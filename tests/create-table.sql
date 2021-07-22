@@ -1,0 +1,10 @@
+CREATE TABLE foo (a FLOAT)
+-- msg: CREATE TABLE 1
+
+CREATE TABLE bar (baz CHARACTER VARYING(10))
+-- msg: CREATE TABLE 1
+
+CREATE TABLE foo (a FLOAT)
+CREATE TABLE foo (baz CHARACTER VARYING(10))
+-- msg: CREATE TABLE 1
+-- error: db.SQLState42P07: duplicate table: foo

@@ -1,0 +1,14 @@
+CREATE TABLE foo (a FLOAT)
+INSERT INTO foo (a) VALUES (1.23)
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+
+CREATE TABLE foo (a FLOAT)
+INSERT INTO foo (a) VALUES (101)
+INSERT INTO foo (a) VALUES (102)
+SELECT * FROM foo
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- a: 101
+-- a: 102

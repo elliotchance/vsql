@@ -1,6 +1,5 @@
-module vdb_test
+module vdb
 
-import db
 import os
 
 struct VdbTest {
@@ -38,14 +37,12 @@ fn get_tests() ?[]VdbTest {
 
 fn test_all() ? {
 	for test in get_tests() ? {
-		println(test.stmts)
-
 		path := '/tmp/test.vdb'
 		if os.exists(path) {
 			os.rm(path) ?
 		}
 
-		mut db := db.open(path) ?
+		mut db := open(path) ?
 
 		mut actual := ''
 		for stmt in test.stmts {

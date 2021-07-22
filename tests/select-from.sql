@@ -1,5 +1,5 @@
 SELECT * FROM foo
--- error: db.SQLState42P01: no such table: foo
+-- error: vdb.SQLState42P01: no such table: foo
 
 CREATE TABLE foo (a FLOAT)
 INSERT INTO foo (a) VALUES (1.234)

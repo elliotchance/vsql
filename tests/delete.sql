@@ -1,5 +1,5 @@
 DELETE FROM foo
--- error: db.SQLState42P01: no such table: foo
+-- error: vdb.SQLState42P01: no such table: foo
 
 CREATE TABLE foo (baz CHARACTER VARYING(10))
 INSERT INTO foo (baz) VALUES ('hi')

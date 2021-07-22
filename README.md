@@ -1,7 +1,7 @@
 vdb
 ===
 
-vdb is an in-memory SQL database written in pure [V](https://vlang.io) with no
+vdb is an single-file SQL database written in pure [V](https://vlang.io) with no
 dependencies.
 
 - [Installation](#installation)
@@ -28,31 +28,31 @@ Usage
 -----
 
 ```v
-import elliotchance.vdb
+import elliotchance.vdb.vdb
 
 fn example() ? {
-	mut db := vdb.open('/tmp/test.vdb') ?
+    mut db := vdb.open('/tmp/test.vdb') ?
 
-	// All SQL commands use query():
+    // All SQL commands use query():
     db.query('CREATE TABLE foo (a FLOAT)') ?
     db.query('INSERT INTO foo (a) VALUES (1.23)') ?
     db.query('INSERT INTO foo (a) VALUES (4.56)') ?
 
-	// Iterate through a result:
+    // Iterate through a result:
     result1 := db.query('SELECT * FROM foo') ?
     for row in result1 {
         println(row.get_f64('a'))
     }
 
-	// Handling specific errors:
-	db.query('SELECT * FROM bar') or {
-		match err {
-			vdb.SQLState42P01 { // 42P01 = table not found
-				println("I knew '$err.table_name' did not exist!")
-			}
-			else { panic(err) }
-		}
-	}
+    // Handling specific errors:
+    db.query('SELECT * FROM bar') or {
+        match err {
+            vdb.SQLState42P01 { // 42P01 = table not found
+                println("I knew '$err.table_name' did not exist!")
+            }
+            else { panic(err) }
+        }
+    }
 }
 ```
 

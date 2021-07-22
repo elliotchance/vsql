@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  run:
+    name: Run
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up V version latest
+      uses: nocturlab/setup-vlang-action@v1
+      with:
+        v-version: latest
+      id: v
+    - name: Run SQL tests
+      run: v -stats test vdb

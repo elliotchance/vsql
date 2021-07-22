@@ -1,2 +1,2 @@
 TABLE
--- error: db.SQLState42601: syntax error at "TABLE"
+-- error: vdb.SQLState42601: syntax error at "TABLE"

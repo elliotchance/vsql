@@ -64,6 +64,27 @@ Outputs:
 I knew 'bar' did not exist!
 ```
 
+You can also work with database files through the CLI (ctrl+c to exit).
+
+You will need to build the CLI tool first:
+
+```
+v install elliotchance.vdb
+v ~/.vmodules/elliotchance/vdb/vdb-cli.v
+```
+
+Then usage is:
+
+```
+$ ./vdb-cli test.vdb
+vdb> select * from foo
+a: 1234 
+1 row (1 ms)
+
+vdb> select * from bar
+0 rows (0 ms)
+```
+
 # SQL Commands
 
 ## CREATE TABLE

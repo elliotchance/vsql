@@ -18,4 +18,4 @@ jobs:
         v-version: latest
       id: v
     - name: Run SQL tests
-      run: v -stats test vdb
+      run: v -stats test vsql

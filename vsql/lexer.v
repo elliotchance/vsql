@@ -1,7 +1,7 @@
 // lexer.v contains the lexer (tokenizer) that convert a SQL string into tokens
 // to be read by the parser.v
 
-module vdb
+module vsql
 
 enum TokenKind {
 	eof // End of file

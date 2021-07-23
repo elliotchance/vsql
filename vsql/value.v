@@ -2,7 +2,7 @@
 // runtime and for storage. The Value object is used extensively internally, but
 // also is the exposed type when sending results back.
 
-module vdb
+module vsql
 
 enum ValueType {
 	is_f64

@@ -5,7 +5,7 @@
 // table definitions and any table scan also requires reading the entire file.
 // Although, INSERTs, DELETEs and UPDATEs are O(1).
 
-module vdb
+module vsql
 
 import os
 

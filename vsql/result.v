@@ -1,7 +1,7 @@
 // result.v contains the implementation of results which is a set of rows that
 // can be iterated from a query.
 
-module vdb
+module vsql
 
 struct Result {
 pub:

@@ -1,14 +1,14 @@
-module vdb
+module vsql
 
 import os
 
-struct VdbTest {
+struct SQLTest {
 	stmts    []string
 	expected string
 }
 
-fn get_tests() ?[]VdbTest {
-	mut tests := []VdbTest{}
+fn get_tests() ?[]SQLTest {
+	mut tests := []SQLTest{}
 	test_file_paths := os.walk_ext('tests', 'sql')
 	for test_file_path in test_file_paths {
 		lines := os.read_lines(test_file_path) ?
@@ -17,7 +17,7 @@ fn get_tests() ?[]VdbTest {
 		mut expected := ''
 		for line in lines {
 			if line == '' {
-				tests << VdbTest{stmts, expected}
+				tests << SQLTest{stmts, expected}
 				stmts = []
 				expected = ''
 			} else if line.starts_with('-- ') {
@@ -28,7 +28,7 @@ fn get_tests() ?[]VdbTest {
 		}
 
 		if stmts.len > 0 {
-			tests << VdbTest{stmts, expected}
+			tests << SQLTest{stmts, expected}
 		}
 	}
 
@@ -37,7 +37,7 @@ fn get_tests() ?[]VdbTest {
 
 fn test_all() ? {
 	for test in get_tests() ? {
-		path := '/tmp/test.vdb'
+		path := '/tmp/test.vsql'
 		if os.exists(path) {
 			os.rm(path) ?
 		}

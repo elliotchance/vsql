@@ -1,5 +1,5 @@
 UPDATE foo SET a = 123
--- error: vdb.SQLState42P01: no such table: foo
+-- error: vsql.SQLState42P01: no such table: foo
 
 CREATE TABLE foo (baz CHARACTER VARYING(10))
 INSERT INTO foo (baz) VALUES ('hi')

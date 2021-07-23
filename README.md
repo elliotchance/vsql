@@ -1,8 +1,8 @@
-vdb
-===
+vsql
+====
 
-vdb is an single-file SQL database written in pure [V](https://vlang.io) with no
-dependencies.
+vsql is an single-file SQL database written in pure [V](https://vlang.io) with
+no dependencies.
 
 - [Installation](#installation)
 - [Usage](#usage)
@@ -21,17 +21,17 @@ Installation
 ------------
 
 ```bash
-v install elliotchance.vdb
+v install elliotchance.vsql
 ```
 
 Usage
 -----
 
 ```v
-import elliotchance.vdb.vdb
+import elliotchance.vsql.vsql
 
 fn example() ? {
-    mut db := vdb.open('/tmp/test.vdb') ?
+    mut db := vsql.open('/tmp/test.vsql') ?
 
     // All SQL commands use query():
     db.query('CREATE TABLE foo (a FLOAT)') ?
@@ -47,7 +47,7 @@ fn example() ? {
     // Handling specific errors:
     db.query('SELECT * FROM bar') or {
         match err {
-            vdb.SQLState42P01 { // 42P01 = table not found
+            vsql.SQLState42P01 { // 42P01 = table not found
                 println("I knew '$err.table_name' did not exist!")
             }
             else { panic(err) }
@@ -69,19 +69,19 @@ You can also work with database files through the CLI (ctrl+c to exit).
 You will need to build the CLI tool first:
 
 ```
-v install elliotchance.vdb
-v ~/.vmodules/elliotchance/vdb/vdb-cli.v
+v install elliotchance.vsql
+v ~/.vmodules/elliotchance/vsql/vsql-cli.v
 ```
 
 Then usage is:
 
 ```
-$ ./vdb-cli test.vdb
-vdb> select * from foo
+$ ./vsql-cli test.vsql
+vsql> select * from foo
 a: 1234 
 1 row (1 ms)
 
-vdb> select * from bar
+vsql> select * from bar
 0 rows (0 ms)
 ```
 

@@ -1,6 +1,6 @@
 // where.v executes expressions on a multiple rows.
 
-module vdb
+module vsql
 
 fn where(rows []Row, inverse bool, expr BinaryExpr) ?[]Row {
 	mut new_rows := []Row{}

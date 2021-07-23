@@ -1,7 +1,7 @@
 // row.v defines a row object which is used both internally and as an external
 // representation.
 
-module vdb
+module vsql
 
 struct Row {
 mut:

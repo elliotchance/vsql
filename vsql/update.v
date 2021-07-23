@@ -1,17 +1,17 @@
 // update.v contains the implementation for the UPDATE statement.
 
-module vdb
+module vsql
 
-fn (mut db Vdb) update(stmt UpdateStmt) ?Result {
-	if stmt.table_name !in db.storage.tables {
+fn (mut c Connection) update(stmt UpdateStmt) ?Result {
+	if stmt.table_name !in c.storage.tables {
 		return sqlstate_42p01(stmt.table_name) // table does not exist
 	}
 
-	table := db.storage.tables[stmt.table_name]
+	table := c.storage.tables[stmt.table_name]
 
 	mut delete_rows := []Row{}
 	mut new_rows := []Row{}
-	for mut row in db.storage.read_rows(table.index) ? {
+	for mut row in c.storage.read_rows(table.index) ? {
 		// Missing WHERE matches all records
 		mut ok := true
 		if stmt.where.op != '' {
@@ -39,11 +39,11 @@ fn (mut db Vdb) update(stmt UpdateStmt) ?Result {
 	}
 
 	for row in delete_rows {
-		db.storage.delete_row(row) ?
+		c.storage.delete_row(row) ?
 	}
 
 	for row in new_rows {
-		db.storage.write_row(row, table) ?
+		c.storage.write_row(row, table) ?
 	}
 
 	return new_result_msg('UPDATE $new_rows.len')

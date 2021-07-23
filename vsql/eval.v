@@ -1,6 +1,6 @@
 // eval.v executes expressions (such as you would find in a WHERE condition).
 
-module vdb
+module vsql
 
 fn eval(data Row, e BinaryExpr) ?bool {
 	return eval_binary(data, e)

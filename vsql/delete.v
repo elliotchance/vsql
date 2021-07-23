@@ -1,14 +1,14 @@
 // delete.v contains the implementation for the DELETE statement.
 
-module vdb
+module vsql
 
-fn (mut db Vdb) delete(stmt DeleteStmt) ?Result {
-	if stmt.table_name !in db.storage.tables {
+fn (mut c Connection) delete(stmt DeleteStmt) ?Result {
+	if stmt.table_name !in c.storage.tables {
 		return sqlstate_42p01(stmt.table_name) // table not found
 	}
 
-	table := db.storage.tables[stmt.table_name]
-	mut rows := db.storage.read_rows(table.index) ?
+	table := c.storage.tables[stmt.table_name]
+	mut rows := c.storage.read_rows(table.index) ?
 
 	mut deleted := 0
 	for row in rows {
@@ -19,7 +19,7 @@ fn (mut db Vdb) delete(stmt DeleteStmt) ?Result {
 
 		if ok {
 			deleted++
-			db.storage.delete_row(row) ?
+			c.storage.delete_row(row) ?
 		}
 	}
 

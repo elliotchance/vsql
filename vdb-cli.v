@@ -3,12 +3,12 @@ module main
 import cli
 import os
 import time
-import vdb
+import vsql
 
 fn main() {
 	mut app := cli.Command{
-		name: 'vdb'
-		description: 'vdb is a single-file SQL database written in V'
+		name: 'vsql'
+		description: 'vsql is a single-file SQL database written in V'
 		execute: main_command
 	}
 	app.setup()
@@ -17,12 +17,12 @@ fn main() {
 
 fn main_command(cmd cli.Command) ? {
 	if cmd.args.len != 1 {
-		return error('usage: vdb file.vdb')
+		return error('usage: vsql file.vsql')
 	}
 
-	mut db := vdb.open(cmd.args[0]) ?
+	mut db := vsql.open(cmd.args[0]) ?
 	for {
-		print('vdb> ')
+		print('vsql> ')
 		query := os.get_line()
 
 		start := time.ticks()

@@ -1,2 +1,3 @@
 **/.DS_Store
-vdb-cli
+vsql-cli
+test.vsql

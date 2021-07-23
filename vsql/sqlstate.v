@@ -5,7 +5,7 @@
 // the relevant errors code from the definitions in PostgreSQL:
 // https://www.postgresql.org/docs/9.4/errcodes-appendix.html
 
-module vdb
+module vsql
 
 // syntax error
 struct SQLState42601 {

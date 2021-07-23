@@ -1,6 +1,6 @@
 // ast.v contains the AST structures that represent the parsed SQL.
 
-module vdb
+module vsql
 
 // All possible root statments
 type Stmt = CreateTableStmt | DeleteStmt | DropTableStmt | InsertStmt | SelectStmt | UpdateStmt

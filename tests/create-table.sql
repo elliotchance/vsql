@@ -7,4 +7,4 @@ CREATE TABLE bar (baz CHARACTER VARYING(10))
 CREATE TABLE foo (a FLOAT)
 CREATE TABLE foo (baz CHARACTER VARYING(10))
 -- msg: CREATE TABLE 1
--- error: vdb.SQLState42P07: duplicate table: foo
+-- error: vsql.SQLState42P07: duplicate table: foo

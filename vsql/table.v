@@ -1,6 +1,6 @@
 // table.v is the definition of a table (columns names and types).
 
-module vdb
+module vsql
 
 struct Column {
 	name string

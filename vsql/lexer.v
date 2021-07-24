@@ -13,6 +13,7 @@ enum TokenKind {
 	keyword_delete // DELETE
 	keyword_double // DOUBLE
 	keyword_drop // DROP
+	keyword_false // FALSE
 	keyword_float // FLOAT
 	keyword_from // FROM
 	keyword_insert // INSERT
@@ -25,6 +26,8 @@ enum TokenKind {
 	keyword_set // SET
 	keyword_smallint // SMALLINT
 	keyword_table // TABLE
+	keyword_true // TRUE
+	keyword_unknown // UNKNOWN
 	keyword_update // UPDATE
 	keyword_values // VALUES
 	keyword_varchar // VARCHAR
@@ -154,6 +157,7 @@ fn tokenize(sql string) []Token {
 			'DELETE' { Token{TokenKind.keyword_delete, word} }
 			'DOUBLE' { Token{TokenKind.keyword_double, word} }
 			'DROP' { Token{TokenKind.keyword_drop, word} }
+			'FALSE' { Token{TokenKind.keyword_false, word} }
 			'FLOAT' { Token{TokenKind.keyword_float, word} }
 			'FROM' { Token{TokenKind.keyword_from, word} }
 			'INSERT' { Token{TokenKind.keyword_insert, word} }
@@ -166,6 +170,8 @@ fn tokenize(sql string) []Token {
 			'SET' { Token{TokenKind.keyword_set, word} }
 			'SMALLINT' { Token{TokenKind.keyword_smallint, word} }
 			'TABLE' { Token{TokenKind.keyword_table, word} }
+			'TRUE' { Token{TokenKind.keyword_true, word} }
+			'UNKNOWN' { Token{TokenKind.keyword_unknown, word} }
 			'UPDATE' { Token{TokenKind.keyword_update, word} }
 			'VALUES' { Token{TokenKind.keyword_values, word} }
 			'VARCHAR' { Token{TokenKind.keyword_varchar, word} }

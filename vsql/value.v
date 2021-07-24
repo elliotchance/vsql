@@ -4,35 +4,70 @@
 
 module vsql
 
-enum ValueType {
-	is_f64
-	is_string
-}
-
 struct Value {
 pub:
-	typ          ValueType
-	f64_value    f64
-	string_value string
+	typ          Type
+	f64_value    f64    // boolean and numeric
+	string_value string // char and varchar
 }
 
-fn new_f64_value(x f64) Value {
+fn new_true_value() Value {
 	return Value{
-		typ: ValueType.is_f64
+		typ: Type{.is_boolean, 0}
+		f64_value: 1
+	}
+}
+
+fn new_false_value() Value {
+	return Value{
+		typ: Type{.is_boolean, 0}
+		f64_value: 0
+	}
+}
+
+fn new_unknown_value() Value {
+	return Value{
+		typ: Type{.is_boolean, 0}
+		f64_value: 2
+	}
+}
+
+fn new_float_value(x f64) Value {
+	return Value{
+		typ: Type{.is_float, 0}
 		f64_value: x
 	}
 }
 
-fn new_string_value(x string) Value {
+fn new_integer_value(x int) Value {
 	return Value{
-		typ: ValueType.is_string
+		typ: Type{.is_integer, 0}
+		f64_value: x
+	}
+}
+
+fn new_varchar_value(x string, size int) Value {
+	return Value{
+		typ: Type{.is_varchar, size}
 		string_value: x
 	}
 }
 
 fn (v Value) == (v2 Value) bool {
-	return match v.typ {
-		.is_f64 { v2.typ == .is_f64 && v.f64_value == v2.f64_value }
-		.is_string { v2.typ == .is_string && v.string_value == v2.string_value }
+	return match v.typ.typ {
+		.is_boolean, .is_bigint, .is_integer, .is_smallint, .is_float, .is_real {
+			v2.typ.typ == v.typ.typ && v.f64_value == v2.f64_value
+		}
+		.is_varchar, .is_character {
+			v2.typ.typ == v.typ.typ && v.string_value == v2.string_value
+		}
+	}
+}
+
+fn bool_str(x f64) string {
+	return match x {
+		0 { 'FALSE' }
+		1 { 'TRUE' }
+		else { 'UNKNOWN' }
 	}
 }

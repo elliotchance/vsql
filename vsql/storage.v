@@ -84,13 +84,13 @@ fn (mut f FileStorage) close() {
 }
 
 fn (mut f FileStorage) write_value(v Value) ? {
-	f.write<ValueType>(v.typ) ?
+	f.write<SQLType>(v.typ.typ) ?
 
-	match v.typ {
-		.is_f64 {
+	match v.typ.typ {
+		.is_boolean, .is_float, .is_bigint, .is_integer, .is_real, .is_smallint {
 			f.write<f64>(v.f64_value) ?
 		}
-		.is_string {
+		.is_varchar, .is_character {
 			f.write<int>(v.string_value.len) ?
 			for b in v.string_value.bytes() {
 				f.write<byte>(b) ?
@@ -100,26 +100,33 @@ fn (mut f FileStorage) write_value(v Value) ? {
 }
 
 fn (mut f FileStorage) read_value() ?Value {
-	typ := f.read<ValueType>() ?
+	typ := f.read<SQLType>() ?
 
 	return match typ {
-		.is_f64 {
-			new_f64_value(f.read<f64>() ?)
+		.is_boolean, .is_bigint, .is_float, .is_real, .is_smallint, .is_integer {
+			Value{
+				typ: Type{typ, 0}
+				f64_value: f.read<f64>() ?
+			}
 		}
-		.is_string {
+		.is_varchar, .is_character {
 			len := f.read<int>() ?
 			mut buf := []byte{len: len}
 			f.f.read_from(f.pos, mut buf) ?
 			f.pos += u32(len)
-			new_string_value(string(buf))
+
+			Value{
+				typ: Type{typ, 0}
+				string_value: string(buf)
+			}
 		}
 	}
 }
 
 fn sizeof_value(value Value) int {
-	return int(sizeof(ValueType) + match value.typ {
-		.is_f64 { sizeof(f64) }
-		.is_string { sizeof(int) + u32(value.string_value.len) }
+	return int(sizeof(SQLType) + match value.typ.typ {
+		.is_boolean, .is_float, .is_integer, .is_bigint, .is_smallint, .is_real { sizeof(f64) }
+		.is_varchar, .is_character { sizeof(int) + u32(value.string_value.len) }
 	})
 }
 
@@ -194,7 +201,7 @@ fn (mut f FileStorage) read_object() ?FileStorageNextObject {
 	for i := 2; i < values.len; i += 2 {
 		columns << Column{
 			name: values[i].string_value
-			typ: values[i + 1].string_value
+			typ: new_type(values[i + 1].string_value, 0)
 		}
 	}
 
@@ -215,12 +222,12 @@ fn (mut f FileStorage) create_table(table_name string, columns []Column) ? {
 	offset := f.pos
 
 	// If index is 0, the table is deleletd
-	values << new_f64_value(index)
-	values << new_string_value(table_name)
+	values << new_float_value(index)
+	values << new_varchar_value(table_name, 0)
 
 	for column in columns {
-		values << new_string_value(column.name)
-		values << new_string_value(column.typ)
+		values << new_varchar_value(column.name, 0)
+		values << new_varchar_value(column.typ.str(), 0)
 	}
 
 	f.write_object(1, values) ?
@@ -232,7 +239,7 @@ fn (mut f FileStorage) delete_table(table_name string) ? {
 	f.pos = f.tables[table_name].offset
 
 	// If index is 0, the table is deleted
-	f.write_value(new_f64_value(0)) ?
+	f.write_value(new_float_value(0)) ?
 
 	f.tables.delete(table_name)
 }

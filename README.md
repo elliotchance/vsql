@@ -244,6 +244,8 @@ struct definitions.
 | SQLSTATE   | Reason |
 | ---------- | ------ |
 | `42601`    | syntax error |
+| `42703`    | column does not exist |
+| `42804`    | data type mismatch |
 | `42P01`    | table does not exist |
 | `42P07`    | table already exists |
 

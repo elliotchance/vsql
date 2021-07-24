@@ -28,3 +28,8 @@ SELECT * FROM foo
 -- msg: UPDATE 0
 -- BAZ: 78
 -- BAZ: 100
+
+CREATE TABLE foo (baz FLOAT)
+UPDATE foo SET baz = true
+-- msg: CREATE TABLE 1
+-- error: vsql.SQLState42804: data type mismatch for column BAZ: expected FLOAT but got BOOLEAN

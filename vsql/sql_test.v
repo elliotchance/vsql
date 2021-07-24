@@ -3,8 +3,10 @@ module vsql
 import os
 
 struct SQLTest {
-	stmts    []string
-	expected string
+	file_name   string
+	line_number int
+	stmts       []string
+	expected    string
 }
 
 fn get_tests() ?[]SQLTest {
@@ -15,9 +17,10 @@ fn get_tests() ?[]SQLTest {
 
 		mut stmts := []string{}
 		mut expected := ''
+		mut line_number := 0
 		for line in lines {
 			if line == '' {
-				tests << SQLTest{stmts, expected}
+				tests << SQLTest{test_file_path, line_number, stmts, expected}
 				stmts = []
 				expected = ''
 			} else if line.starts_with('-- ') {
@@ -25,10 +28,12 @@ fn get_tests() ?[]SQLTest {
 			} else {
 				stmts << line
 			}
+
+			line_number++
 		}
 
 		if stmts.len > 0 {
-			tests << SQLTest{stmts, expected}
+			tests << SQLTest{test_file_path, line_number, stmts, expected}
 		}
 	}
 
@@ -59,6 +64,9 @@ fn test_all() ? {
 			}
 		}
 
-		assert test.expected.trim_space() == actual.trim_space()
+		at := 'at $test.file_name:$test.line_number:\n'
+		expected := at + test.expected.trim_space()
+		actual_trim := at + actual.trim_space()
+		assert expected == actual_trim
 	}
 }

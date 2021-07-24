@@ -6,10 +6,29 @@ fn (mut c Connection) insert(stmt InsertStmt) ?Result {
 	mut row := Row{
 		data: map[string]Value{}
 	}
-	row.data[identifier_name(stmt.columns[0])] = stmt.values[0]
+
+	if stmt.columns.len < stmt.values.len {
+		return sqlstate_42601('INSERT has more values than columns')
+	}
+
+	if stmt.columns.len > stmt.values.len {
+		return sqlstate_42601('INSERT has less values than columns')
+	}
 
 	table_name := identifier_name(stmt.table_name)
-	c.storage.write_row(row, c.storage.tables[table_name]) ?
+	if table_name !in c.storage.tables {
+		return sqlstate_42p01(table_name) // table not found
+	}
+
+	table := c.storage.tables[table_name]
+	for i, column in stmt.columns {
+		column_name := identifier_name(column)
+		table_column := table.column(column_name) ?
+		value := cast('for column $column_name', stmt.values[i], table_column.typ) ?
+		row.data[column_name] = value
+	}
+
+	c.storage.write_row(row, table) ?
 
 	return new_result_msg('INSERT 1')
 }

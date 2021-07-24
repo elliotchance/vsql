@@ -53,7 +53,7 @@ fn (mut p Parser) peek(tks ...TokenKind) []Token {
 	return toks
 }
 
-fn (mut p Parser) consume_type() ?string {
+fn (mut p Parser) consume_type() ?Type {
 	// These need to be sorted with longest first to avoid consuming an
 	// incomplete type.
 	types := [
@@ -93,12 +93,29 @@ fn (mut p Parser) consume_type() ?string {
 		if peek.len > 0 {
 			p.pos += peek.len
 
-			mut s := ''
-			for t in peek {
-				s += ' ' + t.value
+			mut type_name := ''
+			mut type_size := '0'
+			match typ.len {
+				1 {
+					type_name = peek[0].value
+				}
+				2 {
+					type_name = '${peek[0].value} ${peek[1].value}'
+				}
+				4 {
+					type_name = peek[0].value
+					type_size = peek[3].value
+				}
+				5 {
+					type_name = '${peek[0].value} ${peek[1].value}'
+					type_size = peek[3].value
+				}
+				else {
+					panic(peek)
+				}
 			}
 
-			return s[1..]
+			return new_type(type_name.to_upper(), type_size.int())
 		}
 	}
 
@@ -150,17 +167,33 @@ fn (mut p Parser) consume_insert() ?InsertStmt {
 	table_name := p.consume(TokenKind.literal_identifier) ?
 
 	// columns
+	mut cols := []string{}
 	p.consume(TokenKind.op_paren_open) ?
 	col := p.consume(TokenKind.literal_identifier) ?
+	cols << col.value
+
+	for p.peek(TokenKind.op_comma).len > 0 {
+		p.pos++
+		next_col := p.consume(TokenKind.literal_identifier) ?
+		cols << next_col.value
+	}
+
 	p.consume(TokenKind.op_paren_close) ?
 
 	// values
+	mut values := []Value{}
 	p.consume(TokenKind.keyword_values) ?
 	p.consume(TokenKind.op_paren_open) ?
-	value := p.consume_value() ?
+	values << p.consume_value() ?
+
+	for p.peek(TokenKind.op_comma).len > 0 {
+		p.pos++
+		values << p.consume_value() ?
+	}
+
 	p.consume(TokenKind.op_paren_close) ?
 
-	return InsertStmt{table_name.value, [col.value], [value]}
+	return InsertStmt{table_name.value, cols, values}
 }
 
 fn (mut p Parser) consume_select() ?SelectStmt {
@@ -168,9 +201,9 @@ fn (mut p Parser) consume_select() ?SelectStmt {
 	p.pos++
 
 	// fields
-	mut fields := new_string_value(p.tokens[p.pos].value)
+	mut fields := new_varchar_value(p.tokens[p.pos].value, 0)
 	if p.tokens[p.pos].kind == TokenKind.literal_number {
-		fields = new_f64_value(p.tokens[p.pos].value.f64())
+		fields = new_float_value(p.tokens[p.pos].value.f64())
 	}
 	p.pos++
 
@@ -241,14 +274,33 @@ fn (mut p Parser) consume_where() ?BinaryExpr {
 }
 
 fn (mut p Parser) consume_value() ?Value {
+	if p.peek(TokenKind.keyword_true).len > 0 {
+		p.pos++
+		return new_true_value()
+	}
+
+	if p.peek(TokenKind.keyword_false).len > 0 {
+		p.pos++
+		return new_false_value()
+	}
+
+	if p.peek(TokenKind.keyword_unknown).len > 0 {
+		p.pos++
+		return new_unknown_value()
+	}
+
 	if p.peek(TokenKind.literal_number).len > 0 {
 		t := p.consume(TokenKind.literal_number) ?
-		return new_f64_value(t.value.f64())
+		if t.value.contains('.') {
+			return new_float_value(t.value.f64())
+		}
+
+		return new_integer_value(t.value.int())
 	}
 
 	if p.peek(TokenKind.literal_string).len > 0 {
 		t := p.consume(TokenKind.literal_string) ?
-		return new_string_value(t.value)
+		return new_varchar_value(t.value, 0)
 	}
 
 	return sqlstate_42601('expecting value but found ${p.tokens[p.pos]}')

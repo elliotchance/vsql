@@ -2,6 +2,8 @@
 
 module vsql
 
+// TODO(elliotchance): A table is allowed to have zero columns.
+
 fn (mut c Connection) create_table(stmt CreateTableStmt) ?Result {
 	if stmt.table_name in c.storage.tables {
 		return sqlstate_42p07(stmt.table_name) // duplicate table

@@ -5,33 +5,44 @@ module vsql
 
 enum TokenKind {
 	eof // End of file
+	keyword_bigint // BIGINT
+	keyword_boolean // BOOLEAN
+	keyword_char // CHAR
 	keyword_character // CHARACTER
 	keyword_create // CREATE
 	keyword_delete // DELETE
+	keyword_double // DOUBLE
 	keyword_drop // DROP
 	keyword_float // FLOAT
 	keyword_from // FROM
 	keyword_insert // INSERT
+	keyword_int // INT
+	keyword_integer // INTEGER
 	keyword_into // INTO
+	keyword_precision // PRECISION
+	keyword_real // REAL
 	keyword_select // SELECT
 	keyword_set // SET
+	keyword_smallint // SMALLINT
 	keyword_table // TABLE
 	keyword_update // UPDATE
 	keyword_values // VALUES
+	keyword_varchar // VARCHAR
 	keyword_varying // VARYING
 	keyword_where // WHERE
 	literal_identifier // foo
 	literal_number // 123
 	literal_string // 'hello'
-	op_paren_open // (
-	op_paren_close // )
-	op_multiply // *
+	op_comma // ,
 	op_eq // =
-	op_neq // !=
 	op_gt // >
-	op_lt // <
 	op_gte // >=
+	op_lt // <
 	op_lte // <=
+	op_multiply // *
+	op_neq // !=
+	op_paren_close // )
+	op_paren_open // (
 }
 
 struct Token {
@@ -97,6 +108,7 @@ fn tokenize(sql string) []Token {
 			`>`: TokenKind.op_gt
 			`<`: TokenKind.op_lt
 			`*`: TokenKind.op_multiply
+			`,`: TokenKind.op_comma
 		}
 		for op, tk in single {
 			if cs[i] == op {
@@ -108,9 +120,11 @@ fn tokenize(sql string) []Token {
 
 		// keyword or identifier
 		mut word := ''
-		for i < cs.len && ((cs[i] >= `a` && cs[i] <= `z`) || (cs[i] >= `A` && cs[i] <= `Z`)) {
+		mut is_not_first := false
+		for i < cs.len && is_identifier_char(cs[i], is_not_first) {
 			word += '${cs[i]}'
 			i++
+			is_not_first = true
 		}
 
 		if word == '' {
@@ -119,19 +133,29 @@ fn tokenize(sql string) []Token {
 		}
 
 		tokens << match word.to_upper() {
+			'BIGINT' { Token{TokenKind.keyword_bigint, word} }
+			'BOOLEAN' { Token{TokenKind.keyword_boolean, word} }
+			'CHAR' { Token{TokenKind.keyword_char, word} }
 			'CHARACTER' { Token{TokenKind.keyword_character, word} }
 			'CREATE' { Token{TokenKind.keyword_create, word} }
 			'DELETE' { Token{TokenKind.keyword_delete, word} }
+			'DOUBLE' { Token{TokenKind.keyword_double, word} }
 			'DROP' { Token{TokenKind.keyword_drop, word} }
 			'FLOAT' { Token{TokenKind.keyword_float, word} }
 			'FROM' { Token{TokenKind.keyword_from, word} }
 			'INSERT' { Token{TokenKind.keyword_insert, word} }
+			'INT' { Token{TokenKind.keyword_int, word} }
+			'INTEGER' { Token{TokenKind.keyword_integer, word} }
 			'INTO' { Token{TokenKind.keyword_into, word} }
+			'PRECISION' { Token{TokenKind.keyword_precision, word} }
+			'REAL' { Token{TokenKind.keyword_real, word} }
 			'SELECT' { Token{TokenKind.keyword_select, word} }
 			'SET' { Token{TokenKind.keyword_set, word} }
+			'SMALLINT' { Token{TokenKind.keyword_smallint, word} }
 			'TABLE' { Token{TokenKind.keyword_table, word} }
 			'UPDATE' { Token{TokenKind.keyword_update, word} }
 			'VALUES' { Token{TokenKind.keyword_values, word} }
+			'VARCHAR' { Token{TokenKind.keyword_varchar, word} }
 			'VARYING' { Token{TokenKind.keyword_varying, word} }
 			'WHERE' { Token{TokenKind.keyword_where, word} }
 			else { Token{TokenKind.literal_identifier, word} }
@@ -141,4 +165,15 @@ fn tokenize(sql string) []Token {
 	tokens << Token{TokenKind.eof, ''}
 
 	return tokens
+}
+
+[inline]
+fn is_identifier_char(c byte, is_not_first bool) bool {
+	yes := (c >= `a` && c <= `z`) || (c >= `A` && c <= `Z`) || c == `_`
+
+	if is_not_first {
+		return yes || (c >= `0` && c <= `9`)
+	}
+
+	return yes
 }

@@ -54,18 +54,52 @@ fn (mut p Parser) peek(tks ...TokenKind) []Token {
 }
 
 fn (mut p Parser) consume_type() ?string {
-	if p.peek(TokenKind.keyword_float).len > 0 {
-		p.pos++
-		return 'FLOAT'
-	}
+	// These need to be sorted with longest first to avoid consuming an
+	// incomplete type.
+	types := [
+		// 5
+		[TokenKind.keyword_char, TokenKind.keyword_varying, TokenKind.op_paren_open,
+			TokenKind.literal_number, TokenKind.op_paren_close],
+		[TokenKind.keyword_character, TokenKind.keyword_varying, TokenKind.op_paren_open,
+			TokenKind.literal_number, TokenKind.op_paren_close],
+		// 4
+		[TokenKind.keyword_char, TokenKind.op_paren_open, TokenKind.literal_number,
+			TokenKind.op_paren_close,
+		],
+		[TokenKind.keyword_character, TokenKind.op_paren_open, TokenKind.literal_number,
+			TokenKind.op_paren_close,
+		],
+		[TokenKind.keyword_float, TokenKind.op_paren_open, TokenKind.literal_number,
+			TokenKind.op_paren_close,
+		],
+		[TokenKind.keyword_varchar, TokenKind.op_paren_open, TokenKind.literal_number,
+			TokenKind.op_paren_close,
+		],
+		// 2
+		[TokenKind.keyword_double, TokenKind.keyword_precision],
+		// 1
+		[TokenKind.keyword_bigint],
+		[TokenKind.keyword_boolean],
+		[TokenKind.keyword_character],
+		[TokenKind.keyword_char],
+		[TokenKind.keyword_float],
+		[TokenKind.keyword_integer],
+		[TokenKind.keyword_int],
+		[TokenKind.keyword_real],
+		[TokenKind.keyword_smallint],
+	]
+	for typ in types {
+		peek := p.peek(...typ)
+		if peek.len > 0 {
+			p.pos += peek.len
 
-	tok := p.peek(TokenKind.keyword_character, TokenKind.keyword_varying, TokenKind.op_paren_open,
-		TokenKind.literal_number, TokenKind.op_paren_close)
-	if tok.len > 0 {
-		p.pos += 5
+			mut s := ''
+			for t in peek {
+				s += ' ' + t.value
+			}
 
-		// TODO(elliotchance): This should use the real value.
-		return 'CHARACTER VARYING(1000)'
+			return s[1..]
+		}
 	}
 
 	return error('expecting type but found ${p.tokens[p.pos].value}')
@@ -84,6 +118,13 @@ fn (mut p Parser) consume_create() ?CreateTableStmt {
 	col_name := p.consume(TokenKind.literal_identifier) ?
 	col_type := p.consume_type() ?
 	columns << Column{col_name.value, col_type}
+
+	for p.peek(TokenKind.op_comma).len > 0 {
+		p.consume(TokenKind.op_comma) ?
+		next_col_name := p.consume(TokenKind.literal_identifier) ?
+		next_col_type := p.consume_type() ?
+		columns << Column{next_col_name.value, next_col_type}
+	}
 
 	p.consume(TokenKind.op_paren_close) ?
 

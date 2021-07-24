@@ -15,6 +15,7 @@ no dependencies.
   - [UPDATE](#update)
 - [Appendix](#appendix)
   - [Data Types](#data-types)
+  - [SQLSTATE (Errors)](#sqlstate-errors)
 - [Testing](#testing)
 
 Installation
@@ -95,6 +96,10 @@ CREATE TABLE <table_name> ( <column> , ... )
 column := <column_name> <column_type>
 ```
 
+1. `column_name` must start with a letter, but can be followed by any letter,
+underscore (`_`) or digit for a maximum length of 128 characters.
+2. `column_type` must be one of the [Data Types](#data-types).
+
 Example:
 
 ```sql
@@ -167,8 +172,74 @@ Appendix
 
 ### Data Types
 
-- `CHARACTER VARYING(n)` for strings that can contain up to *n* characters.
-- `FLOAT` for a 64bit floating-point value.
+**Important:** All data types are currently reduced to several basic internal
+types described below, which is simpler for not but has some consequences:
+
+1. Types that might take less space in other databases (ie. `SMALLINT` vs
+`BIGINT`) will always be stored in a `f64` (8 bytes).
+2. Since all numbers are stored at 64-bit floating, some precision of large
+integers will not be maintained.
+3. Any types that contain a numerical precision or maximum string length will be
+ignored. An error will not be returned if the value stored breaches this
+requirement.
+4. The definition of a "character" isn't yet well defined or enforced. That is,
+characters can be any unicode point, but that may change the future.
+6. The intent is to have all of the above fixed in future version, so please
+choose the correct type for your values now to avoid stricter requirments in the
+future.
+
+There are some types that are not supported yet:
+
+1. `<character large object type>`: `CHARACTER LARGE OBJECT`,
+`CHAR LARGE OBJECT` and `CLOB`.
+2. `<national character string type>`: `NATIONAL CHARACTER`, `NATIONAL CHAR`,
+`NCHAR`, `NATIONAL CHARACTER VARYING`, `NATIONAL CHAR VARYING` and
+`NCHAR VARYING`.
+3. `<national character large object type>`: `NATIONAL CHARACTER LARGE OBJECT`,
+`NCHAR LARGE OBJECT` and `NCLOB`.
+4. `<binary string type>` - `BINARY`, `BINARY VARYING` and `VARBINARY`.
+5. `<binary large object string type>`: `BINARY LARGE OBJECT` and `BLOB`.
+6. `<exact numeric type>` (some): `NUMERIC`, `DECIMAL` and `DEC`.
+7. `<decimal floating-point type>`: `DECFLOAT`.
+8. `<datetime type>`: `DATE`, `TIME` and `TIMESTAMP`.
+9. `<interval type>`: `INTERVAL`.
+10. `<row type>`: `ROW`.
+11. `<reference type>`: `REF`.
+12. `<array type>`: `ARRAY`.
+13. `<multiset type>`: `MULTISET`.
+
+| Type                   | Internal | Notes |
+| ---------------------- | -------- | ----- |
+| `BIGINT`               | f64      | Integer |
+| `BOOLEAN`              | f64      | `TRUE` or `FALSE` |
+| `CHAR VARYING(n)`      | string   | Alias for `CHARACTER VARYING(n)` |
+| `CHAR(n)`              | string   | Alias for `CHARACTER(n)` |
+| `CHARACTER VARYING(n)` | string   | Strings that can contain up to *n* characters |
+| `CHARACTER(n)`         | string   | Fixed width characters |
+| `CHARACTER`            | string   | Single character |
+| `CHAR`                 | string   | Alias for `CHARACTER` |
+| `DOUBLE PRECISION`     | f64      | 64bit floating-point value |
+| `FLOAT(n)`             | f64      | 64bit floating-point value |
+| `FLOAT`                | f64      | 64bit floating-point value |
+| `INTEGER`              | f64      | Integer |
+| `INT`                  | f64      | Alias for `INTEGER`. |
+| `REAL`                 | f64      | 32bit floating-point value |
+| `SMALLINT`             | f64      | Integer |
+| `VARCHAR(n)`           | string   | Alias for `CHARACTER VARYING(n)` |
+
+### SQLSTATE (Errors)
+
+The error returned from `query()` will always one of the `SQLState` struct
+types. Each type describes the error situation, but may also contain specific
+fields appropriate for that error. See
+[sqlstate.v](https://github.com/elliotchance/vsql/blob/main/vsql/sqlstate.v) for
+struct definitions.
+
+| SQLSTATE   | Reason |
+| ---------- | ------ |
+| `42601`    | syntax error |
+| `42P01`    | table does not exist |
+| `42P07`    | table already exists |
 
 Testing
 -------

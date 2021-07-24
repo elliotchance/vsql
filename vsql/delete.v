@@ -3,11 +3,13 @@
 module vsql
 
 fn (mut c Connection) delete(stmt DeleteStmt) ?Result {
-	if stmt.table_name !in c.storage.tables {
-		return sqlstate_42p01(stmt.table_name) // table not found
+	table_name := identifier_name(stmt.table_name)
+
+	if table_name !in c.storage.tables {
+		return sqlstate_42p01(table_name) // table not found
 	}
 
-	table := c.storage.tables[stmt.table_name]
+	table := c.storage.tables[table_name]
 	mut rows := c.storage.read_rows(table.index) ?
 
 	mut deleted := 0

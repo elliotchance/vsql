@@ -3,11 +3,13 @@
 module vsql
 
 fn (mut c Connection) update(stmt UpdateStmt) ?Result {
-	if stmt.table_name !in c.storage.tables {
-		return sqlstate_42p01(stmt.table_name) // table does not exist
+	table_name := identifier_name(stmt.table_name)
+
+	if table_name !in c.storage.tables {
+		return sqlstate_42p01(table_name) // table does not exist
 	}
 
-	table := c.storage.tables[stmt.table_name]
+	table := c.storage.tables[table_name]
 
 	mut delete_rows := []Row{}
 	mut new_rows := []Row{}
@@ -24,10 +26,12 @@ fn (mut c Connection) update(stmt UpdateStmt) ?Result {
 				data: row.data.clone()
 			}
 			for k, v in stmt.set {
-				if row.data[k] != v {
+				column_name := identifier_name(k)
+
+				if row.data[column_name] != v {
 					did_modify = true
-					row.data[k] = v
-					new_row.data[k] = v
+					row.data[column_name] = v
+					new_row.data[column_name] = v
 				}
 			}
 

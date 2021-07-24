@@ -30,7 +30,7 @@ enum TokenKind {
 	keyword_varchar // VARCHAR
 	keyword_varying // VARYING
 	keyword_where // WHERE
-	literal_identifier // foo
+	literal_identifier // foo or "foo" (delimited)
 	literal_number // 123
 	literal_string // 'hello'
 	op_comma // ,
@@ -84,6 +84,19 @@ fn tokenize(sql string) []Token {
 			}
 			i++
 			tokens << Token{TokenKind.literal_string, word}
+			continue
+		}
+
+		// delimited identifiers
+		if cs[i] == `"` {
+			mut word := ''
+			i++
+			for i < cs.len && cs[i] != `"` {
+				word += '${cs[i]}'
+				i++
+			}
+			i++
+			tokens << Token{TokenKind.literal_identifier, '"$word"'}
 			continue
 		}
 

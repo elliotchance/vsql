@@ -10,5 +10,5 @@ SELECT * FROM foo
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- msg: INSERT 1
--- a: 101
--- a: 102
+-- A: 101
+-- A: 102

@@ -4,8 +4,10 @@ module vsql
 
 fn (mut c Connection) query_select(stmt SelectStmt) ?Result {
 	if stmt.from != '' {
-		if stmt.from in c.storage.tables {
-			table := c.storage.tables[stmt.from]
+		table_name := identifier_name(stmt.from)
+
+		if table_name in c.storage.tables {
+			table := c.storage.tables[table_name]
 
 			mut rows := c.storage.read_rows(table.index) ?
 			if stmt.where.op != '' {
@@ -15,13 +17,13 @@ fn (mut c Connection) query_select(stmt SelectStmt) ?Result {
 			return new_result(table.column_names(), rows)
 		}
 
-		return sqlstate_42p01(stmt.from)
+		return sqlstate_42p01(table_name)
 	}
 
-	return new_result(['col1'], [
+	return new_result(['COL1'], [
 		Row{
 			data: map{
-				'col1': stmt.value
+				'COL1': stmt.value
 			}
 		},
 	])

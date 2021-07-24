@@ -15,6 +15,7 @@ no dependencies.
   - [UPDATE](#update)
 - [Appendix](#appendix)
   - [Data Types](#data-types)
+  - [Keywords](#keywords)
   - [SQLSTATE (Errors)](#sqlstate-errors)
 - [Testing](#testing)
 
@@ -254,12 +255,12 @@ separated by an empty line:
 
 ```sql
 SELECT 1
--- col1: 1
+-- COL1: 1
 
 SELECT 2
 SELECT 3
--- col2: 2
--- col1: 3
+-- COL1: 2
+-- COL1: 3
 ```
 
 This is two tests where each test is given an a brand new database. All SQL statements are executed and each of the results collected and compared to the

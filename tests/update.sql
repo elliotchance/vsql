@@ -1,5 +1,5 @@
 UPDATE foo SET a = 123
--- error: vsql.SQLState42P01: no such table: foo
+-- error: vsql.SQLState42P01: no such table: FOO
 
 CREATE TABLE foo (baz CHARACTER VARYING(10))
 INSERT INTO foo (baz) VALUES ('hi')
@@ -12,8 +12,8 @@ SELECT * FROM foo
 -- msg: INSERT 1
 -- msg: UPDATE 1
 -- msg: UPDATE 2
--- baz: other
--- baz: other
+-- BAZ: other
+-- BAZ: other
 
 CREATE TABLE foo (baz FLOAT)
 INSERT INTO foo (baz) VALUES (35)
@@ -26,5 +26,5 @@ SELECT * FROM foo
 -- msg: INSERT 1
 -- msg: UPDATE 1
 -- msg: UPDATE 0
--- baz: 78
--- baz: 100
+-- BAZ: 78
+-- BAZ: 100

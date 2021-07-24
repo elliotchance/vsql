@@ -18,18 +18,18 @@ SELECT * FROM foo WHERE num <= 27
 -- msg: INSERT 1
 -- msg: INSERT 1
 -- msg: INSERT 1
--- col1: =
--- num: 27
--- col1: !=
--- num: 27
--- num: 35
--- col1: >
--- num: 35
--- col1: >=
--- num: 27
--- num: 35
--- col1: <
--- num: 13
--- col1: <=
--- num: 13
--- num: 27
+-- COL1: =
+-- NUM: 27
+-- COL1: !=
+-- NUM: 27
+-- NUM: 35
+-- COL1: >
+-- NUM: 35
+-- COL1: >=
+-- NUM: 27
+-- NUM: 35
+-- COL1: <
+-- NUM: 13
+-- COL1: <=
+-- NUM: 13
+-- NUM: 27

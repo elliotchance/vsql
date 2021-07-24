@@ -15,7 +15,7 @@ struct SQLState42601 {
 
 fn sqlstate_42601(message string) IError {
 	return SQLState42601{
-		msg: 'syntax error $message'
+		msg: 'syntax error: $message'
 	}
 }
 

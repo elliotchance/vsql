@@ -17,5 +17,7 @@ jobs:
       with:
         v-version: latest
       id: v
+    - name: Verify fmt
+      run: v fmt -verify .
     - name: Run SQL tests
       run: v -stats test vsql

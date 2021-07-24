@@ -102,7 +102,7 @@ fn (mut p Parser) consume_type() ?string {
 		}
 	}
 
-	return error('expecting type but found ${p.tokens[p.pos].value}')
+	return sqlstate_42601('expecting type but found ${p.tokens[p.pos].value}')
 }
 
 fn (mut p Parser) consume_create() ?CreateTableStmt {
@@ -140,7 +140,7 @@ fn (mut p Parser) consume(tk TokenKind) ?Token {
 		return p.tokens[p.pos]
 	}
 
-	return error('expecting $tk but found ${p.tokens[p.pos].value}')
+	return sqlstate_42601('expecting $tk but found ${p.tokens[p.pos].value}')
 }
 
 fn (mut p Parser) consume_insert() ?InsertStmt {
@@ -251,7 +251,7 @@ fn (mut p Parser) consume_value() ?Value {
 		return new_string_value(t.value)
 	}
 
-	return error('expecting value but found ${p.tokens[p.pos]}')
+	return sqlstate_42601('expecting value but found ${p.tokens[p.pos]}')
 }
 
 fn (mut p Parser) consume_update() ?UpdateStmt {

@@ -227,6 +227,11 @@ There are some types that are not supported yet:
 | `SMALLINT`             | f64      | Integer |
 | `VARCHAR(n)`           | string   | Alias for `CHARACTER VARYING(n)` |
 
+### Keywords
+
+Names of entities (such as tables and columns) cannot be a
+[reserved word](https://github.com/elliotchance/vsql/blob/main/vsql/keywords.v).
+
 ### SQLSTATE (Errors)
 
 The error returned from `query()` will always one of the `SQLState` struct

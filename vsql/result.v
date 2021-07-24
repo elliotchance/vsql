@@ -22,7 +22,7 @@ fn new_result_msg(msg string) Result {
 	return new_result(['msg'], [
 		Row{
 			data: map{
-				'msg': new_string_value(msg)
+				'msg': new_varchar_value(msg, 0)
 			}
 		},
 	])

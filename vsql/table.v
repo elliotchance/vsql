@@ -4,7 +4,7 @@ module vsql
 
 struct Column {
 	name string
-	typ  string
+	typ  Type
 }
 
 struct Table {
@@ -22,4 +22,14 @@ fn (t Table) column_names() []string {
 	}
 
 	return names
+}
+
+fn (t Table) column(name string) ?Column {
+	for col in t.columns {
+		if name == col.name {
+			return col
+		}
+	}
+
+	return sqlstate_42703(name) // column does not exist
 }

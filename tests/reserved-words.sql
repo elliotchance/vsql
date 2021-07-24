@@ -362,7 +362,7 @@ CREATE TABLE EXTRACT (a INT)
 -- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: EXTRACT
 
 CREATE TABLE FALSE (a INT)
--- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: FALSE
+-- error: vsql.SQLState42601: syntax error: expecting literal_identifier but found FALSE
 
 CREATE TABLE FETCH (a INT)
 -- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: FETCH
@@ -1010,7 +1010,7 @@ CREATE TABLE TRIM_ARRAY (a INT)
 -- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: TRIM_ARRAY
 
 CREATE TABLE TRUE (a INT)
--- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: TRUE
+-- error: vsql.SQLState42601: syntax error: expecting literal_identifier but found TRUE
 
 CREATE TABLE TRUNCATE (a INT)
 -- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: TRUNCATE
@@ -1025,7 +1025,7 @@ CREATE TABLE UNIQUE (a INT)
 -- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: UNIQUE
 
 CREATE TABLE UNKNOWN (a INT)
--- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: UNKNOWN
+-- error: vsql.SQLState42601: syntax error: expecting literal_identifier but found UNKNOWN
 
 CREATE TABLE UNNEST (a INT)
 -- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: UNNEST

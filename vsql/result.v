@@ -11,7 +11,7 @@ mut:
 	idx int
 }
 
-fn new_result(columns []string, rows []Row) Result {
+pub fn new_result(columns []string, rows []Row) Result {
 	return Result{
 		columns: columns
 		rows: rows

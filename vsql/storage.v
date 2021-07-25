@@ -15,8 +15,6 @@ mut:
 	version i8
 	f       os.File
 	tables  map[string]Table
-	pos     u32
-	max_pos u32
 }
 
 type FileStorageObject = Row | Table
@@ -67,23 +65,11 @@ fn new_file_storage(path string) ?FileStorage {
 }
 
 fn (mut f FileStorage) read<T>() ?T {
-	defer {
-		f.pos += sizeof(T)
-
-		if f.pos > f.max_pos {
-			f.max_pos = f.pos
-		}
-	}
-	return f.f.read_raw_at<T>(f.pos)
+	return f.f.read_raw<T>()
 }
 
 fn (mut f FileStorage) write<T>(x T) ? {
-	f.f.write_raw_at<T>(x, f.pos) ?
-	f.pos += sizeof(T)
-
-	if f.pos > f.max_pos {
-		f.max_pos = f.pos
-	}
+	f.f.write_raw<T>(x) ?
 }
 
 fn (mut f FileStorage) close() {
@@ -123,8 +109,7 @@ fn (mut f FileStorage) read_value() ?Value {
 		.is_varchar, .is_character {
 			len := f.read<int>() ?
 			mut buf := []byte{len: len}
-			f.f.read_from(f.pos, mut buf) ?
-			f.pos += u32(len)
+			f.f.read(mut buf) ?
 
 			Value{
 				typ: Type{typ, 0}
@@ -144,7 +129,7 @@ fn sizeof_value(value Value) int {
 
 fn (mut f FileStorage) write_object(category int, values []Value) ? {
 	// Always ensure we append to the file.
-	f.pos = f.max_pos
+	f.f.seek(0, .end) ?
 
 	mut data_len := int(0)
 	for value in values {
@@ -163,13 +148,11 @@ fn (mut f FileStorage) read_object() ?FileStorageNextObject {
 	data_len := f.read<int>() or {
 		// TODO(elliotchance): I'm not sure what the correcy way to detect EOF
 		//  is, but let's assume this error means the end.
-		f.pos -= sizeof(int)
-		f.max_pos -= sizeof(int)
 		return FileStorageNextObject{
 			is_eof: true
 		}
 	}
-	offset := f.pos
+	offset := u32(f.f.tell() ?)
 	category := f.read<int>() ?
 
 	mut values := []Value{}
@@ -231,7 +214,7 @@ fn (mut f FileStorage) read_object() ?FileStorageNextObject {
 fn (mut f FileStorage) create_table(table_name string, columns []Column) ? {
 	mut values := []Value{}
 	index := f.tables.len + 1
-	offset := f.pos
+	offset := u32(f.f.tell() ?)
 
 	// If index is 0, the table is deleletd
 	values << new_float_value(index)
@@ -248,7 +231,7 @@ fn (mut f FileStorage) create_table(table_name string, columns []Column) ? {
 }
 
 fn (mut f FileStorage) delete_table(table_name string) ? {
-	f.pos = f.tables[table_name].offset
+	f.f.seek(f.tables[table_name].offset, .start) ?
 
 	// If index is 0, the table is deleted
 	f.write_value(new_float_value(0)) ?
@@ -257,7 +240,7 @@ fn (mut f FileStorage) delete_table(table_name string) ? {
 }
 
 fn (mut f FileStorage) delete_row(row Row) ? {
-	f.pos = row.offset
+	f.f.seek(row.offset, .start) ?
 	zero := 0
 	f.write<int>(zero) ?
 }
@@ -271,7 +254,7 @@ fn (mut f FileStorage) write_row(r Row, t Table) ? {
 }
 
 fn (mut f FileStorage) read_rows(table_index int) ?[]Row {
-	f.pos = 1
+	f.f.seek(1, .start) ?
 
 	mut rows := []Row{}
 	for {

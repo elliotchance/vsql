@@ -11,30 +11,43 @@ mut:
 fn parse(sql string) ?Stmt {
 	tokens := tokenize(sql)
 	mut parser := Parser{tokens, 0}
+	mut stmt := Stmt(SelectStmt{})
 
 	match tokens[0].kind {
 		.keyword_create {
-			return parser.consume_create_table() or { return err }
+			stmt = parser.consume_create_table() or { return err }
 		}
 		.keyword_delete {
-			return parser.consume_delete() or { return err }
+			stmt = parser.consume_delete() or { return err }
 		}
 		.keyword_drop {
-			return parser.consume_drop_table() or { return err }
+			stmt = parser.consume_drop_table() or { return err }
 		}
 		.keyword_insert {
-			return parser.consume_insert() or { return err }
+			stmt = parser.consume_insert() or { return err }
 		}
 		.keyword_select {
-			return parser.consume_select() or { return err }
+			stmt = parser.consume_select() or { return err }
 		}
 		.keyword_update {
-			return parser.consume_update() or { return err }
+			stmt = parser.consume_update() or { return err }
 		}
 		else {
 			return sqlstate_42601('at "${tokens[0].value}"') // syntax error
 		}
 	}
+
+	// The ; is optional. However, we do not support multiple queries yet so
+	// make sure we catch that.
+	if parser.peek(.op_semi_colon).len > 0 {
+		parser.pos++
+	}
+
+	if tokens[parser.pos].kind != .eof {
+		return sqlstate_42601('at "${tokens[parser.pos].value}"') // syntax error
+	}
+
+	return stmt
 }
 
 fn (mut p Parser) peek(tks ...TokenKind) []Token {

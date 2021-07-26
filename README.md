@@ -287,18 +287,22 @@ All tests are in the `tests/` directory and each file contains individual tests
 separated by an empty line:
 
 ```sql
-SELECT 1
-SELECT * FROM foo
+SELECT 1;
+SELECT *
+FROM foo;
 -- COL1: 1
 -- error 42P01: no such table: FOO
 
-SELECT 2
-SELECT 3
+SELECT 2;
+SELECT 3;
 -- COL1: 2
 -- COL1: 3
 ```
 
-This is two tests where each test is given an a brand new database. All SQL statements are executed and each of the results collected and compared to the
-comment immediately below.
+This describes two tests where each test is given an a brand new database (ie.
+no tables are carried between tests).
 
-Errors will be in the form of `error SQLSTATE: message`.
+- All SQL statements are executed and each of the results collected and compared
+to the comment immediately below.
+- Errors will be in the form of `error SQLSTATE: message`.
+- A statement can span multiple lines but must me terminated by a `;`.

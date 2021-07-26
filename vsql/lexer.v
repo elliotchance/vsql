@@ -49,6 +49,7 @@ enum TokenKind {
 	op_neq // !=
 	op_paren_close // )
 	op_paren_open // (
+	op_semi_colon // ;
 }
 
 struct Token {
@@ -128,6 +129,7 @@ fn tokenize(sql string) []Token {
 			`<`: TokenKind.op_lt
 			`*`: TokenKind.op_multiply
 			`,`: TokenKind.op_comma
+			`;`: TokenKind.op_semi_colon
 		}
 		for op, tk in single {
 			if cs[i] == op {

@@ -41,20 +41,12 @@ fn example() ? {
     db.query('INSERT INTO foo (a) VALUES (4.56)') ?
 
     // Iterate through a result:
-    result1 := db.query('SELECT * FROM foo') ?
-    for row in result1 {
+    result := db.query('SELECT * FROM foo') ?
+    for row in result {
         println(row.get_f64('a'))
     }
 
-    // Handling specific errors:
-    db.query('SELECT * FROM bar') or {
-        match err {
-            vsql.SQLState42P01 { // 42P01 = table not found
-                println("I knew '$err.table_name' did not exist!")
-            }
-            else { panic(err) }
-        }
-    }
+    // See SQLSTATE (Errors) below for more examples.
 }
 ```
 
@@ -94,7 +86,7 @@ vsql> select * from bar
 ```
 CREATE TABLE <table_name> ( <column> , ... )
 
-column := <column_name> <column_type>
+column := <column_name> <column_type> [ NULL | NOT NULL ]
 ```
 
 1. `column_name` must start with a letter, but can be followed by any letter,
@@ -241,6 +233,44 @@ fields appropriate for that error. See
 [sqlstate.v](https://github.com/elliotchance/vsql/blob/main/vsql/sqlstate.v) for
 struct definitions.
 
+You can match on these to inspect the error further:
+
+```v
+db.query('SELECT * FROM bar') or {
+    match err {
+        vsql.SQLState42P01 { // 42P01 = table not found
+            println("I knew '$err.table_name' did not exist!")
+        }
+        else { panic(err) }
+    }
+}
+```
+
+The `err.code` contains the integer representation of the SQLSTATE:
+
+```v
+db.query('SELECT * FROM bar') or {
+    sqlstate := vsql.sqlstate_from_int(err.code)
+    println('$sqlstate: $err.msg')
+    // 42P01: no such table: BAR
+
+    if err.code == vsql.sqlstate_to_int('42P01') {
+        println('table does not exist')
+    }
+}
+```
+
+Or handling errors by class (first two letters):
+
+```v
+db.query('SELECT * FROM bar') or {
+    if err.code >= vsql.sqlstate_to_int('42000') &&
+       err.code <= vsql.sqlstate_to_int('42ZZZ') {
+        println('Class 42 — Syntax Error or Access Rule Violation')
+    }
+}
+```
+
 | SQLSTATE   | Reason |
 | ---------- | ------ |
 | `23502`    | violates non-null constraint |
@@ -258,7 +288,9 @@ separated by an empty line:
 
 ```sql
 SELECT 1
+SELECT * FROM foo
 -- COL1: 1
+-- error 42P01: no such table: FOO
 
 SELECT 2
 SELECT 3
@@ -268,3 +300,5 @@ SELECT 3
 
 This is two tests where each test is given an a brand new database. All SQL statements are executed and each of the results collected and compared to the
 comment immediately below.
+
+Errors will be in the form of `error SQLSTATE: message`.

@@ -52,7 +52,7 @@ fn test_all() ? {
 		mut actual := ''
 		for stmt in test.stmts {
 			result := db.query(stmt) or {
-				actual += 'error: $err\n'
+				actual += 'error ${sqlstate_from_int(err.code)}: $err.msg\n'
 				continue
 			}
 

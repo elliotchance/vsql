@@ -12,7 +12,7 @@ import os
 struct FileStorage {
 	path string
 mut:
-	version i8 // should be = 1
+	version i8
 	f       os.File
 	tables  map[string]Table
 	pos     u32
@@ -28,11 +28,15 @@ struct FileStorageNextObject {
 }
 
 fn new_file_storage(path string) ?FileStorage {
+	// This is a rudimentary way to ensure that small changes to storage.v are
+	// compatible as things change so rapidly. Sorry if you had a database in a
+	// previous version, you'll need to recreate it.
+	current_version := i8(2)
+
 	// If the file doesn't exist we initialize it and reopen it.
 	if !os.exists(path) {
 		mut tmpf := os.create(path) ?
-		file_version := i8(1)
-		tmpf.write_raw(file_version) ?
+		tmpf.write_raw(current_version) ?
 		tmpf.close()
 	}
 
@@ -44,6 +48,9 @@ fn new_file_storage(path string) ?FileStorage {
 	}
 
 	f.version = f.read<i8>() ?
+	if f.version != current_version {
+		return error('need version $current_version but database is $f.version')
+	}
 
 	for {
 		next := f.read_object() ?
@@ -87,6 +94,7 @@ fn (mut f FileStorage) write_value(v Value) ? {
 	f.write<SQLType>(v.typ.typ) ?
 
 	match v.typ.typ {
+		.is_null {}
 		.is_boolean, .is_float, .is_bigint, .is_integer, .is_real, .is_smallint {
 			f.write<f64>(v.f64_value) ?
 		}
@@ -103,6 +111,9 @@ fn (mut f FileStorage) read_value() ?Value {
 	typ := f.read<SQLType>() ?
 
 	return match typ {
+		.is_null {
+			new_null_value()
+		}
 		.is_boolean, .is_bigint, .is_float, .is_real, .is_smallint, .is_integer {
 			Value{
 				typ: Type{typ, 0}
@@ -125,6 +136,7 @@ fn (mut f FileStorage) read_value() ?Value {
 
 fn sizeof_value(value Value) int {
 	return int(sizeof(SQLType) + match value.typ.typ {
+		.is_null { 0 }
 		.is_boolean, .is_float, .is_integer, .is_bigint, .is_smallint, .is_real { sizeof(f64) }
 		.is_varchar, .is_character { sizeof(int) + u32(value.string_value.len) }
 	})

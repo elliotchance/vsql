@@ -33,3 +33,19 @@ CREATE TABLE foo (baz FLOAT)
 UPDATE foo SET baz = true
 -- msg: CREATE TABLE 1
 -- error: vsql.SQLState42804: data type mismatch for column BAZ: expected FLOAT but got BOOLEAN
+
+CREATE TABLE foo (baz FLOAT)
+INSERT INTO foo (baz) VALUES (123)
+UPDATE foo SET baz = NULL
+SELECT * FROM foo
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- BAZ: NULL
+
+CREATE TABLE foo (baz FLOAT NOT NULL)
+INSERT INTO foo (baz) VALUES (123)
+UPDATE foo SET baz = NULL
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error: vsql.SQLState42804: violates non-null constraint: column BAZ

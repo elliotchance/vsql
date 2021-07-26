@@ -473,7 +473,7 @@ CREATE TABLE INTO (a INT)
 -- error: vsql.SQLState42601: syntax error: expecting literal_identifier but found INTO
 
 CREATE TABLE IS (a INT)
--- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: IS
+-- error: vsql.SQLState42601: syntax error: expecting literal_identifier but found IS
 
 CREATE TABLE JOIN (a INT)
 -- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: JOIN
@@ -629,7 +629,7 @@ CREATE TABLE NORMALIZE (a INT)
 -- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: NORMALIZE
 
 CREATE TABLE NOT (a INT)
--- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: NOT
+-- error: vsql.SQLState42601: syntax error: expecting literal_identifier but found NOT
 
 CREATE TABLE NTH_VALUE (a INT)
 -- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: NTH_VALUE
@@ -638,7 +638,7 @@ CREATE TABLE NTILE (a INT)
 -- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: NTILE
 
 CREATE TABLE NULL (a INT)
--- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: NULL
+-- error: vsql.SQLState42601: syntax error: expecting literal_identifier but found NULL
 
 CREATE TABLE NULLIF (a INT)
 -- error: vsql.SQLState42601: syntax error: table name cannot be reserved word: NULLIF

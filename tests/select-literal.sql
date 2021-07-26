@@ -9,3 +9,6 @@ select 789
 
 Select 'hello'
 -- COL1: hello
+
+SELECT 123, 456
+-- COL1: 123 COL2: 456

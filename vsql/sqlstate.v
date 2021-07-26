@@ -7,6 +7,18 @@
 
 module vsql
 
+// violates non-null constraint
+struct SQLState23502 {
+	msg  string
+	code int
+}
+
+fn sqlstate_23502(msg string) IError {
+	return SQLState42804{
+		msg: 'violates non-null constraint: $msg'
+	}
+}
+
 // syntax error
 struct SQLState42601 {
 	msg  string

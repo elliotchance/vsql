@@ -11,17 +11,16 @@ pub:
 	string_value string // char and varchar
 }
 
-fn new_true_value() Value {
+fn new_null_value() Value {
 	return Value{
-		typ: Type{.is_boolean, 0}
-		f64_value: 1
+		typ: Type{.is_null, 0}
 	}
 }
 
-fn new_false_value() Value {
+fn new_boolean_value(b bool) Value {
 	return Value{
 		typ: Type{.is_boolean, 0}
-		f64_value: 0
+		f64_value: if b { 1 } else { 0 }
 	}
 }
 
@@ -55,6 +54,9 @@ fn new_varchar_value(x string, size int) Value {
 
 fn (v Value) == (v2 Value) bool {
 	return match v.typ.typ {
+		.is_null {
+			false
+		}
 		.is_boolean, .is_bigint, .is_integer, .is_smallint, .is_float, .is_real {
 			v2.typ.typ == v.typ.typ && v.f64_value == v2.f64_value
 		}

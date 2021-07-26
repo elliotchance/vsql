@@ -15,6 +15,7 @@ pub fn (r Row) get_f64(name string) f64 {
 
 pub fn (r Row) get_string(name string) string {
 	return match r.data[name].typ.typ {
+		.is_null { 'NULL' }
 		.is_boolean { bool_str(r.data[name].f64_value) }
 		.is_float, .is_real, .is_bigint, .is_integer, .is_smallint { r.data[name].f64_value.str().trim('.') }
 		.is_varchar, .is_character { r.data[name].string_value }

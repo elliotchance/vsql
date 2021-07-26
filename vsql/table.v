@@ -3,8 +3,9 @@
 module vsql
 
 struct Column {
-	name string
-	typ  Type
+	name     string
+	typ      Type
+	not_null bool
 }
 
 struct Table {

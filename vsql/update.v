@@ -15,7 +15,11 @@ fn (mut c Connection) update(stmt UpdateStmt) ?Result {
 	for k, v in stmt.set {
 		column_name := identifier_name(k)
 		table_column := table.column(column_name) ?
-		cast('for column $column_name', v, table_column.typ) ?
+		value := cast('for column $column_name', v, table_column.typ) ?
+
+		if table_column.not_null && value.typ.typ == .is_null {
+			return sqlstate_23502('column $column_name')
+		}
 	}
 
 	mut delete_rows := []Row{}
@@ -23,8 +27,8 @@ fn (mut c Connection) update(stmt UpdateStmt) ?Result {
 	for mut row in c.storage.read_rows(table.index) ? {
 		// Missing WHERE matches all records
 		mut ok := true
-		if stmt.where.op != '' {
-			ok = eval(row, stmt.where) ?
+		if stmt.where !is NoExpr {
+			ok = eval_as_bool(row, stmt.where) ?
 		}
 
 		if ok {

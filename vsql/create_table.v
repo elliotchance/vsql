@@ -23,7 +23,7 @@ fn (mut c Connection) create_table(stmt CreateTableStmt) ?Result {
 			return sqlstate_42601('column name cannot be reserved word: $column_name')
 		}
 
-		columns << Column{column_name, column.typ}
+		columns << Column{column_name, column.typ, column.not_null}
 	}
 
 	c.storage.create_table(table_name, columns) ?

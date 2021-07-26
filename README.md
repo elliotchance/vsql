@@ -243,6 +243,7 @@ struct definitions.
 
 | SQLSTATE   | Reason |
 | ---------- | ------ |
+| `23502`    | violates non-null constraint |
 | `42601`    | syntax error |
 | `42703`    | column does not exist |
 | `42804`    | data type mismatch |

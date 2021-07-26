@@ -2,10 +2,10 @@
 
 module vsql
 
-fn where(rows []Row, inverse bool, expr BinaryExpr) ?[]Row {
+fn where(rows []Row, inverse bool, expr Expr) ?[]Row {
 	mut new_rows := []Row{}
 	for row in rows {
-		mut ok := eval(row, expr) ?
+		mut ok := eval_as_bool(row, expr) ?
 		if inverse {
 			ok = !ok
 		}

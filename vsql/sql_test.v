@@ -16,24 +16,29 @@ fn get_tests() ?[]SQLTest {
 		lines := os.read_lines(test_file_path) ?
 
 		mut stmts := []string{}
-		mut expected := ''
+		mut expected := []string{}
 		mut line_number := 0
+		mut stmt := ''
 		for line in lines {
 			if line == '' {
-				tests << SQLTest{test_file_path, line_number, stmts, expected}
+				tests << SQLTest{test_file_path, line_number, stmts, expected.join('\n')}
 				stmts = []
-				expected = ''
+				expected = []
 			} else if line.starts_with('-- ') {
-				expected += line[3..] + ' \n'
+				expected << line[3..]
 			} else {
-				stmts << line
+				stmt += '\n$line'
+				if line.ends_with(';') {
+					stmts << stmt
+					stmt = ''
+				}
 			}
 
 			line_number++
 		}
 
 		if stmts.len > 0 {
-			tests << SQLTest{test_file_path, line_number, stmts, expected}
+			tests << SQLTest{test_file_path, line_number, stmts, expected.join('\n')}
 		}
 	}
 
@@ -57,10 +62,11 @@ fn test_all() ? {
 			}
 
 			for row in result {
+				mut line := ''
 				for col in result.columns {
-					actual += '$col: ${row.get_string(col)} '
+					line += '$col: ${row.get_string(col)} '
 				}
-				actual += '\n'
+				actual += line.trim_space() + '\n'
 			}
 		}
 

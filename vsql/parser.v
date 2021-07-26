@@ -14,7 +14,7 @@ fn parse(sql string) ?Stmt {
 
 	match tokens[0].kind {
 		.keyword_create {
-			return parser.consume_create() or { return err }
+			return parser.consume_create_table() or { return err }
 		}
 		.keyword_delete {
 			return parser.consume_delete() or { return err }
@@ -58,35 +58,25 @@ fn (mut p Parser) consume_type() ?Type {
 	// incomplete type.
 	types := [
 		// 5
-		[TokenKind.keyword_char, TokenKind.keyword_varying, TokenKind.op_paren_open,
-			TokenKind.literal_number, TokenKind.op_paren_close],
-		[TokenKind.keyword_character, TokenKind.keyword_varying, TokenKind.op_paren_open,
-			TokenKind.literal_number, TokenKind.op_paren_close],
+		[TokenKind.keyword_char, .keyword_varying, .op_paren_open, .literal_number, .op_paren_close],
+		[.keyword_character, .keyword_varying, .op_paren_open, .literal_number, .op_paren_close],
 		// 4
-		[TokenKind.keyword_char, TokenKind.op_paren_open, TokenKind.literal_number,
-			TokenKind.op_paren_close,
-		],
-		[TokenKind.keyword_character, TokenKind.op_paren_open, TokenKind.literal_number,
-			TokenKind.op_paren_close,
-		],
-		[TokenKind.keyword_float, TokenKind.op_paren_open, TokenKind.literal_number,
-			TokenKind.op_paren_close,
-		],
-		[TokenKind.keyword_varchar, TokenKind.op_paren_open, TokenKind.literal_number,
-			TokenKind.op_paren_close,
-		],
+		[.keyword_char, .op_paren_open, .literal_number, .op_paren_close],
+		[.keyword_character, .op_paren_open, .literal_number, .op_paren_close],
+		[.keyword_float, .op_paren_open, .literal_number, .op_paren_close],
+		[.keyword_varchar, .op_paren_open, .literal_number, .op_paren_close],
 		// 2
-		[TokenKind.keyword_double, TokenKind.keyword_precision],
+		[.keyword_double, .keyword_precision],
 		// 1
-		[TokenKind.keyword_bigint],
-		[TokenKind.keyword_boolean],
-		[TokenKind.keyword_character],
-		[TokenKind.keyword_char],
-		[TokenKind.keyword_float],
-		[TokenKind.keyword_integer],
-		[TokenKind.keyword_int],
-		[TokenKind.keyword_real],
-		[TokenKind.keyword_smallint],
+		[.keyword_bigint],
+		[.keyword_boolean],
+		[.keyword_character],
+		[.keyword_char],
+		[.keyword_float],
+		[.keyword_integer],
+		[.keyword_int],
+		[.keyword_real],
+		[.keyword_smallint],
 	]
 	for typ in types {
 		peek := p.peek(...typ)
@@ -122,30 +112,41 @@ fn (mut p Parser) consume_type() ?Type {
 	return sqlstate_42601('expecting type but found ${p.tokens[p.pos].value}')
 }
 
-fn (mut p Parser) consume_create() ?CreateTableStmt {
+fn (mut p Parser) consume_create_table() ?CreateTableStmt {
 	// CREATE TABLE <table_name>
-	p.consume(TokenKind.keyword_create) ?
-	p.consume(TokenKind.keyword_table) ?
-	table_name := p.consume(TokenKind.literal_identifier) ?
+	p.consume(.keyword_create) ?
+	p.consume(.keyword_table) ?
+	table_name := p.consume(.literal_identifier) ?
 
 	// columns
-	p.consume(TokenKind.op_paren_open) ?
+	p.consume(.op_paren_open) ?
 
 	mut columns := []Column{}
-	col_name := p.consume(TokenKind.literal_identifier) ?
-	col_type := p.consume_type() ?
-	columns << Column{col_name.value, col_type}
+	columns << p.consume_column_def() ?
 
-	for p.peek(TokenKind.op_comma).len > 0 {
-		p.consume(TokenKind.op_comma) ?
-		next_col_name := p.consume(TokenKind.literal_identifier) ?
-		next_col_type := p.consume_type() ?
-		columns << Column{next_col_name.value, next_col_type}
+	for p.peek(.op_comma).len > 0 {
+		p.consume(.op_comma) ?
+		columns << p.consume_column_def() ?
 	}
 
-	p.consume(TokenKind.op_paren_close) ?
+	p.consume(.op_paren_close) ?
 
 	return CreateTableStmt{table_name.value, columns}
+}
+
+fn (mut p Parser) consume_column_def() ?Column {
+	col_name := p.consume(.literal_identifier) ?
+	col_type := p.consume_type() ?
+
+	mut not_null := false
+	if p.peek(.keyword_not, .keyword_null).len > 0 {
+		p.pos += 2
+		not_null = true
+	} else if p.peek(.keyword_null).len > 0 {
+		p.pos++
+	}
+
+	return Column{col_name.value, col_type, not_null}
 }
 
 fn (mut p Parser) consume(tk TokenKind) ?Token {
@@ -162,36 +163,36 @@ fn (mut p Parser) consume(tk TokenKind) ?Token {
 
 fn (mut p Parser) consume_insert() ?InsertStmt {
 	// INSERT INTO <table_name>
-	p.consume(TokenKind.keyword_insert) ?
-	p.consume(TokenKind.keyword_into) ?
-	table_name := p.consume(TokenKind.literal_identifier) ?
+	p.consume(.keyword_insert) ?
+	p.consume(.keyword_into) ?
+	table_name := p.consume(.literal_identifier) ?
 
 	// columns
 	mut cols := []string{}
-	p.consume(TokenKind.op_paren_open) ?
-	col := p.consume(TokenKind.literal_identifier) ?
+	p.consume(.op_paren_open) ?
+	col := p.consume(.literal_identifier) ?
 	cols << col.value
 
-	for p.peek(TokenKind.op_comma).len > 0 {
+	for p.peek(.op_comma).len > 0 {
 		p.pos++
-		next_col := p.consume(TokenKind.literal_identifier) ?
+		next_col := p.consume(.literal_identifier) ?
 		cols << next_col.value
 	}
 
-	p.consume(TokenKind.op_paren_close) ?
+	p.consume(.op_paren_close) ?
 
 	// values
 	mut values := []Value{}
-	p.consume(TokenKind.keyword_values) ?
-	p.consume(TokenKind.op_paren_open) ?
+	p.consume(.keyword_values) ?
+	p.consume(.op_paren_open) ?
 	values << p.consume_value() ?
 
-	for p.peek(TokenKind.op_comma).len > 0 {
+	for p.peek(.op_comma).len > 0 {
 		p.pos++
 		values << p.consume_value() ?
 	}
 
-	p.consume(TokenKind.op_paren_close) ?
+	p.consume(.op_paren_close) ?
 
 	return InsertStmt{table_name.value, cols, values}
 }
@@ -200,97 +201,170 @@ fn (mut p Parser) consume_select() ?SelectStmt {
 	// skip SELECT
 	p.pos++
 
-	// fields
-	mut fields := new_varchar_value(p.tokens[p.pos].value, 0)
-	if p.tokens[p.pos].kind == TokenKind.literal_number {
-		fields = new_float_value(p.tokens[p.pos].value.f64())
+	// expressions
+	mut exprs := []Expr{}
+	exprs << p.consume_expr() ?
+
+	for p.peek(.op_comma).len > 0 {
+		p.pos++ // skip ','
+		exprs << p.consume_expr() ?
 	}
-	p.pos++
 
 	// FROM
 	mut from := ''
-	if p.tokens[p.pos].kind == TokenKind.keyword_from {
+	if p.tokens[p.pos].kind == .keyword_from {
 		from = p.tokens[p.pos + 1].value
 		p.pos += 2
 	}
 
 	// WHERE
-	mut expr := BinaryExpr{}
-	if p.peek(TokenKind.keyword_where).len > 0 {
-		expr = p.consume_where() ?
+	mut where := Expr(NoExpr{})
+	if p.peek(.keyword_where).len > 0 {
+		p.pos++ // skip WHERE
+		where = p.consume_expr() ?
 	}
 
-	return SelectStmt{fields, from, expr}
+	return SelectStmt{exprs, from, where}
 }
 
 fn (mut p Parser) consume_drop_table() ?DropTableStmt {
 	// DROP TABLE <table_name>
-	p.consume(TokenKind.keyword_drop) ?
-	p.consume(TokenKind.keyword_table) ?
-	table_name := p.consume(TokenKind.literal_identifier) ?
+	p.consume(.keyword_drop) ?
+	p.consume(.keyword_table) ?
+	table_name := p.consume(.literal_identifier) ?
 
 	return DropTableStmt{table_name.value}
 }
 
 fn (mut p Parser) consume_delete() ?DeleteStmt {
 	// DELETE FROM <table_name>
-	p.consume(TokenKind.keyword_delete) ?
-	p.consume(TokenKind.keyword_from) ?
-	table_name := p.consume(TokenKind.literal_identifier) ?
+	p.consume(.keyword_delete) ?
+	p.consume(.keyword_from) ?
+	table_name := p.consume(.literal_identifier) ?
 
 	// WHERE
-	mut expr := BinaryExpr{}
-	if p.peek(TokenKind.keyword_where).len > 0 {
-		expr = p.consume_where() ?
+	mut expr := Expr(NoExpr{})
+	if p.peek(.keyword_where).len > 0 {
+		p.pos++ // skip WHERE
+		expr = p.consume_expr() ?
 	}
 
 	return DeleteStmt{table_name.value, expr}
 }
 
-fn (mut p Parser) consume_where() ?BinaryExpr {
-	p.consume(TokenKind.keyword_where) ?
+fn (mut p Parser) consume_expr() ?Expr {
+	// TODO(elliotchance): This should not be allowed outside of SELECT
+	// expressions and this returns a dummy value for now.
+	if p.peek(.op_multiply).len > 0 {
+		p.pos++
+		return new_null_value()
+	}
 
-	lhs := p.consume(TokenKind.literal_identifier) ?
+	return p.consume_binary_expr() or {
+		return p.consume_null_expr() or {
+			// Value (must be last).
+			value := p.consume_value() ?
+			return value
+		}
+	}
+}
+
+fn (mut p Parser) consume_identifier() ?Identifier {
+	if p.peek(.literal_identifier).len > 0 {
+		p.pos++
+		return Identifier{p.tokens[p.pos - 1].value}
+	}
+
+	return sqlstate_42601('expecting identifier but found ${p.tokens[p.pos].value}')
+}
+
+fn (mut p Parser) consume_value_or_identifier() ?Expr {
+	return p.consume_identifier() or {
+		value := p.consume_value() ?
+		return value
+	}
+}
+
+fn (mut p Parser) consume_null_expr() ?NullExpr {
+	start := p.pos
+
+	expr := p.consume_value_or_identifier() or {
+		p.pos = start
+		return sqlstate_42601('expecting expr but found ${p.tokens[p.pos].value}')
+	}
+
+	if p.peek(.keyword_is, .keyword_null).len > 0 {
+		p.pos += 2
+		return NullExpr{expr, false}
+	}
+
+	if p.peek(.keyword_is, .keyword_not, .keyword_null).len > 0 {
+		p.pos += 3
+		return NullExpr{expr, true}
+	}
+
+	p.pos = start
+	return sqlstate_42601('expecting null expr but found ${p.tokens[p.pos].value}')
+}
+
+fn (mut p Parser) consume_binary_expr() ?BinaryExpr {
+	start := p.pos
+
+	lhs := p.consume(.literal_identifier) or {
+		p.pos = start
+		return err
+	}
 	mut op := Token{}
 
 	allowed_ops := [
 		TokenKind.op_eq,
-		TokenKind.op_neq,
-		TokenKind.op_gt,
-		TokenKind.op_gte,
-		TokenKind.op_lt,
-		TokenKind.op_lte,
+		.op_neq,
+		.op_gt,
+		.op_gte,
+		.op_lt,
+		.op_lte,
 	]
 	for allowed_op in allowed_ops {
 		if p.peek(allowed_op).len > 0 {
-			op = p.consume(allowed_op) ?
+			op = p.consume(allowed_op) or {
+				p.pos = start
+				return err
+			}
 			break
 		}
 	}
 
-	rhs := p.consume_value() ?
+	rhs := p.consume_value() or {
+		p.pos = start
+		return err
+	}
 
 	return BinaryExpr{lhs.value, op.value, rhs}
 }
 
 fn (mut p Parser) consume_value() ?Value {
-	if p.peek(TokenKind.keyword_true).len > 0 {
+	if p.peek(.keyword_null).len > 0 {
 		p.pos++
-		return new_true_value()
+		return new_null_value()
 	}
 
-	if p.peek(TokenKind.keyword_false).len > 0 {
+	if p.peek(.keyword_true).len > 0 {
 		p.pos++
-		return new_false_value()
+		return new_boolean_value(true)
 	}
 
-	if p.peek(TokenKind.keyword_unknown).len > 0 {
+	if p.peek(.keyword_false).len > 0 {
+		p.pos++
+		return new_boolean_value(false)
+	}
+
+	if p.peek(.keyword_unknown).len > 0 {
 		p.pos++
 		return new_unknown_value()
 	}
 
-	if p.peek(TokenKind.literal_number).len > 0 {
-		t := p.consume(TokenKind.literal_number) ?
+	if p.peek(.literal_number).len > 0 {
+		t := p.consume(.literal_number) ?
 		if t.value.contains('.') {
 			return new_float_value(t.value.f64())
 		}
@@ -298,31 +372,32 @@ fn (mut p Parser) consume_value() ?Value {
 		return new_integer_value(t.value.int())
 	}
 
-	if p.peek(TokenKind.literal_string).len > 0 {
-		t := p.consume(TokenKind.literal_string) ?
+	if p.peek(.literal_string).len > 0 {
+		t := p.consume(.literal_string) ?
 		return new_varchar_value(t.value, 0)
 	}
 
-	return sqlstate_42601('expecting value but found ${p.tokens[p.pos]}')
+	return sqlstate_42601('expecting value but found ${p.tokens[p.pos].value}')
 }
 
 fn (mut p Parser) consume_update() ?UpdateStmt {
 	// UPDATE <table_name>
-	p.consume(TokenKind.keyword_update) ?
-	table_name := p.consume(TokenKind.literal_identifier) ?
+	p.consume(.keyword_update) ?
+	table_name := p.consume(.literal_identifier) ?
 
 	// SET
-	p.consume(TokenKind.keyword_set) ?
-	col_name := p.consume(TokenKind.literal_identifier) ?
-	p.consume(TokenKind.op_eq) ?
+	p.consume(.keyword_set) ?
+	col_name := p.consume(.literal_identifier) ?
+	p.consume(.op_eq) ?
 	col_value := p.consume_value() ?
 	mut set := map[string]Value{}
 	set[col_name.value] = col_value
 
 	// WHERE
-	mut expr := BinaryExpr{}
-	if p.peek(TokenKind.keyword_where).len > 0 {
-		expr = p.consume_where() ?
+	mut expr := Expr(NoExpr{})
+	if p.peek(.keyword_where).len > 0 {
+		p.pos++ // skip WHERE
+		expr = p.consume_expr() ?
 	}
 
 	return UpdateStmt{table_name.value, set, expr}

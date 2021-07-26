@@ -25,7 +25,25 @@ fn (mut c Connection) insert(stmt InsertStmt) ?Result {
 		column_name := identifier_name(column)
 		table_column := table.column(column_name) ?
 		value := cast('for column $column_name', stmt.values[i], table_column.typ) ?
+
+		if value.typ.typ == .is_null && table_column.not_null {
+			return sqlstate_23502('column $column_name')
+		}
+
 		row.data[column_name] = value
+	}
+
+	// Fill in unspecified columns with NULL
+	for col in table.columns {
+		if col.name in row.data {
+			continue
+		}
+
+		if col.not_null {
+			return sqlstate_23502('column $col.name')
+		}
+
+		row.data[col.name] = new_null_value()
 	}
 
 	c.storage.write_row(row, table) ?

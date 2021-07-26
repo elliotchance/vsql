@@ -15,8 +15,8 @@ fn (mut c Connection) delete(stmt DeleteStmt) ?Result {
 	mut deleted := 0
 	for row in rows {
 		mut ok := true
-		if stmt.where.op != '' {
-			ok = eval(row, stmt.where) ?
+		if stmt.where !is NoExpr {
+			ok = eval_as_bool(row, stmt.where) ?
 		}
 
 		if ok {

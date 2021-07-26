@@ -20,6 +20,9 @@ enum TokenKind {
 	keyword_int // INT
 	keyword_integer // INTEGER
 	keyword_into // INTO
+	keyword_is // IS
+	keyword_not // NOT
+	keyword_null // NULL
 	keyword_precision // PRECISION
 	keyword_real // REAL
 	keyword_select // SELECT
@@ -164,6 +167,9 @@ fn tokenize(sql string) []Token {
 			'INT' { Token{TokenKind.keyword_int, word} }
 			'INTEGER' { Token{TokenKind.keyword_integer, word} }
 			'INTO' { Token{TokenKind.keyword_into, word} }
+			'IS' { Token{TokenKind.keyword_is, word} }
+			'NOT' { Token{TokenKind.keyword_not, word} }
+			'NULL' { Token{TokenKind.keyword_null, word} }
 			'PRECISION' { Token{TokenKind.keyword_precision, word} }
 			'REAL' { Token{TokenKind.keyword_real, word} }
 			'SELECT' { Token{TokenKind.keyword_select, word} }

@@ -7,6 +7,10 @@ module vsql
 
 fn cast(msg string, v Value, to Type) ?Value {
 	match v.typ.typ {
+		.is_null {
+			// A NULL can be any type so it's always castable.
+			return v
+		}
 		.is_boolean {
 			match to.typ {
 				.is_boolean { return v }

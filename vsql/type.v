@@ -8,6 +8,7 @@ struct Type {
 }
 
 enum SQLType {
+	is_null // NULL
 	is_bigint // BIGINT
 	is_boolean // BOOLEAN
 	is_character // CHARACTER and CHAR
@@ -20,6 +21,7 @@ enum SQLType {
 
 fn (t SQLType) str() string {
 	return match t {
+		.is_null { 'NULL' }
 		.is_bigint { 'BIGINT' }
 		.is_boolean { 'BOOLEAN' }
 		.is_character { 'CHARACTER' }
@@ -71,6 +73,6 @@ fn (t Type) str() string {
 fn (t Type) uses_f64() bool {
 	return match t.typ {
 		.is_boolean, .is_float, .is_bigint, .is_real, .is_smallint, .is_integer { true }
-		.is_varchar, .is_character { false }
+		.is_null, .is_varchar, .is_character { false }
 	}
 }

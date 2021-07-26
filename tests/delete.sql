@@ -1,5 +1,5 @@
 DELETE FROM foo
--- error: vsql.SQLState42P01: no such table: FOO
+-- error 42P01: no such table: FOO
 
 CREATE TABLE foo (baz CHARACTER VARYING(10))
 INSERT INTO foo (baz) VALUES ('hi')

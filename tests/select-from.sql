@@ -1,5 +1,5 @@
 SELECT * FROM foo
--- error: vsql.SQLState42P01: no such table: FOO
+-- error 42P01: no such table: FOO
 
 CREATE TABLE foo (a FLOAT)
 INSERT INTO foo (a) VALUES (1.234)

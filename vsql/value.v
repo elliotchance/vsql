@@ -4,7 +4,7 @@
 
 module vsql
 
-struct Value {
+pub struct Value {
 pub:
 	typ          Type
 	f64_value    f64    // boolean and numeric
@@ -24,35 +24,35 @@ fn new_boolean_value(b bool) Value {
 	}
 }
 
-fn new_unknown_value() Value {
+pub fn new_unknown_value() Value {
 	return Value{
 		typ: Type{.is_boolean, 0}
 		f64_value: 2
 	}
 }
 
-fn new_float_value(x f64) Value {
+pub fn new_float_value(x f64) Value {
 	return Value{
 		typ: Type{.is_float, 0}
 		f64_value: x
 	}
 }
 
-fn new_integer_value(x int) Value {
+pub fn new_integer_value(x int) Value {
 	return Value{
 		typ: Type{.is_integer, 0}
 		f64_value: x
 	}
 }
 
-fn new_varchar_value(x string, size int) Value {
+pub fn new_varchar_value(x string, size int) Value {
 	return Value{
 		typ: Type{.is_varchar, size}
 		string_value: x
 	}
 }
 
-fn (v Value) == (v2 Value) bool {
+pub fn (v Value) == (v2 Value) bool {
 	return match v.typ.typ {
 		.is_null {
 			false

@@ -6,6 +6,9 @@ no dependencies.
 
 - [Installation](#installation)
 - [Usage](#usage)
+  - [V Module](#v-module)
+  - [CLI](#cli)
+  - [Server](#server)
 - [SQL Commands](#sql-commands)
   - [CREATE TABLE](#create-table)
   - [DELETE](#delete)
@@ -28,6 +31,8 @@ v install elliotchance.vsql
 
 Usage
 -----
+
+### V Module
 
 ```v
 import elliotchance.vsql.vsql
@@ -55,14 +60,16 @@ Outputs:
 ```
 1.23
 4.56
-I knew 'bar' did not exist!
+I knew 'BAR' did not exist!
 ```
+
+### CLI
 
 You can also work with database files through the CLI (ctrl+c to exit).
 
 You will need to build the CLI tool first:
 
-```
+```sh
 v install elliotchance.vsql
 v ~/.vmodules/elliotchance/vsql/vsql-cli.v
 ```
@@ -78,6 +85,28 @@ a: 1234
 vsql> select * from bar
 0 rows (0 ms)
 ```
+
+### Server
+
+vsql can be run as a server and any PostgreSQL-compatible driver can access it.
+This is ideal if you want to use a more familar or feature rich database client.
+
+You will need to build the server first:
+
+```sh
+v install elliotchance.vsql
+v ~/.vmodules/elliotchance/vsql/vsql-server.v
+```
+
+Now run it with (if the file does not exist it will be created):
+
+```sh
+$ ./vsql-server mydb.vsql
+ready on 127.0.0.1:3210
+```
+
+vsql will ignore any authentication values (such as user, password, database,
+etc). Simply connect using `127.0.0.1:3210`.
 
 # SQL Commands
 

@@ -3,7 +3,7 @@
 
 module vsql
 
-struct Row {
+pub struct Row {
 mut:
 	offset u32
 	data   map[string]Value

@@ -1,7 +1,7 @@
 vsql
 ====
 
-vsql is an single-file SQL database written in pure [V](https://vlang.io) with
+vsql is a single-file SQL database written in pure [V](https://vlang.io) with
 no dependencies.
 
 - [Installation](#installation)

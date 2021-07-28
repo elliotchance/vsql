@@ -43,7 +43,7 @@ fn eval_binary(data Row, e BinaryExpr) ?Value {
 	col := identifier_name(e.col)
 
 	if data.data[col].typ.uses_f64() && e.value.typ.uses_f64() {
-		return eval_cmp<f64>(data.get_f64(col), e.value.f64_value, e.op)
+		return eval_cmp<f64>(data.get_f64(col) ?, e.value.f64_value, e.op)
 	}
 
 	// TODO(elliotchance): Use the correct SQLSTATE error.

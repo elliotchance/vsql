@@ -38,7 +38,7 @@ Usage
 import elliotchance.vsql.vsql
 
 fn example() ? {
-    mut db := vsql.open('/tmp/test.vsql') ?
+    mut db := vsql.open('test.vsql') ?
 
     // All SQL commands use query():
     db.query('CREATE TABLE foo (a FLOAT)') ?
@@ -47,8 +47,10 @@ fn example() ? {
 
     // Iterate through a result:
     result := db.query('SELECT * FROM foo') ?
+    println(result.columns)
+
     for row in result {
-        println(row.get_f64('a'))
+        println(row.get_f64('A') ?)
     }
 
     // See SQLSTATE (Errors) below for more examples.
@@ -58,10 +60,13 @@ fn example() ? {
 Outputs:
 
 ```
+['A']
 1.23
 4.56
-I knew 'BAR' did not exist!
 ```
+
+You can find the documentation for a
+[`Row` here](https://github.com/elliotchance/vsql/blob/main/vsql/row.v).
 
 ### CLI
 

@@ -64,7 +64,7 @@ fn test_all() ? {
 			for row in result {
 				mut line := ''
 				for col in result.columns {
-					line += '$col: ${row.get_string(col)} '
+					line += '$col: ${row.get_string(col) ?} '
 				}
 				actual += line.trim_space() + '\n'
 			}

@@ -51,6 +51,19 @@ pub fn sqlstate_from_int(code int) string {
 	return string(b)
 }
 
+// Divide by zero.
+struct SQLState22012 {
+	msg  string
+	code int
+}
+
+fn sqlstate_22012() IError {
+	return SQLState22012{
+		code: sqlstate_to_int('22012')
+		msg: 'division by zero'
+	}
+}
+
 // violates non-null constraint
 struct SQLState23502 {
 	msg  string
@@ -58,7 +71,7 @@ struct SQLState23502 {
 }
 
 fn sqlstate_23502(msg string) IError {
-	return SQLState42804{
+	return SQLState23502{
 		code: sqlstate_to_int('23502')
 		msg: 'violates non-null constraint: $msg'
 	}

@@ -1,0 +1,35 @@
+SELECT 1 = 2;
+-- COL1: FALSE
+
+SELECT 1 = 1;
+-- COL1: TRUE
+
+SELECT 1 <> 2;
+-- COL1: TRUE
+
+SELECT 1 <> 1;
+-- COL1: FALSE
+
+SELECT 1 > 2;
+-- COL1: FALSE
+
+SELECT 1 > 1;
+-- COL1: FALSE
+
+SELECT 1 >= 2;
+-- COL1: FALSE
+
+SELECT 1 >= 1;
+-- COL1: TRUE
+
+SELECT 1 < 2;
+-- COL1: TRUE
+
+SELECT 1 < 1;
+-- COL1: FALSE
+
+SELECT 1 <= 2;
+-- COL1: TRUE
+
+SELECT 1 <= 1;
+-- COL1: TRUE

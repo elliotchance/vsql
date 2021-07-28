@@ -73,3 +73,12 @@ fn bool_str(x f64) string {
 		else { 'UNKNOWN' }
 	}
 }
+
+fn f64_string(x f64) string {
+	s := '${x:.6}'.trim('.').split('.')
+	if s.len == 1 {
+		return s[0]
+	}
+
+	return '${s[0]}.${s[1].trim_right('0')}'
+}

@@ -6,7 +6,7 @@ module vsql
 type Stmt = CreateTableStmt | DeleteStmt | DropTableStmt | InsertStmt | SelectStmt | UpdateStmt
 
 // All possible expression entities.
-type Expr = BinaryExpr | Identifier | NoExpr | NullExpr | Value
+type Expr = BinaryExpr | Identifier | NoExpr | NullExpr | UnaryExpr | Value
 
 // CREATE TABLE ...
 struct CreateTableStmt {
@@ -57,10 +57,15 @@ struct Identifier {
 	name string
 }
 
+struct UnaryExpr {
+	op   string // NOT, -, +
+	expr Expr
+}
+
 struct BinaryExpr {
-	col   string
+	left  Expr
 	op    string
-	value Value
+	right Expr
 }
 
 // NoExpr is just a placeholder when there is no expression provided.

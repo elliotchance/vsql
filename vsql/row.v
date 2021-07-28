@@ -37,7 +37,7 @@ pub fn (r Row) get_string(name string) ?string {
 	return match value.typ.typ {
 		.is_null { 'NULL' }
 		.is_boolean { bool_str(r.data[name].f64_value) }
-		.is_float, .is_real, .is_bigint, .is_integer, .is_smallint { r.data[name].f64_value.str().trim('.') }
+		.is_float, .is_real, .is_bigint, .is_integer, .is_smallint { f64_string(r.data[name].f64_value) }
 		.is_varchar, .is_character { r.data[name].string_value }
 	}
 }

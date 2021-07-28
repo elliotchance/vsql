@@ -20,4 +20,4 @@ jobs:
     - name: Verify fmt
       run: v fmt -verify .
     - name: Run SQL tests
-      run: v -stats test vsql
+      run: v -stats -prod test vsql

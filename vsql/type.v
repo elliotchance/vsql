@@ -76,3 +76,10 @@ fn (t Type) uses_f64() bool {
 		.is_null, .is_varchar, .is_character { false }
 	}
 }
+
+fn (t Type) uses_string() bool {
+	return match t.typ {
+		.is_null, .is_boolean, .is_float, .is_bigint, .is_real, .is_smallint, .is_integer { false }
+		.is_varchar, .is_character { true }
+	}
+}

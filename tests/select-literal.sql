@@ -12,3 +12,6 @@ Select 'hello';
 
 SELECT 123, 456;
 -- COL1: 123 COL2: 456
+
+SELECT 2 + 3 * 5, (2 + 3) * 5;
+-- COL1: 17 COL2: 25

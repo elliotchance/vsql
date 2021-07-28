@@ -3,8 +3,17 @@
 
 module vsql
 
+// Except for the eof and the keywords, the other tokens use the names described
+// in the SQL standard.
 enum TokenKind {
 	eof // End of file
+	asterisk // <asterisk> ::= *
+	comma // <comma> ::= ,
+	concatenation_operator // <concatenation operator> ::= ||
+	equals_operator // <equals operator> ::= =
+	greater_than_operator // <greater than operator> ::= >
+	greater_than_or_equals_operator // <greater than or equals operator> ::= >=
+	keyword_and // AND
 	keyword_bigint // BIGINT
 	keyword_boolean // BOOLEAN
 	keyword_char // CHAR
@@ -23,6 +32,7 @@ enum TokenKind {
 	keyword_is // IS
 	keyword_not // NOT
 	keyword_null // NULL
+	keyword_or // OR
 	keyword_precision // PRECISION
 	keyword_real // REAL
 	keyword_select // SELECT
@@ -36,20 +46,18 @@ enum TokenKind {
 	keyword_varchar // VARCHAR
 	keyword_varying // VARYING
 	keyword_where // WHERE
+	left_paren // <left paren> ::= (
+	less_than_operator // <less than operator> ::= <
+	less_than_or_equals_operator // <less than or equals operator> ::= <=
 	literal_identifier // foo or "foo" (delimited)
 	literal_number // 123
 	literal_string // 'hello'
-	op_comma // ,
-	op_eq // =
-	op_gt // >
-	op_gte // >=
-	op_lt // <
-	op_lte // <=
-	op_multiply // *
-	op_neq // !=
-	op_paren_close // )
-	op_paren_open // (
-	op_semi_colon // ;
+	minus_sign // <minus sign> ::= -
+	not_equals_operator // <not equals operator> ::= <>
+	plus_sign // <plus sign> ::= +
+	right_paren // <right paren> ::= )
+	semicolon // <semicolon> ::= ;
+	solidus // <solidus> ::= /
 }
 
 struct Token {
@@ -77,7 +85,7 @@ fn tokenize(sql string) []Token {
 				word += '${cs[i]}'
 				i++
 			}
-			tokens << Token{TokenKind.literal_number, word}
+			tokens << Token{.literal_number, word}
 			continue
 		}
 
@@ -90,7 +98,7 @@ fn tokenize(sql string) []Token {
 				i++
 			}
 			i++
-			tokens << Token{TokenKind.literal_string, word}
+			tokens << Token{.literal_string, word}
 			continue
 		}
 
@@ -103,15 +111,16 @@ fn tokenize(sql string) []Token {
 				i++
 			}
 			i++
-			tokens << Token{TokenKind.literal_identifier, '"$word"'}
+			tokens << Token{.literal_identifier, '"$word"'}
 			continue
 		}
 
 		// operators
 		multi := map{
-			'!=': TokenKind.op_neq
-			'>=': TokenKind.op_gte
-			'<=': TokenKind.op_lte
+			'<>': TokenKind.not_equals_operator
+			'>=': TokenKind.greater_than_or_equals_operator
+			'<=': TokenKind.less_than_or_equals_operator
+			'||': TokenKind.concatenation_operator
 		}
 		for op, tk in multi {
 			if cs[i] == op[0] && cs[i + 1] == op[1] {
@@ -122,14 +131,17 @@ fn tokenize(sql string) []Token {
 		}
 
 		single := map{
-			`(`: TokenKind.op_paren_open
-			`)`: TokenKind.op_paren_close
-			`=`: TokenKind.op_eq
-			`>`: TokenKind.op_gt
-			`<`: TokenKind.op_lt
-			`*`: TokenKind.op_multiply
-			`,`: TokenKind.op_comma
-			`;`: TokenKind.op_semi_colon
+			`(`: TokenKind.left_paren
+			`)`: TokenKind.right_paren
+			`*`: TokenKind.asterisk
+			`+`: TokenKind.plus_sign
+			`,`: TokenKind.comma
+			`-`: TokenKind.minus_sign
+			`/`: TokenKind.solidus
+			`;`: TokenKind.semicolon
+			`<`: TokenKind.less_than_operator
+			`=`: TokenKind.equals_operator
+			`>`: TokenKind.greater_than_operator
 		}
 		for op, tk in single {
 			if cs[i] == op {
@@ -154,6 +166,7 @@ fn tokenize(sql string) []Token {
 		}
 
 		tokens << match word.to_upper() {
+			'AND' { Token{TokenKind.keyword_and, word} }
 			'BIGINT' { Token{TokenKind.keyword_bigint, word} }
 			'BOOLEAN' { Token{TokenKind.keyword_boolean, word} }
 			'CHAR' { Token{TokenKind.keyword_char, word} }
@@ -172,6 +185,7 @@ fn tokenize(sql string) []Token {
 			'IS' { Token{TokenKind.keyword_is, word} }
 			'NOT' { Token{TokenKind.keyword_not, word} }
 			'NULL' { Token{TokenKind.keyword_null, word} }
+			'OR' { Token{TokenKind.keyword_or, word} }
 			'PRECISION' { Token{TokenKind.keyword_precision, word} }
 			'REAL' { Token{TokenKind.keyword_real, word} }
 			'SELECT' { Token{TokenKind.keyword_select, word} }
@@ -203,4 +217,29 @@ fn is_identifier_char(c byte, is_not_first bool) bool {
 	}
 
 	return yes
+}
+
+fn precedence(tk TokenKind) int {
+	return match tk {
+		.asterisk, .solidus {
+			2
+		}
+		.plus_sign, .minus_sign {
+			3
+		}
+		.equals_operator, .not_equals_operator, .less_than_operator, .less_than_or_equals_operator,
+		.greater_than_operator, .greater_than_or_equals_operator {
+			4
+		}
+		.keyword_and {
+			6
+		}
+		.keyword_or {
+			7
+		}
+		else {
+			panic(tk)
+			0
+		}
+	}
 }

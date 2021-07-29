@@ -4,7 +4,6 @@ vsql
 vsql is a single-file SQL database written in pure [V](https://vlang.io) with
 no dependencies.
 
-- [Installation](#installation)
 - [Usage](#usage)
   - [V Module](#v-module)
   - [CLI](#cli)
@@ -23,17 +22,16 @@ no dependencies.
   - [SQLSTATE (Errors)](#sqlstate-errors)
 - [Testing](#testing)
 
-Installation
-------------
-
-```bash
-v install elliotchance.vsql
-```
-
 Usage
 -----
 
 ### V Module
+
+Install or update to the latest with:
+
+```bash
+v install elliotchance.vsql
+```
 
 ```v
 import elliotchance.vsql.vsql
@@ -71,38 +69,33 @@ You can find the documentation for a
 
 ### CLI
 
-You can also work with database files through the CLI (ctrl+c to exit).
-
-You will need to build the CLI tool first:
-
-```sh
-v install elliotchance.vsql
-v ~/.vmodules/elliotchance/vsql/vsql-cli.v
-```
-
-Then usage is:
+You can also work with database files through the CLI (ctrl+c to exit):
 
 ```
 $ ./vsql-cli test.vsql
 vsql> select * from foo
-a: 1234 
+A: 1234 
 1 row (1 ms)
 
 vsql> select * from bar
 0 rows (0 ms)
 ```
 
+Binary releases can be downloaded from the
+[Releases](https://github.com/elliotchance/vsql/releases) page (under Assets).
+
+These binary releases do not require V to be installed. Or, you can compile from
+source with:
+
+```sh
+v install elliotchance.vsql
+v ~/.vmodules/elliotchance/vsql/vsql-cli.v
+```
+
 ### Server
 
 vsql can be run as a server and any PostgreSQL-compatible driver can access it.
 This is ideal if you want to use a more familar or feature rich database client.
-
-You will need to build the server first:
-
-```sh
-v install elliotchance.vsql
-v ~/.vmodules/elliotchance/vsql/vsql-server.v
-```
 
 Now run it with (if the file does not exist it will be created):
 
@@ -113,6 +106,17 @@ ready on 127.0.0.1:3210
 
 vsql will ignore any authentication values (such as user, password, database,
 etc). Simply connect using `127.0.0.1:3210`.
+
+Binary releases can be downloaded from the
+[Releases](https://github.com/elliotchance/vsql/releases) page (under Assets).
+
+These binary releases do not require V to be installed. Or, you can compile from
+source with:
+
+```sh
+v install elliotchance.vsql
+v ~/.vmodules/elliotchance/vsql/vsql-server.v
+```
 
 # SQL Commands
 

@@ -14,7 +14,7 @@ CREATE TABLE ALTER (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: ALTER
 
 CREATE TABLE AND (a INT);
--- error 42601: syntax error: table name cannot be reserved word: AND
+-- error 42601: syntax error: expecting literal_identifier but found AND
 
 CREATE TABLE ANY (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: ANY
@@ -329,7 +329,7 @@ CREATE TABLE END_PARTITION (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: END_PARTITION
 
 CREATE TABLE END-EXEC (a INT);
--- error 42601: syntax error: expecting op_paren_open but found EXEC
+-- error 42601: syntax error: expecting left_paren but found -
 
 CREATE TABLE EQUALS (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: EQUALS
@@ -677,7 +677,7 @@ CREATE TABLE OPEN (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: OPEN
 
 CREATE TABLE OR (a INT);
--- error 42601: syntax error: table name cannot be reserved word: OR
+-- error 42601: syntax error: expecting literal_identifier but found OR
 
 CREATE TABLE ORDER (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: ORDER

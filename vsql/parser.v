@@ -39,7 +39,7 @@ fn parse(sql string) ?Stmt {
 
 	// The ; is optional. However, we do not support multiple queries yet so
 	// make sure we catch that.
-	if parser.peek(.op_semi_colon).len > 0 {
+	if parser.peek(.semicolon).len > 0 {
 		parser.pos++
 	}
 
@@ -71,13 +71,13 @@ fn (mut p Parser) consume_type() ?Type {
 	// incomplete type.
 	types := [
 		// 5
-		[TokenKind.keyword_char, .keyword_varying, .op_paren_open, .literal_number, .op_paren_close],
-		[.keyword_character, .keyword_varying, .op_paren_open, .literal_number, .op_paren_close],
+		[TokenKind.keyword_char, .keyword_varying, .left_paren, .literal_number, .right_paren],
+		[.keyword_character, .keyword_varying, .left_paren, .literal_number, .right_paren],
 		// 4
-		[.keyword_char, .op_paren_open, .literal_number, .op_paren_close],
-		[.keyword_character, .op_paren_open, .literal_number, .op_paren_close],
-		[.keyword_float, .op_paren_open, .literal_number, .op_paren_close],
-		[.keyword_varchar, .op_paren_open, .literal_number, .op_paren_close],
+		[.keyword_char, .left_paren, .literal_number, .right_paren],
+		[.keyword_character, .left_paren, .literal_number, .right_paren],
+		[.keyword_float, .left_paren, .literal_number, .right_paren],
+		[.keyword_varchar, .left_paren, .literal_number, .right_paren],
 		// 2
 		[.keyword_double, .keyword_precision],
 		// 1
@@ -132,17 +132,17 @@ fn (mut p Parser) consume_create_table() ?CreateTableStmt {
 	table_name := p.consume(.literal_identifier) ?
 
 	// columns
-	p.consume(.op_paren_open) ?
+	p.consume(.left_paren) ?
 
 	mut columns := []Column{}
 	columns << p.consume_column_def() ?
 
-	for p.peek(.op_comma).len > 0 {
-		p.consume(.op_comma) ?
+	for p.peek(.comma).len > 0 {
+		p.consume(.comma) ?
 		columns << p.consume_column_def() ?
 	}
 
-	p.consume(.op_paren_close) ?
+	p.consume(.right_paren) ?
 
 	return CreateTableStmt{table_name.value, columns}
 }
@@ -182,32 +182,53 @@ fn (mut p Parser) consume_insert() ?InsertStmt {
 
 	// columns
 	mut cols := []string{}
-	p.consume(.op_paren_open) ?
+	p.consume(.left_paren) ?
 	col := p.consume(.literal_identifier) ?
 	cols << col.value
 
-	for p.peek(.op_comma).len > 0 {
+	for p.peek(.comma).len > 0 {
 		p.pos++
 		next_col := p.consume(.literal_identifier) ?
 		cols << next_col.value
 	}
 
-	p.consume(.op_paren_close) ?
+	p.consume(.right_paren) ?
 
 	// values
 	mut values := []Value{}
 	p.consume(.keyword_values) ?
-	p.consume(.op_paren_open) ?
+	p.consume(.left_paren) ?
 	values << p.consume_value() ?
 
-	for p.peek(.op_comma).len > 0 {
+	for p.peek(.comma).len > 0 {
 		p.pos++
 		values << p.consume_value() ?
 	}
 
-	p.consume(.op_paren_close) ?
+	p.consume(.right_paren) ?
 
 	return InsertStmt{table_name.value, cols, values}
+}
+
+fn (mut p Parser) consume_grouping_expr() ?Expr {
+	start := p.pos
+
+	p.consume(.left_paren) or {
+		p.pos = start
+		return err
+	}
+
+	expr := p.consume_expr() or {
+		p.pos = start
+		return err
+	}
+
+	p.consume(.right_paren) or {
+		p.pos = start
+		return err
+	}
+
+	return expr
 }
 
 fn (mut p Parser) consume_select() ?SelectStmt {
@@ -218,7 +239,7 @@ fn (mut p Parser) consume_select() ?SelectStmt {
 	mut exprs := []Expr{}
 	exprs << p.consume_expr() ?
 
-	for p.peek(.op_comma).len > 0 {
+	for p.peek(.comma).len > 0 {
 		p.pos++ // skip ','
 		exprs << p.consume_expr() ?
 	}
@@ -268,18 +289,73 @@ fn (mut p Parser) consume_delete() ?DeleteStmt {
 fn (mut p Parser) consume_expr() ?Expr {
 	// TODO(elliotchance): This should not be allowed outside of SELECT
 	// expressions and this returns a dummy value for now.
-	if p.peek(.op_multiply).len > 0 {
+	if p.peek(.asterisk).len > 0 {
 		p.pos++
 		return new_null_value()
 	}
 
-	return p.consume_binary_expr() or {
-		return p.consume_null_expr() or {
-			// Value (must be last).
-			value := p.consume_value() ?
-			return value
+	allowed_ops := [
+		TokenKind.asterisk,
+		.concatenation_operator,
+		.equals_operator,
+		.greater_than_operator,
+		.greater_than_or_equals_operator,
+		.keyword_and,
+		.keyword_or,
+		.less_than_operator,
+		.less_than_or_equals_operator,
+		.minus_sign,
+		.not_equals_operator,
+		.plus_sign,
+		.solidus,
+	]
+	mut parts := [p.consume_simple_expr() ?]
+	mut operators := []Token{}
+	for {
+		if p.peek(.keyword_is, .keyword_null).len > 0 {
+			p.pos += 2
+			parts[parts.len - 1] = NullExpr{parts[parts.len - 1], false}
+		} else if p.peek(.keyword_is, .keyword_not, .keyword_null).len > 0 {
+			p.pos += 3
+			parts[parts.len - 1] = NullExpr{parts[parts.len - 1], true}
+		} else {
+			if p.tokens[p.pos].kind in allowed_ops {
+				operators << p.tokens[p.pos]
+				p.pos++
+
+				parts << p.consume_simple_expr() ?
+			} else {
+				break
+			}
 		}
 	}
+
+	return expr_precedence(parts, operators)
+}
+
+fn expr_precedence(parts []Expr, operators []Token) Expr {
+	if parts.len == 1 {
+		return parts[0]
+	}
+
+	if parts.len == 2 {
+		return BinaryExpr{parts[0], operators[0].value, parts[1]}
+	}
+
+	mut lowest := precedence(operators[0].kind)
+	mut at := 0
+	mut i := 1
+	for i < operators.len {
+		p := precedence(operators[i].kind)
+		if p < lowest {
+			lowest = p
+			at = i
+		}
+		i++
+	}
+
+	return BinaryExpr{expr_precedence(parts[..at], operators[..at - 1]), operators[at - 1].value, expr_precedence(parts[at..],
+		operators[at..])}
 }
 
 fn (mut p Parser) consume_identifier() ?Identifier {
@@ -291,68 +367,38 @@ fn (mut p Parser) consume_identifier() ?Identifier {
 	return sqlstate_42601('expecting identifier but found ${p.tokens[p.pos].value}')
 }
 
-fn (mut p Parser) consume_value_or_identifier() ?Expr {
-	return p.consume_identifier() or {
-		value := p.consume_value() ?
-		return value
-	}
-}
-
-fn (mut p Parser) consume_null_expr() ?NullExpr {
+fn (mut p Parser) consume_unary_expr() ?Expr {
 	start := p.pos
 
-	expr := p.consume_value_or_identifier() or {
-		p.pos = start
-		return sqlstate_42601('expecting expr but found ${p.tokens[p.pos].value}')
-	}
-
-	if p.peek(.keyword_is, .keyword_null).len > 0 {
-		p.pos += 2
-		return NullExpr{expr, false}
-	}
-
-	if p.peek(.keyword_is, .keyword_not, .keyword_null).len > 0 {
-		p.pos += 3
-		return NullExpr{expr, true}
-	}
-
-	p.pos = start
-	return sqlstate_42601('expecting null expr but found ${p.tokens[p.pos].value}')
-}
-
-fn (mut p Parser) consume_binary_expr() ?BinaryExpr {
-	start := p.pos
-
-	lhs := p.consume(.literal_identifier) or {
-		p.pos = start
-		return err
-	}
-	mut op := Token{}
-
-	allowed_ops := [
-		TokenKind.op_eq,
-		.op_neq,
-		.op_gt,
-		.op_gte,
-		.op_lt,
-		.op_lte,
-	]
-	for allowed_op in allowed_ops {
-		if p.peek(allowed_op).len > 0 {
-			op = p.consume(allowed_op) or {
+	ops := [TokenKind.minus_sign, .plus_sign, .keyword_not]
+	for op in ops {
+		if p.peek(op).len > 0 {
+			p.pos++
+			return UnaryExpr{p.tokens[p.pos - 2].value, p.consume_value() or {
 				p.pos = start
 				return err
-			}
-			break
+			}}
 		}
 	}
 
-	rhs := p.consume_value() or {
-		p.pos = start
-		return err
-	}
+	p.pos = start
+	return error('expecting unary')
+}
 
-	return BinaryExpr{lhs.value, op.value, rhs}
+fn (mut p Parser) consume_simple_expr() ?Expr {
+	start := p.pos
+	return p.consume_grouping_expr() or {
+		return p.consume_unary_expr() or {
+			return p.consume_identifier() or {
+				value := p.consume_value() or {
+					p.pos = start
+					return err
+				}
+
+				return value
+			}
+		}
+	}
 }
 
 fn (mut p Parser) consume_value() ?Value {
@@ -401,7 +447,7 @@ fn (mut p Parser) consume_update() ?UpdateStmt {
 	// SET
 	p.consume(.keyword_set) ?
 	col_name := p.consume(.literal_identifier) ?
-	p.consume(.op_eq) ?
+	p.consume(.equals_operator) ?
 	col_value := p.consume_value() ?
 	mut set := map[string]Value{}
 	set[col_name.value] = col_value

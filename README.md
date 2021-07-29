@@ -19,6 +19,7 @@ no dependencies.
 - [Appendix](#appendix)
   - [Data Types](#data-types)
   - [Keywords](#keywords)
+  - [Operators](#operators)
   - [SQLSTATE (Errors)](#sqlstate-errors)
 - [Testing](#testing)
 
@@ -259,6 +260,53 @@ There are some types that are not supported yet:
 Names of entities (such as tables and columns) cannot be a
 [reserved word](https://github.com/elliotchance/vsql/blob/main/vsql/keywords.v).
 
+### Operators
+
+For the tables below:
+
+- `number` is any of the numer types: `FLOAT`, `DOUBLE PRECISION`, etc.
+- `text` is any of the character types: `CHARACTER VARYING`, `CHARACTER`, etc.
+- `any` is any data type.
+
+**Binary Operations**
+
+| Operator              | Precedence | Name |
+| --------------------- | ---------- | ---- |
+| `number * number`     | 2          | Multiplication |
+| `number / number`     | 2          | Division |
+| `number + number`     | 3          | Addition |
+| `number - number`     | 3          | Subtraction |
+| `text || text`        | 3          | Concatenation |
+| `any = any`           | 4          | Equal |
+| `any <> any`          | 4          | Not equal |
+| `number > number`     | 4          | Greater than |
+| `text > text`         | 4          | Greater than |
+| `number < number`     | 4          | Less than |
+| `text <= text`        | 4          | Less than |
+| `number >= number`    | 4          | Greater than or equal |
+| `text >= text`        | 4          | Greater than or equal |
+| `number <= number`    | 4          | Less than or equal |
+| `text <= text`        | 4          | Less than or equal |
+| `boolean AND boolean` | 6          | Logical and |
+| `boolean OR boolean`  | 7          | Logical or |
+
+The _Precedence_ dictates the order of operations. For example `2 + 3 * 5` is
+evaluated as `2 + (3 * 5)` because `*` has a lower precedence so it happens
+first. You can control the order of operations with parenthesis, like
+`(2 + 3) * 5`.
+
+Dividing by zero will result in `SQLSTATE 22012` error.
+
+**Unary Operations**
+
+| Operator              | Name |
+| --------------------- | ---- |
+| `+number`             | Noop |
+| `-number`             | Unary negate |
+| `NOT boolean`         | Logical negate |
+| `any IS NULL`         | NULL check |
+| `any IS NOT NULL`     | Not NULL check |
+
 ### SQLSTATE (Errors)
 
 The error returned from `query()` will always one of the `SQLState` struct
@@ -307,12 +355,13 @@ db.query('SELECT * FROM bar') or {
 
 | SQLSTATE   | Reason |
 | ---------- | ------ |
-| `23502`    | violates non-null constraint |
-| `42601`    | syntax error |
-| `42703`    | column does not exist |
-| `42804`    | data type mismatch |
-| `42P01`    | table does not exist |
-| `42P07`    | table already exists |
+| `22012`    | Divide by zero. |
+| `23502`    | Violates non-null constraint. |
+| `42601`    | Syntax error. |
+| `42703`    | Column does not exist. |
+| `42804`    | Data type mismatch. |
+| `42P01`    | Table does not exist. |
+| `42P07`    | Table already exists. |
 
 Testing
 -------

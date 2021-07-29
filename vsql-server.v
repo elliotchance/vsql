@@ -135,7 +135,7 @@ fn write_command_complete(client_id int, mut conn net.TcpConn, result vsql.Resul
 	// TODO(elliotchance): This is a hack that will probably cause issues.
 	mut tag := 'SELECT $result.rows.len'
 	if result.columns == ['msg'] && result.rows.len == 1 {
-		tag = result.rows[0].get_string('msg')
+		tag = result.rows[0].get_string('msg') or { '$err' }
 	}
 
 	mut msg_len := 4 // self
@@ -220,7 +220,7 @@ fn write_data_row(mut conn net.TcpConn, columns []string, row vsql.Row) {
 	mut msg_len := 4 // self
 	msg_len += 2 // cols
 	for column in columns {
-		v := row.get_string(column)
+		v := row.get_string(column) or { '$err' }
 		msg_len += 4 + v.len
 	}
 
@@ -228,7 +228,7 @@ fn write_data_row(mut conn net.TcpConn, columns []string, row vsql.Row) {
 	write_int16(mut conn, i16(columns.len))
 
 	for column in columns {
-		v := row.get_string(column)
+		v := row.get_string(column) or { '$err' }
 		write_int32(mut conn, v.len)
 		write_bytes(mut conn, v.bytes())
 	}

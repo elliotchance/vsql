@@ -31,9 +31,9 @@ pub fn new_unknown_value() Value {
 	}
 }
 
-pub fn new_float_value(x f64) Value {
+pub fn new_double_precision_value(x f64) Value {
 	return Value{
-		typ: Type{.is_float, 0}
+		typ: Type{.is_double_precision, 0}
 		f64_value: x
 	}
 }
@@ -57,7 +57,7 @@ pub fn (v Value) == (v2 Value) bool {
 		.is_null {
 			false
 		}
-		.is_boolean, .is_bigint, .is_integer, .is_smallint, .is_float, .is_real {
+		.is_boolean, .is_bigint, .is_integer, .is_smallint, .is_double_precision, .is_real {
 			v2.typ.typ == v.typ.typ && v.f64_value == v2.f64_value
 		}
 		.is_varchar, .is_character {

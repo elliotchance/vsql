@@ -154,3 +154,19 @@ fn sqlstate_42p07(table_name string) IError {
 		table_name: table_name
 	}
 }
+
+// No such function
+struct SQLState42883 {
+	msg  string
+	code int
+pub:
+	function_name string
+}
+
+fn sqlstate_42883(function_name string) IError {
+	return SQLState42883{
+		code: sqlstate_to_int('42883')
+		msg: 'function does not exist: $function_name'
+		function_name: function_name
+	}
+}

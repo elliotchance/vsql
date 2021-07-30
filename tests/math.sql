@@ -1,0 +1,71 @@
+SELECT ABS(1.2), ABS(-1.23);
+-- COL1: 1.2 COL2: 1.23
+
+SELECT ABS('hello');
+-- error 42804: data type mismatch argument 1 in ABS: expected DOUBLE PRECISION but got CHARACTER VARYING
+
+SELECT ABS();
+-- error 42883: function does not exist: ABS has 0 arguments but needs 1 argument
+
+SELECT ABS(1, 2);
+-- error 42883: function does not exist: ABS has 2 arguments but needs 1 argument
+
+SELECT SIN(1.2);
+-- COL1: 0.932039
+
+SELECT COS(1.2);
+-- COL1: 0.362358
+
+SELECT TAN(1.2);
+-- COL1: 2.572152
+
+SELECT SINH(1.2);
+-- COL1: 1.509461
+
+SELECT COSH(1.2);
+-- COL1: 1.810656
+
+SELECT TANH(1.2);
+-- COL1: 0.833655
+
+SELECT ASIN(0.2);
+-- COL1: 0.201358
+
+SELECT ACOS(0.2);
+-- COL1: 1.369438
+
+SELECT ATAN(0.2);
+-- COL1: 0.197396
+
+SELECT MOD(232, 3);
+-- COL1: 1
+
+SELECT MOD(10.7, 0.8);
+-- COL1: 0.3
+
+SELECT LOG(13.7);
+-- COL1: 3.776104
+
+SELECT LOG10(13.7);
+-- COL1: 1.136721
+
+SELECT LN(13.7);
+-- COL1: 2.617396
+
+SELECT EXP(3.7);
+-- COL1: 40.447304
+
+SELECT POWER(3.7, 2.5);
+-- COL1: 26.333241
+
+SELECT SQRT(3.7);
+-- COL1: 1.923538
+
+SELECT FLOOR(3.7), FLOOR(3.3), FLOOR(-3.7), FLOOR(-3.3);
+-- COL1: 3 COL2: 3 COL3: -4 COL4: -4
+
+SELECT CEIL(3.7), CEIL(3.3), CEIL(-3.7), CEIL(-3.3);
+-- COL1: 4 COL2: 4 COL3: -3 COL4: -3
+
+SELECT CEILING(3.7);
+-- COL1: 4

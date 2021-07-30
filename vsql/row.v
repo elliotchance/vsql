@@ -16,8 +16,8 @@ pub fn (r Row) get_null(name string) ?bool {
 	return value.typ.typ == .is_null
 }
 
-// get_f64 will only work for columns that are numerical (FLOAT, REAL, etc). If
-// the value is NULL, 0 will be returned. See get_null().
+// get_f64 will only work for columns that are numerical (DOUBLE PRECISION,
+// FLOAT, REAL, etc). If the value is NULL, 0 will be returned. See get_null().
 pub fn (r Row) get_f64(name string) ?f64 {
 	value := r.get(name) ?
 	if value.typ.uses_f64() {
@@ -37,7 +37,7 @@ pub fn (r Row) get_string(name string) ?string {
 	return match value.typ.typ {
 		.is_null { 'NULL' }
 		.is_boolean { bool_str(r.data[name].f64_value) }
-		.is_float, .is_real, .is_bigint, .is_integer, .is_smallint { f64_string(r.data[name].f64_value) }
+		.is_double_precision, .is_real, .is_bigint, .is_integer, .is_smallint { f64_string(r.data[name].f64_value) }
 		.is_varchar, .is_character { r.data[name].string_value }
 	}
 }

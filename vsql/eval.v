@@ -2,19 +2,20 @@
 
 module vsql
 
-fn eval_as_value(data Row, e Expr) ?Value {
+fn eval_as_value(conn Connection, data Row, e Expr) ?Value {
 	match e {
-		BinaryExpr { return eval_binary(data, e) }
+		BinaryExpr { return eval_binary(conn, data, e) }
+		CallExpr { return eval_call(conn, data, e) }
 		Identifier { return eval_identifier(data, e) }
-		NullExpr { return eval_null(data, e) }
+		NullExpr { return eval_null(conn, data, e) }
 		NoExpr { return sqlstate_42601('no expression provided') }
-		UnaryExpr { return eval_unary(data, e) }
+		UnaryExpr { return eval_unary(conn, data, e) }
 		Value { return e }
 	}
 }
 
-fn eval_as_bool(data Row, e Expr) ?bool {
-	v := eval_as_value(data, e) ?
+fn eval_as_bool(conn Connection, data Row, e Expr) ?bool {
+	v := eval_as_value(conn, data, e) ?
 
 	if v.typ.typ == .is_boolean {
 		return v.f64_value != 0
@@ -30,8 +31,32 @@ fn eval_identifier(data Row, e Identifier) ?Value {
 	return value
 }
 
-fn eval_null(data Row, e NullExpr) ?Value {
-	value := eval_as_value(data, e.expr) ?
+fn eval_call(conn Connection, data Row, e CallExpr) ?Value {
+	func_name := identifier_name(e.function_name)
+
+	func := conn.funcs[func_name] or {
+		// function does not exist
+		return sqlstate_42883(func_name)
+	}
+
+	if e.args.len != func.arg_types.len {
+		return sqlstate_42883('$func_name has $e.args.len ${pluralize(e.args.len, 'argument')} but needs $func.arg_types.len ${pluralize(func.arg_types.len,
+			'argument')}')
+	}
+
+	mut args := []Value{}
+	mut i := 0
+	for typ in func.arg_types {
+		arg := eval_as_value(conn, data, e.args[i]) ?
+		args << cast('argument ${i + 1} in $func_name', arg, typ) ?
+		i++
+	}
+
+	return func.func(args)
+}
+
+fn eval_null(conn Connection, data Row, e NullExpr) ?Value {
+	value := eval_as_value(conn, data, e.expr) ?
 
 	if e.not {
 		return new_boolean_value(value.typ.typ != .is_null)
@@ -40,9 +65,9 @@ fn eval_null(data Row, e NullExpr) ?Value {
 	return new_boolean_value(value.typ.typ == .is_null)
 }
 
-fn eval_binary(data Row, e BinaryExpr) ?Value {
-	left := eval_as_value(data, e.left) ?
-	right := eval_as_value(data, e.right) ?
+fn eval_binary(conn Connection, data Row, e BinaryExpr) ?Value {
+	left := eval_as_value(conn, data, e.left) ?
+	right := eval_as_value(conn, data, e.right) ?
 
 	match e.op {
 		'=', '<>', '>', '<', '>=', '<=' {
@@ -61,17 +86,17 @@ fn eval_binary(data Row, e BinaryExpr) ?Value {
 		}
 		'+' {
 			if left.typ.uses_f64() && right.typ.uses_f64() {
-				return new_float_value(left.f64_value + right.f64_value)
+				return new_double_precision_value(left.f64_value + right.f64_value)
 			}
 		}
 		'-' {
 			if left.typ.uses_f64() && right.typ.uses_f64() {
-				return new_float_value(left.f64_value - right.f64_value)
+				return new_double_precision_value(left.f64_value - right.f64_value)
 			}
 		}
 		'*' {
 			if left.typ.uses_f64() && right.typ.uses_f64() {
-				return new_float_value(left.f64_value * right.f64_value)
+				return new_double_precision_value(left.f64_value * right.f64_value)
 			}
 		}
 		'/' {
@@ -80,7 +105,7 @@ fn eval_binary(data Row, e BinaryExpr) ?Value {
 					return sqlstate_22012() // division by zero
 				}
 
-				return new_float_value(left.f64_value / right.f64_value)
+				return new_double_precision_value(left.f64_value / right.f64_value)
 			}
 		}
 		'AND' {
@@ -99,18 +124,18 @@ fn eval_binary(data Row, e BinaryExpr) ?Value {
 	return sqlstate_42804('cannot $left.typ $e.op $right.typ', 'another type', '$left.typ and $right.typ')
 }
 
-fn eval_unary(data Row, e UnaryExpr) ?Value {
-	value := eval_as_value(data, e.expr) ?
+fn eval_unary(conn Connection, data Row, e UnaryExpr) ?Value {
+	value := eval_as_value(conn, data, e.expr) ?
 
 	match e.op {
 		'-' {
 			if value.typ.uses_f64() {
-				return new_float_value(-value.f64_value)
+				return new_double_precision_value(-value.f64_value)
 			}
 		}
 		'+' {
 			if value.typ.uses_f64() {
-				return new_float_value(value.f64_value)
+				return new_double_precision_value(value.f64_value)
 			}
 		}
 		'NOT' {

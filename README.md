@@ -40,7 +40,7 @@ fn example() ? {
     mut db := vsql.open('test.vsql') ?
 
     // All SQL commands use query():
-    db.query('CREATE TABLE foo (a FLOAT)') ?
+    db.query('CREATE TABLE foo (a DOUBLE PRECISION)') ?
     db.query('INSERT INTO foo (a) VALUES (1.23)') ?
     db.query('INSERT INTO foo (a) VALUES (4.56)') ?
 
@@ -204,23 +204,86 @@ Appendix
 
 ### Data Types
 
-**Important:** All data types are currently reduced to several basic internal
-types described below, which is simpler for not but has some consequences:
+**BIGINT**
 
-1. Types that might take less space in other databases (ie. `SMALLINT` vs
-`BIGINT`) will always be stored in a `f64` (8 bytes).
-2. Since all numbers are stored at 64-bit floating, some precision of large
-integers will not be maintained.
-3. Any types that contain a numerical precision or maximum string length will be
-ignored. An error will not be returned if the value stored breaches this
-requirement.
-4. The definition of a "character" isn't yet well defined or enforced. That is,
-characters can be any unicode point, but that may change the future.
-6. The intent is to have all of the above fixed in future version, so please
-choose the correct type for your values now to avoid stricter requirments in the
-future.
+`BIGINT` is an integer type.
 
-There are some types that are not supported yet:
+*TODO*
+
+1. `BIGINT` is currently in memory and on disk as a `DOUBLE PRECISION`. Keep in
+mind this may effect the precision of large values.
+2. The range of possible values is not enforced.
+
+**BOOLEAN**
+
+A `BOOLEAN` may only store a `TRUE`, `FALSE` or `UNKNOWN` value (not including a
+possible `NULL`).
+
+*TODO*
+
+1. A `BOOLEAN` is stored in memory and on disk as a 64-bit floating point
+number.
+
+**CHARACTER VARYING(n)**
+
+A `CHARACTER VARYING(n)` can store up to *n* characters.
+
+The types `CHAR VARYING(n)` and `VARCHAR(n)` are aliases for
+`CHARACTER VARYING(n)`.
+
+*TODO*
+
+1. The *n* limit is not yet enforced.
+
+**CHARACTER(n)**
+
+A `CHARACTER(n)` can store up to *n* characters. `CHARACTER(n)` differs from
+`CHARACTER VARYING(n)` in that a `CHARACTER(n)` will always be a length of *n*.
+For values that have a lesser length, the value will be padded with spaces.
+
+The types `CHAR(n)` are an alias. `CHARACTER` and `CHAR` (without a size) is an
+alias for `CHARACTER(1)`.
+
+*TODO*
+
+1. The *n* limit is not yet enforced.
+2. Values are not actually space padded.
+
+**DOUBLE PRECISION**
+
+`DOUBLE PRECISION` is a 64-bit floating point number.
+
+The `FLOAT(n)` and `FLOAT` are aliases.
+
+*TODO*
+
+1. The *n* in `FLOAT(n)` does not have any affect.
+
+**INTEGER**
+
+The type `INT` is an alias for `INTEGER`.
+
+*TODO*
+
+1. `INTEGER` is currently in memory and on disk as a `DOUBLE PRECISION`.
+2. The range of possible values is not enforced.
+
+**REAL**
+
+A `REAL` is a 32bit floating-point number.
+
+*TODO*
+
+1. `REAL` is currently in memory and on disk as a `DOUBLE PRECISION`.
+
+**SMALLINT**
+
+*TODO*
+
+1. `SMALLINT` is currently in memory and on disk as a `DOUBLE PRECISION`.
+2. The range of possible values is not enforced.
+
+**Unsupported Data Types**
 
 1. `<character large object type>`: `CHARACTER LARGE OBJECT`,
 `CHAR LARGE OBJECT` and `CLOB`.
@@ -240,24 +303,29 @@ There are some types that are not supported yet:
 12. `<array type>`: `ARRAY`.
 13. `<multiset type>`: `MULTISET`.
 
-| Type                   | Internal | Notes |
-| ---------------------- | -------- | ----- |
-| `BIGINT`               | f64      | Integer |
-| `BOOLEAN`              | f64      | `TRUE` or `FALSE` |
-| `CHAR VARYING(n)`      | string   | Alias for `CHARACTER VARYING(n)` |
-| `CHAR(n)`              | string   | Alias for `CHARACTER(n)` |
-| `CHARACTER VARYING(n)` | string   | Strings that can contain up to *n* characters |
-| `CHARACTER(n)`         | string   | Fixed width characters |
-| `CHARACTER`            | string   | Single character |
-| `CHAR`                 | string   | Alias for `CHARACTER` |
-| `DOUBLE PRECISION`     | f64      | 64bit floating-point value |
-| `FLOAT(n)`             | f64      | 64bit floating-point value |
-| `FLOAT`                | f64      | 64bit floating-point value |
-| `INTEGER`              | f64      | Integer |
-| `INT`                  | f64      | Alias for `INTEGER`. |
-| `REAL`                 | f64      | 32bit floating-point value |
-| `SMALLINT`             | f64      | Integer |
-| `VARCHAR(n)`           | string   | Alias for `CHARACTER VARYING(n)` |
+### Functions
+
+| Function                                      | Returns            | Description |
+| --------------------------------------------- | ------------------ | ----------- |
+| `ABS(DOUBLE PRECISION)`                       | `DOUBLE PRECISION` | Absolute value. |
+| `ACOS(DOUBLE PRECISION)`                      | `DOUBLE PRECISION` | Inverse (arc) cosine. |
+| `ASIN(DOUBLE PRECISION)`                      | `DOUBLE PRECISION` | Inverse (arc) sine. |
+| `ATAN(DOUBLE PRECISION)`                      | `DOUBLE PRECISION` | Inverse (arc) tangent. |
+| `CEIL(DOUBLE PRECISION)`                      | `DOUBLE PRECISION` | Round up to the nearest integer. |
+| `COS(DOUBLE PRECISION)`                       | `DOUBLE PRECISION` | Cosine. |
+| `COSH(DOUBLE PRECISION)`                      | `DOUBLE PRECISION` | Hyperbolic cosine. |
+| `EXP(DOUBLE PRECISION)`                       | `DOUBLE PRECISION` | Exponential. |
+| `FLOOR(DOUBLE PRECISION)`                     | `DOUBLE PRECISION` | Round down to the nearest integer. |
+| `LN(DOUBLE PRECISION)`                        | `DOUBLE PRECISION` | Natural logarithm (base e). |
+| `LOG(DOUBLE PRECISION)`                       | `DOUBLE PRECISION` | Logarithm in base 2. |
+| `LOG10(DOUBLE PRECISION)`                     | `DOUBLE PRECISION` | Logarithm in base 10. |
+| `MOD(DOUBLE PRECISION, DOUBLE PRECISION)`     | `DOUBLE PRECISION` | Modulus. |
+| `POWER(DOUBLE PRECISION, DOUBLE PRECISION)`   | `DOUBLE PRECISION` | Power. |
+| `SIN(DOUBLE PRECISION)`                       | `DOUBLE PRECISION` | Sine. |
+| `SINH(DOUBLE PRECISION)`                      | `DOUBLE PRECISION` | Hyperbolic sine. |
+| `SQRT(DOUBLE PRECISION)`                      | `DOUBLE PRECISION` | Square root. |
+| `TAN(DOUBLE PRECISION)`                       | `DOUBLE PRECISION` | Tangent. |
+| `TANH(DOUBLE PRECISION)`                      | `DOUBLE PRECISION` | Hyperbolic tangent. |
 
 ### Keywords
 
@@ -364,6 +432,7 @@ db.query('SELECT * FROM bar') or {
 | `42601`    | Syntax error. |
 | `42703`    | Column does not exist. |
 | `42804`    | Data type mismatch. |
+| `42883`    | Function does not exist. |
 | `42P01`    | Table does not exist. |
 | `42P07`    | Table already exists. |
 

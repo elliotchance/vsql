@@ -81,7 +81,7 @@ fn (mut f FileStorage) write_value(v Value) ? {
 
 	match v.typ.typ {
 		.is_null {}
-		.is_boolean, .is_float, .is_bigint, .is_integer, .is_real, .is_smallint {
+		.is_boolean, .is_double_precision, .is_bigint, .is_integer, .is_real, .is_smallint {
 			f.write<f64>(v.f64_value) ?
 		}
 		.is_varchar, .is_character {
@@ -100,7 +100,7 @@ fn (mut f FileStorage) read_value() ?Value {
 		.is_null {
 			new_null_value()
 		}
-		.is_boolean, .is_bigint, .is_float, .is_real, .is_smallint, .is_integer {
+		.is_boolean, .is_bigint, .is_double_precision, .is_real, .is_smallint, .is_integer {
 			Value{
 				typ: Type{typ, 0}
 				f64_value: f.read<f64>() ?
@@ -122,7 +122,7 @@ fn (mut f FileStorage) read_value() ?Value {
 fn sizeof_value(value Value) int {
 	return int(sizeof(SQLType) + match value.typ.typ {
 		.is_null { 0 }
-		.is_boolean, .is_float, .is_integer, .is_bigint, .is_smallint, .is_real { sizeof(f64) }
+		.is_boolean, .is_double_precision, .is_integer, .is_bigint, .is_smallint, .is_real { sizeof(f64) }
 		.is_varchar, .is_character { sizeof(int) + u32(value.string_value.len) }
 	})
 }
@@ -217,7 +217,7 @@ fn (mut f FileStorage) create_table(table_name string, columns []Column) ? {
 	offset := u32(f.f.tell() ?)
 
 	// If index is 0, the table is deleletd
-	values << new_float_value(index)
+	values << new_double_precision_value(index)
 	values << new_varchar_value(table_name, 0)
 
 	for column in columns {
@@ -234,7 +234,7 @@ fn (mut f FileStorage) delete_table(table_name string) ? {
 	f.f.seek(f.tables[table_name].offset, .start) ?
 
 	// If index is 0, the table is deleted
-	f.write_value(new_float_value(0)) ?
+	f.write_value(new_double_precision_value(0)) ?
 
 	f.tables.delete(table_name)
 }

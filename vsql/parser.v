@@ -210,6 +210,47 @@ fn (mut p Parser) consume_insert() ?InsertStmt {
 	return InsertStmt{table_name.value, cols, values}
 }
 
+fn (mut p Parser) consume_call_expr() ?CallExpr {
+	start := p.pos
+
+	function_name := p.consume(.literal_identifier) or {
+		p.pos = start
+		return err
+	}
+
+	p.consume(.left_paren) or {
+		p.pos = start
+		return err
+	}
+
+	if p.peek(.right_paren).len > 0 {
+		p.pos++
+		return CallExpr{function_name.value, []}
+	}
+
+	mut exprs := []Expr{}
+	exprs << p.consume_expr() or {
+		p.pos = start
+		return err
+	}
+
+	for p.peek(.comma).len > 0 {
+		p.pos++
+
+		exprs << p.consume_expr() or {
+			p.pos = start
+			return err
+		}
+	}
+
+	p.consume(.right_paren) or {
+		p.pos = start
+		return err
+	}
+
+	return CallExpr{function_name.value, exprs}
+}
+
 fn (mut p Parser) consume_grouping_expr() ?Expr {
 	start := p.pos
 
@@ -387,15 +428,17 @@ fn (mut p Parser) consume_unary_expr() ?Expr {
 
 fn (mut p Parser) consume_simple_expr() ?Expr {
 	start := p.pos
-	return p.consume_grouping_expr() or {
-		return p.consume_unary_expr() or {
-			return p.consume_identifier() or {
-				value := p.consume_value() or {
-					p.pos = start
-					return err
-				}
+	return p.consume_call_expr() or {
+		return p.consume_grouping_expr() or {
+			return p.consume_unary_expr() or {
+				return p.consume_identifier() or {
+					value := p.consume_value() or {
+						p.pos = start
+						return err
+					}
 
-				return value
+					return value
+				}
 			}
 		}
 	}
@@ -425,7 +468,7 @@ fn (mut p Parser) consume_value() ?Value {
 	if p.peek(.literal_number).len > 0 {
 		t := p.consume(.literal_number) ?
 		if t.value.contains('.') {
-			return new_float_value(t.value.f64())
+			return new_double_precision_value(t.value.f64())
 		}
 
 		return new_integer_value(t.value.int())

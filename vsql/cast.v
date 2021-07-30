@@ -19,7 +19,7 @@ fn cast(msg string, v Value, to Type) ?Value {
 		}
 		.is_bigint {
 			match to.typ {
-				.is_bigint, .is_float, .is_integer, .is_real, .is_smallint { return v }
+				.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint { return v }
 				else {}
 			}
 		}
@@ -29,27 +29,27 @@ fn cast(msg string, v Value, to Type) ?Value {
 				else {}
 			}
 		}
-		.is_float {
+		.is_double_precision {
 			match to.typ {
-				.is_bigint, .is_float, .is_integer, .is_real, .is_smallint { return v }
+				.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint { return v }
 				else {}
 			}
 		}
 		.is_integer {
 			match to.typ {
-				.is_bigint, .is_float, .is_integer, .is_real, .is_smallint { return v }
+				.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint { return v }
 				else {}
 			}
 		}
 		.is_real {
 			match to.typ {
-				.is_bigint, .is_float, .is_integer, .is_real, .is_smallint { return v }
+				.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint { return v }
 				else {}
 			}
 		}
 		.is_smallint {
 			match to.typ {
-				.is_bigint, .is_float, .is_integer, .is_real, .is_smallint { return v }
+				.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint { return v }
 				else {}
 			}
 		}

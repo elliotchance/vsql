@@ -6,10 +6,16 @@ module vsql
 struct Connection {
 mut:
 	storage FileStorage
+	funcs   map[string]Func
 }
 
 pub fn open(path string) ?Connection {
-	return Connection{new_file_storage(path) ?}
+	mut conn := Connection{
+		storage: new_file_storage(path) ?
+	}
+	register_builtin_funcs(mut conn) ?
+
+	return conn
 }
 
 pub fn (mut c Connection) query(sql string) ?Result {
@@ -35,4 +41,8 @@ pub fn (mut c Connection) query(sql string) ?Result {
 			return c.update(stmt)
 		}
 	}
+}
+
+pub fn (mut c Connection) register_func(func Func) ? {
+	c.funcs[func.name] = func
 }

@@ -11,8 +11,8 @@ enum SQLType {
 	is_null // NULL
 	is_bigint // BIGINT
 	is_boolean // BOOLEAN
-	is_character // CHARACTER and CHAR
-	is_float // FLOAT and DOUBLE PRECISION
+	is_character // CHARACTER(n), CHAR(n), CHARACTER and CHAR
+	is_double_precision // DOUBLE PRECISION, FLOAT and FLOAT(n)
 	is_integer // INTEGER and INT
 	is_real // REAL
 	is_smallint // SMALLINT
@@ -25,7 +25,7 @@ fn (t SQLType) str() string {
 		.is_bigint { 'BIGINT' }
 		.is_boolean { 'BOOLEAN' }
 		.is_character { 'CHARACTER' }
-		.is_float { 'FLOAT' }
+		.is_double_precision { 'DOUBLE PRECISION' }
 		.is_integer { 'INTEGER' }
 		.is_real { 'REAL' }
 		.is_smallint { 'SMALLINT' }
@@ -47,8 +47,8 @@ fn new_type(name string, size int) Type {
 		'CHARACTER', 'CHAR' {
 			Type{.is_character, size}
 		}
-		'FLOAT', 'DOUBLE PRECISION' {
-			Type{.is_float, size}
+		'DOUBLE PRECISION', 'FLOAT' {
+			Type{.is_double_precision, size}
 		}
 		'REAL' {
 			Type{.is_real, size}
@@ -72,14 +72,19 @@ fn (t Type) str() string {
 
 fn (t Type) uses_f64() bool {
 	return match t.typ {
-		.is_boolean, .is_float, .is_bigint, .is_real, .is_smallint, .is_integer { true }
+		.is_boolean, .is_double_precision, .is_bigint, .is_real, .is_smallint, .is_integer { true }
 		.is_null, .is_varchar, .is_character { false }
 	}
 }
 
 fn (t Type) uses_string() bool {
 	return match t.typ {
-		.is_null, .is_boolean, .is_float, .is_bigint, .is_real, .is_smallint, .is_integer { false }
-		.is_varchar, .is_character { true }
+		.is_null, .is_boolean, .is_double_precision, .is_bigint, .is_real, .is_smallint,
+		.is_integer {
+			false
+		}
+		.is_varchar, .is_character {
+			true
+		}
 	}
 }

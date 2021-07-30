@@ -32,7 +32,7 @@ SELECT * FROM foo;
 CREATE TABLE foo (baz FLOAT);
 UPDATE foo SET baz = true;
 -- msg: CREATE TABLE 1
--- error 42804: data type mismatch for column BAZ: expected FLOAT but got BOOLEAN
+-- error 42804: data type mismatch for column BAZ: expected DOUBLE PRECISION but got BOOLEAN
 
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (123);

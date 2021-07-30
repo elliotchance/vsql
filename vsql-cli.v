@@ -37,12 +37,7 @@ fn main_command(cmd cli.Command) ? {
 			println('')
 		}
 
-		mut row_word := 'rows'
-		if result.rows.len == 1 {
-			row_word = 'row'
-		}
-		println('$result.rows.len $row_word (${time.ticks() - start} ms)')
-
+		println('$result.rows.len ${vsql.pluralize(result.rows.len, 'row')} (${time.ticks() - start} ms)')
 		println('')
 	}
 }

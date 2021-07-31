@@ -25,6 +25,9 @@ jobs:
     - name: Run SQL tests
       run: v -stats -prod test vsql
 
+    - name: Run examples
+      run: for f in `ls examples/*.v`; do v -prod run $f; done
+
     - name: Build macOS binaries
       run: |
         v -prod vsql-cli.v

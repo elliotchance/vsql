@@ -7,6 +7,7 @@ fn eval_as_value(conn Connection, data Row, e Expr) ?Value {
 		BinaryExpr { return eval_binary(conn, data, e) }
 		CallExpr { return eval_call(conn, data, e) }
 		Identifier { return eval_identifier(data, e) }
+		NamedExpr { return eval_as_value(conn, data, e.expr) }
 		NullExpr { return eval_null(conn, data, e) }
 		NoExpr { return sqlstate_42601('no expression provided') }
 		UnaryExpr { return eval_unary(conn, data, e) }

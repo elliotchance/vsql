@@ -111,9 +111,14 @@ fn (mut f FileStorage) read_value() ?Value {
 			mut buf := []byte{len: len}
 			f.f.read(mut buf) ?
 
+			// TODO(elliotchance): There seems to be a weird bug where
+			//  converting some bytes to a string ends up with a string that
+			//  also contains the NULL character. ie 'DOUBLE PRECISION' (16
+			//  bytes) becomes 'DOUBLE PRECISION\0' (17 bytes). The [..buf.len]
+			//  is a temporary protection against this.
 			Value{
 				typ: Type{typ, 0}
-				string_value: string(buf)
+				string_value: string(buf)[..buf.len]
 			}
 		}
 	}

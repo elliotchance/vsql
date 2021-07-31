@@ -6,7 +6,8 @@ module vsql
 type Stmt = CreateTableStmt | DeleteStmt | DropTableStmt | InsertStmt | SelectStmt | UpdateStmt
 
 // All possible expression entities.
-type Expr = BinaryExpr | CallExpr | Identifier | NoExpr | NullExpr | UnaryExpr | Value
+type Expr = BinaryExpr | CallExpr | Identifier | NamedExpr | NoExpr | NullExpr | UnaryExpr |
+	Value
 
 // CREATE TABLE ...
 struct CreateTableStmt {
@@ -76,4 +77,10 @@ struct NoExpr {
 struct CallExpr {
 	function_name string
 	args          []Expr
+}
+
+// NamedExpr wraps an "AS" expression.
+struct NamedExpr {
+	name string
+	expr Expr
 }

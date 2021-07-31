@@ -39,6 +39,7 @@ fn (mut c Connection) query_select(stmt SelectStmt) ?Result {
 	mut column_names := []string{cap: exprs.len}
 	mut first_row := true
 	for row in all_rows {
+		col_num = 1
 		mut data := map[string]Value{}
 		for expr in exprs {
 			mut column_name := 'COL$col_num'

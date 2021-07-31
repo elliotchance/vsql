@@ -46,3 +46,16 @@ pub fn (mut c Connection) query(sql string) ?Result {
 pub fn (mut c Connection) register_func(func Func) ? {
 	c.funcs[func.name] = func
 }
+
+pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) ?Value) ? {
+	// A rather crude way to decode the prototype...
+	parts := prototype.replace('(', '|').replace(')', '|').split('|')
+	function_name := identifier_name(parts[0].trim_space())
+	raw_args := parts[1].split(',')
+	mut arg_types := []Type{}
+	for arg in raw_args {
+		arg_types << new_type(arg.trim_space().to_upper(), 0)
+	}
+
+	c.register_func(Func{function_name, arg_types, func}) ?
+}

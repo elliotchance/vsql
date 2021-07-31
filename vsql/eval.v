@@ -2,6 +2,19 @@
 
 module vsql
 
+fn eval_row(conn Connection, data Row, exprs []Expr) ?Row {
+	mut col_number := 1
+	mut row := map[string]Value{}
+	for expr in exprs {
+		row['COL$col_number'] = eval_as_value(conn, data, expr) ?
+		col_number++
+	}
+
+	return Row{
+		data: row
+	}
+}
+
 fn eval_as_value(conn Connection, data Row, e Expr) ?Value {
 	match e {
 		BinaryExpr { return eval_binary(conn, data, e) }

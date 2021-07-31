@@ -32,7 +32,7 @@ CREATE TABLE ARRAY_MAX_CARDINALITY (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: ARRAY_MAX_CARDINALITY
 
 CREATE TABLE AS (a INT);
--- error 42601: syntax error: table name cannot be reserved word: AS
+-- error 42601: syntax error: expecting literal_identifier but found AS
 
 CREATE TABLE ASENSITIVE (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: ASENSITIVE

@@ -3,39 +3,65 @@
 module vsql
 
 fn (mut c Connection) query_select(stmt SelectStmt) ?Result {
-	if stmt.from != '' {
+	// Find all rows first.
+	mut all_rows := []Row{}
+	mut exprs := stmt.exprs
+
+	if stmt.from == '' {
+		all_rows = [Row{}]
+	} else {
 		table_name := identifier_name(stmt.from)
 
-		if table_name in c.storage.tables {
-			table := c.storage.tables[table_name]
+		if table_name !in c.storage.tables {
+			return sqlstate_42p01(table_name)
+		}
+		table := c.storage.tables[table_name]
 
-			mut rows := c.storage.read_rows(table.index) ?
-			if stmt.where !is NoExpr {
-				rows = where(c, rows, false, stmt.where) ?
+		e := exprs[0]
+		if e is Identifier {
+			if e.name == '*' {
+				exprs = []
+				for column_name in table.column_names() {
+					exprs << Identifier{'"$column_name"'}
+				}
 			}
-
-			return new_result(table.column_names(), rows)
 		}
 
-		return sqlstate_42p01(table_name)
+		all_rows = c.storage.read_rows(table.index) ?
+		if stmt.where !is NoExpr {
+			all_rows = where(c, all_rows, false, stmt.where) ?
+		}
 	}
 
-	mut data := map[string]Value{}
+	// Transform into expressions.
+	mut returned_rows := []Row{cap: all_rows.len}
 	mut col_num := 1
-	mut cols := []string{cap: stmt.exprs.len}
-	empty_row := Row{
-		data: map[string]Value{}
-	}
-	for expr in stmt.exprs {
-		column_name := 'COL$col_num'
-		data[column_name] = eval_as_value(c, empty_row, expr) ?
-		cols << column_name
-		col_num++
+	mut column_names := []string{cap: exprs.len}
+	mut first_row := true
+	for row in all_rows {
+		mut data := map[string]Value{}
+		for expr in exprs {
+			mut column_name := 'COL$col_num'
+			if expr is NamedExpr {
+				column_name = identifier_name(expr.name)
+			}
+			if expr is Identifier {
+				column_name = identifier_name(expr.name)
+			}
+
+			if first_row {
+				column_names << column_name
+			}
+
+			data[column_name] = eval_as_value(c, row, expr) ?
+			col_num++
+		}
+
+		first_row = false
+		returned_rows << Row{
+			data: data
+		}
 	}
 
-	return new_result(cols, [
-		Row{
-			data: data
-		},
-	])
+	return new_result(column_names, returned_rows)
 }

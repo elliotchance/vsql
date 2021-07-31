@@ -278,11 +278,11 @@ fn (mut p Parser) consume_select() ?SelectStmt {
 
 	// expressions
 	mut exprs := []Expr{}
-	exprs << p.consume_expr() ?
+	exprs << p.consume_select_expr() ?
 
 	for p.peek(.comma).len > 0 {
 		p.pos++ // skip ','
-		exprs << p.consume_expr() ?
+		exprs << p.consume_select_expr() ?
 	}
 
 	// FROM
@@ -327,14 +327,35 @@ fn (mut p Parser) consume_delete() ?DeleteStmt {
 	return DeleteStmt{table_name.value, expr}
 }
 
-fn (mut p Parser) consume_expr() ?Expr {
+fn (mut p Parser) consume_named_expr() ?Expr {
+	start := p.pos
+	expr := p.consume_expr() ?
+
+	if p.peek(.keyword_as).len > 0 {
+		p.pos++
+		name := p.consume_identifier() or {
+			p.pos = start
+			return err
+		}
+
+		return NamedExpr{name.name, expr}
+	}
+
+	return expr
+}
+
+fn (mut p Parser) consume_select_expr() ?Expr {
 	// TODO(elliotchance): This should not be allowed outside of SELECT
 	// expressions and this returns a dummy value for now.
 	if p.peek(.asterisk).len > 0 {
 		p.pos++
-		return new_null_value()
+		return Identifier{'*'}
 	}
 
+	return p.consume_named_expr()
+}
+
+fn (mut p Parser) consume_expr() ?Expr {
 	allowed_ops := [
 		TokenKind.asterisk,
 		.concatenation_operator,

@@ -14,6 +14,7 @@ enum TokenKind {
 	greater_than_operator // <greater than operator> ::= >
 	greater_than_or_equals_operator // <greater than or equals operator> ::= >=
 	keyword_and // AND
+	keyword_as // AS
 	keyword_bigint // BIGINT
 	keyword_boolean // BOOLEAN
 	keyword_char // CHAR
@@ -166,6 +167,7 @@ fn tokenize(sql string) []Token {
 		}
 
 		tokens << match word.to_upper() {
+			'AS' { Token{TokenKind.keyword_as, word} }
 			'AND' { Token{TokenKind.keyword_and, word} }
 			'BIGINT' { Token{TokenKind.keyword_bigint, word} }
 			'BOOLEAN' { Token{TokenKind.keyword_boolean, word} }

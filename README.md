@@ -132,13 +132,13 @@ column := <column_name> <column_type> [ NULL | NOT NULL ]
 underscore (`_`) or digit for a maximum length of 128 characters.
 2. `column_type` must be one of the [Data Types](#data-types).
 
-Example:
+**Example**
 
 ```sql
 CREATE TABLE products (
     title CHARACTER VARYING(100),
     price FLOAT
-)
+);
 ```
 
 ## DELETE
@@ -165,24 +165,45 @@ VALUES ( <value> , ... )
 
 The number of `col`s and `value`s must match.
 
-Example:
+**Examples**
 
 ```sql
-INSERT INTO products (title, price) VALUES ('Instant Pot', 144.89)
+INSERT INTO products (title, price) VALUES ('Instant Pot', 144.89);
 ```
 
 ## SELECT
 
 ```
-SELECT <field> , ...
+SELECT <expression> [ AS <name> ] , ...
 [ FROM <table_name> ]
-[ WHERE <expr> ]
+[ WHERE <condition> ]
 ```
 
-Examples:
+The SQL standard defines two types of identifiers: regular and delimited. A
+regular identifier is a word (such as `foo`) whereas a delimited identifier is
+surrounded by double-quotes (such as `"foo"`). A regular identifier is always
+converted to upper-case, whereas as delimited identifier keeps it's case. This
+applies to any identifier (table names, column names, `AS` names, etc).
+
+For each *expression*, the naming convention follows:
+
+1. If `name` is provided, that will be used.
+2. If `expression` refered to a column, the column name will be used.
+3. Otherwise, the name `COL<number>` will be used where *number* is the position
+of the column (starting at 1).
+
+If `FROM` is not provided, the result will always be one row containing the
+result of the expressions.
+
+If `WHERE` is not provided all rows are returned.
+
+**Examples**
 
 ```sql
-SELECT * FROM products
+SELECT * FROM products;
+
+SELECT price * (1 + tax) AS total
+FROM products;
 ```
 
 ## UPDATE

@@ -2,3 +2,4 @@
 vsql-cli
 vsql-server
 *.vsql
+.vscode

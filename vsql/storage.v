@@ -258,10 +258,11 @@ fn (mut f FileStorage) write_row(r Row, t Table) ? {
 	f.write_object(10000 + t.index, values) ?
 }
 
-fn (mut f FileStorage) read_rows(table_index int) ?[]Row {
+fn (mut f FileStorage) read_rows(table_index int, offset int) ?[]Row {
 	f.f.seek(1, .start) ?
 
 	mut rows := []Row{}
+	mut skipped := 0
 	for {
 		next := f.read_object() ?
 		if next.is_eof {
@@ -269,7 +270,11 @@ fn (mut f FileStorage) read_rows(table_index int) ?[]Row {
 		}
 
 		if next.obj is Row && next.category - 10000 == table_index {
-			rows << next.obj
+			if skipped < offset {
+				skipped++
+			} else {
+				rows << next.obj
+			}
 		}
 	}
 

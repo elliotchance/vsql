@@ -299,7 +299,33 @@ fn (mut p Parser) consume_select() ?SelectStmt {
 		where = p.consume_expr() ?
 	}
 
-	return SelectStmt{exprs, from, where}
+	// OFFSET
+	mut offset := 0
+	if p.peek(.keyword_offset).len > 0 {
+		p.pos++ // skip OFFSET
+		offset = p.consume_integer() ?
+		p.consume_row_or_rows() ?
+	}
+
+	// FETCH
+	mut fetch := -1
+	if p.peek(.keyword_fetch).len > 0 {
+		p.pos++ // skip FETCH
+		p.consume(.keyword_first) ?
+		fetch = p.consume_integer() ?
+		p.consume_row_or_rows() ?
+		p.consume(.keyword_only) ?
+	}
+
+	return SelectStmt{exprs, from, where, offset, fetch}
+}
+
+fn (mut p Parser) consume_row_or_rows() ? {
+	if p.peek(.keyword_row).len > 0 || p.peek(.keyword_rows).len > 0 {
+		p.pos++
+	} else {
+		return sqlstate_42601('expected ROW or ROWS')
+	}
 }
 
 fn (mut p Parser) consume_drop_table() ?DropTableStmt {
@@ -487,12 +513,7 @@ fn (mut p Parser) consume_value() ?Value {
 	}
 
 	if p.peek(.literal_number).len > 0 {
-		t := p.consume(.literal_number) ?
-		if t.value.contains('.') {
-			return new_double_precision_value(t.value.f64())
-		}
-
-		return new_integer_value(t.value.int())
+		return p.consume_number()
 	}
 
 	if p.peek(.literal_string).len > 0 {
@@ -501,6 +522,24 @@ fn (mut p Parser) consume_value() ?Value {
 	}
 
 	return sqlstate_42601('expecting value but found ${p.tokens[p.pos].value}')
+}
+
+fn (mut p Parser) consume_number() ?Value {
+	t := p.consume(.literal_number) ?
+	if t.value.contains('.') {
+		return new_double_precision_value(t.value.f64())
+	}
+
+	return new_integer_value(t.value.int())
+}
+
+fn (mut p Parser) consume_integer() ?int {
+	t := p.consume(.literal_number) ?
+	if t.value.contains('.') {
+		return error('not an integer')
+	}
+
+	return t.value.int()
 }
 
 fn (mut p Parser) consume_update() ?UpdateStmt {

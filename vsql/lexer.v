@@ -24,6 +24,8 @@ enum TokenKind {
 	keyword_double // DOUBLE
 	keyword_drop // DROP
 	keyword_false // FALSE
+	keyword_fetch // FETCH
+	keyword_first // FIRST
 	keyword_float // FLOAT
 	keyword_from // FROM
 	keyword_insert // INSERT
@@ -33,9 +35,13 @@ enum TokenKind {
 	keyword_is // IS
 	keyword_not // NOT
 	keyword_null // NULL
+	keyword_offset // OFFSET
+	keyword_only // ONLY
 	keyword_or // OR
 	keyword_precision // PRECISION
 	keyword_real // REAL
+	keyword_row // ROW
+	keyword_rows // ROWS
 	keyword_select // SELECT
 	keyword_set // SET
 	keyword_smallint // SMALLINT
@@ -167,8 +173,8 @@ fn tokenize(sql string) []Token {
 		}
 
 		tokens << match word.to_upper() {
-			'AS' { Token{TokenKind.keyword_as, word} }
 			'AND' { Token{TokenKind.keyword_and, word} }
+			'AS' { Token{TokenKind.keyword_as, word} }
 			'BIGINT' { Token{TokenKind.keyword_bigint, word} }
 			'BOOLEAN' { Token{TokenKind.keyword_boolean, word} }
 			'CHAR' { Token{TokenKind.keyword_char, word} }
@@ -178,6 +184,8 @@ fn tokenize(sql string) []Token {
 			'DOUBLE' { Token{TokenKind.keyword_double, word} }
 			'DROP' { Token{TokenKind.keyword_drop, word} }
 			'FALSE' { Token{TokenKind.keyword_false, word} }
+			'FETCH' { Token{TokenKind.keyword_fetch, word} }
+			'FIRST' { Token{TokenKind.keyword_first, word} }
 			'FLOAT' { Token{TokenKind.keyword_float, word} }
 			'FROM' { Token{TokenKind.keyword_from, word} }
 			'INSERT' { Token{TokenKind.keyword_insert, word} }
@@ -187,9 +195,13 @@ fn tokenize(sql string) []Token {
 			'IS' { Token{TokenKind.keyword_is, word} }
 			'NOT' { Token{TokenKind.keyword_not, word} }
 			'NULL' { Token{TokenKind.keyword_null, word} }
+			'OFFSET' { Token{TokenKind.keyword_offset, word} }
+			'ONLY' { Token{TokenKind.keyword_only, word} }
 			'OR' { Token{TokenKind.keyword_or, word} }
 			'PRECISION' { Token{TokenKind.keyword_precision, word} }
 			'REAL' { Token{TokenKind.keyword_real, word} }
+			'ROW' { Token{TokenKind.keyword_row, word} }
+			'ROWS' { Token{TokenKind.keyword_rows, word} }
 			'SELECT' { Token{TokenKind.keyword_select, word} }
 			'SET' { Token{TokenKind.keyword_set, word} }
 			'SMALLINT' { Token{TokenKind.keyword_smallint, word} }

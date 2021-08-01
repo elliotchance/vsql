@@ -27,9 +27,13 @@ fn (mut c Connection) query_select(stmt SelectStmt) ?Result {
 			}
 		}
 
-		all_rows = c.storage.read_rows(table.index) ?
-		if stmt.where !is NoExpr {
-			all_rows = where(c, all_rows, false, stmt.where) ?
+		all_rows = c.storage.read_rows(table.index, stmt.offset) ?
+		if stmt.where is NoExpr {
+			if stmt.fetch >= 0 && all_rows.len > stmt.fetch {
+				all_rows = all_rows[..stmt.fetch]
+			}
+		} else {
+			all_rows = where(c, all_rows, false, stmt.where, stmt.fetch) ?
 		}
 	}
 

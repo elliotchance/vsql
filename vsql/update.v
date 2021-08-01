@@ -24,7 +24,7 @@ fn (mut c Connection) update(stmt UpdateStmt) ?Result {
 
 	mut delete_rows := []Row{}
 	mut new_rows := []Row{}
-	for mut row in c.storage.read_rows(table.index) ? {
+	for mut row in c.storage.read_rows(table.index, 0) ? {
 		// Missing WHERE matches all records
 		mut ok := true
 		if stmt.where !is NoExpr {

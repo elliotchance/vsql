@@ -35,9 +35,11 @@ struct InsertStmt {
 
 // SELECT ...
 struct SelectStmt {
-	exprs []Expr
-	from  string
-	where Expr
+	exprs  []Expr
+	from   string
+	where  Expr
+	offset int
+	fetch  int // -1 to ignore
 }
 
 // UPDATE ...

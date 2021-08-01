@@ -7,8 +7,9 @@ no dependencies.
 - [Usage](#usage)
   - [V Module](#v-module)
   - [CLI](#cli)
-  - [Server](#server)]
+  - [Server](#server)
   - [Custom Functions](#custom-functions)
+- [FAQ](https://github.com/elliotchance/vsql/blob/main/docs/faq.rst)
 - SQL Commands
   - [CREATE TABLE](https://github.com/elliotchance/vsql/blob/main/docs/create-table.rst)
   - [DELETE](https://github.com/elliotchance/vsql/blob/main/docs/delete.rst)
@@ -154,6 +155,9 @@ All tests are in the `tests/` directory and each file contains individual tests
 separated by an empty line:
 
 ```sql
+/* setup */
+CREATE TABLE t (x FLOAT);
+
 SELECT 1;
 SELECT *
 FROM foo;
@@ -169,6 +173,8 @@ SELECT 3;
 This describes two tests where each test is given an a brand new database (ie.
 no tables are carried between tests).
 
+- An optional `/* setup */` can be placed at the top of the file to be run
+before each test.
 - All SQL statements are executed and each of the results collected and compared
 to the comment immediately below.
 - Errors will be in the form of `error SQLSTATE: message`.

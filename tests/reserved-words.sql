@@ -365,7 +365,7 @@ CREATE TABLE FALSE (a INT);
 -- error 42601: syntax error: expecting literal_identifier but found FALSE
 
 CREATE TABLE FETCH (a INT);
--- error 42601: syntax error: table name cannot be reserved word: FETCH
+-- error 42601: syntax error: expecting literal_identifier but found FETCH
 
 CREATE TABLE FILTER (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: FILTER
@@ -656,7 +656,7 @@ CREATE TABLE OF (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: OF
 
 CREATE TABLE OFFSET (a INT);
--- error 42601: syntax error: table name cannot be reserved word: OFFSET
+-- error 42601: syntax error: expecting literal_identifier but found OFFSET
 
 CREATE TABLE OLD (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: OLD
@@ -671,7 +671,7 @@ CREATE TABLE ONE (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: ONE
 
 CREATE TABLE ONLY (a INT);
--- error 42601: syntax error: table name cannot be reserved word: ONLY
+-- error 42601: syntax error: expecting literal_identifier but found ONLY
 
 CREATE TABLE OPEN (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: OPEN
@@ -830,13 +830,13 @@ CREATE TABLE ROLLUP (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: ROLLUP
 
 CREATE TABLE ROW (a INT);
--- error 42601: syntax error: table name cannot be reserved word: ROW
+-- error 42601: syntax error: expecting literal_identifier but found ROW
 
 CREATE TABLE ROW_NUMBER (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: ROW_NUMBER
 
 CREATE TABLE ROWS (a INT);
--- error 42601: syntax error: table name cannot be reserved word: ROWS
+-- error 42601: syntax error: expecting literal_identifier but found ROWS
 
 CREATE TABLE RUNNING (a INT);
 -- error 42601: syntax error: table name cannot be reserved word: RUNNING

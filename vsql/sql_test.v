@@ -3,6 +3,7 @@ module vsql
 import os
 
 struct SQLTest {
+	setup       []string
 	file_name   string
 	line_number int
 	stmts       []string
@@ -17,20 +18,34 @@ fn get_tests() ?[]SQLTest {
 
 		mut stmts := []string{}
 		mut expected := []string{}
+		mut setup := []string{}
 		mut line_number := 0
 		mut stmt := ''
+		mut setup_stmt := ''
+		mut in_setup := false
 		for line in lines {
 			if line == '' {
-				tests << SQLTest{test_file_path, line_number, stmts, expected.join('\n')}
+				tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n')}
 				stmts = []
 				expected = []
+				in_setup = false
+			} else if line == '/* setup */' {
+				in_setup = true
 			} else if line.starts_with('-- ') {
 				expected << line[3..]
 			} else {
-				stmt += '\n$line'
-				if line.ends_with(';') {
-					stmts << stmt
-					stmt = ''
+				if in_setup {
+					setup_stmt += '\n$line'
+					if line.ends_with(';') {
+						setup << setup_stmt
+						setup_stmt = ''
+					}
+				} else {
+					stmt += '\n$line'
+					if line.ends_with(';') {
+						stmts << stmt
+						stmt = ''
+					}
 				}
 			}
 
@@ -38,7 +53,7 @@ fn get_tests() ?[]SQLTest {
 		}
 
 		if stmts.len > 0 {
-			tests << SQLTest{test_file_path, line_number, stmts, expected.join('\n')}
+			tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n')}
 		}
 	}
 
@@ -53,6 +68,10 @@ fn test_all() ? {
 		}
 
 		mut db := open(path) ?
+
+		for stmt in test.setup {
+			db.query(stmt) ?
+		}
 
 		mut actual := ''
 		for stmt in test.stmts {

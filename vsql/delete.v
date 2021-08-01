@@ -10,7 +10,7 @@ fn (mut c Connection) delete(stmt DeleteStmt) ?Result {
 	}
 
 	table := c.storage.tables[table_name]
-	mut rows := c.storage.read_rows(table.index) ?
+	mut rows := c.storage.read_rows(table.index, 0) ?
 
 	mut deleted := 0
 	for row in rows {

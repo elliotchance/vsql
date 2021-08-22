@@ -1,4 +1,4 @@
-UPDATE foo SET a = 123;
+UPDATE foo SET x = 123;
 -- error 42P01: no such table: FOO
 
 CREATE TABLE foo (baz CHARACTER VARYING(10));

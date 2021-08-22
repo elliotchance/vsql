@@ -1,5 +1,5 @@
 TABLE;
--- error 42601: syntax error: at "TABLE"
+-- error 42601: syntax error: near "TABLE"
 
 SELECT 1; DELETE;
--- error 42601: syntax error: at "DELETE"
+-- error 42601: syntax error: near "DELETE"

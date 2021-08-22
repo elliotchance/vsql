@@ -152,18 +152,6 @@ Natural logarithm (base e).
   SELECT LN(13.7);
   -- COL1: 2.617396
 
-``LOG(DOUBLE PRECISION) DOUBLE PRECISION``
-------------------------------------------
-
-Logarithm in base 2.
-
-**Examples**
-
-.. code-block:: sql
-
-  SELECT LOG(13.7);
-  -- COL1: 3.776104
-
 ``LOG10(DOUBLE PRECISION) DOUBLE PRECISION``
 --------------------------------------------
 

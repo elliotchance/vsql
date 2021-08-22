@@ -87,7 +87,7 @@ SQLSTATE
   -- msg: CREATE TABLE 1
   -- error 42601: syntax error: INSERT has more values than columns
   
-  CREATE TABLE ABS (a INT);
+  CREATE TABLE ABS (x INT);
   -- error 42601: syntax error: table name cannot be reserved word: ABS
 
 ``42703`` column does not exist
@@ -147,7 +147,7 @@ SQLSTATE
 
 .. code-block:: sql
 
-  CREATE TABLE foo (a FLOAT);
+  CREATE TABLE foo (x FLOAT);
   CREATE TABLE foo (baz CHARACTER VARYING(10));
   -- msg: CREATE TABLE 1
   -- error 42P07: duplicate table: FOO

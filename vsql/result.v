@@ -21,7 +21,7 @@ pub fn new_result(columns []string, rows []Row) Result {
 fn new_result_msg(msg string) Result {
 	return new_result(['msg'], [
 		Row{
-			data: map{
+			data: {
 				'msg': new_varchar_value(msg, 0)
 			}
 		},

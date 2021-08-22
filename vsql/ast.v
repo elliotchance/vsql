@@ -29,13 +29,13 @@ struct DropTableStmt {
 // INSERT INTO ...
 struct InsertStmt {
 	table_name string
-	columns    []string
-	values     []Value
+	columns    []Identifier
+	values     []Expr
 }
 
 // SELECT ...
 struct SelectStmt {
-	exprs  []Expr
+	exprs  SelectList
 	from   string
 	where  Expr
 	offset int
@@ -45,7 +45,7 @@ struct SelectStmt {
 // UPDATE ...
 struct UpdateStmt {
 	table_name string
-	set        map[string]Value
+	set        map[string]Expr
 	where      Expr
 }
 
@@ -86,3 +86,22 @@ struct NamedExpr {
 	name string
 	expr Expr
 }
+
+struct ComparisonPredicatePart2 {
+	op   string
+	expr Expr
+}
+
+struct TableExpression {
+	from_clause  Identifier
+	where_clause Expr
+}
+
+struct DerivedColumn {
+	expr      Expr
+	as_clause Identifier // will be empty if not provided
+}
+
+type AsteriskExpr = bool
+
+type SelectList = AsteriskExpr | []DerivedColumn

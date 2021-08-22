@@ -20,7 +20,6 @@ fn register_builtin_funcs(mut conn Connection) ? {
 	conn.register_func(Func{'EXP', [Type{SQLType.is_double_precision, 0}], func_exp}) ?
 	conn.register_func(Func{'FLOOR', [Type{SQLType.is_double_precision, 0}], func_floor}) ?
 	conn.register_func(Func{'LN', [Type{SQLType.is_double_precision, 0}], func_ln}) ?
-	conn.register_func(Func{'LOG', [Type{SQLType.is_double_precision, 0}], func_log}) ?
 	conn.register_func(Func{'LOG10', [Type{SQLType.is_double_precision, 0}], func_log10}) ?
 	conn.register_func(Func{'MOD', [Type{SQLType.is_double_precision, 0},
 		Type{SQLType.is_double_precision, 0},

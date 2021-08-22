@@ -13,6 +13,7 @@ enum TokenKind {
 	equals_operator // <equals operator> ::= =
 	greater_than_operator // <greater than operator> ::= >
 	greater_than_or_equals_operator // <greater than or equals operator> ::= >=
+	keyword
 	keyword_and // AND
 	keyword_as // AS
 	keyword_bigint // BIGINT
@@ -61,6 +62,7 @@ enum TokenKind {
 	literal_string // 'hello'
 	minus_sign // <minus sign> ::= -
 	not_equals_operator // <not equals operator> ::= <>
+	period // <period> ::= .
 	plus_sign // <plus sign> ::= +
 	right_paren // <right paren> ::= )
 	semicolon // <semicolon> ::= ;
@@ -88,7 +90,7 @@ fn tokenize(sql string) []Token {
 		// numbers
 		if cs[i] >= `0` && cs[i] <= `9` {
 			mut word := ''
-			for i < cs.len && ((cs[i] >= `0` && cs[i] <= `9`) || cs[i] == `.`) {
+			for i < cs.len && cs[i] >= `0` && cs[i] <= `9` {
 				word += '${cs[i]}'
 				i++
 			}
@@ -97,10 +99,10 @@ fn tokenize(sql string) []Token {
 		}
 
 		// strings
-		if cs[i] == `\'` {
+		if cs[i] == `'` {
 			mut word := ''
 			i++
-			for i < cs.len && cs[i] != `\'` {
+			for i < cs.len && cs[i] != `'` {
 				word += '${cs[i]}'
 				i++
 			}
@@ -123,7 +125,7 @@ fn tokenize(sql string) []Token {
 		}
 
 		// operators
-		multi := map{
+		multi := {
 			'<>': TokenKind.not_equals_operator
 			'>=': TokenKind.greater_than_or_equals_operator
 			'<=': TokenKind.less_than_or_equals_operator
@@ -137,7 +139,7 @@ fn tokenize(sql string) []Token {
 			}
 		}
 
-		single := map{
+		single := {
 			`(`: TokenKind.left_paren
 			`)`: TokenKind.right_paren
 			`*`: TokenKind.asterisk
@@ -149,6 +151,7 @@ fn tokenize(sql string) []Token {
 			`<`: TokenKind.less_than_operator
 			`=`: TokenKind.equals_operator
 			`>`: TokenKind.greater_than_operator
+			`.`: TokenKind.period
 		}
 		for op, tk in single {
 			if cs[i] == op {
@@ -158,7 +161,7 @@ fn tokenize(sql string) []Token {
 			}
 		}
 
-		// keyword or identifier
+		// keyword or regular identifier
 		mut word := ''
 		mut is_not_first := false
 		for i < cs.len && is_identifier_char(cs[i], is_not_first) {
@@ -172,48 +175,10 @@ fn tokenize(sql string) []Token {
 			continue
 		}
 
-		tokens << match word.to_upper() {
-			'AND' { Token{TokenKind.keyword_and, word} }
-			'AS' { Token{TokenKind.keyword_as, word} }
-			'BIGINT' { Token{TokenKind.keyword_bigint, word} }
-			'BOOLEAN' { Token{TokenKind.keyword_boolean, word} }
-			'CHAR' { Token{TokenKind.keyword_char, word} }
-			'CHARACTER' { Token{TokenKind.keyword_character, word} }
-			'CREATE' { Token{TokenKind.keyword_create, word} }
-			'DELETE' { Token{TokenKind.keyword_delete, word} }
-			'DOUBLE' { Token{TokenKind.keyword_double, word} }
-			'DROP' { Token{TokenKind.keyword_drop, word} }
-			'FALSE' { Token{TokenKind.keyword_false, word} }
-			'FETCH' { Token{TokenKind.keyword_fetch, word} }
-			'FIRST' { Token{TokenKind.keyword_first, word} }
-			'FLOAT' { Token{TokenKind.keyword_float, word} }
-			'FROM' { Token{TokenKind.keyword_from, word} }
-			'INSERT' { Token{TokenKind.keyword_insert, word} }
-			'INT' { Token{TokenKind.keyword_int, word} }
-			'INTEGER' { Token{TokenKind.keyword_integer, word} }
-			'INTO' { Token{TokenKind.keyword_into, word} }
-			'IS' { Token{TokenKind.keyword_is, word} }
-			'NOT' { Token{TokenKind.keyword_not, word} }
-			'NULL' { Token{TokenKind.keyword_null, word} }
-			'OFFSET' { Token{TokenKind.keyword_offset, word} }
-			'ONLY' { Token{TokenKind.keyword_only, word} }
-			'OR' { Token{TokenKind.keyword_or, word} }
-			'PRECISION' { Token{TokenKind.keyword_precision, word} }
-			'REAL' { Token{TokenKind.keyword_real, word} }
-			'ROW' { Token{TokenKind.keyword_row, word} }
-			'ROWS' { Token{TokenKind.keyword_rows, word} }
-			'SELECT' { Token{TokenKind.keyword_select, word} }
-			'SET' { Token{TokenKind.keyword_set, word} }
-			'SMALLINT' { Token{TokenKind.keyword_smallint, word} }
-			'TABLE' { Token{TokenKind.keyword_table, word} }
-			'TRUE' { Token{TokenKind.keyword_true, word} }
-			'UNKNOWN' { Token{TokenKind.keyword_unknown, word} }
-			'UPDATE' { Token{TokenKind.keyword_update, word} }
-			'VALUES' { Token{TokenKind.keyword_values, word} }
-			'VARCHAR' { Token{TokenKind.keyword_varchar, word} }
-			'VARYING' { Token{TokenKind.keyword_varying, word} }
-			'WHERE' { Token{TokenKind.keyword_where, word} }
-			else { Token{TokenKind.literal_identifier, word} }
+		tokens << if is_key_word(word) {
+			Token{TokenKind.keyword, word.to_upper()}
+		} else {
+			Token{TokenKind.literal_identifier, word}
 		}
 	}
 

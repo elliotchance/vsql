@@ -1,0 +1,618 @@
+/* This file describes the SQL grammar from the BNF rules defined in the SQL */
+/* 2016 standard. Unfortunatly, the standard is not open source and many of */
+/* the rules below are only partially  */
+
+<preparable statement> /* Stmt */ ::=
+    <preparable SQL data statement>
+  | <preparable SQL schema statement>
+
+<SQL schema statement> /* Stmt */ ::=
+    <SQL schema definition statement>
+  | <SQL schema manipulation statement>
+
+<SQL schema definition statement> /* Stmt */ ::=
+    <table definition>
+
+<SQL schema manipulation statement> /* Stmt */ ::=
+  <drop table statement>
+
+<drop table statement> /* Stmt */ ::=
+    DROP TABLE <table name>   -> drop_table_statement
+
+<table name> /* Identifier */ ::=
+    <local or schema qualified name>
+
+<local or schema qualified name> /* Identifier */ ::=
+    <qualified identifier>
+
+<qualified identifier> /* Identifier */ ::=
+    <identifier>
+
+<identifier> /* Identifier */ ::=
+    <actual identifier>
+
+<actual identifier> /* Identifier */ ::=
+    <regular identifier>
+
+<regular identifier> /* Identifier */ ::=
+    <identifier body>
+
+<identifier body> /* Identifier */ ::=
+    <identifier start>
+
+<identifier start> /* Identifier */ ::=
+    ^identifier
+
+<table definition> /* CreateTableStmt */ ::=
+    CREATE TABLE <table name> <table contents source> -> table_definition
+
+<table contents source> /* []Column */ ::=
+    <table element list>
+
+<table element list> /* []Column */ ::=
+    <left paren>
+    <table elements>
+    <right paren>      -> table_element_list
+
+<table elements> /* []Column */ ::=
+    <table element>                            -> table_elements1
+  | <table elements> <comma> <table element>   -> table_elements2
+
+<table element> /* Column */ ::=
+    <column definition>
+
+<column definition> /* Column */ ::=
+    <column name> <data type or domain name>   -> column_definition1
+  | <column name> <data type or domain name>
+    <column constraint definition>             -> column_definition2
+
+<column name> /* Identifier */ ::=
+    <identifier>
+
+<data type or domain name> /* Type */ ::=
+    <data type>
+
+<data type> /* Type */ ::=
+    <predefined type>
+
+<predefined type> /* Type */ ::=
+    <character string type>
+  | <numeric type>
+  | <boolean type>
+
+<character string type> /* Type */ ::=
+    CHARACTER                                                         -> character
+  | CHARACTER <left paren> <character length> <right paren>           -> character_n
+  | CHAR                                                              -> character
+  | CHAR <left paren> <character length> <right paren>                -> character_n
+  | CHARACTER VARYING <left paren> <character length> <right paren>   -> varchar
+  | CHAR VARYING <left paren> <character length> <right paren>        -> varchar
+  | VARCHAR <left paren> <character length> <right paren>             -> varchar
+
+<left paren> ::= "("
+
+<right paren> ::= ")"
+
+<character length> /* Value */ ::=
+    <length>
+
+<length> /* Value */ ::=
+    <unsigned integer>
+
+<unsigned integer> /* Value */ ::=
+    ^integer
+
+<comma> ::= ","
+
+<numeric type> /* Type */ ::=
+    <exact numeric type>
+  | <approximate numeric type>
+
+<exact numeric type> /* Type */ ::=
+    SMALLINT   -> smallint
+  | INTEGER    -> integer
+  | INT        -> integer
+  | BIGINT     -> bigint
+
+<approximate numeric type> /* Type */ ::=
+    FLOAT                                          -> float
+  | FLOAT <left paren> <precision> <right paren>   -> float_n
+  | REAL                                           -> real
+  | DOUBLE PRECISION                               -> double_precision
+
+<precision> /* Value */ ::=
+    <unsigned integer>
+
+<boolean type> /* Type */ ::=
+    BOOLEAN   -> boolean_type
+
+<null specification> /* Expr */ ::=
+    NULL   -> null
+
+<implicitly typed value specification> /* Expr */ ::=
+    <null specification>
+
+<contextually typed value specification> /* Expr */ ::=
+    <implicitly typed value specification>
+
+<contextually typed row value constructor> /* []Expr */ ::=
+    <common value expression>                        -> expr_to_list
+  | <boolean value expression>                       -> expr_to_list
+  | <contextually typed value specification>         -> expr_to_list
+  | <left paren> <contextually typed value specification>
+    <right paren>                                    -> expr_to_list
+  | <left paren>
+    <contextually typed row value constructor element> <comma>
+    <contextually typed row value constructor element list>
+    <right paren>                                    -> append_exprs2
+
+<contextually typed row value constructor element> /* Expr */ ::=
+    <value expression>
+  | <contextually typed value specification>
+
+<contextually typed row value constructor element list> /* []Expr */ ::=
+    <contextually typed row value constructor element>        -> expr_to_list
+  | <contextually typed row value constructor element list>
+    <comma>
+    <contextually typed row value constructor element>        -> append_exprs1
+
+<column constraint> /* bool */ ::=
+    NOT NULL   -> yes
+
+<column constraint definition> /* bool */ ::=
+    <column constraint>
+
+<delete statement: searched> /* Stmt */ ::=
+    DELETE FROM <target table>   -> delete_statement
+  | DELETE FROM <target table>
+    WHERE <search condition>     -> delete_statement_where
+
+<target table> /* Identifier */ ::=
+    <table name>
+
+<preparable SQL data statement> /* Stmt */ ::=
+    <delete statement: searched>
+  | <insert statement>
+  | <dynamic select statement>
+  | <update statement: searched>
+
+<preparable SQL schema statement> /* Stmt */ ::=
+    <SQL schema statement>
+
+<exact numeric literal> /* Value */ ::=
+    <unsigned integer>
+  | <unsigned integer> <period>                      -> value
+  | <unsigned integer> <period> <unsigned integer>   -> exact_numeric_literal1
+  | <period> <unsigned integer>                      -> exact_numeric_literal2
+
+<unsigned numeric literal> /* Value */ ::=
+    <exact numeric literal>
+
+<unsigned literal> /* Value */ ::=
+    <unsigned numeric literal>
+  | <general literal>
+
+<unsigned value specification> /* Value */ ::=
+    <unsigned literal>
+
+<nonparenthesized value expression primary> /* Expr */ ::=
+    <unsigned value specification>   -> value_to_expr
+  | <column reference>               -> identifier_to_expr
+  | <routine invocation>
+
+<value expression primary> /* Expr */ ::=
+    <parenthesized value expression>
+  | <nonparenthesized value expression primary>
+
+<numeric primary> /* Expr */ ::=
+    <value expression primary>
+  | <numeric value function>
+
+<factor> /* Expr */ ::=
+    <numeric primary>
+  | <sign> <numeric primary>   -> sign_expr
+
+<sign> /* string */ ::=
+    <plus sign>
+  | <minus sign>
+
+<plus sign> /* string */ ::=
+  "+"
+
+<minus sign> /* string */ ::=
+  "-"
+
+<term> /* Expr */ ::=
+    <factor>
+  | <term> <asterisk> <factor>   -> binary_expr
+  | <term> <solidus> <factor>    -> binary_expr
+
+<asterisk> /* string */ ::=
+  "*"
+
+<solidus> /* string */ ::=
+  "/"
+
+<numeric value expression> /* Expr */ ::=
+    <term>
+  | <numeric value expression> <plus sign> <term>    -> binary_expr
+  | <numeric value expression> <minus sign> <term>   -> binary_expr
+
+<common value expression> /* Expr */ ::=
+    <numeric value expression>
+  | <string value expression>
+
+<value expression> /* Expr */ ::=
+    <common value expression>
+  | <boolean value expression>
+
+<search condition> /* Expr */ ::=
+    <boolean value expression>
+
+<boolean value expression> /* Expr */ ::=
+    <boolean term>
+  | <boolean value expression> OR <boolean term>   -> or
+
+<boolean term> /* Expr */ ::=
+    <boolean factor>
+  | <boolean term> AND <boolean factor>   -> and
+
+<boolean factor> /* Expr */ ::=
+    <boolean test>
+  | NOT <boolean test>   -> not
+
+<boolean test> /* Expr */ ::=
+    <boolean primary>
+
+<boolean primary> /* Expr */ ::=
+    <predicate>
+  | <boolean predicand>
+
+<predicate> /* Expr */ ::=
+    <comparison predicate>
+  | <null predicate>
+
+<comparison predicate> /* Expr */ ::=
+    <row value predicand> <comparison predicate part 2>   -> comparison
+
+<row value predicand> /* Expr */ ::=
+  <row value constructor predicand>
+
+<row value constructor predicand> /* Expr */ ::=
+    <common value expression>
+  | <boolean predicand>
+
+<comparison predicate part 2> /* ComparisonPredicatePart2 */ ::=
+    <comp op> <row value predicand>   -> comparison_part
+
+<comp op> /* string */ ::=
+    <equals operator>
+  | <not equals operator>
+  | <less than operator>
+  | <greater than operator>
+  | <less than or equals operator>
+  | <greater than or equals operator>
+
+<equals operator> ::= "="
+
+<not equals operator> ::= "<>"
+
+<less than operator> ::= "<"
+
+<greater than operator> ::= ">"
+
+<less than or equals operator> ::= "<="
+
+<greater than or equals operator> ::= ">="
+
+<period> ::= "."
+
+<column reference> /* Identifier */ ::=
+    <basic identifier chain>
+
+<basic identifier chain> /* Identifier */ ::=
+    <identifier chain>
+
+<identifier chain> /* Identifier */ ::=
+    <identifier>
+
+<insert statement> /* Stmt */ ::=
+    INSERT INTO
+    <insertion target>
+    <insert columns and source>   -> insert_statement
+
+<insertion target> /* Identifier */ ::=
+    <table name>
+
+<insert columns and source> /* InsertStmt */ ::=
+  <from constructor>
+
+<from constructor> /* InsertStmt */ ::=
+    <left paren> <insert column list> <right paren>
+    <contextually typed table value constructor>   -> from_constructor
+
+<insert column list> /* []Identifier */ ::=
+    <column name list>
+
+<column name list> /* []Identifier */ ::=
+    <column name>                              -> column_name_list1
+  | <column name list> <comma> <column name>   -> column_name_list2
+
+<contextually typed table value constructor> /* []Expr */ ::=
+    VALUES <contextually typed row value expression list>   -> exprs
+
+<contextually typed row value expression list> /* []Expr */ ::=
+    <contextually typed row value expression>
+  | <contextually typed row value expression list> <comma>
+    <contextually typed row value expression>                -> merge_expr_lists
+
+<contextually typed row value expression> /* []Expr */ ::=
+  <contextually typed row value constructor>
+
+<parenthesized value expression> /* Expr */ ::=
+    <left paren> <value expression> <right paren>   -> expr
+
+<character string literal> /* Value */ ::=
+    ^string
+
+<general literal> /* Value */ ::=
+    <character string literal>
+  | <boolean literal>
+
+<boolean literal> /* Value */ ::=
+    TRUE      -> true
+  | FALSE     -> false
+  | UNKNOWN   -> unknown
+
+<update statement: searched> /* Stmt */ ::=
+    UPDATE <target table>
+    SET <set clause list>      -> update_statement
+  | UPDATE <target table>
+    SET <set clause list>
+    WHERE <search condition>   -> update_statement_where
+
+<set clause list> /* map[string]Expr */ ::=
+    <set clause>
+  | <set clause list> <comma> <set clause>   -> set_clause_append
+
+<set clause> /* map[string]Expr */ ::=
+  <set target> <equals operator> <update source>   -> set_clause
+
+<set target> /* Identifier */ ::=
+    <update target>
+
+<update target> /* Identifier */ ::=
+    <object column>
+
+<object column> /* Identifier */ ::=
+    <column name>
+
+<update source> /* Expr */ ::=
+    <value expression>
+  | <contextually typed value specification>
+
+<dynamic select statement> /* Stmt */ ::=
+    <cursor specification>
+
+<cursor specification> /* Stmt */ ::=
+    <query expression>
+
+<query expression> /* Stmt */ ::=
+    <query expression body>   -> query_expression
+  | <query expression body>
+    <result offset clause>    -> query_expression_offset
+  | <query expression body>
+    <fetch first clause>      -> query_expression_fetch
+  | <query expression body>
+    <result offset clause>
+    <fetch first clause>      -> query_expression_offset_fetch
+
+<query expression body> /* SelectStmt */ ::=
+    <query term>
+
+<query term> /* SelectStmt */ ::=
+    <query primary>
+
+<query primary> /* SelectStmt */ ::=
+    <simple table>
+
+<simple table> /* SelectStmt */ ::=
+    <query specification>
+
+<query specification> /* SelectStmt */ ::=
+    SELECT
+    <select list>
+    <table expression> -> query_specification
+
+<select list> /* SelectList */ ::=
+    <asterisk>                               -> asterisk
+  | <select sublist>
+  | <select list> <comma> <select sublist>   -> select_list2
+
+<select sublist> /* SelectList */ ::=
+    <derived column>   -> select_sublist
+
+<derived column> /* DerivedColumn */ ::=
+    <value expression>               -> derived_column
+  | <value expression> <as clause>   -> derived_column_as
+
+<table expression> /* TableExpression */ ::=
+    <from clause>                  -> table_expression
+  | <from clause> <where clause>   -> table_expression_where
+
+<from clause> /* Identifier */ ::=
+    FROM <table reference list>   -> from_clause
+
+<table reference list> /* Identifier */ ::=
+    <table reference>
+
+<table reference> /* Identifier */ ::=
+    <table factor>
+
+<table factor> /* Identifier */ ::=
+    <table primary>
+
+<table primary> /* Identifier */ ::=
+    <table or query name>
+
+<table or query name> /* Identifier */ ::=
+    <table name>
+
+<as clause> /* Identifier */ ::=
+    AS <column name>   -> identifier
+  | <column name>
+
+<where clause> /* Expr */ ::=
+    WHERE <search condition>   -> expr
+
+<null predicate part 2> /* bool */ ::=
+    IS NULL       -> yes
+  | IS NOT NULL   -> no
+
+<null predicate> /* Expr */ ::=
+    <row value predicand> <null predicate part 2>   -> null_predicate
+
+<absolute value expression> /* Expr */ ::=
+    ABS <left paren> <numeric value expression> <right paren>   -> abs
+
+<numeric value function> /* Expr */ ::=
+    <absolute value expression>
+  | <modulus expression>
+  | <trigonometric function>
+  | <common logarithm>
+  | <natural logarithm>
+  | <exponential function>
+  | <power function>
+  | <square root>
+  | <floor function>
+  | <ceiling function>
+
+<modulus expression> /* Expr */ ::=
+    MOD <left paren> <numeric value expression dividend> <comma> 
+    <numeric value expression divisor> <right paren>               -> mod
+
+<numeric value expression dividend> /* Expr */ ::=
+    <numeric value expression>
+
+<numeric value expression divisor> /* Expr */ ::=
+    <numeric value expression>
+
+<trigonometric function> /* Expr */ ::=
+    <trigonometric function name>
+    <left paren> <numeric value expression> 
+    <right paren>                             -> trig_func
+
+<trigonometric function name> /* string */ ::=
+    SIN
+  | COS
+  | TAN
+  | SINH
+  | COSH
+  | TANH
+  | ASIN
+  | ACOS
+  | ATAN
+
+<common logarithm> /* Expr */ ::=
+    LOG10 <left paren> <numeric value expression> <right paren>   -> log10
+
+<natural logarithm> /* Expr */ ::=
+    LN <left paren> <numeric value expression> <right paren>   -> ln
+
+<exponential function> /* Expr */ ::=
+    EXP <left paren> <numeric value expression> <right paren>   -> exp
+
+<power function> /* Expr */ ::=
+    POWER <left paren> <numeric value expression base> <comma> 
+    <numeric value expression exponent> <right paren>            -> power
+
+<numeric value expression base> /* Expr */ ::=
+    <numeric value expression>
+
+<numeric value expression exponent> /* Expr */ ::=
+    <numeric value expression>
+
+<square root> /* Expr */ ::=
+    SQRT <left paren> <numeric value expression> <right paren>   -> sqrt
+
+<floor function> /* Expr */ ::=
+    FLOOR <left paren> <numeric value expression> <right paren>   -> floor
+
+<ceiling function> /* Expr */ ::=
+    CEIL <left paren> <numeric value expression> <right paren>      -> ceiling
+  | CEILING <left paren> <numeric value expression> <right paren>   -> ceiling
+
+<concatenation> /* Expr */ ::=
+    <character value expression>
+    <concatenation operator>
+    <character factor>             -> concatenation
+
+<character value expression> /* Expr */ ::=
+    <concatenation>
+  | <character factor>
+
+<concatenation operator> ::= "||"
+
+<character factor> /* Expr */ ::=
+    <character primary>
+
+<character primary> /* Expr */ ::=
+    <value expression primary>
+
+<string value expression> /* Expr */ ::=
+    <character value expression>
+
+<boolean predicand> /* Expr */ ::=
+    <parenthesized boolean value expression>
+  | <nonparenthesized value expression primary>
+
+<parenthesized boolean value expression> /* Expr */ ::=
+    <left paren> <boolean value expression> <right paren>   -> expr
+
+<result offset clause> /* Expr */ ::=
+    OFFSET <offset row count> <row or rows>   -> expr
+
+<offset row count> /* Expr */ ::=
+    <simple value specification>
+
+<simple value specification> /* Expr */ ::=
+    <literal>
+
+<literal> /* Expr */ ::=
+    <signed numeric literal>
+  | <general literal>          -> value_to_expr
+
+<signed numeric literal> /* Expr */ ::=
+    <unsigned numeric literal>          -> value_to_expr
+  | <sign> <unsigned numeric literal>   -> sign_expr
+
+<fetch first clause> /* Expr */ ::=
+    FETCH FIRST
+    <fetch first quantity>
+    <row or rows>
+    ONLY                     -> fetch_first_clause
+
+<row or rows> ::=
+    ROW
+  | ROWS
+
+<fetch first quantity> /* Expr */ ::=
+    <fetch first row count>
+
+<fetch first row count> /* Expr */ ::=
+    <simple value specification>
+
+<routine invocation> /* Expr */ ::=
+    <routine name> <SQL argument list>   -> routine_invocation
+
+<routine name> /* Identifier */ ::=
+    <qualified identifier>
+
+<SQL argument list> /* []Expr */ ::=
+    <left paren> <right paren>                  -> empty_exprs
+  | <left paren> <SQL argument> <right paren>   -> expr_to_list
+  | <left paren> <SQL argument list> <comma>
+    <SQL argument> <right paren>                -> append_exprs1
+
+<SQL argument> /* Expr */ ::=
+    <value expression>

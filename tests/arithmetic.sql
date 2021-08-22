@@ -1,38 +1,42 @@
-SELECT 1 + 2;
+/* setup */
+CREATE TABLE t1 (x INT);
+INSERT INTO t1 (x) VALUES (0);
+
+SELECT 1 + 2 FROM t1;
 -- COL1: 3
 
-SELECT 1 - 2;
+SELECT 1 - 2 FROM t1;
 -- COL1: -1
 
-SELECT 2 * 3;
+SELECT 2 * 3 FROM t1;
 -- COL1: 6
 
-SELECT 6 / 2;
+SELECT 6 / 2 FROM t1;
 -- COL1: 3
 
-SELECT 1.2 + 2.4;
+SELECT 1.2 + 2.4 FROM t1;
 -- COL1: 3.6
 
-SELECT 1.7 - 0.5;
+SELECT 1.7 - 0.5 FROM t1;
 -- COL1: 1.2
 
-SELECT 2.2 * 3.3;
+SELECT 2.2 * 3.3 FROM t1;
 -- COL1: 7.26
 
-SELECT 6 / 2.5;
+SELECT 6 / 2.5 FROM t1;
 -- COL1: 2.4
 
-SELECT 0 / 2.5;
+SELECT 0 / 2.5 FROM t1;
 -- COL1: 0
 
-SELECT 2.5 / 0;
+SELECT 2.5 / 0 FROM t1;
 -- error 22012: division by zero
 
-SELECT -123;
+SELECT -123 FROM t1;
 -- COL1: -123
 
-SELECT +1.23;
+SELECT +1.23 FROM t1;
 -- COL1: 1.23
 
-SELECT 1.5 + 2.4 * 7;
+SELECT 1.5 + 2.4 * 7 FROM t1;
 -- COL1: 18.3

@@ -15,7 +15,7 @@ fn (mut c Connection) update(stmt UpdateStmt) ?Result {
 	for k, v in stmt.set {
 		column_name := identifier_name(k)
 		table_column := table.column(column_name) ?
-		value := cast('for column $column_name', v, table_column.typ) ?
+		value := cast('for column $column_name', v as Value, table_column.typ) ?
 
 		if table_column.not_null && value.typ.typ == .is_null {
 			return sqlstate_23502('column $column_name')
@@ -40,13 +40,13 @@ fn (mut c Connection) update(stmt UpdateStmt) ?Result {
 				column_name := identifier_name(k)
 				table_column := table.column(column_name) ?
 
-				if row.data[column_name] != v {
+				if row.data[column_name] != (v as Value) {
 					did_modify = true
 
 					// msg ignored here becuase the type have already been
 					// checked above.
-					row.data[column_name] = cast('', v, table_column.typ) ?
-					new_row.data[column_name] = cast('', v, table_column.typ) ?
+					row.data[column_name] = cast('', v as Value, table_column.typ) ?
+					new_row.data[column_name] = cast('', v as Value, table_column.typ) ?
 				}
 			}
 

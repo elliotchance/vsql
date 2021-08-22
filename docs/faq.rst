@@ -31,3 +31,21 @@ not part of the SQL standard. The standard way to perform these are:
 1. ``OFFSET 5 ROWS`` skips the first 5 rows.
 2. ``FETCH FIRST 3 ROWS ONLY`` will return a maximum of 3 rows (equivilent to ``LIMIT 3``).
 3. ``OFFSET 1 ROW FETCH FIRST 5 ROWS ONLY`` will skip the first row and return a maximum of 5 rows.
+
+Where can I find the SQL standard?
+----------------------------------
+
+The SQL standard is not free. However, you can find older versions publically
+available and these will be close enough to use as a reference:
+
+1. [SQL 2016 Foundation Grammar (BNF)](https://jakewheat.github.io/sql-overview/sql-2016-foundation-grammar.html)
+2. [SQL 1999](https://crate.io/docs/sql-99/en/latest//)
+
+Wait! You said this is pure V but I see a Python file?
+------------------------------------------------------
+
+The python file ``generate-grammar.py`` is used to convert the BNF grammar into
+V code that makes up the parser. The result file ``grammar.v`` is committed so
+there is no need to use python to compile and otherwise work on vsql unless you
+need to change the grammar. However, if you would like to covert this script to
+V, I'd be happy to have your help!

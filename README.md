@@ -23,6 +23,7 @@ no dependencies.
   - [Keywords](https://github.com/elliotchance/vsql/blob/main/docs/keywords.rst)
   - [Operators](https://github.com/elliotchance/vsql/blob/main/docs/operators.rst)
   - [SQLSTATE (Errors)](https://github.com/elliotchance/vsql/blob/main/docs/sqlstate.rst)
+- [Development](https://github.com/elliotchance/vsql/blob/main/docs/development.rst)
 - [Testing](#testing)
 
 Usage
@@ -43,16 +44,16 @@ fn example() ? {
     mut db := vsql.open('test.vsql') ?
 
     // All SQL commands use query():
-    db.query('CREATE TABLE foo (a DOUBLE PRECISION)') ?
-    db.query('INSERT INTO foo (a) VALUES (1.23)') ?
-    db.query('INSERT INTO foo (a) VALUES (4.56)') ?
+    db.query('CREATE TABLE foo (x DOUBLE PRECISION)') ?
+    db.query('INSERT INTO foo (x) VALUES (1.23)') ?
+    db.query('INSERT INTO foo (x) VALUES (4.56)') ?
 
     // Iterate through a result:
     result := db.query('SELECT * FROM foo') ?
     println(result.columns)
 
     for row in result {
-        println(row.get_f64('A') ?)
+        println(row.get_f64('X') ?)
     }
 
     // See SQLSTATE (Errors) below for more examples.
@@ -128,19 +129,19 @@ You can create custom functions to use in expressions:
 ```v
 // no_pennies will round to 0.05 denominations.
 db.register_function('no_pennies(float) float', fn (a []vsql.Value) ?vsql.Value {
-    amount := math.round(a[0].f64_value / 0.05) * 0.05
-    return vsql.new_double_precision_value(amount)
+  amount := math.round(a[0].f64_value / 0.05) * 0.05
+  return vsql.new_double_precision_value(amount)
 }) ?
 
-db.query('CREATE TABLE products (name VARCHAR(100), price FLOAT)') ?
-db.query("INSERT INTO products (name, price) VALUES ('Ice Cream', 5.99)") ?
-db.query("INSERT INTO products (name, price) VALUES ('Ham Sandwhich', 3.47)") ?
-db.query("INSERT INTO products (name, price) VALUES ('Bagel', 1.25)") ?
+db.query('CREATE TABLE products (product_name VARCHAR(100), price FLOAT)') ?
+db.query("INSERT INTO products (product_name, price) VALUES ('Ice Cream', 5.99)") ?
+db.query("INSERT INTO products (product_name, price) VALUES ('Ham Sandwhich', 3.47)") ?
+db.query("INSERT INTO products (product_name, price) VALUES ('Bagel', 1.25)") ?
 
-result := db.query('SELECT name, no_pennies(price) as total FROM products') ?
+result := db.query('SELECT product_name, no_pennies(price) as total FROM products') ?
 for row in result {
-    total := row.get_f64('TOTAL') ?
-    println('${row.get_string('NAME') ?} $${total:.2f}')
+  total := row.get_f64('TOTAL') ?
+  println('${row.get_string('PRODUCT_NAME') ?} $${total:.2f}')
 }
 ```
 
@@ -156,16 +157,17 @@ separated by an empty line:
 
 ```sql
 /* setup */
-CREATE TABLE t (x FLOAT);
+CREATE TABLE t1 (x FLOAT);
+INSERT INTO t1 (x) VALUES (0);
 
-SELECT 1;
+SELECT 1 FROM t1;
 SELECT *
 FROM foo;
 -- COL1: 1
 -- error 42P01: no such table: FOO
 
-SELECT 2;
-SELECT 3;
+SELECT 2 FROM t1;
+SELECT 3 FROM t1;
 -- COL1: 2
 -- COL1: 3
 ```

@@ -1,4 +1,5 @@
 import re
+import sys
 
 # type RuleOrString = EarleyRule | string
 
@@ -512,3 +513,7 @@ def parse_tree(text):
 # parse_tree("SELECT * FROM t OFFSET 0 ROWS")
 # parse_tree("SELECT * FROM t FETCH FIRST 1 ROW ONLY")
 # parse_tree("SELECT product_name , no_pennies ( price ) AS total FROM products")
+
+for arg in sys.argv[1:]:
+    print(arg)
+    parse_tree(arg)

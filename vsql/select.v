@@ -7,14 +7,28 @@ fn (mut c Connection) query_select(stmt SelectStmt) ?Result {
 	mut all_rows := []Row{}
 	mut exprs := stmt.exprs
 
-	if stmt.from == '' {
-		all_rows = [Row{}]
-	} else {
-		table_name := identifier_name(stmt.from)
+	table_name := identifier_name(stmt.from)
 
-		if table_name !in c.storage.tables {
-			return sqlstate_42p01(table_name)
+	// Check virtual table first.
+	if table_name in c.virtual_tables {
+		mut t := c.virtual_tables[table_name]
+		t.reset()
+		for !t.is_done {
+			t.data(mut t) ?
 		}
+		all_rows = t.rows
+
+		if exprs is AsteriskExpr {
+			mut new_exprs := []DerivedColumn{}
+			for col in t.create_table_stmt.columns {
+				new_exprs << DerivedColumn{Identifier{col.name}, Identifier{col.name}}
+			}
+
+			exprs = new_exprs
+		}
+	}
+	// Now check for a regular table.
+	else if table_name in c.storage.tables {
 		table := c.storage.tables[table_name]
 
 		if exprs is AsteriskExpr {
@@ -34,6 +48,8 @@ fn (mut c Connection) query_select(stmt SelectStmt) ?Result {
 		} else {
 			all_rows = where(c, all_rows, false, stmt.where, stmt.fetch) ?
 		}
+	} else {
+		return sqlstate_42p01(table_name)
 	}
 
 	// Transform into expressions.

@@ -20,18 +20,20 @@ Generally speaking, the connection details are:
 .. contents::
 
 Command Line
-------------
+============
 
-### psql
+psql
+----
 
 The official PostgreSQL command line client is **not supported**. There seems to
 be a timeout when connecting. See
 `the ticket here <https://github.com/elliotchance/vsql/issues/29>`_.
 
 GUI Applications
-----------------
+================
 
-### TablePlus
+TablePlus
+---------
 
 TablePlus is supported using the following connection options:
 
@@ -43,15 +45,17 @@ TablePlus is supported using the following connection options:
 - SSL mode: DISABLED
 
 VSCode
-------
+======
 
-### PostgreSQL (ckolkman.vscode-postgres)
+PostgreSQL (ckolkman.vscode-postgres)
+-------------------------------------
 
 This extension is **not supported** because it executes several complex queries.
 You can view some
 `sample queries here <https://gist.github.com/elliotchance/257951d705132134b882258c83297dd6>`_.
 
-### SQLTools (mtxr.sqltools)
+SQLTools (mtxr.sqltools)
+------------------------
 
 This is extension is supported. There are some queries executed that are not
 compatible, but this doesn't block the connection or execution of custom

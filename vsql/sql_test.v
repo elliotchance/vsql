@@ -69,6 +69,8 @@ fn test_all() ? {
 
 		mut db := open(path) ?
 
+		register_pg_functions(mut db) ?
+
 		for stmt in test.setup {
 			db.query(stmt) ?
 		}

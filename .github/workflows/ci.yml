@@ -31,16 +31,14 @@ jobs:
 
     - name: Build macOS binaries
       run: |
-        v -prod vsql-cli.v
-        v -prod vsql-server.v
-        zip vsql-macos.zip vsql-cli vsql-server
+        v -prod cmd/vsql.v
+        zip -j vsql-macos.zip cmd/vsql
 
     # See https://github.com/vlang/v/issues/10992
     #- name: Build linux binaries
     #  run: |
-    #    v -os linux -prod vsql-cli.v
-    #    v -os linux -prod vsql-server.v
-    #    zip vsql-linux.zip vsql-cli vsql-server
+    #    v -os linux -prod cmd/vsql.v
+    #    zip -j vsql-linux.zip cmd/vsql
 
     # Cross compiling for windows takes a long time because mingw-w64 has to be
     # installed. So we only run this when we're doing a release.
@@ -48,9 +46,8 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       run: |
         brew install mingw-w64
-        v -os windows -prod vsql-cli.v
-        v -os windows -prod vsql-server.v
-        zip vsql-windows.zip vsql-cli.exe vsql-server.exe
+        v -os windows -prod cmd/vsql.v
+        zip -j vsql-windows.zip cmd/vsql.exe
 
     - name: Release
       uses: softprops/action-gh-release@v1

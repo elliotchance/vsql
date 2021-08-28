@@ -6,20 +6,26 @@ import time
 import vsql
 
 fn main() {
-	mut app := cli.Command{
+	mut cmd := cli.Command{
 		name: 'vsql'
 		description: 'vsql is a single-file SQL database written in V'
-		execute: main_command
+		execute: cli_command
 	}
-	app.setup()
-	app.parse(os.args)
+
+	mut server_cmd := cli.Command{
+		name: 'server'
+		description: 'Run as a server for PostgreSQL clients'
+		usage: '<file>'
+		required_args: 1
+		execute: server_command
+	}
+	cmd.add_command(server_cmd)
+
+	cmd.setup()
+	cmd.parse(os.args)
 }
 
-fn main_command(cmd cli.Command) ? {
-	if cmd.args.len != 1 {
-		return error('usage: vsql file.vsql')
-	}
-
+fn cli_command(cmd cli.Command) ? {
 	mut db := vsql.open(cmd.args[0]) ?
 	for {
 		print('vsql> ')
@@ -40,4 +46,11 @@ fn main_command(cmd cli.Command) ? {
 		println('$result.rows.len ${vsql.pluralize(result.rows.len, 'row')} (${time.ticks() - start} ms)')
 		println('')
 	}
+}
+
+fn server_command(cmd cli.Command) {
+	// TODO(elliotchance): Make port a CLI option.
+	mut server := vsql.new_server(cmd.args[0], 3210)
+
+	server.start() or { panic(err) }
 }

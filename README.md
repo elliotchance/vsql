@@ -77,7 +77,7 @@ You can find the documentation for a
 You can also work with database files through the CLI (ctrl+c to exit):
 
 ```
-$ ./vsql-cli test.vsql
+$ vsql test.vsql
 vsql> select * from foo
 A: 1234 
 1 row (1 ms)
@@ -94,7 +94,7 @@ source with:
 
 ```sh
 v install elliotchance.vsql
-v ~/.vmodules/elliotchance/vsql/vsql-cli.v
+v ~/.vmodules/elliotchance/vsql/cmd/vsql.v
 ```
 
 ### Server
@@ -102,10 +102,13 @@ v ~/.vmodules/elliotchance/vsql/vsql-cli.v
 vsql can be run as a server and any PostgreSQL-compatible driver can access it.
 This is ideal if you want to use a more familar or feature rich database client.
 
+See the
+[list of supported clients here](https://github.com/elliotchance/vsql/blob/main/docs/supported-clients.rst).
+
 Now run it with (if the file does not exist it will be created):
 
 ```sh
-$ ./vsql-server mydb.vsql
+$ vsql server mydb.vsql
 ready on 127.0.0.1:3210
 ```
 
@@ -120,7 +123,7 @@ source with:
 
 ```sh
 v install elliotchance.vsql
-v ~/.vmodules/elliotchance/vsql/vsql-server.v
+v ~/.vmodules/elliotchance/vsql/cmd/vsql.v
 ```
 
 ### Custom Functions

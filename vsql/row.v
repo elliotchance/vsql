@@ -9,6 +9,12 @@ mut:
 	data   map[string]Value
 }
 
+pub fn new_row(data map[string]Value) Row {
+	return Row{
+		data: data
+	}
+}
+
 // get_null will return true if the column name is NULL. An error will be
 // returned if the column does not exist.
 pub fn (r Row) get_null(name string) ?bool {

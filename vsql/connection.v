@@ -5,8 +5,9 @@ module vsql
 
 struct Connection {
 mut:
-	storage FileStorage
-	funcs   map[string]Func
+	storage        FileStorage
+	funcs          map[string]Func
+	virtual_tables map[string]VirtualTable
 }
 
 pub fn open(path string) ?Connection {
@@ -58,4 +59,21 @@ pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) 
 	}
 
 	c.register_func(Func{function_name, arg_types, func}) ?
+}
+
+pub fn (mut c Connection) register_virtual_table(create_table string, data fn (mut t VirtualTable)) ? {
+	stmt := parse(create_table) ?
+
+	if stmt is CreateTableStmt {
+		table_name := identifier_name(stmt.table_name)
+		c.virtual_tables[table_name] = VirtualTable{
+			create_table_sql: create_table
+			create_table_stmt: stmt
+			data: data
+		}
+
+		return
+	}
+
+	return error('must provide a CREATE TABLE statement')
 }

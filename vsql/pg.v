@@ -88,7 +88,20 @@ fn (mut c PGConn) read_startup_message() ? {
 	// We read the version, but we don't enforce it. Let's hope the client is
 	// using a client that know how to talk to PostgreSQL 7.4+. Use "<< 16" to
 	// get the significant part of the version.
-	c.read_int32() ?
+	version := c.read_int32() ?
+
+	// This is a magic number for SSLRequest message type (instead of a
+	// StartupMessage).
+	if version == 80877103 {
+		// The server then responds with a single byte containing S or N,
+		// indicating that it is willing or unwilling to perform SSL,
+		// respectively.
+		c.write_byte(`N`) ?
+
+		// It will then expect a StartupMessage.
+		c.read_startup_message() ?
+		return
+	}
 
 	// Read all the key/value pairs, such as user, database, etc. A zero byte is
 	// required after the last pair (hence the - 1).

@@ -19,6 +19,18 @@ fn main() {
 		required_args: 1
 		execute: server_command
 	}
+	server_cmd.add_flag(cli.Flag{
+		flag: .bool
+		name: 'verbose'
+		abbrev: 'v'
+		description: 'Verbose (show all messages in and out of the server)'
+	})
+	server_cmd.add_flag(cli.Flag{
+		flag: .int
+		name: 'port'
+		abbrev: 'p'
+		description: 'Port number (default 3210)'
+	})
 	cmd.add_command(server_cmd)
 
 	cmd.setup()
@@ -49,8 +61,17 @@ fn cli_command(cmd cli.Command) ? {
 }
 
 fn server_command(cmd cli.Command) {
+	mut port := cmd.flags.get_int('port') or { 0 }
+	if port == 0 {
+		port = 3210
+	}
+
 	// TODO(elliotchance): Make port a CLI option.
-	mut server := vsql.new_server(cmd.args[0], 3210)
+	mut server := vsql.new_server(vsql.ServerOptions{
+		db_file: cmd.args[0]
+		port: port
+		verbose: cmd.flags.get_bool('verbose') or { false }
+	})
 
 	server.start() or { panic(err) }
 }

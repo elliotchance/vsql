@@ -6,18 +6,23 @@ module vsql
 import net
 
 struct Server {
-	db_file string
-	port    int
+	options ServerOptions
 mut:
 	db Connection
 }
 
-pub fn new_server(db_file string, port int) Server {
-	return Server{db_file, port, Connection{}}
+pub struct ServerOptions {
+	db_file string
+	port    int
+	verbose bool
+}
+
+pub fn new_server(options ServerOptions) Server {
+	return Server{options, Connection{}}
 }
 
 pub fn (mut s Server) start() ? {
-	s.db = open(s.db_file) or { panic('cannot open database: $err') }
+	s.db = open(s.options.db_file) or { panic('cannot open database: $err') }
 
 	// There are multiple compatibility changes we need to make during the
 	// connection. A missing "FROM" clause is valid in PostgreSQL, but it's not
@@ -38,17 +43,17 @@ pub fn (mut s Server) start() ? {
 	register_pg_functions(mut s.db) ?
 	register_pg_virtual_tables(mut s.db) ?
 
-	mut listener := net.listen_tcp(.ip6, ':$s.port') or {
-		return error('cannot listen on :$s.port: $err')
+	mut listener := net.listen_tcp(.ip6, ':$s.options.port') or {
+		return error('cannot listen on :$s.options.port: $err')
 	}
-	println('ready on 127.0.0.1:$s.port')
+	s.log('ready on 127.0.0.1:$s.options.port')
 
 	mut client_id := 0
 	for {
 		client_id++
 
 		mut conn := listener.accept() or {
-			println(err)
+			s.log('$err')
 			continue
 		}
 
@@ -56,11 +61,17 @@ pub fn (mut s Server) start() ? {
 	}
 }
 
+fn (mut s Server) log(message string) {
+	if s.options.verbose {
+		println(message)
+	}
+}
+
 fn (mut s Server) handle_conn(mut c net.TcpConn) ? {
 	mut conn := new_pg_conn(c)
 
 	conn.accept() ?
-	println('connected')
+	s.log('connected')
 
 	for {
 		msg_type := conn.read_byte() ?
@@ -78,26 +89,26 @@ fn (mut s Server) handle_conn(mut c net.TcpConn) ? {
 					query = query.trim('; ') + ' FROM singlerow;'
 				}
 
-				println('query: $query')
+				s.log('query: $query')
 
 				mut did_error := false
 				result := s.db.query(query) or {
 					did_error = true
-					println('error: $err')
+					s.log('error: $err')
 
 					conn.write_error_result(err) ?
 					new_result([]string{}, []Row{}) // not used
 				}
 
 				if !did_error {
-					println('response: $result')
+					s.log('response: $result')
 					conn.write_result(result) ?
 				}
 
 				conn.write_ready_for_query() ?
 			}
 			`X` /* Terminate */ {
-				// Don't both consuming the message since we're going to
+				// Don't bother consuming the message since we're going to
 				// disconnect anyway.
 				break
 			}
@@ -108,5 +119,5 @@ fn (mut s Server) handle_conn(mut c net.TcpConn) ? {
 	}
 
 	conn.close() ?
-	println('disconnected')
+	s.log('disconnected')
 }

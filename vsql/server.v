@@ -89,6 +89,10 @@ fn (mut s Server) handle_conn(mut c net.TcpConn) ? {
 					query = query.trim('; ') + ' FROM singlerow;'
 				}
 
+				if query_upper.contains('COUNT') {
+					query = 'SELECT x as "COUNT(*)" FROM singlerow;'
+				}
+
 				s.log('query: $query')
 
 				mut did_error := false

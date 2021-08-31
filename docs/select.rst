@@ -12,7 +12,7 @@ Syntax
 .. code-block:: txt
 
   SELECT <expression> [ AS <name> ] , ...
-  [ FROM <table_name> ]
+  FROM <table_name>
   [ WHERE <condition> ]
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH FIRST <integer> { ROW | ROWS } ONLY ]
@@ -25,12 +25,6 @@ For each *expression*, the naming convention follows:
 1. If ``name`` is provided, that will be used.
 2. If ``expression`` refered to a column, the column name will be used.
 3. Otherwise, the name ``COL<number>`` will be used where *number* is the position of the column (starting at 1).
-  
-FROM
-----
-
-If ``FROM`` is not provided, the result will always be one row containing the
-result of the expressions.
 
 WHERE
 -----

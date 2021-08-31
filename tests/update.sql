@@ -49,3 +49,21 @@ UPDATE foo SET baz = NULL;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- error 23502: violates non-null constraint: column BAZ
+
+CREATE TABLE foo (baz FLOAT);
+INSERT INTO foo (baz) VALUES (-123);
+UPDATE foo SET baz = -223 * 4.2;
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- BAZ: -936.6
+
+CREATE TABLE foo (baz FLOAT);
+INSERT INTO foo (baz) VALUES (-123);
+UPDATE foo SET baz = baz * 4.2;
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- BAZ: -516.6

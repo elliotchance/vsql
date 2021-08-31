@@ -12,10 +12,12 @@ fn (mut c Connection) update(stmt UpdateStmt) ?Result {
 	table := c.storage.tables[table_name]
 
 	// check values are appropriate for the table before beginning
+	empty_row := new_empty_row(table.columns)
 	for k, v in stmt.set {
 		column_name := identifier_name(k)
 		table_column := table.column(column_name) ?
-		value := cast('for column $column_name', v as Value, table_column.typ) ?
+		raw_value := eval_as_value(c, empty_row, v) ?
+		value := cast('for column $column_name', raw_value, table_column.typ) ?
 
 		if table_column.not_null && value.typ.typ == .is_null {
 			return sqlstate_23502('column $column_name')
@@ -39,14 +41,15 @@ fn (mut c Connection) update(stmt UpdateStmt) ?Result {
 			for k, v in stmt.set {
 				column_name := identifier_name(k)
 				table_column := table.column(column_name) ?
+				raw_value := eval_as_value(c, row, v) ?
 
-				if row.data[column_name] != (v as Value) {
+				if row.data[column_name] != raw_value {
 					did_modify = true
 
 					// msg ignored here becuase the type have already been
 					// checked above.
-					row.data[column_name] = cast('', v as Value, table_column.typ) ?
-					new_row.data[column_name] = cast('', v as Value, table_column.typ) ?
+					row.data[column_name] = cast('', raw_value, table_column.typ) ?
+					new_row.data[column_name] = cast('', raw_value, table_column.typ) ?
 				}
 			}
 

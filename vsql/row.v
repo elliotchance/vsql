@@ -87,3 +87,30 @@ fn (r Row) get(name string) ?Value {
 		return error('no such column $name')
 	}
 }
+
+// new_empty_row is used internally to generate a row with zero values for all
+// the types in a Row. This is used for testing expressions without needing the
+// actual row.
+fn new_empty_row(columns []Column) Row {
+	mut r := Row{}
+	for col in columns {
+		mut v := Value{}
+		match col.typ.typ {
+			.is_null {
+				v = new_null_value()
+			}
+			.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint {
+				v = new_double_precision_value(0)
+			}
+			.is_boolean {
+				v = new_boolean_value(false)
+			}
+			.is_character, .is_varchar {
+				v = new_varchar_value('', 0)
+			}
+		}
+		r.data[col.name] = v
+	}
+
+	return r
+}

@@ -24,7 +24,8 @@ fn (mut c Connection) insert(stmt InsertStmt) ?Result {
 	for i, column in stmt.columns {
 		column_name := identifier_name(column.name)
 		table_column := table.column(column_name) ?
-		value := cast('for column $column_name', stmt.values[i] as Value, table_column.typ) ?
+		raw_value := eval_as_value(c, Row{}, stmt.values[i]) ?
+		value := cast('for column $column_name', raw_value, table_column.typ) ?
 
 		if value.typ.typ == .is_null && table_column.not_null {
 			return sqlstate_23502('column $column_name')

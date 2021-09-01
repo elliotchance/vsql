@@ -6,8 +6,8 @@ module vsql
 type Stmt = CreateTableStmt | DeleteStmt | DropTableStmt | InsertStmt | SelectStmt | UpdateStmt
 
 // All possible expression entities.
-type Expr = BinaryExpr | CallExpr | Identifier | NamedExpr | NoExpr | NullExpr | UnaryExpr |
-	Value
+type Expr = BinaryExpr | CallExpr | Identifier | NamedExpr | NoExpr | NullExpr | Parameter |
+	UnaryExpr | Value
 
 // CREATE TABLE ...
 struct CreateTableStmt {
@@ -105,3 +105,8 @@ struct DerivedColumn {
 type AsteriskExpr = bool
 
 type SelectList = AsteriskExpr | []DerivedColumn
+
+// Parameter is :foo. The colon is not included in the name.
+struct Parameter {
+	name string
+}

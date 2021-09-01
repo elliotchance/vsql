@@ -4,6 +4,7 @@ import os
 
 struct SQLTest {
 	setup       []string
+	params      map[string]Value
 	file_name   string
 	line_number int
 	stmts       []string
@@ -23,14 +24,29 @@ fn get_tests() ?[]SQLTest {
 		mut stmt := ''
 		mut setup_stmt := ''
 		mut in_setup := false
+		mut params := map[string]Value{}
 		for line in lines {
 			if line == '' {
-				tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n')}
+				tests << SQLTest{setup, params, test_file_path, line_number, stmts, expected.join('\n')}
 				stmts = []
 				expected = []
 				in_setup = false
-			} else if line == '/* setup */' {
-				in_setup = true
+				params = map[string]Value{}
+			} else if line.starts_with('/*') {
+				contents := line[2..line.len - 2].trim_space()
+				if contents == 'setup' {
+					in_setup = true
+				} else if contents.starts_with('set ') {
+					parts := contents.split(' ')
+					if parts[2].starts_with("'") {
+						params[parts[1]] = new_varchar_value(parts[2][1..parts[2].len - 1],
+							0)
+					} else {
+						params[parts[1]] = new_double_precision_value(parts[2].f64())
+					}
+				} else {
+					panic('bad directive: "$contents"')
+				}
 			} else if line.starts_with('-- ') {
 				expected << line[3..]
 			} else {
@@ -53,7 +69,7 @@ fn get_tests() ?[]SQLTest {
 		}
 
 		if stmts.len > 0 {
-			tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n')}
+			tests << SQLTest{setup, params, test_file_path, line_number, stmts, expected.join('\n')}
 		}
 	}
 
@@ -72,12 +88,17 @@ fn test_all() ? {
 		register_pg_functions(mut db) ?
 
 		for stmt in test.setup {
-			db.query(stmt) ?
+			mut prepared := db.prepare(stmt) ?
+			prepared.query(test.params) ?
 		}
 
 		mut actual := ''
 		for stmt in test.stmts {
-			result := db.query(stmt) or {
+			mut prepared := db.prepare(stmt) or {
+				actual += 'error ${sqlstate_from_int(err.code)}: $err.msg\n'
+				continue
+			}
+			result := prepared.query(test.params) or {
 				actual += 'error ${sqlstate_from_int(err.code)}: $err.msg\n'
 				continue
 			}

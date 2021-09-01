@@ -8,6 +8,7 @@ module vsql
 enum TokenKind {
 	eof // End of file
 	asterisk // <asterisk> ::= *
+	colon // <colon> ::= :
 	comma // <comma> ::= ,
 	concatenation_operator // <concatenation operator> ::= ||
 	equals_operator // <equals operator> ::= =
@@ -152,6 +153,7 @@ fn tokenize(sql string) []Token {
 			`=`: TokenKind.equals_operator
 			`>`: TokenKind.greater_than_operator
 			`.`: TokenKind.period
+			`:`: TokenKind.colon
 		}
 		for op, tk in single {
 			if cs[i] == op {

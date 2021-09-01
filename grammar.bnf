@@ -192,11 +192,12 @@
     <unsigned numeric literal>
   | <general literal>
 
-<unsigned value specification> /* Value */ ::=
-    <unsigned literal>
+<unsigned value specification> /* Expr */ ::=
+    <unsigned literal>              -> value_to_expr
+  | <general value specification>
 
 <nonparenthesized value expression primary> /* Expr */ ::=
-    <unsigned value specification>   -> value_to_expr
+    <unsigned value specification>
   | <column reference>               -> identifier_to_expr
   | <routine invocation>
 
@@ -616,3 +617,15 @@
 
 <SQL argument> /* Expr */ ::=
     <value expression>
+
+<general value specification> /* Expr */ ::=
+    <host parameter specification>
+
+<host parameter specification> /* Expr */ ::=
+    <host parameter name>
+
+<host parameter name> /* Expr */ ::=
+    <colon> <identifier>   -> host_parameter_name
+
+<colon> ::=
+  ":"

@@ -140,6 +140,17 @@ SQLSTATE
   DELETE FROM foo;
   -- error 42P01: no such table: FOO
 
+``42P02`` parameter does not exist
+----------------------------------
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t1 (x FLOAT);
+  INSERT INTO t1 (x) VALUES (:foo);
+  -- error 42P02: no such parameter: foo
+
 ``42P07`` table already exists
 ------------------------------
 

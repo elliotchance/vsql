@@ -1,6 +1,8 @@
 Development
 ===========
 
+This page is aimed to developers of vsql.
+
 .. contents::
 
 Parser & SQL Grammar
@@ -34,3 +36,9 @@ After making changes to `grammar.bnf` you will need to run:
 
 Now, when running `v test .` you may receive errors for missing ``parse_``
 functions, you should implement those now.
+
+Testing
+-------
+
+vsql is tested exclusively with SQL test files. See
+`Testing <https://github.com/elliotchance/vsql/blob/main/docs/testing.rst>`_.

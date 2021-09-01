@@ -484,7 +484,7 @@ def parse_tree(text):
     table = []
     for i, token in enumerate(tokens):
         if token == '(' or token == ')' or token == ',' or token == '.' or \
-            token == '+' or token == '-' or token == '||':
+            token == '+' or token == '-' or token == '||' or token == ':':
             table.append(EarleyColumn(i, token, token))
         elif token == '' or token.isupper():
             table.append(EarleyColumn(i, token, token))

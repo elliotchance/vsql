@@ -346,7 +346,7 @@ fn tokenize_earley_columns(tokens []Token) []EarleyColumn {
 			table << new_earley_column(i + 1, v, v)
 		} else if v == '(' || v == ')' || v == ',' || v == '=' || v == '<>' || v == '.' || v == '+'
 			|| v == '-' || v == '*' || v == '/' || v == '>' || v == '<' || v == '>=' || v == '<='
-			|| v == '||' {
+			|| v == '||' || v == ':' {
 			table << new_earley_column(i + 1, v, v)
 		} else {
 			table << new_earley_column(i + 1, '^identifier', v)

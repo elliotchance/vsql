@@ -2,7 +2,7 @@
 
 module vsql
 
-fn (mut c Connection) update(stmt UpdateStmt) ?Result {
+fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value) ?Result {
 	table_name := identifier_name(stmt.table_name)
 
 	if table_name !in c.storage.tables {
@@ -16,7 +16,7 @@ fn (mut c Connection) update(stmt UpdateStmt) ?Result {
 	for k, v in stmt.set {
 		column_name := identifier_name(k)
 		table_column := table.column(column_name) ?
-		raw_value := eval_as_value(c, empty_row, v) ?
+		raw_value := eval_as_value(c, empty_row, v, params) ?
 		value := cast('for column $column_name', raw_value, table_column.typ) ?
 
 		if table_column.not_null && value.typ.typ == .is_null {
@@ -30,7 +30,7 @@ fn (mut c Connection) update(stmt UpdateStmt) ?Result {
 		// Missing WHERE matches all records
 		mut ok := true
 		if stmt.where !is NoExpr {
-			ok = eval_as_bool(c, row, stmt.where) ?
+			ok = eval_as_bool(c, row, stmt.where, params) ?
 		}
 
 		if ok {
@@ -41,7 +41,7 @@ fn (mut c Connection) update(stmt UpdateStmt) ?Result {
 			for k, v in stmt.set {
 				column_name := identifier_name(k)
 				table_column := table.column(column_name) ?
-				raw_value := eval_as_value(c, row, v) ?
+				raw_value := eval_as_value(c, row, v, params) ?
 
 				if row.data[column_name] != raw_value {
 					did_modify = true

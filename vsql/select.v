@@ -2,7 +2,7 @@
 
 module vsql
 
-fn (mut c Connection) query_select(stmt SelectStmt) ?Result {
+fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value) ?Result {
 	// Find all rows first.
 	mut all_rows := []Row{}
 	mut exprs := stmt.exprs
@@ -46,7 +46,7 @@ fn (mut c Connection) query_select(stmt SelectStmt) ?Result {
 				all_rows = all_rows[..stmt.fetch]
 			}
 		} else {
-			all_rows = where(c, all_rows, false, stmt.where, stmt.fetch) ?
+			all_rows = where(c, all_rows, false, stmt.where, stmt.fetch, params) ?
 		}
 	} else {
 		return sqlstate_42p01(table_name)
@@ -73,7 +73,7 @@ fn (mut c Connection) query_select(stmt SelectStmt) ?Result {
 				column_names << column_name
 			}
 
-			data[column_name] = eval_as_value(c, row, expr.expr) ?
+			data[column_name] = eval_as_value(c, row, expr.expr, params) ?
 			col_num++
 		}
 

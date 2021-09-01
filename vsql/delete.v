@@ -2,7 +2,7 @@
 
 module vsql
 
-fn (mut c Connection) delete(stmt DeleteStmt) ?Result {
+fn execute_delete(mut c Connection, stmt DeleteStmt, params map[string]Value) ?Result {
 	table_name := identifier_name(stmt.table_name)
 
 	if table_name !in c.storage.tables {
@@ -16,7 +16,7 @@ fn (mut c Connection) delete(stmt DeleteStmt) ?Result {
 	for row in rows {
 		mut ok := true
 		if stmt.where !is NoExpr {
-			ok = eval_as_bool(c, row, stmt.where) ?
+			ok = eval_as_bool(c, row, stmt.where, params) ?
 		}
 
 		if ok {

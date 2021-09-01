@@ -4,7 +4,7 @@ module vsql
 
 // TODO(elliotchance): A table is allowed to have zero columns.
 
-fn (mut c Connection) create_table(stmt CreateTableStmt) ?Result {
+fn execute_create_table(mut c Connection, stmt CreateTableStmt) ?Result {
 	table_name := identifier_name(stmt.table_name)
 
 	if table_name in c.storage.tables {

@@ -402,3 +402,7 @@ fn parse_empty_exprs() ?[]Expr {
 fn parse_routine_invocation(name Identifier, args []Expr) ?Expr {
 	return CallExpr{name.name, args}
 }
+
+fn parse_host_parameter_name(name Identifier) ?Expr {
+	return Parameter{name.name}
+}

@@ -2,11 +2,11 @@
 
 module vsql
 
-fn eval_row(conn Connection, data Row, exprs []Expr) ?Row {
+fn eval_row(conn Connection, data Row, exprs []Expr, params map[string]Value) ?Row {
 	mut col_number := 1
 	mut row := map[string]Value{}
 	for expr in exprs {
-		row['COL$col_number'] = eval_as_value(conn, data, expr) ?
+		row['COL$col_number'] = eval_as_value(conn, data, expr, params) ?
 		col_number++
 	}
 
@@ -15,21 +15,40 @@ fn eval_row(conn Connection, data Row, exprs []Expr) ?Row {
 	}
 }
 
-fn eval_as_value(conn Connection, data Row, e Expr) ?Value {
+fn eval_as_value(conn Connection, data Row, e Expr, params map[string]Value) ?Value {
 	match e {
-		BinaryExpr { return eval_binary(conn, data, e) }
-		CallExpr { return eval_call(conn, data, e) }
-		Identifier { return eval_identifier(data, e) }
-		NamedExpr { return eval_as_value(conn, data, e.expr) }
-		NullExpr { return eval_null(conn, data, e) }
-		NoExpr { return sqlstate_42601('no expression provided') }
-		UnaryExpr { return eval_unary(conn, data, e) }
-		Value { return e }
+		BinaryExpr {
+			return eval_binary(conn, data, e, params)
+		}
+		CallExpr {
+			return eval_call(conn, data, e, params)
+		}
+		Identifier {
+			return eval_identifier(data, e)
+		}
+		NamedExpr {
+			return eval_as_value(conn, data, e.expr, params)
+		}
+		NullExpr {
+			return eval_null(conn, data, e, params)
+		}
+		NoExpr {
+			return sqlstate_42601('no expression provided')
+		}
+		Parameter {
+			return params[e.name] or { return sqlstate_42p02(e.name) }
+		}
+		UnaryExpr {
+			return eval_unary(conn, data, e, params)
+		}
+		Value {
+			return e
+		}
 	}
 }
 
-fn eval_as_bool(conn Connection, data Row, e Expr) ?bool {
-	v := eval_as_value(conn, data, e) ?
+fn eval_as_bool(conn Connection, data Row, e Expr, params map[string]Value) ?bool {
+	v := eval_as_value(conn, data, e, params) ?
 
 	if v.typ.typ == .is_boolean {
 		return v.f64_value != 0
@@ -40,12 +59,12 @@ fn eval_as_bool(conn Connection, data Row, e Expr) ?bool {
 
 fn eval_identifier(data Row, e Identifier) ?Value {
 	col := identifier_name(e.name)
-	value := data.data[col] or { panic(col) }
+	value := data.data[col] or { return sqlstate_42601(col) }
 
 	return value
 }
 
-fn eval_call(conn Connection, data Row, e CallExpr) ?Value {
+fn eval_call(conn Connection, data Row, e CallExpr, params map[string]Value) ?Value {
 	func_name := identifier_name(e.function_name)
 
 	func := conn.funcs[func_name] or {
@@ -61,7 +80,7 @@ fn eval_call(conn Connection, data Row, e CallExpr) ?Value {
 	mut args := []Value{}
 	mut i := 0
 	for typ in func.arg_types {
-		arg := eval_as_value(conn, data, e.args[i]) ?
+		arg := eval_as_value(conn, data, e.args[i], params) ?
 		args << cast('argument ${i + 1} in $func_name', arg, typ) ?
 		i++
 	}
@@ -69,8 +88,8 @@ fn eval_call(conn Connection, data Row, e CallExpr) ?Value {
 	return func.func(args)
 }
 
-fn eval_null(conn Connection, data Row, e NullExpr) ?Value {
-	value := eval_as_value(conn, data, e.expr) ?
+fn eval_null(conn Connection, data Row, e NullExpr, params map[string]Value) ?Value {
+	value := eval_as_value(conn, data, e.expr, params) ?
 
 	if e.not {
 		return new_boolean_value(value.typ.typ != .is_null)
@@ -79,9 +98,9 @@ fn eval_null(conn Connection, data Row, e NullExpr) ?Value {
 	return new_boolean_value(value.typ.typ == .is_null)
 }
 
-fn eval_binary(conn Connection, data Row, e BinaryExpr) ?Value {
-	left := eval_as_value(conn, data, e.left) ?
-	right := eval_as_value(conn, data, e.right) ?
+fn eval_binary(conn Connection, data Row, e BinaryExpr, params map[string]Value) ?Value {
+	left := eval_as_value(conn, data, e.left, params) ?
+	right := eval_as_value(conn, data, e.right, params) ?
 
 	match e.op {
 		'=', '<>', '>', '<', '>=', '<=' {
@@ -138,8 +157,8 @@ fn eval_binary(conn Connection, data Row, e BinaryExpr) ?Value {
 	return sqlstate_42804('cannot $left.typ $e.op $right.typ', 'another type', '$left.typ and $right.typ')
 }
 
-fn eval_unary(conn Connection, data Row, e UnaryExpr) ?Value {
-	value := eval_as_value(conn, data, e.expr) ?
+fn eval_unary(conn Connection, data Row, e UnaryExpr, params map[string]Value) ?Value {
+	value := eval_as_value(conn, data, e.expr, params) ?
 
 	match e.op {
 		'-' {

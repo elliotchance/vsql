@@ -3,6 +3,7 @@
 
 module vsql
 
+[heap]
 struct Connection {
 mut:
 	storage        FileStorage
@@ -19,29 +20,16 @@ pub fn open(path string) ?Connection {
 	return conn
 }
 
-pub fn (mut c Connection) query(sql string) ?Result {
+pub fn (mut c Connection) prepare(sql string) ?PreparedStmt {
 	stmt := parse(sql) ?
 
-	match stmt {
-		CreateTableStmt {
-			return c.create_table(stmt)
-		}
-		DeleteStmt {
-			return c.delete(stmt)
-		}
-		DropTableStmt {
-			return c.drop_table(stmt)
-		}
-		InsertStmt {
-			return c.insert(stmt)
-		}
-		SelectStmt {
-			return c.query_select(stmt)
-		}
-		UpdateStmt {
-			return c.update(stmt)
-		}
-	}
+	return PreparedStmt{stmt, &c}
+}
+
+pub fn (mut c Connection) query(sql string) ?Result {
+	mut prepared := c.prepare(sql) ?
+
+	return prepared.query(map[string]Value{})
 }
 
 pub fn (mut c Connection) register_func(func Func) ? {

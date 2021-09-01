@@ -140,6 +140,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_character_value_expression_ := &EarleyRule{
 		name: '<character value expression>'
 	}
+	mut rule_colon_ := &EarleyRule{
+		name: '<colon>'
+	}
 	mut rule_column_constraint_definition_ := &EarleyRule{
 		name: '<column constraint definition>'
 	}
@@ -368,11 +371,23 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_general_literal_ := &EarleyRule{
 		name: '<general literal>'
 	}
+	mut rule_general_value_specification_ := &EarleyRule{
+		name: '<general value specification>'
+	}
 	mut rule_greater_than_operator_ := &EarleyRule{
 		name: '<greater than operator>'
 	}
 	mut rule_greater_than_or_equals_operator_ := &EarleyRule{
 		name: '<greater than or equals operator>'
+	}
+	mut rule_host_parameter_name_1_ := &EarleyRule{
+		name: '<host parameter name: 1>'
+	}
+	mut rule_host_parameter_name_ := &EarleyRule{
+		name: '<host parameter name>'
+	}
+	mut rule_host_parameter_specification_ := &EarleyRule{
+		name: '<host parameter specification>'
 	}
 	mut rule_identifier_body_ := &EarleyRule{
 		name: '<identifier body>'
@@ -439,9 +454,6 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_natural_logarithm_ := &EarleyRule{
 		name: '<natural logarithm>'
-	}
-	mut rule_nonparenthesized_value_expression_primary_1_ := &EarleyRule{
-		name: '<nonparenthesized value expression primary: 1>'
 	}
 	mut rule_nonparenthesized_value_expression_primary_2_ := &EarleyRule{
 		name: '<nonparenthesized value expression primary: 2>'
@@ -784,6 +796,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_unsigned_numeric_literal_ := &EarleyRule{
 		name: '<unsigned numeric literal>'
+	}
+	mut rule_unsigned_value_specification_1_ := &EarleyRule{
+		name: '<unsigned value specification: 1>'
 	}
 	mut rule_unsigned_value_specification_ := &EarleyRule{
 		name: '<unsigned value specification>'
@@ -1461,6 +1476,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_character_value_expression_.productions << EarleyProduction{[
 		EarleyRuleOrString{
 			rule: rule_character_factor_
+		},
+	]}
+
+	rule_colon_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			str: ':'
+			rule: 0
 		},
 	]}
 
@@ -2204,6 +2226,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_general_value_specification_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_host_parameter_specification_
+		},
+	]}
+
 	rule_greater_than_operator_.productions << EarleyProduction{[
 		EarleyRuleOrString{
 			str: '>'
@@ -2215,6 +2243,27 @@ fn get_grammar() map[string]EarleyRule {
 		EarleyRuleOrString{
 			str: '>='
 			rule: 0
+		},
+	]}
+
+	rule_host_parameter_name_1_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_colon_
+		},
+		EarleyRuleOrString{
+			rule: rule_identifier_
+		},
+	]}
+
+	rule_host_parameter_name_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_host_parameter_name_1_
+		},
+	]}
+
+	rule_host_parameter_specification_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_host_parameter_name_
 		},
 	]}
 
@@ -2392,12 +2441,6 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_nonparenthesized_value_expression_primary_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
-			rule: rule_unsigned_value_specification_
-		},
-	]}
-
 	rule_nonparenthesized_value_expression_primary_2_.productions << EarleyProduction{[
 		EarleyRuleOrString{
 			rule: rule_column_reference_
@@ -2406,7 +2449,7 @@ fn get_grammar() map[string]EarleyRule {
 
 	rule_nonparenthesized_value_expression_primary_.productions << EarleyProduction{[
 		EarleyRuleOrString{
-			rule: rule_nonparenthesized_value_expression_primary_1_
+			rule: rule_unsigned_value_specification_
 		},
 	]}
 	rule_nonparenthesized_value_expression_primary_.productions << EarleyProduction{[
@@ -3506,9 +3549,20 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_unsigned_value_specification_.productions << EarleyProduction{[
+	rule_unsigned_value_specification_1_.productions << EarleyProduction{[
 		EarleyRuleOrString{
 			rule: rule_unsigned_literal_
+		},
+	]}
+
+	rule_unsigned_value_specification_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_unsigned_value_specification_1_
+		},
+	]}
+	rule_unsigned_value_specification_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_general_value_specification_
 		},
 	]}
 
@@ -4090,6 +4144,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<character string type: 7>'] = rule_character_string_type_7_
 	rules['<character string type>'] = rule_character_string_type_
 	rules['<character value expression>'] = rule_character_value_expression_
+	rules['<colon>'] = rule_colon_
 	rules['<column constraint definition>'] = rule_column_constraint_definition_
 	rules['<column constraint: 1>'] = rule_column_constraint_1_
 	rules['<column constraint>'] = rule_column_constraint_
@@ -4166,8 +4221,12 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<from constructor: 1>'] = rule_from_constructor_1_
 	rules['<from constructor>'] = rule_from_constructor_
 	rules['<general literal>'] = rule_general_literal_
+	rules['<general value specification>'] = rule_general_value_specification_
 	rules['<greater than operator>'] = rule_greater_than_operator_
 	rules['<greater than or equals operator>'] = rule_greater_than_or_equals_operator_
+	rules['<host parameter name: 1>'] = rule_host_parameter_name_1_
+	rules['<host parameter name>'] = rule_host_parameter_name_
+	rules['<host parameter specification>'] = rule_host_parameter_specification_
 	rules['<identifier body>'] = rule_identifier_body_
 	rules['<identifier chain>'] = rule_identifier_chain_
 	rules['<identifier start>'] = rule_identifier_start_
@@ -4190,7 +4249,6 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<modulus expression>'] = rule_modulus_expression_
 	rules['<natural logarithm: 1>'] = rule_natural_logarithm_1_
 	rules['<natural logarithm>'] = rule_natural_logarithm_
-	rules['<nonparenthesized value expression primary: 1>'] = rule_nonparenthesized_value_expression_primary_1_
 	rules['<nonparenthesized value expression primary: 2>'] = rule_nonparenthesized_value_expression_primary_2_
 	rules['<nonparenthesized value expression primary>'] = rule_nonparenthesized_value_expression_primary_
 	rules['<not equals operator>'] = rule_not_equals_operator_
@@ -4305,6 +4363,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<unsigned integer>'] = rule_unsigned_integer_
 	rules['<unsigned literal>'] = rule_unsigned_literal_
 	rules['<unsigned numeric literal>'] = rule_unsigned_numeric_literal_
+	rules['<unsigned value specification: 1>'] = rule_unsigned_value_specification_1_
 	rules['<unsigned value specification>'] = rule_unsigned_value_specification_
 	rules['<update source>'] = rule_update_source_
 	rules['<update statement: searched: 1>'] = rule_update_statement_searched_1_
@@ -4615,6 +4674,9 @@ fn parse_ast(node EarleyNode) ?[]EarleyValue {
 				EarleyValue(parse_from_constructor(children[1] as []Identifier, children[3] as []Expr) ?),
 			]
 		}
+		'<host parameter name: 1>' {
+			children = [EarleyValue(parse_host_parameter_name(children[1] as Identifier) ?)]
+		}
 		'<insert statement: 1>' {
 			children = [
 				EarleyValue(parse_insert_statement(children[2] as Identifier, children[3] as InsertStmt) ?),
@@ -4628,9 +4690,6 @@ fn parse_ast(node EarleyNode) ?[]EarleyValue {
 		}
 		'<natural logarithm: 1>' {
 			children = [EarleyValue(parse_ln(children[2] as Expr) ?)]
-		}
-		'<nonparenthesized value expression primary: 1>' {
-			children = [EarleyValue(parse_value_to_expr(children[0] as Value) ?)]
 		}
 		'<nonparenthesized value expression primary: 2>' {
 			children = [EarleyValue(parse_identifier_to_expr(children[0] as Identifier) ?)]
@@ -4781,6 +4840,9 @@ fn parse_ast(node EarleyNode) ?[]EarleyValue {
 		}
 		'<trigonometric function: 1>' {
 			children = [EarleyValue(parse_trig_func(children[0] as string, children[2] as Expr) ?)]
+		}
+		'<unsigned value specification: 1>' {
+			children = [EarleyValue(parse_value_to_expr(children[0] as Value) ?)]
 		}
 		'<update statement: searched: 1>' {
 			children = [

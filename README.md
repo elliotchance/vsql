@@ -10,6 +10,7 @@ no dependencies.
   - [Server](#server)
   - [Custom Functions](#custom-functions)
   - [Virtual Tables](#virtual-tables)
+  - [Prepared Statements](https://github.com/elliotchance/vsql/blob/main/docs/prepared-statements.rst)
 - [FAQ](https://github.com/elliotchance/vsql/blob/main/docs/faq.rst)
 - SQL Commands
   - [CREATE TABLE](https://github.com/elliotchance/vsql/blob/main/docs/create-table.rst)
@@ -25,7 +26,7 @@ no dependencies.
   - [Operators](https://github.com/elliotchance/vsql/blob/main/docs/operators.rst)
   - [SQLSTATE (Errors)](https://github.com/elliotchance/vsql/blob/main/docs/sqlstate.rst)
 - [Development](https://github.com/elliotchance/vsql/blob/main/docs/development.rst)
-- [Testing](#testing)
+- [Testing](https://github.com/elliotchance/vsql/blob/main/docs/testing.rst)
 
 Usage
 -----
@@ -187,36 +188,3 @@ for row in result {
 The callback for the virtual table will be called repeatedly until `t.done()` is
 invoked, even if zero rows are provided in an iteration. All data will be thrown
 away between subsequent `SELECT` operations.
-
-Testing
--------
-
-All tests are in the `tests/` directory and each file contains individual tests
-separated by an empty line:
-
-```sql
-/* setup */
-CREATE TABLE t1 (x FLOAT);
-INSERT INTO t1 (x) VALUES (0);
-
-SELECT 1 FROM t1;
-SELECT *
-FROM foo;
--- COL1: 1
--- error 42P01: no such table: FOO
-
-SELECT 2 FROM t1;
-SELECT 3 FROM t1;
--- COL1: 2
--- COL1: 3
-```
-
-This describes two tests where each test is given an a brand new database (ie.
-no tables are carried between tests).
-
-- An optional `/* setup */` can be placed at the top of the file to be run
-before each test.
-- All SQL statements are executed and each of the results collected and compared
-to the comment immediately below.
-- Errors will be in the form of `error SQLSTATE: message`.
-- A statement can span multiple lines but must me terminated by a `;`.

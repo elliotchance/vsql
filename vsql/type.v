@@ -34,7 +34,9 @@ fn (t SQLType) str() string {
 }
 
 fn new_type(name string, size int) Type {
-	return match name {
+	name_without_size := name.split('(')[0]
+
+	return match name_without_size {
 		'BIGINT' {
 			Type{.is_bigint, size}
 		}
@@ -60,7 +62,7 @@ fn new_type(name string, size int) Type {
 			Type{.is_smallint, size}
 		}
 		else {
-			panic(name)
+			panic(name_without_size)
 			Type{}
 		}
 	}

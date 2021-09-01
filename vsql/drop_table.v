@@ -2,7 +2,7 @@
 
 module vsql
 
-fn (mut c Connection) drop_table(stmt DropTableStmt) ?Result {
+fn execute_drop_table(mut c Connection, stmt DropTableStmt) ?Result {
 	table_name := identifier_name(stmt.table_name)
 
 	if table_name !in c.storage.tables {

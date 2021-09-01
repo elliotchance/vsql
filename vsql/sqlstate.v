@@ -170,3 +170,19 @@ fn sqlstate_42883(function_name string) IError {
 		function_name: function_name
 	}
 }
+
+// Undefined parameter
+struct SQLState42P02 {
+	msg  string
+	code int
+pub:
+	parameter_name string
+}
+
+fn sqlstate_42p02(parameter_name string) IError {
+	return SQLState42P02{
+		code: sqlstate_to_int('42P02')
+		msg: 'parameter does not exist: $parameter_name'
+		parameter_name: parameter_name
+	}
+}

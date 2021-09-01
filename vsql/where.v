@@ -3,10 +3,10 @@
 module vsql
 
 // fetch: -1 to ignore, otherwise the max records to return.
-fn where(conn Connection, rows []Row, inverse bool, expr Expr, fetch int) ?[]Row {
+fn where(conn Connection, rows []Row, inverse bool, expr Expr, fetch int, params map[string]Value) ?[]Row {
 	mut new_rows := []Row{}
 	for row in rows {
-		mut ok := eval_as_bool(conn, row, expr) ?
+		mut ok := eval_as_bool(conn, row, expr, params) ?
 		if inverse {
 			ok = !ok
 		}

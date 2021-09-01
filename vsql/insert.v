@@ -2,7 +2,7 @@
 
 module vsql
 
-fn (mut c Connection) insert(stmt InsertStmt) ?Result {
+fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value) ?Result {
 	mut row := Row{
 		data: map[string]Value{}
 	}
@@ -24,7 +24,7 @@ fn (mut c Connection) insert(stmt InsertStmt) ?Result {
 	for i, column in stmt.columns {
 		column_name := identifier_name(column.name)
 		table_column := table.column(column_name) ?
-		raw_value := eval_as_value(c, Row{}, stmt.values[i]) ?
+		raw_value := eval_as_value(c, Row{}, stmt.values[i], params) ?
 		value := cast('for column $column_name', raw_value, table_column.typ) ?
 
 		if value.typ.typ == .is_null && table_column.not_null {

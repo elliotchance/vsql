@@ -26,6 +26,8 @@ fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value) ?R
 
 			exprs = new_exprs
 		}
+
+		// TODO(elliotchance): Virtual tables don't implement OFFSET/FETCH.
 	}
 	// Now check for a regular table.
 	else if table_name in c.storage.tables {
@@ -40,13 +42,23 @@ fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value) ?R
 			exprs = new_exprs
 		}
 
-		all_rows = c.storage.read_rows(table.index, stmt.offset) ?
+		mut offset := 0
+		if stmt.offset !is NoExpr {
+			offset = int((eval_as_value(c, Row{}, stmt.offset, params) ?).f64_value)
+		}
+
+		mut fetch := -1
+		if stmt.fetch !is NoExpr {
+			fetch = int((eval_as_value(c, Row{}, stmt.fetch, params) ?).f64_value)
+		}
+
+		all_rows = c.storage.read_rows(table.index, offset) ?
 		if stmt.where is NoExpr {
-			if stmt.fetch >= 0 && all_rows.len > stmt.fetch {
-				all_rows = all_rows[..stmt.fetch]
+			if fetch >= 0 && all_rows.len > fetch {
+				all_rows = all_rows[..fetch]
 			}
 		} else {
-			all_rows = where(c, all_rows, false, stmt.where, stmt.fetch, params) ?
+			all_rows = where(c, all_rows, false, stmt.where, fetch, params) ?
 		}
 	} else {
 		return sqlstate_42p01(table_name)

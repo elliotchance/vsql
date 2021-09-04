@@ -6,7 +6,6 @@ module vsql
 // Except for the eof and the keywords, the other tokens use the names described
 // in the SQL standard.
 enum TokenKind {
-	eof // End of file
 	asterisk // <asterisk> ::= *
 	colon // <colon> ::= :
 	comma // <comma> ::= ,
@@ -78,7 +77,7 @@ pub:
 
 fn tokenize(sql string) []Token {
 	mut tokens := []Token{}
-	cs := sql.runes()
+	cs := sql.trim(';').runes()
 	mut i := 0
 
 	next: for i < cs.len {
@@ -184,8 +183,6 @@ fn tokenize(sql string) []Token {
 		}
 	}
 
-	tokens << Token{TokenKind.eof, ''}
-
 	return tokens
 }
 
@@ -198,29 +195,4 @@ fn is_identifier_char(c byte, is_not_first bool) bool {
 	}
 
 	return yes
-}
-
-fn precedence(tk TokenKind) int {
-	return match tk {
-		.asterisk, .solidus {
-			2
-		}
-		.plus_sign, .minus_sign {
-			3
-		}
-		.equals_operator, .not_equals_operator, .less_than_operator, .less_than_or_equals_operator,
-		.greater_than_operator, .greater_than_or_equals_operator {
-			4
-		}
-		.keyword_and {
-			6
-		}
-		.keyword_or {
-			7
-		}
-		else {
-			panic(tk)
-			0
-		}
-	}
 }

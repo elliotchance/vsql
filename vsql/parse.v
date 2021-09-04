@@ -9,7 +9,7 @@ fn parse_binary_expr(left Expr, op string, right Expr) ?Expr {
 }
 
 fn parse_query_specification(select_list SelectList, table_expression TableExpression) ?SelectStmt {
-	return SelectStmt{select_list, table_expression.from_clause.name, table_expression.where_clause, 0, -1}
+	return SelectStmt{select_list, table_expression.from_clause.name, table_expression.where_clause, NoExpr{}, NoExpr{}}
 }
 
 fn parse_select_sublist(column DerivedColumn) ?SelectList {
@@ -347,51 +347,32 @@ fn parse_query_expression(body SelectStmt) ?Stmt {
 }
 
 fn parse_query_expression_offset(body SelectStmt, offset Expr) ?Stmt {
-	mut offset_int := 0
-	if offset is Value {
-		offset_int = int(offset.f64_value)
-	}
-
 	return SelectStmt{
 		exprs: body.exprs
 		from: body.from
 		where: body.where
-		offset: offset_int
-		fetch: -1
+		offset: offset
+		fetch: NoExpr{}
 	}
 }
 
 fn parse_query_expression_fetch(body SelectStmt, fetch Expr) ?Stmt {
-	mut fetch_int := -1
-	if fetch is Value {
-		fetch_int = int(fetch.f64_value)
-	}
-
 	return SelectStmt{
 		exprs: body.exprs
 		from: body.from
 		where: body.where
-		fetch: fetch_int
+		offset: NoExpr{}
+		fetch: fetch
 	}
 }
 
 fn parse_query_expression_offset_fetch(body SelectStmt, offset Expr, fetch Expr) ?Stmt {
-	mut offset_int := 0
-	if offset is Value {
-		offset_int = int(offset.f64_value)
-	}
-
-	mut fetch_int := -1
-	if fetch is Value {
-		fetch_int = int(fetch.f64_value)
-	}
-
 	return SelectStmt{
 		exprs: body.exprs
 		from: body.from
 		where: body.where
-		offset: offset_int
-		fetch: fetch_int
+		offset: offset
+		fetch: fetch
 	}
 }
 

@@ -3152,6 +3152,11 @@ fn get_grammar() map[string]EarleyRule {
 			rule: rule_literal_
 		},
 	]}
+	rule_simple_value_specification_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_host_parameter_name_
+		},
+	]}
 
 	rule_solidus_.productions << EarleyProduction{[
 		EarleyRuleOrString{

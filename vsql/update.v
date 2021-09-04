@@ -2,7 +2,11 @@
 
 module vsql
 
-fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value) ?Result {
+import time
+
+fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, elapsed_parse time.Duration) ?Result {
+	t := start_timer()
+
 	table_name := identifier_name(stmt.table_name)
 
 	if table_name !in c.storage.tables {
@@ -68,5 +72,5 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value) ?R
 		c.storage.write_row(row, table) ?
 	}
 
-	return new_result_msg('UPDATE $new_rows.len')
+	return new_result_msg('UPDATE $new_rows.len', elapsed_parse, t.elapsed())
 }

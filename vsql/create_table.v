@@ -2,9 +2,12 @@
 
 module vsql
 
+import time
+
 // TODO(elliotchance): A table is allowed to have zero columns.
 
-fn execute_create_table(mut c Connection, stmt CreateTableStmt) ?Result {
+fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse time.Duration) ?Result {
+	t := start_timer()
 	table_name := identifier_name(stmt.table_name)
 
 	if table_name in c.storage.tables {
@@ -20,5 +23,5 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt) ?Result {
 
 	c.storage.create_table(table_name, columns) ?
 
-	return new_result_msg('CREATE TABLE 1')
+	return new_result_msg('CREATE TABLE 1', elapsed_parse, t.elapsed())
 }

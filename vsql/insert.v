@@ -2,7 +2,11 @@
 
 module vsql
 
-fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value) ?Result {
+import time
+
+fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, elapsed_parse time.Duration) ?Result {
+	t := start_timer()
+
 	mut row := Row{
 		data: map[string]Value{}
 	}
@@ -49,5 +53,5 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value) ?R
 
 	c.storage.write_row(row, table) ?
 
-	return new_result_msg('INSERT 1')
+	return new_result_msg('INSERT 1', elapsed_parse, t.elapsed())
 }

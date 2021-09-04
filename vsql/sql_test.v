@@ -77,13 +77,16 @@ fn get_tests() ?[]SQLTest {
 }
 
 fn test_all() ? {
+	query_cache := new_query_cache()
 	for test in get_tests() ? {
 		path := '/tmp/test.vsql'
 		if os.exists(path) {
 			os.rm(path) ?
 		}
 
-		mut db := open(path) ?
+		mut options := default_connection_options()
+		options.query_cache = query_cache
+		mut db := open_database(path, options) ?
 
 		register_pg_functions(mut db) ?
 

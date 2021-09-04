@@ -18,7 +18,9 @@ pub struct ServerOptions {
 }
 
 pub fn new_server(options ServerOptions) Server {
-	return Server{options, Connection{}}
+	return Server{options, Connection{
+		query_cache: new_query_cache()
+	}}
 }
 
 pub fn (mut s Server) start() ? {

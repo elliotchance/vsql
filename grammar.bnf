@@ -578,6 +578,7 @@
 
 <simple value specification> /* Expr */ ::=
     <literal>
+  | <host parameter name>
 
 <literal> /* Expr */ ::=
     <signed numeric literal>

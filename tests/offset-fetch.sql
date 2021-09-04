@@ -44,3 +44,11 @@ FETCH FIRST 2 ROWS ONLY;
 SELECT * FROM t1
 OFFSET 10 ROWS
 FETCH FIRST 2 ROWS ONLY;
+
+/* set offset_num 1 */
+/* set row_num 2 */
+SELECT * FROM t1
+OFFSET :offset_num ROW
+FETCH FIRST :row_num ROWS ONLY;
+-- X: 2
+-- X: 3

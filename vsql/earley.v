@@ -226,14 +226,8 @@ fn complete(mut col EarleyColumn, state EarleyState) {
 	}
 }
 
-fn parse(sql string) ?Stmt {
-	mut new_tokens := tokenize(sql.trim(';'))
-
-	// Strip EOF
-	new_tokens = new_tokens[..new_tokens.len - 1]
-
-	mut columns := tokenize_earley_columns(new_tokens)
-
+fn parse(tokens []Token) ?Stmt {
+	mut columns := tokenize_earley_columns(tokens)
 	mut grammar := get_grammar()
 
 	q0 := parse_earley(grammar['<preparable statement>'], mut columns) ?

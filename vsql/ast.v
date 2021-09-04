@@ -38,8 +38,8 @@ struct SelectStmt {
 	exprs  SelectList
 	from   string
 	where  Expr
-	offset int
-	fetch  int // -1 to ignore
+	offset Expr
+	fetch  Expr
 }
 
 // UPDATE ...

@@ -2,7 +2,11 @@
 
 module vsql
 
-fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value) ?Result {
+import time
+
+fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value, elapsed_parse time.Duration) ?Result {
+	t := start_timer()
+
 	// Find all rows first.
 	mut all_rows := []Row{}
 	mut exprs := stmt.exprs
@@ -11,16 +15,16 @@ fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value) ?R
 
 	// Check virtual table first.
 	if table_name in c.virtual_tables {
-		mut t := c.virtual_tables[table_name]
-		t.reset()
-		for !t.is_done {
-			t.data(mut t) ?
+		mut vt := c.virtual_tables[table_name]
+		vt.reset()
+		for !vt.is_done {
+			vt.data(mut vt) ?
 		}
-		all_rows = t.rows
+		all_rows = vt.rows
 
 		if exprs is AsteriskExpr {
 			mut new_exprs := []DerivedColumn{}
-			for col in t.create_table_stmt.columns {
+			for col in vt.create_table_stmt.columns {
 				new_exprs << DerivedColumn{Identifier{col.name}, Identifier{col.name}}
 			}
 
@@ -95,5 +99,5 @@ fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value) ?R
 		}
 	}
 
-	return new_result(column_names, returned_rows)
+	return new_result(column_names, returned_rows, elapsed_parse, t.elapsed())
 }

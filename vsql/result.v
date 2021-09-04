@@ -3,29 +3,35 @@
 
 module vsql
 
+import time
+
 struct Result {
 pub:
-	columns []string
-	rows    []Row
+	columns       []string
+	rows          []Row
+	elapsed_parse time.Duration
+	elapsed_exec  time.Duration
 mut:
 	idx int
 }
 
-pub fn new_result(columns []string, rows []Row) Result {
+pub fn new_result(columns []string, rows []Row, elapsed_parse time.Duration, elapsed_exec time.Duration) Result {
 	return Result{
 		columns: columns
 		rows: rows
+		elapsed_parse: elapsed_parse
+		elapsed_exec: elapsed_exec
 	}
 }
 
-fn new_result_msg(msg string) Result {
+fn new_result_msg(msg string, elapsed_parse time.Duration, elapsed_exec time.Duration) Result {
 	return new_result(['msg'], [
 		Row{
 			data: {
 				'msg': new_varchar_value(msg, 0)
 			}
 		},
-	])
+	], elapsed_parse, elapsed_exec)
 }
 
 pub fn (mut r Result) next() ?Row {

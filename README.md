@@ -25,6 +25,7 @@ no dependencies.
   - [Keywords](https://github.com/elliotchance/vsql/blob/main/docs/keywords.rst)
   - [Operators](https://github.com/elliotchance/vsql/blob/main/docs/operators.rst)
   - [SQLSTATE (Errors)](https://github.com/elliotchance/vsql/blob/main/docs/sqlstate.rst)
+- [Benchmark](https://github.com/elliotchance/vsql/blob/main/docs/benchmark.rst)
 - [Development](https://github.com/elliotchance/vsql/blob/main/docs/development.rst)
 - [Testing](https://github.com/elliotchance/vsql/blob/main/docs/testing.rst)
 

@@ -33,6 +33,13 @@ fn main() {
 	})
 	cmd.add_command(server_cmd)
 
+	mut bench_cmd := cli.Command{
+		name: 'bench'
+		description: 'Run benchmark'
+		execute: bench_command
+	}
+	cmd.add_command(bench_cmd)
+
 	cmd.setup()
 	cmd.parse(os.args)
 }
@@ -66,7 +73,6 @@ fn server_command(cmd cli.Command) {
 		port = 3210
 	}
 
-	// TODO(elliotchance): Make port a CLI option.
 	mut server := vsql.new_server(vsql.ServerOptions{
 		db_file: cmd.args[0]
 		port: port
@@ -74,4 +80,11 @@ fn server_command(cmd cli.Command) {
 	})
 
 	server.start() or { panic(err) }
+}
+
+fn bench_command(cmd cli.Command) {
+	mut conn := vsql.open('bench.vsql') or { panic('$err') }
+
+	mut benchmark := vsql.new_benchmark(conn)
+	benchmark.start() or { panic('$err') }
 }

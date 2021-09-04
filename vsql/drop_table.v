@@ -2,7 +2,10 @@
 
 module vsql
 
-fn execute_drop_table(mut c Connection, stmt DropTableStmt) ?Result {
+import time
+
+fn execute_drop_table(mut c Connection, stmt DropTableStmt, elapsed_parse time.Duration) ?Result {
+	t := start_timer()
 	table_name := identifier_name(stmt.table_name)
 
 	if table_name !in c.storage.tables {
@@ -12,5 +15,5 @@ fn execute_drop_table(mut c Connection, stmt DropTableStmt) ?Result {
 	// TODO(elliotchance): Also delete rows.
 	c.storage.delete_table(table_name) ?
 
-	return new_result_msg('DROP TABLE 1')
+	return new_result_msg('DROP TABLE 1', elapsed_parse, t.elapsed())
 }

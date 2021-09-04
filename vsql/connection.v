@@ -4,7 +4,7 @@
 module vsql
 
 [heap]
-struct Connection {
+pub struct Connection {
 mut:
 	storage        FileStorage
 	funcs          map[string]Func
@@ -27,10 +27,11 @@ pub fn open_database(path string, options ConnectionOptions) ?Connection {
 }
 
 pub fn (mut c Connection) prepare(sql string) ?PreparedStmt {
+	t := start_timer()
 	stmt, params := c.query_cache.parse(sql) ?
-	println('> $stmt $params')
+	elapsed_parse := t.elapsed()
 
-	return PreparedStmt{stmt, params, &c}
+	return PreparedStmt{stmt, params, &c, elapsed_parse}
 }
 
 pub fn (mut c Connection) query(sql string) ?Result {

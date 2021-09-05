@@ -48,7 +48,7 @@ pub fn (mut s Server) start() ? {
 	mut listener := net.listen_tcp(.ip6, ':$s.options.port') or {
 		return error('cannot listen on :$s.options.port: $err')
 	}
-	s.log('ready on 127.0.0.1:$s.options.port')
+	println('ready on 127.0.0.1:$s.options.port')
 
 	mut client_id := 0
 	for {

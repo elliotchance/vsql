@@ -29,7 +29,7 @@ fn new_file_storage(path string) ?FileStorage {
 	// This is a rudimentary way to ensure that small changes to storage.v are
 	// compatible as things change so rapidly. Sorry if you had a database in a
 	// previous version, you'll need to recreate it.
-	current_version := i8(2)
+	current_version := i8(3)
 
 	// If the file doesn't exist we initialize it and reopen it.
 	if !os.exists(path) {
@@ -132,24 +132,17 @@ fn sizeof_value(value Value) int {
 	})
 }
 
-fn (mut f FileStorage) write_object(category int, values []Value) ? {
+fn (mut f FileStorage) write_data_object(category int, data []byte) ? {
 	// Always ensure we append to the file.
 	f.f.seek(0, .end) ?
 
-	mut data_len := int(0)
-	for value in values {
-		data_len += sizeof_value(value)
-	}
-
-	f.write(data_len) ?
-	f.write(category) ?
-
-	for value in values {
-		f.write_value(value) ?
-	}
+	f.write<int>(data.len) ?
+	f.write<int>(category) ?
+	f.f.write(data) ?
 }
 
 fn (mut f FileStorage) read_object() ?FileStorageNextObject {
+	offset := u32(f.f.tell() ?)
 	data_len := f.read<int>() or {
 		// TODO(elliotchance): I'm not sure what the correcy way to detect EOF
 		//  is, but let's assume this error means the end.
@@ -157,22 +150,31 @@ fn (mut f FileStorage) read_object() ?FileStorageNextObject {
 			is_eof: true
 		}
 	}
-	offset := u32(f.f.tell() ?)
 	category := f.read<int>() ?
 
-	mut values := []Value{}
-	for i := 0; i < data_len; {
-		value := f.read_value() ?
-		values << value
-		i += sizeof_value(value)
-	}
-
+	// Dead object.
 	if category == 0 {
+		mut buf := []byte{len: data_len}
+		f.f.read(mut buf) ?
+
 		return FileStorageNextObject{
 			category: category
 		}
 	}
 
+	// Table
+	if category == 1 {
+		mut buf := []byte{len: data_len}
+		f.f.read(mut buf) ?
+		table := new_table_from_bytes(buf, offset)
+
+		return FileStorageNextObject{
+			category: category
+			obj: table
+		}
+	}
+
+	// Row
 	if category >= 10000 {
 		mut table := Table{}
 		for _, t in f.tables {
@@ -181,15 +183,10 @@ fn (mut f FileStorage) read_object() ?FileStorageNextObject {
 			}
 		}
 
-		mut i := 0
-		mut row := Row{
-			offset: offset
-			data: map[string]Value{}
-		}
-		for column in table.columns {
-			row.data[column.name] = values[i]
-			i++
-		}
+		mut buf := []byte{len: data_len}
+		f.f.read(mut buf) ?
+
+		row := new_row_from_bytes(table, buf, offset)
 
 		return FileStorageNextObject{
 			category: category
@@ -197,65 +194,39 @@ fn (mut f FileStorage) read_object() ?FileStorageNextObject {
 		}
 	}
 
-	mut columns := []Column{cap: (values.len - 2) / 2}
-	for i := 2; i < values.len; i += 2 {
-		columns << Column{
-			name: values[i].string_value
-			typ: new_type(values[i + 1].string_value, 0)
-		}
-	}
-
-	return FileStorageNextObject{
-		category: category
-		obj: Table{
-			offset: offset
-			index: int(values[0].f64_value)
-			name: values[1].string_value
-			columns: columns
-		}
-	}
+	panic(category)
 }
 
 fn (mut f FileStorage) create_table(table_name string, columns []Column) ? {
-	mut values := []Value{}
 	index := f.tables.len + 1
 	offset := u32(f.f.tell() ?)
 
-	// If index is 0, the table is deleletd
-	values << new_double_precision_value(index)
-	values << new_varchar_value(table_name, 0)
+	table := Table{offset, index, table_name, columns}
 
-	for column in columns {
-		values << new_varchar_value(column.name, 0)
-		values << new_varchar_value(column.typ.str(), 0)
-	}
+	data := table.bytes()
+	f.write_data_object(1, data) ?
 
-	f.write_object(1, values) ?
-
-	f.tables[table_name] = Table{offset, index, table_name, columns}
+	f.tables[table_name] = table
 }
 
 fn (mut f FileStorage) delete_table(table_name string) ? {
 	f.f.seek(f.tables[table_name].offset, .start) ?
 
-	// If index is 0, the table is deleted
-	f.write_value(new_double_precision_value(0)) ?
+	// If category is 0, the table (actually, the object) is deleted.
+	f.write<int>(0) ?
 
 	f.tables.delete(table_name)
 }
 
 fn (mut f FileStorage) delete_row(row Row) ? {
-	f.f.seek(row.offset, .start) ?
-	zero := 0
-	f.write<int>(zero) ?
+	f.f.seek(row.offset + 4, .start) ?
+
+	// If category is 0, the table (actually, the object) is deleted.
+	f.write<int>(0) ?
 }
 
 fn (mut f FileStorage) write_row(r Row, t Table) ? {
-	mut values := []Value{}
-	for column in t.columns {
-		values << r.data[column.name]
-	}
-	f.write_object(10000 + t.index, values) ?
+	f.write_data_object(10000 + t.index, r.bytes(t)) ?
 }
 
 fn (mut f FileStorage) read_rows(table_index int, offset int) ?[]Row {

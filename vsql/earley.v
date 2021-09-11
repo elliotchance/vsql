@@ -299,7 +299,7 @@ fn build_trees_helper(children []EarleyNode, state EarleyState, rule_index int, 
 	if rule_index < 0 {
 		return [EarleyNode{state, children}]
 	} else if rule_index == 0 {
-		start_column = state.start_column
+		start_column = *state.start_column
 	}
 
 	rule := state.rules[rule_index]

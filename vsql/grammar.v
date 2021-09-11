@@ -4,9 +4,25 @@
 
 module vsql
 
-type EarleyValue = Column | ComparisonPredicatePart2 | CreateTableStmt | DerivedColumn |
-	Expr | Identifier | InsertStmt | SelectList | SelectStmt | Stmt | TableExpression |
-	Type | Value | []Column | []Expr | []Identifier | bool | map[string]Expr | string
+type EarleyValue = Column
+	| ComparisonPredicatePart2
+	| CreateTableStmt
+	| DerivedColumn
+	| Expr
+	| Identifier
+	| InsertStmt
+	| SelectList
+	| SelectStmt
+	| Stmt
+	| TableExpression
+	| Type
+	| Value
+	| []Column
+	| []Expr
+	| []Identifier
+	| bool
+	| map[string]Expr
+	| string
 
 fn get_grammar() map[string]EarleyRule {
 	mut rules := map[string]EarleyRule{}

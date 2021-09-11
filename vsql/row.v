@@ -114,3 +114,103 @@ fn new_empty_row(columns []Column) Row {
 
 	return r
 }
+
+fn (r Row) bytes(t Table) []byte {
+	mut buf := new_bytes([]byte{})
+
+	for col in t.columns {
+		v := r.data[col.name]
+
+		// Some types do not need a NULL flag because it's built into the value.
+		if !col.not_null && col.typ.typ != .is_boolean && col.typ.typ != .is_varchar
+			&& col.typ.typ != .is_character {
+			buf.write_bool(v.typ.typ == .is_null)
+		}
+
+		match col.typ.typ {
+			.is_null {
+				panic('should not be possible')
+			}
+			.is_boolean {
+				buf.write_byte(byte(v.f64_value))
+			}
+			.is_bigint {
+				buf.write_i64(i64(v.f64_value))
+			}
+			.is_double_precision {
+				buf.write_f64(v.f64_value)
+			}
+			.is_integer {
+				buf.write_int(int(v.f64_value))
+			}
+			.is_real {
+				buf.write_f32(f32(v.f64_value))
+			}
+			.is_smallint {
+				buf.write_i16(i16(v.f64_value))
+			}
+			.is_varchar, .is_character {
+				if v.typ.typ == .is_null {
+					buf.write_int(-1)
+				} else {
+					buf.write_string4(v.string_value)
+				}
+			}
+		}
+	}
+
+	return buf.bytes()
+}
+
+fn new_row_from_bytes(t Table, data []byte, offset u32) Row {
+	mut buf := new_bytes(data)
+	mut row := map[string]Value{}
+
+	for col in t.columns {
+		// Some types do not need a NULL flag because it's built into the value.
+		mut v := Value{
+			typ: col.typ
+		}
+		if col.typ.typ != .is_boolean && col.typ.typ != .is_varchar && col.typ.typ != .is_character {
+			if !col.not_null && buf.read_bool() {
+				v.typ.typ = .is_null
+			}
+		}
+
+		match col.typ.typ {
+			.is_null {
+				panic('should not be possible')
+			}
+			.is_boolean {
+				v.f64_value = buf.read_byte()
+			}
+			.is_bigint {
+				v.f64_value = buf.read_i64()
+			}
+			.is_double_precision {
+				v.f64_value = buf.read_f64()
+			}
+			.is_integer {
+				v.f64_value = buf.read_int()
+			}
+			.is_real {
+				v.f64_value = buf.read_f32()
+			}
+			.is_smallint {
+				v.f64_value = buf.read_i16()
+			}
+			.is_varchar, .is_character {
+				len := buf.read_int()
+				if len == -1 {
+					v.typ.typ = .is_null
+				} else {
+					v.string_value = buf.read_bytes(len).bytestr()
+				}
+			}
+		}
+
+		row[col.name] = v
+	}
+
+	return Row{offset, row}
+}

@@ -94,5 +94,5 @@ fn (mut q QueryCache) parse(query string) ?(Stmt, map[string]Value) {
 		q.stmts[key] = parse(new_tokens) ?
 	}
 
-	return q.stmts[key], params
+	return q.stmts[key] or { panic('impossible') }, params
 }

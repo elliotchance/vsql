@@ -5,7 +5,8 @@
 module vsql
 
 pub struct Value {
-pub:
+pub mut:
+	// TODO(elliotchance): Make these non-mutable.
 	typ          Type
 	f64_value    f64    // boolean and numeric
 	string_value string // char and varchar
@@ -53,15 +54,30 @@ pub fn new_varchar_value(x string, size int) Value {
 }
 
 pub fn (v Value) == (v2 Value) bool {
-	return match v.typ.typ {
+	match v.typ.typ {
 		.is_null {
-			false
+			return false
 		}
+		// TODO(elliotchance): BOOLEAN shouldn't be compared this way.
 		.is_boolean, .is_bigint, .is_integer, .is_smallint, .is_double_precision, .is_real {
-			v2.typ.typ == v.typ.typ && v.f64_value == v2.f64_value
+			return match v2.typ.typ {
+				.is_boolean, .is_bigint, .is_integer, .is_smallint, .is_double_precision, .is_real {
+					v.f64_value == v2.f64_value
+				}
+				else {
+					false
+				}
+			}
 		}
 		.is_varchar, .is_character {
-			v2.typ.typ == v.typ.typ && v.string_value == v2.string_value
+			return match v2.typ.typ {
+				.is_varchar, .is_character {
+					v.string_value == v2.string_value
+				}
+				else {
+					false
+				}
+			}
 		}
 	}
 }
@@ -70,7 +86,8 @@ fn bool_str(x f64) string {
 	return match x {
 		0 { 'FALSE' }
 		1 { 'TRUE' }
-		else { 'UNKNOWN' }
+		2 { 'UNKNOWN' }
+		else { 'NULL' }
 	}
 }
 

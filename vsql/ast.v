@@ -6,8 +6,15 @@ module vsql
 type Stmt = CreateTableStmt | DeleteStmt | DropTableStmt | InsertStmt | SelectStmt | UpdateStmt
 
 // All possible expression entities.
-type Expr = BinaryExpr | CallExpr | Identifier | NamedExpr | NoExpr | NullExpr | Parameter |
-	UnaryExpr | Value
+type Expr = BinaryExpr
+	| CallExpr
+	| Identifier
+	| NamedExpr
+	| NoExpr
+	| NullExpr
+	| Parameter
+	| UnaryExpr
+	| Value
 
 // CREATE TABLE ...
 struct CreateTableStmt {

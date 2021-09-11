@@ -3,6 +3,8 @@
 module vsql
 
 struct Type {
+mut:
+	// TODO(elliotchance): Make these non-mutable.
 	typ  SQLType
 	size int // the size/precision specified for the type
 }
@@ -89,4 +91,33 @@ fn (t Type) uses_string() bool {
 			true
 		}
 	}
+}
+
+fn (t Type) number() byte {
+	return match t.typ {
+		.is_null { 0 }
+		.is_boolean { 1 }
+		.is_bigint { 2 }
+		.is_double_precision { 3 }
+		.is_integer { 4 }
+		.is_real { 5 }
+		.is_smallint { 6 }
+		.is_varchar { 7 }
+		.is_character { 8 }
+	}
+}
+
+fn type_from_number(number byte) Type {
+	return new_type(match number {
+		0 { 'NULL' }
+		1 { 'BOOLEAN' }
+		2 { 'BIGINT' }
+		3 { 'DOUBLE PRECISION' }
+		4 { 'INTEGER' }
+		5 { 'REAL' }
+		6 { 'SMALLINT' }
+		7 { 'CHARACTER VARYING' }
+		8 { 'CHARACTER' }
+		else { panic(number) }
+	}, 0)
 }

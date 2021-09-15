@@ -70,6 +70,7 @@ fn (mut b Bytes) read_string4() string {
 union Bytes2 {
 	bytes     [2]byte
 	i16_value i16
+	u16_value u16
 }
 
 fn (b Bytes2) bytes() []byte {
@@ -80,8 +81,12 @@ fn (mut b Bytes) write_i16(d i16) {
 	b.write_bytes(Bytes2{ i16_value: d }.bytes())
 }
 
+fn (mut b Bytes) write_u16(d u16) {
+	b.write_bytes(Bytes2{ u16_value: d }.bytes())
+}
+
 fn (mut b Bytes) write_int(x int) {
-	b.write_bytes(Bytes4{ int_value: x }.bytes())
+	b.write_bytes(int_to_bytes(x))
 }
 
 fn (mut b Bytes) read_i16() i16 {
@@ -93,13 +98,17 @@ fn (mut b Bytes) read_i16() i16 {
 	}
 }
 
-fn (mut b Bytes) read_int() int {
-	bytes := b.read_bytes(4)
+fn (mut b Bytes) read_u16() u16 {
+	bytes := b.read_bytes(2)
 	return unsafe {
-		Bytes4{
-			bytes: [bytes[0], bytes[1], bytes[2], bytes[3]]!
-		}.int_value
+		Bytes2{
+			bytes: [bytes[0], bytes[1]]!
+		}.u16_value
 	}
+}
+
+fn (mut b Bytes) read_int() int {
+	return bytes_to_int(b.read_bytes(4))
 }
 
 fn (b Bytes) bytes() []byte {
@@ -170,5 +179,19 @@ fn (mut b Bytes) read_i64() i64 {
 		Bytes8{
 			bytes: [bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7]]!
 		}.i64_value
+	}
+}
+
+fn int_to_bytes(n int) []byte {
+	return Bytes4{
+		int_value: n
+	}.bytes()
+}
+
+fn bytes_to_int(bytes []byte) int {
+	return unsafe {
+		Bytes4{
+			bytes: [bytes[0], bytes[1], bytes[2], bytes[3]]!
+		}.int_value
 	}
 }

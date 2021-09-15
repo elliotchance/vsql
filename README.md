@@ -21,6 +21,7 @@ no dependencies.
   - [UPDATE](https://github.com/elliotchance/vsql/blob/main/docs/update.rst)
 - [Appendix](#appendix)
   - [Data Types](https://github.com/elliotchance/vsql/blob/main/docs/data-types.rst)
+  - [File Format](https://github.com/elliotchance/vsql/blob/main/docs/file-format.rst)
   - [Functions](https://github.com/elliotchance/vsql/blob/main/docs/functions.rst)
   - [Keywords](https://github.com/elliotchance/vsql/blob/main/docs/keywords.rst)
   - [Operators](https://github.com/elliotchance/vsql/blob/main/docs/operators.rst)

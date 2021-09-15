@@ -24,10 +24,10 @@ jobs:
       run: v fmt -verify .
 
     - name: Run SQL tests
-      run: v -stats -prod test vsql
+      run: v -stats -gc boehm -prod test vsql
 
     - name: Run examples
-      run: for f in `ls examples/*.v`; do v -prod run $f; done
+      run: for f in `ls examples/*.v`; do v -gc boehm -prod run $f; done
 
     - name: Set version
       if: startsWith(github.ref, 'refs/tags/')
@@ -35,7 +35,7 @@ jobs:
 
     - name: Build macOS binaries
       run: |
-        v -prod cmd/vsql.v
+        v -gc boehm -prod cmd/vsql.v
         zip -j vsql-macos.zip cmd/vsql
 
     # See https://github.com/vlang/v/issues/10992
@@ -50,7 +50,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       run: |
         brew install mingw-w64
-        v -os windows -prod cmd/vsql.v
+        v -os windows -gc boehm -prod cmd/vsql.v
         zip -j vsql-windows.zip cmd/vsql.exe
 
     - name: Release

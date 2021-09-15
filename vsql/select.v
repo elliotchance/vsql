@@ -56,7 +56,7 @@ fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value, el
 			fetch = int((eval_as_value(c, Row{}, stmt.fetch, params) ?).f64_value)
 		}
 
-		all_rows = c.storage.read_rows(table.index, offset) ?
+		all_rows = c.storage.read_rows(table.name, offset) ?
 		if stmt.where is NoExpr {
 			if fetch >= 0 && all_rows.len > fetch {
 				all_rows = all_rows[..fetch]

@@ -10,8 +10,6 @@ struct Column {
 
 struct Table {
 mut:
-	offset  u32
-	index   int
 	name    string
 	columns []Column
 }
@@ -38,7 +36,6 @@ fn (t Table) column(name string) ?Column {
 fn (t Table) bytes() []byte {
 	mut b := new_bytes([]byte{})
 
-	b.write_int(t.index)
 	b.write_string1(t.name)
 
 	for col in t.columns {
@@ -52,10 +49,9 @@ fn (t Table) bytes() []byte {
 	return b.bytes()
 }
 
-fn new_table_from_bytes(data []byte, offset u32) Table {
+fn new_table_from_bytes(data []byte) Table {
 	mut b := new_bytes(data)
 
-	index := b.read_int()
 	table_name := b.read_string1()
 
 	mut columns := []Column{}
@@ -69,5 +65,5 @@ fn new_table_from_bytes(data []byte, offset u32) Table {
 		columns << Column{column_name, type_from_number(column_type), is_not_null}
 	}
 
-	return Table{offset, index, table_name, columns}
+	return Table{table_name, columns}
 }

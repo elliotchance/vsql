@@ -21,13 +21,13 @@ jobs:
       id: v
 
     - name: Verify fmt
-      run: v fmt -verify .
+      run: make fmt-verify
 
     - name: Run SQL tests
-      run: v -stats -gc boehm -prod test vsql
+      run: make test
 
     - name: Run examples
-      run: for f in `ls examples/*.v`; do v -gc boehm -prod run $f; done
+      run: make examples
 
     - name: Set version
       if: startsWith(github.ref, 'refs/tags/')
@@ -35,7 +35,7 @@ jobs:
 
     - name: Build macOS binaries
       run: |
-        v -gc boehm -prod cmd/vsql.v
+        make vsql
         zip -j vsql-macos.zip cmd/vsql
 
     # See https://github.com/vlang/v/issues/10992

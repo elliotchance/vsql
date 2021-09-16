@@ -3,6 +3,8 @@
 
 module vsql
 
+import os
+
 [heap]
 pub struct Connection {
 mut:
@@ -17,8 +19,52 @@ pub fn open(path string) ?Connection {
 }
 
 pub fn open_database(path string, options ConnectionOptions) ?Connection {
+	if path == ':memory:' {
+		return open_memory_database(options)
+	}
+
+	// This is a rudimentary way to ensure that small changes to storage.v are
+	// compatible as things change so rapidly. Sorry if you had a database in a
+	// previous version, you'll need to recreate it.
+	current_version := i8(4)
+
+	// If the file doesn't exist we initialize it and reopen it.
+	if !os.exists(path) {
+		mut tmpf := os.create(path) ?
+		tmpf.write_raw(current_version) ?
+		tmpf.write([]byte{len: options.page_size - 1}) ?
+		tmpf.close()
+	}
+
+	// Now open the prepared or existing file and read all of the table
+	// definitions.
+	mut pager := new_file_pager(path, options.page_size) ?
+	mut f := Storage{
+		btree: new_btree(pager)
+	}
+
+	// TODO(elliotchance): Move this to a read/write header. See
+	//  https://github.com/elliotchance/vsql/issues/42.
+	mut version := []byte{len: options.page_size}
+	pager.file.seek(0, .start) ?
+	pager.file.read(mut version) ?
+	f.version = i8(version[0])
+
+	// Check file version compatibility.
+	if f.version != current_version {
+		return error('need version $current_version but database is $f.version')
+	}
+
+	return open_connection(pager, options)
+}
+
+pub fn open_memory_database(options ConnectionOptions) ?Connection {
+	return open_connection(new_memory_pager(options.page_size), options)
+}
+
+fn open_connection(pager Pager, options ConnectionOptions) ?Connection {
 	mut conn := Connection{
-		storage: new_file_storage(path) ?
+		storage: new_storage(pager) ?
 		query_cache: options.query_cache
 	}
 	register_builtin_funcs(mut conn) ?
@@ -36,6 +82,9 @@ pub fn (mut c Connection) prepare(sql string) ?PreparedStmt {
 
 pub fn (mut c Connection) query(sql string) ?Result {
 	mut prepared := c.prepare(sql) ?
+	defer {
+		c.storage.flush()
+	}
 
 	return prepared.query(map[string]Value{})
 }
@@ -81,10 +130,14 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data fn (m
 struct ConnectionOptions {
 pub mut:
 	query_cache &QueryCache
+	// Warning: This only works for :memory: databases. Configuring it for
+	// file-based databases will either be ignored or causes crashes.
+	page_size int
 }
 
 fn default_connection_options() ConnectionOptions {
 	return ConnectionOptions{
 		query_cache: new_query_cache()
+		page_size: 4096
 	}
 }

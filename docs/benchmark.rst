@@ -7,6 +7,12 @@ are already a wide array of products out there that are battled tested and tuned
 to perfection. This page is useful to compare the relative performance
 improvements between releases.
 
+Use the follow command to run the on-disk and memory benchmarks:
+
+.. code-block:: sh
+
+   make bench
+
 .. contents::
 
 Process
@@ -76,26 +82,31 @@ These were run on:
 - 2.3 GHz Quad-Core Intel Core i7
 - 16 GB 1600 MHz DDR3
 
-.. list-table::
-  :header-rows: 1
+**INSERT** and **SELECT** are in rows per second and **TCP-B** is in transactions per second.
 
-  * - Date
-    - Version
-    - INSERT (rows/s)
-    - SELECT (rows/s)
-    - TCP-B (tps)
-    - Notes
++------------+---------+-------------------------+-------------------------+-------+
+|            |         | On-disk                 | In-memory               |       |
+| Date       | Version +--------+--------+-------+--------+--------+-------+ Notes |
+|            |         | INSERT | SELECT | TCP-B | INSERT | SELECT | TCP-B |       |
++============+=========+========+========+=======+========+========+=======+=======+
+| 2021-09-15 | v0.12.1 | 378    | 65256  | 0.376 | 270    | 71851  | 0.396 | [3]_  |
++------------+---------+--------+--------+-------+--------+--------+-------+-------+
+| 2021-09-15 | v0.12.1 | 355    | 71851  | 0.377 |        |        |       | [2]_  |
++------------+---------+--------+--------+-------+--------+--------+-------+-------+
+| 2021-09-04 | v0.12.0 | 5107   | 129252 | 0.378 |        |        |       | [1]_  |
++------------+---------+--------+--------+-------+--------+--------+-------+-------+
 
-  * - 2021-09-04
-    - `v0.11.0 <https://github.com/elliotchance/vsql/releases/tag/v0.11.0>`_
-    - 5107
-    - 129252
-    - 0.378
-    - This first version of the storage format is basically a binary CSV. Where tables and rows are treated as objects in a stream. That is, to find a record is to read (and decode) all rows from every table.
+.. [3] This version introduces an in-memory option, but no changes were made to
+   functionality. The on-disk and in-memory performance is similar because the
+   OS does a very good job at cashing random access reads and writes.
 
-  * - 2021-09-15
-    - `v0.12.0 <https://github.com/elliotchance/vsql/releases/tag/v0.12.0>`_
-    - 355
-    - 71851
-    - 0.377
-    - This version completely replaces the storage engine with with a B-tree on disk. Although the ``INSERT`` and ``SELECT`` speeds are much lower, the same transaction throughput is retained because it no longer has to scan the full file for any ``SELECT`` operation. The current implementation uses a 4kb page, but leaves a lot of low hanging fruit for optimization, however, this version only focused on functionalty and not performance.
+.. [2] This version completely replaces the storage engine with with a B-tree on
+   disk. Although the ``INSERT`` and ``SELECT`` speeds are much lower, the same
+   transaction throughput is retained because it no longer has to scan the full
+   file for any ``SELECT`` operation. The current implementation uses a 4kb
+   page, but leaves a lot of low hanging fruit for optimization, however, this
+   version only focused on functionalty and not performance.
+
+.. [1] This first version of the storage format is basically a binary CSV. Where
+   tables and rows are treated as objects in a stream. That is, to find a record
+   is to read (and decode) all rows from every table.

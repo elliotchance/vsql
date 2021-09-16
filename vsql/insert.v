@@ -7,9 +7,7 @@ import time
 fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, elapsed_parse time.Duration) ?Result {
 	t := start_timer()
 
-	mut row := Row{
-		data: map[string]Value{}
-	}
+	mut row := map[string]Value{}
 
 	if stmt.columns.len < stmt.values.len {
 		return sqlstate_42601('INSERT has more values than columns')
@@ -35,12 +33,12 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 			return sqlstate_23502('column $column_name')
 		}
 
-		row.data[column_name] = value
+		row[column_name] = value
 	}
 
 	// Fill in unspecified columns with NULL
 	for col in table.columns {
-		if col.name in row.data {
+		if col.name in row {
 			continue
 		}
 
@@ -48,10 +46,10 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 			return sqlstate_23502('column $col.name')
 		}
 
-		row.data[col.name] = new_null_value()
+		row[col.name] = new_null_value()
 	}
 
-	c.storage.write_row(row, table) ?
+	c.storage.write_row(new_row(row), table) ?
 
 	return new_result_msg('INSERT 1', elapsed_parse, t.elapsed())
 }

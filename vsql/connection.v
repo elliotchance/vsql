@@ -6,7 +6,7 @@ module vsql
 [heap]
 pub struct Connection {
 mut:
-	storage        FileStorage
+	storage        Storage
 	funcs          map[string]Func
 	virtual_tables map[string]VirtualTable
 	query_cache    &QueryCache

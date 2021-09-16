@@ -30,7 +30,7 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 
 	mut delete_rows := []Row{}
 	mut new_rows := []Row{}
-	for mut row in c.storage.read_rows(table.index, 0) ? {
+	for mut row in c.storage.read_rows(table.name, 0) ? {
 		// Missing WHERE matches all records
 		mut ok := true
 		if stmt.where !is NoExpr {
@@ -39,9 +39,7 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 
 		if ok {
 			mut did_modify := false
-			mut new_row := Row{
-				data: row.data.clone()
-			}
+			mut row2 := new_row(row.data.clone())
 			for k, v in stmt.set {
 				column_name := identifier_name(k)
 				table_column := table.column(column_name) ?
@@ -53,19 +51,19 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 					// msg ignored here becuase the type have already been
 					// checked above.
 					row.data[column_name] = cast('', raw_value, table_column.typ) ?
-					new_row.data[column_name] = cast('', raw_value, table_column.typ) ?
+					row2.data[column_name] = cast('', raw_value, table_column.typ) ?
 				}
 			}
 
 			if did_modify {
 				delete_rows << row
-				new_rows << new_row
+				new_rows << row2
 			}
 		}
 	}
 
 	for row in delete_rows {
-		c.storage.delete_row(row) ?
+		c.storage.delete_row(table.name, row) ?
 	}
 
 	for row in new_rows {

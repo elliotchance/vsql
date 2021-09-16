@@ -84,9 +84,18 @@ These were run on:
     - INSERT (rows/s)
     - SELECT (rows/s)
     - TCP-B (tps)
+    - Notes
 
   * - 2021-09-04
     - `v0.11.0 <https://github.com/elliotchance/vsql/releases/tag/v0.11.0>`_
     - 5107
     - 129252
     - 0.378
+    - This first version of the storage format is basically a binary CSV. Where tables and rows are treated as objects in a stream. That is, to find a record is to read (and decode) all rows from every table.
+
+  * - 2021-09-15
+    - `v0.12.0 <https://github.com/elliotchance/vsql/releases/tag/v0.12.0>`_
+    - 355
+    - 71851
+    - 0.377
+    - This version completely replaces the storage engine with with a B-tree on disk. Although the ``INSERT`` and ``SELECT`` speeds are much lower, the same transaction throughput is retained because it no longer has to scan the full file for any ``SELECT`` operation. The current implementation uses a 4kb page, but leaves a lot of low hanging fruit for optimization, however, this version only focused on functionalty and not performance.

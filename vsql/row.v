@@ -3,15 +3,23 @@
 
 module vsql
 
+import time
+
 struct Row {
+	id i64
 mut:
-	offset u32
-	data   map[string]Value
+	data map[string]Value
 }
 
 pub fn new_row(data map[string]Value) Row {
+	// TODO(elliotchance): This is a terrible hack to make sure we have a
+	//  globally unique but also ordered id for the row.
+	unique_id := time.now().unix_time_milli()
+	time.sleep(time.millisecond)
+
 	return Row{
 		data: data
+		id: unique_id
 	}
 }
 
@@ -118,6 +126,8 @@ fn new_empty_row(columns []Column) Row {
 fn (r Row) bytes(t Table) []byte {
 	mut buf := new_bytes([]byte{})
 
+	buf.write_i64(r.id)
+
 	for col in t.columns {
 		v := r.data[col.name]
 
@@ -162,9 +172,11 @@ fn (r Row) bytes(t Table) []byte {
 	return buf.bytes()
 }
 
-fn new_row_from_bytes(t Table, data []byte, offset u32) Row {
+fn new_row_from_bytes(t Table, data []byte) Row {
 	mut buf := new_bytes(data)
 	mut row := map[string]Value{}
+
+	row_id := buf.read_i64()
 
 	for col in t.columns {
 		// Some types do not need a NULL flag because it's built into the value.
@@ -212,5 +224,5 @@ fn new_row_from_bytes(t Table, data []byte, offset u32) Row {
 		row[col.name] = v
 	}
 
-	return Row{offset, row}
+	return Row{row_id, row}
 }

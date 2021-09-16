@@ -13,7 +13,7 @@ fn execute_delete(mut c Connection, stmt DeleteStmt, params map[string]Value, el
 	}
 
 	table := c.storage.tables[table_name]
-	mut rows := c.storage.read_rows(table.index, 0) ?
+	mut rows := c.storage.read_rows(table.name, 0) ?
 
 	mut deleted := 0
 	for row in rows {
@@ -24,7 +24,7 @@ fn execute_delete(mut c Connection, stmt DeleteStmt, params map[string]Value, el
 
 		if ok {
 			deleted++
-			c.storage.delete_row(row) ?
+			c.storage.delete_row(table.name, row) ?
 		}
 	}
 

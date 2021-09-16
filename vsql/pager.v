@@ -18,6 +18,7 @@ interface Pager {
 	root_page() int
 	set_root_page(page_number int) ?
 	close()
+	flush()
 }
 
 struct MemoryPager {
@@ -72,6 +73,9 @@ fn (p MemoryPager) page_size() int {
 }
 
 fn (p MemoryPager) close() {
+}
+
+fn (p MemoryPager) flush() {
 }
 
 struct FilePager {
@@ -164,4 +168,8 @@ fn (p FilePager) page_size() int {
 
 fn (mut p FilePager) close() {
 	p.file.close()
+}
+
+fn (mut p FilePager) flush() {
+	p.file.flush()
 }

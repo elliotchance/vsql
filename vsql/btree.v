@@ -291,3 +291,7 @@ fn (mut p Btree) remove(key []byte) ? {
 fn (mut b Btree) close() {
 	b.pager.close()
 }
+
+fn (mut b Btree) flush() {
+	b.pager.flush()
+}

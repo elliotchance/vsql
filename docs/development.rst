@@ -24,6 +24,16 @@ If you receive an error, you may need to install it on macOS:
 
   brew install libgc
 
+Debugging
+---------
+
+Termination signals often don't give much context, you can get more information
+by using the ``lldb`` debugger:
+
+.. code-block:: sh
+
+   v examples/memory.v && lldb -o run examples/memory
+
 Parser & SQL Grammar
 --------------------
 

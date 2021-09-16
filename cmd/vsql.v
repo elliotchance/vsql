@@ -38,6 +38,12 @@ fn main() {
 		description: 'Run benchmark'
 		execute: bench_command
 	}
+	bench_cmd.add_flag(cli.Flag{
+		flag: .string
+		name: 'file'
+		abbrev: 'f'
+		description: 'File path that will be deleted and created for the test. You can use :memory: as well (default bench.vsql)'
+	})
 	cmd.add_command(bench_cmd)
 
 	mut version_cmd := cli.Command{
@@ -96,7 +102,12 @@ fn server_command(cmd cli.Command) ? {
 fn bench_command(cmd cli.Command) ? {
 	print_version()
 
-	mut conn := vsql.open('bench.vsql') or { panic('$err') }
+	mut file := cmd.flags.get_string('file') or { '' }
+	if file == '' {
+		file = 'bench.vsql'
+	}
+
+	mut conn := vsql.open(':memory:') or { panic('$err') }
 
 	mut benchmark := vsql.new_benchmark(conn)
 	benchmark.start() or { panic('$err') }
@@ -104,7 +115,13 @@ fn bench_command(cmd cli.Command) ? {
 
 fn print_version() {
 	// This constant is replaced at build time. See ci.yml.
-	println('vsql MISSING_VERSION')
+	version := 'MISSING_VERSION'
+
+	// For local development we don't want to print the version if it's not set.
+	// Be careful not to use the constant value again as it will be replaced.
+	if !version.contains('MISSING') {
+		println('vsql $version')
+	}
 }
 
 fn version_command(cmd cli.Command) ? {

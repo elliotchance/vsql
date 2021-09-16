@@ -11,6 +11,7 @@ no dependencies.
   - [Custom Functions](#custom-functions)
   - [Virtual Tables](#virtual-tables)
   - [Prepared Statements](https://github.com/elliotchance/vsql/blob/main/docs/prepared-statements.rst)
+  - [In Memory Databases](#in-memory-databases)
 - [FAQ](https://github.com/elliotchance/vsql/blob/main/docs/faq.rst)
 - SQL Commands
   - [CREATE TABLE](https://github.com/elliotchance/vsql/blob/main/docs/create-table.rst)
@@ -190,3 +191,12 @@ for row in result {
 The callback for the virtual table will be called repeatedly until `t.done()` is
 invoked, even if zero rows are provided in an iteration. All data will be thrown
 away between subsequent `SELECT` operations.
+
+### In Memory Databases
+
+Opening a database with the special file name ":memory:" will use an entirely
+in-memory database:
+
+```v
+mut db := vsql.open(':memory:') ?
+```

@@ -4,15 +4,17 @@ module vsql
 
 import time
 
-fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, elapsed_parse time.Duration) ?Result {
+fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, elapsed_parse time.Duration, explain bool) ?Result {
 	t := start_timer()
+	plan := create_plan(stmt, params, c) ?
 
-	table_name := identifier_name(stmt.table_name)
-
-	if table_name !in c.storage.tables {
-		return sqlstate_42p01(table_name) // table does not exist
+	if explain {
+		return plan.explain(elapsed_parse)
 	}
 
+	mut rows := plan.execute([]Row{}) ?
+
+	table_name := identifier_name(stmt.table_name)
 	table := c.storage.tables[table_name]
 
 	// check values are appropriate for the table before beginning
@@ -30,35 +32,27 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 
 	mut delete_rows := []Row{}
 	mut new_rows := []Row{}
-	for mut row in c.storage.read_rows(table.name, 0) ? {
-		// Missing WHERE matches all records
-		mut ok := true
-		if stmt.where !is NoExpr {
-			ok = eval_as_bool(c, row, stmt.where, params) ?
+	for mut row in rows {
+		mut did_modify := false
+		mut row2 := new_row(row.data.clone())
+		for k, v in stmt.set {
+			column_name := identifier_name(k)
+			table_column := table.column(column_name) ?
+			raw_value := eval_as_value(c, row, v, params) ?
+
+			if row.data[column_name] != raw_value {
+				did_modify = true
+
+				// msg ignored here becuase the type have already been
+				// checked above.
+				row.data[column_name] = cast('', raw_value, table_column.typ) ?
+				row2.data[column_name] = cast('', raw_value, table_column.typ) ?
+			}
 		}
 
-		if ok {
-			mut did_modify := false
-			mut row2 := new_row(row.data.clone())
-			for k, v in stmt.set {
-				column_name := identifier_name(k)
-				table_column := table.column(column_name) ?
-				raw_value := eval_as_value(c, row, v, params) ?
-
-				if row.data[column_name] != raw_value {
-					did_modify = true
-
-					// msg ignored here becuase the type have already been
-					// checked above.
-					row.data[column_name] = cast('', raw_value, table_column.typ) ?
-					row2.data[column_name] = cast('', raw_value, table_column.typ) ?
-				}
-			}
-
-			if did_modify {
-				delete_rows << row
-				new_rows << row2
-			}
+		if did_modify {
+			delete_rows << row
+			new_rows << row2
 		}
 	}
 

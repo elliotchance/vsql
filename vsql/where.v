@@ -2,19 +2,25 @@
 
 module vsql
 
-// fetch: -1 to ignore, otherwise the max records to return.
-fn where(conn Connection, rows []Row, inverse bool, expr Expr, fetch int, params map[string]Value) ?[]Row {
+// A WhereOperation executes a condition on each row, only passing through rows
+// that evaluate to TRUE.
+struct WhereOperation {
+	condition Expr
+	params    map[string]Value
+	conn      Connection
+}
+
+fn (o WhereOperation) str() string {
+	return 'WHERE ${o.condition.pstr(o.params)}'
+}
+
+fn (o WhereOperation) execute(rows []Row) ?[]Row {
 	mut new_rows := []Row{}
+
 	for row in rows {
-		mut ok := eval_as_bool(conn, row, expr, params) ?
-		if inverse {
-			ok = !ok
-		}
+		mut ok := eval_as_bool(o.conn, row, o.condition, o.params) ?
 		if ok {
 			new_rows << row
-		}
-		if fetch >= 0 && new_rows.len == fetch {
-			break
 		}
 	}
 

@@ -67,3 +67,58 @@ fn new_table_from_bytes(data []byte) Table {
 
 	return Table{table_name, columns}
 }
+
+// A TableOperation requires that up to rows in the table be read. The number of
+// rows read may be limited and/or an offset (rows to skip) provided.
+struct TableOperation {
+	table_name string
+	table      Table
+	offset     Expr // NoExpr for not set
+	params     map[string]Value
+	conn       Connection
+mut:
+	storage Storage
+}
+
+fn (o TableOperation) str() string {
+	mut s := 'TABLE $o.table_name'
+
+	// TODO(elliotchance): It would be nice to correctly pluralize ROW/ROWS, but
+	//  the number may be a parameter we would have to resolve.
+
+	if o.offset !is NoExpr {
+		s += ' OFFSET ${o.offset.pstr(o.params)} ROWS'
+	}
+
+	return s
+}
+
+fn (mut o TableOperation) execute(_ []Row) ?[]Row {
+	mut offset := 0
+	if o.offset !is NoExpr {
+		offset = int((eval_as_value(o.conn, Row{}, o.offset, o.params) ?).f64_value)
+	}
+
+	return o.storage.read_rows(o.table_name, offset)
+}
+
+// A LimitOperation stops after a specified number of rows have been received.
+struct LimitOperation {
+	fetch  Expr
+	params map[string]Value
+	conn   Connection
+}
+
+fn (o LimitOperation) str() string {
+	return 'FETCH FIRST ${o.fetch.pstr(o.params)} ROWS ONLY'
+}
+
+fn (o LimitOperation) execute(rows []Row) ?[]Row {
+	mut fetch := int((eval_as_value(o.conn, Row{}, o.fetch, o.params) ?).f64_value)
+
+	if fetch < rows.len {
+		return rows[..fetch]
+	}
+
+	return rows
+}

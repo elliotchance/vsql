@@ -17,6 +17,7 @@ no dependencies.
   - [CREATE TABLE](https://github.com/elliotchance/vsql/blob/main/docs/create-table.rst)
   - [DELETE](https://github.com/elliotchance/vsql/blob/main/docs/delete.rst)
   - [DROP TABLE](https://github.com/elliotchance/vsql/blob/main/docs/drop-table.rst)
+  - [EXPLAIN](https://github.com/elliotchance/vsql/blob/main/docs/explain.rst)
   - [INSERT](https://github.com/elliotchance/vsql/blob/main/docs/insert.rst)
   - [SELECT](https://github.com/elliotchance/vsql/blob/main/docs/select.rst)
   - [UPDATE](https://github.com/elliotchance/vsql/blob/main/docs/update.rst)

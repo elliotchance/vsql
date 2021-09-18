@@ -91,18 +91,12 @@ class Set(object):
 
     def exists(self, v):
         return v.index() in self.elems
-        # for elem in self.elems:
-        #     if elem.eq(v):
-        #         return True
-
-        # return False
         
     def add(self, v):
         if self.exists(v):
             return
         
         self.elems[v.index()] = v
-        # self.elems.append(v)
 
 class EarleyColumn(object):
     # index  int
@@ -222,8 +216,6 @@ def parse3(rule, table):
                     predict(col, term)
                 elif i + 1 < len(table):
                     scan(table[i+1], state, term)
-        
-        #col.print(completedOnly = True)
 
     # find gamma rule in last table column (otherwise fail)
     for st in table[len(table)-1].states:

@@ -26,9 +26,6 @@ fn eval_as_value(conn Connection, data Row, e Expr, params map[string]Value) ?Va
 		Identifier {
 			return eval_identifier(data, e)
 		}
-		NamedExpr {
-			return eval_as_value(conn, data, e.expr, params)
-		}
 		NullExpr {
 			return eval_null(conn, data, e, params)
 		}

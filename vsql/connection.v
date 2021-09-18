@@ -74,10 +74,10 @@ fn open_connection(pager Pager, options ConnectionOptions) ?Connection {
 
 pub fn (mut c Connection) prepare(sql string) ?PreparedStmt {
 	t := start_timer()
-	stmt, params := c.query_cache.parse(sql) ?
+	stmt, params, explain := c.query_cache.parse(sql) ?
 	elapsed_parse := t.elapsed()
 
-	return PreparedStmt{stmt, params, &c, elapsed_parse}
+	return PreparedStmt{stmt, params, explain, &c, elapsed_parse}
 }
 
 pub fn (mut c Connection) query(sql string) ?Result {

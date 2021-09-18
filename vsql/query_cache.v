@@ -82,17 +82,26 @@ fn (q QueryCache) prepare_stmt(tokens []Token) (string, map[string]Value, []Toke
 	return key, params, new_tokens
 }
 
-fn (mut q QueryCache) parse(query string) ?(Stmt, map[string]Value) {
+fn (mut q QueryCache) parse(query string) ?(Stmt, map[string]Value, bool) {
 	mut tokens := tokenize(query)
+
+	// EXPLAIN is super helpful, but not part of the SQL standard so we only
+	// treat it as a prefix that is trimmed off before parsing.
+	mut explain := false
+	if tokens[0].value.to_upper() == 'EXPLAIN' {
+		explain = true
+		tokens = tokens[1..]
+	}
+
 	key, params, new_tokens := q.prepare(tokens)
 	if key == '' {
 		stmt := parse(new_tokens) ?
-		return stmt, map[string]Value{}
+		return stmt, map[string]Value{}, explain
 	}
 
 	if key !in q.stmts {
 		q.stmts[key] = parse(new_tokens) ?
 	}
 
-	return q.stmts[key] or { panic('impossible') }, params
+	return q.stmts[key] or { panic('impossible') }, params, explain
 }

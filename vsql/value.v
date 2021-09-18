@@ -99,3 +99,12 @@ fn f64_string(x f64) string {
 
 	return '${s[0]}.${s[1].trim_right('0')}'
 }
+
+fn (v Value) str() string {
+	return match v.typ.typ {
+		.is_null { 'NULL' }
+		.is_boolean { bool_str(v.f64_value) }
+		.is_double_precision, .is_real, .is_bigint, .is_integer, .is_smallint { f64_string(v.f64_value) }
+		.is_varchar, .is_character { v.string_value }
+	}
+}

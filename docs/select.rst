@@ -1,8 +1,8 @@
 SELECT
 ======
 
-A `SELECT` statement is used to retrieve rows from a table. It can also be used
-to evaulate expressions without a table (see *FROM*).
+A ``SELECT`` statement is used to retrieve rows from a table. It can also be
+used to evaulate expressions without a table (see *FROM*).
 
 .. contents::
 
@@ -50,6 +50,13 @@ If the ``FETCH`` rows is greater than the total set, all rows will be returned.
 
 Using ``ROW`` or ``ROWS`` has no functional difference and either can be used
 with any value. Both words are provided soley for grammatical benefit.
+
+EXPLAIN
+=======
+
+The query planner will decide the best strategy to execute the ``SELECT``. You
+can see this plan by using the ``EXPLAIN`` prefix. See
+`EXPLAIN <https://github.com/elliotchance/vsql/blob/main/docs/explain.rst>`_.
 
 Examples
 ========

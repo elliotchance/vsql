@@ -47,13 +47,7 @@ pub fn (r Row) get_f64(name string) ?f64 {
 //
 // An error is only returned if the column does not exist.
 pub fn (r Row) get_string(name string) ?string {
-	value := r.get(name) ?
-	return match value.typ.typ {
-		.is_null { 'NULL' }
-		.is_boolean { bool_str(r.data[name].f64_value) }
-		.is_double_precision, .is_real, .is_bigint, .is_integer, .is_smallint { f64_string(r.data[name].f64_value) }
-		.is_varchar, .is_character { r.data[name].string_value }
-	}
+	return (r.get(name) ?).str()
 }
 
 // get_bool only works on a BOOLEAN value. If the value is NULL or UNKNOWN,

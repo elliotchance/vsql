@@ -4,71 +4,49 @@ module vsql
 
 import time
 
-fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value, elapsed_parse time.Duration) ?Result {
+fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value, elapsed_parse time.Duration, explain bool) ?Result {
 	t := start_timer()
-
-	// Find all rows first.
-	mut all_rows := []Row{}
+	plan := create_plan(stmt, params, c) ?
 	mut exprs := stmt.exprs
 
-	table_name := identifier_name(stmt.from)
-
-	// Check virtual table first.
-	if table_name in c.virtual_tables {
-		mut vt := c.virtual_tables[table_name]
-		vt.reset()
-		for !vt.is_done {
-			vt.data(mut vt) ?
-		}
-		all_rows = vt.rows
-
-		if exprs is AsteriskExpr {
-			mut new_exprs := []DerivedColumn{}
-			for col in vt.create_table_stmt.columns {
-				new_exprs << DerivedColumn{Identifier{col.name}, Identifier{col.name}}
-			}
-
-			exprs = new_exprs
-		}
-
-		// TODO(elliotchance): Virtual tables don't implement OFFSET/FETCH.
+	if explain {
+		return plan.explain(elapsed_parse)
 	}
-	// Now check for a regular table.
-	else if table_name in c.storage.tables {
-		table := c.storage.tables[table_name]
 
-		if exprs is AsteriskExpr {
-			mut new_exprs := []DerivedColumn{}
-			for column_name in table.column_names() {
-				new_exprs << DerivedColumn{Identifier{'"$column_name"'}, Identifier{'"$column_name"'}}
-			}
-
-			exprs = new_exprs
-		}
-
-		mut offset := 0
-		if stmt.offset !is NoExpr {
-			offset = int((eval_as_value(c, Row{}, stmt.offset, params) ?).f64_value)
-		}
-
-		mut fetch := -1
-		if stmt.fetch !is NoExpr {
-			fetch = int((eval_as_value(c, Row{}, stmt.fetch, params) ?).f64_value)
-		}
-
-		all_rows = c.storage.read_rows(table.name, offset) ?
-		if stmt.where is NoExpr {
-			if fetch >= 0 && all_rows.len > fetch {
-				all_rows = all_rows[..fetch]
-			}
-		} else {
-			all_rows = where(c, all_rows, false, stmt.where, fetch, params) ?
-		}
-	} else {
-		return sqlstate_42p01(table_name)
-	}
+	// Execute the query.
+	all_rows := plan.execute([]Row{}) ?
 
 	// Transform into expressions.
+	//
+	// TODO(elliotchance): This isn't necessary if the VirtualTable relies on
+	//  the Table and not the CreateTableStmt.
+	first_operation := plan.operations[0]
+	match first_operation {
+		TableOperation {
+			if exprs is AsteriskExpr {
+				mut new_exprs := []DerivedColumn{}
+				for column_name in first_operation.table.column_names() {
+					new_exprs << DerivedColumn{Identifier{'"$column_name"'}, Identifier{'"$column_name"'}}
+				}
+
+				exprs = new_exprs
+			}
+		}
+		VirtualTableOperation {
+			if exprs is AsteriskExpr {
+				mut new_exprs := []DerivedColumn{}
+				for col in first_operation.table.create_table_stmt.columns {
+					new_exprs << DerivedColumn{Identifier{col.name}, Identifier{col.name}}
+				}
+
+				exprs = new_exprs
+			}
+		}
+		else {
+			panic('invalid initial operation')
+		}
+	}
+
 	mut returned_rows := []Row{cap: all_rows.len}
 	mut col_num := 1
 	mut column_names := []string{cap: (exprs as []DerivedColumn).len}

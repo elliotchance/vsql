@@ -9,7 +9,13 @@ fn parse_binary_expr(left Expr, op string, right Expr) ?Expr {
 }
 
 fn parse_query_specification(select_list SelectList, table_expression TableExpression) ?SelectStmt {
-	return SelectStmt{select_list, table_expression.from_clause.name, table_expression.where_clause, NoExpr{}, NoExpr{}}
+	return SelectStmt{
+		exprs: select_list
+		from: table_expression.from_clause.name
+		where: table_expression.where_clause
+		offset: NoExpr{}
+		fetch: NoExpr{}
+	}
 }
 
 fn parse_select_sublist(column DerivedColumn) ?SelectList {

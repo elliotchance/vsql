@@ -1,9 +1,15 @@
-.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples vsql
+.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples vsql grammar sql-test
 
 # Binaries
 
 vsql:
 	v -gc boehm -prod cmd/vsql.v
+
+# Grammar (BNF)
+
+grammar:
+	python generate-grammar.py
+	v fmt -w vsql/grammar.v
 
 # Formatting
 
@@ -17,6 +23,9 @@ fmt-verify:
 
 test:
 	v -stats -gc boehm -prod test vsql
+
+sql-test:
+	v -stats -gc boehm test vsql/sql_test.v
 
 # Examples
 

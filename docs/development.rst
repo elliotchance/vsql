@@ -60,8 +60,7 @@ After making changes to `grammar.bnf` you will need to run:
 
 .. code-block:: sh
 
-  python generate-grammar.py
-  v fmt -w vsql/grammar.v
+  make grammar
 
 Now, when running `v test .` you may receive errors for missing ``parse_``
 functions, you should implement those now.

@@ -12,11 +12,11 @@ fn execute_delete(mut c Connection, stmt DeleteStmt, params map[string]Value, el
 		return plan.explain(elapsed_parse)
 	}
 
-	rows := plan.execute([]Row{}) ?
+	mut rows := plan.execute([]Row{}) ?
 
 	table_name := identifier_name(stmt.table_name)
-	for row in rows {
-		c.storage.delete_row(table_name, row) ?
+	for mut row in rows {
+		c.storage.delete_row(table_name, mut row) ?
 	}
 
 	return new_result_msg('DELETE $rows.len', elapsed_parse, t.elapsed())

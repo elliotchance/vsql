@@ -34,8 +34,8 @@ fn (mut f Storage) flush() {
 	f.btree.flush()
 }
 
-fn (mut f Storage) create_table(table_name string, columns []Column) ? {
-	table := Table{table_name, columns}
+fn (mut f Storage) create_table(table_name string, columns []Column, primary_key []string) ? {
+	table := Table{table_name, columns, primary_key}
 
 	obj := new_page_object('T$table_name'.bytes(), table.bytes())
 	f.btree.add(obj) ?
@@ -48,18 +48,20 @@ fn (mut f Storage) delete_table(table_name string) ? {
 	f.tables.delete(table_name)
 }
 
-fn (mut f Storage) delete_row(table_name string, row Row) ? {
-	f.btree.remove('R$table_name:$row.id'.bytes()) ?
+fn (mut f Storage) delete_row(table_name string, mut row Row) ? {
+	f.btree.remove(row.object_key(f.tables[table_name]) ?) ?
 }
 
-fn (mut f Storage) write_row(r Row, t Table) ? {
-	obj := new_page_object('R$t.name:$r.id'.bytes(), r.bytes(t))
+fn (mut f Storage) write_row(mut r Row, t Table) ? {
+	obj := new_page_object(r.object_key(t) ?, r.bytes(t))
 	f.btree.add(obj) ?
 }
 
 fn (mut f Storage) read_rows(table_name string, offset int) ?[]Row {
 	mut rows := []Row{}
-	for object in f.btree.new_range_iterator('R$table_name:'.bytes(), 'R$table_name:Z'.bytes()) {
+
+	// ';' = ':' + 1
+	for object in f.btree.new_range_iterator('R$table_name:'.bytes(), 'R$table_name;'.bytes()) {
 		rows << new_row_from_bytes(f.tables[table_name], object.value)
 	}
 

@@ -89,12 +89,19 @@ These were run on:
 | Date       | Version +--------+--------+-------+--------+--------+-------+ Notes |
 |            |         | INSERT | SELECT | TCP-B | INSERT | SELECT | TCP-B |       |
 +============+=========+========+========+=======+========+========+=======+=======+
+| 2021-09-19 | v0.14.0 | 995    | 61782  | 94    | 992    | 62253  | 91    | [4]_  |
++------------+---------+--------+--------+-------+--------+--------+-------+-------+
 | 2021-09-15 | v0.12.1 | 378    | 65256  | 0.376 | 270    | 71851  | 0.396 | [3]_  |
 +------------+---------+--------+--------+-------+--------+--------+-------+-------+
 | 2021-09-15 | v0.12.0 | 355    | 71851  | 0.377 |        |        |       | [2]_  |
 +------------+---------+--------+--------+-------+--------+--------+-------+-------+
 | 2021-09-04 | v0.11.0 | 5107   | 129252 | 0.378 |        |        |       | [1]_  |
 +------------+---------+--------+--------+-------+--------+--------+-------+-------+
+
+.. [4] Now we can utilize a PRIMARY KEY on the table which the query planner
+   understands for exact matches (which we use in these benchmarks). This
+   creates an enourmous speed up since we only need to check pages that contain
+   the record.
 
 .. [3] This version introduces an in-memory option, but no changes were made to
    functionality. The on-disk and in-memory performance is similar because the

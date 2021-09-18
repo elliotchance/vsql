@@ -114,6 +114,12 @@ The table definition is stored as:
 
 - 1 byte (signed integer) for the table name length.
 - *n* bytes for the table name.
+- 1 byte (signed integer) for the number of columns in the primary key (0 means there is no primary key defined).
+- For each primary key column:
+
+  * 1 byte (signed integer) for the column name length.
+  * *n* bytes for the column name.
+
 - For each column:
 
   * 1 byte (signed integer) for the column name length.
@@ -130,7 +136,8 @@ For example:
    CREATE TABLE products (
        product_id INT NOT NULL,
        product_name VARCHAR(64) NOT NULL,
-       product_desc VARCHAR(1000)
+       product_desc VARCHAR(1000),
+       PRIMARY KEY (product_id)
    );
 
 Is serialized as 41 bytes:
@@ -150,59 +157,71 @@ Is serialized as 41 bytes:
     - 8 ([]byte)
     - ``PRODUCTS``
 
-  * - 12
+  * - 8
+    - 1 (signed int)
+    - 1
+
+  * - 9
     - 1 (signed int)
     - 10
 
-  * - 13
+  * - 10
     - 10 ([]byte)
-    - ``product_id``
-
-  * - 23
-    - 1 (signed int)
-    - 4 (INTEGER)
+    - ``PRODUCT_ID``
 
   * - 24
     - 1 (signed int)
-    - 0 (NOT NULL)
+    - 10
 
   * - 25
-    - 2 (signed int)
-    - 0 (size, ignored)
-
-  * - 27
-    - 2 (signed int)
-    - 0 (precision, ignored)
-
-  * - 29
-    - 1 (signed int)
-    - 7 (CHARACTER VARYING)
-
-  * - 30
-    - 1 (signed int)
-    - 0 (NOT NULL)
-
-  * - 32
-    - 2 (signed int)
-    - 64 (size)
-
-  * - 33
-    - 2 (signed int)
-    - 0 (precision, ignored)
+    - 10 ([]byte)
+    - ``PRODUCT_ID``
 
   * - 35
     - 1 (signed int)
-    - 7 (CHARACTER VARYING)
+    - 4 (INTEGER)
 
   * - 36
     - 1 (signed int)
-    - 1 (nullable)
+    - 0 (NOT NULL)
 
   * - 37
     - 2 (signed int)
-    - 1000 (size)
+    - 0 (size, ignored)
 
   * - 39
+    - 2 (signed int)
+    - 0 (precision, ignored)
+
+  * - 41
+    - 1 (signed int)
+    - 7 (CHARACTER VARYING)
+
+  * - 42
+    - 1 (signed int)
+    - 0 (NOT NULL)
+
+  * - 44
+    - 2 (signed int)
+    - 64 (size)
+
+  * - 45
+    - 2 (signed int)
+    - 0 (precision, ignored)
+
+  * - 47
+    - 1 (signed int)
+    - 7 (CHARACTER VARYING)
+
+  * - 48
+    - 1 (signed int)
+    - 1 (nullable)
+
+  * - 49
+    - 2 (signed int)
+    - 1000 (size)
+
+  * - 51
     - 2 (signed int)
     - 0 (precision, ignored)
 
@@ -210,7 +229,10 @@ Row Objects
 -----------
 
 The object key for a row is ``R<table>:<id>``, where *<table>* is the name of
-the table and *<id>* is a globally unique sequential integer. See
+the table and *<id>* is a unique set of bytes for the row within the table. The
+*<id>* will either be the binary representation of the `PRIMARY KEY` or a random
+but sequental value. The *<id>* does not need to be the same length for all rows
+within the table, but in many cases it will be. See
 https://github.com/elliotchance/vsql/issues/44.
 
 Within a row each of the values may be stored with a fixed or variable length.
@@ -277,7 +299,8 @@ So, for example, following table:
    CREATE TABLE products (
        product_id INT NOT NULL,
        product_name VARCHAR(64) NOT NULL,
-       product_desc VARCHAR(1000)
+       product_desc VARCHAR(1000),
+       PRIMARY KEY (product_id)
    );
 
    INSERT INTO products (product_id, product_name, product_desc) VALUES

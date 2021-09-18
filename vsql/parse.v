@@ -42,25 +42,25 @@ fn parse_from_clause(name Identifier) ?Identifier {
 	return name
 }
 
-fn parse_table_definition(table_name Identifier, table_contents_source []Column) ?Stmt {
+fn parse_table_definition(table_name Identifier, table_contents_source []TableElement) ?Stmt {
 	return CreateTableStmt{table_name.name, table_contents_source}
 }
 
-fn parse_table_elements1(table_element Column) ?[]Column {
+fn parse_table_elements1(table_element TableElement) ?[]TableElement {
 	return [table_element]
 }
 
-fn parse_table_elements2(table_elements []Column, table_element Column) ?[]Column {
+fn parse_table_elements2(table_elements []TableElement, table_element TableElement) ?[]TableElement {
 	mut new_table_elements := table_elements.clone()
 	new_table_elements << table_element
 	return new_table_elements
 }
 
-fn parse_column_definition1(column_name Identifier, data_type Type) ?Column {
+fn parse_column_definition1(column_name Identifier, data_type Type) ?TableElement {
 	return Column{column_name.name, data_type, false}
 }
 
-fn parse_column_definition2(column_name Identifier, data_type Type, constraint bool) ?Column {
+fn parse_column_definition2(column_name Identifier, data_type Type, constraint bool) ?TableElement {
 	return Column{column_name.name, data_type, constraint}
 }
 
@@ -108,7 +108,7 @@ fn parse_drop_table_statement(table_name Identifier) ?Stmt {
 	return DropTableStmt{table_name.name}
 }
 
-fn parse_table_element_list(table_elements []Column) ?[]Column {
+fn parse_table_element_list(table_elements []TableElement) ?[]TableElement {
 	return table_elements
 }
 
@@ -392,4 +392,12 @@ fn parse_routine_invocation(name Identifier, args []Expr) ?Expr {
 
 fn parse_host_parameter_name(name Identifier) ?Expr {
 	return Parameter{name.name}
+}
+
+fn parse_unique_constraint_definition(columns []Identifier) ?TableElement {
+	return UniqueConstraintDefinition{columns}
+}
+
+fn parse_ignore() ?bool {
+	return false
 }

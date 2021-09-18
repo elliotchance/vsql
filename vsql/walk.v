@@ -80,3 +80,35 @@ fn (mut iter PageIterator) next() ?PageObject {
 
 	return o
 }
+
+// A PrimaryKeyOperation scans an inclusive range for a PRIMARY KEY.
+struct PrimaryKeyOperation {
+	table  Table
+	lower  Expr
+	upper  Expr
+	params map[string]Value
+mut:
+	conn Connection
+}
+
+fn (o PrimaryKeyOperation) str() string {
+	return 'PRIMARY KEY $o.table.name BETWEEN ${o.lower.pstr(o.params)} AND ${o.upper.pstr(o.params)}'
+}
+
+fn (o PrimaryKeyOperation) execute(_ []Row) ?[]Row {
+	lower := eval_as_value(o.conn, Row{}, o.lower, o.params) ?
+
+	mut tmp_row := Row{
+		data: {
+			identifier_name(o.table.primary_key[0]): lower
+		}
+	}
+	object_key := tmp_row.object_key(o.table) ?
+
+	mut rows := []Row{}
+	for object in o.conn.storage.btree.new_range_iterator(object_key, object_key) {
+		rows << new_row_from_bytes(o.table, object.value)
+	}
+
+	return rows
+}

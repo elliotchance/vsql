@@ -6,20 +6,17 @@ module vsql
 import time
 
 struct Row {
-	id i64
 mut:
+	// id is the unique row identifier within the table. If the table has a
+	// PRIMARY KEY this will be a binary representation of that. Otherwise, a
+	// random but time sequential value will be generated for it.
+	id   []byte
 	data map[string]Value
 }
 
 pub fn new_row(data map[string]Value) Row {
-	// TODO(elliotchance): This is a terrible hack to make sure we have a
-	//  globally unique but also ordered id for the row.
-	unique_id := time.now().unix_time_milli()
-	time.sleep(time.millisecond)
-
 	return Row{
 		data: data
-		id: unique_id
 	}
 }
 
@@ -120,7 +117,7 @@ fn new_empty_row(columns []Column) Row {
 fn (r Row) bytes(t Table) []byte {
 	mut buf := new_bytes([]byte{})
 
-	buf.write_i64(r.id)
+	buf.write_bytes1(r.id)
 
 	for col in t.columns {
 		v := r.data[col.name]
@@ -170,7 +167,7 @@ fn new_row_from_bytes(t Table, data []byte) Row {
 	mut buf := new_bytes(data)
 	mut row := map[string]Value{}
 
-	row_id := buf.read_i64()
+	row_id := buf.read_bytes1()
 
 	for col in t.columns {
 		// Some types do not need a NULL flag because it's built into the value.
@@ -219,4 +216,66 @@ fn new_row_from_bytes(t Table, data []byte) Row {
 	}
 
 	return Row{row_id, row}
+}
+
+fn (mut r Row) object_key(t Table) ?[]byte {
+	// If there is a PRIMARY KEY, generate the row key.
+	if t.primary_key.len > 0 {
+		mut pk := new_bytes([]byte{})
+
+		for col_name in t.primary_key {
+			col := t.column(col_name) ?
+			match col.typ.typ {
+				.is_null {
+					return error('cannot use NULL in PRIMARY KEY')
+				}
+				.is_bigint {
+					pk.write_i64(i64(r.data[col_name].f64_value))
+				}
+				.is_boolean {
+					return error('cannot use BOOLEAN in PRIMARY KEY')
+				}
+				.is_character {
+					return error('cannot use character types in PRIMARY KEY')
+				}
+				.is_double_precision {
+					return error('cannot use non-integer types in PRIMARY KEY')
+				}
+				.is_integer {
+					pk.write_int(int(r.data[col_name].f64_value))
+				}
+				.is_real {
+					return error('cannot use non-integer types in PRIMARY KEY')
+				}
+				.is_smallint {
+					pk.write_i16(i16(r.data[col_name].f64_value))
+				}
+				.is_varchar {
+					return error('cannot use character types in PRIMARY KEY')
+				}
+			}
+		}
+
+		r.id = pk.bytes()
+	} else {
+		if r.id.len == 0 {
+			// TODO(elliotchance): This is a terrible hack to make sure we have a
+			//  globally unique but also ordered id for the row.
+			unique_id := time.now().unix_time_milli()
+			time.sleep(time.millisecond)
+
+			r.id = i64_to_bytes(unique_id)
+		}
+	}
+
+	mut key := new_bytes([]byte{})
+	key.write_byte(`R`)
+	key.write_bytes(t.name.bytes())
+
+	// TODO(elliotchance): This is actually not a safe separator to use since
+	//  deliminated table names can contain ':'
+	key.write_byte(`:`)
+	key.write_bytes(r.id)
+
+	return key.bytes()
 }

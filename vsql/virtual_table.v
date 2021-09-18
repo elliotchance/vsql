@@ -17,9 +17,11 @@ fn (mut v VirtualTable) reset() {
 pub fn (mut v VirtualTable) next_values(values []Value) {
 	mut row := map[string]Value{}
 	mut i := 0
-	for col in v.create_table_stmt.columns {
-		row[identifier_name(col.name)] = values[i]
-		i++
+	for col in v.create_table_stmt.table_elements {
+		if col is Column {
+			row[identifier_name(col.name)] = values[i]
+			i++
+		}
 	}
 	v.rows << new_row(row)
 }

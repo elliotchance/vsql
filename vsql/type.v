@@ -6,7 +6,7 @@ struct Type {
 mut:
 	// TODO(elliotchance): Make these non-mutable.
 	typ  SQLType
-	size int // the size/precision specified for the type
+	size int // the size specified for the type
 }
 
 enum SQLType {
@@ -71,6 +71,10 @@ fn new_type(name string, size int) Type {
 }
 
 fn (t Type) str() string {
+	if t.size > 0 {
+		return '${t.typ}($t.size)'
+	}
+
 	return t.typ.str()
 }
 

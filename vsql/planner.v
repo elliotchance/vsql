@@ -4,6 +4,7 @@
 // the next operation. You can find the operations in:
 //
 //   LimitOperation          table.v
+//   PrimaryKeyOperation     walk.v
 //   TableOperation          table.v
 //   WhereOperation          where.v
 //   VirtualTableOperation   virtual_table.v
@@ -26,16 +27,35 @@ fn create_plan(stmt Stmt, params map[string]Value, c Connection) ?Plan {
 	}
 }
 
-fn create_basic_plan(table_name string, where Expr, params map[string]Value, c Connection) ?Plan {
+fn create_basic_plan(table_name string, where Expr, offset Expr, params map[string]Value, c Connection, allow_virtual bool) ?Plan {
 	mut plan := Plan{}
+	mut covered_by_pk := false
 
-	if table_name in c.storage.tables {
-		plan.operations << TableOperation{table_name, c.storage.tables[table_name], NoExpr{}, params, c, c.storage}
+	if allow_virtual && table_name in c.virtual_tables {
+		plan.operations << VirtualTableOperation{table_name, c.virtual_tables[table_name]}
+	} else if table_name in c.storage.tables {
+		table := c.storage.tables[table_name]
+
+		// This is a special case to handle "PRIMARY KEY = INTEGER".
+		if table.primary_key.len > 0 && where is BinaryExpr {
+			left := where.left
+			right := where.right
+			if where.op == '=' && left is Identifier {
+				if identifier_name(left.name) == table.primary_key[0] {
+					covered_by_pk = true
+					plan.operations << PrimaryKeyOperation{table, right, right, params, c}
+				}
+			}
+		}
+
+		if !covered_by_pk {
+			plan.operations << TableOperation{table_name, c.storage.tables[table_name], offset, params, c, c.storage}
+		}
 	} else {
 		return sqlstate_42p01(table_name)
 	}
 
-	if where !is NoExpr {
+	if where !is NoExpr && !covered_by_pk {
 		plan.operations << WhereOperation{where, params, c}
 	}
 
@@ -43,32 +63,18 @@ fn create_basic_plan(table_name string, where Expr, params map[string]Value, c C
 }
 
 fn create_delete_plan(stmt DeleteStmt, params map[string]Value, c Connection) ?Plan {
-	return create_basic_plan(identifier_name(stmt.table_name), stmt.where, params, c)
+	return create_basic_plan(identifier_name(stmt.table_name), stmt.where, NoExpr{}, params,
+		c, false)
 }
 
 fn create_update_plan(stmt UpdateStmt, params map[string]Value, c Connection) ?Plan {
-	return create_basic_plan(identifier_name(stmt.table_name), stmt.where, params, c)
+	return create_basic_plan(identifier_name(stmt.table_name), stmt.where, NoExpr{}, params,
+		c, false)
 }
 
 fn create_select_plan(stmt SelectStmt, params map[string]Value, c Connection) ?Plan {
-	mut plan := Plan{}
-
-	table_name := identifier_name(stmt.from)
-
-	// Check virtual table first.
-	if table_name in c.virtual_tables {
-		plan.operations << VirtualTableOperation{table_name, c.virtual_tables[table_name]}
-	}
-	// Now check for a regular table.
-	else if table_name in c.storage.tables {
-		plan.operations << TableOperation{table_name, c.storage.tables[table_name], stmt.offset, params, c, c.storage}
-	} else {
-		return sqlstate_42p01(table_name)
-	}
-
-	if stmt.where !is NoExpr {
-		plan.operations << WhereOperation{stmt.where, params, c}
-	}
+	mut plan := create_basic_plan(identifier_name(stmt.from), stmt.where, stmt.offset,
+		params, c, true) ?
 
 	if stmt.fetch !is NoExpr {
 		plan.operations << LimitOperation{stmt.fetch, params, c}

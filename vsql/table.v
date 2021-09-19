@@ -12,6 +12,9 @@ struct Table {
 mut:
 	name    string
 	columns []Column
+	// If the table has a PRIMARY KEY defined the column (or columns) will be
+	// defined here.
+	primary_key []string
 }
 
 fn (t Table) column_names() []string {
@@ -37,6 +40,7 @@ fn (t Table) bytes() []byte {
 	mut b := new_bytes([]byte{})
 
 	b.write_string1(t.name)
+	b.write_string1_list(t.primary_key)
 
 	for col in t.columns {
 		b.write_string1(col.name)
@@ -53,6 +57,7 @@ fn new_table_from_bytes(data []byte) Table {
 	mut b := new_bytes(data)
 
 	table_name := b.read_string1()
+	primary_key := b.read_string1_list()
 
 	mut columns := []Column{}
 	for b.has_more() {
@@ -65,7 +70,7 @@ fn new_table_from_bytes(data []byte) Table {
 		columns << Column{column_name, type_from_number(column_type), is_not_null}
 	}
 
-	return Table{table_name, columns}
+	return Table{table_name, columns, primary_key}
 }
 
 // A TableOperation requires that up to rows in the table be read. The number of

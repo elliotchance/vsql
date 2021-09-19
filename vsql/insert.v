@@ -49,7 +49,7 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 		row[col.name] = new_null_value()
 	}
 
-	c.storage.write_row(new_row(row), table) ?
+	c.storage.write_row(mut new_row(row), table) ?
 
 	return new_result_msg('INSERT 1', elapsed_parse, t.elapsed())
 }

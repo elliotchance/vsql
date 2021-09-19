@@ -34,8 +34,8 @@ fn (e Expr) pstr(params map[string]Value) string {
 
 // CREATE TABLE ...
 struct CreateTableStmt {
-	table_name string
-	columns    []Column
+	table_name     string
+	table_elements []TableElement
 }
 
 // DELETE ...
@@ -180,3 +180,9 @@ fn (e Parameter) str() string {
 fn (e Parameter) pstr(params map[string]Value) string {
 	return params[e.name].str()
 }
+
+struct UniqueConstraintDefinition {
+	columns []Identifier
+}
+
+type TableElement = Column | UniqueConstraintDefinition

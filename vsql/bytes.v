@@ -40,7 +40,7 @@ fn (mut b Bytes) write_bytes(data []byte) {
 fn (mut b Bytes) read_bytes(len int) []byte {
 	data := b.data[b.at..b.at + len]
 	b.at += len
-	return data
+	return data.clone()
 }
 
 fn (mut b Bytes) write_string1(s string) {
@@ -123,6 +123,7 @@ union Bytes8 {
 	bytes     [8]byte
 	f64_value f64
 	i64_value i64
+	u64_value u64
 }
 
 fn (b Bytes8) bytes() []byte {
@@ -138,7 +139,7 @@ fn (mut b Bytes) write_f64(x f64) {
 }
 
 fn (mut b Bytes) write_i64(x i64) {
-	b.write_bytes(Bytes8{ i64_value: x }.bytes())
+	b.write_bytes(i64_to_bytes(x))
 }
 
 union Bytes4 {
@@ -185,13 +186,46 @@ fn (mut b Bytes) read_i64() i64 {
 fn int_to_bytes(n int) []byte {
 	return Bytes4{
 		int_value: n
-	}.bytes()
+	}.bytes().reverse()
 }
 
 fn bytes_to_int(bytes []byte) int {
 	return unsafe {
 		Bytes4{
-			bytes: [bytes[0], bytes[1], bytes[2], bytes[3]]!
+			bytes: [bytes[3], bytes[2], bytes[1], bytes[0]]!
 		}.int_value
 	}
+}
+
+fn i64_to_bytes(n i64) []byte {
+	return Bytes8{
+		i64_value: n
+	}.bytes().reverse()
+}
+
+fn (mut b Bytes) write_string1_list(ss []string) {
+	b.write_byte(byte(ss.len))
+	for s in ss {
+		b.write_string1(s)
+	}
+}
+
+fn (mut b Bytes) read_string1_list() []string {
+	len := b.read_byte()
+	mut ss := []string{len: int(len)}
+	for i in 0 .. len {
+		ss[i] = b.read_string1()
+	}
+
+	return ss
+}
+
+fn (mut b Bytes) read_bytes1() []byte {
+	len := b.read_byte()
+	return b.read_bytes(len)
+}
+
+fn (mut b Bytes) write_bytes1(s []byte) {
+	b.write_byte(byte(s.len))
+	b.write_bytes(s.clone())
 }

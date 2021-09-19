@@ -45,7 +45,6 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 
 				// msg ignored here becuase the type have already been
 				// checked above.
-				row.data[column_name] = cast('', raw_value, table_column.typ) ?
 				row2.data[column_name] = cast('', raw_value, table_column.typ) ?
 			}
 		}
@@ -56,12 +55,12 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 		}
 	}
 
-	for row in delete_rows {
-		c.storage.delete_row(table.name, row) ?
+	for mut row in delete_rows {
+		c.storage.delete_row(table_name, mut row) ?
 	}
 
-	for row in new_rows {
-		c.storage.write_row(row, table) ?
+	for mut row in new_rows {
+		c.storage.write_row(mut row, table) ?
 	}
 
 	return new_result_msg('UPDATE $new_rows.len', elapsed_parse, t.elapsed())

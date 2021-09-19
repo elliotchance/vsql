@@ -22,6 +22,16 @@ fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value, el
 	//  the Table and not the CreateTableStmt.
 	first_operation := plan.operations[0]
 	match first_operation {
+		PrimaryKeyOperation {
+			if exprs is AsteriskExpr {
+				mut new_exprs := []DerivedColumn{}
+				for column_name in first_operation.table.column_names() {
+					new_exprs << DerivedColumn{Identifier{'"$column_name"'}, Identifier{'"$column_name"'}}
+				}
+
+				exprs = new_exprs
+			}
+		}
 		TableOperation {
 			if exprs is AsteriskExpr {
 				mut new_exprs := []DerivedColumn{}
@@ -35,8 +45,10 @@ fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value, el
 		VirtualTableOperation {
 			if exprs is AsteriskExpr {
 				mut new_exprs := []DerivedColumn{}
-				for col in first_operation.table.create_table_stmt.columns {
-					new_exprs << DerivedColumn{Identifier{col.name}, Identifier{col.name}}
+				for table_element in first_operation.table.create_table_stmt.table_elements {
+					if table_element is Column {
+						new_exprs << DerivedColumn{Identifier{table_element.name}, Identifier{table_element.name}}
+					}
 				}
 
 				exprs = new_exprs

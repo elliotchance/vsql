@@ -33,7 +33,7 @@ pub fn new_benchmark(conn Connection) Benchmark {
 }
 
 pub fn (mut b Benchmark) start() ? {
-	b.conn.query('CREATE TABLE accounts ( aid INT, abalance INT ) ') ?
+	b.conn.query('CREATE TABLE accounts ( aid INT, abalance INT, PRIMARY KEY ( aid ) ) ') ?
 
 	mut t := start_timer()
 	for aid in 1 .. b.account_rows + 1 {
@@ -41,20 +41,23 @@ pub fn (mut b Benchmark) start() ? {
 	}
 	b.print_stat('INSERT', b.account_rows, 'rows', t.elapsed())
 
-	b.conn.query('CREATE TABLE tellers ( tid INT, tbalance INT ) ') ?
+	b.conn.query('CREATE TABLE tellers ( tid INT, tbalance INT, PRIMARY KEY ( tid ) ) ') ?
 	for tid in 1 .. b.teller_rows + 1 {
 		b.conn.query('INSERT INTO tellers (tid, tbalance) VALUES ($tid, 0)') ?
 	}
 
-	b.conn.query('CREATE TABLE branches ( bid INT, bbalance INT ) ') ?
+	b.conn.query('CREATE TABLE branches ( bid INT, bbalance INT, PRIMARY KEY ( bid ) ) ') ?
 	for bid in 1 .. b.branch_rows + 1 {
 		b.conn.query('INSERT INTO branches (bid, bbalance) VALUES ($bid, 0)') ?
 	}
 
+	// TODO(elliotchance): This should have a PRIMARY KEY when we support
+	//  multiple columns.
 	b.conn.query('CREATE TABLE history ( tid INT, bid INT, aid INT, delta INT, mtime VARCHAR(30) ) ') ?
 
 	t = start_timer()
-	b.conn.query('SELECT abalance FROM accounts WHERE aid = 0') ?
+
+	b.conn.query('SELECT abalance FROM accounts WHERE abalance = 0') ?
 	b.print_stat('SELECT', b.account_rows, 'rows', t.elapsed())
 
 	t = start_timer()

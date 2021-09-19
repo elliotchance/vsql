@@ -4,8 +4,7 @@
 
 module vsql
 
-type EarleyValue = Column
-	| ComparisonPredicatePart2
+type EarleyValue = ComparisonPredicatePart2
 	| CreateTableStmt
 	| DerivedColumn
 	| Expr
@@ -14,12 +13,13 @@ type EarleyValue = Column
 	| SelectList
 	| SelectStmt
 	| Stmt
+	| TableElement
 	| TableExpression
 	| Type
 	| Value
-	| []Column
 	| []Expr
 	| []Identifier
+	| []TableElement
 	| bool
 	| map[string]Expr
 	| string
@@ -729,6 +729,12 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_string_value_expression_ := &EarleyRule{
 		name: '<string value expression>'
 	}
+	mut rule_table_constraint_definition_ := &EarleyRule{
+		name: '<table constraint definition>'
+	}
+	mut rule_table_constraint_ := &EarleyRule{
+		name: '<table constraint>'
+	}
 	mut rule_table_contents_source_ := &EarleyRule{
 		name: '<table contents source>'
 	}
@@ -803,6 +809,21 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_trigonometric_function_ := &EarleyRule{
 		name: '<trigonometric function>'
+	}
+	mut rule_unique_column_list_ := &EarleyRule{
+		name: '<unique column list>'
+	}
+	mut rule_unique_constraint_definition_1_ := &EarleyRule{
+		name: '<unique constraint definition: 1>'
+	}
+	mut rule_unique_constraint_definition_ := &EarleyRule{
+		name: '<unique constraint definition>'
+	}
+	mut rule_unique_specification_1_ := &EarleyRule{
+		name: '<unique specification: 1>'
+	}
+	mut rule_unique_specification_ := &EarleyRule{
+		name: '<unique specification>'
 	}
 	mut rule_unsigned_integer_ := &EarleyRule{
 		name: '<unsigned integer>'
@@ -945,6 +966,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_is := &EarleyRule{
 		name: 'IS'
 	}
+	mut rule_key := &EarleyRule{
+		name: 'KEY'
+	}
 	mut rule_ln := &EarleyRule{
 		name: 'LN'
 	}
@@ -974,6 +998,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_precision := &EarleyRule{
 		name: 'PRECISION'
+	}
+	mut rule_primary := &EarleyRule{
+		name: 'PRIMARY'
 	}
 	mut rule_real := &EarleyRule{
 		name: 'REAL'
@@ -3292,6 +3319,18 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_table_constraint_definition_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_table_constraint_
+		},
+	]}
+
+	rule_table_constraint_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_unique_constraint_definition_
+		},
+	]}
+
 	rule_table_contents_source_.productions << EarleyProduction{[
 		EarleyRuleOrString{
 			rule: rule_table_element_list_
@@ -3340,6 +3379,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_table_element_.productions << EarleyProduction{[
 		EarleyRuleOrString{
 			rule: rule_column_definition_
+		},
+	]}
+	rule_table_element_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_table_constraint_definition_
 		},
 	]}
 
@@ -3544,6 +3588,48 @@ fn get_grammar() map[string]EarleyRule {
 	rule_trigonometric_function_.productions << EarleyProduction{[
 		EarleyRuleOrString{
 			rule: rule_trigonometric_function_1_
+		},
+	]}
+
+	rule_unique_column_list_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_column_name_list_
+		},
+	]}
+
+	rule_unique_constraint_definition_1_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_unique_specification_
+		},
+		EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		EarleyRuleOrString{
+			rule: rule_unique_column_list_
+		},
+		EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_unique_constraint_definition_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_unique_constraint_definition_1_
+		},
+	]}
+
+	rule_unique_specification_1_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_primary
+		},
+		EarleyRuleOrString{
+			rule: rule_key
+		},
+	]}
+
+	rule_unique_specification_.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			rule: rule_unique_specification_1_
 		},
 	]}
 
@@ -3919,6 +4005,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_key.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			str: 'KEY'
+			rule: 0
+		},
+	]}
+
 	rule_ln.productions << EarleyProduction{[
 		EarleyRuleOrString{
 			str: 'LN'
@@ -3985,6 +4078,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_precision.productions << EarleyProduction{[
 		EarleyRuleOrString{
 			str: 'PRECISION'
+			rule: 0
+		},
+	]}
+
+	rule_primary.productions << EarleyProduction{[
+		EarleyRuleOrString{
+			str: 'PRIMARY'
 			rule: 0
 		},
 	]}
@@ -4356,6 +4456,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<square root: 1>'] = rule_square_root_1_
 	rules['<square root>'] = rule_square_root_
 	rules['<string value expression>'] = rule_string_value_expression_
+	rules['<table constraint definition>'] = rule_table_constraint_definition_
+	rules['<table constraint>'] = rule_table_constraint_
 	rules['<table contents source>'] = rule_table_contents_source_
 	rules['<table definition: 1>'] = rule_table_definition_1_
 	rules['<table definition>'] = rule_table_definition_
@@ -4381,6 +4483,11 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<trigonometric function name>'] = rule_trigonometric_function_name_
 	rules['<trigonometric function: 1>'] = rule_trigonometric_function_1_
 	rules['<trigonometric function>'] = rule_trigonometric_function_
+	rules['<unique column list>'] = rule_unique_column_list_
+	rules['<unique constraint definition: 1>'] = rule_unique_constraint_definition_1_
+	rules['<unique constraint definition>'] = rule_unique_constraint_definition_
+	rules['<unique specification: 1>'] = rule_unique_specification_1_
+	rules['<unique specification>'] = rule_unique_specification_
 	rules['<unsigned integer>'] = rule_unsigned_integer_
 	rules['<unsigned literal>'] = rule_unsigned_literal_
 	rules['<unsigned numeric literal>'] = rule_unsigned_numeric_literal_
@@ -4428,6 +4535,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['INTEGER'] = rule_integer
 	rules['INTO'] = rule_into
 	rules['IS'] = rule_is
+	rules['KEY'] = rule_key
 	rules['LN'] = rule_ln
 	rules['LOG10'] = rule_log10
 	rules['MOD'] = rule_mod
@@ -4438,6 +4546,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['OR'] = rule_or
 	rules['POWER'] = rule_power
 	rules['PRECISION'] = rule_precision
+	rules['PRIMARY'] = rule_primary
 	rules['REAL'] = rule_real
 	rules['ROW'] = rule_row
 	rules['ROWS'] = rule_rows
@@ -4825,18 +4934,18 @@ fn parse_ast(node EarleyNode) ?[]EarleyValue {
 		}
 		'<table definition: 1>' {
 			children = [
-				EarleyValue(parse_table_definition(children[2] as Identifier, children[3] as []Column) ?),
+				EarleyValue(parse_table_definition(children[2] as Identifier, children[3] as []TableElement) ?),
 			]
 		}
 		'<table element list: 1>' {
-			children = [EarleyValue(parse_table_element_list(children[1] as []Column) ?)]
+			children = [EarleyValue(parse_table_element_list(children[1] as []TableElement) ?)]
 		}
 		'<table elements: 1>' {
-			children = [EarleyValue(parse_table_elements1(children[0] as Column) ?)]
+			children = [EarleyValue(parse_table_elements1(children[0] as TableElement) ?)]
 		}
 		'<table elements: 2>' {
 			children = [
-				EarleyValue(parse_table_elements2(children[0] as []Column, children[2] as Column) ?),
+				EarleyValue(parse_table_elements2(children[0] as []TableElement, children[2] as TableElement) ?),
 			]
 		}
 		'<table expression: 1>' {
@@ -4861,6 +4970,14 @@ fn parse_ast(node EarleyNode) ?[]EarleyValue {
 		}
 		'<trigonometric function: 1>' {
 			children = [EarleyValue(parse_trig_func(children[0] as string, children[2] as Expr) ?)]
+		}
+		'<unique constraint definition: 1>' {
+			children = [
+				EarleyValue(parse_unique_constraint_definition(children[2] as []Identifier) ?),
+			]
+		}
+		'<unique specification: 1>' {
+			children = [EarleyValue(parse_ignore() ?)]
 		}
 		'<unsigned value specification: 1>' {
 			children = [EarleyValue(parse_value_to_expr(children[0] as Value) ?)]

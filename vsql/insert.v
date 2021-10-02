@@ -12,8 +12,6 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 		c.release_write_connection()
 	}
 
-	mut row := map[string]Value{}
-
 	if stmt.columns.len < stmt.values.len {
 		return sqlstate_42601('INSERT has more values than columns')
 	}
@@ -21,6 +19,8 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 	if stmt.columns.len > stmt.values.len {
 		return sqlstate_42601('INSERT has less values than columns')
 	}
+
+	mut row := map[string]Value{}
 
 	table_name := identifier_name(stmt.table_name)
 	if table_name !in c.storage.tables {

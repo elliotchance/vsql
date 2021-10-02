@@ -99,13 +99,15 @@ fn (mut p Btree) search_page(key []byte) ?([]int, []int) {
 	return path, depth_iterator
 }
 
-fn (mut p Btree) add(obj PageObject) ? {
+// add returns the page number that the object was added to.
+fn (mut p Btree) add(obj PageObject) ?int {
 	// First page is a special condition.
 	if p.pager.total_pages() == 0 {
 		mut page := new_page(0, p.page_size)
 		page.add(obj) ?
 		p.pager.append_page(page) ?
-		return
+
+		return 0
 	}
 
 	// Find the page that is suitable for our insertion.
@@ -154,6 +156,8 @@ fn (mut p Btree) add(obj PageObject) ? {
 			p.pager.store_page(p.pager.root_page(), new_root_page) ?
 		}
 	}
+
+	return left_page_number
 }
 
 fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind byte) ? {

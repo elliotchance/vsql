@@ -32,6 +32,14 @@ pub fn (mut p PreparedStmt) query(params map[string]Value) ?Result {
 
 	stmt := p.stmt
 	match stmt {
+		CommitStmt {
+			if p.explain {
+				return sqlstate_42601('Cannot EXPLAIN COMMIT')
+			}
+
+			// See transaction.v
+			return execute_commit(mut p.c, stmt, p.elapsed_parse)
+		}
 		CreateTableStmt {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN CREATE TABLE')
@@ -56,8 +64,24 @@ pub fn (mut p PreparedStmt) query(params map[string]Value) ?Result {
 
 			return execute_insert(mut p.c, stmt, all_params, p.elapsed_parse)
 		}
+		RollbackStmt {
+			if p.explain {
+				return sqlstate_42601('Cannot EXPLAIN ROLLBACK')
+			}
+
+			// See transaction.v
+			return execute_rollback(mut p.c, stmt, p.elapsed_parse)
+		}
 		SelectStmt {
 			return execute_select(mut p.c, stmt, all_params, p.elapsed_parse, p.explain)
+		}
+		StartTransactionStmt {
+			if p.explain {
+				return sqlstate_42601('Cannot EXPLAIN START TRANSACTION')
+			}
+
+			// See transaction.v
+			return execute_start_transaction(mut p.c, stmt, p.elapsed_parse)
 		}
 		UpdateStmt {
 			return execute_update(mut p.c, stmt, all_params, p.elapsed_parse, p.explain)

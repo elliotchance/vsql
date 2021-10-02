@@ -186,3 +186,42 @@ fn sqlstate_42p02(parameter_name string) IError {
 		parameter_name: parameter_name
 	}
 }
+
+// invalid transaction state: active sql transaction
+struct SQLState25001 {
+	msg  string
+	code int
+}
+
+fn sqlstate_25001() IError {
+	return SQLState25001{
+		code: sqlstate_to_int('25001')
+		msg: 'invalid transaction state: active sql transaction'
+	}
+}
+
+// invalid transaction termination
+struct SQLState2D000 {
+	msg  string
+	code int
+}
+
+fn sqlstate_2d000() IError {
+	return SQLState2D000{
+		code: sqlstate_to_int('2D000')
+		msg: 'invalid transaction termination'
+	}
+}
+
+// invalid transaction initiation
+struct SQLState0B000 {
+	msg  string
+	code int
+}
+
+fn sqlstate_0b000(msg string) IError {
+	return SQLState0B000{
+		code: sqlstate_to_int('0B000')
+		msg: 'invalid transaction initiation: $msg'
+	}
+}

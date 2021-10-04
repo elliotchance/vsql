@@ -5,12 +5,13 @@ module vsql
 
 import strings
 
+[heap]
 struct EarleyRuleOrString {
 	rule &EarleyRule
 	str  string
 }
 
-fn (o EarleyRuleOrString) str() string {
+fn (o &EarleyRuleOrString) str() string {
 	if o.rule != 0 {
 		return (*o.rule).str()
 	}
@@ -18,11 +19,12 @@ fn (o EarleyRuleOrString) str() string {
 	return o.str
 }
 
+[heap]
 struct EarleyProduction {
-	terms []EarleyRuleOrString
+	terms []&EarleyRuleOrString
 }
 
-fn (prod EarleyProduction) index() string {
+fn (prod &EarleyProduction) index() string {
 	mut elems := []string{}
 	for t in prod.terms {
 		elems << t.str()
@@ -30,35 +32,37 @@ fn (prod EarleyProduction) index() string {
 	return elems.join(',')
 }
 
+[heap]
 struct EarleyRule {
 	name string
 mut:
-	productions []EarleyProduction
+	productions []&EarleyProduction
 }
 
-fn (rule EarleyRule) str() string {
+fn (rule &EarleyRule) str() string {
 	return rule.name
 }
 
+[heap]
 struct EarleyState {
 	name         string
-	production   EarleyProduction
+	production   &EarleyProduction
 	dot_index    int
 	start_column &EarleyColumn
 mut:
 	end_column &EarleyColumn
-	rules      []EarleyRule
+	rules      []&EarleyRule
 }
 
-fn new_earley_state(name string, production EarleyProduction, dot_index int, start_column &EarleyColumn) EarleyState {
-	mut rules := []EarleyRule{}
+fn new_earley_state(name string, production &EarleyProduction, dot_index int, start_column &EarleyColumn) &EarleyState {
+	mut rules := []&EarleyRule{}
 	for t in production.terms {
 		if t.rule != 0 {
 			rules << t.rule
 		}
 	}
 
-	return EarleyState{
+	return &EarleyState{
 		name: name
 		production: production
 		start_column: start_column
@@ -68,11 +72,11 @@ fn new_earley_state(name string, production EarleyProduction, dot_index int, sta
 	}
 }
 
-fn (state EarleyState) index() string {
+fn (state &EarleyState) index() string {
 	return '$state.name $state.production.index() $state.dot_index $state.start_column'
 }
 
-fn (state EarleyState) str() string {
+fn (state &EarleyState) str() string {
 	mut terms := []string{}
 	for p in state.production.terms {
 		terms << p.str()
@@ -80,21 +84,21 @@ fn (state EarleyState) str() string {
 
 	terms.insert(state.dot_index, '$')
 
-	return '$state.name -> ${terms.join(' ')} [${*state.start_column}-${*state.end_column}]'
+	return '$state.name -> ${terms.join(' ')} [$state.start_column-$state.end_column]'
 }
 
-fn (state EarleyState) eq(other EarleyState) bool {
+fn (state &EarleyState) eq(other &EarleyState) bool {
 	return state.name == other.name && state.production == other.production
 		&& state.dot_index == other.dot_index && state.start_column == other.start_column
 }
 
-fn (state EarleyState) completed() bool {
+fn (state &EarleyState) completed() bool {
 	return state.dot_index >= state.production.terms.len
 }
 
-fn (state EarleyState) next_term() EarleyRuleOrString {
+fn (state &EarleyState) next_term() &EarleyRuleOrString {
 	if state.completed() {
-		return EarleyRuleOrString{
+		return &EarleyRuleOrString{
 			rule: 0
 		}
 	}
@@ -102,12 +106,13 @@ fn (state EarleyState) next_term() EarleyRuleOrString {
 	return state.production.terms[state.dot_index]
 }
 
+[heap]
 struct Set {
 mut:
 	elems map[string]bool
 }
 
-fn (s Set) exists(v string) bool {
+fn (s &Set) exists(v string) bool {
 	return v in s.elems
 }
 
@@ -125,23 +130,24 @@ struct EarleyColumn {
 	token string
 	value string
 mut:
-	states []EarleyState
-	unique Set
+	states []&EarleyState
+	unique &Set
 }
 
-fn new_earley_column(index int, token string, value string) EarleyColumn {
-	return EarleyColumn{
+fn new_earley_column(index int, token string, value string) &EarleyColumn {
+	return &EarleyColumn{
 		index: index
 		token: token
 		value: value
+		unique: &Set{}
 	}
 }
 
-fn (col EarleyColumn) str() string {
+fn (col &EarleyColumn) str() string {
 	return '$col.index'
 }
 
-fn (col EarleyColumn) repr() string {
+fn (col &EarleyColumn) repr() string {
 	return '$col.token:$col.value'
 }
 
@@ -157,7 +163,7 @@ fn (mut col EarleyColumn) add(mut state EarleyState) bool {
 	return false
 }
 
-fn (col EarleyColumn) print() {
+fn (col &EarleyColumn) print() {
 	println('[$col.index] $col.token')
 	println(strings.repeat_string('=', 35))
 	for s in col.states {
@@ -166,19 +172,20 @@ fn (col EarleyColumn) print() {
 	println('')
 }
 
+[heap]
 struct EarleyNode {
-	value    EarleyState
-	children []EarleyNode
+	value    &EarleyState
+	children []&EarleyNode
 }
 
-fn (node EarleyNode) print(level int) {
+fn (node &EarleyNode) print(level int) {
 	println(strings.repeat_string('  ', level) + node.value.str())
 	for child in node.children {
 		child.print(level + 1)
 	}
 }
 
-fn (node EarleyNode) max() int {
+fn (node &EarleyNode) max() int {
 	mut max := 0
 	for child in node.children {
 		child_max := child.max()
@@ -194,13 +201,13 @@ fn (node EarleyNode) max() int {
 	return max
 }
 
-fn predict(mut col EarleyColumn, rule EarleyRule) {
+fn predict(mut col EarleyColumn, rule &EarleyRule) {
 	for prod in rule.productions {
 		col.add(mut new_earley_state(rule.name, prod, 0, col))
 	}
 }
 
-fn scan(mut col EarleyColumn, state EarleyState, token string) {
+fn scan(mut col EarleyColumn, state &EarleyState, token string) {
 	if token != col.token {
 		return
 	}
@@ -208,7 +215,7 @@ fn scan(mut col EarleyColumn, state EarleyState, token string) {
 	col.add(mut new_earley_state(state.name, state.production, state.dot_index + 1, state.start_column))
 }
 
-fn complete(mut col EarleyColumn, state EarleyState) {
+fn complete(mut col EarleyColumn, state &EarleyState) {
 	if !state.completed() {
 		return
 	}
@@ -240,19 +247,19 @@ fn parse(tokens []Token) ?Stmt {
 	return (parse_ast(trees[0]) ?)[0] as Stmt
 }
 
-fn parse_earley(rule EarleyRule, mut table []EarleyColumn) ?EarleyState {
-	table[0].add(mut new_earley_state('start', EarleyProduction{[
-		EarleyRuleOrString{ rule: &rule },
+fn parse_earley(rule &EarleyRule, mut table []&EarleyColumn) ?&EarleyState {
+	table[0].add(mut new_earley_state('start', &EarleyProduction{[
+		&EarleyRuleOrString{ rule: rule },
 	]}, 0, table[0]))
 
 	for i, mut col in table {
 		for state in col.states {
 			if state.completed() {
-				complete(mut col, state)
+				complete(mut *col, state)
 			} else {
 				term := state.next_term()
 				if term.rule != 0 {
-					predict(mut col, term.rule)
+					predict(mut *col, term.rule)
 				} else if i + 1 < table.len {
 					scan(mut table[i + 1], state, term.str)
 				}
@@ -290,20 +297,20 @@ fn parse_earley(rule EarleyRule, mut table []EarleyColumn) ?EarleyState {
 	return sqlstate_42601('near "${table[max + 1].value}"')
 }
 
-fn build_trees(state EarleyState) []EarleyNode {
-	return build_trees_helper([]EarleyNode{}, state, state.rules.len - 1, state.end_column)
+fn build_trees(state &EarleyState) []&EarleyNode {
+	return build_trees_helper([]&EarleyNode{}, state, state.rules.len - 1, state.end_column)
 }
 
-fn build_trees_helper(children []EarleyNode, state EarleyState, rule_index int, end_column EarleyColumn) []EarleyNode {
+fn build_trees_helper(children []&EarleyNode, state &EarleyState, rule_index int, end_column &EarleyColumn) []&EarleyNode {
 	mut start_column := new_earley_column(0, '', '')
 	if rule_index < 0 {
-		return [EarleyNode{state, children}]
+		return [&EarleyNode{state, children}]
 	} else if rule_index == 0 {
-		start_column = *state.start_column
+		start_column = state.start_column
 	}
 
 	rule := state.rules[rule_index]
-	mut outputs := []EarleyNode{}
+	mut outputs := []&EarleyNode{}
 	for st in end_column.states {
 		if st.eq(state) || !st.completed() || st.name != rule.name {
 			continue
@@ -326,7 +333,7 @@ fn build_trees_helper(children []EarleyNode, state EarleyState, rule_index int, 
 	return outputs
 }
 
-fn tokenize_earley_columns(tokens []Token) []EarleyColumn {
+fn tokenize_earley_columns(tokens []Token) []&EarleyColumn {
 	mut table := [new_earley_column(0, '', '')]
 
 	for i, token in tokens {

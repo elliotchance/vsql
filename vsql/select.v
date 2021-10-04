@@ -6,6 +6,12 @@ import time
 
 fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value, elapsed_parse time.Duration, explain bool) ?Result {
 	t := start_timer()
+
+	c.open_read_connection() ?
+	defer {
+		c.release_connection()
+	}
+
 	plan := create_plan(stmt, params, c) ?
 	mut exprs := stmt.exprs
 

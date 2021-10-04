@@ -1,10 +1,47 @@
 .. contents::
 
-vsql is tested exclusively with SQL test files. This page describes how to write
-tests and optional functionality you might need.
+vsql is tested in a variety of ways, but all functional tests are through the
+SQL files.
 
-Test Files
-----------
+This page explains what each test suite does and describes how to write tests
+and optional functionality you might need.
+
+Test Suites
+-----------
+
+B-Tree
+^^^^^^
+
+The ``btree_test.v`` stress tests the B-Tree (on-disk and in-memory)
+implementation by creating a variety of sized trees/files with randomly ordered
+keys for insertion and deletion. All keys are inserted then all keys are
+removed. This test suite more specifically verifies:
+
+1. Trees of different sizes (1, 10, 100 and 1000) keys can be created by inserting random order keys (one at a time).
+2. All keys are correctly iterated and in order.
+3. Removing all keys (one at a time) will correctly shrink the file as pages become empty.
+
+Connection
+^^^^^^^^^^
+
+The connection test suite is responsible for testing that various operations
+from concurrent connections do not cause race conditions and other anomalies.
+
+SQL
+^^^
+
+The SQL test suite contains all the functional tests. This is likely the only
+test suite you will use when adding functionality or fixing bugs in vsql. More
+description below.
+
+SQL Tests
+---------
+
+Run all SQL tests with:
+
+.. code-block:: sql
+
+   make sql-test
 
 All tests are in the ``tests/`` directory and each file contains individual
 tests separated by an empty line:
@@ -33,7 +70,7 @@ A statement can span multiple lines but must me terminated by a `;`.
 Errors will be in the form of ``error SQLSTATE: message``.
 
 Setup
------
+^^^^^
 
 An optional ``/* setup */`` can be placed at the top of the file to be run
 before each test:
@@ -51,7 +88,7 @@ before each test:
    -- COL1: 2
 
 Host Parameters
----------------
+^^^^^^^^^^^^^^^
 
 Host parameters can be set with the ``/* set name value */`` and only exist for
 the lifetime of a single test:
@@ -74,3 +111,51 @@ There are slightly different forms depending on the type of the host parameter:
 
 - ``/* set a 123 */`` for numeric values.
 - ``/* set b 'foo' */`` for string values.
+
+Multiple Connections
+^^^^^^^^^^^^^^^^^^^^
+
+If a test needs to use more than one connection (such as for testing
+transactions). You can connect or reuse an existing connection by name with the
+``connection`` directive.
+
+Tests that need to use more than one connection **must** use the ``connection``
+directive as the first line in the test. This is to avoid an in-memory database
+being used when the test begins.
+
+.. code-block:: sql
+
+   /* connection 1 */
+   START TRANSACTION;
+   /* connection 2 */
+   START TRANSACTION;
+   -- 1: msg: START TRANSACTION
+   -- 2: msg: START TRANSACTION
+
+Multiple connections only exist for the lifetime of this test. The first time a
+connection name is seen it will spawn a new connection and subsequent references
+will use the existing connection.
+
+All SQL statements are still run syncronously and sequentially and their output
+is prefixed with the connection name.
+
+Connection names can be any single word including numbers for convienience. The
+default connection name is named "main" but this should not be used or
+referenced in tests to avoid unexpected behavior.
+
+Debugging Tests
+---------------
+
+Verbose Output
+^^^^^^^^^^^^^^
+
+By default tests will be silent, only outputting contextual information on
+failure. However, in some cases (such as debugging crashes) you might want more
+verbose output.
+
+You can set the environment variable ``$VERBOSE`` to any value other than empty,
+such as:
+
+.. code-block:: sql
+
+   VERBOSE=1 make sql-test

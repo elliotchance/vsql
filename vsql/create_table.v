@@ -8,6 +8,12 @@ import time
 
 fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse time.Duration) ?Result {
 	t := start_timer()
+
+	c.open_write_connection() ?
+	defer {
+		c.release_connection()
+	}
+
 	table_name := identifier_name(stmt.table_name)
 
 	if table_name in c.storage.tables {

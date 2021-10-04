@@ -22,11 +22,9 @@ fn register_builtin_funcs(mut conn Connection) ? {
 	conn.register_func(Func{'LN', [Type{SQLType.is_double_precision, 0}], func_ln}) ?
 	conn.register_func(Func{'LOG10', [Type{SQLType.is_double_precision, 0}], func_log10}) ?
 	conn.register_func(Func{'MOD', [Type{SQLType.is_double_precision, 0},
-		Type{SQLType.is_double_precision, 0},
-	], func_mod}) ?
+		Type{SQLType.is_double_precision, 0}], func_mod}) ?
 	conn.register_func(Func{'POWER', [Type{SQLType.is_double_precision, 0},
-		Type{SQLType.is_double_precision, 0},
-	], func_power}) ?
+		Type{SQLType.is_double_precision, 0}], func_power}) ?
 	conn.register_func(Func{'SIN', [Type{SQLType.is_double_precision, 0}], func_sin}) ?
 	conn.register_func(Func{'SINH', [Type{SQLType.is_double_precision, 0}], func_sinh}) ?
 	conn.register_func(Func{'SQRT', [Type{SQLType.is_double_precision, 0}], func_sqrt}) ?

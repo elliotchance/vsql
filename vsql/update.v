@@ -6,6 +6,12 @@ import time
 
 fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, elapsed_parse time.Duration, explain bool) ?Result {
 	t := start_timer()
+
+	c.open_write_connection() ?
+	defer {
+		c.release_connection()
+	}
+
 	plan := create_plan(stmt, params, c) ?
 
 	if explain {

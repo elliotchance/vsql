@@ -7,6 +7,11 @@ import time
 fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, elapsed_parse time.Duration) ?Result {
 	t := start_timer()
 
+	c.open_write_connection() ?
+	defer {
+		c.release_connection()
+	}
+
 	mut row := map[string]Value{}
 
 	if stmt.columns.len < stmt.values.len {

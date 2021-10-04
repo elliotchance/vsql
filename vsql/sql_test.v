@@ -36,6 +36,8 @@ fn get_tests() ?[]SQLTest {
 				contents := line[2..line.len - 2].trim_space()
 				if contents == 'setup' {
 					in_setup = true
+				} else if contents.starts_with('connection ') {
+					stmts << contents
 				} else if contents.starts_with('set ') {
 					parts := contents.split(' ')
 					if parts[2].starts_with("'") {
@@ -77,44 +79,92 @@ fn get_tests() ?[]SQLTest {
 }
 
 fn test_all() ? {
+	verbose := $env('VERBOSE')
 	query_cache := new_query_cache()
 	for test in get_tests() ? {
-		mut options := default_connection_options()
-		options.query_cache = query_cache
-
-		// Use an in-memory database because it's much faster.
-		mut db := open_database(':memory:', options) ?
-
-		register_pg_functions(mut db) ?
-
-		for stmt in test.setup {
-			mut prepared := db.prepare(stmt) ?
-			prepared.query(test.params) ?
-		}
-
-		mut actual := ''
-		for stmt in test.stmts {
-			mut prepared := db.prepare(stmt) or {
-				actual += 'error ${sqlstate_from_int(err.code)}: $err.msg\n'
-				continue
-			}
-			result := prepared.query(test.params) or {
-				actual += 'error ${sqlstate_from_int(err.code)}: $err.msg\n'
-				continue
-			}
-
-			for row in result {
-				mut line := ''
-				for col in result.columns {
-					line += '$col: ${row.get_string(col) ?} '
-				}
-				actual += line.trim_space() + '\n'
-			}
-		}
-
-		at := 'at $test.file_name:$test.line_number:\n'
-		expected := at + test.expected.trim_space()
-		actual_trim := at + actual.trim_space()
-		assert expected == actual_trim
+		run_single_test(test, query_cache, verbose != '') ?
 	}
+}
+
+fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool) ? {
+	if verbose {
+		println('BEGIN $test.file_name:$test.line_number')
+		defer {
+			println('END $test.file_name:$test.line_number\n')
+		}
+	}
+
+	mut options := default_connection_options()
+	options.query_cache = query_cache
+
+	mut db := open_database(':memory:', options) ?
+	register_pg_functions(mut db) ?
+
+	// If a test needs multiple connections we cannot rely on ":memory:".
+	// The default connection is called "main". The docs explain that "main"
+	// should not be referenced in tests and the "connection" directive must
+	// be the first line in the test.
+	mut connections := map[string]Connection{}
+	mut current_connection_name := ''
+
+	file_name := 'test.vsql'
+	if os.exists(file_name) {
+		os.rm(file_name) ?
+	}
+
+	for stmt in test.setup {
+		if verbose {
+			println('  $stmt.trim_space()')
+		}
+
+		mut prepared := db.prepare(stmt) ?
+		prepared.query(test.params) ?
+	}
+
+	mut actual := ''
+	for stmt in test.stmts {
+		if stmt.starts_with('connection ') {
+			connection_name := stmt[11..]
+			if connection_name !in connections {
+				mut conn := open_database(file_name, options) ?
+				register_pg_functions(mut conn) ?
+				connections[connection_name] = conn
+			}
+
+			db = connections[connection_name]
+			current_connection_name = connection_name
+			continue
+		}
+
+		if verbose {
+			println('  $stmt.trim_space()')
+		}
+
+		mut prepared := db.prepare(stmt) or {
+			actual += 'error ${sqlstate_from_int(err.code)}: $err.msg\n'
+			continue
+		}
+		result := prepared.query(test.params) or {
+			actual += 'error ${sqlstate_from_int(err.code)}: $err.msg\n'
+			continue
+		}
+
+		for row in result {
+			mut line := ''
+
+			if current_connection_name != '' {
+				line = '$current_connection_name: '
+			}
+
+			for col in result.columns {
+				line += '$col: ${row.get_string(col) ?} '
+			}
+			actual += line.trim_space() + '\n'
+		}
+	}
+
+	at := 'at $test.file_name:$test.line_number:\n'
+	expected := at + test.expected.trim_space()
+	actual_trim := at + actual.trim_space()
+	assert expected == actual_trim
 }

@@ -6,7 +6,9 @@ module vsql
 struct Storage {
 mut:
 	version i8
-	btree   Btree
+	// schema_version determines if the schema needs to be reloaded.
+	schema_version int
+	btree          Btree
 	// We keep the table definitions in memory because they are needed for most
 	// operations (including read and writing rows). All tables must be loaded
 	// when the database is opened.
@@ -18,12 +20,23 @@ fn new_storage(pager Pager) ?Storage {
 		btree: new_btree(pager)
 	}
 
+	return f
+}
+
+fn (mut f Storage) load_schema() ? {
+	current_schema_version := f.btree.pager.schema_version() ?
+	if current_schema_version == f.schema_version {
+		return
+	}
+
+	f.tables = map[string]Table{}
+
 	for object in f.btree.new_range_iterator('T'.bytes(), 'U'.bytes()) {
 		table := new_table_from_bytes(object.value)
 		f.tables[table.name] = table
 	}
 
-	return f
+	f.schema_version = current_schema_version
 }
 
 fn (mut f Storage) close() {
@@ -41,11 +54,13 @@ fn (mut f Storage) create_table(table_name string, columns []Column, primary_key
 	f.btree.add(obj) ?
 
 	f.tables[table_name] = table
+	f.btree.pager.schema_changed() ?
 }
 
 fn (mut f Storage) delete_table(table_name string) ? {
 	f.btree.remove('T$table_name'.bytes()) ?
 	f.tables.delete(table_name)
+	f.btree.pager.schema_changed() ?
 }
 
 fn (mut f Storage) delete_row(table_name string, mut row Row) ? {

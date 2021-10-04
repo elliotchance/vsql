@@ -8,6 +8,7 @@
 
 module vsql
 
+[heap]
 struct QueryCache {
 mut:
 	stmts map[string]Stmt

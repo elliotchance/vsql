@@ -19,6 +19,8 @@ interface Pager {
 	set_root_page(page_number int) ?
 	close()
 	flush()
+	schema_version() ?int
+	schema_changed() ?
 }
 
 struct MemoryPager {
@@ -76,6 +78,13 @@ fn (p MemoryPager) close() {
 }
 
 fn (p MemoryPager) flush() {
+}
+
+fn (p MemoryPager) schema_version() ?int {
+	return 0
+}
+
+fn (p MemoryPager) schema_changed() ? {
 }
 
 struct FilePager {
@@ -172,4 +181,15 @@ fn (mut p FilePager) close() {
 
 fn (mut p FilePager) flush() {
 	p.file.flush()
+}
+
+fn (mut p FilePager) schema_version() ?int {
+	mut header := read_header(mut p.file) ?
+	return header.schema_version
+}
+
+fn (mut p FilePager) schema_changed() ? {
+	mut header := read_header(mut p.file) ?
+	header.schema_version++
+	write_header(mut p.file, header) ?
 }

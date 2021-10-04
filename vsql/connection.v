@@ -7,11 +7,23 @@ import os
 
 [heap]
 pub struct Connection {
+	// path is the file name of the database. It can be the special name
+	// ':memory:'.
+	path string
 mut:
-	storage        Storage
-	funcs          map[string]Func
+	// storage will be replaced when the file is reopend for reading or writing.
+	storage Storage
+	// funcs only needs to be initialized once on open()
+	funcs map[string]Func
+	// virtual_tables can be created independent from the physical schema.
 	virtual_tables map[string]VirtualTable
-	query_cache    &QueryCache
+	// query_cache is maintained over file reopens.
+	query_cache &QueryCache
+	// options are used when aquiring each file connection.
+	options ConnectionOptions
+	// file is a copy of the file handle opened by the pager so that we can
+	// release the lock.
+	file os.File
 }
 
 pub fn open(path string) ?Connection {
@@ -20,56 +32,70 @@ pub fn open(path string) ?Connection {
 
 pub fn open_database(path string, options ConnectionOptions) ?Connection {
 	if path == ':memory:' {
-		return open_memory_database(options)
+		return open_connection(path, options)
 	}
-
-	// This is a rudimentary way to ensure that small changes to storage.v are
-	// compatible as things change so rapidly. Sorry if you had a database in a
-	// previous version, you'll need to recreate it.
-	current_version := i8(4)
 
 	// If the file doesn't exist we initialize it and reopen it.
 	if !os.exists(path) {
-		mut tmpf := os.create(path) ?
-		tmpf.write_raw(current_version) ?
-		tmpf.write([]byte{len: options.page_size - 1}) ?
-		tmpf.close()
+		init_database_file(path, options.page_size) ?
 	}
 
-	// Now open the prepared or existing file and read all of the table
-	// definitions.
-	mut pager := new_file_pager(path, options.page_size) ?
-	mut f := Storage{
-		btree: new_btree(pager)
-	}
-
-	// TODO(elliotchance): Move this to a read/write header. See
-	//  https://github.com/elliotchance/vsql/issues/42.
-	mut version := []byte{len: options.page_size}
-	pager.file.seek(0, .start) ?
-	pager.file.read(mut version) ?
-	f.version = i8(version[0])
-
-	// Check file version compatibility.
-	if f.version != current_version {
-		return error('need version $current_version but database is $f.version')
-	}
-
-	return open_connection(pager, options)
+	return open_connection(path, options)
 }
 
-pub fn open_memory_database(options ConnectionOptions) ?Connection {
-	return open_connection(new_memory_pager(options.page_size), options)
-}
-
-fn open_connection(pager Pager, options ConnectionOptions) ?Connection {
+fn open_connection(path string, options ConnectionOptions) ?Connection {
 	mut conn := Connection{
-		storage: new_storage(pager) ?
+		path: path
 		query_cache: options.query_cache
+		options: options
 	}
+
+	if path == ':memory:' {
+		conn.storage = new_storage(new_memory_pager(options.page_size)) ?
+	}
+
 	register_builtin_funcs(mut conn) ?
 
 	return conn
+}
+
+fn (mut c Connection) open_read_connection() ? {
+	if c.path == ':memory:' {
+		return
+	}
+
+	mut pager := new_file_pager(c.path, c.options.page_size) ?
+	c.file = pager.file
+
+	c.storage = new_storage(pager) ?
+	flock_lock_shared(c.file)
+
+	c.storage.load_schema() ?
+}
+
+fn (mut c Connection) open_write_connection() ? {
+	if c.path == ':memory:' {
+		return
+	}
+
+	mut pager := new_file_pager(c.path, c.options.page_size) ?
+	c.file = pager.file
+
+	c.storage = new_storage(pager) ?
+	flock_lock_exclusive(c.file)
+
+	c.storage.load_schema() ?
+}
+
+fn (mut c Connection) release_connection() {
+	if c.path == ':memory:' {
+		return
+	}
+
+	c.storage.flush()
+	c.storage.close()
+
+	flock_unlock(c.file)
 }
 
 pub fn (mut c Connection) prepare(sql string) ?PreparedStmt {

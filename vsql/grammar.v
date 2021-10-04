@@ -1060,3163 +1060,3163 @@ fn get_grammar() map[string]EarleyRule {
 		name: 'WHERE'
 	}
 
-	rule_absolute_value_expression_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_absolute_value_expression_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_abs
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_absolute_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_absolute_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_absolute_value_expression_1_
 		},
 	]}
 
-	rule_actual_identifier_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_actual_identifier_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_regular_identifier_
 		},
 	]}
 
-	rule_approximate_numeric_type_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_approximate_numeric_type_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_float
 		},
 	]}
 
-	rule_approximate_numeric_type_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_approximate_numeric_type_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_float
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_precision_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_approximate_numeric_type_3_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_approximate_numeric_type_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_real
 		},
 	]}
 
-	rule_approximate_numeric_type_4_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_approximate_numeric_type_4_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_double
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_precision
 		},
 	]}
 
-	rule_approximate_numeric_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_approximate_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_approximate_numeric_type_1_
 		},
 	]}
-	rule_approximate_numeric_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_approximate_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_approximate_numeric_type_2_
 		},
 	]}
-	rule_approximate_numeric_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_approximate_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_approximate_numeric_type_3_
 		},
 	]}
-	rule_approximate_numeric_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_approximate_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_approximate_numeric_type_4_
 		},
 	]}
 
-	rule_as_clause_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_as_clause_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_as
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_column_name_
 		},
 	]}
 
-	rule_as_clause_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_as_clause_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_as_clause_1_
 		},
 	]}
-	rule_as_clause_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_as_clause_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_name_
 		},
 	]}
 
-	rule_asterisk_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_asterisk_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '*'
 			rule: 0
 		},
 	]}
 
-	rule_basic_identifier_chain_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_basic_identifier_chain_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_identifier_chain_
 		},
 	]}
 
-	rule_boolean_factor_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_factor_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_not
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_boolean_test_
 		},
 	]}
 
-	rule_boolean_factor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_factor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_test_
 		},
 	]}
-	rule_boolean_factor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_factor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_factor_2_
 		},
 	]}
 
-	rule_boolean_literal_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_literal_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_true
 		},
 	]}
 
-	rule_boolean_literal_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_literal_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_false
 		},
 	]}
 
-	rule_boolean_literal_3_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_literal_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unknown
 		},
 	]}
 
-	rule_boolean_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_literal_1_
 		},
 	]}
-	rule_boolean_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_literal_2_
 		},
 	]}
-	rule_boolean_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_literal_3_
 		},
 	]}
 
-	rule_boolean_predicand_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_predicand_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_parenthesized_boolean_value_expression_
 		},
 	]}
-	rule_boolean_predicand_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_predicand_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_nonparenthesized_value_expression_primary_
 		},
 	]}
 
-	rule_boolean_primary_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_predicate_
 		},
 	]}
-	rule_boolean_primary_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_predicand_
 		},
 	]}
 
-	rule_boolean_term_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_term_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_term_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_and
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_boolean_factor_
 		},
 	]}
 
-	rule_boolean_term_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_term_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_factor_
 		},
 	]}
-	rule_boolean_term_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_term_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_term_2_
 		},
 	]}
 
-	rule_boolean_test_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_test_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_primary_
 		},
 	]}
 
-	rule_boolean_type_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_type_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean
 		},
 	]}
 
-	rule_boolean_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_type_1_
 		},
 	]}
 
-	rule_boolean_value_expression_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_value_expression_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_or
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_boolean_term_
 		},
 	]}
 
-	rule_boolean_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_term_
 		},
 	]}
-	rule_boolean_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_value_expression_2_
 		},
 	]}
 
-	rule_ceiling_function_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_ceiling_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_ceil
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_ceiling_function_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_ceiling_function_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_ceiling
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_ceiling_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_ceiling_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_ceiling_function_1_
 		},
 	]}
-	rule_ceiling_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_ceiling_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_ceiling_function_2_
 		},
 	]}
 
-	rule_character_factor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_factor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character_primary_
 		},
 	]}
 
-	rule_character_length_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_length_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_length_
 		},
 	]}
 
-	rule_character_primary_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_value_expression_primary_
 		},
 	]}
 
-	rule_character_string_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule__string
 		},
 	]}
 
-	rule_character_string_type_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character
 		},
 	]}
 
-	rule_character_string_type_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_character_length_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_character_string_type_3_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_char
 		},
 	]}
 
-	rule_character_string_type_4_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_4_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_char
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_character_length_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_character_string_type_5_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_5_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_varying
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_character_length_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_character_string_type_6_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_6_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_char
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_varying
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_character_length_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_character_string_type_7_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_7_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_varchar
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_character_length_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_character_string_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character_string_type_1_
 		},
 	]}
-	rule_character_string_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character_string_type_2_
 		},
 	]}
-	rule_character_string_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character_string_type_3_
 		},
 	]}
-	rule_character_string_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character_string_type_4_
 		},
 	]}
-	rule_character_string_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character_string_type_5_
 		},
 	]}
-	rule_character_string_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character_string_type_6_
 		},
 	]}
-	rule_character_string_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_string_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character_string_type_7_
 		},
 	]}
 
-	rule_character_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_concatenation_
 		},
 	]}
-	rule_character_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character_factor_
 		},
 	]}
 
-	rule_colon_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_colon_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: ':'
 			rule: 0
 		},
 	]}
 
-	rule_column_constraint_definition_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_column_constraint_definition_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_constraint_
 		},
 	]}
 
-	rule_column_constraint_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_column_constraint_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_not
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_null
 		},
 	]}
 
-	rule_column_constraint_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_column_constraint_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_constraint_1_
 		},
 	]}
 
-	rule_column_definition_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_column_definition_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_name_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_data_type_or_domain_name_
 		},
 	]}
 
-	rule_column_definition_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_column_definition_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_name_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_data_type_or_domain_name_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_column_constraint_definition_
 		},
 	]}
 
-	rule_column_definition_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_column_definition_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_definition_1_
 		},
 	]}
-	rule_column_definition_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_column_definition_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_definition_2_
 		},
 	]}
 
-	rule_column_name_list_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_column_name_list_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_name_
 		},
 	]}
 
-	rule_column_name_list_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_column_name_list_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_name_list_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_comma_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_column_name_
 		},
 	]}
 
-	rule_column_name_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_column_name_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_name_list_1_
 		},
 	]}
-	rule_column_name_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_column_name_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_name_list_2_
 		},
 	]}
 
-	rule_column_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_column_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_identifier_
 		},
 	]}
 
-	rule_column_reference_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_column_reference_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_basic_identifier_chain_
 		},
 	]}
 
-	rule_comma_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_comma_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: ','
 			rule: 0
 		},
 	]}
 
-	rule_common_logarithm_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_common_logarithm_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_log10
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_common_logarithm_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_common_logarithm_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_common_logarithm_1_
 		},
 	]}
 
-	rule_common_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_common_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
 	]}
-	rule_common_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_common_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_string_value_expression_
 		},
 	]}
 
-	rule_comp_op_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_comp_op_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_equals_operator_
 		},
 	]}
-	rule_comp_op_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_comp_op_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_not_equals_operator_
 		},
 	]}
-	rule_comp_op_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_comp_op_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_less_than_operator_
 		},
 	]}
-	rule_comp_op_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_comp_op_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_greater_than_operator_
 		},
 	]}
-	rule_comp_op_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_comp_op_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_less_than_or_equals_operator_
 		},
 	]}
-	rule_comp_op_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_comp_op_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_greater_than_or_equals_operator_
 		},
 	]}
 
-	rule_comparison_predicate_part_2_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_comparison_predicate_part_2_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_comp_op_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_row_value_predicand_
 		},
 	]}
 
-	rule_comparison_predicate_part_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_comparison_predicate_part_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_comparison_predicate_part_2_1_
 		},
 	]}
 
-	rule_comparison_predicate_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_comparison_predicate_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_row_value_predicand_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_comparison_predicate_part_2_
 		},
 	]}
 
-	rule_comparison_predicate_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_comparison_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_comparison_predicate_1_
 		},
 	]}
 
-	rule_concatenation_operator_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_concatenation_operator_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '||'
 			rule: 0
 		},
 	]}
 
-	rule_concatenation_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_concatenation_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_concatenation_operator_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_character_factor_
 		},
 	]}
 
-	rule_concatenation_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_concatenation_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_concatenation_1_
 		},
 	]}
 
-	rule_contextually_typed_row_value_constructor_element_list_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_element_list_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_constructor_element_
 		},
 	]}
 
-	rule_contextually_typed_row_value_constructor_element_list_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_element_list_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_constructor_element_list_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_comma_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_constructor_element_
 		},
 	]}
 
-	rule_contextually_typed_row_value_constructor_element_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_element_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_constructor_element_list_1_
 		},
 	]}
-	rule_contextually_typed_row_value_constructor_element_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_element_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_constructor_element_list_2_
 		},
 	]}
 
-	rule_contextually_typed_row_value_constructor_element_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_element_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_value_expression_
 		},
 	]}
-	rule_contextually_typed_row_value_constructor_element_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_element_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_value_specification_
 		},
 	]}
 
-	rule_contextually_typed_row_value_constructor_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_common_value_expression_
 		},
 	]}
 
-	rule_contextually_typed_row_value_constructor_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_value_expression_
 		},
 	]}
 
-	rule_contextually_typed_row_value_constructor_3_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_value_specification_
 		},
 	]}
 
-	rule_contextually_typed_row_value_constructor_4_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_4_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_value_specification_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_contextually_typed_row_value_constructor_5_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_5_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_constructor_element_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_comma_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_constructor_element_list_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_contextually_typed_row_value_constructor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_constructor_1_
 		},
 	]}
-	rule_contextually_typed_row_value_constructor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_constructor_2_
 		},
 	]}
-	rule_contextually_typed_row_value_constructor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_constructor_3_
 		},
 	]}
-	rule_contextually_typed_row_value_constructor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_constructor_4_
 		},
 	]}
-	rule_contextually_typed_row_value_constructor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_constructor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_constructor_5_
 		},
 	]}
 
-	rule_contextually_typed_row_value_expression_list_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_expression_list_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_expression_list_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_comma_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_expression_
 		},
 	]}
 
-	rule_contextually_typed_row_value_expression_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_expression_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_expression_
 		},
 	]}
-	rule_contextually_typed_row_value_expression_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_expression_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_expression_list_2_
 		},
 	]}
 
-	rule_contextually_typed_row_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_row_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_constructor_
 		},
 	]}
 
-	rule_contextually_typed_table_value_constructor_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_table_value_constructor_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_values
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_row_value_expression_list_
 		},
 	]}
 
-	rule_contextually_typed_table_value_constructor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_table_value_constructor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_table_value_constructor_1_
 		},
 	]}
 
-	rule_contextually_typed_value_specification_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_contextually_typed_value_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_implicitly_typed_value_specification_
 		},
 	]}
 
-	rule_cursor_specification_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_cursor_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_query_expression_
 		},
 	]}
 
-	rule_data_type_or_domain_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_data_type_or_domain_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_data_type_
 		},
 	]}
 
-	rule_data_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_data_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_predefined_type_
 		},
 	]}
 
-	rule_delete_statement_searched_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_delete_statement_searched_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_delete
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_from
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_target_table_
 		},
 	]}
 
-	rule_delete_statement_searched_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_delete_statement_searched_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_delete
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_from
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_target_table_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_where
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_search_condition_
 		},
 	]}
 
-	rule_delete_statement_searched_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_delete_statement_searched_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_delete_statement_searched_1_
 		},
 	]}
-	rule_delete_statement_searched_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_delete_statement_searched_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_delete_statement_searched_2_
 		},
 	]}
 
-	rule_derived_column_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_derived_column_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_value_expression_
 		},
 	]}
 
-	rule_derived_column_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_derived_column_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_as_clause_
 		},
 	]}
 
-	rule_derived_column_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_derived_column_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_derived_column_1_
 		},
 	]}
-	rule_derived_column_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_derived_column_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_derived_column_2_
 		},
 	]}
 
-	rule_drop_table_statement_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_drop_table_statement_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_drop
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_table
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_table_name_
 		},
 	]}
 
-	rule_drop_table_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_drop_table_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_drop_table_statement_1_
 		},
 	]}
 
-	rule_dynamic_select_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_dynamic_select_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_cursor_specification_
 		},
 	]}
 
-	rule_equals_operator_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_equals_operator_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '='
 			rule: 0
 		},
 	]}
 
-	rule_exact_numeric_literal_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_literal_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unsigned_integer_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_period_
 		},
 	]}
 
-	rule_exact_numeric_literal_3_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_literal_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unsigned_integer_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_period_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_unsigned_integer_
 		},
 	]}
 
-	rule_exact_numeric_literal_4_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_literal_4_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_period_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_unsigned_integer_
 		},
 	]}
 
-	rule_exact_numeric_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unsigned_integer_
 		},
 	]}
-	rule_exact_numeric_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_exact_numeric_literal_2_
 		},
 	]}
-	rule_exact_numeric_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_exact_numeric_literal_3_
 		},
 	]}
-	rule_exact_numeric_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_exact_numeric_literal_4_
 		},
 	]}
 
-	rule_exact_numeric_type_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_type_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_smallint
 		},
 	]}
 
-	rule_exact_numeric_type_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_type_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_integer
 		},
 	]}
 
-	rule_exact_numeric_type_3_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_type_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_int
 		},
 	]}
 
-	rule_exact_numeric_type_4_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_type_4_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_bigint
 		},
 	]}
 
-	rule_exact_numeric_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_exact_numeric_type_1_
 		},
 	]}
-	rule_exact_numeric_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_exact_numeric_type_2_
 		},
 	]}
-	rule_exact_numeric_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_exact_numeric_type_3_
 		},
 	]}
-	rule_exact_numeric_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exact_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_exact_numeric_type_4_
 		},
 	]}
 
-	rule_exponential_function_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exponential_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_exp
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_exponential_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exponential_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_exponential_function_1_
 		},
 	]}
 
-	rule_factor_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_factor_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_sign_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_primary_
 		},
 	]}
 
-	rule_factor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_factor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_numeric_primary_
 		},
 	]}
-	rule_factor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_factor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_factor_2_
 		},
 	]}
 
-	rule_fetch_first_clause_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_fetch_first_clause_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_fetch
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_first
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_fetch_first_quantity_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_row_or_rows_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_only
 		},
 	]}
 
-	rule_fetch_first_clause_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_fetch_first_clause_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_fetch_first_clause_1_
 		},
 	]}
 
-	rule_fetch_first_quantity_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_fetch_first_quantity_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_fetch_first_row_count_
 		},
 	]}
 
-	rule_fetch_first_row_count_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_fetch_first_row_count_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_simple_value_specification_
 		},
 	]}
 
-	rule_floor_function_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_floor_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_floor
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_floor_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_floor_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_floor_function_1_
 		},
 	]}
 
-	rule_from_clause_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_from_clause_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_from
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_table_reference_list_
 		},
 	]}
 
-	rule_from_clause_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_from_clause_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_from_clause_1_
 		},
 	]}
 
-	rule_from_constructor_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_from_constructor_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_insert_column_list_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_table_value_constructor_
 		},
 	]}
 
-	rule_from_constructor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_from_constructor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_from_constructor_1_
 		},
 	]}
 
-	rule_general_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_general_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character_string_literal_
 		},
 	]}
-	rule_general_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_general_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_literal_
 		},
 	]}
 
-	rule_general_value_specification_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_general_value_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_host_parameter_specification_
 		},
 	]}
 
-	rule_greater_than_operator_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_greater_than_operator_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '>'
 			rule: 0
 		},
 	]}
 
-	rule_greater_than_or_equals_operator_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_greater_than_or_equals_operator_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '>='
 			rule: 0
 		},
 	]}
 
-	rule_host_parameter_name_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_host_parameter_name_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_colon_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_identifier_
 		},
 	]}
 
-	rule_host_parameter_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_host_parameter_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_host_parameter_name_1_
 		},
 	]}
 
-	rule_host_parameter_specification_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_host_parameter_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_host_parameter_name_
 		},
 	]}
 
-	rule_identifier_body_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_identifier_body_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_identifier_start_
 		},
 	]}
 
-	rule_identifier_chain_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_identifier_chain_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_identifier_
 		},
 	]}
 
-	rule_identifier_start_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_identifier_start_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule__identifier
 		},
 	]}
 
-	rule_identifier_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_identifier_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_actual_identifier_
 		},
 	]}
 
-	rule_implicitly_typed_value_specification_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_implicitly_typed_value_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_null_specification_
 		},
 	]}
 
-	rule_insert_column_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_insert_column_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_name_list_
 		},
 	]}
 
-	rule_insert_columns_and_source_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_insert_columns_and_source_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_from_constructor_
 		},
 	]}
 
-	rule_insert_statement_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_insert_statement_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_insert
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_into
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_insertion_target_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_insert_columns_and_source_
 		},
 	]}
 
-	rule_insert_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_insert_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_insert_statement_1_
 		},
 	]}
 
-	rule_insertion_target_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_insertion_target_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_name_
 		},
 	]}
 
-	rule_left_paren_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_left_paren_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '('
 			rule: 0
 		},
 	]}
 
-	rule_length_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_length_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unsigned_integer_
 		},
 	]}
 
-	rule_less_than_operator_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_less_than_operator_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '<'
 			rule: 0
 		},
 	]}
 
-	rule_less_than_or_equals_operator_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_less_than_or_equals_operator_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '<='
 			rule: 0
 		},
 	]}
 
-	rule_literal_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_literal_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_general_literal_
 		},
 	]}
 
-	rule_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_signed_numeric_literal_
 		},
 	]}
-	rule_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_literal_2_
 		},
 	]}
 
-	rule_local_or_schema_qualified_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_local_or_schema_qualified_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_qualified_identifier_
 		},
 	]}
 
-	rule_minus_sign_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_minus_sign_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '-'
 			rule: 0
 		},
 	]}
 
-	rule_modulus_expression_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_modulus_expression_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_mod
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_dividend_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_comma_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_divisor_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_modulus_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_modulus_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_modulus_expression_1_
 		},
 	]}
 
-	rule_natural_logarithm_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_natural_logarithm_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_ln
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_natural_logarithm_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_natural_logarithm_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_natural_logarithm_1_
 		},
 	]}
 
-	rule_nonparenthesized_value_expression_primary_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_nonparenthesized_value_expression_primary_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_reference_
 		},
 	]}
 
-	rule_nonparenthesized_value_expression_primary_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unsigned_value_specification_
 		},
 	]}
-	rule_nonparenthesized_value_expression_primary_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_nonparenthesized_value_expression_primary_2_
 		},
 	]}
-	rule_nonparenthesized_value_expression_primary_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_routine_invocation_
 		},
 	]}
 
-	rule_not_equals_operator_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_not_equals_operator_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '<>'
 			rule: 0
 		},
 	]}
 
-	rule_null_predicate_part_2_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_null_predicate_part_2_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_is
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_null
 		},
 	]}
 
-	rule_null_predicate_part_2_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_null_predicate_part_2_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_is
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_not
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_null
 		},
 	]}
 
-	rule_null_predicate_part_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_null_predicate_part_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_null_predicate_part_2_1_
 		},
 	]}
-	rule_null_predicate_part_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_null_predicate_part_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_null_predicate_part_2_2_
 		},
 	]}
 
-	rule_null_predicate_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_null_predicate_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_row_value_predicand_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_null_predicate_part_2_
 		},
 	]}
 
-	rule_null_predicate_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_null_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_null_predicate_1_
 		},
 	]}
 
-	rule_null_specification_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_null_specification_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_null
 		},
 	]}
 
-	rule_null_specification_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_null_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_null_specification_1_
 		},
 	]}
 
-	rule_numeric_primary_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_value_expression_primary_
 		},
 	]}
-	rule_numeric_primary_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_function_
 		},
 	]}
 
-	rule_numeric_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_exact_numeric_type_
 		},
 	]}
-	rule_numeric_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_approximate_numeric_type_
 		},
 	]}
 
-	rule_numeric_value_expression_base_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_expression_base_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
 	]}
 
-	rule_numeric_value_expression_dividend_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_expression_dividend_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
 	]}
 
-	rule_numeric_value_expression_divisor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_expression_divisor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
 	]}
 
-	rule_numeric_value_expression_exponent_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_expression_exponent_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
 	]}
 
-	rule_numeric_value_expression_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_expression_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_plus_sign_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_term_
 		},
 	]}
 
-	rule_numeric_value_expression_3_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_expression_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_minus_sign_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_term_
 		},
 	]}
 
-	rule_numeric_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_term_
 		},
 	]}
-	rule_numeric_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_2_
 		},
 	]}
-	rule_numeric_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_3_
 		},
 	]}
 
-	rule_numeric_value_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_absolute_value_expression_
 		},
 	]}
-	rule_numeric_value_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_modulus_expression_
 		},
 	]}
-	rule_numeric_value_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_trigonometric_function_
 		},
 	]}
-	rule_numeric_value_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_common_logarithm_
 		},
 	]}
-	rule_numeric_value_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_natural_logarithm_
 		},
 	]}
-	rule_numeric_value_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_exponential_function_
 		},
 	]}
-	rule_numeric_value_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_power_function_
 		},
 	]}
-	rule_numeric_value_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_square_root_
 		},
 	]}
-	rule_numeric_value_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_floor_function_
 		},
 	]}
-	rule_numeric_value_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_numeric_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_ceiling_function_
 		},
 	]}
 
-	rule_object_column_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_object_column_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_name_
 		},
 	]}
 
-	rule_offset_row_count_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_offset_row_count_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_simple_value_specification_
 		},
 	]}
 
-	rule_parenthesized_boolean_value_expression_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_parenthesized_boolean_value_expression_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_boolean_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_parenthesized_boolean_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_parenthesized_boolean_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_parenthesized_boolean_value_expression_1_
 		},
 	]}
 
-	rule_parenthesized_value_expression_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_parenthesized_value_expression_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_parenthesized_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_parenthesized_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_parenthesized_value_expression_1_
 		},
 	]}
 
-	rule_period_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_period_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '.'
 			rule: 0
 		},
 	]}
 
-	rule_plus_sign_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_plus_sign_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '+'
 			rule: 0
 		},
 	]}
 
-	rule_power_function_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_power_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_power
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_base_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_comma_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_exponent_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_power_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_power_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_power_function_1_
 		},
 	]}
 
-	rule_precision_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_precision_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unsigned_integer_
 		},
 	]}
 
-	rule_predefined_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_predefined_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character_string_type_
 		},
 	]}
-	rule_predefined_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_predefined_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_numeric_type_
 		},
 	]}
-	rule_predefined_type_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_predefined_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_type_
 		},
 	]}
 
-	rule_predicate_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_comparison_predicate_
 		},
 	]}
-	rule_predicate_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_null_predicate_
 		},
 	]}
 
-	rule_preparable_sql_data_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_preparable_sql_data_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_delete_statement_searched_
 		},
 	]}
-	rule_preparable_sql_data_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_preparable_sql_data_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_insert_statement_
 		},
 	]}
-	rule_preparable_sql_data_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_preparable_sql_data_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_dynamic_select_statement_
 		},
 	]}
-	rule_preparable_sql_data_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_preparable_sql_data_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_update_statement_searched_
 		},
 	]}
 
-	rule_preparable_sql_schema_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_preparable_sql_schema_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_sql_schema_statement_
 		},
 	]}
 
-	rule_preparable_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_preparable_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_preparable_sql_data_statement_
 		},
 	]}
-	rule_preparable_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_preparable_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_preparable_sql_schema_statement_
 		},
 	]}
 
-	rule_qualified_identifier_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_qualified_identifier_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_identifier_
 		},
 	]}
 
-	rule_query_expression_body_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_query_expression_body_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_query_term_
 		},
 	]}
 
-	rule_query_expression_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_query_expression_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_query_expression_body_
 		},
 	]}
 
-	rule_query_expression_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_query_expression_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_query_expression_body_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_result_offset_clause_
 		},
 	]}
 
-	rule_query_expression_3_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_query_expression_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_query_expression_body_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_fetch_first_clause_
 		},
 	]}
 
-	rule_query_expression_4_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_query_expression_4_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_query_expression_body_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_result_offset_clause_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_fetch_first_clause_
 		},
 	]}
 
-	rule_query_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_query_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_query_expression_1_
 		},
 	]}
-	rule_query_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_query_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_query_expression_2_
 		},
 	]}
-	rule_query_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_query_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_query_expression_3_
 		},
 	]}
-	rule_query_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_query_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_query_expression_4_
 		},
 	]}
 
-	rule_query_primary_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_query_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_simple_table_
 		},
 	]}
 
-	rule_query_specification_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_query_specification_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_select
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_select_list_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_table_expression_
 		},
 	]}
 
-	rule_query_specification_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_query_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_query_specification_1_
 		},
 	]}
 
-	rule_query_term_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_query_term_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_query_primary_
 		},
 	]}
 
-	rule_regular_identifier_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_regular_identifier_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_identifier_body_
 		},
 	]}
 
-	rule_result_offset_clause_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_result_offset_clause_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_offset
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_offset_row_count_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_row_or_rows_
 		},
 	]}
 
-	rule_result_offset_clause_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_result_offset_clause_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_result_offset_clause_1_
 		},
 	]}
 
-	rule_right_paren_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_right_paren_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: ')'
 			rule: 0
 		},
 	]}
 
-	rule_routine_invocation_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_routine_invocation_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_routine_name_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_sql_argument_list_
 		},
 	]}
 
-	rule_routine_invocation_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_routine_invocation_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_routine_invocation_1_
 		},
 	]}
 
-	rule_routine_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_routine_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_qualified_identifier_
 		},
 	]}
 
-	rule_row_or_rows_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_row_or_rows_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_row
 		},
 	]}
-	rule_row_or_rows_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_row_or_rows_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_rows
 		},
 	]}
 
-	rule_row_value_constructor_predicand_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_row_value_constructor_predicand_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_common_value_expression_
 		},
 	]}
-	rule_row_value_constructor_predicand_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_row_value_constructor_predicand_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_predicand_
 		},
 	]}
 
-	rule_row_value_predicand_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_row_value_predicand_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_row_value_constructor_predicand_
 		},
 	]}
 
-	rule_search_condition_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_search_condition_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_value_expression_
 		},
 	]}
 
-	rule_select_list_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_select_list_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_asterisk_
 		},
 	]}
 
-	rule_select_list_3_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_select_list_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_select_list_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_comma_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_select_sublist_
 		},
 	]}
 
-	rule_select_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_select_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_select_list_1_
 		},
 	]}
-	rule_select_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_select_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_select_sublist_
 		},
 	]}
-	rule_select_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_select_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_select_list_3_
 		},
 	]}
 
-	rule_select_sublist_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_select_sublist_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_derived_column_
 		},
 	]}
 
-	rule_select_sublist_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_select_sublist_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_select_sublist_1_
 		},
 	]}
 
-	rule_set_clause_list_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_set_clause_list_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_set_clause_list_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_comma_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_set_clause_
 		},
 	]}
 
-	rule_set_clause_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_set_clause_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_set_clause_
 		},
 	]}
-	rule_set_clause_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_set_clause_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_set_clause_list_2_
 		},
 	]}
 
-	rule_set_clause_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_set_clause_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_set_target_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_equals_operator_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_update_source_
 		},
 	]}
 
-	rule_set_clause_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_set_clause_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_set_clause_1_
 		},
 	]}
 
-	rule_set_target_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_set_target_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_update_target_
 		},
 	]}
 
-	rule_sign_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sign_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_plus_sign_
 		},
 	]}
-	rule_sign_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sign_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_minus_sign_
 		},
 	]}
 
-	rule_signed_numeric_literal_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_signed_numeric_literal_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unsigned_numeric_literal_
 		},
 	]}
 
-	rule_signed_numeric_literal_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_signed_numeric_literal_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_sign_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_unsigned_numeric_literal_
 		},
 	]}
 
-	rule_signed_numeric_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_signed_numeric_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_signed_numeric_literal_1_
 		},
 	]}
-	rule_signed_numeric_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_signed_numeric_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_signed_numeric_literal_2_
 		},
 	]}
 
-	rule_simple_table_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_simple_table_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_query_specification_
 		},
 	]}
 
-	rule_simple_value_specification_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_simple_value_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_literal_
 		},
 	]}
-	rule_simple_value_specification_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_simple_value_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_host_parameter_name_
 		},
 	]}
 
-	rule_solidus_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_solidus_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '/'
 			rule: 0
 		},
 	]}
 
-	rule_sql_argument_list_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sql_argument_list_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_sql_argument_list_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sql_argument_list_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_sql_argument_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_sql_argument_list_3_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sql_argument_list_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_sql_argument_list_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_comma_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_sql_argument_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_sql_argument_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sql_argument_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_sql_argument_list_1_
 		},
 	]}
-	rule_sql_argument_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sql_argument_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_sql_argument_list_2_
 		},
 	]}
-	rule_sql_argument_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sql_argument_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_sql_argument_list_3_
 		},
 	]}
 
-	rule_sql_argument_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sql_argument_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_value_expression_
 		},
 	]}
 
-	rule_sql_schema_definition_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sql_schema_definition_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_definition_
 		},
 	]}
 
-	rule_sql_schema_manipulation_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sql_schema_manipulation_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_drop_table_statement_
 		},
 	]}
 
-	rule_sql_schema_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sql_schema_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_sql_schema_definition_statement_
 		},
 	]}
-	rule_sql_schema_statement_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sql_schema_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_sql_schema_manipulation_statement_
 		},
 	]}
 
-	rule_square_root_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_square_root_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_sqrt
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_square_root_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_square_root_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_square_root_1_
 		},
 	]}
 
-	rule_string_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_string_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_character_value_expression_
 		},
 	]}
 
-	rule_table_constraint_definition_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_constraint_definition_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_constraint_
 		},
 	]}
 
-	rule_table_constraint_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_constraint_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unique_constraint_definition_
 		},
 	]}
 
-	rule_table_contents_source_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_contents_source_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_element_list_
 		},
 	]}
 
-	rule_table_definition_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_definition_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_create
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_table
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_table_name_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_table_contents_source_
 		},
 	]}
 
-	rule_table_definition_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_definition_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_definition_1_
 		},
 	]}
 
-	rule_table_element_list_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_element_list_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_table_elements_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_table_element_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_element_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_element_list_1_
 		},
 	]}
 
-	rule_table_element_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_element_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_definition_
 		},
 	]}
-	rule_table_element_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_element_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_constraint_definition_
 		},
 	]}
 
-	rule_table_elements_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_elements_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_element_
 		},
 	]}
 
-	rule_table_elements_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_elements_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_elements_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_comma_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_table_element_
 		},
 	]}
 
-	rule_table_elements_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_elements_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_elements_1_
 		},
 	]}
-	rule_table_elements_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_elements_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_elements_2_
 		},
 	]}
 
-	rule_table_expression_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_expression_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_from_clause_
 		},
 	]}
 
-	rule_table_expression_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_expression_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_from_clause_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_where_clause_
 		},
 	]}
 
-	rule_table_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_expression_1_
 		},
 	]}
-	rule_table_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_expression_2_
 		},
 	]}
 
-	rule_table_factor_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_factor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_primary_
 		},
 	]}
 
-	rule_table_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_local_or_schema_qualified_name_
 		},
 	]}
 
-	rule_table_or_query_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_or_query_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_name_
 		},
 	]}
 
-	rule_table_primary_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_or_query_name_
 		},
 	]}
 
-	rule_table_reference_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_reference_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_reference_
 		},
 	]}
 
-	rule_table_reference_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table_reference_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_factor_
 		},
 	]}
 
-	rule_target_table_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_target_table_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_table_name_
 		},
 	]}
 
-	rule_term_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_term_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_term_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_asterisk_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_factor_
 		},
 	]}
 
-	rule_term_3_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_term_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_term_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_solidus_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_factor_
 		},
 	]}
 
-	rule_term_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_term_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_factor_
 		},
 	]}
-	rule_term_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_term_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_term_2_
 		},
 	]}
-	rule_term_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_term_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_term_3_
 		},
 	]}
 
-	rule_trigonometric_function_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_trigonometric_function_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_sin
 		},
 	]}
-	rule_trigonometric_function_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_trigonometric_function_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_cos
 		},
 	]}
-	rule_trigonometric_function_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_trigonometric_function_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_tan
 		},
 	]}
-	rule_trigonometric_function_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_trigonometric_function_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_sinh
 		},
 	]}
-	rule_trigonometric_function_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_trigonometric_function_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_cosh
 		},
 	]}
-	rule_trigonometric_function_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_trigonometric_function_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_tanh
 		},
 	]}
-	rule_trigonometric_function_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_trigonometric_function_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_asin
 		},
 	]}
-	rule_trigonometric_function_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_trigonometric_function_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_acos
 		},
 	]}
-	rule_trigonometric_function_name_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_trigonometric_function_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_atan
 		},
 	]}
 
-	rule_trigonometric_function_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_trigonometric_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_trigonometric_function_name_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_trigonometric_function_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_trigonometric_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_trigonometric_function_1_
 		},
 	]}
 
-	rule_unique_column_list_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_unique_column_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_column_name_list_
 		},
 	]}
 
-	rule_unique_constraint_definition_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_unique_constraint_definition_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unique_specification_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_left_paren_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_unique_column_list_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_right_paren_
 		},
 	]}
 
-	rule_unique_constraint_definition_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_unique_constraint_definition_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unique_constraint_definition_1_
 		},
 	]}
 
-	rule_unique_specification_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_unique_specification_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_primary
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_key
 		},
 	]}
 
-	rule_unique_specification_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_unique_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unique_specification_1_
 		},
 	]}
 
-	rule_unsigned_integer_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_unsigned_integer_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule__integer
 		},
 	]}
 
-	rule_unsigned_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_unsigned_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unsigned_numeric_literal_
 		},
 	]}
-	rule_unsigned_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_unsigned_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_general_literal_
 		},
 	]}
 
-	rule_unsigned_numeric_literal_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_unsigned_numeric_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_exact_numeric_literal_
 		},
 	]}
 
-	rule_unsigned_value_specification_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_unsigned_value_specification_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unsigned_literal_
 		},
 	]}
 
-	rule_unsigned_value_specification_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_unsigned_value_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_unsigned_value_specification_1_
 		},
 	]}
-	rule_unsigned_value_specification_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_unsigned_value_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_general_value_specification_
 		},
 	]}
 
-	rule_update_source_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_update_source_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_value_expression_
 		},
 	]}
-	rule_update_source_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_update_source_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_contextually_typed_value_specification_
 		},
 	]}
 
-	rule_update_statement_searched_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_update_statement_searched_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_update
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_target_table_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_set
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_set_clause_list_
 		},
 	]}
 
-	rule_update_statement_searched_2_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_update_statement_searched_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_update
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_target_table_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_set
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_set_clause_list_
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_where
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_search_condition_
 		},
 	]}
 
-	rule_update_statement_searched_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_update_statement_searched_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_update_statement_searched_1_
 		},
 	]}
-	rule_update_statement_searched_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_update_statement_searched_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_update_statement_searched_2_
 		},
 	]}
 
-	rule_update_target_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_update_target_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_object_column_
 		},
 	]}
 
-	rule_value_expression_primary_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_value_expression_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_parenthesized_value_expression_
 		},
 	]}
-	rule_value_expression_primary_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_value_expression_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_nonparenthesized_value_expression_primary_
 		},
 	]}
 
-	rule_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_common_value_expression_
 		},
 	]}
-	rule_value_expression_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_boolean_value_expression_
 		},
 	]}
 
-	rule_where_clause_1_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_where_clause_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_where
 		},
-		EarleyRuleOrString{
+		&EarleyRuleOrString{
 			rule: rule_search_condition_
 		},
 	]}
 
-	rule_where_clause_.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_where_clause_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_where_clause_1_
 		},
 	]}
 
-	rule__identifier.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule__identifier.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '^identifier'
 			rule: 0
 		},
 	]}
 
-	rule__integer.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule__integer.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '^integer'
 			rule: 0
 		},
 	]}
 
-	rule__string.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule__string.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: '^string'
 			rule: 0
 		},
 	]}
 
-	rule_abs.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_abs.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'ABS'
 			rule: 0
 		},
 	]}
 
-	rule_acos.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_acos.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'ACOS'
 			rule: 0
 		},
 	]}
 
-	rule_and.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_and.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'AND'
 			rule: 0
 		},
 	]}
 
-	rule_as.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_as.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'AS'
 			rule: 0
 		},
 	]}
 
-	rule_asin.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_asin.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'ASIN'
 			rule: 0
 		},
 	]}
 
-	rule_atan.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_atan.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'ATAN'
 			rule: 0
 		},
 	]}
 
-	rule_bigint.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_bigint.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'BIGINT'
 			rule: 0
 		},
 	]}
 
-	rule_boolean.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_boolean.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'BOOLEAN'
 			rule: 0
 		},
 	]}
 
-	rule_ceil.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_ceil.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'CEIL'
 			rule: 0
 		},
 	]}
 
-	rule_ceiling.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_ceiling.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'CEILING'
 			rule: 0
 		},
 	]}
 
-	rule_char.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_char.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'CHAR'
 			rule: 0
 		},
 	]}
 
-	rule_character.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_character.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'CHARACTER'
 			rule: 0
 		},
 	]}
 
-	rule_cos.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_cos.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'COS'
 			rule: 0
 		},
 	]}
 
-	rule_cosh.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_cosh.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'COSH'
 			rule: 0
 		},
 	]}
 
-	rule_create.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_create.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'CREATE'
 			rule: 0
 		},
 	]}
 
-	rule_delete.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_delete.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'DELETE'
 			rule: 0
 		},
 	]}
 
-	rule_double.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_double.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'DOUBLE'
 			rule: 0
 		},
 	]}
 
-	rule_drop.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_drop.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'DROP'
 			rule: 0
 		},
 	]}
 
-	rule_exp.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_exp.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'EXP'
 			rule: 0
 		},
 	]}
 
-	rule_false.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_false.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'FALSE'
 			rule: 0
 		},
 	]}
 
-	rule_fetch.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_fetch.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'FETCH'
 			rule: 0
 		},
 	]}
 
-	rule_first.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_first.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'FIRST'
 			rule: 0
 		},
 	]}
 
-	rule_float.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_float.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'FLOAT'
 			rule: 0
 		},
 	]}
 
-	rule_floor.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_floor.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'FLOOR'
 			rule: 0
 		},
 	]}
 
-	rule_from.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_from.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'FROM'
 			rule: 0
 		},
 	]}
 
-	rule_insert.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_insert.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'INSERT'
 			rule: 0
 		},
 	]}
 
-	rule_int.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_int.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'INT'
 			rule: 0
 		},
 	]}
 
-	rule_integer.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_integer.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'INTEGER'
 			rule: 0
 		},
 	]}
 
-	rule_into.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_into.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'INTO'
 			rule: 0
 		},
 	]}
 
-	rule_is.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_is.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'IS'
 			rule: 0
 		},
 	]}
 
-	rule_key.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_key.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'KEY'
 			rule: 0
 		},
 	]}
 
-	rule_ln.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_ln.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'LN'
 			rule: 0
 		},
 	]}
 
-	rule_log10.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_log10.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'LOG10'
 			rule: 0
 		},
 	]}
 
-	rule_mod.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_mod.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'MOD'
 			rule: 0
 		},
 	]}
 
-	rule_not.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_not.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'NOT'
 			rule: 0
 		},
 	]}
 
-	rule_null.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_null.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'NULL'
 			rule: 0
 		},
 	]}
 
-	rule_offset.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_offset.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'OFFSET'
 			rule: 0
 		},
 	]}
 
-	rule_only.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_only.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'ONLY'
 			rule: 0
 		},
 	]}
 
-	rule_or.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_or.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'OR'
 			rule: 0
 		},
 	]}
 
-	rule_power.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_power.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'POWER'
 			rule: 0
 		},
 	]}
 
-	rule_precision.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_precision.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'PRECISION'
 			rule: 0
 		},
 	]}
 
-	rule_primary.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_primary.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'PRIMARY'
 			rule: 0
 		},
 	]}
 
-	rule_real.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_real.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'REAL'
 			rule: 0
 		},
 	]}
 
-	rule_row.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_row.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'ROW'
 			rule: 0
 		},
 	]}
 
-	rule_rows.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_rows.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'ROWS'
 			rule: 0
 		},
 	]}
 
-	rule_select.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_select.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'SELECT'
 			rule: 0
 		},
 	]}
 
-	rule_set.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_set.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'SET'
 			rule: 0
 		},
 	]}
 
-	rule_sin.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sin.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'SIN'
 			rule: 0
 		},
 	]}
 
-	rule_sinh.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sinh.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'SINH'
 			rule: 0
 		},
 	]}
 
-	rule_smallint.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_smallint.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'SMALLINT'
 			rule: 0
 		},
 	]}
 
-	rule_sqrt.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_sqrt.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'SQRT'
 			rule: 0
 		},
 	]}
 
-	rule_table.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_table.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'TABLE'
 			rule: 0
 		},
 	]}
 
-	rule_tan.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_tan.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'TAN'
 			rule: 0
 		},
 	]}
 
-	rule_tanh.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_tanh.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'TANH'
 			rule: 0
 		},
 	]}
 
-	rule_true.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_true.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'TRUE'
 			rule: 0
 		},
 	]}
 
-	rule_unknown.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_unknown.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'UNKNOWN'
 			rule: 0
 		},
 	]}
 
-	rule_update.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_update.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'UPDATE'
 			rule: 0
 		},
 	]}
 
-	rule_values.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_values.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'VALUES'
 			rule: 0
 		},
 	]}
 
-	rule_varchar.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_varchar.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'VARCHAR'
 			rule: 0
 		},
 	]}
 
-	rule_varying.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_varying.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'VARYING'
 			rule: 0
 		},
 	]}
 
-	rule_where.productions << EarleyProduction{[
-		EarleyRuleOrString{
+	rule_where.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			str: 'WHERE'
 			rule: 0
 		},
@@ -4570,17 +4570,21 @@ fn get_grammar() map[string]EarleyRule {
 	return rules
 }
 
-fn parse_ast(node EarleyNode) ?[]EarleyValue {
+fn parse_ast(node &EarleyNode) ?[]EarleyValue {
 	if node.children.len == 0 {
 		match node.value.name {
 			'^integer' {
-				return [EarleyValue(new_integer_value(node.value.end_column.value.int()))]
+				return [
+					EarleyValue(new_integer_value(node.value.end_column.value.int())),
+				]
 			}
 			'^identifier' {
 				return [EarleyValue(Identifier{node.value.end_column.value})]
 			}
 			'^string' {
-				return [EarleyValue(new_varchar_value(node.value.end_column.value, 0))]
+				return [
+					EarleyValue(new_varchar_value(node.value.end_column.value, 0)),
+				]
 			}
 			else {
 				if node.value.name[0] == `<` {
@@ -4604,400 +4608,426 @@ fn parse_ast(node EarleyNode) ?[]EarleyValue {
 		}
 	}
 
-	match node.value.name {
+	return parse_ast_name(children, node.value.name)
+}
+
+fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
+	match name {
 		'<absolute value expression: 1>' {
-			children = [EarleyValue(parse_abs(children[2] as Expr) ?)]
+			return [EarleyValue(parse_abs(children[2] as Expr) ?)]
 		}
 		'<approximate numeric type: 1>' {
-			children = [EarleyValue(parse_float() ?)]
+			return [EarleyValue(parse_float() ?)]
 		}
 		'<approximate numeric type: 2>' {
-			children = [EarleyValue(parse_float_n(children[2] as Value) ?)]
+			return [EarleyValue(parse_float_n(children[2] as Value) ?)]
 		}
 		'<approximate numeric type: 3>' {
-			children = [EarleyValue(parse_real() ?)]
+			return [EarleyValue(parse_real() ?)]
 		}
 		'<approximate numeric type: 4>' {
-			children = [EarleyValue(parse_double_precision() ?)]
+			return [EarleyValue(parse_double_precision() ?)]
 		}
 		'<as clause: 1>' {
-			children = [EarleyValue(parse_identifier(children[1] as Identifier) ?)]
+			return [EarleyValue(parse_identifier(children[1] as Identifier) ?)]
 		}
 		'<boolean factor: 2>' {
-			children = [EarleyValue(parse_not(children[1] as Expr) ?)]
+			return [EarleyValue(parse_not(children[1] as Expr) ?)]
 		}
 		'<boolean literal: 1>' {
-			children = [EarleyValue(parse_true() ?)]
+			return [EarleyValue(parse_true() ?)]
 		}
 		'<boolean literal: 2>' {
-			children = [EarleyValue(parse_false() ?)]
+			return [EarleyValue(parse_false() ?)]
 		}
 		'<boolean literal: 3>' {
-			children = [EarleyValue(parse_unknown() ?)]
+			return [EarleyValue(parse_unknown() ?)]
 		}
 		'<boolean term: 2>' {
-			children = [EarleyValue(parse_and(children[0] as Expr, children[2] as Expr) ?)]
+			return [
+				EarleyValue(parse_and(children[0] as Expr, children[2] as Expr) ?),
+			]
 		}
 		'<boolean type: 1>' {
-			children = [EarleyValue(parse_boolean_type() ?)]
+			return [EarleyValue(parse_boolean_type() ?)]
 		}
 		'<boolean value expression: 2>' {
-			children = [EarleyValue(parse_or(children[0] as Expr, children[2] as Expr) ?)]
+			return [EarleyValue(parse_or(children[0] as Expr, children[2] as Expr) ?)]
 		}
 		'<ceiling function: 1>' {
-			children = [EarleyValue(parse_ceiling(children[2] as Expr) ?)]
+			return [EarleyValue(parse_ceiling(children[2] as Expr) ?)]
 		}
 		'<ceiling function: 2>' {
-			children = [EarleyValue(parse_ceiling(children[2] as Expr) ?)]
+			return [EarleyValue(parse_ceiling(children[2] as Expr) ?)]
 		}
 		'<character string type: 1>' {
-			children = [EarleyValue(parse_character() ?)]
+			return [EarleyValue(parse_character() ?)]
 		}
 		'<character string type: 2>' {
-			children = [EarleyValue(parse_character_n(children[2] as Value) ?)]
+			return [EarleyValue(parse_character_n(children[2] as Value) ?)]
 		}
 		'<character string type: 3>' {
-			children = [EarleyValue(parse_character() ?)]
+			return [EarleyValue(parse_character() ?)]
 		}
 		'<character string type: 4>' {
-			children = [EarleyValue(parse_character_n(children[2] as Value) ?)]
+			return [EarleyValue(parse_character_n(children[2] as Value) ?)]
 		}
 		'<character string type: 5>' {
-			children = [EarleyValue(parse_varchar(children[3] as Value) ?)]
+			return [EarleyValue(parse_varchar(children[3] as Value) ?)]
 		}
 		'<character string type: 6>' {
-			children = [EarleyValue(parse_varchar(children[3] as Value) ?)]
+			return [EarleyValue(parse_varchar(children[3] as Value) ?)]
 		}
 		'<character string type: 7>' {
-			children = [EarleyValue(parse_varchar(children[2] as Value) ?)]
+			return [EarleyValue(parse_varchar(children[2] as Value) ?)]
 		}
 		'<column constraint: 1>' {
-			children = [EarleyValue(parse_yes() ?)]
+			return [EarleyValue(parse_yes() ?)]
 		}
 		'<column definition: 1>' {
-			children = [
+			return [
 				EarleyValue(parse_column_definition1(children[0] as Identifier, children[1] as Type) ?),
 			]
 		}
 		'<column definition: 2>' {
-			children = [
+			return [
 				EarleyValue(parse_column_definition2(children[0] as Identifier, children[1] as Type,
 					children[2] as bool) ?),
 			]
 		}
 		'<column name list: 1>' {
-			children = [EarleyValue(parse_column_name_list1(children[0] as Identifier) ?)]
+			return [EarleyValue(parse_column_name_list1(children[0] as Identifier) ?)]
 		}
 		'<column name list: 2>' {
-			children = [
+			return [
 				EarleyValue(parse_column_name_list2(children[0] as []Identifier, children[2] as Identifier) ?),
 			]
 		}
 		'<common logarithm: 1>' {
-			children = [EarleyValue(parse_log10(children[2] as Expr) ?)]
+			return [EarleyValue(parse_log10(children[2] as Expr) ?)]
 		}
 		'<comparison predicate part 2: 1>' {
-			children = [
+			return [
 				EarleyValue(parse_comparison_part(children[0] as string, children[1] as Expr) ?),
 			]
 		}
 		'<comparison predicate: 1>' {
-			children = [
+			return [
 				EarleyValue(parse_comparison(children[0] as Expr, children[1] as ComparisonPredicatePart2) ?),
 			]
 		}
 		'<concatenation: 1>' {
-			children = [EarleyValue(parse_concatenation(children[0] as Expr, children[2] as Expr) ?)]
+			return [
+				EarleyValue(parse_concatenation(children[0] as Expr, children[2] as Expr) ?),
+			]
 		}
 		'<contextually typed row value constructor element list: 1>' {
-			children = [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
 		}
 		'<contextually typed row value constructor element list: 2>' {
-			children = [
+			return [
 				EarleyValue(parse_append_exprs1(children[0] as []Expr, children[2] as Expr) ?),
 			]
 		}
 		'<contextually typed row value constructor: 1>' {
-			children = [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
 		}
 		'<contextually typed row value constructor: 2>' {
-			children = [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
 		}
 		'<contextually typed row value constructor: 3>' {
-			children = [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
 		}
 		'<contextually typed row value constructor: 4>' {
-			children = [EarleyValue(parse_expr_to_list(children[1] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[1] as Expr) ?)]
 		}
 		'<contextually typed row value constructor: 5>' {
-			children = [
+			return [
 				EarleyValue(parse_append_exprs2(children[1] as Expr, children[3] as []Expr) ?),
 			]
 		}
 		'<contextually typed row value expression list: 2>' {
-			children = [
+			return [
 				EarleyValue(parse_merge_expr_lists(children[0] as []Expr, children[2] as []Expr) ?),
 			]
 		}
 		'<contextually typed table value constructor: 1>' {
-			children = [EarleyValue(parse_exprs(children[1] as []Expr) ?)]
+			return [EarleyValue(parse_exprs(children[1] as []Expr) ?)]
 		}
 		'<delete statement: searched: 1>' {
-			children = [EarleyValue(parse_delete_statement(children[2] as Identifier) ?)]
+			return [EarleyValue(parse_delete_statement(children[2] as Identifier) ?)]
 		}
 		'<delete statement: searched: 2>' {
-			children = [
+			return [
 				EarleyValue(parse_delete_statement_where(children[2] as Identifier, children[4] as Expr) ?),
 			]
 		}
 		'<derived column: 1>' {
-			children = [EarleyValue(parse_derived_column(children[0] as Expr) ?)]
+			return [EarleyValue(parse_derived_column(children[0] as Expr) ?)]
 		}
 		'<derived column: 2>' {
-			children = [
+			return [
 				EarleyValue(parse_derived_column_as(children[0] as Expr, children[1] as Identifier) ?),
 			]
 		}
 		'<drop table statement: 1>' {
-			children = [EarleyValue(parse_drop_table_statement(children[2] as Identifier) ?)]
+			return [
+				EarleyValue(parse_drop_table_statement(children[2] as Identifier) ?),
+			]
 		}
 		'<exact numeric literal: 2>' {
-			children = [EarleyValue(parse_value(children[0] as Value) ?)]
+			return [EarleyValue(parse_value(children[0] as Value) ?)]
 		}
 		'<exact numeric literal: 3>' {
-			children = [
+			return [
 				EarleyValue(parse_exact_numeric_literal1(children[0] as Value, children[2] as Value) ?),
 			]
 		}
 		'<exact numeric literal: 4>' {
-			children = [EarleyValue(parse_exact_numeric_literal2(children[1] as Value) ?)]
+			return [EarleyValue(parse_exact_numeric_literal2(children[1] as Value) ?)]
 		}
 		'<exact numeric type: 1>' {
-			children = [EarleyValue(parse_smallint() ?)]
+			return [EarleyValue(parse_smallint() ?)]
 		}
 		'<exact numeric type: 2>' {
-			children = [EarleyValue(parse_integer() ?)]
+			return [EarleyValue(parse_integer() ?)]
 		}
 		'<exact numeric type: 3>' {
-			children = [EarleyValue(parse_integer() ?)]
+			return [EarleyValue(parse_integer() ?)]
 		}
 		'<exact numeric type: 4>' {
-			children = [EarleyValue(parse_bigint() ?)]
+			return [EarleyValue(parse_bigint() ?)]
 		}
 		'<exponential function: 1>' {
-			children = [EarleyValue(parse_exp(children[2] as Expr) ?)]
+			return [EarleyValue(parse_exp(children[2] as Expr) ?)]
 		}
 		'<factor: 2>' {
-			children = [EarleyValue(parse_sign_expr(children[0] as string, children[1] as Expr) ?)]
+			return [
+				EarleyValue(parse_sign_expr(children[0] as string, children[1] as Expr) ?),
+			]
 		}
 		'<fetch first clause: 1>' {
-			children = [EarleyValue(parse_fetch_first_clause(children[2] as Expr) ?)]
+			return [EarleyValue(parse_fetch_first_clause(children[2] as Expr) ?)]
 		}
 		'<floor function: 1>' {
-			children = [EarleyValue(parse_floor(children[2] as Expr) ?)]
+			return [EarleyValue(parse_floor(children[2] as Expr) ?)]
 		}
 		'<from clause: 1>' {
-			children = [EarleyValue(parse_from_clause(children[1] as Identifier) ?)]
+			return [EarleyValue(parse_from_clause(children[1] as Identifier) ?)]
 		}
 		'<from constructor: 1>' {
-			children = [
+			return [
 				EarleyValue(parse_from_constructor(children[1] as []Identifier, children[3] as []Expr) ?),
 			]
 		}
 		'<host parameter name: 1>' {
-			children = [EarleyValue(parse_host_parameter_name(children[1] as Identifier) ?)]
+			return [
+				EarleyValue(parse_host_parameter_name(children[1] as Identifier) ?),
+			]
 		}
 		'<insert statement: 1>' {
-			children = [
+			return [
 				EarleyValue(parse_insert_statement(children[2] as Identifier, children[3] as InsertStmt) ?),
 			]
 		}
 		'<literal: 2>' {
-			children = [EarleyValue(parse_value_to_expr(children[0] as Value) ?)]
+			return [EarleyValue(parse_value_to_expr(children[0] as Value) ?)]
 		}
 		'<modulus expression: 1>' {
-			children = [EarleyValue(parse_mod(children[2] as Expr, children[4] as Expr) ?)]
+			return [
+				EarleyValue(parse_mod(children[2] as Expr, children[4] as Expr) ?),
+			]
 		}
 		'<natural logarithm: 1>' {
-			children = [EarleyValue(parse_ln(children[2] as Expr) ?)]
+			return [EarleyValue(parse_ln(children[2] as Expr) ?)]
 		}
 		'<nonparenthesized value expression primary: 2>' {
-			children = [EarleyValue(parse_identifier_to_expr(children[0] as Identifier) ?)]
+			return [
+				EarleyValue(parse_identifier_to_expr(children[0] as Identifier) ?),
+			]
 		}
 		'<null predicate part 2: 1>' {
-			children = [EarleyValue(parse_yes() ?)]
+			return [EarleyValue(parse_yes() ?)]
 		}
 		'<null predicate part 2: 2>' {
-			children = [EarleyValue(parse_no() ?)]
+			return [EarleyValue(parse_no() ?)]
 		}
 		'<null predicate: 1>' {
-			children = [
+			return [
 				EarleyValue(parse_null_predicate(children[0] as Expr, children[1] as bool) ?),
 			]
 		}
 		'<null specification: 1>' {
-			children = [EarleyValue(parse_null() ?)]
+			return [EarleyValue(parse_null() ?)]
 		}
 		'<numeric value expression: 2>' {
-			children = [
+			return [
 				EarleyValue(parse_binary_expr(children[0] as Expr, children[1] as string,
 					children[2] as Expr) ?),
 			]
 		}
 		'<numeric value expression: 3>' {
-			children = [
+			return [
 				EarleyValue(parse_binary_expr(children[0] as Expr, children[1] as string,
 					children[2] as Expr) ?),
 			]
 		}
 		'<parenthesized boolean value expression: 1>' {
-			children = [EarleyValue(parse_expr(children[1] as Expr) ?)]
+			return [EarleyValue(parse_expr(children[1] as Expr) ?)]
 		}
 		'<parenthesized value expression: 1>' {
-			children = [EarleyValue(parse_expr(children[1] as Expr) ?)]
+			return [EarleyValue(parse_expr(children[1] as Expr) ?)]
 		}
 		'<power function: 1>' {
-			children = [EarleyValue(parse_power(children[2] as Expr, children[4] as Expr) ?)]
+			return [
+				EarleyValue(parse_power(children[2] as Expr, children[4] as Expr) ?),
+			]
 		}
 		'<query expression: 1>' {
-			children = [EarleyValue(parse_query_expression(children[0] as SelectStmt) ?)]
+			return [EarleyValue(parse_query_expression(children[0] as SelectStmt) ?)]
 		}
 		'<query expression: 2>' {
-			children = [
+			return [
 				EarleyValue(parse_query_expression_offset(children[0] as SelectStmt, children[1] as Expr) ?),
 			]
 		}
 		'<query expression: 3>' {
-			children = [
+			return [
 				EarleyValue(parse_query_expression_fetch(children[0] as SelectStmt, children[1] as Expr) ?),
 			]
 		}
 		'<query expression: 4>' {
-			children = [
+			return [
 				EarleyValue(parse_query_expression_offset_fetch(children[0] as SelectStmt,
 					children[1] as Expr, children[2] as Expr) ?),
 			]
 		}
 		'<query specification: 1>' {
-			children = [
+			return [
 				EarleyValue(parse_query_specification(children[1] as SelectList, children[2] as TableExpression) ?),
 			]
 		}
 		'<result offset clause: 1>' {
-			children = [EarleyValue(parse_expr(children[1] as Expr) ?)]
+			return [EarleyValue(parse_expr(children[1] as Expr) ?)]
 		}
 		'<routine invocation: 1>' {
-			children = [
+			return [
 				EarleyValue(parse_routine_invocation(children[0] as Identifier, children[1] as []Expr) ?),
 			]
 		}
 		'<select list: 1>' {
-			children = [EarleyValue(parse_asterisk(children[0] as string) ?)]
+			return [EarleyValue(parse_asterisk(children[0] as string) ?)]
 		}
 		'<select list: 3>' {
-			children = [
+			return [
 				EarleyValue(parse_select_list2(children[0] as SelectList, children[2] as SelectList) ?),
 			]
 		}
 		'<select sublist: 1>' {
-			children = [EarleyValue(parse_select_sublist(children[0] as DerivedColumn) ?)]
+			return [EarleyValue(parse_select_sublist(children[0] as DerivedColumn) ?)]
 		}
 		'<set clause list: 2>' {
-			children = [
+			return [
 				EarleyValue(parse_set_clause_append(children[0] as map[string]Expr, children[2] as map[string]Expr) ?),
 			]
 		}
 		'<set clause: 1>' {
-			children = [
+			return [
 				EarleyValue(parse_set_clause(children[0] as Identifier, children[2] as Expr) ?),
 			]
 		}
 		'<signed numeric literal: 1>' {
-			children = [EarleyValue(parse_value_to_expr(children[0] as Value) ?)]
+			return [EarleyValue(parse_value_to_expr(children[0] as Value) ?)]
 		}
 		'<signed numeric literal: 2>' {
-			children = [EarleyValue(parse_sign_expr(children[0] as string, children[1] as Value) ?)]
+			return [
+				EarleyValue(parse_sign_expr(children[0] as string, children[1] as Value) ?),
+			]
 		}
 		'<SQL argument list: 1>' {
-			children = [EarleyValue(parse_empty_exprs() ?)]
+			return [EarleyValue(parse_empty_exprs() ?)]
 		}
 		'<SQL argument list: 2>' {
-			children = [EarleyValue(parse_expr_to_list(children[1] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[1] as Expr) ?)]
 		}
 		'<SQL argument list: 3>' {
-			children = [
+			return [
 				EarleyValue(parse_append_exprs1(children[1] as []Expr, children[3] as Expr) ?),
 			]
 		}
 		'<square root: 1>' {
-			children = [EarleyValue(parse_sqrt(children[2] as Expr) ?)]
+			return [EarleyValue(parse_sqrt(children[2] as Expr) ?)]
 		}
 		'<table definition: 1>' {
-			children = [
+			return [
 				EarleyValue(parse_table_definition(children[2] as Identifier, children[3] as []TableElement) ?),
 			]
 		}
 		'<table element list: 1>' {
-			children = [EarleyValue(parse_table_element_list(children[1] as []TableElement) ?)]
+			return [
+				EarleyValue(parse_table_element_list(children[1] as []TableElement) ?),
+			]
 		}
 		'<table elements: 1>' {
-			children = [EarleyValue(parse_table_elements1(children[0] as TableElement) ?)]
+			return [EarleyValue(parse_table_elements1(children[0] as TableElement) ?)]
 		}
 		'<table elements: 2>' {
-			children = [
+			return [
 				EarleyValue(parse_table_elements2(children[0] as []TableElement, children[2] as TableElement) ?),
 			]
 		}
 		'<table expression: 1>' {
-			children = [EarleyValue(parse_table_expression(children[0] as Identifier) ?)]
+			return [EarleyValue(parse_table_expression(children[0] as Identifier) ?)]
 		}
 		'<table expression: 2>' {
-			children = [
+			return [
 				EarleyValue(parse_table_expression_where(children[0] as Identifier, children[1] as Expr) ?),
 			]
 		}
 		'<term: 2>' {
-			children = [
+			return [
 				EarleyValue(parse_binary_expr(children[0] as Expr, children[1] as string,
 					children[2] as Expr) ?),
 			]
 		}
 		'<term: 3>' {
-			children = [
+			return [
 				EarleyValue(parse_binary_expr(children[0] as Expr, children[1] as string,
 					children[2] as Expr) ?),
 			]
 		}
 		'<trigonometric function: 1>' {
-			children = [EarleyValue(parse_trig_func(children[0] as string, children[2] as Expr) ?)]
+			return [
+				EarleyValue(parse_trig_func(children[0] as string, children[2] as Expr) ?),
+			]
 		}
 		'<unique constraint definition: 1>' {
-			children = [
+			return [
 				EarleyValue(parse_unique_constraint_definition(children[2] as []Identifier) ?),
 			]
 		}
 		'<unique specification: 1>' {
-			children = [EarleyValue(parse_ignore() ?)]
+			return [EarleyValue(parse_ignore() ?)]
 		}
 		'<unsigned value specification: 1>' {
-			children = [EarleyValue(parse_value_to_expr(children[0] as Value) ?)]
+			return [EarleyValue(parse_value_to_expr(children[0] as Value) ?)]
 		}
 		'<update statement: searched: 1>' {
-			children = [
+			return [
 				EarleyValue(parse_update_statement(children[1] as Identifier, children[3] as map[string]Expr) ?),
 			]
 		}
 		'<update statement: searched: 2>' {
-			children = [
+			return [
 				EarleyValue(parse_update_statement_where(children[1] as Identifier, children[3] as map[string]Expr,
 					children[5] as Expr) ?),
 			]
 		}
 		'<where clause: 1>' {
-			children = [EarleyValue(parse_expr(children[1] as Expr) ?)]
+			return [EarleyValue(parse_expr(children[1] as Expr) ?)]
 		}
-		else {}
+		else {
+			return children
+		}
 	}
-
-	return children
 }

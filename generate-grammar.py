@@ -399,12 +399,12 @@ grammar_file.write('\n')
 
 for gr in sorted(grammar.keys(), key=lambda s: s.lower()):
     for production in grammar[gr].productions:
-        grammar_file.write('\t' + var_name(gr) + '.productions << EarleyProduction{[\n')
+        grammar_file.write('\t' + var_name(gr) + '.productions << &EarleyProduction{[\n')
         for term in production.terms:
             if isinstance(term, str):
-                grammar_file.write("\t\tEarleyRuleOrString{str: '" + rule_name(term) + "', rule: 0},\n")
+                grammar_file.write("\t\t&EarleyRuleOrString{str: '" + rule_name(term) + "', rule: 0},\n")
             else:
-               grammar_file.write("\t\tEarleyRuleOrString{rule: " + var_name(term) + "},\n")
+               grammar_file.write("\t\t&EarleyRuleOrString{rule: " + var_name(term) + "},\n")
         grammar_file.write('\t]}\n')
     grammar_file.write('\n')
 
@@ -414,7 +414,7 @@ for gr in sorted(grammar.keys(), key=lambda s: s.lower()):
 grammar_file.write('\n\treturn rules\n')
 grammar_file.write('}\n\n')
 
-grammar_file.write("""fn parse_ast(node EarleyNode) ?[]EarleyValue {
+grammar_file.write("""fn parse_ast(node &EarleyNode) ?[]EarleyValue {
     if node.children.len == 0 {
         match node.value.name {
             '^integer' {
@@ -447,14 +447,18 @@ grammar_file.write("""fn parse_ast(node EarleyNode) ?[]EarleyValue {
             children << result
         }
     }
-    
-    match node.value.name {
+
+    return parse_ast_name(children, node.value.name)
+}
+
+fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
+    match name {
 """)
 
 for rule in sorted(parse_functions.keys(), key=lambda s: s.lower()):
     grammar_file.write("\t\t'" + rule + "' {\n")
     function_name, terms = parse_functions[rule]
-    grammar_file.write("\t\t\tchildren = [EarleyValue(parse_" + function_name + "(")
+    grammar_file.write("\t\t\treturn [EarleyValue(parse_" + function_name + "(")
     grammar_file.write(', '.join([
         'children[' + str(i) + '] as ' + grammar_types[t]
         for i, t in enumerate(terms)
@@ -462,10 +466,10 @@ for rule in sorted(parse_functions.keys(), key=lambda s: s.lower()):
     
     grammar_file.write("\t\t}\n")
 
-grammar_file.write("""\t\telse {}
+grammar_file.write("""\t\telse {
+            return children
+        }
     }
-
-    return children
 }
 """)
 

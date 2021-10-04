@@ -129,8 +129,7 @@ union Bytes8 {
 fn (b Bytes8) bytes() []byte {
 	return unsafe {
 		[b.bytes[0], b.bytes[1], b.bytes[2], b.bytes[3], b.bytes[4], b.bytes[5], b.bytes[6],
-			b.bytes[7],
-		]
+			b.bytes[7]]
 	}
 }
 

@@ -9,7 +9,7 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 
 	c.open_write_connection() ?
 	defer {
-		c.release_connection()
+		c.release_write_connection()
 	}
 
 	plan := create_plan(stmt, params, c) ?

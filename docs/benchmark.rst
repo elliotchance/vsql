@@ -89,6 +89,8 @@ These were run on:
 | Date       | Version +--------+--------+-------+--------+--------+-------+ Notes |
 |            |         | INSERT | SELECT | TCP-B | INSERT | SELECT | TCP-B |       |
 +============+=========+========+========+=======+========+========+=======+=======+
+| 2021-10-04 | v0.14.2 | 974    | 65775  | 97    | 939    | 64267  | 97    | [5]_  |
++------------+---------+--------+--------+-------+--------+--------+-------+-------+
 | 2021-09-19 | v0.14.0 | 995    | 61782  | 94    | 992    | 62253  | 91    | [4]_  |
 +------------+---------+--------+--------+-------+--------+--------+-------+-------+
 | 2021-09-15 | v0.12.1 | 378    | 65256  | 0.376 | 270    | 71851  | 0.396 | [3]_  |
@@ -97,6 +99,15 @@ These were run on:
 +------------+---------+--------+--------+-------+--------+--------+-------+-------+
 | 2021-09-04 | v0.11.0 | 5107   | 129252 | 0.378 |        |        |       | [1]_  |
 +------------+---------+--------+--------+-------+--------+--------+-------+-------+
+
+.. [5] The recent two patches focused on fixes to do with concurrent read/write
+   to the same file. This is critical general reliability and for transactions
+   (coming soon). Fortunately, the added locking mechanics did not have any
+   serious impact on performance. Which is a bit surprising since readers and
+   writers have to always check if the schema has changed on the file
+   underneath. Or, perhaps, it was just some inadvertent optimizations that were
+   introduced when simplifying the abstraction layers and lifecycle between
+   Connection/Storage/Btree/Pager/File.
 
 .. [4] Now we can utilize a PRIMARY KEY on the table which the query planner
    understands for exact matches (which we use in these benchmarks). This

@@ -1,6 +1,8 @@
 // pager.v contains the interface and implementation for a pager that stores
 // pages in memory or on disk.
 //
+// A new pager is created for each operation on the file. See btree.v.
+//
 // See https://github.com/elliotchance/vsql/issues/45.
 
 module vsql
@@ -13,18 +15,12 @@ interface Pager {
 	append_page(page Page) ?
 	truncate_all() ?
 	truncate_last_page() ?
-	page_size() int
 	total_pages() int
 	root_page() int
 	set_root_page(page_number int) ?
-	close()
-	flush()
-	schema_version() ?int
-	schema_changed() ?
 }
 
 struct MemoryPager {
-	page_size int
 mut:
 	// root_page is the starting page for a traversal. The root page may change
 	// as balancing happens on the tree.
@@ -32,10 +28,8 @@ mut:
 	pages     []Page
 }
 
-fn new_memory_pager(page_size int) &MemoryPager {
-	return &MemoryPager{
-		page_size: page_size
-	}
+fn new_memory_pager() &MemoryPager {
+	return &MemoryPager{}
 }
 
 fn (p MemoryPager) fetch_page(page_number int) ?Page {
@@ -70,23 +64,6 @@ fn (mut p MemoryPager) set_root_page(page_number int) ? {
 	p.root_page = page_number
 }
 
-fn (p MemoryPager) page_size() int {
-	return p.page_size
-}
-
-fn (p MemoryPager) close() {
-}
-
-fn (p MemoryPager) flush() {
-}
-
-fn (p MemoryPager) schema_version() ?int {
-	return 0
-}
-
-fn (p MemoryPager) schema_changed() ? {
-}
-
 struct FilePager {
 	page_size int
 mut:
@@ -99,15 +76,14 @@ mut:
 
 // new_file_pager requires that the path already exists and has already been
 // initialized as a new database.
-fn new_file_pager(path string, page_size int) ?&FilePager {
-	mut file := os.open_file(path, 'r+') ?
-
+fn new_file_pager(mut file os.File, page_size int, root_page int) ?&FilePager {
 	file.seek(0, .end) ?
 	file_len := file.tell() ?
 
 	return &FilePager{
 		file: file
 		page_size: page_size
+		root_page: root_page
 		// The first page is reserved for header information. We do not include
 		// this in the pages.
 		total_pages: int(file_len / i64(page_size)) - 1
@@ -169,27 +145,4 @@ fn (p FilePager) root_page() int {
 
 fn (mut p FilePager) set_root_page(page_number int) ? {
 	p.root_page = page_number
-}
-
-fn (p FilePager) page_size() int {
-	return p.page_size
-}
-
-fn (mut p FilePager) close() {
-	p.file.close()
-}
-
-fn (mut p FilePager) flush() {
-	p.file.flush()
-}
-
-fn (mut p FilePager) schema_version() ?int {
-	mut header := read_header(mut p.file) ?
-	return header.schema_version
-}
-
-fn (mut p FilePager) schema_changed() ? {
-	mut header := read_header(mut p.file) ?
-	header.schema_version++
-	write_header(mut p.file, header) ?
 }

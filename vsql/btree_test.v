@@ -12,16 +12,23 @@ fn test_btree_test() ? {
 	// least 10 (ideally 100) before the final diff.
 	times := 1
 
+	page_size := 256
+	file_name := 'btree.vsql'
+
 	for tt in 0 .. times {
 		for size := 1; size <= 1000; size *= 10 {
-			mut db_file := os.create('btree.vsql') ?
-			db_file.write([]byte{len: 256}) ?
-			db_file.close()
-			mut file_pager := new_file_pager('btree.vsql', 256) ?
+			if os.exists(file_name) {
+				os.rm(file_name) ?
+			}
 
+			init_database_file(file_name, 256) ?
+
+			mut db_file := os.open_file('btree.vsql', 'r+') ?
+			mut file_pager := new_file_pager(mut db_file, 256, 0) ?
 			run_btree_test(file_pager, size) ?
+			db_file.close()
 
-			memory_pager := new_memory_pager(256)
+			memory_pager := new_memory_pager()
 			run_btree_test(memory_pager, size) ?
 		}
 	}
@@ -35,7 +42,7 @@ fn run_btree_test(pager Pager, size int) ? {
 
 	util.shuffle(mut objs, 0)
 
-	mut btree := new_btree(pager)
+	mut btree := new_btree(pager, 256)
 	mut expected_objects := 0
 	for obj in objs {
 		btree.add(obj) ?

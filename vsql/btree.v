@@ -5,13 +5,15 @@
 module vsql
 
 struct Btree {
+	page_size int
 mut:
 	pager Pager
 }
 
-fn new_btree(pager Pager) &Btree {
+fn new_btree(pager Pager, page_size int) &Btree {
 	return &Btree{
 		pager: pager
+		page_size: page_size
 	}
 }
 
@@ -75,7 +77,7 @@ fn (p Btree) search_page(key []byte) ?([]int, []int) {
 fn (mut p Btree) add(obj PageObject) ? {
 	// First page is a special condition.
 	if p.pager.total_pages() == 0 {
-		mut page := new_page(0, p.pager.page_size())
+		mut page := new_page(0, p.page_size)
 		page.add(obj)
 		p.pager.append_page(page) ?
 		return
@@ -93,7 +95,7 @@ fn (mut p Btree) add(obj PageObject) ? {
 	previous_root_page := p.pager.root_page()
 
 	// Does it fit into the desired page?
-	if page.used + obj.length() < p.pager.page_size() {
+	if page.used + obj.length() < p.page_size {
 		page.add(obj)
 		p.pager.store_page(left_page_number, page) ?
 	} else {
@@ -111,7 +113,7 @@ fn (mut p Btree) add(obj PageObject) ? {
 		}
 
 		if previous_root_page != p.pager.root_page() {
-			mut new_root_page := new_page(kind_not_leaf, p.pager.page_size())
+			mut new_root_page := new_page(kind_not_leaf, p.page_size)
 			mut previous_objs := (p.pager.fetch_page(p.pager.root_page()) ?).objects()
 			previous_objs[0] = new_page_object(obj.key.clone(), int_to_bytes(previous_root_page))
 			new_root_page.add(previous_objs[0])
@@ -127,12 +129,12 @@ fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind byte) ?
 	objects := page.objects()
 	left := objects[..objects.len / 2]
 
-	mut page1 := new_page(kind, p.pager.page_size())
+	mut page1 := new_page(kind, p.page_size)
 	for o in left {
 		page1.add(o)
 	}
 
-	mut page2 := new_page(kind, p.pager.page_size())
+	mut page2 := new_page(kind, p.page_size)
 	for o in objects[left.len..] {
 		page2.add(o)
 	}
@@ -169,7 +171,7 @@ fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind byte) ?
 		mut page3 := p.pager.fetch_page(path[path.len - 2]) ?
 
 		// 30 is the length of p1 + p2.
-		if page3.used >= p.pager.page_size() - 30 {
+		if page3.used >= p.page_size - 30 {
 			mut new_path := path[..path.len - 1]
 			p.split_page(new_path, &page3, p2, kind_not_leaf) ?
 		} else {
@@ -178,7 +180,7 @@ fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind byte) ?
 		}
 	} else {
 		// Otherwise, we're going to need to create a new root.
-		mut page3 := new_page(kind_not_leaf, p.pager.page_size())
+		mut page3 := new_page(kind_not_leaf, p.page_size)
 		p.pager.append_page(page3) ?
 		p.pager.set_root_page(p.pager.total_pages() - 1) ?
 
@@ -286,12 +288,4 @@ fn (mut p Btree) remove(key []byte) ? {
 	if (p.pager.fetch_page(p.pager.root_page()) ?).is_empty() {
 		p.pager.truncate_all() ?
 	}
-}
-
-fn (mut b Btree) close() {
-	b.pager.close()
-}
-
-fn (mut b Btree) flush() {
-	b.pager.flush()
 }

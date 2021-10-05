@@ -9,7 +9,7 @@ fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value, el
 
 	c.open_read_connection() ?
 	defer {
-		c.release_connection()
+		c.release_read_connection()
 	}
 
 	plan := create_plan(stmt, params, c) ?

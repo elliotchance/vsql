@@ -11,7 +11,7 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse ti
 
 	c.open_write_connection() ?
 	defer {
-		c.release_connection()
+		c.release_write_connection()
 	}
 
 	table_name := identifier_name(stmt.table_name)

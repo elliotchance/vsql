@@ -20,12 +20,29 @@ mut:
 	// that prevents connections (even if there is only one) from needing to
 	// reread the schema if it has not changed.
 	schema_version int
+	// The page_size is always set to 4kb (4096 bytes). It's possible we can
+	// make this configurable in the future, but for now changing it may break
+	// stuff.
+	page_size int
+	// The root_page is the virtual page number (not including the header) of
+	// the page that is the top of the B-tree. This may move around (potentially
+	// anywhere in the file) as the root page needs to be divided or merged -
+	// although this should be quite infrequent.
+	root_page int
+}
+
+fn new_header(page_size int) Header {
+	return Header{
+		// Set all default here - even if they are zero - to be explicit.
+		version: vsql.current_version
+		schema_version: 0
+		page_size: page_size
+		root_page: 0
+	}
 }
 
 fn init_database_file(path string, page_size int) ? {
-	header := Header{
-		version: vsql.current_version
-	}
+	header := new_header(page_size)
 
 	mut tmpf := os.create(path) ?
 	write_header(mut tmpf, header) ?

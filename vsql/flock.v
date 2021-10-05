@@ -1,5 +1,8 @@
-// flock.v contains file locking functions. This likely only works on *nix
-// systems.
+// flock.v contains file locking functions. flock() itself only protects against
+// concurrent access from different processes, so to protect against goroutines
+// we need to add an additional level of locking within this process.
+//
+// TODO(elliotchance) This likely only works on *nix systems.
 
 module vsql
 
@@ -9,14 +12,18 @@ import os
 
 fn C.flock(int, int) int
 
-fn flock_lock_exclusive(f os.File) {
-	C.flock(f.fd, C.LOCK_EX)
+fn flock_lock_exclusive(file os.File) {
+	C.flock(file.fd, C.LOCK_EX)
 }
 
-fn flock_lock_shared(f os.File) {
-	C.flock(f.fd, C.LOCK_SH)
+fn flock_lock_shared(file os.File) {
+	C.flock(file.fd, C.LOCK_SH)
 }
 
-fn flock_unlock(f os.File) {
-	C.flock(f.fd, C.LOCK_UN)
+fn flock_unlock_exclusive(file os.File) {
+	C.flock(file.fd, C.LOCK_UN)
+}
+
+fn flock_unlock_shared(file os.File) {
+	C.flock(file.fd, C.LOCK_UN)
 }

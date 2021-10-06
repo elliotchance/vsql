@@ -85,7 +85,7 @@ fn (mut c Connection) open_read_connection() ? {
 
 	c.options.mutex.@rlock()
 
-	flock_lock_shared(c.storage.file)
+	flock_lock_shared(c.storage.file, c.path) ?
 	c.storage.open(c.path) ?
 }
 
@@ -96,7 +96,7 @@ fn (mut c Connection) open_write_connection() ? {
 
 	c.options.mutex.@lock()
 
-	flock_lock_exclusive(c.storage.file)
+	flock_lock_exclusive(c.storage.file, c.path) ?
 	c.storage.open(c.path) ?
 }
 
@@ -111,7 +111,7 @@ fn (mut c Connection) release_write_connection() {
 		panic(err)
 	}
 
-	flock_unlock_exclusive(c.storage.file)
+	flock_unlock_exclusive(c.storage.file, c.path)
 	c.options.mutex.unlock()
 }
 
@@ -126,7 +126,7 @@ fn (mut c Connection) release_read_connection() {
 		panic(err)
 	}
 
-	flock_unlock_shared(c.storage.file)
+	flock_unlock_shared(c.storage.file, c.path)
 	c.options.mutex.runlock()
 }
 

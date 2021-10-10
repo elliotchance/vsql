@@ -1,9 +1,14 @@
-.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples vsql grammar sql-test
+.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples vsql grammar sql-test docs
 
 # Binaries
 
 vsql:
 	v -gc boehm -prod cmd/vsql.v
+
+# Documentation
+
+docs:
+	cd docs && make html
 
 # Grammar (BNF)
 

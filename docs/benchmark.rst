@@ -42,7 +42,7 @@ their respective ranges and ``:delta`` is a random value between -5000 and 5000.
 
 After the benchmark is finished it will report something like:
 
-.. code-block:: txt
+.. code-block:: text
 
    INSERT: 100000 rows in 19.692 (5078.086 rows/s)
    SELECT: 100000 rows in 0.845 (118389.150 rows/s)

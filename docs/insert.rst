@@ -6,7 +6,7 @@ INSERT
 Syntax
 ------
 
-.. code-block:: txt
+.. code-block:: text
 
   INSERT INTO <table_name> ( <col> , ... )
   VALUES ( <value> , ... )

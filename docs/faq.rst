@@ -1,3 +1,6 @@
+FAQ
+===
+
 .. contents::
 
 Why are my field/column names in upper case?
@@ -38,8 +41,8 @@ Where can I find the SQL standard?
 The SQL standard is not free. However, you can find older versions publically
 available and these will be close enough to use as a reference:
 
-1. [SQL 2016 Foundation Grammar (BNF)](https://jakewheat.github.io/sql-overview/sql-2016-foundation-grammar.html)
-2. [SQL 1999](https://crate.io/docs/sql-99/en/latest//)
+1. `SQL 2016 Foundation Grammar (BNF) <https://jakewheat.github.io/sql-overview/sql-2016-foundation-grammar.html>`_
+2. `SQL 1999 <https://crate.io/docs/sql-99/en/latest//>`_
 
 Wait! You said this is pure V but I see a Python file?
 ------------------------------------------------------

@@ -1,3 +1,6 @@
+Testing
+=======
+
 .. contents::
 
 vsql is tested in a variety of ways, but all functional tests are through the

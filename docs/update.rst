@@ -6,7 +6,7 @@ UPDATE
 Syntax
 ------
 
-.. code-block:: txt
+.. code-block:: text
 
   UPDATE <table_name>
   SET <col> = <value> , ...
@@ -19,8 +19,7 @@ That is, more than this number of records may have matched, but only those that
 were changed will increment this counter.
 
 EXPLAIN
-=======
+-------
 
 The query planner will decide the best strategy to execute the ``UPDATE``. You
-can see this plan by using the ``EXPLAIN`` prefix. See
-`EXPLAIN <https://github.com/elliotchance/vsql/blob/main/docs/explain.rst>`_.
+can see this plan by using the ``EXPLAIN`` prefix. See :doc:`explain`.

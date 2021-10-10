@@ -1,7 +1,10 @@
+SQLSTATE
+========
+
 .. contents::
 
 Handling Errors
-===============
+---------------
 
 The error returned from ``query()`` will always one of the ``SQLState`` struct
 types. Each type describes the error situation, but may also contain specific
@@ -48,10 +51,10 @@ Or handling errors by class (first two letters):
     }
     
 SQLSTATE
-========
+--------
 
 ``22012`` division by zero
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Examples**
 
@@ -61,7 +64,7 @@ SQLSTATE
   -- error 22012: division by zero
 
 ``23502`` violates not-null constraint
---------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Examples**
 
@@ -73,7 +76,7 @@ SQLSTATE
   -- error 23502: violates non-null constraint: column F2
 
 ``42601`` syntax error
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 **Examples**
 
@@ -91,7 +94,7 @@ SQLSTATE
   -- error 42601: syntax error: table name cannot be reserved word: ABS
 
 ``42703`` column does not exist
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Examples**
 
@@ -103,7 +106,7 @@ SQLSTATE
   -- error 42703: no such column: C
 
 ``42804`` data type mismatch
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Examples**
 
@@ -118,7 +121,7 @@ SQLSTATE
   -- error 42804: data type mismatch for column B: expected BOOLEAN but got INTEGER
 
 ``42883`` function does not exist
----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Examples**
 
@@ -131,7 +134,7 @@ SQLSTATE
   -- error 42883: function does not exist: ABS has 2 arguments but needs 1 argument
 
 ``42P01`` table does not exist
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Examples**
 
@@ -141,7 +144,7 @@ SQLSTATE
   -- error 42P01: no such table: FOO
 
 ``42P02`` parameter does not exist
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Examples**
 
@@ -152,7 +155,7 @@ SQLSTATE
   -- error 42P02: no such parameter: foo
 
 ``42P07`` table already exists
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Examples**
 

@@ -1,3 +1,6 @@
+Operators
+=========
+
 .. contents::
 
 For the tables below:
@@ -7,84 +10,84 @@ For the tables below:
 - ``any`` is any data type.
 
 Binary Operations
-=================
+-----------------
 
 .. list-table::
-    :header-rows: 1
+   :header-rows: 1
 
-  * - Operator
-    - Precedence
-    - Name
+   * - Operator
+     - Precedence
+     - Name
 
-  * - ``number * number``
-    - 2
-    - Multiplication
+   * - ``number * number``
+     - 2
+     - Multiplication
 
-  * - ``number / number``
-    - 2
-    - Division
+   * - ``number / number``
+     - 2
+     - Division
 
-  * - ``number + number``
-    - 3
-    - Addition
+   * - ``number + number``
+     - 3
+     - Addition
 
-  * - ``number - number``
-    - 3
-    - Subtraction
+   * - ``number - number``
+     - 3
+     - Subtraction
 
-  * - ``text || text``
-    - 3
-    - Concatenation
+   * - ``text || text``
+     - 3
+     - Concatenation
 
-  * - ``any = any``
-    - 4
-    - Equal
+   * - ``any = any``
+     - 4
+     - Equal
 
-  * - ``any <> any``
-    - 4
-    - Not equal
+   * - ``any <> any``
+     - 4
+     - Not equal
 
-  * - ``number > number``
-    - 4
-    - Greater than
+   * - ``number > number``
+     - 4
+     - Greater than
 
-  * - ``text > text``
-    - 4
-    - Greater than
+   * - ``text > text``
+     - 4
+     - Greater than
 
-  * - ``number < number``
-    - 4
-  -   Less than
+   * - ``number < number``
+     - 4
+     - Less than
 
-  * - ``text <= text``
-    - 4
-    - Less than
+   * - ``text <= text``
+     - 4
+     - Less than
 
-  * - ``number >= number``
-    - 4
-    - Greater than or equal
+   * - ``number >= number``
+     - 4
+     - Greater than or equal
 
-  * - ``text >= text``
-    - 4
-    - Greater than or equal
+   * - ``text >= text``
+     - 4
+     - Greater than or equal
 
-  * - ``number <= number``
-    - 4
-    - Less than or equal
+   * - ``number <= number``
+     - 4
+     - Less than or equal
 
-  * - ``text <= text``
-    - 4
-    - Less than or equal
+   * - ``text <= text``
+     - 4
+     - Less than or equal
 
-  * - ``boolean AND boolean`
-    - 6
-    - Logical and
+   * - ``boolean AND boolean``
+     - 6
+     - Logical and
 
-  * - ``boolean OR boolean``
-    - 7
-    - Logical or
+   * - ``boolean OR boolean``
+     - 7
+     - Logical or
 
-The _Precedence_ dictates the order of operations. For example ``2 + 3 * 5`` is
+The *Precedence* dictates the order of operations. For example ``2 + 3 * 5`` is
 evaluated as ``2 + (3 * 5)`` because ``*`` has a lower precedence so it happens
 first. You can control the order of operations with parenthesis, like
 ``(2 + 3) * 5``.
@@ -92,25 +95,25 @@ first. You can control the order of operations with parenthesis, like
 Dividing by zero will result in ``SQLSTATE 22012`` error.
 
 Unary Operations
-================
+----------------
 
 .. list-table::
-    :header-rows: 1
+   :header-rows: 1
 
-  * - Operator
-    - Name
+   * - Operator
+     - Name
   
-  * - ``+number``
-    - Noop
+   * - ``+number``
+     - Noop
   
-  * - ``-number``
-    - Unary negate
+   * - ``-number``
+     - Unary negate
   
-  * - ``NOT boolean``
-    - Logical negate
+   * - ``NOT boolean``
+     - Logical negate
   
-  * - ``any IS NULL``
-    - NULL check
+   * - ``any IS NULL``
+     - NULL check
   
-  * - ``any IS NOT NULL``
-    - Not NULL check
+   * - ``any IS NOT NULL``
+     - Not NULL check

@@ -11,12 +11,12 @@ for debugging query performance.
 Syntax
 ------
 
-.. code-block:: txt
+.. code-block:: text
 
   EXPLAIN ...
 
 Examples
-========
+--------
 
 .. code-block:: sql
 

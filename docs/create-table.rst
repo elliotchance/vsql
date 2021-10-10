@@ -6,7 +6,7 @@ CREATE TABLE
 Syntax
 ------
 
-.. code-block:: txt
+.. code-block:: text
 
   CREATE TABLE <table_name> ( <element> , ... )
 
@@ -14,9 +14,8 @@ Syntax
              | PRIMARY KEY ( <column_name> , ... )
 
 1. ``column_name`` must start with a letter, but can be followed by any letter,
-underscore (``_``) or digit for a maximum length of 128 characters.
-2. ``column_type`` must be one of the
-`Data Types <https://github.com/elliotchance/vsql/blob/main/docs/data-types.rst>`_.
+   underscore (``_``) or digit for a maximum length of 128 characters.
+2. ``column_type`` must be one of the :doc:`data-types`.
 
 Primary Keys
 ------------

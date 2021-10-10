@@ -1,10 +1,13 @@
+Functions
+=========
+
 .. contents::
 
 Mathematical Functions
-======================
+----------------------
 
 ``ABS(DOUBLE PRECISION) DOUBLE PRECISION``
-------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Absolute value.
 
@@ -19,7 +22,7 @@ Absolute value.
   -- 1.23
 
 ``ACOS(DOUBLE PRECISION) DOUBLE PRECISION``
--------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Inverse (arc) cosine.
 
@@ -31,7 +34,7 @@ Inverse (arc) cosine.
   -- COL1: 1.369438
 
 ``ASIN(DOUBLE PRECISION) DOUBLE PRECISION``
--------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Inverse (arc) sine.
 
@@ -43,7 +46,7 @@ Inverse (arc) sine.
   -- COL1: 0.201358
 
 ``ATAN(DOUBLE PRECISION) DOUBLE PRECISION``
--------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Inverse (arc) tangent.
 
@@ -55,7 +58,7 @@ Inverse (arc) tangent.
   -- COL1: 0.197396
 
 ``CEIL(DOUBLE PRECISION) DOUBLE PRECISION``
--------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Round up to the nearest integer.
 
@@ -79,12 +82,12 @@ Round up to the nearest integer.
   -- COL1: 4
 
 ``CEILING(DOUBLE PRECISION) DOUBLE PRECISION``
-----------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`CEILING` is an alias of `CEIL`.
+``CEILING`` is an alias of ``CEIL``.
 
 ``COS(DOUBLE PRECISION) DOUBLE PRECISION``
-------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Cosine.
 
@@ -96,7 +99,7 @@ Cosine.
   -- COL1: 0.362358
 
 ``COSH(DOUBLE PRECISION) DOUBLE PRECISION``
--------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Hyperbolic cosine.
 
@@ -108,7 +111,7 @@ Hyperbolic cosine.
   -- COL1: 1.810656
 
 ``EXP(DOUBLE PRECISION) DOUBLE PRECISION``
-------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Exponential.
 
@@ -120,7 +123,7 @@ Exponential.
   -- COL1: 40.447304
 
 ``FLOOR(DOUBLE PRECISION) DOUBLE PRECISION``
---------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Round down to the nearest integer.
 
@@ -141,7 +144,7 @@ Round down to the nearest integer.
   -- COL1: -4
 
 ``LN(DOUBLE PRECISION) DOUBLE PRECISION``
------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Natural logarithm (base e).
 
@@ -153,7 +156,7 @@ Natural logarithm (base e).
   -- COL1: 2.617396
 
 ``LOG10(DOUBLE PRECISION) DOUBLE PRECISION``
---------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Logarithm in base 10.
 
@@ -165,7 +168,7 @@ Logarithm in base 10.
   -- COL1: 1.136721
 
 ``MOD(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION``
-------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Modulus.
 
@@ -180,7 +183,7 @@ Modulus.
   -- COL1: 0.3
 
 ``POWER(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION``
---------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Power.
 
@@ -192,7 +195,7 @@ Power.
   -- COL1: 26.333241
 
 ``SIN(DOUBLE PRECISION) DOUBLE PRECISION``
-------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sine.
 
@@ -204,7 +207,7 @@ Sine.
   -- COL1: 0.932039
 
 ``SINH(DOUBLE PRECISION) DOUBLE PRECISION``
--------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Hyperbolic sine.
 
@@ -216,7 +219,7 @@ Hyperbolic sine.
   -- COL1: 1.509461
 
 ``SQRT(DOUBLE PRECISION) DOUBLE PRECISION``
--------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Square root.
 
@@ -228,7 +231,7 @@ Square root.
   -- COL1: 1.923538
 
 ``TAN(DOUBLE PRECISION) DOUBLE PRECISION``
-------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Tangent.
 
@@ -240,7 +243,7 @@ Tangent.
   -- COL1: 2.572152
 
 ``TANH(DOUBLE PRECISION) DOUBLE PRECISION``
--------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Hyperbolic tangent.
 

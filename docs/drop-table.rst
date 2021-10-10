@@ -6,6 +6,6 @@ DROP TABLE
 Syntax
 ------
 
-.. code-block:: txt
+.. code-block:: text
 
   DROP TABLE <table_name>

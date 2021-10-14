@@ -15,6 +15,8 @@ fn register_builtin_funcs(mut conn Connection) ? {
 	conn.register_func(Func{'ATAN', [Type{SQLType.is_double_precision, 0}], func_atan}) ?
 	conn.register_func(Func{'CEIL', [Type{SQLType.is_double_precision, 0}], func_ceil}) ?
 	conn.register_func(Func{'CEILING', [Type{SQLType.is_double_precision, 0}], func_ceil}) ?
+	conn.register_func(Func{'CHAR_LENGTH', [Type{SQLType.is_varchar, 0}], func_char_length}) ?
+	conn.register_func(Func{'CHARACTER_LENGTH', [Type{SQLType.is_varchar, 0}], func_char_length}) ?
 	conn.register_func(Func{'COS', [Type{SQLType.is_double_precision, 0}], func_cos}) ?
 	conn.register_func(Func{'COSH', [Type{SQLType.is_double_precision, 0}], func_cosh}) ?
 	conn.register_func(Func{'EXP', [Type{SQLType.is_double_precision, 0}], func_exp}) ?
@@ -23,6 +25,7 @@ fn register_builtin_funcs(mut conn Connection) ? {
 	conn.register_func(Func{'LOG10', [Type{SQLType.is_double_precision, 0}], func_log10}) ?
 	conn.register_func(Func{'MOD', [Type{SQLType.is_double_precision, 0},
 		Type{SQLType.is_double_precision, 0}], func_mod}) ?
+	conn.register_func(Func{'OCTET_LENGTH', [Type{SQLType.is_varchar, 0}], func_octet_length}) ?
 	conn.register_func(Func{'POSITION', [Type{SQLType.is_varchar, 0},
 		Type{SQLType.is_varchar, 0}], func_position}) ?
 	conn.register_func(Func{'POWER', [Type{SQLType.is_double_precision, 0},

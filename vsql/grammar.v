@@ -117,6 +117,15 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_ceiling_function_ := &EarleyRule{
 		name: '<ceiling function>'
 	}
+	mut rule_char_length_expression_1_ := &EarleyRule{
+		name: '<char length expression: 1>'
+	}
+	mut rule_char_length_expression_2_ := &EarleyRule{
+		name: '<char length expression: 2>'
+	}
+	mut rule_char_length_expression_ := &EarleyRule{
+		name: '<char length expression>'
+	}
 	mut rule_character_factor_ := &EarleyRule{
 		name: '<character factor>'
 	}
@@ -450,6 +459,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_left_paren_ := &EarleyRule{
 		name: '<left paren>'
 	}
+	mut rule_length_expression_ := &EarleyRule{
+		name: '<length expression>'
+	}
 	mut rule_length_ := &EarleyRule{
 		name: '<length>'
 	}
@@ -545,6 +557,12 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_object_column_ := &EarleyRule{
 		name: '<object column>'
+	}
+	mut rule_octet_length_expression_1_ := &EarleyRule{
+		name: '<octet length expression: 1>'
+	}
+	mut rule_octet_length_expression_ := &EarleyRule{
+		name: '<octet length expression>'
 	}
 	mut rule_offset_row_count_ := &EarleyRule{
 		name: '<offset row count>'
@@ -924,8 +942,14 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_char := &EarleyRule{
 		name: 'CHAR'
 	}
+	mut rule_char_length := &EarleyRule{
+		name: 'CHAR_LENGTH'
+	}
 	mut rule_character := &EarleyRule{
 		name: 'CHARACTER'
+	}
+	mut rule_character_length := &EarleyRule{
+		name: 'CHARACTER_LENGTH'
 	}
 	mut rule_cos := &EarleyRule{
 		name: 'COS'
@@ -1001,6 +1025,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_null := &EarleyRule{
 		name: 'NULL'
+	}
+	mut rule_octet_length := &EarleyRule{
+		name: 'OCTET_LENGTH'
 	}
 	mut rule_offset := &EarleyRule{
 		name: 'OFFSET'
@@ -1376,6 +1403,47 @@ fn get_grammar() map[string]EarleyRule {
 	rule_ceiling_function_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_ceiling_function_2_
+		},
+	]}
+
+	rule_char_length_expression_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_char_length
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_char_length_expression_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_length
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_char_length_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_char_length_expression_1_
+		},
+	]}
+	rule_char_length_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_char_length_expression_2_
 		},
 	]}
 
@@ -2446,6 +2514,17 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_length_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_char_length_expression_
+		},
+	]}
+	rule_length_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_octet_length_expression_
+		},
+	]}
+
 	rule_length_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_unsigned_integer_
@@ -2725,6 +2804,11 @@ fn get_grammar() map[string]EarleyRule {
 	]}
 	rule_numeric_value_function_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
+			rule: rule_length_expression_
+		},
+	]}
+	rule_numeric_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_absolute_value_expression_
 		},
 	]}
@@ -2777,6 +2861,27 @@ fn get_grammar() map[string]EarleyRule {
 	rule_object_column_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_column_name_
+		},
+	]}
+
+	rule_octet_length_expression_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_octet_length
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_string_value_expression_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_octet_length_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_octet_length_expression_1_
 		},
 	]}
 
@@ -3943,9 +4048,23 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_char_length.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CHAR_LENGTH'
+			rule: 0
+		},
+	]}
+
 	rule_character.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'CHARACTER'
+			rule: 0
+		},
+	]}
+
+	rule_character_length.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CHARACTER_LENGTH'
 			rule: 0
 		},
 	]}
@@ -4121,6 +4240,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_null.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'NULL'
+			rule: 0
+		},
+	]}
+
+	rule_octet_length.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'OCTET_LENGTH'
 			rule: 0
 		},
 	]}
@@ -4337,6 +4463,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<ceiling function: 1>'] = rule_ceiling_function_1_
 	rules['<ceiling function: 2>'] = rule_ceiling_function_2_
 	rules['<ceiling function>'] = rule_ceiling_function_
+	rules['<char length expression: 1>'] = rule_char_length_expression_1_
+	rules['<char length expression: 2>'] = rule_char_length_expression_2_
+	rules['<char length expression>'] = rule_char_length_expression_
 	rules['<character factor>'] = rule_character_factor_
 	rules['<character length>'] = rule_character_length_
 	rules['<character position expression: 1>'] = rule_character_position_expression_1_
@@ -4448,6 +4577,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<insert statement>'] = rule_insert_statement_
 	rules['<insertion target>'] = rule_insertion_target_
 	rules['<left paren>'] = rule_left_paren_
+	rules['<length expression>'] = rule_length_expression_
 	rules['<length>'] = rule_length_
 	rules['<less than operator>'] = rule_less_than_operator_
 	rules['<less than or equals operator>'] = rule_less_than_or_equals_operator_
@@ -4480,6 +4610,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<numeric value expression>'] = rule_numeric_value_expression_
 	rules['<numeric value function>'] = rule_numeric_value_function_
 	rules['<object column>'] = rule_object_column_
+	rules['<octet length expression: 1>'] = rule_octet_length_expression_1_
+	rules['<octet length expression>'] = rule_octet_length_expression_
 	rules['<offset row count>'] = rule_offset_row_count_
 	rules['<parenthesized boolean value expression: 1>'] = rule_parenthesized_boolean_value_expression_1_
 	rules['<parenthesized boolean value expression>'] = rule_parenthesized_boolean_value_expression_
@@ -4606,7 +4738,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['CEIL'] = rule_ceil
 	rules['CEILING'] = rule_ceiling
 	rules['CHAR'] = rule_char
+	rules['CHAR_LENGTH'] = rule_char_length
 	rules['CHARACTER'] = rule_character
+	rules['CHARACTER_LENGTH'] = rule_character_length
 	rules['COS'] = rule_cos
 	rules['COSH'] = rule_cosh
 	rules['CREATE'] = rule_create
@@ -4632,6 +4766,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['MOD'] = rule_mod
 	rules['NOT'] = rule_not
 	rules['NULL'] = rule_null
+	rules['OCTET_LENGTH'] = rule_octet_length
 	rules['OFFSET'] = rule_offset
 	rules['ONLY'] = rule_only
 	rules['OR'] = rule_or
@@ -4751,6 +4886,12 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		}
 		'<ceiling function: 2>' {
 			return [EarleyValue(parse_ceiling(children[2] as Expr) ?)]
+		}
+		'<char length expression: 1>' {
+			return [EarleyValue(parse_char_length(children[2] as Expr) ?)]
+		}
+		'<char length expression: 2>' {
+			return [EarleyValue(parse_char_length(children[2] as Expr) ?)]
 		}
 		'<character position expression: 1>' {
 			return [
@@ -4968,6 +5109,9 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 				EarleyValue(parse_binary_expr(children[0] as Expr, children[1] as string,
 					children[2] as Expr) ?),
 			]
+		}
+		'<octet length expression: 1>' {
+			return [EarleyValue(parse_octet_length(children[2] as Expr) ?)]
 		}
 		'<parenthesized boolean value expression: 1>' {
 			return [EarleyValue(parse_expr(children[1] as Expr) ?)]

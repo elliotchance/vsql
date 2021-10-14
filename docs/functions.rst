@@ -257,6 +257,32 @@ Hyperbolic tangent.
 String Functions
 ----------------
 
+``CHAR_LENGTH(CHARACTER VARYING) INTEGER``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Returns the character length (multibyte chatracters are counted as a single
+character).
+
+.. code-block:: sql
+
+  SELECT CHAR_LENGTH('😊£');
+  -- COL1: 2
+
+``CHARACTER_LENGTH(CHARACTER VARYING) INTEGER``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``CHARACTER_LENGTH`` is an alias of ``CHAR_LENGTH``.
+
+``OCTET_LENGTH(CHARACTER VARYING) INTEGER``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Returns the byte length (multibyte chatracters are ignored).
+
+.. code-block:: sql
+
+  SELECT OCTET_LENGTH('😊£');
+  -- COL1: 6
+
 ``POSITION(CHARACTER VARYING IN CHARACTER VARYING) INTEGER``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

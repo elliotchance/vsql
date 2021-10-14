@@ -14,8 +14,9 @@ module vsql
 import time
 
 interface PlanOperation {
-	execute(row []Row) ?[]Row
 	str() string
+mut:
+	execute(row []Row) ?[]Row
 }
 
 fn create_plan(stmt Stmt, params map[string]Value, c Connection) ?Plan {
@@ -91,9 +92,9 @@ mut:
 	params     map[string]Value
 }
 
-fn (o Plan) execute(_ []Row) ?[]Row {
+fn (mut o Plan) execute(_ []Row) ?[]Row {
 	mut rows := []Row{}
-	for operation in o.operations {
+	for mut operation in o.operations {
 		rows = operation.execute(rows) ?
 	}
 

@@ -6,7 +6,7 @@ import time
 
 fn execute_delete(mut c Connection, stmt DeleteStmt, params map[string]Value, elapsed_parse time.Duration, explain bool) ?Result {
 	t := start_timer()
-	plan := create_plan(stmt, params, c) ?
+	mut plan := create_plan(stmt, params, c) ?
 
 	if explain {
 		return plan.explain(elapsed_parse)

@@ -253,3 +253,25 @@ Hyperbolic tangent.
 
   SELECT TANH(1.2);
   -- COL1: 0.833655
+
+String Functions
+----------------
+
+``POSITION(CHARACTER VARYING IN CHARACTER VARYING) INTEGER``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Returns the start of the left most (first) match of one string within another. 1
+will be the smallest index on a match and 0 is returned if the substring does
+not exist.
+
+Matching is case-sensitive.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT POSITION('He' IN 'hello Hello');
+  -- COL1: 7
+
+  SELECT POSITION('xx' IN 'hello Hello');
+  -- COL1: 0

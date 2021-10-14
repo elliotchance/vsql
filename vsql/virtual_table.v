@@ -1,9 +1,11 @@
 module vsql
 
+type VirtualTableProviderFn = fn (mut t VirtualTable) ?
+
 struct VirtualTable {
 	create_table_sql  string
 	create_table_stmt CreateTableStmt
-	data              fn (mut t VirtualTable) ?
+	data              VirtualTableProviderFn
 mut:
 	is_done bool
 	rows    []Row

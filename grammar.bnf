@@ -478,7 +478,8 @@
     ABS <left paren> <numeric value expression> <right paren>   -> abs
 
 <numeric value function> /* Expr */ ::=
-    <absolute value expression>
+    <position expression>
+  | <absolute value expression>
   | <modulus expression>
   | <trigonometric function>
   | <common logarithm>
@@ -647,3 +648,16 @@
 
 <table constraint definition> /* TableElement */ ::=
   <table constraint>
+
+<position expression> /* Expr */ ::=
+    <character position expression>
+
+<character position expression> /* Expr */ ::=
+    POSITION <left paren> <character value expression 1> IN 
+    <character value expression 2> <right paren>              -> position
+
+<character value expression 1> /* Expr */ ::=
+    <character value expression>
+
+<character value expression 2> /* Expr */ ::=
+    <character value expression>

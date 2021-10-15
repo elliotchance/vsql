@@ -19,7 +19,6 @@ fn get_tests() ?[]SQLTest {
 		if env_test != '' && !test_file_path.contains(env_test) {
 			continue
 		}
-
 		lines := os.read_lines(test_file_path) ?
 
 		mut stmts := []string{}
@@ -109,7 +108,7 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool) ? {
 	// The default connection is called "main". The docs explain that "main"
 	// should not be referenced in tests and the "connection" directive must
 	// be the first line in the test.
-	mut connections := map[string]Connection{}
+	mut connections := map[string]&Connection{}
 	mut current_connection_name := ''
 
 	file_name := 'test.vsql'

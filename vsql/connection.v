@@ -25,7 +25,7 @@ mut:
 }
 
 // open is the convenience function for open_database() with default options.
-pub fn open(path string) ?Connection {
+pub fn open(path string) ?&Connection {
 	return open_database(path, default_connection_options())
 }
 
@@ -48,7 +48,7 @@ pub fn open(path string) ?Connection {
 // - Bad: Multiple goroutines open_database() the same file.
 //
 // See ConnectionOptions and default_connection_options().
-pub fn open_database(path string, options ConnectionOptions) ?Connection {
+pub fn open_database(path string, options ConnectionOptions) ?&Connection {
 	if path == ':memory:' {
 		return open_connection(path, options)
 	}
@@ -61,8 +61,8 @@ pub fn open_database(path string, options ConnectionOptions) ?Connection {
 	return open_connection(path, options)
 }
 
-fn open_connection(path string, options ConnectionOptions) ?Connection {
-	mut conn := Connection{
+fn open_connection(path string, options ConnectionOptions) ?&Connection {
+	mut conn := &Connection{
 		path: path
 		query_cache: options.query_cache
 		options: options

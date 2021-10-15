@@ -73,7 +73,7 @@ fn (mut f Storage) close() ? {
 fn (mut f Storage) create_table(table_name string, columns []Column, primary_key []string) ? {
 	table := Table{table_name, columns, primary_key}
 
-	obj := new_page_object('T$table_name'.bytes(), table.bytes())
+	obj := new_page_object('T$table_name'.bytes(), 0, 0, table.bytes())
 	f.btree.add(obj) ?
 
 	f.tables[table_name] = table
@@ -81,17 +81,23 @@ fn (mut f Storage) create_table(table_name string, columns []Column, primary_key
 }
 
 fn (mut f Storage) delete_table(table_name string) ? {
-	f.btree.remove('T$table_name'.bytes()) ?
+	// TODO(elliotchance): This is wrong because we should expire (not delete)
+	//  and the tid needs to be maintained on the row.
+	f.btree.remove('T$table_name'.bytes(), 0) ?
+
 	f.tables.delete(table_name)
 	f.schema_changed()
 }
 
 fn (mut f Storage) delete_row(table_name string, mut row Row) ? {
-	f.btree.remove(row.object_key(f.tables[table_name]) ?) ?
+	// TODO(elliotchance): This is wrong because we should expire (not delete)
+	//  and the tid needs to be maintained on the row.
+	f.btree.remove(row.object_key(f.tables[table_name]) ?, 0) ?
 }
 
 fn (mut f Storage) write_row(mut r Row, t Table) ? {
-	obj := new_page_object(r.object_key(t) ?, r.bytes(t))
+	// TODO(elliotchance): The real tid needs to be provided.
+	obj := new_page_object(r.object_key(t) ?, 0, 0, r.bytes(t))
 	f.btree.add(obj) ?
 }
 

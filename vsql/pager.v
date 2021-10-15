@@ -10,6 +10,7 @@ module vsql
 import os
 
 interface Pager {
+mut:
 	fetch_page(page_number int) ?Page
 	store_page(page_number int, page Page) ?
 	append_page(page Page) ?
@@ -32,7 +33,7 @@ fn new_memory_pager() &MemoryPager {
 	return &MemoryPager{}
 }
 
-fn (p MemoryPager) fetch_page(page_number int) ?Page {
+fn (mut p MemoryPager) fetch_page(page_number int) ?Page {
 	return p.pages[page_number]
 }
 
@@ -40,7 +41,7 @@ fn (mut p MemoryPager) store_page(page_number int, page Page) ? {
 	p.pages[page_number] = page
 }
 
-fn (p MemoryPager) total_pages() int {
+fn (mut p MemoryPager) total_pages() int {
 	return p.pages.len
 }
 
@@ -56,7 +57,7 @@ fn (mut p MemoryPager) truncate_last_page() ? {
 	p.pages = p.pages[..p.pages.len - 1]
 }
 
-fn (p MemoryPager) root_page() int {
+fn (mut p MemoryPager) root_page() int {
 	return p.root_page
 }
 
@@ -139,7 +140,7 @@ fn (mut p FilePager) truncate_last_page() ? {
 	p.total_pages--
 }
 
-fn (p FilePager) root_page() int {
+fn (mut p FilePager) root_page() int {
 	return p.root_page
 }
 

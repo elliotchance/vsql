@@ -123,6 +123,12 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_character_length_ := &EarleyRule{
 		name: '<character length>'
 	}
+	mut rule_character_position_expression_1_ := &EarleyRule{
+		name: '<character position expression: 1>'
+	}
+	mut rule_character_position_expression_ := &EarleyRule{
+		name: '<character position expression>'
+	}
 	mut rule_character_primary_ := &EarleyRule{
 		name: '<character primary>'
 	}
@@ -152,6 +158,12 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_character_string_type_ := &EarleyRule{
 		name: '<character string type>'
+	}
+	mut rule_character_value_expression_1_ := &EarleyRule{
+		name: '<character value expression 1>'
+	}
+	mut rule_character_value_expression_2_ := &EarleyRule{
+		name: '<character value expression 2>'
 	}
 	mut rule_character_value_expression_ := &EarleyRule{
 		name: '<character value expression>'
@@ -555,6 +567,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_plus_sign_ := &EarleyRule{
 		name: '<plus sign>'
 	}
+	mut rule_position_expression_ := &EarleyRule{
+		name: '<position expression>'
+	}
 	mut rule_power_function_1_ := &EarleyRule{
 		name: '<power function: 1>'
 	}
@@ -951,6 +966,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_from := &EarleyRule{
 		name: 'FROM'
 	}
+	mut rule_in := &EarleyRule{
+		name: 'IN'
+	}
 	mut rule_insert := &EarleyRule{
 		name: 'INSERT'
 	}
@@ -992,6 +1010,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_or := &EarleyRule{
 		name: 'OR'
+	}
+	mut rule_position := &EarleyRule{
+		name: 'POSITION'
 	}
 	mut rule_power := &EarleyRule{
 		name: 'POWER'
@@ -1370,6 +1391,33 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_character_position_expression_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_position
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_1_
+		},
+		&EarleyRuleOrString{
+			rule: rule_in
+		},
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_2_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_character_position_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_position_expression_1_
+		},
+	]}
+
 	rule_character_primary_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_value_expression_primary_
@@ -1508,6 +1556,18 @@ fn get_grammar() map[string]EarleyRule {
 	rule_character_string_type_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_character_string_type_7_
+		},
+	]}
+
+	rule_character_value_expression_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
+		},
+	]}
+
+	rule_character_value_expression_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
 		},
 	]}
 
@@ -2660,6 +2720,11 @@ fn get_grammar() map[string]EarleyRule {
 
 	rule_numeric_value_function_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
+			rule: rule_position_expression_
+		},
+	]}
+	rule_numeric_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_absolute_value_expression_
 		},
 	]}
@@ -2768,6 +2833,12 @@ fn get_grammar() map[string]EarleyRule {
 		&EarleyRuleOrString{
 			str: '+'
 			rule: 0
+		},
+	]}
+
+	rule_position_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_position_expression_
 		},
 	]}
 
@@ -3970,6 +4041,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_in.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'IN'
+			rule: 0
+		},
+	]}
+
 	rule_insert.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'INSERT'
@@ -4064,6 +4142,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_or.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'OR'
+			rule: 0
+		},
+	]}
+
+	rule_position.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'POSITION'
 			rule: 0
 		},
 	]}
@@ -4254,6 +4339,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<ceiling function>'] = rule_ceiling_function_
 	rules['<character factor>'] = rule_character_factor_
 	rules['<character length>'] = rule_character_length_
+	rules['<character position expression: 1>'] = rule_character_position_expression_1_
+	rules['<character position expression>'] = rule_character_position_expression_
 	rules['<character primary>'] = rule_character_primary_
 	rules['<character string literal>'] = rule_character_string_literal_
 	rules['<character string type: 1>'] = rule_character_string_type_1_
@@ -4264,6 +4351,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<character string type: 6>'] = rule_character_string_type_6_
 	rules['<character string type: 7>'] = rule_character_string_type_7_
 	rules['<character string type>'] = rule_character_string_type_
+	rules['<character value expression 1>'] = rule_character_value_expression_1_
+	rules['<character value expression 2>'] = rule_character_value_expression_2_
 	rules['<character value expression>'] = rule_character_value_expression_
 	rules['<colon>'] = rule_colon_
 	rules['<column constraint definition>'] = rule_column_constraint_definition_
@@ -4398,6 +4487,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<parenthesized value expression>'] = rule_parenthesized_value_expression_
 	rules['<period>'] = rule_period_
 	rules['<plus sign>'] = rule_plus_sign_
+	rules['<position expression>'] = rule_position_expression_
 	rules['<power function: 1>'] = rule_power_function_1_
 	rules['<power function>'] = rule_power_function_
 	rules['<precision>'] = rule_precision_
@@ -4530,6 +4620,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['FLOAT'] = rule_float
 	rules['FLOOR'] = rule_floor
 	rules['FROM'] = rule_from
+	rules['IN'] = rule_in
 	rules['INSERT'] = rule_insert
 	rules['INT'] = rule_int
 	rules['INTEGER'] = rule_integer
@@ -4544,6 +4635,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['OFFSET'] = rule_offset
 	rules['ONLY'] = rule_only
 	rules['OR'] = rule_or
+	rules['POSITION'] = rule_position
 	rules['POWER'] = rule_power
 	rules['PRECISION'] = rule_precision
 	rules['PRIMARY'] = rule_primary
@@ -4659,6 +4751,11 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		}
 		'<ceiling function: 2>' {
 			return [EarleyValue(parse_ceiling(children[2] as Expr) ?)]
+		}
+		'<character position expression: 1>' {
+			return [
+				EarleyValue(parse_position(children[2] as Expr, children[4] as Expr) ?),
+			]
 		}
 		'<character string type: 1>' {
 			return [EarleyValue(parse_character() ?)]

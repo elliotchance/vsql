@@ -25,16 +25,16 @@ fn test_btree_test() ? {
 
 			mut db_file := os.open_file('btree.vsql', 'r+') ?
 			mut file_pager := new_file_pager(mut db_file, 256, 0) ?
-			run_btree_test(file_pager, size) ?
+			run_btree_test(mut file_pager, size) ?
 			db_file.close()
 
-			memory_pager := new_memory_pager()
-			run_btree_test(memory_pager, size) ?
+			mut memory_pager := new_memory_pager()
+			run_btree_test(mut memory_pager, size) ?
 		}
 	}
 }
 
-fn run_btree_test(pager Pager, size int) ? {
+fn run_btree_test(mut pager Pager, size int) ? {
 	mut objs := []PageObject{len: size}
 	for i in 0 .. objs.len {
 		objs[i] = PageObject{'R${i:04d}'.bytes(), []byte{len: 48}}
@@ -48,9 +48,9 @@ fn run_btree_test(pager Pager, size int) ? {
 		btree.add(obj) ?
 		expected_objects++
 
-		total_leaf_objects, _ := count(pager) ?
+		total_leaf_objects, _ := count(mut pager) ?
 		assert total_leaf_objects == expected_objects
-		validate(pager) ?
+		validate(mut pager) ?
 	}
 
 	mut all := []string{}
@@ -68,13 +68,13 @@ fn run_btree_test(pager Pager, size int) ? {
 		btree.remove(obj.key) ?
 		expected_objects--
 
-		total_leaf_objects, _ := count(pager) ?
+		total_leaf_objects, _ := count(mut pager) ?
 		assert total_leaf_objects == expected_objects
-		validate(pager) ?
+		validate(mut pager) ?
 	}
 }
 
-fn visualize(p Pager) ? {
+fn visualize(mut p Pager) ? {
 	println('\n=== VISUALIZE (root = $p.root_page()) ===')
 	for i := 0; i < p.total_pages(); i++ {
 		page := p.fetch_page(i) ?
@@ -86,18 +86,18 @@ fn visualize(p Pager) ? {
 		}
 	}
 
-	leaf_objects, non_leaf_objects := count(p) ?
+	leaf_objects, non_leaf_objects := count(mut p) ?
 
 	println('total: $leaf_objects leaf + $non_leaf_objects non-leaf \n')
 }
 
 // Validate ensures that the tree is valid.
-fn validate(p Pager) ? {
+fn validate(mut p Pager) ? {
 	if p.total_pages() == 0 {
 		return
 	}
 
-	validate_page(p, p.root_page()) ?
+	validate_page(mut p, p.root_page()) ?
 
 	// Also make sure none of the pages become orphaned.
 	for i := 0; i < p.total_pages(); i++ {
@@ -109,7 +109,7 @@ fn validate(p Pager) ? {
 	}
 }
 
-fn validate_page(p Pager, page_number int) ?([]byte, []byte) {
+fn validate_page(mut p Pager, page_number int) ?([]byte, []byte) {
 	page := p.fetch_page(page_number) ?
 	objects := page.objects()
 
@@ -124,7 +124,7 @@ fn validate_page(p Pager, page_number int) ?([]byte, []byte) {
 	// the pointers.
 	if page.kind == kind_not_leaf {
 		for object in objects {
-			smallest, _ := validate_page(p, bytes_to_int(object.value)) ?
+			smallest, _ := validate_page(mut p, bytes_to_int(object.value)) ?
 
 			// min and max have already been verified in the subpage, but the
 			// min has to equal what our pointer says.
@@ -138,7 +138,7 @@ fn validate_page(p Pager, page_number int) ?([]byte, []byte) {
 	return objects[0].key.clone(), objects[objects.len - 1].key.clone()
 }
 
-fn count(p Pager) ?(int, int) {
+fn count(mut p Pager) ?(int, int) {
 	mut total_leaf_objects := 0
 	mut total_non_leaf_objects := 0
 	for i := 0; i < p.total_pages(); i++ {

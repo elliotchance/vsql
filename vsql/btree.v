@@ -27,7 +27,7 @@ fn new_btree(pager Pager, page_size int) &Btree {
 // visited and the last element being the only leaf page). The second parameter
 // is the depth iterator at each non-leaf page (so it will have a len of the
 // path - 1).
-fn (p Btree) search_page(key []byte) ?([]int, []int) {
+fn (mut p Btree) search_page(key []byte) ?([]int, []int) {
 	// Special condition if there are no pages.
 	if p.pager.total_pages() == 0 {
 		return []int{}, []int{}

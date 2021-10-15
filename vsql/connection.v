@@ -70,7 +70,8 @@ fn open_connection(path string, options ConnectionOptions) ?Connection {
 	}
 
 	if path == ':memory:' {
-		conn.storage.btree = new_btree(new_memory_pager(), options.page_size)
+		mut pager := new_memory_pager()
+		conn.storage.btree = new_btree(pager, options.page_size)
 	}
 
 	register_builtin_funcs(mut conn) ?
@@ -163,7 +164,7 @@ pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) 
 	c.register_func(Func{function_name, arg_types, func}) ?
 }
 
-pub fn (mut c Connection) register_virtual_table(create_table string, data fn (mut t VirtualTable)) ? {
+pub fn (mut c Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ? {
 	// Registering virtual tables does not need use query cache.
 	mut tokens := tokenize(create_table)
 	stmt := parse(tokens) ?

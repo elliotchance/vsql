@@ -159,6 +159,17 @@ verbose output.
 You can set the environment variable ``$VERBOSE`` to any value other than empty,
 such as:
 
-.. code-block:: sql
+.. code-block:: sh
 
    VERBOSE=1 make sql-test
+
+Running Specific Test Files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you need to debug a specific sql test file, or just want quicker iterations,
+you can use the ``$TEST`` environment variable:
+
+.. code-block:: sql
+
+   # only run tests/transaction.sql
+   TEST=transaction make sql-test

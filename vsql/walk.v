@@ -4,11 +4,11 @@
 module vsql
 
 struct PageIterator {
-	btree Btree
 	// min and max are inclusive.
 	min []byte
 	max []byte
 mut:
+	btree Btree
 	// objects is just for performance so we dont need to parse the objects in
 	// the page several times while we iterate that page.
 	objects []PageObject

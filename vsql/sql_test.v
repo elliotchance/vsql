@@ -12,9 +12,14 @@ struct SQLTest {
 }
 
 fn get_tests() ?[]SQLTest {
+	env_test := $env('TEST')
 	mut tests := []SQLTest{}
 	test_file_paths := os.walk_ext('tests', 'sql')
 	for test_file_path in test_file_paths {
+		if env_test != '' && !test_file_path.contains(env_test) {
+			continue
+		}
+
 		lines := os.read_lines(test_file_path) ?
 
 		mut stmts := []string{}
@@ -145,7 +150,12 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool) ? {
 			continue
 		}
 		result := prepared.query(test.params) or {
-			actual += 'error ${sqlstate_from_int(err.code)}: $err.msg\n'
+			if current_connection_name == '' {
+				actual += 'error ${sqlstate_from_int(err.code)}: $err.msg\n'
+			} else {
+				actual += '$current_connection_name: error ${sqlstate_from_int(err.code)}: $err.msg\n'
+			}
+
 			continue
 		}
 

@@ -12,7 +12,7 @@ fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value, el
 		c.release_read_connection()
 	}
 
-	plan := create_plan(stmt, params, c) ?
+	mut plan := create_plan(stmt, params, c) ?
 	mut exprs := stmt.exprs
 
 	if explain {

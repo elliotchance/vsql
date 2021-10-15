@@ -401,3 +401,7 @@ fn parse_unique_constraint_definition(columns []Identifier) ?TableElement {
 fn parse_ignore() ?bool {
 	return false
 }
+
+fn parse_position(expr1 Expr, expr2 Expr) ?Expr {
+	return CallExpr{'position', [expr1, expr2]}
+}

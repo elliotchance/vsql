@@ -479,6 +479,7 @@
 
 <numeric value function> /* Expr */ ::=
     <position expression>
+  | <length expression>
   | <absolute value expression>
   | <modulus expression>
   | <trigonometric function>
@@ -661,3 +662,17 @@
 
 <character value expression 2> /* Expr */ ::=
     <character value expression>
+
+<length expression> /* Expr */ ::=
+    <char length expression>
+  | <octet length expression>
+
+<char length expression> /* Expr */ ::=
+    CHAR_LENGTH
+    <left paren> <character value expression> <right paren>   -> char_length
+  | CHARACTER_LENGTH
+    <left paren> <character value expression> <right paren>   -> char_length
+
+<octet length expression> /* Expr */ ::=
+    OCTET_LENGTH
+    <left paren> <string value expression> <right paren>   -> octet_length

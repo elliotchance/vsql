@@ -405,3 +405,11 @@ fn parse_ignore() ?bool {
 fn parse_position(expr1 Expr, expr2 Expr) ?Expr {
 	return CallExpr{'position', [expr1, expr2]}
 }
+
+fn parse_char_length(e Expr) ?Expr {
+	return CallExpr{'char_length', [e]}
+}
+
+fn parse_octet_length(e Expr) ?Expr {
+	return CallExpr{'octet_length', [e]}
+}

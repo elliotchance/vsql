@@ -8,3 +8,13 @@ fn func_position(args []Value) ?Value {
 
 	return new_integer_value(index + 1)
 }
+
+// CHAR_LENGTH(CHARACTER VARYING) INTEGER
+fn func_char_length(args []Value) ?Value {
+	return new_integer_value(args[0].string_value.runes().len)
+}
+
+// OCTET_LENGTH(CHARACTER VARYING) INTEGER
+fn func_octet_length(args []Value) ?Value {
+	return new_integer_value(args[0].string_value.len)
+}

@@ -13,26 +13,28 @@ needed.
 Header
 ------
 
-The header is always one page or 4kb (4096 bytes). At the moment only the first
-byte is used for a rudimentary version. It will be expanded out in the future to
-contain a magic number and other metadata for the file.
+The header is always one page or 4kb (4096 bytes).
 
-See https://github.com/elliotchance/vsql/issues/42.
+At the moment only the first byte is used for a rudimentary version. It will be
+expanded out in the future to contain a magic number and other metadata for the
+file. See https://github.com/elliotchance/vsql/issues/42.
 
 Pages
 -----
 
 Pages are fixed width and may be layed out in any order since they represent a
-single B-tree that contains all records, tables, etc (these are called Objects,
-described below) for the database.
+single B-tree that contains all records, tables, etc. (these are called
+"objects" - described below) for the database.
 
 A file will start with zero pages (this does not include the header) since there
-is nothing stored and expand as the B-tree expands as needed.
+is nothing stored and will expand as the B-tree needs to.
 
 All pages within a file are the same size (4kb) and each page reserves 3 bytes
 for metadata. The metadata describes the type of page (leaf or non-leaf) and the
-current usage. Objects within a page are kept sorted by key and unused space is
-always after the used data.
+current usage (how full the page is).
+
+Objects within a page are kept sorted by key and unused space is always located
+after the used data. You should not assume that the unused portion is zeroed,
 
 A page that contains 2 objects will look like:
 
@@ -49,7 +51,8 @@ A page that contains 2 objects will look like:
 
   * - 1
     - 2 (u16)
-    - Usage of page (including header). The value in this case will be 63. An empty page will have used bytes of 3.
+    - Usage of page (including header). The value in this case will be 63. An
+      empty page will have used bytes of 3.
 
   * - 3
     - 23 ([]byte)
@@ -63,21 +66,27 @@ Objects
 -------
 
 Pages are made up of objects. Objects wrap different types of entities (such as
-a table or row) so that page does not need to be dedicated to a particular
+a table or row) and the page does not need to be dedicated to a particular
 object type.
 
 The key uses a single character prefix to designate what type of object it is.
-For example, ``T`` for tables. See the specific obejct definitions for more
+For example, ``T`` for tables. See the specific object definitions for more
 information.
 
 An object is serialized as:
 
-- 4 bytes (signed integer) for the total length of the object (including self). 4 bytes may seem excessive since the page cannot hold that much, but this is to prepare for a future when a single record spans multiple pages. See https://github.com/elliotchance/vsql/issues/43.
+- 4 bytes (signed integer) for the total length of the object (including self).
+  4 bytes may seem excessive since the page cannot hold that much, but this is
+  to prepare for a future when a single record spans multiple pages. See
+  https://github.com/elliotchance/vsql/issues/43.
+- 4 bytes for the created transaction ID (also called the "tid").
+- 4 bytes for the expired transaction ID (also called the "xid").
 - 2 bytes (signed integer) for the key length.
 - *n* bytes for the key
-- *n* bytes for the value. The length of the value can be calculated from the total length - 2 - key length.
+- *n* bytes for the value. The length of the value can be calculated from the
+  total length - 2 - key length.
 
-Here is an example of a *Row Object* (83 bytes) stored as an *Object* (94
+Here is an example of a *Row Object* (91 bytes) stored as an *Object* (102
 bytes):
 
 .. list-table::
@@ -85,22 +94,30 @@ bytes):
 
   * - Byte Offset
     - Length
-    - Description
+    - Value/Description
 
   * - 0
     - 4 (signed 32-bit int)
-    - 94
+    - 102 (the total length of the object, including self)
 
   * - 4
-    - 2 (signed 32-bit int)
-    - 5
+    - 4 (signed 32-bit int)
+    - 123 (the transaction ID that created this row)
 
-  * - 6
-    - 5
-    - R12345 (not the true representation, see *Row Objects*)
+  * - 8
+    - 4 (signed 32-bit int)
+    - 0 (the transaction ID that expired this row, 0 means not expired)
 
-  * - 11
-    - 83
+  * - 12
+    - 2 (signed 16-bit int)
+    - 5 (key length)
+
+  * - 14
+    - 5
+    - ``R12345`` (not the true representation, see *Row Objects*)
+
+  * - 19
+    - 91
     - The *Row Objects* data.
 
 Table Objects
@@ -114,7 +131,8 @@ The table definition is stored as:
 
 - 1 byte (signed integer) for the table name length.
 - *n* bytes for the table name.
-- 1 byte (signed integer) for the number of columns in the primary key (0 means there is no primary key defined).
+- 1 byte (signed integer) for the number of columns in the primary key (0 means
+  there is no primary key defined).
 - For each primary key column:
 
   * 1 byte (signed integer) for the column name length.
@@ -285,12 +303,14 @@ describing columns in a *Table Object*.
   * - ``CHARACTER VARYING``
     - 4 + len
     - 7
-    - ``len`` may be zero. ``-1`` is a special length to signify NULL (followed by zero bytes).
+    - ``len`` may be zero. ``-1`` is a special length to signify NULL (followed
+      by zero bytes).
 
   * - ``CHARACTER(n)``
     - 4 + len
     - 8
-    - ``len`` may only be ``-1`` (for ``NULL``) or ``n``. Values that are less then ``n`` length will be right padded with spaces.
+    - ``len`` may only be ``-1`` (for ``NULL``) or ``n``. Values that are less
+      than ``n`` length will be right padded with spaces.
 
 So, for example, following table:
 

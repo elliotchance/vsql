@@ -1,6 +1,31 @@
 // btree.v implements the btree that stores all data on disk (or memory) as
 // pages. The B-tree will allocate more pages as needed, but will also shrink
 // as data is deleted.
+//
+// All objects (tables, rows, etc) exist in a single tree. Keys are not unique
+// on their own but they become unique when combined with the tid - the
+// transaction ID that created them.
+//
+// Some important caveats to note:
+//
+// 1. A single object cannot be larger than a page. This also includes the page
+// header and key itself. This is because a object cannot be split or span
+// multiple pages yet. See https://github.com/elliotchance/vsql/issues/43.
+// However, due to the limitation in #3, practically speaking an object cannot
+// be larger than half the page if that object is to be updated.
+//
+// 2. The combination of the key (which could be the PRIMARY KEY) and tid make
+// up the true key in the file, it is expected that only 1 or 2 versions of the
+// key may exist. Trying to add a third version of a key will result in an
+// error. This is because under MVCC the in-flight version would block new
+// versions from being created and it simplifes the layout of pages, because;
+//
+// 3. When a page split happens, both versions of the same key will always
+// arrive on one of the pages. They will not be split across multiple pages.
+// This highly simplifies the page paths but has the caveat of limiting the
+// maximum size of an object to be very slightly less than half a page. This is
+// just a hard limitation we will have to live with until objects can be split
+// across multiple pages.
 
 module vsql
 
@@ -78,7 +103,7 @@ fn (mut p Btree) add(obj PageObject) ? {
 	// First page is a special condition.
 	if p.pager.total_pages() == 0 {
 		mut page := new_page(0, p.page_size)
-		page.add(obj)
+		page.add(obj) ?
 		p.pager.append_page(page) ?
 		return
 	}
@@ -96,7 +121,7 @@ fn (mut p Btree) add(obj PageObject) ? {
 
 	// Does it fit into the desired page?
 	if page.used + obj.length() < p.page_size {
-		page.add(obj)
+		page.add(obj) ?
 		p.pager.store_page(left_page_number, page) ?
 	} else {
 		p.split_page(path, &page, obj, kind_leaf) ?
@@ -106,18 +131,26 @@ fn (mut p Btree) add(obj PageObject) ? {
 	if compare_bytes(obj.key, previous_page_head) < 0 {
 		for path_index in 0 .. path.len - 1 {
 			mut t := p.pager.fetch_page(path[path_index]) ?
-			t.delete(previous_page_head)
-			new_object := new_page_object(obj.key.clone(), int_to_bytes(path[path_index + 1]))
-			t.add(new_object)
+
+			// The tids are zero here because non-leaf pages do not have
+			// transaction visibility for their nodes.
+			t.delete(previous_page_head, 0)
+			new_object := new_page_object(obj.key.clone(), 0, 0, int_to_bytes(path[path_index + 1]))
+
+			t.add(new_object) ?
 			p.pager.store_page(path[path_index], t) ?
 		}
 
 		if previous_root_page != p.pager.root_page() {
 			mut new_root_page := new_page(kind_not_leaf, p.page_size)
 			mut previous_objs := (p.pager.fetch_page(p.pager.root_page()) ?).objects()
-			previous_objs[0] = new_page_object(obj.key.clone(), int_to_bytes(previous_root_page))
-			new_root_page.add(previous_objs[0])
-			new_root_page.add(previous_objs[1])
+
+			// The tids are zero here because non-leaf pages do not have
+			// transaction visibility for their nodes.
+			previous_objs[0] = new_page_object(obj.key.clone(), 0, 0, int_to_bytes(previous_root_page))
+
+			new_root_page.add(previous_objs[0]) ?
+			new_root_page.add(previous_objs[1]) ?
 			p.pager.store_page(p.pager.root_page(), new_root_page) ?
 		}
 	}
@@ -127,16 +160,26 @@ fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind byte) ?
 	// TODO(elliotchance): We do this by dividing the number of entities, this
 	//  isn't the best since it can result in pages that aren't evenly split.
 	objects := page.objects()
-	left := objects[..objects.len / 2]
+	mut left := objects[..objects.len / 2]
+
+	// Important: We need to make sure two versions of the same key didn't just
+	// get split across two pages. Move the head the head of the right page to
+	// the tail of the left. See top of the file for details.
+	//
+	// TODO(elliotchance): We could be smarter about this placement based on the
+	//  object size.
+	if compare_bytes(objects[left.len - 1].key, objects[left.len].key) == 0 {
+		left = objects[..(objects.len / 2) + 1]
+	}
 
 	mut page1 := new_page(kind, p.page_size)
 	for o in left {
-		page1.add(o)
+		page1.add(o) ?
 	}
 
 	mut page2 := new_page(kind, p.page_size)
 	for o in objects[left.len..] {
-		page2.add(o)
+		page2.add(o) ?
 	}
 
 	// To maintain the sort order we need to make sure we place the new object
@@ -145,10 +188,10 @@ fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind byte) ?
 	//
 	// TODO(elliotchance): What if it doesn't fit in the page still? See
 	//  https://github.com/elliotchance/vsql/issues/43.
-	if compare_bytes(obj.key, left[left.len - 1].key) < 0 {
-		page1.add(obj)
+	if compare_bytes(obj.key, left[left.len - 1].key) <= 0 {
+		page1.add(obj) ?
 	} else {
-		page2.add(obj)
+		page2.add(obj) ?
 	}
 
 	left_page_number := path[path.len - 1]
@@ -163,8 +206,10 @@ fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind byte) ?
 	head1 := page1.head()
 	head2 := page2.head()
 
-	p1 := new_page_object(head1.key.clone(), int_to_bytes(left_page_number))
-	p2 := new_page_object(head2.key.clone(), int_to_bytes(right_page_number))
+	// The tids are zero here because non-leaf pages do not have transaction
+	// visibility for their nodes.
+	p1 := new_page_object(head1.key.clone(), 0, 0, int_to_bytes(left_page_number))
+	p2 := new_page_object(head2.key.clone(), 0, 0, int_to_bytes(right_page_number))
 
 	// Try to register the new page with the parent of the left page.
 	if path.len > 1 {
@@ -175,7 +220,7 @@ fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind byte) ?
 			mut new_path := path[..path.len - 1]
 			p.split_page(new_path, &page3, p2, kind_not_leaf) ?
 		} else {
-			page3.add(p2)
+			page3.add(p2) ?
 			p.pager.store_page(path[path.len - 2], page3) ?
 		}
 	} else {
@@ -184,8 +229,8 @@ fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind byte) ?
 		p.pager.append_page(page3) ?
 		p.pager.set_root_page(p.pager.total_pages() - 1) ?
 
-		page3.add(p1)
-		page3.add(p2)
+		page3.add(p1) ?
+		page3.add(p2) ?
 
 		p.pager.store_page(p.pager.root_page(), page3) ?
 	}
@@ -199,14 +244,14 @@ fn (p Btree) new_range_iterator(min []byte, max []byte) PageIterator {
 	}
 }
 
-fn (mut p Btree) remove(key []byte) ? {
+fn (mut p Btree) remove(key []byte, tid int) ? {
 	// Find the page that will contain the key, if it exists.
 	mut path, _ := p.search_page(key) ?
 	page_number := path[path.len - 1]
 	mut empty_pages := []int{}
 
 	mut page := p.pager.fetch_page(page_number) ?
-	page.delete(key)
+	page.delete(key, tid)
 	p.pager.store_page(page_number, page) ?
 
 	if page.is_empty() {
@@ -223,12 +268,16 @@ fn (mut p Btree) remove(key []byte) ? {
 	if path.len > 1 {
 		for path_index := path.len - 2; path_index >= 0; path_index-- {
 			mut t := p.pager.fetch_page(path[path_index]) ?
-			did_delete := t.delete(key)
+			did_delete := t.delete(key, 0)
 
 			if !(p.pager.fetch_page(path[path_index + 1]) ?).is_empty() && did_delete {
 				lower_bound := (p.pager.fetch_page(path[path_index + 1]) ?).head().key
-				obj := new_page_object(lower_bound.clone(), int_to_bytes(path[path_index + 1]))
-				t.add(obj)
+
+				// The tids are zero here because non-leaf pages do not have
+				// transaction visibility for their nodes.
+				obj := new_page_object(lower_bound.clone(), 0, 0, int_to_bytes(path[path_index + 1]))
+
+				t.add(obj) ?
 			}
 
 			p.pager.store_page(path[path_index], t) ?
@@ -262,13 +311,17 @@ fn (mut p Btree) remove(key []byte) ? {
 		mut path_to_last_page, _ := p.search_page(last_page_key) ?
 
 		// The last page will be referred to somewhere in the path. We need to
-		// replace that elemenet and its immediate child.
+		// replace that element and its immediate child.
 		for path_index in 0 .. path_to_last_page.len - 1 {
 			if path_to_last_page[path_index + 1] == p.pager.total_pages() - 1 {
 				mut ancestor := p.pager.fetch_page(path_to_last_page[path_index]) ?
-				ancestor.delete(last_page_key)
-				new_object := new_page_object(last_page_key.clone(), int_to_bytes(empty_page))
-				ancestor.add(new_object)
+
+				// All tids are zero here because non-leaf pages do not have
+				// transaction visibility for their nodes.
+				ancestor.delete(last_page_key, 0)
+				new_object := new_page_object(last_page_key.clone(), 0, 0, int_to_bytes(empty_page))
+
+				ancestor.add(new_object) ?
 				p.pager.store_page(path_to_last_page[path_index], ancestor) ?
 			}
 		}
@@ -287,5 +340,19 @@ fn (mut p Btree) remove(key []byte) ? {
 	// If the root page becomes empty we need to truncate the file.
 	if (p.pager.fetch_page(p.pager.root_page()) ?).is_empty() {
 		p.pager.truncate_all() ?
+	}
+}
+
+// expire will set the deleted transaction ID for the key, effectively making
+// the object invisible to the current transaction.
+fn (mut p Btree) expire(key []byte, tid int, xid int) ? {
+	// Find the page that will contain the key, if it exists.
+	mut path, _ := p.search_page(key) ?
+	page_number := path[path.len - 1]
+
+	mut page := p.pager.fetch_page(page_number) ?
+
+	if page.expire(key, tid, xid) {
+		p.pager.store_page(page_number, page) ?
 	}
 }

@@ -14,7 +14,8 @@ type Stmt = CommitStmt
 	| UpdateStmt
 
 // All possible expression entities.
-type Expr = BinaryExpr
+type Expr = BetweenExpr
+	| BinaryExpr
 	| CallExpr
 	| Identifier
 	| NoExpr
@@ -29,14 +30,37 @@ fn (e Expr) str() string {
 
 fn (e Expr) pstr(params map[string]Value) string {
 	return match e {
-		BinaryExpr { e.pstr(params) }
-		CallExpr { e.pstr(params) }
-		Identifier { e.str() }
-		NoExpr { e.str() }
-		NullExpr { e.pstr(params) }
-		Parameter { e.pstr(params) }
-		UnaryExpr { e.pstr(params) }
-		Value { e.str() }
+		BetweenExpr {
+			e.pstr(params)
+		}
+		BinaryExpr {
+			e.pstr(params)
+		}
+		CallExpr {
+			e.pstr(params)
+		}
+		Identifier {
+			e.str()
+		}
+		NoExpr {
+			e.str()
+		}
+		NullExpr {
+			e.pstr(params)
+		}
+		Parameter {
+			e.pstr(params)
+		}
+		UnaryExpr {
+			e.pstr(params)
+		}
+		Value {
+			if e.typ.uses_string() {
+				'\'$e.str()\''
+			} else {
+				e.str()
+			}
+		}
 	}
 }
 
@@ -186,7 +210,13 @@ fn (e Parameter) str() string {
 }
 
 fn (e Parameter) pstr(params map[string]Value) string {
-	return params[e.name].str()
+	p := params[e.name]
+
+	if p.typ.uses_string() {
+		return '\'$p.str()\''
+	}
+
+	return p.str()
 }
 
 struct UniqueConstraintDefinition {
@@ -202,4 +232,24 @@ struct CommitStmt {
 }
 
 struct RollbackStmt {
+}
+
+struct BetweenExpr {
+	not       bool
+	symmetric bool
+	expr      Expr
+	left      Expr
+	right     Expr
+}
+
+fn (e BetweenExpr) pstr(params map[string]Value) string {
+	return '${e.expr.pstr(params)} ' + if e.not {
+		'NOT '
+	} else {
+		''
+	} + 'BETWEEN ' + if e.symmetric {
+		'SYMMETRIC '
+	} else {
+		''
+	} + '${e.left.pstr(params)} BETWEEN ${e.right.pstr(params)}'
 }

@@ -425,3 +425,27 @@ fn parse_commit() ?Stmt {
 fn parse_rollback() ?Stmt {
 	return RollbackStmt{}
 }
+
+fn parse_between(expr Expr, between BetweenExpr) ?Expr {
+	return BetweenExpr{
+		not: between.not
+		symmetric: between.symmetric
+		expr: expr
+		left: between.left
+		right: between.right
+	}
+}
+
+fn parse_between1(is_true bool, left Expr, right Expr) ?BetweenExpr {
+	// false between ASYMMETRIC by default.
+	return parse_between2(is_true, false, left, right)
+}
+
+fn parse_between2(is_true bool, symmetric bool, left Expr, right Expr) ?BetweenExpr {
+	return BetweenExpr{
+		not: !is_true
+		symmetric: symmetric
+		left: left
+		right: right
+	}
+}

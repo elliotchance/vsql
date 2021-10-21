@@ -4,7 +4,8 @@
 
 module vsql
 
-type EarleyValue = ComparisonPredicatePart2
+type EarleyValue = BetweenExpr
+	| ComparisonPredicatePart2
 	| CreateTableStmt
 	| DerivedColumn
 	| Expr
@@ -62,6 +63,30 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_basic_identifier_chain_ := &EarleyRule{
 		name: '<basic identifier chain>'
+	}
+	mut rule_between_predicate_part_1_1_ := &EarleyRule{
+		name: '<between predicate part 1: 1>'
+	}
+	mut rule_between_predicate_part_1_2_ := &EarleyRule{
+		name: '<between predicate part 1: 2>'
+	}
+	mut rule_between_predicate_part_1_ := &EarleyRule{
+		name: '<between predicate part 1>'
+	}
+	mut rule_between_predicate_part_2_1_ := &EarleyRule{
+		name: '<between predicate part 2: 1>'
+	}
+	mut rule_between_predicate_part_2_2_ := &EarleyRule{
+		name: '<between predicate part 2: 2>'
+	}
+	mut rule_between_predicate_part_2_ := &EarleyRule{
+		name: '<between predicate part 2>'
+	}
+	mut rule_between_predicate_1_ := &EarleyRule{
+		name: '<between predicate: 1>'
+	}
+	mut rule_between_predicate_ := &EarleyRule{
+		name: '<between predicate>'
 	}
 	mut rule_boolean_factor_2_ := &EarleyRule{
 		name: '<boolean factor: 2>'
@@ -464,6 +489,15 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_insertion_target_ := &EarleyRule{
 		name: '<insertion target>'
+	}
+	mut rule_is_symmetric_1_ := &EarleyRule{
+		name: '<is symmetric: 1>'
+	}
+	mut rule_is_symmetric_2_ := &EarleyRule{
+		name: '<is symmetric: 2>'
+	}
+	mut rule_is_symmetric_ := &EarleyRule{
+		name: '<is symmetric>'
 	}
 	mut rule_left_paren_ := &EarleyRule{
 		name: '<left paren>'
@@ -954,8 +988,14 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_asin := &EarleyRule{
 		name: 'ASIN'
 	}
+	mut rule_asymmetric := &EarleyRule{
+		name: 'ASYMMETRIC'
+	}
 	mut rule_atan := &EarleyRule{
 		name: 'ATAN'
+	}
+	mut rule_between := &EarleyRule{
+		name: 'BETWEEN'
 	}
 	mut rule_bigint := &EarleyRule{
 		name: 'BIGINT'
@@ -1116,6 +1156,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_start := &EarleyRule{
 		name: 'START'
 	}
+	mut rule_symmetric := &EarleyRule{
+		name: 'SYMMETRIC'
+	}
 	mut rule_table := &EarleyRule{
 		name: 'TABLE'
 	}
@@ -1267,6 +1310,91 @@ fn get_grammar() map[string]EarleyRule {
 	rule_basic_identifier_chain_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_identifier_chain_
+		},
+	]}
+
+	rule_between_predicate_part_1_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_between
+		},
+	]}
+
+	rule_between_predicate_part_1_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_not
+		},
+		&EarleyRuleOrString{
+			rule: rule_between
+		},
+	]}
+
+	rule_between_predicate_part_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_between_predicate_part_1_1_
+		},
+	]}
+	rule_between_predicate_part_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_between_predicate_part_1_2_
+		},
+	]}
+
+	rule_between_predicate_part_2_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_between_predicate_part_1_
+		},
+		&EarleyRuleOrString{
+			rule: rule_row_value_predicand_
+		},
+		&EarleyRuleOrString{
+			rule: rule_and
+		},
+		&EarleyRuleOrString{
+			rule: rule_row_value_predicand_
+		},
+	]}
+
+	rule_between_predicate_part_2_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_between_predicate_part_1_
+		},
+		&EarleyRuleOrString{
+			rule: rule_is_symmetric_
+		},
+		&EarleyRuleOrString{
+			rule: rule_row_value_predicand_
+		},
+		&EarleyRuleOrString{
+			rule: rule_and
+		},
+		&EarleyRuleOrString{
+			rule: rule_row_value_predicand_
+		},
+	]}
+
+	rule_between_predicate_part_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_between_predicate_part_2_1_
+		},
+	]}
+	rule_between_predicate_part_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_between_predicate_part_2_2_
+		},
+	]}
+
+	rule_between_predicate_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_row_value_predicand_
+		},
+		&EarleyRuleOrString{
+			rule: rule_between_predicate_part_2_
+		},
+	]}
+
+	rule_between_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_between_predicate_1_
 		},
 	]}
 
@@ -2578,6 +2706,29 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_is_symmetric_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_symmetric
+		},
+	]}
+
+	rule_is_symmetric_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_asymmetric
+		},
+	]}
+
+	rule_is_symmetric_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_is_symmetric_1_
+		},
+	]}
+	rule_is_symmetric_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_is_symmetric_2_
+		},
+	]}
+
 	rule_left_paren_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: '('
@@ -3070,6 +3221,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_predicate_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_comparison_predicate_
+		},
+	]}
+	rule_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_between_predicate_
 		},
 	]}
 	rule_predicate_.productions << &EarleyProduction{[
@@ -4145,9 +4301,23 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_asymmetric.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ASYMMETRIC'
+			rule: 0
+		},
+	]}
+
 	rule_atan.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'ATAN'
+			rule: 0
+		},
+	]}
+
+	rule_between.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'BETWEEN'
 			rule: 0
 		},
 	]}
@@ -4523,6 +4693,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_symmetric.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SYMMETRIC'
+			rule: 0
+		},
+	]}
+
 	rule_table.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'TABLE'
@@ -4619,6 +4796,14 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<as clause>'] = rule_as_clause_
 	rules['<asterisk>'] = rule_asterisk_
 	rules['<basic identifier chain>'] = rule_basic_identifier_chain_
+	rules['<between predicate part 1: 1>'] = rule_between_predicate_part_1_1_
+	rules['<between predicate part 1: 2>'] = rule_between_predicate_part_1_2_
+	rules['<between predicate part 1>'] = rule_between_predicate_part_1_
+	rules['<between predicate part 2: 1>'] = rule_between_predicate_part_2_1_
+	rules['<between predicate part 2: 2>'] = rule_between_predicate_part_2_2_
+	rules['<between predicate part 2>'] = rule_between_predicate_part_2_
+	rules['<between predicate: 1>'] = rule_between_predicate_1_
+	rules['<between predicate>'] = rule_between_predicate_
 	rules['<boolean factor: 2>'] = rule_boolean_factor_2_
 	rules['<boolean factor>'] = rule_boolean_factor_
 	rules['<boolean literal: 1>'] = rule_boolean_literal_1_
@@ -4753,6 +4938,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<insert statement: 1>'] = rule_insert_statement_1_
 	rules['<insert statement>'] = rule_insert_statement_
 	rules['<insertion target>'] = rule_insertion_target_
+	rules['<is symmetric: 1>'] = rule_is_symmetric_1_
+	rules['<is symmetric: 2>'] = rule_is_symmetric_2_
+	rules['<is symmetric>'] = rule_is_symmetric_
 	rules['<left paren>'] = rule_left_paren_
 	rules['<length expression>'] = rule_length_expression_
 	rules['<length>'] = rule_length_
@@ -4916,7 +5104,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['AND'] = rule_and
 	rules['AS'] = rule_as
 	rules['ASIN'] = rule_asin
+	rules['ASYMMETRIC'] = rule_asymmetric
 	rules['ATAN'] = rule_atan
+	rules['BETWEEN'] = rule_between
 	rules['BIGINT'] = rule_bigint
 	rules['BOOLEAN'] = rule_boolean
 	rules['CEIL'] = rule_ceil
@@ -4970,6 +5160,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['SMALLINT'] = rule_smallint
 	rules['SQRT'] = rule_sqrt
 	rules['START'] = rule_start
+	rules['SYMMETRIC'] = rule_symmetric
 	rules['TABLE'] = rule_table
 	rules['TAN'] = rule_tan
 	rules['TANH'] = rule_tanh
@@ -5046,6 +5237,28 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		}
 		'<as clause: 1>' {
 			return [EarleyValue(parse_identifier(children[1] as Identifier) ?)]
+		}
+		'<between predicate part 1: 1>' {
+			return [EarleyValue(parse_yes() ?)]
+		}
+		'<between predicate part 1: 2>' {
+			return [EarleyValue(parse_no() ?)]
+		}
+		'<between predicate part 2: 1>' {
+			return [
+				EarleyValue(parse_between1(children[0] as bool, children[1] as Expr, children[3] as Expr) ?),
+			]
+		}
+		'<between predicate part 2: 2>' {
+			return [
+				EarleyValue(parse_between2(children[0] as bool, children[1] as bool, children[2] as Expr,
+					children[4] as Expr) ?),
+			]
+		}
+		'<between predicate: 1>' {
+			return [
+				EarleyValue(parse_between(children[0] as Expr, children[1] as BetweenExpr) ?),
+			]
 		}
 		'<boolean factor: 2>' {
 			return [EarleyValue(parse_not(children[1] as Expr) ?)]
@@ -5262,6 +5475,12 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [
 				EarleyValue(parse_insert_statement(children[2] as Identifier, children[3] as InsertStmt) ?),
 			]
+		}
+		'<is symmetric: 1>' {
+			return [EarleyValue(parse_yes() ?)]
+		}
+		'<is symmetric: 2>' {
+			return [EarleyValue(parse_no() ?)]
 		}
 		'<literal: 2>' {
 			return [EarleyValue(parse_value_to_expr(children[0] as Value) ?)]

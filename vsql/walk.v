@@ -105,9 +105,14 @@ fn (o PrimaryKeyOperation) execute(_ []Row) ?[]Row {
 	}
 	object_key := tmp_row.object_key(o.table) ?
 
+	tid := o.conn.storage.transaction_id
+	mut transaction_ids := o.conn.storage.header.active_transaction_ids
+
 	mut rows := []Row{}
 	for object in o.conn.storage.btree.new_range_iterator(object_key, object_key) {
-		rows << new_row_from_bytes(o.table, object.value)
+		if object_is_visible(object.tid, object.xid, tid, mut transaction_ids) {
+			rows << new_row_from_bytes(o.table, object.value, object.tid)
+		}
 	}
 
 	return rows

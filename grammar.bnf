@@ -5,6 +5,7 @@
 <preparable statement> /* Stmt */ ::=
     <preparable SQL data statement>
   | <preparable SQL schema statement>
+  | <preparable SQL transaction statement>
 
 <SQL schema statement> /* Stmt */ ::=
     <SQL schema definition statement>
@@ -676,3 +677,22 @@
 <octet length expression> /* Expr */ ::=
     OCTET_LENGTH
     <left paren> <string value expression> <right paren>   -> octet_length
+
+<start transaction statement> /* Stmt */ ::=
+  START TRANSACTION   -> start_transaction
+
+<commit statement> /* Stmt */ ::=
+    COMMIT        -> commit
+  | COMMIT WORK   -> commit
+
+<rollback statement> /* Stmt */ ::=
+    ROLLBACK        -> rollback
+  | ROLLBACK WORK   -> rollback
+
+<SQL transaction statement> /* Stmt */ ::=
+    <start transaction statement>
+  | <commit statement>
+  | <rollback statement>
+
+<preparable SQL transaction statement> /* Stmt */ ::=
+  <SQL transaction statement>

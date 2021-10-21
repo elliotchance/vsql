@@ -3,7 +3,15 @@
 module vsql
 
 // All possible root statments.
-type Stmt = CreateTableStmt | DeleteStmt | DropTableStmt | InsertStmt | SelectStmt | UpdateStmt
+type Stmt = CommitStmt
+	| CreateTableStmt
+	| DeleteStmt
+	| DropTableStmt
+	| InsertStmt
+	| RollbackStmt
+	| SelectStmt
+	| StartTransactionStmt
+	| UpdateStmt
 
 // All possible expression entities.
 type Expr = BinaryExpr
@@ -186,3 +194,12 @@ struct UniqueConstraintDefinition {
 }
 
 type TableElement = Column | UniqueConstraintDefinition
+
+struct StartTransactionStmt {
+}
+
+struct CommitStmt {
+}
+
+struct RollbackStmt {
+}

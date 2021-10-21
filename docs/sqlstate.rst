@@ -53,6 +53,12 @@ Or handling errors by class (first two letters):
 SQLSTATE
 --------
 
+``0B000`` invalid transaction initiation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``0B000`` is caused when attempting to ``START TRANSACTION`` but there pool of
+in-flight transactions is full.
+
 ``22012`` division by zero
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -74,6 +80,35 @@ SQLSTATE
   INSERT INTO t1 (f1, f2) VALUES ('a', NULL);
   -- msg: CREATE TABLE 1
   -- error 23502: violates non-null constraint: column F2
+
+``25001`` invalid transaction state: active sql transaction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``25001`` is caused by a transaction state transition that is not legal on an
+already active transaction.
+
+**Examples**
+
+.. code-block:: sql
+
+   START TRANSACTION;
+   START TRANSACTION;
+   -- error 25001: invalid transaction state: active sql transaction
+
+``2D000`` invalid transaction termination
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``2D000`` is caused by a transaction state transition that is not legal when not
+in an active transaction.
+
+**Examples**
+
+.. code-block:: sql
+
+   START TRANSACTION;
+   COMMIT;
+   COMMIT;
+   -- error 2D000: invalid transaction termination
 
 ``42601`` syntax error
 ^^^^^^^^^^^^^^^^^^^^^^

@@ -413,3 +413,15 @@ fn parse_char_length(e Expr) ?Expr {
 fn parse_octet_length(e Expr) ?Expr {
 	return CallExpr{'octet_length', [e]}
 }
+
+fn parse_start_transaction() ?Stmt {
+	return StartTransactionStmt{}
+}
+
+fn parse_commit() ?Stmt {
+	return CommitStmt{}
+}
+
+fn parse_rollback() ?Stmt {
+	return RollbackStmt{}
+}

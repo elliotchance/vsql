@@ -216,6 +216,15 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_comma_ := &EarleyRule{
 		name: '<comma>'
 	}
+	mut rule_commit_statement_1_ := &EarleyRule{
+		name: '<commit statement: 1>'
+	}
+	mut rule_commit_statement_2_ := &EarleyRule{
+		name: '<commit statement: 2>'
+	}
+	mut rule_commit_statement_ := &EarleyRule{
+		name: '<commit statement>'
+	}
 	mut rule_common_logarithm_1_ := &EarleyRule{
 		name: '<common logarithm: 1>'
 	}
@@ -609,6 +618,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_preparable_sql_schema_statement_ := &EarleyRule{
 		name: '<preparable SQL schema statement>'
 	}
+	mut rule_preparable_sql_transaction_statement_ := &EarleyRule{
+		name: '<preparable SQL transaction statement>'
+	}
 	mut rule_preparable_statement_ := &EarleyRule{
 		name: '<preparable statement>'
 	}
@@ -656,6 +668,15 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_right_paren_ := &EarleyRule{
 		name: '<right paren>'
+	}
+	mut rule_rollback_statement_1_ := &EarleyRule{
+		name: '<rollback statement: 1>'
+	}
+	mut rule_rollback_statement_2_ := &EarleyRule{
+		name: '<rollback statement: 2>'
+	}
+	mut rule_rollback_statement_ := &EarleyRule{
+		name: '<rollback statement>'
 	}
 	mut rule_routine_invocation_1_ := &EarleyRule{
 		name: '<routine invocation: 1>'
@@ -753,11 +774,20 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_sql_schema_statement_ := &EarleyRule{
 		name: '<SQL schema statement>'
 	}
+	mut rule_sql_transaction_statement_ := &EarleyRule{
+		name: '<SQL transaction statement>'
+	}
 	mut rule_square_root_1_ := &EarleyRule{
 		name: '<square root: 1>'
 	}
 	mut rule_square_root_ := &EarleyRule{
 		name: '<square root>'
+	}
+	mut rule_start_transaction_statement_1_ := &EarleyRule{
+		name: '<start transaction statement: 1>'
+	}
+	mut rule_start_transaction_statement_ := &EarleyRule{
+		name: '<start transaction statement>'
 	}
 	mut rule_string_value_expression_ := &EarleyRule{
 		name: '<string value expression>'
@@ -951,6 +981,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_character_length := &EarleyRule{
 		name: 'CHARACTER_LENGTH'
 	}
+	mut rule_commit := &EarleyRule{
+		name: 'COMMIT'
+	}
 	mut rule_cos := &EarleyRule{
 		name: 'COS'
 	}
@@ -1053,6 +1086,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_real := &EarleyRule{
 		name: 'REAL'
 	}
+	mut rule_rollback := &EarleyRule{
+		name: 'ROLLBACK'
+	}
 	mut rule_row := &EarleyRule{
 		name: 'ROW'
 	}
@@ -1077,6 +1113,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_sqrt := &EarleyRule{
 		name: 'SQRT'
 	}
+	mut rule_start := &EarleyRule{
+		name: 'START'
+	}
 	mut rule_table := &EarleyRule{
 		name: 'TABLE'
 	}
@@ -1085,6 +1124,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_tanh := &EarleyRule{
 		name: 'TANH'
+	}
+	mut rule_transaction := &EarleyRule{
+		name: 'TRANSACTION'
 	}
 	mut rule_true := &EarleyRule{
 		name: 'TRUE'
@@ -1106,6 +1148,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_where := &EarleyRule{
 		name: 'WHERE'
+	}
+	mut rule_work := &EarleyRule{
+		name: 'WORK'
 	}
 
 	rule_absolute_value_expression_1_.productions << &EarleyProduction{[
@@ -1755,6 +1800,32 @@ fn get_grammar() map[string]EarleyRule {
 		&EarleyRuleOrString{
 			str: ','
 			rule: 0
+		},
+	]}
+
+	rule_commit_statement_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_commit
+		},
+	]}
+
+	rule_commit_statement_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_commit
+		},
+		&EarleyRuleOrString{
+			rule: rule_work
+		},
+	]}
+
+	rule_commit_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_commit_statement_1_
+		},
+	]}
+	rule_commit_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_commit_statement_2_
 		},
 	]}
 
@@ -3034,6 +3105,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_preparable_sql_transaction_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sql_transaction_statement_
+		},
+	]}
+
 	rule_preparable_statement_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_preparable_sql_data_statement_
@@ -3042,6 +3119,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_preparable_statement_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_preparable_sql_schema_statement_
+		},
+	]}
+	rule_preparable_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_preparable_sql_transaction_statement_
 		},
 	]}
 
@@ -3172,6 +3254,32 @@ fn get_grammar() map[string]EarleyRule {
 		&EarleyRuleOrString{
 			str: ')'
 			rule: 0
+		},
+	]}
+
+	rule_rollback_statement_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_rollback
+		},
+	]}
+
+	rule_rollback_statement_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_rollback
+		},
+		&EarleyRuleOrString{
+			rule: rule_work
+		},
+	]}
+
+	rule_rollback_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_rollback_statement_1_
+		},
+	]}
+	rule_rollback_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_rollback_statement_2_
 		},
 	]}
 
@@ -3468,6 +3576,22 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_sql_transaction_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_start_transaction_statement_
+		},
+	]}
+	rule_sql_transaction_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_commit_statement_
+		},
+	]}
+	rule_sql_transaction_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_rollback_statement_
+		},
+	]}
+
 	rule_square_root_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_sqrt
@@ -3486,6 +3610,21 @@ fn get_grammar() map[string]EarleyRule {
 	rule_square_root_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_square_root_1_
+		},
+	]}
+
+	rule_start_transaction_statement_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_start
+		},
+		&EarleyRuleOrString{
+			rule: rule_transaction
+		},
+	]}
+
+	rule_start_transaction_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_start_transaction_statement_1_
 		},
 	]}
 
@@ -4069,6 +4208,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_commit.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COMMIT'
+			rule: 0
+		},
+	]}
+
 	rule_cos.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'COS'
@@ -4307,6 +4453,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_rollback.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ROLLBACK'
+			rule: 0
+		},
+	]}
+
 	rule_row.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'ROW'
@@ -4363,6 +4516,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_start.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'START'
+			rule: 0
+		},
+	]}
+
 	rule_table.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'TABLE'
@@ -4380,6 +4540,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_tanh.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'TANH'
+			rule: 0
+		},
+	]}
+
+	rule_transaction.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TRANSACTION'
 			rule: 0
 		},
 	]}
@@ -4429,6 +4596,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_where.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'WHERE'
+			rule: 0
+		},
+	]}
+
+	rule_work.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'WORK'
 			rule: 0
 		},
 	]}
@@ -4496,6 +4670,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<column name>'] = rule_column_name_
 	rules['<column reference>'] = rule_column_reference_
 	rules['<comma>'] = rule_comma_
+	rules['<commit statement: 1>'] = rule_commit_statement_1_
+	rules['<commit statement: 2>'] = rule_commit_statement_2_
+	rules['<commit statement>'] = rule_commit_statement_
 	rules['<common logarithm: 1>'] = rule_common_logarithm_1_
 	rules['<common logarithm>'] = rule_common_logarithm_
 	rules['<common value expression>'] = rule_common_value_expression_
@@ -4627,6 +4804,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<predicate>'] = rule_predicate_
 	rules['<preparable SQL data statement>'] = rule_preparable_sql_data_statement_
 	rules['<preparable SQL schema statement>'] = rule_preparable_sql_schema_statement_
+	rules['<preparable SQL transaction statement>'] = rule_preparable_sql_transaction_statement_
 	rules['<preparable statement>'] = rule_preparable_statement_
 	rules['<qualified identifier>'] = rule_qualified_identifier_
 	rules['<query expression body>'] = rule_query_expression_body_
@@ -4643,6 +4821,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<result offset clause: 1>'] = rule_result_offset_clause_1_
 	rules['<result offset clause>'] = rule_result_offset_clause_
 	rules['<right paren>'] = rule_right_paren_
+	rules['<rollback statement: 1>'] = rule_rollback_statement_1_
+	rules['<rollback statement: 2>'] = rule_rollback_statement_2_
+	rules['<rollback statement>'] = rule_rollback_statement_
 	rules['<routine invocation: 1>'] = rule_routine_invocation_1_
 	rules['<routine invocation>'] = rule_routine_invocation_
 	rules['<routine name>'] = rule_routine_name_
@@ -4675,8 +4856,11 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<SQL schema definition statement>'] = rule_sql_schema_definition_statement_
 	rules['<SQL schema manipulation statement>'] = rule_sql_schema_manipulation_statement_
 	rules['<SQL schema statement>'] = rule_sql_schema_statement_
+	rules['<SQL transaction statement>'] = rule_sql_transaction_statement_
 	rules['<square root: 1>'] = rule_square_root_1_
 	rules['<square root>'] = rule_square_root_
+	rules['<start transaction statement: 1>'] = rule_start_transaction_statement_1_
+	rules['<start transaction statement>'] = rule_start_transaction_statement_
 	rules['<string value expression>'] = rule_string_value_expression_
 	rules['<table constraint definition>'] = rule_table_constraint_definition_
 	rules['<table constraint>'] = rule_table_constraint_
@@ -4741,6 +4925,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['CHAR_LENGTH'] = rule_char_length
 	rules['CHARACTER'] = rule_character
 	rules['CHARACTER_LENGTH'] = rule_character_length
+	rules['COMMIT'] = rule_commit
 	rules['COS'] = rule_cos
 	rules['COSH'] = rule_cosh
 	rules['CREATE'] = rule_create
@@ -4775,6 +4960,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['PRECISION'] = rule_precision
 	rules['PRIMARY'] = rule_primary
 	rules['REAL'] = rule_real
+	rules['ROLLBACK'] = rule_rollback
 	rules['ROW'] = rule_row
 	rules['ROWS'] = rule_rows
 	rules['SELECT'] = rule_select
@@ -4783,9 +4969,11 @@ fn get_grammar() map[string]EarleyRule {
 	rules['SINH'] = rule_sinh
 	rules['SMALLINT'] = rule_smallint
 	rules['SQRT'] = rule_sqrt
+	rules['START'] = rule_start
 	rules['TABLE'] = rule_table
 	rules['TAN'] = rule_tan
 	rules['TANH'] = rule_tanh
+	rules['TRANSACTION'] = rule_transaction
 	rules['TRUE'] = rule_true
 	rules['UNKNOWN'] = rule_unknown
 	rules['UPDATE'] = rule_update
@@ -4793,6 +4981,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['VARCHAR'] = rule_varchar
 	rules['VARYING'] = rule_varying
 	rules['WHERE'] = rule_where
+	rules['WORK'] = rule_work
 
 	return rules
 }
@@ -4940,6 +5129,12 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [
 				EarleyValue(parse_column_name_list2(children[0] as []Identifier, children[2] as Identifier) ?),
 			]
+		}
+		'<commit statement: 1>' {
+			return [EarleyValue(parse_commit() ?)]
+		}
+		'<commit statement: 2>' {
+			return [EarleyValue(parse_commit() ?)]
 		}
 		'<common logarithm: 1>' {
 			return [EarleyValue(parse_log10(children[2] as Expr) ?)]
@@ -5151,6 +5346,12 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		'<result offset clause: 1>' {
 			return [EarleyValue(parse_expr(children[1] as Expr) ?)]
 		}
+		'<rollback statement: 1>' {
+			return [EarleyValue(parse_rollback() ?)]
+		}
+		'<rollback statement: 2>' {
+			return [EarleyValue(parse_rollback() ?)]
+		}
 		'<routine invocation: 1>' {
 			return [
 				EarleyValue(parse_routine_invocation(children[0] as Identifier, children[1] as []Expr) ?),
@@ -5198,6 +5399,9 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		}
 		'<square root: 1>' {
 			return [EarleyValue(parse_sqrt(children[2] as Expr) ?)]
+		}
+		'<start transaction statement: 1>' {
+			return [EarleyValue(parse_start_transaction() ?)]
 		}
 		'<table definition: 1>' {
 			return [

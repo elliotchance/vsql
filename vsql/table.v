@@ -15,6 +15,8 @@ mut:
 	// If the table has a PRIMARY KEY defined the column (or columns) will be
 	// defined here.
 	primary_key []string
+	// The tid is the transaction ID that created this table.
+	tid int
 }
 
 fn (t Table) column_names() []string {
@@ -53,7 +55,7 @@ fn (t Table) bytes() []byte {
 	return b.bytes()
 }
 
-fn new_table_from_bytes(data []byte) Table {
+fn new_table_from_bytes(data []byte, tid int) Table {
 	mut b := new_bytes(data)
 
 	table_name := b.read_string1()
@@ -70,7 +72,7 @@ fn new_table_from_bytes(data []byte) Table {
 		columns << Column{column_name, type_from_number(column_type), is_not_null}
 	}
 
-	return Table{table_name, columns, primary_key}
+	return Table{table_name, columns, primary_key, tid}
 }
 
 // A TableOperation requires that up to rows in the table be read. The number of

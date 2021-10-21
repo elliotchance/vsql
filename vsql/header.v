@@ -29,6 +29,21 @@ mut:
 	// anywhere in the file) as the root page needs to be divided or merged -
 	// although this should be quite infrequent.
 	root_page int
+	// The transaction_id is the next transaction ID. This will be incremented
+	// immediately after being accessed. The transaction ID starts at 2 because
+	// there are two special values reserved:
+	//
+	//   0 indicates not set - specifically for expiries.
+	//   1 indicates the frozen transaction.
+	//
+	// TODO(elliotchance): Is there a way to avoid incrementing this for read
+	//  only transactions?
+	transaction_id int
+	// active_transaction_ids maintains the transactions that are currently
+	// in-flight.
+	active_transaction_ids TransactionIDs
+	// padding ensures the sizeof(header) is always 4kb.
+	padding [3052]byte
 }
 
 fn new_header(page_size int) Header {
@@ -38,6 +53,9 @@ fn new_header(page_size int) Header {
 		schema_version: 0
 		page_size: page_size
 		root_page: 0
+		// 2 is a reserved number for freezing rows, but the transaction_is is
+		// always incremented before returning the next value.
+		transaction_id: 2
 	}
 }
 
@@ -46,7 +64,6 @@ fn init_database_file(path string, page_size int) ? {
 
 	mut tmpf := os.create(path) ?
 	write_header(mut tmpf, header) ?
-	tmpf.write([]byte{len: page_size - int(sizeof(header))}) ?
 	tmpf.close()
 }
 

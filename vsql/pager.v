@@ -87,14 +87,14 @@ fn new_file_pager(mut file os.File, page_size int, root_page int) ?&FilePager {
 		root_page: root_page
 		// The first page is reserved for header information. We do not include
 		// this in the pages.
-		total_pages: int(file_len / i64(page_size)) - 1
+		total_pages: int((file_len - sizeof(Header)) / i64(page_size))
 	}
 }
 
 fn (mut p FilePager) fetch_page(page_number int) ?Page {
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
-	p.file.seek(p.page_size * (page_number + 1), .start) ?
+	p.file.seek(int(sizeof(Header)) + (p.page_size * page_number), .start) ?
 
 	mut buf := []byte{len: p.page_size}
 	p.file.read(mut buf) ?
@@ -111,7 +111,7 @@ fn (mut p FilePager) fetch_page(page_number int) ?Page {
 fn (mut p FilePager) store_page(page_number int, page Page) ? {
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
-	p.file.seek(p.page_size * (page_number + 1), .start) ?
+	p.file.seek(int(sizeof(Header)) + (p.page_size * page_number), .start) ?
 
 	mut b := new_bytes([]byte{})
 	b.write_byte(page.kind)

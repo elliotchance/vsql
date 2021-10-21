@@ -20,7 +20,7 @@ fn execute_drop_table(mut c Connection, stmt DropTableStmt, elapsed_parse time.D
 
 	// TODO(elliotchance): Also delete rows. See
 	//  https://github.com/elliotchance/vsql/issues/65.
-	c.storage.delete_table(table_name) ?
+	c.storage.delete_table(table_name, c.storage.tables[table_name].tid) ?
 
 	return new_result_msg('DROP TABLE 1', elapsed_parse, t.elapsed())
 }

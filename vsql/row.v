@@ -10,7 +10,9 @@ mut:
 	// id is the unique row identifier within the table. If the table has a
 	// PRIMARY KEY this will be a binary representation of that. Otherwise, a
 	// random but time sequential value will be generated for it.
-	id   []byte
+	id []byte
+	// tid is the transaction ID that created this row.
+	tid  int
 	data map[string]Value
 }
 
@@ -163,7 +165,7 @@ fn (r Row) bytes(t Table) []byte {
 	return buf.bytes()
 }
 
-fn new_row_from_bytes(t Table, data []byte) Row {
+fn new_row_from_bytes(t Table, data []byte, tid int) Row {
 	mut buf := new_bytes(data)
 	mut row := map[string]Value{}
 
@@ -215,7 +217,7 @@ fn new_row_from_bytes(t Table, data []byte) Row {
 		row[col.name] = v
 	}
 
-	return Row{row_id, row}
+	return Row{row_id, tid, row}
 }
 
 fn (mut r Row) object_key(t Table) ?[]byte {

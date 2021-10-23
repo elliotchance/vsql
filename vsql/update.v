@@ -46,7 +46,15 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 			table_column := table.column(column_name) ?
 			raw_value := eval_as_value(c, row, v, params) ?
 
-			if row.data[column_name] != raw_value {
+			// Unlike most comparisons we have to treat NULL like a known value
+			// for this particular case because we want NULL to be set in cases
+			// where the value wasn't NULL.
+			//
+			// TODO(elliotchance): This has the side effect that NULL being
+			//  replaced with NULL is true, which is unnecessary, even if the
+			//  logic is a bit murky.
+			cmp, is_null := row.data[column_name].cmp(raw_value) ?
+			if is_null || cmp != 0 {
 				did_modify = true
 
 				// msg ignored here becuase the type have already been

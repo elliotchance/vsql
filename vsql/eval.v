@@ -17,6 +17,9 @@ fn eval_row(conn Connection, data Row, exprs []Expr, params map[string]Value) ?R
 
 fn eval_as_value(conn Connection, data Row, e Expr, params map[string]Value) ?Value {
 	match e {
+		BetweenExpr {
+			return eval_between(conn, data, e, params)
+		}
 		BinaryExpr {
 			return eval_binary(conn, data, e, params)
 		}
@@ -191,4 +194,31 @@ fn eval_cmp<T>(lhs T, rhs T, op string) Value {
 		// this.
 		else { false }
 	})
+}
+
+fn eval_between(conn Connection, data Row, e BetweenExpr, params map[string]Value) ?Value {
+	expr := eval_as_value(conn, data, e.expr, params) ?
+	mut left := eval_as_value(conn, data, e.left, params) ?
+	mut right := eval_as_value(conn, data, e.right, params) ?
+
+	// SYMMETRIC operandsmight need to be swapped.
+	cmp, is_null := left.cmp(right) ?
+	if e.symmetric && !is_null && cmp > 0 {
+		left, right = right, left
+	}
+
+	lower, lower_is_null := expr.cmp(left) ?
+	upper, upper_is_null := expr.cmp(right) ?
+
+	if lower_is_null || upper_is_null {
+		return new_null_value()
+	}
+
+	mut result := lower >= 0 && upper <= 0
+
+	if e.not {
+		result = !result
+	}
+
+	return new_boolean_value(result)
 }

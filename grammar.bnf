@@ -273,6 +273,7 @@
 
 <predicate> /* Expr */ ::=
     <comparison predicate>
+  | <between predicate>
   | <null predicate>
 
 <comparison predicate> /* Expr */ ::=
@@ -696,3 +697,20 @@
 
 <preparable SQL transaction statement> /* Stmt */ ::=
   <SQL transaction statement>
+
+<between predicate> /* Expr */ ::=
+    <row value predicand> <between predicate part 2>   -> between
+
+<between predicate part 2> /* BetweenExpr */ ::=
+    <between predicate part 1>
+    <row value predicand> AND <row value predicand>   -> between1
+  | <between predicate part 1> <is symmetric>
+    <row value predicand> AND <row value predicand>   -> between2
+
+<between predicate part 1> /* bool */ ::=
+    BETWEEN       -> yes
+  | NOT BETWEEN   -> no
+
+<is symmetric> /* bool */ ::=
+    SYMMETRIC    -> yes
+  | ASYMMETRIC   -> no

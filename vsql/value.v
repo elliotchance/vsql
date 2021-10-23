@@ -53,35 +53,6 @@ pub fn new_varchar_value(x string, size int) Value {
 	}
 }
 
-pub fn (v Value) == (v2 Value) bool {
-	match v.typ.typ {
-		.is_null {
-			return false
-		}
-		// TODO(elliotchance): BOOLEAN shouldn't be compared this way.
-		.is_boolean, .is_bigint, .is_integer, .is_smallint, .is_double_precision, .is_real {
-			return match v2.typ.typ {
-				.is_boolean, .is_bigint, .is_integer, .is_smallint, .is_double_precision, .is_real {
-					v.f64_value == v2.f64_value
-				}
-				else {
-					false
-				}
-			}
-		}
-		.is_varchar, .is_character {
-			return match v2.typ.typ {
-				.is_varchar, .is_character {
-					v.string_value == v2.string_value
-				}
-				else {
-					false
-				}
-			}
-		}
-	}
-}
-
 fn bool_str(x f64) string {
 	return match x {
 		0 { 'FALSE' }
@@ -107,4 +78,48 @@ fn (v Value) str() string {
 		.is_double_precision, .is_real, .is_bigint, .is_integer, .is_smallint { f64_string(v.f64_value) }
 		.is_varchar, .is_character { v.string_value }
 	}
+}
+
+// cmp returns for the first argument:
+//
+//   -1 if v < v2
+//    0 if v == v2
+//    1 if v > v2
+//
+// For the second argument, true if either (or both) values are NULL. If either
+// values are null the first argument must not be considered as it will always
+// be zero.
+//
+// Or an error if the values are different types (cannot be compared).
+fn (v Value) cmp(v2 Value) ?(int, bool) {
+	if v.typ.typ == .is_null || v2.typ.typ == .is_null {
+		return 0, true
+	}
+
+	// TODO(elliotchance): BOOLEAN shouldn't be compared this way.
+	if v.typ.uses_f64() && v2.typ.uses_f64() {
+		if v.f64_value < v2.f64_value {
+			return -1, false
+		}
+
+		if v.f64_value > v2.f64_value {
+			return 1, false
+		}
+
+		return 0, false
+	}
+
+	if v.typ.uses_string() && v2.typ.uses_string() {
+		if v.string_value < v2.string_value {
+			return -1, false
+		}
+
+		if v.string_value > v2.string_value {
+			return 1, false
+		}
+
+		return 0, false
+	}
+
+	return error('cannot compare $v.typ and $v2.typ')
 }

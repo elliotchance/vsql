@@ -82,7 +82,7 @@ struct TableOperation {
 	table      Table
 	offset     Expr // NoExpr for not set
 	params     map[string]Value
-	conn       Connection
+	conn       &Connection
 mut:
 	storage Storage
 }
@@ -113,7 +113,7 @@ fn (mut o TableOperation) execute(_ []Row) ?[]Row {
 struct LimitOperation {
 	fetch  Expr
 	params map[string]Value
-	conn   Connection
+	conn   &Connection
 }
 
 fn (o LimitOperation) str() string {

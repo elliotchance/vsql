@@ -8,11 +8,10 @@ fn parse_binary_expr(left Expr, op string, right Expr) ?Expr {
 	return BinaryExpr{left, op, right}
 }
 
-fn parse_query_specification(select_list SelectList, table_expression TableExpression) ?SelectStmt {
+fn parse_query_specification(select_list SelectList, table_expression TableExpression) ?SimpleTable {
 	return SelectStmt{
 		exprs: select_list
-		from: table_expression.from_clause.name
-		where: table_expression.where_clause
+		table_expression: table_expression
 		offset: NoExpr{}
 		fetch: NoExpr{}
 	}
@@ -30,15 +29,15 @@ fn parse_derived_column_as(expr Expr, as_clause Identifier) ?DerivedColumn {
 	return DerivedColumn{expr, as_clause}
 }
 
-fn parse_table_expression(from_clause Identifier) ?TableExpression {
+fn parse_table_expression(from_clause TablePrimary) ?TableExpression {
 	return TableExpression{from_clause, NoExpr{}}
 }
 
-fn parse_table_expression_where(from_clause Identifier, where Expr) ?TableExpression {
+fn parse_table_expression_where(from_clause TablePrimary, where Expr) ?TableExpression {
 	return TableExpression{from_clause, where}
 }
 
-fn parse_from_clause(name Identifier) ?Identifier {
+fn parse_from_clause(name TablePrimary) ?TablePrimary {
 	return name
 }
 
@@ -348,35 +347,33 @@ fn parse_empty() ?Expr {
 	return NoExpr{}
 }
 
-fn parse_query_expression(body SelectStmt) ?Stmt {
-	return body
+fn parse_query_expression(body SimpleTable) ?QueryExpression {
+	return QueryExpression{
+		body: body
+		offset: NoExpr{}
+		fetch: NoExpr{}
+	}
 }
 
-fn parse_query_expression_offset(body SelectStmt, offset Expr) ?Stmt {
-	return SelectStmt{
-		exprs: body.exprs
-		from: body.from
-		where: body.where
+fn parse_query_expression_offset(body SimpleTable, offset Expr) ?QueryExpression {
+	return QueryExpression{
+		body: body
 		offset: offset
 		fetch: NoExpr{}
 	}
 }
 
-fn parse_query_expression_fetch(body SelectStmt, fetch Expr) ?Stmt {
-	return SelectStmt{
-		exprs: body.exprs
-		from: body.from
-		where: body.where
+fn parse_query_expression_fetch(body SimpleTable, fetch Expr) ?QueryExpression {
+	return QueryExpression{
+		body: body
 		offset: NoExpr{}
 		fetch: fetch
 	}
 }
 
-fn parse_query_expression_offset_fetch(body SelectStmt, offset Expr, fetch Expr) ?Stmt {
-	return SelectStmt{
-		exprs: body.exprs
-		from: body.from
-		where: body.where
+fn parse_query_expression_offset_fetch(body SimpleTable, offset Expr, fetch Expr) ?QueryExpression {
+	return QueryExpression{
+		body: body
 		offset: offset
 		fetch: fetch
 	}
@@ -448,4 +445,68 @@ fn parse_between2(is_true bool, symmetric bool, left Expr, right Expr) ?BetweenE
 		left: left
 		right: right
 	}
+}
+
+fn parse_table_value_constructor(exprs []Expr) ?SimpleTable {
+	if exprs[0] is RowExpr {
+		mut rows := []RowExpr{}
+
+		for expr in exprs {
+			rows << expr as RowExpr
+		}
+
+		return rows
+	}
+
+	return [RowExpr{
+		exprs: exprs
+	}]
+}
+
+fn parse_table_primary_identifier(name Identifier) ?TablePrimary {
+	return TablePrimary{
+		body: name
+	}
+}
+
+fn parse_subquery(stmt QueryExpression) ?TablePrimary {
+	return TablePrimary{
+		body: stmt
+	}
+}
+
+fn parse_cursor_specification(stmt QueryExpression) ?Stmt {
+	return stmt
+}
+
+fn parse_table_primary_derived1(body TablePrimary) ?TablePrimary {
+	return body
+}
+
+fn parse_table_primary_derived2(body TablePrimary, correlation Correlation) ?TablePrimary {
+	return TablePrimary{
+		body: body.body
+		correlation: correlation
+	}
+}
+
+fn parse_parenthesized_derived_column_list(columns []Identifier) ?[]Identifier {
+	return columns
+}
+
+fn parse_correlation1(name Identifier) ?Correlation {
+	return Correlation{
+		name: name
+	}
+}
+
+fn parse_correlation2(name Identifier, columns []Identifier) ?Correlation {
+	return Correlation{
+		name: name
+		columns: columns
+	}
+}
+
+fn parse_row_constructor(exprs []Expr) ?Expr {
+	return RowExpr{exprs}
 }

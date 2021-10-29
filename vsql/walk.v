@@ -88,7 +88,7 @@ struct PrimaryKeyOperation {
 	upper  Expr
 	params map[string]Value
 mut:
-	conn Connection
+	conn &Connection
 }
 
 fn (o PrimaryKeyOperation) str() string {

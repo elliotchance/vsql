@@ -509,6 +509,8 @@ def parse_tree(text):
 # parse_tree("SELECT * FROM t OFFSET 0 ROWS")
 # parse_tree("SELECT * FROM t FETCH FIRST 1 ROW ONLY")
 # parse_tree("SELECT product_name , no_pennies ( price ) AS total FROM products")
+# parse_tree("SELECT * FROM ( VALUES 1 )")
+# parse_tree("SELECT * FROM ( VALUES ROW ( 123 ) , ROW ( 456 ) )")
 
 for arg in sys.argv[1:]:
     print(arg)

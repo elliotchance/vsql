@@ -1,18 +1,14 @@
-/* setup */
-CREATE TABLE t1 (x VARCHAR(64));
-INSERT INTO t1 (x) VALUES ('hello Hello');
-
-SELECT POSITION('h' IN x) FROM t1;
+VALUES POSITION('h' IN 'hello Hello');
 -- COL1: 1
 
-SELECT POSITION('l' IN x) FROM t1;
+VALUES POSITION('l' IN 'hello Hello');
 -- COL1: 3
 
-SELECT POSITION('H' IN x) FROM t1;
+VALUES POSITION('H' IN 'hello Hello');
 -- COL1: 7
 
-SELECT POSITION('llo' IN x) FROM t1;
+VALUES POSITION('llo' IN 'hello Hello');
 -- COL1: 3
 
-SELECT POSITION('z' IN x) FROM t1;
+VALUES POSITION('z' IN 'hello Hello');
 -- COL1: 0

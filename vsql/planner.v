@@ -7,6 +7,7 @@
 //   PrimaryKeyOperation     walk.v
 //   TableOperation          table.v
 //   WhereOperation          where.v
+//   ValuesOperation         values.v
 //   VirtualTableOperation   virtual_table.v
 
 module vsql
@@ -19,63 +20,115 @@ mut:
 	execute(row []Row) ?[]Row
 }
 
-fn create_plan(stmt Stmt, params map[string]Value, c Connection) ?Plan {
+fn create_plan(stmt Stmt, params map[string]Value, c &Connection) ?Plan {
 	match stmt {
 		DeleteStmt { return create_delete_plan(stmt, params, c) }
-		SelectStmt { return create_select_plan(stmt, params, c) }
+		QueryExpression { return create_query_expression_plan(stmt, params, c) }
 		UpdateStmt { return create_update_plan(stmt, params, c) }
 		else { return error('Cannot plan for $stmt') }
 	}
 }
 
-fn create_basic_plan(table_name string, where Expr, offset Expr, params map[string]Value, c Connection, allow_virtual bool) ?Plan {
+fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, c &Connection, allow_virtual bool) ?Plan {
+	match body {
+		SelectStmt {
+			return create_select_plan(body, offset, params, c, allow_virtual)
+		}
+		// VALUES
+		[]RowExpr {
+			mut plan := Plan{}
+
+			plan.operations << ValuesOperation{
+				rows: body
+				conn: c
+				params: params
+			}
+
+			return plan
+		}
+	}
+}
+
+fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &Connection, allow_virtual bool) ?Plan {
 	mut plan := Plan{}
 	mut covered_by_pk := false
+	from_clause := body.table_expression.from_clause.body
 
-	if allow_virtual && table_name in c.virtual_tables {
-		plan.operations << VirtualTableOperation{table_name, c.virtual_tables[table_name]}
-	} else if table_name in c.storage.tables {
-		table := c.storage.tables[table_name]
+	match from_clause {
+		Identifier {
+			table_name := identifier_name(from_clause.name)
+			where := body.table_expression.where_clause
 
-		// This is a special case to handle "PRIMARY KEY = INTEGER".
-		if table.primary_key.len > 0 && where is BinaryExpr {
-			left := where.left
-			right := where.right
-			if where.op == '=' && left is Identifier {
-				if identifier_name(left.name) == table.primary_key[0] {
-					covered_by_pk = true
-					plan.operations << PrimaryKeyOperation{table, right, right, params, c}
+			if allow_virtual && table_name in c.virtual_tables {
+				plan.operations << VirtualTableOperation{table_name, c.virtual_tables[table_name]}
+			} else if table_name in c.storage.tables {
+				table := c.storage.tables[table_name]
+
+				// This is a special case to handle "PRIMARY KEY = INTEGER".
+				if table.primary_key.len > 0 && where is BinaryExpr {
+					left := where.left
+					right := where.right
+					if where.op == '=' && left is Identifier {
+						if identifier_name(left.name) == table.primary_key[0] {
+							covered_by_pk = true
+							plan.operations << PrimaryKeyOperation{table, right, right, params, c}
+						}
+					}
 				}
+
+				if !covered_by_pk {
+					plan.operations << TableOperation{table_name, c.storage.tables[table_name], offset, params, c, c.storage}
+				}
+			} else {
+				return sqlstate_42p01(table_name)
+			}
+
+			if where !is NoExpr && !covered_by_pk {
+				plan.operations << WhereOperation{where, params, c}
 			}
 		}
-
-		if !covered_by_pk {
-			plan.operations << TableOperation{table_name, c.storage.tables[table_name], offset, params, c, c.storage}
+		QueryExpression {
+			rows := from_clause.body as []RowExpr
+			plan.operations << new_values_operation(rows, offset, body.table_expression.from_clause.correlation,
+				c, params) ?
 		}
-	} else {
-		return sqlstate_42p01(table_name)
-	}
-
-	if where !is NoExpr && !covered_by_pk {
-		plan.operations << WhereOperation{where, params, c}
 	}
 
 	return plan
 }
 
-fn create_delete_plan(stmt DeleteStmt, params map[string]Value, c Connection) ?Plan {
-	return create_basic_plan(identifier_name(stmt.table_name), stmt.where, NoExpr{}, params,
-		c, false)
+fn create_delete_plan(stmt DeleteStmt, params map[string]Value, c &Connection) ?Plan {
+	select_stmt := SelectStmt{
+		table_expression: TableExpression{
+			from_clause: TablePrimary{
+				body: Identifier{
+					name: stmt.table_name
+				}
+			}
+			where_clause: stmt.where
+		}
+	}
+
+	return create_select_plan(select_stmt, NoExpr{}, params, c, false)
 }
 
-fn create_update_plan(stmt UpdateStmt, params map[string]Value, c Connection) ?Plan {
-	return create_basic_plan(identifier_name(stmt.table_name), stmt.where, NoExpr{}, params,
-		c, false)
+fn create_update_plan(stmt UpdateStmt, params map[string]Value, c &Connection) ?Plan {
+	select_stmt := SelectStmt{
+		table_expression: TableExpression{
+			from_clause: TablePrimary{
+				body: Identifier{
+					name: stmt.table_name
+				}
+			}
+			where_clause: stmt.where
+		}
+	}
+
+	return create_select_plan(select_stmt, NoExpr{}, params, c, false)
 }
 
-fn create_select_plan(stmt SelectStmt, params map[string]Value, c Connection) ?Plan {
-	mut plan := create_basic_plan(identifier_name(stmt.from), stmt.where, stmt.offset,
-		params, c, true) ?
+fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, c &Connection) ?Plan {
+	mut plan := create_basic_plan(stmt.body, stmt.offset, params, c, true) ?
 
 	if stmt.fetch !is NoExpr {
 		plan.operations << LimitOperation{stmt.fetch, params, c}

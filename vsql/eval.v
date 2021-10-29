@@ -2,7 +2,7 @@
 
 module vsql
 
-fn eval_row(conn Connection, data Row, exprs []Expr, params map[string]Value) ?Row {
+fn eval_row(conn &Connection, data Row, exprs []Expr, params map[string]Value) ?Row {
 	mut col_number := 1
 	mut row := map[string]Value{}
 	for expr in exprs {
@@ -15,7 +15,7 @@ fn eval_row(conn Connection, data Row, exprs []Expr, params map[string]Value) ?R
 	}
 }
 
-fn eval_as_value(conn Connection, data Row, e Expr, params map[string]Value) ?Value {
+fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?Value {
 	match e {
 		BetweenExpr {
 			return eval_between(conn, data, e, params)
@@ -32,9 +32,6 @@ fn eval_as_value(conn Connection, data Row, e Expr, params map[string]Value) ?Va
 		NullExpr {
 			return eval_null(conn, data, e, params)
 		}
-		NoExpr {
-			return sqlstate_42601('no expression provided')
-		}
 		Parameter {
 			return params[e.name] or { return sqlstate_42p02(e.name) }
 		}
@@ -44,10 +41,15 @@ fn eval_as_value(conn Connection, data Row, e Expr, params map[string]Value) ?Va
 		Value {
 			return e
 		}
+		NoExpr, RowExpr {
+			// RowExpr should never make it to eval because it will be
+			// reformatted into a ValuesOperation.
+			return sqlstate_42601('missing or invalid expression provided')
+		}
 	}
 }
 
-fn eval_as_bool(conn Connection, data Row, e Expr, params map[string]Value) ?bool {
+fn eval_as_bool(conn &Connection, data Row, e Expr, params map[string]Value) ?bool {
 	v := eval_as_value(conn, data, e, params) ?
 
 	if v.typ.typ == .is_boolean {
@@ -64,7 +66,7 @@ fn eval_identifier(data Row, e Identifier) ?Value {
 	return value
 }
 
-fn eval_call(conn Connection, data Row, e CallExpr, params map[string]Value) ?Value {
+fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) ?Value {
 	func_name := identifier_name(e.function_name)
 
 	func := conn.funcs[func_name] or {
@@ -88,7 +90,7 @@ fn eval_call(conn Connection, data Row, e CallExpr, params map[string]Value) ?Va
 	return func.func(args)
 }
 
-fn eval_null(conn Connection, data Row, e NullExpr, params map[string]Value) ?Value {
+fn eval_null(conn &Connection, data Row, e NullExpr, params map[string]Value) ?Value {
 	value := eval_as_value(conn, data, e.expr, params) ?
 
 	if e.not {
@@ -98,7 +100,7 @@ fn eval_null(conn Connection, data Row, e NullExpr, params map[string]Value) ?Va
 	return new_boolean_value(value.typ.typ == .is_null)
 }
 
-fn eval_binary(conn Connection, data Row, e BinaryExpr, params map[string]Value) ?Value {
+fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value) ?Value {
 	left := eval_as_value(conn, data, e.left, params) ?
 	right := eval_as_value(conn, data, e.right, params) ?
 
@@ -157,7 +159,7 @@ fn eval_binary(conn Connection, data Row, e BinaryExpr, params map[string]Value)
 	return sqlstate_42804('cannot $left.typ $e.op $right.typ', 'another type', '$left.typ and $right.typ')
 }
 
-fn eval_unary(conn Connection, data Row, e UnaryExpr, params map[string]Value) ?Value {
+fn eval_unary(conn &Connection, data Row, e UnaryExpr, params map[string]Value) ?Value {
 	value := eval_as_value(conn, data, e.expr, params) ?
 
 	match e.op {
@@ -196,7 +198,7 @@ fn eval_cmp<T>(lhs T, rhs T, op string) Value {
 	})
 }
 
-fn eval_between(conn Connection, data Row, e BetweenExpr, params map[string]Value) ?Value {
+fn eval_between(conn &Connection, data Row, e BetweenExpr, params map[string]Value) ?Value {
 	expr := eval_as_value(conn, data, e.expr, params) ?
 	mut left := eval_as_value(conn, data, e.left, params) ?
 	mut right := eval_as_value(conn, data, e.right, params) ?

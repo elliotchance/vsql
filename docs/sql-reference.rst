@@ -14,3 +14,4 @@ SQL Reference
    select.rst
    start-transaction.rst
    update.rst
+   values.rst

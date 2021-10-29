@@ -7,7 +7,7 @@ module vsql
 struct WhereOperation {
 	condition Expr
 	params    map[string]Value
-	conn      Connection
+	conn      &Connection
 }
 
 fn (o WhereOperation) str() string {

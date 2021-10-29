@@ -3,13 +3,15 @@
 module vsql
 
 // All possible root statments.
+//
+// QueryExpression is used for both SELECT and VALUES.
 type Stmt = CommitStmt
 	| CreateTableStmt
 	| DeleteStmt
 	| DropTableStmt
 	| InsertStmt
+	| QueryExpression
 	| RollbackStmt
-	| SelectStmt
 	| StartTransactionStmt
 	| UpdateStmt
 
@@ -21,6 +23,7 @@ type Expr = BetweenExpr
 	| NoExpr
 	| NullExpr
 	| Parameter
+	| RowExpr
 	| UnaryExpr
 	| Value
 
@@ -51,6 +54,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 		Parameter {
 			e.pstr(params)
 		}
+		RowExpr {
+			e.pstr(params)
+		}
 		UnaryExpr {
 			e.pstr(params)
 		}
@@ -62,6 +68,17 @@ fn (e Expr) pstr(params map[string]Value) string {
 			}
 		}
 	}
+}
+
+// SelectStmt for SELECT
+// []RowExpr for VALUES ROW(), ROW() ...
+type SimpleTable = SelectStmt | []RowExpr
+
+type TablePrimaryBody = Identifier | QueryExpression
+
+struct TablePrimary {
+	body        TablePrimaryBody
+	correlation Correlation
 }
 
 // CREATE TABLE ...
@@ -90,11 +107,10 @@ struct InsertStmt {
 
 // SELECT ...
 struct SelectStmt {
-	exprs  SelectList
-	from   string
-	where  Expr
-	offset Expr
-	fetch  Expr
+	exprs            SelectList
+	table_expression TableExpression
+	offset           Expr
+	fetch            Expr
 }
 
 // UPDATE ...
@@ -187,7 +203,7 @@ struct ComparisonPredicatePart2 {
 }
 
 struct TableExpression {
-	from_clause  Identifier
+	from_clause  TablePrimary
 	where_clause Expr
 }
 
@@ -199,6 +215,30 @@ struct DerivedColumn {
 type AsteriskExpr = bool
 
 type SelectList = AsteriskExpr | []DerivedColumn
+
+struct Correlation {
+	name    Identifier
+	columns []Identifier
+}
+
+fn (c Correlation) str() string {
+	if c.name.name == '' {
+		return ''
+	}
+
+	mut s := ' AS $c.name'
+
+	if c.columns.len > 0 {
+		mut columns := []string{}
+		for col in c.columns {
+			columns << identifier_name(col.name)
+		}
+
+		s += ' (${columns.join(', ')})'
+	}
+
+	return s
+}
 
 // Parameter is :foo. The colon is not included in the name.
 struct Parameter {
@@ -251,5 +291,24 @@ fn (e BetweenExpr) pstr(params map[string]Value) string {
 		'SYMMETRIC '
 	} else {
 		''
-	} + '${e.left.pstr(params)} BETWEEN ${e.right.pstr(params)}'
+	} + '${e.left.pstr(params)} AND ${e.right.pstr(params)}'
+}
+
+struct QueryExpression {
+	body   SimpleTable
+	fetch  Expr
+	offset Expr
+}
+
+struct RowExpr {
+	exprs []Expr
+}
+
+fn (e RowExpr) pstr(params map[string]Value) string {
+	mut values := []string{}
+	for expr in e.exprs {
+		values << expr.pstr(params)
+	}
+
+	return 'ROW(${values.join(', ')})'
 }

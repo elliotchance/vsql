@@ -399,9 +399,9 @@
     <cursor specification>
 
 <cursor specification> /* Stmt */ ::=
-    <query expression>
+    <query expression>   -> cursor_specification
 
-<query expression> /* Stmt */ ::=
+<query expression> /* QueryExpression */ ::=
     <query expression body>   -> query_expression
   | <query expression body>
     <result offset clause>    -> query_expression_offset
@@ -411,19 +411,20 @@
     <result offset clause>
     <fetch first clause>      -> query_expression_offset_fetch
 
-<query expression body> /* SelectStmt */ ::=
+<query expression body> /* SimpleTable */ ::=
     <query term>
 
-<query term> /* SelectStmt */ ::=
+<query term> /* SimpleTable */ ::=
     <query primary>
 
-<query primary> /* SelectStmt */ ::=
+<query primary> /* SimpleTable */ ::=
     <simple table>
 
-<simple table> /* SelectStmt */ ::=
+<simple table> /* SimpleTable */ ::=
     <query specification>
+  | <table value constructor>
 
-<query specification> /* SelectStmt */ ::=
+<query specification> /* SimpleTable */ ::=
     SELECT
     <select list>
     <table expression> -> query_specification
@@ -444,20 +445,22 @@
     <from clause>                  -> table_expression
   | <from clause> <where clause>   -> table_expression_where
 
-<from clause> /* Identifier */ ::=
+<from clause> /* TablePrimary */ ::=
     FROM <table reference list>   -> from_clause
 
-<table reference list> /* Identifier */ ::=
+<table reference list> /* TablePrimary */ ::=
     <table reference>
 
-<table reference> /* Identifier */ ::=
+<table reference> /* TablePrimary */ ::=
     <table factor>
 
-<table factor> /* Identifier */ ::=
+<table factor> /* TablePrimary */ ::=
     <table primary>
 
-<table primary> /* Identifier */ ::=
-    <table or query name>
+<table primary> /* TablePrimary */ ::=
+    <table or query name>                          -> table_primary_identifier
+  | <derived table>                                -> table_primary_derived1
+  | <derived table> <correlation or recognition>   -> table_primary_derived2
 
 <table or query name> /* Identifier */ ::=
     <table name>
@@ -714,3 +717,58 @@
 <is symmetric> /* bool */ ::=
     SYMMETRIC    -> yes
   | ASYMMETRIC   -> no
+
+<table value constructor> /* SimpleTable */ ::=
+    VALUES <row value expression list>   -> table_value_constructor
+
+<row value expression list> /* []Expr */ ::=
+    <table row value expression>           -> expr_to_list
+  | <row value expression list>
+    <comma> <table row value expression>   -> append_exprs1
+
+<table row value expression> /* Expr */ ::=
+    <row value constructor>
+
+<row value constructor> /* Expr */ ::=
+    <common value expression>
+  | <boolean value expression>
+  | <explicit row value constructor>
+
+<derived table> /* TablePrimary */ ::=
+    <table subquery>
+
+<table subquery> /* TablePrimary */ ::=
+    <subquery>
+
+<subquery> /* TablePrimaryBody */ ::=
+    <left paren> <query expression> <right paren>   -> subquery
+
+<correlation or recognition> /* Correlation */ ::=
+    <correlation name>                    -> correlation1
+  | AS <correlation name>                 -> correlation1
+  | <correlation name>
+    <parenthesized derived column list>   -> correlation2
+  | AS <correlation name>
+    <parenthesized derived column list>   -> correlation2
+
+<correlation name> /* Identifier */ ::=
+    <identifier>
+
+<parenthesized derived column list> /* []Identifier */ ::=
+    <left paren> <derived column list>
+    <right paren>                        -> parenthesized_derived_column_list
+
+<derived column list> /* []Identifier */ ::=
+    <column name list>
+
+<explicit row value constructor> /* Expr */ ::=
+    ROW <left paren> <row value constructor element list>
+    <right paren>                                           -> row_constructor
+
+<row value constructor element list> /* []Expr */ ::=
+    <row value constructor element>                -> expr_to_list
+  | <row value constructor element list> <comma>
+    <row value constructor element>                -> append_exprs1
+
+<row value constructor element> /* Expr */ ::=
+    <value expression>

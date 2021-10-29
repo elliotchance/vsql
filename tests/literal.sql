@@ -1,0 +1,23 @@
+VALUES 1;
+-- COL1: 1
+
+VALUES 1.23;
+-- COL1: 1.23
+
+VALUES 1.;
+-- COL1: 1
+
+VALUES .23;
+-- COL1: 0.23
+
+VALUES 789;
+-- COL1: 789
+
+VALUES 'hello';
+-- COL1: hello
+
+VALUES 123, 456;
+-- COL1: 123 COL2: 456
+
+VALUES 2 + 3 * 5, (2 + 3) * 5;
+-- COL1: 17 COL2: 25

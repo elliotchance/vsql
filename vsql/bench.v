@@ -15,14 +15,14 @@ import time
 
 pub struct Benchmark {
 pub mut:
-	conn         Connection
+	conn         &Connection
 	account_rows int
 	teller_rows  int
 	branch_rows  int
 	run_for      time.Duration
 }
 
-pub fn new_benchmark(conn Connection) Benchmark {
+pub fn new_benchmark(conn &Connection) Benchmark {
 	return Benchmark{
 		account_rows: 100000
 		teller_rows: 10

@@ -72,7 +72,7 @@ pub fn (mut p PreparedStmt) query(params map[string]Value) ?Result {
 			// See transaction.v
 			return execute_rollback(mut p.c, stmt, p.elapsed_parse)
 		}
-		SelectStmt {
+		QueryExpression {
 			return execute_select(mut p.c, stmt, all_params, p.elapsed_parse, p.explain)
 		}
 		StartTransactionStmt {

@@ -8,7 +8,7 @@ import net
 struct Server {
 	options ServerOptions
 mut:
-	db Connection
+	db &Connection
 }
 
 pub struct ServerOptions {
@@ -18,7 +18,7 @@ pub struct ServerOptions {
 }
 
 pub fn new_server(options ServerOptions) Server {
-	return Server{options, Connection{
+	return Server{options, &Connection{
 		query_cache: new_query_cache()
 	}}
 }

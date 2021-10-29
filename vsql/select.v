@@ -4,7 +4,7 @@ module vsql
 
 import time
 
-fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value, elapsed_parse time.Duration, explain bool) ?Result {
+fn execute_select(mut c Connection, stmt QueryExpression, params map[string]Value, elapsed_parse time.Duration, explain bool) ?Result {
 	t := start_timer()
 
 	c.open_read_connection() ?
@@ -13,7 +13,15 @@ fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value, el
 	}
 
 	mut plan := create_plan(stmt, params, c) ?
-	mut exprs := stmt.exprs
+	body := stmt.body
+	mut exprs := match body {
+		SelectStmt {
+			body.exprs
+		}
+		[]RowExpr {
+			SelectList(AsteriskExpr(true))
+		}
+	}
 
 	if explain {
 		return plan.explain(elapsed_parse)
@@ -55,6 +63,16 @@ fn execute_select(mut c Connection, stmt SelectStmt, params map[string]Value, el
 					if table_element is Column {
 						new_exprs << DerivedColumn{Identifier{table_element.name}, Identifier{table_element.name}}
 					}
+				}
+
+				exprs = new_exprs
+			}
+		}
+		ValuesOperation {
+			if exprs is AsteriskExpr {
+				mut new_exprs := []DerivedColumn{}
+				for col in first_operation.columns() {
+					new_exprs << DerivedColumn{Identifier{'"$col"'}, Identifier{'"$col"'}}
 				}
 
 				exprs = new_exprs

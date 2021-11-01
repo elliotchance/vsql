@@ -1,4 +1,17 @@
 // update.v contains the implementation for the UPDATE statement.
+//
+// UPDATE under MVCC works by actually executing a DELETE and an INSERT on the
+// record to be updated. There are two important caveats for this:
+//
+// 1. If there is already two versions that exist for the record, UPDATE will
+// return a SQLSTATE 40001 serialization failure to prevent multiple in-flight
+// transactions form holding different modified version of the same semantic
+// row. Clients that receive this error should retry the entire transaction.
+//
+// 2. If there are two versions that exist for a record but the in-flight
+// version that exists belongs to this transaction we must avoid the
+// DELETE/INSERT and only update the specific version that belongs to this
+// transaction.
 
 module vsql
 
@@ -36,11 +49,18 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 		}
 	}
 
-	mut delete_rows := []Row{}
-	mut new_rows := []Row{}
+	mut modify_count := 0
 	for mut row in rows {
 		mut did_modify := false
+
+		// When creating a new row make sure we also carry across the internal
+		// ID. This allows the underlying storage to indentify it as a different
+		// version of the same semantic row. We also need to maintain the
+		// original tid for the storage to know which version is frozen.
 		mut row2 := new_row(row.data.clone())
+		row2.id = row.id
+		row2.tid = row.tid
+
 		for k, v in stmt.set {
 			column_name := identifier_name(k)
 			table_column := table.column(column_name) ?
@@ -64,18 +84,10 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 		}
 
 		if did_modify {
-			delete_rows << row
-			new_rows << row2
+			modify_count++
+			c.storage.update_row(mut row, mut row2, table) ?
 		}
 	}
 
-	for mut row in delete_rows {
-		c.storage.delete_row(table_name, mut row) ?
-	}
-
-	for mut row in new_rows {
-		c.storage.write_row(mut row, table) ?
-	}
-
-	return new_result_msg('UPDATE $new_rows.len', elapsed_parse, t.elapsed())
+	return new_result_msg('UPDATE $modify_count', elapsed_parse, t.elapsed())
 }

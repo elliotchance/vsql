@@ -29,13 +29,15 @@ And executes the following:
 4. Create a ``HISTORY`` table that is empty.
 5. Will run as many transactions as it can within 60 seconds.
 
-A transaction consists of 5 statements (in order):
+A transaction consists of 7 statements (in order):
 
-1. ``UPDATE accounts SET abalance = abalance + :delta WHERE aid = :aid``
-2. ``SELECT abalance FROM accounts WHERE aid = :aid``
-3. ``UPDATE tellers SET tbalance = tbalance + $delta WHERE tid = :tid``
-4. ``UPDATE branches SET bbalance = bbalance + $delta WHERE bid = :bid``
-5. ``INSERT INTO history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP)``
+1. ``START TRANSATION``
+2. ``UPDATE accounts SET abalance = abalance + :delta WHERE aid = :aid``
+3. ``SELECT abalance FROM accounts WHERE aid = :aid``
+4. ``UPDATE tellers SET tbalance = tbalance + $delta WHERE tid = :tid``
+5. ``UPDATE branches SET bbalance = bbalance + $delta WHERE bid = :bid``
+6. ``INSERT INTO history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP)``
+7. ``COMMIT``
 
 Where ``:aid``, ``:tid`` and ``:bid`` are random integers that are within the
 their respective ranges and ``:delta`` is a random value between -5000 and 5000.
@@ -57,19 +59,14 @@ Where:
 Notes
 -----
 
-1. It may look initially suspicious that the ``INSERT`` and ``SELECT`` speeds
-seem reasonable but ``TCP-B (sort of)`` is extremely slow. This is because vsql
-does not have any indexes yet, so each transaction is effectievly reading all
-rows 4 times. This will be substantially improved in the future.
-
-2. ``CURRENT_TIMESTAMP`` is not yet supported, so a V generated timestamp as
+1. ``CURRENT_TIMESTAMP`` is not yet supported, so a V generated timestamp as
 ``VARCHAR`` is used instead.
 
-3. ``INSERT`` only inserts one row per statement (rather than bulk inserts with
+2. ``INSERT`` only inserts one row per statement (rather than bulk inserts with
 a single statement). Bulk inserts are not yet supported, although when they are
 this mechanic will probably not change.
 
-4. The ``bench`` command will create a file called ``bench.vsql`` for the test.
+3. The ``bench`` command will create a file called ``bench.vsql`` for the test.
 If the file already exists the command will fail as it tries to create tables
 that already exist. You must delete ``bench.vsql`` between test runs.
 
@@ -82,13 +79,16 @@ These were run on:
 - 2.3 GHz Quad-Core Intel Core i7
 - 16 GB 1600 MHz DDR3
 
-**INSERT** and **SELECT** are in rows per second and **TCP-B** is in transactions per second.
+**INSERT** and **SELECT** are in rows per second and **TCP-B** is in
+transactions per second.
 
 +------------+---------+-------------------------+-------------------------+-------+
 |            |         | On-disk                 | In-memory               |       |
 | Date       | Version +--------+--------+-------+--------+--------+-------+ Notes |
 |            |         | INSERT | SELECT | TCP-B | INSERT | SELECT | TCP-B |       |
 +============+=========+========+========+=======+========+========+=======+=======+
+| 2021-10-31 | v0.16.1 | 891    | 68263  | 109   | 878    | 68368  | 106   | [6]_  |
++------------+---------+--------+--------+-------+--------+--------+-------+-------+
 | 2021-10-04 | v0.14.2 | 974    | 65775  | 97    | 939    | 64267  | 97    | [5]_  |
 +------------+---------+--------+--------+-------+--------+--------+-------+-------+
 | 2021-09-19 | v0.14.0 | 995    | 61782  | 94    | 992    | 62253  | 91    | [4]_  |
@@ -99,6 +99,10 @@ These were run on:
 +------------+---------+--------+--------+-------+--------+--------+-------+-------+
 | 2021-09-04 | v0.11.0 | 5107   | 129252 | 0.378 |        |        |       | [1]_  |
 +------------+---------+--------+--------+-------+--------+--------+-------+-------+
+
+.. [6] v0.15.0 introduced transactions, but this wasn't stabalised until
+   v0.16.1. The benchmark now runs true transactions (which is technically two
+   more SQL statements than before).
 
 .. [5] The recent two patches focused on fixes to do with concurrent read/write
    to the same file. This is critical general reliability and for transactions

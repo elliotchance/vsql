@@ -8,8 +8,16 @@ import time
 fn execute_start_transaction(mut c Connection, stmt StartTransactionStmt, elapsed_parse time.Duration) ?Result {
 	t := start_timer()
 
-	if c.storage.in_transaction {
-		return sqlstate_25001()
+	match c.storage.transaction_state {
+		.not_active {
+			// All good, continue below.
+		}
+		.active {
+			return sqlstate_25001()
+		}
+		.aborted {
+			return sqlstate_25p02()
+		}
 	}
 
 	c.open_write_connection() ?
@@ -17,11 +25,15 @@ fn execute_start_transaction(mut c Connection, stmt StartTransactionStmt, elapse
 		c.release_write_connection()
 	}
 
-	// isolation_start registers the transaction, then in_transaction ensures
+	// isolation_start registers the transaction, then transaction_state ensures
 	// that future calls to isolation_start for individual operations use the
 	// same isolation scope (the transaction).
 	c.storage.isolation_start() ?
-	c.storage.in_transaction = true
+	c.storage.transaction_state = .active
+
+	// This would fail is a implicit or explicit transaction did not perform
+	// cleanup.
+	assert c.storage.transaction_pages.len == 0
 
 	// TODO(elliotchance): Is this really needed? We should find a way to make
 	//  sure implicit transactions erase this at the end of their used as well.
@@ -33,8 +45,16 @@ fn execute_start_transaction(mut c Connection, stmt StartTransactionStmt, elapse
 fn execute_commit(mut c Connection, stmt CommitStmt, elapsed_parse time.Duration) ?Result {
 	t := start_timer()
 
-	if !c.storage.in_transaction {
-		return sqlstate_2d000()
+	match c.storage.transaction_state {
+		.not_active {
+			return sqlstate_2d000()
+		}
+		.active {
+			// All good, continue below.
+		}
+		.aborted {
+			return sqlstate_25p02()
+		}
 	}
 
 	c.open_write_connection() ?
@@ -56,8 +76,8 @@ fn execute_commit(mut c Connection, stmt CommitStmt, elapsed_parse time.Duration
 
 	// We do the reverse of start_transation where we disable the active
 	// transaction before calling isolation_end.
-	c.storage.in_transaction = false
-	c.storage.isolation_end()
+	c.storage.transaction_state = .not_active
+	c.storage.isolation_end() ?
 
 	// We can erase these now.
 	c.storage.transaction_pages = map[int]bool{}
@@ -68,8 +88,16 @@ fn execute_commit(mut c Connection, stmt CommitStmt, elapsed_parse time.Duration
 fn execute_rollback(mut c Connection, stmt RollbackStmt, elapsed_parse time.Duration) ?Result {
 	t := start_timer()
 
-	if !c.storage.in_transaction {
-		return sqlstate_2d000()
+	match c.storage.transaction_state {
+		.not_active {
+			return sqlstate_2d000()
+		}
+		.active {
+			// All good, continue below.
+		}
+		.aborted {
+			return sqlstate_25p02()
+		}
 	}
 
 	c.open_write_connection() ?
@@ -91,8 +119,8 @@ fn execute_rollback(mut c Connection, stmt RollbackStmt, elapsed_parse time.Dura
 
 	// We do the reverse of start_transation where we disable the active
 	// transaction before calling isolation_end.
-	c.storage.in_transaction = false
-	c.storage.isolation_end()
+	c.storage.transaction_state = .not_active
+	c.storage.isolation_end() ?
 
 	// We can erase these now.
 	c.storage.transaction_pages = map[int]bool{}

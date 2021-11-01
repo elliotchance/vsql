@@ -87,3 +87,18 @@ SELECT * FROM foo;
 -- 2: msg: START TRANSACTION
 -- 2: msg: DROP TABLE 1
 -- 2: error 42P01: no such table: FOO
+
+CREATE TABLE foo (b BOOLEAN);
+INSERT INTO foo (b) VALUES (123, 456);
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: INSERT has more values than columns
+
+START TRANSACTION;
+CREATE TABLE foo (b BOOLEAN);
+INSERT INTO foo (b) VALUES (123, 456);
+SELECT * FROM foo;
+-- msg: START TRANSACTION
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: INSERT has more values than columns
+-- error 25P02: transaction is aborted, commands ignored until end of transaction block

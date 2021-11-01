@@ -133,16 +133,29 @@ fn (mut c Connection) release_read_connection() {
 
 pub fn (mut c Connection) prepare(sql string) ?PreparedStmt {
 	t := start_timer()
-	stmt, params, explain := c.query_cache.parse(sql) ?
+	stmt, params, explain := c.query_cache.parse(sql) or {
+		c.storage.transaction_aborted()
+		return err
+	}
 	elapsed_parse := t.elapsed()
 
 	return PreparedStmt{stmt, params, explain, &c, elapsed_parse}
 }
 
 pub fn (mut c Connection) query(sql string) ?Result {
-	mut prepared := c.prepare(sql) ?
+	if c.storage.transaction_state == .aborted {
+		return sqlstate_25p02()
+	}
 
-	return prepared.query(map[string]Value{})
+	mut prepared := c.prepare(sql) or {
+		c.storage.transaction_aborted()
+		return err
+	}
+
+	return prepared.query(map[string]Value{}) or {
+		c.storage.transaction_aborted()
+		return err
+	}
 }
 
 pub fn (mut c Connection) register_func(func Func) ? {

@@ -99,6 +99,58 @@ fn (mut p Btree) search_page(key []byte) ?([]int, []int) {
 	return path, depth_iterator
 }
 
+// The old and new must be provided separately because the key may change if the
+// PRIMARY KEY value has changed.
+fn (mut p Btree) update(old PageObject, new PageObject, tid int) ?[]int {
+	if p.pager.total_pages() == 0 {
+		// The object does not exist to update.
+		return []int{}
+	}
+
+	// If the pages are the same and we're updating an in-flight row we need to
+	// actually delete the existing row.
+	if compare_bytes(old.key, new.key) == 0 {
+		page_number := p.update_single(new, tid) ?
+
+		return [page_number]
+	}
+
+	// Otherwise we have to deal with two pages, but we're dealing with them
+	// differently because the operations and not symmetrical.
+	old_page_number := p.expire(old.key, old.tid, tid) ?
+	new_page_number := p.add(new) ?
+
+	mut page_numbers := [new_page_number]
+	if old_page_number >= 0 && old_page_number != new_page_number {
+		page_numbers << old_page_number
+	}
+
+	return page_numbers
+}
+
+fn (mut p Btree) update_single(obj PageObject, tid int) ?int {
+	if p.pager.total_pages() == 0 {
+		// The object does not exist to update.
+		return 0
+	}
+
+	// Find the page that would contain our old object (if it exists).
+	mut path, _ := p.search_page(obj.key) ?
+	page_number := path[path.len - 1]
+	mut page := p.pager.fetch_page(page_number) ?
+	previous_page_head := page.head().key.clone()
+	previous_root_page := p.pager.root_page()
+
+	page.update(obj, obj, obj.tid) ?
+	p.pager.store_page(page_number, page) ?
+
+	p.add(obj) ?
+
+	p.fix_parent_pages(previous_page_head, previous_root_page, obj, path) ?
+
+	return page_number
+}
+
 // add returns the page number that the object was added to.
 fn (mut p Btree) add(obj PageObject) ?int {
 	// First page is a special condition.
@@ -129,6 +181,12 @@ fn (mut p Btree) add(obj PageObject) ?int {
 		p.split_page(path, &page, obj, kind_leaf) ?
 	}
 
+	p.fix_parent_pages(previous_page_head, previous_root_page, obj, path) ?
+
+	return left_page_number
+}
+
+fn (mut p Btree) fix_parent_pages(previous_page_head []byte, previous_root_page int, obj PageObject, path []int) ? {
 	// Make sure we correct the minimum bound up the tree, if needed.
 	if compare_bytes(obj.key, previous_page_head) < 0 {
 		for path_index in 0 .. path.len - 1 {
@@ -156,8 +214,6 @@ fn (mut p Btree) add(obj PageObject) ?int {
 			p.pager.store_page(p.pager.root_page(), new_root_page) ?
 		}
 	}
-
-	return left_page_number
 }
 
 fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind byte) ? {
@@ -219,8 +275,8 @@ fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind byte) ?
 	if path.len > 1 {
 		mut page3 := p.pager.fetch_page(path[path.len - 2]) ?
 
-		// 30 is the length of p1 + p2.
-		if page3.used >= p.page_size - 30 {
+		// 36 is the length of p1 + p2.
+		if page3.used >= p.page_size - 36 {
 			mut new_path := path[..path.len - 1]
 			p.split_page(new_path, &page3, p2, kind_not_leaf) ?
 		} else {
@@ -348,8 +404,9 @@ fn (mut p Btree) remove(key []byte, tid int) ? {
 }
 
 // expire will set the deleted transaction ID for the key, effectively making
-// the object invisible to the current transaction.
-fn (mut p Btree) expire(key []byte, tid int, xid int) ? {
+// the object invisible to the current transaction. The page modified will be
+// returned, or -1 if the object does not exist.
+fn (mut p Btree) expire(key []byte, tid int, xid int) ?int {
 	// Find the page that will contain the key, if it exists.
 	mut path, _ := p.search_page(key) ?
 	page_number := path[path.len - 1]
@@ -358,5 +415,8 @@ fn (mut p Btree) expire(key []byte, tid int, xid int) ? {
 
 	if page.expire(key, tid, xid) {
 		p.pager.store_page(page_number, page) ?
+		return page_number
 	}
+
+	return -1
 }

@@ -95,6 +95,24 @@ already active transaction.
    START TRANSACTION;
    -- error 25001: invalid transaction state: active sql transaction
 
+``25P02`` in failed sql transaction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``25P02`` will be returned for all commands within a transaction after a failure
+of a previous SQL statement. You must ``COMMIT`` or ``ROLLBACK``, however,
+``COMMIT`` will be treated as a ``ROLLBACK``.
+
+**Examples**
+
+.. code-block:: sql
+
+   CREATE TABLE foo (b BOOLEAN);
+   INSERT INTO foo (b) VALUES (123, 456);
+   SELECT * FROM foo;
+   -- msg: CREATE TABLE 1
+   -- error 42601: syntax error: INSERT has more values than columns
+   -- error 25P02: transaction is aborted, commands ignored until end of transaction block
+
 ``2D000`` invalid transaction termination
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -109,6 +127,16 @@ in an active transaction.
    COMMIT;
    COMMIT;
    -- error 2D000: invalid transaction termination
+
+``40001`` serialization failure
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``40001`` occurs if concurrent transactions attempt to update the same row. If
+allowed, this would lead to an inconsistency. It's possible that this also might
+be a deadlock in some situations. However, the deadlock is always avoided
+because the current transaction that receives this error will be rolled back.
+
+A client that receives this error should retry the transaction.
 
 ``42601`` syntax error
 ^^^^^^^^^^^^^^^^^^^^^^

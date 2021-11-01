@@ -84,6 +84,8 @@ fn (mut b Benchmark) run_transaction() ? {
 	tid := b.random(1, b.teller_rows)
 	delta := b.random(-5000, 5000)
 
+	b.conn.query('START TRANSACTION') ?
+
 	b.conn.query('UPDATE accounts SET abalance = abalance + $delta WHERE aid = $aid') ?
 	b.conn.query('SELECT abalance FROM accounts WHERE aid = $aid') ?
 	b.conn.query('UPDATE tellers SET tbalance = tbalance + $delta WHERE tid = $tid') ?
@@ -91,6 +93,8 @@ fn (mut b Benchmark) run_transaction() ? {
 
 	// TODO(elliotchance): Should use CURRENT_TIMESTAMP once supported.
 	b.conn.query('INSERT INTO history (tid, bid, aid, delta, mtime) VALUES ($tid, $bid, $aid, $delta, \'$time.now()\')') ?
+
+	b.conn.query('COMMIT') ?
 }
 
 fn (b Benchmark) random(min int, max int) int {

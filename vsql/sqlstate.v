@@ -225,3 +225,29 @@ fn sqlstate_0b000(msg string) IError {
 		msg: 'invalid transaction initiation: $msg'
 	}
 }
+
+// serialization failure
+struct SQLState40001 {
+	msg  string
+	code int
+}
+
+fn sqlstate_40001(message string) IError {
+	return SQLState40001{
+		code: sqlstate_to_int('40001')
+		msg: 'serialization failure: $message'
+	}
+}
+
+// in failed sql transaction
+struct SQLState25P02 {
+	msg  string
+	code int
+}
+
+fn sqlstate_25p02() IError {
+	return SQLState25P02{
+		code: sqlstate_to_int('25P02')
+		msg: 'transaction is aborted, commands ignored until end of transaction block'
+	}
+}

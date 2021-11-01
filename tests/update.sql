@@ -26,8 +26,8 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- msg: UPDATE 1
 -- msg: UPDATE 0
--- BAZ: 78
 -- BAZ: 100
+-- BAZ: 78
 
 CREATE TABLE foo (baz FLOAT);
 UPDATE foo SET baz = true;

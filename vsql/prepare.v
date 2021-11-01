@@ -23,6 +23,13 @@ mut:
 }
 
 pub fn (mut p PreparedStmt) query(params map[string]Value) ?Result {
+	return p.query_internal(params) or {
+		p.c.storage.transaction_aborted()
+		return err
+	}
+}
+
+fn (mut p PreparedStmt) query_internal(params map[string]Value) ?Result {
 	mut all_params := params.clone()
 	for k, v in p.params {
 		if k !in all_params {

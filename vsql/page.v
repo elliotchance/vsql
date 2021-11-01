@@ -87,29 +87,72 @@ fn (p Page) page_size() int {
 	return p.data.len + 3
 }
 
-// add will append the object (in order of key) or return an error if either the
-// object cannot fit or there already exists two versions of the key.
-fn (mut p Page) add(obj PageObject) ? {
-	if p.used + obj.length() > p.page_size() {
-		return error('page cannot fit object')
+// TODO(elliotchance): This really isn't the most efficient way to do this. Make
+//  me faster. Especially since the calls down will recount versions again, etc.
+fn (mut p Page) update(old PageObject, new PageObject, tid int) ? {
+	mut objects := p.objects()
+	old_versions := p.versions(old.key, objects)
+	match old_versions.len {
+		1 {
+			// Expire the existing record.
+			p.expire(old.key, old_versions[0], tid)
+		}
+		2 {
+			// Attempt to delete the version for the current in-flight
+			// transaction only. If this works, the add() should also work. This
+			// handles the case of allowing a record to be updated by the same
+			// transaction that still holds it.
+			//
+			// However, if the version is held not by our transaction the delete
+			// will do nothing and the subsequent add() will fail appropriately
+			// with SQLSTATE 40001 serialization failure.
+			p.delete(old.key, tid)
+		}
+		else {
+			// This would be 0. Nothing to do here. Falldown to the add() below.
+		}
+	}
+}
+
+// versions returns all versions of a record. The result will have 0, 1 or 2
+// elements. versions accepts the objects to prevent callers from needing to
+// call objects again themselves.
+fn (p Page) versions(key []byte, objects []PageObject) []int {
+	mut versions := []int{}
+	for object in objects {
+		if compare_bytes(object.key, key) == 0 {
+			// TODO(elliotchance): As long as the database has not become
+			//  corrupt, we can stop here at 2. However, I'm going to leave the
+			//  full scan in place until the underlying storage is more mature.
+			versions << object.tid
+		}
 	}
 
-	// TODO(elliotchance): Checking for existence is just a safety measure for
-	//  now and should be wasted CPU. The MVCC logic that creates the extra
-	//  version should prevent more than two versions from being created anyway.
-	//  Try removing this in the future when transaction are well tested and
-	//  stable.
-	mut objects := p.objects()
-	mut versions := 0
-	for object in objects {
-		if compare_bytes(object.key, obj.key) == 0 {
-			versions++
+	return versions
+}
 
-			// Check for two (since we're about to add a third).
-			if versions == 2 {
-				return error('more than two versions is not allowed')
-			}
-		}
+// add will append the object (in order of key) or return an error if either the
+// object cannot fit or if their already exists two versions of the key - which
+// should be interpreted by the client as a try again. See description below.
+fn (mut p Page) add(obj PageObject) ? {
+	if p.used + obj.length() > p.page_size() {
+		println(p.objects())
+		panic('page cannot fit object of $obj.length() b in page using $p.used b')
+	}
+
+	// If there are two versions, there must be one version that is
+	// frozen (visible to all transactions) and one version that is
+	// in-flight for a transaction (and hence only visible to that
+	// transaction).
+	//
+	// We should not let any other transactions create a new version
+	// because this would cause a conflict when the COMMIT occurs.
+	//
+	// We return a SQLSTATE 40001 to let the client know it should retry the
+	// entire transaction again.
+	mut objects := p.objects()
+	if p.versions(obj.key, objects).len >= 2 {
+		return sqlstate_40001('avoiding concurrent write on individual row')
 	}
 
 	// Make sure the object is added in sorted order. This is not the most

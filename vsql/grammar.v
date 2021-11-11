@@ -17,6 +17,7 @@ type EarleyValue = BetweenExpr
 	| SelectList
 	| SimilarExpr
 	| SimpleTable
+	| SortSpecification
 	| Stmt
 	| TableElement
 	| TableExpression
@@ -26,6 +27,7 @@ type EarleyValue = BetweenExpr
 	| Value
 	| []Expr
 	| []Identifier
+	| []SortSpecification
 	| []TableElement
 	| bool
 	| map[string]Expr
@@ -673,6 +675,21 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_offset_row_count_ := &EarleyRule{
 		name: '<offset row count>'
 	}
+	mut rule_order_by_clause_1_ := &EarleyRule{
+		name: '<order by clause: 1>'
+	}
+	mut rule_order_by_clause_ := &EarleyRule{
+		name: '<order by clause>'
+	}
+	mut rule_ordering_specification_1_ := &EarleyRule{
+		name: '<ordering specification: 1>'
+	}
+	mut rule_ordering_specification_2_ := &EarleyRule{
+		name: '<ordering specification: 2>'
+	}
+	mut rule_ordering_specification_ := &EarleyRule{
+		name: '<ordering specification>'
+	}
 	mut rule_parenthesized_boolean_value_expression_1_ := &EarleyRule{
 		name: '<parenthesized boolean value expression: 1>'
 	}
@@ -744,6 +761,18 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_query_expression_4_ := &EarleyRule{
 		name: '<query expression: 4>'
+	}
+	mut rule_query_expression_5_ := &EarleyRule{
+		name: '<query expression: 5>'
+	}
+	mut rule_query_expression_6_ := &EarleyRule{
+		name: '<query expression: 6>'
+	}
+	mut rule_query_expression_7_ := &EarleyRule{
+		name: '<query expression: 7>'
+	}
+	mut rule_query_expression_8_ := &EarleyRule{
+		name: '<query expression: 8>'
 	}
 	mut rule_query_expression_ := &EarleyRule{
 		name: '<query expression>'
@@ -897,6 +926,27 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_solidus_ := &EarleyRule{
 		name: '<solidus>'
+	}
+	mut rule_sort_key_ := &EarleyRule{
+		name: '<sort key>'
+	}
+	mut rule_sort_specification_list_1_ := &EarleyRule{
+		name: '<sort specification list: 1>'
+	}
+	mut rule_sort_specification_list_2_ := &EarleyRule{
+		name: '<sort specification list: 2>'
+	}
+	mut rule_sort_specification_list_ := &EarleyRule{
+		name: '<sort specification list>'
+	}
+	mut rule_sort_specification_1_ := &EarleyRule{
+		name: '<sort specification: 1>'
+	}
+	mut rule_sort_specification_2_ := &EarleyRule{
+		name: '<sort specification: 2>'
+	}
+	mut rule_sort_specification_ := &EarleyRule{
+		name: '<sort specification>'
 	}
 	mut rule_sql_argument_list_1_ := &EarleyRule{
 		name: '<SQL argument list: 1>'
@@ -1126,6 +1176,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_as := &EarleyRule{
 		name: 'AS'
 	}
+	mut rule_asc := &EarleyRule{
+		name: 'ASC'
+	}
 	mut rule_asin := &EarleyRule{
 		name: 'ASIN'
 	}
@@ -1143,6 +1196,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_boolean := &EarleyRule{
 		name: 'BOOLEAN'
+	}
+	mut rule_by := &EarleyRule{
+		name: 'BY'
 	}
 	mut rule_ceil := &EarleyRule{
 		name: 'CEIL'
@@ -1176,6 +1232,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_delete := &EarleyRule{
 		name: 'DELETE'
+	}
+	mut rule_desc := &EarleyRule{
+		name: 'DESC'
 	}
 	mut rule_double := &EarleyRule{
 		name: 'DOUBLE'
@@ -1254,6 +1313,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_or := &EarleyRule{
 		name: 'OR'
+	}
+	mut rule_order := &EarleyRule{
+		name: 'ORDER'
 	}
 	mut rule_position := &EarleyRule{
 		name: 'POSITION'
@@ -3435,6 +3497,47 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_order_by_clause_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_order
+		},
+		&EarleyRuleOrString{
+			rule: rule_by
+		},
+		&EarleyRuleOrString{
+			rule: rule_sort_specification_list_
+		},
+	]}
+
+	rule_order_by_clause_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_order_by_clause_1_
+		},
+	]}
+
+	rule_ordering_specification_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_asc
+		},
+	]}
+
+	rule_ordering_specification_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_desc
+		},
+	]}
+
+	rule_ordering_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_ordering_specification_1_
+		},
+	]}
+	rule_ordering_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_ordering_specification_2_
+		},
+	]}
+
 	rule_parenthesized_boolean_value_expression_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_left_paren_
@@ -3656,7 +3759,7 @@ fn get_grammar() map[string]EarleyRule {
 			rule: rule_query_expression_body_
 		},
 		&EarleyRuleOrString{
-			rule: rule_result_offset_clause_
+			rule: rule_order_by_clause_
 		},
 	]}
 
@@ -3665,11 +3768,59 @@ fn get_grammar() map[string]EarleyRule {
 			rule: rule_query_expression_body_
 		},
 		&EarleyRuleOrString{
-			rule: rule_fetch_first_clause_
+			rule: rule_result_offset_clause_
 		},
 	]}
 
 	rule_query_expression_4_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_query_expression_body_
+		},
+		&EarleyRuleOrString{
+			rule: rule_order_by_clause_
+		},
+		&EarleyRuleOrString{
+			rule: rule_result_offset_clause_
+		},
+	]}
+
+	rule_query_expression_5_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_query_expression_body_
+		},
+		&EarleyRuleOrString{
+			rule: rule_fetch_first_clause_
+		},
+	]}
+
+	rule_query_expression_6_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_query_expression_body_
+		},
+		&EarleyRuleOrString{
+			rule: rule_order_by_clause_
+		},
+		&EarleyRuleOrString{
+			rule: rule_fetch_first_clause_
+		},
+	]}
+
+	rule_query_expression_7_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_query_expression_body_
+		},
+		&EarleyRuleOrString{
+			rule: rule_order_by_clause_
+		},
+		&EarleyRuleOrString{
+			rule: rule_result_offset_clause_
+		},
+		&EarleyRuleOrString{
+			rule: rule_fetch_first_clause_
+		},
+	]}
+
+	rule_query_expression_8_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_query_expression_body_
 		},
@@ -3699,6 +3850,26 @@ fn get_grammar() map[string]EarleyRule {
 	rule_query_expression_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_query_expression_4_
+		},
+	]}
+	rule_query_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_query_expression_5_
+		},
+	]}
+	rule_query_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_query_expression_6_
+		},
+	]}
+	rule_query_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_query_expression_7_
+		},
+	]}
+	rule_query_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_query_expression_8_
 		},
 	]}
 
@@ -4145,6 +4316,67 @@ fn get_grammar() map[string]EarleyRule {
 		&EarleyRuleOrString{
 			str: '/'
 			rule: 0
+		},
+	]}
+
+	rule_sort_key_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_value_expression_
+		},
+	]}
+
+	rule_sort_specification_list_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sort_specification_
+		},
+	]}
+
+	rule_sort_specification_list_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sort_specification_list_
+		},
+		&EarleyRuleOrString{
+			rule: rule_comma_
+		},
+		&EarleyRuleOrString{
+			rule: rule_sort_specification_
+		},
+	]}
+
+	rule_sort_specification_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sort_specification_list_1_
+		},
+	]}
+	rule_sort_specification_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sort_specification_list_2_
+		},
+	]}
+
+	rule_sort_specification_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sort_key_
+		},
+	]}
+
+	rule_sort_specification_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sort_key_
+		},
+		&EarleyRuleOrString{
+			rule: rule_ordering_specification_
+		},
+	]}
+
+	rule_sort_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sort_specification_1_
+		},
+	]}
+	rule_sort_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sort_specification_2_
 		},
 	]}
 
@@ -4870,6 +5102,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_asc.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ASC'
+			rule: 0
+		},
+	]}
+
 	rule_asin.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'ASIN'
@@ -4908,6 +5147,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_boolean.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'BOOLEAN'
+			rule: 0
+		},
+	]}
+
+	rule_by.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'BY'
 			rule: 0
 		},
 	]}
@@ -4985,6 +5231,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_delete.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'DELETE'
+			rule: 0
+		},
+	]}
+
+	rule_desc.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DESC'
 			rule: 0
 		},
 	]}
@@ -5167,6 +5420,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_or.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'OR'
+			rule: 0
+		},
+	]}
+
+	rule_order.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ORDER'
 			rule: 0
 		},
 	]}
@@ -5594,6 +5854,11 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<octet length expression: 1>'] = rule_octet_length_expression_1_
 	rules['<octet length expression>'] = rule_octet_length_expression_
 	rules['<offset row count>'] = rule_offset_row_count_
+	rules['<order by clause: 1>'] = rule_order_by_clause_1_
+	rules['<order by clause>'] = rule_order_by_clause_
+	rules['<ordering specification: 1>'] = rule_ordering_specification_1_
+	rules['<ordering specification: 2>'] = rule_ordering_specification_2_
+	rules['<ordering specification>'] = rule_ordering_specification_
 	rules['<parenthesized boolean value expression: 1>'] = rule_parenthesized_boolean_value_expression_1_
 	rules['<parenthesized boolean value expression>'] = rule_parenthesized_boolean_value_expression_
 	rules['<parenthesized derived column list: 1>'] = rule_parenthesized_derived_column_list_1_
@@ -5618,6 +5883,10 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<query expression: 2>'] = rule_query_expression_2_
 	rules['<query expression: 3>'] = rule_query_expression_3_
 	rules['<query expression: 4>'] = rule_query_expression_4_
+	rules['<query expression: 5>'] = rule_query_expression_5_
+	rules['<query expression: 6>'] = rule_query_expression_6_
+	rules['<query expression: 7>'] = rule_query_expression_7_
+	rules['<query expression: 8>'] = rule_query_expression_8_
 	rules['<query expression>'] = rule_query_expression_
 	rules['<query primary>'] = rule_query_primary_
 	rules['<query specification: 1>'] = rule_query_specification_1_
@@ -5669,6 +5938,13 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<simple table>'] = rule_simple_table_
 	rules['<simple value specification>'] = rule_simple_value_specification_
 	rules['<solidus>'] = rule_solidus_
+	rules['<sort key>'] = rule_sort_key_
+	rules['<sort specification list: 1>'] = rule_sort_specification_list_1_
+	rules['<sort specification list: 2>'] = rule_sort_specification_list_2_
+	rules['<sort specification list>'] = rule_sort_specification_list_
+	rules['<sort specification: 1>'] = rule_sort_specification_1_
+	rules['<sort specification: 2>'] = rule_sort_specification_2_
+	rules['<sort specification>'] = rule_sort_specification_
 	rules['<SQL argument list: 1>'] = rule_sql_argument_list_1_
 	rules['<SQL argument list: 2>'] = rule_sql_argument_list_2_
 	rules['<SQL argument list: 3>'] = rule_sql_argument_list_3_
@@ -5745,12 +6021,14 @@ fn get_grammar() map[string]EarleyRule {
 	rules['ACOS'] = rule_acos
 	rules['AND'] = rule_and
 	rules['AS'] = rule_as
+	rules['ASC'] = rule_asc
 	rules['ASIN'] = rule_asin
 	rules['ASYMMETRIC'] = rule_asymmetric
 	rules['ATAN'] = rule_atan
 	rules['BETWEEN'] = rule_between
 	rules['BIGINT'] = rule_bigint
 	rules['BOOLEAN'] = rule_boolean
+	rules['BY'] = rule_by
 	rules['CEIL'] = rule_ceil
 	rules['CEILING'] = rule_ceiling
 	rules['CHAR'] = rule_char
@@ -5762,6 +6040,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['COSH'] = rule_cosh
 	rules['CREATE'] = rule_create
 	rules['DELETE'] = rule_delete
+	rules['DESC'] = rule_desc
 	rules['DOUBLE'] = rule_double
 	rules['DROP'] = rule_drop
 	rules['EXP'] = rule_exp
@@ -5788,6 +6067,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['OFFSET'] = rule_offset
 	rules['ONLY'] = rule_only
 	rules['OR'] = rule_or
+	rules['ORDER'] = rule_order
 	rules['POSITION'] = rule_position
 	rules['POWER'] = rule_power
 	rules['PRECISION'] = rule_precision
@@ -6212,6 +6492,15 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		'<octet length expression: 1>' {
 			return [EarleyValue(parse_octet_length(children[2] as Expr) ?)]
 		}
+		'<order by clause: 1>' {
+			return [EarleyValue(parse_order_by(children[2] as []SortSpecification) ?)]
+		}
+		'<ordering specification: 1>' {
+			return [EarleyValue(parse_yes() ?)]
+		}
+		'<ordering specification: 2>' {
+			return [EarleyValue(parse_no() ?)]
+		}
 		'<parenthesized boolean value expression: 1>' {
 			return [EarleyValue(parse_expr(children[1] as Expr) ?)]
 		}
@@ -6233,16 +6522,39 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		}
 		'<query expression: 2>' {
 			return [
-				EarleyValue(parse_query_expression_offset(children[0] as SimpleTable,
-					children[1] as Expr) ?),
+				EarleyValue(parse_query_expression_order(children[0] as SimpleTable, children[1] as []SortSpecification) ?),
 			]
 		}
 		'<query expression: 3>' {
 			return [
-				EarleyValue(parse_query_expression_fetch(children[0] as SimpleTable, children[1] as Expr) ?),
+				EarleyValue(parse_query_expression_offset(children[0] as SimpleTable,
+					children[1] as Expr) ?),
 			]
 		}
 		'<query expression: 4>' {
+			return [
+				EarleyValue(parse_query_expression_order_offset(children[0] as SimpleTable,
+					children[1] as []SortSpecification, children[2] as Expr) ?),
+			]
+		}
+		'<query expression: 5>' {
+			return [
+				EarleyValue(parse_query_expression_fetch(children[0] as SimpleTable, children[1] as Expr) ?),
+			]
+		}
+		'<query expression: 6>' {
+			return [
+				EarleyValue(parse_query_expression_order_fetch(children[0] as SimpleTable,
+					children[1] as []SortSpecification, children[2] as Expr) ?),
+			]
+		}
+		'<query expression: 7>' {
+			return [
+				EarleyValue(parse_query_expression_order_offset_fetch(children[0] as SimpleTable,
+					children[1] as []SortSpecification, children[2] as Expr, children[3] as Expr) ?),
+			]
+		}
+		'<query expression: 8>' {
 			return [
 				EarleyValue(parse_query_expression_offset_fetch(children[0] as SimpleTable,
 					children[1] as Expr, children[2] as Expr) ?),
@@ -6321,6 +6633,22 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		'<similar predicate: 1>' {
 			return [
 				EarleyValue(parse_similar_pred(children[0] as Expr, children[1] as SimilarExpr) ?),
+			]
+		}
+		'<sort specification list: 1>' {
+			return [EarleyValue(parse_sort_list1(children[0] as SortSpecification) ?)]
+		}
+		'<sort specification list: 2>' {
+			return [
+				EarleyValue(parse_sort_list2(children[0] as []SortSpecification, children[2] as SortSpecification) ?),
+			]
+		}
+		'<sort specification: 1>' {
+			return [EarleyValue(parse_sort1(children[0] as Expr) ?)]
+		}
+		'<sort specification: 2>' {
+			return [
+				EarleyValue(parse_sort2(children[0] as Expr, children[1] as bool) ?),
 			]
 		}
 		'<SQL argument list: 1>' {

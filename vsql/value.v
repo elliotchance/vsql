@@ -114,14 +114,22 @@ fn (v Value) str() string {
 //    0 if v == v2
 //    1 if v > v2
 //
-// For the second argument, true if either (or both) values are NULL. If either
-// values are null the first argument must not be considered as it will always
-// be zero.
+// The SQL standard doesn't define if NULLs should be always ordered first or
+// last. In vsql, NULLs are always considered to be less than any other non-null
+// value. The second return value will be true if either value is NULL.
 //
 // Or an error if the values are different types (cannot be compared).
 fn (v Value) cmp(v2 Value) ?(int, bool) {
-	if v.typ.typ == .is_null || v2.typ.typ == .is_null {
+	if v.typ.typ == .is_null && v2.typ.typ == .is_null {
 		return 0, true
+	}
+
+	if v.typ.typ == .is_null {
+		return -1, true
+	}
+
+	if v2.typ.typ == .is_null {
+		return 1, true
 	}
 
 	// TODO(elliotchance): BOOLEAN shouldn't be compared this way.

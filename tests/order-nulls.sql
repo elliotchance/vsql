@@ -1,0 +1,18 @@
+/* setup */
+CREATE TABLE bar (x FLOAT);
+INSERT INTO bar (x) VALUES (4.567);
+INSERT INTO bar (x) VALUES (NULL);
+INSERT INTO bar (x) VALUES (1.234);
+INSERT INTO bar (x) VALUES (NULL);
+
+SELECT * FROM bar ORDER BY x;
+-- X: NULL
+-- X: NULL
+-- X: 1.234
+-- X: 4.567
+
+SELECT * FROM bar ORDER BY x DESC;
+-- X: 4.567
+-- X: 1.234
+-- X: NULL
+-- X: NULL

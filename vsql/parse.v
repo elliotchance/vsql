@@ -355,11 +355,29 @@ fn parse_query_expression(body SimpleTable) ?QueryExpression {
 	}
 }
 
+fn parse_query_expression_order(body SimpleTable, order []SortSpecification) ?QueryExpression {
+	return QueryExpression{
+		body: body
+		offset: NoExpr{}
+		fetch: NoExpr{}
+		order: order
+	}
+}
+
 fn parse_query_expression_offset(body SimpleTable, offset Expr) ?QueryExpression {
 	return QueryExpression{
 		body: body
 		offset: offset
 		fetch: NoExpr{}
+	}
+}
+
+fn parse_query_expression_order_offset(body SimpleTable, order []SortSpecification, offset Expr) ?QueryExpression {
+	return QueryExpression{
+		body: body
+		offset: offset
+		fetch: NoExpr{}
+		order: order
 	}
 }
 
@@ -371,11 +389,29 @@ fn parse_query_expression_fetch(body SimpleTable, fetch Expr) ?QueryExpression {
 	}
 }
 
+fn parse_query_expression_order_fetch(body SimpleTable, order []SortSpecification, fetch Expr) ?QueryExpression {
+	return QueryExpression{
+		body: body
+		offset: NoExpr{}
+		fetch: fetch
+		order: order
+	}
+}
+
 fn parse_query_expression_offset_fetch(body SimpleTable, offset Expr, fetch Expr) ?QueryExpression {
 	return QueryExpression{
 		body: body
 		offset: offset
 		fetch: fetch
+	}
+}
+
+fn parse_query_expression_order_offset_fetch(body SimpleTable, order []SortSpecification, offset Expr, fetch Expr) ?QueryExpression {
+	return QueryExpression{
+		body: body
+		offset: offset
+		fetch: fetch
+		order: order
 	}
 }
 
@@ -525,6 +561,29 @@ fn parse_like(expr Expr) ?LikeExpr {
 
 fn parse_not_like(expr Expr) ?LikeExpr {
 	return LikeExpr{NoExpr{}, expr, true}
+}
+
+fn parse_sort1(expr Expr) ?SortSpecification {
+	return SortSpecification{expr, true}
+}
+
+fn parse_sort2(expr Expr, is_asc bool) ?SortSpecification {
+	return SortSpecification{expr, is_asc}
+}
+
+fn parse_sort_list1(spec SortSpecification) ?[]SortSpecification {
+	return [spec]
+}
+
+fn parse_sort_list2(specs []SortSpecification, spec SortSpecification) ?[]SortSpecification {
+	mut specs2 := specs.clone()
+	specs2 << spec
+
+	return specs2
+}
+
+fn parse_order_by(specs []SortSpecification) ?[]SortSpecification {
+	return specs
 }
 
 fn parse_similar_pred(left Expr, like SimilarExpr) ?Expr {

@@ -763,7 +763,8 @@
 
 <explicit row value constructor> /* Expr */ ::=
     ROW <left paren> <row value constructor element list>
-    <right paren>                                           -> row_constructor
+    <right paren>                                           -> row_constructor1
+  | <row subquery>                                          -> row_constructor2
 
 <row value constructor element list> /* []Expr */ ::=
     <row value constructor element>                -> expr_to_list
@@ -772,3 +773,6 @@
 
 <row value constructor element> /* Expr */ ::=
     <value expression>
+
+<row subquery> /* QueryExpression */ ::=
+    <subquery>

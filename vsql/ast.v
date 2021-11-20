@@ -23,6 +23,7 @@ type Expr = BetweenExpr
 	| NoExpr
 	| NullExpr
 	| Parameter
+	| QueryExpression
 	| RowExpr
 	| UnaryExpr
 	| Value
@@ -54,6 +55,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 		Parameter {
 			e.pstr(params)
 		}
+		QueryExpression {
+			e.pstr(params)
+		}
 		RowExpr {
 			e.pstr(params)
 		}
@@ -73,6 +77,22 @@ fn (e Expr) pstr(params map[string]Value) string {
 // SelectStmt for SELECT
 // []RowExpr for VALUES ROW(), ROW() ...
 type SimpleTable = SelectStmt | []RowExpr
+
+fn (e SimpleTable) pstr(params map[string]Value) string {
+	match e {
+		SelectStmt {
+			return '<subquery>'
+		}
+		[]RowExpr {
+			mut elements := []string{}
+			for element in e {
+				elements << element.pstr(params)
+			}
+
+			return 'VALUES ${elements.join(', ')}'
+		}
+	}
+}
 
 type TablePrimaryBody = Identifier | QueryExpression
 
@@ -328,6 +348,10 @@ struct QueryExpression {
 	body   SimpleTable
 	fetch  Expr
 	offset Expr
+}
+
+fn (e QueryExpression) pstr(params map[string]Value) string {
+	return '<subquery>'
 }
 
 struct RowExpr {

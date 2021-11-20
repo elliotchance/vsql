@@ -11,14 +11,28 @@ struct SQLTest {
 	expected    string
 }
 
-fn get_tests() ?[]SQLTest {
+fn get_test_filter() (string, int) {
 	env_test := $env('TEST')
+	parts := env_test.split(':')
+
+	if parts.len == 1 {
+		return parts[0], 0
+	}
+
+	return parts[0], parts[1].int()
+}
+
+fn get_tests() ?[]SQLTest {
+	filter_test, filter_line := get_test_filter()
+
 	mut tests := []SQLTest{}
 	test_file_paths := os.walk_ext('tests', 'sql')
 	for test_file_path in test_file_paths {
-		if env_test != '' && !test_file_path.contains(env_test) {
+		// Skip any tests not in the explicit filter.
+		if filter_test != '' && !test_file_path.contains(filter_test) {
 			continue
 		}
+
 		lines := os.read_lines(test_file_path) ?
 
 		mut stmts := []string{}
@@ -83,14 +97,23 @@ fn get_tests() ?[]SQLTest {
 }
 
 fn test_all() ? {
+	filter_test, filter_line := get_test_filter()
 	verbose := $env('VERBOSE')
 	query_cache := new_query_cache()
 	for test in get_tests() ? {
-		run_single_test(test, query_cache, verbose != '') ?
+		run_single_test(test, query_cache, verbose != '', filter_line) ?
 	}
 }
 
-fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool) ? {
+fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_line int) ? {
+	if filter_line != 0 && test.line_number != filter_line {
+		if verbose {
+			println('SKIP $test.file_name:$test.line_number\n')
+		}
+
+		return
+	}
+
 	if verbose {
 		println('BEGIN $test.file_name:$test.line_number')
 		defer {
@@ -166,7 +189,7 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool) ? {
 			}
 
 			for col in result.columns {
-				line += '$col: ${row.get_string(col) ?} '
+				line += '$col.name: ${row.get_string(col.name) ?} '
 			}
 			actual += line.trim_space() + '\n'
 		}

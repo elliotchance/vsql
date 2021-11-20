@@ -136,7 +136,6 @@ fn (p Page) versions(key []byte, objects []PageObject) []int {
 // should be interpreted by the client as a try again. See description below.
 fn (mut p Page) add(obj PageObject) ? {
 	if p.used + obj.length() > p.page_size() {
-		println(p.objects())
 		panic('page cannot fit object of $obj.length() b in page using $p.used b')
 	}
 

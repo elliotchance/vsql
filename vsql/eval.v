@@ -47,8 +47,8 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 
 			return col.typ
 		}
-		NoExpr, RowExpr {
-			return sqlstate_42601('missing or invalid expression provided')
+		NoExpr, RowExpr, QueryExpression {
+			return sqlstate_42601('invalid expression provided')
 		}
 	}
 }
@@ -79,9 +79,12 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 		Value {
 			return e
 		}
-		NoExpr, RowExpr {
+		NoExpr, RowExpr, QueryExpression {
 			// RowExpr should never make it to eval because it will be
 			// reformatted into a ValuesOperation.
+			//
+			// QueryExpression will have already been resolved to a
+			// ValuesOperation.
 			return sqlstate_42601('missing or invalid expression provided')
 		}
 	}

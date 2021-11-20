@@ -100,14 +100,29 @@ fn new_empty_row(columns Columns) Row {
 			.is_null {
 				v = new_null_value()
 			}
-			.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint {
+			.is_bigint {
+				v = new_bigint_value(0)
+			}
+			.is_double_precision {
 				v = new_double_precision_value(0)
+			}
+			.is_integer {
+				v = new_integer_value(0)
+			}
+			.is_real {
+				v = new_real_value(0)
+			}
+			.is_smallint {
+				v = new_smallint_value(0)
 			}
 			.is_boolean {
 				v = new_boolean_value(false)
 			}
-			.is_character, .is_varchar {
-				v = new_varchar_value('', 0)
+			.is_character {
+				v = new_character_value('', col.typ.size)
+			}
+			.is_varchar {
+				v = new_varchar_value('', col.typ.size)
 			}
 		}
 		r.data[col.name] = v

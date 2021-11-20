@@ -28,13 +28,13 @@ mut:
 fn create_plan(stmt Stmt, params map[string]Value, c &Connection) ?Plan {
 	match stmt {
 		DeleteStmt { return create_delete_plan(stmt, params, c) }
-		QueryExpression { return create_query_expression_plan(stmt, params, c) }
+		QueryExpression { return create_query_expression_plan(stmt, params, c, Correlation{}) }
 		UpdateStmt { return create_update_plan(stmt, params, c) }
-		else { return error('Cannot plan for $stmt') }
+		else { return error('Cannot create plan for $stmt') }
 	}
 }
 
-fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, c &Connection, allow_virtual bool) ?Plan {
+fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, c &Connection, allow_virtual bool, correlation Correlation) ?Plan {
 	match body {
 		SelectStmt {
 			return create_select_plan(body, offset, params, c, allow_virtual)
@@ -43,8 +43,7 @@ fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, c &
 		[]RowExpr {
 			mut plan := Plan{}
 
-			plan.operations << new_values_operation(body, NoExpr{}, Correlation{}, c,
-				params) ?
+			plan.operations << new_values_operation(body, NoExpr{}, correlation, c, params) ?
 
 			return plan
 		}
@@ -80,7 +79,8 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 				}
 
 				if !covered_by_pk {
-					plan.operations << TableOperation{table_name, c.storage.tables[table_name], offset, params, c, c.storage}
+					columns := columns_from_select(body, table, params, c) ?
+					plan.operations << TableOperation{table_name, false, c.storage.tables[table_name], params, c, columns, body.exprs, plan.subplans, c.storage}
 				}
 			} else {
 				return sqlstate_42p01(table_name)
@@ -92,17 +92,61 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 			}
 		}
 		QueryExpression {
-			rows := from_clause.body as []RowExpr
-			plan.operations << new_values_operation(rows, offset, body.table_expression.from_clause.correlation,
-				c, params) ?
+			// TODO(elliotchance): Needs to increment.
+			mut table_name := '\$1'
+
+			if body.table_expression.from_clause.correlation.name.name != '' {
+				table_name = body.table_expression.from_clause.correlation.name.name
+			}
+
+			subplan := create_query_expression_plan(from_clause, params, c, body.table_expression.from_clause.correlation) ?
+			plan.subplans[table_name] = subplan
+
+			// NOTE: This has to be assigned to a variable otherwise the value
+			// is lost. This must be a bug in V.
+			t := Table{
+				columns: subplan.columns()
+			}
+
+			columns := columns_from_select(body, t, params, c) ?
+			plan.operations << TableOperation{table_name, true, t, params, c, columns, body.exprs, plan.subplans, c.storage}
 		}
 	}
 
 	return plan
 }
 
+fn columns_from_select(stmt SelectStmt, table Table, params map[string]Value, c &Connection) ?Columns {
+	expr := stmt.exprs
+	match expr {
+		AsteriskExpr {
+			return table.columns
+		}
+		[]DerivedColumn {
+			mut columns := []Column{}
+			for i, col in expr {
+				mut column_name := 'COL${i + 1}'
+				if col.as_clause.name != '' {
+					column_name = col.as_clause.name
+				} else if col.expr is Identifier {
+					column_name = col.expr.name
+				}
+				empty_row := new_empty_row(table.columns)
+				typ := eval_as_type(c, empty_row, col.expr, params) ?
+				columns << Column{
+					name: column_name
+					typ: typ
+				}
+			}
+
+			return columns
+		}
+	}
+}
+
 fn create_delete_plan(stmt DeleteStmt, params map[string]Value, c &Connection) ?Plan {
 	select_stmt := SelectStmt{
+		exprs: AsteriskExpr(true)
 		table_expression: TableExpression{
 			from_clause: TablePrimary{
 				body: new_identifier(stmt.table_name)
@@ -116,6 +160,7 @@ fn create_delete_plan(stmt DeleteStmt, params map[string]Value, c &Connection) ?
 
 fn create_update_plan(stmt UpdateStmt, params map[string]Value, c &Connection) ?Plan {
 	select_stmt := SelectStmt{
+		exprs: AsteriskExpr(true)
 		table_expression: TableExpression{
 			from_clause: TablePrimary{
 				body: new_identifier(stmt.table_name)
@@ -127,11 +172,11 @@ fn create_update_plan(stmt UpdateStmt, params map[string]Value, c &Connection) ?
 	return create_select_plan(select_stmt, NoExpr{}, params, c, false)
 }
 
-fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, c &Connection) ?Plan {
-	mut plan := create_basic_plan(stmt.body, stmt.offset, params, c, true) ?
+fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, c &Connection, correlation Correlation) ?Plan {
+	mut plan := create_basic_plan(stmt.body, stmt.offset, params, c, true, correlation) ?
 
-	if stmt.fetch !is NoExpr {
-		plan.operations << new_limit_operation(stmt.fetch, params, c, plan.columns())
+	if stmt.fetch !is NoExpr || stmt.offset !is NoExpr {
+		plan.operations << new_limit_operation(stmt.fetch, stmt.offset, params, c, plan.columns())
 	}
 
 	return plan
@@ -143,6 +188,9 @@ struct Plan {
 mut:
 	operations []PlanOperation
 	params     map[string]Value
+	// subplans represent the subqueries. These are indexed by name and may be
+	// referenced by expressions.
+	subplans map[string]Plan
 }
 
 fn (mut o Plan) execute(_ []Row) ?[]Row {
@@ -166,11 +214,22 @@ fn (p Plan) columns() Columns {
 
 fn (p Plan) explain(elapsed_parse time.Duration) Result {
 	mut rows := []Row{}
+
+	for name, subplan in p.subplans {
+		rows << new_row({
+			'EXPLAIN': new_varchar_value(name + ':', 0)
+		})
+		rows << new_row({
+			'EXPLAIN': new_varchar_value('  ' + subplan.str(), 0)
+		})
+	}
+
 	for operation in p.operations {
 		rows << new_row({
 			'EXPLAIN': new_varchar_value(operation.str(), 0)
 		})
 	}
 
-	return new_result(['EXPLAIN'], rows, elapsed_parse, 0)
+	return new_result([Column{'EXPLAIN', new_type('VARCHAR', 0), false}], rows, elapsed_parse,
+		0)
 }

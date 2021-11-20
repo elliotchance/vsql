@@ -12,3 +12,6 @@ VALUES CHAR_LENGTH('😊£');
 
 VALUES OCTET_LENGTH('😊£');
 -- COL1: 6
+
+VALUES char_length('😊£');
+-- COL1: 2

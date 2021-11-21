@@ -56,7 +56,7 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 
 	match from_clause {
 		Identifier {
-			table_name := identifier_name(from_clause.name)
+			table_name := from_clause.name
 			where := body.table_expression.where_clause
 
 			if allow_virtual && table_name in c.virtual_tables {
@@ -69,7 +69,7 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 					left := where.left
 					right := where.right
 					if where.op == '=' && left is Identifier {
-						if identifier_name(left.name) == table.primary_key[0] {
+						if left.name == table.primary_key[0] {
 							covered_by_pk = true
 							plan.operations << PrimaryKeyOperation{table, right, right, params, c}
 						}
@@ -101,9 +101,7 @@ fn create_delete_plan(stmt DeleteStmt, params map[string]Value, c &Connection) ?
 	select_stmt := SelectStmt{
 		table_expression: TableExpression{
 			from_clause: TablePrimary{
-				body: Identifier{
-					name: stmt.table_name
-				}
+				body: new_identifier(stmt.table_name)
 			}
 			where_clause: stmt.where
 		}
@@ -116,9 +114,7 @@ fn create_update_plan(stmt UpdateStmt, params map[string]Value, c &Connection) ?
 	select_stmt := SelectStmt{
 		table_expression: TableExpression{
 			from_clause: TablePrimary{
-				body: Identifier{
-					name: stmt.table_name
-				}
+				body: new_identifier(stmt.table_name)
 			}
 			where_clause: stmt.where
 		}

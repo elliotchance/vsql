@@ -53,22 +53,22 @@ fn (q QueryCache) prepare_stmt(tokens []Token) (string, map[string]Value, []Toke
 		if !ignore {
 			match token.kind {
 				.literal_number {
-					key += ':p$i '
+					key += ':P$i '
 					if token.value.f64() == token.value.int() {
-						params['p$i'] = new_integer_value(token.value.int())
+						params['P$i'] = new_integer_value(token.value.int())
 					} else {
-						params['p$i'] = new_double_precision_value(token.value.f64())
+						params['P$i'] = new_double_precision_value(token.value.f64())
 					}
 					new_tokens << Token{.colon, ':'}
-					new_tokens << Token{.literal_identifier, 'p$i'}
+					new_tokens << Token{.literal_identifier, 'P$i'}
 					i++
 					continue
 				}
 				.literal_string {
-					key += ':p$i '
-					params['p$i'] = new_varchar_value(token.value, 0)
+					key += ':P$i '
+					params['P$i'] = new_varchar_value(token.value, 0)
 					new_tokens << Token{.colon, ':'}
-					new_tokens << Token{.literal_identifier, 'p$i'}
+					new_tokens << Token{.literal_identifier, 'P$i'}
 					i++
 					continue
 				}

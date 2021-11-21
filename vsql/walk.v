@@ -100,7 +100,7 @@ fn (o PrimaryKeyOperation) execute(_ []Row) ?[]Row {
 
 	mut tmp_row := Row{
 		data: {
-			identifier_name(o.table.primary_key[0]): lower
+			o.table.primary_key[0]: lower
 		}
 	}
 	object_key := tmp_row.object_key(o.table) ?

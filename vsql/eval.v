@@ -60,14 +60,13 @@ fn eval_as_bool(conn &Connection, data Row, e Expr, params map[string]Value) ?bo
 }
 
 fn eval_identifier(data Row, e Identifier) ?Value {
-	col := identifier_name(e.name)
-	value := data.data[col] or { return sqlstate_42601(col) }
+	value := data.data[e.name] or { return sqlstate_42601(e.name) }
 
 	return value
 }
 
 fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) ?Value {
-	func_name := identifier_name(e.function_name)
+	func_name := e.function_name
 
 	func := conn.funcs[func_name] or {
 		// function does not exist

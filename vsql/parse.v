@@ -200,7 +200,7 @@ fn parse_asterisk(_ string) ?SelectList {
 }
 
 fn parse_abs(expr Expr) ?Expr {
-	return CallExpr{'abs', [expr]}
+	return CallExpr{'ABS', [expr]}
 }
 
 fn parse_sign_expr(sign string, expr Expr) ?Expr {
@@ -235,35 +235,35 @@ fn parse_trig_func(function_name string, expr Expr) ?Expr {
 }
 
 fn parse_sqrt(expr Expr) ?Expr {
-	return CallExpr{'sqrt', [expr]}
+	return CallExpr{'SQRT', [expr]}
 }
 
 fn parse_ln(expr Expr) ?Expr {
-	return CallExpr{'ln', [expr]}
+	return CallExpr{'LN', [expr]}
 }
 
 fn parse_floor(expr Expr) ?Expr {
-	return CallExpr{'floor', [expr]}
+	return CallExpr{'FLOOR', [expr]}
 }
 
 fn parse_ceiling(expr Expr) ?Expr {
-	return CallExpr{'ceiling', [expr]}
+	return CallExpr{'CEILING', [expr]}
 }
 
 fn parse_log10(expr Expr) ?Expr {
-	return CallExpr{'log10', [expr]}
+	return CallExpr{'LOG10', [expr]}
 }
 
 fn parse_exp(expr Expr) ?Expr {
-	return CallExpr{'exp', [expr]}
+	return CallExpr{'EXP', [expr]}
 }
 
 fn parse_power(a Expr, b Expr) ?Expr {
-	return CallExpr{'power', [a, b]}
+	return CallExpr{'POWER', [a, b]}
 }
 
 fn parse_mod(a Expr, b Expr) ?Expr {
-	return CallExpr{'mod', [a, b]}
+	return CallExpr{'MOD', [a, b]}
 }
 
 fn parse_delete_statement(table_name Identifier) ?Stmt {
@@ -388,7 +388,7 @@ fn parse_routine_invocation(name Identifier, args []Expr) ?Expr {
 }
 
 fn parse_host_parameter_name(name Identifier) ?Expr {
-	return Parameter{name.name}
+	return Parameter{name.original}
 }
 
 fn parse_unique_constraint_definition(columns []Identifier) ?TableElement {
@@ -400,15 +400,15 @@ fn parse_ignore() ?bool {
 }
 
 fn parse_position(expr1 Expr, expr2 Expr) ?Expr {
-	return CallExpr{'position', [expr1, expr2]}
+	return CallExpr{'POSITION', [expr1, expr2]}
 }
 
 fn parse_char_length(e Expr) ?Expr {
-	return CallExpr{'char_length', [e]}
+	return CallExpr{'CHAR_LENGTH', [e]}
 }
 
 fn parse_octet_length(e Expr) ?Expr {
-	return CallExpr{'octet_length', [e]}
+	return CallExpr{'OCTET_LENGTH', [e]}
 }
 
 fn parse_start_transaction() ?Stmt {

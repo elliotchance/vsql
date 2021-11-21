@@ -14,7 +14,7 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse ti
 		c.release_write_connection()
 	}
 
-	table_name := identifier_name(stmt.table_name)
+	table_name := stmt.table_name
 
 	if table_name in c.storage.tables {
 		return sqlstate_42p07(table_name) // duplicate table
@@ -25,7 +25,7 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse ti
 	for table_element in stmt.table_elements {
 		match table_element {
 			Column {
-				column_name := identifier_name(table_element.name)
+				column_name := table_element.name
 
 				columns << Column{column_name, table_element.typ, table_element.not_null}
 			}
@@ -43,10 +43,10 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse ti
 					mut found := false
 					for e in stmt.table_elements {
 						if e is Column {
-							if identifier_name(e.name) == identifier_name(column.name) {
+							if e.name == column.name {
 								match e.typ.typ {
 									.is_smallint, .is_integer, .is_bigint {
-										primary_key << identifier_name(column.name)
+										primary_key << column.name
 									}
 									else {
 										return sqlstate_42601('PRIMARY KEY does not support $e.typ')
@@ -59,7 +59,7 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse ti
 					}
 
 					if !found {
-						return sqlstate_42601('unknown column ${identifier_name(column.name)} in PRIMARY KEY')
+						return sqlstate_42601('unknown column $column.name in PRIMARY KEY')
 					}
 				}
 			}

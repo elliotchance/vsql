@@ -5591,7 +5591,7 @@ fn parse_ast(node &EarleyNode) ?[]EarleyValue {
 				]
 			}
 			'^identifier' {
-				return [EarleyValue(Identifier{node.value.end_column.value})]
+				return [EarleyValue(new_identifier(node.value.end_column.value))]
 			}
 			'^string' {
 				return [

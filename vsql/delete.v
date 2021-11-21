@@ -20,7 +20,7 @@ fn execute_delete(mut c Connection, stmt DeleteStmt, params map[string]Value, el
 
 	mut rows := plan.execute([]Row{}) ?
 
-	table_name := identifier_name(stmt.table_name)
+	table_name := stmt.table_name
 	for mut row in rows {
 		c.storage.delete_row(table_name, mut row) ?
 	}

@@ -24,6 +24,26 @@ removed. This test suite more specifically verifies:
 2. All keys are correctly iterated and in order.
 3. Removing all keys (one at a time) will correctly shrink the file as pages become empty.
 
+Examples
+^^^^^^^^
+
+The ``examples/`` directory contains simple programs that are both aimed at
+demonstrating concepts and features but are also a test suite in their own
+right.
+
+Run all examples with:
+
+.. code-block:: sh
+
+   make examples
+
+Or, you can run a single example with (notice there is no ``.v`` extension on
+the path):
+
+.. code-block:: sh
+
+   make examples/virtual-table
+
 Connection
 ^^^^^^^^^^
 
@@ -42,7 +62,7 @@ SQL Tests
 
 Run all SQL tests with:
 
-.. code-block:: sql
+.. code-block:: sh
 
    make sql-test
 

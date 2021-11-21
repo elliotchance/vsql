@@ -21,7 +21,7 @@ pub fn (mut v VirtualTable) next_values(values []Value) {
 	mut i := 0
 	for col in v.create_table_stmt.table_elements {
 		if col is Column {
-			row[identifier_name(col.name)] = values[i]
+			row[col.name] = values[i]
 			i++
 		}
 	}

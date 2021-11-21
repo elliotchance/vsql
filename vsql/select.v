@@ -40,7 +40,7 @@ fn execute_select(mut c Connection, stmt QueryExpression, params map[string]Valu
 			if exprs is AsteriskExpr {
 				mut new_exprs := []DerivedColumn{}
 				for column_name in first_operation.table.column_names() {
-					new_exprs << DerivedColumn{Identifier{'"$column_name"'}, Identifier{'"$column_name"'}}
+					new_exprs << DerivedColumn{new_identifier('"$column_name"'), new_identifier('"$column_name"')}
 				}
 
 				exprs = new_exprs
@@ -50,7 +50,7 @@ fn execute_select(mut c Connection, stmt QueryExpression, params map[string]Valu
 			if exprs is AsteriskExpr {
 				mut new_exprs := []DerivedColumn{}
 				for column_name in first_operation.table.column_names() {
-					new_exprs << DerivedColumn{Identifier{'"$column_name"'}, Identifier{'"$column_name"'}}
+					new_exprs << DerivedColumn{new_identifier('"$column_name"'), new_identifier('"$column_name"')}
 				}
 
 				exprs = new_exprs
@@ -61,7 +61,7 @@ fn execute_select(mut c Connection, stmt QueryExpression, params map[string]Valu
 				mut new_exprs := []DerivedColumn{}
 				for table_element in first_operation.table.create_table_stmt.table_elements {
 					if table_element is Column {
-						new_exprs << DerivedColumn{Identifier{table_element.name}, Identifier{table_element.name}}
+						new_exprs << DerivedColumn{new_identifier('"$table_element.name"'), new_identifier('"$table_element.name"')}
 					}
 				}
 
@@ -72,7 +72,7 @@ fn execute_select(mut c Connection, stmt QueryExpression, params map[string]Valu
 			if exprs is AsteriskExpr {
 				mut new_exprs := []DerivedColumn{}
 				for col in first_operation.columns() {
-					new_exprs << DerivedColumn{Identifier{'"$col"'}, Identifier{'"$col"'}}
+					new_exprs << DerivedColumn{new_identifier('"$col"'), new_identifier('"$col"')}
 				}
 
 				exprs = new_exprs
@@ -93,10 +93,10 @@ fn execute_select(mut c Connection, stmt QueryExpression, params map[string]Valu
 		for expr in exprs as []DerivedColumn {
 			mut column_name := 'COL$col_num'
 			if expr.as_clause.name != '' {
-				column_name = identifier_name(expr.as_clause.name)
+				column_name = expr.as_clause.name
 			}
 			if expr.expr is Identifier {
-				column_name = identifier_name(expr.expr.name)
+				column_name = expr.expr.name
 			}
 
 			if first_row {

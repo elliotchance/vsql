@@ -23,6 +23,11 @@ fn example() ? {
 		t.done()
 	}) ?
 
+	explain := db.query('EXPLAIN SELECT * FROM foo') ?
+	for row in explain {
+		assert row.get_string('EXPLAIN') ? == 'VIRTUAL TABLE FOO (num INTEGER, WORD CHARACTER VARYING(32))'
+	}
+
 	result := db.query('SELECT * FROM foo') ?
 	for row in result {
 		num := row.get_f64('num') ?

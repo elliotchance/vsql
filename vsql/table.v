@@ -8,10 +8,29 @@ struct Column {
 	not_null bool
 }
 
+fn (c Column) str() string {
+	return c.name
+}
+
+type Columns = []Column
+
+fn (c Columns) str() string {
+	mut s := []string{}
+	for col in c {
+		mut f := '$col.name $col.typ'
+		if col.not_null {
+			f += ' NOT NULL'
+		}
+		s << f
+	}
+
+	return s.join(', ')
+}
+
 struct Table {
 mut:
 	name    string
-	columns []Column
+	columns Columns
 	// If the table has a PRIMARY KEY defined the column (or columns) will be
 	// defined here.
 	primary_key []string
@@ -88,7 +107,7 @@ mut:
 }
 
 fn (o TableOperation) str() string {
-	mut s := 'TABLE $o.table_name'
+	mut s := 'TABLE $o.table_name ($o.columns())'
 
 	// TODO(elliotchance): It would be nice to correctly pluralize ROW/ROWS, but
 	//  the number may be a parameter we would have to resolve.
@@ -100,6 +119,10 @@ fn (o TableOperation) str() string {
 	return s
 }
 
+fn (o TableOperation) columns() Columns {
+	return o.table.columns
+}
+
 fn (mut o TableOperation) execute(_ []Row) ?[]Row {
 	mut offset := 0
 	if o.offset !is NoExpr {
@@ -107,25 +130,4 @@ fn (mut o TableOperation) execute(_ []Row) ?[]Row {
 	}
 
 	return o.storage.read_rows(o.table_name, offset)
-}
-
-// A LimitOperation stops after a specified number of rows have been received.
-struct LimitOperation {
-	fetch  Expr
-	params map[string]Value
-	conn   &Connection
-}
-
-fn (o LimitOperation) str() string {
-	return 'FETCH FIRST ${o.fetch.pstr(o.params)} ROWS ONLY'
-}
-
-fn (o LimitOperation) execute(rows []Row) ?[]Row {
-	mut fetch := int((eval_as_value(o.conn, Row{}, o.fetch, o.params) ?).f64_value)
-
-	if fetch < rows.len {
-		return rows[..fetch]
-	}
-
-	return rows
 }

@@ -3,36 +3,38 @@
 module vsql
 
 struct Func {
-	name      string
-	arg_types []Type
-	func      fn ([]Value) ?Value
+	name        string
+	arg_types   []Type
+	func        fn ([]Value) ?Value
+	return_type Type
 }
 
 fn register_builtin_funcs(mut conn Connection) ? {
-	conn.register_func(Func{'ABS', [Type{SQLType.is_double_precision, 0}], func_abs}) ?
-	conn.register_func(Func{'ACOS', [Type{SQLType.is_double_precision, 0}], func_acos}) ?
-	conn.register_func(Func{'ASIN', [Type{SQLType.is_double_precision, 0}], func_asin}) ?
-	conn.register_func(Func{'ATAN', [Type{SQLType.is_double_precision, 0}], func_atan}) ?
-	conn.register_func(Func{'CEIL', [Type{SQLType.is_double_precision, 0}], func_ceil}) ?
-	conn.register_func(Func{'CEILING', [Type{SQLType.is_double_precision, 0}], func_ceil}) ?
-	conn.register_func(Func{'CHAR_LENGTH', [Type{SQLType.is_varchar, 0}], func_char_length}) ?
-	conn.register_func(Func{'CHARACTER_LENGTH', [Type{SQLType.is_varchar, 0}], func_char_length}) ?
-	conn.register_func(Func{'COS', [Type{SQLType.is_double_precision, 0}], func_cos}) ?
-	conn.register_func(Func{'COSH', [Type{SQLType.is_double_precision, 0}], func_cosh}) ?
-	conn.register_func(Func{'EXP', [Type{SQLType.is_double_precision, 0}], func_exp}) ?
-	conn.register_func(Func{'FLOOR', [Type{SQLType.is_double_precision, 0}], func_floor}) ?
-	conn.register_func(Func{'LN', [Type{SQLType.is_double_precision, 0}], func_ln}) ?
-	conn.register_func(Func{'LOG10', [Type{SQLType.is_double_precision, 0}], func_log10}) ?
-	conn.register_func(Func{'MOD', [Type{SQLType.is_double_precision, 0},
-		Type{SQLType.is_double_precision, 0}], func_mod}) ?
-	conn.register_func(Func{'OCTET_LENGTH', [Type{SQLType.is_varchar, 0}], func_octet_length}) ?
-	conn.register_func(Func{'POSITION', [Type{SQLType.is_varchar, 0},
-		Type{SQLType.is_varchar, 0}], func_position}) ?
-	conn.register_func(Func{'POWER', [Type{SQLType.is_double_precision, 0},
-		Type{SQLType.is_double_precision, 0}], func_power}) ?
-	conn.register_func(Func{'SIN', [Type{SQLType.is_double_precision, 0}], func_sin}) ?
-	conn.register_func(Func{'SINH', [Type{SQLType.is_double_precision, 0}], func_sinh}) ?
-	conn.register_func(Func{'SQRT', [Type{SQLType.is_double_precision, 0}], func_sqrt}) ?
-	conn.register_func(Func{'TAN', [Type{SQLType.is_double_precision, 0}], func_tan}) ?
-	conn.register_func(Func{'TANH', [Type{SQLType.is_double_precision, 0}], func_tanh}) ?
+	double_precision := Type{SQLType.is_double_precision, 0}
+	integer := Type{SQLType.is_integer, 0}
+	varchar := Type{SQLType.is_varchar, 0}
+
+	conn.register_func(Func{'ABS', [double_precision], func_abs, double_precision}) ?
+	conn.register_func(Func{'ACOS', [double_precision], func_acos, double_precision}) ?
+	conn.register_func(Func{'ASIN', [double_precision], func_asin, double_precision}) ?
+	conn.register_func(Func{'ATAN', [double_precision], func_atan, double_precision}) ?
+	conn.register_func(Func{'CEIL', [double_precision], func_ceil, double_precision}) ?
+	conn.register_func(Func{'CEILING', [double_precision], func_ceil, double_precision}) ?
+	conn.register_func(Func{'CHAR_LENGTH', [varchar], func_char_length, integer}) ?
+	conn.register_func(Func{'CHARACTER_LENGTH', [varchar], func_char_length, integer}) ?
+	conn.register_func(Func{'COS', [double_precision], func_cos, double_precision}) ?
+	conn.register_func(Func{'COSH', [double_precision], func_cosh, double_precision}) ?
+	conn.register_func(Func{'EXP', [double_precision], func_exp, double_precision}) ?
+	conn.register_func(Func{'FLOOR', [double_precision], func_floor, double_precision}) ?
+	conn.register_func(Func{'LN', [double_precision], func_ln, double_precision}) ?
+	conn.register_func(Func{'LOG10', [double_precision], func_log10, double_precision}) ?
+	conn.register_func(Func{'MOD', [double_precision, double_precision], func_mod, double_precision}) ?
+	conn.register_func(Func{'OCTET_LENGTH', [varchar], func_octet_length, integer}) ?
+	conn.register_func(Func{'POSITION', [varchar, varchar], func_position, integer}) ?
+	conn.register_func(Func{'POWER', [double_precision, double_precision], func_power, double_precision}) ?
+	conn.register_func(Func{'SIN', [double_precision], func_sin, double_precision}) ?
+	conn.register_func(Func{'SINH', [double_precision], func_sinh, double_precision}) ?
+	conn.register_func(Func{'SQRT', [double_precision], func_sqrt, double_precision}) ?
+	conn.register_func(Func{'TAN', [double_precision], func_tan, double_precision}) ?
+	conn.register_func(Func{'TANH', [double_precision], func_tanh, double_precision}) ?
 }

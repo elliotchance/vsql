@@ -3,7 +3,7 @@
 // operation may take in rows but will always produce rows that can be fed into
 // the next operation. You can find the operations in:
 //
-//   LimitOperation          table.v
+//   LimitOperation          limit.v
 //   PrimaryKeyOperation     walk.v
 //   TableOperation          table.v
 //   WhereOperation          where.v
@@ -16,6 +16,11 @@ import time
 
 interface PlanOperation {
 	str() string
+	// A PlanOperation may return different columns from the input rows. This
+	// will return the columns (including their types) from the result of this
+	// operation. It's safe to invoke this before execute() and invokes multiple
+	// times if needed.
+	columns() Columns
 mut:
 	execute(row []Row) ?[]Row
 }
@@ -38,11 +43,8 @@ fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, c &
 		[]RowExpr {
 			mut plan := Plan{}
 
-			plan.operations << ValuesOperation{
-				rows: body
-				conn: c
-				params: params
-			}
+			plan.operations << new_values_operation(body, NoExpr{}, Correlation{}, c,
+				params) ?
 
 			return plan
 		}
@@ -71,7 +73,8 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 					if where.op == '=' && left is Identifier {
 						if left.name == table.primary_key[0] {
 							covered_by_pk = true
-							plan.operations << PrimaryKeyOperation{table, right, right, params, c}
+							plan.operations << new_primary_key_operation(table, right,
+								right, params, c)
 						}
 					}
 				}
@@ -84,7 +87,8 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 			}
 
 			if where !is NoExpr && !covered_by_pk {
-				plan.operations << WhereOperation{where, params, c}
+				last_operation := plan.operations[plan.operations.len - 1]
+				plan.operations << new_where_operation(where, params, c, last_operation.columns())
 			}
 		}
 		QueryExpression {
@@ -127,7 +131,7 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, c
 	mut plan := create_basic_plan(stmt.body, stmt.offset, params, c, true) ?
 
 	if stmt.fetch !is NoExpr {
-		plan.operations << LimitOperation{stmt.fetch, params, c}
+		plan.operations << new_limit_operation(stmt.fetch, params, c, plan.columns())
 	}
 
 	return plan
@@ -152,6 +156,12 @@ fn (mut o Plan) execute(_ []Row) ?[]Row {
 
 fn (p Plan) str() string {
 	return p.operations.map(it.str()).join('\n')
+}
+
+fn (p Plan) columns() Columns {
+	// The columns at the end of the plan will always be whatever the last
+	// operation returns.
+	return p.operations[p.operations.len - 1].columns()
 }
 
 fn (p Plan) explain(elapsed_parse time.Duration) Result {

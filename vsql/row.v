@@ -92,7 +92,7 @@ fn (r Row) get(name string) ?Value {
 // new_empty_row is used internally to generate a row with zero values for all
 // the types in a Row. This is used for testing expressions without needing the
 // actual row.
-fn new_empty_row(columns []Column) Row {
+fn new_empty_row(columns Columns) Row {
 	mut r := Row{}
 	for col in columns {
 		mut v := Value{}

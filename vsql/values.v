@@ -47,9 +47,7 @@ fn (o &ValuesOperation) columns() []Identifier {
 	// TODO(elliotchance): All check all exprs are RowExpr AND they have the
 	//  right number of columns AND types.
 	for i in 1 .. o.rows[0].exprs.len + 1 {
-		columns << Identifier{
-			name: 'COL$i'
-		}
+		columns << new_identifier('COL$i')
 	}
 
 	return columns
@@ -77,7 +75,7 @@ fn (o &ValuesOperation) execute(_ []Row) ?[]Row {
 		for mut row in rows {
 			mut data := map[string]Value{}
 			for i in 1 .. row.data.len + 1 {
-				name := identifier_name(column_names[i - 1].name)
+				name := column_names[i - 1].name
 				data[name] = row.data['COL$i']
 			}
 

@@ -14,46 +14,6 @@ enum TokenKind {
 	greater_than_operator // <greater than operator> ::= >
 	greater_than_or_equals_operator // <greater than or equals operator> ::= >=
 	keyword
-	keyword_and // AND
-	keyword_as // AS
-	keyword_bigint // BIGINT
-	keyword_boolean // BOOLEAN
-	keyword_char // CHAR
-	keyword_character // CHARACTER
-	keyword_create // CREATE
-	keyword_delete // DELETE
-	keyword_double // DOUBLE
-	keyword_drop // DROP
-	keyword_false // FALSE
-	keyword_fetch // FETCH
-	keyword_first // FIRST
-	keyword_float // FLOAT
-	keyword_from // FROM
-	keyword_insert // INSERT
-	keyword_int // INT
-	keyword_integer // INTEGER
-	keyword_into // INTO
-	keyword_is // IS
-	keyword_not // NOT
-	keyword_null // NULL
-	keyword_offset // OFFSET
-	keyword_only // ONLY
-	keyword_or // OR
-	keyword_precision // PRECISION
-	keyword_real // REAL
-	keyword_row // ROW
-	keyword_rows // ROWS
-	keyword_select // SELECT
-	keyword_set // SET
-	keyword_smallint // SMALLINT
-	keyword_table // TABLE
-	keyword_true // TRUE
-	keyword_unknown // UNKNOWN
-	keyword_update // UPDATE
-	keyword_values // VALUES
-	keyword_varchar // VARCHAR
-	keyword_varying // VARYING
-	keyword_where // WHERE
 	left_paren // <left paren> ::= (
 	less_than_operator // <less than operator> ::= <
 	less_than_or_equals_operator // <less than or equals operator> ::= <=

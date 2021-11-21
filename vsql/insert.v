@@ -22,14 +22,14 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 
 	mut row := map[string]Value{}
 
-	table_name := identifier_name(stmt.table_name)
+	table_name := stmt.table_name
 	if table_name !in c.storage.tables {
 		return sqlstate_42p01(table_name) // table not found
 	}
 
 	table := c.storage.tables[table_name]
 	for i, column in stmt.columns {
-		column_name := identifier_name(column.name)
+		column_name := column.name
 		table_column := table.column(column_name) ?
 		raw_value := eval_as_value(c, Row{}, stmt.values[i], params) ?
 		value := cast('for column $column_name', raw_value, table_column.typ) ?

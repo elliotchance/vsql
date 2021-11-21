@@ -140,11 +140,29 @@ fn (e NullExpr) pstr(params map[string]Value) string {
 
 // Identifier is foo or "Foo"
 struct Identifier {
+	// name is the normalized name. That is, upper case for regular tokens or
+	// the case is kept for delimited identifiers.
 	name string
+	// original is the original token string.
+	original string
+}
+
+fn new_identifier(s string) Identifier {
+	if s.len > 0 && s[0] == `"` {
+		return Identifier{
+			name: s[1..s.len - 1]
+			original: s
+		}
+	}
+
+	return Identifier{
+		name: s.to_upper()
+		original: s
+	}
 }
 
 fn (e Identifier) str() string {
-	return identifier_name(e.name)
+	return e.name
 }
 
 struct UnaryExpr {
@@ -231,7 +249,7 @@ fn (c Correlation) str() string {
 	if c.columns.len > 0 {
 		mut columns := []string{}
 		for col in c.columns {
-			columns << identifier_name(col.name)
+			columns << col.name
 		}
 
 		s += ' (${columns.join(', ')})'
@@ -240,7 +258,8 @@ fn (c Correlation) str() string {
 	return s
 }
 
-// Parameter is :foo. The colon is not included in the name.
+// Parameter is :foo. The colon is not included in the name. Parameters are case
+// sensitive.
 struct Parameter {
 	name string
 }

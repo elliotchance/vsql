@@ -13,7 +13,7 @@ docs:
 # Grammar (BNF)
 
 grammar:
-	python generate-grammar.py
+	python3 generate-grammar.py
 	v fmt -w vsql/grammar.v
 
 # Formatting
@@ -36,8 +36,11 @@ sql-test:
 
 examples:
 	for f in `ls examples/*.v`; do \
-		v -gc boehm -prod run $$f ; \
+		v -gc boehm run $$f ; \
 	done
+
+examples/%:
+	v -gc boehm run examples/$*.v
 
 # Benchmarking
 

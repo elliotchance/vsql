@@ -12,7 +12,7 @@ fn execute_drop_table(mut c Connection, stmt DropTableStmt, elapsed_parse time.D
 		c.release_write_connection()
 	}
 
-	table_name := identifier_name(stmt.table_name)
+	table_name := stmt.table_name
 
 	if table_name !in c.storage.tables {
 		return sqlstate_42p01(table_name) // table does not exist

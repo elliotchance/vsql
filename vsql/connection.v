@@ -165,7 +165,7 @@ pub fn (mut c Connection) register_func(func Func) ? {
 pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) ?Value) ? {
 	// TODO(elliotchance): A rather crude way to decode the prototype...
 	parts := prototype.replace('(', '|').replace(')', '|').split('|')
-	function_name := identifier_name(parts[0].trim_space())
+	function_name := new_identifier(parts[0].trim_space()).name
 	raw_args := parts[1].split(',')
 	mut arg_types := []Type{}
 	for arg in raw_args {
@@ -183,7 +183,7 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 	stmt := parse(tokens) ?
 
 	if stmt is CreateTableStmt {
-		table_name := identifier_name(stmt.table_name)
+		table_name := stmt.table_name
 		c.virtual_tables[table_name] = VirtualTable{
 			create_table_sql: create_table
 			create_table_stmt: stmt

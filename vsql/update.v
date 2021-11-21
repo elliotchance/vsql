@@ -33,13 +33,12 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 
 	mut rows := plan.execute([]Row{}) ?
 
-	table_name := identifier_name(stmt.table_name)
+	table_name := stmt.table_name
 	table := c.storage.tables[table_name]
 
 	// check values are appropriate for the table before beginning
 	empty_row := new_empty_row(table.columns)
-	for k, v in stmt.set {
-		column_name := identifier_name(k)
+	for column_name, v in stmt.set {
 		table_column := table.column(column_name) ?
 		raw_value := eval_as_value(c, empty_row, v, params) ?
 		value := cast('for column $column_name', raw_value, table_column.typ) ?
@@ -61,8 +60,7 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 		row2.id = row.id
 		row2.tid = row.tid
 
-		for k, v in stmt.set {
-			column_name := identifier_name(k)
+		for column_name, v in stmt.set {
 			table_column := table.column(column_name) ?
 			raw_value := eval_as_value(c, row, v, params) ?
 

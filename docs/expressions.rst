@@ -36,3 +36,30 @@ IS NULL
   X IS [ NOT ] NULL
 
 Tests if ``X`` is (or is not) ``NULL``.
+
+LIKE
+----
+
+.. code-block:: text
+
+  X [ NOT ] LIKE Y
+
+Tests if ``X`` matches the like-expression of ``Y``. Apart from simple regexp
+matching, this is very useful for testing the prefix or suffix of a string.
+
+Matching is always against the entire string (not a partial match) and is
+case-sensitive. You can use the following characters in ``Y``:
+
+- ``_`` matches any single character.
+- ``%`` matches zero, one or more characters.
+
+*Examples*
+
+.. code-block:: sql
+
+  'a' LIKE 'a'          -- TRUE
+  'a' LIKE 'A'          -- FALSE
+  'ab' LIKE 'a_'        -- TRUE
+  'abc' LIKE 'a_'       -- FALSE
+  'acdeb' LIKE 'a%b'    -- TRUE
+  'abc' NOT LIKE 'a%'   -- FALSE

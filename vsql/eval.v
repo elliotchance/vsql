@@ -2,6 +2,8 @@
 
 module vsql
 
+import regex
+
 fn eval_row(conn &Connection, data Row, exprs []Expr, params map[string]Value) ?Row {
 	mut col_number := 1
 	mut row := map[string]Value{}
@@ -22,7 +24,7 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 
 			return func.return_type
 		}
-		BetweenExpr, NullExpr {
+		BetweenExpr, NullExpr, LikeExpr {
 			return new_type('BOOLEAN', 0)
 		}
 		Parameter {
@@ -66,6 +68,9 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 		}
 		Identifier {
 			return eval_identifier(data, e)
+		}
+		LikeExpr {
+			return eval_like(conn, data, e, params)
 		}
 		NullExpr {
 			return eval_null(conn, data, e, params)
@@ -138,6 +143,20 @@ fn eval_null(conn &Connection, data Row, e NullExpr, params map[string]Value) ?V
 	}
 
 	return new_boolean_value(value.typ.typ == .is_null)
+}
+
+fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) ?Value {
+	left := eval_as_value(conn, data, e.left, params) ?
+	right := eval_as_value(conn, data, e.right, params) ?
+
+	mut re := regex.regex_opt('^${right.string_value.replace('_', '.').replace('%', '.*')}$') ?
+	result := re.matches_string(left.string_value)
+
+	if e.not {
+		return new_boolean_value(!result)
+	}
+
+	return new_boolean_value(result)
 }
 
 fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value) ?Value {

@@ -514,3 +514,15 @@ fn parse_row_constructor1(exprs []Expr) ?Expr {
 fn parse_row_constructor2(expr QueryExpression) ?Expr {
 	return expr
 }
+
+fn parse_like_pred(left Expr, like LikeExpr) ?Expr {
+	return LikeExpr{left, like.right, like.not}
+}
+
+fn parse_like(expr Expr) ?LikeExpr {
+	return LikeExpr{NoExpr{}, expr, false}
+}
+
+fn parse_not_like(expr Expr) ?LikeExpr {
+	return LikeExpr{NoExpr{}, expr, true}
+}

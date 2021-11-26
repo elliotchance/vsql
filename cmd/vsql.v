@@ -69,7 +69,7 @@ fn cli_command(cmd cli.Command) ? {
 		result := db.query(query) ?
 		for row in result {
 			for column in result.columns {
-				print('$column: ${row.get_string(column)} ')
+				print('$column.name: ${row.get_string(column.name)} ')
 			}
 		}
 

@@ -3,6 +3,7 @@
 module vsql
 
 struct Column {
+pub:
 	name     string
 	typ      Type
 	not_null bool
@@ -98,36 +99,35 @@ fn new_table_from_bytes(data []byte, tid int) Table {
 // rows read may be limited and/or an offset (rows to skip) provided.
 struct TableOperation {
 	table_name string
-	table      Table
-	offset     Expr // NoExpr for not set
-	params     map[string]Value
-	conn       &Connection
+	// table_is_subplan is true if the table_name should be executed from the
+	// subplans instead of a real table.
+	table_is_subplan bool
+	table            Table
+	params           map[string]Value
+	conn             &Connection
+	columns          Columns
+	select_list      SelectList
 mut:
-	storage Storage
+	subplans map[string]Plan
+	storage  Storage
 }
 
 fn (o TableOperation) str() string {
-	mut s := 'TABLE $o.table_name ($o.columns())'
-
-	// TODO(elliotchance): It would be nice to correctly pluralize ROW/ROWS, but
-	//  the number may be a parameter we would have to resolve.
-
-	if o.offset !is NoExpr {
-		s += ' OFFSET ${o.offset.pstr(o.params)} ROWS'
-	}
-
-	return s
+	return 'TABLE $o.table_name ($o.columns())'
 }
 
 fn (o TableOperation) columns() Columns {
-	return o.table.columns
+	return o.columns
 }
 
 fn (mut o TableOperation) execute(_ []Row) ?[]Row {
-	mut offset := 0
-	if o.offset !is NoExpr {
-		offset = int((eval_as_value(o.conn, Row{}, o.offset, o.params) ?).f64_value)
+	mut rows := []Row{}
+
+	if o.table_is_subplan {
+		rows = o.subplans[o.table_name].execute([]Row{}) ?
+	} else {
+		rows = o.storage.read_rows(o.table_name) ?
 	}
 
-	return o.storage.read_rows(o.table_name, offset)
+	return transform_select_expressions(o.conn, o.params, rows, o.select_list, o.columns())
 }

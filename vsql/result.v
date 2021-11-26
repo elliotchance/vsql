@@ -7,7 +7,7 @@ import time
 
 struct Result {
 pub:
-	columns       []string
+	columns       []Column
 	rows          []Row
 	elapsed_parse time.Duration
 	elapsed_exec  time.Duration
@@ -15,7 +15,7 @@ mut:
 	idx int
 }
 
-pub fn new_result(columns []string, rows []Row, elapsed_parse time.Duration, elapsed_exec time.Duration) Result {
+pub fn new_result(columns Columns, rows []Row, elapsed_parse time.Duration, elapsed_exec time.Duration) Result {
 	return Result{
 		columns: columns
 		rows: rows
@@ -25,7 +25,7 @@ pub fn new_result(columns []string, rows []Row, elapsed_parse time.Duration, ela
 }
 
 fn new_result_msg(msg string, elapsed_parse time.Duration, elapsed_exec time.Duration) Result {
-	return new_result(['msg'], [
+	return new_result([Column{'msg', new_type('VARCHAR', 0), false}], [
 		Row{
 			data: {
 				'msg': new_varchar_value(msg, 0)

@@ -13,89 +13,43 @@ fn execute_select(mut c Connection, stmt QueryExpression, params map[string]Valu
 	}
 
 	mut plan := create_plan(stmt, params, c) ?
-	body := stmt.body
-	mut exprs := match body {
-		SelectStmt {
-			body.exprs
-		}
-		[]RowExpr {
-			SelectList(AsteriskExpr(true))
-		}
-	}
 
 	if explain {
 		return plan.explain(elapsed_parse)
 	}
 
-	// Execute the query.
-	all_rows := plan.execute([]Row{}) ?
+	rows := plan.execute([]Row{}) ?
 
-	// Transform into expressions.
-	//
-	// TODO(elliotchance): This isn't necessary if the VirtualTable relies on
-	//  the Table and not the CreateTableStmt.
-	first_operation := plan.operations[0]
-	match first_operation {
-		PrimaryKeyOperation {
-			if exprs is AsteriskExpr {
-				mut new_exprs := []DerivedColumn{}
-				for column_name in first_operation.table.column_names() {
-					new_exprs << DerivedColumn{new_identifier('"$column_name"'), new_identifier('"$column_name"')}
-				}
+	return new_result(plan.columns(), rows, elapsed_parse, t.elapsed())
+}
 
-				exprs = new_exprs
+fn transform_select_expressions(c &Connection, params map[string]Value, rows []Row, select_list SelectList, columns Columns) ?[]Row {
+	// Expand "*" if needed so we have a distinct list of named columns to use
+	// for the transformation.
+	mut exprs := []DerivedColumn{}
+	match select_list {
+		AsteriskExpr {
+			for column_name in columns {
+				exprs << DerivedColumn{new_identifier('"$column_name"'), new_identifier('"$column_name"')}
 			}
 		}
-		TableOperation {
-			if exprs is AsteriskExpr {
-				mut new_exprs := []DerivedColumn{}
-				for column_name in first_operation.table.column_names() {
-					new_exprs << DerivedColumn{new_identifier('"$column_name"'), new_identifier('"$column_name"')}
-				}
-
-				exprs = new_exprs
-			}
-		}
-		VirtualTableOperation {
-			if exprs is AsteriskExpr {
-				mut new_exprs := []DerivedColumn{}
-				for table_element in first_operation.table.create_table_stmt.table_elements {
-					if table_element is Column {
-						new_exprs << DerivedColumn{new_identifier('"$table_element.name"'), new_identifier('"$table_element.name"')}
-					}
-				}
-
-				exprs = new_exprs
-			}
-		}
-		ValuesOperation {
-			if exprs is AsteriskExpr {
-				mut new_exprs := []DerivedColumn{}
-				for col in first_operation.columns() {
-					new_exprs << DerivedColumn{new_identifier('"$col"'), new_identifier('"$col"')}
-				}
-
-				exprs = new_exprs
-			}
-		}
-		else {
-			panic('invalid initial operation')
+		[]DerivedColumn {
+			exprs = select_list.clone()
 		}
 	}
 
-	mut returned_rows := []Row{cap: all_rows.len}
+	mut returned_rows := []Row{cap: rows.len}
 	mut col_num := 1
-	mut column_names := []string{cap: (exprs as []DerivedColumn).len}
+	mut column_names := []string{cap: exprs.len}
 	mut first_row := true
-	for row in all_rows {
+	for row in rows {
 		col_num = 1
 		mut data := map[string]Value{}
-		for expr in exprs as []DerivedColumn {
+		for expr in exprs {
 			mut column_name := 'COL$col_num'
 			if expr.as_clause.name != '' {
 				column_name = expr.as_clause.name
-			}
-			if expr.expr is Identifier {
+			} else if expr.expr is Identifier {
 				column_name = expr.expr.name
 			}
 
@@ -110,8 +64,10 @@ fn execute_select(mut c Connection, stmt QueryExpression, params map[string]Valu
 		first_row = false
 		returned_rows << Row{
 			data: data
+			id: row.id
+			tid: row.tid
 		}
 	}
 
-	return new_result(column_names, returned_rows, elapsed_parse, t.elapsed())
+	return returned_rows
 }

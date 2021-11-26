@@ -511,6 +511,8 @@ def parse_tree(text):
 # parse_tree("SELECT product_name , no_pennies ( price ) AS total FROM products")
 # parse_tree("SELECT * FROM ( VALUES 1 )")
 # parse_tree("SELECT * FROM ( VALUES ROW ( 123 ) , ROW ( 456 ) )")
+# parse_tree("SELECT x FROM ( SELECT y FROM t2 )")
+# parse_tree("SELECT x , y FROM ( SELECT x , y FROM t1 )")
 
 for arg in sys.argv[1:]:
     print(arg)

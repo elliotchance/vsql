@@ -507,6 +507,10 @@ fn parse_correlation2(name Identifier, columns []Identifier) ?Correlation {
 	}
 }
 
-fn parse_row_constructor(exprs []Expr) ?Expr {
+fn parse_row_constructor1(exprs []Expr) ?Expr {
 	return RowExpr{exprs}
+}
+
+fn parse_row_constructor2(expr QueryExpression) ?Expr {
+	return expr
 }

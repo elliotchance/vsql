@@ -99,7 +99,7 @@ fn (mut s Server) handle_conn(mut c net.TcpConn) ? {
 					s.log('error: $err')
 
 					conn.write_error_result(err) ?
-					new_result([]string{}, []Row{}, 0, 0) // not used
+					new_result([]Column{}, []Row{}, 0, 0) // not used
 				}
 
 				if !did_error {

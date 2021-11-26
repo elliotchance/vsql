@@ -46,9 +46,37 @@ pub fn new_integer_value(x int) Value {
 	}
 }
 
+pub fn new_bigint_value(x i64) Value {
+	return Value{
+		typ: Type{.is_bigint, 0}
+		f64_value: x
+	}
+}
+
+pub fn new_real_value(x f32) Value {
+	return Value{
+		typ: Type{.is_real, 0}
+		f64_value: x
+	}
+}
+
+pub fn new_smallint_value(x i16) Value {
+	return Value{
+		typ: Type{.is_smallint, 0}
+		f64_value: x
+	}
+}
+
 pub fn new_varchar_value(x string, size int) Value {
 	return Value{
 		typ: Type{.is_varchar, size}
+		string_value: x
+	}
+}
+
+pub fn new_character_value(x string, size int) Value {
+	return Value{
+		typ: Type{.is_character, size}
 		string_value: x
 	}
 }

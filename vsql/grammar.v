@@ -431,6 +431,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_explicit_row_value_constructor_1_ := &EarleyRule{
 		name: '<explicit row value constructor: 1>'
 	}
+	mut rule_explicit_row_value_constructor_2_ := &EarleyRule{
+		name: '<explicit row value constructor: 2>'
+	}
 	mut rule_explicit_row_value_constructor_ := &EarleyRule{
 		name: '<explicit row value constructor>'
 	}
@@ -766,6 +769,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_row_or_rows_ := &EarleyRule{
 		name: '<row or rows>'
+	}
+	mut rule_row_subquery_ := &EarleyRule{
+		name: '<row subquery>'
 	}
 	mut rule_row_value_constructor_element_list_1_ := &EarleyRule{
 		name: '<row value constructor element list: 1>'
@@ -2641,9 +2647,20 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_explicit_row_value_constructor_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_row_subquery_
+		},
+	]}
+
 	rule_explicit_row_value_constructor_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_explicit_row_value_constructor_1_
+		},
+	]}
+	rule_explicit_row_value_constructor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_explicit_row_value_constructor_2_
 		},
 	]}
 
@@ -3682,6 +3699,12 @@ fn get_grammar() map[string]EarleyRule {
 	rule_row_or_rows_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_rows
+		},
+	]}
+
+	rule_row_subquery_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_subquery_
 		},
 	]}
 
@@ -5292,6 +5315,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<exact numeric type: 4>'] = rule_exact_numeric_type_4_
 	rules['<exact numeric type>'] = rule_exact_numeric_type_
 	rules['<explicit row value constructor: 1>'] = rule_explicit_row_value_constructor_1_
+	rules['<explicit row value constructor: 2>'] = rule_explicit_row_value_constructor_2_
 	rules['<explicit row value constructor>'] = rule_explicit_row_value_constructor_
 	rules['<exponential function: 1>'] = rule_exponential_function_1_
 	rules['<exponential function>'] = rule_exponential_function_
@@ -5404,6 +5428,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<routine invocation>'] = rule_routine_invocation_
 	rules['<routine name>'] = rule_routine_name_
 	rules['<row or rows>'] = rule_row_or_rows_
+	rules['<row subquery>'] = rule_row_subquery_
 	rules['<row value constructor element list: 1>'] = rule_row_value_constructor_element_list_1_
 	rules['<row value constructor element list: 2>'] = rule_row_value_constructor_element_list_2_
 	rules['<row value constructor element list>'] = rule_row_value_constructor_element_list_
@@ -5871,7 +5896,12 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [EarleyValue(parse_bigint() ?)]
 		}
 		'<explicit row value constructor: 1>' {
-			return [EarleyValue(parse_row_constructor(children[2] as []Expr) ?)]
+			return [EarleyValue(parse_row_constructor1(children[2] as []Expr) ?)]
+		}
+		'<explicit row value constructor: 2>' {
+			return [
+				EarleyValue(parse_row_constructor2(children[0] as QueryExpression) ?),
+			]
 		}
 		'<exponential function: 1>' {
 			return [EarleyValue(parse_exp(children[2] as Expr) ?)]

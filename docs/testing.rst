@@ -193,3 +193,27 @@ you can use the ``$TEST`` environment variable:
 
    # only run tests/transaction.sql
    TEST=transaction make sql-test
+
+Running Specific Tests
+^^^^^^^^^^^^^^^^^^^^^^
+
+Even more specific than test files, you can run a single test by including the
+line referenced in the output. This is the same as the last line of the expected
+output.
+
+For example the output a failed test output might be:
+
+.. code-block:: text
+
+       Left value:
+         at tests/subquery.sql:32:
+   X: 123 Y: hello
+       Right value:
+         at tests/subquery.sql:32:
+   error 42601: syntax error: unknown column: Y
+
+Running the specific test again can be done with:
+
+.. code-block:: sh
+
+   TEST=subquery:32 make sql-test

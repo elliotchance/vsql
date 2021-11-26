@@ -164,7 +164,7 @@ fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ? {
 	}
 }
 
-fn (mut f Storage) read_rows(table_name string, offset int) ?[]Row {
+fn (mut f Storage) read_rows(table_name string) ?[]Row {
 	f.isolation_start() ?
 	defer {
 		f.isolation_end() or { panic(err) }
@@ -179,11 +179,7 @@ fn (mut f Storage) read_rows(table_name string, offset int) ?[]Row {
 		}
 	}
 
-	if offset >= rows.len {
-		return []Row{}
-	}
-
-	return rows[offset..]
+	return rows
 }
 
 // isolation_start signals the start of an operation that shall be atomic until

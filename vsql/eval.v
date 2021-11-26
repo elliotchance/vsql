@@ -15,6 +15,44 @@ fn eval_row(conn &Connection, data Row, exprs []Expr, params map[string]Value) ?
 	}
 }
 
+fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Type {
+	match e {
+		CallExpr {
+			func := conn.funcs[e.function_name] or { return sqlstate_42883(e.function_name) }
+
+			return func.return_type
+		}
+		BetweenExpr, NullExpr {
+			return new_type('BOOLEAN', 0)
+		}
+		Parameter {
+			p := params[e.name] or { return sqlstate_42p02(e.name) }
+
+			return eval_as_type(conn, data, p, params)
+		}
+		Value {
+			return e.typ
+		}
+		UnaryExpr {
+			return eval_as_type(conn, data, e.expr, params)
+		}
+		BinaryExpr {
+			// TODO(elliotchance): This is not correct, we would have to return
+			// the highest resolution type (need to check the SQL standard about
+			// this behavior).
+			return eval_as_type(conn, data, e.left, params)
+		}
+		Identifier {
+			col := data.data[e.name] or { return sqlstate_42601('unknown column: $e.name') }
+
+			return col.typ
+		}
+		NoExpr, RowExpr {
+			return sqlstate_42601('missing or invalid expression provided')
+		}
+	}
+}
+
 fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?Value {
 	match e {
 		BetweenExpr {
@@ -60,7 +98,7 @@ fn eval_as_bool(conn &Connection, data Row, e Expr, params map[string]Value) ?bo
 }
 
 fn eval_identifier(data Row, e Identifier) ?Value {
-	value := data.data[e.name] or { return sqlstate_42601(e.name) }
+	value := data.data[e.name] or { return sqlstate_42601('unknown column: $e.name') }
 
 	return value
 }

@@ -174,7 +174,8 @@ pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) 
 		}
 	}
 
-	c.register_func(Func{function_name, arg_types, func}) ?
+	return_type := new_type(parts[2].trim_space().to_upper(), 0)
+	c.register_func(Func{function_name, arg_types, func, return_type}) ?
 }
 
 pub fn (mut c Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ? {

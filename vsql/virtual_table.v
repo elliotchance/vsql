@@ -41,7 +41,11 @@ struct VirtualTableOperation {
 }
 
 fn (o VirtualTableOperation) str() string {
-	return 'TABLE $o.table_name -- virtual'
+	return 'VIRTUAL TABLE $o.table_name ($o.table.create_table_stmt.columns())'
+}
+
+fn (o VirtualTableOperation) columns() Columns {
+	return o.table.create_table_stmt.columns()
 }
 
 fn (o VirtualTableOperation) execute(_ []Row) ?[]Row {

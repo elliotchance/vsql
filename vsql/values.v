@@ -34,20 +34,33 @@ fn (o &ValuesOperation) str() string {
 		rows << row.pstr(o.params)
 	}
 
-	return 'VALUES ${rows.join(', ')}$o.correlation'
+	return 'VALUES ($o.columns()) = ${rows.join(', ')}'
 }
 
-fn (o &ValuesOperation) columns() []Identifier {
+fn (o &ValuesOperation) columns() Columns {
 	if o.correlation.columns.len > 0 {
-		return o.correlation.columns
+		mut columns := []Column{}
+		for i, column in o.correlation.columns {
+			typ := eval_as_type(o.conn, Row{}, o.rows[0].exprs[i], o.params) or { panic(err) }
+			columns << Column{
+				name: column.name
+				typ: typ
+			}
+		}
+
+		return columns
 	}
 
-	mut columns := []Identifier{}
+	mut columns := []Column{}
 
 	// TODO(elliotchance): All check all exprs are RowExpr AND they have the
 	//  right number of columns AND types.
 	for i in 1 .. o.rows[0].exprs.len + 1 {
-		columns << new_identifier('COL$i')
+		typ := eval_as_type(o.conn, Row{}, o.rows[0].exprs[i - 1], o.params) or { panic(err) }
+		columns << Column{
+			name: new_identifier('COL$i').name
+			typ: typ
+		}
 	}
 
 	return columns
@@ -70,12 +83,12 @@ fn (o &ValuesOperation) execute(_ []Row) ?[]Row {
 		}, row.exprs, o.params) ?
 	}
 
-	column_names := o.columns()
-	if column_names.len > 0 {
+	columns := o.columns()
+	if columns.len > 0 {
 		for mut row in rows {
 			mut data := map[string]Value{}
 			for i in 1 .. row.data.len + 1 {
-				name := column_names[i - 1].name
+				name := columns[i - 1].name
 				data[name] = row.data['COL$i']
 			}
 

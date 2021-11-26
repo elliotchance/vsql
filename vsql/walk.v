@@ -91,11 +91,19 @@ mut:
 	conn &Connection
 }
 
-fn (o PrimaryKeyOperation) str() string {
-	return 'PRIMARY KEY $o.table.name BETWEEN ${o.lower.pstr(o.params)} AND ${o.upper.pstr(o.params)}'
+fn new_primary_key_operation(table Table, lower Expr, upper Expr, params map[string]Value, conn &Connection) &PrimaryKeyOperation {
+	return &PrimaryKeyOperation{table, lower, upper, params, conn}
 }
 
-fn (o PrimaryKeyOperation) execute(_ []Row) ?[]Row {
+fn (o &PrimaryKeyOperation) str() string {
+	return 'PRIMARY KEY $o.table.name ($o.columns()) BETWEEN ${o.lower.pstr(o.params)} AND ${o.upper.pstr(o.params)}'
+}
+
+fn (o &PrimaryKeyOperation) columns() Columns {
+	return o.table.columns
+}
+
+fn (o &PrimaryKeyOperation) execute(_ []Row) ?[]Row {
 	lower := eval_as_value(o.conn, Row{}, o.lower, o.params) ?
 
 	mut tmp_row := Row{

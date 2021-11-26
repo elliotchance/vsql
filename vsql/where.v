@@ -8,13 +8,24 @@ struct WhereOperation {
 	condition Expr
 	params    map[string]Value
 	conn      &Connection
+	columns   Columns
 }
 
-fn (o WhereOperation) str() string {
+fn new_where_operation(condition Expr, params map[string]Value, conn &Connection, columns Columns) &WhereOperation {
+	return &WhereOperation{condition, params, conn, columns}
+}
+
+fn (o &WhereOperation) str() string {
 	return 'WHERE ${o.condition.pstr(o.params)}'
 }
 
-fn (o WhereOperation) execute(rows []Row) ?[]Row {
+fn (o &WhereOperation) columns() Columns {
+	// WHERE does not change the columns so pass through from the last
+	// operation.
+	return o.columns
+}
+
+fn (o &WhereOperation) execute(rows []Row) ?[]Row {
 	mut new_rows := []Row{}
 
 	for row in rows {

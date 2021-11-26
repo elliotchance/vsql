@@ -87,6 +87,17 @@ struct CreateTableStmt {
 	table_elements []TableElement
 }
 
+fn (s CreateTableStmt) columns() Columns {
+	mut columns := []Column{}
+	for c in s.table_elements {
+		if c is Column {
+			columns << c
+		}
+	}
+
+	return columns
+}
+
 // DELETE ...
 struct DeleteStmt {
 	table_name string

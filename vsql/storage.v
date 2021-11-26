@@ -101,7 +101,7 @@ fn (mut f Storage) close() ? {
 	f.file.close()
 }
 
-fn (mut f Storage) create_table(table_name string, columns []Column, primary_key []string) ? {
+fn (mut f Storage) create_table(table_name string, columns Columns, primary_key []string) ? {
 	f.isolation_start() ?
 	defer {
 		f.isolation_end() or { panic(err) }

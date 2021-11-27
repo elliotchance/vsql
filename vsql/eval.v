@@ -24,7 +24,7 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 
 			return func.return_type
 		}
-		BetweenExpr, NullExpr, LikeExpr {
+		BetweenExpr, NullExpr, LikeExpr, SimilarExpr {
 			return new_type('BOOLEAN', 0)
 		}
 		Parameter {
@@ -77,6 +77,9 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 		}
 		Parameter {
 			return params[e.name] or { return sqlstate_42p02(e.name) }
+		}
+		SimilarExpr {
+			return eval_similar(conn, data, e, params)
 		}
 		UnaryExpr {
 			return eval_unary(conn, data, e, params)
@@ -149,7 +152,13 @@ fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) ?V
 	left := eval_as_value(conn, data, e.left, params) ?
 	right := eval_as_value(conn, data, e.right, params) ?
 
-	mut re := regex.regex_opt('^${right.string_value.replace('_', '.').replace('%', '.*')}$') ?
+	// Make sure we escape any regexp characters.
+	escaped_regex := right.string_value.replace('+', '\\+').replace('?', '\\?').replace('*',
+		'\\*').replace('|', '\\|').replace('.', '\\.').replace('(', '\\(').replace(')',
+		'\\)').replace('[', '\\[').replace('{', '\\{').replace('_', '.').replace('%',
+		'.*')
+
+	mut re := regex.regex_opt('^$escaped_regex$') ?
 	result := re.matches_string(left.string_value)
 
 	if e.not {
@@ -279,6 +288,21 @@ fn eval_between(conn &Connection, data Row, e BetweenExpr, params map[string]Val
 
 	if e.not {
 		result = !result
+	}
+
+	return new_boolean_value(result)
+}
+
+fn eval_similar(conn &Connection, data Row, e SimilarExpr, params map[string]Value) ?Value {
+	left := eval_as_value(conn, data, e.left, params) ?
+	right := eval_as_value(conn, data, e.right, params) ?
+
+	mut re := regex.regex_opt('^${right.string_value.replace('.', '\\.').replace('_',
+		'.').replace('%', '.*')}$') ?
+	result := re.matches_string(left.string_value)
+
+	if e.not {
+		return new_boolean_value(!result)
 	}
 
 	return new_boolean_value(result)

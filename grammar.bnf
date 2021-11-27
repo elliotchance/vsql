@@ -275,6 +275,7 @@
     <comparison predicate>
   | <between predicate>
   | <like predicate>
+  | <similar predicate>
   | <null predicate>
 
 <comparison predicate> /* Expr */ ::=
@@ -790,3 +791,13 @@
 
 <like predicate> /* Expr */ ::=
     <character like predicate>
+
+<similar predicate part 2> /* SimilarExpr */ ::=
+    SIMILAR TO <similar pattern>       -> similar
+  | NOT SIMILAR TO <similar pattern>   -> not_similar
+
+<similar pattern> /* Expr */ ::=
+    <character value expression>
+
+<similar predicate> /* Expr */ ::=
+    <row value predicand> <similar predicate part 2>   -> similar_pred

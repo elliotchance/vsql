@@ -15,6 +15,7 @@ type EarleyValue = BetweenExpr
 	| LikeExpr
 	| QueryExpression
 	| SelectList
+	| SimilarExpr
 	| SimpleTable
 	| Stmt
 	| TableElement
@@ -870,6 +871,24 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_signed_numeric_literal_ := &EarleyRule{
 		name: '<signed numeric literal>'
 	}
+	mut rule_similar_pattern_ := &EarleyRule{
+		name: '<similar pattern>'
+	}
+	mut rule_similar_predicate_part_2_1_ := &EarleyRule{
+		name: '<similar predicate part 2: 1>'
+	}
+	mut rule_similar_predicate_part_2_2_ := &EarleyRule{
+		name: '<similar predicate part 2: 2>'
+	}
+	mut rule_similar_predicate_part_2_ := &EarleyRule{
+		name: '<similar predicate part 2>'
+	}
+	mut rule_similar_predicate_1_ := &EarleyRule{
+		name: '<similar predicate: 1>'
+	}
+	mut rule_similar_predicate_ := &EarleyRule{
+		name: '<similar predicate>'
+	}
 	mut rule_simple_table_ := &EarleyRule{
 		name: '<simple table>'
 	}
@@ -1266,6 +1285,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_set := &EarleyRule{
 		name: 'SET'
 	}
+	mut rule_similar := &EarleyRule{
+		name: 'SIMILAR'
+	}
 	mut rule_sin := &EarleyRule{
 		name: 'SIN'
 	}
@@ -1292,6 +1314,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_tanh := &EarleyRule{
 		name: 'TANH'
+	}
+	mut rule_to := &EarleyRule{
+		name: 'TO'
 	}
 	mut rule_transaction := &EarleyRule{
 		name: 'TRANSACTION'
@@ -3550,6 +3575,11 @@ fn get_grammar() map[string]EarleyRule {
 	]}
 	rule_predicate_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
+			rule: rule_similar_predicate_
+		},
+	]}
+	rule_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_null_predicate_
 		},
 	]}
@@ -4027,6 +4057,65 @@ fn get_grammar() map[string]EarleyRule {
 	rule_signed_numeric_literal_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_signed_numeric_literal_2_
+		},
+	]}
+
+	rule_similar_pattern_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
+		},
+	]}
+
+	rule_similar_predicate_part_2_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_similar
+		},
+		&EarleyRuleOrString{
+			rule: rule_to
+		},
+		&EarleyRuleOrString{
+			rule: rule_similar_pattern_
+		},
+	]}
+
+	rule_similar_predicate_part_2_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_not
+		},
+		&EarleyRuleOrString{
+			rule: rule_similar
+		},
+		&EarleyRuleOrString{
+			rule: rule_to
+		},
+		&EarleyRuleOrString{
+			rule: rule_similar_pattern_
+		},
+	]}
+
+	rule_similar_predicate_part_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_similar_predicate_part_2_1_
+		},
+	]}
+	rule_similar_predicate_part_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_similar_predicate_part_2_2_
+		},
+	]}
+
+	rule_similar_predicate_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_row_value_predicand_
+		},
+		&EarleyRuleOrString{
+			rule: rule_similar_predicate_part_2_
+		},
+	]}
+
+	rule_similar_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_similar_predicate_1_
 		},
 	]}
 
@@ -5152,6 +5241,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_similar.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SIMILAR'
+			rule: 0
+		},
+	]}
+
 	rule_sin.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'SIN'
@@ -5211,6 +5307,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_tanh.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'TANH'
+			rule: 0
+		},
+	]}
+
+	rule_to.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TO'
 			rule: 0
 		},
 	]}
@@ -5557,6 +5660,12 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<signed numeric literal: 1>'] = rule_signed_numeric_literal_1_
 	rules['<signed numeric literal: 2>'] = rule_signed_numeric_literal_2_
 	rules['<signed numeric literal>'] = rule_signed_numeric_literal_
+	rules['<similar pattern>'] = rule_similar_pattern_
+	rules['<similar predicate part 2: 1>'] = rule_similar_predicate_part_2_1_
+	rules['<similar predicate part 2: 2>'] = rule_similar_predicate_part_2_2_
+	rules['<similar predicate part 2>'] = rule_similar_predicate_part_2_
+	rules['<similar predicate: 1>'] = rule_similar_predicate_1_
+	rules['<similar predicate>'] = rule_similar_predicate_
 	rules['<simple table>'] = rule_simple_table_
 	rules['<simple value specification>'] = rule_simple_value_specification_
 	rules['<solidus>'] = rule_solidus_
@@ -5689,6 +5798,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['ROWS'] = rule_rows
 	rules['SELECT'] = rule_select
 	rules['SET'] = rule_set
+	rules['SIMILAR'] = rule_similar
 	rules['SIN'] = rule_sin
 	rules['SINH'] = rule_sinh
 	rules['SMALLINT'] = rule_smallint
@@ -5698,6 +5808,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['TABLE'] = rule_table
 	rules['TAN'] = rule_tan
 	rules['TANH'] = rule_tanh
+	rules['TO'] = rule_to
 	rules['TRANSACTION'] = rule_transaction
 	rules['TRUE'] = rule_true
 	rules['UNKNOWN'] = rule_unknown
@@ -6199,6 +6310,17 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		'<signed numeric literal: 2>' {
 			return [
 				EarleyValue(parse_sign_expr(children[0] as string, children[1] as Value) ?),
+			]
+		}
+		'<similar predicate part 2: 1>' {
+			return [EarleyValue(parse_similar(children[2] as Expr) ?)]
+		}
+		'<similar predicate part 2: 2>' {
+			return [EarleyValue(parse_not_similar(children[3] as Expr) ?)]
+		}
+		'<similar predicate: 1>' {
+			return [
+				EarleyValue(parse_similar_pred(children[0] as Expr, children[1] as SimilarExpr) ?),
 			]
 		}
 		'<SQL argument list: 1>' {

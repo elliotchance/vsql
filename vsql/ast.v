@@ -26,6 +26,7 @@ type Expr = BetweenExpr
 	| Parameter
 	| QueryExpression
 	| RowExpr
+	| SimilarExpr
 	| UnaryExpr
 	| Value
 
@@ -63,6 +64,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 			e.pstr(params)
 		}
 		RowExpr {
+			e.pstr(params)
+		}
+		SimilarExpr {
 			e.pstr(params)
 		}
 		UnaryExpr {
@@ -384,4 +388,19 @@ fn (e LikeExpr) pstr(params map[string]Value) string {
 	}
 
 	return '${e.left.pstr(params)} LIKE ${e.right.pstr(params)}'
+}
+
+// SimilarExpr for "SIMILAR TO" and "NOT SIMILAR TO".
+struct SimilarExpr {
+	left  Expr
+	right Expr
+	not   bool
+}
+
+fn (e SimilarExpr) pstr(params map[string]Value) string {
+	if e.not {
+		return '${e.left.pstr(params)} NOT SIMILAR TO ${e.right.pstr(params)}'
+	}
+
+	return '${e.left.pstr(params)} SIMILAR TO ${e.right.pstr(params)}'
 }

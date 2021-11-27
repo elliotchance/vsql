@@ -526,3 +526,15 @@ fn parse_like(expr Expr) ?LikeExpr {
 fn parse_not_like(expr Expr) ?LikeExpr {
 	return LikeExpr{NoExpr{}, expr, true}
 }
+
+fn parse_similar_pred(left Expr, like SimilarExpr) ?Expr {
+	return SimilarExpr{left, like.right, like.not}
+}
+
+fn parse_similar(expr Expr) ?SimilarExpr {
+	return SimilarExpr{NoExpr{}, expr, false}
+}
+
+fn parse_not_similar(expr Expr) ?SimilarExpr {
+	return SimilarExpr{NoExpr{}, expr, true}
+}

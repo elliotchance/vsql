@@ -54,3 +54,27 @@ VALUES 'acb' NOT LIKE 'a%b';
 
 VALUES 'acdeb' NOT LIKE 'a%b';
 -- COL1: FALSE
+
+VALUES 'abd' LIKE 'a(b|c)d';
+-- COL1: FALSE
+
+VALUES 'abb' LIKE 'ab*';
+-- COL1: FALSE
+
+VALUES 'abb' LIKE 'ab+';
+-- COL1: FALSE
+
+VALUES 'abb' LIKE 'ab{2}';
+-- COL1: FALSE
+
+VALUES 'abc' LIKE '%(b|d)%';
+-- COL1: FALSE
+
+VALUES 'AbcAbcdefgefg12efgefg12' LIKE '((Ab)?c)+d((efg)+(12))+';
+-- COL1: FALSE
+
+VALUES 'aaaaaab11111xy' LIKE 'a{6}_[0-9]{5}(x|y){2}';
+-- COL1: FALSE
+
+VALUES '$0.87' LIKE '$[0-9]+(.[0-9][0-9])?';
+-- COL1: FALSE

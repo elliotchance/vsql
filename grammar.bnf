@@ -274,6 +274,7 @@
 <predicate> /* Expr */ ::=
     <comparison predicate>
   | <between predicate>
+  | <like predicate>
   | <null predicate>
 
 <comparison predicate> /* Expr */ ::=
@@ -776,3 +777,16 @@
 
 <row subquery> /* QueryExpression */ ::=
     <subquery>
+
+<character like predicate part 2> /* LikeExpr */ ::=
+    LIKE <character pattern>       -> like
+  | NOT LIKE <character pattern>   -> not_like
+
+<character pattern> /* Expr */ ::=
+    <character value expression>
+
+<character like predicate> /* Expr */ ::=
+    <row value predicand> <character like predicate part 2>   -> like_pred
+
+<like predicate> /* Expr */ ::=
+    <character like predicate>

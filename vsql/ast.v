@@ -20,6 +20,7 @@ type Expr = BetweenExpr
 	| BinaryExpr
 	| CallExpr
 	| Identifier
+	| LikeExpr
 	| NoExpr
 	| NullExpr
 	| Parameter
@@ -45,6 +46,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 		}
 		Identifier {
 			e.str()
+		}
+		LikeExpr {
+			e.pstr(params)
 		}
 		NoExpr {
 			e.str()
@@ -365,4 +369,19 @@ fn (e RowExpr) pstr(params map[string]Value) string {
 	}
 
 	return 'ROW(${values.join(', ')})'
+}
+
+// LikeExpr for "LIKE" and "NOT LIKE".
+struct LikeExpr {
+	left  Expr
+	right Expr
+	not   bool
+}
+
+fn (e LikeExpr) pstr(params map[string]Value) string {
+	if e.not {
+		return '${e.left.pstr(params)} NOT LIKE ${e.right.pstr(params)}'
+	}
+
+	return '${e.left.pstr(params)} LIKE ${e.right.pstr(params)}'
 }

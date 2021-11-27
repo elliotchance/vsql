@@ -12,6 +12,7 @@ type EarleyValue = BetweenExpr
 	| Expr
 	| Identifier
 	| InsertStmt
+	| LikeExpr
 	| QueryExpression
 	| SelectList
 	| SimpleTable
@@ -160,6 +161,24 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_character_length_ := &EarleyRule{
 		name: '<character length>'
+	}
+	mut rule_character_like_predicate_part_2_1_ := &EarleyRule{
+		name: '<character like predicate part 2: 1>'
+	}
+	mut rule_character_like_predicate_part_2_2_ := &EarleyRule{
+		name: '<character like predicate part 2: 2>'
+	}
+	mut rule_character_like_predicate_part_2_ := &EarleyRule{
+		name: '<character like predicate part 2>'
+	}
+	mut rule_character_like_predicate_1_ := &EarleyRule{
+		name: '<character like predicate: 1>'
+	}
+	mut rule_character_like_predicate_ := &EarleyRule{
+		name: '<character like predicate>'
+	}
+	mut rule_character_pattern_ := &EarleyRule{
+		name: '<character pattern>'
 	}
 	mut rule_character_position_expression_1_ := &EarleyRule{
 		name: '<character position expression: 1>'
@@ -553,6 +572,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_less_than_or_equals_operator_ := &EarleyRule{
 		name: '<less than or equals operator>'
+	}
+	mut rule_like_predicate_ := &EarleyRule{
+		name: '<like predicate>'
 	}
 	mut rule_literal_2_ := &EarleyRule{
 		name: '<literal: 2>'
@@ -1184,6 +1206,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_key := &EarleyRule{
 		name: 'KEY'
 	}
+	mut rule_like := &EarleyRule{
+		name: 'LIKE'
+	}
 	mut rule_ln := &EarleyRule{
 		name: 'LN'
 	}
@@ -1729,6 +1754,59 @@ fn get_grammar() map[string]EarleyRule {
 	rule_character_length_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_length_
+		},
+	]}
+
+	rule_character_like_predicate_part_2_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_like
+		},
+		&EarleyRuleOrString{
+			rule: rule_character_pattern_
+		},
+	]}
+
+	rule_character_like_predicate_part_2_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_not
+		},
+		&EarleyRuleOrString{
+			rule: rule_like
+		},
+		&EarleyRuleOrString{
+			rule: rule_character_pattern_
+		},
+	]}
+
+	rule_character_like_predicate_part_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_like_predicate_part_2_1_
+		},
+	]}
+	rule_character_like_predicate_part_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_like_predicate_part_2_2_
+		},
+	]}
+
+	rule_character_like_predicate_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_row_value_predicand_
+		},
+		&EarleyRuleOrString{
+			rule: rule_character_like_predicate_part_2_
+		},
+	]}
+
+	rule_character_like_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_like_predicate_1_
+		},
+	]}
+
+	rule_character_pattern_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
 		},
 	]}
 
@@ -2980,6 +3058,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_like_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_like_predicate_
+		},
+	]}
+
 	rule_literal_2_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_general_literal_
@@ -3457,6 +3541,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_predicate_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_between_predicate_
+		},
+	]}
+	rule_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_like_predicate_
 		},
 	]}
 	rule_predicate_.productions << &EarleyProduction{[
@@ -4923,6 +5012,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_like.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'LIKE'
+			rule: 0
+		},
+	]}
+
 	rule_ln.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'LN'
@@ -5225,6 +5321,12 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<char length expression>'] = rule_char_length_expression_
 	rules['<character factor>'] = rule_character_factor_
 	rules['<character length>'] = rule_character_length_
+	rules['<character like predicate part 2: 1>'] = rule_character_like_predicate_part_2_1_
+	rules['<character like predicate part 2: 2>'] = rule_character_like_predicate_part_2_2_
+	rules['<character like predicate part 2>'] = rule_character_like_predicate_part_2_
+	rules['<character like predicate: 1>'] = rule_character_like_predicate_1_
+	rules['<character like predicate>'] = rule_character_like_predicate_
+	rules['<character pattern>'] = rule_character_pattern_
 	rules['<character position expression: 1>'] = rule_character_position_expression_1_
 	rules['<character position expression>'] = rule_character_position_expression_
 	rules['<character primary>'] = rule_character_primary_
@@ -5356,6 +5458,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<length>'] = rule_length_
 	rules['<less than operator>'] = rule_less_than_operator_
 	rules['<less than or equals operator>'] = rule_less_than_or_equals_operator_
+	rules['<like predicate>'] = rule_like_predicate_
 	rules['<literal: 2>'] = rule_literal_2_
 	rules['<literal>'] = rule_literal_
 	rules['<local or schema qualified name>'] = rule_local_or_schema_qualified_name_
@@ -5566,6 +5669,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['INTO'] = rule_into
 	rules['IS'] = rule_is
 	rules['KEY'] = rule_key
+	rules['LIKE'] = rule_like
 	rules['LN'] = rule_ln
 	rules['LOG10'] = rule_log10
 	rules['MOD'] = rule_mod
@@ -5724,6 +5828,17 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		}
 		'<char length expression: 2>' {
 			return [EarleyValue(parse_char_length(children[2] as Expr) ?)]
+		}
+		'<character like predicate part 2: 1>' {
+			return [EarleyValue(parse_like(children[1] as Expr) ?)]
+		}
+		'<character like predicate part 2: 2>' {
+			return [EarleyValue(parse_not_like(children[2] as Expr) ?)]
+		}
+		'<character like predicate: 1>' {
+			return [
+				EarleyValue(parse_like_pred(children[0] as Expr, children[1] as LikeExpr) ?),
+			]
 		}
 		'<character position expression: 1>' {
 			return [

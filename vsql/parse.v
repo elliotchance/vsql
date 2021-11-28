@@ -597,3 +597,11 @@ fn parse_similar(expr Expr) ?SimilarExpr {
 fn parse_not_similar(expr Expr) ?SimilarExpr {
 	return SimilarExpr{NoExpr{}, expr, true}
 }
+
+fn parse_upper(expr Expr) ?Expr {
+	return CallExpr{'UPPER', [expr]}
+}
+
+fn parse_lower(expr Expr) ?Expr {
+	return CallExpr{'LOWER', [expr]}
+}

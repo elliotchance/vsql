@@ -175,6 +175,10 @@ fn create_update_plan(stmt UpdateStmt, params map[string]Value, c &Connection) ?
 fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, c &Connection, correlation Correlation) ?Plan {
 	mut plan := create_basic_plan(stmt.body, stmt.offset, params, c, true, correlation) ?
 
+	if stmt.order.len > 0 {
+		plan.operations << new_order_operation(stmt.order, params, c, plan.columns())
+	}
+
 	if stmt.fetch !is NoExpr || stmt.offset !is NoExpr {
 		plan.operations << new_limit_operation(stmt.fetch, stmt.offset, params, c, plan.columns())
 	}

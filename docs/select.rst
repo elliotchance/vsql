@@ -13,6 +13,7 @@ Syntax
   SELECT <expression> [ AS <name> ] , ...
   FROM <table_name>
   [ WHERE <condition> ]
+  [ ORDER BY <expr> [ ASC | DESC ], ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH FIRST <integer> { ROW | ROWS } ONLY ]
 
@@ -29,6 +30,25 @@ WHERE
 -----
 
 If ``WHERE`` is not provided all rows are returned.
+
+ORDER BY
+--------
+
+The ``ORDER BY`` clause can be used to sort records.
+
+Without an ``ORDER BY`` clause the rows might come out in a predictable order,
+such as the order or insertion or the order of the PRIMARY KEY. However, you
+should never depend on this since it's subject to change either through
+deliberate or emergent behavior. If you need the rows to be returned in a
+specific order you should always specify an appropriate ``ORDER BY`` clause.
+
+The ``ORDER BY`` contains one or more expressions. Each specifying an ``ASC`` or
+``DESC`` for ascending or descending respectively. If no qualifier is specified
+then ``ASC`` is used.
+
+The SQL standard doesn't define if ``NULL`` should be always be ordered first or
+last. In vsql, ``NULL`` is always considered to be less than any other non
+``NULL`` value.
 
 OFFSET
 ------
@@ -65,3 +85,5 @@ Examples
 
   SELECT price * (1 + tax) AS total
   FROM products;
+
+  SELECT * FROM products ORDER BY price;

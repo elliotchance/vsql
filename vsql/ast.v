@@ -356,6 +356,7 @@ struct QueryExpression {
 	body   SimpleTable
 	fetch  Expr
 	offset Expr
+	order  []SortSpecification
 }
 
 fn (e QueryExpression) pstr(params map[string]Value) string {
@@ -403,4 +404,17 @@ fn (e SimilarExpr) pstr(params map[string]Value) string {
 	}
 
 	return '${e.left.pstr(params)} SIMILAR TO ${e.right.pstr(params)}'
+}
+
+struct SortSpecification {
+	expr   Expr
+	is_asc bool
+}
+
+fn (e SortSpecification) pstr(params map[string]Value) string {
+	if e.is_asc {
+		return '${e.expr.pstr(params)} ASC'
+	}
+
+	return '${e.expr.pstr(params)} DESC'
 }

@@ -404,14 +404,22 @@
     <query expression>   -> cursor_specification
 
 <query expression> /* QueryExpression */ ::=
-    <query expression body>   -> query_expression
+    <query expression body>                     -> query_expression
+  | <query expression body> <order by clause>   -> query_expression_order
   | <query expression body>
-    <result offset clause>    -> query_expression_offset
+    <result offset clause>                      -> query_expression_offset
+  | <query expression body> <order by clause>
+    <result offset clause>                      -> query_expression_order_offset
   | <query expression body>
-    <fetch first clause>      -> query_expression_fetch
+    <fetch first clause>                        -> query_expression_fetch
+  | <query expression body> <order by clause>
+    <fetch first clause>                        -> query_expression_order_fetch
+  | <query expression body> <order by clause>
+    <result offset clause>
+    <fetch first clause>                        -> query_expression_order_offset_fetch
   | <query expression body>
     <result offset clause>
-    <fetch first clause>      -> query_expression_offset_fetch
+    <fetch first clause>                        -> query_expression_offset_fetch
 
 <query expression body> /* SimpleTable */ ::=
     <query term>
@@ -801,3 +809,21 @@
 
 <similar predicate> /* Expr */ ::=
     <row value predicand> <similar predicate part 2>   -> similar_pred
+
+<order by clause> /* []SortSpecification */ ::=
+    ORDER BY <sort specification list>   -> order_by
+
+<sort specification list> /* []SortSpecification */ ::=
+    <sort specification>                                     -> sort_list1
+  | <sort specification list> <comma> <sort specification>   -> sort_list2
+
+<sort specification> /* SortSpecification */ ::=
+    <sort key>                            -> sort1
+  | <sort key> <ordering specification>   -> sort2
+
+<sort key> /* Expr */ ::=
+    <value expression>
+
+<ordering specification> /* bool */ ::=
+    ASC    -> yes
+  | DESC   -> no

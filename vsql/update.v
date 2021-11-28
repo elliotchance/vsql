@@ -43,7 +43,7 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 		raw_value := eval_as_value(c, empty_row, v, params)?
 		value := cast('for column $column_name', raw_value, table_column.typ)?
 
-		if table_column.not_null && value.typ.typ == .is_null {
+		if table_column.not_null && value.is_null() {
 			return sqlstate_23502('column $column_name')
 		}
 	}

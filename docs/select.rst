@@ -13,7 +13,8 @@ Syntax
   SELECT <expression> [ AS <name> ] , ...
   FROM <table_name>
   [ WHERE <condition> ]
-  [ ORDER BY <expr> [ ASC | DESC ], ... ]
+  [ GROUP BY <column_name> , ... ]
+  [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH FIRST <integer> { ROW | ROWS } ONLY ]
 
@@ -30,6 +31,28 @@ WHERE
 -----
 
 If ``WHERE`` is not provided all rows are returned.
+
+GROUP BY
+--------
+
+The ``GROUP BY`` clause is used to group rows such that aggregation functions
+such as `count`, `min`, `max`, etc can be performed against them.
+
+If an aggregate function is used is the ``SELECT`` expressions it will cause
+*all* rows to be included in a single set. For example:
+
+.. code-block:: sql
+
+  SELECT min(price) FROM products;
+
+Otherwise, aggregation expressions are calculated from each set defined by the
+``GROUP BY`` columns. For example, to find the average price in each city:
+
+.. code-block:: sql
+
+  SELECT city, AVG(price) FROM products GROUP BY city;
+
+See full list of :doc:`functions<supported aggregate functions>`.
 
 ORDER BY
 --------

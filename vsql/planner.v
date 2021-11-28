@@ -54,11 +54,11 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 	mut plan := Plan{}
 	mut covered_by_pk := false
 	from_clause := body.table_expression.from_clause.body
+	where := body.table_expression.where_clause
 
 	match from_clause {
 		Identifier {
 			table_name := from_clause.name
-			where := body.table_expression.where_clause
 
 			if allow_virtual && table_name in c.virtual_tables {
 				plan.operations << VirtualTableOperation{table_name, c.virtual_tables[table_name]}
@@ -80,7 +80,7 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 
 				if !covered_by_pk {
 					columns := columns_from_select(body, table, params, c)?
-					plan.operations << TableOperation{table_name, false, c.storage.tables[table_name], params, c, columns, body.exprs, plan.subplans, c.storage}
+					plan.operations << TableOperation{table_name, false, c.storage.tables[table_name], params, c, columns, body.exprs, where, plan.subplans, c.storage}
 				}
 			} else {
 				return sqlstate_42p01(table_name)
@@ -109,21 +109,86 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 			}
 
 			columns := columns_from_select(body, t, params, c)?
-			plan.operations << TableOperation{table_name, true, t, params, c, columns, body.exprs, plan.subplans, c.storage}
+			plan.operations << TableOperation{table_name, true, t, params, c, columns, body.exprs, where, plan.subplans, c.storage}
+		}
+	}
+
+	// GROUP BY.
+	//
+	// TODO(elliotchance): This will break if trying to use GROUP BY on
+	// "SELECT *".
+	match body.exprs {
+		[]DerivedColumn {
+			add_group_by_plan(mut &plan, body.table_expression.group_clause, body.exprs,
+				params, c)?
+		}
+		AsteriskExpr {
+			// It's not possible to have a GROUP BY in this case.
 		}
 	}
 
 	return plan
 }
 
+fn add_group_by_plan(mut plan Plan, group_clause []Expr, select_exprs []DerivedColumn, params map[string]Value, c &Connection) ? {
+	// There can be an explicit GROUP BY clause. However, if any of the
+	// expressions contain an aggregate function we need to have an implicit
+	// GROUP BY for the whole set.
+	mut has_agg := false
+	for e in select_exprs {
+		if expr_is_agg(c, e.expr)? {
+			has_agg = true
+			break
+		}
+	}
+
+	if group_clause.len == 0 && !has_agg {
+		return
+	}
+
+	mut order := []SortSpecification{}
+	for col in group_clause {
+		// All of the GROUP BY expressions have to appear in the SELECT. This is
+		// not a restriction with the SQL standard, but just easier to handle
+		// right now.
+		//
+		// TODO(elliotchance): In the future it should be able to extract the
+		// extra columns and pass them through.
+		mut found := false
+		for e in select_exprs {
+			if e.expr.str() == col.str() {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return sqlstate_42601('The expression $col.str() from the GROUP BY must appear in SELECT expressions.')
+		}
+
+		order << SortSpecification{
+			expr: col
+			is_asc: true
+		}
+	}
+
+	// We do not need to sort the set if the all rows belong to the same set.
+	if group_clause.len > 0 {
+		plan.operations << new_order_operation(order, params, c, plan.columns())
+	}
+
+	plan.operations << new_group_operation(select_exprs, group_clause, params, c, plan.columns())
+}
+
 fn columns_from_select(stmt SelectStmt, table Table, params map[string]Value, c &Connection) ?Columns {
+	mut columns := []Column{}
+
 	expr := stmt.exprs
 	match expr {
 		AsteriskExpr {
-			return table.columns
+			columns = table.columns
 		}
 		[]DerivedColumn {
-			mut columns := []Column{}
 			for i, col in expr {
 				mut column_name := 'COL${i + 1}'
 				if col.as_clause.name != '' {
@@ -138,10 +203,10 @@ fn columns_from_select(stmt SelectStmt, table Table, params map[string]Value, c 
 					typ: typ
 				}
 			}
-
-			return columns
 		}
 	}
+
+	return columns
 }
 
 fn create_delete_plan(stmt DeleteStmt, params map[string]Value, c &Connection) ?Plan {

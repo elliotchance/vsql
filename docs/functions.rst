@@ -3,6 +3,97 @@ Functions
 
 .. contents::
 
+Aggregate Functions
+-------------------
+
+``AVG(DOUBLE PRECISION) DOUBLE PRECISION``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Returns the average value. If any of the expressions are ``NULL`` the result
+will also be ``NULL``.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT AVG(price) FROM products;
+  -- COL1: 4.36666
+  
+  SELECT city, AVG(price) FROM products GROUP BY city;
+  -- CITY: New York COL1: 8.96666
+  -- CITY: San Francisco COL1: 6.5
+
+``COUNT(ANY) INTEGER``
+^^^^^^^^^^^^^^^^^^^^^^
+
+Count the number of non-``NULL`` expressions.
+
+There is a special form ``COUNT(*)`` that will count all rows.
+
+**Examples**
+
+These example show the difference between count all rows and only counting those
+that have a non-``NULL`` ``first_name``.
+
+.. code-block:: sql
+
+  SELECT COUNT(*) FROM people;
+  -- 12
+  
+  SELECT COUNT(first_name) FROM people;
+  -- 10
+
+``MAX(DOUBLE PRECISION) DOUBLE PRECISION``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Returns the maximum value. If any of the expressions are ``NULL`` the result
+will also be ``NULL``.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT MAX(price) FROM products;
+  -- COL1: 20.45
+  
+  SELECT city, MAX(price) FROM products GROUP BY city;
+  -- CITY: New York COL1: 18.05
+  -- CITY: San Francisco COL1: 17.5
+
+``MIN(DOUBLE PRECISION) DOUBLE PRECISION``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Returns the minimum value. If any of the expressions are ``NULL`` the result
+will also be ``NULL``.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT MIN(price) FROM products;
+  -- COL1: 10.45
+  
+  SELECT city, MIN(price) FROM products GROUP BY city;
+  -- CITY: New York COL1: 8.05
+  -- CITY: San Francisco COL1: 7.5
+
+``SUM(DOUBLE PRECISION) DOUBLE PRECISION``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Returns the sum (total) of all values. If any of the expressions are ``NULL``
+the result will also be ``NULL``.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT SUM(price) FROM products;
+  -- COL1: 487.75
+  
+  SELECT city, SUM(price) FROM products GROUP BY city;
+  -- CITY: New York COL1: 196.35
+  -- CITY: San Francisco COL1: 291.4
+
 Mathematical Functions
 ----------------------
 

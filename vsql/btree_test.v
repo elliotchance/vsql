@@ -57,7 +57,7 @@ fn run_btree_test(mut pager Pager, size int) ? {
 
 	mut all := []string{}
 	for object in btree.new_range_iterator('R'.bytes(), 'S'.bytes()) {
-		all << string(object.key)
+		all << object.key.bytestr()
 	}
 
 	assert all.len == objs.len
@@ -131,7 +131,7 @@ fn validate_page(mut p Pager, page_number int) ?([]byte, []byte) {
 			// min and max have already been verified in the subpage, but the
 			// min has to equal what our pointer says.
 			if compare_bytes(smallest, object.key) != 0 {
-				panic('${string(object.key)} in page $page_number points to ${bytes_to_int(object.value)}, but child page has head ${string(smallest)}')
+				panic('${object.key.bytestr()} in page $page_number points to ${bytes_to_int(object.value)}, but child page has head ${smallest.bytestr()}')
 				assert false
 			}
 		}
@@ -160,9 +160,9 @@ fn strkeys(p Page) []string {
 	mut keys := []string{}
 	for object in p.objects() {
 		if object.tid == 0 && object.xid == 0 {
-			keys << string(object.key)
+			keys << object.key.bytestr()
 		} else {
-			keys << object.tid.str() + '/' + object.xid.str() + '-' + string(object.key)
+			keys << object.tid.str() + '/' + object.xid.str() + '-' + object.key.bytestr()
 		}
 	}
 
@@ -172,7 +172,7 @@ fn strkeys(p Page) []string {
 fn strobjects(p Page) []string {
 	mut keys := []string{}
 	for object in p.objects() {
-		keys << '${string(object.key)}:${bytes_to_int(object.value)}'
+		keys << '${object.key.bytestr()}:${bytes_to_int(object.value)}'
 	}
 
 	return keys

@@ -48,7 +48,7 @@ pub fn sqlstate_from_int(code int) string {
 		i++
 	}
 
-	return string(b)
+	return b.bytestr()
 }
 
 // Divide by zero.

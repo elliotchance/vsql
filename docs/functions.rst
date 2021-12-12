@@ -15,10 +15,10 @@ Absolute value.
 
 .. code-block:: sql
 
-  SELECT ABS(1.2);
+  VALUES ABS(1.2);
   -- 1.2
   
-  SELECT ABS(-1.23);
+  VALUES ABS(-1.23);
   -- 1.23
 
 ``ACOS(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -30,7 +30,7 @@ Inverse (arc) cosine.
 
 .. code-block:: sql
 
-  SELECT ACOS(0.2);
+  VALUES ACOS(0.2);
   -- COL1: 1.369438
 
 ``ASIN(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -42,7 +42,7 @@ Inverse (arc) sine.
 
 .. code-block:: sql
 
-  SELECT ASIN(0.2);
+  VALUES ASIN(0.2);
   -- COL1: 0.201358
 
 ``ATAN(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -54,7 +54,7 @@ Inverse (arc) tangent.
 
 .. code-block:: sql
 
-  SELECT ATAN(0.2);
+  VALUES ATAN(0.2);
   -- COL1: 0.197396
 
 ``CEIL(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -66,19 +66,19 @@ Round up to the nearest integer.
 
 .. code-block:: sql
 
-  SELECT CEIL(3.7);
+  VALUES CEIL(3.7);
   -- COL1: 4
 
-  SELECT CEIL(3.3);
+  VALUES CEIL(3.3);
   -- COL2: 4
 
-  SELECT CEIL(-3.7);
+  VALUES CEIL(-3.7);
   -- COL3: -3
 
-  SELECT CEIL(-3.3);
+  VALUES CEIL(-3.3);
   -- COL4: -3
 
-  SELECT CEILING(3.7);
+  VALUES CEILING(3.7);
   -- COL1: 4
 
 ``CEILING(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -95,7 +95,7 @@ Cosine.
 
 .. code-block:: sql
 
-  SELECT COS(1.2);
+  VALUES COS(1.2);
   -- COL1: 0.362358
 
 ``COSH(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -107,7 +107,7 @@ Hyperbolic cosine.
 
 .. code-block:: sql
 
-  SELECT COSH(1.2);
+  VALUES COSH(1.2);
   -- COL1: 1.810656
 
 ``EXP(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -119,7 +119,7 @@ Exponential.
 
 .. code-block:: sql
 
-  SELECT EXP(3.7);
+  VALUES EXP(3.7);
   -- COL1: 40.447304
 
 ``FLOOR(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -131,16 +131,16 @@ Round down to the nearest integer.
 
 .. code-block:: sql
 
-  SELECT FLOOR(3.7);
+  VALUES FLOOR(3.7);
   -- COL1: 3
 
-  SELECT FLOOR(3.3);
+  VALUES FLOOR(3.3);
   -- COL1: 3
 
-  SELECT FLOOR(-3.7);
+  VALUES FLOOR(-3.7);
   -- COL1: -4
 
-  SELECT FLOOR(-3.3);
+  VALUES FLOOR(-3.3);
   -- COL1: -4
 
 ``LN(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -152,7 +152,7 @@ Natural logarithm (base e).
 
 .. code-block:: sql
 
-  SELECT LN(13.7);
+  VALUES LN(13.7);
   -- COL1: 2.617396
 
 ``LOG10(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -164,7 +164,7 @@ Logarithm in base 10.
 
 .. code-block:: sql
 
-  SELECT LOG10(13.7);
+  VALUES LOG10(13.7);
   -- COL1: 1.136721
 
 ``MOD(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION``
@@ -176,10 +176,10 @@ Modulus.
 
 .. code-block:: sql
 
-  SELECT MOD(232, 3);
+  VALUES MOD(232, 3);
   -- COL1: 1
 
-  SELECT MOD(10.7, 0.8);
+  VALUES MOD(10.7, 0.8);
   -- COL1: 0.3
 
 ``POWER(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION``
@@ -191,7 +191,7 @@ Power.
 
 .. code-block:: sql
 
-  SELECT POWER(3.7, 2.5);
+  VALUES POWER(3.7, 2.5);
   -- COL1: 26.333241
 
 ``SIN(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -203,7 +203,7 @@ Sine.
 
 .. code-block:: sql
 
-  SELECT SIN(1.2);
+  VALUES SIN(1.2);
   -- COL1: 0.932039
 
 ``SINH(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -215,7 +215,7 @@ Hyperbolic sine.
 
 .. code-block:: sql
 
-  SELECT SINH(1.2);
+  VALUES SINH(1.2);
   -- COL1: 1.509461
 
 ``SQRT(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -227,7 +227,7 @@ Square root.
 
 .. code-block:: sql
 
-  SELECT SQRT(3.7);
+  VALUES SQRT(3.7);
   -- COL1: 1.923538
 
 ``TAN(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -239,7 +239,7 @@ Tangent.
 
 .. code-block:: sql
 
-  SELECT TAN(1.2);
+  VALUES TAN(1.2);
   -- COL1: 2.572152
 
 ``TANH(DOUBLE PRECISION) DOUBLE PRECISION``
@@ -251,7 +251,7 @@ Hyperbolic tangent.
 
 .. code-block:: sql
 
-  SELECT TANH(1.2);
+  VALUES TANH(1.2);
   -- COL1: 0.833655
 
 String Functions
@@ -265,13 +265,23 @@ character).
 
 .. code-block:: sql
 
-  SELECT CHAR_LENGTH('😊£');
+  VALUES CHAR_LENGTH('😊£');
   -- COL1: 2
 
 ``CHARACTER_LENGTH(CHARACTER VARYING) INTEGER``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``CHARACTER_LENGTH`` is an alias of ``CHAR_LENGTH``.
+
+``LOWER(CHARACTER VARYING) CHARACTER VARYING`` 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Returns the input string converted to lower-case.
+
+.. code-block:: sql
+
+  VALUES LOWER('Hello');
+  -- COL1: hello
 
 ``OCTET_LENGTH(CHARACTER VARYING) INTEGER``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -280,7 +290,7 @@ Returns the byte length (multibyte chatracters are ignored).
 
 .. code-block:: sql
 
-  SELECT OCTET_LENGTH('😊£');
+  VALUES OCTET_LENGTH('😊£');
   -- COL1: 6
 
 ``POSITION(CHARACTER VARYING IN CHARACTER VARYING) INTEGER``
@@ -296,8 +306,18 @@ Matching is case-sensitive.
 
 .. code-block:: sql
 
-  SELECT POSITION('He' IN 'hello Hello');
+  VALUES POSITION('He' IN 'hello Hello');
   -- COL1: 7
 
-  SELECT POSITION('xx' IN 'hello Hello');
+  VALUES POSITION('xx' IN 'hello Hello');
   -- COL1: 0
+
+``UPPER(CHARACTER VARYING) CHARACTER VARYING`` 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Returns the input string converted to upper-case.
+
+.. code-block:: sql
+
+  VALUES UPPER('Hello');
+  -- COL1: HELLO

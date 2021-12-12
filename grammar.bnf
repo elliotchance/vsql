@@ -577,6 +577,7 @@
 
 <character primary> /* Expr */ ::=
     <value expression primary>
+  | <string value function>
 
 <string value expression> /* Expr */ ::=
     <character value expression>
@@ -827,3 +828,13 @@
 <ordering specification> /* bool */ ::=
     ASC    -> yes
   | DESC   -> no
+
+<character value function> /* Expr */ ::=
+    <fold>
+
+<fold> /* Expr */ ::=
+    UPPER <left paren> <character value expression> <right paren>   -> upper
+  | LOWER <left paren> <character value expression> <right paren>   -> lower
+
+<string value function> /* Expr */ ::=
+    <character value function>

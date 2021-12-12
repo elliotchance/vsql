@@ -228,6 +228,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_character_value_expression_ := &EarleyRule{
 		name: '<character value expression>'
 	}
+	mut rule_character_value_function_ := &EarleyRule{
+		name: '<character value function>'
+	}
 	mut rule_colon_ := &EarleyRule{
 		name: '<colon>'
 	}
@@ -488,6 +491,15 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_floor_function_ := &EarleyRule{
 		name: '<floor function>'
+	}
+	mut rule_fold_1_ := &EarleyRule{
+		name: '<fold: 1>'
+	}
+	mut rule_fold_2_ := &EarleyRule{
+		name: '<fold: 2>'
+	}
+	mut rule_fold_ := &EarleyRule{
+		name: '<fold>'
 	}
 	mut rule_from_clause_1_ := &EarleyRule{
 		name: '<from clause: 1>'
@@ -990,6 +1002,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_string_value_expression_ := &EarleyRule{
 		name: '<string value expression>'
 	}
+	mut rule_string_value_function_ := &EarleyRule{
+		name: '<string value function>'
+	}
 	mut rule_subquery_1_ := &EarleyRule{
 		name: '<subquery: 1>'
 	}
@@ -1293,6 +1308,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_log10 := &EarleyRule{
 		name: 'LOG10'
 	}
+	mut rule_lower := &EarleyRule{
+		name: 'LOWER'
+	}
 	mut rule_mod := &EarleyRule{
 		name: 'MOD'
 	}
@@ -1391,6 +1409,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_update := &EarleyRule{
 		name: 'UPDATE'
+	}
+	mut rule_upper := &EarleyRule{
+		name: 'UPPER'
 	}
 	mut rule_values := &EarleyRule{
 		name: 'VALUES'
@@ -1929,6 +1950,11 @@ fn get_grammar() map[string]EarleyRule {
 			rule: rule_value_expression_primary_
 		},
 	]}
+	rule_character_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_string_value_function_
+		},
+	]}
 
 	rule_character_string_literal_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
@@ -2085,6 +2111,12 @@ fn get_grammar() map[string]EarleyRule {
 	rule_character_value_expression_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_character_factor_
+		},
+	]}
+
+	rule_character_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_fold_
 		},
 	]}
 
@@ -2924,6 +2956,47 @@ fn get_grammar() map[string]EarleyRule {
 	rule_floor_function_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_floor_function_1_
+		},
+	]}
+
+	rule_fold_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_upper
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_fold_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_lower
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_fold_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_fold_1_
+		},
+	]}
+	rule_fold_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_fold_2_
 		},
 	]}
 
@@ -4522,6 +4595,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_string_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_value_function_
+		},
+	]}
+
 	rule_subquery_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_left_paren_
@@ -5375,6 +5454,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_lower.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'LOWER'
+			rule: 0
+		},
+	]}
+
 	rule_mod.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'MOD'
@@ -5606,6 +5692,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_upper.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'UPPER'
+			rule: 0
+		},
+	]}
+
 	rule_values.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'VALUES'
@@ -5705,6 +5798,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<character value expression 1>'] = rule_character_value_expression_1_
 	rules['<character value expression 2>'] = rule_character_value_expression_2_
 	rules['<character value expression>'] = rule_character_value_expression_
+	rules['<character value function>'] = rule_character_value_function_
 	rules['<colon>'] = rule_colon_
 	rules['<column constraint definition>'] = rule_column_constraint_definition_
 	rules['<column constraint: 1>'] = rule_column_constraint_1_
@@ -5792,6 +5886,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<fetch first row count>'] = rule_fetch_first_row_count_
 	rules['<floor function: 1>'] = rule_floor_function_1_
 	rules['<floor function>'] = rule_floor_function_
+	rules['<fold: 1>'] = rule_fold_1_
+	rules['<fold: 2>'] = rule_fold_2_
+	rules['<fold>'] = rule_fold_
 	rules['<from clause: 1>'] = rule_from_clause_1_
 	rules['<from clause>'] = rule_from_clause_
 	rules['<from constructor: 1>'] = rule_from_constructor_1_
@@ -5959,6 +6056,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<start transaction statement: 1>'] = rule_start_transaction_statement_1_
 	rules['<start transaction statement>'] = rule_start_transaction_statement_
 	rules['<string value expression>'] = rule_string_value_expression_
+	rules['<string value function>'] = rule_string_value_function_
 	rules['<subquery: 1>'] = rule_subquery_1_
 	rules['<subquery>'] = rule_subquery_
 	rules['<table constraint definition>'] = rule_table_constraint_definition_
@@ -6060,6 +6158,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['LIKE'] = rule_like
 	rules['LN'] = rule_ln
 	rules['LOG10'] = rule_log10
+	rules['LOWER'] = rule_lower
 	rules['MOD'] = rule_mod
 	rules['NOT'] = rule_not
 	rules['NULL'] = rule_null
@@ -6093,6 +6192,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['TRUE'] = rule_true
 	rules['UNKNOWN'] = rule_unknown
 	rules['UPDATE'] = rule_update
+	rules['UPPER'] = rule_upper
 	rules['VALUES'] = rule_values
 	rules['VARCHAR'] = rule_varchar
 	rules['VARYING'] = rule_varying
@@ -6422,6 +6522,12 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		}
 		'<floor function: 1>' {
 			return [EarleyValue(parse_floor(children[2] as Expr) ?)]
+		}
+		'<fold: 1>' {
+			return [EarleyValue(parse_upper(children[2] as Expr) ?)]
+		}
+		'<fold: 2>' {
+			return [EarleyValue(parse_lower(children[2] as Expr) ?)]
 		}
 		'<from clause: 1>' {
 			return [EarleyValue(parse_from_clause(children[1] as TablePrimary) ?)]

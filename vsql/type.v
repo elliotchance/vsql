@@ -97,7 +97,7 @@ fn (t Type) uses_string() bool {
 	}
 }
 
-fn (t Type) number() byte {
+fn (t Type) number() u8 {
 	return match t.typ {
 		.is_null { 0 }
 		.is_boolean { 1 }
@@ -111,7 +111,7 @@ fn (t Type) number() byte {
 	}
 }
 
-fn type_from_number(number byte) Type {
+fn type_from_number(number u8) Type {
 	return new_type(match number {
 		0 { 'NULL' }
 		1 { 'BOOLEAN' }

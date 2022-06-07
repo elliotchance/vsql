@@ -4,7 +4,8 @@
 module vsql
 
 import os
-import rand.util
+import rand
+import rand.config
 
 fn test_btree_test() ? {
 	// Note: When making changes to the btree (or anything that might affect
@@ -18,18 +19,18 @@ fn test_btree_test() ? {
 	for tt in 0 .. times {
 		for size := 1; size <= 1000; size *= 10 {
 			if os.exists(file_name) {
-				os.rm(file_name) ?
+				os.rm(file_name)?
 			}
 
-			init_database_file(file_name, page_size) ?
+			init_database_file(file_name, page_size)?
 
-			mut db_file := os.open_file('btree.vsql', 'r+') ?
-			mut file_pager := new_file_pager(mut db_file, page_size, 0) ?
-			run_btree_test(mut file_pager, size) ?
+			mut db_file := os.open_file('btree.vsql', 'r+')?
+			mut file_pager := new_file_pager(mut db_file, page_size, 0)?
+			run_btree_test(mut file_pager, size)?
 			db_file.close()
 
 			mut memory_pager := new_memory_pager()
-			run_btree_test(mut memory_pager, size) ?
+			run_btree_test(mut memory_pager, size)?
 		}
 	}
 }
@@ -39,20 +40,20 @@ fn run_btree_test(mut pager Pager, size int) ? {
 
 	mut objs := []PageObject{len: size}
 	for i in 0 .. objs.len {
-		objs[i] = PageObject{'R${i:04d}'.bytes(), []byte{len: 48}, transaction_id, 0}
+		objs[i] = PageObject{'R${i:04d}'.bytes(), []u8{len: 48}, transaction_id, 0}
 	}
 
-	util.shuffle(mut objs, 0)
+	rand.shuffle(mut objs, config.ShuffleConfigStruct{})?
 
 	mut btree := new_btree(pager, 256)
 	mut expected_objects := 0
 	for obj in objs {
-		btree.add(obj) ?
+		btree.add(obj)?
 		expected_objects++
 
-		total_leaf_objects, _ := count(mut pager) ?
+		total_leaf_objects, _ := count(mut pager)?
 		assert total_leaf_objects == expected_objects
-		validate(mut pager) ?
+		validate(mut pager)?
 	}
 
 	mut all := []string{}
@@ -67,19 +68,19 @@ fn run_btree_test(mut pager Pager, size int) ? {
 
 	expected_objects = objs.len
 	for obj in objs {
-		btree.remove(obj.key, transaction_id) ?
+		btree.remove(obj.key, transaction_id)?
 		expected_objects--
 
-		total_leaf_objects, _ := count(mut pager) ?
+		total_leaf_objects, _ := count(mut pager)?
 		assert total_leaf_objects == expected_objects
-		validate(mut pager) ?
+		validate(mut pager)?
 	}
 }
 
 fn visualize(mut p Pager) ? {
 	println('\n=== VISUALIZE (root = $p.root_page()) ===')
 	for i := 0; i < p.total_pages(); i++ {
-		page := p.fetch_page(i) ?
+		page := p.fetch_page(i)?
 
 		if page.kind == kind_leaf {
 			println('$i (leaf, $page.used b used): ${strkeys(page)}')
@@ -88,7 +89,7 @@ fn visualize(mut p Pager) ? {
 		}
 	}
 
-	leaf_objects, non_leaf_objects := count(mut p) ?
+	leaf_objects, non_leaf_objects := count(mut p)?
 
 	println('total: $leaf_objects leaf + $non_leaf_objects non-leaf \n')
 }
@@ -99,11 +100,11 @@ fn validate(mut p Pager) ? {
 		return
 	}
 
-	validate_page(mut p, p.root_page()) ?
+	validate_page(mut p, p.root_page())?
 
 	// Also make sure none of the pages become orphaned.
 	for i := 0; i < p.total_pages(); i++ {
-		page := p.fetch_page(i) ?
+		page := p.fetch_page(i)?
 
 		if page.is_empty() {
 			panic('found empty page')
@@ -111,8 +112,8 @@ fn validate(mut p Pager) ? {
 	}
 }
 
-fn validate_page(mut p Pager, page_number int) ?([]byte, []byte) {
-	page := p.fetch_page(page_number) ?
+fn validate_page(mut p Pager, page_number int) ?([]u8, []u8) {
+	page := p.fetch_page(page_number)?
 	objects := page.objects()
 
 	// For any type of page the keys must be ordered.
@@ -126,7 +127,7 @@ fn validate_page(mut p Pager, page_number int) ?([]byte, []byte) {
 	// the pointers.
 	if page.kind == kind_not_leaf {
 		for object in objects {
-			smallest, _ := validate_page(mut p, bytes_to_int(object.value)) ?
+			smallest, _ := validate_page(mut p, bytes_to_int(object.value))?
 
 			// min and max have already been verified in the subpage, but the
 			// min has to equal what our pointer says.
@@ -144,7 +145,7 @@ fn count(mut p Pager) ?(int, int) {
 	mut total_leaf_objects := 0
 	mut total_non_leaf_objects := 0
 	for i := 0; i < p.total_pages(); i++ {
-		page := p.fetch_page(i) ?
+		page := p.fetch_page(i)?
 
 		if page.kind == kind_leaf {
 			total_leaf_objects += page.keys().len
@@ -195,51 +196,51 @@ fn test_btree_expire_test() ? {
 	size := 1000
 
 	if os.exists(file_name) {
-		os.rm(file_name) ?
+		os.rm(file_name)?
 	}
 
-	init_database_file(file_name, page_size) ?
+	init_database_file(file_name, page_size)?
 
-	mut db_file := os.open_file('btree.vsql', 'r+') ?
-	mut file_pager := new_file_pager(mut db_file, page_size, 0) ?
+	mut db_file := os.open_file('btree.vsql', 'r+')?
+	mut file_pager := new_file_pager(mut db_file, page_size, 0)?
 	mut btree := new_btree(file_pager, page_size)
 
 	// 1. Insert a bunch of keys. We don't need to scrutinize this part becauase
 	// it's well covered in the add/remove test.
 	mut objs := []PageObject{len: size}
 	for i in 0 .. objs.len {
-		objs[i] = PageObject{'R${i:04d}'.bytes(), []byte{len: 48}, tid1, 0}
+		objs[i] = PageObject{'R${i:04d}'.bytes(), []u8{len: 48}, tid1, 0}
 	}
-	util.shuffle(mut objs, 0)
+	rand.shuffle(mut objs, config.ShuffleConfigStruct{})?
 
 	for obj in objs {
-		btree.add(obj) ?
+		btree.add(obj)?
 	}
 
 	// 2. Half the objects are going to be expired. Randomly chosen and in
 	// random order.
 	for obj in objs[..objs.len / 2] {
-		btree.expire(obj.key, tid1, tid2) ?
+		btree.expire(obj.key, tid1, tid2)?
 	}
 
 	// The number of objects remains the same. We'll be checking their actual
 	// status later.
-	mut total_leaf_objects, _ := count(mut file_pager) ?
+	mut total_leaf_objects, _ := count(mut file_pager)?
 	assert total_leaf_objects == size
-	validate(mut file_pager) ?
+	validate(mut file_pager)?
 
 	// 3. Add updated versions of all the other half (applied in random order).
 	for mut obj in objs[objs.len / 2..] {
-		btree.expire(obj.key, tid1, tid3) ?
+		btree.expire(obj.key, tid1, tid3)?
 
 		obj.tid = tid3
-		btree.add(obj) ?
+		btree.add(obj)?
 	}
 
 	// The number of objects is raised by 50%.
-	total_leaf_objects, _ = count(mut file_pager) ?
+	total_leaf_objects, _ = count(mut file_pager)?
 	assert total_leaf_objects == size + (size / 2)
-	validate(mut file_pager) ?
+	validate(mut file_pager)?
 
 	// Finally, validate all the tid state.
 	mut created_by_tid1 := 0

@@ -69,7 +69,7 @@ fn (o &ValuesOperation) columns() Columns {
 fn (o &ValuesOperation) execute(_ []Row) ?[]Row {
 	mut offset := 0
 	if o.offset !is NoExpr {
-		offset = int((eval_as_value(o.conn, Row{}, o.offset, o.params) ?).f64_value)
+		offset = int((eval_as_value(o.conn, Row{}, o.offset, o.params)?).f64_value)
 	}
 
 	mut rows := []Row{}
@@ -80,7 +80,7 @@ fn (o &ValuesOperation) execute(_ []Row) ?[]Row {
 	for row in o.rows[offset..] {
 		rows << eval_row(o.conn, Row{
 			data: map[string]Value{}
-		}, row.exprs, o.params) ?
+		}, row.exprs, o.params)?
 	}
 
 	columns := o.columns()

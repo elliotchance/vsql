@@ -8,7 +8,7 @@ fn eval_row(conn &Connection, data Row, exprs []Expr, params map[string]Value) ?
 	mut col_number := 1
 	mut row := map[string]Value{}
 	for expr in exprs {
-		row['COL$col_number'] = eval_as_value(conn, data, expr, params) ?
+		row['COL$col_number'] = eval_as_value(conn, data, expr, params)?
 		col_number++
 	}
 
@@ -99,7 +99,7 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 }
 
 fn eval_as_bool(conn &Connection, data Row, e Expr, params map[string]Value) ?bool {
-	v := eval_as_value(conn, data, e, params) ?
+	v := eval_as_value(conn, data, e, params)?
 
 	if v.typ.typ == .is_boolean {
 		return v.f64_value != 0
@@ -130,8 +130,8 @@ fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) ?V
 	mut args := []Value{}
 	mut i := 0
 	for typ in func.arg_types {
-		arg := eval_as_value(conn, data, e.args[i], params) ?
-		args << cast('argument ${i + 1} in $func_name', arg, typ) ?
+		arg := eval_as_value(conn, data, e.args[i], params)?
+		args << cast('argument ${i + 1} in $func_name', arg, typ)?
 		i++
 	}
 
@@ -139,7 +139,7 @@ fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) ?V
 }
 
 fn eval_null(conn &Connection, data Row, e NullExpr, params map[string]Value) ?Value {
-	value := eval_as_value(conn, data, e.expr, params) ?
+	value := eval_as_value(conn, data, e.expr, params)?
 
 	if e.not {
 		return new_boolean_value(value.typ.typ != .is_null)
@@ -149,8 +149,8 @@ fn eval_null(conn &Connection, data Row, e NullExpr, params map[string]Value) ?V
 }
 
 fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) ?Value {
-	left := eval_as_value(conn, data, e.left, params) ?
-	right := eval_as_value(conn, data, e.right, params) ?
+	left := eval_as_value(conn, data, e.left, params)?
+	right := eval_as_value(conn, data, e.right, params)?
 
 	// Make sure we escape any regexp characters.
 	escaped_regex := right.string_value.replace('+', '\\+').replace('?', '\\?').replace('*',
@@ -158,7 +158,7 @@ fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) ?V
 		'\\)').replace('[', '\\[').replace('{', '\\{').replace('_', '.').replace('%',
 		'.*')
 
-	mut re := regex.regex_opt('^$escaped_regex$') ?
+	mut re := regex.regex_opt('^$escaped_regex$')?
 	result := re.matches_string(left.string_value)
 
 	if e.not {
@@ -169,8 +169,8 @@ fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) ?V
 }
 
 fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value) ?Value {
-	left := eval_as_value(conn, data, e.left, params) ?
-	right := eval_as_value(conn, data, e.right, params) ?
+	left := eval_as_value(conn, data, e.left, params)?
+	right := eval_as_value(conn, data, e.right, params)?
 
 	match e.op {
 		'=', '<>', '>', '<', '>=', '<=' {
@@ -228,7 +228,7 @@ fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value
 }
 
 fn eval_unary(conn &Connection, data Row, e UnaryExpr, params map[string]Value) ?Value {
-	value := eval_as_value(conn, data, e.expr, params) ?
+	value := eval_as_value(conn, data, e.expr, params)?
 
 	match e.op {
 		'-' {
@@ -267,18 +267,18 @@ fn eval_cmp<T>(lhs T, rhs T, op string) Value {
 }
 
 fn eval_between(conn &Connection, data Row, e BetweenExpr, params map[string]Value) ?Value {
-	expr := eval_as_value(conn, data, e.expr, params) ?
-	mut left := eval_as_value(conn, data, e.left, params) ?
-	mut right := eval_as_value(conn, data, e.right, params) ?
+	expr := eval_as_value(conn, data, e.expr, params)?
+	mut left := eval_as_value(conn, data, e.left, params)?
+	mut right := eval_as_value(conn, data, e.right, params)?
 
 	// SYMMETRIC operandsmight need to be swapped.
-	cmp, is_null := left.cmp(right) ?
+	cmp, is_null := left.cmp(right)?
 	if e.symmetric && !is_null && cmp > 0 {
 		left, right = right, left
 	}
 
-	lower, lower_is_null := expr.cmp(left) ?
-	upper, upper_is_null := expr.cmp(right) ?
+	lower, lower_is_null := expr.cmp(left)?
+	upper, upper_is_null := expr.cmp(right)?
 
 	if lower_is_null || upper_is_null {
 		return new_null_value()
@@ -294,11 +294,11 @@ fn eval_between(conn &Connection, data Row, e BetweenExpr, params map[string]Val
 }
 
 fn eval_similar(conn &Connection, data Row, e SimilarExpr, params map[string]Value) ?Value {
-	left := eval_as_value(conn, data, e.left, params) ?
-	right := eval_as_value(conn, data, e.right, params) ?
+	left := eval_as_value(conn, data, e.left, params)?
+	right := eval_as_value(conn, data, e.right, params)?
 
 	mut re := regex.regex_opt('^${right.string_value.replace('.', '\\.').replace('_',
-		'.').replace('%', '.*')}$') ?
+		'.').replace('%', '.*')}$')?
 	result := re.matches_string(left.string_value)
 
 	if e.not {

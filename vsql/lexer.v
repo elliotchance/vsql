@@ -147,7 +147,7 @@ fn tokenize(sql string) []Token {
 }
 
 [inline]
-fn is_identifier_char(c byte, is_not_first bool) bool {
+fn is_identifier_char(c u8, is_not_first bool) bool {
 	yes := (c >= `a` && c <= `z`) || (c >= `A` && c <= `Z`) || c == `_`
 
 	if is_not_first {

@@ -78,8 +78,8 @@ mut:
 // new_file_pager requires that the path already exists and has already been
 // initialized as a new database.
 fn new_file_pager(mut file os.File, page_size int, root_page int) ?&FilePager {
-	file.seek(0, .end) ?
-	file_len := file.tell() ?
+	file.seek(0, .end)?
+	file_len := file.tell()?
 
 	return &FilePager{
 		file: file
@@ -94,10 +94,10 @@ fn new_file_pager(mut file os.File, page_size int, root_page int) ?&FilePager {
 fn (mut p FilePager) fetch_page(page_number int) ?Page {
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
-	p.file.seek(int(sizeof(Header)) + (p.page_size * page_number), .start) ?
+	p.file.seek(int(sizeof(Header)) + (p.page_size * page_number), .start)?
 
-	mut buf := []byte{len: p.page_size}
-	p.file.read(mut buf) ?
+	mut buf := []u8{len: p.page_size}
+	p.file.read(mut buf)?
 
 	mut b := new_bytes(buf)
 
@@ -111,14 +111,14 @@ fn (mut p FilePager) fetch_page(page_number int) ?Page {
 fn (mut p FilePager) store_page(page_number int, page Page) ? {
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
-	p.file.seek(int(sizeof(Header)) + (p.page_size * page_number), .start) ?
+	p.file.seek(int(sizeof(Header)) + (p.page_size * page_number), .start)?
 
-	mut b := new_bytes([]byte{})
+	mut b := new_bytes([]u8{})
 	b.write_byte(page.kind)
 	b.write_u16(page.used)
 	b.write_bytes(page.data)
 
-	p.file.write(b.bytes()) ?
+	p.file.write(b.bytes())?
 }
 
 fn (mut p FilePager) total_pages() int {
@@ -128,7 +128,7 @@ fn (mut p FilePager) total_pages() int {
 fn (mut p FilePager) append_page(page Page) ? {
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
-	p.store_page(p.total_pages, page) ?
+	p.store_page(p.total_pages, page)?
 	p.total_pages++
 }
 

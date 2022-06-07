@@ -55,7 +55,7 @@ pub fn open_database(path string, options ConnectionOptions) ?&Connection {
 
 	// If the file doesn't exist we initialize it and reopen it.
 	if !os.exists(path) {
-		init_database_file(path, options.page_size) ?
+		init_database_file(path, options.page_size)?
 	}
 
 	return open_connection(path, options)
@@ -74,7 +74,7 @@ fn open_connection(path string, options ConnectionOptions) ?&Connection {
 		conn.storage.btree = new_btree(pager, options.page_size)
 	}
 
-	register_builtin_funcs(mut conn) ?
+	register_builtin_funcs(mut conn)?
 
 	return conn
 }
@@ -86,8 +86,8 @@ fn (mut c Connection) open_read_connection() ? {
 
 	c.options.mutex.@rlock()
 
-	flock_lock_shared(c.storage.file, c.path) ?
-	c.storage.open(c.path) ?
+	flock_lock_shared(c.storage.file, c.path)?
+	c.storage.open(c.path)?
 }
 
 fn (mut c Connection) open_write_connection() ? {
@@ -97,8 +97,8 @@ fn (mut c Connection) open_write_connection() ? {
 
 	c.options.mutex.@lock()
 
-	flock_lock_exclusive(c.storage.file, c.path) ?
-	c.storage.open(c.path) ?
+	flock_lock_exclusive(c.storage.file, c.path)?
+	c.storage.open(c.path)?
 }
 
 fn (mut c Connection) release_write_connection() {
@@ -175,13 +175,13 @@ pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) 
 	}
 
 	return_type := new_type(parts[2].trim_space().to_upper(), 0)
-	c.register_func(Func{function_name, arg_types, func, return_type}) ?
+	c.register_func(Func{function_name, arg_types, func, return_type})?
 }
 
 pub fn (mut c Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ? {
 	// Registering virtual tables does not need use query cache.
 	mut tokens := tokenize(create_table)
-	stmt := parse(tokens) ?
+	stmt := parse(tokens)?
 
 	if stmt is CreateTableStmt {
 		table_name := stmt.table_name

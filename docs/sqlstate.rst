@@ -25,16 +25,16 @@ You can match on these to inspect the error further:
         }
     }
 
-The ``err.code`` contains the integer representation of the SQLSTATE:
+The ``err.code()`` contains the integer representation of the SQLSTATE:
 
 .. code-block:: v
 
     db.query('SELECT * FROM bar') or {
-        sqlstate := vsql.sqlstate_from_int(err.code)
-        println('$sqlstate: $err.msg')
+        sqlstate := vsql.sqlstate_from_int(err.code())
+        println('$sqlstate: $err.msg()')
         // 42P01: no such table: BAR
 
-        if err.code == vsql.sqlstate_to_int('42P01') {
+        if err.code() == vsql.sqlstate_to_int('42P01') {
             println('table does not exist')
         }
     }
@@ -44,8 +44,8 @@ Or handling errors by class (first two letters):
 .. code-block:: v
 
     db.query('SELECT * FROM bar') or {
-        if err.code >= vsql.sqlstate_to_int('42000') &&
-            err.code <= vsql.sqlstate_to_int('42ZZZ') {
+        if err.code() >= vsql.sqlstate_to_int('42000') &&
+            err.code() <= vsql.sqlstate_to_int('42ZZZ') {
             println('Class 42 — Syntax Error or Access Rule Violation')
         }
     }

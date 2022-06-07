@@ -12,7 +12,7 @@ pub fn pluralize(n int, word string) string {
 	return '${word}s'
 }
 
-fn compare_bytes(a []byte, b []byte) int {
+fn compare_bytes(a []u8, b []u8) int {
 	// Only compare digits to the minimum length of both.
 	min := if a.len < b.len { a.len } else { b.len }
 

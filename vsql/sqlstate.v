@@ -20,24 +20,24 @@ pub fn sqlstate_to_int(code string) int {
 		sqlstate_chr(upper_code[4])
 }
 
-fn sqlstate_chr(ch byte) int {
+fn sqlstate_chr(ch u8) int {
 	if ch <= `9` {
-		return ch - byte(`0`)
+		return ch - u8(`0`)
 	}
 
-	return ch - byte(`A`) + 10
+	return ch - u8(`A`) + 10
 }
 
-fn sqlstate_ord(ch int) byte {
+fn sqlstate_ord(ch int) u8 {
 	if ch <= 9 {
-		return byte(byte(`0`) + ch)
+		return u8(`0`) + u8(ch)
 	}
 
-	return byte(byte(`A`) + (ch - 10))
+	return u8(`A`) + (u8(ch) - 10)
 }
 
 pub fn sqlstate_from_int(code int) string {
-	mut b := []byte{len: 5}
+	mut b := []u8{len: 5}
 
 	mut i := 0
 	mut left := code
@@ -51,10 +51,22 @@ pub fn sqlstate_from_int(code int) string {
 	return b.bytestr()
 }
 
-// Divide by zero.
-struct SQLState22012 {
+struct SQLState {
 	msg  string
 	code int
+}
+
+fn (err SQLState) msg() string {
+	return err.msg
+}
+
+fn (err SQLState) code() int {
+	return err.code
+}
+
+// Divide by zero.
+struct SQLState22012 {
+	SQLState
 }
 
 fn sqlstate_22012() IError {
@@ -66,8 +78,7 @@ fn sqlstate_22012() IError {
 
 // violates non-null constraint
 struct SQLState23502 {
-	msg  string
-	code int
+	SQLState
 }
 
 fn sqlstate_23502(msg string) IError {
@@ -79,8 +90,7 @@ fn sqlstate_23502(msg string) IError {
 
 // syntax error
 struct SQLState42601 {
-	msg  string
-	code int
+	SQLState
 }
 
 fn sqlstate_42601(message string) IError {
@@ -92,8 +102,7 @@ fn sqlstate_42601(message string) IError {
 
 // column does not exist
 struct SQLState42703 {
-	msg  string
-	code int
+	SQLState
 pub:
 	column_name string
 }
@@ -108,8 +117,7 @@ fn sqlstate_42703(column_name string) IError {
 
 // data type mismatch
 struct SQLState42804 {
-	msg      string
-	code     int
+	SQLState
 	expected string
 	actual   string
 }
@@ -125,8 +133,7 @@ fn sqlstate_42804(msg string, expected string, actual string) IError {
 
 // no such table
 struct SQLState42P01 {
-	msg  string
-	code int
+	SQLState
 pub:
 	table_name string
 }
@@ -141,8 +148,7 @@ fn sqlstate_42p01(table_name string) IError {
 
 // duplicate table
 struct SQLState42P07 {
-	msg  string
-	code int
+	SQLState
 pub:
 	table_name string
 }
@@ -157,8 +163,7 @@ fn sqlstate_42p07(table_name string) IError {
 
 // No such function
 struct SQLState42883 {
-	msg  string
-	code int
+	SQLState
 pub:
 	function_name string
 }
@@ -173,8 +178,7 @@ fn sqlstate_42883(function_name string) IError {
 
 // Undefined parameter
 struct SQLState42P02 {
-	msg  string
-	code int
+	SQLState
 pub:
 	parameter_name string
 }
@@ -189,8 +193,7 @@ fn sqlstate_42p02(parameter_name string) IError {
 
 // invalid transaction state: active sql transaction
 struct SQLState25001 {
-	msg  string
-	code int
+	SQLState
 }
 
 fn sqlstate_25001() IError {
@@ -202,8 +205,7 @@ fn sqlstate_25001() IError {
 
 // invalid transaction termination
 struct SQLState2D000 {
-	msg  string
-	code int
+	SQLState
 }
 
 fn sqlstate_2d000() IError {
@@ -215,8 +217,7 @@ fn sqlstate_2d000() IError {
 
 // invalid transaction initiation
 struct SQLState0B000 {
-	msg  string
-	code int
+	SQLState
 }
 
 fn sqlstate_0b000(msg string) IError {
@@ -228,8 +229,7 @@ fn sqlstate_0b000(msg string) IError {
 
 // serialization failure
 struct SQLState40001 {
-	msg  string
-	code int
+	SQLState
 }
 
 fn sqlstate_40001(message string) IError {
@@ -241,8 +241,7 @@ fn sqlstate_40001(message string) IError {
 
 // in failed sql transaction
 struct SQLState25P02 {
-	msg  string
-	code int
+	SQLState
 }
 
 fn sqlstate_25p02() IError {

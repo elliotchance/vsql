@@ -50,7 +50,7 @@ jobs:
     - name: Build windows binaries
       run: |
         brew install mingw-w64
-        v -os windows -gc boehm -prod cmd/vsql.v
+        v -os windows -prod cmd/vsql.v
         zip -j vsql-windows.zip cmd/vsql.exe
 
     - name: Release

@@ -8,21 +8,9 @@ This page is aimed to developers of vsql.
 Building from Source
 --------------------
 
-Building the binary from source is pretty straight forward. However, you should
-be aware that the current default garbage collection mechanism (``-autofree``)
-is not yet stable enough and stress testing vsql will lead to memory leaks.
-
-For the timebeing, you must use the ``boehm`` garbage collection mode:
-
 .. code-block:: sh
 
-  v -gc boehm -prod cmd/vsql.v
-
-If you receive an error, you may need to install it on macOS:
-
-.. code-block:: sh
-
-  brew install libgc
+  make vsql
 
 Debugging
 ---------

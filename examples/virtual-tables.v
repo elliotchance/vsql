@@ -7,7 +7,7 @@ fn main() {
 }
 
 fn example() ? {
-	mut db := vsql.open('test.vsql') ?
+	mut db := vsql.open('test.vsql')?
 
 	db.register_virtual_table('CREATE TABLE foo ( "num" INT, word VARCHAR (32) )', fn (mut t vsql.VirtualTable) ? {
 		t.next_values([
@@ -21,17 +21,17 @@ fn example() ? {
 		])
 
 		t.done()
-	}) ?
+	})?
 
-	explain := db.query('EXPLAIN SELECT * FROM foo') ?
+	explain := db.query('EXPLAIN SELECT * FROM foo')?
 	for row in explain {
-		assert row.get_string('EXPLAIN') ? == 'VIRTUAL TABLE FOO (num INTEGER, WORD CHARACTER VARYING(32))'
+		assert row.get_string('EXPLAIN')? == 'VIRTUAL TABLE FOO (num INTEGER, WORD CHARACTER VARYING(32))'
 	}
 
-	result := db.query('SELECT * FROM foo') ?
+	result := db.query('SELECT * FROM foo')?
 	for row in result {
-		num := row.get_f64('num') ?
-		word := row.get_string('WORD') ?
+		num := row.get_f64('num')?
+		word := row.get_string('WORD')?
 		println('$num $word')
 	}
 }

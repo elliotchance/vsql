@@ -9,7 +9,7 @@ fn test_concurrent_writes() ? {
 
 	file_name := 'test_concurrent_writes.vsql'
 	if os.exists(file_name) {
-		os.rm(file_name) ?
+		os.rm(file_name)?
 	}
 
 	// A shared mutex is required if we intend to open_database() to the same
@@ -17,8 +17,8 @@ fn test_concurrent_writes() ? {
 	mut options := default_connection_options()
 	options.mutex = sync.new_rwmutex()
 
-	mut db := open_database(file_name, options) ?
-	db.query('CREATE TABLE foo (x INT)') ?
+	mut db := open_database(file_name, options)?
+	db.query('CREATE TABLE foo (x INT)')?
 
 	mut waits := []thread{}
 	for i in 0 .. 10 {
@@ -37,10 +37,10 @@ fn test_concurrent_writes() ? {
 	}
 	waits.wait()
 
-	result := db.query('SELECT * FROM foo') ?
+	result := db.query('SELECT * FROM foo')?
 	mut total := 0
 	for row in result {
-		total += int(row.get_f64('X') ?)
+		total += int(row.get_f64('X')?)
 	}
 
 	assert total == 1000

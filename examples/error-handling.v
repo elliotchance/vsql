@@ -7,14 +7,14 @@ fn main() {
 }
 
 fn example() ? {
-	mut db := vsql.open('test.vsql') ?
+	mut db := vsql.open('test.vsql')?
 
 	db.query('SELECT * FROM bar') or {
-		sqlstate := vsql.sqlstate_from_int(err.code)
-		println('$sqlstate: $err.msg')
+		sqlstate := vsql.sqlstate_from_int(err.code())
+		println('$sqlstate: $err.msg()')
 		// 42P01: no such table: BAR
 
-		if err.code == vsql.sqlstate_to_int('42P01') {
+		if err.code() == vsql.sqlstate_to_int('42P01') {
 			println('table does not exist')
 		}
 	}
@@ -31,7 +31,8 @@ fn example() ? {
 	}
 
 	db.query('SELECT * FROM bar') or {
-		if err.code >= vsql.sqlstate_to_int('42000') && err.code <= vsql.sqlstate_to_int('42ZZZ') {
+		if err.code() >= vsql.sqlstate_to_int('42000')
+			&& err.code() <= vsql.sqlstate_to_int('42ZZZ') {
 			println('Class 42 — Syntax Error or Access Rule Violation')
 		}
 	}

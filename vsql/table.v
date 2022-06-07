@@ -58,8 +58,8 @@ fn (t Table) column(name string) ?Column {
 	return sqlstate_42703(name) // column does not exist
 }
 
-fn (t Table) bytes() []byte {
-	mut b := new_bytes([]byte{})
+fn (t Table) bytes() []u8 {
+	mut b := new_bytes([]u8{})
 
 	b.write_string1(t.name)
 	b.write_string1_list(t.primary_key)
@@ -75,7 +75,7 @@ fn (t Table) bytes() []byte {
 	return b.bytes()
 }
 
-fn new_table_from_bytes(data []byte, tid int) Table {
+fn new_table_from_bytes(data []u8, tid int) Table {
 	mut b := new_bytes(data)
 
 	table_name := b.read_string1()
@@ -124,9 +124,9 @@ fn (mut o TableOperation) execute(_ []Row) ?[]Row {
 	mut rows := []Row{}
 
 	if o.table_is_subplan {
-		rows = o.subplans[o.table_name].execute([]Row{}) ?
+		rows = o.subplans[o.table_name].execute([]Row{})?
 	} else {
-		rows = o.storage.read_rows(o.table_name) ?
+		rows = o.storage.read_rows(o.table_name)?
 	}
 
 	return transform_select_expressions(o.conn, o.params, rows, o.select_list, o.columns())

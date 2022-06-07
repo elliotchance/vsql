@@ -96,12 +96,12 @@ fn (mut q QueryCache) parse(query string) ?(Stmt, map[string]Value, bool) {
 
 	key, params, new_tokens := q.prepare(tokens)
 	if key == '' {
-		stmt := parse(new_tokens) ?
+		stmt := parse(new_tokens)?
 		return stmt, map[string]Value{}, explain
 	}
 
 	if key !in q.stmts {
-		q.stmts[key] = parse(new_tokens) ?
+		q.stmts[key] = parse(new_tokens)?
 	}
 
 	return q.stmts[key] or { panic('impossible') }, params, explain

@@ -5,8 +5,8 @@ module vsql
 
 struct PageIterator {
 	// min and max are inclusive.
-	min []byte
-	max []byte
+	min []u8
+	max []u8
 mut:
 	btree Btree
 	// objects is just for performance so we dont need to parse the objects in
@@ -25,7 +25,7 @@ fn (mut iter PageIterator) next() ?PageObject {
 
 	// On the first iteration we fast-forward to the starting page.
 	if iter.path.len == 0 {
-		iter.path, iter.depth_iterator = iter.btree.search_page(iter.min) ?
+		iter.path, iter.depth_iterator = iter.btree.search_page(iter.min)?
 
 		// search_page does not include the last depth_iterator becuase that
 		// belongs to the leaf not which is does not search.
@@ -33,7 +33,7 @@ fn (mut iter PageIterator) next() ?PageObject {
 
 		// Load all the objects for this leaf. Making sure to skip over any keys
 		// that are out of bounds.
-		iter.objects = (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) ?).objects()
+		iter.objects = (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1])?).objects()
 		for object in iter.objects {
 			// TODO(elliotchance): It would be more efficient to do a binary
 			//  search here since the page is already sorted.
@@ -55,19 +55,19 @@ fn (mut iter PageIterator) next() ?PageObject {
 			iter.depth_iterator = iter.depth_iterator[..iter.depth_iterator.len - 1]
 			iter.depth_iterator[iter.depth_iterator.len - 1]++
 
-			if iter.depth_iterator[iter.depth_iterator.len - 1] < (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) ?).objects().len {
+			if iter.depth_iterator[iter.depth_iterator.len - 1] < (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1])?).objects().len {
 				break
 			}
 		}
 
-		for (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) ?).kind == kind_not_leaf {
-			objects := (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) ?).objects()
+		for (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1])?).kind == kind_not_leaf {
+			objects := (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1])?).objects()
 
 			iter.path << bytes_to_int(objects[iter.depth_iterator[iter.depth_iterator.len - 1]].value)
 			iter.depth_iterator << 0
 		}
 
-		iter.objects = (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) ?).objects()
+		iter.objects = (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1])?).objects()
 	}
 
 	o := iter.objects[iter.depth_iterator[iter.depth_iterator.len - 1]]
@@ -104,14 +104,14 @@ fn (o &PrimaryKeyOperation) columns() Columns {
 }
 
 fn (o &PrimaryKeyOperation) execute(_ []Row) ?[]Row {
-	lower := eval_as_value(o.conn, Row{}, o.lower, o.params) ?
+	lower := eval_as_value(o.conn, Row{}, o.lower, o.params)?
 
 	mut tmp_row := Row{
 		data: {
 			o.table.primary_key[0]: lower
 		}
 	}
-	object_key := tmp_row.object_key(o.table) ?
+	object_key := tmp_row.object_key(o.table)?
 
 	tid := o.conn.storage.transaction_id
 	mut transaction_ids := o.conn.storage.header.active_transaction_ids

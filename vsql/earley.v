@@ -12,7 +12,7 @@ struct EarleyRuleOrString {
 }
 
 fn (o &EarleyRuleOrString) str() string {
-	if o.rule != 0 {
+	if unsafe { o.rule != 0 } {
 		return (*o.rule).str()
 	}
 
@@ -57,7 +57,7 @@ mut:
 fn new_earley_state(name string, production &EarleyProduction, dot_index int, start_column &EarleyColumn) &EarleyState {
 	mut rules := []&EarleyRule{}
 	for t in production.terms {
-		if t.rule != 0 {
+		if unsafe { t.rule != 0 } {
 			rules << t.rule
 		}
 	}
@@ -223,7 +223,7 @@ fn complete(mut col EarleyColumn, state &EarleyState) {
 	for st in state.start_column.states {
 		term := st.next_term()
 
-		if term.rule == 0 {
+		if unsafe { term.rule == 0 } {
 			continue
 		}
 
@@ -237,14 +237,14 @@ fn parse(tokens []Token) ?Stmt {
 	mut columns := tokenize_earley_columns(tokens)
 	mut grammar := get_grammar()
 
-	q0 := parse_earley(grammar['<preparable statement>'], mut columns) ?
+	q0 := parse_earley(grammar['<preparable statement>'], mut columns)?
 
 	trees := build_trees(q0)
 	if trees.len == 0 {
 		panic(q0.end_column)
 	}
 
-	return (parse_ast(trees[0]) ?)[0] as Stmt
+	return (parse_ast(trees[0])?)[0] as Stmt
 }
 
 fn parse_earley(rule &EarleyRule, mut table []&EarleyColumn) ?&EarleyState {
@@ -258,7 +258,7 @@ fn parse_earley(rule &EarleyRule, mut table []&EarleyColumn) ?&EarleyState {
 				complete(mut *col, state)
 			} else {
 				term := state.next_term()
-				if term.rule != 0 {
+				if unsafe { term.rule != 0 } {
 					predict(mut *col, term.rule)
 				} else if i + 1 < table.len {
 					scan(mut table[i + 1], state, term.str)

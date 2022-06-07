@@ -46,7 +46,7 @@ A page that contains 2 objects will look like:
     - Description
 
   * - 0
-    - 1 (byte)
+    - 1 (u8)
     - Kind (0 = leaf, 1 = non-leaf)
 
   * - 1
@@ -55,11 +55,11 @@ A page that contains 2 objects will look like:
       empty page will have used bytes of 3.
 
   * - 3
-    - 23 ([]byte)
+    - 23 ([]u8)
     - An object of 23 bytes.
 
   * - 26
-    - 37 ([]byte)
+    - 37 ([]u8)
     - An object of 37 bytes.
 
 Objects
@@ -172,7 +172,7 @@ Is serialized as 41 bytes:
     - 1
 
   * - 4
-    - 8 ([]byte)
+    - 8 ([]u8)
     - ``PRODUCTS``
 
   * - 8
@@ -184,7 +184,7 @@ Is serialized as 41 bytes:
     - 10
 
   * - 10
-    - 10 ([]byte)
+    - 10 ([]u8)
     - ``PRODUCT_ID``
 
   * - 24
@@ -192,7 +192,7 @@ Is serialized as 41 bytes:
     - 10
 
   * - 25
-    - 10 ([]byte)
+    - 10 ([]u8)
     - ``PRODUCT_ID``
 
   * - 35
@@ -347,7 +347,7 @@ Will have the combined row layouts of 112 bytes:
     - 14
 
   * - 8
-    - 14 ([]byte)
+    - 14 ([]u8)
     - ``Espresso Maker``
 
   * - 22
@@ -355,7 +355,7 @@ Will have the combined row layouts of 112 bytes:
     - 0
 
   * - 23
-    - 60 ([]byte)
+    - 60 ([]u8)
     - ``Extra-large portafilter brews up to 4 shots of rich espresso``
 
   * - 83
@@ -367,7 +367,7 @@ Will have the combined row layouts of 112 bytes:
     - 20
 
   * - 91
-    - 20 ([]byte)
+    - 20 ([]u8)
     - ``Self Cleaning Juicer``
 
   * - 111

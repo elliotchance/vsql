@@ -37,13 +37,13 @@ pub fn (mut s Server) start() ? {
 	s.db.query('CREATE TABLE singlerow (x INT)') or { table_exists = true }
 
 	if !table_exists {
-		s.db.query('INSERT INTO singlerow (x) VALUES (0)') ?
+		s.db.query('INSERT INTO singlerow (x) VALUES (0)')?
 	}
 
 	// Also, we need to register some dummy functions commonly used in the
 	// connection phase.
-	register_pg_functions(mut s.db) ?
-	register_pg_virtual_tables(mut s.db) ?
+	register_pg_functions(mut s.db)?
+	register_pg_virtual_tables(mut s.db)?
 
 	mut listener := net.listen_tcp(.ip6, ':$s.options.port') or {
 		return error('cannot listen on :$s.options.port: $err')
@@ -59,7 +59,7 @@ pub fn (mut s Server) start() ? {
 			continue
 		}
 
-		s.handle_conn(mut conn) ?
+		s.handle_conn(mut conn)?
 	}
 }
 
@@ -72,14 +72,14 @@ fn (mut s Server) log(message string) {
 fn (mut s Server) handle_conn(mut c net.TcpConn) ? {
 	mut conn := new_pg_conn(c)
 
-	conn.accept() ?
+	conn.accept()?
 	s.log('connected')
 
 	for {
-		msg_type := conn.read_byte() ?
+		msg_type := conn.read_byte()?
 		match msg_type {
 			`Q` /* Query */ {
-				mut query := conn.read_query() ?
+				mut query := conn.read_query()?
 
 				// A missing "FROM" clause is valid in PostgreSQL, but it's not
 				// valid in the SQL standard so it's not supported by vsql.
@@ -98,16 +98,16 @@ fn (mut s Server) handle_conn(mut c net.TcpConn) ? {
 					did_error = true
 					s.log('error: $err')
 
-					conn.write_error_result(err) ?
+					conn.write_error_result(err)?
 					new_result([]Column{}, []Row{}, 0, 0) // not used
 				}
 
 				if !did_error {
 					s.log('response: $result')
-					conn.write_result(result) ?
+					conn.write_result(result)?
 				}
 
-				conn.write_ready_for_query() ?
+				conn.write_ready_for_query()?
 			}
 			`X` /* Terminate */ {
 				// Don't bother consuming the message since we're going to
@@ -120,6 +120,6 @@ fn (mut s Server) handle_conn(mut c net.TcpConn) ? {
 		}
 	}
 
-	conn.close() ?
+	conn.close()?
 	s.log('disconnected')
 }

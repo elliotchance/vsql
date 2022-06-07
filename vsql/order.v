@@ -42,7 +42,7 @@ fn (o &OrderOperation) execute(rows []Row) ?[]Row {
 	mut head := &RowLink(0)
 	for row in rows {
 		// First item is assigned to head.
-		if head == 0 {
+		if unsafe { head == 0 } {
 			head = &RowLink{
 				row: row
 			}
@@ -52,7 +52,7 @@ fn (o &OrderOperation) execute(rows []Row) ?[]Row {
 		// If the item is less than the head we unshift it. This cannot be
 		// easily done in the next step without us needing to keep the previous
 		// pointer as well.
-		head_cmp := row_cmp(o.conn, o.params, row, head.row, o.order) ?
+		head_cmp := row_cmp(o.conn, o.params, row, head.row, o.order)?
 		if head_cmp < 0 {
 			head = &RowLink{
 				row: row
@@ -64,8 +64,8 @@ fn (o &OrderOperation) execute(rows []Row) ?[]Row {
 		// Find the place to insert.
 		mut cursor := head
 		mut inserted := false
-		for cursor.next != 0 {
-			cmp := row_cmp(o.conn, o.params, row, cursor.next.row, o.order) ?
+		for unsafe { cursor.next != 0 } {
+			cmp := row_cmp(o.conn, o.params, row, cursor.next.row, o.order)?
 			if cmp < 0 {
 				cursor.next = &RowLink{
 					row: row
@@ -98,7 +98,7 @@ mut:
 fn (l &RowLink) rows() []Row {
 	mut rows := []Row{}
 	mut cursor := l
-	for cursor.next != 0 {
+	for unsafe { cursor.next != 0 } {
 		rows << cursor.row
 		cursor = cursor.next
 	}
@@ -110,10 +110,10 @@ fn (l &RowLink) rows() []Row {
 
 fn row_cmp(conn &Connection, params map[string]Value, r1 Row, r2 Row, specs []SortSpecification) ?int {
 	for spec in specs {
-		left := eval_as_value(conn, r1, spec.expr, params) ?
-		right := eval_as_value(conn, r2, spec.expr, params) ?
+		left := eval_as_value(conn, r1, spec.expr, params)?
+		right := eval_as_value(conn, r2, spec.expr, params)?
 
-		cmp, _ := left.cmp(right) ?
+		cmp, _ := left.cmp(right)?
 		if cmp != 0 {
 			if !spec.is_asc {
 				return -cmp

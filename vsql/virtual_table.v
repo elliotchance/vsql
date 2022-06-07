@@ -52,7 +52,7 @@ fn (o VirtualTableOperation) execute(_ []Row) ?[]Row {
 	mut vt := o.table
 	vt.reset()
 	for !vt.is_done {
-		vt.data(mut vt) ?
+		vt.data(mut vt)?
 	}
 
 	return vt.rows

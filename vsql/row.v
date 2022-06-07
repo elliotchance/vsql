@@ -10,7 +10,7 @@ mut:
 	// id is the unique row identifier within the table. If the table has a
 	// PRIMARY KEY this will be a binary representation of that. Otherwise, a
 	// random but time sequential value will be generated for it.
-	id []byte
+	id []u8
 	// tid is the transaction ID that created this row.
 	tid  int
 	data map[string]Value
@@ -25,14 +25,14 @@ pub fn new_row(data map[string]Value) Row {
 // get_null will return true if the column name is NULL. An error will be
 // returned if the column does not exist.
 pub fn (r Row) get_null(name string) ?bool {
-	value := r.get(name) ?
+	value := r.get(name)?
 	return value.typ.typ == .is_null
 }
 
 // get_f64 will only work for columns that are numerical (DOUBLE PRECISION,
 // FLOAT, REAL, etc). If the value is NULL, 0 will be returned. See get_null().
 pub fn (r Row) get_f64(name string) ?f64 {
-	value := r.get(name) ?
+	value := r.get(name)?
 	if value.typ.uses_f64() {
 		return value.f64_value
 	}
@@ -46,7 +46,7 @@ pub fn (r Row) get_f64(name string) ?f64 {
 //
 // An error is only returned if the column does not exist.
 pub fn (r Row) get_string(name string) ?string {
-	return (r.get(name) ?).str()
+	return (r.get(name)?).str()
 }
 
 // get_bool only works on a BOOLEAN value. If the value is NULL or UNKNOWN,
@@ -55,7 +55,7 @@ pub fn (r Row) get_string(name string) ?string {
 // An error is returned if the type is not a BOOLEAN or the column name does not
 // exist.
 pub fn (r Row) get_bool(name string) ?bool {
-	value := r.get(name) ?
+	value := r.get(name)?
 	return match value.typ.typ {
 		.is_boolean { value.f64_value == 1 }
 		else { false }
@@ -69,7 +69,7 @@ pub fn (r Row) get_bool(name string) ?bool {
 // An error is returned if the type is not a BOOLEAN or the column name does not
 // exist.
 pub fn (r Row) get_unknown(name string) ?bool {
-	value := r.get(name) ?
+	value := r.get(name)?
 	return match value.typ.typ {
 		.is_boolean { value.f64_value == 2 }
 		else { false }
@@ -131,8 +131,8 @@ fn new_empty_row(columns Columns) Row {
 	return r
 }
 
-fn (r Row) bytes(t Table) []byte {
-	mut buf := new_bytes([]byte{})
+fn (r Row) bytes(t Table) []u8 {
+	mut buf := new_bytes([]u8{})
 
 	buf.write_bytes1(r.id)
 
@@ -150,7 +150,7 @@ fn (r Row) bytes(t Table) []byte {
 				panic('should not be possible')
 			}
 			.is_boolean {
-				buf.write_byte(byte(v.f64_value))
+				buf.write_byte(u8(v.f64_value))
 			}
 			.is_bigint {
 				buf.write_i64(i64(v.f64_value))
@@ -180,7 +180,7 @@ fn (r Row) bytes(t Table) []byte {
 	return buf.bytes()
 }
 
-fn new_row_from_bytes(t Table, data []byte, tid int) Row {
+fn new_row_from_bytes(t Table, data []u8, tid int) Row {
 	mut buf := new_bytes(data)
 	mut row := map[string]Value{}
 
@@ -235,13 +235,13 @@ fn new_row_from_bytes(t Table, data []byte, tid int) Row {
 	return Row{row_id, tid, row}
 }
 
-fn (mut r Row) object_key(t Table) ?[]byte {
+fn (mut r Row) object_key(t Table) ?[]u8 {
 	// If there is a PRIMARY KEY, generate the row key.
 	if t.primary_key.len > 0 {
-		mut pk := new_bytes([]byte{})
+		mut pk := new_bytes([]u8{})
 
 		for col_name in t.primary_key {
-			col := t.column(col_name) ?
+			col := t.column(col_name)?
 			match col.typ.typ {
 				.is_null {
 					return error('cannot use NULL in PRIMARY KEY')
@@ -285,7 +285,7 @@ fn (mut r Row) object_key(t Table) ?[]byte {
 		}
 	}
 
-	mut key := new_bytes([]byte{})
+	mut key := new_bytes([]u8{})
 	key.write_byte(`R`)
 	key.write_bytes(t.name.bytes())
 

@@ -43,7 +43,7 @@ mut:
 	// in-flight.
 	active_transaction_ids TransactionIDs
 	// padding ensures the sizeof(header) is always 4kb.
-	padding [3052]byte
+	padding [3052]u8
 }
 
 fn new_header(page_size int) Header {
@@ -62,14 +62,14 @@ fn new_header(page_size int) Header {
 fn init_database_file(path string, page_size int) ? {
 	header := new_header(page_size)
 
-	mut tmpf := os.create(path) ?
-	write_header(mut tmpf, header) ?
+	mut tmpf := os.create(path)?
+	write_header(mut tmpf, header)?
 	tmpf.close()
 }
 
 fn read_header(mut file os.File) ?Header {
-	file.seek(0, .start) ?
-	header := file.read_raw<Header>() ?
+	file.seek(0, .start)?
+	header := file.read_raw<Header>()?
 
 	// Check file version compatibility.
 	if header.version != vsql.current_version {
@@ -80,6 +80,6 @@ fn read_header(mut file os.File) ?Header {
 }
 
 fn write_header(mut file os.File, header Header) ? {
-	file.seek(0, .start) ?
-	file.write_raw(header) ?
+	file.seek(0, .start)?
+	file.write_raw(header)?
 }

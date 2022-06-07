@@ -3,7 +3,7 @@
 # Binaries
 
 vsql:
-	v -gc boehm -prod cmd/vsql.v
+	v -prod cmd/vsql.v
 
 # Documentation
 
@@ -27,27 +27,30 @@ fmt-verify:
 # Tests
 
 test:
-	v -stats -gc boehm -prod test vsql
+	v -stats -prod test vsql
+
+btree-test:
+	v -stats -prod test vsql/btree_test.v
 
 sql-test:
-	v -stats -gc boehm test vsql/sql_test.v
+	v -stats test vsql/sql_test.v
 
 # Examples
 
 examples:
 	for f in `ls examples/*.v`; do \
-		v -gc boehm run $$f ; \
+		v run $$f ; \
 	done
 
 examples/%:
-	v -gc boehm run examples/$*.v
+	v run examples/$*.v
 
 # Benchmarking
 
 bench: bench-on-disk bench-memory
 
 bench-on-disk:
-	v -gc boehm run cmd/vsql.v bench
+	v run cmd/vsql.v bench
 
 bench-memory:
-	v -gc boehm run cmd/vsql.v bench -file ':memory:'
+	v run cmd/vsql.v bench -file ':memory:'

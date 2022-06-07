@@ -24,6 +24,13 @@ removed. This test suite more specifically verifies:
 2. All keys are correctly iterated and in order.
 3. Removing all keys (one at a time) will correctly shrink the file as pages become empty.
 
+The B-Tree tests are run as part of ``make test``. However, you can run this
+suite alone with:
+
+.. code-block:: sh
+
+   make btree-test
+
 Examples
 ^^^^^^^^
 

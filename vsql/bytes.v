@@ -5,46 +5,46 @@ module vsql
 struct Bytes {
 mut:
 	at   int
-	data []byte
+	data []u8
 }
 
-fn new_bytes(data []byte) Bytes {
+fn new_bytes(data []u8) Bytes {
 	return Bytes{
 		data: data.clone()
 	}
 }
 
 fn (mut b Bytes) write_bool(d bool) {
-	b.write_byte(if d { byte(1) } else { 0 })
+	b.write_byte(if d { u8(1) } else { 0 })
 }
 
 fn (mut b Bytes) read_bool() bool {
 	return b.read_byte() != 0
 }
 
-fn (mut b Bytes) write_byte(d byte) {
+fn (mut b Bytes) write_byte(d u8) {
 	b.data << d
 }
 
-fn (mut b Bytes) read_byte() byte {
+fn (mut b Bytes) read_byte() u8 {
 	b.at++
 	return b.data[b.at - 1]
 }
 
-fn (mut b Bytes) write_bytes(data []byte) {
+fn (mut b Bytes) write_bytes(data []u8) {
 	for d in data {
 		b.data << d
 	}
 }
 
-fn (mut b Bytes) read_bytes(len int) []byte {
+fn (mut b Bytes) read_bytes(len int) []u8 {
 	data := b.data[b.at..b.at + len]
 	b.at += len
 	return data.clone()
 }
 
 fn (mut b Bytes) write_string1(s string) {
-	b.write_byte(byte(s.len))
+	b.write_byte(u8(s.len))
 	b.write_bytes(s.bytes())
 }
 
@@ -68,12 +68,12 @@ fn (mut b Bytes) read_string4() string {
 }
 
 union Bytes2 {
-	bytes     [2]byte
+	bytes     [2]u8
 	i16_value i16
 	u16_value u16
 }
 
-fn (b Bytes2) bytes() []byte {
+fn (b Bytes2) bytes() []u8 {
 	return unsafe { [b.bytes[0], b.bytes[1]] }
 }
 
@@ -111,7 +111,7 @@ fn (mut b Bytes) read_int() int {
 	return bytes_to_int(b.read_bytes(4))
 }
 
-fn (b Bytes) bytes() []byte {
+fn (b Bytes) bytes() []u8 {
 	return b.data.clone()
 }
 
@@ -120,16 +120,15 @@ fn (b Bytes) has_more() bool {
 }
 
 union Bytes8 {
-	bytes     [8]byte
+	bytes     [8]u8
 	f64_value f64
 	i64_value i64
 	u64_value u64
 }
 
-fn (b Bytes8) bytes() []byte {
+fn (b Bytes8) bytes() []u8 {
 	return unsafe {
-		[b.bytes[0], b.bytes[1], b.bytes[2], b.bytes[3], b.bytes[4], b.bytes[5], b.bytes[6],
-			b.bytes[7]]
+		[b.bytes[0], b.bytes[1], b.bytes[2], b.bytes[3], b.bytes[4], b.bytes[5], b.bytes[6], b.bytes[7]]
 	}
 }
 
@@ -142,12 +141,12 @@ fn (mut b Bytes) write_i64(x i64) {
 }
 
 union Bytes4 {
-	bytes     [4]byte
+	bytes     [4]u8
 	f32_value f32
 	int_value int
 }
 
-fn (b Bytes4) bytes() []byte {
+fn (b Bytes4) bytes() []u8 {
 	return unsafe { [b.bytes[0], b.bytes[1], b.bytes[2], b.bytes[3]] }
 }
 
@@ -182,13 +181,13 @@ fn (mut b Bytes) read_i64() i64 {
 	}
 }
 
-fn int_to_bytes(n int) []byte {
+fn int_to_bytes(n int) []u8 {
 	return Bytes4{
 		int_value: n
 	}.bytes().reverse()
 }
 
-fn bytes_to_int(bytes []byte) int {
+fn bytes_to_int(bytes []u8) int {
 	return unsafe {
 		Bytes4{
 			bytes: [bytes[3], bytes[2], bytes[1], bytes[0]]!
@@ -196,14 +195,14 @@ fn bytes_to_int(bytes []byte) int {
 	}
 }
 
-fn i64_to_bytes(n i64) []byte {
+fn i64_to_bytes(n i64) []u8 {
 	return Bytes8{
 		i64_value: n
 	}.bytes().reverse()
 }
 
 fn (mut b Bytes) write_string1_list(ss []string) {
-	b.write_byte(byte(ss.len))
+	b.write_byte(u8(ss.len))
 	for s in ss {
 		b.write_string1(s)
 	}
@@ -212,19 +211,19 @@ fn (mut b Bytes) write_string1_list(ss []string) {
 fn (mut b Bytes) read_string1_list() []string {
 	len := b.read_byte()
 	mut ss := []string{len: int(len)}
-	for i in 0 .. len {
+	for i in 0 .. int(len) {
 		ss[i] = b.read_string1()
 	}
 
 	return ss
 }
 
-fn (mut b Bytes) read_bytes1() []byte {
+fn (mut b Bytes) read_bytes1() []u8 {
 	len := b.read_byte()
 	return b.read_bytes(len)
 }
 
-fn (mut b Bytes) write_bytes1(s []byte) {
-	b.write_byte(byte(s.len))
+fn (mut b Bytes) write_bytes1(s []u8) {
+	b.write_byte(u8(s.len))
 	b.write_bytes(s.clone())
 }

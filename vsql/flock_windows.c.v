@@ -10,12 +10,12 @@ import os.filelock
 
 fn flock_lock_exclusive(file os.File, path string) ? {
 	mut f := filelock.new('${path}.lock')
-	f.acquire() ?
+	f.acquire()?
 }
 
 fn flock_lock_shared(file os.File, path string) ? {
 	mut f := filelock.new('${path}.lock')
-	f.acquire() ?
+	f.acquire()?
 }
 
 fn flock_unlock_exclusive(file os.File, path string) {

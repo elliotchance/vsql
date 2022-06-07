@@ -60,13 +60,13 @@ fn main() {
 fn cli_command(cmd cli.Command) ? {
 	print_version()
 
-	mut db := vsql.open(cmd.args[0]) ?
+	mut db := vsql.open(cmd.args[0])?
 	for {
 		print('vsql> ')
 		query := os.get_line()
 
 		start := time.ticks()
-		result := db.query(query) ?
+		result := db.query(query)?
 		for row in result {
 			for column in result.columns {
 				print('$column.name: ${row.get_string(column.name)} ')

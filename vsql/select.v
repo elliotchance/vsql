@@ -7,18 +7,18 @@ import time
 fn execute_select(mut c Connection, stmt QueryExpression, params map[string]Value, elapsed_parse time.Duration, explain bool) ?Result {
 	t := start_timer()
 
-	c.open_read_connection() ?
+	c.open_read_connection()?
 	defer {
 		c.release_read_connection()
 	}
 
-	mut plan := create_plan(stmt, params, c) ?
+	mut plan := create_plan(stmt, params, c)?
 
 	if explain {
 		return plan.explain(elapsed_parse)
 	}
 
-	rows := plan.execute([]Row{}) ?
+	rows := plan.execute([]Row{})?
 
 	return new_result(plan.columns(), rows, elapsed_parse, t.elapsed())
 }
@@ -57,7 +57,7 @@ fn transform_select_expressions(c &Connection, params map[string]Value, rows []R
 				column_names << column_name
 			}
 
-			data[column_name] = eval_as_value(c, row, expr.expr, params) ?
+			data[column_name] = eval_as_value(c, row, expr.expr, params)?
 			col_num++
 		}
 

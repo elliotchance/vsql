@@ -6235,7 +6235,7 @@ fn parse_ast(node &EarleyNode) ?[]EarleyValue {
 
 	mut children := []EarleyValue{}
 	for child in node.children {
-		for result in parse_ast(child) ? {
+		for result in parse_ast(child)? {
 			children << result
 		}
 	}
@@ -6246,628 +6246,628 @@ fn parse_ast(node &EarleyNode) ?[]EarleyValue {
 fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 	match name {
 		'<absolute value expression: 1>' {
-			return [EarleyValue(parse_abs(children[2] as Expr) ?)]
+			return [EarleyValue(parse_abs(children[2] as Expr)?)]
 		}
 		'<approximate numeric type: 1>' {
-			return [EarleyValue(parse_float() ?)]
+			return [EarleyValue(parse_float()?)]
 		}
 		'<approximate numeric type: 2>' {
-			return [EarleyValue(parse_float_n(children[2] as Value) ?)]
+			return [EarleyValue(parse_float_n(children[2] as Value)?)]
 		}
 		'<approximate numeric type: 3>' {
-			return [EarleyValue(parse_real() ?)]
+			return [EarleyValue(parse_real()?)]
 		}
 		'<approximate numeric type: 4>' {
-			return [EarleyValue(parse_double_precision() ?)]
+			return [EarleyValue(parse_double_precision()?)]
 		}
 		'<as clause: 1>' {
-			return [EarleyValue(parse_identifier(children[1] as Identifier) ?)]
+			return [EarleyValue(parse_identifier(children[1] as Identifier)?)]
 		}
 		'<between predicate part 1: 1>' {
-			return [EarleyValue(parse_yes() ?)]
+			return [EarleyValue(parse_yes()?)]
 		}
 		'<between predicate part 1: 2>' {
-			return [EarleyValue(parse_no() ?)]
+			return [EarleyValue(parse_no()?)]
 		}
 		'<between predicate part 2: 1>' {
 			return [
-				EarleyValue(parse_between1(children[0] as bool, children[1] as Expr, children[3] as Expr) ?),
+				EarleyValue(parse_between1(children[0] as bool, children[1] as Expr, children[3] as Expr)?),
 			]
 		}
 		'<between predicate part 2: 2>' {
 			return [
 				EarleyValue(parse_between2(children[0] as bool, children[1] as bool, children[2] as Expr,
-					children[4] as Expr) ?),
+					children[4] as Expr)?),
 			]
 		}
 		'<between predicate: 1>' {
 			return [
-				EarleyValue(parse_between(children[0] as Expr, children[1] as BetweenExpr) ?),
+				EarleyValue(parse_between(children[0] as Expr, children[1] as BetweenExpr)?),
 			]
 		}
 		'<boolean factor: 2>' {
-			return [EarleyValue(parse_not(children[1] as Expr) ?)]
+			return [EarleyValue(parse_not(children[1] as Expr)?)]
 		}
 		'<boolean literal: 1>' {
-			return [EarleyValue(parse_true() ?)]
+			return [EarleyValue(parse_true()?)]
 		}
 		'<boolean literal: 2>' {
-			return [EarleyValue(parse_false() ?)]
+			return [EarleyValue(parse_false()?)]
 		}
 		'<boolean literal: 3>' {
-			return [EarleyValue(parse_unknown() ?)]
+			return [EarleyValue(parse_unknown()?)]
 		}
 		'<boolean term: 2>' {
 			return [
-				EarleyValue(parse_and(children[0] as Expr, children[2] as Expr) ?),
+				EarleyValue(parse_and(children[0] as Expr, children[2] as Expr)?),
 			]
 		}
 		'<boolean type: 1>' {
-			return [EarleyValue(parse_boolean_type() ?)]
+			return [EarleyValue(parse_boolean_type()?)]
 		}
 		'<boolean value expression: 2>' {
-			return [EarleyValue(parse_or(children[0] as Expr, children[2] as Expr) ?)]
+			return [EarleyValue(parse_or(children[0] as Expr, children[2] as Expr)?)]
 		}
 		'<ceiling function: 1>' {
-			return [EarleyValue(parse_ceiling(children[2] as Expr) ?)]
+			return [EarleyValue(parse_ceiling(children[2] as Expr)?)]
 		}
 		'<ceiling function: 2>' {
-			return [EarleyValue(parse_ceiling(children[2] as Expr) ?)]
+			return [EarleyValue(parse_ceiling(children[2] as Expr)?)]
 		}
 		'<char length expression: 1>' {
-			return [EarleyValue(parse_char_length(children[2] as Expr) ?)]
+			return [EarleyValue(parse_char_length(children[2] as Expr)?)]
 		}
 		'<char length expression: 2>' {
-			return [EarleyValue(parse_char_length(children[2] as Expr) ?)]
+			return [EarleyValue(parse_char_length(children[2] as Expr)?)]
 		}
 		'<character like predicate part 2: 1>' {
-			return [EarleyValue(parse_like(children[1] as Expr) ?)]
+			return [EarleyValue(parse_like(children[1] as Expr)?)]
 		}
 		'<character like predicate part 2: 2>' {
-			return [EarleyValue(parse_not_like(children[2] as Expr) ?)]
+			return [EarleyValue(parse_not_like(children[2] as Expr)?)]
 		}
 		'<character like predicate: 1>' {
 			return [
-				EarleyValue(parse_like_pred(children[0] as Expr, children[1] as LikeExpr) ?),
+				EarleyValue(parse_like_pred(children[0] as Expr, children[1] as LikeExpr)?),
 			]
 		}
 		'<character position expression: 1>' {
 			return [
-				EarleyValue(parse_position(children[2] as Expr, children[4] as Expr) ?),
+				EarleyValue(parse_position(children[2] as Expr, children[4] as Expr)?),
 			]
 		}
 		'<character string type: 1>' {
-			return [EarleyValue(parse_character() ?)]
+			return [EarleyValue(parse_character()?)]
 		}
 		'<character string type: 2>' {
-			return [EarleyValue(parse_character_n(children[2] as Value) ?)]
+			return [EarleyValue(parse_character_n(children[2] as Value)?)]
 		}
 		'<character string type: 3>' {
-			return [EarleyValue(parse_character() ?)]
+			return [EarleyValue(parse_character()?)]
 		}
 		'<character string type: 4>' {
-			return [EarleyValue(parse_character_n(children[2] as Value) ?)]
+			return [EarleyValue(parse_character_n(children[2] as Value)?)]
 		}
 		'<character string type: 5>' {
-			return [EarleyValue(parse_varchar(children[3] as Value) ?)]
+			return [EarleyValue(parse_varchar(children[3] as Value)?)]
 		}
 		'<character string type: 6>' {
-			return [EarleyValue(parse_varchar(children[3] as Value) ?)]
+			return [EarleyValue(parse_varchar(children[3] as Value)?)]
 		}
 		'<character string type: 7>' {
-			return [EarleyValue(parse_varchar(children[2] as Value) ?)]
+			return [EarleyValue(parse_varchar(children[2] as Value)?)]
 		}
 		'<column constraint: 1>' {
-			return [EarleyValue(parse_yes() ?)]
+			return [EarleyValue(parse_yes()?)]
 		}
 		'<column definition: 1>' {
 			return [
-				EarleyValue(parse_column_definition1(children[0] as Identifier, children[1] as Type) ?),
+				EarleyValue(parse_column_definition1(children[0] as Identifier, children[1] as Type)?),
 			]
 		}
 		'<column definition: 2>' {
 			return [
 				EarleyValue(parse_column_definition2(children[0] as Identifier, children[1] as Type,
-					children[2] as bool) ?),
+					children[2] as bool)?),
 			]
 		}
 		'<column name list: 1>' {
-			return [EarleyValue(parse_column_name_list1(children[0] as Identifier) ?)]
+			return [EarleyValue(parse_column_name_list1(children[0] as Identifier)?)]
 		}
 		'<column name list: 2>' {
 			return [
-				EarleyValue(parse_column_name_list2(children[0] as []Identifier, children[2] as Identifier) ?),
+				EarleyValue(parse_column_name_list2(children[0] as []Identifier, children[2] as Identifier)?),
 			]
 		}
 		'<commit statement: 1>' {
-			return [EarleyValue(parse_commit() ?)]
+			return [EarleyValue(parse_commit()?)]
 		}
 		'<commit statement: 2>' {
-			return [EarleyValue(parse_commit() ?)]
+			return [EarleyValue(parse_commit()?)]
 		}
 		'<common logarithm: 1>' {
-			return [EarleyValue(parse_log10(children[2] as Expr) ?)]
+			return [EarleyValue(parse_log10(children[2] as Expr)?)]
 		}
 		'<comparison predicate part 2: 1>' {
 			return [
-				EarleyValue(parse_comparison_part(children[0] as string, children[1] as Expr) ?),
+				EarleyValue(parse_comparison_part(children[0] as string, children[1] as Expr)?),
 			]
 		}
 		'<comparison predicate: 1>' {
 			return [
-				EarleyValue(parse_comparison(children[0] as Expr, children[1] as ComparisonPredicatePart2) ?),
+				EarleyValue(parse_comparison(children[0] as Expr, children[1] as ComparisonPredicatePart2)?),
 			]
 		}
 		'<concatenation: 1>' {
 			return [
-				EarleyValue(parse_concatenation(children[0] as Expr, children[2] as Expr) ?),
+				EarleyValue(parse_concatenation(children[0] as Expr, children[2] as Expr)?),
 			]
 		}
 		'<contextually typed row value constructor element list: 1>' {
-			return [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[0] as Expr)?)]
 		}
 		'<contextually typed row value constructor element list: 2>' {
 			return [
-				EarleyValue(parse_append_exprs1(children[0] as []Expr, children[2] as Expr) ?),
+				EarleyValue(parse_append_exprs1(children[0] as []Expr, children[2] as Expr)?),
 			]
 		}
 		'<contextually typed row value constructor: 1>' {
-			return [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[0] as Expr)?)]
 		}
 		'<contextually typed row value constructor: 2>' {
-			return [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[0] as Expr)?)]
 		}
 		'<contextually typed row value constructor: 3>' {
-			return [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[0] as Expr)?)]
 		}
 		'<contextually typed row value constructor: 4>' {
-			return [EarleyValue(parse_expr_to_list(children[1] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[1] as Expr)?)]
 		}
 		'<contextually typed row value constructor: 5>' {
 			return [
-				EarleyValue(parse_append_exprs2(children[1] as Expr, children[3] as []Expr) ?),
+				EarleyValue(parse_append_exprs2(children[1] as Expr, children[3] as []Expr)?),
 			]
 		}
 		'<contextually typed row value expression list: 2>' {
 			return [
-				EarleyValue(parse_merge_expr_lists(children[0] as []Expr, children[2] as []Expr) ?),
+				EarleyValue(parse_merge_expr_lists(children[0] as []Expr, children[2] as []Expr)?),
 			]
 		}
 		'<contextually typed table value constructor: 1>' {
-			return [EarleyValue(parse_exprs(children[1] as []Expr) ?)]
+			return [EarleyValue(parse_exprs(children[1] as []Expr)?)]
 		}
 		'<correlation or recognition: 1>' {
-			return [EarleyValue(parse_correlation1(children[0] as Identifier) ?)]
+			return [EarleyValue(parse_correlation1(children[0] as Identifier)?)]
 		}
 		'<correlation or recognition: 2>' {
-			return [EarleyValue(parse_correlation1(children[1] as Identifier) ?)]
+			return [EarleyValue(parse_correlation1(children[1] as Identifier)?)]
 		}
 		'<correlation or recognition: 3>' {
 			return [
-				EarleyValue(parse_correlation2(children[0] as Identifier, children[1] as []Identifier) ?),
+				EarleyValue(parse_correlation2(children[0] as Identifier, children[1] as []Identifier)?),
 			]
 		}
 		'<correlation or recognition: 4>' {
 			return [
-				EarleyValue(parse_correlation2(children[1] as Identifier, children[2] as []Identifier) ?),
+				EarleyValue(parse_correlation2(children[1] as Identifier, children[2] as []Identifier)?),
 			]
 		}
 		'<cursor specification: 1>' {
 			return [
-				EarleyValue(parse_cursor_specification(children[0] as QueryExpression) ?),
+				EarleyValue(parse_cursor_specification(children[0] as QueryExpression)?),
 			]
 		}
 		'<delete statement: searched: 1>' {
-			return [EarleyValue(parse_delete_statement(children[2] as Identifier) ?)]
+			return [EarleyValue(parse_delete_statement(children[2] as Identifier)?)]
 		}
 		'<delete statement: searched: 2>' {
 			return [
-				EarleyValue(parse_delete_statement_where(children[2] as Identifier, children[4] as Expr) ?),
+				EarleyValue(parse_delete_statement_where(children[2] as Identifier, children[4] as Expr)?),
 			]
 		}
 		'<derived column: 1>' {
-			return [EarleyValue(parse_derived_column(children[0] as Expr) ?)]
+			return [EarleyValue(parse_derived_column(children[0] as Expr)?)]
 		}
 		'<derived column: 2>' {
 			return [
-				EarleyValue(parse_derived_column_as(children[0] as Expr, children[1] as Identifier) ?),
+				EarleyValue(parse_derived_column_as(children[0] as Expr, children[1] as Identifier)?),
 			]
 		}
 		'<drop table statement: 1>' {
 			return [
-				EarleyValue(parse_drop_table_statement(children[2] as Identifier) ?),
+				EarleyValue(parse_drop_table_statement(children[2] as Identifier)?),
 			]
 		}
 		'<exact numeric literal: 2>' {
-			return [EarleyValue(parse_value(children[0] as Value) ?)]
+			return [EarleyValue(parse_value(children[0] as Value)?)]
 		}
 		'<exact numeric literal: 3>' {
 			return [
-				EarleyValue(parse_exact_numeric_literal1(children[0] as Value, children[2] as Value) ?),
+				EarleyValue(parse_exact_numeric_literal1(children[0] as Value, children[2] as Value)?),
 			]
 		}
 		'<exact numeric literal: 4>' {
-			return [EarleyValue(parse_exact_numeric_literal2(children[1] as Value) ?)]
+			return [EarleyValue(parse_exact_numeric_literal2(children[1] as Value)?)]
 		}
 		'<exact numeric type: 1>' {
-			return [EarleyValue(parse_smallint() ?)]
+			return [EarleyValue(parse_smallint()?)]
 		}
 		'<exact numeric type: 2>' {
-			return [EarleyValue(parse_integer() ?)]
+			return [EarleyValue(parse_integer()?)]
 		}
 		'<exact numeric type: 3>' {
-			return [EarleyValue(parse_integer() ?)]
+			return [EarleyValue(parse_integer()?)]
 		}
 		'<exact numeric type: 4>' {
-			return [EarleyValue(parse_bigint() ?)]
+			return [EarleyValue(parse_bigint()?)]
 		}
 		'<explicit row value constructor: 1>' {
-			return [EarleyValue(parse_row_constructor1(children[2] as []Expr) ?)]
+			return [EarleyValue(parse_row_constructor1(children[2] as []Expr)?)]
 		}
 		'<explicit row value constructor: 2>' {
 			return [
-				EarleyValue(parse_row_constructor2(children[0] as QueryExpression) ?),
+				EarleyValue(parse_row_constructor2(children[0] as QueryExpression)?),
 			]
 		}
 		'<exponential function: 1>' {
-			return [EarleyValue(parse_exp(children[2] as Expr) ?)]
+			return [EarleyValue(parse_exp(children[2] as Expr)?)]
 		}
 		'<factor: 2>' {
 			return [
-				EarleyValue(parse_sign_expr(children[0] as string, children[1] as Expr) ?),
+				EarleyValue(parse_sign_expr(children[0] as string, children[1] as Expr)?),
 			]
 		}
 		'<fetch first clause: 1>' {
-			return [EarleyValue(parse_fetch_first_clause(children[2] as Expr) ?)]
+			return [EarleyValue(parse_fetch_first_clause(children[2] as Expr)?)]
 		}
 		'<floor function: 1>' {
-			return [EarleyValue(parse_floor(children[2] as Expr) ?)]
+			return [EarleyValue(parse_floor(children[2] as Expr)?)]
 		}
 		'<fold: 1>' {
-			return [EarleyValue(parse_upper(children[2] as Expr) ?)]
+			return [EarleyValue(parse_upper(children[2] as Expr)?)]
 		}
 		'<fold: 2>' {
-			return [EarleyValue(parse_lower(children[2] as Expr) ?)]
+			return [EarleyValue(parse_lower(children[2] as Expr)?)]
 		}
 		'<from clause: 1>' {
-			return [EarleyValue(parse_from_clause(children[1] as TablePrimary) ?)]
+			return [EarleyValue(parse_from_clause(children[1] as TablePrimary)?)]
 		}
 		'<from constructor: 1>' {
 			return [
-				EarleyValue(parse_from_constructor(children[1] as []Identifier, children[3] as []Expr) ?),
+				EarleyValue(parse_from_constructor(children[1] as []Identifier, children[3] as []Expr)?),
 			]
 		}
 		'<host parameter name: 1>' {
 			return [
-				EarleyValue(parse_host_parameter_name(children[1] as Identifier) ?),
+				EarleyValue(parse_host_parameter_name(children[1] as Identifier)?),
 			]
 		}
 		'<insert statement: 1>' {
 			return [
-				EarleyValue(parse_insert_statement(children[2] as Identifier, children[3] as InsertStmt) ?),
+				EarleyValue(parse_insert_statement(children[2] as Identifier, children[3] as InsertStmt)?),
 			]
 		}
 		'<is symmetric: 1>' {
-			return [EarleyValue(parse_yes() ?)]
+			return [EarleyValue(parse_yes()?)]
 		}
 		'<is symmetric: 2>' {
-			return [EarleyValue(parse_no() ?)]
+			return [EarleyValue(parse_no()?)]
 		}
 		'<literal: 2>' {
-			return [EarleyValue(parse_value_to_expr(children[0] as Value) ?)]
+			return [EarleyValue(parse_value_to_expr(children[0] as Value)?)]
 		}
 		'<modulus expression: 1>' {
 			return [
-				EarleyValue(parse_mod(children[2] as Expr, children[4] as Expr) ?),
+				EarleyValue(parse_mod(children[2] as Expr, children[4] as Expr)?),
 			]
 		}
 		'<natural logarithm: 1>' {
-			return [EarleyValue(parse_ln(children[2] as Expr) ?)]
+			return [EarleyValue(parse_ln(children[2] as Expr)?)]
 		}
 		'<nonparenthesized value expression primary: 2>' {
 			return [
-				EarleyValue(parse_identifier_to_expr(children[0] as Identifier) ?),
+				EarleyValue(parse_identifier_to_expr(children[0] as Identifier)?),
 			]
 		}
 		'<null predicate part 2: 1>' {
-			return [EarleyValue(parse_yes() ?)]
+			return [EarleyValue(parse_yes()?)]
 		}
 		'<null predicate part 2: 2>' {
-			return [EarleyValue(parse_no() ?)]
+			return [EarleyValue(parse_no()?)]
 		}
 		'<null predicate: 1>' {
 			return [
-				EarleyValue(parse_null_predicate(children[0] as Expr, children[1] as bool) ?),
+				EarleyValue(parse_null_predicate(children[0] as Expr, children[1] as bool)?),
 			]
 		}
 		'<null specification: 1>' {
-			return [EarleyValue(parse_null() ?)]
+			return [EarleyValue(parse_null()?)]
 		}
 		'<numeric value expression: 2>' {
 			return [
 				EarleyValue(parse_binary_expr(children[0] as Expr, children[1] as string,
-					children[2] as Expr) ?),
+					children[2] as Expr)?),
 			]
 		}
 		'<numeric value expression: 3>' {
 			return [
 				EarleyValue(parse_binary_expr(children[0] as Expr, children[1] as string,
-					children[2] as Expr) ?),
+					children[2] as Expr)?),
 			]
 		}
 		'<octet length expression: 1>' {
-			return [EarleyValue(parse_octet_length(children[2] as Expr) ?)]
+			return [EarleyValue(parse_octet_length(children[2] as Expr)?)]
 		}
 		'<order by clause: 1>' {
-			return [EarleyValue(parse_order_by(children[2] as []SortSpecification) ?)]
+			return [EarleyValue(parse_order_by(children[2] as []SortSpecification)?)]
 		}
 		'<ordering specification: 1>' {
-			return [EarleyValue(parse_yes() ?)]
+			return [EarleyValue(parse_yes()?)]
 		}
 		'<ordering specification: 2>' {
-			return [EarleyValue(parse_no() ?)]
+			return [EarleyValue(parse_no()?)]
 		}
 		'<parenthesized boolean value expression: 1>' {
-			return [EarleyValue(parse_expr(children[1] as Expr) ?)]
+			return [EarleyValue(parse_expr(children[1] as Expr)?)]
 		}
 		'<parenthesized derived column list: 1>' {
 			return [
-				EarleyValue(parse_parenthesized_derived_column_list(children[1] as []Identifier) ?),
+				EarleyValue(parse_parenthesized_derived_column_list(children[1] as []Identifier)?),
 			]
 		}
 		'<parenthesized value expression: 1>' {
-			return [EarleyValue(parse_expr(children[1] as Expr) ?)]
+			return [EarleyValue(parse_expr(children[1] as Expr)?)]
 		}
 		'<power function: 1>' {
 			return [
-				EarleyValue(parse_power(children[2] as Expr, children[4] as Expr) ?),
+				EarleyValue(parse_power(children[2] as Expr, children[4] as Expr)?),
 			]
 		}
 		'<query expression: 1>' {
-			return [EarleyValue(parse_query_expression(children[0] as SimpleTable) ?)]
+			return [EarleyValue(parse_query_expression(children[0] as SimpleTable)?)]
 		}
 		'<query expression: 2>' {
 			return [
-				EarleyValue(parse_query_expression_order(children[0] as SimpleTable, children[1] as []SortSpecification) ?),
+				EarleyValue(parse_query_expression_order(children[0] as SimpleTable, children[1] as []SortSpecification)?),
 			]
 		}
 		'<query expression: 3>' {
 			return [
 				EarleyValue(parse_query_expression_offset(children[0] as SimpleTable,
-					children[1] as Expr) ?),
+					children[1] as Expr)?),
 			]
 		}
 		'<query expression: 4>' {
 			return [
 				EarleyValue(parse_query_expression_order_offset(children[0] as SimpleTable,
-					children[1] as []SortSpecification, children[2] as Expr) ?),
+					children[1] as []SortSpecification, children[2] as Expr)?),
 			]
 		}
 		'<query expression: 5>' {
 			return [
-				EarleyValue(parse_query_expression_fetch(children[0] as SimpleTable, children[1] as Expr) ?),
+				EarleyValue(parse_query_expression_fetch(children[0] as SimpleTable, children[1] as Expr)?),
 			]
 		}
 		'<query expression: 6>' {
 			return [
 				EarleyValue(parse_query_expression_order_fetch(children[0] as SimpleTable,
-					children[1] as []SortSpecification, children[2] as Expr) ?),
+					children[1] as []SortSpecification, children[2] as Expr)?),
 			]
 		}
 		'<query expression: 7>' {
 			return [
 				EarleyValue(parse_query_expression_order_offset_fetch(children[0] as SimpleTable,
-					children[1] as []SortSpecification, children[2] as Expr, children[3] as Expr) ?),
+					children[1] as []SortSpecification, children[2] as Expr, children[3] as Expr)?),
 			]
 		}
 		'<query expression: 8>' {
 			return [
 				EarleyValue(parse_query_expression_offset_fetch(children[0] as SimpleTable,
-					children[1] as Expr, children[2] as Expr) ?),
+					children[1] as Expr, children[2] as Expr)?),
 			]
 		}
 		'<query specification: 1>' {
 			return [
-				EarleyValue(parse_query_specification(children[1] as SelectList, children[2] as TableExpression) ?),
+				EarleyValue(parse_query_specification(children[1] as SelectList, children[2] as TableExpression)?),
 			]
 		}
 		'<result offset clause: 1>' {
-			return [EarleyValue(parse_expr(children[1] as Expr) ?)]
+			return [EarleyValue(parse_expr(children[1] as Expr)?)]
 		}
 		'<rollback statement: 1>' {
-			return [EarleyValue(parse_rollback() ?)]
+			return [EarleyValue(parse_rollback()?)]
 		}
 		'<rollback statement: 2>' {
-			return [EarleyValue(parse_rollback() ?)]
+			return [EarleyValue(parse_rollback()?)]
 		}
 		'<routine invocation: 1>' {
 			return [
-				EarleyValue(parse_routine_invocation(children[0] as Identifier, children[1] as []Expr) ?),
+				EarleyValue(parse_routine_invocation(children[0] as Identifier, children[1] as []Expr)?),
 			]
 		}
 		'<row value constructor element list: 1>' {
-			return [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[0] as Expr)?)]
 		}
 		'<row value constructor element list: 2>' {
 			return [
-				EarleyValue(parse_append_exprs1(children[0] as []Expr, children[2] as Expr) ?),
+				EarleyValue(parse_append_exprs1(children[0] as []Expr, children[2] as Expr)?),
 			]
 		}
 		'<row value expression list: 1>' {
-			return [EarleyValue(parse_expr_to_list(children[0] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[0] as Expr)?)]
 		}
 		'<row value expression list: 2>' {
 			return [
-				EarleyValue(parse_append_exprs1(children[0] as []Expr, children[2] as Expr) ?),
+				EarleyValue(parse_append_exprs1(children[0] as []Expr, children[2] as Expr)?),
 			]
 		}
 		'<select list: 1>' {
-			return [EarleyValue(parse_asterisk(children[0] as string) ?)]
+			return [EarleyValue(parse_asterisk(children[0] as string)?)]
 		}
 		'<select list: 3>' {
 			return [
-				EarleyValue(parse_select_list2(children[0] as SelectList, children[2] as SelectList) ?),
+				EarleyValue(parse_select_list2(children[0] as SelectList, children[2] as SelectList)?),
 			]
 		}
 		'<select sublist: 1>' {
-			return [EarleyValue(parse_select_sublist(children[0] as DerivedColumn) ?)]
+			return [EarleyValue(parse_select_sublist(children[0] as DerivedColumn)?)]
 		}
 		'<set clause list: 2>' {
 			return [
-				EarleyValue(parse_set_clause_append(children[0] as map[string]Expr, children[2] as map[string]Expr) ?),
+				EarleyValue(parse_set_clause_append(children[0] as map[string]Expr, children[2] as map[string]Expr)?),
 			]
 		}
 		'<set clause: 1>' {
 			return [
-				EarleyValue(parse_set_clause(children[0] as Identifier, children[2] as Expr) ?),
+				EarleyValue(parse_set_clause(children[0] as Identifier, children[2] as Expr)?),
 			]
 		}
 		'<signed numeric literal: 1>' {
-			return [EarleyValue(parse_value_to_expr(children[0] as Value) ?)]
+			return [EarleyValue(parse_value_to_expr(children[0] as Value)?)]
 		}
 		'<signed numeric literal: 2>' {
 			return [
-				EarleyValue(parse_sign_expr(children[0] as string, children[1] as Value) ?),
+				EarleyValue(parse_sign_expr(children[0] as string, children[1] as Value)?),
 			]
 		}
 		'<similar predicate part 2: 1>' {
-			return [EarleyValue(parse_similar(children[2] as Expr) ?)]
+			return [EarleyValue(parse_similar(children[2] as Expr)?)]
 		}
 		'<similar predicate part 2: 2>' {
-			return [EarleyValue(parse_not_similar(children[3] as Expr) ?)]
+			return [EarleyValue(parse_not_similar(children[3] as Expr)?)]
 		}
 		'<similar predicate: 1>' {
 			return [
-				EarleyValue(parse_similar_pred(children[0] as Expr, children[1] as SimilarExpr) ?),
+				EarleyValue(parse_similar_pred(children[0] as Expr, children[1] as SimilarExpr)?),
 			]
 		}
 		'<sort specification list: 1>' {
-			return [EarleyValue(parse_sort_list1(children[0] as SortSpecification) ?)]
+			return [EarleyValue(parse_sort_list1(children[0] as SortSpecification)?)]
 		}
 		'<sort specification list: 2>' {
 			return [
-				EarleyValue(parse_sort_list2(children[0] as []SortSpecification, children[2] as SortSpecification) ?),
+				EarleyValue(parse_sort_list2(children[0] as []SortSpecification, children[2] as SortSpecification)?),
 			]
 		}
 		'<sort specification: 1>' {
-			return [EarleyValue(parse_sort1(children[0] as Expr) ?)]
+			return [EarleyValue(parse_sort1(children[0] as Expr)?)]
 		}
 		'<sort specification: 2>' {
 			return [
-				EarleyValue(parse_sort2(children[0] as Expr, children[1] as bool) ?),
+				EarleyValue(parse_sort2(children[0] as Expr, children[1] as bool)?),
 			]
 		}
 		'<SQL argument list: 1>' {
-			return [EarleyValue(parse_empty_exprs() ?)]
+			return [EarleyValue(parse_empty_exprs()?)]
 		}
 		'<SQL argument list: 2>' {
-			return [EarleyValue(parse_expr_to_list(children[1] as Expr) ?)]
+			return [EarleyValue(parse_expr_to_list(children[1] as Expr)?)]
 		}
 		'<SQL argument list: 3>' {
 			return [
-				EarleyValue(parse_append_exprs1(children[1] as []Expr, children[3] as Expr) ?),
+				EarleyValue(parse_append_exprs1(children[1] as []Expr, children[3] as Expr)?),
 			]
 		}
 		'<square root: 1>' {
-			return [EarleyValue(parse_sqrt(children[2] as Expr) ?)]
+			return [EarleyValue(parse_sqrt(children[2] as Expr)?)]
 		}
 		'<start transaction statement: 1>' {
-			return [EarleyValue(parse_start_transaction() ?)]
+			return [EarleyValue(parse_start_transaction()?)]
 		}
 		'<subquery: 1>' {
-			return [EarleyValue(parse_subquery(children[1] as QueryExpression) ?)]
+			return [EarleyValue(parse_subquery(children[1] as QueryExpression)?)]
 		}
 		'<table definition: 1>' {
 			return [
-				EarleyValue(parse_table_definition(children[2] as Identifier, children[3] as []TableElement) ?),
+				EarleyValue(parse_table_definition(children[2] as Identifier, children[3] as []TableElement)?),
 			]
 		}
 		'<table element list: 1>' {
 			return [
-				EarleyValue(parse_table_element_list(children[1] as []TableElement) ?),
+				EarleyValue(parse_table_element_list(children[1] as []TableElement)?),
 			]
 		}
 		'<table elements: 1>' {
-			return [EarleyValue(parse_table_elements1(children[0] as TableElement) ?)]
+			return [EarleyValue(parse_table_elements1(children[0] as TableElement)?)]
 		}
 		'<table elements: 2>' {
 			return [
-				EarleyValue(parse_table_elements2(children[0] as []TableElement, children[2] as TableElement) ?),
+				EarleyValue(parse_table_elements2(children[0] as []TableElement, children[2] as TableElement)?),
 			]
 		}
 		'<table expression: 1>' {
 			return [
-				EarleyValue(parse_table_expression(children[0] as TablePrimary) ?),
+				EarleyValue(parse_table_expression(children[0] as TablePrimary)?),
 			]
 		}
 		'<table expression: 2>' {
 			return [
 				EarleyValue(parse_table_expression_where(children[0] as TablePrimary,
-					children[1] as Expr) ?),
+					children[1] as Expr)?),
 			]
 		}
 		'<table primary: 1>' {
 			return [
-				EarleyValue(parse_table_primary_identifier(children[0] as Identifier) ?),
+				EarleyValue(parse_table_primary_identifier(children[0] as Identifier)?),
 			]
 		}
 		'<table primary: 2>' {
 			return [
-				EarleyValue(parse_table_primary_derived1(children[0] as TablePrimary) ?),
+				EarleyValue(parse_table_primary_derived1(children[0] as TablePrimary)?),
 			]
 		}
 		'<table primary: 3>' {
 			return [
 				EarleyValue(parse_table_primary_derived2(children[0] as TablePrimary,
-					children[1] as Correlation) ?),
+					children[1] as Correlation)?),
 			]
 		}
 		'<table value constructor: 1>' {
 			return [
-				EarleyValue(parse_table_value_constructor(children[1] as []Expr) ?),
+				EarleyValue(parse_table_value_constructor(children[1] as []Expr)?),
 			]
 		}
 		'<term: 2>' {
 			return [
 				EarleyValue(parse_binary_expr(children[0] as Expr, children[1] as string,
-					children[2] as Expr) ?),
+					children[2] as Expr)?),
 			]
 		}
 		'<term: 3>' {
 			return [
 				EarleyValue(parse_binary_expr(children[0] as Expr, children[1] as string,
-					children[2] as Expr) ?),
+					children[2] as Expr)?),
 			]
 		}
 		'<trigonometric function: 1>' {
 			return [
-				EarleyValue(parse_trig_func(children[0] as string, children[2] as Expr) ?),
+				EarleyValue(parse_trig_func(children[0] as string, children[2] as Expr)?),
 			]
 		}
 		'<unique constraint definition: 1>' {
 			return [
-				EarleyValue(parse_unique_constraint_definition(children[2] as []Identifier) ?),
+				EarleyValue(parse_unique_constraint_definition(children[2] as []Identifier)?),
 			]
 		}
 		'<unique specification: 1>' {
-			return [EarleyValue(parse_ignore() ?)]
+			return [EarleyValue(parse_ignore()?)]
 		}
 		'<unsigned value specification: 1>' {
-			return [EarleyValue(parse_value_to_expr(children[0] as Value) ?)]
+			return [EarleyValue(parse_value_to_expr(children[0] as Value)?)]
 		}
 		'<update statement: searched: 1>' {
 			return [
-				EarleyValue(parse_update_statement(children[1] as Identifier, children[3] as map[string]Expr) ?),
+				EarleyValue(parse_update_statement(children[1] as Identifier, children[3] as map[string]Expr)?),
 			]
 		}
 		'<update statement: searched: 2>' {
 			return [
 				EarleyValue(parse_update_statement_where(children[1] as Identifier, children[3] as map[string]Expr,
-					children[5] as Expr) ?),
+					children[5] as Expr)?),
 			]
 		}
 		'<where clause: 1>' {
-			return [EarleyValue(parse_expr(children[1] as Expr) ?)]
+			return [EarleyValue(parse_expr(children[1] as Expr)?)]
 		}
 		else {
 			return children

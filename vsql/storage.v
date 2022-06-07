@@ -49,11 +49,11 @@ fn new_storage() Storage {
 }
 
 fn (mut f Storage) open(path string) ? {
-	f.file = os.open_file(path, 'r+') ?
+	f.file = os.open_file(path, 'r+')?
 
-	header := read_header(mut f.file) ?
+	header := read_header(mut f.file)?
 
-	f.btree = new_btree(new_file_pager(mut f.file, header.page_size, header.root_page) ?,
+	f.btree = new_btree(new_file_pager(mut f.file, header.page_size, header.root_page)?,
 		header.page_size)
 
 	// Avoid reloading the schema if it hasn't changed.
@@ -67,7 +67,7 @@ fn (mut f Storage) open(path string) ? {
 
 	// The schema must be read in an isolation block, which may or may not
 	// belong to an active transaction.
-	f.isolation_start() ?
+	f.isolation_start()?
 	defer {
 		f.isolation_end() or { panic(err) }
 	}
@@ -95,14 +95,14 @@ fn (mut f Storage) close() ? {
 	//  need to.
 	f.header.root_page = f.btree.pager.root_page()
 
-	write_header(mut f.file, f.header) ?
+	write_header(mut f.file, f.header)?
 
 	f.file.flush()
 	f.file.close()
 }
 
 fn (mut f Storage) create_table(table_name string, columns Columns, primary_key []string) ? {
-	f.isolation_start() ?
+	f.isolation_start()?
 	defer {
 		f.isolation_end() or { panic(err) }
 	}
@@ -110,7 +110,7 @@ fn (mut f Storage) create_table(table_name string, columns Columns, primary_key 
 	table := Table{table_name, columns, primary_key, f.transaction_id}
 
 	obj := new_page_object('T$table_name'.bytes(), f.transaction_id, 0, table.bytes())
-	page_number := f.btree.add(obj) ?
+	page_number := f.btree.add(obj)?
 	f.transaction_pages[page_number] = true
 
 	f.tables[table_name] = table
@@ -118,12 +118,12 @@ fn (mut f Storage) create_table(table_name string, columns Columns, primary_key 
 }
 
 fn (mut f Storage) delete_table(table_name string, tid int) ? {
-	f.isolation_start() ?
+	f.isolation_start()?
 	defer {
 		f.isolation_end() or { panic(err) }
 	}
 
-	page_number := f.btree.expire('T$table_name'.bytes(), tid, f.transaction_id) ?
+	page_number := f.btree.expire('T$table_name'.bytes(), tid, f.transaction_id)?
 	f.transaction_pages[page_number] = true
 
 	f.tables.delete(table_name)
@@ -131,41 +131,41 @@ fn (mut f Storage) delete_table(table_name string, tid int) ? {
 }
 
 fn (mut f Storage) delete_row(table_name string, mut row Row) ? {
-	f.isolation_start() ?
+	f.isolation_start()?
 	defer {
 		f.isolation_end() or { panic(err) }
 	}
 
-	page_number := f.btree.expire(row.object_key(f.tables[table_name]) ?, row.tid, f.transaction_id) ?
+	page_number := f.btree.expire(row.object_key(f.tables[table_name])?, row.tid, f.transaction_id)?
 	f.transaction_pages[page_number] = true
 }
 
 fn (mut f Storage) write_row(mut r Row, t Table) ? {
-	f.isolation_start() ?
+	f.isolation_start()?
 	defer {
 		f.isolation_end() or { panic(err) }
 	}
 
-	obj := new_page_object(r.object_key(t) ?, f.transaction_id, 0, r.bytes(t))
-	page_number := f.btree.add(obj) ?
+	obj := new_page_object(r.object_key(t)?, f.transaction_id, 0, r.bytes(t))
+	page_number := f.btree.add(obj)?
 	f.transaction_pages[page_number] = true
 }
 
 fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ? {
-	f.isolation_start() ?
+	f.isolation_start()?
 	defer {
 		f.isolation_end() or { panic(err) }
 	}
 
-	old_obj := new_page_object(old.object_key(t) ?, old.tid, 0, old.bytes(t))
-	new_obj := new_page_object(new.object_key(t) ?, f.transaction_id, 0, new.bytes(t))
-	for page_number in f.btree.update(old_obj, new_obj, f.transaction_id) ? {
+	old_obj := new_page_object(old.object_key(t)?, old.tid, 0, old.bytes(t))
+	new_obj := new_page_object(new.object_key(t)?, f.transaction_id, 0, new.bytes(t))
+	for page_number in f.btree.update(old_obj, new_obj, f.transaction_id)? {
 		f.transaction_pages[page_number] = true
 	}
 }
 
 fn (mut f Storage) read_rows(table_name string) ?[]Row {
-	f.isolation_start() ?
+	f.isolation_start()?
 	defer {
 		f.isolation_end() or { panic(err) }
 	}
@@ -202,7 +202,7 @@ fn (mut f Storage) isolation_start() ? {
 	f.header.transaction_id++
 
 	f.transaction_id = f.header.transaction_id
-	f.header.active_transaction_ids.add(f.transaction_id) ?
+	f.header.active_transaction_ids.add(f.transaction_id)?
 }
 
 fn (mut f Storage) transaction_aborted() {
@@ -229,7 +229,7 @@ fn (mut f Storage) isolation_end() ? {
 
 	// Revist any remaining pages to clean out any expired rows.
 	for page_number, _ in f.transaction_pages {
-		mut page := f.btree.pager.fetch_page(page_number) ?
+		mut page := f.btree.pager.fetch_page(page_number)?
 		for obj in page.objects() {
 			// Only remove the objects expired in this transaction.
 			if obj.xid == f.transaction_id {
@@ -237,7 +237,7 @@ fn (mut f Storage) isolation_end() ? {
 			}
 		}
 
-		f.btree.pager.store_page(page_number, page) ?
+		f.btree.pager.store_page(page_number, page)?
 	}
 
 	f.transaction_pages = map[int]bool{}

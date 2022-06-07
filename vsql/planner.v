@@ -43,7 +43,7 @@ fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, c &
 		[]RowExpr {
 			mut plan := Plan{}
 
-			plan.operations << new_values_operation(body, NoExpr{}, correlation, c, params) ?
+			plan.operations << new_values_operation(body, NoExpr{}, correlation, c, params)?
 
 			return plan
 		}
@@ -79,7 +79,7 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 				}
 
 				if !covered_by_pk {
-					columns := columns_from_select(body, table, params, c) ?
+					columns := columns_from_select(body, table, params, c)?
 					plan.operations << TableOperation{table_name, false, c.storage.tables[table_name], params, c, columns, body.exprs, plan.subplans, c.storage}
 				}
 			} else {
@@ -99,7 +99,7 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 				table_name = body.table_expression.from_clause.correlation.name.name
 			}
 
-			subplan := create_query_expression_plan(from_clause, params, c, body.table_expression.from_clause.correlation) ?
+			subplan := create_query_expression_plan(from_clause, params, c, body.table_expression.from_clause.correlation)?
 			plan.subplans[table_name] = subplan
 
 			// NOTE: This has to be assigned to a variable otherwise the value
@@ -108,7 +108,7 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 				columns: subplan.columns()
 			}
 
-			columns := columns_from_select(body, t, params, c) ?
+			columns := columns_from_select(body, t, params, c)?
 			plan.operations << TableOperation{table_name, true, t, params, c, columns, body.exprs, plan.subplans, c.storage}
 		}
 	}
@@ -132,7 +132,7 @@ fn columns_from_select(stmt SelectStmt, table Table, params map[string]Value, c 
 					column_name = col.expr.name
 				}
 				empty_row := new_empty_row(table.columns)
-				typ := eval_as_type(c, empty_row, col.expr, params) ?
+				typ := eval_as_type(c, empty_row, col.expr, params)?
 				columns << Column{
 					name: column_name
 					typ: typ
@@ -173,7 +173,7 @@ fn create_update_plan(stmt UpdateStmt, params map[string]Value, c &Connection) ?
 }
 
 fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, c &Connection, correlation Correlation) ?Plan {
-	mut plan := create_basic_plan(stmt.body, stmt.offset, params, c, true, correlation) ?
+	mut plan := create_basic_plan(stmt.body, stmt.offset, params, c, true, correlation)?
 
 	if stmt.order.len > 0 {
 		plan.operations << new_order_operation(stmt.order, params, c, plan.columns())
@@ -200,7 +200,7 @@ mut:
 fn (mut o Plan) execute(_ []Row) ?[]Row {
 	mut rows := []Row{}
 	for mut operation in o.operations {
-		rows = operation.execute(rows) ?
+		rows = operation.execute(rows)?
 	}
 
 	return rows

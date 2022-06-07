@@ -16,11 +16,11 @@ struct PageObject {
 	// The key is not required to be unique in the page. It becomes unique when
 	// combined with tid. However, no more than two version of the same key can
 	// exist in a page. See the caveats at the top of btree.v.
-	key []byte
+	key []u8
 	// The value contains the serialized data for the object. The first byte of
 	// key is used to both identify what type of object this is and also keep
 	// objects within the same collection also within the same range.
-	value []byte
+	value []u8
 mut:
 	// The tid is the transaction that created the object.
 	//
@@ -32,7 +32,7 @@ mut:
 	xid int
 }
 
-fn new_page_object(key []byte, tid int, xid int, value []byte) PageObject {
+fn new_page_object(key []u8, tid int, xid int, value []u8) PageObject {
 	return PageObject{key, value, tid, xid}
 }
 
@@ -40,8 +40,8 @@ fn (o PageObject) length() int {
 	return vsql.page_object_prefix_length + o.key.len + o.value.len
 }
 
-fn (o PageObject) serialize() []byte {
-	mut buf := new_bytes([]byte{})
+fn (o PageObject) serialize() []u8 {
+	mut buf := new_bytes([]u8{})
 	buf.write_int(o.length())
 	buf.write_int(o.tid)
 	buf.write_int(o.xid)
@@ -52,7 +52,7 @@ fn (o PageObject) serialize() []byte {
 	return buf.bytes()
 }
 
-fn parse_page_object(data []byte) (int, PageObject) {
+fn parse_page_object(data []u8) (int, PageObject) {
 	mut buf := new_bytes(data)
 	total_len := buf.read_int()
 	tid := buf.read_int()
@@ -65,17 +65,17 @@ fn parse_page_object(data []byte) (int, PageObject) {
 }
 
 struct Page {
-	kind byte // 0 = leaf, 1 = non-leaf, see constants at the top of the file.
+	kind u8 // 0 = leaf, 1 = non-leaf, see constants at the top of the file.
 mut:
-	used u16    // number of bytes used by this page including 3 bytes for header.
-	data []byte // len = page size - 3
+	used u16  // number of bytes used by this page including 3 bytes for header.
+	data []u8 // len = page size - 3
 }
 
-fn new_page(kind byte, page_size int) &Page {
+fn new_page(kind u8, page_size int) &Page {
 	return &Page{
 		kind: kind
 		used: 3 // includes kind and self
-		data: []byte{len: page_size - 3}
+		data: []u8{len: page_size - 3}
 	}
 }
 
@@ -117,7 +117,7 @@ fn (mut p Page) update(old PageObject, new PageObject, tid int) ? {
 // versions returns all versions of a record. The result will have 0, 1 or 2
 // elements. versions accepts the objects to prevent callers from needing to
 // call objects again themselves.
-fn (p Page) versions(key []byte, objects []PageObject) []int {
+fn (p Page) versions(key []u8, objects []PageObject) []int {
 	mut versions := []int{}
 	for object in objects {
 		if compare_bytes(object.key, key) == 0 {
@@ -176,7 +176,7 @@ fn (mut p Page) add(obj PageObject) ? {
 
 // delete will remove a key from a page if it exists, otherwise no action will
 // be taken. The index of the deleted object is returned or -1.
-fn (mut p Page) delete(key []byte, tid int) bool {
+fn (mut p Page) delete(key []u8, tid int) bool {
 	mut offset := 0
 	mut did_delete := false
 	for object in p.objects() {
@@ -198,7 +198,7 @@ fn (mut p Page) delete(key []byte, tid int) bool {
 
 // expire will set the expiry transaction ID on an existing object. True is
 // returned if the page was modified.
-fn (mut p Page) expire(key []byte, tid int, xid int) bool {
+fn (mut p Page) expire(key []u8, tid int, xid int) bool {
 	mut offset := 0
 	mut modified := false
 	for mut object in p.objects() {
@@ -219,14 +219,14 @@ fn (mut p Page) expire(key []byte, tid int, xid int) bool {
 
 // replace will perform a delete and add operation. If the key does not exist it
 // will be created.
-fn (mut p Page) replace(key []byte, tid int, value []byte) ? {
+fn (mut p Page) replace(key []u8, tid int, value []u8) ? {
 	p.delete(key, tid)
 	obj := new_page_object(key.clone(), tid, 0, value)
-	p.add(obj) ?
+	p.add(obj)?
 }
 
-fn (p Page) keys() [][]byte {
-	mut keys := [][]byte{}
+fn (p Page) keys() [][]u8 {
+	mut keys := [][]u8{}
 	for object in p.objects() {
 		keys << object.key
 	}

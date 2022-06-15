@@ -30,11 +30,19 @@ fn parse_derived_column_as(expr Expr, as_clause Identifier) ?DerivedColumn {
 }
 
 fn parse_table_expression(from_clause TablePrimary) ?TableExpression {
-	return TableExpression{from_clause, NoExpr{}}
+	return TableExpression{from_clause, NoExpr{}, []Expr{}}
+}
+
+fn parse_table_expression_group(from_clause TablePrimary, group []Expr) ?TableExpression {
+	return TableExpression{from_clause, NoExpr{}, group}
 }
 
 fn parse_table_expression_where(from_clause TablePrimary, where Expr) ?TableExpression {
-	return TableExpression{from_clause, where}
+	return TableExpression{from_clause, where, []Expr{}}
+}
+
+fn parse_table_expression_where_group(from_clause TablePrimary, where Expr, group []Expr) ?TableExpression {
+	return TableExpression{from_clause, where, group}
 }
 
 fn parse_from_clause(name TablePrimary) ?TablePrimary {
@@ -604,4 +612,32 @@ fn parse_upper(expr Expr) ?Expr {
 
 fn parse_lower(expr Expr) ?Expr {
 	return CallExpr{'LOWER', [expr]}
+}
+
+fn parse_count_all(asterisk string) ?Expr {
+	return CountAllExpr{}
+}
+
+fn parse_avg() ?string {
+	return 'AVG'
+}
+
+fn parse_count() ?string {
+	return 'COUNT'
+}
+
+fn parse_min() ?string {
+	return 'MIN'
+}
+
+fn parse_max() ?string {
+	return 'MAX'
+}
+
+fn parse_sum() ?string {
+	return 'SUM'
+}
+
+fn parse_general_set_function(name string, expr Expr) ?Expr {
+	return CallExpr{name, [expr]}
 }

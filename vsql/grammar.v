@@ -45,6 +45,12 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_actual_identifier_ := &EarleyRule{
 		name: '<actual identifier>'
 	}
+	mut rule_aggregate_function_1_ := &EarleyRule{
+		name: '<aggregate function: 1>'
+	}
+	mut rule_aggregate_function_ := &EarleyRule{
+		name: '<aggregate function>'
+	}
 	mut rule_approximate_numeric_type_1_ := &EarleyRule{
 		name: '<approximate numeric type: 1>'
 	}
@@ -303,6 +309,24 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_comparison_predicate_ := &EarleyRule{
 		name: '<comparison predicate>'
 	}
+	mut rule_computational_operation_1_ := &EarleyRule{
+		name: '<computational operation: 1>'
+	}
+	mut rule_computational_operation_2_ := &EarleyRule{
+		name: '<computational operation: 2>'
+	}
+	mut rule_computational_operation_3_ := &EarleyRule{
+		name: '<computational operation: 3>'
+	}
+	mut rule_computational_operation_4_ := &EarleyRule{
+		name: '<computational operation: 4>'
+	}
+	mut rule_computational_operation_5_ := &EarleyRule{
+		name: '<computational operation: 5>'
+	}
+	mut rule_computational_operation_ := &EarleyRule{
+		name: '<computational operation>'
+	}
 	mut rule_concatenation_operator_ := &EarleyRule{
 		name: '<concatenation operator>'
 	}
@@ -516,6 +540,12 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_general_literal_ := &EarleyRule{
 		name: '<general literal>'
 	}
+	mut rule_general_set_function_1_ := &EarleyRule{
+		name: '<general set function: 1>'
+	}
+	mut rule_general_set_function_ := &EarleyRule{
+		name: '<general set function>'
+	}
 	mut rule_general_value_specification_ := &EarleyRule{
 		name: '<general value specification>'
 	}
@@ -524,6 +554,30 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_greater_than_or_equals_operator_ := &EarleyRule{
 		name: '<greater than or equals operator>'
+	}
+	mut rule_group_by_clause_1_ := &EarleyRule{
+		name: '<group by clause: 1>'
+	}
+	mut rule_group_by_clause_ := &EarleyRule{
+		name: '<group by clause>'
+	}
+	mut rule_grouping_column_reference_1_ := &EarleyRule{
+		name: '<grouping column reference: 1>'
+	}
+	mut rule_grouping_column_reference_ := &EarleyRule{
+		name: '<grouping column reference>'
+	}
+	mut rule_grouping_element_list_1_ := &EarleyRule{
+		name: '<grouping element list: 1>'
+	}
+	mut rule_grouping_element_list_2_ := &EarleyRule{
+		name: '<grouping element list: 2>'
+	}
+	mut rule_grouping_element_list_ := &EarleyRule{
+		name: '<grouping element list>'
+	}
+	mut rule_grouping_element_ := &EarleyRule{
+		name: '<grouping element>'
 	}
 	mut rule_host_parameter_name_1_ := &EarleyRule{
 		name: '<host parameter name: 1>'
@@ -701,6 +755,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_ordering_specification_ := &EarleyRule{
 		name: '<ordering specification>'
+	}
+	mut rule_ordinary_grouping_set_ := &EarleyRule{
+		name: '<ordinary grouping set>'
 	}
 	mut rule_parenthesized_boolean_value_expression_1_ := &EarleyRule{
 		name: '<parenthesized boolean value expression: 1>'
@@ -897,6 +954,12 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_set_clause_ := &EarleyRule{
 		name: '<set clause>'
 	}
+	mut rule_set_function_specification_ := &EarleyRule{
+		name: '<set function specification>'
+	}
+	mut rule_set_function_type_ := &EarleyRule{
+		name: '<set function type>'
+	}
 	mut rule_set_target_ := &EarleyRule{
 		name: '<set target>'
 	}
@@ -1049,6 +1112,12 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_table_expression_2_ := &EarleyRule{
 		name: '<table expression: 2>'
+	}
+	mut rule_table_expression_3_ := &EarleyRule{
+		name: '<table expression: 3>'
+	}
+	mut rule_table_expression_4_ := &EarleyRule{
+		name: '<table expression: 4>'
 	}
 	mut rule_table_expression_ := &EarleyRule{
 		name: '<table expression>'
@@ -1203,6 +1272,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_atan := &EarleyRule{
 		name: 'ATAN'
 	}
+	mut rule_avg := &EarleyRule{
+		name: 'AVG'
+	}
 	mut rule_between := &EarleyRule{
 		name: 'BETWEEN'
 	}
@@ -1242,6 +1314,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_cosh := &EarleyRule{
 		name: 'COSH'
 	}
+	mut rule_count := &EarleyRule{
+		name: 'COUNT'
+	}
 	mut rule_create := &EarleyRule{
 		name: 'CREATE'
 	}
@@ -1278,6 +1353,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_from := &EarleyRule{
 		name: 'FROM'
 	}
+	mut rule_group := &EarleyRule{
+		name: 'GROUP'
+	}
 	mut rule_in := &EarleyRule{
 		name: 'IN'
 	}
@@ -1310,6 +1388,12 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_lower := &EarleyRule{
 		name: 'LOWER'
+	}
+	mut rule_max := &EarleyRule{
+		name: 'MAX'
+	}
+	mut rule_min := &EarleyRule{
+		name: 'MIN'
 	}
 	mut rule_mod := &EarleyRule{
 		name: 'MOD'
@@ -1383,6 +1467,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_start := &EarleyRule{
 		name: 'START'
 	}
+	mut rule_sum := &EarleyRule{
+		name: 'SUM'
+	}
 	mut rule_symmetric := &EarleyRule{
 		name: 'SYMMETRIC'
 	}
@@ -1453,6 +1540,32 @@ fn get_grammar() map[string]EarleyRule {
 	rule_actual_identifier_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_regular_identifier_
+		},
+	]}
+
+	rule_aggregate_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_count
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_asterisk_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_aggregate_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_aggregate_function_1_
+		},
+	]}
+	rule_aggregate_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_general_set_function_
 		},
 	]}
 
@@ -2347,6 +2460,62 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_computational_operation_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_avg
+		},
+	]}
+
+	rule_computational_operation_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_max
+		},
+	]}
+
+	rule_computational_operation_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_min
+		},
+	]}
+
+	rule_computational_operation_4_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sum
+		},
+	]}
+
+	rule_computational_operation_5_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_count
+		},
+	]}
+
+	rule_computational_operation_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_computational_operation_1_
+		},
+	]}
+	rule_computational_operation_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_computational_operation_2_
+		},
+	]}
+	rule_computational_operation_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_computational_operation_3_
+		},
+	]}
+	rule_computational_operation_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_computational_operation_4_
+		},
+	]}
+	rule_computational_operation_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_computational_operation_5_
+		},
+	]}
+
 	rule_concatenation_operator_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: '||'
@@ -3047,6 +3216,27 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_general_set_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_set_function_type_
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_value_expression_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_general_set_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_general_set_function_1_
+		},
+	]}
+
 	rule_general_value_specification_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_host_parameter_specification_
@@ -3064,6 +3254,71 @@ fn get_grammar() map[string]EarleyRule {
 		&EarleyRuleOrString{
 			str: '>='
 			rule: 0
+		},
+	]}
+
+	rule_group_by_clause_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_group
+		},
+		&EarleyRuleOrString{
+			rule: rule_by
+		},
+		&EarleyRuleOrString{
+			rule: rule_grouping_element_list_
+		},
+	]}
+
+	rule_group_by_clause_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_group_by_clause_1_
+		},
+	]}
+
+	rule_grouping_column_reference_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_column_reference_
+		},
+	]}
+
+	rule_grouping_column_reference_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_grouping_column_reference_1_
+		},
+	]}
+
+	rule_grouping_element_list_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_grouping_element_
+		},
+	]}
+
+	rule_grouping_element_list_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_grouping_element_list_
+		},
+		&EarleyRuleOrString{
+			rule: rule_comma_
+		},
+		&EarleyRuleOrString{
+			rule: rule_grouping_element_
+		},
+	]}
+
+	rule_grouping_element_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_grouping_element_list_1_
+		},
+	]}
+	rule_grouping_element_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_grouping_element_list_2_
+		},
+	]}
+
+	rule_grouping_element_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_ordinary_grouping_set_
 		},
 	]}
 
@@ -3316,6 +3571,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_nonparenthesized_value_expression_primary_2_
+		},
+	]}
+	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_set_function_specification_
 		},
 	]}
 	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
@@ -3608,6 +3868,12 @@ fn get_grammar() map[string]EarleyRule {
 	rule_ordering_specification_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_ordering_specification_2_
+		},
+	]}
+
+	rule_ordinary_grouping_set_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_grouping_column_reference_
 		},
 	]}
 
@@ -4261,6 +4527,18 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_set_function_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_aggregate_function_
+		},
+	]}
+
+	rule_set_function_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_computational_operation_
+		},
+	]}
+
 	rule_set_target_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_update_target_
@@ -4731,6 +5009,27 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_table_expression_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_from_clause_
+		},
+		&EarleyRuleOrString{
+			rule: rule_group_by_clause_
+		},
+	]}
+
+	rule_table_expression_4_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_from_clause_
+		},
+		&EarleyRuleOrString{
+			rule: rule_where_clause_
+		},
+		&EarleyRuleOrString{
+			rule: rule_group_by_clause_
+		},
+	]}
+
 	rule_table_expression_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_table_expression_1_
@@ -4739,6 +5038,16 @@ fn get_grammar() map[string]EarleyRule {
 	rule_table_expression_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_table_expression_2_
+		},
+	]}
+	rule_table_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_table_expression_3_
+		},
+	]}
+	rule_table_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_table_expression_4_
 		},
 	]}
 
@@ -5209,6 +5518,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_avg.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'AVG'
+			rule: 0
+		},
+	]}
+
 	rule_between.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'BETWEEN'
@@ -5300,6 +5616,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_count.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COUNT'
+			rule: 0
+		},
+	]}
+
 	rule_create.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'CREATE'
@@ -5384,6 +5707,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_group.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'GROUP'
+			rule: 0
+		},
+	]}
+
 	rule_in.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'IN'
@@ -5457,6 +5787,20 @@ fn get_grammar() map[string]EarleyRule {
 	rule_lower.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'LOWER'
+			rule: 0
+		},
+	]}
+
+	rule_max.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'MAX'
+			rule: 0
+		},
+	]}
+
+	rule_min.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'MIN'
 			rule: 0
 		},
 	]}
@@ -5629,6 +5973,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_sum.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SUM'
+			rule: 0
+		},
+	]}
+
 	rule_symmetric.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'SYMMETRIC'
@@ -5737,6 +6088,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<absolute value expression: 1>'] = rule_absolute_value_expression_1_
 	rules['<absolute value expression>'] = rule_absolute_value_expression_
 	rules['<actual identifier>'] = rule_actual_identifier_
+	rules['<aggregate function: 1>'] = rule_aggregate_function_1_
+	rules['<aggregate function>'] = rule_aggregate_function_
 	rules['<approximate numeric type: 1>'] = rule_approximate_numeric_type_1_
 	rules['<approximate numeric type: 2>'] = rule_approximate_numeric_type_2_
 	rules['<approximate numeric type: 3>'] = rule_approximate_numeric_type_3_
@@ -5823,6 +6176,12 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<comparison predicate part 2>'] = rule_comparison_predicate_part_2_
 	rules['<comparison predicate: 1>'] = rule_comparison_predicate_1_
 	rules['<comparison predicate>'] = rule_comparison_predicate_
+	rules['<computational operation: 1>'] = rule_computational_operation_1_
+	rules['<computational operation: 2>'] = rule_computational_operation_2_
+	rules['<computational operation: 3>'] = rule_computational_operation_3_
+	rules['<computational operation: 4>'] = rule_computational_operation_4_
+	rules['<computational operation: 5>'] = rule_computational_operation_5_
+	rules['<computational operation>'] = rule_computational_operation_
 	rules['<concatenation operator>'] = rule_concatenation_operator_
 	rules['<concatenation: 1>'] = rule_concatenation_1_
 	rules['<concatenation>'] = rule_concatenation_
@@ -5894,9 +6253,19 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<from constructor: 1>'] = rule_from_constructor_1_
 	rules['<from constructor>'] = rule_from_constructor_
 	rules['<general literal>'] = rule_general_literal_
+	rules['<general set function: 1>'] = rule_general_set_function_1_
+	rules['<general set function>'] = rule_general_set_function_
 	rules['<general value specification>'] = rule_general_value_specification_
 	rules['<greater than operator>'] = rule_greater_than_operator_
 	rules['<greater than or equals operator>'] = rule_greater_than_or_equals_operator_
+	rules['<group by clause: 1>'] = rule_group_by_clause_1_
+	rules['<group by clause>'] = rule_group_by_clause_
+	rules['<grouping column reference: 1>'] = rule_grouping_column_reference_1_
+	rules['<grouping column reference>'] = rule_grouping_column_reference_
+	rules['<grouping element list: 1>'] = rule_grouping_element_list_1_
+	rules['<grouping element list: 2>'] = rule_grouping_element_list_2_
+	rules['<grouping element list>'] = rule_grouping_element_list_
+	rules['<grouping element>'] = rule_grouping_element_
 	rules['<host parameter name: 1>'] = rule_host_parameter_name_1_
 	rules['<host parameter name>'] = rule_host_parameter_name_
 	rules['<host parameter specification>'] = rule_host_parameter_specification_
@@ -5956,6 +6325,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<ordering specification: 1>'] = rule_ordering_specification_1_
 	rules['<ordering specification: 2>'] = rule_ordering_specification_2_
 	rules['<ordering specification>'] = rule_ordering_specification_
+	rules['<ordinary grouping set>'] = rule_ordinary_grouping_set_
 	rules['<parenthesized boolean value expression: 1>'] = rule_parenthesized_boolean_value_expression_1_
 	rules['<parenthesized boolean value expression>'] = rule_parenthesized_boolean_value_expression_
 	rules['<parenthesized derived column list: 1>'] = rule_parenthesized_derived_column_list_1_
@@ -6021,6 +6391,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<set clause list>'] = rule_set_clause_list_
 	rules['<set clause: 1>'] = rule_set_clause_1_
 	rules['<set clause>'] = rule_set_clause_
+	rules['<set function specification>'] = rule_set_function_specification_
+	rules['<set function type>'] = rule_set_function_type_
 	rules['<set target>'] = rule_set_target_
 	rules['<sign>'] = rule_sign_
 	rules['<signed numeric literal: 1>'] = rule_signed_numeric_literal_1_
@@ -6072,6 +6444,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<table elements>'] = rule_table_elements_
 	rules['<table expression: 1>'] = rule_table_expression_1_
 	rules['<table expression: 2>'] = rule_table_expression_2_
+	rules['<table expression: 3>'] = rule_table_expression_3_
+	rules['<table expression: 4>'] = rule_table_expression_4_
 	rules['<table expression>'] = rule_table_expression_
 	rules['<table factor>'] = rule_table_factor_
 	rules['<table name>'] = rule_table_name_
@@ -6123,6 +6497,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['ASIN'] = rule_asin
 	rules['ASYMMETRIC'] = rule_asymmetric
 	rules['ATAN'] = rule_atan
+	rules['AVG'] = rule_avg
 	rules['BETWEEN'] = rule_between
 	rules['BIGINT'] = rule_bigint
 	rules['BOOLEAN'] = rule_boolean
@@ -6136,6 +6511,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['COMMIT'] = rule_commit
 	rules['COS'] = rule_cos
 	rules['COSH'] = rule_cosh
+	rules['COUNT'] = rule_count
 	rules['CREATE'] = rule_create
 	rules['DELETE'] = rule_delete
 	rules['DESC'] = rule_desc
@@ -6148,6 +6524,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['FLOAT'] = rule_float
 	rules['FLOOR'] = rule_floor
 	rules['FROM'] = rule_from
+	rules['GROUP'] = rule_group
 	rules['IN'] = rule_in
 	rules['INSERT'] = rule_insert
 	rules['INT'] = rule_int
@@ -6159,6 +6536,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['LN'] = rule_ln
 	rules['LOG10'] = rule_log10
 	rules['LOWER'] = rule_lower
+	rules['MAX'] = rule_max
+	rules['MIN'] = rule_min
 	rules['MOD'] = rule_mod
 	rules['NOT'] = rule_not
 	rules['NULL'] = rule_null
@@ -6183,6 +6562,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['SMALLINT'] = rule_smallint
 	rules['SQRT'] = rule_sqrt
 	rules['START'] = rule_start
+	rules['SUM'] = rule_sum
 	rules['SYMMETRIC'] = rule_symmetric
 	rules['TABLE'] = rule_table
 	rules['TAN'] = rule_tan
@@ -6247,6 +6627,9 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 	match name {
 		'<absolute value expression: 1>' {
 			return [EarleyValue(parse_abs(children[2] as Expr)?)]
+		}
+		'<aggregate function: 1>' {
+			return [EarleyValue(parse_count_all(children[2] as string)?)]
 		}
 		'<approximate numeric type: 1>' {
 			return [EarleyValue(parse_float()?)]
@@ -6398,6 +6781,21 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 				EarleyValue(parse_comparison(children[0] as Expr, children[1] as ComparisonPredicatePart2)?),
 			]
 		}
+		'<computational operation: 1>' {
+			return [EarleyValue(parse_avg()?)]
+		}
+		'<computational operation: 2>' {
+			return [EarleyValue(parse_max()?)]
+		}
+		'<computational operation: 3>' {
+			return [EarleyValue(parse_min()?)]
+		}
+		'<computational operation: 4>' {
+			return [EarleyValue(parse_sum()?)]
+		}
+		'<computational operation: 5>' {
+			return [EarleyValue(parse_count()?)]
+		}
 		'<concatenation: 1>' {
 			return [
 				EarleyValue(parse_concatenation(children[0] as Expr, children[2] as Expr)?),
@@ -6535,6 +6933,27 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		'<from constructor: 1>' {
 			return [
 				EarleyValue(parse_from_constructor(children[1] as []Identifier, children[3] as []Expr)?),
+			]
+		}
+		'<general set function: 1>' {
+			return [
+				EarleyValue(parse_general_set_function(children[0] as string, children[2] as Expr)?),
+			]
+		}
+		'<group by clause: 1>' {
+			return [EarleyValue(parse_exprs(children[2] as []Expr)?)]
+		}
+		'<grouping column reference: 1>' {
+			return [
+				EarleyValue(parse_identifier_to_expr(children[0] as Identifier)?),
+			]
+		}
+		'<grouping element list: 1>' {
+			return [EarleyValue(parse_expr_to_list(children[0] as Expr)?)]
+		}
+		'<grouping element list: 2>' {
+			return [
+				EarleyValue(parse_append_exprs1(children[0] as []Expr, children[2] as Expr)?),
 			]
 		}
 		'<host parameter name: 1>' {
@@ -6804,6 +7223,18 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [
 				EarleyValue(parse_table_expression_where(children[0] as TablePrimary,
 					children[1] as Expr)?),
+			]
+		}
+		'<table expression: 3>' {
+			return [
+				EarleyValue(parse_table_expression_group(children[0] as TablePrimary,
+					children[1] as []Expr)?),
+			]
+		}
+		'<table expression: 4>' {
+			return [
+				EarleyValue(parse_table_expression_where_group(children[0] as TablePrimary,
+					children[1] as Expr, children[2] as []Expr)?),
 			]
 		}
 		'<table primary: 1>' {

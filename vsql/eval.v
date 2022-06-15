@@ -24,6 +24,9 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 
 			return func.return_type
 		}
+		CountAllExpr {
+			return new_type('INTEGER', 0)
+		}
 		BetweenExpr, NullExpr, LikeExpr, SimilarExpr {
 			return new_type('BOOLEAN', 0)
 		}
@@ -65,6 +68,9 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 		}
 		CallExpr {
 			return eval_call(conn, data, e, params)
+		}
+		CountAllExpr {
+			return new_integer_value(0)
 		}
 		Identifier {
 			return eval_identifier(data, e)
@@ -122,6 +128,13 @@ fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) ?V
 		return sqlstate_42883(func_name)
 	}
 
+	// If this is a set function, we pass through the value. It can only have
+	// one argument. This is because the GROUP BY (GroupOperation) will handle
+	// the aggregation later on these individually evaluated values.
+	if func.is_agg {
+		return eval_as_value(conn, data, e.args[0], params)
+	}
+
 	if e.args.len != func.arg_types.len {
 		return sqlstate_42883('$func_name has $e.args.len ${pluralize(e.args.len, 'argument')} but needs $func.arg_types.len ${pluralize(func.arg_types.len,
 			'argument')}')
@@ -142,10 +155,10 @@ fn eval_null(conn &Connection, data Row, e NullExpr, params map[string]Value) ?V
 	value := eval_as_value(conn, data, e.expr, params)?
 
 	if e.not {
-		return new_boolean_value(value.typ.typ != .is_null)
+		return new_boolean_value(!value.is_null())
 	}
 
-	return new_boolean_value(value.typ.typ == .is_null)
+	return new_boolean_value(value.is_null())
 }
 
 fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) ?Value {

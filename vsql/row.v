@@ -142,7 +142,7 @@ fn (r Row) bytes(t Table) []u8 {
 		// Some types do not need a NULL flag because it's built into the value.
 		if !col.not_null && col.typ.typ != .is_boolean && col.typ.typ != .is_varchar
 			&& col.typ.typ != .is_character {
-			buf.write_bool(v.typ.typ == .is_null)
+			buf.write_bool(v.is_null())
 		}
 
 		match col.typ.typ {
@@ -168,7 +168,7 @@ fn (r Row) bytes(t Table) []u8 {
 				buf.write_i16(i16(v.f64_value))
 			}
 			.is_varchar, .is_character {
-				if v.typ.typ == .is_null {
+				if v.is_null() {
 					buf.write_int(-1)
 				} else {
 					buf.write_string4(v.string_value)

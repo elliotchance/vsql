@@ -23,7 +23,7 @@ fn execute_select(mut c Connection, stmt QueryExpression, params map[string]Valu
 	return new_result(plan.columns(), rows, elapsed_parse, t.elapsed())
 }
 
-fn transform_select_expressions(c &Connection, params map[string]Value, rows []Row, select_list SelectList, columns Columns) ?[]Row {
+fn transform_select_expressions(c &Connection, params map[string]Value, rows []Row, select_list SelectList, columns Columns, where_clause Expr) ?[]Row {
 	// Expand "*" if needed so we have a distinct list of named columns to use
 	// for the transformation.
 	mut exprs := []DerivedColumn{}
@@ -36,6 +36,13 @@ fn transform_select_expressions(c &Connection, params map[string]Value, rows []R
 		[]DerivedColumn {
 			exprs = select_list.clone()
 		}
+	}
+
+	// If there is a WHERE clause, we include it as a new expression to be
+	// evaluated at the time the row is evaluated. The WHERE operation itself
+	// will filter on this.
+	if where_clause !is NoExpr {
+		exprs << DerivedColumn{where_clause, new_identifier('"\$WHERE"')}
 	}
 
 	mut returned_rows := []Row{cap: rows.len}

@@ -107,6 +107,7 @@ struct TableOperation {
 	conn             &Connection
 	columns          Columns
 	select_list      SelectList
+	where_clause     Expr
 mut:
 	subplans map[string]Plan
 	storage  Storage
@@ -129,5 +130,6 @@ fn (mut o TableOperation) execute(_ []Row) ?[]Row {
 		rows = o.storage.read_rows(o.table_name)?
 	}
 
-	return transform_select_expressions(o.conn, o.params, rows, o.select_list, o.columns())
+	return transform_select_expressions(o.conn, o.params, rows, o.select_list, o.columns(),
+		o.where_clause)
 }

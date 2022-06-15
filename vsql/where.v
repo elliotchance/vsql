@@ -29,8 +29,7 @@ fn (o &WhereOperation) execute(rows []Row) ?[]Row {
 	mut new_rows := []Row{}
 
 	for row in rows {
-		mut ok := eval_as_bool(o.conn, row, o.condition, o.params)?
-		if ok {
+		if row.data['\$WHERE'].f64_value != 0 {
 			new_rows << row
 		}
 	}

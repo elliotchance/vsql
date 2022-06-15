@@ -201,6 +201,7 @@
 <nonparenthesized value expression primary> /* Expr */ ::=
     <unsigned value specification>
   | <column reference>               -> identifier_to_expr
+  | <set function specification>
   | <routine invocation>
 
 <value expression primary> /* Expr */ ::=
@@ -437,7 +438,7 @@
 <query specification> /* SimpleTable */ ::=
     SELECT
     <select list>
-    <table expression> -> query_specification
+    <table expression>   -> query_specification
 
 <select list> /* SelectList */ ::=
     <asterisk>                               -> asterisk
@@ -452,8 +453,10 @@
   | <value expression> <as clause>   -> derived_column_as
 
 <table expression> /* TableExpression */ ::=
-    <from clause>                  -> table_expression
-  | <from clause> <where clause>   -> table_expression_where
+    <from clause>                                    -> table_expression
+  | <from clause> <where clause>                     -> table_expression_where
+  | <from clause> <group by clause>                  -> table_expression_group
+  | <from clause> <where clause> <group by clause>   -> table_expression_where_group
 
 <from clause> /* TablePrimary */ ::=
     FROM <table reference list>   -> from_clause
@@ -838,3 +841,40 @@
 
 <string value function> /* Expr */ ::=
     <character value function>
+
+<group by clause> /* []Expr */ ::=
+    GROUP BY <grouping element list>   -> exprs
+
+<grouping element list> /* []Expr */ ::=
+    <grouping element>                                   -> expr_to_list
+  | <grouping element list> <comma> <grouping element>   -> append_exprs1
+
+<grouping element> /* Expr */ ::=
+    <ordinary grouping set>
+
+<ordinary grouping set> /* Expr */ ::=
+    <grouping column reference>
+
+<grouping column reference> /* Expr */ ::=
+    <column reference>   -> identifier_to_expr
+
+<aggregate function> /* Expr */ ::=
+    COUNT <left paren> <asterisk> <right paren>   -> count_all
+  | <general set function>
+
+<set function specification> /* Expr */ ::=
+    <aggregate function>
+
+<general set function> /* Expr */ ::=
+    <set function type> <left paren>
+    <value expression> <right paren>   -> general_set_function
+
+<set function type> /* string */ ::=
+    <computational operation>
+
+<computational operation> /* string */ ::=
+    AVG     -> avg
+  | MAX     -> max
+  | MIN     -> min
+  | SUM     -> sum
+  | COUNT   -> count

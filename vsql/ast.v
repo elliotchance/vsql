@@ -19,6 +19,7 @@ type Stmt = CommitStmt
 type Expr = BetweenExpr
 	| BinaryExpr
 	| CallExpr
+	| CountAllExpr
 	| Identifier
 	| LikeExpr
 	| NoExpr
@@ -43,6 +44,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 			e.pstr(params)
 		}
 		CallExpr {
+			e.pstr(params)
+		}
+		CountAllExpr {
 			e.pstr(params)
 		}
 		Identifier {
@@ -262,6 +266,7 @@ struct ComparisonPredicatePart2 {
 struct TableExpression {
 	from_clause  TablePrimary
 	where_clause Expr
+	group_clause []Expr
 }
 
 struct DerivedColumn {
@@ -417,4 +422,14 @@ fn (e SortSpecification) pstr(params map[string]Value) string {
 	}
 
 	return '${e.expr.pstr(params)} DESC'
+}
+
+struct CountAllExpr {}
+
+fn (e CountAllExpr) str() string {
+	return e.pstr(map[string]Value{})
+}
+
+fn (e CountAllExpr) pstr(params map[string]Value) string {
+	return 'COUNT(*)'
 }

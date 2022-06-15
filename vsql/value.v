@@ -108,6 +108,10 @@ fn (v Value) str() string {
 	}
 }
 
+fn (v Value) is_null() bool {
+	return v.typ.typ == .is_null
+}
+
 // cmp returns for the first argument:
 //
 //   -1 if v < v2
@@ -120,15 +124,15 @@ fn (v Value) str() string {
 //
 // Or an error if the values are different types (cannot be compared).
 fn (v Value) cmp(v2 Value) ?(int, bool) {
-	if v.typ.typ == .is_null && v2.typ.typ == .is_null {
+	if v.is_null() && v2.is_null() {
 		return 0, true
 	}
 
-	if v.typ.typ == .is_null {
+	if v.is_null() {
 		return -1, true
 	}
 
-	if v2.typ.typ == .is_null {
+	if v2.is_null() {
 		return 1, true
 	}
 

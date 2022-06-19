@@ -60,6 +60,11 @@ fn main() {
 fn cli_command(cmd cli.Command) ? {
 	print_version()
 
+	if cmd.args.len < 1 {
+		println("USAGE: vsql [OPTIONS] <file>.vsql")
+		return
+	}
+
 	mut db := vsql.open(cmd.args[0])?
 	for {
 		print('vsql> ')

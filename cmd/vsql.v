@@ -8,6 +8,8 @@ import vsql
 fn main() {
 	mut cmd := cli.Command{
 		name: 'vsql'
+		usage: '<file>'
+		required_args: 1
 		description: 'vsql is a single-file SQL database written in V'
 		execute: cli_command
 	}
@@ -60,29 +62,28 @@ fn main() {
 fn cli_command(cmd cli.Command) ? {
 	print_version()
 
-	if cmd.args.len < 1 {
-		println("USAGE: vsql [OPTIONS] <file>.vsql")
-		return
-	}
-
 	mut db := vsql.open(cmd.args[0])?
+	
 	for {
 		print('vsql> ')
 		query := os.get_line()
 
-		start := time.ticks()
-		result := db.query(query)?
-		for row in result {
-			for column in result.columns {
-				print('$column.name: ${row.get_string(column.name)} ')
+		if query != "" {
+			start := time.ticks()
+			result := db.query(query)?
+			for row in result {
+				for column in result.columns {
+					print('$column.name: ${row.get_string(column.name)} ')
+				}
 			}
+
+			if result.rows.len > 0 {
+				println('')
+			}
+
+			println('$result.rows.len ${vsql.pluralize(result.rows.len, 'row')} (${time.ticks() - start} ms)')
 		}
 
-		if result.rows.len > 0 {
-			println('')
-		}
-
-		println('$result.rows.len ${vsql.pluralize(result.rows.len, 'row')} (${time.ticks() - start} ms)')
 		println('')
 	}
 }

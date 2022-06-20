@@ -38,9 +38,8 @@ If you receive an error, you might be missing some dependencies:
 
 .. code-block:: sh
 
-   pip3 install sphinx
+   pip3 install sphinx sphinx_rtd_theme
    cd docs && python3 -m pip install -r requirements.txt
-   pip3 install sphinx_rtd_theme
 
 ``make docs`` will only regenerate the parts that it thinks have changed. To
 rebuild the entire docs you can use:

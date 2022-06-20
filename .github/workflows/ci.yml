@@ -7,8 +7,8 @@ on:
       - '**.rst'
 
 jobs:
-  run:
-    name: Run
+  tests:
+    name: Tests
     runs-on: macos-latest
     steps:
     - name: Checkout
@@ -23,31 +23,87 @@ jobs:
     - name: Verify fmt
       run: make fmt-verify
 
+    - name: Verify docs
+      run: |
+        pip install sphinx sphinx_rtd_theme
+        cd docs && python3 -m pip install -r requirements.txt && cd -
+        make clean-docs docs
+
     - name: Run SQL tests
       run: make test
 
     - name: Run examples
       run: make examples
 
-    - name: Set version
-      if: startsWith(github.ref, 'refs/tags/')
-      run: sed -i -e "s/MISSING_VERSION/${GITHUB_REF##*/} `date +'%F'`/g" cmd/vsql.v
+  macos-binary:
+    name: Build for macOS
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up V version latest
+      uses: nocturlab/setup-vlang-action@v1
+      with:
+        v-version: master
+      id: v
 
     - name: Build macOS binaries
       run: |
+        sed -i -e "s/MISSING_VERSION/${GITHUB_REF##*/} `date +'%F'`/g" cmd/vsql.v
         make vsql
         zip -j vsql-macos.zip cmd/vsql
 
-    # See https://github.com/vlang/v/issues/10992
-    #- name: Build linux binaries
-    #  run: |
-    #    v -os linux -prod cmd/vsql.v
-    #    zip -j vsql-linux.zip cmd/vsql
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          vsql-macos.zip
 
-    # Cross compiling for windows takes a long time because mingw-w64 has to be
-    # installed. It would be nice to skip this, but until we have code that
-    # specific to each OS we need to keep this in place.
-    - name: Build windows binaries
+  linux-binary:
+    name: Build for Linux
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up V version latest
+      uses: nocturlab/setup-vlang-action@v1
+      with:
+        v-version: master
+      id: v
+
+    - name: Build linux binaries
+      run: |
+        sed -i -e "s/MISSING_VERSION/${GITHUB_REF##*/} `date +'%F'`/g" cmd/vsql.v
+        make vsql
+        zip -j vsql-linux.zip cmd/vsql
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          vsql-linux.zip
+
+  # I know it seems pretty silly that we're using macOS and cross compling for
+  # Windows. But I couldn't get window-latest to work. If you use windows please
+  # put in a PR to fix this.
+  windows-binary:
+    name: Build for Windows
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up V version latest
+      uses: nocturlab/setup-vlang-action@v1
+      with:
+        v-version: master
+      id: v
+
+    - name: Build Windows binaries
       run: |
         brew install mingw-w64
         v -os windows -prod cmd/vsql.v
@@ -58,5 +114,4 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          vsql-macos.zip
           vsql-windows.zip

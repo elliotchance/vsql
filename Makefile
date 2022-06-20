@@ -4,10 +4,7 @@
 # `-gc` values.
 BUILD_OPTIONS =
 
-# Ideally we compile with "-prod" because it should make the resulting binaries
-# faster. However, this has to be disabled for now.
-# See https://github.com/elliotchance/vsql/issues/97
-PROD = # -prod
+PROD = -prod
 
 # Binaries
 
@@ -17,7 +14,8 @@ vsql:
 # Documentation
 
 docs:
-	cd docs && make html
+	mkdir -p docs/_static
+	cd docs && make html SPHINXOPTS="-W --keep-going -n"
 
 clean-docs:
 	cd docs && make clean

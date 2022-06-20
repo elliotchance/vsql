@@ -4,7 +4,7 @@ Virtual Tables
 Virtual tables allow you to register tables that have their rows provided at the
 time of a ``SELECT``:
 
-.. code-block:: v
+.. code-block:: text
 
    db.register_virtual_table(
      'CREATE TABLE foo ( "num" INT, word VARCHAR (32) )',

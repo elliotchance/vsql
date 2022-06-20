@@ -7,7 +7,7 @@ Install or update to the latest with:
 
    v install elliotchance.vsql
 
-.. code-block:: v
+.. code-block:: text
 
    import elliotchance.vsql.vsql
 

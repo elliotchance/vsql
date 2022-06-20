@@ -2,7 +2,7 @@ module vsql
 
 type VirtualTableProviderFn = fn (mut t VirtualTable) ?
 
-struct VirtualTable {
+pub struct VirtualTable {
 	create_table_sql  string
 	create_table_stmt CreateTableStmt
 	data              VirtualTableProviderFn

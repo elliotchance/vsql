@@ -1,14 +1,26 @@
-.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples vsql grammar sql-test docs
+.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples vsql grammar sql-test docs clean-docs
+
+# Is not used at the moment. It is useful for testing options like different
+# `-gc` values.
+BUILD_OPTIONS =
+
+# Ideally we compile with "-prod" because it should make the resulting binaries
+# faster. However, this has to be disabled for now.
+# See https://github.com/elliotchance/vsql/issues/97
+PROD = # -prod
 
 # Binaries
 
 vsql:
-	v -prod cmd/vsql.v
+	v $(BUILD_OPTIONS) $(PROD) cmd/vsql.v
 
 # Documentation
 
 docs:
 	cd docs && make html
+
+clean-docs:
+	cd docs && make clean
 
 # Grammar (BNF)
 
@@ -27,13 +39,13 @@ fmt-verify:
 # Tests
 
 test:
-	v -stats -prod test vsql
+	v -stats $(BUILD_OPTIONS) $(PROD) test vsql
 
 btree-test:
-	v -stats -prod test vsql/btree_test.v
+	v -stats $(BUILD_OPTIONS) $(PROD) test vsql/btree_test.v
 
 sql-test:
-	v -stats test vsql/sql_test.v
+	v -stats $(BUILD_OPTIONS) $(PROD) test vsql/sql_test.v
 
 # Examples
 
@@ -50,7 +62,7 @@ examples/%:
 bench: bench-on-disk bench-memory
 
 bench-on-disk:
-	v run cmd/vsql.v bench
+	v run $(PROD) cmd/vsql.v bench
 
 bench-memory:
-	v run cmd/vsql.v bench -file ':memory:'
+	v run $(PROD) cmd/vsql.v bench -file ':memory:'

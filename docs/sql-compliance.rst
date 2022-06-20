@@ -1,0 +1,259 @@
+SQL Compliance
+==============
+
+.. contents::
+
+vsql aims to be SQL compliant by following the 2016 SQL Standard in both BNF
+syntax and mandatory features.
+
+There are still many features to be implemented before it can be considered
+fully compliant - as shown by the Mandatory Features table below.
+
+Mandatory Features
+------------------
+
+The following table is **not complete** and will be filled in as time goes on.
+
+.. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
+   :header-rows: 1
+
+   * - Feature ID
+     - Supported
+     - Feature Name
+
+   * - **E011**
+     - **Partial**
+     - **Numeric data types**
+
+   * - E011-01
+     - Yes
+     - ``INTEGER`` and ``SMALLINT`` data types (including all spellings)
+
+   * - E011-02
+     - Yes
+     - ``REAL``, ``DOUBLE PRECISON``, and ``FLOAT`` data types
+
+   * - E011-03
+     - No
+     - ``DECIMAL`` and ``NUMERIC`` data types
+
+   * - E011-04
+     - Yes
+     - Arithmetic operators
+
+   * - E011-05
+     - Yes
+     - Numeric comparison
+
+   * - E011-06
+     - No
+     - Implicit casting among the numeric data types
+
+   * - **E021**
+     - **Partial**
+     - **Character string types**
+
+   * - E021-01
+     - Yes
+     - ``CHARACTER`` data type (including all its spellings)
+
+   * - E021-02
+     - Yes
+     - ``CHARACTER VARYING`` data type (including all its spellings)
+
+   * - E021-03
+     - Yes
+     - Character literals
+
+   * - E021-04
+     - Yes
+     - ``CHARACTER_LENGTH`` function
+
+   * - E021-05
+     - Yes
+     - ``OCTET_LENGTH`` function
+
+   * - E021-06
+     - No
+     - ``SUBSTRING`` function
+
+   * - E021-07
+     - Yes
+     - Character concatenation
+
+   * - E021-08
+     - Yes
+     - ``UPPER`` and ``LOWER`` functions
+
+   * - E021-09
+     - No
+     - ``TRIM`` function
+
+   * - E021-10
+     - No
+     - Implicit casting among the fixed-length and variable-length character string types
+
+   * - E021-11
+     - Yes
+     - ``POSITION`` function
+
+   * - E021-12
+     - Partial
+     - Character comparison
+
+   * - **E031**
+     - **Unknown**
+     - **Identifiers**
+
+   * - **E051**
+     - **Unknown**
+     - **Basic query specification**
+
+   * - **E061**
+     - **Unknown**
+     - **Basic predicates and search conditions**
+
+   * - **E071**
+     - **Unknown**
+     - **Basic query expressions**
+
+   * - **E081**
+     - **Unknown**
+     - **Basic Privileges**
+
+   * - **E091**
+     - **Unknown**
+     - **Set functions**
+
+   * - **E071**
+     - **Unknown**
+     - **Basic query expressions**
+
+   * - **E101**
+     - **Unknown**
+     - **Basic data manipulation**
+
+   * - **E111**
+     - **Unknown**
+     - **Single row SELECT statement**
+
+   * - **E121**
+     - **Unknown**
+     - **Basic cursor support**
+
+   * - **E131**
+     - **Unknown**
+     - **Null value support (nulls in lieu of values)**
+
+   * - **E141**
+     - **Unknown**
+     - **Basic integrity constraints**
+
+   * - **E151**
+     - **Unknown**
+     - **Transaction support**
+
+   * - **E152**
+     - **Unknown**
+     - **Basic SET TRANSACTION statement**
+
+   * - **E153**
+     - **Unknown**
+     - **Updatable queries with subqueries**
+
+   * - **E161**
+     - **Unknown**
+     - **SQL comments using leading double minus**
+
+   * - **E171**
+     - **Unknown**
+     - **SQLSTATE support**
+
+   * - **E182**
+     - **Unknown**
+     - **Host language binding**
+
+   * - **F031**
+     - **Unknown**
+     - **Basic schema manipulation**
+
+   * - **F041**
+     - **Unknown**
+     - **Basic joined table**
+
+   * - **F051**
+     - **Unknown**
+     - **Basic date and time**
+
+   * - **F081**
+     - **Unknown**
+     - **UNION and EXCEPT in views**
+
+   * - **F131**
+     - **Unknown**
+     - **Grouped operations**
+
+   * - **F181**
+     - **Unknown**
+     - **Multiple module support**
+
+   * - **F201**
+     - **Unknown**
+     - **CAST function**
+
+   * - **F221**
+     - **Unknown**
+     - **Explicit defaults**
+
+   * - **F261**
+     - **Unknown**
+     - **CASE expression**
+
+   * - **F311**
+     - **Unknown**
+     - **Schema definition statement**
+
+   * - **F471**
+     - **Unknown**
+     - **Scalar subquery values**
+
+   * - **F481**
+     - **Unknown**
+     - **Expanded NULL predicate**
+
+   * - **F812**
+     - **Unknown**
+     - **Basic flagging**
+
+   * - **S011**
+     - **Unknown**
+     - **Distinct data types**
+
+   * - **T321**
+     - **Unknown**
+     - **Basic SQL-invoked routines**
+
+   * - **T631**
+     - **Unknown**
+     - **IN predicate with one list element**
+
+Optional Features
+-----------------
+
+The following table has not been filled in. It is here as a placeholder.
+
+.. list-table:: Table 44 — Feature taxonomy for optional features
+   :header-rows: 1
+
+   * - Feature ID
+     - Supported
+     - Feature Name
+
+   * - **B011**
+     - No
+     - **Embedded Ada**
+
+See Also
+--------
+
+- https://en.wikipedia.org/wiki/SQL_compliance

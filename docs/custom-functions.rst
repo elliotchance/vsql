@@ -3,7 +3,7 @@ Custom Functions
 
 You can create custom functions to use in expressions:
 
-.. code-block:: v
+.. code-block:: text
 
    // no_pennies will round to 0.05 denominations.
    db.register_function('no_pennies(float) float', fn (a []vsql.Value) ?vsql.Value {

@@ -14,7 +14,7 @@ for struct definitions.
 
 You can match on these to inspect the error further:
 
-.. code-block:: v
+.. code-block:: text
 
     db.query('SELECT * FROM bar') or {
         match err {
@@ -27,7 +27,7 @@ You can match on these to inspect the error further:
 
 The ``err.code()`` contains the integer representation of the SQLSTATE:
 
-.. code-block:: v
+.. code-block:: text
 
     db.query('SELECT * FROM bar') or {
         sqlstate := vsql.sqlstate_from_int(err.code())
@@ -41,7 +41,7 @@ The ``err.code()`` contains the integer representation of the SQLSTATE:
 
 Or handling errors by class (first two letters):
 
-.. code-block:: v
+.. code-block:: text
 
     db.query('SELECT * FROM bar') or {
         if err.code() >= vsql.sqlstate_to_int('42000') &&

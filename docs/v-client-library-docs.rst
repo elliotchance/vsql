@@ -13,15 +13,29 @@ Constants
 
 
 
-fn open
--------
+fn open_database
+----------------
 
 
 .. code-block:: v
 
-   pub fn open(path string) !&Connection
+   pub fn open_database(path string, options ConnectionOptions) !&Connection
 
-open is the convenience function for open_database() with default options.
+open_database will open an existing database file or create a new file if the path does not exist.
+
+If the file does exist, open_database will assume that the file is a valid database file (not corrupt). Otherwise unexpected behavior or even a crash may occur.
+
+The special file name ":memory:" can be used to create an entirely in-memory database. This will be faster but all data will be lost when the connection is closed.
+
+open_database can be used concurrently for reading and writing to the same file and provides the following default protections:
+
+- Fine: Multiple processes open_database() the same file.
+
+- Fine: Multiple goroutines sharing an open_database() on the same file.
+
+- Bad: Multiple goroutines open_database() the same file.
+
+See ConnectionOptions and default_connection_options().
 
 fn catalog_name_from_path
 -------------------------
@@ -85,29 +99,15 @@ fn default_connection_options
 
 default_connection_options returns the sensible defaults used by open() and the correct base to provide your own option overrides. See ConnectionOptions.
 
-fn open_database
-----------------
+fn open_orm
+-----------
 
 
 .. code-block:: v
 
-   pub fn open_database(path string, options ConnectionOptions) !&Connection
+   pub fn open_orm(path string) !ORMConnection
 
-open_database will open an existing database file or create a new file if the path does not exist.
 
-If the file does exist, open_database will assume that the file is a valid database file (not corrupt). Otherwise unexpected behavior or even a crash may occur.
-
-The special file name ":memory:" can be used to create an entirely in-memory database. This will be faster but all data will be lost when the connection is closed.
-
-open_database can be used concurrently for reading and writing to the same file and provides the following default protections:
-
-- Fine: Multiple processes open_database() the same file.
-
-- Fine: Multiple goroutines sharing an open_database() on the same file.
-
-- Bad: Multiple goroutines open_database() the same file.
-
-See ConnectionOptions and default_connection_options().
 
 fn new_benchmark
 ----------------
@@ -287,16 +287,6 @@ fn new_timestamp_value
 
 new_timestamp_value creates a ``TIMESTAMP`` value.
 
-fn new_varchar_value
---------------------
-
-
-.. code-block:: v
-
-   pub fn new_varchar_value(x string) Value
-
-new_varchar_value creates a ``CHARACTER VARYING`` value.
-
 fn new_unknown_value
 --------------------
 
@@ -306,6 +296,26 @@ fn new_unknown_value
    pub fn new_unknown_value() Value
 
 new_unknown_value returns an ``UNKNOWN`` value. This is the ``NULL`` representation of ``BOOLEAN``.
+
+fn open
+-------
+
+
+.. code-block:: v
+
+   pub fn open(path string) !&Connection
+
+open is the convenience function for open_database() with default options.
+
+fn new_varchar_value
+--------------------
+
+
+.. code-block:: v
+
+   pub fn new_varchar_value(x string) Value
+
+new_varchar_value creates a ``CHARACTER VARYING`` value.
 
 type Row
 --------
@@ -340,6 +350,37 @@ enum Boolean
    }
 
 Possible values for a BOOLEAN.
+
+struct PageObject
+-----------------
+
+
+.. code-block:: v
+
+   pub struct PageObject {
+   	// The key is not required to be unique in the page. It becomes unique when
+   	// combined with tid. However, no more than two version of the same key can
+   	// exist in a page. See the caveats at the top of btree.v.
+   	key []u8
+   	// The value contains the serialized data for the object. The first byte of
+   	// key is used to both identify what type of object this is and also keep
+   	// objects within the same collection also within the same range.
+   	value []u8
+   	// When is_blob_ref is true, the value will be always be 5 bytes. See
+   	// blob_info().
+   	is_blob_ref bool
+   mut:
+   	// The tid is the transaction that created the object.
+   	//
+   	// TODO(elliotchance): It makes more sense to construct a new PageObject
+   	//  when changing the tid and xid.
+   	tid int
+   	// The xid is the transaciton that deleted the object, or zero if it has
+   	// never been deleted.
+   	xid int
+   }
+
+TODO(elliotchance): This does not need to be public. It was required for a bug at the time with V not being able to pass this to the shuffle function. At some point in the future remove the pub and see if it works.
 
 struct ConnectionOptions
 ------------------------
@@ -684,36 +725,18 @@ struct Value
 
 A single value. It contains it's type information in ``typ``.
 
-struct PageObject
------------------
+struct ORMConnection
+--------------------
 
 
 .. code-block:: v
 
-   pub struct PageObject {
-   	// The key is not required to be unique in the page. It becomes unique when
-   	// combined with tid. However, no more than two version of the same key can
-   	// exist in a page. See the caveats at the top of btree.v.
-   	key []u8
-   	// The value contains the serialized data for the object. The first byte of
-   	// key is used to both identify what type of object this is and also keep
-   	// objects within the same collection also within the same range.
-   	value []u8
-   	// When is_blob_ref is true, the value will be always be 5 bytes. See
-   	// blob_info().
-   	is_blob_ref bool
+   pub struct ORMConnection {
    mut:
-   	// The tid is the transaction that created the object.
-   	//
-   	// TODO(elliotchance): It makes more sense to construct a new PageObject
-   	//  when changing the tid and xid.
-   	tid int
-   	// The xid is the transaciton that deleted the object, or zero if it has
-   	// never been deleted.
-   	xid int
+   	c Connection
    }
 
-TODO(elliotchance): This does not need to be public. It was required for a bug at the time with V not being able to pass this to the shuffle function. At some point in the future remove the pub and see if it works.
+
 
 struct Identifier
 -----------------

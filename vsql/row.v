@@ -4,6 +4,7 @@
 module vsql
 
 import time
+import orm
 
 // Represents a single row which may contain one or more columns.
 struct Row {
@@ -103,6 +104,13 @@ fn (r Row) for_storage() Row {
 	}
 
 	return Row{r.id, r.tid, new_data}
+}
+
+// primitives are used by the ORM.
+pub fn (r Row) get_primitive(name string) !orm.Primitive {
+	value := r.get(name)!
+
+	return value.primitive()
 }
 
 // new_empty_row is used internally to generate a row with zero values for all

@@ -52,7 +52,7 @@ Otherwise, aggregation expressions are calculated from each set defined by the
 
   SELECT city, AVG(price) FROM products GROUP BY city;
 
-See full list of :doc:`functions<supported aggregate functions>`.
+See full list of :doc:`functions`.
 
 ORDER BY
 --------

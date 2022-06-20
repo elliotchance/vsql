@@ -63,12 +63,12 @@ fn cli_command(cmd cli.Command) ? {
 	print_version()
 
 	mut db := vsql.open(cmd.args[0])?
-	
+
 	for {
 		print('vsql> ')
 		query := os.get_line()
 
-		if query != "" {
+		if query != '' {
 			start := time.ticks()
 			result := db.query(query)?
 			for row in result {

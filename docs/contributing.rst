@@ -22,6 +22,33 @@ by using the ``lldb`` debugger:
 
    v examples/memory.v && lldb -o run examples/memory
 
+Documentation
+-------------
+
+Documentation is built and published automatically at
+`vsql.readthedocs.com <https://vsql.readthedocs.io/en/latest/>`_.
+
+You can generate the documentation locally with:
+
+.. code-block:: sh
+
+   make docs
+
+If you receive an error, you might be missing some dependencies:
+
+.. code-block:: sh
+
+   pip3 install sphinx
+   cd docs && python3 -m pip install -r requirements.txt
+   pip3 install sphinx_rtd_theme
+
+``make docs`` will only regenerate the parts that it thinks have changed. To
+rebuild the entire docs you can use:
+
+.. code-block:: sh
+
+   make clean-docs docs
+
 Parser & SQL Grammar
 --------------------
 

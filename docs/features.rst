@@ -8,4 +8,5 @@ Features
    in-memory-database.rst
    prepared-statements.rst
    server.rst
+   transactions.rst
    virtual-tables.rst

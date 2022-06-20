@@ -12,7 +12,10 @@ const (
 // combination of all fixed width meta for the page object.
 const page_object_prefix_length = 14
 
-struct PageObject {
+// TODO(elliotchance): This does not need to be public. It was required for a
+//  bug at the time with V not being able to pass this to the shuffle function.
+//  At some point in the future remove the pub and see if it works.
+pub struct PageObject {
 	// The key is not required to be unique in the page. It becomes unique when
 	// combined with tid. However, no more than two version of the same key can
 	// exist in a page. See the caveats at the top of btree.v.

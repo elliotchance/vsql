@@ -92,7 +92,7 @@ fn (r Row) get(name string) ?Value {
 // new_empty_row is used internally to generate a row with zero values for all
 // the types in a Row. This is used for testing expressions without needing the
 // actual row.
-fn new_empty_row(columns Columns) Row {
+fn new_empty_row(columns Columns, table_name string) Row {
 	mut r := Row{}
 	for col in columns {
 		mut v := Value{}
@@ -125,7 +125,12 @@ fn new_empty_row(columns Columns) Row {
 				v = new_varchar_value('', col.typ.size)
 			}
 		}
-		r.data[col.name] = v
+
+		if table_name == '' {
+			r.data[col.name] = v
+		} else {
+			r.data['${table_name}.$col.name'] = v
+		}
 	}
 
 	return r
@@ -180,7 +185,7 @@ fn (r Row) bytes(t Table) []u8 {
 	return buf.bytes()
 }
 
-fn new_row_from_bytes(t Table, data []u8, tid int) Row {
+fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 	mut buf := new_bytes(data)
 	mut row := map[string]Value{}
 
@@ -229,7 +234,11 @@ fn new_row_from_bytes(t Table, data []u8, tid int) Row {
 			}
 		}
 
-		row[col.name] = v
+		if table_name == '' {
+			row[col.name] = v
+		} else {
+			row['${table_name}.$col.name'] = v
+		}
 	}
 
 	return Row{row_id, tid, row}
@@ -276,8 +285,8 @@ fn (mut r Row) object_key(t Table) ?[]u8 {
 		r.id = pk.bytes()
 	} else {
 		if r.id.len == 0 {
-			// TODO(elliotchance): This is a terrible hack to make sure we have a
-			//  globally unique but also ordered id for the row.
+			// TODO(elliotchance): This is a terrible hack to make sure we have
+			//  a globally unique but also ordered id for the row.
 			unique_id := time.now().unix_time_milli()
 			time.sleep(time.millisecond)
 

@@ -107,7 +107,7 @@ fn (mut f Storage) create_table(table_name string, columns Columns, primary_key 
 		f.isolation_end() or { panic(err) }
 	}
 
-	table := Table{table_name, columns, primary_key, f.transaction_id}
+	table := Table{table_name, columns, primary_key, f.transaction_id, false}
 
 	obj := new_page_object('T$table_name'.bytes(), f.transaction_id, 0, table.bytes())
 	page_number := f.btree.add(obj)?
@@ -164,7 +164,7 @@ fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ? {
 	}
 }
 
-fn (mut f Storage) read_rows(table_name string) ?[]Row {
+fn (mut f Storage) read_rows(table_name string, prefix_table_name bool) ?[]Row {
 	f.isolation_start()?
 	defer {
 		f.isolation_end() or { panic(err) }
@@ -175,7 +175,12 @@ fn (mut f Storage) read_rows(table_name string) ?[]Row {
 	// ';' = ':' + 1
 	for object in f.btree.new_range_iterator('R$table_name:'.bytes(), 'R$table_name;'.bytes()) {
 		if object_is_visible(object.tid, object.xid, f.transaction_id, mut f.header.active_transaction_ids) {
-			rows << new_row_from_bytes(f.tables[table_name], object.value, object.tid)
+			mut prefixed_table_name := ''
+			if prefix_table_name {
+				prefixed_table_name = table_name
+			}
+			rows << new_row_from_bytes(f.tables[table_name], object.value, object.tid,
+				prefixed_table_name)
 		}
 	}
 

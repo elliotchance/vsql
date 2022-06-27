@@ -37,6 +37,8 @@ mut:
 	primary_key []string
 	// The tid is the transaction ID that created this table.
 	tid int
+	// When the table is virtual it is not persisted to disk.
+	is_virtual bool
 }
 
 fn (t Table) column_names() []string {
@@ -92,7 +94,7 @@ fn new_table_from_bytes(data []u8, tid int) Table {
 		columns << Column{column_name, type_from_number(column_type), is_not_null}
 	}
 
-	return Table{table_name, columns, primary_key, tid}
+	return Table{table_name, columns, primary_key, tid, false}
 }
 
 // A TableOperation requires that up to rows in the table be read. The number of
@@ -101,13 +103,11 @@ struct TableOperation {
 	table_name string
 	// table_is_subplan is true if the table_name should be executed from the
 	// subplans instead of a real table.
-	table_is_subplan bool
-	table            Table
-	params           map[string]Value
-	conn             &Connection
-	columns          Columns
-	select_list      SelectList
-	where_clause     Expr
+	table_is_subplan  bool
+	table             Table
+	params            map[string]Value
+	conn              &Connection
+	prefix_table_name bool
 mut:
 	subplans map[string]Plan
 	storage  Storage
@@ -118,18 +118,33 @@ fn (o TableOperation) str() string {
 }
 
 fn (o TableOperation) columns() Columns {
-	return o.columns
+	if o.prefix_table_name {
+		mut columns := []Column{}
+		for column in o.table.columns {
+			columns << Column{'${o.table_name}.$column.name', column.typ, column.not_null}
+		}
+
+		return columns
+	}
+
+	return o.table.columns
 }
 
 fn (mut o TableOperation) execute(_ []Row) ?[]Row {
 	mut rows := []Row{}
 
 	if o.table_is_subplan {
-		rows = o.subplans[o.table_name].execute([]Row{})?
+		for row in o.subplans[o.table_name].execute([]Row{})? {
+			mut data := map[string]Value{}
+			for k, v in row.data {
+				data['${o.table_name}.$k'] = v
+			}
+
+			rows << new_row(data)
+		}
 	} else {
-		rows = o.storage.read_rows(o.table_name)?
+		rows = o.storage.read_rows(o.table_name, o.prefix_table_name)?
 	}
 
-	return transform_select_expressions(o.conn, o.params, rows, o.select_list, o.columns(),
-		o.where_clause)
+	return rows
 }

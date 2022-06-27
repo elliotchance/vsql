@@ -23,12 +23,21 @@ fn execute_select(mut c Connection, stmt QueryExpression, params map[string]Valu
 	return new_result(plan.columns(), rows, elapsed_parse, t.elapsed())
 }
 
-fn transform_select_expressions(c &Connection, params map[string]Value, rows []Row, select_list SelectList, columns Columns, where_clause Expr) ?[]Row {
+fn transform_select_expressions(c &Connection, params map[string]Value, rows []Row, select_list SelectList, columns Columns, where_clause Expr, table_name string) ?[]Row {
 	// Expand "*" if needed so we have a distinct list of named columns to use
 	// for the transformation.
 	mut exprs := []DerivedColumn{}
 	match select_list {
 		AsteriskExpr {
+			for column_name in columns {
+				exprs << DerivedColumn{new_identifier('"$column_name"'), new_identifier('"$column_name"')}
+			}
+		}
+		QualifiedAsteriskExpr {
+			if select_list.table_name.name != table_name {
+				return sqlstate_42p01(select_list.table_name.name)
+			}
+
 			for column_name in columns {
 				exprs << DerivedColumn{new_identifier('"$column_name"'), new_identifier('"$column_name"')}
 			}

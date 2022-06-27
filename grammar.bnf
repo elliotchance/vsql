@@ -322,6 +322,7 @@
 
 <identifier chain> /* Identifier */ ::=
     <identifier>
+  | <identifier> <period> <identifier>   -> identifier_chain1
 
 <insert statement> /* Stmt */ ::=
     INSERT INTO
@@ -446,7 +447,17 @@
   | <select list> <comma> <select sublist>   -> select_list2
 
 <select sublist> /* SelectList */ ::=
-    <derived column>   -> select_sublist
+    <derived column>       -> select_sublist1
+  | <qualified asterisk>   -> select_sublist2
+
+<qualified asterisk> /* QualifiedAsteriskExpr */ ::=
+    <asterisked identifier chain> <period> <asterisk>   -> qualified_asterisk
+
+<asterisked identifier chain> /* Identifier */ ::=
+    <asterisked identifier>
+
+<asterisked identifier> /* Identifier */ ::=
+    <identifier>
 
 <derived column> /* DerivedColumn */ ::=
     <value expression>               -> derived_column
@@ -458,14 +469,30 @@
   | <from clause> <group by clause>                  -> table_expression_group
   | <from clause> <where clause> <group by clause>   -> table_expression_where_group
 
-<from clause> /* TablePrimary */ ::=
+<from clause> /* TableReference */ ::=
     FROM <table reference list>   -> from_clause
 
-<table reference list> /* TablePrimary */ ::=
+<table reference list> /* TableReference */ ::=
     <table reference>
 
-<table reference> /* TablePrimary */ ::=
-    <table factor>
+<table reference> /* TableReference */ ::=
+    <table factor>   -> table_factor
+  | <joined table>   -> joined_table
+
+<joined table> /* QualifiedJoin */ ::=
+    <qualified join>
+
+<qualified join> /* QualifiedJoin */ ::=
+    <table reference>
+    JOIN <table reference> <join specification>   -> qualified_join1
+  | <table reference> <join type>
+    JOIN <table reference> <join specification>   -> qualified_join2
+
+<join specification> /* Expr */ ::=
+    <join condition>
+
+<join condition> /* Expr */ ::=
+    ON <search condition>   -> expr
 
 <table factor> /* TablePrimary */ ::=
     <table primary>
@@ -873,8 +900,17 @@
     <computational operation>
 
 <computational operation> /* string */ ::=
-    AVG     -> avg
-  | MAX     -> max
-  | MIN     -> min
-  | SUM     -> sum
-  | COUNT   -> count
+    AVG
+  | MAX
+  | MIN
+  | SUM
+  | COUNT
+
+<outer join type> /* string */ ::=
+    LEFT
+  | RIGHT
+
+<join type> /* string */ ::=
+    INNER
+  | <outer join type>
+  | <outer join type> OUTER   -> string

@@ -12,19 +12,30 @@ struct ExprOperation {
 	columns []Column
 }
 
-fn new_expr_operation(conn &Connection, params map[string]Value, select_list SelectList, table Table) ?ExprOperation {
+fn new_expr_operation(conn &Connection, params map[string]Value, select_list SelectList, tables map[string]Table) ?ExprOperation {
 	mut exprs := []DerivedColumn{}
 	mut columns := []Column{}
 
 	match select_list {
 		AsteriskExpr {
+			for _, table in tables {
+				columns << table.columns
+				for column in table.columns {
+					exprs << DerivedColumn{new_identifier('"${table.name}.$column.name"'), new_identifier('"$column.name"')}
+				}
+			}
+		}
+		QualifiedAsteriskExpr {
+			table := tables[select_list.table_name.name] or {
+				return sqlstate_42p01(select_list.table_name.name)
+			}
 			columns = table.columns
 			for column in table.columns {
 				exprs << DerivedColumn{new_identifier('"${table.name}.$column.name"'), new_identifier('"$column.name"')}
 			}
 		}
 		[]DerivedColumn {
-			empty_row := new_empty_row(table.columns, '')
+			empty_row := new_empty_table_row(tables)
 			for i, column in select_list {
 				mut column_name := 'COL${i + 1}'
 				if column.as_clause.name != '' {
@@ -33,10 +44,11 @@ fn new_expr_operation(conn &Connection, params map[string]Value, select_list Sel
 					column_name = column.expr.name
 				}
 
-				columns << Column{column_name, eval_as_type(conn, empty_row, column.expr,
-					params)?, false}
+				expr := resolve_identifiers(column.expr, tables)?
 
-				exprs << DerivedColumn{resolve_identifiers(column.expr, table)?, new_identifier('"$column_name"')}
+				columns << Column{column_name, eval_as_type(conn, empty_row, expr, params)?, false}
+
+				exprs << DerivedColumn{expr, new_identifier('"$column_name"')}
 			}
 		}
 	}
@@ -110,15 +122,12 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 			return eval_as_type(conn, data, e.left, params)
 		}
 		Identifier {
-			col := data.data[e.name] or {
-				panic(e.name)
-				return sqlstate_42601('unknown column: $e.name')
-			}
+			col := data.data[e.name] or { return sqlstate_42601('unknown column: $e.name') }
 
 			return col.typ
 		}
-		NoExpr, RowExpr, QueryExpression {
-			return sqlstate_42601('invalid expression provided')
+		NoExpr, QualifiedAsteriskExpr, QueryExpression, RowExpr {
+			return sqlstate_42601('invalid expression provided: $e.str()')
 		}
 	}
 }
@@ -158,7 +167,7 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 		Value {
 			return e
 		}
-		NoExpr, RowExpr, QueryExpression {
+		NoExpr, QualifiedAsteriskExpr, QueryExpression, RowExpr {
 			// RowExpr should never make it to eval because it will be
 			// reformatted into a ValuesOperation.
 			//

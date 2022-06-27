@@ -64,3 +64,52 @@ fn expr_is_agg(conn &Connection, e Expr) ?bool {
 fn nested_agg_unsupported(e Expr) ?bool {
 	return sqlstate_42601('nested aggregate functions are not supported: $e.str()')
 }
+
+fn resolve_identifiers_exprs(exprs []Expr, table Table) ?[]Expr {
+	mut new_exprs := []Expr{}
+
+	for expr in exprs {
+		new_exprs << resolve_identifiers(expr, table)?
+	}
+
+	return new_exprs
+}
+
+// resolve_identifiers will resolve the identifiers against their relevant
+// table.
+fn resolve_identifiers(e Expr, table Table) ?Expr {
+	match e {
+		BinaryExpr {
+			return BinaryExpr{resolve_identifiers(e.left, table)?, e.op, resolve_identifiers(e.right,
+				table)?}
+		}
+		BetweenExpr {
+			return BetweenExpr{e.not, e.symmetric, resolve_identifiers(e.expr, table)?, resolve_identifiers(e.left,
+				table)?, resolve_identifiers(e.right, table)?}
+		}
+		CallExpr {
+			return CallExpr{e.function_name, resolve_identifiers_exprs(e.args, table)?}
+		}
+		Identifier {
+			return new_identifier('${table.name}.$e')
+		}
+		LikeExpr {
+			return LikeExpr{resolve_identifiers(e.left, table)?, resolve_identifiers(e.right,
+				table)?, e.not}
+		}
+		NullExpr {
+			return NullExpr{resolve_identifiers(e.expr, table)?, e.not}
+		}
+		SimilarExpr {
+			return SimilarExpr{resolve_identifiers(e.left, table)?, resolve_identifiers(e.right,
+				table)?, e.not}
+		}
+		UnaryExpr {
+			return UnaryExpr{e.op, resolve_identifiers(e.expr, table)?}
+		}
+		CountAllExpr, Parameter, Value, NoExpr, RowExpr, QueryExpression {
+			// These don't have any Expr properties to recurse.
+			return e
+		}
+	}
+}

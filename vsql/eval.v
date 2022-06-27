@@ -4,6 +4,68 @@ module vsql
 
 import regex
 
+// A ExprOperation executes expressions for each row.
+struct ExprOperation {
+	conn    &Connection
+	params  map[string]Value
+	exprs   []DerivedColumn
+	columns []Column
+}
+
+fn new_expr_operation(conn &Connection, params map[string]Value, select_list SelectList, table Table) ?ExprOperation {
+	mut exprs := []DerivedColumn{}
+	mut columns := []Column{}
+
+	match select_list {
+		AsteriskExpr {
+			columns = table.columns
+			for column in table.columns {
+				exprs << DerivedColumn{new_identifier('"${table.name}.$column.name"'), new_identifier('"$column.name"')}
+			}
+		}
+		[]DerivedColumn {
+			empty_row := new_empty_row(table.columns, '')
+			for i, column in select_list {
+				mut column_name := 'COL${i + 1}'
+				if column.as_clause.name != '' {
+					column_name = column.as_clause.name
+				} else if column.expr is Identifier {
+					column_name = column.expr.name
+				}
+
+				columns << Column{column_name, eval_as_type(conn, empty_row, column.expr,
+					params)?, false}
+
+				exprs << DerivedColumn{resolve_identifiers(column.expr, table)?, new_identifier('"$column_name"')}
+			}
+		}
+	}
+
+	return ExprOperation{conn, params, exprs, columns}
+}
+
+fn (o ExprOperation) str() string {
+	return 'EXPR ($o.columns())'
+}
+
+fn (o ExprOperation) columns() Columns {
+	return o.columns
+}
+
+fn (mut o ExprOperation) execute(rows []Row) ?[]Row {
+	mut new_rows := []Row{}
+
+	for row in rows {
+		mut data := map[string]Value{}
+		for expr in o.exprs {
+			data[expr.as_clause.name] = eval_as_value(o.conn, row, expr.expr, o.params)?
+		}
+		new_rows << new_row(data)
+	}
+
+	return new_rows
+}
+
 fn eval_row(conn &Connection, data Row, exprs []Expr, params map[string]Value) ?Row {
 	mut col_number := 1
 	mut row := map[string]Value{}
@@ -48,7 +110,10 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 			return eval_as_type(conn, data, e.left, params)
 		}
 		Identifier {
-			col := data.data[e.name] or { return sqlstate_42601('unknown column: $e.name') }
+			col := data.data[e.name] or {
+				panic(e.name)
+				return sqlstate_42601('unknown column: $e.name')
+			}
 
 			return col.typ
 		}
@@ -70,7 +135,7 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 			return eval_call(conn, data, e, params)
 		}
 		CountAllExpr {
-			return new_integer_value(0)
+			return eval_identifier(data, new_identifier('COUNT(*)'))
 		}
 		Identifier {
 			return eval_identifier(data, e)
@@ -128,11 +193,8 @@ fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) ?V
 		return sqlstate_42883(func_name)
 	}
 
-	// If this is a set function, we pass through the value. It can only have
-	// one argument. This is because the GROUP BY (GroupOperation) will handle
-	// the aggregation later on these individually evaluated values.
 	if func.is_agg {
-		return eval_as_value(conn, data, e.args[0], params)
+		return eval_identifier(data, new_identifier('"${e.pstr(params)}"'))
 	}
 
 	if e.args.len != func.arg_types.len {

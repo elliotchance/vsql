@@ -87,12 +87,16 @@ struct PrimaryKeyOperation {
 	lower  Expr
 	upper  Expr
 	params map[string]Value
+	// prefix_table_name will add the table name to the column names. This is
+	// required for SELECT statements, but should be avoided for DML statements
+	// since the rows are written back to disk.
+	prefix_table_name bool
 mut:
 	conn &Connection
 }
 
-fn new_primary_key_operation(table Table, lower Expr, upper Expr, params map[string]Value, conn &Connection) &PrimaryKeyOperation {
-	return &PrimaryKeyOperation{table, lower, upper, params, conn}
+fn new_primary_key_operation(table Table, lower Expr, upper Expr, params map[string]Value, conn &Connection, prefix_table_name bool) &PrimaryKeyOperation {
+	return &PrimaryKeyOperation{table, lower, upper, params, prefix_table_name, conn}
 }
 
 fn (o &PrimaryKeyOperation) str() string {
@@ -100,6 +104,16 @@ fn (o &PrimaryKeyOperation) str() string {
 }
 
 fn (o &PrimaryKeyOperation) columns() Columns {
+	if o.prefix_table_name {
+		mut columns := []Column{}
+
+		for column in o.table.columns {
+			columns << Column{'${o.table.name}.$column.name', column.typ, column.not_null}
+		}
+
+		return columns
+	}
+
 	return o.table.columns
 }
 
@@ -119,7 +133,11 @@ fn (o &PrimaryKeyOperation) execute(_ []Row) ?[]Row {
 	mut rows := []Row{}
 	for object in o.conn.storage.btree.new_range_iterator(object_key, object_key) {
 		if object_is_visible(object.tid, object.xid, tid, mut transaction_ids) {
-			rows << new_row_from_bytes(o.table, object.value, object.tid)
+			mut prefixed_table_name := ''
+			if o.prefix_table_name {
+				prefixed_table_name = o.table.name
+			}
+			rows << new_row_from_bytes(o.table, object.value, object.tid, prefixed_table_name)
 		}
 	}
 

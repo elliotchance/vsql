@@ -3,56 +3,53 @@
 module vsql
 
 struct GroupOperation {
+	// select_exprs contains the original SELECT expressions, both the aggregate
+	// and non-aggrgate expressions, such as "a, count(*)".
+	//
+	// It only works with []DerivedColumn because other forms of SelectList are
+	// impossible to use with GROUP BY.
 	select_exprs []DerivedColumn
-	group_exprs  []Expr
-	params       map[string]Value
-	conn         &Connection
-	columns      Columns
+	// group_exprs contains the expressions for the GROUP BY itself, such as
+	// "a".
+	//
+	// The SQL standard doesn't actually allow anything other than a identifer
+	// to be used in GROUP BY expressions, but well keep them as []Expr because
+	// it's easier.
+	group_exprs []Expr
+
+	params map[string]Value
+	conn   &Connection
+
+	columns Columns
 }
 
-fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Expr, params map[string]Value, conn &Connection, columns Columns) &GroupOperation {
+fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Expr, params map[string]Value, conn &Connection, table Table) ?&GroupOperation {
+	mut columns := []Column{}
+
+	for expr in group_exprs {
+		// TODO(elliotchance): This is a hack for now. Fix me later when we have
+		//  multiple tables.
+		name := expr.str().split('.')[1]
+		columns << table.column(name)?
+	}
+
+	empty_row := new_empty_row(table.columns, table.name)
+	for expr in select_exprs {
+		if expr_is_agg(conn, expr.expr) or { false } {
+			columns << Column{expr.expr.pstr(params), eval_as_type(conn, empty_row, expr.expr,
+				params)?, false}
+		}
+	}
+
 	return &GroupOperation{select_exprs, group_exprs, params, conn, columns}
 }
 
 fn (o &GroupOperation) str() string {
-	mut exprs := []string{}
-	for expr in o.select_exprs {
-		if !expr_is_agg(o.conn, expr.expr) or { false } {
-			exprs << expr.expr.pstr(o.params)
-		}
-	}
-
-	agg_destinations := o.group_columns().join(', ')
-
-	if exprs.len == 0 {
-		return 'GROUP BY ($agg_destinations)'
-	}
-
-	return 'GROUP BY ${exprs.join(', ')} ($agg_destinations)'
+	return 'GROUP BY ($o.columns())'
 }
 
-// The input and output colums of a GROUP BY operation is always the same. This
-// is because the columns that contain aggregation expressions (such as
-// COUNT(*)) are already resolved for their type and location (that is, the
-// order they appear in).
-//
-// The GROUP BY is basically "back filling" these values onto the same (or less)
-// rows but the columns don't change.
 fn (o &GroupOperation) columns() Columns {
 	return o.columns
-}
-
-// The group colums are those that contains aggregations expressions. These will
-// be the ones we actually evaulate and fill back into the result set.
-fn (o &GroupOperation) group_columns() []string {
-	mut columns := []string{}
-	for i, expr in o.select_exprs {
-		if expr_is_agg(o.conn, expr.expr) or { false } {
-			columns << expr.expr.pstr(o.params) + ' AS ' + o.columns[i].name
-		}
-	}
-
-	return columns
 }
 
 fn (o &GroupOperation) execute(rows []Row) ?[]Row {
@@ -90,8 +87,9 @@ fn (o &GroupOperation) execute(rows []Row) ?[]Row {
 	}
 
 	// Perform the aggregations functions.
-	for i, expr in o.select_exprs {
+	for expr in o.select_exprs {
 		if expr_is_agg(o.conn, expr.expr) or { false } {
+			key := expr.expr.pstr(o.params)
 			for mut set in sets {
 				match expr.expr {
 					CallExpr {
@@ -101,13 +99,13 @@ fn (o &GroupOperation) execute(rows []Row) ?[]Row {
 
 						mut values := []Value{}
 						for row in set {
-							values << row.data[o.columns[i].name]
+							values << eval_as_value(o.conn, row, expr.expr.args[0], o.params)?
 						}
 
-						set[0].data[o.columns[i].name] = func.func(values)?
+						set[0].data[key] = func.func(values)?
 					}
 					CountAllExpr {
-						set[0].data[o.columns[i].name] = new_integer_value(set.len)
+						set[0].data[key] = new_integer_value(set.len)
 					}
 					else {
 						return sqlstate_42601('invalid set function: $expr.expr')

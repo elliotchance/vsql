@@ -37,7 +37,7 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 	table := c.storage.tables[table_name]
 
 	// check values are appropriate for the table before beginning
-	empty_row := new_empty_row(table.columns)
+	empty_row := new_empty_row(table.columns, '')
 	for column_name, v in stmt.set {
 		table_column := table.column(column_name)?
 		raw_value := eval_as_value(c, empty_row, v, params)?

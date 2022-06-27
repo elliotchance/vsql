@@ -3,6 +3,7 @@
 // operation may take in rows but will always produce rows that can be fed into
 // the next operation. You can find the operations in:
 //
+//   ExprOperation           eval.v
 //   LimitOperation          limit.v
 //   PrimaryKeyOperation     walk.v
 //   TableOperation          table.v
@@ -34,10 +35,10 @@ fn create_plan(stmt Stmt, params map[string]Value, c &Connection) ?Plan {
 	}
 }
 
-fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, c &Connection, allow_virtual bool, correlation Correlation) ?Plan {
+fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, c &Connection, allow_virtual bool, correlation Correlation) ?(Plan, Table) {
 	match body {
 		SelectStmt {
-			return create_select_plan(body, offset, params, c, allow_virtual)
+			return create_select_plan(body, offset, params, c, allow_virtual, true)
 		}
 		// VALUES
 		[]RowExpr {
@@ -45,16 +46,19 @@ fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, c &
 
 			plan.operations << new_values_operation(body, NoExpr{}, correlation, c, params)?
 
-			return plan
+			return plan, Table{
+				is_virtual: true
+			}
 		}
 	}
 }
 
-fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &Connection, allow_virtual bool) ?Plan {
+fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &Connection, allow_virtual bool, is_for_select bool) ?(Plan, Table) {
 	mut plan := Plan{}
 	mut covered_by_pk := false
 	from_clause := body.table_expression.from_clause.body
 	where := body.table_expression.where_clause
+	mut table := Table{}
 
 	match from_clause {
 		Identifier {
@@ -62,8 +66,9 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 
 			if allow_virtual && table_name in c.virtual_tables {
 				plan.operations << VirtualTableOperation{table_name, c.virtual_tables[table_name]}
+				table.is_virtual = true
 			} else if table_name in c.storage.tables {
-				table := c.storage.tables[table_name]
+				table = c.storage.tables[table_name]
 
 				// This is a special case to handle "PRIMARY KEY = INTEGER".
 				if table.primary_key.len > 0 && where is BinaryExpr {
@@ -73,22 +78,26 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 						if left.name == table.primary_key[0] {
 							covered_by_pk = true
 							plan.operations << new_primary_key_operation(table, right,
-								right, params, c)
+								right, params, c, is_for_select)
 						}
 					}
 				}
 
 				if !covered_by_pk {
-					columns := columns_from_select(body, table, params, c)?
-					plan.operations << TableOperation{table_name, false, c.storage.tables[table_name], params, c, columns, body.exprs, where, plan.subplans, c.storage}
+					plan.operations << TableOperation{table_name, false, table, params, c, is_for_select, plan.subplans, c.storage}
+				}
+
+				if where !is NoExpr && !covered_by_pk {
+					last_operation := plan.operations[plan.operations.len - 1]
+					mut resolved_where := where
+					if is_for_select {
+						resolved_where = resolve_identifiers(where, table)?
+					}
+					plan.operations << new_where_operation(resolved_where, params, c,
+						last_operation.columns())
 				}
 			} else {
 				return sqlstate_42p01(table_name)
-			}
-
-			if where !is NoExpr && !covered_by_pk {
-				last_operation := plan.operations[plan.operations.len - 1]
-				plan.operations << new_where_operation(where, params, c, last_operation.columns())
 			}
 		}
 		QueryExpression {
@@ -104,12 +113,12 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 
 			// NOTE: This has to be assigned to a variable otherwise the value
 			// is lost. This must be a bug in V.
-			t := Table{
+			table = Table{
+				name: table_name
 				columns: subplan.columns()
 			}
 
-			columns := columns_from_select(body, t, params, c)?
-			plan.operations << TableOperation{table_name, true, t, params, c, columns, body.exprs, where, plan.subplans, c.storage}
+			plan.operations << TableOperation{table_name, true, table, params, c, is_for_select, plan.subplans, c.storage}
 		}
 	}
 
@@ -119,18 +128,25 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 	// "SELECT *".
 	match body.exprs {
 		[]DerivedColumn {
-			add_group_by_plan(mut &plan, body.table_expression.group_clause, body.exprs,
-				params, c)?
+			group_exprs := resolve_identifiers_exprs(body.table_expression.group_clause,
+				table)?
+
+			mut select_exprs := []DerivedColumn{}
+			for expr in body.exprs {
+				select_exprs << DerivedColumn{resolve_identifiers(expr.expr, table)?, expr.as_clause}
+			}
+
+			add_group_by_plan(mut &plan, group_exprs, select_exprs, params, c, table)?
 		}
 		AsteriskExpr {
 			// It's not possible to have a GROUP BY in this case.
 		}
 	}
 
-	return plan
+	return plan, table
 }
 
-fn add_group_by_plan(mut plan Plan, group_clause []Expr, select_exprs []DerivedColumn, params map[string]Value, c &Connection) ? {
+fn add_group_by_plan(mut plan Plan, group_clause []Expr, select_exprs []DerivedColumn, params map[string]Value, c &Connection, table Table) ? {
 	// There can be an explicit GROUP BY clause. However, if any of the
 	// expressions contain an aggregate function we need to have an implicit
 	// GROUP BY for the whole set.
@@ -148,24 +164,6 @@ fn add_group_by_plan(mut plan Plan, group_clause []Expr, select_exprs []DerivedC
 
 	mut order := []SortSpecification{}
 	for col in group_clause {
-		// All of the GROUP BY expressions have to appear in the SELECT. This is
-		// not a restriction with the SQL standard, but just easier to handle
-		// right now.
-		//
-		// TODO(elliotchance): In the future it should be able to extract the
-		// extra columns and pass them through.
-		mut found := false
-		for e in select_exprs {
-			if e.expr.str() == col.str() {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			return sqlstate_42601('The expression $col.str() from the GROUP BY must appear in SELECT expressions.')
-		}
-
 		order << SortSpecification{
 			expr: col
 			is_asc: true
@@ -177,36 +175,7 @@ fn add_group_by_plan(mut plan Plan, group_clause []Expr, select_exprs []DerivedC
 		plan.operations << new_order_operation(order, params, c, plan.columns())
 	}
 
-	plan.operations << new_group_operation(select_exprs, group_clause, params, c, plan.columns())
-}
-
-fn columns_from_select(stmt SelectStmt, table Table, params map[string]Value, c &Connection) ?Columns {
-	mut columns := []Column{}
-
-	expr := stmt.exprs
-	match expr {
-		AsteriskExpr {
-			columns = table.columns
-		}
-		[]DerivedColumn {
-			for i, col in expr {
-				mut column_name := 'COL${i + 1}'
-				if col.as_clause.name != '' {
-					column_name = col.as_clause.name
-				} else if col.expr is Identifier {
-					column_name = col.expr.name
-				}
-				empty_row := new_empty_row(table.columns)
-				typ := eval_as_type(c, empty_row, col.expr, params)?
-				columns << Column{
-					name: column_name
-					typ: typ
-				}
-			}
-		}
-	}
-
-	return columns
+	plan.operations << new_group_operation(select_exprs, group_clause, params, c, table)?
 }
 
 fn create_delete_plan(stmt DeleteStmt, params map[string]Value, c &Connection) ?Plan {
@@ -220,7 +189,9 @@ fn create_delete_plan(stmt DeleteStmt, params map[string]Value, c &Connection) ?
 		}
 	}
 
-	return create_select_plan(select_stmt, NoExpr{}, params, c, false)
+	plan, _ := create_select_plan(select_stmt, NoExpr{}, params, c, false, false)?
+
+	return plan
 }
 
 fn create_update_plan(stmt UpdateStmt, params map[string]Value, c &Connection) ?Plan {
@@ -234,18 +205,32 @@ fn create_update_plan(stmt UpdateStmt, params map[string]Value, c &Connection) ?
 		}
 	}
 
-	return create_select_plan(select_stmt, NoExpr{}, params, c, false)
+	plan, _ := create_select_plan(select_stmt, NoExpr{}, params, c, false, false)?
+
+	return plan
 }
 
 fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, c &Connection, correlation Correlation) ?Plan {
-	mut plan := create_basic_plan(stmt.body, stmt.offset, params, c, true, correlation)?
+	mut plan, table := create_basic_plan(stmt.body, stmt.offset, params, c, true, correlation)?
 
 	if stmt.order.len > 0 {
-		plan.operations << new_order_operation(stmt.order, params, c, plan.columns())
+		mut order := []SortSpecification{}
+		for spec in stmt.order {
+			order << SortSpecification{
+				expr: resolve_identifiers(spec.expr, table)?
+				is_asc: spec.is_asc
+			}
+		}
+
+		plan.operations << new_order_operation(order, params, c, plan.columns())
 	}
 
 	if stmt.fetch !is NoExpr || stmt.offset !is NoExpr {
 		plan.operations << new_limit_operation(stmt.fetch, stmt.offset, params, c, plan.columns())
+	}
+
+	if stmt.body is SelectStmt && !table.is_virtual {
+		plan.operations << new_expr_operation(c, params, stmt.body.exprs, table)?
 	}
 
 	return plan
@@ -288,9 +273,11 @@ fn (p Plan) explain(elapsed_parse time.Duration) Result {
 		rows << new_row({
 			'EXPLAIN': new_varchar_value(name + ':', 0)
 		})
-		rows << new_row({
-			'EXPLAIN': new_varchar_value('  ' + subplan.str(), 0)
-		})
+		for line in subplan.str().split('\n') {
+			rows << new_row({
+				'EXPLAIN': new_varchar_value('  ' + line, 0)
+			})
+		}
 	}
 
 	for operation in p.operations {

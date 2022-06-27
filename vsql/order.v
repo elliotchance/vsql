@@ -92,12 +92,13 @@ fn (o &OrderOperation) execute(rows []Row) ?[]Row {
 struct RowLink {
 	row Row
 mut:
-	next &RowLink = 0
+	next &RowLink = unsafe { 0 }
 }
 
 fn (l &RowLink) rows() []Row {
 	mut rows := []Row{}
-	mut cursor := l
+	mut cursor := unsafe { l }
+
 	for unsafe { cursor.next != 0 } {
 		rows << cursor.row
 		cursor = cursor.next

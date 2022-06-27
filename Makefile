@@ -43,7 +43,7 @@ btree-test:
 	v -stats $(BUILD_OPTIONS) $(PROD) test vsql/btree_test.v
 
 sql-test:
-	v -stats $(BUILD_OPTIONS) $(PROD) test vsql/sql_test.v
+	v -stats $(BUILD_OPTIONS) test vsql/sql_test.v
 
 # Examples
 

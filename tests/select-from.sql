@@ -26,3 +26,21 @@ FROM foo;
 SELECT * FROM bar;
 -- error 42P01: no such table: FOO
 -- error 42P01: no such table: BAR
+
+CREATE TABLE foo (x FLOAT);
+EXPLAIN SELECT foo.* FROM foo;
+-- msg: CREATE TABLE 1
+-- EXPLAIN: TABLE FOO (FOO.X DOUBLE PRECISION)
+-- EXPLAIN: EXPR (X DOUBLE PRECISION)
+
+CREATE TABLE foo (x FLOAT);
+INSERT INTO foo (x) VALUES (1.234);
+SELECT foo.* FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- X: 1.234
+
+CREATE TABLE foo (x FLOAT);
+EXPLAIN SELECT bar.* FROM foo;
+-- msg: CREATE TABLE 1
+-- error 42P01: no such table: BAR

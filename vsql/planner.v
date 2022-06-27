@@ -35,7 +35,7 @@ fn create_plan(stmt Stmt, params map[string]Value, c &Connection) ?Plan {
 	}
 }
 
-fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, c &Connection, allow_virtual bool, correlation Correlation) ?(Plan, Table) {
+fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, c &Connection, allow_virtual bool, correlation Correlation) ?(Plan, map[string]Table) {
 	match body {
 		SelectStmt {
 			return create_select_plan(body, offset, params, c, allow_virtual, true)
@@ -46,27 +46,62 @@ fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, c &
 
 			plan.operations << new_values_operation(body, NoExpr{}, correlation, c, params)?
 
-			return plan, Table{
-				is_virtual: true
-			}
+			return plan, map[string]Table{}
 		}
 	}
 }
 
-fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &Connection, allow_virtual bool, is_for_select bool) ?(Plan, Table) {
+fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &Connection, allow_virtual bool, is_for_select bool) ?(Plan, map[string]Table) {
+	from_clause := body.table_expression.from_clause
+
+	match from_clause {
+		TablePrimary {
+			plan, table := create_select_plan_without_join(body, from_clause, offset,
+				params, c, allow_virtual, is_for_select)?
+			return plan, {
+				table.name: table
+			}
+		}
+		QualifiedJoin {
+			left_table_clause := from_clause.left_table as TablePrimary
+			left_plan, left_table := create_select_plan_without_join(body, left_table_clause,
+				offset, params, c, allow_virtual, is_for_select)?
+
+			right_table_clause := from_clause.right_table as TablePrimary
+			right_plan, right_table := create_select_plan_without_join(body, right_table_clause,
+				offset, params, c, allow_virtual, is_for_select)?
+
+			mut plan := Plan{}
+			plan.subplans['\$1'] = left_plan
+			plan.subplans['\$2'] = right_plan
+
+			tables := {
+				left_table.name:  left_table
+				right_table.name: right_table
+			}
+
+			plan.operations << new_join_operation(left_plan.columns(), from_clause.join_type,
+				right_plan.columns(), resolve_identifiers(from_clause.specification, tables)?,
+				params, c, plan, c.storage)
+
+			return plan, tables
+		}
+	}
+}
+
+fn create_select_plan_without_join(body SelectStmt, from_clause TablePrimary, offset Expr, params map[string]Value, c &Connection, allow_virtual bool, is_for_select bool) ?(Plan, Table) {
 	mut plan := Plan{}
 	mut covered_by_pk := false
-	from_clause := body.table_expression.from_clause.body
 	where := body.table_expression.where_clause
 	mut table := Table{}
 
-	match from_clause {
+	match from_clause.body {
 		Identifier {
-			table_name := from_clause.name
+			table_name := from_clause.body.name
 
 			if allow_virtual && table_name in c.virtual_tables {
 				plan.operations << VirtualTableOperation{table_name, c.virtual_tables[table_name]}
-				table.is_virtual = true
+				table = c.virtual_tables[table_name].table()
 			} else if table_name in c.storage.tables {
 				table = c.storage.tables[table_name]
 
@@ -91,7 +126,9 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 					last_operation := plan.operations[plan.operations.len - 1]
 					mut resolved_where := where
 					if is_for_select {
-						resolved_where = resolve_identifiers(where, table)?
+						resolved_where = resolve_identifiers(where, {
+							table.name: table
+						})?
 					}
 					plan.operations << new_where_operation(resolved_where, params, c,
 						last_operation.columns())
@@ -104,11 +141,11 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 			// TODO(elliotchance): Needs to increment.
 			mut table_name := '\$1'
 
-			if body.table_expression.from_clause.correlation.name.name != '' {
-				table_name = body.table_expression.from_clause.correlation.name.name
+			if from_clause.correlation.name.name != '' {
+				table_name = from_clause.correlation.name.name
 			}
 
-			subplan := create_query_expression_plan(from_clause, params, c, body.table_expression.from_clause.correlation)?
+			subplan := create_query_expression_plan(from_clause.body, params, c, from_clause.correlation)?
 			plan.subplans[table_name] = subplan
 
 			// NOTE: This has to be assigned to a variable otherwise the value
@@ -128,17 +165,20 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 	// "SELECT *".
 	match body.exprs {
 		[]DerivedColumn {
+			tables := {
+				table.name: table
+			}
 			group_exprs := resolve_identifiers_exprs(body.table_expression.group_clause,
-				table)?
+				tables)?
 
 			mut select_exprs := []DerivedColumn{}
 			for expr in body.exprs {
-				select_exprs << DerivedColumn{resolve_identifiers(expr.expr, table)?, expr.as_clause}
+				select_exprs << DerivedColumn{resolve_identifiers(expr.expr, tables)?, expr.as_clause}
 			}
 
 			add_group_by_plan(mut &plan, group_exprs, select_exprs, params, c, table)?
 		}
-		AsteriskExpr {
+		AsteriskExpr, QualifiedAsteriskExpr {
 			// It's not possible to have a GROUP BY in this case.
 		}
 	}
@@ -211,13 +251,13 @@ fn create_update_plan(stmt UpdateStmt, params map[string]Value, c &Connection) ?
 }
 
 fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, c &Connection, correlation Correlation) ?Plan {
-	mut plan, table := create_basic_plan(stmt.body, stmt.offset, params, c, true, correlation)?
+	mut plan, tables := create_basic_plan(stmt.body, stmt.offset, params, c, true, correlation)?
 
 	if stmt.order.len > 0 {
 		mut order := []SortSpecification{}
 		for spec in stmt.order {
 			order << SortSpecification{
-				expr: resolve_identifiers(spec.expr, table)?
+				expr: resolve_identifiers(spec.expr, tables)?
 				is_asc: spec.is_asc
 			}
 		}
@@ -229,8 +269,8 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, c
 		plan.operations << new_limit_operation(stmt.fetch, stmt.offset, params, c, plan.columns())
 	}
 
-	if stmt.body is SelectStmt && !table.is_virtual {
-		plan.operations << new_expr_operation(c, params, stmt.body.exprs, table)?
+	if stmt.body is SelectStmt {
+		plan.operations << new_expr_operation(c, params, stmt.body.exprs, tables)?
 	}
 
 	return plan

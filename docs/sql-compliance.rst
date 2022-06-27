@@ -178,8 +178,36 @@ The following table is **not complete** and will be filled in as time goes on.
      - **Basic schema manipulation**
 
    * - **F041**
-     - **Unknown**
+     - **Partial**
      - **Basic joined table**
+
+   * - F041-01
+     - Yes
+     - Inner join (but not necessarily the ``INNER`` keyword)
+
+   * - F041-02
+     - Yes
+     - ``INNER`` keyword
+
+   * - F041-03
+     - Yes
+     - ``LEFT OUTER JOIN``
+
+   * - F041-04
+     - Yes
+     - ``RIGHT OUTER JOIN``
+
+   * - F041-05
+     - No
+     - Outer joins can be nested
+
+   * - F041-07
+     - No
+     - The inner table in a left or right outer join can also be used in an inner join
+
+   * - F041-08
+     - Yes
+     - All comparison operators are supported (rather than just =)
 
    * - **F051**
      - **Unknown**

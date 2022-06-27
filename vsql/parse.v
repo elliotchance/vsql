@@ -17,8 +17,16 @@ fn parse_query_specification(select_list SelectList, table_expression TableExpre
 	}
 }
 
-fn parse_select_sublist(column DerivedColumn) ?SelectList {
+fn parse_select_sublist1(column DerivedColumn) ?SelectList {
 	return [column]
+}
+
+fn parse_select_sublist2(column QualifiedAsteriskExpr) ?SelectList {
+	return column
+}
+
+fn parse_qualified_asterisk(column Identifier, _ string) ?QualifiedAsteriskExpr {
+	return QualifiedAsteriskExpr{column}
 }
 
 fn parse_derived_column(expr Expr) ?DerivedColumn {
@@ -29,24 +37,36 @@ fn parse_derived_column_as(expr Expr, as_clause Identifier) ?DerivedColumn {
 	return DerivedColumn{expr, as_clause}
 }
 
-fn parse_table_expression(from_clause TablePrimary) ?TableExpression {
+fn parse_table_factor(p TablePrimary) ?TableReference {
+	return p
+}
+
+fn parse_table_expression(from_clause TableReference) ?TableExpression {
 	return TableExpression{from_clause, NoExpr{}, []Expr{}}
 }
 
-fn parse_table_expression_group(from_clause TablePrimary, group []Expr) ?TableExpression {
+fn parse_table_expression_group(from_clause TableReference, group []Expr) ?TableExpression {
 	return TableExpression{from_clause, NoExpr{}, group}
 }
 
-fn parse_table_expression_where(from_clause TablePrimary, where Expr) ?TableExpression {
+fn parse_table_expression_where(from_clause TableReference, where Expr) ?TableExpression {
 	return TableExpression{from_clause, where, []Expr{}}
 }
 
-fn parse_table_expression_where_group(from_clause TablePrimary, where Expr, group []Expr) ?TableExpression {
+fn parse_table_expression_where_group(from_clause TableReference, where Expr, group []Expr) ?TableExpression {
 	return TableExpression{from_clause, where, group}
 }
 
-fn parse_from_clause(name TablePrimary) ?TablePrimary {
-	return name
+fn parse_from_clause(table TableReference) ?TableReference {
+	return table
+}
+
+fn parse_qualified_join1(left_table TableReference, right_table TableReference, specification Expr) ?QualifiedJoin {
+	return QualifiedJoin{left_table, 'INNER', right_table, specification}
+}
+
+fn parse_qualified_join2(left_table TableReference, join_type string, right_table TableReference, specification Expr) ?QualifiedJoin {
+	return QualifiedJoin{left_table, join_type, right_table, specification}
 }
 
 fn parse_table_definition(table_name Identifier, table_contents_source []TableElement) ?Stmt {
@@ -618,26 +638,18 @@ fn parse_count_all(asterisk string) ?Expr {
 	return CountAllExpr{}
 }
 
-fn parse_avg() ?string {
-	return 'AVG'
-}
-
-fn parse_count() ?string {
-	return 'COUNT'
-}
-
-fn parse_min() ?string {
-	return 'MIN'
-}
-
-fn parse_max() ?string {
-	return 'MAX'
-}
-
-fn parse_sum() ?string {
-	return 'SUM'
-}
-
 fn parse_general_set_function(name string, expr Expr) ?Expr {
 	return CallExpr{name, [expr]}
+}
+
+fn parse_identifier_chain1(a Identifier, b Identifier) ?Identifier {
+	return new_identifier(a.name + '.' + b.name)
+}
+
+fn parse_joined_table(join QualifiedJoin) ?TableReference {
+	return join
+}
+
+fn parse_string(s string) ?string {
+	return s
 }

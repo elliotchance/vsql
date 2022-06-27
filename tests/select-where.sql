@@ -24,3 +24,6 @@ SELECT * FROM foo WHERE num < 27;
 SELECT * FROM foo WHERE num <= 27;
 -- NUM: 13
 -- NUM: 27
+
+SELECT * FROM foo WHERE foo.num = 27;
+-- NUM: 27

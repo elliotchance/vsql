@@ -33,7 +33,7 @@ fn expr_is_agg(conn &Connection, e Expr) ?bool {
 		CountAllExpr {
 			return true
 		}
-		Identifier, Parameter, Value, NoExpr, RowExpr, QueryExpression {
+		Identifier, Parameter, Value, NoExpr, RowExpr, QualifiedAsteriskExpr, QueryExpression {
 			return false
 		}
 		LikeExpr {
@@ -65,49 +65,62 @@ fn nested_agg_unsupported(e Expr) ?bool {
 	return sqlstate_42601('nested aggregate functions are not supported: $e.str()')
 }
 
-fn resolve_identifiers_exprs(exprs []Expr, table Table) ?[]Expr {
+fn resolve_identifiers_exprs(exprs []Expr, tables map[string]Table) ?[]Expr {
 	mut new_exprs := []Expr{}
 
 	for expr in exprs {
-		new_exprs << resolve_identifiers(expr, table)?
+		new_exprs << resolve_identifiers(expr, tables)?
 	}
 
 	return new_exprs
 }
 
 // resolve_identifiers will resolve the identifiers against their relevant
-// table.
-fn resolve_identifiers(e Expr, table Table) ?Expr {
+// tables.
+fn resolve_identifiers(e Expr, tables map[string]Table) ?Expr {
 	match e {
 		BinaryExpr {
-			return BinaryExpr{resolve_identifiers(e.left, table)?, e.op, resolve_identifiers(e.right,
-				table)?}
+			return BinaryExpr{resolve_identifiers(e.left, tables)?, e.op, resolve_identifiers(e.right,
+				tables)?}
 		}
 		BetweenExpr {
-			return BetweenExpr{e.not, e.symmetric, resolve_identifiers(e.expr, table)?, resolve_identifiers(e.left,
-				table)?, resolve_identifiers(e.right, table)?}
+			return BetweenExpr{e.not, e.symmetric, resolve_identifiers(e.expr, tables)?, resolve_identifiers(e.left,
+				tables)?, resolve_identifiers(e.right, tables)?}
 		}
 		CallExpr {
-			return CallExpr{e.function_name, resolve_identifiers_exprs(e.args, table)?}
+			return CallExpr{e.function_name, resolve_identifiers_exprs(e.args, tables)?}
 		}
 		Identifier {
-			return new_identifier('${table.name}.$e')
+			// TODO(elliotchance): This is super hacky. It valid for there to be
+			//  a "." in the deliminated name.
+			if e.name.contains('.') {
+				return e
+			}
+
+			for _, table in tables {
+				if (table.column(e.name) or { Column{} }).name == e.name {
+					return new_identifier('${table.name}.$e')
+				}
+			}
+
+			// TODO(elliotchance): Need tests for table qualifier not existing.
+			return e
 		}
 		LikeExpr {
-			return LikeExpr{resolve_identifiers(e.left, table)?, resolve_identifiers(e.right,
-				table)?, e.not}
+			return LikeExpr{resolve_identifiers(e.left, tables)?, resolve_identifiers(e.right,
+				tables)?, e.not}
 		}
 		NullExpr {
-			return NullExpr{resolve_identifiers(e.expr, table)?, e.not}
+			return NullExpr{resolve_identifiers(e.expr, tables)?, e.not}
 		}
 		SimilarExpr {
-			return SimilarExpr{resolve_identifiers(e.left, table)?, resolve_identifiers(e.right,
-				table)?, e.not}
+			return SimilarExpr{resolve_identifiers(e.left, tables)?, resolve_identifiers(e.right,
+				tables)?, e.not}
 		}
 		UnaryExpr {
-			return UnaryExpr{e.op, resolve_identifiers(e.expr, table)?}
+			return UnaryExpr{e.op, resolve_identifiers(e.expr, tables)?}
 		}
-		CountAllExpr, Parameter, Value, NoExpr, RowExpr, QueryExpression {
+		CountAllExpr, Parameter, Value, NoExpr, RowExpr, QueryExpression, QualifiedAsteriskExpr {
 			// These don't have any Expr properties to recurse.
 			return e
 		}

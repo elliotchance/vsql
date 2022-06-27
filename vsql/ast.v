@@ -25,6 +25,7 @@ type Expr = BetweenExpr
 	| NoExpr
 	| NullExpr
 	| Parameter
+	| QualifiedAsteriskExpr
 	| QueryExpression
 	| RowExpr
 	| SimilarExpr
@@ -64,6 +65,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 		Parameter {
 			e.pstr(params)
 		}
+		QualifiedAsteriskExpr {
+			e.str()
+		}
 		QueryExpression {
 			e.pstr(params)
 		}
@@ -84,6 +88,23 @@ fn (e Expr) pstr(params map[string]Value) string {
 			}
 		}
 	}
+}
+
+type TableReference = QualifiedJoin | TablePrimary
+
+struct QualifiedJoin {
+	left_table    TableReference
+	join_type     string // 'INNER', 'LEFT' or 'RIGHT'
+	right_table   TableReference
+	specification Expr // ON condition
+}
+
+struct QualifiedAsteriskExpr {
+	table_name Identifier
+}
+
+fn (e QualifiedAsteriskExpr) str() string {
+	return '${e.table_name}.*'
 }
 
 // SelectStmt for SELECT
@@ -264,7 +285,7 @@ struct ComparisonPredicatePart2 {
 }
 
 struct TableExpression {
-	from_clause  TablePrimary
+	from_clause  TableReference
 	where_clause Expr
 	group_clause []Expr
 }
@@ -276,7 +297,7 @@ struct DerivedColumn {
 
 type AsteriskExpr = bool
 
-type SelectList = AsteriskExpr | []DerivedColumn
+type SelectList = AsteriskExpr | QualifiedAsteriskExpr | []DerivedColumn
 
 struct Correlation {
 	name    Identifier

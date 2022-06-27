@@ -95,41 +95,55 @@ fn (r Row) get(name string) ?Value {
 fn new_empty_row(columns Columns, table_name string) Row {
 	mut r := Row{}
 	for col in columns {
-		mut v := Value{}
-		match col.typ.typ {
-			.is_null {
-				v = new_null_value()
-			}
-			.is_bigint {
-				v = new_bigint_value(0)
-			}
-			.is_double_precision {
-				v = new_double_precision_value(0)
-			}
-			.is_integer {
-				v = new_integer_value(0)
-			}
-			.is_real {
-				v = new_real_value(0)
-			}
-			.is_smallint {
-				v = new_smallint_value(0)
-			}
-			.is_boolean {
-				v = new_boolean_value(false)
-			}
-			.is_character {
-				v = new_character_value('', col.typ.size)
-			}
-			.is_varchar {
-				v = new_varchar_value('', col.typ.size)
-			}
-		}
+		v := new_empty_value(col)
 
 		if table_name == '' {
 			r.data[col.name] = v
 		} else {
 			r.data['${table_name}.$col.name'] = v
+		}
+	}
+
+	return r
+}
+
+fn new_empty_value(col Column) Value {
+	match col.typ.typ {
+		.is_null {
+			return new_null_value()
+		}
+		.is_bigint {
+			return new_bigint_value(0)
+		}
+		.is_double_precision {
+			return new_double_precision_value(0)
+		}
+		.is_integer {
+			return new_integer_value(0)
+		}
+		.is_real {
+			return new_real_value(0)
+		}
+		.is_smallint {
+			return new_smallint_value(0)
+		}
+		.is_boolean {
+			return new_boolean_value(false)
+		}
+		.is_character {
+			return new_character_value('', col.typ.size)
+		}
+		.is_varchar {
+			return new_varchar_value('', col.typ.size)
+		}
+	}
+}
+
+fn new_empty_table_row(tables map[string]Table) Row {
+	mut r := Row{}
+	for _, table in tables {
+		for col in table.columns {
+			r.data['${table.name}.$col.name'] = new_empty_value(col)
 		}
 	}
 

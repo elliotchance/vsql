@@ -1,7 +1,7 @@
 SELECT
 ======
 
-A ``SELECT`` statement is used to retrieve rows from a table.
+A ``SELECT`` statement is used to retrieve rows from one or more tables.
 
 .. contents::
 
@@ -12,6 +12,7 @@ Syntax
 
   SELECT <expression> [ AS <name> ] , ...
   FROM <table_name>
+  [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_name> ON <condition> ]
   [ WHERE <condition> ]
   [ GROUP BY <column_name> , ... ]
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
@@ -26,6 +27,24 @@ For each *expression*, the naming convention follows:
 1. If ``name`` is provided, that will be used.
 2. If ``expression`` refered to a column, the column name will be used.
 3. Otherwise, the name ``COL<number>`` will be used where *number* is the position of the column (starting at 1).
+
+JOIN
+----
+
+vsql supports three types of JOIN operations:
+
+1. ``INNER JOIN`` (or, more simply: ``JOIN``).
+2. ``LEFT OUTER JOIN`` (or, more simply: ``LEFT JOIN``).
+3. ``RIGHT OUTER JOIN`` (or, more simply: ``RIGHT JOIN``).
+
+For an ``INNER JOIN``, only records that satisfy the ``<condition>`` in *both*
+tables will be included.
+
+Whereas ``LEFT OUTER JOIN`` and ``RIGHT OUTER JOIN`` will always include all
+records from the *left* or *right* table respectively. Any record that does not
+match the other side will be given all ``NULL`` values. The *left* table is that
+defined by the ``FROM`` expressions and the *right* table is that used in the
+``JOIN`` clause.
 
 WHERE
 -----

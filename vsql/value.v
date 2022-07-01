@@ -4,6 +4,8 @@
 
 module vsql
 
+import orm
+
 pub struct Value {
 pub mut:
 	// TODO(elliotchance): Make these non-mutable.
@@ -78,6 +80,16 @@ pub fn new_character_value(x string, size int) Value {
 	return Value{
 		typ: Type{.is_character, size}
 		string_value: x
+	}
+}
+
+// new_primitive_value returns the Value of a Primitive. Primitives are used by
+// the ORM.
+pub fn new_primitive_value(p orm.Primitive) ?Value {
+	return match p {
+		int { new_integer_value(p) }
+		f64 { new_double_precision_value(p) }
+		else { error('$p') }
 	}
 }
 
@@ -162,4 +174,15 @@ fn (v Value) cmp(v2 Value) ?(int, bool) {
 	}
 
 	return error('cannot compare $v.typ and $v2.typ')
+}
+
+// primitives are used by the ORM.
+pub fn (v Value) primitive() ?orm.Primitive {
+	return match v.typ.typ {
+		.is_boolean { orm.bool_to_primitive(v.f64_value != 0) }
+		.is_integer { orm.int_to_primitive(int(v.f64_value)) }
+		.is_varchar { orm.string_to_primitive(v.string_value) }
+		.is_double_precision { orm.f64_to_primitive(v.f64_value) }
+		else { error('$v.typ.typ') }
+	}
 }

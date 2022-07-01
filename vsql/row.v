@@ -4,6 +4,7 @@
 module vsql
 
 import time
+import orm
 
 struct Row {
 mut:
@@ -87,6 +88,13 @@ fn (r Row) get(name string) ?Value {
 
 		return error('no such column $name')
 	}
+}
+
+// primitives are used by the ORM.
+pub fn (r Row) get_primitive(name string) ?orm.Primitive {
+	value := r.get(name)?
+
+	return value.primitive()
 }
 
 // new_empty_row is used internally to generate a row with zero values for all

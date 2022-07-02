@@ -1,14 +1,14 @@
 Installing & Updating
 =====================
 
-vsql can be installed or updated using [V](https://vlang.io):
+vsql can be installed or updated using `V <https://vlang.io>`_:
 
-```
-v install elliotchance.vsql
-```
+.. code-block:: sh
+
+   v install elliotchance.vsql
 
 Or, if you don't have V installed you can also download standalone binaries from
-the [Releases](https://github.com/elliotchance/vsql/releases) page.
+the `Releases <https://github.com/elliotchance/vsql/releases>`_.
 
 See Also
 --------

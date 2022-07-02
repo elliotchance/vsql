@@ -244,6 +244,12 @@ fn parse(tokens []Token) ?Stmt {
 		panic(q0.end_column)
 	}
 
+	// This is helpful for debugging. Enable it to see the tree (or at least the
+	// first resolved tree since there could be multiple solutions in an
+	// ambiguous grammar)
+	//
+	//   trees[0].print(0)
+
 	return (parse_ast(trees[0])?)[0] as Stmt
 }
 
@@ -339,12 +345,12 @@ fn tokenize_earley_columns(tokens []Token) []&EarleyColumn {
 	for i, token in tokens {
 		v := token.value
 
-		if v[0].is_digit() {
-			table << new_earley_column(i + 1, '^integer', v)
-		} else if tokens[i].kind == .literal_string {
+		if tokens[i].kind == .literal_string {
 			table << new_earley_column(i + 1, '^string', v)
 		} else if tokens[i].kind == .keyword {
 			table << new_earley_column(i + 1, v, v)
+		} else if v[0].is_digit() {
+			table << new_earley_column(i + 1, '^integer', v)
 		} else if v == '(' || v == ')' || v == ',' || v == '=' || v == '<>' || v == '.' || v == '+'
 			|| v == '-' || v == '*' || v == '/' || v == '>' || v == '<' || v == '>=' || v == '<='
 			|| v == '||' || v == ':' {

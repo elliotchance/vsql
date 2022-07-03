@@ -82,6 +82,105 @@ is an alias for ``CHARACTER(1)``.
 1. The *n* limit is not yet enforced.
 2. Values are not actually space padded.
 
+Date and Time Types
+-------------------
+
+``DATE``
+^^^^^^^^
+
+A ``DATE`` holds a year-month-day value, such as ``2010-10-25``.
+
+A ``DATE`` value can be created with the ``DATE '2010-10-25'`` literal
+expression.
+
+Valid date ranges are between ``0000-01-01`` and ``9999-12-31``.
+
+A ``DATE`` is stored as 8 bytes.
+
+``TIME(n) WITH TIME ZONE``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Holds a time as hour-minute-second-timezone (without respect to a date),
+for example: ``15:12:47+05:30``.
+
+The ``(n)`` describes the sub-second resolution to be stored. It must be
+inclusively between 0 (whole seconds) and 6 (microseconds). If omitted, 0 is
+used.
+
+A ``TIME(n) WITH TIME ZONE`` value is created with the ``TIME 'VALUE'`` literal
+expression. The ``VALUE`` itself will determine whether the time has a time zone
+and its precision. For example:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Expr
+    - Type
+
+  * - ``TIME '15:12:47'``
+    - ``TIME(0) WITHOUT TIME ZONE``
+
+  * - ``TIME '15:12:47.123'``
+    - ``TIME(3) WITHOUT TIME ZONE``
+
+  * - ``TIME '15:12:47+05:30'``
+    - ``TIME(0) WITH TIME ZONE``
+
+  * - ``TIME '15:12:47.000000+05:30'``
+    - ``TIME(6) WITH TIME ZONE``
+
+A ``TIME WITH TIME ZONE`` (with any precision) is stored as 10 bytes.
+
+``TIME(n) WITHOUT TIME ZONE``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This works the same way as ``TIME(n) WITH TIME ZONE`` except there is no
+time zone component.
+
+A ``TIME WITHOUT TIME ZONE`` (with any precision) is stored as 8 bytes.
+
+``TIMESTAMP(n) WITH TIME ZONE``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Holds a timestamp as year-month-day-hour-minute-second-timezone, for example:
+``2010-10-25 15:12:47+05:30``.
+
+The ``(n)`` describes the sub-second resolution to be stored. It must be
+inclusively between 0 (whole seconds) and 6 (microseconds). If omitted, 6 is
+used. This is different from the behavior of ``TIME`` that uses 0 by default.
+
+A ``TIMESTAMP(n) WITH TIME ZONE`` value is created with the
+``TIMESTAMP 'VALUE'`` literal expression. The ``VALUE`` itself will determine
+whether the timestamp has a time zone and its precision. For example:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Expr
+    - Type
+
+  * - ``TIMESTAMP '2010-10-25 15:12:47'``
+    - ``TIMESTAMP(0) WITHOUT TIME ZONE``
+
+  * - ``TIMESTAMP '2010-10-25 15:12:47.123'``
+    - ``TIMESTAMP(3) WITHOUT TIME ZONE``
+
+  * - ``TIMESTAMP '2010-10-25 15:12:47+05:30'``
+    - ``TIMESTAMP(0) WITH TIME ZONE``
+
+  * - ``TIMESTAMP '2010-10-25 15:12:47.000000+05:30'``
+    - ``TIMESTAMP(6) WITH TIME ZONE``
+
+A ``TIMESTAMP WITH TIME ZONE`` (with any precision) is stored as 10 bytes.
+
+``TIMESTAMP(n) WITHOUT TIME ZONE``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This works the same way as ``TIMESTAMP(n) WITH TIME ZONE`` except there is no
+time zone component.
+
+A ``TIMESTAMP WITHOUT TIME ZONE`` (with any precision) is stored as 8 bytes.
+
 Unsupported Data Types
 ----------------------
 
@@ -135,13 +234,6 @@ Some are supported, but the remaining ones that are not supported:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. ``DECFLOAT``
-
-<datetime type>
-^^^^^^^^^^^^^^^
-
-1. ``DATE``
-2. ``TIME``
-3. ``TIMESTAMP``
 
 <interval type>
 ^^^^^^^^^^^^^^^

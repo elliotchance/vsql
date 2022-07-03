@@ -103,12 +103,12 @@ fn parse_smallint() ?Type {
 	return new_type('SMALLINT', 0)
 }
 
-fn parse_varchar(length Value) ?Type {
-	return new_type('CHARACTER VARYING', int(length.f64_value))
+fn parse_varchar(length int) ?Type {
+	return new_type('CHARACTER VARYING', length)
 }
 
-fn parse_character_n(length Value) ?Type {
-	return new_type('CHARACTER', int(length.f64_value))
+fn parse_character_n(length int) ?Type {
+	return new_type('CHARACTER', length)
 }
 
 fn parse_character() ?Type {
@@ -119,8 +119,8 @@ fn parse_double_precision() ?Type {
 	return new_type('DOUBLE PRECISION', 0)
 }
 
-fn parse_float_n(length Value) ?Type {
-	return new_type('FLOAT', int(length.f64_value))
+fn parse_float_n(length int) ?Type {
+	return new_type('FLOAT', length)
 }
 
 fn parse_float() ?Type {
@@ -243,12 +243,12 @@ fn parse_value(v Value) ?Value {
 	return v
 }
 
-fn parse_exact_numeric_literal1(a Value, b Value) ?Value {
-	return new_double_precision_value('${a.f64_value}.$b.f64_value'.f64())
+fn parse_exact_numeric_literal1(a int, b int) ?Value {
+	return new_double_precision_value('${a}.$b'.f64())
 }
 
-fn parse_exact_numeric_literal2(a Value) ?Value {
-	return new_double_precision_value('0.$a.f64_value'.f64())
+fn parse_exact_numeric_literal2(a int) ?Value {
+	return new_double_precision_value('0.$a'.f64())
 }
 
 // <select list> <comma> <select sublist>
@@ -652,4 +652,66 @@ fn parse_joined_table(join QualifiedJoin) ?TableReference {
 
 fn parse_string(s string) ?string {
 	return s
+}
+
+fn parse_int_value(x int) ?Value {
+	return new_integer_value(x)
+}
+
+fn parse_timestamp_prec_tz_type(prec int, tz bool) ?Type {
+	if tz {
+		return new_type('TIMESTAMP WITH TIME ZONE', prec)
+	}
+
+	return new_type('TIMESTAMP WITHOUT TIME ZONE', prec)
+}
+
+fn parse_timestamp_prec_type(prec int) ?Type {
+	return parse_timestamp_prec_tz_type(prec, false)
+}
+
+fn parse_timestamp_tz_type(tz bool) ?Type {
+	// ISO/IEC 9075-2:2016(E), 6.1, 36) If <timestamp precision> is not
+	// specified, then 6 is implicit.
+	return parse_timestamp_prec_tz_type(6, tz)
+}
+
+fn parse_timestamp_type() ?Type {
+	return parse_timestamp_prec_tz_type(0, false)
+}
+
+fn parse_time_prec_tz_type(prec int, tz bool) ?Type {
+	if tz {
+		return new_type('TIME WITH TIME ZONE', prec)
+	}
+
+	return new_type('TIME WITHOUT TIME ZONE', prec)
+}
+
+fn parse_time_type() ?Type {
+	return parse_time_prec_tz_type(0, false)
+}
+
+fn parse_time_prec_type(prec int) ?Type {
+	return parse_time_prec_tz_type(prec, false)
+}
+
+fn parse_time_tz_type(tz bool) ?Type {
+	return parse_time_prec_tz_type(0, tz)
+}
+
+fn parse_date_type() ?Type {
+	return new_type('DATE', 0)
+}
+
+fn parse_timestamp_literal(v Value) ?Value {
+	return new_timestamp_value(v.string_value)
+}
+
+fn parse_time_literal(v Value) ?Value {
+	return new_time_value(v.string_value)
+}
+
+fn parse_date_literal(v Value) ?Value {
+	return new_date_value(v.string_value)
 }

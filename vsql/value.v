@@ -10,6 +10,7 @@ pub mut:
 	typ          Type
 	f64_value    f64    // boolean and numeric
 	string_value string // char and varchar
+	time_value   Time   // date, time and timestamp
 }
 
 fn new_null_value() Value {
@@ -81,6 +82,33 @@ pub fn new_character_value(x string, size int) Value {
 	}
 }
 
+pub fn new_timestamp_value(ts string) ?Value {
+	t := new_timestamp_from_string(ts)?
+
+	return Value{
+		typ: t.sql_type()
+		time_value: t
+	}
+}
+
+pub fn new_time_value(ts string) ?Value {
+	t := new_time_from_string(ts)?
+
+	return Value{
+		typ: t.sql_type()
+		time_value: t
+	}
+}
+
+pub fn new_date_value(ts string) ?Value {
+	t := new_date_from_string(ts)?
+
+	return Value{
+		typ: t.sql_type()
+		time_value: t
+	}
+}
+
 fn bool_str(x f64) string {
 	return match x {
 		0 { 'FALSE' }
@@ -101,10 +129,22 @@ fn f64_string(x f64) string {
 
 fn (v Value) str() string {
 	return match v.typ.typ {
-		.is_null { 'NULL' }
-		.is_boolean { bool_str(v.f64_value) }
-		.is_double_precision, .is_real, .is_bigint, .is_integer, .is_smallint { f64_string(v.f64_value) }
-		.is_varchar, .is_character { v.string_value }
+		.is_null {
+			'NULL'
+		}
+		.is_boolean {
+			bool_str(v.f64_value)
+		}
+		.is_double_precision, .is_real, .is_bigint, .is_integer, .is_smallint {
+			f64_string(v.f64_value)
+		}
+		.is_varchar, .is_character {
+			v.string_value
+		}
+		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
+		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
+			v.time_value.str()
+		}
 	}
 }
 

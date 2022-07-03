@@ -50,6 +50,14 @@ fn (q QueryCache) prepare_stmt(tokens []Token) (string, map[string]Value, []Toke
 			ignore = true
 		}
 
+		// Do not replace with placeholders for string literals that are part of
+		// date time literals, these have to stay as strings because they are
+		// parsed internally.
+		if j > 0 && tokens[j - 1].kind == .keyword && (tokens[j - 1].value == 'TIMESTAMP'
+			|| tokens[j - 1].value == 'TIME' || tokens[j - 1].value == 'DATE') {
+			ignore = true
+		}
+
 		if !ignore {
 			match token.kind {
 				.literal_number {

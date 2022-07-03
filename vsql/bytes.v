@@ -195,10 +195,26 @@ fn bytes_to_int(bytes []u8) int {
 	}
 }
 
+fn bytes_to_i16(bytes []u8) i16 {
+	return unsafe {
+		Bytes2{
+			bytes: [bytes[0], bytes[1]]!
+		}.i16_value
+	}
+}
+
 fn i64_to_bytes(n i64) []u8 {
 	return Bytes8{
 		i64_value: n
 	}.bytes().reverse()
+}
+
+fn bytes_to_i64(bytes []u8) i64 {
+	return unsafe {
+		Bytes8{
+			bytes: [bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]]!
+		}.i64_value
+	}
 }
 
 fn (mut b Bytes) write_string1_list(ss []string) {

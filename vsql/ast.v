@@ -81,7 +81,7 @@ fn (e Expr) pstr(params map[string]Value) string {
 			e.pstr(params)
 		}
 		Value {
-			if e.typ.uses_string() {
+			if e.typ.uses_string() || e.typ.uses_time() {
 				'\'$e.str()\''
 			} else {
 				e.str()
@@ -336,7 +336,7 @@ fn (e Parameter) str() string {
 fn (e Parameter) pstr(params map[string]Value) string {
 	p := params[e.name]
 
-	if p.typ.uses_string() {
+	if p.typ.uses_string() || p.typ.uses_time() {
 		return '\'$p.str()\''
 	}
 

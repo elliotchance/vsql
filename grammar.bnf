@@ -81,6 +81,7 @@
     <character string type>
   | <numeric type>
   | <boolean type>
+  | <datetime type>
 
 <character string type> /* Type */ ::=
     CHARACTER                                                         -> character
@@ -95,13 +96,13 @@
 
 <right paren> ::= ")"
 
-<character length> /* Value */ ::=
+<character length> /* int */ ::=
     <length>
 
-<length> /* Value */ ::=
+<length> /* int */ ::=
     <unsigned integer>
 
-<unsigned integer> /* Value */ ::=
+<unsigned integer> /* int */ ::=
     ^integer
 
 <comma> ::= ","
@@ -122,7 +123,7 @@
   | REAL                                           -> real
   | DOUBLE PRECISION                               -> double_precision
 
-<precision> /* Value */ ::=
+<precision> /* int */ ::=
     <unsigned integer>
 
 <boolean type> /* Type */ ::=
@@ -182,8 +183,8 @@
     <SQL schema statement>
 
 <exact numeric literal> /* Value */ ::=
-    <unsigned integer>
-  | <unsigned integer> <period>                      -> value
+    <unsigned integer>                               -> int_value
+  | <unsigned integer> <period>                      -> int_value
   | <unsigned integer> <period> <unsigned integer>   -> exact_numeric_literal1
   | <period> <unsigned integer>                      -> exact_numeric_literal2
 
@@ -245,6 +246,19 @@
 <common value expression> /* Expr */ ::=
     <numeric value expression>
   | <string value expression>
+  | <datetime value expression>
+
+<datetime value expression> /* Expr */ ::=
+    <datetime term>
+
+<datetime term> /* Expr */ ::=
+    <datetime factor>
+
+<datetime factor> /* Expr */ ::=
+    <datetime primary>
+
+<datetime primary> /* Expr */ ::=
+    <value expression primary>
 
 <value expression> /* Expr */ ::=
     <common value expression>
@@ -365,7 +379,31 @@
 
 <general literal> /* Value */ ::=
     <character string literal>
+  | <datetime literal>
   | <boolean literal>
+
+<datetime literal> /* Value */ ::=
+    <date literal>
+  | <time literal>
+  | <timestamp literal>
+
+<date literal> /* Value */ ::=
+    DATE <date string>   -> date_literal
+
+<date string> /* Value */ ::=
+    ^string
+
+<time literal> /* Value */ ::=
+    TIME <time string>   -> time_literal
+
+<time string> /* Value */ ::=
+    ^string
+
+<timestamp literal> /* Value */ ::=
+    TIMESTAMP <timestamp string>   -> timestamp_literal
+
+<timestamp string> /* Value */ ::=
+    ^string
 
 <boolean literal> /* Value */ ::=
     TRUE      -> true
@@ -914,3 +952,34 @@
     INNER
   | <outer join type>
   | <outer join type> OUTER   -> string
+
+<datetime type> /* Type */ ::=
+    DATE                                               -> date_type
+  | TIME                                               -> time_type
+  | TIME <left paren> <time precision> <right paren>   -> time_prec_type
+  | TIME <with or without time zone>                   -> time_tz_type
+  | TIME <left paren> <time precision> <right paren>
+    <with or without time zone>                        -> time_prec_tz_type
+  | TIMESTAMP                                          -> timestamp_type
+  | TIMESTAMP
+    <left paren> <timestamp precision> <right paren>   -> timestamp_prec_type
+  | TIMESTAMP <with or without time zone>              -> timestamp_tz_type
+  | TIMESTAMP
+    <left paren> <timestamp precision> <right paren>
+    <with or without time zone>                        -> timestamp_prec_tz_type
+
+<time precision> /* int */ ::=
+    <time fractional seconds precision>
+
+<time fractional seconds precision> /* int */ ::=
+    <unsigned integer>
+
+<with or without time zone> /* bool */ ::=
+    WITH TIME ZONE      -> yes
+  | WITHOUT TIME ZONE   -> no
+
+<timestamp precision> /* int */ ::=
+    <time fractional seconds precision>
+
+<time fractional seconds precision> /* int */ ::=
+    <unsigned integer>

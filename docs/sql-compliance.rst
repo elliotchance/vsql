@@ -210,8 +210,40 @@ The following table is **not complete** and will be filled in as time goes on.
      - All comparison operators are supported (rather than just =)
 
    * - **F051**
-     - **Unknown**
+     - **Partial**
      - **Basic date and time**
+
+   * - F051-01
+     - Yes
+     - ``DATE`` data type (including support of ``DATE`` literal)
+
+   * - F051-02
+     - Yes
+     - ``TIME`` data type (including support of ``TIME`` literal) with fractional seconds precision of at least 0.
+
+   * - F051-03
+     - Yes
+     - ``TIMESTAMP`` data type (including support of ``TIMESTAMP`` literal) with fractional seconds precision of at least 0 and 6.
+
+   * - F051-04
+     - No
+     - Comparison predicate on ``DATE``, ``TIME``, and ``TIMESTAMP`` data types
+
+   * - F051-05
+     - No
+     - Explicit ``CAST`` between date-time types and character string types
+
+   * - F051-06
+     - No
+     - ``CURRENT_DATE``
+
+   * - F051-07
+     - No
+     - ``LOCALTIME``
+
+   * - F051-08
+     - No
+     - ``LOCALTIMESTAMP``
 
    * - **F081**
      - **Unknown**

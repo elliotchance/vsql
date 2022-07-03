@@ -418,7 +418,7 @@ grammar_file.write("""fn parse_ast(node &EarleyNode) ?[]EarleyValue {
     if node.children.len == 0 {
         match node.value.name {
             '^integer' {
-                return [EarleyValue(new_integer_value(node.value.end_column.value.int()))]
+                return [EarleyValue(node.value.end_column.value.int())]
             }
             '^identifier' {
                 return [EarleyValue(new_identifier(node.value.end_column.value))]
@@ -513,6 +513,8 @@ def parse_tree(text):
 # parse_tree("SELECT * FROM ( VALUES ROW ( 123 ) , ROW ( 456 ) )")
 # parse_tree("SELECT x FROM ( SELECT y FROM t2 )")
 # parse_tree("SELECT x , y FROM ( SELECT x , y FROM t1 )")
+# parse_tree("VALUES TIMESTAMP '2022-06-30'")
+# parse_tree("INSERT INTO foo ( f1 ) VALUES ( TIMESTAMP '2022-06-30' )")
 
 for arg in sys.argv[1:]:
     print(arg)

@@ -33,6 +33,7 @@ type EarleyValue = BetweenExpr
 	| []SortSpecification
 	| []TableElement
 	| bool
+	| int
 	| map[string]Expr
 	| string
 
@@ -408,6 +409,60 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_data_type_ := &EarleyRule{
 		name: '<data type>'
 	}
+	mut rule_date_literal_1_ := &EarleyRule{
+		name: '<date literal: 1>'
+	}
+	mut rule_date_literal_ := &EarleyRule{
+		name: '<date literal>'
+	}
+	mut rule_date_string_ := &EarleyRule{
+		name: '<date string>'
+	}
+	mut rule_datetime_factor_ := &EarleyRule{
+		name: '<datetime factor>'
+	}
+	mut rule_datetime_literal_ := &EarleyRule{
+		name: '<datetime literal>'
+	}
+	mut rule_datetime_primary_ := &EarleyRule{
+		name: '<datetime primary>'
+	}
+	mut rule_datetime_term_ := &EarleyRule{
+		name: '<datetime term>'
+	}
+	mut rule_datetime_type_1_ := &EarleyRule{
+		name: '<datetime type: 1>'
+	}
+	mut rule_datetime_type_2_ := &EarleyRule{
+		name: '<datetime type: 2>'
+	}
+	mut rule_datetime_type_3_ := &EarleyRule{
+		name: '<datetime type: 3>'
+	}
+	mut rule_datetime_type_4_ := &EarleyRule{
+		name: '<datetime type: 4>'
+	}
+	mut rule_datetime_type_5_ := &EarleyRule{
+		name: '<datetime type: 5>'
+	}
+	mut rule_datetime_type_6_ := &EarleyRule{
+		name: '<datetime type: 6>'
+	}
+	mut rule_datetime_type_7_ := &EarleyRule{
+		name: '<datetime type: 7>'
+	}
+	mut rule_datetime_type_8_ := &EarleyRule{
+		name: '<datetime type: 8>'
+	}
+	mut rule_datetime_type_9_ := &EarleyRule{
+		name: '<datetime type: 9>'
+	}
+	mut rule_datetime_type_ := &EarleyRule{
+		name: '<datetime type>'
+	}
+	mut rule_datetime_value_expression_ := &EarleyRule{
+		name: '<datetime value expression>'
+	}
 	mut rule_delete_statement_searched_1_ := &EarleyRule{
 		name: '<delete statement: searched: 1>'
 	}
@@ -443,6 +498,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_equals_operator_ := &EarleyRule{
 		name: '<equals operator>'
+	}
+	mut rule_exact_numeric_literal_1_ := &EarleyRule{
+		name: '<exact numeric literal: 1>'
 	}
 	mut rule_exact_numeric_literal_2_ := &EarleyRule{
 		name: '<exact numeric literal: 2>'
@@ -1215,6 +1273,33 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_term_ := &EarleyRule{
 		name: '<term>'
 	}
+	mut rule_time_fractional_seconds_precision_ := &EarleyRule{
+		name: '<time fractional seconds precision>'
+	}
+	mut rule_time_literal_1_ := &EarleyRule{
+		name: '<time literal: 1>'
+	}
+	mut rule_time_literal_ := &EarleyRule{
+		name: '<time literal>'
+	}
+	mut rule_time_precision_ := &EarleyRule{
+		name: '<time precision>'
+	}
+	mut rule_time_string_ := &EarleyRule{
+		name: '<time string>'
+	}
+	mut rule_timestamp_literal_1_ := &EarleyRule{
+		name: '<timestamp literal: 1>'
+	}
+	mut rule_timestamp_literal_ := &EarleyRule{
+		name: '<timestamp literal>'
+	}
+	mut rule_timestamp_precision_ := &EarleyRule{
+		name: '<timestamp precision>'
+	}
+	mut rule_timestamp_string_ := &EarleyRule{
+		name: '<timestamp string>'
+	}
 	mut rule_trigonometric_function_name_ := &EarleyRule{
 		name: '<trigonometric function name>'
 	}
@@ -1280,6 +1365,15 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_where_clause_ := &EarleyRule{
 		name: '<where clause>'
+	}
+	mut rule_with_or_without_time_zone_1_ := &EarleyRule{
+		name: '<with or without time zone: 1>'
+	}
+	mut rule_with_or_without_time_zone_2_ := &EarleyRule{
+		name: '<with or without time zone: 2>'
+	}
+	mut rule_with_or_without_time_zone_ := &EarleyRule{
+		name: '<with or without time zone>'
 	}
 	mut rule__identifier := &EarleyRule{
 		name: '^identifier'
@@ -1361,6 +1455,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_create := &EarleyRule{
 		name: 'CREATE'
+	}
+	mut rule_date := &EarleyRule{
+		name: 'DATE'
 	}
 	mut rule_delete := &EarleyRule{
 		name: 'DELETE'
@@ -1542,6 +1639,12 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_tanh := &EarleyRule{
 		name: 'TANH'
 	}
+	mut rule_time := &EarleyRule{
+		name: 'TIME'
+	}
+	mut rule_timestamp := &EarleyRule{
+		name: 'TIMESTAMP'
+	}
 	mut rule_to := &EarleyRule{
 		name: 'TO'
 	}
@@ -1572,8 +1675,17 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_where := &EarleyRule{
 		name: 'WHERE'
 	}
+	mut rule_with := &EarleyRule{
+		name: 'WITH'
+	}
+	mut rule_without := &EarleyRule{
+		name: 'WITHOUT'
+	}
 	mut rule_work := &EarleyRule{
 		name: 'WORK'
+	}
+	mut rule_zone := &EarleyRule{
+		name: 'ZONE'
 	}
 
 	rule_absolute_value_expression_1_.productions << &EarleyProduction{[
@@ -2470,6 +2582,11 @@ fn get_grammar() map[string]EarleyRule {
 			rule: rule_string_value_expression_
 		},
 	]}
+	rule_common_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_value_expression_
+		},
+	]}
 
 	rule_comp_op_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
@@ -2834,6 +2951,215 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_date_literal_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_date
+		},
+		&EarleyRuleOrString{
+			rule: rule_date_string_
+		},
+	]}
+
+	rule_date_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_date_literal_1_
+		},
+	]}
+
+	rule_date_string_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule__string
+		},
+	]}
+
+	rule_datetime_factor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_primary_
+		},
+	]}
+
+	rule_datetime_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_date_literal_
+		},
+	]}
+	rule_datetime_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_time_literal_
+		},
+	]}
+	rule_datetime_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_timestamp_literal_
+		},
+	]}
+
+	rule_datetime_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_value_expression_primary_
+		},
+	]}
+
+	rule_datetime_term_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_factor_
+		},
+	]}
+
+	rule_datetime_type_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_date
+		},
+	]}
+
+	rule_datetime_type_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_time
+		},
+	]}
+
+	rule_datetime_type_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_time
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_time_precision_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_datetime_type_4_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_time
+		},
+		&EarleyRuleOrString{
+			rule: rule_with_or_without_time_zone_
+		},
+	]}
+
+	rule_datetime_type_5_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_time
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_time_precision_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_with_or_without_time_zone_
+		},
+	]}
+
+	rule_datetime_type_6_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_timestamp
+		},
+	]}
+
+	rule_datetime_type_7_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_timestamp
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_timestamp_precision_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_datetime_type_8_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_timestamp
+		},
+		&EarleyRuleOrString{
+			rule: rule_with_or_without_time_zone_
+		},
+	]}
+
+	rule_datetime_type_9_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_timestamp
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_timestamp_precision_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_with_or_without_time_zone_
+		},
+	]}
+
+	rule_datetime_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_type_1_
+		},
+	]}
+	rule_datetime_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_type_2_
+		},
+	]}
+	rule_datetime_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_type_3_
+		},
+	]}
+	rule_datetime_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_type_4_
+		},
+	]}
+	rule_datetime_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_type_5_
+		},
+	]}
+	rule_datetime_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_type_6_
+		},
+	]}
+	rule_datetime_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_type_7_
+		},
+	]}
+	rule_datetime_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_type_8_
+		},
+	]}
+	rule_datetime_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_type_9_
+		},
+	]}
+
+	rule_datetime_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_term_
+		},
+	]}
+
 	rule_delete_statement_searched_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_delete
@@ -2944,6 +3270,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_exact_numeric_literal_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_unsigned_integer_
+		},
+	]}
+
 	rule_exact_numeric_literal_2_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_unsigned_integer_
@@ -2976,7 +3308,7 @@ fn get_grammar() map[string]EarleyRule {
 
 	rule_exact_numeric_literal_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_unsigned_integer_
+			rule: rule_exact_numeric_literal_1_
 		},
 	]}
 	rule_exact_numeric_literal_.productions << &EarleyProduction{[
@@ -3250,6 +3582,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_general_literal_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_character_string_literal_
+		},
+	]}
+	rule_general_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_literal_
 		},
 	]}
 	rule_general_literal_.productions << &EarleyProduction{[
@@ -4119,6 +4456,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_predefined_type_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_boolean_type_
+		},
+	]}
+	rule_predefined_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_type_
 		},
 	]}
 
@@ -5403,6 +5745,71 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_time_fractional_seconds_precision_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_unsigned_integer_
+		},
+	]}
+	rule_time_fractional_seconds_precision_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_unsigned_integer_
+		},
+	]}
+
+	rule_time_literal_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_time
+		},
+		&EarleyRuleOrString{
+			rule: rule_time_string_
+		},
+	]}
+
+	rule_time_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_time_literal_1_
+		},
+	]}
+
+	rule_time_precision_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_time_fractional_seconds_precision_
+		},
+	]}
+
+	rule_time_string_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule__string
+		},
+	]}
+
+	rule_timestamp_literal_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_timestamp
+		},
+		&EarleyRuleOrString{
+			rule: rule_timestamp_string_
+		},
+	]}
+
+	rule_timestamp_literal_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_timestamp_literal_1_
+		},
+	]}
+
+	rule_timestamp_precision_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_time_fractional_seconds_precision_
+		},
+	]}
+
+	rule_timestamp_string_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule__string
+		},
+	]}
+
 	rule_trigonometric_function_name_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_sin
@@ -5653,6 +6060,41 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_with_or_without_time_zone_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_with
+		},
+		&EarleyRuleOrString{
+			rule: rule_time
+		},
+		&EarleyRuleOrString{
+			rule: rule_zone
+		},
+	]}
+
+	rule_with_or_without_time_zone_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_without
+		},
+		&EarleyRuleOrString{
+			rule: rule_time
+		},
+		&EarleyRuleOrString{
+			rule: rule_zone
+		},
+	]}
+
+	rule_with_or_without_time_zone_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_with_or_without_time_zone_1_
+		},
+	]}
+	rule_with_or_without_time_zone_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_with_or_without_time_zone_2_
+		},
+	]}
+
 	rule__identifier.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: '^identifier'
@@ -5838,6 +6280,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_create.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'CREATE'
+			rule: 0
+		},
+	]}
+
+	rule_date.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DATE'
 			rule: 0
 		},
 	]}
@@ -6262,6 +6711,20 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_time.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TIME'
+			rule: 0
+		},
+	]}
+
+	rule_timestamp.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TIMESTAMP'
+			rule: 0
+		},
+	]}
+
 	rule_to.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'TO'
@@ -6332,9 +6795,30 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_with.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'WITH'
+			rule: 0
+		},
+	]}
+
+	rule_without.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'WITHOUT'
+			rule: 0
+		},
+	]}
+
 	rule_work.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'WORK'
+			rule: 0
+		},
+	]}
+
+	rule_zone.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ZONE'
 			rule: 0
 		},
 	]}
@@ -6462,6 +6946,24 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<cursor specification>'] = rule_cursor_specification_
 	rules['<data type or domain name>'] = rule_data_type_or_domain_name_
 	rules['<data type>'] = rule_data_type_
+	rules['<date literal: 1>'] = rule_date_literal_1_
+	rules['<date literal>'] = rule_date_literal_
+	rules['<date string>'] = rule_date_string_
+	rules['<datetime factor>'] = rule_datetime_factor_
+	rules['<datetime literal>'] = rule_datetime_literal_
+	rules['<datetime primary>'] = rule_datetime_primary_
+	rules['<datetime term>'] = rule_datetime_term_
+	rules['<datetime type: 1>'] = rule_datetime_type_1_
+	rules['<datetime type: 2>'] = rule_datetime_type_2_
+	rules['<datetime type: 3>'] = rule_datetime_type_3_
+	rules['<datetime type: 4>'] = rule_datetime_type_4_
+	rules['<datetime type: 5>'] = rule_datetime_type_5_
+	rules['<datetime type: 6>'] = rule_datetime_type_6_
+	rules['<datetime type: 7>'] = rule_datetime_type_7_
+	rules['<datetime type: 8>'] = rule_datetime_type_8_
+	rules['<datetime type: 9>'] = rule_datetime_type_9_
+	rules['<datetime type>'] = rule_datetime_type_
+	rules['<datetime value expression>'] = rule_datetime_value_expression_
 	rules['<delete statement: searched: 1>'] = rule_delete_statement_searched_1_
 	rules['<delete statement: searched: 2>'] = rule_delete_statement_searched_2_
 	rules['<delete statement: searched>'] = rule_delete_statement_searched_
@@ -6474,6 +6976,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<drop table statement>'] = rule_drop_table_statement_
 	rules['<dynamic select statement>'] = rule_dynamic_select_statement_
 	rules['<equals operator>'] = rule_equals_operator_
+	rules['<exact numeric literal: 1>'] = rule_exact_numeric_literal_1_
 	rules['<exact numeric literal: 2>'] = rule_exact_numeric_literal_2_
 	rules['<exact numeric literal: 3>'] = rule_exact_numeric_literal_3_
 	rules['<exact numeric literal: 4>'] = rule_exact_numeric_literal_4_
@@ -6731,6 +7234,15 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<term: 2>'] = rule_term_2_
 	rules['<term: 3>'] = rule_term_3_
 	rules['<term>'] = rule_term_
+	rules['<time fractional seconds precision>'] = rule_time_fractional_seconds_precision_
+	rules['<time literal: 1>'] = rule_time_literal_1_
+	rules['<time literal>'] = rule_time_literal_
+	rules['<time precision>'] = rule_time_precision_
+	rules['<time string>'] = rule_time_string_
+	rules['<timestamp literal: 1>'] = rule_timestamp_literal_1_
+	rules['<timestamp literal>'] = rule_timestamp_literal_
+	rules['<timestamp precision>'] = rule_timestamp_precision_
+	rules['<timestamp string>'] = rule_timestamp_string_
 	rules['<trigonometric function name>'] = rule_trigonometric_function_name_
 	rules['<trigonometric function: 1>'] = rule_trigonometric_function_1_
 	rules['<trigonometric function>'] = rule_trigonometric_function_
@@ -6753,6 +7265,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<value expression>'] = rule_value_expression_
 	rules['<where clause: 1>'] = rule_where_clause_1_
 	rules['<where clause>'] = rule_where_clause_
+	rules['<with or without time zone: 1>'] = rule_with_or_without_time_zone_1_
+	rules['<with or without time zone: 2>'] = rule_with_or_without_time_zone_2_
+	rules['<with or without time zone>'] = rule_with_or_without_time_zone_
 	rules['^identifier'] = rule__identifier
 	rules['^integer'] = rule__integer
 	rules['^string'] = rule__string
@@ -6780,6 +7295,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['COSH'] = rule_cosh
 	rules['COUNT'] = rule_count
 	rules['CREATE'] = rule_create
+	rules['DATE'] = rule_date
 	rules['DELETE'] = rule_delete
 	rules['DESC'] = rule_desc
 	rules['DOUBLE'] = rule_double
@@ -6840,6 +7356,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['TABLE'] = rule_table
 	rules['TAN'] = rule_tan
 	rules['TANH'] = rule_tanh
+	rules['TIME'] = rule_time
+	rules['TIMESTAMP'] = rule_timestamp
 	rules['TO'] = rule_to
 	rules['TRANSACTION'] = rule_transaction
 	rules['TRUE'] = rule_true
@@ -6850,7 +7368,10 @@ fn get_grammar() map[string]EarleyRule {
 	rules['VARCHAR'] = rule_varchar
 	rules['VARYING'] = rule_varying
 	rules['WHERE'] = rule_where
+	rules['WITH'] = rule_with
+	rules['WITHOUT'] = rule_without
 	rules['WORK'] = rule_work
+	rules['ZONE'] = rule_zone
 
 	return rules
 }
@@ -6859,9 +7380,7 @@ fn parse_ast(node &EarleyNode) ?[]EarleyValue {
 	if node.children.len == 0 {
 		match node.value.name {
 			'^integer' {
-				return [
-					EarleyValue(new_integer_value(node.value.end_column.value.int())),
-				]
+				return [EarleyValue(node.value.end_column.value.int())]
 			}
 			'^identifier' {
 				return [EarleyValue(new_identifier(node.value.end_column.value))]
@@ -6908,7 +7427,7 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [EarleyValue(parse_float()?)]
 		}
 		'<approximate numeric type: 2>' {
-			return [EarleyValue(parse_float_n(children[2] as Value)?)]
+			return [EarleyValue(parse_float_n(children[2] as int)?)]
 		}
 		'<approximate numeric type: 3>' {
 			return [EarleyValue(parse_real()?)]
@@ -6996,22 +7515,22 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [EarleyValue(parse_character()?)]
 		}
 		'<character string type: 2>' {
-			return [EarleyValue(parse_character_n(children[2] as Value)?)]
+			return [EarleyValue(parse_character_n(children[2] as int)?)]
 		}
 		'<character string type: 3>' {
 			return [EarleyValue(parse_character()?)]
 		}
 		'<character string type: 4>' {
-			return [EarleyValue(parse_character_n(children[2] as Value)?)]
+			return [EarleyValue(parse_character_n(children[2] as int)?)]
 		}
 		'<character string type: 5>' {
-			return [EarleyValue(parse_varchar(children[3] as Value)?)]
+			return [EarleyValue(parse_varchar(children[3] as int)?)]
 		}
 		'<character string type: 6>' {
-			return [EarleyValue(parse_varchar(children[3] as Value)?)]
+			return [EarleyValue(parse_varchar(children[3] as int)?)]
 		}
 		'<character string type: 7>' {
-			return [EarleyValue(parse_varchar(children[2] as Value)?)]
+			return [EarleyValue(parse_varchar(children[2] as int)?)]
 		}
 		'<column constraint: 1>' {
 			return [EarleyValue(parse_yes()?)]
@@ -7113,6 +7632,40 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 				EarleyValue(parse_cursor_specification(children[0] as QueryExpression)?),
 			]
 		}
+		'<date literal: 1>' {
+			return [EarleyValue(parse_date_literal(children[1] as Value)?)]
+		}
+		'<datetime type: 1>' {
+			return [EarleyValue(parse_date_type()?)]
+		}
+		'<datetime type: 2>' {
+			return [EarleyValue(parse_time_type()?)]
+		}
+		'<datetime type: 3>' {
+			return [EarleyValue(parse_time_prec_type(children[2] as int)?)]
+		}
+		'<datetime type: 4>' {
+			return [EarleyValue(parse_time_tz_type(children[1] as bool)?)]
+		}
+		'<datetime type: 5>' {
+			return [
+				EarleyValue(parse_time_prec_tz_type(children[2] as int, children[4] as bool)?),
+			]
+		}
+		'<datetime type: 6>' {
+			return [EarleyValue(parse_timestamp_type()?)]
+		}
+		'<datetime type: 7>' {
+			return [EarleyValue(parse_timestamp_prec_type(children[2] as int)?)]
+		}
+		'<datetime type: 8>' {
+			return [EarleyValue(parse_timestamp_tz_type(children[1] as bool)?)]
+		}
+		'<datetime type: 9>' {
+			return [
+				EarleyValue(parse_timestamp_prec_tz_type(children[2] as int, children[4] as bool)?),
+			]
+		}
 		'<delete statement: searched: 1>' {
 			return [EarleyValue(parse_delete_statement(children[2] as Identifier)?)]
 		}
@@ -7134,16 +7687,19 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 				EarleyValue(parse_drop_table_statement(children[2] as Identifier)?),
 			]
 		}
+		'<exact numeric literal: 1>' {
+			return [EarleyValue(parse_int_value(children[0] as int)?)]
+		}
 		'<exact numeric literal: 2>' {
-			return [EarleyValue(parse_value(children[0] as Value)?)]
+			return [EarleyValue(parse_int_value(children[0] as int)?)]
 		}
 		'<exact numeric literal: 3>' {
 			return [
-				EarleyValue(parse_exact_numeric_literal1(children[0] as Value, children[2] as Value)?),
+				EarleyValue(parse_exact_numeric_literal1(children[0] as int, children[2] as int)?),
 			]
 		}
 		'<exact numeric literal: 4>' {
-			return [EarleyValue(parse_exact_numeric_literal2(children[1] as Value)?)]
+			return [EarleyValue(parse_exact_numeric_literal2(children[1] as int)?)]
 		}
 		'<exact numeric type: 1>' {
 			return [EarleyValue(parse_smallint()?)]
@@ -7569,6 +8125,12 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 					children[2] as Expr)?),
 			]
 		}
+		'<time literal: 1>' {
+			return [EarleyValue(parse_time_literal(children[1] as Value)?)]
+		}
+		'<timestamp literal: 1>' {
+			return [EarleyValue(parse_timestamp_literal(children[1] as Value)?)]
+		}
 		'<trigonometric function: 1>' {
 			return [
 				EarleyValue(parse_trig_func(children[0] as string, children[2] as Expr)?),
@@ -7598,6 +8160,12 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		}
 		'<where clause: 1>' {
 			return [EarleyValue(parse_expr(children[1] as Expr)?)]
+		}
+		'<with or without time zone: 1>' {
+			return [EarleyValue(parse_yes()?)]
+		}
+		'<with or without time zone: 2>' {
+			return [EarleyValue(parse_no()?)]
 		}
 		else {
 			return children

@@ -109,7 +109,8 @@ fn new_empty_row(columns Columns, table_name string) Row {
 
 fn new_empty_value(col Column) Value {
 	match col.typ.typ {
-		.is_null {
+		.is_null, .is_date, .is_time_with_time_zone, .is_time_without_time_zone,
+		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 			return new_null_value()
 		}
 		.is_bigint {
@@ -193,6 +194,10 @@ fn (r Row) bytes(t Table) []u8 {
 					buf.write_string4(v.string_value)
 				}
 			}
+			.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
+			.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
+				buf.write_bytes(v.time_value.bytes())
+			}
 		}
 	}
 
@@ -246,6 +251,23 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 					v.string_value = buf.read_bytes(len).bytestr()
 				}
 			}
+			.is_date {
+				v.time_value = new_time_from_bytes(.date, false, buf.read_bytes(8), 0)
+			}
+			.is_time_with_time_zone {
+				v.time_value = new_time_from_bytes(.time, true, buf.read_bytes(10), u8(col.typ.size))
+			}
+			.is_time_without_time_zone {
+				v.time_value = new_time_from_bytes(.time, false, buf.read_bytes(8), u8(col.typ.size))
+			}
+			.is_timestamp_with_time_zone {
+				v.time_value = new_time_from_bytes(.timestamp, true, buf.read_bytes(10),
+					u8(col.typ.size))
+			}
+			.is_timestamp_without_time_zone {
+				v.time_value = new_time_from_bytes(.timestamp, false, buf.read_bytes(8),
+					u8(col.typ.size))
+			}
 		}
 
 		if table_name == '' {
@@ -266,32 +288,17 @@ fn (mut r Row) object_key(t Table) ?[]u8 {
 		for col_name in t.primary_key {
 			col := t.column(col_name)?
 			match col.typ.typ {
-				.is_null {
-					return error('cannot use NULL in PRIMARY KEY')
-				}
 				.is_bigint {
 					pk.write_i64(i64(r.data[col_name].f64_value))
-				}
-				.is_boolean {
-					return error('cannot use BOOLEAN in PRIMARY KEY')
-				}
-				.is_character {
-					return error('cannot use character types in PRIMARY KEY')
-				}
-				.is_double_precision {
-					return error('cannot use non-integer types in PRIMARY KEY')
 				}
 				.is_integer {
 					pk.write_int(int(r.data[col_name].f64_value))
 				}
-				.is_real {
-					return error('cannot use non-integer types in PRIMARY KEY')
-				}
 				.is_smallint {
 					pk.write_i16(i16(r.data[col_name].f64_value))
 				}
-				.is_varchar {
-					return error('cannot use character types in PRIMARY KEY')
+				else {
+					return error('cannot use $col.typ.str() in PRIMARY KEY')
 				}
 			}
 		}

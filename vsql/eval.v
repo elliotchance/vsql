@@ -129,6 +129,21 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 		NoExpr, QualifiedAsteriskExpr, QueryExpression, RowExpr {
 			return sqlstate_42601('invalid expression provided: $e.str()')
 		}
+		CurrentDateExpr {
+			return new_type('DATE', 0)
+		}
+		CurrentTimeExpr {
+			return new_type('TIME WITH TIME ZONE', 0)
+		}
+		CurrentTimestampExpr {
+			return new_type('TIMESTAMP WITH TIME ZONE', 0)
+		}
+		LocalTimeExpr {
+			return new_type('TIME WITHOUT TIME ZONE', 0)
+		}
+		LocalTimestampExpr {
+			return new_type('TIMESTAMP WITHOUT TIME ZONE', 0)
+		}
 	}
 }
 
@@ -175,7 +190,78 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 			// ValuesOperation.
 			return sqlstate_42601('missing or invalid expression provided')
 		}
+		CurrentDateExpr {
+			now, _ := conn.options.now()
+
+			return new_date_value(now.strftime('%Y-%m-%d'))
+		}
+		CurrentTimeExpr {
+			if e.prec > 6 {
+				return sqlstate_42601('$e: cannot have precision greater than 6')
+			}
+
+			return new_time_value(time_value(conn, e.prec, true))
+		}
+		CurrentTimestampExpr {
+			if e.prec > 6 {
+				return sqlstate_42601('$e: cannot have precision greater than 6')
+			}
+
+			now, _ := conn.options.now()
+
+			return new_timestamp_value(now.strftime('%Y-%m-%d ') + time_value(conn, e.prec, true))
+		}
+		LocalTimeExpr {
+			if e.prec > 6 {
+				return sqlstate_42601('$e: cannot have precision greater than 6')
+			}
+
+			return new_time_value(time_value(conn, e.prec, false))
+		}
+		LocalTimestampExpr {
+			if e.prec > 6 {
+				return sqlstate_42601('$e: cannot have precision greater than 6')
+			}
+
+			now, _ := conn.options.now()
+
+			return new_timestamp_value(now.strftime('%Y-%m-%d ') + time_value(conn, e.prec, false))
+		}
 	}
+}
+
+fn time_value(conn &Connection, prec int, include_offset bool) string {
+	now, mut offset := conn.options.now()
+
+	mut s := now.strftime('%H:%M:%S')
+
+	if prec > 0 {
+		microseconds := left_pad(now.microsecond.str(), '0', 6)
+		s += '.' + microseconds.substr(0, prec)
+	}
+
+	if include_offset {
+		if offset < 0 {
+			s += '-'
+			offset *= -1
+		} else {
+			s += '+'
+		}
+
+		s += left_pad(int(offset / 60).str(), '0', 2) + ':' +
+			left_pad(int(offset % 60).str(), '0', 2)
+	}
+
+	return s
+}
+
+fn left_pad(s string, c string, len int) string {
+	mut new_s := s
+	for new_s.len < len {
+		new_s = c + new_s
+	}
+
+	return new_s
 }
 
 fn eval_as_bool(conn &Connection, data Row, e Expr, params map[string]Value) ?bool {

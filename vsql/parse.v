@@ -715,3 +715,39 @@ fn parse_time_literal(v Value) ?Value {
 fn parse_date_literal(v Value) ?Value {
 	return new_date_value(v.string_value)
 }
+
+fn parse_current_date() ?Expr {
+	return CurrentDateExpr{}
+}
+
+fn parse_localtime1() ?Expr {
+	return LocalTimeExpr{0}
+}
+
+fn parse_localtime2(prec int) ?Expr {
+	return LocalTimeExpr{prec}
+}
+
+fn parse_localtimestamp1() ?Expr {
+	return LocalTimestampExpr{6}
+}
+
+fn parse_localtimestamp2(prec int) ?Expr {
+	return LocalTimestampExpr{prec}
+}
+
+fn parse_current_time1() ?Expr {
+	return CurrentTimeExpr{0}
+}
+
+fn parse_current_time2(prec int) ?Expr {
+	return CurrentTimeExpr{prec}
+}
+
+fn parse_current_timestamp1() ?Expr {
+	return CurrentTimestampExpr{6}
+}
+
+fn parse_current_timestamp2(prec int) ?Expr {
+	return CurrentTimestampExpr{prec}
+}

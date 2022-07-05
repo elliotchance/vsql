@@ -20,8 +20,13 @@ type Expr = BetweenExpr
 	| BinaryExpr
 	| CallExpr
 	| CountAllExpr
+	| CurrentDateExpr
+	| CurrentTimeExpr
+	| CurrentTimestampExpr
 	| Identifier
 	| LikeExpr
+	| LocalTimeExpr
+	| LocalTimestampExpr
 	| NoExpr
 	| NullExpr
 	| Parameter
@@ -50,11 +55,26 @@ fn (e Expr) pstr(params map[string]Value) string {
 		CountAllExpr {
 			e.pstr(params)
 		}
+		CurrentDateExpr {
+			e.str()
+		}
+		CurrentTimeExpr {
+			e.str()
+		}
+		CurrentTimestampExpr {
+			e.str()
+		}
 		Identifier {
 			e.str()
 		}
 		LikeExpr {
 			e.pstr(params)
+		}
+		LocalTimeExpr {
+			e.str()
+		}
+		LocalTimestampExpr {
+			e.str()
 		}
 		NoExpr {
 			e.str()
@@ -453,4 +473,43 @@ fn (e CountAllExpr) str() string {
 
 fn (e CountAllExpr) pstr(params map[string]Value) string {
 	return 'COUNT(*)'
+}
+
+struct CurrentDateExpr {
+}
+
+fn (e CurrentDateExpr) str() string {
+	return 'CURRENT_DATE'
+}
+
+struct CurrentTimeExpr {
+	prec int
+}
+
+fn (e CurrentTimeExpr) str() string {
+	return 'CURRENT_TIME($e.prec)'
+}
+
+struct CurrentTimestampExpr {
+	prec int
+}
+
+fn (e CurrentTimestampExpr) str() string {
+	return 'CURRENT_TIMESTAMP($e.prec)'
+}
+
+struct LocalTimeExpr {
+	prec int
+}
+
+fn (e LocalTimeExpr) str() string {
+	return 'LOCALTIME($e.prec)'
+}
+
+struct LocalTimestampExpr {
+	prec int
+}
+
+fn (e LocalTimestampExpr) str() string {
+	return 'LOCALTIMESTAMP($e.prec)'
 }

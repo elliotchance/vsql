@@ -5,6 +5,7 @@ module vsql
 
 import os
 import sync
+import time
 
 [heap]
 pub struct Connection {
@@ -228,6 +229,10 @@ pub mut:
 	// Since locking all database isn't ideal. You could provide a consistent
 	// RwMutex that belongs to each file - such as from a map.
 	mutex &sync.RwMutex
+	// now allows you to override the wall clock that is used. The Time must be
+	// in UTC with a separate offset for the current local timezone (in positive
+	// or negative minutes).
+	now fn () (time.Time, i16)
 }
 
 // default_connection_options returns the sensible defaults used by open() and
@@ -237,5 +242,8 @@ fn default_connection_options() ConnectionOptions {
 		query_cache: new_query_cache()
 		page_size: 4096
 		mutex: sync.new_rwmutex()
+		now: fn () (time.Time, i16) {
+			return time.utc(), i16(time.offset() / 60)
+		}
 	}
 }

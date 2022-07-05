@@ -234,15 +234,15 @@ The following table is **not complete** and will be filled in as time goes on.
      - Explicit ``CAST`` between date-time types and character string types
 
    * - F051-06
-     - No
+     - Yes
      - ``CURRENT_DATE``
 
    * - F051-07
-     - No
+     - Yes
      - ``LOCALTIME``
 
    * - F051-08
-     - No
+     - Yes
      - ``LOCALTIMESTAMP``
 
    * - **F081**

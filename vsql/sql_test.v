@@ -1,6 +1,7 @@
 module vsql
 
 import os
+import time
 
 struct SQLTest {
 	setup       []string
@@ -123,6 +124,17 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 
 	mut options := default_connection_options()
 	options.query_cache = query_cache
+	options.now = fn () (time.Time, i16) {
+		return time.new_time(time.Time{
+			year: 2022
+			month: 7
+			day: 4
+			hour: 14
+			minute: 5
+			second: 3
+			microsecond: 120056
+		}), 300
+	}
 
 	mut db := open_database(':memory:', options)?
 	register_pg_functions(mut db)?
@@ -196,7 +208,8 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 	}
 
 	at := 'at $test.file_name:$test.line_number:\n'
-	expected := at + test.expected.trim_space()
+	mut expected := at + test.expected.trim_space()
 	actual_trim := at + actual.trim_space()
+
 	assert expected == actual_trim
 }

@@ -9,5 +9,6 @@ Welcome to the vsql documentation.
    getting-started.rst
    features.rst
    sql-reference.rst
+   sql-language.rst
    development.rst
    appendix.rst

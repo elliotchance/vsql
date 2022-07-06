@@ -52,3 +52,10 @@ V code that makes up the parser. The result file ``grammar.v`` is committed so
 there is no need to use python to compile and otherwise work on vsql unless you
 need to change the grammar. However, if you would like to covert this script to
 V, I'd be happy to have your help!
+
+Why is there no `NOW()` function?
+---------------------------------
+
+The ``NOW()`` function commonly found in other databases is not actually part of
+the SQL standard. Instead you must use one off ``CURRENT_TIMESTAMP(p)`` or
+``LOCALTIMESTAMP`` depending if you need to include the time zone or not.

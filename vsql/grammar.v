@@ -397,6 +397,48 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_correlation_or_recognition_ := &EarleyRule{
 		name: '<correlation or recognition>'
 	}
+	mut rule_current_date_value_function_1_ := &EarleyRule{
+		name: '<current date value function: 1>'
+	}
+	mut rule_current_date_value_function_ := &EarleyRule{
+		name: '<current date value function>'
+	}
+	mut rule_current_local_time_value_function_1_ := &EarleyRule{
+		name: '<current local time value function: 1>'
+	}
+	mut rule_current_local_time_value_function_2_ := &EarleyRule{
+		name: '<current local time value function: 2>'
+	}
+	mut rule_current_local_time_value_function_ := &EarleyRule{
+		name: '<current local time value function>'
+	}
+	mut rule_current_local_timestamp_value_function_1_ := &EarleyRule{
+		name: '<current local timestamp value function: 1>'
+	}
+	mut rule_current_local_timestamp_value_function_2_ := &EarleyRule{
+		name: '<current local timestamp value function: 2>'
+	}
+	mut rule_current_local_timestamp_value_function_ := &EarleyRule{
+		name: '<current local timestamp value function>'
+	}
+	mut rule_current_time_value_function_1_ := &EarleyRule{
+		name: '<current time value function: 1>'
+	}
+	mut rule_current_time_value_function_2_ := &EarleyRule{
+		name: '<current time value function: 2>'
+	}
+	mut rule_current_time_value_function_ := &EarleyRule{
+		name: '<current time value function>'
+	}
+	mut rule_current_timestamp_value_function_1_ := &EarleyRule{
+		name: '<current timestamp value function: 1>'
+	}
+	mut rule_current_timestamp_value_function_2_ := &EarleyRule{
+		name: '<current timestamp value function: 2>'
+	}
+	mut rule_current_timestamp_value_function_ := &EarleyRule{
+		name: '<current timestamp value function>'
+	}
 	mut rule_cursor_specification_1_ := &EarleyRule{
 		name: '<cursor specification: 1>'
 	}
@@ -462,6 +504,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_datetime_value_expression_ := &EarleyRule{
 		name: '<datetime value expression>'
+	}
+	mut rule_datetime_value_function_ := &EarleyRule{
+		name: '<datetime value function>'
 	}
 	mut rule_delete_statement_searched_1_ := &EarleyRule{
 		name: '<delete statement: searched: 1>'
@@ -1456,6 +1501,15 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_create := &EarleyRule{
 		name: 'CREATE'
 	}
+	mut rule_current_date := &EarleyRule{
+		name: 'CURRENT_DATE'
+	}
+	mut rule_current_time := &EarleyRule{
+		name: 'CURRENT_TIME'
+	}
+	mut rule_current_timestamp := &EarleyRule{
+		name: 'CURRENT_TIMESTAMP'
+	}
 	mut rule_date := &EarleyRule{
 		name: 'DATE'
 	}
@@ -1530,6 +1584,12 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_ln := &EarleyRule{
 		name: 'LN'
+	}
+	mut rule_localtime := &EarleyRule{
+		name: 'LOCALTIME'
+	}
+	mut rule_localtimestamp := &EarleyRule{
+		name: 'LOCALTIMESTAMP'
 	}
 	mut rule_log10 := &EarleyRule{
 		name: 'LOG10'
@@ -2927,6 +2987,146 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_current_date_value_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_date
+		},
+	]}
+
+	rule_current_date_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_date_value_function_1_
+		},
+	]}
+
+	rule_current_local_time_value_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_localtime
+		},
+	]}
+
+	rule_current_local_time_value_function_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_localtime
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_time_precision_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_current_local_time_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_local_time_value_function_1_
+		},
+	]}
+	rule_current_local_time_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_local_time_value_function_2_
+		},
+	]}
+
+	rule_current_local_timestamp_value_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_localtimestamp
+		},
+	]}
+
+	rule_current_local_timestamp_value_function_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_localtimestamp
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_timestamp_precision_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_current_local_timestamp_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_local_timestamp_value_function_1_
+		},
+	]}
+	rule_current_local_timestamp_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_local_timestamp_value_function_2_
+		},
+	]}
+
+	rule_current_time_value_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_time
+		},
+	]}
+
+	rule_current_time_value_function_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_time
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_time_precision_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_current_time_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_time_value_function_1_
+		},
+	]}
+	rule_current_time_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_time_value_function_2_
+		},
+	]}
+
+	rule_current_timestamp_value_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_timestamp
+		},
+	]}
+
+	rule_current_timestamp_value_function_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_timestamp
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_timestamp_precision_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_current_timestamp_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_timestamp_value_function_1_
+		},
+	]}
+	rule_current_timestamp_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_timestamp_value_function_2_
+		},
+	]}
+
 	rule_cursor_specification_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_query_expression_
@@ -2997,6 +3197,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_datetime_primary_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_value_expression_primary_
+		},
+	]}
+	rule_datetime_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_value_function_
 		},
 	]}
 
@@ -3157,6 +3362,32 @@ fn get_grammar() map[string]EarleyRule {
 	rule_datetime_value_expression_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_datetime_term_
+		},
+	]}
+
+	rule_datetime_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_date_value_function_
+		},
+	]}
+	rule_datetime_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_time_value_function_
+		},
+	]}
+	rule_datetime_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_timestamp_value_function_
+		},
+	]}
+	rule_datetime_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_local_time_value_function_
+		},
+	]}
+	rule_datetime_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_local_timestamp_value_function_
 		},
 	]}
 
@@ -6284,6 +6515,27 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_current_date.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CURRENT_DATE'
+			rule: 0
+		},
+	]}
+
+	rule_current_time.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CURRENT_TIME'
+			rule: 0
+		},
+	]}
+
+	rule_current_timestamp.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CURRENT_TIMESTAMP'
+			rule: 0
+		},
+	]}
+
 	rule_date.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'DATE'
@@ -6455,6 +6707,20 @@ fn get_grammar() map[string]EarleyRule {
 	rule_ln.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'LN'
+			rule: 0
+		},
+	]}
+
+	rule_localtime.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'LOCALTIME'
+			rule: 0
+		},
+	]}
+
+	rule_localtimestamp.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'LOCALTIMESTAMP'
 			rule: 0
 		},
 	]}
@@ -6942,6 +7208,20 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<correlation or recognition: 3>'] = rule_correlation_or_recognition_3_
 	rules['<correlation or recognition: 4>'] = rule_correlation_or_recognition_4_
 	rules['<correlation or recognition>'] = rule_correlation_or_recognition_
+	rules['<current date value function: 1>'] = rule_current_date_value_function_1_
+	rules['<current date value function>'] = rule_current_date_value_function_
+	rules['<current local time value function: 1>'] = rule_current_local_time_value_function_1_
+	rules['<current local time value function: 2>'] = rule_current_local_time_value_function_2_
+	rules['<current local time value function>'] = rule_current_local_time_value_function_
+	rules['<current local timestamp value function: 1>'] = rule_current_local_timestamp_value_function_1_
+	rules['<current local timestamp value function: 2>'] = rule_current_local_timestamp_value_function_2_
+	rules['<current local timestamp value function>'] = rule_current_local_timestamp_value_function_
+	rules['<current time value function: 1>'] = rule_current_time_value_function_1_
+	rules['<current time value function: 2>'] = rule_current_time_value_function_2_
+	rules['<current time value function>'] = rule_current_time_value_function_
+	rules['<current timestamp value function: 1>'] = rule_current_timestamp_value_function_1_
+	rules['<current timestamp value function: 2>'] = rule_current_timestamp_value_function_2_
+	rules['<current timestamp value function>'] = rule_current_timestamp_value_function_
 	rules['<cursor specification: 1>'] = rule_cursor_specification_1_
 	rules['<cursor specification>'] = rule_cursor_specification_
 	rules['<data type or domain name>'] = rule_data_type_or_domain_name_
@@ -6964,6 +7244,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<datetime type: 9>'] = rule_datetime_type_9_
 	rules['<datetime type>'] = rule_datetime_type_
 	rules['<datetime value expression>'] = rule_datetime_value_expression_
+	rules['<datetime value function>'] = rule_datetime_value_function_
 	rules['<delete statement: searched: 1>'] = rule_delete_statement_searched_1_
 	rules['<delete statement: searched: 2>'] = rule_delete_statement_searched_2_
 	rules['<delete statement: searched>'] = rule_delete_statement_searched_
@@ -7295,6 +7576,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['COSH'] = rule_cosh
 	rules['COUNT'] = rule_count
 	rules['CREATE'] = rule_create
+	rules['CURRENT_DATE'] = rule_current_date
+	rules['CURRENT_TIME'] = rule_current_time
+	rules['CURRENT_TIMESTAMP'] = rule_current_timestamp
 	rules['DATE'] = rule_date
 	rules['DELETE'] = rule_delete
 	rules['DESC'] = rule_desc
@@ -7320,6 +7604,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['LEFT'] = rule_left
 	rules['LIKE'] = rule_like
 	rules['LN'] = rule_ln
+	rules['LOCALTIME'] = rule_localtime
+	rules['LOCALTIMESTAMP'] = rule_localtimestamp
 	rules['LOG10'] = rule_log10
 	rules['LOWER'] = rule_lower
 	rules['MAX'] = rule_max
@@ -7626,6 +7912,33 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [
 				EarleyValue(parse_correlation2(children[1] as Identifier, children[2] as []Identifier)?),
 			]
+		}
+		'<current date value function: 1>' {
+			return [EarleyValue(parse_current_date()?)]
+		}
+		'<current local time value function: 1>' {
+			return [EarleyValue(parse_localtime1()?)]
+		}
+		'<current local time value function: 2>' {
+			return [EarleyValue(parse_localtime2(children[2] as int)?)]
+		}
+		'<current local timestamp value function: 1>' {
+			return [EarleyValue(parse_localtimestamp1()?)]
+		}
+		'<current local timestamp value function: 2>' {
+			return [EarleyValue(parse_localtimestamp2(children[2] as int)?)]
+		}
+		'<current time value function: 1>' {
+			return [EarleyValue(parse_current_time1()?)]
+		}
+		'<current time value function: 2>' {
+			return [EarleyValue(parse_current_time2(children[2] as int)?)]
+		}
+		'<current timestamp value function: 1>' {
+			return [EarleyValue(parse_current_timestamp1()?)]
+		}
+		'<current timestamp value function: 2>' {
+			return [EarleyValue(parse_current_timestamp2(children[2] as int)?)]
 		}
 		'<cursor specification: 1>' {
 			return [

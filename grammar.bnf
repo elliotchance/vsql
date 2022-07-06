@@ -259,6 +259,35 @@
 
 <datetime primary> /* Expr */ ::=
     <value expression primary>
+  | <datetime value function>
+
+<datetime value function> /* Expr */ ::=
+    <current date value function>
+  | <current time value function>
+  | <current timestamp value function>
+  | <current local time value function>
+  | <current local timestamp value function>
+
+<current date value function> /* Expr */ ::=
+    CURRENT_DATE   -> current_date
+
+<current time value function> /* Expr */ ::=
+    CURRENT_TIME                                               -> current_time1
+  | CURRENT_TIME <left paren> <time precision> <right paren>   -> current_time2
+
+<current timestamp value function> /* Expr */ ::=
+    CURRENT_TIMESTAMP                                  -> current_timestamp1
+  | CURRENT_TIMESTAMP
+    <left paren> <timestamp precision> <right paren>   -> current_timestamp2
+
+<current local time value function> /* Expr */ ::=
+    LOCALTIME                                               -> localtime1
+  | LOCALTIME <left paren> <time precision> <right paren>   -> localtime2
+
+<current local timestamp value function> /* Expr */ ::=
+    LOCALTIMESTAMP                                     -> localtimestamp1
+  | LOCALTIMESTAMP
+    <left paren> <timestamp precision> <right paren>   -> localtimestamp2
 
 <value expression> /* Expr */ ::=
     <common value expression>

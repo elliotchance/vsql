@@ -95,3 +95,13 @@ SELECT * FROM t1;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- F1: -516.6
+
+INSERT INTO foo.bar (nothing) VALUES (123);
+-- error 3F000: invalid schema name: FOO
+
+CREATE SCHEMA foo;
+CREATE TABLE foo.bar (baz BIGINT);
+INSERT INTO foo.bar (baz) VALUES (123);
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1

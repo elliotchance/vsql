@@ -88,6 +88,36 @@ fn sqlstate_23502(msg string) IError {
 	}
 }
 
+// dependent objects still exist
+struct SQLState2BP01 {
+	SQLState
+pub:
+	object_name string
+}
+
+fn sqlstate_2bp01(object_name string) IError {
+	return SQLState2BP01{
+		code: sqlstate_to_int('2BP01')
+		msg: 'dependent objects still exist on $object_name'
+		object_name: object_name
+	}
+}
+
+// schema name is invalid
+struct SQLState3F000 {
+	SQLState
+pub:
+	schema_name string
+}
+
+fn sqlstate_3f000(schema_name string) IError {
+	return SQLState42P06{
+		code: sqlstate_to_int('3F000')
+		msg: 'invalid schema name: $schema_name'
+		schema_name: schema_name
+	}
+}
+
 // syntax error
 struct SQLState42601 {
 	SQLState
@@ -143,6 +173,21 @@ fn sqlstate_42p01(table_name string) IError {
 		code: sqlstate_to_int('42P01')
 		msg: 'no such table: $table_name'
 		table_name: table_name
+	}
+}
+
+// duplicate schema
+struct SQLState42P06 {
+	SQLState
+pub:
+	schema_name string
+}
+
+fn sqlstate_42p06(schema_name string) IError {
+	return SQLState42P06{
+		code: sqlstate_to_int('42P06')
+		msg: 'duplicate schema: $schema_name'
+		schema_name: schema_name
 	}
 }
 

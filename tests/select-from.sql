@@ -44,3 +44,15 @@ CREATE TABLE foo (x FLOAT);
 EXPLAIN SELECT bar.* FROM foo;
 -- msg: CREATE TABLE 1
 -- error 42P01: no such table: BAR
+
+SELECT * FROM foo.bar;
+-- error 3F000: invalid schema name: FOO
+
+CREATE SCHEMA foo;
+CREATE TABLE foo.bar (x FLOAT);
+INSERT INTO foo.bar (x) VALUES (1.234);
+SELECT * FROM foo.bar;
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- X: 1.234

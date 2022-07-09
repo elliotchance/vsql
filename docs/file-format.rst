@@ -120,6 +120,45 @@ bytes):
     - 91
     - The *Row Objects* data.
 
+Schema Objects
+--------------
+
+The object key for a table is ``S`` followed by the schema name, for example
+``SFOO`` for the ``foo`` schema (notice the uppercase is because of the SQL
+standard). Whereas the schema ``"foo"`` would be ``Sfoo``.
+   
+The schema definition is stored as:
+
+- 1 byte (signed integer) for the schema name length.
+- *n* bytes for the schema name.
+
+For example:
+
+.. code-block:: sql
+
+   CREATE SCHEMA warehouse;
+
+Is serialized as 14 bytes:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Byte Offset
+    - Length
+    - Description
+
+  * - 0
+    - 4 (signed 32-bit int)
+    - 14 (the total length of the object, including self)
+
+  * - 4
+    - 1 (signed int)
+    - 9
+
+  * - 5
+    - 9 ([]u8)
+    - ``WAREHOUSE``
+
 Table Objects
 -------------
 

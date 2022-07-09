@@ -10,5 +10,6 @@ Welcome to the vsql documentation.
    features.rst
    sql-reference.rst
    sql-language.rst
+   internals.rst
    development.rst
    appendix.rst

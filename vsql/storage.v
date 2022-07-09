@@ -42,6 +42,8 @@ mut:
 	// during this transaction. This is important for COMMIT and ROLLBACK to
 	// revisit pages that need to be cleaned up or frozen.
 	transaction_pages map[int]bool
+	// Like the tables we keep the schemas in memory.
+	schemas map[string]Schema
 }
 
 fn new_storage() Storage {
@@ -63,8 +65,6 @@ fn (mut f Storage) open(path string) ? {
 	}
 	f.header = header
 
-	f.tables = map[string]Table{}
-
 	// The schema must be read in an isolation block, which may or may not
 	// belong to an active transaction.
 	f.isolation_start()?
@@ -72,10 +72,19 @@ fn (mut f Storage) open(path string) ? {
 		f.isolation_end() or { panic(err) }
 	}
 
+	f.tables = map[string]Table{}
 	for object in f.btree.new_range_iterator('T'.bytes(), 'U'.bytes()) {
 		if object_is_visible(object.tid, object.xid, f.transaction_id, mut f.header.active_transaction_ids) {
 			table := new_table_from_bytes(object.value, object.tid)
 			f.tables[table.name] = table
+		}
+	}
+
+	f.schemas = map[string]Schema{}
+	for object in f.btree.new_range_iterator('S'.bytes(), 'T'.bytes()) {
+		if object_is_visible(object.tid, object.xid, f.transaction_id, mut f.header.active_transaction_ids) {
+			schema := new_schema_from_bytes(object.value, object.tid)
+			f.schemas[schema.name] = schema
 		}
 	}
 }
@@ -117,6 +126,22 @@ fn (mut f Storage) create_table(table_name string, columns Columns, primary_key 
 	f.schema_changed()
 }
 
+fn (mut f Storage) create_schema(schema_name string) ? {
+	f.isolation_start()?
+	defer {
+		f.isolation_end() or { panic(err) }
+	}
+
+	schema := Schema{schema_name, f.transaction_id}
+
+	obj := new_page_object('S$schema_name'.bytes(), f.transaction_id, 0, schema.bytes())
+	page_number := f.btree.add(obj)?
+	f.transaction_pages[page_number] = true
+
+	f.schemas[schema_name] = schema
+	f.schema_changed()
+}
+
 fn (mut f Storage) delete_table(table_name string, tid int) ? {
 	f.isolation_start()?
 	defer {
@@ -127,6 +152,19 @@ fn (mut f Storage) delete_table(table_name string, tid int) ? {
 	f.transaction_pages[page_number] = true
 
 	f.tables.delete(table_name)
+	f.schema_changed()
+}
+
+fn (mut f Storage) delete_schema(schema_name string, tid int) ? {
+	f.isolation_start()?
+	defer {
+		f.isolation_end() or { panic(err) }
+	}
+
+	page_number := f.btree.expire('S$schema_name'.bytes(), tid, f.transaction_id)?
+	f.transaction_pages[page_number] = true
+
+	f.schemas.delete(schema_name)
 	f.schema_changed()
 }
 

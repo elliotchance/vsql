@@ -12,10 +12,31 @@
   | <SQL schema manipulation statement>
 
 <SQL schema definition statement> /* Stmt */ ::=
-    <table definition>
+    <schema definition>
+  | <table definition>
+
+<schema definition> /* Stmt */ ::=
+    CREATE SCHEMA <schema name clause>   -> schema_definition
+
+<schema name clause> /* Identifier */ ::=
+    <schema name>
+
+<schema name> /* Identifier */ ::=
+    <unqualified schema name>
+
+<unqualified schema name> /* Identifier */ ::=
+    <identifier>
 
 <SQL schema manipulation statement> /* Stmt */ ::=
-  <drop table statement>
+    <drop schema statement>
+  | <drop table statement>
+
+<drop schema statement> /* Stmt */ ::=
+    DROP SCHEMA <schema name> <drop behavior>   -> drop_schema_statement
+
+<drop behavior> /* string */ ::=
+    CASCADE
+  | RESTRICT
 
 <drop table statement> /* Stmt */ ::=
     DROP TABLE <table name>   -> drop_table_statement
@@ -25,6 +46,11 @@
 
 <local or schema qualified name> /* Identifier */ ::=
     <qualified identifier>
+  | <local or schema qualifier> <period>
+    <qualified identifier>                 -> local_or_schema_qualified_name2
+
+<local or schema qualifier> /* Identifier */ ::=
+    <schema name>
 
 <qualified identifier> /* Identifier */ ::=
     <identifier>

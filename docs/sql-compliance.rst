@@ -270,8 +270,28 @@ The following table is **not complete** and will be filled in as time goes on.
      - **CASE expression**
 
    * - **F311**
-     - **Unknown**
+     - **Partial**
      - **Schema definition statement**
+
+   * - F311-01
+     - Yes
+     - ``CREATE SCHEMA``
+
+   * - F311-02
+     - Yes
+     - ``CREATE TABLE`` for persistent base tables
+
+   * - F311-03
+     - No
+     - ``CREATE VIEW``
+
+   * - F311-04
+     - No
+     - ``CREATE VIEW``: ``WITH CHECK OPTION``
+
+   * - F311-05
+     - No
+     - ``GRANT`` statement
 
    * - **F471**
      - **Unknown**

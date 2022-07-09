@@ -99,6 +99,16 @@ fn create_select_plan_without_join(body SelectStmt, from_clause TablePrimary, of
 		Identifier {
 			table_name := from_clause.body.name
 
+			// TODO(elliotchance): This isn't really ideal. Replace with a proper
+			//  identifier chain when we support that.
+			if table_name.contains('.') {
+				parts := table_name.split('.')
+
+				if parts[0] !in c.storage.schemas {
+					return sqlstate_3f000(parts[0]) // scheme does not exist
+				}
+			}
+
 			if allow_virtual && table_name in c.virtual_tables {
 				plan.operations << VirtualTableOperation{table_name, c.virtual_tables[table_name]}
 				table = c.virtual_tables[table_name].table()

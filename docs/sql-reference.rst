@@ -5,8 +5,10 @@ SQL Reference
    :maxdepth: 1
 
    commit.rst
+   create-schema.rst
    create-table.rst
    delete.rst
+   drop-schema.rst
    drop-table.rst
    explain.rst
    insert.rst

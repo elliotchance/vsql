@@ -113,6 +113,12 @@ of a previous SQL statement. You must ``COMMIT`` or ``ROLLBACK``, however,
    -- error 42601: syntax error: INSERT has more values than columns
    -- error 25P02: transaction is aborted, commands ignored until end of transaction block
 
+``2BP01`` dependent objects still exist
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``2BP01`` occurs if trying to drop a schema with ``RESTRICT`` and there are
+still objects that exist in the schema.
+
 ``2D000`` invalid transaction termination
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -127,6 +133,11 @@ in an active transaction.
    COMMIT;
    COMMIT;
    -- error 2D000: invalid transaction termination
+
+``3F000`` invalid schema name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``3F000`` occurs if the schema does not exist or is otherwise invalid.
 
 ``40001`` serialization failure
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -216,6 +227,18 @@ A client that receives this error should retry the transaction.
   CREATE TABLE t1 (x FLOAT);
   INSERT INTO t1 (x) VALUES (:foo);
   -- error 42P02: no such parameter: foo
+
+``42P06`` schema already exists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE foo;
+  CREATE TABLE foo;
+  -- msg: CREATE SCHEMA 1
+  -- error 42P06: duplicate schema: FOO
 
 ``42P07`` table already exists
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

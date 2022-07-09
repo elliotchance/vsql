@@ -6,8 +6,10 @@ module vsql
 //
 // QueryExpression is used for both SELECT and VALUES.
 type Stmt = CommitStmt
+	| CreateSchemaStmt
 	| CreateTableStmt
 	| DeleteStmt
+	| DropSchemaStmt
 	| DropTableStmt
 	| InsertStmt
 	| QueryExpression
@@ -512,4 +514,13 @@ struct LocalTimestampExpr {
 
 fn (e LocalTimestampExpr) str() string {
 	return 'LOCALTIMESTAMP($e.prec)'
+}
+
+struct CreateSchemaStmt {
+	schema_name Identifier
+}
+
+struct DropSchemaStmt {
+	schema_name Identifier
+	behavior    string // CASCADE or RESTRICT
 }

@@ -47,6 +47,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) ?Result {
 			// See transaction.v
 			return execute_commit(mut p.c, stmt, p.elapsed_parse)
 		}
+		CreateSchemaStmt {
+			if p.explain {
+				return sqlstate_42601('Cannot EXPLAIN CREATE SCHEMA')
+			}
+
+			return execute_create_schema(mut p.c, stmt, p.elapsed_parse)
+		}
 		CreateTableStmt {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN CREATE TABLE')
@@ -56,6 +63,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) ?Result {
 		}
 		DeleteStmt {
 			return execute_delete(mut p.c, stmt, all_params, p.elapsed_parse, p.explain)
+		}
+		DropSchemaStmt {
+			if p.explain {
+				return sqlstate_42601('Cannot EXPLAIN DROP SCHEMA')
+			}
+
+			return execute_drop_schema(mut p.c, stmt, p.elapsed_parse)
 		}
 		DropTableStmt {
 			if p.explain {

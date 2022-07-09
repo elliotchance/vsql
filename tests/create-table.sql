@@ -105,3 +105,11 @@ CREATE TABLE foo (bar TIMESTAMP WITH TIME ZONE);
 
 CREATE TABLE foo (bar TIMESTAMP(3) WITH TIME ZONE);
 -- msg: CREATE TABLE 1
+
+CREATE TABLE foo.bar (baz BIGINT);
+-- error 3F000: invalid schema name: FOO
+
+CREATE SCHEMA foo;
+CREATE TABLE foo.bar (baz BIGINT);
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE TABLE 1

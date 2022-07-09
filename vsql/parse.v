@@ -751,3 +751,15 @@ fn parse_current_timestamp1() ?Expr {
 fn parse_current_timestamp2(prec int) ?Expr {
 	return CurrentTimestampExpr{prec}
 }
+
+fn parse_schema_definition(schema_name Identifier) ?Stmt {
+	return CreateSchemaStmt{schema_name}
+}
+
+fn parse_local_or_schema_qualified_name2(schema_name Identifier, table_name Identifier) ?Identifier {
+	return new_identifier('${schema_name}.$table_name')
+}
+
+fn parse_drop_schema_statement(schema_name Identifier, behavior string) ?Stmt {
+	return DropSchemaStmt{schema_name, behavior}
+}

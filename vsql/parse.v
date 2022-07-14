@@ -763,3 +763,19 @@ fn parse_local_or_schema_qualified_name2(schema_name Identifier, table_name Iden
 fn parse_drop_schema_statement(schema_name Identifier, behavior string) ?Stmt {
 	return DropSchemaStmt{schema_name, behavior}
 }
+
+fn parse_substring1(value Expr, from Expr) ?Expr {
+	return SubstringExpr{value, from, NoExpr{}, 'CHARACTERS'}
+}
+
+fn parse_substring2(value Expr, from Expr, @for Expr) ?Expr {
+	return SubstringExpr{value, from, @for, 'CHARACTERS'}
+}
+
+fn parse_substring3(value Expr, from Expr, using string) ?Expr {
+	return SubstringExpr{value, from, NoExpr{}, using}
+}
+
+fn parse_substring4(value Expr, from Expr, @for Expr, using string) ?Expr {
+	return SubstringExpr{value, from, @for, using}
+}

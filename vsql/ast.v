@@ -36,6 +36,7 @@ type Expr = BetweenExpr
 	| QueryExpression
 	| RowExpr
 	| SimilarExpr
+	| SubstringExpr
 	| UnaryExpr
 	| Value
 
@@ -97,6 +98,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 			e.pstr(params)
 		}
 		SimilarExpr {
+			e.pstr(params)
+		}
+		SubstringExpr {
 			e.pstr(params)
 		}
 		UnaryExpr {
@@ -523,4 +527,29 @@ struct CreateSchemaStmt {
 struct DropSchemaStmt {
 	schema_name Identifier
 	behavior    string // CASCADE or RESTRICT
+}
+
+struct SubstringExpr {
+	value Expr
+	from  Expr   // NoExpr when missing
+	@for  Expr   // NoExpr when missing
+	using string // CHARACTERS or OCTETS or ''
+}
+
+fn (e SubstringExpr) str() string {
+	return e.pstr(map[string]Value{})
+}
+
+fn (e SubstringExpr) pstr(params map[string]Value) string {
+	mut s := 'SUBSTRING(${e.value.pstr(params)}'
+
+	if e.from !is NoExpr {
+		s += ' FROM ${e.from.pstr(params)}'
+	}
+
+	if e.@for !is NoExpr {
+		s += ' FOR ${e.@for.pstr(params)}'
+	}
+
+	return s + ' USING $e.using)'
 }

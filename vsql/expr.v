@@ -52,6 +52,12 @@ fn expr_is_agg(conn &Connection, e Expr) ?bool {
 				return nested_agg_unsupported(e)
 			}
 		}
+		SubstringExpr {
+			if expr_is_agg(conn, e.value)? || expr_is_agg(conn, e.from)?
+				|| expr_is_agg(conn, e.@for)? {
+				return nested_agg_unsupported(e)
+			}
+		}
 		UnaryExpr {
 			if expr_is_agg(conn, e.expr)? {
 				return nested_agg_unsupported(e)
@@ -117,6 +123,10 @@ fn resolve_identifiers(e Expr, tables map[string]Table) ?Expr {
 		SimilarExpr {
 			return SimilarExpr{resolve_identifiers(e.left, tables)?, resolve_identifiers(e.right,
 				tables)?, e.not}
+		}
+		SubstringExpr {
+			return SubstringExpr{resolve_identifiers(e.value, tables)?, resolve_identifiers(e.from,
+				tables)?, resolve_identifiers(e.@for, tables)?, e.using}
 		}
 		UnaryExpr {
 			return UnaryExpr{e.op, resolve_identifiers(e.expr, tables)?}

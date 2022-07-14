@@ -144,6 +144,9 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 		LocalTimestampExpr {
 			return new_type('TIMESTAMP WITHOUT TIME ZONE', 0)
 		}
+		SubstringExpr {
+			return new_type('CHARACTER VARYING', 0)
+		}
 	}
 }
 
@@ -175,6 +178,9 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 		}
 		SimilarExpr {
 			return eval_similar(conn, data, e, params)
+		}
+		SubstringExpr {
+			return eval_substring(conn, data, e, params)
 		}
 		UnaryExpr {
 			return eval_unary(conn, data, e, params)
@@ -336,6 +342,37 @@ fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) ?V
 	}
 
 	return new_boolean_value(result)
+}
+
+fn eval_substring(conn &Connection, data Row, e SubstringExpr, params map[string]Value) ?Value {
+	value := eval_as_value(conn, data, e.value, params)?
+	from := int((eval_as_value(conn, data, e.from, params)?).f64_value) - 1
+
+	if e.using == 'CHARACTERS' {
+		characters := value.string_value.runes()
+
+		if from >= characters.len || from < 0 {
+			return new_varchar_value('', 0)
+		}
+
+		mut @for := characters.len - from
+		if e.@for !is NoExpr {
+			@for = int((eval_as_value(conn, data, e.@for, params)?).f64_value)
+		}
+
+		return new_varchar_value(characters[from..from + @for].string(), 0)
+	}
+
+	if from >= value.string_value.len || from < 0 {
+		return new_varchar_value('', 0)
+	}
+
+	mut @for := value.string_value.len - from
+	if e.@for !is NoExpr {
+		@for = int((eval_as_value(conn, data, e.@for, params)?).f64_value)
+	}
+
+	return new_varchar_value(value.string_value.substr(from, from + @for), 0)
 }
 
 fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value) ?Value {

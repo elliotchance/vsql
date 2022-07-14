@@ -61,7 +61,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E021-05
      - ``OCTET_LENGTH`` function
 
-   * - ❌ E021-06
+   * - ✅ E021-06
      - ``SUBSTRING`` function
 
    * - ✅ E021-07

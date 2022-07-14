@@ -175,6 +175,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_char_length_expression_ := &EarleyRule{
 		name: '<char length expression>'
 	}
+	mut rule_char_length_units_ := &EarleyRule{
+		name: '<char length units>'
+	}
 	mut rule_character_factor_ := &EarleyRule{
 		name: '<character factor>'
 	}
@@ -234,6 +237,21 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_character_string_type_ := &EarleyRule{
 		name: '<character string type>'
+	}
+	mut rule_character_substring_function_1_ := &EarleyRule{
+		name: '<character substring function: 1>'
+	}
+	mut rule_character_substring_function_2_ := &EarleyRule{
+		name: '<character substring function: 2>'
+	}
+	mut rule_character_substring_function_3_ := &EarleyRule{
+		name: '<character substring function: 3>'
+	}
+	mut rule_character_substring_function_4_ := &EarleyRule{
+		name: '<character substring function: 4>'
+	}
+	mut rule_character_substring_function_ := &EarleyRule{
+		name: '<character substring function>'
 	}
 	mut rule_character_value_expression_1_ := &EarleyRule{
 		name: '<character value expression 1>'
@@ -1222,11 +1240,17 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_square_root_ := &EarleyRule{
 		name: '<square root>'
 	}
+	mut rule_start_position_ := &EarleyRule{
+		name: '<start position>'
+	}
 	mut rule_start_transaction_statement_1_ := &EarleyRule{
 		name: '<start transaction statement: 1>'
 	}
 	mut rule_start_transaction_statement_ := &EarleyRule{
 		name: '<start transaction statement>'
+	}
+	mut rule_string_length_ := &EarleyRule{
+		name: '<string length>'
 	}
 	mut rule_string_value_expression_ := &EarleyRule{
 		name: '<string value expression>'
@@ -1519,6 +1543,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_character_length := &EarleyRule{
 		name: 'CHARACTER_LENGTH'
 	}
+	mut rule_characters := &EarleyRule{
+		name: 'CHARACTERS'
+	}
 	mut rule_commit := &EarleyRule{
 		name: 'COMMIT'
 	}
@@ -1575,6 +1602,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_floor := &EarleyRule{
 		name: 'FLOOR'
+	}
+	mut rule_for := &EarleyRule{
+		name: 'FOR'
 	}
 	mut rule_from := &EarleyRule{
 		name: 'FROM'
@@ -1647,6 +1677,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_octet_length := &EarleyRule{
 		name: 'OCTET_LENGTH'
+	}
+	mut rule_octets := &EarleyRule{
+		name: 'OCTETS'
 	}
 	mut rule_offset := &EarleyRule{
 		name: 'OFFSET'
@@ -1723,6 +1756,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_start := &EarleyRule{
 		name: 'START'
 	}
+	mut rule_substring := &EarleyRule{
+		name: 'SUBSTRING'
+	}
 	mut rule_sum := &EarleyRule{
 		name: 'SUM'
 	}
@@ -1761,6 +1797,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_upper := &EarleyRule{
 		name: 'UPPER'
+	}
+	mut rule_using := &EarleyRule{
+		name: 'USING'
 	}
 	mut rule_values := &EarleyRule{
 		name: 'VALUES'
@@ -2249,6 +2288,17 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_char_length_units_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_characters
+		},
+	]}
+	rule_char_length_units_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_octets
+		},
+	]}
+
 	rule_character_factor_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_character_primary_
@@ -2487,6 +2537,135 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_character_substring_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_substring
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
+		},
+		&EarleyRuleOrString{
+			rule: rule_from
+		},
+		&EarleyRuleOrString{
+			rule: rule_start_position_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_character_substring_function_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_substring
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
+		},
+		&EarleyRuleOrString{
+			rule: rule_from
+		},
+		&EarleyRuleOrString{
+			rule: rule_start_position_
+		},
+		&EarleyRuleOrString{
+			rule: rule_for
+		},
+		&EarleyRuleOrString{
+			rule: rule_string_length_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_character_substring_function_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_substring
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
+		},
+		&EarleyRuleOrString{
+			rule: rule_from
+		},
+		&EarleyRuleOrString{
+			rule: rule_start_position_
+		},
+		&EarleyRuleOrString{
+			rule: rule_using
+		},
+		&EarleyRuleOrString{
+			rule: rule_char_length_units_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_character_substring_function_4_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_substring
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
+		},
+		&EarleyRuleOrString{
+			rule: rule_from
+		},
+		&EarleyRuleOrString{
+			rule: rule_start_position_
+		},
+		&EarleyRuleOrString{
+			rule: rule_for
+		},
+		&EarleyRuleOrString{
+			rule: rule_string_length_
+		},
+		&EarleyRuleOrString{
+			rule: rule_using
+		},
+		&EarleyRuleOrString{
+			rule: rule_char_length_units_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_character_substring_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_substring_function_1_
+		},
+	]}
+	rule_character_substring_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_substring_function_2_
+		},
+	]}
+	rule_character_substring_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_substring_function_3_
+		},
+	]}
+	rule_character_substring_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_substring_function_4_
+		},
+	]}
+
 	rule_character_value_expression_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_character_value_expression_
@@ -2510,6 +2689,11 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_character_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_substring_function_
+		},
+	]}
 	rule_character_value_function_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_fold_
@@ -5754,6 +5938,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_start_position_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_numeric_value_expression_
+		},
+	]}
+
 	rule_start_transaction_statement_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_start
@@ -5766,6 +5956,12 @@ fn get_grammar() map[string]EarleyRule {
 	rule_start_transaction_statement_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_start_transaction_statement_1_
+		},
+	]}
+
+	rule_string_length_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_numeric_value_expression_
 		},
 	]}
 
@@ -6627,6 +6823,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_characters.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CHARACTERS'
+			rule: 0
+		},
+	]}
+
 	rule_commit.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'COMMIT'
@@ -6756,6 +6959,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_floor.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'FLOOR'
+			rule: 0
+		},
+	]}
+
+	rule_for.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FOR'
 			rule: 0
 		},
 	]}
@@ -6924,6 +7134,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_octet_length.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'OCTET_LENGTH'
+			rule: 0
+		},
+	]}
+
+	rule_octets.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'OCTETS'
 			rule: 0
 		},
 	]}
@@ -7103,6 +7320,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_substring.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SUBSTRING'
+			rule: 0
+		},
+	]}
+
 	rule_sum.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'SUM'
@@ -7190,6 +7414,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_upper.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'UPPER'
+			rule: 0
+		},
+	]}
+
+	rule_using.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'USING'
 			rule: 0
 		},
 	]}
@@ -7295,6 +7526,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<char length expression: 1>'] = rule_char_length_expression_1_
 	rules['<char length expression: 2>'] = rule_char_length_expression_2_
 	rules['<char length expression>'] = rule_char_length_expression_
+	rules['<char length units>'] = rule_char_length_units_
 	rules['<character factor>'] = rule_character_factor_
 	rules['<character length>'] = rule_character_length_
 	rules['<character like predicate part 2: 1>'] = rule_character_like_predicate_part_2_1_
@@ -7315,6 +7547,11 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<character string type: 6>'] = rule_character_string_type_6_
 	rules['<character string type: 7>'] = rule_character_string_type_7_
 	rules['<character string type>'] = rule_character_string_type_
+	rules['<character substring function: 1>'] = rule_character_substring_function_1_
+	rules['<character substring function: 2>'] = rule_character_substring_function_2_
+	rules['<character substring function: 3>'] = rule_character_substring_function_3_
+	rules['<character substring function: 4>'] = rule_character_substring_function_4_
+	rules['<character substring function>'] = rule_character_substring_function_
 	rules['<character value expression 1>'] = rule_character_value_expression_1_
 	rules['<character value expression 2>'] = rule_character_value_expression_2_
 	rules['<character value expression>'] = rule_character_value_expression_
@@ -7644,8 +7881,10 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<SQL transaction statement>'] = rule_sql_transaction_statement_
 	rules['<square root: 1>'] = rule_square_root_1_
 	rules['<square root>'] = rule_square_root_
+	rules['<start position>'] = rule_start_position_
 	rules['<start transaction statement: 1>'] = rule_start_transaction_statement_1_
 	rules['<start transaction statement>'] = rule_start_transaction_statement_
+	rules['<string length>'] = rule_string_length_
 	rules['<string value expression>'] = rule_string_value_expression_
 	rules['<string value function>'] = rule_string_value_function_
 	rules['<subquery: 1>'] = rule_subquery_1_
@@ -7743,6 +7982,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['CHAR_LENGTH'] = rule_char_length
 	rules['CHARACTER'] = rule_character
 	rules['CHARACTER_LENGTH'] = rule_character_length
+	rules['CHARACTERS'] = rule_characters
 	rules['COMMIT'] = rule_commit
 	rules['COS'] = rule_cos
 	rules['COSH'] = rule_cosh
@@ -7762,6 +8002,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['FIRST'] = rule_first
 	rules['FLOAT'] = rule_float
 	rules['FLOOR'] = rule_floor
+	rules['FOR'] = rule_for
 	rules['FROM'] = rule_from
 	rules['GROUP'] = rule_group
 	rules['IN'] = rule_in
@@ -7786,6 +8027,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['NOT'] = rule_not
 	rules['NULL'] = rule_null
 	rules['OCTET_LENGTH'] = rule_octet_length
+	rules['OCTETS'] = rule_octets
 	rules['OFFSET'] = rule_offset
 	rules['ON'] = rule_on
 	rules['ONLY'] = rule_only
@@ -7811,6 +8053,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['SMALLINT'] = rule_smallint
 	rules['SQRT'] = rule_sqrt
 	rules['START'] = rule_start
+	rules['SUBSTRING'] = rule_substring
 	rules['SUM'] = rule_sum
 	rules['SYMMETRIC'] = rule_symmetric
 	rules['TABLE'] = rule_table
@@ -7824,6 +8067,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['UNKNOWN'] = rule_unknown
 	rules['UPDATE'] = rule_update
 	rules['UPPER'] = rule_upper
+	rules['USING'] = rule_using
 	rules['VALUES'] = rule_values
 	rules['VARCHAR'] = rule_varchar
 	rules['VARYING'] = rule_varying
@@ -7991,6 +8235,29 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		}
 		'<character string type: 7>' {
 			return [EarleyValue(parse_varchar(children[2] as int)?)]
+		}
+		'<character substring function: 1>' {
+			return [
+				EarleyValue(parse_substring1(children[2] as Expr, children[4] as Expr)?),
+			]
+		}
+		'<character substring function: 2>' {
+			return [
+				EarleyValue(parse_substring2(children[2] as Expr, children[4] as Expr,
+					children[6] as Expr)?),
+			]
+		}
+		'<character substring function: 3>' {
+			return [
+				EarleyValue(parse_substring3(children[2] as Expr, children[4] as Expr,
+					children[6] as string)?),
+			]
+		}
+		'<character substring function: 4>' {
+			return [
+				EarleyValue(parse_substring4(children[2] as Expr, children[4] as Expr,
+					children[6] as Expr, children[8] as string)?),
+			]
 		}
 		'<column constraint: 1>' {
 			return [EarleyValue(parse_yes()?)]

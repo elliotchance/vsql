@@ -953,7 +953,8 @@
   | DESC   -> no
 
 <character value function> /* Expr */ ::=
-    <fold>
+    <character substring function>
+  | <fold>
 
 <fold> /* Expr */ ::=
     UPPER <left paren> <character value expression> <right paren>   -> upper
@@ -1038,3 +1039,27 @@
 
 <time fractional seconds precision> /* int */ ::=
     <unsigned integer>
+
+<character substring function> /* Expr */ ::=
+    SUBSTRING <left paren> <character value expression>
+    FROM <start position> <right paren>                   -> substring1
+  | SUBSTRING <left paren> <character value expression>
+    FROM <start position> 
+    FOR <string length> <right paren>                     -> substring2
+  | SUBSTRING <left paren> <character value expression>
+    FROM <start position> 
+    USING <char length units> <right paren>               -> substring3
+  | SUBSTRING <left paren> <character value expression>
+    FROM <start position> 
+    FOR <string length>
+    USING <char length units> <right paren>               -> substring4
+
+<start position> /* Expr */ ::=
+    <numeric value expression>
+
+<string length> /* Expr */ ::=
+    <numeric value expression>
+
+<char length units> /* string */ ::=
+    CHARACTERS
+  | OCTETS

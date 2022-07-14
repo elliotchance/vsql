@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 54 of the 164 mandatory features** of the
+**vsql supports 56 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -70,7 +70,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E021-08
      - ``UPPER`` and ``LOWER`` functions
 
-   * - ❌ E021-09
+   * - ✅ E021-09
      - ``TRIM`` function
 
    * - ❌ E021-10

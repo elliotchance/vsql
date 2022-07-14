@@ -445,6 +445,36 @@ be used.
   VALUES SUBSTRING('Жabڣc' FROM 4 USING OCTETS);
   -- COL1: bڣc
 
+TRIM() CHARACTER VARYING
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+``TRIM`` can be constructed in several forms:
+
+.. code-block:: text
+
+  TRIM(
+    [ [ { LEADING | TRAILING | BOTH } ] [ trim_character ] FROM ]
+    trim_source
+  )
+
+If ``LEADING``, ``TRAILING`` or ``BOTH`` is not provided, ``BOTH`` is used.
+
+If ``trim_character`` is not provided, a space (`' '`) is used.
+
+.. code-block:: sql
+
+  VALUES TRIM('  hello world ');
+  -- COL1: hello world
+
+  VALUES TRIM('a' FROM 'aaababccaa');
+  -- COL1: babcc
+
+  VALUES TRIM(LEADING 'a' FROM 'aaababccaa');
+  -- COL1: babccaa
+
+  VALUES TRIM(TRAILING 'a' FROM 'aaababccaa');
+  -- COL1: aaababcc
+
 ``UPPER(CHARACTER VARYING) CHARACTER VARYING`` 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

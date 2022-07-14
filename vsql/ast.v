@@ -37,6 +37,7 @@ type Expr = BetweenExpr
 	| RowExpr
 	| SimilarExpr
 	| SubstringExpr
+	| TrimExpr
 	| UnaryExpr
 	| Value
 
@@ -101,6 +102,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 			e.pstr(params)
 		}
 		SubstringExpr {
+			e.pstr(params)
+		}
+		TrimExpr {
 			e.pstr(params)
 		}
 		UnaryExpr {
@@ -552,4 +556,18 @@ fn (e SubstringExpr) pstr(params map[string]Value) string {
 	}
 
 	return s + ' USING $e.using)'
+}
+
+struct TrimExpr {
+	specification string // LEADING, TRAILING or BOTH
+	character     Expr   // NoExpr when missing
+	source        Expr
+}
+
+fn (e TrimExpr) str() string {
+	return e.pstr(map[string]Value{})
+}
+
+fn (e TrimExpr) pstr(params map[string]Value) string {
+	return 'TRIM($e.specification ${e.character.pstr(params)} FROM ${e.source.pstr(params)})'
 }

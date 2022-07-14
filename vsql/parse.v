@@ -779,3 +779,23 @@ fn parse_substring3(value Expr, from Expr, using string) ?Expr {
 fn parse_substring4(value Expr, from Expr, @for Expr, using string) ?Expr {
 	return SubstringExpr{value, from, @for, using}
 }
+
+fn parse_trim1(source Expr) ?Expr {
+	return TrimExpr{'BOTH', new_varchar_value(' ', 0), source}
+}
+
+fn parse_trim2(specification string, source Expr) ?Expr {
+	return TrimExpr{specification, new_varchar_value(' ', 0), source}
+}
+
+fn parse_trim3(character Expr, source Expr) ?Expr {
+	return TrimExpr{'BOTH', character, source}
+}
+
+fn parse_trim4(specification string, character Expr, source Expr) ?Expr {
+	return TrimExpr{specification, character, source}
+}
+
+fn parse_trim(e Expr) ?Expr {
+	return e
+}

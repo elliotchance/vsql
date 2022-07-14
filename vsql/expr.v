@@ -63,6 +63,11 @@ fn expr_is_agg(conn &Connection, e Expr) ?bool {
 				return nested_agg_unsupported(e)
 			}
 		}
+		TrimExpr {
+			if expr_is_agg(conn, e.source)? || expr_is_agg(conn, e.character)? {
+				return nested_agg_unsupported(e)
+			}
+		}
 	}
 
 	return false
@@ -135,6 +140,10 @@ fn resolve_identifiers(e Expr, tables map[string]Table) ?Expr {
 		CurrentDateExpr, CurrentTimeExpr, CurrentTimestampExpr, LocalTimeExpr, LocalTimestampExpr {
 			// These don't have any Expr properties to recurse.
 			return e
+		}
+		TrimExpr {
+			return TrimExpr{e.specification, resolve_identifiers(e.character, tables)?, resolve_identifiers(e.source,
+				tables)?}
 		}
 	}
 }

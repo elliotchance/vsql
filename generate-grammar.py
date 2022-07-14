@@ -515,6 +515,7 @@ def parse_tree(text):
 # parse_tree("SELECT x , y FROM ( SELECT x , y FROM t1 )")
 # parse_tree("VALUES TIMESTAMP '2022-06-30'")
 # parse_tree("INSERT INTO foo ( f1 ) VALUES ( TIMESTAMP '2022-06-30' )")
+# parse_tree("VALUES TRIM ( 'helloworld' )")
 
 for arg in sys.argv[1:]:
     print(arg)

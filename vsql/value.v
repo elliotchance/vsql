@@ -4,80 +4,98 @@
 
 module vsql
 
+// Possible values for a BOOLEAN. These must not be negative values because they
+// are encoded as u8 on disk.
+const (
+	boolean_null    = f64(0)
+	boolean_unknown = f64(1)
+	boolean_true    = f64(2)
+	boolean_false   = f64(3)
+)
+
 pub struct Value {
 pub mut:
 	// TODO(elliotchance): Make these non-mutable.
-	typ          Type
-	f64_value    f64    // boolean and numeric
-	string_value string // char and varchar
-	time_value   Time   // date, time and timestamp
+	typ Type
+	// Used by all types (including those that have NULL built in like BOOLEAN).
+	is_null bool
+	// BOOLEAN: See one of the boolean_* constants.
+	// BIGINT, DOUBLE PRECISION, INTEGER, REAL and SMALLINT
+	f64_value f64
+	// CHARACTER VARYING(n) and CHARACTER(n)
+	string_value string
+	// DATE
+	// TIME(n) WITH TIME ZONE and TIME(n) WITHOUT TIME ZONE
+	// TIMESTAMP(n) WITH TIME ZONE and TIMESTAMP(n) WITHOUT TIME ZONE
+	time_value Time
 }
 
-fn new_null_value() Value {
+fn new_null_value(typ SQLType) Value {
 	return Value{
-		typ: Type{.is_null, 0}
+		typ: Type{typ, 0, false}
+		is_null: true
 	}
 }
 
 fn new_boolean_value(b bool) Value {
 	return Value{
-		typ: Type{.is_boolean, 0}
-		f64_value: if b { 1 } else { 0 }
+		typ: Type{.is_boolean, 0, false}
+		f64_value: if b { vsql.boolean_true } else { vsql.boolean_false }
 	}
 }
 
 pub fn new_unknown_value() Value {
 	return Value{
-		typ: Type{.is_boolean, 0}
-		f64_value: 2
+		typ: Type{.is_boolean, 0, false}
+		f64_value: vsql.boolean_unknown
 	}
 }
 
 pub fn new_double_precision_value(x f64) Value {
 	return Value{
-		typ: Type{.is_double_precision, 0}
+		typ: Type{.is_double_precision, 0, false}
 		f64_value: x
 	}
 }
 
 pub fn new_integer_value(x int) Value {
 	return Value{
-		typ: Type{.is_integer, 0}
+		typ: Type{.is_integer, 0, false}
 		f64_value: x
 	}
 }
 
 pub fn new_bigint_value(x i64) Value {
 	return Value{
-		typ: Type{.is_bigint, 0}
+		typ: Type{.is_bigint, 0, false}
 		f64_value: x
 	}
 }
 
 pub fn new_real_value(x f32) Value {
 	return Value{
-		typ: Type{.is_real, 0}
+		typ: Type{.is_real, 0, false}
 		f64_value: x
 	}
 }
 
 pub fn new_smallint_value(x i16) Value {
 	return Value{
-		typ: Type{.is_smallint, 0}
+		typ: Type{.is_smallint, 0, false}
 		f64_value: x
 	}
 }
 
 pub fn new_varchar_value(x string, size int) Value {
 	return Value{
-		typ: Type{.is_varchar, size}
+		typ: Type{.is_varchar, size, false}
 		string_value: x
 	}
 }
 
 pub fn new_character_value(x string, size int) Value {
 	return Value{
-		typ: Type{.is_character, size}
+		typ: Type{.is_character, size, false}
 		string_value: x
 	}
 }
@@ -86,7 +104,7 @@ pub fn new_timestamp_value(ts string) ?Value {
 	t := new_timestamp_from_string(ts)?
 
 	return Value{
-		typ: t.sql_type()
+		typ: t.typ
 		time_value: t
 	}
 }
@@ -95,7 +113,7 @@ pub fn new_time_value(ts string) ?Value {
 	t := new_time_from_string(ts)?
 
 	return Value{
-		typ: t.sql_type()
+		typ: t.typ
 		time_value: t
 	}
 }
@@ -104,16 +122,16 @@ pub fn new_date_value(ts string) ?Value {
 	t := new_date_from_string(ts)?
 
 	return Value{
-		typ: t.sql_type()
+		typ: t.typ
 		time_value: t
 	}
 }
 
 fn bool_str(x f64) string {
 	return match x {
-		0 { 'FALSE' }
-		1 { 'TRUE' }
-		2 { 'UNKNOWN' }
+		vsql.boolean_false { 'FALSE' }
+		vsql.boolean_true { 'TRUE' }
+		vsql.boolean_unknown { 'UNKNOWN' }
 		else { 'NULL' }
 	}
 }
@@ -128,10 +146,11 @@ fn f64_string(x f64) string {
 }
 
 fn (v Value) str() string {
+	if v.is_null {
+		return 'NULL'
+	}
+
 	return match v.typ.typ {
-		.is_null {
-			'NULL'
-		}
 		.is_boolean {
 			bool_str(v.f64_value)
 		}
@@ -148,10 +167,6 @@ fn (v Value) str() string {
 	}
 }
 
-fn (v Value) is_null() bool {
-	return v.typ.typ == .is_null
-}
-
 // cmp returns for the first argument:
 //
 //   -1 if v < v2
@@ -164,15 +179,15 @@ fn (v Value) is_null() bool {
 //
 // Or an error if the values are different types (cannot be compared).
 fn (v Value) cmp(v2 Value) ?(int, bool) {
-	if v.is_null() && v2.is_null() {
+	if v.is_null && v2.is_null {
 		return 0, true
 	}
 
-	if v.is_null() {
+	if v.is_null {
 		return -1, true
 	}
 
-	if v2.is_null() {
+	if v2.is_null {
 		return 1, true
 	}
 

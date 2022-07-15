@@ -39,6 +39,7 @@ type Expr = BetweenExpr
 	| SubstringExpr
 	| TrimExpr
 	| UnaryExpr
+	| UntypedNullExpr
 	| Value
 
 fn (e Expr) str() string {
@@ -109,6 +110,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 		}
 		UnaryExpr {
 			e.pstr(params)
+		}
+		UntypedNullExpr {
+			e.str()
 		}
 		Value {
 			if e.typ.uses_string() || e.typ.uses_time() {
@@ -570,4 +574,15 @@ fn (e TrimExpr) str() string {
 
 fn (e TrimExpr) pstr(params map[string]Value) string {
 	return 'TRIM($e.specification ${e.character.pstr(params)} FROM ${e.source.pstr(params)})'
+}
+
+// UntypedNullExpr (not to be confused with NullExpr) represents an untyped
+// NULL. This exists as an expression (rather than a special value) because it's
+// devoid of a type until it's used in an actual expression. Also, having it use
+// it;s own SQLType creates a lot of branches in the codebase that require "this
+// should not be possible" comments and panics.
+struct UntypedNullExpr {}
+
+fn (e UntypedNullExpr) str() string {
+	return 'NULL'
 }

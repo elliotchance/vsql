@@ -47,22 +47,14 @@ const (
 		unquoted_time_string_without_time_zone + '$'
 )
 
-// TimeType changes the behavior of calculations of Time objects. The time zone
-// is not included here as that is kept separate.
-enum TimeType {
-	date
-	time
-	timestamp
-}
-
 // Time is the internal way that time is represented and provides other
 // conversions such as to/from storage and to/from V's native time.Time.
 struct Time {
-	typ            TimeType
-	with_time_zone bool
-	time_zone      i16 // number of minutes from 00:00 (positive or negative)
-	t              time.Time
-	prec           u8 // 0 to 6
+mut:
+	// typ.size is the precision (0 to 6)
+	typ       Type
+	time_zone i16 // number of minutes from 00:00 (positive or negative)
+	t         time.Time
 }
 
 // This is an internal constructor, you will want to use new_timestamp_value
@@ -98,14 +90,18 @@ fn new_timestamp_from_string(s string) ?Time {
 		to_parse = s.substr(0, s.len - 6)
 	}
 
-	mut prec := u8(0)
-	if to_parse.contains('.') {
-		prec = u8(to_parse.len - to_parse.index_u8(`.`)) - 1
+	mut typ := Type{
+		typ: if expects_time_zone {
+			.is_timestamp_with_time_zone
+		} else {
+			.is_timestamp_without_time_zone
+		}
+		size: if to_parse.contains('.') { u8(to_parse.len - to_parse.index_u8(`.`)) - 1 } else { 0 }
 	}
 
-	return Time{.timestamp, expects_time_zone, time_zone, time.parse_iso8601(to_parse) or {
+	return Time{typ, time_zone, time.parse_iso8601(to_parse) or {
 		return sqlstate_42601('TIMESTAMP \'$s\' is not valid')
-	}, prec}
+	}}
 }
 
 // This is an internal constructor, you will want to use new_time_value
@@ -115,11 +111,17 @@ fn new_time_from_string(s string) ?Time {
 	// part. We use 1970-01-01 because internally we still need to rely on the
 	// unix timestamp in V's Time object. This data part will be ignored in
 	// actual calculations.
-	t := new_timestamp_from_string('1970-01-01 $s') or {
+	mut t := new_timestamp_from_string('1970-01-01 $s') or {
 		return sqlstate_42601('TIME \'$s\' is not valid')
 	}
 
-	return Time{.time, t.with_time_zone, t.time_zone, t.t, t.prec}
+	if t.typ.typ == .is_timestamp_with_time_zone {
+		t.typ.typ = .is_time_with_time_zone
+	} else {
+		t.typ.typ = .is_time_without_time_zone
+	}
+
+	return Time{t.typ, t.time_zone, t.t}
 }
 
 // This is an internal constructor, you will want to use new_date_value
@@ -127,15 +129,17 @@ fn new_time_from_string(s string) ?Time {
 fn new_date_from_string(s string) ?Time {
 	// The easiest way to parse it is as a normal timestamp with a dummy time
 	// part.
-	t := new_timestamp_from_string('$s 00:00:00') or {
+	mut t := new_timestamp_from_string('$s 00:00:00') or {
 		return sqlstate_42601('DATE \'$s\' is not valid')
 	}
 
-	return Time{.date, t.with_time_zone, t.time_zone, t.t, t.prec}
+	t.typ.typ = .is_date
+
+	return Time{t.typ, t.time_zone, t.t}
 }
 
-fn new_time_from_components(typ TimeType, with_time_zone bool, year int, month int, day int, hour int, minute int, second int, microsecond int, time_zone i16, prec u8) Time {
-	return Time{typ, with_time_zone, time_zone, time.new_time(time.Time{
+fn new_time_from_components(typ Type, year int, month int, day int, hour int, minute int, second int, microsecond int, time_zone i16) Time {
+	return Time{typ, time_zone, time.new_time(time.Time{
 		year: year
 		month: month
 		day: day
@@ -143,10 +147,10 @@ fn new_time_from_components(typ TimeType, with_time_zone bool, year int, month i
 		minute: minute
 		second: second
 		microsecond: microsecond
-	}), prec}
+	})}
 }
 
-fn new_time_from_bytes(typ TimeType, with_time_zone bool, bytes []u8, prec u8) Time {
+fn new_time_from_bytes(typ Type, bytes []u8) Time {
 	mut ts_i64 := bytes_to_i64(bytes)
 
 	year := int(ts_i64 / vsql.year_period)
@@ -168,12 +172,12 @@ fn new_time_from_bytes(typ TimeType, with_time_zone bool, bytes []u8, prec u8) T
 	ts_i64 -= second * vsql.second_period
 
 	mut time_zone := i16(0)
-	if with_time_zone {
+	if typ.typ == .is_time_with_time_zone || typ.typ == .is_timestamp_with_time_zone {
 		time_zone = bytes_to_i16(bytes[bytes.len - 2..])
 	}
 
-	return new_time_from_components(typ, with_time_zone, year, month, day, hour, minute,
-		second, int(ts_i64), time_zone, prec)
+	return new_time_from_components(typ, year, month, day, hour, minute, second, int(ts_i64),
+		time_zone)
 }
 
 // bytes returns the storage representation of the Time. The number of bytes
@@ -194,7 +198,7 @@ fn new_time_from_bytes(typ TimeType, with_time_zone bool, bytes []u8, prec u8) T
 // treats a timestamp as grammar. It will be up to you how to decide to round
 // the time zone to whole minutes in these cases.
 fn (t Time) bytes() []u8 {
-	if t.with_time_zone {
+	if t.typ.typ == .is_time_with_time_zone || t.typ.typ == .is_timestamp_with_time_zone {
 		mut buf := new_bytes(i64_to_bytes(t.i64()))
 		buf.write_i16(t.time_zone)
 
@@ -233,15 +237,19 @@ fn (t Time) date_i64() i64 {
 }
 
 fn (t Time) str() string {
-	return match t.typ {
-		.timestamp {
+	return match t.typ.typ {
+		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 			t.str_timestamp()
 		}
-		.time {
+		.is_time_with_time_zone, .is_time_without_time_zone {
 			t.str_time()
 		}
-		.date {
+		.is_date {
 			t.str_date()
+		}
+		else {
+			// Not possible.
+			''
 		}
 	}
 }
@@ -257,12 +265,12 @@ fn (t Time) str_date() string {
 fn (t Time) str_time() string {
 	mut s := t.t.strftime('%H:%M:%S')
 
-	if t.prec > 0 {
+	if t.typ.size > 0 {
 		s += '.' + t.t.microsecond.str()
-		s += strings.repeat(`0`, t.prec - t.t.microsecond.str().len)
+		s += strings.repeat(`0`, t.typ.size - t.t.microsecond.str().len)
 	}
 
-	if t.with_time_zone {
+	if t.typ.typ == .is_time_with_time_zone || t.typ.typ == .is_timestamp_with_time_zone {
 		negative := t.time_zone < 0
 		mut time_zone := t.time_zone
 		if negative {
@@ -292,26 +300,4 @@ fn (t Time) str_time() string {
 	}
 
 	return s
-}
-
-fn (t Time) sql_type() Type {
-	match t.typ {
-		.date {
-			return Type{.is_date, t.prec}
-		}
-		.time {
-			if t.with_time_zone {
-				return Type{.is_time_with_time_zone, t.prec}
-			}
-
-			return Type{.is_time_without_time_zone, t.prec}
-		}
-		.timestamp {
-			if t.with_time_zone {
-				return Type{.is_timestamp_with_time_zone, t.prec}
-			}
-
-			return Type{.is_timestamp_without_time_zone, t.prec}
-		}
-	}
 }

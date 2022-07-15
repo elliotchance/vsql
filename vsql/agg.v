@@ -6,7 +6,7 @@ module vsql
 fn func_count(values []Value) ?Value {
 	mut count := 0
 	for value in values {
-		if !value.is_null() {
+		if !value.is_null {
 			count++
 		}
 	}
@@ -17,14 +17,14 @@ fn func_count(values []Value) ?Value {
 // MIN(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_min(values []Value) ?Value {
 	if values.len == 0 {
-		return new_null_value()
+		return new_null_value(.is_double_precision)
 	}
 
 	mut min := values[0].f64_value
 	for value in values {
 		// If any values are NULL, the result is also NULL.
-		if value.is_null() {
-			return new_null_value()
+		if value.is_null {
+			return new_null_value(.is_double_precision)
 		}
 
 		if value.f64_value < min {
@@ -38,14 +38,14 @@ fn func_min(values []Value) ?Value {
 // MAX(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_max(values []Value) ?Value {
 	if values.len == 0 {
-		return new_null_value()
+		return new_null_value(.is_double_precision)
 	}
 
 	mut max := values[0].f64_value
 	for value in values {
 		// If any values are NULL, the result is also NULL.
-		if value.is_null() {
-			return new_null_value()
+		if value.is_null {
+			return new_null_value(.is_double_precision)
 		}
 
 		if value.f64_value > max {
@@ -59,14 +59,14 @@ fn func_max(values []Value) ?Value {
 // SUM(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_sum(values []Value) ?Value {
 	if values.len == 0 {
-		return new_null_value()
+		return new_null_value(.is_double_precision)
 	}
 
 	mut sum := 0.0
 	for value in values {
 		// If any values are NULL, the result is also NULL.
-		if value.is_null() {
-			return new_null_value()
+		if value.is_null {
+			return new_null_value(.is_double_precision)
 		}
 
 		sum += value.f64_value
@@ -78,14 +78,14 @@ fn func_sum(values []Value) ?Value {
 // AVG(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_avg(values []Value) ?Value {
 	if values.len == 0 {
-		return new_null_value()
+		return new_null_value(.is_double_precision)
 	}
 
 	mut sum := 0.0
 	for value in values {
 		// If any values are NULL, the result is also NULL.
-		if value.is_null() {
-			return new_null_value()
+		if value.is_null {
+			return new_null_value(.is_double_precision)
 		}
 
 		sum += value.f64_value

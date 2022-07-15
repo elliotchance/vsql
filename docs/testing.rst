@@ -141,6 +141,7 @@ There are slightly different forms depending on the type of the host parameter:
 
 - ``/* set a 123 */`` for numeric values.
 - ``/* set b 'foo' */`` for string values.
+- ``/* set b NULL BOOLEAN */`` for ``NULL`` values (must specify a type).
 
 Multiple Connections
 ^^^^^^^^^^^^^^^^^^^^

@@ -47,3 +47,25 @@ DELETE FROM t1 WHERE x = :foo;
 SELECT * FROM t1;
 -- msg: INSERT 1
 -- msg: DELETE 1
+
+/* set foo NULL INT */
+INSERT INTO t1 (x) VALUES (100);
+UPDATE t1 SET x = :foo;
+SELECT * FROM t1;
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- X: NULL
+
+/* set foo NULL INT */
+CREATE TABLE t2 (x INT NOT NULL);
+UPDATE t2 SET x = :foo;
+SELECT * FROM t2;
+-- msg: CREATE TABLE 1
+-- error 23502: violates non-null constraint: column X
+
+/* set foo NULL BOOLEAN */
+CREATE TABLE t2 (x INT);
+UPDATE t2 SET x = :foo;
+SELECT * FROM t2;
+-- msg: CREATE TABLE 1
+-- error 42804: data type mismatch for column X: expected INTEGER but got BOOLEAN

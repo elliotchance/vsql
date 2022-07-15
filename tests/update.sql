@@ -81,3 +81,9 @@ SELECT * FROM foo.bar;
 -- msg: INSERT 1
 -- msg: UPDATE 1
 -- BAZ: -516.6
+
+CREATE TABLE foo (baz FLOAT NOT NULL);
+UPDATE foo SET baz = NULL;
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- error 23502: violates non-null constraint: column BAZ

@@ -219,7 +219,7 @@ fn parse_identifier_to_expr(name Identifier) ?Expr {
 }
 
 fn parse_null() ?Expr {
-	return new_null_value()
+	return UntypedNullExpr{}
 }
 
 // asterisk is a special expression used in SELECT to represent "*".

@@ -36,18 +36,6 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 	table_name := stmt.table_name
 	table := c.storage.tables[table_name]
 
-	// check values are appropriate for the table before beginning
-	empty_row := new_empty_row(table.columns, '')
-	for column_name, v in stmt.set {
-		table_column := table.column(column_name)?
-		raw_value := eval_as_value(c, empty_row, v, params)?
-		value := cast('for column $column_name', raw_value, table_column.typ)?
-
-		if table_column.not_null && value.is_null() {
-			return sqlstate_23502('column $column_name')
-		}
-	}
-
 	mut modify_count := 0
 	for mut row in rows {
 		mut did_modify := false
@@ -62,7 +50,11 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 
 		for column_name, v in stmt.set {
 			table_column := table.column(column_name)?
-			raw_value := eval_as_value(c, row, v, params)?
+			raw_value := eval_as_nullable_value(c, table_column.typ.typ, row, v, params)?
+
+			if table_column.not_null && raw_value.is_null {
+				return sqlstate_23502('column $column_name')
+			}
 
 			// Unlike most comparisons we have to treat NULL like a known value
 			// for this particular case because we want NULL to be set in cases
@@ -74,16 +66,35 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 			cmp, is_null := row.data[column_name].cmp(raw_value)?
 			if is_null || cmp != 0 {
 				did_modify = true
-
-				// msg ignored here becuase the type have already been
-				// checked above.
-				row2.data[column_name] = cast('', raw_value, table_column.typ)?
+				row2.data[column_name] = cast('for column $column_name', raw_value, table_column.typ)?
 			}
 		}
 
 		if did_modify {
 			modify_count++
 			c.storage.update_row(mut row, mut row2, table)?
+		}
+	}
+
+	// There is a case where no records were updated. The potential problem is
+	// that the field assignments might be wrong, but we never knew they were
+	// wrong (because we never actually evaluated them for any rows). So if
+	// nothing was match, we do a dummy match just to catch errors that would
+	// otherwise not be caught.
+	//
+	// We could do this before the UPDATE to catch the error earlier, but that
+	// comes at the cost of evaulating the row when we might not need to.
+	if modify_count == 0 {
+		empty_row := new_empty_row(table.columns, '')
+		for column_name, v in stmt.set {
+			table_column := table.column(column_name)?
+			raw_value := eval_as_nullable_value(c, table_column.typ.typ, empty_row, v,
+				params)?
+			value := cast('for column $column_name', raw_value, table_column.typ)?
+
+			if table_column.not_null && value.is_null {
+				return sqlstate_23502('column $column_name')
+			}
 		}
 	}
 

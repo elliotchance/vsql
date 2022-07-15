@@ -11,9 +11,9 @@ struct Func {
 }
 
 fn register_builtin_funcs(mut conn Connection) ? {
-	double_precision := Type{SQLType.is_double_precision, 0}
-	integer := Type{SQLType.is_integer, 0}
-	varchar := Type{SQLType.is_varchar, 0}
+	double_precision := Type{SQLType.is_double_precision, 0, false}
+	integer := Type{SQLType.is_integer, 0, false}
+	varchar := Type{SQLType.is_varchar, 0, false}
 
 	// Scalar functions.
 	conn.register_func(Func{'ABS', [double_precision], false, func_abs, double_precision})?

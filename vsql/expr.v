@@ -34,7 +34,8 @@ fn expr_is_agg(conn &Connection, e Expr) ?bool {
 			return true
 		}
 		Identifier, Parameter, Value, NoExpr, RowExpr, QualifiedAsteriskExpr, QueryExpression,
-		CurrentDateExpr, CurrentTimeExpr, CurrentTimestampExpr, LocalTimeExpr, LocalTimestampExpr {
+		CurrentDateExpr, CurrentTimeExpr, CurrentTimestampExpr, LocalTimeExpr, LocalTimestampExpr,
+		UntypedNullExpr {
 			return false
 		}
 		LikeExpr {
@@ -137,7 +138,8 @@ fn resolve_identifiers(e Expr, tables map[string]Table) ?Expr {
 			return UnaryExpr{e.op, resolve_identifiers(e.expr, tables)?}
 		}
 		CountAllExpr, Parameter, Value, NoExpr, RowExpr, QueryExpression, QualifiedAsteriskExpr,
-		CurrentDateExpr, CurrentTimeExpr, CurrentTimestampExpr, LocalTimeExpr, LocalTimestampExpr {
+		CurrentDateExpr, CurrentTimeExpr, CurrentTimestampExpr, LocalTimeExpr, LocalTimestampExpr,
+		UntypedNullExpr {
 			// These don't have any Expr properties to recurse.
 			return e
 		}

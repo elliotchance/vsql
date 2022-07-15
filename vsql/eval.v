@@ -147,6 +147,9 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 		SubstringExpr, TrimExpr {
 			return new_type('CHARACTER VARYING', 0)
 		}
+		UntypedNullExpr {
+			return error('cannot determine type of untyped NULL')
+		}
 	}
 }
 
@@ -236,6 +239,9 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 		TrimExpr {
 			return eval_trim(conn, data, e, params)
 		}
+		UntypedNullExpr {
+			return error('cannot determine value of untyped NULL')
+		}
 	}
 }
 
@@ -277,7 +283,7 @@ fn eval_as_bool(conn &Connection, data Row, e Expr, params map[string]Value) ?bo
 	v := eval_as_value(conn, data, e, params)?
 
 	if v.typ.typ == .is_boolean {
-		return v.f64_value != 0
+		return v.f64_value == boolean_true
 	}
 
 	return sqlstate_42804('in expression', 'BOOLEAN', v.typ.str())
@@ -321,10 +327,10 @@ fn eval_null(conn &Connection, data Row, e NullExpr, params map[string]Value) ?V
 	value := eval_as_value(conn, data, e.expr, params)?
 
 	if e.not {
-		return new_boolean_value(!value.is_null())
+		return new_boolean_value(!value.is_null)
 	}
 
-	return new_boolean_value(value.is_null())
+	return new_boolean_value(value.is_null)
 }
 
 fn eval_trim(conn &Connection, data Row, e TrimExpr, params map[string]Value) ?Value {
@@ -440,12 +446,14 @@ fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value
 		}
 		'AND' {
 			if left.typ.typ == .is_boolean && right.typ.typ == .is_boolean {
-				return new_boolean_value((left.f64_value != 0) && (right.f64_value != 0))
+				return new_boolean_value((left.f64_value == boolean_true)
+					&& (right.f64_value == boolean_true))
 			}
 		}
 		'OR' {
 			if left.typ.typ == .is_boolean && right.typ.typ == .is_boolean {
-				return new_boolean_value((left.f64_value != 0) || (right.f64_value != 0))
+				return new_boolean_value((left.f64_value == boolean_true)
+					|| (right.f64_value == boolean_true))
 			}
 		}
 		else {}
@@ -470,7 +478,7 @@ fn eval_unary(conn &Connection, data Row, e UnaryExpr, params map[string]Value) 
 		}
 		'NOT' {
 			if value.typ.typ == .is_boolean {
-				return new_boolean_value(!(value.f64_value != 0))
+				return new_boolean_value(value.f64_value != boolean_true)
 			}
 		}
 		else {}
@@ -498,7 +506,7 @@ fn eval_between(conn &Connection, data Row, e BetweenExpr, params map[string]Val
 	mut left := eval_as_value(conn, data, e.left, params)?
 	mut right := eval_as_value(conn, data, e.right, params)?
 
-	// SYMMETRIC operandsmight need to be swapped.
+	// SYMMETRIC operands might need to be swapped.
 	cmp, is_null := left.cmp(right)?
 	if e.symmetric && !is_null && cmp > 0 {
 		left, right = right, left
@@ -508,7 +516,7 @@ fn eval_between(conn &Connection, data Row, e BetweenExpr, params map[string]Val
 	upper, upper_is_null := expr.cmp(right)?
 
 	if lower_is_null || upper_is_null {
-		return new_null_value()
+		return new_null_value(.is_boolean)
 	}
 
 	mut result := lower >= 0 && upper <= 0
@@ -533,4 +541,17 @@ fn eval_similar(conn &Connection, data Row, e SimilarExpr, params map[string]Val
 	}
 
 	return new_boolean_value(result)
+}
+
+// eval_as_nullable_value is a broader version of eval_as_value that also takes
+// the known destination type as so allows for untyped NULLs.
+//
+// TODO(elliotchance): Is this even needed? Can eval_as_value be refactored to
+//  work the same way and avoid this extra layer?
+fn eval_as_nullable_value(conn &Connection, typ SQLType, data Row, e Expr, params map[string]Value) ?Value {
+	if e is UntypedNullExpr {
+		return new_null_value(typ)
+	}
+
+	return eval_as_value(conn, data, e, params)
 }

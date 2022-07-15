@@ -42,10 +42,11 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 	for i, column in stmt.columns {
 		column_name := column.name
 		table_column := table.column(column_name)?
-		raw_value := eval_as_value(c, Row{}, stmt.values[i], params)?
+		raw_value := eval_as_nullable_value(c, table_column.typ.typ, Row{}, stmt.values[i],
+			params)?
 		value := cast('for column $column_name', raw_value, table_column.typ)?
 
-		if value.is_null() && table_column.not_null {
+		if value.is_null && table_column.not_null {
 			return sqlstate_23502('column $column_name')
 		}
 
@@ -62,7 +63,7 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 			return sqlstate_23502('column $col.name')
 		}
 
-		row[col.name] = new_null_value()
+		row[col.name] = new_null_value(col.typ.typ)
 	}
 
 	c.storage.write_row(mut new_row(row), table)?

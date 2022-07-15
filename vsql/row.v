@@ -26,7 +26,8 @@ pub fn new_row(data map[string]Value) Row {
 // returned if the column does not exist.
 pub fn (r Row) get_null(name string) ?bool {
 	value := r.get(name)?
-	return value.typ.typ == .is_null
+
+	return value.is_null
 }
 
 // get_f64 will only work for columns that are numerical (DOUBLE PRECISION,
@@ -56,8 +57,9 @@ pub fn (r Row) get_string(name string) ?string {
 // exist.
 pub fn (r Row) get_bool(name string) ?bool {
 	value := r.get(name)?
+
 	return match value.typ.typ {
-		.is_boolean { value.f64_value == 1 }
+		.is_boolean { value.f64_value == boolean_true }
 		else { false }
 	}
 }
@@ -70,8 +72,9 @@ pub fn (r Row) get_bool(name string) ?bool {
 // exist.
 pub fn (r Row) get_unknown(name string) ?bool {
 	value := r.get(name)?
+
 	return match value.typ.typ {
-		.is_boolean { value.f64_value == 2 }
+		.is_boolean { value.f64_value == boolean_unknown }
 		else { false }
 	}
 }
@@ -108,36 +111,40 @@ fn new_empty_row(columns Columns, table_name string) Row {
 }
 
 fn new_empty_value(col Column) Value {
-	match col.typ.typ {
-		.is_null, .is_date, .is_time_with_time_zone, .is_time_without_time_zone,
+	mut value := match col.typ.typ {
+		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
-			return new_null_value()
+			new_null_value(col.typ.typ)
 		}
 		.is_bigint {
-			return new_bigint_value(0)
+			new_bigint_value(0)
 		}
 		.is_double_precision {
-			return new_double_precision_value(0)
+			new_double_precision_value(0)
 		}
 		.is_integer {
-			return new_integer_value(0)
+			new_integer_value(0)
 		}
 		.is_real {
-			return new_real_value(0)
+			new_real_value(0)
 		}
 		.is_smallint {
-			return new_smallint_value(0)
+			new_smallint_value(0)
 		}
 		.is_boolean {
-			return new_boolean_value(false)
+			new_boolean_value(false)
 		}
 		.is_character {
-			return new_character_value('', col.typ.size)
+			new_character_value('', col.typ.size)
 		}
 		.is_varchar {
-			return new_varchar_value('', col.typ.size)
+			new_varchar_value('', col.typ.size)
 		}
 	}
+
+	value.typ.not_null = col.not_null
+
+	return value
 }
 
 fn new_empty_table_row(tables map[string]Table) Row {
@@ -159,44 +166,51 @@ fn (r Row) bytes(t Table) []u8 {
 	for col in t.columns {
 		v := r.data[col.name]
 
-		// Some types do not need a NULL flag because it's built into the value.
-		if !col.not_null && col.typ.typ != .is_boolean && col.typ.typ != .is_varchar
-			&& col.typ.typ != .is_character {
-			buf.write_bool(v.is_null())
-		}
-
-		match col.typ.typ {
-			.is_null {
-				panic('should not be possible')
-			}
-			.is_boolean {
-				buf.write_byte(u8(v.f64_value))
-			}
-			.is_bigint {
-				buf.write_i64(i64(v.f64_value))
-			}
-			.is_double_precision {
-				buf.write_f64(v.f64_value)
-			}
-			.is_integer {
-				buf.write_int(int(v.f64_value))
-			}
-			.is_real {
-				buf.write_f32(f32(v.f64_value))
-			}
-			.is_smallint {
-				buf.write_i16(i16(v.f64_value))
-			}
-			.is_varchar, .is_character {
-				if v.is_null() {
-					buf.write_int(-1)
-				} else {
-					buf.write_string4(v.string_value)
+		// If the column is allows for NULL we need to prepend a NULL indicator.
+		// However, there are certain types that we do not need to add a
+		// separate NULL indicator because it's built into the value itself.
+		if !col.not_null {
+			match col.typ.typ {
+				.is_varchar, .is_character, .is_date, .is_time_with_time_zone,
+				.is_time_without_time_zone, .is_timestamp_with_time_zone,
+				.is_timestamp_without_time_zone, .is_bigint, .is_double_precision, .is_integer,
+				.is_real, .is_smallint {
+					buf.write_bool(v.is_null)
+				}
+				.is_boolean {
+					// BOOLEAN: NULL is encoded as one of the values.
 				}
 			}
-			.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
-			.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
-				buf.write_bytes(v.time_value.bytes())
+		}
+
+		// If v is null, there's not need to write any more information.
+		if !v.is_null || col.typ.typ == .is_boolean {
+			match col.typ.typ {
+				.is_boolean {
+					buf.write_byte(u8(v.f64_value))
+				}
+				.is_bigint {
+					buf.write_i64(i64(v.f64_value))
+				}
+				.is_double_precision {
+					buf.write_f64(v.f64_value)
+				}
+				.is_integer {
+					buf.write_int(int(v.f64_value))
+				}
+				.is_real {
+					buf.write_f32(f32(v.f64_value))
+				}
+				.is_smallint {
+					buf.write_i16(i16(v.f64_value))
+				}
+				.is_varchar, .is_character {
+					buf.write_string4(v.string_value)
+				}
+				.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
+				.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
+					buf.write_bytes(v.time_value.bytes())
+				}
 			}
 		}
 	}
@@ -215,58 +229,74 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 		mut v := Value{
 			typ: col.typ
 		}
-		if col.typ.typ != .is_boolean && col.typ.typ != .is_varchar && col.typ.typ != .is_character {
-			if !col.not_null && buf.read_bool() {
-				v.typ.typ = .is_null
+
+		// If the column is allows for NULL we need to read the prepended a NULL
+		// indicator. However, there are certain types that we do not need to
+		// add a separate NULL indicator because it's built into the value
+		// itself.
+		if !col.not_null {
+			match col.typ.typ {
+				.is_varchar, .is_character, .is_date, .is_time_with_time_zone,
+				.is_time_without_time_zone, .is_timestamp_with_time_zone,
+				.is_timestamp_without_time_zone, .is_bigint, .is_double_precision, .is_integer,
+				.is_real, .is_smallint {
+					v.is_null = buf.read_bool()
+				}
+				.is_boolean {
+					// BOOLEAN: NULL is encoded as one of the values.
+				}
 			}
 		}
 
-		match col.typ.typ {
-			.is_null {
-				panic('should not be possible')
-			}
-			.is_boolean {
-				v.f64_value = buf.read_byte()
-			}
-			.is_bigint {
-				v.f64_value = buf.read_i64()
-			}
-			.is_double_precision {
-				v.f64_value = buf.read_f64()
-			}
-			.is_integer {
-				v.f64_value = buf.read_int()
-			}
-			.is_real {
-				v.f64_value = buf.read_f32()
-			}
-			.is_smallint {
-				v.f64_value = buf.read_i16()
-			}
-			.is_varchar, .is_character {
-				len := buf.read_int()
-				if len == -1 {
-					v.typ.typ = .is_null
-				} else {
+		// The value is only written if it's not null (or NULL is encoded into
+		// the value).
+		if !v.is_null || v.typ.typ == .is_boolean {
+			match col.typ.typ {
+				.is_boolean {
+					v.f64_value = buf.read_byte()
+					if v.f64_value == boolean_null {
+						v.is_null = true
+					}
+				}
+				.is_bigint {
+					v.f64_value = buf.read_i64()
+				}
+				.is_double_precision {
+					v.f64_value = buf.read_f64()
+				}
+				.is_integer {
+					v.f64_value = buf.read_int()
+				}
+				.is_real {
+					v.f64_value = buf.read_f32()
+				}
+				.is_smallint {
+					v.f64_value = buf.read_i16()
+				}
+				.is_varchar, .is_character {
+					len := buf.read_int()
 					v.string_value = buf.read_bytes(len).bytestr()
 				}
-			}
-			.is_date {
-				v.time_value = new_time_from_bytes(.date, false, buf.read_bytes(8), 0)
-			}
-			.is_time_with_time_zone {
-				v.time_value = new_time_from_bytes(.time, true, buf.read_bytes(10), u8(col.typ.size))
-			}
-			.is_time_without_time_zone {
-				v.time_value = new_time_from_bytes(.time, false, buf.read_bytes(8), u8(col.typ.size))
-			}
-			.is_timestamp_with_time_zone {
-				v.time_value = new_time_from_bytes(.timestamp, true, buf.read_bytes(10),
-					u8(col.typ.size))
-			}
-			.is_timestamp_without_time_zone {
-				v.time_value = new_time_from_bytes(.timestamp, false, buf.read_bytes(8),
-					u8(col.typ.size))
+				.is_date {
+					typ := Type{.is_date, col.typ.size, col.not_null}
+					v.time_value = new_time_from_bytes(typ, buf.read_bytes(8))
+				}
+				.is_time_with_time_zone {
+					typ := Type{.is_time_with_time_zone, col.typ.size, col.not_null}
+					v.time_value = new_time_from_bytes(typ, buf.read_bytes(10))
+				}
+				.is_time_without_time_zone {
+					typ := Type{.is_time_without_time_zone, col.typ.size, col.not_null}
+					v.time_value = new_time_from_bytes(typ, buf.read_bytes(8))
+				}
+				.is_timestamp_with_time_zone {
+					typ := Type{.is_timestamp_with_time_zone, col.typ.size, col.not_null}
+					v.time_value = new_time_from_bytes(typ, buf.read_bytes(10))
+				}
+				.is_timestamp_without_time_zone {
+					typ := Type{.is_timestamp_without_time_zone, col.typ.size, col.not_null}
+					v.time_value = new_time_from_bytes(typ, buf.read_bytes(8))
+				}
 			}
 		}
 

@@ -106,7 +106,7 @@ fn (mut o JoinOperation) execute_left(left_rows []Row, right_rows []Row) ?[]Row 
 			}
 
 			for k in o.right_columns {
-				row.data[k.name] = new_null_value()
+				row.data[k.name] = new_null_value(k.typ.typ)
 			}
 
 			new_rows << row
@@ -143,7 +143,7 @@ fn (mut o JoinOperation) execute_right(left_rows []Row, right_rows []Row) ?[]Row
 			mut row := new_row(map[string]Value{})
 
 			for k in o.left_columns {
-				row.data[k.name] = new_null_value()
+				row.data[k.name] = new_null_value(k.typ.typ)
 			}
 
 			for k, v in right_row.data {

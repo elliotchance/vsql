@@ -287,16 +287,19 @@ Row Objects
 
 The object key for a row is ``R<table>:<id>``, where *<table>* is the name of
 the table and *<id>* is a unique set of bytes for the row within the table. The
-*<id>* will either be the binary representation of the `PRIMARY KEY` or a random
-but sequental value. The *<id>* does not need to be the same length for all rows
-within the table, but in many cases it will be. See
+*<id>* will either be the binary representation of the ``PRIMARY KEY`` or a
+random but sequental value. The *<id>* does not need to be the same length for
+all rows within the table, but in many cases it will be. See
 https://github.com/elliotchance/vsql/issues/44.
 
 Within a row each of the values may be stored with a fixed or variable length.
 The length of the row is the sum of all columns.
 
-Some types that are nullable may include an extra byte on the front. If so, 0
-for ``NOT NULL`` and 1 for ``NULL``.
+If a type allows for ``NULL``, it will have 1 byte marker before the value and
+if ``NULL`` the value will *not* be encoded. There is one special exception to
+this with ``BOOLEAN`` which are always encoded as a single byte regardless if
+the type is nullable. For the ``NULL`` marker, ``1`` represents ``NULL``
+otherwise ``0`` for all other values.
 
 The *Type Number* is not used in the row, but is used to identify this type for
 describing columns in a *Table Object*.
@@ -312,7 +315,7 @@ describing columns in a *Table Object*.
   * - ``BOOLEAN``
     - 1
     - 1
-    - ``0`` (FALSE), ``1`` (TRUE), ``2`` (UNKNOWN), ``3`` (NULL)
+    - ``0`` (NULL), ``1`` (UNKNOWN), ``2`` (TRUE), ``3`` (FALSE)
 
   * - ``BIGINT``
     - 8 (NOT NULL) or 9 (nullable)

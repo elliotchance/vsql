@@ -1,0 +1,44 @@
+EXPLAIN VALUES TRIM('aaababccaa');
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING) = ROW(TRIM(BOTH ' ' FROM 'aaababccaa'))
+
+EXPLAIN VALUES TRIM(FROM 'aaababccaa');
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING) = ROW(TRIM(BOTH ' ' FROM 'aaababccaa'))
+
+EXPLAIN VALUES TRIM(LEADING FROM 'aaababccaa');
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING) = ROW(TRIM(LEADING ' ' FROM 'aaababccaa'))
+
+EXPLAIN VALUES TRIM(TRAILING FROM 'aaababccaa');
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING) = ROW(TRIM(TRAILING ' ' FROM 'aaababccaa'))
+
+EXPLAIN VALUES TRIM(BOTH FROM 'aaababccaa');
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING) = ROW(TRIM(BOTH ' ' FROM 'aaababccaa'))
+
+EXPLAIN VALUES TRIM('a' FROM 'aaababccaa');
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING) = ROW(TRIM(BOTH 'a' FROM 'aaababccaa'))
+
+EXPLAIN VALUES TRIM(LEADING 'a' FROM 'aaababccaa');
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING) = ROW(TRIM(LEADING 'a' FROM 'aaababccaa'))
+
+VALUES TRIM('aaababccaa');
+-- COL1: aaababccaa
+
+VALUES TRIM(FROM 'aaababccaa');
+-- COL1: aaababccaa
+
+VALUES TRIM(LEADING FROM 'aaababccaa');
+-- COL1: aaababccaa
+
+VALUES TRIM(TRAILING FROM 'aaababccaa');
+-- COL1: aaababccaa
+
+VALUES TRIM(BOTH FROM 'aaababccaa');
+-- COL1: aaababccaa
+
+VALUES TRIM('a' FROM 'aaababccaa');
+-- COL1: babcc
+
+VALUES TRIM(LEADING 'a' FROM 'aaababccaa');
+-- COL1: babccaa
+
+VALUES TRIM(TRAILING 'a' FROM 'aaababccaa');
+-- COL1: aaababcc

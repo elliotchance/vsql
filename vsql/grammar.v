@@ -1405,6 +1405,39 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_trigonometric_function_ := &EarleyRule{
 		name: '<trigonometric function>'
 	}
+	mut rule_trim_character_ := &EarleyRule{
+		name: '<trim character>'
+	}
+	mut rule_trim_function_1_ := &EarleyRule{
+		name: '<trim function: 1>'
+	}
+	mut rule_trim_function_ := &EarleyRule{
+		name: '<trim function>'
+	}
+	mut rule_trim_operands_1_ := &EarleyRule{
+		name: '<trim operands: 1>'
+	}
+	mut rule_trim_operands_2_ := &EarleyRule{
+		name: '<trim operands: 2>'
+	}
+	mut rule_trim_operands_3_ := &EarleyRule{
+		name: '<trim operands: 3>'
+	}
+	mut rule_trim_operands_4_ := &EarleyRule{
+		name: '<trim operands: 4>'
+	}
+	mut rule_trim_operands_5_ := &EarleyRule{
+		name: '<trim operands: 5>'
+	}
+	mut rule_trim_operands_ := &EarleyRule{
+		name: '<trim operands>'
+	}
+	mut rule_trim_source_ := &EarleyRule{
+		name: '<trim source>'
+	}
+	mut rule_trim_specification_ := &EarleyRule{
+		name: '<trim specification>'
+	}
 	mut rule_unique_column_list_ := &EarleyRule{
 		name: '<unique column list>'
 	}
@@ -1518,6 +1551,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_boolean := &EarleyRule{
 		name: 'BOOLEAN'
+	}
+	mut rule_both := &EarleyRule{
+		name: 'BOTH'
 	}
 	mut rule_by := &EarleyRule{
 		name: 'BY'
@@ -1638,6 +1674,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_key := &EarleyRule{
 		name: 'KEY'
+	}
+	mut rule_leading := &EarleyRule{
+		name: 'LEADING'
 	}
 	mut rule_left := &EarleyRule{
 		name: 'LEFT'
@@ -1783,8 +1822,14 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_to := &EarleyRule{
 		name: 'TO'
 	}
+	mut rule_trailing := &EarleyRule{
+		name: 'TRAILING'
+	}
 	mut rule_transaction := &EarleyRule{
 		name: 'TRANSACTION'
+	}
+	mut rule_trim := &EarleyRule{
+		name: 'TRIM'
 	}
 	mut rule_true := &EarleyRule{
 		name: 'TRUE'
@@ -2697,6 +2742,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_character_value_function_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_fold_
+		},
+	]}
+	rule_character_value_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trim_function_
 		},
 	]}
 
@@ -6438,6 +6488,135 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_trim_character_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
+		},
+	]}
+
+	rule_trim_function_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trim
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_trim_operands_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_trim_function_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trim_function_1_
+		},
+	]}
+
+	rule_trim_operands_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trim_source_
+		},
+	]}
+
+	rule_trim_operands_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_from
+		},
+		&EarleyRuleOrString{
+			rule: rule_trim_source_
+		},
+	]}
+
+	rule_trim_operands_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trim_specification_
+		},
+		&EarleyRuleOrString{
+			rule: rule_from
+		},
+		&EarleyRuleOrString{
+			rule: rule_trim_source_
+		},
+	]}
+
+	rule_trim_operands_4_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trim_character_
+		},
+		&EarleyRuleOrString{
+			rule: rule_from
+		},
+		&EarleyRuleOrString{
+			rule: rule_trim_source_
+		},
+	]}
+
+	rule_trim_operands_5_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trim_specification_
+		},
+		&EarleyRuleOrString{
+			rule: rule_trim_character_
+		},
+		&EarleyRuleOrString{
+			rule: rule_from
+		},
+		&EarleyRuleOrString{
+			rule: rule_trim_source_
+		},
+	]}
+
+	rule_trim_operands_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trim_operands_1_
+		},
+	]}
+	rule_trim_operands_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trim_operands_2_
+		},
+	]}
+	rule_trim_operands_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trim_operands_3_
+		},
+	]}
+	rule_trim_operands_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trim_operands_4_
+		},
+	]}
+	rule_trim_operands_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trim_operands_5_
+		},
+	]}
+
+	rule_trim_source_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_value_expression_
+		},
+	]}
+
+	rule_trim_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_leading
+		},
+	]}
+	rule_trim_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trailing
+		},
+	]}
+	rule_trim_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_both
+		},
+	]}
+
 	rule_unique_column_list_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_column_name_list_
@@ -6767,6 +6946,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_both.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'BOTH'
+			rule: 0
+		},
+	]}
+
 	rule_by.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'BY'
@@ -7043,6 +7229,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_key.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'KEY'
+			rule: 0
+		},
+	]}
+
+	rule_leading.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'LEADING'
 			rule: 0
 		},
 	]}
@@ -7383,9 +7576,23 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_trailing.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TRAILING'
+			rule: 0
+		},
+	]}
+
 	rule_transaction.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'TRANSACTION'
+			rule: 0
+		},
+	]}
+
+	rule_trim.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TRIM'
 			rule: 0
 		},
 	]}
@@ -7936,6 +8143,17 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<trigonometric function name>'] = rule_trigonometric_function_name_
 	rules['<trigonometric function: 1>'] = rule_trigonometric_function_1_
 	rules['<trigonometric function>'] = rule_trigonometric_function_
+	rules['<trim character>'] = rule_trim_character_
+	rules['<trim function: 1>'] = rule_trim_function_1_
+	rules['<trim function>'] = rule_trim_function_
+	rules['<trim operands: 1>'] = rule_trim_operands_1_
+	rules['<trim operands: 2>'] = rule_trim_operands_2_
+	rules['<trim operands: 3>'] = rule_trim_operands_3_
+	rules['<trim operands: 4>'] = rule_trim_operands_4_
+	rules['<trim operands: 5>'] = rule_trim_operands_5_
+	rules['<trim operands>'] = rule_trim_operands_
+	rules['<trim source>'] = rule_trim_source_
+	rules['<trim specification>'] = rule_trim_specification_
 	rules['<unique column list>'] = rule_unique_column_list_
 	rules['<unique constraint definition: 1>'] = rule_unique_constraint_definition_1_
 	rules['<unique constraint definition>'] = rule_unique_constraint_definition_
@@ -7974,6 +8192,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['BETWEEN'] = rule_between
 	rules['BIGINT'] = rule_bigint
 	rules['BOOLEAN'] = rule_boolean
+	rules['BOTH'] = rule_both
 	rules['BY'] = rule_by
 	rules['CASCADE'] = rule_cascade
 	rules['CEIL'] = rule_ceil
@@ -8014,6 +8233,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['IS'] = rule_is
 	rules['JOIN'] = rule_join
 	rules['KEY'] = rule_key
+	rules['LEADING'] = rule_leading
 	rules['LEFT'] = rule_left
 	rules['LIKE'] = rule_like
 	rules['LN'] = rule_ln
@@ -8062,7 +8282,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['TIME'] = rule_time
 	rules['TIMESTAMP'] = rule_timestamp
 	rules['TO'] = rule_to
+	rules['TRAILING'] = rule_trailing
 	rules['TRANSACTION'] = rule_transaction
+	rules['TRIM'] = rule_trim
 	rules['TRUE'] = rule_true
 	rules['UNKNOWN'] = rule_unknown
 	rules['UPDATE'] = rule_update
@@ -8902,6 +9124,30 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		'<trigonometric function: 1>' {
 			return [
 				EarleyValue(parse_trig_func(children[0] as string, children[2] as Expr)?),
+			]
+		}
+		'<trim function: 1>' {
+			return [EarleyValue(parse_trim(children[2] as Expr)?)]
+		}
+		'<trim operands: 1>' {
+			return [EarleyValue(parse_trim1(children[0] as Expr)?)]
+		}
+		'<trim operands: 2>' {
+			return [EarleyValue(parse_trim1(children[1] as Expr)?)]
+		}
+		'<trim operands: 3>' {
+			return [
+				EarleyValue(parse_trim2(children[0] as string, children[2] as Expr)?),
+			]
+		}
+		'<trim operands: 4>' {
+			return [
+				EarleyValue(parse_trim3(children[0] as Expr, children[2] as Expr)?),
+			]
+		}
+		'<trim operands: 5>' {
+			return [
+				EarleyValue(parse_trim4(children[0] as string, children[1] as Expr, children[3] as Expr)?),
 			]
 		}
 		'<unique constraint definition: 1>' {

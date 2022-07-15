@@ -144,7 +144,7 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 		LocalTimestampExpr {
 			return new_type('TIMESTAMP WITHOUT TIME ZONE', 0)
 		}
-		SubstringExpr {
+		SubstringExpr, TrimExpr {
 			return new_type('CHARACTER VARYING', 0)
 		}
 	}
@@ -232,6 +232,9 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 			now, _ := conn.options.now()
 
 			return new_timestamp_value(now.strftime('%Y-%m-%d ') + time_value(conn, e.prec, false))
+		}
+		TrimExpr {
+			return eval_trim(conn, data, e, params)
 		}
 	}
 }
@@ -322,6 +325,23 @@ fn eval_null(conn &Connection, data Row, e NullExpr, params map[string]Value) ?V
 	}
 
 	return new_boolean_value(value.is_null())
+}
+
+fn eval_trim(conn &Connection, data Row, e TrimExpr, params map[string]Value) ?Value {
+	source := eval_as_value(conn, data, e.source, params)?
+	character := eval_as_value(conn, data, e.character, params)?
+
+	if e.specification == 'LEADING' {
+		return new_varchar_value(source.string_value.trim_left(character.string_value),
+			0)
+	}
+
+	if e.specification == 'TRAILING' {
+		return new_varchar_value(source.string_value.trim_right(character.string_value),
+			0)
+	}
+
+	return new_varchar_value(source.string_value.trim(character.string_value), 0)
 }
 
 fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) ?Value {

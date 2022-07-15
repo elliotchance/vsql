@@ -955,6 +955,28 @@
 <character value function> /* Expr */ ::=
     <character substring function>
   | <fold>
+  | <trim function>
+
+<trim function> /* Expr */ ::=
+  TRIM <left paren> <trim operands> <right paren>   -> trim
+
+<trim operands> /* Expr */ ::=
+    <trim source>                                              -> trim1
+  | FROM <trim source>                                         -> trim1
+  | <trim specification> FROM <trim source>                    -> trim2
+  | <trim character> FROM <trim source>                        -> trim3
+  | <trim specification> <trim character> FROM <trim source>   -> trim4
+
+<trim source> /* Expr */ ::=
+    <character value expression>
+
+<trim specification> /* string */ ::=
+    LEADING
+  | TRAILING
+  | BOTH
+
+<trim character> /* Expr */ ::=
+    <character value expression>
 
 <fold> /* Expr */ ::=
     UPPER <left paren> <character value expression> <right paren>   -> upper

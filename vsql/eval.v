@@ -137,10 +137,12 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 			return eval_as_type(conn, data, e.expr, params)
 		}
 		BinaryExpr {
-			// TODO(elliotchance): This is not correct, we would have to return
-			// the highest resolution type (need to check the SQL standard about
-			// this behavior).
-			return eval_as_type(conn, data, e.left, params)
+			left := eval_as_type(conn, data, e.left, params)!
+			right := eval_as_type(conn, data, e.right, params)!
+
+			l, _ := coerce_numeric_binary(new_empty_value(left), e.op, new_empty_value(right))?
+
+			return l.typ
 		}
 		Identifier {
 			col := data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }

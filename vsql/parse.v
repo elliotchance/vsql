@@ -258,16 +258,30 @@ fn parse_value(v Value) !Value {
 	return v
 }
 
-fn parse_exact_numeric_literal1(a string, b string) !Value {
-	mut v := new_double_precision_value('${a}.${b}'.f64())
-	v.is_coercible = true
+fn parse_exact_numeric_literal1(a string) !Value {
+	mut v := new_numeric_value(new_numeric_from_string(a))
+	v.typ.is_coercible = true
 
 	return v
 }
 
 fn parse_exact_numeric_literal2(a string) !Value {
-	mut v := new_double_precision_value('0.${a}'.f64())
-	v.is_coercible = true
+	mut v := new_numeric_value(new_numeric_from_string(a))
+	v.typ.is_coercible = true
+
+	return v
+}
+
+fn parse_exact_numeric_literal3(a string, b string) !Value {
+	mut v := new_numeric_value(new_numeric_from_string('${a}.${b}'))
+	v.typ.is_coercible = true
+
+	return v
+}
+
+fn parse_exact_numeric_literal4(a string) !Value {
+	mut v := new_numeric_value(new_numeric_from_string('0.${a}'))
+	v.typ.is_coercible = true
 
 	return v
 }
@@ -697,7 +711,7 @@ fn parse_string(s string) !string {
 
 fn parse_int_value(x string) !Value {
 	mut v := new_bigint_value(x.i64())
-	v.is_coercible = true
+	v.typ.is_coercible = true
 
 	return v
 }
@@ -998,4 +1012,28 @@ fn parse_current_schema() !Expr {
 
 fn parse_schema_name_1(catalog IdentifierChain, identifier Identifier) !Identifier {
 	return new_schema_identifier('${catalog}.${identifier}')
+}
+
+fn parse_decimal1() !Type {
+	return new_type('DECIMAL', 0, 0)
+}
+
+fn parse_decimal2(precision string) !Type {
+	return new_type('DECIMAL', precision.int(), 0)
+}
+
+fn parse_decimal3(precision string, scale int) !Type {
+	return new_type('DECIMAL', precision.int(), i16(scale))
+}
+
+fn parse_numeric1() !Type {
+	return new_type('NUMERIC', 0, 0)
+}
+
+fn parse_numeric2(precision string) !Type {
+	return new_type('NUMERIC', precision.int(), 0)
+}
+
+fn parse_numeric3(precision string, scale int) !Type {
+	return new_type('NUMERIC', precision.int(), i16(scale))
 }

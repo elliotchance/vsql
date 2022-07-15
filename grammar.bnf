@@ -433,10 +433,19 @@
   | <approximate numeric type>
 
 <exact numeric type> /* Type */ ::=
-    SMALLINT   -> smallint
-  | INTEGER    -> integer
-  | INT        -> integer
-  | BIGINT     -> bigint
+    NUMERIC                                                          -> numeric1
+  | NUMERIC <left paren> <precision> <right paren>                   -> numeric2
+  | NUMERIC <left paren> <precision> <comma> <scale> <right paren>   -> numeric3
+  | DECIMAL                                                          -> decimal1
+  | DECIMAL <left paren> <precision> <right paren>                   -> decimal2
+  | DECIMAL <left paren> <precision> <comma> <scale> <right paren>   -> decimal3
+  | SMALLINT                                                         -> smallint
+  | INTEGER                                                          -> integer
+  | INT                                                              -> integer
+  | BIGINT                                                           -> bigint
+
+<scale> /* int */ ::=
+    <unsigned integer>
 
 <approximate numeric type> /* Type */ ::=
     FLOAT                                          -> float
@@ -504,10 +513,10 @@
     <SQL schema statement>
 
 <exact numeric literal> /* Value */ ::=
-    <unsigned integer>                               -> int_value
-  | <unsigned integer> <period>                      -> int_value
-  | <unsigned integer> <period> <unsigned integer>   -> exact_numeric_literal1
-  | <period> <unsigned integer>                      -> exact_numeric_literal2
+    <unsigned integer>                               -> exact_numeric_literal1
+  | <unsigned integer> <period>                      -> exact_numeric_literal2
+  | <unsigned integer> <period> <unsigned integer>   -> exact_numeric_literal3
+  | <period> <unsigned integer>                      -> exact_numeric_literal4
 
 <unsigned numeric literal> /* Value */ ::=
     <exact numeric literal>

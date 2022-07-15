@@ -105,6 +105,10 @@ large enough to store it.
   -- COL1: 20
   -- error 2200H: sequence generator limit exceeded: PUBLIC.SEQ1
 
+  CREATE TABLE foo (bar NUMERIC(3));
+  INSERT INTO foo (bar) VALUES (1234);
+  -- error 22003: numeric value out of range
+
 ``22012`` division by zero
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 

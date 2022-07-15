@@ -106,6 +106,24 @@ CREATE TABLE foo (bar TIMESTAMP WITH TIME ZONE);
 CREATE TABLE foo (bar TIMESTAMP(3) WITH TIME ZONE);
 -- msg: CREATE TABLE 1
 
+CREATE TABLE foo (bar NUMERIC);
+-- msg: CREATE TABLE 1
+
+CREATE TABLE foo (bar NUMERIC(10));
+-- msg: CREATE TABLE 1
+
+CREATE TABLE foo (bar NUMERIC(10, 2));
+-- msg: CREATE TABLE 1
+
+CREATE TABLE foo (bar DECIMAL);
+-- msg: CREATE TABLE 1
+
+CREATE TABLE foo (bar DECIMAL(10));
+-- msg: CREATE TABLE 1
+
+CREATE TABLE foo (bar DECIMAL(10, 2));
+-- msg: CREATE TABLE 1
+
 CREATE TABLE foo.bar (baz BIGINT);
 -- error 3F000: invalid schema name: FOO
 

@@ -41,6 +41,7 @@ type EarleyValue = BetweenExpr
 	| []SortSpecification
 	| []TableElement
 	| bool
+	| int
 	| map[string]Expr
 	| string
 
@@ -707,6 +708,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_exact_numeric_literal_ := &EarleyRule{
 		name: '<exact numeric literal>'
 	}
+	mut rule_exact_numeric_type_10_ := &EarleyRule{
+		name: '<exact numeric type: 10>'
+	}
 	mut rule_exact_numeric_type_1_ := &EarleyRule{
 		name: '<exact numeric type: 1>'
 	}
@@ -718,6 +722,21 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_exact_numeric_type_4_ := &EarleyRule{
 		name: '<exact numeric type: 4>'
+	}
+	mut rule_exact_numeric_type_5_ := &EarleyRule{
+		name: '<exact numeric type: 5>'
+	}
+	mut rule_exact_numeric_type_6_ := &EarleyRule{
+		name: '<exact numeric type: 6>'
+	}
+	mut rule_exact_numeric_type_7_ := &EarleyRule{
+		name: '<exact numeric type: 7>'
+	}
+	mut rule_exact_numeric_type_8_ := &EarleyRule{
+		name: '<exact numeric type: 8>'
+	}
+	mut rule_exact_numeric_type_9_ := &EarleyRule{
+		name: '<exact numeric type: 9>'
 	}
 	mut rule_exact_numeric_type_ := &EarleyRule{
 		name: '<exact numeric type>'
@@ -1237,6 +1256,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_row_value_predicand_ := &EarleyRule{
 		name: '<row value predicand>'
+	}
+	mut rule_scale_ := &EarleyRule{
+		name: '<scale>'
 	}
 	mut rule_schema_definition_1_ := &EarleyRule{
 		name: '<schema definition: 1>'
@@ -2054,6 +2076,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_datetime_interval_precision := &EarleyRule{
 		name: 'DATETIME_INTERVAL_PRECISION'
 	}
+	mut rule_decimal := &EarleyRule{
+		name: 'DECIMAL'
+	}
 	mut rule_defaults := &EarleyRule{
 		name: 'DEFAULTS'
 	}
@@ -2470,6 +2495,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_number := &EarleyRule{
 		name: 'NUMBER'
+	}
+	mut rule_numeric := &EarleyRule{
+		name: 'NUMERIC'
 	}
 	mut rule_object := &EarleyRule{
 		name: 'OBJECT'
@@ -5346,27 +5374,111 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_exact_numeric_type_10_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_bigint
+		},
+	]}
+
 	rule_exact_numeric_type_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_smallint
+			rule: rule_numeric
 		},
 	]}
 
 	rule_exact_numeric_type_2_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_integer
+			rule: rule_numeric
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_precision_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
 		},
 	]}
 
 	rule_exact_numeric_type_3_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_int
+			rule: rule_numeric
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_precision_
+		},
+		&EarleyRuleOrString{
+			rule: rule_comma_
+		},
+		&EarleyRuleOrString{
+			rule: rule_scale_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
 		},
 	]}
 
 	rule_exact_numeric_type_4_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_bigint
+			rule: rule_decimal
+		},
+	]}
+
+	rule_exact_numeric_type_5_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_decimal
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_precision_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_exact_numeric_type_6_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_decimal
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_precision_
+		},
+		&EarleyRuleOrString{
+			rule: rule_comma_
+		},
+		&EarleyRuleOrString{
+			rule: rule_scale_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_exact_numeric_type_7_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_smallint
+		},
+	]}
+
+	rule_exact_numeric_type_8_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_integer
+		},
+	]}
+
+	rule_exact_numeric_type_9_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_int
 		},
 	]}
 
@@ -5388,6 +5500,36 @@ fn get_grammar() map[string]EarleyRule {
 	rule_exact_numeric_type_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_exact_numeric_type_4_
+		},
+	]}
+	rule_exact_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_exact_numeric_type_5_
+		},
+	]}
+	rule_exact_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_exact_numeric_type_6_
+		},
+	]}
+	rule_exact_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_exact_numeric_type_7_
+		},
+	]}
+	rule_exact_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_exact_numeric_type_8_
+		},
+	]}
+	rule_exact_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_exact_numeric_type_9_
+		},
+	]}
+	rule_exact_numeric_type_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_exact_numeric_type_10_
 		},
 	]}
 
@@ -8489,6 +8631,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_scale_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_unsigned_integer_
+		},
+	]}
+
 	rule_schema_definition_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_create
@@ -10851,6 +10999,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_decimal.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DECIMAL'
+			rule: 0
+		},
+	]}
+
 	rule_defaults.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'DEFAULTS'
@@ -11820,6 +11975,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_number.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'NUMBER'
+			rule: 0
+		},
+	]}
+
+	rule_numeric.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NUMERIC'
 			rule: 0
 		},
 	]}
@@ -13234,10 +13396,16 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<exact numeric literal: 3>'] = rule_exact_numeric_literal_3_
 	rules['<exact numeric literal: 4>'] = rule_exact_numeric_literal_4_
 	rules['<exact numeric literal>'] = rule_exact_numeric_literal_
+	rules['<exact numeric type: 10>'] = rule_exact_numeric_type_10_
 	rules['<exact numeric type: 1>'] = rule_exact_numeric_type_1_
 	rules['<exact numeric type: 2>'] = rule_exact_numeric_type_2_
 	rules['<exact numeric type: 3>'] = rule_exact_numeric_type_3_
 	rules['<exact numeric type: 4>'] = rule_exact_numeric_type_4_
+	rules['<exact numeric type: 5>'] = rule_exact_numeric_type_5_
+	rules['<exact numeric type: 6>'] = rule_exact_numeric_type_6_
+	rules['<exact numeric type: 7>'] = rule_exact_numeric_type_7_
+	rules['<exact numeric type: 8>'] = rule_exact_numeric_type_8_
+	rules['<exact numeric type: 9>'] = rule_exact_numeric_type_9_
 	rules['<exact numeric type>'] = rule_exact_numeric_type_
 	rules['<explicit row value constructor: 1>'] = rule_explicit_row_value_constructor_1_
 	rules['<explicit row value constructor: 2>'] = rule_explicit_row_value_constructor_2_
@@ -13411,6 +13579,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<row value expression list: 2>'] = rule_row_value_expression_list_2_
 	rules['<row value expression list>'] = rule_row_value_expression_list_
 	rules['<row value predicand>'] = rule_row_value_predicand_
+	rules['<scale>'] = rule_scale_
 	rules['<schema definition: 1>'] = rule_schema_definition_1_
 	rules['<schema definition>'] = rule_schema_definition_
 	rules['<schema name characteristic: 1>'] = rule_schema_name_characteristic_1_
@@ -13683,6 +13852,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['DATE'] = rule_date
 	rules['DATETIME_INTERVAL_CODE'] = rule_datetime_interval_code
 	rules['DATETIME_INTERVAL_PRECISION'] = rule_datetime_interval_precision
+	rules['DECIMAL'] = rule_decimal
 	rules['DEFAULTS'] = rule_defaults
 	rules['DEFERRABLE'] = rule_deferrable
 	rules['DEFERRED'] = rule_deferred
@@ -13822,6 +13992,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['NULLIF'] = rule_nullif
 	rules['NULLS'] = rule_nulls
 	rules['NUMBER'] = rule_number
+	rules['NUMERIC'] = rule_numeric
 	rules['OBJECT'] = rule_object
 	rules['OCTET_LENGTH'] = rule_octet_length
 	rules['OCTETS'] = rule_octets
@@ -14473,32 +14644,58 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 			]
 		}
 		'<exact numeric literal: 1>' {
-			return [EarleyValue(parse_int_value(children[0] as string)!)]
+			return [
+				EarleyValue(parse_exact_numeric_literal1(children[0] as string)!),
+			]
 		}
 		'<exact numeric literal: 2>' {
-			return [EarleyValue(parse_int_value(children[0] as string)!)]
+			return [
+				EarleyValue(parse_exact_numeric_literal2(children[0] as string)!),
+			]
 		}
 		'<exact numeric literal: 3>' {
 			return [
-				EarleyValue(parse_exact_numeric_literal1(children[0] as string, children[2] as string)!),
+				EarleyValue(parse_exact_numeric_literal3(children[0] as string, children[2] as string)!),
 			]
 		}
 		'<exact numeric literal: 4>' {
 			return [
-				EarleyValue(parse_exact_numeric_literal2(children[1] as string)!),
+				EarleyValue(parse_exact_numeric_literal4(children[1] as string)!),
 			]
 		}
+		'<exact numeric type: 10>' {
+			return [EarleyValue(parse_bigint()!)]
+		}
 		'<exact numeric type: 1>' {
-			return [EarleyValue(parse_smallint()!)]
+			return [EarleyValue(parse_numeric1()!)]
 		}
 		'<exact numeric type: 2>' {
-			return [EarleyValue(parse_integer()!)]
+			return [EarleyValue(parse_numeric2(children[2] as string)!)]
 		}
 		'<exact numeric type: 3>' {
-			return [EarleyValue(parse_integer()!)]
+			return [
+				EarleyValue(parse_numeric3(children[2] as string, children[4] as int)!),
+			]
 		}
 		'<exact numeric type: 4>' {
-			return [EarleyValue(parse_bigint()!)]
+			return [EarleyValue(parse_decimal1()!)]
+		}
+		'<exact numeric type: 5>' {
+			return [EarleyValue(parse_decimal2(children[2] as string)!)]
+		}
+		'<exact numeric type: 6>' {
+			return [
+				EarleyValue(parse_decimal3(children[2] as string, children[4] as int)!),
+			]
+		}
+		'<exact numeric type: 7>' {
+			return [EarleyValue(parse_smallint()!)]
+		}
+		'<exact numeric type: 8>' {
+			return [EarleyValue(parse_integer()!)]
+		}
+		'<exact numeric type: 9>' {
+			return [EarleyValue(parse_integer()!)]
 		}
 		'<explicit row value constructor: 1>' {
 			return [EarleyValue(parse_row_constructor1(children[2] as []Expr)!)]

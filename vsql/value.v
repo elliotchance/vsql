@@ -62,6 +62,8 @@ mut:
 	// TIME(n) WITH TIME ZONE and TIME(n) WITHOUT TIME ZONE
 	// TIMESTAMP(n) WITH TIME ZONE and TIMESTAMP(n) WITHOUT TIME ZONE
 	time_value Time
+	// DECIMAL and NUMERIC
+	numeric_value Numeric
 }
 
 // new_null_value creates a NULL value of a specific type. In SQL, all NULL
@@ -70,7 +72,7 @@ mut:
 // snippet: v.new_null_value
 pub fn new_null_value(typ SQLType) Value {
 	return Value{
-		typ: Type{typ, 0, 0, false}
+		typ: Type{typ, 0, 0, false, false}
 		is_null: true
 	}
 }
@@ -81,7 +83,7 @@ pub fn new_null_value(typ SQLType) Value {
 // snippet: v.new_boolean_value
 pub fn new_boolean_value(b bool) Value {
 	return Value{
-		typ: Type{.is_boolean, 0, 0, false}
+		typ: Type{.is_boolean, 0, 0, false, false}
 		v: InternalValue{
 			bool_value: if b { .is_true } else { .is_false }
 		}
@@ -94,7 +96,7 @@ pub fn new_boolean_value(b bool) Value {
 // snippet: v.new_unknown_value
 pub fn new_unknown_value() Value {
 	return Value{
-		typ: Type{.is_boolean, 0, 0, false}
+		typ: Type{.is_boolean, 0, 0, false, false}
 		v: InternalValue{
 			bool_value: .is_unknown
 		}
@@ -106,7 +108,7 @@ pub fn new_unknown_value() Value {
 // snippet: v.new_double_precision_value
 pub fn new_double_precision_value(x f64) Value {
 	return Value{
-		typ: Type{.is_double_precision, 0, 0, false}
+		typ: Type{.is_double_precision, 0, 0, false, false}
 		v: InternalValue{
 			f64_value: x
 		}
@@ -118,7 +120,7 @@ pub fn new_double_precision_value(x f64) Value {
 // snippet: v.new_integer_value
 pub fn new_integer_value(x int) Value {
 	return Value{
-		typ: Type{.is_integer, 0, 0, false}
+		typ: Type{.is_integer, 0, 0, false, false}
 		v: InternalValue{
 			int_value: x
 		}
@@ -130,7 +132,7 @@ pub fn new_integer_value(x int) Value {
 // snippet: v.new_bigint_value
 pub fn new_bigint_value(x i64) Value {
 	return Value{
-		typ: Type{.is_bigint, 0, 0, false}
+		typ: Type{.is_bigint, 0, 0, false, false}
 		v: InternalValue{
 			int_value: x
 		}
@@ -142,7 +144,7 @@ pub fn new_bigint_value(x i64) Value {
 // snippet: v.new_real_value
 pub fn new_real_value(x f32) Value {
 	return Value{
-		typ: Type{.is_real, 0, 0, false}
+		typ: Type{.is_real, 0, 0, false, false}
 		v: InternalValue{
 			f64_value: x
 		}
@@ -154,7 +156,7 @@ pub fn new_real_value(x f32) Value {
 // snippet: v.new_smallint_value
 pub fn new_smallint_value(x i16) Value {
 	return Value{
-		typ: Type{.is_smallint, 0, 0, false}
+		typ: Type{.is_smallint, 0, 0, false, false}
 		v: InternalValue{
 			int_value: x
 		}
@@ -166,7 +168,7 @@ pub fn new_smallint_value(x i16) Value {
 // snippet: v.new_varchar_value
 pub fn new_varchar_value(x string, size int) Value {
 	return Value{
-		typ: Type{.is_varchar, size, 0, false}
+		typ: Type{.is_varchar, size, 0, false, false}
 		v: InternalValue{
 			string_value: x
 		}
@@ -181,7 +183,7 @@ pub fn new_character_value(x string, size int) Value {
 	// TODO(elliotchance): Doesn't handle size < x.len
 
 	return Value{
-		typ: Type{.is_character, size, 0, false}
+		typ: Type{.is_character, size, 0, false, false}
 		v: InternalValue{
 			string_value: x + strings.repeat(` `, size - x.len)
 		}
@@ -230,6 +232,15 @@ pub fn new_date_value(ts string) !Value {
 	}
 }
 
+pub fn new_numeric_value(n Numeric) Value {
+	return Value{
+		typ: n.typ
+		v: InternalValue{
+			numeric_value: n
+		}
+	}
+}
+
 fn f64_string(x f64) string {
 	s := '${x:.6}'.trim('.').split('.')
 	if s.len == 1 {
@@ -237,6 +248,19 @@ fn f64_string(x f64) string {
 	}
 
 	return '${s[0]}.${s[1].trim_right('0')}'
+}
+
+// as_f64() is not safe to use if the value is not numeric.
+fn (v Value) as_f64() f64 {
+	if v.typ.uses_f64() {
+		return v.f64_value()
+	}
+
+	if v.typ.uses_numeric() {
+		return v.numeric_value().f64()
+	}
+
+	return v.int_value()
 }
 
 // as_int() is not safe to use if the value is not numeric. It is used in cases
@@ -275,6 +299,9 @@ pub fn (v Value) str() string {
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 			v.time_value().str()
+		}
+		.is_decimal, .is_numeric {
+			v.numeric_value().str()
 		}
 	}
 }
@@ -372,5 +399,11 @@ pub fn (v Value) string_value() string {
 pub fn (v Value) time_value() Time {
 	unsafe {
 		return v.v.time_value
+	}
+}
+
+pub fn (v Value) numeric_value() Numeric {
+	unsafe {
+		return v.v.numeric_value
 	}
 }

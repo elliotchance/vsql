@@ -100,10 +100,14 @@ struct SQLState22003 {
 	SQLState
 }
 
-fn sqlstate_22003() IError {
+fn sqlstate_22003(prec int, scale i16) IError {
 	return SQLState22003{
 		code: sqlstate_to_int('22003')
-		msg: 'numeric value out of range'
+		msg: if prec == 0 && scale == 0 {
+			'numeric out of range'
+		} else {
+			'numeric overflow: a field with precision ${prec}, scale ${scale} must round to an absolute value less than 10^${prec}'
+		}
 	}
 }
 

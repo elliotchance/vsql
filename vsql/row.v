@@ -3,6 +3,7 @@
 
 module vsql
 
+import math.big
 import time
 
 // Represents a single row which may contain one or more columns.
@@ -140,7 +141,7 @@ fn new_empty_row(columns Columns, table_name string) Row {
 fn new_empty_value(typ Type) Value {
 	mut value := match typ.typ {
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
-		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
+		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone, .is_decimal, .is_numeric {
 			new_null_value(typ.typ)
 		}
 		.is_bigint {
@@ -197,6 +198,7 @@ fn (r Row) bytes(t Table) []u8 {
 		// If the column is allows for NULL we need to prepend a NULL indicator.
 		// However, there are certain types that we do not need to add a
 		// separate NULL indicator because it's built into the value itself.
+		mut should_write := false
 		if !col.not_null {
 			match col.typ.typ {
 				.is_varchar, .is_character, .is_date, .is_time_with_time_zone,
@@ -205,14 +207,16 @@ fn (r Row) bytes(t Table) []u8 {
 				.is_real, .is_smallint {
 					buf.write_bool(v.is_null)
 				}
-				.is_boolean {
+				.is_boolean, .is_decimal, .is_numeric {
 					// BOOLEAN: NULL is encoded as one of the values.
+					// DECIMAL and NUMERIC: NULL is encoded with flags.
+					should_write = true
 				}
 			}
 		}
 
 		// If v is null, there's not need to write any more information.
-		if !v.is_null || col.typ.typ == .is_boolean {
+		if !v.is_null || should_write {
 			match col.typ.typ {
 				.is_boolean {
 					buf.write_u8(u8(v.bool_value()))
@@ -239,6 +243,9 @@ fn (r Row) bytes(t Table) []u8 {
 				.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 					buf.write_u8s(v.time_value().bytes())
 				}
+				.is_decimal, .is_numeric {
+					buf.write_u8s(v.numeric_value().bytes())
+				}
 			}
 		}
 	}
@@ -262,6 +269,7 @@ fn new_row_from_bytes(t Table, data []u8, tid int) Row {
 		// indicator. However, there are certain types that we do not need to
 		// add a separate NULL indicator because it's built into the value
 		// itself.
+		mut should_read := false
 		if !col.not_null {
 			match col.typ.typ {
 				.is_varchar, .is_character, .is_date, .is_time_with_time_zone,
@@ -270,61 +278,106 @@ fn new_row_from_bytes(t Table, data []u8, tid int) Row {
 				.is_real, .is_smallint {
 					v.is_null = buf.read_bool()
 				}
-				.is_boolean {
+				.is_boolean, .is_decimal, .is_numeric {
 					// BOOLEAN: NULL is encoded as one of the values.
+					// DECIMAL and NUMERIC: NULL is encoded with flags.
+					should_read = true
 				}
 			}
 		}
 
 		// The value is only written if it's not null (or NULL is encoded into
 		// the value).
-		if !v.is_null || v.typ.typ == .is_boolean {
+		if !v.is_null || should_read {
 			match col.typ.typ {
 				.is_boolean {
-					unsafe {
-						v.v.bool_value = Boolean(buf.read_u8())
-						if v.bool_value() == .is_unknown {
-							v.is_null = true
-						}
+					v.v = InternalValue{
+						bool_value: unsafe { Boolean(buf.read_u8()) }
+					}
+					if v.bool_value() == .is_unknown {
+						v.is_null = true
 					}
 				}
 				.is_bigint {
-					v.v.int_value = buf.read_i64()
+					v.v = InternalValue{
+						int_value: buf.read_i64()
+					}
 				}
 				.is_double_precision {
-					v.v.f64_value = buf.read_f64()
+					v.v = InternalValue{
+						f64_value: buf.read_f64()
+					}
 				}
 				.is_integer {
-					v.v.int_value = buf.read_i32()
+					v.v = InternalValue{
+						int_value: buf.read_i32()
+					}
 				}
 				.is_real {
-					v.v.f64_value = buf.read_f32()
+					v.v = InternalValue{
+						f64_value: buf.read_f32()
+					}
 				}
 				.is_smallint {
-					v.v.int_value = buf.read_i16()
+					v.v = InternalValue{
+						int_value: buf.read_i16()
+					}
 				}
 				.is_varchar, .is_character {
-					v.v.string_value = buf.read_string4()
+					v.v = InternalValue{
+						string_value: buf.read_string4()
+					}
 				}
 				.is_date {
-					typ := Type{.is_date, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
+					typ := Type{.is_date, col.typ.size, 0, col.not_null, false}
+					v.v = InternalValue{
+						time_value: new_time_from_bytes(typ, buf.read_u8s(8))
+					}
 				}
 				.is_time_with_time_zone {
-					typ := Type{.is_time_with_time_zone, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(10))
+					typ := Type{.is_time_with_time_zone, col.typ.size, 0, col.not_null, false}
+					v.v = InternalValue{
+						time_value: new_time_from_bytes(typ, buf.read_u8s(10))
+					}
 				}
 				.is_time_without_time_zone {
-					typ := Type{.is_time_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
+					typ := Type{.is_time_without_time_zone, col.typ.size, 0, col.not_null, false}
+					v.v = InternalValue{
+						time_value: new_time_from_bytes(typ, buf.read_u8s(8))
+					}
 				}
 				.is_timestamp_with_time_zone {
-					typ := Type{.is_timestamp_with_time_zone, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(10))
+					typ := Type{.is_timestamp_with_time_zone, col.typ.size, 0, col.not_null, false}
+					v.v = InternalValue{
+						time_value: new_time_from_bytes(typ, buf.read_u8s(10))
+					}
 				}
 				.is_timestamp_without_time_zone {
-					typ := Type{.is_timestamp_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
+					typ := Type{.is_timestamp_without_time_zone, col.typ.size, 0, col.not_null, false}
+					v.v = InternalValue{
+						time_value: new_time_from_bytes(typ, buf.read_u8s(8))
+					}
+				}
+				.is_decimal, .is_numeric {
+					flags := buf.read_u8()
+					mut numerator := big.zero_int
+					mut denominator := big.one_int
+
+					// If it's NULL or 0 there's nothing more to read.
+					if !(flags & numeric_is_null != 0 || flags & numeric_is_zero != 0) {
+						numerator_len := buf.read_i16()
+						numerator = big.integer_from_bytes(buf.read_u8s(numerator_len),
+							big.IntegerConfig{})
+
+						denominator_len := buf.read_i16()
+						denominator = big.integer_from_bytes(buf.read_u8s(denominator_len),
+							big.IntegerConfig{})
+					}
+
+					v.v = InternalValue{
+						numeric_value: new_numeric(col.typ, flags & numeric_is_positive != 0,
+							numerator, denominator)
+					}
 				}
 			}
 		}

@@ -20,6 +20,10 @@ fn expr_is_agg(conn &Connection, e Expr, row Row, params map[string]Value) !bool
 		CallExpr {
 			mut arg_types := []Type{}
 			for arg in e.args {
+				if expr_is_agg(conn, arg, row, params)! {
+					return nested_agg_unsupported(e)
+				}
+
 				arg_types << eval_as_type(conn, row, arg, params)!
 			}
 

@@ -61,16 +61,20 @@ fn (t Table) column(name string) ?Column {
 }
 
 fn (t Table) bytes() []u8 {
-	mut b := new_bytes([]u8{})
+	mut b := new_empty_bytes()
 
 	b.write_string1(t.name)
-	b.write_string1_list(t.primary_key)
+
+	b.write_u8(u8(t.primary_key.len))
+	for s in t.primary_key {
+		b.write_string1(s)
+	}
 
 	for col in t.columns {
 		b.write_string1(col.name)
-		b.write_byte(col.typ.number())
+		b.write_u8(col.typ.number())
 		b.write_bool(col.not_null)
-		b.write_int(col.typ.size)
+		b.write_i32(col.typ.size)
 		b.write_i16(0) // precision
 	}
 
@@ -81,14 +85,19 @@ fn new_table_from_bytes(data []u8, tid int) Table {
 	mut b := new_bytes(data)
 
 	table_name := b.read_string1()
-	primary_key := b.read_string1_list()
+
+	primary_key_len := b.read_u8()
+	mut primary_key := []string{len: int(primary_key_len)}
+	for i in 0 .. int(primary_key_len) {
+		primary_key[i] = b.read_string1()
+	}
 
 	mut columns := []Column{}
 	for b.has_more() {
 		column_name := b.read_string1()
-		column_type := b.read_byte()
+		column_type := b.read_u8()
 		is_not_null := b.read_bool()
-		size := b.read_int()
+		size := b.read_i32()
 		b.read_i16() // precision
 
 		columns << Column{column_name, type_from_number(column_type, size), is_not_null}

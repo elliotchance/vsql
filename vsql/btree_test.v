@@ -127,12 +127,14 @@ fn validate_page(mut p Pager, page_number int) ?([]u8, []u8) {
 	// the pointers.
 	if page.kind == kind_not_leaf {
 		for object in objects {
-			smallest, _ := validate_page(mut p, bytes_to_int(object.value))?
+			mut buf := new_bytes(object.value)
+			object_value := buf.read_i32()
+			smallest, _ := validate_page(mut p, object_value)?
 
 			// min and max have already been verified in the subpage, but the
 			// min has to equal what our pointer says.
 			if compare_bytes(smallest, object.key) != 0 {
-				panic('$object.key.bytestr() in page $page_number points to ${bytes_to_int(object.value)}, but child page has head $smallest.bytestr()')
+				panic('$object.key.bytestr() in page $page_number points to $object_value}, but child page has head $smallest.bytestr()')
 				assert false
 			}
 		}
@@ -173,7 +175,8 @@ fn strkeys(p Page) []string {
 fn strobjects(p Page) []string {
 	mut keys := []string{}
 	for object in p.objects() {
-		keys << '$object.key.bytestr():${bytes_to_int(object.value)}'
+		mut buf := new_bytes(object.value)
+		keys << '$object.key.bytestr():$buf.read_i32()'
 	}
 
 	return keys

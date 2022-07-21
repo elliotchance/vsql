@@ -159,9 +159,10 @@ fn new_empty_table_row(tables map[string]Table) Row {
 }
 
 fn (r Row) bytes(t Table) []u8 {
-	mut buf := new_bytes([]u8{})
+	mut buf := new_empty_bytes()
 
-	buf.write_bytes1(r.id)
+	buf.write_u8(u8(r.id.len))
+	buf.write_u8s(r.id)
 
 	for col in t.columns {
 		v := r.data[col.name]
@@ -187,7 +188,7 @@ fn (r Row) bytes(t Table) []u8 {
 		if !v.is_null || col.typ.typ == .is_boolean {
 			match col.typ.typ {
 				.is_boolean {
-					buf.write_byte(u8(v.f64_value))
+					buf.write_u8(u8(v.f64_value))
 				}
 				.is_bigint {
 					buf.write_i64(i64(v.f64_value))
@@ -196,7 +197,7 @@ fn (r Row) bytes(t Table) []u8 {
 					buf.write_f64(v.f64_value)
 				}
 				.is_integer {
-					buf.write_int(int(v.f64_value))
+					buf.write_i32(int(v.f64_value))
 				}
 				.is_real {
 					buf.write_f32(f32(v.f64_value))
@@ -209,7 +210,7 @@ fn (r Row) bytes(t Table) []u8 {
 				}
 				.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
 				.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
-					buf.write_bytes(v.time_value.bytes())
+					buf.write_u8s(v.time_value.bytes())
 				}
 			}
 		}
@@ -222,7 +223,7 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 	mut buf := new_bytes(data)
 	mut row := map[string]Value{}
 
-	row_id := buf.read_bytes1()
+	row_id := buf.read_u8s(buf.read_u8())
 
 	for col in t.columns {
 		// Some types do not need a NULL flag because it's built into the value.
@@ -253,7 +254,7 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 		if !v.is_null || v.typ.typ == .is_boolean {
 			match col.typ.typ {
 				.is_boolean {
-					v.f64_value = buf.read_byte()
+					v.f64_value = buf.read_u8()
 					if v.f64_value == boolean_null {
 						v.is_null = true
 					}
@@ -265,7 +266,7 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 					v.f64_value = buf.read_f64()
 				}
 				.is_integer {
-					v.f64_value = buf.read_int()
+					v.f64_value = buf.read_i32()
 				}
 				.is_real {
 					v.f64_value = buf.read_f32()
@@ -274,28 +275,27 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 					v.f64_value = buf.read_i16()
 				}
 				.is_varchar, .is_character {
-					len := buf.read_int()
-					v.string_value = buf.read_bytes(len).bytestr()
+					v.string_value = buf.read_string4()
 				}
 				.is_date {
 					typ := Type{.is_date, col.typ.size, col.not_null}
-					v.time_value = new_time_from_bytes(typ, buf.read_bytes(8))
+					v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
 				}
 				.is_time_with_time_zone {
 					typ := Type{.is_time_with_time_zone, col.typ.size, col.not_null}
-					v.time_value = new_time_from_bytes(typ, buf.read_bytes(10))
+					v.time_value = new_time_from_bytes(typ, buf.read_u8s(10))
 				}
 				.is_time_without_time_zone {
 					typ := Type{.is_time_without_time_zone, col.typ.size, col.not_null}
-					v.time_value = new_time_from_bytes(typ, buf.read_bytes(8))
+					v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
 				}
 				.is_timestamp_with_time_zone {
 					typ := Type{.is_timestamp_with_time_zone, col.typ.size, col.not_null}
-					v.time_value = new_time_from_bytes(typ, buf.read_bytes(10))
+					v.time_value = new_time_from_bytes(typ, buf.read_u8s(10))
 				}
 				.is_timestamp_without_time_zone {
 					typ := Type{.is_timestamp_without_time_zone, col.typ.size, col.not_null}
-					v.time_value = new_time_from_bytes(typ, buf.read_bytes(8))
+					v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
 				}
 			}
 		}
@@ -313,7 +313,7 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 fn (mut r Row) object_key(t Table) ?[]u8 {
 	// If there is a PRIMARY KEY, generate the row key.
 	if t.primary_key.len > 0 {
-		mut pk := new_bytes([]u8{})
+		mut pk := new_empty_bytes()
 
 		for col_name in t.primary_key {
 			col := t.column(col_name)?
@@ -322,7 +322,7 @@ fn (mut r Row) object_key(t Table) ?[]u8 {
 					pk.write_i64(i64(r.data[col_name].f64_value))
 				}
 				.is_integer {
-					pk.write_int(int(r.data[col_name].f64_value))
+					pk.write_i32(int(r.data[col_name].f64_value))
 				}
 				.is_smallint {
 					pk.write_i16(i16(r.data[col_name].f64_value))
@@ -341,18 +341,20 @@ fn (mut r Row) object_key(t Table) ?[]u8 {
 			unique_id := time.now().unix_time_milli()
 			time.sleep(time.millisecond)
 
-			r.id = i64_to_bytes(unique_id)
+			mut buf := new_empty_bytes()
+			buf.write_i64(unique_id)
+			r.id = buf.bytes()
 		}
 	}
 
-	mut key := new_bytes([]u8{})
-	key.write_byte(`R`)
-	key.write_bytes(t.name.bytes())
+	mut key := new_empty_bytes()
+	key.write_u8(`R`)
+	key.write_u8s(t.name.bytes())
 
 	// TODO(elliotchance): This is actually not a safe separator to use since
 	//  deliminated table names can contain ':'
-	key.write_byte(`:`)
-	key.write_bytes(r.id)
+	key.write_u8(`:`)
+	key.write_u8s(r.id)
 
 	return key.bytes()
 }

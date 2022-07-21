@@ -80,7 +80,8 @@ fn (mut p Btree) search_page(key []u8) ?([]int, []int) {
 		mut found := false
 		for depth_iterator[depth_iterator.len - 1] >= 0 {
 			if compare_bytes(key, objects[depth_iterator[depth_iterator.len - 1]].key) >= 0 {
-				current_page = bytes_to_int(objects[depth_iterator[depth_iterator.len - 1]].value)
+				mut buf := new_bytes(objects[depth_iterator[depth_iterator.len - 1]].value)
+				current_page = buf.read_i32()
 				found = true
 				break
 			}
@@ -92,7 +93,8 @@ fn (mut p Btree) search_page(key []u8) ?([]int, []int) {
 		// leaf.
 		if !found {
 			depth_iterator[depth_iterator.len - 1] = 0
-			current_page = bytes_to_int(objects[0].value)
+			mut buf := new_bytes(objects[0].value)
+			current_page = buf.read_i32()
 		}
 	}
 
@@ -195,7 +197,11 @@ fn (mut p Btree) fix_parent_pages(previous_page_head []u8, previous_root_page in
 			// The tids are zero here because non-leaf pages do not have
 			// transaction visibility for their nodes.
 			t.delete(previous_page_head, 0)
-			new_object := new_page_object(obj.key.clone(), 0, 0, int_to_bytes(path[path_index + 1]))
+
+			mut buf := new_empty_bytes()
+			buf.write_i32(path[path_index + 1])
+
+			new_object := new_page_object(obj.key.clone(), 0, 0, buf.bytes())
 
 			t.add(new_object)?
 			p.pager.store_page(path[path_index], t)?
@@ -207,7 +213,10 @@ fn (mut p Btree) fix_parent_pages(previous_page_head []u8, previous_root_page in
 
 			// The tids are zero here because non-leaf pages do not have
 			// transaction visibility for their nodes.
-			previous_objs[0] = new_page_object(obj.key.clone(), 0, 0, int_to_bytes(previous_root_page))
+			mut buf := new_empty_bytes()
+			buf.write_i32(previous_root_page)
+
+			previous_objs[0] = new_page_object(obj.key.clone(), 0, 0, buf.bytes())
 
 			new_root_page.add(previous_objs[0])?
 			new_root_page.add(previous_objs[1])?
@@ -268,8 +277,13 @@ fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind u8) ? {
 
 	// The tids are zero here because non-leaf pages do not have transaction
 	// visibility for their nodes.
-	p1 := new_page_object(head1.key.clone(), 0, 0, int_to_bytes(left_page_number))
-	p2 := new_page_object(head2.key.clone(), 0, 0, int_to_bytes(right_page_number))
+	mut buf1 := new_empty_bytes()
+	buf1.write_i32(left_page_number)
+	p1 := new_page_object(head1.key.clone(), 0, 0, buf1.bytes())
+
+	mut buf2 := new_empty_bytes()
+	buf2.write_i32(right_page_number)
+	p2 := new_page_object(head2.key.clone(), 0, 0, buf2.bytes())
 
 	// Try to register the new page with the parent of the left page.
 	if path.len > 1 {
@@ -335,7 +349,9 @@ fn (mut p Btree) remove(key []u8, tid int) ? {
 
 				// The tids are zero here because non-leaf pages do not have
 				// transaction visibility for their nodes.
-				obj := new_page_object(lower_bound.clone(), 0, 0, int_to_bytes(path[path_index + 1]))
+				mut buf := new_empty_bytes()
+				buf.write_i32(path[path_index + 1])
+				obj := new_page_object(lower_bound.clone(), 0, 0, buf.bytes())
 
 				t.add(obj)?
 			}
@@ -379,7 +395,10 @@ fn (mut p Btree) remove(key []u8, tid int) ? {
 				// All tids are zero here because non-leaf pages do not have
 				// transaction visibility for their nodes.
 				ancestor.delete(last_page_key, 0)
-				new_object := new_page_object(last_page_key.clone(), 0, 0, int_to_bytes(empty_page))
+
+				mut buf := new_empty_bytes()
+				buf.write_i32(empty_page)
+				new_object := new_page_object(last_page_key.clone(), 0, 0, buf.bytes())
 
 				ancestor.add(new_object)?
 				p.pager.store_page(path_to_last_page[path_index], ancestor)?

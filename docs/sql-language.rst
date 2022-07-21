@@ -6,3 +6,4 @@ The SQL Language
 
    booleans.rst
    dates-times.rst
+   numbers.rst

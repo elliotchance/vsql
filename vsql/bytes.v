@@ -27,6 +27,7 @@ mut:
 	// be used for writing and reading raw binary data.
 	write_u8s(data []u8)
 	write_u16(data u16)
+	write_u64(data u64)
 }
 
 // BytesReader allows a buffer to be read, but also allows the position to be
@@ -55,6 +56,7 @@ mut:
 	// be used for writing and reading raw ordered binary data.
 	read_u8s(len int) []u8
 	read_u16() u16
+	read_u64() u64
 	// bytes returns the entire buffer. It does not move the current position.
 	bytes() []u8
 	// has_more can be used by the reader to see if we're at the end.
@@ -168,6 +170,12 @@ fn (mut b BytesLittleEndian) write_i64(data i64) {
 	}.bytes_reversed())
 }
 
+fn (mut b BytesLittleEndian) write_u64(data u64) {
+	b.write_u8s(Bytes8{
+		u64_value: data
+	}.bytes_reversed())
+}
+
 fn (mut b BytesLittleEndian) read_i64() i64 {
 	// This needs to be converted from big-endian (that's the reverse order).
 	bytes := b.read_u8s(8)
@@ -175,6 +183,16 @@ fn (mut b BytesLittleEndian) read_i64() i64 {
 		Bytes8{
 			bytes: [bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]]!
 		}.i64_value
+	}
+}
+
+fn (mut b BytesLittleEndian) read_u64() u64 {
+	// This needs to be converted from big-endian (that's the reverse order).
+	bytes := b.read_u8s(8)
+	return unsafe {
+		Bytes8{
+			bytes: [bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]]!
+		}.u64_value
 	}
 }
 
@@ -326,12 +344,27 @@ fn (mut b BytesBigEndian) write_i64(data i64) {
 	}.bytes())
 }
 
+fn (mut b BytesBigEndian) write_u64(data u64) {
+	b.write_u8s(Bytes8{
+		u64_value: data
+	}.bytes())
+}
+
 fn (mut b BytesBigEndian) read_i64() i64 {
 	bytes := b.read_u8s(8)
 	return unsafe {
 		Bytes8{
 			bytes: [bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7]]!
 		}.i64_value
+	}
+}
+
+fn (mut b BytesBigEndian) read_u64() u64 {
+	bytes := b.read_u8s(8)
+	return unsafe {
+		Bytes8{
+			bytes: [bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7]]!
+		}.u64_value
 	}
 }
 

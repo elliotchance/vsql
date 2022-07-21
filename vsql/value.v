@@ -28,14 +28,20 @@ pub mut:
 	is_null bool
 	// BOOLEAN
 	bool_value Boolean
-	// BIGINT, DOUBLE PRECISION, INTEGER, REAL and SMALLINT
+	// DOUBLE PRECISION and REAL
 	f64_value f64
+	// BIGINT, INTEGER and SMALLINT
+	int_value i64
 	// CHARACTER VARYING(n) and CHARACTER(n)
 	string_value string
 	// DATE
 	// TIME(n) WITH TIME ZONE and TIME(n) WITHOUT TIME ZONE
 	// TIMESTAMP(n) WITH TIME ZONE and TIMESTAMP(n) WITHOUT TIME ZONE
 	time_value Time
+	// If is_coercible is true the value comes from an ambigious type (like a
+	// numerical constant) that can be corerced to another type if needed in an
+	// expression.
+	is_coercible bool
 }
 
 pub fn new_null_value(typ SQLType) Value {
@@ -69,14 +75,14 @@ pub fn new_double_precision_value(x f64) Value {
 pub fn new_integer_value(x int) Value {
 	return Value{
 		typ: Type{.is_integer, 0, false}
-		f64_value: x
+		int_value: x
 	}
 }
 
 pub fn new_bigint_value(x i64) Value {
 	return Value{
 		typ: Type{.is_bigint, 0, false}
-		f64_value: x
+		int_value: x
 	}
 }
 
@@ -90,7 +96,7 @@ pub fn new_real_value(x f32) Value {
 pub fn new_smallint_value(x i16) Value {
 	return Value{
 		typ: Type{.is_smallint, 0, false}
-		f64_value: x
+		int_value: x
 	}
 }
 
@@ -144,6 +150,24 @@ fn f64_string(x f64) string {
 	return '${s[0]}.${s[1].trim_right('0')}'
 }
 
+// as_f64() is not safe to use if the value is not numeric.
+fn (v Value) as_f64() f64 {
+	if v.typ.uses_f64() {
+		return v.f64_value
+	}
+
+	return v.int_value
+}
+
+// as_int() is not safe to use if the value is not numeric.
+fn (v Value) as_int() i64 {
+	if v.typ.uses_int() {
+		return v.int_value
+	}
+
+	return i64(v.f64_value)
+}
+
 fn (v Value) str() string {
 	if v.is_null && v.typ.typ != .is_boolean {
 		return 'NULL'
@@ -153,8 +177,11 @@ fn (v Value) str() string {
 		.is_boolean {
 			v.bool_value.str()
 		}
-		.is_double_precision, .is_real, .is_bigint, .is_integer, .is_smallint {
+		.is_double_precision, .is_real {
 			f64_string(v.f64_value)
+		}
+		.is_bigint, .is_integer, .is_smallint {
+			v.int_value.str()
 		}
 		.is_varchar, .is_character {
 			v.string_value
@@ -191,29 +218,41 @@ fn (v Value) cmp(v2 Value) ?(int, bool) {
 	}
 
 	// TODO(elliotchance): BOOLEAN shouldn't be compared this way.
-	if v.typ.uses_f64() && v2.typ.uses_f64() {
-		if v.f64_value < v2.f64_value {
-			return -1, false
+	if v.typ.uses_int() {
+		if v2.typ.uses_int() {
+			return cmp_value(v.int_value, v2.int_value)
 		}
 
-		if v.f64_value > v2.f64_value {
-			return 1, false
+		if v2.typ.uses_f64() {
+			return cmp_value(v.int_value, v2.f64_value)
+		}
+	}
+
+	if v.typ.uses_f64() {
+		if v2.typ.uses_int() {
+			return cmp_value(v.f64_value, v2.int_value)
 		}
 
-		return 0, false
+		if v2.typ.uses_f64() {
+			return cmp_value(v.f64_value, v2.f64_value)
+		}
 	}
 
 	if v.typ.uses_string() && v2.typ.uses_string() {
-		if v.string_value < v2.string_value {
-			return -1, false
-		}
-
-		if v.string_value > v2.string_value {
-			return 1, false
-		}
-
-		return 0, false
+		return cmp_value(v.string_value, v2.string_value)
 	}
 
 	return error('cannot compare $v.typ and $v2.typ')
+}
+
+fn cmp_value<A, B>(lhs A, rhs B) (int, bool) {
+	if lhs < rhs {
+		return -1, false
+	}
+
+	if lhs > rhs {
+		return 1, false
+	}
+
+	return 0, false
 }

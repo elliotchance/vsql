@@ -136,14 +136,26 @@ fn (t Type) str() string {
 	return s
 }
 
-fn (t Type) uses_f64() bool {
+fn (t Type) uses_int() bool {
 	return match t.typ {
-		.is_boolean, .is_double_precision, .is_bigint, .is_real, .is_smallint, .is_integer,
-		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
-		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
+		.is_boolean, .is_bigint, .is_smallint, .is_integer {
 			true
 		}
-		.is_varchar, .is_character {
+		.is_varchar, .is_character, .is_double_precision, .is_real, .is_date,
+		.is_time_with_time_zone, .is_time_without_time_zone, .is_timestamp_with_time_zone,
+		.is_timestamp_without_time_zone {
+			false
+		}
+	}
+}
+
+fn (t Type) uses_f64() bool {
+	return match t.typ {
+		.is_double_precision, .is_real, .is_date, .is_time_with_time_zone,
+		.is_time_without_time_zone, .is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
+			true
+		}
+		.is_boolean, .is_varchar, .is_character, .is_bigint, .is_smallint, .is_integer {
 			false
 		}
 	}

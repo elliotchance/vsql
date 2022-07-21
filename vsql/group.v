@@ -35,9 +35,16 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Expr, params 
 
 	empty_row := new_empty_row(table.columns, table.name)
 	for expr in select_exprs {
-		if expr_is_agg(conn, expr.expr) or { false } {
+		if expr_is_agg(conn, expr.expr, empty_row, params)? {
 			columns << Column{expr.expr.pstr(params), eval_as_type(conn, empty_row, expr.expr,
 				params)?, false}
+
+			// We need verify the expression type for the argument to the
+			// aggregate function is valid.
+			if expr.expr is CallExpr {
+				expr_type := eval_as_type(conn, empty_row, expr.expr.args[0], params)?
+				conn.find_function(expr.expr.function_name, [expr_type])?
+			}
 		}
 	}
 
@@ -88,20 +95,17 @@ fn (o &GroupOperation) execute(rows []Row) ?[]Row {
 
 	// Perform the aggregations functions.
 	for expr in o.select_exprs {
-		if expr_is_agg(o.conn, expr.expr) or { false } {
+		if expr_is_agg(o.conn, expr.expr, rows[0], o.params)? {
 			key := expr.expr.pstr(o.params)
 			for mut set in sets {
 				match expr.expr {
 					CallExpr {
-						func := o.conn.funcs[expr.expr.function_name] or {
-							return sqlstate_42883(expr.expr.function_name)
-						}
-
 						mut values := []Value{}
 						for row in set {
 							values << eval_as_value(o.conn, row, expr.expr.args[0], o.params)?
 						}
 
+						func := o.conn.find_function(expr.expr.function_name, [values[0].typ])?
 						set[0].data[key] = func.func(values)?
 					}
 					CountAllExpr {

@@ -59,6 +59,17 @@ SQLSTATE
 ``0B000`` is caused when attempting to ``START TRANSACTION`` but there pool of
 in-flight transactions is full.
 
+``22003`` numeric value out of range
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE foo (x SMALLINT);
+  INSERT INTO foo (x) VALUES (-32769);
+  -- error 22003: numeric value out of range
+
 ``22012`` division by zero
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 

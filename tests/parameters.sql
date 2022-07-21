@@ -62,10 +62,3 @@ UPDATE t2 SET x = :foo;
 SELECT * FROM t2;
 -- msg: CREATE TABLE 1
 -- error 23502: violates non-null constraint: column X
-
-/* set foo NULL BOOLEAN */
-CREATE TABLE t2 (x INT);
-UPDATE t2 SET x = :foo;
-SELECT * FROM t2;
--- msg: CREATE TABLE 1
--- error 42804: data type mismatch for column X: expected INTEGER but got BOOLEAN

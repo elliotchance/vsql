@@ -37,18 +37,18 @@ fn (o &LimitOperation) columns() Columns {
 }
 
 fn (o &LimitOperation) execute(rows []Row) ?[]Row {
-	mut offset := 0
+	mut offset := i64(0)
 	if o.offset !is NoExpr {
-		offset = int((eval_as_value(o.conn, Row{}, o.offset, o.params)?).f64_value)
+		offset = (eval_as_value(o.conn, Row{}, o.offset, o.params)?).as_int()
 
 		if offset >= rows.len {
 			return []Row{}
 		}
 	}
 
-	mut fetch := rows.len
+	mut fetch := i64(rows.len)
 	if o.fetch !is NoExpr {
-		fetch = int((eval_as_value(o.conn, Row{}, o.fetch, o.params)?).f64_value)
+		fetch = (eval_as_value(o.conn, Row{}, o.fetch, o.params)?).as_int()
 	}
 
 	if offset + fetch >= rows.len {

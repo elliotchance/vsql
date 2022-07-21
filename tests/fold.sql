@@ -5,10 +5,10 @@ VALUES LOWER('Hello');
 -- COL1: hello
 
 VALUES UPPER(123);
--- error 42804: data type mismatch argument 1 in UPPER: expected CHARACTER VARYING but got INTEGER
+-- error 42883: function does not exist: UPPER(BIGINT)
 
 VALUES LOWER(TRUE);
--- error 42804: data type mismatch argument 1 in LOWER: expected CHARACTER VARYING but got BOOLEAN
+-- error 42883: function does not exist: LOWER(BOOLEAN)
 
 VALUES UPPER();
 -- error 42601: syntax error: near ")"

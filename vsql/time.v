@@ -151,7 +151,8 @@ fn new_time_from_components(typ Type, year int, month int, day int, hour int, mi
 }
 
 fn new_time_from_bytes(typ Type, bytes []u8) Time {
-	mut ts_i64 := bytes_to_i64(bytes)
+	mut buf := new_bytes(bytes)
+	mut ts_i64 := buf.read_i64()
 
 	year := int(ts_i64 / vsql.year_period)
 	ts_i64 -= year * vsql.year_period
@@ -173,7 +174,7 @@ fn new_time_from_bytes(typ Type, bytes []u8) Time {
 
 	mut time_zone := i16(0)
 	if typ.typ == .is_time_with_time_zone || typ.typ == .is_timestamp_with_time_zone {
-		time_zone = bytes_to_i16(bytes[bytes.len - 2..])
+		time_zone = buf.read_i16()
 	}
 
 	return new_time_from_components(typ, year, month, day, hour, minute, second, int(ts_i64),
@@ -198,14 +199,14 @@ fn new_time_from_bytes(typ Type, bytes []u8) Time {
 // treats a timestamp as grammar. It will be up to you how to decide to round
 // the time zone to whole minutes in these cases.
 fn (t Time) bytes() []u8 {
-	if t.typ.typ == .is_time_with_time_zone || t.typ.typ == .is_timestamp_with_time_zone {
-		mut buf := new_bytes(i64_to_bytes(t.i64()))
-		buf.write_i16(t.time_zone)
+	mut buf := new_empty_bytes()
+	buf.write_i64(t.i64())
 
-		return buf.bytes()
+	if t.typ.typ == .is_time_with_time_zone || t.typ.typ == .is_timestamp_with_time_zone {
+		buf.write_i16(t.time_zone)
 	}
 
-	return i64_to_bytes(t.i64())
+	return buf.bytes()
 }
 
 // i64 returns the canonical integer representation of a specific millisecond

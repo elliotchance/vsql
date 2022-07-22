@@ -9,8 +9,7 @@ struct Schema {
 }
 
 fn (s Schema) bytes() []u8 {
-	mut b := new_bytes([]u8{})
-
+	mut b := new_empty_bytes()
 	b.write_string1(s.name)
 
 	return b.bytes()

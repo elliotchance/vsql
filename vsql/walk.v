@@ -63,7 +63,8 @@ fn (mut iter PageIterator) next() ?PageObject {
 		for (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1])?).kind == kind_not_leaf {
 			objects := (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1])?).objects()
 
-			iter.path << bytes_to_int(objects[iter.depth_iterator[iter.depth_iterator.len - 1]].value)
+			mut buf := new_bytes(objects[iter.depth_iterator[iter.depth_iterator.len - 1]].value)
+			iter.path << buf.read_i32()
 			iter.depth_iterator << 0
 		}
 

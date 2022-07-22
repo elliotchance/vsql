@@ -102,7 +102,7 @@ fn (mut p FilePager) fetch_page(page_number int) ?Page {
 	mut b := new_bytes(buf)
 
 	return Page{
-		kind: b.read_byte()
+		kind: b.read_u8()
 		used: b.read_u16()
 		data: buf[3..]
 	}
@@ -113,10 +113,10 @@ fn (mut p FilePager) store_page(page_number int, page Page) ? {
 	// in the pages.
 	p.file.seek(int(sizeof(Header)) + (p.page_size * page_number), .start)?
 
-	mut b := new_bytes([]u8{})
-	b.write_byte(page.kind)
+	mut b := new_empty_bytes()
+	b.write_u8(page.kind)
 	b.write_u16(page.used)
-	b.write_bytes(page.data)
+	b.write_u8s(page.data)
 
 	p.file.write(b.bytes())?
 }

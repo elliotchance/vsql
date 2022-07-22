@@ -44,22 +44,22 @@ fn (o PageObject) length() int {
 }
 
 fn (o PageObject) serialize() []u8 {
-	mut buf := new_bytes([]u8{})
-	buf.write_int(o.length())
-	buf.write_int(o.tid)
-	buf.write_int(o.xid)
+	mut buf := new_empty_bytes()
+	buf.write_i32(o.length())
+	buf.write_i32(o.tid)
+	buf.write_i32(o.xid)
 	buf.write_i16(i16(o.key.len))
-	buf.write_bytes(o.key)
-	buf.write_bytes(o.value)
+	buf.write_u8s(o.key)
+	buf.write_u8s(o.value)
 
 	return buf.bytes()
 }
 
 fn parse_page_object(data []u8) (int, PageObject) {
 	mut buf := new_bytes(data)
-	total_len := buf.read_int()
-	tid := buf.read_int()
-	xid := buf.read_int()
+	total_len := buf.read_i32()
+	tid := buf.read_i32()
+	xid := buf.read_i32()
 	key_len := buf.read_i16()
 
 	return total_len, new_page_object(data[vsql.page_object_prefix_length..key_len +

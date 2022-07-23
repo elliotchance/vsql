@@ -46,70 +46,70 @@ pub mut:
 
 pub fn new_null_value(typ SQLType) Value {
 	return Value{
-		typ: Type{typ, 0, false}
+		typ: Type{typ, 0, 0, false}
 		is_null: true
 	}
 }
 
 pub fn new_boolean_value(b bool) Value {
 	return Value{
-		typ: Type{.is_boolean, 0, false}
+		typ: Type{.is_boolean, 0, 0, false}
 		bool_value: if b { .is_true } else { .is_false }
 	}
 }
 
 pub fn new_unknown_value() Value {
 	return Value{
-		typ: Type{.is_boolean, 0, false}
+		typ: Type{.is_boolean, 0, 0, false}
 		bool_value: .is_unknown
 	}
 }
 
 pub fn new_double_precision_value(x f64) Value {
 	return Value{
-		typ: Type{.is_double_precision, 0, false}
+		typ: Type{.is_double_precision, 0, 0, false}
 		f64_value: x
 	}
 }
 
 pub fn new_integer_value(x int) Value {
 	return Value{
-		typ: Type{.is_integer, 0, false}
+		typ: Type{.is_integer, 0, 0, false}
 		int_value: x
 	}
 }
 
 pub fn new_bigint_value(x i64) Value {
 	return Value{
-		typ: Type{.is_bigint, 0, false}
+		typ: Type{.is_bigint, 0, 0, false}
 		int_value: x
 	}
 }
 
 pub fn new_real_value(x f32) Value {
 	return Value{
-		typ: Type{.is_real, 0, false}
+		typ: Type{.is_real, 0, 0, false}
 		f64_value: x
 	}
 }
 
 pub fn new_smallint_value(x i16) Value {
 	return Value{
-		typ: Type{.is_smallint, 0, false}
+		typ: Type{.is_smallint, 0, 0, false}
 		int_value: x
 	}
 }
 
 pub fn new_varchar_value(x string, size int) Value {
 	return Value{
-		typ: Type{.is_varchar, size, false}
+		typ: Type{.is_varchar, size, 0, false}
 		string_value: x
 	}
 }
 
 pub fn new_character_value(x string, size int) Value {
 	return Value{
-		typ: Type{.is_character, size, false}
+		typ: Type{.is_character, size, 0, false}
 		string_value: x
 	}
 }

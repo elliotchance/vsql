@@ -75,7 +75,7 @@ fn (t Table) bytes() []u8 {
 		b.write_u8(col.typ.number())
 		b.write_bool(col.not_null)
 		b.write_i32(col.typ.size)
-		b.write_i16(0) // precision
+		b.write_i16(col.typ.scale)
 	}
 
 	return b.bytes()
@@ -98,9 +98,9 @@ fn new_table_from_bytes(data []u8, tid int) Table {
 		column_type := b.read_u8()
 		is_not_null := b.read_bool()
 		size := b.read_i32()
-		b.read_i16() // precision
+		scale := b.read_i16()
 
-		columns << Column{column_name, type_from_number(column_type, size), is_not_null}
+		columns << Column{column_name, type_from_number(column_type, size, scale), is_not_null}
 	}
 
 	return Table{table_name, columns, primary_key, tid, false}

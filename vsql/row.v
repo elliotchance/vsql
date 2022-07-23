@@ -278,23 +278,23 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 					v.string_value = buf.read_string4()
 				}
 				.is_date {
-					typ := Type{.is_date, col.typ.size, col.not_null}
+					typ := Type{.is_date, col.typ.size, 0, col.not_null}
 					v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
 				}
 				.is_time_with_time_zone {
-					typ := Type{.is_time_with_time_zone, col.typ.size, col.not_null}
+					typ := Type{.is_time_with_time_zone, col.typ.size, 0, col.not_null}
 					v.time_value = new_time_from_bytes(typ, buf.read_u8s(10))
 				}
 				.is_time_without_time_zone {
-					typ := Type{.is_time_without_time_zone, col.typ.size, col.not_null}
+					typ := Type{.is_time_without_time_zone, col.typ.size, 0, col.not_null}
 					v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
 				}
 				.is_timestamp_with_time_zone {
-					typ := Type{.is_timestamp_with_time_zone, col.typ.size, col.not_null}
+					typ := Type{.is_timestamp_with_time_zone, col.typ.size, 0, col.not_null}
 					v.time_value = new_time_from_bytes(typ, buf.read_u8s(10))
 				}
 				.is_timestamp_without_time_zone {
-					typ := Type{.is_timestamp_without_time_zone, col.typ.size, col.not_null}
+					typ := Type{.is_timestamp_without_time_zone, col.typ.size, 0, col.not_null}
 					v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
 				}
 			}

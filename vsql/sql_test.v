@@ -63,7 +63,7 @@ fn get_tests() ?[]SQLTest {
 						params[parts[1]] = new_varchar_value(parts[2][1..parts[2].len - 1],
 							0)
 					} else if parts[2] == 'NULL' {
-						typ := new_type(parts[3], 0)
+						typ := new_type(parts[3], 0, 0)
 						params[parts[1]] = new_null_value(typ.typ)
 					} else {
 						params[parts[1]] = new_double_precision_value(parts[2].f64())

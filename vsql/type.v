@@ -6,7 +6,8 @@ struct Type {
 mut:
 	// TODO(elliotchance): Make these non-mutable.
 	typ      SQLType
-	size     int  // the size specified for the type
+	size     int  // the size (or precision) specified for the type
+	scale    i16  // the scale is only for numeric types
 	not_null bool // NOT NULL?
 }
 
@@ -26,48 +27,48 @@ enum SQLType {
 	is_timestamp_with_time_zone // TIMESTAMP WITH TIME ZONE
 }
 
-fn new_type(name string, size int) Type {
+fn new_type(name string, size int, scale i16) Type {
 	name_without_size := name.split('(')[0]
 
 	return match name_without_size {
 		'BIGINT' {
-			Type{.is_bigint, size, false}
+			Type{.is_bigint, 0, 0, false}
 		}
 		'BOOLEAN' {
-			Type{.is_boolean, size, false}
+			Type{.is_boolean, 0, 0, false}
 		}
 		'CHARACTER VARYING', 'CHAR VARYING', 'VARCHAR' {
-			Type{.is_varchar, size, false}
+			Type{.is_varchar, size, 0, false}
 		}
 		'CHARACTER', 'CHAR' {
-			Type{.is_character, size, false}
+			Type{.is_character, size, 0, false}
 		}
 		'DOUBLE PRECISION', 'FLOAT' {
-			Type{.is_double_precision, size, false}
+			Type{.is_double_precision, 0, 0, false}
 		}
 		'REAL' {
-			Type{.is_real, size, false}
+			Type{.is_real, 0, 0, false}
 		}
 		'INT', 'INTEGER' {
-			Type{.is_integer, size, false}
+			Type{.is_integer, 0, 0, false}
 		}
 		'SMALLINT' {
-			Type{.is_smallint, size, false}
+			Type{.is_smallint, 0, 0, false}
 		}
 		'DATE' {
-			Type{.is_date, 0, false}
+			Type{.is_date, 0, 0, false}
 		}
 		'TIME', 'TIME WITHOUT TIME ZONE' {
-			Type{.is_time_without_time_zone, size, false}
+			Type{.is_time_without_time_zone, size, 0, false}
 		}
 		'TIME WITH TIME ZONE' {
-			Type{.is_time_with_time_zone, size, false}
+			Type{.is_time_with_time_zone, size, 0, false}
 		}
 		'TIMESTAMP', 'TIMESTAMP WITHOUT TIME ZONE' {
-			Type{.is_timestamp_without_time_zone, size, false}
+			Type{.is_timestamp_without_time_zone, size, 0, false}
 		}
 		'TIMESTAMP WITH TIME ZONE' {
-			Type{.is_timestamp_with_time_zone, size, false}
+			Type{.is_timestamp_with_time_zone, size, 0, false}
 		}
 		else {
 			panic(name_without_size)
@@ -205,7 +206,7 @@ fn (t Type) number() u8 {
 	}
 }
 
-fn type_from_number(number u8, size int) Type {
+fn type_from_number(number u8, size int, scale i16) Type {
 	return new_type(match number {
 		0 { 'BOOLEAN' }
 		1 { 'BIGINT' }
@@ -221,5 +222,29 @@ fn type_from_number(number u8, size int) Type {
 		11 { 'TIMESTAMP($size) WITH TIME ZONE' }
 		12 { 'TIMESTAMP($size) WITHOUT TIME ZONE' }
 		else { panic(number) }
-	}, 0)
+	}, size, scale)
+}
+
+fn decimal_type_str(size int, scale i16) string {
+	if size == 0 {
+		return 'DECIMAL'
+	}
+
+	if scale == 0 {
+		return 'DECIMAL($size)'
+	}
+
+	return 'DECIMAL($size, $scale)'
+}
+
+fn numeric_type_str(size int, scale i16) string {
+	if size == 0 {
+		return 'NUMERIC'
+	}
+
+	if scale == 0 {
+		return 'NUMERIC($size)'
+	}
+
+	return 'NUMERIC($size, $scale)'
 }

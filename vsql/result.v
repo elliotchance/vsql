@@ -25,7 +25,7 @@ pub fn new_result(columns Columns, rows []Row, elapsed_parse time.Duration, elap
 }
 
 fn new_result_msg(msg string, elapsed_parse time.Duration, elapsed_exec time.Duration) Result {
-	return new_result([Column{'msg', new_type('VARCHAR', 0), false}], [
+	return new_result([Column{'msg', new_type('VARCHAR', 0, 0), false}], [
 		Row{
 			data: {
 				'msg': new_varchar_value(msg, 0)

@@ -202,9 +202,7 @@ fn add_group_by_plan(mut plan Plan, group_clause []Expr, select_exprs []DerivedC
 	// expressions contain an aggregate function we need to have an implicit
 	// GROUP BY for the whole set.
 	mut has_agg := false
-	empty_row := new_empty_table_row({
-		table.name: table
-	})
+	empty_row := new_empty_row(table.columns, table.name)
 	for e in select_exprs {
 		if expr_is_agg(c, e.expr, empty_row, params)? {
 			has_agg = true
@@ -340,6 +338,6 @@ fn (p Plan) explain(elapsed_parse time.Duration) Result {
 		})
 	}
 
-	return new_result([Column{'EXPLAIN', new_type('VARCHAR', 0), false}], rows, elapsed_parse,
+	return new_result([Column{'EXPLAIN', new_type('VARCHAR', 0, 0), false}], rows, elapsed_parse,
 		0)
 }

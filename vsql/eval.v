@@ -104,10 +104,10 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 			return func.return_type
 		}
 		CountAllExpr {
-			return new_type('INTEGER', 0)
+			return new_type('INTEGER', 0, 0)
 		}
 		BetweenExpr, NullExpr, TruthExpr, LikeExpr, SimilarExpr {
-			return new_type('BOOLEAN', 0)
+			return new_type('BOOLEAN', 0, 0)
 		}
 		Parameter {
 			p := params[e.name] or { return sqlstate_42p02(e.name) }
@@ -135,22 +135,22 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 			return sqlstate_42601('invalid expression provided: $e.str()')
 		}
 		CurrentDateExpr {
-			return new_type('DATE', 0)
+			return new_type('DATE', 0, 0)
 		}
 		CurrentTimeExpr {
-			return new_type('TIME WITH TIME ZONE', 0)
+			return new_type('TIME WITH TIME ZONE', 0, 0)
 		}
 		CurrentTimestampExpr {
-			return new_type('TIMESTAMP WITH TIME ZONE', 0)
+			return new_type('TIMESTAMP WITH TIME ZONE', 0, 0)
 		}
 		LocalTimeExpr {
-			return new_type('TIME WITHOUT TIME ZONE', 0)
+			return new_type('TIME WITHOUT TIME ZONE', 0, 0)
 		}
 		LocalTimestampExpr {
-			return new_type('TIMESTAMP WITHOUT TIME ZONE', 0)
+			return new_type('TIMESTAMP WITHOUT TIME ZONE', 0, 0)
 		}
 		SubstringExpr, TrimExpr {
-			return new_type('CHARACTER VARYING', 0)
+			return new_type('CHARACTER VARYING', 0, 0)
 		}
 		UntypedNullExpr {
 			return error('cannot determine type of untyped NULL')

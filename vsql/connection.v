@@ -195,11 +195,11 @@ pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) 
 	mut arg_types := []Type{}
 	for arg in raw_args {
 		if arg.trim_space() != '' {
-			arg_types << new_type(arg.trim_space().to_upper(), 0)
+			arg_types << new_type(arg.trim_space().to_upper(), 0, 0)
 		}
 	}
 
-	return_type := new_type(parts[2].trim_space().to_upper(), 0)
+	return_type := new_type(parts[2].trim_space().to_upper(), 0, 0)
 	c.register_func(Func{function_name, arg_types, false, func, return_type})?
 }
 

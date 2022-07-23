@@ -886,7 +886,7 @@ Optional Features
    * - ❌ **F561**
      - **Full value expressions**
 
-   * - ❌ **F571**
+   * - ✅ **F571**
      - **Truth value tests**
 
    * - ❌ **F591**
@@ -1213,7 +1213,7 @@ Optional Features
    * - ❌ **T024**
      - **Spaces in binary literals**
 
-   * - ❌ **T031**
+   * - ✅ **T031**
      - **BOOLEAN data type**
 
    * - ❌ **T041**

@@ -50,32 +50,21 @@ pub fn (r Row) get_string(name string) ?string {
 	return (r.get(name)?).str()
 }
 
-// get_bool only works on a BOOLEAN value. If the value is NULL or UNKNOWN,
-// false will be returned. See get_null() and get_unknown() repsectively.
+// get_bool only works on a BOOLEAN value. If the value is UNKNOWN (same as
+// NULL), false will be returned. See get_null() and get_unknown() respectively.
 //
 // An error is returned if the type is not a BOOLEAN or the column name does not
 // exist.
-pub fn (r Row) get_bool(name string) ?bool {
+pub fn (r Row) get_bool(name string) ?Boolean {
 	value := r.get(name)?
 
-	return match value.typ.typ {
-		.is_boolean { value.f64_value == boolean_true }
-		else { false }
-	}
-}
-
-// get_unknown returns true only is a value is a BOOLEAN and in the UNKNOWN
-// state. The UNKNOWN state is a third state beyond TRUE and FALSE defined in
-// the SQL standard. A NULL BOOLEAN will return false.
-//
-// An error is returned if the type is not a BOOLEAN or the column name does not
-// exist.
-pub fn (r Row) get_unknown(name string) ?bool {
-	value := r.get(name)?
-
-	return match value.typ.typ {
-		.is_boolean { value.f64_value == boolean_unknown }
-		else { false }
+	match value.typ.typ {
+		.is_boolean {
+			return value.bool_value
+		}
+		else {
+			return error("cannot use get_bool('$name') when type is $value.typ")
+		}
 	}
 }
 
@@ -188,7 +177,7 @@ fn (r Row) bytes(t Table) []u8 {
 		if !v.is_null || col.typ.typ == .is_boolean {
 			match col.typ.typ {
 				.is_boolean {
-					buf.write_u8(u8(v.f64_value))
+					buf.write_u8(u8(v.bool_value))
 				}
 				.is_bigint {
 					buf.write_i64(i64(v.f64_value))
@@ -254,8 +243,8 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 		if !v.is_null || v.typ.typ == .is_boolean {
 			match col.typ.typ {
 				.is_boolean {
-					v.f64_value = buf.read_u8()
-					if v.f64_value == boolean_null {
+					v.bool_value = Boolean(buf.read_u8())
+					if v.bool_value == .is_unknown {
 						v.is_null = true
 					}
 				}

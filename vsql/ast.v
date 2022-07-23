@@ -38,6 +38,7 @@ type Expr = BetweenExpr
 	| SimilarExpr
 	| SubstringExpr
 	| TrimExpr
+	| TruthExpr
 	| UnaryExpr
 	| UntypedNullExpr
 	| Value
@@ -106,6 +107,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 			e.pstr(params)
 		}
 		TrimExpr {
+			e.pstr(params)
+		}
+		TruthExpr {
 			e.pstr(params)
 		}
 		UnaryExpr {
@@ -585,4 +589,23 @@ struct UntypedNullExpr {}
 
 fn (e UntypedNullExpr) str() string {
 	return 'NULL'
+}
+
+// TruthExpr for "IS [ NOT ] { TRUE | FALSE | UNKNOWN }".
+struct TruthExpr {
+	expr  Expr
+	not   bool
+	value Value
+}
+
+fn (e TruthExpr) str() string {
+	return e.pstr(map[string]Value{})
+}
+
+fn (e TruthExpr) pstr(params map[string]Value) string {
+	if e.not {
+		return '${e.expr.pstr(params)} IS NOT $e.value.str()'
+	}
+
+	return '${e.expr.pstr(params)} IS $e.value.str()'
 }

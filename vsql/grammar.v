@@ -142,6 +142,12 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_boolean_term_ := &EarleyRule{
 		name: '<boolean term>'
 	}
+	mut rule_boolean_test_2_ := &EarleyRule{
+		name: '<boolean test: 2>'
+	}
+	mut rule_boolean_test_3_ := &EarleyRule{
+		name: '<boolean test: 3>'
+	}
 	mut rule_boolean_test_ := &EarleyRule{
 		name: '<boolean test>'
 	}
@@ -1438,6 +1444,18 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_trim_specification_ := &EarleyRule{
 		name: '<trim specification>'
 	}
+	mut rule_truth_value_1_ := &EarleyRule{
+		name: '<truth value: 1>'
+	}
+	mut rule_truth_value_2_ := &EarleyRule{
+		name: '<truth value: 2>'
+	}
+	mut rule_truth_value_3_ := &EarleyRule{
+		name: '<truth value: 3>'
+	}
+	mut rule_truth_value_ := &EarleyRule{
+		name: '<truth value>'
+	}
 	mut rule_unique_column_list_ := &EarleyRule{
 		name: '<unique column list>'
 	}
@@ -2210,9 +2228,46 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_boolean_test_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_boolean_primary_
+		},
+		&EarleyRuleOrString{
+			rule: rule_is
+		},
+		&EarleyRuleOrString{
+			rule: rule_truth_value_
+		},
+	]}
+
+	rule_boolean_test_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_boolean_primary_
+		},
+		&EarleyRuleOrString{
+			rule: rule_is
+		},
+		&EarleyRuleOrString{
+			rule: rule_not
+		},
+		&EarleyRuleOrString{
+			rule: rule_truth_value_
+		},
+	]}
+
 	rule_boolean_test_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_boolean_primary_
+		},
+	]}
+	rule_boolean_test_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_boolean_test_2_
+		},
+	]}
+	rule_boolean_test_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_boolean_test_3_
 		},
 	]}
 
@@ -6617,6 +6672,40 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_truth_value_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_true
+		},
+	]}
+
+	rule_truth_value_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_false
+		},
+	]}
+
+	rule_truth_value_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_unknown
+		},
+	]}
+
+	rule_truth_value_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_truth_value_1_
+		},
+	]}
+	rule_truth_value_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_truth_value_2_
+		},
+	]}
+	rule_truth_value_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_truth_value_3_
+		},
+	]}
+
 	rule_unique_column_list_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_column_name_list_
@@ -7722,6 +7811,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<boolean primary>'] = rule_boolean_primary_
 	rules['<boolean term: 2>'] = rule_boolean_term_2_
 	rules['<boolean term>'] = rule_boolean_term_
+	rules['<boolean test: 2>'] = rule_boolean_test_2_
+	rules['<boolean test: 3>'] = rule_boolean_test_3_
 	rules['<boolean test>'] = rule_boolean_test_
 	rules['<boolean type: 1>'] = rule_boolean_type_1_
 	rules['<boolean type>'] = rule_boolean_type_
@@ -8154,6 +8245,10 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<trim operands>'] = rule_trim_operands_
 	rules['<trim source>'] = rule_trim_source_
 	rules['<trim specification>'] = rule_trim_specification_
+	rules['<truth value: 1>'] = rule_truth_value_1_
+	rules['<truth value: 2>'] = rule_truth_value_2_
+	rules['<truth value: 3>'] = rule_truth_value_3_
+	rules['<truth value>'] = rule_truth_value_
 	rules['<unique column list>'] = rule_unique_column_list_
 	rules['<unique constraint definition: 1>'] = rule_unique_constraint_definition_1_
 	rules['<unique constraint definition>'] = rule_unique_constraint_definition_
@@ -8401,6 +8496,16 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		'<boolean term: 2>' {
 			return [
 				EarleyValue(parse_and(children[0] as Expr, children[2] as Expr)?),
+			]
+		}
+		'<boolean test: 2>' {
+			return [
+				EarleyValue(parse_boolean_test1(children[0] as Expr, children[2] as Value)?),
+			]
+		}
+		'<boolean test: 3>' {
+			return [
+				EarleyValue(parse_boolean_test2(children[0] as Expr, children[3] as Value)?),
 			]
 		}
 		'<boolean type: 1>' {
@@ -9149,6 +9254,15 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [
 				EarleyValue(parse_trim4(children[0] as string, children[1] as Expr, children[3] as Expr)?),
 			]
+		}
+		'<truth value: 1>' {
+			return [EarleyValue(parse_true()?)]
+		}
+		'<truth value: 2>' {
+			return [EarleyValue(parse_false()?)]
+		}
+		'<truth value: 3>' {
+			return [EarleyValue(parse_unknown()?)]
 		}
 		'<unique constraint definition: 1>' {
 			return [

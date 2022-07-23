@@ -6,12 +6,19 @@ module vsql
 
 // Possible values for a BOOLEAN. These must not be negative values because they
 // are encoded as u8 on disk.
-const (
-	boolean_null    = f64(0)
-	boolean_unknown = f64(1)
-	boolean_true    = f64(2)
-	boolean_false   = f64(3)
-)
+pub enum Boolean {
+	is_unknown = 0 // same as NULL
+	is_false = 1
+	is_true = 2
+}
+
+fn (b Boolean) str() string {
+	return match b {
+		.is_false { 'FALSE' }
+		.is_true { 'TRUE' }
+		.is_unknown { 'UNKNOWN' }
+	}
+}
 
 pub struct Value {
 pub mut:
@@ -19,7 +26,8 @@ pub mut:
 	typ Type
 	// Used by all types (including those that have NULL built in like BOOLEAN).
 	is_null bool
-	// BOOLEAN: See one of the boolean_* constants.
+	// BOOLEAN
+	bool_value Boolean
 	// BIGINT, DOUBLE PRECISION, INTEGER, REAL and SMALLINT
 	f64_value f64
 	// CHARACTER VARYING(n) and CHARACTER(n)
@@ -30,24 +38,24 @@ pub mut:
 	time_value Time
 }
 
-fn new_null_value(typ SQLType) Value {
+pub fn new_null_value(typ SQLType) Value {
 	return Value{
 		typ: Type{typ, 0, false}
 		is_null: true
 	}
 }
 
-fn new_boolean_value(b bool) Value {
+pub fn new_boolean_value(b bool) Value {
 	return Value{
 		typ: Type{.is_boolean, 0, false}
-		f64_value: if b { vsql.boolean_true } else { vsql.boolean_false }
+		bool_value: if b { .is_true } else { .is_false }
 	}
 }
 
 pub fn new_unknown_value() Value {
 	return Value{
 		typ: Type{.is_boolean, 0, false}
-		f64_value: vsql.boolean_unknown
+		bool_value: .is_unknown
 	}
 }
 
@@ -127,15 +135,6 @@ pub fn new_date_value(ts string) ?Value {
 	}
 }
 
-fn bool_str(x f64) string {
-	return match x {
-		vsql.boolean_false { 'FALSE' }
-		vsql.boolean_true { 'TRUE' }
-		vsql.boolean_unknown { 'UNKNOWN' }
-		else { 'NULL' }
-	}
-}
-
 fn f64_string(x f64) string {
 	s := '${x:.6}'.trim('.').split('.')
 	if s.len == 1 {
@@ -146,13 +145,13 @@ fn f64_string(x f64) string {
 }
 
 fn (v Value) str() string {
-	if v.is_null {
+	if v.is_null && v.typ.typ != .is_boolean {
 		return 'NULL'
 	}
 
 	return match v.typ.typ {
 		.is_boolean {
-			bool_str(v.f64_value)
+			v.bool_value.str()
 		}
 		.is_double_precision, .is_real, .is_bigint, .is_integer, .is_smallint {
 			f64_string(v.f64_value)

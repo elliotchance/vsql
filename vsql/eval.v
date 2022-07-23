@@ -101,7 +101,7 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 		CountAllExpr {
 			return new_type('INTEGER', 0)
 		}
-		BetweenExpr, NullExpr, LikeExpr, SimilarExpr {
+		BetweenExpr, NullExpr, TruthExpr, LikeExpr, SimilarExpr {
 			return new_type('BOOLEAN', 0)
 		}
 		Parameter {
@@ -239,6 +239,9 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 		TrimExpr {
 			return eval_trim(conn, data, e, params)
 		}
+		TruthExpr {
+			return eval_truth(conn, data, e, params)
+		}
 		UntypedNullExpr {
 			return error('cannot determine value of untyped NULL')
 		}
@@ -283,7 +286,7 @@ fn eval_as_bool(conn &Connection, data Row, e Expr, params map[string]Value) ?bo
 	v := eval_as_value(conn, data, e, params)?
 
 	if v.typ.typ == .is_boolean {
-		return v.f64_value == boolean_true
+		return v.bool_value == .is_true
 	}
 
 	return sqlstate_42804('in expression', 'BOOLEAN', v.typ.str())
@@ -331,6 +334,36 @@ fn eval_null(conn &Connection, data Row, e NullExpr, params map[string]Value) ?V
 	}
 
 	return new_boolean_value(value.is_null)
+}
+
+fn eval_truth(conn &Connection, data Row, e TruthExpr, params map[string]Value) ?Value {
+	value := eval_as_value(conn, data, e.expr, params)?
+	result := match value.bool_value {
+		.is_true {
+			match e.value.bool_value {
+				.is_true { new_boolean_value(true) }
+				.is_false, .is_unknown { new_boolean_value(false) }
+			}
+		}
+		.is_false {
+			match e.value.bool_value {
+				.is_true, .is_unknown { new_boolean_value(false) }
+				.is_false { new_boolean_value(true) }
+			}
+		}
+		.is_unknown {
+			match e.value.bool_value {
+				.is_true, .is_false { new_boolean_value(false) }
+				.is_unknown { new_boolean_value(true) }
+			}
+		}
+	}
+
+	if e.not {
+		return eval_not(result)
+	}
+
+	return result
 }
 
 fn eval_trim(conn &Connection, data Row, e TrimExpr, params map[string]Value) ?Value {
@@ -446,20 +479,70 @@ fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value
 		}
 		'AND' {
 			if left.typ.typ == .is_boolean && right.typ.typ == .is_boolean {
-				return new_boolean_value((left.f64_value == boolean_true)
-					&& (right.f64_value == boolean_true))
+				return eval_and(left, right)
 			}
 		}
 		'OR' {
 			if left.typ.typ == .is_boolean && right.typ.typ == .is_boolean {
-				return new_boolean_value((left.f64_value == boolean_true)
-					|| (right.f64_value == boolean_true))
+				return eval_or(left, right)
 			}
 		}
 		else {}
 	}
 
 	return sqlstate_42804('cannot $left.typ $e.op $right.typ', 'another type', '$left.typ and $right.typ')
+}
+
+fn eval_and(left Value, right Value) Value {
+	return match left.bool_value {
+		.is_true {
+			match right.bool_value {
+				.is_true { new_boolean_value(true) }
+				.is_false { new_boolean_value(false) }
+				.is_unknown { new_unknown_value() }
+			}
+		}
+		.is_false {
+			new_boolean_value(false)
+		}
+		.is_unknown {
+			match right.bool_value {
+				.is_true { new_unknown_value() }
+				.is_false { new_boolean_value(false) }
+				.is_unknown { new_unknown_value() }
+			}
+		}
+	}
+}
+
+fn eval_or(left Value, right Value) Value {
+	return match left.bool_value {
+		.is_true {
+			new_boolean_value(true)
+		}
+		.is_false {
+			match right.bool_value {
+				.is_true { new_boolean_value(true) }
+				.is_false { new_boolean_value(false) }
+				.is_unknown { new_unknown_value() }
+			}
+		}
+		.is_unknown {
+			match right.bool_value {
+				.is_true { new_boolean_value(true) }
+				.is_false { new_unknown_value() }
+				.is_unknown { new_unknown_value() }
+			}
+		}
+	}
+}
+
+fn eval_not(x Value) Value {
+	return match x.bool_value {
+		.is_true { new_boolean_value(false) }
+		.is_false { new_boolean_value(true) }
+		.is_unknown { new_unknown_value() }
+	}
 }
 
 fn eval_unary(conn &Connection, data Row, e UnaryExpr, params map[string]Value) ?Value {
@@ -478,7 +561,7 @@ fn eval_unary(conn &Connection, data Row, e UnaryExpr, params map[string]Value) 
 		}
 		'NOT' {
 			if value.typ.typ == .is_boolean {
-				return new_boolean_value(value.f64_value != boolean_true)
+				return eval_not(value)
 			}
 		}
 		else {}

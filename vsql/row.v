@@ -41,6 +41,17 @@ pub fn (r Row) get_f64(name string) ?f64 {
 	return error("cannot use get_f64('$name') when type is $value.typ")
 }
 
+// get_int will only work for columns that are integeres (SMALLINT, INTEGER or
+// BIGINT). If the value is NULL, 0 will be returned. See get_null().
+pub fn (r Row) get_int(name string) ?int {
+	value := r.get(name)?
+	if value.typ.uses_int() {
+		return int(value.int_value)
+	}
+
+	return error("cannot use get_int('$name') when type is $value.typ")
+}
+
 // get_string is the most flexible getter and will try to coerce the value
 // (including non-strings like numbers, booleans, NULL, etc) into some kind of
 // string.
@@ -87,7 +98,7 @@ fn (r Row) get(name string) ?Value {
 fn new_empty_row(columns Columns, table_name string) Row {
 	mut r := Row{}
 	for col in columns {
-		v := new_empty_value(col)
+		v := new_empty_value(col.typ)
 
 		if table_name == '' {
 			r.data[col.name] = v
@@ -99,11 +110,11 @@ fn new_empty_row(columns Columns, table_name string) Row {
 	return r
 }
 
-fn new_empty_value(col Column) Value {
-	mut value := match col.typ.typ {
+fn new_empty_value(typ Type) Value {
+	mut value := match typ.typ {
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
-			new_null_value(col.typ.typ)
+			new_null_value(typ.typ)
 		}
 		.is_bigint {
 			new_bigint_value(0)
@@ -124,14 +135,14 @@ fn new_empty_value(col Column) Value {
 			new_boolean_value(false)
 		}
 		.is_character {
-			new_character_value('', col.typ.size)
+			new_character_value('', typ.size)
 		}
 		.is_varchar {
-			new_varchar_value('', col.typ.size)
+			new_varchar_value('', typ.size)
 		}
 	}
 
-	value.typ.not_null = col.not_null
+	value.typ.not_null = typ.not_null
 
 	return value
 }
@@ -140,7 +151,7 @@ fn new_empty_table_row(tables map[string]Table) Row {
 	mut r := Row{}
 	for _, table in tables {
 		for col in table.columns {
-			r.data['${table.name}.$col.name'] = new_empty_value(col)
+			r.data['${table.name}.$col.name'] = new_empty_value(col.typ)
 		}
 	}
 
@@ -180,19 +191,19 @@ fn (r Row) bytes(t Table) []u8 {
 					buf.write_u8(u8(v.bool_value))
 				}
 				.is_bigint {
-					buf.write_i64(i64(v.f64_value))
+					buf.write_i64(v.int_value)
 				}
 				.is_double_precision {
 					buf.write_f64(v.f64_value)
 				}
 				.is_integer {
-					buf.write_i32(int(v.f64_value))
+					buf.write_i32(int(v.int_value))
 				}
 				.is_real {
 					buf.write_f32(f32(v.f64_value))
 				}
 				.is_smallint {
-					buf.write_i16(i16(v.f64_value))
+					buf.write_i16(i16(v.int_value))
 				}
 				.is_varchar, .is_character {
 					buf.write_string4(v.string_value)
@@ -249,19 +260,19 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 					}
 				}
 				.is_bigint {
-					v.f64_value = buf.read_i64()
+					v.int_value = buf.read_i64()
 				}
 				.is_double_precision {
 					v.f64_value = buf.read_f64()
 				}
 				.is_integer {
-					v.f64_value = buf.read_i32()
+					v.int_value = buf.read_i32()
 				}
 				.is_real {
 					v.f64_value = buf.read_f32()
 				}
 				.is_smallint {
-					v.f64_value = buf.read_i16()
+					v.int_value = buf.read_i16()
 				}
 				.is_varchar, .is_character {
 					v.string_value = buf.read_string4()
@@ -308,13 +319,13 @@ fn (mut r Row) object_key(t Table) ?[]u8 {
 			col := t.column(col_name)?
 			match col.typ.typ {
 				.is_bigint {
-					pk.write_i64(i64(r.data[col_name].f64_value))
+					pk.write_i64(r.data[col_name].int_value)
 				}
 				.is_integer {
-					pk.write_i32(int(r.data[col_name].f64_value))
+					pk.write_i32(int(r.data[col_name].int_value))
 				}
 				.is_smallint {
-					pk.write_i16(i16(r.data[col_name].f64_value))
+					pk.write_i16(i16(r.data[col_name].int_value))
 				}
 				else {
 					return error('cannot use $col.typ.str() in PRIMARY KEY')
@@ -327,11 +338,11 @@ fn (mut r Row) object_key(t Table) ?[]u8 {
 		if r.id.len == 0 {
 			// TODO(elliotchance): This is a terrible hack to make sure we have
 			//  a globally unique but also ordered id for the row.
-			unique_id := time.now().unix_time_milli()
+			unique_id := u64(time.now().unix_time_milli())
 			time.sleep(time.millisecond)
 
 			mut buf := new_empty_bytes()
-			buf.write_i64(unique_id)
+			buf.write_u64(unique_id)
 			r.id = buf.bytes()
 		}
 	}

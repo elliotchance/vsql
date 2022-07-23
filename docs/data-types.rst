@@ -6,51 +6,12 @@ Data Types
 Boolean Types
 -------------
 
-``BOOLEAN``
-^^^^^^^^^^^
-
-A ``BOOLEAN`` may only store a ``TRUE``, ``FALSE`` or ``UNKNOWN`` value (not
-including a possible ``NULL``).
+See :doc:`booleans`.
 
 Numeric Types
 -------------
 
-``BIGINT``
-^^^^^^^^^^
-
-``BIGINT`` is an integer type.
-
-``DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^
-
-``DOUBLE PRECISION`` is a 64-bit floating point number.
-
-The ``FLOAT(n)`` and ``FLOAT`` are aliases.
-
-**TODO**
-
-1. The *n* in ``FLOAT(n)`` does not have any affect.
-
-``INTEGER``
-^^^^^^^^^^^
-
-The type ``INT`` is an alias for ``INTEGER``.
-
-**TODO**
-
-1. The range of possible values is not enforced.
-
-``REAL``
-^^^^^^^^
-
-A ``REAL`` is a 32bit floating-point number.
-
-``SMALLINT``
-^^^^^^^^^^^^
-
-**TODO**
-
-1. The range of possible values is not enforced.
+See :doc:`numbers`.
 
 Text Types
 ----------

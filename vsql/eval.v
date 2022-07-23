@@ -94,7 +94,12 @@ fn eval_row(conn &Connection, data Row, exprs []Expr, params map[string]Value) ?
 fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Type {
 	match e {
 		CallExpr {
-			func := conn.funcs[e.function_name] or { return sqlstate_42883(e.function_name) }
+			mut arg_types := []Type{}
+			for arg in e.args {
+				arg_types << eval_as_type(conn, data, arg, params)?
+			}
+
+			func := conn.find_function(e.function_name, arg_types)?
 
 			return func.return_type
 		}
@@ -301,10 +306,12 @@ fn eval_identifier(data Row, e Identifier) ?Value {
 fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) ?Value {
 	func_name := e.function_name
 
-	func := conn.funcs[func_name] or {
-		// function does not exist
-		return sqlstate_42883(func_name)
+	mut arg_types := []Type{}
+	for arg in e.args {
+		arg_types << eval_as_type(conn, data, arg, params)?
 	}
+
+	func := conn.find_function(func_name, arg_types)?
 
 	if func.is_agg {
 		return eval_identifier(data, new_identifier('"${e.pstr(params)}"'))
@@ -312,7 +319,7 @@ fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) ?V
 
 	if e.args.len != func.arg_types.len {
 		return sqlstate_42883('$func_name has $e.args.len ${pluralize(e.args.len, 'argument')} but needs $func.arg_types.len ${pluralize(func.arg_types.len,
-			'argument')}')
+			'argument')}', arg_types)
 	}
 
 	mut args := []Value{}
@@ -405,7 +412,7 @@ fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) ?V
 
 fn eval_substring(conn &Connection, data Row, e SubstringExpr, params map[string]Value) ?Value {
 	value := eval_as_value(conn, data, e.value, params)?
-	from := int((eval_as_value(conn, data, e.from, params)?).f64_value) - 1
+	from := int((eval_as_value(conn, data, e.from, params)?).as_int() - 1)
 
 	if e.using == 'CHARACTERS' {
 		characters := value.string_value.runes()
@@ -416,7 +423,7 @@ fn eval_substring(conn &Connection, data Row, e SubstringExpr, params map[string
 
 		mut @for := characters.len - from
 		if e.@for !is NoExpr {
-			@for = int((eval_as_value(conn, data, e.@for, params)?).f64_value)
+			@for = int((eval_as_value(conn, data, e.@for, params)?).as_int())
 		}
 
 		return new_varchar_value(characters[from..from + @for].string(), 0)
@@ -428,7 +435,7 @@ fn eval_substring(conn &Connection, data Row, e SubstringExpr, params map[string
 
 	mut @for := value.string_value.len - from
 	if e.@for !is NoExpr {
-		@for = int((eval_as_value(conn, data, e.@for, params)?).f64_value)
+		@for = int((eval_as_value(conn, data, e.@for, params)?).as_int())
 	}
 
 	return new_varchar_value(value.string_value.substr(from, from + @for), 0)
@@ -440,12 +447,16 @@ fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value
 
 	match e.op {
 		'=', '<>', '>', '<', '>=', '<=' {
-			if left.typ.uses_f64() && right.typ.uses_f64() {
-				return eval_cmp<f64>(left.f64_value, right.f64_value, e.op)
-			}
-
 			if left.typ.uses_string() && right.typ.uses_string() {
 				return eval_cmp<string>(left.string_value, right.string_value, e.op)
+			}
+
+			l, r := coerce_numeric_binary(left, e.op, right)?
+
+			if l.typ.uses_f64() {
+				return eval_cmp<f64>(l.f64_value, r.f64_value, e.op)
+			} else {
+				return eval_cmp<i64>(l.int_value, r.int_value, e.op)
 			}
 		}
 		'||' {
@@ -454,27 +465,47 @@ fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value
 			}
 		}
 		'+' {
-			if left.typ.uses_f64() && right.typ.uses_f64() {
-				return new_double_precision_value(left.f64_value + right.f64_value)
+			l, r := coerce_numeric_binary(left, e.op, right)?
+
+			if l.typ.uses_f64() {
+				return new_double_precision_value(l.f64_value + r.f64_value)
+			} else {
+				return new_bigint_value(l.int_value + r.int_value)
 			}
 		}
 		'-' {
-			if left.typ.uses_f64() && right.typ.uses_f64() {
-				return new_double_precision_value(left.f64_value - right.f64_value)
+			l, r := coerce_numeric_binary(left, e.op, right)?
+
+			if l.typ.uses_f64() {
+				return new_double_precision_value(l.f64_value - r.f64_value)
+			} else {
+				return new_bigint_value(l.int_value - r.int_value)
 			}
 		}
 		'*' {
-			if left.typ.uses_f64() && right.typ.uses_f64() {
-				return new_double_precision_value(left.f64_value * right.f64_value)
+			l, r := coerce_numeric_binary(left, e.op, right)?
+
+			if l.typ.uses_f64() {
+				return new_double_precision_value(l.f64_value * r.f64_value)
+			} else {
+				return new_bigint_value(l.int_value * r.int_value)
 			}
 		}
 		'/' {
-			if left.typ.uses_f64() && right.typ.uses_f64() {
-				if right.f64_value == 0 {
+			l, r := coerce_numeric_binary(left, e.op, right)?
+
+			if l.typ.uses_f64() {
+				if r.f64_value == 0 {
 					return sqlstate_22012() // division by zero
 				}
 
-				return new_double_precision_value(left.f64_value / right.f64_value)
+				return new_double_precision_value(l.f64_value / r.f64_value)
+			} else {
+				if r.int_value == 0 {
+					return sqlstate_22012() // division by zero
+				}
+
+				return new_bigint_value(l.int_value / r.int_value)
 			}
 		}
 		'AND' {
@@ -545,18 +576,84 @@ fn eval_not(x Value) Value {
 	}
 }
 
+fn coerce_numeric_binary(left Value, op string, right Value) ?(Value, Value) {
+	if (!left.typ.uses_f64() && !left.typ.uses_int())
+		|| (!right.typ.uses_f64() && !right.typ.uses_int()) {
+		return sqlstate_42804('cannot $left.typ $op $right.typ', 'another type', '$left.typ and $right.typ')
+	}
+
+	// If they are already both the same, there is nothing to coerce.
+	if left.typ.uses_f64() && right.typ.uses_f64() {
+		return left, right
+	}
+
+	if left.typ.uses_int() && right.typ.uses_int() {
+		return left, right
+	}
+
+	// If they are both coercable this means that we have two constants like
+	// "2.4 * 12". In this case we need to make sure we pick the more precise
+	// type.
+	//
+	// TODO(elliotchance): This shouldn't be needed when we support NUMERIC
+	//  types.
+	//
+	// TODO(elliotchance): It would be nice to reduce these constant expressions
+	//  to avoid evaulating them for each row.
+	if left.is_coercible && right.is_coercible {
+		if left.typ.uses_f64() || right.typ.uses_f64() {
+			return new_double_precision_value(left.as_f64()), new_double_precision_value(right.as_f64())
+		}
+
+		return new_bigint_value(left.as_int()), new_bigint_value(right.as_int())
+	}
+
+	// Only when they are different do we try to coerce one to the other.
+	if left.is_coercible {
+		if right.typ.uses_f64() {
+			return new_double_precision_value(left.int_value), right
+		}
+
+		return new_bigint_value(i64(left.f64_value)), right
+	}
+
+	if right.is_coercible {
+		if left.typ.uses_f64() {
+			return left, new_double_precision_value(right.int_value)
+		}
+
+		return left, new_bigint_value(i64(right.f64_value))
+	}
+
+	return sqlstate_42804('cannot $left.typ $op $right.typ', 'another type', '$left.typ and $right.typ')
+}
+
 fn eval_unary(conn &Connection, data Row, e UnaryExpr, params map[string]Value) ?Value {
 	value := eval_as_value(conn, data, e.expr, params)?
 
 	match e.op {
 		'-' {
+			// '-' needs to carry through the is_coercible status because it's
+			// used for negative numbers that may need to be coerced later in
+			// the expression.
+
 			if value.typ.uses_f64() {
-				return new_double_precision_value(-value.f64_value)
+				mut v := new_double_precision_value(-value.f64_value)
+				v.is_coercible = value.is_coercible
+
+				return v
+			}
+
+			if value.typ.uses_int() {
+				mut v := new_bigint_value(-value.int_value)
+				v.is_coercible = value.is_coercible
+
+				return v
 			}
 		}
 		'+' {
-			if value.typ.uses_f64() {
-				return new_double_precision_value(value.f64_value)
+			if value.typ.uses_f64() || value.typ.uses_int() {
+				return value
 			}
 		}
 		'NOT' {

@@ -2,7 +2,7 @@ VALUES ABS(1.2), ABS(-1.23);
 -- COL1: 1.2 COL2: 1.23
 
 VALUES ABS('hello');
--- error 42804: data type mismatch argument 1 in ABS: expected DOUBLE PRECISION but got CHARACTER VARYING
+-- error 42883: function does not exist: ABS(CHARACTER VARYING)
 
 VALUES ABS();
 -- error 42601: syntax error: near ")"
@@ -37,7 +37,7 @@ VALUES ACOS(0.2);
 VALUES ATAN(0.2);
 -- COL1: 0.197396
 
-VALUES MOD(232, 3);
+VALUES MOD(232.0, 3.0);
 -- COL1: 1
 
 VALUES MOD(10.7, 0.8);

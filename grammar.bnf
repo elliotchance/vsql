@@ -122,13 +122,13 @@
 
 <right paren> ::= ")"
 
-<character length> /* int */ ::=
+<character length> /* string */ ::=
     <length>
 
-<length> /* int */ ::=
+<length> /* string */ ::=
     <unsigned integer>
 
-<unsigned integer> /* int */ ::=
+<unsigned integer> /* string */ ::=
     ^integer
 
 <comma> ::= ","
@@ -149,7 +149,7 @@
   | REAL                                           -> real
   | DOUBLE PRECISION                               -> double_precision
 
-<precision> /* int */ ::=
+<precision> /* string */ ::=
     <unsigned integer>
 
 <boolean type> /* Type */ ::=
@@ -1048,20 +1048,20 @@
     <left paren> <timestamp precision> <right paren>
     <with or without time zone>                        -> timestamp_prec_tz_type
 
-<time precision> /* int */ ::=
+<time precision> /* string */ ::=
     <time fractional seconds precision>
 
-<time fractional seconds precision> /* int */ ::=
+<time fractional seconds precision> /* string */ ::=
     <unsigned integer>
 
 <with or without time zone> /* bool */ ::=
     WITH TIME ZONE      -> yes
   | WITHOUT TIME ZONE   -> no
 
-<timestamp precision> /* int */ ::=
+<timestamp precision> /* string */ ::=
     <time fractional seconds precision>
 
-<time fractional seconds precision> /* int */ ::=
+<time fractional seconds precision> /* string */ ::=
     <unsigned integer>
 
 <character substring function> /* Expr */ ::=

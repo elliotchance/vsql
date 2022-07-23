@@ -40,7 +40,7 @@ fn test_concurrent_writes() ? {
 	result := db.query('SELECT * FROM foo')?
 	mut total := 0
 	for row in result {
-		total += int(row.get_f64('X')?)
+		total += row.get_int('X')?
 	}
 
 	assert total == 1000

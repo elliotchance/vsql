@@ -33,7 +33,6 @@ type EarleyValue = BetweenExpr
 	| []SortSpecification
 	| []TableElement
 	| bool
-	| int
 	| map[string]Expr
 	| string
 
@@ -8401,7 +8400,7 @@ fn parse_ast(node &EarleyNode) ?[]EarleyValue {
 	if node.children.len == 0 {
 		match node.value.name {
 			'^integer' {
-				return [EarleyValue(node.value.end_column.value.int())]
+				return [EarleyValue(node.value.end_column.value)]
 			}
 			'^identifier' {
 				return [EarleyValue(new_identifier(node.value.end_column.value))]
@@ -8448,7 +8447,7 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [EarleyValue(parse_float()?)]
 		}
 		'<approximate numeric type: 2>' {
-			return [EarleyValue(parse_float_n(children[2] as int)?)]
+			return [EarleyValue(parse_float_n(children[2] as string)?)]
 		}
 		'<approximate numeric type: 3>' {
 			return [EarleyValue(parse_real()?)]
@@ -8546,22 +8545,22 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [EarleyValue(parse_character()?)]
 		}
 		'<character string type: 2>' {
-			return [EarleyValue(parse_character_n(children[2] as int)?)]
+			return [EarleyValue(parse_character_n(children[2] as string)?)]
 		}
 		'<character string type: 3>' {
 			return [EarleyValue(parse_character()?)]
 		}
 		'<character string type: 4>' {
-			return [EarleyValue(parse_character_n(children[2] as int)?)]
+			return [EarleyValue(parse_character_n(children[2] as string)?)]
 		}
 		'<character string type: 5>' {
-			return [EarleyValue(parse_varchar(children[3] as int)?)]
+			return [EarleyValue(parse_varchar(children[3] as string)?)]
 		}
 		'<character string type: 6>' {
-			return [EarleyValue(parse_varchar(children[3] as int)?)]
+			return [EarleyValue(parse_varchar(children[3] as string)?)]
 		}
 		'<character string type: 7>' {
-			return [EarleyValue(parse_varchar(children[2] as int)?)]
+			return [EarleyValue(parse_varchar(children[2] as string)?)]
 		}
 		'<character substring function: 1>' {
 			return [
@@ -8688,25 +8687,25 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [EarleyValue(parse_localtime1()?)]
 		}
 		'<current local time value function: 2>' {
-			return [EarleyValue(parse_localtime2(children[2] as int)?)]
+			return [EarleyValue(parse_localtime2(children[2] as string)?)]
 		}
 		'<current local timestamp value function: 1>' {
 			return [EarleyValue(parse_localtimestamp1()?)]
 		}
 		'<current local timestamp value function: 2>' {
-			return [EarleyValue(parse_localtimestamp2(children[2] as int)?)]
+			return [EarleyValue(parse_localtimestamp2(children[2] as string)?)]
 		}
 		'<current time value function: 1>' {
 			return [EarleyValue(parse_current_time1()?)]
 		}
 		'<current time value function: 2>' {
-			return [EarleyValue(parse_current_time2(children[2] as int)?)]
+			return [EarleyValue(parse_current_time2(children[2] as string)?)]
 		}
 		'<current timestamp value function: 1>' {
 			return [EarleyValue(parse_current_timestamp1()?)]
 		}
 		'<current timestamp value function: 2>' {
-			return [EarleyValue(parse_current_timestamp2(children[2] as int)?)]
+			return [EarleyValue(parse_current_timestamp2(children[2] as string)?)]
 		}
 		'<cursor specification: 1>' {
 			return [
@@ -8723,28 +8722,28 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [EarleyValue(parse_time_type()?)]
 		}
 		'<datetime type: 3>' {
-			return [EarleyValue(parse_time_prec_type(children[2] as int)?)]
+			return [EarleyValue(parse_time_prec_type(children[2] as string)?)]
 		}
 		'<datetime type: 4>' {
 			return [EarleyValue(parse_time_tz_type(children[1] as bool)?)]
 		}
 		'<datetime type: 5>' {
 			return [
-				EarleyValue(parse_time_prec_tz_type(children[2] as int, children[4] as bool)?),
+				EarleyValue(parse_time_prec_tz_type(children[2] as string, children[4] as bool)?),
 			]
 		}
 		'<datetime type: 6>' {
 			return [EarleyValue(parse_timestamp_type()?)]
 		}
 		'<datetime type: 7>' {
-			return [EarleyValue(parse_timestamp_prec_type(children[2] as int)?)]
+			return [EarleyValue(parse_timestamp_prec_type(children[2] as string)?)]
 		}
 		'<datetime type: 8>' {
 			return [EarleyValue(parse_timestamp_tz_type(children[1] as bool)?)]
 		}
 		'<datetime type: 9>' {
 			return [
-				EarleyValue(parse_timestamp_prec_tz_type(children[2] as int, children[4] as bool)?),
+				EarleyValue(parse_timestamp_prec_tz_type(children[2] as string, children[4] as bool)?),
 			]
 		}
 		'<delete statement: searched: 1>' {
@@ -8774,18 +8773,20 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			]
 		}
 		'<exact numeric literal: 1>' {
-			return [EarleyValue(parse_int_value(children[0] as int)?)]
+			return [EarleyValue(parse_int_value(children[0] as string)?)]
 		}
 		'<exact numeric literal: 2>' {
-			return [EarleyValue(parse_int_value(children[0] as int)?)]
+			return [EarleyValue(parse_int_value(children[0] as string)?)]
 		}
 		'<exact numeric literal: 3>' {
 			return [
-				EarleyValue(parse_exact_numeric_literal1(children[0] as int, children[2] as int)?),
+				EarleyValue(parse_exact_numeric_literal1(children[0] as string, children[2] as string)?),
 			]
 		}
 		'<exact numeric literal: 4>' {
-			return [EarleyValue(parse_exact_numeric_literal2(children[1] as int)?)]
+			return [
+				EarleyValue(parse_exact_numeric_literal2(children[1] as string)?),
+			]
 		}
 		'<exact numeric type: 1>' {
 			return [EarleyValue(parse_smallint()?)]

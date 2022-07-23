@@ -5,27 +5,32 @@ module vsql
 // expr_is_agg returns true if the expression is or contains an aggregate
 // function. That means that the value must be evaluated by the GROUP BY
 // (GroupOperation)
-fn expr_is_agg(conn &Connection, e Expr) ?bool {
+fn expr_is_agg(conn &Connection, e Expr, row Row, params map[string]Value) ?bool {
 	match e {
 		BinaryExpr {
-			if expr_is_agg(conn, e.left)? || expr_is_agg(conn, e.right)? {
+			if expr_is_agg(conn, e.left, row, params)? || expr_is_agg(conn, e.right, row, params)? {
 				return nested_agg_unsupported(e)
 			}
 		}
 		BetweenExpr {
-			if expr_is_agg(conn, e.left)? || expr_is_agg(conn, e.right)? {
+			if expr_is_agg(conn, e.left, row, params)? || expr_is_agg(conn, e.right, row, params)? {
 				return nested_agg_unsupported(e)
 			}
 		}
 		CallExpr {
-			func := conn.funcs[e.function_name] or { return sqlstate_42883(e.function_name) }
+			mut arg_types := []Type{}
+			for arg in e.args {
+				arg_types << eval_as_type(conn, row, arg, params)?
+			}
+
+			func := conn.find_function(e.function_name, arg_types)?
 
 			if func.is_agg {
 				return true
 			}
 
 			for arg in e.args {
-				if expr_is_agg(conn, arg)? {
+				if expr_is_agg(conn, arg, row, params)? {
 					return nested_agg_unsupported(e)
 				}
 			}
@@ -39,38 +44,39 @@ fn expr_is_agg(conn &Connection, e Expr) ?bool {
 			return false
 		}
 		LikeExpr {
-			if expr_is_agg(conn, e.left)? {
+			if expr_is_agg(conn, e.left, row, params)? {
 				return nested_agg_unsupported(e)
 			}
 		}
 		NullExpr {
-			if expr_is_agg(conn, e.expr)? {
+			if expr_is_agg(conn, e.expr, row, params)? {
 				return nested_agg_unsupported(e)
 			}
 		}
 		TruthExpr {
-			if expr_is_agg(conn, e.expr)? {
+			if expr_is_agg(conn, e.expr, row, params)? {
 				return nested_agg_unsupported(e)
 			}
 		}
 		SimilarExpr {
-			if expr_is_agg(conn, e.left)? {
+			if expr_is_agg(conn, e.left, row, params)? {
 				return nested_agg_unsupported(e)
 			}
 		}
 		SubstringExpr {
-			if expr_is_agg(conn, e.value)? || expr_is_agg(conn, e.from)?
-				|| expr_is_agg(conn, e.@for)? {
+			if expr_is_agg(conn, e.value, row, params)? || expr_is_agg(conn, e.from, row, params)?
+				|| expr_is_agg(conn, e.@for, row, params)? {
 				return nested_agg_unsupported(e)
 			}
 		}
 		UnaryExpr {
-			if expr_is_agg(conn, e.expr)? {
+			if expr_is_agg(conn, e.expr, row, params)? {
 				return nested_agg_unsupported(e)
 			}
 		}
 		TrimExpr {
-			if expr_is_agg(conn, e.source)? || expr_is_agg(conn, e.character)? {
+			if expr_is_agg(conn, e.source, row, params)?
+				|| expr_is_agg(conn, e.character, row, params)? {
 				return nested_agg_unsupported(e)
 			}
 		}

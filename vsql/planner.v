@@ -4,6 +4,7 @@
 // the next operation. You can find the operations in:
 //
 //   ExprOperation           eval.v
+//   GroupOperation          group.v
 //   LimitOperation          limit.v
 //   PrimaryKeyOperation     walk.v
 //   TableOperation          table.v
@@ -201,8 +202,11 @@ fn add_group_by_plan(mut plan Plan, group_clause []Expr, select_exprs []DerivedC
 	// expressions contain an aggregate function we need to have an implicit
 	// GROUP BY for the whole set.
 	mut has_agg := false
+	empty_row := new_empty_table_row({
+		table.name: table
+	})
 	for e in select_exprs {
-		if expr_is_agg(c, e.expr)? {
+		if expr_is_agg(c, e.expr, empty_row, params)? {
 			has_agg = true
 			break
 		}

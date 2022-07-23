@@ -16,7 +16,7 @@ mut:
 	// storage will be replaced when the file is reopend for reading or writing.
 	storage Storage
 	// funcs only needs to be initialized once on open()
-	funcs map[string]Func
+	funcs []Func
 	// virtual_tables can be created independent from the physical schema.
 	virtual_tables map[string]VirtualTable
 	// query_cache is maintained over file reopens.
@@ -160,7 +160,31 @@ pub fn (mut c Connection) query(sql string) ?Result {
 }
 
 pub fn (mut c Connection) register_func(func Func) ? {
-	c.funcs[func.name] = func
+	c.funcs << func
+}
+
+fn (c Connection) find_function(func_name string, arg_types []Type) ?Func {
+	for f in c.funcs {
+		if func_name != f.name || arg_types.len != f.arg_types.len {
+			continue
+		}
+
+		mut found := true
+		for i, t in arg_types {
+			// Only compare the SQLType so that the precision/scale/null isn't
+			// part of the comparison.
+			if t.typ != f.arg_types[i].typ {
+				found = false
+				break
+			}
+		}
+
+		if found {
+			return f
+		}
+	}
+
+	return sqlstate_42883(func_name, arg_types)
 }
 
 pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) ?Value) ? {

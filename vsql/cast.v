@@ -6,6 +6,12 @@ module vsql
 //  <cast specification>.
 
 fn cast(msg string, v Value, to Type) ?Value {
+	// For now, all NULLs are allowed to be converted to any other NULL. This
+	// should not technically be true, but it will do for now.
+	if v.is_null {
+		return new_null_value(to.typ)
+	}
+
 	match v.typ.typ {
 		.is_boolean {
 			match to.typ {
@@ -17,8 +23,25 @@ fn cast(msg string, v Value, to Type) ?Value {
 		}
 		.is_bigint {
 			match to.typ {
-				.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint {
+				.is_smallint {
+					if v.int_value < -32768 || v.int_value > 32767 {
+						return sqlstate_22003()
+					}
+
 					return v
+				}
+				.is_integer {
+					if v.int_value < -2147483648 || v.int_value > 2147483647 {
+						return sqlstate_22003()
+					}
+
+					return v
+				}
+				.is_bigint {
+					return v
+				}
+				.is_double_precision, .is_real {
+					return new_double_precision_value(v.int_value)
 				}
 				else {}
 			}
@@ -33,7 +56,10 @@ fn cast(msg string, v Value, to Type) ?Value {
 		}
 		.is_double_precision {
 			match to.typ {
-				.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint {
+				.is_bigint, .is_integer, .is_smallint {
+					return new_bigint_value(i64(v.f64_value))
+				}
+				.is_double_precision, .is_real {
 					return v
 				}
 				else {}
@@ -41,15 +67,21 @@ fn cast(msg string, v Value, to Type) ?Value {
 		}
 		.is_integer {
 			match to.typ {
-				.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint {
+				.is_bigint, .is_integer, .is_smallint {
 					return v
+				}
+				.is_double_precision, .is_real {
+					return new_double_precision_value(v.int_value)
 				}
 				else {}
 			}
 		}
 		.is_real {
 			match to.typ {
-				.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint {
+				.is_bigint, .is_integer, .is_smallint {
+					return new_bigint_value(i64(v.f64_value))
+				}
+				.is_double_precision, .is_real {
 					return v
 				}
 				else {}
@@ -57,8 +89,11 @@ fn cast(msg string, v Value, to Type) ?Value {
 		}
 		.is_smallint {
 			match to.typ {
-				.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint {
+				.is_bigint, .is_integer, .is_smallint {
 					return v
+				}
+				.is_double_precision, .is_real {
+					return new_double_precision_value(v.int_value)
 				}
 				else {}
 			}

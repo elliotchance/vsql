@@ -418,7 +418,7 @@ grammar_file.write("""fn parse_ast(node &EarleyNode) ?[]EarleyValue {
     if node.children.len == 0 {
         match node.value.name {
             '^integer' {
-                return [EarleyValue(node.value.end_column.value.int())]
+                return [EarleyValue(node.value.end_column.value)]
             }
             '^identifier' {
                 return [EarleyValue(new_identifier(node.value.end_column.value))]

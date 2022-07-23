@@ -64,6 +64,18 @@ fn (err SQLState) code() int {
 	return err.code
 }
 
+// Numeric value out of range.
+struct SQLState22003 {
+	SQLState
+}
+
+fn sqlstate_22003() IError {
+	return SQLState22012{
+		code: sqlstate_to_int('22003')
+		msg: 'numeric value out of range'
+	}
+}
+
 // Divide by zero.
 struct SQLState22012 {
 	SQLState
@@ -211,13 +223,15 @@ struct SQLState42883 {
 	SQLState
 pub:
 	function_name string
+	arg_types     []Type
 }
 
-fn sqlstate_42883(function_name string) IError {
+fn sqlstate_42883(function_name string, arg_types []Type) IError {
 	return SQLState42883{
 		code: sqlstate_to_int('42883')
-		msg: 'function does not exist: $function_name'
+		msg: 'function does not exist: ${function_name}(${arg_types.map(it.str()).join(', ')})'
 		function_name: function_name
+		arg_types: arg_types
 	}
 }
 

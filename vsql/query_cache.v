@@ -61,12 +61,16 @@ fn (q QueryCache) prepare_stmt(tokens []Token) (string, map[string]Value, []Toke
 		if !ignore {
 			match token.kind {
 				.literal_number {
-					key += ':P$i '
-					if token.value.f64() == token.value.int() {
-						params['P$i'] = new_integer_value(token.value.int())
+					mut v := Value{}
+					if token.value.contains('.') {
+						v = new_double_precision_value(token.value.f64())
 					} else {
-						params['P$i'] = new_double_precision_value(token.value.f64())
+						v = new_bigint_value(token.value.i64())
 					}
+					v.is_coercible = true
+					params['P$i'] = v
+
+					key += ':P$i '
 					new_tokens << Token{.colon, ':'}
 					new_tokens << Token{.literal_identifier, 'P$i'}
 					i++

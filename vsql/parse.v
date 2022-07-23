@@ -103,12 +103,12 @@ fn parse_smallint() ?Type {
 	return new_type('SMALLINT', 0)
 }
 
-fn parse_varchar(length int) ?Type {
-	return new_type('CHARACTER VARYING', length)
+fn parse_varchar(length string) ?Type {
+	return new_type('CHARACTER VARYING', length.int())
 }
 
-fn parse_character_n(length int) ?Type {
-	return new_type('CHARACTER', length)
+fn parse_character_n(length string) ?Type {
+	return new_type('CHARACTER', length.int())
 }
 
 fn parse_character() ?Type {
@@ -119,8 +119,8 @@ fn parse_double_precision() ?Type {
 	return new_type('DOUBLE PRECISION', 0)
 }
 
-fn parse_float_n(length int) ?Type {
-	return new_type('FLOAT', length)
+fn parse_float_n(length string) ?Type {
+	return new_type('FLOAT', length.int())
 }
 
 fn parse_float() ?Type {
@@ -243,12 +243,18 @@ fn parse_value(v Value) ?Value {
 	return v
 }
 
-fn parse_exact_numeric_literal1(a int, b int) ?Value {
-	return new_double_precision_value('${a}.$b'.f64())
+fn parse_exact_numeric_literal1(a string, b string) ?Value {
+	mut v := new_double_precision_value('${a}.$b'.f64())
+	v.is_coercible = true
+
+	return v
 }
 
-fn parse_exact_numeric_literal2(a int) ?Value {
-	return new_double_precision_value('0.$a'.f64())
+fn parse_exact_numeric_literal2(a string) ?Value {
+	mut v := new_double_precision_value('0.$a'.f64())
+	v.is_coercible = true
+
+	return v
 }
 
 // <select list> <comma> <select sublist>
@@ -654,50 +660,53 @@ fn parse_string(s string) ?string {
 	return s
 }
 
-fn parse_int_value(x int) ?Value {
-	return new_integer_value(x)
+fn parse_int_value(x string) ?Value {
+	mut v := new_bigint_value(x.i64())
+	v.is_coercible = true
+
+	return v
 }
 
-fn parse_timestamp_prec_tz_type(prec int, tz bool) ?Type {
+fn parse_timestamp_prec_tz_type(prec string, tz bool) ?Type {
 	if tz {
-		return new_type('TIMESTAMP WITH TIME ZONE', prec)
+		return new_type('TIMESTAMP WITH TIME ZONE', prec.int())
 	}
 
-	return new_type('TIMESTAMP WITHOUT TIME ZONE', prec)
+	return new_type('TIMESTAMP WITHOUT TIME ZONE', prec.int())
 }
 
-fn parse_timestamp_prec_type(prec int) ?Type {
+fn parse_timestamp_prec_type(prec string) ?Type {
 	return parse_timestamp_prec_tz_type(prec, false)
 }
 
 fn parse_timestamp_tz_type(tz bool) ?Type {
 	// ISO/IEC 9075-2:2016(E), 6.1, 36) If <timestamp precision> is not
 	// specified, then 6 is implicit.
-	return parse_timestamp_prec_tz_type(6, tz)
+	return parse_timestamp_prec_tz_type('6', tz)
 }
 
 fn parse_timestamp_type() ?Type {
-	return parse_timestamp_prec_tz_type(0, false)
+	return parse_timestamp_prec_tz_type('0', false)
 }
 
-fn parse_time_prec_tz_type(prec int, tz bool) ?Type {
+fn parse_time_prec_tz_type(prec string, tz bool) ?Type {
 	if tz {
-		return new_type('TIME WITH TIME ZONE', prec)
+		return new_type('TIME WITH TIME ZONE', prec.int())
 	}
 
-	return new_type('TIME WITHOUT TIME ZONE', prec)
+	return new_type('TIME WITHOUT TIME ZONE', prec.int())
 }
 
 fn parse_time_type() ?Type {
-	return parse_time_prec_tz_type(0, false)
+	return parse_time_prec_tz_type('0', false)
 }
 
-fn parse_time_prec_type(prec int) ?Type {
+fn parse_time_prec_type(prec string) ?Type {
 	return parse_time_prec_tz_type(prec, false)
 }
 
 fn parse_time_tz_type(tz bool) ?Type {
-	return parse_time_prec_tz_type(0, tz)
+	return parse_time_prec_tz_type('0', tz)
 }
 
 fn parse_date_type() ?Type {
@@ -724,32 +733,32 @@ fn parse_localtime1() ?Expr {
 	return LocalTimeExpr{0}
 }
 
-fn parse_localtime2(prec int) ?Expr {
-	return LocalTimeExpr{prec}
+fn parse_localtime2(prec string) ?Expr {
+	return LocalTimeExpr{prec.int()}
 }
 
 fn parse_localtimestamp1() ?Expr {
 	return LocalTimestampExpr{6}
 }
 
-fn parse_localtimestamp2(prec int) ?Expr {
-	return LocalTimestampExpr{prec}
+fn parse_localtimestamp2(prec string) ?Expr {
+	return LocalTimestampExpr{prec.int()}
 }
 
 fn parse_current_time1() ?Expr {
 	return CurrentTimeExpr{0}
 }
 
-fn parse_current_time2(prec int) ?Expr {
-	return CurrentTimeExpr{prec}
+fn parse_current_time2(prec string) ?Expr {
+	return CurrentTimeExpr{prec.int()}
 }
 
 fn parse_current_timestamp1() ?Expr {
 	return CurrentTimestampExpr{6}
 }
 
-fn parse_current_timestamp2(prec int) ?Expr {
-	return CurrentTimestampExpr{prec}
+fn parse_current_timestamp2(prec string) ?Expr {
+	return CurrentTimestampExpr{prec.int()}
 }
 
 fn parse_schema_definition(schema_name Identifier) ?Stmt {

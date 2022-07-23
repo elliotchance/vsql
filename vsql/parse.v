@@ -799,3 +799,11 @@ fn parse_trim4(specification string, character Expr, source Expr) ?Expr {
 fn parse_trim(e Expr) ?Expr {
 	return e
 }
+
+fn parse_boolean_test1(e Expr, v Value) ?Expr {
+	return TruthExpr{e, false, v}
+}
+
+fn parse_boolean_test2(e Expr, v Value) ?Expr {
+	return TruthExpr{e, true, v}
+}

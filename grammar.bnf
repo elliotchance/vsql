@@ -336,6 +336,8 @@
 
 <boolean test> /* Expr */ ::=
     <boolean primary>
+  | <boolean primary> IS <truth value>       -> boolean_test1
+  | <boolean primary> IS NOT <truth value>   -> boolean_test2
 
 <boolean primary> /* Expr */ ::=
     <predicate>
@@ -1085,3 +1087,8 @@
 <char length units> /* string */ ::=
     CHARACTERS
   | OCTETS
+
+<truth value> /* Value */ ::=
+    TRUE      -> true
+  | FALSE     -> false
+  | UNKNOWN   -> unknown

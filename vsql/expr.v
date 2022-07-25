@@ -80,6 +80,11 @@ fn expr_is_agg(conn &Connection, e Expr, row Row, params map[string]Value) ?bool
 				return nested_agg_unsupported(e)
 			}
 		}
+		CastExpr {
+			if expr_is_agg(conn, e.expr, row, params)? {
+				return nested_agg_unsupported(e)
+			}
+		}
 	}
 
 	return false
@@ -139,6 +144,9 @@ fn resolve_identifiers(e Expr, tables map[string]Table) ?Expr {
 		}
 		TruthExpr {
 			return TruthExpr{resolve_identifiers(e.expr, tables)?, e.not, e.value}
+		}
+		CastExpr {
+			return CastExpr{resolve_identifiers(e.expr, tables)?, e.target}
 		}
 		SimilarExpr {
 			return SimilarExpr{resolve_identifiers(e.left, tables)?, resolve_identifiers(e.right,

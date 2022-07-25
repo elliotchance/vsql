@@ -4,6 +4,8 @@
 
 module vsql
 
+import strings
+
 // Possible values for a BOOLEAN. These must not be negative values because they
 // are encoded as u8 on disk.
 pub enum Boolean {
@@ -107,10 +109,13 @@ pub fn new_varchar_value(x string, size int) Value {
 	}
 }
 
+// The value will be padded with spaces up to the size specified.
 pub fn new_character_value(x string, size int) Value {
+	// TODO(elliotchance): Doesn't handle size < x.len
+
 	return Value{
 		typ: Type{.is_character, size, false}
-		string_value: x
+		string_value: x + strings.repeat(` `, size - x.len)
 	}
 }
 
@@ -150,16 +155,9 @@ fn f64_string(x f64) string {
 	return '${s[0]}.${s[1].trim_right('0')}'
 }
 
-// as_f64() is not safe to use if the value is not numeric.
-fn (v Value) as_f64() f64 {
-	if v.typ.uses_f64() {
-		return v.f64_value
-	}
-
-	return v.int_value
-}
-
-// as_int() is not safe to use if the value is not numeric.
+// as_int() is not safe to use if the value is not numeric. It is used in cases
+// where a placeholder might be anythign but needs to be an int (such as for an
+// OFFSET).
 fn (v Value) as_int() i64 {
 	if v.typ.uses_int() {
 		return v.int_value

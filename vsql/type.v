@@ -26,6 +26,24 @@ enum SQLType {
 	is_timestamp_with_time_zone // TIMESTAMP WITH TIME ZONE
 }
 
+fn (t SQLType) str() string {
+	return match t {
+		.is_bigint { 'BIGINT' }
+		.is_boolean { 'BOOLEAN' }
+		.is_character { 'CHARACTER' }
+		.is_double_precision { 'DOUBLE PRECISION' }
+		.is_integer { 'INTEGER' }
+		.is_real { 'REAL' }
+		.is_smallint { 'SMALLINT' }
+		.is_varchar { 'CHARACTER VARYING' }
+		.is_date { 'DATE' }
+		.is_time_without_time_zone { 'TIME WITHOUT TIME ZONE' }
+		.is_time_with_time_zone { 'TIME WITH TIME ZONE' }
+		.is_timestamp_without_time_zone { 'TIMESTAMP WITHOUT TIME ZONE' }
+		.is_timestamp_with_time_zone { 'TIMESTAMP WITH TIME ZONE' }
+	}
+}
+
 fn new_type(name string, size int) Type {
 	name_without_size := name.split('(')[0]
 

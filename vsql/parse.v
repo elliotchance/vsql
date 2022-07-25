@@ -746,7 +746,7 @@ fn parse_localtimestamp2(prec string) ?Expr {
 }
 
 fn parse_current_time1() ?Expr {
-	return CurrentTimeExpr{0}
+	return CurrentTimeExpr{default_time_precision}
 }
 
 fn parse_current_time2(prec string) ?Expr {
@@ -754,7 +754,7 @@ fn parse_current_time2(prec string) ?Expr {
 }
 
 fn parse_current_timestamp1() ?Expr {
-	return CurrentTimestampExpr{6}
+	return CurrentTimestampExpr{default_timestamp_precision}
 }
 
 fn parse_current_timestamp2(prec string) ?Expr {
@@ -815,4 +815,8 @@ fn parse_boolean_test1(e Expr, v Value) ?Expr {
 
 fn parse_boolean_test2(e Expr, v Value) ?Expr {
 	return TruthExpr{e, true, v}
+}
+
+fn parse_cast(expr Expr, typ Type) ?Expr {
+	return CastExpr{expr, typ}
 }

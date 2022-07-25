@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 56 of the 164 mandatory features** of the
+**vsql supports 57 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -442,7 +442,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ **F181**
      - **Multiple module support**
 
-   * - ❌ **F201**
+   * - ✅ **F201**
      - **CAST function**
 
    * - ❌ **F221**

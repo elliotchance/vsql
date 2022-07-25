@@ -58,6 +58,11 @@ fn (q QueryCache) prepare_stmt(tokens []Token) (string, map[string]Value, []Toke
 			ignore = true
 		}
 
+		// Do not replace numbers that appear in types. Such as 'VARCHAR(10)'.
+		if j > 1 && tokens[j - 2].kind == .keyword {
+			ignore = true
+		}
+
 		if !ignore {
 			match token.kind {
 				.literal_number {

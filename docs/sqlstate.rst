@@ -59,6 +59,23 @@ SQLSTATE
 ``0B000`` is caused when attempting to ``START TRANSACTION`` but there pool of
 in-flight transactions is full.
 
+``22001`` string data right truncation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This means a character value is trying to be converted to a type that is not
+large enough to store it.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE foo (x CHARACTER VARYING(8));
+  INSERT INTO foo (x) VALUES ('hello');
+  SELECT CAST(x AS VARCHAR(4)) FROM foo;
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 1
+  -- error 22001: string data right truncation for CHARACTER VARYING(4)
+
 ``22003`` numeric value out of range
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -204,6 +221,16 @@ A client that receives this error should retry the transaction.
   INSERT INTO foo (b) VALUES (123);
   -- msg: CREATE TABLE 1
   -- error 42804: data type mismatch for column B: expected BOOLEAN but got INTEGER
+
+``42846`` cannot coerce
+^^^^^^^^^^^^^^^^^^^^^^^
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES CAST(123 AS BOOLEAN);
+  -- error 42846: cannot coerce BIGINT to BOOLEAN
 
 ``42883`` function does not exist
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

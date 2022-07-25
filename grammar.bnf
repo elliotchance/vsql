@@ -230,6 +230,7 @@
   | <column reference>               -> identifier_to_expr
   | <set function specification>
   | <routine invocation>
+  | <cast specification>
 
 <value expression primary> /* Expr */ ::=
     <parenthesized value expression>
@@ -1092,3 +1093,13 @@
     TRUE      -> true
   | FALSE     -> false
   | UNKNOWN   -> unknown
+
+<cast specification> /* Expr */ ::=
+    CAST <left paren> <cast operand> AS <cast target> <right paren>   -> cast
+
+<cast operand> /* Expr */ ::=
+    <value expression>
+  | <implicitly typed value specification>
+
+<cast target> /* Type */ ::=
+    <data type>

@@ -12,7 +12,7 @@ SELECT * FROM t1;
 
 /* set foo 'hello' */
 INSERT INTO t1 (x) VALUES (:foo);
--- error 42804: data type mismatch for column X: expected DOUBLE PRECISION but got CHARACTER VARYING
+-- error 42846: cannot coerce CHARACTER VARYING to DOUBLE PRECISION
 
 /* set foo 'hello' */
 CREATE TABLE t2 (x VARCHAR(10));

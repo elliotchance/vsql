@@ -162,3 +162,50 @@ the subsecond accuracy and result type.
 
 ``LOCALTIMESTAMP`` differs from ``CURRENT_TIMESTAMP`` which returns the same
 date and time component, but includes the time zone.
+
+Casting
+-------
+
+.. list-table::
+
+  * - ↓ From / To →
+    - ``DATE``
+    - ``TIME(n) WITHOUT TIME ZONE``
+    - ``TIME(n) WITH TIME ZONE``
+    - ``TIMESTAMP(n) WITHOUT TIME ZONE``
+    - ``TIMESTAMP(n) WITH TIME ZONE``
+
+  * - ``DATE``
+    - ✅
+    - ❌
+    - ❌
+    - ✅
+    - ✅
+
+  * - ``TIME(n) WITHOUT TIME ZONE``
+    - ❌
+    - ✅
+    - ✅
+    - ❌
+    - ❌
+
+  * - ``TIME(n) WITH TIME ZONE``
+    - ❌
+    - ✅
+    - ✅
+    - ❌
+    - ❌
+
+  * - ``TIMESTAMP(n) WITHOUT TIME ZONE``
+    - ✅
+    - ✅
+    - ✅
+    - ✅
+    - ✅
+
+  * - ``TIMESTAMP(n) WITH TIME ZONE``
+    - ✅
+    - ✅
+    - ✅
+    - ✅
+    - ✅

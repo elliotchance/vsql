@@ -64,6 +64,21 @@ fn (err SQLState) code() int {
 	return err.code
 }
 
+// string data right truncation - the character value is too long for the
+// destination.
+struct SQLState22001 {
+	SQLState
+	to Type
+}
+
+fn sqlstate_22001(to Type) IError {
+	return SQLState22001{
+		code: sqlstate_to_int('22001')
+		msg: 'string data right truncation for $to'
+		to: to
+	}
+}
+
 // Numeric value out of range.
 struct SQLState22003 {
 	SQLState
@@ -173,6 +188,22 @@ fn sqlstate_42804(msg string, expected string, actual string) IError {
 	}
 }
 
+// cannot coerce
+struct SQLState42846 {
+	SQLState
+	from Type
+	to   Type
+}
+
+fn sqlstate_42846(from Type, to Type) IError {
+	return SQLState42846{
+		code: sqlstate_to_int('42846')
+		msg: 'cannot coerce $from to $to'
+		from: from
+		to: to
+	}
+}
+
 // no such table
 struct SQLState42P01 {
 	SQLState
@@ -218,20 +249,15 @@ fn sqlstate_42p07(table_name string) IError {
 	}
 }
 
-// No such function
+// No such function or operator (since operators are functions).
 struct SQLState42883 {
 	SQLState
-pub:
-	function_name string
-	arg_types     []Type
 }
 
-fn sqlstate_42883(function_name string, arg_types []Type) IError {
+fn sqlstate_42883(msg string) IError {
 	return SQLState42883{
 		code: sqlstate_to_int('42883')
-		msg: 'function does not exist: ${function_name}(${arg_types.map(it.str()).join(', ')})'
-		function_name: function_name
-		arg_types: arg_types
+		msg: msg
 	}
 }
 

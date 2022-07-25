@@ -117,6 +117,9 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 		Value {
 			return e.typ
 		}
+		CastExpr {
+			return e.target
+		}
 		UnaryExpr {
 			return eval_as_type(conn, data, e.expr, params)
 		}
@@ -168,6 +171,9 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 		}
 		CallExpr {
 			return eval_call(conn, data, e, params)
+		}
+		CastExpr {
+			return eval_cast(conn, data, e, params)
 		}
 		CountAllExpr {
 			return eval_identifier(data, new_identifier('COUNT(*)'))
@@ -254,7 +260,7 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 }
 
 fn time_value(conn &Connection, prec int, include_offset bool) string {
-	now, mut offset := conn.options.now()
+	now, _ := conn.options.now()
 
 	mut s := now.strftime('%H:%M:%S')
 
@@ -264,15 +270,7 @@ fn time_value(conn &Connection, prec int, include_offset bool) string {
 	}
 
 	if include_offset {
-		if offset < 0 {
-			s += '-'
-			offset *= -1
-		} else {
-			s += '+'
-		}
-
-		s += left_pad(int(offset / 60).str(), '0', 2) + ':' +
-			left_pad(int(offset % 60).str(), '0', 2)
+		s += time_zone_value(conn)
 	}
 
 	return s
@@ -319,14 +317,14 @@ fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) ?V
 
 	if e.args.len != func.arg_types.len {
 		return sqlstate_42883('$func_name has $e.args.len ${pluralize(e.args.len, 'argument')} but needs $func.arg_types.len ${pluralize(func.arg_types.len,
-			'argument')}', arg_types)
+			'argument')}')
 	}
 
 	mut args := []Value{}
 	mut i := 0
 	for typ in func.arg_types {
 		arg := eval_as_value(conn, data, e.args[i], params)?
-		args << cast('argument ${i + 1} in $func_name', arg, typ)?
+		args << cast(conn, 'argument ${i + 1} in $func_name', arg, typ)?
 		i++
 	}
 
@@ -341,6 +339,12 @@ fn eval_null(conn &Connection, data Row, e NullExpr, params map[string]Value) ?V
 	}
 
 	return new_boolean_value(value.is_null)
+}
+
+fn eval_cast(conn &Connection, data Row, e CastExpr, params map[string]Value) ?Value {
+	value := eval_as_value(conn, data, e.expr, params)?
+
+	return cast(conn, 'for CAST', value, e.target)
 }
 
 fn eval_truth(conn &Connection, data Row, e TruthExpr, params map[string]Value) ?Value {
@@ -367,7 +371,7 @@ fn eval_truth(conn &Connection, data Row, e TruthExpr, params map[string]Value) 
 	}
 
 	if e.not {
-		return eval_not(result)
+		return unary_not_boolean(conn, result)
 	}
 
 	return result
@@ -445,240 +449,23 @@ fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value
 	left := eval_as_value(conn, data, e.left, params)?
 	right := eval_as_value(conn, data, e.right, params)?
 
-	match e.op {
-		'=', '<>', '>', '<', '>=', '<=' {
-			if left.typ.uses_string() && right.typ.uses_string() {
-				return eval_cmp<string>(left.string_value, right.string_value, e.op)
-			}
-
-			l, r := coerce_numeric_binary(left, e.op, right)?
-
-			if l.typ.uses_f64() {
-				return eval_cmp<f64>(l.f64_value, r.f64_value, e.op)
-			} else {
-				return eval_cmp<i64>(l.int_value, r.int_value, e.op)
-			}
-		}
-		'||' {
-			if left.typ.uses_string() && right.typ.uses_string() {
-				return new_varchar_value(left.string_value + right.string_value, 0)
-			}
-		}
-		'+' {
-			l, r := coerce_numeric_binary(left, e.op, right)?
-
-			if l.typ.uses_f64() {
-				return new_double_precision_value(l.f64_value + r.f64_value)
-			} else {
-				return new_bigint_value(l.int_value + r.int_value)
-			}
-		}
-		'-' {
-			l, r := coerce_numeric_binary(left, e.op, right)?
-
-			if l.typ.uses_f64() {
-				return new_double_precision_value(l.f64_value - r.f64_value)
-			} else {
-				return new_bigint_value(l.int_value - r.int_value)
-			}
-		}
-		'*' {
-			l, r := coerce_numeric_binary(left, e.op, right)?
-
-			if l.typ.uses_f64() {
-				return new_double_precision_value(l.f64_value * r.f64_value)
-			} else {
-				return new_bigint_value(l.int_value * r.int_value)
-			}
-		}
-		'/' {
-			l, r := coerce_numeric_binary(left, e.op, right)?
-
-			if l.typ.uses_f64() {
-				if r.f64_value == 0 {
-					return sqlstate_22012() // division by zero
-				}
-
-				return new_double_precision_value(l.f64_value / r.f64_value)
-			} else {
-				if r.int_value == 0 {
-					return sqlstate_22012() // division by zero
-				}
-
-				return new_bigint_value(l.int_value / r.int_value)
-			}
-		}
-		'AND' {
-			if left.typ.typ == .is_boolean && right.typ.typ == .is_boolean {
-				return eval_and(left, right)
-			}
-		}
-		'OR' {
-			if left.typ.typ == .is_boolean && right.typ.typ == .is_boolean {
-				return eval_or(left, right)
-			}
-		}
-		else {}
+	key := '$left.typ.typ $e.op $right.typ.typ'
+	if key in conn.binary_operators {
+		return conn.binary_operators[key](conn, left, right)
 	}
 
-	return sqlstate_42804('cannot $left.typ $e.op $right.typ', 'another type', '$left.typ and $right.typ')
-}
-
-fn eval_and(left Value, right Value) Value {
-	return match left.bool_value {
-		.is_true {
-			match right.bool_value {
-				.is_true { new_boolean_value(true) }
-				.is_false { new_boolean_value(false) }
-				.is_unknown { new_unknown_value() }
-			}
-		}
-		.is_false {
-			new_boolean_value(false)
-		}
-		.is_unknown {
-			match right.bool_value {
-				.is_true { new_unknown_value() }
-				.is_false { new_boolean_value(false) }
-				.is_unknown { new_unknown_value() }
-			}
-		}
-	}
-}
-
-fn eval_or(left Value, right Value) Value {
-	return match left.bool_value {
-		.is_true {
-			new_boolean_value(true)
-		}
-		.is_false {
-			match right.bool_value {
-				.is_true { new_boolean_value(true) }
-				.is_false { new_boolean_value(false) }
-				.is_unknown { new_unknown_value() }
-			}
-		}
-		.is_unknown {
-			match right.bool_value {
-				.is_true { new_boolean_value(true) }
-				.is_false { new_unknown_value() }
-				.is_unknown { new_unknown_value() }
-			}
-		}
-	}
-}
-
-fn eval_not(x Value) Value {
-	return match x.bool_value {
-		.is_true { new_boolean_value(false) }
-		.is_false { new_boolean_value(true) }
-		.is_unknown { new_unknown_value() }
-	}
-}
-
-fn coerce_numeric_binary(left Value, op string, right Value) ?(Value, Value) {
-	if (!left.typ.uses_f64() && !left.typ.uses_int())
-		|| (!right.typ.uses_f64() && !right.typ.uses_int()) {
-		return sqlstate_42804('cannot $left.typ $op $right.typ', 'another type', '$left.typ and $right.typ')
-	}
-
-	// If they are already both the same, there is nothing to coerce.
-	if left.typ.uses_f64() && right.typ.uses_f64() {
-		return left, right
-	}
-
-	if left.typ.uses_int() && right.typ.uses_int() {
-		return left, right
-	}
-
-	// If they are both coercable this means that we have two constants like
-	// "2.4 * 12". In this case we need to make sure we pick the more precise
-	// type.
-	//
-	// TODO(elliotchance): This shouldn't be needed when we support NUMERIC
-	//  types.
-	//
-	// TODO(elliotchance): It would be nice to reduce these constant expressions
-	//  to avoid evaulating them for each row.
-	if left.is_coercible && right.is_coercible {
-		if left.typ.uses_f64() || right.typ.uses_f64() {
-			return new_double_precision_value(left.as_f64()), new_double_precision_value(right.as_f64())
-		}
-
-		return new_bigint_value(left.as_int()), new_bigint_value(right.as_int())
-	}
-
-	// Only when they are different do we try to coerce one to the other.
-	if left.is_coercible {
-		if right.typ.uses_f64() {
-			return new_double_precision_value(left.int_value), right
-		}
-
-		return new_bigint_value(i64(left.f64_value)), right
-	}
-
-	if right.is_coercible {
-		if left.typ.uses_f64() {
-			return left, new_double_precision_value(right.int_value)
-		}
-
-		return left, new_bigint_value(i64(right.f64_value))
-	}
-
-	return sqlstate_42804('cannot $left.typ $op $right.typ', 'another type', '$left.typ and $right.typ')
+	return sqlstate_42883('operator does not exist: $left.typ $e.op $right.typ')
 }
 
 fn eval_unary(conn &Connection, data Row, e UnaryExpr, params map[string]Value) ?Value {
 	value := eval_as_value(conn, data, e.expr, params)?
 
-	match e.op {
-		'-' {
-			// '-' needs to carry through the is_coercible status because it's
-			// used for negative numbers that may need to be coerced later in
-			// the expression.
-
-			if value.typ.uses_f64() {
-				mut v := new_double_precision_value(-value.f64_value)
-				v.is_coercible = value.is_coercible
-
-				return v
-			}
-
-			if value.typ.uses_int() {
-				mut v := new_bigint_value(-value.int_value)
-				v.is_coercible = value.is_coercible
-
-				return v
-			}
-		}
-		'+' {
-			if value.typ.uses_f64() || value.typ.uses_int() {
-				return value
-			}
-		}
-		'NOT' {
-			if value.typ.typ == .is_boolean {
-				return eval_not(value)
-			}
-		}
-		else {}
+	key := '$e.op $value.typ.typ'
+	if key in conn.unary_operators {
+		return conn.unary_operators[key](conn, value)
 	}
 
-	return sqlstate_42804('cannot $e.op$value.typ', 'another type', value.typ.str())
-}
-
-fn eval_cmp<T>(lhs T, rhs T, op string) Value {
-	return new_boolean_value(match op {
-		'=' { lhs == rhs }
-		'<>' { lhs != rhs }
-		'>' { lhs > rhs }
-		'>=' { lhs >= rhs }
-		'<' { lhs < rhs }
-		'<=' { lhs <= rhs }
-		// This should not be possible because the parser has already verified
-		// this.
-		else { false }
-	})
+	return sqlstate_42883('operator does not exist: $key')
 }
 
 fn eval_between(conn &Connection, data Row, e BetweenExpr, params map[string]Value) ?Value {

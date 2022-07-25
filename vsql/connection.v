@@ -23,6 +23,11 @@ mut:
 	query_cache &QueryCache
 	// options are used when aquiring each file connection.
 	options ConnectionOptions
+	// cast_rules are use for CAST() (see cast.v)
+	cast_rules map[string]CastFunc
+	// unary_operators and binary_operators are for operators (see operators.v)
+	unary_operators  map[string]UnaryOperatorFunc
+	binary_operators map[string]BinaryOperatorFunc
 }
 
 // open is the convenience function for open_database() with default options.
@@ -76,6 +81,8 @@ fn open_connection(path string, options ConnectionOptions) ?&Connection {
 	}
 
 	register_builtin_funcs(mut conn)?
+	register_cast_rules(mut conn)
+	register_operators(mut conn)
 
 	return conn
 }
@@ -184,7 +191,7 @@ fn (c Connection) find_function(func_name string, arg_types []Type) ?Func {
 		}
 	}
 
-	return sqlstate_42883(func_name, arg_types)
+	return sqlstate_42883('function does not exist: ${func_name}(${arg_types.map(it.str()).join(', ')})')
 }
 
 pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) ?Value) ? {

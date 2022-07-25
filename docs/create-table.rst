@@ -15,7 +15,7 @@ Syntax
 
 1. ``column_name`` must start with a letter, but can be followed by any letter,
    underscore (``_``) or digit for a maximum length of 128 characters.
-2. ``column_type`` must be one of the :doc:`data-types`.
+2. ``column_type`` must be a data type.
 
 Primary Keys
 ------------

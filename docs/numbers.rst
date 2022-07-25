@@ -51,6 +51,53 @@ as currency) needs to be retained.
     - -1.7e+308 to +1.7e+308
     - 8 or 9 bytes [2]_
 
+Casting
+-------
+
+.. list-table::
+
+  * - ↓ From / To →
+    - ``SMALLINT``
+    - ``INTEGER``
+    - ``BIGINT``
+    - ``REAL``
+    - ``DOUBLE PRECISION``
+
+  * - ``SMALLINT``
+    - ✅
+    - ✅
+    - ✅
+    - ✅
+    - ✅
+
+  * - ``INTEGER``
+    - ✅
+    - ✅
+    - ✅
+    - ✅
+    - ✅
+
+  * - ``BIGINT``
+    - ✅
+    - ✅
+    - ✅
+    - ✅
+    - ✅
+
+  * - ``REAL``
+    - ✅
+    - ✅
+    - ✅
+    - ✅
+    - ✅
+
+  * - ``DOUBLE PRECISION``
+    - ✅
+    - ✅
+    - ✅
+    - ✅
+    - ✅
+
 Notes
 -----
 

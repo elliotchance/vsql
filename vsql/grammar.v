@@ -162,6 +162,18 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_boolean_value_expression_ := &EarleyRule{
 		name: '<boolean value expression>'
 	}
+	mut rule_cast_operand_ := &EarleyRule{
+		name: '<cast operand>'
+	}
+	mut rule_cast_specification_1_ := &EarleyRule{
+		name: '<cast specification: 1>'
+	}
+	mut rule_cast_specification_ := &EarleyRule{
+		name: '<cast specification>'
+	}
+	mut rule_cast_target_ := &EarleyRule{
+		name: '<cast target>'
+	}
 	mut rule_ceiling_function_1_ := &EarleyRule{
 		name: '<ceiling function: 1>'
 	}
@@ -1578,6 +1590,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_cascade := &EarleyRule{
 		name: 'CASCADE'
 	}
+	mut rule_cast := &EarleyRule{
+		name: 'CAST'
+	}
 	mut rule_ceil := &EarleyRule{
 		name: 'CEIL'
 	}
@@ -2302,6 +2317,50 @@ fn get_grammar() map[string]EarleyRule {
 	rule_boolean_value_expression_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_boolean_value_expression_2_
+		},
+	]}
+
+	rule_cast_operand_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_value_expression_
+		},
+	]}
+	rule_cast_operand_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_implicitly_typed_value_specification_
+		},
+	]}
+
+	rule_cast_specification_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_cast
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_cast_operand_
+		},
+		&EarleyRuleOrString{
+			rule: rule_as
+		},
+		&EarleyRuleOrString{
+			rule: rule_cast_target_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_cast_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_cast_specification_1_
+		},
+	]}
+
+	rule_cast_target_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_data_type_
 		},
 	]}
 
@@ -4642,6 +4701,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_routine_invocation_
+		},
+	]}
+	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_cast_specification_
 		},
 	]}
 
@@ -7055,6 +7119,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_cast.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CAST'
+			rule: 0
+		},
+	]}
+
 	rule_ceil.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'CEIL'
@@ -7817,6 +7888,10 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<boolean type>'] = rule_boolean_type_
 	rules['<boolean value expression: 2>'] = rule_boolean_value_expression_2_
 	rules['<boolean value expression>'] = rule_boolean_value_expression_
+	rules['<cast operand>'] = rule_cast_operand_
+	rules['<cast specification: 1>'] = rule_cast_specification_1_
+	rules['<cast specification>'] = rule_cast_specification_
+	rules['<cast target>'] = rule_cast_target_
 	rules['<ceiling function: 1>'] = rule_ceiling_function_1_
 	rules['<ceiling function: 2>'] = rule_ceiling_function_2_
 	rules['<ceiling function>'] = rule_ceiling_function_
@@ -8289,6 +8364,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['BOTH'] = rule_both
 	rules['BY'] = rule_by
 	rules['CASCADE'] = rule_cascade
+	rules['CAST'] = rule_cast
 	rules['CEIL'] = rule_ceil
 	rules['CEILING'] = rule_ceiling
 	rules['CHAR'] = rule_char
@@ -8512,6 +8588,11 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		}
 		'<boolean value expression: 2>' {
 			return [EarleyValue(parse_or(children[0] as Expr, children[2] as Expr)?)]
+		}
+		'<cast specification: 1>' {
+			return [
+				EarleyValue(parse_cast(children[2] as Expr, children[4] as Type)?),
+			]
 		}
 		'<ceiling function: 1>' {
 			return [EarleyValue(parse_ceiling(children[2] as Expr)?)]

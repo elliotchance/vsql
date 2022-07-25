@@ -66,7 +66,8 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 			cmp, is_null := row.data[column_name].cmp(raw_value)?
 			if is_null || cmp != 0 {
 				did_modify = true
-				row2.data[column_name] = cast('for column $column_name', raw_value, table_column.typ)?
+				row2.data[column_name] = cast(c, 'for column $column_name', raw_value,
+					table_column.typ)?
 			}
 		}
 
@@ -90,7 +91,7 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 			table_column := table.column(column_name)?
 			raw_value := eval_as_nullable_value(c, table_column.typ.typ, empty_row, v,
 				params)?
-			value := cast('for column $column_name', raw_value, table_column.typ)?
+			value := cast(c, 'for column $column_name', raw_value, table_column.typ)?
 
 			if table_column.not_null && value.is_null {
 				return sqlstate_23502('column $column_name')

@@ -16,8 +16,8 @@ SELECT * FROM foo;
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (35);
 INSERT INTO foo (baz) VALUES (78);
-DELETE FROM foo WHERE baz = 35;
-DELETE FROM foo WHERE baz = 35;
+DELETE FROM foo WHERE baz = 35.0;
+DELETE FROM foo WHERE baz = 35.0;
 SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1

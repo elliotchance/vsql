@@ -25,7 +25,6 @@ or use one of the quick links:
 - [Features](https://vsql.readthedocs.io/en/latest/features.html)
 - [SQL Reference](https://vsql.readthedocs.io/en/latest/features.html)
 - [Contributing](https://vsql.readthedocs.io/en/latest/contributing.html)
-- [Data Types](https://vsql.readthedocs.io/en/latest/data-types.html)
 - [Functions](https://vsql.readthedocs.io/en/latest/functions.html)
 - [SQLSTATE](https://vsql.readthedocs.io/en/latest/sqlstate.html)
 - [SQL Compliance](https://vsql.readthedocs.io/en/latest/sql-compliance.html)

@@ -47,7 +47,7 @@ INSERT INTO foo (x) VALUES (true);
 CREATE TABLE foo (b BOOLEAN);
 INSERT INTO foo (b) VALUES (123);
 -- msg: CREATE TABLE 1
--- error 42804: data type mismatch for column B: expected BOOLEAN but got BIGINT
+-- error 42846: cannot coerce BIGINT to BOOLEAN
 
 CREATE TABLE t1 (f1 CHARACTER VARYING(10), f2 FLOAT NOT NULL);
 INSERT INTO t1 (f1, f2) VALUES ('a', 1.23);
@@ -90,7 +90,7 @@ SELECT * FROM t1;
 -- error 23502: violates non-null constraint: column F2
 
 CREATE TABLE t1 (f1 FLOAT NOT NULL);
-INSERT INTO t1 (f1) VALUES (-123 * 4.2);
+INSERT INTO t1 (f1) VALUES (-123.0 * 4.2);
 SELECT * FROM t1;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
@@ -105,3 +105,12 @@ INSERT INTO foo.bar (baz) VALUES (123);
 -- msg: CREATE SCHEMA 1
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
+
+CREATE TABLE t1 (f1 CHARACTER VARYING(4));
+INSERT INTO t1 (f1) VALUES ('abc');
+INSERT INTO t1 (f1) VALUES ('too long');
+SELECT * FROM t1;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 22001: string data right truncation for CHARACTER VARYING(4)
+-- F1: abc

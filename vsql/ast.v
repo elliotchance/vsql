@@ -21,6 +21,7 @@ type Stmt = CommitStmt
 type Expr = BetweenExpr
 	| BinaryExpr
 	| CallExpr
+	| CastExpr
 	| CountAllExpr
 	| CurrentDateExpr
 	| CurrentTimeExpr
@@ -56,6 +57,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 			e.pstr(params)
 		}
 		CallExpr {
+			e.pstr(params)
+		}
+		CastExpr {
 			e.pstr(params)
 		}
 		CountAllExpr {
@@ -608,4 +612,13 @@ fn (e TruthExpr) pstr(params map[string]Value) string {
 	}
 
 	return '${e.expr.pstr(params)} IS $e.value.str()'
+}
+
+struct CastExpr {
+	expr   Expr
+	target Type
+}
+
+fn (e CastExpr) pstr(params map[string]Value) string {
+	return 'CAST(${e.expr.pstr(params)} AS $e.target)'
 }

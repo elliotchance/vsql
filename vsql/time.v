@@ -2,7 +2,6 @@
 
 module vsql
 
-import strings
 import regex
 import time
 
@@ -13,6 +12,13 @@ const (
 	day_period    = 24 * hour_period
 	month_period  = 31 * day_period
 	year_period   = 12 * month_period
+)
+
+// When a precision is not specified by TIME or TIMESTAMP types we should use
+// these defaults. These are layed out specifically in the SQL standard.
+const (
+	default_time_precision      = 0
+	default_timestamp_precision = 6
 )
 
 // The SQL standard is pretty strict about the format for date and time
@@ -240,10 +246,10 @@ fn (t Time) date_i64() i64 {
 fn (t Time) str() string {
 	return match t.typ.typ {
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
-			t.str_timestamp()
+			t.str_full_timestamp(t.typ.size, true, false)
 		}
 		.is_time_with_time_zone, .is_time_without_time_zone {
-			t.str_time()
+			t.str_full_time(t.typ.size, true, false)
 		}
 		.is_date {
 			t.str_date()
@@ -255,50 +261,131 @@ fn (t Time) str() string {
 	}
 }
 
-fn (t Time) str_timestamp() string {
-	return t.str_date() + 'T' + t.str_time()
-}
-
+// str_date returns the date portion, such as '2022-06-30'.
 fn (t Time) str_date() string {
 	return t.t.strftime('%Y-%m-%d')
 }
 
+// str_time returns the time portion, such as '12:34:56'. This does not include
+// fractional seconds or time zone information.
 fn (t Time) str_time() string {
-	mut s := t.t.strftime('%H:%M:%S')
+	return t.t.strftime('%H:%M:%S')
+}
 
-	if t.typ.size > 0 {
-		s += '.' + t.t.microsecond.str()
-		s += strings.repeat(`0`, t.typ.size - t.t.microsecond.str().len)
+// str_full_time returns the time, fractional seconds (rounded to prec) and time
+// zone information (if included).
+//
+// If allow_time_zone is false, the time zone information will never be included
+// in the output. Otherwise the time zone will be optionally included depending
+// on the type.
+//
+// See str_time_zone for details about sql_formatting.
+fn (t Time) str_full_time(prec int, allow_time_zone bool, sql_formatting bool) string {
+	return t.str_time() + t.str_fractional_seconds(prec) +
+		t.str_time_zone(allow_time_zone, sql_formatting)
+}
+
+// str_full_timestamp works the same way as str_full_time but also includes the
+// date portion.
+//
+// See str_time_zone for details about sql_formatting.
+fn (t Time) str_full_timestamp(prec int, allow_time_zone bool, sql_formatting bool) string {
+	return t.str_date() + if sql_formatting {
+		' '
+	} else {
+		'T'
+	} + t.str_full_time(prec, allow_time_zone, sql_formatting)
+}
+
+// str_fractional_seconds returns the fractional seconds which can either be
+// empty for zero size or include the proceeding decimal and be zero padded to
+// the size, such as '.123000'.
+//
+// This function takes a prec to allow for external rounding. For normal
+// formatting you should pass in the current type precision.
+fn (t Time) str_fractional_seconds(prec int) string {
+	if prec == 0 {
+		return ''
 	}
 
-	if t.typ.typ == .is_time_with_time_zone || t.typ.typ == .is_timestamp_with_time_zone {
-		negative := t.time_zone < 0
-		mut time_zone := t.time_zone
-		if negative {
-			time_zone *= -1
-		}
-
-		if t.time_zone >= 0 {
-			s += '+'
-		} else {
-			s += '-'
-		}
-
-		hours := time_zone / 60
-		minutes := time_zone % 60
-
-		if hours < 10 {
-			s += '0$hours'
-		} else {
-			s += '$hours'
-		}
-
-		if minutes < 10 {
-			s += '0$minutes'
-		} else {
-			s += '$minutes'
-		}
+	// Round down first, if needed.
+	mut s := t.t.microsecond.str()
+	if prec < s.len {
+		s = s[..prec]
 	}
+
+	return '.' + (s + '000000')[..prec]
+}
+
+// str_time_zone returns an empty string when not part of the type (ie. WITHOUT
+// TIME ZONE) or the encoded time zone, such as '+0500'.
+//
+// If allow_time_zone is false, the time zone information will never be included
+// in the output. Otherwise the time zone will be optionally included depending
+// on the type.
+//
+// If sql_formatting is true, a ':' will be placed between the hours and
+// minutes. This is rather annoying thing (as I best understand it, I may be
+// wrong) that *receiving* a time zone need to be like '+05:00' but *formatting*
+// a time zone must be in '+0500'. Because this function is used to format a
+// time zone that will do back into another value we need it to do both
+// depending on the situation.
+fn (t Time) str_time_zone(allow_time_zone bool, sql_formatting bool) string {
+	if !allow_time_zone {
+		return ''
+	}
+
+	if t.typ.typ != .is_time_with_time_zone && t.typ.typ != .is_timestamp_with_time_zone {
+		return ''
+	}
+
+	mut s := ''
+	negative := t.time_zone < 0
+	mut time_zone := t.time_zone
+	if negative {
+		time_zone *= -1
+	}
+
+	if t.time_zone >= 0 {
+		s += '+'
+	} else {
+		s += '-'
+	}
+
+	hours := time_zone / 60
+	minutes := time_zone % 60
+
+	if hours < 10 {
+		s += '0$hours'
+	} else {
+		s += '$hours'
+	}
+
+	if sql_formatting {
+		s += ':'
+	}
+
+	if minutes < 10 {
+		s += '0$minutes'
+	} else {
+		s += '$minutes'
+	}
+
+	return s
+}
+
+fn time_zone_value(conn &Connection) string {
+	_, mut offset := conn.options.now()
+	mut s := ''
+
+	if offset < 0 {
+		s += '-'
+		offset *= -1
+	} else {
+		s += '+'
+	}
+
+	s += left_pad(int(offset / 60).str(), '0', 2) + ':' + left_pad(int(offset % 60).str(), '0', 2)
 
 	return s
 }

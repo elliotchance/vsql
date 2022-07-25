@@ -18,8 +18,8 @@ SELECT * FROM foo;
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (35);
 INSERT INTO foo (baz) VALUES (78);
-UPDATE foo SET baz = 100 WHERE baz = 35;
-UPDATE foo SET baz = 100 WHERE baz = 100;
+UPDATE foo SET baz = 100 WHERE baz = 35.0;
+UPDATE foo SET baz = 100 WHERE baz = 100.0;
 SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
@@ -32,7 +32,7 @@ SELECT * FROM foo;
 CREATE TABLE foo (baz FLOAT);
 UPDATE foo SET baz = true;
 -- msg: CREATE TABLE 1
--- error 42804: data type mismatch for column BAZ: expected DOUBLE PRECISION but got BOOLEAN
+-- error 42846: cannot coerce BOOLEAN to DOUBLE PRECISION
 
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (123);
@@ -52,7 +52,7 @@ UPDATE foo SET baz = NULL;
 
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (-123);
-UPDATE foo SET baz = -223 * 4.2;
+UPDATE foo SET baz = -223.0 * 4.2;
 SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
@@ -87,3 +87,12 @@ UPDATE foo SET baz = NULL;
 SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- error 23502: violates non-null constraint: column BAZ
+
+CREATE TABLE foo (baz VARCHAR(4));
+INSERT INTO foo (baz) VALUES ('abc');
+UPDATE foo SET baz = 'too long';
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 22001: string data right truncation for CHARACTER VARYING(4)
+-- BAZ: abc

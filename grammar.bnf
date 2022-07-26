@@ -230,6 +230,7 @@
   | <column reference>               -> identifier_to_expr
   | <set function specification>
   | <routine invocation>
+  | <case expression>
   | <cast specification>
 
 <value expression primary> /* Expr */ ::=
@@ -1103,3 +1104,10 @@
 
 <cast target> /* Type */ ::=
     <data type>
+
+<case abbreviation> /* Expr */ ::=
+    NULLIF <left paren> <value expression>
+    <comma> <value expression> <right paren>   -> nullif
+
+<case expression> /* Expr */ ::=
+    <case abbreviation>

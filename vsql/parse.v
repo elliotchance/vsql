@@ -820,3 +820,7 @@ fn parse_boolean_test2(e Expr, v Value) ?Expr {
 fn parse_cast(expr Expr, typ Type) ?Expr {
 	return CastExpr{expr, typ}
 }
+
+fn parse_nullif(a Expr, b Expr) ?Expr {
+	return NullIfExpr{a, b}
+}

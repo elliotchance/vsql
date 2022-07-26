@@ -162,6 +162,15 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_boolean_value_expression_ := &EarleyRule{
 		name: '<boolean value expression>'
 	}
+	mut rule_case_abbreviation_1_ := &EarleyRule{
+		name: '<case abbreviation: 1>'
+	}
+	mut rule_case_abbreviation_ := &EarleyRule{
+		name: '<case abbreviation>'
+	}
+	mut rule_case_expression_ := &EarleyRule{
+		name: '<case expression>'
+	}
 	mut rule_cast_operand_ := &EarleyRule{
 		name: '<cast operand>'
 	}
@@ -1746,6 +1755,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_null := &EarleyRule{
 		name: 'NULL'
 	}
+	mut rule_nullif := &EarleyRule{
+		name: 'NULLIF'
+	}
 	mut rule_octet_length := &EarleyRule{
 		name: 'OCTET_LENGTH'
 	}
@@ -2317,6 +2329,39 @@ fn get_grammar() map[string]EarleyRule {
 	rule_boolean_value_expression_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_boolean_value_expression_2_
+		},
+	]}
+
+	rule_case_abbreviation_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_nullif
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_value_expression_
+		},
+		&EarleyRuleOrString{
+			rule: rule_comma_
+		},
+		&EarleyRuleOrString{
+			rule: rule_value_expression_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
+	rule_case_abbreviation_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_case_abbreviation_1_
+		},
+	]}
+
+	rule_case_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_case_abbreviation_
 		},
 	]}
 
@@ -4701,6 +4746,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_routine_invocation_
+		},
+	]}
+	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_case_expression_
 		},
 	]}
 	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
@@ -7483,6 +7533,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_nullif.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NULLIF'
+			rule: 0
+		},
+	]}
+
 	rule_octet_length.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'OCTET_LENGTH'
@@ -7888,6 +7945,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<boolean type>'] = rule_boolean_type_
 	rules['<boolean value expression: 2>'] = rule_boolean_value_expression_2_
 	rules['<boolean value expression>'] = rule_boolean_value_expression_
+	rules['<case abbreviation: 1>'] = rule_case_abbreviation_1_
+	rules['<case abbreviation>'] = rule_case_abbreviation_
+	rules['<case expression>'] = rule_case_expression_
 	rules['<cast operand>'] = rule_cast_operand_
 	rules['<cast specification: 1>'] = rule_cast_specification_1_
 	rules['<cast specification>'] = rule_cast_specification_
@@ -8416,6 +8476,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['MOD'] = rule_mod
 	rules['NOT'] = rule_not
 	rules['NULL'] = rule_null
+	rules['NULLIF'] = rule_nullif
 	rules['OCTET_LENGTH'] = rule_octet_length
 	rules['OCTETS'] = rule_octets
 	rules['OFFSET'] = rule_offset
@@ -8588,6 +8649,11 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 		}
 		'<boolean value expression: 2>' {
 			return [EarleyValue(parse_or(children[0] as Expr, children[2] as Expr)?)]
+		}
+		'<case abbreviation: 1>' {
+			return [
+				EarleyValue(parse_nullif(children[2] as Expr, children[4] as Expr)?),
+			]
 		}
 		'<cast specification: 1>' {
 			return [

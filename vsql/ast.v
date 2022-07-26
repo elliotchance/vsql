@@ -32,6 +32,7 @@ type Expr = BetweenExpr
 	| LocalTimestampExpr
 	| NoExpr
 	| NullExpr
+	| NullIfExpr
 	| Parameter
 	| QualifiedAsteriskExpr
 	| QueryExpression
@@ -90,6 +91,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 			e.str()
 		}
 		NullExpr {
+			e.pstr(params)
+		}
+		NullIfExpr {
 			e.pstr(params)
 		}
 		Parameter {
@@ -621,4 +625,13 @@ struct CastExpr {
 
 fn (e CastExpr) pstr(params map[string]Value) string {
 	return 'CAST(${e.expr.pstr(params)} AS $e.target)'
+}
+
+struct NullIfExpr {
+	a Expr
+	b Expr
+}
+
+fn (e NullIfExpr) pstr(params map[string]Value) string {
+	return 'NULLIF(${e.a.pstr(params)}, ${e.b.pstr(params)})'
 }

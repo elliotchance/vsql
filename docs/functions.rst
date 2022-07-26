@@ -484,3 +484,26 @@ Returns the input string converted to upper-case.
 
   VALUES UPPER('Hello');
   -- COL1: HELLO
+
+Other Functions
+---------------
+
+``NULLIF(X, Y)``
+^^^^^^^^^^^^^^^^
+
+If ``X`` and ``Y`` are equal, ``NULL`` will be returned. Otherwise ``X`` is
+returned.
+
+``NULLIF`` is equivilent to:
+
+.. code-block:: sql
+
+  CASE WHEN X=Y THEN NULL ELSE X END
+
+.. code-block:: sql
+
+  VALUES NULLIF(123, 123);
+  -- COL1: NULL
+  
+  VALUES NULLIF(123, 456);
+  -- COL1: 123

@@ -120,6 +120,9 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 		CastExpr {
 			return e.target
 		}
+		NullIfExpr {
+			return eval_as_type(conn, data, e.a, params)
+		}
 		UnaryExpr {
 			return eval_as_type(conn, data, e.expr, params)
 		}
@@ -186,6 +189,9 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 		}
 		NullExpr {
 			return eval_null(conn, data, e, params)
+		}
+		NullIfExpr {
+			return eval_nullif(conn, data, e, params)
 		}
 		Parameter {
 			return params[e.name] or { return sqlstate_42p02(e.name) }
@@ -339,6 +345,18 @@ fn eval_null(conn &Connection, data Row, e NullExpr, params map[string]Value) ?V
 	}
 
 	return new_boolean_value(value.is_null)
+}
+
+fn eval_nullif(conn &Connection, data Row, e NullIfExpr, params map[string]Value) ?Value {
+	a := eval_as_value(conn, data, e.a, params)?
+	b := eval_as_value(conn, data, e.b, params)?
+
+	cmp, _ := a.cmp(b)?
+	if cmp == 0 {
+		return new_null_value(a.typ.typ)
+	}
+
+	return a
 }
 
 fn eval_cast(conn &Connection, data Row, e CastExpr, params map[string]Value) ?Value {

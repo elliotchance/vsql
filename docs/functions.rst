@@ -488,6 +488,17 @@ Returns the input string converted to upper-case.
 Other Functions
 ---------------
 
+``COALESCE(VALUE, ...)``
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+``COALESCE`` returns the first value that is not ``NULL``. If all values are
+``NULL`` then ``NULL`` is also returned.
+
+.. code-block:: sql
+
+  VALUES COALESCE(1, 2);
+  -- COL1: 1
+
 ``NULLIF(X, Y)``
 ^^^^^^^^^^^^^^^^
 

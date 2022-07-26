@@ -120,6 +120,9 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 		CastExpr {
 			return e.target
 		}
+		CoalesceExpr {
+			return eval_as_type(conn, data, e.exprs[0], params)
+		}
 		NullIfExpr {
 			return eval_as_type(conn, data, e.a, params)
 		}
@@ -177,6 +180,9 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?V
 		}
 		CastExpr {
 			return eval_cast(conn, data, e, params)
+		}
+		CoalesceExpr {
+			return eval_coalesce(conn, data, e, params)
 		}
 		CountAllExpr {
 			return eval_identifier(data, new_identifier('COUNT(*)'))
@@ -351,12 +357,44 @@ fn eval_nullif(conn &Connection, data Row, e NullIfExpr, params map[string]Value
 	a := eval_as_value(conn, data, e.a, params)?
 	b := eval_as_value(conn, data, e.b, params)?
 
+	if a.typ.typ != b.typ.typ {
+		return sqlstate_42804('in NULLIF', a.typ.str(), b.typ.str())
+	}
+
 	cmp, _ := a.cmp(b)?
 	if cmp == 0 {
 		return new_null_value(a.typ.typ)
 	}
 
 	return a
+}
+
+fn eval_coalesce(conn &Connection, data Row, e CoalesceExpr, params map[string]Value) ?Value {
+	// TODO(elliotchance): This is horribly inefficient.
+
+	mut typ := SQLType{}
+	mut first := true
+	for i, expr in e.exprs {
+		typ2 := eval_as_type(conn, data, expr, params)?
+
+		if first {
+			typ = typ2.typ
+			first = false
+		} else if typ != typ2.typ {
+			return sqlstate_42804('in argument ${i + 1} of COALESCE', typ.str(), typ2.typ.str())
+		}
+	}
+
+	mut value := Value{}
+	for expr in e.exprs {
+		value = eval_as_value(conn, data, expr, params)?
+
+		if !value.is_null {
+			return value
+		}
+	}
+
+	return new_null_value(value.typ.typ)
 }
 
 fn eval_cast(conn &Connection, data Row, e CastExpr, params map[string]Value) ?Value {

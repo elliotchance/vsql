@@ -22,6 +22,7 @@ type Expr = BetweenExpr
 	| BinaryExpr
 	| CallExpr
 	| CastExpr
+	| CoalesceExpr
 	| CountAllExpr
 	| CurrentDateExpr
 	| CurrentTimeExpr
@@ -61,6 +62,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 			e.pstr(params)
 		}
 		CastExpr {
+			e.pstr(params)
+		}
+		CoalesceExpr {
 			e.pstr(params)
 		}
 		CountAllExpr {
@@ -625,6 +629,14 @@ struct CastExpr {
 
 fn (e CastExpr) pstr(params map[string]Value) string {
 	return 'CAST(${e.expr.pstr(params)} AS $e.target)'
+}
+
+struct CoalesceExpr {
+	exprs []Expr
+}
+
+fn (e CoalesceExpr) pstr(params map[string]Value) string {
+	return 'COALESCE(${e.exprs.map(it.pstr(params)).join(', ')})'
 }
 
 struct NullIfExpr {

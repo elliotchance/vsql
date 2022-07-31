@@ -165,6 +165,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_case_abbreviation_1_ := &EarleyRule{
 		name: '<case abbreviation: 1>'
 	}
+	mut rule_case_abbreviation_2_ := &EarleyRule{
+		name: '<case abbreviation: 2>'
+	}
 	mut rule_case_abbreviation_ := &EarleyRule{
 		name: '<case abbreviation>'
 	}
@@ -1524,6 +1527,15 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_update_target_ := &EarleyRule{
 		name: '<update target>'
 	}
+	mut rule_value_expression_list_1_ := &EarleyRule{
+		name: '<value expression list: 1>'
+	}
+	mut rule_value_expression_list_2_ := &EarleyRule{
+		name: '<value expression list: 2>'
+	}
+	mut rule_value_expression_list_ := &EarleyRule{
+		name: '<value expression list>'
+	}
 	mut rule_value_expression_primary_ := &EarleyRule{
 		name: '<value expression primary>'
 	}
@@ -1622,6 +1634,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_characters := &EarleyRule{
 		name: 'CHARACTERS'
+	}
+	mut rule_coalesce := &EarleyRule{
+		name: 'COALESCE'
 	}
 	mut rule_commit := &EarleyRule{
 		name: 'COMMIT'
@@ -2353,9 +2368,29 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_case_abbreviation_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_coalesce
+		},
+		&EarleyRuleOrString{
+			rule: rule_left_paren_
+		},
+		&EarleyRuleOrString{
+			rule: rule_value_expression_list_
+		},
+		&EarleyRuleOrString{
+			rule: rule_right_paren_
+		},
+	]}
+
 	rule_case_abbreviation_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_case_abbreviation_1_
+		},
+	]}
+	rule_case_abbreviation_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_case_abbreviation_2_
 		},
 	]}
 
@@ -6971,6 +7006,35 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_value_expression_list_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_value_expression_
+		},
+	]}
+
+	rule_value_expression_list_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_value_expression_list_
+		},
+		&EarleyRuleOrString{
+			rule: rule_comma_
+		},
+		&EarleyRuleOrString{
+			rule: rule_value_expression_
+		},
+	]}
+
+	rule_value_expression_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_value_expression_list_1_
+		},
+	]}
+	rule_value_expression_list_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_value_expression_list_2_
+		},
+	]}
+
 	rule_value_expression_primary_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_parenthesized_value_expression_
@@ -7221,6 +7285,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_characters.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'CHARACTERS'
+			rule: 0
+		},
+	]}
+
+	rule_coalesce.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COALESCE'
 			rule: 0
 		},
 	]}
@@ -7946,6 +8017,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<boolean value expression: 2>'] = rule_boolean_value_expression_2_
 	rules['<boolean value expression>'] = rule_boolean_value_expression_
 	rules['<case abbreviation: 1>'] = rule_case_abbreviation_1_
+	rules['<case abbreviation: 2>'] = rule_case_abbreviation_2_
 	rules['<case abbreviation>'] = rule_case_abbreviation_
 	rules['<case expression>'] = rule_case_expression_
 	rules['<cast operand>'] = rule_cast_operand_
@@ -8399,6 +8471,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<update statement: searched: 2>'] = rule_update_statement_searched_2_
 	rules['<update statement: searched>'] = rule_update_statement_searched_
 	rules['<update target>'] = rule_update_target_
+	rules['<value expression list: 1>'] = rule_value_expression_list_1_
+	rules['<value expression list: 2>'] = rule_value_expression_list_2_
+	rules['<value expression list>'] = rule_value_expression_list_
 	rules['<value expression primary>'] = rule_value_expression_primary_
 	rules['<value expression>'] = rule_value_expression_
 	rules['<where clause: 1>'] = rule_where_clause_1_
@@ -8432,6 +8507,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['CHARACTER'] = rule_character
 	rules['CHARACTER_LENGTH'] = rule_character_length
 	rules['CHARACTERS'] = rule_characters
+	rules['COALESCE'] = rule_coalesce
 	rules['COMMIT'] = rule_commit
 	rules['COS'] = rule_cos
 	rules['COSH'] = rule_cosh
@@ -8654,6 +8730,9 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [
 				EarleyValue(parse_nullif(children[2] as Expr, children[4] as Expr)?),
 			]
+		}
+		'<case abbreviation: 2>' {
+			return [EarleyValue(parse_coalesce(children[2] as []Expr)?)]
 		}
 		'<cast specification: 1>' {
 			return [
@@ -9432,6 +9511,14 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [
 				EarleyValue(parse_update_statement_where(children[1] as Identifier, children[3] as map[string]Expr,
 					children[5] as Expr)?),
+			]
+		}
+		'<value expression list: 1>' {
+			return [EarleyValue(parse_expr_to_list(children[0] as Expr)?)]
+		}
+		'<value expression list: 2>' {
+			return [
+				EarleyValue(parse_append_exprs1(children[0] as []Expr, children[2] as Expr)?),
 			]
 		}
 		'<where clause: 1>' {

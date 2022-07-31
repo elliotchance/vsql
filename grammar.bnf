@@ -1105,9 +1105,14 @@
 <cast target> /* Type */ ::=
     <data type>
 
+<value expression list> /* []Expr */ ::=
+    <value expression>                                   -> expr_to_list
+  | <value expression list> <comma> <value expression>   -> append_exprs1
+
 <case abbreviation> /* Expr */ ::=
     NULLIF <left paren> <value expression>
-    <comma> <value expression> <right paren>   -> nullif
+    <comma> <value expression> <right paren>                      -> nullif
+  | COALESCE <left paren> <value expression list> <right paren>   -> coalesce
 
 <case expression> /* Expr */ ::=
     <case abbreviation>

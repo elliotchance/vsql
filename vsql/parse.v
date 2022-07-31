@@ -824,3 +824,7 @@ fn parse_cast(expr Expr, typ Type) ?Expr {
 fn parse_nullif(a Expr, b Expr) ?Expr {
 	return NullIfExpr{a, b}
 }
+
+fn parse_coalesce(exprs []Expr) ?Expr {
+	return CoalesceExpr{exprs}
+}

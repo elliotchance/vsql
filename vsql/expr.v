@@ -53,6 +53,13 @@ fn expr_is_agg(conn &Connection, e Expr, row Row, params map[string]Value) ?bool
 				return nested_agg_unsupported(e)
 			}
 		}
+		CoalesceExpr {
+			for expr in e.exprs {
+				if expr_is_agg(conn, expr, row, params)? {
+					return nested_agg_unsupported(expr)
+				}
+			}
+		}
 		NullIfExpr {
 			if expr_is_agg(conn, e.a, row, params)? || expr_is_agg(conn, e.b, row, params)? {
 				return nested_agg_unsupported(e)
@@ -156,6 +163,9 @@ fn resolve_identifiers(e Expr, tables map[string]Table) ?Expr {
 		}
 		CastExpr {
 			return CastExpr{resolve_identifiers(e.expr, tables)?, e.target}
+		}
+		CoalesceExpr {
+			return CoalesceExpr{e.exprs.map(resolve_identifiers(it, tables)?)}
 		}
 		SimilarExpr {
 			return SimilarExpr{resolve_identifiers(e.left, tables)?, resolve_identifiers(e.right,

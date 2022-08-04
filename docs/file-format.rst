@@ -1,417 +1,223 @@
 File Format
 ===========
 
-vsql stores all data in a single file, usually with a ``.vsql`` extension
-(although, that is not required).
-
-The database file consists of a header followed by zero or more pages. All pages
-are the same size and the file will expand in whole pages as more storage is
-needed.
-
 .. contents::
+
+Overview
+--------
+
+.. image:: img/file-format-layout.png
+
+vsql stores the entire database (also known as the catalog) in a single file.
+The default extension is ``.vsql``, although that is not required.
+
+The file must include a *Header*, followed by zero or more pages. That is, when
+the database file is initially created it will only have a *Header* and zero
+pages.
+
+Every page must be the same size, but this is configurable. The page size cannot
+be changed after the file is created (the page size is stored in the *Header*).
+
+A page can be one of two types: leaf and non-leaf, and they may appear in any
+order in the file. They may also be reordered or removed as the file expands and
+contracts.
+
+Also see :doc:`limitations`.
 
 Header
 ------
 
-The header is always one page or 4kb (4096 bytes).
+The header is always 4kb (4096 bytes). Not all of this space is used, the
+remaining space is filled with zeros and can be ignored.
 
-At the moment only the first byte is used for a rudimentary version. It will be
-expanded out in the future to contain a magic number and other metadata for the
-file. See https://github.com/elliotchance/vsql/issues/42.
+The contents of the Header is best explained by looking at the code. See
+``struct Header`` in
+https://github.com/elliotchance/vsql/blob/main/vsql/header.v.
 
-Pages
------
+Page
+----
 
-Pages are fixed width and may be layed out in any order since they represent a
-single B-tree that contains all records, tables, etc. (these are called
-"objects" - described below) for the database.
+.. image:: img/file-format-page.png
 
-A file will start with zero pages (this does not include the header) since there
-is nothing stored and will expand as the B-tree needs to.
-
-All pages within a file are the same size (4kb) and each page reserves 3 bytes
-for metadata. The metadata describes the type of page (leaf or non-leaf) and the
-current usage (how full the page is).
-
-Objects within a page are kept sorted by key and unused space is always located
-after the used data. You should not assume that the unused portion is zeroed,
-
-A page that contains 2 objects will look like:
+All pages types (defined by *Kind*) will use the same basic structure with 3
+bytes reserved for metadata and the remaining bytes available for *Data*. The
+format of the data itself will depend on the *Kind*:
 
 .. list-table::
   :header-rows: 1
 
-  * - Byte Offset
-    - Length
-    - Description
+  * - Kind
+    - Page Type
 
   * - 0
-    - 1 (u8)
-    - Kind (0 = leaf, 1 = non-leaf)
+    - `Leaf Page`_
 
   * - 1
-    - 2 (u16)
-    - Usage of page (including header). The value in this case will be 63. An
-      empty page will have used bytes of 3.
+    - `Non-leaf Page`_
 
-  * - 3
-    - 23 ([]u8)
-    - An object of 23 bytes.
+Since *Used* has a max value of 65536 this is also the maximum possible size
+for a page. Although, the default page size for new files is 4096 bytes. [1]_
 
-  * - 26
-    - 37 ([]u8)
-    - An object of 37 bytes.
+The *Used* includes the size of *Meta*. So an empty page would have a *Used* of
+3 and an entirely full page would have a *Used* equal to the page size.
 
-Objects
--------
+Leaf Page
+---------
 
-Pages are made up of objects. Objects wrap different types of entities (such as
-a table or row) and the page does not need to be dedicated to a particular
-object type.
+.. image:: img/file-format-leaf-page.png
 
-The key uses a single character prefix to designate what type of object it is.
-For example, ``T`` for tables. See the specific object definitions for more
-information.
+The first 3 bytes are reserved for *Meta*, which will contain the kind (``0``
+for leaf) and the number of used bytes (remember that it also contains the
+size of *Meta*).
 
-An object is serialized as:
+The *Data* will contain zero or more objects. Although, zero objects is valid if
+that were the case the page should be removed as part of the garbage collection.
 
-- 4 bytes (signed integer) for the total length of the object (including self).
-  4 bytes may seem excessive since the page cannot hold that much, but this is
-  to prepare for a future when a single record spans multiple pages. See
-  https://github.com/elliotchance/vsql/issues/43.
-- 4 bytes for the created transaction ID (also called the "tid").
-- 4 bytes for the expired transaction ID (also called the "xid").
-- 2 bytes (signed integer) for the key length.
-- *n* bytes for the key
-- *n* bytes for the value. The length of the value can be calculated from the
-  total length - 2 - key length.
+Each `Object`_ may be variable length and can be any number of bytes so long as
+the *Object* size is equal to or less than the (page size - 3). For objects that
+cannot fit into a page, they are stored in as a `Blob Object`_ and referenced
+from the *Object*.
 
-Here is an example of a *Row Object* (91 bytes) stored as an *Object* (102
-bytes):
+Objects within a page are kept sorted by key and unused space is always located
+after the used data. You should not assume that the unused portion is zeroed.
 
-.. list-table::
-  :header-rows: 1
-
-  * - Byte Offset
-    - Length
-    - Value/Description
-
-  * - 0
-    - 4 (signed 32-bit int)
-    - 102 (the total length of the object, including self)
-
-  * - 4
-    - 4 (signed 32-bit int)
-    - 123 (the transaction ID that created this row)
-
-  * - 8
-    - 4 (signed 32-bit int)
-    - 0 (the transaction ID that expired this row, 0 means not expired)
-
-  * - 12
-    - 2 (signed 16-bit int)
-    - 5 (key length)
-
-  * - 14
-    - 5
-    - ``R12345`` (not the true representation, see *Row Objects*)
-
-  * - 19
-    - 91
-    - The *Row Objects* data.
-
-Schema Objects
---------------
-
-The object key for a table is ``S`` followed by the schema name, for example
-``SFOO`` for the ``foo`` schema (notice the uppercase is because of the SQL
-standard). Whereas the schema ``"foo"`` would be ``Sfoo``.
-   
-The schema definition is stored as:
-
-- 1 byte (signed integer) for the schema name length.
-- *n* bytes for the schema name.
-
-For example:
-
-.. code-block:: sql
-
-   CREATE SCHEMA warehouse;
-
-Is serialized as 14 bytes:
-
-.. list-table::
-  :header-rows: 1
-
-  * - Byte Offset
-    - Length
-    - Description
-
-  * - 0
-    - 4 (signed 32-bit int)
-    - 14 (the total length of the object, including self)
-
-  * - 4
-    - 1 (signed int)
-    - 9
-
-  * - 5
-    - 9 ([]u8)
-    - ``WAREHOUSE``
-
-Table Objects
+Non-leaf Page
 -------------
 
-The object key for a table is ``T`` followed by the table name, for example
-``TFOO`` for the ``foo`` table (notice the uppercase is because of the SQL
-standard). Whereas the table ``"foo"`` would be ``Tfoo``.
-   
-The table definition is stored as:
+.. image:: img/file-format-non-leaf-page.png
 
-- 1 byte (signed integer) for the table name length.
-- *n* bytes for the table name.
-- 1 byte (signed integer) for the number of columns in the primary key (0 means
-  there is no primary key defined).
-- For each primary key column:
+A non-leaf page share a lot of similarities with a `Leaf Page`_. However, the
+Objects are pointers to Leaf pages. That is the *Value* within the *Object* is a
+i32 that references the `Leaf Page`_ number.
 
-  * 1 byte (signed integer) for the column name length.
-  * *n* bytes for the column name.
+Objects within a non-leaf page are ordered based on the objects *Key*. This is
+important for scanning (such as range queries) to improve performance as the
+*Key* itself is the first *Key* in the referenced `Leaf Page`_. Here is an
+example of how a `Non-leaf Page`_ references a `Leaf Page`_:
 
-- For each column:
+.. image:: img/file-format-non-leaf-reference.png
 
-  * 1 byte (signed integer) for the column name length.
-  * *n* bytes for the table name.
-  * 1 byte (signed integer) for the column type (see *Type Number* in *Row Objects*)
-  * 1 byte (signed integer) for NULL constraint (1 = NOT NULL, 0 = nullable).
-  * 2 bytes (signed integer) for size (eg. 100 in ``VARCHAR(100)``).
-  * 2 bytes (signed integer) for precision (eg. 6 in ``DECIMAL(10, 6)``).
+It's also important to note that as the B-tree gets larger, there may be
+multiple non-leaf pages that need to be traversed this way. The process will
+always end with a leaf page. A parent of a non-leaf (which must also be a
+non-leaf) uses the *Key* that points to the first *Key* in the child page.
 
-For example:
+Object
+------
 
-.. code-block:: sql
+An Object may be any length, but this example uses an object of 230 bytes:
 
-   CREATE TABLE products (
-       product_id INT NOT NULL,
-       product_name VARCHAR(64) NOT NULL,
-       product_desc VARCHAR(1000),
-       PRIMARY KEY (product_id)
-   );
+.. image:: img/file-format-object.png
 
-Is serialized as 41 bytes:
+Individual objects can be of different types and are encoded/decoded based on
+the first byte of the *Key*:
 
 .. list-table::
   :header-rows: 1
 
-  * - Byte Offset
-    - Length
+  * - First Byte
+    - Object Type
+
+  * - ``B``
+    - `Blob Object`_
+
+  * - ``F``
+    - `Fragment Object`_
+
+  * - ``R``
+    - `Row Object`_
+
+  * - ``S``
+    - `Schema Object`_
+
+  * - ``T``
+    - `Table Object`_
+
+Every object contains 15 bytes of metadata:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Part
+    - Format
     - Description
 
-  * - 0
-    - 4 (signed int)
-    - 1
+  * - *Length*
+    - i32 (4 bytes)
+    - Is the total length of the object (including the metadata).
 
-  * - 4
-    - 8 ([]u8)
-    - ``PRODUCTS``
+  * - *TID*
+    - i32 (4 bytes)
+    - Transaction ID that created this object. [2]_
 
-  * - 8
-    - 1 (signed int)
-    - 1
+  * - *XID*
+    - i32 (4 bytes)
+    - Transaction ID that expired this object. [2]_
 
-  * - 9
-    - 1 (signed int)
-    - 10
+  * - *Ref*
+    - u8 (1 byte)
+    - When ``true``, the *Value* will be 5 bytes containing. See `Blob Object`_.
 
-  * - 10
-    - 10 ([]u8)
-    - ``PRODUCT_ID``
+  * - *Key Len*
+    - i16 (2 bytes)
+    - The number of bytes in the proceeding *Key*.
 
-  * - 24
-    - 1 (signed int)
-    - 10
+Using this metadata we can say that the length of *Value* will be: (*Length* -
+15 - *Key Length*).
 
-  * - 25
-    - 10 ([]u8)
-    - ``PRODUCT_ID``
-
-  * - 35
-    - 1 (signed int)
-    - 4 (INTEGER)
-
-  * - 36
-    - 1 (signed int)
-    - 0 (NOT NULL)
-
-  * - 37
-    - 2 (signed int)
-    - 0 (size, ignored)
-
-  * - 39
-    - 2 (signed int)
-    - 0 (precision, ignored)
-
-  * - 41
-    - 1 (signed int)
-    - 7 (CHARACTER VARYING)
-
-  * - 42
-    - 1 (signed int)
-    - 0 (NOT NULL)
-
-  * - 44
-    - 2 (signed int)
-    - 64 (size)
-
-  * - 45
-    - 2 (signed int)
-    - 0 (precision, ignored)
-
-  * - 47
-    - 1 (signed int)
-    - 7 (CHARACTER VARYING)
-
-  * - 48
-    - 1 (signed int)
-    - 1 (nullable)
-
-  * - 49
-    - 2 (signed int)
-    - 1000 (size)
-
-  * - 51
-    - 2 (signed int)
-    - 0 (precision, ignored)
-
-Row Objects
+Blob Object
 -----------
 
-The object key for a row is ``R<table>:<id>``, where *<table>* is the name of
-the table and *<id>* is a unique set of bytes for the row within the table. The
-*<id>* will either be the binary representation of the ``PRIMARY KEY`` or a
-random but sequental value. The *<id>* does not need to be the same length for
-all rows within the table, but in many cases it will be. See
-https://github.com/elliotchance/vsql/issues/44.
+When an object is added to the B-tree that is too large to fit into a single
+page, it must be split into *blob* (B) and *fragment* (F) objects. For example,
+if the page size was 256 bytes, but we try to insert a object that is 529 bytes:
 
-Within a row each of the values may be stored with a fixed or variable length.
-The length of the row is the sum of all columns.
+.. image:: img/file-format-blob-1.png
 
-If a type allows for ``NULL``, it will have 1 byte marker before the value and
-if ``NULL`` the value will *not* be encoded. There is one special exception to
-this with ``BOOLEAN`` which are always encoded as a single byte regardless if
-the type is nullable. For the ``NULL`` marker, ``1`` represents ``NULL``
-otherwise ``0`` for all other values.
+It is split into 3 objects:
 
-The *Type Number* is not used in the row, but is used to identify this type for
-describing columns in a *Table Object*.
+.. image:: img/file-format-blob-2.png
 
-.. list-table::
-  :header-rows: 1
+Where entire pages consist of one more blob objects followed by an optional
+fragement object containing any left over data. The fragment is optional because
+the object might happen to fit perfectly in a whole number of blob objects.
 
-  * - Data Type
-    - Bytes
-    - Type Number
-    - Description
+Finally, the original object is replaced with a reference (blue indiciated
+replacements):
 
-  * - ``BOOLEAN``
-    - 1
-    - 1
-    - ``0`` (NULL), ``1`` (UNKNOWN), ``2`` (TRUE), ``3`` (FALSE)
+.. image:: img/file-format-blob-3.png
 
-  * - ``BIGINT``
-    - 8 (NOT NULL) or 9 (nullable)
-    - 2
-    -
+Fragment Object
+---------------
 
-  * - ``DOUBLE PRECISION``
-    - 8 (NOT NULL) or 9 (nullable)
-    - 3
-    - 64-bit floating point.
+A fragment object (uses the prefix ``F``) contains a portion of data from
+splitting a large object. See `Blob Object`_.
 
-  * - ``INTEGER``
-    - 4 (NOT NULL) or 5 (nullable)
-    - 4
-    -
+Row Object
+----------
 
-  * - ``REAL``
-    - 4 (NOT NULL) or 5 (nullable)
-    - 5
-    - 32-bit floating point.
+A Row Object (has the ``R`` prefix) contains a table row. The serialization does
+not need to be explained in detail here. You can check the code for
+``Row.bytes()`` and ``new_row_from_bytes()`` respectively.
 
-  * - ``SMALLINT``
-    - 2 (NOT NULL) or 3 (nullable)
-    - 6
-    -
+Schema Object
+-------------
 
-  * - ``CHARACTER VARYING``
-    - 4 + len
-    - 7
-    - ``len`` may be zero. ``-1`` is a special length to signify NULL (followed
-      by zero bytes).
+A Schema Object (has the ``S`` prefix) contains a schema definition. The
+serialization does not need to be explained in detail here. You can check the
+code for ``Schema.bytes()`` and ``new_schema_from_bytes()`` respectively.
 
-  * - ``CHARACTER(n)``
-    - 4 + len
-    - 8
-    - ``len`` may only be ``-1`` (for ``NULL``) or ``n``. Values that are less
-      than ``n`` length will be right padded with spaces.
+Table Object
+------------
 
-So, for example, following table:
+A Table Object (has the ``T`` prefix) contains a table definition. The
+serialization does not need to be explained in detail here. You can check the
+code for ``Table.bytes()`` and ``new_table_from_bytes()`` respectively.
 
-.. code-block:: sql
+Notes
+-----
 
-   CREATE TABLE products (
-       product_id INT NOT NULL,
-       product_name VARCHAR(64) NOT NULL,
-       product_desc VARCHAR(1000),
-       PRIMARY KEY (product_id)
-   );
+.. [1] See ``default_connection_options()`` in
+   https://github.com/elliotchance/vsql/blob/main/vsql/connection.v.
 
-   INSERT INTO products (product_id, product_name, product_desc) VALUES
-     (100, 'Espresso Maker', 'Extra-large portafilter brews up to 4 shots of rich espresso');
-
-   INSERT INTO products (product_id, product_name, product_desc) VALUES
-     (200, 'Self Cleaning Juicer', NULL);
-   
-Will have the combined row layouts of 112 bytes:
-
-.. list-table::
-  :header-rows: 1
-
-  * - Byte Offset
-    - Length
-    - Value
-
-  * - 0
-    - 4 (signed 32-bit int)
-    - 100
-
-  * - 4
-    - 4 (signed 32-bit int)
-    - 14
-
-  * - 8
-    - 14 ([]u8)
-    - ``Espresso Maker``
-
-  * - 22
-    - 1 (byte)
-    - 0
-
-  * - 23
-    - 60 ([]u8)
-    - ``Extra-large portafilter brews up to 4 shots of rich espresso``
-
-  * - 83
-    - 4 (signed 32-bit int)
-    - 200
-
-  * - 87
-    - 4 (signed 32-bit int)
-    - 20
-
-  * - 91
-    - 20 ([]u8)
-    - ``Self Cleaning Juicer``
-
-  * - 111
-    - 1 (byte)
-    - 1
+.. [2] This is used for transaction visibility. See :doc:`mvcc`.

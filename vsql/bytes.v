@@ -61,6 +61,10 @@ mut:
 	bytes() []u8
 	// has_more can be used by the reader to see if we're at the end.
 	has_more() bool
+	// pos and set_pos to intereact with the position (affects futures reads and
+	// writes)
+	pos() int
+	set_pos(pos int)
 }
 
 // BytesReaderWriter can be read and written at any point. These interfaces
@@ -80,6 +84,14 @@ interface BytesReaderWriter {
 struct BytesLittleEndian {
 mut:
 	bytes BytesBigEndian
+}
+
+fn (mut b BytesLittleEndian) set_pos(pos int) {
+	b.bytes.set_pos(pos)
+}
+
+fn (mut b BytesLittleEndian) pos() int {
+	return b.bytes.pos()
 }
 
 fn (mut b BytesLittleEndian) bytes() []u8 {
@@ -260,12 +272,25 @@ mut:
 	data []u8
 }
 
+fn (mut b BytesBigEndian) pos() int {
+	return b.at
+}
+
+fn (mut b BytesBigEndian) set_pos(pos int) {
+	b.at = pos
+}
+
 fn (mut b BytesBigEndian) bytes() []u8 {
 	return b.data
 }
 
 fn (mut b BytesBigEndian) write_u8(d u8) {
-	b.data << d
+	if b.at < b.data.len {
+		b.data[b.at] = d
+	} else {
+		b.data << d
+	}
+	b.at++
 }
 
 fn (mut b BytesBigEndian) write_bool(d bool) {
@@ -284,8 +309,11 @@ fn (mut b BytesBigEndian) read_u8() u8 {
 fn (mut b BytesBigEndian) write_u8s(data []u8) {
 	// As documented on the interface, u8s does not undergo any endian
 	// conversion.
+	//
+	// TODO(elliotchance): Surely there is a more efficient way to copy a block
+	//  of data.
 	for d in data {
-		b.data << d
+		b.write_u8(d)
 	}
 }
 
@@ -294,6 +322,7 @@ fn (mut b BytesBigEndian) read_u8s(len int) []u8 {
 	// conversion.
 	data := b.data[b.at..b.at + len]
 	b.at += len
+
 	return data.clone()
 }
 

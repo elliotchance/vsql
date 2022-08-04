@@ -3,6 +3,10 @@
 
 module vsql
 
+// It would be nice to put this an an enum, but actually keeping it as a u8 (and
+// not the required int is kind of fiddly). Also, there's almost no case where
+// we need to deal with all cases because they are context specific. So let's
+// just keep these as u8 for now.
 const (
 	kind_leaf     = 0 // page contains only objects.
 	kind_not_leaf = 1 // page contains only links to other pages.
@@ -10,7 +14,7 @@ const (
 
 // page_object_prefix_length is the precalculated length that will be the
 // combination of all fixed width meta for the page object.
-const page_object_prefix_length = 14
+const page_object_prefix_length = 15
 
 // TODO(elliotchance): This does not need to be public. It was required for a
 //  bug at the time with V not being able to pass this to the shuffle function.
@@ -24,6 +28,9 @@ pub struct PageObject {
 	// key is used to both identify what type of object this is and also keep
 	// objects within the same collection also within the same range.
 	value []u8
+	// When is_blob_ref is true, the value will be always be 5 bytes. See
+	// blob_info().
+	is_blob_ref bool
 mut:
 	// The tid is the transaction that created the object.
 	//
@@ -36,20 +43,64 @@ mut:
 }
 
 fn new_page_object(key []u8, tid int, xid int, value []u8) PageObject {
-	return PageObject{key, value, tid, xid}
+	return PageObject{key, value, false, tid, xid}
+}
+
+fn blob_object_key(key []u8, part int) []u8 {
+	mut buf := new_empty_bytes()
+	buf.write_u8(`B`)
+	buf.write_u8s(key)
+	buf.write_u8(`0`)
+	buf.write_i32(part)
+
+	return buf.bytes()
+}
+
+fn new_blob_object(key []u8, tid int, xid int, part int, value []u8) PageObject {
+	return PageObject{blob_object_key(key, part), value, false, tid, xid}
+}
+
+fn fragment_object_key(key []u8) []u8 {
+	mut buf := new_empty_bytes()
+	buf.write_u8(`F`)
+	buf.write_u8s(key)
+
+	return buf.bytes()
+}
+
+fn new_fragment_object(key []u8, tid int, xid int, value []u8) PageObject {
+	return PageObject{fragment_object_key(key), value, false, tid, xid}
+}
+
+fn new_reference_object(key []u8, tid int, xid int, blob_peices int, has_fragment bool) PageObject {
+	mut buf := new_empty_bytes()
+	buf.write_i32(blob_peices)
+	buf.write_bool(has_fragment)
+
+	return PageObject{key, buf.bytes(), true, tid, xid}
 }
 
 fn (o PageObject) length() int {
 	return vsql.page_object_prefix_length + o.key.len + o.value.len
 }
 
-fn (o PageObject) serialize() []u8 {
+// blob_info only applies to blob objects.
+fn (o PageObject) blob_info() (int, bool) {
+	mut buf := new_bytes(o.value)
+	blob_peices := buf.read_i32()
+	has_fragment := buf.read_bool()
+
+	return blob_peices, has_fragment
+}
+
+fn (o PageObject) bytes() []u8 {
 	mut buf := new_empty_bytes()
 	buf.write_i32(o.length())
 	buf.write_i32(o.tid)
 	buf.write_i32(o.xid)
 	buf.write_i16(i16(o.key.len))
 	buf.write_u8s(o.key)
+	buf.write_bool(o.is_blob_ref)
 	buf.write_u8s(o.value)
 
 	return buf.bytes()
@@ -61,11 +112,16 @@ fn parse_page_object(data []u8) (int, PageObject) {
 	tid := buf.read_i32()
 	xid := buf.read_i32()
 	key_len := buf.read_i16()
+	key := buf.read_u8s(key_len)
+	is_blob_ref := buf.read_bool()
+	value := buf.read_u8s(total_len - vsql.page_object_prefix_length - key_len)
 
-	return total_len, new_page_object(data[vsql.page_object_prefix_length..key_len +
-		vsql.page_object_prefix_length].clone(), tid, xid, data[vsql.page_object_prefix_length +
-		key_len..total_len].clone())
+	return total_len, PageObject{key, value, is_blob_ref, tid, xid}
 }
+
+// page_header_size is the number of reserved bytes at the start of the page
+// that are not writable (because it contains metadata)
+const page_header_size = 3
 
 struct Page {
 	kind u8 // 0 = leaf, 1 = non-leaf, see constants at the top of the file.
@@ -77,17 +133,17 @@ mut:
 fn new_page(kind u8, page_size int) &Page {
 	return &Page{
 		kind: kind
-		used: 3 // includes kind and self
-		data: []u8{len: page_size - 3}
+		used: vsql.page_header_size // includes kind and self
+		data: []u8{len: page_size - vsql.page_header_size}
 	}
 }
 
 fn (p Page) is_empty() bool {
-	return p.used == 3
+	return p.used == vsql.page_header_size
 }
 
 fn (p Page) page_size() int {
-	return p.data.len + 3
+	return p.data.len + vsql.page_header_size
 }
 
 // TODO(elliotchance): This really isn't the most efficient way to do this. Make
@@ -167,7 +223,7 @@ fn (mut p Page) add(obj PageObject) ? {
 
 	mut offset := 0
 	for object in objects {
-		s := object.serialize()
+		s := object.bytes()
 		for i in 0 .. s.len {
 			p.data[offset] = s[i]
 			offset++
@@ -178,7 +234,8 @@ fn (mut p Page) add(obj PageObject) ? {
 }
 
 // delete will remove a key from a page if it exists, otherwise no action will
-// be taken. The index of the deleted object is returned or -1.
+// be taken. The removed object will be returned, or an object with an empty key
+// if the object did not exist.
 fn (mut p Page) delete(key []u8, tid int) bool {
 	mut offset := 0
 	mut did_delete := false
@@ -189,7 +246,7 @@ fn (mut p Page) delete(key []u8, tid int) bool {
 			continue
 		}
 
-		s := object.serialize()
+		s := object.bytes()
 		for i in 0 .. s.len {
 			p.data[offset] = s[i]
 			offset++
@@ -197,6 +254,16 @@ fn (mut p Page) delete(key []u8, tid int) bool {
 	}
 
 	return did_delete
+}
+
+fn (p Page) get(key []u8, tid int) PageObject {
+	for object in p.objects() {
+		if compare_bytes(key, object.key) == 0 && object.tid == tid {
+			return object
+		}
+	}
+
+	return PageObject{}
 }
 
 // expire will set the expiry transaction ID on an existing object. True is
@@ -210,7 +277,7 @@ fn (mut p Page) expire(key []u8, tid int, xid int) bool {
 			modified = true
 		}
 
-		s := object.serialize()
+		s := object.bytes()
 		for i in 0 .. s.len {
 			p.data[offset] = s[i]
 			offset++
@@ -241,7 +308,7 @@ fn (p Page) objects() []PageObject {
 	mut objects := []PageObject{}
 	mut n := 0
 
-	for n < p.used - 3 {
+	for n < p.used - vsql.page_header_size {
 		// Be careful to clone the size as the underlying data might get moved
 		// around.
 		m, object := parse_page_object(p.data[n..].clone())

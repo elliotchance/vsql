@@ -3,29 +3,22 @@
 // as data is deleted.
 //
 // All objects (tables, rows, etc) exist in a single tree. Keys are not unique
-// on their own but they become unique when combined with the tid - the
-// transaction ID that created them.
+// on their own but they become unique when combined with the tid (the
+// transaction ID that created them.)
 //
 // Some important caveats to note:
 //
-// 1. A single object cannot be larger than a page. This also includes the page
-// header and key itself. This is because a object cannot be split or span
-// multiple pages yet. See https://github.com/elliotchance/vsql/issues/43.
-// However, due to the limitation in #3, practically speaking an object cannot
-// be larger than half the page if that object is to be updated.
+// 1. When objects are larger than a single page, they will be moved to blob
+// storage. In a nutshell this means the data is split into sequential
+// page-sized objects using the 'B' prefixed and an optional 'F' (fragment)
+// object. Then the original object is converted into a reference. See
+// new_reference_object().
 //
 // 2. The combination of the key (which could be the PRIMARY KEY) and tid make
 // up the true key in the file, it is expected that only 1 or 2 versions of the
 // key may exist. Trying to add a third version of a key will result in an
 // error. This is because under MVCC the in-flight version would block new
-// versions from being created and it simplifes the layout of pages, because;
-//
-// 3. When a page split happens, both versions of the same key will always
-// arrive on one of the pages. They will not be split across multiple pages.
-// This highly simplifies the page paths but has the caveat of limiting the
-// maximum size of an object to be very slightly less than half a page. This is
-// just a hard limitation we will have to live with until objects can be split
-// across multiple pages.
+// versions from being created.
 
 module vsql
 
@@ -140,28 +133,71 @@ fn (mut p Btree) update_single(obj PageObject, tid int) ?int {
 	mut path, _ := p.search_page(obj.key)?
 	page_number := path[path.len - 1]
 	mut page := p.pager.fetch_page(page_number)?
-	previous_page_head := page.head().key.clone()
-	previous_root_page := p.pager.root_page()
 
 	page.update(obj, obj, obj.tid)?
 	p.pager.store_page(page_number, page)?
 
 	p.add(obj)?
 
-	p.fix_parent_pages(previous_page_head, previous_root_page, obj, path)?
+	p.fix_parent_pages(path)?
 
 	return page_number
 }
 
 // add returns the page number that the object was added to.
-fn (mut p Btree) add(obj PageObject) ?int {
+fn (mut p Btree) add(object PageObject) ?int {
+	mut obj := object
+
+	// If the object does not fit into a single page it needs to be moved to
+	// blob storage first.
+	maximum_size := p.max_allowed_in_page()
+	obj_bytes := obj.bytes()
+	if obj_bytes.len > maximum_size {
+		// One important consideration is that the actual bytes of the page
+		// object contains the key and the value. Since we're going to be
+		// splitting it up into smaller peices each with their own key we cannot
+		// simply divide the obj.bytes() into a fixed size.
+		//
+		// Formula derived from PageObject.length() and using 5 bytes for the
+		// blob value size.
+		mut blob_size := maximum_size - page_object_prefix_length - blob_object_key(obj.key,
+			0).len - 5
+		mut part_number := 0
+		mut remaining := obj_bytes.len
+		for remaining >= blob_size {
+			blob_object := new_blob_object(obj.key, obj.tid, obj.xid, part_number, obj_bytes[obj_bytes.len - remaining..
+				obj_bytes.len - remaining + blob_size])
+			part_number++
+			remaining -= blob_size
+			p.add(blob_object)?
+		}
+
+		// With the remaining amount (if any) create a blob fragement page.
+		has_fragment := remaining > 0
+		if has_fragment {
+			fragment_object := new_fragment_object(obj.key, obj.tid, obj.xid, obj_bytes[obj_bytes.len - remaining..])
+			p.add(fragment_object)?
+		}
+
+		// Rather than fall through, we need to call add() again with the proper
+		// object.
+		obj = new_reference_object(obj.key, obj.tid, obj.xid, part_number, has_fragment)
+
+		return p.add(obj)
+	}
+
 	// First page is a special condition.
 	if p.pager.total_pages() == 0 {
-		mut page := new_page(0, p.page_size)
+		mut page := new_page(kind_leaf, p.page_size)
 		page.add(obj)?
-		p.pager.append_page(page)?
 
-		return 0
+		// Just because there was no pages previously, doesn't mean that the
+		// object will get put into the 0th page. We need to be careful to set
+		// the root page to whatever the destination is now.
+		page_number := p.pager.append_page(page)?
+		p.pager.set_root_page(page_number)?
+
+		return page_number
 	}
 
 	// Find the page that is suitable for our insertion.
@@ -172,102 +208,123 @@ fn (mut p Btree) add(obj PageObject) ?int {
 	// need to update the parent(s). In the case of a split the minimum key will
 	// still appear in the left (same page).
 	mut page := p.pager.fetch_page(left_page_number)?
-	previous_page_head := page.head().key.clone()
-	previous_root_page := p.pager.root_page()
 
 	// Does it fit into the desired page?
 	if page.used + obj.length() < p.page_size {
 		page.add(obj)?
 		p.pager.store_page(left_page_number, page)?
 	} else {
-		p.split_page(path, &page, obj, kind_leaf)?
+		p.split_page(path, page, obj, kind_leaf)?
 	}
 
-	p.fix_parent_pages(previous_page_head, previous_root_page, obj, path)?
+	// The key may not be inserted into the existing page (if there was a
+	// split). So be careful to refetch the actual page.
+	//
+	// TODO(elliotchance): This can be improved to avoid the extra search().
+	path, _ = p.search_page(obj.key)?
+	p.fix_parent_pages(path)?
 
 	return left_page_number
 }
 
-fn (mut p Btree) fix_parent_pages(previous_page_head []u8, previous_root_page int, obj PageObject, path []int) ? {
+fn (mut p Btree) fix_parent_pages(path []int) ? {
 	// Make sure we correct the minimum bound up the tree, if needed.
-	if compare_bytes(obj.key, previous_page_head) < 0 {
-		for path_index in 0 .. path.len - 1 {
-			mut t := p.pager.fetch_page(path[path_index])?
+	if path.len < 2 {
+		return
+	}
 
-			// The tids are zero here because non-leaf pages do not have
-			// transaction visibility for their nodes.
-			t.delete(previous_page_head, 0)
+	mut leaf_page := p.pager.fetch_page(path[path.len - 1])?
+	min_key := leaf_page.head().key
+	for path_index in 0 .. path.len - 1 {
+		mut t := p.pager.fetch_page(path[path_index])?
 
-			mut buf := new_empty_bytes()
-			buf.write_i32(path[path_index + 1])
+		t_head := t.head()
+		if compare_bytes(min_key, t_head.key) < 0 {
+			t.delete(t_head.key, 0)
 
-			new_object := new_page_object(obj.key.clone(), 0, 0, buf.bytes())
-
+			new_object := new_page_object(min_key.clone(), 0, 0, t_head.value.clone())
 			t.add(new_object)?
-			p.pager.store_page(path[path_index], t)?
 		}
 
-		if previous_root_page != p.pager.root_page() {
-			mut new_root_page := new_page(kind_not_leaf, p.page_size)
-			mut previous_objs := (p.pager.fetch_page(p.pager.root_page())?).objects()
-
-			// The tids are zero here because non-leaf pages do not have
-			// transaction visibility for their nodes.
-			mut buf := new_empty_bytes()
-			buf.write_i32(previous_root_page)
-
-			previous_objs[0] = new_page_object(obj.key.clone(), 0, 0, buf.bytes())
-
-			new_root_page.add(previous_objs[0])?
-			new_root_page.add(previous_objs[1])?
-			p.pager.store_page(p.pager.root_page(), new_root_page)?
-		}
+		p.pager.store_page(path[path_index], t)?
 	}
 }
 
-fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind u8) ? {
-	// TODO(elliotchance): We do this by dividing the number of entities, this
-	//  isn't the best since it can result in pages that aren't evenly split.
-	objects := page.objects()
-	mut left := objects[..objects.len / 2]
+// max_allowed_in_page returns the maximum bytes a page can hold of data. That
+// is, not including the space required for the page metadata.
+fn (p Btree) max_allowed_in_page() int {
+	return p.page_size - page_header_size
+}
 
-	// Important: We need to make sure two versions of the same key didn't just
-	// get split across two pages. Move the head the head of the right page to
-	// the tail of the left. See top of the file for details.
+fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ? {
+	// A simple (but unsuccessful) way to split a page is to put half of the
+	// objects into each page. This doesn't work because the new object might be
+	// larger than the remaining space on the left or right page. Instead we
+	// need to insert sort the object and divide the pages by size with a heavy
+	// bias towards loading the left page.
 	//
-	// TODO(elliotchance): We could be smarter about this placement based on the
-	//  object size.
-	if compare_bytes(objects[left.len - 1].key, objects[left.len].key) == 0 {
-		left = objects[..(objects.len / 2) + 1]
+	// We prefer the left page to be a full as possible because the keys are
+	// sequential, so in the case of lots of sequential inserts it can pack the
+	// data more tightly. However, if the inserts are not sequential we will get
+	// a lot of semi-full pages that hopefully become full over time.
+	mut objects := page.objects()
+	original_head := objects[0].key.clone()
+	mut inserted_at := -1
+	for pos, object in objects {
+		if compare_bytes(obj.key, object.key) <= 0 {
+			mut new_objects := objects[..pos]
+			new_objects << obj
+			new_objects << objects[pos..]
+			objects = new_objects.clone()
+			inserted_at = pos
+			break
+		}
 	}
 
+	if inserted_at == -1 {
+		objects << obj
+	}
+
+	mut consumed := 0
+	mut objects_in_left_page := 0
+	mut max_allowed_in_page := p.max_allowed_in_page()
+
+	// Load the left page.
 	mut page1 := new_page(kind, p.page_size)
-	for o in left {
-		page1.add(o)?
+	for object in objects {
+		object_size := object.length()
+		if consumed + object_size > max_allowed_in_page {
+			break
+		}
+
+		consumed += object_size
+		objects_in_left_page++
+		page1.add(object)?
+
+		// It's possible that when we split a page that all of the objects fit
+		// into the left page. This would be bad as the right page would be left
+		// empty (pun, see what I did there) and the code below would fail. This
+		// isn't a bug, it happens when we're splitting non-leaf pages to make
+		// room for the new page pointer object. So at the time of the split the
+		// page contains many objects but they are not larger than a single
+		// page.
+		if objects_in_left_page == objects.len - 1 {
+			break
+		}
 	}
 
+	// Whatever is remaining goes into the right page.
 	mut page2 := new_page(kind, p.page_size)
-	for o in objects[left.len..] {
-		page2.add(o)?
-	}
-
-	// To maintain the sort order we need to make sure we place the new object
-	// into the correct page. That is, if the new objects key is less then the
-	// first item in the second page it must go into the first page.
-	//
-	// TODO(elliotchance): What if it doesn't fit in the page still? See
-	//  https://github.com/elliotchance/vsql/issues/43.
-	if compare_bytes(obj.key, left[left.len - 1].key) <= 0 {
-		page1.add(obj)?
-	} else {
-		page2.add(obj)?
+	mut stored_in_right := 0
+	for i in objects_in_left_page .. objects.len {
+		page2.add(objects[i])?
+		stored_in_right++
 	}
 
 	left_page_number := path[path.len - 1]
 	p.pager.store_page(left_page_number, page1)?
 
-	right_page_number := p.pager.total_pages()
-	p.pager.append_page(page2)?
+	right_page_number := p.pager.append_page(page2)?
 
 	// Important: The object is inserted in sorted order, so we cannot rely on
 	// the existing split values. We need to read the head object from each
@@ -289,24 +346,37 @@ fn (mut p Btree) split_page(path []int, page &Page, obj PageObject, kind u8) ? {
 	if path.len > 1 {
 		mut page3 := p.pager.fetch_page(path[path.len - 2])?
 
-		// 36 is the length of p1 + p2.
-		if page3.used >= p.page_size - 36 {
+		// Update the page head, if the object was inserted at the start of the
+		// left page. It doesn't matter if it was inserted at the start of the
+		// right page because that's always added to the parent non-leaf page.
+		//
+		// TODO(elliotchance): I'm not certain that this will work if the head
+		//  object changes to something very large. This code should panic on
+		//  add(). We need a test suite for very long keys.
+		if inserted_at == 0 {
+			page3.delete(original_head, 0)
+			page3.add(p1)?
+		}
+
+		// The non-leaf pages only contain page pointers, so the objects are
+		// usually quite small. However, they are not a fixed size because the
+		// keys can be variable length.
+		if page3.used > p.page_size - p2.length() {
 			mut new_path := path[..path.len - 1]
-			p.split_page(new_path, &page3, p2, kind_not_leaf)?
+			p.split_page(new_path, page3, p2, kind_not_leaf)?
 		} else {
 			page3.add(p2)?
+
 			p.pager.store_page(path[path.len - 2], page3)?
 		}
 	} else {
 		// Otherwise, we're going to need to create a new root.
 		mut page3 := new_page(kind_not_leaf, p.page_size)
-		p.pager.append_page(page3)?
-		p.pager.set_root_page(p.pager.total_pages() - 1)?
-
 		page3.add(p1)?
 		page3.add(p2)?
 
-		p.pager.store_page(p.pager.root_page(), page3)?
+		new_root_page := p.pager.append_page(page3)?
+		p.pager.set_root_page(new_root_page)?
 	}
 }
 
@@ -318,13 +388,36 @@ fn (p Btree) new_range_iterator(min []u8, max []u8) PageIterator {
 	}
 }
 
-fn (mut p Btree) remove(key []u8, tid int) ? {
+fn (mut p Btree) remove(key []u8, tid int, handle_blob bool) ? {
 	// Find the page that will contain the key, if it exists.
 	mut path, _ := p.search_page(key)?
 	page_number := path[path.len - 1]
 	mut empty_pages := []int{}
 
 	mut page := p.pager.fetch_page(page_number)?
+	object_to_delete := page.get(key, tid)
+	if handle_blob && object_to_delete.is_blob_ref {
+		// Remove the associated blob.
+		blob_peices, has_fragment := object_to_delete.blob_info()
+
+		for part in 0 .. blob_peices {
+			p.remove(blob_object_key(key, part), tid, false)?
+		}
+
+		if has_fragment {
+			p.remove(fragment_object_key(key), tid, false)?
+		}
+
+		// There's an important edge case where the original key might be in one
+		// of the pages we just modified OR the pages have been moved around so
+		// that the page we deleted from is no longer valid.
+		//
+		// We handle this by calling remove again. Probably not the most ideal,
+		// but it will do for now.
+		return p.remove(key, tid, false)
+	}
+
+	// The object does not use blob storage, or it has already been cleared out.
 	page.delete(key, tid)
 	p.pager.store_page(page_number, page)?
 
@@ -344,8 +437,9 @@ fn (mut p Btree) remove(key []u8, tid int) ? {
 			mut t := p.pager.fetch_page(path[path_index])?
 			did_delete := t.delete(key, 0)
 
-			if !(p.pager.fetch_page(path[path_index + 1])?).is_empty() && did_delete {
-				lower_bound := (p.pager.fetch_page(path[path_index + 1])?).head().key
+			lower_page := p.pager.fetch_page(path[path_index + 1])?
+			if !lower_page.is_empty() && did_delete {
+				lower_bound := lower_page.head().key
 
 				// The tids are zero here because non-leaf pages do not have
 				// transaction visibility for their nodes.
@@ -358,7 +452,7 @@ fn (mut p Btree) remove(key []u8, tid int) ? {
 
 			p.pager.store_page(path[path_index], t)?
 
-			if (p.pager.fetch_page(path[path_index])?).is_empty() {
+			if t.is_empty() {
 				// If the root page becomes empty we need to truncate the file.
 				if path[path_index] == p.pager.root_page() {
 					p.pager.truncate_all()?
@@ -370,9 +464,13 @@ fn (mut p Btree) remove(key []u8, tid int) ? {
 		}
 	}
 
+	p.fill_empty_pages(mut empty_pages)?
+}
+
+fn (mut p Btree) fill_empty_pages(mut empty_pages []int) ? {
 	// I'm not sure why, but we must backfill pages starting with the last page
-	// first. Without sorting descending the b-tree stress will always crash
-	// with a handful or more size=100 trees.
+	// first. Without sorting descending the B-tree stress test will always
+	// crash with a handful or more size=100 trees.
 	empty_pages.sort(a > b)
 
 	// If there were any pages that are now empty we swap out the gap with the
@@ -383,11 +481,12 @@ fn (mut p Btree) remove(key []u8, tid int) ? {
 	//  page. This will help the file shrink if there are a lot of scattered
 	//  deletes.
 	for empty_page in empty_pages {
-		last_page_key := (p.pager.fetch_page(p.pager.total_pages() - 1)?).head().key
+		last_page := p.pager.fetch_page(p.pager.total_pages() - 1)?
+		last_page_key := last_page.head().key
 		mut path_to_last_page, _ := p.search_page(last_page_key)?
 
-		// The last page will be referred to somewhere in the path. We need to
-		// replace that element and its immediate child.
+		// The last page will be referred to somewhere in the path. We need
+		// to replace that element and its immediate child.
 		for path_index in 0 .. path_to_last_page.len - 1 {
 			if path_to_last_page[path_index + 1] == p.pager.total_pages() - 1 {
 				mut ancestor := p.pager.fetch_page(path_to_last_page[path_index])?
@@ -405,15 +504,15 @@ fn (mut p Btree) remove(key []u8, tid int) ? {
 			}
 		}
 
-		p.pager.store_page(empty_page, p.pager.fetch_page(p.pager.total_pages() - 1)?)?
+		p.pager.store_page(empty_page, last_page)?
+
+		// Be careful of moving the root page.
+		if p.pager.root_page() == p.pager.total_pages() - 1 {
+			p.pager.set_root_page(empty_page)?
+		}
 
 		// Finally, truncate the last page.
 		p.pager.truncate_last_page()?
-
-		// Be careful of moving the root page.
-		if p.pager.root_page() == p.pager.total_pages() {
-			p.pager.set_root_page(empty_page)?
-		}
 	}
 
 	// If the root page becomes empty we need to truncate the file.

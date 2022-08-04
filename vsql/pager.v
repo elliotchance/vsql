@@ -13,7 +13,7 @@ interface Pager {
 mut:
 	fetch_page(page_number int) ?Page
 	store_page(page_number int, page Page) ?
-	append_page(page Page) ?
+	append_page(page Page) ?int
 	truncate_all() ?
 	truncate_last_page() ?
 	total_pages() int
@@ -45,8 +45,10 @@ fn (mut p MemoryPager) total_pages() int {
 	return p.pages.len
 }
 
-fn (mut p MemoryPager) append_page(page Page) ? {
+fn (mut p MemoryPager) append_page(page Page) ?int {
 	p.pages << page
+
+	return p.pages.len - 1
 }
 
 fn (mut p MemoryPager) truncate_all() ? {
@@ -104,7 +106,7 @@ fn (mut p FilePager) fetch_page(page_number int) ?Page {
 	return Page{
 		kind: b.read_u8()
 		used: b.read_u16()
-		data: buf[3..]
+		data: buf[page_header_size..]
 	}
 }
 
@@ -125,11 +127,13 @@ fn (mut p FilePager) total_pages() int {
 	return p.total_pages
 }
 
-fn (mut p FilePager) append_page(page Page) ? {
+fn (mut p FilePager) append_page(page Page) ?int {
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
 	p.store_page(p.total_pages, page)?
 	p.total_pages++
+
+	return p.total_pages - 1
 }
 
 fn (mut p FilePager) truncate_all() ? {

@@ -828,3 +828,7 @@ fn parse_nullif(a Expr, b Expr) ?Expr {
 fn parse_coalesce(exprs []Expr) ?Expr {
 	return CoalesceExpr{exprs}
 }
+
+fn parse_string_identifier(s string) ?Identifier {
+	return new_identifier(s)
+}

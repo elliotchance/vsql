@@ -17,3 +17,9 @@ SELECT * FROM foo.bar;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- BAZ: 123
+
+CREATE SCHEMA absolute;
+-- msg: CREATE SCHEMA 1
+
+CREATE SCHEMA ABSOLUTE;
+-- msg: CREATE SCHEMA 1

@@ -113,3 +113,19 @@ CREATE SCHEMA foo;
 CREATE TABLE foo.bar (baz BIGINT);
 -- msg: CREATE SCHEMA 1
 -- msg: CREATE TABLE 1
+
+CREATE TABLE absolute (baz BIGINT);
+-- msg: CREATE TABLE 1
+
+CREATE TABLE ABSOLUTE (baz BIGINT);
+-- msg: CREATE TABLE 1
+
+CREATE SCHEMA absolute;
+CREATE TABLE absolute.continue (baz BIGINT);
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE TABLE 1
+
+CREATE SCHEMA absolute;
+CREATE TABLE absolute.CONTINUE (baz BIGINT);
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE TABLE 1

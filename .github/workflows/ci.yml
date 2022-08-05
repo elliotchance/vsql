@@ -50,9 +50,9 @@ jobs:
 
     - name: Build macOS binaries
       run: |
-        sed -i -e "s/MISSING_VERSION/${GITHUB_REF##*/} `date +'%F'`/g" cmd/vsql.v
-        make vsql
-        zip -j vsql-macos.zip cmd/vsql
+        sed -i -e "s/MISSING_VERSION/${GITHUB_REF##*/} `date +'%F'`/g" cmd/vsql/version.v
+        make bin/vsql
+        zip -j vsql-macos.zip bin/vsql
 
     - name: Release
       uses: softprops/action-gh-release@v1
@@ -76,9 +76,9 @@ jobs:
 
     - name: Build linux binaries
       run: |
-        sed -i -e "s/MISSING_VERSION/${GITHUB_REF##*/} `date +'%F'`/g" cmd/vsql.v
-        make vsql
-        zip -j vsql-linux.zip cmd/vsql
+        sed -i -e "s/MISSING_VERSION/${GITHUB_REF##*/} `date +'%F'`/g" cmd/vsql/version.v
+        make bin/vsql
+        zip -j vsql-linux.zip bin/vsql
 
     - name: Release
       uses: softprops/action-gh-release@v1
@@ -106,8 +106,9 @@ jobs:
     - name: Build Windows binaries
       run: |
         brew install mingw-w64
-        v -os windows -prod cmd/vsql.v
-        zip -j vsql-windows.zip cmd/vsql.exe
+        v -os windows -prod cmd/vsql
+        mv cmd/vsql/vsql.exe bin/vsql.exe
+        zip -j vsql-windows.zip bin/vsql.exe
 
     - name: Release
       uses: softprops/action-gh-release@v1

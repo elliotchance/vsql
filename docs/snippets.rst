@@ -47,11 +47,11 @@
    runtime to a virtual table.
 
 .. |v.Connection.schema_tables| replace::
-   schema_tables returns all table names for the provided schema. If the schema
-   does not exist and empty list will be returned.
+   schema_tables returns tables for the provided schema. If the schema does not
+   exist and empty list will be returned.
 
 .. |v.Connection.schemas| replace::
-   schemas returns the names of schemas in this catalog (database).
+   schemas returns the schemas in this catalog (database).
 
 .. |v.ConnectionOptions| replace::
    ConnectionOptions can modify the behavior of a connection when it is opened.
@@ -179,6 +179,40 @@
 
 .. |v.SQLType.str| replace::
    The SQL representation, such as ``TIME WITHOUT TIME ZONE``.
+
+.. |v.Schema| replace::
+   Represents a schema.
+
+.. |v.Schema.name| replace::
+   The name of the schema is case-sensitive.
+
+.. |v.Schema.str| replace::
+   Returns the CREATE SCHEMA statement for this schema, including the ';'.
+
+.. |v.Table| replace::
+   Represents the structure of a table.
+
+.. |v.Table.column| replace::
+   Find a column by name, or return a SQLSTATE 42703 error.
+
+.. |v.Table.column_names| replace::
+   Convenience method for returning the ordered list of column names.
+
+.. |v.Table.columns| replace::
+   The column definitions for the table.
+
+.. |v.Table.is_virtual| replace::
+   When the table is virtual it is not persisted to disk.
+
+.. |v.Table.name| replace::
+   The name of the table is case-sensitive.
+
+.. |v.Table.primary_key| replace::
+   If the table has a PRIMARY KEY defined the column (or columns) will be
+   defined here in order.
+
+.. |v.Table.str| replace::
+   Returns the CREATE TABLE statement, including the ';'.
 
 .. |v.Time| replace::
    Time is the internal way that time is represented and provides other

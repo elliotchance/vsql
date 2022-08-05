@@ -59,6 +59,16 @@ btree-test:
 sql-test:
 	v -stats $(BUILD_OPTIONS) test vsql/sql_test.v
 
+# CLI Tests
+
+cli-test: bin/vsql
+	for f in `ls cmd/tests/*.sh`; do \
+		VSQL=bin/vsql ./$$f ; \
+	done
+
+cmd/tests/%: bin/vsql
+	VSQL=bin/vsql ./cmd/tests/$*.sh
+
 # Examples
 
 examples:
@@ -73,8 +83,8 @@ examples/%:
 
 bench: bench-on-disk bench-memory
 
-bench-on-disk: vsql
+bench-on-disk: bin/vsql
 	./bin/vsql bench
 
-bench-memory: vsql
+bench-memory: bin/vsql
 	./bin/vsql bench -file ':memory:'

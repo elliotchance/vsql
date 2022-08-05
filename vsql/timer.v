@@ -4,16 +4,16 @@ module vsql
 
 import time
 
-struct Timer {
+pub struct Timer {
 	started_at time.Time
 }
 
-fn start_timer() Timer {
+pub fn start_timer() Timer {
 	return Timer{
 		started_at: time.now()
 	}
 }
 
-fn (t Timer) elapsed() time.Duration {
+pub fn (t Timer) elapsed() time.Duration {
 	return time.now() - t.started_at
 }

@@ -31,6 +31,78 @@ suite alone with:
 
    make btree-test
 
+CLI
+^^^
+
+CLI tests are a collection of shell scripts that are executed. The vast majority
+of these are used to test the ``vsql`` executable itself, however, since they
+are shell scripts they are not limited to this.
+
+To run all CLI tests:
+
+.. code-block:: sh
+
+   make cli-tests
+
+Or, to run a single command test use the path without the ``.sh`` suffix:
+
+.. code-block:: sh
+
+   make cmd/tests/in-success
+
+Each shell file must return a 0 (success) exit code. However, there are many
+ways to verify that certain commands fail on purpose within the script itself.
+
+There are some things to consider when writing CLI tests:
+
+1. The file must end with ``.sh`` and contain a
+`https://en.wikipedia.org/wiki/Shebang_(Unix) <shebang>`_ on the first line.
+
+2. Remember to put ``set -e`` before any other commands. This will ensure that
+if a command fails, that the script itself will halt and return the exit code.
+
+3. A ``$VSQL`` will be provided for the true location of the ``vsql``
+executable, you should not hardcode the binary location. This also makes it easy
+to test the same scripts against different versions of vsql in the future.
+
+Debugging
+*********
+
+Modify the ``set -e`` at the start of the file to be ``set -ex``. This will
+print out each of the commmands before they run.
+
+Temporary Files
+***************
+
+Your test files should make temporary files as needed. This will prevent race
+conditions and other errors with inconsistent state. Create a temporary file
+with (replace the ``.vsql`` extension, if needed):
+
+.. code-block:: sh
+
+   VSQL_FILE="$(mktemp).vsql" || exit 1
+
+Assertions
+**********
+
+You can use the following to verify that a file contains a string (it will not
+match the whole line):
+
+.. code-block:: sh
+
+   grep -R "CREATE TABLE PUBLIC.FOO" $SQL_FILE
+
+Conversely, ``grep -vR`` can be used to check a file does not contain a string.
+
+To verify that a command failed (specifically did not succeed), you can use:
+
+.. code-block:: sh
+
+   (echo 'CREATE foo (bar INT);' | $VSQL in $VSQL_FILE) && exit 1 || true
+
+Where ``echo 'CREATE foo (bar INT);' | $VSQL in $VSQL_FILE`` is the command to
+be tested.
+
 Examples
 ^^^^^^^^
 

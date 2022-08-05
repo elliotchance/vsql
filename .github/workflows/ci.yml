@@ -30,11 +30,14 @@ jobs:
         make clean-docs docs
         git diff --exit-code
 
-    - name: Run SQL tests
+    - name: Run SQL and B-tree tests
       run: make test
 
     - name: Run examples
       run: make examples
+
+    - name: Run CLI tests
+      run: make cli-test
 
   macos-binary:
     name: Build for macOS

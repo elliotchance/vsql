@@ -10,7 +10,7 @@ import time
 // See next() for an example on iterating rows in a Result.
 //
 // snippet: v.Result
-struct Result {
+pub struct Result {
 	// rows is not public because in the future this may end up being a cursor.
 	// You should use V iteration to read the rows.
 	rows []Row

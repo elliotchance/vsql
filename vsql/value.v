@@ -225,7 +225,7 @@ fn (v Value) as_int() i64 {
 // formatting.
 //
 // snippet: v.Value.str
-fn (v Value) str() string {
+pub fn (v Value) str() string {
 	if v.is_null && v.typ.typ != .is_boolean {
 		return 'NULL'
 	}

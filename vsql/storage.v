@@ -116,7 +116,7 @@ fn (mut f Storage) create_table(table_name string, columns Columns, primary_key 
 		f.isolation_end() or { panic(err) }
 	}
 
-	table := Table{table_name, columns, primary_key, f.transaction_id, false}
+	table := Table{f.transaction_id, table_name, columns, primary_key, false}
 
 	obj := new_page_object('T$table_name'.bytes(), f.transaction_id, 0, table.bytes())
 	page_number := f.btree.add(obj)?
@@ -132,7 +132,7 @@ fn (mut f Storage) create_schema(schema_name string) ? {
 		f.isolation_end() or { panic(err) }
 	}
 
-	schema := Schema{schema_name, f.transaction_id}
+	schema := Schema{f.transaction_id, schema_name}
 
 	obj := new_page_object('S$schema_name'.bytes(), f.transaction_id, 0, schema.bytes())
 	page_number := f.btree.add(obj)?

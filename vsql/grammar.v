@@ -849,6 +849,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_natural_logarithm_ := &EarleyRule{
 		name: '<natural logarithm>'
 	}
+	mut rule_non_reserved_word_ := &EarleyRule{
+		name: '<non-reserved word>'
+	}
 	mut rule_nonparenthesized_value_expression_primary_2_ := &EarleyRule{
 		name: '<nonparenthesized value expression primary: 2>'
 	}
@@ -1055,6 +1058,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_query_term_ := &EarleyRule{
 		name: '<query term>'
+	}
+	mut rule_regular_identifier_2_ := &EarleyRule{
+		name: '<regular identifier: 2>'
 	}
 	mut rule_regular_identifier_ := &EarleyRule{
 		name: '<regular identifier>'
@@ -1566,11 +1572,35 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule__string := &EarleyRule{
 		name: '^string'
 	}
+	mut rule_a := &EarleyRule{
+		name: 'A'
+	}
 	mut rule_abs := &EarleyRule{
 		name: 'ABS'
 	}
+	mut rule_absolute := &EarleyRule{
+		name: 'ABSOLUTE'
+	}
 	mut rule_acos := &EarleyRule{
 		name: 'ACOS'
+	}
+	mut rule_action := &EarleyRule{
+		name: 'ACTION'
+	}
+	mut rule_ada := &EarleyRule{
+		name: 'ADA'
+	}
+	mut rule_add := &EarleyRule{
+		name: 'ADD'
+	}
+	mut rule_admin := &EarleyRule{
+		name: 'ADMIN'
+	}
+	mut rule_after := &EarleyRule{
+		name: 'AFTER'
+	}
+	mut rule_always := &EarleyRule{
+		name: 'ALWAYS'
 	}
 	mut rule_and := &EarleyRule{
 		name: 'AND'
@@ -1584,14 +1614,32 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_asin := &EarleyRule{
 		name: 'ASIN'
 	}
+	mut rule_assertion := &EarleyRule{
+		name: 'ASSERTION'
+	}
+	mut rule_assignment := &EarleyRule{
+		name: 'ASSIGNMENT'
+	}
 	mut rule_asymmetric := &EarleyRule{
 		name: 'ASYMMETRIC'
 	}
 	mut rule_atan := &EarleyRule{
 		name: 'ATAN'
 	}
+	mut rule_attribute := &EarleyRule{
+		name: 'ATTRIBUTE'
+	}
+	mut rule_attributes := &EarleyRule{
+		name: 'ATTRIBUTES'
+	}
 	mut rule_avg := &EarleyRule{
 		name: 'AVG'
+	}
+	mut rule_before := &EarleyRule{
+		name: 'BEFORE'
+	}
+	mut rule_bernoulli := &EarleyRule{
+		name: 'BERNOULLI'
 	}
 	mut rule_between := &EarleyRule{
 		name: 'BETWEEN'
@@ -1605,8 +1653,14 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_both := &EarleyRule{
 		name: 'BOTH'
 	}
+	mut rule_breadth := &EarleyRule{
+		name: 'BREADTH'
+	}
 	mut rule_by := &EarleyRule{
 		name: 'BY'
+	}
+	mut rule_c := &EarleyRule{
+		name: 'C'
 	}
 	mut rule_cascade := &EarleyRule{
 		name: 'CASCADE'
@@ -1614,11 +1668,23 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_cast := &EarleyRule{
 		name: 'CAST'
 	}
+	mut rule_catalog := &EarleyRule{
+		name: 'CATALOG'
+	}
+	mut rule_catalog_name := &EarleyRule{
+		name: 'CATALOG_NAME'
+	}
 	mut rule_ceil := &EarleyRule{
 		name: 'CEIL'
 	}
 	mut rule_ceiling := &EarleyRule{
 		name: 'CEILING'
+	}
+	mut rule_chain := &EarleyRule{
+		name: 'CHAIN'
+	}
+	mut rule_chaining := &EarleyRule{
+		name: 'CHAINING'
 	}
 	mut rule_char := &EarleyRule{
 		name: 'CHAR'
@@ -1632,14 +1698,89 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_character_length := &EarleyRule{
 		name: 'CHARACTER_LENGTH'
 	}
+	mut rule_character_set_catalog := &EarleyRule{
+		name: 'CHARACTER_SET_CATALOG'
+	}
+	mut rule_character_set_name := &EarleyRule{
+		name: 'CHARACTER_SET_NAME'
+	}
+	mut rule_character_set_schema := &EarleyRule{
+		name: 'CHARACTER_SET_SCHEMA'
+	}
+	mut rule_characteristics := &EarleyRule{
+		name: 'CHARACTERISTICS'
+	}
 	mut rule_characters := &EarleyRule{
 		name: 'CHARACTERS'
+	}
+	mut rule_class_origin := &EarleyRule{
+		name: 'CLASS_ORIGIN'
 	}
 	mut rule_coalesce := &EarleyRule{
 		name: 'COALESCE'
 	}
+	mut rule_cobol := &EarleyRule{
+		name: 'COBOL'
+	}
+	mut rule_collation := &EarleyRule{
+		name: 'COLLATION'
+	}
+	mut rule_collation_catalog := &EarleyRule{
+		name: 'COLLATION_CATALOG'
+	}
+	mut rule_collation_name := &EarleyRule{
+		name: 'COLLATION_NAME'
+	}
+	mut rule_collation_schema := &EarleyRule{
+		name: 'COLLATION_SCHEMA'
+	}
+	mut rule_column_name := &EarleyRule{
+		name: 'COLUMN_NAME'
+	}
+	mut rule_columns := &EarleyRule{
+		name: 'COLUMNS'
+	}
+	mut rule_command_function := &EarleyRule{
+		name: 'COMMAND_FUNCTION'
+	}
+	mut rule_command_function_code := &EarleyRule{
+		name: 'COMMAND_FUNCTION_CODE'
+	}
 	mut rule_commit := &EarleyRule{
 		name: 'COMMIT'
+	}
+	mut rule_committed := &EarleyRule{
+		name: 'COMMITTED'
+	}
+	mut rule_condition_number := &EarleyRule{
+		name: 'CONDITION_NUMBER'
+	}
+	mut rule_conditional := &EarleyRule{
+		name: 'CONDITIONAL'
+	}
+	mut rule_connection := &EarleyRule{
+		name: 'CONNECTION'
+	}
+	mut rule_connection_name := &EarleyRule{
+		name: 'CONNECTION_NAME'
+	}
+	mut rule_constraint_catalog := &EarleyRule{
+		name: 'CONSTRAINT_CATALOG'
+	}
+	mut rule_constraint_name := &EarleyRule{
+		name: 'CONSTRAINT_NAME'
+	}
+	mut rule_constraint_schema := &EarleyRule{
+		name: 'CONSTRAINT_SCHEMA'
+	}
+	mut rule_constraints := &EarleyRule{
+		name: 'CONSTRAINTS'
+	}
+	mut rule_constructor := &EarleyRule{
+		name: 'CONSTRUCTOR'
+	}
+	mut rule_continue := &EarleyRule{
+		name: 'CONTINUE'
 	}
 	mut rule_cos := &EarleyRule{
 		name: 'COS'
@@ -1662,14 +1803,80 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_current_timestamp := &EarleyRule{
 		name: 'CURRENT_TIMESTAMP'
 	}
+	mut rule_cursor_name := &EarleyRule{
+		name: 'CURSOR_NAME'
+	}
+	mut rule_data := &EarleyRule{
+		name: 'DATA'
+	}
 	mut rule_date := &EarleyRule{
 		name: 'DATE'
+	}
+	mut rule_datetime_interval_code := &EarleyRule{
+		name: 'DATETIME_INTERVAL_CODE'
+	}
+	mut rule_datetime_interval_precision := &EarleyRule{
+		name: 'DATETIME_INTERVAL_PRECISION'
+	}
+	mut rule_defaults := &EarleyRule{
+		name: 'DEFAULTS'
+	}
+	mut rule_deferrable := &EarleyRule{
+		name: 'DEFERRABLE'
+	}
+	mut rule_deferred := &EarleyRule{
+		name: 'DEFERRED'
+	}
+	mut rule_defined := &EarleyRule{
+		name: 'DEFINED'
+	}
+	mut rule_definer := &EarleyRule{
+		name: 'DEFINER'
+	}
+	mut rule_degree := &EarleyRule{
+		name: 'DEGREE'
 	}
 	mut rule_delete := &EarleyRule{
 		name: 'DELETE'
 	}
+	mut rule_depth := &EarleyRule{
+		name: 'DEPTH'
+	}
+	mut rule_derived := &EarleyRule{
+		name: 'DERIVED'
+	}
 	mut rule_desc := &EarleyRule{
 		name: 'DESC'
+	}
+	mut rule_describe_catalog := &EarleyRule{
+		name: 'DESCRIBE_CATALOG'
+	}
+	mut rule_describe_name := &EarleyRule{
+		name: 'DESCRIBE_NAME'
+	}
+	mut rule_describe_procedure_specific_catalog := &EarleyRule{
+		name: 'DESCRIBE_PROCEDURE_SPECIFIC_CATALOG'
+	}
+	mut rule_describe_procedure_specific_name := &EarleyRule{
+		name: 'DESCRIBE_PROCEDURE_SPECIFIC_NAME'
+	}
+	mut rule_describe_procedure_specific_schema := &EarleyRule{
+		name: 'DESCRIBE_PROCEDURE_SPECIFIC_SCHEMA'
+	}
+	mut rule_describe_schema := &EarleyRule{
+		name: 'DESCRIBE_SCHEMA'
+	}
+	mut rule_descriptor := &EarleyRule{
+		name: 'DESCRIPTOR'
+	}
+	mut rule_diagnostics := &EarleyRule{
+		name: 'DIAGNOSTICS'
+	}
+	mut rule_dispatch := &EarleyRule{
+		name: 'DISPATCH'
+	}
+	mut rule_domain := &EarleyRule{
+		name: 'DOMAIN'
 	}
 	mut rule_double := &EarleyRule{
 		name: 'DOUBLE'
@@ -1677,8 +1884,32 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_drop := &EarleyRule{
 		name: 'DROP'
 	}
+	mut rule_dynamic_function := &EarleyRule{
+		name: 'DYNAMIC_FUNCTION'
+	}
+	mut rule_dynamic_function_code := &EarleyRule{
+		name: 'DYNAMIC_FUNCTION_CODE'
+	}
+	mut rule_encoding := &EarleyRule{
+		name: 'ENCODING'
+	}
+	mut rule_enforced := &EarleyRule{
+		name: 'ENFORCED'
+	}
+	mut rule_error := &EarleyRule{
+		name: 'ERROR'
+	}
+	mut rule_exclude := &EarleyRule{
+		name: 'EXCLUDE'
+	}
+	mut rule_excluding := &EarleyRule{
+		name: 'EXCLUDING'
+	}
 	mut rule_exp := &EarleyRule{
 		name: 'EXP'
+	}
+	mut rule_expression := &EarleyRule{
+		name: 'EXPRESSION'
 	}
 	mut rule_false := &EarleyRule{
 		name: 'FALSE'
@@ -1686,8 +1917,35 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_fetch := &EarleyRule{
 		name: 'FETCH'
 	}
+	mut rule_final := &EarleyRule{
+		name: 'FINAL'
+	}
+	mut rule_finish := &EarleyRule{
+		name: 'FINISH'
+	}
+	mut rule_finish_catalog := &EarleyRule{
+		name: 'FINISH_CATALOG'
+	}
+	mut rule_finish_name := &EarleyRule{
+		name: 'FINISH_NAME'
+	}
+	mut rule_finish_procedure_specific_catalog := &EarleyRule{
+		name: 'FINISH_PROCEDURE_SPECIFIC_CATALOG'
+	}
+	mut rule_finish_procedure_specific_name := &EarleyRule{
+		name: 'FINISH_PROCEDURE_SPECIFIC_NAME'
+	}
+	mut rule_finish_procedure_specific_schema := &EarleyRule{
+		name: 'FINISH_PROCEDURE_SPECIFIC_SCHEMA'
+	}
+	mut rule_finish_schema := &EarleyRule{
+		name: 'FINISH_SCHEMA'
+	}
 	mut rule_first := &EarleyRule{
 		name: 'FIRST'
+	}
+	mut rule_flag := &EarleyRule{
+		name: 'FLAG'
 	}
 	mut rule_float := &EarleyRule{
 		name: 'FLOAT'
@@ -1695,23 +1953,116 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_floor := &EarleyRule{
 		name: 'FLOOR'
 	}
+	mut rule_following := &EarleyRule{
+		name: 'FOLLOWING'
+	}
 	mut rule_for := &EarleyRule{
 		name: 'FOR'
+	}
+	mut rule_format := &EarleyRule{
+		name: 'FORMAT'
+	}
+	mut rule_fortran := &EarleyRule{
+		name: 'FORTRAN'
+	}
+	mut rule_found := &EarleyRule{
+		name: 'FOUND'
 	}
 	mut rule_from := &EarleyRule{
 		name: 'FROM'
 	}
+	mut rule_fulfill := &EarleyRule{
+		name: 'FULFILL'
+	}
+	mut rule_fulfill_catalog := &EarleyRule{
+		name: 'FULFILL_CATALOG'
+	}
+	mut rule_fulfill_name := &EarleyRule{
+		name: 'FULFILL_NAME'
+	}
+	mut rule_fulfill_procedure_specific_catalog := &EarleyRule{
+		name: 'FULFILL_PROCEDURE_SPECIFIC_CATALOG'
+	}
+	mut rule_fulfill_procedure_specific_name := &EarleyRule{
+		name: 'FULFILL_PROCEDURE_SPECIFIC_NAME'
+	}
+	mut rule_fulfill_procedure_specific_schema := &EarleyRule{
+		name: 'FULFILL_PROCEDURE_SPECIFIC_SCHEMA'
+	}
+	mut rule_fulfill_schema := &EarleyRule{
+		name: 'FULFILL_SCHEMA'
+	}
+	mut rule_g := &EarleyRule{
+		name: 'G'
+	}
+	mut rule_general := &EarleyRule{
+		name: 'GENERAL'
+	}
+	mut rule_generated := &EarleyRule{
+		name: 'GENERATED'
+	}
+	mut rule_go := &EarleyRule{
+		name: 'GO'
+	}
+	mut rule_goto := &EarleyRule{
+		name: 'GOTO'
+	}
+	mut rule_granted := &EarleyRule{
+		name: 'GRANTED'
+	}
 	mut rule_group := &EarleyRule{
 		name: 'GROUP'
+	}
+	mut rule_has_pass_through_columns := &EarleyRule{
+		name: 'HAS_PASS_THROUGH_COLUMNS'
+	}
+	mut rule_has_pass_thru_cols := &EarleyRule{
+		name: 'HAS_PASS_THRU_COLS'
+	}
+	mut rule_hierarchy := &EarleyRule{
+		name: 'HIERARCHY'
+	}
+	mut rule_ignore := &EarleyRule{
+		name: 'IGNORE'
+	}
+	mut rule_immediate := &EarleyRule{
+		name: 'IMMEDIATE'
+	}
+	mut rule_immediately := &EarleyRule{
+		name: 'IMMEDIATELY'
+	}
+	mut rule_implementation := &EarleyRule{
+		name: 'IMPLEMENTATION'
 	}
 	mut rule_in := &EarleyRule{
 		name: 'IN'
 	}
+	mut rule_including := &EarleyRule{
+		name: 'INCLUDING'
+	}
+	mut rule_increment := &EarleyRule{
+		name: 'INCREMENT'
+	}
+	mut rule_initially := &EarleyRule{
+		name: 'INITIALLY'
+	}
 	mut rule_inner := &EarleyRule{
 		name: 'INNER'
 	}
+	mut rule_input := &EarleyRule{
+		name: 'INPUT'
+	}
 	mut rule_insert := &EarleyRule{
 		name: 'INSERT'
+	}
+	mut rule_instance := &EarleyRule{
+		name: 'INSTANCE'
+	}
+	mut rule_instantiable := &EarleyRule{
+		name: 'INSTANTIABLE'
+	}
+	mut rule_instead := &EarleyRule{
+		name: 'INSTEAD'
 	}
 	mut rule_int := &EarleyRule{
 		name: 'INT'
@@ -1722,20 +2073,56 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_into := &EarleyRule{
 		name: 'INTO'
 	}
+	mut rule_invoker := &EarleyRule{
+		name: 'INVOKER'
+	}
 	mut rule_is := &EarleyRule{
 		name: 'IS'
+	}
+	mut rule_is_prunable := &EarleyRule{
+		name: 'IS_PRUNABLE'
+	}
+	mut rule_isolation := &EarleyRule{
+		name: 'ISOLATION'
 	}
 	mut rule_join := &EarleyRule{
 		name: 'JOIN'
 	}
+	mut rule_json := &EarleyRule{
+		name: 'JSON'
+	}
+	mut rule_k := &EarleyRule{
+		name: 'K'
+	}
+	mut rule_keep := &EarleyRule{
+		name: 'KEEP'
+	}
 	mut rule_key := &EarleyRule{
 		name: 'KEY'
+	}
+	mut rule_key_member := &EarleyRule{
+		name: 'KEY_MEMBER'
+	}
+	mut rule_key_type := &EarleyRule{
+		name: 'KEY_TYPE'
+	}
+	mut rule_keys := &EarleyRule{
+		name: 'KEYS'
+	}
+	mut rule_last := &EarleyRule{
+		name: 'LAST'
 	}
 	mut rule_leading := &EarleyRule{
 		name: 'LEADING'
 	}
 	mut rule_left := &EarleyRule{
 		name: 'LEFT'
+	}
+	mut rule_length := &EarleyRule{
+		name: 'LENGTH'
+	}
+	mut rule_level := &EarleyRule{
+		name: 'LEVEL'
 	}
 	mut rule_like := &EarleyRule{
 		name: 'LIKE'
@@ -1749,20 +2136,83 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_localtimestamp := &EarleyRule{
 		name: 'LOCALTIMESTAMP'
 	}
+	mut rule_locator := &EarleyRule{
+		name: 'LOCATOR'
+	}
 	mut rule_log10 := &EarleyRule{
 		name: 'LOG10'
 	}
 	mut rule_lower := &EarleyRule{
 		name: 'LOWER'
 	}
+	mut rule_m := &EarleyRule{
+		name: 'M'
+	}
+	mut rule_map := &EarleyRule{
+		name: 'MAP'
+	}
+	mut rule_matched := &EarleyRule{
+		name: 'MATCHED'
+	}
 	mut rule_max := &EarleyRule{
 		name: 'MAX'
+	}
+	mut rule_maxvalue := &EarleyRule{
+		name: 'MAXVALUE'
+	}
+	mut rule_message_length := &EarleyRule{
+		name: 'MESSAGE_LENGTH'
+	}
+	mut rule_message_octet_length := &EarleyRule{
+		name: 'MESSAGE_OCTET_LENGTH'
+	}
+	mut rule_message_text := &EarleyRule{
+		name: 'MESSAGE_TEXT'
 	}
 	mut rule_min := &EarleyRule{
 		name: 'MIN'
 	}
+	mut rule_minvalue := &EarleyRule{
+		name: 'MINVALUE'
+	}
 	mut rule_mod := &EarleyRule{
 		name: 'MOD'
+	}
+	mut rule_more := &EarleyRule{
+		name: 'MORE'
+	}
+	mut rule_mumps := &EarleyRule{
+		name: 'MUMPS'
+	}
+	mut rule_name := &EarleyRule{
+		name: 'NAME'
+	}
+	mut rule_names := &EarleyRule{
+		name: 'NAMES'
+	}
+	mut rule_nested := &EarleyRule{
+		name: 'NESTED'
+	}
+	mut rule_nesting := &EarleyRule{
+		name: 'NESTING'
+	}
+	mut rule_next := &EarleyRule{
+		name: 'NEXT'
+	}
+	mut rule_nfc := &EarleyRule{
+		name: 'NFC'
+	}
+	mut rule_nfd := &EarleyRule{
+		name: 'NFD'
+	}
+	mut rule_nfkc := &EarleyRule{
+		name: 'NFKC'
+	}
+	mut rule_nfkd := &EarleyRule{
+		name: 'NFKD'
+	}
+	mut rule_normalized := &EarleyRule{
+		name: 'NORMALIZED'
 	}
 	mut rule_not := &EarleyRule{
 		name: 'NOT'
@@ -1770,8 +2220,20 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_null := &EarleyRule{
 		name: 'NULL'
 	}
+	mut rule_nullable := &EarleyRule{
+		name: 'NULLABLE'
+	}
 	mut rule_nullif := &EarleyRule{
 		name: 'NULLIF'
+	}
+	mut rule_nulls := &EarleyRule{
+		name: 'NULLS'
+	}
+	mut rule_number := &EarleyRule{
+		name: 'NUMBER'
+	}
+	mut rule_object := &EarleyRule{
+		name: 'OBJECT'
 	}
 	mut rule_octet_length := &EarleyRule{
 		name: 'OCTET_LENGTH'
@@ -1788,14 +2250,89 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_only := &EarleyRule{
 		name: 'ONLY'
 	}
+	mut rule_option := &EarleyRule{
+		name: 'OPTION'
+	}
+	mut rule_options := &EarleyRule{
+		name: 'OPTIONS'
+	}
 	mut rule_or := &EarleyRule{
 		name: 'OR'
 	}
 	mut rule_order := &EarleyRule{
 		name: 'ORDER'
 	}
+	mut rule_ordering := &EarleyRule{
+		name: 'ORDERING'
+	}
+	mut rule_ordinality := &EarleyRule{
+		name: 'ORDINALITY'
+	}
+	mut rule_others := &EarleyRule{
+		name: 'OTHERS'
+	}
 	mut rule_outer := &EarleyRule{
 		name: 'OUTER'
+	}
+	mut rule_output := &EarleyRule{
+		name: 'OUTPUT'
+	}
+	mut rule_overflow := &EarleyRule{
+		name: 'OVERFLOW'
+	}
+	mut rule_overriding := &EarleyRule{
+		name: 'OVERRIDING'
+	}
+	mut rule_p := &EarleyRule{
+		name: 'P'
+	}
+	mut rule_pad := &EarleyRule{
+		name: 'PAD'
+	}
+	mut rule_parameter_mode := &EarleyRule{
+		name: 'PARAMETER_MODE'
+	}
+	mut rule_parameter_name := &EarleyRule{
+		name: 'PARAMETER_NAME'
+	}
+	mut rule_parameter_ordinal_position := &EarleyRule{
+		name: 'PARAMETER_ORDINAL_POSITION'
+	}
+	mut rule_parameter_specific_catalog := &EarleyRule{
+		name: 'PARAMETER_SPECIFIC_CATALOG'
+	}
+	mut rule_parameter_specific_name := &EarleyRule{
+		name: 'PARAMETER_SPECIFIC_NAME'
+	}
+	mut rule_parameter_specific_schema := &EarleyRule{
+		name: 'PARAMETER_SPECIFIC_SCHEMA'
+	}
+	mut rule_partial := &EarleyRule{
+		name: 'PARTIAL'
+	}
+	mut rule_pascal := &EarleyRule{
+		name: 'PASCAL'
+	}
+	mut rule_pass := &EarleyRule{
+		name: 'PASS'
+	}
+	mut rule_passing := &EarleyRule{
+		name: 'PASSING'
+	}
+	mut rule_past := &EarleyRule{
+		name: 'PAST'
+	}
+	mut rule_path := &EarleyRule{
+		name: 'PATH'
+	}
+	mut rule_placing := &EarleyRule{
+		name: 'PLACING'
+	}
+	mut rule_plan := &EarleyRule{
+		name: 'PLAN'
+	}
+	mut rule_pli := &EarleyRule{
+		name: 'PLI'
 	}
 	mut rule_position := &EarleyRule{
 		name: 'POSITION'
@@ -1803,41 +2340,170 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_power := &EarleyRule{
 		name: 'POWER'
 	}
+	mut rule_preceding := &EarleyRule{
+		name: 'PRECEDING'
+	}
 	mut rule_precision := &EarleyRule{
 		name: 'PRECISION'
+	}
+	mut rule_preserve := &EarleyRule{
+		name: 'PRESERVE'
 	}
 	mut rule_primary := &EarleyRule{
 		name: 'PRIMARY'
 	}
+	mut rule_prior := &EarleyRule{
+		name: 'PRIOR'
+	}
+	mut rule_private := &EarleyRule{
+		name: 'PRIVATE'
+	}
+	mut rule_private_parameters := &EarleyRule{
+		name: 'PRIVATE_PARAMETERS'
+	}
+	mut rule_private_params_s := &EarleyRule{
+		name: 'PRIVATE_PARAMS_S'
+	}
+	mut rule_privileges := &EarleyRule{
+		name: 'PRIVILEGES'
+	}
+	mut rule_prune := &EarleyRule{
+		name: 'PRUNE'
+	}
+	mut rule_public := &EarleyRule{
+		name: 'PUBLIC'
+	}
+	mut rule_quotes := &EarleyRule{
+		name: 'QUOTES'
+	}
+	mut rule_read := &EarleyRule{
+		name: 'READ'
+	}
 	mut rule_real := &EarleyRule{
 		name: 'REAL'
+	}
+	mut rule_relative := &EarleyRule{
+		name: 'RELATIVE'
+	}
+	mut rule_repeatable := &EarleyRule{
+		name: 'REPEATABLE'
+	}
+	mut rule_respect := &EarleyRule{
+		name: 'RESPECT'
+	}
+	mut rule_restart := &EarleyRule{
+		name: 'RESTART'
 	}
 	mut rule_restrict := &EarleyRule{
 		name: 'RESTRICT'
 	}
+	mut rule_ret_only_pass_thru := &EarleyRule{
+		name: 'RET_ONLY_PASS_THRU'
+	}
+	mut rule_returned_cardinality := &EarleyRule{
+		name: 'RETURNED_CARDINALITY'
+	}
+	mut rule_returned_length := &EarleyRule{
+		name: 'RETURNED_LENGTH'
+	}
+	mut rule_returned_octet_length := &EarleyRule{
+		name: 'RETURNED_OCTET_LENGTH'
+	}
+	mut rule_returned_sqlstate := &EarleyRule{
+		name: 'RETURNED_SQLSTATE'
+	}
+	mut rule_returning := &EarleyRule{
+		name: 'RETURNING'
+	}
+	mut rule_returns_only_pass_through := &EarleyRule{
+		name: 'RETURNS_ONLY_PASS_THROUGH'
+	}
 	mut rule_right := &EarleyRule{
 		name: 'RIGHT'
+	}
+	mut rule_role := &EarleyRule{
+		name: 'ROLE'
 	}
 	mut rule_rollback := &EarleyRule{
 		name: 'ROLLBACK'
 	}
+	mut rule_routine := &EarleyRule{
+		name: 'ROUTINE'
+	}
+	mut rule_routine_catalog := &EarleyRule{
+		name: 'ROUTINE_CATALOG'
+	}
+	mut rule_routine_name := &EarleyRule{
+		name: 'ROUTINE_NAME'
+	}
+	mut rule_routine_schema := &EarleyRule{
+		name: 'ROUTINE_SCHEMA'
+	}
 	mut rule_row := &EarleyRule{
 		name: 'ROW'
+	}
+	mut rule_row_count := &EarleyRule{
+		name: 'ROW_COUNT'
 	}
 	mut rule_rows := &EarleyRule{
 		name: 'ROWS'
 	}
+	mut rule_scalar := &EarleyRule{
+		name: 'SCALAR'
+	}
+	mut rule_scale := &EarleyRule{
+		name: 'SCALE'
+	}
 	mut rule_schema := &EarleyRule{
 		name: 'SCHEMA'
+	}
+	mut rule_schema_name := &EarleyRule{
+		name: 'SCHEMA_NAME'
+	}
+	mut rule_scope_catalog := &EarleyRule{
+		name: 'SCOPE_CATALOG'
+	}
+	mut rule_scope_name := &EarleyRule{
+		name: 'SCOPE_NAME'
+	}
+	mut rule_scope_schema := &EarleyRule{
+		name: 'SCOPE_SCHEMA'
+	}
+	mut rule_section := &EarleyRule{
+		name: 'SECTION'
+	}
+	mut rule_security := &EarleyRule{
+		name: 'SECURITY'
 	}
 	mut rule_select := &EarleyRule{
 		name: 'SELECT'
 	}
+	mut rule_self := &EarleyRule{
+		name: 'SELF'
+	}
+	mut rule_sequence := &EarleyRule{
+		name: 'SEQUENCE'
+	}
+	mut rule_serializable := &EarleyRule{
+		name: 'SERIALIZABLE'
+	}
+	mut rule_server_name := &EarleyRule{
+		name: 'SERVER_NAME'
+	}
+	mut rule_session := &EarleyRule{
+		name: 'SESSION'
+	}
 	mut rule_set := &EarleyRule{
 		name: 'SET'
 	}
+	mut rule_sets := &EarleyRule{
+		name: 'SETS'
+	}
 	mut rule_similar := &EarleyRule{
 		name: 'SIMILAR'
+	}
+	mut rule_simple := &EarleyRule{
+		name: 'SIMPLE'
 	}
 	mut rule_sin := &EarleyRule{
 		name: 'SIN'
@@ -1845,14 +2511,62 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_sinh := &EarleyRule{
 		name: 'SINH'
 	}
+	mut rule_size := &EarleyRule{
+		name: 'SIZE'
+	}
 	mut rule_smallint := &EarleyRule{
 		name: 'SMALLINT'
+	}
+	mut rule_source := &EarleyRule{
+		name: 'SOURCE'
+	}
+	mut rule_space := &EarleyRule{
+		name: 'SPACE'
+	}
+	mut rule_specific_name := &EarleyRule{
+		name: 'SPECIFIC_NAME'
 	}
 	mut rule_sqrt := &EarleyRule{
 		name: 'SQRT'
 	}
 	mut rule_start := &EarleyRule{
 		name: 'START'
+	}
+	mut rule_start_catalog := &EarleyRule{
+		name: 'START_CATALOG'
+	}
+	mut rule_start_name := &EarleyRule{
+		name: 'START_NAME'
+	}
+	mut rule_start_procedure_specific_catalog := &EarleyRule{
+		name: 'START_PROCEDURE_SPECIFIC_CATALOG'
+	}
+	mut rule_start_procedure_specific_name := &EarleyRule{
+		name: 'START_PROCEDURE_SPECIFIC_NAME'
+	}
+	mut rule_start_procedure_specific_schema := &EarleyRule{
+		name: 'START_PROCEDURE_SPECIFIC_SCHEMA'
+	}
+	mut rule_start_schema := &EarleyRule{
+		name: 'START_SCHEMA'
+	}
+	mut rule_state := &EarleyRule{
+		name: 'STATE'
+	}
+	mut rule_statement := &EarleyRule{
+		name: 'STATEMENT'
+	}
+	mut rule_string := &EarleyRule{
+		name: 'STRING'
+	}
+	mut rule_structure := &EarleyRule{
+		name: 'STRUCTURE'
+	}
+	mut rule_style := &EarleyRule{
+		name: 'STYLE'
+	}
+	mut rule_subclass_origin := &EarleyRule{
+		name: 'SUBCLASS_ORIGIN'
 	}
 	mut rule_substring := &EarleyRule{
 		name: 'SUBSTRING'
@@ -1863,14 +2577,32 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_symmetric := &EarleyRule{
 		name: 'SYMMETRIC'
 	}
+	mut rule_t := &EarleyRule{
+		name: 'T'
+	}
 	mut rule_table := &EarleyRule{
 		name: 'TABLE'
+	}
+	mut rule_table_name := &EarleyRule{
+		name: 'TABLE_NAME'
+	}
+	mut rule_table_semantics := &EarleyRule{
+		name: 'TABLE_SEMANTICS'
 	}
 	mut rule_tan := &EarleyRule{
 		name: 'TAN'
 	}
 	mut rule_tanh := &EarleyRule{
 		name: 'TANH'
+	}
+	mut rule_temporary := &EarleyRule{
+		name: 'TEMPORARY'
+	}
+	mut rule_through := &EarleyRule{
+		name: 'THROUGH'
+	}
+	mut rule_ties := &EarleyRule{
+		name: 'TIES'
 	}
 	mut rule_time := &EarleyRule{
 		name: 'TIME'
@@ -1881,11 +2613,38 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_to := &EarleyRule{
 		name: 'TO'
 	}
+	mut rule_top_level_count := &EarleyRule{
+		name: 'TOP_LEVEL_COUNT'
+	}
 	mut rule_trailing := &EarleyRule{
 		name: 'TRAILING'
 	}
 	mut rule_transaction := &EarleyRule{
 		name: 'TRANSACTION'
+	}
+	mut rule_transaction_active := &EarleyRule{
+		name: 'TRANSACTION_ACTIVE'
+	}
+	mut rule_transactions_committed := &EarleyRule{
+		name: 'TRANSACTIONS_COMMITTED'
+	}
+	mut rule_transactions_rolled_back := &EarleyRule{
+		name: 'TRANSACTIONS_ROLLED_BACK'
+	}
+	mut rule_transform := &EarleyRule{
+		name: 'TRANSFORM'
+	}
+	mut rule_transforms := &EarleyRule{
+		name: 'TRANSFORMS'
+	}
+	mut rule_trigger_catalog := &EarleyRule{
+		name: 'TRIGGER_CATALOG'
+	}
+	mut rule_trigger_name := &EarleyRule{
+		name: 'TRIGGER_NAME'
+	}
+	mut rule_trigger_schema := &EarleyRule{
+		name: 'TRIGGER_SCHEMA'
 	}
 	mut rule_trim := &EarleyRule{
 		name: 'TRIM'
@@ -1893,8 +2652,26 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_true := &EarleyRule{
 		name: 'TRUE'
 	}
+	mut rule_type := &EarleyRule{
+		name: 'TYPE'
+	}
+	mut rule_unbounded := &EarleyRule{
+		name: 'UNBOUNDED'
+	}
+	mut rule_uncommitted := &EarleyRule{
+		name: 'UNCOMMITTED'
+	}
+	mut rule_unconditional := &EarleyRule{
+		name: 'UNCONDITIONAL'
+	}
+	mut rule_under := &EarleyRule{
+		name: 'UNDER'
+	}
 	mut rule_unknown := &EarleyRule{
 		name: 'UNKNOWN'
+	}
+	mut rule_unnamed := &EarleyRule{
+		name: 'UNNAMED'
 	}
 	mut rule_update := &EarleyRule{
 		name: 'UPDATE'
@@ -1902,8 +2679,32 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_upper := &EarleyRule{
 		name: 'UPPER'
 	}
+	mut rule_usage := &EarleyRule{
+		name: 'USAGE'
+	}
+	mut rule_user_defined_type_catalog := &EarleyRule{
+		name: 'USER_DEFINED_TYPE_CATALOG'
+	}
+	mut rule_user_defined_type_code := &EarleyRule{
+		name: 'USER_DEFINED_TYPE_CODE'
+	}
+	mut rule_user_defined_type_name := &EarleyRule{
+		name: 'USER_DEFINED_TYPE_NAME'
+	}
+	mut rule_user_defined_type_schema := &EarleyRule{
+		name: 'USER_DEFINED_TYPE_SCHEMA'
+	}
 	mut rule_using := &EarleyRule{
 		name: 'USING'
+	}
+	mut rule_utf16 := &EarleyRule{
+		name: 'UTF16'
+	}
+	mut rule_utf32 := &EarleyRule{
+		name: 'UTF32'
+	}
+	mut rule_utf8 := &EarleyRule{
+		name: 'UTF8'
 	}
 	mut rule_values := &EarleyRule{
 		name: 'VALUES'
@@ -1913,6 +2714,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_varying := &EarleyRule{
 		name: 'VARYING'
+	}
+	mut rule_view := &EarleyRule{
+		name: 'VIEW'
 	}
 	mut rule_where := &EarleyRule{
 		name: 'WHERE'
@@ -1925,6 +2729,12 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_work := &EarleyRule{
 		name: 'WORK'
+	}
+	mut rule_wrapper := &EarleyRule{
+		name: 'WRAPPER'
+	}
+	mut rule_write := &EarleyRule{
+		name: 'WRITE'
 	}
 	mut rule_zone := &EarleyRule{
 		name: 'ZONE'
@@ -4757,6 +5567,1407 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_a
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_absolute
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_action
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_ada
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_add
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_admin
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_after
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_always
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_asc
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_assertion
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_assignment
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_attribute
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_attributes
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_before
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_bernoulli
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_breadth
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_c
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_cascade
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_catalog_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_chain
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_chaining
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_set_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_set_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_character_set_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_characteristics
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_characters
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_class_origin
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_cobol
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_collation
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_collation_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_collation_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_collation_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_columns
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_column_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_command_function
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_command_function_code
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_committed
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_conditional
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_condition_number
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_connection
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_connection_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_constraint_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_constraint_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_constraint_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_constraints
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_constructor
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_continue
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_cursor_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_data
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_interval_code
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_interval_precision
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_defaults
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_deferrable
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_deferred
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_defined
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_definer
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_degree
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_depth
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_derived
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_desc
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_describe_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_describe_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_describe_procedure_specific_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_describe_procedure_specific_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_describe_procedure_specific_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_describe_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_descriptor
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_diagnostics
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_dispatch
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_domain
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_dynamic_function
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_dynamic_function_code
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_encoding
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_enforced
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_error
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_exclude
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_excluding
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_expression
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_final
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_finish
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_finish_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_finish_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_finish_procedure_specific_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_finish_procedure_specific_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_finish_procedure_specific_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_finish_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_first
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_flag
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_following
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_format
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_fortran
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_found
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_fulfill
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_fulfill_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_fulfill_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_fulfill_procedure_specific_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_fulfill_procedure_specific_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_fulfill_procedure_specific_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_fulfill_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_g
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_general
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_generated
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_go
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_goto
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_granted
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_has_pass_through_columns
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_has_pass_thru_cols
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_hierarchy
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_ignore
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_immediate
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_immediately
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_implementation
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_including
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_increment
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_initially
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_input
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_instance
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_instantiable
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_instead
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_invoker
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_isolation
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_is_prunable
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_json
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_k
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_keep
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_key
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_keys
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_key_member
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_key_type
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_last
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_length
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_level
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_locator
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_m
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_map
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_matched
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_maxvalue
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_message_length
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_message_octet_length
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_message_text
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_minvalue
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_more
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_mumps
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_names
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_nested
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_nesting
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_next
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_nfc
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_nfd
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_nfkc
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_nfkd
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_normalized
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_nullable
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_nulls
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_number
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_object
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_octets
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_option
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_options
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_ordering
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_ordinality
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_others
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_output
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_overflow
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_overriding
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_p
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_pad
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_parameter_mode
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_parameter_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_parameter_ordinal_position
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_parameter_specific_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_parameter_specific_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_parameter_specific_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_partial
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_pascal
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_pass
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_passing
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_past
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_path
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_placing
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_plan
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_pli
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_preceding
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_preserve
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_prior
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_private
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_private_parameters
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_private_params_s
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_privileges
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_prune
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_public
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_quotes
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_read
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_relative
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_repeatable
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_respect
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_restart
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_restrict
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_returned_cardinality
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_returned_length
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_returned_octet_length
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_returned_sqlstate
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_returning
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_returns_only_pass_through
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_ret_only_pass_thru
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_role
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_routine
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_routine_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_routine_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_routine_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_row_count
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_scalar
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_scale
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_schema_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_scope_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_scope_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_scope_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_section
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_security
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_self
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_serializable
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_server_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_session
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sets
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_simple
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_size
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_source
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_space
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_specific_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_start_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_start_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_start_procedure_specific_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_start_procedure_specific_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_start_procedure_specific_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_start_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_state
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_statement
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_string
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_structure
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_style
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_subclass_origin
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_t
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_table_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_table_semantics
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_temporary
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_through
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_ties
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_top_level_count
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_transaction
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_transaction_active
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_transactions_committed
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_transactions_rolled_back
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_transform
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_transforms
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trigger_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trigger_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_trigger_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_type
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_unbounded
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_uncommitted
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_unconditional
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_under
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_unnamed
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_usage
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_user_defined_type_catalog
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_user_defined_type_code
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_user_defined_type_name
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_user_defined_type_schema
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_utf16
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_utf32
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_utf8
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_view
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_work
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_wrapper
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_write
+		},
+	]}
+	rule_non_reserved_word_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_zone
+		},
+	]}
+
 	rule_nonparenthesized_value_expression_primary_2_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_column_reference_
@@ -5530,9 +7741,20 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_regular_identifier_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_non_reserved_word_
+		},
+	]}
+
 	rule_regular_identifier_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_identifier_body_
+		},
+	]}
+	rule_regular_identifier_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_regular_identifier_2_
 		},
 	]}
 
@@ -7128,6 +9350,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_a.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'A'
+			rule: 0
+		},
+	]}
+
 	rule_abs.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'ABS'
@@ -7135,9 +9364,58 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_absolute.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ABSOLUTE'
+			rule: 0
+		},
+	]}
+
 	rule_acos.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'ACOS'
+			rule: 0
+		},
+	]}
+
+	rule_action.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ACTION'
+			rule: 0
+		},
+	]}
+
+	rule_ada.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ADA'
+			rule: 0
+		},
+	]}
+
+	rule_add.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ADD'
+			rule: 0
+		},
+	]}
+
+	rule_admin.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ADMIN'
+			rule: 0
+		},
+	]}
+
+	rule_after.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'AFTER'
+			rule: 0
+		},
+	]}
+
+	rule_always.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ALWAYS'
 			rule: 0
 		},
 	]}
@@ -7170,6 +9448,20 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_assertion.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ASSERTION'
+			rule: 0
+		},
+	]}
+
+	rule_assignment.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ASSIGNMENT'
+			rule: 0
+		},
+	]}
+
 	rule_asymmetric.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'ASYMMETRIC'
@@ -7184,9 +9476,37 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_attribute.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ATTRIBUTE'
+			rule: 0
+		},
+	]}
+
+	rule_attributes.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ATTRIBUTES'
+			rule: 0
+		},
+	]}
+
 	rule_avg.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'AVG'
+			rule: 0
+		},
+	]}
+
+	rule_before.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'BEFORE'
+			rule: 0
+		},
+	]}
+
+	rule_bernoulli.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'BERNOULLI'
 			rule: 0
 		},
 	]}
@@ -7219,9 +9539,23 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_breadth.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'BREADTH'
+			rule: 0
+		},
+	]}
+
 	rule_by.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'BY'
+			rule: 0
+		},
+	]}
+
+	rule_c.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'C'
 			rule: 0
 		},
 	]}
@@ -7240,6 +9574,20 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_catalog_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CATALOG_NAME'
+			rule: 0
+		},
+	]}
+
 	rule_ceil.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'CEIL'
@@ -7250,6 +9598,20 @@ fn get_grammar() map[string]EarleyRule {
 	rule_ceiling.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'CEILING'
+			rule: 0
+		},
+	]}
+
+	rule_chain.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CHAIN'
+			rule: 0
+		},
+	]}
+
+	rule_chaining.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CHAINING'
 			rule: 0
 		},
 	]}
@@ -7282,9 +9644,44 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_character_set_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CHARACTER_SET_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_character_set_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CHARACTER_SET_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_character_set_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CHARACTER_SET_SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_characteristics.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CHARACTERISTICS'
+			rule: 0
+		},
+	]}
+
 	rule_characters.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'CHARACTERS'
+			rule: 0
+		},
+	]}
+
+	rule_class_origin.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CLASS_ORIGIN'
 			rule: 0
 		},
 	]}
@@ -7296,9 +9693,149 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_cobol.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COBOL'
+			rule: 0
+		},
+	]}
+
+	rule_collation.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COLLATION'
+			rule: 0
+		},
+	]}
+
+	rule_collation_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COLLATION_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_collation_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COLLATION_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_collation_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COLLATION_SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_column_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COLUMN_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_columns.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COLUMNS'
+			rule: 0
+		},
+	]}
+
+	rule_command_function.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COMMAND_FUNCTION'
+			rule: 0
+		},
+	]}
+
+	rule_command_function_code.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COMMAND_FUNCTION_CODE'
+			rule: 0
+		},
+	]}
+
 	rule_commit.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'COMMIT'
+			rule: 0
+		},
+	]}
+
+	rule_committed.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COMMITTED'
+			rule: 0
+		},
+	]}
+
+	rule_condition_number.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CONDITION_NUMBER'
+			rule: 0
+		},
+	]}
+
+	rule_conditional.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CONDITIONAL'
+			rule: 0
+		},
+	]}
+
+	rule_connection.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CONNECTION'
+			rule: 0
+		},
+	]}
+
+	rule_connection_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CONNECTION_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_constraint_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CONSTRAINT_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_constraint_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CONSTRAINT_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_constraint_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CONSTRAINT_SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_constraints.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CONSTRAINTS'
+			rule: 0
+		},
+	]}
+
+	rule_constructor.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CONSTRUCTOR'
+			rule: 0
+		},
+	]}
+
+	rule_continue.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CONTINUE'
 			rule: 0
 		},
 	]}
@@ -7352,9 +9889,79 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_cursor_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CURSOR_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_data.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DATA'
+			rule: 0
+		},
+	]}
+
 	rule_date.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'DATE'
+			rule: 0
+		},
+	]}
+
+	rule_datetime_interval_code.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DATETIME_INTERVAL_CODE'
+			rule: 0
+		},
+	]}
+
+	rule_datetime_interval_precision.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DATETIME_INTERVAL_PRECISION'
+			rule: 0
+		},
+	]}
+
+	rule_defaults.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DEFAULTS'
+			rule: 0
+		},
+	]}
+
+	rule_deferrable.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DEFERRABLE'
+			rule: 0
+		},
+	]}
+
+	rule_deferred.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DEFERRED'
+			rule: 0
+		},
+	]}
+
+	rule_defined.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DEFINED'
+			rule: 0
+		},
+	]}
+
+	rule_definer.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DEFINER'
+			rule: 0
+		},
+	]}
+
+	rule_degree.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DEGREE'
 			rule: 0
 		},
 	]}
@@ -7366,9 +9973,93 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_depth.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DEPTH'
+			rule: 0
+		},
+	]}
+
+	rule_derived.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DERIVED'
+			rule: 0
+		},
+	]}
+
 	rule_desc.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'DESC'
+			rule: 0
+		},
+	]}
+
+	rule_describe_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DESCRIBE_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_describe_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DESCRIBE_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_describe_procedure_specific_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DESCRIBE_PROCEDURE_SPECIFIC_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_describe_procedure_specific_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DESCRIBE_PROCEDURE_SPECIFIC_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_describe_procedure_specific_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DESCRIBE_PROCEDURE_SPECIFIC_SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_describe_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DESCRIBE_SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_descriptor.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DESCRIPTOR'
+			rule: 0
+		},
+	]}
+
+	rule_diagnostics.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DIAGNOSTICS'
+			rule: 0
+		},
+	]}
+
+	rule_dispatch.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DISPATCH'
+			rule: 0
+		},
+	]}
+
+	rule_domain.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DOMAIN'
 			rule: 0
 		},
 	]}
@@ -7387,9 +10078,65 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_dynamic_function.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DYNAMIC_FUNCTION'
+			rule: 0
+		},
+	]}
+
+	rule_dynamic_function_code.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'DYNAMIC_FUNCTION_CODE'
+			rule: 0
+		},
+	]}
+
+	rule_encoding.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ENCODING'
+			rule: 0
+		},
+	]}
+
+	rule_enforced.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ENFORCED'
+			rule: 0
+		},
+	]}
+
+	rule_error.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ERROR'
+			rule: 0
+		},
+	]}
+
+	rule_exclude.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'EXCLUDE'
+			rule: 0
+		},
+	]}
+
+	rule_excluding.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'EXCLUDING'
+			rule: 0
+		},
+	]}
+
 	rule_exp.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'EXP'
+			rule: 0
+		},
+	]}
+
+	rule_expression.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'EXPRESSION'
 			rule: 0
 		},
 	]}
@@ -7408,9 +10155,72 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_final.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FINAL'
+			rule: 0
+		},
+	]}
+
+	rule_finish.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FINISH'
+			rule: 0
+		},
+	]}
+
+	rule_finish_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FINISH_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_finish_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FINISH_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_finish_procedure_specific_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FINISH_PROCEDURE_SPECIFIC_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_finish_procedure_specific_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FINISH_PROCEDURE_SPECIFIC_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_finish_procedure_specific_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FINISH_PROCEDURE_SPECIFIC_SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_finish_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FINISH_SCHEMA'
+			rule: 0
+		},
+	]}
+
 	rule_first.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'FIRST'
+			rule: 0
+		},
+	]}
+
+	rule_flag.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FLAG'
 			rule: 0
 		},
 	]}
@@ -7429,9 +10239,37 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_following.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FOLLOWING'
+			rule: 0
+		},
+	]}
+
 	rule_for.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'FOR'
+			rule: 0
+		},
+	]}
+
+	rule_format.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FORMAT'
+			rule: 0
+		},
+	]}
+
+	rule_fortran.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FORTRAN'
+			rule: 0
+		},
+	]}
+
+	rule_found.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FOUND'
 			rule: 0
 		},
 	]}
@@ -7443,9 +10281,149 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_fulfill.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FULFILL'
+			rule: 0
+		},
+	]}
+
+	rule_fulfill_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FULFILL_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_fulfill_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FULFILL_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_fulfill_procedure_specific_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FULFILL_PROCEDURE_SPECIFIC_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_fulfill_procedure_specific_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FULFILL_PROCEDURE_SPECIFIC_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_fulfill_procedure_specific_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FULFILL_PROCEDURE_SPECIFIC_SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_fulfill_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'FULFILL_SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_g.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'G'
+			rule: 0
+		},
+	]}
+
+	rule_general.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'GENERAL'
+			rule: 0
+		},
+	]}
+
+	rule_generated.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'GENERATED'
+			rule: 0
+		},
+	]}
+
+	rule_go.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'GO'
+			rule: 0
+		},
+	]}
+
+	rule_goto.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'GOTO'
+			rule: 0
+		},
+	]}
+
+	rule_granted.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'GRANTED'
+			rule: 0
+		},
+	]}
+
 	rule_group.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'GROUP'
+			rule: 0
+		},
+	]}
+
+	rule_has_pass_through_columns.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'HAS_PASS_THROUGH_COLUMNS'
+			rule: 0
+		},
+	]}
+
+	rule_has_pass_thru_cols.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'HAS_PASS_THRU_COLS'
+			rule: 0
+		},
+	]}
+
+	rule_hierarchy.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'HIERARCHY'
+			rule: 0
+		},
+	]}
+
+	rule_ignore.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'IGNORE'
+			rule: 0
+		},
+	]}
+
+	rule_immediate.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'IMMEDIATE'
+			rule: 0
+		},
+	]}
+
+	rule_immediately.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'IMMEDIATELY'
+			rule: 0
+		},
+	]}
+
+	rule_implementation.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'IMPLEMENTATION'
 			rule: 0
 		},
 	]}
@@ -7457,6 +10435,27 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_including.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'INCLUDING'
+			rule: 0
+		},
+	]}
+
+	rule_increment.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'INCREMENT'
+			rule: 0
+		},
+	]}
+
+	rule_initially.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'INITIALLY'
+			rule: 0
+		},
+	]}
+
 	rule_inner.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'INNER'
@@ -7464,9 +10463,37 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_input.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'INPUT'
+			rule: 0
+		},
+	]}
+
 	rule_insert.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'INSERT'
+			rule: 0
+		},
+	]}
+
+	rule_instance.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'INSTANCE'
+			rule: 0
+		},
+	]}
+
+	rule_instantiable.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'INSTANTIABLE'
+			rule: 0
+		},
+	]}
+
+	rule_instead.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'INSTEAD'
 			rule: 0
 		},
 	]}
@@ -7492,9 +10519,30 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_invoker.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'INVOKER'
+			rule: 0
+		},
+	]}
+
 	rule_is.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'IS'
+			rule: 0
+		},
+	]}
+
+	rule_is_prunable.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'IS_PRUNABLE'
+			rule: 0
+		},
+	]}
+
+	rule_isolation.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ISOLATION'
 			rule: 0
 		},
 	]}
@@ -7506,9 +10554,58 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_json.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'JSON'
+			rule: 0
+		},
+	]}
+
+	rule_k.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'K'
+			rule: 0
+		},
+	]}
+
+	rule_keep.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'KEEP'
+			rule: 0
+		},
+	]}
+
 	rule_key.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'KEY'
+			rule: 0
+		},
+	]}
+
+	rule_key_member.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'KEY_MEMBER'
+			rule: 0
+		},
+	]}
+
+	rule_key_type.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'KEY_TYPE'
+			rule: 0
+		},
+	]}
+
+	rule_keys.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'KEYS'
+			rule: 0
+		},
+	]}
+
+	rule_last.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'LAST'
 			rule: 0
 		},
 	]}
@@ -7523,6 +10620,20 @@ fn get_grammar() map[string]EarleyRule {
 	rule_left.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'LEFT'
+			rule: 0
+		},
+	]}
+
+	rule_length.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'LENGTH'
+			rule: 0
+		},
+	]}
+
+	rule_level.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'LEVEL'
 			rule: 0
 		},
 	]}
@@ -7555,6 +10666,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_locator.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'LOCATOR'
+			rule: 0
+		},
+	]}
+
 	rule_log10.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'LOG10'
@@ -7569,9 +10687,58 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_m.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'M'
+			rule: 0
+		},
+	]}
+
+	rule_map.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'MAP'
+			rule: 0
+		},
+	]}
+
+	rule_matched.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'MATCHED'
+			rule: 0
+		},
+	]}
+
 	rule_max.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'MAX'
+			rule: 0
+		},
+	]}
+
+	rule_maxvalue.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'MAXVALUE'
+			rule: 0
+		},
+	]}
+
+	rule_message_length.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'MESSAGE_LENGTH'
+			rule: 0
+		},
+	]}
+
+	rule_message_octet_length.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'MESSAGE_OCTET_LENGTH'
+			rule: 0
+		},
+	]}
+
+	rule_message_text.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'MESSAGE_TEXT'
 			rule: 0
 		},
 	]}
@@ -7583,9 +10750,100 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_minvalue.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'MINVALUE'
+			rule: 0
+		},
+	]}
+
 	rule_mod.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'MOD'
+			rule: 0
+		},
+	]}
+
+	rule_more.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'MORE'
+			rule: 0
+		},
+	]}
+
+	rule_mumps.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'MUMPS'
+			rule: 0
+		},
+	]}
+
+	rule_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NAME'
+			rule: 0
+		},
+	]}
+
+	rule_names.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NAMES'
+			rule: 0
+		},
+	]}
+
+	rule_nested.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NESTED'
+			rule: 0
+		},
+	]}
+
+	rule_nesting.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NESTING'
+			rule: 0
+		},
+	]}
+
+	rule_next.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NEXT'
+			rule: 0
+		},
+	]}
+
+	rule_nfc.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NFC'
+			rule: 0
+		},
+	]}
+
+	rule_nfd.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NFD'
+			rule: 0
+		},
+	]}
+
+	rule_nfkc.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NFKC'
+			rule: 0
+		},
+	]}
+
+	rule_nfkd.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NFKD'
+			rule: 0
+		},
+	]}
+
+	rule_normalized.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NORMALIZED'
 			rule: 0
 		},
 	]}
@@ -7604,9 +10862,37 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_nullable.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NULLABLE'
+			rule: 0
+		},
+	]}
+
 	rule_nullif.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'NULLIF'
+			rule: 0
+		},
+	]}
+
+	rule_nulls.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NULLS'
+			rule: 0
+		},
+	]}
+
+	rule_number.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NUMBER'
+			rule: 0
+		},
+	]}
+
+	rule_object.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'OBJECT'
 			rule: 0
 		},
 	]}
@@ -7646,6 +10932,20 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_option.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'OPTION'
+			rule: 0
+		},
+	]}
+
+	rule_options.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'OPTIONS'
+			rule: 0
+		},
+	]}
+
 	rule_or.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'OR'
@@ -7660,9 +10960,170 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_ordering.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ORDERING'
+			rule: 0
+		},
+	]}
+
+	rule_ordinality.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ORDINALITY'
+			rule: 0
+		},
+	]}
+
+	rule_others.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'OTHERS'
+			rule: 0
+		},
+	]}
+
 	rule_outer.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'OUTER'
+			rule: 0
+		},
+	]}
+
+	rule_output.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'OUTPUT'
+			rule: 0
+		},
+	]}
+
+	rule_overflow.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'OVERFLOW'
+			rule: 0
+		},
+	]}
+
+	rule_overriding.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'OVERRIDING'
+			rule: 0
+		},
+	]}
+
+	rule_p.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'P'
+			rule: 0
+		},
+	]}
+
+	rule_pad.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PAD'
+			rule: 0
+		},
+	]}
+
+	rule_parameter_mode.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PARAMETER_MODE'
+			rule: 0
+		},
+	]}
+
+	rule_parameter_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PARAMETER_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_parameter_ordinal_position.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PARAMETER_ORDINAL_POSITION'
+			rule: 0
+		},
+	]}
+
+	rule_parameter_specific_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PARAMETER_SPECIFIC_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_parameter_specific_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PARAMETER_SPECIFIC_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_parameter_specific_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PARAMETER_SPECIFIC_SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_partial.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PARTIAL'
+			rule: 0
+		},
+	]}
+
+	rule_pascal.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PASCAL'
+			rule: 0
+		},
+	]}
+
+	rule_pass.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PASS'
+			rule: 0
+		},
+	]}
+
+	rule_passing.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PASSING'
+			rule: 0
+		},
+	]}
+
+	rule_past.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PAST'
+			rule: 0
+		},
+	]}
+
+	rule_path.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PATH'
+			rule: 0
+		},
+	]}
+
+	rule_placing.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PLACING'
+			rule: 0
+		},
+	]}
+
+	rule_plan.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PLAN'
+			rule: 0
+		},
+	]}
+
+	rule_pli.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PLI'
 			rule: 0
 		},
 	]}
@@ -7681,9 +11142,23 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_preceding.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PRECEDING'
+			rule: 0
+		},
+	]}
+
 	rule_precision.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'PRECISION'
+			rule: 0
+		},
+	]}
+
+	rule_preserve.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PRESERVE'
 			rule: 0
 		},
 	]}
@@ -7695,9 +11170,100 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_prior.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PRIOR'
+			rule: 0
+		},
+	]}
+
+	rule_private.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PRIVATE'
+			rule: 0
+		},
+	]}
+
+	rule_private_parameters.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PRIVATE_PARAMETERS'
+			rule: 0
+		},
+	]}
+
+	rule_private_params_s.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PRIVATE_PARAMS_S'
+			rule: 0
+		},
+	]}
+
+	rule_privileges.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PRIVILEGES'
+			rule: 0
+		},
+	]}
+
+	rule_prune.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PRUNE'
+			rule: 0
+		},
+	]}
+
+	rule_public.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'PUBLIC'
+			rule: 0
+		},
+	]}
+
+	rule_quotes.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'QUOTES'
+			rule: 0
+		},
+	]}
+
+	rule_read.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'READ'
+			rule: 0
+		},
+	]}
+
 	rule_real.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'REAL'
+			rule: 0
+		},
+	]}
+
+	rule_relative.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'RELATIVE'
+			rule: 0
+		},
+	]}
+
+	rule_repeatable.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'REPEATABLE'
+			rule: 0
+		},
+	]}
+
+	rule_respect.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'RESPECT'
+			rule: 0
+		},
+	]}
+
+	rule_restart.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'RESTART'
 			rule: 0
 		},
 	]}
@@ -7709,9 +11275,65 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_ret_only_pass_thru.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'RET_ONLY_PASS_THRU'
+			rule: 0
+		},
+	]}
+
+	rule_returned_cardinality.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'RETURNED_CARDINALITY'
+			rule: 0
+		},
+	]}
+
+	rule_returned_length.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'RETURNED_LENGTH'
+			rule: 0
+		},
+	]}
+
+	rule_returned_octet_length.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'RETURNED_OCTET_LENGTH'
+			rule: 0
+		},
+	]}
+
+	rule_returned_sqlstate.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'RETURNED_SQLSTATE'
+			rule: 0
+		},
+	]}
+
+	rule_returning.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'RETURNING'
+			rule: 0
+		},
+	]}
+
+	rule_returns_only_pass_through.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'RETURNS_ONLY_PASS_THROUGH'
+			rule: 0
+		},
+	]}
+
 	rule_right.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'RIGHT'
+			rule: 0
+		},
+	]}
+
+	rule_role.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ROLE'
 			rule: 0
 		},
 	]}
@@ -7723,9 +11345,44 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_routine.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ROUTINE'
+			rule: 0
+		},
+	]}
+
+	rule_routine_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ROUTINE_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_routine_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ROUTINE_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_routine_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ROUTINE_SCHEMA'
+			rule: 0
+		},
+	]}
+
 	rule_row.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'ROW'
+			rule: 0
+		},
+	]}
+
+	rule_row_count.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ROW_COUNT'
 			rule: 0
 		},
 	]}
@@ -7737,9 +11394,65 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_scalar.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SCALAR'
+			rule: 0
+		},
+	]}
+
+	rule_scale.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SCALE'
+			rule: 0
+		},
+	]}
+
 	rule_schema.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_schema_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SCHEMA_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_scope_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SCOPE_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_scope_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SCOPE_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_scope_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SCOPE_SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_section.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SECTION'
+			rule: 0
+		},
+	]}
+
+	rule_security.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SECURITY'
 			rule: 0
 		},
 	]}
@@ -7751,6 +11464,41 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_self.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SELF'
+			rule: 0
+		},
+	]}
+
+	rule_sequence.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SEQUENCE'
+			rule: 0
+		},
+	]}
+
+	rule_serializable.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SERIALIZABLE'
+			rule: 0
+		},
+	]}
+
+	rule_server_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SERVER_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_session.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SESSION'
+			rule: 0
+		},
+	]}
+
 	rule_set.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'SET'
@@ -7758,9 +11506,23 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_sets.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SETS'
+			rule: 0
+		},
+	]}
+
 	rule_similar.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'SIMILAR'
+			rule: 0
+		},
+	]}
+
+	rule_simple.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SIMPLE'
 			rule: 0
 		},
 	]}
@@ -7779,9 +11541,37 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_size.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SIZE'
+			rule: 0
+		},
+	]}
+
 	rule_smallint.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'SMALLINT'
+			rule: 0
+		},
+	]}
+
+	rule_source.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SOURCE'
+			rule: 0
+		},
+	]}
+
+	rule_space.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SPACE'
+			rule: 0
+		},
+	]}
+
+	rule_specific_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SPECIFIC_NAME'
 			rule: 0
 		},
 	]}
@@ -7796,6 +11586,90 @@ fn get_grammar() map[string]EarleyRule {
 	rule_start.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'START'
+			rule: 0
+		},
+	]}
+
+	rule_start_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'START_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_start_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'START_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_start_procedure_specific_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'START_PROCEDURE_SPECIFIC_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_start_procedure_specific_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'START_PROCEDURE_SPECIFIC_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_start_procedure_specific_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'START_PROCEDURE_SPECIFIC_SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_start_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'START_SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_state.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'STATE'
+			rule: 0
+		},
+	]}
+
+	rule_statement.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'STATEMENT'
+			rule: 0
+		},
+	]}
+
+	rule_string.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'STRING'
+			rule: 0
+		},
+	]}
+
+	rule_structure.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'STRUCTURE'
+			rule: 0
+		},
+	]}
+
+	rule_style.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'STYLE'
+			rule: 0
+		},
+	]}
+
+	rule_subclass_origin.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'SUBCLASS_ORIGIN'
 			rule: 0
 		},
 	]}
@@ -7821,9 +11695,30 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_t.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'T'
+			rule: 0
+		},
+	]}
+
 	rule_table.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'TABLE'
+			rule: 0
+		},
+	]}
+
+	rule_table_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TABLE_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_table_semantics.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TABLE_SEMANTICS'
 			rule: 0
 		},
 	]}
@@ -7838,6 +11733,27 @@ fn get_grammar() map[string]EarleyRule {
 	rule_tanh.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'TANH'
+			rule: 0
+		},
+	]}
+
+	rule_temporary.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TEMPORARY'
+			rule: 0
+		},
+	]}
+
+	rule_through.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'THROUGH'
+			rule: 0
+		},
+	]}
+
+	rule_ties.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TIES'
 			rule: 0
 		},
 	]}
@@ -7863,6 +11779,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_top_level_count.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TOP_LEVEL_COUNT'
+			rule: 0
+		},
+	]}
+
 	rule_trailing.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'TRAILING'
@@ -7873,6 +11796,62 @@ fn get_grammar() map[string]EarleyRule {
 	rule_transaction.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'TRANSACTION'
+			rule: 0
+		},
+	]}
+
+	rule_transaction_active.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TRANSACTION_ACTIVE'
+			rule: 0
+		},
+	]}
+
+	rule_transactions_committed.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TRANSACTIONS_COMMITTED'
+			rule: 0
+		},
+	]}
+
+	rule_transactions_rolled_back.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TRANSACTIONS_ROLLED_BACK'
+			rule: 0
+		},
+	]}
+
+	rule_transform.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TRANSFORM'
+			rule: 0
+		},
+	]}
+
+	rule_transforms.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TRANSFORMS'
+			rule: 0
+		},
+	]}
+
+	rule_trigger_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TRIGGER_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_trigger_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TRIGGER_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_trigger_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TRIGGER_SCHEMA'
 			rule: 0
 		},
 	]}
@@ -7891,9 +11870,51 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_type.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'TYPE'
+			rule: 0
+		},
+	]}
+
+	rule_unbounded.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'UNBOUNDED'
+			rule: 0
+		},
+	]}
+
+	rule_uncommitted.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'UNCOMMITTED'
+			rule: 0
+		},
+	]}
+
+	rule_unconditional.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'UNCONDITIONAL'
+			rule: 0
+		},
+	]}
+
+	rule_under.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'UNDER'
+			rule: 0
+		},
+	]}
+
 	rule_unknown.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'UNKNOWN'
+			rule: 0
+		},
+	]}
+
+	rule_unnamed.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'UNNAMED'
 			rule: 0
 		},
 	]}
@@ -7912,9 +11933,65 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_usage.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'USAGE'
+			rule: 0
+		},
+	]}
+
+	rule_user_defined_type_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'USER_DEFINED_TYPE_CATALOG'
+			rule: 0
+		},
+	]}
+
+	rule_user_defined_type_code.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'USER_DEFINED_TYPE_CODE'
+			rule: 0
+		},
+	]}
+
+	rule_user_defined_type_name.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'USER_DEFINED_TYPE_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_user_defined_type_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'USER_DEFINED_TYPE_SCHEMA'
+			rule: 0
+		},
+	]}
+
 	rule_using.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'USING'
+			rule: 0
+		},
+	]}
+
+	rule_utf16.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'UTF16'
+			rule: 0
+		},
+	]}
+
+	rule_utf32.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'UTF32'
+			rule: 0
+		},
+	]}
+
+	rule_utf8.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'UTF8'
 			rule: 0
 		},
 	]}
@@ -7936,6 +12013,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_varying.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'VARYING'
+			rule: 0
+		},
+	]}
+
+	rule_view.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'VIEW'
 			rule: 0
 		},
 	]}
@@ -7964,6 +12048,20 @@ fn get_grammar() map[string]EarleyRule {
 	rule_work.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'WORK'
+			rule: 0
+		},
+	]}
+
+	rule_wrapper.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'WRAPPER'
+			rule: 0
+		},
+	]}
+
+	rule_write.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'WRITE'
 			rule: 0
 		},
 	]}
@@ -8245,6 +12343,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<modulus expression>'] = rule_modulus_expression_
 	rules['<natural logarithm: 1>'] = rule_natural_logarithm_1_
 	rules['<natural logarithm>'] = rule_natural_logarithm_
+	rules['<non-reserved word>'] = rule_non_reserved_word_
 	rules['<nonparenthesized value expression primary: 2>'] = rule_nonparenthesized_value_expression_primary_2_
 	rules['<nonparenthesized value expression primary>'] = rule_nonparenthesized_value_expression_primary_
 	rules['<not equals operator>'] = rule_not_equals_operator_
@@ -8314,6 +12413,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<query specification: 1>'] = rule_query_specification_1_
 	rules['<query specification>'] = rule_query_specification_
 	rules['<query term>'] = rule_query_term_
+	rules['<regular identifier: 2>'] = rule_regular_identifier_2_
 	rules['<regular identifier>'] = rule_regular_identifier_
 	rules['<result offset clause: 1>'] = rule_result_offset_clause_1_
 	rules['<result offset clause>'] = rule_result_offset_clause_
@@ -8484,31 +12584,76 @@ fn get_grammar() map[string]EarleyRule {
 	rules['^identifier'] = rule__identifier
 	rules['^integer'] = rule__integer
 	rules['^string'] = rule__string
+	rules['A'] = rule_a
 	rules['ABS'] = rule_abs
+	rules['ABSOLUTE'] = rule_absolute
 	rules['ACOS'] = rule_acos
+	rules['ACTION'] = rule_action
+	rules['ADA'] = rule_ada
+	rules['ADD'] = rule_add
+	rules['ADMIN'] = rule_admin
+	rules['AFTER'] = rule_after
+	rules['ALWAYS'] = rule_always
 	rules['AND'] = rule_and
 	rules['AS'] = rule_as
 	rules['ASC'] = rule_asc
 	rules['ASIN'] = rule_asin
+	rules['ASSERTION'] = rule_assertion
+	rules['ASSIGNMENT'] = rule_assignment
 	rules['ASYMMETRIC'] = rule_asymmetric
 	rules['ATAN'] = rule_atan
+	rules['ATTRIBUTE'] = rule_attribute
+	rules['ATTRIBUTES'] = rule_attributes
 	rules['AVG'] = rule_avg
+	rules['BEFORE'] = rule_before
+	rules['BERNOULLI'] = rule_bernoulli
 	rules['BETWEEN'] = rule_between
 	rules['BIGINT'] = rule_bigint
 	rules['BOOLEAN'] = rule_boolean
 	rules['BOTH'] = rule_both
+	rules['BREADTH'] = rule_breadth
 	rules['BY'] = rule_by
+	rules['C'] = rule_c
 	rules['CASCADE'] = rule_cascade
 	rules['CAST'] = rule_cast
+	rules['CATALOG'] = rule_catalog
+	rules['CATALOG_NAME'] = rule_catalog_name
 	rules['CEIL'] = rule_ceil
 	rules['CEILING'] = rule_ceiling
+	rules['CHAIN'] = rule_chain
+	rules['CHAINING'] = rule_chaining
 	rules['CHAR'] = rule_char
 	rules['CHAR_LENGTH'] = rule_char_length
 	rules['CHARACTER'] = rule_character
 	rules['CHARACTER_LENGTH'] = rule_character_length
+	rules['CHARACTER_SET_CATALOG'] = rule_character_set_catalog
+	rules['CHARACTER_SET_NAME'] = rule_character_set_name
+	rules['CHARACTER_SET_SCHEMA'] = rule_character_set_schema
+	rules['CHARACTERISTICS'] = rule_characteristics
 	rules['CHARACTERS'] = rule_characters
+	rules['CLASS_ORIGIN'] = rule_class_origin
 	rules['COALESCE'] = rule_coalesce
+	rules['COBOL'] = rule_cobol
+	rules['COLLATION'] = rule_collation
+	rules['COLLATION_CATALOG'] = rule_collation_catalog
+	rules['COLLATION_NAME'] = rule_collation_name
+	rules['COLLATION_SCHEMA'] = rule_collation_schema
+	rules['COLUMN_NAME'] = rule_column_name
+	rules['COLUMNS'] = rule_columns
+	rules['COMMAND_FUNCTION'] = rule_command_function
+	rules['COMMAND_FUNCTION_CODE'] = rule_command_function_code
 	rules['COMMIT'] = rule_commit
+	rules['COMMITTED'] = rule_committed
+	rules['CONDITION_NUMBER'] = rule_condition_number
+	rules['CONDITIONAL'] = rule_conditional
+	rules['CONNECTION'] = rule_connection
+	rules['CONNECTION_NAME'] = rule_connection_name
+	rules['CONSTRAINT_CATALOG'] = rule_constraint_catalog
+	rules['CONSTRAINT_NAME'] = rule_constraint_name
+	rules['CONSTRAINT_SCHEMA'] = rule_constraint_schema
+	rules['CONSTRAINTS'] = rule_constraints
+	rules['CONSTRUCTOR'] = rule_constructor
+	rules['CONTINUE'] = rule_continue
 	rules['COS'] = rule_cos
 	rules['COSH'] = rule_cosh
 	rules['COUNT'] = rule_count
@@ -8516,94 +12661,317 @@ fn get_grammar() map[string]EarleyRule {
 	rules['CURRENT_DATE'] = rule_current_date
 	rules['CURRENT_TIME'] = rule_current_time
 	rules['CURRENT_TIMESTAMP'] = rule_current_timestamp
+	rules['CURSOR_NAME'] = rule_cursor_name
+	rules['DATA'] = rule_data
 	rules['DATE'] = rule_date
+	rules['DATETIME_INTERVAL_CODE'] = rule_datetime_interval_code
+	rules['DATETIME_INTERVAL_PRECISION'] = rule_datetime_interval_precision
+	rules['DEFAULTS'] = rule_defaults
+	rules['DEFERRABLE'] = rule_deferrable
+	rules['DEFERRED'] = rule_deferred
+	rules['DEFINED'] = rule_defined
+	rules['DEFINER'] = rule_definer
+	rules['DEGREE'] = rule_degree
 	rules['DELETE'] = rule_delete
+	rules['DEPTH'] = rule_depth
+	rules['DERIVED'] = rule_derived
 	rules['DESC'] = rule_desc
+	rules['DESCRIBE_CATALOG'] = rule_describe_catalog
+	rules['DESCRIBE_NAME'] = rule_describe_name
+	rules['DESCRIBE_PROCEDURE_SPECIFIC_CATALOG'] = rule_describe_procedure_specific_catalog
+	rules['DESCRIBE_PROCEDURE_SPECIFIC_NAME'] = rule_describe_procedure_specific_name
+	rules['DESCRIBE_PROCEDURE_SPECIFIC_SCHEMA'] = rule_describe_procedure_specific_schema
+	rules['DESCRIBE_SCHEMA'] = rule_describe_schema
+	rules['DESCRIPTOR'] = rule_descriptor
+	rules['DIAGNOSTICS'] = rule_diagnostics
+	rules['DISPATCH'] = rule_dispatch
+	rules['DOMAIN'] = rule_domain
 	rules['DOUBLE'] = rule_double
 	rules['DROP'] = rule_drop
+	rules['DYNAMIC_FUNCTION'] = rule_dynamic_function
+	rules['DYNAMIC_FUNCTION_CODE'] = rule_dynamic_function_code
+	rules['ENCODING'] = rule_encoding
+	rules['ENFORCED'] = rule_enforced
+	rules['ERROR'] = rule_error
+	rules['EXCLUDE'] = rule_exclude
+	rules['EXCLUDING'] = rule_excluding
 	rules['EXP'] = rule_exp
+	rules['EXPRESSION'] = rule_expression
 	rules['FALSE'] = rule_false
 	rules['FETCH'] = rule_fetch
+	rules['FINAL'] = rule_final
+	rules['FINISH'] = rule_finish
+	rules['FINISH_CATALOG'] = rule_finish_catalog
+	rules['FINISH_NAME'] = rule_finish_name
+	rules['FINISH_PROCEDURE_SPECIFIC_CATALOG'] = rule_finish_procedure_specific_catalog
+	rules['FINISH_PROCEDURE_SPECIFIC_NAME'] = rule_finish_procedure_specific_name
+	rules['FINISH_PROCEDURE_SPECIFIC_SCHEMA'] = rule_finish_procedure_specific_schema
+	rules['FINISH_SCHEMA'] = rule_finish_schema
 	rules['FIRST'] = rule_first
+	rules['FLAG'] = rule_flag
 	rules['FLOAT'] = rule_float
 	rules['FLOOR'] = rule_floor
+	rules['FOLLOWING'] = rule_following
 	rules['FOR'] = rule_for
+	rules['FORMAT'] = rule_format
+	rules['FORTRAN'] = rule_fortran
+	rules['FOUND'] = rule_found
 	rules['FROM'] = rule_from
+	rules['FULFILL'] = rule_fulfill
+	rules['FULFILL_CATALOG'] = rule_fulfill_catalog
+	rules['FULFILL_NAME'] = rule_fulfill_name
+	rules['FULFILL_PROCEDURE_SPECIFIC_CATALOG'] = rule_fulfill_procedure_specific_catalog
+	rules['FULFILL_PROCEDURE_SPECIFIC_NAME'] = rule_fulfill_procedure_specific_name
+	rules['FULFILL_PROCEDURE_SPECIFIC_SCHEMA'] = rule_fulfill_procedure_specific_schema
+	rules['FULFILL_SCHEMA'] = rule_fulfill_schema
+	rules['G'] = rule_g
+	rules['GENERAL'] = rule_general
+	rules['GENERATED'] = rule_generated
+	rules['GO'] = rule_go
+	rules['GOTO'] = rule_goto
+	rules['GRANTED'] = rule_granted
 	rules['GROUP'] = rule_group
+	rules['HAS_PASS_THROUGH_COLUMNS'] = rule_has_pass_through_columns
+	rules['HAS_PASS_THRU_COLS'] = rule_has_pass_thru_cols
+	rules['HIERARCHY'] = rule_hierarchy
+	rules['IGNORE'] = rule_ignore
+	rules['IMMEDIATE'] = rule_immediate
+	rules['IMMEDIATELY'] = rule_immediately
+	rules['IMPLEMENTATION'] = rule_implementation
 	rules['IN'] = rule_in
+	rules['INCLUDING'] = rule_including
+	rules['INCREMENT'] = rule_increment
+	rules['INITIALLY'] = rule_initially
 	rules['INNER'] = rule_inner
+	rules['INPUT'] = rule_input
 	rules['INSERT'] = rule_insert
+	rules['INSTANCE'] = rule_instance
+	rules['INSTANTIABLE'] = rule_instantiable
+	rules['INSTEAD'] = rule_instead
 	rules['INT'] = rule_int
 	rules['INTEGER'] = rule_integer
 	rules['INTO'] = rule_into
+	rules['INVOKER'] = rule_invoker
 	rules['IS'] = rule_is
+	rules['IS_PRUNABLE'] = rule_is_prunable
+	rules['ISOLATION'] = rule_isolation
 	rules['JOIN'] = rule_join
+	rules['JSON'] = rule_json
+	rules['K'] = rule_k
+	rules['KEEP'] = rule_keep
 	rules['KEY'] = rule_key
+	rules['KEY_MEMBER'] = rule_key_member
+	rules['KEY_TYPE'] = rule_key_type
+	rules['KEYS'] = rule_keys
+	rules['LAST'] = rule_last
 	rules['LEADING'] = rule_leading
 	rules['LEFT'] = rule_left
+	rules['LENGTH'] = rule_length
+	rules['LEVEL'] = rule_level
 	rules['LIKE'] = rule_like
 	rules['LN'] = rule_ln
 	rules['LOCALTIME'] = rule_localtime
 	rules['LOCALTIMESTAMP'] = rule_localtimestamp
+	rules['LOCATOR'] = rule_locator
 	rules['LOG10'] = rule_log10
 	rules['LOWER'] = rule_lower
+	rules['M'] = rule_m
+	rules['MAP'] = rule_map
+	rules['MATCHED'] = rule_matched
 	rules['MAX'] = rule_max
+	rules['MAXVALUE'] = rule_maxvalue
+	rules['MESSAGE_LENGTH'] = rule_message_length
+	rules['MESSAGE_OCTET_LENGTH'] = rule_message_octet_length
+	rules['MESSAGE_TEXT'] = rule_message_text
 	rules['MIN'] = rule_min
+	rules['MINVALUE'] = rule_minvalue
 	rules['MOD'] = rule_mod
+	rules['MORE'] = rule_more
+	rules['MUMPS'] = rule_mumps
+	rules['NAME'] = rule_name
+	rules['NAMES'] = rule_names
+	rules['NESTED'] = rule_nested
+	rules['NESTING'] = rule_nesting
+	rules['NEXT'] = rule_next
+	rules['NFC'] = rule_nfc
+	rules['NFD'] = rule_nfd
+	rules['NFKC'] = rule_nfkc
+	rules['NFKD'] = rule_nfkd
+	rules['NORMALIZED'] = rule_normalized
 	rules['NOT'] = rule_not
 	rules['NULL'] = rule_null
+	rules['NULLABLE'] = rule_nullable
 	rules['NULLIF'] = rule_nullif
+	rules['NULLS'] = rule_nulls
+	rules['NUMBER'] = rule_number
+	rules['OBJECT'] = rule_object
 	rules['OCTET_LENGTH'] = rule_octet_length
 	rules['OCTETS'] = rule_octets
 	rules['OFFSET'] = rule_offset
 	rules['ON'] = rule_on
 	rules['ONLY'] = rule_only
+	rules['OPTION'] = rule_option
+	rules['OPTIONS'] = rule_options
 	rules['OR'] = rule_or
 	rules['ORDER'] = rule_order
+	rules['ORDERING'] = rule_ordering
+	rules['ORDINALITY'] = rule_ordinality
+	rules['OTHERS'] = rule_others
 	rules['OUTER'] = rule_outer
+	rules['OUTPUT'] = rule_output
+	rules['OVERFLOW'] = rule_overflow
+	rules['OVERRIDING'] = rule_overriding
+	rules['P'] = rule_p
+	rules['PAD'] = rule_pad
+	rules['PARAMETER_MODE'] = rule_parameter_mode
+	rules['PARAMETER_NAME'] = rule_parameter_name
+	rules['PARAMETER_ORDINAL_POSITION'] = rule_parameter_ordinal_position
+	rules['PARAMETER_SPECIFIC_CATALOG'] = rule_parameter_specific_catalog
+	rules['PARAMETER_SPECIFIC_NAME'] = rule_parameter_specific_name
+	rules['PARAMETER_SPECIFIC_SCHEMA'] = rule_parameter_specific_schema
+	rules['PARTIAL'] = rule_partial
+	rules['PASCAL'] = rule_pascal
+	rules['PASS'] = rule_pass
+	rules['PASSING'] = rule_passing
+	rules['PAST'] = rule_past
+	rules['PATH'] = rule_path
+	rules['PLACING'] = rule_placing
+	rules['PLAN'] = rule_plan
+	rules['PLI'] = rule_pli
 	rules['POSITION'] = rule_position
 	rules['POWER'] = rule_power
+	rules['PRECEDING'] = rule_preceding
 	rules['PRECISION'] = rule_precision
+	rules['PRESERVE'] = rule_preserve
 	rules['PRIMARY'] = rule_primary
+	rules['PRIOR'] = rule_prior
+	rules['PRIVATE'] = rule_private
+	rules['PRIVATE_PARAMETERS'] = rule_private_parameters
+	rules['PRIVATE_PARAMS_S'] = rule_private_params_s
+	rules['PRIVILEGES'] = rule_privileges
+	rules['PRUNE'] = rule_prune
+	rules['PUBLIC'] = rule_public
+	rules['QUOTES'] = rule_quotes
+	rules['READ'] = rule_read
 	rules['REAL'] = rule_real
+	rules['RELATIVE'] = rule_relative
+	rules['REPEATABLE'] = rule_repeatable
+	rules['RESPECT'] = rule_respect
+	rules['RESTART'] = rule_restart
 	rules['RESTRICT'] = rule_restrict
+	rules['RET_ONLY_PASS_THRU'] = rule_ret_only_pass_thru
+	rules['RETURNED_CARDINALITY'] = rule_returned_cardinality
+	rules['RETURNED_LENGTH'] = rule_returned_length
+	rules['RETURNED_OCTET_LENGTH'] = rule_returned_octet_length
+	rules['RETURNED_SQLSTATE'] = rule_returned_sqlstate
+	rules['RETURNING'] = rule_returning
+	rules['RETURNS_ONLY_PASS_THROUGH'] = rule_returns_only_pass_through
 	rules['RIGHT'] = rule_right
+	rules['ROLE'] = rule_role
 	rules['ROLLBACK'] = rule_rollback
+	rules['ROUTINE'] = rule_routine
+	rules['ROUTINE_CATALOG'] = rule_routine_catalog
+	rules['ROUTINE_NAME'] = rule_routine_name
+	rules['ROUTINE_SCHEMA'] = rule_routine_schema
 	rules['ROW'] = rule_row
+	rules['ROW_COUNT'] = rule_row_count
 	rules['ROWS'] = rule_rows
+	rules['SCALAR'] = rule_scalar
+	rules['SCALE'] = rule_scale
 	rules['SCHEMA'] = rule_schema
+	rules['SCHEMA_NAME'] = rule_schema_name
+	rules['SCOPE_CATALOG'] = rule_scope_catalog
+	rules['SCOPE_NAME'] = rule_scope_name
+	rules['SCOPE_SCHEMA'] = rule_scope_schema
+	rules['SECTION'] = rule_section
+	rules['SECURITY'] = rule_security
 	rules['SELECT'] = rule_select
+	rules['SELF'] = rule_self
+	rules['SEQUENCE'] = rule_sequence
+	rules['SERIALIZABLE'] = rule_serializable
+	rules['SERVER_NAME'] = rule_server_name
+	rules['SESSION'] = rule_session
 	rules['SET'] = rule_set
+	rules['SETS'] = rule_sets
 	rules['SIMILAR'] = rule_similar
+	rules['SIMPLE'] = rule_simple
 	rules['SIN'] = rule_sin
 	rules['SINH'] = rule_sinh
+	rules['SIZE'] = rule_size
 	rules['SMALLINT'] = rule_smallint
+	rules['SOURCE'] = rule_source
+	rules['SPACE'] = rule_space
+	rules['SPECIFIC_NAME'] = rule_specific_name
 	rules['SQRT'] = rule_sqrt
 	rules['START'] = rule_start
+	rules['START_CATALOG'] = rule_start_catalog
+	rules['START_NAME'] = rule_start_name
+	rules['START_PROCEDURE_SPECIFIC_CATALOG'] = rule_start_procedure_specific_catalog
+	rules['START_PROCEDURE_SPECIFIC_NAME'] = rule_start_procedure_specific_name
+	rules['START_PROCEDURE_SPECIFIC_SCHEMA'] = rule_start_procedure_specific_schema
+	rules['START_SCHEMA'] = rule_start_schema
+	rules['STATE'] = rule_state
+	rules['STATEMENT'] = rule_statement
+	rules['STRING'] = rule_string
+	rules['STRUCTURE'] = rule_structure
+	rules['STYLE'] = rule_style
+	rules['SUBCLASS_ORIGIN'] = rule_subclass_origin
 	rules['SUBSTRING'] = rule_substring
 	rules['SUM'] = rule_sum
 	rules['SYMMETRIC'] = rule_symmetric
+	rules['T'] = rule_t
 	rules['TABLE'] = rule_table
+	rules['TABLE_NAME'] = rule_table_name
+	rules['TABLE_SEMANTICS'] = rule_table_semantics
 	rules['TAN'] = rule_tan
 	rules['TANH'] = rule_tanh
+	rules['TEMPORARY'] = rule_temporary
+	rules['THROUGH'] = rule_through
+	rules['TIES'] = rule_ties
 	rules['TIME'] = rule_time
 	rules['TIMESTAMP'] = rule_timestamp
 	rules['TO'] = rule_to
+	rules['TOP_LEVEL_COUNT'] = rule_top_level_count
 	rules['TRAILING'] = rule_trailing
 	rules['TRANSACTION'] = rule_transaction
+	rules['TRANSACTION_ACTIVE'] = rule_transaction_active
+	rules['TRANSACTIONS_COMMITTED'] = rule_transactions_committed
+	rules['TRANSACTIONS_ROLLED_BACK'] = rule_transactions_rolled_back
+	rules['TRANSFORM'] = rule_transform
+	rules['TRANSFORMS'] = rule_transforms
+	rules['TRIGGER_CATALOG'] = rule_trigger_catalog
+	rules['TRIGGER_NAME'] = rule_trigger_name
+	rules['TRIGGER_SCHEMA'] = rule_trigger_schema
 	rules['TRIM'] = rule_trim
 	rules['TRUE'] = rule_true
+	rules['TYPE'] = rule_type
+	rules['UNBOUNDED'] = rule_unbounded
+	rules['UNCOMMITTED'] = rule_uncommitted
+	rules['UNCONDITIONAL'] = rule_unconditional
+	rules['UNDER'] = rule_under
 	rules['UNKNOWN'] = rule_unknown
+	rules['UNNAMED'] = rule_unnamed
 	rules['UPDATE'] = rule_update
 	rules['UPPER'] = rule_upper
+	rules['USAGE'] = rule_usage
+	rules['USER_DEFINED_TYPE_CATALOG'] = rule_user_defined_type_catalog
+	rules['USER_DEFINED_TYPE_CODE'] = rule_user_defined_type_code
+	rules['USER_DEFINED_TYPE_NAME'] = rule_user_defined_type_name
+	rules['USER_DEFINED_TYPE_SCHEMA'] = rule_user_defined_type_schema
 	rules['USING'] = rule_using
+	rules['UTF16'] = rule_utf16
+	rules['UTF32'] = rule_utf32
+	rules['UTF8'] = rule_utf8
 	rules['VALUES'] = rule_values
 	rules['VARCHAR'] = rule_varchar
 	rules['VARYING'] = rule_varying
+	rules['VIEW'] = rule_view
 	rules['WHERE'] = rule_where
 	rules['WITH'] = rule_with
 	rules['WITHOUT'] = rule_without
 	rules['WORK'] = rule_work
+	rules['WRAPPER'] = rule_wrapper
+	rules['WRITE'] = rule_write
 	rules['ZONE'] = rule_zone
 
 	return rules
@@ -9250,6 +13618,9 @@ fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
 			return [
 				EarleyValue(parse_query_specification(children[1] as SelectList, children[2] as TableExpression)?),
 			]
+		}
+		'<regular identifier: 2>' {
+			return [EarleyValue(parse_string_identifier(children[0] as string)?)]
 		}
 		'<result offset clause: 1>' {
 			return [EarleyValue(parse_expr(children[1] as Expr)?)]

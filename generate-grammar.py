@@ -286,12 +286,12 @@ def parse_grammar(grammar):
 
     full_line = ''
     for line in grammar.split("\n"):
+        if line.startswith('#'):
+            continue
         if '/*' in line and '::=' in line:
             parts = line.split('/*')
             full_line += parts[0] + "::= "
             grammar_types[parts[0].strip()] = parts[1].split('*/')[0].strip()
-        elif '/*' in line:
-            continue
         elif line == '':
             if full_line != '':
                 lines.append(full_line.strip())
@@ -375,7 +375,7 @@ def rule_name(name):
     return name
 
 def var_name(name):
-    return "rule_" + rule_name(name).lower().replace('<', '').replace(':', '').replace('>', '_').replace(' ', '_').replace('^', '_')
+    return "rule_" + rule_name(name).lower().replace('<', '').replace('-', '_').replace(':', '').replace('>', '_').replace(' ', '_').replace('^', '_')
 
 # Generate grammar file
 grammar_file = open('vsql/grammar.v', mode='w')
@@ -516,6 +516,7 @@ def parse_tree(text):
 # parse_tree("VALUES TIMESTAMP '2022-06-30'")
 # parse_tree("INSERT INTO foo ( f1 ) VALUES ( TIMESTAMP '2022-06-30' )")
 # parse_tree("VALUES TRIM ( 'helloworld' )")
+# parse_tree("CREATE SCHEMA public")
 
 for arg in sys.argv[1:]:
     print(arg)

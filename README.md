@@ -10,7 +10,7 @@ database written in pure [V](https://vlang.io) with zero dependencies.
 After
 [installing or updating](https://vsql.readthedocs.io/en/latest/install.html),
 you can use vsql
-[within your V applications](https://vsql.readthedocs.io/en/latest/v-module.html),
+[within your V applications](https://vsql.readthedocs.io/en/latest/v-client-library.html),
 interact with database files using the
 [CLI](https://vsql.readthedocs.io/en/latest/cli.html), or connect to a database
 using the
@@ -21,7 +21,7 @@ or use one of the quick links:
 
 - [FAQ](https://vsql.readthedocs.io/en/latest/faq.html)
 - [CLI](https://vsql.readthedocs.io/en/latest/cli.html)
-- [Supported PostgreSQL clients](https://vsql.readthedocs.io/en/latest/supported-clients.html)
+- [Supported PostgreSQL clients](https://vsql.readthedocs.io/en/latest/postgresql-clients.html)
 - [Features](https://vsql.readthedocs.io/en/latest/features.html)
 - [SQL Reference](https://vsql.readthedocs.io/en/latest/features.html)
 - [Contributing](https://vsql.readthedocs.io/en/latest/contributing.html)

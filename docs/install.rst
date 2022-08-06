@@ -15,4 +15,4 @@ See Also
 
 - :doc:`cli`
 - :doc:`contributing`
-- :doc:`v-module`
+- :doc:`v-client-library`

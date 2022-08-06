@@ -1,5 +1,5 @@
-Supported Clients
-=================
+PostgreSQL Clients
+==================
 
 vsql can run as a server that is compatible with PostgreSQL clients. However,
 some clients will execute complex or highly PostgreSQL-specific queries during

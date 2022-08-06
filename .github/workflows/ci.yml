@@ -28,6 +28,7 @@ jobs:
         pip install sphinx sphinx_rtd_theme
         cd docs && python3 -m pip install -r requirements.txt && cd -
         make clean-docs docs
+        git diff --exit-code
 
     - name: Run SQL tests
       run: make test

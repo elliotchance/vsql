@@ -8,13 +8,22 @@
 
 module vsql
 
+// A QueryCache improves the performance of parsing by caching previously cached
+// statements. By default, a new QueryCache is created for each Connection.
+// However, you can share a single QueryCache safely amung multiple connections
+// for even better performance. See ConnectionOptions.
+//
+// snippet: v.QueryCache
 [heap]
-struct QueryCache {
+pub struct QueryCache {
 mut:
 	stmts map[string]Stmt
 }
 
-fn new_query_cache() &QueryCache {
+// Create a new query cache.
+//
+// snippet: v.new_query_cache
+pub fn new_query_cache() &QueryCache {
 	return &QueryCache{}
 }
 

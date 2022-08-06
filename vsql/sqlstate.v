@@ -12,6 +12,8 @@ module vsql
 // respective string by using sqlstate_from_int().
 //
 // If code is invalid the result will be unexpected.
+//
+// snippet: v.sqlstate_to_int
 pub fn sqlstate_to_int(code string) int {
 	upper_code := code.to_upper()
 
@@ -36,6 +38,9 @@ fn sqlstate_ord(ch int) u8 {
 	return u8(`A`) + (u8(ch) - 10)
 }
 
+// sqlstate_from_int performs the inverse operation of sqlstate_to_int.
+//
+// snippet: v.sqlstate_from_int
 pub fn sqlstate_from_int(code int) string {
 	mut b := []u8{len: 5}
 
@@ -51,15 +56,26 @@ pub fn sqlstate_from_int(code int) string {
 	return b.bytestr()
 }
 
+// SQLState is a compatible V error. It contains a human-readable message and'
+// the SQLSTATE code.
+//
+// snippet: v.SQLState
 struct SQLState {
 	msg  string
 	code int
 }
 
+// Provides the human-readable message.
+//
+// snippet: v.SQLState.msg
 fn (err SQLState) msg() string {
 	return err.msg
 }
 
+// Is the integer representation of the SQLSTATE. Convert to a string with
+// sqlstate_from_int.
+//
+// snippet: v.SQLState.code
 fn (err SQLState) code() int {
 	return err.code
 }

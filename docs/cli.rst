@@ -21,5 +21,5 @@ source with:
 
 .. code-block:: sh
 
-   v install elliotchance.vsql
-   v ~/.vmodules/elliotchance/vsql/cmd/vsql.v
+   make bin/vsql       # macOS and linux
+   make bin/vsql.exe   # windows

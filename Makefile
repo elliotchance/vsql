@@ -1,4 +1,4 @@
-.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples vsql grammar sql-test docs clean-docs
+.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples grammar sql-test docs clean-docs
 
 # Is not used at the moment. It is useful for testing options like different
 # `-gc` values.
@@ -8,8 +8,14 @@ PROD = -prod
 
 # Binaries
 
-vsql:
-	v $(BUILD_OPTIONS) $(PROD) cmd/vsql.v
+bin/vsql:
+	mkdir -p bin
+	v $(BUILD_OPTIONS) $(PROD) cmd/vsql -o bin/vsql
+
+bin/vsql.exe:
+	mkdir -p bin
+	v $(BUILD_OPTIONS) $(PROD) cmd/vsql
+	mv cmd/vsql/vsql.exe bin/vsql.exe
 
 # Documentation
 
@@ -59,8 +65,8 @@ examples/%:
 
 bench: bench-on-disk bench-memory
 
-bench-on-disk:
-	v run $(PROD) cmd/vsql.v bench
+bench-on-disk: vsql
+	./bin/vsql bench
 
-bench-memory:
-	v run $(PROD) cmd/vsql.v bench -file ':memory:'
+bench-memory: vsql
+	./bin/vsql bench -file ':memory:'

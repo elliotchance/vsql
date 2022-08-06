@@ -10,7 +10,8 @@ Building from Source
 
 .. code-block:: sh
 
-  make vsql
+  make bin/vsql       # macOS and linux
+  make bin/vsql.exe   # windows
 
 Debugging
 ---------

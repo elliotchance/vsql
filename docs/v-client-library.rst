@@ -124,6 +124,16 @@ fn Connection.register_virtual_table(create_table string, data VirtualTableProvi
 
 |v.Connection.register_virtual_table|
 
+fn Connection.schemas() []string
+********************************
+
+|v.Connection.schemas|
+
+fn Connection.schema_tables(schema string) []string
+***************************************************
+
+|v.Connection.schema_tables|
+
 struct ConnectionOptions
 ^^^^^^^^^^^^^^^^^^^^^^^^
 

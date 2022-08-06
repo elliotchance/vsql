@@ -29,8 +29,8 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Expr, params 
 	for expr in group_exprs {
 		// TODO(elliotchance): This is a hack for now. Fix me later when we have
 		//  multiple tables.
-		name := expr.str().split('.')[1]
-		columns << table.column(name)?
+		name := expr.str().split('.')
+		columns << table.column(name[name.len - 1])?
 	}
 
 	empty_row := new_empty_row(table.columns, table.name)

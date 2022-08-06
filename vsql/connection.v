@@ -32,6 +32,8 @@ mut:
 	// unary_operators and binary_operators are for operators (see operators.v)
 	unary_operators  map[string]UnaryOperatorFunc
 	binary_operators map[string]BinaryOperatorFunc
+	// current_schema is where to search for unquailified table names.
+	current_schema string
 }
 
 // open is the convenience function for open_database() with default options.
@@ -65,16 +67,20 @@ pub fn open(path string) ?&Connection {
 //
 // snippet: v.open_database
 pub fn open_database(path string, options ConnectionOptions) ?&Connection {
-	if path == ':memory:' {
-		return open_connection(path, options)
-	}
+	mut init_schema := path == ':memory:'
 
 	// If the file doesn't exist we initialize it and reopen it.
-	if !os.exists(path) {
+	if !os.exists(path) && path != ':memory:' {
 		init_database_file(path, options.page_size)?
+		init_schema = true
 	}
 
-	return open_connection(path, options)
+	mut conn := open_connection(path, options)?
+	if init_schema {
+		conn.query('CREATE SCHEMA public')?
+	}
+
+	return conn
 }
 
 fn open_connection(path string, options ConnectionOptions) ?&Connection {
@@ -241,7 +247,20 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 	stmt := parse(tokens)?
 
 	if stmt is CreateTableStmt {
-		table_name := stmt.table_name
+		mut table_name := stmt.table_name
+
+		// TODO(elliotchance): This isn't really ideal. Replace with a proper
+		//  identifier chain when we support that.
+		if table_name.contains('.') {
+			parts := table_name.split('.')
+
+			if parts[0] !in c.storage.schemas {
+				return sqlstate_3f000(parts[0]) // scheme does not exist
+			}
+		} else {
+			table_name = 'PUBLIC.$table_name'
+		}
+
 		c.virtual_tables[table_name] = VirtualTable{
 			create_table_sql: create_table
 			create_table_stmt: stmt
@@ -252,6 +271,33 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 	}
 
 	return error('must provide a CREATE TABLE statement')
+}
+
+// schemas returns the names of schemas in this catalog (database).
+//
+// snippet: v.Connection.schemas
+pub fn (mut c Connection) schemas() []string {
+	mut schemas := []string{}
+	for _, schema in c.storage.schemas {
+		schemas << schema.name
+	}
+
+	return schemas
+}
+
+// schema_tables returns all table names for the provided schema. If the schema
+// does not exist and empty list will be returned.
+//
+// snippet: v.Connection.schema_tables
+pub fn (mut c Connection) schema_tables(schema string) []string {
+	mut tables := []string{}
+	for _, table in c.storage.tables {
+		if table.name.starts_with('${schema}.') {
+			tables << table.name.split('.')[1]
+		}
+	}
+
+	return tables
 }
 
 // ConnectionOptions can modify the behavior of a connection when it is opened.

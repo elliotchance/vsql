@@ -134,8 +134,13 @@ fn resolve_identifiers(e Expr, tables map[string]Table) ?Expr {
 		Identifier {
 			// TODO(elliotchance): This is super hacky. It valid for there to be
 			//  a "." in the deliminated name.
-			if e.name.contains('.') {
+			parts := e.name.split('.')
+			if parts.len == 3 {
 				return e
+			}
+
+			if parts.len == 2 {
+				return new_identifier('PUBLIC.$e.name')
 			}
 
 			for _, table in tables {

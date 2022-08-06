@@ -46,6 +46,13 @@
    register_virtual_table will register a function that can provide data at
    runtime to a virtual table.
 
+.. |v.Connection.schema_tables| replace::
+   schema_tables returns all table names for the provided schema. If the schema
+   does not exist and empty list will be returned.
+
+.. |v.Connection.schemas| replace::
+   schemas returns the names of schemas in this catalog (database).
+
 .. |v.ConnectionOptions| replace::
    ConnectionOptions can modify the behavior of a connection when it is opened.
    You should not create the ConnectionOptions instance manually. Instead, use

@@ -6,6 +6,11 @@ BUILD_OPTIONS =
 
 PROD = -prod
 
+# Ready is a some quick tasks that can easily be forgotten when preparing a
+# diff.
+
+ready: grammar fmt snippets
+
 # Binaries
 
 bin/vsql:
@@ -19,7 +24,10 @@ bin/vsql.exe:
 
 # Documentation
 
-docs:
+snippets:
+	python3 generate-snippets.py > docs/snippets.rst
+
+docs: snippets
 	mkdir -p docs/_static
 	cd docs && make html SPHINXOPTS="-W --keep-going -n"
 

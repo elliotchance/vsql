@@ -1,13 +1,15 @@
-// prepare.v is for prepared statements. A prepared statement is compiled and
-// validated, but not executed. It can then be executed with a set of host
-// parameters to be substituted into the statement. Each invocation requires all
-// host parameters to be passed in.
+// prepare.v is for prepared statements.
 
 module vsql
 
 import time
 
-struct PreparedStmt {
+// A prepared statement is compiled and validated, but not executed. It can then
+// be executed with a set of host parameters to be substituted into the
+// statement. Each invocation requires all host parameters to be passed in.
+//
+// snippet: v.PreparedStmt
+pub struct PreparedStmt {
 	stmt Stmt
 	// params can be set on the statement and will be merged with the extra
 	// params at execution time. If name collisions occur, the params provided
@@ -22,6 +24,9 @@ mut:
 	elapsed_parse time.Duration
 }
 
+// Execute the prepared statement.
+//
+// snippet: v.PreparedStmt.query
 pub fn (mut p PreparedStmt) query(params map[string]Value) ?Result {
 	return p.query_internal(params) or {
 		p.c.storage.transaction_aborted()

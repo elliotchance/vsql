@@ -30,8 +30,8 @@ fn example() ? {
 	}
 
 	assert lines == [
-		'VIRTUAL TABLE FOO (FOO.num INTEGER, FOO.WORD CHARACTER VARYING(32))',
-		'EXPR (num INTEGER, WORD CHARACTER VARYING(32))',
+		'VIRTUAL TABLE FOO ("FOO.num" INTEGER, FOO.WORD CHARACTER VARYING(32))',
+		'EXPR ("num" INTEGER, WORD CHARACTER VARYING(32))',
 	]
 
 	result := db.query('SELECT * FROM foo')?

@@ -1,5 +1,5 @@
-CLI
-===
+Command Line Interface (CLI)
+============================
 
 You can also work with database files through the CLI (ctrl+c to exit):
 

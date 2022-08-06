@@ -6,6 +6,3 @@ Getting Started
 
    install.rst
    faq.rst
-   v-module.rst
-   cli.rst
-   supported-clients.rst

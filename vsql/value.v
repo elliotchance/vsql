@@ -6,15 +6,20 @@ module vsql
 
 import strings
 
-// Possible values for a BOOLEAN. These must not be negative values because they
-// are encoded as u8 on disk.
+// Possible values for a BOOLEAN.
+//
+// snippet: v.Boolean
 pub enum Boolean {
+	// These must not be negative values because they are encoded as u8 on disk.
 	is_unknown = 0 // same as NULL
 	is_false = 1
 	is_true = 2
 }
 
-fn (b Boolean) str() string {
+// Returns ``TRUE``, ``FALSE`` or ``UNKNOWN``.
+//
+// snippet: v.Boolean.str
+pub fn (b Boolean) str() string {
 	return match b {
 		.is_false { 'FALSE' }
 		.is_true { 'TRUE' }
@@ -22,11 +27,19 @@ fn (b Boolean) str() string {
 	}
 }
 
+// A single value. It contains it's type information in ``typ``.
+//
+// snippet: v.Value
 pub struct Value {
 pub mut:
 	// TODO(elliotchance): Make these non-mutable.
+	// The type of this Value.
+	//
+	// snippet: v.Value.typ
 	typ Type
 	// Used by all types (including those that have NULL built in like BOOLEAN).
+	//
+	// snippet: v.Value.is_null
 	is_null bool
 	// BOOLEAN
 	bool_value Boolean
@@ -46,6 +59,10 @@ pub mut:
 	is_coercible bool
 }
 
+// new_null_value creates a NULL value of a specific type. In SQL, all NULL
+// values need to have a type.
+//
+// snippet: v.new_null_value
 pub fn new_null_value(typ SQLType) Value {
 	return Value{
 		typ: Type{typ, 0, false}
@@ -53,6 +70,10 @@ pub fn new_null_value(typ SQLType) Value {
 	}
 }
 
+// new_boolean_value creates a ``TRUE`` or ``FALSE`` value. For ``UNKNOWN`` (the
+// ``BOOLEAN`` equivilent of NULL) you will need to use ``new_unknown_value``.
+//
+// snippet: v.new_boolean_value
 pub fn new_boolean_value(b bool) Value {
 	return Value{
 		typ: Type{.is_boolean, 0, false}
@@ -60,6 +81,10 @@ pub fn new_boolean_value(b bool) Value {
 	}
 }
 
+// new_unknown_value returns an ``UNKNOWN`` value. This is the ``NULL``
+// representation of ``BOOLEAN``.
+//
+// snippet: v.new_unknown_value
 pub fn new_unknown_value() Value {
 	return Value{
 		typ: Type{.is_boolean, 0, false}
@@ -67,6 +92,9 @@ pub fn new_unknown_value() Value {
 	}
 }
 
+// new_double_precision_value creates a ``DOUBLE PRECISION`` value.
+//
+// snippet: v.new_double_precision_value
 pub fn new_double_precision_value(x f64) Value {
 	return Value{
 		typ: Type{.is_double_precision, 0, false}
@@ -74,6 +102,9 @@ pub fn new_double_precision_value(x f64) Value {
 	}
 }
 
+// new_integer_value creates an ``INTEGER`` value.
+//
+// snippet: v.new_integer_value
 pub fn new_integer_value(x int) Value {
 	return Value{
 		typ: Type{.is_integer, 0, false}
@@ -81,6 +112,9 @@ pub fn new_integer_value(x int) Value {
 	}
 }
 
+// new_bigint_value creates a ``BIGINT`` value.
+//
+// snippet: v.new_bigint_value
 pub fn new_bigint_value(x i64) Value {
 	return Value{
 		typ: Type{.is_bigint, 0, false}
@@ -88,6 +122,9 @@ pub fn new_bigint_value(x i64) Value {
 	}
 }
 
+// new_real_value creates a ``REAL`` value.
+//
+// snippet: v.new_real_value
 pub fn new_real_value(x f32) Value {
 	return Value{
 		typ: Type{.is_real, 0, false}
@@ -95,6 +132,9 @@ pub fn new_real_value(x f32) Value {
 	}
 }
 
+// new_smallint_value creates a ``SMALLINT`` value.
+//
+// snippet: v.new_smallint_value
 pub fn new_smallint_value(x i16) Value {
 	return Value{
 		typ: Type{.is_smallint, 0, false}
@@ -102,6 +142,9 @@ pub fn new_smallint_value(x i16) Value {
 	}
 }
 
+// new_varchar_value creates a ``CHARACTER VARYING`` value.
+//
+// snippet: v.new_varchar_value
 pub fn new_varchar_value(x string, size int) Value {
 	return Value{
 		typ: Type{.is_varchar, size, false}
@@ -109,7 +152,10 @@ pub fn new_varchar_value(x string, size int) Value {
 	}
 }
 
-// The value will be padded with spaces up to the size specified.
+// new_character_value creates a ``CHARACTER`` value. The value will be padded
+// with spaces up to the size specified.
+//
+// snippet: v.new_character_value
 pub fn new_character_value(x string, size int) Value {
 	// TODO(elliotchance): Doesn't handle size < x.len
 
@@ -119,6 +165,9 @@ pub fn new_character_value(x string, size int) Value {
 	}
 }
 
+// new_timestamp_value creates a ``TIMESTAMP`` value.
+//
+// snippet: v.new_timestamp_value
 pub fn new_timestamp_value(ts string) ?Value {
 	t := new_timestamp_from_string(ts)?
 
@@ -128,6 +177,9 @@ pub fn new_timestamp_value(ts string) ?Value {
 	}
 }
 
+// new_time_value creates a ``TIME`` value.
+//
+// snippet: v.new_time_value
 pub fn new_time_value(ts string) ?Value {
 	t := new_time_from_string(ts)?
 
@@ -137,6 +189,9 @@ pub fn new_time_value(ts string) ?Value {
 	}
 }
 
+// new_date_value creates a ``DATE`` value.
+//
+// snippet: v.new_date_value
 pub fn new_date_value(ts string) ?Value {
 	t := new_date_from_string(ts)?
 
@@ -166,6 +221,10 @@ fn (v Value) as_int() i64 {
 	return i64(v.f64_value)
 }
 
+// The string representation of this value. Different types will have different
+// formatting.
+//
+// snippet: v.Value.str
 fn (v Value) str() string {
 	if v.is_null && v.typ.typ != .is_boolean {
 		return 'NULL'
@@ -202,7 +261,9 @@ fn (v Value) str() string {
 // value. The second return value will be true if either value is NULL.
 //
 // Or an error if the values are different types (cannot be compared).
-fn (v Value) cmp(v2 Value) ?(int, bool) {
+//
+// snippet: v.Value.cmp
+pub fn (v Value) cmp(v2 Value) ?(int, bool) {
 	if v.is_null && v2.is_null {
 		return 0, true
 	}

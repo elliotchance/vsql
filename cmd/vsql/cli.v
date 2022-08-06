@@ -28,17 +28,19 @@ fn cli_command(cmd cli.Command) ? {
 		if query != '' {
 			start := time.ticks()
 			result := db.query(query)?
+			mut total_rows := 0
 			for row in result {
 				for column in result.columns {
 					print('$column.name: ${row.get_string(column.name)} ')
 				}
+				total_rows++
 			}
 
-			if result.rows.len > 0 {
+			if total_rows > 0 {
 				println('')
 			}
 
-			println('$result.rows.len ${vsql.pluralize(result.rows.len, 'row')} (${time.ticks() - start} ms)')
+			println('$total_rows ${vsql.pluralize(total_rows, 'row')} (${time.ticks() - start} ms)')
 		}
 
 		println('')

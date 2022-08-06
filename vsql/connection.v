@@ -7,6 +7,10 @@ import os
 import sync
 import time
 
+// A Connection allows querying and other introspection for a database file. Use
+// open() or open_database() to create a Connection.
+//
+// snippet: v.Connection
 [heap]
 pub struct Connection {
 	// path is the file name of the database. It can be the special name
@@ -31,6 +35,8 @@ mut:
 }
 
 // open is the convenience function for open_database() with default options.
+//
+// snippet: v.open
 pub fn open(path string) ?&Connection {
 	return open_database(path, default_connection_options())
 }
@@ -50,10 +56,14 @@ pub fn open(path string) ?&Connection {
 // file and provides the following default protections:
 //
 // - Fine: Multiple processes open_database() the same file.
+//
 // - Fine: Multiple goroutines sharing an open_database() on the same file.
+//
 // - Bad: Multiple goroutines open_database() the same file.
 //
 // See ConnectionOptions and default_connection_options().
+//
+// snippet: v.open_database
 pub fn open_database(path string, options ConnectionOptions) ?&Connection {
 	if path == ':memory:' {
 		return open_connection(path, options)
@@ -139,6 +149,10 @@ fn (mut c Connection) release_read_connection() {
 	c.options.mutex.runlock()
 }
 
+// prepare returns a precompiled statement that can be executed multiple times
+// with different provided parameters.
+//
+// snippet: v.Connection.prepare
 pub fn (mut c Connection) prepare(sql string) ?PreparedStmt {
 	t := start_timer()
 	stmt, params, explain := c.query_cache.parse(sql) or {
@@ -150,6 +164,9 @@ pub fn (mut c Connection) prepare(sql string) ?PreparedStmt {
 	return PreparedStmt{stmt, params, explain, &c, elapsed_parse}
 }
 
+// query executes a statement. If there is a result set it will be returned.
+//
+// snippet: v.Connection.query
 pub fn (mut c Connection) query(sql string) ?Result {
 	if c.storage.transaction_state == .aborted {
 		return sqlstate_25p02()
@@ -166,7 +183,7 @@ pub fn (mut c Connection) query(sql string) ?Result {
 	}
 }
 
-pub fn (mut c Connection) register_func(func Func) ? {
+fn (mut c Connection) register_func(func Func) ? {
 	c.funcs << func
 }
 
@@ -194,6 +211,10 @@ fn (c Connection) find_function(func_name string, arg_types []Type) ?Func {
 	return sqlstate_42883('function does not exist: ${func_name}(${arg_types.map(it.str()).join(', ')})')
 }
 
+// register_function will register a function that can be used in SQL
+// expressions.
+//
+// snippet: v.Connection.register_function
 pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) ?Value) ? {
 	// TODO(elliotchance): A rather crude way to decode the prototype...
 	parts := prototype.replace('(', '|').replace(')', '|').split('|')
@@ -210,6 +231,10 @@ pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) 
 	c.register_func(Func{function_name, arg_types, false, func, return_type})?
 }
 
+// register_virtual_table will register a function that can provide data at
+// runtime to a virtual table.
+//
+// snippet: v.Connection.register_virtual_table
 pub fn (mut c Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ? {
 	// Registering virtual tables does not need use query cache.
 	mut tokens := tokenize(create_table)
@@ -229,6 +254,11 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 	return error('must provide a CREATE TABLE statement')
 }
 
+// ConnectionOptions can modify the behavior of a connection when it is opened.
+// You should not create the ConnectionOptions instance manually. Instead, use
+// default_connection_options() as a starting point and modify the attributes.
+//
+// snippet: v.ConnectionOptions
 struct ConnectionOptions {
 pub mut:
 	// query_cache contains the precompiled prepared statements that can be
@@ -238,15 +268,21 @@ pub mut:
 	// By default each connection will be given its own query cache. However,
 	// you can safely share a single cache over multiple connections and you are
 	// encouraged to do so.
+	//
+	// snippet: v.ConnectionOptions.query_cache
 	query_cache &QueryCache
 	// Warning: This only works for :memory: databases. Configuring it for
 	// file-based databases will either be ignored or causes crashes.
+	//
+	// snippet: v.ConnectionOptions.page_size
 	page_size int
 	// In short, vsql (with default options) when dealing with concurrent
 	// read/write access to single file provides the following protections:
 	//
 	// - Fine: Multiple processes open() the same file.
+	//
 	// - Fine: Multiple goroutines sharing an open() on the same file.
+	//
 	// - Bad: Multiple goroutines open() the same file.
 	//
 	// The mutex option will protect against the third Bad case if you
@@ -259,15 +295,21 @@ pub mut:
 	//
 	// Since locking all database isn't ideal. You could provide a consistent
 	// RwMutex that belongs to each file - such as from a map.
+	//
+	// snippet: v.ConnectionOptions.mutex
 	mutex &sync.RwMutex
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive
 	// or negative minutes).
+	//
+	// snippet: v.ConnectionOptions.now
 	now fn () (time.Time, i16)
 }
 
 // default_connection_options returns the sensible defaults used by open() and
 // the correct base to provide your own option overrides. See ConnectionOptions.
+//
+// snippet: v.default_connection_options
 fn default_connection_options() ConnectionOptions {
 	return ConnectionOptions{
 		query_cache: new_query_cache()

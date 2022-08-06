@@ -1,5 +1,8 @@
 module vsql
 
+// A function than will provide rows to a virtual table.
+//
+// snippet: v.VirtualTableProviderFn
 type VirtualTableProviderFn = fn (mut t VirtualTable) ?
 
 pub struct VirtualTable {

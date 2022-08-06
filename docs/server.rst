@@ -4,7 +4,7 @@ Server
 vsql can be run as a server and any PostgreSQL-compatible driver can access it.
 This is ideal if you want to use a more familar or feature rich database client.
 
-See the :doc:`list of supported clients here<supported-clients>`.
+See the :doc:`list of supported clients here<postgresql-clients>`.
 
 Now run it with (if the file does not exist it will be created):
 

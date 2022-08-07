@@ -26,9 +26,22 @@ fn new_expr_operation(conn &Connection, params map[string]Value, select_list Sel
 			}
 		}
 		QualifiedAsteriskExpr {
-			table := tables[select_list.table_name.name] or {
-				return sqlstate_42p01(select_list.table_name.name)
+			mut table_name := select_list.table_name.name
+
+			// TODO(elliotchance): This isn't really ideal. Replace with a
+			//  proper identifier chain when we support that.
+			if table_name.contains('.') {
+				parts := table_name.split('.')
+
+				if parts[0] !in conn.storage.schemas {
+					return sqlstate_3f000(parts[0]) // scheme does not exist
+				}
+			} else {
+				table_name = 'PUBLIC.$table_name'
 			}
+
+			// panic(table_name)
+			table := tables[table_name] or { return sqlstate_42p01(table_name) }
 			columns = table.columns
 			for column in table.columns {
 				exprs << DerivedColumn{new_identifier('"${table.name}.$column.name"'), new_identifier('"$column.name"')}

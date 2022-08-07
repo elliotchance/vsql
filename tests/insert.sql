@@ -37,7 +37,7 @@ INSERT INTO foo (b, x) VALUES (123);
 -- error 42601: syntax error: INSERT has less values than columns
 
 INSERT INTO foo (b) VALUES (123);
--- error 42P01: no such table: FOO
+-- error 42P01: no such table: PUBLIC.FOO
 
 CREATE TABLE foo (b BOOLEAN);
 INSERT INTO foo (x) VALUES (true);

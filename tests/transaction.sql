@@ -62,7 +62,7 @@ CREATE TABLE foo (bar INT);
 SELECT * FROM foo;
 -- 1: msg: START TRANSACTION
 -- 1: msg: CREATE TABLE 1
--- 2: error 42P01: no such table: FOO
+-- 2: error 42P01: no such table: PUBLIC.FOO
 
 /* connection 1 */
 START TRANSACTION;
@@ -73,7 +73,7 @@ SELECT * FROM foo;
 -- 1: msg: START TRANSACTION
 -- 1: msg: CREATE TABLE 1
 -- 1: msg: ROLLBACK
--- 2: error 42P01: no such table: FOO
+-- 2: error 42P01: no such table: PUBLIC.FOO
 
 /* connection 1 */
 CREATE TABLE foo (bar INT);
@@ -86,7 +86,7 @@ SELECT * FROM foo;
 -- 1: msg: CREATE TABLE 1
 -- 2: msg: START TRANSACTION
 -- 2: msg: DROP TABLE 1
--- 2: error 42P01: no such table: FOO
+-- 2: error 42P01: no such table: PUBLIC.FOO
 
 CREATE TABLE foo (b BOOLEAN);
 INSERT INTO foo (b) VALUES (123, 456);

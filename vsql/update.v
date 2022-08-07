@@ -33,7 +33,20 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 
 	mut rows := plan.execute([]Row{})?
 
-	table_name := stmt.table_name
+	mut table_name := stmt.table_name
+
+	// TODO(elliotchance): This isn't really ideal. Replace with a proper
+	//  identifier chain when we support that.
+	if table_name.contains('.') {
+		parts := table_name.split('.')
+
+		if parts[0] !in c.storage.schemas {
+			return sqlstate_3f000(parts[0]) // scheme does not exist
+		}
+	} else {
+		table_name = 'PUBLIC.$table_name'
+	}
+
 	table := c.storage.tables[table_name]
 
 	mut modify_count := 0

@@ -124,12 +124,12 @@ fn Connection.register_virtual_table(create_table string, data VirtualTableProvi
 
 |v.Connection.register_virtual_table|
 
-fn Connection.schemas() []string
-********************************
+fn Connection.schemas() ?[]Schema
+*********************************
 
 |v.Connection.schemas|
 
-fn Connection.schema_tables(schema string) []string
+fn Connection.schema_tables(schema string) ?[]Table
 ***************************************************
 
 |v.Connection.schema_tables|
@@ -240,6 +240,21 @@ get(name string) ?Value
 
 |v.Row.get|
 
+struct Schema
+^^^^^^^^^^^^^
+
+|v.Schema|
+
+name string
+***********
+
+|v.Schema.name|
+
+fn Schema.str() string
+**********************
+
+|v.Schema.str|
+
 struct SQLState
 ^^^^^^^^^^^^^^^
 
@@ -277,6 +292,46 @@ fn SQLType.str() string
 ***********************
 
 |v.SQLType.str|
+
+struct Table
+^^^^^^^^^^^^
+
+|v.Table|
+
+columns Columns
+***************
+
+|v.Table.columns|
+
+is_virtual bool
+***************
+
+|v.Table.is_virtual|
+
+name string
+***********
+
+|v.Table.name|
+
+primary_key []string
+********************
+
+|v.Table.primary_key|
+
+fn Table.column(name string) ?Column
+************************************
+
+|v.Table.column|
+
+fn Table.column_names() []string
+********************************
+
+|v.Table.column_names|
+
+fn Table.str() string
+*********************
+
+|v.Table.str|
 
 struct Time
 ^^^^^^^^^^^

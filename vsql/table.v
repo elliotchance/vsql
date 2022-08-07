@@ -49,20 +49,37 @@ fn (c Columns) str() string {
 	return s.join(', ')
 }
 
+// Represents the structure of a table.
+//
+// snippet: v.Table
 struct Table {
 mut:
-	name    string
-	columns Columns
-	// If the table has a PRIMARY KEY defined the column (or columns) will be
-	// defined here.
-	primary_key []string
 	// The tid is the transaction ID that created this table.
 	tid int
+pub mut:
+	// The name of the table is case-sensitive.
+	//
+	// snippet: v.Table.name
+	name string
+	// The column definitions for the table.
+	//
+	// snippet: v.Table.columns
+	columns Columns
+	// If the table has a PRIMARY KEY defined the column (or columns) will be
+	// defined here in order.
+	//
+	// snippet: v.Table.primary_key
+	primary_key []string
 	// When the table is virtual it is not persisted to disk.
+	//
+	// snippet: v.Table.is_virtual
 	is_virtual bool
 }
 
-fn (t Table) column_names() []string {
+// Convenience method for returning the ordered list of column names.
+//
+// snippet: v.Table.column_names
+pub fn (t Table) column_names() []string {
 	mut names := []string{}
 	for col in t.columns {
 		names << col.name
@@ -71,7 +88,10 @@ fn (t Table) column_names() []string {
 	return names
 }
 
-fn (t Table) column(name string) ?Column {
+// Find a column by name, or return a SQLSTATE 42703 error.
+//
+// snippet: v.Table.column
+pub fn (t Table) column(name string) ?Column {
 	for col in t.columns {
 		if name == col.name {
 			return col
@@ -124,7 +144,21 @@ fn new_table_from_bytes(data []u8, tid int) Table {
 		columns << Column{column_name, type_from_number(column_type, size), is_not_null}
 	}
 
-	return Table{table_name, columns, primary_key, tid, false}
+	return Table{tid, table_name, columns, primary_key, false}
+}
+
+// Returns the CREATE TABLE statement, including the ';'.
+//
+// snippet: v.Table.str
+pub fn (t Table) str() string {
+	mut s := 'CREATE TABLE $t.name ('
+	mut cols := []string{}
+
+	for col in t.columns {
+		cols << '  $col'
+	}
+
+	return s + '\n' + cols.join(',\n') + '\n);'
 }
 
 // A TableOperation requires that up to rows in the table be read. The number of

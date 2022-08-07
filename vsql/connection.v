@@ -273,27 +273,37 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 	return error('must provide a CREATE TABLE statement')
 }
 
-// schemas returns the names of schemas in this catalog (database).
+// schemas returns the schemas in this catalog (database).
 //
 // snippet: v.Connection.schemas
-pub fn (mut c Connection) schemas() []string {
-	mut schemas := []string{}
+pub fn (mut c Connection) schemas() ?[]Schema {
+	c.open_read_connection()?
+	defer {
+		c.release_read_connection()
+	}
+
+	mut schemas := []Schema{}
 	for _, schema in c.storage.schemas {
-		schemas << schema.name
+		schemas << schema
 	}
 
 	return schemas
 }
 
-// schema_tables returns all table names for the provided schema. If the schema
-// does not exist and empty list will be returned.
+// schema_tables returns tables for the provided schema. If the schema does not
+// exist and empty list will be returned.
 //
 // snippet: v.Connection.schema_tables
-pub fn (mut c Connection) schema_tables(schema string) []string {
-	mut tables := []string{}
+pub fn (mut c Connection) schema_tables(schema string) ?[]Table {
+	c.open_read_connection()?
+	defer {
+		c.release_read_connection()
+	}
+
+	mut tables := []Table{}
 	for _, table in c.storage.tables {
 		if table.name.starts_with('${schema}.') {
-			tables << table.name.split('.')[1]
+			tables << table
 		}
 	}
 

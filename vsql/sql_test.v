@@ -23,7 +23,7 @@ fn get_test_filter() (string, int) {
 	return parts[0], parts[1].int()
 }
 
-fn get_tests() ?[]SQLTest {
+fn get_tests() ![]SQLTest {
 	filter_test, filter_line := get_test_filter()
 
 	mut tests := []SQLTest{}
@@ -34,7 +34,7 @@ fn get_tests() ?[]SQLTest {
 			continue
 		}
 
-		lines := os.read_lines(test_file_path)?
+		lines := os.read_lines(test_file_path) or { []string{} }
 
 		mut stmts := []string{}
 		mut expected := []string{}
@@ -100,16 +100,16 @@ fn get_tests() ?[]SQLTest {
 	return tests
 }
 
-fn test_all() ? {
+fn test_all() ! {
 	filter_test, filter_line := get_test_filter()
 	verbose := $env('VERBOSE')
 	query_cache := new_query_cache()
-	for test in get_tests()? {
-		run_single_test(test, query_cache, verbose != '', filter_line)?
+	for test in get_tests()! {
+		run_single_test(test, query_cache, verbose != '', filter_line)!
 	}
 }
 
-fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_line int) ? {
+fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_line int) ! {
 	if filter_line != 0 && test.line_number != filter_line {
 		if verbose {
 			println('SKIP $test.file_name:$test.line_number\n')
@@ -139,8 +139,8 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 		}), 300
 	}
 
-	mut db := open_database(':memory:', options)?
-	register_pg_functions(mut db)?
+	mut db := open_database(':memory:', options)!
+	register_pg_functions(mut db)!
 
 	// If a test needs multiple connections we cannot rely on ":memory:".
 	// The default connection is called "main". The docs explain that "main"
@@ -151,7 +151,7 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 
 	file_name := 'test.vsql'
 	if os.exists(file_name) {
-		os.rm(file_name)?
+		os.rm(file_name) or { return }
 	}
 
 	for stmt in test.setup {
@@ -159,8 +159,8 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 			println('  $stmt.trim_space()')
 		}
 
-		mut prepared := db.prepare(stmt)?
-		prepared.query(test.params)?
+		mut prepared := db.prepare(stmt)!
+		prepared.query(test.params)!
 	}
 
 	mut actual := ''
@@ -168,8 +168,8 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 		if stmt.starts_with('connection ') {
 			connection_name := stmt[11..]
 			if connection_name !in connections {
-				mut conn := open_database(file_name, options)?
-				register_pg_functions(mut conn)?
+				mut conn := open_database(file_name, options)!
+				register_pg_functions(mut conn)!
 				connections[connection_name] = conn
 			}
 
@@ -204,7 +204,7 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 			}
 
 			for col in result.columns {
-				line += '$col.name: ${row.get_string(col.name)?} '
+				line += '$col.name: ${row.get_string(col.name)!} '
 			}
 			actual += line.trim_space() + '\n'
 		}

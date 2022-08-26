@@ -12,7 +12,7 @@ struct ExprOperation {
 	columns []Column
 }
 
-fn new_expr_operation(conn &Connection, params map[string]Value, select_list SelectList, tables map[string]Table) ?ExprOperation {
+fn new_expr_operation(conn &Connection, params map[string]Value, select_list SelectList, tables map[string]Table) !ExprOperation {
 	mut exprs := []DerivedColumn{}
 	mut columns := []Column{}
 
@@ -57,9 +57,9 @@ fn new_expr_operation(conn &Connection, params map[string]Value, select_list Sel
 					column_name = column.expr.name
 				}
 
-				expr := resolve_identifiers(column.expr, tables)?
+				expr := resolve_identifiers(column.expr, tables)!
 
-				columns << Column{column_name, eval_as_type(conn, empty_row, expr, params)?, false}
+				columns << Column{column_name, eval_as_type(conn, empty_row, expr, params)!, false}
 
 				exprs << DerivedColumn{expr, new_identifier('"$column_name"')}
 			}
@@ -77,13 +77,13 @@ fn (o ExprOperation) columns() Columns {
 	return o.columns
 }
 
-fn (mut o ExprOperation) execute(rows []Row) ?[]Row {
+fn (mut o ExprOperation) execute(rows []Row) ![]Row {
 	mut new_rows := []Row{}
 
 	for row in rows {
 		mut data := map[string]Value{}
 		for expr in o.exprs {
-			data[expr.as_clause.name] = eval_as_value(o.conn, row, expr.expr, o.params)?
+			data[expr.as_clause.name] = eval_as_value(o.conn, row, expr.expr, o.params)!
 		}
 		new_rows << new_row(data)
 	}
@@ -91,11 +91,11 @@ fn (mut o ExprOperation) execute(rows []Row) ?[]Row {
 	return new_rows
 }
 
-fn eval_row(conn &Connection, data Row, exprs []Expr, params map[string]Value) ?Row {
+fn eval_row(conn &Connection, data Row, exprs []Expr, params map[string]Value) !Row {
 	mut col_number := 1
 	mut row := map[string]Value{}
 	for expr in exprs {
-		row['COL$col_number'] = eval_as_value(conn, data, expr, params)?
+		row['COL$col_number'] = eval_as_value(conn, data, expr, params)!
 		col_number++
 	}
 
@@ -104,15 +104,15 @@ fn eval_row(conn &Connection, data Row, exprs []Expr, params map[string]Value) ?
 	}
 }
 
-fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Type {
+fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Type {
 	match e {
 		CallExpr {
 			mut arg_types := []Type{}
 			for arg in e.args {
-				arg_types << eval_as_type(conn, data, arg, params)?
+				arg_types << eval_as_type(conn, data, arg, params)!
 			}
 
-			func := conn.find_function(e.function_name, arg_types)?
+			func := conn.find_function(e.function_name, arg_types)!
 
 			return func.return_type
 		}
@@ -180,7 +180,7 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) ?Ty
 	}
 }
 
-fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) ?Value {
+fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) !Value {
 	match e {
 		BetweenExpr {
 			return eval_between(conn, data, e, params)
@@ -310,8 +310,8 @@ fn left_pad(s string, c string, len int) string {
 	return new_s
 }
 
-fn eval_as_bool(conn &Connection, data Row, e Expr, params map[string]Value) ?bool {
-	v := eval_as_value(conn, data, e, params)?
+fn eval_as_bool(conn &Connection, data Row, e Expr, params map[string]Value) !bool {
+	v := eval_as_value(conn, data, e, params)!
 
 	if v.typ.typ == .is_boolean {
 		return v.bool_value == .is_true
@@ -320,21 +320,21 @@ fn eval_as_bool(conn &Connection, data Row, e Expr, params map[string]Value) ?bo
 	return sqlstate_42804('in expression', 'BOOLEAN', v.typ.str())
 }
 
-fn eval_identifier(data Row, e Identifier) ?Value {
+fn eval_identifier(data Row, e Identifier) !Value {
 	value := data.data[e.name] or { return sqlstate_42601('unknown column: $e.name') }
 
 	return value
 }
 
-fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) ?Value {
+fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) !Value {
 	func_name := e.function_name
 
 	mut arg_types := []Type{}
 	for arg in e.args {
-		arg_types << eval_as_type(conn, data, arg, params)?
+		arg_types << eval_as_type(conn, data, arg, params)!
 	}
 
-	func := conn.find_function(func_name, arg_types)?
+	func := conn.find_function(func_name, arg_types)!
 
 	if func.is_agg {
 		return eval_identifier(data, new_identifier('"${e.pstr(params)}"'))
@@ -348,16 +348,16 @@ fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) ?V
 	mut args := []Value{}
 	mut i := 0
 	for typ in func.arg_types {
-		arg := eval_as_value(conn, data, e.args[i], params)?
-		args << cast(conn, 'argument ${i + 1} in $func_name', arg, typ)?
+		arg := eval_as_value(conn, data, e.args[i], params)!
+		args << cast(conn, 'argument ${i + 1} in $func_name', arg, typ)!
 		i++
 	}
 
 	return func.func(args)
 }
 
-fn eval_null(conn &Connection, data Row, e NullExpr, params map[string]Value) ?Value {
-	value := eval_as_value(conn, data, e.expr, params)?
+fn eval_null(conn &Connection, data Row, e NullExpr, params map[string]Value) !Value {
+	value := eval_as_value(conn, data, e.expr, params)!
 
 	if e.not {
 		return new_boolean_value(!value.is_null)
@@ -366,15 +366,15 @@ fn eval_null(conn &Connection, data Row, e NullExpr, params map[string]Value) ?V
 	return new_boolean_value(value.is_null)
 }
 
-fn eval_nullif(conn &Connection, data Row, e NullIfExpr, params map[string]Value) ?Value {
-	a := eval_as_value(conn, data, e.a, params)?
-	b := eval_as_value(conn, data, e.b, params)?
+fn eval_nullif(conn &Connection, data Row, e NullIfExpr, params map[string]Value) !Value {
+	a := eval_as_value(conn, data, e.a, params)!
+	b := eval_as_value(conn, data, e.b, params)!
 
 	if a.typ.typ != b.typ.typ {
 		return sqlstate_42804('in NULLIF', a.typ.str(), b.typ.str())
 	}
 
-	cmp, _ := a.cmp(b)?
+	cmp, _ := a.cmp(b)!
 	if cmp == 0 {
 		return new_null_value(a.typ.typ)
 	}
@@ -382,13 +382,13 @@ fn eval_nullif(conn &Connection, data Row, e NullIfExpr, params map[string]Value
 	return a
 }
 
-fn eval_coalesce(conn &Connection, data Row, e CoalesceExpr, params map[string]Value) ?Value {
+fn eval_coalesce(conn &Connection, data Row, e CoalesceExpr, params map[string]Value) !Value {
 	// TODO(elliotchance): This is horribly inefficient.
 
 	mut typ := SQLType{}
 	mut first := true
 	for i, expr in e.exprs {
-		typ2 := eval_as_type(conn, data, expr, params)?
+		typ2 := eval_as_type(conn, data, expr, params)!
 
 		if first {
 			typ = typ2.typ
@@ -400,7 +400,7 @@ fn eval_coalesce(conn &Connection, data Row, e CoalesceExpr, params map[string]V
 
 	mut value := Value{}
 	for expr in e.exprs {
-		value = eval_as_value(conn, data, expr, params)?
+		value = eval_as_value(conn, data, expr, params)!
 
 		if !value.is_null {
 			return value
@@ -410,14 +410,14 @@ fn eval_coalesce(conn &Connection, data Row, e CoalesceExpr, params map[string]V
 	return new_null_value(value.typ.typ)
 }
 
-fn eval_cast(conn &Connection, data Row, e CastExpr, params map[string]Value) ?Value {
-	value := eval_as_value(conn, data, e.expr, params)?
+fn eval_cast(conn &Connection, data Row, e CastExpr, params map[string]Value) !Value {
+	value := eval_as_value(conn, data, e.expr, params)!
 
 	return cast(conn, 'for CAST', value, e.target)
 }
 
-fn eval_truth(conn &Connection, data Row, e TruthExpr, params map[string]Value) ?Value {
-	value := eval_as_value(conn, data, e.expr, params)?
+fn eval_truth(conn &Connection, data Row, e TruthExpr, params map[string]Value) !Value {
+	value := eval_as_value(conn, data, e.expr, params)!
 	result := match value.bool_value {
 		.is_true {
 			match e.value.bool_value {
@@ -446,9 +446,9 @@ fn eval_truth(conn &Connection, data Row, e TruthExpr, params map[string]Value) 
 	return result
 }
 
-fn eval_trim(conn &Connection, data Row, e TrimExpr, params map[string]Value) ?Value {
-	source := eval_as_value(conn, data, e.source, params)?
-	character := eval_as_value(conn, data, e.character, params)?
+fn eval_trim(conn &Connection, data Row, e TrimExpr, params map[string]Value) !Value {
+	source := eval_as_value(conn, data, e.source, params)!
+	character := eval_as_value(conn, data, e.character, params)!
 
 	if e.specification == 'LEADING' {
 		return new_varchar_value(source.string_value.trim_left(character.string_value),
@@ -463,9 +463,9 @@ fn eval_trim(conn &Connection, data Row, e TrimExpr, params map[string]Value) ?V
 	return new_varchar_value(source.string_value.trim(character.string_value), 0)
 }
 
-fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) ?Value {
-	left := eval_as_value(conn, data, e.left, params)?
-	right := eval_as_value(conn, data, e.right, params)?
+fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) !Value {
+	left := eval_as_value(conn, data, e.left, params)!
+	right := eval_as_value(conn, data, e.right, params)!
 
 	// Make sure we escape any regexp characters.
 	escaped_regex := right.string_value.replace('+', '\\+').replace('?', '\\?').replace('*',
@@ -473,7 +473,9 @@ fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) ?V
 		'\\)').replace('[', '\\[').replace('{', '\\{').replace('_', '.').replace('%',
 		'.*')
 
-	mut re := regex.regex_opt('^$escaped_regex$')?
+	mut re := regex.regex_opt('^$escaped_regex$') or {
+		return error('cannot compile regexp: ^$escaped_regex$: $err')
+	}
 	result := re.matches_string(left.string_value)
 
 	if e.not {
@@ -483,9 +485,9 @@ fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) ?V
 	return new_boolean_value(result)
 }
 
-fn eval_substring(conn &Connection, data Row, e SubstringExpr, params map[string]Value) ?Value {
-	value := eval_as_value(conn, data, e.value, params)?
-	from := int((eval_as_value(conn, data, e.from, params)?).as_int() - 1)
+fn eval_substring(conn &Connection, data Row, e SubstringExpr, params map[string]Value) !Value {
+	value := eval_as_value(conn, data, e.value, params)!
+	from := int((eval_as_value(conn, data, e.from, params)!).as_int() - 1)
 
 	if e.using == 'CHARACTERS' {
 		characters := value.string_value.runes()
@@ -496,7 +498,7 @@ fn eval_substring(conn &Connection, data Row, e SubstringExpr, params map[string
 
 		mut @for := characters.len - from
 		if e.@for !is NoExpr {
-			@for = int((eval_as_value(conn, data, e.@for, params)?).as_int())
+			@for = int((eval_as_value(conn, data, e.@for, params)!).as_int())
 		}
 
 		return new_varchar_value(characters[from..from + @for].string(), 0)
@@ -508,15 +510,15 @@ fn eval_substring(conn &Connection, data Row, e SubstringExpr, params map[string
 
 	mut @for := value.string_value.len - from
 	if e.@for !is NoExpr {
-		@for = int((eval_as_value(conn, data, e.@for, params)?).as_int())
+		@for = int((eval_as_value(conn, data, e.@for, params)!).as_int())
 	}
 
 	return new_varchar_value(value.string_value.substr(from, from + @for), 0)
 }
 
-fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value) ?Value {
-	left := eval_as_value(conn, data, e.left, params)?
-	right := eval_as_value(conn, data, e.right, params)?
+fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value) !Value {
+	left := eval_as_value(conn, data, e.left, params)!
+	right := eval_as_value(conn, data, e.right, params)!
 
 	key := '$left.typ.typ $e.op $right.typ.typ'
 	if key in conn.binary_operators {
@@ -526,8 +528,8 @@ fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value
 	return sqlstate_42883('operator does not exist: $left.typ $e.op $right.typ')
 }
 
-fn eval_unary(conn &Connection, data Row, e UnaryExpr, params map[string]Value) ?Value {
-	value := eval_as_value(conn, data, e.expr, params)?
+fn eval_unary(conn &Connection, data Row, e UnaryExpr, params map[string]Value) !Value {
+	value := eval_as_value(conn, data, e.expr, params)!
 
 	key := '$e.op $value.typ.typ'
 	if key in conn.unary_operators {
@@ -537,19 +539,19 @@ fn eval_unary(conn &Connection, data Row, e UnaryExpr, params map[string]Value) 
 	return sqlstate_42883('operator does not exist: $key')
 }
 
-fn eval_between(conn &Connection, data Row, e BetweenExpr, params map[string]Value) ?Value {
-	expr := eval_as_value(conn, data, e.expr, params)?
-	mut left := eval_as_value(conn, data, e.left, params)?
-	mut right := eval_as_value(conn, data, e.right, params)?
+fn eval_between(conn &Connection, data Row, e BetweenExpr, params map[string]Value) !Value {
+	expr := eval_as_value(conn, data, e.expr, params)!
+	mut left := eval_as_value(conn, data, e.left, params)!
+	mut right := eval_as_value(conn, data, e.right, params)!
 
 	// SYMMETRIC operands might need to be swapped.
-	cmp, is_null := left.cmp(right)?
+	cmp, is_null := left.cmp(right)!
 	if e.symmetric && !is_null && cmp > 0 {
 		left, right = right, left
 	}
 
-	lower, lower_is_null := expr.cmp(left)?
-	upper, upper_is_null := expr.cmp(right)?
+	lower, lower_is_null := expr.cmp(left)!
+	upper, upper_is_null := expr.cmp(right)!
 
 	if lower_is_null || upper_is_null {
 		return new_null_value(.is_boolean)
@@ -564,12 +566,13 @@ fn eval_between(conn &Connection, data Row, e BetweenExpr, params map[string]Val
 	return new_boolean_value(result)
 }
 
-fn eval_similar(conn &Connection, data Row, e SimilarExpr, params map[string]Value) ?Value {
-	left := eval_as_value(conn, data, e.left, params)?
-	right := eval_as_value(conn, data, e.right, params)?
+fn eval_similar(conn &Connection, data Row, e SimilarExpr, params map[string]Value) !Value {
+	left := eval_as_value(conn, data, e.left, params)!
+	right := eval_as_value(conn, data, e.right, params)!
 
-	mut re := regex.regex_opt('^${right.string_value.replace('.', '\\.').replace('_',
-		'.').replace('%', '.*')}$')?
+	regexp := '^${right.string_value.replace('.', '\\.').replace('_', '.').replace('%',
+		'.*')}$'
+	mut re := regex.regex_opt(regexp) or { return error('cannot compile regexp: $regexp: $err') }
 	result := re.matches_string(left.string_value)
 
 	if e.not {
@@ -584,7 +587,7 @@ fn eval_similar(conn &Connection, data Row, e SimilarExpr, params map[string]Val
 //
 // TODO(elliotchance): Is this even needed? Can eval_as_value be refactored to
 //  work the same way and avoid this extra layer?
-fn eval_as_nullable_value(conn &Connection, typ SQLType, data Row, e Expr, params map[string]Value) ?Value {
+fn eval_as_nullable_value(conn &Connection, typ SQLType, data Row, e Expr, params map[string]Value) !Value {
 	if e is UntypedNullExpr {
 		return new_null_value(typ)
 	}

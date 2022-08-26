@@ -12,7 +12,7 @@ import rand.config
 // (ideally 100) before the final diff.
 const times = 1
 
-fn test_btree_test() ? {
+fn test_btree_test() ! {
 	// This test runs on different pagers (file vs memory), blob sizes (below)
 	// and tree size to generate a test matrix of lots of different scenarios.
 	blob_sizes := [
@@ -33,24 +33,24 @@ fn test_btree_test() ? {
 		for size := 1; size <= 1000; size *= 10 {
 			for blob_size in blob_sizes {
 				if os.exists(file_name) {
-					os.rm(file_name)?
+					os.rm(file_name) or {}
 				}
 
-				init_database_file(file_name, page_size)?
+				init_database_file(file_name, page_size)!
 
-				mut db_file := os.open_file('btree.vsql', 'r+')?
-				mut file_pager := new_file_pager(mut db_file, page_size, 0)?
-				run_btree_test(mut file_pager, size, blob_size, page_size, true, true)?
+				mut db_file := os.open_file('btree.vsql', 'r+') or { return err }
+				mut file_pager := new_file_pager(mut db_file, page_size, 0)!
+				run_btree_test(mut file_pager, size, blob_size, page_size, true, true)!
 				db_file.close()
 
 				mut memory_pager := new_memory_pager()
-				run_btree_test(mut memory_pager, size, blob_size, page_size, true, true)?
+				run_btree_test(mut memory_pager, size, blob_size, page_size, true, true)!
 			}
 		}
 	}
 }
 
-fn run_btree_test(mut pager Pager, size int, object_size int, page_size int, randomize bool, run_validate bool) ? {
+fn run_btree_test(mut pager Pager, size int, object_size int, page_size int, randomize bool, run_validate bool) ! {
 	transaction_id := 123
 
 	mut objs := []PageObject{len: size}
@@ -59,17 +59,17 @@ fn run_btree_test(mut pager Pager, size int, object_size int, page_size int, ran
 	}
 
 	if randomize {
-		rand.shuffle(mut objs, config.ShuffleConfigStruct{})?
+		rand.shuffle(mut objs, config.ShuffleConfigStruct{}) or { return err }
 	}
 
 	mut btree := new_btree(pager, page_size)
 	mut expected_objects := 0
 	for obj in objs {
-		btree.add(obj)?
+		btree.add(obj)!
 		expected_objects++
 
 		if run_validate {
-			total_found_objects := validate(mut pager)?
+			total_found_objects := validate(mut pager)!
 			assert total_found_objects == expected_objects
 		}
 	}
@@ -86,20 +86,20 @@ fn run_btree_test(mut pager Pager, size int, object_size int, page_size int, ran
 
 	expected_objects = objs.len
 	for obj in objs {
-		btree.remove(obj.key, transaction_id, true)?
+		btree.remove(obj.key, transaction_id, true)!
 		expected_objects--
 
 		if run_validate {
-			total_found_objects := validate(mut pager)?
+			total_found_objects := validate(mut pager)!
 			assert total_found_objects == expected_objects
 		}
 	}
 }
 
-fn visualize(mut p Pager) ? {
+fn visualize(mut p Pager) ! {
 	println('\n=== VISUALIZE (root = $p.root_page()) ===')
 	for i := 0; i < p.total_pages(); i++ {
-		page := p.fetch_page(i)?
+		page := p.fetch_page(i)!
 
 		match page.kind {
 			kind_leaf {
@@ -114,22 +114,22 @@ fn visualize(mut p Pager) ? {
 		}
 	}
 
-	leaf_objects, non_leaf_objects := count(mut p)?
+	leaf_objects, non_leaf_objects := count(mut p)!
 
 	println('total: $leaf_objects leaf objects + $non_leaf_objects non-leaf objects\n')
 }
 
 // Validate ensures that the tree is valid.
-fn validate(mut p Pager) ?int {
+fn validate(mut p Pager) !int {
 	if p.total_pages() == 0 {
 		return 0
 	}
 
-	_, _, total_objects := validate_page(mut p, p.root_page())?
+	_, _, total_objects := validate_page(mut p, p.root_page())!
 
 	// Also make sure none of the pages become orphaned.
 	for i := 0; i < p.total_pages(); i++ {
-		page := p.fetch_page(i)?
+		page := p.fetch_page(i)!
 
 		if page.is_empty() {
 			panic('found empty page')
@@ -139,16 +139,16 @@ fn validate(mut p Pager) ?int {
 	return total_objects
 }
 
-fn validate_page(mut p Pager, page_number int) ?([]u8, []u8, int) {
-	page := p.fetch_page(page_number)?
+fn validate_page(mut p Pager, page_number int) !([]u8, []u8, int) {
+	page := p.fetch_page(page_number)!
 	objects := page.objects()
 	mut total_objects := 0
 
 	// For any type of page the keys must be ordered.
-	mut min := objects[0].key
+	mut min := objects[0].key.clone()
 	for object in objects[1..] {
 		assert compare_bytes(object.key, min) >= 0
-		min = object.key
+		min = object.key.clone()
 	}
 
 	// For non-leafs we need to verify subpages are valid and consistent with
@@ -157,7 +157,7 @@ fn validate_page(mut p Pager, page_number int) ?([]u8, []u8, int) {
 		for object in objects {
 			mut buf := new_bytes(object.value)
 			object_value := buf.read_i32()
-			smallest, _, new_objects := validate_page(mut p, object_value)?
+			smallest, _, new_objects := validate_page(mut p, object_value)!
 			total_objects += new_objects
 
 			// min and max have already been verified in the subpage, but the
@@ -180,11 +180,11 @@ fn validate_page(mut p Pager, page_number int) ?([]u8, []u8, int) {
 	return objects[0].key.clone(), objects[objects.len - 1].key.clone(), total_objects
 }
 
-fn count(mut p Pager) ?(int, int) {
+fn count(mut p Pager) !(int, int) {
 	mut total_leaf_objects := 0
 	mut total_non_leaf_objects := 0
 	for i := 0; i < p.total_pages(); i++ {
-		page := p.fetch_page(i)?
+		page := p.fetch_page(i)!
 
 		match page.kind {
 			kind_leaf {
@@ -232,7 +232,7 @@ fn strobjects(p Page) []string {
 // We can start a decent sized tree then create two versions of every object
 // (effectively an UPDATE on all rows) and make sure the objects and their tid
 // integrity is maintained.
-fn test_btree_expire_test() ? {
+fn test_btree_expire_test() ! {
 	tid1 := 123 // the first transaction to create the initial data
 	tid2 := 456 // the second transaction that will expire half the data
 	tid3 := 789 // the third transaction that will update (other) half the data
@@ -242,13 +242,13 @@ fn test_btree_expire_test() ? {
 	size := 1000
 
 	if os.exists(file_name) {
-		os.rm(file_name)?
+		os.rm(file_name) or { return err }
 	}
 
-	init_database_file(file_name, page_size)?
+	init_database_file(file_name, page_size)!
 
-	mut db_file := os.open_file('btree.vsql', 'r+')?
-	mut file_pager := new_file_pager(mut db_file, page_size, 0)?
+	mut db_file := os.open_file('btree.vsql', 'r+') or { return err }
+	mut file_pager := new_file_pager(mut db_file, page_size, 0)!
 	mut btree := new_btree(file_pager, page_size)
 
 	// 1. Insert a bunch of keys. We don't need to scrutinize this part becauase
@@ -257,36 +257,36 @@ fn test_btree_expire_test() ? {
 	for i in 0 .. objs.len {
 		objs[i] = new_page_object('R${i:07d}'.bytes(), tid1, 0, []u8{len: 48})
 	}
-	rand.shuffle(mut objs, config.ShuffleConfigStruct{})?
+	rand.shuffle(mut objs, config.ShuffleConfigStruct{}) or { return err }
 
 	for obj in objs {
-		btree.add(obj)?
+		btree.add(obj)!
 	}
 
 	// 2. Half the objects are going to be expired. Randomly chosen and in
 	// random order.
 	for obj in objs[..objs.len / 2] {
-		btree.expire(obj.key, tid1, tid2)?
+		btree.expire(obj.key, tid1, tid2)!
 	}
 
 	// The number of objects remains the same. We'll be checking their actual
 	// status later.
-	mut total_leaf_objects, _ := count(mut file_pager)?
+	mut total_leaf_objects, _ := count(mut file_pager)!
 	assert total_leaf_objects == size
-	validate(mut file_pager)?
+	validate(mut file_pager)!
 
 	// 3. Add updated versions of all the other half (applied in random order).
 	for mut obj in objs[objs.len / 2..] {
-		btree.expire(obj.key, tid1, tid3)?
+		btree.expire(obj.key, tid1, tid3)!
 
 		obj.tid = tid3
-		btree.add(obj)?
+		btree.add(obj)!
 	}
 
 	// The number of objects is raised by 50%.
-	total_leaf_objects, _ = count(mut file_pager)?
+	total_leaf_objects, _ = count(mut file_pager)!
 	assert total_leaf_objects == size + (size / 2)
-	validate(mut file_pager)?
+	validate(mut file_pager)!
 
 	// Finally, validate all the tid state.
 	mut created_by_tid1 := 0
@@ -311,28 +311,28 @@ fn test_btree_expire_test() ? {
 	db_file.close()
 }
 
-fn test_big_btree_test() ? {
+fn test_big_btree_test() ! {
 	page_size := 1024
 	file_name := 'btree.vsql'
 
 	if os.exists(file_name) {
-		os.rm(file_name)?
+		os.rm(file_name) or { return err }
 	}
 
-	init_database_file(file_name, page_size)?
+	init_database_file(file_name, page_size)!
 
-	mut db_file := os.open_file('btree.vsql', 'r+')?
-	mut file_pager := new_file_pager(mut db_file, page_size, 0)?
-	run_btree_test(mut file_pager, 100000, 48, page_size, false, false)?
+	mut db_file := os.open_file('btree.vsql', 'r+') or { return err }
+	mut file_pager := new_file_pager(mut db_file, page_size, 0)!
+	run_btree_test(mut file_pager, 100000, 48, page_size, false, false)!
 
-	mut total_found_objects := validate(mut file_pager)?
+	mut total_found_objects := validate(mut file_pager)!
 	assert total_found_objects == 0
 
 	db_file.close()
 
 	mut memory_pager := new_memory_pager()
-	run_btree_test(mut memory_pager, 100000, 48, page_size, false, false)?
+	run_btree_test(mut memory_pager, 100000, 48, page_size, false, false)!
 
-	total_found_objects = validate(mut memory_pager)?
+	total_found_objects = validate(mut memory_pager)!
 	assert total_found_objects == 0
 }

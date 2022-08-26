@@ -36,10 +36,10 @@ fn (o &LimitOperation) columns() Columns {
 	return o.columns
 }
 
-fn (o &LimitOperation) execute(rows []Row) ?[]Row {
+fn (o &LimitOperation) execute(rows []Row) ![]Row {
 	mut offset := i64(0)
 	if o.offset !is NoExpr {
-		offset = (eval_as_value(o.conn, Row{}, o.offset, o.params)?).as_int()
+		offset = (eval_as_value(o.conn, Row{}, o.offset, o.params)!).as_int()
 
 		if offset >= rows.len {
 			return []Row{}
@@ -48,7 +48,7 @@ fn (o &LimitOperation) execute(rows []Row) ?[]Row {
 
 	mut fetch := i64(rows.len)
 	if o.fetch !is NoExpr {
-		fetch = (eval_as_value(o.conn, Row{}, o.fetch, o.params)?).as_int()
+		fetch = (eval_as_value(o.conn, Row{}, o.fetch, o.params)!).as_int()
 	}
 
 	if offset + fetch >= rows.len {

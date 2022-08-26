@@ -3,7 +3,7 @@
 module vsql
 
 // COUNT(ANY) INTEGER
-fn func_count(values []Value) ?Value {
+fn func_count(values []Value) !Value {
 	mut count := 0
 	for value in values {
 		if !value.is_null {
@@ -15,7 +15,7 @@ fn func_count(values []Value) ?Value {
 }
 
 // MIN(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_min(values []Value) ?Value {
+fn func_min(values []Value) !Value {
 	if values.len == 0 {
 		return new_null_value(.is_double_precision)
 	}
@@ -36,7 +36,7 @@ fn func_min(values []Value) ?Value {
 }
 
 // MAX(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_max(values []Value) ?Value {
+fn func_max(values []Value) !Value {
 	if values.len == 0 {
 		return new_null_value(.is_double_precision)
 	}
@@ -57,7 +57,7 @@ fn func_max(values []Value) ?Value {
 }
 
 // SUM(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_sum(values []Value) ?Value {
+fn func_sum(values []Value) !Value {
 	if values.len == 0 {
 		return new_null_value(.is_double_precision)
 	}
@@ -76,7 +76,7 @@ fn func_sum(values []Value) ?Value {
 }
 
 // AVG(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_avg(values []Value) ?Value {
+fn func_avg(values []Value) !Value {
 	if values.len == 0 {
 		return new_null_value(.is_double_precision)
 	}

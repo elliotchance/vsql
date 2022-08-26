@@ -91,7 +91,7 @@ pub fn (t Table) column_names() []string {
 // Find a column by name, or return a SQLSTATE 42703 error.
 //
 // snippet: v.Table.column
-pub fn (t Table) column(name string) ?Column {
+pub fn (t Table) column(name string) !Column {
 	for col in t.columns {
 		if name == col.name {
 			return col
@@ -194,11 +194,11 @@ fn (o TableOperation) columns() Columns {
 	return o.table.columns
 }
 
-fn (mut o TableOperation) execute(_ []Row) ?[]Row {
+fn (mut o TableOperation) execute(_ []Row) ![]Row {
 	mut rows := []Row{}
 
 	if o.table_is_subplan {
-		for row in o.subplans[o.table_name].execute([]Row{})? {
+		for row in o.subplans[o.table_name].execute([]Row{})! {
 			mut data := map[string]Value{}
 			for k, v in row.data {
 				data['${o.table_name}.$k'] = v
@@ -207,7 +207,7 @@ fn (mut o TableOperation) execute(_ []Row) ?[]Row {
 			rows << new_row(data)
 		}
 	} else {
-		rows = o.storage.read_rows(o.table_name, o.prefix_table_name)?
+		rows = o.storage.read_rows(o.table_name, o.prefix_table_name)!
 	}
 
 	return rows

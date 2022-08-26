@@ -4,10 +4,10 @@ module vsql
 
 import time
 
-fn execute_create_schema(mut c Connection, stmt CreateSchemaStmt, elapsed_parse time.Duration) ?Result {
+fn execute_create_schema(mut c Connection, stmt CreateSchemaStmt, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	c.open_write_connection()?
+	c.open_write_connection()!
 	defer {
 		c.release_write_connection()
 	}
@@ -18,7 +18,7 @@ fn execute_create_schema(mut c Connection, stmt CreateSchemaStmt, elapsed_parse 
 		return sqlstate_42p06(schema_name) // duplicate schema
 	}
 
-	c.storage.create_schema(schema_name)?
+	c.storage.create_schema(schema_name)!
 
 	return new_result_msg('CREATE SCHEMA 1', elapsed_parse, t.elapsed())
 }

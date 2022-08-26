@@ -6,8 +6,8 @@ fn main() {
 	example() or { panic(err) }
 }
 
-fn example() ? {
-	mut db := vsql.open('test.vsql')?
+fn example() ! {
+	mut db := vsql.open('test.vsql')!
 
 	db.query('SELECT * FROM bar') or {
 		sqlstate := vsql.sqlstate_from_int(err.code())

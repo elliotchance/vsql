@@ -75,13 +75,13 @@ pub mut:
 
 // This is an internal constructor, you will want to use new_timestamp_value
 // (or similar others) to return the Value instead.
-fn new_timestamp_from_string(s string) ?Time {
+fn new_timestamp_from_string(s string) !Time {
 	expects_time_zone := s.len > 6 && (s[s.len - 6] == `+` || s[s.len - 6] == `-`)
 
 	mut re := regex.regex_opt(match expects_time_zone {
 		true { vsql.unquoted_timestamp_with_time_zone_string }
 		false { vsql.unquoted_timestamp_without_time_zone_string }
-	})?
+	}) or { return error('cannot compile regex for timestamp: $err') }
 	if !re.matches_string(s) {
 		return sqlstate_42601('TIMESTAMP \'$s\' is not valid')
 	}
@@ -122,7 +122,7 @@ fn new_timestamp_from_string(s string) ?Time {
 
 // This is an internal constructor, you will want to use new_time_value
 // (or similar others) to return the Value instead.
-fn new_time_from_string(s string) ?Time {
+fn new_time_from_string(s string) !Time {
 	// The easiest way to parse it is as a normal timestamp with a dummy date
 	// part. We use 1970-01-01 because internally we still need to rely on the
 	// unix timestamp in V's Time object. This data part will be ignored in
@@ -142,7 +142,7 @@ fn new_time_from_string(s string) ?Time {
 
 // This is an internal constructor, you will want to use new_date_value
 // (or similar others) to return the Value instead.
-fn new_date_from_string(s string) ?Time {
+fn new_date_from_string(s string) !Time {
 	// The easiest way to parse it is as a normal timestamp with a dummy time
 	// part.
 	mut t := new_timestamp_from_string('$s 00:00:00') or {

@@ -29,8 +29,8 @@ fn new_row(data map[string]Value) Row {
 // returned if the column does not exist.
 //
 // snippet: v.Row.get_null
-pub fn (r Row) get_null(name string) ?bool {
-	value := r.get(name)?
+pub fn (r Row) get_null(name string) !bool {
+	value := r.get(name)!
 
 	return value.is_null
 }
@@ -39,8 +39,8 @@ pub fn (r Row) get_null(name string) ?bool {
 // FLOAT, REAL, etc). If the value is NULL, 0 will be returned. See get_null().
 //
 // snippet: v.Row.get_f64
-pub fn (r Row) get_f64(name string) ?f64 {
-	value := r.get(name)?
+pub fn (r Row) get_f64(name string) !f64 {
+	value := r.get(name)!
 	if value.typ.uses_f64() {
 		return value.f64_value
 	}
@@ -52,8 +52,8 @@ pub fn (r Row) get_f64(name string) ?f64 {
 // BIGINT). If the value is NULL, 0 will be returned. See get_null().
 //
 // snippet: v.Row.get_int
-pub fn (r Row) get_int(name string) ?int {
-	value := r.get(name)?
+pub fn (r Row) get_int(name string) !int {
+	value := r.get(name)!
 	if value.typ.uses_int() {
 		return int(value.int_value)
 	}
@@ -68,8 +68,8 @@ pub fn (r Row) get_int(name string) ?int {
 // An error is only returned if the column does not exist.
 //
 // snippet: v.Row.get_string
-pub fn (r Row) get_string(name string) ?string {
-	return (r.get(name)?).str()
+pub fn (r Row) get_string(name string) !string {
+	return (r.get(name)!).str()
 }
 
 // get_bool only works on a BOOLEAN value. If the column permits NULL values it
@@ -79,8 +79,8 @@ pub fn (r Row) get_string(name string) ?string {
 // exist.
 //
 // snippet: v.Row.get_bool
-pub fn (r Row) get_bool(name string) ?Boolean {
-	value := r.get(name)?
+pub fn (r Row) get_bool(name string) !Boolean {
+	value := r.get(name)!
 
 	match value.typ.typ {
 		.is_boolean {
@@ -96,7 +96,7 @@ pub fn (r Row) get_bool(name string) ?Boolean {
 // not exist.
 //
 // snippet: v.Row.get
-pub fn (r Row) get(name string) ?Value {
+pub fn (r Row) get(name string) !Value {
 	return r.data[name] or {
 		// Be helpful and look for silly mistakes.
 		for n, _ in r.data {
@@ -327,13 +327,13 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 	return Row{row_id, tid, row}
 }
 
-fn (mut r Row) object_key(t Table) ?[]u8 {
+fn (mut r Row) object_key(t Table) ![]u8 {
 	// If there is a PRIMARY KEY, generate the row key.
 	if t.primary_key.len > 0 {
 		mut pk := new_empty_bytes()
 
 		for col_name in t.primary_key {
-			col := t.column(col_name)?
+			col := t.column(col_name)!
 			match col.typ.typ {
 				.is_bigint {
 					pk.write_i64(r.data[col_name].int_value)

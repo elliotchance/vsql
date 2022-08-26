@@ -4,10 +4,10 @@ module vsql
 
 import time
 
-fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, elapsed_parse time.Duration) ?Result {
+fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	c.open_write_connection()?
+	c.open_write_connection()!
 	defer {
 		c.release_write_connection()
 	}
@@ -43,10 +43,10 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 	table := c.storage.tables[table_name]
 	for i, column in stmt.columns {
 		column_name := column.name
-		table_column := table.column(column_name)?
+		table_column := table.column(column_name)!
 		raw_value := eval_as_nullable_value(c, table_column.typ.typ, Row{}, stmt.values[i],
-			params)?
-		value := cast(c, 'for column $column_name', raw_value, table_column.typ)?
+			params)!
+		value := cast(c, 'for column $column_name', raw_value, table_column.typ)!
 
 		if value.is_null && table_column.not_null {
 			return sqlstate_23502('column $column_name')
@@ -68,7 +68,7 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 		row[col.name] = new_null_value(col.typ.typ)
 	}
 
-	c.storage.write_row(mut new_row(row), table)?
+	c.storage.write_row(mut new_row(row), table)!
 
 	return new_result_msg('INSERT 1', elapsed_parse, t.elapsed())
 }

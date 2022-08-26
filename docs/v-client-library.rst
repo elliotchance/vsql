@@ -21,20 +21,20 @@ Example
 
    import elliotchance.vsql.vsql
 
-   fn example() ? {
-     mut db := vsql.open('test.vsql') ?
+   fn example() ! {
+     mut db := vsql.open('test.vsql') !
 
      // All SQL commands use query():
-     db.query('CREATE TABLE foo (x DOUBLE PRECISION)') ?
-     db.query('INSERT INTO foo (x) VALUES (1.23)') ?
-     db.query('INSERT INTO foo (x) VALUES (4.56)') ?
+     db.query('CREATE TABLE foo (x DOUBLE PRECISION)') !
+     db.query('INSERT INTO foo (x) VALUES (1.23)') !
+     db.query('INSERT INTO foo (x) VALUES (4.56)') !
 
      // Iterate through a result:
-     result := db.query('SELECT * FROM foo') ?
+     result := db.query('SELECT * FROM foo') !
      println(result.columns)
 
      for row in result {
-         println(row.get_f64('X') ?)
+         println(row.get_f64('X') !)
      }
 
      // See SQLSTATE (Errors) below for more examples.
@@ -94,42 +94,42 @@ struct Connection
 
 |v.Connection|
 
-fn open(path string) ?&Connection
+fn open(path string) !&Connection
 *********************************
 
 |v.open|
 
-fn open_database(path string, options ConnectionOptions) ?&Connection
+fn open_database(path string, options ConnectionOptions) !&Connection
 *********************************************************************
 
 |v.open_database|
 
-fn Connection.prepare(sql string) ?PreparedStmt
+fn Connection.prepare(sql string) !PreparedStmt
 ***********************************************
 
 |v.Connection.prepare|
 
-fn Connection.query(sql string) ?Result
+fn Connection.query(sql string) !Result
 ***************************************
 
 |v.Connection.query|
 
-fn Connection.register_function(prototype string, func fn ([]Value) ?Value) ?
+fn Connection.register_function(prototype string, func fn ([]Value) !Value) !
 *****************************************************************************
 
 |v.Connection.register_function|
 
-fn Connection.register_virtual_table(create_table string, data VirtualTableProviderFn) ?
+fn Connection.register_virtual_table(create_table string, data VirtualTableProviderFn) !
 ****************************************************************************************
 
 |v.Connection.register_virtual_table|
 
-fn Connection.schemas() ?[]Schema
+fn Connection.schemas() ![]Schema
 *********************************
 
 |v.Connection.schemas|
 
-fn Connection.schema_tables(schema string) ?[]Table
+fn Connection.schema_tables(schema string) ![]Table
 ***************************************************
 
 |v.Connection.schema_tables|
@@ -167,7 +167,7 @@ fn default_connection_options() ConnectionOptions
 struct PreparedStmt
 ^^^^^^^^^^^^^^^^^^^
 
-fn PreparedStmt.query(params map[string]Value) ?Result
+fn PreparedStmt.query(params map[string]Value) !Result
 ******************************************************
 
 |v.PreparedStmt.query|
@@ -210,32 +210,32 @@ struct Row
 
 |v.Row|
 
-get_null(name string) ?bool
+get_null(name string) !bool
 ***************************
 
 |v.Row.get_null|
 
-get_f64(name string) ?f64
+get_f64(name string) !f64
 *************************
 
 |v.Row.get_f64|
 
-get_int(name string) ?int
+get_int(name string) !int
 *************************
 
 |v.Row.get_int|
 
-get_string(name string) ?string
+get_string(name string) !string
 *******************************
 
 |v.Row.get_string|
 
-get_bool(name string) ?Boolean
+get_bool(name string) !Boolean
 ******************************
 
 |v.Row.get_bool|
 
-get(name string) ?Value
+get(name string) !Value
 ***********************
 
 |v.Row.get|
@@ -318,7 +318,7 @@ primary_key []string
 
 |v.Table.primary_key|
 
-fn Table.column(name string) ?Column
+fn Table.column(name string) !Column
 ************************************
 
 |v.Table.column|
@@ -413,7 +413,7 @@ fn new_character_value(x string, size int) Value
 
 |v.new_character_value|
 
-fn new_date_value(ts string) ?Value
+fn new_date_value(ts string) !Value
 ***********************************
 
 |v.new_date_value|
@@ -443,12 +443,12 @@ fn new_smallint_value(x i16) Value
 
 |v.new_smallint_value|
 
-fn new_time_value(ts string) ?Value
+fn new_time_value(ts string) !Value
 ***********************************
 
 |v.new_time_value|
 
-fn new_timestamp_value(ts string) ?Value
+fn new_timestamp_value(ts string) !Value
 ****************************************
 
 |v.new_timestamp_value|
@@ -463,7 +463,7 @@ fn new_varchar_value(x string, size int) Value
 
 |v.new_varchar_value|
 
-fn Value.cmp(v2 Value) ?(int, bool)
+fn Value.cmp(v2 Value) !(int, bool)
 ***********************************
 
 |v.Value.cmp|

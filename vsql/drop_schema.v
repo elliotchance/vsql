@@ -4,10 +4,10 @@ module vsql
 
 import time
 
-fn execute_drop_schema(mut c Connection, stmt DropSchemaStmt, elapsed_parse time.Duration) ?Result {
+fn execute_drop_schema(mut c Connection, stmt DropSchemaStmt, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	c.open_write_connection()?
+	c.open_write_connection()!
 	defer {
 		c.release_write_connection()
 	}
@@ -31,10 +31,10 @@ fn execute_drop_schema(mut c Connection, stmt DropSchemaStmt, elapsed_parse time
 	}
 
 	for table_name in table_names {
-		c.storage.delete_table(table_name, c.storage.tables[table_name].tid)?
+		c.storage.delete_table(table_name, c.storage.tables[table_name].tid)!
 	}
 
-	c.storage.delete_schema(schema_name, c.storage.schemas[schema_name].tid)?
+	c.storage.delete_schema(schema_name, c.storage.schemas[schema_name].tid)!
 
 	return new_result_msg('DROP SCHEMA 1', elapsed_parse, t.elapsed())
 }

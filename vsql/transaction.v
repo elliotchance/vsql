@@ -5,7 +5,7 @@ module vsql
 
 import time
 
-fn execute_start_transaction(mut c Connection, stmt StartTransactionStmt, elapsed_parse time.Duration) ?Result {
+fn execute_start_transaction(mut c Connection, stmt StartTransactionStmt, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	match c.storage.transaction_state {
@@ -20,7 +20,7 @@ fn execute_start_transaction(mut c Connection, stmt StartTransactionStmt, elapse
 		}
 	}
 
-	c.open_write_connection()?
+	c.open_write_connection()!
 	defer {
 		c.release_write_connection()
 	}
@@ -28,7 +28,7 @@ fn execute_start_transaction(mut c Connection, stmt StartTransactionStmt, elapse
 	// isolation_start registers the transaction, then transaction_state ensures
 	// that future calls to isolation_start for individual operations use the
 	// same isolation scope (the transaction).
-	c.storage.isolation_start()?
+	c.storage.isolation_start()!
 	c.storage.transaction_state = .active
 
 	// This would fail is a implicit or explicit transaction did not perform
@@ -42,7 +42,7 @@ fn execute_start_transaction(mut c Connection, stmt StartTransactionStmt, elapse
 	return new_result_msg('START TRANSACTION', elapsed_parse, t.elapsed())
 }
 
-fn execute_commit(mut c Connection, stmt CommitStmt, elapsed_parse time.Duration) ?Result {
+fn execute_commit(mut c Connection, stmt CommitStmt, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	match c.storage.transaction_state {
@@ -57,13 +57,13 @@ fn execute_commit(mut c Connection, stmt CommitStmt, elapsed_parse time.Duration
 		}
 	}
 
-	c.open_write_connection()?
+	c.open_write_connection()!
 	defer {
 		c.release_write_connection()
 	}
 
 	for page_number, _ in c.storage.transaction_pages {
-		mut page := c.storage.btree.pager.fetch_page(page_number)?
+		mut page := c.storage.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
 			// Only remove the now expired records.
 			if obj.xid == c.storage.transaction_id {
@@ -71,13 +71,13 @@ fn execute_commit(mut c Connection, stmt CommitStmt, elapsed_parse time.Duration
 			}
 		}
 
-		c.storage.btree.pager.store_page(page_number, page)?
+		c.storage.btree.pager.store_page(page_number, page)!
 	}
 
 	// We do the reverse of start_transation where we disable the active
 	// transaction before calling isolation_end.
 	c.storage.transaction_state = .not_active
-	c.storage.isolation_end()?
+	c.storage.isolation_end()!
 
 	// We can erase these now.
 	c.storage.transaction_pages = map[int]bool{}
@@ -85,7 +85,7 @@ fn execute_commit(mut c Connection, stmt CommitStmt, elapsed_parse time.Duration
 	return new_result_msg('COMMIT', elapsed_parse, t.elapsed())
 }
 
-fn execute_rollback(mut c Connection, stmt RollbackStmt, elapsed_parse time.Duration) ?Result {
+fn execute_rollback(mut c Connection, stmt RollbackStmt, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	match c.storage.transaction_state {
@@ -100,13 +100,13 @@ fn execute_rollback(mut c Connection, stmt RollbackStmt, elapsed_parse time.Dura
 		}
 	}
 
-	c.open_write_connection()?
+	c.open_write_connection()!
 	defer {
 		c.release_write_connection()
 	}
 
 	for page_number, _ in c.storage.transaction_pages {
-		mut page := c.storage.btree.pager.fetch_page(page_number)?
+		mut page := c.storage.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
 			// Only remove the objects created in this transaction.
 			if obj.tid == c.storage.transaction_id {
@@ -114,13 +114,13 @@ fn execute_rollback(mut c Connection, stmt RollbackStmt, elapsed_parse time.Dura
 			}
 		}
 
-		c.storage.btree.pager.store_page(page_number, page)?
+		c.storage.btree.pager.store_page(page_number, page)!
 	}
 
 	// We do the reverse of start_transation where we disable the active
 	// transaction before calling isolation_end.
 	c.storage.transaction_state = .not_active
-	c.storage.isolation_end()?
+	c.storage.isolation_end()!
 
 	// We can erase these now.
 	c.storage.transaction_pages = map[int]bool{}

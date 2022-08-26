@@ -8,7 +8,7 @@ time of a ``SELECT``:
 
    db.register_virtual_table(
      'CREATE TABLE foo ( "num" INT, word VARCHAR (32) )',
-     fn (mut t vsql.VirtualTable) ? {
+     fn (mut t vsql.VirtualTable) ! {
        t.next_values([
          vsql.new_double_precision_value(1)
          vsql.new_varchar_value("hi", 0)
@@ -21,12 +21,12 @@ time of a ``SELECT``:
    
        t.done()
      }
-   ) ?
+   ) !
    
-   result := db.query('SELECT * FROM foo') ?
+   result := db.query('SELECT * FROM foo') !
    for row in result {
-     num := row.get_f64('num') ?
-     word := row.get_string('WORD') ?
+     num := row.get_f64('num') !
+     word := row.get_string('WORD') !
      println('$num $word')
    }
 

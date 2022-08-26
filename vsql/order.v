@@ -28,7 +28,7 @@ fn (o &OrderOperation) columns() Columns {
 	return o.columns
 }
 
-fn (o &OrderOperation) execute(rows []Row) ?[]Row {
+fn (o &OrderOperation) execute(rows []Row) ![]Row {
 	// TODO(elliotchance): I know this is a horribly inefficient way to handle
 	//  sorting. I did it this way because at the time V didn't allow closures
 	//  on M1 macs (which would be required to pass in a sort function).
@@ -52,7 +52,7 @@ fn (o &OrderOperation) execute(rows []Row) ?[]Row {
 		// If the item is less than the head we unshift it. This cannot be
 		// easily done in the next step without us needing to keep the previous
 		// pointer as well.
-		head_cmp := row_cmp(o.conn, o.params, row, head.row, o.order)?
+		head_cmp := row_cmp(o.conn, o.params, row, head.row, o.order)!
 		if head_cmp < 0 {
 			head = &RowLink{
 				row: row
@@ -65,7 +65,7 @@ fn (o &OrderOperation) execute(rows []Row) ?[]Row {
 		mut cursor := head
 		mut inserted := false
 		for unsafe { cursor.next != 0 } {
-			cmp := row_cmp(o.conn, o.params, row, cursor.next.row, o.order)?
+			cmp := row_cmp(o.conn, o.params, row, cursor.next.row, o.order)!
 			if cmp < 0 {
 				cursor.next = &RowLink{
 					row: row
@@ -109,12 +109,12 @@ fn (l &RowLink) rows() []Row {
 	return rows
 }
 
-fn row_cmp(conn &Connection, params map[string]Value, r1 Row, r2 Row, specs []SortSpecification) ?int {
+fn row_cmp(conn &Connection, params map[string]Value, r1 Row, r2 Row, specs []SortSpecification) !int {
 	for spec in specs {
-		left := eval_as_value(conn, r1, spec.expr, params)?
-		right := eval_as_value(conn, r2, spec.expr, params)?
+		left := eval_as_value(conn, r1, spec.expr, params)!
+		right := eval_as_value(conn, r2, spec.expr, params)!
 
-		cmp, _ := left.cmp(right)?
+		cmp, _ := left.cmp(right)!
 		if cmp != 0 {
 			if !spec.is_asc {
 				return -cmp

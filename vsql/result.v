@@ -57,10 +57,11 @@ fn new_result_msg(msg string, elapsed_parse time.Duration, elapsed_exec time.Dur
 // snippet: v.Result.next
 pub fn (mut r Result) next() ?Row {
 	if r.idx >= r.rows.len {
-		return error('')
+		return none
 	}
 	defer {
 		r.idx++
 	}
+
 	return r.rows[r.idx]
 }

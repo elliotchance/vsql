@@ -19,7 +19,7 @@ fn register_cli_command(mut cmd cli.Command) {
 fn cli_command(cmd cli.Command) ? {
 	print_version()
 
-	mut db := vsql.open(cmd.args[0])?
+	mut db := vsql.open(cmd.args[0]) or { return err }
 
 	for {
 		print('vsql> ')
@@ -27,7 +27,8 @@ fn cli_command(cmd cli.Command) ? {
 
 		if query != '' {
 			start := time.ticks()
-			result := db.query(query)?
+			result := db.query(query) or { return err }
+
 			mut total_rows := 0
 			for row in result {
 				for column in result.columns {

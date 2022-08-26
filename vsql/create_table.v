@@ -6,10 +6,10 @@ import time
 
 // TODO(elliotchance): A table is allowed to have zero columns.
 
-fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse time.Duration) ?Result {
+fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	c.open_write_connection()?
+	c.open_write_connection()!
 	defer {
 		c.release_write_connection()
 	}
@@ -78,7 +78,7 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse ti
 		}
 	}
 
-	c.storage.create_table(table_name, columns, primary_key)?
+	c.storage.create_table(table_name, columns, primary_key)!
 
 	return new_result_msg('CREATE TABLE 1', elapsed_parse, t.elapsed())
 }

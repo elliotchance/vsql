@@ -6,4 +6,4 @@ in-memory database:
 
 .. code-block:: text
 
-   mut db := vsql.open(':memory:') ?
+   mut db := vsql.open(':memory:') !

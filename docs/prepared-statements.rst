@@ -11,14 +11,14 @@ executed using ``query()`` with some (or none) host parameters:
 
 .. code-block:: sh
 
-    stmt := db.prepare('SELECT * FROM people WHERE first_name = :name') ?
+    stmt := db.prepare('SELECT * FROM people WHERE first_name = :name') !
 
     for name in ['Bob', 'Jane'] {
         result := stmt.query({
             'name': new_varchar_value(name)
-        }) ?
+        }) !
 
         for row in result {
-            println(row.get_string('FIRST_NAME') ?)
+            println(row.get_string('FIRST_NAME') !)
         }
     }

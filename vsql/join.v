@@ -29,9 +29,9 @@ fn (o &JoinOperation) columns() Columns {
 	return columns
 }
 
-fn (mut o JoinOperation) execute(rows []Row) ?[]Row {
-	left_rows := o.plan.subplans['\$1'].execute([]Row{})?
-	right_rows := o.plan.subplans['\$2'].execute([]Row{})?
+fn (mut o JoinOperation) execute(rows []Row) ![]Row {
+	left_rows := o.plan.subplans['\$1'].execute([]Row{})!
+	right_rows := o.plan.subplans['\$2'].execute([]Row{})!
 
 	match o.join_type {
 		'INNER' {
@@ -52,7 +52,7 @@ fn (mut o JoinOperation) execute(rows []Row) ?[]Row {
 	}
 }
 
-fn (mut o JoinOperation) execute_inner(left_rows []Row, right_rows []Row) ?[]Row {
+fn (mut o JoinOperation) execute_inner(left_rows []Row, right_rows []Row) ![]Row {
 	mut new_rows := []Row{}
 
 	for left_row in left_rows {
@@ -66,7 +66,7 @@ fn (mut o JoinOperation) execute_inner(left_rows []Row, right_rows []Row) ?[]Row
 				row.data[k] = v
 			}
 
-			if eval_as_bool(o.conn, row, o.specification, o.params)? {
+			if eval_as_bool(o.conn, row, o.specification, o.params)! {
 				new_rows << row
 			}
 		}
@@ -75,7 +75,7 @@ fn (mut o JoinOperation) execute_inner(left_rows []Row, right_rows []Row) ?[]Row
 	return new_rows
 }
 
-fn (mut o JoinOperation) execute_left(left_rows []Row, right_rows []Row) ?[]Row {
+fn (mut o JoinOperation) execute_left(left_rows []Row, right_rows []Row) ![]Row {
 	mut new_rows := []Row{}
 
 	for left_row in left_rows {
@@ -92,7 +92,7 @@ fn (mut o JoinOperation) execute_left(left_rows []Row, right_rows []Row) ?[]Row 
 				row.data[k] = v
 			}
 
-			if eval_as_bool(o.conn, row, o.specification, o.params)? {
+			if eval_as_bool(o.conn, row, o.specification, o.params)! {
 				new_rows << row
 				matched = true
 			}
@@ -116,7 +116,7 @@ fn (mut o JoinOperation) execute_left(left_rows []Row, right_rows []Row) ?[]Row 
 	return new_rows
 }
 
-fn (mut o JoinOperation) execute_right(left_rows []Row, right_rows []Row) ?[]Row {
+fn (mut o JoinOperation) execute_right(left_rows []Row, right_rows []Row) ![]Row {
 	mut new_rows := []Row{}
 
 	for right_row in right_rows {
@@ -133,7 +133,7 @@ fn (mut o JoinOperation) execute_right(left_rows []Row, right_rows []Row) ?[]Row
 				row.data[k] = v
 			}
 
-			if eval_as_bool(o.conn, row, o.specification, o.params)? {
+			if eval_as_bool(o.conn, row, o.specification, o.params)! {
 				new_rows << row
 				matched = true
 			}

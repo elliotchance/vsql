@@ -39,7 +39,7 @@ mut:
 // open is the convenience function for open_database() with default options.
 //
 // snippet: v.open
-pub fn open(path string) ?&Connection {
+pub fn open(path string) !&Connection {
 	return open_database(path, default_connection_options())
 }
 
@@ -66,24 +66,24 @@ pub fn open(path string) ?&Connection {
 // See ConnectionOptions and default_connection_options().
 //
 // snippet: v.open_database
-pub fn open_database(path string, options ConnectionOptions) ?&Connection {
+pub fn open_database(path string, options ConnectionOptions) !&Connection {
 	mut init_schema := path == ':memory:'
 
 	// If the file doesn't exist we initialize it and reopen it.
 	if !os.exists(path) && path != ':memory:' {
-		init_database_file(path, options.page_size)?
+		init_database_file(path, options.page_size)!
 		init_schema = true
 	}
 
-	mut conn := open_connection(path, options)?
+	mut conn := open_connection(path, options)!
 	if init_schema {
-		conn.query('CREATE SCHEMA public')?
+		conn.query('CREATE SCHEMA public')!
 	}
 
 	return conn
 }
 
-fn open_connection(path string, options ConnectionOptions) ?&Connection {
+fn open_connection(path string, options ConnectionOptions) !&Connection {
 	mut conn := &Connection{
 		path: path
 		query_cache: options.query_cache
@@ -96,33 +96,33 @@ fn open_connection(path string, options ConnectionOptions) ?&Connection {
 		conn.storage.btree = new_btree(pager, options.page_size)
 	}
 
-	register_builtin_funcs(mut conn)?
+	register_builtin_funcs(mut conn)!
 	register_cast_rules(mut conn)
 	register_operators(mut conn)
 
 	return conn
 }
 
-fn (mut c Connection) open_read_connection() ? {
+fn (mut c Connection) open_read_connection() ! {
 	if c.path == ':memory:' {
 		return
 	}
 
 	c.options.mutex.@rlock()
 
-	flock_lock_shared(c.storage.file, c.path)?
-	c.storage.open(c.path)?
+	flock_lock_shared(c.storage.file, c.path)!
+	c.storage.open(c.path)!
 }
 
-fn (mut c Connection) open_write_connection() ? {
+fn (mut c Connection) open_write_connection() ! {
 	if c.path == ':memory:' {
 		return
 	}
 
 	c.options.mutex.@lock()
 
-	flock_lock_exclusive(c.storage.file, c.path)?
-	c.storage.open(c.path)?
+	flock_lock_exclusive(c.storage.file, c.path)!
+	c.storage.open(c.path)!
 }
 
 fn (mut c Connection) release_write_connection() {
@@ -133,10 +133,15 @@ fn (mut c Connection) release_write_connection() {
 	c.storage.close() or {
 		// This was a hack to get around the fact we can't return an option from
 		// this function because it messes with the behavior of defer.
+		//
+		// TODO(elliotchance): I'm not sure what a fair thing to do is here, but
+		//  certainly takling down the server or application is not the best
+		//  call.
 		panic(err)
 	}
 
 	flock_unlock_exclusive(c.storage.file, c.path)
+
 	c.options.mutex.unlock()
 }
 
@@ -148,10 +153,15 @@ fn (mut c Connection) release_read_connection() {
 	c.storage.close() or {
 		// This was a hack to get around the fact we can't return an option from
 		// this function because it messes with the behavior of defer.
+		//
+		// TODO(elliotchance): I'm not sure what a fair thing to do is here, but
+		//  certainly takling down the server or application is not the best
+		//  call.
 		panic(err)
 	}
 
 	flock_unlock_shared(c.storage.file, c.path)
+
 	c.options.mutex.runlock()
 }
 
@@ -159,7 +169,7 @@ fn (mut c Connection) release_read_connection() {
 // with different provided parameters.
 //
 // snippet: v.Connection.prepare
-pub fn (mut c Connection) prepare(sql string) ?PreparedStmt {
+pub fn (mut c Connection) prepare(sql string) !PreparedStmt {
 	t := start_timer()
 	stmt, params, explain := c.query_cache.parse(sql) or {
 		c.storage.transaction_aborted()
@@ -173,7 +183,7 @@ pub fn (mut c Connection) prepare(sql string) ?PreparedStmt {
 // query executes a statement. If there is a result set it will be returned.
 //
 // snippet: v.Connection.query
-pub fn (mut c Connection) query(sql string) ?Result {
+pub fn (mut c Connection) query(sql string) !Result {
 	if c.storage.transaction_state == .aborted {
 		return sqlstate_25p02()
 	}
@@ -189,11 +199,11 @@ pub fn (mut c Connection) query(sql string) ?Result {
 	}
 }
 
-fn (mut c Connection) register_func(func Func) ? {
+fn (mut c Connection) register_func(func Func) ! {
 	c.funcs << func
 }
 
-fn (c Connection) find_function(func_name string, arg_types []Type) ?Func {
+fn (c Connection) find_function(func_name string, arg_types []Type) !Func {
 	for f in c.funcs {
 		if func_name != f.name || arg_types.len != f.arg_types.len {
 			continue
@@ -221,7 +231,7 @@ fn (c Connection) find_function(func_name string, arg_types []Type) ?Func {
 // expressions.
 //
 // snippet: v.Connection.register_function
-pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) ?Value) ? {
+pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) !Value) ! {
 	// TODO(elliotchance): A rather crude way to decode the prototype...
 	parts := prototype.replace('(', '|').replace(')', '|').split('|')
 	function_name := new_identifier(parts[0].trim_space()).name
@@ -234,17 +244,17 @@ pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) 
 	}
 
 	return_type := new_type(parts[2].trim_space().to_upper(), 0)
-	c.register_func(Func{function_name, arg_types, false, func, return_type})?
+	c.register_func(Func{function_name, arg_types, false, func, return_type})!
 }
 
 // register_virtual_table will register a function that can provide data at
 // runtime to a virtual table.
 //
 // snippet: v.Connection.register_virtual_table
-pub fn (mut c Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ? {
+pub fn (mut c Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ! {
 	// Registering virtual tables does not need use query cache.
 	mut tokens := tokenize(create_table)
-	stmt := parse(tokens)?
+	stmt := parse(tokens)!
 
 	if stmt is CreateTableStmt {
 		mut table_name := stmt.table_name
@@ -276,8 +286,8 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 // schemas returns the schemas in this catalog (database).
 //
 // snippet: v.Connection.schemas
-pub fn (mut c Connection) schemas() ?[]Schema {
-	c.open_read_connection()?
+pub fn (mut c Connection) schemas() ![]Schema {
+	c.open_read_connection()!
 	defer {
 		c.release_read_connection()
 	}
@@ -294,8 +304,8 @@ pub fn (mut c Connection) schemas() ?[]Schema {
 // exist and empty list will be returned.
 //
 // snippet: v.Connection.schema_tables
-pub fn (mut c Connection) schema_tables(schema string) ?[]Table {
-	c.open_read_connection()?
+pub fn (mut c Connection) schema_tables(schema string) ![]Table {
+	c.open_read_connection()!
 	defer {
 		c.release_read_connection()
 	}

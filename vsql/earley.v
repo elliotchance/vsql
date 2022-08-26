@@ -233,11 +233,11 @@ fn complete(mut col EarleyColumn, state &EarleyState) {
 	}
 }
 
-fn parse(tokens []Token) ?Stmt {
+fn parse(tokens []Token) !Stmt {
 	mut columns := tokenize_earley_columns(tokens)
 	mut grammar := get_grammar()
 
-	q0 := parse_earley(grammar['<preparable statement>'], mut columns)?
+	q0 := parse_earley(grammar['<preparable statement>'], mut columns)!
 
 	trees := build_trees(q0)
 	if trees.len == 0 {
@@ -250,10 +250,10 @@ fn parse(tokens []Token) ?Stmt {
 	//
 	//   trees[0].print(0)
 
-	return (parse_ast(trees[0])?)[0] as Stmt
+	return (parse_ast(trees[0])!)[0] as Stmt
 }
 
-fn parse_earley(rule &EarleyRule, mut table []&EarleyColumn) ?&EarleyState {
+fn parse_earley(rule &EarleyRule, mut table []&EarleyColumn) !&EarleyState {
 	table[0].add(mut new_earley_state('start', &EarleyProduction{[
 		&EarleyRuleOrString{ rule: rule },
 	]}, 0, table[0]))

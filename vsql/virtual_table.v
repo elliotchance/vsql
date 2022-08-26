@@ -3,7 +3,7 @@ module vsql
 // A function than will provide rows to a virtual table.
 //
 // snippet: v.VirtualTableProviderFn
-type VirtualTableProviderFn = fn (mut t VirtualTable) ?
+type VirtualTableProviderFn = fn (mut t VirtualTable) !
 
 pub struct VirtualTable {
 	create_table_sql  string
@@ -65,11 +65,11 @@ fn (o VirtualTableOperation) columns() Columns {
 	return columns
 }
 
-fn (o VirtualTableOperation) execute(_ []Row) ?[]Row {
+fn (o VirtualTableOperation) execute(_ []Row) ![]Row {
 	mut vt := o.table
 	vt.reset()
 	for !vt.is_done {
-		vt.data(mut vt)?
+		vt.data(mut vt)!
 	}
 
 	mut new_rows := []Row{}

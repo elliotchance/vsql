@@ -30,7 +30,8 @@ fn register_in_command(mut cmd cli.Command) {
 }
 
 fn in_command(cmd cli.Command) ? {
-	mut db := vsql.open(cmd.args[0])?
+	mut db := vsql.open(cmd.args[0]) or { return err }
+
 	mut f := os.stdin()
 
 	// Keep running stats for the end.
@@ -41,7 +42,8 @@ fn in_command(cmd cli.Command) ? {
 	mut stmt := ''
 	for !f.eof() {
 		mut buf := []u8{len: 100}
-		f.read_bytes_into_newline(mut buf)?
+		f.read_bytes_into_newline(mut buf) or { return err }
+
 		line := buf.bytestr()
 		stmt += line.trim_right('\0 \n;')
 

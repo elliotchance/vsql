@@ -13,7 +13,7 @@ mut:
 	tids [256]int
 }
 
-fn (mut t TransactionIDs) add(transaction_id int) ? {
+fn (mut t TransactionIDs) add(transaction_id int) ! {
 	for i in 0 .. 256 {
 		if t.tids[i] == 0 {
 			t.tids[i] = transaction_id

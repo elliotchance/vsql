@@ -22,12 +22,13 @@ fn register_out_command(mut cmd cli.Command) {
 }
 
 fn out_command(cmd cli.Command) ? {
-	mut db := vsql.open(cmd.args[0])?
+	mut db := vsql.open(cmd.args[0]) or { return err }
 
 	// To make the output more deterministic the schemas and tables will ordered
 	// by name. This is not true for the records however, which can potentially
 	// come out in any order.
-	mut schemas := db.schemas()?
+	mut schemas := db.schemas() or { return err }
+
 	schemas.sort(a.name > b.name)
 
 	for _, schema in schemas {
@@ -38,16 +39,17 @@ fn out_command(cmd cli.Command) ? {
 			println('$schema\n')
 		}
 
-		mut tables := db.schema_tables(schema.name)?
+		mut tables := db.schema_tables(schema.name) or { return err }
+
 		tables.sort(a.name > b.name)
 
 		for _, table in tables {
 			println('$table\n')
 
-			for row in db.query('SELECT * FROM $table.name')? {
+			for row in db.query('SELECT * FROM $table.name')! {
 				mut data := []string{}
 				for col in table.column_names() {
-					data << (row.get(col)?).str()
+					data << (row.get(col)!).str()
 				}
 
 				println('INSERT INTO $table.name (${table.column_names().join(', ')}) VALUES (${data.join(', ')});')

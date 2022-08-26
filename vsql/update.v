@@ -17,21 +17,21 @@ module vsql
 
 import time
 
-fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, elapsed_parse time.Duration, explain bool) ?Result {
+fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, elapsed_parse time.Duration, explain bool) !Result {
 	t := start_timer()
 
-	c.open_write_connection()?
+	c.open_write_connection()!
 	defer {
 		c.release_write_connection()
 	}
 
-	mut plan := create_plan(stmt, params, c)?
+	mut plan := create_plan(stmt, params, c)!
 
 	if explain {
 		return plan.explain(elapsed_parse)
 	}
 
-	mut rows := plan.execute([]Row{})?
+	mut rows := plan.execute([]Row{})!
 
 	mut table_name := stmt.table_name
 
@@ -62,8 +62,8 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 		row2.tid = row.tid
 
 		for column_name, v in stmt.set {
-			table_column := table.column(column_name)?
-			raw_value := eval_as_nullable_value(c, table_column.typ.typ, row, v, params)?
+			table_column := table.column(column_name)!
+			raw_value := eval_as_nullable_value(c, table_column.typ.typ, row, v, params)!
 
 			if table_column.not_null && raw_value.is_null {
 				return sqlstate_23502('column $column_name')
@@ -76,17 +76,17 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 			// TODO(elliotchance): This has the side effect that NULL being
 			//  replaced with NULL is true, which is unnecessary, even if the
 			//  logic is a bit murky.
-			cmp, is_null := row.data[column_name].cmp(raw_value)?
+			cmp, is_null := row.data[column_name].cmp(raw_value)!
 			if is_null || cmp != 0 {
 				did_modify = true
 				row2.data[column_name] = cast(c, 'for column $column_name', raw_value,
-					table_column.typ)?
+					table_column.typ)!
 			}
 		}
 
 		if did_modify {
 			modify_count++
-			c.storage.update_row(mut row, mut row2, table)?
+			c.storage.update_row(mut row, mut row2, table)!
 		}
 	}
 
@@ -101,10 +101,10 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 	if modify_count == 0 {
 		empty_row := new_empty_row(table.columns, '')
 		for column_name, v in stmt.set {
-			table_column := table.column(column_name)?
+			table_column := table.column(column_name)!
 			raw_value := eval_as_nullable_value(c, table_column.typ.typ, empty_row, v,
-				params)?
-			value := cast(c, 'for column $column_name', raw_value, table_column.typ)?
+				params)!
+			value := cast(c, 'for column $column_name', raw_value, table_column.typ)!
 
 			if table_column.not_null && value.is_null {
 				return sqlstate_23502('column $column_name')

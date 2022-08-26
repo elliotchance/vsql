@@ -168,8 +168,8 @@ pub fn new_character_value(x string, size int) Value {
 // new_timestamp_value creates a ``TIMESTAMP`` value.
 //
 // snippet: v.new_timestamp_value
-pub fn new_timestamp_value(ts string) ?Value {
-	t := new_timestamp_from_string(ts)?
+pub fn new_timestamp_value(ts string) !Value {
+	t := new_timestamp_from_string(ts)!
 
 	return Value{
 		typ: t.typ
@@ -180,8 +180,8 @@ pub fn new_timestamp_value(ts string) ?Value {
 // new_time_value creates a ``TIME`` value.
 //
 // snippet: v.new_time_value
-pub fn new_time_value(ts string) ?Value {
-	t := new_time_from_string(ts)?
+pub fn new_time_value(ts string) !Value {
+	t := new_time_from_string(ts)!
 
 	return Value{
 		typ: t.typ
@@ -192,8 +192,8 @@ pub fn new_time_value(ts string) ?Value {
 // new_date_value creates a ``DATE`` value.
 //
 // snippet: v.new_date_value
-pub fn new_date_value(ts string) ?Value {
-	t := new_date_from_string(ts)?
+pub fn new_date_value(ts string) !Value {
+	t := new_date_from_string(ts)!
 
 	return Value{
 		typ: t.typ
@@ -263,7 +263,7 @@ pub fn (v Value) str() string {
 // Or an error if the values are different types (cannot be compared).
 //
 // snippet: v.Value.cmp
-pub fn (v Value) cmp(v2 Value) ?(int, bool) {
+pub fn (v Value) cmp(v2 Value) !(int, bool) {
 	if v.is_null && v2.is_null {
 		return 0, true
 	}

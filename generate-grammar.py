@@ -414,7 +414,7 @@ for gr in sorted(grammar.keys(), key=lambda s: s.lower()):
 grammar_file.write('\n\treturn rules\n')
 grammar_file.write('}\n\n')
 
-grammar_file.write("""fn parse_ast(node &EarleyNode) ?[]EarleyValue {
+grammar_file.write("""fn parse_ast(node &EarleyNode) ![]EarleyValue {
     if node.children.len == 0 {
         match node.value.name {
             '^integer' {
@@ -443,7 +443,7 @@ grammar_file.write("""fn parse_ast(node &EarleyNode) ?[]EarleyValue {
 
     mut children := []EarleyValue{}
     for child in node.children {
-        for result in parse_ast(child) ? {
+        for result in parse_ast(child) ! {
             children << result
         }
     }
@@ -451,7 +451,7 @@ grammar_file.write("""fn parse_ast(node &EarleyNode) ?[]EarleyValue {
     return parse_ast_name(children, node.value.name)
 }
 
-fn parse_ast_name(children []EarleyValue, name string) ?[]EarleyValue {
+fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
     match name {
 """)
 
@@ -462,7 +462,7 @@ for rule in sorted(parse_functions.keys(), key=lambda s: s.lower()):
     grammar_file.write(', '.join([
         'children[' + str(i) + '] as ' + grammar_types[t]
         for i, t in enumerate(terms)
-        if t in grammar_types and grammar_types[t] != '']) + ") ?)]\n")
+        if t in grammar_types and grammar_types[t] != '']) + ") !)]\n")
     
     grammar_file.write("\t\t}\n")
 

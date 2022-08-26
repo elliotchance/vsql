@@ -148,7 +148,7 @@ fn (p Page) page_size() int {
 
 // TODO(elliotchance): This really isn't the most efficient way to do this. Make
 //  me faster. Especially since the calls down will recount versions again, etc.
-fn (mut p Page) update(old PageObject, new PageObject, tid int) ? {
+fn (mut p Page) update(old PageObject, new PageObject, tid int) ! {
 	mut objects := p.objects()
 	old_versions := p.versions(old.key, objects)
 	match old_versions.len {
@@ -193,7 +193,7 @@ fn (p Page) versions(key []u8, objects []PageObject) []int {
 // add will append the object (in order of key) or return an error if either the
 // object cannot fit or if their already exists two versions of the key - which
 // should be interpreted by the client as a try again. See description below.
-fn (mut p Page) add(obj PageObject) ? {
+fn (mut p Page) add(obj PageObject) ! {
 	if p.used + obj.length() > p.page_size() {
 		panic('page cannot fit object of $obj.length() b in page using $p.used b')
 	}
@@ -289,10 +289,10 @@ fn (mut p Page) expire(key []u8, tid int, xid int) bool {
 
 // replace will perform a delete and add operation. If the key does not exist it
 // will be created.
-fn (mut p Page) replace(key []u8, tid int, value []u8) ? {
+fn (mut p Page) replace(key []u8, tid int, value []u8) ! {
 	p.delete(key, tid)
 	obj := new_page_object(key.clone(), tid, 0, value)
-	p.add(obj)?
+	p.add(obj)!
 }
 
 fn (p Page) keys() [][]u8 {

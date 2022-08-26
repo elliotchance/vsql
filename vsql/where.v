@@ -25,11 +25,11 @@ fn (o &WhereOperation) columns() Columns {
 	return o.columns
 }
 
-fn (o &WhereOperation) execute(rows []Row) ?[]Row {
+fn (o &WhereOperation) execute(rows []Row) ![]Row {
 	mut new_rows := []Row{}
 
 	for row in rows {
-		mut ok := eval_as_bool(o.conn, row, o.condition, o.params)?
+		mut ok := eval_as_bool(o.conn, row, o.condition, o.params)!
 		if ok {
 			new_rows << row
 		}

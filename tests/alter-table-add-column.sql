@@ -1,0 +1,28 @@
+EXPLAIN ALTER TABLE t1 ADD COLUMN f2 INT;
+-- error 42601: syntax error: Cannot EXPLAIN ALTER TABLE
+
+ALTER TABLE t1 ADD COLUMN f2 INT;
+-- error 42P01: no such table: PUBLIC.T1
+
+ALTER TABLE bad_schema.t1 ADD COLUMN f2 INT;
+-- error 3F000: invalid schema name: BAD_SCHEMA
+
+CREATE TABLE t1 (x INT);
+ALTER TABLE t1 ADD COLUMN x INT;
+-- msg: CREATE TABLE 1
+-- error 42S21: column already exists: X
+
+CREATE TABLE t1 (x INT);
+INSERT INTO t1 (x) VALUES (123);
+SELECT * FROM t1;
+ALTER TABLE t1 ADD COLUMN y INT;
+SELECT * FROM t1;
+UPDATE t1 SET y = 456;
+SELECT * FROM t1;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- X: 123
+-- msg: ALTER TABLE 1
+-- X: 123 Y: 0
+-- msg: UPDATE 1
+-- X: 123 Y: 456

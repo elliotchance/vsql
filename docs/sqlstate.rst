@@ -289,3 +289,15 @@ A client that receives this error should retry the transaction.
   CREATE TABLE foo (baz CHARACTER VARYING(10));
   -- msg: CREATE TABLE 1
   -- error 42P07: duplicate table: FOO
+
+``42S21`` column already exists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t1 (x INT);
+  ALTER TABLE t1 ADD COLUMN x INT;
+  -- msg: CREATE TABLE 1
+  -- error 42S21: column already exists: X

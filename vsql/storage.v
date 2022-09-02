@@ -225,6 +225,129 @@ fn (mut f Storage) read_rows(table_name string, prefix_table_name bool) ![]Row {
 	return rows
 }
 
+// Locking a table prevents reading 
+fn (mut f Storage) lock_table(table_name string) ! {
+	f.isolation_start()!
+	defer {
+		f.isolation_end() or { panic(err) }
+	}
+
+	// Adding a column to a table works by recreating the rows. The existing
+	// rows are actually expired so that the ALTER TABLE can be rolled back.
+	// This is easier but it has the limitation that nothing can read or write
+	// to the table while this process is happening.
+	//
+	// ALTER TABLE needs an exclusive read and write lock on the table to make
+	// sure there are no records currently in-flight. Otherwise, they would be
+	// skipped with MVCC visibility and the table would become mangled when
+	// those rows came online.
+	//
+	// TODO(elliotchance): At some point we should version the table metadata
+	//  itself. This would also protect against trying to perform concurrent
+	//  ALTER TABLE statements.
+
+	// mut new_columns := f.tables[table_name].columns
+	mut t := f.tables[table_name]
+
+	t.columns << Column{'Y', new_type('INT', 0), false}
+
+	// ';' = ':' + 1
+	for object in f.btree.new_range_iterator('R$table_name:'.bytes(), 'R$table_name;'.bytes()) {
+		mut old := new_row_from_bytes(t, object.value, object.tid, '')
+
+		// We can modify the old row in place because we only need the existing
+		// transactions ID to delete the previous version.
+		old.data[column_definition.column_name.name] = new_integer_value(0)
+		// mut new := new_row({
+		// 	'X': new_integer_value(123),
+		// 	'Y': new_integer_value(0),
+		// })
+		// println(new)
+
+		// old_obj := new_page_object(old.object_key(t)!, old.tid, 0, []u8{})
+		new_obj := new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t))
+		for page_number in f.btree.update(object, new_obj, f.transaction_id)! {
+			f.transaction_pages[page_number] = true
+		}
+	}
+
+	page_number := f.btree.expire('T$table_name'.bytes(), t.tid, f.transaction_id)!
+	f.transaction_pages[page_number] = true
+
+	obj := new_page_object('T$table_name'.bytes(), f.transaction_id, 0, t.bytes())
+	f.transaction_pages[f.btree.add(obj)!] = true
+
+	f.tables[table_name] = t
+	f.schema_changed()
+
+	// old_obj := new_page_object(old.object_key(t)!, t.tid, 0, t.bytes(t))
+	// new_obj := new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t))
+	// for page_number in f.btree.update(old_obj, new_obj, f.transaction_id)! {
+	// 	f.transaction_pages[page_number] = true
+	// }
+}
+
+fn (mut f Storage) add_column(table_name string, column_definition ColumnDefinition) ! {
+	f.isolation_start()!
+	defer {
+		f.isolation_end() or { panic(err) }
+	}
+
+	// Adding a column to a table works by recreating the rows. The existing
+	// rows are actually expired so that the ALTER TABLE can be rolled back.
+	// This is easier but it has the limitation that nothing can read or write
+	// to the table while this process is happening.
+	//
+	// ALTER TABLE needs an exclusive read and write lock on the table to make
+	// sure there are no records currently in-flight. Otherwise, they would be
+	// skipped with MVCC visibility and the table would become mangled when
+	// those rows came online.
+	//
+	// TODO(elliotchance): At some point we should version the table metadata
+	//  itself. This would also protect against trying to perform concurrent
+	//  ALTER TABLE statements.
+
+	// mut new_columns := f.tables[table_name].columns
+	mut t := f.tables[table_name]
+
+	t.columns << Column{'Y', new_type('INT', 0), false}
+
+	// ';' = ':' + 1
+	for object in f.btree.new_range_iterator('R$table_name:'.bytes(), 'R$table_name;'.bytes()) {
+		mut old := new_row_from_bytes(t, object.value, object.tid, '')
+
+		// We can modify the old row in place because we only need the existing
+		// transactions ID to delete the previous version.
+		old.data[column_definition.column_name.name] = new_integer_value(0)
+		// mut new := new_row({
+		// 	'X': new_integer_value(123),
+		// 	'Y': new_integer_value(0),
+		// })
+		// println(new)
+
+		// old_obj := new_page_object(old.object_key(t)!, old.tid, 0, []u8{})
+		new_obj := new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t))
+		for page_number in f.btree.update(object, new_obj, f.transaction_id)! {
+			f.transaction_pages[page_number] = true
+		}
+	}
+
+	page_number := f.btree.expire('T$table_name'.bytes(), t.tid, f.transaction_id)!
+	f.transaction_pages[page_number] = true
+
+	obj := new_page_object('T$table_name'.bytes(), f.transaction_id, 0, t.bytes())
+	f.transaction_pages[f.btree.add(obj)!] = true
+
+	f.tables[table_name] = t
+	f.schema_changed()
+
+	// old_obj := new_page_object(old.object_key(t)!, t.tid, 0, t.bytes(t))
+	// new_obj := new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t))
+	// for page_number in f.btree.update(old_obj, new_obj, f.transaction_id)! {
+	// 	f.transaction_pages[page_number] = true
+	// }
+}
+
 // isolation_start signals the start of an operation that shall be atomic until
 // isolation_end is invoked. If there is no active transaction, a new
 // transaction will be created. Otherwise, this isolation block will be part of

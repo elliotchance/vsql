@@ -4,7 +4,9 @@
 
 module vsql
 
-type EarleyValue = BetweenExpr
+type EarleyValue = AddColumnDefinition
+	| BetweenExpr
+	| ColumnDefinition
 	| ComparisonPredicatePart2
 	| Correlation
 	| CreateTableStmt
@@ -27,6 +29,7 @@ type EarleyValue = BetweenExpr
 	| TablePrimaryBody
 	| TableReference
 	| Type
+	| UniqueConstraintDefinition
 	| Value
 	| []Expr
 	| []Identifier
@@ -48,11 +51,29 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_actual_identifier_ := &EarleyRule{
 		name: '<actual identifier>'
 	}
+	mut rule_add_column_definition_1_ := &EarleyRule{
+		name: '<add column definition: 1>'
+	}
+	mut rule_add_column_definition_2_ := &EarleyRule{
+		name: '<add column definition: 2>'
+	}
+	mut rule_add_column_definition_ := &EarleyRule{
+		name: '<add column definition>'
+	}
 	mut rule_aggregate_function_1_ := &EarleyRule{
 		name: '<aggregate function: 1>'
 	}
 	mut rule_aggregate_function_ := &EarleyRule{
 		name: '<aggregate function>'
+	}
+	mut rule_alter_table_action_ := &EarleyRule{
+		name: '<alter table action>'
+	}
+	mut rule_alter_table_statement_1_ := &EarleyRule{
+		name: '<alter table statement: 1>'
+	}
+	mut rule_alter_table_statement_ := &EarleyRule{
+		name: '<alter table statement>'
 	}
 	mut rule_approximate_numeric_type_1_ := &EarleyRule{
 		name: '<approximate numeric type: 1>'
@@ -1320,6 +1341,12 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_table_element_list_ := &EarleyRule{
 		name: '<table element list>'
 	}
+	mut rule_table_element_1_ := &EarleyRule{
+		name: '<table element: 1>'
+	}
+	mut rule_table_element_2_ := &EarleyRule{
+		name: '<table element: 2>'
+	}
 	mut rule_table_element_ := &EarleyRule{
 		name: '<table element>'
 	}
@@ -1599,6 +1626,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_after := &EarleyRule{
 		name: 'AFTER'
 	}
+	mut rule_alter := &EarleyRule{
+		name: 'ALTER'
+	}
 	mut rule_always := &EarleyRule{
 		name: 'ALWAYS'
 	}
@@ -1733,6 +1763,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_collation_schema := &EarleyRule{
 		name: 'COLLATION_SCHEMA'
+	}
+	mut rule_column := &EarleyRule{
+		name: 'COLUMN'
 	}
 	mut rule_column_name := &EarleyRule{
 		name: 'COLUMN_NAME'
@@ -2767,6 +2800,38 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_add_column_definition_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_add
+		},
+		&EarleyRuleOrString{
+			rule: rule_column_definition_
+		},
+	]}
+
+	rule_add_column_definition_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_add
+		},
+		&EarleyRuleOrString{
+			rule: rule_column
+		},
+		&EarleyRuleOrString{
+			rule: rule_column_definition_
+		},
+	]}
+
+	rule_add_column_definition_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_add_column_definition_1_
+		},
+	]}
+	rule_add_column_definition_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_add_column_definition_2_
+		},
+	]}
+
 	rule_aggregate_function_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_count
@@ -2790,6 +2855,33 @@ fn get_grammar() map[string]EarleyRule {
 	rule_aggregate_function_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_general_set_function_
+		},
+	]}
+
+	rule_alter_table_action_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_add_column_definition_
+		},
+	]}
+
+	rule_alter_table_statement_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_alter
+		},
+		&EarleyRuleOrString{
+			rule: rule_table
+		},
+		&EarleyRuleOrString{
+			rule: rule_table_name_
+		},
+		&EarleyRuleOrString{
+			rule: rule_alter_table_action_
+		},
+	]}
+
+	rule_alter_table_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_alter_table_statement_1_
 		},
 	]}
 
@@ -8361,6 +8453,11 @@ fn get_grammar() map[string]EarleyRule {
 	]}
 	rule_sql_schema_manipulation_statement_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
+			rule: rule_alter_table_statement_
+		},
+	]}
+	rule_sql_schema_manipulation_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_drop_table_statement_
 		},
 	]}
@@ -8527,14 +8624,26 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_table_element_.productions << &EarleyProduction{[
+	rule_table_element_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_column_definition_
 		},
 	]}
-	rule_table_element_.productions << &EarleyProduction{[
+
+	rule_table_element_2_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_table_constraint_definition_
+		},
+	]}
+
+	rule_table_element_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_table_element_1_
+		},
+	]}
+	rule_table_element_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_table_element_2_
 		},
 	]}
 
@@ -9413,6 +9522,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_alter.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ALTER'
+			rule: 0
+		},
+	]}
+
 	rule_always.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'ALWAYS'
@@ -9724,6 +9840,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_collation_schema.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'COLLATION_SCHEMA'
+			rule: 0
+		},
+	]}
+
+	rule_column.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'COLUMN'
 			rule: 0
 		},
 	]}
@@ -12076,8 +12199,14 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<absolute value expression: 1>'] = rule_absolute_value_expression_1_
 	rules['<absolute value expression>'] = rule_absolute_value_expression_
 	rules['<actual identifier>'] = rule_actual_identifier_
+	rules['<add column definition: 1>'] = rule_add_column_definition_1_
+	rules['<add column definition: 2>'] = rule_add_column_definition_2_
+	rules['<add column definition>'] = rule_add_column_definition_
 	rules['<aggregate function: 1>'] = rule_aggregate_function_1_
 	rules['<aggregate function>'] = rule_aggregate_function_
+	rules['<alter table action>'] = rule_alter_table_action_
+	rules['<alter table statement: 1>'] = rule_alter_table_statement_1_
+	rules['<alter table statement>'] = rule_alter_table_statement_
 	rules['<approximate numeric type: 1>'] = rule_approximate_numeric_type_1_
 	rules['<approximate numeric type: 2>'] = rule_approximate_numeric_type_2_
 	rules['<approximate numeric type: 3>'] = rule_approximate_numeric_type_3_
@@ -12500,6 +12629,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<table definition>'] = rule_table_definition_
 	rules['<table element list: 1>'] = rule_table_element_list_1_
 	rules['<table element list>'] = rule_table_element_list_
+	rules['<table element: 1>'] = rule_table_element_1_
+	rules['<table element: 2>'] = rule_table_element_2_
 	rules['<table element>'] = rule_table_element_
 	rules['<table elements: 1>'] = rule_table_elements_1_
 	rules['<table elements: 2>'] = rule_table_elements_2_
@@ -12593,6 +12724,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['ADD'] = rule_add
 	rules['ADMIN'] = rule_admin
 	rules['AFTER'] = rule_after
+	rules['ALTER'] = rule_alter
 	rules['ALWAYS'] = rule_always
 	rules['AND'] = rule_and
 	rules['AS'] = rule_as
@@ -12638,6 +12770,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['COLLATION_CATALOG'] = rule_collation_catalog
 	rules['COLLATION_NAME'] = rule_collation_name
 	rules['COLLATION_SCHEMA'] = rule_collation_schema
+	rules['COLUMN'] = rule_column
 	rules['COLUMN_NAME'] = rule_column_name
 	rules['COLUMNS'] = rule_columns
 	rules['COMMAND_FUNCTION'] = rule_command_function
@@ -13021,8 +13154,23 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		'<absolute value expression: 1>' {
 			return [EarleyValue(parse_abs(children[2] as Expr)!)]
 		}
+		'<add column definition: 1>' {
+			return [
+				EarleyValue(parse_add_column_definition(children[1] as ColumnDefinition)!),
+			]
+		}
+		'<add column definition: 2>' {
+			return [
+				EarleyValue(parse_add_column_definition(children[2] as ColumnDefinition)!),
+			]
+		}
 		'<aggregate function: 1>' {
 			return [EarleyValue(parse_count_all(children[2] as string)!)]
+		}
+		'<alter table statement: 1>' {
+			return [
+				EarleyValue(parse_alter_table(children[2] as Identifier, children[3] as AddColumnDefinition)!),
+			]
 		}
 		'<approximate numeric type: 1>' {
 			return [EarleyValue(parse_float()!)]
@@ -13746,6 +13894,16 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		'<table element list: 1>' {
 			return [
 				EarleyValue(parse_table_element_list(children[1] as []TableElement)!),
+			]
+		}
+		'<table element: 1>' {
+			return [
+				EarleyValue(parse_table_element1(children[0] as ColumnDefinition)!),
+			]
+		}
+		'<table element: 2>' {
+			return [
+				EarleyValue(parse_table_element2(children[0] as UniqueConstraintDefinition)!),
 			]
 		}
 		'<table elements: 1>' {

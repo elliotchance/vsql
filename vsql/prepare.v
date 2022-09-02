@@ -44,6 +44,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 
 	stmt := p.stmt
 	match stmt {
+		AlterTableStmt {
+			if p.explain {
+				return sqlstate_42601('Cannot EXPLAIN ALTER TABLE')
+			}
+
+			return execute_alter_table(mut p.c, stmt, p.elapsed_parse)
+		}
 		CommitStmt {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN COMMIT')

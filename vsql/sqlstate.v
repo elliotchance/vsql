@@ -154,7 +154,7 @@ pub:
 }
 
 fn sqlstate_3f000(schema_name string) IError {
-	return SQLState42P06{
+	return SQLState3F000{
 		code: sqlstate_to_int('3F000')
 		msg: 'invalid schema name: $schema_name'
 		schema_name: schema_name
@@ -289,6 +289,21 @@ fn sqlstate_42p02(parameter_name string) IError {
 		code: sqlstate_to_int('42P02')
 		msg: 'parameter does not exist: $parameter_name'
 		parameter_name: parameter_name
+	}
+}
+
+// Column already exists
+struct SQLState42S21 {
+	SQLState
+pub:
+	column_name string
+}
+
+fn sqlstate_42s21(column_name string) IError {
+	return SQLState42S21{
+		code: sqlstate_to_int('42S21')
+		msg: 'column already exists: $column_name'
+		column_name: column_name
 	}
 }
 

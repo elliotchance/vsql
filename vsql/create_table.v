@@ -36,8 +36,8 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse ti
 	mut primary_key := []string{}
 	for table_element in stmt.table_elements {
 		match table_element {
-			Column {
-				column_name := table_element.name
+			ColumnDefinition {
+				column_name := table_element.column_name.name
 
 				columns << Column{column_name, table_element.typ, table_element.not_null}
 			}
@@ -54,8 +54,8 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse ti
 					// Only some types are allowed in the PRIMARY KEY.
 					mut found := false
 					for e in stmt.table_elements {
-						if e is Column {
-							if e.name == column.name {
+						if e is ColumnDefinition {
+							if e.column_name.name == column.name {
 								match e.typ.typ {
 									.is_smallint, .is_integer, .is_bigint {
 										primary_key << column.name

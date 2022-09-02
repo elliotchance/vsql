@@ -83,12 +83,20 @@ fn parse_table_elements2(table_elements []TableElement, table_element TableEleme
 	return new_table_elements
 }
 
-fn parse_column_definition1(column_name Identifier, data_type Type) !TableElement {
-	return Column{column_name.name, data_type, false}
+fn parse_column_definition1(column_name Identifier, data_type Type) !ColumnDefinition {
+	return ColumnDefinition{column_name, data_type, false}
 }
 
-fn parse_column_definition2(column_name Identifier, data_type Type, constraint bool) !TableElement {
-	return Column{column_name.name, data_type, constraint}
+fn parse_column_definition2(column_name Identifier, data_type Type, not_null bool) !ColumnDefinition {
+	return ColumnDefinition{column_name, data_type, not_null}
+}
+
+fn parse_table_element1(column_definition ColumnDefinition) !TableElement {
+	return column_definition
+}
+
+fn parse_table_element2(table_constraint UniqueConstraintDefinition) !TableElement {
+	return table_constraint
 }
 
 fn parse_bigint() !Type {
@@ -831,4 +839,12 @@ fn parse_coalesce(exprs []Expr) !Expr {
 
 fn parse_string_identifier(s string) !Identifier {
 	return new_identifier(s)
+}
+
+fn parse_alter_table(table_name Identifier, action AddColumnDefinition) !Stmt {
+	return AlterTableStmt{table_name, action}
+}
+
+fn parse_add_column_definition(column_definition ColumnDefinition) !AddColumnDefinition {
+	return AddColumnDefinition{column_definition}
 }

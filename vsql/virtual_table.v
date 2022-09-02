@@ -23,8 +23,8 @@ pub fn (mut v VirtualTable) next_values(values []Value) {
 	mut row := map[string]Value{}
 	mut i := 0
 	for col in v.create_table_stmt.table_elements {
-		if col is Column {
-			row[col.name] = values[i]
+		if col is ColumnDefinition {
+			row[col.column_name.name] = values[i]
 			i++
 		}
 	}

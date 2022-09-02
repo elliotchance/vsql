@@ -33,7 +33,18 @@
 
 <SQL schema manipulation statement> /* Stmt */ ::=
     <drop schema statement>
+  | <alter table statement>
   | <drop table statement>
+
+<alter table statement> /* Stmt */ ::=
+    ALTER TABLE <table name> <alter table action>   -> alter_table
+
+<alter table action> /* AddColumnDefinition */ ::=
+    <add column definition>
+
+<add column definition> /* AddColumnDefinition */ ::=
+    ADD <column definition>          -> add_column_definition
+  | ADD COLUMN <column definition>   -> add_column_definition
 
 <drop schema statement> /* Stmt */ ::=
     DROP SCHEMA <schema name> <drop behavior>   -> drop_schema_statement
@@ -376,10 +387,10 @@
   | <table elements> <comma> <table element>   -> table_elements2
 
 <table element> /* TableElement */ ::=
-    <column definition>
-  | <table constraint definition>
+    <column definition>             -> table_element1
+  | <table constraint definition>   -> table_element2
 
-<column definition> /* TableElement */ ::=
+<column definition> /* ColumnDefinition */ ::=
     <column name> <data type or domain name>   -> column_definition1
   | <column name> <data type or domain name>
     <column constraint definition>             -> column_definition2
@@ -1070,17 +1081,17 @@
 <unique specification> ::=
   PRIMARY KEY   -> ignore
 
-<unique constraint definition> /* TableElement */ ::=
+<unique constraint definition> /* UniqueConstraintDefinition */ ::=
   <unique specification> <left paren>
   <unique column list> <right paren>    -> unique_constraint_definition
 
 <unique column list> /* []Identifier */ ::=
   <column name list>
 
-<table constraint> /* TableElement */ ::=
+<table constraint> /* UniqueConstraintDefinition */ ::=
   <unique constraint definition>
 
-<table constraint definition> /* TableElement */ ::=
+<table constraint definition> /* UniqueConstraintDefinition */ ::=
   <table constraint>
 
 <position expression> /* Expr */ ::=

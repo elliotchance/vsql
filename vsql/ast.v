@@ -5,7 +5,8 @@ module vsql
 // All possible root statments.
 //
 // QueryExpression is used for both SELECT and VALUES.
-type Stmt = CommitStmt
+type Stmt = AlterTableStmt
+	| CommitStmt
 	| CreateSchemaStmt
 	| CreateTableStmt
 	| DeleteStmt
@@ -193,8 +194,8 @@ struct CreateTableStmt {
 fn (s CreateTableStmt) columns() Columns {
 	mut columns := []Column{}
 	for c in s.table_elements {
-		if c is Column {
-			columns << c
+		if c is ColumnDefinition {
+			columns << Column{c.column_name.name, c.typ, c.not_null}
 		}
 	}
 
@@ -393,11 +394,26 @@ fn (e Parameter) pstr(params map[string]Value) string {
 	return p.str()
 }
 
+struct ColumnDefinition {
+	column_name Identifier
+	typ Type
+	not_null bool
+}
+
+fn (e ColumnDefinition) str() string {
+	mut s := '${e.column_name} ${e.typ}'
+	if e.not_null {
+		s += ' NOT NULL'
+	}
+
+	return s
+}
+
 struct UniqueConstraintDefinition {
 	columns []Identifier
 }
 
-type TableElement = Column | UniqueConstraintDefinition
+type TableElement = ColumnDefinition | UniqueConstraintDefinition
 
 struct StartTransactionStmt {
 }
@@ -646,4 +662,21 @@ struct NullIfExpr {
 
 fn (e NullIfExpr) pstr(params map[string]Value) string {
 	return 'NULLIF(${e.a.pstr(params)}, ${e.b.pstr(params)})'
+}
+
+struct AddColumnDefinition {
+	column_definition ColumnDefinition
+}
+
+fn (e AddColumnDefinition) str() string {
+	return 'ADD COLUMN ${e.column_definition.str()}'
+}
+
+struct AlterTableStmt {
+	table_name Identifier
+	action AddColumnDefinition
+}
+
+fn (e AlterTableStmt) str() string {
+	return 'ALTER TABLE ${e.table_name.str()} ${e.action.str()}'
 }

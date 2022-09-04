@@ -28,7 +28,7 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse ti
 		table_name = 'PUBLIC.$table_name'
 	}
 
-	if table_name in c.storage.tables {
+	if (c.storage.get_table(table_name) or { Table{} }).xid != 0 {
 		return sqlstate_42p07(table_name) // duplicate table
 	}
 

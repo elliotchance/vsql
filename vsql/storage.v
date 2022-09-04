@@ -29,7 +29,11 @@ mut:
 	// We keep the table definitions in memory because they are needed for most
 	// operations (including read and writing rows). All tables must be loaded
 	// when the database is opened.
-	tables map[string]Table
+	//
+	// To support alerting tables, we need to be able to hold multiple
+	// definitions of the same table while we migrate the rows. Internally, we
+	// need to resolve the visible table to get the correct definition.
+	tables []Table
 	// file is opened, flushed and closed with each operation against the file.
 	file os.File
 	// See TransactionState for docs.
@@ -72,11 +76,11 @@ fn (mut f Storage) open(path string) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
-	f.tables = map[string]Table{}
+	f.tables = []Table{}
 	for object in f.btree.new_range_iterator('T'.bytes(), 'U'.bytes()) {
 		if object_is_visible(object.tid, object.xid, f.transaction_id, mut f.header.active_transaction_ids) {
-			table := new_table_from_bytes(object.value, object.tid)
-			f.tables[table.name] = table
+			table := new_table_from_bytes(object.value, object.tid, object.xid)
+			f.tables << table
 		}
 	}
 
@@ -110,19 +114,29 @@ fn (mut f Storage) close() ! {
 	f.file.close()
 }
 
+fn (mut f Storage) get_table(table_name string) ?Table {
+	for table in f.tables {
+		if table.name == table_name && table.xid == 0 {
+			return table
+		}
+	}
+
+	return none
+}
+
 fn (mut f Storage) create_table(table_name string, columns Columns, primary_key []string) ! {
 	f.isolation_start()!
 	defer {
 		f.isolation_end() or { panic(err) }
 	}
 
-	table := Table{f.transaction_id, table_name, columns, primary_key, false}
+	table := Table{f.transaction_id, 0, table_name, columns, primary_key, false}
 
 	obj := new_page_object('T$table_name'.bytes(), f.transaction_id, 0, table.bytes())
 	page_number := f.btree.add(obj)!
 	f.transaction_pages[page_number] = true
 
-	f.tables[table_name] = table
+	f.tables << table
 	f.schema_changed()
 }
 
@@ -151,7 +165,13 @@ fn (mut f Storage) delete_table(table_name string, tid int) ! {
 	page_number := f.btree.expire('T$table_name'.bytes(), tid, f.transaction_id)!
 	f.transaction_pages[page_number] = true
 
-	f.tables.delete(table_name)
+	for table in f.tables {
+		if table.name == table_name && table.tid == tid {
+			table.xid = f.transaction_id
+		}
+	}
+
+	// f.tables.delete(table_name)
 	f.schema_changed()
 }
 
@@ -209,6 +229,9 @@ fn (mut f Storage) read_rows(table_name string, prefix_table_name bool) ![]Row {
 	}
 
 	mut rows := []Row{}
+	table := f.get_table(table_name) or {
+		return sqlstate_42p01(table_name) // table does not exist
+	}
 
 	// ';' = ':' + 1
 	for object in f.btree.new_range_iterator('R$table_name:'.bytes(), 'R$table_name;'.bytes()) {
@@ -217,8 +240,7 @@ fn (mut f Storage) read_rows(table_name string, prefix_table_name bool) ![]Row {
 			if prefix_table_name {
 				prefixed_table_name = table_name
 			}
-			rows << new_row_from_bytes(f.tables[table_name], object.value, object.tid,
-				prefixed_table_name)
+			rows << new_row_from_bytes(table, object.value, object.tid, prefixed_table_name)
 		}
 	}
 

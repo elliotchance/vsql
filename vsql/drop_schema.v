@@ -19,19 +19,19 @@ fn execute_drop_schema(mut c Connection, stmt DropSchemaStmt, elapsed_parse time
 	}
 
 	// Find all dependencies (which is just tables right now).
-	mut table_names := []string{}
-	for table_name, _ in c.storage.tables {
-		if table_name.starts_with('${schema_name}.') {
-			table_names << table_name
+	mut tables := []Table{}
+	for table in c.storage.tables {
+		if table.name.starts_with('${schema_name}.') && table.xid == 0 {
+			tables << table
 		}
 	}
 
-	if stmt.behavior == 'RESTRICT' && table_names.len > 0 {
+	if stmt.behavior == 'RESTRICT' && tables.len > 0 {
 		return sqlstate_2bp01(schema_name)
 	}
 
-	for table_name in table_names {
-		c.storage.delete_table(table_name, c.storage.tables[table_name].tid)!
+	for table in tables {
+		c.storage.delete_table(table.name, table.tid)!
 	}
 
 	c.storage.delete_schema(schema_name, c.storage.schemas[schema_name].tid)!

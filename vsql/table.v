@@ -2,53 +2,6 @@
 
 module vsql
 
-// A column definition.
-//
-// snippet: v.Column
-struct Column {
-pub:
-	// name is case-sensitive. The name is equivilent to using a deliminated
-	// identifier (with double quotes).
-	//
-	// snippet: v.Column.name
-	name string
-	// typ of the column contains more specifics like size and precision.
-	//
-	// snippet: v.Column.typ
-	typ Type
-	// not_null will be true if ``NOT NULL`` was specified on the column.
-	//
-	// snippet: v.Column.not_null
-	not_null bool
-}
-
-// str returns the column definition like:
-//
-//   "foo" INT
-//   BAR DOUBLE PRECISION NOT NULL
-//
-// snippet: v.Column.str
-pub fn (c Column) str() string {
-	name := if c.name.is_upper() { c.name } else { '"$c.name"' }
-	mut f := '$name $c.typ'
-	if c.not_null {
-		f += ' NOT NULL'
-	}
-
-	return f
-}
-
-type Columns = []Column
-
-fn (c Columns) str() string {
-	mut s := []string{}
-	for col in c {
-		s << col.str()
-	}
-
-	return s.join(', ')
-}
-
 // Represents the structure of a table.
 //
 // snippet: v.Table
@@ -56,6 +9,8 @@ struct Table {
 mut:
 	// The tid is the transaction ID that created this table.
 	tid int
+	// The xid is the transaction ID that expired this table.
+	xid int
 pub mut:
 	// The name of the table is case-sensitive.
 	//
@@ -122,7 +77,7 @@ fn (t Table) bytes() []u8 {
 	return b.bytes()
 }
 
-fn new_table_from_bytes(data []u8, tid int) Table {
+fn new_table_from_bytes(data []u8, tid int, xid int) Table {
 	mut b := new_bytes(data)
 
 	table_name := b.read_string1()
@@ -144,7 +99,7 @@ fn new_table_from_bytes(data []u8, tid int) Table {
 		columns << Column{column_name, type_from_number(column_type, size), is_not_null}
 	}
 
-	return Table{tid, table_name, columns, primary_key, false}
+	return Table{tid, xid, table_name, columns, primary_key, false}
 }
 
 // Returns the CREATE TABLE statement, including the ';'.

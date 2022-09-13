@@ -7,6 +7,7 @@
 module vsql
 
 import os
+import rand
 
 enum TransactionState {
 	not_active
@@ -29,7 +30,7 @@ mut:
 	// We keep the table definitions in memory because they are needed for most
 	// operations (including read and writing rows). All tables must be loaded
 	// when the database is opened.
-	tables map[string]Table
+	tables []Table
 	// file is opened, flushed and closed with each operation against the file.
 	file os.File
 	// See TransactionState for docs.
@@ -54,15 +55,18 @@ fn (mut f Storage) open(path string) ! {
 	f.file = os.open_file(path, 'r+') or { return error('unable to open $path: $err') }
 
 	header := read_header(mut f.file)!
+	println('read version ${header.schema_version} (vs ${f.header.schema_version})')
 
 	f.btree = new_btree(new_file_pager(mut f.file, header.page_size, header.root_page)!,
 		header.page_size)
 
 	// Avoid reloading the schema if it hasn't changed.
 	if header.schema_version == f.header.schema_version {
+		println('schema unchanged')
 		f.header = header
 		return
 	}
+	println('schema CHANGED')
 	f.header = header
 
 	// The schema must be read in an isolation block, which may or may not
@@ -72,12 +76,10 @@ fn (mut f Storage) open(path string) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
-	f.tables = map[string]Table{}
+	f.tables = []Table{}
 	for object in f.btree.new_range_iterator('T'.bytes(), 'U'.bytes()) {
-		if object_is_visible(object.tid, object.xid, f.transaction_id, mut f.header.active_transaction_ids) {
-			table := new_table_from_bytes(object.value, object.tid)
-			f.tables[table.name] = table
-		}
+		table := new_table_from_bytes(object.value, object.tid, object.xid)
+		f.tables << table
 	}
 
 	f.schemas = map[string]Schema{}
@@ -93,7 +95,7 @@ fn (mut f Storage) schema_changed() {
 	// We don't need to read the header again because write operations on a file
 	// are exclusive so the version (and the header itself) we already have can
 	// be incremented.
-	f.header.schema_version++
+	f.header.schema_version = rand.int()
 }
 
 fn (mut f Storage) close() ! {
@@ -105,9 +107,33 @@ fn (mut f Storage) close() ! {
 	f.header.root_page = f.btree.pager.root_page()
 
 	write_header(mut f.file, f.header)!
+	println('wrote version ${f.header.schema_version}')
 
 	f.file.flush()
 	f.file.close()
+}
+
+fn (mut f Storage) get_table_by_name(table_name string) !Table {
+	for _, table in f.tables {
+		if table.name == table_name {
+			if object_is_visible(table.tid, table.xid, f.transaction_id, mut f.header.active_transaction_ids) {
+				return table
+			}
+		}
+	}
+
+	return sqlstate_42p01(table_name)
+}
+
+fn (mut f Storage) get_table_by_id(table_id []u8) Table {
+	for _, table in f.tables {
+		if table.id == table_id {
+			return table
+		}
+	}
+
+	// This should not be possible.
+	return Table{}
 }
 
 fn (mut f Storage) create_table(table_name string, columns Columns, primary_key []string) ! {
@@ -116,13 +142,13 @@ fn (mut f Storage) create_table(table_name string, columns Columns, primary_key 
 		f.isolation_end() or { panic(err) }
 	}
 
-	table := Table{f.transaction_id, table_name, columns, primary_key, false}
+	table := new_table(f.transaction_id, 0, table_name, columns, primary_key, false)
 
-	obj := new_page_object('T$table_name'.bytes(), f.transaction_id, 0, table.bytes())
+	obj := new_page_object('T${table.id.bytestr()}'.bytes(), f.transaction_id, 0, table.bytes())
 	page_number := f.btree.add(obj)!
 	f.transaction_pages[page_number] = true
 
-	f.tables[table_name] = table
+	f.tables << table
 	f.schema_changed()
 }
 
@@ -142,16 +168,22 @@ fn (mut f Storage) create_schema(schema_name string) ! {
 	f.schema_changed()
 }
 
-fn (mut f Storage) delete_table(table_name string, tid int) ! {
+fn (mut f Storage) delete_table(table_id []u8, tid int) ! {
 	f.isolation_start()!
 	defer {
 		f.isolation_end() or { panic(err) }
 	}
 
-	page_number := f.btree.expire('T$table_name'.bytes(), tid, f.transaction_id)!
+	page_number := f.btree.expire('T${table_id.bytestr()}'.bytes(), tid, f.transaction_id)!
 	f.transaction_pages[page_number] = true
 
-	f.tables.delete(table_name)
+	for i, table in f.tables {
+		if table.id == table_id {
+			f.tables.delete(i)
+			break
+		}
+	}
+
 	f.schema_changed()
 }
 
@@ -168,13 +200,13 @@ fn (mut f Storage) delete_schema(schema_name string, tid int) ! {
 	f.schema_changed()
 }
 
-fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
+fn (mut f Storage) delete_row(table Table, mut row Row) ! {
 	f.isolation_start()!
 	defer {
 		f.isolation_end() or { panic(err) }
 	}
 
-	page_number := f.btree.expire(row.object_key(f.tables[table_name])!, row.tid, f.transaction_id)!
+	page_number := f.btree.expire(row.object_key(table)!, row.tid, f.transaction_id)!
 	f.transaction_pages[page_number] = true
 }
 
@@ -202,7 +234,7 @@ fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ! {
 	}
 }
 
-fn (mut f Storage) read_rows(table_name string, prefix_table_name bool) ![]Row {
+fn (mut f Storage) read_rows(table Table, prefix_table_name bool) ![]Row {
 	f.isolation_start()!
 	defer {
 		f.isolation_end() or { panic(err) }
@@ -211,14 +243,13 @@ fn (mut f Storage) read_rows(table_name string, prefix_table_name bool) ![]Row {
 	mut rows := []Row{}
 
 	// ';' = ':' + 1
-	for object in f.btree.new_range_iterator('R$table_name:'.bytes(), 'R$table_name;'.bytes()) {
+	for object in f.btree.new_range_iterator('R${table.id.bytestr()}:'.bytes(), 'R${table.id.bytestr()};'.bytes()) {
 		if object_is_visible(object.tid, object.xid, f.transaction_id, mut f.header.active_transaction_ids) {
 			mut prefixed_table_name := ''
 			if prefix_table_name {
-				prefixed_table_name = table_name
+				prefixed_table_name = table.name
 			}
-			rows << new_row_from_bytes(f.tables[table_name], object.value, object.tid,
-				prefixed_table_name)
+			rows << new_row_from_bytes(table, object.value, object.tid, prefixed_table_name)
 		}
 	}
 

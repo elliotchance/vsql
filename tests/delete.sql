@@ -35,3 +35,42 @@ DELETE FROM foo.bar;
 -- msg: CREATE SCHEMA 1
 -- msg: CREATE TABLE 1
 -- msg: DELETE 0
+
+/* connection 1 */
+START TRANSACTION;
+CREATE TABLE foo (bar INT);
+INSERT INTO foo (bar) VALUES (123);
+/* connection 2 */
+DELETE FROM foo;
+-- 1: msg: START TRANSACTION
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 2: error 42P01: no such table: PUBLIC.FOO
+
+/* connection 1 */
+START TRANSACTION;
+CREATE TABLE foo (bar INT);
+INSERT INTO foo (bar) VALUES (123);
+COMMIT;
+/* connection 2 */
+DELETE FROM foo;
+-- 1: msg: START TRANSACTION
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: COMMIT
+-- 2: msg: DELETE 1
+
+/* connection 1 */
+START TRANSACTION;
+CREATE TABLE foo (bar INT);
+INSERT INTO foo (bar) VALUES (123);
+DROP TABLE foo;
+COMMIT;
+/* connection 2 */
+DELETE FROM foo;
+-- 1: msg: START TRANSACTION
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: DROP TABLE 1
+-- 1: msg: COMMIT
+-- 2: error 42P01: no such table: PUBLIC.FOO

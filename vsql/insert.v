@@ -36,11 +36,8 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 		table_name = 'PUBLIC.$table_name'
 	}
 
-	if table_name !in c.storage.tables {
-		return sqlstate_42p01(table_name) // table not found
-	}
+	table := c.storage.get_table_by_name(table_name)!
 
-	table := c.storage.tables[table_name]
 	for i, column in stmt.columns {
 		column_name := column.name
 		table_column := table.column(column_name)!

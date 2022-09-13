@@ -3,6 +3,17 @@
 
 module vsql
 
+import rand
+
+fn random_bytes(len int) []u8 {
+	mut buf := []u8{len: len}
+	for i in 0 .. len {
+		buf[i] = rand.u8()
+	}
+
+	return buf
+}
+
 // TODO(elliotchance): Make private when CLI is moved into vsql package.
 pub fn pluralize(n int, word string) string {
 	if n == 1 {

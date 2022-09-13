@@ -129,3 +129,27 @@ CREATE SCHEMA absolute;
 CREATE TABLE absolute.CONTINUE (baz BIGINT);
 -- msg: CREATE SCHEMA 1
 -- msg: CREATE TABLE 1
+
+/* connection 1 */
+CREATE TABLE foo (bar INT);
+/* connection 2 */
+CREATE TABLE foo (bar INT);
+-- 1: msg: CREATE TABLE 1
+-- 2: error 42P07: duplicate table: PUBLIC.FOO
+
+/* connection 1 */
+START TRANSACTION;
+CREATE TABLE foo (bar INT);
+INSERT INTO foo (bar) VALUES (123);
+/* connection 2 */
+START TRANSACTION;
+CREATE TABLE foo (bar VARCHAR(10));
+INSERT INTO foo (bar) VALUES ('hello');
+/* connection 1 */
+COMMIT;
+SELECT * FROM foo;
+/* connection 2 */
+COMMIT;
+SELECT * FROM foo;
+-- 1: msg: CREATE TABLE 1
+-- 2: error 42P07: duplicate table: PUBLIC.FOO

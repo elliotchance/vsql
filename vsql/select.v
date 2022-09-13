@@ -12,7 +12,7 @@ fn execute_select(mut c Connection, stmt QueryExpression, params map[string]Valu
 		c.release_read_connection()
 	}
 
-	mut plan := create_plan(stmt, params, c)!
+	mut plan := create_plan(stmt, params, mut c)!
 
 	if explain {
 		return plan.explain(elapsed_parse)

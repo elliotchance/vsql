@@ -36,11 +36,7 @@ pub fn (mut v VirtualTable) done() {
 }
 
 pub fn (v VirtualTable) table() Table {
-	return Table{
-		name: v.create_table_stmt.table_name
-		columns: v.create_table_stmt.columns()
-		is_virtual: true
-	}
+	return new_table(0, 0, v.create_table_stmt.table_name, v.create_table_stmt.columns(), []string{}, true)
 }
 
 // A VirtualTableOperation reads all rows from a virtual table.

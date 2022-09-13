@@ -26,7 +26,7 @@ fn execute_delete(mut c Connection, stmt DeleteStmt, params map[string]Value, el
 		table_name = 'PUBLIC.$table_name'
 	}
 
-	mut plan := create_plan(stmt, params, c)!
+	mut plan := create_plan(stmt, params, mut c)!
 
 	if explain {
 		return plan.explain(elapsed_parse)
@@ -34,8 +34,9 @@ fn execute_delete(mut c Connection, stmt DeleteStmt, params map[string]Value, el
 
 	mut rows := plan.execute([]Row{})!
 
+	table := c.storage.get_table_by_name(table_name)!
 	for mut row in rows {
-		c.storage.delete_row(table_name, mut row)!
+		c.storage.delete_row(table, mut row)!
 	}
 
 	return new_result_msg('DELETE $rows.len', elapsed_parse, t.elapsed())

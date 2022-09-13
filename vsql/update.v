@@ -25,7 +25,7 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 		c.release_write_connection()
 	}
 
-	mut plan := create_plan(stmt, params, c)!
+	mut plan := create_plan(stmt, params, mut c)!
 
 	if explain {
 		return plan.explain(elapsed_parse)
@@ -47,7 +47,7 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 		table_name = 'PUBLIC.$table_name'
 	}
 
-	table := c.storage.tables[table_name]
+	table := c.storage.get_table_by_name(table_name)!
 
 	mut modify_count := 0
 	for mut row in rows {

@@ -2,53 +2,6 @@
 
 module vsql
 
-// A column definition.
-//
-// snippet: v.Column
-struct Column {
-pub:
-	// name is case-sensitive. The name is equivilent to using a deliminated
-	// identifier (with double quotes).
-	//
-	// snippet: v.Column.name
-	name string
-	// typ of the column contains more specifics like size and precision.
-	//
-	// snippet: v.Column.typ
-	typ Type
-	// not_null will be true if ``NOT NULL`` was specified on the column.
-	//
-	// snippet: v.Column.not_null
-	not_null bool
-}
-
-// str returns the column definition like:
-//
-//   "foo" INT
-//   BAR DOUBLE PRECISION NOT NULL
-//
-// snippet: v.Column.str
-pub fn (c Column) str() string {
-	name := if c.name.is_upper() { c.name } else { '"$c.name"' }
-	mut f := '$name $c.typ'
-	if c.not_null {
-		f += ' NOT NULL'
-	}
-
-	return f
-}
-
-type Columns = []Column
-
-fn (c Columns) str() string {
-	mut s := []string{}
-	for col in c {
-		s << col.str()
-	}
-
-	return s.join(', ')
-}
-
 // Represents the structure of a table.
 //
 // snippet: v.Table
@@ -56,7 +9,12 @@ struct Table {
 mut:
 	// The tid is the transaction ID that created this table.
 	tid int
+	// The xid is the transaction ID that dropped the table.
+	xid int
 pub mut:
+	// A unique identifier for this table. It is used internally. It will always
+	// be 8 bytes and is generated randomly and non-sequentially.
+	id []u8
 	// The name of the table is case-sensitive.
 	//
 	// snippet: v.Table.name
@@ -74,6 +32,20 @@ pub mut:
 	//
 	// snippet: v.Table.is_virtual
 	is_virtual bool
+}
+
+fn new_table(tid int, xid int, name string, columns Columns, primary_key []string, is_virtual bool) Table {
+	id := random_bytes(8)
+
+	return Table{
+		tid
+		xid
+		id
+		name
+		columns
+		primary_key
+		is_virtual
+	}
 }
 
 // Convenience method for returning the ordered list of column names.
@@ -104,6 +76,7 @@ pub fn (t Table) column(name string) !Column {
 fn (t Table) bytes() []u8 {
 	mut b := new_empty_bytes()
 
+	b.write_u8s(t.id)
 	b.write_string1(t.name)
 
 	b.write_u8(u8(t.primary_key.len))
@@ -122,9 +95,10 @@ fn (t Table) bytes() []u8 {
 	return b.bytes()
 }
 
-fn new_table_from_bytes(data []u8, tid int) Table {
+fn new_table_from_bytes(data []u8, tid int, xid int) Table {
 	mut b := new_bytes(data)
 
+	id := b.read_u8s(8)
 	table_name := b.read_string1()
 
 	primary_key_len := b.read_u8()
@@ -144,7 +118,7 @@ fn new_table_from_bytes(data []u8, tid int) Table {
 		columns << Column{column_name, type_from_number(column_type, size), is_not_null}
 	}
 
-	return Table{tid, table_name, columns, primary_key, false}
+	return Table{tid, xid, id, table_name, columns, primary_key, false}
 }
 
 // Returns the CREATE TABLE statement, including the ';'.
@@ -207,7 +181,8 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 			rows << new_row(data)
 		}
 	} else {
-		rows = o.storage.read_rows(o.table_name, o.prefix_table_name)!
+		table := o.storage.get_table_by_name(o.table_name)!
+		rows = o.storage.read_rows(table, o.prefix_table_name)!
 	}
 
 	return rows

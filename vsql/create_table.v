@@ -4,8 +4,6 @@ module vsql
 
 import time
 
-// TODO(elliotchance): A table is allowed to have zero columns.
-
 fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
@@ -28,8 +26,13 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse ti
 		table_name = 'PUBLIC.$table_name'
 	}
 
-	if table_name in c.storage.tables {
-		return sqlstate_42p07(table_name) // duplicate table
+	// Make sure the table doesn't exist at any visibility (so we cannot use
+	// get_table_by_name) This is to avoid concurrent transactions from creating
+	// a table of the same name.
+	for _, table in c.storage.tables {
+		if table.name == table_name {
+			return sqlstate_42p07(table_name) // duplicate table
+		}
 	}
 
 	mut columns := []Column{}

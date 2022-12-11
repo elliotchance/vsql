@@ -21,7 +21,7 @@ fn new_expr_operation(conn &Connection, params map[string]Value, select_list Sel
 			for _, table in tables {
 				columns << table.columns
 				for column in table.columns {
-					exprs << DerivedColumn{new_identifier('"${table.name}.$column.name"'), new_identifier('"$column.name"')}
+					exprs << DerivedColumn{new_identifier('"${table.name}.${column.name}"'), new_identifier('"${column.name}"')}
 				}
 			}
 		}
@@ -37,14 +37,14 @@ fn new_expr_operation(conn &Connection, params map[string]Value, select_list Sel
 					return sqlstate_3f000(parts[0]) // scheme does not exist
 				}
 			} else {
-				table_name = 'PUBLIC.$table_name'
+				table_name = 'PUBLIC.${table_name}'
 			}
 
 			// panic(table_name)
 			table := tables[table_name] or { return sqlstate_42p01(table_name) }
 			columns = table.columns
 			for column in table.columns {
-				exprs << DerivedColumn{new_identifier('"${table.name}.$column.name"'), new_identifier('"$column.name"')}
+				exprs << DerivedColumn{new_identifier('"${table.name}.${column.name}"'), new_identifier('"${column.name}"')}
 			}
 		}
 		[]DerivedColumn {
@@ -61,7 +61,7 @@ fn new_expr_operation(conn &Connection, params map[string]Value, select_list Sel
 
 				columns << Column{column_name, eval_as_type(conn, empty_row, expr, params)!, false}
 
-				exprs << DerivedColumn{expr, new_identifier('"$column_name"')}
+				exprs << DerivedColumn{expr, new_identifier('"${column_name}"')}
 			}
 		}
 	}
@@ -70,7 +70,7 @@ fn new_expr_operation(conn &Connection, params map[string]Value, select_list Sel
 }
 
 fn (o ExprOperation) str() string {
-	return 'EXPR ($o.columns())'
+	return 'EXPR (${o.columns()})'
 }
 
 fn (o ExprOperation) columns() Columns {
@@ -95,7 +95,7 @@ fn eval_row(conn &Connection, data Row, exprs []Expr, params map[string]Value) !
 	mut col_number := 1
 	mut row := map[string]Value{}
 	for expr in exprs {
-		row['COL$col_number'] = eval_as_value(conn, data, expr, params)!
+		row['COL${col_number}'] = eval_as_value(conn, data, expr, params)!
 		col_number++
 	}
 
@@ -149,12 +149,12 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 			return eval_as_type(conn, data, e.left, params)
 		}
 		Identifier {
-			col := data.data[e.name] or { return sqlstate_42601('unknown column: $e.name') }
+			col := data.data[e.name] or { return sqlstate_42601('unknown column: ${e.name}') }
 
 			return col.typ
 		}
 		NoExpr, QualifiedAsteriskExpr, QueryExpression, RowExpr {
-			return sqlstate_42601('invalid expression provided: $e.str()')
+			return sqlstate_42601('invalid expression provided: ${e.str()}')
 		}
 		CurrentDateExpr {
 			return new_type('DATE', 0)
@@ -242,14 +242,14 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) !V
 		}
 		CurrentTimeExpr {
 			if e.prec > 6 {
-				return sqlstate_42601('$e: cannot have precision greater than 6')
+				return sqlstate_42601('${e}: cannot have precision greater than 6')
 			}
 
 			return new_time_value(time_value(conn, e.prec, true))
 		}
 		CurrentTimestampExpr {
 			if e.prec > 6 {
-				return sqlstate_42601('$e: cannot have precision greater than 6')
+				return sqlstate_42601('${e}: cannot have precision greater than 6')
 			}
 
 			now, _ := conn.options.now()
@@ -258,14 +258,14 @@ fn eval_as_value(conn &Connection, data Row, e Expr, params map[string]Value) !V
 		}
 		LocalTimeExpr {
 			if e.prec > 6 {
-				return sqlstate_42601('$e: cannot have precision greater than 6')
+				return sqlstate_42601('${e}: cannot have precision greater than 6')
 			}
 
 			return new_time_value(time_value(conn, e.prec, false))
 		}
 		LocalTimestampExpr {
 			if e.prec > 6 {
-				return sqlstate_42601('$e: cannot have precision greater than 6')
+				return sqlstate_42601('${e}: cannot have precision greater than 6')
 			}
 
 			now, _ := conn.options.now()
@@ -321,7 +321,7 @@ fn eval_as_bool(conn &Connection, data Row, e Expr, params map[string]Value) !bo
 }
 
 fn eval_identifier(data Row, e Identifier) !Value {
-	value := data.data[e.name] or { return sqlstate_42601('unknown column: $e.name') }
+	value := data.data[e.name] or { return sqlstate_42601('unknown column: ${e.name}') }
 
 	return value
 }
@@ -341,7 +341,8 @@ fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) !V
 	}
 
 	if e.args.len != func.arg_types.len {
-		return sqlstate_42883('$func_name has $e.args.len ${pluralize(e.args.len, 'argument')} but needs $func.arg_types.len ${pluralize(func.arg_types.len,
+		return sqlstate_42883('${func_name} has ${e.args.len} ${pluralize(e.args.len,
+			'argument')} but needs ${func.arg_types.len} ${pluralize(func.arg_types.len,
 			'argument')}')
 	}
 
@@ -349,7 +350,7 @@ fn eval_call(conn &Connection, data Row, e CallExpr, params map[string]Value) !V
 	mut i := 0
 	for typ in func.arg_types {
 		arg := eval_as_value(conn, data, e.args[i], params)!
-		args << cast(conn, 'argument ${i + 1} in $func_name', arg, typ)!
+		args << cast(conn, 'argument ${i + 1} in ${func_name}', arg, typ)!
 		i++
 	}
 
@@ -473,8 +474,8 @@ fn eval_like(conn &Connection, data Row, e LikeExpr, params map[string]Value) !V
 		'\\)').replace('[', '\\[').replace('{', '\\{').replace('_', '.').replace('%',
 		'.*')
 
-	mut re := regex.regex_opt('^$escaped_regex$') or {
-		return error('cannot compile regexp: ^$escaped_regex$: $err')
+	mut re := regex.regex_opt('^${escaped_regex}$') or {
+		return error('cannot compile regexp: ^${escaped_regex}$: ${err}')
 	}
 	result := re.matches_string(left.string_value)
 
@@ -516,27 +517,29 @@ fn eval_substring(conn &Connection, data Row, e SubstringExpr, params map[string
 	return new_varchar_value(value.string_value.substr(from, from + @for), 0)
 }
 
-fn eval_binary(conn &Connection, data Row, e BinaryExpr, params map[string]Value) !Value {
+fn eval_binary(conn Connection, data Row, e BinaryExpr, params map[string]Value) !Value {
 	left := eval_as_value(conn, data, e.left, params)!
 	right := eval_as_value(conn, data, e.right, params)!
 
-	key := '$left.typ.typ $e.op $right.typ.typ'
-	if key in conn.binary_operators {
-		return conn.binary_operators[key](conn, left, right)
+	key := '${left.typ.typ} ${e.op} ${right.typ.typ}'
+	if fnc := conn.binary_operators[key] {
+		op_fn:=fnc as BinaryOperatorFunc
+		return op_fn(conn, left, right) 
 	}
 
-	return sqlstate_42883('operator does not exist: $left.typ $e.op $right.typ')
+	return sqlstate_42883('operator does not exist: ${left.typ} ${e.op} ${right.typ}')
 }
 
 fn eval_unary(conn &Connection, data Row, e UnaryExpr, params map[string]Value) !Value {
 	value := eval_as_value(conn, data, e.expr, params)!
 
-	key := '$e.op $value.typ.typ'
-	if key in conn.unary_operators {
-		return conn.unary_operators[key](conn, value)
+	key := '${e.op} ${value.typ.typ}'
+	if fnc:= conn.unary_operators[key] {
+		unary_fn:=fnc as UnaryOperatorFunc
+		return unary_fn(conn, value)! 
 	}
 
-	return sqlstate_42883('operator does not exist: $key')
+	return sqlstate_42883('operator does not exist: ${key}')
 }
 
 fn eval_between(conn &Connection, data Row, e BetweenExpr, params map[string]Value) !Value {
@@ -572,7 +575,9 @@ fn eval_similar(conn &Connection, data Row, e SimilarExpr, params map[string]Val
 
 	regexp := '^${right.string_value.replace('.', '\\.').replace('_', '.').replace('%',
 		'.*')}$'
-	mut re := regex.regex_opt(regexp) or { return error('cannot compile regexp: $regexp: $err') }
+	mut re := regex.regex_opt(regexp) or {
+		return error('cannot compile regexp: ${regexp}: ${err}')
+	}
 	result := re.matches_string(left.string_value)
 
 	if e.not {
@@ -591,6 +596,5 @@ fn eval_as_nullable_value(conn &Connection, typ SQLType, data Row, e Expr, param
 	if e is UntypedNullExpr {
 		return new_null_value(typ)
 	}
-
 	return eval_as_value(conn, data, e, params)
 }

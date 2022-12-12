@@ -271,9 +271,11 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 		if !v.is_null || v.typ.typ == .is_boolean {
 			match col.typ.typ {
 				.is_boolean {
-					v.bool_value = Boolean(buf.read_u8())
-					if v.bool_value == .is_unknown {
-						v.is_null = true
+					unsafe{
+						v.bool_value = Boolean(buf.read_u8())
+						if v.bool_value == .is_unknown {
+							v.is_null = true
+						}
 					}
 				}
 				.is_bigint {

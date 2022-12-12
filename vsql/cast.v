@@ -64,9 +64,10 @@ fn cast(conn &Connection, msg string, v Value, to Type) !Value {
 		return new_null_value(to.typ)
 	}
 
-	key := '$v.typ.typ AS $to.typ'
-	if key in conn.cast_rules {
-		return conn.cast_rules[key](conn, v, to)
+	key := '${v.typ.typ} AS ${to.typ}'
+	if fnc := conn.cast_rules[key] {
+		cast_fn := fnc as CastFunc
+		return cast_fn(conn, v, to)!
 	}
 
 	return sqlstate_42846(v.typ, to)

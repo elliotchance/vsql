@@ -30,14 +30,24 @@ jobs:
         make clean-docs docs
         git diff --exit-code
 
-    - name: Run SQL and B-tree tests
-      run: make test
+    - name: Run SQL tests
+      run: make sql-test
 
     - name: Run examples
       run: make examples
 
     - name: Run CLI tests
       run: make cli-test
+
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@v24.1
+
+    - name: List all changed files
+      run: |
+        for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+          echo "$file was changed"
+        done
 
   macos-binary:
     name: Build for macOS

@@ -336,7 +336,7 @@ pub mut:
 	// encouraged to do so.
 	//
 	// snippet: v.ConnectionOptions.query_cache
-	query_cache &QueryCache
+	query_cache &QueryCache = unsafe { nil }
 	// Warning: This only works for :memory: databases. Configuring it for
 	// file-based databases will either be ignored or causes crashes.
 	//
@@ -363,7 +363,7 @@ pub mut:
 	// RwMutex that belongs to each file - such as from a map.
 	//
 	// snippet: v.ConnectionOptions.mutex
-	mutex &sync.RwMutex
+	mutex &sync.RwMutex = unsafe { nil }
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive
 	// or negative minutes).

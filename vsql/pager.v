@@ -80,9 +80,9 @@ mut:
 // new_file_pager requires that the path already exists and has already been
 // initialized as a new database.
 fn new_file_pager(mut file os.File, page_size int, root_page int) !&FilePager {
-	file.seek(0, .end) or { return error('unable seek end: $err') }
+	file.seek(0, .end) or { return error('unable seek end: ${err}') }
 
-	file_len := file.tell() or { return error('unable to get file length: $err') }
+	file_len := file.tell() or { return error('unable to get file length: ${err}') }
 
 	return &FilePager{
 		file: file
@@ -98,11 +98,11 @@ fn (mut p FilePager) fetch_page(page_number int) !Page {
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
 	p.file.seek(int(sizeof(Header)) + (p.page_size * page_number), .start) or {
-		return error('unable to seek: $err')
+		return error('unable to seek: ${err}')
 	}
 
 	mut buf := []u8{len: p.page_size}
-	p.file.read(mut buf) or { return error('unable to read from file: $err') }
+	p.file.read(mut buf) or { return error('unable to read from file: ${err}') }
 
 	mut b := new_bytes(buf)
 
@@ -117,7 +117,7 @@ fn (mut p FilePager) store_page(page_number int, page Page) ! {
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
 	p.file.seek(int(sizeof(Header)) + (p.page_size * page_number), .start) or {
-		return error('unable to seek: $err')
+		return error('unable to seek: ${err}')
 	}
 
 	mut b := new_empty_bytes()
@@ -125,7 +125,7 @@ fn (mut p FilePager) store_page(page_number int, page Page) ! {
 	b.write_u16(page.used)
 	b.write_u8s(page.data)
 
-	p.file.write(b.bytes()) or { return error('unable to write to file: $err') }
+	p.file.write(b.bytes()) or { return error('unable to write to file: ${err}') }
 }
 
 fn (mut p FilePager) total_pages() int {
@@ -135,7 +135,7 @@ fn (mut p FilePager) total_pages() int {
 fn (mut p FilePager) append_page(page Page) !int {
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
-	p.store_page(p.total_pages, page) or { return error('unable to store page: $err') }
+	p.store_page(p.total_pages, page) or { return error('unable to store page: ${err}') }
 	p.total_pages++
 
 	return p.total_pages - 1

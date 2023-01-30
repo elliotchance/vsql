@@ -34,5 +34,5 @@ fn new_schema_from_bytes(data []u8, tid int) Schema {
 //
 // snippet: v.Schema.str
 fn (s Schema) str() string {
-	return 'CREATE SCHEMA $s.name;'
+	return 'CREATE SCHEMA ${s.name};'
 }

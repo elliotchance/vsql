@@ -11,7 +11,7 @@ fn example() ! {
 
 	db.query('SELECT * FROM bar') or {
 		sqlstate := vsql.sqlstate_from_int(err.code())
-		println('$sqlstate: $err.msg()')
+		println('${sqlstate}: ${err.msg()}')
 		// 42P01: no such table: BAR
 
 		if err.code() == vsql.sqlstate_to_int('42P01') {
@@ -22,7 +22,7 @@ fn example() ! {
 	db.query('SELECT * FROM bar') or {
 		match err {
 			vsql.SQLState42P01 { // 42P01 = table not found
-				println("I knew '$err.table_name' did not exist!")
+				println("I knew '${err.table_name}' did not exist!")
 			}
 			else {
 				panic(err)

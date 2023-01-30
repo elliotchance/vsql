@@ -101,7 +101,7 @@ fn new_primary_key_operation(table Table, lower Expr, upper Expr, params map[str
 }
 
 fn (o &PrimaryKeyOperation) str() string {
-	return 'PRIMARY KEY $o.table.name ($o.columns()) BETWEEN ${o.lower.pstr(o.params)} AND ${o.upper.pstr(o.params)}'
+	return 'PRIMARY KEY ${o.table.name} (${o.columns()}) BETWEEN ${o.lower.pstr(o.params)} AND ${o.upper.pstr(o.params)}'
 }
 
 fn (o &PrimaryKeyOperation) columns() Columns {
@@ -109,7 +109,7 @@ fn (o &PrimaryKeyOperation) columns() Columns {
 		mut columns := []Column{}
 
 		for column in o.table.columns {
-			columns << Column{'${o.table.name}.$column.name', column.typ, column.not_null}
+			columns << Column{'${o.table.name}.${column.name}', column.typ, column.not_null}
 		}
 
 		return columns

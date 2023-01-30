@@ -29,8 +29,8 @@ pub:
 //
 // snippet: v.Column.str
 pub fn (c Column) str() string {
-	name := if c.name.is_upper() { c.name } else { '"$c.name"' }
-	mut f := '$name $c.typ'
+	name := if c.name.is_upper() { c.name } else { '"${c.name}"' }
+	mut f := '${name} ${c.typ}'
 	if c.not_null {
 		f += ' NOT NULL'
 	}
@@ -151,11 +151,11 @@ fn new_table_from_bytes(data []u8, tid int) Table {
 //
 // snippet: v.Table.str
 pub fn (t Table) str() string {
-	mut s := 'CREATE TABLE $t.name ('
+	mut s := 'CREATE TABLE ${t.name} ('
 	mut cols := []string{}
 
 	for col in t.columns {
-		cols << '  $col'
+		cols << '  ${col}'
 	}
 
 	return s + '\n' + cols.join(',\n') + '\n);'
@@ -178,14 +178,14 @@ mut:
 }
 
 fn (o TableOperation) str() string {
-	return 'TABLE $o.table_name ($o.columns())'
+	return 'TABLE ${o.table_name} (${o.columns()})'
 }
 
 fn (o TableOperation) columns() Columns {
 	if o.prefix_table_name {
 		mut columns := []Column{}
 		for column in o.table.columns {
-			columns << Column{'${o.table_name}.$column.name', column.typ, column.not_null}
+			columns << Column{'${o.table_name}.${column.name}', column.typ, column.not_null}
 		}
 
 		return columns
@@ -201,7 +201,7 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 		for row in o.subplans[o.table_name].execute([]Row{})! {
 			mut data := map[string]Value{}
 			for k, v in row.data {
-				data['${o.table_name}.$k'] = v
+				data['${o.table_name}.${k}'] = v
 			}
 
 			rows << new_row(data)

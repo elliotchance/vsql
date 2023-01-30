@@ -38,6 +38,6 @@ fn example() ! {
 	for row in result {
 		num := row.get_f64('num')!
 		word := row.get_string('WORD')!
-		println('$num $word')
+		println('${num} ${word}')
 	}
 }

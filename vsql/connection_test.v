@@ -22,15 +22,15 @@ fn test_concurrent_writes() ! {
 
 	mut waits := []thread{}
 	for i in 0 .. 10 {
-		waits << go fn (file_name string, verbose bool, i int, options ConnectionOptions) {
+		waits << spawn fn (file_name string, verbose bool, i int, options ConnectionOptions) {
 			mut db := open_database(file_name, options) or { panic(err) }
 			for j in 0 .. 100 {
 				if verbose {
-					println('${i}.$j: INSERT start')
+					println('${i}.${j}: INSERT start')
 				}
 				db.query('INSERT INTO foo (x) VALUES (1)') or { panic(err) }
 				if verbose {
-					println('${i}.$j: INSERT done')
+					println('${i}.${j}: INSERT done')
 				}
 			}
 		}(file_name, verbose, i, options)

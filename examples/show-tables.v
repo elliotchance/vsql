@@ -22,8 +22,8 @@ fn example() ! {
 			table_names << table.name
 		}
 
-		println('$schema.name has $table_names')
-		actual << '$schema.name has $table_names'
+		println('${schema.name} has ${table_names}')
+		actual << '${schema.name} has ${table_names}'
 	}
 
 	assert actual == [

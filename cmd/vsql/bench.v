@@ -26,8 +26,8 @@ fn bench_command(cmd cli.Command) ? {
 		file = 'bench.vsql'
 	}
 
-	mut conn := vsql.open(':memory:') or { panic('$err') }
+	mut conn := vsql.open(':memory:') or { panic('${err}') }
 
 	mut benchmark := vsql.new_benchmark(conn)
-	benchmark.start() or { panic('$err') }
+	benchmark.start() or { panic('${err}') }
 }

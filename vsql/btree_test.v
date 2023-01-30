@@ -97,16 +97,16 @@ fn run_btree_test(mut pager Pager, size int, object_size int, page_size int, ran
 }
 
 fn visualize(mut p Pager) ! {
-	println('\n=== VISUALIZE (root = $p.root_page()) ===')
+	println('\n=== VISUALIZE (root = ${p.root_page()}) ===')
 	for i := 0; i < p.total_pages(); i++ {
 		page := p.fetch_page(i)!
 
 		match page.kind {
 			kind_leaf {
-				println('$i (leaf, $page.used b used): ${strkeys(page)}')
+				println('${i} (leaf, ${page.used} b used): ${strkeys(page)}')
 			}
 			kind_not_leaf {
-				println('$i (non-leaf, $page.used b used): ${strobjects(page)}')
+				println('${i} (non-leaf, ${page.used} b used): ${strobjects(page)}')
 			}
 			else {
 				panic(page.kind)
@@ -116,7 +116,7 @@ fn visualize(mut p Pager) ! {
 
 	leaf_objects, non_leaf_objects := count(mut p)!
 
-	println('total: $leaf_objects leaf objects + $non_leaf_objects non-leaf objects\n')
+	println('total: ${leaf_objects} leaf objects + ${non_leaf_objects} non-leaf objects\n')
 }
 
 // Validate ensures that the tree is valid.
@@ -163,7 +163,7 @@ fn validate_page(mut p Pager, page_number int) !([]u8, []u8, int) {
 			// min and max have already been verified in the subpage, but the
 			// min has to equal what our pointer says.
 			if compare_bytes(smallest, object.key) != 0 {
-				panic('$object.key.bytestr() in page $page_number points to $object_value, but child page has head $smallest.bytestr()')
+				panic('${object.key.bytestr()} in page ${page_number} points to ${object_value}, but child page has head ${smallest.bytestr()}')
 			}
 		}
 	} else {
@@ -219,7 +219,7 @@ fn strobjects(p Page) []string {
 	mut keys := []string{}
 	for object in p.objects() {
 		mut buf := new_bytes(object.value)
-		keys << '$object.key.bytestr():$buf.read_i32()'
+		keys << '${object.key.bytestr()}:${buf.read_i32()}'
 	}
 
 	return keys

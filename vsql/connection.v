@@ -268,7 +268,7 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 				return sqlstate_3f000(parts[0]) // scheme does not exist
 			}
 		} else {
-			table_name = 'PUBLIC.$table_name'
+			table_name = 'PUBLIC.${table_name}'
 		}
 
 		c.virtual_tables[table_name] = VirtualTable{

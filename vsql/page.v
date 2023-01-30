@@ -195,7 +195,7 @@ fn (p Page) versions(key []u8, objects []PageObject) []int {
 // should be interpreted by the client as a try again. See description below.
 fn (mut p Page) add(obj PageObject) ! {
 	if p.used + obj.length() > p.page_size() {
-		panic('page cannot fit object of $obj.length() b in page using $p.used b')
+		panic('page cannot fit object of ${obj.length()} b in page using ${p.used} b')
 	}
 
 	// If there are two versions, there must be one version that is

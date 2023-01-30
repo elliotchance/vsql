@@ -23,6 +23,6 @@ fn print_version() {
 	if version.contains('MISSING') {
 		println('no version information available')
 	} else {
-		println('vsql $version')
+		println('vsql ${version}')
 	}
 }

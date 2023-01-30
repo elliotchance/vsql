@@ -31,34 +31,34 @@ fn register_binary_operators(mut conn Connection) {
 
 	for typ1 in int_types {
 		for typ2 in int_types {
-			conn.binary_operators['$typ1 = $typ2'] = binary_int_equal_int
-			conn.binary_operators['$typ1 <> $typ2'] = binary_int_not_equal_int
-			conn.binary_operators['$typ1 < $typ2'] = binary_int_less_int
-			conn.binary_operators['$typ1 > $typ2'] = binary_int_greater_int
-			conn.binary_operators['$typ1 <= $typ2'] = binary_int_less_equal_int
-			conn.binary_operators['$typ1 >= $typ2'] = binary_int_greater_equal_int
+			conn.binary_operators['${typ1} = ${typ2}'] = binary_int_equal_int
+			conn.binary_operators['${typ1} <> ${typ2}'] = binary_int_not_equal_int
+			conn.binary_operators['${typ1} < ${typ2}'] = binary_int_less_int
+			conn.binary_operators['${typ1} > ${typ2}'] = binary_int_greater_int
+			conn.binary_operators['${typ1} <= ${typ2}'] = binary_int_less_equal_int
+			conn.binary_operators['${typ1} >= ${typ2}'] = binary_int_greater_equal_int
 		}
 	}
 
 	for typ1 in float_types {
 		for typ2 in float_types {
-			conn.binary_operators['$typ1 = $typ2'] = binary_float_equal_float
-			conn.binary_operators['$typ1 <> $typ2'] = binary_float_not_equal_float
-			conn.binary_operators['$typ1 < $typ2'] = binary_float_less_float
-			conn.binary_operators['$typ1 > $typ2'] = binary_float_greater_float
-			conn.binary_operators['$typ1 <= $typ2'] = binary_float_less_equal_float
-			conn.binary_operators['$typ1 >= $typ2'] = binary_float_greater_equal_float
+			conn.binary_operators['${typ1} = ${typ2}'] = binary_float_equal_float
+			conn.binary_operators['${typ1} <> ${typ2}'] = binary_float_not_equal_float
+			conn.binary_operators['${typ1} < ${typ2}'] = binary_float_less_float
+			conn.binary_operators['${typ1} > ${typ2}'] = binary_float_greater_float
+			conn.binary_operators['${typ1} <= ${typ2}'] = binary_float_less_equal_float
+			conn.binary_operators['${typ1} >= ${typ2}'] = binary_float_greater_equal_float
 		}
 	}
 
 	for typ1 in text_types {
 		for typ2 in text_types {
-			conn.binary_operators['$typ1 = $typ2'] = binary_string_equal_string
-			conn.binary_operators['$typ1 <> $typ2'] = binary_string_not_equal_string
-			conn.binary_operators['$typ1 < $typ2'] = binary_string_less_string
-			conn.binary_operators['$typ1 > $typ2'] = binary_string_greater_string
-			conn.binary_operators['$typ1 <= $typ2'] = binary_string_less_equal_string
-			conn.binary_operators['$typ1 >= $typ2'] = binary_string_greater_equal_string
+			conn.binary_operators['${typ1} = ${typ2}'] = binary_string_equal_string
+			conn.binary_operators['${typ1} <> ${typ2}'] = binary_string_not_equal_string
+			conn.binary_operators['${typ1} < ${typ2}'] = binary_string_less_string
+			conn.binary_operators['${typ1} > ${typ2}'] = binary_string_greater_string
+			conn.binary_operators['${typ1} <= ${typ2}'] = binary_string_less_equal_string
+			conn.binary_operators['${typ1} >= ${typ2}'] = binary_string_greater_equal_string
 		}
 	}
 

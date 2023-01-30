@@ -51,7 +51,7 @@ fn new_storage() Storage {
 }
 
 fn (mut f Storage) open(path string) ! {
-	f.file = os.open_file(path, 'r+') or { return error('unable to open $path: $err') }
+	f.file = os.open_file(path, 'r+') or { return error('unable to open ${path}: ${err}') }
 
 	header := read_header(mut f.file)!
 
@@ -118,7 +118,7 @@ fn (mut f Storage) create_table(table_name string, columns Columns, primary_key 
 
 	table := Table{f.transaction_id, table_name, columns, primary_key, false}
 
-	obj := new_page_object('T$table_name'.bytes(), f.transaction_id, 0, table.bytes())
+	obj := new_page_object('T${table_name}'.bytes(), f.transaction_id, 0, table.bytes())
 	page_number := f.btree.add(obj)!
 	f.transaction_pages[page_number] = true
 
@@ -134,7 +134,7 @@ fn (mut f Storage) create_schema(schema_name string) ! {
 
 	schema := Schema{f.transaction_id, schema_name}
 
-	obj := new_page_object('S$schema_name'.bytes(), f.transaction_id, 0, schema.bytes())
+	obj := new_page_object('S${schema_name}'.bytes(), f.transaction_id, 0, schema.bytes())
 	page_number := f.btree.add(obj)!
 	f.transaction_pages[page_number] = true
 
@@ -148,7 +148,7 @@ fn (mut f Storage) delete_table(table_name string, tid int) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
-	page_number := f.btree.expire('T$table_name'.bytes(), tid, f.transaction_id)!
+	page_number := f.btree.expire('T${table_name}'.bytes(), tid, f.transaction_id)!
 	f.transaction_pages[page_number] = true
 
 	f.tables.delete(table_name)
@@ -161,7 +161,7 @@ fn (mut f Storage) delete_schema(schema_name string, tid int) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
-	page_number := f.btree.expire('S$schema_name'.bytes(), tid, f.transaction_id)!
+	page_number := f.btree.expire('S${schema_name}'.bytes(), tid, f.transaction_id)!
 	f.transaction_pages[page_number] = true
 
 	f.schemas.delete(schema_name)
@@ -211,7 +211,7 @@ fn (mut f Storage) read_rows(table_name string, prefix_table_name bool) ![]Row {
 	mut rows := []Row{}
 
 	// ';' = ':' + 1
-	for object in f.btree.new_range_iterator('R$table_name:'.bytes(), 'R$table_name;'.bytes()) {
+	for object in f.btree.new_range_iterator('R${table_name}:'.bytes(), 'R${table_name};'.bytes()) {
 		if object_is_visible(object.tid, object.xid, f.transaction_id, mut f.header.active_transaction_ids) {
 			mut prefixed_table_name := ''
 			if prefix_table_name {

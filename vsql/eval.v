@@ -523,8 +523,8 @@ fn eval_binary(conn Connection, data Row, e BinaryExpr, params map[string]Value)
 
 	key := '${left.typ.typ} ${e.op} ${right.typ.typ}'
 	if fnc := conn.binary_operators[key] {
-		op_fn:=fnc as BinaryOperatorFunc
-		return op_fn(conn, left, right) 
+		op_fn := fnc as BinaryOperatorFunc
+		return op_fn(conn, left, right)
 	}
 
 	return sqlstate_42883('operator does not exist: ${left.typ} ${e.op} ${right.typ}')
@@ -534,9 +534,9 @@ fn eval_unary(conn &Connection, data Row, e UnaryExpr, params map[string]Value) 
 	value := eval_as_value(conn, data, e.expr, params)!
 
 	key := '${e.op} ${value.typ.typ}'
-	if fnc:= conn.unary_operators[key] {
-		unary_fn:=fnc as UnaryOperatorFunc
-		return unary_fn(conn, value)! 
+	if fnc := conn.unary_operators[key] {
+		unary_fn := fnc as UnaryOperatorFunc
+		return unary_fn(conn, value)!
 	}
 
 	return sqlstate_42883('operator does not exist: ${key}')

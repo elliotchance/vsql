@@ -32,7 +32,7 @@ fn create_plan(stmt Stmt, params map[string]Value, c &Connection) !Plan {
 		DeleteStmt { return create_delete_plan(stmt, params, c) }
 		QueryExpression { return create_query_expression_plan(stmt, params, c, Correlation{}) }
 		UpdateStmt { return create_update_plan(stmt, params, c) }
-		else { return error('cannot create plan for $stmt') }
+		else { return error('cannot create plan for ${stmt}') }
 	}
 }
 
@@ -109,7 +109,7 @@ fn create_select_plan_without_join(body SelectStmt, from_clause TablePrimary, of
 					return sqlstate_3f000(parts[0]) // scheme does not exist
 				}
 			} else {
-				table_name = 'PUBLIC.$table_name'
+				table_name = 'PUBLIC.${table_name}'
 			}
 
 			if allow_virtual && table_name in c.virtual_tables {

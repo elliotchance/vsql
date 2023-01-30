@@ -45,7 +45,7 @@ pub fn (r Row) get_f64(name string) !f64 {
 		return value.f64_value
 	}
 
-	return error("cannot use get_f64('$name') when type is $value.typ")
+	return error("cannot use get_f64('${name}') when type is ${value.typ}")
 }
 
 // get_int will only work for columns that are integers (SMALLINT, INTEGER or
@@ -58,7 +58,7 @@ pub fn (r Row) get_int(name string) !int {
 		return int(value.int_value)
 	}
 
-	return error("cannot use get_int('$name') when type is $value.typ")
+	return error("cannot use get_int('${name}') when type is ${value.typ}")
 }
 
 // get_string is the most flexible getter and will try to coerce the value
@@ -87,7 +87,7 @@ pub fn (r Row) get_bool(name string) !Boolean {
 			return value.bool_value
 		}
 		else {
-			return error("cannot use get_bool('$name') when type is $value.typ")
+			return error("cannot use get_bool('${name}') when type is ${value.typ}")
 		}
 	}
 }
@@ -101,11 +101,11 @@ pub fn (r Row) get(name string) !Value {
 		// Be helpful and look for silly mistakes.
 		for n, _ in r.data {
 			if n.to_upper() == name.to_upper() {
-				return error('no such column $name, did you mean $n?')
+				return error('no such column ${name}, did you mean ${n}?')
 			}
 		}
 
-		return error('no such column $name')
+		return error('no such column ${name}')
 	}
 }
 
@@ -120,7 +120,7 @@ fn new_empty_row(columns Columns, table_name string) Row {
 		if table_name == '' {
 			r.data[col.name] = v
 		} else {
-			r.data['${table_name}.$col.name'] = v
+			r.data['${table_name}.${col.name}'] = v
 		}
 	}
 
@@ -168,7 +168,7 @@ fn new_empty_table_row(tables map[string]Table) Row {
 	mut r := Row{}
 	for _, table in tables {
 		for col in table.columns {
-			r.data['${table.name}.$col.name'] = new_empty_value(col.typ)
+			r.data['${table.name}.${col.name}'] = new_empty_value(col.typ)
 		}
 	}
 
@@ -271,7 +271,7 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 		if !v.is_null || v.typ.typ == .is_boolean {
 			match col.typ.typ {
 				.is_boolean {
-					unsafe{
+					unsafe {
 						v.bool_value = Boolean(buf.read_u8())
 						if v.bool_value == .is_unknown {
 							v.is_null = true
@@ -322,7 +322,7 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 		if table_name == '' {
 			row[col.name] = v
 		} else {
-			row['${table_name}.$col.name'] = v
+			row['${table_name}.${col.name}'] = v
 		}
 	}
 
@@ -347,7 +347,7 @@ fn (mut r Row) object_key(t Table) ![]u8 {
 					pk.write_i16(i16(r.data[col_name].int_value))
 				}
 				else {
-					return error('cannot use $col.typ.str() in PRIMARY KEY')
+					return error('cannot use ${col.typ.str()} in PRIMARY KEY')
 				}
 			}
 		}

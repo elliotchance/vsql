@@ -10,7 +10,7 @@ import rand.config
 // Note: When making changes to the btree (or anything that might affect it).
 // Please pick a higher value here for more exhustive testing. Use at least 10
 // (ideally 100) before the final diff.
-const times = 1
+const times = os.getenv_opt('TIMES') or { '1' }.int()
 
 fn test_btree_test() ! {
 	// This test runs on different pagers (file vs memory), blob sizes (below)

@@ -5,11 +5,20 @@ on:
     paths-ignore:
       - '**.md'
       - '**.rst'
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "**.rst"
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
 
 jobs:
   tests:
     name: Tests
     runs-on: macos-latest
+    if: github.event_name != 'push' || github.event.ref == 'refs/heads/master'	
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -42,6 +51,7 @@ jobs:
   macos-binary:
     name: Build for macOS
     runs-on: macos-latest
+    if: github.event.ref == 'refs/heads/master'	
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -67,6 +77,7 @@ jobs:
 
   linux-binary:
     name: Build for Linux
+    if: github.event.ref == 'refs/heads/master'	
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -96,6 +107,7 @@ jobs:
   # put in a PR to fix this.
   windows-binary:
     name: Build for Windows
+    if: github.event.ref == 'refs/heads/master'	
     runs-on: macos-latest
     steps:
     - name: Checkout

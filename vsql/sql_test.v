@@ -173,7 +173,7 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 				connections[connection_name] = conn
 			}
 
-			db = connections[connection_name] or { continue }
+			db = connections[connection_name] or { panic('unknown connection: ${connection_name}') }
 			current_connection_name = connection_name
 			continue
 		}

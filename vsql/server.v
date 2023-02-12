@@ -18,8 +18,17 @@ pub struct ServerOptions {
 }
 
 pub fn new_server(options ServerOptions) Server {
+	// The server never actually runs in memory mode. I guess it could with a
+	// server option, but for now we create a memory storage (that will be
+	// replaced with file storage) to satisfy the V check.
+	connection_options := default_connection_options()
+	mut pager := new_memory_pager()
+	btree := new_btree(pager, connection_options.page_size)
+
 	return Server{options, &Connection{
 		query_cache: new_query_cache()
+		storage: new_storage(btree)
+		options: connection_options
 	}}
 }
 

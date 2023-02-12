@@ -31,6 +31,18 @@ suite alone with:
 
    make btree-test
 
+Note: by default, btree_test.v will do just one iteration, which is faster,
+and ok while developing, but before making a PR or a release, you should use:
+
+.. code-block:: sh
+
+   TIMES=10 make btree-test
+
+or even ideally:
+.. code-block:: sh
+
+   TIMES=100 make btree-test
+
 CLI
 ^^^
 

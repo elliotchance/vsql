@@ -25,7 +25,7 @@ module vsql
 struct Btree {
 	page_size int
 mut:
-	pager Pager
+	pager Pager = new_memory_pager()
 }
 
 fn new_btree(pager Pager, page_size int) &Btree {

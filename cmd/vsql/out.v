@@ -21,7 +21,7 @@ fn register_out_command(mut cmd cli.Command) {
 	cmd.add_command(out_cmd)
 }
 
-fn out_command(cmd cli.Command) ? {
+fn out_command(cmd cli.Command) ! {
 	mut db := vsql.open(cmd.args[0]) or { return err }
 
 	// To make the output more deterministic the schemas and tables will ordered

@@ -16,7 +16,7 @@ fn register_cli_command(mut cmd cli.Command) {
 	cmd.add_command(cli_cmd)
 }
 
-fn cli_command(cmd cli.Command) ? {
+fn cli_command(cmd cli.Command) ! {
 	print_version()
 
 	mut db := vsql.open(cmd.args[0]) or { return err }

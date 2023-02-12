@@ -26,7 +26,7 @@ fn register_server_command(mut cmd cli.Command) {
 	cmd.add_command(server_cmd)
 }
 
-fn server_command(cmd cli.Command) ? {
+fn server_command(cmd cli.Command) ! {
 	print_version()
 
 	mut port := cmd.flags.get_int('port') or { 0 }

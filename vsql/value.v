@@ -301,10 +301,10 @@ pub fn (v Value) cmp(v2 Value) !(int, bool) {
 		return cmp_value(v.string_value, v2.string_value)
 	}
 
-	return error('cannot compare $v.typ and $v2.typ')
+	return error('cannot compare ${v.typ} and ${v2.typ}')
 }
 
-fn cmp_value<A, B>(lhs A, rhs B) (int, bool) {
+fn cmp_value[A, B](lhs A, rhs B) (int, bool) {
 	if lhs < rhs {
 		return -1, false
 	}

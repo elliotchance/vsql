@@ -52,14 +52,14 @@ struct VirtualTableOperation {
 }
 
 fn (o VirtualTableOperation) str() string {
-	return 'VIRTUAL TABLE $o.table_name ($o.columns())'
+	return 'VIRTUAL TABLE ${o.table_name} (${o.columns()})'
 }
 
 fn (o VirtualTableOperation) columns() Columns {
 	mut columns := []Column{}
 
 	for column in o.table.create_table_stmt.columns() {
-		columns << Column{'${o.table.create_table_stmt.table_name}.$column.name', column.typ, column.not_null}
+		columns << Column{'${o.table.create_table_stmt.table_name}.${column.name}', column.typ, column.not_null}
 	}
 
 	return columns
@@ -79,7 +79,7 @@ fn (o VirtualTableOperation) execute(_ []Row) ![]Row {
 		mut data := map[string]Value{}
 
 		for k, v in row.data {
-			data['${table_name}.$k'] = v
+			data['${table_name}.${k}'] = v
 		}
 
 		new_rows << new_row(data)

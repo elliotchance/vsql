@@ -25,7 +25,7 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse ti
 			return sqlstate_3f000(parts[0]) // scheme does not exist
 		}
 	} else {
-		table_name = 'PUBLIC.$table_name'
+		table_name = 'PUBLIC.${table_name}'
 	}
 
 	if table_name in c.storage.tables {
@@ -61,7 +61,7 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse ti
 										primary_key << column.name
 									}
 									else {
-										return sqlstate_42601('PRIMARY KEY does not support $e.typ')
+										return sqlstate_42601('PRIMARY KEY does not support ${e.typ}')
 									}
 								}
 
@@ -71,7 +71,7 @@ fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse ti
 					}
 
 					if !found {
-						return sqlstate_42601('unknown column $column.name in PRIMARY KEY')
+						return sqlstate_42601('unknown column ${column.name} in PRIMARY KEY')
 					}
 				}
 			}

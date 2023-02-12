@@ -103,7 +103,7 @@ fn expr_is_agg(conn &Connection, e Expr, row Row, params map[string]Value) !bool
 }
 
 fn nested_agg_unsupported(e Expr) !bool {
-	return sqlstate_42601('nested aggregate functions are not supported: $e.str()')
+	return sqlstate_42601('nested aggregate functions are not supported: ${e.str()}')
 }
 
 fn resolve_identifiers_exprs(exprs []Expr, tables map[string]Table) ![]Expr {
@@ -140,12 +140,12 @@ fn resolve_identifiers(e Expr, tables map[string]Table) !Expr {
 			}
 
 			if parts.len == 2 {
-				return new_identifier('PUBLIC.$e.name')
+				return new_identifier('PUBLIC.${e.name}')
 			}
 
 			for _, table in tables {
 				if (table.column(e.name) or { Column{} }).name == e.name {
-					return new_identifier('${table.name}.$e')
+					return new_identifier('${table.name}.${e}')
 				}
 			}
 

@@ -3,10 +3,9 @@ module vsql
 import os
 import sync
 
-fn test_concurrent_writes() ! {
-	verbose_env := $env('VERBOSE')
-	verbose := verbose_env != ''
+const verbose = os.getenv('VERBOSE') != ''
 
+fn test_concurrent_writes() ! {
 	file_name := 'test_concurrent_writes.vsql'
 	if os.exists(file_name) {
 		os.rm(file_name) or { return err }
@@ -22,18 +21,18 @@ fn test_concurrent_writes() ! {
 
 	mut waits := []thread{}
 	for i in 0 .. 10 {
-		waits << go fn (file_name string, verbose bool, i int, options ConnectionOptions) {
+		waits << spawn fn (file_name string, i int, options ConnectionOptions) {
 			mut db := open_database(file_name, options) or { panic(err) }
 			for j in 0 .. 100 {
-				if verbose {
-					println('${i}.$j: INSERT start')
+				if vsql.verbose {
+					println('${i}.${j}: INSERT start')
 				}
 				db.query('INSERT INTO foo (x) VALUES (1)') or { panic(err) }
-				if verbose {
-					println('${i}.$j: INSERT done')
+				if vsql.verbose {
+					println('${i}.${j}: INSERT done')
 				}
 			}
-		}(file_name, verbose, i, options)
+		}(file_name, i, options)
 	}
 	waits.wait()
 

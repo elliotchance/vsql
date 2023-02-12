@@ -21,7 +21,7 @@ fn register_out_command(mut cmd cli.Command) {
 	cmd.add_command(out_cmd)
 }
 
-fn out_command(cmd cli.Command) ? {
+fn out_command(cmd cli.Command) ! {
 	mut db := vsql.open(cmd.args[0]) or { return err }
 
 	// To make the output more deterministic the schemas and tables will ordered
@@ -36,7 +36,7 @@ fn out_command(cmd cli.Command) ? {
 		// Although, `-create-public-schema` can be used to enable it when
 		// dealing with other databases.
 		if schema.name == 'PUBLIC' && cmd.flags.get_bool('create-public-schema') or { false } {
-			println('$schema\n')
+			println('${schema}\n')
 		}
 
 		mut tables := db.schema_tables(schema.name) or { return err }
@@ -44,15 +44,15 @@ fn out_command(cmd cli.Command) ? {
 		tables.sort(a.name > b.name)
 
 		for _, table in tables {
-			println('$table\n')
+			println('${table}\n')
 
-			for row in db.query('SELECT * FROM $table.name')! {
+			for row in db.query('SELECT * FROM ${table.name}')! {
 				mut data := []string{}
 				for col in table.column_names() {
 					data << (row.get(col)!).str()
 				}
 
-				println('INSERT INTO $table.name (${table.column_names().join(', ')}) VALUES (${data.join(', ')});')
+				println('INSERT INTO ${table.name} (${table.column_names().join(', ')}) VALUES (${data.join(', ')});')
 			}
 
 			println('')

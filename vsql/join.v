@@ -19,7 +19,7 @@ fn new_join_operation(left_columns Columns, join_type string, right_columns Colu
 }
 
 fn (o &JoinOperation) str() string {
-	return '$o.join_type JOIN ON $o.specification ($o.columns())'
+	return '${o.join_type} JOIN ON ${o.specification} (${o.columns()})'
 }
 
 fn (o &JoinOperation) columns() Columns {

@@ -69,19 +69,19 @@ fn get_tests() ![]SQLTest {
 						params[parts[1]] = new_double_precision_value(parts[2].f64())
 					}
 				} else {
-					panic('bad directive: "$contents"')
+					panic('bad directive: "${contents}"')
 				}
 			} else if line.starts_with('-- ') {
 				expected << line[3..]
 			} else {
 				if in_setup {
-					setup_stmt += '\n$line'
+					setup_stmt += '\n${line}'
 					if line.ends_with(';') {
 						setup << setup_stmt
 						setup_stmt = ''
 					}
 				} else {
-					stmt += '\n$line'
+					stmt += '\n${line}'
 					if line.ends_with(';') {
 						stmts << stmt
 						stmt = ''
@@ -112,16 +112,16 @@ fn test_all() ! {
 fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_line int) ! {
 	if filter_line != 0 && test.line_number != filter_line {
 		if verbose {
-			println('SKIP $test.file_name:$test.line_number\n')
+			println('SKIP ${test.file_name}:${test.line_number}\n')
 		}
 
 		return
 	}
 
 	if verbose {
-		println('BEGIN $test.file_name:$test.line_number')
+		println('BEGIN ${test.file_name}:${test.line_number}')
 		defer {
-			println('END $test.file_name:$test.line_number\n')
+			println('END ${test.file_name}:${test.line_number}\n')
 		}
 	}
 
@@ -156,7 +156,7 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 
 	for stmt in test.setup {
 		if verbose {
-			println('  $stmt.trim_space()')
+			println('  ${stmt.trim_space()}')
 		}
 
 		mut prepared := db.prepare(stmt)!
@@ -179,18 +179,18 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 		}
 
 		if verbose {
-			println('  $stmt.trim_space()')
+			println('  ${stmt.trim_space()}')
 		}
 
 		mut prepared := db.prepare(stmt) or {
-			actual += 'error ${sqlstate_from_int(err.code())}: $err.msg()\n'
+			actual += 'error ${sqlstate_from_int(err.code())}: ${err.msg()}\n'
 			continue
 		}
 		result := prepared.query(test.params) or {
 			if current_connection_name == '' {
-				actual += 'error ${sqlstate_from_int(err.code())}: $err.msg()\n'
+				actual += 'error ${sqlstate_from_int(err.code())}: ${err.msg()}\n'
 			} else {
-				actual += '$current_connection_name: error ${sqlstate_from_int(err.code())}: $err.msg()\n'
+				actual += '${current_connection_name}: error ${sqlstate_from_int(err.code())}: ${err.msg()}\n'
 			}
 
 			continue
@@ -200,17 +200,17 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 			mut line := ''
 
 			if current_connection_name != '' {
-				line = '$current_connection_name: '
+				line = '${current_connection_name}: '
 			}
 
 			for col in result.columns {
-				line += '$col.name: ${row.get_string(col.name)!} '
+				line += '${col.name}: ${row.get_string(col.name)!} '
 			}
 			actual += line.trim_space() + '\n'
 		}
 	}
 
-	at := 'at $test.file_name:$test.line_number:\n'
+	at := 'at ${test.file_name}:${test.line_number}:\n'
 	mut expected := at + test.expected.trim_space()
 	actual_trim := at + actual.trim_space()
 

@@ -29,7 +29,7 @@ fn register_in_command(mut cmd cli.Command) {
 	cmd.add_command(in_cmd)
 }
 
-fn in_command(cmd cli.Command) ? {
+fn in_command(cmd cli.Command) ! {
 	mut db := vsql.open(cmd.args[0]) or { return err }
 
 	mut f := os.stdin()
@@ -69,7 +69,7 @@ fn in_command(cmd cli.Command) ? {
 		}
 	}
 
-	println('$error_count errors, $stmt_count statements, $timer.elapsed()')
+	println('${error_count} errors, ${stmt_count} statements, ${timer.elapsed()}')
 
 	if error_count > 0 {
 		exit(1)

@@ -23,7 +23,7 @@ fn execute_drop_table(mut c Connection, stmt DropTableStmt, elapsed_parse time.D
 			return sqlstate_3f000(parts[0]) // scheme does not exist
 		}
 	} else {
-		table_name = 'PUBLIC.$table_name'
+		table_name = 'PUBLIC.${table_name}'
 	}
 
 	if table_name !in c.storage.tables {

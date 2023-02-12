@@ -52,7 +52,7 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Expr, params 
 }
 
 fn (o &GroupOperation) str() string {
-	return 'GROUP BY ($o.columns())'
+	return 'GROUP BY (${o.columns()})'
 }
 
 fn (o &GroupOperation) columns() Columns {
@@ -112,7 +112,7 @@ fn (o &GroupOperation) execute(rows []Row) ![]Row {
 						set[0].data[key] = new_integer_value(set.len)
 					}
 					else {
-						return sqlstate_42601('invalid set function: $expr.expr')
+						return sqlstate_42601('invalid set function: ${expr.expr}')
 					}
 				}
 			}

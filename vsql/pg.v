@@ -64,9 +64,9 @@ fn (mut c PGConn) write_command_complete(result Result) ! {
 	c.write_byte(`C`)!
 
 	// TODO(elliotchance): This is a hack that will probably cause issues.
-	mut tag := 'SELECT $result.rows.len'
+	mut tag := 'SELECT ${result.rows.len}'
 	if result.columns.len == 1 && result.columns[0].name == 'msg' && result.rows.len == 1 {
-		tag = result.rows[0].get_string('msg') or { '$err' }
+		tag = result.rows[0].get_string('msg') or { '${err}' }
 	}
 
 	mut msg_len := 4 // self
@@ -126,11 +126,11 @@ fn (mut c PGConn) read_query() !string {
 }
 
 fn (mut c PGConn) write_byte(b u8) ! {
-	c.conn.write([b]) or { return error('cannot write to tcp connection: $err') }
+	c.conn.write([b]) or { return error('cannot write to tcp connection: ${err}') }
 }
 
 fn (mut c PGConn) write_bytes(b []u8) ! {
-	c.conn.write(b) or { return error('cannot write to tcp connection: $err') }
+	c.conn.write(b) or { return error('cannot write to tcp connection: ${err}') }
 }
 
 fn (mut c PGConn) write_row_description(result Result) ! {
@@ -163,7 +163,7 @@ fn (mut c PGConn) write_data_row(columns Columns, row Row) ! {
 	mut msg_len := 4 // self
 	msg_len += 2 // cols
 	for column in columns {
-		v := row.get_string(column.name) or { '$err' }
+		v := row.get_string(column.name) or { '${err}' }
 		msg_len += 4 + v.len
 	}
 
@@ -171,7 +171,7 @@ fn (mut c PGConn) write_data_row(columns Columns, row Row) ! {
 	c.write_int16(i16(columns.len))!
 
 	for column in columns {
-		v := row.get_string(column.name) or { '$err' }
+		v := row.get_string(column.name) or { '${err}' }
 		c.write_int32(v.len)!
 		c.write_bytes(v.bytes())!
 	}
@@ -199,13 +199,13 @@ fn (mut c PGConn) read_int32() !int {
 fn (mut c PGConn) write_int16(x i16) ! {
 	mut bytes := []u8{len: 2}
 	binary.big_endian_put_u16(mut bytes, u16(x))
-	c.conn.write(bytes) or { return error('cannot write to tcp connection: $err') }
+	c.conn.write(bytes) or { return error('cannot write to tcp connection: ${err}') }
 }
 
 fn (mut c PGConn) write_int32(x int) ! {
 	mut bytes := []u8{len: 4}
 	binary.big_endian_put_u32(mut bytes, u32(x))
-	c.conn.write(bytes) or { return error('cannot write to tcp connection: $err') }
+	c.conn.write(bytes) or { return error('cannot write to tcp connection: ${err}') }
 }
 
 fn (mut c PGConn) read_string() !(string, int) {
@@ -230,7 +230,7 @@ fn (mut c PGConn) write_string(s string) ! {
 }
 
 fn (mut c PGConn) close() ! {
-	c.conn.close() or { return error('cannot close connection: $err') }
+	c.conn.close() or { return error('cannot close connection: ${err}') }
 }
 
 fn register_pg_functions(mut db Connection) ! {

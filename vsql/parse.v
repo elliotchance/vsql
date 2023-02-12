@@ -244,14 +244,14 @@ fn parse_value(v Value) !Value {
 }
 
 fn parse_exact_numeric_literal1(a string, b string) !Value {
-	mut v := new_double_precision_value('${a}.$b'.f64())
+	mut v := new_double_precision_value('${a}.${b}'.f64())
 	v.is_coercible = true
 
 	return v
 }
 
 fn parse_exact_numeric_literal2(a string) !Value {
-	mut v := new_double_precision_value('0.$a'.f64())
+	mut v := new_double_precision_value('0.${a}'.f64())
 	v.is_coercible = true
 
 	return v
@@ -766,7 +766,7 @@ fn parse_schema_definition(schema_name Identifier) !Stmt {
 }
 
 fn parse_local_or_schema_qualified_name2(schema_name Identifier, table_name Identifier) !Identifier {
-	return new_identifier('${schema_name}.$table_name')
+	return new_identifier('${schema_name}.${table_name}')
 }
 
 fn parse_drop_schema_statement(schema_name Identifier, behavior string) !Stmt {

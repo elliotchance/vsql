@@ -80,7 +80,7 @@ fn tokenize(sql string) []Token {
 				i++
 			}
 			i++
-			tokens << Token{.literal_identifier, '"$word"'}
+			tokens << Token{.literal_identifier, '"${word}"'}
 			continue
 		}
 

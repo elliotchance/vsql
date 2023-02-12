@@ -84,16 +84,17 @@ pub fn open_database(path string, options ConnectionOptions) !&Connection {
 }
 
 fn open_connection(path string, options ConnectionOptions) !&Connection {
+	// This is really only used when path == ':memory:' but we must supply
+	// something to satisfy V's checker. It will be replaced if it's using file
+	// storage.
+	mut pager := new_memory_pager()
+	btree := new_btree(pager, options.page_size)
+
 	mut conn := &Connection{
 		path: path
 		query_cache: options.query_cache
 		options: options
-		storage: new_storage()
-	}
-
-	if path == ':memory:' {
-		mut pager := new_memory_pager()
-		conn.storage.btree = new_btree(pager, options.page_size)
+		storage: new_storage(btree)
 	}
 
 	register_builtin_funcs(mut conn)!
@@ -268,7 +269,7 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 				return sqlstate_3f000(parts[0]) // scheme does not exist
 			}
 		} else {
-			table_name = 'PUBLIC.$table_name'
+			table_name = 'PUBLIC.${table_name}'
 		}
 
 		c.virtual_tables[table_name] = VirtualTable{
@@ -336,7 +337,7 @@ pub mut:
 	// encouraged to do so.
 	//
 	// snippet: v.ConnectionOptions.query_cache
-	query_cache &QueryCache
+	query_cache &QueryCache = unsafe { nil }
 	// Warning: This only works for :memory: databases. Configuring it for
 	// file-based databases will either be ignored or causes crashes.
 	//
@@ -363,7 +364,7 @@ pub mut:
 	// RwMutex that belongs to each file - such as from a map.
 	//
 	// snippet: v.ConnectionOptions.mutex
-	mutex &sync.RwMutex
+	mutex &sync.RwMutex = unsafe { nil }
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive
 	// or negative minutes).

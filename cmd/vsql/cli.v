@@ -16,7 +16,7 @@ fn register_cli_command(mut cmd cli.Command) {
 	cmd.add_command(cli_cmd)
 }
 
-fn cli_command(cmd cli.Command) ? {
+fn cli_command(cmd cli.Command) ! {
 	print_version()
 
 	mut db := vsql.open(cmd.args[0]) or { return err }
@@ -32,7 +32,7 @@ fn cli_command(cmd cli.Command) ? {
 			mut total_rows := 0
 			for row in result {
 				for column in result.columns {
-					print('$column.name: ${row.get_string(column.name)} ')
+					print('${column.name}: ${row.get_string(column.name)} ')
 				}
 				total_rows++
 			}
@@ -41,7 +41,7 @@ fn cli_command(cmd cli.Command) ? {
 				println('')
 			}
 
-			println('$total_rows ${vsql.pluralize(total_rows, 'row')} (${time.ticks() - start} ms)')
+			println('${total_rows} ${vsql.pluralize(total_rows, 'row')} (${time.ticks() - start} ms)')
 		}
 
 		println('')

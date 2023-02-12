@@ -81,9 +81,9 @@ fn new_timestamp_from_string(s string) !Time {
 	mut re := regex.regex_opt(match expects_time_zone {
 		true { vsql.unquoted_timestamp_with_time_zone_string }
 		false { vsql.unquoted_timestamp_without_time_zone_string }
-	}) or { return error('cannot compile regex for timestamp: $err') }
+	}) or { return error('cannot compile regex for timestamp: ${err}') }
 	if !re.matches_string(s) {
-		return sqlstate_42601('TIMESTAMP \'$s\' is not valid')
+		return sqlstate_42601('TIMESTAMP \'${s}\' is not valid')
 	}
 
 	mut time_zone := i16(0)
@@ -98,7 +98,7 @@ fn new_timestamp_from_string(s string) !Time {
 		}
 
 		if time_zone <= -720 || time_zone >= 720 {
-			return sqlstate_42601('TIMESTAMP \'$s\' is not valid')
+			return sqlstate_42601('TIMESTAMP \'${s}\' is not valid')
 		}
 
 		// If we don't trim off the time zone, V will try and interpret it but
@@ -116,7 +116,7 @@ fn new_timestamp_from_string(s string) !Time {
 	}
 
 	return Time{typ, time_zone, time.parse_iso8601(to_parse) or {
-		return sqlstate_42601('TIMESTAMP \'$s\' is not valid')
+		return sqlstate_42601('TIMESTAMP \'${s}\' is not valid')
 	}}
 }
 
@@ -127,8 +127,8 @@ fn new_time_from_string(s string) !Time {
 	// part. We use 1970-01-01 because internally we still need to rely on the
 	// unix timestamp in V's Time object. This data part will be ignored in
 	// actual calculations.
-	mut t := new_timestamp_from_string('1970-01-01 $s') or {
-		return sqlstate_42601('TIME \'$s\' is not valid')
+	mut t := new_timestamp_from_string('1970-01-01 ${s}') or {
+		return sqlstate_42601('TIME \'${s}\' is not valid')
 	}
 
 	if t.typ.typ == .is_timestamp_with_time_zone {
@@ -145,8 +145,8 @@ fn new_time_from_string(s string) !Time {
 fn new_date_from_string(s string) !Time {
 	// The easiest way to parse it is as a normal timestamp with a dummy time
 	// part.
-	mut t := new_timestamp_from_string('$s 00:00:00') or {
-		return sqlstate_42601('DATE \'$s\' is not valid')
+	mut t := new_timestamp_from_string('${s} 00:00:00') or {
+		return sqlstate_42601('DATE \'${s}\' is not valid')
 	}
 
 	t.typ.typ = .is_date
@@ -369,9 +369,9 @@ fn (t Time) str_time_zone(allow_time_zone bool, sql_formatting bool) string {
 	minutes := time_zone % 60
 
 	if hours < 10 {
-		s += '0$hours'
+		s += '0${hours}'
 	} else {
-		s += '$hours'
+		s += '${hours}'
 	}
 
 	if sql_formatting {
@@ -379,9 +379,9 @@ fn (t Time) str_time_zone(allow_time_zone bool, sql_formatting bool) string {
 	}
 
 	if minutes < 10 {
-		s += '0$minutes'
+		s += '0${minutes}'
 	} else {
-		s += '$minutes'
+		s += '${minutes}'
 	}
 
 	return s

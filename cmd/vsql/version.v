@@ -11,7 +11,7 @@ fn register_version_command(mut cmd cli.Command) {
 	cmd.add_command(version_cmd)
 }
 
-fn version_command(cmd cli.Command) ? {
+fn version_command(cmd cli.Command) ! {
 	print_version()
 }
 
@@ -23,6 +23,6 @@ fn print_version() {
 	if version.contains('MISSING') {
 		println('no version information available')
 	} else {
-		println('vsql $version')
+		println('vsql ${version}')
 	}
 }

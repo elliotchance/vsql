@@ -124,7 +124,7 @@ fn (t Type) str() string {
 		}
 		.is_character {
 			if t.size > 0 {
-				'CHARACTER($t.size)'
+				'CHARACTER(${t.size})'
 			} else {
 				'CHARACTER'
 			}
@@ -145,7 +145,7 @@ fn (t Type) str() string {
 			// TODO(elliotchance): Is this a bug to allow no size for CHARACTER
 			//  VARYING? Need to check standard.
 			if t.size > 0 {
-				'CHARACTER VARYING($t.size)'
+				'CHARACTER VARYING(${t.size})'
 			} else {
 				'CHARACTER VARYING'
 			}
@@ -154,16 +154,16 @@ fn (t Type) str() string {
 			'DATE'
 		}
 		.is_time_without_time_zone {
-			'TIME($t.size) WITHOUT TIME ZONE'
+			'TIME(${t.size}) WITHOUT TIME ZONE'
 		}
 		.is_time_with_time_zone {
-			'TIME($t.size) WITH TIME ZONE'
+			'TIME(${t.size}) WITH TIME ZONE'
 		}
 		.is_timestamp_without_time_zone {
-			'TIMESTAMP($t.size) WITHOUT TIME ZONE'
+			'TIMESTAMP(${t.size}) WITHOUT TIME ZONE'
 		}
 		.is_timestamp_with_time_zone {
-			'TIMESTAMP($t.size) WITH TIME ZONE'
+			'TIMESTAMP(${t.size}) WITH TIME ZONE'
 		}
 	}
 
@@ -251,13 +251,13 @@ fn type_from_number(number u8, size int) Type {
 		3 { 'INTEGER' }
 		4 { 'REAL' }
 		5 { 'SMALLINT' }
-		6 { 'CHARACTER VARYING($size)' }
+		6 { 'CHARACTER VARYING(${size})' }
 		7 { 'CHARACTER' }
 		8 { 'DATE' }
-		9 { 'TIME($size) WITH TIME ZONE' }
-		10 { 'TIME($size) WITHOUT TIME ZONE' }
-		11 { 'TIMESTAMP($size) WITH TIME ZONE' }
-		12 { 'TIMESTAMP($size) WITHOUT TIME ZONE' }
+		9 { 'TIME(${size}) WITH TIME ZONE' }
+		10 { 'TIME(${size}) WITHOUT TIME ZONE' }
+		11 { 'TIMESTAMP(${size}) WITH TIME ZONE' }
+		12 { 'TIMESTAMP(${size}) WITHOUT TIME ZONE' }
 		else { panic(number) }
 	}, 0)
 }

@@ -18,7 +18,7 @@ fn register_bench_command(mut cmd cli.Command) {
 	cmd.add_command(bench_cmd)
 }
 
-fn bench_command(cmd cli.Command) ? {
+fn bench_command(cmd cli.Command) ! {
 	print_version()
 
 	mut file := cmd.flags.get_string('file') or { '' }
@@ -26,8 +26,8 @@ fn bench_command(cmd cli.Command) ? {
 		file = 'bench.vsql'
 	}
 
-	mut conn := vsql.open(':memory:') or { panic('$err') }
+	mut conn := vsql.open(':memory:') or { panic('${err}') }
 
 	mut benchmark := vsql.new_benchmark(conn)
-	benchmark.start() or { panic('$err') }
+	benchmark.start() or { panic('${err}') }
 }

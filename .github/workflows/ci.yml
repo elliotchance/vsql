@@ -5,91 +5,100 @@ on:
     paths-ignore:
       - '**.md'
       - '**.rst'
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "**.rst"
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
 
 jobs:
   tests:
     name: Tests
     runs-on: macos-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Set up V version latest
-      uses: nocturlab/setup-vlang-action@v1
-      with:
-        v-version: master
-      id: v
+      - name: Set up V version latest
+        uses: nocturlab/setup-vlang-action@v1
+        with:
+          id: v
+          v-version: master
 
-    - name: Verify fmt
-      run: make fmt-verify
+      - name: Verify fmt
+        run: make fmt-verify
 
-    - name: Verify docs
-      run: |
-        pip install sphinx sphinx_rtd_theme
-        cd docs && python3 -m pip install -r requirements.txt && cd -
-        make clean-docs docs
-        git diff --exit-code
+      - name: Verify docs
+        run: |
+          pip install sphinx sphinx_rtd_theme
+          cd docs && python3 -m pip install -r requirements.txt && cd -
+          make clean-docs docs
+          git diff --exit-code
 
-    - name: Run SQL and B-tree tests
-      run: make test
+      - name: Run SQL and B-tree tests
+        run: make test
 
-    - name: Run examples
-      run: make examples
+      - name: Run examples
+        run: make examples
 
-    - name: Run CLI tests
-      run: make cli-test
+      - name: Run CLI tests
+        run: make cli-test
 
   macos-binary:
     name: Build for macOS
     runs-on: macos-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Set up V version latest
-      uses: nocturlab/setup-vlang-action@v1
-      with:
-        v-version: master
-      id: v
+      - name: Set up V version latest
+        uses: nocturlab/setup-vlang-action@v1
+        with:
+          id: v
+          v-version: master
 
-    - name: Build macOS binaries
-      run: |
-        sed -i -e "s/MISSING_VERSION/${GITHUB_REF##*/} `date +'%F'`/g" cmd/vsql/version.v
-        make bin/vsql
-        zip -j vsql-macos.zip bin/vsql
 
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: |
-          vsql-macos.zip
+      - name: Build macOS binaries
+        run: |
+          .github/workflows/set_version.sh
+          make bin/vsql
+          zip -j vsql-macos.zip bin/vsql
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            vsql-macos.zip
 
   linux-binary:
     name: Build for Linux
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Set up V version latest
-      uses: nocturlab/setup-vlang-action@v1
-      with:
-        v-version: master
-      id: v
+      - name: Set up V version latest
+        uses: nocturlab/setup-vlang-action@v1
+        with:
+          id: v
+          v-version: master
 
-    - name: Build linux binaries
-      run: |
-        sed -i -e "s/MISSING_VERSION/${GITHUB_REF##*/} `date +'%F'`/g" cmd/vsql/version.v
-        make bin/vsql
-        zip -j vsql-linux.zip bin/vsql
+      - name: Build linux binaries
+        run: |
+          .github/workflows/set_version.sh
+          make bin/vsql
+          zip -j vsql-linux.zip bin/vsql
 
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: |
-          vsql-linux.zip
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            vsql-linux.zip
 
   # I know it seems pretty silly that we're using macOS and cross compling for
   # Windows. But I couldn't get window-latest to work. If you use windows please
@@ -98,25 +107,25 @@ jobs:
     name: Build for Windows
     runs-on: macos-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Set up V version latest
-      uses: nocturlab/setup-vlang-action@v1
-      with:
-        v-version: master
-      id: v
+      - name: Set up V version latest
+        uses: nocturlab/setup-vlang-action@v1
+        with:
+          id: v
+          v-version: master
 
-    - name: Build Windows binaries
-      run: |
-        brew install mingw-w64
-        v -os windows -prod cmd/vsql
-        mv cmd/vsql/vsql.exe bin/vsql.exe
-        zip -j vsql-windows.zip bin/vsql.exe
+      - name: Build Windows binaries
+        run: |
+          brew install mingw-w64
+          v -os windows -prod cmd/vsql
+          mv cmd/vsql/vsql.exe bin/vsql.exe
+          zip -j vsql-windows.zip bin/vsql.exe
 
-    - name: Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: |
-          vsql-windows.zip
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            vsql-windows.zip

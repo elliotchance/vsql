@@ -18,13 +18,22 @@ pub struct ServerOptions {
 }
 
 pub fn new_server(options ServerOptions) Server {
+	// The server never actually runs in memory mode. I guess it could with a
+	// server option, but for now we create a memory storage (that will be
+	// replaced with file storage) to satisfy the V check.
+	connection_options := default_connection_options()
+	mut pager := new_memory_pager()
+	btree := new_btree(pager, connection_options.page_size)
+
 	return Server{options, &Connection{
 		query_cache: new_query_cache()
+		storage: new_storage(btree)
+		options: connection_options
 	}}
 }
 
 pub fn (mut s Server) start() ! {
-	s.db = open(s.options.db_file) or { panic('cannot open database: $err') }
+	s.db = open(s.options.db_file) or { panic('cannot open database: ${err}') }
 
 	// There are multiple compatibility changes we need to make during the
 	// connection. A missing "FROM" clause is valid in PostgreSQL, but it's not
@@ -45,17 +54,17 @@ pub fn (mut s Server) start() ! {
 	register_pg_functions(mut s.db)!
 	register_pg_virtual_tables(mut s.db)!
 
-	mut listener := net.listen_tcp(.ip6, ':$s.options.port') or {
-		return error('cannot listen on :$s.options.port: $err')
+	mut listener := net.listen_tcp(.ip6, ':${s.options.port}') or {
+		return error('cannot listen on :${s.options.port}: ${err}')
 	}
-	println('ready on 127.0.0.1:$s.options.port')
+	println('ready on 127.0.0.1:${s.options.port}')
 
 	mut client_id := 0
 	for {
 		client_id++
 
 		mut conn := listener.accept() or {
-			s.log('$err')
+			s.log('${err}')
 			continue
 		}
 
@@ -91,19 +100,19 @@ fn (mut s Server) handle_conn(mut c net.TcpConn) ! {
 					query = query.trim('; ') + ' FROM singlerow;'
 				}
 
-				s.log('query: $query')
+				s.log('query: ${query}')
 
 				mut did_error := false
 				result := s.db.query(query) or {
 					did_error = true
-					s.log('error: $err')
+					s.log('error: ${err}')
 
 					conn.write_error_result(err)!
 					new_result([]Column{}, []Row{}, 0, 0) // not used
 				}
 
 				if !did_error {
-					s.log('response: $result')
+					s.log('response: ${result}')
 					conn.write_result(result)!
 				}
 
@@ -115,7 +124,7 @@ fn (mut s Server) handle_conn(mut c net.TcpConn) ! {
 				break
 			}
 			else {
-				return error('unknown message: $msg_type.str()')
+				return error('unknown message: ${msg_type.str()}')
 			}
 		}
 	}

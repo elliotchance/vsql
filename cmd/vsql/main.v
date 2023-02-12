@@ -21,7 +21,7 @@ fn main() {
 	cmd.parse(os.args)
 }
 
-fn unknown_command(_ cli.Command) ? {
+fn unknown_command(_ cli.Command) ! {
 	println('unknown or missing command, see "vsql help"')
 	exit(1)
 }

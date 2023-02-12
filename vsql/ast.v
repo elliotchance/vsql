@@ -132,7 +132,7 @@ fn (e Expr) pstr(params map[string]Value) string {
 		}
 		Value {
 			if e.typ.uses_string() || e.typ.uses_time() {
-				'\'$e.str()\''
+				'\'${e.str()}\''
 			} else {
 				e.str()
 			}
@@ -289,7 +289,7 @@ fn (e UnaryExpr) str() string {
 }
 
 fn (e UnaryExpr) pstr(params map[string]Value) string {
-	return '$e.op ${e.expr.pstr(params)}'
+	return '${e.op} ${e.expr.pstr(params)}'
 }
 
 struct BinaryExpr {
@@ -303,7 +303,7 @@ fn (e BinaryExpr) str() string {
 }
 
 fn (e BinaryExpr) pstr(params map[string]Value) string {
-	return '${e.left.pstr(params)} $e.op ${e.right.pstr(params)}'
+	return '${e.left.pstr(params)} ${e.op} ${e.right.pstr(params)}'
 }
 
 // NoExpr is just a placeholder when there is no expression provided.
@@ -326,7 +326,7 @@ fn (e CallExpr) str() string {
 
 fn (e CallExpr) pstr(params map[string]Value) string {
 	args := e.args.map(it.pstr(params)).join(', ')
-	return '${e.function_name}($args)'
+	return '${e.function_name}(${args})'
 }
 
 struct ComparisonPredicatePart2 {
@@ -359,7 +359,7 @@ fn (c Correlation) str() string {
 		return ''
 	}
 
-	mut s := ' AS $c.name'
+	mut s := ' AS ${c.name}'
 
 	if c.columns.len > 0 {
 		mut columns := []string{}
@@ -380,14 +380,14 @@ struct Parameter {
 }
 
 fn (e Parameter) str() string {
-	return ':$e.name'
+	return ':${e.name}'
 }
 
 fn (e Parameter) pstr(params map[string]Value) string {
 	p := params[e.name]
 
 	if p.typ.uses_string() || p.typ.uses_time() {
-		return '\'$p.str()\''
+		return '\'${p.str()}\''
 	}
 
 	return p.str()
@@ -517,7 +517,7 @@ struct CurrentTimeExpr {
 }
 
 fn (e CurrentTimeExpr) str() string {
-	return 'CURRENT_TIME($e.prec)'
+	return 'CURRENT_TIME(${e.prec})'
 }
 
 struct CurrentTimestampExpr {
@@ -525,7 +525,7 @@ struct CurrentTimestampExpr {
 }
 
 fn (e CurrentTimestampExpr) str() string {
-	return 'CURRENT_TIMESTAMP($e.prec)'
+	return 'CURRENT_TIMESTAMP(${e.prec})'
 }
 
 struct LocalTimeExpr {
@@ -533,7 +533,7 @@ struct LocalTimeExpr {
 }
 
 fn (e LocalTimeExpr) str() string {
-	return 'LOCALTIME($e.prec)'
+	return 'LOCALTIME(${e.prec})'
 }
 
 struct LocalTimestampExpr {
@@ -541,7 +541,7 @@ struct LocalTimestampExpr {
 }
 
 fn (e LocalTimestampExpr) str() string {
-	return 'LOCALTIMESTAMP($e.prec)'
+	return 'LOCALTIMESTAMP(${e.prec})'
 }
 
 struct CreateSchemaStmt {
@@ -575,7 +575,7 @@ fn (e SubstringExpr) pstr(params map[string]Value) string {
 		s += ' FOR ${e.@for.pstr(params)}'
 	}
 
-	return s + ' USING $e.using)'
+	return s + ' USING ${e.using})'
 }
 
 struct TrimExpr {
@@ -589,7 +589,7 @@ fn (e TrimExpr) str() string {
 }
 
 fn (e TrimExpr) pstr(params map[string]Value) string {
-	return 'TRIM($e.specification ${e.character.pstr(params)} FROM ${e.source.pstr(params)})'
+	return 'TRIM(${e.specification} ${e.character.pstr(params)} FROM ${e.source.pstr(params)})'
 }
 
 // UntypedNullExpr (not to be confused with NullExpr) represents an untyped
@@ -616,10 +616,10 @@ fn (e TruthExpr) str() string {
 
 fn (e TruthExpr) pstr(params map[string]Value) string {
 	if e.not {
-		return '${e.expr.pstr(params)} IS NOT $e.value.str()'
+		return '${e.expr.pstr(params)} IS NOT ${e.value.str()}'
 	}
 
-	return '${e.expr.pstr(params)} IS $e.value.str()'
+	return '${e.expr.pstr(params)} IS ${e.value.str()}'
 }
 
 struct CastExpr {
@@ -628,7 +628,7 @@ struct CastExpr {
 }
 
 fn (e CastExpr) pstr(params map[string]Value) string {
-	return 'CAST(${e.expr.pstr(params)} AS $e.target)'
+	return 'CAST(${e.expr.pstr(params)} AS ${e.target})'
 }
 
 struct CoalesceExpr {

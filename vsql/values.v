@@ -34,7 +34,7 @@ fn (o &ValuesOperation) str() string {
 		rows << row.pstr(o.params)
 	}
 
-	return 'VALUES ($o.columns()) = ${rows.join(', ')}'
+	return 'VALUES (${o.columns()}) = ${rows.join(', ')}'
 }
 
 fn (o &ValuesOperation) columns() Columns {
@@ -58,7 +58,7 @@ fn (o &ValuesOperation) columns() Columns {
 	for i in 1 .. o.rows[0].exprs.len + 1 {
 		typ := eval_as_type(o.conn, Row{}, o.rows[0].exprs[i - 1], o.params) or { panic(err) }
 		columns << Column{
-			name: new_identifier('COL$i').name
+			name: new_identifier('COL${i}').name
 			typ: typ
 		}
 	}
@@ -89,7 +89,7 @@ fn (o &ValuesOperation) execute(_ []Row) ![]Row {
 			mut data := map[string]Value{}
 			for i in 1 .. row.data.len + 1 {
 				name := columns[i - 1].name
-				data[name] = row.data['COL$i']
+				data[name] = row.data['COL${i}']
 			}
 
 			row = Row{

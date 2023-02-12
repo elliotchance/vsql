@@ -62,26 +62,26 @@ fn new_header(page_size int) Header {
 fn init_database_file(path string, page_size int) ! {
 	header := new_header(page_size)
 
-	mut tmpf := os.create(path) or { return error('cannot create file $path: $err') }
+	mut tmpf := os.create(path) or { return error('cannot create file ${path}: ${err}') }
 	write_header(mut tmpf, header)!
 	tmpf.close()
 }
 
 fn read_header(mut file os.File) !Header {
-	file.seek(0, .start) or { return error('unable seek start: $err') }
+	file.seek(0, .start) or { return error('unable seek start: ${err}') }
 
-	header := file.read_raw<Header>() or { return error('unable to read raw header: $err') }
+	header := file.read_raw[Header]() or { return error('unable to read raw header: ${err}') }
 
 	// Check file version compatibility.
 	if header.version != vsql.current_version {
-		return error('need version $vsql.current_version but database is $header.version')
+		return error('need version ${vsql.current_version} but database is ${header.version}')
 	}
 
 	return header
 }
 
 fn write_header(mut file os.File, header Header) ! {
-	file.seek(0, .start) or { return error('unable seek start: $err') }
+	file.seek(0, .start) or { return error('unable seek start: ${err}') }
 
-	file.write_raw(header) or { return error('unable to write raw header: $err') }
+	file.write_raw(header) or { return error('unable to write raw header: ${err}') }
 }

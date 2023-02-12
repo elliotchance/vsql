@@ -82,19 +82,19 @@ fn (q QueryCache) prepare_stmt(tokens []Token) (string, map[string]Value, []Toke
 						v = new_bigint_value(token.value.i64())
 					}
 					v.is_coercible = true
-					params['P$i'] = v
+					params['P${i}'] = v
 
-					key += ':P$i '
+					key += ':P${i} '
 					new_tokens << Token{.colon, ':'}
-					new_tokens << Token{.literal_identifier, 'P$i'}
+					new_tokens << Token{.literal_identifier, 'P${i}'}
 					i++
 					continue
 				}
 				.literal_string {
-					key += ':P$i '
-					params['P$i'] = new_varchar_value(token.value, 0)
+					key += ':P${i} '
+					params['P${i}'] = new_varchar_value(token.value, 0)
 					new_tokens << Token{.colon, ':'}
-					new_tokens << Token{.literal_identifier, 'P$i'}
+					new_tokens << Token{.literal_identifier, 'P${i}'}
 					i++
 					continue
 				}

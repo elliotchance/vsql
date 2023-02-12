@@ -90,7 +90,7 @@ struct SQLState22001 {
 fn sqlstate_22001(to Type) IError {
 	return SQLState22001{
 		code: sqlstate_to_int('22001')
-		msg: 'string data right truncation for $to'
+		msg: 'string data right truncation for ${to}'
 		to: to
 	}
 }
@@ -127,7 +127,7 @@ struct SQLState23502 {
 fn sqlstate_23502(msg string) IError {
 	return SQLState23502{
 		code: sqlstate_to_int('23502')
-		msg: 'violates non-null constraint: $msg'
+		msg: 'violates non-null constraint: ${msg}'
 	}
 }
 
@@ -141,7 +141,7 @@ pub:
 fn sqlstate_2bp01(object_name string) IError {
 	return SQLState2BP01{
 		code: sqlstate_to_int('2BP01')
-		msg: 'dependent objects still exist on $object_name'
+		msg: 'dependent objects still exist on ${object_name}'
 		object_name: object_name
 	}
 }
@@ -156,7 +156,7 @@ pub:
 fn sqlstate_3f000(schema_name string) IError {
 	return SQLState42P06{
 		code: sqlstate_to_int('3F000')
-		msg: 'invalid schema name: $schema_name'
+		msg: 'invalid schema name: ${schema_name}'
 		schema_name: schema_name
 	}
 }
@@ -169,7 +169,7 @@ struct SQLState42601 {
 fn sqlstate_42601(message string) IError {
 	return SQLState42601{
 		code: sqlstate_to_int('42601')
-		msg: 'syntax error: $message'
+		msg: 'syntax error: ${message}'
 	}
 }
 
@@ -183,7 +183,7 @@ pub:
 fn sqlstate_42703(column_name string) IError {
 	return SQLState42703{
 		code: sqlstate_to_int('42703')
-		msg: 'no such column: $column_name'
+		msg: 'no such column: ${column_name}'
 		column_name: column_name
 	}
 }
@@ -198,7 +198,7 @@ struct SQLState42804 {
 fn sqlstate_42804(msg string, expected string, actual string) IError {
 	return SQLState42804{
 		code: sqlstate_to_int('42804')
-		msg: 'data type mismatch $msg: expected $expected but got $actual'
+		msg: 'data type mismatch ${msg}: expected ${expected} but got ${actual}'
 		expected: expected
 		actual: actual
 	}
@@ -214,7 +214,7 @@ struct SQLState42846 {
 fn sqlstate_42846(from Type, to Type) IError {
 	return SQLState42846{
 		code: sqlstate_to_int('42846')
-		msg: 'cannot coerce $from to $to'
+		msg: 'cannot coerce ${from} to ${to}'
 		from: from
 		to: to
 	}
@@ -230,7 +230,7 @@ pub:
 fn sqlstate_42p01(table_name string) IError {
 	return SQLState42P01{
 		code: sqlstate_to_int('42P01')
-		msg: 'no such table: $table_name'
+		msg: 'no such table: ${table_name}'
 		table_name: table_name
 	}
 }
@@ -245,7 +245,7 @@ pub:
 fn sqlstate_42p06(schema_name string) IError {
 	return SQLState42P06{
 		code: sqlstate_to_int('42P06')
-		msg: 'duplicate schema: $schema_name'
+		msg: 'duplicate schema: ${schema_name}'
 		schema_name: schema_name
 	}
 }
@@ -260,7 +260,7 @@ pub:
 fn sqlstate_42p07(table_name string) IError {
 	return SQLState42P07{
 		code: sqlstate_to_int('42P07')
-		msg: 'duplicate table: $table_name'
+		msg: 'duplicate table: ${table_name}'
 		table_name: table_name
 	}
 }
@@ -287,7 +287,7 @@ pub:
 fn sqlstate_42p02(parameter_name string) IError {
 	return SQLState42P02{
 		code: sqlstate_to_int('42P02')
-		msg: 'parameter does not exist: $parameter_name'
+		msg: 'parameter does not exist: ${parameter_name}'
 		parameter_name: parameter_name
 	}
 }
@@ -324,7 +324,7 @@ struct SQLState0B000 {
 fn sqlstate_0b000(msg string) IError {
 	return SQLState0B000{
 		code: sqlstate_to_int('0B000')
-		msg: 'invalid transaction initiation: $msg'
+		msg: 'invalid transaction initiation: ${msg}'
 	}
 }
 
@@ -336,7 +336,7 @@ struct SQLState40001 {
 fn sqlstate_40001(message string) IError {
 	return SQLState40001{
 		code: sqlstate_to_int('40001')
-		msg: 'serialization failure: $message'
+		msg: 'serialization failure: ${message}'
 	}
 }
 

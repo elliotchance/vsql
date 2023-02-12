@@ -73,7 +73,7 @@ fn new_earley_state(name string, production &EarleyProduction, dot_index int, st
 }
 
 fn (state &EarleyState) index() string {
-	return '$state.name $state.production.index() $state.dot_index $state.start_column'
+	return '${state.name} ${state.production.index()} ${state.dot_index} ${state.start_column}'
 }
 
 fn (state &EarleyState) str() string {
@@ -84,7 +84,7 @@ fn (state &EarleyState) str() string {
 
 	terms.insert(state.dot_index, '$')
 
-	return '$state.name -> ${terms.join(' ')} [$state.start_column-$state.end_column]'
+	return '${state.name} -> ${terms.join(' ')} [${state.start_column}-${state.end_column}]'
 }
 
 fn (state &EarleyState) eq(other &EarleyState) bool {
@@ -144,11 +144,11 @@ fn new_earley_column(index int, token string, value string) &EarleyColumn {
 }
 
 fn (col &EarleyColumn) str() string {
-	return '$col.index'
+	return '${col.index}'
 }
 
 fn (col &EarleyColumn) repr() string {
-	return '$col.token:$col.value'
+	return '${col.token}:${col.value}'
 }
 
 fn (mut col EarleyColumn) add(mut state EarleyState) bool {
@@ -164,7 +164,7 @@ fn (mut col EarleyColumn) add(mut state EarleyState) bool {
 }
 
 fn (col &EarleyColumn) print() {
-	println('[$col.index] $col.token')
+	println('[${col.index}] ${col.token}')
 	println(strings.repeat_string('=', 35))
 	for s in col.states {
 		println(s.str())

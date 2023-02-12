@@ -23,7 +23,7 @@ fn execute_delete(mut c Connection, stmt DeleteStmt, params map[string]Value, el
 			return sqlstate_3f000(parts[0]) // scheme does not exist
 		}
 	} else {
-		table_name = 'PUBLIC.$table_name'
+		table_name = 'PUBLIC.${table_name}'
 	}
 
 	mut plan := create_plan(stmt, params, c)!
@@ -38,5 +38,5 @@ fn execute_delete(mut c Connection, stmt DeleteStmt, params map[string]Value, el
 		c.storage.delete_row(table_name, mut row)!
 	}
 
-	return new_result_msg('DELETE $rows.len', elapsed_parse, t.elapsed())
+	return new_result_msg('DELETE ${rows.len}', elapsed_parse, t.elapsed())
 }

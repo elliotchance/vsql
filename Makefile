@@ -63,7 +63,7 @@ sql-test:
 
 cli-test: bin/vsql
 	for f in `ls cmd/tests/*.sh`; do \
-		VSQL=bin/vsql ./$$f ; \
+		echo $$f; VSQL=bin/vsql ./$$f || exit 1; \
 	done
 
 cmd/tests/%: bin/vsql
@@ -73,7 +73,7 @@ cmd/tests/%: bin/vsql
 
 examples:
 	for f in `ls examples/*.v`; do \
-		v run $$f ; \
+		echo $$f; v run $$f || exit 1; \
 	done
 
 examples/%:

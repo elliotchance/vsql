@@ -18,7 +18,7 @@ fn register_bench_command(mut cmd cli.Command) {
 	cmd.add_command(bench_cmd)
 }
 
-fn bench_command(cmd cli.Command) ? {
+fn bench_command(cmd cli.Command) ! {
 	print_version()
 
 	mut file := cmd.flags.get_string('file') or { '' }

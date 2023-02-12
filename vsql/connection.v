@@ -84,16 +84,17 @@ pub fn open_database(path string, options ConnectionOptions) !&Connection {
 }
 
 fn open_connection(path string, options ConnectionOptions) !&Connection {
+	// This is really only used when path == ':memory:' but we must supply
+	// something to satisfy V's checker. It will be replaced if it's using file
+	// storage.
+	mut pager := new_memory_pager()
+	btree := new_btree(pager, options.page_size)
+
 	mut conn := &Connection{
 		path: path
 		query_cache: options.query_cache
 		options: options
-		storage: new_storage()
-	}
-
-	if path == ':memory:' {
-		mut pager := new_memory_pager()
-		conn.storage.btree = new_btree(pager, options.page_size)
+		storage: new_storage(btree)
 	}
 
 	register_builtin_funcs(mut conn)!

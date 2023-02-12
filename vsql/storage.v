@@ -46,8 +46,10 @@ mut:
 	schemas map[string]Schema
 }
 
-fn new_storage() Storage {
-	return Storage{}
+fn new_storage(btree Btree) Storage {
+	return Storage{
+		btree: btree
+	}
 }
 
 fn (mut f Storage) open(path string) ! {

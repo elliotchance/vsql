@@ -18,6 +18,7 @@
 <SQL schema definition statement> /* Stmt */ ::=
     <schema definition>
   | <table definition>
+  | <sequence generator definition>
 
 <schema definition> /* Stmt */ ::=
     CREATE SCHEMA <schema name clause>   -> schema_definition
@@ -34,6 +35,8 @@
 <SQL schema manipulation statement> /* Stmt */ ::=
     <drop schema statement>
   | <drop table statement>
+  | <alter sequence generator statement>
+  | <drop sequence generator statement>
 
 <drop schema statement> /* Stmt */ ::=
     DROP SCHEMA <schema name> <drop behavior>   -> drop_schema_statement
@@ -522,6 +525,7 @@
   | <routine invocation>
   | <case expression>
   | <cast specification>
+  | <next value expression>
 
 <value expression primary> /* Expr */ ::=
     <parenthesized value expression>
@@ -1406,3 +1410,101 @@
 
 <case expression> /* Expr */ ::=
     <case abbreviation>
+
+<sequence generator definition> /* Stmt */ ::=
+    CREATE SEQUENCE
+    <sequence generator name>                   -> sequence_generator_definition_1
+  | CREATE SEQUENCE <sequence generator name>
+    <sequence generator options>                -> sequence_generator_definition_2
+
+<sequence generator name> /* Identifier */ ::=
+    <schema qualified name>
+
+<schema qualified name> /* Identifier */ ::=
+    <qualified identifier>
+  | <schema name> <period> <qualified identifier>   -> schema_qualified_name_2
+
+<sequence generator options> /* []SequenceGeneratorOption */ ::=
+    <sequence generator option>
+  | <sequence generator options> <sequence generator option>
+
+<sequence generator option> /* []SequenceGeneratorOption */ ::=
+    <common sequence generator options>
+
+<common sequence generator options> /* []SequenceGeneratorOption */ ::=
+    <common sequence generator option>    -> sequence_generator_options_1
+  | <common sequence generator options>
+    <common sequence generator option>    -> sequence_generator_options_2
+
+<common sequence generator option> /* SequenceGeneratorOption */ ::=
+    <sequence generator start with option>   -> common_sequence_generator_option_1
+  | <basic sequence generator option>
+
+<sequence generator start with option> /* SequenceGeneratorStartWithOption */ ::=
+    START WITH
+    <sequence generator start value>   -> sequence_generator_start_with_option
+
+<sequence generator start value> /* Expr */ ::=
+    <signed numeric literal>
+
+<basic sequence generator option> /* SequenceGeneratorOption */ ::=
+    <sequence generator increment by option>   -> basic_sequence_generator_option_1
+  | <sequence generator maxvalue option>       -> basic_sequence_generator_option_2
+  | <sequence generator minvalue option>       -> basic_sequence_generator_option_3
+  | <sequence generator cycle option>          -> basic_sequence_generator_option_4
+
+<sequence generator increment by option> /* SequenceGeneratorIncrementByOption */ ::=
+    INCREMENT BY
+    <sequence generator increment>   -> sequence_generator_increment_by_option
+
+<sequence generator increment> /* Expr */ ::=
+    <signed numeric literal>
+
+<sequence generator maxvalue option> /* SequenceGeneratorMaxvalueOption */ ::=
+    MAXVALUE
+    <sequence generator max value>   -> sequence_generator_maxvalue_option_1
+  | NO MAXVALUE                      -> sequence_generator_maxvalue_option_2
+
+<sequence generator minvalue option> /* SequenceGeneratorMinvalueOption */ ::=
+    MINVALUE
+    <sequence generator min value>   -> sequence_generator_minvalue_option_1
+  | NO MINVALUE                      -> sequence_generator_minvalue_option_2
+
+<sequence generator cycle option> /* bool */ ::=
+    CYCLE      -> yes
+  | NO CYCLE   -> no
+
+<sequence generator max value> /* Expr */ ::=
+    <signed numeric literal>
+
+<sequence generator min value> /* Expr */ ::=
+    <signed numeric literal>
+
+<next value expression> /* Expr */ ::=
+    NEXT VALUE FOR <sequence generator name>   -> next_value_expression
+
+<drop sequence generator statement> /* Stmt */ ::=
+    DROP SEQUENCE
+    <sequence generator name>   -> drop_sequence_generator_statement
+
+<alter sequence generator statement> /* Stmt */ ::=
+    ALTER SEQUENCE
+    <sequence generator name>
+    <alter sequence generator options>   -> alter_sequence_generator_statement
+
+<alter sequence generator options> /* []SequenceGeneratorOption */ ::=
+    <alter sequence generator option>   -> sequence_generator_options_1
+  | <alter sequence generator options>
+    <alter sequence generator option>   -> sequence_generator_options_2
+
+<alter sequence generator option> /* SequenceGeneratorOption */ ::=
+    <alter sequence generator restart option>   -> alter_sequence_generator_option_1
+  | <basic sequence generator option>
+
+<alter sequence generator restart option> /* SequenceGeneratorRestartOption */ ::=
+    RESTART                              -> sequence_generator_restart_option_1
+  | RESTART WITH
+    <sequence generator restart value>   -> sequence_generator_restart_option_2
+
+<sequence generator restart value> /* Expr */ ::=
+    <signed numeric literal>

@@ -22,13 +22,12 @@ fn register_out_command(mut cmd cli.Command) {
 }
 
 fn out_command(cmd cli.Command) ! {
-	mut db := vsql.open(cmd.args[0]) or { return err }
+	mut db := vsql.open(cmd.args[0])!
+	mut schemas := db.schemas()!
 
-	// To make the output more deterministic the schemas and tables will ordered
-	// by name. This is not true for the records however, which can potentially
-	// come out in any order.
-	mut schemas := db.schemas() or { return err }
-
+	// To make the output more deterministic, entities will be ordered by name.
+	// This is not true for the records however, which can potentially come out in
+	// any order.
 	schemas.sort(a.name > b.name)
 
 	for _, schema in schemas {
@@ -37,6 +36,13 @@ fn out_command(cmd cli.Command) ! {
 		// dealing with other databases.
 		if schema.name == 'PUBLIC' && cmd.flags.get_bool('create-public-schema') or { false } {
 			println('${schema}\n')
+		}
+
+		mut sequences := db.sequences(schema.name)!
+		sequences.sort(a.name > b.name)
+
+		for _, sequence in sequences {
+			println('${sequence}\n')
 		}
 
 		mut tables := db.schema_tables(schema.name) or { return err }

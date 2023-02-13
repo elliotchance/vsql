@@ -26,7 +26,7 @@ fn execute_delete(mut c Connection, stmt DeleteStmt, params map[string]Value, el
 		table_name = 'PUBLIC.${table_name}'
 	}
 
-	mut plan := create_plan(stmt, params, c)!
+	mut plan := create_plan(stmt, params, mut c)!
 
 	if explain {
 		return plan.explain(elapsed_parse)

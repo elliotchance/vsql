@@ -8,8 +8,8 @@ struct JoinOperation {
 	right_columns Columns
 	specification Expr
 	params        map[string]Value
-	conn          &Connection
 mut:
+	conn    &Connection
 	plan    Plan
 	storage Storage
 }
@@ -66,7 +66,7 @@ fn (mut o JoinOperation) execute_inner(left_rows []Row, right_rows []Row) ![]Row
 				row.data[k] = v
 			}
 
-			if eval_as_bool(o.conn, row, o.specification, o.params)! {
+			if eval_as_bool(mut o.conn, row, o.specification, o.params)! {
 				new_rows << row
 			}
 		}
@@ -92,7 +92,7 @@ fn (mut o JoinOperation) execute_left(left_rows []Row, right_rows []Row) ![]Row 
 				row.data[k] = v
 			}
 
-			if eval_as_bool(o.conn, row, o.specification, o.params)! {
+			if eval_as_bool(mut o.conn, row, o.specification, o.params)! {
 				new_rows << row
 				matched = true
 			}
@@ -133,7 +133,7 @@ fn (mut o JoinOperation) execute_right(left_rows []Row, right_rows []Row) ![]Row
 				row.data[k] = v
 			}
 
-			if eval_as_bool(o.conn, row, o.specification, o.params)! {
+			if eval_as_bool(mut o.conn, row, o.specification, o.params)! {
 				new_rows << row
 				matched = true
 			}

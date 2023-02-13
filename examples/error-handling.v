@@ -22,7 +22,7 @@ fn example() ! {
 	db.query('SELECT * FROM bar') or {
 		match err {
 			vsql.SQLState42P01 { // 42P01 = table not found
-				println("I knew '${err.table_name}' did not exist!")
+				println("I knew '${err.entity_name}' did not exist!")
 			}
 			else {
 				panic(err)

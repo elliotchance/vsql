@@ -7,12 +7,13 @@ module vsql
 struct WhereOperation {
 	condition Expr
 	params    map[string]Value
-	conn      &Connection
 	columns   Columns
+mut:
+	conn &Connection
 }
 
 fn new_where_operation(condition Expr, params map[string]Value, conn &Connection, columns Columns) &WhereOperation {
-	return &WhereOperation{condition, params, conn, columns}
+	return &WhereOperation{condition, params, columns, conn}
 }
 
 fn (o &WhereOperation) str() string {
@@ -25,11 +26,11 @@ fn (o &WhereOperation) columns() Columns {
 	return o.columns
 }
 
-fn (o &WhereOperation) execute(rows []Row) ![]Row {
+fn (mut o WhereOperation) execute(rows []Row) ![]Row {
 	mut new_rows := []Row{}
 
 	for row in rows {
-		mut ok := eval_as_bool(o.conn, row, o.condition, o.params)!
+		mut ok := eval_as_bool(mut o.conn, row, o.condition, o.params)!
 		if ok {
 			new_rows << row
 		}

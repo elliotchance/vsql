@@ -27,38 +27,39 @@ mut:
 	execute(row []Row) ![]Row
 }
 
-fn create_plan(stmt Stmt, params map[string]Value, c &Connection) !Plan {
+fn create_plan(stmt Stmt, params map[string]Value, mut c Connection) !Plan {
 	match stmt {
-		DeleteStmt { return create_delete_plan(stmt, params, c) }
-		QueryExpression { return create_query_expression_plan(stmt, params, c, Correlation{}) }
-		UpdateStmt { return create_update_plan(stmt, params, c) }
+		DeleteStmt { return create_delete_plan(stmt, params, mut c) }
+		QueryExpression { return create_query_expression_plan(stmt, params, mut c, Correlation{}) }
+		UpdateStmt { return create_update_plan(stmt, params, mut c) }
 		else { return error('cannot create plan for ${stmt}') }
 	}
 }
 
-fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, c &Connection, allow_virtual bool, correlation Correlation) !(Plan, map[string]Table) {
+fn create_basic_plan(body SimpleTable, offset Expr, params map[string]Value, mut c Connection, allow_virtual bool, correlation Correlation) !(Plan, map[string]Table) {
 	match body {
 		SelectStmt {
-			return create_select_plan(body, offset, params, c, allow_virtual, true)
+			return create_select_plan(body, offset, params, mut c, allow_virtual, true)
 		}
 		// VALUES
 		[]RowExpr {
 			mut plan := Plan{}
 
-			plan.operations << new_values_operation(body, NoExpr{}, correlation, c, params)!
+			plan.operations << new_values_operation(body, NoExpr{}, correlation, mut c,
+				params)!
 
 			return plan, map[string]Table{}
 		}
 	}
 }
 
-fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &Connection, allow_virtual bool, is_for_select bool) !(Plan, map[string]Table) {
+fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, mut c Connection, allow_virtual bool, is_for_select bool) !(Plan, map[string]Table) {
 	from_clause := body.table_expression.from_clause
 
 	match from_clause {
 		TablePrimary {
 			plan, table := create_select_plan_without_join(body, from_clause, offset,
-				params, c, allow_virtual, is_for_select)!
+				params, mut c, allow_virtual, is_for_select)!
 			return plan, {
 				table.name: table
 			}
@@ -66,11 +67,11 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 		QualifiedJoin {
 			left_table_clause := from_clause.left_table as TablePrimary
 			left_plan, left_table := create_select_plan_without_join(body, left_table_clause,
-				offset, params, c, allow_virtual, is_for_select)!
+				offset, params, mut c, allow_virtual, is_for_select)!
 
 			right_table_clause := from_clause.right_table as TablePrimary
 			right_plan, right_table := create_select_plan_without_join(body, right_table_clause,
-				offset, params, c, allow_virtual, is_for_select)!
+				offset, params, mut c, allow_virtual, is_for_select)!
 
 			mut plan := Plan{}
 			plan.subplans['\$1'] = left_plan
@@ -90,7 +91,7 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, c &
 	}
 }
 
-fn create_select_plan_without_join(body SelectStmt, from_clause TablePrimary, offset Expr, params map[string]Value, c &Connection, allow_virtual bool, is_for_select bool) !(Plan, Table) {
+fn create_select_plan_without_join(body SelectStmt, from_clause TablePrimary, offset Expr, params map[string]Value, mut c Connection, allow_virtual bool, is_for_select bool) !(Plan, Table) {
 	mut plan := Plan{}
 	mut covered_by_pk := false
 	where := body.table_expression.where_clause
@@ -147,7 +148,7 @@ fn create_select_plan_without_join(body SelectStmt, from_clause TablePrimary, of
 						last_operation.columns())
 				}
 			} else {
-				return sqlstate_42p01(table_name)
+				return sqlstate_42p01('table', table_name)
 			}
 		}
 		QueryExpression {
@@ -158,7 +159,7 @@ fn create_select_plan_without_join(body SelectStmt, from_clause TablePrimary, of
 				table_name = from_clause.correlation.name.name
 			}
 
-			subplan := create_query_expression_plan(from_clause.body, params, c, from_clause.correlation)!
+			subplan := create_query_expression_plan(from_clause.body, params, mut c, from_clause.correlation)!
 			plan.subplans[table_name] = subplan
 
 			// NOTE: This has to be assigned to a variable otherwise the value
@@ -189,7 +190,7 @@ fn create_select_plan_without_join(body SelectStmt, from_clause TablePrimary, of
 				select_exprs << DerivedColumn{resolve_identifiers(expr.expr, tables)!, expr.as_clause}
 			}
 
-			add_group_by_plan(mut &plan, group_exprs, select_exprs, params, c, table)!
+			add_group_by_plan(mut &plan, group_exprs, select_exprs, params, mut c, table)!
 		}
 		AsteriskExpr, QualifiedAsteriskExpr {
 			// It's not possible to have a GROUP BY in this case.
@@ -199,7 +200,7 @@ fn create_select_plan_without_join(body SelectStmt, from_clause TablePrimary, of
 	return plan, table
 }
 
-fn add_group_by_plan(mut plan Plan, group_clause []Expr, select_exprs []DerivedColumn, params map[string]Value, c &Connection, table Table) ! {
+fn add_group_by_plan(mut plan Plan, group_clause []Expr, select_exprs []DerivedColumn, params map[string]Value, mut c Connection, table Table) ! {
 	// There can be an explicit GROUP BY clause. However, if any of the
 	// expressions contain an aggregate function we need to have an implicit
 	// GROUP BY for the whole set.
@@ -231,10 +232,11 @@ fn add_group_by_plan(mut plan Plan, group_clause []Expr, select_exprs []DerivedC
 		plan.operations << new_order_operation(order, params, c, plan.columns())
 	}
 
-	plan.operations << new_group_operation(select_exprs, group_clause, params, c, table)!
+	plan.operations << new_group_operation(select_exprs, group_clause, params, mut c,
+		table)!
 }
 
-fn create_delete_plan(stmt DeleteStmt, params map[string]Value, c &Connection) !Plan {
+fn create_delete_plan(stmt DeleteStmt, params map[string]Value, mut c Connection) !Plan {
 	select_stmt := SelectStmt{
 		exprs: AsteriskExpr(true)
 		table_expression: TableExpression{
@@ -245,12 +247,12 @@ fn create_delete_plan(stmt DeleteStmt, params map[string]Value, c &Connection) !
 		}
 	}
 
-	plan, _ := create_select_plan(select_stmt, NoExpr{}, params, c, false, false)!
+	plan, _ := create_select_plan(select_stmt, NoExpr{}, params, mut c, false, false)!
 
 	return plan
 }
 
-fn create_update_plan(stmt UpdateStmt, params map[string]Value, c &Connection) !Plan {
+fn create_update_plan(stmt UpdateStmt, params map[string]Value, mut c Connection) !Plan {
 	select_stmt := SelectStmt{
 		exprs: AsteriskExpr(true)
 		table_expression: TableExpression{
@@ -261,13 +263,14 @@ fn create_update_plan(stmt UpdateStmt, params map[string]Value, c &Connection) !
 		}
 	}
 
-	plan, _ := create_select_plan(select_stmt, NoExpr{}, params, c, false, false)!
+	plan, _ := create_select_plan(select_stmt, NoExpr{}, params, mut c, false, false)!
 
 	return plan
 }
 
-fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, c &Connection, correlation Correlation) !Plan {
-	mut plan, tables := create_basic_plan(stmt.body, stmt.offset, params, c, true, correlation)!
+fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, mut c Connection, correlation Correlation) !Plan {
+	mut plan, tables := create_basic_plan(stmt.body, stmt.offset, params, mut c, true,
+		correlation)!
 
 	if stmt.order.len > 0 {
 		mut order := []SortSpecification{}
@@ -282,7 +285,8 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, c
 	}
 
 	if stmt.fetch !is NoExpr || stmt.offset !is NoExpr {
-		plan.operations << new_limit_operation(stmt.fetch, stmt.offset, params, c, plan.columns())
+		plan.operations << new_limit_operation(stmt.fetch, stmt.offset, params, mut c,
+			plan.columns())
 	}
 
 	if stmt.body is SelectStmt {

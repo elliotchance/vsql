@@ -19,7 +19,7 @@ You can match on these to inspect the error further:
     db.query('SELECT * FROM bar') or {
         match err {
             vsql.SQLState42P01 { // 42P01 = table not found
-                println("I knew '$err.table_name' did not exist!")
+                println("I knew '${err.entity_name}' did not exist!")
             }
             else { panic(err) }
         }
@@ -86,6 +86,24 @@ large enough to store it.
   CREATE TABLE foo (x SMALLINT);
   INSERT INTO foo (x) VALUES (-32769);
   -- error 22003: numeric value out of range
+
+``2200H`` sequence generator limit exceeded
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE SEQUENCE seq1 START WITH 10 INCREMENT BY 5 MAXVALUE 20 NO CYCLE;
+  VALUES NEXT VALUE FOR seq1;
+  VALUES NEXT VALUE FOR seq1;
+  VALUES NEXT VALUE FOR seq1;
+  VALUES NEXT VALUE FOR seq1;
+  -- msg: CREATE SEQUENCE 1
+  -- COL1: 10
+  -- COL1: 15
+  -- COL1: 20
+  -- error 2200H: sequence generator limit exceeded: PUBLIC.SEQ1
 
 ``22012`` division by zero
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -305,6 +305,26 @@ pub fn (mut c Connection) schemas() ![]Schema {
 // exist and empty list will be returned.
 //
 // snippet: v.Connection.schema_tables
+pub fn (mut c Connection) sequences(schema string) ![]Sequence {
+	c.open_read_connection()!
+	defer {
+		c.release_read_connection()
+	}
+
+	mut sequences := []Sequence{}
+	for _, sequence in c.storage.sequences()! {
+		if sequence.name.starts_with('${schema}.') {
+			sequences << sequence
+		}
+	}
+
+	return sequences
+}
+
+// schema_tables returns tables for the provided schema. If the schema does not
+// exist and empty list will be returned.
+//
+// snippet: v.Connection.schema_tables
 pub fn (mut c Connection) schema_tables(schema string) ![]Table {
 	c.open_read_connection()!
 	defer {

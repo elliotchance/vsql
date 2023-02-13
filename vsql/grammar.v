@@ -17,6 +17,12 @@ type EarleyValue = BetweenExpr
 	| QualifiedJoin
 	| QueryExpression
 	| SelectList
+	| SequenceGeneratorIncrementByOption
+	| SequenceGeneratorMaxvalueOption
+	| SequenceGeneratorMinvalueOption
+	| SequenceGeneratorOption
+	| SequenceGeneratorRestartOption
+	| SequenceGeneratorStartWithOption
 	| SimilarExpr
 	| SimpleTable
 	| SortSpecification
@@ -30,6 +36,7 @@ type EarleyValue = BetweenExpr
 	| Value
 	| []Expr
 	| []Identifier
+	| []SequenceGeneratorOption
 	| []SortSpecification
 	| []TableElement
 	| bool
@@ -53,6 +60,36 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_aggregate_function_ := &EarleyRule{
 		name: '<aggregate function>'
+	}
+	mut rule_alter_sequence_generator_option_1_ := &EarleyRule{
+		name: '<alter sequence generator option: 1>'
+	}
+	mut rule_alter_sequence_generator_option_ := &EarleyRule{
+		name: '<alter sequence generator option>'
+	}
+	mut rule_alter_sequence_generator_options_1_ := &EarleyRule{
+		name: '<alter sequence generator options: 1>'
+	}
+	mut rule_alter_sequence_generator_options_2_ := &EarleyRule{
+		name: '<alter sequence generator options: 2>'
+	}
+	mut rule_alter_sequence_generator_options_ := &EarleyRule{
+		name: '<alter sequence generator options>'
+	}
+	mut rule_alter_sequence_generator_restart_option_1_ := &EarleyRule{
+		name: '<alter sequence generator restart option: 1>'
+	}
+	mut rule_alter_sequence_generator_restart_option_2_ := &EarleyRule{
+		name: '<alter sequence generator restart option: 2>'
+	}
+	mut rule_alter_sequence_generator_restart_option_ := &EarleyRule{
+		name: '<alter sequence generator restart option>'
+	}
+	mut rule_alter_sequence_generator_statement_1_ := &EarleyRule{
+		name: '<alter sequence generator statement: 1>'
+	}
+	mut rule_alter_sequence_generator_statement_ := &EarleyRule{
+		name: '<alter sequence generator statement>'
 	}
 	mut rule_approximate_numeric_type_1_ := &EarleyRule{
 		name: '<approximate numeric type: 1>'
@@ -86,6 +123,21 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_basic_identifier_chain_ := &EarleyRule{
 		name: '<basic identifier chain>'
+	}
+	mut rule_basic_sequence_generator_option_1_ := &EarleyRule{
+		name: '<basic sequence generator option: 1>'
+	}
+	mut rule_basic_sequence_generator_option_2_ := &EarleyRule{
+		name: '<basic sequence generator option: 2>'
+	}
+	mut rule_basic_sequence_generator_option_3_ := &EarleyRule{
+		name: '<basic sequence generator option: 3>'
+	}
+	mut rule_basic_sequence_generator_option_4_ := &EarleyRule{
+		name: '<basic sequence generator option: 4>'
+	}
+	mut rule_basic_sequence_generator_option_ := &EarleyRule{
+		name: '<basic sequence generator option>'
 	}
 	mut rule_between_predicate_part_1_1_ := &EarleyRule{
 		name: '<between predicate part 1: 1>'
@@ -348,6 +400,21 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_common_logarithm_ := &EarleyRule{
 		name: '<common logarithm>'
 	}
+	mut rule_common_sequence_generator_option_1_ := &EarleyRule{
+		name: '<common sequence generator option: 1>'
+	}
+	mut rule_common_sequence_generator_option_ := &EarleyRule{
+		name: '<common sequence generator option>'
+	}
+	mut rule_common_sequence_generator_options_1_ := &EarleyRule{
+		name: '<common sequence generator options: 1>'
+	}
+	mut rule_common_sequence_generator_options_2_ := &EarleyRule{
+		name: '<common sequence generator options: 2>'
+	}
+	mut rule_common_sequence_generator_options_ := &EarleyRule{
+		name: '<common sequence generator options>'
+	}
 	mut rule_common_value_expression_ := &EarleyRule{
 		name: '<common value expression>'
 	}
@@ -587,6 +654,12 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_drop_schema_statement_ := &EarleyRule{
 		name: '<drop schema statement>'
+	}
+	mut rule_drop_sequence_generator_statement_1_ := &EarleyRule{
+		name: '<drop sequence generator statement: 1>'
+	}
+	mut rule_drop_sequence_generator_statement_ := &EarleyRule{
+		name: '<drop sequence generator statement>'
 	}
 	mut rule_drop_table_statement_1_ := &EarleyRule{
 		name: '<drop table statement: 1>'
@@ -848,6 +921,12 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_natural_logarithm_ := &EarleyRule{
 		name: '<natural logarithm>'
+	}
+	mut rule_next_value_expression_1_ := &EarleyRule{
+		name: '<next value expression: 1>'
+	}
+	mut rule_next_value_expression_ := &EarleyRule{
+		name: '<next value expression>'
 	}
 	mut rule_non_reserved_word_ := &EarleyRule{
 		name: '<non-reserved word>'
@@ -1140,6 +1219,12 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_schema_name_ := &EarleyRule{
 		name: '<schema name>'
 	}
+	mut rule_schema_qualified_name_2_ := &EarleyRule{
+		name: '<schema qualified name: 2>'
+	}
+	mut rule_schema_qualified_name_ := &EarleyRule{
+		name: '<schema qualified name>'
+	}
 	mut rule_search_condition_ := &EarleyRule{
 		name: '<search condition>'
 	}
@@ -1160,6 +1245,78 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_select_sublist_ := &EarleyRule{
 		name: '<select sublist>'
+	}
+	mut rule_sequence_generator_cycle_option_1_ := &EarleyRule{
+		name: '<sequence generator cycle option: 1>'
+	}
+	mut rule_sequence_generator_cycle_option_2_ := &EarleyRule{
+		name: '<sequence generator cycle option: 2>'
+	}
+	mut rule_sequence_generator_cycle_option_ := &EarleyRule{
+		name: '<sequence generator cycle option>'
+	}
+	mut rule_sequence_generator_definition_1_ := &EarleyRule{
+		name: '<sequence generator definition: 1>'
+	}
+	mut rule_sequence_generator_definition_2_ := &EarleyRule{
+		name: '<sequence generator definition: 2>'
+	}
+	mut rule_sequence_generator_definition_ := &EarleyRule{
+		name: '<sequence generator definition>'
+	}
+	mut rule_sequence_generator_increment_by_option_1_ := &EarleyRule{
+		name: '<sequence generator increment by option: 1>'
+	}
+	mut rule_sequence_generator_increment_by_option_ := &EarleyRule{
+		name: '<sequence generator increment by option>'
+	}
+	mut rule_sequence_generator_increment_ := &EarleyRule{
+		name: '<sequence generator increment>'
+	}
+	mut rule_sequence_generator_max_value_ := &EarleyRule{
+		name: '<sequence generator max value>'
+	}
+	mut rule_sequence_generator_maxvalue_option_1_ := &EarleyRule{
+		name: '<sequence generator maxvalue option: 1>'
+	}
+	mut rule_sequence_generator_maxvalue_option_2_ := &EarleyRule{
+		name: '<sequence generator maxvalue option: 2>'
+	}
+	mut rule_sequence_generator_maxvalue_option_ := &EarleyRule{
+		name: '<sequence generator maxvalue option>'
+	}
+	mut rule_sequence_generator_min_value_ := &EarleyRule{
+		name: '<sequence generator min value>'
+	}
+	mut rule_sequence_generator_minvalue_option_1_ := &EarleyRule{
+		name: '<sequence generator minvalue option: 1>'
+	}
+	mut rule_sequence_generator_minvalue_option_2_ := &EarleyRule{
+		name: '<sequence generator minvalue option: 2>'
+	}
+	mut rule_sequence_generator_minvalue_option_ := &EarleyRule{
+		name: '<sequence generator minvalue option>'
+	}
+	mut rule_sequence_generator_name_ := &EarleyRule{
+		name: '<sequence generator name>'
+	}
+	mut rule_sequence_generator_option_ := &EarleyRule{
+		name: '<sequence generator option>'
+	}
+	mut rule_sequence_generator_options_ := &EarleyRule{
+		name: '<sequence generator options>'
+	}
+	mut rule_sequence_generator_restart_value_ := &EarleyRule{
+		name: '<sequence generator restart value>'
+	}
+	mut rule_sequence_generator_start_value_ := &EarleyRule{
+		name: '<sequence generator start value>'
+	}
+	mut rule_sequence_generator_start_with_option_1_ := &EarleyRule{
+		name: '<sequence generator start with option: 1>'
+	}
+	mut rule_sequence_generator_start_with_option_ := &EarleyRule{
+		name: '<sequence generator start with option>'
 	}
 	mut rule_set_clause_list_2_ := &EarleyRule{
 		name: '<set clause list: 2>'
@@ -1599,6 +1756,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_after := &EarleyRule{
 		name: 'AFTER'
 	}
+	mut rule_alter := &EarleyRule{
+		name: 'ALTER'
+	}
 	mut rule_always := &EarleyRule{
 		name: 'ALWAYS'
 	}
@@ -1805,6 +1965,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_cursor_name := &EarleyRule{
 		name: 'CURSOR_NAME'
+	}
+	mut rule_cycle := &EarleyRule{
+		name: 'CYCLE'
 	}
 	mut rule_data := &EarleyRule{
 		name: 'DATA'
@@ -2210,6 +2373,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_nfkd := &EarleyRule{
 		name: 'NFKD'
+	}
+	mut rule_no := &EarleyRule{
+		name: 'NO'
 	}
 	mut rule_normalized := &EarleyRule{
 		name: 'NORMALIZED'
@@ -2706,6 +2872,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_utf8 := &EarleyRule{
 		name: 'UTF8'
 	}
+	mut rule_value := &EarleyRule{
+		name: 'VALUE'
+	}
 	mut rule_values := &EarleyRule{
 		name: 'VALUES'
 	}
@@ -2790,6 +2959,99 @@ fn get_grammar() map[string]EarleyRule {
 	rule_aggregate_function_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_general_set_function_
+		},
+	]}
+
+	rule_alter_sequence_generator_option_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_alter_sequence_generator_restart_option_
+		},
+	]}
+
+	rule_alter_sequence_generator_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_alter_sequence_generator_option_1_
+		},
+	]}
+	rule_alter_sequence_generator_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_basic_sequence_generator_option_
+		},
+	]}
+
+	rule_alter_sequence_generator_options_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_alter_sequence_generator_option_
+		},
+	]}
+
+	rule_alter_sequence_generator_options_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_alter_sequence_generator_options_
+		},
+		&EarleyRuleOrString{
+			rule: rule_alter_sequence_generator_option_
+		},
+	]}
+
+	rule_alter_sequence_generator_options_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_alter_sequence_generator_options_1_
+		},
+	]}
+	rule_alter_sequence_generator_options_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_alter_sequence_generator_options_2_
+		},
+	]}
+
+	rule_alter_sequence_generator_restart_option_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_restart
+		},
+	]}
+
+	rule_alter_sequence_generator_restart_option_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_restart
+		},
+		&EarleyRuleOrString{
+			rule: rule_with
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_restart_value_
+		},
+	]}
+
+	rule_alter_sequence_generator_restart_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_alter_sequence_generator_restart_option_1_
+		},
+	]}
+	rule_alter_sequence_generator_restart_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_alter_sequence_generator_restart_option_2_
+		},
+	]}
+
+	rule_alter_sequence_generator_statement_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_alter
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_name_
+		},
+		&EarleyRuleOrString{
+			rule: rule_alter_sequence_generator_options_
+		},
+	]}
+
+	rule_alter_sequence_generator_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_alter_sequence_generator_statement_1_
 		},
 	]}
 
@@ -2892,6 +3154,51 @@ fn get_grammar() map[string]EarleyRule {
 	rule_basic_identifier_chain_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_identifier_chain_
+		},
+	]}
+
+	rule_basic_sequence_generator_option_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_increment_by_option_
+		},
+	]}
+
+	rule_basic_sequence_generator_option_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_maxvalue_option_
+		},
+	]}
+
+	rule_basic_sequence_generator_option_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_minvalue_option_
+		},
+	]}
+
+	rule_basic_sequence_generator_option_4_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_cycle_option_
+		},
+	]}
+
+	rule_basic_sequence_generator_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_basic_sequence_generator_option_1_
+		},
+	]}
+	rule_basic_sequence_generator_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_basic_sequence_generator_option_2_
+		},
+	]}
+	rule_basic_sequence_generator_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_basic_sequence_generator_option_3_
+		},
+	]}
+	rule_basic_sequence_generator_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_basic_sequence_generator_option_4_
 		},
 	]}
 
@@ -3908,6 +4215,49 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_common_sequence_generator_option_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_start_with_option_
+		},
+	]}
+
+	rule_common_sequence_generator_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_common_sequence_generator_option_1_
+		},
+	]}
+	rule_common_sequence_generator_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_basic_sequence_generator_option_
+		},
+	]}
+
+	rule_common_sequence_generator_options_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_common_sequence_generator_option_
+		},
+	]}
+
+	rule_common_sequence_generator_options_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_common_sequence_generator_options_
+		},
+		&EarleyRuleOrString{
+			rule: rule_common_sequence_generator_option_
+		},
+	]}
+
+	rule_common_sequence_generator_options_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_common_sequence_generator_options_1_
+		},
+	]}
+	rule_common_sequence_generator_options_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_common_sequence_generator_options_2_
+		},
+	]}
+
 	rule_common_value_expression_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
@@ -4778,6 +5128,24 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_drop_sequence_generator_statement_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_drop
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_name_
+		},
+	]}
+
+	rule_drop_sequence_generator_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_drop_sequence_generator_statement_1_
+		},
+	]}
+
 	rule_drop_table_statement_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_drop
@@ -5564,6 +5932,27 @@ fn get_grammar() map[string]EarleyRule {
 	rule_natural_logarithm_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_natural_logarithm_1_
+		},
+	]}
+
+	rule_next_value_expression_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_next
+		},
+		&EarleyRuleOrString{
+			rule: rule_value
+		},
+		&EarleyRuleOrString{
+			rule: rule_for
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_name_
+		},
+	]}
+
+	rule_next_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_next_value_expression_1_
 		},
 	]}
 
@@ -7004,6 +7393,11 @@ fn get_grammar() map[string]EarleyRule {
 			rule: rule_cast_specification_
 		},
 	]}
+	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_next_value_expression_
+		},
+	]}
 
 	rule_not_equals_operator_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
@@ -7974,6 +8368,29 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_schema_qualified_name_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_schema_name_
+		},
+		&EarleyRuleOrString{
+			rule: rule_period_
+		},
+		&EarleyRuleOrString{
+			rule: rule_qualified_identifier_
+		},
+	]}
+
+	rule_schema_qualified_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_qualified_identifier_
+		},
+	]}
+	rule_schema_qualified_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_schema_qualified_name_2_
+		},
+	]}
+
 	rule_search_condition_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_boolean_value_expression_
@@ -8034,6 +8451,220 @@ fn get_grammar() map[string]EarleyRule {
 	rule_select_sublist_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_select_sublist_2_
+		},
+	]}
+
+	rule_sequence_generator_cycle_option_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_cycle
+		},
+	]}
+
+	rule_sequence_generator_cycle_option_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_no
+		},
+		&EarleyRuleOrString{
+			rule: rule_cycle
+		},
+	]}
+
+	rule_sequence_generator_cycle_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_cycle_option_1_
+		},
+	]}
+	rule_sequence_generator_cycle_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_cycle_option_2_
+		},
+	]}
+
+	rule_sequence_generator_definition_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_create
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_name_
+		},
+	]}
+
+	rule_sequence_generator_definition_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_create
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_name_
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_options_
+		},
+	]}
+
+	rule_sequence_generator_definition_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_definition_1_
+		},
+	]}
+	rule_sequence_generator_definition_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_definition_2_
+		},
+	]}
+
+	rule_sequence_generator_increment_by_option_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_increment
+		},
+		&EarleyRuleOrString{
+			rule: rule_by
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_increment_
+		},
+	]}
+
+	rule_sequence_generator_increment_by_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_increment_by_option_1_
+		},
+	]}
+
+	rule_sequence_generator_increment_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_signed_numeric_literal_
+		},
+	]}
+
+	rule_sequence_generator_max_value_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_signed_numeric_literal_
+		},
+	]}
+
+	rule_sequence_generator_maxvalue_option_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_maxvalue
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_max_value_
+		},
+	]}
+
+	rule_sequence_generator_maxvalue_option_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_no
+		},
+		&EarleyRuleOrString{
+			rule: rule_maxvalue
+		},
+	]}
+
+	rule_sequence_generator_maxvalue_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_maxvalue_option_1_
+		},
+	]}
+	rule_sequence_generator_maxvalue_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_maxvalue_option_2_
+		},
+	]}
+
+	rule_sequence_generator_min_value_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_signed_numeric_literal_
+		},
+	]}
+
+	rule_sequence_generator_minvalue_option_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_minvalue
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_min_value_
+		},
+	]}
+
+	rule_sequence_generator_minvalue_option_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_no
+		},
+		&EarleyRuleOrString{
+			rule: rule_minvalue
+		},
+	]}
+
+	rule_sequence_generator_minvalue_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_minvalue_option_1_
+		},
+	]}
+	rule_sequence_generator_minvalue_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_minvalue_option_2_
+		},
+	]}
+
+	rule_sequence_generator_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_schema_qualified_name_
+		},
+	]}
+
+	rule_sequence_generator_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_common_sequence_generator_options_
+		},
+	]}
+
+	rule_sequence_generator_options_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_option_
+		},
+	]}
+	rule_sequence_generator_options_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_options_
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_option_
+		},
+	]}
+
+	rule_sequence_generator_restart_value_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_signed_numeric_literal_
+		},
+	]}
+
+	rule_sequence_generator_start_value_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_signed_numeric_literal_
+		},
+	]}
+
+	rule_sequence_generator_start_with_option_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_start
+		},
+		&EarleyRuleOrString{
+			rule: rule_with
+		},
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_start_value_
+		},
+	]}
+
+	rule_sequence_generator_start_with_option_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_start_with_option_1_
 		},
 	]}
 
@@ -8353,6 +8984,11 @@ fn get_grammar() map[string]EarleyRule {
 			rule: rule_table_definition_
 		},
 	]}
+	rule_sql_schema_definition_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_definition_
+		},
+	]}
 
 	rule_sql_schema_manipulation_statement_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
@@ -8362,6 +8998,16 @@ fn get_grammar() map[string]EarleyRule {
 	rule_sql_schema_manipulation_statement_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_drop_table_statement_
+		},
+	]}
+	rule_sql_schema_manipulation_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_alter_sequence_generator_statement_
+		},
+	]}
+	rule_sql_schema_manipulation_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_drop_sequence_generator_statement_
 		},
 	]}
 
@@ -9413,6 +10059,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_alter.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'ALTER'
+			rule: 0
+		},
+	]}
+
 	rule_always.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'ALWAYS'
@@ -9892,6 +10545,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_cursor_name.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'CURSOR_NAME'
+			rule: 0
+		},
+	]}
+
+	rule_cycle.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CYCLE'
 			rule: 0
 		},
 	]}
@@ -10837,6 +11497,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_nfkd.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'NFKD'
+			rule: 0
+		},
+	]}
+
+	rule_no.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'NO'
 			rule: 0
 		},
 	]}
@@ -11996,6 +12663,13 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_value.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'VALUE'
+			rule: 0
+		},
+	]}
+
 	rule_values.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'VALUES'
@@ -12078,6 +12752,16 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<actual identifier>'] = rule_actual_identifier_
 	rules['<aggregate function: 1>'] = rule_aggregate_function_1_
 	rules['<aggregate function>'] = rule_aggregate_function_
+	rules['<alter sequence generator option: 1>'] = rule_alter_sequence_generator_option_1_
+	rules['<alter sequence generator option>'] = rule_alter_sequence_generator_option_
+	rules['<alter sequence generator options: 1>'] = rule_alter_sequence_generator_options_1_
+	rules['<alter sequence generator options: 2>'] = rule_alter_sequence_generator_options_2_
+	rules['<alter sequence generator options>'] = rule_alter_sequence_generator_options_
+	rules['<alter sequence generator restart option: 1>'] = rule_alter_sequence_generator_restart_option_1_
+	rules['<alter sequence generator restart option: 2>'] = rule_alter_sequence_generator_restart_option_2_
+	rules['<alter sequence generator restart option>'] = rule_alter_sequence_generator_restart_option_
+	rules['<alter sequence generator statement: 1>'] = rule_alter_sequence_generator_statement_1_
+	rules['<alter sequence generator statement>'] = rule_alter_sequence_generator_statement_
 	rules['<approximate numeric type: 1>'] = rule_approximate_numeric_type_1_
 	rules['<approximate numeric type: 2>'] = rule_approximate_numeric_type_2_
 	rules['<approximate numeric type: 3>'] = rule_approximate_numeric_type_3_
@@ -12089,6 +12773,11 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<asterisked identifier chain>'] = rule_asterisked_identifier_chain_
 	rules['<asterisked identifier>'] = rule_asterisked_identifier_
 	rules['<basic identifier chain>'] = rule_basic_identifier_chain_
+	rules['<basic sequence generator option: 1>'] = rule_basic_sequence_generator_option_1_
+	rules['<basic sequence generator option: 2>'] = rule_basic_sequence_generator_option_2_
+	rules['<basic sequence generator option: 3>'] = rule_basic_sequence_generator_option_3_
+	rules['<basic sequence generator option: 4>'] = rule_basic_sequence_generator_option_4_
+	rules['<basic sequence generator option>'] = rule_basic_sequence_generator_option_
 	rules['<between predicate part 1: 1>'] = rule_between_predicate_part_1_1_
 	rules['<between predicate part 1: 2>'] = rule_between_predicate_part_1_2_
 	rules['<between predicate part 1>'] = rule_between_predicate_part_1_
@@ -12176,6 +12865,11 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<commit statement>'] = rule_commit_statement_
 	rules['<common logarithm: 1>'] = rule_common_logarithm_1_
 	rules['<common logarithm>'] = rule_common_logarithm_
+	rules['<common sequence generator option: 1>'] = rule_common_sequence_generator_option_1_
+	rules['<common sequence generator option>'] = rule_common_sequence_generator_option_
+	rules['<common sequence generator options: 1>'] = rule_common_sequence_generator_options_1_
+	rules['<common sequence generator options: 2>'] = rule_common_sequence_generator_options_2_
+	rules['<common sequence generator options>'] = rule_common_sequence_generator_options_
 	rules['<common value expression>'] = rule_common_value_expression_
 	rules['<comp op>'] = rule_comp_op_
 	rules['<comparison predicate part 2: 1>'] = rule_comparison_predicate_part_2_1_
@@ -12256,6 +12950,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<drop behavior>'] = rule_drop_behavior_
 	rules['<drop schema statement: 1>'] = rule_drop_schema_statement_1_
 	rules['<drop schema statement>'] = rule_drop_schema_statement_
+	rules['<drop sequence generator statement: 1>'] = rule_drop_sequence_generator_statement_1_
+	rules['<drop sequence generator statement>'] = rule_drop_sequence_generator_statement_
 	rules['<drop table statement: 1>'] = rule_drop_table_statement_1_
 	rules['<drop table statement>'] = rule_drop_table_statement_
 	rules['<dynamic select statement>'] = rule_dynamic_select_statement_
@@ -12343,6 +13039,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<modulus expression>'] = rule_modulus_expression_
 	rules['<natural logarithm: 1>'] = rule_natural_logarithm_1_
 	rules['<natural logarithm>'] = rule_natural_logarithm_
+	rules['<next value expression: 1>'] = rule_next_value_expression_1_
+	rules['<next value expression>'] = rule_next_value_expression_
 	rules['<non-reserved word>'] = rule_non_reserved_word_
 	rules['<nonparenthesized value expression primary: 2>'] = rule_nonparenthesized_value_expression_primary_2_
 	rules['<nonparenthesized value expression primary>'] = rule_nonparenthesized_value_expression_primary_
@@ -12440,6 +13138,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<schema definition>'] = rule_schema_definition_
 	rules['<schema name clause>'] = rule_schema_name_clause_
 	rules['<schema name>'] = rule_schema_name_
+	rules['<schema qualified name: 2>'] = rule_schema_qualified_name_2_
+	rules['<schema qualified name>'] = rule_schema_qualified_name_
 	rules['<search condition>'] = rule_search_condition_
 	rules['<select list: 1>'] = rule_select_list_1_
 	rules['<select list: 3>'] = rule_select_list_3_
@@ -12447,6 +13147,30 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<select sublist: 1>'] = rule_select_sublist_1_
 	rules['<select sublist: 2>'] = rule_select_sublist_2_
 	rules['<select sublist>'] = rule_select_sublist_
+	rules['<sequence generator cycle option: 1>'] = rule_sequence_generator_cycle_option_1_
+	rules['<sequence generator cycle option: 2>'] = rule_sequence_generator_cycle_option_2_
+	rules['<sequence generator cycle option>'] = rule_sequence_generator_cycle_option_
+	rules['<sequence generator definition: 1>'] = rule_sequence_generator_definition_1_
+	rules['<sequence generator definition: 2>'] = rule_sequence_generator_definition_2_
+	rules['<sequence generator definition>'] = rule_sequence_generator_definition_
+	rules['<sequence generator increment by option: 1>'] = rule_sequence_generator_increment_by_option_1_
+	rules['<sequence generator increment by option>'] = rule_sequence_generator_increment_by_option_
+	rules['<sequence generator increment>'] = rule_sequence_generator_increment_
+	rules['<sequence generator max value>'] = rule_sequence_generator_max_value_
+	rules['<sequence generator maxvalue option: 1>'] = rule_sequence_generator_maxvalue_option_1_
+	rules['<sequence generator maxvalue option: 2>'] = rule_sequence_generator_maxvalue_option_2_
+	rules['<sequence generator maxvalue option>'] = rule_sequence_generator_maxvalue_option_
+	rules['<sequence generator min value>'] = rule_sequence_generator_min_value_
+	rules['<sequence generator minvalue option: 1>'] = rule_sequence_generator_minvalue_option_1_
+	rules['<sequence generator minvalue option: 2>'] = rule_sequence_generator_minvalue_option_2_
+	rules['<sequence generator minvalue option>'] = rule_sequence_generator_minvalue_option_
+	rules['<sequence generator name>'] = rule_sequence_generator_name_
+	rules['<sequence generator option>'] = rule_sequence_generator_option_
+	rules['<sequence generator options>'] = rule_sequence_generator_options_
+	rules['<sequence generator restart value>'] = rule_sequence_generator_restart_value_
+	rules['<sequence generator start value>'] = rule_sequence_generator_start_value_
+	rules['<sequence generator start with option: 1>'] = rule_sequence_generator_start_with_option_1_
+	rules['<sequence generator start with option>'] = rule_sequence_generator_start_with_option_
 	rules['<set clause list: 2>'] = rule_set_clause_list_2_
 	rules['<set clause list>'] = rule_set_clause_list_
 	rules['<set clause: 1>'] = rule_set_clause_1_
@@ -12593,6 +13317,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['ADD'] = rule_add
 	rules['ADMIN'] = rule_admin
 	rules['AFTER'] = rule_after
+	rules['ALTER'] = rule_alter
 	rules['ALWAYS'] = rule_always
 	rules['AND'] = rule_and
 	rules['AS'] = rule_as
@@ -12662,6 +13387,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['CURRENT_TIME'] = rule_current_time
 	rules['CURRENT_TIMESTAMP'] = rule_current_timestamp
 	rules['CURSOR_NAME'] = rule_cursor_name
+	rules['CYCLE'] = rule_cycle
 	rules['DATA'] = rule_data
 	rules['DATE'] = rule_date
 	rules['DATETIME_INTERVAL_CODE'] = rule_datetime_interval_code
@@ -12797,6 +13523,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['NFD'] = rule_nfd
 	rules['NFKC'] = rule_nfkc
 	rules['NFKD'] = rule_nfkd
+	rules['NO'] = rule_no
 	rules['NORMALIZED'] = rule_normalized
 	rules['NOT'] = rule_not
 	rules['NULL'] = rule_null
@@ -12962,6 +13689,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['UTF16'] = rule_utf16
 	rules['UTF32'] = rule_utf32
 	rules['UTF8'] = rule_utf8
+	rules['VALUE'] = rule_value
 	rules['VALUES'] = rule_values
 	rules['VARCHAR'] = rule_varchar
 	rules['VARYING'] = rule_varying
@@ -13024,6 +13752,36 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		'<aggregate function: 1>' {
 			return [EarleyValue(parse_count_all(children[2] as string)!)]
 		}
+		'<alter sequence generator option: 1>' {
+			return [
+				EarleyValue(parse_alter_sequence_generator_option_1(children[0] as SequenceGeneratorRestartOption)!),
+			]
+		}
+		'<alter sequence generator options: 1>' {
+			return [
+				EarleyValue(parse_sequence_generator_options_1(children[0] as SequenceGeneratorOption)!),
+			]
+		}
+		'<alter sequence generator options: 2>' {
+			return [
+				EarleyValue(parse_sequence_generator_options_2(children[0] as []SequenceGeneratorOption,
+					children[1] as SequenceGeneratorOption)!),
+			]
+		}
+		'<alter sequence generator restart option: 1>' {
+			return [EarleyValue(parse_sequence_generator_restart_option_1()!)]
+		}
+		'<alter sequence generator restart option: 2>' {
+			return [
+				EarleyValue(parse_sequence_generator_restart_option_2(children[2] as Expr)!),
+			]
+		}
+		'<alter sequence generator statement: 1>' {
+			return [
+				EarleyValue(parse_alter_sequence_generator_statement(children[2] as Identifier,
+					children[3] as []SequenceGeneratorOption)!),
+			]
+		}
 		'<approximate numeric type: 1>' {
 			return [EarleyValue(parse_float()!)]
 		}
@@ -13038,6 +13796,26 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		}
 		'<as clause: 1>' {
 			return [EarleyValue(parse_identifier(children[1] as Identifier)!)]
+		}
+		'<basic sequence generator option: 1>' {
+			return [
+				EarleyValue(parse_basic_sequence_generator_option_1(children[0] as SequenceGeneratorIncrementByOption)!),
+			]
+		}
+		'<basic sequence generator option: 2>' {
+			return [
+				EarleyValue(parse_basic_sequence_generator_option_2(children[0] as SequenceGeneratorMaxvalueOption)!),
+			]
+		}
+		'<basic sequence generator option: 3>' {
+			return [
+				EarleyValue(parse_basic_sequence_generator_option_3(children[0] as SequenceGeneratorMinvalueOption)!),
+			]
+		}
+		'<basic sequence generator option: 4>' {
+			return [
+				EarleyValue(parse_basic_sequence_generator_option_4(children[0] as bool)!),
+			]
 		}
 		'<between predicate part 1: 1>' {
 			return [EarleyValue(parse_yes()!)]
@@ -13210,6 +13988,22 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		'<common logarithm: 1>' {
 			return [EarleyValue(parse_log10(children[2] as Expr)!)]
 		}
+		'<common sequence generator option: 1>' {
+			return [
+				EarleyValue(parse_common_sequence_generator_option_1(children[0] as SequenceGeneratorStartWithOption)!),
+			]
+		}
+		'<common sequence generator options: 1>' {
+			return [
+				EarleyValue(parse_sequence_generator_options_1(children[0] as SequenceGeneratorOption)!),
+			]
+		}
+		'<common sequence generator options: 2>' {
+			return [
+				EarleyValue(parse_sequence_generator_options_2(children[0] as []SequenceGeneratorOption,
+					children[1] as SequenceGeneratorOption)!),
+			]
+		}
 		'<comparison predicate part 2: 1>' {
 			return [
 				EarleyValue(parse_comparison_part(children[0] as string, children[1] as Expr)!),
@@ -13361,6 +14155,11 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 				EarleyValue(parse_drop_schema_statement(children[2] as Identifier, children[3] as string)!),
 			]
 		}
+		'<drop sequence generator statement: 1>' {
+			return [
+				EarleyValue(parse_drop_sequence_generator_statement(children[2] as Identifier)!),
+			]
+		}
 		'<drop table statement: 1>' {
 			return [
 				EarleyValue(parse_drop_table_statement(children[2] as Identifier)!),
@@ -13494,6 +14293,11 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		}
 		'<natural logarithm: 1>' {
 			return [EarleyValue(parse_ln(children[2] as Expr)!)]
+		}
+		'<next value expression: 1>' {
+			return [
+				EarleyValue(parse_next_value_expression(children[3] as Identifier)!),
+			]
 		}
 		'<nonparenthesized value expression primary: 2>' {
 			return [
@@ -13655,6 +14459,11 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		'<schema definition: 1>' {
 			return [EarleyValue(parse_schema_definition(children[2] as Identifier)!)]
 		}
+		'<schema qualified name: 2>' {
+			return [
+				EarleyValue(parse_schema_qualified_name_2(children[0] as Identifier, children[2] as Identifier)!),
+			]
+		}
 		'<select list: 1>' {
 			return [EarleyValue(parse_asterisk(children[0] as string)!)]
 		}
@@ -13671,6 +14480,49 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		'<select sublist: 2>' {
 			return [
 				EarleyValue(parse_select_sublist2(children[0] as QualifiedAsteriskExpr)!),
+			]
+		}
+		'<sequence generator cycle option: 1>' {
+			return [EarleyValue(parse_yes()!)]
+		}
+		'<sequence generator cycle option: 2>' {
+			return [EarleyValue(parse_no()!)]
+		}
+		'<sequence generator definition: 1>' {
+			return [
+				EarleyValue(parse_sequence_generator_definition_1(children[2] as Identifier)!),
+			]
+		}
+		'<sequence generator definition: 2>' {
+			return [
+				EarleyValue(parse_sequence_generator_definition_2(children[2] as Identifier,
+					children[3] as []SequenceGeneratorOption)!),
+			]
+		}
+		'<sequence generator increment by option: 1>' {
+			return [
+				EarleyValue(parse_sequence_generator_increment_by_option(children[2] as Expr)!),
+			]
+		}
+		'<sequence generator maxvalue option: 1>' {
+			return [
+				EarleyValue(parse_sequence_generator_maxvalue_option_1(children[1] as Expr)!),
+			]
+		}
+		'<sequence generator maxvalue option: 2>' {
+			return [EarleyValue(parse_sequence_generator_maxvalue_option_2()!)]
+		}
+		'<sequence generator minvalue option: 1>' {
+			return [
+				EarleyValue(parse_sequence_generator_minvalue_option_1(children[1] as Expr)!),
+			]
+		}
+		'<sequence generator minvalue option: 2>' {
+			return [EarleyValue(parse_sequence_generator_minvalue_option_2()!)]
+		}
+		'<sequence generator start with option: 1>' {
+			return [
+				EarleyValue(parse_sequence_generator_start_with_option(children[2] as Expr)!),
 			]
 		}
 		'<set clause list: 2>' {

@@ -832,3 +832,119 @@ fn parse_coalesce(exprs []Expr) !Expr {
 fn parse_string_identifier(s string) !Identifier {
 	return new_identifier(s)
 }
+
+fn parse_basic_sequence_generator_option_1(option SequenceGeneratorIncrementByOption) !SequenceGeneratorOption {
+	return option
+}
+
+fn parse_basic_sequence_generator_option_2(option SequenceGeneratorMaxvalueOption) !SequenceGeneratorOption {
+	return option
+}
+
+fn parse_basic_sequence_generator_option_3(option SequenceGeneratorMinvalueOption) !SequenceGeneratorOption {
+	return option
+}
+
+fn parse_basic_sequence_generator_option_4(option bool) !SequenceGeneratorOption {
+	return SequenceGeneratorCycleOption{option}
+}
+
+fn parse_common_sequence_generator_option_1(option SequenceGeneratorStartWithOption) !SequenceGeneratorOption {
+	return option
+}
+
+fn parse_sequence_generator_options_1(option SequenceGeneratorOption) ![]SequenceGeneratorOption {
+	return [option]
+}
+
+fn parse_sequence_generator_options_2(options []SequenceGeneratorOption, option SequenceGeneratorOption) ![]SequenceGeneratorOption {
+	mut new_options := options.clone()
+	new_options << option
+	return new_options
+}
+
+fn parse_schema_qualified_name_2(schema_name Identifier, identifier Identifier) !Identifier {
+	return new_identifier('${schema_name}.${identifier}')
+}
+
+fn parse_sequence_generator_definition_1(generator_name Identifier) !Stmt {
+	return CreateSequenceStmt{
+		name: generator_name
+	}
+}
+
+fn parse_sequence_generator_definition_2(generator_name Identifier, options []SequenceGeneratorOption) !Stmt {
+	return CreateSequenceStmt{
+		name: generator_name
+		options: options
+	}
+}
+
+fn parse_sequence_generator_increment_by_option(increment_by Expr) !SequenceGeneratorIncrementByOption {
+	return SequenceGeneratorIncrementByOption{
+		increment_by: increment_by
+	}
+}
+
+fn parse_sequence_generator_maxvalue_option_1(max_value Expr) !SequenceGeneratorMaxvalueOption {
+	return SequenceGeneratorMaxvalueOption{
+		max_value: max_value
+	}
+}
+
+fn parse_sequence_generator_maxvalue_option_2() !SequenceGeneratorMaxvalueOption {
+	return SequenceGeneratorMaxvalueOption{
+		max_value: NoExpr{}
+	}
+}
+
+fn parse_sequence_generator_minvalue_option_1(min_value Expr) !SequenceGeneratorMinvalueOption {
+	return SequenceGeneratorMinvalueOption{
+		min_value: min_value
+	}
+}
+
+fn parse_sequence_generator_minvalue_option_2() !SequenceGeneratorMinvalueOption {
+	return SequenceGeneratorMinvalueOption{
+		min_value: NoExpr{}
+	}
+}
+
+fn parse_sequence_generator_start_with_option(start_value Expr) !SequenceGeneratorStartWithOption {
+	return SequenceGeneratorStartWithOption{
+		start_value: start_value
+	}
+}
+
+fn parse_next_value_expression(name Identifier) !Expr {
+	return NextValueExpr{
+		name: name
+	}
+}
+
+fn parse_drop_sequence_generator_statement(sequence_name Identifier) !Stmt {
+	return DropSequenceStmt{sequence_name}
+}
+
+fn parse_sequence_generator_restart_option_1() !SequenceGeneratorRestartOption {
+	return SequenceGeneratorRestartOption{
+		restart_value: NoExpr{}
+	}
+}
+
+fn parse_sequence_generator_restart_option_2(restart_value Expr) !SequenceGeneratorRestartOption {
+	return SequenceGeneratorRestartOption{
+		restart_value: restart_value
+	}
+}
+
+fn parse_alter_sequence_generator_statement(generator_name Identifier, options []SequenceGeneratorOption) !Stmt {
+	return AlterSequenceStmt{
+		name: generator_name
+		options: options
+	}
+}
+
+fn parse_alter_sequence_generator_option_1(option SequenceGeneratorRestartOption) !SequenceGeneratorOption {
+	return option
+}

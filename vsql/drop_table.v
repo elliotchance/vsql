@@ -27,7 +27,7 @@ fn execute_drop_table(mut c Connection, stmt DropTableStmt, elapsed_parse time.D
 	}
 
 	if table_name !in c.storage.tables {
-		return sqlstate_42p01(table_name) // table does not exist
+		return sqlstate_42p01('table', table_name) // table does not exist
 	}
 
 	// TODO(elliotchance): Also delete rows. See

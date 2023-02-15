@@ -72,6 +72,22 @@ case-sensitive. You can use the following characters in ``Y``:
   'acdeb' LIKE 'a%b'    -- TRUE
   'abc' NOT LIKE 'a%'   -- FALSE
 
+NEXT VALUE FOR
+--------------
+
+.. code-block:: text
+
+  NEXT VALUE FOR X
+
+Returns the next value for a SEQUENCE called ``X``.
+
+*Examples*
+
+.. code-block:: sql
+
+  NEXT VALUE FOR my_sequence   -- 1
+  NEXT VALUE FOR my_sequence   -- 2
+
 SIMILAR TO
 ----------
 

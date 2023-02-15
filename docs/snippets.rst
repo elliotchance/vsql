@@ -11,6 +11,31 @@
 .. |v.Column| replace::
    A column definition.
 
+.. |v.Column.current_value| replace::
+   current_value is the current value before it is incremented by
+   "NEXT VALUE FOR".
+
+.. |v.Column.cycle| replace::
+   cycle allows the sequence to repeat once MAXVALUE is reached. By default it
+   is not enabled.
+
+.. |v.Column.has_max_value| replace::
+   has_max_value is true when a MAXVALUE is set.
+
+.. |v.Column.has_min_value| replace::
+   has_min_value is true when a MINVALUE is set.
+
+.. |v.Column.increment_by| replace::
+   increment_by is added for each next value and defaults to 1.
+
+.. |v.Column.max_value| replace::
+   max_value is the largest inclusive value allowed for the sequence. The
+   MAXVALUE is optional.
+
+.. |v.Column.min_value| replace::
+   min_value is the smallest inclusive value allowed for the sequence. The
+   MINVALUE is optional.
+
 .. |v.Column.name| replace::
    name is case-sensitive. The name is equivilent to using a deliminated
    identifier (with double quotes).
@@ -188,6 +213,18 @@
 
 .. |v.Schema.str| replace::
    Returns the CREATE SCHEMA statement for this schema, including the ';'.
+
+.. |v.Sequence| replace::
+   A SEQUENCE definition.
+
+.. |v.Sequence.name| replace::
+   name is case-sensitive. The name is equivilent to using a deliminated
+   identifier (with double quotes).
+
+.. |v.Sequence.str| replace::
+   str returns the CREATE SEQUENCE definition (including the ';') like:
+   |br| |br|
+   CREATE SEQUENCE "foo" START WITH 12 NO MINVALUE NO MAXVALUE;
 
 .. |v.Table| replace::
    Represents the structure of a table.

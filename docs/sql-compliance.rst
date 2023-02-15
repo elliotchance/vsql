@@ -1300,10 +1300,10 @@ Optional Features
    * - ❌ **T175**
      - **Generated columns**
 
-   * - ❌ **T176**
+   * - ✅ **T176**
      - **Sequence generator support**
 
-   * - ❌ **T177**
+   * - ✅ **T177**
      - **Sequence generator support: simple restart option**
 
    * - ❌ **T178**

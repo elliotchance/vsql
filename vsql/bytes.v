@@ -17,6 +17,7 @@ mut:
 	write_i16(data i16)
 	write_i32(data int)
 	write_i64(data i64)
+	write_optional_i64(is_set bool, data i64)
 	// write_string1 is safe to use for short strings (less then 128 bytes).
 	write_string1(s string)
 	// write_string4 is safe to use for long strings (up to 2GB).
@@ -44,6 +45,7 @@ mut:
 	read_i16() i16
 	read_i32() int
 	read_i64() i64
+	read_optional_i64() (bool, i64)
 	// read_string1 is the opposite of write_string1. It allows for strings up
 	// to 128 bytes (number of characters may be less).
 	read_string1() string
@@ -182,6 +184,13 @@ fn (mut b BytesLittleEndian) write_i64(data i64) {
 	}.bytes_reversed())
 }
 
+fn (mut b BytesLittleEndian) write_optional_i64(is_set bool, data i64) {
+	b.write_bool(is_set)
+	if is_set {
+		b.write_i64(data)
+	}
+}
+
 fn (mut b BytesLittleEndian) write_u64(data u64) {
 	b.write_u8s(Bytes8{
 		u64_value: data
@@ -196,6 +205,15 @@ fn (mut b BytesLittleEndian) read_i64() i64 {
 			bytes: [bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2], bytes[1], bytes[0]]!
 		}.i64_value
 	}
+}
+
+fn (mut b BytesLittleEndian) read_optional_i64() (bool, i64) {
+	is_set := b.read_bool()
+	if is_set {
+		return true, b.read_i64()
+	}
+
+	return false, 0
 }
 
 fn (mut b BytesLittleEndian) read_u64() u64 {
@@ -373,6 +391,13 @@ fn (mut b BytesBigEndian) write_i64(data i64) {
 	}.bytes())
 }
 
+fn (mut b BytesBigEndian) write_optional_i64(is_set bool, data i64) {
+	b.write_bool(is_set)
+	if is_set {
+		b.write_i64(data)
+	}
+}
+
 fn (mut b BytesBigEndian) write_u64(data u64) {
 	b.write_u8s(Bytes8{
 		u64_value: data
@@ -386,6 +411,15 @@ fn (mut b BytesBigEndian) read_i64() i64 {
 			bytes: [bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7]]!
 		}.i64_value
 	}
+}
+
+fn (mut b BytesBigEndian) read_optional_i64() (bool, i64) {
+	is_set := b.read_bool()
+	if is_set {
+		return true, b.read_i64()
+	}
+
+	return false, 0
 }
 
 fn (mut b BytesBigEndian) read_u64() u64 {

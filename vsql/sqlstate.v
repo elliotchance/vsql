@@ -101,9 +101,22 @@ struct SQLState22003 {
 }
 
 fn sqlstate_22003() IError {
-	return SQLState22012{
+	return SQLState22003{
 		code: sqlstate_to_int('22003')
 		msg: 'numeric value out of range'
+	}
+}
+
+// Sequence generator limit exceeded.
+struct SQLState2200H {
+	SQLState
+	generator_name string
+}
+
+fn sqlstate_2200h(generator_name string) IError {
+	return SQLState2200H{
+		code: sqlstate_to_int('2200H')
+		msg: 'sequence generator limit exceeded: ${generator_name}'
 	}
 }
 
@@ -224,14 +237,18 @@ fn sqlstate_42846(from Type, to Type) IError {
 struct SQLState42P01 {
 	SQLState
 pub:
-	table_name string
+	// entity_type is 'table' or 'sequence'
+	entity_type string
+	// entity_name is the table name, sequence name, etc
+	entity_name string
 }
 
-fn sqlstate_42p01(table_name string) IError {
+fn sqlstate_42p01(entity_type string, entity_name string) IError {
 	return SQLState42P01{
 		code: sqlstate_to_int('42P01')
-		msg: 'no such table: ${table_name}'
-		table_name: table_name
+		msg: 'no such ${entity_type}: ${entity_name}'
+		entity_type: entity_type
+		entity_name: entity_name
 	}
 }
 

@@ -44,6 +44,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 
 	stmt := p.stmt
 	match stmt {
+		AlterSequenceStmt {
+			if p.explain {
+				return sqlstate_42601('Cannot EXPLAIN ALTER SEQUENCE')
+			}
+
+			return execute_alter_sequence(mut p.c, stmt, p.elapsed_parse)
+		}
 		CommitStmt {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN COMMIT')
@@ -58,6 +65,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			}
 
 			return execute_create_schema(mut p.c, stmt, p.elapsed_parse)
+		}
+		CreateSequenceStmt {
+			if p.explain {
+				return sqlstate_42601('Cannot EXPLAIN CREATE SEQUENCE')
+			}
+
+			return execute_create_sequence(mut p.c, stmt, p.elapsed_parse)
 		}
 		CreateTableStmt {
 			if p.explain {
@@ -75,6 +89,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			}
 
 			return execute_drop_schema(mut p.c, stmt, p.elapsed_parse)
+		}
+		DropSequenceStmt {
+			if p.explain {
+				return sqlstate_42601('Cannot EXPLAIN DROP SEQUENCE')
+			}
+
+			return execute_drop_sequence(mut p.c, stmt, p.elapsed_parse)
 		}
 		DropTableStmt {
 			if p.explain {

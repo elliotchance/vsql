@@ -7,8 +7,9 @@ struct ValuesOperation {
 	rows        []RowExpr
 	offset      Expr
 	correlation Correlation
-	conn        &Connection
 	params      map[string]Value
+mut:
+	conn &Connection
 }
 
 // TODO(elliotchance): It's important we return a pointer, otherwise there's
@@ -16,7 +17,7 @@ struct ValuesOperation {
 //  suspect this is just immaturity with the garbage collector and the pointer
 //  may be removed in the future. Run the test suite a few times and if it
 //  passes you're in the clear.
-fn new_values_operation(rows []RowExpr, offset Expr, correlation Correlation, conn &Connection, params map[string]Value) !&ValuesOperation {
+fn new_values_operation(rows []RowExpr, offset Expr, correlation Correlation, mut conn Connection, params map[string]Value) !&ValuesOperation {
 	if correlation.columns.len > 0 {
 		for row in rows {
 			if row.exprs.len != correlation.columns.len {
@@ -25,7 +26,7 @@ fn new_values_operation(rows []RowExpr, offset Expr, correlation Correlation, co
 		}
 	}
 
-	return &ValuesOperation{rows, offset, correlation, conn, params}
+	return &ValuesOperation{rows, offset, correlation, params, conn}
 }
 
 fn (o &ValuesOperation) str() string {
@@ -66,10 +67,10 @@ fn (o &ValuesOperation) columns() Columns {
 	return columns
 }
 
-fn (o &ValuesOperation) execute(_ []Row) ![]Row {
+fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
 	mut offset := 0
 	if o.offset !is NoExpr {
-		offset = int((eval_as_value(o.conn, Row{}, o.offset, o.params)!).f64_value)
+		offset = int((eval_as_value(mut o.conn, Row{}, o.offset, o.params)!).f64_value)
 	}
 
 	mut rows := []Row{}
@@ -78,7 +79,7 @@ fn (o &ValuesOperation) execute(_ []Row) ![]Row {
 	}
 
 	for row in o.rows[offset..] {
-		rows << eval_row(o.conn, Row{
+		rows << eval_row(mut o.conn, Row{
 			data: map[string]Value{}
 		}, row.exprs, o.params)!
 	}

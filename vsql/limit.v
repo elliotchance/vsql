@@ -8,12 +8,13 @@ struct LimitOperation {
 	fetch   Expr // may be NoExpr
 	offset  Expr // may be NoExpr
 	params  map[string]Value
-	conn    &Connection
 	columns Columns
+mut:
+	conn &Connection
 }
 
-fn new_limit_operation(fetch Expr, offset Expr, params map[string]Value, conn &Connection, columns Columns) &LimitOperation {
-	return &LimitOperation{fetch, offset, params, conn, columns}
+fn new_limit_operation(fetch Expr, offset Expr, params map[string]Value, mut conn Connection, columns Columns) &LimitOperation {
+	return &LimitOperation{fetch, offset, params, columns, conn}
 }
 
 fn (o &LimitOperation) str() string {
@@ -36,10 +37,10 @@ fn (o &LimitOperation) columns() Columns {
 	return o.columns
 }
 
-fn (o &LimitOperation) execute(rows []Row) ![]Row {
+fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 	mut offset := i64(0)
 	if o.offset !is NoExpr {
-		offset = (eval_as_value(o.conn, Row{}, o.offset, o.params)!).as_int()
+		offset = (eval_as_value(mut o.conn, Row{}, o.offset, o.params)!).as_int()
 
 		if offset >= rows.len {
 			return []Row{}
@@ -48,7 +49,7 @@ fn (o &LimitOperation) execute(rows []Row) ![]Row {
 
 	mut fetch := i64(rows.len)
 	if o.fetch !is NoExpr {
-		fetch = (eval_as_value(o.conn, Row{}, o.fetch, o.params)!).as_int()
+		fetch = (eval_as_value(mut o.conn, Row{}, o.fetch, o.params)!).as_int()
 	}
 
 	if offset + fetch >= rows.len {

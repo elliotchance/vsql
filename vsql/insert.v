@@ -37,14 +37,14 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 	}
 
 	if table_name !in c.storage.tables {
-		return sqlstate_42p01(table_name) // table not found
+		return sqlstate_42p01('table', table_name) // table not found
 	}
 
 	table := c.storage.tables[table_name]
 	for i, column in stmt.columns {
 		column_name := column.name
 		table_column := table.column(column_name)!
-		raw_value := eval_as_nullable_value(c, table_column.typ.typ, Row{}, stmt.values[i],
+		raw_value := eval_as_nullable_value(mut c, table_column.typ.typ, Row{}, stmt.values[i],
 			params)!
 		value := cast(c, 'for column ${column_name}', raw_value, table_column.typ)!
 

@@ -17,13 +17,13 @@ struct GroupOperation {
 	// it's easier.
 	group_exprs []Expr
 
-	params map[string]Value
-	conn   &Connection
-
+	params  map[string]Value
 	columns Columns
+mut:
+	conn &Connection
 }
 
-fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Expr, params map[string]Value, conn &Connection, table Table) !&GroupOperation {
+fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Expr, params map[string]Value, mut conn Connection, table Table) !&GroupOperation {
 	mut columns := []Column{}
 
 	for expr in group_exprs {
@@ -48,7 +48,7 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Expr, params 
 		}
 	}
 
-	return &GroupOperation{select_exprs, group_exprs, params, conn, columns}
+	return &GroupOperation{select_exprs, group_exprs, params, columns, conn}
 }
 
 fn (o &GroupOperation) str() string {
@@ -59,7 +59,7 @@ fn (o &GroupOperation) columns() Columns {
 	return o.columns
 }
 
-fn (o &GroupOperation) execute(rows []Row) ![]Row {
+fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 	// Create the grouped sets.
 	mut sets := [][]Row{}
 
@@ -75,9 +75,9 @@ fn (o &GroupOperation) execute(rows []Row) ![]Row {
 
 		mut equal := true
 		for expr in o.group_exprs {
-			left := eval_as_value(o.conn, sets[sets.len - 1][sets[sets.len - 1].len - 1],
+			left := eval_as_value(mut o.conn, sets[sets.len - 1][sets[sets.len - 1].len - 1],
 				expr, o.params)!
-			right := eval_as_value(o.conn, row, expr, o.params)!
+			right := eval_as_value(mut o.conn, row, expr, o.params)!
 
 			cmp, _ := left.cmp(right)!
 			if cmp != 0 {
@@ -102,7 +102,8 @@ fn (o &GroupOperation) execute(rows []Row) ![]Row {
 					CallExpr {
 						mut values := []Value{}
 						for row in set {
-							values << eval_as_value(o.conn, row, expr.expr.args[0], o.params)!
+							values << eval_as_value(mut o.conn, row, expr.expr.args[0],
+								o.params)!
 						}
 
 						func := o.conn.find_function(expr.expr.function_name, [values[0].typ])!

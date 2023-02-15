@@ -5,11 +5,14 @@ module vsql
 // All possible root statments.
 //
 // QueryExpression is used for both SELECT and VALUES.
-type Stmt = CommitStmt
+type Stmt = AlterSequenceStmt
+	| CommitStmt
 	| CreateSchemaStmt
+	| CreateSequenceStmt
 	| CreateTableStmt
 	| DeleteStmt
 	| DropSchemaStmt
+	| DropSequenceStmt
 	| DropTableStmt
 	| InsertStmt
 	| QueryExpression
@@ -31,6 +34,7 @@ type Expr = BetweenExpr
 	| LikeExpr
 	| LocalTimeExpr
 	| LocalTimestampExpr
+	| NextValueExpr
 	| NoExpr
 	| NullExpr
 	| NullIfExpr
@@ -89,6 +93,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 			e.str()
 		}
 		LocalTimestampExpr {
+			e.str()
+		}
+		NextValueExpr {
 			e.str()
 		}
 		NoExpr {
@@ -548,6 +555,10 @@ struct CreateSchemaStmt {
 	schema_name Identifier
 }
 
+struct DropSequenceStmt {
+	sequence_name Identifier
+}
+
 struct DropSchemaStmt {
 	schema_name Identifier
 	behavior    string // CASCADE or RESTRICT
@@ -646,4 +657,56 @@ struct NullIfExpr {
 
 fn (e NullIfExpr) pstr(params map[string]Value) string {
 	return 'NULLIF(${e.a.pstr(params)}, ${e.b.pstr(params)})'
+}
+
+// CREATE SEQUENCE ...
+struct CreateSequenceStmt {
+	name    Identifier
+	options []SequenceGeneratorOption
+}
+
+// ALTER SEQUENCE ...
+struct AlterSequenceStmt {
+	name    Identifier
+	options []SequenceGeneratorOption
+}
+
+type SequenceGeneratorOption = SequenceGeneratorCycleOption
+	| SequenceGeneratorIncrementByOption
+	| SequenceGeneratorMaxvalueOption
+	| SequenceGeneratorMinvalueOption
+	| SequenceGeneratorRestartOption
+	| SequenceGeneratorStartWithOption
+
+struct SequenceGeneratorStartWithOption {
+	start_value Expr
+}
+
+struct SequenceGeneratorRestartOption {
+	restart_value Expr // NoExpr is automatic
+}
+
+struct SequenceGeneratorIncrementByOption {
+	increment_by Expr
+}
+
+struct SequenceGeneratorMinvalueOption {
+	min_value Expr // NoExpr = NO MINVALUE
+}
+
+struct SequenceGeneratorMaxvalueOption {
+	max_value Expr // NoExpr = NO MAXVALUE
+}
+
+struct SequenceGeneratorCycleOption {
+	cycle bool
+}
+
+// NextValueExpr for "NEXT VALUE FOR <sequence generator name>"
+struct NextValueExpr {
+	name Identifier
+}
+
+fn (e NextValueExpr) str() string {
+	return 'NEXT VALUE FOR ${e.name}'
 }

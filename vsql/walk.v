@@ -118,8 +118,8 @@ fn (o &PrimaryKeyOperation) columns() Columns {
 	return o.table.columns
 }
 
-fn (o &PrimaryKeyOperation) execute(_ []Row) ![]Row {
-	lower := eval_as_value(o.conn, Row{}, o.lower, o.params)!
+fn (mut o PrimaryKeyOperation) execute(_ []Row) ![]Row {
+	lower := eval_as_value(mut o.conn, Row{}, o.lower, o.params)!
 
 	mut tmp_row := Row{
 		data: {

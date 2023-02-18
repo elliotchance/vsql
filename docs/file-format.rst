@@ -207,12 +207,34 @@ A Schema Object (has the ``S`` prefix) contains a schema definition. The
 serialization does not need to be explained in detail here. You can check the
 code for ``Schema.bytes()`` and ``new_schema_from_bytes()`` respectively.
 
+Sequence Object
+---------------
+
+A Sequence Object (has the ``Q`` prefix) contains the definition and next value
+for a sequence. Since a sequence's next value needs to be atomic, this creates
+some special rules that only apply to updating or incrementing a sequence. See
+*Notes for Future Improvements* below or *Caveats* in :doc:`alter-sequence`.
+
 Table Object
 ------------
 
 A Table Object (has the ``T`` prefix) contains a table definition. The
 serialization does not need to be explained in detail here. You can check the
 code for ``Table.bytes()`` and ``new_table_from_bytes()`` respectively.
+
+Notes for Future Improvements
+-----------------------------
+
+Sequences
+^^^^^^^^^
+
+The properties of a sequence (such as the ``INCREMENT BY``, etc) are held in the
+same record as the next value. Since the next value of a sequence needs to be
+atomic (and separate from the transaction isolation) a ``ROLLBACK`` on a
+transaction that contains an ``ALTER SEQUENCE`` will not undo any changes.
+
+Ideally, the properties of a ``SEQUENCE`` can be stored in a separate location
+on disk.
 
 Notes
 -----

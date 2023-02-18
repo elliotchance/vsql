@@ -210,8 +210,13 @@ fn (mut f Storage) sequence_next_value(name Identifier) !i64 {
 
 	next_sequence := sequence.next()!
 	key := 'Q${canonical_name}'.bytes()
+
+	// Important: All other objects have to use the current transaction ID when
+	// modifying an entity so that the change is not visible to other transaction.
+	// However, a sequence's number needs to be atomic and modifys the value in
+	// place.
 	old_obj := new_page_object(key, sequence.tid, 0, sequence.bytes())
-	new_obj := new_page_object(key, f.transaction_id, 0, next_sequence.bytes())
+	new_obj := new_page_object(key, sequence.tid, 0, next_sequence.bytes())
 	for page_number in f.btree.update(old_obj, new_obj, f.transaction_id)! {
 		f.transaction_pages[page_number] = true
 	}
@@ -232,8 +237,18 @@ fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence)
 	}
 
 	key := 'Q${canonical_name}'.bytes()
+
+	// Important: All other objects have to use the current transaction ID when
+	// modifying an entity so that the change is not visible to other transaction.
+	// However, a sequence's number needs to be atomic and modifys the value in
+	// place.
+	//
+	// Unfortunately, this also means that we can't guarantee the properties
+	// (INCREMENET BY, etc) AND the next value (which needs to be atomic outside
+	// of any transaction). So a ROLLBACK on a sequence will not undo such
+	// property modifications.
 	old_obj := new_page_object(key, old_sequence.tid, 0, old_sequence.bytes())
-	new_obj := new_page_object(key, f.transaction_id, 0, new_sequence.bytes())
+	new_obj := new_page_object(key, old_sequence.tid, 0, new_sequence.bytes())
 	for page_number in f.btree.update(old_obj, new_obj, f.transaction_id)! {
 		f.transaction_pages[page_number] = true
 	}

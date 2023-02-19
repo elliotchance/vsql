@@ -11,7 +11,7 @@ fn execute_set_schema(mut c Connection, stmt SetSchemaStmt, elapsed_parse time.D
 
 	new_schema := eval_as_value(mut c, Row{}, stmt.schema_name, map[string]Value{})!.str()
 
-	if new_schema !in c.storage.schemas {
+	if new_schema !in c.catalog().storage.schemas {
 		return sqlstate_3f000(new_schema) // schema does not exist
 	}
 

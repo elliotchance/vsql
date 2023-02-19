@@ -49,7 +49,7 @@ CREATE TABLE bar (baz VARCHAR(10));
 CREATE TABLE foo (x FLOAT);
 CREATE TABLE foo (baz CHARACTER VARYING(10));
 -- msg: CREATE TABLE 1
--- error 42P07: duplicate table: PUBLIC.FOO
+-- error 42P07: duplicate table: ":memory:".PUBLIC.FOO
 
 CREATE TABLE t1 (f1 CHARACTER VARYING(10), f2 FLOAT);
 -- msg: CREATE TABLE 1
@@ -57,7 +57,7 @@ CREATE TABLE t1 (f1 CHARACTER VARYING(10), f2 FLOAT);
 CREATE TABLE foo (x FLOAT);
 CREATE TABLE Foo (baz CHARACTER VARYING(10));
 -- msg: CREATE TABLE 1
--- error 42P07: duplicate table: PUBLIC.FOO
+-- error 42P07: duplicate table: ":memory:".PUBLIC.FOO
 
 CREATE TABLE "foo" (x FLOAT);
 CREATE TABLE "Foo" (baz CHARACTER VARYING(10));

@@ -27,6 +27,13 @@ wrapped in an implicit transaction. Internally this is important becuase any
 statements that may make changes (such as a ``DELETE`` that removes multiple
 rows) should seem atomic to all other readers and writers.
 
+Catalogs
+--------
+
+Transactions across catalogs are semi-supported. That is, transaction isolation
+is not guaranteed across catalogs for all operations. And ``COMMIT`` and
+``ROLLBACK`` may independently succeed or fail.
+
 Examples
 --------
 

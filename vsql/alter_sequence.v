@@ -13,8 +13,9 @@ fn execute_alter_sequence(mut c Connection, stmt AlterSequenceStmt, elapsed_pars
 		c.release_write_connection()
 	}
 
+	mut catalog := c.catalog()
 	name := c.resolve_schema_identifier(stmt.name)!
-	old_sequence := c.storage.sequence(name)!
+	old_sequence := catalog.storage.sequence(name)!
 	mut sequence := old_sequence.copy()
 
 	for option in stmt.options {
@@ -63,7 +64,7 @@ fn execute_alter_sequence(mut c Connection, stmt AlterSequenceStmt, elapsed_pars
 		}
 	}
 
-	c.storage.update_sequence(old_sequence, sequence)!
+	catalog.storage.update_sequence(old_sequence, sequence)!
 
 	return new_result_msg('ALTER SEQUENCE 1', elapsed_parse, t.elapsed())
 }

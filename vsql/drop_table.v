@@ -12,11 +12,12 @@ fn execute_drop_table(mut c Connection, stmt DropTableStmt, elapsed_parse time.D
 		c.release_write_connection()
 	}
 
+	mut catalog := c.catalog()
 	table_name := c.resolve_table_identifier(stmt.table_name, false)!
 
 	// TODO(elliotchance): Also delete rows. See
 	//  https://github.com/elliotchance/vsql/issues/65.
-	c.storage.delete_table(table_name.id(), c.storage.tables[table_name.id()].tid)!
+	catalog.storage.delete_table(table_name.storage_id(), catalog.storage.tables[table_name.storage_id()].tid)!
 
 	return new_result_msg('DROP TABLE 1', elapsed_parse, t.elapsed())
 }

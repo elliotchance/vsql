@@ -34,7 +34,7 @@ fn (mut o OrderOperation) execute(rows []Row) ![]Row {
 	//  sorting. I did it this way because at the time V didn't allow closures
 	//  on M1 macs (which would be required to pass in a sort function).
 	//  Definitely improve this in the future, especially since sorting of the
-	//  top N rows can usually be done must more efficiently than sorting the
+	//  top N rows can usually be done much more efficiently than sorting the
 	//  whole set.
 
 	// This sorting implementation uses a linked list which is very simple but
@@ -84,6 +84,10 @@ fn (mut o OrderOperation) execute(rows []Row) ![]Row {
 				row: row
 			}
 		}
+	}
+
+	if unsafe { head == 0 } {
+		return []Row{}
 	}
 
 	return head.rows()

@@ -29,7 +29,7 @@ mut:
 // snippet: v.PreparedStmt.query
 pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
 	return p.query_internal(params) or {
-		p.c.storage.transaction_aborted()
+		p.c.transaction_aborted()
 		return err
 	}
 }
@@ -118,6 +118,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 
 			// See transaction.v
 			return execute_rollback(mut p.c, stmt, p.elapsed_parse)
+		}
+		SetCatalogStmt {
+			if p.explain {
+				return sqlstate_42601('Cannot EXPLAIN SET CATALOG')
+			}
+
+			return execute_set_catalog(mut p.c, stmt, p.elapsed_parse)
 		}
 		SetSchemaStmt {
 			if p.explain {

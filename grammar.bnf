@@ -28,7 +28,8 @@
     <schema name>
 
 <schema name> /* Identifier */ ::=
-    <unqualified schema name>
+    <catalog name> <period> <unqualified schema name>   -> schema_name_1
+  | <unqualified schema name>
 
 <unqualified schema name> /* Identifier */ ::=
     <identifier>   -> unqualified_schema_name
@@ -1062,6 +1063,7 @@
 
 <general value specification> /* Expr */ ::=
     <host parameter specification>
+  | CURRENT_CATALOG                  -> current_catalog
   | CURRENT_SCHEMA                   -> current_schema
 
 <host parameter specification> /* Expr */ ::=
@@ -1516,6 +1518,13 @@
 
 <SQL session statement> /* Stmt */ ::=
     <set schema statement>
+  | <set catalog statement>
+
+<set catalog statement> /* Stmt */ ::=
+    SET <catalog name characteristic>   -> set_catalog_stmt
+
+<catalog name characteristic> /* Expr */ ::=
+    CATALOG <value specification>   -> expr
 
 <set schema statement> /* Stmt */ ::=
     SET <schema name characteristic>   -> set_schema_stmt
@@ -1526,3 +1535,6 @@
 <value specification> /* Expr */ ::=
     <literal>
   | <general value specification>
+
+<catalog name> /* IdentifierChain */ ::=
+    <identifier>

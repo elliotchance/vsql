@@ -88,11 +88,11 @@ fn parse_column_name(column_name IdentifierChain) !Identifier {
 }
 
 fn parse_column_definition1(column_name Identifier, data_type Type) !TableElement {
-	return Column{column_name.sub_entity_name, data_type, false}
+	return Column{column_name, data_type, false}
 }
 
 fn parse_column_definition2(column_name Identifier, data_type Type, constraint bool) !TableElement {
-	return Column{column_name.sub_entity_name, data_type, constraint}
+	return Column{column_name, data_type, constraint}
 }
 
 fn parse_bigint() !Type {
@@ -141,6 +141,10 @@ fn parse_drop_table_statement(table_name Identifier) !Stmt {
 
 fn parse_set_schema_stmt(schema_name Expr) !Stmt {
 	return SetSchemaStmt{schema_name}
+}
+
+fn parse_set_catalog_stmt(catalog_name Expr) !Stmt {
+	return SetCatalogStmt{catalog_name}
 }
 
 fn parse_table_element_list(table_elements []TableElement) ![]TableElement {
@@ -801,7 +805,7 @@ fn parse_routine_name(identifier IdentifierChain) !Identifier {
 }
 
 fn parse_local_or_schema_qualified_name2(schema_name Identifier, table_name IdentifierChain) !IdentifierChain {
-	return IdentifierChain{'${schema_name.schema_name}.${table_name}'}
+	return IdentifierChain{'${schema_name}.${table_name}'}
 }
 
 fn parse_drop_schema_statement(schema_name Identifier, behavior string) !Stmt {
@@ -984,6 +988,14 @@ fn parse_alter_sequence_generator_option_1(option SequenceGeneratorRestartOption
 	return option
 }
 
+fn parse_current_catalog() !Expr {
+	return CurrentCatalogExpr{}
+}
+
 fn parse_current_schema() !Expr {
 	return CurrentSchemaExpr{}
+}
+
+fn parse_schema_name_1(catalog IdentifierChain, identifier Identifier) !Identifier {
+	return new_schema_identifier('${catalog}.${identifier}')
 }

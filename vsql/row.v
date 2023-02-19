@@ -128,9 +128,9 @@ fn new_empty_row(columns Columns, table_name string) Row {
 		v := new_empty_value(col.typ)
 
 		if table_name == '' {
-			r.data[col.name] = v
+			r.data[col.name.sub_entity_name] = v
 		} else {
-			r.data['${table_name}.${col.name}'] = v
+			r.data[col.name.id()] = v
 		}
 	}
 
@@ -178,7 +178,7 @@ fn new_empty_table_row(tables map[string]Table) Row {
 	mut r := Row{}
 	for _, table in tables {
 		for col in table.columns {
-			r.data['${table.name}.${col.name}'] = new_empty_value(col.typ)
+			r.data[col.name.id()] = new_empty_value(col.typ)
 		}
 	}
 
@@ -192,7 +192,7 @@ fn (r Row) bytes(t Table) []u8 {
 	buf.write_u8s(r.id)
 
 	for col in t.columns {
-		v := r.data[col.name]
+		v := r.data[col.name.sub_entity_name]
 
 		// If the column is allows for NULL we need to prepend a NULL indicator.
 		// However, there are certain types that we do not need to add a
@@ -246,7 +246,7 @@ fn (r Row) bytes(t Table) []u8 {
 	return buf.bytes()
 }
 
-fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
+fn new_row_from_bytes(t Table, data []u8, tid int) Row {
 	mut buf := new_bytes(data)
 	mut row := map[string]Value{}
 
@@ -329,11 +329,7 @@ fn new_row_from_bytes(t Table, data []u8, tid int, table_name string) Row {
 			}
 		}
 
-		if table_name == '' {
-			row[col.name] = v
-		} else {
-			row['${table_name}.${col.name}'] = v
-		}
+		row[col.name.id()] = v
 	}
 
 	return Row{row_id, tid, row}
@@ -378,7 +374,7 @@ fn (mut r Row) object_key(t Table) ![]u8 {
 
 	mut key := new_empty_bytes()
 	key.write_u8(`R`)
-	key.write_u8s(t.name.id().bytes())
+	key.write_u8s(t.name.storage_id().bytes())
 
 	// TODO(elliotchance): This is actually not a safe separator to use since
 	//  deliminated table names can contain ':'

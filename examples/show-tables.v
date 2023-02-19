@@ -8,6 +8,7 @@ fn main() {
 
 fn example() ! {
 	mut db := vsql.open('test.vsql')!
+	mut catalog := db.catalog()
 
 	// The "public" schema is available by default, but we can create more.
 	db.query('CREATE TABLE foo (x DOUBLE PRECISION)')!
@@ -16,9 +17,9 @@ fn example() ! {
 	db.query('CREATE TABLE my_schema.baz (x BOOLEAN)')!
 
 	mut actual := []string{}
-	for schema in db.schemas()! {
+	for schema in catalog.schemas()! {
 		mut table_names := []string{}
-		for table in db.schema_tables(schema.name)! {
+		for table in catalog.schema_tables(schema.name)! {
 			table_names << table.name.str()
 		}
 
@@ -27,7 +28,7 @@ fn example() ! {
 	}
 
 	assert actual == [
-		"PUBLIC has ['PUBLIC.FOO', 'PUBLIC.BAR']",
-		"MY_SCHEMA has ['MY_SCHEMA.BAZ']",
+		'PUBLIC has [\'"test".PUBLIC.FOO\', \'"test".PUBLIC.BAR\']',
+		'MY_SCHEMA has [\'"test".MY_SCHEMA.BAZ\']',
 	]
 }

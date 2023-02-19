@@ -13,7 +13,7 @@ mut:
 	columns []Column
 }
 
-fn new_expr_operation(conn &Connection, params map[string]Value, select_list SelectList, tables map[string]Table) !ExprOperation {
+fn new_expr_operation(mut conn Connection, params map[string]Value, select_list SelectList, tables map[string]Table) !ExprOperation {
 	mut exprs := []DerivedColumn{}
 	mut columns := []Column{}
 
@@ -22,7 +22,9 @@ fn new_expr_operation(conn &Connection, params map[string]Value, select_list Sel
 			for _, table in tables {
 				columns << table.columns
 				for column in table.columns {
-					exprs << DerivedColumn{new_column_identifier('${table.name}."${column.name}"')!, new_column_identifier('"${column.name}"')!}
+					exprs << DerivedColumn{column.name, Identifier{
+						sub_entity_name: column.name.sub_entity_name
+					}}
 				}
 			}
 		}
@@ -31,7 +33,9 @@ fn new_expr_operation(conn &Connection, params map[string]Value, select_list Sel
 			table := tables[table_name.id()] or { return sqlstate_42p01('table', table_name.str()) }
 			columns = table.columns
 			for column in table.columns {
-				exprs << DerivedColumn{new_column_identifier('"${table.name}"."${column.name}"')!, new_column_identifier('"${column.name}"')!}
+				exprs << DerivedColumn{column.name, Identifier{
+					sub_entity_name: column.name.sub_entity_name
+				}}
 			}
 		}
 		[]DerivedColumn {
@@ -45,10 +49,13 @@ fn new_expr_operation(conn &Connection, params map[string]Value, select_list Sel
 				}
 
 				expr := resolve_identifiers(conn, column.expr, tables)!
+				col := Identifier{
+					sub_entity_name: column_name
+				}
 
-				columns << Column{column_name, eval_as_type(conn, empty_row, expr, params)!, false}
+				columns << Column{col, eval_as_type(conn, empty_row, expr, params)!, false}
 
-				exprs << DerivedColumn{expr, new_column_identifier('"${column_name}"')!}
+				exprs << DerivedColumn{expr, col}
 			}
 		}
 	}
@@ -158,7 +165,7 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 		LocalTimestampExpr {
 			return new_type('TIMESTAMP WITHOUT TIME ZONE', 0)
 		}
-		SubstringExpr, TrimExpr, CurrentSchemaExpr {
+		SubstringExpr, TrimExpr, CurrentCatalogExpr, CurrentSchemaExpr {
 			return new_type('CHARACTER VARYING', 0)
 		}
 		UntypedNullExpr {
@@ -225,8 +232,11 @@ fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value)
 			// ValuesOperation.
 			return sqlstate_42601('missing or invalid expression provided')
 		}
+		CurrentCatalogExpr {
+			return new_varchar_value(conn.current_catalog, 0)
+		}
 		CurrentDateExpr {
-			now, _ := conn.options.now()
+			now, _ := conn.now()
 
 			return new_date_value(now.strftime('%Y-%m-%d'))
 		}
@@ -245,7 +255,7 @@ fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value)
 				return sqlstate_42601('${e}: cannot have precision greater than 6')
 			}
 
-			now, _ := conn.options.now()
+			now, _ := conn.now()
 
 			return new_timestamp_value(now.strftime('%Y-%m-%d ') + time_value(conn, e.prec, true))
 		}
@@ -261,7 +271,7 @@ fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value)
 				return sqlstate_42601('${e}: cannot have precision greater than 6')
 			}
 
-			now, _ := conn.options.now()
+			now, _ := conn.now()
 
 			return new_timestamp_value(now.strftime('%Y-%m-%d ') + time_value(conn, e.prec, false))
 		}
@@ -278,7 +288,7 @@ fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value)
 }
 
 fn time_value(conn &Connection, prec int, include_offset bool) string {
-	now, _ := conn.options.now()
+	now, _ := conn.now()
 
 	mut s := now.strftime('%H:%M:%S')
 
@@ -314,10 +324,7 @@ fn eval_as_bool(mut conn Connection, data Row, e Expr, params map[string]Value) 
 }
 
 fn eval_identifier(data Row, e Identifier) !Value {
-	value := data.data[e.id()] or {
-		panic(e)
-		return sqlstate_42601('${e.id()} ${data.data} unknown column: ${e}')
-	}
+	value := data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }
 
 	return value
 }
@@ -333,7 +340,7 @@ fn eval_call(mut conn Connection, data Row, e CallExpr, params map[string]Value)
 	func := conn.find_function(func_name, arg_types)!
 
 	if func.is_agg {
-		return eval_identifier(data, new_function_identifier('"${e.pstr(params)}"')!)
+		return eval_identifier(data, Identifier{ custom_id: e.pstr(params) })
 	}
 
 	if e.args.len != func.arg_types.len {
@@ -354,7 +361,9 @@ fn eval_call(mut conn Connection, data Row, e CallExpr, params map[string]Value)
 }
 
 fn eval_next_value(mut conn Connection, data Row, e NextValueExpr, params map[string]Value) !Value {
-	next := conn.storage.sequence_next_value(e.name)!
+	mut catalog := conn.catalog()
+	next := catalog.storage.sequence_next_value(e.name)!
+
 	return new_bigint_value(next)
 }
 

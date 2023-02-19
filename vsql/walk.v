@@ -97,14 +97,27 @@ fn new_primary_key_operation(table Table, lower Expr, upper Expr, params map[str
 }
 
 fn (o &PrimaryKeyOperation) str() string {
-	return 'PRIMARY KEY ${o.table.name} (${o.columns()}) BETWEEN ${o.lower.pstr(o.params)} AND ${o.upper.pstr(o.params)}'
+	return 'PRIMARY KEY ${o.table.name} (${o.pretty_columns()}) BETWEEN ${o.lower.pstr(o.params)} AND ${o.upper.pstr(o.params)}'
+}
+
+// We could just render columns(), however, it makes the output extra verbose,
+// so we only show the column names.
+fn (o &PrimaryKeyOperation) pretty_columns() Columns {
+	mut cols := []Column{}
+	for c in o.table.columns {
+		cols << Column{Identifier{
+			sub_entity_name: c.name.sub_entity_name
+		}, c.typ, c.not_null}
+	}
+
+	return cols
 }
 
 fn (o &PrimaryKeyOperation) columns() Columns {
 	mut columns := []Column{}
 
 	for column in o.table.columns {
-		columns << Column{'${o.table.name}.${column.name}', column.typ, column.not_null}
+		columns << Column{column.name, column.typ, column.not_null}
 	}
 
 	return columns
@@ -120,13 +133,14 @@ fn (mut o PrimaryKeyOperation) execute(_ []Row) ![]Row {
 	}
 	object_key := tmp_row.object_key(o.table)!
 
-	tid := o.conn.storage.transaction_id
-	mut transaction_ids := o.conn.storage.header.active_transaction_ids
+	mut catalog := o.conn.catalog()
+	tid := catalog.storage.transaction_id
+	mut transaction_ids := catalog.storage.header.active_transaction_ids
 
 	mut rows := []Row{}
-	for object in o.conn.storage.btree.new_range_iterator(object_key, object_key) {
+	for object in catalog.storage.btree.new_range_iterator(object_key, object_key) {
 		if object_is_visible(object.tid, object.xid, tid, mut transaction_ids) {
-			rows << new_row_from_bytes(o.table, object.value, object.tid, o.table.name.str())
+			rows << new_row_from_bytes(o.table, object.value, object.tid)
 		}
 	}
 

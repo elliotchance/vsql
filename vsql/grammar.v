@@ -239,6 +239,15 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_cast_target_ := &EarleyRule{
 		name: '<cast target>'
 	}
+	mut rule_catalog_name_characteristic_1_ := &EarleyRule{
+		name: '<catalog name characteristic: 1>'
+	}
+	mut rule_catalog_name_characteristic_ := &EarleyRule{
+		name: '<catalog name characteristic>'
+	}
+	mut rule_catalog_name_ := &EarleyRule{
+		name: '<catalog name>'
+	}
 	mut rule_ceiling_function_1_ := &EarleyRule{
 		name: '<ceiling function: 1>'
 	}
@@ -785,6 +794,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_general_value_specification_2_ := &EarleyRule{
 		name: '<general value specification: 2>'
 	}
+	mut rule_general_value_specification_3_ := &EarleyRule{
+		name: '<general value specification: 3>'
+	}
 	mut rule_general_value_specification_ := &EarleyRule{
 		name: '<general value specification>'
 	}
@@ -1241,6 +1253,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_schema_name_clause_ := &EarleyRule{
 		name: '<schema name clause>'
 	}
+	mut rule_schema_name_1_ := &EarleyRule{
+		name: '<schema name: 1>'
+	}
 	mut rule_schema_name_ := &EarleyRule{
 		name: '<schema name>'
 	}
@@ -1345,6 +1360,12 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_sequence_generator_start_with_option_ := &EarleyRule{
 		name: '<sequence generator start with option>'
+	}
+	mut rule_set_catalog_statement_1_ := &EarleyRule{
+		name: '<set catalog statement: 1>'
+	}
+	mut rule_set_catalog_statement_ := &EarleyRule{
+		name: '<set catalog statement>'
 	}
 	mut rule_set_clause_list_2_ := &EarleyRule{
 		name: '<set clause list: 2>'
@@ -1999,6 +2020,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_create := &EarleyRule{
 		name: 'CREATE'
+	}
+	mut rule_current_catalog := &EarleyRule{
+		name: 'CURRENT_CATALOG'
 	}
 	mut rule_current_date := &EarleyRule{
 		name: 'CURRENT_DATE'
@@ -3607,6 +3631,27 @@ fn get_grammar() map[string]EarleyRule {
 	rule_cast_target_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_data_type_
+		},
+	]}
+
+	rule_catalog_name_characteristic_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_catalog
+		},
+		&EarleyRuleOrString{
+			rule: rule_value_specification_
+		},
+	]}
+
+	rule_catalog_name_characteristic_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_catalog_name_characteristic_1_
+		},
+	]}
+
+	rule_catalog_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_identifier_
 		},
 	]}
 
@@ -5592,6 +5637,12 @@ fn get_grammar() map[string]EarleyRule {
 
 	rule_general_value_specification_2_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
+			rule: rule_current_catalog
+		},
+	]}
+
+	rule_general_value_specification_3_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_current_schema
 		},
 	]}
@@ -5604,6 +5655,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_general_value_specification_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_general_value_specification_2_
+		},
+	]}
+	rule_general_value_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_general_value_specification_3_
 		},
 	]}
 
@@ -8472,6 +8528,23 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_schema_name_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_catalog_name_
+		},
+		&EarleyRuleOrString{
+			rule: rule_period_
+		},
+		&EarleyRuleOrString{
+			rule: rule_unqualified_schema_name_
+		},
+	]}
+
+	rule_schema_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_schema_name_1_
+		},
+	]}
 	rule_schema_name_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_unqualified_schema_name_
@@ -8781,6 +8854,21 @@ fn get_grammar() map[string]EarleyRule {
 	rule_sequence_generator_start_with_option_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_sequence_generator_start_with_option_1_
+		},
+	]}
+
+	rule_set_catalog_statement_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_set
+		},
+		&EarleyRuleOrString{
+			rule: rule_catalog_name_characteristic_
+		},
+	]}
+
+	rule_set_catalog_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_set_catalog_statement_1_
 		},
 	]}
 
@@ -9156,6 +9244,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_sql_session_statement_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_set_schema_statement_
+		},
+	]}
+	rule_sql_session_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_set_catalog_statement_
 		},
 	]}
 
@@ -10677,6 +10770,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_create.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'CREATE'
+			rule: 0
+		},
+	]}
+
+	rule_current_catalog.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CURRENT_CATALOG'
 			rule: 0
 		},
 	]}
@@ -12978,6 +13078,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<cast specification: 1>'] = rule_cast_specification_1_
 	rules['<cast specification>'] = rule_cast_specification_
 	rules['<cast target>'] = rule_cast_target_
+	rules['<catalog name characteristic: 1>'] = rule_catalog_name_characteristic_1_
+	rules['<catalog name characteristic>'] = rule_catalog_name_characteristic_
+	rules['<catalog name>'] = rule_catalog_name_
 	rules['<ceiling function: 1>'] = rule_ceiling_function_1_
 	rules['<ceiling function: 2>'] = rule_ceiling_function_2_
 	rules['<ceiling function>'] = rule_ceiling_function_
@@ -13160,6 +13263,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<general set function: 1>'] = rule_general_set_function_1_
 	rules['<general set function>'] = rule_general_set_function_
 	rules['<general value specification: 2>'] = rule_general_value_specification_2_
+	rules['<general value specification: 3>'] = rule_general_value_specification_3_
 	rules['<general value specification>'] = rule_general_value_specification_
 	rules['<greater than operator>'] = rule_greater_than_operator_
 	rules['<greater than or equals operator>'] = rule_greater_than_or_equals_operator_
@@ -13312,6 +13416,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<schema name characteristic: 1>'] = rule_schema_name_characteristic_1_
 	rules['<schema name characteristic>'] = rule_schema_name_characteristic_
 	rules['<schema name clause>'] = rule_schema_name_clause_
+	rules['<schema name: 1>'] = rule_schema_name_1_
 	rules['<schema name>'] = rule_schema_name_
 	rules['<schema qualified name: 2>'] = rule_schema_qualified_name_2_
 	rules['<schema qualified name>'] = rule_schema_qualified_name_
@@ -13347,6 +13452,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<sequence generator start value>'] = rule_sequence_generator_start_value_
 	rules['<sequence generator start with option: 1>'] = rule_sequence_generator_start_with_option_1_
 	rules['<sequence generator start with option>'] = rule_sequence_generator_start_with_option_
+	rules['<set catalog statement: 1>'] = rule_set_catalog_statement_1_
+	rules['<set catalog statement>'] = rule_set_catalog_statement_
 	rules['<set clause list: 2>'] = rule_set_clause_list_2_
 	rules['<set clause list>'] = rule_set_clause_list_
 	rules['<set clause: 1>'] = rule_set_clause_1_
@@ -13565,6 +13672,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['COSH'] = rule_cosh
 	rules['COUNT'] = rule_count
 	rules['CREATE'] = rule_create
+	rules['CURRENT_CATALOG'] = rule_current_catalog
 	rules['CURRENT_DATE'] = rule_current_date
 	rules['CURRENT_SCHEMA'] = rule_current_schema
 	rules['CURRENT_TIME'] = rule_current_time
@@ -14068,6 +14176,9 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 				EarleyValue(parse_cast(children[2] as Expr, children[4] as Type)!),
 			]
 		}
+		'<catalog name characteristic: 1>' {
+			return [EarleyValue(parse_expr(children[1] as Expr)!)]
+		}
 		'<ceiling function: 1>' {
 			return [EarleyValue(parse_ceiling(children[2] as Expr)!)]
 		}
@@ -14431,6 +14542,9 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 			]
 		}
 		'<general value specification: 2>' {
+			return [EarleyValue(parse_current_catalog()!)]
+		}
+		'<general value specification: 3>' {
 			return [EarleyValue(parse_current_schema()!)]
 		}
 		'<group by clause: 1>' {
@@ -14664,6 +14778,11 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		'<schema name characteristic: 1>' {
 			return [EarleyValue(parse_expr(children[1] as Expr)!)]
 		}
+		'<schema name: 1>' {
+			return [
+				EarleyValue(parse_schema_name_1(children[0] as IdentifierChain, children[2] as Identifier)!),
+			]
+		}
 		'<schema qualified name: 2>' {
 			return [
 				EarleyValue(parse_schema_qualified_name_2(children[0] as Identifier, children[2] as IdentifierChain)!),
@@ -14734,6 +14853,9 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 			return [
 				EarleyValue(parse_sequence_generator_start_with_option(children[2] as Expr)!),
 			]
+		}
+		'<set catalog statement: 1>' {
+			return [EarleyValue(parse_set_catalog_stmt(children[1] as Expr)!)]
 		}
 		'<set clause list: 2>' {
 			return [

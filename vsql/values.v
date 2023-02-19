@@ -28,7 +28,7 @@ fn new_values_operation(rows []RowExpr, offset Expr, correlation Correlation, mu
 
 	mut new_rows := []RowExpr{}
 	for row in rows {
-		new_rows << resolve_identifiers(conn, row, conn.storage.tables)! as RowExpr
+		new_rows << resolve_identifiers(conn, row, conn.catalog().storage.tables)! as RowExpr
 	}
 
 	return &ValuesOperation{new_rows, offset, correlation, params, conn}
@@ -49,7 +49,7 @@ fn (o &ValuesOperation) columns() Columns {
 		for i, column in o.correlation.columns {
 			typ := eval_as_type(o.conn, Row{}, o.rows[0].exprs[i], o.params) or { panic(err) }
 			columns << Column{
-				name: column.sub_entity_name
+				name: column
 				typ: typ
 			}
 		}
@@ -64,7 +64,9 @@ fn (o &ValuesOperation) columns() Columns {
 	for i in 1 .. o.rows[0].exprs.len + 1 {
 		typ := eval_as_type(o.conn, Row{}, o.rows[0].exprs[i - 1], o.params) or { panic(err) }
 		columns << Column{
-			name: 'COL${i}'
+			name: Identifier{
+				sub_entity_name: 'COL${i}'
+			}
 			typ: typ
 		}
 	}
@@ -95,7 +97,7 @@ fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
 			mut data := map[string]Value{}
 			for i in 1 .. row.data.len + 1 {
 				name := columns[i - 1].name
-				data[name] = row.data['COL${i}']
+				data[name.sub_entity_name] = row.data['COL${i}']
 			}
 
 			row = Row{

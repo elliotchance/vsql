@@ -14,28 +14,50 @@ pub const default_schema_name = 'PUBLIC'
 //
 // snippet: v.Connection
 [heap]
-pub struct Connection {
+pub struct CatalogConnection {
 	// path is the file name of the database. It can be the special name
 	// ':memory:'.
-	path string
+	path         string
+	catalog_name string
 mut:
 	// storage will be replaced when the file is reopend for reading or writing.
 	storage Storage
-	// funcs only needs to be initialized once on open()
-	funcs []Func
-	// virtual_tables can be created independent from the physical schema.
-	virtual_tables map[string]VirtualTable
-	// query_cache is maintained over file reopens.
-	query_cache &QueryCache
 	// options are used when aquiring each file connection.
 	options ConnectionOptions
+	// virtual_tables can be created independent from the physical schema.
+	virtual_tables map[string]VirtualTable
+}
+
+// A Connection allows querying and other introspection for a database file. Use
+// open() or open_database() to create a Connection.
+//
+// snippet: v.Connection
+[heap]
+pub struct Connection {
+mut:
+	catalogs map[string]&CatalogConnection
+	// funcs only needs to be initialized once on open()
+	funcs []Func
+	// query_cache is maintained over file reopens.
+	query_cache &QueryCache
 	// cast_rules are use for CAST() (see cast.v)
 	cast_rules map[string]CastFunc
 	// unary_operators and binary_operators are for operators (see operators.v)
 	unary_operators  map[string]UnaryOperatorFunc
 	binary_operators map[string]BinaryOperatorFunc
-	// current_schema is where to search for unquailified table names.
+	// current_schema is where to search for unquailified table names. It will
+	// have an initial value of 'PUBLIC'.
 	current_schema string
+	// current_catalog (also known as the database). It will have an inital value
+	// derived from the first database file loaded.
+	current_catalog string
+pub mut:
+	// now allows you to override the wall clock that is used. The Time must be
+	// in UTC with a separate offset for the current local timezone (in positive
+	// or negative minutes).
+	//
+	// snippet: v.ConnectionOptions.now
+	now fn () (time.Time, i16)
 }
 
 // open is the convenience function for open_database() with default options.
@@ -69,7 +91,7 @@ pub fn open(path string) !&Connection {
 //
 // snippet: v.open_database
 pub fn open_database(path string, options ConnectionOptions) !&Connection {
-	mut init_schema := path == ':memory:'
+	mut init_schema := false
 
 	// If the file doesn't exist we initialize it and reopen it.
 	if !os.exists(path) && path != ':memory:' {
@@ -85,29 +107,65 @@ pub fn open_database(path string, options ConnectionOptions) !&Connection {
 	return conn
 }
 
+pub fn catalog_name_from_path(path string) string {
+	return os.base(path).split('.')[0]
+}
+
 fn open_connection(path string, options ConnectionOptions) !&Connection {
-	// This is really only used when path == ':memory:' but we must supply
-	// something to satisfy V's checker. It will be replaced if it's using file
-	// storage.
-	mut pager := new_memory_pager()
-	btree := new_btree(pager, options.page_size)
+	catalog_name := catalog_name_from_path(path)
 
 	mut conn := &Connection{
-		path: path
 		query_cache: options.query_cache
-		options: options
-		storage: new_storage(btree)
+		current_catalog: catalog_name
 		current_schema: vsql.default_schema_name
+		now: fn () (time.Time, i16) {
+			return time.utc(), i16(time.offset() / 60)
+		}
 	}
 
 	register_builtin_funcs(mut conn)!
 	register_cast_rules(mut conn)
 	register_operators(mut conn)
 
+	conn.add_catalog(catalog_name, path, options)!
+
 	return conn
 }
 
+pub fn (mut conn Connection) add_catalog(catalog_name string, path string, options ConnectionOptions) ! {
+	if catalog_name in conn.catalogs {
+		return error('catalog already exists: ${catalog_name}')
+	}
+
+	// This is really only used when path == ':memory:' but we must supply
+	// something to satisfy V's checker. It will be replaced if it's using file
+	// storage.
+	mut pager := new_memory_pager()
+	btree := new_btree(pager, options.page_size)
+
+	catalog := &CatalogConnection{
+		catalog_name: catalog_name
+		path: path
+		storage: new_storage(btree)
+		options: options
+	}
+
+	conn.catalogs[catalog_name] = catalog
+
+	if path == ':memory:' {
+		conn.query("SET CATALOG '${catalog_name}'")!
+		conn.query('CREATE SCHEMA public')!
+		conn.query("SET CATALOG '${conn.current_catalog}'")!
+	}
+}
+
 fn (mut c Connection) open_read_connection() ! {
+	for _, mut catalog in c.catalogs {
+		catalog.open_read_connection()!
+	}
+}
+
+fn (mut c CatalogConnection) open_read_connection() ! {
 	if c.path == ':memory:' {
 		return
 	}
@@ -115,10 +173,16 @@ fn (mut c Connection) open_read_connection() ! {
 	c.options.mutex.@rlock()
 
 	flock_lock_shared(c.storage.file, c.path)!
-	c.storage.open(c.path)!
+	c.storage.open(c.path, c.catalog_name)!
 }
 
 fn (mut c Connection) open_write_connection() ! {
+	for _, mut catalog in c.catalogs {
+		catalog.open_write_connection()!
+	}
+}
+
+fn (mut c CatalogConnection) open_write_connection() ! {
 	if c.path == ':memory:' {
 		return
 	}
@@ -126,10 +190,16 @@ fn (mut c Connection) open_write_connection() ! {
 	c.options.mutex.@lock()
 
 	flock_lock_exclusive(c.storage.file, c.path)!
-	c.storage.open(c.path)!
+	c.storage.open(c.path, c.catalog_name)!
 }
 
 fn (mut c Connection) release_write_connection() {
+	for _, mut catalog in c.catalogs {
+		catalog.release_write_connection()
+	}
+}
+
+fn (mut c CatalogConnection) release_write_connection() {
 	if c.path == ':memory:' {
 		return
 	}
@@ -150,6 +220,12 @@ fn (mut c Connection) release_write_connection() {
 }
 
 fn (mut c Connection) release_read_connection() {
+	for _, mut catalog in c.catalogs {
+		catalog.release_read_connection()
+	}
+}
+
+fn (mut c CatalogConnection) release_read_connection() {
 	if c.path == ':memory:' {
 		return
 	}
@@ -176,7 +252,8 @@ fn (mut c Connection) release_read_connection() {
 pub fn (mut c Connection) prepare(sql string) !PreparedStmt {
 	t := start_timer()
 	stmt, params, explain := c.query_cache.parse(sql) or {
-		c.storage.transaction_aborted()
+		mut catalog := c.catalog()
+		catalog.storage.transaction_aborted()
 		return err
 	}
 	elapsed_parse := t.elapsed()
@@ -188,23 +265,35 @@ pub fn (mut c Connection) prepare(sql string) !PreparedStmt {
 //
 // snippet: v.Connection.query
 pub fn (mut c Connection) query(sql string) !Result {
-	if c.storage.transaction_state == .aborted {
+	mut catalog := c.catalog()
+
+	if catalog.storage.transaction_state == .aborted {
 		return sqlstate_25p02()
 	}
 
 	mut prepared := c.prepare(sql) or {
-		c.storage.transaction_aborted()
+		catalog.storage.transaction_aborted()
 		return err
 	}
 
 	return prepared.query(map[string]Value{}) or {
-		c.storage.transaction_aborted()
+		catalog.storage.transaction_aborted()
 		return err
+	}
+}
+
+fn (mut c Connection) transaction_aborted() {
+	for _, mut catalog in c.catalogs {
+		catalog.storage.transaction_aborted()
 	}
 }
 
 fn (mut c Connection) register_func(func Func) ! {
 	c.funcs << func
+}
+
+pub fn (mut c Connection) catalog() &CatalogConnection {
+	return c.catalogs[c.current_catalog] or { panic('unknown catalog: ${c.current_catalog}') }
 }
 
 fn (c Connection) find_function(func_name string, arg_types []Type) !Func {
@@ -263,7 +352,7 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 	if stmt is CreateTableStmt {
 		mut table_name := c.resolve_schema_identifier(stmt.table_name)!
 
-		c.virtual_tables[table_name.id()] = VirtualTable{
+		c.catalogs[c.current_catalog].virtual_tables[table_name.storage_id()] = VirtualTable{
 			create_table_sql: create_table
 			create_table_stmt: stmt
 			data: data
@@ -278,7 +367,7 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 // schemas returns the schemas in this catalog (database).
 //
 // snippet: v.Connection.schemas
-pub fn (mut c Connection) schemas() ![]Schema {
+pub fn (mut c CatalogConnection) schemas() ![]Schema {
 	c.open_read_connection()!
 	defer {
 		c.release_read_connection()
@@ -296,7 +385,7 @@ pub fn (mut c Connection) schemas() ![]Schema {
 // exist and empty list will be returned.
 //
 // snippet: v.Connection.schema_tables
-pub fn (mut c Connection) sequences(schema string) ![]Sequence {
+pub fn (mut c CatalogConnection) sequences(schema string) ![]Sequence {
 	c.open_read_connection()!
 	defer {
 		c.release_read_connection()
@@ -316,7 +405,7 @@ pub fn (mut c Connection) sequences(schema string) ![]Sequence {
 // exist and empty list will be returned.
 //
 // snippet: v.Connection.schema_tables
-pub fn (mut c Connection) schema_tables(schema string) ![]Table {
+pub fn (mut c CatalogConnection) schema_tables(schema string) ![]Table {
 	c.open_read_connection()!
 	defer {
 		c.release_read_connection()
@@ -332,11 +421,16 @@ pub fn (mut c Connection) schema_tables(schema string) ![]Table {
 	return tables
 }
 
-// resolve_identifier returns a new identifier that would represent the canonical
-// (fully qualified) form.
+// resolve_identifier returns a new identifier that would represent the
+// canonical (fully qualified) form.
 fn (c Connection) resolve_identifier(identifier Identifier) Identifier {
 	return Identifier{
 		custom_id: identifier.custom_id
+		catalog_name: if identifier.catalog_name == '' && !identifier.entity_name.starts_with('$') {
+			c.current_catalog
+		} else {
+			identifier.catalog_name
+		}
 		schema_name: if identifier.schema_name == '' && !identifier.entity_name.starts_with('$') {
 			c.current_schema
 		} else {
@@ -347,11 +441,22 @@ fn (c Connection) resolve_identifier(identifier Identifier) Identifier {
 	}
 }
 
-// resolve_schema_identifier returns the fully qualified and validates it.
-fn (c Connection) resolve_schema_identifier(identifier Identifier) !Identifier {
+// resolve_catalog_identifier returns the fully qualified and validates it.
+fn (c Connection) resolve_catalog_identifier(identifier Identifier) !Identifier {
 	ident := c.resolve_identifier(identifier)
 
-	if ident.schema_name !in c.storage.schemas {
+	if ident.catalog_name !in c.catalogs {
+		return sqlstate_3d000(ident.catalog_name) // catalog does not exist
+	}
+
+	return ident
+}
+
+// resolve_schema_identifier returns the fully qualified and validates it.
+fn (mut c Connection) resolve_schema_identifier(identifier Identifier) !Identifier {
+	ident := c.resolve_catalog_identifier(identifier)!
+
+	if ident.schema_name !in c.catalog().storage.schemas {
 		return sqlstate_3f000(ident.schema_name) // schema does not exist
 	}
 
@@ -360,19 +465,22 @@ fn (c Connection) resolve_schema_identifier(identifier Identifier) !Identifier {
 
 // resolve_table_identifier returns a new identifer that would represent the
 // canonical (fully qualified) form of the provided identifier or an error.
-fn (c Connection) resolve_table_identifier(identifier Identifier, allow_virtual bool) !Identifier {
+fn (mut c Connection) resolve_table_identifier(identifier Identifier, allow_virtual bool) !Identifier {
 	ident := c.resolve_schema_identifier(identifier)!
-	id := ident.id()
+	id := ident.storage_id()
+	mut catalog := c.catalogs[ident.catalog_name] or {
+		return error('unknown catalog: ${ident.catalog_name}')
+	}
 
-	if id in c.storage.tables {
+	if id in catalog.storage.tables {
 		return ident
 	}
 
-	if allow_virtual && id in c.virtual_tables {
+	if allow_virtual && id in catalog.virtual_tables {
 		return ident
 	}
 
-	return sqlstate_42p01('table', id) // table does not exist
+	return sqlstate_42p01('table', ident.str()) // table does not exist
 }
 
 // ConnectionOptions can modify the behavior of a connection when it is opened.
@@ -380,7 +488,7 @@ fn (c Connection) resolve_table_identifier(identifier Identifier, allow_virtual 
 // default_connection_options() as a starting point and modify the attributes.
 //
 // snippet: v.ConnectionOptions
-struct ConnectionOptions {
+pub struct ConnectionOptions {
 pub mut:
 	// query_cache contains the precompiled prepared statements that can be
 	// reused. This makes execution much faster as parsing the SQL is extremely
@@ -419,25 +527,16 @@ pub mut:
 	//
 	// snippet: v.ConnectionOptions.mutex
 	mutex &sync.RwMutex = unsafe { nil }
-	// now allows you to override the wall clock that is used. The Time must be
-	// in UTC with a separate offset for the current local timezone (in positive
-	// or negative minutes).
-	//
-	// snippet: v.ConnectionOptions.now
-	now fn () (time.Time, i16)
 }
 
 // default_connection_options returns the sensible defaults used by open() and
 // the correct base to provide your own option overrides. See ConnectionOptions.
 //
 // snippet: v.default_connection_options
-fn default_connection_options() ConnectionOptions {
+pub fn default_connection_options() ConnectionOptions {
 	return ConnectionOptions{
 		query_cache: new_query_cache()
 		page_size: 4096
 		mutex: sync.new_rwmutex()
-		now: fn () (time.Time, i16) {
-			return time.utc(), i16(time.offset() / 60)
-		}
 	}
 }

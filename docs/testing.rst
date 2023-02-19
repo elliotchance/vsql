@@ -258,6 +258,21 @@ Connection names can be any single word including numbers for convienience. The
 default connection name is named "main" but this should not be used or
 referenced in tests to avoid unexpected behavior.
 
+Multiple Catalogs
+^^^^^^^^^^^^^^^^^
+
+If a test needs to use more than one catalog, you can use the ``create_catalog``
+directive:
+
+.. code-block:: sql
+
+   /* create_catalog FOO */
+   CREATE TABLE foo.public.bar (baz INTEGER);
+   EXPLAIN SELECT * FROM foo.public.bar;
+   -- msg: CREATE TABLE 1
+   -- EXPLAIN: TABLE FOO.PUBLIC.BAR (BAZ INTEGER)
+   -- EXPLAIN: EXPR (FOO.PUBLIC.BAR.BAZ INTEGER)
+
 Debugging Tests
 ---------------
 

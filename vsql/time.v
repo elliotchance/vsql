@@ -388,7 +388,7 @@ fn (t Time) str_time_zone(allow_time_zone bool, sql_formatting bool) string {
 }
 
 fn time_zone_value(conn &Connection) string {
-	_, mut offset := conn.options.now()
+	_, mut offset := conn.now()
 	mut s := ''
 
 	if offset < 0 {

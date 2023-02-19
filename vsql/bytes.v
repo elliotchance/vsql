@@ -262,7 +262,7 @@ fn (mut b BytesLittleEndian) write_string1(s string) {
 }
 
 fn (mut b BytesLittleEndian) write_identifier(identifier Identifier) {
-	b.write_string1(identifier.id())
+	b.write_string1(identifier.storage_id())
 }
 
 fn (mut b BytesLittleEndian) read_string1() string {
@@ -473,7 +473,7 @@ fn (mut b BytesBigEndian) write_string1(s string) {
 }
 
 fn (mut b BytesBigEndian) write_identifier(identifier Identifier) {
-	b.write_string1(identifier.id())
+	b.write_string1(identifier.storage_id())
 }
 
 fn (mut b BytesBigEndian) read_string1() string {

@@ -23,7 +23,8 @@ fn register_out_command(mut cmd cli.Command) {
 
 fn out_command(cmd cli.Command) ! {
 	mut db := vsql.open(cmd.args[0])!
-	mut schemas := db.schemas()!
+	mut catalog := db.catalog()
+	mut schemas := catalog.schemas()!
 
 	// To make the output more deterministic, entities will be ordered by name.
 	// This is not true for the records however, which can potentially come out in
@@ -40,7 +41,7 @@ fn out_command(cmd cli.Command) ! {
 			println('${schema}\n')
 		}
 
-		mut sequences := db.sequences(schema.name)!
+		mut sequences := catalog.sequences(schema.name)!
 		sequences.sort_with_compare(fn (a &vsql.Sequence, b &vsql.Sequence) int {
 			return compare_strings(a.name.str(), b.name.str())
 		})
@@ -49,7 +50,7 @@ fn out_command(cmd cli.Command) ! {
 			println('${sequence}\n')
 		}
 
-		mut tables := db.schema_tables(schema.name) or { return err }
+		mut tables := catalog.schema_tables(schema.name) or { return err }
 		tables.sort_with_compare(fn (a &vsql.Table, b &vsql.Table) int {
 			return compare_strings(a.name.str(), b.name.str())
 		})

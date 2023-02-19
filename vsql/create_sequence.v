@@ -13,6 +13,7 @@ fn execute_create_sequence(mut c Connection, stmt CreateSequenceStmt, elapsed_pa
 		c.release_write_connection()
 	}
 
+	mut catalog := c.catalog()
 	mut sequence_name := c.resolve_schema_identifier(stmt.name)!
 	mut increment_by := i64(1)
 	mut has_start_value := false
@@ -79,7 +80,7 @@ fn execute_create_sequence(mut c Connection, stmt CreateSequenceStmt, elapsed_pa
 		max_value: max_value
 	}
 
-	c.storage.create_sequence(sequence)!
+	catalog.storage.create_sequence(sequence)!
 
 	return new_result_msg('CREATE SEQUENCE 1', elapsed_parse, t.elapsed())
 }

@@ -84,7 +84,7 @@ fn create_select_plan(body SelectStmt, offset Expr, params map[string]Value, mut
 
 			plan.operations << new_join_operation(left_plan.columns(), from_clause.join_type,
 				right_plan.columns(), resolve_identifiers(c, from_clause.specification,
-				tables)!, params, c, plan, c.storage)
+				tables)!, params, c, plan)
 
 			return plan, tables
 		}
@@ -100,13 +100,16 @@ fn create_select_plan_without_join(body SelectStmt, from_clause TablePrimary, of
 	match from_clause.body {
 		Identifier {
 			mut table_name := c.resolve_table_identifier(from_clause.body, allow_virtual)!
-			table_name_id := table_name.id()
+			table_name_id := table_name.storage_id()
+			mut catalog := c.catalogs[table_name.catalog_name] or {
+				return error('unknown catalog: ${table_name.catalog_name}')
+			}
 
-			if allow_virtual && table_name_id in c.virtual_tables {
-				plan.operations << VirtualTableOperation{table_name_id, c.virtual_tables[table_name_id]}
-				table = c.virtual_tables[table_name_id].table()
-			} else if table_name_id in c.storage.tables {
-				table = c.storage.tables[table_name_id]
+			if allow_virtual && table_name_id in catalog.virtual_tables {
+				plan.operations << VirtualTableOperation{table_name_id, catalog.virtual_tables[table_name_id]}
+				table = catalog.virtual_tables[table_name_id].table()
+			} else if table_name_id in catalog.storage.tables {
+				table = catalog.storage.tables[table_name_id]
 
 				// This is a special case to handle "PRIMARY KEY = INTEGER".
 				if table.primary_key.len > 0 && where is BinaryExpr {
@@ -122,7 +125,7 @@ fn create_select_plan_without_join(body SelectStmt, from_clause TablePrimary, of
 				}
 
 				if !covered_by_pk {
-					plan.operations << TableOperation{table_name, false, table, params, c, plan.subplans, c.storage}
+					plan.operations << TableOperation{table_name, false, table, params, c, plan.subplans}
 				}
 
 				if where !is NoExpr && !covered_by_pk {
@@ -150,14 +153,22 @@ fn create_select_plan_without_join(body SelectStmt, from_clause TablePrimary, of
 			subplan := create_query_expression_plan(from_clause.body, params, mut c, from_clause.correlation)!
 			plan.subplans[table_name.id()] = subplan
 
+			mut subplan_columns := []Column{}
+			for col in subplan.columns() {
+				subplan_columns << Column{Identifier{
+					entity_name: table_name.id()
+					sub_entity_name: col.name.sub_entity_name
+				}, col.typ, col.not_null}
+			}
+
 			// NOTE: This has to be assigned to a variable otherwise the value
 			// is lost. This must be a bug in V.
 			table = Table{
 				name: table_name
-				columns: subplan.columns()
+				columns: subplan_columns
 			}
 
-			plan.operations << TableOperation{table_name, true, table, params, c, plan.subplans, c.storage}
+			plan.operations << TableOperation{table_name, true, table, params, c, plan.subplans}
 		}
 	}
 
@@ -278,7 +289,7 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 	}
 
 	if stmt.body is SelectStmt {
-		plan.operations << new_expr_operation(c, params, stmt.body.exprs, tables)!
+		plan.operations << new_expr_operation(mut c, params, stmt.body.exprs, tables)!
 	}
 
 	return plan
@@ -334,6 +345,7 @@ fn (p Plan) explain(elapsed_parse time.Duration) Result {
 		})
 	}
 
-	return new_result([Column{'EXPLAIN', new_type('VARCHAR', 0), false}], rows, elapsed_parse,
-		0)
+	return new_result([
+		Column{Identifier{ sub_entity_name: 'EXPLAIN' }, new_type('VARCHAR', 0), false},
+	], rows, elapsed_parse, 0)
 }

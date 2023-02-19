@@ -1,5 +1,5 @@
 SELECT * FROM foo;
--- error 42P01: no such table: PUBLIC.FOO
+-- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
 CREATE TABLE foo (x FLOAT);
 INSERT INTO foo (x) VALUES (1.234);
@@ -31,14 +31,14 @@ SELECT * FROM "Foo";
 SELECT *
 FROM foo;
 SELECT * FROM bar;
--- error 42P01: no such table: PUBLIC.FOO
--- error 42P01: no such table: PUBLIC.BAR
+-- error 42P01: no such table: ":memory:".PUBLIC.FOO
+-- error 42P01: no such table: ":memory:".PUBLIC.BAR
 
 CREATE TABLE foo (x FLOAT);
 EXPLAIN SELECT foo.* FROM foo;
 -- msg: CREATE TABLE 1
--- EXPLAIN: TABLE PUBLIC.FOO (PUBLIC.FOO.X DOUBLE PRECISION)
--- EXPLAIN: EXPR (X DOUBLE PRECISION)
+-- EXPLAIN: TABLE ":memory:".PUBLIC.FOO (X DOUBLE PRECISION)
+-- EXPLAIN: EXPR (":memory:".PUBLIC.FOO.X DOUBLE PRECISION)
 
 CREATE TABLE foo (x FLOAT);
 INSERT INTO foo (x) VALUES (1.234);
@@ -50,7 +50,7 @@ SELECT foo.* FROM foo;
 CREATE TABLE foo (x FLOAT);
 EXPLAIN SELECT bar.* FROM foo;
 -- msg: CREATE TABLE 1
--- error 42P01: no such table: PUBLIC.BAR
+-- error 42P01: no such table: ":memory:".PUBLIC.BAR
 
 SELECT * FROM foo.bar;
 -- error 3F000: invalid schema name: FOO

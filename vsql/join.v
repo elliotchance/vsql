@@ -9,13 +9,12 @@ struct JoinOperation {
 	specification Expr
 	params        map[string]Value
 mut:
-	conn    &Connection
-	plan    Plan
-	storage Storage
+	conn &Connection
+	plan Plan
 }
 
-fn new_join_operation(left_columns Columns, join_type string, right_columns Columns, specification Expr, params map[string]Value, conn &Connection, plan Plan, storage Storage) &JoinOperation {
-	return &JoinOperation{left_columns, join_type, right_columns, specification, params, conn, plan, storage}
+fn new_join_operation(left_columns Columns, join_type string, right_columns Columns, specification Expr, params map[string]Value, conn &Connection, plan Plan) &JoinOperation {
+	return &JoinOperation{left_columns, join_type, right_columns, specification, params, conn, plan}
 }
 
 fn (o &JoinOperation) str() string {
@@ -106,7 +105,7 @@ fn (mut o JoinOperation) execute_left(left_rows []Row, right_rows []Row) ![]Row 
 			}
 
 			for k in o.right_columns {
-				row.data[k.name] = new_null_value(k.typ.typ)
+				row.data[k.name.id()] = new_null_value(k.typ.typ)
 			}
 
 			new_rows << row
@@ -143,7 +142,7 @@ fn (mut o JoinOperation) execute_right(left_rows []Row, right_rows []Row) ![]Row
 			mut row := new_row(map[string]Value{})
 
 			for k in o.left_columns {
-				row.data[k.name] = new_null_value(k.typ.typ)
+				row.data[k.name.id()] = new_null_value(k.typ.typ)
 			}
 
 			for k, v in right_row.data {

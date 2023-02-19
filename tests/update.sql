@@ -1,5 +1,5 @@
 UPDATE foo SET x = 123;
--- error 42P01: no such table: PUBLIC.FOO
+-- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
 CREATE TABLE foo (baz CHARACTER VARYING(10));
 INSERT INTO foo (baz) VALUES ('hi');

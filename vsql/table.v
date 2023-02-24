@@ -52,15 +52,15 @@ fn (c Columns) str() string {
 // Represents the structure of a table.
 //
 // snippet: v.Table
-struct Table {
+pub struct Table {
 mut:
 	// The tid is the transaction ID that created this table.
 	tid int
 pub mut:
-	// The name of the table is case-sensitive.
+	// The name of the table including the schema.
 	//
 	// snippet: v.Table.name
-	name string
+	name Identifier
 	// The column definitions for the table.
 	//
 	// snippet: v.Table.columns
@@ -104,7 +104,7 @@ pub fn (t Table) column(name string) !Column {
 fn (t Table) bytes() []u8 {
 	mut b := new_empty_bytes()
 
-	b.write_string1(t.name)
+	b.write_identifier(t.name)
 
 	b.write_u8(u8(t.primary_key.len))
 	for s in t.primary_key {
@@ -125,7 +125,7 @@ fn (t Table) bytes() []u8 {
 fn new_table_from_bytes(data []u8, tid int) Table {
 	mut b := new_bytes(data)
 
-	table_name := b.read_string1()
+	table_name := b.read_identifier()
 
 	primary_key_len := b.read_u8()
 	mut primary_key := []string{len: int(primary_key_len)}
@@ -164,14 +164,13 @@ pub fn (t Table) str() string {
 // A TableOperation requires that up to rows in the table be read. The number of
 // rows read may be limited and/or an offset (rows to skip) provided.
 struct TableOperation {
-	table_name string
+	table_name Identifier
 	// table_is_subplan is true if the table_name should be executed from the
 	// subplans instead of a real table.
-	table_is_subplan  bool
-	table             Table
-	params            map[string]Value
-	conn              &Connection
-	prefix_table_name bool
+	table_is_subplan bool
+	table            Table
+	params           map[string]Value
+	conn             &Connection
 mut:
 	subplans map[string]Plan
 	storage  Storage
@@ -182,32 +181,28 @@ fn (o TableOperation) str() string {
 }
 
 fn (o TableOperation) columns() Columns {
-	if o.prefix_table_name {
-		mut columns := []Column{}
-		for column in o.table.columns {
-			columns << Column{'${o.table_name}.${column.name}', column.typ, column.not_null}
-		}
-
-		return columns
+	mut columns := []Column{}
+	for column in o.table.columns {
+		columns << Column{'${o.table_name.id()}.${column.name}', column.typ, column.not_null}
 	}
 
-	return o.table.columns
+	return columns
 }
 
 fn (mut o TableOperation) execute(_ []Row) ![]Row {
 	mut rows := []Row{}
 
 	if o.table_is_subplan {
-		for row in o.subplans[o.table_name].execute([]Row{})! {
+		for row in o.subplans[o.table_name.id()].execute([]Row{})! {
 			mut data := map[string]Value{}
 			for k, v in row.data {
-				data['${o.table_name}.${k}'] = v
+				data['${o.table_name.id()}.${k}'] = v
 			}
 
 			rows << new_row(data)
 		}
 	} else {
-		rows = o.storage.read_rows(o.table_name, o.prefix_table_name)!
+		rows = o.storage.read_rows(o.table_name.id())!
 	}
 
 	return rows

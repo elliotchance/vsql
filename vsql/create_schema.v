@@ -12,7 +12,7 @@ fn execute_create_schema(mut c Connection, stmt CreateSchemaStmt, elapsed_parse 
 		c.release_write_connection()
 	}
 
-	schema_name := stmt.schema_name.name
+	schema_name := stmt.schema_name.schema_name
 
 	if schema_name in c.storage.schemas {
 		return sqlstate_42p06(schema_name) // duplicate schema

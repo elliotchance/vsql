@@ -68,6 +68,15 @@ SELECT * FROM foo;
 -- msg: UPDATE 1
 -- BAZ: -516.6
 
+CREATE TABLE foo (baz FLOAT);
+INSERT INTO foo (baz) VALUES (-123);
+UPDATE foo SET baz = foo.baz * 4.2;
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- BAZ: -516.6
+
 UPDATE foo.bar SET baz = baz * 4.2;
 -- error 3F000: invalid schema name: FOO
 

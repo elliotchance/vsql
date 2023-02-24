@@ -5,16 +5,15 @@ module vsql
 // A SEQUENCE definition.
 //
 // snippet: v.Sequence
-struct Sequence {
+pub struct Sequence {
 mut:
 	// The tid is the transaction ID that created this table.
 	tid int
 pub mut:
-	// name is case-sensitive. The name is equivilent to using a deliminated
-	// identifier (with double quotes).
+	// name contains the other parts such as the schema.
 	//
 	// snippet: v.Sequence.name
-	name string
+	name Identifier
 	// current_value is the current value before it is incremented by
 	// "NEXT VALUE FOR".
 	//
@@ -55,9 +54,7 @@ pub mut:
 //
 // snippet: v.Sequence.str
 pub fn (s Sequence) str() string {
-	name := if s.name.is_upper() { s.name } else { '"${s.name}"' }
-
-	mut parts := ['CREATE SEQUENCE ${name} START WITH ${s.current_value}']
+	mut parts := ['CREATE SEQUENCE ${s.name} START WITH ${s.current_value}']
 
 	if s.increment_by != 1 {
 		parts << 'INCREMENT BY ${s.increment_by}'
@@ -94,7 +91,7 @@ fn (s Sequence) next() !Sequence {
 	mut next_value := s.current_value + s.increment_by
 	if s.has_max_value && next_value > s.max_value {
 		if !s.cycle {
-			return sqlstate_2200h(s.name)
+			return sqlstate_2200h(s.name.str())
 		}
 
 		next_value = s.reset()
@@ -102,7 +99,7 @@ fn (s Sequence) next() !Sequence {
 
 	if s.has_min_value && next_value < s.min_value {
 		if !s.cycle {
-			return sqlstate_2200h(s.name)
+			return sqlstate_2200h(s.name.str())
 		}
 
 		next_value = s.reset()
@@ -114,7 +111,7 @@ fn (s Sequence) next() !Sequence {
 fn (s Sequence) bytes() []u8 {
 	mut b := new_empty_bytes()
 
-	b.write_string1(s.name)
+	b.write_string1(s.name.id())
 	b.write_i64(s.current_value)
 	b.write_i64(s.increment_by)
 	b.write_bool(s.cycle)
@@ -127,7 +124,7 @@ fn (s Sequence) bytes() []u8 {
 fn new_sequence_from_bytes(data []u8, tid int) Sequence {
 	mut b := new_bytes(data)
 
-	sequence_name := b.read_string1()
+	sequence_name := b.read_identifier()
 	current_value := b.read_i64()
 	increment_by := b.read_i64()
 	cycle := b.read_bool()

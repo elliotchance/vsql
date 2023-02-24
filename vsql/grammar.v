@@ -11,6 +11,7 @@ type EarleyValue = BetweenExpr
 	| DerivedColumn
 	| Expr
 	| Identifier
+	| IdentifierChain
 	| InsertStmt
 	| LikeExpr
 	| QualifiedAsteriskExpr
@@ -376,8 +377,14 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_column_name_list_ := &EarleyRule{
 		name: '<column name list>'
 	}
+	mut rule_column_name_1_ := &EarleyRule{
+		name: '<column name: 1>'
+	}
 	mut rule_column_name_ := &EarleyRule{
 		name: '<column name>'
+	}
+	mut rule_column_reference_1_ := &EarleyRule{
+		name: '<column reference: 1>'
 	}
 	mut rule_column_reference_ := &EarleyRule{
 		name: '<column reference>'
@@ -492,6 +499,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_contextually_typed_value_specification_ := &EarleyRule{
 		name: '<contextually typed value specification>'
+	}
+	mut rule_correlation_name_1_ := &EarleyRule{
+		name: '<correlation name: 1>'
 	}
 	mut rule_correlation_name_ := &EarleyRule{
 		name: '<correlation name>'
@@ -771,6 +781,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_general_set_function_ := &EarleyRule{
 		name: '<general set function>'
+	}
+	mut rule_general_value_specification_2_ := &EarleyRule{
+		name: '<general value specification: 2>'
 	}
 	mut rule_general_value_specification_ := &EarleyRule{
 		name: '<general value specification>'
@@ -1072,6 +1085,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_preparable_sql_schema_statement_ := &EarleyRule{
 		name: '<preparable SQL schema statement>'
 	}
+	mut rule_preparable_sql_session_statement_ := &EarleyRule{
+		name: '<preparable SQL session statement>'
+	}
 	mut rule_preparable_sql_transaction_statement_ := &EarleyRule{
 		name: '<preparable SQL transaction statement>'
 	}
@@ -1168,6 +1184,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_routine_invocation_ := &EarleyRule{
 		name: '<routine invocation>'
 	}
+	mut rule_routine_name_1_ := &EarleyRule{
+		name: '<routine name: 1>'
+	}
 	mut rule_routine_name_ := &EarleyRule{
 		name: '<routine name>'
 	}
@@ -1212,6 +1231,12 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_schema_definition_ := &EarleyRule{
 		name: '<schema definition>'
+	}
+	mut rule_schema_name_characteristic_1_ := &EarleyRule{
+		name: '<schema name characteristic: 1>'
+	}
+	mut rule_schema_name_characteristic_ := &EarleyRule{
+		name: '<schema name characteristic>'
 	}
 	mut rule_schema_name_clause_ := &EarleyRule{
 		name: '<schema name clause>'
@@ -1297,6 +1322,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_sequence_generator_minvalue_option_ := &EarleyRule{
 		name: '<sequence generator minvalue option>'
 	}
+	mut rule_sequence_generator_name_1_ := &EarleyRule{
+		name: '<sequence generator name: 1>'
+	}
 	mut rule_sequence_generator_name_ := &EarleyRule{
 		name: '<sequence generator name>'
 	}
@@ -1335,6 +1363,12 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_set_function_type_ := &EarleyRule{
 		name: '<set function type>'
+	}
+	mut rule_set_schema_statement_1_ := &EarleyRule{
+		name: '<set schema statement: 1>'
+	}
+	mut rule_set_schema_statement_ := &EarleyRule{
+		name: '<set schema statement>'
 	}
 	mut rule_set_target_ := &EarleyRule{
 		name: '<set target>'
@@ -1423,6 +1457,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_sql_schema_statement_ := &EarleyRule{
 		name: '<SQL schema statement>'
 	}
+	mut rule_sql_session_statement_ := &EarleyRule{
+		name: '<SQL session statement>'
+	}
 	mut rule_sql_transaction_statement_ := &EarleyRule{
 		name: '<SQL transaction statement>'
 	}
@@ -1506,6 +1543,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_table_factor_ := &EarleyRule{
 		name: '<table factor>'
+	}
+	mut rule_table_name_1_ := &EarleyRule{
+		name: '<table name: 1>'
 	}
 	mut rule_table_name_ := &EarleyRule{
 		name: '<table name>'
@@ -1657,6 +1697,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_unique_specification_ := &EarleyRule{
 		name: '<unique specification>'
 	}
+	mut rule_unqualified_schema_name_1_ := &EarleyRule{
+		name: '<unqualified schema name: 1>'
+	}
 	mut rule_unqualified_schema_name_ := &EarleyRule{
 		name: '<unqualified schema name>'
 	}
@@ -1704,6 +1747,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_value_expression_ := &EarleyRule{
 		name: '<value expression>'
+	}
+	mut rule_value_specification_ := &EarleyRule{
+		name: '<value specification>'
 	}
 	mut rule_where_clause_1_ := &EarleyRule{
 		name: '<where clause: 1>'
@@ -1956,6 +2002,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_current_date := &EarleyRule{
 		name: 'CURRENT_DATE'
+	}
+	mut rule_current_schema := &EarleyRule{
+		name: 'CURRENT_SCHEMA'
 	}
 	mut rule_current_time := &EarleyRule{
 		name: 'CURRENT_TIME'
@@ -4149,15 +4198,27 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_column_name_.productions << &EarleyProduction{[
+	rule_column_name_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_identifier_
 		},
 	]}
 
-	rule_column_reference_.productions << &EarleyProduction{[
+	rule_column_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_column_name_1_
+		},
+	]}
+
+	rule_column_reference_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_basic_identifier_chain_
+		},
+	]}
+
+	rule_column_reference_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_column_reference_1_
 		},
 	]}
 
@@ -4550,9 +4611,15 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_correlation_name_.productions << &EarleyProduction{[
+	rule_correlation_name_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_identifier_
+		},
+	]}
+
+	rule_correlation_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_correlation_name_1_
 		},
 	]}
 
@@ -5523,9 +5590,20 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_general_value_specification_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_current_schema
+		},
+	]}
+
 	rule_general_value_specification_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_host_parameter_specification_
+		},
+	]}
+	rule_general_value_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_general_value_specification_2_
 		},
 	]}
 
@@ -7884,6 +7962,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_preparable_sql_session_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sql_session_statement_
+		},
+	]}
+
 	rule_preparable_sql_transaction_statement_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_sql_transaction_statement_
@@ -7903,6 +7987,11 @@ fn get_grammar() map[string]EarleyRule {
 	rule_preparable_statement_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_preparable_sql_transaction_statement_
+		},
+	]}
+	rule_preparable_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_preparable_sql_session_statement_
 		},
 	]}
 
@@ -8218,9 +8307,15 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_routine_name_.productions << &EarleyProduction{[
+	rule_routine_name_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_qualified_identifier_
+		},
+	]}
+
+	rule_routine_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_routine_name_1_
 		},
 	]}
 
@@ -8353,6 +8448,21 @@ fn get_grammar() map[string]EarleyRule {
 	rule_schema_definition_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_schema_definition_1_
+		},
+	]}
+
+	rule_schema_name_characteristic_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_schema
+		},
+		&EarleyRuleOrString{
+			rule: rule_value_specification_
+		},
+	]}
+
+	rule_schema_name_characteristic_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_schema_name_characteristic_1_
 		},
 	]}
 
@@ -8612,9 +8722,15 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_sequence_generator_name_.productions << &EarleyProduction{[
+	rule_sequence_generator_name_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_schema_qualified_name_
+		},
+	]}
+
+	rule_sequence_generator_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_sequence_generator_name_1_
 		},
 	]}
 
@@ -8718,6 +8834,21 @@ fn get_grammar() map[string]EarleyRule {
 	rule_set_function_type_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_computational_operation_
+		},
+	]}
+
+	rule_set_schema_statement_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_set
+		},
+		&EarleyRuleOrString{
+			rule: rule_schema_name_characteristic_
+		},
+	]}
+
+	rule_set_schema_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_set_schema_statement_1_
 		},
 	]}
 
@@ -9022,6 +9153,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_sql_session_statement_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_set_schema_statement_
+		},
+	]}
+
 	rule_sql_transaction_statement_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_start_transaction_statement_
@@ -9276,9 +9413,15 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_table_name_.productions << &EarleyProduction{[
+	rule_table_name_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_local_or_schema_qualified_name_
+		},
+	]}
+
+	rule_table_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_table_name_1_
 		},
 	]}
 
@@ -9764,9 +9907,15 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_unqualified_schema_name_.productions << &EarleyProduction{[
+	rule_unqualified_schema_name_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_identifier_
+		},
+	]}
+
+	rule_unqualified_schema_name_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_unqualified_schema_name_1_
 		},
 	]}
 
@@ -9922,6 +10071,17 @@ fn get_grammar() map[string]EarleyRule {
 	rule_value_expression_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_boolean_value_expression_
+		},
+	]}
+
+	rule_value_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_literal_
+		},
+	]}
+	rule_value_specification_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_general_value_specification_
 		},
 	]}
 
@@ -10524,6 +10684,13 @@ fn get_grammar() map[string]EarleyRule {
 	rule_current_date.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			str: 'CURRENT_DATE'
+			rule: 0
+		},
+	]}
+
+	rule_current_schema.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			str: 'CURRENT_SCHEMA'
 			rule: 0
 		},
 	]}
@@ -12857,7 +13024,9 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<column name list: 1>'] = rule_column_name_list_1_
 	rules['<column name list: 2>'] = rule_column_name_list_2_
 	rules['<column name list>'] = rule_column_name_list_
+	rules['<column name: 1>'] = rule_column_name_1_
 	rules['<column name>'] = rule_column_name_
+	rules['<column reference: 1>'] = rule_column_reference_1_
 	rules['<column reference>'] = rule_column_reference_
 	rules['<comma>'] = rule_comma_
 	rules['<commit statement: 1>'] = rule_commit_statement_1_
@@ -12896,6 +13065,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<contextually typed table value constructor: 1>'] = rule_contextually_typed_table_value_constructor_1_
 	rules['<contextually typed table value constructor>'] = rule_contextually_typed_table_value_constructor_
 	rules['<contextually typed value specification>'] = rule_contextually_typed_value_specification_
+	rules['<correlation name: 1>'] = rule_correlation_name_1_
 	rules['<correlation name>'] = rule_correlation_name_
 	rules['<correlation or recognition: 1>'] = rule_correlation_or_recognition_1_
 	rules['<correlation or recognition: 2>'] = rule_correlation_or_recognition_2_
@@ -12989,6 +13159,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<general literal>'] = rule_general_literal_
 	rules['<general set function: 1>'] = rule_general_set_function_1_
 	rules['<general set function>'] = rule_general_set_function_
+	rules['<general value specification: 2>'] = rule_general_value_specification_2_
 	rules['<general value specification>'] = rule_general_value_specification_
 	rules['<greater than operator>'] = rule_greater_than_operator_
 	rules['<greater than or equals operator>'] = rule_greater_than_or_equals_operator_
@@ -13089,6 +13260,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<predicate>'] = rule_predicate_
 	rules['<preparable SQL data statement>'] = rule_preparable_sql_data_statement_
 	rules['<preparable SQL schema statement>'] = rule_preparable_sql_schema_statement_
+	rules['<preparable SQL session statement>'] = rule_preparable_sql_session_statement_
 	rules['<preparable SQL transaction statement>'] = rule_preparable_sql_transaction_statement_
 	rules['<preparable statement>'] = rule_preparable_statement_
 	rules['<qualified asterisk: 1>'] = rule_qualified_asterisk_1_
@@ -13121,6 +13293,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<rollback statement>'] = rule_rollback_statement_
 	rules['<routine invocation: 1>'] = rule_routine_invocation_1_
 	rules['<routine invocation>'] = rule_routine_invocation_
+	rules['<routine name: 1>'] = rule_routine_name_1_
 	rules['<routine name>'] = rule_routine_name_
 	rules['<row or rows>'] = rule_row_or_rows_
 	rules['<row subquery>'] = rule_row_subquery_
@@ -13136,6 +13309,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<row value predicand>'] = rule_row_value_predicand_
 	rules['<schema definition: 1>'] = rule_schema_definition_1_
 	rules['<schema definition>'] = rule_schema_definition_
+	rules['<schema name characteristic: 1>'] = rule_schema_name_characteristic_1_
+	rules['<schema name characteristic>'] = rule_schema_name_characteristic_
 	rules['<schema name clause>'] = rule_schema_name_clause_
 	rules['<schema name>'] = rule_schema_name_
 	rules['<schema qualified name: 2>'] = rule_schema_qualified_name_2_
@@ -13164,6 +13339,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<sequence generator minvalue option: 1>'] = rule_sequence_generator_minvalue_option_1_
 	rules['<sequence generator minvalue option: 2>'] = rule_sequence_generator_minvalue_option_2_
 	rules['<sequence generator minvalue option>'] = rule_sequence_generator_minvalue_option_
+	rules['<sequence generator name: 1>'] = rule_sequence_generator_name_1_
 	rules['<sequence generator name>'] = rule_sequence_generator_name_
 	rules['<sequence generator option>'] = rule_sequence_generator_option_
 	rules['<sequence generator options>'] = rule_sequence_generator_options_
@@ -13177,6 +13353,8 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<set clause>'] = rule_set_clause_
 	rules['<set function specification>'] = rule_set_function_specification_
 	rules['<set function type>'] = rule_set_function_type_
+	rules['<set schema statement: 1>'] = rule_set_schema_statement_1_
+	rules['<set schema statement>'] = rule_set_schema_statement_
 	rules['<set target>'] = rule_set_target_
 	rules['<sign>'] = rule_sign_
 	rules['<signed numeric literal: 1>'] = rule_signed_numeric_literal_1_
@@ -13206,6 +13384,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<SQL schema definition statement>'] = rule_sql_schema_definition_statement_
 	rules['<SQL schema manipulation statement>'] = rule_sql_schema_manipulation_statement_
 	rules['<SQL schema statement>'] = rule_sql_schema_statement_
+	rules['<SQL session statement>'] = rule_sql_session_statement_
 	rules['<SQL transaction statement>'] = rule_sql_transaction_statement_
 	rules['<square root: 1>'] = rule_square_root_1_
 	rules['<square root>'] = rule_square_root_
@@ -13234,6 +13413,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<table expression: 4>'] = rule_table_expression_4_
 	rules['<table expression>'] = rule_table_expression_
 	rules['<table factor>'] = rule_table_factor_
+	rules['<table name: 1>'] = rule_table_name_1_
 	rules['<table name>'] = rule_table_name_
 	rules['<table or query name>'] = rule_table_or_query_name_
 	rules['<table primary: 1>'] = rule_table_primary_1_
@@ -13284,6 +13464,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<unique constraint definition>'] = rule_unique_constraint_definition_
 	rules['<unique specification: 1>'] = rule_unique_specification_1_
 	rules['<unique specification>'] = rule_unique_specification_
+	rules['<unqualified schema name: 1>'] = rule_unqualified_schema_name_1_
 	rules['<unqualified schema name>'] = rule_unqualified_schema_name_
 	rules['<unsigned integer>'] = rule_unsigned_integer_
 	rules['<unsigned literal>'] = rule_unsigned_literal_
@@ -13300,6 +13481,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<value expression list>'] = rule_value_expression_list_
 	rules['<value expression primary>'] = rule_value_expression_primary_
 	rules['<value expression>'] = rule_value_expression_
+	rules['<value specification>'] = rule_value_specification_
 	rules['<where clause: 1>'] = rule_where_clause_1_
 	rules['<where clause>'] = rule_where_clause_
 	rules['<with or without time zone: 1>'] = rule_with_or_without_time_zone_1_
@@ -13384,6 +13566,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['COUNT'] = rule_count
 	rules['CREATE'] = rule_create
 	rules['CURRENT_DATE'] = rule_current_date
+	rules['CURRENT_SCHEMA'] = rule_current_schema
 	rules['CURRENT_TIME'] = rule_current_time
 	rules['CURRENT_TIMESTAMP'] = rule_current_timestamp
 	rules['CURSOR_NAME'] = rule_cursor_name
@@ -13712,7 +13895,7 @@ fn parse_ast(node &EarleyNode) ![]EarleyValue {
 				return [EarleyValue(node.value.end_column.value)]
 			}
 			'^identifier' {
-				return [EarleyValue(new_identifier(node.value.end_column.value))]
+				return [EarleyValue(IdentifierChain{node.value.end_column.value})]
 			}
 			'^string' {
 				return [
@@ -13979,6 +14162,14 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 				EarleyValue(parse_column_name_list2(children[0] as []Identifier, children[2] as Identifier)!),
 			]
 		}
+		'<column name: 1>' {
+			return [EarleyValue(parse_column_name(children[0] as IdentifierChain)!)]
+		}
+		'<column reference: 1>' {
+			return [
+				EarleyValue(parse_column_reference(children[0] as IdentifierChain)!),
+			]
+		}
 		'<commit statement: 1>' {
 			return [EarleyValue(parse_commit()!)]
 		}
@@ -14051,6 +14242,11 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		}
 		'<contextually typed table value constructor: 1>' {
 			return [EarleyValue(parse_exprs(children[1] as []Expr)!)]
+		}
+		'<correlation name: 1>' {
+			return [
+				EarleyValue(parse_correlation_name(children[0] as IdentifierChain)!),
+			]
 		}
 		'<correlation or recognition: 1>' {
 			return [EarleyValue(parse_correlation1(children[0] as Identifier)!)]
@@ -14234,6 +14430,9 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 				EarleyValue(parse_general_set_function(children[0] as string, children[2] as Expr)!),
 			]
 		}
+		'<general value specification: 2>' {
+			return [EarleyValue(parse_current_schema()!)]
+		}
 		'<group by clause: 1>' {
 			return [EarleyValue(parse_exprs(children[2] as []Expr)!)]
 		}
@@ -14252,12 +14451,12 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		}
 		'<host parameter name: 1>' {
 			return [
-				EarleyValue(parse_host_parameter_name(children[1] as Identifier)!),
+				EarleyValue(parse_host_parameter_name(children[1] as IdentifierChain)!),
 			]
 		}
 		'<identifier chain: 2>' {
 			return [
-				EarleyValue(parse_identifier_chain1(children[0] as Identifier, children[2] as Identifier)!),
+				EarleyValue(parse_identifier_chain1(children[0] as IdentifierChain, children[2] as IdentifierChain)!),
 			]
 		}
 		'<insert statement: 1>' {
@@ -14283,7 +14482,7 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		'<local or schema qualified name: 2>' {
 			return [
 				EarleyValue(parse_local_or_schema_qualified_name2(children[0] as Identifier,
-					children[2] as Identifier)!),
+					children[2] as IdentifierChain)!),
 			]
 		}
 		'<modulus expression: 1>' {
@@ -14360,7 +14559,7 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		}
 		'<qualified asterisk: 1>' {
 			return [
-				EarleyValue(parse_qualified_asterisk(children[0] as Identifier, children[2] as string)!),
+				EarleyValue(parse_qualified_asterisk(children[0] as IdentifierChain, children[2] as string)!),
 			]
 		}
 		'<qualified join: 1>' {
@@ -14440,6 +14639,9 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 				EarleyValue(parse_routine_invocation(children[0] as Identifier, children[1] as []Expr)!),
 			]
 		}
+		'<routine name: 1>' {
+			return [EarleyValue(parse_routine_name(children[0] as IdentifierChain)!)]
+		}
 		'<row value constructor element list: 1>' {
 			return [EarleyValue(parse_expr_to_list(children[0] as Expr)!)]
 		}
@@ -14459,9 +14661,12 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		'<schema definition: 1>' {
 			return [EarleyValue(parse_schema_definition(children[2] as Identifier)!)]
 		}
+		'<schema name characteristic: 1>' {
+			return [EarleyValue(parse_expr(children[1] as Expr)!)]
+		}
 		'<schema qualified name: 2>' {
 			return [
-				EarleyValue(parse_schema_qualified_name_2(children[0] as Identifier, children[2] as Identifier)!),
+				EarleyValue(parse_schema_qualified_name_2(children[0] as Identifier, children[2] as IdentifierChain)!),
 			]
 		}
 		'<select list: 1>' {
@@ -14520,6 +14725,11 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		'<sequence generator minvalue option: 2>' {
 			return [EarleyValue(parse_sequence_generator_minvalue_option_2()!)]
 		}
+		'<sequence generator name: 1>' {
+			return [
+				EarleyValue(parse_sequence_generator_name(children[0] as IdentifierChain)!),
+			]
+		}
 		'<sequence generator start with option: 1>' {
 			return [
 				EarleyValue(parse_sequence_generator_start_with_option(children[2] as Expr)!),
@@ -14534,6 +14744,9 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 			return [
 				EarleyValue(parse_set_clause(children[0] as Identifier, children[2] as Expr)!),
 			]
+		}
+		'<set schema statement: 1>' {
+			return [EarleyValue(parse_set_schema_stmt(children[1] as Expr)!)]
 		}
 		'<signed numeric literal: 1>' {
 			return [EarleyValue(parse_value_to_expr(children[0] as Value)!)]
@@ -14631,6 +14844,9 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 					children[1] as Expr, children[2] as []Expr)!),
 			]
 		}
+		'<table name: 1>' {
+			return [EarleyValue(parse_table_name(children[0] as IdentifierChain)!)]
+		}
 		'<table primary: 1>' {
 			return [
 				EarleyValue(parse_table_primary_identifier(children[0] as Identifier)!),
@@ -14721,6 +14937,11 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		}
 		'<unique specification: 1>' {
 			return [EarleyValue(parse_ignore()!)]
+		}
+		'<unqualified schema name: 1>' {
+			return [
+				EarleyValue(parse_unqualified_schema_name(children[0] as IdentifierChain)!),
+			]
 		}
 		'<unsigned value specification: 1>' {
 			return [EarleyValue(parse_value_to_expr(children[0] as Value)!)]

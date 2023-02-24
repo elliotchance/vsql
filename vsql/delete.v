@@ -12,20 +12,7 @@ fn execute_delete(mut c Connection, stmt DeleteStmt, params map[string]Value, el
 		c.release_write_connection()
 	}
 
-	mut table_name := stmt.table_name
-
-	// TODO(elliotchance): This isn't really ideal. Replace with a proper
-	//  identifier chain when we support that.
-	if table_name.contains('.') {
-		parts := table_name.split('.')
-
-		if parts[0] !in c.storage.schemas {
-			return sqlstate_3f000(parts[0]) // scheme does not exist
-		}
-	} else {
-		table_name = 'PUBLIC.${table_name}'
-	}
-
+	mut table_name := c.resolve_table_identifier(stmt.table_name, false)!
 	mut plan := create_plan(stmt, params, mut c)!
 
 	if explain {
@@ -35,7 +22,7 @@ fn execute_delete(mut c Connection, stmt DeleteStmt, params map[string]Value, el
 	mut rows := plan.execute([]Row{})!
 
 	for mut row in rows {
-		c.storage.delete_row(table_name, mut row)!
+		c.storage.delete_row(table_name.id(), mut row)!
 	}
 
 	return new_result_msg('DELETE ${rows.len}', elapsed_parse, t.elapsed())

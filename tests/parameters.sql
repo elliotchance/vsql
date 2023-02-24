@@ -23,7 +23,7 @@ SELECT * FROM t2;
 -- X: hello
 
 EXPLAIN UPDATE t1 SET x = :foo;
--- EXPLAIN: TABLE PUBLIC.T1 (X DOUBLE PRECISION)
+-- EXPLAIN: TABLE PUBLIC.T1 (PUBLIC.T1.X DOUBLE PRECISION)
 
 UPDATE t1 SET x = :foo;
 -- error 42P02: parameter does not exist: foo

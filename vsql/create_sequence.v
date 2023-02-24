@@ -13,20 +13,7 @@ fn execute_create_sequence(mut c Connection, stmt CreateSequenceStmt, elapsed_pa
 		c.release_write_connection()
 	}
 
-	mut sequence_name := stmt.name.str()
-
-	// TODO(elliotchance): This isn't really ideal. Replace with a proper
-	//  identifier chain when we support that.
-	if sequence_name.contains('.') {
-		parts := sequence_name.split('.')
-
-		if parts[0] !in c.storage.schemas {
-			return sqlstate_3f000(parts[0]) // scheme does not exist
-		}
-	} else {
-		sequence_name = 'PUBLIC.${sequence_name}'
-	}
-
+	mut sequence_name := c.resolve_schema_identifier(stmt.name)!
 	mut increment_by := i64(1)
 	mut has_start_value := false
 	mut start_value := i64(1)

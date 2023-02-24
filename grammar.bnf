@@ -10,6 +10,7 @@
     <preparable SQL data statement>
   | <preparable SQL schema statement>
   | <preparable SQL transaction statement>
+  | <preparable SQL session statement>
 
 <SQL schema statement> /* Stmt */ ::=
     <SQL schema definition statement>
@@ -30,7 +31,7 @@
     <unqualified schema name>
 
 <unqualified schema name> /* Identifier */ ::=
-    <identifier>
+    <identifier>   -> unqualified_schema_name
 
 <SQL schema manipulation statement> /* Stmt */ ::=
     <drop schema statement>
@@ -49,9 +50,9 @@
     DROP TABLE <table name>   -> drop_table_statement
 
 <table name> /* Identifier */ ::=
-    <local or schema qualified name>
+    <local or schema qualified name>   -> table_name
 
-<local or schema qualified name> /* Identifier */ ::=
+<local or schema qualified name> /* IdentifierChain */ ::=
     <qualified identifier>
   | <local or schema qualifier> <period>
     <qualified identifier>                 -> local_or_schema_qualified_name2
@@ -59,19 +60,19 @@
 <local or schema qualifier> /* Identifier */ ::=
     <schema name>
 
-<qualified identifier> /* Identifier */ ::=
+<qualified identifier> /* IdentifierChain */ ::=
     <identifier>
 
-<identifier> /* Identifier */ ::=
+<identifier> /* IdentifierChain */ ::=
     <actual identifier>
 
-<actual identifier> /* Identifier */ ::=
+<actual identifier> /* IdentifierChain */ ::=
     <regular identifier>
 
 # <non-reserved word> is added on top of the original <regular identifier> to
 # allow non-reserved words to be used as identifiers. As far as I can tell, only
 # <reserved word>s are restricted. See "9075-2:2016 5.2 #26".
-<regular identifier> /* Identifier */ ::=
+<regular identifier> /* IdentifierChain */ ::=
     <identifier body>
   | <non-reserved word>   -> string_identifier
 
@@ -357,14 +358,14 @@
   | WRITE
   | ZONE
 
-<identifier body> /* Identifier */ ::=
+<identifier body> /* IdentifierChain */ ::=
     <identifier start>
 
-<identifier start> /* Identifier */ ::=
+<identifier start> /* IdentifierChain */ ::=
     ^identifier
 
 <table definition> /* CreateTableStmt */ ::=
-    CREATE TABLE <table name> <table contents source> -> table_definition
+    CREATE TABLE <table name> <table contents source>   -> table_definition
 
 <table contents source> /* []TableElement */ ::=
     <table element list>
@@ -388,7 +389,7 @@
     <column constraint definition>             -> column_definition2
 
 <column name> /* Identifier */ ::=
-    <identifier>
+    <identifier>   -> column_name
 
 <data type or domain name> /* Type */ ::=
     <data type>
@@ -682,12 +683,12 @@
 <period> ::= "."
 
 <column reference> /* Identifier */ ::=
-    <basic identifier chain>
+    <basic identifier chain>   -> column_reference
 
-<basic identifier chain> /* Identifier */ ::=
+<basic identifier chain> /* IdentifierChain */ ::=
     <identifier chain>
 
-<identifier chain> /* Identifier */ ::=
+<identifier chain> /* IdentifierChain */ ::=
     <identifier>
   | <identifier> <period> <identifier>   -> identifier_chain1
 
@@ -844,10 +845,10 @@
 <qualified asterisk> /* QualifiedAsteriskExpr */ ::=
     <asterisked identifier chain> <period> <asterisk>   -> qualified_asterisk
 
-<asterisked identifier chain> /* Identifier */ ::=
+<asterisked identifier chain> /* IdentifierChain */ ::=
     <asterisked identifier>
 
-<asterisked identifier> /* Identifier */ ::=
+<asterisked identifier> /* IdentifierChain */ ::=
     <identifier>
 
 <derived column> /* DerivedColumn */ ::=
@@ -1048,7 +1049,7 @@
     <routine name> <SQL argument list>   -> routine_invocation
 
 <routine name> /* Identifier */ ::=
-    <qualified identifier>
+    <qualified identifier>   -> routine_name
 
 <SQL argument list> /* []Expr */ ::=
     <left paren> <right paren>                  -> empty_exprs
@@ -1061,6 +1062,7 @@
 
 <general value specification> /* Expr */ ::=
     <host parameter specification>
+  | CURRENT_SCHEMA                   -> current_schema
 
 <host parameter specification> /* Expr */ ::=
     <host parameter name>
@@ -1184,7 +1186,7 @@
     <parenthesized derived column list>   -> correlation2
 
 <correlation name> /* Identifier */ ::=
-    <identifier>
+    <identifier>   -> correlation_name
 
 <parenthesized derived column list> /* []Identifier */ ::=
     <left paren> <derived column list>
@@ -1418,9 +1420,9 @@
     <sequence generator options>                -> sequence_generator_definition_2
 
 <sequence generator name> /* Identifier */ ::=
-    <schema qualified name>
+    <schema qualified name>   -> sequence_generator_name
 
-<schema qualified name> /* Identifier */ ::=
+<schema qualified name> /* IdentifierChain */ ::=
     <qualified identifier>
   | <schema name> <period> <qualified identifier>   -> schema_qualified_name_2
 
@@ -1508,3 +1510,19 @@
 
 <sequence generator restart value> /* Expr */ ::=
     <signed numeric literal>
+
+<preparable SQL session statement> /* Stmt */ ::=
+    <SQL session statement>
+
+<SQL session statement> /* Stmt */ ::=
+    <set schema statement>
+
+<set schema statement> /* Stmt */ ::=
+    SET <schema name characteristic>   -> set_schema_stmt
+
+<schema name characteristic> /* Expr */ ::=
+    SCHEMA <value specification>   -> expr
+
+<value specification> /* Expr */ ::=
+    <literal>
+  | <general value specification>

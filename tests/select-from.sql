@@ -8,6 +8,13 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- X: 1.234
 
+CREATE TABLE "Foo" ("a" FLOAT);
+INSERT INTO "Foo" ("a") VALUES (4.56);
+SELECT * FROM "Foo";
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- a: 4.56
+
 CREATE TABLE foo (x FLOAT);
 CREATE TABLE "Foo" ("a" FLOAT);
 INSERT INTO FOO (x) VALUES (1.234);

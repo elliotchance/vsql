@@ -122,6 +122,15 @@
    you can safely share a single cache over multiple connections and you are
    encouraged to do so.
 
+.. |v.Identifier| replace::
+   Identifier is used to describe a object within a schema (such as a table
+   name) or a property of an object (like a column name of a table). You should
+   not instantiate this directly, instead use the appropriate new_*_identifier()
+   function.
+   |br| |br|
+   If you need the fully qualified (canonical) form of an identified you can use
+   Connection.resolve_schema_identifier().
+
 .. |v.PreparedStmt| replace::
    A prepared statement is compiled and validated, but not executed. It can then
    be executed with a set of host parameters to be substituted into the
@@ -218,8 +227,7 @@
    A SEQUENCE definition.
 
 .. |v.Sequence.name| replace::
-   name is case-sensitive. The name is equivilent to using a deliminated
-   identifier (with double quotes).
+   name contains the other parts such as the schema.
 
 .. |v.Sequence.str| replace::
    str returns the CREATE SEQUENCE definition (including the ';') like:
@@ -242,7 +250,7 @@
    When the table is virtual it is not persisted to disk.
 
 .. |v.Table.name| replace::
-   The name of the table is case-sensitive.
+   The name of the table including the schema.
 
 .. |v.Table.primary_key| replace::
    If the table has a PRIMARY KEY defined the column (or columns) will be

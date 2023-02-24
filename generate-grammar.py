@@ -421,7 +421,7 @@ grammar_file.write("""fn parse_ast(node &EarleyNode) ![]EarleyValue {
                 return [EarleyValue(node.value.end_column.value)]
             }
             '^identifier' {
-                return [EarleyValue(new_identifier(node.value.end_column.value))]
+                return [EarleyValue(IdentifierChain{node.value.end_column.value})]
             }
             '^string' {
                 return [EarleyValue(new_varchar_value(node.value.end_column.value, 0))]

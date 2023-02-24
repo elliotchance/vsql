@@ -25,8 +25,8 @@ fn parse_select_sublist2(column QualifiedAsteriskExpr) !SelectList {
 	return column
 }
 
-fn parse_qualified_asterisk(column Identifier, _ string) !QualifiedAsteriskExpr {
-	return QualifiedAsteriskExpr{column}
+fn parse_qualified_asterisk(column IdentifierChain, _ string) !QualifiedAsteriskExpr {
+	return QualifiedAsteriskExpr{new_column_identifier(column.identifier)!}
 }
 
 fn parse_derived_column(expr Expr) !DerivedColumn {
@@ -70,7 +70,7 @@ fn parse_qualified_join2(left_table TableReference, join_type string, right_tabl
 }
 
 fn parse_table_definition(table_name Identifier, table_contents_source []TableElement) !Stmt {
-	return CreateTableStmt{table_name.name, table_contents_source}
+	return CreateTableStmt{table_name, table_contents_source}
 }
 
 fn parse_table_elements1(table_element TableElement) ![]TableElement {
@@ -83,12 +83,16 @@ fn parse_table_elements2(table_elements []TableElement, table_element TableEleme
 	return new_table_elements
 }
 
+fn parse_column_name(column_name IdentifierChain) !Identifier {
+	return new_column_identifier(column_name.identifier)
+}
+
 fn parse_column_definition1(column_name Identifier, data_type Type) !TableElement {
-	return Column{column_name.name, data_type, false}
+	return Column{column_name.sub_entity_name, data_type, false}
 }
 
 fn parse_column_definition2(column_name Identifier, data_type Type, constraint bool) !TableElement {
-	return Column{column_name.name, data_type, constraint}
+	return Column{column_name.sub_entity_name, data_type, constraint}
 }
 
 fn parse_bigint() !Type {
@@ -132,7 +136,11 @@ fn parse_real() !Type {
 }
 
 fn parse_drop_table_statement(table_name Identifier) !Stmt {
-	return DropTableStmt{table_name.name}
+	return DropTableStmt{table_name}
+}
+
+fn parse_set_schema_stmt(schema_name Expr) !Stmt {
+	return SetSchemaStmt{schema_name}
 }
 
 fn parse_table_element_list(table_elements []TableElement) ![]TableElement {
@@ -140,11 +148,14 @@ fn parse_table_element_list(table_elements []TableElement) ![]TableElement {
 }
 
 fn parse_insert_statement(insertion_target Identifier, stmt InsertStmt) !Stmt {
-	return InsertStmt{insertion_target.name, stmt.columns, stmt.values}
+	return InsertStmt{insertion_target, stmt.columns, stmt.values}
 }
 
 fn parse_from_constructor(columns []Identifier, values []Expr) !InsertStmt {
-	return InsertStmt{'', columns, values}
+	return InsertStmt{
+		columns: columns
+		values: values
+	}
 }
 
 fn parse_column_name_list1(column_name Identifier) ![]Identifier {
@@ -301,11 +312,11 @@ fn parse_mod(a Expr, b Expr) !Expr {
 }
 
 fn parse_delete_statement(table_name Identifier) !Stmt {
-	return DeleteStmt{table_name.name, NoExpr{}}
+	return DeleteStmt{table_name, NoExpr{}}
 }
 
 fn parse_delete_statement_where(table_name Identifier, where Expr) !Stmt {
-	return DeleteStmt{table_name.name, where}
+	return DeleteStmt{table_name, where}
 }
 
 fn parse_comparison_part(op string, expr Expr) !ComparisonPredicatePart2 {
@@ -333,11 +344,11 @@ fn parse_unknown() !Value {
 }
 
 fn parse_update_statement(target_table Identifier, set_clause_list map[string]Expr) !Stmt {
-	return UpdateStmt{target_table.name, set_clause_list, NoExpr{}}
+	return UpdateStmt{target_table, set_clause_list, NoExpr{}}
 }
 
 fn parse_update_statement_where(target_table Identifier, set_clause_list map[string]Expr, where Expr) !Stmt {
-	return UpdateStmt{target_table.name, set_clause_list, where}
+	return UpdateStmt{target_table, set_clause_list, where}
 }
 
 fn parse_set_clause_append(set_clause_list map[string]Expr, set_clause map[string]Expr) !map[string]Expr {
@@ -353,7 +364,7 @@ fn parse_set_clause_append(set_clause_list map[string]Expr, set_clause map[strin
 
 fn parse_set_clause(target Identifier, update_source Expr) !map[string]Expr {
 	return {
-		target.name: update_source
+		target.str(): update_source
 	}
 }
 
@@ -454,11 +465,11 @@ fn parse_empty_exprs() ![]Expr {
 }
 
 fn parse_routine_invocation(name Identifier, args []Expr) !Expr {
-	return CallExpr{name.name, args}
+	return CallExpr{name.entity_name, args}
 }
 
-fn parse_host_parameter_name(name Identifier) !Expr {
-	return Parameter{name.original}
+fn parse_host_parameter_name(name IdentifierChain) !Expr {
+	return Parameter{name.identifier}
 }
 
 fn parse_unique_constraint_definition(columns []Identifier) !TableElement {
@@ -648,8 +659,28 @@ fn parse_general_set_function(name string, expr Expr) !Expr {
 	return CallExpr{name, [expr]}
 }
 
-fn parse_identifier_chain1(a Identifier, b Identifier) !Identifier {
-	return new_identifier(a.name + '.' + b.name)
+fn parse_identifier_chain1(a IdentifierChain, b IdentifierChain) !IdentifierChain {
+	return IdentifierChain{a.identifier + '.' + b.identifier}
+}
+
+fn parse_column_reference(identifier IdentifierChain) !Identifier {
+	return new_column_identifier(identifier.identifier)
+}
+
+fn parse_correlation_name(identifier IdentifierChain) !Identifier {
+	return new_column_identifier(identifier.identifier)
+}
+
+fn parse_sequence_generator_name(identifier IdentifierChain) !Identifier {
+	return new_table_identifier(identifier.identifier)
+}
+
+fn parse_unqualified_schema_name(identifier IdentifierChain) !Identifier {
+	return new_schema_identifier(identifier.identifier)
+}
+
+fn parse_table_name(identifier IdentifierChain) !Identifier {
+	return new_table_identifier(identifier.identifier)
 }
 
 fn parse_joined_table(join QualifiedJoin) !TableReference {
@@ -765,8 +796,12 @@ fn parse_schema_definition(schema_name Identifier) !Stmt {
 	return CreateSchemaStmt{schema_name}
 }
 
-fn parse_local_or_schema_qualified_name2(schema_name Identifier, table_name Identifier) !Identifier {
-	return new_identifier('${schema_name}.${table_name}')
+fn parse_routine_name(identifier IdentifierChain) !Identifier {
+	return new_function_identifier(identifier.identifier)
+}
+
+fn parse_local_or_schema_qualified_name2(schema_name Identifier, table_name IdentifierChain) !IdentifierChain {
+	return IdentifierChain{'${schema_name.schema_name}.${table_name}'}
 }
 
 fn parse_drop_schema_statement(schema_name Identifier, behavior string) !Stmt {
@@ -829,8 +864,8 @@ fn parse_coalesce(exprs []Expr) !Expr {
 	return CoalesceExpr{exprs}
 }
 
-fn parse_string_identifier(s string) !Identifier {
-	return new_identifier(s)
+fn parse_string_identifier(s string) !IdentifierChain {
+	return IdentifierChain{s}
 }
 
 fn parse_basic_sequence_generator_option_1(option SequenceGeneratorIncrementByOption) !SequenceGeneratorOption {
@@ -863,8 +898,8 @@ fn parse_sequence_generator_options_2(options []SequenceGeneratorOption, option 
 	return new_options
 }
 
-fn parse_schema_qualified_name_2(schema_name Identifier, identifier Identifier) !Identifier {
-	return new_identifier('${schema_name}.${identifier}')
+fn parse_schema_qualified_name_2(schema_name Identifier, identifier IdentifierChain) !IdentifierChain {
+	return IdentifierChain{'${schema_name.schema_name}.${identifier}'}
 }
 
 fn parse_sequence_generator_definition_1(generator_name Identifier) !Stmt {
@@ -947,4 +982,8 @@ fn parse_alter_sequence_generator_statement(generator_name Identifier, options [
 
 fn parse_alter_sequence_generator_option_1(option SequenceGeneratorRestartOption) !SequenceGeneratorOption {
 	return option
+}
+
+fn parse_current_schema() !Expr {
+	return CurrentSchemaExpr{}
 }

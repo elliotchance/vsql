@@ -949,7 +949,7 @@ Optional Features
    * - ❌ **F762**
      - **CURRENT_CATALOG**
 
-   * - ❌ **F763**
+   * - ✅ **F763**
      - **CURRENT_SCHEMA**
 
    * - ❌ **F771**

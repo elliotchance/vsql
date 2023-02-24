@@ -12,7 +12,7 @@ fn execute_drop_schema(mut c Connection, stmt DropSchemaStmt, elapsed_parse time
 		c.release_write_connection()
 	}
 
-	schema_name := stmt.schema_name.name
+	schema_name := stmt.schema_name.schema_name
 
 	if schema_name !in c.storage.schemas {
 		return sqlstate_3f000(schema_name) // schema does not exist

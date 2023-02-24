@@ -19,7 +19,7 @@ fn example() ! {
 	for schema in db.schemas()! {
 		mut table_names := []string{}
 		for table in db.schema_tables(schema.name)! {
-			table_names << table.name
+			table_names << table.name.str()
 		}
 
 		println('${schema.name} has ${table_names}')

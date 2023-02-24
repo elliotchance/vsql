@@ -17,6 +17,7 @@ type Stmt = AlterSequenceStmt
 	| InsertStmt
 	| QueryExpression
 	| RollbackStmt
+	| SetSchemaStmt
 	| StartTransactionStmt
 	| UpdateStmt
 
@@ -28,6 +29,7 @@ type Expr = BetweenExpr
 	| CoalesceExpr
 	| CountAllExpr
 	| CurrentDateExpr
+	| CurrentSchemaExpr
 	| CurrentTimeExpr
 	| CurrentTimestampExpr
 	| Identifier
@@ -73,6 +75,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 		}
 		CountAllExpr {
 			e.pstr(params)
+		}
+		CurrentSchemaExpr {
+			e.str()
 		}
 		CurrentDateExpr {
 			e.str()
@@ -193,7 +198,7 @@ struct TablePrimary {
 
 // CREATE TABLE ...
 struct CreateTableStmt {
-	table_name     string
+	table_name     Identifier
 	table_elements []TableElement
 }
 
@@ -210,18 +215,18 @@ fn (s CreateTableStmt) columns() Columns {
 
 // DELETE ...
 struct DeleteStmt {
-	table_name string
+	table_name Identifier
 	where      Expr
 }
 
 // DROP TABLE ...
 struct DropTableStmt {
-	table_name string
+	table_name Identifier
 }
 
 // INSERT INTO ...
 struct InsertStmt {
-	table_name string
+	table_name Identifier
 	columns    []Identifier
 	values     []Expr
 }
@@ -236,7 +241,7 @@ struct SelectStmt {
 
 // UPDATE ...
 struct UpdateStmt {
-	table_name string
+	table_name Identifier
 	set        map[string]Expr
 	where      Expr
 }
@@ -259,31 +264,248 @@ fn (e NullExpr) pstr(params map[string]Value) string {
 	return '${e.expr.pstr(params)} IS NULL'
 }
 
-// Identifier is foo or "Foo"
-struct Identifier {
-	// name is the normalized name. That is, upper case for regular tokens or
-	// the case is kept for delimited identifiers.
-	name string
-	// original is the original token string.
-	original string
+// IdentifierChain wraps a single string that contains the chain of one or more
+// identifiers, such as: "Foo".bar."BAZ"
+struct IdentifierChain {
+	identifier string
 }
 
-fn new_identifier(s string) Identifier {
-	if s.len > 0 && s[0] == `"` {
-		return Identifier{
-			name: s[1..s.len - 1]
-			original: s
+fn (identifier IdentifierChain) str() string {
+	return identifier.identifier
+}
+
+// Identifier is used to describe a object within a schema (such as a table
+// name) or a property of an object (like a column name of a table). You should
+// not instantiate this directly, instead use the appropriate new_*_identifier()
+// function.
+//
+// If you need the fully qualified (canonical) form of an identified you can use
+// Connection.resolve_schema_identifier().
+//
+// snippet: v.Identifier
+pub struct Identifier {
+	// schema_name is optional. If not provided, it will use CURRENT_SCHEMA.
+	schema_name string
+	// entity_name would be the table name, sequence name, etc. Something inside
+	// of a schema. It is case sensitive.
+	entity_name string
+	// sub_entity_name would represent a column name. It is case sensitive.
+	sub_entity_name string
+	// custom_id is a way to override the behavior of rendering and storage. This
+	// is only used for internal identifiers.
+	custom_id string
+}
+
+// new_table_identifier is the correct way to create a new Identifier that
+// represents a table. It can take several forms:
+//
+//   foo                   => FOO
+//   "foo"                 => foo
+//   schema.Bar            => SCHEMA.BAR
+//   "Schema".bar          => Schema.BAR
+//   "Fully"."Qualified"   => Fully.Qualified
+//
+// It's important to note that when a schema is not provided it will be left
+// blank. You will need to use Connection.resolve_schema_identifier() to fill in
+// the missing schema.
+//
+// An error is returned if the identifer is not valid (cannot be parsed).
+//
+// Even though it's valid to have a '.' in an entity name (ie. "foo.bar"),
+// new_table_identifier does not correct parse this yet.
+fn new_table_identifier(s string) !Identifier {
+	return new_identifier2(s)
+}
+
+fn new_function_identifier(s string) !Identifier {
+	return new_identifier2(s)
+}
+
+fn new_schema_identifier(s string) !Identifier {
+	return new_identifier1(s)
+}
+
+fn new_identifier1(s string) !Identifier {
+	parts := split_identifier_parts(s)!
+
+	match parts.len {
+		1 {
+			return Identifier{
+				schema_name: parts[0]
+			}
+		}
+		else {
+			return error('invalid identifier: ${s}')
+		}
+	}
+}
+
+fn new_identifier2(s string) !Identifier {
+	parts := split_identifier_parts(s)!
+
+	match parts.len {
+		1 {
+			return Identifier{
+				entity_name: parts[0]
+			}
+		}
+		2 {
+			return Identifier{
+				schema_name: parts[0]
+				entity_name: parts[1]
+			}
+		}
+		else {
+			return error('invalid identifier: ${s}')
+		}
+	}
+}
+
+// new_column_identifier is the correct way to create a new Identifier that
+// represents a table column. It can take several forms:
+//
+//   col                            => COL
+//   "col"                          => col
+//   tbl.Bar                        => TBL.BAR
+//   "Table".bar                    => Table.BAR
+//   schema.tbl.Bar                 => SCHEMA.TBL.BAR
+//   "Schema"."Table".bar           => Schema.Table.BAR
+//   "Fully"."Qualified"."Column"   => Fully.Qualified.Column
+//
+// It's important to note that when a schema is not provided it will be left
+// blank. You will need to use Connection.resolve_schema_identifier() to fill in
+// the missing schema.
+//
+// An error is returned if the identifer is not valid (cannot be parsed).
+//
+// Even though it's valid to have a '.' in an entity name (ie. "foo.bar"),
+// new_column_identifier does not correct parse this yet.
+fn new_column_identifier(s string) !Identifier {
+	return new_identifier3(s)
+}
+
+fn new_identifier3(s string) !Identifier {
+	parts := split_identifier_parts(s)!
+
+	match parts.len {
+		1 {
+			return Identifier{
+				sub_entity_name: parts[0]
+			}
+		}
+		2 {
+			return Identifier{
+				entity_name: parts[0]
+				sub_entity_name: parts[1]
+			}
+		}
+		3 {
+			return Identifier{
+				schema_name: parts[0]
+				entity_name: parts[1]
+				sub_entity_name: parts[2]
+			}
+		}
+		else {
+			return error('invalid identifier3: ${s} ${parts}')
+		}
+	}
+}
+
+// decode_identifier is only for internal use. It is the opposite of
+// Identifier.id().
+fn decode_identifier(s string) Identifier {
+	parts := split_identifier_parts(s) or { panic('cannot parse identifier: ${s}') }
+
+	return Identifier{
+		schema_name: parts[0]
+		entity_name: parts[1]
+	}
+}
+
+fn split_identifier_parts(s string) ![]string {
+	if s == '' {
+		return error('cannot use empty string for identifier')
+	}
+
+	mut parts := []string{}
+	mut s2 := s
+	for s2 != '' {
+		if s2[0] == `"` {
+			s2 = s2[1..]
+			index := s2.index('"') or { return error('invalid identifier chain: ${s}') }
+			parts << s2[..index]
+			s2 = s2[index + 1..]
+		} else {
+			mut index := s2.index('.') or { -1 }
+			if index < 0 {
+				parts << s2.to_upper()
+				break
+			}
+			if index > 0 {
+				parts << s2[..index].to_upper()
+			}
+			s2 = s2[index + 1..]
 		}
 	}
 
-	return Identifier{
-		name: s.to_upper()
-		original: s
-	}
+	return parts
 }
 
-fn (e Identifier) str() string {
-	return e.name
+fn requote_identifier(s string) string {
+	if s.to_upper() == s {
+		return s
+	}
+
+	return '"${s}"'
+}
+
+// id is the internal canonical name. How it is represented in memory and
+// on-disk. As opposed to str() which is the human readable form.
+fn (e Identifier) id() string {
+	if e.custom_id != '' {
+		return e.custom_id
+	}
+
+	mut parts := []string{}
+
+	if e.schema_name != '' {
+		parts << e.schema_name
+	}
+
+	if e.entity_name != '' {
+		parts << e.entity_name
+	}
+
+	if e.sub_entity_name != '' {
+		parts << e.sub_entity_name
+	}
+
+	return parts.join('.')
+}
+
+pub fn (e Identifier) str() string {
+	if e.custom_id != '' {
+		return e.custom_id
+	}
+
+	if e.schema_name != '' {
+		if e.sub_entity_name == '' {
+			return '${requote_identifier(e.schema_name)}.${requote_identifier(e.entity_name)}'
+		}
+
+		return '${requote_identifier(e.schema_name)}.${requote_identifier(e.entity_name)}.${requote_identifier(e.sub_entity_name)}'
+	}
+
+	if e.entity_name != '' {
+		if e.sub_entity_name == '' {
+			return requote_identifier(e.entity_name)
+		}
+
+		return '${requote_identifier(e.entity_name)}.${requote_identifier(e.sub_entity_name)}'
+	}
+
+	return requote_identifier(e.sub_entity_name)
 }
 
 struct UnaryExpr {
@@ -362,7 +584,7 @@ struct Correlation {
 }
 
 fn (c Correlation) str() string {
-	if c.name.name == '' {
+	if c.name.sub_entity_name == '' {
 		return ''
 	}
 
@@ -371,7 +593,7 @@ fn (c Correlation) str() string {
 	if c.columns.len > 0 {
 		mut columns := []string{}
 		for col in c.columns {
-			columns << col.name
+			columns << col.sub_entity_name
 		}
 
 		s += ' (${columns.join(', ')})'
@@ -709,4 +931,21 @@ struct NextValueExpr {
 
 fn (e NextValueExpr) str() string {
 	return 'NEXT VALUE FOR ${e.name}'
+}
+
+// CURRENT_SCHEMA
+struct CurrentSchemaExpr {
+}
+
+fn (e CurrentSchemaExpr) str() string {
+	return 'CURRENT_SCHEMA'
+}
+
+// SET SCHEMA
+struct SetSchemaStmt {
+	schema_name Expr
+}
+
+fn (e SetSchemaStmt) pstr(params map[string]Value) string {
+	return 'SET SCHEMA ${e.schema_name.pstr(params)}'
 }

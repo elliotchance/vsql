@@ -22,6 +22,7 @@ mut:
 	write_string1(s string)
 	// write_string4 is safe to use for long strings (up to 2GB).
 	write_string4(s string)
+	write_identifier(identifier Identifier)
 	write_u8(data u8)
 	// write_u8s does not undergo any endian conversion so it's important not to
 	// use this to write the binary representations of ints, etc. It should only
@@ -52,6 +53,7 @@ mut:
 	// read_string4 is the opposite of write_string4. It allows for strings up
 	// to 2GB (number of characters may be less).
 	read_string4() string
+	read_identifier() Identifier
 	read_u8() u8
 	// read_u8s does not undergo any endian conversion so it's important not to
 	// use this to write the binary representations of ints, etc. It should only
@@ -259,10 +261,18 @@ fn (mut b BytesLittleEndian) write_string1(s string) {
 	b.write_u8s(s.bytes())
 }
 
+fn (mut b BytesLittleEndian) write_identifier(identifier Identifier) {
+	b.write_string1(identifier.id())
+}
+
 fn (mut b BytesLittleEndian) read_string1() string {
 	len := b.read_u8()
 
 	return b.read_string(len)
+}
+
+fn (mut b BytesLittleEndian) read_identifier() Identifier {
+	return decode_identifier(b.read_string1())
 }
 
 fn (mut b BytesLittleEndian) read_string(len int) string {
@@ -462,10 +472,18 @@ fn (mut b BytesBigEndian) write_string1(s string) {
 	b.write_u8s(s.bytes())
 }
 
+fn (mut b BytesBigEndian) write_identifier(identifier Identifier) {
+	b.write_string1(identifier.id())
+}
+
 fn (mut b BytesBigEndian) read_string1() string {
 	len := b.read_u8()
 
 	return b.read_string(len)
+}
+
+fn (mut b BytesBigEndian) read_identifier() Identifier {
+	return decode_identifier(b.read_string1())
 }
 
 fn (mut b BytesBigEndian) read_string(len int) string {

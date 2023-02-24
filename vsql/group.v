@@ -33,7 +33,7 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Expr, params 
 		columns << table.column(name[name.len - 1])!
 	}
 
-	empty_row := new_empty_row(table.columns, table.name)
+	empty_row := new_empty_row(table.columns, table.name.str())
 	for expr in select_exprs {
 		if expr_is_agg(conn, expr.expr, empty_row, params)! {
 			columns << Column{expr.expr.pstr(params), eval_as_type(conn, empty_row, expr.expr,

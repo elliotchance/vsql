@@ -7,6 +7,8 @@ import os
 import sync
 import time
 
+pub const default_schema_name = 'PUBLIC'
+
 // A Connection allows querying and other introspection for a database file. Use
 // open() or open_database() to create a Connection.
 //
@@ -95,6 +97,7 @@ fn open_connection(path string, options ConnectionOptions) !&Connection {
 		query_cache: options.query_cache
 		options: options
 		storage: new_storage(btree)
+		current_schema: vsql.default_schema_name
 	}
 
 	register_builtin_funcs(mut conn)!
@@ -235,7 +238,7 @@ fn (c Connection) find_function(func_name string, arg_types []Type) !Func {
 pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) !Value) ! {
 	// TODO(elliotchance): A rather crude way to decode the prototype...
 	parts := prototype.replace('(', '|').replace(')', '|').split('|')
-	function_name := new_identifier(parts[0].trim_space()).name
+	function_name := new_function_identifier(parts[0].trim_space())!.entity_name
 	raw_args := parts[1].split(',')
 	mut arg_types := []Type{}
 	for arg in raw_args {
@@ -258,21 +261,9 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 	stmt := parse(tokens)!
 
 	if stmt is CreateTableStmt {
-		mut table_name := stmt.table_name
+		mut table_name := c.resolve_schema_identifier(stmt.table_name)!
 
-		// TODO(elliotchance): This isn't really ideal. Replace with a proper
-		//  identifier chain when we support that.
-		if table_name.contains('.') {
-			parts := table_name.split('.')
-
-			if parts[0] !in c.storage.schemas {
-				return sqlstate_3f000(parts[0]) // scheme does not exist
-			}
-		} else {
-			table_name = 'PUBLIC.${table_name}'
-		}
-
-		c.virtual_tables[table_name] = VirtualTable{
+		c.virtual_tables[table_name.id()] = VirtualTable{
 			create_table_sql: create_table
 			create_table_stmt: stmt
 			data: data
@@ -313,7 +304,7 @@ pub fn (mut c Connection) sequences(schema string) ![]Sequence {
 
 	mut sequences := []Sequence{}
 	for _, sequence in c.storage.sequences()! {
-		if sequence.name.starts_with('${schema}.') {
+		if sequence.name.schema_name == schema {
 			sequences << sequence
 		}
 	}
@@ -333,12 +324,55 @@ pub fn (mut c Connection) schema_tables(schema string) ![]Table {
 
 	mut tables := []Table{}
 	for _, table in c.storage.tables {
-		if table.name.starts_with('${schema}.') {
+		if table.name.schema_name == schema {
 			tables << table
 		}
 	}
 
 	return tables
+}
+
+// resolve_identifier returns a new identifier that would represent the canonical
+// (fully qualified) form.
+fn (c Connection) resolve_identifier(identifier Identifier) Identifier {
+	return Identifier{
+		custom_id: identifier.custom_id
+		schema_name: if identifier.schema_name == '' && !identifier.entity_name.starts_with('$') {
+			c.current_schema
+		} else {
+			identifier.schema_name
+		}
+		entity_name: identifier.entity_name
+		sub_entity_name: identifier.sub_entity_name
+	}
+}
+
+// resolve_schema_identifier returns the fully qualified and validates it.
+fn (c Connection) resolve_schema_identifier(identifier Identifier) !Identifier {
+	ident := c.resolve_identifier(identifier)
+
+	if ident.schema_name !in c.storage.schemas {
+		return sqlstate_3f000(ident.schema_name) // schema does not exist
+	}
+
+	return ident
+}
+
+// resolve_table_identifier returns a new identifer that would represent the
+// canonical (fully qualified) form of the provided identifier or an error.
+fn (c Connection) resolve_table_identifier(identifier Identifier, allow_virtual bool) !Identifier {
+	ident := c.resolve_schema_identifier(identifier)!
+	id := ident.id()
+
+	if id in c.storage.tables {
+		return ident
+	}
+
+	if allow_virtual && id in c.virtual_tables {
+		return ident
+	}
+
+	return sqlstate_42p01('table', id) // table does not exist
 }
 
 // ConnectionOptions can modify the behavior of a connection when it is opened.

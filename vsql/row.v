@@ -109,6 +109,16 @@ pub fn (r Row) get(name string) !Value {
 	}
 }
 
+fn (r Row) for_storage() Row {
+	mut new_data := map[string]Value{}
+	for k, v in r.data {
+		parts := k.split('.')
+		new_data[parts[parts.len - 1]] = v
+	}
+
+	return Row{r.id, r.tid, new_data}
+}
+
 // new_empty_row is used internally to generate a row with zero values for all
 // the types in a Row. This is used for testing expressions without needing the
 // actual row.
@@ -368,7 +378,7 @@ fn (mut r Row) object_key(t Table) ![]u8 {
 
 	mut key := new_empty_bytes()
 	key.write_u8(`R`)
-	key.write_u8s(t.name.bytes())
+	key.write_u8s(t.name.id().bytes())
 
 	// TODO(elliotchance): This is actually not a safe separator to use since
 	//  deliminated table names can contain ':'

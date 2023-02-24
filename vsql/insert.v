@@ -21,31 +21,14 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 	}
 
 	mut row := map[string]Value{}
+	mut table_name := c.resolve_table_identifier(stmt.table_name, false)!
 
-	mut table_name := stmt.table_name
-
-	// TODO(elliotchance): This isn't really ideal. Replace with a proper
-	//  identifier chain when we support that.
-	if table_name.contains('.') {
-		parts := table_name.split('.')
-
-		if parts[0] !in c.storage.schemas {
-			return sqlstate_3f000(parts[0]) // scheme does not exist
-		}
-	} else {
-		table_name = 'PUBLIC.${table_name}'
-	}
-
-	if table_name !in c.storage.tables {
-		return sqlstate_42p01('table', table_name) // table not found
-	}
-
-	table := c.storage.tables[table_name]
+	table := c.storage.tables[table_name.id()]
 	for i, column in stmt.columns {
-		column_name := column.name
+		column_name := column.sub_entity_name
 		table_column := table.column(column_name)!
-		raw_value := eval_as_nullable_value(mut c, table_column.typ.typ, Row{}, stmt.values[i],
-			params)!
+		raw_value := eval_as_nullable_value(mut c, table_column.typ.typ, Row{}, resolve_identifiers(c,
+			stmt.values[i], c.storage.tables)!, params)!
 		value := cast(c, 'for column ${column_name}', raw_value, table_column.typ)!
 
 		if value.is_null && table_column.not_null {

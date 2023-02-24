@@ -78,7 +78,7 @@ fn (mut f Storage) open(path string) ! {
 	for object in f.btree.new_range_iterator('T'.bytes(), 'U'.bytes()) {
 		if object_is_visible(object.tid, object.xid, f.transaction_id, mut f.header.active_transaction_ids) {
 			table := new_table_from_bytes(object.value, object.tid)
-			f.tables[table.name] = table
+			f.tables[table.name.id()] = table
 		}
 	}
 
@@ -112,7 +112,7 @@ fn (mut f Storage) close() ! {
 	f.file.close()
 }
 
-fn (mut f Storage) create_table(table_name string, columns Columns, primary_key []string) ! {
+fn (mut f Storage) create_table(table_name Identifier, columns Columns, primary_key []string) ! {
 	f.isolation_start()!
 	defer {
 		f.isolation_end() or { panic(err) }
@@ -120,11 +120,11 @@ fn (mut f Storage) create_table(table_name string, columns Columns, primary_key 
 
 	table := Table{f.transaction_id, table_name, columns, primary_key, false}
 
-	obj := new_page_object('T${table_name}'.bytes(), f.transaction_id, 0, table.bytes())
+	obj := new_page_object('T${table_name.id()}'.bytes(), f.transaction_id, 0, table.bytes())
 	page_number := f.btree.add(obj)!
 	f.transaction_pages[page_number] = true
 
-	f.tables[table_name] = table
+	f.tables[table_name.id()] = table
 	f.schema_changed()
 }
 
@@ -150,7 +150,7 @@ fn (mut f Storage) create_sequence(sequence Sequence) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
-	obj := new_page_object('Q${sequence.name}'.bytes(), f.transaction_id, 0, sequence.bytes())
+	obj := new_page_object('Q${sequence.name.id()}'.bytes(), f.transaction_id, 0, sequence.bytes())
 	page_number := f.btree.add(obj)!
 	f.transaction_pages[page_number] = true
 }
@@ -161,19 +161,13 @@ fn (mut f Storage) sequence(name Identifier) !Sequence {
 		f.isolation_end() or { panic(err) }
 	}
 
-	// TODO(elliotchance): Fix this when identifier chains are properly supported.
-	mut canonical_name := name.str()
-	if !canonical_name.contains('.') {
-		canonical_name = 'PUBLIC.${canonical_name}'
-	}
-
-	key := 'Q${canonical_name}'.bytes()
+	key := 'Q${name.id()}'.bytes()
 	mut sequence := Sequence{}
 	for object in f.read_objects(key, key)! {
 		sequence = new_sequence_from_bytes(object.value, object.tid)
 	}
 
-	if sequence.name == '' {
+	if sequence.name.entity_name == '' {
 		return sqlstate_42p01('sequence', name.str()) // sequence does not exist
 	}
 
@@ -201,13 +195,7 @@ fn (mut f Storage) sequence_next_value(name Identifier) !i64 {
 	}
 
 	mut sequence := f.sequence(name)!
-
-	// TODO(elliotchance): Fix this when identifier chains are properly supported.
 	mut canonical_name := name.str()
-	if !canonical_name.contains('.') {
-		canonical_name = 'PUBLIC.${canonical_name}'
-	}
-
 	next_sequence := sequence.next()!
 	key := 'Q${canonical_name}'.bytes()
 
@@ -230,12 +218,7 @@ fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence)
 		f.isolation_end() or { panic(err) }
 	}
 
-	// TODO(elliotchance): Fix this when identifier chains are properly supported.
 	mut canonical_name := new_sequence.name.str()
-	if !canonical_name.contains('.') {
-		canonical_name = 'PUBLIC.${canonical_name}'
-	}
-
 	key := 'Q${canonical_name}'.bytes()
 
 	// Important: All other objects have to use the current transaction ID when
@@ -280,19 +263,13 @@ fn (mut f Storage) delete_schema(schema_name string, tid int) ! {
 	f.schema_changed()
 }
 
-fn (mut f Storage) delete_sequence(sequence_name string, tid int) ! {
+fn (mut f Storage) delete_sequence(name Identifier, tid int) ! {
 	f.isolation_start()!
 	defer {
 		f.isolation_end() or { panic(err) }
 	}
 
-	// TODO(elliotchance): Fix this when identifier chains are properly supported.
-	mut canonical_name := sequence_name
-	if !canonical_name.contains('.') {
-		canonical_name = 'PUBLIC.${canonical_name}'
-	}
-
-	page_number := f.btree.expire('Q${canonical_name}'.bytes(), tid, f.transaction_id)!
+	page_number := f.btree.expire('Q${name.id()}'.bytes(), tid, f.transaction_id)!
 	f.transaction_pages[page_number] = true
 }
 
@@ -330,7 +307,7 @@ fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ! {
 	}
 }
 
-fn (mut f Storage) read_rows(table_name string, prefix_table_name bool) ![]Row {
+fn (mut f Storage) read_rows(table_name string) ![]Row {
 	f.isolation_start()!
 	defer {
 		f.isolation_end() or { panic(err) }
@@ -340,11 +317,7 @@ fn (mut f Storage) read_rows(table_name string, prefix_table_name bool) ![]Row {
 
 	// ';' = ':' + 1
 	for object in f.read_objects('R${table_name}:'.bytes(), 'R${table_name};'.bytes())! {
-		mut prefixed_table_name := ''
-		if prefix_table_name {
-			prefixed_table_name = table_name
-		}
-		rows << new_row_from_bytes(f.tables[table_name], object.value, object.tid, prefixed_table_name)
+		rows << new_row_from_bytes(f.tables[table_name], object.value, object.tid, table_name)
 	}
 
 	return rows

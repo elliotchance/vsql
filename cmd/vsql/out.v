@@ -28,7 +28,9 @@ fn out_command(cmd cli.Command) ! {
 	// To make the output more deterministic, entities will be ordered by name.
 	// This is not true for the records however, which can potentially come out in
 	// any order.
-	schemas.sort(a.name > b.name)
+	schemas.sort_with_compare(fn (a &vsql.Schema, b &vsql.Schema) int {
+		return compare_strings(a.name, b.name)
+	})
 
 	for _, schema in schemas {
 		// We avoid "CREATE SCHEMA PUBLIC;" because it would break the import.
@@ -39,15 +41,18 @@ fn out_command(cmd cli.Command) ! {
 		}
 
 		mut sequences := db.sequences(schema.name)!
-		sequences.sort(a.name > b.name)
+		sequences.sort_with_compare(fn (a &vsql.Sequence, b &vsql.Sequence) int {
+			return compare_strings(a.name.str(), b.name.str())
+		})
 
 		for _, sequence in sequences {
 			println('${sequence}\n')
 		}
 
 		mut tables := db.schema_tables(schema.name) or { return err }
-
-		tables.sort(a.name > b.name)
+		tables.sort_with_compare(fn (a &vsql.Table, b &vsql.Table) int {
+			return compare_strings(a.name.str(), b.name.str())
+		})
 
 		for _, table in tables {
 			println('${table}\n')

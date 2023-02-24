@@ -6,8 +6,12 @@ Functions
 Aggregate Functions
 -------------------
 
-``AVG(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AVG
+^^^
+
+.. code-block:: sql
+
+   AVG(DOUBLE PRECISION) DOUBLE PRECISION
 
 Returns the average value. If any of the expressions are ``NULL`` the result
 will also be ``NULL``.
@@ -23,8 +27,12 @@ will also be ``NULL``.
   -- CITY: New York COL1: 8.96666
   -- CITY: San Francisco COL1: 6.5
 
-``COUNT(ANY) INTEGER``
-^^^^^^^^^^^^^^^^^^^^^^
+COUNT
+^^^^^
+
+.. code-block:: sql
+
+   COUNT(ANY) INTEGER
 
 Count the number of non-``NULL`` expressions.
 
@@ -43,8 +51,12 @@ that have a non-``NULL`` ``first_name``.
   SELECT COUNT(first_name) FROM people;
   -- 10
 
-``MAX(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+MAX
+^^^
+
+.. code-block:: sql
+
+   MAX(DOUBLE PRECISION) DOUBLE PRECISION
 
 Returns the maximum value. If any of the expressions are ``NULL`` the result
 will also be ``NULL``.
@@ -60,8 +72,12 @@ will also be ``NULL``.
   -- CITY: New York COL1: 18.05
   -- CITY: San Francisco COL1: 17.5
 
-``MIN(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+MIN
+^^^
+
+.. code-block:: sql
+
+   MIN(DOUBLE PRECISION) DOUBLE PRECISION
 
 Returns the minimum value. If any of the expressions are ``NULL`` the result
 will also be ``NULL``.
@@ -77,8 +93,12 @@ will also be ``NULL``.
   -- CITY: New York COL1: 8.05
   -- CITY: San Francisco COL1: 7.5
 
-``SUM(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SUM
+^^^
+
+.. code-block:: sql
+
+   SUM(DOUBLE PRECISION) DOUBLE PRECISION
 
 Returns the sum (total) of all values. If any of the expressions are ``NULL``
 the result will also be ``NULL``.
@@ -94,11 +114,43 @@ the result will also be ``NULL``.
   -- CITY: New York COL1: 196.35
   -- CITY: San Francisco COL1: 291.4
 
+Date & Time
+-----------
+
+CURRENT_DATE
+^^^^^^^^^^^^
+
+See :doc:`dates-times`.
+
+CURRENT_TIME
+^^^^^^^^^^^^
+
+See :doc:`dates-times`.
+
+CURRENT_TIMESTAMP
+^^^^^^^^^^^^^^^^^
+
+See :doc:`dates-times`.
+
+LOCALTIME
+^^^^^^^^^
+
+See :doc:`dates-times`.
+
+LOCALTIMESTAMP
+^^^^^^^^^^^^^^
+
+See :doc:`dates-times`.
+
 Mathematical Functions
 ----------------------
 
-``ABS(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ABS
+^^^
+
+.. code-block:: sql
+
+   ABS(DOUBLE PRECISION) DOUBLE PRECISION
 
 Absolute value.
 
@@ -112,8 +164,12 @@ Absolute value.
   VALUES ABS(-1.23);
   -- 1.23
 
-``ACOS(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ACOS
+^^^^
+
+.. code-block:: sql
+
+   ACOS(DOUBLE PRECISION) DOUBLE PRECISION
 
 Inverse (arc) cosine.
 
@@ -124,8 +180,12 @@ Inverse (arc) cosine.
   VALUES ACOS(0.2);
   -- COL1: 1.369438
 
-``ASIN(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ASIN
+^^^^
+
+.. code-block:: sql
+
+   ASIN(DOUBLE PRECISION) DOUBLE PRECISION
 
 Inverse (arc) sine.
 
@@ -136,8 +196,12 @@ Inverse (arc) sine.
   VALUES ASIN(0.2);
   -- COL1: 0.201358
 
-``ATAN(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ATAN
+^^^^
+
+.. code-block:: sql
+
+   ATAN(DOUBLE PRECISION) DOUBLE PRECISION
 
 Inverse (arc) tangent.
 
@@ -148,8 +212,12 @@ Inverse (arc) tangent.
   VALUES ATAN(0.2);
   -- COL1: 0.197396
 
-``CEIL(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+CEIL
+^^^^
+
+.. code-block:: sql
+
+   CEIL(DOUBLE PRECISION) DOUBLE PRECISION
 
 Round up to the nearest integer.
 
@@ -172,13 +240,21 @@ Round up to the nearest integer.
   VALUES CEILING(3.7);
   -- COL1: 4
 
-``CEILING(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+CEILING
+^^^^^^^
+
+.. code-block:: sql
+
+   CEILING(DOUBLE PRECISION) DOUBLE PRECISION
 
 ``CEILING`` is an alias of ``CEIL``.
 
-``COS(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+COS
+^^^
+
+.. code-block:: sql
+
+   COS(DOUBLE PRECISION) DOUBLE PRECISION
 
 Cosine.
 
@@ -189,8 +265,12 @@ Cosine.
   VALUES COS(1.2);
   -- COL1: 0.362358
 
-``COSH(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+COSH
+^^^^
+
+.. code-block:: sql
+
+   COSH(DOUBLE PRECISION) DOUBLE PRECISION
 
 Hyperbolic cosine.
 
@@ -201,8 +281,12 @@ Hyperbolic cosine.
   VALUES COSH(1.2);
   -- COL1: 1.810656
 
-``EXP(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+EXP
+^^^
+
+.. code-block:: sql
+
+   EXP(DOUBLE PRECISION) DOUBLE PRECISION
 
 Exponential.
 
@@ -213,8 +297,12 @@ Exponential.
   VALUES EXP(3.7);
   -- COL1: 40.447304
 
-``FLOOR(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FLOOR
+^^^^^
+
+.. code-block:: sql
+
+   FLOOR(DOUBLE PRECISION) DOUBLE PRECISION
 
 Round down to the nearest integer.
 
@@ -234,8 +322,12 @@ Round down to the nearest integer.
   VALUES FLOOR(-3.3);
   -- COL1: -4
 
-``LN(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+LN
+^^^
+
+.. code-block:: sql
+
+   LN(DOUBLE PRECISION) DOUBLE PRECISION
 
 Natural logarithm (base e).
 
@@ -246,8 +338,12 @@ Natural logarithm (base e).
   VALUES LN(13.7);
   -- COL1: 2.617396
 
-``LOG10(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+LOG10
+^^^^^
+
+.. code-block:: sql
+
+   LOG10(DOUBLE PRECISION) DOUBLE PRECISION
 
 Logarithm in base 10.
 
@@ -258,8 +354,12 @@ Logarithm in base 10.
   VALUES LOG10(13.7);
   -- COL1: 1.136721
 
-``MOD(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+MOD
+^^^
+
+.. code-block:: sql
+
+   MOD(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
 
 Modulus.
 
@@ -273,8 +373,12 @@ Modulus.
   VALUES MOD(10.7, 0.8);
   -- COL1: 0.3
 
-``POWER(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+POWER
+^^^^^
+
+.. code-block:: sql
+
+   POWER(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
 
 Power.
 
@@ -285,8 +389,12 @@ Power.
   VALUES POWER(3.7, 2.5);
   -- COL1: 26.333241
 
-``SIN(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SIN
+^^^
+
+.. code-block:: sql
+
+   SIN(DOUBLE PRECISION) DOUBLE PRECISION
 
 Sine.
 
@@ -297,8 +405,12 @@ Sine.
   VALUES SIN(1.2);
   -- COL1: 0.932039
 
-``SINH(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SINH
+^^^^
+
+.. code-block:: sql
+
+   SINH(DOUBLE PRECISION) DOUBLE PRECISION
 
 Hyperbolic sine.
 
@@ -309,8 +421,12 @@ Hyperbolic sine.
   VALUES SINH(1.2);
   -- COL1: 1.509461
 
-``SQRT(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SQRT
+^^^^
+
+.. code-block:: sql
+
+   SQRT(DOUBLE PRECISION) DOUBLE PRECISION
 
 Square root.
 
@@ -321,8 +437,12 @@ Square root.
   VALUES SQRT(3.7);
   -- COL1: 1.923538
 
-``TAN(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TAN
+^^^
+
+.. code-block:: sql
+
+   TAN(DOUBLE PRECISION) DOUBLE PRECISION
 
 Tangent.
 
@@ -333,8 +453,12 @@ Tangent.
   VALUES TAN(1.2);
   -- COL1: 2.572152
 
-``TANH(DOUBLE PRECISION) DOUBLE PRECISION``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TANH
+^^^^
+
+.. code-block:: sql
+
+   TANH(DOUBLE PRECISION) DOUBLE PRECISION
 
 Hyperbolic tangent.
 
@@ -348,8 +472,12 @@ Hyperbolic tangent.
 String Functions
 ----------------
 
-``CHAR_LENGTH(CHARACTER VARYING) INTEGER``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+CHAR_LENGTH
+^^^^^^^^^^^
+
+.. code-block:: sql
+
+   CHAR_LENGTH(CHARACTER VARYING) INTEGER
 
 Returns the character length (multibyte chatracters are counted as a single
 character).
@@ -359,13 +487,21 @@ character).
   VALUES CHAR_LENGTH('😊£');
   -- COL1: 2
 
-``CHARACTER_LENGTH(CHARACTER VARYING) INTEGER``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+CHARACTER_LENGTH
+^^^^^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   CHARACTER_LENGTH(CHARACTER VARYING) INTEGER
 
 ``CHARACTER_LENGTH`` is an alias of ``CHAR_LENGTH``.
 
-``LOWER(CHARACTER VARYING) CHARACTER VARYING`` 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+LOWER
+^^^^^
+
+.. code-block:: sql
+
+   LOWER(CHARACTER VARYING) CHARACTER VARYING
 
 Returns the input string converted to lower-case.
 
@@ -374,8 +510,12 @@ Returns the input string converted to lower-case.
   VALUES LOWER('Hello');
   -- COL1: hello
 
-``OCTET_LENGTH(CHARACTER VARYING) INTEGER``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OCTET_LENGTH
+^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   OCTET_LENGTH(CHARACTER VARYING) INTEGER
 
 Returns the byte length (multibyte chatracters are ignored).
 
@@ -384,8 +524,12 @@ Returns the byte length (multibyte chatracters are ignored).
   VALUES OCTET_LENGTH('😊£');
   -- COL1: 6
 
-``POSITION(CHARACTER VARYING IN CHARACTER VARYING) INTEGER``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+POSITION
+^^^^^^^^
+
+.. code-block:: sql
+
+   POSITION(CHARACTER VARYING IN CHARACTER VARYING) INTEGER
 
 Returns the start of the left most (first) match of one string within another. 1
 will be the smallest index on a match and 0 is returned if the substring does
@@ -403,19 +547,19 @@ Matching is case-sensitive.
   VALUES POSITION('xx' IN 'hello Hello');
   -- COL1: 0
 
-SUBSTRING(CHARACTER VARYING FROM INTEGER ...) CHARACTER VARYING
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SUBSTRING
+^^^^^^^^^
 
 ``SUBSTRING`` can be constructed in several forms:
 
 .. code-block:: text
 
-  SUBSTRING(
-    value
-    FROM start_position
-    [ FOR string_length ]
-    [ USING { CHARACTERS | OCTETS } ]
-  )
+   SUBSTRING(
+     value
+     FROM start_position
+     [ FOR string_length ]
+     [ USING { CHARACTERS | OCTETS } ]
+   )
 
 ``start_position`` starts at 1 for the first character or byte. If
 ``start_position`` is out of bounds (either before the start or after the end)
@@ -445,8 +589,8 @@ be used.
   VALUES SUBSTRING('Жabڣc' FROM 4 USING OCTETS);
   -- COL1: bڣc
 
-TRIM() CHARACTER VARYING
-^^^^^^^^^^^^^^^^^^^^^^^^
+TRIM
+^^^^
 
 ``TRIM`` can be constructed in several forms:
 
@@ -475,8 +619,12 @@ If ``trim_character`` is not provided, a space (`' '`) is used.
   VALUES TRIM(TRAILING 'a' FROM 'aaababccaa');
   -- COL1: aaababcc
 
-``UPPER(CHARACTER VARYING) CHARACTER VARYING`` 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UPPER 
+^^^^^
+
+.. code-block:: sql
+
+   UPPER(CHARACTER VARYING) CHARACTER VARYING
 
 Returns the input string converted to upper-case.
 
@@ -488,8 +636,12 @@ Returns the input string converted to upper-case.
 Other Functions
 ---------------
 
-``COALESCE(VALUE, ...)``
-^^^^^^^^^^^^^^^^^^^^^^^^
+COALESCE
+^^^^^^^^
+
+.. code-block:: sql
+
+   COALESCE(VALUE, ...)
 
 ``COALESCE`` returns the first value that is not ``NULL``. If all values are
 ``NULL`` then ``NULL`` is also returned.
@@ -499,8 +651,23 @@ Other Functions
   VALUES COALESCE(1, 2);
   -- COL1: 1
 
-``NULLIF(X, Y)``
-^^^^^^^^^^^^^^^^
+CURRENT_SCHEMA
+^^^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   CURRENT_SCHEMA
+
+``CURRENT_SCHEMA`` reports the current schema. The current schema is where
+objects (such as tables, sequences, etc) are located or created. The default
+schema is ``PUBLIC``. The current schema can be changed with :doc:`set-schema`.
+
+NULLIF
+^^^^^^
+
+.. code-block:: sql
+
+   NULLIF(X, Y)
 
 If ``X`` and ``Y`` are equal, ``NULL`` will be returned. Otherwise ``X`` is
 returned.

@@ -22,47 +22,33 @@ fn new_expr_operation(conn &Connection, params map[string]Value, select_list Sel
 			for _, table in tables {
 				columns << table.columns
 				for column in table.columns {
-					exprs << DerivedColumn{new_identifier('"${table.name}.${column.name}"'), new_identifier('"${column.name}"')}
+					exprs << DerivedColumn{new_column_identifier('${table.name}."${column.name}"')!, new_column_identifier('"${column.name}"')!}
 				}
 			}
 		}
 		QualifiedAsteriskExpr {
-			mut table_name := select_list.table_name.name
-
-			// TODO(elliotchance): This isn't really ideal. Replace with a
-			//  proper identifier chain when we support that.
-			if table_name.contains('.') {
-				parts := table_name.split('.')
-
-				if parts[0] !in conn.storage.schemas {
-					return sqlstate_3f000(parts[0]) // scheme does not exist
-				}
-			} else {
-				table_name = 'PUBLIC.${table_name}'
-			}
-
-			// panic(table_name)
-			table := tables[table_name] or { return sqlstate_42p01('table', table_name) }
+			mut table_name := conn.resolve_table_identifier(select_list.table_name, true)!
+			table := tables[table_name.id()] or { return sqlstate_42p01('table', table_name.str()) }
 			columns = table.columns
 			for column in table.columns {
-				exprs << DerivedColumn{new_identifier('"${table.name}.${column.name}"'), new_identifier('"${column.name}"')}
+				exprs << DerivedColumn{new_column_identifier('"${table.name}"."${column.name}"')!, new_column_identifier('"${column.name}"')!}
 			}
 		}
 		[]DerivedColumn {
 			empty_row := new_empty_table_row(tables)
 			for i, column in select_list {
 				mut column_name := 'COL${i + 1}'
-				if column.as_clause.name != '' {
-					column_name = column.as_clause.name
+				if column.as_clause.sub_entity_name != '' {
+					column_name = column.as_clause.sub_entity_name
 				} else if column.expr is Identifier {
-					column_name = column.expr.name
+					column_name = column.expr.sub_entity_name
 				}
 
-				expr := resolve_identifiers(column.expr, tables)!
+				expr := resolve_identifiers(conn, column.expr, tables)!
 
 				columns << Column{column_name, eval_as_type(conn, empty_row, expr, params)!, false}
 
-				exprs << DerivedColumn{expr, new_identifier('"${column_name}"')}
+				exprs << DerivedColumn{expr, new_column_identifier('"${column_name}"')!}
 			}
 		}
 	}
@@ -84,7 +70,7 @@ fn (mut o ExprOperation) execute(rows []Row) ![]Row {
 	for row in rows {
 		mut data := map[string]Value{}
 		for expr in o.exprs {
-			data[expr.as_clause.name] = eval_as_value(mut o.conn, row, expr.expr, o.params)!
+			data[expr.as_clause.id()] = eval_as_value(mut o.conn, row, expr.expr, o.params)!
 		}
 		new_rows << new_row(data)
 	}
@@ -150,7 +136,7 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 			return eval_as_type(conn, data, e.left, params)
 		}
 		Identifier {
-			col := data.data[e.name] or { return sqlstate_42601('unknown column: ${e.name}') }
+			col := data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }
 
 			return col.typ
 		}
@@ -172,7 +158,7 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 		LocalTimestampExpr {
 			return new_type('TIMESTAMP WITHOUT TIME ZONE', 0)
 		}
-		SubstringExpr, TrimExpr {
+		SubstringExpr, TrimExpr, CurrentSchemaExpr {
 			return new_type('CHARACTER VARYING', 0)
 		}
 		UntypedNullExpr {
@@ -199,7 +185,7 @@ fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value)
 			return eval_coalesce(mut conn, data, e, params)
 		}
 		CountAllExpr {
-			return eval_identifier(data, new_identifier('COUNT(*)'))
+			return eval_identifier(data, new_column_identifier('"COUNT(*)"')!)
 		}
 		Identifier {
 			return eval_identifier(data, e)
@@ -243,6 +229,9 @@ fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value)
 			now, _ := conn.options.now()
 
 			return new_date_value(now.strftime('%Y-%m-%d'))
+		}
+		CurrentSchemaExpr {
+			return new_varchar_value(conn.current_schema, 0)
 		}
 		CurrentTimeExpr {
 			if e.prec > 6 {
@@ -325,7 +314,10 @@ fn eval_as_bool(mut conn Connection, data Row, e Expr, params map[string]Value) 
 }
 
 fn eval_identifier(data Row, e Identifier) !Value {
-	value := data.data[e.name] or { return sqlstate_42601('unknown column: ${e.name}') }
+	value := data.data[e.id()] or {
+		panic(e)
+		return sqlstate_42601('${e.id()} ${data.data} unknown column: ${e}')
+	}
 
 	return value
 }
@@ -341,7 +333,7 @@ fn eval_call(mut conn Connection, data Row, e CallExpr, params map[string]Value)
 	func := conn.find_function(func_name, arg_types)!
 
 	if func.is_agg {
-		return eval_identifier(data, new_identifier('"${e.pstr(params)}"'))
+		return eval_identifier(data, new_function_identifier('"${e.pstr(params)}"')!)
 	}
 
 	if e.args.len != func.arg_types.len {
@@ -395,7 +387,7 @@ fn eval_nullif(mut conn Connection, data Row, e NullIfExpr, params map[string]Va
 fn eval_coalesce(mut conn Connection, data Row, e CoalesceExpr, params map[string]Value) !Value {
 	// TODO(elliotchance): This is horribly inefficient.
 
-	mut typ := SQLType{}
+	mut typ := SQLType.is_varchar
 	mut first := true
 	for i, expr in e.exprs {
 		typ2 := eval_as_type(conn, data, expr, params)!
@@ -605,5 +597,6 @@ fn eval_as_nullable_value(mut conn Connection, typ SQLType, data Row, e Expr, pa
 	if e is UntypedNullExpr {
 		return new_null_value(typ)
 	}
+
 	return eval_as_value(mut conn, data, e, params)
 }

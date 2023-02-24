@@ -119,6 +119,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			// See transaction.v
 			return execute_rollback(mut p.c, stmt, p.elapsed_parse)
 		}
+		SetSchemaStmt {
+			if p.explain {
+				return sqlstate_42601('Cannot EXPLAIN SET SCHEMA')
+			}
+
+			return execute_set_schema(mut p.c, stmt, p.elapsed_parse)
+		}
 		QueryExpression {
 			return execute_select(mut p.c, stmt, all_params, p.elapsed_parse, p.explain)
 		}

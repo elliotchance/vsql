@@ -32,22 +32,8 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 	}
 
 	mut rows := plan.execute([]Row{})!
-
-	mut table_name := stmt.table_name
-
-	// TODO(elliotchance): This isn't really ideal. Replace with a proper
-	//  identifier chain when we support that.
-	if table_name.contains('.') {
-		parts := table_name.split('.')
-
-		if parts[0] !in c.storage.schemas {
-			return sqlstate_3f000(parts[0]) // scheme does not exist
-		}
-	} else {
-		table_name = 'PUBLIC.${table_name}'
-	}
-
-	table := c.storage.tables[table_name]
+	mut table_name := c.resolve_table_identifier(stmt.table_name, false)!
+	table := c.storage.tables[table_name.id()]
 
 	mut modify_count := 0
 	for mut row in rows {
@@ -63,7 +49,8 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 
 		for column_name, v in stmt.set {
 			table_column := table.column(column_name)!
-			raw_value := eval_as_nullable_value(mut c, table_column.typ.typ, row, v, params)!
+			raw_value := eval_as_nullable_value(mut c, table_column.typ.typ, row, resolve_identifiers(c,
+				v, c.storage.tables)!, params)!
 
 			if table_column.not_null && raw_value.is_null {
 				return sqlstate_23502('column ${column_name}')
@@ -76,17 +63,19 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 			// TODO(elliotchance): This has the side effect that NULL being
 			//  replaced with NULL is true, which is unnecessary, even if the
 			//  logic is a bit murky.
-			cmp, is_null := row.data[column_name].cmp(raw_value)!
+			column_id := '${table_name}.${column_name}'
+			cmp, is_null := row.data[column_id].cmp(raw_value)!
 			if is_null || cmp != 0 {
 				did_modify = true
-				row2.data[column_name] = cast(c, 'for column ${column_name}', raw_value,
+				row2.data[column_id] = cast(c, 'for column ${column_name}', raw_value,
 					table_column.typ)!
 			}
 		}
 
 		if did_modify {
+			// To be able to write the row back we need to clean the column names.
 			modify_count++
-			c.storage.update_row(mut row, mut row2, table)!
+			c.storage.update_row(mut row.for_storage(), mut row2.for_storage(), table)!
 		}
 	}
 
@@ -103,7 +92,7 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 		for column_name, v in stmt.set {
 			table_column := table.column(column_name)!
 			raw_value := eval_as_nullable_value(mut c, table_column.typ.typ, empty_row,
-				v, params)!
+				resolve_identifiers(c, v, c.storage.tables)!, params)!
 			value := cast(c, 'for column ${column_name}', raw_value, table_column.typ)!
 
 			if table_column.not_null && value.is_null {

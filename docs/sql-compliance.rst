@@ -898,7 +898,7 @@ Optional Features
    * - ❌ **F641**
      - **Row and table constructors**
 
-   * - ❌ **F651**
+   * - ✅ **F651**
      - **Catalog name qualifiers**
 
    * - ❌ **F661**
@@ -946,7 +946,7 @@ Optional Features
    * - ❌ **F761**
      - **Session management**
 
-   * - ❌ **F762**
+   * - ✅ **F762**
      - **CURRENT_CATALOG**
 
    * - ✅ **F763**

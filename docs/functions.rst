@@ -651,6 +651,19 @@ COALESCE
   VALUES COALESCE(1, 2);
   -- COL1: 1
 
+CURRENT_CATALOG
+^^^^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   CURRENT_CATALOG
+
+``CURRENT_CATALOG`` always reflects the file name, only up to the first ``.``.
+So, if the complete file path is ``/tmp/mydb.cool.vsql`` the ``CURRENT_CATALOG``
+would be ``mydb``.
+
+When using in-memory databases, the ``CURRENT_CATALOG`` will be ``:memory:``.
+
 CURRENT_SCHEMA
 ^^^^^^^^^^^^^^
 

@@ -40,7 +40,7 @@ fn expr_is_agg(conn &Connection, e Expr, row Row, params map[string]Value) !bool
 		}
 		Identifier, Parameter, Value, NoExpr, RowExpr, QualifiedAsteriskExpr, QueryExpression,
 		CurrentDateExpr, CurrentTimeExpr, CurrentTimestampExpr, LocalTimeExpr, LocalTimestampExpr,
-		UntypedNullExpr, NextValueExpr, CurrentSchemaExpr {
+		UntypedNullExpr, NextValueExpr, CurrentCatalogExpr, CurrentSchemaExpr {
 			return false
 		}
 		LikeExpr {
@@ -139,7 +139,7 @@ fn resolve_identifiers(conn &Connection, e Expr, tables map[string]Table) !Expr 
 			// If the table name is not provided we need to find it.
 			if e.entity_name == '' {
 				for _, table in tables {
-					if (table.column(e.sub_entity_name) or { Column{} }).name == e.sub_entity_name {
+					if (table.column(e.sub_entity_name) or { Column{} }).name.sub_entity_name == e.sub_entity_name {
 						return conn.resolve_identifier(new_column_identifier('${table.name}.${e.sub_entity_name}')!)
 					}
 				}
@@ -190,7 +190,7 @@ fn resolve_identifiers(conn &Connection, e Expr, tables map[string]Table) !Expr 
 		}
 		CountAllExpr, Parameter, Value, NoExpr, QueryExpression, CurrentDateExpr, CurrentTimeExpr,
 		CurrentTimestampExpr, LocalTimeExpr, LocalTimestampExpr, UntypedNullExpr,
-		CurrentSchemaExpr {
+		CurrentSchemaExpr, CurrentCatalogExpr {
 			// These don't have any Expr properties to recurse.
 			return e
 		}

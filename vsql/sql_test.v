@@ -57,6 +57,8 @@ fn get_tests() ![]SQLTest {
 					in_setup = true
 				} else if contents.starts_with('connection ') {
 					stmts << contents
+				} else if contents.starts_with('create_catalog ') {
+					stmts << contents
 				} else if contents.starts_with('set ') {
 					parts := contents.split(' ')
 					if parts[2].starts_with("'") {
@@ -127,7 +129,9 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 
 	mut options := default_connection_options()
 	options.query_cache = query_cache
-	options.now = fn () (time.Time, i16) {
+
+	mut db := open_database(':memory:', options)!
+	db.now = fn () (time.Time, i16) {
 		return time.new_time(time.Time{
 			year: 2022
 			month: 7
@@ -138,8 +142,6 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 			microsecond: 120056
 		}), 300
 	}
-
-	mut db := open_database(':memory:', options)!
 	register_pg_functions(mut db)!
 
 	// If a test needs multiple connections we cannot rely on ":memory:".
@@ -165,6 +167,12 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 
 	mut actual := ''
 	for stmt in test.stmts {
+		if stmt.starts_with('create_catalog ') {
+			catalog_name := stmt[15..]
+			db.add_catalog(catalog_name, ':memory:', options)!
+			continue
+		}
+
 		if stmt.starts_with('connection ') {
 			connection_name := stmt[11..]
 			if connection_name !in connections {
@@ -204,7 +212,7 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 			}
 
 			for col in result.columns {
-				line += '${col.name}: ${row.get_string(col.name)!} '
+				line += '${col.name.sub_entity_name}: ${row.get_string(col.name.sub_entity_name)!} '
 			}
 			actual += line.trim_space() + '\n'
 		}

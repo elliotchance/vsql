@@ -52,7 +52,7 @@ fn new_storage(btree Btree) Storage {
 	}
 }
 
-fn (mut f Storage) open(path string) ! {
+fn (mut f Storage) open(path string, catalog_name string) ! {
 	f.file = os.open_file(path, 'r+') or { return error('unable to open ${path}: ${err}') }
 
 	header := read_header(mut f.file)!
@@ -77,8 +77,8 @@ fn (mut f Storage) open(path string) ! {
 	f.tables = map[string]Table{}
 	for object in f.btree.new_range_iterator('T'.bytes(), 'U'.bytes()) {
 		if object_is_visible(object.tid, object.xid, f.transaction_id, mut f.header.active_transaction_ids) {
-			table := new_table_from_bytes(object.value, object.tid)
-			f.tables[table.name.id()] = table
+			table := new_table_from_bytes(object.value, object.tid, catalog_name)
+			f.tables[table.name.storage_id()] = table
 		}
 	}
 
@@ -120,11 +120,12 @@ fn (mut f Storage) create_table(table_name Identifier, columns Columns, primary_
 
 	table := Table{f.transaction_id, table_name, columns, primary_key, false}
 
-	obj := new_page_object('T${table_name.id()}'.bytes(), f.transaction_id, 0, table.bytes())
+	obj := new_page_object('T${table_name.storage_id()}'.bytes(), f.transaction_id, 0,
+		table.bytes())
 	page_number := f.btree.add(obj)!
 	f.transaction_pages[page_number] = true
 
-	f.tables[table_name.id()] = table
+	f.tables[table_name.storage_id()] = table
 	f.schema_changed()
 }
 
@@ -150,7 +151,8 @@ fn (mut f Storage) create_sequence(sequence Sequence) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
-	obj := new_page_object('Q${sequence.name.id()}'.bytes(), f.transaction_id, 0, sequence.bytes())
+	obj := new_page_object('Q${sequence.name.storage_id()}'.bytes(), f.transaction_id,
+		0, sequence.bytes())
 	page_number := f.btree.add(obj)!
 	f.transaction_pages[page_number] = true
 }
@@ -161,7 +163,7 @@ fn (mut f Storage) sequence(name Identifier) !Sequence {
 		f.isolation_end() or { panic(err) }
 	}
 
-	key := 'Q${name.id()}'.bytes()
+	key := 'Q${name.storage_id()}'.bytes()
 	mut sequence := Sequence{}
 	for object in f.read_objects(key, key)! {
 		sequence = new_sequence_from_bytes(object.value, object.tid)
@@ -195,7 +197,7 @@ fn (mut f Storage) sequence_next_value(name Identifier) !i64 {
 	}
 
 	mut sequence := f.sequence(name)!
-	mut canonical_name := name.str()
+	mut canonical_name := name.storage_id()
 	next_sequence := sequence.next()!
 	key := 'Q${canonical_name}'.bytes()
 
@@ -269,7 +271,7 @@ fn (mut f Storage) delete_sequence(name Identifier, tid int) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
-	page_number := f.btree.expire('Q${name.id()}'.bytes(), tid, f.transaction_id)!
+	page_number := f.btree.expire('Q${name.storage_id()}'.bytes(), tid, f.transaction_id)!
 	f.transaction_pages[page_number] = true
 }
 
@@ -307,7 +309,7 @@ fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ! {
 	}
 }
 
-fn (mut f Storage) read_rows(table_name string) ![]Row {
+fn (mut f Storage) read_rows(table_name Identifier) ![]Row {
 	f.isolation_start()!
 	defer {
 		f.isolation_end() or { panic(err) }
@@ -316,8 +318,9 @@ fn (mut f Storage) read_rows(table_name string) ![]Row {
 	mut rows := []Row{}
 
 	// ';' = ':' + 1
-	for object in f.read_objects('R${table_name}:'.bytes(), 'R${table_name};'.bytes())! {
-		rows << new_row_from_bytes(f.tables[table_name], object.value, object.tid, table_name)
+	table_storage_id := table_name.storage_id()
+	for object in f.read_objects('R${table_storage_id}:'.bytes(), 'R${table_storage_id};'.bytes())! {
+		rows << new_row_from_bytes(f.tables[table_storage_id], object.value, object.tid)
 	}
 
 	return rows

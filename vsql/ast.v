@@ -17,6 +17,7 @@ type Stmt = AlterSequenceStmt
 	| InsertStmt
 	| QueryExpression
 	| RollbackStmt
+	| SetCatalogStmt
 	| SetSchemaStmt
 	| StartTransactionStmt
 	| UpdateStmt
@@ -28,6 +29,7 @@ type Expr = BetweenExpr
 	| CastExpr
 	| CoalesceExpr
 	| CountAllExpr
+	| CurrentCatalogExpr
 	| CurrentDateExpr
 	| CurrentSchemaExpr
 	| CurrentTimeExpr
@@ -75,6 +77,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 		}
 		CountAllExpr {
 			e.pstr(params)
+		}
+		CurrentCatalogExpr {
+			e.str()
 		}
 		CurrentSchemaExpr {
 			e.str()
@@ -284,6 +289,10 @@ fn (identifier IdentifierChain) str() string {
 //
 // snippet: v.Identifier
 pub struct Identifier {
+pub:
+	// catalog_name is optional. If not provided, the CURRENT_CATALOG will be
+	// used.
+	catalog_name string
 	// schema_name is optional. If not provided, it will use CURRENT_SCHEMA.
 	schema_name string
 	// entity_name would be the table name, sequence name, etc. Something inside
@@ -334,6 +343,12 @@ fn new_identifier1(s string) !Identifier {
 				schema_name: parts[0]
 			}
 		}
+		2 {
+			return Identifier{
+				catalog_name: parts[0]
+				schema_name: parts[1]
+			}
+		}
 		else {
 			return error('invalid identifier: ${s}')
 		}
@@ -353,6 +368,13 @@ fn new_identifier2(s string) !Identifier {
 			return Identifier{
 				schema_name: parts[0]
 				entity_name: parts[1]
+			}
+		}
+		3 {
+			return Identifier{
+				catalog_name: parts[0]
+				schema_name: parts[1]
+				entity_name: parts[2]
 			}
 		}
 		else {
@@ -406,14 +428,22 @@ fn new_identifier3(s string) !Identifier {
 				sub_entity_name: parts[2]
 			}
 		}
+		4 {
+			return Identifier{
+				catalog_name: parts[0]
+				schema_name: parts[1]
+				entity_name: parts[2]
+				sub_entity_name: parts[3]
+			}
+		}
 		else {
-			return error('invalid identifier3: ${s} ${parts}')
+			return error('invalid identifier: ${s}')
 		}
 	}
 }
 
 // decode_identifier is only for internal use. It is the opposite of
-// Identifier.id().
+// Identifier.storage_id().
 fn decode_identifier(s string) Identifier {
 	parts := split_identifier_parts(s) or { panic('cannot parse identifier: ${s}') }
 
@@ -460,14 +490,45 @@ fn requote_identifier(s string) string {
 	return '"${s}"'
 }
 
-// id is the internal canonical name. How it is represented in memory and
-// on-disk. As opposed to str() which is the human readable form.
+// id is the internal canonical name. How it is represented in memory during
+// processing. As opposed to str() which is the human readable form.
 fn (e Identifier) id() string {
 	if e.custom_id != '' {
 		return e.custom_id
 	}
 
 	mut parts := []string{}
+
+	if e.catalog_name != '' {
+		parts << e.catalog_name
+	}
+
+	if e.schema_name != '' {
+		parts << e.schema_name
+	}
+
+	if e.entity_name != '' {
+		parts << e.entity_name
+	}
+
+	if e.sub_entity_name != '' {
+		parts << e.sub_entity_name
+	}
+
+	return parts.join('.')
+}
+
+// storage_id is the internal canonical name for disk storage, as opposed to
+// str() which is the human readable form.
+fn (e Identifier) storage_id() string {
+	if e.custom_id != '' {
+		return e.custom_id
+	}
+
+	mut parts := []string{}
+
+	// Note: The catalog name is not included here because its registered
+	// virtually on the connection to the storage.
 
 	if e.schema_name != '' {
 		parts << e.schema_name
@@ -489,23 +550,25 @@ pub fn (e Identifier) str() string {
 		return e.custom_id
 	}
 
-	if e.schema_name != '' {
-		if e.sub_entity_name == '' {
-			return '${requote_identifier(e.schema_name)}.${requote_identifier(e.entity_name)}'
-		}
+	mut parts := []string{}
 
-		return '${requote_identifier(e.schema_name)}.${requote_identifier(e.entity_name)}.${requote_identifier(e.sub_entity_name)}'
+	if e.catalog_name != '' {
+		parts << requote_identifier(e.catalog_name)
+	}
+
+	if e.schema_name != '' {
+		parts << requote_identifier(e.schema_name)
 	}
 
 	if e.entity_name != '' {
-		if e.sub_entity_name == '' {
-			return requote_identifier(e.entity_name)
-		}
-
-		return '${requote_identifier(e.entity_name)}.${requote_identifier(e.sub_entity_name)}'
+		parts << requote_identifier(e.entity_name)
 	}
 
-	return requote_identifier(e.sub_entity_name)
+	if e.sub_entity_name != '' {
+		parts << requote_identifier(e.sub_entity_name)
+	}
+
+	return parts.join('.')
 }
 
 struct UnaryExpr {
@@ -933,6 +996,14 @@ fn (e NextValueExpr) str() string {
 	return 'NEXT VALUE FOR ${e.name}'
 }
 
+// CURRENT_CATALOG
+struct CurrentCatalogExpr {
+}
+
+fn (e CurrentCatalogExpr) str() string {
+	return 'CURRENT_CATALOG'
+}
+
 // CURRENT_SCHEMA
 struct CurrentSchemaExpr {
 }
@@ -948,4 +1019,13 @@ struct SetSchemaStmt {
 
 fn (e SetSchemaStmt) pstr(params map[string]Value) string {
 	return 'SET SCHEMA ${e.schema_name.pstr(params)}'
+}
+
+// SET CATALOG
+struct SetCatalogStmt {
+	catalog_name Expr
+}
+
+fn (e SetCatalogStmt) pstr(params map[string]Value) string {
+	return 'SET CATALOG ${e.catalog_name.pstr(params)}'
 }

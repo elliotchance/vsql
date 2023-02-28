@@ -180,6 +180,11 @@ in an active transaction.
    COMMIT;
    -- error 2D000: invalid transaction termination
 
+``3D000`` invalid catalog name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``3D000`` occurs if the catalog does not exist or is otherwise invalid.
+
 ``3F000`` invalid schema name
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

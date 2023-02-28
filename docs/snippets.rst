@@ -37,8 +37,8 @@
    MINVALUE is optional.
 
 .. |v.Column.name| replace::
-   name is case-sensitive. The name is equivilent to using a deliminated
-   identifier (with double quotes).
+   name resolves to the actual canonical location. If you only need the column
+   name itself, you can use name.sub_entity_name.
 
 .. |v.Column.not_null| replace::
    not_null will be true if ``NOT NULL`` was specified on the column.

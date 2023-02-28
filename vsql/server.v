@@ -24,11 +24,19 @@ pub fn new_server(options ServerOptions) Server {
 	connection_options := default_connection_options()
 	mut pager := new_memory_pager()
 	btree := new_btree(pager, connection_options.page_size)
+	catalog_name := catalog_name_from_path(options.db_file)
+
+	catalog := &CatalogConnection{
+		catalog_name: catalog_name
+		storage: new_storage(btree)
+		options: default_connection_options()
+	}
 
 	return Server{options, &Connection{
 		query_cache: new_query_cache()
-		storage: new_storage(btree)
-		options: connection_options
+		catalogs: {
+			catalog_name: catalog
+		}
 	}}
 }
 

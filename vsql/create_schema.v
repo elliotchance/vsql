@@ -12,13 +12,14 @@ fn execute_create_schema(mut c Connection, stmt CreateSchemaStmt, elapsed_parse 
 		c.release_write_connection()
 	}
 
+	mut catalog := c.catalog()
 	schema_name := stmt.schema_name.schema_name
 
-	if schema_name in c.storage.schemas {
+	if schema_name in catalog.storage.schemas {
 		return sqlstate_42p06(schema_name) // duplicate schema
 	}
 
-	c.storage.create_schema(schema_name)!
+	catalog.storage.create_schema(schema_name)!
 
 	return new_result_msg('CREATE SCHEMA 1', elapsed_parse, t.elapsed())
 }

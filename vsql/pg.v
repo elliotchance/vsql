@@ -65,7 +65,8 @@ fn (mut c PGConn) write_command_complete(result Result) ! {
 
 	// TODO(elliotchance): This is a hack that will probably cause issues.
 	mut tag := 'SELECT ${result.rows.len}'
-	if result.columns.len == 1 && result.columns[0].name == 'msg' && result.rows.len == 1 {
+	if result.columns.len == 1 && result.columns[0].name.sub_entity_name == 'msg'
+		&& result.rows.len == 1 {
 		tag = result.rows[0].get_string('msg') or { '${err}' }
 	}
 
@@ -139,7 +140,7 @@ fn (mut c PGConn) write_row_description(result Result) ! {
 	mut msg_len := 4 // self
 	msg_len += 2 // cols
 	for column in result.columns {
-		msg_len += column.name.len + 1 // NULL
+		msg_len += column.name.sub_entity_name.len + 1 // NULL
 		msg_len += 18 // all the other fields
 	}
 
@@ -147,7 +148,7 @@ fn (mut c PGConn) write_row_description(result Result) ! {
 	c.write_int16(i16(result.columns.len))!
 
 	for column in result.columns {
-		c.write_string(column.name)!
+		c.write_string(column.name.sub_entity_name)!
 		c.write_int32(0)!
 		c.write_int16(0)!
 		c.write_int32(0)! // object ID of type
@@ -163,7 +164,7 @@ fn (mut c PGConn) write_data_row(columns Columns, row Row) ! {
 	mut msg_len := 4 // self
 	msg_len += 2 // cols
 	for column in columns {
-		v := row.get_string(column.name) or { '${err}' }
+		v := row.get_string(column.name.sub_entity_name) or { '${err}' }
 		msg_len += 4 + v.len
 	}
 
@@ -171,7 +172,7 @@ fn (mut c PGConn) write_data_row(columns Columns, row Row) ! {
 	c.write_int16(i16(columns.len))!
 
 	for column in columns {
-		v := row.get_string(column.name) or { '${err}' }
+		v := row.get_string(column.name.sub_entity_name) or { '${err}' }
 		c.write_int32(v.len)!
 		c.write_bytes(v.bytes())!
 	}

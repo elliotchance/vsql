@@ -159,6 +159,21 @@ fn sqlstate_2bp01(object_name string) IError {
 	}
 }
 
+// catalog name is invalid
+struct SQLState3D000 {
+	SQLState
+pub:
+	catalog_name string
+}
+
+fn sqlstate_3d000(catalog_name string) IError {
+	return SQLState3D000{
+		code: sqlstate_to_int('3D000')
+		msg: 'invalid catalog name: ${catalog_name}'
+		catalog_name: catalog_name
+	}
+}
+
 // schema name is invalid
 struct SQLState3F000 {
 	SQLState
@@ -167,7 +182,7 @@ pub:
 }
 
 fn sqlstate_3f000(schema_name string) IError {
-	return SQLState42P06{
+	return SQLState3F000{
 		code: sqlstate_to_int('3F000')
 		msg: 'invalid schema name: ${schema_name}'
 		schema_name: schema_name

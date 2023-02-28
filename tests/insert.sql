@@ -37,7 +37,7 @@ INSERT INTO foo (b, x) VALUES (123);
 -- error 42601: syntax error: INSERT has less values than columns
 
 INSERT INTO foo (b) VALUES (123);
--- error 42P01: no such table: PUBLIC.FOO
+-- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
 CREATE TABLE foo (b BOOLEAN);
 INSERT INTO foo (x) VALUES (true);
@@ -87,7 +87,7 @@ CREATE TABLE t1 (f1 CHARACTER VARYING(10), f2 FLOAT NOT NULL);
 INSERT INTO t1 (f1) VALUES ('a');
 SELECT * FROM t1;
 -- msg: CREATE TABLE 1
--- error 23502: violates non-null constraint: column F2
+-- error 23502: violates non-null constraint: column ":memory:".PUBLIC.T1.F2
 
 CREATE TABLE t1 (f1 FLOAT NOT NULL);
 INSERT INTO t1 (f1) VALUES (-123.0 * 4.2);

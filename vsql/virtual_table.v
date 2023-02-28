@@ -24,7 +24,7 @@ pub fn (mut v VirtualTable) next_values(values []Value) {
 	mut i := 0
 	for col in v.create_table_stmt.table_elements {
 		if col is Column {
-			row[col.name] = values[i]
+			row[col.name.sub_entity_name] = values[i]
 			i++
 		}
 	}
@@ -56,13 +56,7 @@ fn (o VirtualTableOperation) str() string {
 }
 
 fn (o VirtualTableOperation) columns() Columns {
-	mut columns := []Column{}
-
-	for column in o.table.create_table_stmt.columns() {
-		columns << Column{'${o.table.create_table_stmt.table_name}.${column.name}', column.typ, column.not_null}
-	}
-
-	return columns
+	return o.table.create_table_stmt.columns()
 }
 
 fn (o VirtualTableOperation) execute(_ []Row) ![]Row {
@@ -73,13 +67,11 @@ fn (o VirtualTableOperation) execute(_ []Row) ![]Row {
 	}
 
 	mut new_rows := []Row{}
-
-	table_name := o.table.create_table_stmt.table_name
 	for row in vt.rows {
 		mut data := map[string]Value{}
 
 		for k, v in row.data {
-			data['${table_name}.${k}'] = v
+			data[k] = v
 		}
 
 		new_rows << new_row(data)

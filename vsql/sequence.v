@@ -111,7 +111,7 @@ fn (s Sequence) next() !Sequence {
 fn (s Sequence) bytes() []u8 {
 	mut b := new_empty_bytes()
 
-	b.write_string1(s.name.id())
+	b.write_string1(s.name.storage_id())
 	b.write_i64(s.current_value)
 	b.write_i64(s.increment_by)
 	b.write_bool(s.cycle)

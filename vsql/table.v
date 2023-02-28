@@ -7,11 +7,11 @@ module vsql
 // snippet: v.Column
 struct Column {
 pub:
-	// name is case-sensitive. The name is equivilent to using a deliminated
-	// identifier (with double quotes).
+	// name resolves to the actual canonical location. If you only need the column
+	// name itself, you can use name.sub_entity_name.
 	//
 	// snippet: v.Column.name
-	name string
+	name Identifier
 	// typ of the column contains more specifics like size and precision.
 	//
 	// snippet: v.Column.typ
@@ -29,8 +29,7 @@ pub:
 //
 // snippet: v.Column.str
 pub fn (c Column) str() string {
-	name := if c.name.is_upper() { c.name } else { '"${c.name}"' }
-	mut f := '${name} ${c.typ}'
+	mut f := '${c.name} ${c.typ}'
 	if c.not_null {
 		f += ' NOT NULL'
 	}
@@ -82,7 +81,7 @@ pub mut:
 pub fn (t Table) column_names() []string {
 	mut names := []string{}
 	for col in t.columns {
-		names << col.name
+		names << col.name.sub_entity_name
 	}
 
 	return names
@@ -93,7 +92,7 @@ pub fn (t Table) column_names() []string {
 // snippet: v.Table.column
 pub fn (t Table) column(name string) !Column {
 	for col in t.columns {
-		if name == col.name {
+		if name == col.name.sub_entity_name {
 			return col
 		}
 	}
@@ -112,7 +111,7 @@ fn (t Table) bytes() []u8 {
 	}
 
 	for col in t.columns {
-		b.write_string1(col.name)
+		b.write_string1(col.name.sub_entity_name)
 		b.write_u8(col.typ.number())
 		b.write_bool(col.not_null)
 		b.write_i32(col.typ.size)
@@ -122,7 +121,7 @@ fn (t Table) bytes() []u8 {
 	return b.bytes()
 }
 
-fn new_table_from_bytes(data []u8, tid int) Table {
+fn new_table_from_bytes(data []u8, tid int, catalog_name string) Table {
 	mut b := new_bytes(data)
 
 	table_name := b.read_identifier()
@@ -141,7 +140,12 @@ fn new_table_from_bytes(data []u8, tid int) Table {
 		size := b.read_i32()
 		b.read_i16() // precision
 
-		columns << Column{column_name, type_from_number(column_type, size), is_not_null}
+		columns << Column{Identifier{
+			catalog_name: catalog_name
+			schema_name: table_name.schema_name
+			entity_name: table_name.entity_name
+			sub_entity_name: column_name
+		}, type_from_number(column_type, size), is_not_null}
 	}
 
 	return Table{tid, table_name, columns, primary_key, false}
@@ -170,23 +174,30 @@ struct TableOperation {
 	table_is_subplan bool
 	table            Table
 	params           map[string]Value
-	conn             &Connection
 mut:
+	conn     &Connection
 	subplans map[string]Plan
-	storage  Storage
 }
 
 fn (o TableOperation) str() string {
-	return 'TABLE ${o.table_name} (${o.columns()})'
+	return 'TABLE ${o.table_name} (${o.pretty_columns()})'
+}
+
+// We could just render `o.table.columns`. However, it makes the output extra
+// verbose, so we only show the column names.
+fn (o TableOperation) pretty_columns() Columns {
+	mut cols := []Column{}
+	for c in o.table.columns {
+		cols << Column{Identifier{
+			sub_entity_name: c.name.sub_entity_name
+		}, c.typ, c.not_null}
+	}
+
+	return cols
 }
 
 fn (o TableOperation) columns() Columns {
-	mut columns := []Column{}
-	for column in o.table.columns {
-		columns << Column{'${o.table_name.id()}.${column.name}', column.typ, column.not_null}
-	}
-
-	return columns
+	return o.table.columns
 }
 
 fn (mut o TableOperation) execute(_ []Row) ![]Row {
@@ -196,13 +207,16 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 		for row in o.subplans[o.table_name.id()].execute([]Row{})! {
 			mut data := map[string]Value{}
 			for k, v in row.data {
-				data['${o.table_name.id()}.${k}'] = v
+				data['${o.table_name}.${k}'] = v
 			}
 
 			rows << new_row(data)
 		}
 	} else {
-		rows = o.storage.read_rows(o.table_name.id())!
+		mut catalog := o.conn.catalogs[o.table_name.catalog_name] or {
+			return error('unknown catalog: ${o.table_name.catalog_name}')
+		}
+		rows = catalog.storage.read_rows(o.table_name)!
 	}
 
 	return rows

@@ -12,9 +12,10 @@ fn execute_drop_sequence(mut c Connection, stmt DropSequenceStmt, elapsed_parse 
 		c.release_write_connection()
 	}
 
+	mut catalog := c.catalog()
 	name := c.resolve_schema_identifier(stmt.sequence_name)!
-	sequence := c.storage.sequence(name)!
-	c.storage.delete_sequence(name, sequence.tid)!
+	sequence := catalog.storage.sequence(name)!
+	catalog.storage.delete_sequence(name, sequence.tid)!
 
 	return new_result_msg('DROP SEQUENCE 1', elapsed_parse, t.elapsed())
 }

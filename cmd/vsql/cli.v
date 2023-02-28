@@ -19,7 +19,13 @@ fn register_cli_command(mut cmd cli.Command) {
 fn cli_command(cmd cli.Command) ! {
 	print_version()
 
-	mut db := vsql.open(cmd.args[0]) or { return err }
+	mut db := vsql.open(cmd.args[0])!
+
+	for arg in cmd.args[1..] {
+		catalog_name := vsql.catalog_name_from_path(arg)
+		options := vsql.default_connection_options()
+		db.add_catalog(catalog_name, arg, options)!
+	}
 
 	for {
 		print('vsql> ')
@@ -27,12 +33,12 @@ fn cli_command(cmd cli.Command) ! {
 
 		if query != '' {
 			start := time.ticks()
-			result := db.query(query) or { return err }
+			result := db.query(query)!
 
 			mut total_rows := 0
 			for row in result {
 				for column in result.columns {
-					print('${column.name}: ${row.get_string(column.name)} ')
+					print('${column.name.sub_entity_name}: ${row.get_string(column.name.sub_entity_name)!} ')
 				}
 				total_rows++
 			}
@@ -42,6 +48,12 @@ fn cli_command(cmd cli.Command) ! {
 			}
 
 			println('${total_rows} ${vsql.pluralize(total_rows, 'row')} (${time.ticks() - start} ms)')
+		} else {
+			// This means there is no more input and should only occur when the
+			// commands are being few through a pipe like:
+			//
+			//   echo "VALUES CURRENT_CATALOG;" | vsql cli
+			break
 		}
 
 		println('')

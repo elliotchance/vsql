@@ -1,12 +1,12 @@
 DROP TABLE foo;
--- error 42P01: no such table: PUBLIC.FOO
+-- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
 CREATE TABLE foo (x FLOAT);
 DROP TABLE foo;
 DROP TABLE foo;
 -- msg: CREATE TABLE 1
 -- msg: DROP TABLE 1
--- error 42P01: no such table: PUBLIC.FOO
+-- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
 DROP TABLE foo.bar;
 -- error 3F000: invalid schema name: FOO

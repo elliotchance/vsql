@@ -16,23 +16,23 @@ VALUES 6 / 2;
 
 /* types */
 VALUES 1.2 + 2.4;
--- COL1: 3.6e0 (DOUBLE PRECISION)
+-- COL1: 3.6 (NUMERIC(2, 1))
 
 /* types */
 VALUES 1.7 - 0.5;
--- COL1: 1.2e0 (DOUBLE PRECISION)
+-- COL1: 1.2 (NUMERIC(2, 1))
 
 /* types */
 VALUES 2.2 * 3.3;
--- COL1: 7.26e0 (DOUBLE PRECISION)
+-- COL1: 7.26 (NUMERIC(4, 2))
 
 /* types */
 VALUES 6.0 / 2.5;
--- COL1: 2.4e0 (DOUBLE PRECISION)
+-- COL1: 2.4 (NUMERIC(4, 2))
 
 /* types */
 VALUES 0.0 / 2.5;
--- COL1: 0e0 (DOUBLE PRECISION)
+-- COL1: 0 (NUMERIC(4, 2))
 
 /* types */
 VALUES 2.5 / 0.0;
@@ -44,11 +44,11 @@ VALUES -123;
 
 /* types */
 VALUES +1.23;
--- COL1: 1.23e0 (DOUBLE PRECISION)
+-- COL1: 1.23 (NUMERIC(3, 2))
 
 /* types */
 VALUES 1.5 + 2.4 * 7.0;
--- COL1: 18.3e0 (DOUBLE PRECISION)
+-- COL1: 18.3 (NUMERIC(4, 2))
 
 VALUES 30000 + 30000;
 -- error 22003: numeric value out of range

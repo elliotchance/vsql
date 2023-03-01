@@ -41,61 +41,106 @@ fn (q QueryCache) prepare_stmt(tokens []Token) (string, map[string]Value, []Toke
 	//  placeholder so it can be replaced in place?
 	mut new_tokens := []Token{cap: tokens.len}
 
-	for j, token in tokens {
-		mut ignore := false
+	mut j := 0
+	for j < tokens.len {
+		token := tokens[j]
 
-		// Do not replace with placeholders for parts of a number.
-		//
-		// TODO(elliotchance): This should actually replace the exact decimal
-		//  number with a placeholder instead of ignoring.
-		if j < tokens.len - 1 && tokens[j + 1].kind == .period {
-			ignore = true
-		}
-		if j > 0 && tokens[j - 1].kind == .period {
-			ignore = true
+		// Special handling for named literals.
+		if j < tokens.len - 1 && token.kind == .keyword
+			&& (token.value == 'TIMESTAMP' || token.value == 'TIME' || token.value == 'DATE')
+			&& tokens[j + 1].kind == .literal_string {
+			v := match token.value {
+				'DATE' {
+					new_date_value(tokens[j + 1].value) or { panic(err) }
+				}
+				'TIME' {
+					new_time_value(tokens[j + 1].value) or { panic(err) }
+				}
+				'TIMESTAMP' {
+					new_timestamp_value(tokens[j + 1].value) or { panic(err) }
+				}
+				else {
+					panic(token.value)
+				}
+			}
+			params['P${i}'] = v
+
+			key += ':P${i} '
+			new_tokens << Token{.colon, ':'}
+			new_tokens << Token{.literal_identifier, 'P${i}'}
+			i++
+
+			j += 2
+			continue
 		}
 
-		// Do not replace with placeholders for string literals that are part of
-		// date time literals, these have to stay as strings because they are
-		// parsed internally.
-		if j > 0 && tokens[j - 1].kind == .keyword && (tokens[j - 1].value == 'TIMESTAMP'
-			|| tokens[j - 1].value == 'TIME' || tokens[j - 1].value == 'DATE') {
-			ignore = true
+		// Do not replace numbers that appear in types. Such as 'NUMERIC(10, 2)'.
+		if j < tokens.len - 6 && token.kind == .keyword
+			&& (token.value == 'DECIMAL' || token.value == 'NUMERIC') && tokens[j + 1].value == '('
+			&& tokens[j + 3].value == ',' {
+			key += tokens[j].value.to_upper() + ' '
+			key += tokens[j + 1].value.to_upper() + ' '
+			key += tokens[j + 2].value.to_upper() + ' '
+			key += tokens[j + 3].value.to_upper() + ' '
+			key += tokens[j + 4].value.to_upper() + ' '
+			key += tokens[j + 5].value.to_upper() + ' '
+			new_tokens << tokens[j..j + 6]
+			j += 6
+			continue
 		}
 
 		// Do not replace numbers that appear in types. Such as 'VARCHAR(10)'.
-		if j > 1 && tokens[j - 2].kind == .keyword {
-			ignore = true
+		if j < tokens.len - 4 && token.kind == .keyword && (token.value == 'VARCHAR'
+			|| token.value == 'CHAR' || token.value == 'VARYING'
+			|| token.value == 'DECIMAL' || token.value == 'NUMERIC'
+			|| token.value == 'TIMESTAMP' || token.value == 'TIME') && tokens[j + 1].value == '(' {
+			key += tokens[j].value.to_upper() + ' '
+			key += tokens[j + 1].value.to_upper() + ' '
+			key += tokens[j + 2].value.to_upper() + ' '
+			key += tokens[j + 3].value.to_upper() + ' '
+			new_tokens << tokens[j..j + 4]
+			j += 4
+			continue
 		}
 
-		if !ignore {
-			match token.kind {
-				.literal_number {
-					// This should never fail as the value is already well formed, but we
-					// have to satisfy the compiler with an "or".
-					v := numeric_literal(token.value) or { panic(err) }
-					params['P${i}'] = v
+		match token.kind {
+			.literal_number {
+				mut numeric_tokens := ''
+				// Numeric values with a decimal and approximate literals (1e2) are
+				// actually multiple tokens like [number, '.' number] or
+				// [number, 'E', number] so we need to be careful to consume all.
+				for j < tokens.len && (tokens[j].kind == .literal_number
+					|| tokens[j].kind == .period || tokens[j].value == 'E') {
+					numeric_tokens += tokens[j].value
+					j++
+				}
 
-					key += ':P${i} '
-					new_tokens << Token{.colon, ':'}
-					new_tokens << Token{.literal_identifier, 'P${i}'}
-					i++
-					continue
-				}
-				.literal_string {
-					key += ':P${i} '
-					params['P${i}'] = new_varchar_value(token.value)
-					new_tokens << Token{.colon, ':'}
-					new_tokens << Token{.literal_identifier, 'P${i}'}
-					i++
-					continue
-				}
-				else {}
+				// This should never fail as the value is already well formed, but we
+				// have to satisfy the compiler with an "or".
+				v := numeric_literal(numeric_tokens) or { panic(numeric_tokens) }
+				params['P${i}'] = v
+
+				key += ':P${i} '
+				new_tokens << Token{.colon, ':'}
+				new_tokens << Token{.literal_identifier, 'P${i}'}
+				i++
+				continue
 			}
+			.literal_string {
+				key += ':P${i} '
+				params['P${i}'] = new_varchar_value(token.value)
+				new_tokens << Token{.colon, ':'}
+				new_tokens << Token{.literal_identifier, 'P${i}'}
+				i++
+				j++
+				continue
+			}
+			else {}
 		}
 
 		key += token.value.to_upper() + ' '
 		new_tokens << token
+		j++
 	}
 
 	return key, params, new_tokens

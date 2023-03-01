@@ -89,6 +89,11 @@ fn (stmt TableDefinition) execute(mut conn Connection, params map[string]Value, 
 	for table_element in stmt.table_elements {
 		match table_element {
 			Column {
+				if (table_element.typ.typ == .is_numeric || table_element.typ.typ == .is_decimal)
+					&& table_element.typ.size == 0 {
+					return sqlstate_42601('column ${table_element.name.sub_entity_name}: ${table_element.typ.typ} must specify a size')
+				}
+
 				columns << Column{Identifier{
 					catalog_name: table_name.catalog_name
 					schema_name: table_name.schema_name

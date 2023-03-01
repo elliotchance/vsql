@@ -151,15 +151,19 @@ ABS
 .. code-block:: sql
 
    ABS(DOUBLE PRECISION) DOUBLE PRECISION
+   ABS(NUMERIC) NUMERIC
 
-Absolute value.
+Absolute value. When using ``NUMERIC`` the same scale and precision is returned.
 
 **Examples**
 
 .. code-block:: sql
 
-  VALUES ABS(1.2);
-  -- 1.2
+  VALUES ABS(1.2e0);
+  -- 1.2e0
+  
+  VALUES ABS(-1.23e0);
+  -- 1.23e0
   
   VALUES ABS(-1.23);
   -- 1.23
@@ -218,27 +222,35 @@ CEIL
 .. code-block:: sql
 
    CEIL(DOUBLE PRECISION) DOUBLE PRECISION
+   CEIL(NUMERIC) NUMERIC
 
-Round up to the nearest integer.
+Round up to the nearest integer. When using ``NUMERIC`` the same scale and
+precision is returned.
 
 **Examples**
 
 .. code-block:: sql
 
+  VALUES CEIL(3.7e0);
+  -- COL1: 4e0
+
+  VALUES CEIL(3.3e0);
+  -- COL2: 4e0
+
+  VALUES CEIL(-3.7e0);
+  -- COL3: -3e0
+
+  VALUES CEIL(-3.3e0);
+  -- COL4: -3e0
+
+  VALUES CEILING(3.7e0);
+  -- COL1: 4e0
+
   VALUES CEIL(3.7);
   -- COL1: 4
 
-  VALUES CEIL(3.3);
-  -- COL2: 4
-
-  VALUES CEIL(-3.7);
-  -- COL3: -3
-
-  VALUES CEIL(-3.3);
-  -- COL4: -3
-
-  VALUES CEILING(3.7);
-  -- COL1: 4
+  VALUES CEILING(-3.7);
+  -- COL1: -3
 
 CEILING
 ^^^^^^^
@@ -246,6 +258,7 @@ CEILING
 .. code-block:: sql
 
    CEILING(DOUBLE PRECISION) DOUBLE PRECISION
+   CEILING(NUMERIC) NUMERIC
 
 ``CEILING`` is an alias of ``CEIL``.
 
@@ -303,23 +316,31 @@ FLOOR
 .. code-block:: sql
 
    FLOOR(DOUBLE PRECISION) DOUBLE PRECISION
+   FLOOR(NUMERIC) NUMERIC
 
-Round down to the nearest integer.
+Round down to the nearest integer. When using ``NUMERIC`` the same scale and
+precision is returned.
 
 **Examples**
 
 .. code-block:: sql
 
+  VALUES FLOOR(3.7e0);
+  -- COL1: 3e0
+
+  VALUES FLOOR(3.3e0);
+  -- COL1: 3e0
+
+  VALUES FLOOR(-3.7e0);
+  -- COL1: -4e0
+
+  VALUES FLOOR(-3.3e0);
+  -- COL1: -4e0
+
   VALUES FLOOR(3.7);
   -- COL1: 3
 
-  VALUES FLOOR(3.3);
-  -- COL1: 3
-
   VALUES FLOOR(-3.7);
-  -- COL1: -4
-
-  VALUES FLOOR(-3.3);
   -- COL1: -4
 
 LN
@@ -360,15 +381,20 @@ MOD
 .. code-block:: sql
 
    MOD(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   MOD(NUMERIC, NUMERIC) NUMERIC
 
-Modulus.
+Modulus. When using ``NUMERIC`` the result will have a precision that is the
+highest precision between either parameter. The scale is undetermined.
 
 **Examples**
 
 .. code-block:: sql
 
-  VALUES MOD(232, 3);
-  -- COL1: 1
+  VALUES MOD(232e0, 3e0);
+  -- COL1: 1e0
+
+  VALUES MOD(10.7e0, 0.8e0);
+  -- COL1: 0.3e0
 
   VALUES MOD(10.7, 0.8);
   -- COL1: 0.3

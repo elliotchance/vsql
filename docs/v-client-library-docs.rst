@@ -13,6 +13,16 @@ Constants
 
 
 
+fn open
+-------
+
+
+.. code-block:: v
+
+   pub fn open(path string) !&Connection
+
+open is the convenience function for open_database() with default options.
+
 fn catalog_name_from_path
 -------------------------
 
@@ -23,25 +33,57 @@ fn catalog_name_from_path
 
 
 
-fn new_varchar_value
+fn sqlstate_to_int
+------------------
+
+
+.. code-block:: v
+
+   pub fn sqlstate_to_int(code string) int
+
+sqlstate_to_int converts the 5 character SQLSTATE code (such as "42P01") into an integer representation. The returned value can be converted back to its respective string by using sqlstate_from_int().
+
+If code is invalid the result will be unexpected.
+
+fn start_timer
+--------------
+
+
+.. code-block:: v
+
+   pub fn start_timer() Timer
+
+
+
+fn sqlstate_from_int
 --------------------
 
 
 .. code-block:: v
 
-   pub fn new_varchar_value(x string) Value
+   pub fn sqlstate_from_int(code int) string
 
-new_varchar_value creates a ``CHARACTER VARYING`` value.
+sqlstate_from_int performs the inverse operation of sqlstate_to_int.
 
-fn open
--------
+fn pluralize
+------------
 
 
 .. code-block:: v
 
-   pub fn open(path string) !&Connection
+   pub fn pluralize(n int, word string) string
 
-open is the convenience function for open_database() with default options.
+TODO(elliotchance): Make private when CLI is moved into vsql package.
+
+fn default_connection_options
+-----------------------------
+
+
+.. code-block:: v
+
+   pub fn default_connection_options() ConnectionOptions
+
+default_connection_options returns the sensible defaults used by open() and the correct base to provide your own option overrides. See ConnectionOptions.
 
 fn open_database
 ----------------
@@ -67,26 +109,6 @@ open_database can be used concurrently for reading and writing to the same file 
 
 See ConnectionOptions and default_connection_options().
 
-fn pluralize
-------------
-
-
-.. code-block:: v
-
-   pub fn pluralize(n int, word string) string
-
-TODO(elliotchance): Make private when CLI is moved into vsql package.
-
-fn default_connection_options
------------------------------
-
-
-.. code-block:: v
-
-   pub fn default_connection_options() ConnectionOptions
-
-default_connection_options returns the sensible defaults used by open() and the correct base to provide your own option overrides. See ConnectionOptions.
-
 fn new_benchmark
 ----------------
 
@@ -106,38 +128,6 @@ fn new_bigint_value
    pub fn new_bigint_value(x i64) Value
 
 new_bigint_value creates a ``BIGINT`` value.
-
-fn sqlstate_from_int
---------------------
-
-
-.. code-block:: v
-
-   pub fn sqlstate_from_int(code int) string
-
-sqlstate_from_int performs the inverse operation of sqlstate_to_int.
-
-fn sqlstate_to_int
-------------------
-
-
-.. code-block:: v
-
-   pub fn sqlstate_to_int(code string) int
-
-sqlstate_to_int converts the 5 character SQLSTATE code (such as "42P01") into an integer representation. The returned value can be converted back to its respective string by using sqlstate_from_int().
-
-If code is invalid the result will be unexpected.
-
-fn start_timer
---------------
-
-
-.. code-block:: v
-
-   pub fn start_timer() Timer
-
-
 
 fn new_boolean_value
 --------------------
@@ -169,6 +159,20 @@ fn new_date_value
 
 new_date_value creates a ``DATE`` value.
 
+fn new_decimal_value
+--------------------
+
+
+.. code-block:: v
+
+   pub fn new_decimal_value(x string) Value
+
+new_decimal_value expects a value to be valid and the size and scale are determined from the value as:
+
+123     -> DECIMAL(3, 0) 123.    -> DECIMAL(3, 0) 1.23    -> DECIMAL(3, 2) -1.23   -> DECIMAL(3, 2) 12.00   -> DECIMAL(4, 2)
+
+
+
 fn new_double_precision_value
 -----------------------------
 
@@ -198,6 +202,20 @@ fn new_null_value
    pub fn new_null_value(typ SQLType) Value
 
 new_null_value creates a NULL value of a specific type. In SQL, all NULL values need to have a type.
+
+fn new_numeric_value
+--------------------
+
+
+.. code-block:: v
+
+   pub fn new_numeric_value(x string) Value
+
+new_numeric_value expects a value to be valid and the size and scale are determined from the value as:
+
+123     -> NUMERIC(3, 0) 123.    -> NUMERIC(3, 0) 1.23    -> NUMERIC(3, 2) -1.23   -> NUMERIC(3, 2) 12.00   -> NUMERIC(4, 2)
+
+
 
 fn new_query_cache
 ------------------
@@ -269,6 +287,16 @@ fn new_timestamp_value
 
 new_timestamp_value creates a ``TIMESTAMP`` value.
 
+fn new_varchar_value
+--------------------
+
+
+.. code-block:: v
+
+   pub fn new_varchar_value(x string) Value
+
+new_varchar_value creates a ``CHARACTER VARYING`` value.
+
 fn new_unknown_value
 --------------------
 
@@ -279,12 +307,6 @@ fn new_unknown_value
 
 new_unknown_value returns an ``UNKNOWN`` value. This is the ``NULL`` representation of ``BOOLEAN``.
 
-type Server
------------
-
-
-
-
 type Row
 --------
 
@@ -292,6 +314,12 @@ type Row
 
 
 type Column
+-----------
+
+
+
+
+type Server
 -----------
 
 
@@ -312,88 +340,6 @@ enum Boolean
    }
 
 Possible values for a BOOLEAN.
-
-struct VirtualTable
--------------------
-
-
-.. code-block:: v
-
-   pub struct VirtualTable {
-   	create_table_sql  string
-   	create_table_stmt TableDefinition
-   	data              VirtualTableProviderFn @[required]
-   mut:
-   	is_done bool
-   	rows    []Row
-   }
-
-
-
-struct CatalogConnection
-------------------------
-
-
-.. code-block:: v
-
-   @[heap]
-   pub struct CatalogConnection {
-   	// path is the file name of the database. It can be the special name
-   	// ':memory:'.
-   	path         string
-   	catalog_name string
-   mut:
-   	// storage will be replaced when the file is reopend for reading or writing.
-   	storage Storage
-   	// options are used when aquiring each file connection.
-   	options ConnectionOptions
-   	// virtual_tables can be created independent from the physical schema.
-   	virtual_tables map[string]VirtualTable
-   }
-
-A Connection allows querying and other introspection for a database file. Use open() or open_database() to create a Connection.
-
-struct Connection
------------------
-
-
-.. code-block:: v
-
-   @[heap]
-   pub struct Connection {
-   mut:
-   	catalogs map[string]&CatalogConnection
-   	// funcs only needs to be initialized once on open()
-   	funcs []Func
-   	// query_cache is maintained over file reopens.
-   	query_cache &QueryCache
-   	// cast_rules are use for CAST() (see cast.v)
-   	cast_rules map[string]CastFunc
-   	// unary_operators and binary_operators are for operators (see operators.v)
-   	unary_operators  map[string]UnaryOperatorFunc
-   	binary_operators map[string]BinaryOperatorFunc
-   	// current_schema is where to search for unquailified table names. It will
-   	// have an initial value of 'PUBLIC'.
-   	current_schema string
-   	// current_catalog (also known as the database). It will have an inital value
-   	// derived from the first database file loaded.
-   	current_catalog string
-   pub mut:
-   	// now allows you to override the wall clock that is used. The Time must be
-   	// in UTC with a separate offset for the current local timezone (in positive
-   	// or negative minutes).
-   	now fn () (time.Time, i16) @[required]
-   	// warnings are SQLSTATE errors that do not stop the execution. For example,
-   	// if a value must be truncated during a runtime CAST.
-   	//
-   	// Warnings are not ever reset, although only 100 of the most recent warnings
-   	// are retained. This is to be able to collect all warnings during some
-   	// arbitrary process defined by the application. Instead, you should call
-   	// clear_warnings() before starting a block of work.
-   	warnings []IError
-   }
-
-A Connection allows querying and other introspection for a database file. Use open() or open_database() to create a Connection.
 
 struct ConnectionOptions
 ------------------------
@@ -437,65 +383,6 @@ struct ConnectionOptions
    }
 
 ConnectionOptions can modify the behavior of a connection when it is opened. You should not create the ConnectionOptions instance manually. Instead, use default_connection_options() as a starting point and modify the attributes.
-
-struct Identifier
------------------
-
-
-.. code-block:: v
-
-   pub struct Identifier {
-   pub:
-   	// catalog_name is optional. If not provided, the CURRENT_CATALOG will be
-   	// used.
-   	catalog_name string
-   	// schema_name is optional. If not provided, it will use CURRENT_SCHEMA.
-   	schema_name string
-   	// entity_name would be the table name, sequence name, etc. Something inside
-   	// of a schema. It is case sensitive.
-   	entity_name string
-   	// sub_entity_name would represent a column name. It is case sensitive.
-   	sub_entity_name string
-   	// custom_id is a way to override the behavior of rendering and storage. This
-   	// is only used for internal identifiers.
-   	custom_id  string
-   	custom_typ Type
-   }
-
-Identifier is used to describe a object within a schema (such as a table name) or a property of an object (like a column name of a table). You should not instantiate this directly, instead use the appropriate new_*_identifier() function.
-
-If you need the fully qualified (canonical) form of an identified you can use Connection.resolve_schema_identifier().
-
-struct PageObject
------------------
-
-
-.. code-block:: v
-
-   pub struct PageObject {
-   	// The key is not required to be unique in the page. It becomes unique when
-   	// combined with tid. However, no more than two version of the same key can
-   	// exist in a page. See the caveats at the top of btree.v.
-   	key []u8
-   	// The value contains the serialized data for the object. The first byte of
-   	// key is used to both identify what type of object this is and also keep
-   	// objects within the same collection also within the same range.
-   	value []u8
-   	// When is_blob_ref is true, the value will be always be 5 bytes. See
-   	// blob_info().
-   	is_blob_ref bool
-   mut:
-   	// The tid is the transaction that created the object.
-   	//
-   	// TODO(elliotchance): It makes more sense to construct a new PageObject
-   	//  when changing the tid and xid.
-   	tid int
-   	// The xid is the transaciton that deleted the object, or zero if it has
-   	// never been deleted.
-   	xid int
-   }
-
-TODO(elliotchance): This does not need to be public. It was required for a bug at the time with V not being able to pass this to the shuffle function. At some point in the future remove the pub and see if it works.
 
 struct PreparedStmt
 -------------------
@@ -559,6 +446,23 @@ A Result contains zero or more rows returned from a query.
 
 See next() for an example on iterating rows in a Result.
 
+struct Benchmark
+----------------
+
+
+.. code-block:: v
+
+   pub struct Benchmark {
+   pub mut:
+   	conn         &Connection
+   	account_rows int
+   	teller_rows  int
+   	branch_rows  int
+   	run_for      time.Duration
+   }
+
+
+
 struct Schema
 -------------
 
@@ -610,6 +514,23 @@ struct Sequence
 
 A SEQUENCE definition.
 
+struct VirtualTable
+-------------------
+
+
+.. code-block:: v
+
+   pub struct VirtualTable {
+   	create_table_sql  string
+   	create_table_stmt TableDefinition
+   	data              VirtualTableProviderFn @[required]
+   mut:
+   	is_done bool
+   	rows    []Row
+   }
+
+
+
 struct ServerOptions
 --------------------
 
@@ -623,6 +544,71 @@ struct ServerOptions
    }
 
 
+
+struct Connection
+-----------------
+
+
+.. code-block:: v
+
+   @[heap]
+   pub struct Connection {
+   mut:
+   	catalogs map[string]&CatalogConnection
+   	// funcs only needs to be initialized once on open()
+   	funcs []Func
+   	// query_cache is maintained over file reopens.
+   	query_cache &QueryCache
+   	// cast_rules are use for CAST() (see cast.v)
+   	cast_rules map[string]CastFunc
+   	// unary_operators and binary_operators are for operators (see operators.v)
+   	unary_operators  map[string]UnaryOperatorFunc
+   	binary_operators map[string]BinaryOperatorFunc
+   	// current_schema is where to search for unquailified table names. It will
+   	// have an initial value of 'PUBLIC'.
+   	current_schema string
+   	// current_catalog (also known as the database). It will have an inital value
+   	// derived from the first database file loaded.
+   	current_catalog string
+   pub mut:
+   	// now allows you to override the wall clock that is used. The Time must be
+   	// in UTC with a separate offset for the current local timezone (in positive
+   	// or negative minutes).
+   	now fn () (time.Time, i16) @[required]
+   	// warnings are SQLSTATE errors that do not stop the execution. For example,
+   	// if a value must be truncated during a runtime CAST.
+   	//
+   	// Warnings are not ever reset, although only 100 of the most recent warnings
+   	// are retained. This is to be able to collect all warnings during some
+   	// arbitrary process defined by the application. Instead, you should call
+   	// clear_warnings() before starting a block of work.
+   	warnings []IError
+   }
+
+A Connection allows querying and other introspection for a database file. Use open() or open_database() to create a Connection.
+
+struct CatalogConnection
+------------------------
+
+
+.. code-block:: v
+
+   @[heap]
+   pub struct CatalogConnection {
+   	// path is the file name of the database. It can be the special name
+   	// ':memory:'.
+   	path         string
+   	catalog_name string
+   mut:
+   	// storage will be replaced when the file is reopend for reading or writing.
+   	storage Storage
+   	// options are used when aquiring each file connection.
+   	options ConnectionOptions
+   	// virtual_tables can be created independent from the physical schema.
+   	virtual_tables map[string]VirtualTable
+   }
+
+A Connection allows querying and other introspection for a database file. Use open() or open_database() to create a Connection.
 
 struct Table
 ------------
@@ -698,20 +684,62 @@ struct Value
 
 A single value. It contains it's type information in ``typ``.
 
-struct Benchmark
-----------------
+struct PageObject
+-----------------
 
 
 .. code-block:: v
 
-   pub struct Benchmark {
-   pub mut:
-   	conn         &Connection
-   	account_rows int
-   	teller_rows  int
-   	branch_rows  int
-   	run_for      time.Duration
+   pub struct PageObject {
+   	// The key is not required to be unique in the page. It becomes unique when
+   	// combined with tid. However, no more than two version of the same key can
+   	// exist in a page. See the caveats at the top of btree.v.
+   	key []u8
+   	// The value contains the serialized data for the object. The first byte of
+   	// key is used to both identify what type of object this is and also keep
+   	// objects within the same collection also within the same range.
+   	value []u8
+   	// When is_blob_ref is true, the value will be always be 5 bytes. See
+   	// blob_info().
+   	is_blob_ref bool
+   mut:
+   	// The tid is the transaction that created the object.
+   	//
+   	// TODO(elliotchance): It makes more sense to construct a new PageObject
+   	//  when changing the tid and xid.
+   	tid int
+   	// The xid is the transaciton that deleted the object, or zero if it has
+   	// never been deleted.
+   	xid int
    }
 
+TODO(elliotchance): This does not need to be public. It was required for a bug at the time with V not being able to pass this to the shuffle function. At some point in the future remove the pub and see if it works.
 
+struct Identifier
+-----------------
+
+
+.. code-block:: v
+
+   pub struct Identifier {
+   pub:
+   	// catalog_name is optional. If not provided, the CURRENT_CATALOG will be
+   	// used.
+   	catalog_name string
+   	// schema_name is optional. If not provided, it will use CURRENT_SCHEMA.
+   	schema_name string
+   	// entity_name would be the table name, sequence name, etc. Something inside
+   	// of a schema. It is case sensitive.
+   	entity_name string
+   	// sub_entity_name would represent a column name. It is case sensitive.
+   	sub_entity_name string
+   	// custom_id is a way to override the behavior of rendering and storage. This
+   	// is only used for internal identifiers.
+   	custom_id  string
+   	custom_typ Type
+   }
+
+Identifier is used to describe a object within a schema (such as a table name) or a property of an object (like a column name of a table). You should not instantiate this directly, instead use the appropriate new_*_identifier() function.
+
+If you need the fully qualified (canonical) form of an identified you can use Connection.resolve_schema_identifier().
 

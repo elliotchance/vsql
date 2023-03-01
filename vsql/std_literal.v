@@ -118,13 +118,18 @@ fn parse_timestamp_literal(v Value) !Value {
 }
 
 fn numeric_literal(x string) !Value {
+	// This is only to handle QueryCache.prepare_stmt(). It can be removed when
+	// that's no longer needed.
+	if x.contains('E') {
+		parts := x.split('E')
+		return new_double_precision_value(parts[0].f64() * math.pow(10, parts[1].f64()))
+	}
+
 	// Any number that contains a decimal (even if its a whole number) must be
 	// treated as a NUMERIC.
 	if x.contains('.') {
 		// The trim handles cases of "123." which should be treated as "123".
-		//
-		// TODO(elliotchance): This needs to be new_numeric_value() once supported.
-		return new_double_precision_value(x.trim_right('.').f64())
+		return new_numeric_value(x.trim_right('.'))
 	}
 
 	// Otherwise, we know this is an int but we have to choose the smallest type.

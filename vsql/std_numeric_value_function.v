@@ -204,6 +204,16 @@ fn func_abs(args []Value) !Value {
 	return new_double_precision_value(math.abs(args[0].f64_value()))
 }
 
+// ABS(NUMERIC) NUMERIC
+fn func_abs_numeric(args []Value) !Value {
+	n := args[0].numeric_value()
+	if n.is_negative() {
+		return new_numeric_value_from_numeric(n.neg())
+	}
+
+	return args[0]
+}
+
 // SIN(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_sin(args []Value) !Value {
 	return new_double_precision_value(math.sin(args[0].f64_value()))
@@ -254,6 +264,14 @@ fn func_mod(args []Value) !Value {
 	return new_double_precision_value(math.fmod(args[0].f64_value(), args[1].f64_value()))
 }
 
+// MOD(NUMERIC, NUMERIC) NUMERIC
+fn func_mod_numeric(args []Value) !Value {
+	value := args[0].numeric_value()
+	modulus := args[1].numeric_value()
+
+	return new_numeric_value_from_numeric(value.subtract(value.divide(modulus)!.trunc().multiply(modulus)))
+}
+
 // LOG(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_log(args []Value) !Value {
 	return new_double_precision_value(math.log2(args[0].f64_value()))
@@ -289,7 +307,32 @@ fn func_floor(args []Value) !Value {
 	return new_double_precision_value(math.floor(args[0].f64_value()))
 }
 
+// FLOOR(NUMERIC) NUMERIC
+fn func_floor_numeric(args []Value) !Value {
+	n := args[0].numeric_value()
+	if n.is_negative() {
+		return new_numeric_value_from_numeric(n.subtract(new_numeric_from_string('1')).trunc())
+	}
+
+	return new_numeric_value_from_numeric(n.trunc())
+}
+
 // CEIL(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_ceil(args []Value) !Value {
 	return new_double_precision_value(math.ceil(args[0].f64_value()))
+}
+
+// CEIL(NUMERIC) NUMERIC
+fn func_ceil_numeric(args []Value) !Value {
+	n := args[0].numeric_value()
+	t := n.trunc()
+	if n.equals(t) {
+		return args[0]
+	}
+
+	if n.is_negative() {
+		return new_numeric_value_from_numeric(t)
+	}
+
+	return new_numeric_value_from_numeric(t.add(new_numeric_from_string('1')))
 }

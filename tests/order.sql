@@ -66,13 +66,13 @@ EXPLAIN SELECT * FROM foo ORDER BY ABS(10 - x);
 -- EXPLAIN: ORDER BY ABS(10 - X) ASC
 -- EXPLAIN: EXPR (":memory:".PUBLIC.FOO.X DOUBLE PRECISION, ":memory:".PUBLIC.FOO.Y CHARACTER VARYING(32))
 
-SELECT * FROM foo ORDER BY ABS(10.0 - x);
+SELECT * FROM foo ORDER BY ABS(10e0 - x);
 -- X: 12.34e0 Y: there
 -- X: 5.6e0 Y: bar
 -- X: 1.234e0 Y: hi
 -- X: 0.1234e0 Y: hi
 
-SELECT * FROM foo ORDER BY ABS(10.0 - x) DESC;
+SELECT * FROM foo ORDER BY ABS(10e0 - x) DESC;
 -- X: 0.1234e0 Y: hi
 -- X: 1.234e0 Y: hi
 -- X: 5.6e0 Y: bar

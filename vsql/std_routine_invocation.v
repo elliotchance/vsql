@@ -36,16 +36,7 @@ fn (e RoutineInvocation) pstr(params map[string]Value) string {
 fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	mut arg_types := []Type{}
 	for arg in e.args {
-		mut arg_type := arg.compile(mut c)!.typ
-
-		// TODO(elliotchance): There is a special case where numeric literals are
-		// treated as DOUBLE PRECISION. This will be changed in the future when we
-		// have proper support for NUMERIC.
-		if arg_type.typ == .is_numeric && arg_type.scale == 0 {
-			arg_type = Type{.is_double_precision, 0, 0, false}
-		}
-
-		arg_types << arg_type
+		arg_types << arg.compile(mut c)!.typ
 	}
 
 	func_name := e.function_name

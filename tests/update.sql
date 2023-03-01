@@ -55,7 +55,7 @@ UPDATE foo SET baz = NULL;
 
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (-123);
-UPDATE foo SET baz = -223.0 * 4.2;
+UPDATE foo SET baz = -223.0e0 * 4.2e0;
 SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
@@ -64,7 +64,7 @@ SELECT * FROM foo;
 
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (-123);
-UPDATE foo SET baz = baz * 4.2;
+UPDATE foo SET baz = baz * 4.2e0;
 SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
@@ -73,7 +73,7 @@ SELECT * FROM foo;
 
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (-123);
-UPDATE foo SET baz = foo.baz * 4.2;
+UPDATE foo SET baz = foo.baz * 4.2e0;
 SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
@@ -86,7 +86,7 @@ UPDATE foo.bar SET baz = baz * 4.2;
 CREATE SCHEMA foo;
 CREATE TABLE foo.bar (baz FLOAT);
 INSERT INTO foo.bar (baz) VALUES (-123);
-UPDATE foo.bar SET baz = baz * 4.2;
+UPDATE foo.bar SET baz = baz * 4.2e0;
 SELECT * FROM foo.bar;
 -- msg: CREATE SCHEMA 1
 -- msg: CREATE TABLE 1

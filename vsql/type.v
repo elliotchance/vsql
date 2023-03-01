@@ -30,9 +30,8 @@ enum SQLType {
 	is_time_with_time_zone // TIME WITH TIME ZONE
 	is_timestamp_without_time_zone // TIMESTAMP, TIMESTAMP WITHOUT TIME ZONE
 	is_timestamp_with_time_zone // TIMESTAMP WITH TIME ZONE
-	// This is not actually supported yet, it is a placeholder for numeric
-	// literals.
-	is_numeric
+	is_decimal // DECIMAL
+	is_numeric // NUMERIC
 }
 
 // The SQL representation, such as ``TIME WITHOUT TIME ZONE``.
@@ -52,6 +51,7 @@ fn (t SQLType) str() string {
 		.is_timestamp_without_time_zone { 'TIMESTAMP WITHOUT TIME ZONE' }
 		.is_timestamp_with_time_zone { 'TIMESTAMP WITH TIME ZONE' }
 		.is_numeric { 'NUMERIC' }
+		.is_decimal { 'DECIMAL' }
 	}
 }
 
@@ -106,6 +106,12 @@ fn (t SQLType) supertype() (i16, i16) {
 		.is_bigint {
 			2, 2
 		}
+		.is_decimal {
+			2, 3
+		}
+		.is_numeric {
+			2, 4
+		}
 		// Approximate numeric types.
 		.is_real {
 			3, 0
@@ -118,10 +124,6 @@ fn (t SQLType) supertype() (i16, i16) {
 		.is_timestamp_without_time_zone, .is_timestamp_with_time_zone {
 			4, 0
 		}
-		// Numeric isn't a storage type (yet), otherwise it would be (2, 3).
-		.is_numeric {
-			5, 0
-		}
 	}
 }
 
@@ -130,11 +132,14 @@ fn most_specific_type(t1 Type, t2 Type) !Type {
 	t2_category, t2_supertype := t2.typ.supertype()
 
 	if t1_category == t2_category {
+		// It's important that we strip the sizes so that anything that needs to be
+		// cast (like an integer) will get the correct size.
+
 		if t1_supertype > t2_supertype {
-			return t1
+			return Type{t1.typ, 0, 0, false}
 		}
 
-		return t2
+		return Type{t2.typ, 0, 0, false}
 	}
 
 	// TODO(elliotchance): Is this the correct SQLSTATE?
@@ -183,6 +188,12 @@ fn new_type(name string, size int, scale i16) Type {
 		}
 		'TIMESTAMP WITH TIME ZONE' {
 			Type{.is_timestamp_with_time_zone, size, scale, false}
+		}
+		'DECIMAL' {
+			Type{.is_decimal, size, scale, false}
+		}
+		'NUMERIC' {
+			Type{.is_numeric, size, scale, false}
 		}
 		else {
 			panic(name_without_size)
@@ -243,8 +254,11 @@ fn (t Type) str() string {
 		.is_timestamp_with_time_zone {
 			'TIMESTAMP(${t.size}) WITH TIME ZONE'
 		}
+		.is_decimal {
+			decimal_type_str(t.size, t.scale)
+		}
 		.is_numeric {
-			'NUMERIC'
+			numeric_type_str(t.size, t.scale)
 		}
 	}
 
@@ -255,10 +269,6 @@ fn (t Type) str() string {
 	return s
 }
 
-fn (t Type) is_numeric_literal() bool {
-	return t.typ == .is_numeric && t.size == 0
-}
-
 fn (t Type) uses_int() bool {
 	return match t.typ {
 		.is_boolean, .is_bigint, .is_smallint, .is_integer {
@@ -266,7 +276,7 @@ fn (t Type) uses_int() bool {
 		}
 		.is_varchar, .is_character, .is_double_precision, .is_real, .is_date,
 		.is_time_with_time_zone, .is_time_without_time_zone, .is_timestamp_with_time_zone,
-		.is_timestamp_without_time_zone, .is_numeric {
+		.is_timestamp_without_time_zone, .is_numeric, .is_decimal {
 			false
 		}
 	}
@@ -279,7 +289,7 @@ fn (t Type) uses_f64() bool {
 			true
 		}
 		.is_boolean, .is_varchar, .is_character, .is_bigint, .is_smallint, .is_integer,
-		.is_numeric {
+		.is_numeric, .is_decimal {
 			false
 		}
 	}
@@ -289,10 +299,10 @@ fn (t Type) uses_string() bool {
 	return match t.typ {
 		.is_boolean, .is_double_precision, .is_bigint, .is_real, .is_smallint, .is_integer,
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
-		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
+		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone, .is_numeric, .is_decimal {
 			false
 		}
-		.is_varchar, .is_character, .is_numeric {
+		.is_varchar, .is_character {
 			true
 		}
 	}
@@ -301,7 +311,7 @@ fn (t Type) uses_string() bool {
 fn (t Type) uses_time() bool {
 	return match t.typ {
 		.is_boolean, .is_double_precision, .is_bigint, .is_real, .is_smallint, .is_integer,
-		.is_varchar, .is_character, .is_numeric {
+		.is_varchar, .is_character, .is_numeric, .is_decimal {
 			false
 		}
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
@@ -326,7 +336,8 @@ fn (t Type) number() u8 {
 		.is_time_without_time_zone { 10 }
 		.is_timestamp_with_time_zone { 11 }
 		.is_timestamp_without_time_zone { 12 }
-		.is_numeric { panic('NUMERIC error') }
+		.is_decimal { 13 }
+		.is_numeric { 14 }
 	}
 }
 
@@ -345,6 +356,32 @@ fn type_from_number(number u8, size int, scale i16) Type {
 		10 { 'TIME(${size}) WITHOUT TIME ZONE' }
 		11 { 'TIMESTAMP(${size}) WITH TIME ZONE' }
 		12 { 'TIMESTAMP(${size}) WITHOUT TIME ZONE' }
+		13 { decimal_type_str(size, scale) }
+		14 { numeric_type_str(size, scale) }
 		else { panic(number) }
 	}, size, scale)
+}
+
+fn decimal_type_str(size int, scale i16) string {
+	if size == 0 {
+		return 'DECIMAL'
+	}
+
+	if scale == 0 {
+		return 'DECIMAL(${size})'
+	}
+
+	return 'DECIMAL(${size}, ${scale})'
+}
+
+fn numeric_type_str(size int, scale i16) string {
+	if size == 0 {
+		return 'NUMERIC'
+	}
+
+	if scale == 0 {
+		return 'NUMERIC(${size})'
+	}
+
+	return 'NUMERIC(${size}, ${scale})'
 }

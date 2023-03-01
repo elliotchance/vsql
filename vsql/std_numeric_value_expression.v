@@ -184,7 +184,8 @@ fn parse_factor_2(sign string, expr NumericPrimary) !NumericPrimary {
 				return ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_integer_value(-2147483648))))
 			}
 
-			if v.typ.typ == .is_numeric && v.string_value() == '9223372036854775808' {
+			if v.typ.typ == .is_numeric
+				&& v.numeric_value().equals(new_numeric_from_string('9223372036854775808')) {
 				return ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_bigint_value(-9223372036854775808))))
 			}
 		}

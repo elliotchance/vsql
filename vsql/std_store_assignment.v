@@ -1,6 +1,5 @@
 module vsql
 
-import math.big
 import strings
 
 // ISO/IEC 9075-2:2016(E), 9.2, Store assignment
@@ -11,17 +10,17 @@ import strings
 // of indicator parameters or indicator variables, such as storing SQL-data or
 // setting the value of SQL parameters.
 
-const min_smallint = big.integer_from_i64(-32768)
+const min_smallint = new_numeric_from_string('-32768')
 
-const max_smallint = big.integer_from_i64(32767)
+const max_smallint = new_numeric_from_string('32767')
 
-const min_integer = big.integer_from_i64(-2147483648)
+const min_integer = new_numeric_from_string('-2147483648')
 
-const max_integer = big.integer_from_i64(2147483647)
+const max_integer = new_numeric_from_string('2147483647')
 
-const min_bigint = big.integer_from_i64(-9223372036854775808)
+const min_bigint = new_numeric_from_string('-9223372036854775808')
 
-const max_bigint = big.integer_from_i64(9223372036854775807)
+const max_bigint = new_numeric_from_string('9223372036854775807')
 
 type CastFunc = fn (conn &Connection, v Value, to Type) !Value
 
@@ -200,7 +199,8 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 		//
 		// All of these are not supported types, so fallthrough.
 		//
-		.is_numeric, .is_smallint, .is_integer, .is_bigint, .is_real, .is_double_precision {
+		.is_numeric, .is_decimal, .is_smallint, .is_integer, .is_bigint, .is_real,
+		.is_double_precision {
 			// - 3.b.xv. If the declared type of T is numeric, then, Case:
 			// - 3.b.xv.1. If V is a value of the declared type of T, then the value
 			// of T is set to V.
@@ -363,7 +363,7 @@ fn cast_numeric(mut conn Connection, v Value, t Type) !Value {
 			mut numeric_value := v.as_numeric()!
 			check_numeric_range(numeric_value, .is_smallint)!
 
-			return new_smallint_value(i16(numeric_value.int()))
+			return new_smallint_value(i16(numeric_value.i64()))
 		}
 		.is_integer {
 			mut numeric_value := v.as_numeric()!
@@ -376,7 +376,7 @@ fn cast_numeric(mut conn Connection, v Value, t Type) !Value {
 				return new_integer_value(-2147483648)
 			}
 
-			return new_integer_value(numeric_value.int())
+			return new_integer_value(int(numeric_value.i64()))
 		}
 		.is_bigint {
 			mut numeric_value := v.as_numeric()!
@@ -389,6 +389,39 @@ fn cast_numeric(mut conn Connection, v Value, t Type) !Value {
 		}
 		.is_double_precision {
 			return new_double_precision_value(v.as_f64()!)
+		}
+		.is_numeric, .is_decimal {
+			mut numeric_value := v.as_numeric()!
+
+			// If the destination size = 0, then this is a cast to NUMERIC/DECIMAL and
+			// so we determine the size and scale from the original rules of a NUMERIC
+			// literal.
+			if t.size == 0 {
+				if t.typ == .is_numeric {
+					return new_numeric_value(numeric_value.str())
+				}
+
+				return new_decimal_value(numeric_value.str())
+			}
+
+			// We must not lose any significant figures. We can't trust the size of
+			// the existing number as all the digits may not be used.
+			parts := numeric_value.str().split('.')
+			if parts[0].trim_left('-').len > t.size - t.scale {
+				// numeric value out of range
+				return sqlstate_22003()
+			}
+
+			// We don't need to truncate the scale because there needs to be a
+			// normalization step.
+			// TODO(elliotchace): Normalize number.
+			n := new_numeric(t, numeric_value.numerator, numeric_value.denominator)
+
+			if t.typ == .is_numeric {
+				return new_numeric_value_from_numeric(n)
+			}
+
+			return new_decimal_value_from_numeric(n)
 		}
 		else {}
 	}
@@ -515,20 +548,20 @@ fn cast_timestamp_without_to_timestamp_without(conn &Connection, v Value, to Typ
 	return new_timestamp_value(v.time_value().str_full_timestamp(to.size, false, true))
 }
 
-fn check_numeric_range(x big.Integer, typ SQLType) ! {
+fn check_numeric_range(x Numeric, typ SQLType) ! {
 	match typ {
 		.is_smallint {
-			if x < vsql.min_smallint || x > vsql.max_smallint {
+			if x.less_than(vsql.min_smallint) || x.greater_than(vsql.max_smallint) {
 				return sqlstate_22003()
 			}
 		}
 		.is_integer {
-			if x < vsql.min_integer || x > vsql.max_integer {
+			if x.less_than(vsql.min_integer) || x.greater_than(vsql.max_integer) {
 				return sqlstate_22003()
 			}
 		}
 		.is_bigint {
-			if x < vsql.min_bigint || x > vsql.max_bigint {
+			if x.less_than(vsql.min_bigint) || x.greater_than(vsql.max_bigint) {
 				return sqlstate_22003()
 			}
 		}

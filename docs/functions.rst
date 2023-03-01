@@ -158,11 +158,11 @@ Absolute value.
 
 .. code-block:: sql
 
-  VALUES ABS(1.2);
-  -- 1.2
+  VALUES ABS(1.2e0);
+  -- 1.2e0
   
-  VALUES ABS(-1.23);
-  -- 1.23
+  VALUES ABS(-1.23e0);
+  -- 1.23e0
 
 ACOS
 ^^^^

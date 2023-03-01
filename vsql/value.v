@@ -4,8 +4,6 @@
 
 module vsql
 
-import math.big
-import strconv
 import regex
 
 // Possible values for a BOOLEAN.
@@ -63,6 +61,9 @@ mut:
 	// TIME(n) WITH TIME ZONE and TIME(n) WITHOUT TIME ZONE
 	// TIMESTAMP(n) WITH TIME ZONE and TIMESTAMP(n) WITHOUT TIME ZONE
 	time_value Time
+	// DECIMAL(n,m)
+	// NUMERIC(n,m)
+	numeric_value Numeric
 }
 
 // new_null_value creates a NULL value of a specific type. In SQL, all NULL
@@ -165,15 +166,66 @@ pub fn new_character_value(x string) Value {
 	}
 }
 
-// This is not public yet becuase numeric is not officially supported. It's just
-// to interally create a typeless numeric value.
-fn new_numeric_value(x string) Value {
+// new_numeric_value expects a value to be valid and the size and scale are
+// determined from the value as:
+//
+//   123     -> NUMERIC(3, 0)
+//   123.    -> NUMERIC(3, 0)
+//   1.23    -> NUMERIC(3, 2)
+//   -1.23   -> NUMERIC(3, 2)
+//   12.00   -> NUMERIC(4, 2)
+//
+pub fn new_numeric_value(x string) Value {
+	n := new_numeric_from_string(x)
+
 	return Value{
-		// size = 0 means that we don't know the precision yet. It will have to be
-		// converted to something else at some point.
-		typ: Type{.is_numeric, 0, 0, false}
+		typ: n.typ
 		v: InternalValue{
-			string_value: x
+			numeric_value: n.normalize_denominator(n.typ)
+		}
+	}
+}
+
+// new_decimal_value expects a value to be valid and the size and scale are
+// determined from the value as:
+//
+//   123     -> DECIMAL(3, 0)
+//   123.    -> DECIMAL(3, 0)
+//   1.23    -> DECIMAL(3, 2)
+//   -1.23   -> DECIMAL(3, 2)
+//   12.00   -> DECIMAL(4, 2)
+//
+pub fn new_decimal_value(x string) Value {
+	// All the same rules for determining NUMERIC can be used for DECIMAL,
+	// including denoninator being a power of 10. We just need to change it to a
+	// DECIMAL type.
+	n := new_numeric_from_string(x)
+	typ := new_type('DECIMAL', n.typ.size, n.typ.scale)
+
+	return Value{
+		typ: typ
+		v: InternalValue{
+			numeric_value: n.normalize_denominator(typ)
+		}
+	}
+}
+
+fn new_numeric_value_from_numeric(n Numeric) Value {
+	return Value{
+		typ: n.typ
+		v: InternalValue{
+			numeric_value: n.normalize_denominator(n.typ)
+		}
+	}
+}
+
+fn new_decimal_value_from_numeric(n Numeric) Value {
+	typ := new_type('DECIMAL', n.typ.size, n.typ.scale)
+
+	return Value{
+		typ: typ
+		v: InternalValue{
+			numeric_value: n.normalize_denominator(n.typ)
 		}
 	}
 }
@@ -233,11 +285,11 @@ fn f64_string(x f64, bits i16) string {
 }
 
 // as_int() is not safe to use if the value is not numeric. It is used in cases
-// where a placeholder might be anythign but needs to be an int (such as for an
+// where a placeholder might be anything but needs to be an int (such as for an
 // OFFSET).
 fn (v Value) as_int() i64 {
 	if v.typ.typ == .is_numeric {
-		return i64(v.string_value().f64())
+		return i64(v.numeric_value().f64())
 	}
 
 	if v.typ.uses_int() {
@@ -272,7 +324,7 @@ fn (v Value) as_f64() !f64 {
 	if v.typ.typ == .is_numeric {
 		// This will always be valid because the SQL parser wouldn't allow it
 		// otherwise.
-		return v.string_value().f64()
+		return v.numeric_value().f64()
 	}
 
 	if v.typ.uses_int() {
@@ -282,22 +334,22 @@ fn (v Value) as_f64() !f64 {
 	return v.f64_value()
 }
 
-fn (v Value) as_numeric() !big.Integer {
+fn (v Value) as_numeric() !Numeric {
 	if v.typ.typ == .is_boolean {
 		return sqlstate_22003()
 	}
 
 	if v.typ.typ == .is_numeric {
-		int_part := v.string_value().split('.')[0]
-
-		return big.integer_from_string(int_part)
+		return v.numeric_value()
 	}
 
-	if v.typ.uses_int() {
-		return big.integer_from_i64(v.int_value())
+	s := v.str()
+	if s.contains('e') {
+		// This covers the approximate to exact number conversion.
+		return new_numeric_from_f64(v.as_f64()!)
 	}
 
-	return big.integer_from_string(strconv.f64_to_str_l(v.f64_value()).split('.')[0])
+	return new_numeric_from_string(s)
 }
 
 fn (v Value) pstr(params map[string]Value) string {
@@ -328,12 +380,15 @@ pub fn (v Value) str() string {
 		.is_bigint, .is_integer, .is_smallint {
 			v.int_value().str()
 		}
-		.is_varchar, .is_character, .is_numeric {
+		.is_varchar, .is_character {
 			v.string_value()
 		}
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 			v.time_value().str()
+		}
+		.is_decimal, .is_numeric {
+			v.numeric_value().str()
 		}
 	}
 }
@@ -365,5 +420,11 @@ pub fn (v Value) string_value() string {
 pub fn (v Value) time_value() Time {
 	unsafe {
 		return v.v.time_value
+	}
+}
+
+pub fn (v Value) numeric_value() Numeric {
+	unsafe {
+		return v.v.numeric_value
 	}
 }

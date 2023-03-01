@@ -15,6 +15,10 @@ mut:
 	//
 	// snippet: v.Type.size
 	size int
+	// The scale is only for numeric types.
+	//
+	// snippet: v.Type.scale
+	scale i16
 	// Is NOT NULL?
 	//
 	// snippet: v.Type.not_null
@@ -61,48 +65,48 @@ fn (t SQLType) str() string {
 	}
 }
 
-fn new_type(name string, size int) Type {
+fn new_type(name string, size int, scale i16) Type {
 	name_without_size := name.split('(')[0]
 
 	return match name_without_size {
 		'BIGINT' {
-			Type{.is_bigint, size, false}
+			Type{.is_bigint, size, scale, false}
 		}
 		'BOOLEAN' {
-			Type{.is_boolean, size, false}
+			Type{.is_boolean, size, scale, false}
 		}
 		'CHARACTER VARYING', 'CHAR VARYING', 'VARCHAR' {
-			Type{.is_varchar, size, false}
+			Type{.is_varchar, size, scale, false}
 		}
 		'CHARACTER', 'CHAR' {
-			Type{.is_character, size, false}
+			Type{.is_character, size, scale, false}
 		}
 		'DOUBLE PRECISION', 'FLOAT' {
-			Type{.is_double_precision, size, false}
+			Type{.is_double_precision, size, scale, false}
 		}
 		'REAL' {
-			Type{.is_real, size, false}
+			Type{.is_real, size, scale, false}
 		}
 		'INT', 'INTEGER' {
-			Type{.is_integer, size, false}
+			Type{.is_integer, size, scale, false}
 		}
 		'SMALLINT' {
-			Type{.is_smallint, size, false}
+			Type{.is_smallint, size, scale, false}
 		}
 		'DATE' {
-			Type{.is_date, 0, false}
+			Type{.is_date, size, scale, false}
 		}
 		'TIME', 'TIME WITHOUT TIME ZONE' {
-			Type{.is_time_without_time_zone, size, false}
+			Type{.is_time_without_time_zone, size, scale, false}
 		}
 		'TIME WITH TIME ZONE' {
-			Type{.is_time_with_time_zone, size, false}
+			Type{.is_time_with_time_zone, size, scale, false}
 		}
 		'TIMESTAMP', 'TIMESTAMP WITHOUT TIME ZONE' {
-			Type{.is_timestamp_without_time_zone, size, false}
+			Type{.is_timestamp_without_time_zone, size, scale, false}
 		}
 		'TIMESTAMP WITH TIME ZONE' {
-			Type{.is_timestamp_with_time_zone, size, false}
+			Type{.is_timestamp_with_time_zone, size, scale, false}
 		}
 		else {
 			panic(name_without_size)
@@ -243,7 +247,7 @@ fn (t Type) number() u8 {
 	}
 }
 
-fn type_from_number(number u8, size int) Type {
+fn type_from_number(number u8, size int, scale i16) Type {
 	return new_type(match number {
 		0 { 'BOOLEAN' }
 		1 { 'BIGINT' }
@@ -259,5 +263,5 @@ fn type_from_number(number u8, size int) Type {
 		11 { 'TIMESTAMP(${size}) WITH TIME ZONE' }
 		12 { 'TIMESTAMP(${size}) WITHOUT TIME ZONE' }
 		else { panic(number) }
-	}, 0)
+	}, size, scale)
 }

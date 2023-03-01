@@ -7,7 +7,7 @@ You can create custom functions to use in expressions:
 
    // no_pennies will round to 0.05 denominations.
    db.register_function('no_pennies(float) float', fn (a []vsql.Value) !vsql.Value {
-     amount := math.round(a[0].f64_value / 0.05) * 0.05
+     amount := math.round(a[0].f64_value() / 0.05) * 0.05
      return vsql.new_double_precision_value(amount)
    }) !
 

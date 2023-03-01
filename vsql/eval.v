@@ -111,10 +111,10 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 			return func.return_type
 		}
 		CountAllExpr, NextValueExpr {
-			return new_type('INTEGER', 0)
+			return new_type('INTEGER', 0, 0)
 		}
 		BetweenExpr, NullExpr, TruthExpr, LikeExpr, SimilarExpr {
-			return new_type('BOOLEAN', 0)
+			return new_type('BOOLEAN', 0, 0)
 		}
 		Parameter {
 			p := params[e.name] or { return sqlstate_42p02(e.name) }
@@ -151,22 +151,22 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 			return sqlstate_42601('invalid expression provided: ${e.str()}')
 		}
 		CurrentDateExpr {
-			return new_type('DATE', 0)
+			return new_type('DATE', 0, 0)
 		}
 		CurrentTimeExpr {
-			return new_type('TIME WITH TIME ZONE', 0)
+			return new_type('TIME WITH TIME ZONE', 0, 0)
 		}
 		CurrentTimestampExpr {
-			return new_type('TIMESTAMP WITH TIME ZONE', 0)
+			return new_type('TIMESTAMP WITH TIME ZONE', 0, 0)
 		}
 		LocalTimeExpr {
-			return new_type('TIME WITHOUT TIME ZONE', 0)
+			return new_type('TIME WITHOUT TIME ZONE', 0, 0)
 		}
 		LocalTimestampExpr {
-			return new_type('TIMESTAMP WITHOUT TIME ZONE', 0)
+			return new_type('TIMESTAMP WITHOUT TIME ZONE', 0, 0)
 		}
 		SubstringExpr, TrimExpr, CurrentCatalogExpr, CurrentSchemaExpr {
-			return new_type('CHARACTER VARYING', 0)
+			return new_type('CHARACTER VARYING', 0, 0)
 		}
 		UntypedNullExpr {
 			return error('cannot determine type of untyped NULL')
@@ -317,7 +317,7 @@ fn eval_as_bool(mut conn Connection, data Row, e Expr, params map[string]Value) 
 	v := eval_as_value(mut conn, data, e, params)!
 
 	if v.typ.typ == .is_boolean {
-		return v.bool_value == .is_true
+		return v.bool_value() == .is_true
 	}
 
 	return sqlstate_42804('in expression', 'BOOLEAN', v.typ.str())
@@ -429,21 +429,21 @@ fn eval_cast(mut conn Connection, data Row, e CastExpr, params map[string]Value)
 
 fn eval_truth(mut conn Connection, data Row, e TruthExpr, params map[string]Value) !Value {
 	value := eval_as_value(mut conn, data, e.expr, params)!
-	result := match value.bool_value {
+	result := match value.bool_value() {
 		.is_true {
-			match e.value.bool_value {
+			match e.value.bool_value() {
 				.is_true { new_boolean_value(true) }
 				.is_false, .is_unknown { new_boolean_value(false) }
 			}
 		}
 		.is_false {
-			match e.value.bool_value {
+			match e.value.bool_value() {
 				.is_true, .is_unknown { new_boolean_value(false) }
 				.is_false { new_boolean_value(true) }
 			}
 		}
 		.is_unknown {
-			match e.value.bool_value {
+			match e.value.bool_value() {
 				.is_true, .is_false { new_boolean_value(false) }
 				.is_unknown { new_boolean_value(true) }
 			}
@@ -462,16 +462,16 @@ fn eval_trim(mut conn Connection, data Row, e TrimExpr, params map[string]Value)
 	character := eval_as_value(mut conn, data, e.character, params)!
 
 	if e.specification == 'LEADING' {
-		return new_varchar_value(source.string_value.trim_left(character.string_value),
+		return new_varchar_value(source.string_value().trim_left(character.string_value()),
 			0)
 	}
 
 	if e.specification == 'TRAILING' {
-		return new_varchar_value(source.string_value.trim_right(character.string_value),
+		return new_varchar_value(source.string_value().trim_right(character.string_value()),
 			0)
 	}
 
-	return new_varchar_value(source.string_value.trim(character.string_value), 0)
+	return new_varchar_value(source.string_value().trim(character.string_value()), 0)
 }
 
 fn eval_like(mut conn Connection, data Row, e LikeExpr, params map[string]Value) !Value {
@@ -479,7 +479,7 @@ fn eval_like(mut conn Connection, data Row, e LikeExpr, params map[string]Value)
 	right := eval_as_value(mut conn, data, e.right, params)!
 
 	// Make sure we escape any regexp characters.
-	escaped_regex := right.string_value.replace('+', '\\+').replace('?', '\\?').replace('*',
+	escaped_regex := right.string_value().replace('+', '\\+').replace('?', '\\?').replace('*',
 		'\\*').replace('|', '\\|').replace('.', '\\.').replace('(', '\\(').replace(')',
 		'\\)').replace('[', '\\[').replace('{', '\\{').replace('_', '.').replace('%',
 		'.*')
@@ -487,7 +487,7 @@ fn eval_like(mut conn Connection, data Row, e LikeExpr, params map[string]Value)
 	mut re := regex.regex_opt('^${escaped_regex}$') or {
 		return error('cannot compile regexp: ^${escaped_regex}$: ${err}')
 	}
-	result := re.matches_string(left.string_value)
+	result := re.matches_string(left.string_value())
 
 	if e.not {
 		return new_boolean_value(!result)
@@ -501,7 +501,7 @@ fn eval_substring(mut conn Connection, data Row, e SubstringExpr, params map[str
 	from := int((eval_as_value(mut conn, data, e.from, params)!).as_int() - 1)
 
 	if e.using == 'CHARACTERS' {
-		characters := value.string_value.runes()
+		characters := value.string_value().runes()
 
 		if from >= characters.len || from < 0 {
 			return new_varchar_value('', 0)
@@ -515,16 +515,16 @@ fn eval_substring(mut conn Connection, data Row, e SubstringExpr, params map[str
 		return new_varchar_value(characters[from..from + @for].string(), 0)
 	}
 
-	if from >= value.string_value.len || from < 0 {
+	if from >= value.string_value().len || from < 0 {
 		return new_varchar_value('', 0)
 	}
 
-	mut @for := value.string_value.len - from
+	mut @for := value.string_value().len - from
 	if e.@for !is NoExpr {
 		@for = int((eval_as_value(mut conn, data, e.@for, params)!).as_int())
 	}
 
-	return new_varchar_value(value.string_value.substr(from, from + @for), 0)
+	return new_varchar_value(value.string_value().substr(from, from + @for), 0)
 }
 
 fn eval_binary(mut conn Connection, data Row, e BinaryExpr, params map[string]Value) !Value {
@@ -583,12 +583,12 @@ fn eval_similar(mut conn Connection, data Row, e SimilarExpr, params map[string]
 	left := eval_as_value(mut conn, data, e.left, params)!
 	right := eval_as_value(mut conn, data, e.right, params)!
 
-	regexp := '^${right.string_value.replace('.', '\\.').replace('_', '.').replace('%',
+	regexp := '^${right.string_value().replace('.', '\\.').replace('_', '.').replace('%',
 		'.*')}$'
 	mut re := regex.regex_opt(regexp) or {
 		return error('cannot compile regexp: ${regexp}: ${err}')
 	}
-	result := re.matches_string(left.string_value)
+	result := re.matches_string(left.string_value())
 
 	if e.not {
 		return new_boolean_value(!result)

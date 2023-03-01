@@ -346,6 +346,6 @@ fn (p Plan) explain(elapsed_parse time.Duration) Result {
 	}
 
 	return new_result([
-		Column{Identifier{ sub_entity_name: 'EXPLAIN' }, new_type('VARCHAR', 0), false},
+		Column{Identifier{ sub_entity_name: 'EXPLAIN' }, new_type('VARCHAR', 0, 0), false},
 	], rows, elapsed_parse, 0)
 }

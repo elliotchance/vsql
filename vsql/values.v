@@ -77,7 +77,7 @@ fn (o &ValuesOperation) columns() Columns {
 fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
 	mut offset := 0
 	if o.offset !is NoExpr {
-		offset = int((eval_as_value(mut o.conn, Row{}, o.offset, o.params)!).f64_value)
+		offset = int((eval_as_value(mut o.conn, Row{}, o.offset, o.params)!).f64_value())
 	}
 
 	mut rows := []Row{}

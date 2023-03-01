@@ -20,15 +20,15 @@ fn func_min(values []Value) !Value {
 		return new_null_value(.is_double_precision)
 	}
 
-	mut min := values[0].f64_value
+	mut min := values[0].f64_value()
 	for value in values {
 		// If any values are NULL, the result is also NULL.
 		if value.is_null {
 			return new_null_value(.is_double_precision)
 		}
 
-		if value.f64_value < min {
-			min = value.f64_value
+		if value.f64_value() < min {
+			min = value.f64_value()
 		}
 	}
 
@@ -41,15 +41,15 @@ fn func_max(values []Value) !Value {
 		return new_null_value(.is_double_precision)
 	}
 
-	mut max := values[0].f64_value
+	mut max := values[0].f64_value()
 	for value in values {
 		// If any values are NULL, the result is also NULL.
 		if value.is_null {
 			return new_null_value(.is_double_precision)
 		}
 
-		if value.f64_value > max {
-			max = value.f64_value
+		if value.f64_value() > max {
+			max = value.f64_value()
 		}
 	}
 
@@ -69,7 +69,7 @@ fn func_sum(values []Value) !Value {
 			return new_null_value(.is_double_precision)
 		}
 
-		sum += value.f64_value
+		sum += value.f64_value()
 	}
 
 	return new_double_precision_value(sum)
@@ -88,7 +88,7 @@ fn func_avg(values []Value) !Value {
 			return new_null_value(.is_double_precision)
 		}
 
-		sum += value.f64_value
+		sum += value.f64_value()
 	}
 
 	return new_double_precision_value(sum / values.len)

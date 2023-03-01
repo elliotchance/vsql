@@ -281,6 +281,9 @@
 .. |v.Type.not_null| replace::
    Is NOT NULL?
 
+.. |v.Type.scale| replace::
+   The scale is only for numeric types.
+
 .. |v.Type.size| replace::
    The size specified for the type.
 

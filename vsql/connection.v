@@ -304,9 +304,18 @@ fn (c Connection) find_function(func_name string, arg_types []Type) !Func {
 
 		mut found := true
 		for i, t in arg_types {
+			mut real_arg_type := t
+
+			// TODO(elliotchance): There is a special case where numeric literals are
+			// treated as DOUBLE PRECISION. This will be changed in the future when we
+			// have proper support for NUMERIC.
+			if t.typ == .is_numeric && t.scale == 0 {
+				real_arg_type = Type{SQLType.is_double_precision, 0, 0, false}
+			}
+
 			// Only compare the SQLType so that the precision/scale/null isn't
 			// part of the comparison.
-			if t.typ != f.arg_types[i].typ {
+			if real_arg_type.typ != f.arg_types[i].typ {
 				found = false
 				break
 			}

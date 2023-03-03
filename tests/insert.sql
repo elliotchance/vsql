@@ -47,7 +47,7 @@ INSERT INTO foo (x) VALUES (true);
 CREATE TABLE foo (b BOOLEAN);
 INSERT INTO foo (b) VALUES (123);
 -- msg: CREATE TABLE 1
--- error 42846: cannot coerce BIGINT to BOOLEAN
+-- error 42846: cannot coerce NUMERIC to BOOLEAN
 
 CREATE TABLE t1 (f1 CHARACTER VARYING(10), f2 FLOAT NOT NULL);
 INSERT INTO t1 (f1, f2) VALUES ('a', 1.23);

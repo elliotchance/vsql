@@ -8,4 +8,4 @@ VALUES NULLIF(123, 456);
 -- COL1: 123
 
 VALUES NULLIF(123, 'hello');
--- error 42804: data type mismatch in NULLIF: expected BIGINT but got CHARACTER VARYING
+-- error 42804: data type mismatch in NULLIF: expected NUMERIC but got CHARACTER VARYING

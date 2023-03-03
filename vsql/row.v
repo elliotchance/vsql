@@ -167,6 +167,9 @@ fn new_empty_value(typ Type) Value {
 		.is_varchar {
 			new_varchar_value('', typ.size)
 		}
+		.is_numeric {
+			panic('NUMERIC error')
+		}
 	}
 
 	value.typ.not_null = typ.not_null
@@ -208,6 +211,9 @@ fn (r Row) bytes(t Table) []u8 {
 				.is_boolean {
 					// BOOLEAN: NULL is encoded as one of the values.
 				}
+				.is_numeric {
+					panic('NUMERIC error')
+				}
 			}
 		}
 
@@ -238,6 +244,9 @@ fn (r Row) bytes(t Table) []u8 {
 				.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
 				.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 					buf.write_u8s(v.time_value().bytes())
+				}
+				.is_numeric {
+					panic('NUMERIC error')
 				}
 			}
 		}
@@ -272,6 +281,9 @@ fn new_row_from_bytes(t Table, data []u8, tid int) Row {
 				}
 				.is_boolean {
 					// BOOLEAN: NULL is encoded as one of the values.
+				}
+				.is_numeric {
+					panic('NUMERIC error')
 				}
 			}
 		}
@@ -325,6 +337,9 @@ fn new_row_from_bytes(t Table, data []u8, tid int) Row {
 				.is_timestamp_without_time_zone {
 					typ := Type{.is_timestamp_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
 					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
+				}
+				.is_numeric {
+					panic('NUMERIC error')
 				}
 			}
 		}

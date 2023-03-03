@@ -2,8 +2,22 @@
 
 module vsql
 
+import math.big
+
 // TODO(elliotchance): This should be rewritten to follow the table in
 //  <cast specification>.
+
+const min_smallint = big.integer_from_i64(-32768)
+
+const max_smallint = big.integer_from_i64(32767)
+
+const min_integer = big.integer_from_i64(-2147483648)
+
+const max_integer = big.integer_from_i64(2147483647)
+
+const min_bigint = big.integer_from_i64(-9223372036854775808)
+
+const max_bigint = big.integer_from_i64(9223372036854775807)
 
 type CastFunc = fn (conn &Connection, v Value, to Type) !Value
 
@@ -55,6 +69,11 @@ fn register_cast_rules(mut conn Connection) {
 	conn.cast_rules['TIMESTAMP WITHOUT TIME ZONE AS TIME WITHOUT TIME ZONE'] = cast_timestamp_without_to_time_without
 	conn.cast_rules['TIMESTAMP WITHOUT TIME ZONE AS TIMESTAMP WITH TIME ZONE'] = cast_timestamp_without_to_timestamp_with
 	conn.cast_rules['TIMESTAMP WITHOUT TIME ZONE AS TIMESTAMP WITHOUT TIME ZONE'] = cast_timestamp_without_to_timestamp_without
+	conn.cast_rules['NUMERIC AS SMALLINT'] = cast_numeric_to_smallint
+	conn.cast_rules['NUMERIC AS INTEGER'] = cast_numeric_to_integer
+	conn.cast_rules['NUMERIC AS BIGINT'] = cast_numeric_to_bigint
+	conn.cast_rules['NUMERIC AS DOUBLE PRECISION'] = cast_numeric_to_double_precision
+	conn.cast_rules['NUMERIC AS REAL'] = cast_numeric_to_real
 }
 
 fn cast(conn &Connection, msg string, v Value, to Type) !Value {
@@ -324,4 +343,51 @@ fn cast_timestamp_without_to_timestamp_with(conn &Connection, v Value, to Type) 
 // '2022-06-30 12:34:56.999999' => '2022-06-30 12:34:56.999999'
 fn cast_timestamp_without_to_timestamp_without(conn &Connection, v Value, to Type) !Value {
 	return new_timestamp_value(v.time_value().str_full_timestamp(to.size, false, true))
+}
+
+fn check_numeric_range(x big.Integer, typ SQLType) ! {
+	match typ {
+		.is_smallint {
+			if x < vsql.min_smallint || x > vsql.max_smallint {
+				return sqlstate_22003()
+			}
+		}
+		.is_integer {
+			if x < vsql.min_integer || x > vsql.max_integer {
+				return sqlstate_22003()
+			}
+		}
+		.is_bigint {
+			if x < vsql.min_bigint || x > vsql.max_bigint {
+				return sqlstate_22003()
+			}
+		}
+		else {}
+	}
+}
+
+fn cast_numeric_to_smallint(conn &Connection, v Value, to Type) !Value {
+	check_numeric_range(v.as_numeric()!, .is_smallint)!
+
+	return new_smallint_value(i16(v.string_value().int()))
+}
+
+fn cast_numeric_to_integer(conn &Connection, v Value, to Type) !Value {
+	check_numeric_range(v.as_numeric()!, .is_integer)!
+
+	return new_integer_value(v.string_value().int())
+}
+
+fn cast_numeric_to_bigint(conn &Connection, v Value, to Type) !Value {
+	check_numeric_range(v.as_numeric()!, .is_bigint)!
+
+	return new_bigint_value(v.string_value().i64())
+}
+
+fn cast_numeric_to_double_precision(conn &Connection, v Value, to Type) !Value {
+	return new_double_precision_value(v.string_value().f64())
+}
+
+fn cast_numeric_to_real(conn &Connection, v Value, to Type) !Value {
+	return new_real_value(f32(v.string_value().f64()))
 }

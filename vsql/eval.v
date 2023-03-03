@@ -334,7 +334,16 @@ fn eval_call(mut conn Connection, data Row, e CallExpr, params map[string]Value)
 
 	mut arg_types := []Type{}
 	for arg in e.args {
-		arg_types << eval_as_type(conn, data, arg, params)!
+		mut arg_type := eval_as_type(conn, data, arg, params)!
+
+		// TODO(elliotchance): There is a special case where numeric literals are
+		// treated as DOUBLE PRECISION. This will be changed in the future when we
+		// have proper support for NUMERIC.
+		if arg_type.typ == .is_numeric && arg_type.scale == 0 {
+			arg_type = Type{.is_double_precision, 0, 0, false}
+		}
+
+		arg_types << arg_type
 	}
 
 	func := conn.find_function(func_name, arg_types)!

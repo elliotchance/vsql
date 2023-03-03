@@ -4,6 +4,7 @@
 
 module vsql
 
+import math.big
 import strings
 
 // Possible values for a BOOLEAN.
@@ -41,11 +42,9 @@ pub mut:
 	//
 	// snippet: v.Value.is_null
 	is_null bool
-	v       InternalValue
-	// If is_coercible is true the value comes from an ambigious type (like a
-	// numerical constant) that can be corerced to another type if needed in an
-	// expression.
-	is_coercible bool
+	// v packs the actual value. You need to use one of the methods to get the
+	// actual value safely.
+	v InternalValue
 }
 
 union InternalValue {
@@ -57,6 +56,7 @@ mut:
 	// BIGINT, INTEGER and SMALLINT
 	int_value i64
 	// CHARACTER VARYING(n) and CHARACTER(n)
+	// NUMERIC
 	string_value string
 	// DATE
 	// TIME(n) WITH TIME ZONE and TIME(n) WITHOUT TIME ZONE
@@ -188,6 +188,19 @@ pub fn new_character_value(x string, size int) Value {
 	}
 }
 
+// This is not public yet becuase numeric is not officially supported. It's just
+// to interally create a typeless numeric value.
+fn new_numeric_value(x string) Value {
+	return Value{
+		// size = 0 means that we don't know the precision yet. It will have to be
+		// converted to something else at some point.
+		typ: Type{.is_numeric, 0, 0, false}
+		v: InternalValue{
+			string_value: x
+		}
+	}
+}
+
 // new_timestamp_value creates a ``TIMESTAMP`` value.
 //
 // snippet: v.new_timestamp_value
@@ -243,11 +256,41 @@ fn f64_string(x f64) string {
 // where a placeholder might be anythign but needs to be an int (such as for an
 // OFFSET).
 fn (v Value) as_int() i64 {
+	if v.typ.typ == .is_numeric {
+		return i64(v.string_value().f64())
+	}
+
 	if v.typ.uses_int() {
 		return v.int_value()
 	}
 
 	return i64(v.f64_value())
+}
+
+fn (v Value) as_f64() f64 {
+	if v.typ.typ == .is_numeric {
+		return v.string_value().f64()
+	}
+
+	if v.typ.uses_int() {
+		return v.int_value()
+	}
+
+	return v.f64_value()
+}
+
+fn (v Value) as_numeric() !big.Integer {
+	if v.typ.typ == .is_numeric {
+		int_part := v.string_value().split('.')[0]
+
+		return big.integer_from_string(int_part)
+	}
+
+	if v.typ.uses_int() {
+		return big.integer_from_i64(v.int_value())
+	}
+
+	return big.integer_from_i64(i64(v.f64_value()))
 }
 
 // The string representation of this value. Different types will have different
@@ -269,7 +312,7 @@ pub fn (v Value) str() string {
 		.is_bigint, .is_integer, .is_smallint {
 			v.int_value().str()
 		}
-		.is_varchar, .is_character {
+		.is_varchar, .is_character, .is_numeric {
 			v.string_value()
 		}
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
@@ -303,6 +346,10 @@ pub fn (v Value) cmp(v2 Value) !(int, bool) {
 
 	if v2.is_null {
 		return 1, true
+	}
+
+	if v.typ.typ == .is_numeric || v2.typ.typ == .is_numeric {
+		return cmp_value(v.as_f64(), v2.as_f64())
 	}
 
 	// TODO(elliotchance): BOOLEAN shouldn't be compared this way.

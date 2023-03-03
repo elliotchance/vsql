@@ -42,6 +42,9 @@ enum SQLType {
 	is_time_with_time_zone // TIME WITH TIME ZONE
 	is_timestamp_without_time_zone // TIMESTAMP, TIMESTAMP WITHOUT TIME ZONE
 	is_timestamp_with_time_zone // TIMESTAMP WITH TIME ZONE
+	// This is not actually supported yet, it is a placeholder for numeric
+	// literals.
+	is_numeric
 }
 
 // The SQL representation, such as ``TIME WITHOUT TIME ZONE``.
@@ -62,6 +65,7 @@ fn (t SQLType) str() string {
 		.is_time_with_time_zone { 'TIME WITH TIME ZONE' }
 		.is_timestamp_without_time_zone { 'TIMESTAMP WITHOUT TIME ZONE' }
 		.is_timestamp_with_time_zone { 'TIMESTAMP WITH TIME ZONE' }
+		.is_numeric { 'NUMERIC' }
 	}
 }
 
@@ -169,6 +173,9 @@ fn (t Type) str() string {
 		.is_timestamp_with_time_zone {
 			'TIMESTAMP(${t.size}) WITH TIME ZONE'
 		}
+		.is_numeric {
+			'NUMERIC'
+		}
 	}
 
 	if t.not_null {
@@ -185,7 +192,7 @@ fn (t Type) uses_int() bool {
 		}
 		.is_varchar, .is_character, .is_double_precision, .is_real, .is_date,
 		.is_time_with_time_zone, .is_time_without_time_zone, .is_timestamp_with_time_zone,
-		.is_timestamp_without_time_zone {
+		.is_timestamp_without_time_zone, .is_numeric {
 			false
 		}
 	}
@@ -197,7 +204,8 @@ fn (t Type) uses_f64() bool {
 		.is_time_without_time_zone, .is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 			true
 		}
-		.is_boolean, .is_varchar, .is_character, .is_bigint, .is_smallint, .is_integer {
+		.is_boolean, .is_varchar, .is_character, .is_bigint, .is_smallint, .is_integer,
+		.is_numeric {
 			false
 		}
 	}
@@ -210,7 +218,7 @@ fn (t Type) uses_string() bool {
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 			false
 		}
-		.is_varchar, .is_character {
+		.is_varchar, .is_character, .is_numeric {
 			true
 		}
 	}
@@ -219,7 +227,7 @@ fn (t Type) uses_string() bool {
 fn (t Type) uses_time() bool {
 	return match t.typ {
 		.is_boolean, .is_double_precision, .is_bigint, .is_real, .is_smallint, .is_integer,
-		.is_varchar, .is_character {
+		.is_varchar, .is_character, .is_numeric {
 			false
 		}
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
@@ -244,6 +252,7 @@ fn (t Type) number() u8 {
 		.is_time_without_time_zone { 10 }
 		.is_timestamp_with_time_zone { 11 }
 		.is_timestamp_without_time_zone { 12 }
+		.is_numeric { panic('NUMERIC error') }
 	}
 }
 

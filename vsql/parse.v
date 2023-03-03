@@ -259,17 +259,11 @@ fn parse_value(v Value) !Value {
 }
 
 fn parse_exact_numeric_literal1(a string, b string) !Value {
-	mut v := new_double_precision_value('${a}.${b}'.f64())
-	v.is_coercible = true
-
-	return v
+	return new_numeric_value('${a}.${b}')
 }
 
 fn parse_exact_numeric_literal2(a string) !Value {
-	mut v := new_double_precision_value('0.${a}'.f64())
-	v.is_coercible = true
-
-	return v
+	return new_numeric_value('0.${a}')
 }
 
 // <select list> <comma> <select sublist>
@@ -696,10 +690,7 @@ fn parse_string(s string) !string {
 }
 
 fn parse_int_value(x string) !Value {
-	mut v := new_bigint_value(x.i64())
-	v.is_coercible = true
-
-	return v
+	return new_numeric_value(x)
 }
 
 fn parse_timestamp_prec_tz_type(prec string, tz bool) !Type {

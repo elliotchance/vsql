@@ -5,7 +5,7 @@ VALUES LOWER('Hello');
 -- COL1: hello
 
 VALUES UPPER(123);
--- error 42883: function does not exist: UPPER(BIGINT)
+-- error 42883: function does not exist: UPPER(DOUBLE PRECISION)
 
 VALUES LOWER(TRUE);
 -- error 42883: function does not exist: LOWER(BOOLEAN)

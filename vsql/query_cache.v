@@ -75,13 +75,7 @@ fn (q QueryCache) prepare_stmt(tokens []Token) (string, map[string]Value, []Toke
 		if !ignore {
 			match token.kind {
 				.literal_number {
-					mut v := Value{}
-					if token.value.contains('.') {
-						v = new_double_precision_value(token.value.f64())
-					} else {
-						v = new_bigint_value(token.value.i64())
-					}
-					v.is_coercible = true
+					v := new_numeric_value(token.value)
 					params['P${i}'] = v
 
 					key += ':P${i} '

@@ -124,7 +124,10 @@ fn (o &PrimaryKeyOperation) columns() Columns {
 }
 
 fn (mut o PrimaryKeyOperation) execute(_ []Row) ![]Row {
-	lower := eval_as_value(mut o.conn, Row{}, o.lower, o.params)!
+	mut lower := eval_as_value(mut o.conn, Row{}, o.lower, o.params)!
+
+	// Literals will be a NUMERIC, so that needs to be cast to the expected type.
+	lower = cast(o.conn, '', lower, Type{.is_bigint, 0, 0, false})!
 
 	mut tmp_row := Row{
 		data: {

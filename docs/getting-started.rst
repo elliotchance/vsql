@@ -5,4 +5,5 @@ Getting Started
    :maxdepth: 1
 
    install.rst
+   docker.rst
    faq.rst

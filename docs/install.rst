@@ -3,6 +3,8 @@ Installing & Updating
 
 There are lots of ways to install vsql depending on how you want to use it.
 
+.. contents::
+
 Docker
 ------
 
@@ -14,21 +16,7 @@ stable version with:
 
    docker pull elliotchance/vsql:latest
 
-You can also use major (``0``), minor (``0.27``) or patch versions (``0.27.1``).
-View all versions on
-`hub.docker.com/repository/docker/elliotchance/vsql/tags <https://hub.docker.com/repository/docker/elliotchance/vsql/tags?page=1&ordering=last_updated>`_.
-
-Run the CLI directly (see :doc:`cli`):
-
-.. code-block:: sh
-
-   docker run -it elliotchance/vsql:latest cli mydb.vsql
-
-Or, start the PostgreSQL-compatible server (see :doc:`server`):
-
-.. code-block:: sh
-
-   docker run -it elliotchance/vsql:latest server mydb.vsql
+See :doc:`docker` for more information.
 
 Prebuilt Binaries
 -----------------

@@ -12,12 +12,12 @@ fn example() ! {
 	db.register_virtual_table('CREATE TABLE foo ( "num" INT, word VARCHAR (32) )', fn (mut t vsql.VirtualTable) ! {
 		t.next_values([
 			vsql.new_double_precision_value(1),
-			vsql.new_varchar_value('hi', 0),
+			vsql.new_varchar_value('hi'),
 		])
 
 		t.next_values([
 			vsql.new_double_precision_value(2),
-			vsql.new_varchar_value('there', 0),
+			vsql.new_varchar_value('there'),
 		])
 
 		t.done()

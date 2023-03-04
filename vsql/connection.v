@@ -122,7 +122,6 @@ fn open_connection(path string, options ConnectionOptions) !&Connection {
 	}
 
 	register_builtin_funcs(mut conn)!
-	register_cast_rules(mut conn)
 	register_operators(mut conn)
 
 	conn.add_catalog(catalog_name, path, options)!
@@ -305,6 +304,12 @@ fn (c Connection) find_function(func_name string, arg_types []Type) !Func {
 			// have proper support for NUMERIC.
 			if t.typ == .is_numeric && t.scale == 0 {
 				real_arg_type = Type{SQLType.is_double_precision, 0, 0, false}
+			}
+
+			// TODO(elliotchance); For now, we just consider all CHARACTER types as
+			//  CHARACTER VARYING.
+			if t.typ == .is_character {
+				real_arg_type = Type{SQLType.is_varchar, t.scale, 0, false}
 			}
 
 			// Only compare the SQLType so that the precision/scale/null isn't

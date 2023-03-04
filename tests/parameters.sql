@@ -12,7 +12,7 @@ SELECT * FROM t1;
 
 /* set foo 'hello' */
 INSERT INTO t1 (x) VALUES (:foo);
--- error 42846: cannot coerce CHARACTER VARYING to DOUBLE PRECISION
+-- error 22003: numeric value out of range
 
 /* set foo 'hello' */
 CREATE TABLE t2 (x VARCHAR(10));

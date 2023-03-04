@@ -2,7 +2,7 @@ VALUES ABS(1.2), ABS(-1.23);
 -- COL1: 1.2 COL2: 1.23
 
 VALUES ABS('hello');
--- error 42883: function does not exist: ABS(CHARACTER VARYING)
+-- error 42883: function does not exist: ABS(CHARACTER(5))
 
 VALUES ABS();
 -- error 42601: syntax error: near ")"

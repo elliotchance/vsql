@@ -424,7 +424,8 @@ grammar_file.write("""fn parse_ast(node &EarleyNode) ![]EarleyValue {
                 return [EarleyValue(IdentifierChain{node.value.end_column.value})]
             }
             '^string' {
-                return [EarleyValue(new_varchar_value(node.value.end_column.value, 0))]
+                // See ISO/IEC 9075-2:2016(E), "5.3 <literal>", #17
+                return [EarleyValue(new_character_value(node.value.end_column.value))]
             }
             else {
                 if node.value.name[0] == `<` {

@@ -29,7 +29,7 @@ fn new_varchar_value
 
 .. code-block:: v
 
-   pub fn new_varchar_value(x string, size int) Value
+   pub fn new_varchar_value(x string) Value
 
 
 new_varchar_value creates a ``CHARACTER VARYING`` value.  
@@ -170,11 +170,11 @@ fn new_character_value
 
 .. code-block:: v
 
-   pub fn new_character_value(x string, size int) Value
+   pub fn new_character_value(x string) Value
 
 
-new_character_value creates a ``CHARACTER`` value. The value will be padded
-with spaces up to the size specified.  
+new_character_value creates a ``CHARACTER`` value. The size is determined
+from the length of the string itself.  
 
 fn new_date_value
 -----------------

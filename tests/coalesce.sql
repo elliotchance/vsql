@@ -27,4 +27,4 @@ SELECT COALESCE(f1) FROM foo;
 -- COL1: 3
 
 VALUES COALESCE(1, 'hello');
--- error 42804: data type mismatch in argument 2 of COALESCE: expected NUMERIC but got CHARACTER VARYING
+-- error 42804: data type mismatch in argument 2 of COALESCE: expected NUMERIC but got CHARACTER

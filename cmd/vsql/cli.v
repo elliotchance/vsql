@@ -29,11 +29,22 @@ fn cli_command(cmd cli.Command) ! {
 
 	for {
 		print('vsql> ')
+		os.flush()
+
 		query := os.get_line()
+
+		// When running on Docker, ctrl+C doesn't always get passed through. Also,
+		// this provides another text based way to break out of the shell.
+		if query.trim_space() == 'exit' {
+			break
+		}
 
 		if query != '' {
 			start := time.ticks()
-			result := db.query(query)!
+			result := db.query(query) or {
+				print_error(err)
+				continue
+			}
 
 			mut total_rows := 0
 			for row in result {
@@ -57,5 +68,14 @@ fn cli_command(cmd cli.Command) ! {
 		}
 
 		println('')
+	}
+}
+
+fn print_error(err IError) {
+	if err.code() > 0 {
+		sqlstate := vsql.sqlstate_from_int(err.code())
+		println('${sqlstate}: ${err.msg()}\n')
+	} else {
+		println('ERROR: ${err}\n')
 	}
 }

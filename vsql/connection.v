@@ -52,6 +52,14 @@ pub mut:
 	// in UTC with a separate offset for the current local timezone (in positive
 	// or negative minutes).
 	now fn () (time.Time, i16)
+	// warnings are SQLSTATE errors that do not stop the execution. For example,
+	// if a value must be truncated during a runtime CAST.
+	//
+	// Warnings are not ever reset, although only 100 of the most recent warnings
+	// are retained. This is to be able to collect all warnings during some
+	// arbitrary process defined by the application. Instead, you should call
+	// clear_warnings() before starting a block of work.
+	warnings []IError
 }
 
 // open is the convenience function for open_database() with default options.
@@ -513,5 +521,23 @@ pub fn default_connection_options() ConnectionOptions {
 		query_cache: new_query_cache()
 		page_size: 4096
 		mutex: sync.new_rwmutex()
+	}
+}
+
+// clear_warnings removes all the existing warnings associated with this
+// connection. Warnings are not ever reset, although only 100 of the most recent
+// warnings are retained.
+//
+// This is to be able to collect all warnings during some arbitrary process
+// defined by the application. Instead, you should call clear_warnings() before
+// starting a block of work.
+pub fn (mut c Connection) clear_warnings() {
+	c.warnings = []IError{}
+}
+
+fn (mut c Connection) add_warning(warning IError) {
+	c.warnings << warning
+	if c.warnings.len > 100 {
+		c.warnings = c.warnings[c.warnings.len - 100..]
 	}
 }

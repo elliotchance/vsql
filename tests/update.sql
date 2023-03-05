@@ -103,5 +103,6 @@ UPDATE foo SET baz = 'too long';
 SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- error 22001: string data right truncation for CHARACTER VARYING(4)
--- BAZ: abc
+-- warning 22001: string data right truncation for CHARACTER VARYING(4)
+-- msg: UPDATE 1
+-- BAZ: too

@@ -112,5 +112,7 @@ INSERT INTO t1 (f1) VALUES ('too long');
 SELECT * FROM t1;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- error 22001: string data right truncation for CHARACTER VARYING(4)
+-- warning 22001: string data right truncation for CHARACTER VARYING(4)
+-- msg: INSERT 1
 -- F1: abc
+-- F1: too

@@ -5,4 +5,4 @@ vsql-server
 .vscode
 .vlang_tmp_build/
 
-scripts/generate-snippets
+scripts/generate-v-client-library-docs

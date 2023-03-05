@@ -4,3 +4,5 @@ vsql-server
 *.vsql
 .vscode
 .vlang_tmp_build/
+
+scripts/generate-snippets

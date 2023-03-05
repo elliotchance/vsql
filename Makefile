@@ -25,7 +25,7 @@ bin/vsql.exe:
 # Documentation
 
 snippets:
-	python3 generate-snippets.py > docs/snippets.rst
+	./scripts/generate-snippets.vsh > docs/snippets.rst
 
 docs: snippets
 	mkdir -p docs/_static

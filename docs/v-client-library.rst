@@ -15,7 +15,7 @@ Install or update to the latest with:
 Example
 -------
 
-.. code-block:: text
+.. code-block:: v
 
    import elliotchance.vsql.vsql
 

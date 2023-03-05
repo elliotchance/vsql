@@ -55,21 +55,13 @@ const (
 
 // Time is the internal way that time is represented and provides other
 // conversions such as to/from storage and to/from V's native time.Time.
-//
-// snippet: v.Time
 pub struct Time {
 pub mut:
 	// typ.size is the precision (0 to 6)
-	//
-	// snippet: v.Time.typ
 	typ Type
 	// Number of minutes from 00:00 (positive or negative)
-	//
-	// snippet: v.Time.time_zone
 	time_zone i16
 	// Internal V time represenation.
-	//
-	// snippet: v.Time.t
 	t time.Time
 }
 
@@ -254,8 +246,6 @@ fn (t Time) date_i64() i64 {
 }
 
 // Returns the Time formatted based on its type.
-//
-// snippet: v.Time.str
 fn (t Time) str() string {
 	return match t.typ.typ {
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {

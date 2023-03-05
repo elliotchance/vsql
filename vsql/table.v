@@ -3,22 +3,14 @@
 module vsql
 
 // A column definition.
-//
-// snippet: v.Column
 struct Column {
 pub:
 	// name resolves to the actual canonical location. If you only need the column
 	// name itself, you can use name.sub_entity_name.
-	//
-	// snippet: v.Column.name
 	name Identifier
 	// typ of the column contains more specifics like size and precision.
-	//
-	// snippet: v.Column.typ
 	typ Type
 	// not_null will be true if ``NOT NULL`` was specified on the column.
-	//
-	// snippet: v.Column.not_null
 	not_null bool
 }
 
@@ -26,8 +18,6 @@ pub:
 //
 //   "foo" INT
 //   BAR DOUBLE PRECISION NOT NULL
-//
-// snippet: v.Column.str
 pub fn (c Column) str() string {
 	mut f := '${c.name} ${c.typ}'
 	if c.not_null {
@@ -49,35 +39,23 @@ fn (c Columns) str() string {
 }
 
 // Represents the structure of a table.
-//
-// snippet: v.Table
 pub struct Table {
 mut:
 	// The tid is the transaction ID that created this table.
 	tid int
 pub mut:
 	// The name of the table including the schema.
-	//
-	// snippet: v.Table.name
 	name Identifier
 	// The column definitions for the table.
-	//
-	// snippet: v.Table.columns
 	columns Columns
 	// If the table has a PRIMARY KEY defined the column (or columns) will be
 	// defined here in order.
-	//
-	// snippet: v.Table.primary_key
 	primary_key []string
 	// When the table is virtual it is not persisted to disk.
-	//
-	// snippet: v.Table.is_virtual
 	is_virtual bool
 }
 
 // Convenience method for returning the ordered list of column names.
-//
-// snippet: v.Table.column_names
 pub fn (t Table) column_names() []string {
 	mut names := []string{}
 	for col in t.columns {
@@ -88,8 +66,6 @@ pub fn (t Table) column_names() []string {
 }
 
 // Find a column by name, or return a SQLSTATE 42703 error.
-//
-// snippet: v.Table.column
 pub fn (t Table) column(name string) !Column {
 	for col in t.columns {
 		if name == col.name.sub_entity_name {
@@ -152,8 +128,6 @@ fn new_table_from_bytes(data []u8, tid int, catalog_name string) Table {
 }
 
 // Returns the CREATE TABLE statement, including the ';'.
-//
-// snippet: v.Table.str
 pub fn (t Table) str() string {
 	mut s := 'CREATE TABLE ${t.name} ('
 	mut cols := []string{}

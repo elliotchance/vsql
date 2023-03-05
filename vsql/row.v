@@ -6,8 +6,6 @@ module vsql
 import time
 
 // Represents a single row which may contain one or more columns.
-//
-// snippet: v.Row
 struct Row {
 mut:
 	// id is the unique row identifier within the table. If the table has a
@@ -27,8 +25,6 @@ fn new_row(data map[string]Value) Row {
 
 // get_null will return true if the column name is NULL. An error will be
 // returned if the column does not exist.
-//
-// snippet: v.Row.get_null
 pub fn (r Row) get_null(name string) !bool {
 	value := r.get(name)!
 
@@ -37,8 +33,6 @@ pub fn (r Row) get_null(name string) !bool {
 
 // get_f64 will only work for columns that are numerical (DOUBLE PRECISION,
 // FLOAT, REAL, etc). If the value is NULL, 0 will be returned. See get_null().
-//
-// snippet: v.Row.get_f64
 pub fn (r Row) get_f64(name string) !f64 {
 	value := r.get(name)!
 	if value.typ.uses_f64() {
@@ -50,8 +44,6 @@ pub fn (r Row) get_f64(name string) !f64 {
 
 // get_int will only work for columns that are integers (SMALLINT, INTEGER or
 // BIGINT). If the value is NULL, 0 will be returned. See get_null().
-//
-// snippet: v.Row.get_int
 pub fn (r Row) get_int(name string) !int {
 	value := r.get(name)!
 	if value.typ.uses_int() {
@@ -66,8 +58,6 @@ pub fn (r Row) get_int(name string) !int {
 // string.
 //
 // An error is only returned if the column does not exist.
-//
-// snippet: v.Row.get_string
 pub fn (r Row) get_string(name string) !string {
 	return (r.get(name)!).str()
 }
@@ -77,8 +67,6 @@ pub fn (r Row) get_string(name string) !string {
 //
 // An error is returned if the type is not a BOOLEAN or the column name does not
 // exist.
-//
-// snippet: v.Row.get_bool
 pub fn (r Row) get_bool(name string) !Boolean {
 	value := r.get(name)!
 
@@ -94,8 +82,6 @@ pub fn (r Row) get_bool(name string) !Boolean {
 
 // get returns the underlying Value. It will return an error if the column does
 // not exist.
-//
-// snippet: v.Row.get
 pub fn (r Row) get(name string) !Value {
 	return r.data[name] or {
 		// Be helpful and look for silly mistakes.

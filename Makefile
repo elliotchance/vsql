@@ -25,7 +25,7 @@ bin/vsql.exe:
 # Documentation
 
 snippets:
-	./scripts/generate-snippets.vsh > docs/snippets.rst
+	./scripts/generate-v-client-library-docs.vsh > docs/v-client-library-docs.rst
 
 docs: snippets
 	mkdir -p docs/_static

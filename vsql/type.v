@@ -3,31 +3,19 @@
 module vsql
 
 // Represents a fully-qualified SQL type.
-//
-// snippet: v.Type
 struct Type {
 mut:
 	// Base SQL type.
-	//
-	// snippet: v.Type.typ
 	typ SQLType
 	// The size specified for the type.
-	//
-	// snippet: v.Type.size
 	size int
 	// The scale is only for numeric types.
-	//
-	// snippet: v.Type.scale
 	scale i16
 	// Is NOT NULL?
-	//
-	// snippet: v.Type.not_null
 	not_null bool
 }
 
 // Represents the fundamental SQL type.
-//
-// snippet: v.SQLType
 enum SQLType {
 	is_bigint // BIGINT
 	is_boolean // BOOLEAN
@@ -48,8 +36,6 @@ enum SQLType {
 }
 
 // The SQL representation, such as ``TIME WITHOUT TIME ZONE``.
-//
-// snippet: v.SQLType.str
 fn (t SQLType) str() string {
 	return match t {
 		.is_bigint { 'BIGINT' }
@@ -120,8 +106,6 @@ fn new_type(name string, size int, scale i16) Type {
 }
 
 // The SQL representation, such as ``TIME(3) WITHOUT TIME ZONE``.
-//
-// snippet: v.Type.str
 fn (t Type) str() string {
 	mut s := match t.typ {
 		.is_bigint {

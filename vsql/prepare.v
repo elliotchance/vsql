@@ -7,8 +7,6 @@ import time
 // A prepared statement is compiled and validated, but not executed. It can then
 // be executed with a set of host parameters to be substituted into the
 // statement. Each invocation requires all host parameters to be passed in.
-//
-// snippet: v.PreparedStmt
 pub struct PreparedStmt {
 	stmt Stmt
 	// params can be set on the statement and will be merged with the extra
@@ -25,8 +23,6 @@ mut:
 }
 
 // Execute the prepared statement.
-//
-// snippet: v.PreparedStmt.query
 pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
 	return p.query_internal(params) or {
 		p.c.transaction_aborted()

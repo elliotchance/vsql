@@ -5,6 +5,10 @@ on:
     paths-ignore:
       - "**.md"
       - "**.rst"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "**.rst"
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.sha }}

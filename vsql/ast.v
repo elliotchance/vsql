@@ -286,8 +286,6 @@ fn (identifier IdentifierChain) str() string {
 //
 // If you need the fully qualified (canonical) form of an identified you can use
 // Connection.resolve_schema_identifier().
-//
-// snippet: v.Identifier
 pub struct Identifier {
 pub:
 	// catalog_name is optional. If not provided, the CURRENT_CATALOG will be

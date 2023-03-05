@@ -3,56 +3,36 @@
 module vsql
 
 // A SEQUENCE definition.
-//
-// snippet: v.Sequence
 pub struct Sequence {
 mut:
 	// The tid is the transaction ID that created this table.
 	tid int
 pub mut:
 	// name contains the other parts such as the schema.
-	//
-	// snippet: v.Sequence.name
 	name Identifier
 	// current_value is the current value before it is incremented by
 	// "NEXT VALUE FOR".
-	//
-	// snippet: v.Column.current_value
 	current_value i64
 	// increment_by is added for each next value and defaults to 1.
-	//
-	// snippet: v.Column.increment_by
 	increment_by i64
 	// cycle allows the sequence to repeat once MAXVALUE is reached. By default it
 	// is not enabled.
-	//
-	// snippet: v.Column.cycle
 	cycle bool
 	// has_min_value is true when a MINVALUE is set.
-	//
-	// snippet: v.Column.has_min_value
 	has_min_value bool
 	// min_value is the smallest inclusive value allowed for the sequence. The
 	// MINVALUE is optional.
-	//
-	// snippet: v.Column.min_value
 	min_value i64
 	// has_max_value is true when a MAXVALUE is set.
-	//
-	// snippet: v.Column.has_max_value
 	has_max_value bool
 	// max_value is the largest inclusive value allowed for the sequence. The
 	// MAXVALUE is optional.
-	//
-	// snippet: v.Column.max_value
 	max_value i64
 }
 
 // str returns the CREATE SEQUENCE definition (including the ';') like:
 //
 //   CREATE SEQUENCE "foo" START WITH 12 NO MINVALUE NO MAXVALUE;
-//
-// snippet: v.Sequence.str
 pub fn (s Sequence) str() string {
 	mut parts := ['CREATE SEQUENCE ${s.name} START WITH ${s.current_value}']
 

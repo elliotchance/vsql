@@ -11,8 +11,6 @@ pub const default_schema_name = 'PUBLIC'
 
 // A Connection allows querying and other introspection for a database file. Use
 // open() or open_database() to create a Connection.
-//
-// snippet: v.Connection
 [heap]
 pub struct CatalogConnection {
 	// path is the file name of the database. It can be the special name
@@ -30,8 +28,6 @@ mut:
 
 // A Connection allows querying and other introspection for a database file. Use
 // open() or open_database() to create a Connection.
-//
-// snippet: v.Connection
 [heap]
 pub struct Connection {
 mut:
@@ -55,14 +51,10 @@ pub mut:
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive
 	// or negative minutes).
-	//
-	// snippet: v.ConnectionOptions.now
 	now fn () (time.Time, i16)
 }
 
 // open is the convenience function for open_database() with default options.
-//
-// snippet: v.open
 pub fn open(path string) !&Connection {
 	return open_database(path, default_connection_options())
 }
@@ -88,8 +80,6 @@ pub fn open(path string) !&Connection {
 // - Bad: Multiple goroutines open_database() the same file.
 //
 // See ConnectionOptions and default_connection_options().
-//
-// snippet: v.open_database
 pub fn open_database(path string, options ConnectionOptions) !&Connection {
 	mut init_schema := false
 
@@ -247,8 +237,6 @@ fn (mut c CatalogConnection) release_read_connection() {
 
 // prepare returns a precompiled statement that can be executed multiple times
 // with different provided parameters.
-//
-// snippet: v.Connection.prepare
 pub fn (mut c Connection) prepare(sql string) !PreparedStmt {
 	t := start_timer()
 	stmt, params, explain := c.query_cache.parse(sql) or {
@@ -262,8 +250,6 @@ pub fn (mut c Connection) prepare(sql string) !PreparedStmt {
 }
 
 // query executes a statement. If there is a result set it will be returned.
-//
-// snippet: v.Connection.query
 pub fn (mut c Connection) query(sql string) !Result {
 	mut catalog := c.catalog()
 
@@ -331,8 +317,6 @@ fn (c Connection) find_function(func_name string, arg_types []Type) !Func {
 
 // register_function will register a function that can be used in SQL
 // expressions.
-//
-// snippet: v.Connection.register_function
 pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) !Value) ! {
 	// TODO(elliotchance): A rather crude way to decode the prototype...
 	parts := prototype.replace('(', '|').replace(')', '|').split('|')
@@ -351,8 +335,6 @@ pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) 
 
 // register_virtual_table will register a function that can provide data at
 // runtime to a virtual table.
-//
-// snippet: v.Connection.register_virtual_table
 pub fn (mut c Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ! {
 	// Registering virtual tables does not need use query cache.
 	mut tokens := tokenize(create_table)
@@ -374,8 +356,6 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 }
 
 // schemas returns the schemas in this catalog (database).
-//
-// snippet: v.Connection.schemas
 pub fn (mut c CatalogConnection) schemas() ![]Schema {
 	c.open_read_connection()!
 	defer {
@@ -392,8 +372,6 @@ pub fn (mut c CatalogConnection) schemas() ![]Schema {
 
 // schema_tables returns tables for the provided schema. If the schema does not
 // exist and empty list will be returned.
-//
-// snippet: v.Connection.schema_tables
 pub fn (mut c CatalogConnection) sequences(schema string) ![]Sequence {
 	c.open_read_connection()!
 	defer {
@@ -412,8 +390,6 @@ pub fn (mut c CatalogConnection) sequences(schema string) ![]Sequence {
 
 // schema_tables returns tables for the provided schema. If the schema does not
 // exist and empty list will be returned.
-//
-// snippet: v.Connection.schema_tables
 pub fn (mut c CatalogConnection) schema_tables(schema string) ![]Table {
 	c.open_read_connection()!
 	defer {
@@ -495,8 +471,6 @@ fn (mut c Connection) resolve_table_identifier(identifier Identifier, allow_virt
 // ConnectionOptions can modify the behavior of a connection when it is opened.
 // You should not create the ConnectionOptions instance manually. Instead, use
 // default_connection_options() as a starting point and modify the attributes.
-//
-// snippet: v.ConnectionOptions
 pub struct ConnectionOptions {
 pub mut:
 	// query_cache contains the precompiled prepared statements that can be
@@ -506,13 +480,9 @@ pub mut:
 	// By default each connection will be given its own query cache. However,
 	// you can safely share a single cache over multiple connections and you are
 	// encouraged to do so.
-	//
-	// snippet: v.ConnectionOptions.query_cache
 	query_cache &QueryCache = unsafe { nil }
 	// Warning: This only works for :memory: databases. Configuring it for
 	// file-based databases will either be ignored or causes crashes.
-	//
-	// snippet: v.ConnectionOptions.page_size
 	page_size int
 	// In short, vsql (with default options) when dealing with concurrent
 	// read/write access to single file provides the following protections:
@@ -533,15 +503,11 @@ pub mut:
 	//
 	// Since locking all database isn't ideal. You could provide a consistent
 	// RwMutex that belongs to each file - such as from a map.
-	//
-	// snippet: v.ConnectionOptions.mutex
 	mutex &sync.RwMutex = unsafe { nil }
 }
 
 // default_connection_options returns the sensible defaults used by open() and
 // the correct base to provide your own option overrides. See ConnectionOptions.
-//
-// snippet: v.default_connection_options
 pub fn default_connection_options() ConnectionOptions {
 	return ConnectionOptions{
 		query_cache: new_query_cache()

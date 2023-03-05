@@ -3,15 +3,11 @@
 module vsql
 
 // Represents a schema.
-//
-// snippet: v.Schema
 pub struct Schema {
 	// The tid is the transaction ID that created this table.
 	tid int
 pub:
 	// The name of the schema is case-sensitive.
-	//
-	// snippet: v.Schema.name
 	name string
 }
 
@@ -31,8 +27,6 @@ fn new_schema_from_bytes(data []u8, tid int) Schema {
 }
 
 // Returns the CREATE SCHEMA statement for this schema, including the ';'.
-//
-// snippet: v.Schema.str
 fn (s Schema) str() string {
 	return 'CREATE SCHEMA ${s.name};'
 }

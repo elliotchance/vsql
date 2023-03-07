@@ -194,6 +194,7 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 			actual += 'error ${sqlstate_from_int(err.code())}: ${err.msg()}\n'
 			continue
 		}
+		db.clear_warnings()
 		result := prepared.query(test.params) or {
 			if current_connection_name == '' {
 				actual += 'error ${sqlstate_from_int(err.code())}: ${err.msg()}\n'
@@ -202,6 +203,10 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 			}
 
 			continue
+		}
+
+		for err in db.warnings {
+			actual += 'warning ${sqlstate_from_int(err.code())}: ${err.msg()}\n'
 		}
 
 		for row in result {

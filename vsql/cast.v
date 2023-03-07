@@ -231,33 +231,41 @@ fn cast_double_precision_to_real(conn &Connection, v Value, to Type) !Value {
 	return new_real_value(f32(v.f64_value()))
 }
 
-fn cast_varchar_to_varchar(conn &Connection, v Value, to Type) !Value {
+fn cast_varchar_to_varchar(mut conn Connection, v Value, to Type) !Value {
 	if to.size > 0 && v.string_value().len > to.size {
-		return sqlstate_22001(to)
+		conn.add_warning(sqlstate_22001(to))
+
+		return new_varchar_value(v.string_value()[..to.size], to.size)
 	}
 
 	return new_varchar_value(v.string_value(), to.size)
 }
 
-fn cast_varchar_to_character(conn &Connection, v Value, to Type) !Value {
+fn cast_varchar_to_character(mut conn Connection, v Value, to Type) !Value {
 	if to.size > 0 && v.string_value().len > to.size {
-		return sqlstate_22001(to)
+		conn.add_warning(sqlstate_22001(to))
+
+		return new_varchar_value(v.string_value()[..to.size], to.size)
 	}
 
 	return new_character_value(v.string_value(), to.size)
 }
 
-fn cast_character_to_varchar(conn &Connection, v Value, to Type) !Value {
+fn cast_character_to_varchar(mut conn Connection, v Value, to Type) !Value {
 	if to.size > 0 && v.string_value().len > to.size {
-		return sqlstate_22001(to)
+		conn.add_warning(sqlstate_22001(to))
+
+		return new_varchar_value(v.string_value()[..to.size], to.size)
 	}
 
 	return new_varchar_value(v.string_value(), to.size)
 }
 
-fn cast_character_to_character(conn &Connection, v Value, to Type) !Value {
+fn cast_character_to_character(mut conn Connection, v Value, to Type) !Value {
 	if to.size > 0 && v.string_value().len > to.size {
-		return sqlstate_22001(to)
+		conn.add_warning(sqlstate_22001(to))
+
+		return new_varchar_value(v.string_value()[..to.size], to.size)
 	}
 
 	return new_character_value(v.string_value(), to.size)

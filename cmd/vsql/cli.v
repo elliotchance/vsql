@@ -18,6 +18,7 @@ fn register_cli_command(mut cmd cli.Command) {
 
 fn cli_command(cmd cli.Command) ! {
 	print_version()
+	println('')
 
 	mut db := vsql.open(cmd.args[0])!
 
@@ -41,9 +42,14 @@ fn cli_command(cmd cli.Command) ! {
 
 		if query != '' {
 			start := time.ticks()
+			db.clear_warnings()
 			result := db.query(query) or {
-				print_error(err)
+				print_error('Error', err)
 				continue
+			}
+
+			for warning in db.warnings {
+				print_error('Warning', warning)
 			}
 
 			mut total_rows := 0
@@ -71,10 +77,10 @@ fn cli_command(cmd cli.Command) ! {
 	}
 }
 
-fn print_error(err IError) {
+fn print_error(prefix string, err IError) {
 	if err.code() > 0 {
 		sqlstate := vsql.sqlstate_from_int(err.code())
-		println('${sqlstate}: ${err.msg()}\n')
+		println('${prefix} ${sqlstate}: ${err.msg()}\n')
 	} else {
 		println('ERROR: ${err}\n')
 	}

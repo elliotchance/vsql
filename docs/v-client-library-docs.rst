@@ -414,6 +414,14 @@ struct Connection
    	// in UTC with a separate offset for the current local timezone (in positive
    	// or negative minutes).
    	now fn () (time.Time, i16)
+   	// warnings are SQLSTATE errors that do not stop the execution. For example,
+   	// if a value must be truncated during a runtime CAST.
+   	//
+   	// Warnings are not ever reset, although only 100 of the most recent warnings
+   	// are retained. This is to be able to collect all warnings during some
+   	// arbitrary process defined by the application. Instead, you should call
+   	// clear_warnings() before starting a block of work.
+   	warnings []IError
    }
 
 

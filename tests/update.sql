@@ -32,7 +32,7 @@ SELECT * FROM foo;
 CREATE TABLE foo (baz FLOAT);
 UPDATE foo SET baz = true;
 -- msg: CREATE TABLE 1
--- error 42846: cannot coerce BOOLEAN to DOUBLE PRECISION
+-- error 22003: numeric value out of range
 
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (123);
@@ -103,6 +103,5 @@ UPDATE foo SET baz = 'too long';
 SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- warning 22001: string data right truncation for CHARACTER VARYING(4)
--- msg: UPDATE 1
--- BAZ: too
+-- error 22001: string data right truncation for CHARACTER VARYING(4)
+-- BAZ: abc

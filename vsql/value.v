@@ -5,7 +5,8 @@
 module vsql
 
 import math.big
-import strings
+import strconv
+import regex
 
 // Possible values for a BOOLEAN.
 pub enum Boolean {
@@ -136,24 +137,22 @@ pub fn new_smallint_value(x i16) Value {
 }
 
 // new_varchar_value creates a ``CHARACTER VARYING`` value.
-pub fn new_varchar_value(x string, size int) Value {
+pub fn new_varchar_value(x string) Value {
 	return Value{
-		typ: Type{.is_varchar, size, 0, false}
+		typ: Type{.is_varchar, x.len, 0, false}
 		v: InternalValue{
 			string_value: x
 		}
 	}
 }
 
-// new_character_value creates a ``CHARACTER`` value. The value will be padded
-// with spaces up to the size specified.
-pub fn new_character_value(x string, size int) Value {
-	// TODO(elliotchance): Doesn't handle size < x.len
-
+// new_character_value creates a ``CHARACTER`` value. The size is determined
+// from the length of the string itself.
+pub fn new_character_value(x string) Value {
 	return Value{
-		typ: Type{.is_character, size, 0, false}
+		typ: Type{.is_character, x.len, 0, false}
 		v: InternalValue{
-			string_value: x + strings.repeat(` `, size - x.len)
+			string_value: x
 		}
 	}
 }
@@ -231,8 +230,31 @@ fn (v Value) as_int() i64 {
 	return i64(v.f64_value())
 }
 
-fn (v Value) as_f64() f64 {
+fn (v Value) as_f64() !f64 {
+	if v.typ.typ == .is_boolean {
+		// See the notes below about sqlstate_22003().
+		return sqlstate_22003()
+	}
+
+	if v.typ.typ == .is_character || v.typ.typ == .is_varchar {
+		s := v.string_value()
+
+		mut re := regex.regex_opt(r'^\d+(\.\d+)?$') or {
+			return error('cannot compile regex for number: ${err}')
+		}
+		if !re.matches_string(s) {
+			// This sounds a little counterintuitive, but the SQL standard says this
+			// situation must be classified as "data exception — numeric value out of
+			// range". See cast().
+			return sqlstate_22003()
+		}
+
+		return s.f64()
+	}
+
 	if v.typ.typ == .is_numeric {
+		// This will always be valid because the SQL parser wouldn't allow it
+		// otherwise.
 		return v.string_value().f64()
 	}
 
@@ -244,6 +266,10 @@ fn (v Value) as_f64() f64 {
 }
 
 fn (v Value) as_numeric() !big.Integer {
+	if v.typ.typ == .is_boolean {
+		return sqlstate_22003()
+	}
+
 	if v.typ.typ == .is_numeric {
 		int_part := v.string_value().split('.')[0]
 
@@ -254,7 +280,7 @@ fn (v Value) as_numeric() !big.Integer {
 		return big.integer_from_i64(v.int_value())
 	}
 
-	return big.integer_from_i64(i64(v.f64_value()))
+	return big.integer_from_string(strconv.f64_to_str_l(v.f64_value()).split('.')[0])
 }
 
 // The string representation of this value. Different types will have different
@@ -309,7 +335,7 @@ pub fn (v Value) cmp(v2 Value) !(int, bool) {
 	}
 
 	if v.typ.typ == .is_numeric || v2.typ.typ == .is_numeric {
-		return cmp_value(v.as_f64(), v2.as_f64())
+		return cmp_value(v.as_f64()!, v2.as_f64()!)
 	}
 
 	// TODO(elliotchance): BOOLEAN shouldn't be compared this way.

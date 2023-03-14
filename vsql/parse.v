@@ -820,11 +820,11 @@ fn parse_substring4(value Expr, from Expr, @for Expr, using string) !Expr {
 }
 
 fn parse_trim1(source Expr) !Expr {
-	return TrimExpr{'BOTH', new_varchar_value(' ', 0), source}
+	return TrimExpr{'BOTH', new_varchar_value(' '), source}
 }
 
 fn parse_trim2(specification string, source Expr) !Expr {
-	return TrimExpr{specification, new_varchar_value(' ', 0), source}
+	return TrimExpr{specification, new_varchar_value(' '), source}
 }
 
 fn parse_trim3(character Expr, source Expr) !Expr {

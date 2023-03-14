@@ -62,8 +62,7 @@ fn get_tests() ![]SQLTest {
 				} else if contents.starts_with('set ') {
 					parts := contents.split(' ')
 					if parts[2].starts_with("'") {
-						params[parts[1]] = new_varchar_value(parts[2][1..parts[2].len - 1],
-							0)
+						params[parts[1]] = new_character_value(parts[2][1..parts[2].len - 1])
 					} else if parts[2] == 'NULL' {
 						typ := new_type(parts[3], 0, 0)
 						params[parts[1]] = new_null_value(typ.typ)

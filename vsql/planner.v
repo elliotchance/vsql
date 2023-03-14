@@ -330,18 +330,18 @@ fn (p Plan) explain(elapsed_parse time.Duration) Result {
 
 	for name, subplan in p.subplans {
 		rows << new_row({
-			'EXPLAIN': new_varchar_value(name + ':', 0)
+			'EXPLAIN': new_varchar_value(name + ':')
 		})
 		for line in subplan.str().split('\n') {
 			rows << new_row({
-				'EXPLAIN': new_varchar_value('  ' + line, 0)
+				'EXPLAIN': new_varchar_value('  ' + line)
 			})
 		}
 	}
 
 	for operation in p.operations {
 		rows << new_row({
-			'EXPLAIN': new_varchar_value(operation.str(), 0)
+			'EXPLAIN': new_varchar_value(operation.str())
 		})
 	}
 

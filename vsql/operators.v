@@ -29,7 +29,7 @@ fn register_binary_operators(mut conn Connection) {
 	// of compatible operators that use the same function.
 	int_types := ['SMALLINT', 'INTEGER', 'BIGINT', 'NUMERIC']
 	float_types := ['REAL', 'DOUBLE PRECISION', 'NUMERIC']
-	text_types := ['CHARACTER VARYING']
+	text_types := ['CHARACTER VARYING', 'CHARACTER']
 
 	for typ1 in int_types {
 		for typ2 in int_types {
@@ -61,6 +61,7 @@ fn register_binary_operators(mut conn Connection) {
 			conn.binary_operators['${typ1} > ${typ2}'] = binary_string_greater_string
 			conn.binary_operators['${typ1} <= ${typ2}'] = binary_string_less_equal_string
 			conn.binary_operators['${typ1} >= ${typ2}'] = binary_string_greater_equal_string
+			conn.binary_operators['${typ1} || ${typ2}'] = binary_varchar_concat_varchar
 		}
 	}
 
@@ -129,8 +130,6 @@ fn register_binary_operators(mut conn Connection) {
 	conn.binary_operators['DOUBLE PRECISION / DOUBLE PRECISION'] = binary_double_precision_divide_double_precision
 	conn.binary_operators['INTEGER / INTEGER'] = binary_integer_divide_integer
 	conn.binary_operators['BIGINT / BIGINT'] = binary_bigint_divide_bigint
-
-	conn.binary_operators['CHARACTER VARYING || CHARACTER VARYING'] = binary_varchar_concat_varchar
 
 	conn.binary_operators['BOOLEAN AND BOOLEAN'] = binary_boolean_and_boolean
 
@@ -226,7 +225,7 @@ fn binary_bigint_divide_bigint(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_varchar_concat_varchar(conn &Connection, a Value, b Value) !Value {
-	return new_varchar_value(a.string_value() + b.string_value(), 0)
+	return new_varchar_value(a.string_value() + b.string_value())
 }
 
 fn binary_boolean_and_boolean(conn &Connection, a Value, b Value) !Value {
@@ -274,7 +273,7 @@ fn binary_boolean_or_boolean(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_float_equal_float(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_f64() == b.as_f64())
+	return new_boolean_value(a.as_f64()! == b.as_f64()!)
 }
 
 fn binary_int_equal_int(conn &Connection, a Value, b Value) !Value {
@@ -286,7 +285,7 @@ fn binary_string_equal_string(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_float_not_equal_float(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_f64() != b.as_f64())
+	return new_boolean_value(a.as_f64()! != b.as_f64()!)
 }
 
 fn binary_int_not_equal_int(conn &Connection, a Value, b Value) !Value {
@@ -298,7 +297,7 @@ fn binary_string_not_equal_string(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_float_less_float(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_f64() < b.as_f64())
+	return new_boolean_value(a.as_f64()! < b.as_f64()!)
 }
 
 fn binary_int_less_int(conn &Connection, a Value, b Value) !Value {
@@ -310,7 +309,7 @@ fn binary_string_less_string(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_float_greater_float(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_f64() > b.as_f64())
+	return new_boolean_value(a.as_f64()! > b.as_f64()!)
 }
 
 fn binary_int_greater_int(conn &Connection, a Value, b Value) !Value {
@@ -322,7 +321,7 @@ fn binary_string_greater_string(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_float_less_equal_float(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_f64() <= b.as_f64())
+	return new_boolean_value(a.as_f64()! <= b.as_f64()!)
 }
 
 fn binary_int_less_equal_int(conn &Connection, a Value, b Value) !Value {
@@ -334,7 +333,7 @@ fn binary_string_less_equal_string(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_float_greater_equal_float(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_f64() >= b.as_f64())
+	return new_boolean_value(a.as_f64()! >= b.as_f64()!)
 }
 
 fn binary_int_greater_equal_int(conn &Connection, a Value, b Value) !Value {
@@ -347,7 +346,7 @@ fn binary_string_greater_equal_string(conn &Connection, a Value, b Value) !Value
 
 fn binary_smallint_plus_numeric(conn &Connection, a Value, b Value) !Value {
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.int_value() + b.as_f64())
+	x := i64(a.int_value() + b.as_f64()!)
 	check_integer_range(x, .is_smallint)!
 
 	return new_smallint_value(i16(x))
@@ -355,7 +354,7 @@ fn binary_smallint_plus_numeric(conn &Connection, a Value, b Value) !Value {
 
 fn binary_numeric_plus_smallint(conn &Connection, a Value, b Value) !Value {
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.as_f64() + b.int_value())
+	x := i64(a.as_f64()! + b.int_value())
 	check_integer_range(x, .is_smallint)!
 
 	return new_smallint_value(i16(x))
@@ -363,7 +362,7 @@ fn binary_numeric_plus_smallint(conn &Connection, a Value, b Value) !Value {
 
 fn binary_smallint_minus_numeric(conn &Connection, a Value, b Value) !Value {
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.int_value() - b.as_f64())
+	x := i64(a.int_value() - b.as_f64()!)
 	check_integer_range(x, .is_smallint)!
 
 	return new_smallint_value(i16(x))
@@ -371,7 +370,7 @@ fn binary_smallint_minus_numeric(conn &Connection, a Value, b Value) !Value {
 
 fn binary_numeric_minus_smallint(conn &Connection, a Value, b Value) !Value {
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.as_f64() - b.int_value())
+	x := i64(a.as_f64()! - b.int_value())
 	check_integer_range(x, .is_smallint)!
 
 	return new_smallint_value(i16(x))
@@ -379,7 +378,7 @@ fn binary_numeric_minus_smallint(conn &Connection, a Value, b Value) !Value {
 
 fn binary_smallint_multiply_numeric(conn &Connection, a Value, b Value) !Value {
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.int_value() * b.as_f64())
+	x := i64(a.int_value() * b.as_f64()!)
 	check_integer_range(x, .is_smallint)!
 
 	return new_smallint_value(i16(x))
@@ -387,31 +386,31 @@ fn binary_smallint_multiply_numeric(conn &Connection, a Value, b Value) !Value {
 
 fn binary_numeric_multiply_smallint(conn &Connection, a Value, b Value) !Value {
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.as_f64() * b.int_value())
+	x := i64(a.as_f64()! * b.int_value())
 	check_integer_range(x, .is_smallint)!
 
 	return new_smallint_value(i16(x))
 }
 
 fn binary_smallint_divide_numeric(conn &Connection, a Value, b Value) !Value {
-	if b.as_f64() == 0 {
+	if b.as_f64()! == 0 {
 		return sqlstate_22012() // division by zero
 	}
 
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.int_value() / b.as_f64())
+	x := i64(a.int_value() / b.as_f64()!)
 	check_integer_range(x, .is_smallint)!
 
 	return new_smallint_value(i16(x))
 }
 
 fn binary_numeric_divide_smallint(conn &Connection, a Value, b Value) !Value {
-	if b.as_f64() == 0 {
+	if b.as_f64()! == 0 {
 		return sqlstate_22012() // division by zero
 	}
 
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.as_f64() / b.int_value())
+	x := i64(a.as_f64()! / b.int_value())
 	check_integer_range(x, .is_smallint)!
 
 	return new_smallint_value(i16(x))
@@ -419,7 +418,7 @@ fn binary_numeric_divide_smallint(conn &Connection, a Value, b Value) !Value {
 
 fn binary_integer_plus_numeric(conn &Connection, a Value, b Value) !Value {
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.int_value() + b.as_f64())
+	x := i64(a.int_value() + b.as_f64()!)
 	check_integer_range(x, .is_integer)!
 
 	return new_integer_value(int(x))
@@ -427,7 +426,7 @@ fn binary_integer_plus_numeric(conn &Connection, a Value, b Value) !Value {
 
 fn binary_numeric_plus_integer(conn &Connection, a Value, b Value) !Value {
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.as_f64() + b.int_value())
+	x := i64(a.as_f64()! + b.int_value())
 	check_integer_range(x, .is_integer)!
 
 	return new_integer_value(int(x))
@@ -435,7 +434,7 @@ fn binary_numeric_plus_integer(conn &Connection, a Value, b Value) !Value {
 
 fn binary_integer_minus_numeric(conn &Connection, a Value, b Value) !Value {
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.int_value() - b.as_f64())
+	x := i64(a.int_value() - b.as_f64()!)
 	check_integer_range(x, .is_integer)!
 
 	return new_integer_value(int(x))
@@ -443,7 +442,7 @@ fn binary_integer_minus_numeric(conn &Connection, a Value, b Value) !Value {
 
 fn binary_numeric_minus_integer(conn &Connection, a Value, b Value) !Value {
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.as_f64() - b.int_value())
+	x := i64(a.as_f64()! - b.int_value())
 	check_integer_range(x, .is_integer)!
 
 	return new_integer_value(int(x))
@@ -451,7 +450,7 @@ fn binary_numeric_minus_integer(conn &Connection, a Value, b Value) !Value {
 
 fn binary_integer_multiply_numeric(conn &Connection, a Value, b Value) !Value {
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.int_value() * b.as_f64())
+	x := i64(a.int_value() * b.as_f64()!)
 	check_integer_range(x, .is_integer)!
 
 	return new_integer_value(int(x))
@@ -459,31 +458,31 @@ fn binary_integer_multiply_numeric(conn &Connection, a Value, b Value) !Value {
 
 fn binary_numeric_multiply_integer(conn &Connection, a Value, b Value) !Value {
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.as_f64() * b.int_value())
+	x := i64(a.as_f64()! * b.int_value())
 	check_integer_range(x, .is_integer)!
 
 	return new_integer_value(int(x))
 }
 
 fn binary_integer_divide_numeric(conn &Connection, a Value, b Value) !Value {
-	if b.as_f64() == 0 {
+	if b.as_f64()! == 0 {
 		return sqlstate_22012() // division by zero
 	}
 
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.int_value() / b.as_f64())
+	x := i64(a.int_value() / b.as_f64()!)
 	check_integer_range(x, .is_integer)!
 
 	return new_integer_value(int(x))
 }
 
 fn binary_numeric_divide_integer(conn &Connection, a Value, b Value) !Value {
-	if b.as_f64() == 0 {
+	if b.as_f64()! == 0 {
 		return sqlstate_22012() // division by zero
 	}
 
 	// TODO(elliotchance): This should use NUMERIC math to catch all overflows.
-	x := i64(a.as_f64() / b.int_value())
+	x := i64(a.as_f64()! / b.int_value())
 	check_integer_range(x, .is_integer)!
 
 	return new_integer_value(int(x))
@@ -554,101 +553,101 @@ fn binary_numeric_divide_bigint(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_double_precision_plus_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_double_precision_value(a.as_f64() + b.as_f64())
+	return new_double_precision_value(a.as_f64()! + b.as_f64()!)
 }
 
 fn binary_numeric_plus_double_precision(conn &Connection, a Value, b Value) !Value {
-	return new_double_precision_value(a.as_f64() + b.as_f64())
+	return new_double_precision_value(a.as_f64()! + b.as_f64()!)
 }
 
 fn binary_double_precision_minus_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_double_precision_value(a.as_f64() - b.as_f64())
+	return new_double_precision_value(a.as_f64()! - b.as_f64()!)
 }
 
 fn binary_numeric_minus_double_precision(conn &Connection, a Value, b Value) !Value {
-	return new_double_precision_value(a.as_f64() - b.as_f64())
+	return new_double_precision_value(a.as_f64()! - b.as_f64()!)
 }
 
 fn binary_double_precision_multiply_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_double_precision_value(a.as_f64() * b.as_f64())
+	return new_double_precision_value(a.as_f64()! * b.as_f64()!)
 }
 
 fn binary_numeric_multiply_double_precision(conn &Connection, a Value, b Value) !Value {
-	return new_double_precision_value(a.as_f64() * b.as_f64())
+	return new_double_precision_value(a.as_f64()! * b.as_f64()!)
 }
 
 fn binary_double_precision_divide_numeric(conn &Connection, a Value, b Value) !Value {
-	if b.as_f64() == 0 {
+	if b.as_f64()! == 0 {
 		return sqlstate_22012() // division by zero
 	}
 
-	return new_double_precision_value(a.as_f64() / b.as_f64())
+	return new_double_precision_value(a.as_f64()! / b.as_f64()!)
 }
 
 fn binary_numeric_divide_double_precision(conn &Connection, a Value, b Value) !Value {
-	if b.as_f64() == 0 {
+	if b.as_f64()! == 0 {
 		return sqlstate_22012() // division by zero
 	}
 
-	return new_double_precision_value(a.as_f64() / b.as_f64())
+	return new_double_precision_value(a.as_f64()! / b.as_f64()!)
 }
 
 fn binary_real_plus_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_real_value(f32(a.as_f64() + b.as_f64()))
+	return new_real_value(f32(a.as_f64()! + b.as_f64()!))
 }
 
 fn binary_numeric_plus_real(conn &Connection, a Value, b Value) !Value {
-	return new_real_value(f32(a.as_f64() + b.as_f64()))
+	return new_real_value(f32(a.as_f64()! + b.as_f64()!))
 }
 
 fn binary_real_minus_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_real_value(f32(a.as_f64() - b.as_f64()))
+	return new_real_value(f32(a.as_f64()! - b.as_f64()!))
 }
 
 fn binary_numeric_minus_real(conn &Connection, a Value, b Value) !Value {
-	return new_real_value(f32(a.as_f64() - b.as_f64()))
+	return new_real_value(f32(a.as_f64()! - b.as_f64()!))
 }
 
 fn binary_real_multiply_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_real_value(f32(a.as_f64() * b.as_f64()))
+	return new_real_value(f32(a.as_f64()! * b.as_f64()!))
 }
 
 fn binary_numeric_multiply_real(conn &Connection, a Value, b Value) !Value {
-	return new_real_value(f32(a.as_f64() * b.as_f64()))
+	return new_real_value(f32(a.as_f64()! * b.as_f64()!))
 }
 
 fn binary_real_divide_numeric(conn &Connection, a Value, b Value) !Value {
-	if b.as_f64() == 0 {
+	if b.as_f64()! == 0 {
 		return sqlstate_22012() // division by zero
 	}
 
-	return new_real_value(f32(a.as_f64() / b.as_f64()))
+	return new_real_value(f32(a.as_f64()! / b.as_f64()!))
 }
 
 fn binary_numeric_divide_real(conn &Connection, a Value, b Value) !Value {
-	if b.as_f64() == 0 {
+	if b.as_f64()! == 0 {
 		return sqlstate_22012() // division by zero
 	}
 
-	return new_real_value(f32(a.as_f64() / b.as_f64()))
+	return new_real_value(f32(a.as_f64()! / b.as_f64()!))
 }
 
 fn binary_numeric_plus_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_numeric_value(f64_string(a.as_f64() + b.as_f64()))
+	return new_numeric_value(f64_string(a.as_f64()! + b.as_f64()!))
 }
 
 fn binary_numeric_minus_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_numeric_value(f64_string(a.as_f64() - b.as_f64()))
+	return new_numeric_value(f64_string(a.as_f64()! - b.as_f64()!))
 }
 
 fn binary_numeric_multiply_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_numeric_value(f64_string(a.as_f64() * b.as_f64()))
+	return new_numeric_value(f64_string(a.as_f64()! * b.as_f64()!))
 }
 
 fn binary_numeric_divide_numeric(conn &Connection, a Value, b Value) !Value {
-	if b.as_f64() == 0 {
+	if b.as_f64()! == 0 {
 		return sqlstate_22012() // division by zero
 	}
 
-	return new_numeric_value(f64_string(a.as_f64() / b.as_f64()))
+	return new_numeric_value(f64_string(a.as_f64()! / b.as_f64()!))
 }

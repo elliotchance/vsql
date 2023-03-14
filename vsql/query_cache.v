@@ -82,7 +82,7 @@ fn (q QueryCache) prepare_stmt(tokens []Token) (string, map[string]Value, []Toke
 				}
 				.literal_string {
 					key += ':P${i} '
-					params['P${i}'] = new_varchar_value(token.value, 0)
+					params['P${i}'] = new_varchar_value(token.value)
 					new_tokens << Token{.colon, ':'}
 					new_tokens << Token{.literal_identifier, 'P${i}'}
 					i++

@@ -21,10 +21,10 @@ fn func_octet_length(args []Value) !Value {
 
 // UPPER(CHARACTER VARYING) CHARACTER VARYING
 fn func_upper(args []Value) !Value {
-	return new_varchar_value(args[0].string_value().to_upper(), 0)
+	return new_varchar_value(args[0].string_value().to_upper())
 }
 
 // LOWER(CHARACTER VARYING) CHARACTER VARYING
 fn func_lower(args []Value) !Value {
-	return new_varchar_value(args[0].string_value().to_lower(), 0)
+	return new_varchar_value(args[0].string_value().to_lower())
 }

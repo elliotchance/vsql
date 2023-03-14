@@ -30,7 +30,7 @@ fn execute_insert(mut c Connection, stmt InsertStmt, params map[string]Value, el
 		table_column := table.column(column_name)!
 		raw_value := eval_as_nullable_value(mut c, table_column.typ.typ, Row{}, resolve_identifiers(c,
 			stmt.values[i], catalog.storage.tables)!, params)!
-		value := cast(c, 'for column ${column_name}', raw_value, table_column.typ)!
+		value := cast(mut c, 'for column ${column_name}', raw_value, table_column.typ)!
 
 		if value.is_null && table_column.not_null {
 			return sqlstate_23502('column ${column_name}')

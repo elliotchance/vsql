@@ -233,7 +233,7 @@ fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value)
 			return sqlstate_42601('missing or invalid expression provided')
 		}
 		CurrentCatalogExpr {
-			return new_varchar_value(conn.current_catalog, 0)
+			return new_varchar_value(conn.current_catalog)
 		}
 		CurrentDateExpr {
 			now, _ := conn.now()
@@ -241,7 +241,7 @@ fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value)
 			return new_date_value(now.strftime('%Y-%m-%d'))
 		}
 		CurrentSchemaExpr {
-			return new_varchar_value(conn.current_schema, 0)
+			return new_varchar_value(conn.current_schema)
 		}
 		CurrentTimeExpr {
 			if e.prec > 6 {
@@ -360,9 +360,9 @@ fn eval_call(mut conn Connection, data Row, e CallExpr, params map[string]Value)
 
 	mut args := []Value{}
 	mut i := 0
-	for typ in func.arg_types {
+	for typ in arg_types {
 		arg := eval_as_value(mut conn, data, e.args[i], params)!
-		args << cast(conn, 'argument ${i + 1} in ${func_name}', arg, typ)!
+		args << cast(mut conn, 'argument ${i + 1} in ${func_name}', arg, typ)!
 		i++
 	}
 
@@ -433,7 +433,7 @@ fn eval_coalesce(mut conn Connection, data Row, e CoalesceExpr, params map[strin
 fn eval_cast(mut conn Connection, data Row, e CastExpr, params map[string]Value) !Value {
 	value := eval_as_value(mut conn, data, e.expr, params)!
 
-	return cast(conn, 'for CAST', value, e.target)
+	return cast(mut conn, 'for CAST', value, e.target)
 }
 
 fn eval_truth(mut conn Connection, data Row, e TruthExpr, params map[string]Value) !Value {
@@ -471,16 +471,14 @@ fn eval_trim(mut conn Connection, data Row, e TrimExpr, params map[string]Value)
 	character := eval_as_value(mut conn, data, e.character, params)!
 
 	if e.specification == 'LEADING' {
-		return new_varchar_value(source.string_value().trim_left(character.string_value()),
-			0)
+		return new_varchar_value(source.string_value().trim_left(character.string_value()))
 	}
 
 	if e.specification == 'TRAILING' {
-		return new_varchar_value(source.string_value().trim_right(character.string_value()),
-			0)
+		return new_varchar_value(source.string_value().trim_right(character.string_value()))
 	}
 
-	return new_varchar_value(source.string_value().trim(character.string_value()), 0)
+	return new_varchar_value(source.string_value().trim(character.string_value()))
 }
 
 fn eval_like(mut conn Connection, data Row, e LikeExpr, params map[string]Value) !Value {
@@ -513,7 +511,7 @@ fn eval_substring(mut conn Connection, data Row, e SubstringExpr, params map[str
 		characters := value.string_value().runes()
 
 		if from >= characters.len || from < 0 {
-			return new_varchar_value('', 0)
+			return new_varchar_value('')
 		}
 
 		mut @for := characters.len - from
@@ -521,11 +519,11 @@ fn eval_substring(mut conn Connection, data Row, e SubstringExpr, params map[str
 			@for = int((eval_as_value(mut conn, data, e.@for, params)!).as_int())
 		}
 
-		return new_varchar_value(characters[from..from + @for].string(), 0)
+		return new_varchar_value(characters[from..from + @for].string())
 	}
 
 	if from >= value.string_value().len || from < 0 {
-		return new_varchar_value('', 0)
+		return new_varchar_value('')
 	}
 
 	mut @for := value.string_value().len - from
@@ -533,7 +531,7 @@ fn eval_substring(mut conn Connection, data Row, e SubstringExpr, params map[str
 		@for = int((eval_as_value(mut conn, data, e.@for, params)!).as_int())
 	}
 
-	return new_varchar_value(value.string_value().substr(from, from + @for), 0)
+	return new_varchar_value(value.string_value().substr(from, from + @for))
 }
 
 fn eval_binary(mut conn Connection, data Row, e BinaryExpr, params map[string]Value) !Value {
@@ -546,7 +544,7 @@ fn eval_binary(mut conn Connection, data Row, e BinaryExpr, params map[string]Va
 		return op_fn(conn, left, right)
 	}
 
-	return sqlstate_42883('operator does not exist: ${left.typ} ${e.op} ${right.typ}')
+	return sqlstate_42883('operator does not exist: ${key}')
 }
 
 fn eval_unary(mut conn Connection, data Row, e UnaryExpr, params map[string]Value) !Value {

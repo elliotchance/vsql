@@ -148,10 +148,10 @@ fn new_empty_value(typ Type) Value {
 			new_boolean_value(false)
 		}
 		.is_character {
-			new_character_value('', typ.size)
+			new_character_value('')
 		}
 		.is_varchar {
-			new_varchar_value('', typ.size)
+			new_varchar_value('')
 		}
 		.is_numeric {
 			panic('NUMERIC error')

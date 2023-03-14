@@ -3,9 +3,7 @@
 module vsql
 
 import math.big
-
-// TODO(elliotchance): This should be rewritten to follow the table in
-//  <cast specification>.
+import strings
 
 const min_smallint = big.integer_from_i64(-32768)
 
@@ -21,75 +19,375 @@ const max_bigint = big.integer_from_i64(9223372036854775807)
 
 type CastFunc = fn (conn &Connection, v Value, to Type) !Value
 
-fn register_cast_rules(mut conn Connection) {
-	conn.cast_rules['BOOLEAN AS BOOLEAN'] = cast_passthru
-	conn.cast_rules['SMALLINT AS SMALLINT'] = cast_passthru
-	conn.cast_rules['SMALLINT AS INTEGER'] = cast_smallint_to_integer
-	conn.cast_rules['SMALLINT AS BIGINT'] = cast_smallint_to_bigint
-	conn.cast_rules['SMALLINT AS REAL'] = cast_smallint_to_real
-	conn.cast_rules['SMALLINT AS DOUBLE PRECISION'] = cast_smallint_to_double_precision
-	conn.cast_rules['INTEGER AS SMALLINT'] = cast_integer_to_smallint
-	conn.cast_rules['INTEGER AS INTEGER'] = cast_passthru
-	conn.cast_rules['INTEGER AS BIGINT'] = cast_integer_to_bigint
-	conn.cast_rules['INTEGER AS REAL'] = cast_integer_to_real
-	conn.cast_rules['INTEGER AS DOUBLE PRECISION'] = cast_integer_to_double_precision
-	conn.cast_rules['BIGINT AS SMALLINT'] = cast_bigint_to_smallint
-	conn.cast_rules['BIGINT AS INTEGER'] = cast_bigint_to_integer
-	conn.cast_rules['BIGINT AS BIGINT'] = cast_passthru
-	conn.cast_rules['BIGINT AS REAL'] = cast_bigint_to_real
-	conn.cast_rules['BIGINT AS DOUBLE PRECISION'] = cast_bigint_to_double_precision
-	conn.cast_rules['REAL AS SMALLINT'] = cast_real_to_smallint
-	conn.cast_rules['REAL AS INTEGER'] = cast_real_to_integer
-	conn.cast_rules['REAL AS BIGINT'] = cast_real_to_bigint
-	conn.cast_rules['REAL AS REAL'] = cast_passthru
-	conn.cast_rules['REAL AS DOUBLE PRECISION'] = cast_real_to_double_precision
-	conn.cast_rules['DOUBLE PRECISION AS SMALLINT'] = cast_double_precision_to_smallint
-	conn.cast_rules['DOUBLE PRECISION AS INTEGER'] = cast_double_precision_to_integer
-	conn.cast_rules['DOUBLE PRECISION AS BIGINT'] = cast_double_precision_to_bigint
-	conn.cast_rules['DOUBLE PRECISION AS REAL'] = cast_double_precision_to_real
-	conn.cast_rules['DOUBLE PRECISION AS DOUBLE PRECISION'] = cast_passthru
-	conn.cast_rules['CHARACTER VARYING AS CHARACTER VARYING'] = cast_varchar_to_varchar
-	conn.cast_rules['CHARACTER VARYING AS CHARACTER'] = cast_varchar_to_character
-	conn.cast_rules['CHARACTER AS CHARACTER VARYING'] = cast_character_to_varchar
-	conn.cast_rules['CHARACTER AS CHARACTER'] = cast_character_to_character
-	conn.cast_rules['DATE AS DATE'] = cast_passthru
-	conn.cast_rules['DATE AS TIMESTAMP WITHOUT TIME ZONE'] = cast_date_to_timestamp_without
-	conn.cast_rules['DATE AS TIMESTAMP WITH TIME ZONE'] = cast_date_to_timestamp_with
-	conn.cast_rules['TIME WITH TIME ZONE AS TIME WITH TIME ZONE'] = cast_time_with_to_time_with
-	conn.cast_rules['TIME WITH TIME ZONE AS TIME WITHOUT TIME ZONE'] = cast_time_with_to_time_without
-	conn.cast_rules['TIME WITHOUT TIME ZONE AS TIME WITHOUT TIME ZONE'] = cast_time_without_to_time_without
-	conn.cast_rules['TIME WITHOUT TIME ZONE AS TIME WITH TIME ZONE'] = cast_time_without_to_time_with
-	conn.cast_rules['TIMESTAMP WITH TIME ZONE AS DATE'] = cast_timestamp_with_to_date
-	conn.cast_rules['TIMESTAMP WITH TIME ZONE AS TIME WITH TIME ZONE'] = cast_timestamp_with_to_time_with
-	conn.cast_rules['TIMESTAMP WITH TIME ZONE AS TIME WITHOUT TIME ZONE'] = cast_timestamp_with_to_time_without
-	conn.cast_rules['TIMESTAMP WITH TIME ZONE AS TIMESTAMP WITH TIME ZONE'] = cast_timestamp_with_to_timestamp_with
-	conn.cast_rules['TIMESTAMP WITH TIME ZONE AS TIMESTAMP WITHOUT TIME ZONE'] = cast_timestamp_with_to_timestamp_without
-	conn.cast_rules['TIMESTAMP WITHOUT TIME ZONE AS DATE'] = cast_timestamp_without_to_date
-	conn.cast_rules['TIMESTAMP WITHOUT TIME ZONE AS TIME WITH TIME ZONE'] = cast_timestamp_without_to_time_with
-	conn.cast_rules['TIMESTAMP WITHOUT TIME ZONE AS TIME WITHOUT TIME ZONE'] = cast_timestamp_without_to_time_without
-	conn.cast_rules['TIMESTAMP WITHOUT TIME ZONE AS TIMESTAMP WITH TIME ZONE'] = cast_timestamp_without_to_timestamp_with
-	conn.cast_rules['TIMESTAMP WITHOUT TIME ZONE AS TIMESTAMP WITHOUT TIME ZONE'] = cast_timestamp_without_to_timestamp_without
-	conn.cast_rules['NUMERIC AS SMALLINT'] = cast_numeric_to_smallint
-	conn.cast_rules['NUMERIC AS INTEGER'] = cast_numeric_to_integer
-	conn.cast_rules['NUMERIC AS BIGINT'] = cast_numeric_to_bigint
-	conn.cast_rules['NUMERIC AS DOUBLE PRECISION'] = cast_numeric_to_double_precision
-	conn.cast_rules['NUMERIC AS REAL'] = cast_numeric_to_real
+// explicit cast follows the rules outlined in Subclause 9.2,
+// "Store assignment", in ISO/IEC 9075-2.
+fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
+	// - 1. Let T be the TARGET and let V be the VALUE in an application of the
+	// General Rules of this Subclause.
+
+	// - 2. If the declared type of V is not assignable to the declared type of T,
+	// then for the remaining General Rules of this Subclause V is effectively
+	// replaced by the result of evaluating the expression UDCF(V).
+	//
+	// User-defined cast functions are not currently supported.
+
+	// - 3. Case:
+	// - 3.a. If V is the null value, then Case:
+	if v.is_null {
+		// - 3.a.i. If V is specified using NULL, then T is set to the null value.
+		if !v.typ.not_null {
+			return v
+		}
+
+		// - 3.a.ii. If V is a host parameter and contains an indicator parameter,
+		// then, Case:
+		//
+		// - 3.a.ii.1. If the value of the indicator parameter is equal to –1
+		// (negative one), then T is set to the null value.
+		//
+		// - 3.a.ii.2. If the value of the indicator parameter is less than –1
+		// (negative one), then an exception condition is raised: data exception —
+		// invalid indicator parameter value.
+		//
+		// - 3.a.iii. If V is a host variable and contains an indicator variable,
+		// then Case:
+		//
+		// - 3.a.iii.1. If the value of the indicator variable is equal to –1
+		// (negative one), then T is set to the null value.
+		//
+		// - 3.a.iii.2. If the value of the indicator variable is less than –1
+		// (negative one), then an exception con- dition is raised: data exception —
+		// invalid indicator parameter value.
+		//
+		// - 3.a.iv. Otherwise, T is set to the null value.
+		//
+		// Declaring host parameters is not supported yet, so fallthough.
+	}
+
+	// - 3.b. Otherwise, Case:
+	match t.typ {
+		.is_character {
+			// - 3.b.i. If the declared type of T is fixed-length character string
+			// with length in characters L and the length in characters of V is equal
+			// to L, then the value of T is set to V.
+			//
+			// It doesn't state that the destination needs to also be a
+			// character-type. This is what allows any string representation (for
+			// example numbers) to be converted to a string, provided they still fit
+			// all the same requirements.
+			s := v.str()
+
+			l := t.size
+			if l == s.len {
+				return new_character_value(s)
+			}
+
+			// - 3.b.ii. If the declared type of T is fixed-length character string
+			// with length in characters L and the length in characters M of V is
+			// larger than L, then, Case:
+			m := s.len
+			if m > l {
+				// - 3.b.ii.1. If the rightmost M–L characters of V are all <space>s,
+				// then the value of T is set to the first L characters of V.
+				if s[l..].trim_space() == '' {
+					return new_character_value(s[..l])
+				}
+
+				// - 3.b.ii.2. If one or more of the rightmost M–L characters of V are
+				// not <space>s, then an exception condition is raised: data exception —
+				// string data, right truncation.
+				return sqlstate_22001(t)
+			} else {
+				// - 3.b.iii. If the declared type of T is fixed-length character string
+				// with length in characters L and the length in characters M of V is
+				// less than L, then the first M characters of T are set to V and the
+				// last L–M characters of T are set to <space>s.
+				pad := strings.repeat(` `, l - m)
+				return new_character_value(s + pad)
+			}
+		}
+		.is_varchar {
+			// - 3.b.iv. If the declared type of T is variable-length character string
+			// and the length in characters M of V is not greater than the maximum
+			// length in characters of T, then the value of T is set to V and the
+			// length in characters of T is set to M.
+			//
+			// See note above about using v.str() instead of string_value().
+			s := v.str()
+
+			l := t.size
+			m := s.len
+			if m <= l {
+				return new_varchar_value(s)
+			}
+
+			// - 3.b.v. If the declared type of T is variable-length character string
+			// and the length in characters M of V is greater than the maximum length
+			// in characters L of T, then, Case:
+			pad := strings.repeat(` `, m - l)
+			if pad == s[l..] {
+				// - 3.b.v.1. If the rightmost M–L characters of V are all <space>s,
+				// then the value of T is set to the first L characters of V and the
+				// length in characters of T is set to L.
+				return new_varchar_value(s[..l])
+			}
+
+			// - 3.b.v.2. If one or more of the rightmost M–L characters of V are
+			// not <space>s, then an exception condition is raised: data exception —
+			// string data, right truncation.
+			return sqlstate_22001(t)
+		}
+		// - 3.b.vi. If the declared type of T is a character large object type and
+		// the length in characters M of V is not greater than the maximum length in
+		// characters of T, then the value of T is set to V and the length in
+		// characters of T is set to M.
+		// - 3.b.vii. If the declared type of T is a character large object type and
+		// the length in characters M of V is greater than the maximum length in
+		// characters L of T, then, Case:
+		// - 3.b.vii.1. If the rightmost M–L characters of V are all <space>s, then
+		// the value of T is set to the first L characters of V and the length in
+		// characters of T is set to L.
+		// - 3.b.vii.2. If one or more of the rightmost M–L characters of V are not
+		// <space>s, then an exception condition is raised: data exception — string
+		// data, right truncation.
+		// - 3.b.viii. If the declared type of T is fixed-length binary string with
+		// length in octets L and the length in octets of V is equal to L, then the
+		// value of T is set to V.
+		// - 3.b.ix. If the declared type of T is fixed-length binary string with
+		// length in octets L and the length in octets M of V is larger than L,
+		// then, Case:
+		// - 3.b.ix.1. If the rightmost M–L octets of V are all equal to X'00', then
+		// the value of T is set to the first L octets of V.
+		// - 3.b.ix.2. If one or more of the rightmost M–L octets of V are not equal
+		// to X'00', then an exception condition is raised: data exception — string
+		// data, right truncation.
+		// - 3.b.x. If the declared type of T is fixed-length binary string with
+		// length in octets L and the length in octets M of V is less than L, then
+		// the first M octets of T are set to V and the last L–M octets of T are set
+		// to X'00's.
+		// - 3.b.xi. If the declared type of T is variable-length binary string and
+		// the length in octets M of V is not greater than the maximum length in
+		// octets of T, then the value of T is set to V and the length in octets of
+		// T is set to M.
+		// - 3.b.xii. If the declared type of T is variable-length binary string and
+		// the length in octets M of V is greater than the maximum length in octets
+		// L of T, then, Case:
+		// - 3.b.xii.1. If the rightmost M–L octets of V are all equal to X'00',
+		// then the value of T is set to the first L octets of V and the length in
+		// octets of T is set to L.
+		// - 3.b.xii.2. If one or more of the rightmost M–L octets of V are not
+		// equal to X'00', then an exception condition is raised: data exception —
+		// string data, right truncation.
+		// - 3.b.xiii. If the declared type of T is binary large object string and
+		// the length in octets M of V is not greater than the maximum length in
+		// octets of T, then the value of T is set to V and the length in octets of
+		// T is set to M.
+		// - 3.b.xiv. If the declared type of T is binary large object string and
+		// the length in octets M of V is greater than the maximum length in octets
+		// L of T, then, Case:
+		// - 3.b.xiv.1. If the rightmost M–L octets of V are all equal to X'00',
+		// then the value of T is set to the first L octets of V and the length in
+		// octets of T is set to L.
+		// - 3.b.xiv.2. If one or more of the rightmost M–L octets of V are not
+		// equal to X'00', then an exception condition is raised: data exception —
+		// string data, right truncation.
+		//
+		// All of these are not supported types, so fallthrough.
+		//
+		.is_numeric, .is_smallint, .is_integer, .is_bigint, .is_real, .is_double_precision {
+			// - 3.b.xv. If the declared type of T is numeric, then, Case:
+			// - 3.b.xv.1. If V is a value of the declared type of T, then the value
+			// of T is set to V.
+			if v.typ == t {
+				return v
+			}
+
+			// - 3.b.xv.2. If a value of the declared type of T can be obtained from V
+			// by rounding or truncation, then the value of T is set to that value.
+			// If the declared type of T is exact numeric, then it is
+			// implementation-defined whether the approximation is obtained by
+			// rounding or by truncation.
+			//
+			// - 3.b.xv.3. Otherwise, an exception condition is raised: data exception
+			// — numeric value out of range.
+			//
+			// Both cases are handled by cast_numeric.
+			return cast_numeric(mut conn, v, t)
+		}
+		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone, .is_date,
+		.is_time_with_time_zone, .is_time_without_time_zone {
+			// - 3.b.xvi. If the declared type DT of T is datetime, then
+			//
+			// - 3.b.xvi.1. If only one of DT and the declared type of V is datetime
+			// with time zone, then V is effectively replaced by: CAST ( V AS DT )
+			if t.typ == .is_timestamp_with_time_zone && v.typ.typ == .is_timestamp_without_time_zone {
+				return cast(mut conn, msg, cast_timestamp_without_to_timestamp_with(conn,
+					v, t)!, t)
+			}
+			if t.typ == .is_timestamp_without_time_zone && v.typ.typ == .is_timestamp_with_time_zone {
+				return cast(mut conn, msg, cast_timestamp_with_to_timestamp_without(conn,
+					v, t)!, t)
+			}
+
+			// - 3.b.xvi.2. Case:
+			//
+			// - 3.b.xvi.2.A. If V is a value of the declared type of T, then the
+			// value of T is set to V.
+			if v.typ == t {
+				return v
+			}
+
+			// - 3.b.xvi.2.B. If a value of the declared type of T can be obtained
+			// from V by rounding or truncation, then the value of T is set to that
+			// value. It is implementation-defined whether the approximation is
+			// obtained by rounding or truncation.
+			//
+			// I'm going to assume this also leaves open the opportunity to cast
+			// between different types like DATE to TIMESTAMP.
+			return cast_datetime(conn, v, t)
+
+			// - 3.b.xvi.2.C. Otherwise, an exception condition is raised: data
+			// exception — datetime field overflow.
+			//
+			// This is not possible right now since the range is already validated at
+			// the time the timestamp is created.
+		}
+		// - 3.b.xvii. If the declared type of T is interval, then, Case:
+		//
+		// - 3.b.xvii.1. If V is a value of the declared type of T, then the value
+		// of T is set to V.
+		//
+		// - 3.b.xvii.2. If a value of the declared type of T can be obtained from V
+		// by rounding or truncation, then the value of T is set to that value. It
+		// is implementation-defined whether the approximation is obtained by
+		// rounding or by truncation.
+		//
+		// - 3.b.xvii.3. Otherwise, an exception condition is raised: data exception
+		// — interval field overflow.
+		//
+		// INTERVAL type is not supported yet.
+		.is_boolean {
+			// - 3.b.xviii. If the declared type of T is boolean, then the value of T
+			// is set to V.
+			//
+			// This seems oddly ambigious to me, they don't specify that the value
+			// it's coming from must also be a BOOLEAN, so for now we must assume this
+			// is not permitted.
+			if v.typ.typ == .is_boolean {
+				return v
+			}
+		}
+		// - 3.b.xix. If the declared type of T is a row type, then:
+		// - 3.b.xix.1. Let n be the degree of T.
+		// - 3.b.xix.2. For i ranging from 1 (one) to n, the General Rules of this
+		// Subclause are applied to the i-th element of T and the i-th element of V
+		// as TARGET and VALUE, respectively.
+		// - 3.b.xx. If the declared type of T is a reference type, then the value
+		// of T is set to V.
+		// - 3.b.xxi. If the declared type of T is an array type or a distinct type
+		// whose source type is an array type, then, Case:
+		// - 3.b.xxi.1. If the maximum cardinality L of T is equal to the
+		// cardinality M of V, then the elements of T are set to the values of the
+		// corresponding elements of V by applying the General Rules of this
+		// Subclause to each pair of elements with the element of T as TARGET and
+		// the element of V as VALUE.
+		// - 3.b.xxi.2. If the maximum cardinality L of T is smaller than the
+		// cardinality M of V, then Case:
+		// - 3.b.xxi.2.A. If the rightmost M–L elements of V are all null, then the
+		// elements of T are set to the values of the first L corresponding elements
+		// of V by applying the General Rules of this Subclause to each pair of
+		// elements with the element of T as TARGET and the element of V as VALUE.
+		// - 3.b.xxi.2.B. If one or more of the rightmost M–L elements of V are not
+		// the null value, then an exception condition is raised: data exception —
+		// array data, right truncation.
+		// - 3.b.xxi.3. If the maximum cardinality L of T is greater than the
+		// cardinality M of V, then the M first elements of T are set to the values
+		// of the corresponding elements of V by applying the General Rules of this
+		// Subclause to each pair of elements with the element of T as TARGET and
+		// the element of V as VALUE. The cardinality of the value of T is set to M.
+		// NOTE 363 — The maximum cardinality L of T is unchanged.
+		// - 3.b.xxii. If the declared type of T is a multiset type or a distinct
+		// type whose source type is a multiset type, then the value of T is set to
+		// V.
+		// - 3.b.xxiii. If the declared type of T is a user-defined type, then the
+		// value of T is set to V.
+		//
+		// All of these are not supported yet.
+	}
+
+	return sqlstate_42846(v.typ, t)
 }
 
-fn cast(conn &Connection, msg string, v Value, to Type) !Value {
-	// For now, all NULLs are allowed to be converted to any other NULL. This
-	// should not technically be true, but it will do for now.
-	if v.is_null {
-		return new_null_value(to.typ)
+fn cast_datetime(conn Connection, v Value, t Type) !Value {
+	cast_rules := {
+		'DATE AS TIMESTAMP WITHOUT TIME ZONE':                        CastFunc(cast_date_to_timestamp_without)
+		'DATE AS TIMESTAMP WITH TIME ZONE':                           cast_date_to_timestamp_with
+		'TIME WITH TIME ZONE AS TIME WITH TIME ZONE':                 cast_time_with_to_time_with
+		'TIME WITH TIME ZONE AS TIME WITHOUT TIME ZONE':              cast_time_with_to_time_without
+		'TIME WITHOUT TIME ZONE AS TIME WITHOUT TIME ZONE':           cast_time_without_to_time_without
+		'TIME WITHOUT TIME ZONE AS TIME WITH TIME ZONE':              cast_time_without_to_time_with
+		'TIMESTAMP WITH TIME ZONE AS DATE':                           cast_timestamp_with_to_date
+		'TIMESTAMP WITH TIME ZONE AS TIME WITH TIME ZONE':            cast_timestamp_with_to_time_with
+		'TIMESTAMP WITH TIME ZONE AS TIME WITHOUT TIME ZONE':         cast_timestamp_with_to_time_without
+		'TIMESTAMP WITH TIME ZONE AS TIMESTAMP WITH TIME ZONE':       cast_timestamp_with_to_timestamp_with
+		'TIMESTAMP WITH TIME ZONE AS TIMESTAMP WITHOUT TIME ZONE':    cast_timestamp_with_to_timestamp_without
+		'TIMESTAMP WITHOUT TIME ZONE AS DATE':                        cast_timestamp_without_to_date
+		'TIMESTAMP WITHOUT TIME ZONE AS TIME WITH TIME ZONE':         cast_timestamp_without_to_time_with
+		'TIMESTAMP WITHOUT TIME ZONE AS TIME WITHOUT TIME ZONE':      cast_timestamp_without_to_time_without
+		'TIMESTAMP WITHOUT TIME ZONE AS TIMESTAMP WITH TIME ZONE':    cast_timestamp_without_to_timestamp_with
+		'TIMESTAMP WITHOUT TIME ZONE AS TIMESTAMP WITHOUT TIME ZONE': cast_timestamp_without_to_timestamp_without
 	}
 
-	key := '${v.typ.typ} AS ${to.typ}'
-	if fnc := conn.cast_rules[key] {
+	key := '${v.typ.typ} AS ${t.typ}'
+	if fnc := cast_rules[key] {
 		cast_fn := fnc as CastFunc
-		return cast_fn(conn, v, to)!
+		return cast_fn(conn, v, t)!
 	}
 
-	return sqlstate_42846(v.typ, to)
+	return sqlstate_42846(v.typ, t)
+}
+
+fn cast_numeric(mut conn Connection, v Value, t Type) !Value {
+	// It would be more efficient to build a matrix of every combination, but for
+	// now it's easier to convert to a lossless number then the final destination
+	// type.
+
+	match t.typ {
+		.is_smallint {
+			mut numeric_value := v.as_numeric()!
+			check_numeric_range(numeric_value, .is_smallint)!
+
+			return new_smallint_value(i16(numeric_value.int()))
+		}
+		.is_integer {
+			mut numeric_value := v.as_numeric()!
+			check_numeric_range(numeric_value, .is_integer)!
+
+			// This is a bug: https://github.com/vlang/v/issues/17637
+			// There are unit tests for this, so feel free to remove this in the
+			// future and see it it works.
+			if numeric_value.str() == '-2147483648' {
+				return new_integer_value(-2147483648)
+			}
+
+			return new_integer_value(numeric_value.int())
+		}
+		.is_bigint {
+			mut numeric_value := v.as_numeric()!
+			check_numeric_range(numeric_value, .is_bigint)!
+
+			return new_bigint_value(numeric_value.str().i64())
+		}
+		.is_real {
+			return new_real_value(f32(v.as_f64()!))
+		}
+		.is_double_precision {
+			return new_double_precision_value(v.as_f64()!)
+		}
+		else {}
+	}
+
+	return sqlstate_42846(v.typ, t)
 }
 
 fn check_integer_range(x i64, typ SQLType) ! {
@@ -127,148 +425,6 @@ fn check_floating_range(x f64, typ SQLType) ! {
 		}
 		else {}
 	}
-}
-
-fn cast_passthru(conn &Connection, v Value, to Type) !Value {
-	return v
-}
-
-fn cast_bigint_to_smallint(conn &Connection, v Value, to Type) !Value {
-	check_integer_range(v.int_value(), .is_smallint)!
-
-	return new_smallint_value(i16(v.int_value()))
-}
-
-fn cast_bigint_to_integer(conn &Connection, v Value, to Type) !Value {
-	check_integer_range(v.int_value(), .is_integer)!
-
-	return new_integer_value(int(v.int_value()))
-}
-
-fn cast_bigint_to_real(conn &Connection, v Value, to Type) !Value {
-	return new_real_value(f32(v.int_value()))
-}
-
-fn cast_bigint_to_double_precision(conn &Connection, v Value, to Type) !Value {
-	return new_double_precision_value(f64(v.int_value()))
-}
-
-fn cast_smallint_to_integer(conn &Connection, v Value, to Type) !Value {
-	return new_integer_value(int(v.int_value()))
-}
-
-fn cast_smallint_to_bigint(conn &Connection, v Value, to Type) !Value {
-	return new_bigint_value(int(v.int_value()))
-}
-
-fn cast_smallint_to_real(conn &Connection, v Value, to Type) !Value {
-	return new_real_value(f32(v.int_value()))
-}
-
-fn cast_smallint_to_double_precision(conn &Connection, v Value, to Type) !Value {
-	return new_double_precision_value(f64(v.int_value()))
-}
-
-fn cast_integer_to_smallint(conn &Connection, v Value, to Type) !Value {
-	check_integer_range(v.int_value(), .is_smallint)!
-
-	return new_smallint_value(i16(v.int_value()))
-}
-
-fn cast_integer_to_bigint(conn &Connection, v Value, to Type) !Value {
-	return new_bigint_value(int(v.int_value()))
-}
-
-fn cast_integer_to_real(conn &Connection, v Value, to Type) !Value {
-	return new_real_value(f32(v.int_value()))
-}
-
-fn cast_integer_to_double_precision(conn &Connection, v Value, to Type) !Value {
-	return new_double_precision_value(f64(v.int_value()))
-}
-
-fn cast_real_to_smallint(conn &Connection, v Value, to Type) !Value {
-	check_floating_range(v.f64_value(), .is_smallint)!
-
-	return new_smallint_value(i16(v.f64_value()))
-}
-
-fn cast_real_to_integer(conn &Connection, v Value, to Type) !Value {
-	check_floating_range(v.f64_value(), .is_integer)!
-
-	return new_integer_value(int(v.f64_value()))
-}
-
-fn cast_real_to_bigint(conn &Connection, v Value, to Type) !Value {
-	check_floating_range(v.f64_value(), .is_bigint)!
-
-	return new_bigint_value(i64(v.f64_value()))
-}
-
-fn cast_real_to_double_precision(conn &Connection, v Value, to Type) !Value {
-	return new_double_precision_value(f64(v.f64_value()))
-}
-
-fn cast_double_precision_to_smallint(conn &Connection, v Value, to Type) !Value {
-	check_floating_range(v.f64_value(), .is_smallint)!
-
-	return new_smallint_value(i16(v.f64_value()))
-}
-
-fn cast_double_precision_to_integer(conn &Connection, v Value, to Type) !Value {
-	check_floating_range(v.f64_value(), .is_integer)!
-
-	return new_integer_value(int(v.f64_value()))
-}
-
-fn cast_double_precision_to_bigint(conn &Connection, v Value, to Type) !Value {
-	check_floating_range(v.f64_value(), .is_bigint)!
-
-	return new_bigint_value(i64(v.f64_value()))
-}
-
-fn cast_double_precision_to_real(conn &Connection, v Value, to Type) !Value {
-	return new_real_value(f32(v.f64_value()))
-}
-
-fn cast_varchar_to_varchar(mut conn Connection, v Value, to Type) !Value {
-	if to.size > 0 && v.string_value().len > to.size {
-		conn.add_warning(sqlstate_22001(to))
-
-		return new_varchar_value(v.string_value()[..to.size], to.size)
-	}
-
-	return new_varchar_value(v.string_value(), to.size)
-}
-
-fn cast_varchar_to_character(mut conn Connection, v Value, to Type) !Value {
-	if to.size > 0 && v.string_value().len > to.size {
-		conn.add_warning(sqlstate_22001(to))
-
-		return new_varchar_value(v.string_value()[..to.size], to.size)
-	}
-
-	return new_character_value(v.string_value(), to.size)
-}
-
-fn cast_character_to_varchar(mut conn Connection, v Value, to Type) !Value {
-	if to.size > 0 && v.string_value().len > to.size {
-		conn.add_warning(sqlstate_22001(to))
-
-		return new_varchar_value(v.string_value()[..to.size], to.size)
-	}
-
-	return new_varchar_value(v.string_value(), to.size)
-}
-
-fn cast_character_to_character(mut conn Connection, v Value, to Type) !Value {
-	if to.size > 0 && v.string_value().len > to.size {
-		conn.add_warning(sqlstate_22001(to))
-
-		return new_varchar_value(v.string_value()[..to.size], to.size)
-	}
-
-	return new_character_value(v.string_value(), to.size)
 }
 
 // '2022-06-30' => '2022-06-30 00:00:00.000000'
@@ -372,30 +528,4 @@ fn check_numeric_range(x big.Integer, typ SQLType) ! {
 		}
 		else {}
 	}
-}
-
-fn cast_numeric_to_smallint(conn &Connection, v Value, to Type) !Value {
-	check_numeric_range(v.as_numeric()!, .is_smallint)!
-
-	return new_smallint_value(i16(v.string_value().int()))
-}
-
-fn cast_numeric_to_integer(conn &Connection, v Value, to Type) !Value {
-	check_numeric_range(v.as_numeric()!, .is_integer)!
-
-	return new_integer_value(v.string_value().int())
-}
-
-fn cast_numeric_to_bigint(conn &Connection, v Value, to Type) !Value {
-	check_numeric_range(v.as_numeric()!, .is_bigint)!
-
-	return new_bigint_value(v.string_value().i64())
-}
-
-fn cast_numeric_to_double_precision(conn &Connection, v Value, to Type) !Value {
-	return new_double_precision_value(v.string_value().f64())
-}
-
-fn cast_numeric_to_real(conn &Connection, v Value, to Type) !Value {
-	return new_real_value(f32(v.string_value().f64()))
 }

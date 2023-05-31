@@ -88,11 +88,10 @@ fn (s Sequence) next() !Sequence {
 	return Sequence{s.tid, s.name, next_value, s.increment_by, s.cycle, s.has_min_value, s.min_value, s.has_max_value, s.max_value}
 }
 
-fn (s Sequence) bytes() []u8 {
+fn (s Sequence) definition_bytes() []u8 {
 	mut b := new_empty_bytes()
 
 	b.write_string1(s.name.storage_id())
-	b.write_i64(s.current_value)
 	b.write_i64(s.increment_by)
 	b.write_bool(s.cycle)
 	b.write_optional_i64(s.has_min_value, s.min_value)
@@ -101,15 +100,24 @@ fn (s Sequence) bytes() []u8 {
 	return b.bytes()
 }
 
-fn new_sequence_from_bytes(data []u8, tid int) Sequence {
-	mut b := new_bytes(data)
+fn (s Sequence) value_bytes() []u8 {
+	mut b := new_empty_bytes()
 
-	sequence_name := b.read_identifier()
-	current_value := b.read_i64()
-	increment_by := b.read_i64()
-	cycle := b.read_bool()
-	has_min_value, min_value := b.read_optional_i64()
-	has_max_value, max_value := b.read_optional_i64()
+	b.write_i64(s.current_value)
+
+	return b.bytes()
+}
+
+fn new_sequence_from_bytes(definition_data []u8, value_data []u8, tid int) Sequence {
+	mut b1 := new_bytes(definition_data)
+	sequence_name := b1.read_identifier()
+	increment_by := b1.read_i64()
+	cycle := b1.read_bool()
+	has_min_value, min_value := b1.read_optional_i64()
+	has_max_value, max_value := b1.read_optional_i64()
+
+	mut b2 := new_bytes(value_data)
+	current_value := b2.read_i64()
 
 	return Sequence{tid, sequence_name, current_value, increment_by, cycle, has_min_value, min_value, has_max_value, max_value}
 }

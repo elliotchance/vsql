@@ -40,7 +40,7 @@ fn (mut o OrderOperation) execute(rows []Row) ![]Row {
 	// This sorting implementation uses a linked list which is very simple but
 	// very expensive at O(n^2).
 
-	mut head := &RowLink(0)
+	mut head := &RowLink(unsafe { nil })
 	for row in rows {
 		// First item is assigned to head.
 		if unsafe { head == 0 } {

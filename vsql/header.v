@@ -7,7 +7,7 @@ import os
 // This is a rudimentary way to ensure that small changes to storage.v are
 // compatible as things change so rapidly. Sorry if you had a database in a
 // previous version, you'll need to recreate it.
-const current_version = i8(11)
+const current_version = i8(12)
 
 // The Header contains important metadata about the database and always occupies
 // the first page of the database.

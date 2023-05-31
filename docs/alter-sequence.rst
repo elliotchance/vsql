@@ -44,16 +44,6 @@ Examples
    -- msg: ALTER SEQUENCE 1
    -- COL1: 1 COL2: 2
 
-Caveats
--------
-
-The properties of a sequence (such as the ``INCREMENT BY``, etc) are held in the
-same record as the next value. Since the next value of a sequence needs to be
-atomic (and separate from the transaction isolation) a ``ROLLBACK`` on a
-transaction that contains an ``ALTER SEQUENCE`` will not undo any changes.
-
-This was noted in :doc:`file-format` under *Notes for Future Improvements*.
-
 See Also
 --------
 

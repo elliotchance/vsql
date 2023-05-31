@@ -124,6 +124,9 @@ the first byte of the *Key*:
   * - ``F``
     - `Fragment Object`_
 
+  * - ``Q``
+    - `Sequence Object`_
+
   * - ``R``
     - `Row Object`_
 
@@ -132,6 +135,9 @@ the first byte of the *Key*:
 
   * - ``T``
     - `Table Object`_
+
+  * - ``V``
+    - `Sequence Value Object`_
 
 Every object contains 15 bytes of metadata:
 
@@ -210,10 +216,15 @@ code for ``Schema.bytes()`` and ``new_schema_from_bytes()`` respectively.
 Sequence Object
 ---------------
 
-A Sequence Object (has the ``Q`` prefix) contains the definition and next value
-for a sequence. Since a sequence's next value needs to be atomic, this creates
-some special rules that only apply to updating or incrementing a sequence. See
-*Notes for Future Improvements* below or *Caveats* in :doc:`alter-sequence`.
+A Sequence Object (has the ``Q`` prefix) contains the definition for a sequence
+(not including the next value, see `Sequence Value Object`_).
+
+Sequence Value Object
+---------------------
+
+A Sequence Value Object (has the ``V`` prefix) contains the next value for a
+sequence. Since a sequence's next value needs to be atomic, even outside of
+transaction isolation, changing the value will be always persistent.
 
 Table Object
 ------------

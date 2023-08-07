@@ -23,67 +23,6 @@ fn catalog_name_from_path
 
 
 
-fn new_varchar_value
---------------------
-
-
-.. code-block:: v
-
-   pub fn new_varchar_value(x string) Value
-
-
-new_varchar_value creates a ``CHARACTER VARYING`` value.  
-
-fn open
--------
-
-
-.. code-block:: v
-
-   pub fn open(path string) !&Connection
-
-
-open is the convenience function for open_database() with default options.  
-
-fn open_database
-----------------
-
-
-.. code-block:: v
-
-   pub fn open_database(path string, options ConnectionOptions) !&Connection
-
-
-open_database will open an existing database file or create a new file if the
-path does not exist.  
-
-If the file does exist, open_database will assume that the file is a valid database file (not corrupt). Otherwise unexpected behavior or even a crash
-may occur.  
-
-The special file name ":memory:" can be used to create an entirely in-memory database. This will be faster but all data will be lost when the connection
-is closed.  
-
-open_database can be used concurrently for reading and writing to the same file and provides the following default protections:
-
-- Fine: Multiple processes open_database() the same file.
-
-- Fine: Multiple goroutines sharing an open_database() on the same file.
-
-- Bad: Multiple goroutines open_database() the same file.
-
-See ConnectionOptions and default_connection_options().  
-
-fn pluralize
-------------
-
-
-.. code-block:: v
-
-   pub fn pluralize(n int, word string) string
-
-
-TODO(elliotchance): Make private when CLI is moved into vsql package.  
-
 fn default_connection_options
 -----------------------------
 
@@ -116,41 +55,6 @@ fn new_bigint_value
 
 
 new_bigint_value creates a ``BIGINT`` value.  
-
-fn sqlstate_from_int
---------------------
-
-
-.. code-block:: v
-
-   pub fn sqlstate_from_int(code int) string
-
-
-sqlstate_from_int performs the inverse operation of sqlstate_to_int.  
-
-fn sqlstate_to_int
-------------------
-
-
-.. code-block:: v
-
-   pub fn sqlstate_to_int(code string) int
-
-
-sqlstate_to_int converts the 5 character SQLSTATE code (such as "42P01") into an integer representation. The returned value can be converted back to its
-respective string by using sqlstate_from_int().  
-
-If code is invalid the result will be unexpected.  
-
-fn start_timer
---------------
-
-
-.. code-block:: v
-
-   pub fn start_timer() Timer
-
-
 
 fn new_boolean_value
 --------------------
@@ -308,7 +212,103 @@ fn new_unknown_value
 new_unknown_value returns an ``UNKNOWN`` value. This is the ``NULL``
 representation of ``BOOLEAN``.  
 
-type Server
+fn new_varchar_value
+--------------------
+
+
+.. code-block:: v
+
+   pub fn new_varchar_value(x string) Value
+
+
+new_varchar_value creates a ``CHARACTER VARYING`` value.  
+
+fn open
+-------
+
+
+.. code-block:: v
+
+   pub fn open(path string) !&Connection
+
+
+open is the convenience function for open_database() with default options.  
+
+fn open_database
+----------------
+
+
+.. code-block:: v
+
+   pub fn open_database(path string, options ConnectionOptions) !&Connection
+
+
+open_database will open an existing database file or create a new file if the
+path does not exist.  
+
+If the file does exist, open_database will assume that the file is a valid database file (not corrupt). Otherwise unexpected behavior or even a crash
+may occur.  
+
+The special file name ":memory:" can be used to create an entirely in-memory database. This will be faster but all data will be lost when the connection
+is closed.  
+
+open_database can be used concurrently for reading and writing to the same file and provides the following default protections:
+
+- Fine: Multiple processes open_database() the same file.
+
+- Fine: Multiple goroutines sharing an open_database() on the same file.
+
+- Bad: Multiple goroutines open_database() the same file.
+
+See ConnectionOptions and default_connection_options().  
+
+fn pluralize
+------------
+
+
+.. code-block:: v
+
+   pub fn pluralize(n int, word string) string
+
+
+TODO(elliotchance): Make private when CLI is moved into vsql package.  
+
+fn sqlstate_from_int
+--------------------
+
+
+.. code-block:: v
+
+   pub fn sqlstate_from_int(code int) string
+
+
+sqlstate_from_int performs the inverse operation of sqlstate_to_int.  
+
+fn sqlstate_to_int
+------------------
+
+
+.. code-block:: v
+
+   pub fn sqlstate_to_int(code string) int
+
+
+sqlstate_to_int converts the 5 character SQLSTATE code (such as "42P01") into an integer representation. The returned value can be converted back to its
+respective string by using sqlstate_from_int().  
+
+If code is invalid the result will be unexpected.  
+
+fn start_timer
+--------------
+
+
+.. code-block:: v
+
+   pub fn start_timer() Timer
+
+
+
+type Column
 -----------
 
 
@@ -320,7 +320,7 @@ type Row
 
 
 
-type Column
+type Server
 -----------
 
 
@@ -342,19 +342,19 @@ enum Boolean
 
 Possible values for a BOOLEAN.  
 
-struct VirtualTable
--------------------
+struct Benchmark
+----------------
 
 
 .. code-block:: v
 
-   pub struct VirtualTable {
-   	create_table_sql  string
-   	create_table_stmt CreateTableStmt
-   	data              VirtualTableProviderFn
-   mut:
-   	is_done bool
-   	rows    []Row
+   pub struct Benchmark {
+   pub mut:
+   	conn         &Connection
+   	account_rows int
+   	teller_rows  int
+   	branch_rows  int
+   	run_for      time.Duration
    }
 
 
@@ -413,7 +413,7 @@ struct Connection
    	// now allows you to override the wall clock that is used. The Time must be
    	// in UTC with a separate offset for the current local timezone (in positive
    	// or negative minutes).
-   	now fn () (time.Time, i16)
+   	now fn () (time.Time, i16) = unsafe { nil }
    	// warnings are SQLSTATE errors that do not stop the execution. For example,
    	// if a value must be truncated during a runtime CAST.
    	//
@@ -752,19 +752,19 @@ struct Value
 
 A single value. It contains it's type information in ``typ``.  
 
-struct Benchmark
-----------------
+struct VirtualTable
+-------------------
 
 
 .. code-block:: v
 
-   pub struct Benchmark {
-   pub mut:
-   	conn         &Connection
-   	account_rows int
-   	teller_rows  int
-   	branch_rows  int
-   	run_for      time.Duration
+   pub struct VirtualTable {
+   	create_table_sql  string
+   	create_table_stmt CreateTableStmt
+   	data              VirtualTableProviderFn = unsafe { nil }
+   mut:
+   	is_done bool
+   	rows    []Row
    }
 
 

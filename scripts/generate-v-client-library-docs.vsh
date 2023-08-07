@@ -30,7 +30,7 @@ fn main() {
 	print('\n')
 
 	mut dcs_contents := d.contents.arr()
-	dcs_contents.sort_by_name()
+	dcs_contents.sort_by_kind()
 
 	for node in dcs_contents {
 		section_title := if node.kind == .const_group {

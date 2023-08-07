@@ -29,7 +29,8 @@ fn main() {
 	println('-'.repeat(module_title.len))
 	print('\n')
 
-	dcs_contents := d.contents.arr()
+	mut dcs_contents := d.contents.arr()
+	dcs_contents.sort_by_name()
 
 	for node in dcs_contents {
 		section_title := if node.kind == .const_group {

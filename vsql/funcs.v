@@ -6,7 +6,7 @@ struct Func {
 	name        string
 	arg_types   []Type
 	is_agg      bool
-	func        fn ([]Value) !Value
+	func        fn ([]Value) !Value = unsafe { nil }
 	return_type Type
 }
 

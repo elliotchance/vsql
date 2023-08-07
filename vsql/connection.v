@@ -51,7 +51,7 @@ pub mut:
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive
 	// or negative minutes).
-	now fn () (time.Time, i16)
+	now fn () (time.Time, i16) = unsafe { nil }
 	// warnings are SQLSTATE errors that do not stop the execution. For example,
 	// if a value must be truncated during a runtime CAST.
 	//

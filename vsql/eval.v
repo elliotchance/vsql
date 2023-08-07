@@ -293,7 +293,7 @@ fn time_value(conn &Connection, prec int, include_offset bool) string {
 	mut s := now.strftime('%H:%M:%S')
 
 	if prec > 0 {
-		microseconds := left_pad(now.microsecond.str(), '0', 6)
+		microseconds := left_pad((now.nanosecond / 1000).str(), '0', 6)
 		s += '.' + microseconds.substr(0, prec)
 	}
 

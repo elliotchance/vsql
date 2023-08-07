@@ -6,7 +6,7 @@ type VirtualTableProviderFn = fn (mut t VirtualTable) !
 pub struct VirtualTable {
 	create_table_sql  string
 	create_table_stmt CreateTableStmt
-	data              VirtualTableProviderFn
+	data              VirtualTableProviderFn = unsafe { nil }
 mut:
 	is_done bool
 	rows    []Row

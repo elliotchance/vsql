@@ -154,7 +154,7 @@ fn new_time_from_components(typ Type, year int, month int, day int, hour int, mi
 		hour: hour
 		minute: minute
 		second: second
-		microsecond: microsecond
+		nanosecond: microsecond * 1000
 	})}
 }
 
@@ -237,7 +237,7 @@ fn (t Time) i64() i64 {
 // See i64() for details.
 fn (t Time) time_i64() i64 {
 	return t.t.hour * vsql.hour_period + t.t.minute * vsql.minute_period +
-		t.t.second * vsql.second_period + t.t.microsecond
+		t.t.second * vsql.second_period + t.t.nanosecond / 1000
 }
 
 // See i64() for details.
@@ -312,7 +312,7 @@ fn (t Time) str_fractional_seconds(prec int) string {
 	}
 
 	// Round down first, if needed.
-	mut s := t.t.microsecond.str()
+	mut s := (t.t.nanosecond / 1000).str()
 	if prec < s.len {
 		s = s[..prec]
 	}

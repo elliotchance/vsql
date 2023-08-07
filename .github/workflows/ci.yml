@@ -31,13 +31,6 @@ jobs:
       - name: Verify fmt
         run: make fmt-verify
 
-      - name: Verify docs
-        run: |
-          pip install sphinx sphinx_rtd_theme
-          cd docs && python3 -m pip install -r requirements.txt && cd -
-          make clean-docs docs
-          git diff --exit-code
-
       - name: Run SQL and B-tree tests
         run: make test
 
@@ -46,6 +39,13 @@ jobs:
 
       - name: Run CLI tests
         run: make cli-test
+
+      - name: Verify docs
+        run: |
+          pip install sphinx sphinx_rtd_theme
+          cd docs && python3 -m pip install -r requirements.txt && cd -
+          make clean-docs docs
+          git diff --exit-code
 
   macos-binary:
     name: Build for macOS

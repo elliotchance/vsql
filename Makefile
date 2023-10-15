@@ -57,6 +57,8 @@ clean-docs:
 # Grammar (BNF)
 
 grammar:
+	@# Grammer rules should be sorted
+	grep "::=" grammar.bnf | sort -C
 	python3 generate-grammar.py
 	v fmt -w vsql/grammar.v
 

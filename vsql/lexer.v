@@ -35,9 +35,9 @@ pub:
 	value string
 }
 
-fn tokenize(sql string) []Token {
+fn tokenize(sql_stmt string) []Token {
 	mut tokens := []Token{}
-	cs := sql.trim(';').runes()
+	cs := sql_stmt.trim(';').runes()
 	mut i := 0
 
 	next: for i < cs.len {

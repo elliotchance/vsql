@@ -1,10 +1,20 @@
-.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples grammar sql-test docs clean-docs
+.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples grammar sql-test docs clean-docs oldv
 
 # Is not used at the moment. It is useful for testing options like different
 # `-gc` values.
 BUILD_OPTIONS =
 
 PROD = -prod
+
+# OLDV let's you specify a differnt V version rather than the default one. This
+# is important for testing V language changes or legacy performance tests. It is
+# documented in testing.rst.
+ifdef OLDV
+V_DIR := $(shell dirname `which v`)
+V := "/tmp/oldv/v_at_$(OLDV)/v"
+else
+V := $(shell which v)
+endif
 
 # Ready is a some quick tasks that can easily be forgotten when preparing a
 # diff.
@@ -21,6 +31,16 @@ bin/vsql.exe:
 	mkdir -p bin
 	v $(BUILD_OPTIONS) $(PROD) cmd/vsql
 	mv cmd/vsql/vsql.exe bin/vsql.exe
+
+oldv:
+ifdef OLDV
+	@mkdir -p /tmp/oldv/
+	@# VJOBS and VFLAGS needs to be provided for macOS. I'm not sure if they also
+	@# have to be removed for linux.
+	cd $(V_DIR) && VJOBS=1 VFLAGS='-no-parallel' cmd/tools/oldv $(OLDV) -w /tmp/oldv/
+	@# Print out the version to make sure the V build was successful.
+	$(V) version
+endif
 
 # Documentation
 
@@ -50,14 +70,14 @@ fmt-verify:
 
 # Tests
 
-test:
-	v -stats $(BUILD_OPTIONS) $(PROD) test vsql
+test: oldv
+	$(V) -stats $(BUILD_OPTIONS) $(PROD) test vsql
 
-btree-test:
-	v -stats $(BUILD_OPTIONS) $(PROD) test vsql/btree_test.v
+btree-test: oldv
+	$(V) -stats $(BUILD_OPTIONS) $(PROD) test vsql/btree_test.v
 
-sql-test:
-	v -stats $(BUILD_OPTIONS) test vsql/sql_test.v
+sql-test: oldv
+	$(V) -stats $(BUILD_OPTIONS) test vsql/sql_test.v
 
 # CLI Tests
 

@@ -18,10 +18,10 @@ fn test_btree_test() ! {
 	blob_sizes := [
 		// 48 means all objects will fit in pages (and several per page) and
 		// never have to use blob storage.
-		48
+		48,
 		// 148 is larger than half a page so we always end up with one object
 		// per page, but no need to use blob storage, yet.
-		148
+		148,
 		// 348 is larger than a page so all items must go into blob storage.
 		348,
 	]

@@ -107,7 +107,7 @@ fn (mut q QueryCache) parse(query string) !(Stmt, map[string]Value, bool) {
 	mut explain := false
 	if tokens[0].value.to_upper() == 'EXPLAIN' {
 		explain = true
-		tokens = tokens[1..]
+		tokens = tokens[1..].clone()
 	}
 
 	key, params, new_tokens := q.prepare(tokens)

@@ -6,33 +6,19 @@
 #
 # Many rules are missing, or only partially implemented.
 
-<preparable statement> /* Stmt */ ::=
-    <preparable SQL data statement>
-  | <preparable SQL schema statement>
-  | <preparable SQL transaction statement>
-  | <preparable SQL session statement>
+<SQL argument list> /* []Expr */ ::=
+    <left paren> <right paren>                  -> empty_exprs
+  | <left paren> <SQL argument> <right paren>   -> expr_to_list
+  | <left paren> <SQL argument list> <comma>
+    <SQL argument> <right paren>                -> append_exprs1
 
-<SQL schema statement> /* Stmt */ ::=
-    <SQL schema definition statement>
-  | <SQL schema manipulation statement>
+<SQL argument> /* Expr */ ::=
+    <value expression>
 
 <SQL schema definition statement> /* Stmt */ ::=
     <schema definition>
   | <table definition>
   | <sequence generator definition>
-
-<schema definition> /* Stmt */ ::=
-    CREATE SCHEMA <schema name clause>   -> schema_definition
-
-<schema name clause> /* Identifier */ ::=
-    <schema name>
-
-<schema name> /* Identifier */ ::=
-    <catalog name> <period> <unqualified schema name>   -> schema_name_1
-  | <unqualified schema name>
-
-<unqualified schema name> /* Identifier */ ::=
-    <identifier>   -> unqualified_schema_name
 
 <SQL schema manipulation statement> /* Stmt */ ::=
     <drop schema statement>
@@ -40,18 +26,611 @@
   | <alter sequence generator statement>
   | <drop sequence generator statement>
 
-<drop schema statement> /* Stmt */ ::=
-    DROP SCHEMA <schema name> <drop behavior>   -> drop_schema_statement
+<SQL schema statement> /* Stmt */ ::=
+    <SQL schema definition statement>
+  | <SQL schema manipulation statement>
+
+<SQL session statement> /* Stmt */ ::=
+    <set schema statement>
+  | <set catalog statement>
+
+<SQL transaction statement> /* Stmt */ ::=
+    <start transaction statement>
+  | <commit statement>
+  | <rollback statement>
+
+<absolute value expression> /* Expr */ ::=
+    ABS <left paren> <numeric value expression> <right paren>   -> abs
+
+<actual identifier> /* IdentifierChain */ ::=
+    <regular identifier>
+
+<aggregate function> /* Expr */ ::=
+    COUNT <left paren> <asterisk> <right paren>   -> count_all
+  | <general set function>
+
+<alter sequence generator option> /* SequenceGeneratorOption */ ::=
+    <alter sequence generator restart option>   -> alter_sequence_generator_option_1
+  | <basic sequence generator option>
+
+<alter sequence generator options> /* []SequenceGeneratorOption */ ::=
+    <alter sequence generator option>   -> sequence_generator_options_1
+  | <alter sequence generator options>
+    <alter sequence generator option>   -> sequence_generator_options_2
+
+<alter sequence generator restart option> /* SequenceGeneratorRestartOption */ ::=
+    RESTART                              -> sequence_generator_restart_option_1
+  | RESTART WITH
+    <sequence generator restart value>   -> sequence_generator_restart_option_2
+
+<alter sequence generator statement> /* Stmt */ ::=
+    ALTER SEQUENCE
+    <sequence generator name>
+    <alter sequence generator options>   -> alter_sequence_generator_statement
+
+<approximate numeric type> /* Type */ ::=
+    FLOAT                                          -> float
+  | FLOAT <left paren> <precision> <right paren>   -> float_n
+  | REAL                                           -> real
+  | DOUBLE PRECISION                               -> double_precision
+
+<as clause> /* Identifier */ ::=
+    AS <column name>   -> identifier
+  | <column name>
+
+<asterisk> /* string */ ::=
+  "*"
+
+<asterisked identifier chain> /* IdentifierChain */ ::=
+    <asterisked identifier>
+
+<asterisked identifier> /* IdentifierChain */ ::=
+    <identifier>
+
+<basic identifier chain> /* IdentifierChain */ ::=
+    <identifier chain>
+
+<basic sequence generator option> /* SequenceGeneratorOption */ ::=
+    <sequence generator increment by option>   -> basic_sequence_generator_option_1
+  | <sequence generator maxvalue option>       -> basic_sequence_generator_option_2
+  | <sequence generator minvalue option>       -> basic_sequence_generator_option_3
+  | <sequence generator cycle option>          -> basic_sequence_generator_option_4
+
+<between predicate part 1> /* bool */ ::=
+    BETWEEN       -> yes
+  | NOT BETWEEN   -> no
+
+<between predicate part 2> /* BetweenExpr */ ::=
+    <between predicate part 1>
+    <row value predicand> AND <row value predicand>   -> between1
+  | <between predicate part 1> <is symmetric>
+    <row value predicand> AND <row value predicand>   -> between2
+
+<between predicate> /* Expr */ ::=
+    <row value predicand> <between predicate part 2>   -> between
+
+<boolean factor> /* Expr */ ::=
+    <boolean test>
+  | NOT <boolean test>   -> not
+
+<boolean literal> /* Value */ ::=
+    TRUE      -> true
+  | FALSE     -> false
+  | UNKNOWN   -> unknown
+
+<boolean predicand> /* Expr */ ::=
+    <parenthesized boolean value expression>
+  | <nonparenthesized value expression primary>
+
+<boolean primary> /* Expr */ ::=
+    <predicate>
+  | <boolean predicand>
+
+<boolean term> /* Expr */ ::=
+    <boolean factor>
+  | <boolean term> AND <boolean factor>   -> and
+
+<boolean test> /* Expr */ ::=
+    <boolean primary>
+  | <boolean primary> IS <truth value>       -> boolean_test1
+  | <boolean primary> IS NOT <truth value>   -> boolean_test2
+
+<boolean type> /* Type */ ::=
+    BOOLEAN   -> boolean_type
+
+<boolean value expression> /* Expr */ ::=
+    <boolean term>
+  | <boolean value expression> OR <boolean term>   -> or
+
+<case abbreviation> /* Expr */ ::=
+    NULLIF <left paren> <value expression>
+    <comma> <value expression> <right paren>                      -> nullif
+  | COALESCE <left paren> <value expression list> <right paren>   -> coalesce
+
+<case expression> /* Expr */ ::=
+    <case abbreviation>
+
+<cast operand> /* Expr */ ::=
+    <value expression>
+  | <implicitly typed value specification>
+
+<cast specification> /* Expr */ ::=
+    CAST <left paren> <cast operand> AS <cast target> <right paren>   -> cast
+
+<cast target> /* Type */ ::=
+    <data type>
+
+<catalog name characteristic> /* Expr */ ::=
+    CATALOG <value specification>   -> expr
+
+<catalog name> /* IdentifierChain */ ::=
+    <identifier>
+
+
+<ceiling function> /* Expr */ ::=
+    CEIL <left paren> <numeric value expression> <right paren>      -> ceiling
+  | CEILING <left paren> <numeric value expression> <right paren>   -> ceiling
+
+<char length expression> /* Expr */ ::=
+    CHAR_LENGTH
+    <left paren> <character value expression> <right paren>   -> char_length
+  | CHARACTER_LENGTH
+    <left paren> <character value expression> <right paren>   -> char_length
+
+<char length units> /* string */ ::=
+    CHARACTERS
+  | OCTETS
+
+<character factor> /* Expr */ ::=
+    <character primary>
+
+<character length> /* string */ ::=
+    <length>
+
+<character like predicate part 2> /* LikeExpr */ ::=
+    LIKE <character pattern>       -> like
+  | NOT LIKE <character pattern>   -> not_like
+
+<character like predicate> /* Expr */ ::=
+    <row value predicand> <character like predicate part 2>   -> like_pred
+
+<character pattern> /* Expr */ ::=
+    <character value expression>
+
+<character position expression> /* Expr */ ::=
+    POSITION <left paren> <character value expression 1> IN 
+    <character value expression 2> <right paren>              -> position
+
+<character primary> /* Expr */ ::=
+    <value expression primary>
+  | <string value function>
+
+<character string literal> /* Value */ ::=
+    ^string
+
+<character string type> /* Type */ ::=
+    CHARACTER                                                         -> character
+  | CHARACTER <left paren> <character length> <right paren>           -> character_n
+  | CHAR                                                              -> character
+  | CHAR <left paren> <character length> <right paren>                -> character_n
+  | CHARACTER VARYING <left paren> <character length> <right paren>   -> varchar
+  | CHAR VARYING <left paren> <character length> <right paren>        -> varchar
+  | VARCHAR <left paren> <character length> <right paren>             -> varchar
+
+<character substring function> /* Expr */ ::=
+    SUBSTRING <left paren> <character value expression>
+    FROM <start position> <right paren>                   -> substring1
+  | SUBSTRING <left paren> <character value expression>
+    FROM <start position> 
+    FOR <string length> <right paren>                     -> substring2
+  | SUBSTRING <left paren> <character value expression>
+    FROM <start position> 
+    USING <char length units> <right paren>               -> substring3
+  | SUBSTRING <left paren> <character value expression>
+    FROM <start position> 
+    FOR <string length>
+    USING <char length units> <right paren>               -> substring4
+
+<character value expression 1> /* Expr */ ::=
+    <character value expression>
+
+<character value expression 2> /* Expr */ ::=
+    <character value expression>
+
+<character value expression> /* Expr */ ::=
+    <concatenation>
+  | <character factor>
+
+<character value function> /* Expr */ ::=
+    <character substring function>
+  | <fold>
+  | <trim function>
+
+<colon> ::=
+  ":"
+
+<column constraint definition> /* bool */ ::=
+    <column constraint>
+
+<column constraint> /* bool */ ::=
+    NOT NULL   -> yes
+
+<column definition> /* TableElement */ ::=
+    <column name> <data type or domain name>   -> column_definition1
+  | <column name> <data type or domain name>
+    <column constraint definition>             -> column_definition2
+
+<column name list> /* []Identifier */ ::=
+    <column name>                              -> column_name_list1
+  | <column name list> <comma> <column name>   -> column_name_list2
+
+<column name> /* Identifier */ ::=
+    <identifier>   -> column_name
+
+<column reference> /* Identifier */ ::=
+    <basic identifier chain>   -> column_reference
+
+<comma> ::= ","
+
+<commit statement> /* Stmt */ ::=
+    COMMIT        -> commit
+  | COMMIT WORK   -> commit
+
+<common logarithm> /* Expr */ ::=
+    LOG10 <left paren> <numeric value expression> <right paren>   -> log10
+
+<common sequence generator option> /* SequenceGeneratorOption */ ::=
+    <sequence generator start with option>   -> common_sequence_generator_option_1
+  | <basic sequence generator option>
+
+<common sequence generator options> /* []SequenceGeneratorOption */ ::=
+    <common sequence generator option>    -> sequence_generator_options_1
+  | <common sequence generator options>
+    <common sequence generator option>    -> sequence_generator_options_2
+
+<common value expression> /* Expr */ ::=
+    <numeric value expression>
+  | <string value expression>
+  | <datetime value expression>
+
+<comp op> /* string */ ::=
+    <equals operator>
+  | <not equals operator>
+  | <less than operator>
+  | <greater than operator>
+  | <less than or equals operator>
+  | <greater than or equals operator>
+
+<comparison predicate part 2> /* ComparisonPredicatePart2 */ ::=
+    <comp op> <row value predicand>   -> comparison_part
+
+<comparison predicate> /* Expr */ ::=
+    <row value predicand> <comparison predicate part 2>   -> comparison
+
+<computational operation> /* string */ ::=
+    AVG
+  | MAX
+  | MIN
+  | SUM
+  | COUNT
+
+<concatenation operator> ::= "||"
+
+<concatenation> /* Expr */ ::=
+    <character value expression>
+    <concatenation operator>
+    <character factor>             -> concatenation
+
+<contextually typed row value constructor element list> /* []Expr */ ::=
+    <contextually typed row value constructor element>        -> expr_to_list
+  | <contextually typed row value constructor element list>
+    <comma>
+    <contextually typed row value constructor element>        -> append_exprs1
+
+<contextually typed row value constructor element> /* Expr */ ::=
+    <value expression>
+  | <contextually typed value specification>
+
+<contextually typed row value constructor> /* []Expr */ ::=
+    <common value expression>                        -> expr_to_list
+  | <boolean value expression>                       -> expr_to_list
+  | <contextually typed value specification>         -> expr_to_list
+  | <left paren> <contextually typed value specification>
+    <right paren>                                    -> expr_to_list
+  | <left paren>
+    <contextually typed row value constructor element> <comma>
+    <contextually typed row value constructor element list>
+    <right paren>                                    -> append_exprs2
+
+<contextually typed row value expression list> /* []Expr */ ::=
+    <contextually typed row value expression>
+  | <contextually typed row value expression list> <comma>
+    <contextually typed row value expression>                -> merge_expr_lists
+
+<contextually typed row value expression> /* []Expr */ ::=
+  <contextually typed row value constructor>
+
+<contextually typed table value constructor> /* []Expr */ ::=
+    VALUES <contextually typed row value expression list>   -> exprs
+
+<contextually typed value specification> /* Expr */ ::=
+    <implicitly typed value specification>
+
+<correlation name> /* Identifier */ ::=
+    <identifier>   -> correlation_name
+
+<correlation or recognition> /* Correlation */ ::=
+    <correlation name>                    -> correlation1
+  | AS <correlation name>                 -> correlation1
+  | <correlation name>
+    <parenthesized derived column list>   -> correlation2
+  | AS <correlation name>
+    <parenthesized derived column list>   -> correlation2
+
+<current date value function> /* Expr */ ::=
+    CURRENT_DATE   -> current_date
+
+<current local time value function> /* Expr */ ::=
+    LOCALTIME                                               -> localtime1
+  | LOCALTIME <left paren> <time precision> <right paren>   -> localtime2
+
+<current local timestamp value function> /* Expr */ ::=
+    LOCALTIMESTAMP                                     -> localtimestamp1
+  | LOCALTIMESTAMP
+    <left paren> <timestamp precision> <right paren>   -> localtimestamp2
+
+<current time value function> /* Expr */ ::=
+    CURRENT_TIME                                               -> current_time1
+  | CURRENT_TIME <left paren> <time precision> <right paren>   -> current_time2
+
+<current timestamp value function> /* Expr */ ::=
+    CURRENT_TIMESTAMP                                  -> current_timestamp1
+  | CURRENT_TIMESTAMP
+    <left paren> <timestamp precision> <right paren>   -> current_timestamp2
+
+<cursor specification> /* Stmt */ ::=
+    <query expression>   -> cursor_specification
+
+<data type or domain name> /* Type */ ::=
+    <data type>
+
+<data type> /* Type */ ::=
+    <predefined type>
+
+<date literal> /* Value */ ::=
+    DATE <date string>   -> date_literal
+
+<date string> /* Value */ ::=
+    ^string
+
+<datetime factor> /* Expr */ ::=
+    <datetime primary>
+
+<datetime literal> /* Value */ ::=
+    <date literal>
+  | <time literal>
+  | <timestamp literal>
+
+<datetime primary> /* Expr */ ::=
+    <value expression primary>
+  | <datetime value function>
+
+<datetime term> /* Expr */ ::=
+    <datetime factor>
+
+<datetime type> /* Type */ ::=
+    DATE                                               -> date_type
+  | TIME                                               -> time_type
+  | TIME <left paren> <time precision> <right paren>   -> time_prec_type
+  | TIME <with or without time zone>                   -> time_tz_type
+  | TIME <left paren> <time precision> <right paren>
+    <with or without time zone>                        -> time_prec_tz_type
+  | TIMESTAMP                                          -> timestamp_type
+  | TIMESTAMP
+    <left paren> <timestamp precision> <right paren>   -> timestamp_prec_type
+  | TIMESTAMP <with or without time zone>              -> timestamp_tz_type
+  | TIMESTAMP
+    <left paren> <timestamp precision> <right paren>
+    <with or without time zone>                        -> timestamp_prec_tz_type
+
+<datetime value expression> /* Expr */ ::=
+    <datetime term>
+
+<datetime value function> /* Expr */ ::=
+    <current date value function>
+  | <current time value function>
+  | <current timestamp value function>
+  | <current local time value function>
+  | <current local timestamp value function>
+
+<delete statement: searched> /* Stmt */ ::=
+    DELETE FROM <target table>   -> delete_statement
+  | DELETE FROM <target table>
+    WHERE <search condition>     -> delete_statement_where
+
+<derived column list> /* []Identifier */ ::=
+    <column name list>
+
+<derived column> /* DerivedColumn */ ::=
+    <value expression>               -> derived_column
+  | <value expression> <as clause>   -> derived_column_as
+
+<derived table> /* TablePrimary */ ::=
+    <table subquery>
 
 <drop behavior> /* string */ ::=
     CASCADE
   | RESTRICT
 
+<drop schema statement> /* Stmt */ ::=
+    DROP SCHEMA <schema name> <drop behavior>   -> drop_schema_statement
+
+<drop sequence generator statement> /* Stmt */ ::=
+    DROP SEQUENCE
+    <sequence generator name>   -> drop_sequence_generator_statement
+
 <drop table statement> /* Stmt */ ::=
     DROP TABLE <table name>   -> drop_table_statement
 
-<table name> /* Identifier */ ::=
-    <local or schema qualified name>   -> table_name
+<dynamic select statement> /* Stmt */ ::=
+    <cursor specification>
+
+<equals operator> ::= "="
+
+<exact numeric literal> /* Value */ ::=
+    <unsigned integer>                               -> int_value
+  | <unsigned integer> <period>                      -> int_value
+  | <unsigned integer> <period> <unsigned integer>   -> exact_numeric_literal1
+  | <period> <unsigned integer>                      -> exact_numeric_literal2
+
+<exact numeric type> /* Type */ ::=
+    SMALLINT   -> smallint
+  | INTEGER    -> integer
+  | INT        -> integer
+  | BIGINT     -> bigint
+
+<explicit row value constructor> /* Expr */ ::=
+    ROW <left paren> <row value constructor element list>
+    <right paren>                                           -> row_constructor1
+  | <row subquery>                                          -> row_constructor2
+
+<exponential function> /* Expr */ ::=
+    EXP <left paren> <numeric value expression> <right paren>   -> exp
+
+<factor> /* Expr */ ::=
+    <numeric primary>
+  | <sign> <numeric primary>   -> sign_expr
+
+<fetch first clause> /* Expr */ ::=
+    FETCH FIRST
+    <fetch first quantity>
+    <row or rows>
+    ONLY                     -> fetch_first_clause
+
+<fetch first quantity> /* Expr */ ::=
+    <fetch first row count>
+
+<fetch first row count> /* Expr */ ::=
+    <simple value specification>
+
+<floor function> /* Expr */ ::=
+    FLOOR <left paren> <numeric value expression> <right paren>   -> floor
+
+<fold> /* Expr */ ::=
+    UPPER <left paren> <character value expression> <right paren>   -> upper
+  | LOWER <left paren> <character value expression> <right paren>   -> lower
+
+<from clause> /* TableReference */ ::=
+    FROM <table reference list>   -> from_clause
+
+<from constructor> /* InsertStmt */ ::=
+    <left paren> <insert column list> <right paren>
+    <contextually typed table value constructor>   -> from_constructor
+
+<general literal> /* Value */ ::=
+    <character string literal>
+  | <datetime literal>
+  | <boolean literal>
+
+<general set function> /* Expr */ ::=
+    <set function type> <left paren>
+    <value expression> <right paren>   -> general_set_function
+
+<general value specification> /* Expr */ ::=
+    <host parameter specification>
+  | CURRENT_CATALOG                  -> current_catalog
+  | CURRENT_SCHEMA                   -> current_schema
+
+<greater than operator> ::= ">"
+
+<greater than or equals operator> ::= ">="
+
+<group by clause> /* []Expr */ ::=
+    GROUP BY <grouping element list>   -> exprs
+
+<grouping column reference> /* Expr */ ::=
+    <column reference>   -> identifier_to_expr
+
+<grouping element list> /* []Expr */ ::=
+    <grouping element>                                   -> expr_to_list
+  | <grouping element list> <comma> <grouping element>   -> append_exprs1
+
+<grouping element> /* Expr */ ::=
+    <ordinary grouping set>
+
+<host parameter name> /* Expr */ ::=
+    <colon> <identifier>   -> host_parameter_name
+
+<host parameter specification> /* Expr */ ::=
+    <host parameter name>
+
+<identifier body> /* IdentifierChain */ ::=
+    <identifier start>
+
+<identifier chain> /* IdentifierChain */ ::=
+    <identifier>
+  | <identifier> <period> <identifier>   -> identifier_chain1
+
+<identifier start> /* IdentifierChain */ ::=
+    ^identifier
+
+<identifier> /* IdentifierChain */ ::=
+    <actual identifier>
+
+<implicitly typed value specification> /* Expr */ ::=
+    <null specification>
+
+<insert column list> /* []Identifier */ ::=
+    <column name list>
+
+<insert columns and source> /* InsertStmt */ ::=
+  <from constructor>
+
+<insert statement> /* Stmt */ ::=
+    INSERT INTO
+    <insertion target>
+    <insert columns and source>   -> insert_statement
+
+<insertion target> /* Identifier */ ::=
+    <table name>
+
+<is symmetric> /* bool */ ::=
+    SYMMETRIC    -> yes
+  | ASYMMETRIC   -> no
+
+<join condition> /* Expr */ ::=
+    ON <search condition>   -> expr
+
+<join specification> /* Expr */ ::=
+    <join condition>
+
+<join type> /* string */ ::=
+    INNER
+  | <outer join type>
+  | <outer join type> OUTER   -> string
+
+<joined table> /* QualifiedJoin */ ::=
+    <qualified join>
+
+<left paren> ::= "("
+
+<length expression> /* Expr */ ::=
+    <char length expression>
+  | <octet length expression>
+
+<length> /* string */ ::=
+    <unsigned integer>
+
+<less than operator> ::= "<"
+
+<less than or equals operator> ::= "<="
+
+<like predicate> /* Expr */ ::=
+    <character like predicate>
+
+<literal> /* Expr */ ::=
+    <signed numeric literal>
+  | <general literal>          -> value_to_expr
 
 <local or schema qualified name> /* IdentifierChain */ ::=
     <qualified identifier>
@@ -61,21 +640,18 @@
 <local or schema qualifier> /* Identifier */ ::=
     <schema name>
 
-<qualified identifier> /* IdentifierChain */ ::=
-    <identifier>
+<minus sign> /* string */ ::=
+  "-"
 
-<identifier> /* IdentifierChain */ ::=
-    <actual identifier>
+<modulus expression> /* Expr */ ::=
+    MOD <left paren> <numeric value expression dividend> <comma> 
+    <numeric value expression divisor> <right paren>               -> mod
 
-<actual identifier> /* IdentifierChain */ ::=
-    <regular identifier>
+<natural logarithm> /* Expr */ ::=
+    LN <left paren> <numeric value expression> <right paren>   -> ln
 
-# <non-reserved word> is added on top of the original <regular identifier> to
-# allow non-reserved words to be used as identifiers. As far as I can tell, only
-# <reserved word>s are restricted. See "9075-2:2016 5.2 #26".
-<regular identifier> /* IdentifierChain */ ::=
-    <identifier body>
-  | <non-reserved word>   -> string_identifier
+<next value expression> /* Expr */ ::=
+    NEXT VALUE FOR <sequence generator name>   -> next_value_expression
 
 <non-reserved word> /* string */ ::=
     A
@@ -359,44 +935,114 @@
   | WRITE
   | ZONE
 
-<identifier body> /* IdentifierChain */ ::=
-    <identifier start>
+<nonparenthesized value expression primary> /* Expr */ ::=
+    <unsigned value specification>
+  | <column reference>               -> identifier_to_expr
+  | <set function specification>
+  | <routine invocation>
+  | <case expression>
+  | <cast specification>
+  | <next value expression>
 
-<identifier start> /* IdentifierChain */ ::=
-    ^identifier
+<not equals operator> ::= "<>"
 
-<table definition> /* CreateTableStmt */ ::=
-    CREATE TABLE <table name> <table contents source>   -> table_definition
+<null predicate part 2> /* bool */ ::=
+    IS NULL       -> yes
+  | IS NOT NULL   -> no
 
-<table contents source> /* []TableElement */ ::=
-    <table element list>
+<null predicate> /* Expr */ ::=
+    <row value predicand> <null predicate part 2>   -> null_predicate
 
-<table element list> /* []TableElement */ ::=
-    <left paren>
-    <table elements>
-    <right paren>      -> table_element_list
+<null specification> /* Expr */ ::=
+    NULL   -> null
 
-<table elements> /* []TableElement */ ::=
-    <table element>                            -> table_elements1
-  | <table elements> <comma> <table element>   -> table_elements2
+<numeric primary> /* Expr */ ::=
+    <value expression primary>
+  | <numeric value function>
 
-<table element> /* TableElement */ ::=
-    <column definition>
-  | <table constraint definition>
+<numeric type> /* Type */ ::=
+    <exact numeric type>
+  | <approximate numeric type>
 
-<column definition> /* TableElement */ ::=
-    <column name> <data type or domain name>   -> column_definition1
-  | <column name> <data type or domain name>
-    <column constraint definition>             -> column_definition2
+<numeric value expression base> /* Expr */ ::=
+    <numeric value expression>
 
-<column name> /* Identifier */ ::=
-    <identifier>   -> column_name
+<numeric value expression dividend> /* Expr */ ::=
+    <numeric value expression>
 
-<data type or domain name> /* Type */ ::=
-    <data type>
+<numeric value expression divisor> /* Expr */ ::=
+    <numeric value expression>
 
-<data type> /* Type */ ::=
-    <predefined type>
+<numeric value expression exponent> /* Expr */ ::=
+    <numeric value expression>
+
+<numeric value expression> /* Expr */ ::=
+    <term>
+  | <numeric value expression> <plus sign> <term>    -> binary_expr
+  | <numeric value expression> <minus sign> <term>   -> binary_expr
+
+<numeric value function> /* Expr */ ::=
+    <position expression>
+  | <length expression>
+  | <absolute value expression>
+  | <modulus expression>
+  | <trigonometric function>
+  | <common logarithm>
+  | <natural logarithm>
+  | <exponential function>
+  | <power function>
+  | <square root>
+  | <floor function>
+  | <ceiling function>
+
+<object column> /* Identifier */ ::=
+    <column name>
+
+<octet length expression> /* Expr */ ::=
+    OCTET_LENGTH
+    <left paren> <string value expression> <right paren>   -> octet_length
+
+<offset row count> /* Expr */ ::=
+    <simple value specification>
+
+<order by clause> /* []SortSpecification */ ::=
+    ORDER BY <sort specification list>   -> order_by
+
+<ordering specification> /* bool */ ::=
+    ASC    -> yes
+  | DESC   -> no
+
+<ordinary grouping set> /* Expr */ ::=
+    <grouping column reference>
+
+<outer join type> /* string */ ::=
+    LEFT
+  | RIGHT
+
+<parenthesized boolean value expression> /* Expr */ ::=
+    <left paren> <boolean value expression> <right paren>   -> expr
+
+<parenthesized derived column list> /* []Identifier */ ::=
+    <left paren> <derived column list>
+    <right paren>                        -> parenthesized_derived_column_list
+
+<parenthesized value expression> /* Expr */ ::=
+    <left paren> <value expression> <right paren>   -> expr
+
+<period> ::= "."
+
+<plus sign> /* string */ ::=
+  "+"
+
+<position expression> /* Expr */ ::=
+    <character position expression>
+
+<power function> /* Expr */ ::=
+    POWER <left paren> <numeric value expression base> <comma> 
+    <numeric value expression exponent> <right paren>            -> power
+
+<precision> /* string */ ::=
+    <unsigned integer>
 
 <predefined type> /* Type */ ::=
     <character string type>
@@ -404,95 +1050,12 @@
   | <boolean type>
   | <datetime type>
 
-<character string type> /* Type */ ::=
-    CHARACTER                                                         -> character
-  | CHARACTER <left paren> <character length> <right paren>           -> character_n
-  | CHAR                                                              -> character
-  | CHAR <left paren> <character length> <right paren>                -> character_n
-  | CHARACTER VARYING <left paren> <character length> <right paren>   -> varchar
-  | CHAR VARYING <left paren> <character length> <right paren>        -> varchar
-  | VARCHAR <left paren> <character length> <right paren>             -> varchar
-
-<left paren> ::= "("
-
-<right paren> ::= ")"
-
-<character length> /* string */ ::=
-    <length>
-
-<length> /* string */ ::=
-    <unsigned integer>
-
-<unsigned integer> /* string */ ::=
-    ^integer
-
-<comma> ::= ","
-
-<numeric type> /* Type */ ::=
-    <exact numeric type>
-  | <approximate numeric type>
-
-<exact numeric type> /* Type */ ::=
-    SMALLINT   -> smallint
-  | INTEGER    -> integer
-  | INT        -> integer
-  | BIGINT     -> bigint
-
-<approximate numeric type> /* Type */ ::=
-    FLOAT                                          -> float
-  | FLOAT <left paren> <precision> <right paren>   -> float_n
-  | REAL                                           -> real
-  | DOUBLE PRECISION                               -> double_precision
-
-<precision> /* string */ ::=
-    <unsigned integer>
-
-<boolean type> /* Type */ ::=
-    BOOLEAN   -> boolean_type
-
-<null specification> /* Expr */ ::=
-    NULL   -> null
-
-<implicitly typed value specification> /* Expr */ ::=
-    <null specification>
-
-<contextually typed value specification> /* Expr */ ::=
-    <implicitly typed value specification>
-
-<contextually typed row value constructor> /* []Expr */ ::=
-    <common value expression>                        -> expr_to_list
-  | <boolean value expression>                       -> expr_to_list
-  | <contextually typed value specification>         -> expr_to_list
-  | <left paren> <contextually typed value specification>
-    <right paren>                                    -> expr_to_list
-  | <left paren>
-    <contextually typed row value constructor element> <comma>
-    <contextually typed row value constructor element list>
-    <right paren>                                    -> append_exprs2
-
-<contextually typed row value constructor element> /* Expr */ ::=
-    <value expression>
-  | <contextually typed value specification>
-
-<contextually typed row value constructor element list> /* []Expr */ ::=
-    <contextually typed row value constructor element>        -> expr_to_list
-  | <contextually typed row value constructor element list>
-    <comma>
-    <contextually typed row value constructor element>        -> append_exprs1
-
-<column constraint> /* bool */ ::=
-    NOT NULL   -> yes
-
-<column constraint definition> /* bool */ ::=
-    <column constraint>
-
-<delete statement: searched> /* Stmt */ ::=
-    DELETE FROM <target table>   -> delete_statement
-  | DELETE FROM <target table>
-    WHERE <search condition>     -> delete_statement_where
-
-<target table> /* Identifier */ ::=
-    <table name>
+<predicate> /* Expr */ ::=
+    <comparison predicate>
+  | <between predicate>
+  | <like predicate>
+  | <similar predicate>
+  | <null predicate>
 
 <preparable SQL data statement> /* Stmt */ ::=
     <delete statement: searched>
@@ -503,300 +1066,32 @@
 <preparable SQL schema statement> /* Stmt */ ::=
     <SQL schema statement>
 
-<exact numeric literal> /* Value */ ::=
-    <unsigned integer>                               -> int_value
-  | <unsigned integer> <period>                      -> int_value
-  | <unsigned integer> <period> <unsigned integer>   -> exact_numeric_literal1
-  | <period> <unsigned integer>                      -> exact_numeric_literal2
+<preparable SQL session statement> /* Stmt */ ::=
+    <SQL session statement>
 
-<unsigned numeric literal> /* Value */ ::=
-    <exact numeric literal>
+<preparable SQL transaction statement> /* Stmt */ ::=
+  <SQL transaction statement>
 
-<unsigned literal> /* Value */ ::=
-    <unsigned numeric literal>
-  | <general literal>
+<preparable statement> /* Stmt */ ::=
+    <preparable SQL data statement>
+  | <preparable SQL schema statement>
+  | <preparable SQL transaction statement>
+  | <preparable SQL session statement>
 
-<unsigned value specification> /* Expr */ ::=
-    <unsigned literal>              -> value_to_expr
-  | <general value specification>
+<qualified asterisk> /* QualifiedAsteriskExpr */ ::=
+    <asterisked identifier chain> <period> <asterisk>   -> qualified_asterisk
 
-<nonparenthesized value expression primary> /* Expr */ ::=
-    <unsigned value specification>
-  | <column reference>               -> identifier_to_expr
-  | <set function specification>
-  | <routine invocation>
-  | <case expression>
-  | <cast specification>
-  | <next value expression>
-
-<value expression primary> /* Expr */ ::=
-    <parenthesized value expression>
-  | <nonparenthesized value expression primary>
-
-<numeric primary> /* Expr */ ::=
-    <value expression primary>
-  | <numeric value function>
-
-<factor> /* Expr */ ::=
-    <numeric primary>
-  | <sign> <numeric primary>   -> sign_expr
-
-<sign> /* string */ ::=
-    <plus sign>
-  | <minus sign>
-
-<plus sign> /* string */ ::=
-  "+"
-
-<minus sign> /* string */ ::=
-  "-"
-
-<term> /* Expr */ ::=
-    <factor>
-  | <term> <asterisk> <factor>   -> binary_expr
-  | <term> <solidus> <factor>    -> binary_expr
-
-<asterisk> /* string */ ::=
-  "*"
-
-<solidus> /* string */ ::=
-  "/"
-
-<numeric value expression> /* Expr */ ::=
-    <term>
-  | <numeric value expression> <plus sign> <term>    -> binary_expr
-  | <numeric value expression> <minus sign> <term>   -> binary_expr
-
-<common value expression> /* Expr */ ::=
-    <numeric value expression>
-  | <string value expression>
-  | <datetime value expression>
-
-<datetime value expression> /* Expr */ ::=
-    <datetime term>
-
-<datetime term> /* Expr */ ::=
-    <datetime factor>
-
-<datetime factor> /* Expr */ ::=
-    <datetime primary>
-
-<datetime primary> /* Expr */ ::=
-    <value expression primary>
-  | <datetime value function>
-
-<datetime value function> /* Expr */ ::=
-    <current date value function>
-  | <current time value function>
-  | <current timestamp value function>
-  | <current local time value function>
-  | <current local timestamp value function>
-
-<current date value function> /* Expr */ ::=
-    CURRENT_DATE   -> current_date
-
-<current time value function> /* Expr */ ::=
-    CURRENT_TIME                                               -> current_time1
-  | CURRENT_TIME <left paren> <time precision> <right paren>   -> current_time2
-
-<current timestamp value function> /* Expr */ ::=
-    CURRENT_TIMESTAMP                                  -> current_timestamp1
-  | CURRENT_TIMESTAMP
-    <left paren> <timestamp precision> <right paren>   -> current_timestamp2
-
-<current local time value function> /* Expr */ ::=
-    LOCALTIME                                               -> localtime1
-  | LOCALTIME <left paren> <time precision> <right paren>   -> localtime2
-
-<current local timestamp value function> /* Expr */ ::=
-    LOCALTIMESTAMP                                     -> localtimestamp1
-  | LOCALTIMESTAMP
-    <left paren> <timestamp precision> <right paren>   -> localtimestamp2
-
-<value expression> /* Expr */ ::=
-    <common value expression>
-  | <boolean value expression>
-
-<search condition> /* Expr */ ::=
-    <boolean value expression>
-
-<boolean value expression> /* Expr */ ::=
-    <boolean term>
-  | <boolean value expression> OR <boolean term>   -> or
-
-<boolean term> /* Expr */ ::=
-    <boolean factor>
-  | <boolean term> AND <boolean factor>   -> and
-
-<boolean factor> /* Expr */ ::=
-    <boolean test>
-  | NOT <boolean test>   -> not
-
-<boolean test> /* Expr */ ::=
-    <boolean primary>
-  | <boolean primary> IS <truth value>       -> boolean_test1
-  | <boolean primary> IS NOT <truth value>   -> boolean_test2
-
-<boolean primary> /* Expr */ ::=
-    <predicate>
-  | <boolean predicand>
-
-<predicate> /* Expr */ ::=
-    <comparison predicate>
-  | <between predicate>
-  | <like predicate>
-  | <similar predicate>
-  | <null predicate>
-
-<comparison predicate> /* Expr */ ::=
-    <row value predicand> <comparison predicate part 2>   -> comparison
-
-<row value predicand> /* Expr */ ::=
-  <row value constructor predicand>
-
-<row value constructor predicand> /* Expr */ ::=
-    <common value expression>
-  | <boolean predicand>
-
-<comparison predicate part 2> /* ComparisonPredicatePart2 */ ::=
-    <comp op> <row value predicand>   -> comparison_part
-
-<comp op> /* string */ ::=
-    <equals operator>
-  | <not equals operator>
-  | <less than operator>
-  | <greater than operator>
-  | <less than or equals operator>
-  | <greater than or equals operator>
-
-<equals operator> ::= "="
-
-<not equals operator> ::= "<>"
-
-<less than operator> ::= "<"
-
-<greater than operator> ::= ">"
-
-<less than or equals operator> ::= "<="
-
-<greater than or equals operator> ::= ">="
-
-<period> ::= "."
-
-<column reference> /* Identifier */ ::=
-    <basic identifier chain>   -> column_reference
-
-<basic identifier chain> /* IdentifierChain */ ::=
-    <identifier chain>
-
-<identifier chain> /* IdentifierChain */ ::=
+<qualified identifier> /* IdentifierChain */ ::=
     <identifier>
-  | <identifier> <period> <identifier>   -> identifier_chain1
 
-<insert statement> /* Stmt */ ::=
-    INSERT INTO
-    <insertion target>
-    <insert columns and source>   -> insert_statement
+<qualified join> /* QualifiedJoin */ ::=
+    <table reference>
+    JOIN <table reference> <join specification>   -> qualified_join1
+  | <table reference> <join type>
+    JOIN <table reference> <join specification>   -> qualified_join2
 
-<insertion target> /* Identifier */ ::=
-    <table name>
-
-<insert columns and source> /* InsertStmt */ ::=
-  <from constructor>
-
-<from constructor> /* InsertStmt */ ::=
-    <left paren> <insert column list> <right paren>
-    <contextually typed table value constructor>   -> from_constructor
-
-<insert column list> /* []Identifier */ ::=
-    <column name list>
-
-<column name list> /* []Identifier */ ::=
-    <column name>                              -> column_name_list1
-  | <column name list> <comma> <column name>   -> column_name_list2
-
-<contextually typed table value constructor> /* []Expr */ ::=
-    VALUES <contextually typed row value expression list>   -> exprs
-
-<contextually typed row value expression list> /* []Expr */ ::=
-    <contextually typed row value expression>
-  | <contextually typed row value expression list> <comma>
-    <contextually typed row value expression>                -> merge_expr_lists
-
-<contextually typed row value expression> /* []Expr */ ::=
-  <contextually typed row value constructor>
-
-<parenthesized value expression> /* Expr */ ::=
-    <left paren> <value expression> <right paren>   -> expr
-
-<character string literal> /* Value */ ::=
-    ^string
-
-<general literal> /* Value */ ::=
-    <character string literal>
-  | <datetime literal>
-  | <boolean literal>
-
-<datetime literal> /* Value */ ::=
-    <date literal>
-  | <time literal>
-  | <timestamp literal>
-
-<date literal> /* Value */ ::=
-    DATE <date string>   -> date_literal
-
-<date string> /* Value */ ::=
-    ^string
-
-<time literal> /* Value */ ::=
-    TIME <time string>   -> time_literal
-
-<time string> /* Value */ ::=
-    ^string
-
-<timestamp literal> /* Value */ ::=
-    TIMESTAMP <timestamp string>   -> timestamp_literal
-
-<timestamp string> /* Value */ ::=
-    ^string
-
-<boolean literal> /* Value */ ::=
-    TRUE      -> true
-  | FALSE     -> false
-  | UNKNOWN   -> unknown
-
-<update statement: searched> /* Stmt */ ::=
-    UPDATE <target table>
-    SET <set clause list>      -> update_statement
-  | UPDATE <target table>
-    SET <set clause list>
-    WHERE <search condition>   -> update_statement_where
-
-<set clause list> /* map[string]Expr */ ::=
-    <set clause>
-  | <set clause list> <comma> <set clause>   -> set_clause_append
-
-<set clause> /* map[string]Expr */ ::=
-  <set target> <equals operator> <update source>   -> set_clause
-
-<set target> /* Identifier */ ::=
-    <update target>
-
-<update target> /* Identifier */ ::=
-    <object column>
-
-<object column> /* Identifier */ ::=
-    <column name>
-
-<update source> /* Expr */ ::=
-    <value expression>
-  | <contextually typed value specification>
-
-<dynamic select statement> /* Stmt */ ::=
-    <cursor specification>
-
-<cursor specification> /* Stmt */ ::=
-    <query expression>   -> cursor_specification
+<query expression body> /* SimpleTable */ ::=
+    <query term>
 
 <query expression> /* QueryExpression */ ::=
     <query expression body>                     -> query_expression
@@ -816,23 +1111,90 @@
     <result offset clause>
     <fetch first clause>                        -> query_expression_offset_fetch
 
-<query expression body> /* SimpleTable */ ::=
-    <query term>
-
-<query term> /* SimpleTable */ ::=
-    <query primary>
-
 <query primary> /* SimpleTable */ ::=
     <simple table>
-
-<simple table> /* SimpleTable */ ::=
-    <query specification>
-  | <table value constructor>
 
 <query specification> /* SimpleTable */ ::=
     SELECT
     <select list>
     <table expression>   -> query_specification
+
+<query term> /* SimpleTable */ ::=
+    <query primary>
+
+# <non-reserved word> is added on top of the original <regular identifier> to
+# allow non-reserved words to be used as identifiers. As far as I can tell, only
+# <reserved word>s are restricted. See "9075-2:2016 5.2 #26".
+<regular identifier> /* IdentifierChain */ ::=
+    <identifier body>
+  | <non-reserved word>   -> string_identifier
+
+<result offset clause> /* Expr */ ::=
+    OFFSET <offset row count> <row or rows>   -> expr
+
+<right paren> ::= ")"
+
+<rollback statement> /* Stmt */ ::=
+    ROLLBACK        -> rollback
+  | ROLLBACK WORK   -> rollback
+
+<routine invocation> /* Expr */ ::=
+    <routine name> <SQL argument list>   -> routine_invocation
+
+<routine name> /* Identifier */ ::=
+    <qualified identifier>   -> routine_name
+
+<row or rows> ::=
+    ROW
+  | ROWS
+
+<row subquery> /* QueryExpression */ ::=
+    <subquery>
+
+<row value constructor element list> /* []Expr */ ::=
+    <row value constructor element>                -> expr_to_list
+  | <row value constructor element list> <comma>
+    <row value constructor element>                -> append_exprs1
+
+<row value constructor element> /* Expr */ ::=
+    <value expression>
+
+<row value constructor predicand> /* Expr */ ::=
+    <common value expression>
+  | <boolean predicand>
+
+<row value constructor> /* Expr */ ::=
+    <common value expression>
+  | <boolean value expression>
+  | <explicit row value constructor>
+
+<row value expression list> /* []Expr */ ::=
+    <table row value expression>           -> expr_to_list
+  | <row value expression list>
+    <comma> <table row value expression>   -> append_exprs1
+
+<row value predicand> /* Expr */ ::=
+  <row value constructor predicand>
+
+<schema definition> /* Stmt */ ::=
+    CREATE SCHEMA <schema name clause>   -> schema_definition
+
+<schema name characteristic> /* Expr */ ::=
+    SCHEMA <value specification>   -> expr
+
+<schema name clause> /* Identifier */ ::=
+    <schema name>
+
+<schema name> /* Identifier */ ::=
+    <catalog name> <period> <unqualified schema name>   -> schema_name_1
+  | <unqualified schema name>
+
+<schema qualified name> /* IdentifierChain */ ::=
+    <qualified identifier>
+  | <schema name> <period> <qualified identifier>   -> schema_qualified_name_2
+
+<search condition> /* Expr */ ::=
+    <boolean value expression>
 
 <select list> /* SelectList */ ::=
     <asterisk>                               -> asterisk
@@ -843,18 +1205,166 @@
     <derived column>       -> select_sublist1
   | <qualified asterisk>   -> select_sublist2
 
-<qualified asterisk> /* QualifiedAsteriskExpr */ ::=
-    <asterisked identifier chain> <period> <asterisk>   -> qualified_asterisk
+<sequence generator cycle option> /* bool */ ::=
+    CYCLE      -> yes
+  | NO CYCLE   -> no
 
-<asterisked identifier chain> /* IdentifierChain */ ::=
-    <asterisked identifier>
+<sequence generator definition> /* Stmt */ ::=
+    CREATE SEQUENCE
+    <sequence generator name>                   -> sequence_generator_definition_1
+  | CREATE SEQUENCE <sequence generator name>
+    <sequence generator options>                -> sequence_generator_definition_2
 
-<asterisked identifier> /* IdentifierChain */ ::=
-    <identifier>
+<sequence generator increment by option> /* SequenceGeneratorIncrementByOption */ ::=
+    INCREMENT BY
+    <sequence generator increment>   -> sequence_generator_increment_by_option
 
-<derived column> /* DerivedColumn */ ::=
-    <value expression>               -> derived_column
-  | <value expression> <as clause>   -> derived_column_as
+<sequence generator increment> /* Expr */ ::=
+    <signed numeric literal>
+
+<sequence generator max value> /* Expr */ ::=
+    <signed numeric literal>
+
+<sequence generator maxvalue option> /* SequenceGeneratorMaxvalueOption */ ::=
+    MAXVALUE
+    <sequence generator max value>   -> sequence_generator_maxvalue_option_1
+  | NO MAXVALUE                      -> sequence_generator_maxvalue_option_2
+
+<sequence generator min value> /* Expr */ ::=
+    <signed numeric literal>
+
+<sequence generator minvalue option> /* SequenceGeneratorMinvalueOption */ ::=
+    MINVALUE
+    <sequence generator min value>   -> sequence_generator_minvalue_option_1
+  | NO MINVALUE                      -> sequence_generator_minvalue_option_2
+
+<sequence generator name> /* Identifier */ ::=
+    <schema qualified name>   -> sequence_generator_name
+
+<sequence generator option> /* []SequenceGeneratorOption */ ::=
+    <common sequence generator options>
+
+<sequence generator options> /* []SequenceGeneratorOption */ ::=
+    <sequence generator option>
+  | <sequence generator options> <sequence generator option>
+
+<sequence generator restart value> /* Expr */ ::=
+    <signed numeric literal>
+
+<sequence generator start value> /* Expr */ ::=
+    <signed numeric literal>
+
+<sequence generator start with option> /* SequenceGeneratorStartWithOption */ ::=
+    START WITH
+    <sequence generator start value>   -> sequence_generator_start_with_option
+
+<set catalog statement> /* Stmt */ ::=
+    SET <catalog name characteristic>   -> set_catalog_stmt
+
+<set clause list> /* map[string]Expr */ ::=
+    <set clause>
+  | <set clause list> <comma> <set clause>   -> set_clause_append
+
+<set clause> /* map[string]Expr */ ::=
+  <set target> <equals operator> <update source>   -> set_clause
+
+<set function specification> /* Expr */ ::=
+    <aggregate function>
+
+<set function type> /* string */ ::=
+    <computational operation>
+
+<set schema statement> /* Stmt */ ::=
+    SET <schema name characteristic>   -> set_schema_stmt
+
+<set target> /* Identifier */ ::=
+    <update target>
+
+<sign> /* string */ ::=
+    <plus sign>
+  | <minus sign>
+
+<signed numeric literal> /* Expr */ ::=
+    <unsigned numeric literal>          -> value_to_expr
+  | <sign> <unsigned numeric literal>   -> sign_expr
+
+<similar pattern> /* Expr */ ::=
+    <character value expression>
+
+<similar predicate part 2> /* SimilarExpr */ ::=
+    SIMILAR TO <similar pattern>       -> similar
+  | NOT SIMILAR TO <similar pattern>   -> not_similar
+
+<similar predicate> /* Expr */ ::=
+    <row value predicand> <similar predicate part 2>   -> similar_pred
+
+<simple table> /* SimpleTable */ ::=
+    <query specification>
+  | <table value constructor>
+
+<simple value specification> /* Expr */ ::=
+    <literal>
+  | <host parameter name>
+
+<solidus> /* string */ ::=
+  "/"
+
+<sort key> /* Expr */ ::=
+    <value expression>
+
+<sort specification list> /* []SortSpecification */ ::=
+    <sort specification>                                     -> sort_list1
+  | <sort specification list> <comma> <sort specification>   -> sort_list2
+
+<sort specification> /* SortSpecification */ ::=
+    <sort key>                            -> sort1
+  | <sort key> <ordering specification>   -> sort2
+
+<square root> /* Expr */ ::=
+    SQRT <left paren> <numeric value expression> <right paren>   -> sqrt
+
+<start position> /* Expr */ ::=
+    <numeric value expression>
+
+<start transaction statement> /* Stmt */ ::=
+  START TRANSACTION   -> start_transaction
+
+<string length> /* Expr */ ::=
+    <numeric value expression>
+
+<string value expression> /* Expr */ ::=
+    <character value expression>
+
+<string value function> /* Expr */ ::=
+    <character value function>
+
+<subquery> /* TablePrimaryBody */ ::=
+    <left paren> <query expression> <right paren>   -> subquery
+
+<table constraint definition> /* TableElement */ ::=
+  <table constraint>
+
+<table constraint> /* TableElement */ ::=
+  <unique constraint definition>
+
+<table contents source> /* []TableElement */ ::=
+    <table element list>
+
+<table definition> /* CreateTableStmt */ ::=
+    CREATE TABLE <table name> <table contents source>   -> table_definition
+
+<table element list> /* []TableElement */ ::=
+    <left paren>
+    <table elements>
+    <right paren>      -> table_element_list
+
+<table element> /* TableElement */ ::=
+    <column definition>
+  | <table constraint definition>
+
+<table elements> /* []TableElement */ ::=
+    <table element>                            -> table_elements1
+  | <table elements> <comma> <table element>   -> table_elements2
 
 <table expression> /* TableExpression */ ::=
     <from clause>                                    -> table_expression
@@ -862,8 +1372,19 @@
   | <from clause> <group by clause>                  -> table_expression_group
   | <from clause> <where clause> <group by clause>   -> table_expression_where_group
 
-<from clause> /* TableReference */ ::=
-    FROM <table reference list>   -> from_clause
+<table factor> /* TablePrimary */ ::=
+    <table primary>
+
+<table name> /* Identifier */ ::=
+    <local or schema qualified name>   -> table_name
+
+<table or query name> /* Identifier */ ::=
+    <table name>
+
+<table primary> /* TablePrimary */ ::=
+    <table or query name>                          -> table_primary_identifier
+  | <derived table>                                -> table_primary_derived1
+  | <derived table> <correlation or recognition>   -> table_primary_derived2
 
 <table reference list> /* TableReference */ ::=
     <table reference>
@@ -872,77 +1393,46 @@
     <table factor>   -> table_factor
   | <joined table>   -> joined_table
 
-<joined table> /* QualifiedJoin */ ::=
-    <qualified join>
+<table row value expression> /* Expr */ ::=
+    <row value constructor>
 
-<qualified join> /* QualifiedJoin */ ::=
-    <table reference>
-    JOIN <table reference> <join specification>   -> qualified_join1
-  | <table reference> <join type>
-    JOIN <table reference> <join specification>   -> qualified_join2
+<table subquery> /* TablePrimary */ ::=
+    <subquery>
 
-<join specification> /* Expr */ ::=
-    <join condition>
+<table value constructor> /* SimpleTable */ ::=
+    VALUES <row value expression list>   -> table_value_constructor
 
-<join condition> /* Expr */ ::=
-    ON <search condition>   -> expr
-
-<table factor> /* TablePrimary */ ::=
-    <table primary>
-
-<table primary> /* TablePrimary */ ::=
-    <table or query name>                          -> table_primary_identifier
-  | <derived table>                                -> table_primary_derived1
-  | <derived table> <correlation or recognition>   -> table_primary_derived2
-
-<table or query name> /* Identifier */ ::=
+<target table> /* Identifier */ ::=
     <table name>
 
-<as clause> /* Identifier */ ::=
-    AS <column name>   -> identifier
-  | <column name>
+<term> /* Expr */ ::=
+    <factor>
+  | <term> <asterisk> <factor>   -> binary_expr
+  | <term> <solidus> <factor>    -> binary_expr
 
-<where clause> /* Expr */ ::=
-    WHERE <search condition>   -> expr
+<time fractional seconds precision> /* string */ ::=
+    <unsigned integer>
 
-<null predicate part 2> /* bool */ ::=
-    IS NULL       -> yes
-  | IS NOT NULL   -> no
+<time fractional seconds precision> /* string */ ::=
+    <unsigned integer>
 
-<null predicate> /* Expr */ ::=
-    <row value predicand> <null predicate part 2>   -> null_predicate
+<time literal> /* Value */ ::=
+    TIME <time string>   -> time_literal
 
-<absolute value expression> /* Expr */ ::=
-    ABS <left paren> <numeric value expression> <right paren>   -> abs
+<time precision> /* string */ ::=
+    <time fractional seconds precision>
 
-<numeric value function> /* Expr */ ::=
-    <position expression>
-  | <length expression>
-  | <absolute value expression>
-  | <modulus expression>
-  | <trigonometric function>
-  | <common logarithm>
-  | <natural logarithm>
-  | <exponential function>
-  | <power function>
-  | <square root>
-  | <floor function>
-  | <ceiling function>
+<time string> /* Value */ ::=
+    ^string
 
-<modulus expression> /* Expr */ ::=
-    MOD <left paren> <numeric value expression dividend> <comma> 
-    <numeric value expression divisor> <right paren>               -> mod
+<timestamp literal> /* Value */ ::=
+    TIMESTAMP <timestamp string>   -> timestamp_literal
 
-<numeric value expression dividend> /* Expr */ ::=
-    <numeric value expression>
+<timestamp precision> /* string */ ::=
+    <time fractional seconds precision>
 
-<numeric value expression divisor> /* Expr */ ::=
-    <numeric value expression>
-
-<trigonometric function> /* Expr */ ::=
-    <trigonometric function name>
-    <left paren> <numeric value expression> 
-    <right paren>                             -> trig_func
+<timestamp string> /* Value */ ::=
+    ^string
 
 <trigonometric function name> /* string */ ::=
     SIN
@@ -955,309 +1445,13 @@
   | ACOS
   | ATAN
 
-<common logarithm> /* Expr */ ::=
-    LOG10 <left paren> <numeric value expression> <right paren>   -> log10
+<trigonometric function> /* Expr */ ::=
+    <trigonometric function name>
+    <left paren> <numeric value expression> 
+    <right paren>                             -> trig_func
 
-<natural logarithm> /* Expr */ ::=
-    LN <left paren> <numeric value expression> <right paren>   -> ln
-
-<exponential function> /* Expr */ ::=
-    EXP <left paren> <numeric value expression> <right paren>   -> exp
-
-<power function> /* Expr */ ::=
-    POWER <left paren> <numeric value expression base> <comma> 
-    <numeric value expression exponent> <right paren>            -> power
-
-<numeric value expression base> /* Expr */ ::=
-    <numeric value expression>
-
-<numeric value expression exponent> /* Expr */ ::=
-    <numeric value expression>
-
-<square root> /* Expr */ ::=
-    SQRT <left paren> <numeric value expression> <right paren>   -> sqrt
-
-<floor function> /* Expr */ ::=
-    FLOOR <left paren> <numeric value expression> <right paren>   -> floor
-
-<ceiling function> /* Expr */ ::=
-    CEIL <left paren> <numeric value expression> <right paren>      -> ceiling
-  | CEILING <left paren> <numeric value expression> <right paren>   -> ceiling
-
-<concatenation> /* Expr */ ::=
+<trim character> /* Expr */ ::=
     <character value expression>
-    <concatenation operator>
-    <character factor>             -> concatenation
-
-<character value expression> /* Expr */ ::=
-    <concatenation>
-  | <character factor>
-
-<concatenation operator> ::= "||"
-
-<character factor> /* Expr */ ::=
-    <character primary>
-
-<character primary> /* Expr */ ::=
-    <value expression primary>
-  | <string value function>
-
-<string value expression> /* Expr */ ::=
-    <character value expression>
-
-<boolean predicand> /* Expr */ ::=
-    <parenthesized boolean value expression>
-  | <nonparenthesized value expression primary>
-
-<parenthesized boolean value expression> /* Expr */ ::=
-    <left paren> <boolean value expression> <right paren>   -> expr
-
-<result offset clause> /* Expr */ ::=
-    OFFSET <offset row count> <row or rows>   -> expr
-
-<offset row count> /* Expr */ ::=
-    <simple value specification>
-
-<simple value specification> /* Expr */ ::=
-    <literal>
-  | <host parameter name>
-
-<literal> /* Expr */ ::=
-    <signed numeric literal>
-  | <general literal>          -> value_to_expr
-
-<signed numeric literal> /* Expr */ ::=
-    <unsigned numeric literal>          -> value_to_expr
-  | <sign> <unsigned numeric literal>   -> sign_expr
-
-<fetch first clause> /* Expr */ ::=
-    FETCH FIRST
-    <fetch first quantity>
-    <row or rows>
-    ONLY                     -> fetch_first_clause
-
-<row or rows> ::=
-    ROW
-  | ROWS
-
-<fetch first quantity> /* Expr */ ::=
-    <fetch first row count>
-
-<fetch first row count> /* Expr */ ::=
-    <simple value specification>
-
-<routine invocation> /* Expr */ ::=
-    <routine name> <SQL argument list>   -> routine_invocation
-
-<routine name> /* Identifier */ ::=
-    <qualified identifier>   -> routine_name
-
-<SQL argument list> /* []Expr */ ::=
-    <left paren> <right paren>                  -> empty_exprs
-  | <left paren> <SQL argument> <right paren>   -> expr_to_list
-  | <left paren> <SQL argument list> <comma>
-    <SQL argument> <right paren>                -> append_exprs1
-
-<SQL argument> /* Expr */ ::=
-    <value expression>
-
-<general value specification> /* Expr */ ::=
-    <host parameter specification>
-  | CURRENT_CATALOG                  -> current_catalog
-  | CURRENT_SCHEMA                   -> current_schema
-
-<host parameter specification> /* Expr */ ::=
-    <host parameter name>
-
-<host parameter name> /* Expr */ ::=
-    <colon> <identifier>   -> host_parameter_name
-
-<colon> ::=
-  ":"
-
-<unique specification> ::=
-  PRIMARY KEY   -> ignore
-
-<unique constraint definition> /* TableElement */ ::=
-  <unique specification> <left paren>
-  <unique column list> <right paren>    -> unique_constraint_definition
-
-<unique column list> /* []Identifier */ ::=
-  <column name list>
-
-<table constraint> /* TableElement */ ::=
-  <unique constraint definition>
-
-<table constraint definition> /* TableElement */ ::=
-  <table constraint>
-
-<position expression> /* Expr */ ::=
-    <character position expression>
-
-<character position expression> /* Expr */ ::=
-    POSITION <left paren> <character value expression 1> IN 
-    <character value expression 2> <right paren>              -> position
-
-<character value expression 1> /* Expr */ ::=
-    <character value expression>
-
-<character value expression 2> /* Expr */ ::=
-    <character value expression>
-
-<length expression> /* Expr */ ::=
-    <char length expression>
-  | <octet length expression>
-
-<char length expression> /* Expr */ ::=
-    CHAR_LENGTH
-    <left paren> <character value expression> <right paren>   -> char_length
-  | CHARACTER_LENGTH
-    <left paren> <character value expression> <right paren>   -> char_length
-
-<octet length expression> /* Expr */ ::=
-    OCTET_LENGTH
-    <left paren> <string value expression> <right paren>   -> octet_length
-
-<start transaction statement> /* Stmt */ ::=
-  START TRANSACTION   -> start_transaction
-
-<commit statement> /* Stmt */ ::=
-    COMMIT        -> commit
-  | COMMIT WORK   -> commit
-
-<rollback statement> /* Stmt */ ::=
-    ROLLBACK        -> rollback
-  | ROLLBACK WORK   -> rollback
-
-<SQL transaction statement> /* Stmt */ ::=
-    <start transaction statement>
-  | <commit statement>
-  | <rollback statement>
-
-<preparable SQL transaction statement> /* Stmt */ ::=
-  <SQL transaction statement>
-
-<between predicate> /* Expr */ ::=
-    <row value predicand> <between predicate part 2>   -> between
-
-<between predicate part 2> /* BetweenExpr */ ::=
-    <between predicate part 1>
-    <row value predicand> AND <row value predicand>   -> between1
-  | <between predicate part 1> <is symmetric>
-    <row value predicand> AND <row value predicand>   -> between2
-
-<between predicate part 1> /* bool */ ::=
-    BETWEEN       -> yes
-  | NOT BETWEEN   -> no
-
-<is symmetric> /* bool */ ::=
-    SYMMETRIC    -> yes
-  | ASYMMETRIC   -> no
-
-<table value constructor> /* SimpleTable */ ::=
-    VALUES <row value expression list>   -> table_value_constructor
-
-<row value expression list> /* []Expr */ ::=
-    <table row value expression>           -> expr_to_list
-  | <row value expression list>
-    <comma> <table row value expression>   -> append_exprs1
-
-<table row value expression> /* Expr */ ::=
-    <row value constructor>
-
-<row value constructor> /* Expr */ ::=
-    <common value expression>
-  | <boolean value expression>
-  | <explicit row value constructor>
-
-<derived table> /* TablePrimary */ ::=
-    <table subquery>
-
-<table subquery> /* TablePrimary */ ::=
-    <subquery>
-
-<subquery> /* TablePrimaryBody */ ::=
-    <left paren> <query expression> <right paren>   -> subquery
-
-<correlation or recognition> /* Correlation */ ::=
-    <correlation name>                    -> correlation1
-  | AS <correlation name>                 -> correlation1
-  | <correlation name>
-    <parenthesized derived column list>   -> correlation2
-  | AS <correlation name>
-    <parenthesized derived column list>   -> correlation2
-
-<correlation name> /* Identifier */ ::=
-    <identifier>   -> correlation_name
-
-<parenthesized derived column list> /* []Identifier */ ::=
-    <left paren> <derived column list>
-    <right paren>                        -> parenthesized_derived_column_list
-
-<derived column list> /* []Identifier */ ::=
-    <column name list>
-
-<explicit row value constructor> /* Expr */ ::=
-    ROW <left paren> <row value constructor element list>
-    <right paren>                                           -> row_constructor1
-  | <row subquery>                                          -> row_constructor2
-
-<row value constructor element list> /* []Expr */ ::=
-    <row value constructor element>                -> expr_to_list
-  | <row value constructor element list> <comma>
-    <row value constructor element>                -> append_exprs1
-
-<row value constructor element> /* Expr */ ::=
-    <value expression>
-
-<row subquery> /* QueryExpression */ ::=
-    <subquery>
-
-<character like predicate part 2> /* LikeExpr */ ::=
-    LIKE <character pattern>       -> like
-  | NOT LIKE <character pattern>   -> not_like
-
-<character pattern> /* Expr */ ::=
-    <character value expression>
-
-<character like predicate> /* Expr */ ::=
-    <row value predicand> <character like predicate part 2>   -> like_pred
-
-<like predicate> /* Expr */ ::=
-    <character like predicate>
-
-<similar predicate part 2> /* SimilarExpr */ ::=
-    SIMILAR TO <similar pattern>       -> similar
-  | NOT SIMILAR TO <similar pattern>   -> not_similar
-
-<similar pattern> /* Expr */ ::=
-    <character value expression>
-
-<similar predicate> /* Expr */ ::=
-    <row value predicand> <similar predicate part 2>   -> similar_pred
-
-<order by clause> /* []SortSpecification */ ::=
-    ORDER BY <sort specification list>   -> order_by
-
-<sort specification list> /* []SortSpecification */ ::=
-    <sort specification>                                     -> sort_list1
-  | <sort specification list> <comma> <sort specification>   -> sort_list2
-
-<sort specification> /* SortSpecification */ ::=
-    <sort key>                            -> sort1
-  | <sort key> <ordering specification>   -> sort2
-
-<sort key> /* Expr */ ::=
-    <value expression>
-
-<ordering specification> /* bool */ ::=
-    ASC    -> yes
-  | DESC   -> no
-
-<character value function> /* Expr */ ::=
-    <character substring function>
-  | <fold>
-  | <trim function>
 
 <trim function> /* Expr */ ::=
   TRIM <left paren> <trim operands> <right paren>   -> trim
@@ -1277,264 +1471,71 @@
   | TRAILING
   | BOTH
 
-<trim character> /* Expr */ ::=
-    <character value expression>
-
-<fold> /* Expr */ ::=
-    UPPER <left paren> <character value expression> <right paren>   -> upper
-  | LOWER <left paren> <character value expression> <right paren>   -> lower
-
-<string value function> /* Expr */ ::=
-    <character value function>
-
-<group by clause> /* []Expr */ ::=
-    GROUP BY <grouping element list>   -> exprs
-
-<grouping element list> /* []Expr */ ::=
-    <grouping element>                                   -> expr_to_list
-  | <grouping element list> <comma> <grouping element>   -> append_exprs1
-
-<grouping element> /* Expr */ ::=
-    <ordinary grouping set>
-
-<ordinary grouping set> /* Expr */ ::=
-    <grouping column reference>
-
-<grouping column reference> /* Expr */ ::=
-    <column reference>   -> identifier_to_expr
-
-<aggregate function> /* Expr */ ::=
-    COUNT <left paren> <asterisk> <right paren>   -> count_all
-  | <general set function>
-
-<set function specification> /* Expr */ ::=
-    <aggregate function>
-
-<general set function> /* Expr */ ::=
-    <set function type> <left paren>
-    <value expression> <right paren>   -> general_set_function
-
-<set function type> /* string */ ::=
-    <computational operation>
-
-<computational operation> /* string */ ::=
-    AVG
-  | MAX
-  | MIN
-  | SUM
-  | COUNT
-
-<outer join type> /* string */ ::=
-    LEFT
-  | RIGHT
-
-<join type> /* string */ ::=
-    INNER
-  | <outer join type>
-  | <outer join type> OUTER   -> string
-
-<datetime type> /* Type */ ::=
-    DATE                                               -> date_type
-  | TIME                                               -> time_type
-  | TIME <left paren> <time precision> <right paren>   -> time_prec_type
-  | TIME <with or without time zone>                   -> time_tz_type
-  | TIME <left paren> <time precision> <right paren>
-    <with or without time zone>                        -> time_prec_tz_type
-  | TIMESTAMP                                          -> timestamp_type
-  | TIMESTAMP
-    <left paren> <timestamp precision> <right paren>   -> timestamp_prec_type
-  | TIMESTAMP <with or without time zone>              -> timestamp_tz_type
-  | TIMESTAMP
-    <left paren> <timestamp precision> <right paren>
-    <with or without time zone>                        -> timestamp_prec_tz_type
-
-<time precision> /* string */ ::=
-    <time fractional seconds precision>
-
-<time fractional seconds precision> /* string */ ::=
-    <unsigned integer>
-
-<with or without time zone> /* bool */ ::=
-    WITH TIME ZONE      -> yes
-  | WITHOUT TIME ZONE   -> no
-
-<timestamp precision> /* string */ ::=
-    <time fractional seconds precision>
-
-<time fractional seconds precision> /* string */ ::=
-    <unsigned integer>
-
-<character substring function> /* Expr */ ::=
-    SUBSTRING <left paren> <character value expression>
-    FROM <start position> <right paren>                   -> substring1
-  | SUBSTRING <left paren> <character value expression>
-    FROM <start position> 
-    FOR <string length> <right paren>                     -> substring2
-  | SUBSTRING <left paren> <character value expression>
-    FROM <start position> 
-    USING <char length units> <right paren>               -> substring3
-  | SUBSTRING <left paren> <character value expression>
-    FROM <start position> 
-    FOR <string length>
-    USING <char length units> <right paren>               -> substring4
-
-<start position> /* Expr */ ::=
-    <numeric value expression>
-
-<string length> /* Expr */ ::=
-    <numeric value expression>
-
-<char length units> /* string */ ::=
-    CHARACTERS
-  | OCTETS
-
 <truth value> /* Value */ ::=
     TRUE      -> true
   | FALSE     -> false
   | UNKNOWN   -> unknown
 
-<cast specification> /* Expr */ ::=
-    CAST <left paren> <cast operand> AS <cast target> <right paren>   -> cast
+<unique column list> /* []Identifier */ ::=
+  <column name list>
 
-<cast operand> /* Expr */ ::=
+<unique constraint definition> /* TableElement */ ::=
+  <unique specification> <left paren>
+  <unique column list> <right paren>    -> unique_constraint_definition
+
+<unique specification> ::=
+  PRIMARY KEY   -> ignore
+
+<unqualified schema name> /* Identifier */ ::=
+    <identifier>   -> unqualified_schema_name
+
+<unsigned integer> /* string */ ::=
+    ^integer
+
+<unsigned literal> /* Value */ ::=
+    <unsigned numeric literal>
+  | <general literal>
+
+<unsigned numeric literal> /* Value */ ::=
+    <exact numeric literal>
+
+<unsigned value specification> /* Expr */ ::=
+    <unsigned literal>              -> value_to_expr
+  | <general value specification>
+
+<update source> /* Expr */ ::=
     <value expression>
-  | <implicitly typed value specification>
+  | <contextually typed value specification>
 
-<cast target> /* Type */ ::=
-    <data type>
+<update statement: searched> /* Stmt */ ::=
+    UPDATE <target table>
+    SET <set clause list>      -> update_statement
+  | UPDATE <target table>
+    SET <set clause list>
+    WHERE <search condition>   -> update_statement_where
+
+<update target> /* Identifier */ ::=
+    <object column>
 
 <value expression list> /* []Expr */ ::=
     <value expression>                                   -> expr_to_list
   | <value expression list> <comma> <value expression>   -> append_exprs1
 
-<case abbreviation> /* Expr */ ::=
-    NULLIF <left paren> <value expression>
-    <comma> <value expression> <right paren>                      -> nullif
-  | COALESCE <left paren> <value expression list> <right paren>   -> coalesce
+<value expression primary> /* Expr */ ::=
+    <parenthesized value expression>
+  | <nonparenthesized value expression primary>
 
-<case expression> /* Expr */ ::=
-    <case abbreviation>
-
-<sequence generator definition> /* Stmt */ ::=
-    CREATE SEQUENCE
-    <sequence generator name>                   -> sequence_generator_definition_1
-  | CREATE SEQUENCE <sequence generator name>
-    <sequence generator options>                -> sequence_generator_definition_2
-
-<sequence generator name> /* Identifier */ ::=
-    <schema qualified name>   -> sequence_generator_name
-
-<schema qualified name> /* IdentifierChain */ ::=
-    <qualified identifier>
-  | <schema name> <period> <qualified identifier>   -> schema_qualified_name_2
-
-<sequence generator options> /* []SequenceGeneratorOption */ ::=
-    <sequence generator option>
-  | <sequence generator options> <sequence generator option>
-
-<sequence generator option> /* []SequenceGeneratorOption */ ::=
-    <common sequence generator options>
-
-<common sequence generator options> /* []SequenceGeneratorOption */ ::=
-    <common sequence generator option>    -> sequence_generator_options_1
-  | <common sequence generator options>
-    <common sequence generator option>    -> sequence_generator_options_2
-
-<common sequence generator option> /* SequenceGeneratorOption */ ::=
-    <sequence generator start with option>   -> common_sequence_generator_option_1
-  | <basic sequence generator option>
-
-<sequence generator start with option> /* SequenceGeneratorStartWithOption */ ::=
-    START WITH
-    <sequence generator start value>   -> sequence_generator_start_with_option
-
-<sequence generator start value> /* Expr */ ::=
-    <signed numeric literal>
-
-<basic sequence generator option> /* SequenceGeneratorOption */ ::=
-    <sequence generator increment by option>   -> basic_sequence_generator_option_1
-  | <sequence generator maxvalue option>       -> basic_sequence_generator_option_2
-  | <sequence generator minvalue option>       -> basic_sequence_generator_option_3
-  | <sequence generator cycle option>          -> basic_sequence_generator_option_4
-
-<sequence generator increment by option> /* SequenceGeneratorIncrementByOption */ ::=
-    INCREMENT BY
-    <sequence generator increment>   -> sequence_generator_increment_by_option
-
-<sequence generator increment> /* Expr */ ::=
-    <signed numeric literal>
-
-<sequence generator maxvalue option> /* SequenceGeneratorMaxvalueOption */ ::=
-    MAXVALUE
-    <sequence generator max value>   -> sequence_generator_maxvalue_option_1
-  | NO MAXVALUE                      -> sequence_generator_maxvalue_option_2
-
-<sequence generator minvalue option> /* SequenceGeneratorMinvalueOption */ ::=
-    MINVALUE
-    <sequence generator min value>   -> sequence_generator_minvalue_option_1
-  | NO MINVALUE                      -> sequence_generator_minvalue_option_2
-
-<sequence generator cycle option> /* bool */ ::=
-    CYCLE      -> yes
-  | NO CYCLE   -> no
-
-<sequence generator max value> /* Expr */ ::=
-    <signed numeric literal>
-
-<sequence generator min value> /* Expr */ ::=
-    <signed numeric literal>
-
-<next value expression> /* Expr */ ::=
-    NEXT VALUE FOR <sequence generator name>   -> next_value_expression
-
-<drop sequence generator statement> /* Stmt */ ::=
-    DROP SEQUENCE
-    <sequence generator name>   -> drop_sequence_generator_statement
-
-<alter sequence generator statement> /* Stmt */ ::=
-    ALTER SEQUENCE
-    <sequence generator name>
-    <alter sequence generator options>   -> alter_sequence_generator_statement
-
-<alter sequence generator options> /* []SequenceGeneratorOption */ ::=
-    <alter sequence generator option>   -> sequence_generator_options_1
-  | <alter sequence generator options>
-    <alter sequence generator option>   -> sequence_generator_options_2
-
-<alter sequence generator option> /* SequenceGeneratorOption */ ::=
-    <alter sequence generator restart option>   -> alter_sequence_generator_option_1
-  | <basic sequence generator option>
-
-<alter sequence generator restart option> /* SequenceGeneratorRestartOption */ ::=
-    RESTART                              -> sequence_generator_restart_option_1
-  | RESTART WITH
-    <sequence generator restart value>   -> sequence_generator_restart_option_2
-
-<sequence generator restart value> /* Expr */ ::=
-    <signed numeric literal>
-
-<preparable SQL session statement> /* Stmt */ ::=
-    <SQL session statement>
-
-<SQL session statement> /* Stmt */ ::=
-    <set schema statement>
-  | <set catalog statement>
-
-<set catalog statement> /* Stmt */ ::=
-    SET <catalog name characteristic>   -> set_catalog_stmt
-
-<catalog name characteristic> /* Expr */ ::=
-    CATALOG <value specification>   -> expr
-
-<set schema statement> /* Stmt */ ::=
-    SET <schema name characteristic>   -> set_schema_stmt
-
-<schema name characteristic> /* Expr */ ::=
-    SCHEMA <value specification>   -> expr
+<value expression> /* Expr */ ::=
+    <common value expression>
+  | <boolean value expression>
 
 <value specification> /* Expr */ ::=
     <literal>
   | <general value specification>
 
-<catalog name> /* IdentifierChain */ ::=
-    <identifier>
+<where clause> /* Expr */ ::=
+    WHERE <search condition>   -> expr
+
+<with or without time zone> /* bool */ ::=
+    WITH TIME ZONE      -> yes
+  | WITHOUT TIME ZONE   -> no

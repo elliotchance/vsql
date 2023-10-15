@@ -18,7 +18,7 @@ fn compare_bytes(a []u8, b []u8) int {
 
 	for i in 0 .. min {
 		if a[i] != b[i] {
-			return a[i] - b[i]
+			return int(a[i]) - int(b[i])
 		}
 	}
 

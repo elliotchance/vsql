@@ -33,7 +33,7 @@ fn (mut iter PageIterator) next() ?PageObject {
 
 		// Load all the objects for this leaf. Making sure to skip over any keys
 		// that are out of bounds.
-		iter.objects = (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1])!).objects()
+		iter.objects = (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return none }).objects()
 		for object in iter.objects {
 			// TODO(elliotchance): It would be more efficient to do a binary
 			//  search here since the page is already sorted.
@@ -55,20 +55,22 @@ fn (mut iter PageIterator) next() ?PageObject {
 			iter.depth_iterator = iter.depth_iterator[..iter.depth_iterator.len - 1]
 			iter.depth_iterator[iter.depth_iterator.len - 1]++
 
-			if iter.depth_iterator[iter.depth_iterator.len - 1] < (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1])!).objects().len {
+			if iter.depth_iterator[iter.depth_iterator.len - 1] < (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or {
+				return none
+			}).objects().len {
 				break
 			}
 		}
 
 		for (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1])!).kind == kind_not_leaf {
-			objects := (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1])!).objects()
+			objects := (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return none }).objects()
 
 			mut buf := new_bytes(objects[iter.depth_iterator[iter.depth_iterator.len - 1]].value)
 			iter.path << buf.read_i32()
 			iter.depth_iterator << 0
 		}
 
-		iter.objects = (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1])!).objects()
+		iter.objects = (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return none }).objects()
 	}
 
 	o := iter.objects[iter.depth_iterator[iter.depth_iterator.len - 1]]

@@ -34,6 +34,7 @@ pub fn new_server(options ServerOptions) Server {
 
 	return Server{options, &Connection{
 		query_cache: new_query_cache()
+		now: default_now
 		catalogs: {
 			catalog_name: catalog
 		}
@@ -95,7 +96,7 @@ fn (mut s Server) handle_conn(mut c net.TcpConn) ! {
 	for {
 		msg_type := conn.read_byte()!
 		match msg_type {
-			`Q` /* Query */ {
+			`Q` { // Query
 				mut query := conn.read_query()!
 
 				// A missing "FROM" clause is valid in PostgreSQL, but it's not
@@ -126,7 +127,7 @@ fn (mut s Server) handle_conn(mut c net.TcpConn) ! {
 
 				conn.write_ready_for_query()!
 			}
-			`X` /* Terminate */ {
+			`X` { // Terminate
 				// Don't bother consuming the message since we're going to
 				// disconnect anyway.
 				break

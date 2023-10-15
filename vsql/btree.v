@@ -272,7 +272,7 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 	mut inserted_at := -1
 	for pos, object in objects {
 		if compare_bytes(obj.key, object.key) <= 0 {
-			mut new_objects := objects[..pos]
+			mut new_objects := objects[..pos].clone()
 			new_objects << obj
 			new_objects << objects[pos..]
 			objects = new_objects.clone()
@@ -362,7 +362,7 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 		// usually quite small. However, they are not a fixed size because the
 		// keys can be variable length.
 		if page3.used > p.page_size - p2.length() {
-			mut new_path := path[..path.len - 1]
+			mut new_path := path[..path.len - 1].clone()
 			p.split_page(new_path, page3, p2, kind_not_leaf)!
 		} else {
 			page3.add(p2)!

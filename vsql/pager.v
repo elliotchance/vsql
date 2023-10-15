@@ -109,7 +109,7 @@ fn (mut p FilePager) fetch_page(page_number int) !Page {
 	return Page{
 		kind: b.read_u8()
 		used: b.read_u16()
-		data: buf[page_header_size..]
+		data: buf[page_header_size..].clone()
 	}
 }
 

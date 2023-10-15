@@ -12,8 +12,8 @@ import regex
 pub enum Boolean {
 	// These must not be negative values because they are encoded as u8 on disk.
 	is_unknown = 0 // same as NULL
-	is_false = 1
-	is_true = 2
+	is_false   = 1
+	is_true    = 2
 }
 
 // Returns ``TRUE``, ``FALSE`` or ``UNKNOWN``.

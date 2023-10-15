@@ -51,7 +51,7 @@ pub mut:
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive
 	// or negative minutes).
-	now fn () (time.Time, i16)
+	now fn () (time.Time, i16) [required]
 	// warnings are SQLSTATE errors that do not stop the execution. For example,
 	// if a value must be truncated during a runtime CAST.
 	//
@@ -116,9 +116,7 @@ fn open_connection(path string, options ConnectionOptions) !&Connection {
 		query_cache: options.query_cache
 		current_catalog: catalog_name
 		current_schema: vsql.default_schema_name
-		now: fn () (time.Time, i16) {
-			return time.utc(), i16(time.offset() / 60)
-		}
+		now: default_now
 	}
 
 	register_builtin_funcs(mut conn)!
@@ -244,9 +242,9 @@ fn (mut c CatalogConnection) release_read_connection() {
 
 // prepare returns a precompiled statement that can be executed multiple times
 // with different provided parameters.
-pub fn (mut c Connection) prepare(sql string) !PreparedStmt {
+pub fn (mut c Connection) prepare(sql_stmt string) !PreparedStmt {
 	t := start_timer()
-	stmt, params, explain := c.query_cache.parse(sql) or {
+	stmt, params, explain := c.query_cache.parse(sql_stmt) or {
 		mut catalog := c.catalog()
 		catalog.storage.transaction_aborted()
 		return err
@@ -257,14 +255,14 @@ pub fn (mut c Connection) prepare(sql string) !PreparedStmt {
 }
 
 // query executes a statement. If there is a result set it will be returned.
-pub fn (mut c Connection) query(sql string) !Result {
+pub fn (mut c Connection) query(sql_stmt string) !Result {
 	mut catalog := c.catalog()
 
 	if catalog.storage.transaction_state == .aborted {
 		return sqlstate_25p02()
 	}
 
-	mut prepared := c.prepare(sql) or {
+	mut prepared := c.prepare(sql_stmt) or {
 		catalog.storage.transaction_aborted()
 		return err
 	}

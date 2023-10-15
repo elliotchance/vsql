@@ -324,3 +324,18 @@ Running the specific test again can be done with:
 .. code-block:: sh
 
    TEST=subquery:32 make sql-test
+
+Using Different V Versions
+--------------------------
+
+Sometimes there are V language changes which might break tests, or otherwise
+cause issues on newer versions. Fortunatly there is a `oldv` tool which can be
+used to compile older version of `v` for testing. You can run tests simply by
+supplying a different version of V:
+
+.. code-block:: sh
+
+   OLDV=0.3.5 make sql-test
+
+You can use any commit or tag for ``OLDV``. All tags can be
+`found here <https://github.com/vlang/v/tags>`_.

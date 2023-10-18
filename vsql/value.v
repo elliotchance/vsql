@@ -11,9 +11,10 @@ import regex
 // Possible values for a BOOLEAN.
 pub enum Boolean {
 	// These must not be negative values because they are encoded as u8 on disk.
-	is_unknown = 0 // same as NULL
-	is_false   = 1
-	is_true    = 2
+	// 0 is resevered for encoding NULL on disk, but is not a valid value in
+	// memory.
+	is_false = 1
+	is_true  = 2
 }
 
 // Returns ``TRUE``, ``FALSE`` or ``UNKNOWN``.
@@ -21,7 +22,6 @@ pub fn (b Boolean) str() string {
 	return match b {
 		.is_false { 'FALSE' }
 		.is_true { 'TRUE' }
-		.is_unknown { 'UNKNOWN' }
 	}
 }
 
@@ -80,9 +80,7 @@ pub fn new_boolean_value(b bool) Value {
 pub fn new_unknown_value() Value {
 	return Value{
 		typ: Type{.is_boolean, 0, 0, false}
-		v: InternalValue{
-			bool_value: .is_unknown
-		}
+		is_null: true
 	}
 }
 
@@ -286,8 +284,8 @@ fn (v Value) as_numeric() !big.Integer {
 // The string representation of this value. Different types will have different
 // formatting.
 pub fn (v Value) str() string {
-	if v.is_null && v.typ.typ != .is_boolean {
-		return 'NULL'
+	if v.is_null {
+		return if v.typ.typ == .is_boolean { 'UNKNOWN' } else { 'NULL' }
 	}
 
 	return match v.typ.typ {

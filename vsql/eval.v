@@ -437,26 +437,18 @@ fn eval_cast(mut conn Connection, data Row, e CastExpr, params map[string]Value)
 }
 
 fn eval_truth(mut conn Connection, data Row, e TruthExpr, params map[string]Value) !Value {
+	// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
+	// "Table 15 — Truth table for the IS boolean operator"
+
 	value := eval_as_value(mut conn, data, e.expr, params)!
-	result := match value.bool_value() {
-		.is_true {
-			match e.value.bool_value() {
-				.is_true { new_boolean_value(true) }
-				.is_false, .is_unknown { new_boolean_value(false) }
-			}
-		}
-		.is_false {
-			match e.value.bool_value() {
-				.is_true, .is_unknown { new_boolean_value(false) }
-				.is_false { new_boolean_value(true) }
-			}
-		}
-		.is_unknown {
-			match e.value.bool_value() {
-				.is_true, .is_false { new_boolean_value(false) }
-				.is_unknown { new_boolean_value(true) }
-			}
-		}
+	mut result := new_boolean_value(false)
+
+	if value.is_null {
+		result = new_boolean_value(e.value.is_null)
+	} else if value.bool_value() == .is_true {
+		result = new_boolean_value(e.value.bool_value() == .is_true)
+	} else {
+		result = new_boolean_value(e.value.bool_value() == .is_false)
 	}
 
 	if e.not {

@@ -334,9 +334,10 @@ enum Boolean
 
    pub enum Boolean {
    	// These must not be negative values because they are encoded as u8 on disk.
-   	is_unknown = 0 // same as NULL
-   	is_false   = 1
-   	is_true    = 2
+   	// 0 is resevered for encoding NULL on disk, but is not a valid value in
+   	// memory.
+   	is_false = 1
+   	is_true  = 2
    }
 
 

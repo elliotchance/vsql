@@ -65,8 +65,8 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 			//  replaced with NULL is true, which is unnecessary, even if the
 			//  logic is a bit murky.
 			column_id := '${table_name.id()}.${column_name}'
-			cmp, is_null := row.data[column_id].cmp(raw_value)!
-			if is_null || cmp != 0 {
+			cmp := compare(row.data[column_id], raw_value)!
+			if cmp != .is_equal {
 				did_modify = true
 				row2.data[column_id] = cast(mut c, 'for column ${column_name}', raw_value,
 					table_column.typ)!

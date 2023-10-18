@@ -394,8 +394,8 @@ fn eval_nullif(mut conn Connection, data Row, e NullIfExpr, params map[string]Va
 		return sqlstate_42804('in NULLIF', a.typ.str(), b.typ.str())
 	}
 
-	cmp, _ := a.cmp(b)!
-	if cmp == 0 {
+	cmp := compare(a, b)!
+	if cmp == .is_equal {
 		return new_null_value(a.typ.typ)
 	}
 
@@ -565,19 +565,20 @@ fn eval_between(mut conn Connection, data Row, e BetweenExpr, params map[string]
 	mut right := eval_as_value(mut conn, data, e.right, params)!
 
 	// SYMMETRIC operands might need to be swapped.
-	cmp, is_null := left.cmp(right)!
-	if e.symmetric && !is_null && cmp > 0 {
+	cmp := compare(left, right)!
+	if e.symmetric && cmp == .is_greater {
 		left, right = right, left
 	}
 
-	lower, lower_is_null := expr.cmp(left)!
-	upper, upper_is_null := expr.cmp(right)!
+	lower := compare(expr, left)!
+	upper := compare(expr, right)!
 
-	if lower_is_null || upper_is_null {
-		return new_null_value(.is_boolean)
+	if lower == .is_unknown || upper == .is_unknown {
+		return new_unknown_value()
 	}
 
-	mut result := lower >= 0 && upper <= 0
+	mut result := (lower == .is_greater || lower == .is_equal)
+		&& (upper == .is_less || upper == .is_equal)
 
 	if e.not {
 		result = !result

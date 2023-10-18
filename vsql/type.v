@@ -55,6 +55,32 @@ fn (t SQLType) str() string {
 	}
 }
 
+fn (t SQLType) is_number() bool {
+	return match t {
+		.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint, .is_numeric { true }
+		else { false }
+	}
+}
+
+fn (t SQLType) is_string() bool {
+	return match t {
+		.is_character, .is_varchar { true }
+		else { false }
+	}
+}
+
+fn (t SQLType) is_datetime() bool {
+	return match t {
+		.is_date, .is_time_without_time_zone, .is_time_with_time_zone,
+		.is_timestamp_without_time_zone, .is_timestamp_with_time_zone {
+			true
+		}
+		else {
+			false
+		}
+	}
+}
+
 fn new_type(name string, size int, scale i16) Type {
 	name_without_size := name.split('(')[0]
 

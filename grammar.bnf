@@ -289,7 +289,7 @@
     <common sequence generator option>    -> sequence_generator_options_2
 
 <common value expression> /* Expr */ ::=
-    <numeric value expression>
+    <numeric value expression>    -> numeric_to_expr
   | <string value expression>
   | <datetime value expression>
 
@@ -497,9 +497,9 @@
 <exponential function> /* Expr */ ::=
     EXP <left paren> <numeric value expression> <right paren>   -> exp
 
-<factor> /* Expr */ ::=
-    <numeric primary>
-  | <sign> <numeric primary>   -> sign_expr
+<factor> /* Factor */ ::=
+    <numeric primary>          -> factor_1
+  | <sign> <numeric primary>   -> factor_2
 
 <fetch first clause> /* Expr */ ::=
     FETCH FIRST
@@ -956,30 +956,30 @@
 <null specification> /* Expr */ ::=
     NULL   -> null
 
-<numeric primary> /* Expr */ ::=
-    <value expression primary>
-  | <numeric value function>
+<numeric primary> /* NumericPrimary */ ::=
+    <value expression primary>   -> numeric_primary_1
+  | <numeric value function>     -> numeric_primary_1
 
 <numeric type> /* Type */ ::=
     <exact numeric type>
   | <approximate numeric type>
 
 <numeric value expression base> /* Expr */ ::=
-    <numeric value expression>
+    <numeric value expression>   -> numeric_to_expr
 
 <numeric value expression dividend> /* Expr */ ::=
-    <numeric value expression>
+    <numeric value expression>   -> numeric_to_expr
 
 <numeric value expression divisor> /* Expr */ ::=
-    <numeric value expression>
+    <numeric value expression>   -> numeric_to_expr
 
 <numeric value expression exponent> /* Expr */ ::=
-    <numeric value expression>
+    <numeric value expression>   -> numeric_to_expr
 
-<numeric value expression> /* Expr */ ::=
-    <term>
-  | <numeric value expression> <plus sign> <term>    -> binary_expr
-  | <numeric value expression> <minus sign> <term>   -> binary_expr
+<numeric value expression> /* NumericValueExpression */ ::=
+    <term>                                           -> numeric_value_expression_1
+  | <numeric value expression> <plus sign> <term>    -> numeric_value_expression_2
+  | <numeric value expression> <minus sign> <term>   -> numeric_value_expression_2
 
 <numeric value function> /* Expr */ ::=
     <position expression>
@@ -1324,13 +1324,13 @@
     SQRT <left paren> <numeric value expression> <right paren>   -> sqrt
 
 <start position> /* Expr */ ::=
-    <numeric value expression>
+    <numeric value expression>   -> numeric_to_expr
 
 <start transaction statement> /* Stmt */ ::=
   START TRANSACTION   -> start_transaction
 
 <string length> /* Expr */ ::=
-    <numeric value expression>
+    <numeric value expression>   -> numeric_to_expr
 
 <string value expression> /* Expr */ ::=
     <character value expression>
@@ -1405,10 +1405,10 @@
 <target table> /* Identifier */ ::=
     <table name>
 
-<term> /* Expr */ ::=
-    <factor>
-  | <term> <asterisk> <factor>   -> binary_expr
-  | <term> <solidus> <factor>    -> binary_expr
+<term> /* Term */ ::=
+    <factor>                     -> term_1
+  | <term> <asterisk> <factor>   -> term_2
+  | <term> <solidus> <factor>    -> term_2
 
 <time fractional seconds precision> /* string */ ::=
     <unsigned integer>

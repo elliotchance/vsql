@@ -10,10 +10,13 @@ type EarleyValue = BetweenExpr
 	| CreateTableStmt
 	| DerivedColumn
 	| Expr
+	| Factor
 	| Identifier
 	| IdentifierChain
 	| InsertStmt
 	| LikeExpr
+	| NumericPrimary
+	| NumericValueExpression
 	| QualifiedAsteriskExpr
 	| QualifiedJoin
 	| QueryExpression
@@ -33,6 +36,7 @@ type EarleyValue = BetweenExpr
 	| TablePrimary
 	| TablePrimaryBody
 	| TableReference
+	| Term
 	| Type
 	| Value
 	| []Expr
@@ -431,6 +435,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_common_sequence_generator_options_ := &EarleyRule{
 		name: '<common sequence generator options>'
 	}
+	mut rule_common_value_expression_1_ := &EarleyRule{
+		name: '<common value expression: 1>'
+	}
 	mut rule_common_value_expression_ := &EarleyRule{
 		name: '<common value expression>'
 	}
@@ -737,6 +744,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_exponential_function_ := &EarleyRule{
 		name: '<exponential function>'
 	}
+	mut rule_factor_1_ := &EarleyRule{
+		name: '<factor: 1>'
+	}
 	mut rule_factor_2_ := &EarleyRule{
 		name: '<factor: 2>'
 	}
@@ -986,23 +996,44 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_null_specification_ := &EarleyRule{
 		name: '<null specification>'
 	}
+	mut rule_numeric_primary_1_ := &EarleyRule{
+		name: '<numeric primary: 1>'
+	}
+	mut rule_numeric_primary_2_ := &EarleyRule{
+		name: '<numeric primary: 2>'
+	}
 	mut rule_numeric_primary_ := &EarleyRule{
 		name: '<numeric primary>'
 	}
 	mut rule_numeric_type_ := &EarleyRule{
 		name: '<numeric type>'
 	}
+	mut rule_numeric_value_expression_base_1_ := &EarleyRule{
+		name: '<numeric value expression base: 1>'
+	}
 	mut rule_numeric_value_expression_base_ := &EarleyRule{
 		name: '<numeric value expression base>'
+	}
+	mut rule_numeric_value_expression_dividend_1_ := &EarleyRule{
+		name: '<numeric value expression dividend: 1>'
 	}
 	mut rule_numeric_value_expression_dividend_ := &EarleyRule{
 		name: '<numeric value expression dividend>'
 	}
+	mut rule_numeric_value_expression_divisor_1_ := &EarleyRule{
+		name: '<numeric value expression divisor: 1>'
+	}
 	mut rule_numeric_value_expression_divisor_ := &EarleyRule{
 		name: '<numeric value expression divisor>'
 	}
+	mut rule_numeric_value_expression_exponent_1_ := &EarleyRule{
+		name: '<numeric value expression exponent: 1>'
+	}
 	mut rule_numeric_value_expression_exponent_ := &EarleyRule{
 		name: '<numeric value expression exponent>'
+	}
+	mut rule_numeric_value_expression_1_ := &EarleyRule{
+		name: '<numeric value expression: 1>'
 	}
 	mut rule_numeric_value_expression_2_ := &EarleyRule{
 		name: '<numeric value expression: 2>'
@@ -1490,6 +1521,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_square_root_ := &EarleyRule{
 		name: '<square root>'
 	}
+	mut rule_start_position_1_ := &EarleyRule{
+		name: '<start position: 1>'
+	}
 	mut rule_start_position_ := &EarleyRule{
 		name: '<start position>'
 	}
@@ -1498,6 +1532,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_start_transaction_statement_ := &EarleyRule{
 		name: '<start transaction statement>'
+	}
+	mut rule_string_length_1_ := &EarleyRule{
+		name: '<string length: 1>'
 	}
 	mut rule_string_length_ := &EarleyRule{
 		name: '<string length>'
@@ -1612,6 +1649,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_target_table_ := &EarleyRule{
 		name: '<target table>'
+	}
+	mut rule_term_1_ := &EarleyRule{
+		name: '<term: 1>'
 	}
 	mut rule_term_2_ := &EarleyRule{
 		name: '<term: 2>'
@@ -4364,9 +4404,15 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_common_value_expression_.productions << &EarleyProduction{[
+	rule_common_value_expression_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
+		},
+	]}
+
+	rule_common_value_expression_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_common_value_expression_1_
 		},
 	]}
 	rule_common_value_expression_.productions << &EarleyProduction{[
@@ -5444,6 +5490,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_factor_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_numeric_primary_
+		},
+	]}
+
 	rule_factor_2_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_sign_
@@ -5455,7 +5507,7 @@ fn get_grammar() map[string]EarleyRule {
 
 	rule_factor_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_numeric_primary_
+			rule: rule_factor_1_
 		},
 	]}
 	rule_factor_.productions << &EarleyProduction{[
@@ -7599,14 +7651,26 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_numeric_primary_.productions << &EarleyProduction{[
+	rule_numeric_primary_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_value_expression_primary_
 		},
 	]}
-	rule_numeric_primary_.productions << &EarleyProduction{[
+
+	rule_numeric_primary_2_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_numeric_value_function_
+		},
+	]}
+
+	rule_numeric_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_numeric_primary_1_
+		},
+	]}
+	rule_numeric_primary_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_numeric_primary_2_
 		},
 	]}
 
@@ -7621,7 +7685,19 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_numeric_value_expression_base_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_numeric_value_expression_
+		},
+	]}
+
 	rule_numeric_value_expression_base_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_numeric_value_expression_base_1_
+		},
+	]}
+
+	rule_numeric_value_expression_dividend_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
@@ -7629,11 +7705,23 @@ fn get_grammar() map[string]EarleyRule {
 
 	rule_numeric_value_expression_dividend_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
+			rule: rule_numeric_value_expression_dividend_1_
+		},
+	]}
+
+	rule_numeric_value_expression_divisor_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
 	]}
 
 	rule_numeric_value_expression_divisor_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_numeric_value_expression_divisor_1_
+		},
+	]}
+
+	rule_numeric_value_expression_exponent_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
 		},
@@ -7641,7 +7729,13 @@ fn get_grammar() map[string]EarleyRule {
 
 	rule_numeric_value_expression_exponent_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_numeric_value_expression_
+			rule: rule_numeric_value_expression_exponent_1_
+		},
+	]}
+
+	rule_numeric_value_expression_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_term_
 		},
 	]}
 
@@ -7671,7 +7765,7 @@ fn get_grammar() map[string]EarleyRule {
 
 	rule_numeric_value_expression_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_term_
+			rule: rule_numeric_value_expression_1_
 		},
 	]}
 	rule_numeric_value_expression_.productions << &EarleyProduction{[
@@ -9289,9 +9383,15 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_start_position_.productions << &EarleyProduction{[
+	rule_start_position_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
+		},
+	]}
+
+	rule_start_position_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_start_position_1_
 		},
 	]}
 
@@ -9310,9 +9410,15 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_string_length_.productions << &EarleyProduction{[
+	rule_string_length_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_numeric_value_expression_
+		},
+	]}
+
+	rule_string_length_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_string_length_1_
 		},
 	]}
 
@@ -9623,6 +9729,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_term_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_factor_
+		},
+	]}
+
 	rule_term_2_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_term_
@@ -9649,7 +9761,7 @@ fn get_grammar() map[string]EarleyRule {
 
 	rule_term_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_factor_
+			rule: rule_term_1_
 		},
 	]}
 	rule_term_.productions << &EarleyProduction{[
@@ -13142,6 +13254,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<common sequence generator options: 1>'] = rule_common_sequence_generator_options_1_
 	rules['<common sequence generator options: 2>'] = rule_common_sequence_generator_options_2_
 	rules['<common sequence generator options>'] = rule_common_sequence_generator_options_
+	rules['<common value expression: 1>'] = rule_common_value_expression_1_
 	rules['<common value expression>'] = rule_common_value_expression_
 	rules['<comp op>'] = rule_comp_op_
 	rules['<comparison predicate part 2: 1>'] = rule_comparison_predicate_part_2_1_
@@ -13244,6 +13357,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<explicit row value constructor>'] = rule_explicit_row_value_constructor_
 	rules['<exponential function: 1>'] = rule_exponential_function_1_
 	rules['<exponential function>'] = rule_exponential_function_
+	rules['<factor: 1>'] = rule_factor_1_
 	rules['<factor: 2>'] = rule_factor_2_
 	rules['<factor>'] = rule_factor_
 	rules['<fetch first clause: 1>'] = rule_fetch_first_clause_1_
@@ -13327,12 +13441,19 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<null predicate>'] = rule_null_predicate_
 	rules['<null specification: 1>'] = rule_null_specification_1_
 	rules['<null specification>'] = rule_null_specification_
+	rules['<numeric primary: 1>'] = rule_numeric_primary_1_
+	rules['<numeric primary: 2>'] = rule_numeric_primary_2_
 	rules['<numeric primary>'] = rule_numeric_primary_
 	rules['<numeric type>'] = rule_numeric_type_
+	rules['<numeric value expression base: 1>'] = rule_numeric_value_expression_base_1_
 	rules['<numeric value expression base>'] = rule_numeric_value_expression_base_
+	rules['<numeric value expression dividend: 1>'] = rule_numeric_value_expression_dividend_1_
 	rules['<numeric value expression dividend>'] = rule_numeric_value_expression_dividend_
+	rules['<numeric value expression divisor: 1>'] = rule_numeric_value_expression_divisor_1_
 	rules['<numeric value expression divisor>'] = rule_numeric_value_expression_divisor_
+	rules['<numeric value expression exponent: 1>'] = rule_numeric_value_expression_exponent_1_
 	rules['<numeric value expression exponent>'] = rule_numeric_value_expression_exponent_
+	rules['<numeric value expression: 1>'] = rule_numeric_value_expression_1_
 	rules['<numeric value expression: 2>'] = rule_numeric_value_expression_2_
 	rules['<numeric value expression: 3>'] = rule_numeric_value_expression_3_
 	rules['<numeric value expression>'] = rule_numeric_value_expression_
@@ -13495,9 +13616,11 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<SQL transaction statement>'] = rule_sql_transaction_statement_
 	rules['<square root: 1>'] = rule_square_root_1_
 	rules['<square root>'] = rule_square_root_
+	rules['<start position: 1>'] = rule_start_position_1_
 	rules['<start position>'] = rule_start_position_
 	rules['<start transaction statement: 1>'] = rule_start_transaction_statement_1_
 	rules['<start transaction statement>'] = rule_start_transaction_statement_
+	rules['<string length: 1>'] = rule_string_length_1_
 	rules['<string length>'] = rule_string_length_
 	rules['<string value expression>'] = rule_string_value_expression_
 	rules['<string value function>'] = rule_string_value_function_
@@ -13536,6 +13659,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<table value constructor: 1>'] = rule_table_value_constructor_1_
 	rules['<table value constructor>'] = rule_table_value_constructor_
 	rules['<target table>'] = rule_target_table_
+	rules['<term: 1>'] = rule_term_1_
 	rules['<term: 2>'] = rule_term_2_
 	rules['<term: 3>'] = rule_term_3_
 	rules['<term>'] = rule_term_
@@ -14037,7 +14161,7 @@ fn parse_ast(node &EarleyNode) ![]EarleyValue {
 fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 	match name {
 		'<absolute value expression: 1>' {
-			return [EarleyValue(parse_abs(children[2] as Expr)!)]
+			return [EarleyValue(parse_abs(children[2] as NumericValueExpression)!)]
 		}
 		'<aggregate function: 1>' {
 			return [EarleyValue(parse_count_all(children[2] as string)!)]
@@ -14179,10 +14303,14 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 			return [EarleyValue(parse_expr(children[1] as Expr)!)]
 		}
 		'<ceiling function: 1>' {
-			return [EarleyValue(parse_ceiling(children[2] as Expr)!)]
+			return [
+				EarleyValue(parse_ceiling(children[2] as NumericValueExpression)!),
+			]
 		}
 		'<ceiling function: 2>' {
-			return [EarleyValue(parse_ceiling(children[2] as Expr)!)]
+			return [
+				EarleyValue(parse_ceiling(children[2] as NumericValueExpression)!),
+			]
 		}
 		'<char length expression: 1>' {
 			return [EarleyValue(parse_char_length(children[2] as Expr)!)]
@@ -14287,7 +14415,7 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 			return [EarleyValue(parse_commit()!)]
 		}
 		'<common logarithm: 1>' {
-			return [EarleyValue(parse_log10(children[2] as Expr)!)]
+			return [EarleyValue(parse_log10(children[2] as NumericValueExpression)!)]
 		}
 		'<common sequence generator option: 1>' {
 			return [
@@ -14303,6 +14431,11 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 			return [
 				EarleyValue(parse_sequence_generator_options_2(children[0] as []SequenceGeneratorOption,
 					children[1] as SequenceGeneratorOption)!),
+			]
+		}
+		'<common value expression: 1>' {
+			return [
+				EarleyValue(parse_numeric_to_expr(children[0] as NumericValueExpression)!),
 			]
 		}
 		'<comparison predicate part 2: 1>' {
@@ -14508,18 +14641,21 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 			]
 		}
 		'<exponential function: 1>' {
-			return [EarleyValue(parse_exp(children[2] as Expr)!)]
+			return [EarleyValue(parse_exp(children[2] as NumericValueExpression)!)]
+		}
+		'<factor: 1>' {
+			return [EarleyValue(parse_factor_1(children[0] as NumericPrimary)!)]
 		}
 		'<factor: 2>' {
 			return [
-				EarleyValue(parse_sign_expr(children[0] as string, children[1] as Expr)!),
+				EarleyValue(parse_factor_2(children[0] as string, children[1] as NumericPrimary)!),
 			]
 		}
 		'<fetch first clause: 1>' {
 			return [EarleyValue(parse_fetch_first_clause(children[2] as Expr)!)]
 		}
 		'<floor function: 1>' {
-			return [EarleyValue(parse_floor(children[2] as Expr)!)]
+			return [EarleyValue(parse_floor(children[2] as NumericValueExpression)!)]
 		}
 		'<fold: 1>' {
 			return [EarleyValue(parse_upper(children[2] as Expr)!)]
@@ -14604,7 +14740,7 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 			]
 		}
 		'<natural logarithm: 1>' {
-			return [EarleyValue(parse_ln(children[2] as Expr)!)]
+			return [EarleyValue(parse_ln(children[2] as NumericValueExpression)!)]
 		}
 		'<next value expression: 1>' {
 			return [
@@ -14630,16 +14766,47 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		'<null specification: 1>' {
 			return [EarleyValue(parse_null()!)]
 		}
+		'<numeric primary: 1>' {
+			return [EarleyValue(parse_numeric_primary_1(children[0] as Expr)!)]
+		}
+		'<numeric primary: 2>' {
+			return [EarleyValue(parse_numeric_primary_1(children[0] as Expr)!)]
+		}
+		'<numeric value expression base: 1>' {
+			return [
+				EarleyValue(parse_numeric_to_expr(children[0] as NumericValueExpression)!),
+			]
+		}
+		'<numeric value expression dividend: 1>' {
+			return [
+				EarleyValue(parse_numeric_to_expr(children[0] as NumericValueExpression)!),
+			]
+		}
+		'<numeric value expression divisor: 1>' {
+			return [
+				EarleyValue(parse_numeric_to_expr(children[0] as NumericValueExpression)!),
+			]
+		}
+		'<numeric value expression exponent: 1>' {
+			return [
+				EarleyValue(parse_numeric_to_expr(children[0] as NumericValueExpression)!),
+			]
+		}
+		'<numeric value expression: 1>' {
+			return [
+				EarleyValue(parse_numeric_value_expression_1(children[0] as Term)!),
+			]
+		}
 		'<numeric value expression: 2>' {
 			return [
-				EarleyValue(parse_binary_expr(children[0] as Expr, children[1] as string,
-					children[2] as Expr)!),
+				EarleyValue(parse_numeric_value_expression_2(children[0] as NumericValueExpression,
+					children[1] as string, children[2] as Term)!),
 			]
 		}
 		'<numeric value expression: 3>' {
 			return [
-				EarleyValue(parse_binary_expr(children[0] as Expr, children[1] as string,
-					children[2] as Expr)!),
+				EarleyValue(parse_numeric_value_expression_2(children[0] as NumericValueExpression,
+					children[1] as string, children[2] as Term)!),
 			]
 		}
 		'<octet length expression: 1>' {
@@ -14916,10 +15083,20 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 			]
 		}
 		'<square root: 1>' {
-			return [EarleyValue(parse_sqrt(children[2] as Expr)!)]
+			return [EarleyValue(parse_sqrt(children[2] as NumericValueExpression)!)]
+		}
+		'<start position: 1>' {
+			return [
+				EarleyValue(parse_numeric_to_expr(children[0] as NumericValueExpression)!),
+			]
 		}
 		'<start transaction statement: 1>' {
 			return [EarleyValue(parse_start_transaction()!)]
+		}
+		'<string length: 1>' {
+			return [
+				EarleyValue(parse_numeric_to_expr(children[0] as NumericValueExpression)!),
+			]
 		}
 		'<subquery: 1>' {
 			return [EarleyValue(parse_subquery(children[1] as QueryExpression)!)]
@@ -14995,16 +15172,17 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 				EarleyValue(parse_table_value_constructor(children[1] as []Expr)!),
 			]
 		}
+		'<term: 1>' {
+			return [EarleyValue(parse_term_1(children[0] as Factor)!)]
+		}
 		'<term: 2>' {
 			return [
-				EarleyValue(parse_binary_expr(children[0] as Expr, children[1] as string,
-					children[2] as Expr)!),
+				EarleyValue(parse_term_2(children[0] as Term, children[1] as string, children[2] as Factor)!),
 			]
 		}
 		'<term: 3>' {
 			return [
-				EarleyValue(parse_binary_expr(children[0] as Expr, children[1] as string,
-					children[2] as Expr)!),
+				EarleyValue(parse_term_2(children[0] as Term, children[1] as string, children[2] as Factor)!),
 			]
 		}
 		'<time literal: 1>' {
@@ -15015,7 +15193,7 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		}
 		'<trigonometric function: 1>' {
 			return [
-				EarleyValue(parse_trig_func(children[0] as string, children[2] as Expr)!),
+				EarleyValue(parse_trig_func(children[0] as string, children[2] as NumericValueExpression)!),
 			]
 		}
 		'<trim function: 1>' {

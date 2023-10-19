@@ -242,7 +242,7 @@ fn parse_asterisk(_ string) !SelectList {
 	return AsteriskExpr(true)
 }
 
-fn parse_abs(expr Expr) !Expr {
+fn parse_abs(expr NumericValueExpression) !Expr {
 	return CallExpr{'ABS', [expr]}
 }
 
@@ -256,6 +256,10 @@ fn parse_sign_expr(sign string, expr Expr) !Expr {
 
 fn parse_value(v Value) !Value {
 	return v
+}
+
+fn parse_numeric_primary_1(e Expr) !NumericPrimary {
+	return NumericPrimary{e}
 }
 
 fn parse_exact_numeric_literal1(a string, b string) !Value {
@@ -273,31 +277,35 @@ fn parse_select_list2(select_list SelectList, columns SelectList) !SelectList {
 	return new_select_list
 }
 
-fn parse_trig_func(function_name string, expr Expr) !Expr {
+fn parse_numeric_to_expr(expr NumericValueExpression) !Expr {
+	return expr
+}
+
+fn parse_trig_func(function_name string, expr NumericValueExpression) !Expr {
 	return CallExpr{function_name, [expr]}
 }
 
-fn parse_sqrt(expr Expr) !Expr {
+fn parse_sqrt(expr NumericValueExpression) !Expr {
 	return CallExpr{'SQRT', [expr]}
 }
 
-fn parse_ln(expr Expr) !Expr {
+fn parse_ln(expr NumericValueExpression) !Expr {
 	return CallExpr{'LN', [expr]}
 }
 
-fn parse_floor(expr Expr) !Expr {
+fn parse_floor(expr NumericValueExpression) !Expr {
 	return CallExpr{'FLOOR', [expr]}
 }
 
-fn parse_ceiling(expr Expr) !Expr {
+fn parse_ceiling(expr NumericValueExpression) !Expr {
 	return CallExpr{'CEILING', [expr]}
 }
 
-fn parse_log10(expr Expr) !Expr {
+fn parse_log10(expr NumericValueExpression) !Expr {
 	return CallExpr{'LOG10', [expr]}
 }
 
-fn parse_exp(expr Expr) !Expr {
+fn parse_exp(expr NumericValueExpression) !Expr {
 	return CallExpr{'EXP', [expr]}
 }
 

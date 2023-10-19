@@ -53,6 +53,26 @@ fn expr_is_agg(conn &Connection, e Expr, row Row, params map[string]Value) !bool
 				return nested_agg_unsupported(e)
 			}
 		}
+		NumericValueExpression {
+			match e {
+				Term {
+					match e {
+						Factor {
+							return expr_is_agg(conn, e, row, params)!
+						}
+						BinaryExpr {
+							return expr_is_agg(conn, e, row, params)!
+						}
+					}
+				}
+				BinaryExpr {
+					return expr_is_agg(conn, e, row, params)!
+				}
+			}
+		}
+		Factor {
+			return expr_is_agg(conn, e.factor.expr, row, params)!
+		}
 		CoalesceExpr {
 			for expr in e.exprs {
 				if expr_is_agg(conn, expr, row, params)! {
@@ -158,6 +178,30 @@ fn resolve_identifiers(conn &Connection, e Expr, tables map[string]Table) !Expr 
 		NullIfExpr {
 			return NullIfExpr{resolve_identifiers(conn, e.a, tables)!, resolve_identifiers(conn,
 				e.b, tables)!}
+		}
+		NumericValueExpression {
+			match e {
+				Term {
+					match e {
+						Factor {
+							return resolve_identifiers(conn, e, tables)
+						}
+						BinaryExpr {
+							return resolve_identifiers(conn, e, tables)
+						}
+					}
+				}
+				BinaryExpr {
+					return resolve_identifiers(conn, e, tables)
+				}
+			}
+		}
+		Factor {
+			if e.sign == '+' {
+				return resolve_identifiers(conn, e.factor.expr, tables)
+			} else {
+				return resolve_identifiers(conn, UnaryExpr{'-', e.factor.expr}, tables)
+			}
 		}
 		TruthExpr {
 			return TruthExpr{resolve_identifiers(conn, e.expr, tables)!, e.not, e.value}

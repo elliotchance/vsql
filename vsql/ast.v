@@ -2,6 +2,10 @@
 
 module vsql
 
+struct NumericPrimary {
+	expr Expr
+}
+
 // All possible root statments.
 //
 // QueryExpression is used for both SELECT and VALUES.
@@ -34,6 +38,7 @@ type Expr = BetweenExpr
 	| CurrentSchemaExpr
 	| CurrentTimeExpr
 	| CurrentTimestampExpr
+	| Factor
 	| Identifier
 	| LikeExpr
 	| LocalTimeExpr
@@ -42,6 +47,7 @@ type Expr = BetweenExpr
 	| NoExpr
 	| NullExpr
 	| NullIfExpr
+	| NumericValueExpression
 	| Parameter
 	| QualifiedAsteriskExpr
 	| QueryExpression
@@ -93,6 +99,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 		CurrentTimestampExpr {
 			e.str()
 		}
+		Factor {
+			e.pstr(params)
+		}
 		Identifier {
 			e.str()
 		}
@@ -115,6 +124,9 @@ fn (e Expr) pstr(params map[string]Value) string {
 			e.pstr(params)
 		}
 		NullIfExpr {
+			e.pstr(params)
+		}
+		NumericValueExpression {
 			e.pstr(params)
 		}
 		Parameter {

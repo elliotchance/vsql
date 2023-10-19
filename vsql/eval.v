@@ -124,6 +124,9 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 		Value {
 			return e.typ
 		}
+		Factor {
+			return eval_as_type(conn, data, e.factor.expr, params)
+		}
 		CastExpr {
 			return e.target
 		}
@@ -141,6 +144,9 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 			// the highest resolution type (need to check the SQL standard about
 			// this behavior).
 			return eval_as_type(conn, data, e.left, params)
+		}
+		NumericValueExpression {
+			return e.eval_as_type(conn, data, params)
 		}
 		Identifier {
 			col := data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }
@@ -208,6 +214,16 @@ fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value)
 		}
 		NullIfExpr {
 			return eval_nullif(mut conn, data, e, params)
+		}
+		NumericValueExpression {
+			return e.eval_as_value(mut conn, data, params)
+		}
+		Factor {
+			if e.sign == '+' {
+ 				return eval_as_value(mut conn, data, e.factor.expr, params)!
+			}
+
+ 			return eval_as_value(mut conn, data, UnaryExpr{'-', e.factor.expr}, params)!
 		}
 		Parameter {
 			return params[e.name] or { return sqlstate_42p02(e.name) }

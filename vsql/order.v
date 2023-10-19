@@ -115,18 +115,105 @@ fn (l &RowLink) rows() []Row {
 }
 
 fn row_cmp(mut conn Connection, params map[string]Value, r1 Row, r2 Row, specs []SortSpecification) !int {
+	// ISO/IEC 9075-2:2016(E), 10.10, <sort specification list>:
+	//
+	// General Rules
+	//
+	// 1) A <sort specification list> defines an ordering of rows, as follows:
+	//
+	//    a) Let N be the number of <sort specification>s.
+	//
+	//    b) Let Ki, 1 (one) ≤ i ≤ N, be the <sort key> contained in the i-th
+	//       <sort specification>.
+	//
+	//    c) Each <sort specification> specifies the sort direction for the
+	//       corresponding sort key Ki. If DESC is not specified in the i-th
+	//       <sort specification>, then the sort direction for Ki is ascending and
+	//       the applicable <comp op> is the <less than operator>. Otherwise, the
+	//       sort direction for Ki is descending and the applicable <comp op> is
+	//       the <greater than operator>.
+	//
+	//    d) Let P be any row of the collection of rows to be ordered, and let Q
+	//       be any other row of the same collection of rows.
+	//
+	//    e) Let PVi and QVi be the values of Ki in P and Q, respectively. The
+	//       relative position of rows P and Q in the result is determined by
+	//       comparing PVi and QVi as follows:
+	//
+	//       i) The comparison is performed according to the General Rules of
+	//
+	//          Case:
+	//
+	//          1) If the declared type of Ki is a row type, then this Subclause,
+	//             applied recursively.
+	//          2) Otherwise, Subclause 8.2, “<comparison predicate>”, where the
+	//             <comp op> is the applicable <comp op> for Ki.
+	//
+	//       ii) The comparison is performed with the following special treatment
+	//           of null values.
+	//
+	//           Case:
+	//
+	//           1) If PVi and QVi are both the null value, then they are
+	//              considered equal to each other.
+	//           2) If PVi is the null value and QVi is not the null value, then
+	//
+	//              Case:
+	//
+	//              A) If NULLS FIRST is specified or implied, then PVi <comp op>
+	//                 QVi is considered to be True.
+	//              B) If NULLS LAST is specified or implied, then PVi <comp op>
+	//                 QVi is considered to be False.
+	//
+	//           3) If PVi is not the null value and QVi is the null value, then
+	//
+	//              Case:
+	//
+	//              A) If NULLS FIRST is specified or implied, then PVi <comp op>
+	//                 QVi is considered to be False.
+	//              B) If NULLS LAST is specified or implied, then PVi <comp op>
+	//                 QVi is considered to be True.
+	//
+	//    f) PVi is said to precede QVi if the value of the <comparison predicate>
+	//       “PVi <comp op> QVi” is True for the applicable <comp op>.
+	//
+	//    g) If PVi and QVi are not the null value and the result of
+	//       “PVi <comp op> QVi” is Unknown, then the relative ordering of PVi and
+	//       QVi is implementation-dependent.
+	//
+	//    h) The relative position of row P is before row Q if PVn precedes QVn
+	//       for some n, 1 (one) ≤ n ≤ N, and PVi is not distinct from QVi for all
+	//       i < n.
+	//
+	//    i) Two rows that are not distinct with respect to the
+	//       <sort specification>s are said to be peers of each other. The
+	//       relative ordering of peers is implementation-dependent.
 	for spec in specs {
 		left := eval_as_value(mut conn, r1, spec.expr, params)!
 		right := eval_as_value(mut conn, r2, spec.expr, params)!
 
-		cmp, _ := left.cmp(right)!
-		if cmp != 0 {
-			if !spec.is_asc {
-				return -cmp
-			}
-
-			return cmp
+		if left.is_null && right.is_null {
+			continue
 		}
+
+		if left.is_null && !right.is_null {
+			return if spec.is_asc { -1 } else { 1 }
+		}
+
+		if !left.is_null && right.is_null {
+			return if spec.is_asc { 1 } else { -1 }
+		}
+
+		cmp := compare(left, right)!
+		if cmp == .is_equal {
+			continue
+		}
+
+		if cmp == .is_less {
+			return if spec.is_asc { -1 } else { 1 }
+		}
+
+		return if spec.is_asc { 1 } else { -1 }
 	}
 
 	return 0

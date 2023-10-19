@@ -80,8 +80,12 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 				expr, o.params)!
 			right := eval_as_value(mut o.conn, row, expr, o.params)!
 
-			cmp, _ := left.cmp(right)!
-			if cmp != 0 {
+			if left.is_null && right.is_null {
+				continue
+			}
+
+			cmp := compare(left, right)!
+			if cmp != .is_equal {
 				equal = false
 				break
 			}

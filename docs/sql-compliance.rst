@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 59 of the 164 mandatory features** of the
+**vsql supports 60 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -40,7 +40,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E011-05
      - Numeric comparison
 
-   * - ❌ E011-06
+   * - ✅ E011-06
      - Implicit casting among the numeric data types
 
    * - ⭕ **E021**

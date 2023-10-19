@@ -280,9 +280,11 @@ fn new_row_from_bytes(t Table, data []u8, tid int) Row {
 			match col.typ.typ {
 				.is_boolean {
 					unsafe {
-						v.v.bool_value = Boolean(buf.read_u8())
-						if v.bool_value() == .is_unknown {
+						b := buf.read_u8()
+						if b == 0 {
 							v.is_null = true
+						} else {
+							v.v.bool_value = Boolean(b)
 						}
 					}
 				}

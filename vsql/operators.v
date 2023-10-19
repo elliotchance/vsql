@@ -157,10 +157,13 @@ fn unary_negate_double_precision(conn &Connection, v Value) !Value {
 }
 
 fn unary_not_boolean(conn &Connection, v Value) !Value {
+	if v.is_null {
+		return new_unknown_value()
+	}
+
 	return match v.bool_value() {
 		.is_true { new_boolean_value(false) }
 		.is_false { new_boolean_value(true) }
-		.is_unknown { new_unknown_value() }
 	}
 }
 
@@ -229,47 +232,41 @@ fn binary_varchar_concat_varchar(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_boolean_and_boolean(conn &Connection, a Value, b Value) !Value {
-	match a.bool_value() {
-		.is_true {
-			return match b.bool_value() {
-				.is_true { new_boolean_value(true) }
-				.is_false { new_boolean_value(false) }
-				.is_unknown { new_unknown_value() }
-			}
-		}
-		.is_false {
+	// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
+	// "Table 13 — Truth table for the AND boolean operator"
+
+	if a.is_null {
+		if b.bool_value() == .is_false {
 			return new_boolean_value(false)
 		}
-		.is_unknown {
-			return match b.bool_value() {
-				.is_true { new_unknown_value() }
-				.is_false { new_boolean_value(false) }
-				.is_unknown { new_unknown_value() }
-			}
-		}
+
+		return new_unknown_value()
 	}
+
+	if a.bool_value() == .is_true {
+		return b
+	}
+
+	return new_boolean_value(false)
 }
 
 fn binary_boolean_or_boolean(conn &Connection, a Value, b Value) !Value {
-	match a.bool_value() {
-		.is_true {
+	// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
+	// "Table 13 — Truth table for the AND boolean operator"
+
+	if a.is_null {
+		if b.bool_value() == .is_true {
 			return new_boolean_value(true)
 		}
-		.is_false {
-			return match b.bool_value() {
-				.is_true { new_boolean_value(true) }
-				.is_false { new_boolean_value(false) }
-				.is_unknown { new_unknown_value() }
-			}
-		}
-		.is_unknown {
-			return match b.bool_value() {
-				.is_true { new_boolean_value(true) }
-				.is_false { new_unknown_value() }
-				.is_unknown { new_unknown_value() }
-			}
-		}
+
+		return new_unknown_value()
 	}
+
+	if a.bool_value() == .is_true {
+		return new_boolean_value(true)
+	}
+
+	return b
 }
 
 fn binary_float_equal_float(conn &Connection, a Value, b Value) !Value {

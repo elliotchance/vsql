@@ -526,9 +526,35 @@ fn eval_substring(mut conn Connection, data Row, e SubstringExpr, params map[str
 	return new_varchar_value(value.string_value().substr(from, from + @for))
 }
 
+fn eval_binary_comparison(e BinaryExpr, left Value, right Value) !Value {
+	cmp := compare(left, right)!
+	if cmp == .is_unknown {
+		return new_unknown_value()
+	}
+
+	return new_boolean_value(match e.op {
+		'=' { cmp == .is_equal }
+		'<>' { cmp != .is_equal }
+		'>' { cmp == .is_greater }
+		'<' { cmp == .is_less }
+		'>=' { cmp == .is_greater || cmp == .is_equal }
+		'<=' { cmp == .is_less || cmp == .is_equal }
+		else {
+			// This should not be possible, but it's to satisfy the required else.
+			panic('invalid binary operator: ${e.op}')
+		}
+	})
+}
+
 fn eval_binary(mut conn Connection, data Row, e BinaryExpr, params map[string]Value) !Value {
 	left := eval_as_value(mut conn, data, e.left, params)!
 	right := eval_as_value(mut conn, data, e.right, params)!
+
+	// Comparison predicates should rely on compare(), this will handle any
+	// implicit casting.
+	if e.op == '=' || e.op == '<>' || e.op == '>' || e.op == '<' || e.op == '>=' || e.op == '<=' {
+		return eval_binary_comparison(e, left, right)
+	}
 
 	key := '${left.typ.typ} ${e.op} ${right.typ.typ}'
 	if fnc := conn.binary_operators[key] {

@@ -25,42 +25,10 @@ fn register_unary_operators(mut conn Connection) {
 }
 
 fn register_binary_operators(mut conn Connection) {
-	// Since many types share the same underlying memory, we can create a matrix
-	// of compatible operators that use the same function.
-	int_types := ['SMALLINT', 'INTEGER', 'BIGINT', 'NUMERIC']
-	float_types := ['REAL', 'DOUBLE PRECISION', 'NUMERIC']
 	text_types := ['CHARACTER VARYING', 'CHARACTER']
-
-	for typ1 in int_types {
-		for typ2 in int_types {
-			conn.binary_operators['${typ1} = ${typ2}'] = binary_int_equal_int
-			conn.binary_operators['${typ1} <> ${typ2}'] = binary_int_not_equal_int
-			conn.binary_operators['${typ1} < ${typ2}'] = binary_int_less_int
-			conn.binary_operators['${typ1} > ${typ2}'] = binary_int_greater_int
-			conn.binary_operators['${typ1} <= ${typ2}'] = binary_int_less_equal_int
-			conn.binary_operators['${typ1} >= ${typ2}'] = binary_int_greater_equal_int
-		}
-	}
-
-	for typ1 in float_types {
-		for typ2 in float_types {
-			conn.binary_operators['${typ1} = ${typ2}'] = binary_float_equal_float
-			conn.binary_operators['${typ1} <> ${typ2}'] = binary_float_not_equal_float
-			conn.binary_operators['${typ1} < ${typ2}'] = binary_float_less_float
-			conn.binary_operators['${typ1} > ${typ2}'] = binary_float_greater_float
-			conn.binary_operators['${typ1} <= ${typ2}'] = binary_float_less_equal_float
-			conn.binary_operators['${typ1} >= ${typ2}'] = binary_float_greater_equal_float
-		}
-	}
 
 	for typ1 in text_types {
 		for typ2 in text_types {
-			conn.binary_operators['${typ1} = ${typ2}'] = binary_string_equal_string
-			conn.binary_operators['${typ1} <> ${typ2}'] = binary_string_not_equal_string
-			conn.binary_operators['${typ1} < ${typ2}'] = binary_string_less_string
-			conn.binary_operators['${typ1} > ${typ2}'] = binary_string_greater_string
-			conn.binary_operators['${typ1} <= ${typ2}'] = binary_string_less_equal_string
-			conn.binary_operators['${typ1} >= ${typ2}'] = binary_string_greater_equal_string
 			conn.binary_operators['${typ1} || ${typ2}'] = binary_varchar_concat_varchar
 		}
 	}
@@ -267,78 +235,6 @@ fn binary_boolean_or_boolean(conn &Connection, a Value, b Value) !Value {
 	}
 
 	return b
-}
-
-fn binary_float_equal_float(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_f64()! == b.as_f64()!)
-}
-
-fn binary_int_equal_int(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_int() == b.as_int())
-}
-
-fn binary_string_equal_string(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.string_value() == b.string_value())
-}
-
-fn binary_float_not_equal_float(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_f64()! != b.as_f64()!)
-}
-
-fn binary_int_not_equal_int(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_int() != b.as_int())
-}
-
-fn binary_string_not_equal_string(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.string_value() != b.string_value())
-}
-
-fn binary_float_less_float(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_f64()! < b.as_f64()!)
-}
-
-fn binary_int_less_int(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_int() < b.as_int())
-}
-
-fn binary_string_less_string(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.string_value() < b.string_value())
-}
-
-fn binary_float_greater_float(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_f64()! > b.as_f64()!)
-}
-
-fn binary_int_greater_int(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_int() > b.as_int())
-}
-
-fn binary_string_greater_string(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.string_value() > b.string_value())
-}
-
-fn binary_float_less_equal_float(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_f64()! <= b.as_f64()!)
-}
-
-fn binary_int_less_equal_int(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_int() <= b.as_int())
-}
-
-fn binary_string_less_equal_string(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.string_value() <= b.string_value())
-}
-
-fn binary_float_greater_equal_float(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_f64()! >= b.as_f64()!)
-}
-
-fn binary_int_greater_equal_int(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.as_int() >= b.as_int())
-}
-
-fn binary_string_greater_equal_string(conn &Connection, a Value, b Value) !Value {
-	return new_boolean_value(a.string_value() >= b.string_value())
 }
 
 fn binary_smallint_plus_numeric(conn &Connection, a Value, b Value) !Value {

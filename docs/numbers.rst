@@ -3,6 +3,26 @@ Numbers
 
 .. contents::
 
+Literals
+--------
+
+Different forms have implicit types:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Description
+    - Examples
+    - Type
+
+  * - Integers
+    - ``123``, ``0``, ``-1234``
+    - ``BIGINT``
+
+  * - Floating-point (contains ``.``)
+    - ``12.3``, ``0.0001``, ``-12.0``
+    - ``DOUBLE PRECISION``
+
 Exact Numeric Types
 -------------------
 
@@ -97,6 +117,22 @@ Casting
     - ✅
     - ✅
     - ✅
+
+Arithmetic Operations
+---------------------
+
+Arithmetic operations (sometimes called binary operations) require the same type
+for both operands and return this same type. For example ``INTEGER + INTEGER``
+will result in an ``INTEGER``.
+
+When the type of the operands are different it will implicitly cast to the
+supertype of both. For numbers all supertypes are and in order: ``SMALLINT``,
+``INTEGER``, ``BIGINT``, ``REAL`` and ``DOUBLE PRECISION``.
+
+For example ``12 * 10.5`` is evaluated as the expression
+``BIGINT * DOUBLE PRECISION``. Since ``DOUBLE PRECISION`` is the only supertype
+for both, ``12`` must be implicitly cast to a ``DOUBLE PRECISION`` and the
+operation will yield as result as ``DOUBLE PRECISION``.
 
 Notes
 -----

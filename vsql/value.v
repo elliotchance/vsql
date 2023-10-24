@@ -205,7 +205,12 @@ pub fn new_date_value(ts string) !Value {
 }
 
 fn f64_string(x f64) string {
-	s := '${x:.6}'.trim('.').split('.')
+	mut n := '${x:.6}'
+	if n.contains('e') {
+		return n
+	}
+
+	s := n.trim('.').split('.')
 	if s.len == 1 {
 		return s[0]
 	}

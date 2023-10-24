@@ -81,6 +81,68 @@ fn (t SQLType) is_datetime() bool {
 	}
 }
 
+// A greater supertype means a literal value is allowed to be cast up to it.
+// This number is only relevent when multiple values are os the same is_* is
+// true (ie. a boolean cannot be case up to an integer).
+fn (t SQLType) supertype() i16 {
+	return match t {
+		.is_boolean { 0 }
+		.is_character { 0 }
+		.is_varchar { 1 }
+		.is_smallint { 0 }
+		.is_integer { 1 }
+		.is_bigint { 2 }
+		.is_real { 3 }
+		.is_double_precision { 4 }
+		.is_numeric { 5 }
+		// We don't cast date times in this way so setting all to 0 prevents any
+		// kind of casting.
+		.is_date { 0 }
+		.is_time_without_time_zone { 0 }
+		.is_time_with_time_zone { 0 }
+		.is_timestamp_without_time_zone { 0 }
+		.is_timestamp_with_time_zone { 0 }
+	}
+}
+
+// TODO(elliotchance): This can be removed when we don't need special handling
+//  for literals.
+fn most_specific_value(v1 Value, v2 Value) !Type {
+	mut t1 := v1.typ
+	mut t2 := v2.typ
+
+	if v1.typ.is_numeric_literal() {
+		t1 = if v1.str().contains('.') {
+			new_type('DOUBLE PRECISION', 0, 0)
+		} else {
+			new_type('INTEGER', 0, 0)
+		}
+	}
+
+	if v2.typ.is_numeric_literal() {
+		t2 = if v2.str().contains('.') {
+			new_type('DOUBLE PRECISION', 0, 0)
+		} else {
+			new_type('INTEGER', 0, 0)
+		}
+	}
+
+	return most_specific_type(t1, t2)
+}
+
+fn most_specific_type(t1 Type, t2 Type) !Type {
+	if t1.typ.is_number() && t2.typ.is_number() {
+		if t1.typ.supertype() > t2.typ.supertype() {
+			return t1
+		}
+
+		return t2
+	}
+
+	// TODO(elliotchance): Is this it the correct SQLSTATE?
+	return sqlstate_42601('no supertype of both ${t1} and ${t2}')
+}
+
 fn new_type(name string, size int, scale i16) Type {
 	name_without_size := name.split('(')[0]
 
@@ -193,6 +255,10 @@ fn (t Type) str() string {
 	}
 
 	return s
+}
+
+fn (t Type) is_numeric_literal() bool {
+	return t.typ == .is_numeric && t.size == 0
 }
 
 fn (t Type) uses_int() bool {

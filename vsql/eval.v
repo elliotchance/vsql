@@ -526,11 +526,90 @@ fn eval_substring(mut conn Connection, data Row, e SubstringExpr, params map[str
 	return new_varchar_value(value.string_value().substr(from, from + @for))
 }
 
-fn eval_binary(mut conn Connection, data Row, e BinaryExpr, params map[string]Value) !Value {
-	left := eval_as_value(mut conn, data, e.left, params)!
-	right := eval_as_value(mut conn, data, e.right, params)!
+fn eval_binary_comparison(e BinaryExpr, left Value, right Value) !Value {
+	cmp := compare(left, right)!
+	if cmp == .is_unknown {
+		return new_unknown_value()
+	}
 
-	key := '${left.typ.typ} ${e.op} ${right.typ.typ}'
+	return new_boolean_value(match e.op {
+		'=' {
+			cmp == .is_equal
+		}
+		'<>' {
+			cmp != .is_equal
+		}
+		'>' {
+			cmp == .is_greater
+		}
+		'<' {
+			cmp == .is_less
+		}
+		'>=' {
+			cmp == .is_greater || cmp == .is_equal
+		}
+		'<=' {
+			cmp == .is_less || cmp == .is_equal
+		}
+		else {
+			// This should not be possible, but it's to satisfy the required else.
+			panic('invalid binary operator: ${e.op}')
+		}
+	})
+}
+
+fn cast_approximate(v Value, want SQLType) !Value {
+	if v.typ.typ == .is_numeric && v.typ.size == 0 {
+		match want {
+			.is_double_precision {
+				return new_double_precision_value(v.as_f64()!)
+			}
+			.is_real {
+				return new_real_value(f32(v.as_f64()!))
+			}
+			.is_bigint {
+				return new_bigint_value(i64(v.as_f64()!))
+			}
+			.is_smallint {
+				return new_smallint_value(i16(v.as_f64()!))
+			}
+			.is_integer {
+				return new_integer_value(int(v.as_f64()!))
+			}
+			else {
+				// Let it fall through.
+			}
+		}
+	}
+
+	return v
+}
+
+fn eval_binary(mut conn Connection, data Row, e BinaryExpr, params map[string]Value) !Value {
+	mut left := eval_as_value(mut conn, data, e.left, params)!
+	mut right := eval_as_value(mut conn, data, e.right, params)!
+
+	// Comparison predicates should rely on compare(), this will handle any
+	// implicit casting.
+	if e.op == '=' || e.op == '<>' || e.op == '>' || e.op == '<' || e.op == '>=' || e.op == '<=' {
+		return eval_binary_comparison(e, left, right)
+	}
+
+	// There is a special case we need to deal with when using literals against
+	// other approximate types.
+	//
+	// TODO(elliotchance): This won't be needed when we properly implement
+	//  ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>
+	mut key := '${left.typ.typ} ${e.op} ${right.typ.typ}'
+	if left.typ.typ.is_number() && right.typ.typ.is_number() {
+		supertype := most_specific_value(left, right) or {
+			return sqlstate_42883('operator does not exist: ${key}')
+		}
+		left = cast_numeric(mut conn, cast_approximate(left, supertype.typ)!, supertype)!
+		right = cast_numeric(mut conn, cast_approximate(right, supertype.typ)!, supertype)!
+		key = '${supertype.typ} ${e.op} ${supertype.typ}'
+	}
+
 	if fnc := conn.binary_operators[key] {
 		op_fn := fnc as BinaryOperatorFunc
 		return op_fn(conn, left, right)

@@ -23,8 +23,7 @@ type Stmt = AlterSequenceStmt
 	| UpdateStmt
 
 // All possible expression entities.
-type Expr = BetweenExpr
-	| BinaryExpr
+type Expr = BinaryExpr
 	| CallExpr
 	| CastExpr
 	| CoalesceExpr
@@ -35,18 +34,16 @@ type Expr = BetweenExpr
 	| CurrentTimeExpr
 	| CurrentTimestampExpr
 	| Identifier
-	| LikeExpr
 	| LocalTimeExpr
 	| LocalTimestampExpr
 	| NextValueExpr
 	| NoExpr
-	| NullExpr
 	| NullIfExpr
 	| Parameter
+	| Predicate
 	| QualifiedAsteriskExpr
 	| QueryExpression
 	| RowExpr
-	| SimilarExpr
 	| SubstringExpr
 	| TrimExpr
 	| TruthExpr
@@ -60,7 +57,7 @@ fn (e Expr) str() string {
 
 fn (e Expr) pstr(params map[string]Value) string {
 	return match e {
-		BetweenExpr {
+		Predicate {
 			e.pstr(params)
 		}
 		BinaryExpr {
@@ -96,9 +93,6 @@ fn (e Expr) pstr(params map[string]Value) string {
 		Identifier {
 			e.str()
 		}
-		LikeExpr {
-			e.pstr(params)
-		}
 		LocalTimeExpr {
 			e.str()
 		}
@@ -110,9 +104,6 @@ fn (e Expr) pstr(params map[string]Value) string {
 		}
 		NoExpr {
 			e.str()
-		}
-		NullExpr {
-			e.pstr(params)
 		}
 		NullIfExpr {
 			e.pstr(params)
@@ -127,9 +118,6 @@ fn (e Expr) pstr(params map[string]Value) string {
 			e.pstr(params)
 		}
 		RowExpr {
-			e.pstr(params)
-		}
-		SimilarExpr {
 			e.pstr(params)
 		}
 		SubstringExpr {
@@ -249,24 +237,6 @@ struct UpdateStmt {
 	table_name Identifier
 	set        map[string]Expr
 	where      Expr
-}
-
-// NullExpr for "IS NULL" and "IS NOT NULL".
-struct NullExpr {
-	expr Expr
-	not  bool
-}
-
-fn (e NullExpr) str() string {
-	return e.pstr(map[string]Value{})
-}
-
-fn (e NullExpr) pstr(params map[string]Value) string {
-	if e.not {
-		return '${e.expr.pstr(params)} IS NOT NULL'
-	}
-
-	return '${e.expr.pstr(params)} IS NULL'
 }
 
 // IdentifierChain wraps a single string that contains the chain of one or more
@@ -619,11 +589,6 @@ fn (e CallExpr) pstr(params map[string]Value) string {
 	return '${e.function_name}(${args})'
 }
 
-struct ComparisonPredicatePart2 {
-	op   string
-	expr Expr
-}
-
 struct TableExpression {
 	from_clause  TableReference
 	where_clause Expr
@@ -698,26 +663,6 @@ struct CommitStmt {
 struct RollbackStmt {
 }
 
-struct BetweenExpr {
-	not       bool
-	symmetric bool
-	expr      Expr
-	left      Expr
-	right     Expr
-}
-
-fn (e BetweenExpr) pstr(params map[string]Value) string {
-	return '${e.expr.pstr(params)} ' + if e.not {
-		'NOT '
-	} else {
-		''
-	} + 'BETWEEN ' + if e.symmetric {
-		'SYMMETRIC '
-	} else {
-		''
-	} + '${e.left.pstr(params)} AND ${e.right.pstr(params)}'
-}
-
 struct QueryExpression {
 	body   SimpleTable
 	fetch  Expr
@@ -740,36 +685,6 @@ fn (e RowExpr) pstr(params map[string]Value) string {
 	}
 
 	return 'ROW(${values.join(', ')})'
-}
-
-// LikeExpr for "LIKE" and "NOT LIKE".
-struct LikeExpr {
-	left  Expr
-	right Expr
-	not   bool
-}
-
-fn (e LikeExpr) pstr(params map[string]Value) string {
-	if e.not {
-		return '${e.left.pstr(params)} NOT LIKE ${e.right.pstr(params)}'
-	}
-
-	return '${e.left.pstr(params)} LIKE ${e.right.pstr(params)}'
-}
-
-// SimilarExpr for "SIMILAR TO" and "NOT SIMILAR TO".
-struct SimilarExpr {
-	left  Expr
-	right Expr
-	not   bool
-}
-
-fn (e SimilarExpr) pstr(params map[string]Value) string {
-	if e.not {
-		return '${e.left.pstr(params)} NOT SIMILAR TO ${e.right.pstr(params)}'
-	}
-
-	return '${e.left.pstr(params)} SIMILAR TO ${e.right.pstr(params)}'
 }
 
 struct SortSpecification {
@@ -886,7 +801,7 @@ fn (e TrimExpr) pstr(params map[string]Value) string {
 	return 'TRIM(${e.specification} ${e.character.pstr(params)} FROM ${e.source.pstr(params)})'
 }
 
-// UntypedNullExpr (not to be confused with NullExpr) represents an untyped
+// UntypedNullExpr (not to be confused with NullPredicate) represents an untyped
 // NULL. This exists as an expression (rather than a special value) because it's
 // devoid of a type until it's used in an actual expression. Also, having it use
 // it;s own SQLType creates a lot of branches in the codebase that require "this

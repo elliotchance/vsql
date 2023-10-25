@@ -2,8 +2,6 @@
 
 module vsql
 
-import regex
-
 // A ExprOperation executes expressions for each row.
 struct ExprOperation {
 mut:
@@ -113,7 +111,10 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 		CountAllExpr, NextValueExpr {
 			return new_type('INTEGER', 0, 0)
 		}
-		BetweenExpr, NullExpr, TruthExpr, LikeExpr, SimilarExpr {
+		Predicate {
+			return e.eval_type(conn, data, params)
+		}
+		TruthExpr {
 			return new_type('BOOLEAN', 0, 0)
 		}
 		Parameter {
@@ -176,8 +177,8 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 
 fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value) !Value {
 	match e {
-		BetweenExpr {
-			return eval_between(mut conn, data, e, params)
+		Predicate {
+			return e.eval(mut conn, data, params)
 		}
 		BinaryExpr {
 			return eval_binary(mut conn, data, e, params)
@@ -197,23 +198,14 @@ fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value)
 		Identifier {
 			return eval_identifier(data, e)
 		}
-		LikeExpr {
-			return eval_like(mut conn, data, e, params)
-		}
 		NextValueExpr {
 			return eval_next_value(mut conn, data, e, params)
-		}
-		NullExpr {
-			return eval_null(mut conn, data, e, params)
 		}
 		NullIfExpr {
 			return eval_nullif(mut conn, data, e, params)
 		}
 		Parameter {
 			return params[e.name] or { return sqlstate_42p02(e.name) }
-		}
-		SimilarExpr {
-			return eval_similar(mut conn, data, e, params)
 		}
 		SubstringExpr {
 			return eval_substring(mut conn, data, e, params)
@@ -376,16 +368,6 @@ fn eval_next_value(mut conn Connection, data Row, e NextValueExpr, params map[st
 	return new_bigint_value(next)
 }
 
-fn eval_null(mut conn Connection, data Row, e NullExpr, params map[string]Value) !Value {
-	value := eval_as_value(mut conn, data, e.expr, params)!
-
-	if e.not {
-		return new_boolean_value(!value.is_null)
-	}
-
-	return new_boolean_value(value.is_null)
-}
-
 fn eval_nullif(mut conn Connection, data Row, e NullIfExpr, params map[string]Value) !Value {
 	a := eval_as_value(mut conn, data, e.a, params)!
 	b := eval_as_value(mut conn, data, e.b, params)!
@@ -473,28 +455,6 @@ fn eval_trim(mut conn Connection, data Row, e TrimExpr, params map[string]Value)
 	return new_varchar_value(source.string_value().trim(character.string_value()))
 }
 
-fn eval_like(mut conn Connection, data Row, e LikeExpr, params map[string]Value) !Value {
-	left := eval_as_value(mut conn, data, e.left, params)!
-	right := eval_as_value(mut conn, data, e.right, params)!
-
-	// Make sure we escape any regexp characters.
-	escaped_regex := right.string_value().replace('+', '\\+').replace('?', '\\?').replace('*',
-		'\\*').replace('|', '\\|').replace('.', '\\.').replace('(', '\\(').replace(')',
-		'\\)').replace('[', '\\[').replace('{', '\\{').replace('_', '.').replace('%',
-		'.*')
-
-	mut re := regex.regex_opt('^${escaped_regex}$') or {
-		return error('cannot compile regexp: ^${escaped_regex}$: ${err}')
-	}
-	result := re.matches_string(left.string_value())
-
-	if e.not {
-		return new_boolean_value(!result)
-	}
-
-	return new_boolean_value(result)
-}
-
 fn eval_substring(mut conn Connection, data Row, e SubstringExpr, params map[string]Value) !Value {
 	value := eval_as_value(mut conn, data, e.value, params)!
 	from := int((eval_as_value(mut conn, data, e.from, params)!).as_int() - 1)
@@ -524,38 +484,6 @@ fn eval_substring(mut conn Connection, data Row, e SubstringExpr, params map[str
 	}
 
 	return new_varchar_value(value.string_value().substr(from, from + @for))
-}
-
-fn eval_binary_comparison(e BinaryExpr, left Value, right Value) !Value {
-	cmp := compare(left, right)!
-	if cmp == .is_unknown {
-		return new_unknown_value()
-	}
-
-	return new_boolean_value(match e.op {
-		'=' {
-			cmp == .is_equal
-		}
-		'<>' {
-			cmp != .is_equal
-		}
-		'>' {
-			cmp == .is_greater
-		}
-		'<' {
-			cmp == .is_less
-		}
-		'>=' {
-			cmp == .is_greater || cmp == .is_equal
-		}
-		'<=' {
-			cmp == .is_less || cmp == .is_equal
-		}
-		else {
-			// This should not be possible, but it's to satisfy the required else.
-			panic('invalid binary operator: ${e.op}')
-		}
-	})
 }
 
 fn cast_approximate(v Value, want SQLType) !Value {
@@ -588,12 +516,6 @@ fn cast_approximate(v Value, want SQLType) !Value {
 fn eval_binary(mut conn Connection, data Row, e BinaryExpr, params map[string]Value) !Value {
 	mut left := eval_as_value(mut conn, data, e.left, params)!
 	mut right := eval_as_value(mut conn, data, e.right, params)!
-
-	// Comparison predicates should rely on compare(), this will handle any
-	// implicit casting.
-	if e.op == '=' || e.op == '<>' || e.op == '>' || e.op == '<' || e.op == '>=' || e.op == '<=' {
-		return eval_binary_comparison(e, left, right)
-	}
 
 	// There is a special case we need to deal with when using literals against
 	// other approximate types.
@@ -628,52 +550,6 @@ fn eval_unary(mut conn Connection, data Row, e UnaryExpr, params map[string]Valu
 	}
 
 	return sqlstate_42883('operator does not exist: ${key}')
-}
-
-fn eval_between(mut conn Connection, data Row, e BetweenExpr, params map[string]Value) !Value {
-	expr := eval_as_value(mut conn, data, e.expr, params)!
-	mut left := eval_as_value(mut conn, data, e.left, params)!
-	mut right := eval_as_value(mut conn, data, e.right, params)!
-
-	// SYMMETRIC operands might need to be swapped.
-	cmp := compare(left, right)!
-	if e.symmetric && cmp == .is_greater {
-		left, right = right, left
-	}
-
-	lower := compare(expr, left)!
-	upper := compare(expr, right)!
-
-	if lower == .is_unknown || upper == .is_unknown {
-		return new_unknown_value()
-	}
-
-	mut result := (lower == .is_greater || lower == .is_equal)
-		&& (upper == .is_less || upper == .is_equal)
-
-	if e.not {
-		result = !result
-	}
-
-	return new_boolean_value(result)
-}
-
-fn eval_similar(mut conn Connection, data Row, e SimilarExpr, params map[string]Value) !Value {
-	left := eval_as_value(mut conn, data, e.left, params)!
-	right := eval_as_value(mut conn, data, e.right, params)!
-
-	regexp := '^${right.string_value().replace('.', '\\.').replace('_', '.').replace('%',
-		'.*')}$'
-	mut re := regex.regex_opt(regexp) or {
-		return error('cannot compile regexp: ${regexp}: ${err}')
-	}
-	result := re.matches_string(left.string_value())
-
-	if e.not {
-		return new_boolean_value(!result)
-	}
-
-	return new_boolean_value(result)
 }
 
 // eval_as_nullable_value is a broader version of eval_as_value that also takes

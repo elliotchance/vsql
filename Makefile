@@ -56,10 +56,8 @@ clean-docs:
 
 # Grammar (BNF)
 
-grammar.bnf:
+grammar:
 	grep "//~" -r vsql | cut -d~ -f2 > grammar.bnf
-
-grammar: grammar.bnf
 	python3 generate-grammar.py
 	v fmt -w vsql/grammar.v
 

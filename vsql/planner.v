@@ -112,14 +112,16 @@ fn create_select_plan_without_join(body SelectStmt, from_clause TablePrimary, of
 				table = catalog.storage.tables[table_name_id]
 
 				// This is a special case to handle "PRIMARY KEY = INTEGER".
-				if table.primary_key.len > 0 && where is BinaryExpr {
-					left := where.left
-					right := where.right
-					if where.op == '=' && left is Identifier {
-						if left.sub_entity_name == table.primary_key[0] {
-							covered_by_pk = true
-							plan.operations << new_primary_key_operation(table, right,
-								right, params, c)
+				if table.primary_key.len > 0 && where is Predicate {
+					if where is ComparisonPredicate {
+						left := where.left
+						right := where.right
+						if where.op == '=' && left is Identifier {
+							if left.sub_entity_name == table.primary_key[0] {
+								covered_by_pk = true
+								plan.operations << new_primary_key_operation(table, right,
+									right, params, c)
+							}
 						}
 					}
 				}

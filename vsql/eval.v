@@ -585,6 +585,56 @@ fn cast_approximate(v Value, want SQLType) !Value {
 	return v
 }
 
+fn eval_binary_arithmetic(mut conn Connection, e BinaryExpr, left Value, right Value) !Value {
+	// Case 1: We have a compatible operator.
+	key := '${left.typ.typ} ${e.op} ${right.typ.typ}'
+	if fnc := conn.binary_operators[key] {
+		op_fn := fnc as BinaryOperatorFunc
+		return op_fn(conn, left, right)
+	}
+
+	mut a := left
+	mut b := right
+	left_is_literal := a.typ.is_numeric_literal()
+	right_is_literal := b.typ.is_numeric_literal()
+
+	// Case 2: Neither operand is a literal, but they are differnet types. We need
+	// to find a supertype between the two.
+	if !left_is_literal && !right_is_literal && a.typ.typ != b.typ.typ {
+		supertype := most_specific_value(a, b) or {
+			return sqlstate_42883('operator does not exist: ${key}')
+		}
+
+		if a.typ.typ != supertype.typ {
+			a = cast_numeric(mut conn, a, supertype)!
+		}
+
+		if b.typ.typ != supertype.typ {
+			b = cast_numeric(mut conn, b, supertype)!
+		}
+
+		return eval_binary_arithmetic(mut conn, e, a, b)
+	}
+
+	// Case 3: If one side is a literal we must to cast that literal to the same
+	// type of the other side.
+	//
+	// If both sides are literals it would have matched above since both sides
+	// would be NUMERIC. Although we use != (xor) just to prevent an infinte loop
+	// if that operator would not exist.
+	if left_is_literal != right_is_literal {
+		if left_is_literal {
+			a = cast_numeric(mut conn, a, b.typ)!
+		} else {
+			b = cast_numeric(mut conn, b, a.typ)!
+		}
+
+		return eval_binary_arithmetic(mut conn, e, a, b)
+	}
+
+	return sqlstate_42883('operator does not exist: ${key}')
+}
+
 fn eval_binary(mut conn Connection, data Row, e BinaryExpr, params map[string]Value) !Value {
 	mut left := eval_as_value(mut conn, data, e.left, params)!
 	mut right := eval_as_value(mut conn, data, e.right, params)!
@@ -595,20 +645,24 @@ fn eval_binary(mut conn Connection, data Row, e BinaryExpr, params map[string]Va
 		return eval_binary_comparison(e, left, right)
 	}
 
+	if e.op == '+' || e.op == '-' || e.op == '*' || e.op == '/' {
+		return eval_binary_arithmetic(mut conn, e, left, right)
+	}
+
 	// There is a special case we need to deal with when using literals against
 	// other approximate types.
 	//
 	// TODO(elliotchance): This won't be needed when we properly implement
 	//  ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>
 	mut key := '${left.typ.typ} ${e.op} ${right.typ.typ}'
-	if left.typ.typ.is_number() && right.typ.typ.is_number() {
-		supertype := most_specific_value(left, right) or {
-			return sqlstate_42883('operator does not exist: ${key}')
-		}
-		left = cast_numeric(mut conn, cast_approximate(left, supertype.typ)!, supertype)!
-		right = cast_numeric(mut conn, cast_approximate(right, supertype.typ)!, supertype)!
-		key = '${supertype.typ} ${e.op} ${supertype.typ}'
-	}
+	// if left.typ.typ.is_number() && right.typ.typ.is_number() {
+	// 	supertype := most_specific_value(left, right) or {
+	// 		return sqlstate_42883('operator does not exist: ${key}')
+	// 	}
+	// 	left = cast_numeric(mut conn, cast_approximate(left, supertype.typ)!, supertype)!
+	// 	right = cast_numeric(mut conn, cast_approximate(right, supertype.typ)!, supertype)!
+	// 	key = '${supertype.typ} ${e.op} ${supertype.typ}'
+	// }
 
 	if fnc := conn.binary_operators[key] {
 		op_fn := fnc as BinaryOperatorFunc

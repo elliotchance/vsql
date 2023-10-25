@@ -292,7 +292,7 @@ def parse_grammar(grammar):
             parts = line.split('/*')
             full_line += parts[0] + "::= "
             grammar_types[parts[0].strip()] = parts[1].split('*/')[0].strip()
-        elif line == '':
+        elif line.strip() == '':
             if full_line != '':
                 lines.append(full_line.strip())
                 full_line = ''

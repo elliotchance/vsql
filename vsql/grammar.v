@@ -9668,11 +9668,6 @@ fn get_grammar() map[string]EarleyRule {
 			rule: rule_unsigned_integer_
 		},
 	]}
-	rule_time_fractional_seconds_precision_.productions << &EarleyProduction{[
-		&EarleyRuleOrString{
-			rule: rule_unsigned_integer_
-		},
-	]}
 
 	rule_time_literal_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{

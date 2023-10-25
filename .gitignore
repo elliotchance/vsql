@@ -4,5 +4,6 @@ vsql-server
 *.vsql
 .vscode
 .vlang_tmp_build/
+grammar.bnf
 
 scripts/generate-v-client-library-docs

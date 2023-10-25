@@ -4,7 +4,9 @@
 
 module vsql
 
-type EarleyValue = BetweenExpr
+type EarleyValue = BetweenPredicate
+	| CharacterLikePredicate
+	| ComparisonPredicate
 	| ComparisonPredicatePart2
 	| Correlation
 	| CreateTableStmt
@@ -13,7 +15,7 @@ type EarleyValue = BetweenExpr
 	| Identifier
 	| IdentifierChain
 	| InsertStmt
-	| LikeExpr
+	| NullPredicate
 	| QualifiedAsteriskExpr
 	| QualifiedJoin
 	| QueryExpression
@@ -24,7 +26,7 @@ type EarleyValue = BetweenExpr
 	| SequenceGeneratorOption
 	| SequenceGeneratorRestartOption
 	| SequenceGeneratorStartWithOption
-	| SimilarExpr
+	| SimilarPredicate
 	| SimpleTable
 	| SortSpecification
 	| Stmt
@@ -1087,6 +1089,21 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_predefined_type_ := &EarleyRule{
 		name: '<predefined type>'
+	}
+	mut rule_predicate_1_ := &EarleyRule{
+		name: '<predicate: 1>'
+	}
+	mut rule_predicate_2_ := &EarleyRule{
+		name: '<predicate: 2>'
+	}
+	mut rule_predicate_3_ := &EarleyRule{
+		name: '<predicate: 3>'
+	}
+	mut rule_predicate_4_ := &EarleyRule{
+		name: '<predicate: 4>'
+	}
+	mut rule_predicate_5_ := &EarleyRule{
+		name: '<predicate: 5>'
 	}
 	mut rule_predicate_ := &EarleyRule{
 		name: '<predicate>'
@@ -7965,29 +7982,59 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
-	rule_predicate_.productions << &EarleyProduction{[
+	rule_predicate_1_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_comparison_predicate_
 		},
 	]}
-	rule_predicate_.productions << &EarleyProduction{[
+
+	rule_predicate_2_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_between_predicate_
 		},
 	]}
-	rule_predicate_.productions << &EarleyProduction{[
+
+	rule_predicate_3_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_like_predicate_
 		},
 	]}
-	rule_predicate_.productions << &EarleyProduction{[
+
+	rule_predicate_4_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_similar_predicate_
 		},
 	]}
-	rule_predicate_.productions << &EarleyProduction{[
+
+	rule_predicate_5_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_null_predicate_
+		},
+	]}
+
+	rule_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_predicate_1_
+		},
+	]}
+	rule_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_predicate_2_
+		},
+	]}
+	rule_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_predicate_3_
+		},
+	]}
+	rule_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_predicate_4_
+		},
+	]}
+	rule_predicate_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_predicate_5_
 		},
 	]}
 
@@ -13356,6 +13403,11 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<power function>'] = rule_power_function_
 	rules['<precision>'] = rule_precision_
 	rules['<predefined type>'] = rule_predefined_type_
+	rules['<predicate: 1>'] = rule_predicate_1_
+	rules['<predicate: 2>'] = rule_predicate_2_
+	rules['<predicate: 3>'] = rule_predicate_3_
+	rules['<predicate: 4>'] = rule_predicate_4_
+	rules['<predicate: 5>'] = rule_predicate_5_
 	rules['<predicate>'] = rule_predicate_
 	rules['<preparable SQL data statement>'] = rule_preparable_sql_data_statement_
 	rules['<preparable SQL schema statement>'] = rule_preparable_sql_schema_statement_
@@ -14121,7 +14173,7 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		}
 		'<between predicate: 1>' {
 			return [
-				EarleyValue(parse_between(children[0] as Expr, children[1] as BetweenExpr)!),
+				EarleyValue(parse_between(children[0] as Expr, children[1] as BetweenPredicate)!),
 			]
 		}
 		'<boolean factor: 2>' {
@@ -14193,7 +14245,7 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		}
 		'<character like predicate: 1>' {
 			return [
-				EarleyValue(parse_like_pred(children[0] as Expr, children[1] as LikeExpr)!),
+				EarleyValue(parse_like_pred(children[0] as Expr, children[1] as CharacterLikePredicate)!),
 			]
 		}
 		'<character position expression: 1>' {
@@ -14665,6 +14717,25 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 				EarleyValue(parse_power(children[2] as Expr, children[4] as Expr)!),
 			]
 		}
+		'<predicate: 1>' {
+			return [
+				EarleyValue(parse_predicate_1(children[0] as ComparisonPredicate)!),
+			]
+		}
+		'<predicate: 2>' {
+			return [EarleyValue(parse_predicate_2(children[0] as BetweenPredicate)!)]
+		}
+		'<predicate: 3>' {
+			return [
+				EarleyValue(parse_predicate_3(children[0] as CharacterLikePredicate)!),
+			]
+		}
+		'<predicate: 4>' {
+			return [EarleyValue(parse_predicate_4(children[0] as SimilarPredicate)!)]
+		}
+		'<predicate: 5>' {
+			return [EarleyValue(parse_predicate_5(children[0] as NullPredicate)!)]
+		}
 		'<qualified asterisk: 1>' {
 			return [
 				EarleyValue(parse_qualified_asterisk(children[0] as IdentifierChain, children[2] as string)!),
@@ -14880,7 +14951,7 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		}
 		'<similar predicate: 1>' {
 			return [
-				EarleyValue(parse_similar_pred(children[0] as Expr, children[1] as SimilarExpr)!),
+				EarleyValue(parse_similar_pred(children[0] as Expr, children[1] as SimilarPredicate)!),
 			]
 		}
 		'<sort specification list: 1>' {

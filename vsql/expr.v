@@ -12,10 +12,8 @@ fn expr_is_agg(conn &Connection, e Expr, row Row, params map[string]Value) !bool
 				return nested_agg_unsupported(e)
 			}
 		}
-		BetweenExpr {
-			if expr_is_agg(conn, e.left, row, params)! || expr_is_agg(conn, e.right, row, params)! {
-				return nested_agg_unsupported(e)
-			}
+		Predicate {
+			return e.is_agg(conn, row, params)
 		}
 		CallExpr {
 			mut arg_types := []Type{}
@@ -43,16 +41,6 @@ fn expr_is_agg(conn &Connection, e Expr, row Row, params map[string]Value) !bool
 		UntypedNullExpr, NextValueExpr, CurrentCatalogExpr, CurrentSchemaExpr {
 			return false
 		}
-		LikeExpr {
-			if expr_is_agg(conn, e.left, row, params)! {
-				return nested_agg_unsupported(e)
-			}
-		}
-		NullExpr {
-			if expr_is_agg(conn, e.expr, row, params)! {
-				return nested_agg_unsupported(e)
-			}
-		}
 		CoalesceExpr {
 			for expr in e.exprs {
 				if expr_is_agg(conn, expr, row, params)! {
@@ -67,11 +55,6 @@ fn expr_is_agg(conn &Connection, e Expr, row Row, params map[string]Value) !bool
 		}
 		TruthExpr {
 			if expr_is_agg(conn, e.expr, row, params)! {
-				return nested_agg_unsupported(e)
-			}
-		}
-		SimilarExpr {
-			if expr_is_agg(conn, e.left, row, params)! {
 				return nested_agg_unsupported(e)
 			}
 		}
@@ -124,9 +107,8 @@ fn resolve_identifiers(conn &Connection, e Expr, tables map[string]Table) !Expr 
 			return BinaryExpr{resolve_identifiers(conn, e.left, tables)!, e.op, resolve_identifiers(conn,
 				e.right, tables)!}
 		}
-		BetweenExpr {
-			return BetweenExpr{e.not, e.symmetric, resolve_identifiers(conn, e.expr, tables)!, resolve_identifiers(conn,
-				e.left, tables)!, resolve_identifiers(conn, e.right, tables)!}
+		Predicate {
+			return e.resolve_identifiers(conn, tables)
 		}
 		CallExpr {
 			return CallExpr{e.function_name, resolve_identifiers_exprs(conn, e.args, tables)!}
@@ -148,13 +130,6 @@ fn resolve_identifiers(conn &Connection, e Expr, tables map[string]Table) !Expr 
 			// TODO(elliotchance): Need tests for table qualifier not existing.
 			return conn.resolve_identifier(e)
 		}
-		LikeExpr {
-			return LikeExpr{resolve_identifiers(conn, e.left, tables)!, resolve_identifiers(conn,
-				e.right, tables)!, e.not}
-		}
-		NullExpr {
-			return NullExpr{resolve_identifiers(conn, e.expr, tables)!, e.not}
-		}
 		NullIfExpr {
 			return NullIfExpr{resolve_identifiers(conn, e.a, tables)!, resolve_identifiers(conn,
 				e.b, tables)!}
@@ -167,10 +142,6 @@ fn resolve_identifiers(conn &Connection, e Expr, tables map[string]Table) !Expr 
 		}
 		CoalesceExpr {
 			return CoalesceExpr{e.exprs.map(resolve_identifiers(conn, it, tables)!)}
-		}
-		SimilarExpr {
-			return SimilarExpr{resolve_identifiers(conn, e.left, tables)!, resolve_identifiers(conn,
-				e.right, tables)!, e.not}
 		}
 		SubstringExpr {
 			return SubstringExpr{resolve_identifiers(conn, e.value, tables)!, resolve_identifiers(conn,

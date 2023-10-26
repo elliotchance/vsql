@@ -91,3 +91,7 @@ fn parse_time_literal(v Value) !Value {
 fn parse_timestamp_literal(v Value) !Value {
 	return new_timestamp_value(v.string_value())
 }
+
+fn parse_value_to_expr(v Value) !Expr {
+	return v
+}

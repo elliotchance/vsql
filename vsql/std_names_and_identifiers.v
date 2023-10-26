@@ -41,7 +41,7 @@ module vsql
 //~ <column name> /* Identifier */ ::=
 //~     <identifier>   -> column_name
 //~
-//~ <host parameter name> /* Expr */ ::=
+//~ <host parameter name> /* GeneralValueSpecification */ ::=
 //~     <colon> <identifier>   -> host_parameter_name
 //~
 //~ <correlation name> /* Identifier */ ::=
@@ -49,6 +49,32 @@ module vsql
 //~
 //~ <sequence generator name> /* Identifier */ ::=
 //~     <schema qualified name>   -> sequence_generator_name
+
+// HostParameterName is :foo. The colon is not included in the name. Parameters
+// are case sensitive.
+struct HostParameterName {
+	name string
+}
+
+fn (e HostParameterName) pstr(params map[string]Value) string {
+	p := params[e.name]
+
+	if p.typ.typ != .is_numeric && (p.typ.uses_string() || p.typ.uses_time()) {
+		return '\'${p.str()}\''
+	}
+
+	return p.str()
+}
+
+fn (e HostParameterName) eval(mut conn Connection, data Row, params map[string]Value) !Value {
+	return params[e.name] or { return sqlstate_42p02(e.name) }
+}
+
+fn (e HostParameterName) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
+	p := params[e.name] or { return sqlstate_42p02(e.name) }
+
+	return eval_as_type(conn, data, p, params)
+}
 
 fn parse_table_name(identifier IdentifierChain) !Identifier {
 	return new_table_identifier(identifier.identifier)
@@ -74,8 +100,8 @@ fn parse_column_name(column_name IdentifierChain) !Identifier {
 	return new_column_identifier(column_name.identifier)
 }
 
-fn parse_host_parameter_name(name IdentifierChain) !Expr {
-	return Parameter{name.identifier}
+fn parse_host_parameter_name(name IdentifierChain) !GeneralValueSpecification {
+	return HostParameterName{name.identifier}
 }
 
 fn parse_correlation_name(identifier IdentifierChain) !Identifier {

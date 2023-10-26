@@ -12,7 +12,7 @@ module vsql
 //~     <left paren> <value expression> <right paren>   -> expr
 //~
 //~ <nonparenthesized value expression primary> /* Expr */ ::=
-//~     <unsigned value specification>
+//~     <unsigned value specification>   -> nonparenthesized_value_expression_primary_1
 //~   | <column reference>               -> identifier_to_expr
 //~   | <set function specification>
 //~   | <routine invocation>
@@ -26,4 +26,8 @@ fn parse_expr(e Expr) !Expr {
 
 fn parse_identifier_to_expr(name Identifier) !Expr {
 	return name
+}
+
+fn parse_nonparenthesized_value_expression_primary_1(e UnsignedValueSpecification) !Expr {
+	return e
 }

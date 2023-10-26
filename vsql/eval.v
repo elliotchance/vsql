@@ -111,7 +111,7 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 		CountAllExpr, NextValueExpr {
 			return new_type('INTEGER', 0, 0)
 		}
-		Predicate {
+		Predicate, DatetimeValueFunction {
 			return e.eval_type(conn, data, params)
 		}
 		TruthExpr {
@@ -146,21 +146,6 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 		NoExpr, QualifiedAsteriskExpr, QueryExpression, RowExpr {
 			return sqlstate_42601('invalid expression provided: ${e.str()}')
 		}
-		CurrentDateExpr {
-			return new_type('DATE', 0, 0)
-		}
-		CurrentTimeExpr {
-			return new_type('TIME WITH TIME ZONE', 0, 0)
-		}
-		CurrentTimestampExpr {
-			return new_type('TIMESTAMP WITH TIME ZONE', 0, 0)
-		}
-		LocalTimeExpr {
-			return new_type('TIME WITHOUT TIME ZONE', 0, 0)
-		}
-		LocalTimestampExpr {
-			return new_type('TIMESTAMP WITHOUT TIME ZONE', 0, 0)
-		}
 		UnsignedValueSpecification {
 			return e.eval_type(conn, data, params)
 		}
@@ -175,7 +160,7 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 
 fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value) !Value {
 	match e {
-		Predicate, UnsignedValueSpecification {
+		Predicate, UnsignedValueSpecification, DatetimeValueFunction {
 			return e.eval(mut conn, data, params)
 		}
 		BinaryExpr {
@@ -218,43 +203,6 @@ fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value)
 			// QueryExpression will have already been resolved to a
 			// ValuesOperation.
 			return sqlstate_42601('missing or invalid expression provided')
-		}
-		CurrentDateExpr {
-			now, _ := conn.now()
-
-			return new_date_value(now.strftime('%Y-%m-%d'))
-		}
-		CurrentTimeExpr {
-			if e.prec > 6 {
-				return sqlstate_42601('${e}: cannot have precision greater than 6')
-			}
-
-			return new_time_value(time_value(conn, e.prec, true))
-		}
-		CurrentTimestampExpr {
-			if e.prec > 6 {
-				return sqlstate_42601('${e}: cannot have precision greater than 6')
-			}
-
-			now, _ := conn.now()
-
-			return new_timestamp_value(now.strftime('%Y-%m-%d ') + time_value(conn, e.prec, true))
-		}
-		LocalTimeExpr {
-			if e.prec > 6 {
-				return sqlstate_42601('${e}: cannot have precision greater than 6')
-			}
-
-			return new_time_value(time_value(conn, e.prec, false))
-		}
-		LocalTimestampExpr {
-			if e.prec > 6 {
-				return sqlstate_42601('${e}: cannot have precision greater than 6')
-			}
-
-			now, _ := conn.now()
-
-			return new_timestamp_value(now.strftime('%Y-%m-%d ') + time_value(conn, e.prec, false))
 		}
 		TrimExpr {
 			return eval_trim(mut conn, data, e, params)

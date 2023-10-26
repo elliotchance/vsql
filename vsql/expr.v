@@ -12,7 +12,7 @@ fn expr_is_agg(conn &Connection, e Expr, row Row, params map[string]Value) !bool
 				return nested_agg_unsupported(e)
 			}
 		}
-		Predicate, UnsignedValueSpecification {
+		Predicate, UnsignedValueSpecification, DatetimeValueFunction {
 			return e.is_agg(conn, row, params)
 		}
 		CallExpr {
@@ -37,7 +37,6 @@ fn expr_is_agg(conn &Connection, e Expr, row Row, params map[string]Value) !bool
 			return true
 		}
 		Identifier, Value, NoExpr, RowExpr, QualifiedAsteriskExpr, QueryExpression,
-		CurrentDateExpr, CurrentTimeExpr, CurrentTimestampExpr, LocalTimeExpr, LocalTimestampExpr,
 		UntypedNullExpr, NextValueExpr {
 			return false
 		}
@@ -107,7 +106,7 @@ fn resolve_identifiers(conn &Connection, e Expr, tables map[string]Table) !Expr 
 			return BinaryExpr{resolve_identifiers(conn, e.left, tables)!, e.op, resolve_identifiers(conn,
 				e.right, tables)!}
 		}
-		Predicate, UnsignedValueSpecification {
+		Predicate, UnsignedValueSpecification, DatetimeValueFunction {
 			return e.resolve_identifiers(conn, tables)
 		}
 		CallExpr {
@@ -159,8 +158,7 @@ fn resolve_identifiers(conn &Connection, e Expr, tables map[string]Table) !Expr 
 		QualifiedAsteriskExpr {
 			return QualifiedAsteriskExpr{resolve_identifiers(conn, e.table_name, tables)! as Identifier}
 		}
-		CountAllExpr, Value, NoExpr, QueryExpression, CurrentDateExpr, CurrentTimeExpr,
-		CurrentTimestampExpr, LocalTimeExpr, LocalTimestampExpr, UntypedNullExpr {
+		CountAllExpr, Value, NoExpr, QueryExpression, UntypedNullExpr {
 			// These don't have any Expr properties to recurse.
 			return e
 		}

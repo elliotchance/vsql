@@ -28,9 +28,7 @@ type Expr = BinaryExpr
 	| CastExpr
 	| CoalesceExpr
 	| CountAllExpr
-	| CurrentCatalogExpr
 	| CurrentDateExpr
-	| CurrentSchemaExpr
 	| CurrentTimeExpr
 	| CurrentTimestampExpr
 	| Identifier
@@ -39,7 +37,6 @@ type Expr = BinaryExpr
 	| NextValueExpr
 	| NoExpr
 	| NullIfExpr
-	| Parameter
 	| Predicate
 	| QualifiedAsteriskExpr
 	| QueryExpression
@@ -48,6 +45,7 @@ type Expr = BinaryExpr
 	| TrimExpr
 	| TruthExpr
 	| UnaryExpr
+	| UnsignedValueSpecification
 	| UntypedNullExpr
 	| Value
 
@@ -57,7 +55,7 @@ fn (e Expr) str() string {
 
 fn (e Expr) pstr(params map[string]Value) string {
 	return match e {
-		Predicate {
+		Predicate, UnsignedValueSpecification {
 			e.pstr(params)
 		}
 		BinaryExpr {
@@ -74,12 +72,6 @@ fn (e Expr) pstr(params map[string]Value) string {
 		}
 		CountAllExpr {
 			e.pstr(params)
-		}
-		CurrentCatalogExpr {
-			e.str()
-		}
-		CurrentSchemaExpr {
-			e.str()
 		}
 		CurrentDateExpr {
 			e.str()
@@ -106,9 +98,6 @@ fn (e Expr) pstr(params map[string]Value) string {
 			e.str()
 		}
 		NullIfExpr {
-			e.pstr(params)
-		}
-		Parameter {
 			e.pstr(params)
 		}
 		QualifiedAsteriskExpr {
@@ -628,26 +617,6 @@ fn (c Correlation) str() string {
 	return s
 }
 
-// Parameter is :foo. The colon is not included in the name. Parameters are case
-// sensitive.
-struct Parameter {
-	name string
-}
-
-fn (e Parameter) str() string {
-	return ':${e.name}'
-}
-
-fn (e Parameter) pstr(params map[string]Value) string {
-	p := params[e.name]
-
-	if p.typ.typ != .is_numeric && (p.typ.uses_string() || p.typ.uses_time()) {
-		return '\'${p.str()}\''
-	}
-
-	return p.str()
-}
-
 struct UniqueConstraintDefinition {
 	columns []Identifier
 }
@@ -907,22 +876,6 @@ struct NextValueExpr {
 
 fn (e NextValueExpr) str() string {
 	return 'NEXT VALUE FOR ${e.name}'
-}
-
-// CURRENT_CATALOG
-struct CurrentCatalogExpr {
-}
-
-fn (e CurrentCatalogExpr) str() string {
-	return 'CURRENT_CATALOG'
-}
-
-// CURRENT_SCHEMA
-struct CurrentSchemaExpr {
-}
-
-fn (e CurrentSchemaExpr) str() string {
-	return 'CURRENT_SCHEMA'
 }
 
 // SET SCHEMA

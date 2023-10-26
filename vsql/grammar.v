@@ -12,6 +12,7 @@ type EarleyValue = BetweenPredicate
 	| CreateTableStmt
 	| DerivedColumn
 	| Expr
+	| GeneralValueSpecification
 	| Identifier
 	| IdentifierChain
 	| InsertStmt
@@ -36,6 +37,7 @@ type EarleyValue = BetweenPredicate
 	| TablePrimaryBody
 	| TableReference
 	| Type
+	| UnsignedValueSpecification
 	| Value
 	| []Expr
 	| []Identifier
@@ -958,6 +960,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_non_reserved_word_ := &EarleyRule{
 		name: '<non-reserved word>'
 	}
+	mut rule_nonparenthesized_value_expression_primary_1_ := &EarleyRule{
+		name: '<nonparenthesized value expression primary: 1>'
+	}
 	mut rule_nonparenthesized_value_expression_primary_2_ := &EarleyRule{
 		name: '<nonparenthesized value expression primary: 2>'
 	}
@@ -1444,6 +1449,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_simple_table_ := &EarleyRule{
 		name: '<simple table>'
 	}
+	mut rule_simple_value_specification_2_ := &EarleyRule{
+		name: '<simple value specification: 2>'
+	}
 	mut rule_simple_value_specification_ := &EarleyRule{
 		name: '<simple value specification>'
 	}
@@ -1753,6 +1761,9 @@ fn get_grammar() map[string]EarleyRule {
 	mut rule_unsigned_value_specification_1_ := &EarleyRule{
 		name: '<unsigned value specification: 1>'
 	}
+	mut rule_unsigned_value_specification_2_ := &EarleyRule{
+		name: '<unsigned value specification: 2>'
+	}
 	mut rule_unsigned_value_specification_ := &EarleyRule{
 		name: '<unsigned value specification>'
 	}
@@ -1785,6 +1796,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_value_expression_ := &EarleyRule{
 		name: '<value expression>'
+	}
+	mut rule_value_specification_2_ := &EarleyRule{
+		name: '<value specification: 2>'
 	}
 	mut rule_value_specification_ := &EarleyRule{
 		name: '<value specification>'
@@ -7508,6 +7522,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_nonparenthesized_value_expression_primary_1_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_unsigned_value_specification_
+		},
+	]}
+
 	rule_nonparenthesized_value_expression_primary_2_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_column_reference_
@@ -7516,7 +7536,7 @@ fn get_grammar() map[string]EarleyRule {
 
 	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_unsigned_value_specification_
+			rule: rule_nonparenthesized_value_expression_primary_1_
 		},
 	]}
 	rule_nonparenthesized_value_expression_primary_.productions << &EarleyProduction{[
@@ -9100,6 +9120,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_simple_value_specification_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_host_parameter_name_
+		},
+	]}
+
 	rule_simple_value_specification_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_literal_
@@ -9107,7 +9133,7 @@ fn get_grammar() map[string]EarleyRule {
 	]}
 	rule_simple_value_specification_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_host_parameter_name_
+			rule: rule_simple_value_specification_2_
 		},
 	]}
 
@@ -10083,6 +10109,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_unsigned_value_specification_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_general_value_specification_
+		},
+	]}
+
 	rule_unsigned_value_specification_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_unsigned_value_specification_1_
@@ -10090,7 +10122,7 @@ fn get_grammar() map[string]EarleyRule {
 	]}
 	rule_unsigned_value_specification_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_general_value_specification_
+			rule: rule_unsigned_value_specification_2_
 		},
 	]}
 
@@ -10209,6 +10241,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_value_specification_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_general_value_specification_
+		},
+	]}
+
 	rule_value_specification_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_literal_
@@ -10216,7 +10254,7 @@ fn get_grammar() map[string]EarleyRule {
 	]}
 	rule_value_specification_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_general_value_specification_
+			rule: rule_value_specification_2_
 		},
 	]}
 
@@ -13359,6 +13397,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<next value expression: 1>'] = rule_next_value_expression_1_
 	rules['<next value expression>'] = rule_next_value_expression_
 	rules['<non-reserved word>'] = rule_non_reserved_word_
+	rules['<nonparenthesized value expression primary: 1>'] = rule_nonparenthesized_value_expression_primary_1_
 	rules['<nonparenthesized value expression primary: 2>'] = rule_nonparenthesized_value_expression_primary_2_
 	rules['<nonparenthesized value expression primary>'] = rule_nonparenthesized_value_expression_primary_
 	rules['<not equals operator>'] = rule_not_equals_operator_
@@ -13521,6 +13560,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<similar predicate: 1>'] = rule_similar_predicate_1_
 	rules['<similar predicate>'] = rule_similar_predicate_
 	rules['<simple table>'] = rule_simple_table_
+	rules['<simple value specification: 2>'] = rule_simple_value_specification_2_
 	rules['<simple value specification>'] = rule_simple_value_specification_
 	rules['<solidus>'] = rule_solidus_
 	rules['<sort key>'] = rule_sort_key_
@@ -13624,6 +13664,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<unsigned literal>'] = rule_unsigned_literal_
 	rules['<unsigned numeric literal>'] = rule_unsigned_numeric_literal_
 	rules['<unsigned value specification: 1>'] = rule_unsigned_value_specification_1_
+	rules['<unsigned value specification: 2>'] = rule_unsigned_value_specification_2_
 	rules['<unsigned value specification>'] = rule_unsigned_value_specification_
 	rules['<update source>'] = rule_update_source_
 	rules['<update statement: searched: 1>'] = rule_update_statement_searched_1_
@@ -13635,6 +13676,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<value expression list>'] = rule_value_expression_list_
 	rules['<value expression primary>'] = rule_value_expression_primary_
 	rules['<value expression>'] = rule_value_expression_
+	rules['<value specification: 2>'] = rule_value_specification_2_
 	rules['<value specification>'] = rule_value_specification_
 	rules['<where clause: 1>'] = rule_where_clause_1_
 	rules['<where clause>'] = rule_where_clause_
@@ -14658,6 +14700,11 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 				EarleyValue(parse_next_value_expression(children[3] as Identifier)!),
 			]
 		}
+		'<nonparenthesized value expression primary: 1>' {
+			return [
+				EarleyValue(parse_nonparenthesized_value_expression_primary_1(children[0] as UnsignedValueSpecification)!),
+			]
+		}
 		'<nonparenthesized value expression primary: 2>' {
 			return [
 				EarleyValue(parse_identifier_to_expr(children[0] as Identifier)!),
@@ -14954,6 +15001,11 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 				EarleyValue(parse_similar_pred(children[0] as Expr, children[1] as SimilarPredicate)!),
 			]
 		}
+		'<simple value specification: 2>' {
+			return [
+				EarleyValue(parse_simple_value_specification_2(children[0] as GeneralValueSpecification)!),
+			]
+		}
 		'<sort specification list: 1>' {
 			return [EarleyValue(parse_sort_list1(children[0] as SortSpecification)!)]
 		}
@@ -15131,7 +15183,14 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 			]
 		}
 		'<unsigned value specification: 1>' {
-			return [EarleyValue(parse_value_to_expr(children[0] as Value)!)]
+			return [
+				EarleyValue(parse_unsigned_value_specification_1(children[0] as Value)!),
+			]
+		}
+		'<unsigned value specification: 2>' {
+			return [
+				EarleyValue(parse_unsigned_value_specification_2(children[0] as GeneralValueSpecification)!),
+			]
 		}
 		'<update statement: searched: 1>' {
 			return [
@@ -15150,6 +15209,11 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		'<value expression list: 2>' {
 			return [
 				EarleyValue(parse_append_exprs1(children[0] as []Expr, children[2] as Expr)!),
+			]
+		}
+		'<value specification: 2>' {
+			return [
+				EarleyValue(parse_value_specification_2(children[0] as GeneralValueSpecification)!),
 			]
 		}
 		'<where clause: 1>' {

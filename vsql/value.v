@@ -286,6 +286,14 @@ fn (v Value) as_numeric() !big.Integer {
 	return big.integer_from_string(strconv.f64_to_str_l(v.f64_value()).split('.')[0])
 }
 
+fn (v Value) pstr(params map[string]Value) string {
+	if v.typ.typ != .is_numeric && (v.typ.uses_string() || v.typ.uses_time()) {
+		return '\'${v.str()}\''
+	}
+
+	return v.str()
+}
+
 // The string representation of this value. Different types will have different
 // formatting.
 pub fn (v Value) str() string {

@@ -117,11 +117,6 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 		TruthExpr {
 			return new_type('BOOLEAN', 0, 0)
 		}
-		Parameter {
-			p := params[e.name] or { return sqlstate_42p02(e.name) }
-
-			return eval_as_type(conn, data, p, params)
-		}
 		Value {
 			return e.typ
 		}
@@ -166,7 +161,10 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 		LocalTimestampExpr {
 			return new_type('TIMESTAMP WITHOUT TIME ZONE', 0, 0)
 		}
-		SubstringExpr, TrimExpr, CurrentCatalogExpr, CurrentSchemaExpr {
+		UnsignedValueSpecification {
+			return e.eval_type(conn, data, params)
+		}
+		SubstringExpr, TrimExpr {
 			return new_type('CHARACTER VARYING', 0, 0)
 		}
 		UntypedNullExpr {
@@ -177,7 +175,7 @@ fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Ty
 
 fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value) !Value {
 	match e {
-		Predicate {
+		Predicate, UnsignedValueSpecification {
 			return e.eval(mut conn, data, params)
 		}
 		BinaryExpr {
@@ -204,9 +202,6 @@ fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value)
 		NullIfExpr {
 			return eval_nullif(mut conn, data, e, params)
 		}
-		Parameter {
-			return params[e.name] or { return sqlstate_42p02(e.name) }
-		}
 		SubstringExpr {
 			return eval_substring(mut conn, data, e, params)
 		}
@@ -224,16 +219,10 @@ fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value)
 			// ValuesOperation.
 			return sqlstate_42601('missing or invalid expression provided')
 		}
-		CurrentCatalogExpr {
-			return new_varchar_value(conn.current_catalog)
-		}
 		CurrentDateExpr {
 			now, _ := conn.now()
 
 			return new_date_value(now.strftime('%Y-%m-%d'))
-		}
-		CurrentSchemaExpr {
-			return new_varchar_value(conn.current_schema)
 		}
 		CurrentTimeExpr {
 			if e.prec > 6 {

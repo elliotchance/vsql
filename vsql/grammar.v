@@ -10,6 +10,7 @@ type EarleyValue = BetweenPredicate
 	| ComparisonPredicatePart2
 	| Correlation
 	| CreateTableStmt
+	| DatetimeValueFunction
 	| DerivedColumn
 	| Expr
 	| GeneralValueSpecification
@@ -602,6 +603,9 @@ fn get_grammar() map[string]EarleyRule {
 	}
 	mut rule_datetime_literal_ := &EarleyRule{
 		name: '<datetime literal>'
+	}
+	mut rule_datetime_primary_2_ := &EarleyRule{
+		name: '<datetime primary: 2>'
 	}
 	mut rule_datetime_primary_ := &EarleyRule{
 		name: '<datetime primary>'
@@ -4963,6 +4967,12 @@ fn get_grammar() map[string]EarleyRule {
 		},
 	]}
 
+	rule_datetime_primary_2_.productions << &EarleyProduction{[
+		&EarleyRuleOrString{
+			rule: rule_datetime_value_function_
+		},
+	]}
+
 	rule_datetime_primary_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
 			rule: rule_value_expression_primary_
@@ -4970,7 +4980,7 @@ fn get_grammar() map[string]EarleyRule {
 	]}
 	rule_datetime_primary_.productions << &EarleyProduction{[
 		&EarleyRuleOrString{
-			rule: rule_datetime_value_function_
+			rule: rule_datetime_primary_2_
 		},
 	]}
 
@@ -13278,6 +13288,7 @@ fn get_grammar() map[string]EarleyRule {
 	rules['<date string>'] = rule_date_string_
 	rules['<datetime factor>'] = rule_datetime_factor_
 	rules['<datetime literal>'] = rule_datetime_literal_
+	rules['<datetime primary: 2>'] = rule_datetime_primary_2_
 	rules['<datetime primary>'] = rule_datetime_primary_
 	rules['<datetime term>'] = rule_datetime_term_
 	rules['<datetime type: 1>'] = rule_datetime_type_1_
@@ -14497,6 +14508,11 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 		}
 		'<date literal: 1>' {
 			return [EarleyValue(parse_date_literal(children[1] as Value)!)]
+		}
+		'<datetime primary: 2>' {
+			return [
+				EarleyValue(parse_datetime_primary_2(children[0] as DatetimeValueFunction)!),
+			]
 		}
 		'<datetime type: 1>' {
 			return [EarleyValue(parse_date_type()!)]

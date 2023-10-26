@@ -15,4 +15,8 @@ module vsql
 //~
 //~ <datetime primary> /* Expr */ ::=
 //~     <value expression primary>
-//~   | <datetime value function>
+//~   | <datetime value function>   -> datetime_primary_2
+
+fn parse_datetime_primary_2(e DatetimeValueFunction) !Expr {
+	return e
+}

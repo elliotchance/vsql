@@ -8,6 +8,9 @@ module vsql
 //~     COMMIT        -> commit
 //~   | COMMIT WORK   -> commit
 
+struct CommitStmt {
+}
+
 fn parse_commit() !Stmt {
 	return CommitStmt{}
 }

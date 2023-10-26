@@ -4,19 +4,60 @@ module vsql
 
 // Format
 //~
-//~ <datetime value expression> /* Expr */ ::=
+//~ <datetime value expression> /* DatetimePrimary */ ::=
 //~     <datetime term>
 //~
-//~ <datetime term> /* Expr */ ::=
+//~ <datetime term> /* DatetimePrimary */ ::=
 //~     <datetime factor>
 //~
-//~ <datetime factor> /* Expr */ ::=
+//~ <datetime factor> /* DatetimePrimary */ ::=
 //~     <datetime primary>
 //~
-//~ <datetime primary> /* Expr */ ::=
-//~     <value expression primary>
-//~   | <datetime value function>   -> datetime_primary_2
+//~ <datetime primary> /* DatetimePrimary */ ::=
+//~     <value expression primary>   -> DatetimePrimary
+//~   | <datetime value function>    -> DatetimePrimary
 
-fn parse_datetime_primary_2(e DatetimeValueFunction) !Expr {
-	return e
+type DatetimePrimary = DatetimeValueFunction | ValueExpressionPrimary
+
+fn (e DatetimePrimary) pstr(params map[string]Value) string {
+	return match e {
+		ValueExpressionPrimary, DatetimeValueFunction {
+			e.pstr(params)
+		}
+	}
+}
+
+fn (e DatetimePrimary) eval(mut conn Connection, data Row, params map[string]Value) !Value {
+	return match e {
+		ValueExpressionPrimary, DatetimeValueFunction {
+			e.eval(mut conn, data, params)!
+		}
+	}
+}
+
+fn (e DatetimePrimary) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
+	return match e {
+		ValueExpressionPrimary, DatetimeValueFunction {
+			e.eval_type(conn, data, params)!
+		}
+	}
+}
+
+fn (e DatetimePrimary) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
+	return match e {
+		ValueExpressionPrimary, DatetimeValueFunction {
+			e.is_agg(conn, row, params)!
+		}
+	}
+}
+
+fn (e DatetimePrimary) resolve_identifiers(conn &Connection, tables map[string]Table) !DatetimePrimary {
+	return match e {
+		ValueExpressionPrimary {
+			e.resolve_identifiers(conn, tables)!
+		}
+		DatetimeValueFunction {
+			e.resolve_identifiers(conn, tables)!
+		}
+	}
 }

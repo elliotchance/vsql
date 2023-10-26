@@ -14,6 +14,10 @@ module vsql
 //~ <unique column list> /* []Identifier */ ::=
 //~   <column name list>
 
+struct UniqueConstraintDefinition {
+	columns []Identifier
+}
+
 fn parse_unique_constraint_definition(columns []Identifier) !TableElement {
 	return UniqueConstraintDefinition{columns}
 }

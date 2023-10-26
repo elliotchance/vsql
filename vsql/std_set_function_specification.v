@@ -4,5 +4,5 @@ module vsql
 
 // Format
 //~
-//~ <set function specification> /* Expr */ ::=
+//~ <set function specification> /* AggregateFunction */ ::=
 //~     <aggregate function>

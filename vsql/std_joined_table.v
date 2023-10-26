@@ -7,11 +7,11 @@ module vsql
 //~ <joined table> /* QualifiedJoin */ ::=
 //~     <qualified join>
 //~
-//~ <join specification> /* Expr */ ::=
+//~ <join specification> /* BooleanValueExpression */ ::=
 //~     <join condition>
 //~
-//~ <join condition> /* Expr */ ::=
-//~     ON <search condition>   -> expr
+//~ <join condition> /* BooleanValueExpression */ ::=
+//~     ON <search condition>   -> join_condition
 //~
 //~ <join type> /* string */ ::=
 //~     INNER
@@ -21,3 +21,7 @@ module vsql
 //~ <outer join type> /* string */ ::=
 //~     LEFT
 //~   | RIGHT
+
+fn parse_join_condition(expr BooleanValueExpression) !BooleanValueExpression {
+	return expr
+}

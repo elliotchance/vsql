@@ -4,9 +4,9 @@ module vsql
 
 // Format
 //~
-//~ <literal> /* Expr */ ::=
+//~ <literal> /* Value */ ::=
 //~     <signed numeric literal>
-//~   | <general literal>          -> value_to_expr
+//~   | <general literal>
 //~
 //~ <unsigned literal> /* Value */ ::=
 //~     <unsigned numeric literal>
@@ -20,9 +20,9 @@ module vsql
 //~ <character string literal> /* Value */ ::=
 //~     ^string
 //~
-//~ <signed numeric literal> /* Expr */ ::=
-//~     <unsigned numeric literal>          -> value_to_expr
-//~   | <sign> <unsigned numeric literal>   -> sign_expr
+//~ <signed numeric literal> /* Value */ ::=
+//~     <unsigned numeric literal>
+//~   | <sign> <unsigned numeric literal>   -> signed_numeric_literal_2
 //~
 //~ <unsigned numeric literal> /* Value */ ::=
 //~     <exact numeric literal>
@@ -30,8 +30,8 @@ module vsql
 //~ <exact numeric literal> /* Value */ ::=
 //~     <unsigned integer>                               -> int_value
 //~   | <unsigned integer> <period>                      -> int_value
-//~   | <unsigned integer> <period> <unsigned integer>   -> exact_numeric_literal1
-//~   | <period> <unsigned integer>                      -> exact_numeric_literal2
+//~   | <unsigned integer> <period> <unsigned integer>   -> exact_numeric_literal_1
+//~   | <period> <unsigned integer>                      -> exact_numeric_literal_2
 //~
 //~ <sign> /* string */ ::=
 //~     <plus sign>
@@ -72,11 +72,11 @@ fn parse_int_value(x string) !Value {
 	return new_numeric_value(x)
 }
 
-fn parse_exact_numeric_literal1(a string, b string) !Value {
+fn parse_exact_numeric_literal_1(a string, b string) !Value {
 	return new_numeric_value('${a}.${b}')
 }
 
-fn parse_exact_numeric_literal2(a string) !Value {
+fn parse_exact_numeric_literal_2(a string) !Value {
 	return new_numeric_value('0.${a}')
 }
 
@@ -92,6 +92,10 @@ fn parse_timestamp_literal(v Value) !Value {
 	return new_timestamp_value(v.string_value())
 }
 
-fn parse_value_to_expr(v Value) !Expr {
+fn parse_signed_numeric_literal_2(sign string, v Value) !Value {
+	if sign == '-' {
+		return new_numeric_value('-' + v.str())
+	}
+
 	return v
 }

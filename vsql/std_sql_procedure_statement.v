@@ -16,7 +16,7 @@ module vsql
 //~ <SQL schema manipulation statement> /* Stmt */ ::=
 //~     <drop schema statement>
 //~   | <drop table statement>
-//~   | <alter sequence generator statement>
+//~   | <alter sequence generator statement>   -> Stmt
 //~   | <drop sequence generator statement>
 //~
 //~ <SQL transaction statement> /* Stmt */ ::=

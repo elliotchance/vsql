@@ -351,7 +351,7 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 	mut tokens := tokenize(create_table)
 	stmt := parse(tokens)!
 
-	if stmt is CreateTableStmt {
+	if stmt is TableDefinition {
 		mut table_name := c.resolve_schema_identifier(stmt.table_name)!
 
 		c.catalogs[c.current_catalog].virtual_tables[table_name.storage_id()] = VirtualTable{

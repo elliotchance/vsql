@@ -87,14 +87,14 @@ fn (mut iter PageIterator) next() ?PageObject {
 // A PrimaryKeyOperation scans an inclusive range for a PRIMARY KEY.
 struct PrimaryKeyOperation {
 	table  Table
-	lower  Expr
-	upper  Expr
+	lower  Value
+	upper  Value
 	params map[string]Value
 mut:
 	conn &Connection
 }
 
-fn new_primary_key_operation(table Table, lower Expr, upper Expr, params map[string]Value, conn &Connection) &PrimaryKeyOperation {
+fn new_primary_key_operation(table Table, lower Value, upper Value, params map[string]Value, conn &Connection) &PrimaryKeyOperation {
 	return &PrimaryKeyOperation{table, lower, upper, params, conn}
 }
 
@@ -126,7 +126,7 @@ fn (o &PrimaryKeyOperation) columns() Columns {
 }
 
 fn (mut o PrimaryKeyOperation) execute(_ []Row) ![]Row {
-	mut lower := eval_as_value(mut o.conn, Row{}, o.lower, o.params)!
+	mut lower := o.lower.eval(mut o.conn, Row{}, o.params)!
 
 	// Literals will be a NUMERIC, so that needs to be cast to the expected type.
 	lower = cast(mut o.conn, '', lower, Type{.is_bigint, 0, 0, false})!

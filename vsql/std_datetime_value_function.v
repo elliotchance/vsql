@@ -15,22 +15,22 @@ module vsql
 //~     CURRENT_DATE   -> current_date
 //~
 //~ <current time value function> /* DatetimeValueFunction */ ::=
-//~     CURRENT_TIME                                               -> current_time1
-//~   | CURRENT_TIME <left paren> <time precision> <right paren>   -> current_time2
+//~     CURRENT_TIME                                               -> current_time_1
+//~   | CURRENT_TIME <left paren> <time precision> <right paren>   -> current_time_2
 //~
 //~ <current local time value function> /* DatetimeValueFunction */ ::=
-//~     LOCALTIME                                               -> localtime1
-//~   | LOCALTIME <left paren> <time precision> <right paren>   -> localtime2
+//~     LOCALTIME                                               -> localtime_1
+//~   | LOCALTIME <left paren> <time precision> <right paren>   -> localtime_2
 //~
 //~ <current timestamp value function> /* DatetimeValueFunction */ ::=
-//~     CURRENT_TIMESTAMP                                  -> current_timestamp1
+//~     CURRENT_TIMESTAMP                                  -> current_timestamp_1
 //~   | CURRENT_TIMESTAMP
-//~     <left paren> <timestamp precision> <right paren>   -> current_timestamp2
+//~     <left paren> <timestamp precision> <right paren>   -> current_timestamp_2
 //~
 //~ <current local timestamp value function> /* DatetimeValueFunction */ ::=
-//~     LOCALTIMESTAMP                                     -> localtimestamp1
+//~     LOCALTIMESTAMP                                     -> localtimestamp_1
 //~   | LOCALTIMESTAMP
-//~     <left paren> <timestamp precision> <right paren>   -> localtimestamp2
+//~     <left paren> <timestamp precision> <right paren>   -> localtimestamp_2
 
 type DatetimeValueFunction = CurrentDate
 	| CurrentTime
@@ -104,7 +104,7 @@ fn (e DatetimeValueFunction) is_agg(conn &Connection, row Row, params map[string
 	return false
 }
 
-fn (e DatetimeValueFunction) resolve_identifiers(conn &Connection, tables map[string]Table) !Expr {
+fn (e DatetimeValueFunction) resolve_identifiers(conn &Connection, tables map[string]Table) !DatetimeValueFunction {
 	return e
 }
 
@@ -130,34 +130,34 @@ fn parse_current_date() !DatetimeValueFunction {
 	return CurrentDate{}
 }
 
-fn parse_current_time1() !DatetimeValueFunction {
+fn parse_current_time_1() !DatetimeValueFunction {
 	return CurrentTime{default_time_precision}
 }
 
-fn parse_current_time2(prec string) !DatetimeValueFunction {
+fn parse_current_time_2(prec string) !DatetimeValueFunction {
 	return CurrentTime{prec.int()}
 }
 
-fn parse_localtime1() !DatetimeValueFunction {
+fn parse_localtime_1() !DatetimeValueFunction {
 	return LocalTime{0}
 }
 
-fn parse_localtime2(prec string) !DatetimeValueFunction {
+fn parse_localtime_2(prec string) !DatetimeValueFunction {
 	return LocalTime{prec.int()}
 }
 
-fn parse_current_timestamp1() !DatetimeValueFunction {
+fn parse_current_timestamp_1() !DatetimeValueFunction {
 	return CurrentTimestamp{default_timestamp_precision}
 }
 
-fn parse_current_timestamp2(prec string) !DatetimeValueFunction {
+fn parse_current_timestamp_2(prec string) !DatetimeValueFunction {
 	return CurrentTimestamp{prec.int()}
 }
 
-fn parse_localtimestamp1() !DatetimeValueFunction {
+fn parse_localtimestamp_1() !DatetimeValueFunction {
 	return LocalTimestamp{6}
 }
 
-fn parse_localtimestamp2(prec string) !DatetimeValueFunction {
+fn parse_localtimestamp_2(prec string) !DatetimeValueFunction {
 	return LocalTimestamp{prec.int()}
 }

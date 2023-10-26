@@ -17,7 +17,7 @@ module vsql
 
 import time
 
-fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, elapsed_parse time.Duration, explain bool) !Result {
+fn execute_update(mut c Connection, stmt UpdateStatementSearched, params map[string]Value, elapsed_parse time.Duration, explain bool) !Result {
 	t := start_timer()
 
 	c.open_write_connection()!
@@ -50,8 +50,18 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 
 		for column_name, v in stmt.set {
 			table_column := table.column(column_name)!
-			raw_value := eval_as_nullable_value(mut c, table_column.typ.typ, row, resolve_identifiers(c,
-				v, catalog.storage.tables)!, params)!
+
+			raw_value := match v {
+				ValueExpression {
+					eval_as_nullable_value(mut c, table_column.typ.typ, row, [
+						ContextuallyTypedRowValueConstructorElement(v.resolve_identifiers(c,
+							catalog.storage.tables)!),
+					], params)!
+				}
+				NullSpecification {
+					new_null_value(table_column.typ.typ)
+				}
+			}
 
 			if table_column.not_null && raw_value.is_null {
 				return sqlstate_23502('column ${column_name}')
@@ -93,12 +103,20 @@ fn execute_update(mut c Connection, stmt UpdateStmt, params map[string]Value, el
 		empty_row := new_empty_row(table.columns, '')
 		for column_name, v in stmt.set {
 			table_column := table.column(column_name)!
-			raw_value := eval_as_nullable_value(mut c, table_column.typ.typ, empty_row,
-				resolve_identifiers(c, v, catalog.storage.tables)!, params)!
-			value := cast(mut c, 'for column ${column_name}', raw_value, table_column.typ)!
+			match v {
+				ValueExpression {
+					raw_value := v.eval(mut c, empty_row, params)!
+					value := cast(mut c, 'for column ${column_name}', raw_value, table_column.typ)!
 
-			if table_column.not_null && value.is_null {
-				return sqlstate_23502('column ${column_name}')
+					if table_column.not_null && value.is_null {
+						return sqlstate_23502('column ${column_name}')
+					}
+				}
+				NullSpecification {
+					if table_column.not_null {
+						return sqlstate_23502('column ${column_name}')
+					}
+				}
 			}
 		}
 	}

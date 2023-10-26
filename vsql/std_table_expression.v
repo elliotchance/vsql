@@ -10,18 +10,24 @@ module vsql
 //~   | <from clause> <group by clause>                  -> table_expression_group
 //~   | <from clause> <where clause> <group by clause>   -> table_expression_where_group
 
+struct TableExpression {
+	from_clause  TableReference
+	where_clause ?BooleanValueExpression
+	group_clause []Identifier
+}
+
 fn parse_table_expression(from_clause TableReference) !TableExpression {
-	return TableExpression{from_clause, NoExpr{}, []Expr{}}
+	return TableExpression{from_clause, none, []Identifier{}}
 }
 
-fn parse_table_expression_group(from_clause TableReference, group []Expr) !TableExpression {
-	return TableExpression{from_clause, NoExpr{}, group}
+fn parse_table_expression_group(from_clause TableReference, group []Identifier) !TableExpression {
+	return TableExpression{from_clause, none, group}
 }
 
-fn parse_table_expression_where(from_clause TableReference, where Expr) !TableExpression {
-	return TableExpression{from_clause, where, []Expr{}}
+fn parse_table_expression_where(from_clause TableReference, where BooleanValueExpression) !TableExpression {
+	return TableExpression{from_clause, where, []Identifier{}}
 }
 
-fn parse_table_expression_where_group(from_clause TableReference, where Expr, group []Expr) !TableExpression {
+fn parse_table_expression_where_group(from_clause TableReference, where BooleanValueExpression, group []Identifier) !TableExpression {
 	return TableExpression{from_clause, where, group}
 }

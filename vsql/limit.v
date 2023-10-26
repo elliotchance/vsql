@@ -5,27 +5,27 @@ module vsql
 // A LimitOperation stops after a specified number of rows have been received.
 // It is also used for OFFSET clauses.
 struct LimitOperation {
-	fetch   Expr // may be NoExpr
-	offset  Expr // may be NoExpr
+	fetch   ?ValueSpecification
+	offset  ?ValueSpecification
 	params  map[string]Value
 	columns Columns
 mut:
 	conn &Connection
 }
 
-fn new_limit_operation(fetch Expr, offset Expr, params map[string]Value, mut conn Connection, columns Columns) &LimitOperation {
+fn new_limit_operation(fetch ?ValueSpecification, offset ?ValueSpecification, params map[string]Value, mut conn Connection, columns Columns) &LimitOperation {
 	return &LimitOperation{fetch, offset, params, columns, conn}
 }
 
 fn (o &LimitOperation) str() string {
 	mut s := ''
 
-	if o.offset !is NoExpr {
-		s = 'OFFSET ${o.offset.pstr(o.params)} ROWS'
+	if offset := o.offset {
+		s = 'OFFSET ${offset.pstr(o.params)} ROWS'
 	}
 
-	if o.fetch !is NoExpr {
-		s += ' FETCH FIRST ${o.fetch.pstr(o.params)} ROWS ONLY'
+	if fetch := o.fetch {
+		s += ' FETCH FIRST ${fetch.pstr(o.params)} ROWS ONLY'
 	}
 
 	return s.trim_space()
@@ -39,8 +39,8 @@ fn (o &LimitOperation) columns() Columns {
 
 fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 	mut offset := i64(0)
-	if o.offset !is NoExpr {
-		offset = (eval_as_value(mut o.conn, Row{}, o.offset, o.params)!).as_int()
+	if off := o.offset {
+		offset = (off.eval(mut o.conn, Row{}, o.params)!).as_int()
 
 		if offset >= rows.len {
 			return []Row{}
@@ -48,8 +48,8 @@ fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 	}
 
 	mut fetch := i64(rows.len)
-	if o.fetch !is NoExpr {
-		fetch = (eval_as_value(mut o.conn, Row{}, o.fetch, o.params)!).as_int()
+	if f := o.fetch {
+		fetch = (f.eval(mut o.conn, Row{}, o.params)!).as_int()
 	}
 
 	if offset + fetch >= rows.len {

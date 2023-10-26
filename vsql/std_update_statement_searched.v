@@ -6,15 +6,21 @@ module vsql
 //~
 //~ <update statement: searched> /* Stmt */ ::=
 //~     UPDATE <target table>
-//~     SET <set clause list>      -> update_statement
+//~     SET <set clause list>      -> update_statement_searched_1
 //~   | UPDATE <target table>
 //~     SET <set clause list>
-//~     WHERE <search condition>   -> update_statement_where
+//~     WHERE <search condition>   -> update_statement_searched_2
 
-fn parse_update_statement(target_table Identifier, set_clause_list map[string]Expr) !Stmt {
-	return UpdateStmt{target_table, set_clause_list, NoExpr{}}
+struct UpdateStatementSearched {
+	table_name Identifier
+	set        map[string]UpdateSource
+	where      ?BooleanValueExpression
 }
 
-fn parse_update_statement_where(target_table Identifier, set_clause_list map[string]Expr, where Expr) !Stmt {
-	return UpdateStmt{target_table, set_clause_list, where}
+fn parse_update_statement_searched_1(target_table Identifier, set_clause_list map[string]UpdateSource) !Stmt {
+	return UpdateStatementSearched{target_table, set_clause_list, none}
+}
+
+fn parse_update_statement_searched_2(target_table Identifier, set_clause_list map[string]UpdateSource, where BooleanValueExpression) !Stmt {
+	return UpdateStatementSearched{target_table, set_clause_list, where}
 }

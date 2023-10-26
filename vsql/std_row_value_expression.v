@@ -4,11 +4,11 @@ module vsql
 
 // Format
 //~
-//~ <table row value expression> /* Expr */ ::=
+//~ <table row value expression> /* RowValueConstructor */ ::=
 //~     <row value constructor>
 //~
-//~ <contextually typed row value expression> /* []Expr */ ::=
+//~ <contextually typed row value expression> /* ContextuallyTypedRowValueConstructor */ ::=
 //~   <contextually typed row value constructor>
 //~
-//~ <row value predicand> /* Expr */ ::=
+//~ <row value predicand> /* RowValueConstructorPredicand */ ::=
 //~   <row value constructor predicand>

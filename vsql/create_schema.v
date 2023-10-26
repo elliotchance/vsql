@@ -4,7 +4,7 @@ module vsql
 
 import time
 
-fn execute_create_schema(mut c Connection, stmt CreateSchemaStmt, elapsed_parse time.Duration) !Result {
+fn execute_create_schema(mut c Connection, stmt SchemaDefinition, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	c.open_write_connection()!

@@ -12,22 +12,28 @@ module vsql
 //~ <insertion target> /* Identifier */ ::=
 //~     <table name>
 //~
-//~ <insert columns and source> /* InsertStmt */ ::=
+//~ <insert columns and source> /* InsertStatement */ ::=
 //~   <from constructor>
 //~
-//~ <from constructor> /* InsertStmt */ ::=
+//~ <from constructor> /* InsertStatement */ ::=
 //~     <left paren> <insert column list> <right paren>
 //~     <contextually typed table value constructor>   -> from_constructor
 //~
 //~ <insert column list> /* []Identifier */ ::=
 //~     <column name list>
 
-fn parse_insert_statement(insertion_target Identifier, stmt InsertStmt) !Stmt {
-	return InsertStmt{insertion_target, stmt.columns, stmt.values}
+struct InsertStatement {
+	table_name Identifier
+	columns    []Identifier
+	values     []ContextuallyTypedRowValueConstructor
 }
 
-fn parse_from_constructor(columns []Identifier, values []Expr) !InsertStmt {
-	return InsertStmt{
+fn parse_insert_statement(insertion_target Identifier, stmt InsertStatement) !Stmt {
+	return InsertStatement{insertion_target, stmt.columns, stmt.values}
+}
+
+fn parse_from_constructor(columns []Identifier, values []ContextuallyTypedRowValueConstructor) !InsertStatement {
+	return InsertStatement{
 		columns: columns
 		values: values
 	}

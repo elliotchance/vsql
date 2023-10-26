@@ -5,7 +5,7 @@ module vsql
 
 import time
 
-fn execute_create_sequence(mut c Connection, stmt CreateSequenceStmt, elapsed_parse time.Duration) !Result {
+fn execute_create_sequence(mut c Connection, stmt SequenceGeneratorDefinition, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	c.open_write_connection()!
@@ -26,24 +26,24 @@ fn execute_create_sequence(mut c Connection, stmt CreateSequenceStmt, elapsed_pa
 	for option in stmt.options {
 		match option {
 			SequenceGeneratorStartWithOption {
-				start_value = (eval_as_value(mut c, Row{}, option.start_value, map[string]Value{})!).as_int()
+				start_value = (option.start_value.eval(mut c, Row{}, map[string]Value{})!).as_int()
 				has_start_value = true
 			}
 			SequenceGeneratorRestartOption {
 				// Not possible.
 			}
 			SequenceGeneratorIncrementByOption {
-				increment_by = (eval_as_value(mut c, Row{}, option.increment_by, map[string]Value{})!).as_int()
+				increment_by = (option.increment_by.eval(mut c, Row{}, map[string]Value{})!).as_int()
 			}
 			SequenceGeneratorMinvalueOption {
-				if option.min_value !is NoExpr {
-					min_value = (eval_as_value(mut c, Row{}, option.min_value, map[string]Value{})!).as_int()
+				if v := option.min_value {
+					min_value = (v.eval(mut c, Row{}, map[string]Value{})!).as_int()
 					has_min_value = true
 				}
 			}
 			SequenceGeneratorMaxvalueOption {
-				if option.max_value !is NoExpr {
-					max_value = (eval_as_value(mut c, Row{}, option.max_value, map[string]Value{})!).as_int()
+				if v := option.max_value {
+					max_value = (v.eval(mut c, Row{}, map[string]Value{})!).as_int()
 					has_max_value = true
 				}
 			}

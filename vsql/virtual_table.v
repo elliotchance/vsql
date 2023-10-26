@@ -5,7 +5,7 @@ type VirtualTableProviderFn = fn (mut t VirtualTable) !
 
 pub struct VirtualTable {
 	create_table_sql  string
-	create_table_stmt CreateTableStmt
+	create_table_stmt TableDefinition
 	data              VirtualTableProviderFn [required]
 mut:
 	is_done bool

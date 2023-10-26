@@ -7,6 +7,10 @@ module vsql
 //~ <drop table statement> /* Stmt */ ::=
 //~     DROP TABLE <table name>   -> drop_table_statement
 
+struct DropTableStatement {
+	table_name Identifier
+}
+
 fn parse_drop_table_statement(table_name Identifier) !Stmt {
-	return DropTableStmt{table_name}
+	return DropTableStatement{table_name}
 }

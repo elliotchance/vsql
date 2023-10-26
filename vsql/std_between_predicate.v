@@ -9,9 +9,9 @@ module vsql
 //~
 //~ <between predicate part 2> /* BetweenPredicate */ ::=
 //~     <between predicate part 1>
-//~     <row value predicand> AND <row value predicand>   -> between1
+//~     <row value predicand> AND <row value predicand>   -> between_1
 //~   | <between predicate part 1> <is symmetric>
-//~     <row value predicand> AND <row value predicand>   -> between2
+//~     <row value predicand> AND <row value predicand>   -> between_2
 //~
 //~ <between predicate part 1> /* bool */ ::=
 //~     BETWEEN       -> yes
@@ -26,9 +26,9 @@ module vsql
 struct BetweenPredicate {
 	not       bool
 	symmetric bool
-	expr      Expr
-	left      Expr
-	right     Expr
+	expr      RowValueConstructorPredicand
+	left      RowValueConstructorPredicand
+	right     RowValueConstructorPredicand
 }
 
 fn (e BetweenPredicate) pstr(params map[string]Value) string {
@@ -44,9 +44,9 @@ fn (e BetweenPredicate) pstr(params map[string]Value) string {
 }
 
 fn (e BetweenPredicate) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	expr := eval_as_value(mut conn, data, e.expr, params)!
-	mut left := eval_as_value(mut conn, data, e.left, params)!
-	mut right := eval_as_value(mut conn, data, e.right, params)!
+	expr := e.expr.eval(mut conn, data, params)!
+	mut left := e.left.eval(mut conn, data, params)!
+	mut right := e.right.eval(mut conn, data, params)!
 
 	// SYMMETRIC operands might need to be swapped.
 	cmp := compare(left, right)!
@@ -72,20 +72,19 @@ fn (e BetweenPredicate) eval(mut conn Connection, data Row, params map[string]Va
 }
 
 fn (e BetweenPredicate) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	if expr_is_agg(conn, e.left, row, params)! || expr_is_agg(conn, e.right, row, params)! {
-		return nested_agg_unsupported(Predicate(e))
+	if e.left.is_agg(conn, row, params)! || e.right.is_agg(conn, row, params)! {
+		return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
 	}
 
 	return false
 }
 
-fn (e BetweenPredicate) resolve_identifiers(conn &Connection, tables map[string]Table) !Expr {
-	return Predicate(BetweenPredicate{e.not, e.symmetric, resolve_identifiers(conn, e.expr,
-		tables)!, resolve_identifiers(conn, e.left, tables)!, resolve_identifiers(conn,
-		e.right, tables)!})
+fn (e BetweenPredicate) resolve_identifiers(conn &Connection, tables map[string]Table) !BetweenPredicate {
+	return BetweenPredicate{e.not, e.symmetric, e.expr.resolve_identifiers(conn, tables)!, e.left.resolve_identifiers(conn,
+		tables)!, e.right.resolve_identifiers(conn, tables)!}
 }
 
-fn parse_between(expr Expr, between BetweenPredicate) !BetweenPredicate {
+fn parse_between(expr RowValueConstructorPredicand, between BetweenPredicate) !BetweenPredicate {
 	return BetweenPredicate{
 		not: between.not
 		symmetric: between.symmetric
@@ -95,12 +94,12 @@ fn parse_between(expr Expr, between BetweenPredicate) !BetweenPredicate {
 	}
 }
 
-fn parse_between1(is_true bool, left Expr, right Expr) !BetweenPredicate {
+fn parse_between_1(is_true bool, left RowValueConstructorPredicand, right RowValueConstructorPredicand) !BetweenPredicate {
 	// false between ASYMMETRIC by default.
-	return parse_between2(is_true, false, left, right)
+	return parse_between_2(is_true, false, left, right)
 }
 
-fn parse_between2(is_true bool, symmetric bool, left Expr, right Expr) !BetweenPredicate {
+fn parse_between_2(is_true bool, symmetric bool, left RowValueConstructorPredicand, right RowValueConstructorPredicand) !BetweenPredicate {
 	return BetweenPredicate{
 		not: !is_true
 		symmetric: symmetric

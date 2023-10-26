@@ -5,14 +5,14 @@ module vsql
 // A WhereOperation executes a condition on each row, only passing through rows
 // that evaluate to TRUE.
 struct WhereOperation {
-	condition Expr
+	condition BooleanValueExpression
 	params    map[string]Value
 	columns   Columns
 mut:
 	conn &Connection
 }
 
-fn new_where_operation(condition Expr, params map[string]Value, conn &Connection, columns Columns) &WhereOperation {
+fn new_where_operation(condition BooleanValueExpression, params map[string]Value, conn &Connection, columns Columns) &WhereOperation {
 	return &WhereOperation{condition, params, columns, conn}
 }
 

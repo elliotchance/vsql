@@ -4,7 +4,7 @@ module vsql
 
 // Format
 //~
-//~ <alter sequence generator statement> /* Stmt */ ::=
+//~ <alter sequence generator statement> /* AlterSequenceGeneratorStatement */ ::=
 //~     ALTER SEQUENCE
 //~     <sequence generator name>
 //~     <alter sequence generator options>   -> alter_sequence_generator_statement
@@ -15,7 +15,7 @@ module vsql
 //~     <alter sequence generator option>   -> sequence_generator_options_2
 //~
 //~ <alter sequence generator option> /* SequenceGeneratorOption */ ::=
-//~     <alter sequence generator restart option>   -> alter_sequence_generator_option_1
+//~     <alter sequence generator restart option>   -> SequenceGeneratorOption
 //~   | <basic sequence generator option>
 //~
 //~ <alter sequence generator restart option> /* SequenceGeneratorRestartOption */ ::=
@@ -23,11 +23,16 @@ module vsql
 //~   | RESTART WITH
 //~     <sequence generator restart value>   -> sequence_generator_restart_option_2
 //~
-//~ <sequence generator restart value> /* Expr */ ::=
+//~ <sequence generator restart value> /* Value */ ::=
 //~     <signed numeric literal>
 
-fn parse_alter_sequence_generator_statement(generator_name Identifier, options []SequenceGeneratorOption) !Stmt {
-	return AlterSequenceStmt{
+struct AlterSequenceGeneratorStatement {
+	name    Identifier
+	options []SequenceGeneratorOption
+}
+
+fn parse_alter_sequence_generator_statement(generator_name Identifier, options []SequenceGeneratorOption) !AlterSequenceGeneratorStatement {
+	return AlterSequenceGeneratorStatement{
 		name: generator_name
 		options: options
 	}
@@ -43,17 +48,13 @@ fn parse_sequence_generator_options_2(options []SequenceGeneratorOption, option 
 	return new_options
 }
 
-fn parse_alter_sequence_generator_option_1(option SequenceGeneratorRestartOption) !SequenceGeneratorOption {
-	return option
-}
-
 fn parse_sequence_generator_restart_option_1() !SequenceGeneratorRestartOption {
 	return SequenceGeneratorRestartOption{
-		restart_value: NoExpr{}
+		restart_value: none
 	}
 }
 
-fn parse_sequence_generator_restart_option_2(restart_value Expr) !SequenceGeneratorRestartOption {
+fn parse_sequence_generator_restart_option_2(restart_value Value) !SequenceGeneratorRestartOption {
 	return SequenceGeneratorRestartOption{
 		restart_value: restart_value
 	}

@@ -4,5 +4,9 @@ module vsql
 
 // Format
 //~
-//~ <where clause> /* Expr */ ::=
-//~     WHERE <search condition>   -> expr
+//~ <where clause> /* BooleanValueExpression */ ::=
+//~     WHERE <search condition>   -> where_clause
+
+fn parse_where_clause(b BooleanValueExpression) !BooleanValueExpression {
+	return b
+}

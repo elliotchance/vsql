@@ -4,7 +4,7 @@ module vsql
 
 import time
 
-fn execute_drop_table(mut c Connection, stmt DropTableStmt, elapsed_parse time.Duration) !Result {
+fn execute_drop_table(mut c Connection, stmt DropTableStatement, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	c.open_write_connection()!

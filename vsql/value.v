@@ -38,6 +38,14 @@ pub mut:
 	v InternalValue
 }
 
+fn (e Value) eval(mut conn Connection, data Row, params map[string]Value) !Value {
+	return e
+}
+
+fn (e Value) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
+	return e.typ
+}
+
 union InternalValue {
 mut:
 	// BOOLEAN

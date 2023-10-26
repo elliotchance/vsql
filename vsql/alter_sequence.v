@@ -5,7 +5,7 @@ module vsql
 
 import time
 
-fn execute_alter_sequence(mut c Connection, stmt AlterSequenceStmt, elapsed_parse time.Duration) !Result {
+fn execute_alter_sequence(mut c Connection, stmt AlterSequenceGeneratorStatement, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	c.open_write_connection()!
@@ -24,16 +24,14 @@ fn execute_alter_sequence(mut c Connection, stmt AlterSequenceStmt, elapsed_pars
 				// Not possible.
 			}
 			SequenceGeneratorRestartOption {
-				if option.restart_value is NoExpr {
-					sequence.current_value = sequence.reset() - sequence.increment_by
+				if v := option.restart_value {
+					sequence.current_value = (v.eval(mut c, Row{}, map[string]Value{})!).as_int() - sequence.increment_by
 				} else {
-					sequence.current_value = (eval_as_value(mut c, Row{}, option.restart_value,
-						map[string]Value{})!).as_int() - sequence.increment_by
+					sequence.current_value = sequence.reset() - sequence.increment_by
 				}
 			}
 			SequenceGeneratorIncrementByOption {
-				sequence.increment_by = (eval_as_value(mut c, Row{}, option.increment_by,
-					map[string]Value{})!).as_int()
+				sequence.increment_by = (option.increment_by.eval(mut c, Row{}, map[string]Value{})!).as_int()
 
 				// Since we increment the value after it's returned we need to correct
 				// for the current value that takes into account the difference of the
@@ -41,21 +39,19 @@ fn execute_alter_sequence(mut c Connection, stmt AlterSequenceStmt, elapsed_pars
 				sequence.current_value += (sequence.increment_by - old_sequence.increment_by) - 1
 			}
 			SequenceGeneratorMinvalueOption {
-				if option.min_value is NoExpr {
-					sequence.has_min_value = false
-				} else {
-					sequence.min_value = (eval_as_value(mut c, Row{}, option.min_value,
-						map[string]Value{})!).as_int()
+				if v := option.min_value {
+					sequence.min_value = (v.eval(mut c, Row{}, map[string]Value{})!).as_int()
 					sequence.has_min_value = true
+				} else {
+					sequence.has_min_value = false
 				}
 			}
 			SequenceGeneratorMaxvalueOption {
-				if option.max_value is NoExpr {
-					sequence.has_min_value = false
-				} else {
-					sequence.max_value = (eval_as_value(mut c, Row{}, option.max_value,
-						map[string]Value{})!).as_int()
+				if v := option.max_value {
+					sequence.max_value = (v.eval(mut c, Row{}, map[string]Value{})!).as_int()
 					sequence.has_max_value = true
+				} else {
+					sequence.has_min_value = false
 				}
 			}
 			SequenceGeneratorCycleOption {

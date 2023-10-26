@@ -28,7 +28,10 @@ EXPLAIN SELECT * FROM (VALUES ROW(1, 'foo', TRUE));
 -- EXPLAIN: EXPR ($1.COL1 NUMERIC, $1.COL2 CHARACTER VARYING(3), $1.COL3 BOOLEAN)
 
 EXPLAIN SELECT * FROM (VALUES 1, 'foo', TRUE) AS t1 (abc, col2, "f");
--- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
+-- EXPLAIN: T1:
+-- EXPLAIN:   VALUES (ABC NUMERIC, COL2 NUMERIC, "f" NUMERIC) = ROW(1), ROW('foo'), ROW(TRUE)
+-- EXPLAIN: TABLE T1 (ABC NUMERIC, COL2 NUMERIC, "f" NUMERIC)
+-- EXPLAIN: EXPR (T1.ABC NUMERIC, T1.COL2 NUMERIC, T1."f" NUMERIC)
 
 EXPLAIN SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t1 (abc, col2, "f");
 -- EXPLAIN: T1:
@@ -37,7 +40,7 @@ EXPLAIN SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t1 (abc, col2, "f");
 -- EXPLAIN: EXPR (T1.ABC NUMERIC, T1.COL2 CHARACTER VARYING(3), T1."f" BOOLEAN)
 
 SELECT * FROM (VALUES 1, 'foo', TRUE) AS t1 (abc, col2, "f");
--- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
+-- error 42601: syntax error: unknown column: T1.COL2
 
 SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t1 (abc, col2, "f");
 -- ABC: 1 COL2: foo f: TRUE
@@ -103,7 +106,7 @@ SELECT * FROM (VALUES 1, 2) AS t1 (foo);
 -- FOO: 2
 
 SELECT * FROM (VALUES 1, 2) AS t1 (foo, bar, baz);
--- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
+-- error 42601: syntax error: unknown column: T1.BAR
 
 SELECT * FROM (VALUES ROW(1, 2), ROW(3, 4)) AS t1 (foo, bar);
 -- FOO: 1 BAR: 2

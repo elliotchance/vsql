@@ -4,12 +4,12 @@ module vsql
 
 import time
 
-fn execute_set_catalog(mut c Connection, stmt SetCatalogStmt, elapsed_parse time.Duration) !Result {
+fn execute_set_catalog(mut c Connection, stmt SetCatalogStatement, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	// This does not need to hold a write connection with the file.
 
-	new_catalog := eval_as_value(mut c, Row{}, stmt.catalog_name, map[string]Value{})!.str()
+	new_catalog := stmt.catalog_name.eval(mut c, Row{}, map[string]Value{})!.str()
 
 	if new_catalog !in c.catalogs {
 		return sqlstate_3d000(new_catalog) // catalog does not exist

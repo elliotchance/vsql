@@ -4,7 +4,7 @@ module vsql
 
 import time
 
-fn execute_drop_sequence(mut c Connection, stmt DropSequenceStmt, elapsed_parse time.Duration) !Result {
+fn execute_drop_sequence(mut c Connection, stmt DropSequenceGeneratorStatement, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	c.open_write_connection()!

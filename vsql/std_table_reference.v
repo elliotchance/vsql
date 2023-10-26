@@ -5,30 +5,30 @@ module vsql
 // Format
 //~
 //~ <table reference> /* TableReference */ ::=
-//~     <table factor>   -> table_factor
-//~   | <joined table>   -> joined_table
+//~     <table factor>   -> TableReference
+//~   | <joined table>   -> TableReference
 //~
 //~ <qualified join> /* QualifiedJoin */ ::=
 //~     <table reference>
-//~     JOIN <table reference> <join specification>   -> qualified_join1
+//~     JOIN <table reference> <join specification>   -> qualified_join_1
 //~   | <table reference> <join type>
-//~     JOIN <table reference> <join specification>   -> qualified_join2
+//~     JOIN <table reference> <join specification>   -> qualified_join_2
 //~
 //~ <table factor> /* TablePrimary */ ::=
 //~     <table primary>
 //~
 //~ <table primary> /* TablePrimary */ ::=
 //~     <table or query name>                          -> table_primary_identifier
-//~   | <derived table>                                -> table_primary_derived1
-//~   | <derived table> <correlation or recognition>   -> table_primary_derived2
+//~   | <derived table>
+//~   | <derived table> <correlation or recognition>   -> table_primary_derived_2
 //~
 //~ <correlation or recognition> /* Correlation */ ::=
-//~     <correlation name>                    -> correlation1
-//~   | AS <correlation name>                 -> correlation1
+//~     <correlation name>                    -> correlation_1
+//~   | AS <correlation name>                 -> correlation_1
 //~   | <correlation name>
-//~     <parenthesized derived column list>   -> correlation2
+//~     <parenthesized derived column list>   -> correlation_2
 //~   | AS <correlation name>
-//~     <parenthesized derived column list>   -> correlation2
+//~     <parenthesized derived column list>   -> correlation_2
 //~
 //~ <derived table> /* TablePrimary */ ::=
 //~     <table subquery>
@@ -40,26 +40,56 @@ module vsql
 //~     <column name list>
 //~
 //~ <column name list> /* []Identifier */ ::=
-//~     <column name>                              -> column_name_list1
-//~   | <column name list> <comma> <column name>   -> column_name_list2
+//~     <column name>                              -> column_name_list_1
+//~   | <column name list> <comma> <column name>   -> column_name_list_2
 //~
 //~ <parenthesized derived column list> /* []Identifier */ ::=
 //~     <left paren> <derived column list>
 //~     <right paren>                        -> parenthesized_derived_column_list
 
-fn parse_table_factor(p TablePrimary) !TableReference {
-	return p
+struct Correlation {
+	name    Identifier
+	columns []Identifier
 }
 
-fn parse_joined_table(join QualifiedJoin) !TableReference {
-	return join
+fn (c Correlation) str() string {
+	if c.name.sub_entity_name == '' {
+		return ''
+	}
+
+	mut s := ' AS ${c.name}'
+
+	if c.columns.len > 0 {
+		mut columns := []string{}
+		for col in c.columns {
+			columns << col.sub_entity_name
+		}
+
+		s += ' (${columns.join(', ')})'
+	}
+
+	return s
 }
 
-fn parse_qualified_join1(left_table TableReference, right_table TableReference, specification Expr) !QualifiedJoin {
+struct TablePrimary {
+	body        TablePrimaryBody
+	correlation Correlation
+}
+
+type TableReference = QualifiedJoin | TablePrimary
+
+struct QualifiedJoin {
+	left_table    TableReference
+	join_type     string // 'INNER', 'LEFT' or 'RIGHT'
+	right_table   TableReference
+	specification BooleanValueExpression // ON condition
+}
+
+fn parse_qualified_join_1(left_table TableReference, right_table TableReference, specification BooleanValueExpression) !QualifiedJoin {
 	return QualifiedJoin{left_table, 'INNER', right_table, specification}
 }
 
-fn parse_qualified_join2(left_table TableReference, join_type string, right_table TableReference, specification Expr) !QualifiedJoin {
+fn parse_qualified_join_2(left_table TableReference, join_type string, right_table TableReference, specification BooleanValueExpression) !QualifiedJoin {
 	return QualifiedJoin{left_table, join_type, right_table, specification}
 }
 
@@ -69,34 +99,30 @@ fn parse_table_primary_identifier(name Identifier) !TablePrimary {
 	}
 }
 
-fn parse_table_primary_derived1(body TablePrimary) !TablePrimary {
-	return body
-}
-
-fn parse_table_primary_derived2(body TablePrimary, correlation Correlation) !TablePrimary {
+fn parse_table_primary_derived_2(body TablePrimary, correlation Correlation) !TablePrimary {
 	return TablePrimary{
 		body: body.body
 		correlation: correlation
 	}
 }
 
-fn parse_column_name_list1(column_name Identifier) ![]Identifier {
+fn parse_column_name_list_1(column_name Identifier) ![]Identifier {
 	return [column_name]
 }
 
-fn parse_column_name_list2(column_name_list []Identifier, column_name Identifier) ![]Identifier {
+fn parse_column_name_list_2(column_name_list []Identifier, column_name Identifier) ![]Identifier {
 	mut new_columns := column_name_list.clone()
 	new_columns << column_name
 	return new_columns
 }
 
-fn parse_correlation1(name Identifier) !Correlation {
+fn parse_correlation_1(name Identifier) !Correlation {
 	return Correlation{
 		name: name
 	}
 }
 
-fn parse_correlation2(name Identifier, columns []Identifier) !Correlation {
+fn parse_correlation_2(name Identifier, columns []Identifier) !Correlation {
 	return Correlation{
 		name: name
 		columns: columns

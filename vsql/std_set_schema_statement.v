@@ -7,9 +7,22 @@ module vsql
 //~ <set schema statement> /* Stmt */ ::=
 //~     SET <schema name characteristic>   -> set_schema_stmt
 //~
-//~ <schema name characteristic> /* Expr */ ::=
-//~     SCHEMA <value specification>   -> expr
+//~ <schema name characteristic> /* ValueSpecification */ ::=
+//~     SCHEMA <value specification>   -> schema_name_characteristic
 
-fn parse_set_schema_stmt(schema_name Expr) !Stmt {
-	return SetSchemaStmt{schema_name}
+// SET SCHEMA
+struct SetSchemaStatement {
+	schema_name ValueSpecification
+}
+
+fn (e SetSchemaStatement) pstr(params map[string]Value) string {
+	return 'SET SCHEMA ${e.schema_name.pstr(params)}'
+}
+
+fn parse_schema_name_characteristic(v ValueSpecification) !ValueSpecification {
+	return v
+}
+
+fn parse_set_schema_stmt(schema_name ValueSpecification) !Stmt {
+	return SetSchemaStatement{schema_name}
 }

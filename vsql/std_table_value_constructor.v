@@ -31,9 +31,12 @@ fn parse_table_value_constructor(exprs []Expr) !SimpleTable {
 		return rows
 	}
 
-	return [RowExpr{
-		exprs: exprs
-	}]
+	mut rows := []RowExpr{}
+	for expr in exprs {
+		rows << RowExpr{[expr]}
+	}
+
+	return rows
 }
 
 fn parse_merge_expr_lists(exprs1 []Expr, exprs2 []Expr) ![]Expr {

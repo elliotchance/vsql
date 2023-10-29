@@ -16,8 +16,8 @@ VALUES 789;
 VALUES 'hello';
 -- COL1: hello
 
-VALUES 123, 456;
+VALUES ROW(123, 456);
 -- COL1: 123 COL2: 456
 
-VALUES 2 + 3 * 5, (2 + 3) * 5;
+VALUES ROW(2 + 3 * 5, (2 + 3) * 5);
 -- COL1: 17 COL2: 25

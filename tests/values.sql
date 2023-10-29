@@ -17,27 +17,39 @@ SELECT * FROM (VALUES 1.23);
 -- COL1: 1.23
 
 SELECT * FROM (VALUES 1, 'foo', TRUE);
--- COL1: 1 COL2: foo COL3: TRUE
+-- COL1: 1
+-- COL1: foo
+-- COL1: TRUE
 
-EXPLAIN SELECT * FROM (VALUES 1, 'foo', TRUE);
+EXPLAIN SELECT * FROM (VALUES ROW(1, 'foo', TRUE));
 -- EXPLAIN: $1:
 -- EXPLAIN:   VALUES (COL1 NUMERIC, COL2 CHARACTER VARYING(3), COL3 BOOLEAN) = ROW(1, 'foo', TRUE)
 -- EXPLAIN: TABLE $1 (COL1 NUMERIC, COL2 CHARACTER VARYING(3), COL3 BOOLEAN)
 -- EXPLAIN: EXPR ($1.COL1 NUMERIC, $1.COL2 CHARACTER VARYING(3), $1.COL3 BOOLEAN)
 
 EXPLAIN SELECT * FROM (VALUES 1, 'foo', TRUE) AS t1 (abc, col2, "f");
+-- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
+
+EXPLAIN SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t1 (abc, col2, "f");
 -- EXPLAIN: T1:
 -- EXPLAIN:   VALUES (ABC NUMERIC, COL2 CHARACTER VARYING(3), "f" BOOLEAN) = ROW(1, 'foo', TRUE)
 -- EXPLAIN: TABLE T1 (ABC NUMERIC, COL2 CHARACTER VARYING(3), "f" BOOLEAN)
 -- EXPLAIN: EXPR (T1.ABC NUMERIC, T1.COL2 CHARACTER VARYING(3), T1."f" BOOLEAN)
 
 SELECT * FROM (VALUES 1, 'foo', TRUE) AS t1 (abc, col2, "f");
+-- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
+
+SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t1 (abc, col2, "f");
 -- ABC: 1 COL2: foo f: TRUE
 
 VALUES 'cool';
 -- COL1: cool
 
 VALUES 'cool', 12.3;
+-- COL1: cool
+-- COL1: 12.3
+
+VALUES ROW('cool', 12.3);
 -- COL1: cool COL2: 12.3
 
 VALUES '12.3';
@@ -50,6 +62,9 @@ EXPLAIN VALUES 'hello';
 -- EXPLAIN: VALUES (COL1 CHARACTER(5)) = ROW('hello')
 
 EXPLAIN VALUES 'hello', 1.22;
+-- EXPLAIN: VALUES (COL1 CHARACTER(5)) = ROW('hello'), ROW(1.22)
+
+EXPLAIN VALUES ROW('hello', 1.22);
 -- EXPLAIN: VALUES (COL1 CHARACTER(5), COL2 NUMERIC) = ROW('hello', 1.22)
 
 SELECT * FROM (VALUES ROW(123), ROW(456));
@@ -84,7 +99,8 @@ FROM (VALUES ROW(123, 'hi'), ROW(456, 'there')) AS foo (bar, baz);
 -- EXPLAIN: EXPR (FOO.BAR NUMERIC, FOO.BAZ CHARACTER VARYING(2))
 
 SELECT * FROM (VALUES 1, 2) AS t1 (foo);
--- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
+-- FOO: 1
+-- FOO: 2
 
 SELECT * FROM (VALUES 1, 2) AS t1 (foo, bar, baz);
 -- error 42601: syntax error: ROW provides the wrong number of columns for the correlation

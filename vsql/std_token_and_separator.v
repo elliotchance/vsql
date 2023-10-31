@@ -1,8 +1,13 @@
-// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>
+//
+// # Function
+//
+// Specify lexical units (tokens and separators) that participate in SQL
+// language.
+//
+// # Format
 //~
 //~ <concatenation operator> ::= "||"
 //

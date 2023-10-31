@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 6.1, <data type>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 6.1, <data type>
+//
+// # Function
+//
+// Specify a data type.
+//
+// # Format
 //~
 //~ <data type> /* Type */ ::=
 //~     <predefined type>

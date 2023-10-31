@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 8.3, <between predicate>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 8.3, <between predicate>
+//
+// # Function
+//
+// Specify a range comparison.
+//
+// # Format
 //~
 //~ <between predicate> /* BetweenPredicate */ ::=
 //~     <row value predicand> <between predicate part 2>   -> between

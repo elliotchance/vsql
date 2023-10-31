@@ -1,10 +1,14 @@
-// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>
-
 module vsql
 
 import regex
 
-// Format
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>
+//
+// # Function
+//
+// Specify a character string similarity by means of a regular expression.
+//
+// # Format
 //~
 //~ <similar predicate> /* SimilarPredicate */ ::=
 //~     <row value predicand> <similar predicate part 2>   -> similar_pred

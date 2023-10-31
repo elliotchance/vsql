@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>
+//
+// # Function
+//
+// Specify a boolean value.
+//
+// # Format
 //~
 //~ <boolean value expression> /* BooleanValueExpression */ ::=
 //~     <boolean term>                                 -> boolean_value_expression_1

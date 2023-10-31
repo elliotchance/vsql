@@ -1,16 +1,7 @@
 // planner.v contains the query planner which determines the best strategy for
 // finding rows. The plan is built from a stack of operations, where each
 // operation may take in rows but will always produce rows that can be fed into
-// the next operation. You can find the operations in:
-//
-//   ExprOperation           eval.v
-//   GroupOperation          group.v
-//   LimitOperation          limit.v
-//   PrimaryKeyOperation     walk.v
-//   TableOperation          table.v
-//   WhereOperation          where.v
-//   ValuesOperation         values.v
-//   VirtualTableOperation   virtual_table.v
+// the next operation.
 
 module vsql
 
@@ -30,7 +21,7 @@ mut:
 
 fn create_plan(stmt Stmt, params map[string]Value, mut c Connection) !Plan {
 	match stmt {
-		DeleteStmt { return create_delete_plan(stmt, params, mut c) }
+		DeleteStatementSearched { return create_delete_plan(stmt, params, mut c) }
 		QueryExpression { return create_query_expression_plan(stmt, params, mut c, Correlation{}) }
 		UpdateStatementSearched { return create_update_plan(stmt, params, mut c) }
 		else { return error('cannot create plan for ${stmt}') }
@@ -248,7 +239,7 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []De
 		table)!
 }
 
-fn create_delete_plan(stmt DeleteStmt, params map[string]Value, mut c Connection) !Plan {
+fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut c Connection) !Plan {
 	select_stmt := QuerySpecification{
 		exprs: AsteriskExpr(true)
 		table_expression: TableExpression{
@@ -361,4 +352,100 @@ fn (p Plan) explain(elapsed_parse time.Duration) Result {
 	return new_result([
 		Column{Identifier{ sub_entity_name: 'EXPLAIN' }, new_type('VARCHAR', 0, 0), false},
 	], rows, elapsed_parse, 0)
+}
+
+// A ExprOperation executes expressions for each row.
+struct ExprOperation {
+mut:
+	conn    &Connection
+	params  map[string]Value
+	exprs   []DerivedColumn
+	columns []Column
+}
+
+fn new_expr_operation(mut conn Connection, params map[string]Value, select_list SelectList, tables map[string]Table) !ExprOperation {
+	mut exprs := []DerivedColumn{}
+	mut columns := []Column{}
+
+	match select_list {
+		AsteriskExpr {
+			for _, table in tables {
+				columns << table.columns
+				for column in table.columns {
+					exprs << DerivedColumn{ValueExpression(CommonValueExpression(DatetimePrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(column.name))))), Identifier{
+						sub_entity_name: column.name.sub_entity_name
+					}}
+				}
+			}
+		}
+		QualifiedAsteriskExpr {
+			mut table_name := conn.resolve_table_identifier(select_list.table_name, true)!
+			table := tables[table_name.id()] or { return sqlstate_42p01('table', table_name.str()) }
+			columns = table.columns
+			for column in table.columns {
+				exprs << DerivedColumn{ValueExpression(BooleanValueExpression{
+					term: BooleanTerm{
+						factor: BooleanTest{
+							expr: BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(column.name)))
+						}
+					}
+				}), Identifier{
+					sub_entity_name: column.name.sub_entity_name
+				}}
+			}
+		}
+		[]DerivedColumn {
+			empty_row := new_empty_table_row(tables)
+			for i, column in select_list {
+				mut column_name := 'COL${i + 1}'
+				if column.as_clause.sub_entity_name != '' {
+					column_name = column.as_clause.sub_entity_name
+				} else if column.expr is CommonValueExpression {
+					if column.expr is DatetimePrimary {
+						if column.expr is ValueExpressionPrimary {
+							if column.expr is NonparenthesizedValueExpressionPrimary {
+								if column.expr is Identifier {
+									e := column.expr
+									column_name = e.sub_entity_name
+								}
+							}
+						}
+					}
+				}
+
+				expr := column.expr.resolve_identifiers(conn, tables)!
+				col := Identifier{
+					sub_entity_name: column_name
+				}
+
+				columns << Column{col, expr.eval_type(conn, empty_row, params)!, false}
+
+				exprs << DerivedColumn{expr, col}
+			}
+		}
+	}
+
+	return ExprOperation{conn, params, exprs, columns}
+}
+
+fn (o ExprOperation) str() string {
+	return 'EXPR (${o.columns()})'
+}
+
+fn (o ExprOperation) columns() Columns {
+	return o.columns
+}
+
+fn (mut o ExprOperation) execute(rows []Row) ![]Row {
+	mut new_rows := []Row{}
+
+	for row in rows {
+		mut data := map[string]Value{}
+		for expr in o.exprs {
+			data[expr.as_clause.id()] = expr.expr.eval(mut o.conn, row, o.params)!
+		}
+		new_rows << new_row(data)
+	}
+
+	return new_rows
 }

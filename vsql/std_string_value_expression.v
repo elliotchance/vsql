@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>
+//
+// # Function
+//
+// Specify a character string value or a binary string value.
+//
+// # Format
 //~
 //~ <string value expression> /* CharacterValueExpression */ ::=
 //~     <character value expression>

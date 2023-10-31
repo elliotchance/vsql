@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>
+//
+// # Function
+//
+// Specify a numeric value.
+//
+// # Format
 //~
 //~ <numeric value expression> /* NumericValueExpression */ ::=
 //~     <term>                                           -> numeric_value_expression_1
@@ -234,4 +238,58 @@ fn parse_numeric_value_expression_1(term Term) !NumericValueExpression {
 
 fn parse_numeric_value_expression_2(n NumericValueExpression, op string, term Term) !NumericValueExpression {
 	return NumericValueExpression{&n, op, term}
+}
+
+fn eval_binary(mut conn Connection, data Row, x Value, op string, y Value, params map[string]Value) !Value {
+	mut left := x
+	mut right := y
+
+	// There is a special case we need to deal with when using literals against
+	// other approximate types.
+	//
+	// TODO(elliotchance): This won't be needed when we properly implement
+	//  ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>
+	mut key := '${left.typ.typ} ${op} ${right.typ.typ}'
+	if left.typ.typ.is_number() && right.typ.typ.is_number() {
+		supertype := most_specific_value(left, right) or {
+			return sqlstate_42883('operator does not exist: ${key}')
+		}
+		left = cast_numeric(mut conn, cast_approximate(left, supertype.typ)!, supertype)!
+		right = cast_numeric(mut conn, cast_approximate(right, supertype.typ)!, supertype)!
+		key = '${supertype.typ} ${op} ${supertype.typ}'
+	}
+
+	if fnc := conn.binary_operators[key] {
+		op_fn := fnc as BinaryOperatorFunc
+		return op_fn(conn, left, right)
+	}
+
+	return sqlstate_42883('operator does not exist: ${key}')
+}
+
+fn cast_approximate(v Value, want SQLType) !Value {
+	if v.typ.typ == .is_numeric && v.typ.size == 0 {
+		match want {
+			.is_double_precision {
+				return new_double_precision_value(v.as_f64()!)
+			}
+			.is_real {
+				return new_real_value(f32(v.as_f64()!))
+			}
+			.is_bigint {
+				return new_bigint_value(i64(v.as_f64()!))
+			}
+			.is_smallint {
+				return new_smallint_value(i16(v.as_f64()!))
+			}
+			.is_integer {
+				return new_integer_value(int(v.as_f64()!))
+			}
+			else {
+				// Let it fall through.
+			}
+		}
+	}
+
+	return v
 }

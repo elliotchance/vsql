@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 6.3, <value expression primary>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 6.3, <value expression primary>
+//
+// # Function
+//
+// Specify a value that is syntactically self-delimited.
+//
+// # Format
 //~
 //~ <value expression primary> /* ValueExpressionPrimary */ ::=
 //~     <parenthesized value expression>              -> ValueExpressionPrimary

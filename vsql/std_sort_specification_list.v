@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 10.10, <sort specification list>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 10.10, <sort specification list>
+//
+// # Function
+//
+// Specify a sort order.
+//
+// # Format
 //~
 //~ <sort specification list> /* []SortSpecification */ ::=
 //~     <sort specification>                                     -> sort_list_1

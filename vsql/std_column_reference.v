@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 6.7, <column reference>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 6.7, <column reference>
+//
+// # Function
+//
+// Reference a column.
+//
+// # Format
 //~
 //~ <column reference> /* Identifier */ ::=
 //~     <basic identifier chain>   -> column_reference

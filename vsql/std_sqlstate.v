@@ -1,11 +1,10 @@
-// sqlstate.v contains all the error definitions as they are described by the
-// SQLSTATE codes.
+module vsql
+
+// ISO/IEC 9075-2:2016(E), 24.1, SQLSTATE
 //
 // The SQL standard is pretty flexible on the individual codes, so I've copied
 // the relevant errors code from the definitions in PostgreSQL:
 // https://www.postgresql.org/docs/9.4/errcodes-appendix.html
-
-module vsql
 
 // sqlstate_to_int converts the 5 character SQLSTATE code (such as "42P01") into
 // an integer representation. The returned value can be converted back to its

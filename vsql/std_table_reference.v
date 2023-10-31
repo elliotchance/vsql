@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 7.6, <table reference>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 7.6, <table reference>
+//
+// # Function
+//
+// Reference a table.
+//
+// # Format
 //~
 //~ <table reference> /* TableReference */ ::=
 //~     <table factor>   -> TableReference

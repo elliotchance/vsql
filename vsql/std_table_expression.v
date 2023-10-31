@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 7.4, <table expression>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 7.4, <table expression>
+//
+// # Function
+//
+// Specify a table or a grouped table.
+//
+// # Format
 //~
 //~ <table expression> /* TableExpression */ ::=
 //~     <from clause>                                    -> table_expression

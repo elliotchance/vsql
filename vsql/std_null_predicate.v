@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 8.8, <null predicate>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 8.8, <null predicate>
+//
+// # Function
+//
+// Specify a test for a null value.
+//
+// # Format
 //~
 //~ <null predicate> /* NullPredicate */ ::=
 //~     <row value predicand> <null predicate part 2>   -> null_predicate

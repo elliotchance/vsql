@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>
+//
+// # Function
+//
+// Specify a uniqueness constraint for a table.
+//
+// # Format
 //~
 //~ <unique constraint definition> /* TableElement */ ::=
 //~   <unique specification> <left paren>

@@ -1,8 +1,13 @@
-// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target specification>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target specification>
+//
+// # Function
+//
+// Specify one or more values, host parameters, SQL parameters, dynamic
+// parameters, or host variables.
+//
+// # Format
 //~
 //~ <value specification> /* ValueSpecification */ ::=
 //~     <literal>                       -> ValueSpecification

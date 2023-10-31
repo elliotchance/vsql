@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers
+//
+// # Function
+//
+// Specify names.
+//
+// # Format
 //~
 //~ <identifier> /* IdentifierChain */ ::=
 //~     <actual identifier>

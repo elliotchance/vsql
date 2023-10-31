@@ -1,10 +1,14 @@
-// ISO/IEC 9075-2:2016(E), 8.5, <like predicate>
-
 module vsql
 
 import regex
 
-// Format
+// ISO/IEC 9075-2:2016(E), 8.5, <like predicate>
+//
+// # Function
+//
+// Specify a pattern-match comparison.
+//
+// # Format
 //~
 //~ <like predicate> /* CharacterLikePredicate */ ::=
 //~     <character like predicate>

@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 7.2, <row value expression>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 7.2, <row value expression>
+//
+// # Function
+//
+// Specify a row value.
+//
+// # Format
 //~
 //~ <table row value expression> /* RowValueConstructor */ ::=
 //~     <row value constructor>

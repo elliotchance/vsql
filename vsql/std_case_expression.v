@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 6.12, <case expression>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 6.12, <case expression>
+//
+// # Function
+//
+// Specify a conditional value.
+//
+// # Format
 //~
 //~ <case expression> /* CaseExpression */ ::=
 //~     <case abbreviation>

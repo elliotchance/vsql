@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 10.4, <routine invocation>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 10.4, <routine invocation>
+//
+// # Function
+//
+// Invoke an SQL-invoked routine.
+//
+// # Format
 //~
 //~ <routine invocation> /* RoutineInvocation */ ::=
 //~     <routine name> <SQL argument list>   -> routine_invocation

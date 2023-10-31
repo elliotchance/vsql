@@ -1,6 +1,6 @@
-// schema.v contains the structure of a schema.
-
 module vsql
+
+// ISO/IEC 9075-2:2016(E), 4.26, SQL-schemas
 
 // Represents a schema.
 pub struct Schema {

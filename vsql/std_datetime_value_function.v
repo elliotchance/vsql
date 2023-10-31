@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>
+//
+// # Function
+//
+// Specify a function yielding a value of type datetime.
+//
+// # Format
 //~
 //~ <datetime value function> /* DatetimeValueFunction */ ::=
 //~     <current date value function>
@@ -160,4 +164,21 @@ fn parse_localtimestamp_1() !DatetimeValueFunction {
 
 fn parse_localtimestamp_2(prec string) !DatetimeValueFunction {
 	return LocalTimestamp{prec.int()}
+}
+
+fn time_value(conn &Connection, prec int, include_offset bool) string {
+	now, _ := conn.now()
+
+	mut s := now.strftime('%H:%M:%S')
+
+	if prec > 0 {
+		microseconds := left_pad(int(now.nanosecond / 1000).str(), '0', 6)
+		s += '.' + microseconds.substr(0, prec)
+	}
+
+	if include_offset {
+		s += time_zone_value(conn)
+	}
+
+	return s
 }

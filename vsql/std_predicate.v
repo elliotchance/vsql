@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 8.1, <predicate>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 8.1, <predicate>
+//
+// # Function
+//
+// Specify a condition that can be evaluated to give a boolean value.
+//
+// # Format
 //~
 //~ <predicate> /* Predicate */ ::=
 //~     <comparison predicate>   -> Predicate

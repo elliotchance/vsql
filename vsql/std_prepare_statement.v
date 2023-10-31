@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>
+//
+// # Function
+//
+// Prepare a statement for execution.
+//
+// # Format
 //~
 //~ <preparable statement> /* Stmt */ ::=
 //~     <preparable SQL data statement>

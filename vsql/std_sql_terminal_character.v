@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 5.1, <SQL terminal character>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 5.1, <SQL terminal character>
+//
+// # Function
+//
+// Define the terminal symbols of the SQL language and the elements of strings.
+//
+// # Format
 //~
 //~ <left paren> ::= "("
 //~

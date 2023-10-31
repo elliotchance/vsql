@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 6.28, <value expression>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 6.28, <value expression>
+//
+// # Function
+//
+// Specify a value.
+//
+// # Format
 //~
 //~ <value expression> /* ValueExpression */ ::=
 //~     <common value expression>    -> ValueExpression

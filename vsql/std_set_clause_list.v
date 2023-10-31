@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 14.15, <set clause list>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 14.15, <set clause list>
+//
+// # Function
+//
+// Specify a list of updates.
+//
+// # Format
 //~
 //~ <set clause list> /* map[string]UpdateSource */ ::=
 //~     <set clause>

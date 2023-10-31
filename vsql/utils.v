@@ -32,3 +32,12 @@ fn compare_bytes(a []u8, b []u8) int {
 	// greater.
 	return a.len - b.len
 }
+
+fn left_pad(s string, c string, len int) string {
+	mut new_s := s
+	for new_s.len < len {
+		new_s = c + new_s
+	}
+
+	return new_s
+}

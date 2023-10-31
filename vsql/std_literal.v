@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 5.3, <literal>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 5.3, <literal>
+//
+// # Function
+//
+// Specify a non-null value.
+//
+// # Format
 //~
 //~ <literal> /* Value */ ::=
 //~     <signed numeric literal>

@@ -1,9 +1,15 @@
-// cast.v handles the conversion of a value from one type to another.
-
 module vsql
 
 import math.big
 import strings
+
+// ISO/IEC 9075-2:2016(E), 9.2, Store assignment
+//
+// # Function
+//
+// Specify rules for assignments where the target permits null without the use
+// of indicator parameters or indicator variables, such as storing SQL-data or
+// setting the value of SQL parameters.
 
 const min_smallint = big.integer_from_i64(-32768)
 

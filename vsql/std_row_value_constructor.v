@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 7.1, <row value constructor>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 7.1, <row value constructor>
+//
+// # Function
+//
+// Specify a value or list of values to be constructed into a row.
+//
+// # Format
 //~
 //~ <row value constructor> /* RowValueConstructor */ ::=
 //~     <common value expression>          -> RowValueConstructor
@@ -257,6 +261,33 @@ fn (e RowValueConstructor) eval_type(conn &Connection, data Row, params map[stri
 		CommonValueExpression, BooleanValueExpression, ExplicitRowValueConstructor {
 			e.eval_type(conn, data, params)!
 		}
+	}
+}
+
+fn (r RowValueConstructor) eval_row(mut conn Connection, data Row, params map[string]Value) !Row {
+	mut col_number := 1
+	mut row := map[string]Value{}
+	match r {
+		ExplicitRowValueConstructor {
+			match r {
+				ExplicitRowValueConstructorRow {
+					for expr in r.exprs {
+						row['COL${col_number}'] = expr.eval(mut conn, data, params)!
+						col_number++
+					}
+				}
+				QueryExpression {
+					panic('query expressions cannot be used in ROW constructors')
+				}
+			}
+		}
+		CommonValueExpression, BooleanValueExpression {
+			row['COL${col_number}'] = r.eval(mut conn, data, params)!
+		}
+	}
+
+	return Row{
+		data: row
 	}
 }
 

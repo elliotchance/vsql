@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>
+//
+// # Function
+//
+// Define all of the SQL-statements that are <SQL procedure statement>s.
+//
+// # Format
 //~
 //~ <SQL schema statement> /* Stmt */ ::=
 //~     <SQL schema definition statement>

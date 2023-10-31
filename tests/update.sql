@@ -1,3 +1,6 @@
+EXPLAIN UPDATE foo SET x = 123;
+-- error 42P01: no such table: ":memory:".PUBLIC.FOO
+
 UPDATE foo SET x = 123;
 -- error 42P01: no such table: ":memory:".PUBLIC.FOO
 

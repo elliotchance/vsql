@@ -4,6 +4,24 @@ module vsql
 
 import time
 
+// All possible root statments.
+type Stmt = AlterSequenceGeneratorStatement
+	| CommitStatement
+	| DeleteStatementSearched
+	| DropSchemaStatement
+	| DropSequenceGeneratorStatement
+	| DropTableStatement
+	| InsertStatement
+	| QueryExpression
+	| RollbackStatement
+	| SchemaDefinition
+	| SequenceGeneratorDefinition
+	| SetCatalogStatement
+	| SetSchemaStatement
+	| StartTransactionStatement
+	| TableDefinition
+	| UpdateStatementSearched
+
 // A prepared statement is compiled and validated, but not executed. It can then
 // be executed with a set of host parameters to be substituted into the
 // statement. Each invocation requires all host parameters to be passed in.
@@ -42,106 +60,115 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 	match stmt {
 		AlterSequenceGeneratorStatement {
 			if p.explain {
-				return sqlstate_42601('Cannot EXPLAIN ALTER SEQUENCE')
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			return execute_alter_sequence(mut p.c, stmt, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
-		CommitStmt {
+		CommitStatement {
 			if p.explain {
-				return sqlstate_42601('Cannot EXPLAIN COMMIT')
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			// See transaction.v
-			return execute_commit(mut p.c, stmt, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		SchemaDefinition {
 			if p.explain {
-				return sqlstate_42601('Cannot EXPLAIN CREATE SCHEMA')
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			return execute_create_schema(mut p.c, stmt, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		SequenceGeneratorDefinition {
 			if p.explain {
-				return sqlstate_42601('Cannot EXPLAIN CREATE SEQUENCE')
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			return execute_create_sequence(mut p.c, stmt, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		TableDefinition {
 			if p.explain {
-				return sqlstate_42601('Cannot EXPLAIN CREATE TABLE')
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			return execute_create_table(mut p.c, stmt, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
-		DeleteStmt {
-			return execute_delete(mut p.c, stmt, all_params, p.elapsed_parse, p.explain)
+		DeleteStatementSearched {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		DropSchemaStatement {
 			if p.explain {
-				return sqlstate_42601('Cannot EXPLAIN DROP SCHEMA')
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			return execute_drop_schema(mut p.c, stmt, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		DropSequenceGeneratorStatement {
 			if p.explain {
-				return sqlstate_42601('Cannot EXPLAIN DROP SEQUENCE')
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			return execute_drop_sequence(mut p.c, stmt, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		DropTableStatement {
 			if p.explain {
-				return sqlstate_42601('Cannot EXPLAIN DROP TABLE')
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			return execute_drop_table(mut p.c, stmt, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		InsertStatement {
 			if p.explain {
-				return sqlstate_42601('Cannot EXPLAIN INSERT')
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			return execute_insert(mut p.c, stmt, all_params, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		RollbackStatement {
 			if p.explain {
-				return sqlstate_42601('Cannot EXPLAIN ROLLBACK')
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			// See transaction.v
-			return execute_rollback(mut p.c, stmt, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		SetCatalogStatement {
 			if p.explain {
-				return sqlstate_42601('Cannot EXPLAIN SET CATALOG')
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			return execute_set_catalog(mut p.c, stmt, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		SetSchemaStatement {
 			if p.explain {
-				return sqlstate_42601('Cannot EXPLAIN SET SCHEMA')
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			return execute_set_schema(mut p.c, stmt, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		QueryExpression {
-			return execute_select(mut p.c, stmt, all_params, p.elapsed_parse, p.explain)
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		StartTransactionStatement {
 			if p.explain {
-				return sqlstate_42601('Cannot EXPLAIN START TRANSACTION')
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			// See transaction.v
-			return execute_start_transaction(mut p.c, stmt, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		UpdateStatementSearched {
-			return execute_update(mut p.c, stmt, all_params, p.elapsed_parse, p.explain)
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 	}
 }

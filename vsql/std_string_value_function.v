@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 6.32, <string value function>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>
+//
+// # Function
+//
+// Specify a function yielding a value of type character string or binary string.
+//
+// # Format
 //~
 //~ <string value function> /* CharacterValueFunction */ ::=
 //~     <character value function>

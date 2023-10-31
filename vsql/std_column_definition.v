@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 11.4, <column definition>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 11.4, <column definition>
+//
+// # Function
+//
+// Define a column of a base table.
+//
+// # Format
 //~
 //~ <column definition> /* TableElement */ ::=
 //~     <column name> <data type or domain name>   -> column_definition_1

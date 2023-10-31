@@ -1,6 +1,6 @@
-// sequence.v is the definition and usage of SEQUENCEs.
-
 module vsql
+
+// ISO/IEC 9075-2:2016(E), 4.27, Sequence generators
 
 // A SEQUENCE definition.
 pub struct Sequence {

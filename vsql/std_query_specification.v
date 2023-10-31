@@ -1,8 +1,12 @@
-// ISO/IEC 9075-2:2016(E), 7.16, <query specification>
-
 module vsql
 
-// Format
+// ISO/IEC 9075-2:2016(E), 7.16, <query specification>
+//
+// # Function
+//
+// Specify a table derived from the result of a <table expression>.
+//
+// # Format
 //~
 //~ <query specification> /* SimpleTable */ ::=
 //~     SELECT

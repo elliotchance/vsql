@@ -5,8 +5,11 @@ module vsql
 // Format
 //~
 //~ <start transaction statement> /* Stmt */ ::=
-//~   START TRANSACTION   -> start_transaction
+//~   START TRANSACTION   -> start_transaction_statement
 
-fn parse_start_transaction() !Stmt {
-	return StartTransactionStmt{}
+struct StartTransactionStatement {
+}
+
+fn parse_start_transaction_statement() !Stmt {
+	return StartTransactionStatement{}
 }

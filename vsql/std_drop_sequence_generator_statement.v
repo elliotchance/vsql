@@ -8,6 +8,10 @@ module vsql
 //~     DROP SEQUENCE
 //~     <sequence generator name>   -> drop_sequence_generator_statement
 
+struct DropSequenceGeneratorStatement {
+	sequence_name Identifier
+}
+
 fn parse_drop_sequence_generator_statement(sequence_name Identifier) !Stmt {
-	return DropSequenceStmt{sequence_name}
+	return DropSequenceGeneratorStatement{sequence_name}
 }

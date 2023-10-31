@@ -314,10 +314,10 @@ def parse_grammar(grammar):
             # If there is a parsing function we replace the current rule with a
             # subrule:
             #
-            #   <term> /* Expr */ ::=
+            #   <term> /* Term */ ::=
             #       <factor>
-            #     | <term> <asterisk> <factor>   -> binary_expr
-            #     | <term> <solidus> <factor>    -> binary_expr
+            #     | <term> <asterisk> <factor>   -> term_1
+            #     | <term> <solidus> <factor>    -> term_2
             #
             # Becomes:
             #
@@ -334,7 +334,7 @@ def parse_grammar(grammar):
             # can capture all the children and invoke the parsing function.
             if '->' in rule:
                 rule, parse_function = rule.split(' -> ')
-                new_rule = name[:-1] + ': ' + str(rule_number + 1) + '>'
+                new_rule = name[:-1] + ': #' + str(rule_number + 1) + '>'
                 lines.append(new_rule + ' ::= ' + rule)
                 rules[rule_number] = new_rule
                 parse_functions[new_rule] = (parse_function.strip(), re.findall('(<.*?>|[^\s]+)', rule))
@@ -375,7 +375,7 @@ def rule_name(name):
     return name
 
 def var_name(name):
-    return "rule_" + rule_name(name).lower().replace('<', '').replace('-', '_').replace(':', '').replace('>', '_').replace(' ', '_').replace('^', '_')
+    return "rule_" + rule_name(name).lower().replace('<', '').replace('#', '_').replace('-', '_').replace(':', '').replace('>', '_').replace(' ', '_').replace('^', '_')
 
 # Generate grammar file
 grammar_file = open('vsql/grammar.v', mode='w')
@@ -459,11 +459,18 @@ fn parse_ast_name(children []EarleyValue, name string) ![]EarleyValue {
 for rule in sorted(parse_functions.keys(), key=lambda s: s.lower()):
     grammar_file.write("\t\t'" + rule + "' {\n")
     function_name, terms = parse_functions[rule]
-    grammar_file.write("\t\t\treturn [EarleyValue(parse_" + function_name + "(")
+    if function_name == function_name.lower():
+        grammar_file.write("\t\t\treturn [EarleyValue(parse_" + function_name + "(")
+    else:
+        grammar_file.write("\t\t\treturn [EarleyValue(" + function_name + "(")
     grammar_file.write(', '.join([
         'children[' + str(i) + '] as ' + grammar_types[t]
         for i, t in enumerate(terms)
-        if t in grammar_types and grammar_types[t] != '']) + ") !)]\n")
+        if t in grammar_types and grammar_types[t] != '']))
+    if function_name == function_name.lower():
+        grammar_file.write(") !)]\n")
+    else:
+        grammar_file.write("))]\n")
     
     grammar_file.write("\t\t}\n")
 

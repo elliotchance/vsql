@@ -8,6 +8,9 @@ module vsql
 //~     ROLLBACK        -> rollback
 //~   | ROLLBACK WORK   -> rollback
 
+struct RollbackStatement {
+}
+
 fn parse_rollback() !Stmt {
-	return RollbackStmt{}
+	return RollbackStatement{}
 }

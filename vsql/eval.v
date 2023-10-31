@@ -20,7 +20,7 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 			for _, table in tables {
 				columns << table.columns
 				for column in table.columns {
-					exprs << DerivedColumn{column.name, Identifier{
+					exprs << DerivedColumn{ValueExpression(CommonValueExpression(DatetimePrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(column.name))))), Identifier{
 						sub_entity_name: column.name.sub_entity_name
 					}}
 				}
@@ -31,7 +31,13 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 			table := tables[table_name.id()] or { return sqlstate_42p01('table', table_name.str()) }
 			columns = table.columns
 			for column in table.columns {
-				exprs << DerivedColumn{column.name, Identifier{
+				exprs << DerivedColumn{ValueExpression(BooleanValueExpression{
+					term: BooleanTerm{
+						factor: BooleanTest{
+							expr: BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(column.name)))
+						}
+					}
+				}), Identifier{
 					sub_entity_name: column.name.sub_entity_name
 				}}
 			}
@@ -42,16 +48,25 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 				mut column_name := 'COL${i + 1}'
 				if column.as_clause.sub_entity_name != '' {
 					column_name = column.as_clause.sub_entity_name
-				} else if column.expr is Identifier {
-					column_name = column.expr.sub_entity_name
+				} else if column.expr is CommonValueExpression {
+					if column.expr is DatetimePrimary {
+						if column.expr is ValueExpressionPrimary {
+							if column.expr is NonparenthesizedValueExpressionPrimary {
+								if column.expr is Identifier {
+									e := column.expr
+									column_name = e.sub_entity_name
+								}
+							}
+						}
+					}
 				}
 
-				expr := resolve_identifiers(conn, column.expr, tables)!
+				expr := column.expr.resolve_identifiers(conn, tables)!
 				col := Identifier{
 					sub_entity_name: column_name
 				}
 
-				columns << Column{col, eval_as_type(conn, empty_row, expr, params)!, false}
+				columns << Column{col, expr.eval_type(conn, empty_row, params)!, false}
 
 				exprs << DerivedColumn{expr, col}
 			}
@@ -75,7 +90,7 @@ fn (mut o ExprOperation) execute(rows []Row) ![]Row {
 	for row in rows {
 		mut data := map[string]Value{}
 		for expr in o.exprs {
-			data[expr.as_clause.id()] = eval_as_value(mut o.conn, row, expr.expr, o.params)!
+			data[expr.as_clause.id()] = expr.expr.eval(mut o.conn, row, o.params)!
 		}
 		new_rows << new_row(data)
 	}
@@ -83,136 +98,30 @@ fn (mut o ExprOperation) execute(rows []Row) ![]Row {
 	return new_rows
 }
 
-fn eval_row(mut conn Connection, data Row, exprs []Expr, params map[string]Value) !Row {
+fn eval_row(mut conn Connection, data Row, r RowValueConstructor, params map[string]Value) !Row {
 	mut col_number := 1
 	mut row := map[string]Value{}
-	for expr in exprs {
-		row['COL${col_number}'] = eval_as_value(mut conn, data, expr, params)!
-		col_number++
+	match r {
+		ExplicitRowValueConstructor {
+			match r {
+				ExplicitRowValueConstructorRow {
+					for expr in r.exprs {
+						row['COL${col_number}'] = expr.eval(mut conn, data, params)!
+						col_number++
+					}
+				}
+				QueryExpression {
+					panic('query expressions cannot be used in ROW constructors')
+				}
+			}
+		}
+		CommonValueExpression, BooleanValueExpression {
+			row['COL${col_number}'] = r.eval(mut conn, data, params)!
+		}
 	}
 
 	return Row{
 		data: row
-	}
-}
-
-fn eval_as_type(conn &Connection, data Row, e Expr, params map[string]Value) !Type {
-	match e {
-		CallExpr {
-			mut arg_types := []Type{}
-			for arg in e.args {
-				arg_types << eval_as_type(conn, data, arg, params)!
-			}
-
-			func := conn.find_function(e.function_name, arg_types)!
-
-			return func.return_type
-		}
-		CountAllExpr, NextValueExpr {
-			return new_type('INTEGER', 0, 0)
-		}
-		Predicate, DatetimeValueFunction {
-			return e.eval_type(conn, data, params)
-		}
-		TruthExpr {
-			return new_type('BOOLEAN', 0, 0)
-		}
-		Value {
-			return e.typ
-		}
-		CastExpr {
-			return e.target
-		}
-		CoalesceExpr {
-			return eval_as_type(conn, data, e.exprs[0], params)
-		}
-		NullIfExpr {
-			return eval_as_type(conn, data, e.a, params)
-		}
-		UnaryExpr {
-			return eval_as_type(conn, data, e.expr, params)
-		}
-		BinaryExpr {
-			// TODO(elliotchance): This is not correct, we would have to return
-			// the highest resolution type (need to check the SQL standard about
-			// this behavior).
-			return eval_as_type(conn, data, e.left, params)
-		}
-		Identifier {
-			col := data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }
-
-			return col.typ
-		}
-		NoExpr, QualifiedAsteriskExpr, QueryExpression, RowExpr {
-			return sqlstate_42601('invalid expression provided: ${e.str()}')
-		}
-		UnsignedValueSpecification {
-			return e.eval_type(conn, data, params)
-		}
-		SubstringExpr, TrimExpr {
-			return new_type('CHARACTER VARYING', 0, 0)
-		}
-		UntypedNullExpr {
-			return error('cannot determine type of untyped NULL')
-		}
-	}
-}
-
-fn eval_as_value(mut conn Connection, data Row, e Expr, params map[string]Value) !Value {
-	match e {
-		Predicate, UnsignedValueSpecification, DatetimeValueFunction {
-			return e.eval(mut conn, data, params)
-		}
-		BinaryExpr {
-			return eval_binary(mut conn, data, e, params)
-		}
-		CallExpr {
-			return eval_call(mut conn, data, e, params)
-		}
-		CastExpr {
-			return eval_cast(mut conn, data, e, params)
-		}
-		CoalesceExpr {
-			return eval_coalesce(mut conn, data, e, params)
-		}
-		CountAllExpr {
-			return eval_identifier(data, new_column_identifier('"COUNT(*)"')!)
-		}
-		Identifier {
-			return eval_identifier(data, e)
-		}
-		NextValueExpr {
-			return eval_next_value(mut conn, data, e, params)
-		}
-		NullIfExpr {
-			return eval_nullif(mut conn, data, e, params)
-		}
-		SubstringExpr {
-			return eval_substring(mut conn, data, e, params)
-		}
-		UnaryExpr {
-			return eval_unary(mut conn, data, e, params)
-		}
-		Value {
-			return e
-		}
-		NoExpr, QualifiedAsteriskExpr, QueryExpression, RowExpr {
-			// RowExpr should never make it to eval because it will be
-			// reformatted into a ValuesOperation.
-			//
-			// QueryExpression will have already been resolved to a
-			// ValuesOperation.
-			return sqlstate_42601('missing or invalid expression provided')
-		}
-		TrimExpr {
-			return eval_trim(mut conn, data, e, params)
-		}
-		TruthExpr {
-			return eval_truth(mut conn, data, e, params)
-		}
-		UntypedNullExpr {
-			return error('cannot determine value of untyped NULL')
-		}
 	}
 }
 
@@ -242,185 +151,14 @@ fn left_pad(s string, c string, len int) string {
 	return new_s
 }
 
-fn eval_as_bool(mut conn Connection, data Row, e Expr, params map[string]Value) !bool {
-	v := eval_as_value(mut conn, data, e, params)!
+fn eval_as_bool(mut conn Connection, data Row, e BooleanValueExpression, params map[string]Value) !bool {
+	v := e.eval(mut conn, data, params)!
 
 	if v.typ.typ == .is_boolean {
 		return v.bool_value() == .is_true
 	}
 
 	return sqlstate_42804('in expression', 'BOOLEAN', v.typ.str())
-}
-
-fn eval_identifier(data Row, e Identifier) !Value {
-	value := data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }
-
-	return value
-}
-
-fn eval_call(mut conn Connection, data Row, e CallExpr, params map[string]Value) !Value {
-	func_name := e.function_name
-
-	mut arg_types := []Type{}
-	for arg in e.args {
-		mut arg_type := eval_as_type(conn, data, arg, params)!
-
-		// TODO(elliotchance): There is a special case where numeric literals are
-		// treated as DOUBLE PRECISION. This will be changed in the future when we
-		// have proper support for NUMERIC.
-		if arg_type.typ == .is_numeric && arg_type.scale == 0 {
-			arg_type = Type{.is_double_precision, 0, 0, false}
-		}
-
-		arg_types << arg_type
-	}
-
-	func := conn.find_function(func_name, arg_types)!
-
-	if func.is_agg {
-		return eval_identifier(data, Identifier{ custom_id: e.pstr(params) })
-	}
-
-	if e.args.len != func.arg_types.len {
-		return sqlstate_42883('${func_name} has ${e.args.len} ${pluralize(e.args.len,
-			'argument')} but needs ${func.arg_types.len} ${pluralize(func.arg_types.len,
-			'argument')}')
-	}
-
-	mut args := []Value{}
-	mut i := 0
-	for typ in arg_types {
-		arg := eval_as_value(mut conn, data, e.args[i], params)!
-		args << cast(mut conn, 'argument ${i + 1} in ${func_name}', arg, typ)!
-		i++
-	}
-
-	return func.func(args)
-}
-
-fn eval_next_value(mut conn Connection, data Row, e NextValueExpr, params map[string]Value) !Value {
-	mut catalog := conn.catalog()
-	next := catalog.storage.sequence_next_value(e.name)!
-
-	return new_bigint_value(next)
-}
-
-fn eval_nullif(mut conn Connection, data Row, e NullIfExpr, params map[string]Value) !Value {
-	a := eval_as_value(mut conn, data, e.a, params)!
-	b := eval_as_value(mut conn, data, e.b, params)!
-
-	if a.typ.typ != b.typ.typ {
-		return sqlstate_42804('in NULLIF', a.typ.str(), b.typ.str())
-	}
-
-	cmp := compare(a, b)!
-	if cmp == .is_equal {
-		return new_null_value(a.typ.typ)
-	}
-
-	return a
-}
-
-fn eval_coalesce(mut conn Connection, data Row, e CoalesceExpr, params map[string]Value) !Value {
-	// TODO(elliotchance): This is horribly inefficient.
-
-	mut typ := SQLType.is_varchar
-	mut first := true
-	for i, expr in e.exprs {
-		typ2 := eval_as_type(conn, data, expr, params)!
-
-		if first {
-			typ = typ2.typ
-			first = false
-		} else if typ != typ2.typ {
-			return sqlstate_42804('in argument ${i + 1} of COALESCE', typ.str(), typ2.typ.str())
-		}
-	}
-
-	mut value := Value{}
-	for expr in e.exprs {
-		value = eval_as_value(mut conn, data, expr, params)!
-
-		if !value.is_null {
-			return value
-		}
-	}
-
-	return new_null_value(value.typ.typ)
-}
-
-fn eval_cast(mut conn Connection, data Row, e CastExpr, params map[string]Value) !Value {
-	value := eval_as_value(mut conn, data, e.expr, params)!
-
-	return cast(mut conn, 'for CAST', value, e.target)
-}
-
-fn eval_truth(mut conn Connection, data Row, e TruthExpr, params map[string]Value) !Value {
-	// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
-	// "Table 15 — Truth table for the IS boolean operator"
-
-	value := eval_as_value(mut conn, data, e.expr, params)!
-	mut result := new_boolean_value(false)
-
-	if value.is_null {
-		result = new_boolean_value(e.value.is_null)
-	} else if value.bool_value() == .is_true {
-		result = new_boolean_value(e.value.bool_value() == .is_true)
-	} else {
-		result = new_boolean_value(e.value.bool_value() == .is_false)
-	}
-
-	if e.not {
-		return unary_not_boolean(conn, result)
-	}
-
-	return result
-}
-
-fn eval_trim(mut conn Connection, data Row, e TrimExpr, params map[string]Value) !Value {
-	source := eval_as_value(mut conn, data, e.source, params)!
-	character := eval_as_value(mut conn, data, e.character, params)!
-
-	if e.specification == 'LEADING' {
-		return new_varchar_value(source.string_value().trim_left(character.string_value()))
-	}
-
-	if e.specification == 'TRAILING' {
-		return new_varchar_value(source.string_value().trim_right(character.string_value()))
-	}
-
-	return new_varchar_value(source.string_value().trim(character.string_value()))
-}
-
-fn eval_substring(mut conn Connection, data Row, e SubstringExpr, params map[string]Value) !Value {
-	value := eval_as_value(mut conn, data, e.value, params)!
-	from := int((eval_as_value(mut conn, data, e.from, params)!).as_int() - 1)
-
-	if e.using == 'CHARACTERS' {
-		characters := value.string_value().runes()
-
-		if from >= characters.len || from < 0 {
-			return new_varchar_value('')
-		}
-
-		mut @for := characters.len - from
-		if e.@for !is NoExpr {
-			@for = int((eval_as_value(mut conn, data, e.@for, params)!).as_int())
-		}
-
-		return new_varchar_value(characters[from..from + @for].string())
-	}
-
-	if from >= value.string_value().len || from < 0 {
-		return new_varchar_value('')
-	}
-
-	mut @for := value.string_value().len - from
-	if e.@for !is NoExpr {
-		@for = int((eval_as_value(mut conn, data, e.@for, params)!).as_int())
-	}
-
-	return new_varchar_value(value.string_value().substr(from, from + @for))
 }
 
 fn cast_approximate(v Value, want SQLType) !Value {
@@ -450,23 +188,23 @@ fn cast_approximate(v Value, want SQLType) !Value {
 	return v
 }
 
-fn eval_binary(mut conn Connection, data Row, e BinaryExpr, params map[string]Value) !Value {
-	mut left := eval_as_value(mut conn, data, e.left, params)!
-	mut right := eval_as_value(mut conn, data, e.right, params)!
+fn eval_binary(mut conn Connection, data Row, x Value, op string, y Value, params map[string]Value) !Value {
+	mut left := x
+	mut right := y
 
 	// There is a special case we need to deal with when using literals against
 	// other approximate types.
 	//
 	// TODO(elliotchance): This won't be needed when we properly implement
 	//  ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>
-	mut key := '${left.typ.typ} ${e.op} ${right.typ.typ}'
+	mut key := '${left.typ.typ} ${op} ${right.typ.typ}'
 	if left.typ.typ.is_number() && right.typ.typ.is_number() {
 		supertype := most_specific_value(left, right) or {
 			return sqlstate_42883('operator does not exist: ${key}')
 		}
 		left = cast_numeric(mut conn, cast_approximate(left, supertype.typ)!, supertype)!
 		right = cast_numeric(mut conn, cast_approximate(right, supertype.typ)!, supertype)!
-		key = '${supertype.typ} ${e.op} ${supertype.typ}'
+		key = '${supertype.typ} ${op} ${supertype.typ}'
 	}
 
 	if fnc := conn.binary_operators[key] {
@@ -477,27 +215,15 @@ fn eval_binary(mut conn Connection, data Row, e BinaryExpr, params map[string]Va
 	return sqlstate_42883('operator does not exist: ${key}')
 }
 
-fn eval_unary(mut conn Connection, data Row, e UnaryExpr, params map[string]Value) !Value {
-	value := eval_as_value(mut conn, data, e.expr, params)!
-
-	key := '${e.op} ${value.typ.typ}'
-	if fnc := conn.unary_operators[key] {
-		unary_fn := fnc as UnaryOperatorFunc
-		return unary_fn(conn, value)!
-	}
-
-	return sqlstate_42883('operator does not exist: ${key}')
-}
-
 // eval_as_nullable_value is a broader version of eval_as_value that also takes
 // the known destination type as so allows for untyped NULLs.
 //
 // TODO(elliotchance): Is this even needed? Can eval_as_value be refactored to
 //  work the same way and avoid this extra layer?
-fn eval_as_nullable_value(mut conn Connection, typ SQLType, data Row, e Expr, params map[string]Value) !Value {
-	if e is UntypedNullExpr {
+fn eval_as_nullable_value(mut conn Connection, typ SQLType, data Row, e ContextuallyTypedRowValueConstructor, params map[string]Value) !Value {
+	if e is NullSpecification {
 		return new_null_value(typ)
 	}
 
-	return eval_as_value(mut conn, data, e, params)
+	return e.eval(mut conn, data, params)
 }

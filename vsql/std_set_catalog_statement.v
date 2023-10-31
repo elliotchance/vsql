@@ -7,9 +7,21 @@ module vsql
 //~ <set catalog statement> /* Stmt */ ::=
 //~     SET <catalog name characteristic>   -> set_catalog_stmt
 //~
-//~ <catalog name characteristic> /* Expr */ ::=
-//~     CATALOG <value specification>   -> expr
+//~ <catalog name characteristic> /* ValueSpecification */ ::=
+//~     CATALOG <value specification>   -> catalog_name_characteristic
 
-fn parse_set_catalog_stmt(catalog_name Expr) !Stmt {
-	return SetCatalogStmt{catalog_name}
+struct SetCatalogStatement {
+	catalog_name ValueSpecification
+}
+
+fn (e SetCatalogStatement) pstr(params map[string]Value) string {
+	return 'SET CATALOG ${e.catalog_name.pstr(params)}'
+}
+
+fn parse_set_catalog_stmt(catalog_name ValueSpecification) !Stmt {
+	return SetCatalogStatement{catalog_name}
+}
+
+fn parse_catalog_name_characteristic(v ValueSpecification) !ValueSpecification {
+	return v
 }

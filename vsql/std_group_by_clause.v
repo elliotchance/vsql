@@ -4,22 +4,33 @@ module vsql
 
 // Format
 //~
-//~ <group by clause> /* []Expr */ ::=
-//~     GROUP BY <grouping element list>   -> exprs
+//~ <group by clause> /* []Identifier */ ::=
+//~     GROUP BY <grouping element list>   -> group_by_clause
 //~
-//~ <grouping element list> /* []Expr */ ::=
-//~     <grouping element>                                   -> expr_to_list
-//~   | <grouping element list> <comma> <grouping element>   -> append_exprs1
+//~ <grouping element list> /* []Identifier */ ::=
+//~     <grouping element>                                   -> grouping_element_list_1
+//~   | <grouping element list> <comma> <grouping element>   -> grouping_element_list_2
 //~
-//~ <grouping element> /* Expr */ ::=
+//~ <grouping element> /* Identifier */ ::=
 //~     <ordinary grouping set>
 //~
-//~ <ordinary grouping set> /* Expr */ ::=
+//~ <ordinary grouping set> /* Identifier */ ::=
 //~     <grouping column reference>
 //~
-//~ <grouping column reference> /* Expr */ ::=
-//~     <column reference>   -> identifier_to_expr
+//~ <grouping column reference> /* Identifier */ ::=
+//~     <column reference>
 
-fn parse_exprs(e []Expr) ![]Expr {
+fn parse_group_by_clause(e []Identifier) ![]Identifier {
 	return e
+}
+
+fn parse_grouping_element_list_1(expr Identifier) ![]Identifier {
+	return [expr]
+}
+
+fn parse_grouping_element_list_2(element_list []Identifier, element Identifier) ![]Identifier {
+	mut new_list := element_list.clone()
+	new_list << element
+
+	return new_list
 }

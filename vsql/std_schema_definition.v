@@ -10,6 +10,10 @@ module vsql
 //~ <schema name clause> /* Identifier */ ::=
 //~     <schema name>
 
+struct SchemaDefinition {
+	schema_name Identifier
+}
+
 fn parse_schema_definition(schema_name Identifier) !Stmt {
-	return CreateSchemaStmt{schema_name}
+	return SchemaDefinition{schema_name}
 }

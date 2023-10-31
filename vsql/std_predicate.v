@@ -4,12 +4,12 @@ module vsql
 
 // Format
 //~
-//~ <predicate> /* Expr */ ::=
-//~     <comparison predicate>   -> predicate_1
-//~   | <between predicate>      -> predicate_2
-//~   | <like predicate>         -> predicate_3
-//~   | <similar predicate>      -> predicate_4
-//~   | <null predicate>         -> predicate_5
+//~ <predicate> /* Predicate */ ::=
+//~     <comparison predicate>   -> Predicate
+//~   | <between predicate>      -> Predicate
+//~   | <like predicate>         -> Predicate
+//~   | <similar predicate>      -> Predicate
+//~   | <null predicate>         -> Predicate
 
 type Predicate = BetweenPredicate
 	| CharacterLikePredicate
@@ -49,31 +49,22 @@ fn (e Predicate) is_agg(conn &Connection, row Row, params map[string]Value) !boo
 	}
 }
 
-fn (e Predicate) resolve_identifiers(conn &Connection, tables map[string]Table) !Expr {
-	return match e {
-		ComparisonPredicate, BetweenPredicate, CharacterLikePredicate, SimilarPredicate,
+fn (e Predicate) resolve_identifiers(conn &Connection, tables map[string]Table) !Predicate {
+	match e {
+		ComparisonPredicate {
+			return e.resolve_identifiers(conn, tables)!
+		}
+		BetweenPredicate {
+			return e.resolve_identifiers(conn, tables)!
+		}
+		CharacterLikePredicate {
+			return e.resolve_identifiers(conn, tables)!
+		}
+		SimilarPredicate {
+			return e.resolve_identifiers(conn, tables)!
+		}
 		NullPredicate {
-			e.resolve_identifiers(conn, tables)!
+			return e.resolve_identifiers(conn, tables)!
 		}
 	}
-}
-
-fn parse_predicate_1(predicate ComparisonPredicate) !Expr {
-	return Predicate(predicate)
-}
-
-fn parse_predicate_2(predicate BetweenPredicate) !Expr {
-	return Predicate(predicate)
-}
-
-fn parse_predicate_3(predicate CharacterLikePredicate) !Expr {
-	return Predicate(predicate)
-}
-
-fn parse_predicate_4(predicate SimilarPredicate) !Expr {
-	return Predicate(predicate)
-}
-
-fn parse_predicate_5(predicate NullPredicate) !Expr {
-	return Predicate(predicate)
 }

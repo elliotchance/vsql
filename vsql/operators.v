@@ -28,21 +28,9 @@ fn register_unary_operators(mut conn Connection) {
 	conn.unary_operators['+ REAL'] = unary_passthru
 	conn.unary_operators['+ INTEGER'] = unary_passthru
 	conn.unary_operators['+ SMALLINT'] = unary_passthru
-
-	conn.unary_operators['NOT BOOLEAN'] = unary_not_boolean
 }
 
 fn register_binary_operators(mut conn Connection) {
-	// Since many types share the same underlying memory, we can create a matrix
-	// of compatible operators that use the same function.
-	text_types := ['CHARACTER VARYING', 'CHARACTER']
-
-	for typ1 in text_types {
-		for typ2 in text_types {
-			conn.binary_operators['${typ1} || ${typ2}'] = binary_varchar_concat_varchar
-		}
-	}
-
 	conn.binary_operators['NUMERIC + NUMERIC'] = binary_numeric_plus_numeric
 	conn.binary_operators['NUMERIC - NUMERIC'] = binary_numeric_minus_numeric
 	conn.binary_operators['NUMERIC * NUMERIC'] = binary_numeric_multiply_numeric
@@ -72,10 +60,6 @@ fn register_binary_operators(mut conn Connection) {
 	conn.binary_operators['BIGINT - BIGINT'] = binary_bigint_minus_bigint
 	conn.binary_operators['BIGINT * BIGINT'] = binary_bigint_multiply_bigint
 	conn.binary_operators['BIGINT / BIGINT'] = binary_bigint_divide_bigint
-
-	conn.binary_operators['BOOLEAN AND BOOLEAN'] = binary_boolean_and_boolean
-
-	conn.binary_operators['BOOLEAN OR BOOLEAN'] = binary_boolean_or_boolean
 }
 
 fn unary_passthru(conn &Connection, v Value) !Value {
@@ -110,17 +94,6 @@ fn unary_negate_double_precision(conn &Connection, v Value) !Value {
 
 fn unary_negate_real(conn &Connection, v Value) !Value {
 	return new_real_value(f32(-v.f64_value()))
-}
-
-fn unary_not_boolean(conn &Connection, v Value) !Value {
-	if v.is_null {
-		return new_unknown_value()
-	}
-
-	return match v.bool_value() {
-		.is_true { new_boolean_value(false) }
-		.is_false { new_boolean_value(true) }
-	}
 }
 
 fn binary_double_precision_plus_double_precision(conn &Connection, a Value, b Value) !Value {
@@ -202,48 +175,6 @@ fn binary_bigint_divide_bigint(conn &Connection, a Value, b Value) !Value {
 	}
 
 	return new_bigint_value(a.int_value() / b.int_value())
-}
-
-fn binary_varchar_concat_varchar(conn &Connection, a Value, b Value) !Value {
-	return new_varchar_value(a.string_value() + b.string_value())
-}
-
-fn binary_boolean_and_boolean(conn &Connection, a Value, b Value) !Value {
-	// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
-	// "Table 13 — Truth table for the AND boolean operator"
-
-	if a.is_null {
-		if b.bool_value() == .is_false {
-			return new_boolean_value(false)
-		}
-
-		return new_unknown_value()
-	}
-
-	if a.bool_value() == .is_true {
-		return b
-	}
-
-	return new_boolean_value(false)
-}
-
-fn binary_boolean_or_boolean(conn &Connection, a Value, b Value) !Value {
-	// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
-	// "Table 13 — Truth table for the AND boolean operator"
-
-	if a.is_null {
-		if b.bool_value() == .is_true {
-			return new_boolean_value(true)
-		}
-
-		return new_unknown_value()
-	}
-
-	if a.bool_value() == .is_true {
-		return new_boolean_value(true)
-	}
-
-	return b
 }
 
 fn binary_numeric_plus_numeric(conn &Connection, a Value, b Value) !Value {

@@ -4,5 +4,5 @@ module vsql
 
 // Format
 //~
-//~ <search condition> /* Expr */ ::=
+//~ <search condition> /* BooleanValueExpression */ ::=
 //~     <boolean value expression>

@@ -5,35 +5,48 @@ module vsql
 // Format
 //~
 //~ <sort specification list> /* []SortSpecification */ ::=
-//~     <sort specification>                                     -> sort_list1
-//~   | <sort specification list> <comma> <sort specification>   -> sort_list2
+//~     <sort specification>                                     -> sort_list_1
+//~   | <sort specification list> <comma> <sort specification>   -> sort_list_2
 //~
 //~ <sort specification> /* SortSpecification */ ::=
-//~     <sort key>                            -> sort1
-//~   | <sort key> <ordering specification>   -> sort2
+//~     <sort key>                            -> sort_1
+//~   | <sort key> <ordering specification>   -> sort_2
 //~
-//~ <sort key> /* Expr */ ::=
+//~ <sort key> /* ValueExpression */ ::=
 //~     <value expression>
 //~
 //~ <ordering specification> /* bool */ ::=
 //~     ASC    -> yes
 //~   | DESC   -> no
 
-fn parse_sort_list1(spec SortSpecification) ![]SortSpecification {
+struct SortSpecification {
+	expr   ValueExpression
+	is_asc bool
+}
+
+fn (e SortSpecification) pstr(params map[string]Value) string {
+	if e.is_asc {
+		return '${e.expr.pstr(params)} ASC'
+	}
+
+	return '${e.expr.pstr(params)} DESC'
+}
+
+fn parse_sort_list_1(spec SortSpecification) ![]SortSpecification {
 	return [spec]
 }
 
-fn parse_sort_list2(specs []SortSpecification, spec SortSpecification) ![]SortSpecification {
+fn parse_sort_list_2(specs []SortSpecification, spec SortSpecification) ![]SortSpecification {
 	mut specs2 := specs.clone()
 	specs2 << spec
 
 	return specs2
 }
 
-fn parse_sort1(expr Expr) !SortSpecification {
+fn parse_sort_1(expr ValueExpression) !SortSpecification {
 	return SortSpecification{expr, true}
 }
 
-fn parse_sort2(expr Expr, is_asc bool) !SortSpecification {
+fn parse_sort_2(expr ValueExpression, is_asc bool) !SortSpecification {
 	return SortSpecification{expr, is_asc}
 }

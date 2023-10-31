@@ -5,7 +5,7 @@ module vsql
 
 import time
 
-fn execute_start_transaction(mut c Connection, stmt StartTransactionStmt, elapsed_parse time.Duration) !Result {
+fn execute_start_transaction(mut c Connection, stmt StartTransactionStatement, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 	mut catalog := c.catalog()
 
@@ -87,7 +87,7 @@ fn execute_commit(mut c Connection, stmt CommitStmt, elapsed_parse time.Duration
 	return new_result_msg('COMMIT', elapsed_parse, t.elapsed())
 }
 
-fn execute_rollback(mut c Connection, stmt RollbackStmt, elapsed_parse time.Duration) !Result {
+fn execute_rollback(mut c Connection, stmt RollbackStatement, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 	mut catalog := c.catalog()
 

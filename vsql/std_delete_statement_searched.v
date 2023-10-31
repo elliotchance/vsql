@@ -9,10 +9,16 @@ module vsql
 //~   | DELETE FROM <target table>
 //~     WHERE <search condition>     -> delete_statement_where
 
-fn parse_delete_statement(table_name Identifier) !Stmt {
-	return DeleteStmt{table_name, NoExpr{}}
+// DELETE ...
+struct DeleteStmt {
+	table_name Identifier
+	where      ?BooleanValueExpression
 }
 
-fn parse_delete_statement_where(table_name Identifier, where Expr) !Stmt {
+fn parse_delete_statement(table_name Identifier) !Stmt {
+	return DeleteStmt{table_name, none}
+}
+
+fn parse_delete_statement_where(table_name Identifier, where BooleanValueExpression) !Stmt {
 	return DeleteStmt{table_name, where}
 }

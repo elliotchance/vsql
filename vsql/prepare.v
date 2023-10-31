@@ -40,7 +40,7 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 
 	stmt := p.stmt
 	match stmt {
-		AlterSequenceStmt {
+		AlterSequenceGeneratorStatement {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN ALTER SEQUENCE')
 			}
@@ -55,21 +55,21 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			// See transaction.v
 			return execute_commit(mut p.c, stmt, p.elapsed_parse)
 		}
-		CreateSchemaStmt {
+		SchemaDefinition {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN CREATE SCHEMA')
 			}
 
 			return execute_create_schema(mut p.c, stmt, p.elapsed_parse)
 		}
-		CreateSequenceStmt {
+		SequenceGeneratorDefinition {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN CREATE SEQUENCE')
 			}
 
 			return execute_create_sequence(mut p.c, stmt, p.elapsed_parse)
 		}
-		CreateTableStmt {
+		TableDefinition {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN CREATE TABLE')
 			}
@@ -79,35 +79,35 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 		DeleteStmt {
 			return execute_delete(mut p.c, stmt, all_params, p.elapsed_parse, p.explain)
 		}
-		DropSchemaStmt {
+		DropSchemaStatement {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN DROP SCHEMA')
 			}
 
 			return execute_drop_schema(mut p.c, stmt, p.elapsed_parse)
 		}
-		DropSequenceStmt {
+		DropSequenceGeneratorStatement {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN DROP SEQUENCE')
 			}
 
 			return execute_drop_sequence(mut p.c, stmt, p.elapsed_parse)
 		}
-		DropTableStmt {
+		DropTableStatement {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN DROP TABLE')
 			}
 
 			return execute_drop_table(mut p.c, stmt, p.elapsed_parse)
 		}
-		InsertStmt {
+		InsertStatement {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN INSERT')
 			}
 
 			return execute_insert(mut p.c, stmt, all_params, p.elapsed_parse)
 		}
-		RollbackStmt {
+		RollbackStatement {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN ROLLBACK')
 			}
@@ -115,14 +115,14 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			// See transaction.v
 			return execute_rollback(mut p.c, stmt, p.elapsed_parse)
 		}
-		SetCatalogStmt {
+		SetCatalogStatement {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN SET CATALOG')
 			}
 
 			return execute_set_catalog(mut p.c, stmt, p.elapsed_parse)
 		}
-		SetSchemaStmt {
+		SetSchemaStatement {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN SET SCHEMA')
 			}
@@ -132,7 +132,7 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 		QueryExpression {
 			return execute_select(mut p.c, stmt, all_params, p.elapsed_parse, p.explain)
 		}
-		StartTransactionStmt {
+		StartTransactionStatement {
 			if p.explain {
 				return sqlstate_42601('Cannot EXPLAIN START TRANSACTION')
 			}
@@ -140,7 +140,7 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			// See transaction.v
 			return execute_start_transaction(mut p.c, stmt, p.elapsed_parse)
 		}
-		UpdateStmt {
+		UpdateStatementSearched {
 			return execute_update(mut p.c, stmt, all_params, p.elapsed_parse, p.explain)
 		}
 	}

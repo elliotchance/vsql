@@ -19,9 +19,9 @@ module vsql
 //~   | <greater than or equals operator>
 
 struct ComparisonPredicate {
-	left  Expr
+	left  RowValueConstructorPredicand
 	op    string
-	right Expr
+	right RowValueConstructorPredicand
 }
 
 fn (e ComparisonPredicate) pstr(params map[string]Value) string {
@@ -29,8 +29,8 @@ fn (e ComparisonPredicate) pstr(params map[string]Value) string {
 }
 
 fn (e ComparisonPredicate) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	mut left := eval_as_value(mut conn, data, e.left, params)!
-	mut right := eval_as_value(mut conn, data, e.right, params)!
+	mut left := e.left.eval(mut conn, data, params)!
+	mut right := e.right.eval(mut conn, data, params)!
 
 	cmp := compare(left, right)!
 	if cmp == .is_unknown {
@@ -64,27 +64,27 @@ fn (e ComparisonPredicate) eval(mut conn Connection, data Row, params map[string
 }
 
 fn (e ComparisonPredicate) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	if expr_is_agg(conn, e.left, row, params)! || expr_is_agg(conn, e.right, row, params)! {
-		return nested_agg_unsupported(Predicate(e))
+	if e.left.is_agg(conn, row, params)! || e.right.is_agg(conn, row, params)! {
+		return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
 	}
 
 	return false
 }
 
-fn (e ComparisonPredicate) resolve_identifiers(conn &Connection, tables map[string]Table) !Expr {
-	return Predicate(ComparisonPredicate{resolve_identifiers(conn, e.left, tables)!, e.op, resolve_identifiers(conn,
-		e.right, tables)!})
+fn (e ComparisonPredicate) resolve_identifiers(conn &Connection, tables map[string]Table) !ComparisonPredicate {
+	return ComparisonPredicate{e.left.resolve_identifiers(conn, tables)!, e.op, e.right.resolve_identifiers(conn,
+		tables)!}
 }
 
 struct ComparisonPredicatePart2 {
 	op   string
-	expr Expr
+	expr RowValueConstructorPredicand
 }
 
-fn parse_comparison_part(op string, expr Expr) !ComparisonPredicatePart2 {
+fn parse_comparison_part(op string, expr RowValueConstructorPredicand) !ComparisonPredicatePart2 {
 	return ComparisonPredicatePart2{op, expr}
 }
 
-fn parse_comparison(expr Expr, comp ComparisonPredicatePart2) !ComparisonPredicate {
+fn parse_comparison(expr RowValueConstructorPredicand, comp ComparisonPredicatePart2) !ComparisonPredicate {
 	return ComparisonPredicate{expr, comp.op, comp.expr}
 }

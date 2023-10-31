@@ -4,8 +4,8 @@ module vsql
 
 // A ValuesOperation provides a VALUES derived implicit table.
 struct ValuesOperation {
-	rows        []RowExpr
-	offset      Expr
+	rows        []RowValueConstructor
+	offset      Value
 	correlation Correlation
 	params      map[string]Value
 mut:
@@ -17,18 +17,32 @@ mut:
 //  suspect this is just immaturity with the garbage collector and the pointer
 //  may be removed in the future. Run the test suite a few times and if it
 //  passes you're in the clear.
-fn new_values_operation(rows []RowExpr, offset Expr, correlation Correlation, mut conn Connection, params map[string]Value) !&ValuesOperation {
+fn new_values_operation(rows []RowValueConstructor, offset Value, correlation Correlation, mut conn Connection, params map[string]Value) !&ValuesOperation {
 	if correlation.columns.len > 0 {
 		for row in rows {
-			if row.exprs.len != correlation.columns.len {
-				return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
+			match row {
+				ExplicitRowValueConstructor {
+					match row {
+						ExplicitRowValueConstructorRow {
+							if row.exprs.len != correlation.columns.len {
+								return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
+							}
+						}
+						QueryExpression {
+							panic('query expressions cannot be used in ROW constructors')
+						}
+					}
+				}
+				CommonValueExpression, BooleanValueExpression {
+					// Nothing to validate in this case.
+				}
 			}
 		}
 	}
 
-	mut new_rows := []RowExpr{}
+	mut new_rows := []RowValueConstructor{}
 	for row in rows {
-		new_rows << resolve_identifiers(conn, row, conn.catalog().storage.tables)! as RowExpr
+		new_rows << row.resolve_identifiers(conn, conn.catalog().storage.tables)!
 	}
 
 	return &ValuesOperation{new_rows, offset, correlation, params, conn}
@@ -44,13 +58,31 @@ fn (o &ValuesOperation) str() string {
 }
 
 fn (o &ValuesOperation) columns() Columns {
+	e := o.rows[0]
 	if o.correlation.columns.len > 0 {
 		mut columns := []Column{}
 		for i, column in o.correlation.columns {
-			typ := eval_as_type(o.conn, Row{}, o.rows[0].exprs[i], o.params) or { panic(err) }
-			columns << Column{
-				name: column
-				typ: typ
+			match e {
+				ExplicitRowValueConstructor {
+					match e {
+						ExplicitRowValueConstructorRow {
+							typ := e.exprs[i].eval_type(o.conn, Row{}, o.params) or { panic(err) }
+							columns << Column{
+								name: column
+								typ: typ
+							}
+						}
+						QueryExpression {
+							panic('query expressions cannot be used in ROW constructors')
+						}
+					}
+				}
+				CommonValueExpression, BooleanValueExpression {
+					columns << Column{
+						name: column
+						typ: e.eval_type(o.conn, Row{}, o.params) or { panic(err) }
+					}
+				}
 			}
 		}
 
@@ -59,15 +91,34 @@ fn (o &ValuesOperation) columns() Columns {
 
 	mut columns := []Column{}
 
-	// TODO(elliotchance): All check all exprs are RowExpr AND they have the
-	//  right number of columns AND types.
-	for i in 1 .. o.rows[0].exprs.len + 1 {
-		typ := eval_as_type(o.conn, Row{}, o.rows[0].exprs[i - 1], o.params) or { panic(err) }
-		columns << Column{
-			name: Identifier{
-				sub_entity_name: 'COL${i}'
+	// TODO(elliotchance): All check all exprs are ExplicitRowValueConstructorRow
+	//  AND they have the right number of columns AND types.
+	match e {
+		ExplicitRowValueConstructor {
+			match e {
+				ExplicitRowValueConstructorRow {
+					for i in 1 .. e.exprs.len + 1 {
+						typ := e.exprs[i - 1].eval_type(o.conn, Row{}, o.params) or { panic(err) }
+						columns << Column{
+							name: Identifier{
+								sub_entity_name: 'COL${i}'
+							}
+							typ: typ
+						}
+					}
+				}
+				QueryExpression {
+					panic('query expressions cannot be used in ROW constructors')
+				}
 			}
-			typ: typ
+		}
+		CommonValueExpression, BooleanValueExpression {
+			columns << Column{
+				name: Identifier{
+					sub_entity_name: 'COL1'
+				}
+				typ: e.eval_type(o.conn, Row{}, o.params) or { panic(err) }
+			}
 		}
 	}
 
@@ -75,10 +126,7 @@ fn (o &ValuesOperation) columns() Columns {
 }
 
 fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
-	mut offset := 0
-	if o.offset !is NoExpr {
-		offset = int((eval_as_value(mut o.conn, Row{}, o.offset, o.params)!).f64_value())
-	}
+	offset := int((o.offset.eval(mut o.conn, Row{}, o.params)!).f64_value())
 
 	mut rows := []Row{}
 	if offset >= o.rows.len {
@@ -88,7 +136,7 @@ fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
 	for row in o.rows[offset..] {
 		rows << eval_row(mut o.conn, Row{
 			data: map[string]Value{}
-		}, row.exprs, o.params)!
+		}, row, o.params)!
 	}
 
 	columns := o.columns()

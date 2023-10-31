@@ -13,9 +13,9 @@ struct GroupOperation {
 	// "a".
 	//
 	// The SQL standard doesn't actually allow anything other than a identifer
-	// to be used in GROUP BY expressions, but well keep them as []Expr because
-	// it's easier.
-	group_exprs []Expr
+	// to be used in GROUP BY expressions, but well keep them as []Identifier
+	// because it's easier.
+	group_exprs []Identifier
 
 	params  map[string]Value
 	columns Columns
@@ -23,7 +23,7 @@ mut:
 	conn &Connection
 }
 
-fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Expr, params map[string]Value, mut conn Connection, table Table) !&GroupOperation {
+fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, params map[string]Value, mut conn Connection, table Table) !&GroupOperation {
 	mut columns := []Column{}
 
 	for expr in group_exprs {
@@ -35,16 +35,27 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Expr, params 
 
 	empty_row := new_empty_row(table.columns, table.name.str())
 	for expr in select_exprs {
-		if expr_is_agg(conn, expr.expr, empty_row, params)! {
+		if expr.expr.is_agg(conn, empty_row, params)! {
 			columns << Column{Identifier{
 				custom_id: expr.expr.pstr(params)
-			}, eval_as_type(conn, empty_row, expr.expr, params)!, false}
+			}, expr.expr.eval_type(conn, empty_row, params)!, false}
 
 			// We need verify the expression type for the argument to the
 			// aggregate function is valid.
-			if expr.expr is CallExpr {
-				expr_type := eval_as_type(conn, empty_row, expr.expr.args[0], params)!
-				conn.find_function(expr.expr.function_name, [expr_type])!
+			if expr.expr is CommonValueExpression {
+				if expr.expr is CharacterValueExpression {
+					if expr.expr is CharacterPrimary {
+						if expr.expr is CharacterValueFunction {
+							if expr.expr is RoutineInvocation {
+								expr_type := expr.expr.args[0].eval_type(conn, empty_row,
+									params)!
+								conn.find_function(expr.expr.function_name, [
+									expr_type,
+								])!
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -76,9 +87,9 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 
 		mut equal := true
 		for expr in o.group_exprs {
-			left := eval_as_value(mut o.conn, sets[sets.len - 1][sets[sets.len - 1].len - 1],
-				expr, o.params)!
-			right := eval_as_value(mut o.conn, row, expr, o.params)!
+			left := expr.eval(mut o.conn, sets[sets.len - 1][sets[sets.len - 1].len - 1],
+				o.params)!
+			right := expr.eval(mut o.conn, row, o.params)!
 
 			if left.is_null && right.is_null {
 				continue
@@ -100,26 +111,39 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 
 	// Perform the aggregations functions.
 	for expr in o.select_exprs {
-		if expr_is_agg(o.conn, expr.expr, rows[0], o.params)! {
+		if expr.expr.is_agg(o.conn, rows[0], o.params)! {
 			key := expr.expr.pstr(o.params)
 			for mut set in sets {
-				match expr.expr {
-					CallExpr {
-						mut values := []Value{}
-						for row in set {
-							values << eval_as_value(mut o.conn, row, expr.expr.args[0],
-								o.params)!
-						}
+				mut valid := false
+				if expr.expr is CommonValueExpression {
+					if expr.expr is DatetimePrimary {
+						if expr.expr is ValueExpressionPrimary {
+							if expr.expr is NonparenthesizedValueExpressionPrimary {
+								if expr.expr is AggregateFunction {
+									if expr.expr is AggregateFunctionCount {
+										set[0].data[key] = new_integer_value(set.len)
+										valid = true
+									} else if expr.expr is RoutineInvocation {
+										e := expr.expr
+										mut values := []Value{}
+										for row in set {
+											values << e.args[0].eval(mut o.conn, row,
+												o.params)!
+										}
 
-						func := o.conn.find_function(expr.expr.function_name, [values[0].typ])!
-						set[0].data[key] = func.func(values)!
+										func := o.conn.find_function(e.function_name,
+											[values[0].typ])!
+										set[0].data[key] = func.func(values)!
+										valid = true
+									}
+								}
+							}
+						}
 					}
-					CountAllExpr {
-						set[0].data[key] = new_integer_value(set.len)
-					}
-					else {
-						return sqlstate_42601('invalid set function: ${expr.expr}')
-					}
+				}
+
+				if !valid {
+					return sqlstate_42601('invalid set function: ${expr.expr}')
 				}
 			}
 		}

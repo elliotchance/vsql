@@ -189,8 +189,8 @@ fn row_cmp(mut conn Connection, params map[string]Value, r1 Row, r2 Row, specs [
 	//       <sort specification>s are said to be peers of each other. The
 	//       relative ordering of peers is implementation-dependent.
 	for spec in specs {
-		left := eval_as_value(mut conn, r1, spec.expr, params)!
-		right := eval_as_value(mut conn, r2, spec.expr, params)!
+		left := spec.expr.eval(mut conn, r1, params)!
+		right := spec.expr.eval(mut conn, r2, params)!
 
 		if left.is_null && right.is_null {
 			continue

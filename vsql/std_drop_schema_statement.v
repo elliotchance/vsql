@@ -11,6 +11,11 @@ module vsql
 //~     CASCADE
 //~   | RESTRICT
 
+struct DropSchemaStatement {
+	schema_name Identifier
+	behavior    string // CASCADE or RESTRICT
+}
+
 fn parse_drop_schema_statement(schema_name Identifier, behavior string) !Stmt {
-	return DropSchemaStmt{schema_name, behavior}
+	return DropSchemaStatement{schema_name, behavior}
 }

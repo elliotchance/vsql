@@ -5,8 +5,4 @@ module vsql
 // Format
 //~
 //~ <cursor specification> /* Stmt */ ::=
-//~     <query expression>   -> cursor_specification
-
-fn parse_cursor_specification(stmt QueryExpression) !Stmt {
-	return stmt
-}
+//~     <query expression>   -> Stmt

@@ -6,7 +6,7 @@ import time
 
 // TODO(elliotchance): A table is allowed to have zero columns.
 
-fn execute_create_table(mut c Connection, stmt CreateTableStmt, elapsed_parse time.Duration) !Result {
+fn execute_create_table(mut c Connection, stmt TableDefinition, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	c.open_write_connection()!

@@ -12,11 +12,11 @@ module vsql
 //~ <select list> /* SelectList */ ::=
 //~     <asterisk>                               -> asterisk
 //~   | <select sublist>
-//~   | <select list> <comma> <select sublist>   -> select_list2
+//~   | <select list> <comma> <select sublist>   -> select_list_2
 //~
 //~ <select sublist> /* SelectList */ ::=
-//~     <derived column>       -> select_sublist1
-//~   | <qualified asterisk>   -> select_sublist2
+//~     <derived column>       -> select_sublist_1
+//~   | <qualified asterisk>   -> SelectList
 //~
 //~ <qualified asterisk> /* QualifiedAsteriskExpr */ ::=
 //~     <asterisked identifier chain> <period> <asterisk>   -> qualified_asterisk
@@ -35,12 +35,34 @@ module vsql
 //~     AS <column name>   -> identifier
 //~   | <column name>
 
+struct DerivedColumn {
+	expr      ValueExpression
+	as_clause Identifier // will be empty if not provided
+}
+
+type SelectList = AsteriskExpr | QualifiedAsteriskExpr | []DerivedColumn
+
+type AsteriskExpr = bool
+
+struct QualifiedAsteriskExpr {
+	table_name Identifier
+}
+
+fn (e QualifiedAsteriskExpr) str() string {
+	return '${e.table_name}.*'
+}
+
+struct QuerySpecification {
+	exprs            SelectList
+	table_expression TableExpression
+	offset           ?ValueExpression
+	fetch            ?ValueExpression
+}
+
 fn parse_query_specification(select_list SelectList, table_expression TableExpression) !SimpleTable {
-	return SelectStmt{
+	return QuerySpecification{
 		exprs: select_list
 		table_expression: table_expression
-		offset: NoExpr{}
-		fetch: NoExpr{}
 	}
 }
 
@@ -49,30 +71,25 @@ fn parse_asterisk(_ string) !SelectList {
 	return AsteriskExpr(true)
 }
 
-// <select list> <comma> <select sublist>
-fn parse_select_list2(select_list SelectList, columns SelectList) !SelectList {
+fn parse_select_list_2(select_list SelectList, columns SelectList) !SelectList {
 	mut new_select_list := (select_list as []DerivedColumn).clone()
 	new_select_list << (columns as []DerivedColumn)[0]
 	return new_select_list
 }
 
-fn parse_select_sublist1(column DerivedColumn) !SelectList {
+fn parse_select_sublist_1(column DerivedColumn) !SelectList {
 	return [column]
-}
-
-fn parse_select_sublist2(column QualifiedAsteriskExpr) !SelectList {
-	return column
 }
 
 fn parse_qualified_asterisk(column IdentifierChain, _ string) !QualifiedAsteriskExpr {
 	return QualifiedAsteriskExpr{new_column_identifier(column.identifier)!}
 }
 
-fn parse_derived_column(expr Expr) !DerivedColumn {
+fn parse_derived_column(expr ValueExpression) !DerivedColumn {
 	return DerivedColumn{expr, Identifier{}}
 }
 
-fn parse_derived_column_as(expr Expr, as_clause Identifier) !DerivedColumn {
+fn parse_derived_column_as(expr ValueExpression, as_clause Identifier) !DerivedColumn {
 	return DerivedColumn{expr, as_clause}
 }
 

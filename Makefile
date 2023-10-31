@@ -1,4 +1,4 @@
-.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples grammar sql-test docs clean-docs oldv
+.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples clean-grammar grammar sql-test docs clean-docs oldv
 
 # Is not used at the moment. It is useful for testing options like different
 # `-gc` values.
@@ -23,16 +23,16 @@ ready: grammar fmt snippets
 
 # Binaries
 
-bin/vsql:
+bin/vsql: vsql/grammar.v
 	mkdir -p bin
 	v $(BUILD_OPTIONS) $(PROD) cmd/vsql -o bin/vsql
 
-bin/vsql.exe:
+bin/vsql.exe: vsql/grammar.v
 	mkdir -p bin
-	v $(BUILD_OPTIONS) $(PROD) cmd/vsql
+	v -os windows $(BUILD_OPTIONS) $(PROD) cmd/vsql
 	mv cmd/vsql/vsql.exe bin/vsql.exe
 
-oldv:
+oldv: vsql/grammar.v
 ifdef OLDV
 	@mkdir -p /tmp/oldv/
 	@# VJOBS and VFLAGS needs to be provided for macOS. I'm not sure if they also
@@ -56,10 +56,17 @@ clean-docs:
 
 # Grammar (BNF)
 
-grammar:
+grammar.bnf:
 	grep "//~" -r vsql | cut -d~ -f2 > grammar.bnf
+
+vsql/grammar.v: grammar.bnf
 	python3 generate-grammar.py
 	v fmt -w vsql/grammar.v
+
+clean-grammar:
+	rm -f grammar.bnf vsql/grammar.v
+
+grammar: clean-grammar vsql/grammar.v
 
 # Formatting
 
@@ -97,7 +104,7 @@ examples:
 		echo $$f; v run $$f || exit 1; \
 	done
 
-examples/%:
+examples/%: vsql/grammar.v
 	v run examples/$*.v
 
 # Benchmarking

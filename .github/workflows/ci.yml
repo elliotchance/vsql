@@ -118,8 +118,7 @@ jobs:
       - name: Build Windows binaries
         run: |
           brew install mingw-w64
-          v -os windows -prod cmd/vsql
-          mv cmd/vsql/vsql.exe bin/vsql.exe
+          make bin/vsql.exe
           zip -j vsql-windows.zip bin/vsql.exe
 
       - name: Release

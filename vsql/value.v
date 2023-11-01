@@ -38,12 +38,14 @@ pub mut:
 	v InternalValue
 }
 
-fn (e Value) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return e
-}
-
-fn (e Value) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return e.typ
+fn (e Value) compile(mut c Compiler) !CompileResult {
+	return CompileResult{
+		run: fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
+			return e
+		}
+		typ: e.typ
+		contains_agg: false
+	}
 }
 
 union InternalValue {

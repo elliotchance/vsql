@@ -28,28 +28,28 @@ fn parse_delete_statement_where(table_name Identifier, where BooleanValueExpress
 	return DeleteStatementSearched{table_name, where}
 }
 
-fn (stmt DeleteStatementSearched) explain(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
-	c.open_write_connection()!
+fn (stmt DeleteStatementSearched) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+	conn.open_write_connection()!
 	defer {
-		c.release_write_connection()
+		conn.release_write_connection()
 	}
 
-	mut plan := create_plan(stmt, params, mut c)!
+	mut plan := create_plan(stmt, params, mut conn)!
 
 	return plan.explain(elapsed_parse)
 }
 
-fn (stmt DeleteStatementSearched) execute(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	c.open_write_connection()!
+	conn.open_write_connection()!
 	defer {
-		c.release_write_connection()
+		conn.release_write_connection()
 	}
 
-	mut catalog := c.catalog()
-	mut table_name := c.resolve_table_identifier(stmt.table_name, false)!
-	mut plan := create_plan(stmt, params, mut c)!
+	mut catalog := conn.catalog()
+	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
+	mut plan := create_plan(stmt, params, mut conn)!
 	mut rows := plan.execute([]Row{})!
 
 	for mut row in rows {

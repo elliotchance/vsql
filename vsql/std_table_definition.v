@@ -70,16 +70,16 @@ fn parse_table_elements_2(table_elements []TableElement, table_element TableElem
 
 // TODO(elliotchance): A table is allowed to have zero columns.
 
-fn (stmt TableDefinition) execute(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt TableDefinition) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	c.open_write_connection()!
+	conn.open_write_connection()!
 	defer {
-		c.release_write_connection()
+		conn.release_write_connection()
 	}
 
-	mut catalog := c.catalog()
-	mut table_name := c.resolve_schema_identifier(stmt.table_name)!
+	mut catalog := conn.catalog()
+	mut table_name := conn.resolve_schema_identifier(stmt.table_name)!
 	if table_name.storage_id() in catalog.storage.tables {
 		return sqlstate_42p07(table_name.str()) // duplicate table
 	}
@@ -138,6 +138,6 @@ fn (stmt TableDefinition) execute(mut c Connection, params map[string]Value, ela
 	return new_result_msg('CREATE TABLE 1', elapsed_parse, t.elapsed())
 }
 
-fn (stmt TableDefinition) explain(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt TableDefinition) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN CREATE TABLE')
 }

@@ -31,29 +31,10 @@ fn (e DatetimePrimary) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e DatetimePrimary) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
+fn (e DatetimePrimary) compile(mut c Compiler) !CompileResult {
+	match e {
 		ValueExpressionPrimary, DatetimeValueFunction {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e DatetimePrimary) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		ValueExpressionPrimary, DatetimeValueFunction {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e DatetimePrimary) resolve_identifiers(conn &Connection, tables map[string]Table) !DatetimePrimary {
-	return match e {
-		ValueExpressionPrimary {
-			e.resolve_identifiers(conn, tables)!
-		}
-		DatetimeValueFunction {
-			e.resolve_identifiers(conn, tables)!
+			return e.compile(mut c)!
 		}
 	}
 }

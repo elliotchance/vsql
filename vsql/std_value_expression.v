@@ -27,29 +27,10 @@ fn (e ValueExpression) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e ValueExpression) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
-		CommonValueExpression, BooleanValueExpression {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e ValueExpression) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		CommonValueExpression, BooleanValueExpression {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e ValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !ValueExpression {
+fn (e ValueExpression) compile(mut c Compiler) !CompileResult {
 	match e {
-		CommonValueExpression {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		BooleanValueExpression {
-			return e.resolve_identifiers(conn, tables)!
+		CommonValueExpression, BooleanValueExpression {
+			return e.compile(mut c)!
 		}
 	}
 }
@@ -64,32 +45,10 @@ fn (e CommonValueExpression) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e CommonValueExpression) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
+fn (e CommonValueExpression) compile(mut c Compiler) !CompileResult {
+	match e {
 		NumericValueExpression, CharacterValueExpression, DatetimePrimary {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e CommonValueExpression) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		NumericValueExpression, CharacterValueExpression, DatetimePrimary {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e CommonValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !CommonValueExpression {
-	return match e {
-		NumericValueExpression {
-			e.resolve_identifiers(conn, tables)!
-		}
-		CharacterValueExpression {
-			e.resolve_identifiers(conn, tables)!
-		}
-		DatetimePrimary {
-			e.resolve_identifiers(conn, tables)!
+			return e.compile(mut c)!
 		}
 	}
 }

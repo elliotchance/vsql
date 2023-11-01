@@ -30,36 +30,11 @@ fn (e Predicate) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e Predicate) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
+fn (e Predicate) compile(mut c Compiler) !CompileResult {
+	match e {
 		ComparisonPredicate, BetweenPredicate, CharacterLikePredicate, SimilarPredicate,
 		NullPredicate {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e Predicate) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	// The result of a predicate is always a BOOLEAN.
-	return new_type('BOOLEAN', 0, 0)
-}
-
-fn (e Predicate) resolve_identifiers(conn &Connection, tables map[string]Table) !Predicate {
-	match e {
-		ComparisonPredicate {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		BetweenPredicate {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		CharacterLikePredicate {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		SimilarPredicate {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		NullPredicate {
-			return e.resolve_identifiers(conn, tables)!
+			return e.compile(mut c)!
 		}
 	}
 }

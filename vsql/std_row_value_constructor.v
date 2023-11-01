@@ -67,41 +67,20 @@ fn (e ContextuallyTypedRowValueConstructor) pstr(params map[string]Value) string
 	}
 }
 
-fn (e ContextuallyTypedRowValueConstructor) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
-		CommonValueExpression, BooleanValueExpression, NullSpecification {
-			e.eval(mut conn, data, params)!
-		}
-		[]ContextuallyTypedRowValueConstructorElement {
-			e[0].eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e ContextuallyTypedRowValueConstructor) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		CommonValueExpression, BooleanValueExpression, NullSpecification {
-			e.eval_type(conn, data, params)!
-		}
-		[]ContextuallyTypedRowValueConstructorElement {
-			e[0].eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e ContextuallyTypedRowValueConstructor) resolve_identifiers(conn &Connection, tables map[string]Table) !ContextuallyTypedRowValueConstructor {
+fn (e ContextuallyTypedRowValueConstructor) compile(mut c Compiler) !CompileResult {
 	match e {
-		CommonValueExpression {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		BooleanValueExpression {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		NullSpecification {
-			return e.resolve_identifiers(conn, tables)!
+		CommonValueExpression, BooleanValueExpression, NullSpecification {
+			return e.compile(mut c)!
 		}
 		[]ContextuallyTypedRowValueConstructorElement {
-			return e.map(it.resolve_identifiers(conn, tables)!)
+			mut contains_agg := false
+			for element in e {
+				if element.compile(mut c)!.contains_agg {
+					contains_agg = true
+				}
+			}
+
+			return e[0].compile(mut c)!.with_agg(contains_agg)
 		}
 	}
 }
@@ -116,29 +95,10 @@ fn (e ContextuallyTypedRowValueConstructorElement) pstr(params map[string]Value)
 	}
 }
 
-fn (e ContextuallyTypedRowValueConstructorElement) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
-		ValueExpression, NullSpecification {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e ContextuallyTypedRowValueConstructorElement) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		ValueExpression, NullSpecification {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e ContextuallyTypedRowValueConstructorElement) resolve_identifiers(conn &Connection, tables map[string]Table) !ContextuallyTypedRowValueConstructorElement {
+fn (e ContextuallyTypedRowValueConstructorElement) compile(mut c Compiler) !CompileResult {
 	match e {
-		ValueExpression {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		NullSpecification {
-			return e.resolve_identifiers(conn, tables)!
+		ValueExpression, NullSpecification {
+			return e.compile(mut c)!
 		}
 	}
 }
@@ -153,29 +113,10 @@ fn (e RowValueConstructorPredicand) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e RowValueConstructorPredicand) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
+fn (e RowValueConstructorPredicand) compile(mut c Compiler) !CompileResult {
+	match e {
 		CommonValueExpression, BooleanPredicand {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e RowValueConstructorPredicand) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		CommonValueExpression, BooleanPredicand {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e RowValueConstructorPredicand) resolve_identifiers(conn &Connection, tables map[string]Table) !RowValueConstructorPredicand {
-	return match e {
-		CommonValueExpression {
-			e.resolve_identifiers(conn, tables)!
-		}
-		BooleanPredicand {
-			e.resolve_identifiers(conn, tables)!
+			return e.compile(mut c)!
 		}
 	}
 }
@@ -193,16 +134,6 @@ fn (e ExplicitRowValueConstructorRow) pstr(params map[string]Value) string {
 	return values.join(', ')
 }
 
-fn (e ExplicitRowValueConstructorRow) resolve_identifiers(conn &Connection, tables map[string]Table) !ExplicitRowValueConstructorRow {
-	mut new_exprs := []ValueExpression{}
-
-	for expr in e.exprs {
-		new_exprs << expr.resolve_identifiers(conn, tables)!
-	}
-
-	return ExplicitRowValueConstructorRow{new_exprs}
-}
-
 type RowValueConstructor = BooleanValueExpression
 	| CommonValueExpression
 	| ExplicitRowValueConstructor
@@ -215,18 +146,10 @@ fn (e RowValueConstructor) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e RowValueConstructor) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
+fn (e RowValueConstructor) compile(mut c Compiler) !CompileResult {
+	match e {
 		CommonValueExpression, BooleanValueExpression, ExplicitRowValueConstructor {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e RowValueConstructor) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		CommonValueExpression, BooleanValueExpression, ExplicitRowValueConstructor {
-			e.eval_type(conn, data, params)!
+			return e.compile(mut c)!
 		}
 	}
 }
@@ -234,12 +157,17 @@ fn (e RowValueConstructor) eval_type(conn &Connection, data Row, params map[stri
 fn (r RowValueConstructor) eval_row(mut conn Connection, data Row, params map[string]Value) !Row {
 	mut col_number := 1
 	mut row := map[string]Value{}
+	mut c := Compiler{
+		conn: conn
+		params: params
+	}
 	match r {
 		ExplicitRowValueConstructor {
 			match r {
 				ExplicitRowValueConstructorRow {
 					for expr in r.exprs {
-						row['COL${col_number}'] = expr.eval(mut conn, data, params)!
+						row['COL${col_number}'] = expr.compile(mut c)!.run(mut conn, data,
+							params)!
 						col_number++
 					}
 				}
@@ -249,26 +177,12 @@ fn (r RowValueConstructor) eval_row(mut conn Connection, data Row, params map[st
 			}
 		}
 		CommonValueExpression, BooleanValueExpression {
-			row['COL${col_number}'] = r.eval(mut conn, data, params)!
+			row['COL${col_number}'] = r.compile(mut c)!.run(mut conn, data, params)!
 		}
 	}
 
 	return Row{
 		data: row
-	}
-}
-
-fn (e RowValueConstructor) resolve_identifiers(conn &Connection, tables map[string]Table) !RowValueConstructor {
-	match e {
-		CommonValueExpression {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		BooleanValueExpression {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		ExplicitRowValueConstructor {
-			return e.resolve_identifiers(conn, tables)!
-		}
 	}
 }
 
@@ -282,31 +196,12 @@ fn (e ExplicitRowValueConstructor) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e ExplicitRowValueConstructor) eval(mut conn Connection, data Row, params map[string]Value) !Value {
+fn (e ExplicitRowValueConstructor) compile(mut c Compiler) !CompileResult {
 	// ExplicitRowValueConstructorRow should never make it to eval because it will
 	// be reformatted into a ValuesOperation.
 	//
 	// QueryExpression will have already been resolved to a ValuesOperation.
 	return sqlstate_42601('missing or invalid expression provided')
-}
-
-fn (e ExplicitRowValueConstructor) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return sqlstate_42601('invalid expression provided: ${e.pstr(params)}')
-}
-
-fn (e ExplicitRowValueConstructor) resolve_identifiers(conn &Connection, tables map[string]Table) !ExplicitRowValueConstructor {
-	match e {
-		ExplicitRowValueConstructorRow {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		QueryExpression {
-			// TODO(elliotchance): Is this correct? It was copied during refactoring
-			//  but QueryExpression does contain some stuff that might need to be
-			//  resolved. I won't fix it now since resolve_identifiers will be
-			//  replaced by a more formal compiler soon.
-			return e
-		}
-	}
 }
 
 fn parse_explicit_row_value_constructor_1(exprs []ValueExpression) !ExplicitRowValueConstructor {

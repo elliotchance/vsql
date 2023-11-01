@@ -35,22 +35,26 @@ fn parse_set_schema_stmt(schema_name ValueSpecification) !Stmt {
 	return SetSchemaStatement{schema_name}
 }
 
-fn (stmt SetSchemaStatement) execute(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	// This does not need to hold a write connection with the file.
 
-	new_schema := stmt.schema_name.eval(mut c, Row{}, map[string]Value{})!.str()
+	mut c := Compiler{
+		conn: conn
+		params: params
+	}
+	new_schema := stmt.schema_name.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!.str()
 
-	if new_schema !in c.catalog().storage.schemas {
+	if new_schema !in conn.catalog().storage.schemas {
 		return sqlstate_3f000(new_schema) // schema does not exist
 	}
 
-	c.current_schema = new_schema
+	conn.current_schema = new_schema
 
 	return new_result_msg('SET SCHEMA 1', elapsed_parse, t.elapsed())
 }
 
-fn (stmt SetSchemaStatement) explain(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt SetSchemaStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN SET SCHEMA')
 }

@@ -18,12 +18,13 @@ struct WhereOperation {
 	condition BooleanValueExpression
 	params    map[string]Value
 	columns   Columns
+	tables    map[string]Table
 mut:
 	conn &Connection
 }
 
-fn new_where_operation(condition BooleanValueExpression, params map[string]Value, conn &Connection, columns Columns) &WhereOperation {
-	return &WhereOperation{condition, params, columns, conn}
+fn new_where_operation(condition BooleanValueExpression, params map[string]Value, conn &Connection, columns Columns, tables map[string]Table) &WhereOperation {
+	return &WhereOperation{condition, params, columns, tables, conn}
 }
 
 fn (o &WhereOperation) str() string {
@@ -40,7 +41,7 @@ fn (mut o WhereOperation) execute(rows []Row) ![]Row {
 	mut new_rows := []Row{}
 
 	for row in rows {
-		mut ok := eval_as_bool(mut o.conn, row, o.condition, o.params)!
+		mut ok := eval_as_bool(mut o.conn, row, o.condition, o.params, o.tables)!
 		if ok {
 			new_rows << row
 		}
@@ -49,8 +50,13 @@ fn (mut o WhereOperation) execute(rows []Row) ![]Row {
 	return new_rows
 }
 
-fn eval_as_bool(mut conn Connection, data Row, e BooleanValueExpression, params map[string]Value) !bool {
-	v := e.eval(mut conn, data, params)!
+fn eval_as_bool(mut conn Connection, data Row, e BooleanValueExpression, params map[string]Value, tables map[string]Table) !bool {
+	mut c := Compiler{
+		conn: conn
+		params: params
+		tables: tables
+	}
+	v := e.compile(mut c)!.run(mut conn, data, params)!
 
 	if v.typ.typ == .is_boolean {
 		return v.bool_value() == .is_true

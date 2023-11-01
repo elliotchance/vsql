@@ -43,18 +43,22 @@ fn parse_update_statement_searched_2(target_table Identifier, set_clause_list ma
 // version that exists belongs to this transaction we must avoid the
 // DELETE/INSERT and only update the specific version that belongs to this
 // transaction.
-fn (stmt UpdateStatementSearched) execute(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	c.open_write_connection()!
+	conn.open_write_connection()!
 	defer {
-		c.release_write_connection()
+		conn.release_write_connection()
 	}
 
-	mut catalog := c.catalog()
-	mut plan := create_plan(stmt, params, mut c)!
+	mut c := Compiler{
+		conn: conn
+		params: params
+	}
+	mut catalog := conn.catalog()
+	mut plan := create_plan(stmt, params, mut conn)!
 	mut rows := plan.execute([]Row{})!
-	mut table_name := c.resolve_table_identifier(stmt.table_name, false)!
+	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	table := catalog.storage.tables[table_name.storage_id()]
 
 	mut modify_count := 0
@@ -71,13 +75,15 @@ fn (stmt UpdateStatementSearched) execute(mut c Connection, params map[string]Va
 
 		for column_name, v in stmt.set {
 			table_column := table.column(column_name)!
+			c.context = Identifier{
+				catalog_name: table_column.name.catalog_name
+				schema_name: table_column.name.schema_name
+				entity_name: table.name.entity_name
+			}
 
 			raw_value := match v {
 				ValueExpression {
-					eval_as_nullable_value(mut c, table_column.typ.typ, row, [
-						ContextuallyTypedRowValueConstructorElement(v.resolve_identifiers(c,
-							catalog.storage.tables)!),
-					], params)!
+					v.compile(mut c)!.run(mut conn, row, params)!
 				}
 				NullSpecification {
 					new_null_value(table_column.typ.typ)
@@ -99,7 +105,7 @@ fn (stmt UpdateStatementSearched) execute(mut c Connection, params map[string]Va
 			cmp := compare(row.data[column_id], raw_value)!
 			if cmp != .is_equal {
 				did_modify = true
-				row2.data[column_id] = cast(mut c, 'for column ${column_name}', raw_value,
+				row2.data[column_id] = cast(mut conn, 'for column ${column_name}', raw_value,
 					table_column.typ)!
 			}
 		}
@@ -126,8 +132,8 @@ fn (stmt UpdateStatementSearched) execute(mut c Connection, params map[string]Va
 			table_column := table.column(column_name)!
 			match v {
 				ValueExpression {
-					raw_value := v.eval(mut c, empty_row, params)!
-					value := cast(mut c, 'for column ${column_name}', raw_value, table_column.typ)!
+					raw_value := v.compile(mut c)!.run(mut conn, empty_row, params)!
+					value := cast(mut conn, 'for column ${column_name}', raw_value, table_column.typ)!
 
 					if table_column.not_null && value.is_null {
 						return sqlstate_23502('column ${column_name}')
@@ -145,13 +151,13 @@ fn (stmt UpdateStatementSearched) execute(mut c Connection, params map[string]Va
 	return new_result_msg('UPDATE ${modify_count}', elapsed_parse, t.elapsed())
 }
 
-fn (stmt UpdateStatementSearched) explain(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
-	c.open_write_connection()!
+fn (stmt UpdateStatementSearched) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+	conn.open_write_connection()!
 	defer {
-		c.release_write_connection()
+		conn.release_write_connection()
 	}
 
-	mut plan := create_plan(stmt, params, mut c)!
+	mut plan := create_plan(stmt, params, mut conn)!
 
 	return plan.explain(elapsed_parse)
 }

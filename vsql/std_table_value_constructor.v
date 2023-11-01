@@ -110,12 +110,7 @@ fn new_values_operation(rows []RowValueConstructor, offset Value, correlation Co
 		}
 	}
 
-	mut new_rows := []RowValueConstructor{}
-	for row in rows {
-		new_rows << row.resolve_identifiers(conn, conn.catalog().storage.tables)!
-	}
-
-	return &ValuesOperation{new_rows, offset, correlation, params, conn}
+	return &ValuesOperation{rows, offset, correlation, params, conn}
 }
 
 fn (o &ValuesOperation) str() string {
@@ -128,6 +123,10 @@ fn (o &ValuesOperation) str() string {
 }
 
 fn (o &ValuesOperation) columns() Columns {
+	mut c := Compiler{
+		conn: o.conn
+		params: o.params
+	}
 	e := o.rows[0]
 	if o.correlation.columns.len > 0 {
 		mut columns := []Column{}
@@ -136,7 +135,7 @@ fn (o &ValuesOperation) columns() Columns {
 				ExplicitRowValueConstructor {
 					match e {
 						ExplicitRowValueConstructorRow {
-							typ := e.exprs[i].eval_type(o.conn, Row{}, o.params) or { panic(err) }
+							typ := (e.exprs[i].compile(mut c) or { panic(err) }).typ
 							columns << Column{
 								name: column
 								typ: typ
@@ -150,7 +149,7 @@ fn (o &ValuesOperation) columns() Columns {
 				CommonValueExpression, BooleanValueExpression {
 					columns << Column{
 						name: column
-						typ: e.eval_type(o.conn, Row{}, o.params) or { panic(err) }
+						typ: (e.compile(mut c) or { panic(err) }).typ
 					}
 				}
 			}
@@ -168,7 +167,7 @@ fn (o &ValuesOperation) columns() Columns {
 			match e {
 				ExplicitRowValueConstructorRow {
 					for i in 1 .. e.exprs.len + 1 {
-						typ := e.exprs[i - 1].eval_type(o.conn, Row{}, o.params) or { panic(err) }
+						typ := (e.exprs[i - 1].compile(mut c) or { panic(err) }).typ
 						columns << Column{
 							name: Identifier{
 								sub_entity_name: 'COL${i}'
@@ -187,7 +186,7 @@ fn (o &ValuesOperation) columns() Columns {
 				name: Identifier{
 					sub_entity_name: 'COL1'
 				}
-				typ: e.eval_type(o.conn, Row{}, o.params) or { panic(err) }
+				typ: (e.compile(mut c) or { panic(err) }).typ
 			}
 		}
 	}
@@ -196,7 +195,11 @@ fn (o &ValuesOperation) columns() Columns {
 }
 
 fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
-	offset := int((o.offset.eval(mut o.conn, Row{}, o.params)!).f64_value())
+	mut c := Compiler{
+		conn: o.conn
+		params: o.params
+	}
+	offset := int((o.offset.compile(mut c)!.run(mut o.conn, Row{}, o.params)!).f64_value())
 
 	mut rows := []Row{}
 	if offset >= o.rows.len {

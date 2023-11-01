@@ -20,15 +20,19 @@ fn (e NextValueExpression) pstr(params map[string]Value) string {
 	return 'NEXT VALUE FOR ${e.name}'
 }
 
-fn (e NextValueExpression) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	mut catalog := conn.catalog()
-	next := catalog.storage.sequence_next_value(e.name)!
+fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
+	mut catalog := c.conn.catalog()
+	name := c.conn.resolve_identifier(e.name)
 
-	return new_bigint_value(next)
-}
+	return CompileResult{
+		run: fn [name, mut catalog] (mut conn Connection, data Row, params map[string]Value) !Value {
+			next := catalog.storage.sequence_next_value(name)!
 
-fn (e NextValueExpression) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return new_type('INTEGER', 0, 0)
+			return new_bigint_value(next)
+		}
+		typ: new_type('INTEGER', 0, 0)
+		contains_agg: false
+	}
 }
 
 fn (e NextValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !NextValueExpression {

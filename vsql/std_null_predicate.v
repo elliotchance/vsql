@@ -29,18 +29,22 @@ fn (e NullPredicate) pstr(params map[string]Value) string {
 	return '${e.expr.pstr(params)} IS NULL'
 }
 
-fn (e NullPredicate) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	value := e.expr.eval(mut conn, data, params)!
+fn (e NullPredicate) compile(mut c Compiler) !CompileResult {
+	compiled := e.expr.compile(mut c)!
 
-	if e.not {
-		return new_boolean_value(!value.is_null)
+	return CompileResult{
+		run: fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled.run(mut conn, data, params)!
+
+			if e.not {
+				return new_boolean_value(!value.is_null)
+			}
+
+			return new_boolean_value(value.is_null)
+		}
+		typ: new_type('BOOLEAN', 0, 0)
+		contains_agg: compiled.contains_agg
 	}
-
-	return new_boolean_value(value.is_null)
-}
-
-fn (e NullPredicate) resolve_identifiers(conn &Connection, tables map[string]Table) !NullPredicate {
-	return NullPredicate{e.expr.resolve_identifiers(conn, tables)!, e.not}
 }
 
 fn parse_null_predicate(expr RowValueConstructorPredicand, is_null bool) !NullPredicate {

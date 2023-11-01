@@ -165,16 +165,20 @@ fn parse_basic_sequence_generator_option_4(option bool) !SequenceGeneratorOption
 	return SequenceGeneratorCycleOption{option}
 }
 
-fn (stmt SequenceGeneratorDefinition) execute(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	c.open_write_connection()!
+	conn.open_write_connection()!
 	defer {
-		c.release_write_connection()
+		conn.release_write_connection()
 	}
 
-	mut catalog := c.catalog()
-	mut sequence_name := c.resolve_schema_identifier(stmt.name)!
+	mut c := Compiler{
+		conn: conn
+		params: params
+	}
+	mut catalog := conn.catalog()
+	mut sequence_name := conn.resolve_schema_identifier(stmt.name)!
 	mut increment_by := i64(1)
 	mut has_start_value := false
 	mut start_value := i64(1)
@@ -186,24 +190,26 @@ fn (stmt SequenceGeneratorDefinition) execute(mut c Connection, params map[strin
 	for option in stmt.options {
 		match option {
 			SequenceGeneratorStartWithOption {
-				start_value = (option.start_value.eval(mut c, Row{}, map[string]Value{})!).as_int()
+				start_value = (option.start_value.compile(mut c)!.run(mut conn, Row{},
+					map[string]Value{})!).as_int()
 				has_start_value = true
 			}
 			SequenceGeneratorRestartOption {
 				// Not possible.
 			}
 			SequenceGeneratorIncrementByOption {
-				increment_by = (option.increment_by.eval(mut c, Row{}, map[string]Value{})!).as_int()
+				increment_by = (option.increment_by.compile(mut c)!.run(mut conn, Row{},
+					map[string]Value{})!).as_int()
 			}
 			SequenceGeneratorMinvalueOption {
 				if v := option.min_value {
-					min_value = (v.eval(mut c, Row{}, map[string]Value{})!).as_int()
+					min_value = (v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 					has_min_value = true
 				}
 			}
 			SequenceGeneratorMaxvalueOption {
 				if v := option.max_value {
-					max_value = (v.eval(mut c, Row{}, map[string]Value{})!).as_int()
+					max_value = (v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 					has_max_value = true
 				}
 			}
@@ -245,6 +251,6 @@ fn (stmt SequenceGeneratorDefinition) execute(mut c Connection, params map[strin
 	return new_result_msg('CREATE SEQUENCE 1', elapsed_parse, t.elapsed())
 }
 
-fn (stmt SequenceGeneratorDefinition) explain(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt SequenceGeneratorDefinition) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN CREATE SEQUENCE')
 }

@@ -34,44 +34,48 @@ fn (e ComparisonPredicate) pstr(params map[string]Value) string {
 	return '${e.left.pstr(params)} ${e.op} ${e.right.pstr(params)}'
 }
 
-fn (e ComparisonPredicate) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	mut left := e.left.eval(mut conn, data, params)!
-	mut right := e.right.eval(mut conn, data, params)!
+fn (e ComparisonPredicate) compile(mut c Compiler) !CompileResult {
+	compiled_left := e.left.compile(mut c)!
+	compiled_right := e.right.compile(mut c)!
 
-	cmp := compare(left, right)!
-	if cmp == .is_unknown {
-		return new_unknown_value()
+	return CompileResult{
+		run: fn [e, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
+			mut left := compiled_left.run(mut conn, data, params)!
+			mut right := compiled_right.run(mut conn, data, params)!
+
+			cmp := compare(left, right)!
+			if cmp == .is_unknown {
+				return new_unknown_value()
+			}
+
+			return new_boolean_value(match e.op {
+				'=' {
+					cmp == .is_equal
+				}
+				'<>' {
+					cmp != .is_equal
+				}
+				'>' {
+					cmp == .is_greater
+				}
+				'<' {
+					cmp == .is_less
+				}
+				'>=' {
+					cmp == .is_greater || cmp == .is_equal
+				}
+				'<=' {
+					cmp == .is_less || cmp == .is_equal
+				}
+				else {
+					// This should not be possible, but it's to satisfy the required else.
+					panic('invalid binary operator: ${e.op}')
+				}
+			})
+		}
+		typ: new_type('BOOLEAN', 0, 0)
+		contains_agg: compiled_left.contains_agg || compiled_right.contains_agg
 	}
-
-	return new_boolean_value(match e.op {
-		'=' {
-			cmp == .is_equal
-		}
-		'<>' {
-			cmp != .is_equal
-		}
-		'>' {
-			cmp == .is_greater
-		}
-		'<' {
-			cmp == .is_less
-		}
-		'>=' {
-			cmp == .is_greater || cmp == .is_equal
-		}
-		'<=' {
-			cmp == .is_less || cmp == .is_equal
-		}
-		else {
-			// This should not be possible, but it's to satisfy the required else.
-			panic('invalid binary operator: ${e.op}')
-		}
-	})
-}
-
-fn (e ComparisonPredicate) resolve_identifiers(conn &Connection, tables map[string]Table) !ComparisonPredicate {
-	return ComparisonPredicate{e.left.resolve_identifiers(conn, tables)!, e.op, e.right.resolve_identifiers(conn,
-		tables)!}
 }
 
 struct ComparisonPredicatePart2 {

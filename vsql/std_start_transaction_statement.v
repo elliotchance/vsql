@@ -20,9 +20,9 @@ fn parse_start_transaction_statement() !Stmt {
 	return StartTransactionStatement{}
 }
 
-fn (stmt StartTransactionStatement) execute(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
-	mut catalog := c.catalog()
+	mut catalog := conn.catalog()
 
 	match catalog.storage.transaction_state {
 		.not_active {
@@ -58,6 +58,6 @@ fn (stmt StartTransactionStatement) execute(mut c Connection, params map[string]
 	return new_result_msg('START TRANSACTION', elapsed_parse, t.elapsed())
 }
 
-fn (stmt StartTransactionStatement) explain(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt StartTransactionStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN START TRANSACTION')
 }

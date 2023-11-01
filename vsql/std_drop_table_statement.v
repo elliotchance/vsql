@@ -21,16 +21,16 @@ fn parse_drop_table_statement(table_name Identifier) !Stmt {
 	return DropTableStatement{table_name}
 }
 
-fn (stmt DropTableStatement) execute(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt DropTableStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	c.open_write_connection()!
+	conn.open_write_connection()!
 	defer {
-		c.release_write_connection()
+		conn.release_write_connection()
 	}
 
-	mut catalog := c.catalog()
-	table_name := c.resolve_table_identifier(stmt.table_name, false)!
+	mut catalog := conn.catalog()
+	table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 
 	// TODO(elliotchance): Also delete rows. See
 	//  https://github.com/elliotchance/vsql/issues/65.
@@ -39,6 +39,6 @@ fn (stmt DropTableStatement) execute(mut c Connection, params map[string]Value, 
 	return new_result_msg('DROP TABLE 1', elapsed_parse, t.elapsed())
 }
 
-fn (stmt DropTableStatement) explain(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt DropTableStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN DROP TABLE')
 }

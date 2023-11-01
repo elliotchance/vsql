@@ -26,15 +26,15 @@ fn parse_drop_schema_statement(schema_name Identifier, behavior string) !Stmt {
 	return DropSchemaStatement{schema_name, behavior}
 }
 
-fn (stmt DropSchemaStatement) execute(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt DropSchemaStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	c.open_write_connection()!
+	conn.open_write_connection()!
 	defer {
-		c.release_write_connection()
+		conn.release_write_connection()
 	}
 
-	mut catalog := c.catalog()
+	mut catalog := conn.catalog()
 	schema_name := stmt.schema_name.schema_name
 
 	if schema_name !in catalog.storage.schemas {
@@ -62,6 +62,6 @@ fn (stmt DropSchemaStatement) execute(mut c Connection, params map[string]Value,
 	return new_result_msg('DROP SCHEMA 1', elapsed_parse, t.elapsed())
 }
 
-fn (stmt DropSchemaStatement) explain(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt DropSchemaStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN DROP SCHEMA')
 }

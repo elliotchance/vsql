@@ -495,7 +495,8 @@ struct Identifier
    	sub_entity_name string
    	// custom_id is a way to override the behavior of rendering and storage. This
    	// is only used for internal identifiers.
-   	custom_id string
+   	custom_id  string
+   	custom_typ Type
    }
 
 

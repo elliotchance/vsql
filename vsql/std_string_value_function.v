@@ -73,40 +73,10 @@ fn (e CharacterValueFunction) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e CharacterValueFunction) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
-		CharacterSubstringFunction, TrimFunction, RoutineInvocation {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e CharacterValueFunction) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return new_type('CHARACTER VARYING', 0, 0)
-}
-
-fn (e CharacterValueFunction) resolve_identifiers(conn &Connection, tables map[string]Table) !CharacterValueFunction {
+fn (e CharacterValueFunction) compile(mut c Compiler) !CompileResult {
 	match e {
-		CharacterSubstringFunction {
-			from := if t := e.from {
-				?NumericValueExpression(t.resolve_identifiers(conn, tables)!)
-			} else {
-				?NumericValueExpression(none)
-			}
-			@for := if t := e.@for {
-				?NumericValueExpression(t.resolve_identifiers(conn, tables)!)
-			} else {
-				?NumericValueExpression(none)
-			}
-
-			return CharacterSubstringFunction{e.value.resolve_identifiers(conn, tables)!, from, @for, e.using}
-		}
-		RoutineInvocation {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		TrimFunction {
-			return TrimFunction{e.specification, e.character.resolve_identifiers(conn,
-				tables)!, e.source.resolve_identifiers(conn, tables)!}
+		CharacterSubstringFunction, TrimFunction, RoutineInvocation {
+			return e.compile(mut c)!
 		}
 	}
 }
@@ -132,39 +102,65 @@ fn (e CharacterSubstringFunction) pstr(params map[string]Value) string {
 	return s + ' USING ${e.using})'
 }
 
-fn (e CharacterSubstringFunction) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	value := e.value.eval(mut conn, data, params)!
-
-	mut from := 0
-	if f := e.from {
-		from = int((f.eval(mut conn, data, params)!).as_int() - 1)
-	}
-
-	if e.using == 'CHARACTERS' {
-		characters := value.string_value().runes()
-
-		if from >= characters.len || from < 0 {
-			return new_varchar_value('')
+fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
+	compiled_value := e.value.compile(mut c)!
+	compiled_from := if f := e.from {
+		f.compile(mut c)!
+	} else {
+		CompileResult{
+			run: unsafe { nil }
+			typ: Type{}
+			contains_agg: false
 		}
-
-		mut @for := characters.len - from
-		if f := e.@for {
-			@for = int((f.eval(mut conn, data, params)!).as_int())
+	}
+	compiled_for := if f := e.@for {
+		f.compile(mut c)!
+	} else {
+		CompileResult{
+			run: unsafe { nil }
+			typ: Type{}
+			contains_agg: false
 		}
-
-		return new_varchar_value(characters[from..from + @for].string())
 	}
 
-	if from >= value.string_value().len || from < 0 {
-		return new_varchar_value('')
-	}
+	return CompileResult{
+		run: fn [e, compiled_value, compiled_from, compiled_for] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled_value.run(mut conn, data, params)!
 
-	mut @for := value.string_value().len - from
-	if f := e.@for {
-		@for = int((f.eval(mut conn, data, params)!).as_int())
-	}
+			mut from := 0
+			if e.from != none {
+				from = int((compiled_from.run(mut conn, data, params)!).as_int() - 1)
+			}
 
-	return new_varchar_value(value.string_value().substr(from, from + @for))
+			if e.using == 'CHARACTERS' {
+				characters := value.string_value().runes()
+
+				if from >= characters.len || from < 0 {
+					return new_varchar_value('')
+				}
+
+				mut @for := characters.len - from
+				if e.@for != none {
+					@for = int((compiled_for.run(mut conn, data, params)!).as_int())
+				}
+
+				return new_varchar_value(characters[from..from + @for].string())
+			}
+
+			if from >= value.string_value().len || from < 0 {
+				return new_varchar_value('')
+			}
+
+			mut @for := value.string_value().len - from
+			if e.@for != none {
+				@for = int((compiled_for.run(mut conn, data, params)!).as_int())
+			}
+
+			return new_varchar_value(value.string_value().substr(from, from + @for))
+		}
+		typ: new_type('CHARACTER VARYING', 0, 0)
+		contains_agg: compiled_value.contains_agg
+	}
 }
 
 struct TrimFunction {
@@ -179,19 +175,28 @@ fn (e TrimFunction) pstr(params map[string]Value) string {
 	return 'TRIM(${e.specification} ${e.character.pstr(params)} FROM ${e.source.pstr(params)})'
 }
 
-fn (e TrimFunction) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	source := e.source.eval(mut conn, data, params)!
-	character := e.character.eval(mut conn, data, params)!
+fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
+	compiled_source := e.source.compile(mut c)!
+	compiled_character := e.character.compile(mut c)!
 
-	if e.specification == 'LEADING' {
-		return new_varchar_value(source.string_value().trim_left(character.string_value()))
+	return CompileResult{
+		run: fn [e, compiled_source, compiled_character] (mut conn Connection, data Row, params map[string]Value) !Value {
+			source := compiled_source.run(mut conn, data, params)!
+			character := compiled_character.run(mut conn, data, params)!
+
+			if e.specification == 'LEADING' {
+				return new_varchar_value(source.string_value().trim_left(character.string_value()))
+			}
+
+			if e.specification == 'TRAILING' {
+				return new_varchar_value(source.string_value().trim_right(character.string_value()))
+			}
+
+			return new_varchar_value(source.string_value().trim(character.string_value()))
+		}
+		typ: new_type('CHARACTER VARYING', 0, 0)
+		contains_agg: compiled_source.contains_agg || compiled_character.contains_agg
 	}
-
-	if e.specification == 'TRAILING' {
-		return new_varchar_value(source.string_value().trim_right(character.string_value()))
-	}
-
-	return new_varchar_value(source.string_value().trim(character.string_value()))
 }
 
 fn parse_character_substring_function_1(value CharacterValueExpression, from NumericValueExpression) !CharacterSubstringFunction {

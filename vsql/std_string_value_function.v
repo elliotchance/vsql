@@ -85,36 +85,6 @@ fn (e CharacterValueFunction) eval_type(conn &Connection, data Row, params map[s
 	return new_type('CHARACTER VARYING', 0, 0)
 }
 
-fn (e CharacterValueFunction) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	match e {
-		CharacterSubstringFunction {
-			if e.value.is_agg(conn, row, params)! {
-				return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
-			}
-			if from := e.from {
-				if from.is_agg(conn, row, params)! {
-					return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
-				}
-			}
-			if @for := e.@for {
-				if @for.is_agg(conn, row, params)! {
-					return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
-				}
-			}
-		}
-		RoutineInvocation {
-			return e.is_agg(conn, row, params)!
-		}
-		TrimFunction {
-			if e.source.is_agg(conn, row, params)! || e.character.is_agg(conn, row, params)! {
-				return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
-			}
-		}
-	}
-
-	return false
-}
-
 fn (e CharacterValueFunction) resolve_identifiers(conn &Connection, tables map[string]Table) !CharacterValueFunction {
 	match e {
 		CharacterSubstringFunction {

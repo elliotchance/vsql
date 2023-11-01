@@ -51,14 +51,6 @@ fn (e ValueExpressionPrimary) eval_type(conn &Connection, data Row, params map[s
 	}
 }
 
-fn (e ValueExpressionPrimary) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		ParenthesizedValueExpression, NonparenthesizedValueExpressionPrimary {
-			e.is_agg(conn, row, params)!
-		}
-	}
-}
-
 fn (e ValueExpressionPrimary) resolve_identifiers(conn &Connection, tables map[string]Table) !ValueExpressionPrimary {
 	return match e {
 		ParenthesizedValueExpression {
@@ -84,10 +76,6 @@ fn (e ParenthesizedValueExpression) eval(mut conn Connection, data Row, params m
 
 fn (e ParenthesizedValueExpression) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
 	return e.e.eval_type(conn, data, params)
-}
-
-fn (e ParenthesizedValueExpression) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return e.e.is_agg(conn, row, params)!
 }
 
 fn (e ParenthesizedValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !ParenthesizedValueExpression {
@@ -125,15 +113,6 @@ fn (e NonparenthesizedValueExpressionPrimary) eval_type(conn &Connection, data R
 		ValueSpecification, Identifier, AggregateFunction, CaseExpression, CastSpecification,
 		NextValueExpression, RoutineInvocation {
 			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e NonparenthesizedValueExpressionPrimary) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		ValueSpecification, AggregateFunction, CaseExpression, CastSpecification,
-		NextValueExpression, RoutineInvocation, Identifier {
-			e.is_agg(conn, row, params)!
 		}
 	}
 }

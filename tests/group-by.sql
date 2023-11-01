@@ -233,7 +233,10 @@ FETCH FIRST 2 ROWS ONLY;
 -- X: 1.234
 
 EXPLAIN SELECT y, min(x) * avg(x) FROM foo GROUP BY y;
--- error 42601: syntax error: nested aggregate functions are not supported: MIN(":memory:".PUBLIC.FOO.X) * AVG(":memory:".PUBLIC.FOO.X)
+-- EXPLAIN: TABLE ":memory:".PUBLIC.FOO (X DOUBLE PRECISION, Y CHARACTER VARYING(32))
+-- EXPLAIN: ORDER BY ":memory:".PUBLIC.FOO.Y ASC
+-- EXPLAIN: GROUP BY (":memory:".PUBLIC.FOO.Y CHARACTER VARYING(32))
+-- EXPLAIN: EXPR (Y CHARACTER VARYING, COL2 DOUBLE PRECISION)
 
 SELECT y, min(x) * avg(x) FROM foo GROUP BY y;
--- error 42601: syntax error: nested aggregate functions are not supported: MIN(":memory:".PUBLIC.FOO.X) * AVG(":memory:".PUBLIC.FOO.X)
+-- error 42601: syntax error: unknown column: MIN(":memory:".PUBLIC.FOO.X)

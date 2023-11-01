@@ -39,10 +39,6 @@ fn (e NullPredicate) eval(mut conn Connection, data Row, params map[string]Value
 	return new_boolean_value(value.is_null)
 }
 
-fn (e NullPredicate) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return e.expr.is_agg(conn, row, params)!
-}
-
 fn (e NullPredicate) resolve_identifiers(conn &Connection, tables map[string]Table) !NullPredicate {
 	return NullPredicate{e.expr.resolve_identifiers(conn, tables)!, e.not}
 }

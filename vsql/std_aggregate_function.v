@@ -53,19 +53,6 @@ fn (e AggregateFunction) eval_type(conn &Connection, data Row, params map[string
 	}
 }
 
-fn (e AggregateFunction) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	match e {
-		AggregateFunctionCount {
-			return true
-		}
-		RoutineInvocation {
-			return e.is_agg(conn, row, params)!
-		}
-	}
-
-	return false
-}
-
 fn (e AggregateFunction) resolve_identifiers(conn &Connection, tables map[string]Table) !AggregateFunction {
 	match e {
 		AggregateFunctionCount { return AggregateFunction(e) }

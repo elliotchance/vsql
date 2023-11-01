@@ -68,14 +68,6 @@ fn (e CharacterLikePredicate) eval(mut conn Connection, data Row, params map[str
 	return e.right.eval(mut conn, data, params)!
 }
 
-fn (e CharacterLikePredicate) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	if left := e.left {
-		return left.is_agg(conn, row, params)!
-	}
-
-	return false
-}
-
 fn (e CharacterLikePredicate) resolve_identifiers(conn &Connection, tables map[string]Table) !CharacterLikePredicate {
 	left := if t := e.left {
 		?RowValueConstructorPredicand(t.resolve_identifiers(conn, tables)!)

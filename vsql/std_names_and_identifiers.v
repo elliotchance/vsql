@@ -78,10 +78,6 @@ pub:
 	custom_id string
 }
 
-fn (e Identifier) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return false
-}
-
 fn (e Identifier) resolve_identifiers(conn &Connection, tables map[string]Table) !Identifier {
 	if e.custom_id != '' {
 		return e

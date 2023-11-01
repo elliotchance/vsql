@@ -104,10 +104,6 @@ fn (e DatetimeValueFunction) eval_type(conn &Connection, data Row, params map[st
 	}
 }
 
-fn (e DatetimeValueFunction) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return false
-}
-
 fn (e DatetimeValueFunction) resolve_identifiers(conn &Connection, tables map[string]Table) !DatetimeValueFunction {
 	return e
 }

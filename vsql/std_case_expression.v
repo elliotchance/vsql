@@ -90,23 +90,6 @@ fn (e CaseExpression) eval_type(conn &Connection, data Row, params map[string]Va
 	}
 }
 
-fn (e CaseExpression) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	match e {
-		CaseExpressionNullIf {
-			if e.a.is_agg(conn, row, params)! || e.b.is_agg(conn, row, params)! {
-				return sqlstate_42601('nested aggregate functions are not supported: ${CaseExpression(e).pstr(params)}')
-			}
-		}
-		CaseExpressionCoalesce {
-			for expr in e.exprs {
-				return expr.is_agg(conn, row, params)!
-			}
-		}
-	}
-
-	return false
-}
-
 fn (e CaseExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !CaseExpression {
 	match e {
 		CaseExpressionNullIf {

@@ -67,16 +67,6 @@ fn (e BooleanPrimary) eval_type(conn &Connection, data Row, params map[string]Va
 	}
 }
 
-fn (e BooleanPrimary) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	match e {
-		Predicate, BooleanPredicand {
-			return e.is_agg(conn, row, params)!
-		}
-	}
-
-	return false
-}
-
 fn (e BooleanPrimary) resolve_identifiers(conn &Connection, tables map[string]Table) !BooleanPrimary {
 	return match e {
 		Predicate {
@@ -112,16 +102,6 @@ fn (e BooleanPredicand) eval_type(conn &Connection, data Row, params map[string]
 			e.eval_type(conn, data, params)!
 		}
 	}
-}
-
-fn (e BooleanPredicand) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	match e {
-		BooleanValueExpression, NonparenthesizedValueExpressionPrimary {
-			return e.is_agg(conn, row, params)!
-		}
-	}
-
-	return false
 }
 
 fn (e BooleanPredicand) resolve_identifiers(conn &Connection, tables map[string]Table) !BooleanPredicand {
@@ -182,16 +162,6 @@ fn (e BooleanValueExpression) eval_type(conn &Connection, data Row, params map[s
 	return new_type('BOOLEAN', 0, 0)
 }
 
-fn (e BooleanValueExpression) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	if expr := e.expr {
-		if expr.is_agg(conn, row, params)! || e.term.is_agg(conn, row, params)! {
-			return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
-		}
-	}
-
-	return e.term.is_agg(conn, row, params)!
-}
-
 fn (e BooleanValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !BooleanValueExpression {
 	term := e.term.resolve_identifiers(conn, tables)!
 	if expr := e.expr {
@@ -247,16 +217,6 @@ fn (e BooleanTerm) eval_type(conn &Connection, data Row, params map[string]Value
 	}
 
 	return new_type('BOOLEAN', 0, 0)
-}
-
-fn (e BooleanTerm) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	if term := e.term {
-		if term.is_agg(conn, row, params)! || e.factor.is_agg(conn, row, params)! {
-			return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
-		}
-	}
-
-	return e.factor.is_agg(conn, row, params)!
 }
 
 fn (e BooleanTerm) resolve_identifiers(conn &Connection, tables map[string]Table) !BooleanTerm {
@@ -342,10 +302,6 @@ fn (e BooleanTest) eval_type(conn &Connection, data Row, params map[string]Value
 	}
 
 	return new_type('BOOLEAN', 0, 0)
-}
-
-fn (e BooleanTest) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return e.expr.is_agg(conn, row, params)!
 }
 
 fn (e BooleanTest) resolve_identifiers(conn &Connection, tables map[string]Table) !BooleanTest {

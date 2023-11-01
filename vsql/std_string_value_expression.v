@@ -53,14 +53,6 @@ fn (e CharacterValueExpression) eval_type(conn &Connection, data Row, params map
 	}
 }
 
-fn (e CharacterValueExpression) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		Concatenation, CharacterPrimary {
-			e.is_agg(conn, row, params)!
-		}
-	}
-}
-
 fn (e CharacterValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !CharacterValueExpression {
 	return match e {
 		Concatenation {
@@ -98,18 +90,6 @@ fn (e CharacterPrimary) eval_type(conn &Connection, data Row, params map[string]
 	}
 }
 
-fn (e CharacterPrimary) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	match e {
-		ValueExpressionPrimary, CharacterValueFunction {
-			if e.is_agg(conn, row, params)! {
-				return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
-			}
-		}
-	}
-
-	return false
-}
-
 fn (e CharacterPrimary) resolve_identifiers(conn &Connection, tables map[string]Table) !CharacterPrimary {
 	return match e {
 		ValueExpressionPrimary {
@@ -144,14 +124,6 @@ fn (e Concatenation) eval(mut conn Connection, data Row, params map[string]Value
 
 fn (e Concatenation) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
 	return new_type('VARCHAR', 0, 0)
-}
-
-fn (e Concatenation) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	if e.left.is_agg(conn, row, params)! || e.right.is_agg(conn, row, params)! {
-		return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
-	}
-
-	return false
 }
 
 fn (e Concatenation) resolve_identifiers(conn &Connection, tables map[string]Table) !Concatenation {

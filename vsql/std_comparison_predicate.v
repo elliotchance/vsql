@@ -69,14 +69,6 @@ fn (e ComparisonPredicate) eval(mut conn Connection, data Row, params map[string
 	})
 }
 
-fn (e ComparisonPredicate) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	if e.left.is_agg(conn, row, params)! || e.right.is_agg(conn, row, params)! {
-		return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
-	}
-
-	return false
-}
-
 fn (e ComparisonPredicate) resolve_identifiers(conn &Connection, tables map[string]Table) !ComparisonPredicate {
 	return ComparisonPredicate{e.left.resolve_identifiers(conn, tables)!, e.op, e.right.resolve_identifiers(conn,
 		tables)!}

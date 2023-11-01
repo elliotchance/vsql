@@ -31,10 +31,6 @@ fn (e NextValueExpression) eval_type(conn &Connection, data Row, params map[stri
 	return new_type('INTEGER', 0, 0)
 }
 
-fn (e NextValueExpression) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return false
-}
-
 fn (e NextValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !NextValueExpression {
 	return NextValueExpression{conn.resolve_identifier(e.name)}
 }

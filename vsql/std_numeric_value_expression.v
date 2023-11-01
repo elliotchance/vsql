@@ -62,16 +62,6 @@ fn (e NumericValueExpression) eval_type(conn &Connection, data Row, params map[s
 	return e.term.eval_type(conn, data, params)
 }
 
-fn (e NumericValueExpression) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	if n := e.n {
-		if n.is_agg(conn, row, params)! || e.term.is_agg(conn, row, params)! {
-			return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
-		}
-	}
-
-	return e.term.is_agg(conn, row, params)!
-}
-
 fn (e NumericValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !NumericValueExpression {
 	term := e.term.resolve_identifiers(conn, tables)!
 	if n := e.n {
@@ -118,16 +108,6 @@ fn (e Term) eval_type(conn &Connection, data Row, params map[string]Value) !Type
 	return e.factor.eval_type(conn, data, params)
 }
 
-fn (e Term) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	if term := e.term {
-		if term.is_agg(conn, row, params)! || e.factor.is_agg(conn, row, params)! {
-			return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
-		}
-	}
-
-	return e.factor.is_agg(conn, row, params)!
-}
-
 fn (e Term) resolve_identifiers(conn &Connection, tables map[string]Table) !Term {
 	factor := e.factor.resolve_identifiers(conn, tables)!
 	if term := e.term {
@@ -164,10 +144,6 @@ fn (e SignedValueExpressionPrimary) eval_type(conn &Connection, data Row, params
 	return e.e.eval_type(conn, data, params)!
 }
 
-fn (e SignedValueExpressionPrimary) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return e.e.is_agg(conn, row, params)!
-}
-
 fn (e SignedValueExpressionPrimary) resolve_identifiers(conn &Connection, tables map[string]Table) !SignedValueExpressionPrimary {
 	return SignedValueExpressionPrimary{e.sign, e.e.resolve_identifiers(conn, tables)!}
 }
@@ -194,14 +170,6 @@ fn (e NumericPrimary) eval_type(conn &Connection, data Row, params map[string]Va
 	return match e {
 		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation {
 			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e NumericPrimary) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation {
-			e.is_agg(conn, row, params)!
 		}
 	}
 }

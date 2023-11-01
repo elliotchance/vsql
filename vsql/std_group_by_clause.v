@@ -73,7 +73,7 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, p
 
 	empty_row := new_empty_row(table.columns, table.name.str())
 	for expr in select_exprs {
-		if expr.expr.is_agg(conn, empty_row, params)! {
+		if is_agg(expr.expr)! {
 			columns << Column{Identifier{
 				custom_id: expr.expr.pstr(params)
 			}, expr.expr.eval_type(conn, empty_row, params)!, false}
@@ -149,7 +149,7 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 
 	// Perform the aggregations functions.
 	for expr in o.select_exprs {
-		if expr.expr.is_agg(o.conn, rows[0], o.params)! {
+		if is_agg(expr.expr)! {
 			key := expr.expr.pstr(o.params)
 			for mut set in sets {
 				mut valid := false

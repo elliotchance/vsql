@@ -49,10 +49,6 @@ fn (e ValueSpecification) eval(mut conn Connection, data Row, params map[string]
 	}
 }
 
-fn (e ValueSpecification) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return false
-}
-
 fn (e ValueSpecification) resolve_identifiers(conn &Connection, tables map[string]Table) !ValueSpecification {
 	return e
 }

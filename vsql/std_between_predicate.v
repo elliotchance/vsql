@@ -75,14 +75,6 @@ fn (e BetweenPredicate) eval(mut conn Connection, data Row, params map[string]Va
 	return new_boolean_value(result)
 }
 
-fn (e BetweenPredicate) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	if e.left.is_agg(conn, row, params)! || e.right.is_agg(conn, row, params)! {
-		return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
-	}
-
-	return false
-}
-
 fn (e BetweenPredicate) resolve_identifiers(conn &Connection, tables map[string]Table) !BetweenPredicate {
 	return BetweenPredicate{e.not, e.symmetric, e.expr.resolve_identifiers(conn, tables)!, e.left.resolve_identifiers(conn,
 		tables)!, e.right.resolve_identifiers(conn, tables)!}

@@ -86,27 +86,6 @@ fn (e RoutineInvocation) eval_type(conn &Connection, data Row, params map[string
 	return func.return_type
 }
 
-fn (e RoutineInvocation) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	mut arg_types := []Type{}
-	for arg in e.args {
-		arg_types << arg.eval_type(conn, row, params)!
-	}
-
-	func := conn.find_function(e.function_name, arg_types)!
-
-	if func.is_agg {
-		return true
-	}
-
-	for arg in e.args {
-		if arg.is_agg(conn, row, params)! {
-			return sqlstate_42601('nested aggregate functions are not supported: ${e.pstr(params)}')
-		}
-	}
-
-	return false
-}
-
 fn (e RoutineInvocation) resolve_identifiers(conn &Connection, tables map[string]Table) !RoutineInvocation {
 	return RoutineInvocation{e.function_name, e.args.map(it.resolve_identifiers(conn,
 		tables)!)}

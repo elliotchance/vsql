@@ -89,23 +89,6 @@ fn (e ContextuallyTypedRowValueConstructor) eval_type(conn &Connection, data Row
 	}
 }
 
-fn (e ContextuallyTypedRowValueConstructor) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		CommonValueExpression, BooleanValueExpression, NullSpecification {
-			e.is_agg(conn, row, params)!
-		}
-		[]ContextuallyTypedRowValueConstructorElement {
-			for element in e {
-				if element.is_agg(conn, row, params)! {
-					return true
-				}
-			}
-
-			return false
-		}
-	}
-}
-
 fn (e ContextuallyTypedRowValueConstructor) resolve_identifiers(conn &Connection, tables map[string]Table) !ContextuallyTypedRowValueConstructor {
 	match e {
 		CommonValueExpression {
@@ -149,14 +132,6 @@ fn (e ContextuallyTypedRowValueConstructorElement) eval_type(conn &Connection, d
 	}
 }
 
-fn (e ContextuallyTypedRowValueConstructorElement) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		ValueExpression, NullSpecification {
-			e.is_agg(conn, row, params)!
-		}
-	}
-}
-
 fn (e ContextuallyTypedRowValueConstructorElement) resolve_identifiers(conn &Connection, tables map[string]Table) !ContextuallyTypedRowValueConstructorElement {
 	match e {
 		ValueExpression {
@@ -190,14 +165,6 @@ fn (e RowValueConstructorPredicand) eval_type(conn &Connection, data Row, params
 	return match e {
 		CommonValueExpression, BooleanPredicand {
 			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e RowValueConstructorPredicand) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		CommonValueExpression, BooleanPredicand {
-			e.is_agg(conn, row, params)!
 		}
 	}
 }
@@ -291,14 +258,6 @@ fn (r RowValueConstructor) eval_row(mut conn Connection, data Row, params map[st
 	}
 }
 
-fn (e RowValueConstructor) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		CommonValueExpression, BooleanValueExpression, ExplicitRowValueConstructor {
-			e.is_agg(conn, row, params)!
-		}
-	}
-}
-
 fn (e RowValueConstructor) resolve_identifiers(conn &Connection, tables map[string]Table) !RowValueConstructor {
 	match e {
 		CommonValueExpression {
@@ -333,10 +292,6 @@ fn (e ExplicitRowValueConstructor) eval(mut conn Connection, data Row, params ma
 
 fn (e ExplicitRowValueConstructor) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
 	return sqlstate_42601('invalid expression provided: ${e.pstr(params)}')
-}
-
-fn (e ExplicitRowValueConstructor) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return false
 }
 
 fn (e ExplicitRowValueConstructor) resolve_identifiers(conn &Connection, tables map[string]Table) !ExplicitRowValueConstructor {

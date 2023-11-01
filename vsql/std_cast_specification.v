@@ -44,14 +44,6 @@ fn (e CastOperand) eval_type(conn &Connection, data Row, params map[string]Value
 	}
 }
 
-fn (e CastOperand) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		ValueExpression, NullSpecification {
-			e.is_agg(conn, row, params)!
-		}
-	}
-}
-
 fn (e CastOperand) resolve_identifiers(conn &Connection, tables map[string]Table) !CastOperand {
 	match e {
 		ValueExpression {
@@ -80,10 +72,6 @@ fn (e CastSpecification) eval(mut conn Connection, data Row, params map[string]V
 
 fn (e CastSpecification) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
 	return e.target
-}
-
-fn (e CastSpecification) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return e.expr.is_agg(conn, row, params)!
 }
 
 fn (e CastSpecification) resolve_identifiers(conn &Connection, tables map[string]Table) !CastSpecification {

@@ -44,15 +44,6 @@ fn (e Predicate) eval_type(conn &Connection, data Row, params map[string]Value) 
 	return new_type('BOOLEAN', 0, 0)
 }
 
-fn (e Predicate) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		ComparisonPredicate, BetweenPredicate, CharacterLikePredicate, SimilarPredicate,
-		NullPredicate {
-			e.is_agg(conn, row, params)!
-		}
-	}
-}
-
 fn (e Predicate) resolve_identifiers(conn &Connection, tables map[string]Table) !Predicate {
 	match e {
 		ComparisonPredicate {

@@ -43,14 +43,6 @@ fn (e ValueExpression) eval_type(conn &Connection, data Row, params map[string]V
 	}
 }
 
-fn (e ValueExpression) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		CommonValueExpression, BooleanValueExpression {
-			e.is_agg(conn, row, params)!
-		}
-	}
-}
-
 fn (e ValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !ValueExpression {
 	match e {
 		CommonValueExpression {
@@ -84,14 +76,6 @@ fn (e CommonValueExpression) eval_type(conn &Connection, data Row, params map[st
 	return match e {
 		NumericValueExpression, CharacterValueExpression, DatetimePrimary {
 			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e CommonValueExpression) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		NumericValueExpression, CharacterValueExpression, DatetimePrimary {
-			e.is_agg(conn, row, params)!
 		}
 	}
 }

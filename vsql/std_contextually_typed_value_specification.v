@@ -36,10 +36,6 @@ fn (e NullSpecification) eval_type(conn &Connection, data Row, params map[string
 	return error('cannot determine type of untyped NULL')
 }
 
-fn (e NullSpecification) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return false
-}
-
 fn (e NullSpecification) resolve_identifiers(conn &Connection, tables map[string]Table) !NullSpecification {
 	return e
 }

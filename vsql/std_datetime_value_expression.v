@@ -47,14 +47,6 @@ fn (e DatetimePrimary) eval_type(conn &Connection, data Row, params map[string]V
 	}
 }
 
-fn (e DatetimePrimary) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		ValueExpressionPrimary, DatetimeValueFunction {
-			e.is_agg(conn, row, params)!
-		}
-	}
-}
-
 fn (e DatetimePrimary) resolve_identifiers(conn &Connection, tables map[string]Table) !DatetimePrimary {
 	return match e {
 		ValueExpressionPrimary {

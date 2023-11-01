@@ -197,16 +197,29 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 	return plan, table
 }
 
+fn is_agg(expr ValueExpression) !bool {
+	if expr is CommonValueExpression {
+		if expr is DatetimePrimary {
+			if expr is ValueExpressionPrimary {
+				if expr is NonparenthesizedValueExpressionPrimary {
+					if expr is AggregateFunction {
+						return true
+					}
+				}
+			}
+		}
+	}
+
+	return false
+}
+
 fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []DerivedColumn, params map[string]Value, mut c Connection, table Table) ! {
 	// There can be an explicit GROUP BY clause. However, if any of the
 	// expressions contain an aggregate function we need to have an implicit
 	// GROUP BY for the whole set.
 	mut has_agg := false
-	empty_row := new_empty_table_row({
-		table.name.id(): table
-	})
 	for e in select_exprs {
-		if e.expr.is_agg(c, empty_row, params)! {
+		if is_agg(e.expr)! {
 			has_agg = true
 			break
 		}

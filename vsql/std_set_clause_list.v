@@ -54,14 +54,6 @@ fn (e UpdateSource) eval_type(conn &Connection, data Row, params map[string]Valu
 	}
 }
 
-fn (e UpdateSource) is_agg(conn &Connection, row Row, params map[string]Value) !bool {
-	return match e {
-		ValueExpression, NullSpecification {
-			e.is_agg(conn, row, params)!
-		}
-	}
-}
-
 fn (e UpdateSource) resolve_identifiers(conn &Connection, tables map[string]Table) !UpdateSource {
 	match e {
 		ValueExpression {

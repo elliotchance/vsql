@@ -37,29 +37,10 @@ fn (e CharacterValueExpression) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e CharacterValueExpression) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
+fn (e CharacterValueExpression) compile(mut c Compiler) !CompileResult {
+	match e {
 		Concatenation, CharacterPrimary {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e CharacterValueExpression) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		Concatenation, CharacterPrimary {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e CharacterValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !CharacterValueExpression {
-	return match e {
-		Concatenation {
-			e.resolve_identifiers(conn, tables)!
-		}
-		CharacterPrimary {
-			e.resolve_identifiers(conn, tables)!
+			return e.compile(mut c)!
 		}
 	}
 }
@@ -74,29 +55,10 @@ fn (e CharacterPrimary) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e CharacterPrimary) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
+fn (e CharacterPrimary) compile(mut c Compiler) !CompileResult {
+	match e {
 		ValueExpressionPrimary, CharacterValueFunction {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e CharacterPrimary) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		ValueExpressionPrimary, CharacterValueFunction {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e CharacterPrimary) resolve_identifiers(conn &Connection, tables map[string]Table) !CharacterPrimary {
-	return match e {
-		ValueExpressionPrimary {
-			e.resolve_identifiers(conn, tables)!
-		}
-		CharacterValueFunction {
-			e.resolve_identifiers(conn, tables)!
+			return e.compile(mut c)!
 		}
 	}
 }
@@ -110,25 +72,25 @@ fn (e Concatenation) pstr(params map[string]Value) string {
 	return '${e.left.pstr(params)} || ${e.right.pstr(params)}'
 }
 
-fn (e Concatenation) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	mut left := e.left.eval(mut conn, data, params)!
-	mut right := e.right.eval(mut conn, data, params)!
+fn (e Concatenation) compile(mut c Compiler) !CompileResult {
+	compiled_left := e.left.compile(mut c)!
+	compiled_right := e.right.compile(mut c)!
 
-	if (left.typ.typ == .is_character || left.typ.typ == .is_varchar)
-		&& (right.typ.typ == .is_character || right.typ.typ == .is_varchar) {
-		return new_varchar_value(left.string_value() + right.string_value())
+	return CompileResult{
+		run: fn [compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
+			mut left := compiled_left.run(mut conn, data, params)!
+			mut right := compiled_right.run(mut conn, data, params)!
+
+			if (left.typ.typ == .is_character || left.typ.typ == .is_varchar)
+				&& (right.typ.typ == .is_character || right.typ.typ == .is_varchar) {
+				return new_varchar_value(left.string_value() + right.string_value())
+			}
+
+			return sqlstate_42883('operator does not exist: ${left.typ.typ} || ${right.typ.typ}')
+		}
+		typ: new_type('CHARACTER VARYING', 0, 0)
+		contains_agg: compiled_left.contains_agg || compiled_right.contains_agg
 	}
-
-	return sqlstate_42883('operator does not exist: ${left.typ.typ} || ${right.typ.typ}')
-}
-
-fn (e Concatenation) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return new_type('VARCHAR', 0, 0)
-}
-
-fn (e Concatenation) resolve_identifiers(conn &Connection, tables map[string]Table) !Concatenation {
-	return Concatenation{e.left.resolve_identifiers(conn, tables)!, e.right.resolve_identifiers(conn,
-		tables)!}
 }
 
 fn parse_concatenation(a CharacterValueExpression, b CharacterValueExpression) !Concatenation {

@@ -151,28 +151,28 @@ fn parse_result_offset_clause(v ValueSpecification) !ValueSpecification {
 	return v
 }
 
-fn (stmt QueryExpression) execute(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt QueryExpression) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	c.open_read_connection()!
+	conn.open_read_connection()!
 	defer {
-		c.release_read_connection()
+		conn.release_read_connection()
 	}
 
-	mut plan := create_plan(stmt, params, mut c)!
+	mut plan := create_plan(stmt, params, mut conn)!
 
 	rows := plan.execute([]Row{})!
 
 	return new_result(plan.columns(), rows, elapsed_parse, t.elapsed())
 }
 
-fn (stmt QueryExpression) explain(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
-	c.open_read_connection()!
+fn (stmt QueryExpression) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+	conn.open_read_connection()!
 	defer {
-		c.release_read_connection()
+		conn.release_read_connection()
 	}
 
-	mut plan := create_plan(stmt, params, mut c)!
+	mut plan := create_plan(stmt, params, mut conn)!
 
 	return plan.explain(elapsed_parse)
 }
@@ -290,6 +290,11 @@ fn (l &RowLink) rows() []Row {
 }
 
 fn row_cmp(mut conn Connection, params map[string]Value, r1 Row, r2 Row, specs []SortSpecification) !int {
+	mut c := Compiler{
+		conn: conn
+		params: params
+	}
+
 	// ISO/IEC 9075-2:2016(E), 10.10, <sort specification list>:
 	//
 	// General Rules
@@ -364,8 +369,8 @@ fn row_cmp(mut conn Connection, params map[string]Value, r1 Row, r2 Row, specs [
 	//       <sort specification>s are said to be peers of each other. The
 	//       relative ordering of peers is implementation-dependent.
 	for spec in specs {
-		left := spec.expr.eval(mut conn, r1, params)!
-		right := spec.expr.eval(mut conn, r2, params)!
+		left := spec.expr.compile(mut c)!.run(mut conn, r1, params)!
+		right := spec.expr.compile(mut c)!.run(mut conn, r2, params)!
 
 		if left.is_null && right.is_null {
 			continue
@@ -430,9 +435,13 @@ fn (o &LimitOperation) columns() Columns {
 }
 
 fn (mut o LimitOperation) execute(rows []Row) ![]Row {
+	mut c := Compiler{
+		conn: o.conn
+		params: o.params
+	}
 	mut offset := i64(0)
 	if off := o.offset {
-		offset = (off.eval(mut o.conn, Row{}, o.params)!).as_int()
+		offset = (off.compile(mut c)!.run(mut o.conn, Row{}, o.params)!).as_int()
 
 		if offset >= rows.len {
 			return []Row{}
@@ -441,7 +450,7 @@ fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 
 	mut fetch := i64(rows.len)
 	if f := o.fetch {
-		fetch = (f.eval(mut o.conn, Row{}, o.params)!).as_int()
+		fetch = (f.compile(mut c)!.run(mut o.conn, Row{}, o.params)!).as_int()
 	}
 
 	if offset + fetch >= rows.len {

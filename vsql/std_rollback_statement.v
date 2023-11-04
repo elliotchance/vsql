@@ -22,9 +22,9 @@ fn parse_rollback() !Stmt {
 	return RollbackStatement{}
 }
 
-fn (stmt RollbackStatement) execute(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt RollbackStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
-	mut catalog := c.catalog()
+	mut catalog := conn.catalog()
 
 	match catalog.storage.transaction_state {
 		.not_active {
@@ -66,6 +66,6 @@ fn (stmt RollbackStatement) execute(mut c Connection, params map[string]Value, e
 	return new_result_msg('ROLLBACK', elapsed_parse, t.elapsed())
 }
 
-fn (stmt RollbackStatement) explain(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt RollbackStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN ROLLBACK')
 }

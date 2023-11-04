@@ -40,36 +40,28 @@ fn (e NumericValueExpression) pstr(params map[string]Value) string {
 	return e.term.pstr(params)
 }
 
-fn (e NumericValueExpression) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	if n := e.n {
-		mut left := n.eval(mut conn, data, params)!
-		mut right := e.term.eval(mut conn, data, params)!
+fn (e NumericValueExpression) compile(mut c Compiler) !CompileResult {
+	compiled_term := e.term.compile(mut c)!
 
-		return eval_binary(mut conn, data, left, e.op, right, params)!
+	if n := e.n {
+		compiled_n := n.compile(mut c)!
+
+		return CompileResult{
+			run: fn [e, compiled_n, compiled_term] (mut conn Connection, data Row, params map[string]Value) !Value {
+				mut left := compiled_n.run(mut conn, data, params)!
+				mut right := compiled_term.run(mut conn, data, params)!
+
+				return eval_binary(mut conn, data, left, e.op, right, params)!
+			}
+			// TODO(elliotchance): This is not correct, we would have to return
+			//  the highest resolution type (need to check the SQL standard about
+			//  this behavior).
+			typ: compiled_n.typ
+			contains_agg: compiled_term.contains_agg || compiled_n.contains_agg
+		}
 	}
 
-	return e.term.eval(mut conn, data, params)
-}
-
-fn (e NumericValueExpression) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	if n := e.n {
-		// TODO(elliotchance): This is not correct, we would have to return
-		//  the highest resolution type (need to check the SQL standard about
-		//  this behavior).
-		return n.eval_type(conn, data, params)!
-	}
-
-	return e.term.eval_type(conn, data, params)
-}
-
-fn (e NumericValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !NumericValueExpression {
-	term := e.term.resolve_identifiers(conn, tables)!
-	if n := e.n {
-		n2 := n.resolve_identifiers(conn, tables)!
-		return NumericValueExpression{&n2, e.op, term}
-	}
-
-	return NumericValueExpression{none, e.op, term}
+	return compiled_term
 }
 
 struct Term {
@@ -86,36 +78,25 @@ fn (e Term) pstr(params map[string]Value) string {
 	return e.factor.pstr(params)
 }
 
-fn (e Term) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	if term := e.term {
-		mut left := term.eval(mut conn, data, params)!
-		mut right := e.factor.eval(mut conn, data, params)!
+fn (e Term) compile(mut c Compiler) !CompileResult {
+	compiled_factor := e.factor.compile(mut c)!
 
-		return eval_binary(mut conn, data, left, e.op, right, params)!
+	if term := e.term {
+		compiled_term := term.compile(mut c)!
+
+		return CompileResult{
+			run: fn [e, compiled_term, compiled_factor] (mut conn Connection, data Row, params map[string]Value) !Value {
+				mut left := compiled_term.run(mut conn, data, params)!
+				mut right := compiled_factor.run(mut conn, data, params)!
+
+				return eval_binary(mut conn, data, left, e.op, right, params)!
+			}
+			typ: compiled_term.typ
+			contains_agg: compiled_factor.contains_agg || compiled_term.contains_agg
+		}
 	}
 
-	return e.factor.eval(mut conn, data, params)
-}
-
-fn (e Term) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	if term := e.term {
-		// TODO(elliotchance): This is not correct, we would have to return
-		//  the highest resolution type (need to check the SQL standard about
-		//  this behavior).
-		return term.eval_type(conn, data, params)!
-	}
-
-	return e.factor.eval_type(conn, data, params)
-}
-
-fn (e Term) resolve_identifiers(conn &Connection, tables map[string]Table) !Term {
-	factor := e.factor.resolve_identifiers(conn, tables)!
-	if term := e.term {
-		term2 := term.resolve_identifiers(conn, tables)!
-		return Term{&term2, e.op, factor}
-	}
-
-	return Term{none, e.op, factor}
+	return compiled_factor
 }
 
 struct SignedValueExpressionPrimary {
@@ -127,25 +108,24 @@ fn (e SignedValueExpressionPrimary) pstr(params map[string]Value) string {
 	return e.sign + e.e.pstr(params)
 }
 
-fn (e SignedValueExpressionPrimary) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	value := e.e.eval(mut conn, data, params)!
+fn (e SignedValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
+	compiled := e.e.compile(mut c)!
 
-	key := '${e.sign} ${value.typ.typ}'
-	if fnc := conn.unary_operators[key] {
-		unary_fn := fnc as UnaryOperatorFunc
-		return unary_fn(conn, value)!
+	return CompileResult{
+		run: fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled.run(mut conn, data, params)!
+
+			key := '${e.sign} ${value.typ.typ}'
+			if fnc := conn.unary_operators[key] {
+				unary_fn := fnc as UnaryOperatorFunc
+				return unary_fn(conn, value)!
+			}
+
+			return sqlstate_42883('operator does not exist: ${key}')
+		}
+		typ: compiled.typ
+		contains_agg: compiled.contains_agg
 	}
-
-	return sqlstate_42883('operator does not exist: ${key}')
-}
-
-fn (e SignedValueExpressionPrimary) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	// Any sign always results in the same type.
-	return e.e.eval_type(conn, data, params)!
-}
-
-fn (e SignedValueExpressionPrimary) resolve_identifiers(conn &Connection, tables map[string]Table) !SignedValueExpressionPrimary {
-	return SignedValueExpressionPrimary{e.sign, e.e.resolve_identifiers(conn, tables)!}
 }
 
 type NumericPrimary = RoutineInvocation | SignedValueExpressionPrimary | ValueExpressionPrimary
@@ -158,32 +138,10 @@ fn (e NumericPrimary) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e NumericPrimary) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
-		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e NumericPrimary) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e NumericPrimary) resolve_identifiers(conn &Connection, tables map[string]Table) !NumericPrimary {
+fn (e NumericPrimary) compile(mut c Compiler) !CompileResult {
 	match e {
-		SignedValueExpressionPrimary {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		ValueExpressionPrimary {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		RoutineInvocation {
-			return e.resolve_identifiers(conn, tables)!
+		SignedValueExpressionPrimary, ValueExpressionPrimary, RoutineInvocation {
+			return e.compile(mut c)!
 		}
 	}
 }

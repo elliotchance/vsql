@@ -37,15 +37,11 @@ fn (e ValueSpecification) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e ValueSpecification) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		Value, GeneralValueSpecification { e.eval_type(conn, data, params)! }
-	}
-}
-
-fn (e ValueSpecification) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
-		Value, GeneralValueSpecification { e.eval(mut conn, data, params)! }
+fn (e ValueSpecification) compile(mut c Compiler) !CompileResult {
+	match e {
+		Value, GeneralValueSpecification {
+			return e.compile(mut c)!
+		}
 	}
 }
 
@@ -71,18 +67,29 @@ fn (e GeneralValueSpecification) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e GeneralValueSpecification) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		HostParameterName { e.eval_type(conn, data, params)! }
-		CurrentCatalog, CurrentSchema { new_type('CHARACTER VARYING', 0, 0) }
-	}
-}
-
-fn (e GeneralValueSpecification) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
-		HostParameterName { e.eval(mut conn, data, params)! }
-		CurrentCatalog { new_varchar_value(conn.current_catalog) }
-		CurrentSchema { new_varchar_value(conn.current_schema) }
+fn (e GeneralValueSpecification) compile(mut c Compiler) !CompileResult {
+	match e {
+		HostParameterName {
+			return e.compile(mut c)!
+		}
+		CurrentCatalog {
+			return CompileResult{
+				run: fn (mut conn Connection, data Row, params map[string]Value) !Value {
+					return new_varchar_value(conn.current_catalog)
+				}
+				typ: new_type('CHARACTER VARYING', 0, 0)
+				contains_agg: false
+			}
+		}
+		CurrentSchema {
+			return CompileResult{
+				run: fn (mut conn Connection, data Row, params map[string]Value) !Value {
+					return new_varchar_value(conn.current_schema)
+				}
+				typ: new_type('CHARACTER VARYING', 0, 0)
+				contains_agg: false
+			}
+		}
 	}
 }
 

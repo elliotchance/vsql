@@ -33,12 +33,10 @@ fn (e RoutineInvocation) pstr(params map[string]Value) string {
 	return '${e.function_name}(${args})'
 }
 
-fn (e RoutineInvocation) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	func_name := e.function_name
-
+fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	mut arg_types := []Type{}
 	for arg in e.args {
-		mut arg_type := arg.eval_type(conn, data, params)!
+		mut arg_type := arg.compile(mut c)!.typ
 
 		// TODO(elliotchance): There is a special case where numeric literals are
 		// treated as DOUBLE PRECISION. This will be changed in the future when we
@@ -50,45 +48,47 @@ fn (e RoutineInvocation) eval(mut conn Connection, data Row, params map[string]V
 		arg_types << arg_type
 	}
 
-	func := conn.find_function(func_name, arg_types)!
+	func_name := e.function_name
 
-	if func.is_agg {
+	found_func := c.conn.find_function(func_name, arg_types)!
+
+	if found_func.is_agg {
 		return Identifier{
-			custom_id: e.pstr(params)
-		}.eval(mut conn, data, params)
+			custom_id: e.pstr(c.params)
+			custom_typ: found_func.return_type
+		}.compile(mut c)!.with_agg(true)
 	}
 
-	if e.args.len != func.arg_types.len {
+	if e.args.len != found_func.arg_types.len {
 		return sqlstate_42883('${func_name} has ${e.args.len} ${pluralize(e.args.len,
-			'argument')} but needs ${func.arg_types.len} ${pluralize(func.arg_types.len,
+			'argument')} but needs ${found_func.arg_types.len} ${pluralize(found_func.arg_types.len,
 			'argument')}')
 	}
 
-	mut args := []Value{}
-	mut i := 0
-	for typ in arg_types {
-		arg := e.args[i].eval(mut conn, data, params)!
-		args << cast(mut conn, 'argument ${i + 1} in ${func_name}', arg, typ)!
-		i++
+	mut compiled_args := []CompileResult{}
+	for i, _ in arg_types {
+		compiled_args << e.args[i].compile(mut c)!
 	}
 
-	return func.func(args)
-}
+	return CompileResult{
+		run: fn [found_func, func_name, arg_types, compiled_args] (mut conn Connection, data Row, params map[string]Value) !Value {
+			mut args := []Value{}
+			mut i := 0
+			for typ in arg_types {
+				arg := compiled_args[i].run(mut conn, data, params)!
+				args << cast(mut conn, 'argument ${i + 1} in ${func_name}', arg, typ)!
+				i++
+			}
 
-fn (e RoutineInvocation) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	mut arg_types := []Type{}
-	for arg in e.args {
-		arg_types << arg.eval_type(conn, data, params)!
+			return found_func.func(args)!
+		}
+		typ: found_func.return_type
+		contains_agg: found_func.is_agg
 	}
-
-	func := conn.find_function(e.function_name, arg_types)!
-
-	return func.return_type
 }
 
 fn (e RoutineInvocation) resolve_identifiers(conn &Connection, tables map[string]Table) !RoutineInvocation {
-	return RoutineInvocation{e.function_name, e.args.map(it.resolve_identifiers(conn,
-		tables)!)}
+	return RoutineInvocation{e.function_name, e.args}
 }
 
 fn parse_routine_invocation(name Identifier, args []ValueExpression) !RoutineInvocation {

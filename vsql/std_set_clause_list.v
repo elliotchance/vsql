@@ -38,29 +38,10 @@ fn (e UpdateSource) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e UpdateSource) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
-		ValueExpression, NullSpecification {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e UpdateSource) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		ValueExpression, NullSpecification {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e UpdateSource) resolve_identifiers(conn &Connection, tables map[string]Table) !UpdateSource {
+fn (e UpdateSource) compile(mut c Compiler) !CompileResult {
 	match e {
-		ValueExpression {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		NullSpecification {
-			return e.resolve_identifiers(conn, tables)!
+		ValueExpression, NullSpecification {
+			return e.compile(mut c)!
 		}
 	}
 }

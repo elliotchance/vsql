@@ -24,15 +24,15 @@ fn parse_schema_definition(schema_name Identifier) !Stmt {
 	return SchemaDefinition{schema_name}
 }
 
-fn (stmt SchemaDefinition) execute(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt SchemaDefinition) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	c.open_write_connection()!
+	conn.open_write_connection()!
 	defer {
-		c.release_write_connection()
+		conn.release_write_connection()
 	}
 
-	mut catalog := c.catalog()
+	mut catalog := conn.catalog()
 	schema_name := stmt.schema_name.schema_name
 
 	if schema_name in catalog.storage.schemas {
@@ -44,6 +44,6 @@ fn (stmt SchemaDefinition) execute(mut c Connection, params map[string]Value, el
 	return new_result_msg('CREATE SCHEMA 1', elapsed_parse, t.elapsed())
 }
 
-fn (stmt SchemaDefinition) explain(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt SchemaDefinition) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN CREATE SCHEMA')
 }

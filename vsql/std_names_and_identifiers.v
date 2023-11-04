@@ -75,7 +75,8 @@ pub:
 	sub_entity_name string
 	// custom_id is a way to override the behavior of rendering and storage. This
 	// is only used for internal identifiers.
-	custom_id string
+	custom_id  string
+	custom_typ Type
 }
 
 fn (e Identifier) resolve_identifiers(conn &Connection, tables map[string]Table) !Identifier {
@@ -281,16 +282,130 @@ fn requote_identifier(s string) string {
 	return '"${s}"'
 }
 
-fn (e Identifier) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	value := data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }
+fn (e Identifier) compile(mut c Compiler) !CompileResult {
+	// There are lots of ways to reoslve an identifer...
+	//
+	// 1. custom_id is used as a hack to wrap aggregate functions. This should be
+	// removed in the future.
+	if e.custom_id != '' {
+		return CompileResult{
+			run: fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
+				return data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }
+			}
+			typ: e.custom_typ
+			contains_agg: false
+		}
+	}
 
-	return value
-}
+	// 2. A qualified field in a subquery table.
+	if table := c.tables[e.entity_name] {
+		column := table.column(e.sub_entity_name) or { Column{} }
+		if column.name.sub_entity_name == e.sub_entity_name {
+			return CompileResult{
+				run: fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }
+				}
+				typ: column.typ
+				contains_agg: false
+			}
+		}
+	}
 
-fn (e Identifier) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	col := data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }
+	// 3. Try to use the context.
+	mut ident := c.conn.resolve_identifier(Identifier{
+		catalog_name: if c.context.catalog_name != '' {
+			c.context.catalog_name
+		} else {
+			e.catalog_name
+		}
+		schema_name: if c.context.schema_name != '' { c.context.schema_name } else { e.schema_name }
+		entity_name: if c.context.entity_name != '' { c.context.entity_name } else { e.entity_name }
+		sub_entity_name: e.sub_entity_name
+	})
+	mut catalog := c.conn.catalogs[ident.catalog_name] or {
+		panic('unknown catalog: ${ident.catalog_name}')
+	}
+	for _, table in catalog.storage.tables {
+		if table.name.schema_name == ident.schema_name
+			&& table.name.entity_name == ident.entity_name {
+			column := table.column(ident.sub_entity_name) or { Column{} }
+			if column.name.sub_entity_name == ident.sub_entity_name {
+				return CompileResult{
+					run: fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
+						return data.data[ident.id()] or {
+							return sqlstate_42601('unknown column: ${ident}')
+						}
+					}
+					typ: column.typ
+					contains_agg: false
+				}
+			}
+		}
+	}
 
-	return col.typ
+	// 3. An bare field in a subquery tables.
+	ident = c.conn.resolve_identifier(e)
+	for _, table in c.tables {
+		column := table.column(e.sub_entity_name) or { Column{} }
+		if column.name.sub_entity_name == e.sub_entity_name {
+			ident = column.name
+
+			return CompileResult{
+				run: fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return data.data[ident.id()] or {
+						return sqlstate_42601('unknown column: ${ident}')
+					}
+				}
+				typ: column.typ
+				contains_agg: false
+			}
+		}
+	}
+
+	// 4. A qualified table field.
+	if e.entity_name != '' {
+		for _, table in catalog.storage.tables {
+			if table.name.schema_name == ident.schema_name
+				&& table.name.entity_name == ident.entity_name {
+				column := table.column(ident.sub_entity_name) or { Column{} }
+				if column.name.sub_entity_name == ident.sub_entity_name {
+					return CompileResult{
+						run: fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
+							return data.data[ident.id()] or {
+								return sqlstate_42601('unknown column: ${ident}')
+							}
+						}
+						typ: column.typ
+						contains_agg: false
+					}
+				}
+			}
+		}
+	}
+
+	// 5. A bare table field.
+	//
+	// TODO(elliotchance): Check for ambiguous field name.
+	for _, table in catalog.storage.tables {
+		if table.name.schema_name == ident.schema_name {
+			column := table.column(ident.sub_entity_name) or { Column{} }
+			if column.name.sub_entity_name == ident.sub_entity_name {
+				ident = column.name
+
+				return CompileResult{
+					run: fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
+						return data.data[ident.id()] or {
+							return sqlstate_42601('unknown column: ${ident}')
+						}
+					}
+					typ: column.typ
+					contains_agg: false
+				}
+			}
+		}
+	}
+
+	return sqlstate_42601('unknown column: ${ident}')
 }
 
 // id is the internal canonical name. How it is represented in memory during
@@ -394,14 +509,16 @@ fn (e HostParameterName) pstr(params map[string]Value) string {
 	return p.str()
 }
 
-fn (e HostParameterName) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return params[e.name] or { return sqlstate_42p02(e.name) }
-}
+fn (e HostParameterName) compile(mut c Compiler) !CompileResult {
+	p := c.params[e.name] or { return sqlstate_42p02(e.name) }
 
-fn (e HostParameterName) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	p := params[e.name] or { return sqlstate_42p02(e.name) }
-
-	return p.eval_type(conn, data, params)
+	return CompileResult{
+		run: fn [p] (mut conn Connection, data Row, params map[string]Value) !Value {
+			return p
+		}
+		typ: p.typ
+		contains_agg: false
+	}
 }
 
 fn parse_table_name(identifier IdentifierChain) !Identifier {

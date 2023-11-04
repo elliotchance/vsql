@@ -154,52 +154,52 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 	}
 }
 
-fn (mut c Connection) open_read_connection() ! {
-	for _, mut catalog in c.catalogs {
+fn (mut conn Connection) open_read_connection() ! {
+	for _, mut catalog in conn.catalogs {
 		catalog.open_read_connection()!
 	}
 }
 
-fn (mut c CatalogConnection) open_read_connection() ! {
-	if c.path == ':memory:' {
+fn (mut conn CatalogConnection) open_read_connection() ! {
+	if conn.path == ':memory:' {
 		return
 	}
 
-	c.options.mutex.@rlock()
+	conn.options.mutex.@rlock()
 
-	flock_lock_shared(c.storage.file, c.path)!
-	c.storage.open(c.path, c.catalog_name)!
+	flock_lock_shared(conn.storage.file, conn.path)!
+	conn.storage.open(conn.path, conn.catalog_name)!
 }
 
-fn (mut c Connection) open_write_connection() ! {
-	for _, mut catalog in c.catalogs {
+fn (mut conn Connection) open_write_connection() ! {
+	for _, mut catalog in conn.catalogs {
 		catalog.open_write_connection()!
 	}
 }
 
-fn (mut c CatalogConnection) open_write_connection() ! {
-	if c.path == ':memory:' {
+fn (mut conn CatalogConnection) open_write_connection() ! {
+	if conn.path == ':memory:' {
 		return
 	}
 
-	c.options.mutex.@lock()
+	conn.options.mutex.@lock()
 
-	flock_lock_exclusive(c.storage.file, c.path)!
-	c.storage.open(c.path, c.catalog_name)!
+	flock_lock_exclusive(conn.storage.file, conn.path)!
+	conn.storage.open(conn.path, conn.catalog_name)!
 }
 
-fn (mut c Connection) release_write_connection() {
-	for _, mut catalog in c.catalogs {
+fn (mut conn Connection) release_write_connection() {
+	for _, mut catalog in conn.catalogs {
 		catalog.release_write_connection()
 	}
 }
 
-fn (mut c CatalogConnection) release_write_connection() {
-	if c.path == ':memory:' {
+fn (mut conn CatalogConnection) release_write_connection() {
+	if conn.path == ':memory:' {
 		return
 	}
 
-	c.storage.close() or {
+	conn.storage.close() or {
 		// This was a hack to get around the fact we can't return an option from
 		// this function because it messes with the behavior of defer.
 		//
@@ -209,23 +209,23 @@ fn (mut c CatalogConnection) release_write_connection() {
 		panic(err)
 	}
 
-	flock_unlock_exclusive(c.storage.file, c.path)
+	flock_unlock_exclusive(conn.storage.file, conn.path)
 
-	c.options.mutex.unlock()
+	conn.options.mutex.unlock()
 }
 
-fn (mut c Connection) release_read_connection() {
-	for _, mut catalog in c.catalogs {
+fn (mut conn Connection) release_read_connection() {
+	for _, mut catalog in conn.catalogs {
 		catalog.release_read_connection()
 	}
 }
 
-fn (mut c CatalogConnection) release_read_connection() {
-	if c.path == ':memory:' {
+fn (mut conn CatalogConnection) release_read_connection() {
+	if conn.path == ':memory:' {
 		return
 	}
 
-	c.storage.close() or {
+	conn.storage.close() or {
 		// This was a hack to get around the fact we can't return an option from
 		// this function because it messes with the behavior of defer.
 		//
@@ -235,34 +235,34 @@ fn (mut c CatalogConnection) release_read_connection() {
 		panic(err)
 	}
 
-	flock_unlock_shared(c.storage.file, c.path)
+	flock_unlock_shared(conn.storage.file, conn.path)
 
-	c.options.mutex.runlock()
+	conn.options.mutex.runlock()
 }
 
 // prepare returns a precompiled statement that can be executed multiple times
 // with different provided parameters.
-pub fn (mut c Connection) prepare(sql_stmt string) !PreparedStmt {
+pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 	t := start_timer()
-	stmt, params, explain := c.query_cache.parse(sql_stmt) or {
-		mut catalog := c.catalog()
+	stmt, params, explain := conn.query_cache.parse(sql_stmt) or {
+		mut catalog := conn.catalog()
 		catalog.storage.transaction_aborted()
 		return err
 	}
 	elapsed_parse := t.elapsed()
 
-	return PreparedStmt{stmt, params, explain, &c, elapsed_parse}
+	return PreparedStmt{stmt, params, explain, &conn, elapsed_parse}
 }
 
 // query executes a statement. If there is a result set it will be returned.
-pub fn (mut c Connection) query(sql_stmt string) !Result {
-	mut catalog := c.catalog()
+pub fn (mut conn Connection) query(sql_stmt string) !Result {
+	mut catalog := conn.catalog()
 
 	if catalog.storage.transaction_state == .aborted {
 		return sqlstate_25p02()
 	}
 
-	mut prepared := c.prepare(sql_stmt) or {
+	mut prepared := conn.prepare(sql_stmt) or {
 		catalog.storage.transaction_aborted()
 		return err
 	}
@@ -273,22 +273,24 @@ pub fn (mut c Connection) query(sql_stmt string) !Result {
 	}
 }
 
-fn (mut c Connection) transaction_aborted() {
-	for _, mut catalog in c.catalogs {
+fn (mut conn Connection) transaction_aborted() {
+	for _, mut catalog in conn.catalogs {
 		catalog.storage.transaction_aborted()
 	}
 }
 
-fn (mut c Connection) register_func(func Func) ! {
-	c.funcs << func
+fn (mut conn Connection) register_func(func Func) ! {
+	conn.funcs << func
 }
 
-pub fn (mut c Connection) catalog() &CatalogConnection {
-	return c.catalogs[c.current_catalog] or { panic('unknown catalog: ${c.current_catalog}') }
+pub fn (mut conn Connection) catalog() &CatalogConnection {
+	return conn.catalogs[conn.current_catalog] or {
+		panic('unknown catalog: ${conn.current_catalog}')
+	}
 }
 
-fn (c Connection) find_function(func_name string, arg_types []Type) !Func {
-	for f in c.funcs {
+fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
+	for f in conn.funcs {
 		if func_name != f.name || arg_types.len != f.arg_types.len {
 			continue
 		}
@@ -328,7 +330,7 @@ fn (c Connection) find_function(func_name string, arg_types []Type) !Func {
 
 // register_function will register a function that can be used in SQL
 // expressions.
-pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) !Value) ! {
+pub fn (mut conn Connection) register_function(prototype string, func fn ([]Value) !Value) ! {
 	// TODO(elliotchance): A rather crude way to decode the prototype...
 	parts := prototype.replace('(', '|').replace(')', '|').split('|')
 	function_name := new_function_identifier(parts[0].trim_space())!.entity_name
@@ -341,20 +343,20 @@ pub fn (mut c Connection) register_function(prototype string, func fn ([]Value) 
 	}
 
 	return_type := new_type(parts[2].trim_space().to_upper(), 0, 0)
-	c.register_func(Func{function_name, arg_types, false, func, return_type})!
+	conn.register_func(Func{function_name, arg_types, false, func, return_type})!
 }
 
 // register_virtual_table will register a function that can provide data at
 // runtime to a virtual table.
-pub fn (mut c Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ! {
+pub fn (mut conn Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ! {
 	// Registering virtual tables does not need use query cache.
 	mut tokens := tokenize(create_table)
 	stmt := parse(tokens)!
 
 	if stmt is TableDefinition {
-		mut table_name := c.resolve_schema_identifier(stmt.table_name)!
+		mut table_name := conn.resolve_schema_identifier(stmt.table_name)!
 
-		c.catalogs[c.current_catalog].virtual_tables[table_name.storage_id()] = VirtualTable{
+		conn.catalogs[conn.current_catalog].virtual_tables[table_name.storage_id()] = VirtualTable{
 			create_table_sql: create_table
 			create_table_stmt: stmt
 			data: data
@@ -367,14 +369,14 @@ pub fn (mut c Connection) register_virtual_table(create_table string, data Virtu
 }
 
 // schemas returns the schemas in this catalog (database).
-pub fn (mut c CatalogConnection) schemas() ![]Schema {
-	c.open_read_connection()!
+pub fn (mut conn CatalogConnection) schemas() ![]Schema {
+	conn.open_read_connection()!
 	defer {
-		c.release_read_connection()
+		conn.release_read_connection()
 	}
 
 	mut schemas := []Schema{}
-	for _, schema in c.storage.schemas {
+	for _, schema in conn.storage.schemas {
 		schemas << schema
 	}
 
@@ -383,14 +385,14 @@ pub fn (mut c CatalogConnection) schemas() ![]Schema {
 
 // schema_tables returns tables for the provided schema. If the schema does not
 // exist and empty list will be returned.
-pub fn (mut c CatalogConnection) sequences(schema string) ![]Sequence {
-	c.open_read_connection()!
+pub fn (mut conn CatalogConnection) sequences(schema string) ![]Sequence {
+	conn.open_read_connection()!
 	defer {
-		c.release_read_connection()
+		conn.release_read_connection()
 	}
 
 	mut sequences := []Sequence{}
-	for _, sequence in c.storage.sequences()! {
+	for _, sequence in conn.storage.sequences()! {
 		if sequence.name.schema_name == schema {
 			sequences << sequence
 		}
@@ -401,14 +403,14 @@ pub fn (mut c CatalogConnection) sequences(schema string) ![]Sequence {
 
 // schema_tables returns tables for the provided schema. If the schema does not
 // exist and empty list will be returned.
-pub fn (mut c CatalogConnection) schema_tables(schema string) ![]Table {
-	c.open_read_connection()!
+pub fn (mut conn CatalogConnection) schema_tables(schema string) ![]Table {
+	conn.open_read_connection()!
 	defer {
-		c.release_read_connection()
+		conn.release_read_connection()
 	}
 
 	mut tables := []Table{}
-	for _, table in c.storage.tables {
+	for _, table in conn.storage.tables {
 		if table.name.schema_name == schema {
 			tables << table
 		}
@@ -419,16 +421,17 @@ pub fn (mut c CatalogConnection) schema_tables(schema string) ![]Table {
 
 // resolve_identifier returns a new identifier that would represent the
 // canonical (fully qualified) form.
-fn (c Connection) resolve_identifier(identifier Identifier) Identifier {
+fn (conn Connection) resolve_identifier(identifier Identifier) Identifier {
 	return Identifier{
 		custom_id: identifier.custom_id
+		custom_typ: identifier.custom_typ
 		catalog_name: if identifier.catalog_name == '' && !identifier.entity_name.starts_with('$') {
-			c.current_catalog
+			conn.current_catalog
 		} else {
 			identifier.catalog_name
 		}
 		schema_name: if identifier.schema_name == '' && !identifier.entity_name.starts_with('$') {
-			c.current_schema
+			conn.current_schema
 		} else {
 			identifier.schema_name
 		}
@@ -438,10 +441,10 @@ fn (c Connection) resolve_identifier(identifier Identifier) Identifier {
 }
 
 // resolve_catalog_identifier returns the fully qualified and validates it.
-fn (c Connection) resolve_catalog_identifier(identifier Identifier) !Identifier {
-	ident := c.resolve_identifier(identifier)
+fn (conn Connection) resolve_catalog_identifier(identifier Identifier) !Identifier {
+	ident := conn.resolve_identifier(identifier)
 
-	if ident.catalog_name !in c.catalogs {
+	if ident.catalog_name !in conn.catalogs {
 		return sqlstate_3d000(ident.catalog_name) // catalog does not exist
 	}
 
@@ -449,10 +452,10 @@ fn (c Connection) resolve_catalog_identifier(identifier Identifier) !Identifier 
 }
 
 // resolve_schema_identifier returns the fully qualified and validates it.
-fn (mut c Connection) resolve_schema_identifier(identifier Identifier) !Identifier {
-	ident := c.resolve_catalog_identifier(identifier)!
+fn (mut conn Connection) resolve_schema_identifier(identifier Identifier) !Identifier {
+	ident := conn.resolve_catalog_identifier(identifier)!
 
-	if ident.schema_name !in c.catalog().storage.schemas {
+	if ident.schema_name !in conn.catalog().storage.schemas {
 		return sqlstate_3f000(ident.schema_name) // schema does not exist
 	}
 
@@ -461,10 +464,10 @@ fn (mut c Connection) resolve_schema_identifier(identifier Identifier) !Identifi
 
 // resolve_table_identifier returns a new identifer that would represent the
 // canonical (fully qualified) form of the provided identifier or an error.
-fn (mut c Connection) resolve_table_identifier(identifier Identifier, allow_virtual bool) !Identifier {
-	ident := c.resolve_schema_identifier(identifier)!
+fn (mut conn Connection) resolve_table_identifier(identifier Identifier, allow_virtual bool) !Identifier {
+	ident := conn.resolve_schema_identifier(identifier)!
 	id := ident.storage_id()
-	mut catalog := c.catalogs[ident.catalog_name] or {
+	mut catalog := conn.catalogs[ident.catalog_name] or {
 		return error('unknown catalog: ${ident.catalog_name}')
 	}
 
@@ -534,13 +537,13 @@ pub fn default_connection_options() ConnectionOptions {
 // This is to be able to collect all warnings during some arbitrary process
 // defined by the application. Instead, you should call clear_warnings() before
 // starting a block of work.
-pub fn (mut c Connection) clear_warnings() {
-	c.warnings = []IError{}
+pub fn (mut conn Connection) clear_warnings() {
+	conn.warnings = []IError{}
 }
 
-fn (mut c Connection) add_warning(warning IError) {
-	c.warnings << warning
-	if c.warnings.len > 100 {
-		c.warnings = c.warnings[c.warnings.len - 100..]
+fn (mut conn Connection) add_warning(warning IError) {
+	conn.warnings << warning
+	if conn.warnings.len > 100 {
+		conn.warnings = conn.warnings[conn.warnings.len - 100..]
 	}
 }

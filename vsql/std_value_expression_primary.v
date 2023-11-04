@@ -35,29 +35,10 @@ fn (e ValueExpressionPrimary) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e ValueExpressionPrimary) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
+fn (e ValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
+	match e {
 		ParenthesizedValueExpression, NonparenthesizedValueExpressionPrimary {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e ValueExpressionPrimary) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		ParenthesizedValueExpression, NonparenthesizedValueExpressionPrimary {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e ValueExpressionPrimary) resolve_identifiers(conn &Connection, tables map[string]Table) !ValueExpressionPrimary {
-	return match e {
-		ParenthesizedValueExpression {
-			e.resolve_identifiers(conn, tables)!
-		}
-		NonparenthesizedValueExpressionPrimary {
-			e.resolve_identifiers(conn, tables)!
+			return e.compile(mut c)!
 		}
 	}
 }
@@ -70,16 +51,8 @@ fn (e ParenthesizedValueExpression) pstr(params map[string]Value) string {
 	return '(${e.e.pstr(params)})'
 }
 
-fn (e ParenthesizedValueExpression) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return e.e.eval(mut conn, data, params)!
-}
-
-fn (e ParenthesizedValueExpression) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return e.e.eval_type(conn, data, params)
-}
-
-fn (e ParenthesizedValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !ParenthesizedValueExpression {
-	return ParenthesizedValueExpression{e.e.resolve_identifiers(conn, tables)!}
+fn (e ParenthesizedValueExpression) compile(mut c Compiler) !CompileResult {
+	return e.e.compile(mut c)!
 }
 
 type NonparenthesizedValueExpressionPrimary = AggregateFunction
@@ -99,46 +72,11 @@ fn (e NonparenthesizedValueExpressionPrimary) pstr(params map[string]Value) stri
 	}
 }
 
-fn (e NonparenthesizedValueExpressionPrimary) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
-		ValueSpecification, Identifier, AggregateFunction, CaseExpression, CastSpecification,
-		NextValueExpression, RoutineInvocation {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e NonparenthesizedValueExpressionPrimary) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		ValueSpecification, Identifier, AggregateFunction, CaseExpression, CastSpecification,
-		NextValueExpression, RoutineInvocation {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e NonparenthesizedValueExpressionPrimary) resolve_identifiers(conn &Connection, tables map[string]Table) !NonparenthesizedValueExpressionPrimary {
+fn (e NonparenthesizedValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
 	match e {
-		ValueSpecification {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		AggregateFunction {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		CaseExpression {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		CastSpecification {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		NextValueExpression {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		RoutineInvocation {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		Identifier {
-			return e.resolve_identifiers(conn, tables)!
+		ValueSpecification, Identifier, AggregateFunction, CaseExpression, CastSpecification,
+		NextValueExpression, RoutineInvocation {
+			return e.compile(mut c)!
 		}
 	}
 }

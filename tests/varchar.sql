@@ -3,9 +3,9 @@ INSERT INTO foo (x) VALUES ('hello');
 SELECT SUM(x) FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- error 42883: function does not exist: SUM(CHARACTER VARYING)
+-- error 42883: function does not exist: SUM(CHARACTER VARYING(10))
 
 CREATE TABLE foo (x VARCHAR(10));
 SELECT SUM(x) FROM foo;
 -- msg: CREATE TABLE 1
--- error 42883: function does not exist: SUM(CHARACTER VARYING)
+-- error 42883: function does not exist: SUM(CHARACTER VARYING(10))

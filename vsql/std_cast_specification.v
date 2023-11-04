@@ -28,29 +28,10 @@ fn (e CastOperand) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e CastOperand) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
-		ValueExpression, NullSpecification {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e CastOperand) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		ValueExpression, NullSpecification {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e CastOperand) resolve_identifiers(conn &Connection, tables map[string]Table) !CastOperand {
+fn (e CastOperand) compile(mut c Compiler) !CompileResult {
 	match e {
-		ValueExpression {
-			return e.resolve_identifiers(conn, tables)!
-		}
-		NullSpecification {
-			return e.resolve_identifiers(conn, tables)!
+		ValueExpression, NullSpecification {
+			return e.compile(mut c)!
 		}
 	}
 }
@@ -64,18 +45,18 @@ fn (e CastSpecification) pstr(params map[string]Value) string {
 	return 'CAST(${e.expr.pstr(params)} AS ${e.target})'
 }
 
-fn (e CastSpecification) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	value := e.expr.eval(mut conn, data, params)!
+fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
+	compiled_expr := e.expr.compile(mut c)!
 
-	return cast(mut conn, 'for CAST', value, e.target)
-}
+	return CompileResult{
+		run: fn [e, compiled_expr] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled_expr.run(mut conn, data, params)!
 
-fn (e CastSpecification) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return e.target
-}
-
-fn (e CastSpecification) resolve_identifiers(conn &Connection, tables map[string]Table) !CastSpecification {
-	return CastSpecification{e.expr.resolve_identifiers(conn, tables)!, e.target}
+			return cast(mut conn, 'for CAST', value, e.target)!
+		}
+		typ: e.target
+		contains_agg: compiled_expr.contains_agg
+	}
 }
 
 fn parse_cast(expr CastOperand, typ Type) !CastSpecification {

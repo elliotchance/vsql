@@ -51,29 +51,10 @@ fn (e BooleanPrimary) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e BooleanPrimary) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
+fn (e BooleanPrimary) compile(mut c Compiler) !CompileResult {
+	match e {
 		Predicate, BooleanPredicand {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e BooleanPrimary) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		Predicate, BooleanPredicand {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e BooleanPrimary) resolve_identifiers(conn &Connection, tables map[string]Table) !BooleanPrimary {
-	return match e {
-		Predicate {
-			e.resolve_identifiers(conn, tables)!
-		}
-		BooleanPredicand {
-			e.resolve_identifiers(conn, tables)!
+			return e.compile(mut c)!
 		}
 	}
 }
@@ -88,29 +69,10 @@ fn (e BooleanPredicand) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e BooleanPredicand) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
+fn (e BooleanPredicand) compile(mut c Compiler) !CompileResult {
+	match e {
 		BooleanValueExpression, NonparenthesizedValueExpressionPrimary {
-			e.eval(mut conn, data, params)!
-		}
-	}
-}
-
-fn (e BooleanPredicand) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		BooleanValueExpression, NonparenthesizedValueExpressionPrimary {
-			e.eval_type(conn, data, params)!
-		}
-	}
-}
-
-fn (e BooleanPredicand) resolve_identifiers(conn &Connection, tables map[string]Table) !BooleanPredicand {
-	return match e {
-		BooleanValueExpression {
-			BooleanPredicand(e.resolve_identifiers(conn, tables)!)
-		}
-		NonparenthesizedValueExpressionPrimary {
-			BooleanPredicand(e.resolve_identifiers(conn, tables)!)
+			return e.compile(mut c)!
 		}
 	}
 }
@@ -128,48 +90,39 @@ fn (e BooleanValueExpression) pstr(params map[string]Value) string {
 	return e.term.pstr(params)
 }
 
-fn (e BooleanValueExpression) eval(mut conn Connection, data Row, params map[string]Value) !Value {
+fn (e BooleanValueExpression) compile(mut c Compiler) !CompileResult {
 	if expr := e.expr {
-		a := expr.eval(mut conn, data, params)!
-		b := e.term.eval(mut conn, data, params)!
+		compiled_a := expr.compile(mut c)!
+		compiled_b := e.term.compile(mut c)!
 
-		// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
-		// "Table 14 — Truth table for the OR boolean operator"
+		return CompileResult{
+			run: fn [compiled_a, compiled_b] (mut conn Connection, data Row, params map[string]Value) !Value {
+				a := compiled_a.run(mut conn, data, params)!
+				b := compiled_b.run(mut conn, data, params)!
 
-		if a.is_null {
-			if b.bool_value() == .is_true {
-				return new_boolean_value(true)
+				// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
+				// "Table 14 — Truth table for the OR boolean operator"
+
+				if a.is_null {
+					if b.bool_value() == .is_true {
+						return new_boolean_value(true)
+					}
+
+					return new_unknown_value()
+				}
+
+				if a.bool_value() == .is_true {
+					return new_boolean_value(true)
+				}
+
+				return b
 			}
-
-			return new_unknown_value()
+			typ: new_type('BOOLEAN', 0, 0)
+			contains_agg: compiled_a.contains_agg || compiled_b.contains_agg
 		}
-
-		if a.bool_value() == .is_true {
-			return new_boolean_value(true)
-		}
-
-		return b
 	}
 
-	return e.term.eval(mut conn, data, params)
-}
-
-fn (e BooleanValueExpression) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	if e.expr == none {
-		return e.term.eval_type(conn, data, params)
-	}
-
-	return new_type('BOOLEAN', 0, 0)
-}
-
-fn (e BooleanValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !BooleanValueExpression {
-	term := e.term.resolve_identifiers(conn, tables)!
-	if expr := e.expr {
-		expr2 := expr.resolve_identifiers(conn, tables)!
-		return BooleanValueExpression{&expr2, term}
-	}
-
-	return BooleanValueExpression{none, term}
+	return e.term.compile(mut c)!
 }
 
 struct BooleanTerm {
@@ -185,48 +138,39 @@ fn (e BooleanTerm) pstr(params map[string]Value) string {
 	return e.factor.pstr(params)
 }
 
-fn (e BooleanTerm) eval(mut conn Connection, data Row, params map[string]Value) !Value {
+fn (e BooleanTerm) compile(mut c Compiler) !CompileResult {
 	if term := e.term {
-		a := term.eval(mut conn, data, params)!
-		b := e.factor.eval(mut conn, data, params)!
+		compiled_a := term.compile(mut c)!
+		compiled_b := e.factor.compile(mut c)!
 
-		// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
-		// "Table 13 — Truth table for the AND boolean operator"
+		return CompileResult{
+			run: fn [compiled_a, compiled_b] (mut conn Connection, data Row, params map[string]Value) !Value {
+				a := compiled_a.run(mut conn, data, params)!
+				b := compiled_b.run(mut conn, data, params)!
 
-		if a.is_null {
-			if b.bool_value() == .is_false {
+				// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
+				// "Table 13 — Truth table for the AND boolean operator"
+
+				if a.is_null {
+					if b.bool_value() == .is_false {
+						return new_boolean_value(false)
+					}
+
+					return new_unknown_value()
+				}
+
+				if a.bool_value() == .is_true {
+					return b
+				}
+
 				return new_boolean_value(false)
 			}
-
-			return new_unknown_value()
+			typ: new_type('BOOLEAN', 0, 0)
+			contains_agg: compiled_a.contains_agg || compiled_b.contains_agg
 		}
-
-		if a.bool_value() == .is_true {
-			return b
-		}
-
-		return new_boolean_value(false)
 	}
 
-	return e.factor.eval(mut conn, data, params)
-}
-
-fn (e BooleanTerm) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	if e.term == none {
-		return e.factor.eval_type(conn, data, params)
-	}
-
-	return new_type('BOOLEAN', 0, 0)
-}
-
-fn (e BooleanTerm) resolve_identifiers(conn &Connection, tables map[string]Table) !BooleanTerm {
-	factor := e.factor.resolve_identifiers(conn, tables)!
-	if term := e.term {
-		term2 := term.resolve_identifiers(conn, tables)!
-		return BooleanTerm{&term2, factor}
-	}
-
-	return BooleanTerm{none, factor}
+	return e.factor.compile(mut c)!
 }
 
 // BooleanTest for "IS [ NOT ] { TRUE | FALSE | UNKNOWN }".
@@ -267,45 +211,47 @@ fn (e BooleanTest) unary_not(v Value) !Value {
 	return v
 }
 
-fn (e BooleanTest) eval(mut conn Connection, data Row, params map[string]Value) !Value {
+fn (e BooleanTest) compile(mut c Compiler) !CompileResult {
+	compiled := e.expr.compile(mut c)!
+
 	if v := e.value {
-		// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
-		// "Table 15 — Truth table for the IS boolean operator"
+		return CompileResult{
+			run: fn [e, v, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+				// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
+				// "Table 15 — Truth table for the IS boolean operator"
 
-		value := e.expr.eval(mut conn, data, params)!
-		mut result := new_boolean_value(false)
+				value := compiled.run(mut conn, data, params)!
+				mut result := new_boolean_value(false)
 
-		if value.is_null {
-			result = new_boolean_value(v.is_null)
-		} else if value.bool_value() == .is_true {
-			result = new_boolean_value(v.bool_value() == .is_true)
-		} else {
-			result = new_boolean_value(v.bool_value() == .is_false)
-		}
+				if value.is_null {
+					result = new_boolean_value(v.is_null)
+				} else if value.bool_value() == .is_true {
+					result = new_boolean_value(v.bool_value() == .is_true)
+				} else {
+					result = new_boolean_value(v.bool_value() == .is_false)
+				}
 
-		if e.not {
-			result = match result.bool_value() {
-				.is_true { new_boolean_value(false) }
-				.is_false { new_boolean_value(true) }
+				if e.not {
+					result = match result.bool_value() {
+						.is_true { new_boolean_value(false) }
+						.is_false { new_boolean_value(true) }
+					}
+				}
+
+				return e.unary_not(result)!
 			}
+			typ: new_type('BOOLEAN', 0, 0)
+			contains_agg: compiled.contains_agg
 		}
-
-		return e.unary_not(result)
 	}
 
-	return e.unary_not(e.expr.eval(mut conn, data, params)!)
-}
-
-fn (e BooleanTest) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	if e.value == none {
-		return e.expr.eval_type(conn, data, params)
+	return CompileResult{
+		run: fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+			return e.unary_not(compiled.run(mut conn, data, params)!)!
+		}
+		typ: compiled.typ
+		contains_agg: compiled.contains_agg
 	}
-
-	return new_type('BOOLEAN', 0, 0)
-}
-
-fn (e BooleanTest) resolve_identifiers(conn &Connection, tables map[string]Table) !BooleanTest {
-	return BooleanTest{e.expr.resolve_identifiers(conn, tables)!, e.not, e.value, e.inverse}
 }
 
 fn parse_boolean_term_1(factor BooleanTest) !BooleanTerm {

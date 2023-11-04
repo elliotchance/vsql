@@ -45,17 +45,17 @@ fn parse_from_constructor(columns []Identifier, values []ContextuallyTypedRowVal
 	}
 }
 
-fn (stmt InsertStatement) execute(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	c.open_write_connection()!
+	conn.open_write_connection()!
 	defer {
-		c.release_write_connection()
+		conn.release_write_connection()
 	}
 
-	mut catalog := c.catalog()
+	mut catalog := conn.catalog()
 	mut row := map[string]Value{}
-	mut table_name := c.resolve_table_identifier(stmt.table_name, false)!
+	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 
 	mut values := stmt.values.clone()
 	first_value := stmt.values[0]
@@ -94,9 +94,15 @@ fn (stmt InsertStatement) execute(mut c Connection, params map[string]Value, ela
 	for i, column in stmt.columns {
 		column_name := column.sub_entity_name
 		table_column := table.column(column_name)!
-		raw_value := eval_as_nullable_value(mut c, table_column.typ.typ, Row{}, values[i].resolve_identifiers(c,
-			catalog.storage.tables)!, params)!
-		value := cast(mut c, 'for column ${column_name}', raw_value, table_column.typ)!
+
+		mut c := Compiler{
+			conn: conn
+			params: params
+			null_type: table_column.typ
+		}
+		raw_value := values[i].compile(mut c)!.run(mut conn, Row{}, params)!
+
+		value := cast(mut conn, 'for column ${column_name}', raw_value, table_column.typ)!
 
 		if value.is_null && table_column.not_null {
 			return sqlstate_23502('column ${column_name}')
@@ -123,19 +129,6 @@ fn (stmt InsertStatement) execute(mut c Connection, params map[string]Value, ela
 	return new_result_msg('INSERT 1', elapsed_parse, t.elapsed())
 }
 
-fn (stmt InsertStatement) explain(mut c Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt InsertStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN INSERT')
-}
-
-// eval_as_nullable_value is a broader version of eval_as_value that also takes
-// the known destination type as so allows for untyped NULLs.
-//
-// TODO(elliotchance): Is this even needed? Can eval_as_value be refactored to
-//  work the same way and avoid this extra layer?
-fn eval_as_nullable_value(mut conn Connection, typ SQLType, data Row, e ContextuallyTypedRowValueConstructor, params map[string]Value) !Value {
-	if e is NullSpecification {
-		return new_null_value(typ)
-	}
-
-	return e.eval(mut conn, data, params)
 }

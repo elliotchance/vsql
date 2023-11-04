@@ -28,12 +28,18 @@ fn (e NullSpecification) pstr(params map[string]Value) string {
 	return 'NULL'
 }
 
-fn (e NullSpecification) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return error('cannot determine value of untyped NULL')
-}
+fn (e NullSpecification) compile(mut c Compiler) !CompileResult {
+	if null_type := c.null_type {
+		return CompileResult{
+			run: fn [null_type] (mut conn Connection, data Row, params map[string]Value) !Value {
+				return new_null_value(null_type.typ)
+			}
+			typ: null_type
+			contains_agg: false
+		}
+	}
 
-fn (e NullSpecification) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return error('cannot determine type of untyped NULL')
+	return error('cannot determine value of untyped NULL')
 }
 
 fn (e NullSpecification) resolve_identifiers(conn &Connection, tables map[string]Table) !NullSpecification {

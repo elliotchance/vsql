@@ -35,28 +35,25 @@ fn (e AggregateFunction) pstr(params map[string]Value) string {
 	}
 }
 
-fn (e AggregateFunction) eval(mut conn Connection, data Row, params map[string]Value) !Value {
-	return match e {
+fn (e AggregateFunction) compile(mut c Compiler) !CompileResult {
+	match e {
 		AggregateFunctionCount {
-			(new_column_identifier('"COUNT(*)"')!).eval(mut conn, data, params)!
+			compiled := Identifier{
+				custom_id: 'COUNT(*)'
+				custom_typ: new_type('INTEGER', 0, 0)
+			}.compile(mut c)!
+
+			return CompileResult{
+				run: fn [compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return compiled.run(mut conn, data, params)!
+				}
+				typ: new_type('INTEGER', 0, 0)
+				contains_agg: true
+			}
 		}
 		RoutineInvocation {
-			e.eval(mut conn, data, params)!
+			return e.compile(mut c)!
 		}
-	}
-}
-
-fn (e AggregateFunction) eval_type(conn &Connection, data Row, params map[string]Value) !Type {
-	return match e {
-		AggregateFunctionCount { new_type('INTEGER', 0, 0) }
-		RoutineInvocation { e.eval_type(conn, data, params)! }
-	}
-}
-
-fn (e AggregateFunction) resolve_identifiers(conn &Connection, tables map[string]Table) !AggregateFunction {
-	match e {
-		AggregateFunctionCount { return AggregateFunction(e) }
-		RoutineInvocation { return e.resolve_identifiers(conn, tables)! }
 	}
 }
 

@@ -36,13 +36,14 @@ struct JoinOperation {
 	right_columns Columns
 	specification BooleanValueExpression
 	params        map[string]Value
+	tables        map[string]Table
 mut:
 	conn &Connection
 	plan Plan
 }
 
-fn new_join_operation(left_columns Columns, join_type string, right_columns Columns, specification BooleanValueExpression, params map[string]Value, conn &Connection, plan Plan) &JoinOperation {
-	return &JoinOperation{left_columns, join_type, right_columns, specification, params, conn, plan}
+fn new_join_operation(left_columns Columns, join_type string, right_columns Columns, specification BooleanValueExpression, params map[string]Value, conn &Connection, plan Plan, tables map[string]Table) &JoinOperation {
+	return &JoinOperation{left_columns, join_type, right_columns, specification, params, tables, conn, plan}
 }
 
 fn (o &JoinOperation) str() string {
@@ -93,7 +94,7 @@ fn (mut o JoinOperation) execute_inner(left_rows []Row, right_rows []Row) ![]Row
 				row.data[k] = v
 			}
 
-			if eval_as_bool(mut o.conn, row, o.specification, o.params)! {
+			if eval_as_bool(mut o.conn, row, o.specification, o.params, o.tables)! {
 				new_rows << row
 			}
 		}
@@ -119,7 +120,7 @@ fn (mut o JoinOperation) execute_left(left_rows []Row, right_rows []Row) ![]Row 
 				row.data[k] = v
 			}
 
-			if eval_as_bool(mut o.conn, row, o.specification, o.params)! {
+			if eval_as_bool(mut o.conn, row, o.specification, o.params, o.tables)! {
 				new_rows << row
 				matched = true
 			}
@@ -160,7 +161,7 @@ fn (mut o JoinOperation) execute_right(left_rows []Row, right_rows []Row) ![]Row
 				row.data[k] = v
 			}
 
-			if eval_as_bool(mut o.conn, row, o.specification, o.params)! {
+			if eval_as_bool(mut o.conn, row, o.specification, o.params, o.tables)! {
 				new_rows << row
 				matched = true
 			}

@@ -71,12 +71,17 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, p
 		columns << table.column(name[name.len - 1])!
 	}
 
-	empty_row := new_empty_row(table.columns, table.name.str())
+	mut c := Compiler{
+		conn: conn
+		params: params
+	}
 	for expr in select_exprs {
-		if is_agg(expr.expr)! {
+		compiled_expr := expr.expr.compile(mut c)!
+		if compiled_expr.contains_agg {
 			columns << Column{Identifier{
 				custom_id: expr.expr.pstr(params)
-			}, expr.expr.eval_type(conn, empty_row, params)!, false}
+				custom_typ: compiled_expr.typ
+			}, compiled_expr.typ, false}
 
 			// We need verify the expression type for the argument to the
 			// aggregate function is valid.
@@ -85,8 +90,7 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, p
 					if expr.expr is CharacterPrimary {
 						if expr.expr is CharacterValueFunction {
 							if expr.expr is RoutineInvocation {
-								expr_type := expr.expr.args[0].eval_type(conn, empty_row,
-									params)!
+								expr_type := expr.expr.args[0].compile(mut c)!.typ
 								conn.find_function(expr.expr.function_name, [
 									expr_type,
 								])!
@@ -110,6 +114,11 @@ fn (o &GroupOperation) columns() Columns {
 }
 
 fn (mut o GroupOperation) execute(rows []Row) ![]Row {
+	mut c := Compiler{
+		conn: o.conn
+		params: o.params
+	}
+
 	// Create the grouped sets.
 	mut sets := [][]Row{}
 
@@ -125,9 +134,9 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 
 		mut equal := true
 		for expr in o.group_exprs {
-			left := expr.eval(mut o.conn, sets[sets.len - 1][sets[sets.len - 1].len - 1],
+			left := expr.compile(mut c)!.run(mut o.conn, sets[sets.len - 1][sets[sets.len - 1].len - 1],
 				o.params)!
-			right := expr.eval(mut o.conn, row, o.params)!
+			right := expr.compile(mut c)!.run(mut o.conn, row, o.params)!
 
 			if left.is_null && right.is_null {
 				continue
@@ -149,7 +158,7 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 
 	// Perform the aggregations functions.
 	for expr in o.select_exprs {
-		if is_agg(expr.expr)! {
+		if expr.expr.compile(mut c)!.contains_agg {
 			key := expr.expr.pstr(o.params)
 			for mut set in sets {
 				mut valid := false
@@ -165,8 +174,8 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 										e := expr.expr
 										mut values := []Value{}
 										for row in set {
-											values << e.args[0].eval(mut o.conn, row,
-												o.params)!
+											values << e.args[0].compile(mut c)!.run(mut o.conn,
+												row, o.params)!
 										}
 
 										func := o.conn.find_function(e.function_name,
@@ -181,7 +190,7 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 				}
 
 				if !valid {
-					return sqlstate_42601('invalid set function: ${expr.expr}')
+					return sqlstate_42601('invalid set function: ${expr.expr.pstr(o.params)}')
 				}
 			}
 		}

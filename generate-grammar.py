@@ -337,9 +337,9 @@ def parse_grammar(grammar):
                 new_rule = name[:-1] + ': #' + str(rule_number + 1) + '>'
                 lines.append(new_rule + ' ::= ' + rule)
                 rules[rule_number] = new_rule
-                parse_functions[new_rule] = (parse_function.strip(), re.findall('(<.*?>|[^\s]+)', rule))
+                parse_functions[new_rule] = (parse_function.strip(), re.findall('(<.*?>|[^\\s]+)', rule))
 
-            for token in re.findall('(<.*?>|[^\s]+)', rule):
+            for token in re.findall('(<.*?>|[^\\s]+)', rule):
                 if token.isupper():
                     grammar_rules[token] = EarleyRule(token, [EarleyProduction([token])])
                     grammar_types[token] = ''
@@ -358,7 +358,7 @@ def parse_grammar(grammar):
         rules = raw_rules.split(' | ')
         for rule in rules:
             actual_rule = []
-            for token in re.findall('(<.*?>|[^\s]+)', rule):
+            for token in re.findall('(<.*?>|[^\\s]+)', rule):
                 actual_rule.append(grammar_rules[token])
             grammar_rules[name].productions.append(EarleyProduction(actual_rule))
 

@@ -42,40 +42,40 @@ fn (e CharacterLikePredicate) pstr(params map[string]Value) string {
 	return e.right.pstr(params)
 }
 
-fn (e CharacterLikePredicate) eval(mut conn Connection, data Row, params map[string]Value) !Value {
+fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
+	compiled_right := e.right.compile(mut c)!
+
 	if l := e.left {
-		left := l.eval(mut conn, data, params)!
-		right := e.right.eval(mut conn, data, params)!
+		compiled_l := l.compile(mut c)!
 
-		// Make sure we escape any regexp characters.
-		escaped_regex := right.string_value().replace('+', '\\+').replace('?', '\\?').replace('*',
-			'\\*').replace('|', '\\|').replace('.', '\\.').replace('(', '\\(').replace(')',
-			'\\)').replace('[', '\\[').replace('{', '\\{').replace('_', '.').replace('%',
-			'.*')
+		return CompileResult{
+			run: fn [e, compiled_l, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
+				left := compiled_l.run(mut conn, data, params)!
+				right := compiled_right.run(mut conn, data, params)!
 
-		mut re := regex.regex_opt('^${escaped_regex}$') or {
-			return error('cannot compile regexp: ^${escaped_regex}$: ${err}')
+				// Make sure we escape any regexp characters.
+				escaped_regex := right.string_value().replace('+', '\\+').replace('?',
+					'\\?').replace('*', '\\*').replace('|', '\\|').replace('.', '\\.').replace('(',
+					'\\(').replace(')', '\\)').replace('[', '\\[').replace('{', '\\{').replace('_',
+					'.').replace('%', '.*')
+
+				mut re := regex.regex_opt('^${escaped_regex}$') or {
+					return error('cannot compile regexp: ^${escaped_regex}$: ${err}')
+				}
+				result := re.matches_string(left.string_value())
+
+				if e.not {
+					return new_boolean_value(!result)
+				}
+
+				return new_boolean_value(result)
+			}
+			typ: new_type('BOOLEAN', 0, 0)
+			contains_agg: compiled_right.contains_agg || compiled_l.contains_agg
 		}
-		result := re.matches_string(left.string_value())
-
-		if e.not {
-			return new_boolean_value(!result)
-		}
-
-		return new_boolean_value(result)
 	}
 
-	return e.right.eval(mut conn, data, params)!
-}
-
-fn (e CharacterLikePredicate) resolve_identifiers(conn &Connection, tables map[string]Table) !CharacterLikePredicate {
-	left := if t := e.left {
-		?RowValueConstructorPredicand(t.resolve_identifiers(conn, tables)!)
-	} else {
-		?RowValueConstructorPredicand(none)
-	}
-
-	return CharacterLikePredicate{left, e.right.resolve_identifiers(conn, tables)!, e.not}
+	return compiled_right
 }
 
 fn parse_like_pred(left RowValueConstructorPredicand, like CharacterLikePredicate) !CharacterLikePredicate {

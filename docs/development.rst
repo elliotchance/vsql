@@ -7,3 +7,4 @@ Development
    benchmark.rst
    contributing.rst
    testing.rst
+   sql-standard.rst

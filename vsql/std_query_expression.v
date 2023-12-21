@@ -268,7 +268,7 @@ fn (mut o OrderOperation) execute(rows []Row) ![]Row {
 	return head.rows()
 }
 
-[heap]
+@[heap]
 struct RowLink {
 	row Row
 mut:

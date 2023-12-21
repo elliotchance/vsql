@@ -5,21 +5,17 @@ module vsql
 import regex
 import time
 
-const (
-	second_period = i64(1000000)
-	minute_period = 60 * second_period
-	hour_period   = 60 * minute_period
-	day_period    = 24 * hour_period
-	month_period  = 31 * day_period
-	year_period   = 12 * month_period
-)
+const second_period = i64(1000000)
+const minute_period = 60 * second_period
+const hour_period = 60 * minute_period
+const day_period = 24 * hour_period
+const month_period = 31 * day_period
+const year_period = 12 * month_period
 
 // When a precision is not specified by TIME or TIMESTAMP types we should use
 // these defaults. These are layed out specifically in the SQL standard.
-const (
-	default_time_precision      = 0
-	default_timestamp_precision = 6
-)
+const default_time_precision = 0
+const default_timestamp_precision = 6
 
 // The SQL standard is pretty strict about the format for date and time
 // literals. They express this through the grammar itself, but for simplicity
@@ -43,15 +39,13 @@ const (
 //   <time zone interval> ::=
 //     <sign> <hours value> <colon> <minutes value>
 //
-const (
-	unquoted_date_string                        = r'\d+\-\d+\-\d+'
-	unquoted_time_string_with_time_zone         = r'\d+:\d+:\d+(\.\d{1,6})?[-+]\d+:\d+'
-	unquoted_time_string_without_time_zone      = r'\d+:\d+:\d+(\.\d{1,6})?'
-	unquoted_timestamp_with_time_zone_string    = '^' + unquoted_date_string + r'\s' +
-		unquoted_time_string_with_time_zone + '$'
-	unquoted_timestamp_without_time_zone_string = '^' + unquoted_date_string + r'\s' +
-		unquoted_time_string_without_time_zone + '$'
-)
+const unquoted_date_string = r'\d+\-\d+\-\d+'
+const unquoted_time_string_with_time_zone = r'\d+:\d+:\d+(\.\d{1,6})?[-+]\d+:\d+'
+const unquoted_time_string_without_time_zone = r'\d+:\d+:\d+(\.\d{1,6})?'
+const unquoted_timestamp_with_time_zone_string = '^' + unquoted_date_string + r'\s' +
+	unquoted_time_string_with_time_zone + '$'
+const unquoted_timestamp_without_time_zone_string = '^' + unquoted_date_string + r'\s' +
+	unquoted_time_string_without_time_zone + '$'
 
 // Time is the internal way that time is represented and provides other
 // conversions such as to/from storage and to/from V's native time.Time.

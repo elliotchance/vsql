@@ -227,6 +227,33 @@ There are slightly different forms depending on the type of the host parameter:
 - ``/* set b 'foo' */`` for string values.
 - ``/* set b NULL BOOLEAN */`` for ``NULL`` values (must specify a type).
 
+Comments
+^^^^^^^^
+
+Ordinary comments are collected for the expected output. If you want to place an
+ignored comment line you can prefix the line with ``-- #``:
+
+.. code-block:: sql
+
+   -- # This test adds some numbers.
+   VALUES 1 + 2;
+   -- COL1: 3
+
+While the placement of comment lines does not matter, it is by convention that
+comments pertaining to a specific test be joined (without a blank line) and
+comments relating to the entire file or group of tests below use a empty line
+separator:
+
+.. code-block:: sql
+
+   -- # The following tests are arithmetic.
+
+   VALUES 1 + 2;
+   -- COL1: 3
+
+   VALUES 3 * 4;
+   -- COL1: 12
+
 Multiple Connections
 ^^^^^^^^^^^^^^^^^^^^
 

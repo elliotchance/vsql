@@ -71,7 +71,9 @@ fn (q QueryCache) prepare_stmt(tokens []Token) (string, map[string]Value, []Toke
 		if !ignore {
 			match token.kind {
 				.literal_number {
-					v := new_numeric_value(token.value)
+					// This should never fail as the value is already well formed, but we
+					// have to satisfy the compiler with an "or".
+					v := numeric_literal(token.value) or { panic(err) }
 					params['P${i}'] = v
 
 					key += ':P${i} '

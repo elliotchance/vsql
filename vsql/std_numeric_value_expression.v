@@ -220,11 +220,11 @@ fn eval_binary(mut conn Connection, data Row, x Value, op string, y Value, param
 	//  ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>
 	mut key := '${left.typ.typ} ${op} ${right.typ.typ}'
 	if left.typ.typ.is_number() && right.typ.typ.is_number() {
-		supertype := most_specific_value(left, right) or {
+		supertype := most_specific_type(left.typ, right.typ) or {
 			return sqlstate_42883('operator does not exist: ${key}')
 		}
-		left = cast_numeric(mut conn, cast_approximate(left, supertype.typ)!, supertype)!
-		right = cast_numeric(mut conn, cast_approximate(right, supertype.typ)!, supertype)!
+		left = cast(mut conn, '', left, supertype)!
+		right = cast(mut conn, '', right, supertype)!
 		key = '${supertype.typ} ${op} ${supertype.typ}'
 	}
 
@@ -234,31 +234,4 @@ fn eval_binary(mut conn Connection, data Row, x Value, op string, y Value, param
 	}
 
 	return sqlstate_42883('operator does not exist: ${key}')
-}
-
-fn cast_approximate(v Value, want SQLType) !Value {
-	if v.typ.typ == .is_numeric && v.typ.size == 0 {
-		match want {
-			.is_double_precision {
-				return new_double_precision_value(v.as_f64()!)
-			}
-			.is_real {
-				return new_real_value(f32(v.as_f64()!))
-			}
-			.is_bigint {
-				return new_bigint_value(i64(v.as_f64()!))
-			}
-			.is_smallint {
-				return new_smallint_value(i16(v.as_f64()!))
-			}
-			.is_integer {
-				return new_integer_value(int(v.as_f64()!))
-			}
-			else {
-				// Let it fall through.
-			}
-		}
-	}
-
-	return v
 }

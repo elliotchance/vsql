@@ -6,14 +6,14 @@ INSERT INTO foo (x) VALUES (1.234);
 SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- X: 1.234
+-- X: 1.234e0
 
 CREATE TABLE "Foo" ("a" FLOAT);
 INSERT INTO "Foo" ("a") VALUES (4.56);
 SELECT * FROM "Foo";
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- a: 4.56
+-- a: 4.56e0
 
 CREATE TABLE foo (x FLOAT);
 CREATE TABLE "Foo" ("a" FLOAT);
@@ -25,8 +25,8 @@ SELECT * FROM "Foo";
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- msg: INSERT 1
--- X: 1.234
--- a: 4.56
+-- X: 1.234e0
+-- a: 4.56e0
 
 SELECT *
 FROM foo;
@@ -45,7 +45,7 @@ INSERT INTO foo (x) VALUES (1.234);
 SELECT foo.* FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- X: 1.234
+-- X: 1.234e0
 
 CREATE TABLE foo (x FLOAT);
 EXPLAIN SELECT bar.* FROM foo;
@@ -62,4 +62,4 @@ SELECT * FROM foo.bar;
 -- msg: CREATE SCHEMA 1
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- X: 1.234
+-- X: 1.234e0

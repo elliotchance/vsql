@@ -11,10 +11,10 @@ EXPLAIN SELECT * FROM foo ORDER BY x;
 -- EXPLAIN: EXPR (":memory:".PUBLIC.FOO.X DOUBLE PRECISION, ":memory:".PUBLIC.FOO.Y CHARACTER VARYING(32))
 
 SELECT * FROM foo ORDER BY x;
--- X: 0.1234 Y: hi
--- X: 1.234 Y: hi
--- X: 5.6 Y: bar
--- X: 12.34 Y: there
+-- X: 0.1234e0 Y: hi
+-- X: 1.234e0 Y: hi
+-- X: 5.6e0 Y: bar
+-- X: 12.34e0 Y: there
 
 EXPLAIN SELECT * FROM foo ORDER BY x ASC;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.FOO (X DOUBLE PRECISION, Y CHARACTER VARYING(32))
@@ -27,16 +27,16 @@ EXPLAIN SELECT * FROM foo ORDER BY x DESC;
 -- EXPLAIN: EXPR (":memory:".PUBLIC.FOO.X DOUBLE PRECISION, ":memory:".PUBLIC.FOO.Y CHARACTER VARYING(32))
 
 SELECT * FROM foo ORDER BY x DESC;
--- X: 12.34 Y: there
--- X: 5.6 Y: bar
--- X: 1.234 Y: hi
--- X: 0.1234 Y: hi
+-- X: 12.34e0 Y: there
+-- X: 5.6e0 Y: bar
+-- X: 1.234e0 Y: hi
+-- X: 0.1234e0 Y: hi
 
 SELECT * FROM foo ORDER BY y;
--- X: 5.6 Y: bar
--- X: 1.234 Y: hi
--- X: 0.1234 Y: hi
--- X: 12.34 Y: there
+-- X: 5.6e0 Y: bar
+-- X: 1.234e0 Y: hi
+-- X: 0.1234e0 Y: hi
+-- X: 12.34e0 Y: there
 
 EXPLAIN SELECT * FROM foo ORDER BY y, x;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.FOO (X DOUBLE PRECISION, Y CHARACTER VARYING(32))
@@ -44,22 +44,22 @@ EXPLAIN SELECT * FROM foo ORDER BY y, x;
 -- EXPLAIN: EXPR (":memory:".PUBLIC.FOO.X DOUBLE PRECISION, ":memory:".PUBLIC.FOO.Y CHARACTER VARYING(32))
 
 SELECT * FROM foo ORDER BY y, x;
--- X: 5.6 Y: bar
--- X: 0.1234 Y: hi
--- X: 1.234 Y: hi
--- X: 12.34 Y: there
+-- X: 5.6e0 Y: bar
+-- X: 0.1234e0 Y: hi
+-- X: 1.234e0 Y: hi
+-- X: 12.34e0 Y: there
 
 SELECT * FROM foo ORDER BY y, x DESC;
--- X: 5.6 Y: bar
--- X: 1.234 Y: hi
--- X: 0.1234 Y: hi
--- X: 12.34 Y: there
+-- X: 5.6e0 Y: bar
+-- X: 1.234e0 Y: hi
+-- X: 0.1234e0 Y: hi
+-- X: 12.34e0 Y: there
 
 SELECT * FROM foo ORDER BY x DESC, y;
--- X: 12.34 Y: there
--- X: 5.6 Y: bar
--- X: 1.234 Y: hi
--- X: 0.1234 Y: hi
+-- X: 12.34e0 Y: there
+-- X: 5.6e0 Y: bar
+-- X: 1.234e0 Y: hi
+-- X: 0.1234e0 Y: hi
 
 EXPLAIN SELECT * FROM foo ORDER BY ABS(10 - x);
 -- EXPLAIN: TABLE ":memory:".PUBLIC.FOO (X DOUBLE PRECISION, Y CHARACTER VARYING(32))
@@ -67,24 +67,24 @@ EXPLAIN SELECT * FROM foo ORDER BY ABS(10 - x);
 -- EXPLAIN: EXPR (":memory:".PUBLIC.FOO.X DOUBLE PRECISION, ":memory:".PUBLIC.FOO.Y CHARACTER VARYING(32))
 
 SELECT * FROM foo ORDER BY ABS(10.0 - x);
--- X: 12.34 Y: there
--- X: 5.6 Y: bar
--- X: 1.234 Y: hi
--- X: 0.1234 Y: hi
+-- X: 12.34e0 Y: there
+-- X: 5.6e0 Y: bar
+-- X: 1.234e0 Y: hi
+-- X: 0.1234e0 Y: hi
 
 SELECT * FROM foo ORDER BY ABS(10.0 - x) DESC;
--- X: 0.1234 Y: hi
--- X: 1.234 Y: hi
--- X: 5.6 Y: bar
--- X: 12.34 Y: there
+-- X: 0.1234e0 Y: hi
+-- X: 1.234e0 Y: hi
+-- X: 5.6e0 Y: bar
+-- X: 12.34e0 Y: there
 
 SELECT * FROM foo
 ORDER BY y, x
 OFFSET 0 ROWS;
--- X: 5.6 Y: bar
--- X: 0.1234 Y: hi
--- X: 1.234 Y: hi
--- X: 12.34 Y: there
+-- X: 5.6e0 Y: bar
+-- X: 0.1234e0 Y: hi
+-- X: 1.234e0 Y: hi
+-- X: 12.34e0 Y: there
 
 EXPLAIN SELECT * FROM foo
 ORDER BY y, x
@@ -97,8 +97,8 @@ OFFSET 2 ROW;
 SELECT * FROM foo
 ORDER BY y, x
 OFFSET 2 ROW;
--- X: 1.234 Y: hi
--- X: 12.34 Y: there
+-- X: 1.234e0 Y: hi
+-- X: 12.34e0 Y: there
 
 SELECT * FROM foo
 ORDER BY y, x
@@ -107,8 +107,8 @@ OFFSET 50 ROW;
 SELECT * FROM foo
 ORDER BY y, x
 FETCH FIRST 2 ROWS ONLY;
--- X: 5.6 Y: bar
--- X: 0.1234 Y: hi
+-- X: 5.6e0 Y: bar
+-- X: 0.1234e0 Y: hi
 
 EXPLAIN SELECT * FROM foo
 ORDER BY y, x
@@ -123,8 +123,8 @@ SELECT * FROM foo
 ORDER BY y, x
 OFFSET 1 ROW
 FETCH FIRST 2 ROWS ONLY;
--- X: 0.1234 Y: hi
--- X: 1.234 Y: hi
+-- X: 0.1234e0 Y: hi
+-- X: 1.234e0 Y: hi
 
 SELECT * FROM foo
 ORDER BY y, x
@@ -137,8 +137,8 @@ SELECT * FROM foo
 ORDER BY y, x
 OFFSET :offset_num ROW
 FETCH FIRST :row_num ROWS ONLY;
--- X: 0.1234 Y: hi
--- X: 1.234 Y: hi
+-- X: 0.1234e0 Y: hi
+-- X: 1.234e0 Y: hi
 
 CREATE TABLE bar (x FLOAT, y VARCHAR(32));
 EXPLAIN SELECT * FROM bar ORDER BY x;

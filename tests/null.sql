@@ -31,8 +31,8 @@ SELECT * FROM foo WHERE num IS NOT NULL;
 -- COL1: is null
 -- NUM: NULL
 -- COL1: is not null
--- NUM: 13
--- NUM: 35
+-- NUM: 13e0
+-- NUM: 35e0
 
 CREATE TABLE foo (x BOOLEAN);
 INSERT INTO foo (x) VALUES (NULL);

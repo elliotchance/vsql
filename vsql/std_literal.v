@@ -1,6 +1,7 @@
 module vsql
 
 import math.big
+import math
 
 // ISO/IEC 9075-2:2016(E), 5.3, <literal>
 //
@@ -15,7 +16,7 @@ import math.big
 //~   | <general literal>
 //~
 //~ <unsigned literal> /* Value */ ::=
-//~     <unsigned numeric literal>   -> signed_numeric_literal_1
+//~     <unsigned numeric literal>
 //~   | <general literal>
 //~
 //~ <general literal> /* Value */ ::=
@@ -27,13 +28,14 @@ import math.big
 //~     ^string
 //~
 //~ <signed numeric literal> /* Value */ ::=
-//~     <unsigned numeric literal>          -> signed_numeric_literal_1
+//~     <unsigned numeric literal>
 //~   | <sign> <unsigned numeric literal>   -> signed_numeric_literal_2
 //~
-//~ <unsigned numeric literal> /* string */ ::=
+//~ <unsigned numeric literal> /* Value */ ::=
 //~     <exact numeric literal>
+//~   | <approximate numeric literal>
 //~
-//~ <exact numeric literal> /* string */ ::=
+//~ <exact numeric literal> /* Value */ ::=
 //~     <unsigned integer>                               -> exact_numeric_literal_1
 //~   | <unsigned integer> <period>                      -> exact_numeric_literal_2
 //~   | <unsigned integer> <period> <unsigned integer>   -> exact_numeric_literal_3
@@ -42,6 +44,19 @@ import math.big
 //~ <sign> /* string */ ::=
 //~     <plus sign>
 //~   | <minus sign>
+//~
+//~ <approximate numeric literal> /* Value */ ::=
+//~     <mantissa> E <exponent>   -> approximate_numeric_literal
+//~
+//~ <mantissa> /* Value */ ::=
+//~   <exact numeric literal>
+//~
+//~ <exponent> /* Value */ ::=
+//~   <signed integer>
+//~
+//~ <signed integer> /* Value */ ::=
+//~     <unsigned integer>          -> signed_integer_1
+//~   | <sign> <unsigned integer>   -> signed_integer_2
 //~
 //~ <unsigned integer> /* string */ ::=
 //~     ^integer
@@ -74,20 +89,20 @@ import math.big
 //~   | FALSE     -> false
 //~   | UNKNOWN   -> unknown
 
-fn parse_exact_numeric_literal_1(x string) !string {
-	return x
+fn parse_exact_numeric_literal_1(x string) !Value {
+	return numeric_literal(x)
 }
 
-fn parse_exact_numeric_literal_2(a string) !string {
-	return '${a}.'
+fn parse_exact_numeric_literal_2(a string) !Value {
+	return numeric_literal('${a}.')
 }
 
-fn parse_exact_numeric_literal_3(a string, b string) !string {
-	return '${a}.${b}'
+fn parse_exact_numeric_literal_3(a string, b string) !Value {
+	return numeric_literal('${a}.${b}')
 }
 
-fn parse_exact_numeric_literal_4(a string) !string {
-	return '0.${a}'
+fn parse_exact_numeric_literal_4(a string) !Value {
+	return numeric_literal('0.${a}')
 }
 
 fn parse_date_literal(v Value) !Value {
@@ -107,7 +122,9 @@ fn numeric_literal(x string) !Value {
 	// treated as a NUMERIC.
 	if x.contains('.') {
 		// The trim handles cases of "123." which should be treated as "123".
-		return new_numeric_value(x.trim_right('.'))
+		//
+		// TODO(elliotchance): This needs to be new_numeric_value() once supported.
+		return new_double_precision_value(x.trim_right('.').f64())
 	}
 
 	// Otherwise, we know this is an int but we have to choose the smallest type.
@@ -133,10 +150,22 @@ fn numeric_literal(x string) !Value {
 	return new_numeric_value(x)
 }
 
-fn parse_signed_numeric_literal_1(v string) !Value {
-	return numeric_literal(v)
+fn parse_signed_numeric_literal_2(sign string, v Value) !Value {
+	return numeric_literal(sign + v.str())
 }
 
-fn parse_signed_numeric_literal_2(sign string, v string) !Value {
-	return numeric_literal(sign + v)
+fn parse_signed_integer_1(v string) !Value {
+	return new_numeric_value(v)
+}
+
+fn parse_signed_integer_2(sign string, v string) !Value {
+	if sign == '-' {
+		return new_numeric_value('-' + v)
+	}
+
+	return new_numeric_value(v)
+}
+
+fn parse_approximate_numeric_literal(mantissa Value, exponent Value) !Value {
+	return new_double_precision_value(mantissa.as_f64()! * math.pow(10, exponent.as_f64()!))
 }

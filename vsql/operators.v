@@ -101,10 +101,10 @@ fn binary_double_precision_plus_double_precision(conn &Connection, a Value, b Va
 }
 
 fn binary_integer_plus_integer(conn &Connection, a Value, b Value) !Value {
-	x := i64(a.int_value() + b.as_f64()!)
+	x := i64(a.int_value() + b.int_value())
 	check_integer_range(x, .is_integer)!
 
-	return new_integer_value(i16(x))
+	return new_integer_value(int(x))
 }
 
 fn binary_bigint_plus_bigint(conn &Connection, a Value, b Value) !Value {
@@ -178,15 +178,15 @@ fn binary_bigint_divide_bigint(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_numeric_plus_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_numeric_value(f64_string(a.as_f64()! + b.as_f64()!))
+	return new_numeric_value(f64_string(a.as_f64()! + b.as_f64()!, 64))
 }
 
 fn binary_numeric_minus_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_numeric_value(f64_string(a.as_f64()! - b.as_f64()!))
+	return new_numeric_value(f64_string(a.as_f64()! - b.as_f64()!, 64))
 }
 
 fn binary_numeric_multiply_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_numeric_value(f64_string(a.as_f64()! * b.as_f64()!))
+	return new_numeric_value(f64_string(a.as_f64()! * b.as_f64()!, 64))
 }
 
 fn binary_numeric_divide_numeric(conn &Connection, a Value, b Value) !Value {
@@ -194,7 +194,7 @@ fn binary_numeric_divide_numeric(conn &Connection, a Value, b Value) !Value {
 		return sqlstate_22012() // division by zero
 	}
 
-	return new_numeric_value(f64_string(a.as_f64()! / b.as_f64()!))
+	return new_numeric_value(f64_string(a.as_f64()! / b.as_f64()!, 64))
 }
 
 fn binary_smallint_plus_smallint(conn &Connection, a Value, b Value) !Value {

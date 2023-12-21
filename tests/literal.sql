@@ -4,19 +4,55 @@ VALUES 1;
 
 /* types */
 VALUES 1.23;
--- COL1: 1.23 (NUMERIC)
+-- COL1: 1.23e0 (DOUBLE PRECISION)
 
 /* types */
 VALUES 1.;
--- COL1: 1 (NUMERIC)
+-- COL1: 1e0 (DOUBLE PRECISION)
 
 /* types */
 VALUES .23;
--- COL1: 0.23 (NUMERIC)
+-- COL1: 0.23e0 (DOUBLE PRECISION)
 
 /* types */
 VALUES 789;
 -- COL1: 789 (SMALLINT)
+
+/* types */
+VALUES 1 E 2;
+-- COL1: 100e0 (DOUBLE PRECISION)
+
+/* types */
+VALUES -1.2E2;
+-- COL1: -120e0 (DOUBLE PRECISION)
+
+/* types */
+VALUES +1.2e-2;
+-- COL1: 0.012e0 (DOUBLE PRECISION)
+
+/* types */
+VALUES 1000000000000e0;
+-- COL1: 1e+12 (DOUBLE PRECISION)
+
+/* types */
+VALUES 1.e+12;
+-- COL1: 1e+12 (DOUBLE PRECISION)
+
+/* types */
+VALUES -1000000000000e0;
+-- COL1: -1e+12 (DOUBLE PRECISION)
+
+/* types */
+VALUES -1.e+12;
+-- COL1: -1e+12 (DOUBLE PRECISION)
+
+/* types */
+VALUES 0.000000000009e0;
+-- COL1: 9e-12 (DOUBLE PRECISION)
+
+/* types */
+VALUES 9.e-12;
+-- COL1: 9e-12 (DOUBLE PRECISION)
 
 /* types */
 VALUES 'hello';

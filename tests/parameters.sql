@@ -8,12 +8,12 @@ INSERT INTO t1 (x) VALUES (:foo);
 INSERT INTO t1 (x) VALUES (:foo);
 SELECT * FROM t1;
 -- msg: INSERT 1
--- X: 2
+-- X: 2e0
 
 /* set foo 2 */
 /* types */
 VALUES :foo;
--- COL1: 2 (DOUBLE PRECISION)
+-- COL1: 2e0 (DOUBLE PRECISION)
 
 /* set foo 'hello' */
 INSERT INTO t1 (x) VALUES (:foo);
@@ -44,7 +44,7 @@ UPDATE t1 SET x = :foo;
 SELECT * FROM t1;
 -- msg: INSERT 1
 -- msg: UPDATE 1
--- X: 321
+-- X: 321e0
 
 DELETE FROM t1 WHERE x = :foo;
 -- msg: DELETE 0

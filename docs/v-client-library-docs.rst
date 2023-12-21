@@ -31,8 +31,7 @@ fn new_varchar_value
 
    pub fn new_varchar_value(x string) Value
 
-
-new_varchar_value creates a ``CHARACTER VARYING`` value.  
+new_varchar_value creates a ``CHARACTER VARYING`` value.
 
 fn open
 -------
@@ -42,8 +41,7 @@ fn open
 
    pub fn open(path string) !&Connection
 
-
-open is the convenience function for open_database() with default options.  
+open is the convenience function for open_database() with default options.
 
 fn open_database
 ----------------
@@ -53,15 +51,11 @@ fn open_database
 
    pub fn open_database(path string, options ConnectionOptions) !&Connection
 
+open_database will open an existing database file or create a new file if the path does not exist.
 
-open_database will open an existing database file or create a new file if the
-path does not exist.  
+If the file does exist, open_database will assume that the file is a valid database file (not corrupt). Otherwise unexpected behavior or even a crash may occur.
 
-If the file does exist, open_database will assume that the file is a valid database file (not corrupt). Otherwise unexpected behavior or even a crash
-may occur.  
-
-The special file name ":memory:" can be used to create an entirely in-memory database. This will be faster but all data will be lost when the connection
-is closed.  
+The special file name ":memory:" can be used to create an entirely in-memory database. This will be faster but all data will be lost when the connection is closed.
 
 open_database can be used concurrently for reading and writing to the same file and provides the following default protections:
 
@@ -71,7 +65,7 @@ open_database can be used concurrently for reading and writing to the same file 
 
 - Bad: Multiple goroutines open_database() the same file.
 
-See ConnectionOptions and default_connection_options().  
+See ConnectionOptions and default_connection_options().
 
 fn pluralize
 ------------
@@ -81,8 +75,7 @@ fn pluralize
 
    pub fn pluralize(n int, word string) string
 
-
-TODO(elliotchance): Make private when CLI is moved into vsql package.  
+TODO(elliotchance): Make private when CLI is moved into vsql package.
 
 fn default_connection_options
 -----------------------------
@@ -92,9 +85,7 @@ fn default_connection_options
 
    pub fn default_connection_options() ConnectionOptions
 
-
-default_connection_options returns the sensible defaults used by open() and
-the correct base to provide your own option overrides. See ConnectionOptions.  
+default_connection_options returns the sensible defaults used by open() and the correct base to provide your own option overrides. See ConnectionOptions.
 
 fn new_benchmark
 ----------------
@@ -114,8 +105,7 @@ fn new_bigint_value
 
    pub fn new_bigint_value(x i64) Value
 
-
-new_bigint_value creates a ``BIGINT`` value.  
+new_bigint_value creates a ``BIGINT`` value.
 
 fn sqlstate_from_int
 --------------------
@@ -125,8 +115,7 @@ fn sqlstate_from_int
 
    pub fn sqlstate_from_int(code int) string
 
-
-sqlstate_from_int performs the inverse operation of sqlstate_to_int.  
+sqlstate_from_int performs the inverse operation of sqlstate_to_int.
 
 fn sqlstate_to_int
 ------------------
@@ -136,11 +125,9 @@ fn sqlstate_to_int
 
    pub fn sqlstate_to_int(code string) int
 
+sqlstate_to_int converts the 5 character SQLSTATE code (such as "42P01") into an integer representation. The returned value can be converted back to its respective string by using sqlstate_from_int().
 
-sqlstate_to_int converts the 5 character SQLSTATE code (such as "42P01") into an integer representation. The returned value can be converted back to its
-respective string by using sqlstate_from_int().  
-
-If code is invalid the result will be unexpected.  
+If code is invalid the result will be unexpected.
 
 fn start_timer
 --------------
@@ -160,9 +147,7 @@ fn new_boolean_value
 
    pub fn new_boolean_value(b bool) Value
 
-
-new_boolean_value creates a ``TRUE`` or ``FALSE`` value. For ``UNKNOWN`` (the
-``BOOLEAN`` equivilent of NULL) you will need to use ``new_unknown_value``.  
+new_boolean_value creates a ``TRUE`` or ``FALSE`` value. For ``UNKNOWN`` (the ``BOOLEAN`` equivilent of NULL) you will need to use ``new_unknown_value``.
 
 fn new_character_value
 ----------------------
@@ -172,9 +157,7 @@ fn new_character_value
 
    pub fn new_character_value(x string) Value
 
-
-new_character_value creates a ``CHARACTER`` value. The size is determined
-from the length of the string itself.  
+new_character_value creates a ``CHARACTER`` value. The size is determined from the length of the string itself.
 
 fn new_date_value
 -----------------
@@ -184,8 +167,7 @@ fn new_date_value
 
    pub fn new_date_value(ts string) !Value
 
-
-new_date_value creates a ``DATE`` value.  
+new_date_value creates a ``DATE`` value.
 
 fn new_double_precision_value
 -----------------------------
@@ -195,8 +177,7 @@ fn new_double_precision_value
 
    pub fn new_double_precision_value(x f64) Value
 
-
-new_double_precision_value creates a ``DOUBLE PRECISION`` value.  
+new_double_precision_value creates a ``DOUBLE PRECISION`` value.
 
 fn new_integer_value
 --------------------
@@ -206,8 +187,7 @@ fn new_integer_value
 
    pub fn new_integer_value(x int) Value
 
-
-new_integer_value creates an ``INTEGER`` value.  
+new_integer_value creates an ``INTEGER`` value.
 
 fn new_null_value
 -----------------
@@ -217,9 +197,7 @@ fn new_null_value
 
    pub fn new_null_value(typ SQLType) Value
 
-
-new_null_value creates a NULL value of a specific type. In SQL, all NULL
-values need to have a type.  
+new_null_value creates a NULL value of a specific type. In SQL, all NULL values need to have a type.
 
 fn new_query_cache
 ------------------
@@ -229,8 +207,7 @@ fn new_query_cache
 
    pub fn new_query_cache() &QueryCache
 
-
-Create a new query cache.  
+Create a new query cache.
 
 fn new_real_value
 -----------------
@@ -240,8 +217,7 @@ fn new_real_value
 
    pub fn new_real_value(x f32) Value
 
-
-new_real_value creates a ``REAL`` value.  
+new_real_value creates a ``REAL`` value.
 
 fn new_result
 -------------
@@ -271,8 +247,7 @@ fn new_smallint_value
 
    pub fn new_smallint_value(x i16) Value
 
-
-new_smallint_value creates a ``SMALLINT`` value.  
+new_smallint_value creates a ``SMALLINT`` value.
 
 fn new_time_value
 -----------------
@@ -282,8 +257,7 @@ fn new_time_value
 
    pub fn new_time_value(ts string) !Value
 
-
-new_time_value creates a ``TIME`` value.  
+new_time_value creates a ``TIME`` value.
 
 fn new_timestamp_value
 ----------------------
@@ -293,8 +267,7 @@ fn new_timestamp_value
 
    pub fn new_timestamp_value(ts string) !Value
 
-
-new_timestamp_value creates a ``TIMESTAMP`` value.  
+new_timestamp_value creates a ``TIMESTAMP`` value.
 
 fn new_unknown_value
 --------------------
@@ -304,9 +277,7 @@ fn new_unknown_value
 
    pub fn new_unknown_value() Value
 
-
-new_unknown_value returns an ``UNKNOWN`` value. This is the ``NULL``
-representation of ``BOOLEAN``.  
+new_unknown_value returns an ``UNKNOWN`` value. This is the ``NULL`` representation of ``BOOLEAN``.
 
 type Server
 -----------
@@ -340,8 +311,7 @@ enum Boolean
    	is_true  = 2
    }
 
-
-Possible values for a BOOLEAN.  
+Possible values for a BOOLEAN.
 
 struct VirtualTable
 -------------------
@@ -352,7 +322,7 @@ struct VirtualTable
    pub struct VirtualTable {
    	create_table_sql  string
    	create_table_stmt TableDefinition
-   	data              VirtualTableProviderFn [required]
+   	data              VirtualTableProviderFn @[required]
    mut:
    	is_done bool
    	rows    []Row
@@ -366,7 +336,7 @@ struct CatalogConnection
 
 .. code-block:: v
 
-   [heap]
+   @[heap]
    pub struct CatalogConnection {
    	// path is the file name of the database. It can be the special name
    	// ':memory:'.
@@ -381,9 +351,7 @@ struct CatalogConnection
    	virtual_tables map[string]VirtualTable
    }
 
-
-A Connection allows querying and other introspection for a database file. Use
-open() or open_database() to create a Connection.  
+A Connection allows querying and other introspection for a database file. Use open() or open_database() to create a Connection.
 
 struct Connection
 -----------------
@@ -391,7 +359,7 @@ struct Connection
 
 .. code-block:: v
 
-   [heap]
+   @[heap]
    pub struct Connection {
    mut:
    	catalogs map[string]&CatalogConnection
@@ -414,7 +382,7 @@ struct Connection
    	// now allows you to override the wall clock that is used. The Time must be
    	// in UTC with a separate offset for the current local timezone (in positive
    	// or negative minutes).
-   	now fn () (time.Time, i16) [required]
+   	now fn () (time.Time, i16) @[required]
    	// warnings are SQLSTATE errors that do not stop the execution. For example,
    	// if a value must be truncated during a runtime CAST.
    	//
@@ -425,9 +393,7 @@ struct Connection
    	warnings []IError
    }
 
-
-A Connection allows querying and other introspection for a database file. Use
-open() or open_database() to create a Connection.  
+A Connection allows querying and other introspection for a database file. Use open() or open_database() to create a Connection.
 
 struct ConnectionOptions
 ------------------------
@@ -470,10 +436,7 @@ struct ConnectionOptions
    	mutex &sync.RwMutex = unsafe { nil }
    }
 
-
-ConnectionOptions can modify the behavior of a connection when it is opened.  
-You should not create the ConnectionOptions instance manually. Instead, use
-default_connection_options() as a starting point and modify the attributes.  
+ConnectionOptions can modify the behavior of a connection when it is opened. You should not create the ConnectionOptions instance manually. Instead, use default_connection_options() as a starting point and modify the attributes.
 
 struct Identifier
 -----------------
@@ -499,12 +462,9 @@ struct Identifier
    	custom_typ Type
    }
 
+Identifier is used to describe a object within a schema (such as a table name) or a property of an object (like a column name of a table). You should not instantiate this directly, instead use the appropriate new_*_identifier() function.
 
-Identifier is used to describe a object within a schema (such as a table name) or a property of an object (like a column name of a table). You should not instantiate this directly, instead use the appropriate new_*_identifier()
-function.  
-
-If you need the fully qualified (canonical) form of an identified you can use
-Connection.resolve_schema_identifier().  
+If you need the fully qualified (canonical) form of an identified you can use Connection.resolve_schema_identifier().
 
 struct PageObject
 -----------------
@@ -535,10 +495,7 @@ struct PageObject
    	xid int
    }
 
-
-TODO(elliotchance): This does not need to be public. It was required for a
- bug at the time with V not being able to pass this to the shuffle function.  
- At some point in the future remove the pub and see if it works.  
+TODO(elliotchance): This does not need to be public. It was required for a bug at the time with V not being able to pass this to the shuffle function. At some point in the future remove the pub and see if it works.
 
 struct PreparedStmt
 -------------------
@@ -561,9 +518,7 @@ struct PreparedStmt
    	elapsed_parse time.Duration
    }
 
-
-A prepared statement is compiled and validated, but not executed. It can then be executed with a set of host parameters to be substituted into the
-statement. Each invocation requires all host parameters to be passed in.  
+A prepared statement is compiled and validated, but not executed. It can then be executed with a set of host parameters to be substituted into the statement. Each invocation requires all host parameters to be passed in.
 
 struct QueryCache
 -----------------
@@ -571,17 +526,13 @@ struct QueryCache
 
 .. code-block:: v
 
-   [heap]
+   @[heap]
    pub struct QueryCache {
    mut:
    	stmts map[string]Stmt
    }
 
-
-A QueryCache improves the performance of parsing by caching previously cached
-statements. By default, a new QueryCache is created for each Connection.  
-However, you can share a single QueryCache safely amung multiple connections
-for even better performance. See ConnectionOptions.  
+A QueryCache improves the performance of parsing by caching previously cached statements. By default, a new QueryCache is created for each Connection. However, you can share a single QueryCache safely amung multiple connections for even better performance. See ConnectionOptions.
 
 struct Result
 -------------
@@ -604,10 +555,9 @@ struct Result
    	idx int
    }
 
+A Result contains zero or more rows returned from a query.
 
-A Result contains zero or more rows returned from a query.  
-
-See next() for an example on iterating rows in a Result.  
+See next() for an example on iterating rows in a Result.
 
 struct Schema
 -------------
@@ -623,8 +573,7 @@ struct Schema
    	name string
    }
 
-
-Represents a schema.  
+Represents a schema.
 
 struct Sequence
 ---------------
@@ -659,8 +608,7 @@ struct Sequence
    	max_value i64
    }
 
-
-A SEQUENCE definition.  
+A SEQUENCE definition.
 
 struct ServerOptions
 --------------------
@@ -698,8 +646,7 @@ struct Table
    	is_virtual bool
    }
 
-
-Represents the structure of a table.  
+Represents the structure of a table.
 
 struct Time
 -----------
@@ -717,9 +664,7 @@ struct Time
    	t time.Time
    }
 
-
-Time is the internal way that time is represented and provides other
-conversions such as to/from storage and to/from V's native time.Time.  
+Time is the internal way that time is represented and provides other conversions such as to/from storage and to/from V's native time.Time.
 
 struct Timer
 ------------
@@ -751,8 +696,7 @@ struct Value
    	v InternalValue
    }
 
-
-A single value. It contains it's type information in ``typ``.  
+A single value. It contains it's type information in ``typ``.
 
 struct Benchmark
 ----------------

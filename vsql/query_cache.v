@@ -12,7 +12,7 @@ module vsql
 // statements. By default, a new QueryCache is created for each Connection.
 // However, you can share a single QueryCache safely amung multiple connections
 // for even better performance. See ConnectionOptions.
-[heap]
+@[heap]
 pub struct QueryCache {
 mut:
 	stmts map[string]Stmt

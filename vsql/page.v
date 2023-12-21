@@ -7,10 +7,9 @@ module vsql
 // not the required int is kind of fiddly). Also, there's almost no case where
 // we need to deal with all cases because they are context specific. So let's
 // just keep these as u8 for now.
-const (
-	kind_leaf     = 0 // page contains only objects.
-	kind_not_leaf = 1 // page contains only links to other pages.
-)
+const kind_leaf = 0 // page contains only objects.
+
+const kind_not_leaf = 1 // page contains only links to other pages.
 
 // page_object_prefix_length is the precalculated length that will be the
 // combination of all fixed width meta for the page object.

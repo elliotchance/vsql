@@ -402,7 +402,7 @@ for gr in sorted(grammar.keys(), key=lambda s: s.lower()):
         grammar_file.write('\t' + var_name(gr) + '.productions << &EarleyProduction{[\n')
         for term in production.terms:
             if isinstance(term, str):
-                grammar_file.write("\t\t&EarleyRuleOrString{str: '" + rule_name(term) + "', rule: 0},\n")
+                grammar_file.write("\t\t&EarleyRuleOrString{str: '" + rule_name(term) + "', rule: unsafe { 0 }},\n")
             else:
                grammar_file.write("\t\t&EarleyRuleOrString{rule: " + var_name(term) + "},\n")
         grammar_file.write('\t]}\n')

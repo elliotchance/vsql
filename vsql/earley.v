@@ -5,7 +5,7 @@ module vsql
 
 import strings
 
-[heap]
+@[heap]
 struct EarleyRuleOrString {
 	rule &EarleyRule
 	str  string
@@ -19,7 +19,7 @@ fn (o &EarleyRuleOrString) str() string {
 	return o.str
 }
 
-[heap]
+@[heap]
 struct EarleyProduction {
 	terms []&EarleyRuleOrString
 }
@@ -32,7 +32,7 @@ fn (prod &EarleyProduction) index() string {
 	return elems.join(',')
 }
 
-[heap]
+@[heap]
 struct EarleyRule {
 	name string
 mut:
@@ -43,7 +43,7 @@ fn (rule &EarleyRule) str() string {
 	return rule.name
 }
 
-[heap]
+@[heap]
 struct EarleyState {
 	name         string
 	production   &EarleyProduction
@@ -68,7 +68,7 @@ fn new_earley_state(name string, production &EarleyProduction, dot_index int, st
 		start_column: start_column
 		dot_index: dot_index
 		rules: rules
-		end_column: 0
+		end_column: unsafe { 0 }
 	}
 }
 
@@ -99,14 +99,14 @@ fn (state &EarleyState) completed() bool {
 fn (state &EarleyState) next_term() &EarleyRuleOrString {
 	if state.completed() {
 		return &EarleyRuleOrString{
-			rule: 0
+			rule: unsafe { 0 }
 		}
 	}
 
 	return state.production.terms[state.dot_index]
 }
 
-[heap]
+@[heap]
 struct Set {
 mut:
 	elems map[string]bool
@@ -124,7 +124,7 @@ fn (mut s Set) add(v string) {
 	s.elems[v] = true
 }
 
-[heap]
+@[heap]
 struct EarleyColumn {
 	index int
 	token string
@@ -172,7 +172,7 @@ fn (col &EarleyColumn) print() {
 	println('')
 }
 
-[heap]
+@[heap]
 struct EarleyNode {
 	value    &EarleyState
 	children []&EarleyNode

@@ -300,6 +300,28 @@ directive:
    -- EXPLAIN: TABLE FOO.PUBLIC.BAR (BAZ INTEGER)
    -- EXPLAIN: EXPR (FOO.PUBLIC.BAR.BAZ INTEGER)
 
+Unicode and Whitespace Characters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Unicode characters can be placed in tests as regular characters:
+
+.. code-block:: sql
+
+   VALUES '✌️';
+   -- That's a peach sign (or the logo for V) if the character cannot be read.
+
+However, due to editors/IDEs sometimes handling whitespace in different ways
+you can add a placeholder for a specific Unicode point using ``<U+####>``:
+
+.. code-block:: sql
+
+   VALUES<U+0009>'hi';
+   -- U+0009 is a horizontal tab, equal to \t in most languages.
+
+This will be replaced with the correct character before the test runs.
+
+This is only a feature of SQL Tests, so will not work in any other context.
+
 Debugging Tests
 ---------------
 

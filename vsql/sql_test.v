@@ -1,6 +1,7 @@
 module vsql
 
 import os
+import regex
 import time
 
 struct SQLTest {
@@ -56,9 +57,9 @@ fn get_tests() ![]SQLTest {
 				if contents == 'setup' {
 					in_setup = true
 				} else if contents.starts_with('connection ') {
-					stmts << contents
+					stmts << replace_unicode(contents)
 				} else if contents.starts_with('create_catalog ') {
-					stmts << contents
+					stmts << replace_unicode(contents)
 				} else if contents.starts_with('set ') {
 					parts := contents.split(' ')
 					if parts[2].starts_with("'") {
@@ -73,6 +74,7 @@ fn get_tests() ![]SQLTest {
 					panic('bad directive: "${contents}"')
 				}
 			} else if line.starts_with('-- #') {
+				line_number++
 				continue
 			} else if line.starts_with('-- ') {
 				expected << line[3..]
@@ -80,13 +82,13 @@ fn get_tests() ![]SQLTest {
 				if in_setup {
 					setup_stmt += '\n${line}'
 					if line.ends_with(';') {
-						setup << setup_stmt
+						setup << replace_unicode(setup_stmt)
 						setup_stmt = ''
 					}
 				} else {
 					stmt += '\n${line}'
 					if line.ends_with(';') {
-						stmts << stmt
+						stmts << replace_unicode(stmt)
 						stmt = ''
 					}
 				}
@@ -101,6 +103,41 @@ fn get_tests() ![]SQLTest {
 	}
 
 	return tests
+}
+
+fn replace_unicode(s string) string {
+	replace_func := fn (re regex.RE, unicode_point string, start int, end int) string {
+		hex_chars := {
+			`0`: 0
+			`1`: 1
+			`2`: 2
+			`3`: 3
+			`4`: 4
+			`5`: 5
+			`6`: 6
+			`7`: 7
+			`8`: 8
+			`9`: 9
+			`a`: 10
+			`b`: 11
+			`c`: 12
+			`d`: 13
+			`e`: 14
+			`f`: 15
+			`A`: 10
+			`B`: 11
+			`C`: 12
+			`D`: 13
+			`E`: 14
+			`F`: 15
+		}
+		return rune(hex_chars[unicode_point[start + 3]] * 4096 + hex_chars[unicode_point[start +
+			4]] * 256 + hex_chars[unicode_point[start + 5]] * 16 + hex_chars[unicode_point[start +
+			6]]).str()
+	}
+
+	mut re := regex.regex_opt(r'<U\+[0-9A-Fa-f]{4}>') or { panic(err) }
+	return re.replace_by_fn(s, replace_func)
 }
 
 fn test_all() ! {

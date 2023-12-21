@@ -72,6 +72,8 @@ fn get_tests() ![]SQLTest {
 				} else {
 					panic('bad directive: "${contents}"')
 				}
+			} else if line.starts_with('-- #') {
+				continue
 			} else if line.starts_with('-- ') {
 				expected << line[3..]
 			} else {

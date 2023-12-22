@@ -41,13 +41,7 @@ fn tokenize(sql_stmt string) []Token {
 	mut i := 0
 
 	next: for i < cs.len {
-		// space
-		if cs[i] == ` ` {
-			i++
-			continue
-		}
-
-		// numbers
+		// Numbers
 		if cs[i] >= `0` && cs[i] <= `9` {
 			mut word := ''
 			for i < cs.len && cs[i] >= `0` && cs[i] <= `9` {
@@ -58,7 +52,7 @@ fn tokenize(sql_stmt string) []Token {
 			continue
 		}
 
-		// strings
+		// Strings
 		if cs[i] == `'` {
 			mut word := ''
 			i++
@@ -71,7 +65,7 @@ fn tokenize(sql_stmt string) []Token {
 			continue
 		}
 
-		// delimited identifiers
+		// Delimited identifiers
 		if cs[i] == `"` {
 			mut word := ''
 			i++
@@ -84,7 +78,7 @@ fn tokenize(sql_stmt string) []Token {
 			continue
 		}
 
-		// operators
+		// Operators
 		multi := {
 			'<>': TokenKind.not_equals_operator
 			'>=': TokenKind.greater_than_or_equals_operator
@@ -122,7 +116,7 @@ fn tokenize(sql_stmt string) []Token {
 			}
 		}
 
-		// keyword or regular identifier
+		// Keyword or regular identifier
 		mut word := ''
 		mut is_not_first := false
 		for i < cs.len && is_identifier_char(cs[i], is_not_first) {
@@ -147,7 +141,7 @@ fn tokenize(sql_stmt string) []Token {
 }
 
 @[inline]
-fn is_identifier_char(c u8, is_not_first bool) bool {
+fn is_identifier_char(c rune, is_not_first bool) bool {
 	yes := (c >= `a` && c <= `z`) || (c >= `A` && c <= `Z`) || c == `_`
 
 	if is_not_first {

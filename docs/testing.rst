@@ -322,6 +322,19 @@ This will be replaced with the correct character before the test runs.
 
 This is only a feature of SQL Tests, so will not work in any other context.
 
+Exposing Types
+^^^^^^^^^^^^^^
+
+Use the ``/* types */`` directive to include each value type in the output. This
+is useful to verify that literals or expressions are being represented as the
+expected type.
+
+.. code-block:: sql
+
+   /* types */
+   VALUES ROW(2 + 3 * 5, (2 + 3) * 5);
+   -- COL1: 17 (INTEGER) COL2: 25 (INTEGER)
+
 Debugging Tests
 ---------------
 

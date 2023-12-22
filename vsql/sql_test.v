@@ -11,6 +11,7 @@ struct SQLTest {
 	line_number int
 	stmts       []string
 	expected    string
+	show_types  bool
 }
 
 fn get_test_filter() (string, int) {
@@ -45,13 +46,15 @@ fn get_tests() ![]SQLTest {
 		mut setup_stmt := ''
 		mut in_setup := false
 		mut params := map[string]Value{}
+		mut show_types := false
 		for line in lines {
 			if line == '' {
-				tests << SQLTest{setup, params, test_file_path, line_number, stmts, expected.join('\n')}
+				tests << SQLTest{setup, params, test_file_path, line_number, stmts, expected.join('\n'), show_types}
 				stmts = []
 				expected = []
 				in_setup = false
 				params = map[string]Value{}
+				show_types = false
 			} else if line.starts_with('/*') {
 				contents := line[2..line.len - 2].trim_space()
 				if contents == 'setup' {
@@ -60,6 +63,8 @@ fn get_tests() ![]SQLTest {
 					stmts << replace_unicode(contents)
 				} else if contents.starts_with('create_catalog ') {
 					stmts << replace_unicode(contents)
+				} else if contents.starts_with('types') {
+					show_types = true
 				} else if contents.starts_with('set ') {
 					parts := contents.split(' ')
 					if parts[2].starts_with("'") {
@@ -98,7 +103,7 @@ fn get_tests() ![]SQLTest {
 		}
 
 		if stmts.len > 0 {
-			tests << SQLTest{setup, params, test_file_path, line_number, stmts, expected.join('\n')}
+			tests << SQLTest{setup, params, test_file_path, line_number, stmts, expected.join('\n'), show_types}
 		}
 	}
 
@@ -256,6 +261,9 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 
 			for col in result.columns {
 				line += '${col.name.sub_entity_name}: ${row.get_string(col.name.sub_entity_name)!} '
+				if test.show_types {
+					line += '(${row.get(col.name.sub_entity_name)!.typ}) '
+				}
 			}
 			actual += line.trim_space() + '\n'
 		}

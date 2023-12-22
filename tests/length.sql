@@ -1,11 +1,14 @@
+/* types */
 VALUES CHAR_LENGTH('hello Hello');
--- COL1: 11
+-- COL1: 11 (INTEGER)
 
+/* types */
 VALUES CHARACTER_LENGTH('hello Hello');
--- COL1: 11
+-- COL1: 11 (INTEGER)
 
+/* types */
 VALUES OCTET_LENGTH('hello Hello');
--- COL1: 11
+-- COL1: 11 (INTEGER)
 
 VALUES CHAR_LENGTH('😊£');
 -- COL1: 2

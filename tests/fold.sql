@@ -1,8 +1,10 @@
+/* types */
 VALUES UPPER('Hello');
--- COL1: HELLO
+-- COL1: HELLO (CHARACTER VARYING(5))
 
+/* types */
 VALUES LOWER('Hello');
--- COL1: hello
+-- COL1: hello (CHARACTER VARYING(5))
 
 VALUES UPPER(123);
 -- error 42883: function does not exist: UPPER(DOUBLE PRECISION)

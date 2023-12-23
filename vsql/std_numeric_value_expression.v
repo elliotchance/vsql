@@ -146,7 +146,50 @@ fn (e NumericPrimary) compile(mut c Compiler) !CompileResult {
 	}
 }
 
+fn (e NumericPrimary) value() ?Value {
+	if e is ValueExpressionPrimary {
+		if e is NonparenthesizedValueExpressionPrimary {
+			if e is ValueSpecification {
+				if e is Value {
+					return e
+				}
+			}
+		}
+	}
+
+	return none
+}
+
 fn parse_factor_2(sign string, expr NumericPrimary) !NumericPrimary {
+	// Due to the graph nature of the parser, a negative number might end up be
+	// parsed as an <unsigned numeric literal> and take the sign from this stage
+	// instead.
+	//
+	// Normally that wouldn't be an issue because it would negate the value at
+	// runtime. However, literals needs to be given the smallest exact type that
+	// encapsulates the value. This leaves an edge case where negative values need
+	// to support one value lower than their positive counterpart.
+	//
+	// For example, SMALLINT range is -32768 to 32767. However, if we consume
+	// 32768 first it would be given an INTEGER type (because it's out of range)
+	// so the negation would also be an INTEGER when -32768 really should be
+	// stored in a SMALLINT.
+	if v := expr.value() {
+		if sign == '-' {
+			if v.typ.typ == .is_integer && v.int_value() == 32768 {
+				return ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_smallint_value(-32768))))
+			}
+
+			if v.typ.typ == .is_bigint && v.int_value() == 2147483648 {
+				return ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_integer_value(-2147483648))))
+			}
+
+			if v.typ.typ == .is_numeric && v.string_value() == '9223372036854775808' {
+				return ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_bigint_value(-9223372036854775808))))
+			}
+		}
+	}
+
 	return SignedValueExpressionPrimary{sign, expr}
 }
 

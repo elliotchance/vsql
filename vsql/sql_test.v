@@ -154,6 +154,7 @@ fn test_all() ! {
 	}
 }
 
+@[assert_continues]
 fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_line int) ! {
 	if filter_line != 0 && test.line_number != filter_line {
 		if verbose {

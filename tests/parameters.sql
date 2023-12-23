@@ -10,9 +10,19 @@ SELECT * FROM t1;
 -- msg: INSERT 1
 -- X: 2
 
+/* set foo 2 */
+/* types */
+VALUES :foo;
+-- COL1: 2 (DOUBLE PRECISION)
+
 /* set foo 'hello' */
 INSERT INTO t1 (x) VALUES (:foo);
 -- error 22003: numeric value out of range
+
+/* set foo 'hello' */
+/* types */
+VALUES :foo;
+-- COL1: hello (CHARACTER(5))
 
 /* set foo 'hello' */
 CREATE TABLE t2 (x VARCHAR(10));
@@ -58,6 +68,11 @@ SELECT * FROM t1;
 -- msg: INSERT 1
 -- msg: UPDATE 1
 -- X: NULL
+
+/* set foo NULL INT */
+/* types */
+VALUES :foo;
+-- COL1: NULL (INTEGER)
 
 /* set foo NULL INT */
 CREATE TABLE t2 (x INT NOT NULL);

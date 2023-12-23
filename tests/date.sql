@@ -31,8 +31,9 @@ VALUES DATE 'a2022-06-30 21:47:32';
 VALUES DATE '2022-06-30 21:47:32a';
 -- error 42601: syntax error: DATE '2022-06-30 21:47:32a' is not valid
 
+/* types */
 VALUES DATE '2022-06-30';
--- COL1: 2022-06-30
+-- COL1: 2022-06-30 (DATE)
 
 VALUES DATE '21:47:32';
 -- error 42601: syntax error: DATE '21:47:32' is not valid

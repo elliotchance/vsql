@@ -45,21 +45,26 @@ SELECT * FROM (VALUES 1, 'foo', TRUE) AS t1 (abc, col2, "f");
 SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t1 (abc, col2, "f");
 -- ABC: 1 COL2: foo f: TRUE
 
+/* types */
 VALUES 'cool';
--- COL1: cool
+-- COL1: cool (CHARACTER(4))
 
+/* types */
 VALUES 'cool', 12.3;
--- COL1: cool
--- COL1: 12.3
+-- COL1: cool (CHARACTER(4))
+-- COL1: 12.3 (NUMERIC)
 
+/* types */
 VALUES ROW('cool', 12.3);
--- COL1: cool COL2: 12.3
+-- COL1: cool (CHARACTER(4)) COL2: 12.3 (NUMERIC)
 
+/* types */
 VALUES '12.3';
--- COL1: 12.3
+-- COL1: 12.3 (CHARACTER(4))
 
+/* types */
 VALUES '2022-06-30 21:47:32';
--- COL1: 2022-06-30 21:47:32
+-- COL1: 2022-06-30 21:47:32 (CHARACTER(19))
 
 EXPLAIN VALUES 'hello';
 -- EXPLAIN: VALUES (COL1 CHARACTER(5)) = ROW('hello')

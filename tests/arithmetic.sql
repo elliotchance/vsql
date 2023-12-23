@@ -1,18 +1,18 @@
 /* types */
 VALUES 1 + 2;
--- COL1: 3 (INTEGER)
+-- COL1: 3 (SMALLINT)
 
 /* types */
 VALUES 1 - 2;
--- COL1: -1 (INTEGER)
+-- COL1: -1 (SMALLINT)
 
 /* types */
 VALUES 2 * 3;
--- COL1: 6 (INTEGER)
+-- COL1: 6 (SMALLINT)
 
 /* types */
 VALUES 6 / 2;
--- COL1: 3 (INTEGER)
+-- COL1: 3 (SMALLINT)
 
 /* types */
 VALUES 1.2 + 2.4;
@@ -40,7 +40,7 @@ VALUES 2.5 / 0.0;
 
 /* types */
 VALUES -123;
--- COL1: -123 (NUMERIC)
+-- COL1: -123 (SMALLINT)
 
 /* types */
 VALUES +1.23;

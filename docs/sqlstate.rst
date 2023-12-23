@@ -253,7 +253,7 @@ A client that receives this error should retry the transaction.
 .. code-block:: sql
 
   VALUES CAST(123 AS BOOLEAN);
-  -- error 42846: cannot coerce BIGINT to BOOLEAN
+  -- error 42846: cannot coerce SMALLINT to BOOLEAN
 
 ``42883`` function does not exist
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

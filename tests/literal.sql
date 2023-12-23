@@ -1,6 +1,6 @@
 /* types */
 VALUES 1;
--- COL1: 1 (NUMERIC)
+-- COL1: 1 (SMALLINT)
 
 /* types */
 VALUES 1.23;
@@ -16,7 +16,7 @@ VALUES .23;
 
 /* types */
 VALUES 789;
--- COL1: 789 (NUMERIC)
+-- COL1: 789 (SMALLINT)
 
 /* types */
 VALUES 'hello';
@@ -24,8 +24,59 @@ VALUES 'hello';
 
 /* types */
 VALUES ROW(123, 456);
--- COL1: 123 (NUMERIC) COL2: 456 (NUMERIC)
+-- COL1: 123 (SMALLINT) COL2: 456 (SMALLINT)
 
 /* types */
 VALUES ROW(2 + 3 * 5, (2 + 3) * 5);
--- COL1: 17 (INTEGER) COL2: 25 (INTEGER)
+-- COL1: 17 (SMALLINT) COL2: 25 (SMALLINT)
+
+-- # These are range tests to make sure that literals are given the correct
+-- # smallest exact types.
+
+/* types */
+VALUES -9223372036854775809;
+-- COL1: -9223372036854775809 (NUMERIC)
+
+/* types */
+VALUES -9223372036854775808;
+-- COL1: -9223372036854775808 (BIGINT)
+
+/* types */
+VALUES -2147483649;
+-- COL1: -2147483649 (BIGINT)
+
+/* types */
+VALUES -2147483648;
+-- COL1: -2147483648 (INTEGER)
+
+/* types */
+VALUES -32769;
+-- COL1: -32769 (INTEGER)
+
+/* types */
+VALUES -32768;
+-- COL1: -32768 (SMALLINT)
+
+/* types */
+VALUES 32767;
+-- COL1: 32767 (SMALLINT)
+
+/* types */
+VALUES 32768;
+-- COL1: 32768 (INTEGER)
+
+/* types */
+VALUES 2147483647;
+-- COL1: 2147483647 (INTEGER)
+
+/* types */
+VALUES 2147483648;
+-- COL1: 2147483648 (BIGINT)
+
+/* types */
+VALUES 9223372036854775807;
+-- COL1: 9223372036854775807 (BIGINT)
+
+/* types */
+VALUES 9223372036854775808;
+-- COL1: 9223372036854775808 (NUMERIC)

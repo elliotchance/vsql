@@ -16,6 +16,7 @@ fn register_operators(mut conn Connection) {
 
 fn register_unary_operators(mut conn Connection) {
 	conn.unary_operators['- NUMERIC'] = unary_negate_numeric
+	conn.unary_operators['- DECIMAL'] = unary_negate_decimal
 	conn.unary_operators['- BIGINT'] = unary_negate_bigint
 	conn.unary_operators['- DOUBLE PRECISION'] = unary_negate_double_precision
 	conn.unary_operators['- REAL'] = unary_negate_real
@@ -23,6 +24,7 @@ fn register_unary_operators(mut conn Connection) {
 	conn.unary_operators['- INTEGER'] = unary_negate_integer
 
 	conn.unary_operators['+ NUMERIC'] = unary_passthru
+	conn.unary_operators['+ DECIMAL'] = unary_passthru
 	conn.unary_operators['+ BIGINT'] = unary_passthru
 	conn.unary_operators['+ DOUBLE PRECISION'] = unary_passthru
 	conn.unary_operators['+ REAL'] = unary_passthru
@@ -35,6 +37,11 @@ fn register_binary_operators(mut conn Connection) {
 	conn.binary_operators['NUMERIC - NUMERIC'] = binary_numeric_minus_numeric
 	conn.binary_operators['NUMERIC * NUMERIC'] = binary_numeric_multiply_numeric
 	conn.binary_operators['NUMERIC / NUMERIC'] = binary_numeric_divide_numeric
+
+	conn.binary_operators['DECIMAL + DECIMAL'] = binary_decimal_plus_decimal
+	conn.binary_operators['DECIMAL - DECIMAL'] = binary_decimal_minus_decimal
+	conn.binary_operators['DECIMAL * DECIMAL'] = binary_decimal_multiply_decimal
+	conn.binary_operators['DECIMAL / DECIMAL'] = binary_decimal_divide_decimal
 
 	conn.binary_operators['DOUBLE PRECISION + DOUBLE PRECISION'] = binary_double_precision_plus_double_precision
 	conn.binary_operators['DOUBLE PRECISION - DOUBLE PRECISION'] = binary_double_precision_minus_double_precision
@@ -67,11 +74,11 @@ fn unary_passthru(conn &Connection, v Value) !Value {
 }
 
 fn unary_negate_numeric(conn &Connection, v Value) !Value {
-	if v.string_value().starts_with('-') {
-		return new_numeric_value(v.string_value()[1..])
-	}
+	return new_numeric_value_from_numeric(v.numeric_value().neg())
+}
 
-	return new_numeric_value('-${v.string_value()}')
+fn unary_negate_decimal(conn &Connection, v Value) !Value {
+	return new_decimal_value_from_numeric(v.numeric_value().neg())
 }
 
 fn unary_negate_bigint(conn &Connection, v Value) !Value {
@@ -96,6 +103,17 @@ fn unary_negate_real(conn &Connection, v Value) !Value {
 	return new_real_value(f32(-v.f64_value()))
 }
 
+fn unary_not_boolean(conn &Connection, v Value) !Value {
+	if v.is_null {
+		return new_unknown_value()
+	}
+
+	return match v.bool_value() {
+		.is_true { new_boolean_value(false) }
+		.is_false { new_boolean_value(true) }
+	}
+}
+
 fn binary_double_precision_plus_double_precision(conn &Connection, a Value, b Value) !Value {
 	return new_double_precision_value(a.f64_value() + b.f64_value())
 }
@@ -111,7 +129,7 @@ fn binary_bigint_plus_bigint(conn &Connection, a Value, b Value) !Value {
 	x := big.integer_from_i64(a.as_int())
 	y := big.integer_from_i64(b.as_int())
 	z := x + y
-	check_numeric_range(z, .is_bigint)!
+	check_numeric_range(new_numeric_from_string(z.str()), .is_bigint)!
 	return new_bigint_value(z.int())
 }
 
@@ -130,7 +148,7 @@ fn binary_bigint_minus_bigint(conn &Connection, a Value, b Value) !Value {
 	x := big.integer_from_i64(a.as_int())
 	y := big.integer_from_i64(b.as_int())
 	z := x - y
-	check_numeric_range(z, .is_bigint)!
+	check_numeric_range(new_numeric_from_string(z.str()), .is_bigint)!
 	return new_bigint_value(z.int())
 }
 
@@ -149,7 +167,7 @@ fn binary_bigint_multiply_bigint(conn &Connection, a Value, b Value) !Value {
 	x := big.integer_from_i64(a.as_int())
 	y := big.integer_from_i64(b.as_int())
 	z := x * y
-	check_numeric_range(z, .is_bigint)!
+	check_numeric_range(new_numeric_from_string(z.str()), .is_bigint)!
 	return new_bigint_value(z.int())
 }
 
@@ -178,15 +196,15 @@ fn binary_bigint_divide_bigint(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_numeric_plus_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_numeric_value(f64_string(a.as_f64()! + b.as_f64()!, 64))
+	return new_numeric_value_from_numeric(a.numeric_value().add(b.numeric_value()))
 }
 
 fn binary_numeric_minus_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_numeric_value(f64_string(a.as_f64()! - b.as_f64()!, 64))
+	return new_numeric_value_from_numeric(a.numeric_value().subtract(b.numeric_value()))
 }
 
 fn binary_numeric_multiply_numeric(conn &Connection, a Value, b Value) !Value {
-	return new_numeric_value(f64_string(a.as_f64()! * b.as_f64()!, 64))
+	return new_numeric_value_from_numeric(a.numeric_value().multiply(b.numeric_value()))
 }
 
 fn binary_numeric_divide_numeric(conn &Connection, a Value, b Value) !Value {
@@ -194,7 +212,7 @@ fn binary_numeric_divide_numeric(conn &Connection, a Value, b Value) !Value {
 		return sqlstate_22012() // division by zero
 	}
 
-	return new_numeric_value(f64_string(a.as_f64()! / b.as_f64()!, 64))
+	return new_numeric_value_from_numeric(a.numeric_value().divide(b.numeric_value())!)
 }
 
 fn binary_smallint_plus_smallint(conn &Connection, a Value, b Value) !Value {
@@ -244,4 +262,20 @@ fn binary_real_divide_real(conn &Connection, a Value, b Value) !Value {
 	}
 
 	return new_real_value(f32(a.f64_value() / b.f64_value()))
+}
+
+fn binary_decimal_plus_decimal(conn &Connection, a Value, b Value) !Value {
+	return new_decimal_value_from_numeric(a.numeric_value().add(b.numeric_value()))
+}
+
+fn binary_decimal_minus_decimal(conn &Connection, a Value, b Value) !Value {
+	return new_decimal_value_from_numeric(a.numeric_value().subtract(b.numeric_value()))
+}
+
+fn binary_decimal_multiply_decimal(conn &Connection, a Value, b Value) !Value {
+	return new_decimal_value_from_numeric(a.numeric_value().multiply(b.numeric_value()))
+}
+
+fn binary_decimal_divide_decimal(conn &Connection, a Value, b Value) !Value {
+	return new_decimal_value_from_numeric(a.numeric_value().divide(b.numeric_value())!)
 }

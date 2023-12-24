@@ -195,6 +195,155 @@ range a ``SQLSTATE 22003 numeric value out of range`` is raised.
     - -9223372036854775808 to 9223372036854775807
     - 8 or 9 bytes [2]_
 
+  * - ``DECIMAL(scale,prec)``
+    - Variable, described below.
+    - Variable based on scale
+
+  * - ``NUMERIC(scale,prec)``
+    - Variable, described below.
+    - Variable based on scale
+
+DECIMAL vs NUMERIC
+^^^^^^^^^^^^^^^^^^
+
+``DECIMAL`` and ``NUMERIC`` are both exact numeric types that require a scale
+and precision. Both store their respective values as fractions. For example,
+``1.23`` could be represented as ``123/100``.
+
+The main difference between these two types comes down to the allowed
+denominators. In short, a ``NUMERIC`` may have any denominator, whereas a
+``DECIMAL`` must have a denominator of exactly 10^scale. This can also be
+expressed as:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Type
+    - Numerator
+    - Denominator
+
+  * - ``NUMERIC(scale, precision)``
+    - ± 10^scale (exclusive)
+    - ± 10^scale (exclusive)
+
+  * - ``DECIMAL(scale, precision)``
+    - ± 10^scale (exclusive)
+    - 10^scale
+
+When calculations are performed on a ``DECIMAL``, the result from each operation
+will be normalized to always satisfy this constraint.
+
+This means that a ``DECIMAL`` is always exact at the scale and precision
+specified and casting to a higher precision will not alter the value. In
+contrast, a ``NUMERIC`` promises to have *at least* the precision specified but
+the value may change as to be more exact if the precision is increased. This is
+best understood with some examples:
+
+.. code-block:: sql
+
+   VALUES CAST(1.23 AS DECIMAL(3,2)) / CAST(5 AS DECIMAL) * CAST(5 AS DECIMAL);
+   -- 1.20
+
+Because:
+
+1. ``1.23 AS DECIMAL(3,2)`` -> ``123/100``
+2. Normalize denominator -> ``123/100``
+3. Divide by ``5`` -> ``123/500``
+4. Normalize denominator -> ``24/100``
+5. Multiply by ``5`` -> ``120/100``
+6. Normalize denominator -> ``24/100``
+
+Whereas,
+
+.. code-block:: sql
+  
+  VALUES CAST(1.23 AS NUMERIC(3,2)) / 5 * 5;
+  -- 1.23
+
+Because:
+
+1. ``1.23 AS NUMERIC(3,2)`` -> ``123/100``
+2. Divide by ``5`` -> ``123/500``
+3. Multiply by ``5`` -> ``615/500``
+
+This may seem like the only difference is that ``NUMERIC`` does not normalize
+the denominator, but actually they both need to normalize a denominator that
+would be out of bounds. Consider the example:
+
+.. code-block:: sql
+
+   VALUES CAST(1.23 AS NUMERIC(3,2)) / 11;
+   -- 0.11
+
+1. ``1.23 AS NUMERIC(3,2)`` -> ``123/100``
+2. Divide by ``11`` -> ``123/1100``
+3. Denominator is out of bounds as it cannot be larger than 100. Highest
+   precision equivalent would be -> ``11/100``
+
+This the same process and result that a ``DECIMAL`` that the equivalent decimal
+operation. Casting to higher precision might result in a different value for
+``NUMERIC`` values, for example:
+
+.. code-block:: sql
+
+   VALUES CAST(CAST(5 AS NUMERIC(3,2)) / CAST(7 AS NUMERIC(5,4)) AS NUMERIC(5,4));
+   -- 0.7142
+
+Because:
+
+1. ``5 AS NUMERIC(3,2)`` -> ``5/1``
+2. Divide by ``7`` -> ``5/7``
+3. Cast to ``NUMERIC(5,4)`` -> ``5/7``
+4. Formatted result based on 4 precision -> ``0.7142``
+
+.. code-block:: sql
+
+   VALUES CAST(CAST(5 AS DECIMAL(3,2)) / CAST(7 AS DECIMAL) AS DECIMAL(5,4));
+   -- 0.7100
+
+Because:
+
+1. ``5 AS DECIMAL(3,2)`` -> ``500/100``
+2. Divide by ``7`` -> ``500/700``
+3. Normalize denominator -> ``71/100``
+4. Cast to ``DECIMAL(5,4)`` -> ``7100/10000``
+5. Formatted result based on 4 precision -> ``0.7100``
+
+Operations Between Exact Types
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Arithmetic operations can only be performed when both operates are the same
+fundamental types, ``NUMERIC`` or ``DECIMAL``, although they do not need to
+share the same scale or precision.
+
+.. list-table::
+  :header-rows: 1
+
+  * - Operation
+    - Result Type
+
+  * - ``NUMERIC(s1, s2) + NUMERIC(s2, p2)``
+    - ``NUMERIC(MAX(s1, s2), MIN(p1, p2))``
+
+  * - ``NUMERIC(s1, s2) - NUMERIC(s2, p2)``
+    - ``NUMERIC(MAX(s1, s2), MIN(p1, p2))``
+
+  * - ``NUMERIC(s1, s2) * NUMERIC(s2, p2)``
+    - ``NUMERIC(s1 * s2, p1 + p2)``
+
+  * - ``NUMERIC(s1, s2) / NUMERIC(s2, p2)``
+    - ``NUMERIC(s1 * s2, p1 + p2)``
+
+Examples:
+
+.. code-block:: sql
+
+   VALUES CAST(10.24 AS NUMERIC(4,2)) + CAST(12.123 AS NUMERIC(8,3));
+   -- 22.36 as NUMERIC(32, 3)
+
+   VALUES CAST(10.24 AS NUMERIC(4,2)) * CAST(12.123 AS NUMERIC(8,3));
+   -- 124.13952 as NUMERIC(32, 5)
+
 Casting
 -------
 

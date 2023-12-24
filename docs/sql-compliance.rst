@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 60 of the 164 mandatory features** of the
+**vsql supports 62 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -22,7 +22,7 @@ As of the latest version (or at least the version of this documentation)
    * - Feature ID
      - Feature Name
 
-   * - ⭕ **E011**
+   * - ✅ **E011**
      - **Numeric data types**
 
    * - ✅ E011-01
@@ -31,7 +31,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E011-02
      - ``REAL``, ``DOUBLE PRECISON``, and ``FLOAT`` data types
 
-   * - ❌ E011-03
+   * - ✅ E011-03
      - ``DECIMAL`` and ``NUMERIC`` data types
 
    * - ✅ E011-04

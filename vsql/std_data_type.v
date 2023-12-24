@@ -31,10 +31,16 @@ module vsql
 //~   | <approximate numeric type>
 //~
 //~ <exact numeric type> /* Type */ ::=
-//~     SMALLINT   -> smallint
-//~   | INTEGER    -> integer
-//~   | INT        -> integer
-//~   | BIGINT     -> bigint
+//~      NUMERIC                                                          -> numeric1
+//~    | NUMERIC <left paren> <precision> <right paren>                   -> numeric2
+//~    | NUMERIC <left paren> <precision> <comma> <scale> <right paren>   -> numeric3
+//~    | DECIMAL                                                          -> decimal1
+//~    | DECIMAL <left paren> <precision> <right paren>                   -> decimal2
+//~    | DECIMAL <left paren> <precision> <comma> <scale> <right paren>   -> decimal3
+//~    | SMALLINT                                                         -> smallint
+//~    | INTEGER                                                          -> integer
+//~    | INT                                                              -> integer
+//~    | BIGINT                                                           -> bigint
 //~
 //~ <approximate numeric type> /* Type */ ::=
 //~     FLOAT                                          -> float
@@ -53,6 +59,9 @@ module vsql
 //~   | OCTETS
 //~
 //~ <precision> /* string */ ::=
+//~     <unsigned integer>
+//~
+//~ <scale> /* string */ ::=
 //~     <unsigned integer>
 //~
 //~ <boolean type> /* Type */ ::=
@@ -182,4 +191,28 @@ fn parse_no() !bool {
 
 fn parse_boolean_type() !Type {
 	return new_type('BOOLEAN', 0, 0)
+}
+
+fn parse_numeric1() !Type {
+	return new_type('NUMERIC', 0, 0)
+}
+
+fn parse_numeric2(precision string) !Type {
+	return new_type('NUMERIC', precision.int(), 0)
+}
+
+fn parse_numeric3(precision string, scale string) !Type {
+	return new_type('NUMERIC', precision.int(), scale.i16())
+}
+
+fn parse_decimal1() !Type {
+	return new_type('DECIMAL', 0, 0)
+}
+
+fn parse_decimal2(precision string) !Type {
+	return new_type('DECIMAL', precision.int(), 0)
+}
+
+fn parse_decimal3(precision string, scale string) !Type {
+	return new_type('DECIMAL', precision.int(), scale.i16())
 }

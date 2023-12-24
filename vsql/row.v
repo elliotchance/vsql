@@ -153,8 +153,8 @@ fn new_empty_value(typ Type) Value {
 		.is_varchar {
 			new_varchar_value('')
 		}
-		.is_numeric {
-			panic('NUMERIC error')
+		.is_numeric, .is_decimal {
+			new_numeric_value('0')
 		}
 	}
 
@@ -191,14 +191,11 @@ fn (r Row) bytes(t Table) []u8 {
 				.is_varchar, .is_character, .is_date, .is_time_with_time_zone,
 				.is_time_without_time_zone, .is_timestamp_with_time_zone,
 				.is_timestamp_without_time_zone, .is_bigint, .is_double_precision, .is_integer,
-				.is_real, .is_smallint {
+				.is_real, .is_smallint, .is_numeric, .is_decimal {
 					buf.write_bool(v.is_null)
 				}
 				.is_boolean {
 					// BOOLEAN: NULL is encoded as one of the values.
-				}
-				.is_numeric {
-					panic('NUMERIC error')
 				}
 			}
 		}
@@ -231,8 +228,10 @@ fn (r Row) bytes(t Table) []u8 {
 				.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 					buf.write_u8s(v.time_value().bytes())
 				}
-				.is_numeric {
-					panic('NUMERIC error')
+				.is_numeric, .is_decimal {
+					bytes := v.numeric_value().bytes()
+					buf.write_i16(i16(bytes.len))
+					buf.write_u8s(bytes)
 				}
 			}
 		}
@@ -262,14 +261,11 @@ fn new_row_from_bytes(t Table, data []u8, tid int) Row {
 				.is_varchar, .is_character, .is_date, .is_time_with_time_zone,
 				.is_time_without_time_zone, .is_timestamp_with_time_zone,
 				.is_timestamp_without_time_zone, .is_bigint, .is_double_precision, .is_integer,
-				.is_real, .is_smallint {
+				.is_real, .is_smallint, .is_numeric, .is_decimal {
 					v.is_null = buf.read_bool()
 				}
 				.is_boolean {
 					// BOOLEAN: NULL is encoded as one of the values.
-				}
-				.is_numeric {
-					panic('NUMERIC error')
 				}
 			}
 		}
@@ -326,8 +322,10 @@ fn new_row_from_bytes(t Table, data []u8, tid int) Row {
 					typ := Type{.is_timestamp_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
 					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
 				}
-				.is_numeric {
-					panic('NUMERIC error')
+				.is_numeric, .is_decimal {
+					typ := Type{col.typ.typ, col.typ.size, col.typ.scale, col.not_null}
+					len := buf.read_i16()
+					v.v.numeric_value = new_numeric_from_bytes(typ, buf.read_u8s(len))
 				}
 			}
 		}

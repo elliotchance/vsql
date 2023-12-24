@@ -299,13 +299,6 @@ fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
 		for i, t in arg_types {
 			mut real_arg_type := t
 
-			// TODO(elliotchance): There is a special case where numeric literals are
-			// treated as DOUBLE PRECISION. This will be changed in the future when we
-			// have proper support for NUMERIC.
-			if t.typ == .is_numeric && t.scale == 0 {
-				real_arg_type = Type{SQLType.is_double_precision, 0, 0, false}
-			}
-
 			// TODO(elliotchance); For now, we just consider all CHARACTER types as
 			//  CHARACTER VARYING.
 			if t.typ == .is_character {

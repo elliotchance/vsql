@@ -104,6 +104,12 @@ fn is_non_reserved_word(word string) bool {
 	return word.to_upper() in non_reserved_words
 }
 
+fn is_syntax_word(word string) bool {
+	syntax_words := ['E']
+
+	return word.to_upper() in syntax_words
+}
+
 fn is_key_word(word string) bool {
-	return is_reserved_word(word) || is_non_reserved_word(word)
+	return is_reserved_word(word) || is_non_reserved_word(word) || is_syntax_word(word)
 }

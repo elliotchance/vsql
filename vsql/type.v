@@ -82,64 +82,62 @@ fn (t SQLType) is_datetime() bool {
 }
 
 // A greater supertype means a literal value is allowed to be cast up to it.
-// This number is only relevent when multiple values are os the same is_* is
-// true (ie. a boolean cannot be case up to an integer).
-fn (t SQLType) supertype() i16 {
+// However, you cannot cast between different categories. The same category and
+// supertype does not mean that they are the same type - casting may still be
+// required,
+fn (t SQLType) supertype() (i16, i16) {
 	return match t {
-		.is_boolean { 0 }
-		.is_character { 0 }
-		.is_varchar { 1 }
-		.is_smallint { 0 }
-		.is_integer { 1 }
-		.is_bigint { 2 }
-		.is_real { 3 }
-		.is_double_precision { 4 }
-		.is_numeric { 5 }
-		// We don't cast date times in this way so setting all to 0 prevents any
-		// kind of casting.
-		.is_date { 0 }
-		.is_time_without_time_zone { 0 }
-		.is_time_with_time_zone { 0 }
-		.is_timestamp_without_time_zone { 0 }
-		.is_timestamp_with_time_zone { 0 }
-	}
-}
-
-// TODO(elliotchance): This can be removed when we don't need special handling
-//  for literals.
-fn most_specific_value(v1 Value, v2 Value) !Type {
-	mut t1 := v1.typ
-	mut t2 := v2.typ
-
-	if v1.typ.is_numeric_literal() {
-		t1 = if v1.str().contains('.') {
-			new_type('DOUBLE PRECISION', 0, 0)
-		} else {
-			new_type('INTEGER', 0, 0)
+		// Booleans are on their own.
+		.is_boolean {
+			0, 0
+		}
+		// Character types are all equal but would be subject to limitations of the
+		// allowed size.
+		.is_character, .is_varchar {
+			1, 0
+		}
+		// Exact numeric types.
+		.is_smallint {
+			2, 0
+		}
+		.is_integer {
+			2, 1
+		}
+		.is_bigint {
+			2, 2
+		}
+		// Approximate numeric types.
+		.is_real {
+			3, 0
+		}
+		.is_double_precision {
+			3, 1
+		}
+		// Dates and times cannot be implicitly cast.
+		.is_date, .is_time_without_time_zone, .is_time_with_time_zone,
+		.is_timestamp_without_time_zone, .is_timestamp_with_time_zone {
+			4, 0
+		}
+		// Numeric isn't a storage type (yet), otherwise it would be (2, 3).
+		.is_numeric {
+			5, 0
 		}
 	}
-
-	if v2.typ.is_numeric_literal() {
-		t2 = if v2.str().contains('.') {
-			new_type('DOUBLE PRECISION', 0, 0)
-		} else {
-			new_type('INTEGER', 0, 0)
-		}
-	}
-
-	return most_specific_type(t1, t2)
 }
 
 fn most_specific_type(t1 Type, t2 Type) !Type {
-	if t1.typ.is_number() && t2.typ.is_number() {
-		if t1.typ.supertype() > t2.typ.supertype() {
+	t1_category, t1_supertype := t1.typ.supertype()
+	t2_category, t2_supertype := t2.typ.supertype()
+
+	if t1_category == t2_category {
+		if t1_supertype > t2_supertype {
 			return t1
 		}
 
 		return t2
 	}
 
-	// TODO(elliotchance): Is this it the correct SQLSTATE?
+	// TODO(elliotchance): Is this the correct SQLSTATE?
 	return sqlstate_42601('no supertype of both ${t1} and ${t2}')
 }
 

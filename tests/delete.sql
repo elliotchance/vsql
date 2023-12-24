@@ -24,7 +24,7 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- msg: DELETE 1
 -- msg: DELETE 0
--- BAZ: 78
+-- BAZ: 78e0
 
 DELETE FROM foo.bar;
 -- error 3F000: invalid schema name: FOO

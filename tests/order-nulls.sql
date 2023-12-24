@@ -8,11 +8,11 @@ INSERT INTO bar (x) VALUES (NULL);
 SELECT * FROM bar ORDER BY x;
 -- X: NULL
 -- X: NULL
--- X: 1.234
--- X: 4.567
+-- X: 1.234e0
+-- X: 4.567e0
 
 SELECT * FROM bar ORDER BY x DESC;
--- X: 4.567
--- X: 1.234
+-- X: 4.567e0
+-- X: 1.234e0
 -- X: NULL
 -- X: NULL

@@ -214,18 +214,22 @@ pub fn new_date_value(ts string) !Value {
 	}
 }
 
-fn f64_string(x f64) string {
-	mut n := '${x:.6}'
-	if n.contains('e') {
-		return n
+fn f64_string(x f64, bits i16) string {
+	mut s := if bits == 32 { '${x:.6}' } else { '${x:.12}' }
+
+	if s.contains('e') {
+		if s.contains('.') {
+			parts := s.split('e')
+			s = parts[0].trim_right('0') + 'e' + parts[1]
+		}
+	} else {
+		if s.contains('.') {
+			s = s.trim_right('0')
+		}
+		s += 'e0'
 	}
 
-	s := n.trim('.').split('.')
-	if s.len == 1 {
-		return s[0]
-	}
-
-	return '${s[0]}.${s[1].trim_right('0')}'
+	return s
 }
 
 // as_int() is not safe to use if the value is not numeric. It is used in cases
@@ -315,8 +319,11 @@ pub fn (v Value) str() string {
 		.is_boolean {
 			v.bool_value().str()
 		}
-		.is_double_precision, .is_real {
-			f64_string(v.f64_value())
+		.is_double_precision {
+			f64_string(v.f64_value(), 64)
+		}
+		.is_real {
+			f64_string(v.f64_value(), 32)
 		}
 		.is_bigint, .is_integer, .is_smallint {
 			v.int_value().str()

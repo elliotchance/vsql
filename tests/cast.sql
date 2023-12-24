@@ -53,3 +53,15 @@ VALUES CAST(TRUE AS FLOAT);
 
 VALUES CAST(TRUE AS INT);
 -- error 22003: numeric value out of range
+
+VALUES CAST(60000 AS SMALLINT);
+-- error 22003: numeric value out of range
+
+VALUES CAST(12345 AS VARCHAR(10));
+-- COL1: 12345
+
+VALUES CAST(12345 AS VARCHAR(3));
+-- error 22001: string data right truncation for CHARACTER VARYING(3)
+
+VALUES CAST(123456789 AS DOUBLE PRECISION);
+-- COL1: 1.23456789e+08

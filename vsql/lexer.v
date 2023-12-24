@@ -49,6 +49,16 @@ fn tokenize(sql_stmt string) []Token {
 				i++
 			}
 			tokens << Token{.literal_number, word}
+
+			// There is a special case for approximate numbers where 'E' is considered
+			// a separate token in the SQL BNF. However, "e2" should not be treated as
+			// two tokens, but rather we need to catch this case only when with a
+			// number token.
+			if i < cs.len && (cs[i] == `e` || cs[i] == `E`) {
+				tokens << Token{.keyword, 'E'}
+				i++
+			}
+
 			continue
 		}
 

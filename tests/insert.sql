@@ -10,8 +10,8 @@ SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- msg: INSERT 1
--- X: 101
--- X: 102
+-- X: 101e0
+-- X: 102e0
 
 CREATE TABLE foo (b BOOLEAN);
 INSERT INTO foo (b) VALUES (true);
@@ -54,7 +54,7 @@ INSERT INTO t1 (f1, f2) VALUES ('a', 1.23);
 SELECT * FROM t1;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- F1: a F2: 1.23
+-- F1: a F2: 1.23e0
 
 CREATE TABLE t1 (f1 CHARACTER VARYING(10), f2 FLOAT NOT NULL);
 INSERT INTO t1 (f1, f2) VALUES ('a', NULL);
@@ -67,7 +67,7 @@ INSERT INTO t1 (f1, f2) VALUES (NULL, 1.23);
 SELECT * FROM t1;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- F1: NULL F2: 1.23
+-- F1: NULL F2: 1.23e0
 
 CREATE TABLE t1 (f1 CHARACTER VARYING(10), f2 FLOAT);
 INSERT INTO t1 (f1, f2) VALUES (NULL, NULL);
@@ -81,7 +81,7 @@ INSERT INTO t1 (f2) VALUES (1.23);
 SELECT * FROM t1;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- F1: NULL F2: 1.23
+-- F1: NULL F2: 1.23e0
 
 CREATE TABLE t1 (f1 CHARACTER VARYING(10), f2 FLOAT NOT NULL);
 INSERT INTO t1 (f1) VALUES ('a');
@@ -94,7 +94,7 @@ INSERT INTO t1 (f1) VALUES (-123.0 * 4.2);
 SELECT * FROM t1;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- F1: -516.6
+-- F1: -516.6e0
 
 INSERT INTO foo.bar (nothing) VALUES (123);
 -- error 3F000: invalid schema name: FOO

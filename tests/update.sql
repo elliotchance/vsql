@@ -29,8 +29,8 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- msg: UPDATE 1
 -- msg: UPDATE 0
--- BAZ: 100
--- BAZ: 78
+-- BAZ: 100e0
+-- BAZ: 78e0
 
 CREATE TABLE foo (baz FLOAT);
 UPDATE foo SET baz = true;
@@ -60,7 +60,7 @@ SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- msg: UPDATE 1
--- BAZ: -936.6
+-- BAZ: -936.6e0
 
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (-123);
@@ -69,7 +69,7 @@ SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- msg: UPDATE 1
--- BAZ: -516.6
+-- BAZ: -516.6e0
 
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (-123);
@@ -78,7 +78,7 @@ SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- msg: UPDATE 1
--- BAZ: -516.6
+-- BAZ: -516.6e0
 
 UPDATE foo.bar SET baz = baz * 4.2;
 -- error 3F000: invalid schema name: FOO
@@ -92,7 +92,7 @@ SELECT * FROM foo.bar;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- msg: UPDATE 1
--- BAZ: -516.6
+-- BAZ: -516.6e0
 
 CREATE TABLE foo (baz FLOAT NOT NULL);
 UPDATE foo SET baz = NULL;

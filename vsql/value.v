@@ -196,9 +196,6 @@ pub fn new_numeric_value(x string) Value {
 //   12.00   -> DECIMAL(4, 2)
 //
 pub fn new_decimal_value(x string) Value {
-	// All the same rules for determining NUMERIC can be used for DECIMAL,
-	// including denoninator being a power of 10. We just need to change it to a
-	// DECIMAL type.
 	n := new_numeric_from_string(x)
 	typ := new_type('DECIMAL', n.typ.size, n.typ.scale)
 
@@ -339,7 +336,7 @@ fn (v Value) as_numeric() !Numeric {
 		return sqlstate_22003()
 	}
 
-	if v.typ.typ == .is_numeric {
+	if v.typ.typ == .is_numeric || v.typ.typ == .is_decimal {
 		return v.numeric_value()
 	}
 
@@ -387,10 +384,7 @@ pub fn (v Value) str() string {
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 			v.time_value().str()
 		}
-		.is_decimal {
-			v.numeric_value().str()
-		}
-		.is_numeric {
+		.is_decimal, .is_numeric {
 			s := v.numeric_value().str()
 			if s.contains('.') {
 				return s.trim_right('0').trim_right('.')

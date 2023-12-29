@@ -57,8 +57,13 @@ fn (t SQLType) str() string {
 
 fn (t SQLType) is_number() bool {
 	return match t {
-		.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint, .is_numeric { true }
-		else { false }
+		.is_bigint, .is_double_precision, .is_integer, .is_real, .is_smallint, .is_decimal,
+		.is_numeric {
+			true
+		}
+		else {
+			false
+		}
 	}
 }
 
@@ -106,10 +111,10 @@ fn (t SQLType) supertype() (i16, i16) {
 		.is_bigint {
 			2, 2
 		}
-		.is_decimal {
+		.is_numeric {
 			2, 3
 		}
-		.is_numeric {
+		.is_decimal {
 			2, 4
 		}
 		// Approximate numeric types.

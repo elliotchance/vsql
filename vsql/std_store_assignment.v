@@ -394,7 +394,7 @@ fn cast_numeric(mut conn Connection, v Value, t Type) !Value {
 			// There is a special case where we should pass through an already
 			// NUMERIC/DECIMAL value if there is no specified destination precision.
 			// This will prevent as_numeric() from truncating the extra NUMERIC
-			// precision. Technically this is not required for DECIMAL, but it's just
+			// precision. Technically this is not required for NUMERIC, but it's just
 			// more efficient to avoid the reparsing below.
 			if t.size == 0 && (v.typ.typ == .is_numeric || v.typ.typ == .is_decimal) {
 				return v

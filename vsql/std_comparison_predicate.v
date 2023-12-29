@@ -385,9 +385,27 @@ fn compare_datetimes(xv Value, yv Value) CompareResult {
 
 fn compare_numbers(xv Value, yv Value) !CompareResult {
 	// 2) Numbers are compared with respect to their algebraic value.
-	//
-	// TODO(elliotchance): as_f64() will not be safe when NUMERIC and DECIMAL are
-	//  supported, so special handling will be required.
+	if (xv.typ.typ == .is_decimal || xv.typ.typ == .is_numeric)
+		&& (yv.typ.typ == .is_decimal || yv.typ.typ == .is_numeric) {
+		return xv.numeric_value().compare(yv.numeric_value())
+	}
+
+	if (xv.typ.typ == .is_smallint || xv.typ.typ == .is_integer || xv.typ.typ == .is_bigint)
+		&& (yv.typ.typ == .is_smallint || yv.typ.typ == .is_integer || yv.typ.typ == .is_bigint) {
+		x := xv.int_value()
+		y := yv.int_value()
+
+		if x < y {
+			return .is_less
+		}
+
+		if x > y {
+			return .is_greater
+		}
+
+		return .is_equal
+	}
+
 	x := xv.as_f64()!
 	y := yv.as_f64()!
 

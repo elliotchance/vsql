@@ -277,5 +277,9 @@ fn binary_decimal_multiply_decimal(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_decimal_divide_decimal(conn &Connection, a Value, b Value) !Value {
+	if b.as_f64()! == 0 {
+		return sqlstate_22012() // division by zero
+	}
+
 	return new_decimal_value_from_numeric(a.numeric_value().divide(b.numeric_value())!)
 }

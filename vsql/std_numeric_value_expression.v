@@ -214,11 +214,6 @@ fn eval_binary(mut conn Connection, data Row, x Value, op string, y Value, param
 	mut left := x
 	mut right := y
 
-	// There is a special case we need to deal with when using literals against
-	// other approximate types.
-	//
-	// TODO(elliotchance): This won't be needed when we properly implement
-	//  ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>
 	mut key := '${left.typ.typ} ${op} ${right.typ.typ}'
 	if left.typ.typ.is_number() && right.typ.typ.is_number() {
 		supertype := most_specific_type(left.typ, right.typ) or {

@@ -298,13 +298,13 @@ fn (n Numeric) normalize_denominator(typ Type) Numeric {
 	denominator := big.integer_from_int(10).pow(u32(typ.scale))
 	max_denominator := big.integer_from_int(10).pow(u32(typ.scale + 1)) - big.one_int
 
-	// NUMERICAL only need to scale when the denominator goes beyond the bounds.
-	if typ.typ == .is_numeric && n.denominator > max_denominator {
+	// DECIMAL only need to scale when the denominator goes beyond the bounds.
+	if typ.typ == .is_decimal && n.denominator > max_denominator {
 		return n.scale_numerator(denominator)
 	}
 
-	// DECIMAL always needs to have a fixed denominator.
-	if typ.typ == .is_decimal && n.denominator != denominator {
+	// NUMERIC always needs to have a fixed denominator.
+	if typ.typ == .is_numeric && n.denominator != denominator {
 		return n.scale_numerator(denominator)
 	}
 
@@ -324,6 +324,20 @@ fn common_denominator(n1 Numeric, n2 Numeric) (Numeric, Numeric) {
 	n4 := new_numeric(typ, n2.numerator * n1.denominator, n2.denominator * n1.denominator)
 
 	return n3, n4
+}
+
+fn (n Numeric) compare(n2 Numeric) CompareResult {
+	n3, n4 := common_denominator(n, n2)
+
+	if n3.numerator < n4.numerator {
+		return .is_less
+	}
+
+	if n3.numerator > n4.numerator {
+		return .is_greater
+	}
+
+	return .is_equal
 }
 
 fn (n Numeric) equals(n2 Numeric) bool {

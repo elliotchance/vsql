@@ -17,7 +17,7 @@ SELECT -bar FROM foo;
 -- COL1: 1.24
 
 VALUES CAST(1.23 AS DECIMAL(10, 6));
--- COL1: 1.230000
+-- COL1: 1.23
 
 VALUES CAST(1.23 AS DECIMAL(10, 2));
 -- COL1: 1.23
@@ -44,19 +44,19 @@ VALUES CAST(-12.34 AS DECIMAL(3, 2));
 -- error 22003: numeric value out of range
 
 VALUES CAST(1.23 AS DECIMAL(6, 2)) + CAST(1.5 AS DECIMAL(6, 3));
--- COL1: 2.730
+-- COL1: 2.73
 
 VALUES CAST(1.23 AS DECIMAL(6, 2)) - CAST(1.5 AS DECIMAL(6, 3));
--- COL1: -0.270
+-- COL1: -0.27
 
 VALUES CAST(1.23 AS DECIMAL(6, 2)) - CAST(-1.5 AS DECIMAL(6, 3));
--- COL1: 2.730
+-- COL1: 2.73
 
 VALUES CAST(1.23 AS DECIMAL(6, 2)) * CAST(1.5 AS DECIMAL(6, 3));
--- COL1: 1.84500
+-- COL1: 1.845
 
 VALUES CAST(CAST(1.23 AS DECIMAL(6, 2)) * CAST(1.5 AS DECIMAL(6, 3)) AS DECIMAL(6, 4));
--- COL1: 1.8450
+-- COL1: 1.845
 
 VALUES CAST(1.24 AS DECIMAL(6, 2)) / CAST(1.5 AS DECIMAL(6, 3));
 -- COL1: 0.82666
@@ -67,29 +67,39 @@ VALUES CAST(1.24 AS DECIMAL(6, 3)) / CAST(1.5 AS DECIMAL(6, 2));
 VALUES CAST(CAST(1.24 AS DECIMAL(6, 2)) / CAST(1.5 AS DECIMAL(6, 3)) AS DECIMAL(6, 4));
 -- COL1: 0.8266
 
+/* types */
 VALUES CAST(1.23 AS DECIMAL(3,2)) / 5;
--- error 42883: operator does not exist: DECIMAL / SMALLINT
+-- COL1: 0.24 (DECIMAL(3, 2))
+
+/* types */
+VALUES CAST(CAST(1.23 AS DECIMAL(3,2)) / 5 AS DECIMAL(4, 3));
+-- COL1: 0.246 (DECIMAL(4, 3))
 
 -- # This is an important case because it's described in detail in the docs for
--- # NUMERIC vs DECIMAL.
-VALUES CAST(CAST(5 AS DECIMAL(3,2)) / CAST(7 AS DECIMAL) AS DECIMAL(5,4));
--- COL1: 0.7100
+-- # DECIMAL vs DECIMAL.
+VALUES CAST(1.23 AS DECIMAL(3,2)) / 5 * 5;
+-- COL1: 1.23
 
+-- # This is an important case because it's described in detail in the docs for
+-- # DECIMAL vs DECIMAL.
+VALUES CAST(1.23 AS DECIMAL(3,2)) / 11;
+-- COL1: 0.11
+
+-- # This is an important case because it's described in detail in the docs for
+-- # DECIMAL vs DECIMAL.
+VALUES CAST(CAST(5 AS DECIMAL(3,2)) / CAST(7 AS DECIMAL(5,4)) AS DECIMAL(5,4));
+-- COL1: 0.7142
+
+/* types */
 VALUES CAST(10.24 AS DECIMAL(4,2)) + CAST(12.123 AS DECIMAL(8,3));
--- COL1: 22.360
+-- COL1: 22.36 (DECIMAL(8, 3))
 
+/* types */
 VALUES CAST(10.24 AS DECIMAL(4,2)) * CAST(12.123 AS DECIMAL(8,3));
--- COL1: 124.13952
+-- COL1: 124.13952 (DECIMAL(32, 5))
 
--- # This is an important case because it's described in detail in the docs for
--- # NUMERIC vs DECIMAL.
-VALUES CAST(1.23 AS DECIMAL(3,2)) / CAST(5 AS DECIMAL) * CAST(5 AS DECIMAL);
--- COL1: 1.20
+VALUES CAST(1 AS DECIMAL(2,1)) / CAST(3 AS DECIMAL(2,1));
+-- COL1: 0.33
 
-VALUES CAST(5 AS DECIMAL(3,2)) / CAST(7 AS DECIMAL(5,4));
--- COL1: 0.714285
-
--- # This is an important case because it's described in detail in the docs for
--- # NUMERIC vs DECIMAL.
-VALUES CAST(1.23 AS DECIMAL(3,2)) / CAST(5 AS DECIMAL) * CAST(5 AS DECIMAL);
--- COL1: 1.20
+VALUES CAST(CAST(1 AS DECIMAL(2,1)) / CAST(3 AS DECIMAL(2,1)) AS DECIMAL(10, 8));
+-- COL1: 0.33333333

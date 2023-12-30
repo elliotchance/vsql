@@ -77,28 +77,32 @@ VALUES CAST(CAST(1.24 AS NUMERIC(6, 2)) / CAST(1.5 AS NUMERIC(6, 3)) AS NUMERIC(
 VALUES CAST(1.23 AS NUMERIC(3,2)) / 5;
 -- COL1: 0.24
 
-VALUES CAST(CAST(1.23 AS NUMERIC(3,2)) / 5 AS NUMERIC(4, 3));
--- COL1: 0.246
-
 -- # This is an important case because it's described in detail in the docs for
--- # NUMERIC vs DECIMAL.
-VALUES CAST(1.23 AS NUMERIC(3,2)) / 5 * 5;
--- COL1: 1.23
+-- # NUMERIC vs NUMERIC.
+VALUES CAST(CAST(5 AS NUMERIC(3,2)) / CAST(7 AS NUMERIC) AS NUMERIC(5,4));
+-- COL1: 0.71
 
--- # This is an important case because it's described in detail in the docs for
--- # NUMERIC vs DECIMAL.
-VALUES CAST(1.23 AS NUMERIC(3,2)) / 11;
--- COL1: 0.11
-
--- # This is an important case because it's described in detail in the docs for
--- # NUMERIC vs DECIMAL.
-VALUES CAST(CAST(5 AS NUMERIC(3,2)) / CAST(7 AS NUMERIC(5,4)) AS NUMERIC(5,4));
--- COL1: 0.7142
-
-/* types */
 VALUES CAST(10.24 AS NUMERIC(4,2)) + CAST(12.123 AS NUMERIC(8,3));
--- COL1: 22.36 (NUMERIC(8, 3))
+-- COL1: 22.36
 
-/* types */
 VALUES CAST(10.24 AS NUMERIC(4,2)) * CAST(12.123 AS NUMERIC(8,3));
--- COL1: 124.13952 (NUMERIC(32, 5))
+-- COL1: 124.13952
+
+-- # This is an important case because it's described in detail in the docs for
+-- # NUMERIC vs NUMERIC.
+VALUES CAST(1.23 AS NUMERIC(3,2)) / CAST(5 AS NUMERIC) * CAST(5 AS NUMERIC);
+-- COL1: 1.2
+
+VALUES CAST(5 AS NUMERIC(3,2)) / CAST(7 AS NUMERIC(5,4));
+-- COL1: 0.714285
+
+-- # This is an important case because it's described in detail in the docs for
+-- # NUMERIC vs NUMERIC.
+VALUES CAST(1.23 AS NUMERIC(3,2)) / CAST(5 AS NUMERIC) * CAST(5 AS NUMERIC);
+-- COL1: 1.2
+
+VALUES CAST(1 AS NUMERIC(2,1)) / CAST(3 AS NUMERIC(2,1));
+-- COL1: 0.33
+
+VALUES CAST(CAST(1 AS NUMERIC(2,1)) / CAST(3 AS NUMERIC(2,1)) AS NUMERIC(10, 8));
+-- COL1: 0.33

@@ -19,7 +19,11 @@ pub:
 //   "foo" INT
 //   BAR DOUBLE PRECISION NOT NULL
 pub fn (c Column) str() string {
-	mut f := '${c.name} ${c.typ}'
+	return '${c.name} ${c.type_str()}'
+}
+
+fn (c Column) type_str() string {
+	mut f := c.typ.str()
 	if c.not_null {
 		f += ' NOT NULL'
 	}
@@ -133,7 +137,11 @@ pub fn (t Table) str() string {
 	mut cols := []string{}
 
 	for col in t.columns {
-		cols << '  ${col}'
+		cols << '  ${requote_identifier(col.name.sub_entity_name)} ${col.type_str()}'
+	}
+
+	if t.primary_key.len > 0 {
+		cols << '  PRIMARY KEY (${t.primary_key.map(requote_identifier).join(', ')})'
 	}
 
 	return s + '\n' + cols.join(',\n') + '\n);'

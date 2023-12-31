@@ -6,6 +6,7 @@ Features
 
    custom-functions.rst
    in-memory-database.rst
+   orm.rst
    prepared-statements.rst
    server.rst
    transactions.rst

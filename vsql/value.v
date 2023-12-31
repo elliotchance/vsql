@@ -5,6 +5,7 @@
 module vsql
 
 import regex
+import orm
 
 // Possible values for a BOOLEAN.
 pub enum Boolean {
@@ -183,6 +184,15 @@ pub fn new_numeric_value(x string) Value {
 		v: InternalValue{
 			numeric_value: n.normalize_denominator(n.typ)
 		}
+	}
+}
+
+fn bool_str(x f64) string {
+	return match x {
+		0 { 'FALSE' }
+		1 { 'TRUE' }
+		2 { 'UNKNOWN' }
+		else { 'NULL' }
 	}
 }
 
@@ -428,5 +438,43 @@ pub fn (v Value) time_value() Time {
 pub fn (v Value) numeric_value() Numeric {
 	unsafe {
 		return v.v.numeric_value
+	}
+}
+
+// primitives are used by the ORM.
+fn (v Value) primitive() !orm.Primitive {
+	if v.is_null {
+		return orm.Null{}
+	}
+
+	return match v.typ.typ {
+		.is_boolean {
+			orm.Primitive(v.bool_value() == .is_true)
+		}
+		.is_smallint {
+			orm.Primitive(i16(v.int_value()))
+		}
+		.is_integer {
+			orm.Primitive(int(v.int_value()))
+		}
+		.is_bigint {
+			orm.Primitive(i64(v.int_value()))
+		}
+		.is_varchar, .is_character {
+			orm.Primitive(v.string_value())
+		}
+		.is_real {
+			orm.Primitive(f32(v.f64_value()))
+		}
+		.is_double_precision {
+			orm.Primitive(v.f64_value())
+		}
+		.is_decimal, .is_numeric {
+			orm.Primitive(v.str())
+		}
+		.is_date, .is_time_with_time_zone, .is_timestamp_without_time_zone,
+		.is_timestamp_with_time_zone, .is_time_without_time_zone {
+			orm.Primitive(v.str())
+		}
 	}
 }

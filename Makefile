@@ -87,6 +87,9 @@ btree-test: oldv
 sql-test: oldv
 	$(V) -stats $(BUILD_OPTIONS) test vsql/sql_test.v
 
+orm-test: oldv
+	$(V) -stats $(BUILD_OPTIONS) test vsql/orm_test.v
+
 # CLI Tests
 
 cli-test: bin/vsql

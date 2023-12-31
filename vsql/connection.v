@@ -67,6 +67,10 @@ pub fn open(path string) !&Connection {
 	return open_database(path, default_connection_options())
 }
 
+pub fn open_orm(path string) !ORMConnection {
+	return ORMConnection{open(path)!}
+}
+
 // open_database will open an existing database file or create a new file if the
 // path does not exist.
 //
@@ -410,6 +414,23 @@ pub fn (mut conn CatalogConnection) schema_tables(schema string) ![]Table {
 	}
 
 	return tables
+}
+
+// schema_table returns the table for the provided schema. If the schema or
+// table does not exist and empty list will be returned.
+pub fn (mut conn CatalogConnection) schema_table(schema string, table string) !Table {
+	conn.open_read_connection()!
+	defer {
+		conn.release_read_connection()
+	}
+
+	for _, t in conn.storage.tables {
+		if t.name.schema_name == schema && t.name.entity_name == table {
+			return t
+		}
+	}
+
+	return sqlstate_42p01('table', table) // table does not exist
 }
 
 // resolve_identifier returns a new identifier that would represent the

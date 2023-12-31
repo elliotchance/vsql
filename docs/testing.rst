@@ -141,6 +141,16 @@ Connection
 The connection test suite is responsible for testing that various operations
 from concurrent connections do not cause race conditions and other anomalies.
 
+ORM
+^^^
+
+The ORM suite is for testing `V's ORM <https://modules.vlang.io/orm.html>`_ and
+can be found in
+`orm_test.v <https://github.com/elliotchance/vsql/blob/main/vsql/orm_test.v>`.
+
+The ORM test suite is run as part of the main ``make test`` but you can run it
+specifically with ``make orm-test``.
+
 SQL
 ^^^
 

@@ -275,7 +275,7 @@ fn split_identifier_parts(s string) ![]string {
 }
 
 fn requote_identifier(s string) string {
-	if s.to_upper() == s {
+	if s.to_upper() == s && !is_reserved_word(s) {
 		return s
 	}
 

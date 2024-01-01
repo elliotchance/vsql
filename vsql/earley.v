@@ -237,7 +237,7 @@ fn parse(tokens []Token) !Stmt {
 	mut columns := tokenize_earley_columns(tokens)
 	mut grammar := get_grammar()
 
-	q0 := parse_earley(grammar['<preparable statement>'], mut columns)!
+	q0 := parse_earley(unsafe { grammar['<preparable statement>'] }, mut columns)!
 
 	trees := build_trees(q0)
 	if trees.len == 0 {

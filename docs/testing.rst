@@ -54,7 +54,7 @@ To run all CLI tests:
 
 .. code-block:: sh
 
-   make cli-tests
+   make cli-test
 
 Or, to run a single command test use the path without the ``.sh`` suffix:
 

@@ -20,13 +20,12 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up V version latest
-        uses: nocturlab/setup-vlang-action@v1
+        uses: vlang/setup-v@v1.4
         with:
-          id: v
-          v-version: master
+          check-latest: true
 
       - name: Verify fmt
         run: make fmt-verify
@@ -52,13 +51,12 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up V version latest
-        uses: nocturlab/setup-vlang-action@v1
+        uses: vlang/setup-v@v1.4
         with:
-          id: v
-          v-version: master
+          check-latest: true
 
       - name: Build macOS binaries
         run: |
@@ -78,13 +76,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up V version latest
-        uses: nocturlab/setup-vlang-action@v1
+        uses: vlang/setup-v@v1.4
         with:
-          id: v
-          v-version: master
+          check-latest: true
 
       - name: Build linux binaries
         run: |
@@ -107,13 +104,12 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up V version latest
-        uses: nocturlab/setup-vlang-action@v1
+        uses: vlang/setup-v@v1.4
         with:
-          id: v
-          v-version: master
+          check-latest: true
 
       - name: Build Windows binaries
         run: |

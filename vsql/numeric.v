@@ -3,7 +3,6 @@
 
 module vsql
 
-import math
 import math.big
 import strings
 

@@ -12,6 +12,7 @@ mut:
 }
 
 pub struct ServerOptions {
+pub:
 	db_file string
 	port    int
 	verbose bool

@@ -176,7 +176,7 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 
 	mut db := open_database(':memory:', options)!
 	db.now = fn () (time.Time, i16) {
-		return time.new_time(time.Time{
+		return time.new(time.Time{
 			year: 2022
 			month: 7
 			day: 4

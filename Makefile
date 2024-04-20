@@ -82,10 +82,10 @@ test: oldv
 	$(V) -stats $(BUILD_OPTIONS) $(PROD) test vsql
 
 btree-test: oldv
-	$(V) -stats $(BUILD_OPTIONS) $(PROD) test vsql/btree_test.v
+	$(V) -stats $(BUILD_OPTIONS) $(PROD) vsql/btree_test.v
 
 sql-test: oldv
-	$(V) -stats $(BUILD_OPTIONS) test vsql/sql_test.v
+	$(V) -stats $(BUILD_OPTIONS) vsql/sql_test.v
 
 # CLI Tests
 

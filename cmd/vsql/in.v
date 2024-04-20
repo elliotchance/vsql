@@ -42,7 +42,7 @@ fn in_command(cmd cli.Command) ! {
 	mut stmt := ''
 	for !f.eof() {
 		mut buf := []u8{len: 100}
-		f.read_bytes_into_newline(mut buf) or { return err }
+		f.read_bytes_with_newline(mut buf) or { return err }
 
 		line := buf.bytestr()
 		stmt += line.trim_right('\0 \n;')

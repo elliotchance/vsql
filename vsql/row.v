@@ -364,7 +364,7 @@ fn (mut r Row) object_key(t Table) ![]u8 {
 		if r.id.len == 0 {
 			// TODO(elliotchance): This is a terrible hack to make sure we have
 			//  a globally unique but also ordered id for the row.
-			unique_id := u64(time.now().unix_time_milli())
+			unique_id := u64(time.now().unix_milli())
 			time.sleep(time.millisecond)
 
 			mut buf := new_empty_bytes()

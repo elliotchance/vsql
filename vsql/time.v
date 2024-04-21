@@ -141,7 +141,7 @@ fn new_date_from_string(s string) !Time {
 }
 
 fn new_time_from_components(typ Type, year int, month int, day int, hour int, minute int, second int, microsecond int, time_zone i16) Time {
-	return Time{typ, time_zone, time.new_time(time.Time{
+	return Time{typ, time_zone, time.new(time.Time{
 		year: year
 		month: month
 		day: day

@@ -2,14 +2,16 @@ import os
 import vsql
 import time
 
+// CHECK ./vsql/orm_test.v for more advanced usage
+
 fn main() {
 	os.rm('test.vsql') or {}
-	
+
 	example() or { panic(err) }
 }
 
 // NOTE for some reason if we declare a @[primary] on a struct field, we can not do delete queries on the tables...
-// so id is not a primary key in this example
+// so for now we are not supporting primary keys
 struct Product {
 	id           int //@[primary]
 	product_name string @[sql_type: 'varchar(100)']
@@ -57,6 +59,4 @@ fn example() ! {
 	assert all.len == 2
 
 	println(timer.elapsed())
-	// println(typeof[?int]().idx)
-	// println(typeof[int]().idx)
 }

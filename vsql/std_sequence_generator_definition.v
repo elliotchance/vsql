@@ -116,7 +116,7 @@ fn parse_sequence_generator_definition_1(generator_name Identifier) !Stmt {
 
 fn parse_sequence_generator_definition_2(generator_name Identifier, options []SequenceGeneratorOption) !Stmt {
 	return SequenceGeneratorDefinition{
-		name: generator_name
+		name:    generator_name
 		options: options
 	}
 }
@@ -174,7 +174,7 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, params map[st
 	}
 
 	mut c := Compiler{
-		conn: conn
+		conn:   conn
 		params: params
 	}
 	mut catalog := conn.catalog()
@@ -236,14 +236,14 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, params map[st
 	}
 
 	sequence := Sequence{
-		name: sequence_name
+		name:          sequence_name
 		current_value: current_value
-		increment_by: increment_by
-		cycle: cycle
+		increment_by:  increment_by
+		cycle:         cycle
 		has_min_value: has_min_value
-		min_value: min_value
+		min_value:     min_value
 		has_max_value: has_max_value
-		max_value: max_value
+		max_value:     max_value
 	}
 
 	catalog.storage.create_sequence(sequence)!

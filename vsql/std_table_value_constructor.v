@@ -124,7 +124,7 @@ fn (o &ValuesOperation) str() string {
 
 fn (o &ValuesOperation) columns() Columns {
 	mut c := Compiler{
-		conn: o.conn
+		conn:   o.conn
 		params: o.params
 	}
 	e := o.rows[0]
@@ -138,7 +138,7 @@ fn (o &ValuesOperation) columns() Columns {
 							typ := (e.exprs[i].compile(mut c) or { panic(err) }).typ
 							columns << Column{
 								name: column
-								typ: typ
+								typ:  typ
 							}
 						}
 						QueryExpression {
@@ -149,7 +149,7 @@ fn (o &ValuesOperation) columns() Columns {
 				CommonValueExpression, BooleanValueExpression {
 					columns << Column{
 						name: column
-						typ: (e.compile(mut c) or { panic(err) }).typ
+						typ:  (e.compile(mut c) or { panic(err) }).typ
 					}
 				}
 			}
@@ -172,7 +172,7 @@ fn (o &ValuesOperation) columns() Columns {
 							name: Identifier{
 								sub_entity_name: 'COL${i}'
 							}
-							typ: typ
+							typ:  typ
 						}
 					}
 				}
@@ -186,7 +186,7 @@ fn (o &ValuesOperation) columns() Columns {
 				name: Identifier{
 					sub_entity_name: 'COL1'
 				}
-				typ: (e.compile(mut c) or { panic(err) }).typ
+				typ:  (e.compile(mut c) or { panic(err) }).typ
 			}
 		}
 	}
@@ -196,7 +196,7 @@ fn (o &ValuesOperation) columns() Columns {
 
 fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
 	mut c := Compiler{
-		conn: o.conn
+		conn:   o.conn
 		params: o.params
 	}
 	offset := int((o.offset.compile(mut c)!.run(mut o.conn, Row{}, o.params)!).f64_value())

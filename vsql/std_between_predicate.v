@@ -53,7 +53,7 @@ fn (e BetweenPredicate) compile(mut c Compiler) !CompileResult {
 	compiled_right := e.right.compile(mut c)!
 
 	return CompileResult{
-		run: fn [e, compiled_expr, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e, compiled_expr, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
 			expr := compiled_expr.run(mut conn, data, params)!
 			mut left := compiled_left.run(mut conn, data, params)!
 			mut right := compiled_right.run(mut conn, data, params)!
@@ -80,7 +80,7 @@ fn (e BetweenPredicate) compile(mut c Compiler) !CompileResult {
 
 			return new_boolean_value(result)
 		}
-		typ: new_type('BOOLEAN', 0, 0)
+		typ:          new_type('BOOLEAN', 0, 0)
 		contains_agg: compiled_expr.contains_agg || compiled_left.contains_agg
 			|| compiled_left.contains_agg
 	}
@@ -88,11 +88,11 @@ fn (e BetweenPredicate) compile(mut c Compiler) !CompileResult {
 
 fn parse_between(expr RowValueConstructorPredicand, between BetweenPredicate) !BetweenPredicate {
 	return BetweenPredicate{
-		not: between.not
+		not:       between.not
 		symmetric: between.symmetric
-		expr: expr
-		left: between.left
-		right: between.right
+		expr:      expr
+		left:      between.left
+		right:     between.right
 	}
 }
 
@@ -103,9 +103,9 @@ fn parse_between_1(is_true bool, left RowValueConstructorPredicand, right RowVal
 
 fn parse_between_2(is_true bool, symmetric bool, left RowValueConstructorPredicand, right RowValueConstructorPredicand) !BetweenPredicate {
 	return BetweenPredicate{
-		not: !is_true
+		not:       !is_true
 		symmetric: symmetric
-		left: left
-		right: right
+		left:      left
+		right:     right
 	}
 }

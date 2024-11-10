@@ -25,12 +25,12 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 	name := c.conn.resolve_identifier(e.name)
 
 	return CompileResult{
-		run: fn [name, mut catalog] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [name, mut catalog] (mut conn Connection, data Row, params map[string]Value) !Value {
 			next := catalog.storage.sequence_next_value(name)!
 
 			return new_bigint_value(next)
 		}
-		typ: new_type('INTEGER', 0, 0)
+		typ:          new_type('INTEGER', 0, 0)
 		contains_agg: false
 	}
 }

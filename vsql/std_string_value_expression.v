@@ -77,7 +77,7 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 	compiled_right := e.right.compile(mut c)!
 
 	return CompileResult{
-		run: fn [compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
 			mut left := compiled_left.run(mut conn, data, params)!
 			mut right := compiled_right.run(mut conn, data, params)!
 
@@ -88,7 +88,7 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 
 			return sqlstate_42883('operator does not exist: ${left.typ.typ} || ${right.typ.typ}')
 		}
-		typ: new_type('CHARACTER VARYING', 0, 0)
+		typ:          new_type('CHARACTER VARYING', 0, 0)
 		contains_agg: compiled_left.contains_agg || compiled_right.contains_agg
 	}
 }

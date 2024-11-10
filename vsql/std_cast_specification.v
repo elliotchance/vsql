@@ -49,12 +49,12 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 	compiled_expr := e.expr.compile(mut c)!
 
 	return CompileResult{
-		run: fn [e, compiled_expr] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e, compiled_expr] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled_expr.run(mut conn, data, params)!
 
 			return cast(mut conn, 'for CAST', value, e.target)!
 		}
-		typ: e.target
+		typ:          e.target
 		contains_agg: compiled_expr.contains_agg
 	}
 }

@@ -74,19 +74,19 @@ fn (e GeneralValueSpecification) compile(mut c Compiler) !CompileResult {
 		}
 		CurrentCatalog {
 			return CompileResult{
-				run: fn (mut conn Connection, data Row, params map[string]Value) !Value {
+				run:          fn (mut conn Connection, data Row, params map[string]Value) !Value {
 					return new_varchar_value(conn.current_catalog)
 				}
-				typ: new_type('CHARACTER VARYING', 0, 0)
+				typ:          new_type('CHARACTER VARYING', 0, 0)
 				contains_agg: false
 			}
 		}
 		CurrentSchema {
 			return CompileResult{
-				run: fn (mut conn Connection, data Row, params map[string]Value) !Value {
+				run:          fn (mut conn Connection, data Row, params map[string]Value) !Value {
 					return new_varchar_value(conn.current_schema)
 				}
-				typ: new_type('CHARACTER VARYING', 0, 0)
+				typ:          new_type('CHARACTER VARYING', 0, 0)
 				contains_agg: false
 			}
 		}

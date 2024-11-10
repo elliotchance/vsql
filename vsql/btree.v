@@ -30,7 +30,7 @@ mut:
 
 fn new_btree(pager Pager, page_size int) &Btree {
 	return &Btree{
-		pager: pager
+		pager:     pager
 		page_size: page_size
 	}
 }
@@ -383,8 +383,8 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 fn (p Btree) new_range_iterator(min []u8, max []u8) PageIterator {
 	return PageIterator{
 		btree: p
-		min: min
-		max: max
+		min:   min
+		max:   max
 	}
 }
 

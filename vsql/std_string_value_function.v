@@ -108,8 +108,8 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 		f.compile(mut c)!
 	} else {
 		CompileResult{
-			run: unsafe { nil }
-			typ: Type{}
+			run:          unsafe { nil }
+			typ:          Type{}
 			contains_agg: false
 		}
 	}
@@ -117,14 +117,14 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 		f.compile(mut c)!
 	} else {
 		CompileResult{
-			run: unsafe { nil }
-			typ: Type{}
+			run:          unsafe { nil }
+			typ:          Type{}
 			contains_agg: false
 		}
 	}
 
 	return CompileResult{
-		run: fn [e, compiled_value, compiled_from, compiled_for] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e, compiled_value, compiled_from, compiled_for] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled_value.run(mut conn, data, params)!
 
 			mut from := 0
@@ -158,7 +158,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 
 			return new_varchar_value(value.string_value().substr(from, from + @for))
 		}
-		typ: new_type('CHARACTER VARYING', 0, 0)
+		typ:          new_type('CHARACTER VARYING', 0, 0)
 		contains_agg: compiled_value.contains_agg
 	}
 }
@@ -180,7 +180,7 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 	compiled_character := e.character.compile(mut c)!
 
 	return CompileResult{
-		run: fn [e, compiled_source, compiled_character] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e, compiled_source, compiled_character] (mut conn Connection, data Row, params map[string]Value) !Value {
 			source := compiled_source.run(mut conn, data, params)!
 			character := compiled_character.run(mut conn, data, params)!
 
@@ -194,7 +194,7 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 
 			return new_varchar_value(source.string_value().trim(character.string_value()))
 		}
-		typ: new_type('CHARACTER VARYING', 0, 0)
+		typ:          new_type('CHARACTER VARYING', 0, 0)
 		contains_agg: compiled_source.contains_agg || compiled_character.contains_agg
 	}
 }

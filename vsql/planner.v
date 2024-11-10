@@ -162,7 +162,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			mut subplan_columns := []Column{}
 			for col in subplan.columns() {
 				subplan_columns << Column{Identifier{
-					entity_name: table_name.id()
+					entity_name:     table_name.id()
 					sub_entity_name: col.name.sub_entity_name
 				}, col.typ, col.not_null}
 			}
@@ -170,7 +170,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			// NOTE: This has to be assigned to a variable otherwise the value
 			// is lost. This must be a bug in V.
 			table = Table{
-				name: table_name
+				name:    table_name
 				columns: subplan_columns
 			}
 
@@ -209,7 +209,7 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []De
 	// expressions contain an aggregate function we need to have an implicit
 	// GROUP BY for the whole set.
 	mut c := Compiler{
-		conn: conn
+		conn:   conn
 		params: params
 		tables: tables
 	}
@@ -228,7 +228,7 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []De
 	mut order := []SortSpecification{}
 	for col in group_clause {
 		order << SortSpecification{
-			expr: ValueExpression(BooleanValueExpression{
+			expr:   ValueExpression(BooleanValueExpression{
 				term: BooleanTerm{
 					factor: BooleanTest{
 						expr: BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(col)))
@@ -250,9 +250,9 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []De
 
 fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut conn Connection) !Plan {
 	select_stmt := QuerySpecification{
-		exprs: AsteriskExpr(true)
+		exprs:            AsteriskExpr(true)
 		table_expression: TableExpression{
-			from_clause: TablePrimary{
+			from_clause:  TablePrimary{
 				body: stmt.table_name
 			}
 			where_clause: stmt.where
@@ -266,9 +266,9 @@ fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut
 
 fn create_update_plan(stmt UpdateStatementSearched, params map[string]Value, mut conn Connection) !Plan {
 	select_stmt := QuerySpecification{
-		exprs: AsteriskExpr(true)
+		exprs:            AsteriskExpr(true)
 		table_expression: TableExpression{
-			from_clause: TablePrimary{
+			from_clause:  TablePrimary{
 				body: stmt.table_name
 			}
 			where_clause: stmt.where
@@ -288,7 +288,7 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 		mut order := []SortSpecification{}
 		for spec in stmt.order {
 			order << SortSpecification{
-				expr: spec.expr
+				expr:   spec.expr
 				is_asc: spec.is_asc
 			}
 		}
@@ -427,7 +427,7 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 					sub_entity_name: column_name
 				}
 				mut c := Compiler{
-					conn: conn
+					conn:   conn
 					params: params
 					tables: tables
 				}
@@ -452,7 +452,7 @@ fn (o ExprOperation) columns() Columns {
 
 fn (mut o ExprOperation) execute(rows []Row) ![]Row {
 	mut c := Compiler{
-		conn: o.conn
+		conn:   o.conn
 		params: o.params
 		tables: o.tables
 	}

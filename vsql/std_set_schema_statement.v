@@ -41,7 +41,7 @@ fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Valu
 	// This does not need to hold a write connection with the file.
 
 	mut c := Compiler{
-		conn: conn
+		conn:   conn
 		params: params
 	}
 	new_schema := stmt.schema_name.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!.str()

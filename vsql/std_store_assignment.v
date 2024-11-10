@@ -557,17 +557,17 @@ fn cast_timestamp_without_to_timestamp_without(conn &Connection, v Value, to Typ
 fn check_numeric_range(x Numeric, typ SQLType) ! {
 	match typ {
 		.is_smallint {
-			if x.less_than(vsql.min_smallint) || x.greater_than(vsql.max_smallint) {
+			if x.less_than(min_smallint) || x.greater_than(max_smallint) {
 				return sqlstate_22003()
 			}
 		}
 		.is_integer {
-			if x.less_than(vsql.min_integer) || x.greater_than(vsql.max_integer) {
+			if x.less_than(min_integer) || x.greater_than(max_integer) {
 				return sqlstate_22003()
 			}
 		}
 		.is_bigint {
-			if x.less_than(vsql.min_bigint) || x.greater_than(vsql.max_bigint) {
+			if x.less_than(min_bigint) || x.greater_than(max_bigint) {
 				return sqlstate_22003()
 			}
 		}

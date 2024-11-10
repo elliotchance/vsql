@@ -65,7 +65,7 @@ struct QuerySpecification {
 
 fn parse_query_specification(select_list SelectList, table_expression TableExpression) !SimpleTable {
 	return QuerySpecification{
-		exprs: select_list
+		exprs:            select_list
 		table_expression: table_expression
 	}
 }

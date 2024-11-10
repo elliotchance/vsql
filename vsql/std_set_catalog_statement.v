@@ -41,7 +41,7 @@ fn (stmt SetCatalogStatement) execute(mut conn Connection, params map[string]Val
 	// This does not need to hold a write connection with the file.
 
 	mut c := Compiler{
-		conn: conn
+		conn:   conn
 		params: params
 	}
 	new_catalog := stmt.catalog_name.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!.str()

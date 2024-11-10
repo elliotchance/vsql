@@ -49,10 +49,10 @@ mut:
 fn new_header(page_size int) Header {
 	return Header{
 		// Set all default here - even if they are zero - to be explicit.
-		version: vsql.current_version
+		version:        current_version
 		schema_version: 0
-		page_size: page_size
-		root_page: 0
+		page_size:      page_size
+		root_page:      0
 		// 2 is a reserved number for freezing rows, but the transaction_is is
 		// always incremented before returning the next value.
 		transaction_id: 2
@@ -73,8 +73,8 @@ fn read_header(mut file os.File) !Header {
 	header := file.read_raw[Header]() or { return error('unable to read raw header: ${err}') }
 
 	// Check file version compatibility.
-	if header.version != vsql.current_version {
-		return error('need version ${vsql.current_version} but database is ${header.version}')
+	if header.version != current_version {
+		return error('need version ${current_version} but database is ${header.version}')
 	}
 
 	return header

@@ -6,23 +6,23 @@ import vsql
 
 fn register_in_command(mut cmd cli.Command) {
 	mut in_cmd := cli.Command{
-		name: 'in'
-		usage: '<file>'
+		name:          'in'
+		usage:         '<file>'
 		required_args: 1
-		description: 'Import schema and data'
-		execute: in_command
+		description:   'Import schema and data'
+		execute:       in_command
 	}
 
 	in_cmd.add_flag(cli.Flag{
-		flag: .bool
-		name: 'continue-on-error'
+		flag:        .bool
+		name:        'continue-on-error'
 		description: 'Continue when errors occur'
 	})
 
 	in_cmd.add_flag(cli.Flag{
-		flag: .bool
-		name: 'verbose'
-		abbrev: 'v'
+		flag:        .bool
+		name:        'verbose'
+		abbrev:      'v'
 		description: 'Show result of each command'
 	})
 

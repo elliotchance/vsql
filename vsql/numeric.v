@@ -24,15 +24,15 @@ struct Numeric {
 
 fn new_numeric(typ Type, numerator big.Integer, denominator big.Integer) Numeric {
 	return Numeric{
-		typ: typ
-		numerator: numerator
+		typ:         typ
+		numerator:   numerator
 		denominator: denominator
 	}
 }
 
 fn new_null_numeric(typ Type) Numeric {
 	return Numeric{
-		typ: typ
+		typ:     typ
 		is_null: true
 	}
 }
@@ -110,18 +110,18 @@ fn (n Numeric) bytes() []u8 {
 	mut buf := new_bytes([]u8{})
 	mut flags := u8(0)
 	if n.is_null {
-		flags |= vsql.numeric_is_null
+		flags |= numeric_is_null
 	}
 	if n.is_zero() {
-		flags |= vsql.numeric_is_zero
+		flags |= numeric_is_zero
 	}
 	if n.is_negative() {
-		flags |= vsql.numeric_is_negative
+		flags |= numeric_is_negative
 	}
 	buf.write_u8(flags)
 
 	// If the value is NULL or 0 we don't need to encode anything further.
-	if flags & vsql.numeric_is_null != 0 || flags & vsql.numeric_is_zero != 0 {
+	if flags & numeric_is_null != 0 || flags & numeric_is_zero != 0 {
 		return buf.bytes()
 	}
 
@@ -140,11 +140,11 @@ fn new_numeric_from_bytes(typ Type, data []u8) Numeric {
 	mut buf := new_bytes(data)
 	flags := buf.read_u8()
 
-	if flags & vsql.numeric_is_null != 0 {
+	if flags & numeric_is_null != 0 {
 		return new_null_numeric(typ)
 	}
 
-	if flags & vsql.numeric_is_zero != 0 {
+	if flags & numeric_is_zero != 0 {
 		return new_numeric(typ, big.zero_int, big.zero_int)
 	}
 
@@ -154,7 +154,7 @@ fn new_numeric_from_bytes(typ Type, data []u8) Numeric {
 	denominator_len := buf.read_i16()
 	denominator := big.integer_from_bytes(buf.read_u8s(denominator_len), big.IntegerConfig{})
 
-	if flags & vsql.numeric_is_negative != 0 {
+	if flags & numeric_is_negative != 0 {
 		numerator = numerator.neg()
 	}
 
@@ -214,9 +214,9 @@ fn (n Numeric) round(scale i16) Numeric {
 	denominator := n.denominator / big.integer_from_int(10).pow(u32(-(scale - n.denominator.str().len) - 1))
 
 	return new_numeric(Type{
-		typ: n.typ.typ
-		size: n.typ.size
-		scale: scale
+		typ:      n.typ.typ
+		size:     n.typ.size
+		scale:    scale
 		not_null: n.typ.not_null
 	}, numerator, denominator)
 }

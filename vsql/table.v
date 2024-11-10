@@ -117,9 +117,9 @@ fn new_table_from_bytes(data []u8, tid int, catalog_name string) Table {
 		scale := b.read_i16()
 
 		columns << Column{Identifier{
-			catalog_name: catalog_name
-			schema_name: table_name.schema_name
-			entity_name: table_name.entity_name
+			catalog_name:    catalog_name
+			schema_name:     table_name.schema_name
+			entity_name:     table_name.entity_name
 			sub_entity_name: column_name
 		}, type_from_number(column_type, size, scale), is_not_null}
 	}

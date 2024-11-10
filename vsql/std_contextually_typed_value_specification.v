@@ -31,10 +31,10 @@ fn (e NullSpecification) pstr(params map[string]Value) string {
 fn (e NullSpecification) compile(mut c Compiler) !CompileResult {
 	if null_type := c.null_type {
 		return CompileResult{
-			run: fn [null_type] (mut conn Connection, data Row, params map[string]Value) !Value {
+			run:          fn [null_type] (mut conn Connection, data Row, params map[string]Value) !Value {
 				return new_null_value(null_type.typ)
 			}
-			typ: null_type
+			typ:          null_type
 			contains_agg: false
 		}
 	}

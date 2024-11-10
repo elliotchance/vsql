@@ -45,7 +45,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 
 	if found_func.is_agg {
 		return Identifier{
-			custom_id: e.pstr(c.params)
+			custom_id:  e.pstr(c.params)
 			custom_typ: found_func.return_type
 		}.compile(mut c)!.with_agg(true)
 	}
@@ -62,7 +62,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	}
 
 	return CompileResult{
-		run: fn [found_func, func_name, arg_types, compiled_args] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [found_func, func_name, arg_types, compiled_args] (mut conn Connection, data Row, params map[string]Value) !Value {
 			mut args := []Value{}
 			mut i := 0
 			for typ in arg_types {
@@ -73,7 +73,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 
 			return found_func.func(args)!
 		}
-		typ: found_func.return_type
+		typ:          found_func.return_type
 		contains_agg: found_func.is_agg
 	}
 }

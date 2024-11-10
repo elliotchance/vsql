@@ -39,15 +39,15 @@ fn (e AggregateFunction) compile(mut c Compiler) !CompileResult {
 	match e {
 		AggregateFunctionCount {
 			compiled := Identifier{
-				custom_id: 'COUNT(*)'
+				custom_id:  'COUNT(*)'
 				custom_typ: new_type('INTEGER', 0, 0)
 			}.compile(mut c)!
 
 			return CompileResult{
-				run: fn [compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+				run:          fn [compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
 					return compiled.run(mut conn, data, params)!
 				}
-				typ: new_type('INTEGER', 0, 0)
+				typ:          new_type('INTEGER', 0, 0)
 				contains_agg: true
 			}
 		}

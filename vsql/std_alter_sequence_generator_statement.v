@@ -39,7 +39,7 @@ struct AlterSequenceGeneratorStatement {
 
 fn parse_alter_sequence_generator_statement(generator_name Identifier, options []SequenceGeneratorOption) !AlterSequenceGeneratorStatement {
 	return AlterSequenceGeneratorStatement{
-		name: generator_name
+		name:    generator_name
 		options: options
 	}
 }
@@ -79,7 +79,7 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 	old_sequence := catalog.storage.sequence(name)!
 	mut sequence := old_sequence.copy()
 	mut c := Compiler{
-		conn: conn
+		conn:   conn
 		params: params
 	}
 

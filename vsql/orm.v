@@ -5,31 +5,28 @@ import time
 
 pub const varchar_default_len = 255
 
-// DDL (table creation/destroying etc)
+// Returns a string of the vsql type based on the v type index
 fn vsql_type_from_v(typ int) !string {
 	return if typ == orm.type_idx['i8'] || typ == orm.type_idx['i16'] || typ == orm.type_idx['u8'] {
 		'SMALLINT'
 	} else if typ == orm.type_idx['bool'] {
 		'BOOLEAN'
 	} else if typ == orm.type_idx['int'] || typ == orm.type_idx['u16'] || typ == 8 {
-		'INT'
+		'INTEGER'
 	} else if typ == orm.type_idx['i64'] || typ == orm.type_idx['u32'] {
 		'BIGINT'
 	} else if typ == orm.type_idx['f32'] {
 		'REAL'
 	} else if typ == orm.type_idx['u64'] {
-		// 'NUMERIC(20)'
 		'BIGINT'
 	} else if typ == orm.type_idx['f64'] {
 		'DOUBLE PRECISION'
 	} else if typ == orm.type_idx['string'] {
 		'VARCHAR(${varchar_default_len})'
 	} else if typ == orm.time_ {
-		// time.Time will be converted to a string
-		// will be parsed as a time.Time when read
 		'TIMESTAMP(6) WITHOUT TIME ZONE'
 	} else if typ == -1 {
-		// SERIAL
+		// -1 is a field with @[sql: serial]
 		'INTEGER'
 	} else {
 		error('Unknown type ${typ}')
@@ -135,14 +132,21 @@ fn serial_name(table string) string {
 	return '${table}_SERIAL'
 }
 
+fn reformat_table_name(table string) string {
+	mut new_table := table
+	if is_reserved_word(table) {
+		new_table = '"${table}"'
+	}
+	return new_table
+}
+
 fn get_table_values_map(mut db Connection, table string, data []orm.QueryData) !map[string]Value {
 	mut mp := map[string]Value{}
 	mut tbl := Table{}
 	mut cat := db.catalog()
 	tables := cat.schema_tables('PUBLIC') or { [] }
-	// println(tables)
+
 	for t in tables {
-		// println(t.name.entity_name)
 		if t.name.entity_name == table.to_upper() {
 			tbl = t
 			break
@@ -179,9 +183,6 @@ fn query_reformatter(query string, query_data []orm.QueryData) string {
 	for data in query_data {
 		for field in data.fields {
 			// this if check is for if there are multiple of the same field being checked for
-			// products = sql db {
-			// 		select from Product where price > '3' && price < '3.50'
-			// }!
 			if new_query.contains(':${field}') {
 				new_query = new_query.replace(':${counter}', ':${field}_${field_counter.str()}')
 				field_counter++
@@ -218,10 +219,6 @@ fn check_for_not_supported(mut db Connection, table string, fields []orm.TableFi
 			if attr.name == 'unique' {
 				return error('unique is not supported in vsql')
 			}
-			if attr.name == 'primary' {
-				// TODO (daniel-le97) figure out how we should be handling primary keys as it will break delete queries
-				return error('primary key is supported, but currently will break delete queries')
-			}
 		}
 	}
 }
@@ -234,8 +231,6 @@ pub fn (mut db Connection) select(config orm.SelectConfig, data orm.QueryData, w
 	}
 	mut query := orm.orm_select_gen(conf, '', true, ':', 1, where)
 	query = query_reformatter(query, [data, where])
-	// println('query: ${query}')
-
 	mut rows := Result{}
 	if data.data.len == 0 && where.data.len == 0 {
 		rows = db.query(query) or { return err }
@@ -263,9 +258,7 @@ pub fn (mut db Connection) select(config orm.SelectConfig, data orm.QueryData, w
 pub fn (mut db Connection) insert(table string, data orm.QueryData) ! {
 	new_table := reformat_table_name(table)
 	mut tbl := get_table_values_map(mut db, table, [data]) or { return err }
-
 	mut query := 'INSERT INTO ${new_table} (${data.fields.join(', ')}) VALUES (:${data.fields.join(', :')})'
-
 	// if a table has a serial field, we need to remove it from the insert statement
 	// only allows one serial field per table, as do most RDBMS
 	if data.auto_fields.len > 1 {
@@ -276,9 +269,6 @@ pub fn (mut db Connection) insert(table string, data orm.QueryData) ! {
 		tbl.delete(autofield)
 		query = query.replace(':${autofield}', 'NEXT VALUE FOR "${serial_name(table)}"')
 	}
-	$if trace_vsql_orm ? {
-		eprintln('> vsql insert: ${query}')
-	}
 	mut stmt := db.prepare(query) or { return err }
 	stmt.query(tbl) or { return err }
 }
@@ -288,14 +278,8 @@ pub fn (mut db Connection) update(table string, data orm.QueryData, where orm.Qu
 	new_table := reformat_table_name(table)
 	mut query, _ := orm.orm_stmt_gen(.sqlite, new_table, '', .update, true, ':', 1, data,
 		where)
-
 	values := get_table_values_map(mut db, table, [data, where]) or { return err }
 	query = query_reformatter(query, [data, where])
-	// println(query)
-
-	$if trace_vsql_orm ? {
-		eprintln('> vsql update: ${query}')
-	}
 	mut stmt := db.prepare(query) or { return err }
 	stmt.query(values) or { return err }
 }
@@ -305,14 +289,8 @@ pub fn (mut db Connection) delete(table string, where orm.QueryData) ! {
 	new_table := reformat_table_name(table)
 	mut query, _ := orm.orm_stmt_gen(.sqlite, new_table, '', .delete, true, ':', 1, orm.QueryData{},
 		where)
-
 	query = query_reformatter(query, [where])
 	values := get_table_values_map(mut db, table, [where]) or { return err }
-
-	$if trace_vsql_orm ? {
-		eprintln('> vsql delete: ${query}')
-	}
-	// db.query(query) or { return err }
 	mut stmt := db.prepare(query) or { return err }
 	stmt.query(values) or { return err }
 }
@@ -321,14 +299,6 @@ pub fn (mut db Connection) delete(table string, where orm.QueryData) ! {
 // <ul> TODO i dont think vsql supports this
 pub fn (mut db Connection) last_id() int {
 	return 0
-}
-
-fn reformat_table_name(table string) string {
-	mut new_table := table
-	if is_reserved_word(table) {
-		new_table = '"${table}"'
-	}
-	return new_table
 }
 
 // create is used internally by V's ORM for processing table creation queries (DDL)
@@ -342,10 +312,6 @@ pub fn (mut db Connection) create(table string, fields []orm.TableField) ! {
 	query = query.replace(' IF NOT EXISTS ', ' ')
 	// `TEXT` is not supported in vsql, so we replace it with `VARCHAR(255) if its somehow used`
 	query = query.replace('TEXT', 'VARCHAR(${varchar_default_len})')
-
-	$if trace_vsql_orm ? {
-		eprintln('> vsql create: ${query}')
-	}
 	db.query(query) or { return err }
 }
 
@@ -353,21 +319,18 @@ pub fn (mut db Connection) create(table string, fields []orm.TableField) ! {
 pub fn (mut db Connection) drop(table string) ! {
 	new_table := reformat_table_name(table)
 	mut query := 'DROP TABLE ${new_table};'
-	$if trace_vsql_orm ? {
-		eprintln('> vsql drop: ${query}')
-	}
-
 	db.query(query) or { return err }
 
-	// // check to see if there is a SEQUENCE for the table (for the @[sql: 'serial'] attribute)
-	db.query('EXPLAIN DROP SEQUENCE "${serial_name(table)}"') or { return }
-
-	// if we have not returned then we can drop the sequence
-	query = 'DROP SEQUENCE "${serial_name(table)}"'
-	$if trace_vsql_orm ? {
-		eprintln('> vsql drop: ${query}')
+	// check to see if there is a SEQUENCE for the table (for the @[sql: 'serial'] attribute)
+	// if there is, drop it
+	mut cat := db.catalog()
+	seqs := cat.sequences('PUBLIC') or { [] }
+	for sequence in seqs {
+		if sequence.name.entity_name == serial_name(table).to_upper() {
+			query = 'DROP SEQUENCE "${serial_name(table)}"'
+			db.query(query) or { return err }
+		}
 	}
-	db.query(query) or { return err }
 }
 
 // convert a vsql row value to orm.Primitive
@@ -375,7 +338,6 @@ fn (v Value) primitive() !orm.Primitive {
 	if v.is_null {
 		return orm.Null{}
 	}
-
 	return match v.typ.typ {
 		.is_boolean {
 			orm.Primitive(v.bool_value() == .is_true)

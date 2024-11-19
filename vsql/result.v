@@ -25,10 +25,10 @@ mut:
 
 pub fn new_result(columns Columns, rows []Row, elapsed_parse time.Duration, elapsed_exec time.Duration) Result {
 	return Result{
-		columns: columns
-		rows: rows
+		columns:       columns
+		rows:          rows
 		elapsed_parse: elapsed_parse
-		elapsed_exec: elapsed_exec
+		elapsed_exec:  elapsed_exec
 	}
 }
 

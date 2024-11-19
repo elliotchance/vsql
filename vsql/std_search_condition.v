@@ -52,7 +52,7 @@ fn (mut o WhereOperation) execute(rows []Row) ![]Row {
 
 fn eval_as_bool(mut conn Connection, data Row, e BooleanValueExpression, params map[string]Value, tables map[string]Table) !bool {
 	mut c := Compiler{
-		conn: conn
+		conn:   conn
 		params: params
 		tables: tables
 	}

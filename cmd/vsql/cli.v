@@ -7,11 +7,11 @@ import vsql
 
 fn register_cli_command(mut cmd cli.Command) {
 	mut cli_cmd := cli.Command{
-		name: 'cli'
-		usage: '<file>'
+		name:          'cli'
+		usage:         '<file>'
 		required_args: 1
-		description: 'Run SQL in a vsql file'
-		execute: cli_command
+		description:   'Run SQL in a vsql file'
+		execute:       cli_command
 	}
 	cmd.add_command(cli_cmd)
 }

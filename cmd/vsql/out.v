@@ -5,16 +5,16 @@ import vsql
 
 fn register_out_command(mut cmd cli.Command) {
 	mut out_cmd := cli.Command{
-		name: 'out'
-		usage: '<file>'
+		name:          'out'
+		usage:         '<file>'
 		required_args: 1
-		description: 'Export schema and data'
-		execute: out_command
+		description:   'Export schema and data'
+		execute:       out_command
 	}
 
 	out_cmd.add_flag(cli.Flag{
-		flag: .bool
-		name: 'create-public-schema'
+		flag:        .bool
+		name:        'create-public-schema'
 		description: 'Include "CREATE SCHEMA PUBLIC"'
 	})
 

@@ -6,27 +6,27 @@ module vsql
 // Except for the eof and the keywords, the other tokens use the names described
 // in the SQL standard.
 enum TokenKind {
-	asterisk // <asterisk> ::= *
-	colon // <colon> ::= :
-	comma // <comma> ::= ,
-	concatenation_operator // <concatenation operator> ::= ||
-	equals_operator // <equals operator> ::= =
-	greater_than_operator // <greater than operator> ::= >
+	asterisk                        // <asterisk> ::= *
+	colon                           // <colon> ::= :
+	comma                           // <comma> ::= ,
+	concatenation_operator          // <concatenation operator> ::= ||
+	equals_operator                 // <equals operator> ::= =
+	greater_than_operator           // <greater than operator> ::= >
 	greater_than_or_equals_operator // <greater than or equals operator> ::= >=
 	keyword
-	left_paren // <left paren> ::= (
-	less_than_operator // <less than operator> ::= <
+	left_paren                   // <left paren> ::= (
+	less_than_operator           // <less than operator> ::= <
 	less_than_or_equals_operator // <less than or equals operator> ::= <=
-	literal_identifier // foo or "foo" (delimited)
-	literal_number // 123
-	literal_string // 'hello'
-	minus_sign // <minus sign> ::= -
-	not_equals_operator // <not equals operator> ::= <>
-	period // <period> ::= .
-	plus_sign // <plus sign> ::= +
-	right_paren // <right paren> ::= )
-	semicolon // <semicolon> ::= ;
-	solidus // <solidus> ::= /
+	literal_identifier           // foo or "foo" (delimited)
+	literal_number               // 123
+	literal_string               // 'hello'
+	minus_sign                   // <minus sign> ::= -
+	not_equals_operator          // <not equals operator> ::= <>
+	period                       // <period> ::= .
+	plus_sign                    // <plus sign> ::= +
+	right_paren                  // <right paren> ::= )
+	semicolon                    // <semicolon> ::= ;
+	solidus                      // <solidus> ::= /
 }
 
 struct Token {

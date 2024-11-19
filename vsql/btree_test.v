@@ -29,7 +29,7 @@ fn test_btree_test() ! {
 	page_size := 256
 	file_name := 'btree.vsql'
 
-	for tt in 0 .. vsql.times {
+	for tt in 0 .. times {
 		for size := 1; size <= 1000; size *= 10 {
 			for blob_size in blob_sizes {
 				if os.exists(file_name) {

@@ -65,8 +65,8 @@ fn new_timestamp_from_string(s string) !Time {
 	expects_time_zone := s.len > 6 && (s[s.len - 6] == `+` || s[s.len - 6] == `-`)
 
 	mut re := regex.regex_opt(match expects_time_zone {
-		true { vsql.unquoted_timestamp_with_time_zone_string }
-		false { vsql.unquoted_timestamp_without_time_zone_string }
+		true { unquoted_timestamp_with_time_zone_string }
+		false { unquoted_timestamp_without_time_zone_string }
 	}) or { return error('cannot compile regex for timestamp: ${err}') }
 	if !re.matches_string(s) {
 		return sqlstate_42601('TIMESTAMP \'${s}\' is not valid')
@@ -93,7 +93,7 @@ fn new_timestamp_from_string(s string) !Time {
 	}
 
 	mut typ := Type{
-		typ: if expects_time_zone {
+		typ:  if expects_time_zone {
 			.is_timestamp_with_time_zone
 		} else {
 			.is_timestamp_without_time_zone
@@ -142,12 +142,12 @@ fn new_date_from_string(s string) !Time {
 
 fn new_time_from_components(typ Type, year int, month int, day int, hour int, minute int, second int, microsecond int, time_zone i16) Time {
 	return Time{typ, time_zone, time.new(time.Time{
-		year: year
-		month: month
-		day: day
-		hour: hour
-		minute: minute
-		second: second
+		year:       year
+		month:      month
+		day:        day
+		hour:       hour
+		minute:     minute
+		second:     second
 		nanosecond: microsecond * 1000
 	})}
 }
@@ -156,23 +156,23 @@ fn new_time_from_bytes(typ Type, bytes []u8) Time {
 	mut buf := new_bytes(bytes)
 	mut ts_i64 := buf.read_i64()
 
-	year := int(ts_i64 / vsql.year_period)
-	ts_i64 -= year * vsql.year_period
+	year := int(ts_i64 / year_period)
+	ts_i64 -= year * year_period
 
-	month := int(ts_i64 / vsql.month_period)
-	ts_i64 -= month * vsql.month_period
+	month := int(ts_i64 / month_period)
+	ts_i64 -= month * month_period
 
-	day := int(ts_i64 / vsql.day_period)
-	ts_i64 -= day * vsql.day_period
+	day := int(ts_i64 / day_period)
+	ts_i64 -= day * day_period
 
-	hour := int(ts_i64 / vsql.hour_period)
-	ts_i64 -= hour * vsql.hour_period
+	hour := int(ts_i64 / hour_period)
+	ts_i64 -= hour * hour_period
 
-	minute := int(ts_i64 / vsql.minute_period)
-	ts_i64 -= minute * vsql.minute_period
+	minute := int(ts_i64 / minute_period)
+	ts_i64 -= minute * minute_period
 
-	second := int(ts_i64 / vsql.second_period)
-	ts_i64 -= second * vsql.second_period
+	second := int(ts_i64 / second_period)
+	ts_i64 -= second * second_period
 
 	mut time_zone := i16(0)
 	if typ.typ == .is_time_with_time_zone || typ.typ == .is_timestamp_with_time_zone {
@@ -230,13 +230,13 @@ fn (t Time) i64() i64 {
 
 // See i64() for details.
 fn (t Time) time_i64() i64 {
-	return t.t.hour * vsql.hour_period + t.t.minute * vsql.minute_period +
-		t.t.second * vsql.second_period + int(t.t.nanosecond / 1000)
+	return t.t.hour * hour_period + t.t.minute * minute_period + t.t.second * second_period +
+		int(t.t.nanosecond / 1000)
 }
 
 // See i64() for details.
 fn (t Time) date_i64() i64 {
-	return t.t.year * vsql.year_period + t.t.month * vsql.month_period + t.t.day * vsql.day_period
+	return t.t.year * year_period + t.t.month * month_period + t.t.day * day_period
 }
 
 // Returns the Time formatted based on its type.

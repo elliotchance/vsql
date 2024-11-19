@@ -5,9 +5,9 @@ import os
 
 fn main() {
 	mut cmd := cli.Command{
-		name: 'vsql'
+		name:        'vsql'
 		description: 'vsql is a single-file or PostgeSQL-compatible SQL database written in V.\nhttps://github.com/elliotchance/vsql'
-		execute: unknown_command
+		execute:     unknown_command
 	}
 
 	register_bench_command(mut cmd)

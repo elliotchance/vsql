@@ -32,6 +32,7 @@ jobs:
 
       - name: Verify docs
         run: |
+          export PIP_BREAK_SYSTEM_PACKAGES=1
           pip install sphinx sphinx_rtd_theme
           cd docs && python3 -m pip install -r requirements.txt && cd -
           make clean-docs docs

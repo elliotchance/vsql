@@ -25,10 +25,10 @@ pub mut:
 pub fn new_benchmark(conn &Connection) Benchmark {
 	return Benchmark{
 		account_rows: 100000
-		teller_rows: 10
-		branch_rows: 1
-		run_for: time.minute
-		conn: conn
+		teller_rows:  10
+		branch_rows:  1
+		run_for:      time.minute
+		conn:         conn
 	}
 }
 

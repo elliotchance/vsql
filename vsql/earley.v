@@ -63,12 +63,12 @@ fn new_earley_state(name string, production &EarleyProduction, dot_index int, st
 	}
 
 	return &EarleyState{
-		name: name
-		production: production
+		name:         name
+		production:   production
 		start_column: start_column
-		dot_index: dot_index
-		rules: rules
-		end_column: unsafe { 0 }
+		dot_index:    dot_index
+		rules:        rules
+		end_column:   unsafe { 0 }
 	}
 }
 
@@ -136,9 +136,9 @@ mut:
 
 fn new_earley_column(index int, token string, value string) &EarleyColumn {
 	return &EarleyColumn{
-		index: index
-		token: token
-		value: value
+		index:  index
+		token:  token
+		value:  value
 		unique: &Set{}
 	}
 }

@@ -138,7 +138,7 @@ fn new_identifier1(s string) !Identifier {
 		2 {
 			return Identifier{
 				catalog_name: parts[0]
-				schema_name: parts[1]
+				schema_name:  parts[1]
 			}
 		}
 		else {
@@ -165,8 +165,8 @@ fn new_identifier2(s string) !Identifier {
 		3 {
 			return Identifier{
 				catalog_name: parts[0]
-				schema_name: parts[1]
-				entity_name: parts[2]
+				schema_name:  parts[1]
+				entity_name:  parts[2]
 			}
 		}
 		else {
@@ -209,22 +209,22 @@ fn new_identifier3(s string) !Identifier {
 		}
 		2 {
 			return Identifier{
-				entity_name: parts[0]
+				entity_name:     parts[0]
 				sub_entity_name: parts[1]
 			}
 		}
 		3 {
 			return Identifier{
-				schema_name: parts[0]
-				entity_name: parts[1]
+				schema_name:     parts[0]
+				entity_name:     parts[1]
 				sub_entity_name: parts[2]
 			}
 		}
 		4 {
 			return Identifier{
-				catalog_name: parts[0]
-				schema_name: parts[1]
-				entity_name: parts[2]
+				catalog_name:    parts[0]
+				schema_name:     parts[1]
+				entity_name:     parts[2]
 				sub_entity_name: parts[3]
 			}
 		}
@@ -289,10 +289,10 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	// removed in the future.
 	if e.custom_id != '' {
 		return CompileResult{
-			run: fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
+			run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
 				return data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }
 			}
-			typ: e.custom_typ
+			typ:          e.custom_typ
 			contains_agg: false
 		}
 	}
@@ -302,10 +302,10 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 		column := table.column(e.sub_entity_name) or { Column{} }
 		if column.name.sub_entity_name == e.sub_entity_name {
 			return CompileResult{
-				run: fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
+				run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
 					return data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }
 				}
-				typ: column.typ
+				typ:          column.typ
 				contains_agg: false
 			}
 		}
@@ -313,13 +313,21 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 
 	// 3. Try to use the context.
 	mut ident := c.conn.resolve_identifier(Identifier{
-		catalog_name: if c.context.catalog_name != '' {
+		catalog_name:    if c.context.catalog_name != '' {
 			c.context.catalog_name
 		} else {
 			e.catalog_name
 		}
-		schema_name: if c.context.schema_name != '' { c.context.schema_name } else { e.schema_name }
-		entity_name: if c.context.entity_name != '' { c.context.entity_name } else { e.entity_name }
+		schema_name:     if c.context.schema_name != '' {
+			c.context.schema_name
+		} else {
+			e.schema_name
+		}
+		entity_name:     if c.context.entity_name != '' {
+			c.context.entity_name
+		} else {
+			e.entity_name
+		}
 		sub_entity_name: e.sub_entity_name
 	})
 	mut catalog := c.conn.catalogs[ident.catalog_name] or {
@@ -331,12 +339,12 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 			column := table.column(ident.sub_entity_name) or { Column{} }
 			if column.name.sub_entity_name == ident.sub_entity_name {
 				return CompileResult{
-					run: fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
+					run:          fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
 						return data.data[ident.id()] or {
 							return sqlstate_42601('unknown column: ${ident}')
 						}
 					}
-					typ: column.typ
+					typ:          column.typ
 					contains_agg: false
 				}
 			}
@@ -351,12 +359,12 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 			ident = column.name
 
 			return CompileResult{
-				run: fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
+				run:          fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
 					return data.data[ident.id()] or {
 						return sqlstate_42601('unknown column: ${ident}')
 					}
 				}
-				typ: column.typ
+				typ:          column.typ
 				contains_agg: false
 			}
 		}
@@ -370,12 +378,12 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 				column := table.column(ident.sub_entity_name) or { Column{} }
 				if column.name.sub_entity_name == ident.sub_entity_name {
 					return CompileResult{
-						run: fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
+						run:          fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
 							return data.data[ident.id()] or {
 								return sqlstate_42601('unknown column: ${ident}')
 							}
 						}
-						typ: column.typ
+						typ:          column.typ
 						contains_agg: false
 					}
 				}
@@ -393,12 +401,12 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 				ident = column.name
 
 				return CompileResult{
-					run: fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
+					run:          fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
 						return data.data[ident.id()] or {
 							return sqlstate_42601('unknown column: ${ident}')
 						}
 					}
-					typ: column.typ
+					typ:          column.typ
 					contains_agg: false
 				}
 			}
@@ -513,10 +521,10 @@ fn (e HostParameterName) compile(mut c Compiler) !CompileResult {
 	p := c.params[e.name] or { return sqlstate_42p02(e.name) }
 
 	return CompileResult{
-		run: fn [p] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [p] (mut conn Connection, data Row, params map[string]Value) !Value {
 			return p
 		}
-		typ: p.typ
+		typ:          p.typ
 		contains_agg: false
 	}
 }

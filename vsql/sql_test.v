@@ -177,12 +177,12 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 	mut db := open_database(':memory:', options)!
 	db.now = fn () (time.Time, i16) {
 		return time.new(time.Time{
-			year: 2022
-			month: 7
-			day: 4
-			hour: 14
-			minute: 5
-			second: 3
+			year:       2022
+			month:      7
+			day:        4
+			hour:       14
+			minute:     5
+			second:     3
 			nanosecond: 120056000
 		}), 300
 	}

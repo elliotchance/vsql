@@ -158,7 +158,7 @@ fn (r RowValueConstructor) eval_row(mut conn Connection, data Row, params map[st
 	mut col_number := 1
 	mut row := map[string]Value{}
 	mut c := Compiler{
-		conn: conn
+		conn:   conn
 		params: params
 	}
 	match r {

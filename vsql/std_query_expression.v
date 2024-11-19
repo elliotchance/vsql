@@ -87,36 +87,36 @@ fn parse_query_expression(body SimpleTable) !QueryExpression {
 
 fn parse_query_expression_order(body SimpleTable, order []SortSpecification) !QueryExpression {
 	return QueryExpression{
-		body: body
+		body:  body
 		order: order
 	}
 }
 
 fn parse_query_expression_offset(body SimpleTable, offset ValueSpecification) !QueryExpression {
 	return QueryExpression{
-		body: body
+		body:   body
 		offset: offset
 	}
 }
 
 fn parse_query_expression_order_offset(body SimpleTable, order []SortSpecification, offset ValueSpecification) !QueryExpression {
 	return QueryExpression{
-		body: body
+		body:   body
 		offset: offset
-		order: order
+		order:  order
 	}
 }
 
 fn parse_query_expression_fetch(body SimpleTable, fetch ValueSpecification) !QueryExpression {
 	return QueryExpression{
-		body: body
+		body:  body
 		fetch: fetch
 	}
 }
 
 fn parse_query_expression_order_fetch(body SimpleTable, order []SortSpecification, fetch ValueSpecification) !QueryExpression {
 	return QueryExpression{
-		body: body
+		body:  body
 		fetch: fetch
 		order: order
 	}
@@ -124,18 +124,18 @@ fn parse_query_expression_order_fetch(body SimpleTable, order []SortSpecificatio
 
 fn parse_query_expression_offset_fetch(body SimpleTable, offset ValueSpecification, fetch ValueSpecification) !QueryExpression {
 	return QueryExpression{
-		body: body
+		body:   body
 		offset: offset
-		fetch: fetch
+		fetch:  fetch
 	}
 }
 
 fn parse_query_expression_order_offset_fetch(body SimpleTable, order []SortSpecification, offset ValueSpecification, fetch ValueSpecification) !QueryExpression {
 	return QueryExpression{
-		body: body
+		body:   body
 		offset: offset
-		fetch: fetch
-		order: order
+		fetch:  fetch
+		order:  order
 	}
 }
 
@@ -231,7 +231,7 @@ fn (mut o OrderOperation) execute(rows []Row) ![]Row {
 		head_cmp := row_cmp(mut o.conn, o.params, row, head.row, o.order)!
 		if head_cmp < 0 {
 			head = &RowLink{
-				row: row
+				row:  row
 				next: head
 			}
 			continue
@@ -244,7 +244,7 @@ fn (mut o OrderOperation) execute(rows []Row) ![]Row {
 			cmp := row_cmp(mut o.conn, o.params, row, cursor.next.row, o.order)!
 			if cmp < 0 {
 				cursor.next = &RowLink{
-					row: row
+					row:  row
 					next: cursor.next
 				}
 				inserted = true
@@ -291,7 +291,7 @@ fn (l &RowLink) rows() []Row {
 
 fn row_cmp(mut conn Connection, params map[string]Value, r1 Row, r2 Row, specs []SortSpecification) !int {
 	mut c := Compiler{
-		conn: conn
+		conn:   conn
 		params: params
 	}
 
@@ -436,7 +436,7 @@ fn (o &LimitOperation) columns() Columns {
 
 fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 	mut c := Compiler{
-		conn: o.conn
+		conn:   o.conn
 		params: o.params
 	}
 	mut offset := i64(0)

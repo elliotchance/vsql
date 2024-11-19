@@ -4,9 +4,9 @@ import cli
 
 fn register_version_command(mut cmd cli.Command) {
 	mut version_cmd := cli.Command{
-		name: 'version'
+		name:        'version'
 		description: 'Show version'
-		execute: version_command
+		execute:     version_command
 	}
 	cmd.add_command(version_cmd)
 }

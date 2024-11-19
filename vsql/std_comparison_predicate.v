@@ -39,7 +39,7 @@ fn (e ComparisonPredicate) compile(mut c Compiler) !CompileResult {
 	compiled_right := e.right.compile(mut c)!
 
 	return CompileResult{
-		run: fn [e, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
 			mut left := compiled_left.run(mut conn, data, params)!
 			mut right := compiled_right.run(mut conn, data, params)!
 
@@ -73,7 +73,7 @@ fn (e ComparisonPredicate) compile(mut c Compiler) !CompileResult {
 				}
 			})
 		}
-		typ: new_type('BOOLEAN', 0, 0)
+		typ:          new_type('BOOLEAN', 0, 0)
 		contains_agg: compiled_left.contains_agg || compiled_right.contains_agg
 	}
 }

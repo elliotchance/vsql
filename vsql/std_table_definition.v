@@ -95,9 +95,9 @@ fn (stmt TableDefinition) execute(mut conn Connection, params map[string]Value, 
 				}
 
 				columns << Column{Identifier{
-					catalog_name: table_name.catalog_name
-					schema_name: table_name.schema_name
-					entity_name: table_name.entity_name
+					catalog_name:    table_name.catalog_name
+					schema_name:     table_name.schema_name
+					entity_name:     table_name.entity_name
 					sub_entity_name: table_element.name.sub_entity_name
 				}, table_element.typ, table_element.not_null}
 			}

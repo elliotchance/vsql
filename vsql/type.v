@@ -17,21 +17,21 @@ mut:
 
 // Represents the fundamental SQL type.
 enum SQLType {
-	is_bigint // BIGINT
-	is_boolean // BOOLEAN
-	is_character // CHARACTER(n), CHAR(n), CHARACTER and CHAR
-	is_double_precision // DOUBLE PRECISION, FLOAT and FLOAT(n)
-	is_integer // INTEGER and INT
-	is_real // REAL
-	is_smallint // SMALLINT
-	is_varchar // CHARACTER VARYING, CHAR VARYING and VARCHAR
-	is_date // DATE
-	is_time_without_time_zone // TIME, TIME WITHOUT TIME ZONE
-	is_time_with_time_zone // TIME WITH TIME ZONE
+	is_bigint                      // BIGINT
+	is_boolean                     // BOOLEAN
+	is_character                   // CHARACTER(n), CHAR(n), CHARACTER and CHAR
+	is_double_precision            // DOUBLE PRECISION, FLOAT and FLOAT(n)
+	is_integer                     // INTEGER and INT
+	is_real                        // REAL
+	is_smallint                    // SMALLINT
+	is_varchar                     // CHARACTER VARYING, CHAR VARYING and VARCHAR
+	is_date                        // DATE
+	is_time_without_time_zone      // TIME, TIME WITHOUT TIME ZONE
+	is_time_with_time_zone         // TIME WITH TIME ZONE
 	is_timestamp_without_time_zone // TIMESTAMP, TIMESTAMP WITHOUT TIME ZONE
-	is_timestamp_with_time_zone // TIMESTAMP WITH TIME ZONE
-	is_decimal // DECIMAL
-	is_numeric // NUMERIC
+	is_timestamp_with_time_zone    // TIMESTAMP WITH TIME ZONE
+	is_decimal                     // DECIMAL
+	is_numeric                     // NUMERIC
 }
 
 // The SQL representation, such as ``TIME WITHOUT TIME ZONE``.

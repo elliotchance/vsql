@@ -72,14 +72,14 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, p
 	}
 
 	mut c := Compiler{
-		conn: conn
+		conn:   conn
 		params: params
 	}
 	for expr in select_exprs {
 		compiled_expr := expr.expr.compile(mut c)!
 		if compiled_expr.contains_agg {
 			columns << Column{Identifier{
-				custom_id: expr.expr.pstr(params)
+				custom_id:  expr.expr.pstr(params)
 				custom_typ: compiled_expr.typ
 			}, compiled_expr.typ, false}
 
@@ -115,7 +115,7 @@ fn (o &GroupOperation) columns() Columns {
 
 fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 	mut c := Compiler{
-		conn: o.conn
+		conn:   o.conn
 		params: o.params
 	}
 

@@ -79,8 +79,8 @@ struct SQLState22001 {
 fn sqlstate_22001(to Type) IError {
 	return SQLState22001{
 		code: sqlstate_to_int('22001')
-		msg: 'string data right truncation for ${to}'
-		to: to
+		msg:  'string data right truncation for ${to}'
+		to:   to
 	}
 }
 
@@ -92,7 +92,7 @@ struct SQLState22003 {
 fn sqlstate_22003() IError {
 	return SQLState22003{
 		code: sqlstate_to_int('22003')
-		msg: 'numeric value out of range'
+		msg:  'numeric value out of range'
 	}
 }
 
@@ -105,7 +105,7 @@ struct SQLState2200H {
 fn sqlstate_2200h(generator_name string) IError {
 	return SQLState2200H{
 		code: sqlstate_to_int('2200H')
-		msg: 'sequence generator limit exceeded: ${generator_name}'
+		msg:  'sequence generator limit exceeded: ${generator_name}'
 	}
 }
 
@@ -117,7 +117,7 @@ struct SQLState22012 {
 fn sqlstate_22012() IError {
 	return SQLState22012{
 		code: sqlstate_to_int('22012')
-		msg: 'division by zero'
+		msg:  'division by zero'
 	}
 }
 
@@ -129,7 +129,7 @@ struct SQLState23502 {
 fn sqlstate_23502(msg string) IError {
 	return SQLState23502{
 		code: sqlstate_to_int('23502')
-		msg: 'violates non-null constraint: ${msg}'
+		msg:  'violates non-null constraint: ${msg}'
 	}
 }
 
@@ -142,8 +142,8 @@ pub:
 
 fn sqlstate_2bp01(object_name string) IError {
 	return SQLState2BP01{
-		code: sqlstate_to_int('2BP01')
-		msg: 'dependent objects still exist on ${object_name}'
+		code:        sqlstate_to_int('2BP01')
+		msg:         'dependent objects still exist on ${object_name}'
 		object_name: object_name
 	}
 }
@@ -157,8 +157,8 @@ pub:
 
 fn sqlstate_3d000(catalog_name string) IError {
 	return SQLState3D000{
-		code: sqlstate_to_int('3D000')
-		msg: 'invalid catalog name: ${catalog_name}'
+		code:         sqlstate_to_int('3D000')
+		msg:          'invalid catalog name: ${catalog_name}'
 		catalog_name: catalog_name
 	}
 }
@@ -172,8 +172,8 @@ pub:
 
 fn sqlstate_3f000(schema_name string) IError {
 	return SQLState3F000{
-		code: sqlstate_to_int('3F000')
-		msg: 'invalid schema name: ${schema_name}'
+		code:        sqlstate_to_int('3F000')
+		msg:         'invalid schema name: ${schema_name}'
 		schema_name: schema_name
 	}
 }
@@ -186,7 +186,7 @@ struct SQLState42601 {
 fn sqlstate_42601(message string) IError {
 	return SQLState42601{
 		code: sqlstate_to_int('42601')
-		msg: 'syntax error: ${message}'
+		msg:  'syntax error: ${message}'
 	}
 }
 
@@ -199,8 +199,8 @@ pub:
 
 fn sqlstate_42703(column_name string) IError {
 	return SQLState42703{
-		code: sqlstate_to_int('42703')
-		msg: 'no such column: ${column_name}'
+		code:        sqlstate_to_int('42703')
+		msg:         'no such column: ${column_name}'
 		column_name: column_name
 	}
 }
@@ -214,10 +214,10 @@ struct SQLState42804 {
 
 fn sqlstate_42804(msg string, expected string, actual string) IError {
 	return SQLState42804{
-		code: sqlstate_to_int('42804')
-		msg: 'data type mismatch ${msg}: expected ${expected} but got ${actual}'
+		code:     sqlstate_to_int('42804')
+		msg:      'data type mismatch ${msg}: expected ${expected} but got ${actual}'
 		expected: expected
-		actual: actual
+		actual:   actual
 	}
 }
 
@@ -231,9 +231,9 @@ struct SQLState42846 {
 fn sqlstate_42846(from Type, to Type) IError {
 	return SQLState42846{
 		code: sqlstate_to_int('42846')
-		msg: 'cannot coerce ${from} to ${to}'
+		msg:  'cannot coerce ${from} to ${to}'
 		from: from
-		to: to
+		to:   to
 	}
 }
 
@@ -249,8 +249,8 @@ pub:
 
 fn sqlstate_42p01(entity_type string, entity_name string) IError {
 	return SQLState42P01{
-		code: sqlstate_to_int('42P01')
-		msg: 'no such ${entity_type}: ${entity_name}'
+		code:        sqlstate_to_int('42P01')
+		msg:         'no such ${entity_type}: ${entity_name}'
 		entity_type: entity_type
 		entity_name: entity_name
 	}
@@ -265,8 +265,8 @@ pub:
 
 fn sqlstate_42p06(schema_name string) IError {
 	return SQLState42P06{
-		code: sqlstate_to_int('42P06')
-		msg: 'duplicate schema: ${schema_name}'
+		code:        sqlstate_to_int('42P06')
+		msg:         'duplicate schema: ${schema_name}'
 		schema_name: schema_name
 	}
 }
@@ -280,8 +280,8 @@ pub:
 
 fn sqlstate_42p07(table_name string) IError {
 	return SQLState42P07{
-		code: sqlstate_to_int('42P07')
-		msg: 'duplicate table: ${table_name}'
+		code:       sqlstate_to_int('42P07')
+		msg:        'duplicate table: ${table_name}'
 		table_name: table_name
 	}
 }
@@ -294,7 +294,7 @@ struct SQLState42883 {
 fn sqlstate_42883(msg string) IError {
 	return SQLState42883{
 		code: sqlstate_to_int('42883')
-		msg: msg
+		msg:  msg
 	}
 }
 
@@ -307,8 +307,8 @@ pub:
 
 fn sqlstate_42p02(parameter_name string) IError {
 	return SQLState42P02{
-		code: sqlstate_to_int('42P02')
-		msg: 'parameter does not exist: ${parameter_name}'
+		code:           sqlstate_to_int('42P02')
+		msg:            'parameter does not exist: ${parameter_name}'
 		parameter_name: parameter_name
 	}
 }
@@ -321,7 +321,7 @@ struct SQLState25001 {
 fn sqlstate_25001() IError {
 	return SQLState25001{
 		code: sqlstate_to_int('25001')
-		msg: 'invalid transaction state: active sql transaction'
+		msg:  'invalid transaction state: active sql transaction'
 	}
 }
 
@@ -333,7 +333,7 @@ struct SQLState2D000 {
 fn sqlstate_2d000() IError {
 	return SQLState2D000{
 		code: sqlstate_to_int('2D000')
-		msg: 'invalid transaction termination'
+		msg:  'invalid transaction termination'
 	}
 }
 
@@ -345,7 +345,7 @@ struct SQLState0B000 {
 fn sqlstate_0b000(msg string) IError {
 	return SQLState0B000{
 		code: sqlstate_to_int('0B000')
-		msg: 'invalid transaction initiation: ${msg}'
+		msg:  'invalid transaction initiation: ${msg}'
 	}
 }
 
@@ -357,7 +357,7 @@ struct SQLState40001 {
 fn sqlstate_40001(message string) IError {
 	return SQLState40001{
 		code: sqlstate_to_int('40001')
-		msg: 'serialization failure: ${message}'
+		msg:  'serialization failure: ${message}'
 	}
 }
 
@@ -369,6 +369,6 @@ struct SQLState25P02 {
 fn sqlstate_25p02() IError {
 	return SQLState25P02{
 		code: sqlstate_to_int('25P02')
-		msg: 'transaction is aborted, commands ignored until end of transaction block'
+		msg:  'transaction is aborted, commands ignored until end of transaction block'
 	}
 }

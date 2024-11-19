@@ -24,8 +24,8 @@ struct CompileResult {
 
 fn (c CompileResult) with_agg(contains_agg bool) CompileResult {
 	return CompileResult{
-		run: c.run
-		typ: c.typ
+		run:          c.run
+		typ:          c.typ
 		contains_agg: contains_agg
 	}
 }

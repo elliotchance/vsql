@@ -80,7 +80,7 @@ fn new_reference_object(key []u8, tid int, xid int, blob_peices int, has_fragmen
 }
 
 fn (o PageObject) length() int {
-	return vsql.page_object_prefix_length + o.key.len + o.value.len
+	return page_object_prefix_length + o.key.len + o.value.len
 }
 
 // blob_info only applies to blob objects.
@@ -113,7 +113,7 @@ fn parse_page_object(data []u8) (int, PageObject) {
 	key_len := buf.read_i16()
 	key := buf.read_u8s(key_len)
 	is_blob_ref := buf.read_bool()
-	value := buf.read_u8s(total_len - vsql.page_object_prefix_length - key_len)
+	value := buf.read_u8s(total_len - page_object_prefix_length - key_len)
 
 	return total_len, PageObject{key, value, is_blob_ref, tid, xid}
 }
@@ -132,17 +132,17 @@ mut:
 fn new_page(kind u8, page_size int) &Page {
 	return &Page{
 		kind: kind
-		used: vsql.page_header_size // includes kind and self
-		data: []u8{len: page_size - vsql.page_header_size}
+		used: page_header_size // includes kind and self
+		data: []u8{len: page_size - page_header_size}
 	}
 }
 
 fn (p Page) is_empty() bool {
-	return p.used == vsql.page_header_size
+	return p.used == page_header_size
 }
 
 fn (p Page) page_size() int {
-	return p.data.len + vsql.page_header_size
+	return p.data.len + page_header_size
 }
 
 // TODO(elliotchance): This really isn't the most efficient way to do this. Make
@@ -307,7 +307,7 @@ fn (p Page) objects() []PageObject {
 	mut objects := []PageObject{}
 	mut n := 0
 
-	for n < p.used - vsql.page_header_size {
+	for n < p.used - page_header_size {
 		// Be careful to clone the size as the underlying data might get moved
 		// around.
 		m, object := parse_page_object(p.data[n..].clone())

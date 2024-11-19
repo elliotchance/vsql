@@ -56,7 +56,7 @@ fn (e NumericValueExpression) compile(mut c Compiler) !CompileResult {
 			// TODO(elliotchance): This is not correct, we would have to return
 			//  the highest resolution type (need to check the SQL standard about
 			//  this behavior).
-			typ: compiled_n.typ
+			typ:          compiled_n.typ
 			contains_agg: compiled_term.contains_agg || compiled_n.contains_agg
 		}
 	}
@@ -85,13 +85,13 @@ fn (e Term) compile(mut c Compiler) !CompileResult {
 		compiled_term := term.compile(mut c)!
 
 		return CompileResult{
-			run: fn [e, compiled_term, compiled_factor] (mut conn Connection, data Row, params map[string]Value) !Value {
+			run:          fn [e, compiled_term, compiled_factor] (mut conn Connection, data Row, params map[string]Value) !Value {
 				mut left := compiled_term.run(mut conn, data, params)!
 				mut right := compiled_factor.run(mut conn, data, params)!
 
 				return eval_binary(mut conn, data, left, e.op, right, params)!
 			}
-			typ: compiled_term.typ
+			typ:          compiled_term.typ
 			contains_agg: compiled_factor.contains_agg || compiled_term.contains_agg
 		}
 	}
@@ -112,7 +112,7 @@ fn (e SignedValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
 	compiled := e.e.compile(mut c)!
 
 	return CompileResult{
-		run: fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled.run(mut conn, data, params)!
 
 			key := '${e.sign} ${value.typ.typ}'
@@ -123,7 +123,7 @@ fn (e SignedValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
 
 			return sqlstate_42883('operator does not exist: ${key}')
 		}
-		typ: compiled.typ
+		typ:          compiled.typ
 		contains_agg: compiled.contains_agg
 	}
 }

@@ -105,7 +105,7 @@ fn parse_table_primary_identifier(name Identifier) !TablePrimary {
 
 fn parse_table_primary_derived_2(body TablePrimary, correlation Correlation) !TablePrimary {
 	return TablePrimary{
-		body: body.body
+		body:        body.body
 		correlation: correlation
 	}
 }
@@ -128,7 +128,7 @@ fn parse_correlation_1(name Identifier) !Correlation {
 
 fn parse_correlation_2(name Identifier, columns []Identifier) !Correlation {
 	return Correlation{
-		name: name
+		name:    name
 		columns: columns
 	}
 }

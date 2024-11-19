@@ -52,7 +52,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	}
 
 	mut c := Compiler{
-		conn: conn
+		conn:   conn
 		params: params
 	}
 	mut catalog := conn.catalog()
@@ -77,8 +77,8 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			table_column := table.column(column_name)!
 			c.context = Identifier{
 				catalog_name: table_column.name.catalog_name
-				schema_name: table_column.name.schema_name
-				entity_name: table.name.entity_name
+				schema_name:  table_column.name.schema_name
+				entity_name:  table.name.entity_name
 			}
 
 			raw_value := match v {

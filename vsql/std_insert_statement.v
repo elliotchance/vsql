@@ -41,7 +41,7 @@ fn parse_insert_statement(insertion_target Identifier, stmt InsertStatement) !St
 fn parse_from_constructor(columns []Identifier, values []ContextuallyTypedRowValueConstructor) !InsertStatement {
 	return InsertStatement{
 		columns: columns
-		values: values
+		values:  values
 	}
 }
 
@@ -96,8 +96,8 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 		table_column := table.column(column_name)!
 
 		mut c := Compiler{
-			conn: conn
-			params: params
+			conn:      conn
+			params:    params
 			null_type: table_column.typ
 		}
 		raw_value := values[i].compile(mut c)!.run(mut conn, Row{}, params)!

@@ -42,7 +42,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			compiled_b := e.b.compile(mut c)!
 
 			return CompileResult{
-				run: fn [compiled_a, compiled_b] (mut conn Connection, data Row, params map[string]Value) !Value {
+				run:          fn [compiled_a, compiled_b] (mut conn Connection, data Row, params map[string]Value) !Value {
 					a := compiled_a.run(mut conn, data, params)!
 					b := compiled_b.run(mut conn, data, params)!
 
@@ -57,7 +57,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 
 					return a
 				}
-				typ: compiled_a.typ
+				typ:          compiled_a.typ
 				contains_agg: compiled_a.contains_agg || compiled_b.contains_agg
 			}
 		}
@@ -70,7 +70,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			}
 
 			return CompileResult{
-				run: fn [compiled_exprs] (mut conn Connection, data Row, params map[string]Value) !Value {
+				run:          fn [compiled_exprs] (mut conn Connection, data Row, params map[string]Value) !Value {
 					mut typ := SQLType.is_varchar
 					mut first := true
 					for i, compiled_expr in compiled_exprs {
@@ -96,7 +96,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 
 					return new_null_value(value.typ.typ)
 				}
-				typ: compiled_exprs[0].typ
+				typ:          compiled_exprs[0].typ
 				contains_agg: contains_agg
 			}
 		}

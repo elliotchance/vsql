@@ -113,10 +113,10 @@ fn open_connection(path string, options ConnectionOptions) !&Connection {
 	catalog_name := catalog_name_from_path(path)
 
 	mut conn := &Connection{
-		query_cache: options.query_cache
+		query_cache:     options.query_cache
 		current_catalog: catalog_name
-		current_schema: vsql.default_schema_name
-		now: default_now
+		current_schema:  default_schema_name
+		now:             default_now
 	}
 
 	register_builtin_funcs(mut conn)!
@@ -140,9 +140,9 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 
 	catalog := &CatalogConnection{
 		catalog_name: catalog_name
-		path: path
-		storage: new_storage(btree)
-		options: options
+		path:         path
+		storage:      new_storage(btree)
+		options:      options
 	}
 
 	conn.catalogs[catalog_name] = catalog
@@ -350,9 +350,9 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 		mut table_name := conn.resolve_schema_identifier(stmt.table_name)!
 
 		conn.catalogs[conn.current_catalog].virtual_tables[table_name.storage_id()] = VirtualTable{
-			create_table_sql: create_table
+			create_table_sql:  create_table
 			create_table_stmt: stmt
-			data: data
+			data:              data
 		}
 
 		return
@@ -416,19 +416,20 @@ pub fn (mut conn CatalogConnection) schema_tables(schema string) ![]Table {
 // canonical (fully qualified) form.
 fn (conn Connection) resolve_identifier(identifier Identifier) Identifier {
 	return Identifier{
-		custom_id: identifier.custom_id
-		custom_typ: identifier.custom_typ
-		catalog_name: if identifier.catalog_name == '' && !identifier.entity_name.starts_with('$') {
+		custom_id:       identifier.custom_id
+		custom_typ:      identifier.custom_typ
+		catalog_name:    if identifier.catalog_name == ''
+			&& !identifier.entity_name.starts_with('$') {
 			conn.current_catalog
 		} else {
 			identifier.catalog_name
 		}
-		schema_name: if identifier.schema_name == '' && !identifier.entity_name.starts_with('$') {
+		schema_name:     if identifier.schema_name == '' && !identifier.entity_name.starts_with('$') {
 			conn.current_schema
 		} else {
 			identifier.schema_name
 		}
-		entity_name: identifier.entity_name
+		entity_name:     identifier.entity_name
 		sub_entity_name: identifier.sub_entity_name
 	}
 }
@@ -518,8 +519,8 @@ pub mut:
 pub fn default_connection_options() ConnectionOptions {
 	return ConnectionOptions{
 		query_cache: new_query_cache()
-		page_size: 4096
-		mutex: sync.new_rwmutex()
+		page_size:   4096
+		mutex:       sync.new_rwmutex()
 	}
 }
 

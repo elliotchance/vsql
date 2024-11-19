@@ -33,7 +33,7 @@ fn (e NullPredicate) compile(mut c Compiler) !CompileResult {
 	compiled := e.expr.compile(mut c)!
 
 	return CompileResult{
-		run: fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled.run(mut conn, data, params)!
 
 			if e.not {
@@ -42,7 +42,7 @@ fn (e NullPredicate) compile(mut c Compiler) !CompileResult {
 
 			return new_boolean_value(value.is_null)
 		}
-		typ: new_type('BOOLEAN', 0, 0)
+		typ:          new_type('BOOLEAN', 0, 0)
 		contains_agg: compiled.contains_agg
 	}
 }

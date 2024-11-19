@@ -29,14 +29,14 @@ pub fn new_server(options ServerOptions) Server {
 
 	catalog := &CatalogConnection{
 		catalog_name: catalog_name
-		storage: new_storage(btree)
-		options: default_connection_options()
+		storage:      new_storage(btree)
+		options:      default_connection_options()
 	}
 
 	return Server{options, &Connection{
 		query_cache: new_query_cache()
-		now: default_now
-		catalogs: {
+		now:         default_now
+		catalogs:    {
 			catalog_name: catalog
 		}
 	}}

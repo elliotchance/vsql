@@ -24,11 +24,11 @@ fn test_concurrent_writes() ! {
 		waits << spawn fn (file_name string, i int, options ConnectionOptions) {
 			mut db := open_database(file_name, options) or { panic(err) }
 			for j in 0 .. 100 {
-				if vsql.verbose {
+				if verbose {
 					println('${i}.${j}: INSERT start')
 				}
 				db.query('INSERT INTO foo (x) VALUES (1)') or { panic(err) }
-				if vsql.verbose {
+				if verbose {
 					println('${i}.${j}: INSERT done')
 				}
 			}

@@ -35,8 +35,8 @@ pub fn (mut v VirtualTable) done() {
 
 pub fn (v VirtualTable) table() Table {
 	return Table{
-		name: v.create_table_stmt.table_name
-		columns: v.create_table_stmt.columns()
+		name:       v.create_table_stmt.table_name
+		columns:    v.create_table_stmt.columns()
 		is_virtual: true
 	}
 }

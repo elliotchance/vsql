@@ -45,7 +45,7 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 		compiled_right := e.right.compile(mut c)!
 
 		return CompileResult{
-			run: fn [e, compiled_l, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
+			run:          fn [e, compiled_l, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
 				left := compiled_l.run(mut conn, data, params)!
 				right := compiled_right.run(mut conn, data, params)!
 
@@ -62,7 +62,7 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 
 				return new_boolean_value(result)
 			}
-			typ: new_type('BOOLEAN', 0, 0)
+			typ:          new_type('BOOLEAN', 0, 0)
 			contains_agg: compiled_l.contains_agg || compiled_right.contains_agg
 		}
 	}

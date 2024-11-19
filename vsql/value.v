@@ -38,10 +38,10 @@ pub mut:
 
 fn (e Value) compile(mut c Compiler) !CompileResult {
 	return CompileResult{
-		run: fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
 			return e
 		}
-		typ: e.typ
+		typ:          e.typ
 		contains_agg: false
 	}
 }
@@ -70,7 +70,7 @@ mut:
 // values need to have a type.
 pub fn new_null_value(typ SQLType) Value {
 	return Value{
-		typ: Type{typ, 0, 0, false}
+		typ:     Type{typ, 0, 0, false}
 		is_null: true
 	}
 }
@@ -80,7 +80,7 @@ pub fn new_null_value(typ SQLType) Value {
 pub fn new_boolean_value(b bool) Value {
 	return Value{
 		typ: Type{.is_boolean, 0, 0, false}
-		v: InternalValue{
+		v:   InternalValue{
 			bool_value: if b { .is_true } else { .is_false }
 		}
 	}
@@ -90,7 +90,7 @@ pub fn new_boolean_value(b bool) Value {
 // representation of ``BOOLEAN``.
 pub fn new_unknown_value() Value {
 	return Value{
-		typ: Type{.is_boolean, 0, 0, false}
+		typ:     Type{.is_boolean, 0, 0, false}
 		is_null: true
 	}
 }
@@ -99,7 +99,7 @@ pub fn new_unknown_value() Value {
 pub fn new_double_precision_value(x f64) Value {
 	return Value{
 		typ: Type{.is_double_precision, 0, 0, false}
-		v: InternalValue{
+		v:   InternalValue{
 			f64_value: x
 		}
 	}
@@ -109,7 +109,7 @@ pub fn new_double_precision_value(x f64) Value {
 pub fn new_integer_value(x int) Value {
 	return Value{
 		typ: Type{.is_integer, 0, 0, false}
-		v: InternalValue{
+		v:   InternalValue{
 			int_value: x
 		}
 	}
@@ -119,7 +119,7 @@ pub fn new_integer_value(x int) Value {
 pub fn new_bigint_value(x i64) Value {
 	return Value{
 		typ: Type{.is_bigint, 0, 0, false}
-		v: InternalValue{
+		v:   InternalValue{
 			int_value: x
 		}
 	}
@@ -129,7 +129,7 @@ pub fn new_bigint_value(x i64) Value {
 pub fn new_real_value(x f32) Value {
 	return Value{
 		typ: Type{.is_real, 0, 0, false}
-		v: InternalValue{
+		v:   InternalValue{
 			f64_value: x
 		}
 	}
@@ -139,7 +139,7 @@ pub fn new_real_value(x f32) Value {
 pub fn new_smallint_value(x i16) Value {
 	return Value{
 		typ: Type{.is_smallint, 0, 0, false}
-		v: InternalValue{
+		v:   InternalValue{
 			int_value: x
 		}
 	}
@@ -149,7 +149,7 @@ pub fn new_smallint_value(x i16) Value {
 pub fn new_varchar_value(x string) Value {
 	return Value{
 		typ: Type{.is_varchar, x.len, 0, false}
-		v: InternalValue{
+		v:   InternalValue{
 			string_value: x
 		}
 	}
@@ -160,7 +160,7 @@ pub fn new_varchar_value(x string) Value {
 pub fn new_character_value(x string) Value {
 	return Value{
 		typ: Type{.is_character, x.len, 0, false}
-		v: InternalValue{
+		v:   InternalValue{
 			string_value: x
 		}
 	}
@@ -180,7 +180,7 @@ pub fn new_numeric_value(x string) Value {
 
 	return Value{
 		typ: n.typ
-		v: InternalValue{
+		v:   InternalValue{
 			numeric_value: n.normalize_denominator(n.typ)
 		}
 	}
@@ -201,7 +201,7 @@ pub fn new_decimal_value(x string) Value {
 
 	return Value{
 		typ: typ
-		v: InternalValue{
+		v:   InternalValue{
 			numeric_value: n.normalize_denominator(typ)
 		}
 	}
@@ -210,7 +210,7 @@ pub fn new_decimal_value(x string) Value {
 fn new_numeric_value_from_numeric(n Numeric) Value {
 	return Value{
 		typ: n.typ
-		v: InternalValue{
+		v:   InternalValue{
 			numeric_value: n.normalize_denominator(n.typ)
 		}
 	}
@@ -221,7 +221,7 @@ fn new_decimal_value_from_numeric(n Numeric) Value {
 
 	return Value{
 		typ: typ
-		v: InternalValue{
+		v:   InternalValue{
 			numeric_value: n.normalize_denominator(n.typ)
 		}
 	}
@@ -233,7 +233,7 @@ pub fn new_timestamp_value(ts string) !Value {
 
 	return Value{
 		typ: t.typ
-		v: InternalValue{
+		v:   InternalValue{
 			time_value: t
 		}
 	}
@@ -245,7 +245,7 @@ pub fn new_time_value(ts string) !Value {
 
 	return Value{
 		typ: t.typ
-		v: InternalValue{
+		v:   InternalValue{
 			time_value: t
 		}
 	}
@@ -257,7 +257,7 @@ pub fn new_date_value(ts string) !Value {
 
 	return Value{
 		typ: t.typ
-		v: InternalValue{
+		v:   InternalValue{
 			time_value: t
 		}
 	}

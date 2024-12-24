@@ -73,10 +73,10 @@ module vsql
 %token OPERATOR_ASTERISK OPERATOR_PLUS OPERATOR_COMMA OPERATOR_MINUS;
 %token OPERATOR_PERIOD OPERATOR_SOLIDUS OPERATOR_COLON OPERATOR_LESS_THAN;
 %token OPERATOR_GREATER_THAN OPERATOR_DOUBLE_PIPE OPERATOR_NOT_EQUALS;
-%token OPERATOR_GREATER_EQUALS OPERATOR_LESS_EQUALS;
+%token OPERATOR_GREATER_EQUALS OPERATOR_LESS_EQUALS OPERATOR_SEMICOLON;
 
 // literals
-%token LITERAL_IDENTIFIER LITERAL_STRING LITERAL_INTEGER;
+%token LITERAL_IDENTIFIER LITERAL_STRING LITERAL_NUMBER;
 
 %start preparable_statement;
 
@@ -345,7 +345,7 @@ signed_integer /* Value */ :
   | sign unsigned_integer   { log("signed_integer_2()") }
 
 unsigned_integer /* string */ :
-    LITERAL_INTEGER
+    LITERAL_NUMBER
 
 datetime_literal /* Value */ :
     date_literal
@@ -1641,7 +1641,7 @@ type YYSym = Value | ValueSpecification | ValueExpression | RowValueConstructor
   | CommonValueExpression | BooleanTerm | ValueExpressionPrimary
   | NumericPrimary | Term | BooleanTest | BooleanPrimary | BooleanPredicand
   | NonparenthesizedValueExpressionPrimary | SimpleTable | QueryExpression
-  | Stmt;
+  | Stmt | string;
 
 pub struct YYSymType {
 pub mut:
@@ -1651,12 +1651,6 @@ pub mut:
 
 fn log(s string) {
   println(s)
-}
-
-pub struct Tok {
-pub:
-  token int
-  sym YYSymType
 }
 
 pub struct Lexer {
@@ -1680,11 +1674,11 @@ fn (mut l Lexer) error(s string) {
 }
 
 pub fn main_() {
+  // println(tokenize2("SELECT 'foo' FROM bar WHERE \"baz\" = 12.3"))
+  tokens := tokenize2("VALUES FALSE")
+
   mut lexer := Lexer{
-    tokens: [
-      Tok{token_values, YYSymType{} }
-      Tok{token_true, YYSymType{} }
-    ]
+    tokens: tokens
   }
 	mut parser := yy_new_parser()
   parser.parse(mut lexer)

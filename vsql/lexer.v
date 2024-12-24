@@ -160,3 +160,132 @@ fn is_identifier_char(c rune, is_not_first bool) bool {
 
 	return yes
 }
+
+pub struct Tok {
+pub:
+  token int
+  sym YYSymType
+}
+
+fn tokenize2(sql_stmt string) []Tok {
+	mut tokens := []Tok{}
+	cs := sql_stmt.trim(';').runes()
+	mut i := 0
+
+	next: for i < cs.len {
+		// Numbers
+		if cs[i] >= `0` && cs[i] <= `9` {
+			mut word := ''
+			for i < cs.len && cs[i] >= `0` && cs[i] <= `9` {
+				word += '${cs[i]}'
+				i++
+			}
+			tokens << Tok{token_literal_number, YYSymType{value: word}}
+
+			// There is a special case for approximate numbers where 'E' is considered
+			// a separate token in the SQL BNF. However, "e2" should not be treated as
+			// two tokens, but rather we need to catch this case only when with a
+			// number token.
+			if i < cs.len && (cs[i] == `e` || cs[i] == `E`) {
+				tokens << Tok{token_e, YYSymType{}}
+				i++
+			}
+
+			continue
+		}
+
+		// Strings
+		if cs[i] == `'` {
+			mut word := ''
+			i++
+			for i < cs.len && cs[i] != `'` {
+				word += '${cs[i]}'
+				i++
+			}
+			i++
+			tokens << Tok{token_literal_string, YYSymType{value: word}}
+			continue
+		}
+
+		// Delimited identifiers
+		if cs[i] == `"` {
+			mut word := ''
+			i++
+			for i < cs.len && cs[i] != `"` {
+				word += '${cs[i]}'
+				i++
+			}
+			i++
+			tokens << Tok{token_literal_identifier, YYSymType{value: '"${word}"'}}
+			continue
+		}
+
+		// Operators
+		multi := {
+			'<>': token_operator_not_equals
+			'>=': token_operator_greater_equals
+			'<=': token_operator_less_equals
+			'||': token_operator_double_pipe
+		}
+		for op, tk in multi {
+			if cs[i] == op[0] && cs[i + 1] == op[1] {
+				tokens << Tok{tk, YYSymType{value: op}}
+				i += 2
+				continue next
+			}
+		}
+
+		single := {
+			`(`: token_operator_left_paren
+			`)`: token_operator_right_paren
+			`*`: token_operator_asterisk
+			`+`: token_operator_plus
+			`,`: token_operator_comma
+			`-`: token_operator_minus
+			`/`: token_operator_solidus
+			`;`: token_operator_semicolon
+			`<`: token_operator_less_than
+			`=`: token_operator_equals
+			`>`: token_operator_greater_than
+			`.`: token_operator_period
+			`:`: token_operator_colon
+		}
+		for op, tk in single {
+			if cs[i] == op {
+				tokens << Tok{tk, YYSymType{value: op.str()}}
+				i++
+				continue next
+			}
+		}
+
+		// Keyword or regular identifier
+		mut word := ''
+		mut is_not_first := false
+		for i < cs.len && is_identifier_char(cs[i], is_not_first) {
+			word += '${cs[i]}'
+			i++
+			is_not_first = true
+		}
+
+		if word == '' {
+			i++
+			continue
+		}
+
+		upper_word := word.to_upper()
+		mut found := false
+		for tok_pos, tok_name in yy_toknames {
+			if tok_name == upper_word {
+				tokens << Tok{tok_pos + 57343, YYSymType{value: upper_word}}
+				found = true
+				break
+			}
+		}
+		
+		if !found {
+			Tok{token_literal_identifier, YYSymType{value: word}}
+		}
+	}
+
+	return tokens
+}

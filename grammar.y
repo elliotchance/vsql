@@ -78,12 +78,17 @@ module vsql
 // literals
 %token LITERAL_IDENTIFIER LITERAL_STRING LITERAL_NUMBER;
 
-%start preparable_statement;
+%start start;
 
 %%
 
+// This is a special case that uses `yyrcvr.lval` to make sure the parser
+// captures the final result.
+start:
+  preparable_statement { yyrcvr.lval.v = $1.v as Stmt };
+
 preparable_statement:
-    preparable_sql_data_statement { yyrcvr.lval.value = $1.value as Stmt }
+    preparable_sql_data_statement { $$.v = $1.v as Stmt }
   | preparable_sql_schema_statement
   | preparable_sql_transaction_statement
   | preparable_sql_session_statement
@@ -96,11 +101,11 @@ column_reference /* Identifier */ :
 
 table_value_constructor:
   VALUES row_value_expression_list {
-    $$.value = SimpleTable($2.value as []RowValueConstructor)
+    $$.v = SimpleTable($2.v as []RowValueConstructor)
   }
 
 row_value_expression_list:
-    table_row_value_expression { $$.value = [$1.value as RowValueConstructor] }
+    table_row_value_expression { $$.v = [$1.v as RowValueConstructor] }
   | row_value_expression_list comma table_row_value_expression {
       log("row_value_expression_list_2()")
     }
@@ -226,7 +231,7 @@ table_elements /* []TableElement */ :
 preparable_sql_data_statement:
     delete_statement_searched
   | insert_statement
-  | dynamic_select_statement { $$.value = $1.value as Stmt }
+  | dynamic_select_statement { $$.v = $1.v as Stmt }
   | update_statement_searched
 
 preparable_sql_schema_statement /* Stmt */ :
@@ -239,7 +244,7 @@ preparable_sql_session_statement /* Stmt */ :
     sql_session_statement
 
 dynamic_select_statement:
-    cursor_specification { $$.value = $1.value as Stmt }
+    cursor_specification { $$.v = $1.v as Stmt }
 
 schema_definition /* Stmt */ :
     CREATE SCHEMA schema_name_clause   { log("schema_definition()") }
@@ -248,7 +253,7 @@ schema_name_clause /* Identifier */ :
     schema_name
 
 cursor_specification:
-    query_expression { $$.value = Stmt($1.value as QueryExpression) }
+    query_expression { $$.v = Stmt($1.v as QueryExpression) }
 
 datetime_value_expression /* DatetimePrimary */ :
     datetime_term
@@ -299,16 +304,16 @@ where_clause /* BooleanValueExpression */ :
 
 literal:
     signed_numeric_literal
-  | general_literal { $$.value = $1.value as Value }
+  | general_literal { $$.v = $1.v as Value }
 
 unsigned_literal:
     unsigned_numeric_literal
-  | general_literal { $$.value = $1.value as Value }
+  | general_literal { $$.v = $1.v as Value }
 
 general_literal:
     character_string_literal
   | datetime_literal
-  | boolean_literal { $$.value = $1.value as Value }
+  | boolean_literal { $$.v = $1.v as Value }
 
 character_string_literal /* Value */ :
     LITERAL_STRING
@@ -371,9 +376,9 @@ timestamp_string /* Value */ :
     LITERAL_STRING
 
 boolean_literal:
-    TRUE { $$.value = new_boolean_value(true) }
-  | FALSE { $$.value = new_boolean_value(false) }
-  | UNKNOWN { $$.value = new_unknown_value() }
+    TRUE { $$.v = new_boolean_value(true) }
+  | FALSE { $$.v = new_boolean_value(false) }
+  | UNKNOWN { $$.v = new_unknown_value() }
 
 contextually_typed_value_specification /* NullSpecification */ :
     implicitly_typed_value_specification
@@ -975,7 +980,7 @@ comp_op /* string */ :
 
 row_value_constructor:
     common_value_expression          { log("RowValueConstructor()") }
-  | boolean_value_expression { $$.value = RowValueConstructor($1.value as BooleanValueExpression) }
+  | boolean_value_expression { $$.v = RowValueConstructor($1.v as BooleanValueExpression) }
   | explicit_row_value_constructor   { log("RowValueConstructor()") }
 
 explicit_row_value_constructor /* ExplicitRowValueConstructor */ :
@@ -989,7 +994,7 @@ row_value_constructor_element_list /* []ValueExpression */ :
     row_value_constructor_element                { log("row_value_constructor_element_list_2()") }
 
 row_value_constructor_element:
-    value_expression { $$.value = $1.value as ValueExpression }
+    value_expression { $$.v = $1.v as ValueExpression }
 
 contextually_typed_row_value_constructor /* ContextuallyTypedRowValueConstructor */ :
     common_value_expression                        { log("ContextuallyTypedRowValueConstructor()") }
@@ -1178,11 +1183,11 @@ search_condition /* BooleanValueExpression */ :
     boolean_value_expression
 
 value_expression:
-    common_value_expression { $$.value = ValueExpression($1.value as CommonValueExpression) }
+    common_value_expression { $$.v = ValueExpression($1.v as CommonValueExpression) }
   | boolean_value_expression   { log("ValueExpression()") }
 
 common_value_expression:
-    numeric_value_expression { $$.value = CommonValueExpression($1.value as NumericValueExpression) }
+    numeric_value_expression { $$.v = CommonValueExpression($1.v as NumericValueExpression) }
   | string_value_expression     { log("CommonValueExpression()") }
   | datetime_value_expression   { log("CommonValueExpression()") }
 
@@ -1209,19 +1214,19 @@ grouping_column_reference /* Identifier */ :
     column_reference
 
 boolean_value_expression:
-    boolean_term { $$.value = BooleanValueExpression{term: $1.value as BooleanTerm} }
+    boolean_term { $$.v = BooleanValueExpression{term: $1.v as BooleanTerm} }
   | boolean_value_expression OR boolean_term   { log("boolean_value_expression_2()") }
 
 boolean_term:
-    boolean_factor { $$.value = BooleanTerm{factor: $1.value as BooleanTest} }
+    boolean_factor { $$.v = BooleanTerm{factor: $1.v as BooleanTest} }
   | boolean_term AND boolean_factor   { log("boolean_term_2()") }
 
 boolean_factor:
-    boolean_test { $$.value = $1.value as BooleanTest }
+    boolean_test { $$.v = $1.v as BooleanTest }
   | NOT boolean_test   { log("boolean_factor_not()") }
 
 boolean_test:
-    boolean_primary { $$.value = BooleanTest{expr: $1.value as BooleanPrimary} }
+    boolean_primary { $$.v = BooleanTest{expr: $1.v as BooleanPrimary} }
   | boolean_primary IS truth_value       { log("boolean_test_2()") }
   | boolean_primary IS NOT truth_value   { log("boolean_test_3()") }
 
@@ -1232,12 +1237,12 @@ truth_value /* Value */ :
 
 boolean_primary:
     predicate           { log("BooleanPrimary()") }
-  | boolean_predicand { $$.value = BooleanPrimary($1.value as BooleanPredicand) }
+  | boolean_predicand { $$.v = BooleanPrimary($1.v as BooleanPredicand) }
 
 boolean_predicand:
     parenthesized_boolean_value_expression      { log("BooleanPredicand()") }
   | nonparenthesized_value_expression_primary {
-      $$.value = BooleanPredicand($1.value as NonparenthesizedValueExpressionPrimary)
+      $$.v = BooleanPredicand($1.v as NonparenthesizedValueExpressionPrimary)
     }
 
 parenthesized_boolean_value_expression /* BooleanValueExpression */ :
@@ -1254,7 +1259,7 @@ unique_column_list /* []Identifier */ :
   column_name_list
 
 table_row_value_expression:
-    row_value_constructor { $$.value = $1.value as RowValueConstructor }
+    row_value_constructor { $$.v = $1.v as RowValueConstructor }
 
 contextually_typed_row_value_expression /* ContextuallyTypedRowValueConstructor */ :
   contextually_typed_row_value_constructor
@@ -1350,7 +1355,7 @@ start_transaction_statement /* Stmt */ :
   START TRANSACTION   { log("start_transaction_statement()") }
 
 query_expression:
-    query_expression_body { $$.value = QueryExpression{body: $1.value as SimpleTable} }
+    query_expression_body { $$.v = QueryExpression{body: $1.v as SimpleTable} }
   | query_expression_body order_by_clause   { log("query_expression_order()") }
   | query_expression_body
     result_offset_clause                      { log("query_expression_offset()") }
@@ -1368,17 +1373,17 @@ query_expression:
     fetch_first_clause                        { log("query_expression_offset_fetch()") }
 
 query_expression_body:
-    query_term { $$.value = $1.value as SimpleTable }
+    query_term { $$.v = $1.v as SimpleTable }
 
 query_term:
-  query_primary { $$.value = $1.value as SimpleTable }
+  query_primary { $$.v = $1.v as SimpleTable }
 
 query_primary:
-  simple_table { $$.value = $1.value as SimpleTable }
+  simple_table { $$.v = $1.v as SimpleTable }
 
 simple_table:
     query_specification
-  | table_value_constructor { $$.value = $1.value as SimpleTable }
+  | table_value_constructor { $$.v = $1.v as SimpleTable }
 
 order_by_clause /* []SortSpecification */ :
     ORDER BY sort_specification_list   { log("order_by()") }
@@ -1493,11 +1498,11 @@ drop_table_statement /* Stmt */ :
     DROP TABLE table_name   { log("drop_table_statement()") }
 
 value_specification:
-    literal { $$.value = $1.value }
+    literal { $$.v = $1.v }
   | general_value_specification   { log("ValueSpecification()") }
 
 unsigned_value_specification:
-    unsigned_literal { $$.value = ValueSpecification($1.value as Value) }
+    unsigned_literal { $$.v = ValueSpecification($1.v as Value) }
   | general_value_specification   { log("ValueSpecification()") }
 
 general_value_specification /* GeneralValueSpecification */ :
@@ -1539,7 +1544,7 @@ parenthesized_value_expression /* ParenthesizedValueExpression */ :
 
 nonparenthesized_value_expression_primary:
     unsigned_value_specification {
-      $$.value = NonparenthesizedValueExpressionPrimary($1.value as ValueSpecification)
+      $$.v = NonparenthesizedValueExpressionPrimary($1.v as ValueSpecification)
     }
   | column_reference               { log("NonparenthesizedValueExpressionPrimary()") }
   | set_function_specification     { log("NonparenthesizedValueExpressionPrimary()") }
@@ -1602,21 +1607,21 @@ string_length /* NumericValueExpression */ :
     numeric_value_expression
 
 numeric_value_expression:
-    term { $$.value = NumericValueExpression{term: $1.value as Term} }
+    term { $$.v = NumericValueExpression{term: $1.v as Term} }
   | numeric_value_expression plus_sign term    { log("numeric_value_expression_2()") }
   | numeric_value_expression minus_sign term   { log("numeric_value_expression_2()") }
 
 term:
-    factor { $$.value = Term{factor: $1.value as NumericPrimary} }
+    factor { $$.v = Term{factor: $1.v as NumericPrimary} }
   | term asterisk factor   { log("term_2()") }
   | term solidus factor    { log("term_2()") }
 
 factor:
-    numeric_primary { $$.value = $1.value as NumericPrimary }
+    numeric_primary { $$.v = $1.v as NumericPrimary }
   | sign numeric_primary   { log("factor_2()") }
 
 numeric_primary:
-    value_expression_primary { $$.value = NumericPrimary($1.value as ValueExpressionPrimary) }
+    value_expression_primary { $$.v = NumericPrimary($1.v as ValueExpressionPrimary) }
   | numeric_value_function     { log("NumericPrimary()") }
 
 routine_invocation /* RoutineInvocation */ :
@@ -1645,7 +1650,7 @@ type YYSym = Value | ValueSpecification | ValueExpression | RowValueConstructor
 
 pub struct YYSymType {
 pub mut:
-  value YYSym
+  v YYSym
   yys int
 }
 
@@ -1682,7 +1687,7 @@ pub fn main_() {
   }
 	mut parser := yy_new_parser()
   parser.parse(mut lexer)
-  println((parser as YYParserImpl).lval.value)
-  value := ((parser as YYParserImpl).lval.value as Stmt as QueryExpression)
+  println((parser as YYParserImpl).lval.v)
+  value := ((parser as YYParserImpl).lval.v as Stmt as QueryExpression)
   println(value.pstr(map[string]Value{}))
 }

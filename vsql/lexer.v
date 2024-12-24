@@ -180,7 +180,7 @@ fn tokenize2(sql_stmt string) []Tok {
 				word += '${cs[i]}'
 				i++
 			}
-			tokens << Tok{token_literal_number, YYSymType{value: word}}
+			tokens << Tok{token_literal_number, YYSymType{v: word}}
 
 			// There is a special case for approximate numbers where 'E' is considered
 			// a separate token in the SQL BNF. However, "e2" should not be treated as
@@ -203,7 +203,7 @@ fn tokenize2(sql_stmt string) []Tok {
 				i++
 			}
 			i++
-			tokens << Tok{token_literal_string, YYSymType{value: word}}
+			tokens << Tok{token_literal_string, YYSymType{v: word}}
 			continue
 		}
 
@@ -216,7 +216,7 @@ fn tokenize2(sql_stmt string) []Tok {
 				i++
 			}
 			i++
-			tokens << Tok{token_literal_identifier, YYSymType{value: '"${word}"'}}
+			tokens << Tok{token_literal_identifier, YYSymType{v: '"${word}"'}}
 			continue
 		}
 
@@ -229,7 +229,7 @@ fn tokenize2(sql_stmt string) []Tok {
 		}
 		for op, tk in multi {
 			if cs[i] == op[0] && cs[i + 1] == op[1] {
-				tokens << Tok{tk, YYSymType{value: op}}
+				tokens << Tok{tk, YYSymType{v: op}}
 				i += 2
 				continue next
 			}
@@ -252,7 +252,7 @@ fn tokenize2(sql_stmt string) []Tok {
 		}
 		for op, tk in single {
 			if cs[i] == op {
-				tokens << Tok{tk, YYSymType{value: op.str()}}
+				tokens << Tok{tk, YYSymType{v: op.str()}}
 				i++
 				continue next
 			}
@@ -276,14 +276,14 @@ fn tokenize2(sql_stmt string) []Tok {
 		mut found := false
 		for tok_pos, tok_name in yy_toknames {
 			if tok_name == upper_word {
-				tokens << Tok{tok_pos + 57343, YYSymType{value: upper_word}}
+				tokens << Tok{tok_pos + 57343, YYSymType{v: upper_word}}
 				found = true
 				break
 			}
 		}
 		
 		if !found {
-			Tok{token_literal_identifier, YYSymType{value: word}}
+			Tok{token_literal_identifier, YYSymType{v: word}}
 		}
 	}
 

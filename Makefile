@@ -56,8 +56,8 @@ clean-docs:
 
 # Grammar (BNF)
 
-y.v:
-	v run scripts/vyacc.v grammar.y
+vsql/y.v:
+	v run scripts/vyacc.v -o vsql/y.v grammar.y
 
 grammar.bnf:
 	grep "//~" -r vsql | cut -d~ -f2 > grammar.bnf

@@ -78,10 +78,15 @@ module vsql
 // literals
 %token LITERAL_IDENTIFIER LITERAL_STRING LITERAL_INTEGER;
 
-%start table_value_constructor;
-// %start preparable_statement;
+%start preparable_statement;
 
 %%
+
+preparable_statement:
+    preparable_sql_data_statement { yyrcvr.lval.value = $1.value as Stmt }
+  | preparable_sql_schema_statement
+  | preparable_sql_transaction_statement
+  | preparable_sql_session_statement
 
 target_table /* Identifier */ :
     table_name
@@ -89,10 +94,10 @@ target_table /* Identifier */ :
 column_reference /* Identifier */ :
     basic_identifier_chain   { log("column_reference()") }
 
-table_value_constructor /* SimpleTable */ :
-    VALUES row_value_expression_list {
-      yyrcvr.lval.value = SimpleTable($2.value as []RowValueConstructor)
-    }
+table_value_constructor:
+  VALUES row_value_expression_list {
+    $$.value = SimpleTable($2.value as []RowValueConstructor)
+  }
 
 row_value_expression_list:
     table_row_value_expression { $$.value = [$1.value as RowValueConstructor] }
@@ -218,16 +223,10 @@ table_elements /* []TableElement */ :
     table_element                            { log("table_elements_1()") }
   | table_elements comma table_element   { log("table_elements_2()") }
 
-preparable_statement /* Stmt */ :
-    preparable_sql_data_statement
-  | preparable_sql_schema_statement
-  | preparable_sql_transaction_statement
-  | preparable_sql_session_statement
-
-preparable_sql_data_statement /* Stmt */ :
+preparable_sql_data_statement:
     delete_statement_searched
   | insert_statement
-  | dynamic_select_statement
+  | dynamic_select_statement { $$.value = $1.value as Stmt }
   | update_statement_searched
 
 preparable_sql_schema_statement /* Stmt */ :
@@ -239,8 +238,8 @@ preparable_sql_transaction_statement /* Stmt */ :
 preparable_sql_session_statement /* Stmt */ :
     sql_session_statement
 
-dynamic_select_statement /* Stmt */ :
-    cursor_specification
+dynamic_select_statement:
+    cursor_specification { $$.value = $1.value as Stmt }
 
 schema_definition /* Stmt */ :
     CREATE SCHEMA schema_name_clause   { log("schema_definition()") }
@@ -248,8 +247,8 @@ schema_definition /* Stmt */ :
 schema_name_clause /* Identifier */ :
     schema_name
 
-cursor_specification /* Stmt */ :
-    query_expression   { log("Stmt()") }
+cursor_specification:
+    query_expression { $$.value = Stmt($1.value as QueryExpression) }
 
 datetime_value_expression /* DatetimePrimary */ :
     datetime_term
@@ -1350,8 +1349,8 @@ predicate /* Predicate */ :
 start_transaction_statement /* Stmt */ :
   START TRANSACTION   { log("start_transaction_statement()") }
 
-query_expression /* QueryExpression */ :
-    query_expression_body                     { log("query_expression()") }
+query_expression:
+    query_expression_body { $$.value = QueryExpression{body: $1.value as SimpleTable} }
   | query_expression_body order_by_clause   { log("query_expression_order()") }
   | query_expression_body
     result_offset_clause                      { log("query_expression_offset()") }
@@ -1368,18 +1367,18 @@ query_expression /* QueryExpression */ :
     result_offset_clause
     fetch_first_clause                        { log("query_expression_offset_fetch()") }
 
-query_expression_body /* SimpleTable */ :
-    query_term
+query_expression_body:
+    query_term { $$.value = $1.value as SimpleTable }
 
-query_term /* SimpleTable */ :
-    query_primary
+query_term:
+  query_primary { $$.value = $1.value as SimpleTable }
 
-query_primary /* SimpleTable */ :
-    simple_table
+query_primary:
+  simple_table { $$.value = $1.value as SimpleTable }
 
-simple_table /* SimpleTable */ :
+simple_table:
     query_specification
-  | table_value_constructor
+  | table_value_constructor { $$.value = $1.value as SimpleTable }
 
 order_by_clause /* []SortSpecification */ :
     ORDER BY sort_specification_list   { log("order_by()") }
@@ -1641,7 +1640,8 @@ type YYSym = Value | ValueSpecification | ValueExpression | RowValueConstructor
   | []RowValueConstructor | BooleanValueExpression | NumericValueExpression
   | CommonValueExpression | BooleanTerm | ValueExpressionPrimary
   | NumericPrimary | Term | BooleanTest | BooleanPrimary | BooleanPredicand
-  | NonparenthesizedValueExpressionPrimary | SimpleTable;
+  | NonparenthesizedValueExpressionPrimary | SimpleTable | QueryExpression
+  | Stmt;
 
 pub struct YYSymType {
 pub mut:
@@ -1689,6 +1689,6 @@ pub fn main_() {
 	mut parser := yy_new_parser()
   parser.parse(mut lexer)
   println((parser as YYParserImpl).lval.value)
-  value := ((parser as YYParserImpl).lval.value as SimpleTable)
+  value := ((parser as YYParserImpl).lval.value as Stmt as QueryExpression)
   println(value.pstr(map[string]Value{}))
 }

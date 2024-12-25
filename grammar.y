@@ -1427,17 +1427,17 @@ common_value_expression:
   | datetime_value_expression   { $$.v = CommonValueExpression($1.v as DatetimePrimary) }
 
 table_expression /* TableExpression */ :
-    from_clause                                    { log("table_expression()") }
-  | from_clause where_clause                     { log("table_expression_where()") }
-  | from_clause group_by_clause                  { log("table_expression_group()") }
-  | from_clause where_clause group_by_clause   { log("table_expression_where_group()") }
+    from_clause                                    { $$.v = TableExpression{$1.v as TableReference, none, []Identifier{}} }
+  | from_clause where_clause                     { $$.v = TableExpression{$1.v as TableReference, $2.v as BooleanValueExpression, []Identifier{}} }
+  | from_clause group_by_clause                  { $$.v = TableExpression{$1.v as TableReference, none, $2.v as []Identifier} }
+  | from_clause where_clause group_by_clause   { $$.v = TableExpression{$1.v as TableReference, $2.v as BooleanValueExpression, $3.v as []Identifier} }
 
 group_by_clause /* []Identifier */ :
-    GROUP BY grouping_element_list   { log("group_by_clause()") }
+    GROUP BY grouping_element_list   { $$.v = $3.v }
 
 grouping_element_list /* []Identifier */ :
-    grouping_element                                   { log("grouping_element_list_1()") }
-  | grouping_element_list comma grouping_element   { log("grouping_element_list_2()") }
+    grouping_element                                   { $$.v = [$1.v as Identifier] }
+  | grouping_element_list comma grouping_element   { $$.v = append_list($1.v as []Identifier, $3.v as Identifier) }
 
 grouping_element /* Identifier */ :
     ordinary_grouping_set
@@ -1449,46 +1449,55 @@ grouping_column_reference /* Identifier */ :
     column_reference
 
 boolean_value_expression:
-    boolean_term { $$.v = BooleanValueExpression{term: $1.v as BooleanTerm} }
-  | boolean_value_expression OR boolean_term   { log("boolean_value_expression_2()") }
+  boolean_term { $$.v = BooleanValueExpression{term: $1.v as BooleanTerm} }
+| boolean_value_expression OR boolean_term {
+    expr := $1.v as BooleanValueExpression
+    $$.v = BooleanValueExpression{&expr, $3.v as BooleanTerm}
+  }
 
 boolean_term:
     boolean_factor { $$.v = BooleanTerm{factor: $1.v as BooleanTest} }
-  | boolean_term AND boolean_factor   { log("boolean_term_2()") }
+  | boolean_term AND boolean_factor   { 
+    term := $1.v as BooleanTerm
+    $$.v = BooleanTerm{&term, $3.v as BooleanTest}
+    }
 
 boolean_factor:
     boolean_test { $$.v = $1.v as BooleanTest }
-  | NOT boolean_test   { log("boolean_factor_not()") }
+  | NOT boolean_test   {
+      b := $2.v as BooleanTest
+      $$.v = BooleanTest{b.expr, b.not, b.value, !b.inverse}
+    }
 
 boolean_test:
     boolean_primary { $$.v = BooleanTest{expr: $1.v as BooleanPrimary} }
-  | boolean_primary IS truth_value       { log("boolean_test_2()") }
-  | boolean_primary IS NOT truth_value   { log("boolean_test_3()") }
+  | boolean_primary IS truth_value       { $$.v = BooleanTest{$1.v as BooleanPrimary, false, $3.v as Value, false} }
+  | boolean_primary IS NOT truth_value   { $$.v = BooleanTest{$1.v as BooleanPrimary, true, $4.v as Value, false} }
 
 truth_value /* Value */ :
-    TRUE      { log("true()") }
-  | FALSE     { log("false()") }
-  | UNKNOWN   { log("unknown()") }
+    TRUE      { $$.v = new_boolean_value(true) }
+  | FALSE     { $$.v = new_boolean_value(false) }
+  | UNKNOWN   { $$.v = new_unknown_value() }
 
 boolean_primary:
-    predicate           { log("BooleanPrimary()") }
+    predicate           { $$.v = BooleanPrimary($1.v as Predicate) }
   | boolean_predicand { $$.v = BooleanPrimary($1.v as BooleanPredicand) }
 
 boolean_predicand:
-    parenthesized_boolean_value_expression      { log("BooleanPredicand()") }
+    parenthesized_boolean_value_expression      { $$.v = BooleanPredicand($1.v as BooleanValueExpression) }
   | nonparenthesized_value_expression_primary {
       $$.v = BooleanPredicand($1.v as NonparenthesizedValueExpressionPrimary)
     }
 
 parenthesized_boolean_value_expression /* BooleanValueExpression */ :
-    left_paren boolean_value_expression right_paren   { log("parenthesized_boolean_value_expression()") }
+    left_paren boolean_value_expression right_paren   { $$.v = $2.v }
 
 unique_constraint_definition /* TableElement */ :
   unique_specification left_paren
-  unique_column_list right_paren    { log("unique_constraint_definition()") }
+  unique_column_list right_paren    { $$.v = UniqueConstraintDefinition{$3.v as []Identifier} }
 
-unique_specification :
-  PRIMARY KEY   { log("ignore()") }
+unique_specification:
+  PRIMARY KEY
 
 unique_column_list /* []Identifier */ :
   column_name_list
@@ -1514,7 +1523,7 @@ sql_schema_definition_statement /* Stmt */ :
 sql_schema_manipulation_statement /* Stmt */ :
     drop_schema_statement
   | drop_table_statement
-  | alter_sequence_generator_statement   { log("Stmt()") }
+  | alter_sequence_generator_statement { $$.v = Stmt($1.v as AlterSequenceGeneratorStatement) }
   | drop_sequence_generator_statement
 
 sql_transaction_statement /* Stmt */ :
@@ -1534,25 +1543,25 @@ datetime_value_function /* DatetimeValueFunction */ :
   | current_local_timestamp_value_function
 
 current_date_value_function /* DatetimeValueFunction */ :
-    CURRENT_DATE   { log("current_date()") }
+    CURRENT_DATE   { $$.v = CurrentDate{} }
 
 current_time_value_function /* DatetimeValueFunction */ :
-    CURRENT_TIME                                               { log("current_time_1()") }
-  | CURRENT_TIME left_paren time_precision right_paren   { log("current_time_2()") }
+    CURRENT_TIME                                               { $$.v = CurrentTime{default_time_precision} }
+  | CURRENT_TIME left_paren time_precision right_paren   { $$.v = CurrentTime{($3.v as string).int()} }
 
 current_local_time_value_function /* DatetimeValueFunction */ :
-    LOCALTIME                                               { log("localtime_1()") }
-  | LOCALTIME left_paren time_precision right_paren   { log("localtime_2()") }
+    LOCALTIME                                               { $$.v = LocalTime{0} }
+  | LOCALTIME left_paren time_precision right_paren   { $$.v = LocalTime{($3.v as string).int()} }
 
 current_timestamp_value_function /* DatetimeValueFunction */ :
-    CURRENT_TIMESTAMP                                  { log("current_timestamp_1()") }
+    CURRENT_TIMESTAMP                                  { $$.v = CurrentTimestamp{default_timestamp_precision} }
   | CURRENT_TIMESTAMP
-    left_paren timestamp_precision right_paren   { log("current_timestamp_2()") }
+    left_paren timestamp_precision right_paren   { $$.v = CurrentTimestamp{($3.v as string).int()} }
 
 current_local_timestamp_value_function /* DatetimeValueFunction */ :
-    LOCALTIMESTAMP                                     { log("localtimestamp_1()") }
+    LOCALTIMESTAMP                                     { $$.v = LocalTimestamp{6} }
   | LOCALTIMESTAMP
-    left_paren timestamp_precision right_paren   { log("localtimestamp_2()") }
+    left_paren timestamp_precision right_paren   { $$.v = LocalTimestamp{($3.v as string).int()} }
 
 joined_table /* QualifiedJoin */ :
     qualified_join
@@ -1561,51 +1570,91 @@ join_specification /* BooleanValueExpression */ :
     join_condition
 
 join_condition /* BooleanValueExpression */ :
-    ON search_condition   { log("join_condition()") }
+    ON search_condition   { $$.v = $2.v }
 
 join_type /* string */ :
     INNER
   | outer_join_type
-  | outer_join_type OUTER   { log("string()") }
+  | outer_join_type OUTER   { $$.v = $1.v }
 
 outer_join_type /* string */ :
     LEFT
   | RIGHT
 
 null_predicate /* NullPredicate */ :
-    row_value_predicand null_predicate_part_2   { log("null_predicate()") }
+    row_value_predicand null_predicate_part_2   { $$.v = NullPredicate{$1.v as RowValueConstructorPredicand, !($2.v as bool)} }
 
 null_predicate_part_2 /* bool */ :
     IS NULL       { $$.v = true }
   | IS NOT NULL   { $$.v = false }
 
 predicate /* Predicate */ :
-    comparison_predicate   { log("Predicate()") }
-  | between_predicate      { log("Predicate()") }
-  | like_predicate         { log("Predicate()") }
-  | similar_predicate      { log("Predicate()") }
-  | null_predicate         { log("Predicate()") }
+    comparison_predicate   { $$.v = Predicate($1.v as ComparisonPredicate) }
+  | between_predicate      { $$.v = Predicate($1.v as BetweenPredicate) }
+  | like_predicate         { $$.v = Predicate($1.v as CharacterLikePredicate) }
+  | similar_predicate      { $$.v = Predicate($1.v as SimilarPredicate) }
+  | null_predicate         { $$.v = Predicate($1.v as NullPredicate) }
 
 start_transaction_statement /* Stmt */ :
-  START TRANSACTION   { log("start_transaction_statement()") }
+  START TRANSACTION   { $$.v = Stmt(StartTransactionStatement{}) }
 
 query_expression:
     query_expression_body { $$.v = QueryExpression{body: $1.v as SimpleTable} }
-  | query_expression_body order_by_clause   { log("query_expression_order()") }
+  | query_expression_body order_by_clause   { 
+      $$.v = QueryExpression{
+        body:  $1.v as SimpleTable
+        order: $2.v as []SortSpecification
+      }
+   }
   | query_expression_body
-    result_offset_clause                      { log("query_expression_offset()") }
+    result_offset_clause                      {
+      $$.v = QueryExpression{
+        body:   $1.v as SimpleTable
+        offset: $2.v as ValueSpecification
+      }
+    }
   | query_expression_body order_by_clause
-    result_offset_clause                      { log("query_expression_order_offset()") }
+    result_offset_clause                      {
+      $$.v = QueryExpression{
+        body:   $1.v as SimpleTable
+        offset: $3.v as ValueSpecification
+        order:  $2.v as []SortSpecification
+      }
+    }
   | query_expression_body
-    fetch_first_clause                        { log("query_expression_fetch()") }
+    fetch_first_clause                        {
+      $$.v = QueryExpression{
+        body:  $1.v as SimpleTable
+        fetch: $2.v as ValueSpecification
+      }
+    }
   | query_expression_body order_by_clause
-    fetch_first_clause                        { log("query_expression_order_fetch()") }
+    fetch_first_clause                        {
+      $$.v = QueryExpression{
+        body:  $1.v as SimpleTable
+        fetch: $3.v as ValueSpecification
+        order: $2.v as []SortSpecification
+      }
+    }
   | query_expression_body order_by_clause
     result_offset_clause
-    fetch_first_clause                        { log("query_expression_order_offset_fetch()") }
+    fetch_first_clause                        {
+      $$.v = QueryExpression{
+        body:   $1.v as SimpleTable
+        offset: $3.v as ValueSpecification
+        fetch:  $4.v as ValueSpecification
+        order:  $2.v as []SortSpecification
+      }
+    }
   | query_expression_body
     result_offset_clause
-    fetch_first_clause                        { log("query_expression_offset_fetch()") }
+    fetch_first_clause                        {
+      $$.v = QueryExpression{
+        body:   $1.v as SimpleTable
+        offset: $2.v as ValueSpecification
+        fetch:  $3.v as ValueSpecification
+      }
+    }
 
 query_expression_body:
     query_term { $$.v = $1.v as SimpleTable }
@@ -1621,16 +1670,16 @@ simple_table:
   | table_value_constructor { $$.v = $1.v as SimpleTable }
 
 order_by_clause /* []SortSpecification */ :
-    ORDER BY sort_specification_list   { log("order_by()") }
+    ORDER BY sort_specification_list   { $$.v = $3.v }
 
 result_offset_clause /* ValueSpecification */ :
-    OFFSET offset_row_count row_or_rows   { log("result_offset_clause()") }
+    OFFSET offset_row_count row_or_rows   { $$.v = $2.v }
 
 fetch_first_clause /* ValueSpecification */ :
     FETCH FIRST
     fetch_first_quantity
     row_or_rows
-    ONLY                     { log("fetch_first_clause()") }
+    ONLY                     { $$.v = $3.v }
 
 fetch_first_quantity /* ValueSpecification */ :
     fetch_first_row_count
@@ -1646,11 +1695,14 @@ row_or_rows :
   | ROWS
 
 similar_predicate /* SimilarPredicate */ :
-    row_value_predicand similar_predicate_part_2   { log("similar_pred()") }
+  row_value_predicand similar_predicate_part_2 {
+    like := $2.v as SimilarPredicate
+    $$.v = SimilarPredicate{$1.v as RowValueConstructorPredicand, like.right, like.not}
+  }
 
 similar_predicate_part_2 /* SimilarPredicate */ :
-    SIMILAR TO similar_pattern       { log("similar()") }
-  | NOT SIMILAR TO similar_pattern   { log("not_similar()") }
+    SIMILAR TO similar_pattern       { $$.v = SimilarPredicate{none, $3.v as CharacterValueExpression, false} }
+  | NOT SIMILAR TO similar_pattern   { $$.v = SimilarPredicate{none, $4.v as CharacterValueExpression, true} }
 
 similar_pattern /* CharacterValueExpression */ :
     character_value_expression
@@ -1686,9 +1738,9 @@ table_constraint /* TableElement */ :
   unique_constraint_definition
 
 column_definition /* TableElement */ :
-    column_name data_type_or_domain_name   { log("column_definition_1()") }
+    column_name data_type_or_domain_name   { $$.v = Column{$1.v as Identifier, $2.v as Type, false} }
   | column_name data_type_or_domain_name
-    column_constraint_definition             { log("column_definition_2()") }
+    column_constraint_definition             { $$.v = Column{$1.v as Identifier, $2.v as Type, $3.v as bool} }
 
 data_type_or_domain_name /* Type */ :
     data_type
@@ -1700,18 +1752,18 @@ column_constraint /* bool */ :
     NOT NULL   { $$.v = true }
 
 set_schema_statement /* Stmt */ :
-    SET schema_name_characteristic   { log("set_schema_stmt()") }
+    SET schema_name_characteristic   { $$.v = SetSchemaStatement{$2.v as ValueSpecification} }
 
 schema_name_characteristic /* ValueSpecification */ :
-    SCHEMA value_specification   { log("schema_name_characteristic()") }
+    SCHEMA value_specification   { $$.v = $2.v }
 
 aggregate_function /* AggregateFunction */ :
-    COUNT left_paren asterisk right_paren   { log("count_all()") }
+    COUNT left_paren asterisk right_paren   { $$.v = AggregateFunctionCount{} }
   | general_set_function
 
 general_set_function /* AggregateFunction */ :
     set_function_type left_paren
-    value_expression right_paren   { log("general_set_function()") }
+    value_expression right_paren   { $$.v = RoutineInvocation{$1.v as string, [$3.v as ValueExpression]} }
 
 set_function_type /* string */ :
     computational_operation
@@ -1973,16 +2025,15 @@ type YYSym = Value | ValueSpecification | ValueExpression | RowValueConstructor
   | []ContextuallyTypedRowValueConstructorElement | TableReference
   | QualifiedJoin | Correlation | SequenceGeneratorDefinition
   | SequenceGeneratorStartWithOption | SequenceGeneratorIncrementByOption
-  | SequenceGeneratorMaxvalueOption | SequenceGeneratorMinvalueOption;
+  | SequenceGeneratorMaxvalueOption | SequenceGeneratorMinvalueOption
+  | Predicate | UniqueConstraintDefinition | CurrentDate
+  | CurrentTime | LocalTime | CurrentTimestamp | LocalTimestamp | NullPredicate
+  | SimilarPredicate | Column | SetSchemaStatement | AggregateFunctionCount;
 
 pub struct YYSymType {
 pub mut:
   v YYSym
   yys int
-}
-
-fn log(s string) {
-  println(s)
 }
 
 pub struct Lexer {

@@ -488,27 +488,49 @@ null_specification:
   NULL { $$.v = NullSpecification{} }
 
 from_clause /* TableReference */ :
-    FROM table_reference_list   { log("from_clause()") }
+    FROM table_reference_list
 
 table_reference_list /* TableReference */ :
     table_reference
 
-between_predicate /* BetweenPredicate */ :
-    row_value_predicand between_predicate_part_2   { log("between()") }
+between_predicate:
+  row_value_predicand between_predicate_part_2   {
+    between := $2.v as BetweenPredicate
+    $$.v = BetweenPredicate{
+      not:       between.not
+      symmetric: between.symmetric
+      expr:      $1.v as RowValueConstructorPredicand
+      left:      between.left
+      right:     between.right
+    }
+  }
 
-between_predicate_part_2 /* BetweenPredicate */ :
-    between_predicate_part_1
-    row_value_predicand AND row_value_predicand   { log("between_1()") }
-  | between_predicate_part_1 is_symmetric
-    row_value_predicand AND row_value_predicand   { log("between_2()") }
+between_predicate_part_2:
+  between_predicate_part_1 row_value_predicand AND row_value_predicand {
+    $$.v = BetweenPredicate{
+      not:       !($1.v as bool)
+      symmetric: false
+      left:      $3.v as RowValueConstructorPredicand
+      right:     $4.v as RowValueConstructorPredicand
+    }
+  }
+| between_predicate_part_1 is_symmetric row_value_predicand AND
+  row_value_predicand {
+    $$.v = BetweenPredicate{
+      not:       !($1.v as bool)
+      symmetric: $2.v as bool
+      left:      $3.v as RowValueConstructorPredicand
+      right:     $4.v as RowValueConstructorPredicand
+    }
+  }
 
-between_predicate_part_1 /* bool */ :
-    BETWEEN       { log("yes()") }
-  | NOT BETWEEN   { log("no()") }
+between_predicate_part_1:
+    BETWEEN       { $$.v = true }
+  | NOT BETWEEN   { $$.v = false }
 
-is_symmetric /* bool */ :
-    SYMMETRIC    { log("yes()") }
-  | ASYMMETRIC   { log("no()") }
+is_symmetric:
+    SYMMETRIC    { $$.v = true }
+  | ASYMMETRIC   { $$.v = false }
 
 identifier /* IdentifierChain */ :
     actual_identifier
@@ -517,26 +539,32 @@ actual_identifier /* IdentifierChain */ :
     regular_identifier
 
 table_name /* Identifier */ :
-    local_or_schema_qualified_name   { log("table_name()") }
+    local_or_schema_qualified_name   { $$.v = new_table_identifier(($1.v as IdentifierChain).identifier)! }
 
 schema_name /* Identifier */ :
-    catalog_name period unqualified_schema_name   { log("schema_name_1()") }
+    catalog_name period unqualified_schema_name   {
+      $$.v = new_schema_identifier(($1.v as IdentifierChain).str() + '.' + ($3.v as Identifier).str())!
+    }
   | unqualified_schema_name
 
 unqualified_schema_name /* Identifier */ :
-    identifier   { log("unqualified_schema_name()") }
+    identifier   { $$.v = new_schema_identifier(($1.v as IdentifierChain).identifier)! }
 
 catalog_name /* IdentifierChain */ :
     identifier
 
 schema_qualified_name /* IdentifierChain */ :
     qualified_identifier
-  | schema_name period qualified_identifier   { log("schema_qualified_name_2()") }
+  | schema_name period qualified_identifier   {
+    $$.v = IdentifierChain{($1.v as Identifier).schema_name + '.' + ($3.v as IdentifierChain).str()}
+    }
 
 local_or_schema_qualified_name /* IdentifierChain */ :
     qualified_identifier
   | local_or_schema_qualifier period
-    qualified_identifier                 { log("local_or_schema_qualified_name2()") }
+    qualified_identifier                 {
+    $$.v = IdentifierChain{($1.v as Identifier).str() + '.' + ($3.v as IdentifierChain).str()}
+    }
 
 local_or_schema_qualifier /* Identifier */ :
     schema_name
@@ -545,19 +573,19 @@ qualified_identifier /* IdentifierChain */ :
     identifier
 
 column_name /* Identifier */ :
-    identifier   { log("column_name()") }
+    identifier   { $$.v = new_column_identifier(($1.v as IdentifierChain).identifier)! }
 
-host_parameter_name /* GeneralValueSpecification */ :
-    colon identifier   { log("host_parameter_name()") }
+host_parameter_name:
+    colon identifier   { $$.v = GeneralValueSpecification(HostParameterName{($1.v as IdentifierChain).identifier}) }
 
 correlation_name /* Identifier */ :
-    identifier   { log("correlation_name()") }
+    identifier   { $$.v = new_column_identifier(($1.v as IdentifierChain).identifier)! }
 
 sequence_generator_name /* Identifier */ :
-    schema_qualified_name   { log("sequence_generator_name()") }
+    schema_qualified_name   { $$.v = new_table_identifier(($1.v as IdentifierChain).identifier)! }
 
 drop_schema_statement /* Stmt */ :
-    DROP SCHEMA schema_name drop_behavior   { log("drop_schema_statement()") }
+    DROP SCHEMA schema_name drop_behavior   { $$.v = Stmt(DropSchemaStatement{$3.v as Identifier, $4.v as string}) }
 
 drop_behavior /* string */ :
     CASCADE
@@ -582,7 +610,11 @@ position_expression /* RoutineInvocation */ :
 
 character_position_expression /* RoutineInvocation */ :
     POSITION left_paren character_value_expression_1 IN
-    character_value_expression_2 right_paren              { log("position()") }
+    character_value_expression_2 right_paren              {
+      $$.v = RoutineInvocation{'POSITION', [
+        ValueExpression(CommonValueExpression($3.v as CharacterValueExpression)),
+        ValueExpression(CommonValueExpression($5.v as CharacterValueExpression)),
+      ]} }
 
 character_value_expression_1 /* CharacterValueExpression */ :
     character_value_expression
@@ -596,20 +628,30 @@ length_expression /* RoutineInvocation */ :
 
 char_length_expression /* RoutineInvocation */ :
     CHAR_LENGTH
-    left_paren character_value_expression right_paren   { log("char_length()") }
+    left_paren character_value_expression right_paren   { $$.v = RoutineInvocation{'CHAR_LENGTH', [
+		ValueExpression(CommonValueExpression($3.v as CharacterValueExpression)),
+	]} }
   | CHARACTER_LENGTH
-    left_paren character_value_expression right_paren   { log("char_length()") }
+    left_paren character_value_expression right_paren   { $$.v = RoutineInvocation{'CHAR_LENGTH', [
+		ValueExpression(CommonValueExpression($3.v as CharacterValueExpression)),
+	]} }
 
 octet_length_expression /* RoutineInvocation */ :
     OCTET_LENGTH
-    left_paren string_value_expression right_paren   { log("octet_length()") }
+    left_paren string_value_expression right_paren   { $$.v = RoutineInvocation{'OCTET_LENGTH', [
+		ValueExpression(CommonValueExpression($3.v as CharacterValueExpression)),
+	]} }
 
 absolute_value_expression /* RoutineInvocation */ :
-    ABS left_paren numeric_value_expression right_paren   { log("abs()") }
+    ABS left_paren numeric_value_expression right_paren   {
+      $$.v = RoutineInvocation{'ABS', [ValueExpression(CommonValueExpression($3.v as NumericValueExpression))]} }
 
 modulus_expression /* RoutineInvocation */ :
     MOD left_paren numeric_value_expression_dividend comma
-    numeric_value_expression_divisor right_paren               { log("mod()") }
+    numeric_value_expression_divisor right_paren               { 
+      $$.v = RoutineInvocation{'MOD', [ValueExpression(CommonValueExpression($3.v as NumericValueExpression)),
+		ValueExpression(CommonValueExpression($5.v as NumericValueExpression))]}
+     }
 
 numeric_value_expression_dividend /* NumericValueExpression */ :
     numeric_value_expression
@@ -620,31 +662,44 @@ numeric_value_expression_divisor /* NumericValueExpression */ :
 trigonometric_function /* RoutineInvocation */ :
     trigonometric_function_name
     left_paren numeric_value_expression
-    right_paren                             { log("trig_func()") }
+    right_paren                             {
+      $$.v = RoutineInvocation{$1.v as string, [
+        ValueExpression(CommonValueExpression($3.v as NumericValueExpression)),
+      ]}
+  }
 
-trigonometric_function_name /* string */ :
-    SIN
-  | COS
-  | TAN
-  | SINH
-  | COSH
-  | TANH
-  | ASIN
-  | ACOS
-  | ATAN
+trigonometric_function_name:
+  SIN
+| COS
+| TAN
+| SINH
+| COSH
+| TANH
+| ASIN
+| ACOS
+| ATAN
 
 common_logarithm /* RoutineInvocation */ :
-    LOG10 left_paren numeric_value_expression right_paren   { log("log10()") }
+    LOG10 left_paren numeric_value_expression right_paren   {
+      $$.v = RoutineInvocation{'LOG10', [ValueExpression(CommonValueExpression($3.v as NumericValueExpression))]}
+      }
 
 natural_logarithm /* RoutineInvocation */ :
-    LN left_paren numeric_value_expression right_paren   { log("ln()") }
+    LN left_paren numeric_value_expression right_paren   {
+      $$.v = RoutineInvocation{'LN', [ValueExpression(CommonValueExpression($3.v as NumericValueExpression))]}
+      }
 
 exponential_function /* RoutineInvocation */ :
-    EXP left_paren numeric_value_expression right_paren   { log("exp()") }
+    EXP left_paren numeric_value_expression right_paren   {
+      $$.v = RoutineInvocation{'EXP', [ValueExpression(CommonValueExpression($3.v as NumericValueExpression))]}
+      }
 
 power_function /* RoutineInvocation */ :
     POWER left_paren numeric_value_expression_base comma
-    numeric_value_expression_exponent right_paren            { log("power()") }
+    numeric_value_expression_exponent right_paren            {
+      $$.v = RoutineInvocation{'POWER', [ValueExpression(CommonValueExpression($3.v as NumericValueExpression)),
+		ValueExpression(CommonValueExpression($5.v as NumericValueExpression))]}
+    }
 
 numeric_value_expression_base /* NumericValueExpression */ :
     numeric_value_expression
@@ -653,21 +708,29 @@ numeric_value_expression_exponent /* NumericValueExpression */ :
     numeric_value_expression
 
 square_root /* RoutineInvocation */ :
-    SQRT left_paren numeric_value_expression right_paren   { log("sqrt()") }
+    SQRT left_paren numeric_value_expression right_paren   { 
+      $$.v = RoutineInvocation{'SQRT', [ValueExpression(CommonValueExpression($3.v as NumericValueExpression))]}
+      }
 
 floor_function /* RoutineInvocation */ :
-    FLOOR left_paren numeric_value_expression right_paren   { log("floor()") }
+    FLOOR left_paren numeric_value_expression right_paren   { 
+      $$.v = RoutineInvocation{'FLOOR', [ValueExpression(CommonValueExpression($3.v as NumericValueExpression))]}
+       }
 
 ceiling_function /* RoutineInvocation */ :
-    CEIL left_paren numeric_value_expression right_paren      { log("ceiling()") }
-  | CEILING left_paren numeric_value_expression right_paren   { log("ceiling()") }
+    CEIL left_paren numeric_value_expression right_paren      { 
+      $$.v = RoutineInvocation{'CEILING', [ValueExpression(CommonValueExpression($3.v as NumericValueExpression))]}
+       }
+  | CEILING left_paren numeric_value_expression right_paren   { 
+      $$.v = RoutineInvocation{'CEILING', [ValueExpression(CommonValueExpression($3.v as NumericValueExpression))]}
+       }
 
 concatenation_operator:
   OPERATOR_DOUBLE_PIPE
 
-regular_identifier /* IdentifierChain */ :
+regular_identifier:
     identifier_body
-  | non_reserved_word   { log("string_identifier()") }
+  | non_reserved_word   { $$.v = IdentifierChain{$1.v as string} }
 
 identifier_body /* IdentifierChain */ :
     identifier_start
@@ -681,287 +744,287 @@ greater_than_or_equals_operator : OPERATOR_GREATER_EQUALS
 
 less_than_or_equals_operator : OPERATOR_LESS_EQUALS
 
-non_reserved_word /* string */ :
-    A
-  | ABSOLUTE
-  | ACTION
-  | ADA
-  | ADD
-  | ADMIN
-  | AFTER
-  | ALWAYS
-  | ASC
-  | ASSERTION
-  | ASSIGNMENT
-  | ATTRIBUTE
-  | ATTRIBUTES
-  | BEFORE
-  | BERNOULLI
-  | BREADTH
-  | C
-  | CASCADE
-  | CATALOG
-  | CATALOG_NAME
-  | CHAIN
-  | CHAINING
-  | CHARACTER_SET_CATALOG
-  | CHARACTER_SET_NAME
-  | CHARACTER_SET_SCHEMA
-  | CHARACTERISTICS
-  | CHARACTERS
-  | CLASS_ORIGIN
-  | COBOL
-  | COLLATION
-  | COLLATION_CATALOG
-  | COLLATION_NAME
-  | COLLATION_SCHEMA
-  | COLUMNS
-  | COLUMN_NAME
-  | COMMAND_FUNCTION
-  | COMMAND_FUNCTION_CODE
-  | COMMITTED
-  | CONDITIONAL
-  | CONDITION_NUMBER
-  | CONNECTION
-  | CONNECTION_NAME
-  | CONSTRAINT_CATALOG
-  | CONSTRAINT_NAME
-  | CONSTRAINT_SCHEMA
-  | CONSTRAINTS
-  | CONSTRUCTOR
-  | CONTINUE
-  | CURSOR_NAME
-  | DATA
-  | DATETIME_INTERVAL_CODE
-  | DATETIME_INTERVAL_PRECISION
-  | DEFAULTS
-  | DEFERRABLE
-  | DEFERRED
-  | DEFINED
-  | DEFINER
-  | DEGREE
-  | DEPTH
-  | DERIVED
-  | DESC
-  | DESCRIBE_CATALOG
-  | DESCRIBE_NAME
-  | DESCRIBE_PROCEDURE_SPECIFIC_CATALOG
-  | DESCRIBE_PROCEDURE_SPECIFIC_NAME
-  | DESCRIBE_PROCEDURE_SPECIFIC_SCHEMA
-  | DESCRIBE_SCHEMA
-  | DESCRIPTOR
-  | DIAGNOSTICS
-  | DISPATCH
-  | DOMAIN
-  | DYNAMIC_FUNCTION
-  | DYNAMIC_FUNCTION_CODE
-  | ENCODING
-  | ENFORCED
-  | ERROR
-  | EXCLUDE
-  | EXCLUDING
-  | EXPRESSION
-  | FINAL
-  | FINISH
-  | FINISH_CATALOG
-  | FINISH_NAME
-  | FINISH_PROCEDURE_SPECIFIC_CATALOG
-  | FINISH_PROCEDURE_SPECIFIC_NAME
-  | FINISH_PROCEDURE_SPECIFIC_SCHEMA
-  | FINISH_SCHEMA
-  | FIRST
-  | FLAG
-  | FOLLOWING
-  | FORMAT
-  | FORTRAN
-  | FOUND
-  | FULFILL
-  | FULFILL_CATALOG
-  | FULFILL_NAME
-  | FULFILL_PROCEDURE_SPECIFIC_CATALOG
-  | FULFILL_PROCEDURE_SPECIFIC_NAME
-  | FULFILL_PROCEDURE_SPECIFIC_SCHEMA
-  | FULFILL_SCHEMA
-  | G
-  | GENERAL
-  | GENERATED
-  | GO
-  | GOTO
-  | GRANTED
-  | HAS_PASS_THROUGH_COLUMNS
-  | HAS_PASS_THRU_COLS
-  | HIERARCHY
-  | IGNORE
-  | IMMEDIATE
-  | IMMEDIATELY
-  | IMPLEMENTATION
-  | INCLUDING
-  | INCREMENT
-  | INITIALLY
-  | INPUT
-  | INSTANCE
-  | INSTANTIABLE
-  | INSTEAD
-  | INVOKER
-  | ISOLATION
-  | IS_PRUNABLE
-  | JSON
-  | K
-  | KEEP
-  | KEY
-  | KEYS
-  | KEY_MEMBER
-  | KEY_TYPE
-  | LAST
-  | LENGTH
-  | LEVEL
-  | LOCATOR
-  | M
-  | MAP
-  | MATCHED
-  | MAXVALUE
-  | MESSAGE_LENGTH
-  | MESSAGE_OCTET_LENGTH
-  | MESSAGE_TEXT
-  | MINVALUE
-  | MORE
-  | MUMPS
-  | NAME
-  | NAMES
-  | NESTED
-  | NESTING
-  | NEXT
-  | NFC
-  | NFD
-  | NFKC
-  | NFKD
-  | NORMALIZED
-  | NULLABLE
-  | NULLS
-  | NUMBER
-  | OBJECT
-  | OCTETS
-  | OPTION
-  | OPTIONS
-  | ORDERING
-  | ORDINALITY
-  | OTHERS
-  | OUTPUT
-  | OVERFLOW
-  | OVERRIDING
-  | P
-  | PAD
-  | PARAMETER_MODE
-  | PARAMETER_NAME
-  | PARAMETER_ORDINAL_POSITION
-  | PARAMETER_SPECIFIC_CATALOG
-  | PARAMETER_SPECIFIC_NAME
-  | PARAMETER_SPECIFIC_SCHEMA
-  | PARTIAL
-  | PASCAL
-  | PASS
-  | PASSING
-  | PAST
-  | PATH
-  | PLACING
-  | PLAN
-  | PLI
-  | PRECEDING
-  | PRESERVE
-  | PRIOR
-  | PRIVATE
-  | PRIVATE_PARAMETERS
-  | PRIVATE_PARAMS_S
-  | PRIVILEGES
-  | PRUNE
-  | PUBLIC
-  | QUOTES
-  | READ
-  | RELATIVE
-  | REPEATABLE
-  | RESPECT
-  | RESTART
-  | RESTRICT
-  | RETURNED_CARDINALITY
-  | RETURNED_LENGTH
-  | RETURNED_OCTET_LENGTH
-  | RETURNED_SQLSTATE
-  | RETURNING
-  | RETURNS_ONLY_PASS_THROUGH
-  | RET_ONLY_PASS_THRU
-  | ROLE
-  | ROUTINE
-  | ROUTINE_CATALOG
-  | ROUTINE_NAME
-  | ROUTINE_SCHEMA
-  | ROW_COUNT
-  | SCALAR
-  | SCALE
-  | SCHEMA
-  | SCHEMA_NAME
-  | SCOPE_CATALOG
-  | SCOPE_NAME
-  | SCOPE_SCHEMA
-  | SECTION
-  | SECURITY
-  | SELF
-  | SEQUENCE
-  | SERIALIZABLE
-  | SERVER_NAME
-  | SESSION
-  | SETS
-  | SIMPLE
-  | SIZE
-  | SOURCE
-  | SPACE
-  | SPECIFIC_NAME
-  | START_CATALOG
-  | START_NAME
-  | START_PROCEDURE_SPECIFIC_CATALOG
-  | START_PROCEDURE_SPECIFIC_NAME
-  | START_PROCEDURE_SPECIFIC_SCHEMA
-  | START_SCHEMA
-  | STATE
-  | STATEMENT
-  | STRING
-  | STRUCTURE
-  | STYLE
-  | SUBCLASS_ORIGIN
-  | T
-  | TABLE_NAME
-  | TABLE_SEMANTICS
-  | TEMPORARY
-  | THROUGH
-  | TIES
-  | TOP_LEVEL_COUNT
-  | TRANSACTION
-  | TRANSACTION_ACTIVE
-  | TRANSACTIONS_COMMITTED
-  | TRANSACTIONS_ROLLED_BACK
-  | TRANSFORM
-  | TRANSFORMS
-  | TRIGGER_CATALOG
-  | TRIGGER_NAME
-  | TRIGGER_SCHEMA
-  | TYPE
-  | UNBOUNDED
-  | UNCOMMITTED
-  | UNCONDITIONAL
-  | UNDER
-  | UNNAMED
-  | USAGE
-  | USER_DEFINED_TYPE_CATALOG
-  | USER_DEFINED_TYPE_CODE
-  | USER_DEFINED_TYPE_NAME
-  | USER_DEFINED_TYPE_SCHEMA
-  | UTF16
-  | UTF32
-  | UTF8
-  | VIEW
-  | WORK
-  | WRAPPER
-  | WRITE
-  | ZONE
+non_reserved_word:
+  A
+| ABSOLUTE
+| ACTION
+| ADA
+| ADD
+| ADMIN
+| AFTER
+| ALWAYS
+| ASC
+| ASSERTION
+| ASSIGNMENT
+| ATTRIBUTE
+| ATTRIBUTES
+| BEFORE
+| BERNOULLI
+| BREADTH
+| C
+| CASCADE
+| CATALOG
+| CATALOG_NAME
+| CHAIN
+| CHAINING
+| CHARACTER_SET_CATALOG
+| CHARACTER_SET_NAME
+| CHARACTER_SET_SCHEMA
+| CHARACTERISTICS
+| CHARACTERS
+| CLASS_ORIGIN
+| COBOL
+| COLLATION
+| COLLATION_CATALOG
+| COLLATION_NAME
+| COLLATION_SCHEMA
+| COLUMNS
+| COLUMN_NAME
+| COMMAND_FUNCTION
+| COMMAND_FUNCTION_CODE
+| COMMITTED
+| CONDITIONAL
+| CONDITION_NUMBER
+| CONNECTION
+| CONNECTION_NAME
+| CONSTRAINT_CATALOG
+| CONSTRAINT_NAME
+| CONSTRAINT_SCHEMA
+| CONSTRAINTS
+| CONSTRUCTOR
+| CONTINUE
+| CURSOR_NAME
+| DATA
+| DATETIME_INTERVAL_CODE
+| DATETIME_INTERVAL_PRECISION
+| DEFAULTS
+| DEFERRABLE
+| DEFERRED
+| DEFINED
+| DEFINER
+| DEGREE
+| DEPTH
+| DERIVED
+| DESC
+| DESCRIBE_CATALOG
+| DESCRIBE_NAME
+| DESCRIBE_PROCEDURE_SPECIFIC_CATALOG
+| DESCRIBE_PROCEDURE_SPECIFIC_NAME
+| DESCRIBE_PROCEDURE_SPECIFIC_SCHEMA
+| DESCRIBE_SCHEMA
+| DESCRIPTOR
+| DIAGNOSTICS
+| DISPATCH
+| DOMAIN
+| DYNAMIC_FUNCTION
+| DYNAMIC_FUNCTION_CODE
+| ENCODING
+| ENFORCED
+| ERROR
+| EXCLUDE
+| EXCLUDING
+| EXPRESSION
+| FINAL
+| FINISH
+| FINISH_CATALOG
+| FINISH_NAME
+| FINISH_PROCEDURE_SPECIFIC_CATALOG
+| FINISH_PROCEDURE_SPECIFIC_NAME
+| FINISH_PROCEDURE_SPECIFIC_SCHEMA
+| FINISH_SCHEMA
+| FIRST
+| FLAG
+| FOLLOWING
+| FORMAT
+| FORTRAN
+| FOUND
+| FULFILL
+| FULFILL_CATALOG
+| FULFILL_NAME
+| FULFILL_PROCEDURE_SPECIFIC_CATALOG
+| FULFILL_PROCEDURE_SPECIFIC_NAME
+| FULFILL_PROCEDURE_SPECIFIC_SCHEMA
+| FULFILL_SCHEMA
+| G
+| GENERAL
+| GENERATED
+| GO
+| GOTO
+| GRANTED
+| HAS_PASS_THROUGH_COLUMNS
+| HAS_PASS_THRU_COLS
+| HIERARCHY
+| IGNORE
+| IMMEDIATE
+| IMMEDIATELY
+| IMPLEMENTATION
+| INCLUDING
+| INCREMENT
+| INITIALLY
+| INPUT
+| INSTANCE
+| INSTANTIABLE
+| INSTEAD
+| INVOKER
+| ISOLATION
+| IS_PRUNABLE
+| JSON
+| K
+| KEEP
+| KEY
+| KEYS
+| KEY_MEMBER
+| KEY_TYPE
+| LAST
+| LENGTH
+| LEVEL
+| LOCATOR
+| M
+| MAP
+| MATCHED
+| MAXVALUE
+| MESSAGE_LENGTH
+| MESSAGE_OCTET_LENGTH
+| MESSAGE_TEXT
+| MINVALUE
+| MORE
+| MUMPS
+| NAME
+| NAMES
+| NESTED
+| NESTING
+| NEXT
+| NFC
+| NFD
+| NFKC
+| NFKD
+| NORMALIZED
+| NULLABLE
+| NULLS
+| NUMBER
+| OBJECT
+| OCTETS
+| OPTION
+| OPTIONS
+| ORDERING
+| ORDINALITY
+| OTHERS
+| OUTPUT
+| OVERFLOW
+| OVERRIDING
+| P
+| PAD
+| PARAMETER_MODE
+| PARAMETER_NAME
+| PARAMETER_ORDINAL_POSITION
+| PARAMETER_SPECIFIC_CATALOG
+| PARAMETER_SPECIFIC_NAME
+| PARAMETER_SPECIFIC_SCHEMA
+| PARTIAL
+| PASCAL
+| PASS
+| PASSING
+| PAST
+| PATH
+| PLACING
+| PLAN
+| PLI
+| PRECEDING
+| PRESERVE
+| PRIOR
+| PRIVATE
+| PRIVATE_PARAMETERS
+| PRIVATE_PARAMS_S
+| PRIVILEGES
+| PRUNE
+| PUBLIC
+| QUOTES
+| READ
+| RELATIVE
+| REPEATABLE
+| RESPECT
+| RESTART
+| RESTRICT
+| RETURNED_CARDINALITY
+| RETURNED_LENGTH
+| RETURNED_OCTET_LENGTH
+| RETURNED_SQLSTATE
+| RETURNING
+| RETURNS_ONLY_PASS_THROUGH
+| RET_ONLY_PASS_THRU
+| ROLE
+| ROUTINE
+| ROUTINE_CATALOG
+| ROUTINE_NAME
+| ROUTINE_SCHEMA
+| ROW_COUNT
+| SCALAR
+| SCALE
+| SCHEMA
+| SCHEMA_NAME
+| SCOPE_CATALOG
+| SCOPE_NAME
+| SCOPE_SCHEMA
+| SECTION
+| SECURITY
+| SELF
+| SEQUENCE
+| SERIALIZABLE
+| SERVER_NAME
+| SESSION
+| SETS
+| SIMPLE
+| SIZE
+| SOURCE
+| SPACE
+| SPECIFIC_NAME
+| START_CATALOG
+| START_NAME
+| START_PROCEDURE_SPECIFIC_CATALOG
+| START_PROCEDURE_SPECIFIC_NAME
+| START_PROCEDURE_SPECIFIC_SCHEMA
+| START_SCHEMA
+| STATE
+| STATEMENT
+| STRING
+| STRUCTURE
+| STYLE
+| SUBCLASS_ORIGIN
+| T
+| TABLE_NAME
+| TABLE_SEMANTICS
+| TEMPORARY
+| THROUGH
+| TIES
+| TOP_LEVEL_COUNT
+| TRANSACTION
+| TRANSACTION_ACTIVE
+| TRANSACTIONS_COMMITTED
+| TRANSACTIONS_ROLLED_BACK
+| TRANSFORM
+| TRANSFORMS
+| TRIGGER_CATALOG
+| TRIGGER_NAME
+| TRIGGER_SCHEMA
+| TYPE
+| UNBOUNDED
+| UNCOMMITTED
+| UNCONDITIONAL
+| UNDER
+| UNNAMED
+| USAGE
+| USER_DEFINED_TYPE_CATALOG
+| USER_DEFINED_TYPE_CODE
+| USER_DEFINED_TYPE_NAME
+| USER_DEFINED_TYPE_SCHEMA
+| UTF16
+| UTF32
+| UTF8
+| VIEW
+| WORK
+| WRAPPER
+| WRITE
+| ZONE
 
 data_type /* Type */ :
     predefined_type
@@ -1038,8 +1101,8 @@ datetime_type /* Type */ :
     with_or_without_time_zone                        { log("timestamp_prec_tz_type()") }
 
 with_or_without_time_zone /* bool */ :
-    WITH TIME ZONE      { log("yes()") }
-  | WITHOUT TIME ZONE   { log("no()") }
+    WITH TIME ZONE      { $$.v = true }
+  | WITHOUT TIME ZONE   { $$.v = false }
 
 time_precision /* string */ :
     time_fractional_seconds_precision
@@ -1275,8 +1338,8 @@ sequence_generator_min_value /* Value */ :
     signed_numeric_literal
 
 sequence_generator_cycle_option /* bool */ :
-    CYCLE      { log("yes()") }
-  | NO CYCLE   { log("no()") }
+    CYCLE      { $$.v = true }
+  | NO CYCLE   { $$.v = false }
 
 search_condition /* BooleanValueExpression */ :
     boolean_value_expression
@@ -1440,8 +1503,8 @@ null_predicate /* NullPredicate */ :
     row_value_predicand null_predicate_part_2   { log("null_predicate()") }
 
 null_predicate_part_2 /* bool */ :
-    IS NULL       { log("yes()") }
-  | IS NOT NULL   { log("no()") }
+    IS NULL       { $$.v = true }
+  | IS NOT NULL   { $$.v = false }
 
 predicate /* Predicate */ :
     comparison_predicate   { log("Predicate()") }
@@ -1561,7 +1624,7 @@ column_constraint_definition /* bool */ :
     column_constraint
 
 column_constraint /* bool */ :
-    NOT NULL   { log("yes()") }
+    NOT NULL   { $$.v = true }
 
 set_schema_statement /* Stmt */ :
     SET schema_name_characteristic   { log("set_schema_stmt()") }
@@ -1830,7 +1893,8 @@ type YYSym = Value | ValueSpecification | ValueExpression | RowValueConstructor
   | TableElement | DatetimePrimary | DatetimeValueFunction | CastOperand | Type
   | GeneralValueSpecification | []Identifier | InsertStatement
   | ParenthesizedValueExpression | AggregateFunction | CharacterValueFunction
-  | CharacterSubstringFunction | TrimFunction | CharacterValueExpression;
+  | CharacterSubstringFunction | TrimFunction | CharacterValueExpression
+  | BetweenPredicate | RowValueConstructorPredicand;
 
 pub struct YYSymType {
 pub mut:

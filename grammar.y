@@ -1121,20 +1121,26 @@ like_predicate /* CharacterLikePredicate */ :
     character_like_predicate
 
 character_like_predicate /* CharacterLikePredicate */ :
-    row_value_predicand character_like_predicate_part_2   { log("like_pred()") }
+    row_value_predicand character_like_predicate_part_2   {
+      like := $2.v as CharacterLikePredicate
+      $$.v = CharacterLikePredicate{$1.v as RowValueConstructorPredicand, like.right, like.not}
+      }
 
 character_like_predicate_part_2 /* CharacterLikePredicate */ :
-    LIKE character_pattern       { log("like()") }
-  | NOT LIKE character_pattern   { log("not_like()") }
+    LIKE character_pattern       { $$.v = CharacterLikePredicate{none, $2.v as CharacterValueExpression, false} }
+  | NOT LIKE character_pattern   { $$.v = CharacterLikePredicate{none, $3.v as CharacterValueExpression, true} }
 
 character_pattern /* CharacterValueExpression */ :
     character_value_expression
 
 comparison_predicate /* ComparisonPredicate */ :
-    row_value_predicand comparison_predicate_part_2   { log("comparison()") }
+    row_value_predicand comparison_predicate_part_2   {
+      comp := $2.v as ComparisonPredicatePart2
+        $$.v = ComparisonPredicate{$1.v as RowValueConstructorPredicand, comp.op, comp.expr}
+      }
 
 comparison_predicate_part_2 /* ComparisonPredicatePart2 */ :
-    comp_op row_value_predicand   { log("comparison_part()") }
+    comp_op row_value_predicand   { $$.v = ComparisonPredicatePart2{$1.v as string, $2.v as RowValueConstructorPredicand} }
 
 comp_op /* string */ :
     equals_operator
@@ -1145,64 +1151,73 @@ comp_op /* string */ :
   | greater_than_or_equals_operator
 
 row_value_constructor:
-    common_value_expression          { log("RowValueConstructor()") }
+    common_value_expression          { $$.v = RowValueConstructor($1.v as CommonValueExpression) }
   | boolean_value_expression { $$.v = RowValueConstructor($1.v as BooleanValueExpression) }
-  | explicit_row_value_constructor   { log("RowValueConstructor()") }
+  | explicit_row_value_constructor   { $$.v = RowValueConstructor($1.v as ExplicitRowValueConstructor) }
 
-explicit_row_value_constructor /* ExplicitRowValueConstructor */ :
+explicit_row_value_constructor:
     ROW left_paren row_value_constructor_element_list
-    right_paren                                           { log("explicit_row_value_constructor_1()") }
-  | row_subquery                                          { log("ExplicitRowValueConstructor()") }
+    right_paren                                           { $$.v = ExplicitRowValueConstructor(ExplicitRowValueConstructorRow{$3.v as []ValueExpression}) }
+  | row_subquery                                          { $$.v = ExplicitRowValueConstructor($1.v as QueryExpression) }
 
 row_value_constructor_element_list /* []ValueExpression */ :
-    row_value_constructor_element                { log("row_value_constructor_element_list_1()") }
+    row_value_constructor_element                { $$.v = [$1.v as ValueExpression] }
   | row_value_constructor_element_list comma
-    row_value_constructor_element                { log("row_value_constructor_element_list_2()") }
+    row_value_constructor_element                { $$.v = append_list($1.v as []ValueExpression, $3.v as ValueExpression) }
 
 row_value_constructor_element:
     value_expression { $$.v = $1.v as ValueExpression }
 
 contextually_typed_row_value_constructor /* ContextuallyTypedRowValueConstructor */ :
-    common_value_expression                        { log("ContextuallyTypedRowValueConstructor()") }
-  | boolean_value_expression                       { log("ContextuallyTypedRowValueConstructor()") }
-  | contextually_typed_value_specification         { log("ContextuallyTypedRowValueConstructor()") }
+    common_value_expression                        { $$.v = ContextuallyTypedRowValueConstructor($1.v as CommonValueExpression) }
+  | boolean_value_expression                       { $$.v = ContextuallyTypedRowValueConstructor($1.v as BooleanValueExpression) }
+  | contextually_typed_value_specification         { $$.v = ContextuallyTypedRowValueConstructor($1.v as NullSpecification) }
   | left_paren contextually_typed_value_specification
-    right_paren                                    { log("contextually_typed_row_value_constructor_1()") }
+    right_paren                                    { $$.v = ContextuallyTypedRowValueConstructor($1.v as NullSpecification) }
   | left_paren
     contextually_typed_row_value_constructor_element comma
     contextually_typed_row_value_constructor_element_list
-    right_paren                                    { log("contextually_typed_row_value_constructor_2()") }
+    right_paren                                    { $$.v = push_list($2.v as ContextuallyTypedRowValueConstructorElement, $4.v as []ContextuallyTypedRowValueConstructorElement) }
 
 contextually_typed_row_value_constructor_element_list /* []ContextuallyTypedRowValueConstructorElement */ :
-    contextually_typed_row_value_constructor_element        { log("contextually_typed_row_value_constructor_element_list_1()") }
+    contextually_typed_row_value_constructor_element        { $$.v = [$1.v as ContextuallyTypedRowValueConstructorElement] }
   | contextually_typed_row_value_constructor_element_list
     comma
-    contextually_typed_row_value_constructor_element        { log("contextually_typed_row_value_constructor_element_list_2()") }
+    contextually_typed_row_value_constructor_element        { $$.v = append_list($1.v as []ContextuallyTypedRowValueConstructorElement, $3.v as ContextuallyTypedRowValueConstructorElement) }
 
 contextually_typed_row_value_constructor_element /* ContextuallyTypedRowValueConstructorElement */ :
-    value_expression                         { log("ContextuallyTypedRowValueConstructorElement()") }
-  | contextually_typed_value_specification   { log("ContextuallyTypedRowValueConstructorElement()") }
+    value_expression                         { $$.v = ContextuallyTypedRowValueConstructorElement($1.v as ValueExpression) }
+  | contextually_typed_value_specification   { $$.v = ContextuallyTypedRowValueConstructorElement($1.v as NullSpecification) }
 
 row_value_constructor_predicand /* RowValueConstructorPredicand */ :
-    common_value_expression   { log("RowValueConstructorPredicand()") }
-  | boolean_predicand         { log("RowValueConstructorPredicand()") }
+    common_value_expression   { $$.v = RowValueConstructorPredicand($1.v as CommonValueExpression) }
+  | boolean_predicand         { $$.v = RowValueConstructorPredicand($1.v as BooleanPredicand) }
 
-query_specification /* SimpleTable */ :
-    SELECT
-    select_list
-    table_expression   { log("query_specification()") }
+query_specification:
+  SELECT select_list table_expression {
+    $$.v = QuerySpecification{
+      exprs:            $2.v as SelectList
+      table_expression: $3.v as TableExpression
+    }
+  }
 
-select_list /* SelectList */ :
-    asterisk                               { log("asterisk()") }
+select_list:
+    asterisk                               { $$.v = AsteriskExpr(true) }
   | select_sublist
-  | select_list comma select_sublist   { log("select_list_2()") }
+  | select_list comma select_sublist   {
+    mut new_select_list := (($1.v as SelectList) as []DerivedColumn).clone()
+    new_select_list << (($3.v as SelectList) as []DerivedColumn)[0]
+    $$.v = new_select_list
+  }
 
 select_sublist /* SelectList */ :
-    derived_column       { log("select_sublist_1()") }
-  | qualified_asterisk   { log("SelectList()") }
+    derived_column       { $$.v = SelectList([$1.v as DerivedColumn]) }
+  | qualified_asterisk   { $$.v = SelectList($1.v as QualifiedAsteriskExpr) }
 
 qualified_asterisk /* QualifiedAsteriskExpr */ :
-    asterisked_identifier_chain period asterisk   { log("qualified_asterisk()") }
+    asterisked_identifier_chain period asterisk   {
+      $$.v = QualifiedAsteriskExpr{new_column_identifier(($1.v as IdentifierChain).identifier)!}
+      }
 
 asterisked_identifier_chain /* IdentifierChain */ :
     asterisked_identifier
@@ -1211,60 +1226,91 @@ asterisked_identifier /* IdentifierChain */ :
     identifier
 
 derived_column /* DerivedColumn */ :
-    value_expression               { log("derived_column()") }
-  | value_expression as_clause   { log("derived_column_as()") }
+    value_expression               { $$.v = DerivedColumn{$1.v as ValueExpression, Identifier{}} }
+  | value_expression as_clause   { $$.v = DerivedColumn{$1.v as ValueExpression, $2.v as Identifier} }
 
 as_clause /* Identifier */ :
-    AS column_name   { log("identifier()") }
+    AS column_name
   | column_name
 
 string_value_expression /* CharacterValueExpression */ :
     character_value_expression
 
 character_value_expression /* CharacterValueExpression */ :
-    concatenation      { log("CharacterValueExpression()") }
-  | character_factor   { log("CharacterValueExpression()") }
+    concatenation      { $$.v = CharacterValueExpression($1.v as Concatenation) }
+  | character_factor   { $$.v = CharacterValueExpression($1.v as CharacterPrimary) }
 
 concatenation /* Concatenation */ :
     character_value_expression
     concatenation_operator
-    character_factor             { log("concatenation()") }
+    character_factor             { $$.v = Concatenation{$1.v as CharacterValueExpression, $3.v as CharacterValueExpression} }
 
 character_factor /* CharacterPrimary */ :
     character_primary
 
 character_primary /* CharacterPrimary */ :
-    value_expression_primary   { log("CharacterPrimary()") }
-  | string_value_function      { log("CharacterPrimary()") }
+    value_expression_primary   { $$.v = CharacterPrimary($1.v as ValueExpressionPrimary) }
+  | string_value_function      { $$.v = CharacterPrimary($1.v as CharacterValueFunction) }
 
 set_function_specification /* AggregateFunction */ :
     aggregate_function
 
 table_reference /* TableReference */ :
-    table_factor   { log("TableReference()") }
-  | joined_table   { log("TableReference()") }
+    table_factor   { $$.v = TableReference($1.v as TablePrimary) }
+  | joined_table   { $$.v = TableReference($1.v as QualifiedJoin) }
 
 qualified_join /* QualifiedJoin */ :
     table_reference
-    JOIN table_reference join_specification   { log("qualified_join_1()") }
+    JOIN table_reference join_specification   {
+      $$.v = QualifiedJoin{$1.v as TableReference, 'INNER', $3.v as TableReference, $4.v as BooleanValueExpression}
+    }
   | table_reference join_type
-    JOIN table_reference join_specification   { log("qualified_join_2()") }
+    JOIN table_reference join_specification   {
+      $$.v = QualifiedJoin{$1.v as TableReference, $2.v as string, $4.v as TableReference, $5.v as BooleanValueExpression}
+    }
 
 table_factor /* TablePrimary */ :
     table_primary
 
 table_primary /* TablePrimary */ :
-    table_or_query_name                          { log("table_primary_identifier()") }
+    table_or_query_name { 
+      $$.v = TablePrimary{
+        body: $1.v as Identifier
+      }
+     }
   | derived_table
-  | derived_table correlation_or_recognition   { log("table_primary_derived_2()") }
+  | derived_table correlation_or_recognition {
+    $$.v = TablePrimary{
+      body:        ($1.v as TablePrimary).body
+      correlation: $2.v as Correlation
+    }
+  }
 
 correlation_or_recognition /* Correlation */ :
-    correlation_name                    { log("correlation_1()") }
-  | AS correlation_name                 { log("correlation_1()") }
+    correlation_name                    {
+      $$.v = Correlation{
+        name: $1.v as Identifier
+      }
+    }
+  | AS correlation_name                 {
+    $$.v = Correlation{
+      name: $2.v as Identifier
+    }
+  }
   | correlation_name
-    parenthesized_derived_column_list   { log("correlation_2()") }
+    parenthesized_derived_column_list   {
+      $$.v = Correlation{
+        name:    $1.v as Identifier
+        columns: $2.v as []Identifier
+      }
+    }
   | AS correlation_name
-    parenthesized_derived_column_list   { log("correlation_2()") }
+    parenthesized_derived_column_list   {
+      $$.v = Correlation{
+        name:    $2.v as Identifier
+        columns: $3.v as []Identifier
+      }
+    }
 
 derived_table /* TablePrimary */ :
     table_subquery
@@ -1276,18 +1322,27 @@ derived_column_list /* []Identifier */ :
     column_name_list
 
 column_name_list /* []Identifier */ :
-    column_name                              { log("column_name_list_1()") }
-  | column_name_list comma column_name   { log("column_name_list_2()") }
+    column_name                              { $$.v = [$1.v as Identifier] }
+  | column_name_list comma column_name   { $$.v = append_list($1.v as []Identifier, $3.v as Identifier) }
 
 parenthesized_derived_column_list /* []Identifier */ :
     left_paren derived_column_list
-    right_paren                        { log("parenthesized_derived_column_list()") }
+    right_paren                        { $$.v = $2.v }
 
 sequence_generator_definition /* Stmt */ :
     CREATE SEQUENCE
-    sequence_generator_name                   { log("sequence_generator_definition_1()") }
+    sequence_generator_name                   {
+      $$.v = SequenceGeneratorDefinition{
+        name: $3.v as Identifier
+      }
+    }
   | CREATE SEQUENCE sequence_generator_name
-    sequence_generator_options                { log("sequence_generator_definition_2()") }
+    sequence_generator_options                {
+      $$.v = SequenceGeneratorDefinition{
+        name:    $3.v as Identifier
+        options: $4.v as []SequenceGeneratorOption
+      }
+    }
 
 sequence_generator_options /* []SequenceGeneratorOption */ :
     sequence_generator_option
@@ -1297,46 +1352,60 @@ sequence_generator_option /* []SequenceGeneratorOption */ :
     common_sequence_generator_options
 
 common_sequence_generator_options /* []SequenceGeneratorOption */ :
-    common_sequence_generator_option    { log("sequence_generator_options_1()") }
+    common_sequence_generator_option    { $$.v = [$1.v as SequenceGeneratorOption] }
   | common_sequence_generator_options
-    common_sequence_generator_option    { log("sequence_generator_options_2()") }
+    common_sequence_generator_option    { $$.v = append_list($1.v as []SequenceGeneratorOption, $2.v as SequenceGeneratorOption) }
 
 common_sequence_generator_option /* SequenceGeneratorOption */ :
-    sequence_generator_start_with_option   { log("SequenceGeneratorOption()") }
+    sequence_generator_start_with_option   { $$.v = SequenceGeneratorOption($1.v as SequenceGeneratorStartWithOption) }
   | basic_sequence_generator_option
 
 basic_sequence_generator_option /* SequenceGeneratorOption */ :
-    sequence_generator_increment_by_option   { log("SequenceGeneratorOption()") }
-  | sequence_generator_maxvalue_option       { log("SequenceGeneratorOption()") }
-  | sequence_generator_minvalue_option       { log("SequenceGeneratorOption()") }
-  | sequence_generator_cycle_option          { log("basic_sequence_generator_option_4()") }
+    sequence_generator_increment_by_option   { $$.v = SequenceGeneratorOption($1.v as SequenceGeneratorIncrementByOption) }
+  | sequence_generator_maxvalue_option       { $$.v = SequenceGeneratorOption($1.v as SequenceGeneratorMaxvalueOption) }
+  | sequence_generator_minvalue_option       { $$.v = SequenceGeneratorOption($1.v as SequenceGeneratorMinvalueOption) }
+  | sequence_generator_cycle_option          { $$.v = SequenceGeneratorOption(SequenceGeneratorCycleOption{$1.v as bool}) }
 
 sequence_generator_start_with_option /* SequenceGeneratorStartWithOption */ :
     START WITH
-    sequence_generator_start_value   { log("sequence_generator_start_with_option()") }
+    sequence_generator_start_value   {
+      $$.v = SequenceGeneratorStartWithOption{
+		start_value: $3.v as Value
+	}
+    }
 
 sequence_generator_start_value /* Value */ :
     signed_numeric_literal
 
 sequence_generator_increment_by_option /* SequenceGeneratorIncrementByOption */ :
     INCREMENT BY
-    sequence_generator_increment   { log("sequence_generator_increment_by_option()") }
+    sequence_generator_increment   {
+      $$.v = SequenceGeneratorIncrementByOption{
+		increment_by: $3.v as Value
+	}
+    }
 
 sequence_generator_increment /* Value */ :
     signed_numeric_literal
 
 sequence_generator_maxvalue_option /* SequenceGeneratorMaxvalueOption */ :
     MAXVALUE
-    sequence_generator_max_value   { log("sequence_generator_maxvalue_option_1()") }
-  | NO MAXVALUE                      { log("sequence_generator_maxvalue_option_2()") }
+    sequence_generator_max_value   {
+      $$.v = SequenceGeneratorMaxvalueOption{
+        max_value: $2.v as Value
+      }
+    }
+  | NO MAXVALUE                      { $$.v = SequenceGeneratorMaxvalueOption{} }
 
 sequence_generator_max_value /* Value */ :
     signed_numeric_literal
 
 sequence_generator_minvalue_option /* SequenceGeneratorMinvalueOption */ :
     MINVALUE
-    sequence_generator_min_value   { log("sequence_generator_minvalue_option_1()") }
-  | NO MINVALUE                      { log("sequence_generator_minvalue_option_2()") }
+    sequence_generator_min_value   { $$.v = SequenceGeneratorMinvalueOption{
+		min_value: $2.v as Value
+	} }
+  | NO MINVALUE                      { $$.v = SequenceGeneratorMinvalueOption{} }
 
 sequence_generator_min_value /* Value */ :
     signed_numeric_literal
@@ -1350,12 +1419,12 @@ search_condition /* BooleanValueExpression */ :
 
 value_expression:
     common_value_expression { $$.v = ValueExpression($1.v as CommonValueExpression) }
-  | boolean_value_expression   { log("ValueExpression()") }
+  | boolean_value_expression   { $$.v = ValueExpression($1.v as BooleanValueExpression) }
 
 common_value_expression:
     numeric_value_expression { $$.v = CommonValueExpression($1.v as NumericValueExpression) }
-  | string_value_expression     { log("CommonValueExpression()") }
-  | datetime_value_expression   { log("CommonValueExpression()") }
+  | string_value_expression     { $$.v = CommonValueExpression($1.v as CharacterValueExpression) }
+  | datetime_value_expression   { $$.v = CommonValueExpression($1.v as DatetimePrimary) }
 
 table_expression /* TableExpression */ :
     from_clause                                    { log("table_expression()") }
@@ -1883,22 +1952,28 @@ sql_argument /* ValueExpression */ :
 
 type YYSym = Value | ValueSpecification | ValueExpression | RowValueConstructor
   | []RowValueConstructor | BooleanValueExpression | NumericValueExpression
-  | CommonValueExpression | BooleanTerm | ValueExpressionPrimary
+  | CommonValueExpression | BooleanTerm | ValueExpressionPrimary | SelectList
   | NumericPrimary | Term | BooleanTest | BooleanPrimary | BooleanPredicand
   | NonparenthesizedValueExpressionPrimary | SimpleTable | QueryExpression
   | Stmt | string | Identifier | IdentifierChain | RoutineInvocation
-  | []ContextuallyTypedRowValueConstructor | NextValueExpression
-  | ContextuallyTypedRowValueConstructor | CaseExpression  
-  | []vsql.ValueExpression | []SequenceGeneratorOption
-  | AlterSequenceGeneratorStatement | SequenceGeneratorOption
-  | SequenceGeneratorRestartOption | CastSpecification
+  | []ContextuallyTypedRowValueConstructor | NextValueExpression | DerivedColumn
+  | ContextuallyTypedRowValueConstructor | CaseExpression | TableExpression
+  | []vsql.ValueExpression | []SequenceGeneratorOption | QualifiedAsteriskExpr
+  | AlterSequenceGeneratorStatement | SequenceGeneratorOption | []DerivedColumn
+  | SequenceGeneratorRestartOption | CastSpecification | CharacterPrimary
   | SortSpecification | []SortSpecification | bool | TablePrimary
   | map[string]UpdateSource | UpdateSource | NullSpecification | []TableElement
   | TableElement | DatetimePrimary | DatetimeValueFunction | CastOperand | Type
-  | GeneralValueSpecification | []Identifier | InsertStatement
+  | GeneralValueSpecification | []Identifier | InsertStatement | Concatenation
   | ParenthesizedValueExpression | AggregateFunction | CharacterValueFunction
   | CharacterSubstringFunction | TrimFunction | CharacterValueExpression
-  | BetweenPredicate | RowValueConstructorPredicand;
+  | BetweenPredicate | RowValueConstructorPredicand | CharacterLikePredicate
+  | ComparisonPredicatePart2 | ComparisonPredicate | QuerySpecification
+  | ExplicitRowValueConstructor | ContextuallyTypedRowValueConstructorElement
+  | []ContextuallyTypedRowValueConstructorElement | TableReference
+  | QualifiedJoin | Correlation | SequenceGeneratorDefinition
+  | SequenceGeneratorStartWithOption | SequenceGeneratorIncrementByOption
+  | SequenceGeneratorMaxvalueOption | SequenceGeneratorMinvalueOption;
 
 pub struct YYSymType {
 pub mut:

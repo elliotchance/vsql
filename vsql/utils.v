@@ -41,3 +41,19 @@ fn left_pad(s string, c string, len int) string {
 
 	return new_s
 }
+
+fn append_list[T](list []T, element T) []T {
+	mut new_list := list.clone()
+	new_list << element
+	return new_list
+}
+
+fn merge_maps[K, V](a map[K]V, b map[K]V) map[K]V {
+	mut new_map := a.clone()
+
+	for k, v in b {
+		new_map[k] = v
+	}
+
+	return new_map
+}

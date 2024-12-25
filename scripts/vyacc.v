@@ -3317,7 +3317,7 @@ mut:
 
 interface YYParser {
 mut:
-	parse(mut YYLexer) int
+	parse(mut YYLexer) !int
 	lookahead() int
 }
 
@@ -3456,12 +3456,12 @@ out:
 	return ch, token
 }
 
-fn $\$_parse(mut $\$lex YYLexer) int {
+fn $\$_parse(mut $\$lex YYLexer) !int {
 	mut parser := $\$_new_parser()
 	return parser.parse(mut $\$lex)
 }
 
-fn (mut $\$rcvr YYParserImpl) parse(mut $\$lex YYLexer) int {
+fn (mut $\$rcvr YYParserImpl) parse(mut $\$lex YYLexer) !int {
 	mut $\$n := 0
 	mut $\$_val := YYSymType{}
 	mut $\$_dollar := []YYSymType{}

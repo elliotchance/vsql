@@ -2,6 +2,8 @@
 
 module vsql
 
+import math
+
 %}
 
 // keywords
@@ -380,8 +382,8 @@ next_value_expression:
     }
   }
 
-where_clause /* BooleanValueExpression */ :
-    WHERE search_condition   { log("where_clause()") }
+where_clause:
+  WHERE search_condition { $$.v = $2.v as BooleanValueExpression }
 
 literal:
     signed_numeric_literal
@@ -399,26 +401,33 @@ general_literal:
 character_string_literal /* Value */ :
     LITERAL_STRING
 
-signed_numeric_literal /* Value */ :
-    unsigned_numeric_literal
-  | sign unsigned_numeric_literal   { log("signed_numeric_literal_2()") }
+signed_numeric_literal:
+  unsigned_numeric_literal
+| sign unsigned_numeric_literal {
+    $$.v = numeric_literal($1.v as string + ($2.v as Value).str())!
+  }
 
 unsigned_numeric_literal /* Value */ :
     exact_numeric_literal
   | approximate_numeric_literal
 
-exact_numeric_literal /* Value */ :
-    unsigned_integer                               { log("exact_numeric_literal_1()") }
-  | unsigned_integer period                      { log("exact_numeric_literal_2()") }
-  | unsigned_integer period unsigned_integer   { log("exact_numeric_literal_3()") }
-  | period unsigned_integer                      { log("exact_numeric_literal_4()") }
+exact_numeric_literal:
+  unsigned_integer { $$.v = numeric_literal($1.v as string)! }
+| unsigned_integer period { $$.v = numeric_literal(($1.v as string) + '.')! }
+| unsigned_integer period unsigned_integer {
+    $$.v = numeric_literal(($1.v as string) + '.' + ($3.v as string))!
+  }
+| period unsigned_integer { $$.v = numeric_literal('0.' + ($2.v as string))! }
 
 sign /* string */ :
     plus_sign
   | minus_sign
 
-approximate_numeric_literal /* Value */ :
-    mantissa E exponent   { log("approximate_numeric_literal()") }
+approximate_numeric_literal:
+  mantissa E exponent {
+    $$.v = new_double_precision_value(
+      ($1.v as Value).as_f64()! * math.pow(10, ($3.v as Value).as_f64()!))
+  }
 
 mantissa /* Value */ :
   exact_numeric_literal
@@ -426,9 +435,15 @@ mantissa /* Value */ :
 exponent /* Value */ :
   signed_integer
 
-signed_integer /* Value */ :
-    unsigned_integer          { log("signed_integer_1()") }
-  | sign unsigned_integer   { log("signed_integer_2()") }
+signed_integer:
+  unsigned_integer { $$.v = new_numeric_value($1.v as string) }
+| sign unsigned_integer {
+    $$.v = if $1.v as string == '-' {
+      new_numeric_value('-' + ($2.v as string))
+    } else {
+      new_numeric_value($2.v as string)
+    }
+  }
 
 unsigned_integer /* string */ :
     LITERAL_NUMBER
@@ -438,14 +453,16 @@ datetime_literal /* Value */ :
   | time_literal
   | timestamp_literal
 
-date_literal /* Value */ :
-    DATE date_string   { log("date_literal()") }
+date_literal:
+  DATE date_string { $$.v = new_date_value(($2.v as Value).string_value())! }
 
-time_literal /* Value */ :
-    TIME time_string   { log("time_literal()") }
+time_literal:
+  TIME time_string { $$.v = new_time_value(($2.v as Value).string_value())! }
 
-timestamp_literal /* Value */ :
-    TIMESTAMP timestamp_string   { log("timestamp_literal()") }
+timestamp_literal:
+  TIMESTAMP timestamp_string {
+    $$.v = new_timestamp_value(($2.v as Value).string_value())!
+  }
 
 date_string /* Value */ :
     LITERAL_STRING
@@ -467,8 +484,8 @@ contextually_typed_value_specification /* NullSpecification */ :
 implicitly_typed_value_specification /* NullSpecification */ :
     null_specification
 
-null_specification /* NullSpecification */ :
-    NULL   { log("null_specification()") }
+null_specification:
+  NULL { $$.v = NullSpecification{} }
 
 from_clause /* TableReference */ :
     FROM table_reference_list   { log("from_clause()") }
@@ -1570,39 +1587,42 @@ computational_operation /* string */ :
   | SUM
   | COUNT
 
-set_catalog_statement /* Stmt */ :
-    SET catalog_name_characteristic   { log("set_catalog_stmt()") }
+set_catalog_statement:
+  SET catalog_name_characteristic {
+    $$.v = Stmt(SetCatalogStatement{$2.v as ValueSpecification})
+  }
 
 catalog_name_characteristic /* ValueSpecification */ :
-    CATALOG value_specification   { log("catalog_name_characteristic()") }
+  CATALOG value_specification
 
 drop_table_statement /* Stmt */ :
-    DROP TABLE table_name   { log("drop_table_statement()") }
+    DROP TABLE table_name   { $$.v = Stmt(DropTableStatement{$3.v as Identifier}) }
 
 value_specification:
-    literal { $$.v = $1.v }
-  | general_value_specification   { log("ValueSpecification()") }
+  literal { $$.v = ValueSpecification($1.v as Value) }
+| general_value_specification { $$.v = ValueSpecification($1.v as GeneralValueSpecification) }
 
 unsigned_value_specification:
-    unsigned_literal { $$.v = ValueSpecification($1.v as Value) }
-  | general_value_specification   { log("ValueSpecification()") }
+  unsigned_literal { $$.v = ValueSpecification($1.v as Value) }
+| general_value_specification   { $$.v = ValueSpecification($1.v as GeneralValueSpecification) }
 
-general_value_specification /* GeneralValueSpecification */ :
+general_value_specification:
     host_parameter_specification
-  | CURRENT_CATALOG                  { log("current_catalog()") }
-  | CURRENT_SCHEMA                   { log("current_schema()") }
+  | CURRENT_CATALOG                  { $$.v = GeneralValueSpecification(CurrentCatalog{}) }
+  | CURRENT_SCHEMA                   { $$.v = GeneralValueSpecification(CurrentSchema{}) }
 
-simple_value_specification /* ValueSpecification */ :
-    literal               { log("ValueSpecification()") }
-  | host_parameter_name   { log("ValueSpecification()") }
+simple_value_specification:
+  literal               { $$.v = ValueSpecification($1.v as Value) }
+| host_parameter_name   { $$.v = ValueSpecification($1.v as Value) }
 
 host_parameter_specification /* GeneralValueSpecification */ :
     host_parameter_name
 
-insert_statement /* Stmt */ :
-    INSERT INTO
-    insertion_target
-    insert_columns_and_source   { log("insert_statement()") }
+insert_statement:
+  INSERT INTO insertion_target insert_columns_and_source {
+    stmt := $4.v as InsertStatement
+    $$.v = Stmt(InsertStatement{$3.v as Identifier, stmt.columns, stmt.values})
+  }
 
 insertion_target /* Identifier */ :
     table_name
@@ -1610,66 +1630,116 @@ insertion_target /* Identifier */ :
 insert_columns_and_source /* InsertStatement */ :
   from_constructor
 
-from_constructor /* InsertStatement */ :
-    left_paren insert_column_list right_paren
-    contextually_typed_table_value_constructor   { log("from_constructor()") }
+from_constructor:
+  left_paren insert_column_list right_paren
+  contextually_typed_table_value_constructor {
+    $$.v = InsertStatement{
+      columns: $2.v as []Identifier
+      values:  $4.v as []ContextuallyTypedRowValueConstructor
+    }
+  }
 
 insert_column_list /* []Identifier */ :
     column_name_list
 
 value_expression_primary:
-    parenthesized_value_expression              { log("ValueExpressionPrimary()") }
-  | nonparenthesized_value_expression_primary { }
+  parenthesized_value_expression {
+    $$.v = ValueExpressionPrimary($1.v as ParenthesizedValueExpression)
+  }
+| nonparenthesized_value_expression_primary
 
-parenthesized_value_expression /* ParenthesizedValueExpression */ :
-    left_paren value_expression right_paren   { log("parenthesized_value_expression()") }
+parenthesized_value_expression:
+  left_paren value_expression right_paren {
+    $$.v = ParenthesizedValueExpression{$2.v as ValueExpression}
+  }
 
 nonparenthesized_value_expression_primary:
     unsigned_value_specification {
       $$.v = NonparenthesizedValueExpressionPrimary($1.v as ValueSpecification)
     }
-  | column_reference               { log("NonparenthesizedValueExpressionPrimary()") }
-  | set_function_specification     { log("NonparenthesizedValueExpressionPrimary()") }
-  | routine_invocation             { log("NonparenthesizedValueExpressionPrimary()") }
-  | case_expression                { log("NonparenthesizedValueExpressionPrimary()") }
-  | cast_specification             { log("NonparenthesizedValueExpressionPrimary()") }
-  | next_value_expression          { log("NonparenthesizedValueExpressionPrimary()") }
+  | column_reference {
+      $$.v = NonparenthesizedValueExpressionPrimary($1.v as Identifier)
+    }
+  | set_function_specification {
+      $$.v = NonparenthesizedValueExpressionPrimary($1.v as AggregateFunction)
+    }
+  | routine_invocation {
+      $$.v = NonparenthesizedValueExpressionPrimary($1.v as RoutineInvocation)
+    }
+  | case_expression {
+      $$.v = NonparenthesizedValueExpressionPrimary($1.v as CaseExpression)
+    }
+  | cast_specification {
+      $$.v = NonparenthesizedValueExpressionPrimary($1.v as CastSpecification)
+    }
+  | next_value_expression {
+      $$.v = NonparenthesizedValueExpressionPrimary($1.v as NextValueExpression)
+    }
 
 string_value_function /* CharacterValueFunction */ :
     character_value_function
 
-character_value_function /* CharacterValueFunction */ :
-    character_substring_function   { log("CharacterValueFunction()") }
-  | fold                           { log("CharacterValueFunction()") }
-  | trim_function                  { log("CharacterValueFunction()") }
+character_value_function:
+  character_substring_function   { $$.v = CharacterValueFunction($1.v as CharacterSubstringFunction) }
+| fold                           { $$.v = CharacterValueFunction($1.v as RoutineInvocation) }
+| trim_function                  { $$.v = CharacterValueFunction($1.v as TrimFunction) }
 
-character_substring_function /* CharacterSubstringFunction */ :
-    SUBSTRING left_paren character_value_expression
-    FROM start_position right_paren                   { log("character_substring_function_1()") }
-  | SUBSTRING left_paren character_value_expression
-    FROM start_position
-    FOR string_length right_paren                     { log("character_substring_function_2()") }
-  | SUBSTRING left_paren character_value_expression
-    FROM start_position
-    USING char_length_units right_paren               { log("character_substring_function_3()") }
-  | SUBSTRING left_paren character_value_expression
-    FROM start_position
-    FOR string_length
-    USING char_length_units right_paren               { log("character_substring_function_4()") }
+character_substring_function:
+  SUBSTRING left_paren character_value_expression FROM start_position
+  right_paren {
+    $$.v = CharacterSubstringFunction{$3.v as CharacterValueExpression,
+      $5.v as NumericValueExpression, none, 'CHARACTERS'}
+  }
+| SUBSTRING left_paren character_value_expression FROM start_position FOR
+  string_length right_paren {
+    $$.v = CharacterSubstringFunction{$3.v as CharacterValueExpression,
+      $5.v as NumericValueExpression, $7.v as NumericValueExpression,
+      'CHARACTERS'}
+  }
+| SUBSTRING left_paren character_value_expression FROM start_position USING
+  char_length_units right_paren {
+    $$.v = CharacterSubstringFunction{$3.v as CharacterValueExpression,
+      $5.v as NumericValueExpression, none, $7.v as string}
+  }
+| SUBSTRING left_paren character_value_expression FROM start_position FOR
+  string_length USING char_length_units right_paren {
+    $$.v = CharacterSubstringFunction{$3.v as CharacterValueExpression,
+      $5.v as NumericValueExpression, $7.v as NumericValueExpression,
+      $9.v as string}
+  }
 
-fold /* RoutineInvocation */ :
-    UPPER left_paren character_value_expression right_paren   { log("upper()") }
-  | LOWER left_paren character_value_expression right_paren   { log("lower()") }
+fold:
+  UPPER left_paren character_value_expression right_paren {
+    $$.v = RoutineInvocation{'UPPER',
+      [ValueExpression(CommonValueExpression($3.v as CharacterValueExpression))]}
+  }
+| LOWER left_paren character_value_expression right_paren {
+    $$.v = RoutineInvocation{'LOWER',
+      [ValueExpression(CommonValueExpression($3.v as CharacterValueExpression))]}
+  }
 
-trim_function /* TrimFunction */ :
-  TRIM left_paren trim_operands right_paren   { log("trim_function()") }
+trim_function:
+  TRIM left_paren trim_operands right_paren { $$.v = $3.v }
 
-trim_operands /* TrimFunction */ :
-    trim_source                                              { log("trim_operands_1()") }
-  | FROM trim_source                                         { log("trim_operands_1()") }
-  | trim_specification FROM trim_source                    { log("trim_operands_2()") }
-  | trim_character FROM trim_source                        { log("trim_operands_3()") }
-  | trim_specification trim_character FROM trim_source   { log("trim_operands_4()") }
+trim_operands:
+  trim_source {
+    space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
+    $$.v = TrimFunction{'BOTH', space, $1.v as CharacterValueExpression}
+  }
+| FROM trim_source {
+    space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
+    $$.v = TrimFunction{'BOTH', space, $2.v as CharacterValueExpression}
+  }
+| trim_specification FROM trim_source {
+    space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
+    $$.v = TrimFunction{$1.v as string, space, $3.v as CharacterValueExpression}
+  }
+| trim_character FROM trim_source {
+    $$.v = TrimFunction{'BOTH', $1.v as CharacterValueExpression, $3.v as CharacterValueExpression}
+  }
+| trim_specification trim_character FROM trim_source   {
+    $$.v = TrimFunction{$1.v as string, $2.v as CharacterValueExpression, $4.v as CharacterValueExpression}
+  }
 
 trim_source /* CharacterValueExpression */ :
     character_value_expression
@@ -1689,34 +1759,55 @@ string_length /* NumericValueExpression */ :
     numeric_value_expression
 
 numeric_value_expression:
-    term { $$.v = NumericValueExpression{term: $1.v as Term} }
-  | numeric_value_expression plus_sign term    { log("numeric_value_expression_2()") }
-  | numeric_value_expression minus_sign term   { log("numeric_value_expression_2()") }
+  term { $$.v = NumericValueExpression{term: $1.v as Term} }
+| numeric_value_expression plus_sign term {
+    n := $1.v as NumericValueExpression
+    $$.v = NumericValueExpression{&n, '+', $3.v as Term}
+  }
+| numeric_value_expression minus_sign term {
+    n := $1.v as NumericValueExpression
+    $$.v = NumericValueExpression{&n, '-', $3.v as Term}
+  }
 
 term:
-    factor { $$.v = Term{factor: $1.v as NumericPrimary} }
-  | term asterisk factor   { log("term_2()") }
-  | term solidus factor    { log("term_2()") }
+  factor { $$.v = Term{factor: $1.v as NumericPrimary} }
+| term asterisk factor {
+    t := $1.v as Term
+    $$.v = Term{&t, '*', $3.v as NumericPrimary}
+  }
+| term solidus factor {
+    t := $1.v as Term
+    $$.v = Term{&t, '/', $3.v as NumericPrimary}
+  }
 
 factor:
-    numeric_primary { $$.v = $1.v as NumericPrimary }
-  | sign numeric_primary   { log("factor_2()") }
+  numeric_primary { $$.v = $1.v as NumericPrimary }
+| sign numeric_primary {
+    $$.v = parse_factor_2($1.v as string, $2.v as NumericPrimary)!
+  }
 
 numeric_primary:
-    value_expression_primary { $$.v = NumericPrimary($1.v as ValueExpressionPrimary) }
-  | numeric_value_function     { log("NumericPrimary()") }
+  value_expression_primary {
+    $$.v = NumericPrimary($1.v as ValueExpressionPrimary)
+  }
+| numeric_value_function { $$.v = NumericPrimary($1.v as RoutineInvocation) }
 
-routine_invocation /* RoutineInvocation */ :
-    routine_name sql_argument_list   { log("routine_invocation()") }
+routine_invocation:
+  routine_name sql_argument_list {
+    $$.v = RoutineInvocation{($1.v as Identifier).entity_name, $2.v as []ValueExpression}
+  }
 
-routine_name /* Identifier */ :
-    qualified_identifier   { log("routine_name()") }
+routine_name:
+  qualified_identifier {
+    $$.v = new_function_identifier(($1.v as IdentifierChain).identifier)!
+  }
 
-sql_argument_list /* []ValueExpression */ :
-    left_paren right_paren                  { log("sql_argument_list_1()") }
-  | left_paren sql_argument right_paren   { log("sql_argument_list_2()") }
-  | left_paren sql_argument_list comma
-    sql_argument right_paren                { log("sql_argument_list_3()") }
+sql_argument_list:
+  left_paren right_paren { $$.v = []ValueExpression{} }
+| left_paren sql_argument right_paren { $$.v = [$2.v as ValueExpression] }
+| left_paren sql_argument_list comma sql_argument right_paren {
+    $$.v = append_list($2.v as []ValueExpression, $4.v as ValueExpression)
+  }
 
 sql_argument /* ValueExpression */ :
     value_expression
@@ -1728,15 +1819,18 @@ type YYSym = Value | ValueSpecification | ValueExpression | RowValueConstructor
   | CommonValueExpression | BooleanTerm | ValueExpressionPrimary
   | NumericPrimary | Term | BooleanTest | BooleanPrimary | BooleanPredicand
   | NonparenthesizedValueExpressionPrimary | SimpleTable | QueryExpression
-  | Stmt | string | Identifier | IdentifierChain
+  | Stmt | string | Identifier | IdentifierChain | RoutineInvocation
   | []ContextuallyTypedRowValueConstructor | NextValueExpression
-  | ContextuallyTypedRowValueConstructor | CaseExpression
+  | ContextuallyTypedRowValueConstructor | CaseExpression  
   | []vsql.ValueExpression | []SequenceGeneratorOption
   | AlterSequenceGeneratorStatement | SequenceGeneratorOption
   | SequenceGeneratorRestartOption | CastSpecification
   | SortSpecification | []SortSpecification | bool | TablePrimary
   | map[string]UpdateSource | UpdateSource | NullSpecification | []TableElement
-  | TableElement | DatetimePrimary | DatetimeValueFunction | CastOperand | Type;
+  | TableElement | DatetimePrimary | DatetimeValueFunction | CastOperand | Type
+  | GeneralValueSpecification | []Identifier | InsertStatement
+  | ParenthesizedValueExpression | AggregateFunction | CharacterValueFunction
+  | CharacterSubstringFunction | TrimFunction | CharacterValueExpression;
 
 pub struct YYSymType {
 pub mut:

@@ -163,7 +163,7 @@ preparable_sql_session_statement:
 // 6.12 <case expression>
 
 case_expression /* CaseExpression */ :
-    case_abbreviation
+    case_abbreviation { $$.v = $1.v as CaseExpression }
 
 case_abbreviation /* CaseExpression */ :
   NULLIF left_paren value_expression comma value_expression right_paren {
@@ -199,7 +199,7 @@ alter_sequence_generator_option:
   alter_sequence_generator_restart_option {
     $$.v = SequenceGeneratorOption($1.v as SequenceGeneratorRestartOption)
   }
-| basic_sequence_generator_option
+| basic_sequence_generator_option { $$.v = $1.v as SequenceGeneratorOption }
 
 alter_sequence_generator_restart_option:
   RESTART { $$.v = SequenceGeneratorRestartOption{} }
@@ -210,7 +210,7 @@ alter_sequence_generator_restart_option:
   }
 
 sequence_generator_restart_value /* Value */ :
-  signed_numeric_literal
+  signed_numeric_literal { $$.v = $1.v as Value }
 
 commit_statement:
   COMMIT { $$.v = Stmt(CommitStatement{}) }
@@ -229,17 +229,17 @@ sort_specification:
   }
 
 sort_key /* ValueExpression */ :
-    value_expression
+    value_expression { $$.v = $1.v as ValueExpression }
 
 ordering_specification:
   ASC { $$.v = true }
 | DESC { $$.v = false }
 
 row_subquery /* QueryExpression */ :
-    subquery
+    subquery { $$.v = $1.v as QueryExpression }
 
 table_subquery /* TablePrimary */ :
-    subquery
+    subquery { $$.v = $1.v as TablePrimary }
 
 subquery:
   left_paren query_expression right_paren {
@@ -296,8 +296,8 @@ table_element_list:
   left_paren table_elements right_paren { $$.v = $2.v as []TableElement }
 
 table_element /* TableElement */ :
-    column_definition
-  | table_constraint_definition
+    column_definition { $$.v = $1.v as TableElement }
+  | table_constraint_definition { $$.v = $1.v as TableElement }
 
 table_elements:
   table_element { $$.v = [$1.v as TableElement] }
@@ -320,13 +320,13 @@ cursor_specification:
   query_expression { $$.v = Stmt($1.v as QueryExpression) }
 
 datetime_value_expression /* DatetimePrimary */ :
-    datetime_term
+    datetime_term { $$.v = $1.v as DatetimePrimary }
 
 datetime_term /* DatetimePrimary */ :
-    datetime_factor
+    datetime_factor { $$.v = $1.v as DatetimePrimary }
 
 datetime_factor /* DatetimePrimary */ :
-    datetime_primary
+    datetime_primary { $$.v = $1.v as DatetimePrimary }
 
 datetime_primary:
   value_expression_primary {
@@ -347,7 +347,7 @@ update_statement_searched:
   }
 
 identifier_chain:
-  identifier
+  identifier { $$.v = $1.v as IdentifierChain }
 | identifier period identifier {
     $$.v = IdentifierChain{
       ($1.v as IdentifierChain).identifier + '.' + ($3.v as IdentifierChain).identifier
@@ -355,7 +355,7 @@ identifier_chain:
   }
 
 basic_identifier_chain /* IdentifierChain */ :
-  identifier_chain
+  identifier_chain { $$.v = $1.v as IdentifierChain }
 
 cast_specification:
   CAST left_paren cast_operand AS cast_target right_paren {
@@ -369,7 +369,7 @@ cast_operand:
   }
 
 cast_target /* Type */ :
-  data_type
+  data_type { $$.v = $1.v as Type }
 
 rollback_statement:
   ROLLBACK { $$.v = Stmt(RollbackStatement{}) }
@@ -386,30 +386,30 @@ where_clause:
   WHERE search_condition { $$.v = $2.v as BooleanValueExpression }
 
 literal:
-    signed_numeric_literal
+    signed_numeric_literal { $$.v = $1.v as Value }
   | general_literal { $$.v = $1.v as Value }
 
 unsigned_literal:
-    unsigned_numeric_literal
+    unsigned_numeric_literal { $$.v = $1.v as Value }
   | general_literal { $$.v = $1.v as Value }
 
 general_literal:
-    character_string_literal
-  | datetime_literal
+    character_string_literal { $$.v = $1.v as Value }
+  | datetime_literal { $$.v = $1.v as Value }
   | boolean_literal { $$.v = $1.v as Value }
 
 character_string_literal /* Value */ :
-    LITERAL_STRING
+    LITERAL_STRING { $$.v = $1.v as Value }
 
 signed_numeric_literal:
-  unsigned_numeric_literal
+  unsigned_numeric_literal { $$.v = $1.v as Value }
 | sign unsigned_numeric_literal {
     $$.v = numeric_literal($1.v as string + ($2.v as Value).str())!
   }
 
 unsigned_numeric_literal /* Value */ :
-    exact_numeric_literal
-  | approximate_numeric_literal
+    exact_numeric_literal { $$.v = $1.v as Value }
+  | approximate_numeric_literal { $$.v = $1.v as Value }
 
 exact_numeric_literal:
   unsigned_integer { $$.v = numeric_literal($1.v as string)! }
@@ -420,8 +420,8 @@ exact_numeric_literal:
 | period unsigned_integer { $$.v = numeric_literal('0.' + ($2.v as string))! }
 
 sign /* string */ :
-    plus_sign
-  | minus_sign
+  plus_sign { $$.v = $1.v as string }
+| minus_sign { $$.v = $1.v as string }
 
 approximate_numeric_literal:
   mantissa E exponent {
@@ -430,10 +430,10 @@ approximate_numeric_literal:
   }
 
 mantissa /* Value */ :
-  exact_numeric_literal
+  exact_numeric_literal { $$.v = $1.v as Value }
 
 exponent /* Value */ :
-  signed_integer
+  signed_integer { $$.v = $1.v as Value }
 
 signed_integer:
   unsigned_integer { $$.v = new_numeric_value($1.v as string) }
@@ -446,12 +446,12 @@ signed_integer:
   }
 
 unsigned_integer /* string */ :
-    LITERAL_NUMBER
+    LITERAL_NUMBER { $$.v = $1.v as string }
 
 datetime_literal /* Value */ :
-    date_literal
-  | time_literal
-  | timestamp_literal
+    date_literal { $$.v = $1.v as Value }
+  | time_literal { $$.v = $1.v as Value }
+  | timestamp_literal { $$.v = $1.v as Value }
 
 date_literal:
   DATE date_string { $$.v = new_date_value(($2.v as Value).string_value())! }
@@ -465,13 +465,13 @@ timestamp_literal:
   }
 
 date_string /* Value */ :
-    LITERAL_STRING
+    LITERAL_STRING { $$.v = $1.v as Value }
 
 time_string /* Value */ :
-    LITERAL_STRING
+    LITERAL_STRING { $$.v = $1.v as Value }
 
 timestamp_string /* Value */ :
-    LITERAL_STRING
+    LITERAL_STRING { $$.v = $1.v as Value }
 
 boolean_literal:
     TRUE { $$.v = new_boolean_value(true) }
@@ -479,22 +479,22 @@ boolean_literal:
   | UNKNOWN { $$.v = new_unknown_value() }
 
 contextually_typed_value_specification /* NullSpecification */ :
-    implicitly_typed_value_specification
+    implicitly_typed_value_specification { $$.v = $1.v as NullSpecification }
 
 implicitly_typed_value_specification /* NullSpecification */ :
-    null_specification
+    null_specification { $$.v = $1.v as NullSpecification }
 
 null_specification:
   NULL { $$.v = NullSpecification{} }
 
 from_clause /* TableReference */ :
-    FROM table_reference_list
+    FROM table_reference_list { $$.v = $2.v as TableReference }
 
 table_reference_list /* TableReference */ :
-    table_reference
+    table_reference { $$.v = $1.v as TableReference }
 
 between_predicate:
-  row_value_predicand between_predicate_part_2   {
+  row_value_predicand between_predicate_part_2 {
     between := $2.v as BetweenPredicate
     $$.v = BetweenPredicate{
       not:       between.not
@@ -533,10 +533,10 @@ is_symmetric:
   | ASYMMETRIC   { $$.v = false }
 
 identifier /* IdentifierChain */ :
-    actual_identifier
+    actual_identifier { $$.v = $1.v as IdentifierChain }
 
 actual_identifier /* IdentifierChain */ :
-    regular_identifier
+    regular_identifier { $$.v = $1.v as IdentifierChain }
 
 table_name /* Identifier */ :
     local_or_schema_qualified_name   { $$.v = new_table_identifier(($1.v as IdentifierChain).identifier)! }
@@ -545,32 +545,32 @@ schema_name /* Identifier */ :
     catalog_name period unqualified_schema_name   {
       $$.v = new_schema_identifier(($1.v as IdentifierChain).str() + '.' + ($3.v as Identifier).str())!
     }
-  | unqualified_schema_name
+  | unqualified_schema_name { $$.v = $1.v as Identifier }
 
 unqualified_schema_name /* Identifier */ :
     identifier   { $$.v = new_schema_identifier(($1.v as IdentifierChain).identifier)! }
 
 catalog_name /* IdentifierChain */ :
-    identifier
+    identifier { $$.v = $1.v as IdentifierChain }
 
 schema_qualified_name /* IdentifierChain */ :
-    qualified_identifier
+    qualified_identifier { $$.v = $1.v as IdentifierChain }
   | schema_name period qualified_identifier   {
     $$.v = IdentifierChain{($1.v as Identifier).schema_name + '.' + ($3.v as IdentifierChain).str()}
     }
 
 local_or_schema_qualified_name /* IdentifierChain */ :
-    qualified_identifier
+    qualified_identifier { $$.v = $1.v as IdentifierChain }
   | local_or_schema_qualifier period
     qualified_identifier                 {
     $$.v = IdentifierChain{($1.v as Identifier).str() + '.' + ($3.v as IdentifierChain).str()}
     }
 
 local_or_schema_qualifier /* Identifier */ :
-    schema_name
+    schema_name { $$.v = $1.v as Identifier }
 
 qualified_identifier /* IdentifierChain */ :
-    identifier
+    identifier { $$.v = $1.v as IdentifierChain }
 
 column_name /* Identifier */ :
     identifier   { $$.v = new_column_identifier(($1.v as IdentifierChain).identifier)! }
@@ -588,25 +588,25 @@ drop_schema_statement /* Stmt */ :
     DROP SCHEMA schema_name drop_behavior   { $$.v = Stmt(DropSchemaStatement{$3.v as Identifier, $4.v as string}) }
 
 drop_behavior /* string */ :
-    CASCADE
-  | RESTRICT
+    CASCADE { $$.v = $1.v as string }
+  | RESTRICT { $$.v = $1.v as string }
 
 numeric_value_function /* RoutineInvocation */ :
-    position_expression
-  | length_expression
-  | absolute_value_expression
-  | modulus_expression
-  | trigonometric_function
-  | common_logarithm
-  | natural_logarithm
-  | exponential_function
-  | power_function
-  | square_root
-  | floor_function
-  | ceiling_function
+    position_expression { $$.v = $1.v as RoutineInvocation }
+  | length_expression { $$.v = $1.v as RoutineInvocation }
+  | absolute_value_expression { $$.v = $1.v as RoutineInvocation }
+  | modulus_expression { $$.v = $1.v as RoutineInvocation }
+  | trigonometric_function { $$.v = $1.v as RoutineInvocation }
+  | common_logarithm { $$.v = $1.v as RoutineInvocation }
+  | natural_logarithm { $$.v = $1.v as RoutineInvocation }
+  | exponential_function { $$.v = $1.v as RoutineInvocation }
+  | power_function { $$.v = $1.v as RoutineInvocation }
+  | square_root { $$.v = $1.v as RoutineInvocation }
+  | floor_function { $$.v = $1.v as RoutineInvocation }
+  | ceiling_function { $$.v = $1.v as RoutineInvocation }
 
 position_expression /* RoutineInvocation */ :
-    character_position_expression
+    character_position_expression { $$.v = $1.v as RoutineInvocation }
 
 character_position_expression /* RoutineInvocation */ :
     POSITION left_paren character_value_expression_1 IN
@@ -617,14 +617,14 @@ character_position_expression /* RoutineInvocation */ :
       ]} }
 
 character_value_expression_1 /* CharacterValueExpression */ :
-    character_value_expression
+    character_value_expression { $$.v = $1.v as CharacterValueExpression }
 
 character_value_expression_2 /* CharacterValueExpression */ :
-    character_value_expression
+    character_value_expression { $$.v = $1.v as CharacterValueExpression }
 
 length_expression /* RoutineInvocation */ :
-    char_length_expression
-  | octet_length_expression
+    char_length_expression { $$.v = $1.v as RoutineInvocation }
+  | octet_length_expression { $$.v = $1.v as RoutineInvocation }
 
 char_length_expression /* RoutineInvocation */ :
     CHAR_LENGTH
@@ -654,10 +654,10 @@ modulus_expression /* RoutineInvocation */ :
      }
 
 numeric_value_expression_dividend /* NumericValueExpression */ :
-    numeric_value_expression
+    numeric_value_expression { $$.v = $1.v as NumericValueExpression }
 
 numeric_value_expression_divisor /* NumericValueExpression */ :
-    numeric_value_expression
+    numeric_value_expression { $$.v = $1.v as NumericValueExpression }
 
 trigonometric_function /* RoutineInvocation */ :
     trigonometric_function_name
@@ -669,15 +669,15 @@ trigonometric_function /* RoutineInvocation */ :
   }
 
 trigonometric_function_name:
-  SIN
-| COS
-| TAN
-| SINH
-| COSH
-| TANH
-| ASIN
-| ACOS
-| ATAN
+  SIN { $$.v = $1.v as string }
+| COS { $$.v = $1.v as string }
+| TAN { $$.v = $1.v as string }
+| SINH { $$.v = $1.v as string }
+| COSH { $$.v = $1.v as string }
+| TANH { $$.v = $1.v as string }
+| ASIN { $$.v = $1.v as string }
+| ACOS { $$.v = $1.v as string }
+| ATAN { $$.v = $1.v as string }
 
 common_logarithm /* RoutineInvocation */ :
     LOG10 left_paren numeric_value_expression right_paren   {
@@ -702,10 +702,10 @@ power_function /* RoutineInvocation */ :
     }
 
 numeric_value_expression_base /* NumericValueExpression */ :
-    numeric_value_expression
+    numeric_value_expression { $$.v = $1.v as NumericValueExpression }
 
 numeric_value_expression_exponent /* NumericValueExpression */ :
-    numeric_value_expression
+    numeric_value_expression { $$.v = $1.v as NumericValueExpression }
 
 square_root /* RoutineInvocation */ :
     SQRT left_paren numeric_value_expression right_paren   { 
@@ -729,14 +729,14 @@ concatenation_operator:
   OPERATOR_DOUBLE_PIPE
 
 regular_identifier:
-    identifier_body
+    identifier_body { $$.v = $1.v as IdentifierChain }
   | non_reserved_word   { $$.v = IdentifierChain{$1.v as string} }
 
 identifier_body /* IdentifierChain */ :
-    identifier_start
+    identifier_start { $$.v = $1.v as IdentifierChain }
 
 identifier_start /* IdentifierChain */ :
-    LITERAL_IDENTIFIER
+    LITERAL_IDENTIFIER { $$.v = $1.v as IdentifierChain }
 
 not_equals_operator : OPERATOR_NOT_EQUALS
 
@@ -1027,13 +1027,13 @@ non_reserved_word:
 | ZONE
 
 data_type /* Type */ :
-    predefined_type
+    predefined_type { $$.v = $1.v as Type }
 
 predefined_type /* Type */ :
-    character_string_type
-  | numeric_type
-  | boolean_type
-  | datetime_type
+    character_string_type { $$.v = $1.v as Type }
+  | numeric_type { $$.v = $1.v as Type }
+  | boolean_type { $$.v = $1.v as Type }
+  | datetime_type { $$.v = $1.v as Type }
 
 character_string_type /* Type */ :
     CHARACTER                                                         { $$.v = new_type('CHARACTER', 1, 0) }
@@ -1045,8 +1045,8 @@ character_string_type /* Type */ :
   | VARCHAR left_paren character_length right_paren             { $$.v = new_type('CHARACTER VARYING', ($3.v as string).int(), 0) }
 
 numeric_type /* Type */ :
-    exact_numeric_type
-  | approximate_numeric_type
+    exact_numeric_type { $$.v = $1.v as Type }
+  | approximate_numeric_type { $$.v = $1.v as Type }
 
 exact_numeric_type /* Type */ :
     NUMERIC                                                          { $$.v = new_type('NUMERIC', 0, 0) }
@@ -1067,20 +1067,20 @@ approximate_numeric_type /* Type */ :
   | DOUBLE PRECISION                               { $$.v = new_type('DOUBLE PRECISION', 0, 0) }
 
 length /* string */ :
-    unsigned_integer
+    unsigned_integer { $$.v = $1.v as string }
 
 character_length /* string */ :
-    length
+    length { $$.v = $1.v as string }
 
 char_length_units /* string */ :
-    CHARACTERS
-  | OCTETS
+    CHARACTERS { $$.v = $1.v as string }
+  | OCTETS { $$.v = $1.v as string }
 
 precision /* string */ :
-    unsigned_integer
+    unsigned_integer { $$.v = $1.v as string }
 
 scale /* string */ :
-    unsigned_integer
+    unsigned_integer { $$.v = $1.v as string }
 
 boolean_type /* Type */ :
     BOOLEAN   { $$.v = new_type('BOOLEAN', 0, 0) }
@@ -1109,16 +1109,16 @@ with_or_without_time_zone:
   | WITHOUT TIME ZONE   { $$.v = false }
 
 time_precision /* string */ :
-    time_fractional_seconds_precision
+    time_fractional_seconds_precision { $$.v = $1.v as string }
 
 timestamp_precision /* string */ :
-    time_fractional_seconds_precision
+    time_fractional_seconds_precision { $$.v = $1.v as string }
 
 time_fractional_seconds_precision /* string */ :
-    unsigned_integer
+    unsigned_integer { $$.v = $1.v as string }
 
 like_predicate /* CharacterLikePredicate */ :
-    character_like_predicate
+    character_like_predicate { $$.v = $1.v as CharacterLikePredicate }
 
 character_like_predicate /* CharacterLikePredicate */ :
     row_value_predicand character_like_predicate_part_2   {
@@ -1131,7 +1131,7 @@ character_like_predicate_part_2 /* CharacterLikePredicate */ :
   | NOT LIKE character_pattern   { $$.v = CharacterLikePredicate{none, $3.v as CharacterValueExpression, true} }
 
 character_pattern /* CharacterValueExpression */ :
-    character_value_expression
+    character_value_expression { $$.v = $1.v as CharacterValueExpression }
 
 comparison_predicate /* ComparisonPredicate */ :
     row_value_predicand comparison_predicate_part_2   {
@@ -1143,12 +1143,12 @@ comparison_predicate_part_2 /* ComparisonPredicatePart2 */ :
     comp_op row_value_predicand   { $$.v = ComparisonPredicatePart2{$1.v as string, $2.v as RowValueConstructorPredicand} }
 
 comp_op /* string */ :
-    equals_operator
-  | not_equals_operator
-  | less_than_operator
-  | greater_than_operator
-  | less_than_or_equals_operator
-  | greater_than_or_equals_operator
+    equals_operator { $$.v = $1.v as string }
+  | not_equals_operator { $$.v = $1.v as string }
+  | less_than_operator { $$.v = $1.v as string }
+  | greater_than_operator { $$.v = $1.v as string }
+  | less_than_or_equals_operator { $$.v = $1.v as string }
+  | greater_than_or_equals_operator { $$.v = $1.v as string }
 
 row_value_constructor:
     common_value_expression          { $$.v = RowValueConstructor($1.v as CommonValueExpression) }
@@ -1202,8 +1202,8 @@ query_specification:
   }
 
 select_list:
-    asterisk                               { $$.v = AsteriskExpr(true) }
-  | select_sublist
+    asterisk                               { $$.v = SelectList(AsteriskExpr(true)) }
+  | select_sublist { $$.v = $1.v as SelectList }
   | select_list comma select_sublist   {
     mut new_select_list := (($1.v as SelectList) as []DerivedColumn).clone()
     new_select_list << (($3.v as SelectList) as []DerivedColumn)[0]
@@ -1220,21 +1220,21 @@ qualified_asterisk /* QualifiedAsteriskExpr */ :
       }
 
 asterisked_identifier_chain /* IdentifierChain */ :
-    asterisked_identifier
+    asterisked_identifier { $$.v = $1.v as IdentifierChain }
 
 asterisked_identifier /* IdentifierChain */ :
-    identifier
+    identifier { $$.v = $1.v as IdentifierChain }
 
 derived_column /* DerivedColumn */ :
     value_expression               { $$.v = DerivedColumn{$1.v as ValueExpression, Identifier{}} }
   | value_expression as_clause   { $$.v = DerivedColumn{$1.v as ValueExpression, $2.v as Identifier} }
 
 as_clause /* Identifier */ :
-    AS column_name
-  | column_name
+    AS column_name { $$.v = $2.v as Identifier }
+  | column_name { $$.v = $1.v as Identifier }
 
 string_value_expression /* CharacterValueExpression */ :
-    character_value_expression
+    character_value_expression { $$.v = $1.v as CharacterValueExpression }
 
 character_value_expression /* CharacterValueExpression */ :
     concatenation      { $$.v = CharacterValueExpression($1.v as Concatenation) }
@@ -1246,14 +1246,14 @@ concatenation /* Concatenation */ :
     character_factor             { $$.v = Concatenation{$1.v as CharacterValueExpression, $3.v as CharacterValueExpression} }
 
 character_factor /* CharacterPrimary */ :
-    character_primary
+    character_primary { $$.v = $1.v as CharacterPrimary }
 
 character_primary /* CharacterPrimary */ :
     value_expression_primary   { $$.v = CharacterPrimary($1.v as ValueExpressionPrimary) }
   | string_value_function      { $$.v = CharacterPrimary($1.v as CharacterValueFunction) }
 
 set_function_specification /* AggregateFunction */ :
-    aggregate_function
+    aggregate_function { $$.v = $1.v as AggregateFunction }
 
 table_reference /* TableReference */ :
     table_factor   { $$.v = TableReference($1.v as TablePrimary) }
@@ -1270,7 +1270,7 @@ qualified_join /* QualifiedJoin */ :
     }
 
 table_factor /* TablePrimary */ :
-    table_primary
+    table_primary { $$.v = $1.v as TablePrimary }
 
 table_primary /* TablePrimary */ :
     table_or_query_name { 
@@ -1278,7 +1278,7 @@ table_primary /* TablePrimary */ :
         body: $1.v as Identifier
       }
      }
-  | derived_table
+  | derived_table { $$.v = $1.v as TablePrimary }
   | derived_table correlation_or_recognition {
     $$.v = TablePrimary{
       body:        ($1.v as TablePrimary).body
@@ -1313,13 +1313,13 @@ correlation_or_recognition /* Correlation */ :
     }
 
 derived_table /* TablePrimary */ :
-    table_subquery
+    table_subquery { $$.v = $1.v as TablePrimary }
 
 table_or_query_name /* Identifier */ :
-    table_name
+    table_name { $$.v = $1.v as Identifier }
 
 derived_column_list /* []Identifier */ :
-    column_name_list
+    column_name_list { $$.v = $1.v as []Identifier }
 
 column_name_list /* []Identifier */ :
     column_name                              { $$.v = [$1.v as Identifier] }
@@ -1345,11 +1345,11 @@ sequence_generator_definition /* Stmt */ :
     }
 
 sequence_generator_options /* []SequenceGeneratorOption */ :
-    sequence_generator_option
-  | sequence_generator_options sequence_generator_option
+    sequence_generator_option { $$.v = $1.v as []SequenceGeneratorOption }
+  | sequence_generator_options sequence_generator_option { $$.v = $1.v as []SequenceGeneratorOption }
 
 sequence_generator_option /* []SequenceGeneratorOption */ :
-    common_sequence_generator_options
+    common_sequence_generator_options { $$.v = $1.v as []SequenceGeneratorOption }
 
 common_sequence_generator_options /* []SequenceGeneratorOption */ :
     common_sequence_generator_option    { $$.v = [$1.v as SequenceGeneratorOption] }
@@ -1358,7 +1358,7 @@ common_sequence_generator_options /* []SequenceGeneratorOption */ :
 
 common_sequence_generator_option /* SequenceGeneratorOption */ :
     sequence_generator_start_with_option   { $$.v = SequenceGeneratorOption($1.v as SequenceGeneratorStartWithOption) }
-  | basic_sequence_generator_option
+  | basic_sequence_generator_option { $$.v = $1.v as SequenceGeneratorOption }
 
 basic_sequence_generator_option /* SequenceGeneratorOption */ :
     sequence_generator_increment_by_option   { $$.v = SequenceGeneratorOption($1.v as SequenceGeneratorIncrementByOption) }
@@ -1375,7 +1375,7 @@ sequence_generator_start_with_option /* SequenceGeneratorStartWithOption */ :
     }
 
 sequence_generator_start_value /* Value */ :
-    signed_numeric_literal
+    signed_numeric_literal { $$.v = $1.v as Value }
 
 sequence_generator_increment_by_option /* SequenceGeneratorIncrementByOption */ :
     INCREMENT BY
@@ -1386,7 +1386,7 @@ sequence_generator_increment_by_option /* SequenceGeneratorIncrementByOption */ 
     }
 
 sequence_generator_increment /* Value */ :
-    signed_numeric_literal
+    signed_numeric_literal { $$.v = $1.v as Value }
 
 sequence_generator_maxvalue_option /* SequenceGeneratorMaxvalueOption */ :
     MAXVALUE
@@ -1398,7 +1398,7 @@ sequence_generator_maxvalue_option /* SequenceGeneratorMaxvalueOption */ :
   | NO MAXVALUE                      { $$.v = SequenceGeneratorMaxvalueOption{} }
 
 sequence_generator_max_value /* Value */ :
-    signed_numeric_literal
+    signed_numeric_literal { $$.v = $1.v as Value }
 
 sequence_generator_minvalue_option /* SequenceGeneratorMinvalueOption */ :
     MINVALUE
@@ -1408,14 +1408,14 @@ sequence_generator_minvalue_option /* SequenceGeneratorMinvalueOption */ :
   | NO MINVALUE                      { $$.v = SequenceGeneratorMinvalueOption{} }
 
 sequence_generator_min_value /* Value */ :
-    signed_numeric_literal
+    signed_numeric_literal { $$.v = $1.v as Value }
 
 sequence_generator_cycle_option /* bool */ :
     CYCLE      { $$.v = true }
   | NO CYCLE   { $$.v = false }
 
 search_condition /* BooleanValueExpression */ :
-    boolean_value_expression
+    boolean_value_expression { $$.v = $1.v as BooleanValueExpression }
 
 value_expression:
     common_value_expression { $$.v = ValueExpression($1.v as CommonValueExpression) }
@@ -1440,13 +1440,13 @@ grouping_element_list /* []Identifier */ :
   | grouping_element_list comma grouping_element   { $$.v = append_list($1.v as []Identifier, $3.v as Identifier) }
 
 grouping_element /* Identifier */ :
-    ordinary_grouping_set
+    ordinary_grouping_set { $$.v = $1.v as Identifier }
 
 ordinary_grouping_set /* Identifier */ :
-    grouping_column_reference
+    grouping_column_reference { $$.v = $1.v as Identifier }
 
 grouping_column_reference /* Identifier */ :
-    column_reference
+    column_reference { $$.v = $1.v as Identifier }
 
 boolean_value_expression:
   boolean_term { $$.v = BooleanValueExpression{term: $1.v as BooleanTerm} }
@@ -1500,47 +1500,47 @@ unique_specification:
   PRIMARY KEY
 
 unique_column_list /* []Identifier */ :
-  column_name_list
+  column_name_list { $$.v = $1.v as []Identifier }
 
 table_row_value_expression:
     row_value_constructor { $$.v = $1.v as RowValueConstructor }
 
 contextually_typed_row_value_expression /* ContextuallyTypedRowValueConstructor */ :
-  contextually_typed_row_value_constructor
+  contextually_typed_row_value_constructor { $$.v = $1.v as ContextuallyTypedRowValueConstructor }
 
 row_value_predicand /* RowValueConstructorPredicand */ :
-  row_value_constructor_predicand
+  row_value_constructor_predicand { $$.v = $1.v as RowValueConstructorPredicand }
 
 sql_schema_statement /* Stmt */ :
-    sql_schema_definition_statement
-  | sql_schema_manipulation_statement
+    sql_schema_definition_statement { $$.v = $1.v as Stmt }
+  | sql_schema_manipulation_statement { $$.v = $1.v as Stmt }
 
 sql_schema_definition_statement /* Stmt */ :
-    schema_definition
-  | table_definition
-  | sequence_generator_definition
+    schema_definition { $$.v = $1.v as Stmt }
+  | table_definition { $$.v = $1.v as Stmt }
+  | sequence_generator_definition { $$.v = $1.v as Stmt }
 
 sql_schema_manipulation_statement /* Stmt */ :
-    drop_schema_statement
-  | drop_table_statement
+    drop_schema_statement { $$.v = $1.v as Stmt }
+  | drop_table_statement { $$.v = $1.v as Stmt }
   | alter_sequence_generator_statement { $$.v = Stmt($1.v as AlterSequenceGeneratorStatement) }
-  | drop_sequence_generator_statement
+  | drop_sequence_generator_statement { $$.v = $1.v as Stmt }
 
 sql_transaction_statement /* Stmt */ :
-    start_transaction_statement
-  | commit_statement
-  | rollback_statement
+    start_transaction_statement { $$.v = $1.v as Stmt }
+  | commit_statement { $$.v = $1.v as Stmt }
+  | rollback_statement { $$.v = $1.v as Stmt }
 
 sql_session_statement /* Stmt */ :
-    set_schema_statement
-  | set_catalog_statement
+    set_schema_statement { $$.v = $1.v as Stmt }
+  | set_catalog_statement { $$.v = $1.v as Stmt }
 
 datetime_value_function /* DatetimeValueFunction */ :
-    current_date_value_function
-  | current_time_value_function
-  | current_timestamp_value_function
-  | current_local_time_value_function
-  | current_local_timestamp_value_function
+    current_date_value_function { $$.v = $1.v as DatetimeValueFunction }
+  | current_time_value_function { $$.v = $1.v as DatetimeValueFunction }
+  | current_timestamp_value_function { $$.v = $1.v as DatetimeValueFunction }
+  | current_local_time_value_function { $$.v = $1.v as DatetimeValueFunction }
+  | current_local_timestamp_value_function { $$.v = $1.v as DatetimeValueFunction }
 
 current_date_value_function /* DatetimeValueFunction */ :
     CURRENT_DATE   { $$.v = CurrentDate{} }
@@ -1564,22 +1564,22 @@ current_local_timestamp_value_function /* DatetimeValueFunction */ :
     left_paren timestamp_precision right_paren   { $$.v = LocalTimestamp{($3.v as string).int()} }
 
 joined_table /* QualifiedJoin */ :
-    qualified_join
+    qualified_join { $$.v = $1.v as QualifiedJoin }
 
 join_specification /* BooleanValueExpression */ :
-    join_condition
+    join_condition { $$.v = $1.v as BooleanValueExpression }
 
 join_condition /* BooleanValueExpression */ :
     ON search_condition   { $$.v = $2.v }
 
 join_type /* string */ :
     INNER
-  | outer_join_type
-  | outer_join_type OUTER   { $$.v = $1.v }
+  | outer_join_type { $$.v = $1.v as string }
+  | outer_join_type OUTER   { $$.v = $1.v as string }
 
 outer_join_type /* string */ :
-    LEFT
-  | RIGHT
+    LEFT { $$.v = $1.v as string }
+  | RIGHT { $$.v = $1.v as string }
 
 null_predicate /* NullPredicate */ :
     row_value_predicand null_predicate_part_2   { $$.v = NullPredicate{$1.v as RowValueConstructorPredicand, !($2.v as bool)} }
@@ -1666,7 +1666,7 @@ query_primary:
   simple_table { $$.v = $1.v as SimpleTable }
 
 simple_table:
-    query_specification
+    query_specification { $$.v = $1.v as SimpleTable }
   | table_value_constructor { $$.v = $1.v as SimpleTable }
 
 order_by_clause /* []SortSpecification */ :
@@ -1682,13 +1682,13 @@ fetch_first_clause /* ValueSpecification */ :
     ONLY                     { $$.v = $3.v }
 
 fetch_first_quantity /* ValueSpecification */ :
-    fetch_first_row_count
+    fetch_first_row_count { $$.v = $1.v as ValueSpecification }
 
 offset_row_count /* ValueSpecification */ :
-    simple_value_specification
+    simple_value_specification { $$.v = $1.v as ValueSpecification }
 
 fetch_first_row_count /* ValueSpecification */ :
-    simple_value_specification
+    simple_value_specification { $$.v = $1.v as ValueSpecification }
 
 row_or_rows :
     ROW
@@ -1705,23 +1705,23 @@ similar_predicate_part_2 /* SimilarPredicate */ :
   | NOT SIMILAR TO similar_pattern   { $$.v = SimilarPredicate{none, $4.v as CharacterValueExpression, true} }
 
 similar_pattern /* CharacterValueExpression */ :
-    character_value_expression
+    character_value_expression { $$.v = $1.v as CharacterValueExpression }
 
 left_paren : OPERATOR_LEFT_PAREN
 
 right_paren : OPERATOR_RIGHT_PAREN
 
-asterisk /* string */ : OPERATOR_ASTERISK
+asterisk /* string */ : OPERATOR_ASTERISK { $$.v = $1.v as string }
 
-plus_sign /* string */ : OPERATOR_PLUS
+plus_sign /* string */ : OPERATOR_PLUS { $$.v = $1.v as string }
 
 comma : OPERATOR_COMMA
 
-minus_sign /* string */ : OPERATOR_MINUS
+minus_sign /* string */ : OPERATOR_MINUS { $$.v = $1.v as string }
 
 period : OPERATOR_PERIOD
 
-solidus /* string */ : OPERATOR_SOLIDUS
+solidus /* string */ : OPERATOR_SOLIDUS { $$.v = $1.v as string }
 
 colon : OPERATOR_COLON
 
@@ -1732,10 +1732,10 @@ equals_operator : OPERATOR_EQUALS
 greater_than_operator : OPERATOR_GREATER_THAN
 
 table_constraint_definition /* TableElement */ :
-  table_constraint
+  table_constraint { $$.v = $1.v as TableElement }
 
 table_constraint /* TableElement */ :
-  unique_constraint_definition
+  unique_constraint_definition { $$.v = $1.v as TableElement }
 
 column_definition /* TableElement */ :
     column_name data_type_or_domain_name   { $$.v = Column{$1.v as Identifier, $2.v as Type, false} }
@@ -1743,10 +1743,10 @@ column_definition /* TableElement */ :
     column_constraint_definition             { $$.v = Column{$1.v as Identifier, $2.v as Type, $3.v as bool} }
 
 data_type_or_domain_name /* Type */ :
-    data_type
+    data_type { $$.v = $1.v as Table }
 
 column_constraint_definition /* bool */ :
-    column_constraint
+    column_constraint { $$.v = $1.v as bool }
 
 column_constraint /* bool */ :
     NOT NULL   { $$.v = true }
@@ -1766,14 +1766,14 @@ general_set_function /* AggregateFunction */ :
     value_expression right_paren   { $$.v = RoutineInvocation{$1.v as string, [$3.v as ValueExpression]} }
 
 set_function_type /* string */ :
-    computational_operation
+    computational_operation { $$.v = $1.v as string }
 
 computational_operation /* string */ :
-    AVG
-  | MAX
-  | MIN
-  | SUM
-  | COUNT
+    AVG { $$.v = $1.v as string }
+  | MAX { $$.v = $1.v as string }
+  | MIN { $$.v = $1.v as string }
+  | SUM { $$.v = $1.v as string }
+  | COUNT { $$.v = $1.v as string }
 
 set_catalog_statement:
   SET catalog_name_characteristic {
@@ -1781,7 +1781,7 @@ set_catalog_statement:
   }
 
 catalog_name_characteristic /* ValueSpecification */ :
-  CATALOG value_specification
+  CATALOG value_specification { $$.v = $1.v as ValueSpecification }
 
 drop_table_statement /* Stmt */ :
     DROP TABLE table_name   { $$.v = Stmt(DropTableStatement{$3.v as Identifier}) }
@@ -1795,7 +1795,7 @@ unsigned_value_specification:
 | general_value_specification   { $$.v = ValueSpecification($1.v as GeneralValueSpecification) }
 
 general_value_specification:
-    host_parameter_specification
+    host_parameter_specification { $$.v = $1.v as GeneralValueSpecification }
   | CURRENT_CATALOG                  { $$.v = GeneralValueSpecification(CurrentCatalog{}) }
   | CURRENT_SCHEMA                   { $$.v = GeneralValueSpecification(CurrentSchema{}) }
 
@@ -1804,7 +1804,7 @@ simple_value_specification:
 | host_parameter_name   { $$.v = ValueSpecification($1.v as Value) }
 
 host_parameter_specification /* GeneralValueSpecification */ :
-    host_parameter_name
+    host_parameter_name { $$.v = $1.v as GeneralValueSpecification }
 
 insert_statement:
   INSERT INTO insertion_target insert_columns_and_source {
@@ -1813,10 +1813,10 @@ insert_statement:
   }
 
 insertion_target /* Identifier */ :
-    table_name
+    table_name { $$.v = $1.v as Identifier }
 
 insert_columns_and_source /* InsertStatement */ :
-  from_constructor
+  from_constructor { $$.v = $1.v as InsertStatement }
 
 from_constructor:
   left_paren insert_column_list right_paren
@@ -1828,7 +1828,7 @@ from_constructor:
   }
 
 insert_column_list /* []Identifier */ :
-    column_name_list
+    column_name_list { $$.v = $1.v as []Identifier }
 
 value_expression_primary:
   parenthesized_value_expression {
@@ -1865,7 +1865,7 @@ nonparenthesized_value_expression_primary:
     }
 
 string_value_function /* CharacterValueFunction */ :
-    character_value_function
+    character_value_function { $$.v = $1.v as CharacterValueFunction }
 
 character_value_function:
   character_substring_function   { $$.v = CharacterValueFunction($1.v as CharacterSubstringFunction) }
@@ -1907,7 +1907,7 @@ fold:
   }
 
 trim_function:
-  TRIM left_paren trim_operands right_paren { $$.v = $3.v }
+  TRIM left_paren trim_operands right_paren { $$.v = $3.v as TrimFunction }
 
 trim_operands:
   trim_source {
@@ -1930,21 +1930,21 @@ trim_operands:
   }
 
 trim_source /* CharacterValueExpression */ :
-    character_value_expression
+    character_value_expression { $$.v = $1.v as CharacterValueExpression }
 
 trim_specification /* string */ :
-    LEADING
-  | TRAILING
-  | BOTH
+    LEADING { $$.v = $1.v as string }
+  | TRAILING { $$.v = $1.v as string }
+  | BOTH { $$.v = $1.v as string }
 
 trim_character /* CharacterValueExpression */ :
-    character_value_expression
+    character_value_expression { $$.v = $1.v as CharacterValueExpression }
 
 start_position /* NumericValueExpression */ :
-    numeric_value_expression
+    numeric_value_expression { $$.v = $1.v as NumericValueExpression }
 
 string_length /* NumericValueExpression */ :
-    numeric_value_expression
+    numeric_value_expression { $$.v = $1.v as NumericValueExpression }
 
 numeric_value_expression:
   term { $$.v = NumericValueExpression{term: $1.v as Term} }
@@ -1998,7 +1998,7 @@ sql_argument_list:
   }
 
 sql_argument /* ValueExpression */ :
-    value_expression
+    value_expression { $$.v = $1.v as ValueExpression }
 
 %%
 
@@ -2028,7 +2028,8 @@ type YYSym = Value | ValueSpecification | ValueExpression | RowValueConstructor
   | SequenceGeneratorMaxvalueOption | SequenceGeneratorMinvalueOption
   | Predicate | UniqueConstraintDefinition | CurrentDate
   | CurrentTime | LocalTime | CurrentTimestamp | LocalTimestamp | NullPredicate
-  | SimilarPredicate | Column | SetSchemaStatement | AggregateFunctionCount;
+  | SimilarPredicate | Column | SetSchemaStatement | AggregateFunctionCount
+  | Table;
 
 pub struct YYSymType {
 pub mut:

@@ -3,6 +3,61 @@
 
 module vsql
 
+type YYSym = Value | ValueSpecification | ValueExpression | RowValueConstructor
+  | []RowValueConstructor | BooleanValueExpression | NumericValueExpression
+  | CommonValueExpression | BooleanTerm | ValueExpressionPrimary | SelectList
+  | NumericPrimary | Term | BooleanTest | BooleanPrimary | BooleanPredicand
+  | NonparenthesizedValueExpressionPrimary | SimpleTable | QueryExpression
+  | Stmt | string | Identifier | IdentifierChain | RoutineInvocation
+  | []ContextuallyTypedRowValueConstructor | NextValueExpression | DerivedColumn
+  | ContextuallyTypedRowValueConstructor | CaseExpression | TableExpression
+  | []vsql.ValueExpression | []SequenceGeneratorOption | QualifiedAsteriskExpr
+  | AlterSequenceGeneratorStatement | SequenceGeneratorOption | []DerivedColumn
+  | SequenceGeneratorRestartOption | CastSpecification | CharacterPrimary
+  | SortSpecification | []SortSpecification | bool | TablePrimary
+  | map[string]UpdateSource | UpdateSource | NullSpecification | []TableElement
+  | TableElement | DatetimePrimary | DatetimeValueFunction | CastOperand | Type
+  | GeneralValueSpecification | []Identifier | InsertStatement | Concatenation
+  | ParenthesizedValueExpression | AggregateFunction | CharacterValueFunction
+  | CharacterSubstringFunction | TrimFunction | CharacterValueExpression
+  | BetweenPredicate | RowValueConstructorPredicand | CharacterLikePredicate
+  | ComparisonPredicatePart2 | ComparisonPredicate | QuerySpecification
+  | ExplicitRowValueConstructor | ContextuallyTypedRowValueConstructorElement
+  | []ContextuallyTypedRowValueConstructorElement | TableReference
+  | QualifiedJoin | Correlation | SequenceGeneratorDefinition
+  | SequenceGeneratorStartWithOption | SequenceGeneratorIncrementByOption
+  | SequenceGeneratorMaxvalueOption | SequenceGeneratorMinvalueOption
+  | Predicate | UniqueConstraintDefinition | CurrentDate
+  | CurrentTime | LocalTime | CurrentTimestamp | LocalTimestamp | NullPredicate
+  | SimilarPredicate | Column | SetSchemaStatement | AggregateFunctionCount
+  | Table;
+
+struct YYSymType {
+mut:
+  v YYSym
+  yys int
+}
+
+struct Lexer {
+mut:
+  tokens []Tok
+  pos int
+}
+
+fn (mut l Lexer) lex(mut lval YYSymType) int {
+  if l.pos >= l.tokens.len {
+    return 0
+  }
+
+  l.pos++
+  unsafe { *lval = l.tokens[l.pos-1].sym }
+  return l.tokens[l.pos-1].token
+}
+
+fn (mut l Lexer) error(s string)! {
+  return error(s)
+}
+
 // Except for the eof and the keywords, the other tokens use the names described
 // in the SQL standard.
 enum TokenKind {
@@ -203,7 +258,7 @@ fn tokenize2(sql_stmt string) []Tok {
 				i++
 			}
 			i++
-			tokens << Tok{token_literal_string, YYSymType{v: word}}
+			tokens << Tok{token_literal_string, YYSymType{v: new_varchar_value(word)}}
 			continue
 		}
 
@@ -216,7 +271,7 @@ fn tokenize2(sql_stmt string) []Tok {
 				i++
 			}
 			i++
-			tokens << Tok{token_literal_identifier, YYSymType{v: '"${word}"'}}
+			tokens << Tok{token_literal_identifier, YYSymType{v: IdentifierChain{identifier: word}}}
 			continue
 		}
 
@@ -226,9 +281,12 @@ fn tokenize2(sql_stmt string) []Tok {
 			'>=': token_operator_greater_equals
 			'<=': token_operator_less_equals
 			'||': token_operator_double_pipe
+			// fake
+			'.*': token_operator_period_asterisk
+			'(*': token_operator_left_paren_asterisk
 		}
 		for op, tk in multi {
-			if cs[i] == op[0] && cs[i + 1] == op[1] {
+			if i < cs.len - 1 && cs[i] == op[0] && cs[i + 1] == op[1] {
 				tokens << Tok{tk, YYSymType{v: op}}
 				i += 2
 				continue next
@@ -283,7 +341,7 @@ fn tokenize2(sql_stmt string) []Tok {
 		}
 		
 		if !found {
-			Tok{token_literal_identifier, YYSymType{v: word}}
+			tokens << Tok{token_literal_identifier, YYSymType{v: IdentifierChain{identifier: word}}}
 		}
 	}
 

@@ -41,10 +41,10 @@ mut:
 	// unary_operators and binary_operators are for operators (see operators.v)
 	unary_operators  map[string]UnaryOperatorFunc
 	binary_operators map[string]BinaryOperatorFunc
-	// current_schema is where to search for unquailified table names. It will
+	// current_schema is where to search for unqualified table names. It will
 	// have an initial value of 'PUBLIC'.
 	current_schema string
-	// current_catalog (also known as the database). It will have an inital value
+	// current_catalog (also known as the database). It will have an initial value
 	// derived from the first database file loaded.
 	current_catalog string
 pub mut:
@@ -245,15 +245,29 @@ fn (mut conn CatalogConnection) release_read_connection() {
 pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 	// tokens := tokenize2(sql_stmt)
 	println(sql_stmt)
+
 	t := start_timer()
-	stmt, params, explain := conn.query_cache.parse(sql_stmt) or {
-		mut catalog := conn.catalog()
-		catalog.storage.transaction_aborted()
-		return err
+
+	mut tokens := tokenize2(sql_stmt)
+
+	// EXPLAIN is super helpful, but not part of the SQL standard so we only
+	// treat it as a prefix that is trimmed off before parsing.
+	mut explain := false
+	if tokens[0].sym.v is IdentifierChain {
+		if tokens[0].sym.v.identifier.to_upper() == 'EXPLAIN' {
+			explain = true
+			tokens = tokens[1..].clone()
+		}
 	}
+
+	mut lexer := Lexer{tokens, 0}
+	mut parser := yy_new_parser()
+  parser.parse(mut lexer)!
+
+	stmt := (parser as YYParserImpl).lval.v as Stmt
 	elapsed_parse := t.elapsed()
 
-	return PreparedStmt{stmt, params, explain, &conn, elapsed_parse}
+	return PreparedStmt{stmt, map[string]Value{}, explain, &conn, elapsed_parse}
 }
 
 // query executes a statement. If there is a result set it will be returned.

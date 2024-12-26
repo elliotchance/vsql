@@ -633,6 +633,7 @@ fn (mut y Vyacc) setup() ! {
 			}
 			y.levprd[y.nprod] |= actflag
 			y.fcode.write_string('\n\t${y.nprod} {')
+			y.fcode.write_string('\n\tprintln(${y.nprod})')
 			y.fcode.write_string('\n\t\t${y.prefix}_dollar = ${y.prefix}_s[${y.prefix}pt-${mem - 1}..${y.prefix}pt+1].clone()')
 			y.cpyact(curprod, mem)!
 			y.fcode.write_string('\n\t}')
@@ -3312,7 +3313,7 @@ const $\$_error_verbose = true
 interface YYLexer {
 mut:
 	lex(mut lval YYSymType) int
-	error(s string)
+	error(s string)!
 }
 
 interface YYParser {
@@ -3558,7 +3559,7 @@ $\$default:
 		/* error ... attempt to resume parsing */
 		match err_flag {
 		0 { /* brand new error */
-			$\$lex.error($\$_error_message($\$state, $\$token))
+			$\$lex.error($\$_error_message($\$state, $\$token))!
 			n_errs++
 			if $\$_debug >= 1 {
 				print($\$_statname($\$state))

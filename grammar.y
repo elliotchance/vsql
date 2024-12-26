@@ -76,6 +76,7 @@ import math
 %token OPERATOR_PERIOD OPERATOR_SOLIDUS OPERATOR_COLON OPERATOR_LESS_THAN;
 %token OPERATOR_GREATER_THAN OPERATOR_DOUBLE_PIPE OPERATOR_NOT_EQUALS;
 %token OPERATOR_GREATER_EQUALS OPERATOR_LESS_EQUALS OPERATOR_SEMICOLON;
+%token OPERATOR_PERIOD_ASTERISK OPERATOR_LEFT_PAREN_ASTERISK;
 
 // literals
 %token LITERAL_IDENTIFIER LITERAL_STRING LITERAL_NUMBER;
@@ -112,7 +113,7 @@ row_value_expression_list:
 
 contextually_typed_table_value_constructor:
   VALUES contextually_typed_row_value_expression_list {
-    $$.v = $1.v as []ContextuallyTypedRowValueConstructor
+    $$.v = $2.v as []ContextuallyTypedRowValueConstructor
   }
 
 contextually_typed_row_value_expression_list:
@@ -510,7 +511,7 @@ between_predicate_part_2:
     $$.v = BetweenPredicate{
       not:       !($1.v as bool)
       symmetric: false
-      left:      $3.v as RowValueConstructorPredicand
+      left:      $2.v as RowValueConstructorPredicand
       right:     $4.v as RowValueConstructorPredicand
     }
   }
@@ -520,7 +521,7 @@ between_predicate_part_2:
       not:       !($1.v as bool)
       symmetric: $2.v as bool
       left:      $3.v as RowValueConstructorPredicand
-      right:     $4.v as RowValueConstructorPredicand
+      right:     $5.v as RowValueConstructorPredicand
     }
   }
 
@@ -576,7 +577,7 @@ column_name /* Identifier */ :
     identifier   { $$.v = new_column_identifier(($1.v as IdentifierChain).identifier)! }
 
 host_parameter_name:
-    colon identifier   { $$.v = GeneralValueSpecification(HostParameterName{($1.v as IdentifierChain).identifier}) }
+    colon identifier   { $$.v = GeneralValueSpecification(HostParameterName{($2.v as IdentifierChain).identifier}) }
 
 correlation_name /* Identifier */ :
     identifier   { $$.v = new_column_identifier(($1.v as IdentifierChain).identifier)! }
@@ -1173,11 +1174,11 @@ contextually_typed_row_value_constructor /* ContextuallyTypedRowValueConstructor
   | boolean_value_expression                       { $$.v = ContextuallyTypedRowValueConstructor($1.v as BooleanValueExpression) }
   | contextually_typed_value_specification         { $$.v = ContextuallyTypedRowValueConstructor($1.v as NullSpecification) }
   | left_paren contextually_typed_value_specification
-    right_paren                                    { $$.v = ContextuallyTypedRowValueConstructor($1.v as NullSpecification) }
+    right_paren                                    { $$.v = ContextuallyTypedRowValueConstructor($2.v as NullSpecification) }
   | left_paren
     contextually_typed_row_value_constructor_element comma
     contextually_typed_row_value_constructor_element_list
-    right_paren                                    { $$.v = push_list($2.v as ContextuallyTypedRowValueConstructorElement, $4.v as []ContextuallyTypedRowValueConstructorElement) }
+    right_paren                                    { $$.v = ContextuallyTypedRowValueConstructor(push_list($2.v as ContextuallyTypedRowValueConstructorElement, $4.v as []ContextuallyTypedRowValueConstructorElement)) }
 
 contextually_typed_row_value_constructor_element_list /* []ContextuallyTypedRowValueConstructorElement */ :
     contextually_typed_row_value_constructor_element        { $$.v = [$1.v as ContextuallyTypedRowValueConstructorElement] }
@@ -1207,23 +1208,24 @@ select_list:
   | select_list comma select_sublist   {
     mut new_select_list := (($1.v as SelectList) as []DerivedColumn).clone()
     new_select_list << (($3.v as SelectList) as []DerivedColumn)[0]
-    $$.v = new_select_list
+    $$.v = SelectList(new_select_list)
   }
 
 select_sublist /* SelectList */ :
     derived_column       { $$.v = SelectList([$1.v as DerivedColumn]) }
   | qualified_asterisk   { $$.v = SelectList($1.v as QualifiedAsteriskExpr) }
 
+// was: asterisked_identifier_chain period asterisk
 qualified_asterisk /* QualifiedAsteriskExpr */ :
-    asterisked_identifier_chain period asterisk   {
+    asterisked_identifier_chain OPERATOR_PERIOD_ASTERISK   {
       $$.v = QualifiedAsteriskExpr{new_column_identifier(($1.v as IdentifierChain).identifier)!}
       }
 
-asterisked_identifier_chain /* IdentifierChain */ :
-    asterisked_identifier { $$.v = $1.v as IdentifierChain }
+asterisked_identifier_chain:
+  asterisked_identifier { $$.v = $1.v as IdentifierChain }
 
-asterisked_identifier /* IdentifierChain */ :
-    identifier { $$.v = $1.v as IdentifierChain }
+asterisked_identifier:
+  identifier { $$.v = $1.v as IdentifierChain }
 
 derived_column /* DerivedColumn */ :
     value_expression               { $$.v = DerivedColumn{$1.v as ValueExpression, Identifier{}} }
@@ -1243,7 +1245,7 @@ character_value_expression /* CharacterValueExpression */ :
 concatenation /* Concatenation */ :
     character_value_expression
     concatenation_operator
-    character_factor             { $$.v = Concatenation{$1.v as CharacterValueExpression, $3.v as CharacterValueExpression} }
+    character_factor             { $$.v = Concatenation{$1.v as CharacterValueExpression, $3.v as CharacterPrimary} }
 
 character_factor /* CharacterPrimary */ :
     character_primary { $$.v = $1.v as CharacterPrimary }
@@ -1518,7 +1520,7 @@ sql_schema_statement /* Stmt */ :
 sql_schema_definition_statement /* Stmt */ :
     schema_definition { $$.v = $1.v as Stmt }
   | table_definition { $$.v = $1.v as Stmt }
-  | sequence_generator_definition { $$.v = $1.v as Stmt }
+  | sequence_generator_definition { $$.v = Stmt($1.v as SequenceGeneratorDefinition) }
 
 sql_schema_manipulation_statement /* Stmt */ :
     drop_schema_statement { $$.v = $1.v as Stmt }
@@ -1532,15 +1534,15 @@ sql_transaction_statement /* Stmt */ :
   | rollback_statement { $$.v = $1.v as Stmt }
 
 sql_session_statement /* Stmt */ :
-    set_schema_statement { $$.v = $1.v as Stmt }
+    set_schema_statement { $$.v = Stmt($1.v as SetSchemaStatement) }
   | set_catalog_statement { $$.v = $1.v as Stmt }
 
 datetime_value_function /* DatetimeValueFunction */ :
-    current_date_value_function { $$.v = $1.v as DatetimeValueFunction }
-  | current_time_value_function { $$.v = $1.v as DatetimeValueFunction }
-  | current_timestamp_value_function { $$.v = $1.v as DatetimeValueFunction }
-  | current_local_time_value_function { $$.v = $1.v as DatetimeValueFunction }
-  | current_local_timestamp_value_function { $$.v = $1.v as DatetimeValueFunction }
+    current_date_value_function { $$.v = DatetimeValueFunction($1.v as CurrentDate) }
+  | current_time_value_function { $$.v = DatetimeValueFunction($1.v as CurrentTime) }
+  | current_timestamp_value_function { $$.v = DatetimeValueFunction($1.v as CurrentTimestamp) }
+  | current_local_time_value_function { $$.v = DatetimeValueFunction($1.v as LocalTime) }
+  | current_local_timestamp_value_function { $$.v = DatetimeValueFunction($1.v as LocalTimestamp) }
 
 current_date_value_function /* DatetimeValueFunction */ :
     CURRENT_DATE   { $$.v = CurrentDate{} }
@@ -1666,7 +1668,7 @@ query_primary:
   simple_table { $$.v = $1.v as SimpleTable }
 
 simple_table:
-    query_specification { $$.v = $1.v as SimpleTable }
+    query_specification { $$.v = SimpleTable($1.v as QuerySpecification) }
   | table_value_constructor { $$.v = $1.v as SimpleTable }
 
 order_by_clause /* []SortSpecification */ :
@@ -1735,15 +1737,15 @@ table_constraint_definition /* TableElement */ :
   table_constraint { $$.v = $1.v as TableElement }
 
 table_constraint /* TableElement */ :
-  unique_constraint_definition { $$.v = $1.v as TableElement }
+  unique_constraint_definition { $$.v = TableElement($1.v as UniqueConstraintDefinition) }
 
 column_definition /* TableElement */ :
-    column_name data_type_or_domain_name   { $$.v = Column{$1.v as Identifier, $2.v as Type, false} }
+    column_name data_type_or_domain_name   { $$.v = TableElement(Column{$1.v as Identifier, $2.v as Type, false}) }
   | column_name data_type_or_domain_name
-    column_constraint_definition             { $$.v = Column{$1.v as Identifier, $2.v as Type, $3.v as bool} }
+    column_constraint_definition             { $$.v = TableElement(Column{$1.v as Identifier, $2.v as Type, $3.v as bool}) }
 
 data_type_or_domain_name /* Type */ :
-    data_type { $$.v = $1.v as Table }
+    data_type { $$.v = $1.v as Type }
 
 column_constraint_definition /* bool */ :
     column_constraint { $$.v = $1.v as bool }
@@ -1757,13 +1759,14 @@ set_schema_statement /* Stmt */ :
 schema_name_characteristic /* ValueSpecification */ :
     SCHEMA value_specification   { $$.v = $2.v }
 
+// was: COUNT left_paren asterisk right_paren
 aggregate_function /* AggregateFunction */ :
-    COUNT left_paren asterisk right_paren   { $$.v = AggregateFunctionCount{} }
-  | general_set_function
+    COUNT OPERATOR_LEFT_PAREN_ASTERISK right_paren   { $$.v = AggregateFunction(AggregateFunctionCount{}) }
+  | general_set_function { $$.v = $1.v as AggregateFunction }
 
 general_set_function /* AggregateFunction */ :
     set_function_type left_paren
-    value_expression right_paren   { $$.v = RoutineInvocation{$1.v as string, [$3.v as ValueExpression]} }
+    value_expression right_paren   { $$.v = AggregateFunction(RoutineInvocation{$1.v as string, [$3.v as ValueExpression]}) }
 
 set_function_type /* string */ :
     computational_operation { $$.v = $1.v as string }
@@ -1781,7 +1784,7 @@ set_catalog_statement:
   }
 
 catalog_name_characteristic /* ValueSpecification */ :
-  CATALOG value_specification { $$.v = $1.v as ValueSpecification }
+  CATALOG value_specification { $$.v = $2.v as ValueSpecification }
 
 drop_table_statement /* Stmt */ :
     DROP TABLE table_name   { $$.v = Stmt(DropTableStatement{$3.v as Identifier}) }
@@ -1801,7 +1804,7 @@ general_value_specification:
 
 simple_value_specification:
   literal               { $$.v = ValueSpecification($1.v as Value) }
-| host_parameter_name   { $$.v = ValueSpecification($1.v as Value) }
+| host_parameter_name   { $$.v = ValueSpecification($1.v as GeneralValueSpecification) }
 
 host_parameter_specification /* GeneralValueSpecification */ :
     host_parameter_name { $$.v = $1.v as GeneralValueSpecification }
@@ -1834,7 +1837,7 @@ value_expression_primary:
   parenthesized_value_expression {
     $$.v = ValueExpressionPrimary($1.v as ParenthesizedValueExpression)
   }
-| nonparenthesized_value_expression_primary
+| nonparenthesized_value_expression_primary { $$.v = ValueExpressionPrimary($1.v as NonparenthesizedValueExpressionPrimary) }
 
 parenthesized_value_expression:
   left_paren value_expression right_paren {
@@ -2002,68 +2005,14 @@ sql_argument /* ValueExpression */ :
 
 %%
 
-type YYSym = Value | ValueSpecification | ValueExpression | RowValueConstructor
-  | []RowValueConstructor | BooleanValueExpression | NumericValueExpression
-  | CommonValueExpression | BooleanTerm | ValueExpressionPrimary | SelectList
-  | NumericPrimary | Term | BooleanTest | BooleanPrimary | BooleanPredicand
-  | NonparenthesizedValueExpressionPrimary | SimpleTable | QueryExpression
-  | Stmt | string | Identifier | IdentifierChain | RoutineInvocation
-  | []ContextuallyTypedRowValueConstructor | NextValueExpression | DerivedColumn
-  | ContextuallyTypedRowValueConstructor | CaseExpression | TableExpression
-  | []vsql.ValueExpression | []SequenceGeneratorOption | QualifiedAsteriskExpr
-  | AlterSequenceGeneratorStatement | SequenceGeneratorOption | []DerivedColumn
-  | SequenceGeneratorRestartOption | CastSpecification | CharacterPrimary
-  | SortSpecification | []SortSpecification | bool | TablePrimary
-  | map[string]UpdateSource | UpdateSource | NullSpecification | []TableElement
-  | TableElement | DatetimePrimary | DatetimeValueFunction | CastOperand | Type
-  | GeneralValueSpecification | []Identifier | InsertStatement | Concatenation
-  | ParenthesizedValueExpression | AggregateFunction | CharacterValueFunction
-  | CharacterSubstringFunction | TrimFunction | CharacterValueExpression
-  | BetweenPredicate | RowValueConstructorPredicand | CharacterLikePredicate
-  | ComparisonPredicatePart2 | ComparisonPredicate | QuerySpecification
-  | ExplicitRowValueConstructor | ContextuallyTypedRowValueConstructorElement
-  | []ContextuallyTypedRowValueConstructorElement | TableReference
-  | QualifiedJoin | Correlation | SequenceGeneratorDefinition
-  | SequenceGeneratorStartWithOption | SequenceGeneratorIncrementByOption
-  | SequenceGeneratorMaxvalueOption | SequenceGeneratorMinvalueOption
-  | Predicate | UniqueConstraintDefinition | CurrentDate
-  | CurrentTime | LocalTime | CurrentTimestamp | LocalTimestamp | NullPredicate
-  | SimilarPredicate | Column | SetSchemaStatement | AggregateFunctionCount
-  | Table;
-
-pub struct YYSymType {
-pub mut:
-  v YYSym
-  yys int
-}
-
-pub struct Lexer {
-pub mut:
-  tokens []Tok
-  pos int
-}
-
-fn (mut l Lexer) lex(mut lval YYSymType) int {
-  if l.pos >= l.tokens.len {
-    return 0
-  }
-
-  l.pos++
-  unsafe { *lval = l.tokens[l.pos-1].sym }
-  return l.tokens[l.pos-1].token
-}
-
-fn (mut l Lexer) error(s string) {
-  panic(s)
-}
-
 fn yy_error(err IError) {
   println("yy_error: $err")
 }
 
 pub fn main_()! {
   // println(tokenize2("SELECT 'foo' FROM bar WHERE \"baz\" = 12.3"))
-  tokens := tokenize2("VALUES FALSE")
+  tokens := tokenize2("SELECT foo.* FROM foo")
+  println(tokens)
 
   mut lexer := Lexer{
     tokens: tokens

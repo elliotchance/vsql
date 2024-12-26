@@ -475,9 +475,9 @@ timestamp_string /* Value */ :
     LITERAL_STRING { $$.v = $1.v as Value }
 
 boolean_literal:
-    TRUE { $$.v = new_boolean_value(true) }
-  | FALSE { $$.v = new_boolean_value(false) }
-  | UNKNOWN { $$.v = new_unknown_value() }
+  TRUE { $$.v = new_boolean_value(true) }
+| FALSE { $$.v = new_boolean_value(false) }
+| UNKNOWN { $$.v = new_unknown_value() }
 
 contextually_typed_value_specification /* NullSpecification */ :
     implicitly_typed_value_specification { $$.v = $1.v as NullSpecification }
@@ -1465,21 +1465,21 @@ boolean_term:
     }
 
 boolean_factor:
-    boolean_test { $$.v = $1.v as BooleanTest }
-  | NOT boolean_test   {
-      b := $2.v as BooleanTest
-      $$.v = BooleanTest{b.expr, b.not, b.value, !b.inverse}
-    }
+  boolean_test { $$.v = $1.v as BooleanTest }
+| NOT boolean_test   {
+    b := $2.v as BooleanTest
+    $$.v = BooleanTest{b.expr, b.not, b.value, !b.inverse}
+  }
 
 boolean_test:
-    boolean_primary { $$.v = BooleanTest{expr: $1.v as BooleanPrimary} }
+    boolean_primary { println("A1"); $$.v = BooleanTest{expr: $1.v as BooleanPrimary} }
   | boolean_primary IS truth_value       { $$.v = BooleanTest{$1.v as BooleanPrimary, false, $3.v as Value, false} }
-  | boolean_primary IS NOT truth_value   { $$.v = BooleanTest{$1.v as BooleanPrimary, true, $4.v as Value, false} }
+  | boolean_primary IS NOT truth_value   { println("A2"); $$.v = BooleanTest{$1.v as BooleanPrimary, true, $4.v as Value, false} }
 
-truth_value /* Value */ :
-    TRUE      { $$.v = new_boolean_value(true) }
-  | FALSE     { $$.v = new_boolean_value(false) }
-  | UNKNOWN   { $$.v = new_unknown_value() }
+truth_value:
+  TRUE      { $$.v = new_boolean_value(true) }
+| FALSE     { $$.v = new_boolean_value(false) }
+| UNKNOWN   { $$.v = new_unknown_value() }
 
 boolean_primary:
     predicate           { $$.v = BooleanPrimary($1.v as Predicate) }
@@ -1586,9 +1586,9 @@ outer_join_type /* string */ :
 null_predicate /* NullPredicate */ :
     row_value_predicand null_predicate_part_2   { $$.v = NullPredicate{$1.v as RowValueConstructorPredicand, !($2.v as bool)} }
 
-null_predicate_part_2 /* bool */ :
-    IS NULL       { $$.v = true }
-  | IS NOT NULL   { $$.v = false }
+null_predicate_part_2:
+  IS NULL { $$.v = true }
+| IS NOT NULL { $$.v = false }
 
 predicate /* Predicate */ :
     comparison_predicate   { $$.v = Predicate($1.v as ComparisonPredicate) }
@@ -2011,7 +2011,7 @@ fn yy_error(err IError) {
 
 pub fn main_()! {
   // println(tokenize2("SELECT 'foo' FROM bar WHERE \"baz\" = 12.3"))
-  tokens := tokenize2("VALUES NULLIF(123, 123)")
+  tokens := tokenize2("VALUES UNKNOWN IS NOT UNKNOWN")
   // println(tokens)
 
   mut lexer := Lexer{

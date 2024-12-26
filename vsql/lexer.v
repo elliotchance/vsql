@@ -61,10 +61,25 @@ fn (mut l Lexer) error(s string)! {
 fn cleanup_yacc_error(s string) string {
 	mut msg := s
 	msg = msg.replace("OPERATOR_COMMA", '","')
-	msg = msg.replace("OPERATOR_RIGHT_PAREN", '"("')
+	msg = msg.replace("OPERATOR_RIGHT_PAREN", '")"')
 	msg = msg.replace("OPERATOR_DOUBLE_PIPE", '"||"')
 	msg = msg.replace("OPERATOR_PLUS", '"+"')
 	msg = msg.replace("OPERATOR_MINUS", '"-"')
+	msg = msg.replace("OPERATOR_SEMICOLON", '";"')
+	msg = msg.replace("OPERATOR_EQUALS", '"="')
+	msg = msg.replace("OPERATOR_LEFT_PAREN", '"("')
+	msg = msg.replace("OPERATOR_ASTERISK", '"*"')
+	msg = msg.replace("OPERATOR_PERIOD", '"."')
+	msg = msg.replace("OPERATOR_SOLIDUS", '"/"')
+	msg = msg.replace("OPERATOR_COLON", '":"')
+	msg = msg.replace("OPERATOR_LESS_THAN", '"<"')
+	msg = msg.replace("OPERATOR_GREATER_THAN", '">"')
+	msg = msg.replace("OPERATOR_NOT_EQUALS", '"<>"')
+	msg = msg.replace("OPERATOR_GREATER_EQUALS", '">="')
+	msg = msg.replace("OPERATOR_LESS_EQUALS", '"<="')
+	msg = msg.replace("OPERATOR_PERIOD_ASTERISK", '"." "*"')
+	msg = msg.replace("OPERATOR_LEFT_PAREN_ASTERISK", '"(" "*"')
+
 	return msg['syntax error: '.len..]
 }
 

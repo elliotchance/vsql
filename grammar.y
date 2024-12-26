@@ -72,7 +72,7 @@ import math
 
 // operators
 %token OPERATOR_EQUALS OPERATOR_LEFT_PAREN OPERATOR_RIGHT_PAREN;
-%token OPERATOR_ASTERISK OPERATOR_PLUS OPERATOR_COMMA OPERATOR_MINUS;
+%token OPERATOR_ASTERISK OPERATOR_COMMA OPERATOR_PLUS OPERATOR_MINUS;
 %token OPERATOR_PERIOD OPERATOR_SOLIDUS OPERATOR_COLON OPERATOR_LESS_THAN;
 %token OPERATOR_GREATER_THAN OPERATOR_DOUBLE_PIPE OPERATOR_NOT_EQUALS;
 %token OPERATOR_GREATER_EQUALS OPERATOR_LESS_EQUALS OPERATOR_SEMICOLON;
@@ -446,8 +446,8 @@ signed_integer:
     }
   }
 
-unsigned_integer /* string */ :
-    LITERAL_NUMBER { $$.v = $1.v as string }
+unsigned_integer:
+  LITERAL_NUMBER { $$.v = $1.v as string }
 
 datetime_literal /* Value */ :
     date_literal { $$.v = $1.v as Value }
@@ -1041,8 +1041,8 @@ character_string_type /* Type */ :
   | CHARACTER left_paren character_length right_paren           { $$.v = new_type('CHARACTER', ($3.v as string).int(), 0) }
   | CHAR                                                              { $$.v = new_type('CHARACTER', 1, 0) }
   | CHAR left_paren character_length right_paren                { $$.v = new_type('CHARACTER', ($3.v as string).int(), 0) }
-  | CHARACTER VARYING left_paren character_length right_paren   { $$.v = new_type('CHARACTER VARYING', ($3.v as string).int(), 0) }
-  | CHAR VARYING left_paren character_length right_paren        { $$.v = new_type('CHARACTER VARYING', ($3.v as string).int(), 0) }
+  | CHARACTER VARYING left_paren character_length right_paren   { $$.v = new_type('CHARACTER VARYING', ($4.v as string).int(), 0) }
+  | CHAR VARYING left_paren character_length right_paren        { $$.v = new_type('CHARACTER VARYING', ($4.v as string).int(), 0) }
   | VARCHAR left_paren character_length right_paren             { $$.v = new_type('CHARACTER VARYING', ($3.v as string).int(), 0) }
 
 numeric_type /* Type */ :
@@ -1067,11 +1067,11 @@ approximate_numeric_type /* Type */ :
   | REAL                                           { $$.v = new_type('REAL', 0, 0) }
   | DOUBLE PRECISION                               { $$.v = new_type('DOUBLE PRECISION', 0, 0) }
 
-length /* string */ :
-    unsigned_integer { $$.v = $1.v as string }
+length:
+  unsigned_integer { $$.v = $1.v as string }
 
-character_length /* string */ :
-    length { $$.v = $1.v as string }
+character_length:
+  length { $$.v = $1.v as string }
 
 char_length_units /* string */ :
     CHARACTERS { $$.v = $1.v as string }
@@ -2011,8 +2011,8 @@ fn yy_error(err IError) {
 
 pub fn main_()! {
   // println(tokenize2("SELECT 'foo' FROM bar WHERE \"baz\" = 12.3"))
-  tokens := tokenize2("SELECT foo.* FROM foo")
-  println(tokens)
+  tokens := tokenize2("VALUES NULLIF(123, 123)")
+  // println(tokens)
 
   mut lexer := Lexer{
     tokens: tokens
@@ -2020,6 +2020,6 @@ pub fn main_()! {
 	mut parser := yy_new_parser()
   parser.parse(mut lexer)!
   println((parser as YYParserImpl).lval.v)
-  value := ((parser as YYParserImpl).lval.v as Stmt as QueryExpression)
-  println(value.pstr(map[string]Value{}))
+  // value := ((parser as YYParserImpl).lval.v as Stmt)
+  // println(value.pstr(map[string]Value{}))
 }

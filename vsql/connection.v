@@ -243,9 +243,6 @@ fn (mut conn CatalogConnection) release_read_connection() {
 // prepare returns a precompiled statement that can be executed multiple times
 // with different provided parameters.
 pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
-	// tokens := tokenize2(sql_stmt)
-	println(sql_stmt)
-
 	t := start_timer()
 
 	mut tokens := tokenize2(sql_stmt)

@@ -55,7 +55,17 @@ fn (mut l Lexer) lex(mut lval YYSymType) int {
 }
 
 fn (mut l Lexer) error(s string)! {
-  return error(s)
+  return sqlstate_42601(cleanup_yacc_error(s))
+}
+
+fn cleanup_yacc_error(s string) string {
+	mut msg := s
+	msg = msg.replace("OPERATOR_COMMA", '","')
+	msg = msg.replace("OPERATOR_RIGHT_PAREN", '"("')
+	msg = msg.replace("OPERATOR_DOUBLE_PIPE", '"||"')
+	msg = msg.replace("OPERATOR_PLUS", '"+"')
+	msg = msg.replace("OPERATOR_MINUS", '"-"')
+	return msg['syntax error: '.len..]
 }
 
 // Except for the eof and the keywords, the other tokens use the names described
@@ -258,7 +268,7 @@ fn tokenize2(sql_stmt string) []Tok {
 				i++
 			}
 			i++
-			tokens << Tok{token_literal_string, YYSymType{v: new_varchar_value(word)}}
+			tokens << Tok{token_literal_string, YYSymType{v: new_character_value(word)}}
 			continue
 		}
 
@@ -271,7 +281,7 @@ fn tokenize2(sql_stmt string) []Tok {
 				i++
 			}
 			i++
-			tokens << Tok{token_literal_identifier, YYSymType{v: IdentifierChain{identifier: word}}}
+			tokens << Tok{token_literal_identifier, YYSymType{v: IdentifierChain{identifier: '"${word}"'}}}
 			continue
 		}
 

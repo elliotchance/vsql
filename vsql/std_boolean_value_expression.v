@@ -245,13 +245,17 @@ fn (e BooleanTest) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
-	return CompileResult{
-		run:          fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
-			return e.unary_not(compiled.run(mut conn, data, params)!)!
+	if e.inverse {
+		return CompileResult{
+			run:          fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+				return e.unary_not(compiled.run(mut conn, data, params)!)!
+			}
+			typ:          compiled.typ
+			contains_agg: compiled.contains_agg
 		}
-		typ:          compiled.typ
-		contains_agg: compiled.contains_agg
 	}
+
+	return compiled
 }
 
 fn parse_boolean_term_1(factor BooleanTest) !BooleanTerm {

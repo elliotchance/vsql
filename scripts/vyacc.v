@@ -633,7 +633,6 @@ fn (mut y Vyacc) setup() ! {
 			}
 			y.levprd[y.nprod] |= actflag
 			y.fcode.write_string('\n\t${y.nprod} {')
-			y.fcode.write_string('\n\tprintln(${y.nprod})')
 			y.fcode.write_string('\n\t\t${y.prefix}_dollar = ${y.prefix}_s[${y.prefix}pt-${mem - 1}..${y.prefix}pt+1].clone()')
 			y.cpyact(curprod, mem)!
 			y.fcode.write_string('\n\t}')

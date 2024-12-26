@@ -162,27 +162,25 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 			key := expr.expr.pstr(o.params)
 			for mut set in sets {
 				mut valid := false
-				if expr.expr is CommonValueExpression {
-					if expr.expr is DatetimePrimary {
-						if expr.expr is ValueExpressionPrimary {
-							if expr.expr is NonparenthesizedValueExpressionPrimary {
-								if expr.expr is AggregateFunction {
-									if expr.expr is AggregateFunctionCount {
-										set[0].data[key] = new_integer_value(set.len)
-										valid = true
-									} else if expr.expr is RoutineInvocation {
-										e := expr.expr
-										mut values := []Value{}
-										for row in set {
-											values << e.args[0].compile(mut c)!.run(mut o.conn,
-												row, o.params)!
-										}
-
-										func := o.conn.find_function(e.function_name,
-											[values[0].typ])!
-										set[0].data[key] = func.func(values)!
-										valid = true
+				if expr.expr is BooleanValueExpression {
+					expr2 := expr.expr.term.factor.expr
+					if expr2 is BooleanPredicand {
+						if expr2 is NonparenthesizedValueExpressionPrimary {
+							if expr2 is AggregateFunction {
+								if expr2 is AggregateFunctionCount {
+									set[0].data[key] = new_integer_value(set.len)
+									valid = true
+								} else if expr2 is RoutineInvocation {
+									mut values := []Value{}
+									for row in set {
+										values << expr2.args[0].compile(mut c)!.run(mut o.conn,
+											row, o.params)!
 									}
+
+									func := o.conn.find_function(expr2.function_name,
+										[values[0].typ])!
+									set[0].data[key] = func.func(values)!
+									valid = true
 								}
 							}
 						}

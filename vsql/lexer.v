@@ -359,7 +359,42 @@ fn tokenize2(sql_stmt string) []Tok {
 		mut found := false
 		for tok_pos, tok_name in yy_toknames {
 			if tok_name == upper_word {
-				tokens << Tok{tok_pos + 57343, YYSymType{v: upper_word}}
+				tok_number := tok_pos + 57343
+				tokens << Tok{tok_number, YYSymType{v: upper_word}}
+
+				length, new_token := tail_substitution(tokens)
+				if length > 0 {
+					tokens = tokens[..tokens.len-length].clone()
+					tokens << Tok{new_token, YYSymType{}}
+				}
+
+				// TODO: explain this
+				len := tokens.len
+				if len > 2 && tokens[len-2].token == token_is && tokens[len-1].token == token_true {
+					tokens = tokens[..tokens.len-2].clone()
+					tokens << Tok{token_is_true, YYSymType{}}
+				}
+				if len > 2 && tokens[len-2].token == token_is && tokens[len-1].token == token_false {
+					tokens = tokens[..tokens.len-2].clone()
+					tokens << Tok{token_is_false, YYSymType{}}
+				}
+				if len > 2 && tokens[len-2].token == token_is && tokens[len-1].token == token_unknown {
+					tokens = tokens[..tokens.len-2].clone()
+					tokens << Tok{token_is_unknown, YYSymType{}}
+				}
+				if len > 3 && tokens[len-3].token == token_is && tokens[len-2].token == token_not && tokens[len-1].token == token_true {
+					tokens = tokens[..tokens.len-3].clone()
+					tokens << Tok{token_is_not_true, YYSymType{}}
+				}
+				if len > 3 && tokens[len-3].token == token_is && tokens[len-2].token == token_not && tokens[len-1].token == token_false {
+					tokens = tokens[..tokens.len-3].clone()
+					tokens << Tok{token_is_not_false, YYSymType{}}
+				}
+				if len > 3 && tokens[len-3].token == token_is && tokens[len-2].token == token_not && tokens[len-1].token == token_unknown {
+					tokens = tokens[..tokens.len-3].clone()
+					tokens << Tok{token_is_not_unknown, YYSymType{}}
+				}
+
 				found = true
 				break
 			}
@@ -371,4 +406,29 @@ fn tokenize2(sql_stmt string) []Tok {
 	}
 
 	return tokens
+}
+
+fn tail_substitution(tokens []Tok) (int, int) {
+	len := tokens.len
+
+	if len > 2 && tokens[len-2].token == token_is && tokens[len-1].token == token_true {
+		return 2, token_is_true
+	}
+	if len > 2 && tokens[len-2].token == token_is && tokens[len-1].token == token_false {
+		return 2, token_is_false
+	}
+	if len > 2 && tokens[len-2].token == token_is && tokens[len-1].token == token_unknown {
+		return 2, token_is_unknown
+	}
+	if len > 3 && tokens[len-3].token == token_is && tokens[len-2].token == token_not && tokens[len-1].token == token_true {
+		return 3, token_is_not_true
+	}
+	if len > 3 && tokens[len-3].token == token_is && tokens[len-2].token == token_not && tokens[len-1].token == token_false {
+		return 3, token_is_not_false
+	}
+	if len > 3 && tokens[len-3].token == token_is && tokens[len-2].token == token_not && tokens[len-1].token == token_unknown {
+		return 3, token_is_not_unknown
+	}
+
+	return 0, 0
 }

@@ -148,14 +148,13 @@ fn replace_unicode(s string) string {
 fn test_all() ! {
 	filter_test, filter_line := get_test_filter()
 	verbose := $env('VERBOSE')
-	query_cache := new_query_cache()
 	for test in get_tests()! {
-		run_single_test(test, query_cache, verbose != '', filter_line)!
+		run_single_test(test, verbose != '', filter_line)!
 	}
 }
 
 @[assert_continues]
-fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_line int) ! {
+fn run_single_test(test SQLTest, verbose bool, filter_line int) ! {
 	if filter_line != 0 && test.line_number != filter_line {
 		if verbose {
 			println('SKIP ${test.file_name}:${test.line_number}\n')
@@ -172,7 +171,6 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 	}
 
 	mut options := default_connection_options()
-	options.query_cache = query_cache
 
 	mut db := open_database(':memory:', options)!
 	db.now = fn () (time.Time, i16) {
@@ -275,4 +273,18 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 	actual_trim := at + actual.trim_space()
 
 	assert expected == actual_trim
+}
+
+// Make sure any non-keywords (operators, literals, etc) are replaced in error
+// messages.
+fn test_cleanup_yacc_error() {
+	mut msg := ''
+	for tok_name in yy_toknames {
+		if tok_name.starts_with('OPERATOR_') || tok_name.starts_with('LITERAL_') {
+			msg += ' ' + tok_name
+		}
+	}
+	result := cleanup_yacc_error(msg)
+	assert !result.contains('OPERATOR_')
+	assert !result.contains('LITERAL_')
 }

@@ -13,7 +13,7 @@ VALUES LOWER(TRUE);
 -- error 42883: function does not exist: LOWER(BOOLEAN)
 
 VALUES UPPER();
--- error 42601: syntax error: near ")"
+-- error 42601: syntax error: unexpected ")"
 
 VALUES LOWER('abc', 123);
--- error 42601: syntax error: near ","
+-- error 42601: syntax error: unexpected ",", expecting ")" or "||"

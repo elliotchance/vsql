@@ -34,17 +34,15 @@ mut:
 	catalogs map[string]&CatalogConnection
 	// funcs only needs to be initialized once on open()
 	funcs []Func
-	// query_cache is maintained over file reopens.
-	query_cache &QueryCache
 	// cast_rules are use for CAST() (see cast.v)
 	cast_rules map[string]CastFunc
 	// unary_operators and binary_operators are for operators (see operators.v)
 	unary_operators  map[string]UnaryOperatorFunc
 	binary_operators map[string]BinaryOperatorFunc
-	// current_schema is where to search for unquailified table names. It will
+	// current_schema is where to search for unqualified table names. It will
 	// have an initial value of 'PUBLIC'.
 	current_schema string
-	// current_catalog (also known as the database). It will have an inital value
+	// current_catalog (also known as the database). It will have an initial value
 	// derived from the first database file loaded.
 	current_catalog string
 pub mut:
@@ -113,7 +111,6 @@ fn open_connection(path string, options ConnectionOptions) !&Connection {
 	catalog_name := catalog_name_from_path(path)
 
 	mut conn := &Connection{
-		query_cache:     options.query_cache
 		current_catalog: catalog_name
 		current_schema:  default_schema_name
 		now:             default_now
@@ -244,14 +241,27 @@ fn (mut conn CatalogConnection) release_read_connection() {
 // with different provided parameters.
 pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 	t := start_timer()
-	stmt, params, explain := conn.query_cache.parse(sql_stmt) or {
-		mut catalog := conn.catalog()
-		catalog.storage.transaction_aborted()
-		return err
+
+	mut tokens := tokenize(sql_stmt)
+
+	// EXPLAIN is super helpful, but not part of the SQL standard so we only
+	// treat it as a prefix that is trimmed off before parsing.
+	mut explain := false
+	if tokens[0].sym.v is IdentifierChain {
+		if tokens[0].sym.v.identifier.to_upper() == 'EXPLAIN' {
+			explain = true
+			tokens = tokens[1..].clone()
+		}
 	}
+
+	mut lexer := Lexer{tokens, 0}
+	mut parser := yy_new_parser()
+	parser.parse(mut lexer)!
+
+	stmt := (parser as YYParserImpl).lval.v as Stmt
 	elapsed_parse := t.elapsed()
 
-	return PreparedStmt{stmt, params, explain, &conn, elapsed_parse}
+	return PreparedStmt{stmt, map[string]Value{}, explain, &conn, elapsed_parse}
 }
 
 // query executes a statement. If there is a result set it will be returned.
@@ -344,7 +354,10 @@ pub fn (mut conn Connection) register_function(prototype string, func fn ([]Valu
 pub fn (mut conn Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ! {
 	// Registering virtual tables does not need use query cache.
 	mut tokens := tokenize(create_table)
-	stmt := parse(tokens)!
+	mut lexer := Lexer{tokens, 0}
+	mut parser := yy_new_parser()
+	parser.parse(mut lexer)!
+	stmt := (parser as YYParserImpl).lval.v as Stmt
 
 	if stmt is TableDefinition {
 		mut table_name := conn.resolve_schema_identifier(stmt.table_name)!
@@ -481,14 +494,6 @@ fn (mut conn Connection) resolve_table_identifier(identifier Identifier, allow_v
 // default_connection_options() as a starting point and modify the attributes.
 pub struct ConnectionOptions {
 pub mut:
-	// query_cache contains the precompiled prepared statements that can be
-	// reused. This makes execution much faster as parsing the SQL is extremely
-	// expensive.
-	//
-	// By default each connection will be given its own query cache. However,
-	// you can safely share a single cache over multiple connections and you are
-	// encouraged to do so.
-	query_cache &QueryCache = unsafe { nil }
 	// Warning: This only works for :memory: databases. Configuring it for
 	// file-based databases will either be ignored or causes crashes.
 	page_size int
@@ -518,9 +523,8 @@ pub mut:
 // the correct base to provide your own option overrides. See ConnectionOptions.
 pub fn default_connection_options() ConnectionOptions {
 	return ConnectionOptions{
-		query_cache: new_query_cache()
-		page_size:   4096
-		mutex:       sync.new_rwmutex()
+		page_size: 4096
+		mutex:     sync.new_rwmutex()
 	}
 }
 

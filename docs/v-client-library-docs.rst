@@ -141,16 +141,6 @@ new_numeric_value expects a value to be valid and the size and scale are determi
 
 
 
-fn new_query_cache
-------------------
-
-
-.. code-block:: v
-
-   pub fn new_query_cache() &QueryCache
-
-Create a new query cache.
-
 fn new_real_value
 -----------------
 
@@ -393,17 +383,15 @@ struct Connection
    	catalogs map[string]&CatalogConnection
    	// funcs only needs to be initialized once on open()
    	funcs []Func
-   	// query_cache is maintained over file reopens.
-   	query_cache &QueryCache
    	// cast_rules are use for CAST() (see cast.v)
    	cast_rules map[string]CastFunc
    	// unary_operators and binary_operators are for operators (see operators.v)
    	unary_operators  map[string]UnaryOperatorFunc
    	binary_operators map[string]BinaryOperatorFunc
-   	// current_schema is where to search for unquailified table names. It will
+   	// current_schema is where to search for unqualified table names. It will
    	// have an initial value of 'PUBLIC'.
    	current_schema string
-   	// current_catalog (also known as the database). It will have an inital value
+   	// current_catalog (also known as the database). It will have an initial value
    	// derived from the first database file loaded.
    	current_catalog string
    pub mut:
@@ -431,14 +419,6 @@ struct ConnectionOptions
 
    pub struct ConnectionOptions {
    pub mut:
-   	// query_cache contains the precompiled prepared statements that can be
-   	// reused. This makes execution much faster as parsing the SQL is extremely
-   	// expensive.
-   	//
-   	// By default each connection will be given its own query cache. However,
-   	// you can safely share a single cache over multiple connections and you are
-   	// encouraged to do so.
-   	query_cache &QueryCache = unsafe { nil }
    	// Warning: This only works for :memory: databases. Configuring it for
    	// file-based databases will either be ignored or causes crashes.
    	page_size int
@@ -547,20 +527,6 @@ struct PreparedStmt
    }
 
 A prepared statement is compiled and validated, but not executed. It can then be executed with a set of host parameters to be substituted into the statement. Each invocation requires all host parameters to be passed in.
-
-struct QueryCache
------------------
-
-
-.. code-block:: v
-
-   @[heap]
-   pub struct QueryCache {
-   mut:
-   	stmts map[string]Stmt
-   }
-
-A QueryCache improves the performance of parsing by caching previously cached statements. By default, a new QueryCache is created for each Connection. However, you can share a single QueryCache safely amung multiple connections for even better performance. See ConnectionOptions.
 
 struct Result
 -------------

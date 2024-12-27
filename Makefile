@@ -23,16 +23,16 @@ ready: grammar fmt snippets
 
 # Binaries
 
-bin/vsql: vsql/grammar.v
+bin/vsql: vsql/y.v
 	mkdir -p bin
 	v $(BUILD_OPTIONS) $(PROD) cmd/vsql -o bin/vsql
 
-bin/vsql.exe: vsql/grammar.v
+bin/vsql.exe: vsql/y.v
 	mkdir -p bin
 	v -os windows $(BUILD_OPTIONS) $(PROD) cmd/vsql
 	mv cmd/vsql/vsql.exe bin/vsql.exe
 
-oldv: vsql/grammar.v
+oldv: vsql/y.v
 ifdef OLDV
 	@mkdir -p /tmp/oldv/
 	@# VJOBS and VFLAGS needs to be provided for macOS. I'm not sure if they also
@@ -54,19 +54,18 @@ docs: snippets
 clean-docs:
 	cd docs && make clean
 
-# Grammar (BNF)
+# Grammar
 
-grammar.bnf:
-	grep "//~" -r vsql | cut -d~ -f2 > grammar.bnf
+vsql/y.y:
+	python3 scripts/generate_grammar.py
 
-vsql/grammar.v: grammar.bnf
-	python3 generate-grammar.py
-	v fmt -w vsql/grammar.v
+vsql/y.v: vsql/y.y
+	v run scripts/vyacc.v -o vsql/y.v vsql/y.y
 
 clean-grammar:
-	rm -f grammar.bnf vsql/grammar.v
+	rm -f vsql/y.v vsql/y.y
 
-grammar: clean-grammar vsql/grammar.v
+grammar: clean-grammar vsql/y.v
 
 # Formatting
 
@@ -104,7 +103,7 @@ examples:
 		echo $$f; v run $$f || exit 1; \
 	done
 
-examples/%: vsql/grammar.v
+examples/%: vsql/y.v
 	v run examples/$*.v
 
 # Benchmarking

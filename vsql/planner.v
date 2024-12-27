@@ -409,14 +409,12 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 				mut column_name := 'COL${i + 1}'
 				if column.as_clause.sub_entity_name != '' {
 					column_name = column.as_clause.sub_entity_name
-				} else if column.expr is CommonValueExpression {
-					if column.expr is DatetimePrimary {
-						if column.expr is ValueExpressionPrimary {
-							if column.expr is NonparenthesizedValueExpressionPrimary {
-								if column.expr is Identifier {
-									e := column.expr
-									column_name = e.sub_entity_name
-								}
+				} else if column.expr is BooleanValueExpression {
+					e := column.expr.term.factor.expr
+					if e is BooleanPredicand {
+						if e is NonparenthesizedValueExpressionPrimary {
+							if e is Identifier {
+								column_name = e.sub_entity_name
 							}
 						}
 					}

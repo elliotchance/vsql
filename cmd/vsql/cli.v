@@ -47,8 +47,6 @@ fn cli_command(cmd cli.Command) ! {
 					continue
 				}
 
-				println(query)
-
 				start := time.ticks()
 				db.clear_warnings()
 				result := db.query(query) or {

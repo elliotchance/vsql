@@ -85,27 +85,3 @@ fn (e BetweenPredicate) compile(mut c Compiler) !CompileResult {
 			|| compiled_left.contains_agg
 	}
 }
-
-fn parse_between(expr RowValueConstructorPredicand, between BetweenPredicate) !BetweenPredicate {
-	return BetweenPredicate{
-		not:       between.not
-		symmetric: between.symmetric
-		expr:      expr
-		left:      between.left
-		right:     between.right
-	}
-}
-
-fn parse_between_1(is_true bool, left RowValueConstructorPredicand, right RowValueConstructorPredicand) !BetweenPredicate {
-	// false between ASYMMETRIC by default.
-	return parse_between_2(is_true, false, left, right)
-}
-
-fn parse_between_2(is_true bool, symmetric bool, left RowValueConstructorPredicand, right RowValueConstructorPredicand) !BetweenPredicate {
-	return BetweenPredicate{
-		not:       !is_true
-		symmetric: symmetric
-		left:      left
-		right:     right
-	}
-}

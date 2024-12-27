@@ -46,7 +46,3 @@ fn (e NullPredicate) compile(mut c Compiler) !CompileResult {
 		contains_agg: compiled.contains_agg
 	}
 }
-
-fn parse_null_predicate(expr RowValueConstructorPredicand, is_null bool) !NullPredicate {
-	return NullPredicate{expr, !is_null}
-}

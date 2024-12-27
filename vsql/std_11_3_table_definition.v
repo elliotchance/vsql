@@ -50,24 +50,6 @@ fn (s TableDefinition) columns() Columns {
 	return columns
 }
 
-fn parse_table_definition(table_name Identifier, table_contents_source []TableElement) !Stmt {
-	return TableDefinition{table_name, table_contents_source}
-}
-
-fn parse_table_element_list(table_elements []TableElement) ![]TableElement {
-	return table_elements
-}
-
-fn parse_table_elements_1(table_element TableElement) ![]TableElement {
-	return [table_element]
-}
-
-fn parse_table_elements_2(table_elements []TableElement, table_element TableElement) ![]TableElement {
-	mut new_table_elements := table_elements.clone()
-	new_table_elements << table_element
-	return new_table_elements
-}
-
 // TODO(elliotchance): A table is allowed to have zero columns.
 
 fn (stmt TableDefinition) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {

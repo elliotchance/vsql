@@ -164,42 +164,6 @@ struct LocalTimestamp {
 	prec int
 }
 
-fn parse_current_date() !DatetimeValueFunction {
-	return CurrentDate{}
-}
-
-fn parse_current_time_1() !DatetimeValueFunction {
-	return CurrentTime{default_time_precision}
-}
-
-fn parse_current_time_2(prec string) !DatetimeValueFunction {
-	return CurrentTime{prec.int()}
-}
-
-fn parse_localtime_1() !DatetimeValueFunction {
-	return LocalTime{0}
-}
-
-fn parse_localtime_2(prec string) !DatetimeValueFunction {
-	return LocalTime{prec.int()}
-}
-
-fn parse_current_timestamp_1() !DatetimeValueFunction {
-	return CurrentTimestamp{default_timestamp_precision}
-}
-
-fn parse_current_timestamp_2(prec string) !DatetimeValueFunction {
-	return CurrentTimestamp{prec.int()}
-}
-
-fn parse_localtimestamp_1() !DatetimeValueFunction {
-	return LocalTimestamp{6}
-}
-
-fn parse_localtimestamp_2(prec string) !DatetimeValueFunction {
-	return LocalTimestamp{prec.int()}
-}
-
 fn time_value(conn &Connection, prec int, include_offset bool) string {
 	now, _ := conn.now()
 

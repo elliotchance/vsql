@@ -92,11 +92,3 @@ fn (e GeneralValueSpecification) compile(mut c Compiler) !CompileResult {
 		}
 	}
 }
-
-fn parse_current_catalog() !GeneralValueSpecification {
-	return CurrentCatalog{}
-}
-
-fn parse_current_schema() !GeneralValueSpecification {
-	return CurrentSchema{}
-}

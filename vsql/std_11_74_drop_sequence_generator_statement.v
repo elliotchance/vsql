@@ -18,10 +18,6 @@ struct DropSequenceGeneratorStatement {
 	sequence_name Identifier
 }
 
-fn parse_drop_sequence_generator_statement(sequence_name Identifier) !Stmt {
-	return DropSequenceGeneratorStatement{sequence_name}
-}
-
 fn (stmt DropSequenceGeneratorStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 

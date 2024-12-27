@@ -80,7 +80,3 @@ fn (e NonparenthesizedValueExpressionPrimary) compile(mut c Compiler) !CompileRe
 		}
 	}
 }
-
-fn parse_parenthesized_value_expression(e ValueExpression) !ParenthesizedValueExpression {
-	return ParenthesizedValueExpression{e}
-}

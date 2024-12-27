@@ -35,22 +35,3 @@ fn (e SortSpecification) pstr(params map[string]Value) string {
 
 	return '${e.expr.pstr(params)} DESC'
 }
-
-fn parse_sort_list_1(spec SortSpecification) ![]SortSpecification {
-	return [spec]
-}
-
-fn parse_sort_list_2(specs []SortSpecification, spec SortSpecification) ![]SortSpecification {
-	mut specs2 := specs.clone()
-	specs2 << spec
-
-	return specs2
-}
-
-fn parse_sort_1(expr ValueExpression) !SortSpecification {
-	return SortSpecification{expr, true}
-}
-
-fn parse_sort_2(expr ValueExpression, is_asc bool) !SortSpecification {
-	return SortSpecification{expr, is_asc}
-}

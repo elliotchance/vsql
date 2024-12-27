@@ -108,63 +108,6 @@ struct SequenceGeneratorDefinition {
 	options []SequenceGeneratorOption
 }
 
-fn parse_sequence_generator_definition_1(generator_name Identifier) !Stmt {
-	return SequenceGeneratorDefinition{
-		name: generator_name
-	}
-}
-
-fn parse_sequence_generator_definition_2(generator_name Identifier, options []SequenceGeneratorOption) !Stmt {
-	return SequenceGeneratorDefinition{
-		name:    generator_name
-		options: options
-	}
-}
-
-fn parse_sequence_generator_increment_by_option(increment_by Value) !SequenceGeneratorIncrementByOption {
-	return SequenceGeneratorIncrementByOption{
-		increment_by: increment_by
-	}
-}
-
-fn parse_sequence_generator_maxvalue_option_1(max_value Value) !SequenceGeneratorMaxvalueOption {
-	return SequenceGeneratorMaxvalueOption{
-		max_value: max_value
-	}
-}
-
-fn parse_sequence_generator_maxvalue_option_2() !SequenceGeneratorMaxvalueOption {
-	return SequenceGeneratorMaxvalueOption{
-		max_value: none
-	}
-}
-
-fn parse_sequence_generator_minvalue_option_1(min_value Value) !SequenceGeneratorMinvalueOption {
-	return SequenceGeneratorMinvalueOption{
-		min_value: min_value
-	}
-}
-
-fn parse_sequence_generator_minvalue_option_2() !SequenceGeneratorMinvalueOption {
-	return SequenceGeneratorMinvalueOption{
-		min_value: none
-	}
-}
-
-fn parse_sequence_generator_start_with_option(start_value Value) !SequenceGeneratorStartWithOption {
-	return SequenceGeneratorStartWithOption{
-		start_value: start_value
-	}
-}
-
-fn parse_sequence_generator_name(identifier IdentifierChain) !Identifier {
-	return new_table_identifier(identifier.identifier)
-}
-
-fn parse_basic_sequence_generator_option_4(option bool) !SequenceGeneratorOption {
-	return SequenceGeneratorCycleOption{option}
-}
-
 fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 

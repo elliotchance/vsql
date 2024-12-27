@@ -24,7 +24,3 @@ struct IdentifierChain {
 fn (identifier IdentifierChain) str() string {
 	return identifier.identifier
 }
-
-fn parse_identifier_chain(a IdentifierChain, b IdentifierChain) !IdentifierChain {
-	return IdentifierChain{a.identifier + '.' + b.identifier}
-}

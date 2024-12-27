@@ -26,10 +26,6 @@ module vsql
 //~     LEFT
 //~   | RIGHT
 
-fn parse_join_condition(expr BooleanValueExpression) !BooleanValueExpression {
-	return expr
-}
-
 struct JoinOperation {
 	left_columns  Columns
 	join_type     string

@@ -194,22 +194,6 @@ fn parse_factor_2(sign string, expr NumericPrimary) !NumericPrimary {
 	return SignedValueExpressionPrimary{sign, expr}
 }
 
-fn parse_term_1(factor NumericPrimary) !Term {
-	return Term{none, '', factor}
-}
-
-fn parse_term_2(term Term, op string, factor NumericPrimary) !Term {
-	return Term{&term, op, factor}
-}
-
-fn parse_numeric_value_expression_1(term Term) !NumericValueExpression {
-	return NumericValueExpression{none, '', term}
-}
-
-fn parse_numeric_value_expression_2(n NumericValueExpression, op string, term Term) !NumericValueExpression {
-	return NumericValueExpression{&n, op, term}
-}
-
 fn eval_binary(mut conn Connection, data Row, x Value, op string, y Value, params map[string]Value) !Value {
 	mut left := x
 	mut right := y

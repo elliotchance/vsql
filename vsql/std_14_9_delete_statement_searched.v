@@ -20,14 +20,6 @@ struct DeleteStatementSearched {
 	where      ?BooleanValueExpression
 }
 
-fn parse_delete_statement(table_name Identifier) !Stmt {
-	return DeleteStatementSearched{table_name, none}
-}
-
-fn parse_delete_statement_where(table_name Identifier, where BooleanValueExpression) !Stmt {
-	return DeleteStatementSearched{table_name, where}
-}
-
 fn (stmt DeleteStatementSearched) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	conn.open_write_connection()!
 	defer {

@@ -25,21 +25,6 @@ module vsql
 //~ <grouping column reference> /* Identifier */ ::=
 //~     <column reference>
 
-fn parse_group_by_clause(e []Identifier) ![]Identifier {
-	return e
-}
-
-fn parse_grouping_element_list_1(expr Identifier) ![]Identifier {
-	return [expr]
-}
-
-fn parse_grouping_element_list_2(element_list []Identifier, element Identifier) ![]Identifier {
-	mut new_list := element_list.clone()
-	new_list << element
-
-	return new_list
-}
-
 struct GroupOperation {
 	// select_exprs contains the original SELECT expressions, both the aggregate
 	// and non-aggrgate expressions, such as "a, count(*)".

@@ -17,10 +17,6 @@ import time
 struct CommitStatement {
 }
 
-fn parse_commit() !Stmt {
-	return CommitStatement{}
-}
-
 fn (stmt CommitStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 	mut catalog := conn.catalog()

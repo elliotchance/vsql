@@ -81,26 +81,3 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 fn (e RoutineInvocation) resolve_identifiers(conn &Connection, tables map[string]Table) !RoutineInvocation {
 	return RoutineInvocation{e.function_name, e.args}
 }
-
-fn parse_routine_invocation(name Identifier, args []ValueExpression) !RoutineInvocation {
-	return RoutineInvocation{name.entity_name, args}
-}
-
-fn parse_routine_name(identifier IdentifierChain) !Identifier {
-	return new_function_identifier(identifier.identifier)
-}
-
-fn parse_sql_argument_list_1() ![]ValueExpression {
-	return []ValueExpression{}
-}
-
-fn parse_sql_argument_list_2(expr ValueExpression) ![]ValueExpression {
-	return [expr]
-}
-
-fn parse_sql_argument_list_3(element_list []ValueExpression, element ValueExpression) ![]ValueExpression {
-	mut new_list := element_list.clone()
-	new_list << element
-
-	return new_list
-}

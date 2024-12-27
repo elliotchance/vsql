@@ -69,15 +69,3 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 
 	return e.right.compile(mut c)!
 }
-
-fn parse_similar_pred(left RowValueConstructorPredicand, like SimilarPredicate) !SimilarPredicate {
-	return SimilarPredicate{left, like.right, like.not}
-}
-
-fn parse_similar(expr CharacterValueExpression) !SimilarPredicate {
-	return SimilarPredicate{none, expr, false}
-}
-
-fn parse_not_similar(expr CharacterValueExpression) !SimilarPredicate {
-	return SimilarPredicate{none, expr, true}
-}

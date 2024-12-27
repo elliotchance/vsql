@@ -45,7 +45,3 @@ fn (e NullSpecification) compile(mut c Compiler) !CompileResult {
 fn (e NullSpecification) resolve_identifiers(conn &Connection, tables map[string]Table) !NullSpecification {
 	return e
 }
-
-fn parse_null_specification() !NullSpecification {
-	return NullSpecification{}
-}

@@ -528,35 +528,3 @@ fn (e HostParameterName) compile(mut c Compiler) !CompileResult {
 		contains_agg: false
 	}
 }
-
-fn parse_table_name(identifier IdentifierChain) !Identifier {
-	return new_table_identifier(identifier.identifier)
-}
-
-fn parse_schema_name_1(catalog IdentifierChain, identifier Identifier) !Identifier {
-	return new_schema_identifier('${catalog}.${identifier}')
-}
-
-fn parse_unqualified_schema_name(identifier IdentifierChain) !Identifier {
-	return new_schema_identifier(identifier.identifier)
-}
-
-fn parse_schema_qualified_name_2(schema_name Identifier, identifier IdentifierChain) !IdentifierChain {
-	return IdentifierChain{'${schema_name.schema_name}.${identifier}'}
-}
-
-fn parse_local_or_schema_qualified_name2(schema_name Identifier, table_name IdentifierChain) !IdentifierChain {
-	return IdentifierChain{'${schema_name}.${table_name}'}
-}
-
-fn parse_column_name(column_name IdentifierChain) !Identifier {
-	return new_column_identifier(column_name.identifier)
-}
-
-fn parse_host_parameter_name(name IdentifierChain) !GeneralValueSpecification {
-	return HostParameterName{name.identifier}
-}
-
-fn parse_correlation_name(identifier IdentifierChain) !Identifier {
-	return new_column_identifier(identifier.identifier)
-}

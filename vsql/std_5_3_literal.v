@@ -1,7 +1,6 @@
 module vsql
 
 import math.big
-import math
 
 // ISO/IEC 9075-2:2016(E), 5.3, <literal>
 //
@@ -89,34 +88,6 @@ import math
 //~   | FALSE     -> false
 //~   | UNKNOWN   -> unknown
 
-fn parse_exact_numeric_literal_1(x string) !Value {
-	return numeric_literal(x)
-}
-
-fn parse_exact_numeric_literal_2(a string) !Value {
-	return numeric_literal('${a}.')
-}
-
-fn parse_exact_numeric_literal_3(a string, b string) !Value {
-	return numeric_literal('${a}.${b}')
-}
-
-fn parse_exact_numeric_literal_4(a string) !Value {
-	return numeric_literal('0.${a}')
-}
-
-fn parse_date_literal(v Value) !Value {
-	return new_date_value(v.string_value())
-}
-
-fn parse_time_literal(v Value) !Value {
-	return new_time_value(v.string_value())
-}
-
-fn parse_timestamp_literal(v Value) !Value {
-	return new_timestamp_value(v.string_value())
-}
-
 fn numeric_literal(x string) !Value {
 	// Any number that contains a decimal (even if its a whole number) must be
 	// treated as a NUMERIC.
@@ -146,24 +117,4 @@ fn numeric_literal(x string) !Value {
 	}
 
 	return new_numeric_value(x)
-}
-
-fn parse_signed_numeric_literal_2(sign string, v Value) !Value {
-	return numeric_literal(sign + v.str())
-}
-
-fn parse_signed_integer_1(v string) !Value {
-	return new_numeric_value(v)
-}
-
-fn parse_signed_integer_2(sign string, v string) !Value {
-	if sign == '-' {
-		return new_numeric_value('-' + v)
-	}
-
-	return new_numeric_value(v)
-}
-
-fn parse_approximate_numeric_literal(mantissa Value, exponent Value) !Value {
-	return new_double_precision_value(mantissa.as_f64()! * math.pow(10, exponent.as_f64()!))
 }

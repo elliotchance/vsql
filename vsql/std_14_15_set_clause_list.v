@@ -45,20 +45,3 @@ fn (e UpdateSource) compile(mut c Compiler) !CompileResult {
 		}
 	}
 }
-
-fn parse_set_clause_append(set_clause_list map[string]UpdateSource, set_clause map[string]UpdateSource) !map[string]UpdateSource {
-	mut new_set_clause_list := set_clause_list.clone()
-
-	// Even though there will only be one of these.
-	for k, v in set_clause {
-		new_set_clause_list[k] = v
-	}
-
-	return new_set_clause_list
-}
-
-fn parse_set_clause(target Identifier, update_source UpdateSource) !map[string]UpdateSource {
-	return {
-		target.str(): update_source
-	}
-}

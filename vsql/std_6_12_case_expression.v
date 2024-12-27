@@ -111,22 +111,3 @@ struct CaseExpressionNullIf {
 struct CaseExpressionCoalesce {
 	exprs []ValueExpression
 }
-
-fn parse_nullif(a ValueExpression, b ValueExpression) !CaseExpression {
-	return CaseExpressionNullIf{a, b}
-}
-
-fn parse_coalesce(exprs []ValueExpression) !CaseExpression {
-	return CaseExpressionCoalesce{exprs}
-}
-
-fn parse_value_expression_list_1(e ValueExpression) ![]ValueExpression {
-	return [e]
-}
-
-fn parse_value_expression_list_2(element_list []ValueExpression, element ValueExpression) ![]ValueExpression {
-	mut new_list := element_list.clone()
-	new_list << element
-
-	return new_list
-}

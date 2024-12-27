@@ -18,9 +18,3 @@ module vsql
 //~     <left paren> <query expression> <right paren>   -> subquery
 
 type TablePrimaryBody = Identifier | QueryExpression
-
-fn parse_subquery(stmt QueryExpression) !TablePrimary {
-	return TablePrimary{
-		body: stmt
-	}
-}

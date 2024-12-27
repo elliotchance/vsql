@@ -20,10 +20,6 @@ struct SchemaDefinition {
 	schema_name Identifier
 }
 
-fn parse_schema_definition(schema_name Identifier) !Stmt {
-	return SchemaDefinition{schema_name}
-}
-
 fn (stmt SchemaDefinition) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 

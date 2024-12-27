@@ -77,15 +77,3 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 
 	return compiled_right
 }
-
-fn parse_like_pred(left RowValueConstructorPredicand, like CharacterLikePredicate) !CharacterLikePredicate {
-	return CharacterLikePredicate{left, like.right, like.not}
-}
-
-fn parse_like(expr CharacterValueExpression) !CharacterLikePredicate {
-	return CharacterLikePredicate{none, expr, false}
-}
-
-fn parse_not_like(expr CharacterValueExpression) !CharacterLikePredicate {
-	return CharacterLikePredicate{none, expr, true}
-}

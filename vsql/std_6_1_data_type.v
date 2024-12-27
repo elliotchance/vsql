@@ -95,46 +95,6 @@ module vsql
 //~ <time fractional seconds precision> /* string */ ::=
 //~     <unsigned integer>
 
-fn parse_character_n(length string) !Type {
-	return new_type('CHARACTER', length.int(), 0)
-}
-
-fn parse_character() !Type {
-	return new_type('CHARACTER', 1, 0)
-}
-
-fn parse_varchar(length string) !Type {
-	return new_type('CHARACTER VARYING', length.int(), 0)
-}
-
-fn parse_smallint() !Type {
-	return new_type('SMALLINT', 0, 0)
-}
-
-fn parse_bigint() !Type {
-	return new_type('BIGINT', 0, 0)
-}
-
-fn parse_integer() !Type {
-	return new_type('INTEGER', 0, 0)
-}
-
-fn parse_double_precision() !Type {
-	return new_type('DOUBLE PRECISION', 0, 0)
-}
-
-fn parse_float_n(length string) !Type {
-	return new_type('FLOAT', length.int(), 0)
-}
-
-fn parse_float() !Type {
-	return new_type('FLOAT', 0, 0)
-}
-
-fn parse_real() !Type {
-	return new_type('REAL', 0, 0)
-}
-
 fn parse_timestamp_prec_tz_type(prec string, tz bool) !Type {
 	if tz {
 		return new_type('TIMESTAMP WITH TIME ZONE', prec.int(), 0)
@@ -143,76 +103,10 @@ fn parse_timestamp_prec_tz_type(prec string, tz bool) !Type {
 	return new_type('TIMESTAMP WITHOUT TIME ZONE', prec.int(), 0)
 }
 
-fn parse_timestamp_prec_type(prec string) !Type {
-	return parse_timestamp_prec_tz_type(prec, false)
-}
-
-fn parse_timestamp_tz_type(tz bool) !Type {
-	// ISO/IEC 9075-2:2016(E), 6.1, 36) If <timestamp precision> is not
-	// specified, then 6 is implicit.
-	return parse_timestamp_prec_tz_type('6', tz)
-}
-
-fn parse_timestamp_type() !Type {
-	return parse_timestamp_prec_tz_type('0', false)
-}
-
 fn parse_time_prec_tz_type(prec string, tz bool) !Type {
 	if tz {
 		return new_type('TIME WITH TIME ZONE', prec.int(), 0)
 	}
 
 	return new_type('TIME WITHOUT TIME ZONE', prec.int(), 0)
-}
-
-fn parse_time_type() !Type {
-	return parse_time_prec_tz_type('0', false)
-}
-
-fn parse_time_prec_type(prec string) !Type {
-	return parse_time_prec_tz_type(prec, false)
-}
-
-fn parse_time_tz_type(tz bool) !Type {
-	return parse_time_prec_tz_type('0', tz)
-}
-
-fn parse_date_type() !Type {
-	return new_type('DATE', 0, 0)
-}
-
-fn parse_yes() !bool {
-	return true
-}
-
-fn parse_no() !bool {
-	return false
-}
-
-fn parse_boolean_type() !Type {
-	return new_type('BOOLEAN', 0, 0)
-}
-
-fn parse_numeric1() !Type {
-	return new_type('NUMERIC', 0, 0)
-}
-
-fn parse_numeric2(precision string) !Type {
-	return new_type('NUMERIC', precision.int(), 0)
-}
-
-fn parse_numeric3(precision string, scale string) !Type {
-	return new_type('NUMERIC', precision.int(), scale.i16())
-}
-
-fn parse_decimal1() !Type {
-	return new_type('DECIMAL', 0, 0)
-}
-
-fn parse_decimal2(precision string) !Type {
-	return new_type('DECIMAL', precision.int(), 0)
-}
-
-fn parse_decimal3(precision string, scale string) !Type {
-	return new_type('DECIMAL', precision.int(), scale.i16())
 }

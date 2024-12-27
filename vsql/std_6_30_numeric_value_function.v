@@ -109,69 +109,6 @@ import math
 //~     CEIL <left paren> <numeric value expression> <right paren>      -> ceiling
 //~   | CEILING <left paren> <numeric value expression> <right paren>   -> ceiling
 
-fn parse_position(expr1 CharacterValueExpression, expr2 CharacterValueExpression) !RoutineInvocation {
-	return RoutineInvocation{'POSITION', [
-		ValueExpression(CommonValueExpression(expr1)),
-		ValueExpression(CommonValueExpression(expr2)),
-	]}
-}
-
-fn parse_char_length(e CharacterValueExpression) !RoutineInvocation {
-	return RoutineInvocation{'CHAR_LENGTH', [
-		ValueExpression(CommonValueExpression(e)),
-	]}
-}
-
-fn parse_octet_length(e CharacterValueExpression) !RoutineInvocation {
-	return RoutineInvocation{'OCTET_LENGTH', [
-		ValueExpression(CommonValueExpression(e)),
-	]}
-}
-
-fn parse_abs(expr NumericValueExpression) !RoutineInvocation {
-	return RoutineInvocation{'ABS', [ValueExpression(CommonValueExpression(expr))]}
-}
-
-fn parse_mod(a NumericValueExpression, b NumericValueExpression) !RoutineInvocation {
-	return RoutineInvocation{'MOD', [ValueExpression(CommonValueExpression(a)),
-		ValueExpression(CommonValueExpression(b))]}
-}
-
-fn parse_trig_func(function_name string, expr NumericValueExpression) !RoutineInvocation {
-	return RoutineInvocation{function_name, [
-		ValueExpression(CommonValueExpression(expr)),
-	]}
-}
-
-fn parse_sqrt(expr NumericValueExpression) !RoutineInvocation {
-	return RoutineInvocation{'SQRT', [ValueExpression(CommonValueExpression(expr))]}
-}
-
-fn parse_ln(expr NumericValueExpression) !RoutineInvocation {
-	return RoutineInvocation{'LN', [ValueExpression(CommonValueExpression(expr))]}
-}
-
-fn parse_floor(expr NumericValueExpression) !RoutineInvocation {
-	return RoutineInvocation{'FLOOR', [ValueExpression(CommonValueExpression(expr))]}
-}
-
-fn parse_ceiling(expr NumericValueExpression) !RoutineInvocation {
-	return RoutineInvocation{'CEILING', [ValueExpression(CommonValueExpression(expr))]}
-}
-
-fn parse_log10(expr NumericValueExpression) !RoutineInvocation {
-	return RoutineInvocation{'LOG10', [ValueExpression(CommonValueExpression(expr))]}
-}
-
-fn parse_exp(expr NumericValueExpression) !RoutineInvocation {
-	return RoutineInvocation{'EXP', [ValueExpression(CommonValueExpression(expr))]}
-}
-
-fn parse_power(a NumericValueExpression, b NumericValueExpression) !RoutineInvocation {
-	return RoutineInvocation{'POWER', [ValueExpression(CommonValueExpression(a)),
-		ValueExpression(CommonValueExpression(b))]}
-}
-
 // POSITION(CHARACTER VARYING IN CHARACTER VARYING) INTEGER
 fn func_position(args []Value) !Value {
 	index := args[1].string_value().index(args[0].string_value()) or { -1 }

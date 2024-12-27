@@ -16,10 +16,6 @@ import time
 struct StartTransactionStatement {
 }
 
-fn parse_start_transaction_statement() !Stmt {
-	return StartTransactionStatement{}
-}
-
 fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 	mut catalog := conn.catalog()

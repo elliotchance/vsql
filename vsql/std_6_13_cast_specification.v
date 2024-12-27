@@ -58,7 +58,3 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 		contains_agg: compiled_expr.contains_agg
 	}
 }
-
-fn parse_cast(expr CastOperand, typ Type) !CastSpecification {
-	return CastSpecification{expr, typ}
-}

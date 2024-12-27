@@ -17,10 +17,6 @@ struct DropTableStatement {
 	table_name Identifier
 }
 
-fn parse_drop_table_statement(table_name Identifier) !Stmt {
-	return DropTableStatement{table_name}
-}
-
 fn (stmt DropTableStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 

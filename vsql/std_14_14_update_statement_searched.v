@@ -23,14 +23,6 @@ struct UpdateStatementSearched {
 	where      ?BooleanValueExpression
 }
 
-fn parse_update_statement_searched_1(target_table Identifier, set_clause_list map[string]UpdateSource) !Stmt {
-	return UpdateStatementSearched{target_table, set_clause_list, none}
-}
-
-fn parse_update_statement_searched_2(target_table Identifier, set_clause_list map[string]UpdateSource, where BooleanValueExpression) !Stmt {
-	return UpdateStatementSearched{target_table, set_clause_list, where}
-}
-
 // UPDATE under MVCC works by actually executing a DELETE and an INSERT on the
 // record to be updated. There are two important caveats for this:
 //

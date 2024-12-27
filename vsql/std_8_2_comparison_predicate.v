@@ -83,14 +83,6 @@ struct ComparisonPredicatePart2 {
 	expr RowValueConstructorPredicand
 }
 
-fn parse_comparison_part(op string, expr RowValueConstructorPredicand) !ComparisonPredicatePart2 {
-	return ComparisonPredicatePart2{op, expr}
-}
-
-fn parse_comparison(expr RowValueConstructorPredicand, comp ComparisonPredicatePart2) !ComparisonPredicate {
-	return ComparisonPredicate{expr, comp.op, comp.expr}
-}
-
 enum CompareResult as i8 {
 	is_unknown = 0 // same as NULL
 	is_less    = 1

@@ -21,11 +21,3 @@ module vsql
 //~
 //~ <column constraint> /* bool */ ::=
 //~     NOT NULL   -> yes
-
-fn parse_column_definition_1(column_name Identifier, data_type Type) !TableElement {
-	return Column{column_name, data_type, false}
-}
-
-fn parse_column_definition_2(column_name Identifier, data_type Type, constraint bool) !TableElement {
-	return Column{column_name, data_type, constraint}
-}

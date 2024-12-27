@@ -22,10 +22,6 @@ struct DropSchemaStatement {
 	behavior    string // CASCADE or RESTRICT
 }
 
-fn parse_drop_schema_statement(schema_name Identifier, behavior string) !Stmt {
-	return DropSchemaStatement{schema_name, behavior}
-}
-
 fn (stmt DropSchemaStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 

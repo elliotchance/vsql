@@ -313,11 +313,3 @@ module vsql
 //~   | WRAPPER
 //~   | WRITE
 //~   | ZONE
-
-fn parse_string_identifier(s string) !IdentifierChain {
-	return IdentifierChain{s}
-}
-
-fn parse_string(s string) !string {
-	return s
-}

@@ -13,7 +13,3 @@ module vsql
 //~
 //~ <table reference list> /* TableReference */ ::=
 //~     <table reference>
-
-fn parse_from_clause(table TableReference) !TableReference {
-	return table
-}

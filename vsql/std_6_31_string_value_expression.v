@@ -92,7 +92,3 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 		contains_agg: compiled_left.contains_agg || compiled_right.contains_agg
 	}
 }
-
-fn parse_concatenation(a CharacterValueExpression, b CharacterValueExpression) !Concatenation {
-	return Concatenation{a, b}
-}

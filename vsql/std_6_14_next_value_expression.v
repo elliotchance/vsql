@@ -38,9 +38,3 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 fn (e NextValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !NextValueExpression {
 	return NextValueExpression{conn.resolve_identifier(e.name)}
 }
-
-fn parse_next_value_expression(name Identifier) !NextValueExpression {
-	return NextValueExpression{
-		name: name
-	}
-}

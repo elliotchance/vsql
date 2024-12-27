@@ -21,11 +21,3 @@ module vsql
 struct UniqueConstraintDefinition {
 	columns []Identifier
 }
-
-fn parse_unique_constraint_definition(columns []Identifier) !TableElement {
-	return UniqueConstraintDefinition{columns}
-}
-
-fn parse_ignore() !bool {
-	return false
-}

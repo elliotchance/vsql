@@ -59,14 +59,6 @@ fn (e AggregateFunction) compile(mut c Compiler) !CompileResult {
 
 struct AggregateFunctionCount {}
 
-fn parse_count_all(asterisk string) !AggregateFunction {
-	return AggregateFunctionCount{}
-}
-
-fn parse_general_set_function(name string, expr ValueExpression) !AggregateFunction {
-	return RoutineInvocation{name, [expr]}
-}
-
 // COUNT(ANY) INTEGER
 fn func_count(values []Value) !Value {
 	mut count := 0

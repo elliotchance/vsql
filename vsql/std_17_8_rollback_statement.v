@@ -18,10 +18,6 @@ import time
 struct RollbackStatement {
 }
 
-fn parse_rollback() !Stmt {
-	return RollbackStatement{}
-}
-
 fn (stmt RollbackStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 	mut catalog := conn.catalog()

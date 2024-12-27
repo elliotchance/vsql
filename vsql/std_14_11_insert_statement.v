@@ -34,17 +34,6 @@ struct InsertStatement {
 	values     []ContextuallyTypedRowValueConstructor
 }
 
-fn parse_insert_statement(insertion_target Identifier, stmt InsertStatement) !Stmt {
-	return InsertStatement{insertion_target, stmt.columns, stmt.values}
-}
-
-fn parse_from_constructor(columns []Identifier, values []ContextuallyTypedRowValueConstructor) !InsertStatement {
-	return InsertStatement{
-		columns: columns
-		values:  values
-	}
-}
-
 fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 

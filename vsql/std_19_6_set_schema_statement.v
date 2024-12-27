@@ -27,14 +27,6 @@ fn (e SetSchemaStatement) pstr(params map[string]Value) string {
 	return 'SET SCHEMA ${e.schema_name.pstr(params)}'
 }
 
-fn parse_schema_name_characteristic(v ValueSpecification) !ValueSpecification {
-	return v
-}
-
-fn parse_set_schema_stmt(schema_name ValueSpecification) !Stmt {
-	return SetSchemaStatement{schema_name}
-}
-
 fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 

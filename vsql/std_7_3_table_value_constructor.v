@@ -42,36 +42,6 @@ fn (e SimpleTable) pstr(params map[string]Value) string {
 	}
 }
 
-fn parse_table_value_constructor(exprs []RowValueConstructor) !SimpleTable {
-	return exprs
-}
-
-fn parse_row_value_expression_list_1(expr RowValueConstructor) ![]RowValueConstructor {
-	return [expr]
-}
-
-fn parse_row_value_expression_list_2(element_list []RowValueConstructor, element RowValueConstructor) ![]RowValueConstructor {
-	mut new_list := element_list.clone()
-	new_list << element
-
-	return new_list
-}
-
-fn parse_contextually_typed_row_value_expression_list_1(element ContextuallyTypedRowValueConstructor) ![]ContextuallyTypedRowValueConstructor {
-	return [element]
-}
-
-fn parse_contextually_typed_row_value_expression_list_2(list []ContextuallyTypedRowValueConstructor, element ContextuallyTypedRowValueConstructor) ![]ContextuallyTypedRowValueConstructor {
-	mut new_list := list.clone()
-	new_list << element
-
-	return new_list
-}
-
-fn parse_contextually_typed_table_value_constructor(e []ContextuallyTypedRowValueConstructor) ![]ContextuallyTypedRowValueConstructor {
-	return e
-}
-
 // A ValuesOperation provides a VALUES derived implicit table.
 struct ValuesOperation {
 	rows        []RowValueConstructor

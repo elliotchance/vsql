@@ -27,14 +27,6 @@ fn (e SetCatalogStatement) pstr(params map[string]Value) string {
 	return 'SET CATALOG ${e.catalog_name.pstr(params)}'
 }
 
-fn parse_set_catalog_stmt(catalog_name ValueSpecification) !Stmt {
-	return SetCatalogStatement{catalog_name}
-}
-
-fn parse_catalog_name_characteristic(v ValueSpecification) !ValueSpecification {
-	return v
-}
-
 fn (stmt SetCatalogStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 

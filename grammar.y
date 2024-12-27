@@ -2601,7 +2601,7 @@ fn yy_error(err IError) {
 
 pub fn main_()! {
   // println(tokenize2("SELECT 'foo' FROM bar WHERE \"baz\" = 12.3"))
-  tokens := tokenize2("CREATE TABLE YEAR (x INT)")
+  tokens := tokenize2('SELECT bar.* FROM foo')
   println(tokens)
 
   mut lexer := Lexer{

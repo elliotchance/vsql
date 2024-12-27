@@ -60,6 +60,7 @@ fn (mut l Lexer) error(s string)! {
 
 fn cleanup_yacc_error(s string) string {
 	mut msg := s
+
 	msg = msg.replace("OPERATOR_COMMA", '","')
 	msg = msg.replace("OPERATOR_RIGHT_PAREN", '")"')
 	msg = msg.replace("OPERATOR_DOUBLE_PIPE", '"||"')
@@ -79,6 +80,10 @@ fn cleanup_yacc_error(s string) string {
 	msg = msg.replace("OPERATOR_LESS_EQUALS", '"<="')
 	msg = msg.replace("OPERATOR_PERIOD_ASTERISK", '"." "*"')
 	msg = msg.replace("OPERATOR_LEFT_PAREN_ASTERISK", '"(" "*"')
+
+	msg = msg.replace("LITERAL_IDENTIFIER", "identifier")
+	msg = msg.replace("LITERAL_STRING", "string")
+	msg = msg.replace("LITERAL_NUMBER", "number")
 
 	return msg['syntax error: '.len..]
 }
@@ -252,7 +257,7 @@ fn tokenize2(sql_stmt string) []Tok {
 	cs := sql_stmt.trim(';').runes()
 	mut i := 0
 
-	next: for i < cs.len {
+	for i < cs.len {
 		// Numbers
 		if cs[i] >= `0` && cs[i] <= `9` {
 			mut word := ''
@@ -271,7 +276,7 @@ fn tokenize2(sql_stmt string) []Tok {
 				i++
 			}
 
-			continue
+			unsafe { goto next }
 		}
 
 		// Strings
@@ -284,7 +289,7 @@ fn tokenize2(sql_stmt string) []Tok {
 			}
 			i++
 			tokens << Tok{token_literal_string, YYSymType{v: new_character_value(word)}}
-			continue
+			unsafe { goto next }
 		}
 
 		// Delimited identifiers
@@ -297,7 +302,7 @@ fn tokenize2(sql_stmt string) []Tok {
 			}
 			i++
 			tokens << Tok{token_literal_identifier, YYSymType{v: IdentifierChain{identifier: '"${word}"'}}}
-			continue
+			unsafe { goto next }
 		}
 
 		// Operators
@@ -306,15 +311,12 @@ fn tokenize2(sql_stmt string) []Tok {
 			'>=': token_operator_greater_equals
 			'<=': token_operator_less_equals
 			'||': token_operator_double_pipe
-			// fake
-			'.*': token_operator_period_asterisk
-			'(*': token_operator_left_paren_asterisk
 		}
 		for op, tk in multi {
 			if i < cs.len - 1 && cs[i] == op[0] && cs[i + 1] == op[1] {
 				tokens << Tok{tk, YYSymType{v: op}}
 				i += 2
-				continue next
+				unsafe { goto next }
 			}
 		}
 
@@ -337,7 +339,7 @@ fn tokenize2(sql_stmt string) []Tok {
 			if cs[i] == op {
 				tokens << Tok{tk, YYSymType{v: op.str()}}
 				i++
-				continue next
+				unsafe { goto next }
 			}
 		}
 
@@ -361,40 +363,6 @@ fn tokenize2(sql_stmt string) []Tok {
 			if tok_name == upper_word {
 				tok_number := tok_pos + 57343
 				tokens << Tok{tok_number, YYSymType{v: upper_word}}
-
-				length, new_token := tail_substitution(tokens)
-				if length > 0 {
-					tokens = tokens[..tokens.len-length].clone()
-					tokens << Tok{new_token, YYSymType{}}
-				}
-
-				// TODO: explain this
-				len := tokens.len
-				if len > 2 && tokens[len-2].token == token_is && tokens[len-1].token == token_true {
-					tokens = tokens[..tokens.len-2].clone()
-					tokens << Tok{token_is_true, YYSymType{}}
-				}
-				if len > 2 && tokens[len-2].token == token_is && tokens[len-1].token == token_false {
-					tokens = tokens[..tokens.len-2].clone()
-					tokens << Tok{token_is_false, YYSymType{}}
-				}
-				if len > 2 && tokens[len-2].token == token_is && tokens[len-1].token == token_unknown {
-					tokens = tokens[..tokens.len-2].clone()
-					tokens << Tok{token_is_unknown, YYSymType{}}
-				}
-				if len > 3 && tokens[len-3].token == token_is && tokens[len-2].token == token_not && tokens[len-1].token == token_true {
-					tokens = tokens[..tokens.len-3].clone()
-					tokens << Tok{token_is_not_true, YYSymType{}}
-				}
-				if len > 3 && tokens[len-3].token == token_is && tokens[len-2].token == token_not && tokens[len-1].token == token_false {
-					tokens = tokens[..tokens.len-3].clone()
-					tokens << Tok{token_is_not_false, YYSymType{}}
-				}
-				if len > 3 && tokens[len-3].token == token_is && tokens[len-2].token == token_not && tokens[len-1].token == token_unknown {
-					tokens = tokens[..tokens.len-3].clone()
-					tokens << Tok{token_is_not_unknown, YYSymType{}}
-				}
-
 				found = true
 				break
 			}
@@ -402,6 +370,13 @@ fn tokenize2(sql_stmt string) []Tok {
 		
 		if !found {
 			tokens << Tok{token_literal_identifier, YYSymType{v: IdentifierChain{identifier: word}}}
+		}
+
+next:
+		length, new_token := tail_substitution(tokens)
+		if length > 0 {
+			tokens = tokens[..tokens.len-length].clone()
+			tokens << Tok{new_token, YYSymType{}}
 		}
 	}
 
@@ -411,6 +386,12 @@ fn tokenize2(sql_stmt string) []Tok {
 fn tail_substitution(tokens []Tok) (int, int) {
 	len := tokens.len
 
+	if len > 2 && tokens[len-2].token == token_operator_period && tokens[len-1].token == token_operator_asterisk {
+		return 2, token_operator_period_asterisk
+	}
+	if len > 2 && tokens[len-2].token == token_operator_left_paren && tokens[len-1].token == token_operator_asterisk {
+		return 2, token_operator_left_paren_asterisk
+	}
 	if len > 2 && tokens[len-2].token == token_is && tokens[len-1].token == token_true {
 		return 2, token_is_true
 	}

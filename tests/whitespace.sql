@@ -119,4 +119,4 @@ VALUES<U+0009><U+0009><U+0009>123;
 -- COL1: 123
 
 VALUES<U+0061>123;
--- error 42601: syntax error: near "VALUESa123"
+-- error 42601: syntax error: unexpected identifier

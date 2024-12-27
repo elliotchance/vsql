@@ -10,10 +10,10 @@ VALUES ABS('hello');
 -- error 42883: function does not exist: ABS(CHARACTER(5))
 
 VALUES ABS();
--- error 42601: syntax error: unexpected "("
+-- error 42601: syntax error: unexpected ")"
 
 VALUES ABS(1, 2);
--- error 42601: syntax error: unexpected ",", expecting "(" or "+" or "-"
+-- error 42601: syntax error: unexpected ",", expecting ")" or "+" or "-"
 
 /* types */
 VALUES MOD(232.0, 3.0);

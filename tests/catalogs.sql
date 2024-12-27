@@ -1,11 +1,11 @@
-CREATE TABLE ":memory:".PUBLIC.foo (baz INTEGER);
-INSERT INTO ":memory:".PUBLIC.foo (baz) VALUES (123);
-INSERT INTO ":memory:".PUBLIC.foo (baz) VALUES (456);
-SELECT * FROM ":memory:".PUBLIC.foo;
-UPDATE ":memory:".PUBLIC.foo SET baz = 789 WHERE baz = 123;
-SELECT * FROM ":memory:".PUBLIC.foo;
-DELETE FROM ":memory:".PUBLIC.foo WHERE baz > 700;
-SELECT * FROM ":memory:".PUBLIC.foo;
+CREATE TABLE PUBLIC.foo (baz INTEGER);
+INSERT INTO PUBLIC.foo (baz) VALUES (123);
+INSERT INTO PUBLIC.foo (baz) VALUES (456);
+SELECT * FROM PUBLIC.foo;
+UPDATE PUBLIC.foo SET baz = 789 WHERE baz = 123;
+SELECT * FROM PUBLIC.foo;
+DELETE FROM PUBLIC.foo WHERE baz > 700;
+SELECT * FROM PUBLIC.foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- msg: INSERT 1
@@ -18,17 +18,21 @@ SELECT * FROM ":memory:".PUBLIC.foo;
 -- BAZ: 456
 
 /* create_catalog FOO */
-CREATE TABLE foo.public.bar (baz INTEGER);
-EXPLAIN SELECT * FROM foo.public.bar;
+SET CATALOG 'FOO';
+CREATE TABLE public.bar (baz INTEGER);
+EXPLAIN SELECT * FROM public.bar;
+-- msg: SET CATALOG 1
 -- msg: CREATE TABLE 1
 -- EXPLAIN: TABLE FOO.PUBLIC.BAR (BAZ INTEGER)
 -- EXPLAIN: EXPR (FOO.PUBLIC.BAR.BAZ INTEGER)
 
 /* create_catalog FOO */
-CREATE TABLE foo.public.bar (baz INTEGER);
-INSERT INTO foo.public.bar (baz) VALUES (123);
-EXPLAIN SELECT * FROM foo.public.bar;
+SET CATALOG 'FOO';
+CREATE TABLE public.bar (baz INTEGER);
+INSERT INTO public.bar (baz) VALUES (123);
+EXPLAIN SELECT * FROM public.bar;
 SET CATALOG ':memory:';
+-- msg: SET CATALOG 1
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- EXPLAIN: TABLE FOO.PUBLIC.BAR (BAZ INTEGER)
@@ -51,10 +55,10 @@ SELECT * FROM baz;
 CREATE TABLE baz (num2 INTEGER);
 INSERT INTO baz (num2) VALUES (456);
 SELECT * FROM baz;
-SET CATALOG ':memory:';
-SELECT * FROM foo.public.baz;
-SELECT * FROM bar.public.baz;
-SELECT * FROM foo.public.baz JOIN bar.public.baz ON TRUE;
+SET CATALOG 'FOO';
+SELECT * FROM public.baz;
+SET CATALOG 'BAR';
+SELECT * FROM public.baz;
 -- COL1: :memory:
 -- COL1: BAR
 -- msg: SET CATALOG 1
@@ -71,5 +75,5 @@ SELECT * FROM foo.public.baz JOIN bar.public.baz ON TRUE;
 -- NUM2: 456
 -- msg: SET CATALOG 1
 -- NUM2: 456
+-- msg: SET CATALOG 1
 -- NUM1: 123
--- NUM2: 456 NUM1: 123

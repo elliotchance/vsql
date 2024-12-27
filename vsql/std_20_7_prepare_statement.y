@@ -1,5 +1,9 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>
+//
+// Prepare a statement for execution.
+
 preparable_statement:
   preparable_sql_data_statement { $$.v = $1.v as Stmt }
 | preparable_sql_schema_statement { $$.v = $1.v as Stmt }

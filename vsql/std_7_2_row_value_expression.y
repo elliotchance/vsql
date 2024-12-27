@@ -1,5 +1,9 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 7.2, <row value expression>
+//
+// Specify a row value.
+
 table_row_value_expression:
   row_value_constructor { $$.v = $1.v as RowValueConstructor }
 

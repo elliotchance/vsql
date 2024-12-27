@@ -673,20 +673,6 @@ struct Timer
 
 
 
-struct Token
-------------
-
-
-.. code-block:: v
-
-   pub struct Token {
-   pub:
-   	token int
-   	sym   YYSymType
-   }
-
-
-
 struct Value
 ------------
 

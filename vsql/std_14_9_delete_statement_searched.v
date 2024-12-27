@@ -36,7 +36,9 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 	mut rows := plan.execute([]Row{})!
 
 	for mut row in rows {
-		catalog.storage.delete_row(table_name.storage_id(), mut row)!
+		// for_storage() here is important because it will strip the qualified
+		// identifiers down to just their names used in storage.
+		catalog.storage.delete_row(table_name.storage_id(), mut row.for_storage())!
 	}
 
 	return new_result_msg('DELETE ${rows.len}', elapsed_parse, t.elapsed())

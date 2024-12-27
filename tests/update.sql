@@ -108,3 +108,15 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- error 22001: string data right truncation for CHARACTER VARYING(4)
 -- BAZ: abc
+
+-- # https://github.com/elliotchance/vsql/issues/200
+CREATE TABLE PrimaryProduct (id INT NOT NULL, PRIMARY KEY(id));
+INSERT INTO PrimaryProduct (id) VALUES (1);
+EXPLAIN UPDATE PrimaryProduct SET id = 2 WHERE id = 1;
+UPDATE PrimaryProduct SET id = 2 WHERE id = 1;
+SELECT * FROM PrimaryProduct;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.PRIMARYPRODUCT (ID INTEGER NOT NULL) BETWEEN 1 AND 1
+-- msg: UPDATE 1
+-- ID: 2

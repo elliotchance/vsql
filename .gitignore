@@ -8,4 +8,5 @@ grammar.bnf
 vsql/grammar.v
 scripts/generate-v-client-library-docs
 y.output
-y.v
+vsql/y.v
+vsql/y.y

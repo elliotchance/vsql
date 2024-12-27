@@ -283,6 +283,15 @@ fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
 	}
 
 	page_number := f.btree.expire(row.object_key(f.tables[table_name])!, row.tid, f.transaction_id)!
+
+	// A negative page_number means the object didn't exist so there's nothing to
+	// save. This should not be possible because the delete_row will only be
+	// issued on a row that already exists, but I guess to be safe let's not let
+	// it panic.
+	if page_number < 0 {
+		return error('DELETE: integrity issue, preventing panic')
+	}
+
 	f.transaction_pages[page_number] = true
 }
 

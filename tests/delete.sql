@@ -35,3 +35,17 @@ DELETE FROM foo.bar;
 -- msg: CREATE SCHEMA 1
 -- msg: CREATE TABLE 1
 -- msg: DELETE 0
+
+-- # https://github.com/elliotchance/vsql/issues/200
+CREATE TABLE PrimaryProduct (id INT NOT NULL, PRIMARY KEY(id));
+INSERT INTO PrimaryProduct (id) VALUES (1);
+INSERT INTO PrimaryProduct (id) VALUES (2);
+EXPLAIN DELETE FROM PrimaryProduct WHERE id = 1;
+DELETE FROM PrimaryProduct WHERE id = 1;
+SELECT * FROM PrimaryProduct;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.PRIMARYPRODUCT (ID INTEGER NOT NULL) BETWEEN 1 AND 1
+-- msg: DELETE 1
+-- ID: 2

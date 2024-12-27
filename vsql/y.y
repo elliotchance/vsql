@@ -674,19 +674,14 @@ import math
 
 %start start;
 
+
 %%
+
 
 // This is a special case that uses `yyrcvr.lval` to make sure the parser
 // captures the final result.
 start:
   preparable_statement { yyrcvr.lval.v = $1.v as Stmt }
-
-// 6.7 <column reference>
-
-column_reference:
-  basic_identifier_chain {
-    $$.v = new_column_identifier(($1.v as IdentifierChain).identifier)!
-  }
 
 // 7.3 <table value constructor>
 
@@ -2593,7 +2588,16 @@ sql_argument_list:
 sql_argument /* ValueExpression */ :
     value_expression { $$.v = $1.v as ValueExpression }
 
+
+
+column_reference:
+  basic_identifier_chain {
+    $$.v = new_column_identifier(($1.v as IdentifierChain).identifier)!
+  }
+
+
 %%
+
 
 fn yy_error(err IError) {
   println("yy_error: $err")
@@ -2613,3 +2617,4 @@ pub fn main_()! {
   // value := ((parser as YYParserImpl).lval.v as Stmt)
   // println(value.pstr(map[string]Value{}))
 }
+

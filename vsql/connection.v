@@ -259,7 +259,7 @@ pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 
 	mut lexer := Lexer{tokens, 0}
 	mut parser := yy_new_parser()
-  parser.parse(mut lexer)!
+	parser.parse(mut lexer)!
 
 	stmt := (parser as YYParserImpl).lval.v as Stmt
 	elapsed_parse := t.elapsed()

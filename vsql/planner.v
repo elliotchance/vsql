@@ -410,14 +410,14 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 				if column.as_clause.sub_entity_name != '' {
 					column_name = column.as_clause.sub_entity_name
 				} else if column.expr is BooleanValueExpression {
-						e := column.expr.term.factor.expr
-						if e is BooleanPredicand {
-							if e is NonparenthesizedValueExpressionPrimary {
-								if e is Identifier {
-									column_name = e.sub_entity_name
-								}
+					e := column.expr.term.factor.expr
+					if e is BooleanPredicand {
+						if e is NonparenthesizedValueExpressionPrimary {
+							if e is Identifier {
+								column_name = e.sub_entity_name
 							}
 						}
+					}
 				}
 
 				expr := column.expr

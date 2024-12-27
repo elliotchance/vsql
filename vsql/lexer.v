@@ -3,87 +3,153 @@
 
 module vsql
 
-type YYSym = Value | ValueSpecification | ValueExpression | RowValueConstructor
-  | []RowValueConstructor | BooleanValueExpression | NumericValueExpression
-  | CommonValueExpression | BooleanTerm | ValueExpressionPrimary | SelectList
-  | NumericPrimary | Term | BooleanTest | BooleanPrimary | BooleanPredicand
-  | NonparenthesizedValueExpressionPrimary | SimpleTable | QueryExpression
-  | Stmt | string | Identifier | IdentifierChain | RoutineInvocation
-  | []ContextuallyTypedRowValueConstructor | NextValueExpression | DerivedColumn
-  | ContextuallyTypedRowValueConstructor | CaseExpression | TableExpression
-  | []vsql.ValueExpression | []SequenceGeneratorOption | QualifiedAsteriskExpr
-  | AlterSequenceGeneratorStatement | SequenceGeneratorOption | []DerivedColumn
-  | SequenceGeneratorRestartOption | CastSpecification | CharacterPrimary
-  | SortSpecification | []SortSpecification | bool | TablePrimary
-  | map[string]UpdateSource | UpdateSource | NullSpecification | []TableElement
-  | TableElement | DatetimePrimary | DatetimeValueFunction | CastOperand | Type
-  | GeneralValueSpecification | []Identifier | InsertStatement | Concatenation
-  | ParenthesizedValueExpression | AggregateFunction | CharacterValueFunction
-  | CharacterSubstringFunction | TrimFunction | CharacterValueExpression
-  | BetweenPredicate | RowValueConstructorPredicand | CharacterLikePredicate
-  | ComparisonPredicatePart2 | ComparisonPredicate | QuerySpecification
-  | ExplicitRowValueConstructor | ContextuallyTypedRowValueConstructorElement
-  | []ContextuallyTypedRowValueConstructorElement | TableReference
-  | QualifiedJoin | Correlation | SequenceGeneratorDefinition
-  | SequenceGeneratorStartWithOption | SequenceGeneratorIncrementByOption
-  | SequenceGeneratorMaxvalueOption | SequenceGeneratorMinvalueOption
-  | Predicate | UniqueConstraintDefinition | CurrentDate
-  | CurrentTime | LocalTime | CurrentTimestamp | LocalTimestamp | NullPredicate
-  | SimilarPredicate | Column | SetSchemaStatement | AggregateFunctionCount
-  | Table;
+type YYSym = Value
+	| ValueSpecification
+	| ValueExpression
+	| RowValueConstructor
+	| []RowValueConstructor
+	| BooleanValueExpression
+	| NumericValueExpression
+	| CommonValueExpression
+	| BooleanTerm
+	| ValueExpressionPrimary
+	| SelectList
+	| NumericPrimary
+	| Term
+	| BooleanTest
+	| BooleanPrimary
+	| BooleanPredicand
+	| NonparenthesizedValueExpressionPrimary
+	| SimpleTable
+	| QueryExpression
+	| Stmt
+	| string
+	| Identifier
+	| IdentifierChain
+	| RoutineInvocation
+	| []ContextuallyTypedRowValueConstructor
+	| NextValueExpression
+	| DerivedColumn
+	| ContextuallyTypedRowValueConstructor
+	| CaseExpression
+	| TableExpression
+	| []ValueExpression
+	| []SequenceGeneratorOption
+	| QualifiedAsteriskExpr
+	| AlterSequenceGeneratorStatement
+	| SequenceGeneratorOption
+	| []DerivedColumn
+	| SequenceGeneratorRestartOption
+	| CastSpecification
+	| CharacterPrimary
+	| SortSpecification
+	| []SortSpecification
+	| bool
+	| TablePrimary
+	| map[string]UpdateSource
+	| UpdateSource
+	| NullSpecification
+	| []TableElement
+	| TableElement
+	| DatetimePrimary
+	| DatetimeValueFunction
+	| CastOperand
+	| Type
+	| GeneralValueSpecification
+	| []Identifier
+	| InsertStatement
+	| Concatenation
+	| ParenthesizedValueExpression
+	| AggregateFunction
+	| CharacterValueFunction
+	| CharacterSubstringFunction
+	| TrimFunction
+	| CharacterValueExpression
+	| BetweenPredicate
+	| RowValueConstructorPredicand
+	| CharacterLikePredicate
+	| ComparisonPredicatePart2
+	| ComparisonPredicate
+	| QuerySpecification
+	| ExplicitRowValueConstructor
+	| ContextuallyTypedRowValueConstructorElement
+	| []ContextuallyTypedRowValueConstructorElement
+	| TableReference
+	| QualifiedJoin
+	| Correlation
+	| SequenceGeneratorDefinition
+	| SequenceGeneratorStartWithOption
+	| SequenceGeneratorIncrementByOption
+	| SequenceGeneratorMaxvalueOption
+	| SequenceGeneratorMinvalueOption
+	| Predicate
+	| UniqueConstraintDefinition
+	| CurrentDate
+	| CurrentTime
+	| LocalTime
+	| CurrentTimestamp
+	| LocalTimestamp
+	| NullPredicate
+	| SimilarPredicate
+	| Column
+	| SetSchemaStatement
+	| AggregateFunctionCount
+	| Table
 
 struct YYSymType {
 mut:
-  v YYSym
-  yys int
+	v   YYSym
+	yys int
 }
 
 struct Lexer {
 mut:
-  tokens []Tok
-  pos int
+	tokens []Tok
+	pos    int
 }
 
 fn (mut l Lexer) lex(mut lval YYSymType) int {
-  if l.pos >= l.tokens.len {
-    return 0
-  }
+	if l.pos >= l.tokens.len {
+		return 0
+	}
 
-  l.pos++
-  unsafe { *lval = l.tokens[l.pos-1].sym }
-  return l.tokens[l.pos-1].token
+	l.pos++
+	unsafe {
+		*lval = l.tokens[l.pos - 1].sym
+	}
+	return l.tokens[l.pos - 1].token
 }
 
-fn (mut l Lexer) error(s string)! {
-  return sqlstate_42601(cleanup_yacc_error(s))
+fn (mut l Lexer) error(s string) ! {
+	return sqlstate_42601(cleanup_yacc_error(s))
 }
 
 fn cleanup_yacc_error(s string) string {
 	mut msg := s
 
-	msg = msg.replace("OPERATOR_COMMA", '","')
-	msg = msg.replace("OPERATOR_RIGHT_PAREN", '")"')
-	msg = msg.replace("OPERATOR_DOUBLE_PIPE", '"||"')
-	msg = msg.replace("OPERATOR_PLUS", '"+"')
-	msg = msg.replace("OPERATOR_MINUS", '"-"')
-	msg = msg.replace("OPERATOR_SEMICOLON", '";"')
-	msg = msg.replace("OPERATOR_EQUALS", '"="')
-	msg = msg.replace("OPERATOR_LEFT_PAREN", '"("')
-	msg = msg.replace("OPERATOR_ASTERISK", '"*"')
-	msg = msg.replace("OPERATOR_PERIOD", '"."')
-	msg = msg.replace("OPERATOR_SOLIDUS", '"/"')
-	msg = msg.replace("OPERATOR_COLON", '":"')
-	msg = msg.replace("OPERATOR_LESS_THAN", '"<"')
-	msg = msg.replace("OPERATOR_GREATER_THAN", '">"')
-	msg = msg.replace("OPERATOR_NOT_EQUALS", '"<>"')
-	msg = msg.replace("OPERATOR_GREATER_EQUALS", '">="')
-	msg = msg.replace("OPERATOR_LESS_EQUALS", '"<="')
-	msg = msg.replace("OPERATOR_PERIOD_ASTERISK", '"." "*"')
-	msg = msg.replace("OPERATOR_LEFT_PAREN_ASTERISK", '"(" "*"')
+	msg = msg.replace('OPERATOR_COMMA', '","')
+	msg = msg.replace('OPERATOR_RIGHT_PAREN', '")"')
+	msg = msg.replace('OPERATOR_DOUBLE_PIPE', '"||"')
+	msg = msg.replace('OPERATOR_PLUS', '"+"')
+	msg = msg.replace('OPERATOR_MINUS', '"-"')
+	msg = msg.replace('OPERATOR_SEMICOLON', '";"')
+	msg = msg.replace('OPERATOR_EQUALS', '"="')
+	msg = msg.replace('OPERATOR_LEFT_PAREN', '"("')
+	msg = msg.replace('OPERATOR_ASTERISK', '"*"')
+	msg = msg.replace('OPERATOR_PERIOD', '"."')
+	msg = msg.replace('OPERATOR_SOLIDUS', '"/"')
+	msg = msg.replace('OPERATOR_COLON', '":"')
+	msg = msg.replace('OPERATOR_LESS_THAN', '"<"')
+	msg = msg.replace('OPERATOR_GREATER_THAN', '">"')
+	msg = msg.replace('OPERATOR_NOT_EQUALS', '"<>"')
+	msg = msg.replace('OPERATOR_GREATER_EQUALS', '">="')
+	msg = msg.replace('OPERATOR_LESS_EQUALS', '"<="')
+	msg = msg.replace('OPERATOR_PERIOD_ASTERISK', '"." "*"')
+	msg = msg.replace('OPERATOR_LEFT_PAREN_ASTERISK', '"(" "*"')
 
-	msg = msg.replace("LITERAL_IDENTIFIER", "identifier")
-	msg = msg.replace("LITERAL_STRING", "string")
-	msg = msg.replace("LITERAL_NUMBER", "number")
+	msg = msg.replace('LITERAL_IDENTIFIER', 'identifier')
+	msg = msg.replace('LITERAL_STRING', 'string')
+	msg = msg.replace('LITERAL_NUMBER', 'number')
 
 	return msg['syntax error: '.len..]
 }
@@ -248,8 +314,8 @@ fn is_identifier_char(c rune, is_not_first bool) bool {
 
 pub struct Tok {
 pub:
-  token int
-  sym YYSymType
+	token int
+	sym   YYSymType
 }
 
 fn tokenize2(sql_stmt string) []Tok {
@@ -265,7 +331,9 @@ fn tokenize2(sql_stmt string) []Tok {
 				word += '${cs[i]}'
 				i++
 			}
-			tokens << Tok{token_literal_number, YYSymType{v: word}}
+			tokens << Tok{token_literal_number, YYSymType{
+				v: word
+			}}
 
 			// There is a special case for approximate numbers where 'E' is considered
 			// a separate token in the SQL BNF. However, "e2" should not be treated as
@@ -276,7 +344,9 @@ fn tokenize2(sql_stmt string) []Tok {
 				i++
 			}
 
-			unsafe { goto next }
+			unsafe {
+				goto next
+			}
 		}
 
 		// Strings
@@ -288,8 +358,12 @@ fn tokenize2(sql_stmt string) []Tok {
 				i++
 			}
 			i++
-			tokens << Tok{token_literal_string, YYSymType{v: new_character_value(word)}}
-			unsafe { goto next }
+			tokens << Tok{token_literal_string, YYSymType{
+				v: new_character_value(word)
+			}}
+			unsafe {
+				goto next
+			}
 		}
 
 		// Delimited identifiers
@@ -301,8 +375,14 @@ fn tokenize2(sql_stmt string) []Tok {
 				i++
 			}
 			i++
-			tokens << Tok{token_literal_identifier, YYSymType{v: IdentifierChain{identifier: '"${word}"'}}}
-			unsafe { goto next }
+			tokens << Tok{token_literal_identifier, YYSymType{
+				v: IdentifierChain{
+					identifier: '"${word}"'
+				}
+			}}
+			unsafe {
+				goto next
+			}
 		}
 
 		// Operators
@@ -314,9 +394,13 @@ fn tokenize2(sql_stmt string) []Tok {
 		}
 		for op, tk in multi {
 			if i < cs.len - 1 && cs[i] == op[0] && cs[i + 1] == op[1] {
-				tokens << Tok{tk, YYSymType{v: op}}
+				tokens << Tok{tk, YYSymType{
+					v: op
+				}}
 				i += 2
-				unsafe { goto next }
+				unsafe {
+					goto next
+				}
 			}
 		}
 
@@ -337,9 +421,13 @@ fn tokenize2(sql_stmt string) []Tok {
 		}
 		for op, tk in single {
 			if cs[i] == op {
-				tokens << Tok{tk, YYSymType{v: op.str()}}
+				tokens << Tok{tk, YYSymType{
+					v: op.str()
+				}}
 				i++
-				unsafe { goto next }
+				unsafe {
+					goto next
+				}
 			}
 		}
 
@@ -362,20 +450,26 @@ fn tokenize2(sql_stmt string) []Tok {
 		for tok_pos, tok_name in yy_toknames {
 			if tok_name == upper_word {
 				tok_number := tok_pos + 57343
-				tokens << Tok{tok_number, YYSymType{v: upper_word}}
+				tokens << Tok{tok_number, YYSymType{
+					v: upper_word
+				}}
 				found = true
 				break
 			}
 		}
-		
+
 		if !found {
-			tokens << Tok{token_literal_identifier, YYSymType{v: IdentifierChain{identifier: word}}}
+			tokens << Tok{token_literal_identifier, YYSymType{
+				v: IdentifierChain{
+					identifier: word
+				}
+			}}
 		}
 
-next:
+		next:
 		length, new_token := tail_substitution(tokens)
 		if length > 0 {
-			tokens = tokens[..tokens.len-length].clone()
+			tokens = tokens[..tokens.len - length].clone()
 			tokens << Tok{new_token, YYSymType{}}
 		}
 	}
@@ -386,28 +480,33 @@ next:
 fn tail_substitution(tokens []Tok) (int, int) {
 	len := tokens.len
 
-	if len > 2 && tokens[len-2].token == token_operator_period && tokens[len-1].token == token_operator_asterisk {
+	if len > 2 && tokens[len - 2].token == token_operator_period
+		&& tokens[len - 1].token == token_operator_asterisk {
 		return 2, token_operator_period_asterisk
 	}
-	if len > 2 && tokens[len-2].token == token_operator_left_paren && tokens[len-1].token == token_operator_asterisk {
+	if len > 2 && tokens[len - 2].token == token_operator_left_paren
+		&& tokens[len - 1].token == token_operator_asterisk {
 		return 2, token_operator_left_paren_asterisk
 	}
-	if len > 2 && tokens[len-2].token == token_is && tokens[len-1].token == token_true {
+	if len > 2 && tokens[len - 2].token == token_is && tokens[len - 1].token == token_true {
 		return 2, token_is_true
 	}
-	if len > 2 && tokens[len-2].token == token_is && tokens[len-1].token == token_false {
+	if len > 2 && tokens[len - 2].token == token_is && tokens[len - 1].token == token_false {
 		return 2, token_is_false
 	}
-	if len > 2 && tokens[len-2].token == token_is && tokens[len-1].token == token_unknown {
+	if len > 2 && tokens[len - 2].token == token_is && tokens[len - 1].token == token_unknown {
 		return 2, token_is_unknown
 	}
-	if len > 3 && tokens[len-3].token == token_is && tokens[len-2].token == token_not && tokens[len-1].token == token_true {
+	if len > 3 && tokens[len - 3].token == token_is && tokens[len - 2].token == token_not
+		&& tokens[len - 1].token == token_true {
 		return 3, token_is_not_true
 	}
-	if len > 3 && tokens[len-3].token == token_is && tokens[len-2].token == token_not && tokens[len-1].token == token_false {
+	if len > 3 && tokens[len - 3].token == token_is && tokens[len - 2].token == token_not
+		&& tokens[len - 1].token == token_false {
 		return 3, token_is_not_false
 	}
-	if len > 3 && tokens[len-3].token == token_is && tokens[len-2].token == token_not && tokens[len-1].token == token_unknown {
+	if len > 3 && tokens[len - 3].token == token_is && tokens[len - 2].token == token_not
+		&& tokens[len - 1].token == token_unknown {
 		return 3, token_is_not_unknown
 	}
 

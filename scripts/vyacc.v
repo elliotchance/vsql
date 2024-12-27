@@ -3448,7 +3448,7 @@ fn $\$lex1(mut lex YYLexer, mut lval YYSymType) (int, int) {
 
 out:
 	if token == 0 {
-		token = int($\$_tok2[1]) /* unknown char */
+		token = int($\$_tok2[1]) // unknown char
 	}
 	if $\$_debug >= 3 {
 		println("lex \${$\$_tokname(token)}(\${u8(ch)})")

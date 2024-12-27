@@ -716,7 +716,7 @@ fn (mut y Vyacc) setup() ! {
 	for i2 := tokstart; i2 <= y.ntokens; i2++ {
 		// non-literals
 		if !y.tokset[i2].noconst {
-			y.ftable.write_string('pub const token_${y.tokset[i2].name.to_lower()} = ${y.tokset[i2].value}\n')!
+			y.ftable.write_string('const token_${y.tokset[i2].name.to_lower()} = ${y.tokset[i2].value}\n')!
 		}
 	}
 
@@ -3321,18 +3321,18 @@ mut:
 	lookahead() int
 }
 
-pub struct YYParserImpl {
-pub mut:
+struct YYParserImpl {
+mut:
 	lval  YYSymType
 	stack [$\$_initial_stack_size]YYSymType
 	char  int
 }
 
-pub fn (mut p YYParserImpl) lookahead() int {
+fn (mut p YYParserImpl) lookahead() int {
 	return p.char
 }
 
-pub fn $\$_new_parser() YYParser {
+fn $\$_new_parser() YYParser {
 	return YYParserImpl{}
 }
 

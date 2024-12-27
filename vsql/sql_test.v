@@ -148,14 +148,13 @@ fn replace_unicode(s string) string {
 fn test_all() ! {
 	filter_test, filter_line := get_test_filter()
 	verbose := $env('VERBOSE')
-	query_cache := new_query_cache()
 	for test in get_tests()! {
-		run_single_test(test, query_cache, verbose != '', filter_line)!
+		run_single_test(test, verbose != '', filter_line)!
 	}
 }
 
 @[assert_continues]
-fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_line int) ! {
+fn run_single_test(test SQLTest, verbose bool, filter_line int) ! {
 	if filter_line != 0 && test.line_number != filter_line {
 		if verbose {
 			println('SKIP ${test.file_name}:${test.line_number}\n')
@@ -172,7 +171,6 @@ fn run_single_test(test SQLTest, query_cache &QueryCache, verbose bool, filter_l
 	}
 
 	mut options := default_connection_options()
-	options.query_cache = query_cache
 
 	mut db := open_database(':memory:', options)!
 	db.now = fn () (time.Time, i16) {

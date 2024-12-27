@@ -34,9 +34,8 @@ pub fn new_server(options ServerOptions) Server {
 	}
 
 	return Server{options, &Connection{
-		query_cache: new_query_cache()
-		now:         default_now
-		catalogs:    {
+		now:      default_now
+		catalogs: {
 			catalog_name: catalog
 		}
 	}}

@@ -4,97 +4,97 @@
 module vsql
 
 type YYSym = Value
-	| ValueSpecification
-	| ValueExpression
-	| RowValueConstructor
-	| []RowValueConstructor
-	| BooleanValueExpression
-	| NumericValueExpression
-	| CommonValueExpression
-	| BooleanTerm
-	| ValueExpressionPrimary
-	| SelectList
-	| NumericPrimary
-	| Term
-	| BooleanTest
-	| BooleanPrimary
-	| BooleanPredicand
-	| NonparenthesizedValueExpressionPrimary
-	| SimpleTable
-	| QueryExpression
-	| Stmt
-	| string
-	| Identifier
-	| IdentifierChain
-	| RoutineInvocation
-	| []ContextuallyTypedRowValueConstructor
-	| NextValueExpression
-	| DerivedColumn
-	| ContextuallyTypedRowValueConstructor
-	| CaseExpression
-	| TableExpression
-	| []ValueExpression
-	| []SequenceGeneratorOption
-	| QualifiedAsteriskExpr
+	| AggregateFunction
+	| AggregateFunctionCount
 	| AlterSequenceGeneratorStatement
-	| SequenceGeneratorOption
-	| []DerivedColumn
-	| SequenceGeneratorRestartOption
+	| BetweenPredicate
+	| BooleanPredicand
+	| BooleanPrimary
+	| BooleanTerm
+	| BooleanTest
+	| BooleanValueExpression
+	| CaseExpression
+	| CastOperand
 	| CastSpecification
+	| CharacterLikePredicate
 	| CharacterPrimary
-	| SortSpecification
-	| []SortSpecification
-	| bool
-	| TablePrimary
-	| map[string]UpdateSource
-	| UpdateSource
-	| NullSpecification
-	| []TableElement
-	| TableElement
+	| CharacterSubstringFunction
+	| CharacterValueExpression
+	| CharacterValueFunction
+	| Column
+	| CommonValueExpression
+	| ComparisonPredicate
+	| ComparisonPredicatePart2
+	| Concatenation
+	| ContextuallyTypedRowValueConstructor
+	| ContextuallyTypedRowValueConstructorElement
+	| Correlation
+	| CurrentDate
+	| CurrentTime
+	| CurrentTimestamp
 	| DatetimePrimary
 	| DatetimeValueFunction
-	| CastOperand
-	| Type
-	| GeneralValueSpecification
-	| []Identifier
-	| InsertStatement
-	| Concatenation
-	| ParenthesizedValueExpression
-	| AggregateFunction
-	| CharacterValueFunction
-	| CharacterSubstringFunction
-	| TrimFunction
-	| CharacterValueExpression
-	| BetweenPredicate
-	| RowValueConstructorPredicand
-	| CharacterLikePredicate
-	| ComparisonPredicatePart2
-	| ComparisonPredicate
-	| QuerySpecification
+	| DerivedColumn
 	| ExplicitRowValueConstructor
-	| ContextuallyTypedRowValueConstructorElement
-	| []ContextuallyTypedRowValueConstructorElement
-	| TableReference
+	| GeneralValueSpecification
+	| Identifier
+	| IdentifierChain
+	| InsertStatement
+	| LocalTime
+	| LocalTimestamp
+	| NextValueExpression
+	| NonparenthesizedValueExpressionPrimary
+	| NullPredicate
+	| NullSpecification
+	| NumericPrimary
+	| NumericValueExpression
+	| ParenthesizedValueExpression
+	| Predicate
+	| QualifiedAsteriskExpr
 	| QualifiedJoin
-	| Correlation
+	| QueryExpression
+	| QuerySpecification
+	| RoutineInvocation
+	| RowValueConstructor
+	| RowValueConstructorPredicand
+	| SelectList
 	| SequenceGeneratorDefinition
-	| SequenceGeneratorStartWithOption
 	| SequenceGeneratorIncrementByOption
 	| SequenceGeneratorMaxvalueOption
 	| SequenceGeneratorMinvalueOption
-	| Predicate
-	| UniqueConstraintDefinition
-	| CurrentDate
-	| CurrentTime
-	| LocalTime
-	| CurrentTimestamp
-	| LocalTimestamp
-	| NullPredicate
-	| SimilarPredicate
-	| Column
+	| SequenceGeneratorOption
+	| SequenceGeneratorRestartOption
+	| SequenceGeneratorStartWithOption
 	| SetSchemaStatement
-	| AggregateFunctionCount
+	| SimilarPredicate
+	| SimpleTable
+	| SortSpecification
+	| Stmt
 	| Table
+	| TableElement
+	| TableExpression
+	| TablePrimary
+	| TableReference
+	| Term
+	| TrimFunction
+	| Type
+	| UniqueConstraintDefinition
+	| UpdateSource
+	| ValueExpression
+	| ValueExpressionPrimary
+	| ValueSpecification
+	| []ContextuallyTypedRowValueConstructor
+	| []ContextuallyTypedRowValueConstructorElement
+	| []DerivedColumn
+	| []Identifier
+	| []RowValueConstructor
+	| []SequenceGeneratorOption
+	| []SortSpecification
+	| []TableElement
+	| []ValueExpression
+	| bool
+	| map[string]UpdateSource
+	| string
 
 struct YYSymType {
 mut:
@@ -104,7 +104,7 @@ mut:
 
 struct Lexer {
 mut:
-	tokens []Tok
+	tokens []Token
 	pos    int
 }
 
@@ -180,146 +180,14 @@ enum TokenKind {
 	solidus                      // <solidus> ::= /
 }
 
-struct Token {
-pub:
-	kind  TokenKind
-	value string
-}
-
-fn tokenize(sql_stmt string) []Token {
-	mut tokens := []Token{}
-	cs := sql_stmt.trim(';').runes()
-	mut i := 0
-
-	next: for i < cs.len {
-		// Numbers
-		if cs[i] >= `0` && cs[i] <= `9` {
-			mut word := ''
-			for i < cs.len && cs[i] >= `0` && cs[i] <= `9` {
-				word += '${cs[i]}'
-				i++
-			}
-			tokens << Token{.literal_number, word}
-
-			// There is a special case for approximate numbers where 'E' is considered
-			// a separate token in the SQL BNF. However, "e2" should not be treated as
-			// two tokens, but rather we need to catch this case only when with a
-			// number token.
-			if i < cs.len && (cs[i] == `e` || cs[i] == `E`) {
-				tokens << Token{.keyword, 'E'}
-				i++
-			}
-
-			continue
-		}
-
-		// Strings
-		if cs[i] == `'` {
-			mut word := ''
-			i++
-			for i < cs.len && cs[i] != `'` {
-				word += '${cs[i]}'
-				i++
-			}
-			i++
-			tokens << Token{.literal_string, word}
-			continue
-		}
-
-		// Delimited identifiers
-		if cs[i] == `"` {
-			mut word := ''
-			i++
-			for i < cs.len && cs[i] != `"` {
-				word += '${cs[i]}'
-				i++
-			}
-			i++
-			tokens << Token{.literal_identifier, '"${word}"'}
-			continue
-		}
-
-		// Operators
-		multi := {
-			'<>': TokenKind.not_equals_operator
-			'>=': TokenKind.greater_than_or_equals_operator
-			'<=': TokenKind.less_than_or_equals_operator
-			'||': TokenKind.concatenation_operator
-		}
-		for op, tk in multi {
-			if cs[i] == op[0] && cs[i + 1] == op[1] {
-				tokens << Token{tk, op}
-				i += 2
-				continue next
-			}
-		}
-
-		single := {
-			`(`: TokenKind.left_paren
-			`)`: TokenKind.right_paren
-			`*`: TokenKind.asterisk
-			`+`: TokenKind.plus_sign
-			`,`: TokenKind.comma
-			`-`: TokenKind.minus_sign
-			`/`: TokenKind.solidus
-			`;`: TokenKind.semicolon
-			`<`: TokenKind.less_than_operator
-			`=`: TokenKind.equals_operator
-			`>`: TokenKind.greater_than_operator
-			`.`: TokenKind.period
-			`:`: TokenKind.colon
-		}
-		for op, tk in single {
-			if cs[i] == op {
-				tokens << Token{tk, op.str()}
-				i++
-				continue next
-			}
-		}
-
-		// Keyword or regular identifier
-		mut word := ''
-		mut is_not_first := false
-		for i < cs.len && is_identifier_char(cs[i], is_not_first) {
-			word += '${cs[i]}'
-			i++
-			is_not_first = true
-		}
-
-		if word == '' {
-			i++
-			continue
-		}
-
-		tokens << if is_key_word(word) {
-			Token{TokenKind.keyword, word.to_upper()}
-		} else {
-			Token{TokenKind.literal_identifier, word}
-		}
-	}
-
-	return tokens
-}
-
-@[inline]
-fn is_identifier_char(c rune, is_not_first bool) bool {
-	yes := (c >= `a` && c <= `z`) || (c >= `A` && c <= `Z`) || c == `_`
-
-	if is_not_first {
-		return yes || (c >= `0` && c <= `9`)
-	}
-
-	return yes
-}
-
-pub struct Tok {
+pub struct Token {
 pub:
 	token int
 	sym   YYSymType
 }
 
-fn tokenize2(sql_stmt string) []Tok {
-	mut tokens := []Tok{}
+fn tokenize(sql_stmt string) []Token {
+	mut tokens := []Token{}
 	cs := sql_stmt.trim(';').runes()
 	mut i := 0
 
@@ -331,7 +199,7 @@ fn tokenize2(sql_stmt string) []Tok {
 				word += '${cs[i]}'
 				i++
 			}
-			tokens << Tok{token_literal_number, YYSymType{
+			tokens << Token{token_literal_number, YYSymType{
 				v: word
 			}}
 
@@ -340,7 +208,7 @@ fn tokenize2(sql_stmt string) []Tok {
 			// two tokens, but rather we need to catch this case only when with a
 			// number token.
 			if i < cs.len && (cs[i] == `e` || cs[i] == `E`) {
-				tokens << Tok{token_e, YYSymType{}}
+				tokens << Token{token_e, YYSymType{}}
 				i++
 			}
 
@@ -358,7 +226,7 @@ fn tokenize2(sql_stmt string) []Tok {
 				i++
 			}
 			i++
-			tokens << Tok{token_literal_string, YYSymType{
+			tokens << Token{token_literal_string, YYSymType{
 				v: new_character_value(word)
 			}}
 			unsafe {
@@ -375,7 +243,7 @@ fn tokenize2(sql_stmt string) []Tok {
 				i++
 			}
 			i++
-			tokens << Tok{token_literal_identifier, YYSymType{
+			tokens << Token{token_literal_identifier, YYSymType{
 				v: IdentifierChain{
 					identifier: '"${word}"'
 				}
@@ -394,7 +262,7 @@ fn tokenize2(sql_stmt string) []Tok {
 		}
 		for op, tk in multi {
 			if i < cs.len - 1 && cs[i] == op[0] && cs[i + 1] == op[1] {
-				tokens << Tok{tk, YYSymType{
+				tokens << Token{tk, YYSymType{
 					v: op
 				}}
 				i += 2
@@ -421,7 +289,7 @@ fn tokenize2(sql_stmt string) []Tok {
 		}
 		for op, tk in single {
 			if cs[i] == op {
-				tokens << Tok{tk, YYSymType{
+				tokens << Token{tk, YYSymType{
 					v: op.str()
 				}}
 				i++
@@ -450,7 +318,7 @@ fn tokenize2(sql_stmt string) []Tok {
 		for tok_pos, tok_name in yy_toknames {
 			if tok_name == upper_word {
 				tok_number := tok_pos + 57343
-				tokens << Tok{tok_number, YYSymType{
+				tokens << Token{tok_number, YYSymType{
 					v: upper_word
 				}}
 				found = true
@@ -459,7 +327,7 @@ fn tokenize2(sql_stmt string) []Tok {
 		}
 
 		if !found {
-			tokens << Tok{token_literal_identifier, YYSymType{
+			tokens << Token{token_literal_identifier, YYSymType{
 				v: IdentifierChain{
 					identifier: word
 				}
@@ -470,14 +338,25 @@ fn tokenize2(sql_stmt string) []Tok {
 		length, new_token := tail_substitution(tokens)
 		if length > 0 {
 			tokens = tokens[..tokens.len - length].clone()
-			tokens << Tok{new_token, YYSymType{}}
+			tokens << Token{new_token, YYSymType{}}
 		}
 	}
 
 	return tokens
 }
 
-fn tail_substitution(tokens []Tok) (int, int) {
+@[inline]
+fn is_identifier_char(c rune, is_not_first bool) bool {
+	yes := (c >= `a` && c <= `z`) || (c >= `A` && c <= `Z`) || c == `_`
+
+	if is_not_first {
+		return yes || (c >= `0` && c <= `9`)
+	}
+
+	return yes
+}
+
+fn tail_substitution(tokens []Token) (int, int) {
 	len := tokens.len
 
 	if len > 2 && tokens[len - 2].token == token_operator_period

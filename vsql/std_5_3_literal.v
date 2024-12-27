@@ -118,13 +118,6 @@ fn parse_timestamp_literal(v Value) !Value {
 }
 
 fn numeric_literal(x string) !Value {
-	// This is only to handle QueryCache.prepare_stmt(). It can be removed when
-	// that's no longer needed.
-	if x.contains('E') {
-		parts := x.split('E')
-		return new_double_precision_value(parts[0].f64() * math.pow(10, parts[1].f64()))
-	}
-
 	// Any number that contains a decimal (even if its a whole number) must be
 	// treated as a NUMERIC.
 	if x.contains('.') {

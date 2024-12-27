@@ -3468,8 +3468,8 @@ fn (mut $\$rcvr YYParserImpl) parse(mut $\$lex YYLexer) !int {
 	_ = $\$_dollar // silence set and not used
 	mut $\$_s := $\$rcvr.stack[..]
 
-	mut n_errs := 0   /* number of errors */
-	mut err_flag := 0 /* error recovery flag */
+	mut n_errs := 0   // number of errors
+	mut err_flag := 0 // error recovery flag
 	mut $\$state := 0
 	$\$rcvr.char = -1
 	mut $\$token := -1 // $\$rcvr.char translated into internal numbering
@@ -3489,7 +3489,7 @@ ret1:
 	return 1
 
 $\$stack:
-	/* put a state and value onto the stack */
+	// put a state and value onto the stack
 	if $\$_debug >= 4 {
 		println("char \${$\$_tokname($\$token)} in \${$\$_statname($\$state)}")
 	}
@@ -3506,7 +3506,9 @@ $\$stack:
 $\$newstate:
 	$\$n = int($\$_pact[$\$state])
 	if $\$n <= $\$_flag {
-		unsafe { goto $\$default /* simple state */ }
+		unsafe {
+			goto $\$default // simple state
+		}
 	}
 	if $\$rcvr.char < 0 {
 		$\$rcvr.char, $\$token = $\$lex1(mut $\$lex, mut $\$rcvr.lval)
@@ -3516,7 +3518,8 @@ $\$newstate:
 		unsafe { goto $\$default }
 	}
 	$\$n = int($\$_act[$\$n])
-	if int($\$_chk[$\$n]) == $\$token { /* valid shift */
+	if int($\$_chk[$\$n]) == $\$token {
+		// valid shift
 		$\$rcvr.char = -1
 		$\$token = -1
 		$\$_val = $\$rcvr.lval
@@ -3528,14 +3531,14 @@ $\$newstate:
 	}
 
 $\$default:
-	/* default state action */
+	// default state action
 	$\$n = int($\$_def[$\$state])
 	if $\$n == -2 {
 		if $\$rcvr.char < 0 {
 			$\$rcvr.char, $\$token = $\$lex1(mut $\$lex, mut $\$rcvr.lval)
 		}
 
-		/* look through exception table */
+		// look through exception table
 		mut xi := 0
 		for {
 			if $\$_exca[xi+0] == -1 && int($\$_exca[xi+1]) == $\$state {
@@ -3555,9 +3558,10 @@ $\$default:
 		}
 	}
 	if $\$n == 0 {
-		/* error ... attempt to resume parsing */
+		// error ... attempt to resume parsing
 		match err_flag {
-		0 { /* brand new error */
+		0 {
+			// brand new error
 			$\$lex.error($\$_error_message($\$state, $\$token))!
 			n_errs++
 			if $\$_debug >= 1 {
@@ -3568,50 +3572,52 @@ $\$default:
 			// Note: fallthrough copies the next case:
 			err_flag = 3
 
-			/* find a state where "error" is a legal shift action */
+			// find a state where "error" is a legal shift action
 			for $\$p >= 0 {
 				$\$n = int($\$_pact[$\$_s[$\$p].yys]) + $\$_err_code
 				if $\$n >= 0 && $\$n < $\$_last {
-					$\$state = int($\$_act[$\$n]) /* simulate a shift of "error" */
+					$\$state = int($\$_act[$\$n]) // simulate a shift of "error"
 					if int($\$_chk[$\$state]) == $\$_err_code {
 						unsafe { goto $\$stack }
 					}
 				}
 
-				/* the current p has no shift on "error", pop stack */
+				// the current p has no shift on "error", pop stack
 				if $\$_debug >= 2 {
 					println("error recovery pops state \${$\$_s[$\$p].yys}")
 				}
 				$\$p--
 			}
-			/* there is no state on the stack with an error shift ... abort */
+			// there is no state on the stack with an error shift ... abort
 			unsafe { goto ret1 }
 		}
 
-		1, 2 { /* incompletely recovered error ... try again */
+		1, 2 {
+			// incompletely recovered error ... try again
 			err_flag = 3
 
-			/* find a state where "error" is a legal shift action */
+			// find a state where "error" is a legal shift action
 			for $\$p >= 0 {
 				$\$n = int($\$_pact[$\$_s[$\$p].yys]) + $\$_err_code
 				if $\$n >= 0 && $\$n < $\$_last {
-					$\$state = int($\$_act[$\$n]) /* simulate a shift of "error" */
+					$\$state = int($\$_act[$\$n]) // simulate a shift of "error"
 					if int($\$_chk[$\$state]) == $\$_err_code {
 						unsafe { goto $\$stack }
 					}
 				}
 
-				/* the current p has no shift on "error", pop stack */
+				// the current p has no shift on "error", pop stack
 				if $\$_debug >= 2 {
 					println("error recovery pops state \${$\$_s[$\$p].yys}")
 				}
 				$\$p--
 			}
-			/* there is no state on the stack with an error shift ... abort */
+			// there is no state on the stack with an error shift ... abort
 			unsafe { goto ret1 }
 		}
 
-		3 { /* no shift yet; clobber input char */
+		3 {
+			// no shift yet; clobber input char
 			if $\$_debug >= 2 {
 				println("error recovery discards \${$\$_tokname($\$token)}")
 			}
@@ -3620,14 +3626,17 @@ $\$default:
 			}
 			$\$rcvr.char = -1
 			$\$token = -1
-			unsafe { goto $\$newstate /* try again in the same state */ }
+			unsafe {
+				goto $\$newstate
+				// try again in the same state
+			}
 		}
 
 		else {}
 		}
 	}
 
-	/* reduction by production $\$n */
+	// reduction by production $\$n
 	if $\$_debug >= 2 {
 		println("reduce \${$\$n} in:\\n\\t\${$\$_statname($\$state)}")
 	}
@@ -3646,7 +3655,7 @@ $\$default:
 	}
 	$\$_val = $\$_s[$\$p+1]
 
-	/* consult goto table to find next state */
+	// consult goto table to find next state
 	$\$n = int($\$_r1[$\$n])
 	$\$g := int($\$_pgo[$\$n])
 	$\$j := $\$g + $\$_s[$\$p].yys + 1
@@ -3661,7 +3670,10 @@ $\$default:
 	}
 	// dummy call; replaced with literal code
 	$\$run()
-	unsafe { goto $\$stack /* stack new state and value */ }
+	unsafe {
+		goto $\$stack
+		// stack new state and value
+	}
 }
 
 fn gocopy[T](mut dst []T, src []T) int {

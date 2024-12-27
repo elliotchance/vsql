@@ -2,14 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 6.14, <next value expression>
 //
-// # Function
-//
 // Return the next value of a sequence generator.
-//
-// # Format
-//~
-//~ <next value expression> /* NextValueExpression */ ::=
-//~     NEXT VALUE FOR <sequence generator name>   -> next_value_expression
 
 // NextValueExpression for "NEXT VALUE FOR <sequence generator name>"
 struct NextValueExpression {

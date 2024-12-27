@@ -809,6 +809,10 @@ table_elements:
 
 
 
+// ISO/IEC 9075-2:2016(E), 11.4, <column definition>
+//
+// Define a column of a base table.
+
 column_definition:
   column_name data_type_or_domain_name {
     $$.v = TableElement(Column{$1.v as Identifier, $2.v as Type, false})
@@ -827,6 +831,10 @@ column_constraint:
   NOT NULL { $$.v = true }
 
 
+
+// ISO/IEC 9075-2:2016(E), 11.6, <table constraint definition>
+//
+// Specify an integrity constraint.
 
 table_constraint_definition:
   table_constraint { $$.v = $1.v as TableElement }
@@ -988,6 +996,10 @@ unique_column_list:
   column_name_list { $$.v = $1.v as []Identifier }
 
 
+
+// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>
+//
+// Define all of the SQL-statements that are <SQL procedure statement>s.
 
 sql_schema_statement:
   sql_schema_definition_statement { $$.v = $1.v as Stmt }
@@ -1169,6 +1181,10 @@ dynamic_select_statement:
   cursor_specification { $$.v = $1.v as Stmt }
 
 
+
+// ISO/IEC 9075-2:2016(E), 5.1, <SQL terminal character>
+//
+// Define the terminal symbols of the SQL language and the elements of strings.
 
 left_paren: OPERATOR_LEFT_PAREN
 
@@ -2408,6 +2424,10 @@ column_reference:
 
 
 
+// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>
+//
+// Specify a value derived by the application of a function to an argument.
+
 set_function_specification:
   aggregate_function { $$.v = $1.v as AggregateFunction }
 
@@ -2432,6 +2452,11 @@ outer_join_type:
 | RIGHT { $$.v = $1.v as string }
 
 
+
+// ISO/IEC 9075-2:2016(E), 7.12, <where clause>
+//
+// Specify a table derived by the application of a <search condition> to the
+// result of the preceding <from clause>.
 
 where_clause:
   WHERE search_condition { $$.v = $2.v as BooleanValueExpression }

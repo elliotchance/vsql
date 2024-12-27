@@ -2,25 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 6.12, <case expression>
 //
-// # Function
-//
 // Specify a conditional value.
-//
-// # Format
-//~
-//~ <case expression> /* CaseExpression */ ::=
-//~     <case abbreviation>
-//~
-//~ <case abbreviation> /* CaseExpression */ ::=
-//~     NULLIF <left paren> <value expression>
-//~     <comma> <value expression> <right paren>                      -> nullif
-//~   | COALESCE <left paren> <value expression list> <right paren>   -> coalesce
-//
-// These are non-standard, just to simplify standard rules:
-//~
-//~ <value expression list> /* []ValueExpression */ ::=
-//~     <value expression>                                   -> value_expression_list_1
-//~   | <value expression list> <comma> <value expression>   -> value_expression_list_2
 
 type CaseExpression = CaseExpressionCoalesce | CaseExpressionNullIf
 

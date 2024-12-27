@@ -4,15 +4,7 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 17.7, <commit statement>
 //
-// # Function
-//
 // Terminate the current SQL-transaction with commit.
-//
-// # Format
-//~
-//~ <commit statement> /* Stmt */ ::=
-//~     COMMIT        -> commit
-//~   | COMMIT WORK   -> commit
 
 struct CommitStatement {
 }

@@ -1,5 +1,9 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>
+//
+// Define all of the SQL-statements that are <SQL procedure statement>s.
+
 sql_schema_statement:
   sql_schema_definition_statement { $$.v = $1.v as Stmt }
 | sql_schema_manipulation_statement { $$.v = $1.v as Stmt }

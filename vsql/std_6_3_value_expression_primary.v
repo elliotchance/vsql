@@ -2,27 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 6.3, <value expression primary>
 //
-// # Function
-//
 // Specify a value that is syntactically self-delimited.
-//
-// # Format
-//~
-//~ <value expression primary> /* ValueExpressionPrimary */ ::=
-//~     <parenthesized value expression>              -> ValueExpressionPrimary
-//~   | <nonparenthesized value expression primary>   -> ValueExpressionPrimary
-//~
-//~ <parenthesized value expression> /* ParenthesizedValueExpression */ ::=
-//~     <left paren> <value expression> <right paren>   -> parenthesized_value_expression
-//~
-//~ <nonparenthesized value expression primary> /* NonparenthesizedValueExpressionPrimary */ ::=
-//~     <unsigned value specification>   -> NonparenthesizedValueExpressionPrimary
-//~   | <column reference>               -> NonparenthesizedValueExpressionPrimary
-//~   | <set function specification>     -> NonparenthesizedValueExpressionPrimary
-//~   | <routine invocation>             -> NonparenthesizedValueExpressionPrimary
-//~   | <case expression>                -> NonparenthesizedValueExpressionPrimary
-//~   | <cast specification>             -> NonparenthesizedValueExpressionPrimary
-//~   | <next value expression>          -> NonparenthesizedValueExpressionPrimary
 
 type ValueExpressionPrimary = NonparenthesizedValueExpressionPrimary
 	| ParenthesizedValueExpression

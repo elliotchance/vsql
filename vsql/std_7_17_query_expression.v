@@ -4,69 +4,7 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 7.17, <query expression>
 //
-// # Function
-//
 // Specify a table.
-//
-// # Format
-//~
-//~ <query expression> /* QueryExpression */ ::=
-//~     <query expression body>                     -> query_expression
-//~   | <query expression body> <order by clause>   -> query_expression_order
-//~   | <query expression body>
-//~     <result offset clause>                      -> query_expression_offset
-//~   | <query expression body> <order by clause>
-//~     <result offset clause>                      -> query_expression_order_offset
-//~   | <query expression body>
-//~     <fetch first clause>                        -> query_expression_fetch
-//~   | <query expression body> <order by clause>
-//~     <fetch first clause>                        -> query_expression_order_fetch
-//~   | <query expression body> <order by clause>
-//~     <result offset clause>
-//~     <fetch first clause>                        -> query_expression_order_offset_fetch
-//~   | <query expression body>
-//~     <result offset clause>
-//~     <fetch first clause>                        -> query_expression_offset_fetch
-//~
-//~ <query expression body> /* SimpleTable */ ::=
-//~     <query term>
-//~
-//~ <query term> /* SimpleTable */ ::=
-//~     <query primary>
-//~
-//~ <query primary> /* SimpleTable */ ::=
-//~     <simple table>
-//~
-//~ <simple table> /* SimpleTable */ ::=
-//~     <query specification>
-//~   | <table value constructor>
-//~
-//~ <order by clause> /* []SortSpecification */ ::=
-//~     ORDER BY <sort specification list>   -> order_by
-//~
-//~ <result offset clause> /* ValueSpecification */ ::=
-//~     OFFSET <offset row count> <row or rows>   -> result_offset_clause
-//~
-//~ <fetch first clause> /* ValueSpecification */ ::=
-//~     FETCH FIRST
-//~     <fetch first quantity>
-//~     <row or rows>
-//~     ONLY                     -> fetch_first_clause
-//~
-//~ <fetch first quantity> /* ValueSpecification */ ::=
-//~     <fetch first row count>
-//~
-//~ <offset row count> /* ValueSpecification */ ::=
-//~     <simple value specification>
-//~
-//~ <fetch first row count> /* ValueSpecification */ ::=
-//~     <simple value specification>
-//
-// These are non-standard, just to simplify standard rules:
-//~
-//~ <row or rows> ::=
-//~     ROW
-//~   | ROWS
 
 struct QueryExpression {
 	body   SimpleTable

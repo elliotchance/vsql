@@ -4,18 +4,7 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 11.2, <drop schema statement>
 //
-// # Function
-//
 // Destroy a schema.
-//
-// # Format
-//~
-//~ <drop schema statement> /* Stmt */ ::=
-//~     DROP SCHEMA <schema name> <drop behavior>   -> drop_schema_statement
-//~
-//~ <drop behavior> /* string */ ::=
-//~     CASCADE
-//~   | RESTRICT
 
 struct DropSchemaStatement {
 	schema_name Identifier

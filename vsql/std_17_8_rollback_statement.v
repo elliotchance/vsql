@@ -4,16 +4,8 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>
 //
-// # Function
-//
 // Terminate the current SQL-transaction with rollback, or rollback all actions
 // affecting SQL-data and/or schemas since the establishment of a savepoint.
-//
-// # Format
-//~
-//~ <rollback statement> /* Stmt */ ::=
-//~     ROLLBACK        -> rollback
-//~   | ROLLBACK WORK   -> rollback
 
 struct RollbackStatement {
 }

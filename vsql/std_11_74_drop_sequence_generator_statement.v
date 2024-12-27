@@ -4,15 +4,7 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 11.74, <drop sequence generator statement>
 //
-// # Function
-//
 // Destroy an external sequence generator.
-//
-// # Format
-//~
-//~ <drop sequence generator statement> /* Stmt */ ::=
-//~     DROP SEQUENCE
-//~     <sequence generator name>   -> drop_sequence_generator_statement
 
 struct DropSequenceGeneratorStatement {
 	sequence_name Identifier

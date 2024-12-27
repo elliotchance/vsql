@@ -4,20 +4,10 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 19.5, <set catalog statement>
 //
-// # Function
-//
 // Set the default catalog name for unqualified <schema name>s in
 // <preparable statement>s that are prepared in the current SQL-session by an
 // <execute immediate statement> or a <prepare statement> and in
 // <direct SQL statement>s that are invoked directly.
-//
-// # Format
-//~
-//~ <set catalog statement> /* Stmt */ ::=
-//~     SET <catalog name characteristic>   -> set_catalog_stmt
-//~
-//~ <catalog name characteristic> /* ValueSpecification */ ::=
-//~     CATALOG <value specification>   -> catalog_name_characteristic
 
 struct SetCatalogStatement {
 	catalog_name ValueSpecification

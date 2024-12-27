@@ -2,21 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 6.13, <cast specification>
 //
-// # Function
-//
 // Specify a data conversion.
-//
-// # Format
-//~
-//~ <cast specification> /* CastSpecification */ ::=
-//~     CAST <left paren> <cast operand> AS <cast target> <right paren>   -> cast
-//~
-//~ <cast operand> /* CastOperand */ ::=
-//~     <value expression>                       -> CastOperand
-//~   | <implicitly typed value specification>   -> CastOperand
-//~
-//~ <cast target> /* Type */ ::=
-//~     <data type>
 
 type CastOperand = NullSpecification | ValueExpression
 

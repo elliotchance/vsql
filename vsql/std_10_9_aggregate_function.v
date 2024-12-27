@@ -2,29 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>
 //
-// # Function
-//
 // Specify a value computed from a collection of rows.
-//
-// # Format
-//~
-//~ <aggregate function> /* AggregateFunction */ ::=
-//~     COUNT <left paren> <asterisk> <right paren>   -> count_all
-//~   | <general set function>
-//~
-//~ <general set function> /* AggregateFunction */ ::=
-//~     <set function type> <left paren>
-//~     <value expression> <right paren>   -> general_set_function
-//~
-//~ <set function type> /* string */ ::=
-//~     <computational operation>
-//~
-//~ <computational operation> /* string */ ::=
-//~     AVG
-//~   | MAX
-//~   | MIN
-//~   | SUM
-//~   | COUNT
 
 type AggregateFunction = AggregateFunctionCount | RoutineInvocation
 

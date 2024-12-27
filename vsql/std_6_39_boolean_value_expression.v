@@ -2,44 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>
 //
-// # Function
-//
 // Specify a boolean value.
-//
-// # Format
-//~
-//~ <boolean value expression> /* BooleanValueExpression */ ::=
-//~     <boolean term>                                 -> boolean_value_expression_1
-//~   | <boolean value expression> OR <boolean term>   -> boolean_value_expression_2
-//~
-//~ <boolean term> /* BooleanTerm */ ::=
-//~     <boolean factor>                      -> boolean_term_1
-//~   | <boolean term> AND <boolean factor>   -> boolean_term_2
-//~
-//~ <boolean factor> /* BooleanTest */ ::=
-//~     <boolean test>
-//~   | NOT <boolean test>   -> boolean_factor_not
-//~
-//~ <boolean test> /* BooleanTest */ ::=
-//~     <boolean primary>                        -> boolean_test_1
-//~   | <boolean primary> IS <truth value>       -> boolean_test_2
-//~   | <boolean primary> IS NOT <truth value>   -> boolean_test_3
-//~
-//~ <truth value> /* Value */ ::=
-//~     TRUE      -> true
-//~   | FALSE     -> false
-//~   | UNKNOWN   -> unknown
-//~
-//~ <boolean primary> /* BooleanPrimary */ ::=
-//~     <predicate>           -> BooleanPrimary
-//~   | <boolean predicand>   -> BooleanPrimary
-//~
-//~ <boolean predicand> /* BooleanPredicand */ ::=
-//~     <parenthesized boolean value expression>      -> BooleanPredicand
-//~   | <nonparenthesized value expression primary>   -> BooleanPredicand
-//~
-//~ <parenthesized boolean value expression> /* BooleanValueExpression */ ::=
-//~     <left paren> <boolean value expression> <right paren>   -> parenthesized_boolean_value_expression
 
 type BooleanPrimary = BooleanPredicand | Predicate
 

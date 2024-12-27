@@ -4,18 +4,7 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>
 //
-// # Function
-//
 // Update rows of a table.
-//
-// # Format
-//~
-//~ <update statement: searched> /* Stmt */ ::=
-//~     UPDATE <target table>
-//~     SET <set clause list>      -> update_statement_searched_1
-//~   | UPDATE <target table>
-//~     SET <set clause list>
-//~     WHERE <search condition>   -> update_statement_searched_2
 
 struct UpdateStatementSearched {
 	table_name Identifier

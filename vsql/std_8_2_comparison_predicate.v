@@ -4,26 +4,7 @@ import strings
 
 // ISO/IEC 9075-2:2016(E), 8.2, <comparison predicate>
 //
-// # Function
-//
 // Specify a comparison of two row values.
-//
-// # Format
-//~
-//~ <comparison predicate> /* ComparisonPredicate */ ::=
-//~     <row value predicand> <comparison predicate part 2>   -> comparison
-//~
-//~ <comparison predicate part 2> /* ComparisonPredicatePart2 */ ::=
-//~     <comp op> <row value predicand>   -> comparison_part
-//~
-//~ <comp op> /* string */ ::=
-//~     <equals operator>
-//~   | <not equals operator>
-//~   | <less than operator>
-//~   | <greater than operator>
-//~   | <less than or equals operator>
-//~   | <greater than or equals operator>
-
 struct ComparisonPredicate {
 	left  RowValueConstructorPredicand
 	op    string

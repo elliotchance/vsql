@@ -2,28 +2,8 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 7.13, <group by clause>
 //
-// # Function
-//
 // Specify a grouped table derived by the application of the <group by clause>
 // to the result of the previously specified clause.
-//
-// # Format
-//~
-//~ <group by clause> /* []Identifier */ ::=
-//~     GROUP BY <grouping element list>   -> group_by_clause
-//~
-//~ <grouping element list> /* []Identifier */ ::=
-//~     <grouping element>                                   -> grouping_element_list_1
-//~   | <grouping element list> <comma> <grouping element>   -> grouping_element_list_2
-//~
-//~ <grouping element> /* Identifier */ ::=
-//~     <ordinary grouping set>
-//~
-//~ <ordinary grouping set> /* Identifier */ ::=
-//~     <grouping column reference>
-//~
-//~ <grouping column reference> /* Identifier */ ::=
-//~     <column reference>
 
 struct GroupOperation {
 	// select_exprs contains the original SELECT expressions, both the aggregate

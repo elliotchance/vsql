@@ -4,16 +4,7 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>
 //
-// # Function
-//
 // Delete rows of a table.
-//
-// # Format
-//~
-//~ <delete statement: searched> /* Stmt */ ::=
-//~     DELETE FROM <target table>   -> delete_statement
-//~   | DELETE FROM <target table>
-//~     WHERE <search condition>     -> delete_statement_where
 
 struct DeleteStatementSearched {
 	table_name Identifier

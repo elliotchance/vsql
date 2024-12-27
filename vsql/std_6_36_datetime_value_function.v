@@ -2,39 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>
 //
-// # Function
-//
 // Specify a function yielding a value of type datetime.
-//
-// # Format
-//~
-//~ <datetime value function> /* DatetimeValueFunction */ ::=
-//~     <current date value function>
-//~   | <current time value function>
-//~   | <current timestamp value function>
-//~   | <current local time value function>
-//~   | <current local timestamp value function>
-//~
-//~ <current date value function> /* DatetimeValueFunction */ ::=
-//~     CURRENT_DATE   -> current_date
-//~
-//~ <current time value function> /* DatetimeValueFunction */ ::=
-//~     CURRENT_TIME                                               -> current_time_1
-//~   | CURRENT_TIME <left paren> <time precision> <right paren>   -> current_time_2
-//~
-//~ <current local time value function> /* DatetimeValueFunction */ ::=
-//~     LOCALTIME                                               -> localtime_1
-//~   | LOCALTIME <left paren> <time precision> <right paren>   -> localtime_2
-//~
-//~ <current timestamp value function> /* DatetimeValueFunction */ ::=
-//~     CURRENT_TIMESTAMP                                  -> current_timestamp_1
-//~   | CURRENT_TIMESTAMP
-//~     <left paren> <timestamp precision> <right paren>   -> current_timestamp_2
-//~
-//~ <current local timestamp value function> /* DatetimeValueFunction */ ::=
-//~     LOCALTIMESTAMP                                     -> localtimestamp_1
-//~   | LOCALTIMESTAMP
-//~     <left paren> <timestamp precision> <right paren>   -> localtimestamp_2
 
 type DatetimeValueFunction = CurrentDate
 	| CurrentTime

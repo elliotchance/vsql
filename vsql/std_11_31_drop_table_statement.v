@@ -4,14 +4,7 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 11.31, <drop table statement>
 //
-// # Function
-//
 // Destroy a table.
-//
-// # Format
-//~
-//~ <drop table statement> /* Stmt */ ::=
-//~     DROP TABLE <table name>   -> drop_table_statement
 
 struct DropTableStatement {
 	table_name Identifier

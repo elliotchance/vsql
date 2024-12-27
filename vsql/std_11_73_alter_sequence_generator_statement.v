@@ -4,33 +4,7 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 11.73, <alter sequence generator statement>
 //
-// # Function
-//
 // Change the definition of an external sequence generator.
-//
-// # Format
-//~
-//~ <alter sequence generator statement> /* AlterSequenceGeneratorStatement */ ::=
-//~     ALTER SEQUENCE
-//~     <sequence generator name>
-//~     <alter sequence generator options>   -> alter_sequence_generator_statement
-//~
-//~ <alter sequence generator options> /* []SequenceGeneratorOption */ ::=
-//~     <alter sequence generator option>   -> sequence_generator_options_1
-//~   | <alter sequence generator options>
-//~     <alter sequence generator option>   -> sequence_generator_options_2
-//~
-//~ <alter sequence generator option> /* SequenceGeneratorOption */ ::=
-//~     <alter sequence generator restart option>   -> SequenceGeneratorOption
-//~   | <basic sequence generator option>
-//~
-//~ <alter sequence generator restart option> /* SequenceGeneratorRestartOption */ ::=
-//~     RESTART                              -> sequence_generator_restart_option_1
-//~   | RESTART WITH
-//~     <sequence generator restart value>   -> sequence_generator_restart_option_2
-//~
-//~ <sequence generator restart value> /* Value */ ::=
-//~     <signed numeric literal>
 
 struct AlterSequenceGeneratorStatement {
 	name    Identifier

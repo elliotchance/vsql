@@ -4,73 +4,7 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>
 //
-// # Function
-//
 // Define an external sequence generator.
-//
-// # Format
-//~
-//~ <sequence generator definition> /* Stmt */ ::=
-//~     CREATE SEQUENCE
-//~     <sequence generator name>                   -> sequence_generator_definition_1
-//~   | CREATE SEQUENCE <sequence generator name>
-//~     <sequence generator options>                -> sequence_generator_definition_2
-//~
-//~ <sequence generator options> /* []SequenceGeneratorOption */ ::=
-//~     <sequence generator option>
-//~   | <sequence generator options> <sequence generator option>
-//~
-//~ <sequence generator option> /* []SequenceGeneratorOption */ ::=
-//~     <common sequence generator options>
-//~
-//~ <common sequence generator options> /* []SequenceGeneratorOption */ ::=
-//~     <common sequence generator option>    -> sequence_generator_options_1
-//~   | <common sequence generator options>
-//~     <common sequence generator option>    -> sequence_generator_options_2
-//~
-//~ <common sequence generator option> /* SequenceGeneratorOption */ ::=
-//~     <sequence generator start with option>   -> SequenceGeneratorOption
-//~   | <basic sequence generator option>
-//~
-//~ <basic sequence generator option> /* SequenceGeneratorOption */ ::=
-//~     <sequence generator increment by option>   -> SequenceGeneratorOption
-//~   | <sequence generator maxvalue option>       -> SequenceGeneratorOption
-//~   | <sequence generator minvalue option>       -> SequenceGeneratorOption
-//~   | <sequence generator cycle option>          -> basic_sequence_generator_option_4
-//~
-//~ <sequence generator start with option> /* SequenceGeneratorStartWithOption */ ::=
-//~     START WITH
-//~     <sequence generator start value>   -> sequence_generator_start_with_option
-//~
-//~ <sequence generator start value> /* Value */ ::=
-//~     <signed numeric literal>
-//~
-//~ <sequence generator increment by option> /* SequenceGeneratorIncrementByOption */ ::=
-//~     INCREMENT BY
-//~     <sequence generator increment>   -> sequence_generator_increment_by_option
-//~
-//~ <sequence generator increment> /* Value */ ::=
-//~     <signed numeric literal>
-//~
-//~ <sequence generator maxvalue option> /* SequenceGeneratorMaxvalueOption */ ::=
-//~     MAXVALUE
-//~     <sequence generator max value>   -> sequence_generator_maxvalue_option_1
-//~   | NO MAXVALUE                      -> sequence_generator_maxvalue_option_2
-//~
-//~ <sequence generator max value> /* Value */ ::=
-//~     <signed numeric literal>
-//~
-//~ <sequence generator minvalue option> /* SequenceGeneratorMinvalueOption */ ::=
-//~     MINVALUE
-//~     <sequence generator min value>   -> sequence_generator_minvalue_option_1
-//~   | NO MINVALUE                      -> sequence_generator_minvalue_option_2
-//~
-//~ <sequence generator min value> /* Value */ ::=
-//~     <signed numeric literal>
-//~
-//~ <sequence generator cycle option> /* bool */ ::=
-//~     CYCLE      -> yes
-//~   | NO CYCLE   -> no
 
 type SequenceGeneratorOption = SequenceGeneratorCycleOption
 	| SequenceGeneratorIncrementByOption

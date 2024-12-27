@@ -4,17 +4,7 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 11.1, <schema definition>
 //
-// # Function
-//
 // Define a schema.
-//
-// # Format
-//~
-//~ <schema definition> /* Stmt */ ::=
-//~     CREATE SCHEMA <schema name clause>   -> schema_definition
-//~
-//~ <schema name clause> /* Identifier */ ::=
-//~     <schema name>
 
 struct SchemaDefinition {
 	schema_name Identifier

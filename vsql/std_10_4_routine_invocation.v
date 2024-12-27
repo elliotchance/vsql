@@ -2,26 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 10.4, <routine invocation>
 //
-// # Function
-//
 // Invoke an SQL-invoked routine.
-//
-// # Format
-//~
-//~ <routine invocation> /* RoutineInvocation */ ::=
-//~     <routine name> <SQL argument list>   -> routine_invocation
-//~
-//~ <routine name> /* Identifier */ ::=
-//~     <qualified identifier>   -> routine_name
-//~
-//~ <SQL argument list> /* []ValueExpression */ ::=
-//~     <left paren> <right paren>                  -> sql_argument_list_1
-//~   | <left paren> <SQL argument> <right paren>   -> sql_argument_list_2
-//~   | <left paren> <SQL argument list> <comma>
-//~     <SQL argument> <right paren>                -> sql_argument_list_3
-//~
-//~ <SQL argument> /* ValueExpression */ ::=
-//~     <value expression>
 
 struct RoutineInvocation {
 	function_name string

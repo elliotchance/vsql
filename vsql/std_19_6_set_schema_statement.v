@@ -4,20 +4,10 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 19.6, <set schema statement>
 //
-// # Function
-//
 // Set the default schema name for unqualified <schema qualified name>s in
 // <preparable statement>s that are prepared in the current SQL-session by an
 // <execute immediate statement> or a <prepare statement> and in
 // <direct SQL statement>s that are invoked directly.
-//
-// # Format
-//~
-//~ <set schema statement> /* Stmt */ ::=
-//~     SET <schema name characteristic>   -> set_schema_stmt
-//~
-//~ <schema name characteristic> /* ValueSpecification */ ::=
-//~     SCHEMA <value specification>   -> schema_name_characteristic
 
 struct SetSchemaStatement {
 	schema_name ValueSpecification

@@ -2,15 +2,8 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 8.21, <search condition>
 //
-// # Function
-//
 // Specify a condition that is True, False, or Unknown, depending on the value
 // of a <boolean value expression>.
-//
-// # Format
-//~
-//~ <search condition> /* BooleanValueExpression */ ::=
-//~     <boolean value expression>
 
 // A WhereOperation executes a condition on each row, only passing through rows
 // that evaluate to TRUE.

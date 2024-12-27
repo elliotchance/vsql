@@ -2,57 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers
 //
-// # Function
-//
 // Specify names.
-//
-// # Format
-//~
-//~ <identifier> /* IdentifierChain */ ::=
-//~     <actual identifier>
-//~
-//~ <actual identifier> /* IdentifierChain */ ::=
-//~     <regular identifier>
-//~
-//~ <table name> /* Identifier */ ::=
-//~     <local or schema qualified name>   -> table_name
-//~
-//~ <schema name> /* Identifier */ ::=
-//~     <catalog name> <period> <unqualified schema name>   -> schema_name_1
-//~   | <unqualified schema name>
-//~
-//~ <unqualified schema name> /* Identifier */ ::=
-//~     <identifier>   -> unqualified_schema_name
-//~
-//~ <catalog name> /* IdentifierChain */ ::=
-//~     <identifier>
-//~
-//~ <schema qualified name> /* IdentifierChain */ ::=
-//~     <qualified identifier>
-//~   | <schema name> <period> <qualified identifier>   -> schema_qualified_name_2
-//~
-//~ <local or schema qualified name> /* IdentifierChain */ ::=
-//~     <qualified identifier>
-//~   | <local or schema qualifier> <period>
-//~     <qualified identifier>                 -> local_or_schema_qualified_name2
-//~
-//~ <local or schema qualifier> /* Identifier */ ::=
-//~     <schema name>
-//~
-//~ <qualified identifier> /* IdentifierChain */ ::=
-//~     <identifier>
-//~
-//~ <column name> /* Identifier */ ::=
-//~     <identifier>   -> column_name
-//~
-//~ <host parameter name> /* GeneralValueSpecification */ ::=
-//~     <colon> <identifier>   -> host_parameter_name
-//~
-//~ <correlation name> /* Identifier */ ::=
-//~     <identifier>   -> correlation_name
-//~
-//~ <sequence generator name> /* Identifier */ ::=
-//~     <schema qualified name>   -> sequence_generator_name
 
 // Identifier is used to describe a object within a schema (such as a table
 // name) or a property of an object (like a column name of a table). You should

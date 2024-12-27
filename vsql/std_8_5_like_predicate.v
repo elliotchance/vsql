@@ -4,24 +4,7 @@ import regex
 
 // ISO/IEC 9075-2:2016(E), 8.5, <like predicate>
 //
-// # Function
-//
 // Specify a pattern-match comparison.
-//
-// # Format
-//~
-//~ <like predicate> /* CharacterLikePredicate */ ::=
-//~     <character like predicate>
-//~
-//~ <character like predicate> /* CharacterLikePredicate */ ::=
-//~     <row value predicand> <character like predicate part 2>   -> like_pred
-//~
-//~ <character like predicate part 2> /* CharacterLikePredicate */ ::=
-//~     LIKE <character pattern>       -> like
-//~   | NOT LIKE <character pattern>   -> not_like
-//~
-//~ <character pattern> /* CharacterValueExpression */ ::=
-//~     <character value expression>
 
 // CharacterLikePredicate for "LIKE" and "NOT LIKE".
 struct CharacterLikePredicate {

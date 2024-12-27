@@ -2,18 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 8.8, <null predicate>
 //
-// # Function
-//
 // Specify a test for a null value.
-//
-// # Format
-//~
-//~ <null predicate> /* NullPredicate */ ::=
-//~     <row value predicand> <null predicate part 2>   -> null_predicate
-//~
-//~ <null predicate part 2> /* bool */ ::=
-//~     IS NULL       -> yes
-//~   | IS NOT NULL   -> no
 
 // NullPredicate for "IS NULL" and "IS NOT NULL".
 struct NullPredicate {

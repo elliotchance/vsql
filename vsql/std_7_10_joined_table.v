@@ -2,29 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 7.10, <joined table>
 //
-// # Function
-//
 // Specify a table derived from a Cartesian product, inner join, or outer join.
-//
-// # Format
-//~
-//~ <joined table> /* QualifiedJoin */ ::=
-//~     <qualified join>
-//~
-//~ <join specification> /* BooleanValueExpression */ ::=
-//~     <join condition>
-//~
-//~ <join condition> /* BooleanValueExpression */ ::=
-//~     ON <search condition>   -> join_condition
-//~
-//~ <join type> /* string */ ::=
-//~     INNER
-//~   | <outer join type>
-//~   | <outer join type> OUTER   -> string
-//~
-//~ <outer join type> /* string */ ::=
-//~     LEFT
-//~   | RIGHT
 
 struct JoinOperation {
 	left_columns  Columns

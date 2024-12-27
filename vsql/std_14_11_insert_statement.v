@@ -4,29 +4,7 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 14.11, <insert statement>
 //
-// # Function
-//
 // Create new rows in a table.
-//
-// # Format
-//~
-//~ <insert statement> /* Stmt */ ::=
-//~     INSERT INTO
-//~     <insertion target>
-//~     <insert columns and source>   -> insert_statement
-//~
-//~ <insertion target> /* Identifier */ ::=
-//~     <table name>
-//~
-//~ <insert columns and source> /* InsertStatement */ ::=
-//~   <from constructor>
-//~
-//~ <from constructor> /* InsertStatement */ ::=
-//~     <left paren> <insert column list> <right paren>
-//~     <contextually typed table value constructor>   -> from_constructor
-//~
-//~ <insert column list> /* []Identifier */ ::=
-//~     <column name list>
 
 struct InsertStatement {
 	table_name Identifier

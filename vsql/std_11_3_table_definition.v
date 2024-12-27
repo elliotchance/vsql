@@ -4,33 +4,8 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 11.3, <table definition>
 //
-// # Function
-//
 // Define a persistent base table, a created local temporary table, or a global
 // temporary table.
-//
-// # Format
-//~
-//~ <table definition> /* TableDefinition */ ::=
-//~     CREATE TABLE <table name> <table contents source>   -> table_definition
-//~
-//~ <table contents source> /* []TableElement */ ::=
-//~     <table element list>
-//~
-//~ <table element list> /* []TableElement */ ::=
-//~     <left paren>
-//~     <table elements>
-//~     <right paren>      -> table_element_list
-//~
-//~ <table element> /* TableElement */ ::=
-//~     <column definition>
-//~   | <table constraint definition>
-//
-// These are non-standard, just to simplify standard rules:
-//~
-//~ <table elements> /* []TableElement */ ::=
-//~     <table element>                            -> table_elements_1
-//~   | <table elements> <comma> <table element>   -> table_elements_2
 
 type TableElement = Column | UniqueConstraintDefinition
 

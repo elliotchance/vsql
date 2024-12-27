@@ -2,20 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 6.28, <value expression>
 //
-// # Function
-//
 // Specify a value.
-//
-// # Format
-//~
-//~ <value expression> /* ValueExpression */ ::=
-//~     <common value expression>    -> ValueExpression
-//~   | <boolean value expression>   -> ValueExpression
-//~
-//~ <common value expression> /* CommonValueExpression */ ::=
-//~     <numeric value expression>    -> CommonValueExpression
-//~   | <string value expression>     -> CommonValueExpression
-//~   | <datetime value expression>   -> CommonValueExpression
 
 type ValueExpression = BooleanValueExpression | CommonValueExpression
 

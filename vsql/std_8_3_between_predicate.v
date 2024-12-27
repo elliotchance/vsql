@@ -2,30 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 8.3, <between predicate>
 //
-// # Function
-//
 // Specify a range comparison.
-//
-// # Format
-//~
-//~ <between predicate> /* BetweenPredicate */ ::=
-//~     <row value predicand> <between predicate part 2>   -> between
-//~
-//~ <between predicate part 2> /* BetweenPredicate */ ::=
-//~     <between predicate part 1>
-//~     <row value predicand> AND <row value predicand>   -> between_1
-//~   | <between predicate part 1> <is symmetric>
-//~     <row value predicand> AND <row value predicand>   -> between_2
-//~
-//~ <between predicate part 1> /* bool */ ::=
-//~     BETWEEN       -> yes
-//~   | NOT BETWEEN   -> no
-//
-// These are non-standard, just to simplify standard rules:
-//~
-//~ <is symmetric> /* bool */ ::=
-//~     SYMMETRIC    -> yes
-//~   | ASYMMETRIC   -> no
 
 struct BetweenPredicate {
 	not       bool

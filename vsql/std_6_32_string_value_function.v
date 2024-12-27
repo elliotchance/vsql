@@ -2,64 +2,8 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 6.32, <string value function>
 //
-// # Function
-//
-// Specify a function yielding a value of type character string or binary string.
-//
-// # Format
-//~
-//~ <string value function> /* CharacterValueFunction */ ::=
-//~     <character value function>
-//~
-//~ <character value function> /* CharacterValueFunction */ ::=
-//~     <character substring function>   -> CharacterValueFunction
-//~   | <fold>                           -> CharacterValueFunction
-//~   | <trim function>                  -> CharacterValueFunction
-//~
-//~ <character substring function> /* CharacterSubstringFunction */ ::=
-//~     SUBSTRING <left paren> <character value expression>
-//~     FROM <start position> <right paren>                   -> character_substring_function_1
-//~   | SUBSTRING <left paren> <character value expression>
-//~     FROM <start position>
-//~     FOR <string length> <right paren>                     -> character_substring_function_2
-//~   | SUBSTRING <left paren> <character value expression>
-//~     FROM <start position>
-//~     USING <char length units> <right paren>               -> character_substring_function_3
-//~   | SUBSTRING <left paren> <character value expression>
-//~     FROM <start position>
-//~     FOR <string length>
-//~     USING <char length units> <right paren>               -> character_substring_function_4
-//~
-//~ <fold> /* RoutineInvocation */ ::=
-//~     UPPER <left paren> <character value expression> <right paren>   -> upper
-//~   | LOWER <left paren> <character value expression> <right paren>   -> lower
-//~
-//~ <trim function> /* TrimFunction */ ::=
-//~   TRIM <left paren> <trim operands> <right paren>   -> trim_function
-//~
-//~ <trim operands> /* TrimFunction */ ::=
-//~     <trim source>                                              -> trim_operands_1
-//~   | FROM <trim source>                                         -> trim_operands_1
-//~   | <trim specification> FROM <trim source>                    -> trim_operands_2
-//~   | <trim character> FROM <trim source>                        -> trim_operands_3
-//~   | <trim specification> <trim character> FROM <trim source>   -> trim_operands_4
-//~
-//~ <trim source> /* CharacterValueExpression */ ::=
-//~     <character value expression>
-//~
-//~ <trim specification> /* string */ ::=
-//~     LEADING
-//~   | TRAILING
-//~   | BOTH
-//~
-//~ <trim character> /* CharacterValueExpression */ ::=
-//~     <character value expression>
-//~
-//~ <start position> /* NumericValueExpression */ ::=
-//~     <numeric value expression>
-//~
-//~ <string length> /* NumericValueExpression */ ::=
-//~     <numeric value expression>
+// Specify a function yielding a value of type character string or binary
+// string.
 
 type CharacterValueFunction = CharacterSubstringFunction
 	| RoutineInvocation // <fold>

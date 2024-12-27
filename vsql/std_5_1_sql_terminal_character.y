@@ -1,5 +1,9 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 5.1, <SQL terminal character>
+//
+// Define the terminal symbols of the SQL language and the elements of strings.
+
 left_paren: OPERATOR_LEFT_PAREN
 
 right_paren: OPERATOR_RIGHT_PAREN

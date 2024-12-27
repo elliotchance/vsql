@@ -2,18 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 8.1, <predicate>
 //
-// # Function
-//
 // Specify a condition that can be evaluated to give a boolean value.
-//
-// # Format
-//~
-//~ <predicate> /* Predicate */ ::=
-//~     <comparison predicate>   -> Predicate
-//~   | <between predicate>      -> Predicate
-//~   | <like predicate>         -> Predicate
-//~   | <similar predicate>      -> Predicate
-//~   | <null predicate>         -> Predicate
 
 type Predicate = BetweenPredicate
 	| CharacterLikePredicate

@@ -2,30 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 6.31, <string value expression>
 //
-// # Function
-//
 // Specify a character string value or a binary string value.
-//
-// # Format
-//~
-//~ <string value expression> /* CharacterValueExpression */ ::=
-//~     <character value expression>
-//~
-//~ <character value expression> /* CharacterValueExpression */ ::=
-//~     <concatenation>      -> CharacterValueExpression
-//~   | <character factor>   -> CharacterValueExpression
-//~
-//~ <concatenation> /* Concatenation */ ::=
-//~     <character value expression>
-//~     <concatenation operator>
-//~     <character factor>             -> concatenation
-//~
-//~ <character factor> /* CharacterPrimary */ ::=
-//~     <character primary>
-//~
-//~ <character primary> /* CharacterPrimary */ ::=
-//~     <value expression primary>   -> CharacterPrimary
-//~   | <string value function>      -> CharacterPrimary
 
 type CharacterValueExpression = CharacterPrimary | Concatenation
 

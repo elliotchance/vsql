@@ -4,14 +4,7 @@ import time
 
 // ISO/IEC 9075-2:2016(E), 17.1, <start transaction statement>
 //
-// # Function
-//
 // Start an SQL-transaction and set its characteristics.
-//
-// # Format
-//~
-//~ <start transaction statement> /* Stmt */ ::=
-//~   START TRANSACTION   -> start_transaction_statement
 
 struct StartTransactionStatement {
 }

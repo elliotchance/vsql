@@ -2,27 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 7.3, <table value constructor>
 //
-// # Function
-//
 // Specify a set of <row value expression>s to be constructed into a table.
-//
-// # Format
-//~
-//~ <table value constructor> /* SimpleTable */ ::=
-//~     VALUES <row value expression list>   -> table_value_constructor
-//~
-//~ <row value expression list> /* []RowValueConstructor */ ::=
-//~     <table row value expression>           -> row_value_expression_list_1
-//~   | <row value expression list>
-//~     <comma> <table row value expression>   -> row_value_expression_list_2
-//~
-//~ <contextually typed table value constructor> /* []ContextuallyTypedRowValueConstructor */ ::=
-//~     VALUES <contextually typed row value expression list>   -> contextually_typed_table_value_constructor
-//~
-//~ <contextually typed row value expression list> /* []ContextuallyTypedRowValueConstructor */ ::=
-//~     <contextually typed row value expression>                -> contextually_typed_row_value_expression_list_1
-//~   | <contextually typed row value expression list> <comma>
-//~     <contextually typed row value expression>                -> contextually_typed_row_value_expression_list_2
 
 type SimpleTable = QuerySpecification | []RowValueConstructor
 

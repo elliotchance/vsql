@@ -2,29 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>
 //
-// # Function
-//
 // Specify a numeric value.
-//
-// # Format
-//~
-//~ <numeric value expression> /* NumericValueExpression */ ::=
-//~     <term>                                           -> numeric_value_expression_1
-//~   | <numeric value expression> <plus sign> <term>    -> numeric_value_expression_2
-//~   | <numeric value expression> <minus sign> <term>   -> numeric_value_expression_2
-//~
-//~ <term> /* Term */ ::=
-//~     <factor>                     -> term_1
-//~   | <term> <asterisk> <factor>   -> term_2
-//~   | <term> <solidus> <factor>    -> term_2
-//~
-//~ <factor> /* NumericPrimary */ ::=
-//~     <numeric primary>
-//~   | <sign> <numeric primary>   -> factor_2
-//~
-//~ <numeric primary> /* NumericPrimary */ ::=
-//~     <value expression primary>   -> NumericPrimary
-//~   | <numeric value function>     -> NumericPrimary
 
 struct NumericValueExpression {
 	n    ?&NumericValueExpression

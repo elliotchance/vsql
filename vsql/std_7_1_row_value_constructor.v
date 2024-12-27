@@ -2,54 +2,7 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 7.1, <row value constructor>
 //
-// # Function
-//
 // Specify a value or list of values to be constructed into a row.
-//
-// # Format
-//~
-//~ <row value constructor> /* RowValueConstructor */ ::=
-//~     <common value expression>          -> RowValueConstructor
-//~   | <boolean value expression>         -> RowValueConstructor
-//~   | <explicit row value constructor>   -> RowValueConstructor
-//~
-//~ <explicit row value constructor> /* ExplicitRowValueConstructor */ ::=
-//~     ROW <left paren> <row value constructor element list>
-//~     <right paren>                                           -> explicit_row_value_constructor_1
-//~   | <row subquery>                                          -> ExplicitRowValueConstructor
-//~
-//~ <row value constructor element list> /* []ValueExpression */ ::=
-//~     <row value constructor element>                -> row_value_constructor_element_list_1
-//~   | <row value constructor element list> <comma>
-//~     <row value constructor element>                -> row_value_constructor_element_list_2
-//~
-//~ <row value constructor element> /* ValueExpression */ ::=
-//~     <value expression>
-//~
-//~ <contextually typed row value constructor> /* ContextuallyTypedRowValueConstructor */ ::=
-//~     <common value expression>                        -> ContextuallyTypedRowValueConstructor
-//~   | <boolean value expression>                       -> ContextuallyTypedRowValueConstructor
-//~   | <contextually typed value specification>         -> ContextuallyTypedRowValueConstructor
-//~   | <left paren> <contextually typed value specification>
-//~     <right paren>                                    -> contextually_typed_row_value_constructor_1
-//~   | <left paren>
-//~     <contextually typed row value constructor element> <comma>
-//~     <contextually typed row value constructor element list>
-//~     <right paren>                                    -> contextually_typed_row_value_constructor_2
-//~
-//~ <contextually typed row value constructor element list> /* []ContextuallyTypedRowValueConstructorElement */ ::=
-//~     <contextually typed row value constructor element>        -> contextually_typed_row_value_constructor_element_list_1
-//~   | <contextually typed row value constructor element list>
-//~     <comma>
-//~     <contextually typed row value constructor element>        -> contextually_typed_row_value_constructor_element_list_2
-//~
-//~ <contextually typed row value constructor element> /* ContextuallyTypedRowValueConstructorElement */ ::=
-//~     <value expression>                         -> ContextuallyTypedRowValueConstructorElement
-//~   | <contextually typed value specification>   -> ContextuallyTypedRowValueConstructorElement
-//~
-//~ <row value constructor predicand> /* RowValueConstructorPredicand */ ::=
-//~     <common value expression>   -> RowValueConstructorPredicand
-//~   | <boolean predicand>         -> RowValueConstructorPredicand
 
 type ContextuallyTypedRowValueConstructor = BooleanValueExpression
 	| CommonValueExpression

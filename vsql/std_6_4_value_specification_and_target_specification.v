@@ -2,32 +2,8 @@ module vsql
 
 // ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target specification>
 //
-// # Function
-//
 // Specify one or more values, host parameters, SQL parameters, dynamic
 // parameters, or host variables.
-//
-// # Format
-//~
-//~ <value specification> /* ValueSpecification */ ::=
-//~     <literal>                       -> ValueSpecification
-//~   | <general value specification>   -> ValueSpecification
-//~
-//~ <unsigned value specification> /* ValueSpecification */ ::=
-//~     <unsigned literal>              -> ValueSpecification
-//~   | <general value specification>   -> ValueSpecification
-//~
-//~ <general value specification> /* GeneralValueSpecification */ ::=
-//~     <host parameter specification>
-//~   | CURRENT_CATALOG                  -> current_catalog
-//~   | CURRENT_SCHEMA                   -> current_schema
-//~
-//~ <simple value specification> /* ValueSpecification */ ::=
-//~     <literal>               -> ValueSpecification
-//~   | <host parameter name>   -> ValueSpecification
-//~
-//~ <host parameter specification> /* GeneralValueSpecification */ ::=
-//~     <host parameter name>
 
 type ValueSpecification = GeneralValueSpecification | Value
 

@@ -42,7 +42,7 @@ fn cli_command(cmd cli.Command) ! {
 
 		if raw_query != '' {
 			// TODO: This is a very poor way to handle multiple queries.
-			for query in raw_query.split(';') {
+			for i, query in raw_query.split(';') {
 				if query.trim_space() == '' {
 					continue
 				}
@@ -73,6 +73,10 @@ fn cli_command(cmd cli.Command) ! {
 				}
 
 				println('${total_rows} ${vsql.pluralize(total_rows, 'row')} (${time.ticks() - start} ms)')
+
+				if i > 0 {
+					println('')
+				}
 			}
 		} else {
 			// This means there is no more input and should only occur when the

@@ -274,3 +274,17 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int) ! {
 
 	assert expected == actual_trim
 }
+
+// Make sure any non-keywords (operators, literals, etc) are replaced in error
+// messages.
+fn test_cleanup_yacc_error() {
+	mut msg := ''
+	for tok_name in yy_toknames {
+		if tok_name.starts_with('OPERATOR_') || tok_name.starts_with('LITERAL_') {
+			msg += ' ' + tok_name
+		}
+	}
+	result := cleanup_yacc_error(msg)
+	assert !result.contains('OPERATOR_')
+	assert !result.contains('LITERAL_')
+}

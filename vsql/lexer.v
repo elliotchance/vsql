@@ -3,6 +3,9 @@
 
 module vsql
 
+// YYSym allows for every possible type that needs to pass through $$ rules in
+// the grammar. If V ever supports some kind of "any" type this would be a
+// little easier.
 type YYSym = AggregateFunction
 	| AggregateFunctionCount
 	| AlterSequenceGeneratorStatement
@@ -96,6 +99,9 @@ type YYSym = AggregateFunction
 	| map[string]UpdateSource
 	| string
 
+// YYSymType is the yacc internal type for the stack that contains the symbols
+// to reduce (pass to the code). The only requirement here is that `yys` is
+// included as it contains the position of the token.
 struct YYSymType {
 mut:
 	v   YYSym

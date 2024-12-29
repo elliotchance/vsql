@@ -7,6 +7,7 @@ vsql-server
 grammar.bnf
 vsql/grammar.v
 scripts/generate-v-client-library-docs
+scripts/generate-grammar
 y.output
 vsql/y.v
 vsql/y.y

@@ -57,7 +57,7 @@ clean-docs:
 # Grammar
 
 vsql/y.y:
-	python3 scripts/generate_grammar.py
+	./scripts/generate-grammar.vsh
 
 vsql/y.v: vsql/y.y
 	v run scripts/vyacc.v -o vsql/y.v vsql/y.y

@@ -4,8 +4,6 @@ vsql-server
 *.vsql
 .vscode
 .vlang_tmp_build/
-grammar.bnf
-vsql/grammar.v
 scripts/generate-v-client-library-docs
 scripts/generate-grammar
 y.output

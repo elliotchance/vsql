@@ -18,3 +18,7 @@ VALUES OCTET_LENGTH('😊£');
 
 VALUES char_length('😊£');
 -- COL1: 2
+
+/* types */
+VALUES CHAR_LENGTH(CAST('hello Hello' AS CHAR(30)));
+-- COL1: 30 (INTEGER)

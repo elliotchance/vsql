@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 62 of the 164 mandatory features** of the
+**vsql supports 65 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -43,7 +43,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E011-06
      - Implicit casting among the numeric data types
 
-   * - ⭕ **E021**
+   * - ✅ **E021**
      - **Character string types**
 
    * - ✅ E021-01
@@ -73,13 +73,13 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E021-09
      - ``TRIM`` function
 
-   * - ❌ E021-10
+   * - ✅ E021-10
      - Implicit casting among the fixed-length and variable-length character string types
 
    * - ✅ E021-11
      - ``POSITION`` function
 
-   * - ⭕ E021-12
+   * - ✅ E021-12
      - Character comparison
 
    * - ✅ **E031**

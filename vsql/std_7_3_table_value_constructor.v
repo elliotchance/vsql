@@ -22,6 +22,17 @@ fn (e SimpleTable) pstr(params map[string]Value) string {
 	}
 }
 
+fn (mut e SimpleTable) analyze(mut conn Connection) ![]DerivedColumn {
+	match mut e {
+		QuerySpecification {
+			return e.analyze(mut conn)!
+		}
+		[]RowValueConstructor {
+			panic('fixme')
+		}
+	}
+}
+
 // A ValuesOperation provides a VALUES derived implicit table.
 struct ValuesOperation {
 	rows        []RowValueConstructor

@@ -56,8 +56,8 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 		}
 	}
 
-	stmt := p.stmt
-	match stmt {
+	mut stmt := p.stmt
+	match mut stmt {
 		AlterSequenceGeneratorStatement {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
@@ -151,6 +151,7 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 		}
 		QueryExpression {
 			if p.explain {
+				stmt.analyze(mut p.c)!
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 

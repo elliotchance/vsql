@@ -27,3 +27,26 @@ struct QuerySpecification {
 	offset           ?ValueExpression
 	fetch            ?ValueExpression
 }
+
+fn (mut q QuerySpecification) analyze(mut conn Connection) ![]DerivedColumn {
+	match q.exprs {
+		AsteriskExpr {
+			mut catalog := conn.catalog()
+			mut columns := []DerivedColumn{}
+			for _, table in catalog.schema_tables('PUBLIC')! {
+				for column in table.columns {
+					columns << DerivedColumn{ValueExpression(CommonValueExpression(DatetimePrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(column.name))))), Identifier{
+						sub_entity_name: column.name.sub_entity_name
+					}}
+				}
+			}
+			return columns
+		}
+		QualifiedAsteriskExpr {
+			panic('here')
+		}
+		[]DerivedColumn {
+			panic('here')
+		}
+	}
+}

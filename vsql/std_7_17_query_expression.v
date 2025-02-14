@@ -7,10 +7,16 @@ import time
 // Specify a table.
 
 struct QueryExpression {
+mut:
 	body   SimpleTable
 	fetch  ?ValueSpecification
 	offset ?ValueSpecification
 	order  []SortSpecification
+
+	// All unique expressions that need to be retrieved from storage, this
+	// includes the SELECT fields, but aso any other expressions needed for
+	// sorting, etc.
+	analyze_fields map[string]ValueExpression
 }
 
 fn (e QueryExpression) pstr(params map[string]Value) string {
@@ -41,6 +47,13 @@ fn (stmt QueryExpression) explain(mut conn Connection, params map[string]Value, 
 	mut plan := create_plan(stmt, params, mut conn)!
 
 	return plan.explain(elapsed_parse)
+}
+
+fn (mut q QueryExpression) analyze(mut conn Connection) ! {
+	for _, column in q.body.analyze(mut conn)! {
+		q.analyze_fields["FOO"] = column.expr
+	}
+	println('analyze_fields = ${q.analyze_fields}')
 }
 
 struct OrderOperation {

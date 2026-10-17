@@ -14,7 +14,9 @@ A ``DATE`` holds a year-month-day value, such as ``2010-10-25``.
 A ``DATE`` value can be created with the ``DATE '2010-10-25'`` literal
 expression.
 
-Valid date ranges are between ``0000-01-01`` and ``9999-12-31``.
+Valid date ranges are between ``0001-01-01`` and ``9999-12-31``. The year must
+be four digits and the month and day must be two digits. The date must be valid
+in the Gregorian calendar, so ``DATE '2022-02-30'`` is a syntax error.
 
 A ``DATE`` is stored as 8 bytes.
 
@@ -23,6 +25,10 @@ TIME(n) WITH TIME ZONE
 
 Holds a time as hour-minute-second-timezone (without respect to a date),
 for example: ``15:12:47+05:30``.
+
+The hours, minutes and seconds must be two digits each. Seconds may be ``60`` or
+``61`` to allow for leap seconds, but these will roll over into the next minute.
+The time zone must be between ``-14:00`` and ``+14:00``.
 
 The ``(n)`` describes the sub-second resolution to be stored. It must be
 inclusively between 0 (whole seconds) and 6 (microseconds). If omitted, 0 is

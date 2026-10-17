@@ -35,6 +35,37 @@ VALUES DATE '2022-06-30 21:47:32a';
 VALUES DATE '2022-06-30';
 -- COL1: 2022-06-30 (DATE)
 
+-- # Dates must be valid in the Gregorian calendar.
+VALUES DATE '2022-02-30';
+-- error 42601: syntax error: DATE '2022-02-30' is not valid
+
+VALUES DATE '2024-02-29';
+-- COL1: 2024-02-29
+
+VALUES DATE '2023-02-29';
+-- error 42601: syntax error: DATE '2023-02-29' is not valid
+
+VALUES DATE '2022-00-10';
+-- error 42601: syntax error: DATE '2022-00-10' is not valid
+
+VALUES DATE '2022-13-01';
+-- error 42601: syntax error: DATE '2022-13-01' is not valid
+
+VALUES DATE '2022-06-00';
+-- error 42601: syntax error: DATE '2022-06-00' is not valid
+
+VALUES DATE '0000-01-01';
+-- error 42601: syntax error: DATE '0000-01-01' is not valid
+
+VALUES DATE '0001-01-01';
+-- COL1: 0001-01-01
+
+VALUES DATE '9999-12-31';
+-- COL1: 9999-12-31
+
+VALUES DATE '22-6-3';
+-- error 42601: syntax error: DATE '22-6-3' is not valid
+
 VALUES DATE '21:47:32';
 -- error 42601: syntax error: DATE '21:47:32' is not valid
 

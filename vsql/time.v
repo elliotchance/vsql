@@ -39,9 +39,13 @@ const default_timestamp_precision = 6
 //   <time zone interval> ::=
 //     <sign> <hours value> <colon> <minutes value>
 //
-const unquoted_date_string = r'\d+\-\d+\-\d+'
-const unquoted_time_string_with_time_zone = r'\d+:\d+:\d+(\.\d{1,6})?[-+]\d+:\d+'
-const unquoted_time_string_without_time_zone = r'\d+:\d+:\d+(\.\d{1,6})?'
+// The years value must be four digits, and the other datetime components must
+// be two digits (with the exception of the seconds fraction).
+//
+// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules, 31
+const unquoted_date_string = r'\d{4}\-\d{2}\-\d{2}'
+const unquoted_time_string_with_time_zone = r'\d{2}:\d{2}:\d{2}(\.\d{1,6})?[-+]\d{2}:\d{2}'
+const unquoted_time_string_without_time_zone = r'\d{2}:\d{2}:\d{2}(\.\d{1,6})?'
 const unquoted_timestamp_with_time_zone_string = '^' + unquoted_date_string + r'\s' +
 	unquoted_time_string_with_time_zone + '$'
 const unquoted_timestamp_without_time_zone_string = '^' + unquoted_date_string + r'\s' +
@@ -75,15 +79,17 @@ fn new_timestamp_from_string(s string) !Time {
 	mut time_zone := i16(0)
 	mut to_parse := s
 	if expects_time_zone {
-		hours := i16(s[s.len - 6..s.len - 3].int())
+		// The sign applies to both the hours and minutes, so "-00:30" is 30
+		// minutes behind UTC.
+		hours := i16(s[s.len - 5..s.len - 3].int())
 		minutes := i16(s[s.len - 2..s.len].int())
-		if hours < 0 {
-			time_zone = hours * 60 - minutes
-		} else {
-			time_zone = hours * 60 + minutes
+		time_zone = hours * 60 + minutes
+		if s[s.len - 6] == `-` {
+			time_zone = -time_zone
 		}
 
-		if time_zone <= -720 || time_zone >= 720 {
+		// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules, 35
+		if minutes > 59 || time_zone < -840 || time_zone > 840 {
 			return sqlstate_42601("TIMESTAMP '${s}' is not valid")
 		}
 
@@ -107,9 +113,10 @@ fn new_timestamp_from_string(s string) !Time {
 }
 
 // parse_timestamp_components parses a string that has already been validated
-// by unquoted_timestamp_without_time_zone_string. It is used instead of
-// time.parse_iso8601 because V will panic on out of range components (such as
-// 75 seconds) rather than overflowing them.
+// by unquoted_timestamp_without_time_zone_string. Each component must be within
+// the valid range for a Gregorian date and time.
+//
+// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules, 32 (and Table 11)
 fn parse_timestamp_components(s string) !time.Time {
 	date_and_time := s.fields()
 	if date_and_time.len != 2 {
@@ -123,18 +130,28 @@ fn parse_timestamp_components(s string) !time.Time {
 	}
 
 	year, month, day := date_parts[0].int(), date_parts[1].int(), date_parts[2].int()
-	if year > 9999 || month > 12 || day > 31 {
+	if year < 1 || year > 9999 || month < 1 || month > 12 || day < 1
+		|| day > time.days_in_month(month, year)! {
 		return error('invalid timestamp')
 	}
 
+	hour, minute := time_parts[0].int(), time_parts[1].int()
+
 	seconds_and_fraction := time_parts[2].split('.')
+	second := seconds_and_fraction[0].int()
+
+	// Seconds may be 60 or 61 to allow for leap seconds. These cannot be
+	// represented so they will roll over into the next minute.
+	if hour > 23 || minute > 59 || second > 61 {
+		return error('invalid timestamp')
+	}
+
 	mut nanosecond := 0
 	if seconds_and_fraction.len > 1 {
 		nanosecond = (seconds_and_fraction[1] + '000000000'[seconds_and_fraction[1].len..]).int()
 	}
 
-	return new_lenient_time(year, month, day, time_parts[0].int(), time_parts[1].int(),
-		seconds_and_fraction[0].int(), nanosecond)
+	return new_lenient_time(year, month, day, hour, minute, second, nanosecond)
 }
 
 // new_lenient_time works like time.new except that components outside of their

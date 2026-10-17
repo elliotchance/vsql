@@ -87,7 +87,9 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 	// Create the grouped sets.
 	mut sets := [][]Row{}
 
-	if rows.len > 0 {
+	// Without a GROUP BY the whole table is a single group, even if it has no
+	// rows. For example, "SELECT COUNT(*) FROM t" must always return one row.
+	if rows.len > 0 || o.group_exprs.len == 0 {
 		sets << []Row{}
 	}
 
@@ -121,49 +123,57 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 		}
 	}
 
-	// Perform the aggregations functions.
+	// Each set will produce one row. An empty set (only possible without a GROUP
+	// BY) has no row to store the aggregate results in.
+	mut final_rows := []Row{}
+	for set in sets {
+		final_rows << if set.len > 0 { set[0] } else { new_row(map[string]Value{}) }
+	}
+
+	// Perform the aggregations functions. An expression may contain several
+	// aggregate functions (such as "MIN(x) * AVG(x)"), each result is stored in
+	// the row so that it can be used when the expression is evaluated.
+	mut null_eliminated := false
 	for expr in o.select_exprs {
-		if expr.expr.compile(mut c)!.contains_agg {
-			key := expr.expr.pstr(o.params)
-			for mut set in sets {
-				mut valid := false
-				if expr.expr is BooleanValueExpression {
-					expr2 := expr.expr.term.factor.expr
-					if expr2 is BooleanPredicand {
-						if expr2 is NonparenthesizedValueExpressionPrimary {
-							if expr2 is AggregateFunction {
-								if expr2 is AggregateFunctionCount {
-									set[0].data[key] = new_integer_value(set.len)
-									valid = true
-								} else if expr2 is RoutineInvocation {
-									mut values := []Value{}
-									for row in set {
-										values << expr2.args[0].compile(mut c)!.run(mut o.conn,
-											row, o.params)!
-									}
+		mut agg_c := Compiler{
+			conn:   o.conn
+			params: o.params
+		}
+		if !expr.expr.compile(mut agg_c)!.contains_agg {
+			continue
+		}
 
-									func := o.conn.find_function(expr2.function_name, [
-										values[0].typ,
-									])!
-									set[0].data[key] = func.func(values)!
-									valid = true
-								}
-							}
-						}
+		for aggregate in agg_c.aggregates {
+			key := aggregate.pstr(o.params)
+			for i, set in sets {
+				match aggregate {
+					AggregateFunctionCount {
+						final_rows[i].data[key] = new_integer_value(set.len)
 					}
-				}
+					RoutineInvocation {
+						arg := aggregate.args[0].compile(mut c)!
+						mut values := []Value{}
+						for row in set {
+							value := arg.run(mut o.conn, row, o.params)!
+							if value.is_null {
+								null_eliminated = true
+							}
+							values << value
+						}
 
-				if !valid {
-					return sqlstate_42601('invalid set function: ${expr.expr.pstr(o.params)}')
+						func := o.conn.find_function(aggregate.function_name, [
+							arg.typ,
+						])!
+						final_rows[i].data[key] = func.func(values)!
+					}
 				}
 			}
 		}
 	}
 
-	// Collapse to final set.
-	mut final_rows := []Row{}
-	for set in sets {
-		final_rows << set[0]
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7a
+	if null_eliminated {
+		o.conn.add_warning(sqlstate_01003())
 	}
 
 	return final_rows

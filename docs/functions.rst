@@ -13,8 +13,8 @@ AVG
 
    AVG(DOUBLE PRECISION) DOUBLE PRECISION
 
-Returns the average value. If any of the expressions are ``NULL`` the result
-will also be ``NULL``.
+Returns the average value. ``NULL`` expressions are ignored. If all of the
+expressions are ``NULL`` the result will also be ``NULL``.
 
 **Examples**
 
@@ -58,8 +58,8 @@ MAX
 
    MAX(DOUBLE PRECISION) DOUBLE PRECISION
 
-Returns the maximum value. If any of the expressions are ``NULL`` the result
-will also be ``NULL``.
+Returns the maximum value. ``NULL`` expressions are ignored. If all of the
+expressions are ``NULL`` the result will also be ``NULL``.
 
 **Examples**
 
@@ -79,8 +79,8 @@ MIN
 
    MIN(DOUBLE PRECISION) DOUBLE PRECISION
 
-Returns the minimum value. If any of the expressions are ``NULL`` the result
-will also be ``NULL``.
+Returns the minimum value. ``NULL`` expressions are ignored. If all of the
+expressions are ``NULL`` the result will also be ``NULL``.
 
 **Examples**
 
@@ -100,8 +100,8 @@ SUM
 
    SUM(DOUBLE PRECISION) DOUBLE PRECISION
 
-Returns the sum (total) of all values. If any of the expressions are ``NULL``
-the result will also be ``NULL``.
+Returns the sum (total) of all values. ``NULL`` expressions are ignored. If all
+of the expressions are ``NULL`` the result will also be ``NULL``.
 
 **Examples**
 

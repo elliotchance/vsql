@@ -25,6 +25,15 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	found_func := c.conn.find_function(func_name, arg_types)!
 
 	if found_func.is_agg {
+		// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 1
+		for arg in e.args {
+			if arg.compile(mut c)!.contains_agg {
+				return sqlstate_42601('nested set function: ${e.pstr(c.params)}')
+			}
+		}
+
+		c.aggregates << AggregateFunction(e)
+
 		return Identifier{
 			custom_id:  e.pstr(c.params)
 			custom_typ: found_func.return_type

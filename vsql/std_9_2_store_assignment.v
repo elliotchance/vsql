@@ -329,6 +329,10 @@ fn cast_datetime(conn Connection, v Value, t Type) !Value {
 		'TIME WITH TIME ZONE AS TIME WITHOUT TIME ZONE':              cast_time_with_to_time_without
 		'TIME WITHOUT TIME ZONE AS TIME WITHOUT TIME ZONE':           cast_time_without_to_time_without
 		'TIME WITHOUT TIME ZONE AS TIME WITH TIME ZONE':              cast_time_without_to_time_with
+		'TIME WITH TIME ZONE AS TIMESTAMP WITH TIME ZONE':            cast_time_with_to_timestamp_with
+		'TIME WITH TIME ZONE AS TIMESTAMP WITHOUT TIME ZONE':         cast_time_with_to_timestamp_without
+		'TIME WITHOUT TIME ZONE AS TIMESTAMP WITH TIME ZONE':         cast_time_without_to_timestamp_with
+		'TIME WITHOUT TIME ZONE AS TIMESTAMP WITHOUT TIME ZONE':      cast_time_without_to_timestamp_without
 		'TIMESTAMP WITH TIME ZONE AS DATE':                           cast_timestamp_with_to_date
 		'TIMESTAMP WITH TIME ZONE AS TIME WITH TIME ZONE':            cast_timestamp_with_to_time_with
 		'TIMESTAMP WITH TIME ZONE AS TIME WITHOUT TIME ZONE':         cast_timestamp_with_to_time_without
@@ -489,6 +493,39 @@ fn cast_time_with_to_time_without(conn &Connection, v Value, to Type) !Value {
 // '12:34:56.999999' => '12:34:56.999999+0500'
 fn cast_time_without_to_time_with(conn &Connection, v Value, to Type) !Value {
 	return new_time_value(v.time_value().str_full_time(to.size, false, true) + time_zone_value(conn))
+}
+
+// When a TIME is cast to a TIMESTAMP the date is the same as CURRENT_DATE.
+//
+// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 18 and 19
+fn current_date_str(conn &Connection) string {
+	now, _ := conn.now()
+
+	return now.strftime('%Y-%m-%d')
+}
+
+// '12:34:56.999999+0500' => '2022-06-30 12:34:56.999999+0500'
+fn cast_time_with_to_timestamp_with(conn &Connection, v Value, to Type) !Value {
+	return new_timestamp_value(current_date_str(conn) + ' ' +
+		v.time_value().str_full_time(to.size, true, true))
+}
+
+// '12:34:56.999999+0500' => '2022-06-30 12:34:56.999999'
+fn cast_time_with_to_timestamp_without(conn &Connection, v Value, to Type) !Value {
+	return new_timestamp_value(current_date_str(conn) + ' ' +
+		v.time_value().str_full_time(to.size, false, true))
+}
+
+// '12:34:56.999999' => '2022-06-30 12:34:56.999999+0500'
+fn cast_time_without_to_timestamp_with(conn &Connection, v Value, to Type) !Value {
+	return new_timestamp_value(current_date_str(conn) + ' ' +
+		v.time_value().str_full_time(to.size, false, true) + time_zone_value(conn))
+}
+
+// '12:34:56.999999' => '2022-06-30 12:34:56.999999'
+fn cast_time_without_to_timestamp_without(conn &Connection, v Value, to Type) !Value {
+	return new_timestamp_value(current_date_str(conn) + ' ' +
+		v.time_value().str_full_time(to.size, false, true))
 }
 
 // '2022-06-30 12:34:56.999999+0500' => '2022-06-30'

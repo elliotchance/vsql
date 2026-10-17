@@ -19,7 +19,20 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 
 	return CompileResult{
 		run:          fn [name, mut catalog] (mut conn Connection, data Row, params map[string]Value) !Value {
+			// Multiple NEXT VALUE FOR the same sequence in the same row must return
+			// the same value.
+			key := name.id()
+			if next := conn.row_sequence_values[key] {
+				return new_bigint_value(next)
+			}
+
+			if conn.dry_run {
+				sequence := catalog.storage.sequence(name)!
+				return new_bigint_value(sequence.current_value)
+			}
+
 			next := catalog.storage.sequence_next_value(name)!
+			conn.row_sequence_values[key] = next
 
 			return new_bigint_value(next)
 		}

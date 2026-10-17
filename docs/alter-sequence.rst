@@ -36,13 +36,15 @@ Examples
 .. code-block:: sql
 
    CREATE SEQUENCE seq1;
-   VALUES ROW(NEXT VALUE FOR seq1, NEXT VALUE FOR seq1);
+   VALUES NEXT VALUE FOR seq1, NEXT VALUE FOR seq1;
    ALTER SEQUENCE seq1 RESTART;
-   VALUES ROW(NEXT VALUE FOR seq1, NEXT VALUE FOR seq1);
+   VALUES NEXT VALUE FOR seq1, NEXT VALUE FOR seq1;
    -- msg: CREATE SEQUENCE 1
-   -- COL1: 1 COL2: 2
+   -- COL1: 1
+   -- COL1: 2
    -- msg: ALTER SEQUENCE 1
-   -- COL1: 1 COL2: 2
+   -- COL1: 1
+   -- COL1: 2
 
 See Also
 --------

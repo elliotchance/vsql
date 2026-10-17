@@ -394,6 +394,14 @@ struct Connection
    	// current_catalog (also known as the database). It will have an initial value
    	// derived from the first database file loaded.
    	current_catalog string
+   	// row_sequence_values holds the values returned by NEXT VALUE FOR for the row
+   	// currently being evaluated. All NEXT VALUE FOR expressions for the same
+   	// sequence must return the same value within a row. See begin_row().
+   	row_sequence_values map[string]i64
+   	// dry_run is set when expressions are only being evaluated to check for
+   	// errors (such as an UPDATE that matched no rows). Expressions must not have
+   	// side effects, like advancing a sequence.
+   	dry_run bool
    pub mut:
    	// now allows you to override the wall clock that is used. The Time must be
    	// in UTC with a separate offset for the current local timezone (in positive

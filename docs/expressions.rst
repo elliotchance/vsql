@@ -81,12 +81,19 @@ NEXT VALUE FOR
 
 Returns the next value for a SEQUENCE called ``X``.
 
+All ``NEXT VALUE FOR`` expressions for the same sequence return the same value
+within a row. Each new row will get the next value.
+
 *Examples*
 
 .. code-block:: sql
 
-  NEXT VALUE FOR my_sequence   -- 1
-  NEXT VALUE FOR my_sequence   -- 2
+  VALUES NEXT VALUE FOR my_sequence, NEXT VALUE FOR my_sequence;
+  -- COL1: 1
+  -- COL1: 2
+
+  VALUES ROW(NEXT VALUE FOR my_sequence, NEXT VALUE FOR my_sequence);
+  -- COL1: 3 COL2: 3
 
 SIMILAR TO
 ----------

@@ -66,13 +66,15 @@ However, we can use `CYCLE` to allow the sequence to wrap around:
 .. code-block:: sql
 
   CREATE SEQUENCE seq1 MINVALUE 10 INCREMENT BY 5 MAXVALUE 20 CYCLE;
-  VALUES ROW(NEXT VALUE FOR seq1, NEXT VALUE FOR seq1);
-  VALUES ROW(NEXT VALUE FOR seq1, NEXT VALUE FOR seq1);
-  VALUES ROW(NEXT VALUE FOR seq1, NEXT VALUE FOR seq1);
+  VALUES NEXT VALUE FOR seq1, NEXT VALUE FOR seq1, NEXT VALUE FOR seq1;
+  VALUES NEXT VALUE FOR seq1, NEXT VALUE FOR seq1, NEXT VALUE FOR seq1;
   -- msg: CREATE SEQUENCE 1
-  -- COL1: 10 COL2: 15
-  -- COL1: 20 COL2: 10
-  -- COL1: 15 COL2: 20
+  -- COL1: 10
+  -- COL1: 15
+  -- COL1: 20
+  -- COL1: 10
+  -- COL1: 15
+  -- COL1: 20
 
 See Also
 --------

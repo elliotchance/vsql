@@ -192,15 +192,15 @@ Casting
     - ❌
     - ✅
     - ✅
-    - ❌
-    - ❌
+    - ✅
+    - ✅
 
   * - ``TIME(n) WITH TIME ZONE``
     - ❌
     - ✅
     - ✅
-    - ❌
-    - ❌
+    - ✅
+    - ✅
 
   * - ``TIMESTAMP(n) WITHOUT TIME ZONE``
     - ✅
@@ -215,3 +215,6 @@ Casting
     - ✅
     - ✅
     - ✅
+
+When casting a ``TIME`` to a ``TIMESTAMP`` the date will be the same as
+``CURRENT_DATE``.

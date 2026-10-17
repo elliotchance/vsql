@@ -82,17 +82,26 @@ fn unary_negate_decimal(conn &Connection, v Value) !Value {
 }
 
 fn unary_negate_bigint(conn &Connection, v Value) !Value {
+	// The smallest BIGINT has no positive equivalent.
+	if v.int_value() == min_i64 {
+		return sqlstate_22003()
+	}
+
 	return new_bigint_value(-v.int_value())
 }
 
 fn unary_negate_smallint(conn &Connection, v Value) !Value {
-	// This can't be out of bounds becuase the input type is the same.
-	return new_smallint_value(i16(-v.int_value()))
+	x := -v.int_value()
+	check_integer_range(x, .is_smallint)!
+
+	return new_smallint_value(i16(x))
 }
 
 fn unary_negate_integer(conn &Connection, v Value) !Value {
-	// This can't be out of bounds becuase the input type is the same.
-	return new_integer_value(int(-v.int_value()))
+	x := -v.int_value()
+	check_integer_range(x, .is_integer)!
+
+	return new_integer_value(int(x))
 }
 
 fn unary_negate_double_precision(conn &Connection, v Value) !Value {
@@ -138,10 +147,10 @@ fn binary_double_precision_minus_double_precision(conn &Connection, a Value, b V
 }
 
 fn binary_integer_minus_integer(conn &Connection, a Value, b Value) !Value {
-	x := i64(a.int_value() - b.as_f64()!)
+	x := a.int_value() - b.int_value()
 	check_integer_range(x, .is_integer)!
 
-	return new_integer_value(i16(x))
+	return new_integer_value(int(x))
 }
 
 fn binary_bigint_minus_bigint(conn &Connection, a Value, b Value) !Value {
@@ -157,10 +166,10 @@ fn binary_double_precision_multiply_double_precision(conn &Connection, a Value, 
 }
 
 fn binary_integer_multiply_integer(conn &Connection, a Value, b Value) !Value {
-	x := i64(a.int_value() * b.as_f64()!)
+	x := a.int_value() * b.int_value()
 	check_integer_range(x, .is_integer)!
 
-	return new_integer_value(i16(x))
+	return new_integer_value(int(x))
 }
 
 fn binary_bigint_multiply_bigint(conn &Connection, a Value, b Value) !Value {
@@ -184,12 +193,21 @@ fn binary_integer_divide_integer(conn &Connection, a Value, b Value) !Value {
 		return sqlstate_22012() // division by zero
 	}
 
-	return new_integer_value(int(a.as_int() / b.as_int()))
+	// The smallest INTEGER divided by -1 is out of range.
+	x := a.int_value() / b.int_value()
+	check_integer_range(x, .is_integer)!
+
+	return new_integer_value(int(x))
 }
 
 fn binary_bigint_divide_bigint(conn &Connection, a Value, b Value) !Value {
 	if b.int_value() == 0 {
 		return sqlstate_22012() // division by zero
+	}
+
+	// The smallest BIGINT divided by -1 is out of range.
+	if a.int_value() == min_i64 && b.int_value() == -1 {
+		return sqlstate_22003()
 	}
 
 	return new_bigint_value(a.int_value() / b.int_value())
@@ -241,7 +259,11 @@ fn binary_smallint_divide_smallint(conn &Connection, a Value, b Value) !Value {
 		return sqlstate_22012() // division by zero
 	}
 
-	return new_smallint_value(i16(a.int_value() / b.int_value()))
+	// The smallest SMALLINT divided by -1 is out of range.
+	x := a.int_value() / b.int_value()
+	check_integer_range(x, .is_smallint)!
+
+	return new_smallint_value(i16(x))
 }
 
 fn binary_real_plus_real(conn &Connection, a Value, b Value) !Value {

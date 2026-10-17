@@ -10,13 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up V version latest
-        uses: nocturlab/setup-vlang-action@v1
+        uses: vlang/setup-v@v1.4
         with:
-          id: v
-          v-version: master
+          check-latest: true
 
       - name: Build linux binaries
         run: |

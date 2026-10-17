@@ -14,6 +14,10 @@ V_DIR := $(shell dirname `which v`)
 V := "/tmp/oldv/v_at_$(OLDV)/v"
 else
 V := $(shell which v)
+
+# V3 fails to compile vsql and falls back to the old compiler anyway, so skip
+# straight to it. -n hides the notices, which are thousands of lines.
+V3_OPTIONS = -old-compiler -n
 endif
 
 # Ready is a some quick tasks that can easily be forgotten when preparing a
@@ -25,11 +29,11 @@ ready: grammar fmt snippets
 
 bin/vsql: vsql/y.v
 	mkdir -p bin
-	v $(BUILD_OPTIONS) $(PROD) cmd/vsql-cli -o bin/vsql
+	v $(V3_OPTIONS) $(BUILD_OPTIONS) $(PROD) cmd/vsql-cli -o bin/vsql
 
 bin/vsql.exe: vsql/y.v
 	mkdir -p bin
-	v -os windows $(BUILD_OPTIONS) $(PROD) cmd/vsql-cli -o bin/vsql.exe
+	v $(V3_OPTIONS) -os windows $(BUILD_OPTIONS) $(PROD) cmd/vsql-cli -o bin/vsql.exe
 
 oldv: vsql/y.v
 ifdef OLDV
@@ -77,13 +81,13 @@ fmt-verify:
 # Tests
 
 test: oldv
-	$(V) -stats $(BUILD_OPTIONS) $(PROD) test vsql
+	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) $(PROD) test vsql
 
 btree-test: oldv
-	$(V) -stats $(BUILD_OPTIONS) $(PROD) vsql/btree_test.v
+	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) $(PROD) vsql/btree_test.v
 
 sql-test: oldv
-	$(V) -stats $(BUILD_OPTIONS) vsql/sql_test.v
+	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) vsql/sql_test.v
 
 # CLI Tests
 
@@ -99,11 +103,11 @@ cmd/tests/%: bin/vsql
 
 examples:
 	for f in `ls examples/*.v`; do \
-		echo $$f; v run $$f || exit 1; \
+		echo $$f; v $(V3_OPTIONS) run $$f || exit 1; \
 	done
 
 examples/%: vsql/y.v
-	v run examples/$*.v
+	v $(V3_OPTIONS) run examples/$*.v
 
 # Benchmarking
 

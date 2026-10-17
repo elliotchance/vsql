@@ -115,6 +115,7 @@ jobs:
       - name: Build Windows binaries
         run: |
           brew install mingw-w64
+          .github/workflows/set_version.sh
           make bin/vsql.exe
           zip -j vsql-windows.zip bin/vsql.exe
 

@@ -70,11 +70,24 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 	return CompileResult{
 		run:          fn [e, compiled_value, compiled_from, compiled_for] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled_value.run(mut conn, data, params)!
-
-			mut from := 0
-			if e.from != none {
-				from = int((compiled_from.run(mut conn, data, params)!).as_int() - 1)
+			from_value := if e.from != none {
+				compiled_from.run(mut conn, data, params)!
+			} else {
+				new_integer_value(1)
 			}
+			for_value := if e.@for != none {
+				compiled_for.run(mut conn, data, params)!
+			} else {
+				new_integer_value(0)
+			}
+
+			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General
+			// Rules, 3d
+			if value.is_null || from_value.is_null || for_value.is_null {
+				return new_null_value(.is_varchar)
+			}
+
+			mut from := int(from_value.as_int() - 1)
 
 			if e.using == 'CHARACTERS' {
 				characters := value.string_value().runes()
@@ -85,7 +98,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 
 				mut @for := characters.len - from
 				if e.@for != none {
-					@for = int((compiled_for.run(mut conn, data, params)!).as_int())
+					@for = int(for_value.as_int())
 				}
 
 				return new_varchar_value(characters[from..from + @for].string())
@@ -97,7 +110,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 
 			mut @for := value.string_value().len - from
 			if e.@for != none {
-				@for = int((compiled_for.run(mut conn, data, params)!).as_int())
+				@for = int(for_value.as_int())
 			}
 
 			return new_varchar_value(value.string_value().substr(from, from + @for))
@@ -127,6 +140,12 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 		run:          fn [e, compiled_source, compiled_character] (mut conn Connection, data Row, params map[string]Value) !Value {
 			source := compiled_source.run(mut conn, data, params)!
 			character := compiled_character.run(mut conn, data, params)!
+
+			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General
+			// Rules, 11c
+			if source.is_null || character.is_null {
+				return new_null_value(.is_varchar)
+			}
 
 			if e.specification == 'LEADING' {
 				return new_varchar_value(source.string_value().trim_left(character.string_value()))

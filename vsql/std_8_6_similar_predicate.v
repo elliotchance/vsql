@@ -35,6 +35,11 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 				left := compiled_l.run(mut conn, data, params)!
 				right := compiled_right.run(mut conn, data, params)!
 
+				// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 4a
+				if left.is_null || right.is_null {
+					return new_unknown_value()
+				}
+
 				regexp := '^${right.string_value().replace('.', '\\.').replace('_', '.').replace('%', '.*')}$'
 				mut re := regex.regex_opt(regexp) or {
 					return error('cannot compile regexp: ${regexp}: ${err}')

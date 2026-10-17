@@ -1,0 +1,63 @@
+/* setup */
+CREATE TABLE t (d FLOAT, r REAL, i INT, s SMALLINT, b BIGINT, n NUMERIC(5, 2), m DECIMAL(5, 2), c VARCHAR(10));
+INSERT INTO t (d) VALUES (NULL);
+
+-- # Arithmetic on any NULL operand is NULL (6.29, General Rules, 1).
+
+/* types */
+SELECT d * 2e0, d + 1e0, d - 1e0, d / 2e0, -d, +d FROM t;
+-- COL1: NULL (DOUBLE PRECISION) COL2: NULL (DOUBLE PRECISION) COL3: NULL (DOUBLE PRECISION) COL4: NULL (DOUBLE PRECISION) COL5: NULL (DOUBLE PRECISION) COL6: NULL (DOUBLE PRECISION)
+
+/* types */
+SELECT r * CAST(2 AS REAL), -r FROM t;
+-- COL1: NULL (REAL) COL2: NULL (REAL)
+
+/* types */
+SELECT s * 2, i + 1, b - 1, -i FROM t;
+-- COL1: NULL (SMALLINT) COL2: NULL (INTEGER) COL3: NULL (BIGINT) COL4: NULL (INTEGER)
+
+SELECT n + 1.5, n * 2.0, -n FROM t;
+-- COL1: NULL COL2: NULL COL3: NULL
+
+SELECT m * CAST(2 AS DECIMAL(2, 0)), -m FROM t;
+-- COL1: NULL COL2: NULL
+
+SELECT 2e0 * d, 1 + i FROM t;
+-- COL1: NULL COL2: NULL
+
+-- # The NULL takes precedence over a division by zero.
+SELECT d / 0e0, i / 0, n / 0.0 FROM t;
+-- COL1: NULL COL2: NULL COL3: NULL
+
+-- # String functions and concatenation.
+
+SELECT c || 'x', 'x' || c FROM t;
+-- COL1: NULL COL2: NULL
+
+SELECT UPPER(c), LOWER(c), TRIM(c), TRIM(c FROM 'abc') FROM t;
+-- COL1: NULL COL2: NULL COL3: NULL COL4: NULL
+
+SELECT CHAR_LENGTH(c), OCTET_LENGTH(c), POSITION('a' IN c), POSITION(c IN 'abc') FROM t;
+-- COL1: NULL COL2: NULL COL3: NULL COL4: NULL
+
+SELECT SUBSTRING(c FROM 1), SUBSTRING('abc' FROM i), SUBSTRING('abc' FROM 1 FOR i) FROM t;
+-- COL1: NULL COL2: NULL COL3: NULL
+
+-- # Numeric functions.
+
+SELECT ABS(d), SQRT(d), FLOOR(d), CEIL(d), SIN(d), EXP(d), LN(d), POWER(d, 2e0) FROM t;
+-- COL1: NULL COL2: NULL COL3: NULL COL4: NULL COL5: NULL COL6: NULL COL7: NULL COL8: NULL
+
+SELECT ABS(n), FLOOR(n), CEIL(n), MOD(n, 2.0), MOD(2e0, d) FROM t;
+-- COL1: NULL COL2: NULL COL3: NULL COL4: NULL COL5: NULL
+
+-- # LIKE and SIMILAR TO are UNKNOWN when either side is NULL.
+
+SELECT c LIKE 'a%', 'a' LIKE c, c NOT LIKE 'a%' FROM t;
+-- COL1: UNKNOWN COL2: UNKNOWN COL3: UNKNOWN
+
+SELECT c SIMILAR TO 'a%', 'a' SIMILAR TO c, c NOT SIMILAR TO 'a%' FROM t;
+-- COL1: UNKNOWN COL2: UNKNOWN COL3: UNKNOWN
+
+-- # A NULL in a WHERE expression never matches.
+SELECT * FROM t WHERE d * 2e0 = 0e0 OR c LIKE '%';

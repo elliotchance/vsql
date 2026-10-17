@@ -346,7 +346,7 @@ pub fn (mut conn Connection) register_function(prototype string, func fn ([]Valu
 	}
 
 	return_type := new_type(parts[2].trim_space().to_upper(), 0, 0)
-	conn.register_func(Func{function_name, arg_types, false, func, return_type})!
+	conn.register_func(Func{function_name, arg_types, false, func, return_type, true})!
 }
 
 // register_virtual_table will register a function that can provide data at

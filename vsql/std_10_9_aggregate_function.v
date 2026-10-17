@@ -16,6 +16,8 @@ fn (e AggregateFunction) pstr(params map[string]Value) string {
 fn (e AggregateFunction) compile(mut c Compiler) !CompileResult {
 	match e {
 		AggregateFunctionCount {
+			c.aggregates << e
+
 			compiled := Identifier{
 				custom_id:  'COUNT(*)'
 				custom_typ: new_type('INTEGER', 0, 0)
@@ -37,6 +39,14 @@ fn (e AggregateFunction) compile(mut c Compiler) !CompileResult {
 
 struct AggregateFunctionCount {}
 
+// non_null_values removes NULLs before a general set function is applied. If
+// all values are NULL (or there are no values) the result will be NULL.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7a
+fn non_null_values(values []Value) []Value {
+	return values.filter(!it.is_null)
+}
+
 // COUNT(ANY) INTEGER
 fn func_count(values []Value) !Value {
 	mut count := 0
@@ -50,18 +60,14 @@ fn func_count(values []Value) !Value {
 }
 
 // MIN(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_min(values []Value) !Value {
+fn func_min(all_values []Value) !Value {
+	values := non_null_values(all_values)
 	if values.len == 0 {
 		return new_null_value(.is_double_precision)
 	}
 
 	mut min := values[0].f64_value()
 	for value in values {
-		// If any values are NULL, the result is also NULL.
-		if value.is_null {
-			return new_null_value(.is_double_precision)
-		}
-
 		if value.f64_value() < min {
 			min = value.f64_value()
 		}
@@ -71,18 +77,14 @@ fn func_min(values []Value) !Value {
 }
 
 // MAX(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_max(values []Value) !Value {
+fn func_max(all_values []Value) !Value {
+	values := non_null_values(all_values)
 	if values.len == 0 {
 		return new_null_value(.is_double_precision)
 	}
 
 	mut max := values[0].f64_value()
 	for value in values {
-		// If any values are NULL, the result is also NULL.
-		if value.is_null {
-			return new_null_value(.is_double_precision)
-		}
-
 		if value.f64_value() > max {
 			max = value.f64_value()
 		}
@@ -92,18 +94,14 @@ fn func_max(values []Value) !Value {
 }
 
 // SUM(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_sum(values []Value) !Value {
+fn func_sum(all_values []Value) !Value {
+	values := non_null_values(all_values)
 	if values.len == 0 {
 		return new_null_value(.is_double_precision)
 	}
 
 	mut sum := 0.0
 	for value in values {
-		// If any values are NULL, the result is also NULL.
-		if value.is_null {
-			return new_null_value(.is_double_precision)
-		}
-
 		sum += value.f64_value()
 	}
 
@@ -111,18 +109,14 @@ fn func_sum(values []Value) !Value {
 }
 
 // AVG(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_avg(values []Value) !Value {
+fn func_avg(all_values []Value) !Value {
+	values := non_null_values(all_values)
 	if values.len == 0 {
 		return new_null_value(.is_double_precision)
 	}
 
 	mut sum := 0.0
 	for value in values {
-		// If any values are NULL, the result is also NULL.
-		if value.is_null {
-			return new_null_value(.is_double_precision)
-		}
-
 		sum += value.f64_value()
 	}
 

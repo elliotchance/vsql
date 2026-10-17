@@ -239,4 +239,27 @@ EXPLAIN SELECT y, min(x) * avg(x) FROM foo GROUP BY y;
 -- EXPLAIN: EXPR (Y CHARACTER VARYING(32), COL2 DOUBLE PRECISION)
 
 SELECT y, min(x) * avg(x) FROM foo GROUP BY y;
--- error 42601: syntax error: invalid set function: MIN(X) * AVG(X)
+-- Y: hello COL2: 8.375158e0
+-- Y: world COL2: 5.114518666667e0
+
+SELECT count(*) + 1, max(x) - min(x) FROM foo;
+-- COL1: 6 COL2: 11.106e0
+
+SELECT sum(min(x)) FROM foo;
+-- error 42601: syntax error: nested set function: SUM(MIN(X))
+
+-- # Without a GROUP BY the whole table is one group, even when it's empty.
+CREATE TABLE t2 (x FLOAT);
+SELECT count(*), count(x), min(x), max(x), avg(x), sum(x) FROM t2;
+-- msg: CREATE TABLE 1
+-- COL1: 0 COL2: 0 COL3: NULL COL4: NULL COL5: NULL COL6: NULL
+
+CREATE TABLE t2 (x FLOAT);
+SELECT x, count(*) FROM t2 GROUP BY x;
+-- msg: CREATE TABLE 1
+
+SELECT count(*), sum(x) FROM foo WHERE x > 100e0;
+-- COL1: 0 COL2: NULL
+
+SELECT count(*) + 1 FROM foo WHERE x > 100e0;
+-- COL1: 1

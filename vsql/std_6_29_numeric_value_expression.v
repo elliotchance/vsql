@@ -25,7 +25,7 @@ fn (e NumericValueExpression) compile(mut c Compiler) !CompileResult {
 		compiled_n := n.compile(mut c)!
 
 		return CompileResult{
-			run: fn [e, compiled_n, compiled_term] (mut conn Connection, data Row, params map[string]Value) !Value {
+			run:          fn [e, compiled_n, compiled_term] (mut conn Connection, data Row, params map[string]Value) !Value {
 				mut left := compiled_n.run(mut conn, data, params)!
 				mut right := compiled_term.run(mut conn, data, params)!
 

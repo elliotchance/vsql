@@ -25,7 +25,7 @@ fn (o &JoinOperation) str() string {
 }
 
 fn (o &JoinOperation) columns() Columns {
-	mut columns := o.left_columns
+	mut columns := o.left_columns.clone()
 	columns << o.right_columns
 
 	return columns

@@ -76,7 +76,9 @@ fn (mut f Storage) open(path string, catalog_name string) ! {
 
 	f.tables = map[string]Table{}
 	for object in f.btree.new_range_iterator('T'.bytes(), 'U'.bytes()) {
-		if object_is_visible(object.tid, object.xid, f.transaction_id, mut f.header.active_transaction_ids) {
+		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
+			f.header.active_transaction_ids)
+		{
 			table := new_table_from_bytes(object.value, object.tid, catalog_name)
 			f.tables[table.name.storage_id()] = table
 		}
@@ -84,7 +86,9 @@ fn (mut f Storage) open(path string, catalog_name string) ! {
 
 	f.schemas = map[string]Schema{}
 	for object in f.btree.new_range_iterator('S'.bytes(), 'T'.bytes()) {
-		if object_is_visible(object.tid, object.xid, f.transaction_id, mut f.header.active_transaction_ids) {
+		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
+			f.header.active_transaction_ids)
+		{
 			schema := new_schema_from_bytes(object.value, object.tid)
 			f.schemas[schema.name] = schema
 		}
@@ -152,8 +156,8 @@ fn (mut f Storage) create_sequence(sequence Sequence) ! {
 	}
 
 	// The sequence defintion.
-	obj1 := new_page_object('Q${sequence.name.storage_id()}'.bytes(), f.transaction_id,
-		0, sequence.definition_bytes())
+	obj1 := new_page_object('Q${sequence.name.storage_id()}'.bytes(), f.transaction_id, 0,
+		sequence.definition_bytes())
 	f.transaction_pages[f.btree.add(obj1)!] = true
 
 	// The value for the sequence is stored as a separate object so that is can be
@@ -339,7 +343,9 @@ fn (mut f Storage) read_rows(table_name Identifier) ![]Row {
 fn (mut f Storage) read_objects(start []u8, end []u8) ![]PageObject {
 	mut objs := []PageObject{}
 	for object in f.btree.new_range_iterator(start, end) {
-		if object_is_visible(object.tid, object.xid, f.transaction_id, mut f.header.active_transaction_ids) {
+		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
+			f.header.active_transaction_ids)
+		{
 			objs << object
 		}
 	}

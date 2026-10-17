@@ -23,7 +23,8 @@ fn (stmt DropTableStatement) execute(mut conn Connection, params map[string]Valu
 
 	// TODO(elliotchance): Also delete rows. See
 	//  https://github.com/elliotchance/vsql/issues/65.
-	catalog.storage.delete_table(table_name.storage_id(), catalog.storage.tables[table_name.storage_id()].tid)!
+	catalog.storage.delete_table(table_name.storage_id(),
+		catalog.storage.tables[table_name.storage_id()].tid)!
 
 	return new_result_msg('DROP TABLE 1', elapsed_parse, t.elapsed())
 }

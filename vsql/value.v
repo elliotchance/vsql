@@ -325,7 +325,7 @@ fn (v Value) as_f64() !f64 {
 	}
 
 	if v.typ.uses_int() {
-		return v.int_value()
+		return f64(v.int_value())
 	}
 
 	return v.f64_value()
@@ -351,7 +351,7 @@ fn (v Value) as_numeric() !Numeric {
 
 fn (v Value) pstr(params map[string]Value) string {
 	if v.typ.typ != .is_numeric && (v.typ.uses_string() || v.typ.uses_time()) {
-		return '\'${v.str()}\''
+		return "'${v.str()}'"
 	}
 
 	return v.str()

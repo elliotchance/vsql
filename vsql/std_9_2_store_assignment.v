@@ -225,12 +225,10 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// - 3.b.xvi.1. If only one of DT and the declared type of V is datetime
 			// with time zone, then V is effectively replaced by: CAST ( V AS DT )
 			if t.typ == .is_timestamp_with_time_zone && v.typ.typ == .is_timestamp_without_time_zone {
-				return cast(mut conn, msg, cast_timestamp_without_to_timestamp_with(conn,
-					v, t)!, t)
+				return cast(mut conn, msg, cast_timestamp_without_to_timestamp_with(conn, v, t)!, t)
 			}
 			if t.typ == .is_timestamp_without_time_zone && v.typ.typ == .is_timestamp_with_time_zone {
-				return cast(mut conn, msg, cast_timestamp_with_to_timestamp_without(conn,
-					v, t)!, t)
+				return cast(mut conn, msg, cast_timestamp_with_to_timestamp_without(conn, v, t)!, t)
 			}
 
 			// - 3.b.xvi.2. Case:
@@ -281,43 +279,44 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 				return v
 			}
 		}
-		// - 3.b.xix. If the declared type of T is a row type, then:
-		// - 3.b.xix.1. Let n be the degree of T.
-		// - 3.b.xix.2. For i ranging from 1 (one) to n, the General Rules of this
-		// Subclause are applied to the i-th element of T and the i-th element of V
-		// as TARGET and VALUE, respectively.
-		// - 3.b.xx. If the declared type of T is a reference type, then the value
-		// of T is set to V.
-		// - 3.b.xxi. If the declared type of T is an array type or a distinct type
-		// whose source type is an array type, then, Case:
-		// - 3.b.xxi.1. If the maximum cardinality L of T is equal to the
-		// cardinality M of V, then the elements of T are set to the values of the
-		// corresponding elements of V by applying the General Rules of this
-		// Subclause to each pair of elements with the element of T as TARGET and
-		// the element of V as VALUE.
-		// - 3.b.xxi.2. If the maximum cardinality L of T is smaller than the
-		// cardinality M of V, then Case:
-		// - 3.b.xxi.2.A. If the rightmost M–L elements of V are all null, then the
-		// elements of T are set to the values of the first L corresponding elements
-		// of V by applying the General Rules of this Subclause to each pair of
-		// elements with the element of T as TARGET and the element of V as VALUE.
-		// - 3.b.xxi.2.B. If one or more of the rightmost M–L elements of V are not
-		// the null value, then an exception condition is raised: data exception —
-		// array data, right truncation.
-		// - 3.b.xxi.3. If the maximum cardinality L of T is greater than the
-		// cardinality M of V, then the M first elements of T are set to the values
-		// of the corresponding elements of V by applying the General Rules of this
-		// Subclause to each pair of elements with the element of T as TARGET and
-		// the element of V as VALUE. The cardinality of the value of T is set to M.
-		// NOTE 363 — The maximum cardinality L of T is unchanged.
-		// - 3.b.xxii. If the declared type of T is a multiset type or a distinct
-		// type whose source type is a multiset type, then the value of T is set to
-		// V.
-		// - 3.b.xxiii. If the declared type of T is a user-defined type, then the
-		// value of T is set to V.
-		//
-		// All of these are not supported yet.
 	}
+
+	// - 3.b.xix. If the declared type of T is a row type, then:
+	// - 3.b.xix.1. Let n be the degree of T.
+	// - 3.b.xix.2. For i ranging from 1 (one) to n, the General Rules of this
+	// Subclause are applied to the i-th element of T and the i-th element of V
+	// as TARGET and VALUE, respectively.
+	// - 3.b.xx. If the declared type of T is a reference type, then the value
+	// of T is set to V.
+	// - 3.b.xxi. If the declared type of T is an array type or a distinct type
+	// whose source type is an array type, then, Case:
+	// - 3.b.xxi.1. If the maximum cardinality L of T is equal to the
+	// cardinality M of V, then the elements of T are set to the values of the
+	// corresponding elements of V by applying the General Rules of this
+	// Subclause to each pair of elements with the element of T as TARGET and
+	// the element of V as VALUE.
+	// - 3.b.xxi.2. If the maximum cardinality L of T is smaller than the
+	// cardinality M of V, then Case:
+	// - 3.b.xxi.2.A. If the rightmost M–L elements of V are all null, then the
+	// elements of T are set to the values of the first L corresponding elements
+	// of V by applying the General Rules of this Subclause to each pair of
+	// elements with the element of T as TARGET and the element of V as VALUE.
+	// - 3.b.xxi.2.B. If one or more of the rightmost M–L elements of V are not
+	// the null value, then an exception condition is raised: data exception —
+	// array data, right truncation.
+	// - 3.b.xxi.3. If the maximum cardinality L of T is greater than the
+	// cardinality M of V, then the M first elements of T are set to the values
+	// of the corresponding elements of V by applying the General Rules of this
+	// Subclause to each pair of elements with the element of T as TARGET and
+	// the element of V as VALUE. The cardinality of the value of T is set to M.
+	// NOTE 363 — The maximum cardinality L of T is unchanged.
+	// - 3.b.xxii. If the declared type of T is a multiset type or a distinct
+	// type whose source type is a multiset type, then the value of T is set to
+	// V.
+	// - 3.b.xxiii. If the declared type of T is a user-defined type, then the
+	// value of T is set to V.
+	//
+	// All of these are not supported yet.
 
 	return sqlstate_42846(v.typ, t)
 }
@@ -419,7 +418,8 @@ fn cast_numeric(mut conn Connection, v Value, t Type) !Value {
 				return sqlstate_22003()
 			}
 
-			n := new_numeric(t, numeric_value.numerator, numeric_value.denominator).normalize_denominator(t)
+			n :=
+				new_numeric(t, numeric_value.numerator, numeric_value.denominator).normalize_denominator(t)
 
 			if t.typ == .is_numeric {
 				return new_numeric_value_from_numeric(n)

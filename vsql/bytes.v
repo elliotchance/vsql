@@ -550,13 +550,15 @@ union Bytes8 {
 
 fn (b Bytes8) bytes() []u8 {
 	return unsafe {
-		[b.bytes[0], b.bytes[1], b.bytes[2], b.bytes[3], b.bytes[4], b.bytes[5], b.bytes[6], b.bytes[7]]
+		[b.bytes[0], b.bytes[1], b.bytes[2], b.bytes[3], b.bytes[4], b.bytes[5], b.bytes[6],
+			b.bytes[7]]
 	}
 }
 
 fn (b Bytes8) bytes_reversed() []u8 {
 	return unsafe {
-		[b.bytes[7], b.bytes[6], b.bytes[5], b.bytes[4], b.bytes[3], b.bytes[2], b.bytes[1], b.bytes[0]]
+		[b.bytes[7], b.bytes[6], b.bytes[5], b.bytes[4], b.bytes[3], b.bytes[2], b.bytes[1],
+			b.bytes[0]]
 	}
 }
 

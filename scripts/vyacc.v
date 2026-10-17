@@ -108,7 +108,7 @@ const number = private + 9
 const start = private + 10
 const typedef = private + 11
 const typename = private + 12
-const union = private + 13
+const @union = private + 13
 const error = private + 14
 
 const max_int8 = 127
@@ -278,19 +278,19 @@ mut:
 	peekline int
 
 	resrv []Resrv = [
-	Resrv{'binary', binary},
-	Resrv{'left', left},
-	Resrv{'nonassoc', binary},
-	Resrv{'prec', prec},
-	Resrv{'right', right},
-	Resrv{'start', start},
-	Resrv{'term', term},
-	Resrv{'token', term},
-	Resrv{'type', typedef},
-	Resrv{'union', @union},
-	Resrv{'struct', @union},
-	Resrv{'error', error},
-]
+		Resrv{'binary', binary},
+		Resrv{'left', left},
+		Resrv{'nonassoc', binary},
+		Resrv{'prec', prec},
+		Resrv{'right', right},
+		Resrv{'start', start},
+		Resrv{'term', term},
+		Resrv{'token', term},
+		Resrv{'type', typedef},
+		Resrv{'union', @union},
+		Resrv{'struct', @union},
+		Resrv{'error', error},
+	]
 
 	// utility routines
 	peekrune rune
@@ -299,7 +299,8 @@ mut:
 fn (mut y Vyacc) init() {
 	mut parser := flag.new_flag_parser(os.args)
 	y.oflag = parser.string('', `o`, 'y.v', 'parser output', flag.FlagConfig{})
-	y.prefix = parser.string('', `p`, 'yy', 'name prefix to use in generated code', flag.FlagConfig{})
+	y.prefix =
+		parser.string('', `p`, 'yy', 'name prefix to use in generated code', flag.FlagConfig{})
 	y.vflag = parser.string('', `v`, 'y.output', 'create parsing tables', flag.FlagConfig{})
 	y.lflag = parser.bool('', `l`, false, 'disable line directives', flag.FlagConfig{})
 	y.restflag = (parser.finalize() or { panic(err) })[1..]
@@ -482,6 +483,7 @@ fn (mut y Vyacc) setup() ! {
 						}
 						else {}
 					}
+
 					break
 				}
 				continue
@@ -542,6 +544,7 @@ fn (mut y Vyacc) setup() ! {
 						}
 						else {}
 					}
+
 					break
 				}
 				continue
@@ -553,6 +556,7 @@ fn (mut y Vyacc) setup() ! {
 				y.errorf('syntax error tok=${t - private}')
 			}
 		}
+
 		t = y.gettok()
 	}
 
@@ -623,7 +627,8 @@ fn (mut y Vyacc) setup() ! {
 				}
 				j = y.chfind(2, y.tokname)
 				if j >= ntbase {
-					y.lerrorf(ruleline, 'nonterminal ${y.nontrst[j - ntbase].name} illegal after %prec')
+					y.lerrorf(ruleline,
+						'nonterminal ${y.nontrst[j - ntbase].name} illegal after %prec')
 				}
 				y.levprd[y.nprod] = y.toklev[j]
 				t = y.gettok()
@@ -724,7 +729,7 @@ fn (mut y Vyacc) setup() ! {
 	y.ftable.write_string('\n')!
 	y.ftable.write_string('const ${y.prefix}_toknames = [\n')!
 	for i2 := 1; i2 <= y.ntokens; i2++ {
-		y.ftable.write_string("\t\"${y.tokset[i2].name.replace('$', '\\$')}\",\n")!
+		y.ftable.write_string('\t"${y.tokset[i2].name.replace('$', '\\$')}",\n')!
 	}
 	y.ftable.write_string(']\n')!
 
@@ -734,7 +739,7 @@ fn (mut y Vyacc) setup() ! {
 	y.ftable.write_string('\n')!
 	y.ftable.write_string('const ${y.prefix}_statenames = [\n')!
 	for j = tokstart; j <= y.ntokens; j++ {
-		y.ftable.write_string("\t\"${y.tokset[j].name}\",\n")!
+		y.ftable.write_string('\t"${y.tokset[j].name}",\n')!
 	}
 	y.ftable.write_string(']\n')!
 
@@ -931,7 +936,7 @@ fn (mut y Vyacc) gettok() int {
 					c = y.getrune(mut y.finput)
 				} else if c == mtch {
 					if y.tokflag {
-						print(">>> identifier \"${y.tokname}\" ${y.lineno}\n")
+						print('>>> identifier "${y.tokname}" ${y.lineno}\n')
 					}
 					y.tokname += c.str()
 					return identifier
@@ -1293,6 +1298,7 @@ fn (mut y Vyacc) skipcom() int {
 			}
 		}
 	}
+
 	return nl
 }
 
@@ -1446,6 +1452,7 @@ fn (mut y Vyacc) cpyact(curprod []int, max int) ! {
 							}
 							else {}
 						}
+
 						y.fcode.write_string(c.str())
 						c = y.getrune(mut y.finput)
 					}
@@ -1488,6 +1495,7 @@ fn (mut y Vyacc) cpyact(curprod []int, max int) ! {
 			}
 			else {}
 		}
+
 		swt:
 		y.fcode.write_string(c.str())
 	}
@@ -1582,7 +1590,6 @@ fn (mut y Vyacc) cempty() {
 	aryfil(mut y.pempty, y.nnonter + 1, whoknows)
 
 	// now, look at productions, marking nonterminals which derive something
-
 	more: for {
 		for i = 0; i < y.nprod; i++ {
 			prd = y.prdptr[i]
@@ -1626,7 +1633,6 @@ fn (mut y Vyacc) cempty() {
 	aryfil(mut y.pempty, y.nnonter + 1, whoknows)
 
 	// loop as long as we keep finding empty nonterminals
-
 	again: for {
 		next: for i = 1; i < y.nprod; i++ {
 			// not known to be empty
@@ -1956,7 +1962,7 @@ fn (mut y Vyacc) state(c int) int {
 		for l = k; l > p1; l-- {
 			if y.statemem[l].pitem.prodno < y.statemem[l - 1].pitem.prodno
 				|| (y.statemem[l].pitem.prodno == y.statemem[l - 1].pitem.prodno
-				&& y.statemem[l].pitem.off < y.statemem[l - 1].pitem.off) {
+					&& y.statemem[l].pitem.off < y.statemem[l - 1].pitem.off) {
 				s := y.statemem[l]
 				y.statemem[l] = y.statemem[l - 1]
 				y.statemem[l - 1] = s
@@ -2220,8 +2226,7 @@ fn (mut y Vyacc) output() ! {
 					y.temp1[k] = c
 				} else if y.temp1[k] < 0 { // reduce/reduce conflict
 					if y.foutput != none {
-						y.foutput.write_string("\n ${i}: reduce/reduce conflict  (red'ns " +
-							'${-y.temp1[k]} and ${y.lastred}) on ${y.symnam(k)}')!
+						y.foutput.write_string("\n ${i}: reduce/reduce conflict  (red'ns " + '${-y.temp1[k]} and ${y.lastred}) on ${y.symnam(k)}')!
 					}
 					if -y.temp1[k] > y.lastred {
 						y.temp1[k] = -y.lastred
@@ -2390,17 +2395,17 @@ fn (mut y Vyacc) wrstate(i int) ! {
 		y.state_table[i] = Row{actions, default_action}
 	}
 
-	if y.foutput != none {
-		y.foutput.write_string('\nstate ${i}\n')!
+	if mut foutput := y.foutput {
+		foutput.write_string('\nstate ${i}\n')!
 		qq = y.pstate[i + 1]
 		for pp = y.pstate[i]; pp < qq; pp++ {
-			y.foutput.write_string('\t${y.writem(y.statemem[pp].pitem)}\n')!
+			foutput.write_string('\t${y.writem(y.statemem[pp].pitem)}\n')!
 		}
 		if y.tystate[i] == mustlookahead {
 			// print out empty productions in closure
 			for u = y.pstate[i + 1] - y.pstate[i]; u < y.cwp; u++ {
 				if y.wsets[u].pitem.first < 0 {
-					y.foutput.write_string('\t${y.writem(y.wsets[u].pitem)}\n')!
+					foutput.write_string('\t${y.writem(y.wsets[u].pitem)}\n')!
 				}
 			}
 		}
@@ -2409,28 +2414,28 @@ fn (mut y Vyacc) wrstate(i int) ! {
 		for j0 = 0; j0 <= y.ntokens; j0++ {
 			j1 = y.temp1[j0]
 			if j1 != 0 {
-				y.foutput.write_string('\n\t${y.symnam(j0)}  ')!
+				foutput.write_string('\n\t${y.symnam(j0)}  ')!
 
 				// shift, error, or accept
 				if j1 > 0 {
 					if j1 == acceptcode {
-						y.foutput.write_string('accept')!
+						foutput.write_string('accept')!
 					} else if j1 == errcode {
-						y.foutput.write_string('error')!
+						foutput.write_string('error')!
 					} else {
-						y.foutput.write_string('shift ${j1}')!
+						foutput.write_string('shift ${j1}')!
 					}
 				} else {
-					y.foutput.write_string('reduce ${-j1} (src line ${y.rlines[-j1]})')!
+					foutput.write_string('reduce ${-j1} (src line ${y.rlines[-j1]})')!
 				}
 			}
 		}
 
 		// output the final production
 		if y.lastred != 0 {
-			y.foutput.write_string('\n\t.  reduce ${y.lastred} (src line ${y.rlines[y.lastred]})\n\n')!
+			foutput.write_string('\n\t.  reduce ${y.lastred} (src line ${y.rlines[y.lastred]})\n\n')!
 		} else {
-			y.foutput.write_string('\n\t.  error\n\n')!
+			foutput.write_string('\n\t.  error\n\n')!
 		}
 
 		// now, output nonterminal actions
@@ -2438,7 +2443,7 @@ fn (mut y Vyacc) wrstate(i int) ! {
 		for j0 = 1; j0 <= y.nnonter; j0++ {
 			j1++
 			if y.temp1[j1] != 0 {
-				y.foutput.write_string('\t${y.symnam(j0 + ntbase)}  goto ${y.temp1[j1]}\n')!
+				foutput.write_string('\t${y.symnam(j0 + ntbase)}  goto ${y.temp1[j1]}\n')!
 			}
 		}
 	}
@@ -2714,7 +2719,6 @@ fn (mut y Vyacc) gin(i int) ! {
 	nq := q.len - 1
 
 	// now, find y.amem place for it
-
 	nextgp: for p := 0; p < actsize; p++ {
 		if y.amem[p] != 0 {
 			continue

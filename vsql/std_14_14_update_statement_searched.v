@@ -94,8 +94,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		if did_modify {
 			// To be able to write the row back we need to clean the column names.
 			modify_count++
-			catalog.storage.update_row(mut row.for_storage(), mut row2.for_storage(),
-				table)!
+			catalog.storage.update_row(mut row.for_storage(), mut row2.for_storage(), table)!
 		}
 	}
 
@@ -114,7 +113,8 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			match v {
 				ValueExpression {
 					raw_value := v.compile(mut c)!.run(mut conn, empty_row, params)!
-					value := cast(mut conn, 'for column ${column_name}', raw_value, table_column.typ)!
+					value := cast(mut conn, 'for column ${column_name}', raw_value,
+						table_column.typ)!
 
 					if table_column.not_null && value.is_null {
 						return sqlstate_23502('column ${column_name}')

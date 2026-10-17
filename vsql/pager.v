@@ -85,9 +85,9 @@ fn new_file_pager(mut file os.File, page_size int, root_page int) !&FilePager {
 	file_len := file.tell() or { return error('unable to get file length: ${err}') }
 
 	return &FilePager{
-		file:      file
-		page_size: page_size
-		root_page: root_page
+		file:        file
+		page_size:   page_size
+		root_page:   root_page
 		// The first page is reserved for header information. We do not include
 		// this in the pages.
 		total_pages: int((file_len - sizeof(Header)) / i64(page_size))

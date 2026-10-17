@@ -3,9 +3,12 @@
 // This script generates the V client library documentation from the "vsql/" module
 // in reStructuredText format.
 //
-// Run from the repo root: $ ./scripts/generate-v-client-library-docs.vsh
+// Run from the repo root: $ make snippets
 //
-import v.doc
+// The "document" module lives in V's cmd/tools/vdoc (it used to be v.doc), so
+// the Makefile adds that directory to the module search path.
+//
+import document as doc
 
 fn get_sym_name(dn doc.DocNode) string {
 	sym_name := if dn.parent_name.len > 0 && dn.parent_name != 'void' {
@@ -32,6 +35,12 @@ fn main() {
 	dcs_contents := d.contents.arr()
 
 	for node in dcs_contents {
+		// V generates a public Enum.from() for every enum (even private ones).
+		// These have no description and are not part of the documented API.
+		if node.name.ends_with('.from') && node.content.contains('.from[W](input W) !') {
+			continue
+		}
+
 		section_title := if node.kind == .const_group {
 			get_sym_name(node)
 		} else {

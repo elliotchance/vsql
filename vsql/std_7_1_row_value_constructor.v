@@ -119,8 +119,7 @@ fn (r RowValueConstructor) eval_row(mut conn Connection, data Row, params map[st
 			match r {
 				ExplicitRowValueConstructorRow {
 					for expr in r.exprs {
-						row['COL${col_number}'] = expr.compile(mut c)!.run(mut conn, data,
-							params)!
+						row['COL${col_number}'] = expr.compile(mut c)!.run(mut conn, data, params)!
 						col_number++
 					}
 				}

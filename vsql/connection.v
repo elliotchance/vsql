@@ -362,7 +362,8 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 	if stmt is TableDefinition {
 		mut table_name := conn.resolve_schema_identifier(stmt.table_name)!
 
-		conn.catalogs[conn.current_catalog].virtual_tables[table_name.storage_id()] = VirtualTable{
+		mut catalog := conn.catalog()
+		catalog.virtual_tables[table_name.storage_id()] = VirtualTable{
 			create_table_sql:  create_table
 			create_table_stmt: stmt
 			data:              data

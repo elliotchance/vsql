@@ -37,10 +37,9 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 				right := compiled_right.run(mut conn, data, params)!
 
 				// Make sure we escape any regexp characters.
-				escaped_regex := right.string_value().replace('+', '\\+').replace('?',
-					'\\?').replace('*', '\\*').replace('|', '\\|').replace('.', '\\.').replace('(',
-					'\\(').replace(')', '\\)').replace('[', '\\[').replace('{', '\\{').replace('_',
-					'.').replace('%', '.*')
+				escaped_regex := right.string_value().replace('+', '\\+').replace('?', '\\?').replace('*',
+					'\\*').replace('|', '\\|').replace('.', '\\.').replace('(', '\\(').replace(')',
+					'\\)').replace('[', '\\[').replace('{', '\\{').replace('_', '.').replace('%', '.*')
 
 				mut re := regex.regex_opt('^${escaped_regex}$') or {
 					return error('cannot compile regexp: ^${escaped_regex}$: ${err}')

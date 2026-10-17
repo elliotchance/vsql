@@ -8,6 +8,21 @@ VALUES TIME '2022-06-30 21:47:32+05:12';
 VALUES TIME '21:47:32';
 -- COL1: 21:47:32 (TIME(0) WITHOUT TIME ZONE)
 
+VALUES TIME '25:00:00';
+-- error 42601: syntax error: TIME '25:00:00' is not valid
+
+VALUES TIME '21:60:00';
+-- error 42601: syntax error: TIME '21:60:00' is not valid
+
+VALUES TIME '1:2:3';
+-- error 42601: syntax error: TIME '1:2:3' is not valid
+
+VALUES TIME '21:47:32+14:00';
+-- COL1: 21:47:32+1400
+
+VALUES TIME '21:47:32-00:30';
+-- COL1: 21:47:32-0030
+
 VALUES TIME 'a21:47:32';
 -- error 42601: syntax error: TIME 'a21:47:32' is not valid
 

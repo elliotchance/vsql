@@ -56,6 +56,8 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 		}
 	}
 
+	p.c.begin_row()
+
 	stmt := p.stmt
 	match stmt {
 		AlterSequenceGeneratorStatement {

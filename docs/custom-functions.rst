@@ -22,6 +22,10 @@ You can create custom functions to use in expressions:
      println('${row.get_string('PRODUCT_NAME') !} $${total:.2f}')
    }
 
+Unlike the builtin functions (which return ``NULL`` if any argument is
+``NULL``), a custom function is always called. Use ``is_null`` on the argument
+values to handle ``NULL`` yourself.
+
 A function must return a value to match the return type. See the full list of
 ``Value`` constructors in
 `value.v <https://github.com/elliotchance/vsql/blob/main/vsql/value.v>`_.

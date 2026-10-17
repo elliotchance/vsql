@@ -145,6 +145,9 @@ See :doc:`dates-times`.
 Mathematical Functions
 ----------------------
 
+All mathematical and string functions return ``NULL`` if any argument is
+``NULL``.
+
 ABS
 ^^^
 

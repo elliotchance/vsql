@@ -60,6 +60,12 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 
 			if (left.typ.typ == .is_character || left.typ.typ == .is_varchar)
 				&& (right.typ.typ == .is_character || right.typ.typ == .is_varchar) {
+				// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, General
+				// Rules, 1
+				if left.is_null || right.is_null {
+					return new_null_value(.is_varchar)
+				}
+
 				return new_varchar_value(left.string_value() + right.string_value())
 			}
 

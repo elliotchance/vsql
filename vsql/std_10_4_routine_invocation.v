@@ -50,6 +50,15 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 				i++
 			}
 
+			// All of the builtin scalar functions return NULL if any argument is
+			// NULL. Custom functions are always called.
+			if !found_func.called_on_null_input && args.any(it.is_null) {
+				return Value{
+					typ:     found_func.return_type
+					is_null: true
+				}
+			}
+
 			return found_func.func(args)!
 		}
 		typ:          found_func.return_type

@@ -36,6 +36,11 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 				left := compiled_l.run(mut conn, data, params)!
 				right := compiled_right.run(mut conn, data, params)!
 
+				// ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, General Rules, 3a.i
+				if left.is_null || right.is_null {
+					return new_unknown_value()
+				}
+
 				// Make sure we escape any regexp characters.
 				escaped_regex := right.string_value().replace('+', '\\+').replace('?', '\\?').replace('*',
 					'\\*').replace('|', '\\|').replace('.', '\\.').replace('(', '\\(').replace(')',

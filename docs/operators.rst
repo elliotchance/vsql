@@ -9,6 +9,10 @@ For the tables below:
 - ``text`` is any of the character types: ``CHARACTER VARYING``, ``CHARACTER``, etc.
 - ``any`` is any data type.
 
+If any operand is ``NULL`` the result is also ``NULL`` (or ``UNKNOWN`` for
+comparisons, ``LIKE`` and ``SIMILAR TO``). The exceptions are ``IS NULL``,
+``IS NOT NULL`` and the logical operators (``AND``, ``OR``, etc).
+
 Binary Operations
 -----------------
 

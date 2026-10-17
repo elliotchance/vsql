@@ -95,6 +95,10 @@ fn (e SignedValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
 
 			key := '${e.sign} ${value.typ.typ}'
 			if fnc := conn.unary_operators[key] {
+				if value.is_null {
+					return value
+				}
+
 				unary_fn := fnc as UnaryOperatorFunc
 				return unary_fn(conn, value)!
 			}
@@ -187,6 +191,15 @@ fn eval_binary(mut conn Connection, data Row, x Value, op string, y Value, param
 	}
 
 	if fnc := conn.binary_operators[key] {
+		// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, General
+		// Rules, 1
+		if left.is_null || right.is_null {
+			return Value{
+				typ:     left.typ
+				is_null: true
+			}
+		}
+
 		op_fn := fnc as BinaryOperatorFunc
 		return op_fn(conn, left, right)
 	}

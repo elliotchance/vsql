@@ -113,3 +113,23 @@ VALUES CAST(-30000 AS INTEGER) / 0;
 
 VALUES -90000 / CAST(0.1 AS INTEGER);
 -- error 22012: division by zero
+
+/* types */
+VALUES CAST(100000 AS INTEGER) - 1;
+-- COL1: 99999 (INTEGER)
+
+/* types */
+VALUES CAST(100000 AS INTEGER) * 2;
+-- COL1: 200000 (INTEGER)
+
+VALUES CAST(-2147483648 AS INTEGER) * -1;
+-- error 22003: numeric value out of range
+
+VALUES -CAST(-2147483648 AS INTEGER);
+-- error 22003: numeric value out of range
+
+VALUES -CAST(-2147483647 AS INTEGER);
+-- COL1: 2147483647
+
+VALUES CAST(-2147483648 AS INTEGER) / -1;
+-- error 22003: numeric value out of range

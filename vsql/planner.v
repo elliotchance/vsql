@@ -456,6 +456,7 @@ fn (mut o ExprOperation) execute(rows []Row) ![]Row {
 	mut new_rows := []Row{}
 
 	for row in rows {
+		o.conn.begin_row()
 		mut data := map[string]Value{}
 		for expr in o.exprs {
 			data[expr.as_clause.id()] = expr.expr.compile(mut c)!.run(mut o.conn, row, o.params)!

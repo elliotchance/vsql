@@ -45,6 +45,14 @@ mut:
 	// current_catalog (also known as the database). It will have an initial value
 	// derived from the first database file loaded.
 	current_catalog string
+	// row_sequence_values holds the values returned by NEXT VALUE FOR for the row
+	// currently being evaluated. All NEXT VALUE FOR expressions for the same
+	// sequence must return the same value within a row. See begin_row().
+	row_sequence_values map[string]i64
+	// dry_run is set when expressions are only being evaluated to check for
+	// errors (such as an UPDATE that matched no rows). Expressions must not have
+	// side effects, like advancing a sequence.
+	dry_run bool
 pub mut:
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive
@@ -538,6 +546,14 @@ pub fn default_connection_options() ConnectionOptions {
 // starting a block of work.
 pub fn (mut conn Connection) clear_warnings() {
 	conn.warnings = []IError{}
+}
+
+// begin_row must be called before evaluating the expressions for each new row
+// so that NEXT VALUE FOR returns a new value.
+//
+// ISO/IEC 9075-2:2016(E), 4.27, Sequence generators
+fn (mut conn Connection) begin_row() {
+	conn.row_sequence_values = map[string]i64{}
 }
 
 fn (mut conn Connection) add_warning(warning IError) {

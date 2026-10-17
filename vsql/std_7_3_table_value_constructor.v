@@ -157,6 +157,7 @@ fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
 	}
 
 	for row in o.rows[offset..] {
+		o.conn.begin_row()
 		rows << row.eval_row(mut o.conn, Row{
 			data: map[string]Value{}
 		}, o.params)!

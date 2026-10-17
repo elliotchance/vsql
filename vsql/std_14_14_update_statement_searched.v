@@ -44,6 +44,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 
 	mut modify_count := 0
 	for mut row in rows {
+		conn.begin_row()
 		mut did_modify := false
 
 		// When creating a new row make sure we also carry across the internal
@@ -107,6 +108,11 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// We could do this before the UPDATE to catch the error earlier, but that
 	// comes at the cost of evaulating the row when we might not need to.
 	if modify_count == 0 {
+		conn.dry_run = true
+		defer {
+			conn.dry_run = false
+		}
+
 		empty_row := new_empty_row(table.columns, '')
 		for column_name, v in stmt.set {
 			table_column := table.column(column_name)!

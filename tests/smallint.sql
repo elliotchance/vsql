@@ -102,3 +102,9 @@ VALUES CAST(-30000 AS SMALLINT) / CAST(0 AS SMALLINT);
 
 VALUES CAST(-30000 AS SMALLINT) / CAST(0.1 AS SMALLINT);
 -- error 22012: division by zero
+
+VALUES -CAST(-32768 AS SMALLINT);
+-- error 22003: numeric value out of range
+
+VALUES CAST(-32768 AS SMALLINT) / CAST(-1 AS SMALLINT);
+-- error 22003: numeric value out of range

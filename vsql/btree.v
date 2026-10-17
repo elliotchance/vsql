@@ -160,13 +160,12 @@ fn (mut p Btree) add(object PageObject) !int {
 		//
 		// Formula derived from PageObject.length() and using 5 bytes for the
 		// blob value size.
-		mut blob_size := maximum_size - page_object_prefix_length - blob_object_key(obj.key,
-			0).len - 5
+		mut blob_size := maximum_size - page_object_prefix_length -
+			blob_object_key(obj.key, 0).len - 5
 		mut part_number := 0
 		mut remaining := obj_bytes.len
 		for remaining >= blob_size {
-			blob_object := new_blob_object(obj.key, obj.tid, obj.xid, part_number, obj_bytes[obj_bytes.len - remaining..
-				obj_bytes.len - remaining + blob_size])
+			blob_object := new_blob_object(obj.key, obj.tid, obj.xid, part_number, obj_bytes[obj_bytes.len - remaining..obj_bytes.len - remaining + blob_size])
 			part_number++
 			remaining -= blob_size
 			p.add(blob_object)!
@@ -175,7 +174,8 @@ fn (mut p Btree) add(object PageObject) !int {
 		// With the remaining amount (if any) create a blob fragement page.
 		has_fragment := remaining > 0
 		if has_fragment {
-			fragment_object := new_fragment_object(obj.key, obj.tid, obj.xid, obj_bytes[obj_bytes.len - remaining..])
+			fragment_object := new_fragment_object(obj.key, obj.tid, obj.xid,
+				obj_bytes[obj_bytes.len - remaining..])
 			p.add(fragment_object)!
 		}
 

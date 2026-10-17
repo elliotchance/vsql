@@ -62,8 +62,8 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 							typ = typ2.typ
 							first = false
 						} else if typ != typ2.typ {
-							return sqlstate_42804('in argument ${i + 1} of COALESCE',
-								typ.str(), typ2.typ.str())
+							return sqlstate_42804('in argument ${i + 1} of COALESCE', typ.str(),
+								typ2.typ.str())
 						}
 					}
 

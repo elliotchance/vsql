@@ -311,15 +311,18 @@ fn new_row_from_bytes(t Table, data []u8, tid int) Row {
 					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(10))
 				}
 				.is_time_without_time_zone {
-					typ := Type{.is_time_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
+					typ :=
+						Type{.is_time_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
 					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
 				}
 				.is_timestamp_with_time_zone {
-					typ := Type{.is_timestamp_with_time_zone, col.typ.size, col.typ.scale, col.not_null}
+					typ :=
+						Type{.is_timestamp_with_time_zone, col.typ.size, col.typ.scale, col.not_null}
 					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(10))
 				}
 				.is_timestamp_without_time_zone {
-					typ := Type{.is_timestamp_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
+					typ :=
+						Type{.is_timestamp_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
 					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
 				}
 				.is_numeric, .is_decimal {

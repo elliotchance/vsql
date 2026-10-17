@@ -176,8 +176,8 @@ fn (n Numeric) str() string {
 	}
 
 	mut s := if numerator.str().len >= denominator_str.len {
-		numerator[..numerator.len - denominator_str.len + 1] + '.' +
-			numerator[numerator.len - denominator_str.len + 1..]
+		numerator[..numerator.len - denominator_str.len + 1] + '.' + numerator[numerator.len -
+			denominator_str.len + 1..]
 	} else {
 		'0.' + '0'.repeat(denominator_str.len - numerator.len - 1) + numerator.str()
 	}

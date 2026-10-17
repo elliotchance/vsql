@@ -35,14 +35,15 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 			}
 			SequenceGeneratorRestartOption {
 				if v := option.restart_value {
-					sequence.current_value = (v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int() - sequence.increment_by
+					sequence.current_value = (v.compile(mut c)!.run(mut conn, Row{},
+						map[string]Value{})!).as_int() - sequence.increment_by
 				} else {
 					sequence.current_value = sequence.reset() - sequence.increment_by
 				}
 			}
 			SequenceGeneratorIncrementByOption {
-				sequence.increment_by = (option.increment_by.compile(mut c)!.run(mut conn,
-					Row{}, map[string]Value{})!).as_int()
+				sequence.increment_by = (option.increment_by.compile(mut c)!.run(mut conn, Row{},
+					map[string]Value{})!).as_int()
 
 				// Since we increment the value after it's returned we need to correct
 				// for the current value that takes into account the difference of the
@@ -51,7 +52,8 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 			}
 			SequenceGeneratorMinvalueOption {
 				if v := option.min_value {
-					sequence.min_value = (v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
+					sequence.min_value =
+						(v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 					sequence.has_min_value = true
 				} else {
 					sequence.has_min_value = false
@@ -59,7 +61,8 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 			}
 			SequenceGeneratorMaxvalueOption {
 				if v := option.max_value {
-					sequence.max_value = (v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
+					sequence.max_value =
+						(v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 					sequence.has_max_value = true
 				} else {
 					sequence.has_min_value = false

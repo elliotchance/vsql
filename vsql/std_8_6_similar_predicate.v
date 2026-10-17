@@ -35,8 +35,7 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 				left := compiled_l.run(mut conn, data, params)!
 				right := compiled_right.run(mut conn, data, params)!
 
-				regexp := '^${right.string_value().replace('.', '\\.').replace('_', '.').replace('%',
-					'.*')}$'
+				regexp := '^${right.string_value().replace('.', '\\.').replace('_', '.').replace('%', '.*')}$'
 				mut re := regex.regex_opt(regexp) or {
 					return error('cannot compile regexp: ${regexp}: ${err}')
 				}

@@ -80,13 +80,15 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, params map[st
 			}
 			SequenceGeneratorMinvalueOption {
 				if v := option.min_value {
-					min_value = (v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
+					min_value =
+						(v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 					has_min_value = true
 				}
 			}
 			SequenceGeneratorMaxvalueOption {
 				if v := option.max_value {
-					max_value = (v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
+					max_value =
+						(v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 					has_max_value = true
 				}
 			}

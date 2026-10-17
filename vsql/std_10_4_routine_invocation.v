@@ -32,9 +32,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	}
 
 	if e.args.len != found_func.arg_types.len {
-		return sqlstate_42883('${func_name} has ${e.args.len} ${pluralize(e.args.len,
-			'argument')} but needs ${found_func.arg_types.len} ${pluralize(found_func.arg_types.len,
-			'argument')}')
+		return sqlstate_42883('${func_name} has ${e.args.len} ${pluralize(e.args.len, 'argument')} but needs ${found_func.arg_types.len} ${pluralize(found_func.arg_types.len, 'argument')}')
 	}
 
 	mut compiled_args := []CompileResult{}

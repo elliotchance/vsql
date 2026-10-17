@@ -69,7 +69,7 @@ fn new_timestamp_from_string(s string) !Time {
 		false { unquoted_timestamp_without_time_zone_string }
 	}) or { return error('cannot compile regex for timestamp: ${err}') }
 	if !re.matches_string(s) {
-		return sqlstate_42601('TIMESTAMP \'${s}\' is not valid')
+		return sqlstate_42601("TIMESTAMP '${s}' is not valid")
 	}
 
 	mut time_zone := i16(0)
@@ -84,7 +84,7 @@ fn new_timestamp_from_string(s string) !Time {
 		}
 
 		if time_zone <= -720 || time_zone >= 720 {
-			return sqlstate_42601('TIMESTAMP \'${s}\' is not valid')
+			return sqlstate_42601("TIMESTAMP '${s}' is not valid")
 		}
 
 		// If we don't trim off the time zone, V will try and interpret it but
@@ -101,9 +101,50 @@ fn new_timestamp_from_string(s string) !Time {
 		size: if to_parse.contains('.') { u8(to_parse.len - to_parse.index_u8(`.`)) - 1 } else { 0 }
 	}
 
-	return Time{typ, time_zone, time.parse_iso8601(to_parse) or {
-		return sqlstate_42601('TIMESTAMP \'${s}\' is not valid')
+	return Time{typ, time_zone, parse_timestamp_components(to_parse) or {
+		return sqlstate_42601("TIMESTAMP '${s}' is not valid")
 	}}
+}
+
+// parse_timestamp_components parses a string that has already been validated
+// by unquoted_timestamp_without_time_zone_string. It is used instead of
+// time.parse_iso8601 because V will panic on out of range components (such as
+// 75 seconds) rather than overflowing them.
+fn parse_timestamp_components(s string) !time.Time {
+	date_and_time := s.fields()
+	if date_and_time.len != 2 {
+		return error('invalid timestamp')
+	}
+
+	date_parts := date_and_time[0].split('-')
+	time_parts := date_and_time[1].split(':')
+	if date_parts.len != 3 || time_parts.len != 3 {
+		return error('invalid timestamp')
+	}
+
+	year, month, day := date_parts[0].int(), date_parts[1].int(), date_parts[2].int()
+	if year > 9999 || month > 12 || day > 31 {
+		return error('invalid timestamp')
+	}
+
+	seconds_and_fraction := time_parts[2].split('.')
+	mut nanosecond := 0
+	if seconds_and_fraction.len > 1 {
+		nanosecond = (seconds_and_fraction[1] + '000000000'[seconds_and_fraction[1].len..]).int()
+	}
+
+	return new_lenient_time(year, month, day, time_parts[0].int(), time_parts[1].int(),
+		seconds_and_fraction[0].int(), nanosecond)
+}
+
+// new_lenient_time works like time.new except that components outside of their
+// usual range overflow into the next unit (ie. 75 seconds becomes 1 minute and
+// 15 seconds) rather than causing a panic.
+fn new_lenient_time(year int, month int, day int, hour int, minute int, second int, nanosecond int) time.Time {
+	unix := i64(time.days_from_unix_epoch(year, month, day)) * 86400 + i64(hour) * 3600 +
+		i64(minute) * 60 + second
+
+	return time.unix_nanosecond(unix, nanosecond)
 }
 
 // This is an internal constructor, you will want to use new_time_value
@@ -114,7 +155,7 @@ fn new_time_from_string(s string) !Time {
 	// unix timestamp in V's Time object. This data part will be ignored in
 	// actual calculations.
 	mut t := new_timestamp_from_string('1970-01-01 ${s}') or {
-		return sqlstate_42601('TIME \'${s}\' is not valid')
+		return sqlstate_42601("TIME '${s}' is not valid")
 	}
 
 	if t.typ.typ == .is_timestamp_with_time_zone {
@@ -132,7 +173,7 @@ fn new_date_from_string(s string) !Time {
 	// The easiest way to parse it is as a normal timestamp with a dummy time
 	// part.
 	mut t := new_timestamp_from_string('${s} 00:00:00') or {
-		return sqlstate_42601('DATE \'${s}\' is not valid')
+		return sqlstate_42601("DATE '${s}' is not valid")
 	}
 
 	t.typ.typ = .is_date
@@ -141,15 +182,8 @@ fn new_date_from_string(s string) !Time {
 }
 
 fn new_time_from_components(typ Type, year int, month int, day int, hour int, minute int, second int, microsecond int, time_zone i16) Time {
-	return Time{typ, time_zone, time.new(time.Time{
-		year:       year
-		month:      month
-		day:        day
-		hour:       hour
-		minute:     minute
-		second:     second
-		nanosecond: microsecond * 1000
-	})}
+	return Time{typ, time_zone, new_lenient_time(year, month, day, hour, minute, second,
+		microsecond * 1000)}
 }
 
 fn new_time_from_bytes(typ Type, bytes []u8) Time {

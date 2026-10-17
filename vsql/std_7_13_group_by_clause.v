@@ -99,8 +99,8 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 
 		mut equal := true
 		for expr in o.group_exprs {
-			left := expr.compile(mut c)!.run(mut o.conn, sets[sets.len - 1][sets[sets.len - 1].len - 1],
-				o.params)!
+			left := expr.compile(mut c)!.run(mut o.conn,
+				sets[sets.len - 1][sets[sets.len - 1].len - 1], o.params)!
 			right := expr.compile(mut c)!.run(mut o.conn, row, o.params)!
 
 			if left.is_null && right.is_null {
@@ -142,8 +142,9 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 											row, o.params)!
 									}
 
-									func := o.conn.find_function(expr2.function_name,
-										[values[0].typ])!
+									func := o.conn.find_function(expr2.function_name, [
+										values[0].typ,
+									])!
 									set[0].data[key] = func.func(values)!
 									valid = true
 								}

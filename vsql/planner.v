@@ -58,8 +58,8 @@ fn create_select_plan(body QuerySpecification, offset ?ValueSpecification, param
 
 	match from_clause {
 		TablePrimary {
-			plan, table := create_select_plan_without_join(body, from_clause, offset,
-				params, mut conn, allow_virtual)!
+			plan, table := create_select_plan_without_join(body, from_clause, offset, params, mut
+				conn, allow_virtual)!
 			return plan, {
 				table.name.id(): table
 			}
@@ -120,8 +120,9 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 							parts := where_str.split(' = ')
 							if parts[0] == table.primary_key[0] {
 								covered_by_pk = true
-								plan.operations << new_primary_key_operation(table, new_numeric_value(parts[1]),
-									new_numeric_value(parts[1]), params, conn)
+								plan.operations << new_primary_key_operation(table,
+									new_numeric_value(parts[1]), new_numeric_value(parts[1]),
+									params, conn)
 							}
 						}
 					}
@@ -137,8 +138,8 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 						tables := {
 							table.name.id(): table
 						}
-						plan.operations << new_where_operation(where, params, conn, last_operation.columns(),
-							tables)
+						plan.operations << new_where_operation(where, params, conn,
+							last_operation.columns(), tables)
 					}
 				}
 			} else {
@@ -193,8 +194,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				select_exprs << DerivedColumn{expr.expr, expr.as_clause}
 			}
 
-			add_group_by_plan(mut &plan, group_exprs, select_exprs, params, mut conn,
-				table, tables)!
+			add_group_by_plan(mut &plan, group_exprs, select_exprs, params, mut conn, table, tables)!
 		}
 		AsteriskExpr, QualifiedAsteriskExpr {
 			// It's not possible to have a GROUP BY in this case.
@@ -244,8 +244,7 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []De
 		plan.operations << new_order_operation(order, params, conn, plan.columns())
 	}
 
-	plan.operations << new_group_operation(select_exprs, group_clause, params, mut conn,
-		table)!
+	plan.operations << new_group_operation(select_exprs, group_clause, params, mut conn, table)!
 }
 
 fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut conn Connection) !Plan {
@@ -459,8 +458,7 @@ fn (mut o ExprOperation) execute(rows []Row) ![]Row {
 	for row in rows {
 		mut data := map[string]Value{}
 		for expr in o.exprs {
-			data[expr.as_clause.id()] = expr.expr.compile(mut c)!.run(mut o.conn, row,
-				o.params)!
+			data[expr.as_clause.id()] = expr.expr.compile(mut c)!.run(mut o.conn, row, o.params)!
 		}
 		new_rows << new_row(data)
 	}

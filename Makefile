@@ -25,12 +25,11 @@ ready: grammar fmt snippets
 
 bin/vsql: vsql/y.v
 	mkdir -p bin
-	v $(BUILD_OPTIONS) $(PROD) cmd/vsql -o bin/vsql
+	v $(BUILD_OPTIONS) $(PROD) cmd/vsql-cli -o bin/vsql
 
 bin/vsql.exe: vsql/y.v
 	mkdir -p bin
-	v -os windows $(BUILD_OPTIONS) $(PROD) cmd/vsql
-	mv cmd/vsql/vsql.exe bin/vsql.exe
+	v -os windows $(BUILD_OPTIONS) $(PROD) cmd/vsql-cli -o bin/vsql.exe
 
 oldv: vsql/y.v
 ifdef OLDV
@@ -45,7 +44,7 @@ endif
 # Documentation
 
 snippets:
-	./scripts/generate-v-client-library-docs.vsh > docs/v-client-library-docs.rst
+	v -path '$(shell dirname `realpath $(V)`)/cmd/tools/vdoc|@vlib|@vmodules' run scripts/generate-v-client-library-docs.vsh > docs/v-client-library-docs.rst
 
 docs: snippets
 	mkdir -p docs/_static
@@ -70,10 +69,10 @@ grammar: clean-grammar vsql/y.v
 # Formatting
 
 fmt:
-	v fmt -w .
+	v fmt -w cmd examples scripts vsql
 
 fmt-verify:
-	v fmt -verify .
+	v fmt -verify cmd examples scripts vsql
 
 # Tests
 

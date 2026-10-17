@@ -69,6 +69,18 @@ fn (err SQLState) code() int {
 	return err.code
 }
 
+// null value eliminated in set function (warning)
+struct SQLState01003 {
+	SQLState
+}
+
+fn sqlstate_01003() IError {
+	return SQLState01003{
+		code: sqlstate_to_int('01003')
+		msg:  'null value eliminated in set function'
+	}
+}
+
 // string data right truncation - the character value is too long for the
 // destination.
 struct SQLState22001 {

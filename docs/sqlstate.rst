@@ -53,6 +53,23 @@ Or handling errors by class (first two letters):
 SQLSTATE
 --------
 
+``01003`` null value eliminated in set function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``01003`` is a warning (the query still succeeds) when an aggregate function,
+such as ``SUM(x)``, ignores one or more ``NULL`` values.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE foo (x FLOAT);
+  INSERT INTO foo (x) VALUES (NULL);
+  INSERT INTO foo (x) VALUES (1.5);
+  SELECT SUM(x) FROM foo;
+  -- warning 01003: null value eliminated in set function
+  -- COL1: 1.5e0
+
 ``0B000`` invalid transaction initiation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

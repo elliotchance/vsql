@@ -16,6 +16,7 @@ SELECT x, count(*) FROM foo GROUP BY x;
 -- X: 456e0 COL2: 1
 
 SELECT x, count(x) FROM foo GROUP BY x;
+-- warning 01003: null value eliminated in set function
 -- X: NULL COL2: 0
 -- X: 123e0 COL2: 1
 -- X: 456e0 COL2: 1
@@ -24,6 +25,7 @@ SELECT count(*) FROM foo;
 -- COL1: 4
 
 SELECT count(x) FROM foo;
+-- warning 01003: null value eliminated in set function
 -- COL1: 2
 
 SELECT count(*) FROM foo WHERE x IS NOT NULL;
@@ -33,45 +35,57 @@ SELECT count(x) FROM foo WHERE x IS NOT NULL;
 -- COL1: 2
 
 SELECT x, min(x) FROM foo GROUP BY x;
+-- warning 01003: null value eliminated in set function
 -- X: NULL COL2: NULL
 -- X: 123e0 COL2: 123e0
 -- X: 456e0 COL2: 456e0
 
 SELECT min(x) FROM foo;
--- COL1: NULL
+-- warning 01003: null value eliminated in set function
+-- COL1: 123e0
 
 SELECT min(x) FROM foo WHERE x IS NOT NULL;
 -- COL1: 123e0
 
 SELECT x, max(x) FROM foo GROUP BY x;
+-- warning 01003: null value eliminated in set function
 -- X: NULL COL2: NULL
 -- X: 123e0 COL2: 123e0
 -- X: 456e0 COL2: 456e0
 
 SELECT max(x) FROM foo;
--- COL1: NULL
+-- warning 01003: null value eliminated in set function
+-- COL1: 456e0
 
 SELECT max(x) FROM foo WHERE x IS NOT NULL;
 -- COL1: 456e0
 
 SELECT x, avg(x) FROM foo GROUP BY x;
+-- warning 01003: null value eliminated in set function
 -- X: NULL COL2: NULL
 -- X: 123e0 COL2: 123e0
 -- X: 456e0 COL2: 456e0
 
 SELECT avg(x) FROM foo;
--- COL1: NULL
+-- warning 01003: null value eliminated in set function
+-- COL1: 289.5e0
 
 SELECT avg(x) FROM foo WHERE x IS NOT NULL;
 -- COL1: 289.5e0
 
 SELECT x, sum(x) FROM foo GROUP BY x;
+-- warning 01003: null value eliminated in set function
 -- X: NULL COL2: NULL
 -- X: 123e0 COL2: 123e0
 -- X: 456e0 COL2: 456e0
 
 SELECT sum(x) FROM foo;
--- COL1: NULL
+-- warning 01003: null value eliminated in set function
+-- COL1: 579e0
 
 SELECT sum(x) FROM foo WHERE x IS NOT NULL;
 -- COL1: 579e0
+
+SELECT min(x), max(x), avg(x), sum(x) FROM foo WHERE x IS NULL;
+-- warning 01003: null value eliminated in set function
+-- COL1: NULL COL2: NULL COL3: NULL COL4: NULL

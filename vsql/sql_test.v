@@ -173,12 +173,13 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int) ! {
 	mut options := default_connection_options()
 
 	mut db := open_database(':memory:', options)!
+	// 09:05:03 UTC is 14:05:03 local time at +05:00.
 	db.now = fn () (time.Time, i16) {
 		return time.new(time.Time{
 			year:       2022
 			month:      7
 			day:        4
-			hour:       14
+			hour:       9
 			minute:     5
 			second:     3
 			nanosecond: 120056000

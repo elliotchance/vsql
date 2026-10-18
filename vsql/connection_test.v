@@ -165,6 +165,82 @@ fn test_rollback_after_split() ! {
 	assert (result.next() or { return error('no rows') }).get_int('COL1')! == 10
 }
 
+fn test_large_rows() ! {
+	file_name := 'test_large_rows.vsql'
+	if os.exists(file_name) {
+		os.rm(file_name) or { return err }
+	}
+
+	// Rows larger than half a page are moved to blob storage, and must be put
+	// back together when they are read.
+	mut db := open(file_name)!
+	db.query('CREATE TABLE t (id INT NOT NULL, s VARCHAR(20000), PRIMARY KEY (id))')!
+	db.query("INSERT INTO t (id, s) VALUES (1, '${'a'.repeat(5000)}')")!
+	db.query("INSERT INTO t (id, s) VALUES (2, '${'b'.repeat(100)}')")!
+
+	db.query('START TRANSACTION')!
+	db.query("UPDATE t SET s = '${'c'.repeat(12000)}' WHERE id = 1")!
+	db.query("UPDATE t SET s = '${'d'.repeat(9000)}' WHERE id = 1")!
+	db.query("UPDATE t SET s = '${'e'.repeat(3000)}' WHERE id = 2")!
+	db.query('COMMIT')!
+
+	db.query('START TRANSACTION')!
+	db.query("UPDATE t SET s = '${'f'.repeat(7000)}' WHERE id = 1")!
+	db.query('DELETE FROM t WHERE id = 2')!
+	db.query('ROLLBACK')!
+
+	db = open(file_name)!
+	mut result := db.query('SELECT id, CHAR_LENGTH(s), SUBSTRING(s FROM 1 FOR 1) FROM t')!
+	mut rows := []string{}
+	for row in result {
+		rows << '${row.get_int('ID')!} ${row.get_int('COL2')!} ${row.get_string('COL3')!}'
+	}
+	assert rows == ['1 9000 d', '2 3000 e']
+
+	// Deleting the rows also removes their blobs.
+	db.query('DELETE FROM t')!
+	mut f := os.open(file_name)!
+	defer {
+		f.close()
+	}
+	mut pager := new_file_pager(mut f, default_connection_options().page_size, 0)!
+	for i in 0 .. pager.total_pages() {
+		page := pager.fetch_page(i)!
+		if page.kind == kind_leaf {
+			for object in page.objects() {
+				assert object.key[0] !in [`B`, `F`, `R`]
+			}
+		}
+	}
+}
+
+fn test_split_into_three_pages() ! {
+	file_name := 'test_split_into_three_pages.vsql'
+	if os.exists(file_name) {
+		os.rm(file_name) or { return err }
+	}
+
+	// The UPDATE adds a second version of the middle row to a full page. Both
+	// versions must stay on the same page, so neither of the other rows fit
+	// with them and the page has to be split into three.
+	mut db := open(file_name)!
+	db.query('CREATE TABLE t (id INT NOT NULL, s VARCHAR(2000), PRIMARY KEY (id))')!
+	db.query("INSERT INTO t (id, s) VALUES (1, '${'a'.repeat(800)}')")!
+	db.query("INSERT INTO t (id, s) VALUES (2, '${'b'.repeat(1900)}')")!
+	db.query("INSERT INTO t (id, s) VALUES (3, '${'c'.repeat(800)}')")!
+	db.query('START TRANSACTION')!
+	db.query("UPDATE t SET s = '${'d'.repeat(1900)}' WHERE id = 2")!
+	db.query('COMMIT')!
+
+	db = open(file_name)!
+	mut result := db.query('SELECT id, CHAR_LENGTH(s), SUBSTRING(s FROM 1 FOR 1) FROM t')!
+	mut rows := []string{}
+	for row in result {
+		rows << '${row.get_int('ID')!} ${row.get_int('COL2')!} ${row.get_string('COL3')!}'
+	}
+	assert rows == ['1 800 a', '2 1900 d', '3 800 c']
+}
+
 fn test_random_updates() ! {
 	file_name := 'test_random_updates.vsql'
 	if os.exists(file_name) {

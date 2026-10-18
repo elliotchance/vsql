@@ -326,24 +326,47 @@ Using this metadata we can say that the length of *Value* will be: (*Length* -
 Blob Object
 -----------
 
-When an object is added to the B-tree that is too large to fit into a single
-page, it must be split into *blob* (B) and *fragment* (F) objects. For example,
-if the page size was 256 bytes, but we try to insert a object that is 529 bytes:
+When an object is added to the B-tree that is larger than half a page, it must
+be split into *blob* (B) and *fragment* (F) objects. Half a page, rather than a
+whole page, because two versions of the same key (such as the row before and
+after an ``UPDATE`` that hasn't been committed yet) must always fit into the same
+page, and that includes their blob and fragment objects.
 
-.. image:: img/file-format-blob-1.png
+All of the bytes of the original object (including its metadata, see
+`Object`_) are divided, in order, into blob objects that are each as large as
+possible without being larger than half a page, followed by a fragment object
+containing any left over data. The fragment is optional because the object
+might happen to fit perfectly in a whole number of blob objects. The original
+object is then replaced with a reference to them, which has the same key.
 
-It is split into 3 objects:
+If the original object has the key *K*, it's stored as:
 
-.. image:: img/file-format-blob-2.png
+.. list-table::
+  :header-rows: 1
 
-Where entire pages consist of one more blob objects followed by an optional
-fragement object containing any left over data. The fragment is optional because
-the object might happen to fit perfectly in a whole number of blob objects.
+  * - Key
+    - *Ref*
+    - Value
 
-Finally, the original object is replaced with a reference (blue indiciated
-replacements):
+  * - ``B``, *K*, ``0`` (the character) and then the part number as an i32,
+      starting at 0. There is one of these for each blob object.
+    - ``false``
+    - The next part of the bytes of the original object.
 
-.. image:: img/file-format-blob-3.png
+  * - ``F`` and then *K*, if there is a fragment.
+    - ``false``
+    - The remaining bytes of the original object.
+
+  * - *K*
+    - ``true``
+    - The number of blob objects (i32), followed by whether there is a fragment
+      object (bool). 5 bytes in total.
+
+The blob and fragment objects have the *TID* of the original object. Only the
+reference is expired when the object is deleted, and the blob and fragment
+objects are removed along with it. When the object is read, the reference is
+replaced with the original object, put back together from the blob and fragment
+objects.
 
 Fragment Object
 ---------------

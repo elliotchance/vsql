@@ -151,23 +151,92 @@ fn (mut p Btree) update_single(obj PageObject, tid u64) !int {
 	page_number := path[path.len - 1]
 	mut page := p.pager.fetch_page(page_number)!
 
+	// If there is a version created by this transaction, it's replaced (see
+	// Page.update). Its blob must be removed before the new version is added,
+	// because the blob objects of both versions would have the same keys and
+	// tid.
+	own_version := page.get(obj.key, obj.tid)
 	page.update(obj, obj, obj.tid)!
 	p.store_page(page_number, page)!
+	if own_version.is_blob_ref {
+		p.remove_blob(own_version)!
+	}
 
 	p.add(obj)!
 
+	path, _ = p.search_page(obj.key)!
 	p.fix_parent_pages(path)!
 
 	return page_number
+}
+
+// get returns the object with the key that was created by tid.
+fn (mut p Btree) get(key []u8, tid int) !PageObject {
+	path, _ := p.search_page(key)!
+	page := p.pager.fetch_page(path[path.len - 1])!
+	obj := page.get(key, tid)
+	if obj.key.len == 0 {
+		return error('object does not exist: ${key.bytestr()}')
+	}
+
+	return obj
+}
+
+// read_blob puts back together the object that was moved to blob storage
+// because it's larger than half a page (see add). ref is the blob reference,
+// so the returned object has its tid and xid.
+fn (mut p Btree) read_blob(ref PageObject) !PageObject {
+	blob_peices, has_fragment := ref.blob_info()
+	mut data := []u8{}
+	for part in 0 .. blob_peices {
+		data << (p.get(blob_object_key(ref.key, part), ref.tid)!).value
+	}
+
+	if has_fragment {
+		data << (p.get(fragment_object_key(ref.key), ref.tid)!).value
+	}
+
+	_, obj := parse_page_object(data)
+
+	return PageObject{obj.key, obj.value, false, ref.tid, ref.xid}
+}
+
+// remove_blob removes the blob and fragment objects of a blob reference. The
+// reference itself must be removed separately.
+//
+// Like COMMIT and ROLLBACK, the objects are removed from their pages without
+// removing pages that become empty. Removing a page moves the last page into
+// its place (see fill_empty_pages), which needs the last page to not be empty.
+fn (mut p Btree) remove_blob(ref PageObject) ! {
+	blob_peices, has_fragment := ref.blob_info()
+	mut keys := [][]u8{}
+	for part in 0 .. blob_peices {
+		keys << blob_object_key(ref.key, part)
+	}
+
+	if has_fragment {
+		keys << fragment_object_key(ref.key)
+	}
+
+	for key in keys {
+		path, _ := p.search_page(key)!
+		page_number := path[path.len - 1]
+		mut page := p.pager.fetch_page(page_number)!
+		if page.delete(key, ref.tid) {
+			p.store_page(page_number, page)!
+		}
+	}
 }
 
 // add returns the page number that the object was added to.
 fn (mut p Btree) add(object PageObject) !int {
 	mut obj := object
 
-	// If the object does not fit into a single page it needs to be moved to
-	// blob storage first.
-	maximum_size := p.max_allowed_in_page()
+	// If the object is larger than half a page it needs to be moved to blob
+	// storage first. Half, rather than a whole page, because two versions of the
+	// same key (see the caveats at the top of the file) must fit on one page,
+	// and that includes the blob objects.
+	maximum_size := p.max_allowed_in_page() / 2
 	obj_bytes := obj.bytes()
 	if obj_bytes.len > maximum_size {
 		// One important consideration is that the actual bytes of the page
@@ -277,13 +346,8 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 	// A simple (but unsuccessful) way to split a page is to put half of the
 	// objects into each page. This doesn't work because the new object might be
 	// larger than the remaining space on the left or right page. Instead we
-	// need to insert sort the object and divide the pages by size with a heavy
-	// bias towards loading the left page.
-	//
-	// We prefer the left page to be a full as possible because the keys are
-	// sequential, so in the case of lots of sequential inserts it can pack the
-	// data more tightly. However, if the inserts are not sequential we will get
-	// a lot of semi-full pages that hopefully become full over time.
+	// need to insert sort the object and divide the pages by size, see
+	// split_objects.
 	mut objects := page.objects()
 	mut inserted_at := -1
 	for pos, object in objects {
@@ -301,126 +365,159 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 		objects << obj
 	}
 
-	mut consumed := 0
-	mut objects_in_left_page := 0
-	mut max_allowed_in_page := p.max_allowed_in_page()
+	groups := p.split_objects(objects)
 
-	// Work out how many objects fit into the left page.
-	for object in objects {
-		object_size := object.length()
-		if consumed + object_size > max_allowed_in_page {
-			break
-		}
-
-		consumed += object_size
-		objects_in_left_page++
-
-		// It's possible that when we split a page that all of the objects fit
-		// into the left page. This would be bad as the right page would be left
-		// empty (pun, see what I did there) and the code below would fail. This
-		// isn't a bug, it happens when we're splitting non-leaf pages to make
-		// room for the new page pointer object. So at the time of the split the
-		// page contains many objects but they are not larger than a single
-		// page.
-		if objects_in_left_page == objects.len - 1 {
-			break
-		}
-	}
-
-	// Two versions of the same key (see the caveats at the top of the file)
-	// must stay on the same page. Otherwise, once the expired version is
-	// removed, the parent's key for the right page is a key that is still in
-	// the left page and searching for it finds the wrong page.
-	for objects_in_left_page > 1 && objects_in_left_page < objects.len
-		&& compare_bytes(objects[objects_in_left_page - 1].key, objects[objects_in_left_page].key) == 0 {
-		objects_in_left_page--
-	}
-	if objects_in_left_page == 1 && objects.len > 2
-		&& compare_bytes(objects[0].key, objects[1].key) == 0
-		&& objects[0].length() + objects[1].length() <= max_allowed_in_page {
-		objects_in_left_page = 2
-	}
-
-	// Load the left page.
-	mut page1 := new_page(kind, p.page_size)
-	for i in 0 .. objects_in_left_page {
-		page1.add(objects[i])!
-	}
-
-	// Whatever is remaining goes into the right page.
-	mut page2 := new_page(kind, p.page_size)
-	mut stored_in_right := 0
-	for i in objects_in_left_page .. objects.len {
-		page2.add(objects[i])!
-		stored_in_right++
-	}
-
+	// The first group stays in the page being split, and the others go into
+	// new pages.
 	left_page_number := path[path.len - 1]
-	p.store_page(left_page_number, page1)!
+	mut page_numbers := []int{}
+	for i, group in groups {
+		mut split := new_page(kind, p.page_size)
+		for object in group {
+			split.add(object)!
+		}
 
-	right_page_number := p.append_page(page2)!
+		if i == 0 {
+			p.store_page(left_page_number, split)!
+			page_numbers << left_page_number
+		} else {
+			page_numbers << p.append_page(split)!
+		}
+	}
 
 	// Important: The object is inserted in sorted order, so we cannot rely on
 	// the existing split values. We need to read the head object from each
 	// (potentially new) page.
-	head1 := page1.head()
-	head2 := page2.head()
-
+	//
 	// The tids are zero here because non-leaf pages do not have transaction
 	// visibility for their nodes.
-	mut buf1 := new_empty_bytes()
-	buf1.write_i32(left_page_number)
-	p1 := new_page_object(head1.key.clone(), 0, 0, buf1.bytes())
+	mut pointers := []PageObject{}
+	for i, group in groups {
+		mut buf := new_empty_bytes()
+		buf.write_i32(page_numbers[i])
+		pointers << new_page_object(group[0].key.clone(), 0, 0, buf.bytes())
+	}
 
-	mut buf2 := new_empty_bytes()
-	buf2.write_i32(right_page_number)
-	p2 := new_page_object(head2.key.clone(), 0, 0, buf2.bytes())
-
-	// Try to register the new page with the parent of the left page.
-	if path.len > 1 {
-		mut page3 := p.pager.fetch_page(path[path.len - 2])!
-
-		// Update the page head, if the object was inserted at the start of the
-		// left page. It doesn't matter if it was inserted at the start of the
-		// right page because that's always added to the parent non-leaf page.
-		//
-		// TODO(elliotchance): I'm not certain that this will work if the head
-		//  object changes to something very large. This code should panic on
-		//  add(). We need a test suite for very long keys.
-		//
-		// The parent's key for the left page may be older than the head of
-		// the page, because removing objects from a page (see isolation_end)
-		// does not update the parent. So we find it by the page number instead.
-		if inserted_at == 0 {
-			for parent_object in page3.objects() {
-				mut buf := new_bytes(parent_object.value)
-				if buf.read_i32() == left_page_number {
-					page3.delete(parent_object.key, 0)
-					break
-				}
-			}
-			page3.add(p1)!
+	// If this was the root, we're going to need to create a new root.
+	if path.len == 1 {
+		mut root := new_page(kind_not_leaf, p.page_size)
+		for pointer in pointers {
+			root.add(pointer)!
 		}
 
-		// The non-leaf pages only contain page pointers, so the objects are
-		// usually quite small. However, they are not a fixed size because the
-		// keys can be variable length.
-		if page3.used > p.page_size - p2.length() {
-			mut new_path := path[..path.len - 1].clone()
-			p.split_page(new_path, page3, p2, kind_not_leaf)!
-		} else {
-			page3.add(p2)!
-
-			p.store_page(path[path.len - 2], page3)!
-		}
-	} else {
-		// Otherwise, we're going to need to create a new root.
-		mut page3 := new_page(kind_not_leaf, p.page_size)
-		page3.add(p1)!
-		page3.add(p2)!
-
-		new_root_page := p.append_page(page3)!
+		new_root_page := p.append_page(root)!
 		p.pager.set_root_page(new_root_page)!
+
+		return
+	}
+
+	// Update the page head, if the object was inserted at the start of the
+	// left page. It doesn't matter if it was inserted at the start of another
+	// page because those are always added to the parent non-leaf page.
+	//
+	// TODO(elliotchance): I'm not certain that this will work if the head
+	//  object changes to something very large. This code should panic on
+	//  add(). We need a test suite for very long keys.
+	//
+	// The parent's key for the left page may be older than the head of the
+	// page, because removing objects from a page (see isolation_end) does not
+	// update the parent. So we find it by the page number instead.
+	if inserted_at == 0 {
+		mut parent := p.pager.fetch_page(path[path.len - 2])!
+		for parent_object in parent.objects() {
+			mut buf := new_bytes(parent_object.value)
+			if buf.read_i32() == left_page_number {
+				parent.delete(parent_object.key, 0)
+				break
+			}
+		}
+		parent.add(pointers[0])!
+		p.store_page(path[path.len - 2], parent)!
+	}
+
+	// Register each new page with the parent of the page before it. Adding a
+	// page can split the parent, so the path to the page before it has to be
+	// found again each time.
+	mut previous_path := path.clone()
+	for i in 1 .. pointers.len {
+		if i > 1 {
+			search_path, _ := p.search_page(pointers[i - 1].key)!
+			index := search_path.index(page_numbers[i - 1])
+			if index < 1 {
+				return error('cannot find page ${page_numbers[i - 1]} after split')
+			}
+			previous_path = search_path[..index + 1].clone()
+		}
+
+		p.add_page_pointer(previous_path, pointers[i])!
+	}
+}
+
+// split_objects divides the objects (which are in order) into as few pages as
+// possible, with a heavy bias towards filling the earlier pages.
+//
+// We prefer the left page to be a full as possible because the keys are
+// sequential, so in the case of lots of sequential inserts it can pack the
+// data more tightly. However, if the inserts are not sequential we will get a
+// lot of semi-full pages that hopefully become full over time.
+//
+// Usually this is two pages, but it can be more. For example, objects of 1500,
+// 3000 and 1500 bytes need three pages of 4096 bytes.
+fn (p Btree) split_objects(objects []PageObject) [][]PageObject {
+	max_allowed_in_page := p.max_allowed_in_page()
+	mut groups := [][]PageObject{}
+	mut group := []PageObject{}
+	mut consumed := 0
+	for object in objects {
+		object_size := object.length()
+		if group.len > 0 && consumed + object_size > max_allowed_in_page {
+			// Two versions of the same key (see the caveats at the top of the
+			// file) must stay on the same page. Otherwise, once the expired
+			// version is removed, the parent's key for the next page is a key
+			// that is still in the previous page and searching for it finds the
+			// wrong page.
+			last := group.last()
+			if group.len > 1 && compare_bytes(last.key, object.key) == 0
+				&& last.length() + object_size <= max_allowed_in_page {
+				groups << group[..group.len - 1]
+				group = [last]
+				consumed = last.length()
+			} else {
+				groups << group
+				group = []PageObject{}
+				consumed = 0
+			}
+		}
+
+		group << object
+		consumed += object_size
+	}
+	groups << group
+
+	// It's possible that when we split a page that all of the objects fit into
+	// one page. This isn't a bug, it happens when we're splitting non-leaf
+	// pages to make room for the new page pointer object. There must always be
+	// at least two pages, so the last object goes into its own page.
+	if groups.len == 1 && objects.len > 1 {
+		groups = [objects[..objects.len - 1], [objects.last()]]
+	}
+
+	return groups
+}
+
+// add_page_pointer adds the pointer to a new page to the parent of the last
+// page in path (the page before the new one), splitting the parent if needed.
+// The page before must not be the root.
+fn (mut p Btree) add_page_pointer(path []int, pointer PageObject) ! {
+	// The non-leaf pages only contain page pointers, so the objects are
+	// usually quite small. However, they are not a fixed size because the
+	// keys can be variable length.
+	mut parent := p.pager.fetch_page(path[path.len - 2])!
+	if parent.used > p.page_size - pointer.length() {
+		p.split_page(path[..path.len - 1].clone(), parent, pointer, kind_not_leaf)!
+	} else {
+		parent.add(pointer)!
+		p.store_page(path[path.len - 2], parent)!
 	}
 }
 

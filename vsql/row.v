@@ -3,14 +3,12 @@
 
 module vsql
 
-import time
-
 // Represents a single row which may contain one or more columns.
 struct Row {
 mut:
 	// id is the unique row identifier within the table. If the table has a
-	// PRIMARY KEY this will be a binary representation of that. Otherwise, a
-	// random but time sequential value will be generated for it.
+	// PRIMARY KEY this will be a binary representation of that. Otherwise, it's
+	// a sequential value allocated by Storage.next_row_id.
 	id []u8
 	// tid is the transaction ID that created this row.
 	tid  int
@@ -365,14 +363,7 @@ fn (mut r Row) object_key(t Table) ![]u8 {
 		r.id = pk.bytes()
 	} else {
 		if r.id.len == 0 {
-			// TODO(elliotchance): This is a terrible hack to make sure we have
-			//  a globally unique but also ordered id for the row.
-			unique_id := u64(time.now().unix_milli())
-			time.sleep(time.millisecond)
-
-			mut buf := new_empty_bytes()
-			buf.write_u64(unique_id)
-			r.id = buf.bytes()
+			return error('row in ${t.name} has no row ID')
 		}
 	}
 

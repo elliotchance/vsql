@@ -16,7 +16,7 @@ const header_magic = 'vsql\r\n\x1a\n'.bytes()
 // current_version is the version of the file format. It's incremented whenever
 // the format changes in a way that older versions cannot read. Sorry if you had
 // a database in a previous version, you'll need to recreate it.
-const current_version = u16(13)
+const current_version = u16(14)
 
 // The Header contains important metadata about the database and always occupies
 // the first header_size bytes of the database. It's encoded by write_header and
@@ -49,6 +49,10 @@ mut:
 	// TODO(elliotchance): Is there a way to avoid incrementing this for read
 	//  only transactions?
 	transaction_id int
+	// The row_id is the last row ID that was issued for a row in a table without
+	// a PRIMARY KEY. Row IDs are never reused, even if the transaction that
+	// used them is rolled back.
+	row_id u64
 	// active_transaction_ids maintains the transactions that are currently
 	// in-flight.
 	active_transaction_ids TransactionIDs
@@ -64,6 +68,7 @@ fn new_header(page_size int) Header {
 		// 2 is a reserved number for freezing rows, but the transaction_is is
 		// always incremented before returning the next value.
 		transaction_id: 2
+		row_id:         0
 	}
 }
 
@@ -83,6 +88,7 @@ fn (h Header) bytes() []u8 {
 	b.write_i32(h.page_size)
 	b.write_i32(h.root_page)
 	b.write_i32(h.transaction_id)
+	b.write_u64(h.row_id)
 	for tid in h.active_transaction_ids.tids {
 		b.write_i32(tid)
 	}
@@ -112,6 +118,7 @@ fn new_header_from_bytes(data []u8) !Header {
 		page_size:      b.read_i32()
 		root_page:      b.read_i32()
 		transaction_id: b.read_i32()
+		row_id:         b.read_u64()
 	}
 	for i in 0 .. header.active_transaction_ids.tids.len {
 		header.active_transaction_ids.tids[i] = b.read_i32()

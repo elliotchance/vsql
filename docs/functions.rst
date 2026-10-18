@@ -148,15 +148,26 @@ Mathematical Functions
 All mathematical and string functions return ``NULL`` if any argument is
 ``NULL``.
 
+Mathematical functions accept any numeric argument. If there is no version of
+the function for the argument's type, an exact numeric argument (such as
+``INTEGER``) is converted to ``NUMERIC`` when possible, otherwise to
+``DOUBLE PRECISION``. For example, ``LN(10)`` is the same as ``LN(10e0)``.
+
 ABS
 ^^^
 
 .. code-block:: sql
 
+   ABS(SMALLINT) SMALLINT
+   ABS(INTEGER) INTEGER
+   ABS(BIGINT) BIGINT
+   ABS(REAL) REAL
    ABS(DOUBLE PRECISION) DOUBLE PRECISION
+   ABS(DECIMAL) DECIMAL
    ABS(NUMERIC) NUMERIC
 
-Absolute value. When using ``NUMERIC`` the same scale and precision is returned.
+Absolute value. The result is the same type as the argument. When using
+``DECIMAL`` or ``NUMERIC`` the same scale and precision is returned.
 
 **Examples**
 

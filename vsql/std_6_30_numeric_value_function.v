@@ -48,6 +48,43 @@ fn func_abs_numeric(args []Value) !Value {
 	return args[0]
 }
 
+// ABS(DECIMAL) DECIMAL
+fn func_abs_decimal(args []Value) !Value {
+	n := args[0].numeric_value()
+	if n.is_negative() {
+		return new_decimal_value_from_numeric(n.neg())
+	}
+
+	return args[0]
+}
+
+// ABS(SMALLINT) SMALLINT
+// ABS(INTEGER) INTEGER
+// ABS(BIGINT) BIGINT
+fn func_abs_integer(args []Value) !Value {
+	x := args[0].int_value()
+	if x >= 0 {
+		return args[0]
+	}
+
+	// The smallest value of each type has no positive equivalent.
+	if x == min_i64 {
+		return sqlstate_22003()
+	}
+	check_integer_range(-x, args[0].typ.typ)!
+
+	return match args[0].typ.typ {
+		.is_smallint { new_smallint_value(i16(-x)) }
+		.is_integer { new_integer_value(int(-x)) }
+		else { new_bigint_value(-x) }
+	}
+}
+
+// ABS(REAL) REAL
+fn func_abs_real(args []Value) !Value {
+	return new_real_value(f32(math.abs(args[0].f64_value())))
+}
+
 // SIN(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_sin(args []Value) !Value {
 	return new_double_precision_value(math.sin(args[0].f64_value()))

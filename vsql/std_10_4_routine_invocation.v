@@ -52,11 +52,18 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	return CompileResult{
 		run:          fn [found_func, func_name, arg_types, compiled_args] (mut conn Connection, data Row, params map[string]Value) !Value {
 			mut args := []Value{}
-			mut i := 0
-			for typ in arg_types {
+			for i, typ in arg_types {
+				// The argument may need to be implicitly cast to the parameter type,
+				// such as a SMALLINT to a DOUBLE PRECISION. The size is stripped so
+				// the value isn't truncated (see most_specific_type).
+				mut target := typ
+				param_typ := found_func.arg_types[i].typ
+				if typ.typ != param_typ && typ.typ.is_number() {
+					target = Type{param_typ, 0, 0, false}
+				}
+
 				arg := compiled_args[i].run(mut conn, data, params)!
-				args << cast(mut conn, 'argument ${i + 1} in ${func_name}', arg, typ)!
-				i++
+				args << cast(mut conn, 'argument ${i + 1} in ${func_name}', arg, target)!
 			}
 
 			// All of the builtin scalar functions return NULL if any argument is

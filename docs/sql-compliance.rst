@@ -1516,13 +1516,13 @@ Optional Features
    * - ⭕ **T621**
      - **Enhanced numeric functions**
 
-   * - ⭕ **T622**
+   * - ✅ **T622**
      - **Trigonometric functions**
 
    * - ❌ **T623**
      - **General logarithm functions**
 
-   * - ⭕ **T624**
+   * - ✅ **T624**
      - **Common logarithm functions**
 
    * - ❌ **T625**

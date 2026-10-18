@@ -22,10 +22,19 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	integer := Type{SQLType.is_integer, 0, 0, false}
 	varchar := Type{SQLType.is_varchar, 0, 0, false}
 	numeric := Type{SQLType.is_numeric, 0, 0, false}
+	smallint := Type{SQLType.is_smallint, 0, 0, false}
+	bigint := Type{SQLType.is_bigint, 0, 0, false}
+	real := Type{SQLType.is_real, 0, 0, false}
+	decimal := Type{SQLType.is_decimal, 0, 0, false}
 
 	// Scalar functions.
 	conn.register_func(Func{'ABS', [double_precision], false, func_abs, double_precision, false})!
 	conn.register_func(Func{'ABS', [numeric], false, func_abs_numeric, numeric, false})!
+	conn.register_func(Func{'ABS', [decimal], false, func_abs_decimal, decimal, false})!
+	conn.register_func(Func{'ABS', [smallint], false, func_abs_integer, smallint, false})!
+	conn.register_func(Func{'ABS', [integer], false, func_abs_integer, integer, false})!
+	conn.register_func(Func{'ABS', [bigint], false, func_abs_integer, bigint, false})!
+	conn.register_func(Func{'ABS', [real], false, func_abs_real, real, false})!
 	conn.register_func(Func{'ACOS', [double_precision], false, func_acos, double_precision, false})!
 	conn.register_func(Func{'ASIN', [double_precision], false, func_asin, double_precision, false})!
 	conn.register_func(Func{'ATAN', [double_precision], false, func_atan, double_precision, false})!

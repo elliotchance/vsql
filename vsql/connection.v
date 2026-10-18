@@ -308,12 +308,20 @@ pub fn (mut conn Connection) catalog() &CatalogConnection {
 }
 
 fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
+	// An exact match on the argument types always wins. Otherwise, numeric
+	// arguments may be implicitly cast to a wider numeric parameter type. The
+	// standard defines the numeric functions for any <numeric value expression>
+	// (6.30), so this lets ABS(-3) or LN(10) use the NUMERIC or DOUBLE PRECISION
+	// implementation. If there are several candidates the cheapest one wins, so
+	// an exact numeric prefers NUMERIC over DOUBLE PRECISION.
+	mut best := ?Func(none)
+	mut best_cost := -1
 	for f in conn.funcs {
 		if func_name != f.name || arg_types.len != f.arg_types.len {
 			continue
 		}
 
-		mut found := true
+		mut cost := 0
 		for i, t in arg_types {
 			mut real_arg_type := t
 
@@ -325,18 +333,67 @@ fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
 
 			// Only compare the SQLType so that the precision/scale/null isn't
 			// part of the comparison.
-			if real_arg_type.typ != f.arg_types[i].typ {
-				found = false
+			c := implicit_numeric_cast_cost(real_arg_type.typ, f.arg_types[i].typ) or {
+				cost = -1
 				break
 			}
+
+			// Aggregate functions are not (yet) implicitly cast.
+			if c > 0 && f.is_agg {
+				cost = -1
+				break
+			}
+
+			cost += c
 		}
 
-		if found {
+		if cost == 0 {
 			return f
+		}
+
+		if cost > 0 && (best_cost < 0 || cost < best_cost) {
+			best = f
+			best_cost = cost
 		}
 	}
 
+	if f := best {
+		return f
+	}
+
 	return sqlstate_42883('function does not exist: ${func_name}(${arg_types.map(it.str()).join(', ')})')
+}
+
+// implicit_numeric_cast_cost returns 0 if the types are the same, or a
+// positive cost if from can be implicitly cast to the numeric type to when
+// choosing a function. Casting an exact numeric to an approximate numeric costs
+// more than widening within the same category.
+fn implicit_numeric_cast_cost(from SQLType, to SQLType) ?int {
+	if from == to {
+		return 0
+	}
+
+	if !from.is_number() || !to.is_number() {
+		return none
+	}
+
+	from_category, from_supertype := from.supertype()
+	to_category, to_supertype := to.supertype()
+
+	if from_category == to_category {
+		if to in [.is_numeric, .is_decimal] || to_supertype > from_supertype {
+			return 1
+		}
+
+		return none
+	}
+
+	// Exact numeric to approximate numeric.
+	if to_category > from_category {
+		return 2
+	}
+
+	return none
 }
 
 // register_function will register a function that can be used in SQL

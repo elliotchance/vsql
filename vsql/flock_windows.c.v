@@ -27,3 +27,47 @@ fn flock_unlock_shared(file os.File, path string) {
 	mut f := filelock.new('${path}.lock')
 	f.release()
 }
+
+// SessionLock is a shared lock held on the session file for as long as a
+// connection is open. The operating system releases it when the process dies,
+// so a connection that can get it exclusively knows that it is the only
+// connection to the database.
+struct SessionLock {
+	path string
+mut:
+	lock filelock.FileLock
+}
+
+fn session_lock(path string) !SessionLock {
+	// Make sure the file exists without truncating it.
+	mut file := os.open_append(path) or { return error('unable to open ${path}: ${err}') }
+	file.close()
+
+	mut l := SessionLock{
+		path: path
+		lock: filelock.new_file(path, mode: .shared)
+	}
+	l.lock.acquire() or { return error('cannot acquire lock on ${path}: ${err}') }
+
+	return l
+}
+
+// try_exclusive returns true if the lock was converted to an exclusive lock.
+// Use shared() to convert it back.
+fn (mut l SessionLock) try_exclusive() !bool {
+	l.lock.release()
+	l.lock = filelock.new_file(l.path, mode: .exclusive)
+	if l.lock.try_acquire() {
+		return true
+	}
+
+	l.shared()!
+
+	return false
+}
+
+fn (mut l SessionLock) shared() ! {
+	l.lock.release()
+	l.lock = filelock.new_file(l.path, mode: .shared)
+	l.lock.acquire() or { return error('cannot acquire session lock: ${err}') }
+}

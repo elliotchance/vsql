@@ -24,6 +24,23 @@ other. However, the cost of an individual ``COMMIT`` or ``ROLLBACK`` is
 proportional to the amount of pages modified and not the number of changes
 directly.
 
+Crashed Transactions
+--------------------
+
+If a process dies in the middle of a transaction (it crashes or is killed) its
+transaction stays in the active list of the file header, and the rows it changed
+would be locked forever.
+
+Every connection to a database file holds a shared lock on a second file, with
+the same name followed by ``.session``, for as long as the connection is open.
+The operating system releases this lock when a process dies. When a connection
+writes to the database and it is the only connection with the session lock, any
+other active transaction must belong to a connection that no longer exists, so
+those transactions are rolled back.
+
+This means that a crashed transaction will not be rolled back while any other
+connection to the database is open.
+
 Wraparound Transaction IDs
 --------------------------
 

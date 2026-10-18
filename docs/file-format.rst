@@ -11,6 +11,11 @@ Overview
 vsql stores the entire database (also known as the catalog) in a single file.
 The default extension is ``.vsql``, although that is not required.
 
+A second file, with the same name followed by ``.session``, is created next to
+the database file. It is always empty and is only used for locking (see
+:doc:`mvcc`). It can be deleted whenever there are no open connections to the
+database.
+
 The file must include a *Header*, followed by zero or more pages. That is, when
 the database file is initially created it will only have a *Header* and zero
 pages.

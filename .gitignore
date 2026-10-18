@@ -2,6 +2,7 @@
 vsql-cli
 vsql-server
 *.vsql
+*.vsql.session
 .vscode
 .vlang_tmp_build/
 scripts/generate-v-client-library-docs

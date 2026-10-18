@@ -162,3 +162,12 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- msg: UPDATE 1
 -- A: 1 C: y
+
+CREATE TABLE foo ("name" VARCHAR(10), "Count" INT);
+INSERT INTO foo ("name", "Count") VALUES ('a', 1);
+UPDATE foo SET "name" = 'b', "Count" = "Count" + 1;
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- name: b Count: 2

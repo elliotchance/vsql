@@ -1,6 +1,8 @@
 **/.DS_Store
-vsql-cli
-vsql-server
+# Binaries built in the root. These are anchored so that the cmd/vsql-cli
+# source directory isn't ignored.
+/vsql-cli
+/vsql-server
 *.vsql
 *.vsql.session
 *.vsql.wal

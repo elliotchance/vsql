@@ -7,3 +7,4 @@ Client Interfaces
    cli.rst
    postgresql-clients.rst
    v-client-library.rst
+   v-orm.rst

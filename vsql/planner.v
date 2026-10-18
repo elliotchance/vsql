@@ -109,8 +109,9 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			} else if table_name_id in catalog.storage.tables {
 				table = catalog.storage.tables[table_name_id]
 
-				// This is a special case to handle "PRIMARY KEY = INTEGER".
-				if table.primary_key.len > 0 {
+				// This is a special case to handle "PRIMARY KEY = INTEGER". It only
+				// applies to a PRIMARY KEY with one column.
+				if table.primary_key.len == 1 {
 					if where := body.table_expression.where_clause {
 						where_str := where.pstr(params)
 						mut re := regex.regex_opt('^(\\w+) = (\\d+)$') or {

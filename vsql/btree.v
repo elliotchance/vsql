@@ -26,6 +26,11 @@ struct Btree {
 	page_size int
 mut:
 	pager Pager
+	// written_pages contains every page number that has been stored or appended.
+	// A split can move objects to a new page, so Storage uses this (rather
+	// than the page numbers returned) to find all the pages a transaction
+	// changed.
+	written_pages map[int]bool
 }
 
 fn new_btree(pager Pager, page_size int) &Btree {
@@ -33,6 +38,18 @@ fn new_btree(pager Pager, page_size int) &Btree {
 		pager:     pager
 		page_size: page_size
 	}
+}
+
+fn (mut p Btree) store_page(page_number int, page Page) ! {
+	p.pager.store_page(page_number, page)!
+	p.written_pages[page_number] = true
+}
+
+fn (mut p Btree) append_page(page Page) !int {
+	page_number := p.pager.append_page(page)!
+	p.written_pages[page_number] = true
+
+	return page_number
 }
 
 // search_page returns the traversal path to the page that either contains the
@@ -135,7 +152,7 @@ fn (mut p Btree) update_single(obj PageObject, tid int) !int {
 	mut page := p.pager.fetch_page(page_number)!
 
 	page.update(obj, obj, obj.tid)!
-	p.pager.store_page(page_number, page)!
+	p.store_page(page_number, page)!
 
 	p.add(obj)!
 
@@ -194,7 +211,7 @@ fn (mut p Btree) add(object PageObject) !int {
 		// Just because there was no pages previously, doesn't mean that the
 		// object will get put into the 0th page. We need to be careful to set
 		// the root page to whatever the destination is now.
-		page_number := p.pager.append_page(page)!
+		page_number := p.append_page(page)!
 		p.pager.set_root_page(page_number)!
 
 		return page_number
@@ -212,7 +229,7 @@ fn (mut p Btree) add(object PageObject) !int {
 	// Does it fit into the desired page?
 	if page.used + obj.length() < p.page_size {
 		page.add(obj)!
-		p.pager.store_page(left_page_number, page)!
+		p.store_page(left_page_number, page)!
 	} else {
 		p.split_page(path, page, obj, kind_leaf)!
 	}
@@ -246,7 +263,7 @@ fn (mut p Btree) fix_parent_pages(path []int) ! {
 			t.add(new_object)!
 		}
 
-		p.pager.store_page(path[path_index], t)!
+		p.store_page(path[path_index], t)!
 	}
 }
 
@@ -288,8 +305,7 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 	mut objects_in_left_page := 0
 	mut max_allowed_in_page := p.max_allowed_in_page()
 
-	// Load the left page.
-	mut page1 := new_page(kind, p.page_size)
+	// Work out how many objects fit into the left page.
 	for object in objects {
 		object_size := object.length()
 		if consumed + object_size > max_allowed_in_page {
@@ -298,7 +314,6 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 
 		consumed += object_size
 		objects_in_left_page++
-		page1.add(object)!
 
 		// It's possible that when we split a page that all of the objects fit
 		// into the left page. This would be bad as the right page would be left
@@ -312,6 +327,26 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 		}
 	}
 
+	// Two versions of the same key (see the caveats at the top of the file)
+	// must stay on the same page. Otherwise, once the expired version is
+	// removed, the parent's key for the right page is a key that is still in
+	// the left page and searching for it finds the wrong page.
+	for objects_in_left_page > 1 && objects_in_left_page < objects.len
+		&& compare_bytes(objects[objects_in_left_page - 1].key, objects[objects_in_left_page].key) == 0 {
+		objects_in_left_page--
+	}
+	if objects_in_left_page == 1 && objects.len > 2
+		&& compare_bytes(objects[0].key, objects[1].key) == 0
+		&& objects[0].length() + objects[1].length() <= max_allowed_in_page {
+		objects_in_left_page = 2
+	}
+
+	// Load the left page.
+	mut page1 := new_page(kind, p.page_size)
+	for i in 0 .. objects_in_left_page {
+		page1.add(objects[i])!
+	}
+
 	// Whatever is remaining goes into the right page.
 	mut page2 := new_page(kind, p.page_size)
 	mut stored_in_right := 0
@@ -321,9 +356,9 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 	}
 
 	left_page_number := path[path.len - 1]
-	p.pager.store_page(left_page_number, page1)!
+	p.store_page(left_page_number, page1)!
 
-	right_page_number := p.pager.append_page(page2)!
+	right_page_number := p.append_page(page2)!
 
 	// Important: The object is inserted in sorted order, so we cannot rely on
 	// the existing split values. We need to read the head object from each
@@ -376,7 +411,7 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 		} else {
 			page3.add(p2)!
 
-			p.pager.store_page(path[path.len - 2], page3)!
+			p.store_page(path[path.len - 2], page3)!
 		}
 	} else {
 		// Otherwise, we're going to need to create a new root.
@@ -384,7 +419,7 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 		page3.add(p1)!
 		page3.add(p2)!
 
-		new_root_page := p.pager.append_page(page3)!
+		new_root_page := p.append_page(page3)!
 		p.pager.set_root_page(new_root_page)!
 	}
 }
@@ -428,7 +463,7 @@ fn (mut p Btree) remove(key []u8, tid int, handle_blob bool) ! {
 
 	// The object does not use blob storage, or it has already been cleared out.
 	page.delete(key, tid)
-	p.pager.store_page(page_number, page)!
+	p.store_page(page_number, page)!
 
 	if page.is_empty() {
 		// If the root page becomes empty we need to truncate the file.
@@ -459,7 +494,7 @@ fn (mut p Btree) remove(key []u8, tid int, handle_blob bool) ! {
 				t.add(obj)!
 			}
 
-			p.pager.store_page(path[path_index], t)!
+			p.store_page(path[path_index], t)!
 
 			if t.is_empty() {
 				// If the root page becomes empty we need to truncate the file.
@@ -509,11 +544,11 @@ fn (mut p Btree) fill_empty_pages(mut empty_pages []int) ! {
 				new_object := new_page_object(last_page_key.clone(), 0, 0, buf.bytes())
 
 				ancestor.add(new_object)!
-				p.pager.store_page(path_to_last_page[path_index], ancestor)!
+				p.store_page(path_to_last_page[path_index], ancestor)!
 			}
 		}
 
-		p.pager.store_page(empty_page, last_page)!
+		p.store_page(empty_page, last_page)!
 
 		// Be careful of moving the root page.
 		if p.pager.root_page() == p.pager.total_pages() - 1 {
@@ -541,7 +576,7 @@ fn (mut p Btree) expire(key []u8, tid int, xid int) !int {
 	mut page := p.pager.fetch_page(page_number)!
 
 	if page.expire(key, tid, xid) {
-		p.pager.store_page(page_number, page)!
+		p.store_page(page_number, page)!
 		return page_number
 	}
 

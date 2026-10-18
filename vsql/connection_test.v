@@ -141,3 +141,60 @@ fn test_split_with_stale_parent_key() ! {
 	mut result := db.query('SELECT COUNT(*) FROM t')!
 	assert (result.next() or { return error('no rows') }).get_int('COL1')! == 39
 }
+
+fn test_rollback_after_split() ! {
+	file_name := 'test_rollback_after_split.vsql'
+	if os.exists(file_name) {
+		os.rm(file_name) or { return err }
+	}
+
+	// The rolled back INSERTs split pages, so some of the rows end up on pages
+	// that were created by the split. ROLLBACK must remove those as well.
+	mut db := open(file_name)!
+	db.query('CREATE TABLE t (id INT NOT NULL, s VARCHAR(900), PRIMARY KEY (id))')!
+	for i in 0 .. 10 {
+		db.query("INSERT INTO t (id, s) VALUES (${i}, '${'y'.repeat(300)}')")!
+	}
+	db.query('START TRANSACTION')!
+	for i in 0 .. 30 {
+		db.query("INSERT INTO t (id, s) VALUES (${100 + i * 7 % 30}, '${'z'.repeat(800)}')")!
+	}
+	db.query('ROLLBACK')!
+
+	mut result := db.query('SELECT COUNT(*) FROM t')!
+	assert (result.next() or { return error('no rows') }).get_int('COL1')! == 10
+}
+
+fn test_random_updates() ! {
+	file_name := 'test_random_updates.vsql'
+	if os.exists(file_name) {
+		os.rm(file_name) or { return err }
+	}
+
+	// UPDATEs that split pages must not lose a row or its value. This is a
+	// simple LCG so the sequence of statements is always the same.
+	mut db := open(file_name)!
+	db.query('CREATE TABLE t (id INT NOT NULL, v INT, s VARCHAR(400), PRIMARY KEY (id))')!
+	mut expected := map[int]int{}
+	mut seed := u32(1)
+	for _ in 0 .. 1500 {
+		seed = seed * 1103515245 + 12345
+		id := int(seed >> 16) % 81
+		seed = seed * 1103515245 + 12345
+		len := 10 + int(seed >> 16) % 290
+		v := int(seed >> 8) % 1000
+		if id in expected {
+			mut result := db.query("UPDATE t SET v = ${v}, s = '${'q'.repeat(len)}' WHERE id = ${id}")!
+			assert (result.next() or { return error('no rows') }).get_string('msg')! == 'UPDATE 1'
+		} else {
+			db.query("INSERT INTO t (id, v, s) VALUES (${id}, ${v}, '${'p'.repeat(len)}')")!
+		}
+		expected[id] = v
+	}
+
+	mut actual := map[int]int{}
+	for row in db.query('SELECT id, v FROM t')! {
+		actual[row.get_int('ID')!] = row.get_int('V')!
+	}
+	assert actual == expected
+}

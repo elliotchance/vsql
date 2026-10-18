@@ -27,8 +27,8 @@ The PRIMARY KEY both prevents the same value from being inserted and dictates
 the order that data will naturally be retreived in (even if the PRIMARY KEY is
 not used).
 
-A PRIMARY KEY does not allow NULLs, so all columns used in the PRIMARY KEY must
-also be declared as ``NOT NULL``.
+A PRIMARY KEY does not allow NULLs, so all columns used in the PRIMARY KEY are
+``NOT NULL``, even if they are not declared that way.
 
 Examples
 --------

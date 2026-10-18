@@ -13,20 +13,94 @@ SELECT * FROM pk1;
 -- ID: 3
 
 EXPLAIN SELECT * FROM pk1 WHERE id = 2;
--- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.PK1 (ID INTEGER) BETWEEN 2 AND 2
--- EXPLAIN: EXPR (":memory:".PUBLIC.PK1.ID INTEGER)
+-- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.PK1 (ID INTEGER NOT NULL) BETWEEN 2 AND 2
+-- EXPLAIN: EXPR (":memory:".PUBLIC.PK1.ID INTEGER NOT NULL)
 
 SELECT * FROM pk1 WHERE id = 2;
 -- ID: 2
 
 EXPLAIN UPDATE pk1 SET id = 5 WHERE id = 2;
--- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.PK1 (ID INTEGER) BETWEEN 2 AND 2
+-- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.PK1 (ID INTEGER NOT NULL) BETWEEN 2 AND 2
 
 UPDATE pk1 SET id = 5 WHERE id = 2;
 SELECT * FROM pk1 WHERE id = 2;
 SELECT * FROM pk1 WHERE id = 5;
 -- msg: UPDATE 1
 -- ID: 5
+
+INSERT INTO pk1 (id) VALUES (2);
+-- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.PK1
+
+INSERT INTO pk1 (id) VALUES (NULL);
+-- error 23502: violates non-null constraint: column ID
+
+CREATE TABLE pk2 (id INT, x INT, PRIMARY KEY (id));
+INSERT INTO pk2 (x) VALUES (1);
+-- msg: CREATE TABLE 1
+-- error 23502: violates non-null constraint: column ":memory:".PUBLIC.PK2.ID
+
+UPDATE pk1 SET id = 3 WHERE id = 2;
+SELECT * FROM pk1;
+-- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.PK1
+-- ID: 1
+-- ID: 2
+-- ID: 3
+
+UPDATE pk1 SET id = NULL WHERE id = 2;
+-- error 23502: violates non-null constraint: column ID
+
+CREATE TABLE pk2 (id INT, x INT, PRIMARY KEY (id));
+INSERT INTO pk2 (id, x) VALUES (1, 10);
+UPDATE pk2 SET x = 20 WHERE id = 1;
+SELECT * FROM pk2;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- ID: 1 X: 20
+
+DELETE FROM pk1 WHERE id = 2;
+INSERT INTO pk1 (id) VALUES (2);
+SELECT * FROM pk1;
+-- msg: DELETE 1
+-- msg: INSERT 1
+-- ID: 1
+-- ID: 2
+-- ID: 3
+
+START TRANSACTION;
+DELETE FROM pk1 WHERE id = 2;
+INSERT INTO pk1 (id) VALUES (2);
+INSERT INTO pk1 (id) VALUES (2);
+-- msg: START TRANSACTION
+-- msg: DELETE 1
+-- msg: INSERT 1
+-- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.PK1
+
+/* connection 1 */
+CREATE TABLE pk3 (id INT, PRIMARY KEY (id));
+INSERT INTO pk3 (id) VALUES (1);
+START TRANSACTION;
+INSERT INTO pk3 (id) VALUES (2);
+/* connection 2 */
+INSERT INTO pk3 (id) VALUES (2);
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: INSERT 1
+-- 2: error 40001: serialization failure: avoiding concurrent write on individual row
+
+/* connection 1 */
+CREATE TABLE pk3 (id INT, PRIMARY KEY (id));
+INSERT INTO pk3 (id) VALUES (1);
+START TRANSACTION;
+DELETE FROM pk3 WHERE id = 1;
+/* connection 2 */
+INSERT INTO pk3 (id) VALUES (1);
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: DELETE 1
+-- 2: error 40001: serialization failure: avoiding concurrent write on individual row
 
 CREATE TABLE pk2 (
     PRIMARY KEY (id),

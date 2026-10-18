@@ -110,6 +110,13 @@ fn (stmt TableDefinition) table(table_name Identifier, tid int) !Table {
 		}
 	}
 
+	// Columns in the PRIMARY KEY are implicitly NOT NULL (11.7).
+	for i, column in columns {
+		if column.name.sub_entity_name in primary_key {
+			columns[i] = Column{column.name, column.typ, true}
+		}
+	}
+
 	return Table{tid, table_name, columns, primary_key, false}
 }
 

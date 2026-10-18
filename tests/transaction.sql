@@ -33,6 +33,70 @@ ROLLBACK;
 ROLLBACK;
 -- error 2D000: invalid transaction termination
 
+CREATE TABLE t (x INT);
+INSERT INTO t (x) VALUES (1);
+START TRANSACTION;
+UPDATE t SET x = 2;
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: UPDATE 1
+-- msg: COMMIT
+-- X: 2
+
+CREATE TABLE t (id INT, x INT, PRIMARY KEY (id));
+INSERT INTO t (id, x) VALUES (1, 1);
+START TRANSACTION;
+UPDATE t SET x = 2;
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: UPDATE 1
+-- msg: COMMIT
+-- ID: 1 X: 2
+
+CREATE TABLE t (x INT);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+UPDATE t SET x = 2;
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- msg: COMMIT
+-- X: 2
+
+CREATE TABLE t (id INT, x INT, PRIMARY KEY (id));
+START TRANSACTION;
+INSERT INTO t (id, x) VALUES (1, 1);
+UPDATE t SET x = 2;
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- msg: COMMIT
+-- ID: 1 X: 2
+
+CREATE TABLE t (x INT);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+UPDATE t SET x = 2;
+ROLLBACK;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- msg: ROLLBACK
+
 /* connection 1 */
 START TRANSACTION;
 /* connection 2 */

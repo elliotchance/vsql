@@ -80,23 +80,23 @@ remaining space is reserved (see `Compatibility`_).
 
   * - 24
     - *Transaction ID*
-    - i32 (4 bytes)
+    - u64 (8 bytes)
     - The last transaction ID that was issued.
 
-  * - 28
+  * - 32
     - *Row ID*
     - u64 (8 bytes)
     - The last row ID that was issued. Rows in a table without a ``PRIMARY
       KEY`` are keyed by a row ID. Row IDs are never reused.
 
-  * - 36
+  * - 40
     - *Active Transactions*
-    - 256 x i32 (1024 bytes)
+    - 256 x u64 (2048 bytes)
     - The IDs of the transactions that are in progress. Unused slots are 0.
 
-  * - 1060
+  * - 2088
     - *Reserved*
-    - 3036 bytes
+    - 2008 bytes
     - Zero in this version of the file format. See `Compatibility`_.
 
 Compatibility
@@ -291,7 +291,7 @@ are ignored, so that new types of objects can be added (see
   * - ``V``
     - `Sequence Value Object`_
 
-Every object contains 15 bytes of metadata:
+Every object contains 23 bytes of metadata:
 
 .. list-table::
   :header-rows: 1
@@ -305,11 +305,11 @@ Every object contains 15 bytes of metadata:
     - Is the total length of the object (including the metadata).
 
   * - *TID*
-    - i32 (4 bytes)
+    - u64 (8 bytes)
     - Transaction ID that created this object. [2]_
 
   * - *XID*
-    - i32 (4 bytes)
+    - u64 (8 bytes)
     - Transaction ID that expired this object. [2]_
 
   * - *Ref*
@@ -321,7 +321,7 @@ Every object contains 15 bytes of metadata:
     - The number of bytes in the proceeding *Key*.
 
 Using this metadata we can say that the length of *Value* will be: (*Length* -
-15 - *Key Length*).
+23 - *Key Length*).
 
 Blob Object
 -----------

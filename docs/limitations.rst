@@ -15,6 +15,9 @@ These have not been tested, but are based on fundamental design choices:
   * - The maximum number of pages in a file
     - 2147483647 (~2.1 billion)
 
+  * - The maximum number of transactions over the life of a file
+    - 18446744073709551613 (~18 quintillion)
+
   * - The maximum file size (using the default page size)
     - 8 PB
 

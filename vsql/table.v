@@ -42,7 +42,7 @@ fn (c Columns) str() string {
 pub struct Table {
 mut:
 	// The tid is the transaction ID that created this table.
-	tid int
+	tid u64
 pub mut:
 	// The name of the table including the schema.
 	name Identifier
@@ -101,7 +101,7 @@ fn (t Table) bytes() []u8 {
 	return 'CREATE TABLE ${t.name.storage_sql()} (\n${elements.join(',\n')}\n)'.bytes()
 }
 
-fn new_table_from_bytes(data []u8, tid int, catalog_name string) !Table {
+fn new_table_from_bytes(data []u8, tid u64, catalog_name string) !Table {
 	stmt := parse_definition(data)!
 	if stmt is TableDefinition {
 		mut table := stmt.table(Identifier{

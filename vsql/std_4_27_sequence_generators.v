@@ -6,7 +6,7 @@ module vsql
 pub struct Sequence {
 mut:
 	// The tid is the transaction ID that created this table.
-	tid int
+	tid u64
 pub mut:
 	// name contains the other parts such as the schema.
 	name Identifier
@@ -145,7 +145,7 @@ fn (s Sequence) value_bytes() []u8 {
 	return b.bytes()
 }
 
-fn new_sequence_from_bytes(definition_data []u8, value_data []u8, tid int) !Sequence {
+fn new_sequence_from_bytes(definition_data []u8, value_data []u8, tid u64) !Sequence {
 	stmt := parse_definition(definition_data)!
 	if stmt is SequenceGeneratorDefinition {
 		mut sequence := stmt.sequence(Identifier{

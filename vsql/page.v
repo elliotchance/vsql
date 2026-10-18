@@ -13,7 +13,7 @@ const kind_not_leaf = 1 // page contains only links to other pages.
 
 // page_object_prefix_length is the precalculated length that will be the
 // combination of all fixed width meta for the page object.
-const page_object_prefix_length = 15
+const page_object_prefix_length = 23
 
 // TODO(elliotchance): This does not need to be public. It was required for a
 //  bug at the time with V not being able to pass this to the shuffle function.
@@ -35,13 +35,13 @@ mut:
 	//
 	// TODO(elliotchance): It makes more sense to construct a new PageObject
 	//  when changing the tid and xid.
-	tid int
+	tid u64
 	// The xid is the transaciton that deleted the object, or zero if it has
 	// never been deleted.
-	xid int
+	xid u64
 }
 
-fn new_page_object(key []u8, tid int, xid int, value []u8) PageObject {
+fn new_page_object(key []u8, tid u64, xid u64, value []u8) PageObject {
 	return PageObject{key, value, false, tid, xid}
 }
 
@@ -55,7 +55,7 @@ fn blob_object_key(key []u8, part int) []u8 {
 	return buf.bytes()
 }
 
-fn new_blob_object(key []u8, tid int, xid int, part int, value []u8) PageObject {
+fn new_blob_object(key []u8, tid u64, xid u64, part int, value []u8) PageObject {
 	return PageObject{blob_object_key(key, part), value, false, tid, xid}
 }
 
@@ -67,11 +67,11 @@ fn fragment_object_key(key []u8) []u8 {
 	return buf.bytes()
 }
 
-fn new_fragment_object(key []u8, tid int, xid int, value []u8) PageObject {
+fn new_fragment_object(key []u8, tid u64, xid u64, value []u8) PageObject {
 	return PageObject{fragment_object_key(key), value, false, tid, xid}
 }
 
-fn new_reference_object(key []u8, tid int, xid int, blob_peices int, has_fragment bool) PageObject {
+fn new_reference_object(key []u8, tid u64, xid u64, blob_peices int, has_fragment bool) PageObject {
 	mut buf := new_empty_bytes()
 	buf.write_i32(blob_peices)
 	buf.write_bool(has_fragment)
@@ -95,8 +95,8 @@ fn (o PageObject) blob_info() (int, bool) {
 fn (o PageObject) bytes() []u8 {
 	mut buf := new_empty_bytes()
 	buf.write_i32(o.length())
-	buf.write_i32(o.tid)
-	buf.write_i32(o.xid)
+	buf.write_u64(o.tid)
+	buf.write_u64(o.xid)
 	buf.write_i16(i16(o.key.len))
 	buf.write_u8s(o.key)
 	buf.write_bool(o.is_blob_ref)
@@ -108,8 +108,8 @@ fn (o PageObject) bytes() []u8 {
 fn parse_page_object(data []u8) (int, PageObject) {
 	mut buf := new_bytes(data)
 	total_len := buf.read_i32()
-	tid := buf.read_i32()
-	xid := buf.read_i32()
+	tid := buf.read_u64()
+	xid := buf.read_u64()
 	key_len := buf.read_i16()
 	key := buf.read_u8s(key_len)
 	is_blob_ref := buf.read_bool()
@@ -148,7 +148,7 @@ fn (p Page) page_size() int {
 
 // TODO(elliotchance): This really isn't the most efficient way to do this. Make
 //  me faster. Especially since the calls down will recount versions again, etc.
-fn (mut p Page) update(old PageObject, new PageObject, tid int) ! {
+fn (mut p Page) update(old PageObject, new PageObject, tid u64) ! {
 	mut objects := p.objects()
 	old_versions := p.versions(old.key, objects)
 	match old_versions.len {
@@ -183,8 +183,8 @@ fn (mut p Page) update(old PageObject, new PageObject, tid int) ! {
 // versions returns all versions of a record. The result will have 0, 1 or 2
 // elements. versions accepts the objects to prevent callers from needing to
 // call objects again themselves.
-fn (p Page) versions(key []u8, objects []PageObject) []int {
-	mut versions := []int{}
+fn (p Page) versions(key []u8, objects []PageObject) []u64 {
+	mut versions := []u64{}
 	for object in objects {
 		if compare_bytes(object.key, key) == 0 {
 			// TODO(elliotchance): As long as the database has not become
@@ -243,7 +243,7 @@ fn (mut p Page) add(obj PageObject) ! {
 // delete will remove a key from a page if it exists, otherwise no action will
 // be taken. The removed object will be returned, or an object with an empty key
 // if the object did not exist.
-fn (mut p Page) delete(key []u8, tid int) bool {
+fn (mut p Page) delete(key []u8, tid u64) bool {
 	mut offset := 0
 	mut did_delete := false
 	for object in p.objects() {
@@ -263,7 +263,7 @@ fn (mut p Page) delete(key []u8, tid int) bool {
 	return did_delete
 }
 
-fn (p Page) get(key []u8, tid int) PageObject {
+fn (p Page) get(key []u8, tid u64) PageObject {
 	for object in p.objects() {
 		if compare_bytes(key, object.key) == 0 && object.tid == tid {
 			return object
@@ -275,7 +275,7 @@ fn (p Page) get(key []u8, tid int) PageObject {
 
 // expire will set the expiry transaction ID on an existing object. True is
 // returned if the page was modified.
-fn (mut p Page) expire(key []u8, tid int, xid int) bool {
+fn (mut p Page) expire(key []u8, tid u64, xid u64) bool {
 	mut offset := 0
 	mut modified := false
 	for mut object in p.objects() {
@@ -296,7 +296,7 @@ fn (mut p Page) expire(key []u8, tid int, xid int) bool {
 
 // replace will perform a delete and add operation. If the key does not exist it
 // will be created.
-fn (mut p Page) replace(key []u8, tid int, value []u8) ! {
+fn (mut p Page) replace(key []u8, tid u64, value []u8) ! {
 	p.delete(key, tid)
 	obj := new_page_object(key.clone(), tid, 0, value)
 	p.add(obj)!

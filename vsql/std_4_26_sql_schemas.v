@@ -5,7 +5,7 @@ module vsql
 // Represents a schema.
 pub struct Schema {
 	// The tid is the transaction ID that created this table.
-	tid int
+	tid u64
 pub:
 	// The name of the schema is case-sensitive.
 	name string
@@ -16,7 +16,7 @@ fn (s Schema) bytes() []u8 {
 	return 'CREATE SCHEMA ${delimit_identifier(s.name)}'.bytes()
 }
 
-fn new_schema_from_bytes(data []u8, tid int) !Schema {
+fn new_schema_from_bytes(data []u8, tid u64) !Schema {
 	stmt := parse_definition(data)!
 	if stmt is SchemaDefinition {
 		return Schema{tid, stmt.schema_name.schema_name}

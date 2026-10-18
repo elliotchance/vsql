@@ -113,7 +113,7 @@ fn (mut p Btree) search_page(key []u8) !([]int, []int) {
 
 // The old and new must be provided separately because the key may change if the
 // PRIMARY KEY value has changed.
-fn (mut p Btree) update(old PageObject, new PageObject, tid int) ![]int {
+fn (mut p Btree) update(old PageObject, new PageObject, tid u64) ![]int {
 	if p.pager.total_pages() == 0 {
 		// The object does not exist to update.
 		return []int{}
@@ -140,7 +140,7 @@ fn (mut p Btree) update(old PageObject, new PageObject, tid int) ![]int {
 	return page_numbers
 }
 
-fn (mut p Btree) update_single(obj PageObject, tid int) !int {
+fn (mut p Btree) update_single(obj PageObject, tid u64) !int {
 	if p.pager.total_pages() == 0 {
 		// The object does not exist to update.
 		return 0
@@ -432,7 +432,7 @@ fn (p Btree) new_range_iterator(min []u8, max []u8) PageIterator {
 	}
 }
 
-fn (mut p Btree) remove(key []u8, tid int, handle_blob bool) ! {
+fn (mut p Btree) remove(key []u8, tid u64, handle_blob bool) ! {
 	// Find the page that will contain the key, if it exists.
 	mut path, _ := p.search_page(key)!
 	page_number := path[path.len - 1]
@@ -568,7 +568,7 @@ fn (mut p Btree) fill_empty_pages(mut empty_pages []int) ! {
 // expire will set the deleted transaction ID for the key, effectively making
 // the object invisible to the current transaction. The page modified will be
 // returned, or -1 if the object does not exist.
-fn (mut p Btree) expire(key []u8, tid int, xid int) !int {
+fn (mut p Btree) expire(key []u8, tid u64, xid u64) !int {
 	// Find the page that will contain the key, if it exists.
 	mut path, _ := p.search_page(key)!
 	page_number := path[path.len - 1]

@@ -51,7 +51,7 @@ fn test_btree_test() ! {
 }
 
 fn run_btree_test(mut pager Pager, size int, object_size int, page_size int, randomize bool, run_validate bool) ! {
-	transaction_id := 123
+	transaction_id := u64(123)
 
 	mut objs := []PageObject{len: size}
 	for i in 0 .. objs.len {
@@ -233,9 +233,9 @@ fn strobjects(p Page) []string {
 // (effectively an UPDATE on all rows) and make sure the objects and their tid
 // integrity is maintained.
 fn test_btree_expire_test() ! {
-	tid1 := 123 // the first transaction to create the initial data
-	tid2 := 456 // the second transaction that will expire half the data
-	tid3 := 789 // the third transaction that will update (other) half the data
+	tid1 := u64(123) // the first transaction to create the initial data
+	tid2 := u64(456) // the second transaction that will expire half the data
+	tid3 := u64(789) // the third transaction that will update (other) half the data
 
 	page_size := 256
 	file_name := 'btree.vsql'

@@ -49,7 +49,7 @@ fn (stmt TableDefinition) execute(mut conn Connection, params map[string]Value, 
 
 // table checks the definition and returns the table that it describes. It's
 // also used when reading a table definition from the file.
-fn (stmt TableDefinition) table(table_name Identifier, tid int) !Table {
+fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	mut columns := []Column{}
 	mut primary_key := []string{}
 	mut column_names := map[string]bool{}

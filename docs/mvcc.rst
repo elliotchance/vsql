@@ -45,8 +45,10 @@ Wraparound Transaction IDs
 --------------------------
 
 Another challange with MVCC is that it requires transactions IDs to increment.
-Eventually vsql will run out of transaction IDs leading to incorrect behavior.
-See https://github.com/elliotchance/vsql/issues/70.
+Some databases use 32-bit transaction IDs, which can run out and have to wrap
+around. vsql uses 64-bit transaction IDs, so even at one million transactions
+per second a database would take more than 500,000 years to run out. Transaction
+IDs never wrap around.
 
 Resources
 ---------

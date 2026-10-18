@@ -11,7 +11,7 @@ mut:
 	// a sequential value allocated by Storage.next_row_id.
 	id []u8
 	// tid is the transaction ID that created this row.
-	tid  int
+	tid  u64
 	data map[string]Value
 }
 
@@ -231,7 +231,7 @@ fn (r Row) bytes(t Table) []u8 {
 	return buf.bytes()
 }
 
-fn new_row_from_bytes(t Table, data []u8, tid int) Row {
+fn new_row_from_bytes(t Table, data []u8, tid u64) Row {
 	mut buf := new_bytes(data)
 	mut row := map[string]Value{}
 

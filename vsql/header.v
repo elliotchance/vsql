@@ -26,7 +26,7 @@ const oldest_file_format_version = u16(1)
 // header_reserved_offset is where the reserved space of the header starts.
 // Fields that are added to the header in the future must go in this space, and
 // it must be zero until then.
-const header_reserved_offset = 1060
+const header_reserved_offset = 2088
 
 // The Header contains important metadata about the database and always occupies
 // the first header_size bytes of the database. It's encoded by write_header and
@@ -62,7 +62,7 @@ mut:
 	//
 	// TODO(elliotchance): Is there a way to avoid incrementing this for read
 	//  only transactions?
-	transaction_id int
+	transaction_id u64
 	// The row_id is the last row ID that was issued for a row in a table without
 	// a PRIMARY KEY. Row IDs are never reused, even if the transaction that
 	// used them is rolled back.
@@ -114,10 +114,10 @@ fn (h Header) bytes() []u8 {
 	b.write_i32(h.schema_version)
 	b.write_i32(h.page_size)
 	b.write_i32(h.root_page)
-	b.write_i32(h.transaction_id)
+	b.write_u64(h.transaction_id)
 	b.write_u64(h.row_id)
 	for tid in h.active_transaction_ids.tids {
-		b.write_i32(tid)
+		b.write_u64(tid)
 	}
 
 	b.write_u8s(h.reserved)
@@ -148,11 +148,11 @@ fn new_header_from_bytes(data []u8) !Header {
 		schema_version: b.read_i32()
 		page_size:      b.read_i32()
 		root_page:      b.read_i32()
-		transaction_id: b.read_i32()
+		transaction_id: b.read_u64()
 		row_id:         b.read_u64()
 	}
 	for i in 0 .. header.active_transaction_ids.tids.len {
-		header.active_transaction_ids.tids[i] = b.read_i32()
+		header.active_transaction_ids.tids[i] = b.read_u64()
 	}
 	header.reserved = b.read_u8s(header_size - header_reserved_offset)
 

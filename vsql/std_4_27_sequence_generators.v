@@ -67,6 +67,29 @@ fn (s Sequence) reset() i64 {
 	return 1
 }
 
+// check is used by CREATE SEQUENCE and ALTER SEQUENCE (9.30 and 9.31 Syntax
+// Rules).
+fn (s Sequence) check() ! {
+	if s.increment_by == 0 {
+		return sqlstate_42601('INCREMENT BY must not be 0')
+	}
+
+	if s.has_min_value && s.has_max_value && s.min_value >= s.max_value {
+		return sqlstate_42601('MAXVALUE (${s.max_value}) must be greater than MINVALUE (${s.min_value})')
+	}
+}
+
+// check_in_range is used for the START WITH and RESTART WITH values.
+fn (s Sequence) check_in_range(name string, value i64) ! {
+	if s.has_min_value && value < s.min_value {
+		return sqlstate_42601('${name} (${value}) must not be less than MINVALUE (${s.min_value})')
+	}
+
+	if s.has_max_value && value > s.max_value {
+		return sqlstate_42601('${name} (${value}) must not be greater than MAXVALUE (${s.max_value})')
+	}
+}
+
 fn (s Sequence) next() !Sequence {
 	mut next_value := s.current_value + s.increment_by
 	if s.has_max_value && next_value > s.max_value {

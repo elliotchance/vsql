@@ -193,3 +193,39 @@ VALUES NEXT VALUE FOR seq1, NEXT VALUE FOR seq1;
 -- COL1: 5
 -- COL1: 0
 -- COL1: -5
+
+CREATE SEQUENCE seq1 INCREMENT BY 0;
+-- error 42601: syntax error: INCREMENT BY must not be 0
+
+CREATE SEQUENCE seq1 MINVALUE 10 MAXVALUE 5;
+-- error 42601: syntax error: MAXVALUE (5) must be greater than MINVALUE (10)
+
+CREATE SEQUENCE seq1 MINVALUE 10 MAXVALUE 10;
+-- error 42601: syntax error: MAXVALUE (10) must be greater than MINVALUE (10)
+
+CREATE SEQUENCE seq1 START WITH 100 MAXVALUE 50;
+-- error 42601: syntax error: START WITH (100) must not be greater than MAXVALUE (50)
+
+CREATE SEQUENCE seq1 START WITH 1 MINVALUE 5;
+-- error 42601: syntax error: START WITH (1) must not be less than MINVALUE (5)
+
+CREATE SEQUENCE seq1 START WITH 1 START WITH 2;
+-- error 42601: syntax error: START WITH is specified more than once
+
+CREATE SEQUENCE seq1 CYCLE NO CYCLE;
+-- error 42601: syntax error: CYCLE is specified more than once
+
+CREATE SEQUENCE seq1 MAXVALUE 10 NO MAXVALUE;
+-- error 42601: syntax error: MAXVALUE is specified more than once
+
+CREATE SEQUENCE seq1 INCREMENT BY 1.5;
+-- error 42601: syntax error: INCREMENT BY must be an integer: 1.5
+
+CREATE SEQUENCE seq1 START WITH 1.5;
+-- error 42601: syntax error: START WITH must be an integer: 1.5
+
+CREATE SEQUENCE seq1 START WITH -5 INCREMENT BY 2.0 MAXVALUE 0;
+VALUES NEXT VALUE FOR seq1, NEXT VALUE FOR seq1;
+-- msg: CREATE SEQUENCE 1
+-- COL1: -5
+-- COL1: -3

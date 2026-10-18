@@ -1,5 +1,6 @@
 module vsql
 
+import math
 import time
 
 // ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>
@@ -50,11 +51,59 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, params map[st
 		conn.release_write_connection()
 	}
 
+	check_sequence_options(stmt.options)!
+
 	mut catalog := conn.catalog()
 	sequence := stmt.sequence(conn.resolve_schema_identifier(stmt.name)!)
+	sequence.check()!
+	sequence.check_in_range('START WITH', sequence.current_value + sequence.increment_by)!
 	catalog.storage.create_sequence(sequence)!
 
 	return new_result_msg('CREATE SEQUENCE 1', elapsed_parse, t.elapsed())
+}
+
+// check_sequence_options checks that each option is only given once and that
+// the values are integers (9.30 and 9.31 Syntax Rules). This is only done for
+// CREATE SEQUENCE and ALTER SEQUENCE, not when a sequence is read from the
+// file.
+fn check_sequence_options(options []SequenceGeneratorOption) ! {
+	mut seen := map[string]bool{}
+	for option in options {
+		name, value := match option {
+			SequenceGeneratorStartWithOption {
+				'START WITH', ?Value(option.start_value)
+			}
+			SequenceGeneratorRestartOption {
+				'RESTART', option.restart_value
+			}
+			SequenceGeneratorIncrementByOption {
+				'INCREMENT BY', ?Value(option.increment_by)
+			}
+			SequenceGeneratorMinvalueOption {
+				'MINVALUE', option.min_value
+			}
+			SequenceGeneratorMaxvalueOption {
+				'MAXVALUE', option.max_value
+			}
+			SequenceGeneratorCycleOption {
+				'CYCLE', ?Value(none)
+			}
+		}
+
+		if name in seen {
+			return sqlstate_42601('${name} is specified more than once')
+		}
+		seen[name] = true
+
+		if v := value {
+			if !v.typ.uses_int() {
+				f := v.as_f64()!
+				if f != math.floor(f) {
+					return sqlstate_42601('${name} must be an integer: ${v.str()}')
+				}
+			}
+		}
+	}
 }
 
 // sequence returns the sequence that the definition describes. It's also used

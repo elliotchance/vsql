@@ -124,6 +124,27 @@ CREATE TABLE foo (bar DECIMAL(10));
 CREATE TABLE foo (bar DECIMAL(10, 2));
 -- msg: CREATE TABLE 1
 
+CREATE TABLE foo (x VARCHAR(0));
+-- error 42601: syntax error: CHARACTER VARYING length must be greater than 0
+
+CREATE TABLE foo (x CHAR(0));
+-- error 42601: syntax error: CHARACTER length must be greater than 0
+
+CREATE TABLE foo (x NUMERIC(0));
+-- error 42601: syntax error: NUMERIC precision must be greater than 0
+
+CREATE TABLE foo (x NUMERIC(3, 5));
+-- error 42601: syntax error: NUMERIC scale (5) must not be greater than precision (3)
+
+CREATE TABLE foo (x DECIMAL(3, 4));
+-- error 42601: syntax error: DECIMAL scale (4) must not be greater than precision (3)
+
+CREATE TABLE foo (x NUMERIC(3, 3), y DECIMAL(1, 1));
+-- msg: CREATE TABLE 1
+
+CREATE TABLE foo (x FLOAT(0));
+-- error 42601: syntax error: FLOAT precision must be greater than 0
+
 CREATE TABLE foo.bar (baz BIGINT);
 -- error 3F000: invalid schema name: FOO
 

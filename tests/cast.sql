@@ -105,3 +105,9 @@ VALUES CAST(TIMESTAMP '2022-06-30 12:34:56.456000+05:12' AS VARCHAR(50));
 
 VALUES CAST(TIMESTAMP '2022-06-30 12:34:56' AS VARCHAR(30));
 -- error 22001: string data right truncation for CHARACTER VARYING(30)
+
+VALUES CAST('x' AS VARCHAR(0));
+-- error 42601: syntax error: CHARACTER VARYING length must be greater than 0
+
+VALUES CAST(1.23 AS NUMERIC(2, 3));
+-- error 42601: syntax error: NUMERIC scale (3) must not be greater than precision (2)

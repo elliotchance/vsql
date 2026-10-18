@@ -4,6 +4,31 @@ module vsql
 //
 // Specify a data type.
 
+// parse_type_with_length is used for a data type with an explicit <length>,
+// which must be greater than 0 (6.1 Syntax Rule 4).
+fn parse_type_with_length(name string, length string) !Type {
+	if length.int() < 1 {
+		return sqlstate_42601('${name} length must be greater than 0')
+	}
+
+	return new_type(name, length.int(), 0)
+}
+
+// parse_type_with_precision is used for a data type with an explicit
+// <precision>, which must be greater than 0 (6.1 Syntax Rule 21). The <scale>
+// must not be greater than the <precision> (6.1 Syntax Rule 23).
+fn parse_type_with_precision(name string, precision string, scale string) !Type {
+	if precision.int() < 1 {
+		return sqlstate_42601('${name} precision must be greater than 0')
+	}
+
+	if scale.int() > precision.int() {
+		return sqlstate_42601('${name} scale (${scale}) must not be greater than precision (${precision})')
+	}
+
+	return new_type(name, precision.int(), i16(scale.int()))
+}
+
 fn parse_timestamp_prec_tz_type(prec string, tz bool) !Type {
 	if tz {
 		return new_type('TIMESTAMP WITH TIME ZONE', prec.int(), 0)

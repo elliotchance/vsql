@@ -12,20 +12,20 @@ predefined_type:
 character_string_type:
   CHARACTER { $$.v = new_type('CHARACTER', 1, 0) }
 | CHARACTER left_paren character_length right_paren {
-    $$.v = new_type('CHARACTER', ($3.v as string).int(), 0)
+    $$.v = parse_type_with_length('CHARACTER', $3.v as string)!
   }
 | CHAR { $$.v = new_type('CHARACTER', 1, 0) }
 | CHAR left_paren character_length right_paren {
-    $$.v = new_type('CHARACTER', ($3.v as string).int(), 0)
+    $$.v = parse_type_with_length('CHARACTER', $3.v as string)!
   }
 | CHARACTER VARYING left_paren character_length right_paren {
-    $$.v = new_type('CHARACTER VARYING', ($4.v as string).int(), 0)
+    $$.v = parse_type_with_length('CHARACTER VARYING', $4.v as string)!
   }
 | CHAR VARYING left_paren character_length right_paren {
-    $$.v = new_type('CHARACTER VARYING', ($4.v as string).int(), 0)
+    $$.v = parse_type_with_length('CHARACTER VARYING', $4.v as string)!
   }
 | VARCHAR left_paren character_length right_paren {
-    $$.v = new_type('CHARACTER VARYING', ($3.v as string).int(), 0)
+    $$.v = parse_type_with_length('CHARACTER VARYING', $3.v as string)!
   }
 
 numeric_type:
@@ -35,17 +35,17 @@ numeric_type:
 exact_numeric_type:
   NUMERIC { $$.v = new_type('NUMERIC', 0, 0) }
 | NUMERIC left_paren precision right_paren {
-    $$.v = new_type('NUMERIC', ($3.v as string).int(), 0)
+    $$.v = parse_type_with_precision('NUMERIC', $3.v as string, '0')!
   }
 | NUMERIC left_paren precision comma scale right_paren {
-    $$.v = new_type('NUMERIC', ($3.v as string).int(), ($5.v as string).i16())
+    $$.v = parse_type_with_precision('NUMERIC', $3.v as string, $5.v as string)!
   }
 | DECIMAL { $$.v = new_type('DECIMAL', 0, 0) }
 | DECIMAL left_paren precision right_paren {
-    $$.v = new_type('DECIMAL', ($3.v as string).int(), 0)
+    $$.v = parse_type_with_precision('DECIMAL', $3.v as string, '0')!
   }
 | DECIMAL left_paren precision comma scale right_paren {
-    $$.v = new_type('DECIMAL', ($3.v as string).int(), ($5.v as string).i16())
+    $$.v = parse_type_with_precision('DECIMAL', $3.v as string, $5.v as string)!
   }
 | SMALLINT { $$.v = new_type('SMALLINT', 0, 0) }
 | INTEGER { $$.v = new_type('INTEGER', 0, 0) }
@@ -55,7 +55,7 @@ exact_numeric_type:
 approximate_numeric_type:
   FLOAT { $$.v = new_type('FLOAT', 0, 0) }
 | FLOAT left_paren precision right_paren {
-    $$.v = new_type('FLOAT', ($3.v as string).int(), 0)
+    $$.v = parse_type_with_precision('FLOAT', $3.v as string, '0')!
   }
 | REAL { $$.v = new_type('REAL', 0, 0) }
 | DOUBLE PRECISION { $$.v = new_type('DOUBLE PRECISION', 0, 0) }

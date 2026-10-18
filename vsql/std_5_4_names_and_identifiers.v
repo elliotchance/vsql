@@ -224,6 +224,13 @@ fn split_identifier_parts(s string) ![]string {
 	return parts
 }
 
+// delimit_identifier always quotes the name, like "foo" or "FOO". Use this
+// (rather than requote_identifier) when the SQL needs to mean the same thing
+// in every version of vsql, even if new reserved words are added.
+fn delimit_identifier(s string) string {
+	return '"${s}"'
+}
+
 fn requote_identifier(s string) string {
 	if s.to_upper() == s {
 		return s
@@ -416,6 +423,27 @@ fn (e Identifier) storage_id() string {
 
 	if e.sub_entity_name != '' {
 		parts << e.sub_entity_name
+	}
+
+	return parts.join('.')
+}
+
+// storage_sql is the name as it's written in the definition of an object in the
+// file, like "PUBLIC"."foo". The catalog name is not included (just like
+// storage_id) because the catalog is the file itself.
+fn (e Identifier) storage_sql() string {
+	mut parts := []string{}
+
+	if e.schema_name != '' {
+		parts << delimit_identifier(e.schema_name)
+	}
+
+	if e.entity_name != '' {
+		parts << delimit_identifier(e.entity_name)
+	}
+
+	if e.sub_entity_name != '' {
+		parts << delimit_identifier(e.sub_entity_name)
 	}
 
 	return parts.join('.')

@@ -29,7 +29,7 @@ Header
 
 The header is always 4kb (4096 bytes), regardless of the page size. Like the
 rest of the file, all numbers are big-endian. Not all of this space is used, the
-remaining space is reserved and filled with zeros.
+remaining space is reserved (see `Compatibility`_).
 
 .. list-table::
   :header-rows: 1
@@ -46,42 +46,104 @@ remaining space is reserved and filled with zeros.
       does not start with these bytes is not a vsql database.
 
   * - 8
-    - *Version*
+    - *Read Version*
     - u16 (2 bytes)
-    - The version of the file format. vsql will only open a file with the
-      same version that it writes. The current version is 14.
+    - The oldest version of the file format that can read this file. See
+      `Compatibility`_.
 
   * - 10
+    - *Write Version*
+    - u16 (2 bytes)
+    - The oldest version of the file format that can change this file. See
+      `Compatibility`_.
+
+  * - 12
     - *Schema Version*
     - i32 (4 bytes)
     - Incremented whenever the schema changes, so that connections know when
       to reload it.
 
-  * - 14
+  * - 16
     - *Page Size*
     - i32 (4 bytes)
     - The size of every page, in bytes.
 
-  * - 18
+  * - 20
     - *Root Page*
     - i32 (4 bytes)
     - The page number (not including the header) of the root of the B-tree.
 
-  * - 22
+  * - 24
     - *Transaction ID*
     - i32 (4 bytes)
     - The last transaction ID that was issued.
 
-  * - 26
+  * - 28
     - *Row ID*
     - u64 (8 bytes)
     - The last row ID that was issued. Rows in a table without a ``PRIMARY
       KEY`` are keyed by a row ID. Row IDs are never reused.
 
-  * - 34
+  * - 36
     - *Active Transactions*
     - 256 x i32 (1024 bytes)
     - The IDs of the transactions that are in progress. Unused slots are 0.
+
+  * - 1060
+    - *Reserved*
+    - 3036 bytes
+    - Zero in this version of the file format. See `Compatibility`_.
+
+Compatibility
+-------------
+
+The version of the file format that vsql reads and writes is 1. Before v1.0.0,
+any change to the file format increases this version, and vsql will refuse to
+open a file that uses an older version. You will need to recreate it.
+
+From v1.0.0 the aim is that every version of vsql can open a file created by
+an older version, and that most features don't need to change the file format
+at all. The *Read Version* and *Write Version* in the `Header`_ work the same
+way as the read and write versions of SQLite:
+
+- If the *Read Version* is newer than the version of the file format that vsql
+  supports, the file is refused. Some part of the file can't be understood.
+
+- If the *Write Version* is newer, the file can be read but not changed. Any
+  statement that changes the file returns a ``25006`` error. The file uses a
+  feature that this version of vsql doesn't know how to keep correct, such as
+  an index that wouldn't be updated when a row is inserted.
+
+A new file has both set to the current version. A feature that needs a newer
+version only raises them the first time it's used, so a file that never uses
+the feature can still be read and changed by older versions of vsql.
+
+These rules keep changes compatible:
+
+1. The *Magic*, *Read Version* and *Write Version* never move, so that every
+   version of vsql can check them.
+
+2. New header fields go in the *Reserved* space, which is zero until a field is
+   added. vsql writes the reserved space back exactly as it read it, so a field
+   added by a newer version isn't lost when an older version changes the file.
+
+3. Schema objects, such as tables, are stored as SQL (see `Schema Objects`_).
+   Most features that add to a definition, such as ``DEFAULT`` or ``CHECK``,
+   only need the SQL to be extended, rather than a new layout. An older version
+   can't parse the new syntax, so using such a feature raises the *Read
+   Version*.
+
+4. Things that can be described separately from the object they belong to
+   should be stored as their own objects, with a new key prefix (see
+   `Object`_), rather than added to the existing definition. For example,
+   constraints can be stored as ``ALTER TABLE ... ADD CONSTRAINT`` statements.
+   Older versions ignore key prefixes they don't know about, so this only needs
+   to raise the *Write Version* (or nothing at all, if it doesn't change how
+   rows are written).
+
+5. A change to how values are encoded, such as a new data type, must raise the
+   *Read Version* when a table that uses it is created. Existing encodings
+   never change.
 
 Page
 ----
@@ -159,7 +221,9 @@ An Object may be any length, but this example uses an object of 230 bytes:
 .. image:: img/file-format-object.png
 
 Individual objects can be of different types and are encoded/decoded based on
-the first byte of the *Key*:
+the first byte of the *Key*. Objects with a first byte that isn't listed here
+are ignored, so that new types of objects can be added (see
+`Compatibility`_):
 
 .. list-table::
   :header-rows: 1
@@ -255,18 +319,45 @@ A Row Object (has the ``R`` prefix) contains a table row. The serialization does
 not need to be explained in detail here. You can check the code for
 ``Row.bytes()`` and ``new_row_from_bytes()`` respectively.
 
+Schema Objects
+--------------
+
+The definition of each schema, sequence and table is stored as the SQL
+statement that would create it, like SQLite does. When the file is opened, the
+statements are parsed to rebuild the schema in memory.
+
+The SQL is written so that it means the same thing in any version of vsql:
+
+- Every name is a delimited identifier (``"PUBLIC"."FOO"``), so it isn't
+  affected by case folding or by new reserved words.
+
+- Names don't include the catalog, since the catalog is the file itself.
+
+- Data types are written in full, such as ``TIMESTAMP(0) WITHOUT TIME ZONE``,
+  rather than relying on defaults.
+
 Schema Object
 -------------
 
-A Schema Object (has the ``S`` prefix) contains a schema definition. The
-serialization does not need to be explained in detail here. You can check the
-code for ``Schema.bytes()`` and ``new_schema_from_bytes()`` respectively.
+A Schema Object (has the ``S`` prefix) contains a schema definition, as a
+``CREATE SCHEMA`` statement:
+
+.. code-block:: sql
+
+  CREATE SCHEMA "PUBLIC"
 
 Sequence Object
 ---------------
 
 A Sequence Object (has the ``Q`` prefix) contains the definition for a sequence
-(not including the next value, see `Sequence Value Object`_).
+(not including the next value, see `Sequence Value Object`_), as a ``CREATE
+SEQUENCE`` statement:
+
+.. code-block:: sql
+
+  CREATE SEQUENCE "PUBLIC"."SEQ1"
+    INCREMENT BY 5
+    MINVALUE 10
 
 Sequence Value Object
 ---------------------
@@ -278,9 +369,16 @@ transaction isolation, changing the value will be always persistent.
 Table Object
 ------------
 
-A Table Object (has the ``T`` prefix) contains a table definition. The
-serialization does not need to be explained in detail here. You can check the
-code for ``Table.bytes()`` and ``new_table_from_bytes()`` respectively.
+A Table Object (has the ``T`` prefix) contains a table definition, as a
+``CREATE TABLE`` statement:
+
+.. code-block:: sql
+
+  CREATE TABLE "PUBLIC"."FOO" (
+    "ID" INTEGER NOT NULL,
+    "BAR" CHARACTER VARYING(10),
+    PRIMARY KEY ("ID")
+  )
 
 Notes for Future Improvements
 -----------------------------

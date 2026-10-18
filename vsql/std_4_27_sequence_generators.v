@@ -88,16 +88,30 @@ fn (s Sequence) next() !Sequence {
 	return Sequence{s.tid, s.name, next_value, s.increment_by, s.cycle, s.has_min_value, s.min_value, s.has_max_value, s.max_value}
 }
 
+// definition_bytes is how the sequence is stored in the file: its CREATE
+// SEQUENCE statement, with each option on its own line, like:
+//
+//   CREATE SEQUENCE "PUBLIC"."SEQ1"
+//     INCREMENT BY 5
+//     MINVALUE 10
+//
+// The current value is stored separately, see value_bytes.
 fn (s Sequence) definition_bytes() []u8 {
-	mut b := new_empty_bytes()
+	mut parts := ['CREATE SEQUENCE ${s.name.storage_sql()}', 'INCREMENT BY ${s.increment_by}']
 
-	b.write_string1(s.name.storage_id())
-	b.write_i64(s.increment_by)
-	b.write_bool(s.cycle)
-	b.write_optional_i64(s.has_min_value, s.min_value)
-	b.write_optional_i64(s.has_max_value, s.max_value)
+	if s.has_min_value {
+		parts << 'MINVALUE ${s.min_value}'
+	}
 
-	return b.bytes()
+	if s.has_max_value {
+		parts << 'MAXVALUE ${s.max_value}'
+	}
+
+	if s.cycle {
+		parts << 'CYCLE'
+	}
+
+	return parts.join('\n  ').bytes()
 }
 
 fn (s Sequence) value_bytes() []u8 {
@@ -108,16 +122,20 @@ fn (s Sequence) value_bytes() []u8 {
 	return b.bytes()
 }
 
-fn new_sequence_from_bytes(definition_data []u8, value_data []u8, tid int) Sequence {
-	mut b1 := new_bytes(definition_data)
-	sequence_name := b1.read_identifier()
-	increment_by := b1.read_i64()
-	cycle := b1.read_bool()
-	has_min_value, min_value := b1.read_optional_i64()
-	has_max_value, max_value := b1.read_optional_i64()
+fn new_sequence_from_bytes(definition_data []u8, value_data []u8, tid int) !Sequence {
+	stmt := parse_definition(definition_data)!
+	if stmt is SequenceGeneratorDefinition {
+		mut sequence := stmt.sequence(Identifier{
+			schema_name: stmt.name.schema_name
+			entity_name: stmt.name.entity_name
+		})
+		sequence.tid = tid
 
-	mut b2 := new_bytes(value_data)
-	current_value := b2.read_i64()
+		mut b := new_bytes(value_data)
+		sequence.current_value = b.read_i64()
 
-	return Sequence{tid, sequence_name, current_value, increment_by, cycle, has_min_value, min_value, has_max_value, max_value}
+		return sequence
+	}
+
+	return error('not a sequence definition: ${definition_data.bytestr()}')
 }

@@ -332,47 +332,6 @@ fn (t Type) uses_time() bool {
 	}
 }
 
-fn (t Type) number() u8 {
-	return match t.typ {
-		.is_boolean { 0 }
-		.is_bigint { 1 }
-		.is_double_precision { 2 }
-		.is_integer { 3 }
-		.is_real { 4 }
-		.is_smallint { 5 }
-		.is_varchar { 6 }
-		.is_character { 7 }
-		.is_date { 8 }
-		.is_time_with_time_zone { 9 }
-		.is_time_without_time_zone { 10 }
-		.is_timestamp_with_time_zone { 11 }
-		.is_timestamp_without_time_zone { 12 }
-		.is_decimal { 13 }
-		.is_numeric { 14 }
-	}
-}
-
-fn type_from_number(number u8, size int, scale i16) Type {
-	return new_type(match number {
-		0 { 'BOOLEAN' }
-		1 { 'BIGINT' }
-		2 { 'DOUBLE PRECISION' }
-		3 { 'INTEGER' }
-		4 { 'REAL' }
-		5 { 'SMALLINT' }
-		6 { 'CHARACTER VARYING(${size})' }
-		7 { 'CHARACTER' }
-		8 { 'DATE' }
-		9 { 'TIME(${size}) WITH TIME ZONE' }
-		10 { 'TIME(${size}) WITHOUT TIME ZONE' }
-		11 { 'TIMESTAMP(${size}) WITH TIME ZONE' }
-		12 { 'TIMESTAMP(${size}) WITHOUT TIME ZONE' }
-		13 { numeric_type_str('DECIMAL', size, scale) }
-		14 { numeric_type_str('NUMERIC', size, scale) }
-		else { panic(number) }
-	}, size, scale)
-}
-
 fn numeric_type_str(typ string, size int, scale i16) string {
 	if size == 0 {
 		return typ

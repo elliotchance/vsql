@@ -361,6 +361,18 @@ fn sqlstate_25001() IError {
 	}
 }
 
+// read-only sql transaction
+struct SQLState25006 {
+	SQLState
+}
+
+fn sqlstate_25006(msg string) IError {
+	return SQLState25006{
+		code: sqlstate_to_int('25006')
+		msg:  'read-only sql transaction: ${msg}'
+	}
+}
+
 // invalid transaction termination
 struct SQLState2D000 {
 	SQLState

@@ -17,12 +17,22 @@ fn (e QueryExpression) pstr(params map[string]Value) string {
 	return '<subquery>'
 }
 
-fn (stmt QueryExpression) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+// writes must be true if the query modifies the database, see
+// PreparedStmt.writes.
+fn (stmt QueryExpression) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration, writes bool) !Result {
 	t := start_timer()
 
-	conn.open_read_connection()!
+	if writes {
+		conn.open_write_connection()!
+	} else {
+		conn.open_read_connection()!
+	}
 	defer {
-		conn.release_read_connection()
+		if writes {
+			conn.release_write_connection()
+		} else {
+			conn.release_read_connection()
+		}
 	}
 
 	mut plan := create_plan(stmt, params, mut conn)!

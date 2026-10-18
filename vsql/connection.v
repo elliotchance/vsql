@@ -273,20 +273,24 @@ fn (mut conn CatalogConnection) release_read_connection() {
 		return
 	}
 
-	conn.storage.flush() or {
-		// This was a hack to get around the fact we can't return an option from
-		// this function because it messes with the behavior of defer.
-		//
-		// TODO(elliotchance): I'm not sure what a fair thing to do is here, but
-		//  certainly takling down the server or application is not the best
-		//  call.
-		panic(err)
-	}
-
+	// Readers must not write anything, including the header, since other
+	// readers may be reading the file at the same time.
 	flock_unlock_shared(conn.storage.file, conn.path)
 	conn.storage.close_file()
 
 	conn.options.mutex.runlock()
+}
+
+// has_next_value returns true if the tokens contain a NEXT VALUE FOR, which
+// modifies the sequence.
+fn has_next_value(tokens []Token) bool {
+	for i in 1 .. tokens.len {
+		if tokens[i - 1].token == token_next && tokens[i].token == token_value {
+			return true
+		}
+	}
+
+	return false
 }
 
 // prepare returns a precompiled statement that can be executed multiple times
@@ -309,7 +313,7 @@ pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 	stmt := parse_tokens(tokens)!
 	elapsed_parse := t.elapsed()
 
-	return PreparedStmt{stmt, map[string]Value{}, explain, &conn, elapsed_parse}
+	return PreparedStmt{stmt, map[string]Value{}, explain, has_next_value(tokens), &conn, elapsed_parse}
 }
 
 fn parse_tokens(tokens []Token) !Stmt {

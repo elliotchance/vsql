@@ -529,6 +529,10 @@ struct PreparedStmt
    	// removed from the query before parsing since this keyword is not part of
    	// the SQL standard.
    	explain bool
+   	// writes is true if a query modifies the database, even though it would
+   	// otherwise be read only. At the moment this is only when it contains a
+   	// NEXT VALUE FOR.
+   	writes bool
    mut:
    	c             &Connection
    	elapsed_parse time.Duration

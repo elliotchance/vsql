@@ -59,6 +59,22 @@ VALUES 'hello';
 -- COL1: hello (CHARACTER(5))
 
 /* types */
+VALUES 'it''s';
+-- COL1: it's (CHARACTER(4))
+
+VALUES '''';
+-- COL1: '
+
+VALUES ROW('a''''b', '''x''');
+-- COL1: a''b COL2: 'x'
+
+VALUES CHARACTER_LENGTH('it''s');
+-- COL1: 4
+
+EXPLAIN VALUES 'it''s';
+-- EXPLAIN: VALUES (COL1 CHARACTER(4)) = ROW('it''s')
+
+/* types */
 VALUES ROW(123, 456);
 -- COL1: 123 (SMALLINT) COL2: 456 (SMALLINT)
 

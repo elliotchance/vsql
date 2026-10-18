@@ -215,3 +215,25 @@ SELECT * FROM foo;
 -- 2: BAR: 123
 -- 1: msg: ROLLBACK
 -- 2: BAR: 123
+
+/* connection 1 */
+CREATE TABLE foo (bar INT);
+/* connection 2 */
+SELECT * FROM foo;
+/* connection 1 */
+START TRANSACTION;
+DROP TABLE foo;
+CREATE TABLE baz (x INT);
+ROLLBACK;
+SELECT * FROM foo;
+SELECT * FROM baz;
+/* connection 2 */
+SELECT * FROM foo;
+SELECT * FROM baz;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: DROP TABLE 1
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: ROLLBACK
+-- 1: error 42P01: no such table: "test".PUBLIC.BAZ
+-- 2: error 42P01: no such table: "test".PUBLIC.BAZ

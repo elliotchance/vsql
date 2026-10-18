@@ -31,6 +31,7 @@ fn (stmt RollbackStatement) execute(mut conn Connection, params map[string]Value
 		catalog.release_write_connection()
 	}
 
+	mut schema_changed := false
 	for page_number, _ in catalog.storage.transaction_pages {
 		// Removing objects can move the last page and truncate the file.
 		if page_number >= catalog.storage.btree.pager.total_pages() {
@@ -39,6 +40,11 @@ fn (stmt RollbackStatement) execute(mut conn Connection, params map[string]Value
 
 		mut page := catalog.storage.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
+			if (obj.tid == catalog.storage.transaction_id
+				|| obj.xid == catalog.storage.transaction_id) && obj.key[0] in [`T`, `S`] {
+				schema_changed = true
+			}
+
 			// Only remove the objects created in this transaction.
 			if obj.tid == catalog.storage.transaction_id {
 				page.delete(obj.key, catalog.storage.transaction_id)
@@ -59,6 +65,13 @@ fn (stmt RollbackStatement) execute(mut conn Connection, params map[string]Value
 
 	// We can erase these now.
 	catalog.storage.transaction_pages = map[int]bool{}
+
+	// Tables and schemas that were created or dropped in this transaction must
+	// be reloaded, here and in other connections.
+	if schema_changed {
+		catalog.storage.schema_changed()
+		catalog.storage.load_schema(catalog.catalog_name)!
+	}
 
 	return new_result_msg('ROLLBACK', elapsed_parse, t.elapsed())
 }

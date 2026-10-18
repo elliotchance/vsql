@@ -8,7 +8,7 @@ TXT_FILE="$(mktemp)" || exit 1
 echo 'CREATE TABLE foo (bar INT);' | $VSQL cli $VSQL_FILE
 
 # The file starts with the magic number and the file format version.
-test "$(head -c 10 $VSQL_FILE | od -A n -t x1 | tr -d ' \n')" = "7673716c0d0a1a0a000d"
+test "$(head -c 10 $VSQL_FILE | od -A n -t x1 | tr -d ' \n')" = "7673716c0d0a1a0a000e"
 
 # Files that aren't vsql databases are refused and left untouched.
 echo 'hello' > $TXT_FILE

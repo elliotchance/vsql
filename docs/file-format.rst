@@ -49,7 +49,7 @@ remaining space is reserved and filled with zeros.
     - *Version*
     - u16 (2 bytes)
     - The version of the file format. vsql will only open a file with the
-      same version that it writes. The current version is 13.
+      same version that it writes. The current version is 14.
 
   * - 10
     - *Schema Version*
@@ -73,6 +73,12 @@ remaining space is reserved and filled with zeros.
     - The last transaction ID that was issued.
 
   * - 26
+    - *Row ID*
+    - u64 (8 bytes)
+    - The last row ID that was issued. Rows in a table without a ``PRIMARY
+      KEY`` are keyed by a row ID. Row IDs are never reused.
+
+  * - 34
     - *Active Transactions*
     - 256 x i32 (1024 bytes)
     - The IDs of the transactions that are in progress. Unused slots are 0.

@@ -91,15 +91,17 @@ datetime_type:
 | TIME left_paren time_precision right_paren with_or_without_time_zone {
     $$.v = parse_time_prec_tz_type($3.v as string, $5.v as bool)!
   }
-| TIMESTAMP { $$.v = parse_timestamp_prec_tz_type('0', false)! }
+| TIMESTAMP {
+    // ISO/IEC 9075-2:2016(E), 6.1, 36) If <timestamp precision> is not
+    // specified, then 6 is implicit.
+    $$.v = parse_timestamp_prec_tz_type('6', false)!
+  }
 | TIMESTAMP left_paren timestamp_precision right_paren {
     $$.v = parse_timestamp_prec_tz_type($3.v as string, false)!
   }
 | TIMESTAMP with_or_without_time_zone {
-  // ISO/IEC 9075-2:2016(E), 6.1, 36) If <timestamp precision> is not
-  // specified, then 6 is implicit.
-  $$.v = parse_timestamp_prec_tz_type('6', $2.v as bool)!
-}
+    $$.v = parse_timestamp_prec_tz_type('6', $2.v as bool)!
+  }
 | TIMESTAMP left_paren timestamp_precision right_paren
   with_or_without_time_zone {
     $$.v = parse_timestamp_prec_tz_type($3.v as string, $5.v as bool)!

@@ -62,6 +62,15 @@ After making changes to grammar file(s) you will need to run:
 
   make grammar
 
+Pull Requests
+-------------
+
+Pull requests are squash-merged, so the PR title becomes the first line of the
+commit on ``main`` with ``(#NNN)`` appended. Each merge is released, and the
+release page shows that commit message. GitHub truncates a first line longer
+than 72 characters and hides the rest of the message, so keep PR titles to 65
+characters or fewer.
+
 Testing
 -------
 

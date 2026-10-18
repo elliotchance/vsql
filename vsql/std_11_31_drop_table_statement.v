@@ -21,8 +21,6 @@ fn (stmt DropTableStatement) execute(mut conn Connection, params map[string]Valu
 	mut catalog := conn.catalog()
 	table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 
-	// TODO(elliotchance): Also delete rows. See
-	//  https://github.com/elliotchance/vsql/issues/65.
 	catalog.storage.delete_table(table_name.storage_id(),
 		catalog.storage.tables[table_name.storage_id()].tid)!
 

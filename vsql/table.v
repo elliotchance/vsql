@@ -76,55 +76,50 @@ pub fn (t Table) column(name string) !Column {
 	return sqlstate_42703(name) // column does not exist
 }
 
+// bytes is how the table is stored in the file: its CREATE TABLE statement,
+// with each column on its own line, like:
+//
+//   CREATE TABLE "PUBLIC"."FOO" (
+//     "ID" INTEGER NOT NULL,
+//     "BAR" CHARACTER VARYING(10),
+//     PRIMARY KEY ("ID")
+//   )
 fn (t Table) bytes() []u8 {
-	mut b := new_empty_bytes()
-
-	b.write_identifier(t.name)
-
-	b.write_u8(u8(t.primary_key.len))
-	for s in t.primary_key {
-		b.write_string1(s)
-	}
-
+	mut elements := []string{}
 	for col in t.columns {
-		b.write_string1(col.name.sub_entity_name)
-		b.write_u8(col.typ.number())
-		b.write_bool(col.not_null)
-		b.write_i32(col.typ.size)
-		b.write_i16(col.typ.scale)
+		mut element := '${delimit_identifier(col.name.sub_entity_name)} ${col.typ}'
+		if col.not_null {
+			element += ' NOT NULL'
+		}
+		elements << '  ${element}'
 	}
 
-	return b.bytes()
+	if t.primary_key.len > 0 {
+		elements << '  PRIMARY KEY (${t.primary_key.map(delimit_identifier(it)).join(', ')})'
+	}
+
+	return 'CREATE TABLE ${t.name.storage_sql()} (\n${elements.join(',\n')}\n)'.bytes()
 }
 
-fn new_table_from_bytes(data []u8, tid int, catalog_name string) Table {
-	mut b := new_bytes(data)
+fn new_table_from_bytes(data []u8, tid int, catalog_name string) !Table {
+	stmt := parse_definition(data)!
+	if stmt is TableDefinition {
+		mut table := stmt.table(Identifier{
+			catalog_name: catalog_name
+			schema_name:  stmt.table_name.schema_name
+			entity_name:  stmt.table_name.entity_name
+		}, tid)!
 
-	table_name := b.read_identifier()
+		// Only the columns include the catalog name.
+		table.name = Identifier{
+			schema_name: stmt.table_name.schema_name
+			entity_name: stmt.table_name.entity_name
+		}
 
-	primary_key_len := b.read_u8()
-	mut primary_key := []string{len: int(primary_key_len)}
-	for i in 0 .. int(primary_key_len) {
-		primary_key[i] = b.read_string1()
+		return table
 	}
 
-	mut columns := []Column{}
-	for b.has_more() {
-		column_name := b.read_string1()
-		column_type := b.read_u8()
-		is_not_null := b.read_bool()
-		size := b.read_i32()
-		scale := b.read_i16()
-
-		columns << Column{Identifier{
-			catalog_name:    catalog_name
-			schema_name:     table_name.schema_name
-			entity_name:     table_name.entity_name
-			sub_entity_name: column_name
-		}, type_from_number(column_type, size, scale), is_not_null}
-	}
-
-	return Table{tid, table_name, columns, primary_key, false}
+	return error('not a table definition: ${data.bytestr()}')
 }
 
 // Returns the CREATE TABLE statement, including the ';'.

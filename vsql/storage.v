@@ -84,7 +84,7 @@ fn (mut f Storage) open(path string, catalog_name string) ! {
 		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
 			f.header.active_transaction_ids)
 		{
-			table := new_table_from_bytes(object.value, object.tid, catalog_name)
+			table := new_table_from_bytes(object.value, object.tid, catalog_name)!
 			f.tables[table.name.storage_id()] = table
 		}
 	}
@@ -94,10 +94,17 @@ fn (mut f Storage) open(path string, catalog_name string) ! {
 		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
 			f.header.active_transaction_ids)
 		{
-			schema := new_schema_from_bytes(object.value, object.tid)
+			schema := new_schema_from_bytes(object.value, object.tid)!
 			f.schemas[schema.name] = schema
 		}
 	}
+}
+
+// parse_definition parses the definition of a schema object (such as a table),
+// which is stored in the file as SQL. See "Schema Objects" in the "File Format"
+// docs.
+fn parse_definition(data []u8) !Stmt {
+	return parse_tokens(tokenize(data.bytestr()))
 }
 
 fn (mut f Storage) schema_changed() {
@@ -191,7 +198,7 @@ fn (mut f Storage) sequence(name Identifier) !Sequence {
 	definition_objects := f.read_objects(definition_key, definition_key)!
 
 	sequence := new_sequence_from_bytes(definition_objects[0].value, value_object.value,
-		definition_objects[0].tid)
+		definition_objects[0].tid)!
 
 	return sequence
 }
@@ -206,7 +213,7 @@ fn (mut f Storage) sequences() ![]Sequence {
 	for definition_object in f.read_objects('Q'.bytes(), 'R'.bytes())! {
 		value_object := f.get_object('V${definition_object.key[1..].bytestr()}'.bytes())!
 		sequences << new_sequence_from_bytes(definition_object.value, value_object.value,
-			definition_object.tid)
+			definition_object.tid)!
 	}
 
 	return sequences
@@ -236,7 +243,7 @@ fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence)
 		f.isolation_end() or { panic(err) }
 	}
 
-	mut canonical_name := new_sequence.name.str()
+	mut canonical_name := new_sequence.name.storage_id()
 	definition_key := 'Q${canonical_name}'.bytes()
 
 	old_obj := new_page_object(definition_key, old_sequence.tid, 0, old_sequence.definition_bytes())

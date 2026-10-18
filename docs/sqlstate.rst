@@ -183,6 +183,14 @@ already active transaction.
    START TRANSACTION;
    -- error 25001: invalid transaction state: active sql transaction
 
+``25006`` read-only sql transaction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``25006`` is returned for a statement that would change a database file that
+was changed by a newer version of vsql, in a way that this version cannot
+safely change it. The file can still be read. See *Compatibility* in
+:doc:`file-format`.
+
 ``25P02`` in failed sql transaction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

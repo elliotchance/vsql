@@ -41,6 +41,15 @@ fn (stmt TableDefinition) execute(mut conn Connection, params map[string]Value, 
 		return sqlstate_42p07(table_name.str()) // duplicate table
 	}
 
+	table := stmt.table(table_name, 0)!
+	catalog.storage.create_table(table_name, table.columns, table.primary_key)!
+
+	return new_result_msg('CREATE TABLE 1', elapsed_parse, t.elapsed())
+}
+
+// table checks the definition and returns the table that it describes. It's
+// also used when reading a table definition from the file.
+fn (stmt TableDefinition) table(table_name Identifier, tid int) !Table {
 	mut columns := []Column{}
 	mut primary_key := []string{}
 	for table_element in stmt.table_elements {
@@ -95,9 +104,7 @@ fn (stmt TableDefinition) execute(mut conn Connection, params map[string]Value, 
 		}
 	}
 
-	catalog.storage.create_table(table_name, columns, primary_key)!
-
-	return new_result_msg('CREATE TABLE 1', elapsed_parse, t.elapsed())
+	return Table{tid, table_name, columns, primary_key, false}
 }
 
 fn (stmt TableDefinition) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {

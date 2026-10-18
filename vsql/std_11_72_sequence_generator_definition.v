@@ -50,12 +50,16 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, params map[st
 		conn.release_write_connection()
 	}
 
-	mut c := Compiler{
-		conn:   conn
-		params: params
-	}
 	mut catalog := conn.catalog()
-	mut sequence_name := conn.resolve_schema_identifier(stmt.name)!
+	sequence := stmt.sequence(conn.resolve_schema_identifier(stmt.name)!)
+	catalog.storage.create_sequence(sequence)!
+
+	return new_result_msg('CREATE SEQUENCE 1', elapsed_parse, t.elapsed())
+}
+
+// sequence returns the sequence that the definition describes. It's also used
+// when reading a sequence definition from the file.
+fn (stmt SequenceGeneratorDefinition) sequence(sequence_name Identifier) Sequence {
 	mut increment_by := i64(1)
 	mut has_start_value := false
 	mut start_value := i64(1)
@@ -67,28 +71,24 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, params map[st
 	for option in stmt.options {
 		match option {
 			SequenceGeneratorStartWithOption {
-				start_value = (option.start_value.compile(mut c)!.run(mut conn, Row{},
-					map[string]Value{})!).as_int()
+				start_value = option.start_value.as_int()
 				has_start_value = true
 			}
 			SequenceGeneratorRestartOption {
 				// Not possible.
 			}
 			SequenceGeneratorIncrementByOption {
-				increment_by = (option.increment_by.compile(mut c)!.run(mut conn, Row{},
-					map[string]Value{})!).as_int()
+				increment_by = option.increment_by.as_int()
 			}
 			SequenceGeneratorMinvalueOption {
 				if v := option.min_value {
-					min_value =
-						(v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
+					min_value = v.as_int()
 					has_min_value = true
 				}
 			}
 			SequenceGeneratorMaxvalueOption {
 				if v := option.max_value {
-					max_value =
-						(v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
+					max_value = v.as_int()
 					has_max_value = true
 				}
 			}
@@ -114,7 +114,7 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, params map[st
 		}
 	}
 
-	sequence := Sequence{
+	return Sequence{
 		name:          sequence_name
 		current_value: current_value
 		increment_by:  increment_by
@@ -124,10 +124,6 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, params map[st
 		has_max_value: has_max_value
 		max_value:     max_value
 	}
-
-	catalog.storage.create_sequence(sequence)!
-
-	return new_result_msg('CREATE SEQUENCE 1', elapsed_parse, t.elapsed())
 }
 
 fn (stmt SequenceGeneratorDefinition) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {

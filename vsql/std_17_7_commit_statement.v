@@ -30,6 +30,7 @@ fn (stmt CommitStatement) execute(mut conn Connection, params map[string]Value, 
 		catalog.release_write_connection()
 	}
 
+	mut blob_refs := []PageObject{}
 	for page_number, _ in catalog.storage.transaction_pages {
 		// Removing objects can move the last page and truncate the file.
 		if page_number >= catalog.storage.btree.pager.total_pages() {
@@ -41,10 +42,19 @@ fn (stmt CommitStatement) execute(mut conn Connection, params map[string]Value, 
 			// Only remove the now expired records.
 			if obj.xid == catalog.storage.transaction_id {
 				page.delete(obj.key, obj.tid)
+				if obj.is_blob_ref {
+					blob_refs << obj
+				}
 			}
 		}
 
 		catalog.storage.btree.pager.store_page(page_number, page)!
+	}
+
+	// Removing the blobs can move pages around, so it must be done after the
+	// pages above have been visited.
+	for obj in blob_refs {
+		catalog.storage.btree.remove_blob(obj)!
 	}
 
 	// We do the reverse of start_transation where we disable the active

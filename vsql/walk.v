@@ -86,6 +86,10 @@ fn (mut iter PageIterator) next() ?PageObject {
 		return none
 	}
 
+	if o.is_blob_ref {
+		return iter.btree.read_blob(o) or { panic(err) }
+	}
+
 	return o
 }
 

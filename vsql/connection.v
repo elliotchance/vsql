@@ -217,6 +217,12 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 		conn.options.mutex.unlock()
 		return err
 	}
+	if !conn.storage.header.is_writable() {
+		flock_unlock_exclusive(conn.storage.file, conn.path)
+		conn.storage.close_file()
+		conn.options.mutex.unlock()
+		return sqlstate_25006('database needs file format ${conn.storage.header.write_version} to be changed, but this version of vsql only supports up to ${file_format_version}')
+	}
 }
 
 fn (mut conn Connection) release_write_connection() {
@@ -290,14 +296,18 @@ pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 		}
 	}
 
+	stmt := parse_tokens(tokens)!
+	elapsed_parse := t.elapsed()
+
+	return PreparedStmt{stmt, map[string]Value{}, explain, &conn, elapsed_parse}
+}
+
+fn parse_tokens(tokens []Token) !Stmt {
 	mut lexer := Lexer{tokens, 0}
 	mut parser := yy_new_parser()
 	parser.parse(mut lexer)!
 
-	stmt := (parser as YYParserImpl).lval.v as Stmt
-	elapsed_parse := t.elapsed()
-
-	return PreparedStmt{stmt, map[string]Value{}, explain, &conn, elapsed_parse}
+	return (parser as YYParserImpl).lval.v as Stmt
 }
 
 // query executes a statement. If there is a result set it will be returned.

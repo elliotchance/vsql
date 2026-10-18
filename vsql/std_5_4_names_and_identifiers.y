@@ -29,7 +29,7 @@ catalog_name:
 schema_qualified_name:
   qualified_identifier { $$.v = $1.v as IdentifierChain }
 | schema_name period qualified_identifier   {
-    $$.v = IdentifierChain{($1.v as Identifier).schema_name + '.' +
+    $$.v = IdentifierChain{($1.v as Identifier).str() + '.' +
       ($3.v as IdentifierChain).str()}
   }
 

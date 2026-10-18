@@ -52,9 +52,14 @@ fn new_storage(btree Btree) Storage {
 	}
 }
 
-fn (mut f Storage) open(path string, catalog_name string) ! {
+// open_file must be called before the file is locked, since the lock is placed
+// on the file that is opened.
+fn (mut f Storage) open_file(path string) ! {
 	f.file = os.open_file(path, 'r+') or { return error('unable to open ${path}: ${err}') }
+}
 
+// open must be called after open_file and the file being locked.
+fn (mut f Storage) open(path string, catalog_name string) ! {
 	header := read_header(mut f.file)!
 
 	f.btree = new_btree(new_file_pager(mut f.file, header.page_size, header.root_page)!,
@@ -102,7 +107,8 @@ fn (mut f Storage) schema_changed() {
 	f.header.schema_version++
 }
 
-fn (mut f Storage) close() ! {
+// flush must be called before the file is unlocked and closed with close_file.
+fn (mut f Storage) flush() ! {
 	// Before closing the connection we always write back the page header in
 	// case the schema_version or root_page have changed.
 	//
@@ -113,6 +119,9 @@ fn (mut f Storage) close() ! {
 	write_header(mut f.file, f.header)!
 
 	f.file.flush()
+}
+
+fn (mut f Storage) close_file() {
 	f.file.close()
 }
 

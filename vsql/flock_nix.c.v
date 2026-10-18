@@ -11,11 +11,15 @@ import os
 fn C.flock(int, int) int
 
 fn flock_lock_exclusive(file os.File, path string) ! {
-	C.flock(file.fd, C.LOCK_EX)
+	if C.flock(file.fd, C.LOCK_EX) != 0 {
+		return error('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
+	}
 }
 
 fn flock_lock_shared(file os.File, path string) ! {
-	C.flock(file.fd, C.LOCK_SH)
+	if C.flock(file.fd, C.LOCK_SH) != 0 {
+		return error('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
+	}
 }
 
 fn flock_unlock_exclusive(file os.File, path string) {

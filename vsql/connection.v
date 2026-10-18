@@ -172,8 +172,21 @@ fn (mut conn CatalogConnection) open_read_connection() ! {
 
 	conn.options.mutex.@rlock()
 
-	flock_lock_shared(conn.storage.file, conn.path)!
-	conn.storage.open(conn.path, conn.catalog_name)!
+	conn.storage.open_file(conn.path) or {
+		conn.options.mutex.runlock()
+		return err
+	}
+	flock_lock_shared(conn.storage.file, conn.path) or {
+		conn.storage.close_file()
+		conn.options.mutex.runlock()
+		return err
+	}
+	conn.storage.open(conn.path, conn.catalog_name) or {
+		flock_unlock_shared(conn.storage.file, conn.path)
+		conn.storage.close_file()
+		conn.options.mutex.runlock()
+		return err
+	}
 }
 
 fn (mut conn Connection) open_write_connection() ! {
@@ -189,8 +202,21 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 
 	conn.options.mutex.@lock()
 
-	flock_lock_exclusive(conn.storage.file, conn.path)!
-	conn.storage.open(conn.path, conn.catalog_name)!
+	conn.storage.open_file(conn.path) or {
+		conn.options.mutex.unlock()
+		return err
+	}
+	flock_lock_exclusive(conn.storage.file, conn.path) or {
+		conn.storage.close_file()
+		conn.options.mutex.unlock()
+		return err
+	}
+	conn.storage.open(conn.path, conn.catalog_name) or {
+		flock_unlock_exclusive(conn.storage.file, conn.path)
+		conn.storage.close_file()
+		conn.options.mutex.unlock()
+		return err
+	}
 }
 
 fn (mut conn Connection) release_write_connection() {
@@ -204,7 +230,7 @@ fn (mut conn CatalogConnection) release_write_connection() {
 		return
 	}
 
-	conn.storage.close() or {
+	conn.storage.flush() or {
 		// This was a hack to get around the fact we can't return an option from
 		// this function because it messes with the behavior of defer.
 		//
@@ -215,6 +241,7 @@ fn (mut conn CatalogConnection) release_write_connection() {
 	}
 
 	flock_unlock_exclusive(conn.storage.file, conn.path)
+	conn.storage.close_file()
 
 	conn.options.mutex.unlock()
 }
@@ -230,7 +257,7 @@ fn (mut conn CatalogConnection) release_read_connection() {
 		return
 	}
 
-	conn.storage.close() or {
+	conn.storage.flush() or {
 		// This was a hack to get around the fact we can't return an option from
 		// this function because it messes with the behavior of defer.
 		//
@@ -241,6 +268,7 @@ fn (mut conn CatalogConnection) release_read_connection() {
 	}
 
 	flock_unlock_shared(conn.storage.file, conn.path)
+	conn.storage.close_file()
 
 	conn.options.mutex.runlock()
 }

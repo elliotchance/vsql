@@ -161,17 +161,6 @@ fn new_empty_value(typ Type) Value {
 	return value
 }
 
-fn new_empty_table_row(tables map[string]Table) Row {
-	mut r := Row{}
-	for _, table in tables {
-		for col in table.columns {
-			r.data[col.name.id()] = new_empty_value(col.typ)
-		}
-	}
-
-	return r
-}
-
 fn (r Row) bytes(t Table) []u8 {
 	mut buf := new_empty_bytes()
 

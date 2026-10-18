@@ -29,7 +29,9 @@ fn (mut c PGConn) accept() ! {
 fn (mut c PGConn) write_result(result Result) ! {
 	if result.rows.len > 0 {
 		c.write_row_description(result)!
-		for row in result {
+		// Iterating the Result itself (rather than its rows) generates invalid C
+		// with the V3 compiler.
+		for row in result.rows {
 			c.write_data_row(result.columns, row)!
 		}
 	}

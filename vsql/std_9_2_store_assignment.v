@@ -469,27 +469,6 @@ fn check_integer_range(x i64, typ SQLType) ! {
 	}
 }
 
-fn check_floating_range(x f64, typ SQLType) ! {
-	match typ {
-		.is_smallint {
-			if x < -32768.0 || x > 32767.0 {
-				return sqlstate_22003()
-			}
-		}
-		.is_integer {
-			if x < -2147483648.0 || x > 2147483647.0 {
-				return sqlstate_22003()
-			}
-		}
-		.is_bigint {
-			if x < -9223372036854775808.0 || x > 9223372036854775807.0 {
-				return sqlstate_22003()
-			}
-		}
-		else {}
-	}
-}
-
 // '2022-06-30' => '2022-06-30 00:00:00.000000'
 fn cast_date_to_timestamp_without(conn &Connection, v Value, to Type) !Value {
 	return new_timestamp_value(v.time_value().str_full_timestamp(to.size, false, true))

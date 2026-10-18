@@ -15,9 +15,9 @@ V := "/tmp/oldv/v_at_$(OLDV)/v"
 else
 V := $(shell which v)
 
-# V3 fails to compile vsql and falls back to the old compiler anyway, so skip
-# straight to it. -n hides the notices, which are thousands of lines.
-V3_OPTIONS = -old-compiler -n
+# -n hides the notices, which are thousands of lines. V3's module cache makes it
+# compile vsql three times (55s rather than 17s), so it's turned off.
+V3_OPTIONS = -n -nocache
 endif
 
 # Ready is a some quick tasks that can easily be forgotten when preparing a
@@ -80,8 +80,12 @@ fmt-verify:
 
 # Tests
 
+# Only the B-tree tests are built with -prod. They take 5 minutes without it
+# (rather than 70 seconds), but the other tests are much quicker to build
+# without it.
 test: oldv
-	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) $(PROD) test vsql
+	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) test $(filter-out vsql/btree_test.v,$(wildcard vsql/*_test.v))
+	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) $(PROD) test vsql/btree_test.v
 
 btree-test: oldv
 	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) $(PROD) vsql/btree_test.v

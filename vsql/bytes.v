@@ -138,18 +138,17 @@ fn (mut b BytesLittleEndian) read_u8s(len int) []u8 {
 
 fn (mut b BytesLittleEndian) write_i32(data int) {
 	b.write_u8s(Bytes4{
-		int_value: data
+		i32_value: i32(data)
 	}.bytes_reversed())
 }
 
 fn (mut b BytesLittleEndian) read_i32() int {
 	// This needs to be converted from big-endian (that's the reverse order).
 	bytes := b.read_u8s(4)
-	return unsafe {
-		Bytes4{
-			bytes: [bytes[3], bytes[2], bytes[1], bytes[0]]!
-		}.int_value
+	b4 := Bytes4{
+		bytes: [bytes[3], bytes[2], bytes[1], bytes[0]]!
 	}
+	return unsafe { int(b4.i32_value) }
 }
 
 fn (mut b BytesLittleEndian) write_i16(data i16) {
@@ -348,7 +347,7 @@ fn (mut b BytesBigEndian) write_u8s(data []u8) {
 fn (mut b BytesBigEndian) read_u8s(len int) []u8 {
 	// As documented on the interface, u8s does not undergo any endian
 	// conversion.
-	data := b.data[b.at..b.at + len]
+	data := b.data[b.at..b.at + len].clone()
 	b.at += len
 
 	return data.clone()
@@ -356,17 +355,16 @@ fn (mut b BytesBigEndian) read_u8s(len int) []u8 {
 
 fn (mut b BytesBigEndian) write_i32(data int) {
 	b.write_u8s(Bytes4{
-		int_value: data
+		i32_value: i32(data)
 	}.bytes())
 }
 
 fn (mut b BytesBigEndian) read_i32() int {
 	bytes := b.read_u8s(4)
-	return unsafe {
-		Bytes4{
-			bytes: [bytes[0], bytes[1], bytes[2], bytes[3]]!
-		}.int_value
+	b4 := Bytes4{
+		bytes: [bytes[0], bytes[1], bytes[2], bytes[3]]!
 	}
+	return unsafe { int(b4.i32_value) }
 }
 
 fn (mut b BytesBigEndian) write_i16(data i16) {
@@ -562,10 +560,12 @@ fn (b Bytes8) bytes_reversed() []u8 {
 	}
 }
 
+// Bytes4 uses i32 rather than int because int is not always 32 bits (it's 64
+// bits with the V3 compiler).
 union Bytes4 {
 	bytes     [4]u8
 	f32_value f32
-	int_value int
+	i32_value i32
 }
 
 fn (b Bytes4) bytes() []u8 {

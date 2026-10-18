@@ -112,17 +112,6 @@ fn unary_negate_real(conn &Connection, v Value) !Value {
 	return new_real_value(f32(-v.f64_value()))
 }
 
-fn unary_not_boolean(conn &Connection, v Value) !Value {
-	if v.is_null {
-		return new_unknown_value()
-	}
-
-	return match v.bool_value() {
-		.is_true { new_boolean_value(false) }
-		.is_false { new_boolean_value(true) }
-	}
-}
-
 fn binary_double_precision_plus_double_precision(conn &Connection, a Value, b Value) !Value {
 	return new_double_precision_value(a.f64_value() + b.f64_value())
 }

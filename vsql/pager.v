@@ -90,14 +90,14 @@ fn new_file_pager(mut file os.File, page_size int, root_page int) !&FilePager {
 		root_page:   root_page
 		// The first page is reserved for header information. We do not include
 		// this in the pages.
-		total_pages: int((file_len - sizeof(Header)) / i64(page_size))
+		total_pages: int((file_len - header_size) / i64(page_size))
 	}
 }
 
 fn (mut p FilePager) fetch_page(page_number int) !Page {
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
-	p.file.seek(int(sizeof(Header)) + (p.page_size * page_number), .start) or {
+	p.file.seek(int(header_size) + (p.page_size * page_number), .start) or {
 		return error('unable to seek: ${err}')
 	}
 
@@ -116,7 +116,7 @@ fn (mut p FilePager) fetch_page(page_number int) !Page {
 fn (mut p FilePager) store_page(page_number int, page Page) ! {
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
-	p.file.seek(int(sizeof(Header)) + (p.page_size * page_number), .start) or {
+	p.file.seek(int(header_size) + (p.page_size * page_number), .start) or {
 		return error('unable to seek: ${err}')
 	}
 

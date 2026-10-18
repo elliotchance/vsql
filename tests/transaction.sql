@@ -102,3 +102,56 @@ SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- error 42601: syntax error: INSERT has more values than columns
 -- error 25P02: transaction is aborted, commands ignored until end of transaction block
+
+CREATE TABLE t (id INT NOT NULL, x INT, PRIMARY KEY(id));
+INSERT INTO t (id, x) VALUES (1, 10);
+START TRANSACTION;
+DELETE FROM t WHERE id = 1;
+SELECT * FROM t;
+ROLLBACK;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: DELETE 1
+-- msg: ROLLBACK
+-- ID: 1 X: 10
+
+CREATE TABLE t (id INT NOT NULL, x INT, PRIMARY KEY(id));
+INSERT INTO t (id, x) VALUES (1, 10);
+START TRANSACTION;
+UPDATE t SET x = 99 WHERE id = 1;
+UPDATE t SET x = 100 WHERE id = 1;
+SELECT * FROM t;
+ROLLBACK;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: UPDATE 1
+-- msg: UPDATE 1
+-- ID: 1 X: 100
+-- msg: ROLLBACK
+-- ID: 1 X: 10
+
+CREATE TABLE t (x INT);
+INSERT INTO t (x) VALUES (10);
+INSERT INTO t (x) VALUES (20);
+START TRANSACTION;
+UPDATE t SET x = 99 WHERE x = 10;
+DELETE FROM t WHERE x = 20;
+INSERT INTO t (x) VALUES (30);
+DELETE FROM t WHERE x = 30;
+ROLLBACK;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: UPDATE 1
+-- msg: DELETE 1
+-- msg: INSERT 1
+-- msg: DELETE 1
+-- msg: ROLLBACK
+-- X: 10
+-- X: 20

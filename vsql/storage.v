@@ -87,6 +87,12 @@ fn (mut f Storage) open(path string, catalog_name string, exclusive bool) ! {
 	}
 	f.header = header
 
+	f.load_schema(catalog_name)!
+}
+
+// load_schema reads the tables and schemas that are visible to the current
+// transaction from the file.
+fn (mut f Storage) load_schema(catalog_name string) ! {
 	// The schema must be read in an isolation block, which may or may not
 	// belong to an active transaction.
 	f.isolation_start()!

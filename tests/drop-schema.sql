@@ -33,3 +33,42 @@ INSERT INTO foo.bar (baz) VALUES (123);
 -- msg: CREATE TABLE 1
 -- msg: DROP SCHEMA 1
 -- error 3F000: invalid schema name: FOO
+
+CREATE SCHEMA foo;
+CREATE SEQUENCE foo.seq1;
+DROP SCHEMA foo RESTRICT;
+VALUES NEXT VALUE FOR foo.seq1;
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE SEQUENCE 1
+-- error 2BP01: dependent objects still exist on FOO
+-- COL1: 1
+
+CREATE SCHEMA foo;
+CREATE SEQUENCE foo.seq1;
+CREATE SEQUENCE seq1;
+VALUES NEXT VALUE FOR foo.seq1;
+DROP SCHEMA foo CASCADE;
+VALUES NEXT VALUE FOR foo.seq1;
+VALUES NEXT VALUE FOR seq1;
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE SEQUENCE 1
+-- COL1: 1
+-- msg: DROP SCHEMA 1
+-- error 42P01: no such sequence: ":memory:".FOO.SEQ1
+-- COL1: 1
+
+CREATE SCHEMA foo;
+CREATE SEQUENCE foo.seq1;
+VALUES NEXT VALUE FOR foo.seq1;
+DROP SCHEMA foo CASCADE;
+CREATE SCHEMA foo;
+CREATE SEQUENCE foo.seq1;
+VALUES NEXT VALUE FOR foo.seq1;
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE SEQUENCE 1
+-- COL1: 1
+-- msg: DROP SCHEMA 1
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE SEQUENCE 1
+-- COL1: 1

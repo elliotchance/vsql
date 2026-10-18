@@ -45,8 +45,10 @@ fn (mut iter PageIterator) next() ?PageObject {
 	}
 
 	// If this page is done, roll up to the parent and continue to traverse
-	// down.
-	if iter.depth_iterator[iter.depth_iterator.len - 1] >= iter.objects.len {
+	// down. This repeats because leaf pages may be empty after objects are
+	// removed by COMMIT, ROLLBACK or isolation_end, since those don't remove
+	// empty pages from the B-tree.
+	for iter.depth_iterator[iter.depth_iterator.len - 1] >= iter.objects.len {
 		for {
 			if iter.path.len == 1 {
 				return none

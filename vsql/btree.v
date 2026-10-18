@@ -268,7 +268,6 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 	// data more tightly. However, if the inserts are not sequential we will get
 	// a lot of semi-full pages that hopefully become full over time.
 	mut objects := page.objects()
-	original_head := objects[0].key.clone()
 	mut inserted_at := -1
 	for pos, object in objects {
 		if compare_bytes(obj.key, object.key) <= 0 {
@@ -353,8 +352,18 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 		// TODO(elliotchance): I'm not certain that this will work if the head
 		//  object changes to something very large. This code should panic on
 		//  add(). We need a test suite for very long keys.
+		//
+		// The parent's key for the left page may be older than the head of
+		// the page, because removing objects from a page (see isolation_end)
+		// does not update the parent. So we find it by the page number instead.
 		if inserted_at == 0 {
-			page3.delete(original_head, 0)
+			for parent_object in page3.objects() {
+				mut buf := new_bytes(parent_object.value)
+				if buf.read_i32() == left_page_number {
+					page3.delete(parent_object.key, 0)
+					break
+				}
+			}
 			page3.add(p1)!
 		}
 

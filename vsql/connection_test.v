@@ -101,3 +101,43 @@ fn test_row_ids_survive_reopen() ! {
 	}
 	assert xs == []int{len: 101, init: index}
 }
+
+fn test_empty_pages_after_rollback() ! {
+	file_name := 'test_empty_pages_after_rollback.vsql'
+	if os.exists(file_name) {
+		os.rm(file_name) or { return err }
+	}
+
+	// Rolling back enough rows leaves several empty leaf pages in the B-tree.
+	mut db := open(file_name)!
+	db.query('CREATE TABLE t (id INT NOT NULL, s VARCHAR(200), PRIMARY KEY (id))')!
+	db.query('START TRANSACTION')!
+	for i in 0 .. 60 {
+		db.query("INSERT INTO t (id, s) VALUES (${i}, '${'y'.repeat(100)}')")!
+	}
+	db.query('ROLLBACK')!
+
+	mut result := db.query('SELECT COUNT(*) FROM t')!
+	assert (result.next() or { return error('no rows') }).get_int('COL1')! == 0
+}
+
+fn test_split_with_stale_parent_key() ! {
+	file_name := 'test_split_with_stale_parent_key.vsql'
+	if os.exists(file_name) {
+		os.rm(file_name) or { return err }
+	}
+
+	// Deleting the first row of a page leaves the old key in the parent. A new
+	// first row that splits the page must replace that key rather than add a
+	// second one for the same page, which would make it appear twice.
+	mut db := open(file_name)!
+	db.query('CREATE TABLE t (id INT NOT NULL, s VARCHAR(1000), PRIMARY KEY (id))')!
+	for i in 2 .. 41 {
+		db.query("INSERT INTO t (id, s) VALUES (${i}, '${'y'.repeat(200)}')")!
+	}
+	db.query('DELETE FROM t WHERE id = 2')!
+	db.query("INSERT INTO t (id, s) VALUES (1, '${'y'.repeat(1000)}')")!
+
+	mut result := db.query('SELECT COUNT(*) FROM t')!
+	assert (result.next() or { return error('no rows') }).get_int('COL1')! == 39
+}

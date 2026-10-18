@@ -406,6 +406,7 @@ fn (mut f Storage) write_row(mut r Row, t Table) ! {
 	}
 
 	f.assign_row_id(mut r, t)
+	f.check_primary_key(mut r, t)!
 	obj := new_page_object(r.object_key(t)!, f.transaction_id, 0, r.bytes(t))
 	f.btree.add(obj)!
 }
@@ -433,6 +434,9 @@ fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ! {
 	}
 
 	f.assign_row_id(mut new, t)
+	if new.object_key(t)! != old.object_key(t)! {
+		f.check_primary_key(mut new, t)!
+	}
 	old_obj := new_page_object(old.object_key(t)!, old.tid, 0, old.bytes(t))
 	new_obj := new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t))
 	f.btree.update(old_obj, new_obj, f.transaction_id)!

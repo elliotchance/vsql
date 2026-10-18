@@ -169,6 +169,22 @@ The trim character must be exactly one character.
   -- msg: CREATE TABLE 1
   -- error 23502: violates non-null constraint: column F2
 
+``23505`` violates unique constraint
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A row with the same ``PRIMARY KEY`` already exists.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t1 (id INT, PRIMARY KEY (id));
+  INSERT INTO t1 (id) VALUES (1);
+  INSERT INTO t1 (id) VALUES (1);
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 1
+  -- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.T1
+
 ``25001`` invalid transaction state: active sql transaction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

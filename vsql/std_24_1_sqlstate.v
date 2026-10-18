@@ -169,6 +169,18 @@ fn sqlstate_23502(msg string) IError {
 	}
 }
 
+// violates unique constraint
+struct SQLState23505 {
+	SQLState
+}
+
+fn sqlstate_23505(msg string) IError {
+	return SQLState23505{
+		code: sqlstate_to_int('23505')
+		msg:  'violates unique constraint: ${msg}'
+	}
+}
+
 // dependent objects still exist
 struct SQLState2BP01 {
 	SQLState

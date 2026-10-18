@@ -652,7 +652,7 @@ Optional Features
    * - ❌ **B221**
      - **Routine language Ada: VARCHAR and NUMERIC support**
 
-   * - ❌ **F032**
+   * - ⭕ **F032**
      - **CASCADE drop behavior**
 
    * - ❌ **F033**
@@ -685,10 +685,10 @@ Optional Features
    * - ❌ F111-01
      - READ UNCOMMITTED isolation level
 
-   * - ❌ **F111-02**
+   * - ❌ F111-02
      - READ COMMITTED isolation level
 
-   * - ❌ **F111-03**
+   * - ❌ F111-03
      - REPEATABLE READ isolation level
 
    * - ❌ **F121**
@@ -706,7 +706,7 @@ Optional Features
    * - ❌ **F123**
      - **All diagnostics**
 
-   * - ❌ **F171**
+   * - ✅ **F171**
      - **Multiple schemas per user**
 
    * - ❌ **F191**
@@ -733,7 +733,7 @@ Optional Features
    * - ❌ **F271**
      - **Compound character literals**
 
-   * - ❌ **F281**
+   * - ⭕ **F281**
      - **LIKE enhancements**
 
    * - ❌ **F291**
@@ -769,7 +769,7 @@ Optional Features
    * - ❌ **F361**
      - **Subprogram support**
 
-   * - ❌ **F381**
+   * - ⭕ **F381**
      - **Extended schema manipulation**
 
    * - ❌ F381-01
@@ -796,7 +796,7 @@ Optional Features
    * - ❌ **F386**
      - **Set identity column generation clause**
 
-   * - ❌ **F391**
+   * - ✅ **F391**
      - **Long identifiers**
 
    * - ❌ **F392**
@@ -829,7 +829,7 @@ Optional Features
    * - ❌ **F404**
      - **Range variable for common column names**
 
-   * - ❌ **F411**
+   * - ⭕ **F411**
      - **Time zone specification**
 
    * - ❌ **F421**
@@ -880,7 +880,7 @@ Optional Features
    * - ❌ **F531**
      - **Temporary tables**
 
-   * - ❌ **F555**
+   * - ✅ **F555**
      - **Enhanced seconds precision**
 
    * - ❌ **F561**
@@ -889,7 +889,7 @@ Optional Features
    * - ✅ **F571**
      - **Truth value tests**
 
-   * - ❌ **F591**
+   * - ✅ **F591**
      - **Derived tables**
 
    * - ❌ **F611**
@@ -898,10 +898,10 @@ Optional Features
    * - ❌ **F641**
      - **Row and table constructors**
 
-   * - ✅ **F651**
+   * - ⭕ **F651**
      - **Catalog name qualifiers**
 
-   * - ❌ **F661**
+   * - ⭕ **F661**
      - **Simple tables**
 
    * - ❌ **F671**
@@ -943,7 +943,7 @@ Optional Features
    * - ❌ **F751**
      - **View CHECK enhancements**
 
-   * - ❌ **F761**
+   * - ⭕ **F761**
      - **Session management**
 
    * - ✅ **F762**
@@ -1000,10 +1000,10 @@ Optional Features
    * - ❌ **F847**
      - **Nonconstant regular expressions**
 
-   * - ❌ **F850**
+   * - ✅ **F850**
      - **Top-level <order by clause> in <query expression>**
 
-   * - ❌ **F851**
+   * - ✅ **F851**
      - **<order by clause> in subqueries**
 
    * - ❌ **F852**
@@ -1015,22 +1015,22 @@ Optional Features
    * - ❌ **F856**
      - **Nested <fetch first clause> in <query expression>**
 
-   * - ❌ **F857**
+   * - ✅ **F857**
      - **Top-level <fetch first clause> in <query expression>**
 
-   * - ❌ **F858**
+   * - ✅ **F858**
      - **<fetch first clause> in subqueries**
 
    * - ❌ **F859**
      - **Top-level <fetch first clause> in views**
 
-   * - ❌ **F860**
+   * - ✅ **F860**
      - **dynamic <fetch first row count> in <fetch first clause>**
 
-   * - ❌ **F861**
+   * - ✅ **F861**
      - **Top-level <result offset clause> in <query expression>**
 
-   * - ❌ **F862**
+   * - ✅ **F862**
      - **<result offset clause> in subqueries**
 
    * - ❌ **F863**
@@ -1039,7 +1039,7 @@ Optional Features
    * - ❌ **F864**
      - **Top-level <result offset clause> in views**
 
-   * - ❌ **F865**
+   * - ✅ **F865**
      - **dynamic <offset row count> in <result offset clause>**
 
    * - ❌ **F866**
@@ -1213,7 +1213,7 @@ Optional Features
    * - ❌ **T024**
      - **Spaces in binary literals**
 
-   * - ✅ **T031**
+   * - ⭕ **T031**
      - **BOOLEAN data type**
 
    * - ❌ **T041**
@@ -1252,7 +1252,7 @@ Optional Features
    * - ❌ **T061**
      - **UCS support**
 
-   * - ❌ **T071**
+   * - ✅ **T071**
      - **BIGINT data type**
 
    * - ❌ **T076**
@@ -1276,7 +1276,7 @@ Optional Features
    * - ❌ **T132**
      - **Recursive query in subquery**
 
-   * - ❌ **T141**
+   * - ✅ **T141**
      - **SIMILAR predicate**
 
    * - ❌ **T151**
@@ -1357,7 +1357,7 @@ Optional Features
    * - ❌ **T231**
      - **Sensitive cursors**
 
-   * - ❌ **T241**
+   * - ✅ **T241**
      - **START TRANSACTION statement**
 
    * - ❌ **T251**
@@ -1420,10 +1420,10 @@ Optional Features
    * - ❌ **T434**
      - **GROUP BY DISINCT**
 
-   * - ❌ **T441**
+   * - ⭕ **T441**
      - **ABS and MOD functions**
 
-   * - ❌ **T461**
+   * - ✅ **T461**
      - **Symmetric BETWEEN predicate**
 
    * - ❌ **T471**
@@ -1513,16 +1513,16 @@ Optional Features
    * - ❌ **T620**
      - **WINDOW clause: GROUPS option**
 
-   * - ❌ **T621**
+   * - ⭕ **T621**
      - **Enhanced numeric functions**
 
-   * - ❌ **T622**
+   * - ⭕ **T622**
      - **Trigonometric functions**
 
    * - ❌ **T623**
      - **General logarithm functions**
 
-   * - ❌ **T624**
+   * - ⭕ **T624**
      - **Common logarithm functions**
 
    * - ❌ **T625**

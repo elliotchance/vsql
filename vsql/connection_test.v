@@ -44,3 +44,27 @@ fn test_concurrent_writes() ! {
 
 	assert total == 1000
 }
+
+fn test_datetime_types_survive_reopen() ! {
+	file_name := 'test_datetime_types_survive_reopen.vsql'
+	if os.exists(file_name) {
+		os.rm(file_name) or { return err }
+	}
+
+	mut db := open(file_name)!
+	db.query('CREATE TABLE t (x TIMESTAMP WITH TIME ZONE, y TIME WITH TIME ZONE, z TIMESTAMP(3), w TIME(2))')!
+	db.query("INSERT INTO t (x, y, z, w) VALUES (TIMESTAMP '2022-06-30 21:47:32+05:00', TIME '01:02:03+05:00', TIMESTAMP '2022-06-30 21:47:32.123', TIME '01:02:03.45')")!
+
+	// A new connection reads the table definition back from the file.
+	mut db2 := open(file_name)!
+	result := db2.query('SELECT * FROM t')!
+	mut rows := 0
+	for row in result {
+		rows++
+		assert row.get_string('X')! == '2022-06-30T21:47:32.000000+0500'
+		assert row.get_string('Y')! == '01:02:03+0500'
+		assert row.get_string('Z')! == '2022-06-30T21:47:32.123'
+		assert row.get_string('W')! == '01:02:03.45'
+	}
+	assert rows == 1
+}

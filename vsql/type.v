@@ -152,7 +152,13 @@ fn most_specific_type(t1 Type, t2 Type) !Type {
 }
 
 fn new_type(name string, size int, scale i16) Type {
-	name_without_size := name.split('(')[0]
+	// The size may appear in the middle of the name, such as
+	// "TIME(6) WITH TIME ZONE".
+	name_without_size := if name.contains('(') {
+		name.all_before('(') + name.all_after(')')
+	} else {
+		name
+	}
 
 	return match name_without_size {
 		'BIGINT' {

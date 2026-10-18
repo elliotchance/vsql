@@ -6,6 +6,11 @@ module vsql
 
 type UpdateSource = NullSpecification | ValueExpression
 
+struct SetClause {
+	column_name string
+	source      UpdateSource
+}
+
 fn (e UpdateSource) pstr(params map[string]Value) string {
 	return match e {
 		ValueExpression, NullSpecification {

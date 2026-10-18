@@ -114,3 +114,8 @@ SELECT * FROM t1;
 -- msg: INSERT 1
 -- error 22001: string data right truncation for CHARACTER VARYING(4)
 -- F1: abc
+
+CREATE TABLE foo (a INT, c VARCHAR(5));
+INSERT INTO foo (a, a, c) VALUES (3, 3, 'z');
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: column A is specified more than once

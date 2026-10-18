@@ -15,6 +15,14 @@ struct InsertStatement {
 fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
+	mut insert_columns := map[string]bool{}
+	for column in stmt.columns {
+		if column.sub_entity_name in insert_columns {
+			return sqlstate_42601('column ${column.sub_entity_name} is specified more than once')
+		}
+		insert_columns[column.sub_entity_name] = true
+	}
+
 	conn.open_write_connection()!
 	defer {
 		conn.release_write_connection()

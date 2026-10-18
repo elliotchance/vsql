@@ -147,3 +147,12 @@ CREATE SCHEMA absolute;
 CREATE TABLE absolute.CONTINUE (baz BIGINT);
 -- msg: CREATE SCHEMA 1
 -- msg: CREATE TABLE 1
+
+CREATE TABLE foo (x INT, x INT);
+-- error 42601: syntax error: column X is defined more than once
+
+CREATE TABLE foo (x INT, X VARCHAR(5));
+-- error 42601: syntax error: column X is defined more than once
+
+CREATE TABLE foo (x INT, "x" VARCHAR(5));
+-- msg: CREATE TABLE 1

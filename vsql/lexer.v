@@ -67,6 +67,7 @@ type YYSym = AggregateFunction
 	| SequenceGeneratorOption
 	| SequenceGeneratorRestartOption
 	| SequenceGeneratorStartWithOption
+	| SetClause
 	| SetSchemaStatement
 	| SimilarPredicate
 	| SimpleTable
@@ -92,11 +93,11 @@ type YYSym = AggregateFunction
 	| []Identifier
 	| []RowValueConstructor
 	| []SequenceGeneratorOption
+	| []SetClause
 	| []SortSpecification
 	| []TableElement
 	| []ValueExpression
 	| bool
-	| map[string]UpdateSource
 	| string
 
 // YYSymType is the yacc internal type for the stack that contains the symbols

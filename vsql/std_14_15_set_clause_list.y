@@ -1,17 +1,14 @@
 %%
 
 set_clause_list:
-  set_clause { $$.v = $1.v as map[string]UpdateSource }
+  set_clause { $$.v = [$1.v as SetClause] }
 | set_clause_list comma set_clause {
-    $$.v = merge_maps($1.v as map[string]UpdateSource,
-      $3.v as map[string]UpdateSource)
+    $$.v = append_list($1.v as []SetClause, $3.v as SetClause)
   }
 
 set_clause:
   set_target equals_operator update_source {
-    $$.v = {
-      ($1.v as Identifier).str(): $3.v as UpdateSource
-    }
+    $$.v = SetClause{($1.v as Identifier).str(), $3.v as UpdateSource}
   }
 
 set_target:

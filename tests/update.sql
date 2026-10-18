@@ -120,3 +120,19 @@ SELECT * FROM PrimaryProduct;
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.PRIMARYPRODUCT (ID INTEGER NOT NULL) BETWEEN 1 AND 1
 -- msg: UPDATE 1
 -- ID: 2
+
+CREATE TABLE foo (a INT, c VARCHAR(5));
+INSERT INTO foo (a, c) VALUES (3, 'z');
+UPDATE foo SET a = 1, a = 2;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 42601: syntax error: column A is set more than once
+
+CREATE TABLE foo (a INT, c VARCHAR(5));
+INSERT INTO foo (a, c) VALUES (3, 'z');
+UPDATE foo SET a = 1, c = 'y';
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- A: 1 C: y

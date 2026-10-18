@@ -78,7 +78,7 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// character-type. This is what allows any string representation (for
 			// example numbers) to be converted to a string, provided they still fit
 			// all the same requirements.
-			s := v.str()
+			s := cast_character_source(v)
 
 			l := t.size
 			if l == s.len {
@@ -116,7 +116,7 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// length in characters of T is set to M.
 			//
 			// See note above about using v.str() instead of string_value().
-			s := v.str()
+			s := cast_character_source(v)
 
 			l := t.size
 			m := s.len
@@ -319,6 +319,22 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 	// All of these are not supported yet.
 
 	return sqlstate_42846(v.typ, t)
+}
+
+// cast_character_source returns the string representation of v used when the
+// target is a character string. For datetimes, 6.13 GR 11.e and 12.e require
+// the shortest <literal> (such as "DATE '2022-06-30'") rather than just the
+// formatted value.
+fn cast_character_source(v Value) string {
+	return match v.typ.typ {
+		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
+		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
+			v.time_value().str_literal()
+		}
+		else {
+			v.str()
+		}
+	}
 }
 
 fn cast_datetime(conn Connection, v Value, t Type) !Value {

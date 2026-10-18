@@ -309,6 +309,26 @@ fn (t Time) str() string {
 	}
 }
 
+// str_literal returns the Time as the shortest SQL <literal> that represents
+// it, such as "TIMESTAMP '2022-06-30 12:34:56+05:00'".
+fn (t Time) str_literal() string {
+	return match t.typ.typ {
+		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
+			"TIMESTAMP '${t.str_full_timestamp(t.typ.size, true, true)}'"
+		}
+		.is_time_with_time_zone, .is_time_without_time_zone {
+			"TIME '${t.str_full_time(t.typ.size, true, true)}'"
+		}
+		.is_date {
+			"DATE '${t.str_date()}'"
+		}
+		else {
+			// Not possible.
+			''
+		}
+	}
+}
+
 // str_date returns the date portion, such as '2022-06-30'.
 fn (t Time) str_date() string {
 	return t.t.strftime('%Y-%m-%d')

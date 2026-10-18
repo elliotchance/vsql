@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 63 of the 164 mandatory features** of the
+**vsql supports 65 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -391,7 +391,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ F041-08
      - All comparison operators are supported (rather than just =)
 
-   * - ⭕ **F051**
+   * - ✅ **F051**
      - **Basic date and time**
 
    * - ✅ F051-01
@@ -406,7 +406,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ F051-04
      - Comparison predicate on ``DATE``, ``TIME``, and ``TIMESTAMP`` data types
 
-   * - ⭕ F051-05
+   * - ✅ F051-05
      - Explicit ``CAST`` between date-time types and character string types
 
    * - ✅ F051-06

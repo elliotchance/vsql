@@ -147,15 +147,30 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 				return new_null_value(.is_varchar)
 			}
 
-			if e.specification == 'LEADING' {
-				return new_varchar_value(source.string_value().trim_left(character.string_value()))
+			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General
+			// Rules, 11d
+			trim_character := character.string_value().runes()
+			if trim_character.len != 1 {
+				return sqlstate_22027()
 			}
 
-			if e.specification == 'TRAILING' {
-				return new_varchar_value(source.string_value().trim_right(character.string_value()))
+			// Compare whole characters rather than using V's trim functions
+			// which work on bytes and could split a multibyte character.
+			chars := source.string_value().runes()
+			mut start := 0
+			mut end := chars.len
+			if e.specification != 'TRAILING' {
+				for start < end && chars[start] == trim_character[0] {
+					start++
+				}
+			}
+			if e.specification != 'LEADING' {
+				for end > start && chars[end - 1] == trim_character[0] {
+					end--
+				}
 			}
 
-			return new_varchar_value(source.string_value().trim(character.string_value()))
+			return new_varchar_value(chars[start..end].string())
 		}
 		typ:          new_type('CHARACTER VARYING', 0, 0)
 		contains_agg: compiled_source.contains_agg || compiled_character.contains_agg

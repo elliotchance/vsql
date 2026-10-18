@@ -133,6 +133,18 @@ fn sqlstate_22012() IError {
 	}
 }
 
+// Trim error.
+struct SQLState22027 {
+	SQLState
+}
+
+fn sqlstate_22027() IError {
+	return SQLState22027{
+		code: sqlstate_to_int('22027')
+		msg:  'trim error'
+	}
+}
+
 // violates non-null constraint
 struct SQLState23502 {
 	SQLState

@@ -50,3 +50,22 @@ VALUES TRIM(LEADING 'a' FROM 'aaababccaa');
 /* types */
 VALUES TRIM(TRAILING 'a' FROM 'aaababccaa');
 -- COL1: aaababcc (CHARACTER VARYING(8))
+
+VALUES TRIM('ab' FROM 'abcab');
+-- error 22027: trim error
+
+VALUES TRIM(LEADING '' FROM 'abc');
+-- error 22027: trim error
+
+CREATE TABLE t (c VARCHAR(10));
+INSERT INTO t (c) VALUES (NULL);
+SELECT TRIM(TRAILING 'xx' FROM c) FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- COL1: NULL
+
+VALUES TRIM('é' FROM 'ééãbcé');
+-- COL1: ãbc
+
+VALUES TRIM('a' FROM 'aaaa');
+-- COL1: 

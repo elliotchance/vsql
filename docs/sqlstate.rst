@@ -132,6 +132,18 @@ large enough to store it.
   SELECT 2.5 / 0;
   -- error 22012: division by zero
 
+``22027`` trim error
+^^^^^^^^^^^^^^^^^^^^
+
+The trim character must be exactly one character.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES TRIM('ab' FROM 'abcab');
+  -- error 22027: trim error
+
 ``23502`` violates not-null constraint
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

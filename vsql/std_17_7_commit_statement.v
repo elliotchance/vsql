@@ -40,7 +40,7 @@ fn (stmt CommitStatement) execute(mut conn Connection, params map[string]Value, 
 		for obj in page.objects() {
 			// Only remove the now expired records.
 			if obj.xid == catalog.storage.transaction_id {
-				page.delete(obj.key, catalog.storage.transaction_id)
+				page.delete(obj.key, obj.tid)
 			}
 		}
 

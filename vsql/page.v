@@ -153,8 +153,15 @@ fn (mut p Page) update(old PageObject, new PageObject, tid int) ! {
 	old_versions := p.versions(old.key, objects)
 	match old_versions.len {
 		1 {
-			// Expire the existing record.
-			p.expire(old.key, old_versions[0], tid)
+			// A record created by this transaction is replaced. Otherwise, there
+			// would be two versions with the same tid, and removing the expired
+			// one (see page.delete) would remove both.
+			if old_versions[0] == tid {
+				p.delete(old.key, tid)
+			} else {
+				// Expire the existing record.
+				p.expire(old.key, old_versions[0], tid)
+			}
 		}
 		2 {
 			// Attempt to delete the version for the current in-flight

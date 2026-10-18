@@ -27,12 +27,55 @@ Also see :doc:`limitations`.
 Header
 ------
 
-The header is always 4kb (4096 bytes). Not all of this space is used, the
-remaining space is filled with zeros and can be ignored.
+The header is always 4kb (4096 bytes), regardless of the page size. Like the
+rest of the file, all numbers are big-endian. Not all of this space is used, the
+remaining space is reserved and filled with zeros.
 
-The contents of the Header is best explained by looking at the code. See
-``struct Header`` in
-https://github.com/elliotchance/vsql/blob/main/vsql/header.v.
+.. list-table::
+  :header-rows: 1
+
+  * - Offset
+    - Part
+    - Format
+    - Description
+
+  * - 0
+    - *Magic*
+    - 8 bytes
+    - Always ``76 73 71 6c 0d 0a 1a 0a`` (``vsql\r\n\x1a\n``). Any file that
+      does not start with these bytes is not a vsql database.
+
+  * - 8
+    - *Version*
+    - u16 (2 bytes)
+    - The version of the file format. vsql will only open a file with the
+      same version that it writes. The current version is 13.
+
+  * - 10
+    - *Schema Version*
+    - i32 (4 bytes)
+    - Incremented whenever the schema changes, so that connections know when
+      to reload it.
+
+  * - 14
+    - *Page Size*
+    - i32 (4 bytes)
+    - The size of every page, in bytes.
+
+  * - 18
+    - *Root Page*
+    - i32 (4 bytes)
+    - The page number (not including the header) of the root of the B-tree.
+
+  * - 22
+    - *Transaction ID*
+    - i32 (4 bytes)
+    - The last transaction ID that was issued.
+
+  * - 26
+    - *Active Transactions*
+    - 256 x i32 (1024 bytes)
+    - The IDs of the transactions that are in progress. Unused slots are 0.
 
 Page
 ----

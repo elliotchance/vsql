@@ -5,8 +5,7 @@ module vsql
 // TransactionIDs provides both the storage and mechanisms for a stack of
 // transaction IDs.
 //
-// The structure is very important since it read and written directly as binary
-// in the database header - see header.v.
+// The 256 slots are stored in the database header - see header.v.
 struct TransactionIDs {
 mut:
 	// tids ensures we reserve up to 256 slots (1kb) for active transaction IDs.

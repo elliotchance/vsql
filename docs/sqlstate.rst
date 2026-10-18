@@ -104,6 +104,19 @@ large enough to store it.
   INSERT INTO foo (x) VALUES (-32769);
   -- error 22003: numeric value out of range
 
+``22007`` invalid datetime format
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A character string cast to a date or time type must be a valid value for that
+type.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES CAST('2022-02-30' AS DATE);
+  -- error 22007: invalid datetime format
+
 ``2200H`` sequence generator limit exceeded
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -406,7 +406,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ F051-04
      - Comparison predicate on ``DATE``, ``TIME``, and ``TIMESTAMP`` data types
 
-   * - ❌ F051-05
+   * - ⭕ F051-05
      - Explicit ``CAST`` between date-time types and character string types
 
    * - ✅ F051-06

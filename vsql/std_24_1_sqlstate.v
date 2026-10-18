@@ -108,6 +108,18 @@ fn sqlstate_22003() IError {
 	}
 }
 
+// Invalid datetime format.
+struct SQLState22007 {
+	SQLState
+}
+
+fn sqlstate_22007() IError {
+	return SQLState22007{
+		code: sqlstate_to_int('22007')
+		msg:  'invalid datetime format'
+	}
+}
+
 // Sequence generator limit exceeded.
 struct SQLState2200H {
 	SQLState

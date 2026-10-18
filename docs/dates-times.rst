@@ -108,6 +108,29 @@ time zone component.
 
 A ``TIMESTAMP WITHOUT TIME ZONE`` (with any precision) is stored as 8 bytes.
 
+Casting From Strings
+--------------------
+
+A character string can be cast to any of the date and time types. Leading and
+trailing spaces are ignored, and the rest must be in the same format as the
+literal for that type, otherwise an ``22007`` invalid datetime format error is
+raised:
+
+.. code-block:: sql
+
+  VALUES CAST(' 2022-06-30 ' AS DATE);
+  -- COL1: 2022-06-30
+
+  VALUES CAST('2022-06-30 12:34:56+03:00' AS TIMESTAMP(0) WITH TIME ZONE);
+  -- COL1: 2022-06-30T12:34:56+0300
+
+  VALUES CAST('2022-06-30' AS TIMESTAMP(0));
+  -- error 22007: invalid datetime format
+
+If the string has a time zone and the target type does not, the time zone is
+dropped (keeping the local time). If the target type has a time zone and the
+string does not, the session time zone is used.
+
 Current Date and Time
 ---------------------
 

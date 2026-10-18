@@ -431,9 +431,15 @@ SEQUENCE`` statement:
 Sequence Value Object
 ---------------------
 
-A Sequence Value Object (has the ``V`` prefix) contains the next value for a
-sequence. Since a sequence's next value needs to be atomic, even outside of
-transaction isolation, changing the value will be always persistent.
+A Sequence Value Object (has the ``V`` prefix) contains the current value of a
+sequence (as an i64).
+
+``NEXT VALUE FOR`` is not part of the transaction (a value is never handed out
+twice, even if the transaction is rolled back), so it changes the value of the
+visible version in place, without changing its *TID* or *XID*. However,
+``CREATE SEQUENCE``, ``DROP SEQUENCE`` and an ``ALTER SEQUENCE`` that changes
+the value (such as ``RESTART``) create or expire versions like any other object,
+so they are undone by a ``ROLLBACK``.
 
 Table Object
 ------------
@@ -448,20 +454,6 @@ A Table Object (has the ``T`` prefix) contains a table definition, as a
     "BAR" CHARACTER VARYING(10),
     PRIMARY KEY ("ID")
   )
-
-Notes for Future Improvements
------------------------------
-
-Sequences
-^^^^^^^^^
-
-The properties of a sequence (such as the ``INCREMENT BY``, etc) are held in the
-same record as the next value. Since the next value of a sequence needs to be
-atomic (and separate from the transaction isolation) a ``ROLLBACK`` on a
-transaction that contains an ``ALTER SEQUENCE`` will not undo any changes.
-
-Ideally, the properties of a ``SEQUENCE`` can be stored in a separate location
-on disk.
 
 Notes
 -----

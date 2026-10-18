@@ -582,3 +582,17 @@ fn (mut p Btree) expire(key []u8, tid int, xid int) !int {
 
 	return -1
 }
+
+// replace_value changes the value of an existing object, without changing its
+// tid or xid. The new value must be the same size, so that it fits in the page.
+fn (mut p Btree) replace_value(obj PageObject, value []u8) ! {
+	path, _ := p.search_page(obj.key)!
+	page_number := path[path.len - 1]
+	mut page := p.pager.fetch_page(page_number)!
+	if !page.delete(obj.key, obj.tid) {
+		return error('object does not exist: ${obj.key.bytestr()}')
+	}
+
+	page.add(PageObject{obj.key, value, false, obj.tid, obj.xid})!
+	p.store_page(page_number, page)!
+}

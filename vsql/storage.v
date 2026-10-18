@@ -249,10 +249,12 @@ fn (mut f Storage) create_sequence(sequence Sequence) ! {
 		sequence.definition_bytes())
 	f.btree.add(obj1)!
 
-	// The value for the sequence is stored as a separate object so that is can be
-	// persistent outside of any transaction isolation. Transaction IDs will be
-	// left at 0 since they don't apply.
-	obj2 := new_page_object('V${sequence.name.storage_id()}'.bytes(), 0, 0, sequence.value_bytes())
+	// The value for the sequence is stored as a separate object so that NEXT
+	// VALUE FOR can change it outside of any transaction isolation (see
+	// sequence_next_value). It's created in this transaction, so that it's
+	// removed by a ROLLBACK.
+	obj2 := new_page_object('V${sequence.name.storage_id()}'.bytes(), f.transaction_id, 0,
+		sequence.value_bytes())
 	f.btree.add(obj2)!
 }
 
@@ -262,13 +264,15 @@ fn (mut f Storage) sequence(name Identifier) !Sequence {
 		f.isolation_end() or { panic(err) }
 	}
 
-	value_key := 'V${name.storage_id()}'.bytes()
-	value_object := f.get_object(value_key) or {
+	value_object := f.sequence_value_object(name.storage_id()) or {
 		return sqlstate_42p01('sequence', name.str()) // sequence does not exist
 	}
 
 	definition_key := 'Q${name.storage_id()}'.bytes()
 	definition_objects := f.read_objects(definition_key, definition_key)!
+	if definition_objects.len == 0 {
+		return sqlstate_42p01('sequence', name.str()) // sequence does not exist
+	}
 
 	sequence := new_sequence_from_bytes(definition_objects[0].value, value_object.value,
 		definition_objects[0].tid)!
@@ -284,7 +288,7 @@ fn (mut f Storage) sequences() ![]Sequence {
 
 	mut sequences := []Sequence{}
 	for definition_object in f.read_objects('Q'.bytes(), 'R'.bytes())! {
-		value_object := f.get_object('V${definition_object.key[1..].bytestr()}'.bytes())!
+		value_object := f.sequence_value_object(definition_object.key[1..].bytestr())!
 		sequences << new_sequence_from_bytes(definition_object.value, value_object.value,
 			definition_object.tid)!
 	}
@@ -299,15 +303,26 @@ fn (mut f Storage) sequence_next_value(name Identifier) !i64 {
 	}
 
 	mut sequence := f.sequence(name)!
-	mut canonical_name := name.storage_id()
 	next_sequence := sequence.next()!
-	key := 'V${canonical_name}'.bytes()
 
-	f.btree.remove(key, 0, false)!
-	new_obj := new_page_object(key, 0, 0, next_sequence.value_bytes())
-	f.btree.add(new_obj)!
+	// The new value is not part of the transaction, so the version that's
+	// visible is changed in place, rather than creating a new version.
+	value_object := f.sequence_value_object(name.storage_id())!
+	f.btree.replace_value(value_object, next_sequence.value_bytes())!
 
 	return next_sequence.current_value
+}
+
+// sequence_value_object returns the version of the value of a sequence that is
+// visible to the current transaction.
+fn (mut f Storage) sequence_value_object(storage_id string) !PageObject {
+	key := 'V${storage_id}'.bytes()
+	objects := f.read_objects(key, key)!
+	if objects.len == 0 {
+		return error('no value for sequence ${storage_id}')
+	}
+
+	return objects[0]
 }
 
 fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence) ! {
@@ -323,10 +338,13 @@ fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence)
 	new_obj := new_page_object(definition_key, f.transaction_id, 0, new_sequence.definition_bytes())
 	f.btree.update(old_obj, new_obj, f.transaction_id)!
 
-	value_key := 'V${canonical_name}'.bytes()
-	f.btree.remove(value_key, 0, false)!
-	new_value_obj := new_page_object(value_key, 0, 0, new_sequence.value_bytes())
-	f.btree.add(new_value_obj)!
+	// A new value (such as from RESTART) is a new version, so that it's undone
+	// by a ROLLBACK.
+	if new_sequence.current_value != old_sequence.current_value {
+		old_value_obj := f.sequence_value_object(canonical_name)!
+		new_value_obj := new_page_object(old_value_obj.key, f.transaction_id, 0, new_sequence.value_bytes())
+		f.btree.update(old_value_obj, new_value_obj, f.transaction_id)!
+	}
 }
 
 fn (mut f Storage) delete_table(table_name string, tid int) ! {
@@ -384,8 +402,9 @@ fn (mut f Storage) delete_sequence(name Identifier, tid int) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
+	value_obj := f.sequence_value_object(name.storage_id())!
 	f.btree.expire('Q${name.storage_id()}'.bytes(), tid, f.transaction_id)!
-	f.btree.remove('V${name.storage_id()}'.bytes(), 0, false)!
+	f.btree.expire(value_obj.key, value_obj.tid, f.transaction_id)!
 }
 
 fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
@@ -476,14 +495,6 @@ fn (mut f Storage) read_objects(start []u8, end []u8) ![]PageObject {
 	}
 
 	return objs
-}
-
-fn (mut f Storage) get_object(start []u8) !PageObject {
-	for object in f.btree.new_range_iterator(start, start) {
-		return object
-	}
-
-	return error('no object: ${start.bytestr()}')
 }
 
 // isolation_start signals the start of an operation that shall be atomic until

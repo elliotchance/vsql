@@ -111,6 +111,12 @@ pub fn open_database(path string, options ConnectionOptions) !&Connection {
 	return conn
 }
 
+// session_path is the file that every connection to the database at path holds
+// a shared lock on. See Storage.recover().
+fn session_path(path string) string {
+	return '${path}.session'
+}
+
 pub fn catalog_name_from_path(path string) string {
 	return os.base(path).split('.')[0]
 }
@@ -143,11 +149,15 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 	mut pager := new_memory_pager()
 	btree := new_btree(pager, options.page_size)
 
-	catalog := &CatalogConnection{
+	mut catalog := &CatalogConnection{
 		catalog_name: catalog_name
 		path:         path
 		storage:      new_storage(btree)
 		options:      options
+	}
+
+	if path != ':memory:' {
+		catalog.storage.session = session_lock(session_path(path))!
 	}
 
 	conn.catalogs[catalog_name] = catalog
@@ -181,7 +191,7 @@ fn (mut conn CatalogConnection) open_read_connection() ! {
 		conn.options.mutex.runlock()
 		return err
 	}
-	conn.storage.open(conn.path, conn.catalog_name) or {
+	conn.storage.open(conn.path, conn.catalog_name, false) or {
 		flock_unlock_shared(conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.runlock()
@@ -211,7 +221,7 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 		conn.options.mutex.unlock()
 		return err
 	}
-	conn.storage.open(conn.path, conn.catalog_name) or {
+	conn.storage.open(conn.path, conn.catalog_name, true) or {
 		flock_unlock_exclusive(conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.unlock()

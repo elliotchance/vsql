@@ -44,6 +44,10 @@ mut:
 	transaction_pages map[int]bool
 	// Like the tables we keep the schemas in memory.
 	schemas map[string]Schema
+	// session is held for as long as the connection is open. It is used to
+	// detect transactions left behind by connections that no longer exist. See
+	// recover().
+	session SessionLock
 }
 
 fn new_storage(btree Btree) Storage {
@@ -58,12 +62,23 @@ fn (mut f Storage) open_file(path string) ! {
 	f.file = os.open_file(path, 'r+') or { return error('unable to open ${path}: ${err}') }
 }
 
-// open must be called after open_file and the file being locked.
-fn (mut f Storage) open(path string, catalog_name string) ! {
-	header := read_header(mut f.file)!
+// open must be called after open_file and the file being locked. exclusive
+// must only be true if the file is locked exclusively.
+fn (mut f Storage) open(path string, catalog_name string, exclusive bool) ! {
+	mut header := read_header(mut f.file)!
 
 	f.btree = new_btree(new_file_pager(mut f.file, header.page_size, header.root_page)!,
 		header.page_size)
+
+	if exclusive && f.other_transaction_ids(header).len > 0 {
+		if f.session.try_exclusive()! {
+			defer {
+				f.session.shared() or { panic(err) }
+			}
+
+			f.recover(mut header)!
+		}
+	}
 
 	// Avoid reloading the schema if it hasn't changed.
 	if header.schema_version == f.header.schema_version {
@@ -105,6 +120,60 @@ fn (mut f Storage) open(path string, catalog_name string) ! {
 // docs.
 fn parse_definition(data []u8) !Stmt {
 	return parse_tokens(tokenize(data.bytestr()))
+}
+
+// other_transaction_ids returns the active transaction IDs that do not belong
+// to this connection.
+fn (f Storage) other_transaction_ids(header Header) []int {
+	mut tids := []int{}
+	for tid in header.active_transaction_ids.tids {
+		if tid != 0 && (f.transaction_state == .not_active || tid != f.transaction_id) {
+			tids << tid
+		}
+	}
+
+	return tids
+}
+
+// recover rolls back the transactions that were left active by connections
+// that no longer exist, such as a process that crashed in the middle of a
+// transaction. It must only be called when this is the only connection to the
+// file (the session lock is held exclusively), so that every active
+// transaction other than our own is known to be dead.
+fn (mut f Storage) recover(mut header Header) ! {
+	dead_tids := f.other_transaction_ids(header)
+
+	// We do not know which pages a dead transaction modified, so all of them
+	// need to be checked.
+	for page_number in 0 .. f.btree.pager.total_pages() {
+		mut page := f.btree.pager.fetch_page(page_number)!
+		if page.kind != kind_leaf {
+			continue
+		}
+
+		mut modified := false
+		for obj in page.objects() {
+			if obj.tid in dead_tids {
+				page.delete(obj.key, obj.tid)
+				modified = true
+			} else if obj.xid in dead_tids {
+				page.expire(obj.key, obj.tid, 0)
+				modified = true
+			}
+		}
+
+		if modified {
+			f.btree.pager.store_page(page_number, page)!
+		}
+	}
+
+	for tid in dead_tids {
+		header.active_transaction_ids.remove(tid)
+	}
+
+	// The dead transactions may have created or dropped tables, so any cached
+	// schema must be reloaded.
+	header.schema_version++
 }
 
 fn (mut f Storage) schema_changed() {

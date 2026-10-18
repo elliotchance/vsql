@@ -196,3 +196,22 @@ SELECT * FROM foo;
 -- 2: error 40001: serialization failure: avoiding concurrent write on individual row
 -- 2: error 25P02: transaction is aborted, commands ignored until end of transaction block
 -- 1: BAR: 234
+
+/* connection 1 */
+CREATE TABLE foo (bar INT);
+INSERT INTO foo (bar) VALUES (123);
+START TRANSACTION;
+DELETE FROM foo;
+/* connection 2 */
+SELECT * FROM foo;
+/* connection 1 */
+ROLLBACK;
+/* connection 2 */
+SELECT * FROM foo;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: DELETE 1
+-- 2: BAR: 123
+-- 1: msg: ROLLBACK
+-- 2: BAR: 123

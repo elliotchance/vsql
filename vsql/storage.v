@@ -314,9 +314,26 @@ fn (mut f Storage) write_row(mut r Row, t Table) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
+	f.assign_row_id(mut r, t)
 	obj := new_page_object(r.object_key(t)!, f.transaction_id, 0, r.bytes(t))
 	page_number := f.btree.add(obj)!
 	f.transaction_pages[page_number] = true
+}
+
+// assign_row_id gives a new row in a table without a PRIMARY KEY the next row
+// ID. Writes hold an exclusive lock on the file, so the header we have is
+// current, and flush saves the new value.
+fn (mut f Storage) assign_row_id(mut r Row, t Table) {
+	if t.primary_key.len > 0 || r.id.len > 0 {
+		return
+	}
+
+	f.header.row_id++
+
+	// Big-endian keeps the rows in the order they were inserted.
+	mut buf := new_empty_bytes()
+	buf.write_u64(f.header.row_id)
+	r.id = buf.bytes()
 }
 
 fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ! {
@@ -325,6 +342,7 @@ fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
+	f.assign_row_id(mut new, t)
 	old_obj := new_page_object(old.object_key(t)!, old.tid, 0, old.bytes(t))
 	new_obj := new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t))
 	for page_number in f.btree.update(old_obj, new_obj, f.transaction_id)! {

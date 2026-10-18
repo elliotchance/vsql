@@ -68,3 +68,36 @@ fn test_datetime_types_survive_reopen() ! {
 	}
 	assert rows == 1
 }
+
+fn test_row_ids_survive_reopen() ! {
+	file_name := 'test_row_ids_survive_reopen.vsql'
+	if os.exists(file_name) {
+		os.rm(file_name) or { return err }
+	}
+
+	// Inserting many rows quickly must not create duplicate row IDs. A rolled
+	// back row ID must not be reused either.
+	mut db := open(file_name)!
+	db.query('CREATE TABLE t (x INT)')!
+	for i in 0 .. 100 {
+		db.query('INSERT INTO t (x) VALUES (${i})')!
+	}
+	db.query('START TRANSACTION')!
+	db.query('INSERT INTO t (x) VALUES (-1)')!
+	db.query('ROLLBACK')!
+
+	// A new connection continues from the last row ID in the file.
+	mut db2 := open(file_name)!
+	db2.query('INSERT INTO t (x) VALUES (100)')!
+
+	mut f := os.open(file_name)!
+	header := read_header(mut f)!
+	f.close()
+	assert header.row_id == 102
+
+	mut xs := []int{}
+	for row in db2.query('SELECT * FROM t')! {
+		xs << row.get_int('X')!
+	}
+	assert xs == []int{len: 101, init: index}
+}

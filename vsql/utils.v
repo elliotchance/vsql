@@ -56,13 +56,3 @@ fn push_list[T](element T, list []T) []T {
 
 	return new_list
 }
-
-fn merge_maps[K, V](a map[K]V, b map[K]V) map[K]V {
-	mut new_map := a.clone()
-
-	for k, v in b {
-		new_map[k] = v
-	}
-
-	return new_map
-}

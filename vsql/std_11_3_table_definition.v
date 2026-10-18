@@ -52,9 +52,15 @@ fn (stmt TableDefinition) execute(mut conn Connection, params map[string]Value, 
 fn (stmt TableDefinition) table(table_name Identifier, tid int) !Table {
 	mut columns := []Column{}
 	mut primary_key := []string{}
+	mut column_names := map[string]bool{}
 	for table_element in stmt.table_elements {
 		match table_element {
 			Column {
+				if table_element.name.sub_entity_name in column_names {
+					return sqlstate_42601('column ${table_element.name.sub_entity_name} is defined more than once')
+				}
+				column_names[table_element.name.sub_entity_name] = true
+
 				if (table_element.typ.typ == .is_numeric || table_element.typ.typ == .is_decimal)
 					&& table_element.typ.size == 0 {
 					return sqlstate_42601('column ${table_element.name.sub_entity_name}: ${table_element.typ.typ} must specify a size')

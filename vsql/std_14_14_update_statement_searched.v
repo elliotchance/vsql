@@ -8,7 +8,7 @@ import time
 
 struct UpdateStatementSearched {
 	table_name Identifier
-	set        map[string]UpdateSource
+	set        []SetClause
 	where      ?BooleanValueExpression
 }
 
@@ -26,6 +26,14 @@ struct UpdateStatementSearched {
 // transaction.
 fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
+
+	mut set_columns := map[string]bool{}
+	for clause in stmt.set {
+		if clause.column_name in set_columns {
+			return sqlstate_42601('column ${clause.column_name} is set more than once')
+		}
+		set_columns[clause.column_name] = true
+	}
 
 	conn.open_write_connection()!
 	defer {
@@ -55,7 +63,8 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		row2.id = row.id
 		row2.tid = row.tid
 
-		for column_name, v in stmt.set {
+		for clause in stmt.set {
+			column_name := clause.column_name
 			table_column := table.column(column_name)!
 			c.context = Identifier{
 				catalog_name: table_column.name.catalog_name
@@ -63,9 +72,9 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 				entity_name:  table.name.entity_name
 			}
 
-			raw_value := match v {
+			raw_value := match clause.source {
 				ValueExpression {
-					v.compile(mut c)!.run(mut conn, row, params)!
+					clause.source.compile(mut c)!.run(mut conn, row, params)!
 				}
 				NullSpecification {
 					new_null_value(table_column.typ.typ)
@@ -114,11 +123,12 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		}
 
 		empty_row := new_empty_row(table.columns, '')
-		for column_name, v in stmt.set {
+		for clause in stmt.set {
+			column_name := clause.column_name
 			table_column := table.column(column_name)!
-			match v {
+			match clause.source {
 				ValueExpression {
-					raw_value := v.compile(mut c)!.run(mut conn, empty_row, params)!
+					raw_value := clause.source.compile(mut c)!.run(mut conn, empty_row, params)!
 					value := cast(mut conn, 'for column ${column_name}', raw_value,
 						table_column.typ)!
 

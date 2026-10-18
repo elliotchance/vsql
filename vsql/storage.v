@@ -211,8 +211,7 @@ fn (mut f Storage) create_table(table_name Identifier, columns Columns, primary_
 
 	obj := new_page_object('T${table_name.storage_id()}'.bytes(), f.transaction_id, 0,
 		table.bytes())
-	page_number := f.btree.add(obj)!
-	f.transaction_pages[page_number] = true
+	f.btree.add(obj)!
 
 	f.tables[table_name.storage_id()] = table
 	f.schema_changed()
@@ -227,8 +226,7 @@ fn (mut f Storage) create_schema(schema_name string) ! {
 	schema := Schema{f.transaction_id, schema_name}
 
 	obj := new_page_object('S${schema_name}'.bytes(), f.transaction_id, 0, schema.bytes())
-	page_number := f.btree.add(obj)!
-	f.transaction_pages[page_number] = true
+	f.btree.add(obj)!
 
 	f.schemas[schema_name] = schema
 	f.schema_changed()
@@ -243,13 +241,13 @@ fn (mut f Storage) create_sequence(sequence Sequence) ! {
 	// The sequence defintion.
 	obj1 := new_page_object('Q${sequence.name.storage_id()}'.bytes(), f.transaction_id, 0,
 		sequence.definition_bytes())
-	f.transaction_pages[f.btree.add(obj1)!] = true
+	f.btree.add(obj1)!
 
 	// The value for the sequence is stored as a separate object so that is can be
 	// persistent outside of any transaction isolation. Transaction IDs will be
 	// left at 0 since they don't apply.
 	obj2 := new_page_object('V${sequence.name.storage_id()}'.bytes(), 0, 0, sequence.value_bytes())
-	f.transaction_pages[f.btree.add(obj2)!] = true
+	f.btree.add(obj2)!
 }
 
 fn (mut f Storage) sequence(name Identifier) !Sequence {
@@ -301,7 +299,7 @@ fn (mut f Storage) sequence_next_value(name Identifier) !i64 {
 
 	f.btree.remove(key, 0, false)!
 	new_obj := new_page_object(key, 0, 0, next_sequence.value_bytes())
-	f.transaction_pages[f.btree.add(new_obj)!] = true
+	f.btree.add(new_obj)!
 
 	return next_sequence.current_value
 }
@@ -317,14 +315,12 @@ fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence)
 
 	old_obj := new_page_object(definition_key, old_sequence.tid, 0, old_sequence.definition_bytes())
 	new_obj := new_page_object(definition_key, f.transaction_id, 0, new_sequence.definition_bytes())
-	for page_number in f.btree.update(old_obj, new_obj, f.transaction_id)! {
-		f.transaction_pages[page_number] = true
-	}
+	f.btree.update(old_obj, new_obj, f.transaction_id)!
 
 	value_key := 'V${canonical_name}'.bytes()
 	f.btree.remove(value_key, 0, false)!
 	new_value_obj := new_page_object(value_key, 0, 0, new_sequence.value_bytes())
-	f.transaction_pages[f.btree.add(new_value_obj)!] = true
+	f.btree.add(new_value_obj)!
 }
 
 fn (mut f Storage) delete_table(table_name string, tid int) ! {
@@ -333,8 +329,7 @@ fn (mut f Storage) delete_table(table_name string, tid int) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
-	page_number := f.btree.expire('T${table_name}'.bytes(), tid, f.transaction_id)!
-	f.transaction_pages[page_number] = true
+	f.btree.expire('T${table_name}'.bytes(), tid, f.transaction_id)!
 
 	f.tables.delete(table_name)
 	f.schema_changed()
@@ -346,8 +341,7 @@ fn (mut f Storage) delete_schema(schema_name string, tid int) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
-	page_number := f.btree.expire('S${schema_name}'.bytes(), tid, f.transaction_id)!
-	f.transaction_pages[page_number] = true
+	f.btree.expire('S${schema_name}'.bytes(), tid, f.transaction_id)!
 
 	f.schemas.delete(schema_name)
 	f.schema_changed()
@@ -359,9 +353,7 @@ fn (mut f Storage) delete_sequence(name Identifier, tid int) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
-	page_number := f.btree.expire('Q${name.storage_id()}'.bytes(), tid, f.transaction_id)!
-	f.transaction_pages[page_number] = true
-
+	f.btree.expire('Q${name.storage_id()}'.bytes(), tid, f.transaction_id)!
 	f.btree.remove('V${name.storage_id()}'.bytes(), 0, false)!
 }
 
@@ -380,8 +372,6 @@ fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
 	if page_number < 0 {
 		return error('DELETE: integrity issue, preventing panic')
 	}
-
-	f.transaction_pages[page_number] = true
 }
 
 fn (mut f Storage) write_row(mut r Row, t Table) ! {
@@ -392,8 +382,7 @@ fn (mut f Storage) write_row(mut r Row, t Table) ! {
 
 	f.assign_row_id(mut r, t)
 	obj := new_page_object(r.object_key(t)!, f.transaction_id, 0, r.bytes(t))
-	page_number := f.btree.add(obj)!
-	f.transaction_pages[page_number] = true
+	f.btree.add(obj)!
 }
 
 // assign_row_id gives a new row in a table without a PRIMARY KEY the next row
@@ -421,9 +410,7 @@ fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ! {
 	f.assign_row_id(mut new, t)
 	old_obj := new_page_object(old.object_key(t)!, old.tid, 0, old.bytes(t))
 	new_obj := new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t))
-	for page_number in f.btree.update(old_obj, new_obj, f.transaction_id)! {
-		f.transaction_pages[page_number] = true
-	}
+	f.btree.update(old_obj, new_obj, f.transaction_id)!
 }
 
 fn (mut f Storage) read_rows(table_name Identifier) ![]Row {
@@ -498,6 +485,13 @@ fn (mut f Storage) transaction_aborted() {
 // state of the active or implicit transaction state is expected to be
 // maintained.
 fn (mut f Storage) isolation_end() ! {
+	// The B-tree is replaced for each operation, so the pages it changed must
+	// be kept with the transaction before then.
+	for page_number, _ in f.btree.written_pages {
+		f.transaction_pages[page_number] = true
+	}
+	f.btree.written_pages = map[int]bool{}
+
 	match f.transaction_state {
 		.not_active {
 			// Fallthrough to logic below.
@@ -511,6 +505,11 @@ fn (mut f Storage) isolation_end() ! {
 
 	// Revist any remaining pages to clean out any expired rows.
 	for page_number, _ in f.transaction_pages {
+		// Removing objects can move the last page and truncate the file.
+		if page_number >= f.btree.pager.total_pages() {
+			continue
+		}
+
 		mut page := f.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
 			// Only remove the objects expired in this transaction.

@@ -14,6 +14,8 @@ struct AlterSequenceGeneratorStatement {
 fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
+	check_sequence_options(stmt.options)!
+
 	conn.open_write_connection()!
 	defer {
 		conn.release_write_connection()
@@ -27,6 +29,7 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 		conn:   conn
 		params: params
 	}
+	mut restart_value := ?i64(none)
 
 	for option in stmt.options {
 		match option {
@@ -35,8 +38,9 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 			}
 			SequenceGeneratorRestartOption {
 				if v := option.restart_value {
-					sequence.current_value = (v.compile(mut c)!.run(mut conn, Row{},
-						map[string]Value{})!).as_int() - sequence.increment_by
+					value := (v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
+					restart_value = value
+					sequence.current_value = value - sequence.increment_by
 				} else {
 					sequence.current_value = sequence.reset() - sequence.increment_by
 				}
@@ -65,13 +69,18 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 						(v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 					sequence.has_max_value = true
 				} else {
-					sequence.has_min_value = false
+					sequence.has_max_value = false
 				}
 			}
 			SequenceGeneratorCycleOption {
 				sequence.cycle = option.cycle
 			}
 		}
+	}
+
+	sequence.check()!
+	if v := restart_value {
+		sequence.check_in_range('RESTART WITH', v)!
 	}
 
 	catalog.storage.update_sequence(old_sequence, sequence)!

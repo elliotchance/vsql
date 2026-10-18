@@ -336,6 +336,31 @@ fn (mut f Storage) delete_table(table_name string, tid int) ! {
 	page_number := f.btree.expire('T${table_name}'.bytes(), tid, f.transaction_id)!
 	f.transaction_pages[page_number] = true
 
+	// The rows are expired the same way as a DELETE, so they are removed when
+	// the transaction ends.
+	//
+	// TODO(elliotchance): The range also contains the rows of any table named
+	//  "${table_name}:...", see https://github.com/elliotchance/vsql/issues/285.
+	//  Those rows are skipped here so they are not lost.
+	mut other_prefixes := [][]u8{}
+	for other_table_name, _ in f.tables {
+		if other_table_name.starts_with('${table_name}:') {
+			other_prefixes << 'R${other_table_name}:'.bytes()
+		}
+	}
+
+	// ';' = ':' + 1
+	for object in f.read_objects('R${table_name}:'.bytes(), 'R${table_name};'.bytes())! {
+		if other_prefixes.any(object.key.len >= it.len && object.key[..it.len] == it) {
+			continue
+		}
+
+		row_page_number := f.btree.expire(object.key, object.tid, f.transaction_id)!
+		if row_page_number >= 0 {
+			f.transaction_pages[row_page_number] = true
+		}
+	}
+
 	f.tables.delete(table_name)
 	f.schema_changed()
 }

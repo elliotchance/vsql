@@ -9,3 +9,9 @@ scripts/generate-grammar
 y.output
 vsql/y.v
 vsql/y.y
+
+# Temporary build directories created by the V3 compiler.
+.*.v3cc.*
+
+# The SQL standard is copyrighted and must never be committed.
+ISO_IEC_9075-2E_Foundation.pdf

@@ -145,22 +145,42 @@ fn replace_unicode(s string) string {
 	return re.replace_by_fn(s, replace_func)
 }
 
+enum SQLTestResult {
+	passed
+	failed
+	skipped
+}
+
 fn test_all() ! {
 	filter_test, filter_line := get_test_filter()
 	verbose := $env('VERBOSE')
+
+	// The V test summary does not include the failed assertions (only the
+	// passing ones) so we keep our own count of the SQL tests.
+	mut passed := 0
+	mut failed := []string{}
 	for test in get_tests()! {
-		run_single_test(test, verbose != '', filter_line)!
+		match run_single_test(test, verbose != '', filter_line)! {
+			.passed { passed++ }
+			.failed { failed << '${test.file_name}:${test.line_number}' }
+			.skipped {}
+		}
+	}
+
+	println('SQL tests: ${passed} passed, ${failed.len} failed, ${passed + failed.len} total')
+	for location in failed {
+		println('  FAILED ${location}')
 	}
 }
 
 @[assert_continues]
-fn run_single_test(test SQLTest, verbose bool, filter_line int) ! {
+fn run_single_test(test SQLTest, verbose bool, filter_line int) !SQLTestResult {
 	if filter_line != 0 && test.line_number != filter_line {
 		if verbose {
 			println('SKIP ${test.file_name}:${test.line_number}\n')
 		}
 
-		return
+		return SQLTestResult.skipped
 	}
 
 	if verbose {
@@ -196,7 +216,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int) ! {
 
 	file_name := 'test.vsql'
 	if os.exists(file_name) {
-		os.rm(file_name) or { return }
+		os.rm(file_name) or { return err }
 	}
 
 	for stmt in test.setup {
@@ -274,6 +294,8 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int) ! {
 	actual_trim := at + actual.trim_space()
 
 	assert expected == actual_trim
+
+	return if expected == actual_trim { SQLTestResult.passed } else { SQLTestResult.failed }
 }
 
 // Make sure any non-keywords (operators, literals, etc) are replaced in error

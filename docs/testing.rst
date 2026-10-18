@@ -342,7 +342,18 @@ Verbose Output
 ^^^^^^^^^^^^^^
 
 By default tests will be silent, only outputting contextual information on
-failure. However, in some cases (such as debugging crashes) you might want more
+failure. A summary of the SQL tests is printed at the end, including the
+location of each failed test:
+
+.. code-block:: text
+
+   SQL tests: 1549 passed, 1 failed, 1550 total
+     FAILED tests/arithmetic.sql:3
+
+The "Summary for running V tests" line printed by V does not include failed
+tests, so always check the SQL tests summary (or the exit code).
+
+However, in some cases (such as debugging crashes) you might want more
 verbose output.
 
 You can set the environment variable ``$VERBOSE`` to any value other than empty,

@@ -119,14 +119,15 @@ fn parse_page_object(data []u8) (int, PageObject) {
 }
 
 // page_header_size is the number of reserved bytes at the start of the page
-// that are not writable (because it contains metadata)
-const page_header_size = 3
+// that are not writable (because it contains metadata). See "Page" in the file
+// format docs for the layout.
+const page_header_size = 16
 
 struct Page {
 	kind u8 // 0 = leaf, 1 = non-leaf, see constants at the top of the file.
 mut:
-	used u16  // number of bytes used by this page including 3 bytes for header.
-	data []u8 // len = page size - 3
+	used u16  // number of bytes used by this page including the header.
+	data []u8 // len = page size - page_header_size
 }
 
 fn new_page(kind u8, page_size int) &Page {

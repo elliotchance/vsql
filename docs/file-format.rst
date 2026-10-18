@@ -153,11 +153,47 @@ These rules keep changes compatible:
 Page
 ----
 
-.. image:: img/file-format-page.png
+All pages types (defined by *Kind*) use the same basic structure: a 16 byte
+*Page Header* followed by the *Data*. The format of the data itself depends on
+the *Kind*.
 
-All pages types (defined by *Kind*) will use the same basic structure with 3
-bytes reserved for metadata and the remaining bytes available for *Data*. The
-format of the data itself will depend on the *Kind*:
+.. list-table::
+  :header-rows: 1
+
+  * - Offset
+    - Part
+    - Format
+    - Description
+
+  * - 0
+    - *Kind*
+    - u8 (1 byte)
+    - The page type, see below.
+
+  * - 1
+    - *Flags*
+    - u8 (1 byte)
+    - Always 0. Reserved for changes to the layout of individual pages.
+
+  * - 2
+    - *Used*
+    - u16 (2 bytes)
+    - The number of bytes used by the page, including the *Page Header*.
+
+  * - 4
+    - *Checksum*
+    - u32 (4 bytes)
+    - Always 0. Reserved for detecting torn or corrupted pages.
+
+  * - 8
+    - *Log Sequence Number*
+    - u64 (8 bytes)
+    - Always 0. Reserved for a write-ahead log.
+
+  * - 16
+    - *Data*
+    - (page size - 16) bytes
+    - The objects in the page.
 
 .. list-table::
   :header-rows: 1
@@ -171,26 +207,24 @@ format of the data itself will depend on the *Kind*:
   * - 1
     - `Non-leaf Page`_
 
-Since *Used* has a max value of 65536 this is also the maximum possible size
+Since *Used* has a max value of 65535 this is also the maximum possible size
 for a page. Although, the default page size for new files is 4096 bytes. [1]_
 
-The *Used* includes the size of *Meta*. So an empty page would have a *Used* of
-3 and an entirely full page would have a *Used* equal to the page size.
+So an empty page has a *Used* of 16 and an entirely full page has a *Used* equal
+to the page size.
 
 Leaf Page
 ---------
 
 .. image:: img/file-format-leaf-page.png
 
-The first 3 bytes are reserved for *Meta*, which will contain the kind (``0``
-for leaf) and the number of used bytes (remember that it also contains the
-size of *Meta*).
+The *Page Header* has a *Kind* of ``0``.
 
 The *Data* will contain zero or more objects. Although, zero objects is valid if
 that were the case the page should be removed as part of the garbage collection.
 
 Each `Object`_ may be variable length and can be any number of bytes so long as
-the *Object* size is equal to or less than the (page size - 3). For objects that
+the *Object* size is equal to or less than the (page size - 16). For objects that
 cannot fit into a page, they are stored in as a `Blob Object`_ and referenced
 from the *Object*.
 

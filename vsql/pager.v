@@ -105,9 +105,11 @@ fn (mut p FilePager) fetch_page(page_number int) !Page {
 	p.file.read(mut buf) or { return error('unable to read from file: ${err}') }
 
 	mut b := new_bytes(buf)
+	kind := b.read_u8()
+	b.read_u8() // flags
 
 	return Page{
-		kind: b.read_u8()
+		kind: kind
 		used: b.read_u16()
 		data: buf[page_header_size..].clone()
 	}
@@ -122,7 +124,10 @@ fn (mut p FilePager) store_page(page_number int, page Page) ! {
 
 	mut b := new_empty_bytes()
 	b.write_u8(page.kind)
+	b.write_u8(0) // flags
 	b.write_u16(page.used)
+	// The checksum (u32) and log sequence number (u64) are not used yet.
+	b.write_u8s([]u8{len: 12})
 	b.write_u8s(page.data)
 
 	p.file.write(b.bytes()) or { return error('unable to write to file: ${err}') }

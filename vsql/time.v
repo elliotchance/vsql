@@ -438,6 +438,16 @@ fn time_zone_value(conn &Connection) string {
 	return s
 }
 
+// local_now is the current time in the session's time zone (the UTC time from
+// conn.now() shifted by its offset), as used by CURRENT_DATE, CURRENT_TIME, etc.
+//
+// ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>, General Rules, 2
+fn local_now(conn &Connection) time.Time {
+	now, offset := conn.now()
+
+	return now.add_seconds(int(offset) * 60)
+}
+
 fn default_now() (time.Time, i16) {
 	return time.utc(), i16(time.offset() / 60)
 }

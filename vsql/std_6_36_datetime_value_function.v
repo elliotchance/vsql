@@ -23,7 +23,7 @@ fn (e DatetimeValueFunction) pstr(params map[string]Value) string {
 fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 	match e {
 		CurrentDate {
-			now, _ := c.conn.now()
+			now := local_now(c.conn)
 
 			return CompileResult{
 				run:          fn [now] (mut conn Connection, data Row, params map[string]Value) !Value {
@@ -55,7 +55,7 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 				return sqlstate_42601('${DatetimeValueFunction(e).pstr(c.params)}: cannot have precision greater than 6')
 			}
 
-			now, _ := c.conn.now()
+			now := local_now(c.conn)
 
 			// TODO(elliotchance): Remove this. This is a work around for a bug.
 			//  https://github.com/vlang/v/issues/19748
@@ -92,7 +92,7 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 				return sqlstate_42601('${DatetimeValueFunction(e).pstr(c.params)}: cannot have precision greater than 6')
 			}
 
-			now, _ := c.conn.now()
+			now := local_now(c.conn)
 
 			// TODO(elliotchance): Remove this. This is a work around for a bug.
 			//  https://github.com/vlang/v/issues/19748
@@ -133,7 +133,7 @@ struct LocalTimestamp {
 }
 
 fn time_value(conn &Connection, prec int, include_offset bool) string {
-	now, _ := conn.now()
+	now := local_now(conn)
 
 	mut s := now.strftime('%H:%M:%S')
 

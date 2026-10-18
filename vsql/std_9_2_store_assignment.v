@@ -499,7 +499,7 @@ fn cast_time_without_to_time_with(conn &Connection, v Value, to Type) !Value {
 //
 // ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 18 and 19
 fn current_date_str(conn &Connection) string {
-	now, _ := conn.now()
+	now := local_now(conn)
 
 	return now.strftime('%Y-%m-%d')
 }

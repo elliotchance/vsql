@@ -149,3 +149,35 @@ SELECT CAST(f1 AS TIMESTAMP(0) WITH TIME ZONE) FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- COL1: 2022-06-30T00:00:00+0500
+
+/* types */
+VALUES CAST('2022-06-30' AS DATE);
+-- COL1: 2022-06-30 (DATE)
+
+VALUES CAST('  2022-06-30   ' AS DATE);
+-- COL1: 2022-06-30
+
+VALUES CAST('2022-02-30' AS DATE);
+-- error 22007: invalid datetime format
+
+VALUES CAST('2022-06-30 12:34:56' AS DATE);
+-- error 22007: invalid datetime format
+
+VALUES CAST('hello' AS DATE);
+-- error 22007: invalid datetime format
+
+CREATE TABLE foo (f1 VARCHAR(20));
+INSERT INTO foo (f1) VALUES ('2022-06-30');
+INSERT INTO foo (f1) VALUES (NULL);
+SELECT CAST(f1 AS DATE) FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- COL1: 2022-06-30
+-- COL1: NULL
+
+-- # A character string is not assignable to a DATE column without a CAST.
+CREATE TABLE foo (f1 DATE);
+INSERT INTO foo (f1) VALUES ('2022-06-30');
+-- msg: CREATE TABLE 1
+-- error 42846: cannot coerce CHARACTER(10) to DATE

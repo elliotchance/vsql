@@ -505,10 +505,10 @@ struct PageObject
    	//
    	// TODO(elliotchance): It makes more sense to construct a new PageObject
    	//  when changing the tid and xid.
-   	tid int
+   	tid u64
    	// The xid is the transaciton that deleted the object, or zero if it has
    	// never been deleted.
-   	xid int
+   	xid u64
    }
 
 TODO(elliotchance): This does not need to be public. It was required for a bug at the time with V not being able to pass this to the shuffle function. At some point in the future remove the pub and see if it works.
@@ -569,7 +569,7 @@ struct Schema
 
    pub struct Schema {
    	// The tid is the transaction ID that created this table.
-   	tid int
+   	tid u64
    pub:
    	// The name of the schema is case-sensitive.
    	name string
@@ -586,7 +586,7 @@ struct Sequence
    pub struct Sequence {
    mut:
    	// The tid is the transaction ID that created this table.
-   	tid int
+   	tid u64
    pub mut:
    	// name contains the other parts such as the schema.
    	name Identifier
@@ -636,7 +636,7 @@ struct Table
    pub struct Table {
    mut:
    	// The tid is the transaction ID that created this table.
-   	tid int
+   	tid u64
    pub mut:
    	// The name of the table including the schema.
    	name Identifier

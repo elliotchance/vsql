@@ -37,7 +37,7 @@ mut:
 	// transaction_id is the current active transaction ID, or zero if there is
 	// no active transaction. If there is no active transaction, each statement
 	// will be given an implicit transaction.
-	transaction_id int
+	transaction_id u64
 	// transaction_pages contains all the page numbers that have been modified
 	// during this transaction. This is important for COMMIT and ROLLBACK to
 	// revisit pages that need to be cleaned up or frozen.
@@ -124,8 +124,8 @@ fn parse_definition(data []u8) !Stmt {
 
 // other_transaction_ids returns the active transaction IDs that do not belong
 // to this connection.
-fn (f Storage) other_transaction_ids(header Header) []int {
-	mut tids := []int{}
+fn (f Storage) other_transaction_ids(header Header) []u64 {
+	mut tids := []u64{}
 	for tid in header.active_transaction_ids.tids {
 		if tid != 0 && (f.transaction_state == .not_active || tid != f.transaction_id) {
 			tids << tid
@@ -323,7 +323,7 @@ fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence)
 	f.btree.add(new_value_obj)!
 }
 
-fn (mut f Storage) delete_table(table_name string, tid int) ! {
+fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 	f.isolation_start()!
 	defer {
 		f.isolation_end() or { panic(err) }
@@ -360,7 +360,7 @@ fn (mut f Storage) delete_table(table_name string, tid int) ! {
 	f.schema_changed()
 }
 
-fn (mut f Storage) delete_schema(schema_name string, tid int) ! {
+fn (mut f Storage) delete_schema(schema_name string, tid u64) ! {
 	f.isolation_start()!
 	defer {
 		f.isolation_end() or { panic(err) }
@@ -372,7 +372,7 @@ fn (mut f Storage) delete_schema(schema_name string, tid int) ! {
 	f.schema_changed()
 }
 
-fn (mut f Storage) delete_sequence(name Identifier, tid int) ! {
+fn (mut f Storage) delete_sequence(name Identifier, tid u64) ! {
 	f.isolation_start()!
 	defer {
 		f.isolation_end() or { panic(err) }

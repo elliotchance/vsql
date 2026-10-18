@@ -20,12 +20,14 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Set up V version latest
-        uses: vlang/setup-v@v1.4
+      # V is pinned in .v-version so that it's cached between runs, and a new
+      # commit on V master can't break the build.
+      - name: Set up V
+        uses: vlang/setup-v@v1.7
         with:
-          check-latest: true
+          version-file: .v-version
 
       - name: Verify fmt
         run: make fmt-verify
@@ -52,12 +54,12 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Set up V version latest
-        uses: vlang/setup-v@v1.4
+      - name: Set up V
+        uses: vlang/setup-v@v1.7
         with:
-          check-latest: true
+          version-file: .v-version
 
       - name: Build macOS binaries
         run: |
@@ -66,7 +68,7 @@ jobs:
           zip -j vsql-macos.zip bin/vsql
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
@@ -77,12 +79,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Set up V version latest
-        uses: vlang/setup-v@v1.4
+      - name: Set up V
+        uses: vlang/setup-v@v1.7
         with:
-          check-latest: true
+          version-file: .v-version
 
       - name: Build linux binaries
         run: |
@@ -91,7 +93,7 @@ jobs:
           zip -j vsql-linux.zip bin/vsql
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
@@ -105,12 +107,12 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Set up V version latest
-        uses: vlang/setup-v@v1.4
+      - name: Set up V
+        uses: vlang/setup-v@v1.7
         with:
-          check-latest: true
+          version-file: .v-version
 
       - name: Build Windows binaries
         run: |
@@ -120,7 +122,7 @@ jobs:
           zip -j vsql-windows.zip bin/vsql.exe
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |

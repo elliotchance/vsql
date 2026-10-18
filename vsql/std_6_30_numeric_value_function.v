@@ -143,11 +143,6 @@ fn func_mod_numeric(args []Value) !Value {
 	return new_numeric_value_from_numeric(value.subtract(value.divide(modulus)!.trunc().multiply(modulus)))
 }
 
-// LOG(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_log(args []Value) !Value {
-	return new_double_precision_value(math.log2(args[0].f64_value()))
-}
-
 // LOG10(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_log10(args []Value) !Value {
 	return new_double_precision_value(math.log10(args[0].f64_value()))

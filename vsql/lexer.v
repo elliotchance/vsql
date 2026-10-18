@@ -103,6 +103,18 @@ type YYSym = AggregateFunction
 // YYSymType is the yacc internal type for the stack that contains the symbols
 // to reduce (pass to the code). The only requirement here is that `yys` is
 // included as it contains the position of the token.
+// yy_as is used by the grammar actions instead of `as` (see
+// scripts/generate-grammar.vsh). V3 expands every `as` on a sum type into a
+// check for each variant, so having one function for each type keeps the
+// parser small.
+fn yy_as[T](sym YYSym) T {
+	if sym is T {
+		return sym
+	}
+
+	panic('expected ${T.name}')
+}
+
 struct YYSymType {
 mut:
 	v   YYSym

@@ -111,15 +111,6 @@ const typename = private + 12
 const @union = private + 13
 const error = private + 14
 
-const max_int8 = 127
-const min_int8 = -128
-const max_int16 = 32767
-const min_int16 = -32768
-const max_int32 = 2147483647
-const min_int32 = -2147483648
-const max_uint8 = 255
-const max_uint16 = 65535
-
 const endfile = 0
 const empty = 1
 const whoknows = 0
@@ -1542,15 +1533,6 @@ fn (mut y Vyacc) cpres() {
 	y.pres = [][][]int{len: y.nnonter + 1}
 	mut curres := [][]int{len: y.nprod}
 
-	if false {
-		for j := 0; j <= y.nnonter; j++ {
-			print('y.nnonter[${j}] = ${y.nontrst[j].name}\n')
-		}
-		for j := 0; j < y.nprod; j++ {
-			print('y.prdptr[${j}][0] = ${y.prdptr[j][0] - ntbase}+ntbase\n')
-		}
-	}
-
 	y.fatfl = 0 // make undefined symbols nonfatal
 	for i := 0; i <= y.nnonter; i++ {
 		mut n := 0
@@ -2241,7 +2223,7 @@ fn (mut y Vyacc) output() ! {
 		actions = y.add_actions(mut actions, i)!
 	}
 
-	y.array_out_columns('_exca', actions, 2, false)!
+	y.array_out_columns('_exca', actions, 2)!
 	y.ftable.write_string('\n')!
 	y.ftable.write_string('\n')!
 	y.ftable.write_string('const ${y.prefix}_private = ${private}\n')!
@@ -2857,7 +2839,7 @@ fn (mut y Vyacc) others() ! {
 		}
 	}
 	y.arout('_chk', y.temp1, y.nstate)!
-	y.array_out_columns('_def', y.defact[..y.nstate], 10, false)!
+	y.array_out_columns('_def', y.defact[..y.nstate], 10)!
 
 	// put out token translation tables
 	// table 1 has 0-256
@@ -3025,63 +3007,9 @@ fn (mut y Vyacc) run_machine(tokens []string) (int, int) {
 	return state, token
 }
 
-fn min_max(v []int) (int, int) {
-	mut min := 0
-	mut max := 0
-	if v.len == 0 {
-		return min, max
-	}
-	min = v[0]
-	max = v[0]
-	for _, i in v {
-		if i < min {
-			min = i
-		}
-		if i > max {
-			max = i
-		}
-	}
-	return min, max
-}
-
-// return the smaller integral base type to store the values in v
-fn min_type(v []int, allow_unsigned bool) string {
-	mut typ := 'int'
-	mut type_len := 8
-	min, max := min_max(v)
-
-	if min >= min_int32 && max <= max_int32 && type_len > 4 {
-		typ = 'int32'
-		type_len = 4
-	}
-	if min >= min_int16 && max <= max_int16 && type_len > 2 {
-		typ = 'int16'
-		type_len = 2
-	}
-	if min >= min_int8 && max <= max_int8 && type_len > 1 {
-		typ = 'int8'
-		type_len = 1
-	}
-
-	if allow_unsigned {
-		// Do not check for uint32, not worth and won't compile on 32 bit systems
-
-		if min >= 0 && max <= max_uint16 && type_len > 2 {
-			typ = 'uint16'
-			type_len = 2
-		}
-		if min >= 0 && max <= max_uint8 && type_len > 1 {
-			typ = 'uint8'
-			type_len = 1
-		}
-	}
-	return typ
-}
-
-fn (mut y Vyacc) array_out_columns(s_ string, v []int, columns int, allow_unsigned bool) ! {
+fn (mut y Vyacc) array_out_columns(s_ string, v []int, columns int) ! {
 	mut s := y.prefix + s_
 	y.ftable.write_string('\n')!
-	// min_typ := min_type(v, allow_unsigned)
 	y.ftable.write_string('const ${s} = [')!
 	for i, val in v {
 		if i % columns == 0 {
@@ -3095,7 +3023,7 @@ fn (mut y Vyacc) array_out_columns(s_ string, v []int, columns int, allow_unsign
 }
 
 fn (mut y Vyacc) arout(s string, v []int, n int) ! {
-	y.array_out_columns(s, v[..n], 10, true)!
+	y.array_out_columns(s, v[..n], 10)!
 }
 
 // output the summary on y.output
@@ -3470,7 +3398,7 @@ fn (mut $\$rcvr YYParserImpl) parse(mut $\$lex YYLexer) !int {
 	mut $\$_val := YYSymType{}
 	mut $\$_dollar := []YYSymType{}
 	_ = $\$_dollar // silence set and not used
-	mut $\$_s := $\$rcvr.stack[..]
+	mut $\$_s := $\$rcvr.stack[..].clone()
 
 	mut n_errs := 0   // number of errors
 	mut err_flag := 0 // error recovery flag

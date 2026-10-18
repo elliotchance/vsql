@@ -92,7 +92,11 @@ fn (mut b Benchmark) run_transaction() ! {
 	b.conn.query('UPDATE branches SET bbalance = bbalance + ${delta} WHERE bid = ${bid}')!
 
 	// TODO(elliotchance): Should use CURRENT_TIMESTAMP once supported.
-	b.conn.query("INSERT INTO history (tid, bid, aid, delta, mtime) VALUES (${tid}, ${bid}, ${aid}, ${delta}, '${time.now()}')")!
+	//
+	// time.now() is not called inside the string because the V3 compiler
+	// generates invalid C for that.
+	now := time.now()
+	b.conn.query("INSERT INTO history (tid, bid, aid, delta, mtime) VALUES (${tid}, ${bid}, ${aid}, ${delta}, '${now}')")!
 
 	b.conn.query('COMMIT')!
 }

@@ -102,6 +102,63 @@ INSERT INTO pk3 (id) VALUES (1);
 -- 1: msg: DELETE 1
 -- 2: error 40001: serialization failure: avoiding concurrent write on individual row
 
+CREATE TABLE pk2 (id SMALLINT, PRIMARY KEY (id));
+INSERT INTO pk2 (id) VALUES (3);
+INSERT INTO pk2 (id) VALUES (-1);
+INSERT INTO pk2 (id) VALUES (32767);
+INSERT INTO pk2 (id) VALUES (0);
+INSERT INTO pk2 (id) VALUES (-32768);
+SELECT * FROM pk2;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- ID: -32768
+-- ID: -1
+-- ID: 0
+-- ID: 3
+-- ID: 32767
+
+CREATE TABLE pk2 (id INTEGER, PRIMARY KEY (id));
+INSERT INTO pk2 (id) VALUES (3);
+INSERT INTO pk2 (id) VALUES (-1);
+INSERT INTO pk2 (id) VALUES (2147483647);
+INSERT INTO pk2 (id) VALUES (0);
+INSERT INTO pk2 (id) VALUES (-2147483648);
+SELECT * FROM pk2;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- ID: -2147483648
+-- ID: -1
+-- ID: 0
+-- ID: 3
+-- ID: 2147483647
+
+CREATE TABLE pk2 (id BIGINT, PRIMARY KEY (id));
+INSERT INTO pk2 (id) VALUES (3);
+INSERT INTO pk2 (id) VALUES (-1);
+INSERT INTO pk2 (id) VALUES (9223372036854775807);
+INSERT INTO pk2 (id) VALUES (0);
+INSERT INTO pk2 (id) VALUES (-9223372036854775808);
+SELECT * FROM pk2;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- ID: -9223372036854775808
+-- ID: -1
+-- ID: 0
+-- ID: 3
+-- ID: 9223372036854775807
+
 CREATE TABLE pk2 (
     PRIMARY KEY (id),
     id INT

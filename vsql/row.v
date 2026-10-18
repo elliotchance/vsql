@@ -341,6 +341,16 @@ fn new_row_from_bytes(t Table, data []u8, tid u64) Row {
 	return Row{row_id, tid, row}
 }
 
+// write_key_integer writes an integer in a PRIMARY KEY as size bytes, so that
+// the keys sort in the same order as the values: big-endian with the sign bit
+// flipped. See "Primary Key" in the file format docs.
+fn write_key_integer(mut buf BytesReaderWriter, value i64, size int) {
+	flipped := u64(value) ^ (u64(1) << (size * 8 - 1))
+	for i := size - 1; i >= 0; i-- {
+		buf.write_u8(u8(flipped >> (i * 8)))
+	}
+}
+
 fn (mut r Row) object_key(t Table) ![]u8 {
 	// If there is a PRIMARY KEY, generate the row key.
 	if t.primary_key.len > 0 {
@@ -350,13 +360,13 @@ fn (mut r Row) object_key(t Table) ![]u8 {
 			col := t.column(col_name)!
 			match col.typ.typ {
 				.is_bigint {
-					pk.write_i64(r.data[col_name].int_value())
+					write_key_integer(mut pk, r.data[col_name].int_value(), 8)
 				}
 				.is_integer {
-					pk.write_i32(int(r.data[col_name].int_value()))
+					write_key_integer(mut pk, r.data[col_name].int_value(), 4)
 				}
 				.is_smallint {
-					pk.write_i16(i16(r.data[col_name].int_value()))
+					write_key_integer(mut pk, r.data[col_name].int_value(), 2)
 				}
 				else {
 					return error('cannot use ${col.typ.str()} in PRIMARY KEY')

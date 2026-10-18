@@ -411,6 +411,33 @@ The serialization of each value does not need to be explained in detail here.
 You can check the code for ``Row.bytes()`` and ``new_row_from_bytes()``
 respectively.
 
+Primary Key
+^^^^^^^^^^^
+
+For a table with a ``PRIMARY KEY``, the *Row ID* (which is also at the end of
+the key of the row) is the value of each column in the ``PRIMARY KEY``, encoded
+so that comparing the bytes gives the same order as comparing the values. This
+keeps the rows in order of their ``PRIMARY KEY``, so that a range of keys can
+be read without reading the whole table.
+
+.. list-table::
+  :header-rows: 1
+
+  * - Type
+    - Encoding
+
+  * - ``SMALLINT``, ``INTEGER``, ``BIGINT``
+    - Big-endian, 2, 4 and 8 bytes respectively, with the sign bit flipped (so
+      that negative values come before positive values). For example, the
+      ``INTEGER`` values -1, 0 and 1 are ``7fffffff``, ``80000000`` and
+      ``80000001``.
+
+Other types can't be used in a ``PRIMARY KEY`` yet. The encoding of any type
+added later must also keep the order of the values, and must be self-delimiting
+(the length can be worked out from the bytes themselves), so that the values of
+each column in a ``PRIMARY KEY`` with more than one column can be put one after
+another and still be in order.
+
 Schema Objects
 --------------
 

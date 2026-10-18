@@ -351,7 +351,7 @@ fn (v Value) as_numeric() !Numeric {
 
 fn (v Value) pstr(params map[string]Value) string {
 	if v.typ.typ != .is_numeric && (v.typ.uses_string() || v.typ.uses_time()) {
-		return "'${v.str()}'"
+		return "'${v.str().replace("'", "''")}'"
 	}
 
 	return v.str()

@@ -200,7 +200,16 @@ fn tokenize(sql_stmt string) []Token {
 		if cs[i] == `'` {
 			mut word := ''
 			i++
-			for i < cs.len && cs[i] != `'` {
+			for i < cs.len {
+				if cs[i] == `'` {
+					// A doubled quote ('') represents a single quote character.
+					if i + 1 < cs.len && cs[i + 1] == `'` {
+						word += "'"
+						i += 2
+						continue
+					}
+					break
+				}
 				word += '${cs[i]}'
 				i++
 			}

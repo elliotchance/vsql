@@ -26,7 +26,7 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, params map[string]Val
 		return sqlstate_3f000(schema_name) // schema does not exist
 	}
 
-	// Find all dependencies (which is just tables right now).
+	// Find all dependencies (tables and sequences).
 	mut table_names := []string{}
 	for table_name, _ in catalog.storage.tables {
 		if table_name.starts_with('${schema_name}.') {
@@ -34,12 +34,23 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, params map[string]Val
 		}
 	}
 
-	if stmt.behavior == 'RESTRICT' && table_names.len > 0 {
+	mut sequences := []Sequence{}
+	for sequence in catalog.storage.sequences()! {
+		if sequence.name.schema_name == schema_name {
+			sequences << sequence
+		}
+	}
+
+	if stmt.behavior == 'RESTRICT' && (table_names.len > 0 || sequences.len > 0) {
 		return sqlstate_2bp01(schema_name)
 	}
 
 	for table_name in table_names {
 		catalog.storage.delete_table(table_name, catalog.storage.tables[table_name].tid)!
+	}
+
+	for sequence in sequences {
+		catalog.storage.delete_sequence(sequence.name, sequence.tid)!
 	}
 
 	catalog.storage.delete_schema(schema_name, catalog.storage.schemas[schema_name].tid)!

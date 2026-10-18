@@ -167,6 +167,10 @@ fn (r Row) bytes(t Table) []u8 {
 	buf.write_u8(u8(r.id.len))
 	buf.write_u8s(r.id)
 
+	// The number of columns lets a row written before a column was added to the
+	// table still be read.
+	buf.write_u16(u16(t.columns.len))
+
 	for col in t.columns {
 		v := r.data[col.name.sub_entity_name]
 
@@ -232,8 +236,19 @@ fn new_row_from_bytes(t Table, data []u8, tid int) Row {
 	mut row := map[string]Value{}
 
 	row_id := buf.read_u8s(buf.read_u8())
+	column_count := int(buf.read_u16())
 
-	for col in t.columns {
+	for i, col in t.columns {
+		// Columns that didn't exist when the row was written are NULL. Any
+		// values after the last column are ignored.
+		if i >= column_count {
+			row[col.name.id()] = Value{
+				typ:     col.typ
+				is_null: true
+			}
+			continue
+		}
+
 		// Some types do not need a NULL flag because it's built into the value.
 		mut v := Value{
 			typ: col.typ

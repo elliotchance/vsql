@@ -354,9 +354,39 @@ splitting a large object. See `Blob Object`_.
 Row Object
 ----------
 
-A Row Object (has the ``R`` prefix) contains a table row. The serialization does
-not need to be explained in detail here. You can check the code for
-``Row.bytes()`` and ``new_row_from_bytes()`` respectively.
+A Row Object (has the ``R`` prefix) contains a table row:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Part
+    - Format
+    - Description
+
+  * - *Row ID Length*
+    - u8 (1 byte)
+    - The length of *Row ID*.
+
+  * - *Row ID*
+    - *Row ID Length* bytes
+    - The same as the end of the key.
+
+  * - *Column Count*
+    - u16 (2 bytes)
+    - The number of columns in the table when the row was written.
+
+  * - *Values*
+    - variable
+    - The value of each column, in the order of the columns in the table.
+
+A row with fewer columns than the table was written before the remaining
+columns existed, and those columns are ``NULL``. Values after the last column of
+the table are ignored. This lets columns be added to (or removed from the end
+of) a table without rewriting its rows.
+
+The serialization of each value does not need to be explained in detail here.
+You can check the code for ``Row.bytes()`` and ``new_row_from_bytes()``
+respectively.
 
 Schema Objects
 --------------

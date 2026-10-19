@@ -151,6 +151,18 @@ type.
   -- COL1: 20
   -- error 2200H: sequence generator limit exceeded: PUBLIC.SEQ1
 
+``22011`` substring error
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The length of a ``SUBSTRING`` must not be negative.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES SUBSTRING('hello' FROM 2 FOR -1);
+  -- error 22011: substring error
+
 ``22012`` division by zero
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 

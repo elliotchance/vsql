@@ -603,13 +603,17 @@ SUBSTRING
    )
 
 ``start_position`` starts at 1 for the first character or byte. If
-``start_position`` is out of bounds (either before the start or after the end)
-the returned value will be empty.
+``start_position`` is after the end the returned value will be empty.
 
 If ``string_length`` is not provided, all characters or bytes until the end will
 be included. Otherwise, only ``string_length`` will be included. If
 ``string_length`` goes beyond the end of the string it will only be used until
-the end.
+the end. ``string_length`` must not be negative, otherwise a 22011 (substring
+error) is raised.
+
+A ``start_position`` before 1 is allowed, but the positions before the first
+character still count towards ``string_length``. So ``SUBSTRING('hello' FROM 0
+FOR 3)`` is ``'he'``.
 
 If ``CHARACTERS`` is specified the ``start_position`` and ``string_length`` will
 count in characters (this works with multibyte characters) whereas ``OCTETS``
@@ -626,6 +630,9 @@ be used.
 
   VALUES SUBSTRING('hello world' FROM 3 FOR 5);
   -- COL1: llo w
+
+  VALUES SUBSTRING('hello' FROM 0 FOR 3);
+  -- COL1: he
 
   VALUES SUBSTRING('Жabڣc' FROM 4 USING OCTETS);
   -- COL1: bڣc

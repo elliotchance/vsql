@@ -146,6 +146,18 @@ fn sqlstate_2200h(generator_name string) IError {
 	}
 }
 
+// Substring error.
+struct SQLState22011 {
+	SQLState
+}
+
+fn sqlstate_22011() IError {
+	return SQLState22011{
+		code: sqlstate_to_int('22011')
+		msg:  'substring error'
+	}
+}
+
 // Divide by zero.
 struct SQLState22012 {
 	SQLState

@@ -2,7 +2,6 @@
 
 module vsql
 
-import math
 
 %}
 

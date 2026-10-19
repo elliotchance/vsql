@@ -157,16 +157,10 @@ fn new_table_from_bytes(key []u8, data []u8, tid u64, catalog_name string) !Tabl
 	return error('not a table definition: ${data.bytestr()}')
 }
 
-// Returns the CREATE TABLE statement, including the ';'.
+// Returns the CREATE TABLE statement, including the ';'. It's the same as the
+// definition that's stored in the file.
 pub fn (t Table) str() string {
-	mut s := 'CREATE TABLE ${t.name} ('
-	mut cols := []string{}
-
-	for col in t.columns {
-		cols << '  ${col}'
-	}
-
-	return s + '\n' + cols.join(',\n') + '\n);'
+	return t.bytes().bytestr() + ';'
 }
 
 // A TableOperation requires that up to rows in the table be read. The number of

@@ -37,7 +37,7 @@ fn out_command(cmd cli.Command) ! {
 		// We avoid "CREATE SCHEMA PUBLIC;" because it would break the import.
 		// Although, `-create-public-schema` can be used to enable it when
 		// dealing with other databases.
-		if schema.name == 'PUBLIC' && cmd.flags.get_bool('create-public-schema') or { false } {
+		if schema.name != 'PUBLIC' || cmd.flags.get_bool('create-public-schema') or { false } {
 			println('${schema}\n')
 		}
 
@@ -51,9 +51,16 @@ fn out_command(cmd cli.Command) ! {
 
 			// START WITH is kept for RESTART, so the current position (if it has
 			// moved) needs to be restored separately.
-			next_value := sequence.current_value + sequence.increment_by
-			if next_value != sequence.start_value {
-				println('ALTER SEQUENCE ${sequence.name} RESTART WITH ${next_value};\n')
+			name := sequence.name.storage_sql()
+			if next_value := sequence.next_value() {
+				if next_value != sequence.start_value {
+					println('ALTER SEQUENCE ${name} RESTART WITH ${next_value};\n')
+				}
+			} else {
+				// The sequence has gone past its limit, so the next value can't be
+				// used with RESTART. Instead, the last value is returned again.
+				println('ALTER SEQUENCE ${name} RESTART WITH ${sequence.current_value};')
+				println('VALUES NEXT VALUE FOR ${name};\n')
 			}
 		}
 
@@ -65,13 +72,15 @@ fn out_command(cmd cli.Command) ! {
 		for _, table in tables {
 			println('${table}\n')
 
-			for row in db.query('SELECT * FROM ${table.name}')! {
+			name := table.name.storage_sql()
+			columns := table.column_names().map('"${it}"').join(', ')
+			for row in db.query('SELECT * FROM ${name}')! {
 				mut data := []string{}
 				for col in table.column_names() {
-					data << (row.get(col)!).str()
+					data << (row.get(col)!).literal()
 				}
 
-				println('INSERT INTO ${table.name} (${table.column_names().join(', ')}) VALUES (${data.join(', ')});')
+				println('INSERT INTO ${name} (${columns}) VALUES (${data.join(', ')});')
 			}
 
 			println('')

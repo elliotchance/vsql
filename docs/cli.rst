@@ -78,17 +78,19 @@ out
 
    $ vsql out mydatabase.vsql > myfile.sql
    $ cat myfile.sql
-   CREATE TABLE PUBLIC.BAR (
-      X INTEGER
+   CREATE TABLE "PUBLIC"."BAR" (
+     "X" INTEGER
    );
 
-   INSERT INTO PUBLIC.BAR (X) VALUES (1234);
+   INSERT INTO "PUBLIC"."BAR" ("X") VALUES (1234);
 
-The output can be loaded into a database with the ``in`` command.
+The output can be loaded into a new database with the ``in`` command, so it can
+be used as a backup. All names are quoted so that their case is kept. Sequences
+are restored to the same next value.
 
 Options are:
 
-- ``-create-public-schema``: When enabled, ``CREATE SCHEMA PUBLIC;`` will be
+- ``-create-public-schema``: When enabled, ``CREATE SCHEMA "PUBLIC";`` will be
   included in the output. By default it not included because it is provided
   implicitly with a vsql database.
 

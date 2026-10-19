@@ -6,6 +6,18 @@ import math.big
 //
 // Specify a non-null value.
 
+#include <stdlib.h>
+
+fn C.strtod(&char, &&char) f64
+
+// approximate_numeric_literal_value parses an approximate numeric literal (such
+// as "1.5e-3") as a whole, rather than multiplying the mantissa by a power of
+// 10, so that it's the closest DOUBLE PRECISION to the exact value. strtod is
+// used because strconv.atof64 isn't always the closest in every version of V.
+fn approximate_numeric_literal_value(x string) Value {
+	return new_double_precision_value(C.strtod(&char(x.str), unsafe { nil }))
+}
+
 fn numeric_literal(x string) !Value {
 	// Any number that contains a decimal (even if its a whole number) must be
 	// treated as a NUMERIC.

@@ -66,7 +66,12 @@ fn register_builtin_funcs(mut conn Connection) ! {
 
 	// Aggregate functions.
 	conn.register_func(Func{'AVG', [double_precision], true, func_avg, double_precision, false})!
-	conn.register_func(Func{'COUNT', [double_precision], true, func_count, integer, false})!
+	// COUNT accepts a value of any type because it only counts the non-NULL
+	// values (10.9 General Rule 7). Every SQLType is registered, so a new type
+	// is supported automatically.
+	$for typ in SQLType.values {
+		conn.register_func(Func{'COUNT', [Type{typ.value, 0, 0, false}], true, func_count, integer, false})!
+	}
 	conn.register_func(Func{'MAX', [double_precision], true, func_max, double_precision, false})!
 	conn.register_func(Func{'MIN', [double_precision], true, func_min, double_precision, false})!
 	conn.register_func(Func{'SUM', [double_precision], true, func_sum, double_precision, false})!

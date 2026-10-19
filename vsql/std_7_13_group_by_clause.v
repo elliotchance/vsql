@@ -142,9 +142,17 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 
 	// Each set will produce one row. An empty set (only possible without a GROUP
 	// BY) has no row to store the aggregate results in.
+	//
+	// The data is cloned because the aggregate results are added to it below.
+	// Otherwise the map would be shared with set[0], and growing it can lose
+	// the values of set[0] before the next aggregate function reads them.
 	mut final_rows := []Row{}
 	for set in sets {
-		final_rows << if set.len > 0 { set[0] } else { new_row(map[string]Value{}) }
+		final_rows << if set.len > 0 {
+			new_row(set[0].data.clone())
+		} else {
+			new_row(map[string]Value{})
+		}
 	}
 
 	// Perform the aggregations functions. An expression may contain several

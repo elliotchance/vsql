@@ -182,6 +182,30 @@ fn sqlstate_2201b() IError {
 	}
 }
 
+// Invalid row count in fetch first clause.
+struct SQLState2201W {
+	SQLState
+}
+
+fn sqlstate_2201w() IError {
+	return SQLState2201W{
+		code: sqlstate_to_int('2201W')
+		msg:  'invalid row count in fetch first clause'
+	}
+}
+
+// Invalid row count in result offset clause.
+struct SQLState2201X {
+	SQLState
+}
+
+fn sqlstate_2201x() IError {
+	return SQLState2201X{
+		code: sqlstate_to_int('2201X')
+		msg:  'invalid row count in result offset clause'
+	}
+}
+
 // Trim error.
 struct SQLState22027 {
 	SQLState

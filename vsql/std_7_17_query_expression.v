@@ -1,5 +1,6 @@
 module vsql
 
+import math
 import time
 
 // ISO/IEC 9075-2:2016(E), 7.17, <query expression>
@@ -320,7 +321,12 @@ fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 	}
 	mut offset := i64(0)
 	if off := o.offset {
-		offset = (off.compile(mut c)!.run(mut o.conn, Row{}, o.params)!).as_int()
+		offset = row_count('OFFSET', off, off.compile(mut c)!.run(mut o.conn, Row{}, o.params)!)!
+
+		// General Rule 6b: The offset must not be negative.
+		if offset < 0 {
+			return sqlstate_2201x()
+		}
 
 		if offset >= rows.len {
 			return []Row{}
@@ -329,12 +335,59 @@ fn (mut o LimitOperation) execute(rows []Row) ![]Row {
 
 	mut fetch := i64(rows.len)
 	if f := o.fetch {
-		fetch = (f.compile(mut c)!.run(mut o.conn, Row{}, o.params)!).as_int()
+		fetch = row_count('FETCH FIRST', f, f.compile(mut c)!.run(mut o.conn, Row{}, o.params)!)!
+
+		// General Rule 7c: At least one row must be fetched.
+		if fetch < 1 {
+			return sqlstate_2201w()
+		}
 	}
 
-	if offset + fetch >= rows.len {
+	if fetch >= rows.len - offset {
 		fetch = rows.len - offset
 	}
 
 	return rows[offset..offset + fetch]
+}
+
+// row_count returns the value of an <offset row count> or <fetch first row
+// count>. Syntax Rules 29 and 30 require both to be an exact numeric with scale
+// 0. A host parameter is assigned to that type, so it may be any numeric value
+// that is a whole number.
+fn row_count(clause string, spec ValueSpecification, value Value) !i64 {
+	mut is_parameter := false
+	if spec is GeneralValueSpecification {
+		is_parameter = spec is HostParameterName
+	}
+
+	is_valid := match value.typ.typ {
+		.is_smallint, .is_integer, .is_bigint {
+			true
+		}
+		.is_numeric, .is_decimal, .is_double_precision, .is_real {
+			(value.typ.scale == 0 && !value.typ.uses_f64())
+				|| (is_parameter && (value.is_null || is_whole_number(value.as_f64()!)))
+		}
+		else {
+			false
+		}
+	}
+
+	if !is_valid {
+		if is_parameter {
+			return sqlstate_42601('${clause} row count must be a whole number, got ${value.str()}')
+		}
+
+		return sqlstate_42601('${clause} row count must be an exact numeric with scale 0, got ${value.typ}')
+	}
+
+	if value.is_null {
+		return if clause == 'OFFSET' { sqlstate_2201x() } else { sqlstate_2201w() }
+	}
+
+	return value.as_int()
+}
+
+fn is_whole_number(f f64) bool {
+	return f == math.trunc(f)
 }

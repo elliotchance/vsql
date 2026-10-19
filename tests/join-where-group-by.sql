@@ -1,0 +1,71 @@
+/* setup */
+CREATE TABLE t1 (id INT NOT NULL, x INT, PRIMARY KEY (id));
+INSERT INTO t1 (id, x) VALUES (1, 10);
+INSERT INTO t1 (id, x) VALUES (2, 20);
+INSERT INTO t1 (id, x) VALUES (3, 30);
+CREATE TABLE t2 (t1_id INT, y INT);
+INSERT INTO t2 (t1_id, y) VALUES (1, 100);
+INSERT INTO t2 (t1_id, y) VALUES (2, 200);
+INSERT INTO t2 (t1_id, y) VALUES (2, 300);
+INSERT INTO t2 (t1_id, y) VALUES (4, 400);
+
+SELECT * FROM t1 JOIN t2 ON t1.id = t2.t1_id WHERE y > 100;
+-- ID: 2 X: 20 T1_ID: 2 Y: 200
+-- ID: 2 X: 20 T1_ID: 2 Y: 300
+
+SELECT * FROM t1 JOIN t2 ON TRUE WHERE t1.x = 10 AND t2.y = 100;
+-- ID: 1 X: 10 T1_ID: 1 Y: 100
+
+SELECT * FROM t1 JOIN t2 ON TRUE WHERE x * 10 = y;
+-- ID: 1 X: 10 T1_ID: 1 Y: 100
+-- ID: 2 X: 20 T1_ID: 2 Y: 200
+-- ID: 3 X: 30 T1_ID: 2 Y: 300
+
+SELECT * FROM t1 JOIN t2 ON t1.id = t2.t1_id WHERE id = 2;
+-- ID: 2 X: 20 T1_ID: 2 Y: 200
+-- ID: 2 X: 20 T1_ID: 2 Y: 300
+
+EXPLAIN SELECT * FROM t1 JOIN t2 ON t1.id = t2.t1_id WHERE id = 2;
+-- EXPLAIN: $1:
+-- EXPLAIN:   TABLE ":memory:".PUBLIC.T1 (ID INTEGER NOT NULL, X INTEGER)
+-- EXPLAIN: $2:
+-- EXPLAIN:   TABLE ":memory:".PUBLIC.T2 (T1_ID INTEGER, Y INTEGER)
+-- EXPLAIN: INNER JOIN ON T1.ID = T2.T1_ID (":memory:".PUBLIC.T1.ID INTEGER NOT NULL, ":memory:".PUBLIC.T1.X INTEGER, ":memory:".PUBLIC.T2.T1_ID INTEGER, ":memory:".PUBLIC.T2.Y INTEGER)
+-- EXPLAIN: WHERE ID = 2
+-- EXPLAIN: EXPR (":memory:".PUBLIC.T1.ID INTEGER NOT NULL, ":memory:".PUBLIC.T1.X INTEGER, ":memory:".PUBLIC.T2.T1_ID INTEGER, ":memory:".PUBLIC.T2.Y INTEGER)
+
+SELECT * FROM t1 LEFT JOIN t2 ON t1.id = t2.t1_id WHERE t2.y IS NULL;
+-- ID: 3 X: 30 T1_ID: NULL Y: NULL
+
+SELECT * FROM t1 LEFT JOIN t2 ON t1.id = t2.t1_id AND y = 100 WHERE x > 10;
+-- ID: 2 X: 20 T1_ID: NULL Y: NULL
+-- ID: 3 X: 30 T1_ID: NULL Y: NULL
+
+SELECT * FROM t1 RIGHT JOIN t2 ON t1.id = t2.t1_id WHERE x IS NULL;
+-- ID: NULL X: NULL T1_ID: 4 Y: 400
+
+SELECT * FROM t1 JOIN t2 ON TRUE WHERE z = 1;
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Z
+
+SELECT t1_id, COUNT(*) FROM t1 JOIN t2 ON t1.id = t2.t1_id GROUP BY t1_id;
+-- T1_ID: 1 COL2: 1
+-- T1_ID: 2 COL2: 2
+
+SELECT t1.x, t2.y, COUNT(*) FROM t1 JOIN t2 ON TRUE WHERE t2.y < 300 GROUP BY t1.x, t2.y;
+-- X: 10 Y: 100 COL3: 1
+-- X: 10 Y: 200 COL3: 1
+-- X: 20 Y: 100 COL3: 1
+-- X: 20 Y: 200 COL3: 1
+-- X: 30 Y: 100 COL3: 1
+-- X: 30 Y: 200 COL3: 1
+
+SELECT x, COUNT(*) FROM t1 LEFT JOIN t2 ON t1.id = t2.t1_id WHERE y IS NULL OR y < 300 GROUP BY x;
+-- X: 10 COL2: 1
+-- X: 20 COL2: 1
+-- X: 30 COL2: 1
+
+SELECT COUNT(*) FROM t1 JOIN t2 ON t1.id = t2.t1_id WHERE x = 20;
+-- COL1: 2
+
+SELECT COUNT(*) FROM t1 JOIN t2 ON TRUE GROUP BY z;
+-- error 42703: no such column: Z

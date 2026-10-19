@@ -22,23 +22,22 @@ struct GroupOperation {
 
 	params  map[string]Value
 	columns Columns
+	tables  map[string]Table
 mut:
 	conn &Connection
 }
 
-fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, params map[string]Value, mut conn Connection, table Table) !&GroupOperation {
+fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, params map[string]Value, mut conn Connection, tables map[string]Table) !&GroupOperation {
 	mut columns := []Column{}
 
 	for expr in group_exprs {
-		// TODO(elliotchance): This is a hack for now. Fix me later when we have
-		//  multiple tables.
-		name := expr.str().split('.')
-		columns << table.column(name[name.len - 1])!
+		columns << group_column(expr, tables)!
 	}
 
 	mut c := Compiler{
 		conn:   conn
 		params: params
+		tables: tables
 	}
 	for expr in select_exprs {
 		compiled_expr := expr.expr.compile(mut c)!
@@ -67,7 +66,24 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, p
 		}
 	}
 
-	return &GroupOperation{select_exprs, group_exprs, params, columns, conn}
+	return &GroupOperation{select_exprs, group_exprs, params, columns, tables, conn}
+}
+
+// group_column finds the column for a GROUP BY expression in the tables of the
+// FROM clause. A qualified name (such as "b.x") must match the table name.
+fn group_column(expr Identifier, tables map[string]Table) !Column {
+	for _, table in tables {
+		if expr.entity_name != '' && expr.entity_name != table.name.entity_name
+			&& expr.entity_name != table.name.sub_entity_name {
+			continue
+		}
+
+		if column := table.column(expr.sub_entity_name) {
+			return column
+		}
+	}
+
+	return sqlstate_42703(expr.sub_entity_name) // column does not exist
 }
 
 fn (o &GroupOperation) str() string {
@@ -82,6 +98,7 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 	mut c := Compiler{
 		conn:   o.conn
 		params: o.params
+		tables: o.tables
 	}
 
 	// Create the grouped sets.
@@ -138,6 +155,7 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 		mut agg_c := Compiler{
 			conn:   o.conn
 			params: o.params
+			tables: o.tables
 		}
 		if !expr.expr.compile(mut agg_c)!.contains_agg {
 			continue

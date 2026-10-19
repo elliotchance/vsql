@@ -601,6 +601,10 @@ struct Sequence
    pub mut:
    	// name contains the other parts such as the schema.
    	name Identifier
+   	// start_value is the START WITH value. If START WITH isn't given, it's the
+   	// MINVALUE (or MAXVALUE for a descending sequence), otherwise 1. It's used
+   	// by "ALTER SEQUENCE ... RESTART".
+   	start_value i64
    	// current_value is the current value before it is incremented by
    	// "NEXT VALUE FOR".
    	current_value i64

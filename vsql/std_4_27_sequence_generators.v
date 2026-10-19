@@ -14,6 +14,10 @@ mut:
 pub mut:
 	// name contains the other parts such as the schema.
 	name Identifier
+	// start_value is the START WITH value. If START WITH isn't given, it's the
+	// MINVALUE (or MAXVALUE for a descending sequence), otherwise 1. It's used
+	// by "ALTER SEQUENCE ... RESTART".
+	start_value i64
 	// current_value is the current value before it is incremented by
 	// "NEXT VALUE FOR".
 	current_value i64
@@ -36,9 +40,9 @@ pub mut:
 
 // str returns the CREATE SEQUENCE definition (including the ';') like:
 //
-//   CREATE SEQUENCE "foo" START WITH 12 NO MINVALUE NO MAXVALUE;
+//   CREATE SEQUENCE "foo" START WITH 12 MINVALUE 10;
 pub fn (s Sequence) str() string {
-	mut parts := ['CREATE SEQUENCE ${s.name} START WITH ${s.current_value}']
+	mut parts := ['CREATE SEQUENCE ${s.name} START WITH ${s.start_value}']
 
 	if s.increment_by != 1 {
 		parts << 'INCREMENT BY ${s.increment_by}'
@@ -50,6 +54,10 @@ pub fn (s Sequence) str() string {
 
 	if s.has_max_value {
 		parts << 'MAXVALUE ${s.max_value}'
+	}
+
+	if s.cycle {
+		parts << 'CYCLE'
 	}
 
 	return parts.join(' ') + ';'
@@ -133,12 +141,14 @@ fn add_i64(a i64, b i64) (i64, bool) {
 // SEQUENCE statement, with each option on its own line, like:
 //
 //   CREATE SEQUENCE "PUBLIC"."SEQ1"
+//     START WITH 10
 //     INCREMENT BY 5
 //     MINVALUE 10
 //
 // The current value is stored separately, see value_bytes.
 fn (s Sequence) definition_bytes() []u8 {
-	mut parts := ['CREATE SEQUENCE ${s.name.storage_sql()}', 'INCREMENT BY ${s.increment_by}']
+	mut parts := ['CREATE SEQUENCE ${s.name.storage_sql()}', 'START WITH ${s.start_value}',
+		'INCREMENT BY ${s.increment_by}']
 
 	if s.has_min_value {
 		parts << 'MINVALUE ${s.min_value}'

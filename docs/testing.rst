@@ -65,6 +65,9 @@ Or, to run a single command test use the path without the ``.sh`` suffix:
 Each shell file must return a 0 (success) exit code. However, there are many
 ways to verify that certain commands fail on purpose within the script itself.
 
+The server tests connect with ``psql``. They are skipped if ``psql`` is not
+installed, except on CI (when ``CI`` is set) where they fail instead.
+
 There are some things to consider when writing CLI tests:
 
 1. The file must end with ``.sh`` and contain a

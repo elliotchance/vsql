@@ -2,7 +2,12 @@
 
 set -e
 
+# psql is installed on CI, so the test can't be skipped there by mistake.
 if ! command -v psql > /dev/null; then
+  if [ -n "$CI" ]; then
+    echo "psql is not installed"
+    exit 1
+  fi
   echo "skipped: psql is not installed"
   exit 0
 fi

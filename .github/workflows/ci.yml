@@ -46,6 +46,13 @@ jobs:
       - name: Run examples
         run: make examples
 
+      # libpq is keg-only, so psql must be added to the PATH. It's used by the
+      # server tests.
+      - name: Install psql
+        run: |
+          brew install libpq
+          echo "$(brew --prefix libpq)/bin" >> $GITHUB_PATH
+
       - name: Run CLI tests
         run: make cli-test
 

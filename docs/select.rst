@@ -12,7 +12,7 @@ Syntax
 
   SELECT <expression> [ AS <name> ] , ...
   FROM <table_name>
-  [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_name> ON <condition> ]
+  [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_name> ON <condition> ] ...
   [ WHERE <condition> ]
   [ GROUP BY <column_name> , ... ]
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
@@ -45,6 +45,20 @@ records from the *left* or *right* table respectively. Any record that does not
 match the other side will be given all ``NULL`` values. The *left* table is that
 defined by the ``FROM`` expressions and the *right* table is that used in the
 ``JOIN`` clause.
+
+Any number of tables can be joined. Each ``JOIN`` uses the result of the joins
+before it as its *left* table, unless parentheses are used to change the order:
+
+.. code-block:: sql
+
+  SELECT * FROM t1
+  LEFT JOIN t2 ON t1.a = t2.b
+  LEFT JOIN t3 ON t1.a = t3.c;
+
+  SELECT * FROM t1
+  LEFT JOIN (t2 JOIN t3 ON t2.b = t3.c) ON t1.a = t2.b;
+
+The same table name cannot be used more than once in a ``FROM`` clause.
 
 WHERE
 -----

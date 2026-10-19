@@ -67,25 +67,11 @@ fn create_select_plan(body QuerySpecification, offset ?ValueSpecification, param
 			tables[table.name.id()] = table
 		}
 		QualifiedJoin {
+			plan = create_join_plan(body, from_clause, offset, params, mut conn, allow_virtual, mut
+				tables)!
+
 			// The WHERE clause applies to the joined rows, so it can't be used to
 			// filter either side before the join.
-			left_table_clause := from_clause.left_table as TablePrimary
-			left_plan, left_table := create_select_plan_without_join(body, left_table_clause,
-				offset, params, mut conn, allow_virtual, false)!
-
-			right_table_clause := from_clause.right_table as TablePrimary
-			right_plan, right_table := create_select_plan_without_join(body, right_table_clause,
-				offset, params, mut conn, allow_virtual, false)!
-
-			plan.subplans['\$1'] = left_plan
-			plan.subplans['\$2'] = right_plan
-
-			tables[left_table.name.id()] = left_table
-			tables[right_table.name.id()] = right_table
-
-			plan.operations << new_join_operation(left_plan.columns(), from_clause.join_type,
-				right_plan.columns(), from_clause.specification, params, conn, plan, tables)
-
 			add_where_plan(mut &plan, body, params, conn, tables)
 		}
 	}
@@ -111,6 +97,49 @@ fn create_select_plan(body QuerySpecification, offset ?ValueSpecification, param
 	}
 
 	return plan, tables
+}
+
+// create_join_plan joins two table references. Either side may itself be a
+// join, such as "t1 LEFT JOIN t2 ON ... LEFT JOIN t3 ON ...". Each table used is
+// added to tables.
+fn create_join_plan(body QuerySpecification, join QualifiedJoin, offset ?ValueSpecification, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]Table) !Plan {
+	mut plan := Plan{}
+	plan.subplans['\$1'] = create_table_reference_plan(body, join.left_table, offset,
+		params, mut conn, allow_virtual, mut tables)!
+	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table, offset,
+		params, mut conn, allow_virtual, mut tables)!
+
+	plan.operations << new_join_operation(plan.subplans['\$1'].columns(), join.join_type,
+		plan.subplans['\$2'].columns(), join.specification, params, conn, plan, tables.clone())
+
+	return plan
+}
+
+fn create_table_reference_plan(body QuerySpecification, table_reference TableReference, offset ?ValueSpecification, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]Table) !Plan {
+	match table_reference {
+		TablePrimary {
+			plan, table := create_select_plan_without_join(body, table_reference, offset,
+				params, mut conn, allow_virtual, false)!
+
+			// Rows store each value by its table and column name, so the same
+			// table can't be used twice (7.5, Syntax Rule 5c).
+			if table.name.id() in tables {
+				// Subqueries without a correlation name all use the same name.
+				if table.name.custom_id != '' {
+					return sqlstate_42601('each subquery in FROM needs its own correlation name')
+				}
+
+				return sqlstate_42601('table name ${table.name} specified more than once')
+			}
+			tables[table.name.id()] = table
+
+			return plan
+		}
+		QualifiedJoin {
+			return create_join_plan(body, table_reference, offset, params, mut conn,
+				allow_virtual, mut tables)
+		}
+	}
 }
 
 // create_select_plan_without_join reads the rows of one table. The WHERE clause
@@ -361,27 +390,34 @@ fn (p Plan) columns() Columns {
 
 fn (p Plan) explain(elapsed_parse time.Duration) Result {
 	mut rows := []Row{}
-
-	for name, subplan in p.subplans {
+	for line in p.explain_lines() {
 		rows << new_row({
-			'EXPLAIN': new_varchar_value(name + ':')
-		})
-		for line in subplan.str().split('\n') {
-			rows << new_row({
-				'EXPLAIN': new_varchar_value('  ' + line)
-			})
-		}
-	}
-
-	for operation in p.operations {
-		rows << new_row({
-			'EXPLAIN': new_varchar_value(operation.str())
+			'EXPLAIN': new_varchar_value(line)
 		})
 	}
 
 	return new_result([
 		Column{Identifier{ sub_entity_name: 'EXPLAIN' }, new_type('VARCHAR', 0, 0), false},
 	], rows, elapsed_parse, 0)
+}
+
+// explain_lines lists the subplans (indented under their names) followed by the
+// operations. Subplans of a join can also be joins, so this is recursive.
+fn (p Plan) explain_lines() []string {
+	mut lines := []string{}
+
+	for name, subplan in p.subplans {
+		lines << name + ':'
+		for line in subplan.explain_lines() {
+			lines << '  ' + line
+		}
+	}
+
+	for operation in p.operations {
+		lines << operation.str()
+	}
+
+	return lines
 }
 
 // A ExprOperation executes expressions for each row.

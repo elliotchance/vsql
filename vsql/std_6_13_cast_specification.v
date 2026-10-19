@@ -34,6 +34,21 @@ fn (e CastSpecification) pstr(params map[string]Value) string {
 }
 
 fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
+	// CAST(NULL AS T) is the null value of type T (General Rule 2). The NULL has
+	// no type of its own to cast from.
+	if e.expr is NullSpecification {
+		return CompileResult{
+			run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
+				return Value{
+					typ:     e.target
+					is_null: true
+				}
+			}
+			typ:          e.target
+			contains_agg: false
+		}
+	}
+
 	compiled_expr := e.expr.compile(mut c)!
 
 	return CompileResult{

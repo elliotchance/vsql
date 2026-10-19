@@ -26,7 +26,7 @@ fn (e NullSpecification) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
-	return error('cannot determine value of untyped NULL')
+	return sqlstate_42601('cannot determine value of untyped NULL')
 }
 
 fn (e NullSpecification) resolve_identifiers(conn &Connection, tables map[string]Table) !NullSpecification {

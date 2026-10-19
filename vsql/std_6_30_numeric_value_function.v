@@ -8,9 +8,11 @@ import math
 
 // POSITION(CHARACTER VARYING IN CHARACTER VARYING) INTEGER
 fn func_position(args []Value) !Value {
-	index := args[1].string_value().index(args[0].string_value()) or { -1 }
+	s := args[1].string_value()
+	index := s.index(args[0].string_value()) or { return new_integer_value(0) }
 
-	return new_integer_value(index + 1)
+	// The position is counted in characters, not bytes.
+	return new_integer_value(s[..index].len_utf8() + 1)
 }
 
 // CHAR_LENGTH(CHARACTER VARYING) INTEGER

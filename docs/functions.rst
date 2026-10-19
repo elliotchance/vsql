@@ -573,7 +573,8 @@ POSITION
 
 Returns the start of the left most (first) match of one string within another. 1
 will be the smallest index on a match and 0 is returned if the substring does
-not exist.
+not exist. The position is counted in characters (a multibyte character
+counts as one).
 
 Matching is case-sensitive.
 

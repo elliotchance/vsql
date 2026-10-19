@@ -71,15 +71,16 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 // ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules 11 and 12
 fn cast_character_to_character(mut conn Connection, v Value, to Type) Value {
 	mut s := v.string_value()
-	if s.len > to.size {
-		if s[to.size..].trim_right(' ') != '' {
+	chars := s.runes()
+	if chars.len > to.size {
+		if !chars[to.size..].all(it == ` `) {
 			conn.add_warning(sqlstate_01004())
 		}
-		s = s[..to.size]
+		s = chars[..to.size].string()
 	}
 
-	if to.typ == .is_character {
-		s += strings.repeat(` `, to.size - s.len)
+	if to.typ == .is_character && chars.len < to.size {
+		s += strings.repeat(` `, to.size - chars.len)
 	}
 
 	return Value{

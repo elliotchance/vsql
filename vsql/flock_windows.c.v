@@ -1,31 +1,48 @@
 // flock_windows.c.v contains file locking functions for windows.
-//
-// TODO(elliotchance): This isn't as reliable as the *nix version because it
-//  uses an extra file which may still cause race conditions.
 
 module vsql
 
 import os
 import os.filelock
 
-fn flock_lock_exclusive(file os.File, path string) ! {
-	mut f := filelock.new('${path}.lock')
-	f.acquire() or { return error('cannot acquire lock: ${err}') }
+// DataFileLock is the lock held on the database file while it's being read or
+// written. Windows locks are mandatory, so locking the database file itself
+// would also stop it being read and written through the other handle. Instead,
+// the lock is held on a separate file next to it.
+struct DataFileLock {
+mut:
+	lock filelock.FileLock
 }
 
-fn flock_lock_shared(file os.File, path string) ! {
-	mut f := filelock.new('${path}.lock')
-	f.acquire() or { return error('cannot acquire lock: ${err}') }
+fn flock_lock_exclusive(mut l DataFileLock, file os.File, path string) ! {
+	l.lock = lock_data_file(path, .exclusive)!
 }
 
-fn flock_unlock_exclusive(file os.File, path string) {
-	mut f := filelock.new('${path}.lock')
-	f.release()
+fn flock_lock_shared(mut l DataFileLock, file os.File, path string) ! {
+	l.lock = lock_data_file(path, .shared)!
 }
 
-fn flock_unlock_shared(file os.File, path string) {
-	mut f := filelock.new('${path}.lock')
-	f.release()
+fn flock_unlock_exclusive(mut l DataFileLock, file os.File, path string) {
+	l.lock.release()
+}
+
+fn flock_unlock_shared(mut l DataFileLock, file os.File, path string) {
+	l.lock.release()
+}
+
+fn lock_data_file(path string, mode filelock.LockMode) !filelock.FileLock {
+	lock_path := '${path}.lock'
+
+	// Make sure the file exists without truncating it.
+	mut file := os.open_append(lock_path) or {
+		return error('unable to open ${lock_path}: ${err}')
+	}
+	file.close()
+
+	mut l := filelock.new_file(lock_path, mode: mode)
+	l.acquire() or { return error('cannot acquire lock on ${lock_path}: ${err}') }
+
+	return l
 }
 
 // SessionLock is a shared lock held on the session file for as long as a

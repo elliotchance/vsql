@@ -128,9 +128,32 @@ jobs:
           make bin/vsql.exe
           zip -j vsql-windows.zip bin/vsql.exe
 
+      - name: Upload Windows binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsql-windows
+          path: bin/vsql.exe
+
       - name: Release
         uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             vsql-windows.zip
+
+  windows-test:
+    name: Test on Windows
+    needs: windows-binary
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download Windows binary
+        uses: actions/download-artifact@v4
+        with:
+          name: vsql-windows
+
+      - name: Run Windows tests
+        shell: bash
+        run: .github/workflows/windows-test.sh ./vsql.exe

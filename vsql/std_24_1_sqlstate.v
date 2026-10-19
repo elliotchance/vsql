@@ -145,6 +145,18 @@ fn sqlstate_22012() IError {
 	}
 }
 
+// Invalid character value for cast.
+struct SQLState22018 {
+	SQLState
+}
+
+fn sqlstate_22018() IError {
+	return SQLState22018{
+		code: sqlstate_to_int('22018')
+		msg:  'invalid character value for cast'
+	}
+}
+
 // Trim error.
 struct SQLState22027 {
 	SQLState

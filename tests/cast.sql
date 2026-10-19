@@ -46,6 +46,49 @@ EXPLAIN VALUES CAST(123 AS SMALLINT);
 -- EXPLAIN: VALUES (COL1 SMALLINT) = ROW(CAST(123 AS SMALLINT))
 
 VALUES CAST('hello' AS DOUBLE PRECISION);
+-- error 22018: invalid character value for cast
+
+VALUES CAST('abc' AS INT);
+-- error 22018: invalid character value for cast
+
+VALUES CAST('12abc' AS INT);
+-- error 22018: invalid character value for cast
+
+VALUES CAST('abc' AS NUMERIC(5, 2));
+-- error 22018: invalid character value for cast
+
+VALUES CAST('' AS INT);
+-- error 22018: invalid character value for cast
+
+VALUES CAST('' AS NUMERIC(5, 2));
+-- error 22018: invalid character value for cast
+
+VALUES CAST('1e' AS INT);
+-- error 22018: invalid character value for cast
+
+/* types */
+VALUES CAST(' 12 ' AS INT);
+-- COL1: 12 (INTEGER)
+
+VALUES CAST(' 1.5 ' AS NUMERIC(5, 2));
+-- COL1: 1.5
+
+VALUES CAST('-12' AS INT);
+-- COL1: -12
+
+VALUES CAST('+.5' AS NUMERIC(3, 2));
+-- COL1: 0.5
+
+VALUES CAST('1e2' AS INT);
+-- COL1: 100
+
+VALUES CAST('1e2' AS DOUBLE PRECISION);
+-- COL1: 100e0
+
+VALUES CAST(' 1.5 ' AS DOUBLE PRECISION);
+-- COL1: 1.5e0
+
+VALUES CAST('99999' AS SMALLINT);
 -- error 22003: numeric value out of range
 
 VALUES CAST(TRUE AS FLOAT);

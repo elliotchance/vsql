@@ -92,6 +92,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			// TODO(elliotchance): This has the side effect that NULL being
 			//  replaced with NULL is true, which is unnecessary, even if the
 			//  logic is a bit murky.
+			check_store_assignment(raw_value, table_column.typ)!
 			column_id := '${table_name.id()}.${column_name}'
 			cmp := compare(row.data[column_id], raw_value)!
 			if cmp != .is_equal {
@@ -129,6 +130,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			match clause.source {
 				ValueExpression {
 					raw_value := clause.source.compile(mut c)!.run(mut conn, empty_row, params)!
+					check_store_assignment(raw_value, table_column.typ)!
 					value := cast(mut conn, 'for column ${column_name}', raw_value,
 						table_column.typ)!
 

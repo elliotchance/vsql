@@ -17,7 +17,7 @@ VALUES :foo;
 
 /* set foo 'hello' */
 INSERT INTO t1 (x) VALUES (:foo);
--- error 22003: numeric value out of range
+-- error 42846: cannot coerce CHARACTER(5) to DOUBLE PRECISION
 
 /* set foo 'hello' */
 /* types */

@@ -49,6 +49,16 @@ INSERT INTO foo (b) VALUES (123);
 -- msg: CREATE TABLE 1
 -- error 42846: cannot coerce SMALLINT to BOOLEAN
 
+CREATE TABLE foo (a INT, c VARCHAR(5));
+INSERT INTO foo (a) VALUES ('x');
+INSERT INTO foo (a) VALUES ('5');
+INSERT INTO foo (c) VALUES (5);
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- error 42846: cannot coerce CHARACTER(1) to INTEGER
+-- error 42846: cannot coerce CHARACTER(1) to INTEGER
+-- error 42846: cannot coerce SMALLINT to CHARACTER VARYING(5)
+
 CREATE TABLE t1 (f1 CHARACTER VARYING(10), f2 FLOAT NOT NULL);
 INSERT INTO t1 (f1, f2) VALUES ('a', 1.23);
 SELECT * FROM t1;

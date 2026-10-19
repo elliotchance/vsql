@@ -94,6 +94,7 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 		}
 		raw_value := values[i].compile(mut c)!.run(mut conn, Row{}, params)!
 
+		check_store_assignment(raw_value, table_column.typ)!
 		value := cast(mut conn, 'for column ${column_name}', raw_value, table_column.typ)!
 
 		if value.is_null && table_column.not_null {

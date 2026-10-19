@@ -19,16 +19,22 @@ Each ``<option>`` can be one of (in any order):
 
 .. code-block:: text
 
-   RESET
-   RESET WITH <number>
+   RESTART
+   RESTART WITH <number>
    INCREMENT BY <number>
    MINVALUE <number>
    NO MINVALUE
    MAXVALUE <number>
    NO MAXVALUE
+   CYCLE
+   NO CYCLE
 
-``RESET`` (without using ``WITH <number>``) will choose the smallest starting
-number that is allowed by the other constraints.
+``RESTART`` (without using ``WITH <number>``) will go back to the ``START WITH``
+value of the sequence.
+
+Only ``RESTART`` changes the next value of the sequence. For example, changing
+the ``INCREMENT BY`` will still return the same next value, and the new
+increment is used after that.
 
 Examples
 --------
@@ -45,6 +51,16 @@ Examples
    -- msg: ALTER SEQUENCE 1
    -- COL1: 1
    -- COL1: 2
+
+   CREATE SEQUENCE seq2;
+   VALUES NEXT VALUE FOR seq2;
+   ALTER SEQUENCE seq2 INCREMENT BY 5;
+   VALUES NEXT VALUE FOR seq2, NEXT VALUE FOR seq2;
+   -- msg: CREATE SEQUENCE 1
+   -- COL1: 1
+   -- msg: ALTER SEQUENCE 1
+   -- COL1: 2
+   -- COL1: 7
 
 See Also
 --------

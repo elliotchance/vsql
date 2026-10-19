@@ -24,6 +24,9 @@ mut:
 	options ConnectionOptions
 	// virtual_tables can be created independent from the physical schema.
 	virtual_tables map[string]VirtualTable
+	// write_pending is true when a statement has released its write connection,
+	// but finish_write hasn't decided whether to keep its changes yet.
+	write_pending bool
 }
 
 // A Connection allows querying and other introspection for a database file. Use
@@ -232,6 +235,7 @@ fn (mut conn Connection) open_write_connection() ! {
 
 fn (mut conn CatalogConnection) open_write_connection() ! {
 	if conn.path == ':memory:' {
+		conn.storage.begin_statement()
 		return
 	}
 
@@ -264,6 +268,8 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 		conn.options.mutex.unlock()
 		return sqlstate_25006('database needs file format ${conn.storage.header.write_version} to be changed, but this version of vsql only supports up to ${file_format_version}')
 	}
+
+	conn.storage.begin_statement()
 }
 
 fn (mut conn Connection) release_write_connection() {
@@ -272,25 +278,56 @@ fn (mut conn Connection) release_write_connection() {
 	}
 }
 
+// release_write_connection is called (usually deferred) at the end of a
+// statement that changes the database. It's not known yet whether the statement
+// succeeded, so the file stays locked until finish_write.
 fn (mut conn CatalogConnection) release_write_connection() {
-	if conn.path == ':memory:' {
+	conn.write_pending = true
+}
+
+// finish_write must be called once a statement has finished. If it opened a
+// write connection, the changes it made are kept if it succeeded, or discarded
+// if it failed, and the file is unlocked.
+fn (mut conn Connection) finish_write(success bool) ! {
+	mut first_err := ?IError(none)
+	for _, mut catalog in conn.catalogs {
+		catalog.finish_write(success) or {
+			if first_err == none {
+				first_err = err
+			}
+		}
+	}
+
+	if err := first_err {
+		return err
+	}
+}
+
+fn (mut conn CatalogConnection) finish_write(success bool) ! {
+	if !conn.write_pending {
 		return
 	}
+	conn.write_pending = false
 
-	conn.storage.commit(conn.path) or {
-		// This was a hack to get around the fact we can't return an option from
-		// this function because it messes with the behavior of defer.
-		//
-		// TODO(elliotchance): I'm not sure what a fair thing to do is here, but
-		//  certainly takling down the server or application is not the best
-		//  call.
-		panic(err)
+	mut commit_err := ?IError(none)
+	if success {
+		conn.storage.commit_statement(conn.path) or {
+			conn.storage.discard_statement(conn.path) or {}
+			commit_err = err
+		}
+	} else {
+		conn.storage.discard_statement(conn.path) or { commit_err = err }
 	}
 
-	flock_unlock_exclusive(conn.storage.file, conn.path)
-	conn.storage.close_file()
+	if conn.path != ':memory:' {
+		flock_unlock_exclusive(conn.storage.file, conn.path)
+		conn.storage.close_file()
+		conn.options.mutex.unlock()
+	}
 
-	conn.options.mutex.unlock()
+	if err := commit_err {
+		return err
+	}
 }
 
 fn (mut conn Connection) release_read_connection() {

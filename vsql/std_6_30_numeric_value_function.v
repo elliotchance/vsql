@@ -178,11 +178,12 @@ fn func_floor(args []Value) !Value {
 // FLOOR(NUMERIC) NUMERIC
 fn func_floor_numeric(args []Value) !Value {
 	n := args[0].numeric_value()
-	if n.is_negative() {
-		return new_numeric_value_from_numeric(n.subtract(new_numeric_from_string('1')).trunc())
+	t := n.trunc()
+	if n.is_negative() && !n.equals(t) {
+		return new_numeric_value_from_numeric(t.subtract(new_numeric_from_string('1')).trunc())
 	}
 
-	return new_numeric_value_from_numeric(n.trunc())
+	return new_numeric_value_from_numeric(t)
 }
 
 // CEIL(DOUBLE PRECISION) DOUBLE PRECISION
@@ -194,13 +195,9 @@ fn func_ceil(args []Value) !Value {
 fn func_ceil_numeric(args []Value) !Value {
 	n := args[0].numeric_value()
 	t := n.trunc()
-	if n.equals(t) {
-		return args[0]
+	if !n.is_negative() && !n.equals(t) {
+		return new_numeric_value_from_numeric(t.add(new_numeric_from_string('1')))
 	}
 
-	if n.is_negative() {
-		return new_numeric_value_from_numeric(t)
-	}
-
-	return new_numeric_value_from_numeric(t.add(new_numeric_from_string('1')))
+	return new_numeric_value_from_numeric(t)
 }

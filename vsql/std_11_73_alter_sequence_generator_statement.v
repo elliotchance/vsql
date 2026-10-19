@@ -44,6 +44,7 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 				} else {
 					sequence.current_value = sequence.reset() - sequence.increment_by
 				}
+				sequence.exhausted = false
 			}
 			SequenceGeneratorIncrementByOption {
 				sequence.increment_by = (option.increment_by.compile(mut c)!.run(mut conn, Row{},

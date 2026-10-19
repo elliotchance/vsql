@@ -7,6 +7,10 @@ pub struct Sequence {
 mut:
 	// The tid is the transaction ID that created this table.
 	tid u64
+	// exhausted is true when current_value is the last value that can be
+	// returned, because adding increment_by would go past the range of a BIGINT.
+	// See next.
+	exhausted bool
 pub mut:
 	// name contains the other parts such as the schema.
 	name Identifier
@@ -52,7 +56,9 @@ pub fn (s Sequence) str() string {
 }
 
 fn (s Sequence) copy() Sequence {
-	return Sequence{s.tid, s.name, s.current_value, s.increment_by, s.cycle, s.has_min_value, s.min_value, s.has_max_value, s.max_value}
+	return Sequence{
+		...s
+	}
 }
 
 fn (s Sequence) reset() i64 {
@@ -91,8 +97,14 @@ fn (s Sequence) check_in_range(name string, value i64) ! {
 }
 
 fn (s Sequence) next() !Sequence {
-	mut next_value := s.current_value + s.increment_by
-	if s.has_max_value && next_value > s.max_value {
+	// A new sequence stores START WITH minus INCREMENT BY as the current_value,
+	// which can wrap around (for example, START WITH -9223372036854775808). So
+	// when adding increment_by goes past the range of a BIGINT, it's only the
+	// limit of the sequence if the previous value was the last one (exhausted).
+	// Otherwise, the wrapped value is the START WITH.
+	mut next_value, overflow := add_i64(s.current_value, s.increment_by)
+	if (overflow && s.exhausted) || (s.has_max_value && next_value > s.max_value)
+		|| (s.has_min_value && next_value < s.min_value) {
 		if !s.cycle {
 			return sqlstate_2200h(s.name.str())
 		}
@@ -100,15 +112,21 @@ fn (s Sequence) next() !Sequence {
 		next_value = s.reset()
 	}
 
-	if s.has_min_value && next_value < s.min_value {
-		if !s.cycle {
-			return sqlstate_2200h(s.name.str())
-		}
+	_, exhausted := add_i64(next_value, s.increment_by)
 
-		next_value = s.reset()
+	return Sequence{
+		...s
+		current_value: next_value
+		exhausted:     exhausted
 	}
+}
 
-	return Sequence{s.tid, s.name, next_value, s.increment_by, s.cycle, s.has_min_value, s.min_value, s.has_max_value, s.max_value}
+// add_i64 returns a + b, and true if the result went past the range of an i64
+// (in which case the result wraps around).
+fn add_i64(a i64, b i64) (i64, bool) {
+	overflow := (b > 0 && a > max_i64 - b) || (b < 0 && a < min_i64 - b)
+
+	return i64(u64(a) + u64(b)), overflow
 }
 
 // definition_bytes is how the sequence is stored in the file: its CREATE
@@ -142,6 +160,12 @@ fn (s Sequence) value_bytes() []u8 {
 
 	b.write_i64(s.current_value)
 
+	// This is only written when it's true, so that a sequence that hasn't reached
+	// its limit is stored the same as before it existed.
+	if s.exhausted {
+		b.write_bool(true)
+	}
+
 	return b.bytes()
 }
 
@@ -156,6 +180,9 @@ fn new_sequence_from_bytes(definition_data []u8, value_data []u8, tid u64) !Sequ
 
 		mut b := new_bytes(value_data)
 		sequence.current_value = b.read_i64()
+		if b.has_more() {
+			sequence.exhausted = b.read_bool()
+		}
 
 		return sequence
 	}

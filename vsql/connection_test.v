@@ -293,8 +293,8 @@ fn test_random_updates() ! {
 		len := 10 + int(seed >> 16) % 290
 		v := int(seed >> 8) % 1000
 		if id in expected {
-			mut result := db.query("UPDATE t SET v = ${v}, s = '${'q'.repeat(len)}' WHERE id = ${id}")!
-			assert (result.next() or { return error('no rows') }).get_string('msg')! == 'UPDATE 1'
+			result := db.query("UPDATE t SET v = ${v}, s = '${'q'.repeat(len)}' WHERE id = ${id}")!
+			assert result.msg == 'UPDATE 1'
 		} else {
 			db.query("INSERT INTO t (id, v, s) VALUES (${id}, ${v}, '${'p'.repeat(len)}')")!
 		}

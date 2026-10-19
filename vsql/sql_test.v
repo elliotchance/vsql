@@ -272,6 +272,13 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int) !SQLTestResult {
 			actual += 'warning ${sqlstate_from_int(err.code())}: ${err.msg()}\n'
 		}
 
+		if result.msg != '' {
+			if current_connection_name != '' {
+				actual += '${current_connection_name}: '
+			}
+			actual += 'msg: ${result.msg}\n'
+		}
+
 		for row in result {
 			mut line := ''
 

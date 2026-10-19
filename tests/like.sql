@@ -55,6 +55,60 @@ VALUES 'acb' NOT LIKE 'a%b';
 VALUES 'acdeb' NOT LIKE 'a%b';
 -- COL1: FALSE
 
+VALUES 'abab' LIKE '%b';
+-- COL1: TRUE
+
+VALUES 'abcabc' LIKE '%c';
+-- COL1: TRUE
+
+VALUES 'abab' LIKE 'a%b';
+-- COL1: TRUE
+
+VALUES 'aXbYab' LIKE 'a%b';
+-- COL1: TRUE
+
+VALUES 'abab' LIKE '%a%b';
+-- COL1: TRUE
+
+VALUES 'abab' LIKE '%a';
+-- COL1: FALSE
+
+VALUES 'abc' LIKE '%b%';
+-- COL1: TRUE
+
+VALUES 'abc' LIKE '%%c';
+-- COL1: TRUE
+
+VALUES 'abcbd' LIKE '%b_';
+-- COL1: TRUE
+
+VALUES '' LIKE '_';
+-- COL1: FALSE
+
+VALUES '' LIKE '%';
+-- COL1: TRUE
+
+VALUES '' LIKE '';
+-- COL1: TRUE
+
+VALUES 'a' LIKE '';
+-- COL1: FALSE
+
+VALUES 'é' LIKE '_';
+-- COL1: TRUE
+
+VALUES 'a.c' LIKE 'a.c';
+-- COL1: TRUE
+
+VALUES 'abc' LIKE 'a.c';
+-- COL1: FALSE
+
+VALUES '$5^' LIKE '$5^';
+-- COL1: TRUE
+
+VALUES 'a\b' LIKE 'a\b';
+-- COL1: TRUE
+
 VALUES 'abd' LIKE 'a(b|c)d';
 -- COL1: FALSE
 

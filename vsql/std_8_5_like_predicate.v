@@ -1,7 +1,5 @@
 module vsql
 
-import regex
-
 // ISO/IEC 9075-2:2016(E), 8.5, <like predicate>
 //
 // Specify a pattern-match comparison.
@@ -41,15 +39,7 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 					return new_unknown_value()
 				}
 
-				// Make sure we escape any regexp characters.
-				escaped_regex := right.string_value().replace('+', '\\+').replace('?', '\\?').replace('*',
-					'\\*').replace('|', '\\|').replace('.', '\\.').replace('(', '\\(').replace(')',
-					'\\)').replace('[', '\\[').replace('{', '\\{').replace('_', '.').replace('%', '.*')
-
-				mut re := regex.regex_opt('^${escaped_regex}$') or {
-					return error('cannot compile regexp: ^${escaped_regex}$: ${err}')
-				}
-				result := re.matches_string(left.string_value())
+				result := like_matches(left.string_value(), right.string_value())
 
 				if e.not {
 					return new_boolean_value(!result)
@@ -63,4 +53,45 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 	}
 
 	return compiled_right
+}
+
+// like_matches reports whether s matches pattern, where "%" matches any number
+// of characters (including none) and "_" matches exactly one character
+// (8.5 General Rule 3d). All other characters must match exactly.
+fn like_matches(s string, pattern string) bool {
+	chars := s.runes()
+	pat := pattern.runes()
+	mut i := 0 // position in chars
+	mut j := 0 // position in pat
+
+	// When a "%" is found, its position in the pattern and the position in
+	// chars it started matching from are remembered. If the rest of the pattern
+	// fails to match, the "%" takes one more character and the match is tried
+	// again from there.
+	mut percent := -1
+	mut percent_i := 0
+
+	for i < chars.len {
+		if j < pat.len && pat[j] == `%` {
+			percent = j
+			percent_i = i
+			j++
+		} else if j < pat.len && (pat[j] == `_` || pat[j] == chars[i]) {
+			i++
+			j++
+		} else if percent >= 0 {
+			percent_i++
+			i = percent_i
+			j = percent + 1
+		} else {
+			return false
+		}
+	}
+
+	// Only "%" can match the empty rest of the string.
+	for j < pat.len && pat[j] == `%` {
+		j++
+	}
+
+	return j == pat.len
 }

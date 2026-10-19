@@ -1,5 +1,7 @@
 module vsql
 
+import strings
+
 // ISO/IEC 9075-2:2016(E), 6.13, <cast specification>
 //
 // Specify a data conversion.
@@ -42,10 +44,49 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 				return cast_string_to_datetime(mut conn, value, e.target)!
 			}
 
-			return cast(mut conn, 'for CAST', value, e.target)!
+			if !value.is_null && value.typ.typ.is_string() && e.target.typ.is_string() {
+				return cast_character_to_character(mut conn, value, e.target)
+			}
+
+			mut result := cast(mut conn, 'for CAST', value, e.target)!
+
+			// The declared type of a CAST is the target type (Syntax Rule 2), even
+			// if the value is shorter.
+			if e.target.typ.is_string() {
+				result.typ = e.target
+			}
+
+			return result
 		}
 		typ:          e.target
 		contains_agg: compiled_expr.contains_agg
+	}
+}
+
+// cast_character_to_character casts a character string to CHAR(n) or
+// VARCHAR(n). Unlike a store assignment, a string that's too long is truncated
+// with a warning (01004) rather than an error, if the characters removed aren't
+// all spaces.
+//
+// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules 11 and 12
+fn cast_character_to_character(mut conn Connection, v Value, to Type) Value {
+	mut s := v.string_value()
+	if s.len > to.size {
+		if s[to.size..].trim_right(' ') != '' {
+			conn.add_warning(sqlstate_01004())
+		}
+		s = s[..to.size]
+	}
+
+	if to.typ == .is_character {
+		s += strings.repeat(` `, to.size - s.len)
+	}
+
+	return Value{
+		typ: to
+		v:   InternalValue{
+			string_value: s
+		}
 	}
 }
 

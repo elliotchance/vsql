@@ -81,6 +81,19 @@ fn sqlstate_01003() IError {
 	}
 }
 
+// Warning: string data, right truncation. A CAST removed characters that
+// weren't spaces.
+struct SQLState01004 {
+	SQLState
+}
+
+fn sqlstate_01004() IError {
+	return SQLState01004{
+		code: sqlstate_to_int('01004')
+		msg:  'string data, right truncation'
+	}
+}
+
 // string data right truncation - the character value is too long for the
 // destination.
 struct SQLState22001 {

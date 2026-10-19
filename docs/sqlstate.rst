@@ -145,6 +145,19 @@ type.
   SELECT 2.5 / 0;
   -- error 22012: division by zero
 
+``22018`` invalid character value for cast
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A character string cast to a number must be a valid number, once leading and
+trailing spaces are removed.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES CAST('abc' AS INT);
+  -- error 22018: invalid character value for cast
+
 ``22027`` trim error
 ^^^^^^^^^^^^^^^^^^^^
 

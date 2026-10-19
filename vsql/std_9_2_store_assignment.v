@@ -216,6 +216,10 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// — numeric value out of range.
 			//
 			// Both cases are handled by cast_numeric.
+			if v.typ.typ.is_string() {
+				return cast_character_to_number(mut conn, v, t)
+			}
+
 			return cast_numeric(mut conn, v, t)
 		}
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone, .is_date,
@@ -368,6 +372,83 @@ fn cast_datetime(conn Connection, v Value, t Type) !Value {
 	}
 
 	return sqlstate_42846(v.typ, t)
+}
+
+// check_store_assignment returns an error if a value can't be assigned to a
+// column (ISO/IEC 9075-2:2016(E), 9.2, Syntax Rules). Unlike CAST, a character
+// string can't be assigned to a number, or a number to a character string.
+fn check_store_assignment(v Value, t Type) ! {
+	if v.is_null {
+		return
+	}
+
+	if (v.typ.typ.is_string() && t.typ.is_number()) || (v.typ.typ.is_number() && t.typ.is_string()) {
+		return sqlstate_42846(v.typ, t)
+	}
+}
+
+// cast_character_to_number casts a character string to a number (ISO/IEC
+// 9075-2:2016(E), 6.13, General Rules 8b and 9b). Leading and trailing spaces
+// are removed, and what's left must be a <signed numeric literal>.
+fn cast_character_to_number(mut conn Connection, v Value, t Type) !Value {
+	s := v.string_value().trim(' ')
+
+	return match numeric_literal_kind(s) {
+		.exact { cast(mut conn, '', new_numeric_value(s.trim_left('+')), t)! }
+		.approximate { cast(mut conn, '', new_double_precision_value(s.f64()), t)! }
+		.invalid { sqlstate_22018() }
+	}
+}
+
+enum NumericLiteralKind {
+	invalid
+	exact       // such as 12, -1.5 or .5
+	approximate // such as 1e2 or -1.5E-3
+}
+
+// numeric_literal_kind returns whether s is a <signed numeric literal> (ISO/IEC
+// 9075-2:2016(E), 5.3).
+fn numeric_literal_kind(s string) NumericLiteralKind {
+	mut i := 0
+	if i < s.len && (s[i] == `+` || s[i] == `-`) {
+		i++
+	}
+
+	mut digits := 0
+	for i < s.len && s[i].is_digit() {
+		i++
+		digits++
+	}
+	if i < s.len && s[i] == `.` {
+		i++
+		for i < s.len && s[i].is_digit() {
+			i++
+			digits++
+		}
+	}
+	if digits == 0 {
+		return .invalid
+	}
+	if i == s.len {
+		return .exact
+	}
+
+	if s[i] != `e` && s[i] != `E` {
+		return .invalid
+	}
+	i++
+	if i < s.len && (s[i] == `+` || s[i] == `-`) {
+		i++
+	}
+	exponent_start := i
+	for i < s.len && s[i].is_digit() {
+		i++
+	}
+	if i == exponent_start || i != s.len {
+		return .invalid
+	}
+
+	return .approximate
 }
 
 fn cast_numeric(mut conn Connection, v Value, t Type) !Value {

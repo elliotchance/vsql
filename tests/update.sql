@@ -47,6 +47,17 @@ SELECT * FROM foo;
 -- BAZ: 100e0
 -- BAZ: 78e0
 
+CREATE TABLE foo (a INT, c VARCHAR(5));
+INSERT INTO foo (a, c) VALUES (1, 'ok');
+UPDATE foo SET a = 'abc';
+UPDATE foo SET c = 7;
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 42846: cannot coerce CHARACTER(3) to INTEGER
+-- error 42846: cannot coerce SMALLINT to CHARACTER VARYING(5)
+-- A: 1 C: ok
+
 CREATE TABLE foo (baz FLOAT);
 UPDATE foo SET baz = true;
 -- msg: CREATE TABLE 1

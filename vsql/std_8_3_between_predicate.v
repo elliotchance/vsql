@@ -36,13 +36,13 @@ fn (e BetweenPredicate) compile(mut c Compiler) !CompileResult {
 			mut right := compiled_right.run(mut conn, data, params)!
 
 			// SYMMETRIC operands might need to be swapped.
-			cmp := compare(left, right)!
+			cmp := compare(conn, left, right)!
 			if e.symmetric && cmp == .is_greater {
 				left, right = right, left
 			}
 
-			lower := compare(expr, left)!
-			upper := compare(expr, right)!
+			lower := compare(conn, expr, left)!
+			upper := compare(conn, expr, right)!
 
 			if lower == .is_unknown || upper == .is_unknown {
 				return new_unknown_value()

@@ -109,7 +109,7 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 				continue
 			}
 
-			cmp := compare(left, right)!
+			cmp := compare(o.conn, left, right)!
 			if cmp != .is_equal {
 				equal = false
 				break

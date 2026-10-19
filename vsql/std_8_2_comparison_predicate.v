@@ -24,7 +24,7 @@ fn (e ComparisonPredicate) compile(mut c Compiler) !CompileResult {
 			mut left := compiled_left.run(mut conn, data, params)!
 			mut right := compiled_right.run(mut conn, data, params)!
 
-			cmp := compare(left, right)!
+			cmp := compare(conn, left, right)!
 			if cmp == .is_unknown {
 				return new_unknown_value()
 			}
@@ -73,7 +73,7 @@ enum CompareResult as i8 {
 
 // compare() should only be used for comparison predicates (equality) but
 // shouldn't be used for ordering.
-fn compare(xv Value, yv Value) !CompareResult {
+fn compare(conn &Connection, xv Value, yv Value) !CompareResult {
 	// General Rules
 	//
 	// 1) Let XV and YV be two values represented by <value expression>s X and Y,
@@ -279,7 +279,7 @@ fn compare(xv Value, yv Value) !CompareResult {
 
 	// 6) The comparison of two datetimes ...
 	if xv.typ.typ.is_datetime() && yv.typ.typ.is_datetime() {
-		return compare_datetimes(xv, yv)
+		return compare_datetimes(conn, xv, yv)
 	}
 
 	// 7) The comparison of two intervals is determined by the comparison of their
@@ -321,7 +321,7 @@ fn compare(xv Value, yv Value) !CompareResult {
 	return sqlstate_42883('cannot compare ${xv.typ} and ${yv.typ}')
 }
 
-fn compare_datetimes(xv Value, yv Value) CompareResult {
+fn compare_datetimes(conn &Connection, xv Value, yv Value) CompareResult {
 	// 6) The comparison of two datetimes is determined according to the interval
 	//    resulting from their subtraction. Let X and Y be the two values to be
 	//    compared and let H be the least significant <primary datetime field> of
@@ -333,8 +333,25 @@ fn compare_datetimes(xv Value, yv Value) CompareResult {
 	//
 	// TODO(elliotchance): <primary datetime field> needs to be taken into account
 	//  when it is supported.
-	x := unsafe { xv.v.time_value }.i64()
-	y := unsafe { yv.v.time_value }.i64()
+	mut x := unsafe { xv.v.time_value }.i64()
+	mut y := unsafe { yv.v.time_value }.i64()
+
+	// Datetimes with time zones are compared after adjusting to UTC (General
+	// Rule 6). If only one of them has a time zone, the other one is in the
+	// time zone of the session.
+	if xv.typ.has_time_zone() || yv.typ.has_time_zone() {
+		_, session_time_zone := conn.now()
+		x = xv.time_value().utc_micros(if xv.typ.has_time_zone() {
+			xv.time_value().time_zone
+		} else {
+			session_time_zone
+		})
+		y = yv.time_value().utc_micros(if yv.typ.has_time_zone() {
+			yv.time_value().time_zone
+		} else {
+			session_time_zone
+		})
+	}
 
 	//    a) X is equal to Y if and only if
 	//       ( X - Y ) INTERVAL H = INTERVAL '0' H

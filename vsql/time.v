@@ -275,6 +275,19 @@ fn (t Time) bytes() []u8 {
 // spare digits to also encode the time zone (without reducing the years to
 // around 400, even ultilizing the full 64 bits). So we store the timezone
 // separate.
+// utc_micros is the number of microseconds since 1970-01-01 00:00:00 UTC, for a
+// time in the time zone (in minutes). A TIME has no date, so it's the time of
+// day in UTC, which may wrap around midnight.
+fn (t Time) utc_micros(time_zone i16) i64 {
+	micros := t.t.unix() * 1_000_000 + i64(t.t.nanosecond / 1000) - i64(time_zone) * 60_000_000
+	if t.typ.typ == .is_time_with_time_zone || t.typ.typ == .is_time_without_time_zone {
+		day := i64(86_400_000_000)
+		return ((micros % day) + day) % day
+	}
+
+	return micros
+}
+
 fn (t Time) i64() i64 {
 	return t.date_i64() + t.time_i64()
 }

@@ -321,6 +321,9 @@ A client that receives this error should retry the transaction.
   VALUES CAST(123 AS BOOLEAN);
   -- error 42846: cannot coerce SMALLINT to BOOLEAN
 
+  VALUES CAST(DATE '2020-01-01' AS INT);
+  -- error 42846: cannot coerce DATE to INTEGER
+
 ``42883`` function does not exist
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

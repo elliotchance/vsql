@@ -49,10 +49,33 @@ VALUES CAST('hello' AS DOUBLE PRECISION);
 -- error 22003: numeric value out of range
 
 VALUES CAST(TRUE AS FLOAT);
--- error 22003: numeric value out of range
+-- error 42846: cannot coerce BOOLEAN to DOUBLE PRECISION
 
 VALUES CAST(TRUE AS INT);
--- error 22003: numeric value out of range
+-- error 42846: cannot coerce BOOLEAN to INTEGER
+
+VALUES CAST(DATE '2020-01-01' AS INT);
+-- error 42846: cannot coerce DATE to INTEGER
+
+VALUES CAST(DATE '2020-01-01' AS DOUBLE PRECISION);
+-- error 42846: cannot coerce DATE to DOUBLE PRECISION
+
+VALUES CAST(DATE '2020-01-01' AS NUMERIC(5, 0));
+-- error 42846: cannot coerce DATE to NUMERIC(5)
+
+VALUES CAST(TIME '10:00:00' AS SMALLINT);
+-- error 42846: cannot coerce TIME(0) WITHOUT TIME ZONE to SMALLINT
+
+VALUES CAST(TIMESTAMP '2020-01-01 10:00:00+05:00' AS BIGINT);
+-- error 42846: cannot coerce TIMESTAMP(0) WITH TIME ZONE to BIGINT
+
+CREATE TABLE t (x INT);
+INSERT INTO t (x) VALUES (DATE '2020-01-01');
+INSERT INTO t (x) VALUES (TRUE);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- error 42846: cannot coerce DATE to INTEGER
+-- error 42846: cannot coerce BOOLEAN to INTEGER
 
 VALUES CAST(60000 AS SMALLINT);
 -- error 22003: numeric value out of range

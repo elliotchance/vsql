@@ -29,32 +29,49 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 	}
 
 	mut catalog := conn.catalog()
-	mut row := map[string]Value{}
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
+	table := catalog.storage.tables[table_name.storage_id()]
 
-	mut values := stmt.values.clone()
-	first_value := stmt.values[0]
-	if first_value is []ContextuallyTypedRowValueConstructorElement {
-		mut new_values := []ContextuallyTypedRowValueConstructor{}
-		for v in first_value {
+	// Each element of the VALUES is a row. All of the rows are checked before
+	// any of them are written, so that an error in one row doesn't leave the
+	// rows before it in the table.
+	mut rows := []Row{}
+	for row_value in stmt.values {
+		rows << new_row(stmt.insert_row(mut conn, params, table, row_value)!)
+	}
+
+	for mut row in rows {
+		catalog.storage.write_row(mut row, table)!
+	}
+
+	return new_result_msg('INSERT ${rows.len}', elapsed_parse, t.elapsed())
+}
+
+// insert_row returns the values for a new row from one row of the VALUES. A
+// row with more than one value is in parentheses, otherwise the row has one
+// value.
+fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Value, table Table, row_value ContextuallyTypedRowValueConstructor) !map[string]Value {
+	mut values := []ContextuallyTypedRowValueConstructor{}
+	if row_value is []ContextuallyTypedRowValueConstructorElement {
+		for v in row_value {
 			match v {
 				ValueExpression {
 					match v {
 						CommonValueExpression {
-							new_values << ContextuallyTypedRowValueConstructor(v)
+							values << ContextuallyTypedRowValueConstructor(v)
 						}
 						BooleanValueExpression {
-							new_values << ContextuallyTypedRowValueConstructor(v)
+							values << ContextuallyTypedRowValueConstructor(v)
 						}
 					}
 				}
 				NullSpecification {
-					new_values << ContextuallyTypedRowValueConstructor(v)
+					values << ContextuallyTypedRowValueConstructor(v)
 				}
 			}
 		}
-
-		values = new_values.clone()
+	} else {
+		values << row_value
 	}
 
 	if stmt.columns.len < values.len {
@@ -65,7 +82,7 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 		return sqlstate_42601('INSERT has less values than columns')
 	}
 
-	table := catalog.storage.tables[table_name.storage_id()]
+	mut row := map[string]Value{}
 	for i, column in stmt.columns {
 		column_name := column.sub_entity_name
 		table_column := table.column(column_name)!
@@ -99,9 +116,7 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 		row[col.name.sub_entity_name] = new_null_value(col.typ.typ)
 	}
 
-	catalog.storage.write_row(mut new_row(row), table)!
-
-	return new_result_msg('INSERT 1', elapsed_parse, t.elapsed())
+	return row
 }
 
 fn (stmt InsertStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {

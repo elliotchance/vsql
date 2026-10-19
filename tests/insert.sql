@@ -119,3 +119,39 @@ CREATE TABLE foo (a INT, c VARCHAR(5));
 INSERT INTO foo (a, a, c) VALUES (3, 3, 'z');
 -- msg: CREATE TABLE 1
 -- error 42601: syntax error: column A is specified more than once
+
+CREATE TABLE foo (a INT, b VARCHAR(10));
+INSERT INTO foo (a, b) VALUES (5, 'q'), (6, 'r'), (7, NULL);
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 3
+-- A: 5 B: q
+-- A: 6 B: r
+-- A: 7 B: NULL
+
+CREATE TABLE foo (x INT);
+INSERT INTO foo (x) VALUES (1), (2), 3;
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 3
+-- X: 1
+-- X: 2
+-- X: 3
+
+CREATE TABLE foo (a INT, b VARCHAR(10));
+INSERT INTO foo (a, b) VALUES (5, 'q'), (6);
+INSERT INTO foo (a, b) VALUES (5, 'q'), (6, 'r', 7);
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: INSERT has less values than columns
+-- error 42601: syntax error: INSERT has more values than columns
+
+CREATE TABLE foo (a INT NOT NULL, PRIMARY KEY (a));
+INSERT INTO foo (a) VALUES (1), (NULL);
+INSERT INTO foo (a) VALUES (2), (3);
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- error 23502: violates non-null constraint: column A
+-- msg: INSERT 2
+-- A: 2
+-- A: 3

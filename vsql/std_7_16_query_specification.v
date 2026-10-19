@@ -9,7 +9,9 @@ struct DerivedColumn {
 	as_clause Identifier // will be empty if not provided
 }
 
-type SelectList = AsteriskExpr | QualifiedAsteriskExpr | []DerivedColumn
+type SelectList = AsteriskExpr | []SelectSublist
+
+type SelectSublist = DerivedColumn | QualifiedAsteriskExpr
 
 type AsteriskExpr = bool
 

@@ -10,7 +10,7 @@ Syntax
 
 .. code-block:: text
 
-  SELECT <expression> [ AS <name> ] , ...
+  SELECT { * | { <expression> [ AS <name> ] | <table_name>.* } , ... }
   FROM <table_name>
   [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_name> ON <condition> ] ...
   [ WHERE <condition> ]
@@ -27,6 +27,15 @@ For each *expression*, the naming convention follows:
 1. If ``name`` is provided, that will be used.
 2. If ``expression`` refered to a column, the column name will be used.
 3. Otherwise, the name ``COL<number>`` will be used where *number* is the position of the column (starting at 1).
+
+``*`` selects every column of every table in the ``FROM`` clause. It must be
+the only item in the list, so use ``<table_name>.*`` to select every column of a
+table along with other expressions:
+
+.. code-block:: sql
+
+  SELECT products.*, price * (1 + tax) AS total
+  FROM products;
 
 JOIN
 ----

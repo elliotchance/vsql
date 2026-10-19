@@ -60,6 +60,7 @@ type YYSym = AggregateFunction
 	| RowValueConstructor
 	| RowValueConstructorPredicand
 	| SelectList
+	| SelectSublist
 	| SequenceGeneratorDefinition
 	| SequenceGeneratorIncrementByOption
 	| SequenceGeneratorMaxvalueOption
@@ -92,6 +93,7 @@ type YYSym = AggregateFunction
 	| []DerivedColumn
 	| []Identifier
 	| []RowValueConstructor
+	| []SelectSublist
 	| []SequenceGeneratorOption
 	| []SetClause
 	| []SortSpecification

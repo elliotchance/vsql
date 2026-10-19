@@ -81,17 +81,27 @@ fn create_select_plan(body QuerySpecification, offset ?ValueSpecification, param
 	// TODO(elliotchance): This will break if trying to use GROUP BY on
 	// "SELECT *".
 	match body.exprs {
-		[]DerivedColumn {
+		[]SelectSublist {
 			group_exprs := body.table_expression.group_clause
 			mut select_exprs := []DerivedColumn{}
-			for expr in body.exprs {
-				select_exprs << DerivedColumn{expr.expr, expr.as_clause}
+			for item in body.exprs {
+				match item {
+					DerivedColumn {
+						select_exprs << item
+					}
+					QualifiedAsteriskExpr {
+						table := qualified_asterisk_table(item, mut conn, tables)!
+						for column in table.columns {
+							select_exprs << column_derived_column(column)
+						}
+					}
+				}
 			}
 
 			add_group_by_plan(mut &plan, group_exprs, select_exprs, params, mut conn,
 				tables)!
 		}
-		AsteriskExpr, QualifiedAsteriskExpr {
+		AsteriskExpr {
 			// It's not possible to have a GROUP BY in this case.
 		}
 	}
@@ -445,51 +455,47 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 				}
 			}
 		}
-		QualifiedAsteriskExpr {
-			mut table_name := conn.resolve_table_identifier(select_list.table_name, true)!
-			table := tables[table_name.id()] or { return sqlstate_42p01('table', table_name.str()) }
-			columns = table.columns
-			for column in table.columns {
-				exprs << DerivedColumn{ValueExpression(BooleanValueExpression{
-					term: BooleanTerm{
-						factor: BooleanTest{
-							expr: BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(column.name)))
+		[]SelectSublist {
+			for item in select_list {
+				match item {
+					QualifiedAsteriskExpr {
+						table := qualified_asterisk_table(item, mut conn, tables)!
+						columns << table.columns
+						for column in table.columns {
+							exprs << column_derived_column(column)
 						}
 					}
-				}), Identifier{
-					sub_entity_name: column.name.sub_entity_name
-				}}
-			}
-		}
-		[]DerivedColumn {
-			for i, column in select_list {
-				mut column_name := 'COL${i + 1}'
-				if column.as_clause.sub_entity_name != '' {
-					column_name = column.as_clause.sub_entity_name
-				} else if column.expr is BooleanValueExpression {
-					e := column.expr.term.factor.expr
-					if e is BooleanPredicand {
-						if e is NonparenthesizedValueExpressionPrimary {
-							if e is Identifier {
-								column_name = e.sub_entity_name
+					DerivedColumn {
+						// Unnamed columns are named by their position in the result.
+						mut column_name := 'COL${columns.len + 1}'
+						if item.as_clause.sub_entity_name != '' {
+							column_name = item.as_clause.sub_entity_name
+						} else if item.expr is BooleanValueExpression {
+							e := item.expr.term.factor.expr
+							if e is BooleanPredicand {
+								if e is NonparenthesizedValueExpressionPrimary {
+									if e is Identifier {
+										column_name = e.sub_entity_name
+									}
+								}
 							}
 						}
+
+						expr := item.expr
+						col := Identifier{
+							sub_entity_name: column_name
+						}
+						mut c := Compiler{
+							conn:   conn
+							params: params
+							tables: tables
+						}
+
+						columns << Column{col, expr.compile(mut c)!.typ, false}
+
+						exprs << DerivedColumn{expr, col}
 					}
 				}
-
-				expr := column.expr
-				col := Identifier{
-					sub_entity_name: column_name
-				}
-				mut c := Compiler{
-					conn:   conn
-					params: params
-					tables: tables
-				}
-
-				columns << Column{col, expr.compile(mut c)!.typ, false}
-
-				exprs << DerivedColumn{expr, col}
 			}
 		}
 	}
@@ -515,6 +521,44 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 	}
 
 	return ExprOperation{conn, params, exprs, columns, tables}
+}
+
+// qualified_asterisk_table returns the table that "t.*" refers to.
+fn qualified_asterisk_table(e QualifiedAsteriskExpr, mut conn Connection, tables map[string]Table) !Table {
+	// A derived table, such as "(SELECT ...) AS t", is only known by its
+	// correlation name.
+	if e.table_name.schema_name == '' {
+		if table := tables[e.table_name.entity_name] {
+			return table
+		}
+	}
+
+	table_name := conn.resolve_table_identifier(e.table_name, true)!
+
+	// A table loaded from the file doesn't have the catalog in its name (see
+	// new_table_from_bytes).
+	for _, table in tables {
+		if table.name.schema_name == table_name.schema_name
+			&& table.name.entity_name == table_name.entity_name
+			&& table.name.catalog_name in ['', table_name.catalog_name] {
+			return table
+		}
+	}
+
+	return sqlstate_42p01('table', table_name.str())
+}
+
+// column_derived_column is the select list item for one column of "t.*".
+fn column_derived_column(column Column) DerivedColumn {
+	return DerivedColumn{ValueExpression(BooleanValueExpression{
+		term: BooleanTerm{
+			factor: BooleanTest{
+				expr: BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(column.name)))
+			}
+		}
+	}), Identifier{
+		sub_entity_name: column.name.sub_entity_name
+	}}
 }
 
 fn (o ExprOperation) str() string {

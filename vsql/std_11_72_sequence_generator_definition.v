@@ -56,7 +56,7 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, params map[st
 	mut catalog := conn.catalog()
 	sequence := stmt.sequence(conn.resolve_schema_identifier(stmt.name)!)
 	sequence.check()!
-	sequence.check_in_range('START WITH', sequence.current_value + sequence.increment_by)!
+	sequence.check_in_range('START WITH', sequence.start_value)!
 	catalog.storage.create_sequence(sequence)!
 
 	return new_result_msg('CREATE SEQUENCE 1', elapsed_parse, t.elapsed())
@@ -148,24 +148,18 @@ fn (stmt SequenceGeneratorDefinition) sequence(sequence_name Identifier) Sequenc
 	}
 
 	is_ascending := increment_by >= 0
-	current_value := match true {
-		has_start_value {
-			start_value - increment_by
-		}
-		is_ascending && has_min_value {
-			min_value - increment_by
-		}
-		!is_ascending && has_max_value {
-			max_value - increment_by
-		}
-		else {
-			1 - increment_by
+	if !has_start_value {
+		if is_ascending && has_min_value {
+			start_value = min_value
+		} else if !is_ascending && has_max_value {
+			start_value = max_value
 		}
 	}
 
 	return Sequence{
 		name:          sequence_name
-		current_value: current_value
+		start_value:   start_value
+		current_value: start_value - increment_by
 		increment_by:  increment_by
 		cycle:         cycle
 		has_min_value: has_min_value

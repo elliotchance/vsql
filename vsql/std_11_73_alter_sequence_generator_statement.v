@@ -30,6 +30,7 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 		params: params
 	}
 	mut restart_value := ?i64(none)
+	mut restart_name := ''
 
 	for option in stmt.options {
 		match option {
@@ -40,9 +41,12 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 				if v := option.restart_value {
 					value := (v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 					restart_value = value
+					restart_name = 'RESTART WITH'
 					sequence.current_value = value - sequence.increment_by
 				} else {
-					sequence.current_value = sequence.reset() - sequence.increment_by
+					restart_value = sequence.start_value
+					restart_name = 'START WITH'
+					sequence.current_value = sequence.start_value - sequence.increment_by
 				}
 				sequence.exhausted = false
 			}
@@ -81,7 +85,7 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 
 	sequence.check()!
 	if v := restart_value {
-		sequence.check_in_range('RESTART WITH', v)!
+		sequence.check_in_range(restart_name, v)!
 	}
 
 	catalog.storage.update_sequence(old_sequence, sequence)!

@@ -48,6 +48,13 @@ fn out_command(cmd cli.Command) ! {
 
 		for _, sequence in sequences {
 			println('${sequence}\n')
+
+			// START WITH is kept for RESTART, so the current position (if it has
+			// moved) needs to be restored separately.
+			next_value := sequence.current_value + sequence.increment_by
+			if next_value != sequence.start_value {
+				println('ALTER SEQUENCE ${sequence.name} RESTART WITH ${next_value};\n')
+			}
 		}
 
 		mut tables := catalog.schema_tables(schema.name) or { return err }

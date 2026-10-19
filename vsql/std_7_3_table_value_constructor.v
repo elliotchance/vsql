@@ -38,24 +38,23 @@ mut:
 //  may be removed in the future. Run the test suite a few times and if it
 //  passes you're in the clear.
 fn new_values_operation(rows []RowValueConstructor, offset Value, correlation Correlation, mut conn Connection, params map[string]Value) !&ValuesOperation {
-	if correlation.columns.len > 0 {
-		for row in rows {
-			match row {
-				ExplicitRowValueConstructor {
-					match row {
-						ExplicitRowValueConstructorRow {
-							if row.exprs.len != correlation.columns.len {
-								return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
-							}
-						}
-						QueryExpression {
-							panic('query expressions cannot be used in ROW constructors')
+	for row in rows {
+		match row {
+			ExplicitRowValueConstructor {
+				match row {
+					ExplicitRowValueConstructorRow {
+						if correlation.columns.len > 0 && row.exprs.len != correlation.columns.len {
+							return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
 						}
 					}
+					QueryExpression {
+						// TODO(elliotchance): Row subqueries (F641) are not supported yet.
+						return sqlstate_42601('subqueries are not supported in VALUES')
+					}
 				}
-				CommonValueExpression, BooleanValueExpression {
-					// Nothing to validate in this case.
-				}
+			}
+			CommonValueExpression, BooleanValueExpression {
+				// Nothing to validate in this case.
 			}
 		}
 	}

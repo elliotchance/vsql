@@ -280,9 +280,9 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int) !SQLTestResult {
 			}
 
 			for col in result.columns {
-				line += '${col.name.sub_entity_name}: ${row.get_string(col.name.sub_entity_name)!} '
+				line += '${col.name.sub_entity_name}: ${row.get_column(col)!.str()} '
 				if test.show_types {
-					line += '(${row.get(col.name.sub_entity_name)!.typ}) '
+					line += '(${row.get_column(col)!.typ}) '
 				}
 			}
 			actual += line.trim_space() + '\n'

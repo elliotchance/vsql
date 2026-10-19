@@ -61,7 +61,7 @@ fn cli_command(cmd cli.Command) ! {
 				mut total_rows := 0
 				for row in result {
 					for column in result.columns {
-						print('${column.name.sub_entity_name}: ${row.get_string(column.name.sub_entity_name)!} ')
+						print('${column.name.sub_entity_name}: ${row.get_column(column)!.str()} ')
 					}
 					total_rows++
 				}

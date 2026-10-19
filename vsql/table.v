@@ -19,7 +19,17 @@ pub:
 //   "foo" INT
 //   BAR DOUBLE PRECISION NOT NULL
 pub fn (c Column) str() string {
-	mut f := '${c.name} ${c.typ}'
+	// A column with the same name as another column in a result has a
+	// custom_id (see new_expr_operation), which isn't part of its name.
+	name := if c.name.custom_id != '' && c.name.sub_entity_name != '' {
+		Identifier{
+			...c.name
+			custom_id: ''
+		}.str()
+	} else {
+		c.name.str()
+	}
+	mut f := '${name} ${c.typ}'
 	if c.not_null {
 		f += ' NOT NULL'
 	}

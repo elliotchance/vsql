@@ -80,6 +80,16 @@ pub fn (r Row) get_bool(name string) !Boolean {
 
 // get returns the underlying Value. It will return an error if the column does
 // not exist.
+// get_column returns the value of a column in a Result. Unlike get, this works
+// when the result has more than one column with the same name.
+pub fn (r Row) get_column(column Column) !Value {
+	if column.name.custom_id != '' && column.name.sub_entity_name != '' {
+		return r.get(column.name.custom_id)
+	}
+
+	return r.get(column.name.sub_entity_name)
+}
+
 pub fn (r Row) get(name string) !Value {
 	return r.data[name] or {
 		// Be helpful and look for silly mistakes.

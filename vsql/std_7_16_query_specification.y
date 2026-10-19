@@ -8,24 +8,29 @@ query_specification:
     }
   }
 
+// A bare asterisk can only appear alone (Syntax Rule 7.16), unlike a qualified
+// asterisk which can be mixed with other items.
 select_list:
   asterisk { $$.v = SelectList(AsteriskExpr(true)) }
-| select_sublist { $$.v = $1.v as SelectList }
-| select_list comma select_sublist {
-    mut new_select_list := (($1.v as SelectList) as []DerivedColumn).clone()
-    new_select_list << (($3.v as SelectList) as []DerivedColumn)[0]
-    $$.v = SelectList(new_select_list)
+| select_sublist_list { $$.v = SelectList($1.v as []SelectSublist) }
+
+select_sublist_list:
+  select_sublist { $$.v = [$1.v as SelectSublist] }
+| select_sublist_list comma select_sublist {
+    mut new_select_list := ($1.v as []SelectSublist).clone()
+    new_select_list << $3.v as SelectSublist
+    $$.v = new_select_list
   }
 
 select_sublist:
-  derived_column { $$.v = SelectList([$1.v as DerivedColumn]) }
-| qualified_asterisk { $$.v = SelectList($1.v as QualifiedAsteriskExpr) }
+  derived_column { $$.v = SelectSublist($1.v as DerivedColumn) }
+| qualified_asterisk { $$.v = SelectSublist($1.v as QualifiedAsteriskExpr) }
 
 // was: asterisked_identifier_chain period asterisk
 qualified_asterisk:
   asterisked_identifier_chain OPERATOR_PERIOD_ASTERISK {
     $$.v = QualifiedAsteriskExpr{
-      new_column_identifier(($1.v as IdentifierChain).identifier)!
+      new_table_identifier(($1.v as IdentifierChain).identifier)!
     }
   }
 

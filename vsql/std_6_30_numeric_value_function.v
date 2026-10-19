@@ -134,6 +134,10 @@ fn func_atan(args []Value) !Value {
 
 // MOD(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
 fn func_mod(args []Value) !Value {
+	if args[1].f64_value() == 0 {
+		return sqlstate_22012() // division by zero
+	}
+
 	return new_double_precision_value(math.fmod(args[0].f64_value(), args[1].f64_value()))
 }
 

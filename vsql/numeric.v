@@ -145,7 +145,7 @@ fn new_numeric_from_bytes(typ Type, data []u8) Numeric {
 	}
 
 	if flags & numeric_is_zero != 0 {
-		return new_numeric(typ, big.zero_int, big.zero_int)
+		return new_numeric(typ, big.zero_int, big.integer_from_int(10).pow(u32(typ.scale)))
 	}
 
 	numerator_len := buf.read_i16()
@@ -250,7 +250,7 @@ fn (n Numeric) divide(n2 Numeric) !Numeric {
 }
 
 fn (n Numeric) is_zero() bool {
-	return n.denominator == big.zero_int
+	return n.numerator == big.zero_int
 }
 
 fn (n Numeric) is_negative() bool {

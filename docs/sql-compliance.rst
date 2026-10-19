@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 66 of the 164 mandatory features** of the
+**vsql supports 69 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -367,7 +367,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ F031-19
      - ``REVOKE`` statement: ``RESTRICT`` clause
 
-   * - ⭕ **F041**
+   * - ✅ **F041**
      - **Basic joined table**
 
    * - ✅ F041-01
@@ -382,10 +382,10 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ F041-04
      - ``RIGHT OUTER JOIN``
 
-   * - ❌ F041-05
+   * - ✅ F041-05
      - Outer joins can be nested
 
-   * - ❌ F041-07
+   * - ✅ F041-07
      - The inner table in a left or right outer join can also be used in an inner join
 
    * - ✅ F041-08

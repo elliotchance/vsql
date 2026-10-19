@@ -3,6 +3,15 @@
 table_reference:
   table_factor { $$.v = TableReference($1.v as TablePrimary) }
 | joined_table { $$.v = TableReference($1.v as QualifiedJoin) }
+| parenthesized_joined_table {
+    $$.v = TableReference($1.v as QualifiedJoin)
+  }
+
+parenthesized_joined_table:
+  left_paren parenthesized_joined_table right_paren {
+    $$.v = $2.v as QualifiedJoin
+  }
+| left_paren joined_table right_paren { $$.v = $2.v as QualifiedJoin }
 
 qualified_join:
   table_reference JOIN table_reference join_specification {

@@ -86,3 +86,24 @@ EXPLAIN SELECT foo AS bar FROM (SELECT x + char_length(y) AS foo FROM t1);
 SELECT foo AS bar FROM (SELECT x + char_length(y) AS foo FROM t1);
 -- BAR: 128
 -- BAR: 461
+
+CREATE TABLE t (x INT);
+INSERT INTO t (x) VALUES (1);
+INSERT INTO t (x) VALUES (2);
+SELECT * FROM (SELECT x FROM t) AS s WHERE x > 5;
+SELECT * FROM (SELECT x FROM t) AS s WHERE 1 = 0;
+SELECT * FROM (SELECT x FROM t) AS s WHERE x = 2;
+SELECT * FROM (SELECT x FROM t) AS s WHERE s.x = 1;
+SELECT x * 10 AS y FROM (SELECT x FROM t) AS s WHERE x > 1;
+SELECT COUNT(*) FROM (SELECT x FROM t) AS s WHERE x > 1;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- X: 2
+-- X: 1
+-- Y: 20
+-- COL1: 1
+
+SELECT * FROM (VALUES 1, 2, 3) AS v (n) WHERE n >= 2;
+-- N: 2
+-- N: 3

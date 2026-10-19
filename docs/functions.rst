@@ -238,8 +238,8 @@ CEIL
    CEIL(DOUBLE PRECISION) DOUBLE PRECISION
    CEIL(NUMERIC) NUMERIC
 
-Round up to the nearest integer. When using ``NUMERIC`` the same scale and
-precision is returned.
+Round up to the nearest integer. Any exact numeric argument (such as
+``INTEGER`` or ``DECIMAL``) returns a ``NUMERIC`` with a scale of 0.
 
 **Examples**
 
@@ -332,8 +332,8 @@ FLOOR
    FLOOR(DOUBLE PRECISION) DOUBLE PRECISION
    FLOOR(NUMERIC) NUMERIC
 
-Round down to the nearest integer. When using ``NUMERIC`` the same scale and
-precision is returned.
+Round down to the nearest integer. Any exact numeric argument (such as
+``INTEGER`` or ``DECIMAL``) returns a ``NUMERIC`` with a scale of 0.
 
 **Examples**
 
@@ -356,6 +356,9 @@ precision is returned.
 
   VALUES FLOOR(-3.7);
   -- COL1: -4
+
+  VALUES FLOOR(-3);
+  -- COL1: -3
 
 LN
 ^^^

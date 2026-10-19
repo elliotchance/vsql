@@ -56,6 +56,9 @@ mut:
 	// errors (such as an UPDATE that matched no rows). Expressions must not have
 	// side effects, like advancing a sequence.
 	dry_run bool
+	// orm_last_id is the last value given to a serial field by the ORM. See
+	// last_id() in orm.v.
+	orm_last_id int
 pub mut:
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive

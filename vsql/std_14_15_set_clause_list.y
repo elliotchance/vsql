@@ -8,7 +8,7 @@ set_clause_list:
 
 set_clause:
   set_target equals_operator update_source {
-    $$.v = SetClause{($1.v as Identifier).str(), $3.v as UpdateSource}
+    $$.v = SetClause{($1.v as Identifier).sub_entity_name, $3.v as UpdateSource}
   }
 
 set_target:

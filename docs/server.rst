@@ -16,6 +16,11 @@ Now run it with (if the file does not exist it will be created):
 vsql will ignore any authentication values (such as user, password, database,
 etc). Simply connect using ``127.0.0.1:3210``.
 
+Any number of clients can be connected at the same time. Each client has its own
+connection, so a transaction started by one client is not visible to the others
+until it is committed. A client that disconnects during a transaction will have
+that transaction rolled back.
+
 Binary releases can be downloaded from the
 `Releases <https://github.com/elliotchance/vsql/releases>`_ page (under Assets).
 

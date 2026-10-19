@@ -540,7 +540,13 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 	stmt := (parser as YYParserImpl).lval.v as Stmt
 
 	if stmt is TableDefinition {
-		mut table_name := conn.resolve_schema_identifier(stmt.table_name)!
+		// The schemas aren't loaded until the connection reads the file.
+		conn.open_read_connection()!
+		table_name := conn.resolve_schema_identifier(stmt.table_name) or {
+			conn.release_read_connection()
+			return err
+		}
+		conn.release_read_connection()
 
 		mut catalog := conn.catalog()
 		catalog.virtual_tables[table_name.storage_id()] = VirtualTable{

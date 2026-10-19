@@ -307,3 +307,26 @@ fn test_random_updates() ! {
 	}
 	assert actual == expected
 }
+
+fn test_virtual_table_on_new_connection() ! {
+	file_name := 'test_virtual_table_on_new_connection.vsql'
+	if os.exists(file_name) {
+		os.rm(file_name) or { return err }
+	}
+
+	mut db := open(file_name)!
+	db.query('CREATE TABLE t (x INT)')!
+
+	// A new connection to an existing file hasn't read the schemas yet.
+	mut db2 := open(file_name)!
+	db2.register_virtual_table('CREATE TABLE foo (num INT)', fn (mut t VirtualTable) ! {
+		t.next_values([new_integer_value(1)])
+		t.done()
+	})!
+
+	mut nums := []int{}
+	for row in db2.query('SELECT num FROM foo')! {
+		nums << row.get_int('NUM')!
+	}
+	assert nums == [1]
+}

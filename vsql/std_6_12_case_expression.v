@@ -32,7 +32,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 						return sqlstate_42804('in NULLIF', a.typ.str(), b.typ.str())
 					}
 
-					cmp := compare(a, b)!
+					cmp := compare(conn, a, b)!
 					if cmp == .is_equal {
 						return new_null_value(a.typ.typ)
 					}

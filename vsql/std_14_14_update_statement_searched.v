@@ -93,7 +93,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			//  replaced with NULL is true, which is unnecessary, even if the
 			//  logic is a bit murky.
 			column_id := '${table_name.id()}.${column_name}'
-			cmp := compare(row.data[column_id], raw_value)!
+			cmp := compare(conn, row.data[column_id], raw_value)!
 			if cmp != .is_equal {
 				did_modify = true
 				row2.data[column_id] = cast(mut conn, 'for column ${column_name}', raw_value,

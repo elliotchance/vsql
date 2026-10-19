@@ -108,6 +108,18 @@ time zone component.
 
 A ``TIMESTAMP WITHOUT TIME ZONE`` (with any precision) is stored as 8 bytes.
 
+Comparisons
+-----------
+
+Values with a time zone are compared after adjusting them to UTC, so
+``TIMESTAMP '2020-01-01 10:00:00+05:00'`` is equal to
+``TIMESTAMP '2020-01-01 05:00:00+00:00'``. A ``TIME`` has no date, so its time
+of day in UTC is compared, which may wrap around midnight
+(``TIME '00:30:00+01:00'`` is equal to ``TIME '23:30:00+00:00'``).
+
+When a value with a time zone is compared to one without a time zone, the value
+without a time zone is treated as being in the time zone of the connection.
+
 Casting From Strings
 --------------------
 

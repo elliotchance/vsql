@@ -317,6 +317,11 @@ fn (t Type) str() string {
 	return s
 }
 
+// has_time_zone is true for TIME WITH TIME ZONE and TIMESTAMP WITH TIME ZONE.
+fn (t Type) has_time_zone() bool {
+	return t.typ == .is_time_with_time_zone || t.typ == .is_timestamp_with_time_zone
+}
+
 fn (t Type) uses_int() bool {
 	return match t.typ {
 		.is_boolean, .is_bigint, .is_smallint, .is_integer {

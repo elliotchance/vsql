@@ -260,7 +260,7 @@ fn row_cmp(mut conn Connection, params map[string]Value, r1 Row, r2 Row, specs [
 			return if spec.is_asc { 1 } else { -1 }
 		}
 
-		cmp := compare(left, right)!
+		cmp := compare(conn, left, right)!
 		if cmp == .is_equal {
 			continue
 		}

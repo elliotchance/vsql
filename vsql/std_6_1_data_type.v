@@ -30,6 +30,8 @@ fn parse_type_with_precision(name string, precision string, scale string) !Type 
 }
 
 fn parse_timestamp_prec_tz_type(prec string, tz bool) !Type {
+	check_fractional_seconds_precision('TIMESTAMP', prec)!
+
 	if tz {
 		return new_type('TIMESTAMP WITH TIME ZONE', prec.int(), 0)
 	}
@@ -38,9 +40,20 @@ fn parse_timestamp_prec_tz_type(prec string, tz bool) !Type {
 }
 
 fn parse_time_prec_tz_type(prec string, tz bool) !Type {
+	check_fractional_seconds_precision('TIME', prec)!
+
 	if tz {
 		return new_type('TIME WITH TIME ZONE', prec.int(), 0)
 	}
 
 	return new_type('TIME WITHOUT TIME ZONE', prec.int(), 0)
+}
+
+// ISO/IEC 9075-2:2016(E), 6.1, 38) The maximum value of <time precision> and
+// the maximum value of <timestamp precision> shall be the same
+// implementation-defined value that is not less than 6.
+fn check_fractional_seconds_precision(name string, prec string) ! {
+	if prec.int() > 6 {
+		return sqlstate_42601('${name}(${prec}): cannot have precision greater than 6')
+	}
 }

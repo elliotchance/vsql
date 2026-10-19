@@ -171,7 +171,7 @@ fn (mut p Btree) update_single(obj PageObject, tid u64) !int {
 }
 
 // get returns the object with the key that was created by tid.
-fn (mut p Btree) get(key []u8, tid int) !PageObject {
+fn (mut p Btree) get(key []u8, tid u64) !PageObject {
 	path, _ := p.search_page(key)!
 	page := p.pager.fetch_page(path[path.len - 1])!
 	obj := page.get(key, tid)

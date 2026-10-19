@@ -28,8 +28,8 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, params map[string]Val
 
 	// Find all dependencies (tables and sequences).
 	mut table_names := []string{}
-	for table_name, _ in catalog.storage.tables {
-		if table_name.starts_with('${schema_name}.') {
+	for table_name, table in catalog.storage.tables {
+		if table.name.schema_name == schema_name {
 			table_names << table_name
 		}
 	}

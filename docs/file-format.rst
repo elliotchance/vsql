@@ -95,8 +95,13 @@ remaining space is reserved (see `Compatibility`_).
     - The IDs of the transactions that are in progress. Unused slots are 0.
 
   * - 2088
+    - *Table ID*
+    - u64 (8 bytes)
+    - The last table ID that was issued. Table IDs are never reused.
+
+  * - 2096
     - *Reserved*
-    - 2008 bytes
+    - 2000 bytes
     - Zero in this version of the file format. See `Compatibility`_.
 
 Compatibility
@@ -494,8 +499,8 @@ so they are undone by a ``ROLLBACK``.
 Table Object
 ------------
 
-A Table Object (has the ``T`` prefix) contains a table definition, as a
-``CREATE TABLE`` statement:
+A Table Object (has the ``T`` prefix, followed by the table ID as a u64)
+contains a table definition, as a ``CREATE TABLE`` statement:
 
 .. code-block:: sql
 
@@ -504,6 +509,12 @@ A Table Object (has the ``T`` prefix) contains a table definition, as a
     "BAR" CHARACTER VARYING(10),
     PRIMARY KEY ("ID")
   )
+
+Each row of the table is a `Row Object`_ with a key of ``R``, the table ID as a
+u64 and then the row ID. The row ID is the encoded ``PRIMARY KEY``, or a u64
+from the *Row ID* in the `Header`_ for a table without a ``PRIMARY KEY``.
+Since rows are keyed by the table ID rather than its name, a table or schema
+can be renamed without changing its rows.
 
 Notes
 -----

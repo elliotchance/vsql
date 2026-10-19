@@ -381,14 +381,8 @@ fn (mut r Row) object_key(t Table) ![]u8 {
 		}
 	}
 
-	mut key := new_empty_bytes()
-	key.write_u8(`R`)
-	key.write_u8s(t.name.storage_id().bytes())
+	mut key := row_key_prefix(t.id)
+	key << r.id
 
-	// TODO(elliotchance): This is actually not a safe separator to use since
-	//  deliminated table names can contain ':'
-	key.write_u8(`:`)
-	key.write_u8s(r.id)
-
-	return key.bytes()
+	return key
 }

@@ -105,7 +105,7 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
 			f.header.active_transaction_ids)
 		{
-			table := new_table_from_bytes(object.value, object.tid, catalog_name)!
+			table := new_table_from_bytes(object.key, object.value, object.tid, catalog_name)!
 			f.tables[table.name.storage_id()] = table
 		}
 	}
@@ -213,10 +213,10 @@ fn (mut f Storage) create_table(table_name Identifier, columns Columns, primary_
 		f.isolation_end() or { panic(err) }
 	}
 
-	table := Table{f.transaction_id, table_name, columns, primary_key, false}
+	f.header.table_id++
+	table := Table{f.transaction_id, f.header.table_id, table_name, columns, primary_key, false}
 
-	obj := new_page_object('T${table_name.storage_id()}'.bytes(), f.transaction_id, 0,
-		table.bytes())
+	obj := new_page_object(table_object_key(table.id), f.transaction_id, 0, table.bytes())
 	f.btree.add(obj)!
 
 	f.tables[table_name.storage_id()] = table
@@ -353,31 +353,13 @@ fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 		f.isolation_end() or { panic(err) }
 	}
 
-	f.btree.expire('T${table_name}'.bytes(), tid, f.transaction_id)!
+	table_id := f.tables[table_name].id
+	f.btree.expire(table_object_key(table_id), tid, f.transaction_id)!
 
 	// The rows are expired the same way as a DELETE, so they are removed when
 	// the transaction ends.
-	//
-	// TODO(elliotchance): The range also contains the rows of any table named
-	//  "${table_name}:...", see https://github.com/elliotchance/vsql/issues/285.
-	//  Those rows are skipped here so they are not lost.
-	mut other_prefixes := [][]u8{}
-	for other_table_name, _ in f.tables {
-		if other_table_name.starts_with('${table_name}:') {
-			other_prefixes << 'R${other_table_name}:'.bytes()
-		}
-	}
-
-	// ';' = ':' + 1
-	for object in f.read_objects('R${table_name}:'.bytes(), 'R${table_name};'.bytes())! {
-		if other_prefixes.any(object.key.len >= it.len && object.key[..it.len] == it) {
-			continue
-		}
-
-		row_page_number := f.btree.expire(object.key, object.tid, f.transaction_id)!
-		if row_page_number >= 0 {
-			f.transaction_pages[row_page_number] = true
-		}
+	for object in f.read_objects(row_key_prefix(table_id), row_key_prefix(table_id + 1))! {
+		f.btree.expire(object.key, object.tid, f.transaction_id)!
 	}
 
 	f.tables.delete(table_name)
@@ -475,9 +457,9 @@ fn (mut f Storage) read_rows(table_name Identifier) ![]Row {
 
 	mut rows := []Row{}
 
-	// ';' = ':' + 1
 	table_storage_id := table_name.storage_id()
-	for object in f.read_objects('R${table_storage_id}:'.bytes(), 'R${table_storage_id};'.bytes())! {
+	table_id := f.tables[table_storage_id].id
+	for object in f.read_objects(row_key_prefix(table_id), row_key_prefix(table_id + 1))! {
 		rows << new_row_from_bytes(f.tables[table_storage_id], object.value, object.tid)
 	}
 

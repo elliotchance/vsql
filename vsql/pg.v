@@ -166,7 +166,7 @@ fn (mut c PGConn) write_data_row(columns Columns, row Row) ! {
 	mut msg_len := 4 // self
 	msg_len += 2 // cols
 	for column in columns {
-		v := row.get_string(column.name.sub_entity_name) or { '${err}' }
+		v := (row.get_column(column) or { new_varchar_value(err.msg()) }).str()
 		msg_len += 4 + v.len
 	}
 
@@ -174,7 +174,7 @@ fn (mut c PGConn) write_data_row(columns Columns, row Row) ! {
 	c.write_int16(i16(columns.len))!
 
 	for column in columns {
-		v := row.get_string(column.name.sub_entity_name) or { '${err}' }
+		v := (row.get_column(column) or { new_varchar_value(err.msg()) }).str()
 		c.write_int32(v.len)!
 		c.write_bytes(v.bytes())!
 	}

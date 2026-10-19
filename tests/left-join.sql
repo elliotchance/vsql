@@ -83,3 +83,14 @@ SELECT * FROM t1 LEFT JOIN t2 ON f1 > f3;
 -- F1: 789 F2: 3 F3: 123 F4: 5
 -- F1: 789 F2: 3 F3: 345 F4: 7
 -- F1: 234 F2: 4 F3: 123 F4: 5
+
+CREATE TABLE a (id INT, v VARCHAR(5));
+CREATE TABLE b (id INT, w VARCHAR(5));
+INSERT INTO a (id, v) VALUES (1, 'a1');
+INSERT INTO b (id, w) VALUES (2, 'b2');
+SELECT * FROM a LEFT JOIN b ON FALSE;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- ID: 1 V: a1 ID: NULL W: NULL

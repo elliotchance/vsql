@@ -102,6 +102,23 @@ fn test_row_ids_survive_reopen() ! {
 	assert xs == []int{len: 101, init: index}
 }
 
+fn test_duplicate_column_names() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE TABLE a (id INT)')!
+	db.query('CREATE TABLE b (id INT)')!
+	db.query('INSERT INTO a (id) VALUES (1)')!
+	db.query('INSERT INTO b (id) VALUES (2)')!
+
+	result := db.query('SELECT a.id, b.id FROM a JOIN b ON TRUE')!
+	assert result.columns.map(it.name.sub_entity_name) == ['ID', 'ID']
+	for row in result {
+		// get returns the first column with the name.
+		assert row.get_int('ID')! == 1
+		assert row.get_column(result.columns[0])!.int_value() == 1
+		assert row.get_column(result.columns[1])!.int_value() == 2
+	}
+}
+
 fn test_empty_pages_after_rollback() ! {
 	file_name := 'test_empty_pages_after_rollback.vsql'
 	if os.exists(file_name) {

@@ -437,6 +437,26 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 		}
 	}
 
+	// A result can have more than one column with the same name, such as a.id
+	// and b.id (7.16). Each one after the first is kept in the row under a
+	// different key, see Row.get_column.
+	mut seen := map[string]int{}
+	for i, expr in exprs {
+		name := expr.as_clause.id()
+		seen[name]++
+		if seen[name] > 1 {
+			key := '${name}\x00${seen[name]}'
+			exprs[i] = DerivedColumn{expr.expr, Identifier{
+				custom_id:       key
+				sub_entity_name: expr.as_clause.sub_entity_name
+			}}
+			columns[i] = Column{Identifier{
+				...columns[i].name
+				custom_id: key
+			}, columns[i].typ, columns[i].not_null}
+		}
+	}
+
 	return ExprOperation{conn, params, exprs, columns, tables}
 }
 

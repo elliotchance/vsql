@@ -42,22 +42,14 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 					value := (v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 					restart_value = value
 					restart_name = 'RESTART WITH'
-					sequence.current_value = value - sequence.increment_by
 				} else {
 					restart_value = sequence.start_value
 					restart_name = 'START WITH'
-					sequence.current_value = sequence.start_value - sequence.increment_by
 				}
-				sequence.exhausted = false
 			}
 			SequenceGeneratorIncrementByOption {
 				sequence.increment_by = (option.increment_by.compile(mut c)!.run(mut conn, Row{},
 					map[string]Value{})!).as_int()
-
-				// Since we increment the value after it's returned we need to correct
-				// for the current value that takes into account the difference of the
-				// new INCREMENT BY.
-				sequence.current_value += (sequence.increment_by - old_sequence.increment_by) - 1
 			}
 			SequenceGeneratorMinvalueOption {
 				if v := option.min_value {
@@ -84,8 +76,22 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 	}
 
 	sequence.check()!
+
+	// The current base value (the value NEXT VALUE FOR returns next) is only
+	// changed by RESTART (9.31 Syntax Rule 9 and General Rule 2e). The stored
+	// current_value is the last value returned, so it must be adjusted for the
+	// new INCREMENT BY. These wrap around like add_i64, see Sequence.next.
 	if v := restart_value {
 		sequence.check_in_range(restart_name, v)!
+		sequence.current_value = i64(u64(v) - u64(sequence.increment_by))
+		sequence.exhausted = false
+	} else if old_sequence.exhausted {
+		// The current base value is past the range of a BIGINT, so the next
+		// value will be for any INCREMENT BY.
+		sequence.current_value = if sequence.increment_by > 0 { max_i64 } else { min_i64 }
+	} else {
+		base_value := i64(u64(old_sequence.current_value) + u64(old_sequence.increment_by))
+		sequence.current_value = i64(u64(base_value) - u64(sequence.increment_by))
 	}
 
 	catalog.storage.update_sequence(old_sequence, sequence)!

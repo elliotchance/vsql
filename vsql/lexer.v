@@ -200,8 +200,16 @@ fn tokenize(sql_stmt string) []Token {
 			// There is a special case for approximate numbers where 'E' is considered
 			// a separate token in the SQL BNF. However, "e2" should not be treated as
 			// two tokens, but rather we need to catch this case only when with a
-			// number token.
-			if i < cs.len && (cs[i] == `e` || cs[i] == `E`) {
+			// number token. The literal is a single token (5.2 Syntax Rule 5), so the
+			// exponent must follow the E without any spaces. A mantissa may also end
+			// with a period, such as "1.e5".
+			if is_exponent(cs, i + 1) && cs[i] == `.` {
+				tokens << Token{token_operator_period, YYSymType{
+					v: '.'
+				}}
+				i++
+			}
+			if is_exponent(cs, i) {
 				tokens << Token{token_e, YYSymType{}}
 				i++
 			}
@@ -319,7 +327,9 @@ fn tokenize(sql_stmt string) []Token {
 		upper_word := word.to_upper()
 		mut found := false
 		for tok_pos, tok_name in yy_toknames {
-			if tok_name == upper_word {
+			// E is only a token directly after a number (see above), otherwise it's
+			// a regular identifier.
+			if tok_name == upper_word && upper_word != 'E' {
 				tok_number := tok_pos + 57343
 				tokens << Token{tok_number, YYSymType{
 					v: upper_word
@@ -346,6 +356,13 @@ fn tokenize(sql_stmt string) []Token {
 	}
 
 	return tokens
+}
+
+// is_exponent returns true if cs[i] is the E of an approximate numeric literal
+// that's immediately followed by the exponent.
+fn is_exponent(cs []rune, i int) bool {
+	return i + 1 < cs.len && (cs[i] == `e` || cs[i] == `E`)
+		&& ((cs[i + 1] >= `0` && cs[i + 1] <= `9`) || cs[i + 1] == `+` || cs[i + 1] == `-`)
 }
 
 @[inline]

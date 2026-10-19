@@ -19,8 +19,14 @@ VALUES 789;
 -- COL1: 789 (SMALLINT)
 
 /* types */
-VALUES 1 E 2;
+VALUES 1E2;
 -- COL1: 100e0 (DOUBLE PRECISION)
+
+VALUES 1 E 2;
+-- error 42601: syntax error: unexpected identifier
+
+VALUES 1E 2;
+-- error 42601: syntax error: unexpected identifier
 
 /* types */
 VALUES -1.2E2;

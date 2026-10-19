@@ -637,6 +637,9 @@ struct Table
    mut:
    	// The tid is the transaction ID that created this table.
    	tid u64
+   	// The id is unique for each table in the file and never reused. Rows are
+   	// keyed by it, see row_key_prefix.
+   	id u64
    pub mut:
    	// The name of the table including the schema.
    	name Identifier

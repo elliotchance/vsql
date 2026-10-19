@@ -63,3 +63,68 @@ SELECT * FROM foo.bar;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- X: 1.234e0
+
+CREATE TABLE "A" (x INT);
+CREATE TABLE "A:B" (y VARCHAR(10));
+INSERT INTO "A:B" (y) VALUES ('hello');
+SELECT * FROM "A";
+SELECT * FROM "A:B";
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- Y: hello
+
+/* connection 1 */
+CREATE TABLE "A" (x INT);
+CREATE TABLE "A:B" (y VARCHAR(10));
+INSERT INTO "A" (x) VALUES (1);
+INSERT INTO "A:B" (y) VALUES ('hello');
+/* connection 2 */
+SELECT * FROM "A";
+SELECT * FROM "A:B";
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: INSERT 1
+-- 2: X: 1
+-- 2: Y: hello
+
+CREATE SCHEMA "A.B";
+CREATE SCHEMA a;
+CREATE TABLE "A.B".c (x INT);
+CREATE TABLE a."B.C" (y INT);
+INSERT INTO "A.B".c (x) VALUES (1);
+INSERT INTO a."B.C" (y) VALUES (2);
+SELECT * FROM "A.B".c;
+SELECT * FROM a."B.C";
+DROP SCHEMA "A.B" CASCADE;
+SELECT * FROM a."B.C";
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- X: 1
+-- Y: 2
+-- msg: DROP SCHEMA 1
+-- Y: 2
+
+/* connection 1 */
+CREATE SCHEMA "A.B";
+CREATE SCHEMA a;
+CREATE TABLE "A.B".c (x INT);
+CREATE TABLE a."B.C" (y INT);
+INSERT INTO "A.B".c (x) VALUES (1);
+INSERT INTO a."B.C" (y) VALUES (2);
+/* connection 2 */
+SELECT * FROM "A.B".c;
+SELECT * FROM a."B.C";
+-- 1: msg: CREATE SCHEMA 1
+-- 1: msg: CREATE SCHEMA 1
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: INSERT 1
+-- 2: X: 1
+-- 2: Y: 2

@@ -231,8 +231,10 @@ fn delimit_identifier(s string) string {
 	return '"${s}"'
 }
 
+// requote_identifier only quotes the name if it needs to be, so that the
+// result can be parsed back into the same name.
 fn requote_identifier(s string) string {
-	if s.to_upper() == s {
+	if s.to_upper() == s && !s.contains('.') {
 		return s
 	}
 
@@ -413,16 +415,12 @@ fn (e Identifier) storage_id() string {
 	// Note: The catalog name is not included here because its registered
 	// virtually on the connection to the storage.
 
-	if e.schema_name != '' {
-		parts << e.schema_name
-	}
-
-	if e.entity_name != '' {
-		parts << e.entity_name
-	}
-
-	if e.sub_entity_name != '' {
-		parts << e.sub_entity_name
+	// A name that contains a '.' is quoted, otherwise "A.B".C and A."B.C" would
+	// be the same.
+	for part in [e.schema_name, e.entity_name, e.sub_entity_name] {
+		if part != '' {
+			parts << if part.contains('.') { delimit_identifier(part) } else { part }
+		}
 	}
 
 	return parts.join('.')

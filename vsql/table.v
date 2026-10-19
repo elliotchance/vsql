@@ -43,6 +43,9 @@ pub struct Table {
 mut:
 	// The tid is the transaction ID that created this table.
 	tid u64
+	// The id is unique for each table in the file and never reused. Rows are
+	// keyed by it, see row_key_prefix.
+	id u64
 pub mut:
 	// The name of the table including the schema.
 	name Identifier
@@ -101,7 +104,26 @@ fn (t Table) bytes() []u8 {
 	return 'CREATE TABLE ${t.name.storage_sql()} (\n${elements.join(',\n')}\n)'.bytes()
 }
 
-fn new_table_from_bytes(data []u8, tid u64, catalog_name string) !Table {
+// table_object_key is the key of the definition of a table.
+fn table_object_key(table_id u64) []u8 {
+	mut key := new_empty_bytes()
+	key.write_u8(`T`)
+	key.write_u64(table_id)
+
+	return key.bytes()
+}
+
+// row_key_prefix is the start of the key of every row in a table. The rows of
+// a table are in the range from row_key_prefix(id) to row_key_prefix(id + 1).
+fn row_key_prefix(table_id u64) []u8 {
+	mut key := new_empty_bytes()
+	key.write_u8(`R`)
+	key.write_u64(table_id)
+
+	return key.bytes()
+}
+
+fn new_table_from_bytes(key []u8, data []u8, tid u64, catalog_name string) !Table {
 	stmt := parse_definition(data)!
 	if stmt is TableDefinition {
 		mut table := stmt.table(Identifier{
@@ -109,6 +131,9 @@ fn new_table_from_bytes(data []u8, tid u64, catalog_name string) !Table {
 			schema_name:  stmt.table_name.schema_name
 			entity_name:  stmt.table_name.entity_name
 		}, tid)!
+
+		mut buf := new_bytes(key[1..])
+		table.id = buf.read_u64()
 
 		// Only the columns include the catalog name.
 		table.name = Identifier{

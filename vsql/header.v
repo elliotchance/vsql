@@ -26,7 +26,7 @@ const oldest_file_format_version = u16(1)
 // header_reserved_offset is where the reserved space of the header starts.
 // Fields that are added to the header in the future must go in this space, and
 // it must be zero until then.
-const header_reserved_offset = 2088
+const header_reserved_offset = 2096
 
 // The Header contains important metadata about the database and always occupies
 // the first header_size bytes of the database. It's encoded by write_header and
@@ -70,6 +70,9 @@ mut:
 	// active_transaction_ids maintains the transactions that are currently
 	// in-flight.
 	active_transaction_ids TransactionIDs
+	// The table_id is the last table ID that was issued. Table IDs are never
+	// reused, so rows are keyed by the table ID rather than its name.
+	table_id u64
 	// reserved is the rest of the header. It's written back exactly as it was
 	// read, so that a version of vsql that doesn't know about a field added by
 	// a newer version doesn't erase it.
@@ -119,6 +122,7 @@ fn (h Header) bytes() []u8 {
 	for tid in h.active_transaction_ids.tids {
 		b.write_u64(tid)
 	}
+	b.write_u64(h.table_id)
 
 	b.write_u8s(h.reserved)
 
@@ -154,6 +158,7 @@ fn new_header_from_bytes(data []u8) !Header {
 	for i in 0 .. header.active_transaction_ids.tids.len {
 		header.active_transaction_ids.tids[i] = b.read_u64()
 	}
+	header.table_id = b.read_u64()
 	header.reserved = b.read_u8s(header_size - header_reserved_offset)
 
 	if header.page_size <= page_header_size {

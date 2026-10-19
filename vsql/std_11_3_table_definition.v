@@ -117,7 +117,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 		}
 	}
 
-	return Table{tid, table_name, columns, primary_key, false}
+	return Table{tid, 0, table_name, columns, primary_key, false}
 }
 
 fn (stmt TableDefinition) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {

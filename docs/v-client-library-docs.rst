@@ -367,6 +367,9 @@ struct CatalogConnection
    	options ConnectionOptions
    	// virtual_tables can be created independent from the physical schema.
    	virtual_tables map[string]VirtualTable
+   	// write_pending is true when a statement has released its write connection,
+   	// but finish_write hasn't decided whether to keep its changes yet.
+   	write_pending bool
    }
 
 A Connection allows querying and other introspection for a database file. Use open() or open_database() to create a Connection.

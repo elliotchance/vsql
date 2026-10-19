@@ -19,6 +19,9 @@ mut:
 	total_pages() int
 	root_page() int
 	set_root_page(page_number int) !
+	// discard forgets the pages changed by the current statement, because it
+	// failed. See Storage.discard_statement.
+	discard()
 }
 
 struct MemoryPager {
@@ -27,36 +30,49 @@ mut:
 	// as balancing happens on the tree.
 	root_page int
 	pages     []Page
+	// dirty contains the pages changed by the current statement, which are
+	// only kept once the statement succeeds (see commit). total is the number
+	// of pages including these changes.
+	dirty           map[int]Page
+	total           int
+	saved_root_page int
 }
 
 fn new_memory_pager() &MemoryPager {
 	return &MemoryPager{}
 }
 
+// Pages are copied in and out of the pager because the B-tree changes the
+// data of a page in place before storing it.
 fn (mut p MemoryPager) fetch_page(page_number int) !Page {
-	return p.pages[page_number]
+	if page := p.dirty[page_number] {
+		return page.clone()
+	}
+
+	return p.pages[page_number].clone()
 }
 
 fn (mut p MemoryPager) store_page(page_number int, page Page) ! {
-	p.pages[page_number] = page
+	p.dirty[page_number] = page.clone()
 }
 
 fn (mut p MemoryPager) total_pages() int {
-	return p.pages.len
+	return p.total
 }
 
 fn (mut p MemoryPager) append_page(page Page) !int {
-	p.pages << page
+	p.dirty[p.total] = page.clone()
+	p.total++
 
-	return p.pages.len - 1
+	return p.total - 1
 }
 
 fn (mut p MemoryPager) truncate_all() ! {
-	p.pages = []Page{}
+	p.total = 0
 }
 
 fn (mut p MemoryPager) truncate_last_page() ! {
-	p.pages = p.pages[..p.pages.len - 1]
+	p.total--
 }
 
 fn (mut p MemoryPager) root_page() int {
@@ -65,6 +81,24 @@ fn (mut p MemoryPager) root_page() int {
 
 fn (mut p MemoryPager) set_root_page(page_number int) ! {
 	p.root_page = page_number
+}
+
+// commit keeps the pages changed by the current statement.
+fn (mut p MemoryPager) commit() {
+	mut pages := []Page{cap: p.total}
+	for i in 0 .. p.total {
+		pages << p.dirty[i] or { p.pages[i] }
+	}
+
+	p.pages = pages
+	p.dirty = map[int]Page{}
+	p.saved_root_page = p.root_page
+}
+
+fn (mut p MemoryPager) discard() {
+	p.dirty = map[int]Page{}
+	p.total = p.pages.len
+	p.root_page = p.saved_root_page
 }
 
 struct FilePager {
@@ -114,6 +148,14 @@ fn (mut p FilePager) fetch_page(page_number int) !Page {
 	return new_page_from_bytes(buf)
 }
 
+fn (page Page) clone() Page {
+	return Page{
+		kind: page.kind
+		used: page.used
+		data: page.data.clone()
+	}
+}
+
 fn new_page_from_bytes(buf []u8) Page {
 	mut b := new_bytes(buf)
 	kind := b.read_u8()
@@ -140,6 +182,10 @@ fn (page Page) bytes() []u8 {
 
 fn (mut p FilePager) store_page(page_number int, page Page) ! {
 	p.dirty[page_number] = page.bytes()
+}
+
+fn (mut p FilePager) discard() {
+	p.dirty = map[int][]u8{}
 }
 
 fn (mut p FilePager) total_pages() int {

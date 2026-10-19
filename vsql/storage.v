@@ -51,10 +51,89 @@ mut:
 	// file_pager is the pager of btree when the database is a file. It holds
 	// the pages changed by the current statement until commit.
 	file_pager &FilePager = unsafe { nil }
+	// snapshot is the state before the current statement that changes the
+	// database, see begin_statement.
+	snapshot StatementSnapshot
+	// sequence_values contains the values of sequences changed by the current
+	// statement, so that they can be kept if it fails, see discard_statement.
+	sequence_values map[string]PageObject
 	// session is held for as long as the connection is open. It is used to
 	// detect transactions left behind by connections that no longer exist. See
 	// recover().
 	session SessionLock
+}
+
+// StatementSnapshot is the state of Storage that is kept in memory, from before
+// a statement that changes the database. A statement that fails must not
+// change anything (ISO/IEC 9075-2:2016(E), 4.39.5), so this is put back, and
+// the pages it changed are never written.
+struct StatementSnapshot {
+	header            Header
+	tables            map[string]Table
+	schemas           map[string]Schema
+	transaction_state TransactionState
+	transaction_id    u64
+	transaction_pages map[int]bool
+}
+
+// begin_statement must be called at the start of a statement that changes the
+// database, once the file is locked. The statement must end with either
+// commit_statement or discard_statement.
+fn (mut f Storage) begin_statement() {
+	f.snapshot = StatementSnapshot{
+		header:            Header{
+			...f.header
+			reserved: f.header.reserved.clone()
+		}
+		tables:            f.tables.clone()
+		schemas:           f.schemas.clone()
+		transaction_state: f.transaction_state
+		transaction_id:    f.transaction_id
+		transaction_pages: f.transaction_pages.clone()
+	}
+	f.btree.written_pages = map[int]bool{}
+	f.sequence_values = map[string]PageObject{}
+}
+
+// commit_statement keeps the changes made by the current statement. For a file,
+// they are written through the write-ahead log, see commit.
+fn (mut f Storage) commit_statement(path string) ! {
+	if path == ':memory:' {
+		mut pager := f.btree.pager
+		if mut pager is MemoryPager {
+			pager.commit()
+		}
+
+		return
+	}
+
+	f.commit(path)!
+}
+
+// discard_statement forgets the changes made by the current statement, because
+// it failed. Except that values issued by sequences are kept: "changes to the
+// current base value of a sequence generator are not controlled by
+// SQL-transactions" (ISO/IEC 9075-2:2016(E), 4.27.2).
+fn (mut f Storage) discard_statement(path string) ! {
+	sequence_values := f.sequence_values.clone()
+
+	f.header = f.snapshot.header
+	f.tables = f.snapshot.tables.clone()
+	f.schemas = f.snapshot.schemas.clone()
+	f.transaction_state = f.snapshot.transaction_state
+	f.transaction_id = f.snapshot.transaction_id
+	f.transaction_pages = f.snapshot.transaction_pages.clone()
+	f.btree.pager.discard()
+	f.btree.written_pages = map[int]bool{}
+	f.sequence_values = map[string]PageObject{}
+
+	if sequence_values.len > 0 {
+		for _, obj in sequence_values {
+			f.btree.replace_value(obj, obj.value)!
+		}
+
+		f.commit_statement(path)!
+	}
 }
 
 fn new_storage(btree Btree) Storage {
@@ -316,7 +395,12 @@ fn (mut f Storage) sequence_next_value(name Identifier) !i64 {
 	// The new value is not part of the transaction, so the version that's
 	// visible is changed in place, rather than creating a new version.
 	value_object := f.sequence_value_object(name.storage_id())!
-	f.btree.replace_value(value_object, next_sequence.value_bytes())!
+	new_value := next_sequence.value_bytes()
+	f.btree.replace_value(value_object, new_value)!
+	f.sequence_values['${value_object.key.bytestr()}:${value_object.tid}'] = PageObject{
+		...value_object
+		value: new_value
+	}
 
 	return next_sequence.current_value
 }

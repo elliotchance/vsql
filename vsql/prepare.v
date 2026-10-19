@@ -46,10 +46,19 @@ mut:
 
 // Execute the prepared statement.
 pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
-	return p.query_internal(params) or {
+	result := p.query_internal(params) or {
+		// A statement that fails must not change anything.
+		p.c.finish_write(false) or {}
 		p.c.transaction_aborted()
 		return err
 	}
+
+	p.c.finish_write(true) or {
+		p.c.transaction_aborted()
+		return err
+	}
+
+	return result
 }
 
 fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {

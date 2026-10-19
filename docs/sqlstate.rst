@@ -207,24 +207,6 @@ was changed by a newer version of vsql, in a way that this version cannot
 safely change it. The file can still be read. See *Compatibility* in
 :doc:`file-format`.
 
-``25P02`` in failed sql transaction
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-``25P02`` will be returned for all commands within a transaction after a failure
-of a previous SQL statement. You must ``COMMIT`` or ``ROLLBACK``, however,
-``COMMIT`` will be treated as a ``ROLLBACK``.
-
-**Examples**
-
-.. code-block:: sql
-
-   CREATE TABLE foo (b BOOLEAN);
-   INSERT INTO foo (b) VALUES (123, 456);
-   SELECT * FROM foo;
-   -- msg: CREATE TABLE 1
-   -- error 42601: syntax error: INSERT has more values than columns
-   -- error 25P02: transaction is aborted, commands ignored until end of transaction block
-
 ``2BP01`` dependent objects still exist
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

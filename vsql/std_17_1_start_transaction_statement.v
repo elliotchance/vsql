@@ -20,9 +20,6 @@ fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[stri
 		.active {
 			return sqlstate_25001()
 		}
-		.aborted {
-			return sqlstate_25p02()
-		}
 	}
 
 	catalog.open_write_connection()!

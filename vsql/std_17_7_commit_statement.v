@@ -20,9 +20,6 @@ fn (stmt CommitStatement) execute(mut conn Connection, params map[string]Value, 
 		.active {
 			// All good, continue below.
 		}
-		.aborted {
-			return sqlstate_25p02()
-		}
 	}
 
 	catalog.open_write_connection()!

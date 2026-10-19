@@ -165,7 +165,74 @@ SELECT * FROM foo;
 -- msg: START TRANSACTION
 -- msg: CREATE TABLE 1
 -- error 42601: syntax error: INSERT has more values than columns
--- error 25P02: transaction is aborted, commands ignored until end of transaction block
+
+CREATE TABLE t (x INT, y INT);
+START TRANSACTION;
+INSERT INTO t (x, y) VALUES (10, 2);
+INSERT INTO t (x, y) VALUES (20, 0);
+UPDATE t SET x = x / y;
+INSERT INTO t (x, y) VALUES (30, 3);
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- error 22012: division by zero
+-- msg: INSERT 1
+-- msg: COMMIT
+-- X: 10 Y: 2
+-- X: 20 Y: 0
+-- X: 30 Y: 3
+
+CREATE TABLE t (x INT, y INT);
+INSERT INTO t (x, y) VALUES (10, 2);
+INSERT INTO t (x, y) VALUES (20, 0);
+START TRANSACTION;
+INSERT INTO t (x, y) VALUES (40, 4);
+UPDATE t SET x = x / y;
+ROLLBACK;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- error 22012: division by zero
+-- msg: ROLLBACK
+-- X: 10 Y: 2
+-- X: 20 Y: 0
+
+START TRANSACTION;
+VALUES 1 / 0;
+VALUES 1;
+COMMIT;
+-- msg: START TRANSACTION
+-- error 22012: division by zero
+-- COL1: 1
+-- msg: COMMIT
+
+CREATE TABLE t (x INT, y INT);
+START TRANSACTION;
+INSERT INTO t (x, y) VALUES (10, 2);
+INSERT INTO t (x, y) VALUES (20, 0);
+UPDATE t SET x = x / y;
+SELECT * FROM t;
+UPDATE t SET x = x + 1;
+SELECT * FROM t;
+ROLLBACK;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- error 22012: division by zero
+-- X: 10 Y: 2
+-- X: 20 Y: 0
+-- msg: UPDATE 2
+-- X: 11 Y: 2
+-- X: 21 Y: 0
+-- msg: ROLLBACK
 
 CREATE TABLE t (id INT NOT NULL, x INT, PRIMARY KEY(id));
 INSERT INTO t (id, x) VALUES (1, 10);

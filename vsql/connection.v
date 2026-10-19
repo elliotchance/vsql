@@ -394,27 +394,22 @@ fn parse_tokens(tokens []Token) !Stmt {
 
 // query executes a statement. If there is a result set it will be returned.
 pub fn (mut conn Connection) query(sql_stmt string) !Result {
-	mut catalog := conn.catalog()
+	mut prepared := conn.prepare(sql_stmt)!
 
-	if catalog.storage.transaction_state == .aborted {
-		return sqlstate_25p02()
-	}
-
-	mut prepared := conn.prepare(sql_stmt) or {
-		catalog.storage.transaction_aborted()
-		return err
-	}
-
-	return prepared.query(map[string]Value{}) or {
-		catalog.storage.transaction_aborted()
-		return err
-	}
+	return prepared.query(map[string]Value{})
 }
 
-fn (mut conn Connection) transaction_aborted() {
-	for _, mut catalog in conn.catalogs {
-		catalog.storage.transaction_aborted()
+// rollback_after_error rolls back the current transaction (if any) after a
+// statement raised an exception condition in class 40 (transaction rollback),
+// such as a serialization failure. Any other exception only cancels the
+// statement that raised it, see PreparedStmt.query.
+fn (mut conn Connection) rollback_after_error() {
+	if conn.catalog().storage.transaction_state != .active {
+		return
 	}
+
+	RollbackStatement{}.execute(mut conn, map[string]Value{}, time.Duration(0)) or { return }
+	conn.finish_write(true) or {}
 }
 
 fn (mut conn Connection) register_func(func Func) ! {

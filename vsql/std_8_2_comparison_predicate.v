@@ -363,6 +363,13 @@ fn compare_numbers(xv Value, yv Value) !CompareResult {
 		return xv.numeric_value().compare(yv.numeric_value())
 	}
 
+	// An exact number compared with an integer is compared exactly, rather than
+	// as an approximate number.
+	if (xv.typ.typ in [.is_decimal, .is_numeric] && yv.typ.uses_int())
+		|| (xv.typ.uses_int() && yv.typ.typ in [.is_decimal, .is_numeric]) {
+		return xv.as_numeric()!.compare(yv.as_numeric()!)
+	}
+
 	if (xv.typ.typ == .is_smallint || xv.typ.typ == .is_integer || xv.typ.typ == .is_bigint)
 		&& (yv.typ.typ == .is_smallint || yv.typ.typ == .is_integer || yv.typ.typ == .is_bigint) {
 		x := xv.int_value()

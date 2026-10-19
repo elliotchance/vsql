@@ -56,41 +56,67 @@ fn create_basic_plan(body SimpleTable, offset ?ValueSpecification, params map[st
 fn create_select_plan(body QuerySpecification, offset ?ValueSpecification, params map[string]Value, mut conn Connection, allow_virtual bool) !(Plan, map[string]Table) {
 	from_clause := body.table_expression.from_clause
 
+	mut plan := Plan{}
+	mut tables := map[string]Table{}
+
 	match from_clause {
 		TablePrimary {
-			plan, table := create_select_plan_without_join(body, from_clause, offset, params, mut
-				conn, allow_virtual)!
-			return plan, {
-				table.name.id(): table
-			}
+			table_plan, table := create_select_plan_without_join(body, from_clause, offset,
+				params, mut conn, allow_virtual, true)!
+			plan = table_plan
+			tables[table.name.id()] = table
 		}
 		QualifiedJoin {
+			// The WHERE clause applies to the joined rows, so it can't be used to
+			// filter either side before the join.
 			left_table_clause := from_clause.left_table as TablePrimary
 			left_plan, left_table := create_select_plan_without_join(body, left_table_clause,
-				offset, params, mut conn, allow_virtual)!
+				offset, params, mut conn, allow_virtual, false)!
 
 			right_table_clause := from_clause.right_table as TablePrimary
 			right_plan, right_table := create_select_plan_without_join(body, right_table_clause,
-				offset, params, mut conn, allow_virtual)!
+				offset, params, mut conn, allow_virtual, false)!
 
-			mut plan := Plan{}
 			plan.subplans['\$1'] = left_plan
 			plan.subplans['\$2'] = right_plan
 
-			tables := {
-				left_table.name.id():  left_table
-				right_table.name.id(): right_table
-			}
+			tables[left_table.name.id()] = left_table
+			tables[right_table.name.id()] = right_table
 
 			plan.operations << new_join_operation(left_plan.columns(), from_clause.join_type,
 				right_plan.columns(), from_clause.specification, params, conn, plan, tables)
 
-			return plan, tables
+			add_where_plan(mut &plan, body, params, conn, tables)
 		}
 	}
+
+	// GROUP BY.
+	//
+	// TODO(elliotchance): This will break if trying to use GROUP BY on
+	// "SELECT *".
+	match body.exprs {
+		[]DerivedColumn {
+			group_exprs := body.table_expression.group_clause
+			mut select_exprs := []DerivedColumn{}
+			for expr in body.exprs {
+				select_exprs << DerivedColumn{expr.expr, expr.as_clause}
+			}
+
+			add_group_by_plan(mut &plan, group_exprs, select_exprs, params, mut conn,
+				tables)!
+		}
+		AsteriskExpr, QualifiedAsteriskExpr {
+			// It's not possible to have a GROUP BY in this case.
+		}
+	}
+
+	return plan, tables
 }
 
-fn create_select_plan_without_join(body QuerySpecification, from_clause TablePrimary, offset ?ValueSpecification, params map[string]Value, mut conn Connection, allow_virtual bool) !(Plan, Table) {
+// create_select_plan_without_join reads the rows of one table. The WHERE clause
+// is only applied (and used to choose a primary key lookup) with filter, when
+// the table is the whole FROM clause.
+fn create_select_plan_without_join(body QuerySpecification, from_clause TablePrimary, offset ?ValueSpecification, params map[string]Value, mut conn Connection, allow_virtual bool, filter bool) !(Plan, Table) {
 	mut plan := Plan{}
 	mut covered_by_pk := false
 	mut table := Table{}
@@ -106,13 +132,17 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			if allow_virtual && table_name_id in catalog.virtual_tables {
 				plan.operations << VirtualTableOperation{table_name_id, catalog.virtual_tables[table_name_id]}
 				table = catalog.virtual_tables[table_name_id].table()
-				add_where_plan(mut &plan, body, params, conn, table)
+				if filter {
+					add_where_plan(mut &plan, body, params, conn, {
+						table.name.id(): table
+					})
+				}
 			} else if table_name_id in catalog.storage.tables {
 				table = catalog.storage.tables[table_name_id]
 
 				// This is a special case to handle "PRIMARY KEY = INTEGER". It only
 				// applies to a PRIMARY KEY with one column.
-				if table.primary_key.len == 1 {
+				if filter && table.primary_key.len == 1 {
 					if where := body.table_expression.where_clause {
 						where_str := where.pstr(params)
 						mut re := regex.regex_opt('^(\\w+) = (\\d+)$') or {
@@ -135,7 +165,11 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				}
 
 				if !covered_by_pk {
-					add_where_plan(mut &plan, body, params, conn, table)
+					if filter {
+						add_where_plan(mut &plan, body, params, conn, {
+							table.name.id(): table
+						})
+					}
 				}
 			} else {
 				return sqlstate_42p01('table', table_name.str())
@@ -171,29 +205,11 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			}
 
 			plan.operations << TableOperation{table_name, true, table, params, conn, plan.subplans}
-			add_where_plan(mut &plan, body, params, conn, table)
-		}
-	}
-
-	// GROUP BY.
-	//
-	// TODO(elliotchance): This will break if trying to use GROUP BY on
-	// "SELECT *".
-	match body.exprs {
-		[]DerivedColumn {
-			tables := {
-				table.name.id(): table
+			if filter {
+				add_where_plan(mut &plan, body, params, conn, {
+					table.name.id(): table
+				})
 			}
-			group_exprs := body.table_expression.group_clause
-			mut select_exprs := []DerivedColumn{}
-			for expr in body.exprs {
-				select_exprs << DerivedColumn{expr.expr, expr.as_clause}
-			}
-
-			add_group_by_plan(mut &plan, group_exprs, select_exprs, params, mut conn, table, tables)!
-		}
-		AsteriskExpr, QualifiedAsteriskExpr {
-			// It's not possible to have a GROUP BY in this case.
 		}
 	}
 
@@ -202,18 +218,15 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 
 // add_where_plan filters the rows of the last operation with the WHERE clause,
 // if there is one.
-fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Value, conn &Connection, table Table) {
+fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Value, conn &Connection, tables map[string]Table) {
 	if where := body.table_expression.where_clause {
 		last_operation := plan.operations[plan.operations.len - 1]
-		tables := {
-			table.name.id(): table
-		}
 		plan.operations << new_where_operation(where, params, conn, last_operation.columns(),
 			tables)
 	}
 }
 
-fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []DerivedColumn, params map[string]Value, mut conn Connection, table Table, tables map[string]Table) ! {
+fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []DerivedColumn, params map[string]Value, mut conn Connection, tables map[string]Table) ! {
 	// There can be an explicit GROUP BY clause. However, if any of the
 	// expressions contain an aggregate function we need to have an implicit
 	// GROUP BY for the whole set.
@@ -250,10 +263,10 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []De
 
 	// We do not need to sort the set if the all rows belong to the same set.
 	if group_clause.len > 0 {
-		plan.operations << new_order_operation(order, params, conn, plan.columns())
+		plan.operations << new_order_operation(order, params, conn, plan.columns(), tables)
 	}
 
-	plan.operations << new_group_operation(select_exprs, group_clause, params, mut conn, table)!
+	plan.operations << new_group_operation(select_exprs, group_clause, params, mut conn, tables)!
 }
 
 fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut conn Connection) !Plan {
@@ -301,7 +314,7 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 			}
 		}
 
-		plan.operations << new_order_operation(order, params, conn, plan.columns())
+		plan.operations << new_order_operation(order, params, conn, plan.columns(), tables)
 	}
 
 	if stmt.fetch != none || stmt.offset != none {

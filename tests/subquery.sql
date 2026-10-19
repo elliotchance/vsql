@@ -54,6 +54,14 @@ SELECT y FROM (SELECT x, y FROM t1);
 -- Y: hello
 -- Y: world
 
+SELECT x FROM (SELECT x FROM t1) ORDER BY x DESC;
+-- X: 456
+-- X: 123
+
+SELECT t.y, COUNT(*) FROM (SELECT y FROM t1) AS t GROUP BY t.y;
+-- Y: hello COL2: 1
+-- Y: world COL2: 1
+
 EXPLAIN SELECT * FROM (SELECT x + char_length(y) FROM t1);
 -- EXPLAIN: $1:
 -- EXPLAIN:   TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(16))

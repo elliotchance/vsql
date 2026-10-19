@@ -34,7 +34,7 @@ pub fn new_result(columns Columns, rows []Row, elapsed_parse time.Duration, elap
 
 fn new_result_msg(msg string, elapsed_parse time.Duration, elapsed_exec time.Duration) Result {
 	return new_result([
-		Column{Identifier{ sub_entity_name: 'msg' }, new_type('VARCHAR', msg.len, 0), false},
+		Column{Identifier{ sub_entity_name: 'msg' }, new_type('VARCHAR', msg.len_utf8(), 0), false},
 	], [
 		Row{
 			data: {

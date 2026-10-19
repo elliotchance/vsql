@@ -71,7 +71,7 @@ fn new_character_value
 
    pub fn new_character_value(x string) Value
 
-new_character_value creates a ``CHARACTER`` value. The size is determined from the length of the string itself.
+new_character_value creates a ``CHARACTER`` value. The size is determined from the length of the string itself, in characters (not bytes).
 
 fn new_date_value
 -----------------

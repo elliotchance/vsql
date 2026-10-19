@@ -79,21 +79,22 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// example numbers) to be converted to a string, provided they still fit
 			// all the same requirements.
 			s := cast_character_source(v)
+			chars := s.runes()
 
 			l := t.size
-			if l == s.len {
+			if l == chars.len {
 				return new_character_value(s)
 			}
 
 			// - 3.b.ii. If the declared type of T is fixed-length character string
 			// with length in characters L and the length in characters M of V is
 			// larger than L, then, Case:
-			m := s.len
+			m := chars.len
 			if m > l {
 				// - 3.b.ii.1. If the rightmost M–L characters of V are all <space>s,
 				// then the value of T is set to the first L characters of V.
-				if s[l..].trim_space() == '' {
-					return new_character_value(s[..l])
+				if chars[l..].all(it == ` `) {
+					return new_character_value(chars[..l].string())
 				}
 
 				// - 3.b.ii.2. If one or more of the rightmost M–L characters of V are
@@ -117,9 +118,10 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			//
 			// See note above about using v.str() instead of string_value().
 			s := cast_character_source(v)
+			chars := s.runes()
 
 			l := t.size
-			m := s.len
+			m := chars.len
 			if m <= l {
 				return new_varchar_value(s)
 			}
@@ -127,12 +129,11 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// - 3.b.v. If the declared type of T is variable-length character string
 			// and the length in characters M of V is greater than the maximum length
 			// in characters L of T, then, Case:
-			pad := strings.repeat(` `, m - l)
-			if pad == s[l..] {
+			if chars[l..].all(it == ` `) {
 				// - 3.b.v.1. If the rightmost M–L characters of V are all <space>s,
 				// then the value of T is set to the first L characters of V and the
 				// length in characters of T is set to L.
-				return new_varchar_value(s[..l])
+				return new_varchar_value(chars[..l].string())
 			}
 
 			// - 3.b.v.2. If one or more of the rightmost M–L characters of V are

@@ -148,7 +148,7 @@ pub fn new_smallint_value(x i16) Value {
 // new_varchar_value creates a ``CHARACTER VARYING`` value.
 pub fn new_varchar_value(x string) Value {
 	return Value{
-		typ: Type{.is_varchar, x.len, 0, false}
+		typ: Type{.is_varchar, x.len_utf8(), 0, false}
 		v:   InternalValue{
 			string_value: x
 		}
@@ -156,10 +156,10 @@ pub fn new_varchar_value(x string) Value {
 }
 
 // new_character_value creates a ``CHARACTER`` value. The size is determined
-// from the length of the string itself.
+// from the length of the string itself, in characters (not bytes).
 pub fn new_character_value(x string) Value {
 	return Value{
-		typ: Type{.is_character, x.len, 0, false}
+		typ: Type{.is_character, x.len_utf8(), 0, false}
 		v:   InternalValue{
 			string_value: x
 		}

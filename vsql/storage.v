@@ -48,6 +48,9 @@ mut:
 	// statement (outside of an explicit transaction) uses a transaction ID of 0
 	// because it must not modify the header, see isolation_start.
 	read_only bool
+	// file_pager is the pager of btree when the database is a file. It holds
+	// the pages changed by the current statement until commit.
+	file_pager &FilePager = unsafe { nil }
 	// session is held for as long as the connection is open. It is used to
 	// detect transactions left behind by connections that no longer exist. See
 	// recover().
@@ -72,8 +75,8 @@ fn (mut f Storage) open(path string, catalog_name string, exclusive bool) ! {
 	mut header := read_header(mut f.file)!
 	f.read_only = !exclusive
 
-	f.btree = new_btree(new_file_pager(mut f.file, header.page_size, header.root_page)!,
-		header.page_size)
+	f.file_pager = new_file_pager(mut f.file, header.page_size, header.root_page)!
+	f.btree = new_btree(f.file_pager, header.page_size)
 
 	if exclusive && f.other_transaction_ids(header).len > 0 {
 		if f.session.try_exclusive()! {
@@ -194,18 +197,13 @@ fn (mut f Storage) schema_changed() {
 	f.header.schema_version++
 }
 
-// flush must be called before the file is unlocked and closed with close_file.
-fn (mut f Storage) flush() ! {
-	// Before closing the connection we always write back the page header in
-	// case the schema_version or root_page have changed.
-	//
-	// TODO(elliotchance): We should be smarter about only writing this when we
-	//  need to.
+// commit must be called before a file that was locked exclusively is unlocked
+// and closed. The pages changed by the statement and the header are written to
+// the file through the write-ahead log, see wal_commit.
+fn (mut f Storage) commit(path string) ! {
 	f.header.root_page = f.btree.pager.root_page()
 
-	write_header(mut f.file, f.header)!
-
-	f.file.flush()
+	wal_commit(mut f.file, path, f.header, f.file_pager)!
 }
 
 fn (mut f Storage) close_file() {

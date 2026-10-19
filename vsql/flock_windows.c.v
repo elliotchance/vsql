@@ -71,3 +71,27 @@ fn (mut l SessionLock) shared() ! {
 	l.lock = filelock.new_file(l.path, mode: .shared)
 	l.lock.acquire() or { return error('cannot acquire session lock: ${err}') }
 }
+
+#include <io.h>
+
+fn C._commit(int) int
+
+// fsync waits for the file to be written to the disk. It must be flushed first.
+fn fsync(file os.File, path string) ! {
+	if C._commit(file.fd) != 0 {
+		return error('cannot fsync ${path}')
+	}
+}
+
+// fsync_dir does nothing on Windows, where changes to the entries of a
+// directory don't need to be synced separately.
+fn fsync_dir(path string) ! {
+}
+
+// truncate_file changes the size of a file that is open. It must be flushed
+// first.
+fn truncate_file(file os.File, path string, len u64) ! {
+	if C._chsize_s(file.fd, len) != 0 {
+		return error('cannot truncate ${path}')
+	}
+}

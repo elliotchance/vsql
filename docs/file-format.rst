@@ -16,6 +16,10 @@ the database file. It is always empty and is only used for locking (see
 :doc:`mvcc`). It can be deleted whenever there are no open connections to the
 database.
 
+A third file, with the same name followed by ``.wal``, is the `Write-Ahead
+Log`_. It must not be deleted, because it may contain the only copy of a
+statement that was committed when the process stopped.
+
 The file must include a *Header*, followed by zero or more pages. That is, when
 the database file is initially created it will only have a *Header* and zero
 pages.
@@ -515,6 +519,133 @@ u64 and then the row ID. The row ID is the encoded ``PRIMARY KEY``, or a u64
 from the *Row ID* in the `Header`_ for a table without a ``PRIMARY KEY``.
 Since rows are keyed by the table ID rather than its name, a table or schema
 can be renamed without changing its rows.
+
+Write-Ahead Log
+---------------
+
+The write-ahead log makes each statement that changes the database atomic and
+durable. Even if the process stops (or the power fails) part way through, the
+database contains either all or none of the changes made by the statement.
+
+While a statement is running, the pages it changes are only kept in memory.
+When it finishes (still holding the exclusive lock on the database file):
+
+1. The changed pages and the new `Header`_ are written to the log, which is
+   synced to the disk (with ``fsync``). This is the point where the statement is
+   committed.
+
+2. The pages and header are copied into the database file, the file is
+   truncated to the number of pages, and it is synced to the disk.
+
+3. The *State* in the log header is changed to *Checkpointed*. This doesn't
+   need to be synced, because copying the log into the database file again
+   doesn't change it.
+
+Before a connection reads or changes the database file, it checks the *State*.
+If the log hasn't been checkpointed, and ends with a valid *Commit* frame, the
+pages and header in it are copied into the database file (step 2) first. A log
+without a valid *Commit* frame is ignored, because the statement didn't change
+the database file.
+
+This is about the order that a statement is made permanent. Transactions (which
+may contain many statements) are still made atomic with MVCC (see :doc:`mvcc`),
+and a transaction that was left behind by a process that stopped is rolled back
+by the next connection.
+
+The log starts with a 32 byte header:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Offset
+    - Part
+    - Format
+    - Description
+
+  * - 0
+    - *Magic*
+    - 8 bytes
+    - Always ``76 73 71 6c 77 61 6c 0a`` (``vsqlwal\n``).
+
+  * - 8
+    - *Version*
+    - u16 (2 bytes)
+    - The version of the log format, currently 1.
+
+  * - 10
+    - *State*
+    - u8 (1 byte)
+    - 0 (*Committed*) when the log is written, and 1 (*Checkpointed*) once it
+      has been copied into the database file.
+
+  * - 11
+    - *Reserved*
+    - 1 byte
+    - Always 0.
+
+  * - 12
+    - *Page Size*
+    - u32 (4 bytes)
+    - The page size of the database.
+
+  * - 16
+    - *Salt*
+    - u32 (4 bytes)
+    - A random number that is the start of the chain of checksums. Each log
+      uses a new salt, so that frames left over from a previous log are never
+      valid.
+
+  * - 20
+    - *Reserved*
+    - 8 bytes
+    - Always 0.
+
+  * - 28
+    - *Checksum*
+    - u32 (4 bytes)
+    - The CRC-32 of the first 28 bytes, with the *State* as 0.
+
+Followed by frames, each with a 16 byte header and then its data:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Offset
+    - Part
+    - Format
+    - Description
+
+  * - 0
+    - *Kind*
+    - u8 (1 byte)
+    - 1 for a *Page* frame, or 2 for a *Commit* frame.
+
+  * - 1
+    - *Reserved*
+    - 3 bytes
+    - Always 0.
+
+  * - 4
+    - *Number*
+    - u32 (4 bytes)
+    - For a *Page* frame, the page number. For a *Commit* frame, the total
+      number of pages in the database.
+
+  * - 8
+    - *Length*
+    - u32 (4 bytes)
+    - The length of the data. A *Page* frame contains a whole page. A *Commit*
+      frame contains the whole `Header`_.
+
+  * - 12
+    - *Checksum*
+    - u32 (4 bytes)
+    - The CRC-32 of the previous checksum (the *Salt* for the first frame),
+      the first 12 bytes of this frame and its data.
+
+Frames are read until one is incomplete or has the wrong checksum, which is
+where a process stopped while writing the log. Only the pages up to the last
+*Commit* frame are used.
 
 Notes
 -----

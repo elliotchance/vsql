@@ -72,6 +72,9 @@ struct FilePager {
 mut:
 	file        os.File
 	total_pages int
+	// dirty contains the pages that have been changed, which are only written
+	// to the file at the end of the statement, see wal_commit.
+	dirty map[int][]u8
 	// root_page is the starting page for a traversal. The root page may change
 	// as balancing happens on the tree.
 	root_page int
@@ -95,6 +98,10 @@ fn new_file_pager(mut file os.File, page_size int, root_page int) !&FilePager {
 }
 
 fn (mut p FilePager) fetch_page(page_number int) !Page {
+	if data := p.dirty[page_number] {
+		return new_page_from_bytes(data)
+	}
+
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
 	p.file.seek(int(header_size) + (p.page_size * page_number), .start) or {
@@ -104,6 +111,10 @@ fn (mut p FilePager) fetch_page(page_number int) !Page {
 	mut buf := []u8{len: p.page_size}
 	p.file.read(mut buf) or { return error('unable to read from file: ${err}') }
 
+	return new_page_from_bytes(buf)
+}
+
+fn new_page_from_bytes(buf []u8) Page {
 	mut b := new_bytes(buf)
 	kind := b.read_u8()
 	b.read_u8() // flags
@@ -115,13 +126,7 @@ fn (mut p FilePager) fetch_page(page_number int) !Page {
 	}
 }
 
-fn (mut p FilePager) store_page(page_number int, page Page) ! {
-	// The first page is reserved for header information. We do not include this
-	// in the pages.
-	p.file.seek(int(header_size) + (p.page_size * page_number), .start) or {
-		return error('unable to seek: ${err}')
-	}
-
+fn (page Page) bytes() []u8 {
 	mut b := new_empty_bytes()
 	b.write_u8(page.kind)
 	b.write_u8(0) // flags
@@ -130,7 +135,11 @@ fn (mut p FilePager) store_page(page_number int, page Page) ! {
 	b.write_u8s([]u8{len: 12})
 	b.write_u8s(page.data)
 
-	p.file.write(b.bytes()) or { return error('unable to write to file: ${err}') }
+	return b.bytes()
+}
+
+fn (mut p FilePager) store_page(page_number int, page Page) ! {
+	p.dirty[page_number] = page.bytes()
 }
 
 fn (mut p FilePager) total_pages() int {

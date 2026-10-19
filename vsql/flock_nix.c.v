@@ -66,3 +66,36 @@ fn (mut l SessionLock) shared() ! {
 		return error('cannot acquire session lock: ${os.posix_get_error_msg(C.errno)}')
 	}
 }
+
+fn C.fsync(int) int
+
+// fsync waits for the file to be written to the disk. It must be flushed first.
+fn fsync(file os.File, path string) ! {
+	if C.fsync(file.fd) != 0 {
+		return error('cannot fsync ${path}: ${os.posix_get_error_msg(C.errno)}')
+	}
+}
+
+// fsync_dir waits for a change to the entries of a directory (such as creating
+// a file) to be written to the disk.
+fn fsync_dir(path string) ! {
+	fd := C.open(&char(path.str), C.O_RDONLY)
+	if fd < 0 {
+		return error('cannot open ${path}: ${os.posix_get_error_msg(C.errno)}')
+	}
+	defer {
+		C.close(fd)
+	}
+
+	if C.fsync(fd) != 0 {
+		return error('cannot fsync ${path}: ${os.posix_get_error_msg(C.errno)}')
+	}
+}
+
+// truncate_file changes the size of a file that is open. It must be flushed
+// first.
+fn truncate_file(file os.File, path string, len u64) ! {
+	if C.ftruncate(file.fd, len) != 0 {
+		return error('cannot truncate ${path}: ${os.posix_get_error_msg(C.errno)}')
+	}
+}

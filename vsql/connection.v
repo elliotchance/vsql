@@ -191,6 +191,31 @@ fn (mut conn CatalogConnection) open_read_connection() ! {
 		conn.options.mutex.runlock()
 		return err
 	}
+
+	// A statement that was committed to the write-ahead log but not copied
+	// into the database file (because the process stopped) must be copied
+	// before the file can be read. That needs the file to be locked
+	// exclusively.
+	if wal_needs_recovery(conn.path) {
+		flock_unlock_shared(conn.storage.file, conn.path)
+		flock_lock_exclusive(conn.storage.file, conn.path) or {
+			conn.storage.close_file()
+			conn.options.mutex.runlock()
+			return err
+		}
+		wal_recover(mut conn.storage.file, conn.path) or {
+			flock_unlock_exclusive(conn.storage.file, conn.path)
+			conn.storage.close_file()
+			conn.options.mutex.runlock()
+			return err
+		}
+		flock_unlock_exclusive(conn.storage.file, conn.path)
+		flock_lock_shared(conn.storage.file, conn.path) or {
+			conn.storage.close_file()
+			conn.options.mutex.runlock()
+			return err
+		}
+	}
 	conn.storage.open(conn.path, conn.catalog_name, false) or {
 		flock_unlock_shared(conn.storage.file, conn.path)
 		conn.storage.close_file()
@@ -221,6 +246,12 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 		conn.options.mutex.unlock()
 		return err
 	}
+	wal_recover(mut conn.storage.file, conn.path) or {
+		flock_unlock_exclusive(conn.storage.file, conn.path)
+		conn.storage.close_file()
+		conn.options.mutex.unlock()
+		return err
+	}
 	conn.storage.open(conn.path, conn.catalog_name, true) or {
 		flock_unlock_exclusive(conn.storage.file, conn.path)
 		conn.storage.close_file()
@@ -246,7 +277,7 @@ fn (mut conn CatalogConnection) release_write_connection() {
 		return
 	}
 
-	conn.storage.flush() or {
+	conn.storage.commit(conn.path) or {
 		// This was a hack to get around the fact we can't return an option from
 		// this function because it messes with the behavior of defer.
 		//

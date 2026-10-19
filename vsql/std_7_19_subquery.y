@@ -1,7 +1,7 @@
 %%
 
 row_subquery:
-  subquery { $$.v = $1.v as QueryExpression }
+  subquery { $$.v = ($1.v as TablePrimary).body as QueryExpression }
 
 table_subquery:
   subquery { $$.v = $1.v as TablePrimary }

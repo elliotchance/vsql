@@ -50,7 +50,7 @@ SELECT * FROM foo;
 CREATE TABLE foo (baz FLOAT);
 UPDATE foo SET baz = true;
 -- msg: CREATE TABLE 1
--- error 22003: numeric value out of range
+-- error 42846: cannot coerce BOOLEAN to DOUBLE PRECISION
 
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (123);

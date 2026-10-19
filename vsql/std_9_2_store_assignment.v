@@ -375,6 +375,11 @@ fn cast_numeric(mut conn Connection, v Value, t Type) !Value {
 	// now it's easier to convert to a lossless number then the final destination
 	// type.
 
+	// A boolean or datetime can't be cast to a number (6.13 Syntax Rule 7).
+	if v.typ.typ == .is_boolean || v.typ.typ.is_datetime() {
+		return sqlstate_42846(v.typ, t)
+	}
+
 	match t.typ {
 		.is_smallint {
 			mut numeric_value := v.as_numeric()!

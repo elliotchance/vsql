@@ -47,16 +47,18 @@ mut:
 // Execute the prepared statement.
 pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
 	result := p.query_internal(params) or {
-		// A statement that fails must not change anything.
+		// A statement that fails must not change anything (ISO/IEC
+		// 9075-2:2016(E), 4.39.5), but the transaction it's in continues,
+		// unless the exception condition is a transaction rollback.
 		p.c.finish_write(false) or {}
-		p.c.transaction_aborted()
+		if sqlstate_from_int(err.code()).starts_with('40') {
+			p.c.rollback_after_error()
+		}
+
 		return err
 	}
 
-	p.c.finish_write(true) or {
-		p.c.transaction_aborted()
-		return err
-	}
+	p.c.finish_write(true)!
 
 	return result
 }

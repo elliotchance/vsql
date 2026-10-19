@@ -420,15 +420,3 @@ fn sqlstate_40001(message string) IError {
 		msg:  'serialization failure: ${message}'
 	}
 }
-
-// in failed sql transaction
-struct SQLState25P02 {
-	SQLState
-}
-
-fn sqlstate_25p02() IError {
-	return SQLState25P02{
-		code: sqlstate_to_int('25P02')
-		msg:  'transaction is aborted, commands ignored until end of transaction block'
-	}
-}

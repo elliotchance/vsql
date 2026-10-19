@@ -14,10 +14,6 @@ enum TransactionState {
 	// transaction). This is important to stop a nested transaction from
 	// starting or closing an unstarted transaction.
 	active
-	// If transaction_state is .aborted, all SQL statements will return a
-	// SQLSTATE 25P02 until a COMMIT or ROLLBACK is issued. Also, in this state
-	// a COMMIT will be treated as a ROLLBACK.
-	aborted
 }
 
 struct Storage {
@@ -583,9 +579,6 @@ fn (mut f Storage) isolation_start() ! {
 		.active {
 			return
 		}
-		.aborted {
-			return sqlstate_25p02()
-		}
 	}
 
 	// A reader holds a shared lock, so it must not write to the header. It
@@ -601,12 +594,6 @@ fn (mut f Storage) isolation_start() ! {
 
 	f.transaction_id = f.header.transaction_id
 	f.header.active_transaction_ids.add(f.transaction_id)!
-}
-
-fn (mut f Storage) transaction_aborted() {
-	if f.transaction_state == .active {
-		f.transaction_state = .aborted
-	}
 }
 
 // isolation_end must be called at some point after isolation_start to signal
@@ -625,7 +612,7 @@ fn (mut f Storage) isolation_end() ! {
 		.not_active {
 			// Fallthrough to logic below.
 		}
-		.active, .aborted {
+		.active {
 			// Do nothing. COMMIT, ROLLBACK or some other transaction terminator
 			// will take care of this later.
 			return

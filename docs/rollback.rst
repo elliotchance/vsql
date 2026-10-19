@@ -41,6 +41,28 @@ Examples
   SELECT * FROM products;
   -- empty
 
+Errors
+------
+
+If a statement in a transaction fails, only the changes made by that statement
+are discarded. The transaction stays active, so the statements before it are
+kept, and the transaction can continue or end with ``COMMIT`` or ``ROLLBACK``.
+
+The exception is an error in class ``40`` (transaction rollback), such as
+``40001`` (serialization failure). The whole transaction is rolled back and is
+no longer active.
+
+.. code-block:: sql
+
+  START TRANSACTION;
+  INSERT INTO products (name, price) VALUES ('Kettle', 30);
+  INSERT INTO products (name, price) VALUES ('Toaster', 30 / 0);
+  -- error 22012: division by zero
+  COMMIT;
+
+  SELECT name FROM products;
+  -- NAME: Kettle
+
 See Also
 --------
 

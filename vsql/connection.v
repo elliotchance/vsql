@@ -189,7 +189,7 @@ fn (mut conn CatalogConnection) open_read_connection() ! {
 		conn.options.mutex.runlock()
 		return err
 	}
-	flock_lock_shared(conn.storage.file, conn.path) or {
+	flock_lock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path) or {
 		conn.storage.close_file()
 		conn.options.mutex.runlock()
 		return err
@@ -200,27 +200,27 @@ fn (mut conn CatalogConnection) open_read_connection() ! {
 	// before the file can be read. That needs the file to be locked
 	// exclusively.
 	if wal_needs_recovery(conn.path) {
-		flock_unlock_shared(conn.storage.file, conn.path)
-		flock_lock_exclusive(conn.storage.file, conn.path) or {
+		flock_unlock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path)
+		flock_lock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path) or {
 			conn.storage.close_file()
 			conn.options.mutex.runlock()
 			return err
 		}
 		wal_recover(mut conn.storage.file, conn.path) or {
-			flock_unlock_exclusive(conn.storage.file, conn.path)
+			flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 			conn.storage.close_file()
 			conn.options.mutex.runlock()
 			return err
 		}
-		flock_unlock_exclusive(conn.storage.file, conn.path)
-		flock_lock_shared(conn.storage.file, conn.path) or {
+		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
+		flock_lock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path) or {
 			conn.storage.close_file()
 			conn.options.mutex.runlock()
 			return err
 		}
 	}
 	conn.storage.open(conn.path, conn.catalog_name, false) or {
-		flock_unlock_shared(conn.storage.file, conn.path)
+		flock_unlock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.runlock()
 		return err
@@ -245,25 +245,25 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 		conn.options.mutex.unlock()
 		return err
 	}
-	flock_lock_exclusive(conn.storage.file, conn.path) or {
+	flock_lock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path) or {
 		conn.storage.close_file()
 		conn.options.mutex.unlock()
 		return err
 	}
 	wal_recover(mut conn.storage.file, conn.path) or {
-		flock_unlock_exclusive(conn.storage.file, conn.path)
+		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.unlock()
 		return err
 	}
 	conn.storage.open(conn.path, conn.catalog_name, true) or {
-		flock_unlock_exclusive(conn.storage.file, conn.path)
+		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.unlock()
 		return err
 	}
 	if !conn.storage.header.is_writable() {
-		flock_unlock_exclusive(conn.storage.file, conn.path)
+		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.unlock()
 		return sqlstate_25006('database needs file format ${conn.storage.header.write_version} to be changed, but this version of vsql only supports up to ${file_format_version}')
@@ -320,7 +320,7 @@ fn (mut conn CatalogConnection) finish_write(success bool) ! {
 	}
 
 	if conn.path != ':memory:' {
-		flock_unlock_exclusive(conn.storage.file, conn.path)
+		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.unlock()
 	}
@@ -343,7 +343,7 @@ fn (mut conn CatalogConnection) release_read_connection() {
 
 	// Readers must not write anything, including the header, since other
 	// readers may be reading the file at the same time.
-	flock_unlock_shared(conn.storage.file, conn.path)
+	flock_unlock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path)
 	conn.storage.close_file()
 
 	conn.options.mutex.runlock()

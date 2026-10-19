@@ -163,7 +163,8 @@ fn wal_recover(mut file os.File, path string) ! {
 			commit.total_pages)!
 	}
 
-	mut log := os.open_file(log_path, 'r+') or {
+	// The "b" is needed on Windows, otherwise the file is opened in text mode.
+	mut log := os.open_file(log_path, 'rb+') or {
 		return error('unable to open ${log_path}: ${err}')
 	}
 	defer {

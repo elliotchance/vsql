@@ -10,23 +10,27 @@ import os
 
 fn C.flock(int, int) int
 
-fn flock_lock_exclusive(file os.File, path string) ! {
+// DataFileLock is only needed on Windows. flock() holds the lock on the open
+// file itself.
+struct DataFileLock {}
+
+fn flock_lock_exclusive(mut l DataFileLock, file os.File, path string) ! {
 	if C.flock(file.fd, C.LOCK_EX) != 0 {
 		return error('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
 	}
 }
 
-fn flock_lock_shared(file os.File, path string) ! {
+fn flock_lock_shared(mut l DataFileLock, file os.File, path string) ! {
 	if C.flock(file.fd, C.LOCK_SH) != 0 {
 		return error('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
 	}
 }
 
-fn flock_unlock_exclusive(file os.File, path string) {
+fn flock_unlock_exclusive(mut l DataFileLock, file os.File, path string) {
 	C.flock(file.fd, C.LOCK_UN)
 }
 
-fn flock_unlock_shared(file os.File, path string) {
+fn flock_unlock_shared(mut l DataFileLock, file os.File, path string) {
 	C.flock(file.fd, C.LOCK_UN)
 }
 

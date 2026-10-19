@@ -28,6 +28,8 @@ mut:
 	tables map[string]Table
 	// file is opened, flushed and closed with each operation against the file.
 	file os.File
+	// data_lock is held while file is open. See DataFileLock.
+	data_lock DataFileLock
 	// See TransactionState for docs.
 	transaction_state TransactionState
 	// transaction_id is the current active transaction ID, or zero if there is
@@ -141,7 +143,8 @@ fn new_storage(btree Btree) Storage {
 // open_file must be called before the file is locked, since the lock is placed
 // on the file that is opened.
 fn (mut f Storage) open_file(path string) ! {
-	f.file = os.open_file(path, 'r+') or { return error('unable to open ${path}: ${err}') }
+	// The "b" is needed on Windows, otherwise the file is opened in text mode.
+	f.file = os.open_file(path, 'rb+') or { return error('unable to open ${path}: ${err}') }
 }
 
 // open must be called after open_file and the file being locked. exclusive

@@ -4,6 +4,7 @@
 module vsql
 
 import net
+import sync
 
 struct Server {
 	options ServerOptions
@@ -42,7 +43,15 @@ pub fn new_server(options ServerOptions) Server {
 }
 
 pub fn (mut s Server) start() ! {
-	s.db = open(s.options.db_file) or { panic('cannot open database: ${err}') }
+	// Each client has its own connection (so they each have their own
+	// transaction) in its own thread. They must share the same mutex, see
+	// ConnectionOptions.
+	mut connection_options := default_connection_options()
+	connection_options.mutex = sync.new_rwmutex()
+
+	s.db = open_database(s.options.db_file, connection_options) or {
+		panic('cannot open database: ${err}')
+	}
 
 	// There are multiple compatibility changes we need to make during the
 	// connection. A missing "FROM" clause is valid in PostgreSQL, but it's not
@@ -58,37 +67,53 @@ pub fn (mut s Server) start() ! {
 		s.db.query('INSERT INTO singlerow (x) VALUES (0)')!
 	}
 
-	// Also, we need to register some dummy functions commonly used in the
-	// connection phase.
-	register_pg_functions(mut s.db)!
-	register_pg_virtual_tables(mut s.db)!
-
 	mut listener := net.listen_tcp(.ip6, ':${s.options.port}') or {
 		return error('cannot listen on :${s.options.port}: ${err}')
 	}
 	println('ready on 127.0.0.1:${s.options.port}')
 
-	mut client_id := 0
 	for {
-		client_id++
-
 		mut conn := listener.accept() or {
 			s.log('${err}')
 			continue
 		}
 
-		s.handle_conn(mut conn)!
+		spawn s.handle_client(mut conn, connection_options)
 	}
 }
 
-fn (mut s Server) log(message string) {
+// handle_client runs in its own thread for each client. An error only
+// disconnects that client.
+fn (s &Server) handle_client(mut c net.TcpConn, connection_options ConnectionOptions) {
+	mut db := open_database(s.options.db_file, connection_options) or {
+		s.log('cannot open database: ${err}')
+		c.close() or {}
+		return
+	}
+
+	s.handle_conn(mut db, mut c) or { s.log('error: ${err}') }
+
+	// A client that disconnects in the middle of a transaction implicitly rolls
+	// it back.
+	db.rollback_after_error()
+
+	c.close() or {}
+	s.log('disconnected')
+}
+
+fn (s &Server) log(message string) {
 	if s.options.verbose {
 		println(message)
 	}
 }
 
-fn (mut s Server) handle_conn(mut c net.TcpConn) ! {
+fn (s &Server) handle_conn(mut db Connection, mut c net.TcpConn) ! {
 	mut conn := new_pg_conn(c)
+
+	// We need to register some dummy functions commonly used in the connection
+	// phase.
+	register_pg_functions(mut db)!
+	register_pg_virtual_tables(mut db)!
 
 	conn.accept()!
 	s.log('connected')
@@ -112,7 +137,7 @@ fn (mut s Server) handle_conn(mut c net.TcpConn) ! {
 				s.log('query: ${query}')
 
 				mut did_error := false
-				result := s.db.query(query) or {
+				result := db.query(query) or {
 					did_error = true
 					s.log('error: ${err}')
 
@@ -137,7 +162,4 @@ fn (mut s Server) handle_conn(mut c net.TcpConn) ! {
 			}
 		}
 	}
-
-	conn.close()!
-	s.log('disconnected')
 }

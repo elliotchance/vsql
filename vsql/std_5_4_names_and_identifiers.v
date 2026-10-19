@@ -429,7 +429,7 @@ fn (e Identifier) storage_id() string {
 // storage_sql is the name as it's written in the definition of an object in the
 // file, like "PUBLIC"."foo". The catalog name is not included (just like
 // storage_id) because the catalog is the file itself.
-fn (e Identifier) storage_sql() string {
+pub fn (e Identifier) storage_sql() string {
 	mut parts := []string{}
 
 	if e.schema_name != '' {

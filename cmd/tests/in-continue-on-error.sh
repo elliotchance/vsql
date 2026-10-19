@@ -12,7 +12,7 @@ SQL_FILE="$(mktemp).sql" || exit 1
 | $VSQL in $VSQL_FILE) && exit 1 || true
 
 $VSQL out $VSQL_FILE > $SQL_FILE
-grep -vR "CREATE TABLE PUBLIC.BAR" $SQL_FILE
+grep -vR 'CREATE TABLE "PUBLIC"."BAR"' $SQL_FILE
 
 # Enable continue on error still returns the non-zero exit code.
 (printf '%s\n' \
@@ -21,4 +21,4 @@ grep -vR "CREATE TABLE PUBLIC.BAR" $SQL_FILE
 | $VSQL in -continue-on-error $VSQL_FILE) && exit 1 || true
 
 $VSQL out $VSQL_FILE > $SQL_FILE
-grep -R "CREATE TABLE PUBLIC.BAR" $SQL_FILE
+grep -R 'CREATE TABLE "PUBLIC"."BAR"' $SQL_FILE

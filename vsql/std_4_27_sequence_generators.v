@@ -40,9 +40,9 @@ pub mut:
 
 // str returns the CREATE SEQUENCE definition (including the ';') like:
 //
-//   CREATE SEQUENCE "foo" START WITH 12 MINVALUE 10;
+//   CREATE SEQUENCE "PUBLIC"."foo" START WITH 12 MINVALUE 10;
 pub fn (s Sequence) str() string {
-	mut parts := ['CREATE SEQUENCE ${s.name} START WITH ${s.start_value}']
+	mut parts := ['CREATE SEQUENCE ${s.name.storage_sql()} START WITH ${s.start_value}']
 
 	if s.increment_by != 1 {
 		parts << 'INCREMENT BY ${s.increment_by}'
@@ -104,20 +104,31 @@ fn (s Sequence) check_in_range(name string, value i64) ! {
 	}
 }
 
-fn (s Sequence) next() !Sequence {
+// next_value returns the value that "NEXT VALUE FOR" will return next, or none
+// if the sequence has gone past its limit. In that case "NEXT VALUE FOR" will
+// either start again (CYCLE) or raise an error.
+pub fn (s Sequence) next_value() ?i64 {
 	// A new sequence stores START WITH minus INCREMENT BY as the current_value,
 	// which can wrap around (for example, START WITH -9223372036854775808). So
 	// when adding increment_by goes past the range of a BIGINT, it's only the
 	// limit of the sequence if the previous value was the last one (exhausted).
 	// Otherwise, the wrapped value is the START WITH.
-	mut next_value, overflow := add_i64(s.current_value, s.increment_by)
+	next_value, overflow := add_i64(s.current_value, s.increment_by)
 	if (overflow && s.exhausted) || (s.has_max_value && next_value > s.max_value)
 		|| (s.has_min_value && next_value < s.min_value) {
+		return none
+	}
+
+	return next_value
+}
+
+fn (s Sequence) next() !Sequence {
+	next_value := s.next_value() or {
 		if !s.cycle {
 			return sqlstate_2200h(s.name.str())
 		}
 
-		next_value = s.reset()
+		s.reset()
 	}
 
 	_, exhausted := add_i64(next_value, s.increment_by)

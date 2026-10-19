@@ -40,8 +40,8 @@ sign:
 
 approximate_numeric_literal:
   mantissa E exponent {
-    $$.v = new_double_precision_value(
-      ($1.v as Value).as_f64()! * math.pow(10, ($3.v as Value).as_f64()!))
+    $$.v = approximate_numeric_literal_value(($1.v as Value).str() + 'e' +
+      ($3.v as Value).str())
   }
 
 mantissa:

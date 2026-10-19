@@ -357,6 +357,39 @@ fn (v Value) pstr(params map[string]Value) string {
 	return v.str()
 }
 
+// literal returns the value as an SQL literal that results in the same value
+// when it's used in a statement, such as 'it''s' or DATE '2022-06-30'.
+pub fn (v Value) literal() string {
+	if v.is_null {
+		return 'NULL'
+	}
+
+	return match v.typ.typ {
+		// The shortest representation that converts back to the same value. It must
+		// contain an exponent to be an approximate numeric literal.
+		.is_double_precision {
+			approximate_numeric_literal(v.f64_value().str())
+		}
+		.is_real {
+			approximate_numeric_literal(f32(v.f64_value()).str())
+		}
+		.is_varchar, .is_character {
+			"'${v.string_value().replace("'", "''")}'"
+		}
+		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
+		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
+			v.time_value().str_literal()
+		}
+		.is_boolean, .is_bigint, .is_integer, .is_smallint, .is_decimal, .is_numeric {
+			v.str()
+		}
+	}
+}
+
+fn approximate_numeric_literal(s string) string {
+	return if s.contains('e') { s } else { s + 'e0' }
+}
+
 // The string representation of this value. Different types will have different
 // formatting.
 pub fn (v Value) str() string {

@@ -174,6 +174,18 @@ trailing spaces are removed.
   VALUES CAST('abc' AS INT);
   -- error 22018: invalid character value for cast
 
+``2201B`` invalid regular expression
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The pattern of a ``SIMILAR TO`` is not a valid regular expression.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES 'abc' SIMILAR TO '(a';
+  -- error 2201B: invalid regular expression
+
 ``22027`` trim error
 ^^^^^^^^^^^^^^^^^^^^
 

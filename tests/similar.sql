@@ -67,6 +67,123 @@ VALUES 'abb' SIMILAR TO 'ab+';
 VALUES 'abb' SIMILAR TO 'ab{2}';
 -- COL1: TRUE
 
+VALUES 'abab' SIMILAR TO '%b';
+-- COL1: TRUE
+
+VALUES 'abab' SIMILAR TO '%a%b';
+-- COL1: TRUE
+
+VALUES 'abab' SIMILAR TO '[ab]*b';
+-- COL1: TRUE
+
+VALUES 'abab' SIMILAR TO '%a';
+-- COL1: FALSE
+
+VALUES '' SIMILAR TO '_';
+-- COL1: FALSE
+
+VALUES '' SIMILAR TO '%';
+-- COL1: TRUE
+
+VALUES '' SIMILAR TO '';
+-- COL1: TRUE
+
+VALUES 'a' SIMILAR TO '';
+-- COL1: FALSE
+
+VALUES 'é' SIMILAR TO '_';
+-- COL1: TRUE
+
+VALUES 'aaa' SIMILAR TO 'a{2,}';
+-- COL1: TRUE
+
+VALUES 'a' SIMILAR TO 'a{2,}';
+-- COL1: FALSE
+
+VALUES 'aaa' SIMILAR TO 'a{2,3}';
+-- COL1: TRUE
+
+VALUES 'aaaa' SIMILAR TO 'a{2,3}';
+-- COL1: FALSE
+
+VALUES 'ac' SIMILAR TO 'ab?c';
+-- COL1: TRUE
+
+VALUES 'ab' SIMILAR TO '(a|ab)b';
+-- COL1: TRUE
+
+VALUES 'abb' SIMILAR TO '(a|ab)b';
+-- COL1: TRUE
+
+VALUES 'x' SIMILAR TO 'abc|x';
+-- COL1: TRUE
+
+VALUES 'b' SIMILAR TO '[^a]';
+-- COL1: TRUE
+
+VALUES 'a' SIMILAR TO '[^a]';
+-- COL1: FALSE
+
+VALUES 'x' SIMILAR TO '[a-z^x]';
+-- COL1: FALSE
+
+VALUES 'y' SIMILAR TO '[a-z^x]';
+-- COL1: TRUE
+
+VALUES 'A1' SIMILAR TO '[[:UPPER:]][[:DIGIT:]]';
+-- COL1: TRUE
+
+VALUES 'a1' SIMILAR TO '[[:UPPER:]][[:DIGIT:]]';
+-- COL1: FALSE
+
+VALUES 'a 1' SIMILAR TO '[[:ALPHA:]][[:SPACE:]][[:ALNUM:]]';
+-- COL1: TRUE
+
+VALUES 'a' SIMILAR TO '[[:lower:]]';
+-- COL1: TRUE
+
+VALUES 'a.b$}' SIMILAR TO 'a.b$}';
+-- COL1: TRUE
+
+VALUES 'a\b' SIMILAR TO 'a\b';
+-- COL1: TRUE
+
+VALUES 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' SIMILAR TO '(a|aa)*c';
+-- COL1: FALSE
+
+VALUES 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab' SIMILAR TO '(a*)*b';
+-- COL1: TRUE
+
+VALUES 'a' SIMILAR TO '(a';
+-- error 2201B: invalid regular expression
+
+VALUES 'a' SIMILAR TO 'a)';
+-- error 2201B: invalid regular expression
+
+VALUES 'a' SIMILAR TO '*a';
+-- error 2201B: invalid regular expression
+
+VALUES 'a' SIMILAR TO 'a**';
+-- error 2201B: invalid regular expression
+
+VALUES 'a' SIMILAR TO '[a';
+-- error 2201B: invalid regular expression
+
+VALUES 'a' SIMILAR TO 'a{0}';
+-- error 2201B: invalid regular expression
+
+VALUES 'a' SIMILAR TO 'a{3,2}';
+-- error 2201B: invalid regular expression
+
+VALUES 'a' SIMILAR TO '[[:FOO:]]';
+-- error 2201B: invalid regular expression
+
+VALUES 'a' SIMILAR TO 'a|';
+-- error 2201B: invalid regular expression
+
+VALUES 'a' SIMILAR TO '^a';
+-- error 2201B: invalid regular expression
+
 VALUES 'abc' SIMILAR TO 'abc';
 -- COL1: TRUE
 

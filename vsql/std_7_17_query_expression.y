@@ -72,6 +72,7 @@ result_offset_clause:
 
 fetch_first_clause:
   FETCH FIRST fetch_first_quantity row_or_rows ONLY { $$.v = $3.v }
+| FETCH FIRST row_or_rows ONLY { $$.v = ValueSpecification(new_integer_value(1)) }
 
 fetch_first_quantity:
   fetch_first_row_count { $$.v = $1.v as ValueSpecification }

@@ -17,7 +17,7 @@ Syntax
   [ GROUP BY <column_name> , ... ]
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
-  [ FETCH FIRST <integer> { ROW | ROWS } ONLY ]
+  [ FETCH FIRST [ <integer> ] { ROW | ROWS } ONLY ]
 
 SELECT
 ------
@@ -108,6 +108,9 @@ FETCH
 used in combination with ``OFFSET`` for further control.
 
 If the ``FETCH`` rows is greater than the total set, all rows will be returned.
+
+When the ``<integer>`` is omitted (for example ``FETCH FIRST ROW ONLY``) it
+defaults to ``1``, so only the first row is returned.
 
 Using ``ROW`` or ``ROWS`` has no functional difference and either can be used
 with any value. Both words are provided soley for grammatical benefit.

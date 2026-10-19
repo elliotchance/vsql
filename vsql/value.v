@@ -285,7 +285,7 @@ fn f64_string(x f64, bits i16) string {
 // where a placeholder might be anything but needs to be an int (such as for an
 // OFFSET).
 fn (v Value) as_int() i64 {
-	if v.typ.typ == .is_numeric {
+	if v.typ.typ == .is_numeric || v.typ.typ == .is_decimal {
 		return i64(v.numeric_value().f64())
 	}
 
@@ -318,7 +318,7 @@ fn (v Value) as_f64() !f64 {
 		return s.f64()
 	}
 
-	if v.typ.typ == .is_numeric {
+	if v.typ.typ == .is_numeric || v.typ.typ == .is_decimal {
 		// This will always be valid because the SQL parser wouldn't allow it
 		// otherwise.
 		return v.numeric_value().f64()

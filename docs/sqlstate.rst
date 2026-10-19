@@ -70,6 +70,22 @@ such as ``SUM(x)``, ignores one or more ``NULL`` values.
   -- warning 01003: null value eliminated in set function
   -- COL1: 1.5e0
 
+``01004`` string data, right truncation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``01004`` is a warning (the query still succeeds) when a ``CAST`` of a
+character string to a shorter ``CHAR`` or ``VARCHAR`` removes characters that
+aren't spaces. The value is truncated. Storing the same value in a column with
+``INSERT`` or ``UPDATE`` is an error instead (``22001``).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES CAST('hello' AS VARCHAR(2));
+  -- warning 01004: string data, right truncation
+  -- COL1: he
+
 ``0B000`` invalid transaction initiation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

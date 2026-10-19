@@ -87,37 +87,57 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 				return new_null_value(.is_varchar)
 			}
 
-			mut from := int(from_value.as_int() - 1)
-
 			if e.using == 'CHARACTERS' {
 				characters := value.string_value().runes()
+				start, end := substring_range(characters.len, from_value.as_int(),
+					e.@for != none, for_value.as_int())!
 
-				if from >= characters.len || from < 0 {
-					return new_varchar_value('')
-				}
-
-				mut @for := characters.len - from
-				if e.@for != none {
-					@for = int(for_value.as_int())
-				}
-
-				return new_varchar_value(characters[from..from + @for].string())
+				return new_varchar_value(characters[start..end].string())
 			}
 
-			if from >= value.string_value().len || from < 0 {
-				return new_varchar_value('')
-			}
+			str := value.string_value()
+			start, end := substring_range(str.len, from_value.as_int(), e.@for != none,
+				for_value.as_int())!
 
-			mut @for := value.string_value().len - from
-			if e.@for != none {
-				@for = int(for_value.as_int())
-			}
-
-			return new_varchar_value(value.string_value().substr(from, from + @for))
+			return new_varchar_value(str.substr(start, end))
 		}
 		typ:          new_type('CHARACTER VARYING', 0, 0)
 		contains_agg: compiled_value.contains_agg
 	}
+}
+
+// substring_range returns the zero-based start (inclusive) and end (exclusive)
+// of a SUBSTRING for a string of length characters or octets, following 6.32
+// General Rule 3. from is the one-based start position, which may be before the
+// start or past the end of the string. Positions before the start of the string
+// are skipped, so SUBSTRING('hello' FROM 0 FOR 3) is 'he'.
+fn substring_range(length int, from i64, has_for bool, @for i64) !(int, int) {
+	mut end := i64(0)
+	if has_for {
+		if @for < 0 {
+			return sqlstate_22011()
+		}
+
+		end = from + @for
+		// The end can only overflow when both are very large, in which case it's
+		// past the end of the string.
+		if end < from {
+			end = max_i64
+		}
+	} else {
+		end = if length + 1 > from { i64(length + 1) } else { from }
+	}
+
+	if from > length || end < 1 {
+		return 0, 0
+	}
+
+	start := if from < 1 { i64(1) } else { from }
+	if end > length + 1 {
+		end = length + 1
+	}
+
+	return int(start - 1), int(end - 1)
 }
 
 struct TrimFunction {

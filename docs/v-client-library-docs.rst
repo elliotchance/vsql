@@ -594,6 +594,10 @@ struct Sequence
    mut:
    	// The tid is the transaction ID that created this table.
    	tid u64
+   	// exhausted is true when current_value is the last value that can be
+   	// returned, because adding increment_by would go past the range of a BIGINT.
+   	// See next.
+   	exhausted bool
    pub mut:
    	// name contains the other parts such as the schema.
    	name Identifier

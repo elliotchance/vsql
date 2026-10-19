@@ -7,6 +7,7 @@ module vsql
 import os
 
 #include <fcntl.h>
+#include <sys/file.h>
 
 fn C.flock(int, int) int
 

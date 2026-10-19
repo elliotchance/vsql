@@ -122,7 +122,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			conn.dry_run = false
 		}
 
-		empty_row := new_empty_row(table.columns, '')
+		empty_row := new_empty_row(table.columns, table_name.id())
 		for clause in stmt.set {
 			column_name := clause.column_name
 			table_column := table.column(column_name)!

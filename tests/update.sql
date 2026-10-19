@@ -18,6 +18,21 @@ SELECT * FROM foo;
 -- BAZ: other
 -- BAZ: other
 
+CREATE TABLE foo (x INT, y INT);
+INSERT INTO foo (x, y) VALUES (1, 2);
+UPDATE foo SET x = x;
+UPDATE foo SET y = x + 1;
+UPDATE foo SET x = y WHERE x = 99;
+UPDATE foo SET x = z;
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: UPDATE 0
+-- msg: UPDATE 0
+-- msg: UPDATE 0
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Z
+-- X: 1 Y: 2
+
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (35);
 INSERT INTO foo (baz) VALUES (78);

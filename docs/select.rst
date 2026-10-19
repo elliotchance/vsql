@@ -121,6 +121,9 @@ OFFSET
 If ``OFFSET`` is provided, that number of rows will be skipped. If the
 ``OFFSET`` rows is greater than whole result set zero rows will be returned.
 
+The ``OFFSET`` must be an integer that is zero or more, otherwise a 2201X
+(invalid row count in result offset clause) error is raised.
+
 Using ``ROW`` or ``ROWS`` has no functional difference and either can be used
 with any value. Both words are provided soley for grammatical benefit.
 
@@ -131,6 +134,12 @@ FETCH
 used in combination with ``OFFSET`` for further control.
 
 If the ``FETCH`` rows is greater than the total set, all rows will be returned.
+
+The ``FETCH`` rows must be an integer that is one or more, otherwise a 2201W
+(invalid row count in fetch first clause) error is raised.
+
+When either value is a parameter it may be any numeric value that is a whole
+number, such as ``2.0``.
 
 When the ``<integer>`` is omitted (for example ``FETCH FIRST ROW ONLY``) it
 defaults to ``1``, so only the first row is returned.

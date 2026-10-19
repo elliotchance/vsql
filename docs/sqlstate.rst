@@ -186,6 +186,30 @@ The pattern of a ``SIMILAR TO`` is not a valid regular expression.
   VALUES 'abc' SIMILAR TO '(a';
   -- error 2201B: invalid regular expression
 
+``2201W`` invalid row count in fetch first clause
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The row count of a ``FETCH FIRST`` must be one or more.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES 1, 2, 3 FETCH FIRST 0 ROWS ONLY;
+  -- error 2201W: invalid row count in fetch first clause
+
+``2201X`` invalid row count in result offset clause
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The row count of an ``OFFSET`` must not be negative.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES 1, 2, 3 OFFSET -1 ROWS;
+  -- error 2201X: invalid row count in result offset clause
+
 ``22027`` trim error
 ^^^^^^^^^^^^^^^^^^^^
 

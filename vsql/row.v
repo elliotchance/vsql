@@ -164,7 +164,7 @@ fn new_empty_value(typ Type) Value {
 fn (r Row) bytes(t Table) []u8 {
 	mut buf := new_empty_bytes()
 
-	buf.write_u8(u8(r.id.len))
+	buf.write_u16(u16(r.id.len))
 	buf.write_u8s(r.id)
 
 	// The number of columns lets a row written before a column was added to the
@@ -235,7 +235,7 @@ fn new_row_from_bytes(t Table, data []u8, tid u64) Row {
 	mut buf := new_bytes(data)
 	mut row := map[string]Value{}
 
-	row_id := buf.read_u8s(buf.read_u8())
+	row_id := buf.read_u8s(buf.read_u16())
 	column_count := int(buf.read_u16())
 
 	for i, col in t.columns {

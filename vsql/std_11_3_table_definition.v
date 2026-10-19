@@ -78,11 +78,11 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					return sqlstate_42601('only one PRIMARY KEY can be defined')
 				}
 
-				if table_element.columns.len > 1 {
-					return sqlstate_42601('PRIMARY KEY only supports one column')
-				}
-
 				for column in table_element.columns {
+					if column.sub_entity_name in primary_key {
+						return sqlstate_42601('column ${column.sub_entity_name} appears more than once in PRIMARY KEY')
+					}
+
 					// Only some types are allowed in the PRIMARY KEY.
 					mut found := false
 					for e in stmt.table_elements {

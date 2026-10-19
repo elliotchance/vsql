@@ -392,7 +392,7 @@ A Row Object (has the ``R`` prefix) contains a table row:
     - Description
 
   * - *Row ID Length*
-    - u8 (1 byte)
+    - u16 (2 bytes)
     - The length of *Row ID*.
 
   * - *Row ID*
@@ -420,8 +420,10 @@ Primary Key
 ^^^^^^^^^^^
 
 For a table with a ``PRIMARY KEY``, the *Row ID* (which is also at the end of
-the key of the row) is the value of each column in the ``PRIMARY KEY``, encoded
-so that comparing the bytes gives the same order as comparing the values. This
+the key of the row) is the value of each column in the ``PRIMARY KEY``, one
+after another in the order that they are listed in the ``PRIMARY KEY``. Each
+value is encoded so that comparing the bytes gives the same order as comparing
+the values. This
 keeps the rows in order of their ``PRIMARY KEY``, so that a range of keys can
 be read without reading the whole table.
 

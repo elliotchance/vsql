@@ -44,6 +44,10 @@ mut:
 	transaction_pages map[int]bool
 	// Like the tables we keep the schemas in memory.
 	schemas map[string]Schema
+	// read_only is true when the file is only locked for reading. A read only
+	// statement (outside of an explicit transaction) uses a transaction ID of 0
+	// because it must not modify the header, see isolation_start.
+	read_only bool
 	// session is held for as long as the connection is open. It is used to
 	// detect transactions left behind by connections that no longer exist. See
 	// recover().
@@ -66,6 +70,7 @@ fn (mut f Storage) open_file(path string) ! {
 // must only be true if the file is locked exclusively.
 fn (mut f Storage) open(path string, catalog_name string, exclusive bool) ! {
 	mut header := read_header(mut f.file)!
+	f.read_only = !exclusive
 
 	f.btree = new_btree(new_file_pager(mut f.file, header.page_size, header.root_page)!,
 		header.page_size)
@@ -297,6 +302,11 @@ fn (mut f Storage) sequences() ![]Sequence {
 }
 
 fn (mut f Storage) sequence_next_value(name Identifier) !i64 {
+	// This would be a bug. See PreparedStmt.writes.
+	if f.read_only {
+		return error('cannot use NEXT VALUE FOR without a write connection')
+	}
+
 	f.isolation_start()!
 	defer {
 		f.isolation_end() or { panic(err) }
@@ -496,6 +506,15 @@ fn (mut f Storage) isolation_start() ! {
 		}
 	}
 
+	// A reader holds a shared lock, so it must not write to the header. It
+	// doesn't need its own transaction ID either: no writer can run while the
+	// lock is held, and with an ID of 0 only committed objects (and objects
+	// deleted by transactions that are still active) are visible.
+	if f.read_only {
+		f.transaction_id = 0
+		return
+	}
+
 	f.header.transaction_id++
 
 	f.transaction_id = f.header.transaction_id
@@ -529,6 +548,10 @@ fn (mut f Storage) isolation_end() ! {
 			// will take care of this later.
 			return
 		}
+	}
+
+	if f.read_only {
+		return
 	}
 
 	// Revist any remaining pages to clean out any expired rows.

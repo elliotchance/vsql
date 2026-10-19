@@ -35,6 +35,10 @@ pub struct PreparedStmt {
 	// removed from the query before parsing since this keyword is not part of
 	// the SQL standard.
 	explain bool
+	// writes is true if a query modifies the database, even though it would
+	// otherwise be read only. At the moment this is only when it contains a
+	// NEXT VALUE FOR.
+	writes bool
 mut:
 	c             &Connection
 	elapsed_parse time.Duration
@@ -156,7 +160,7 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
-			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse, p.writes)
 		}
 		StartTransactionStatement {
 			if p.explain {

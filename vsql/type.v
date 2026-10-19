@@ -132,6 +132,43 @@ fn (t SQLType) supertype() (i16, i16) {
 	}
 }
 
+// exact_arithmetic_type is the type of the result of +, - or * with two exact
+// numeric operands (ISO/IEC 9075-2:2016(E), 6.29, Syntax Rule 1c). The scale is
+// max(S1, S2) for + and -, and S1 + S2 for *. The precision is
+// implementation-defined, so it's large enough to hold any result. It's 0
+// (unknown) if either precision is unknown.
+fn exact_arithmetic_type(t1 Type, t2 Type, op string) Type {
+	typ := if t1.typ == .is_decimal || t2.typ == .is_decimal {
+		SQLType.is_decimal
+	} else {
+		SQLType.is_numeric
+	}
+	p1, s1 := t1.exact_precision(), t1.scale
+	p2, s2 := t2.exact_precision(), t2.scale
+
+	if op == '*' {
+		size := if p1 == 0 || p2 == 0 { 0 } else { p1 + p2 }
+		return Type{typ, size, s1 + s2, false}
+	}
+
+	scale := if s1 > s2 { s1 } else { s2 }
+	integer_digits := if p1 - s1 > p2 - s2 { p1 - s1 } else { p2 - s2 }
+	size := if p1 == 0 || p2 == 0 { 0 } else { integer_digits + scale + 1 }
+
+	return Type{typ, size, scale, false}
+}
+
+// exact_precision is the number of decimal digits that an exact numeric type
+// can hold.
+fn (t Type) exact_precision() int {
+	return match t.typ {
+		.is_smallint { 5 }
+		.is_integer { 10 }
+		.is_bigint { 19 }
+		else { t.size }
+	}
+}
+
 fn most_specific_type(t1 Type, t2 Type) !Type {
 	t1_category, t1_supertype := t1.typ.supertype()
 	t2_category, t2_supertype := t2.typ.supertype()

@@ -31,10 +31,7 @@ fn (e NumericValueExpression) compile(mut c Compiler) !CompileResult {
 
 				return eval_binary(mut conn, data, left, e.op, right, params)!
 			}
-			// TODO(elliotchance): This is not correct, we would have to return
-			//  the highest resolution type (need to check the SQL standard about
-			//  this behavior).
-			typ:          compiled_n.typ
+			typ:          arithmetic_type(compiled_n.typ, compiled_term.typ, e.op)
 			contains_agg: compiled_term.contains_agg || compiled_n.contains_agg
 		}
 	}
@@ -69,7 +66,7 @@ fn (e Term) compile(mut c Compiler) !CompileResult {
 
 				return eval_binary(mut conn, data, left, e.op, right, params)!
 			}
-			typ:          compiled_term.typ
+			typ:          arithmetic_type(compiled_term.typ, compiled_factor.typ, e.op)
 			contains_agg: compiled_factor.contains_agg || compiled_term.contains_agg
 		}
 	}
@@ -174,6 +171,27 @@ fn parse_factor_2(sign string, expr NumericPrimary) !NumericPrimary {
 	}
 
 	return SignedValueExpressionPrimary{sign, expr}
+}
+
+// arithmetic_type is the declared type of a binary arithmetic expression. Two
+// numbers of the same category have the more general type, except that an
+// exact result with a NUMERIC or DECIMAL operand follows exact_arithmetic_type
+// (division is done as multiplication, see Numeric.divide).
+fn arithmetic_type(t1 Type, t2 Type, op string) Type {
+	if t1.typ.is_number() && t2.typ.is_number() {
+		t1_category, _ := t1.typ.supertype()
+		t2_category, _ := t2.typ.supertype()
+		if t1_category == 2 && t2_category == 2
+			&& (t1.typ in [.is_numeric, .is_decimal] || t2.typ in [.is_numeric, .is_decimal]) {
+			return exact_arithmetic_type(t1, t2, if op == '/' { '*' } else { op })
+		}
+
+		if t := most_specific_type(t1, t2) {
+			return t
+		}
+	}
+
+	return t1
 }
 
 fn eval_binary(mut conn Connection, data Row, x Value, op string, y Value, params map[string]Value) !Value {

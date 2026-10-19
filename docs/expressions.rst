@@ -136,8 +136,22 @@ case-sensitive. You can use the following characters in ``Y``:
    * - ``()``
      - Parentheses group items into a single logical item.
    * - ``[...]``
-     - A bracket expression specifies a character class, just as in POSIX
-       regular expressions.
+     - Matches any one of the characters inside the brackets, such as
+       ``[abc]``. A range of characters can be written as ``[a-z]``.
+   * - ``[^...]``
+     - Matches any one character that is not inside the brackets.
+   * - ``[...^...]``
+     - Matches any one character from before the ``^`` that is not after it,
+       such as ``[a-z^x]``.
+   * - ``[:ALPHA:]``
+     - Inside brackets, matches a character from a class: ``ALPHA``, ``UPPER``,
+       ``LOWER`` (Latin letters), ``DIGIT``, ``ALNUM``, ``SPACE`` (only the space
+       character) or ``WHITESPACE``. For example, ``[[:DIGIT:]]``.
+
+The characters ``[ ] ( ) | ^ - + * _ % ? {`` always have a special meaning. A
+pattern that uses them in any other way, or that is not complete (such as
+``'(a'``), is an invalid regular expression (SQLSTATE 2201B). The repeat counts
+for ``{m}`` must be at least 1.
 
 *Examples*
 
@@ -151,3 +165,5 @@ case-sensitive. You can use the following characters in ``Y``:
   'AbcAbcdefgefg12efgefg12' SIMILAR TO '((Ab)?c)+d((efg)+(12))+'   -- TRUE
   'aaaaaab11111xy' SIMILAR TO 'a{6}_[0-9]{5}(x|y){2}'              -- TRUE
   '$0.87' SIMILAR TO '$[0-9]+(.[0-9][0-9])?'                       -- TRUE
+  'abab' SIMILAR TO '%a%b'                                         -- TRUE
+  'A1' SIMILAR TO '[[:UPPER:]][^a-z]'                              -- TRUE

@@ -170,6 +170,18 @@ fn sqlstate_22018() IError {
 	}
 }
 
+// Invalid regular expression.
+struct SQLState2201B {
+	SQLState
+}
+
+fn sqlstate_2201b() IError {
+	return SQLState2201B{
+		code: sqlstate_to_int('2201B')
+		msg:  'invalid regular expression'
+	}
+}
+
 // Trim error.
 struct SQLState22027 {
 	SQLState

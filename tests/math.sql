@@ -17,19 +17,19 @@ VALUES ABS(1, 2);
 
 /* types */
 VALUES MOD(232.0, 3.0);
--- COL1: 1 (NUMERIC(4, 1))
+-- COL1: 1 (NUMERIC(5, 1))
 
 /* types */
 VALUES MOD(10.7, 0.8);
--- COL1: 0.3 (NUMERIC(3, 1))
+-- COL1: 0.3 (NUMERIC(5, 1))
 
 /* types */
 VALUES MOD(232.000, 3.0);
--- COL1: 1 (NUMERIC(6, 3))
+-- COL1: 1 (NUMERIC(7, 3))
 
 /* types */
 VALUES MOD(232., 3.0000);
--- COL1: 1 (NUMERIC(10, 4))
+-- COL1: 1 (NUMERIC(8, 4))
 
 /* types */
 VALUES ROW(FLOOR(3.7), FLOOR(3.3), FLOOR(-3.7), FLOOR(-3.3));
@@ -37,11 +37,11 @@ VALUES ROW(FLOOR(3.7), FLOOR(3.3), FLOOR(-3.7), FLOOR(-3.3));
 
 /* types */
 VALUES ROW(CEIL(3.7), CEIL(3.3), CEIL(-3.7), CEIL(-3.3));
--- COL1: 4 (NUMERIC(1)) COL2: 4 (NUMERIC(1)) COL3: -3 (NUMERIC(1)) COL4: -3 (NUMERIC(1))
+-- COL1: 4 (NUMERIC(2)) COL2: 4 (NUMERIC(2)) COL3: -3 (NUMERIC(1)) COL4: -3 (NUMERIC(1))
 
 /* types */
 VALUES CEILING(3.7);
--- COL1: 4 (NUMERIC(1))
+-- COL1: 4 (NUMERIC(2))
 
 /* types */
 VALUES SIN(1.2e0);

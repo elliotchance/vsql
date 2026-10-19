@@ -222,19 +222,21 @@ fn (n Numeric) round(scale i16) Numeric {
 }
 
 fn (n Numeric) add(n2 Numeric) Numeric {
+	typ := exact_arithmetic_type(n.typ, n2.typ, '+')
 	a, b := common_denominator(n, n2)
-	x := new_numeric(a.typ, a.numerator + b.numerator, a.denominator)
-	return x.normalize_denominator(n.typ)
+	x := new_numeric(typ, a.numerator + b.numerator, a.denominator)
+	return x.normalize_denominator(typ)
 }
 
 fn (n Numeric) subtract(n2 Numeric) Numeric {
+	typ := exact_arithmetic_type(n.typ, n2.typ, '-')
 	a, b := common_denominator(n, n2)
-	x := new_numeric(a.typ, a.numerator - b.numerator, a.denominator)
-	return x.normalize_denominator(n.typ)
+	x := new_numeric(typ, a.numerator - b.numerator, a.denominator)
+	return x.normalize_denominator(typ)
 }
 
 fn (n Numeric) multiply(n2 Numeric) Numeric {
-	typ := new_type(n.typ.typ.str(), n.typ.size * n2.typ.size, n.typ.scale + n2.typ.scale)
+	typ := exact_arithmetic_type(n.typ, n2.typ, '*')
 	x := new_numeric(typ, n.numerator * n2.numerator, n.denominator * n2.denominator)
 	return x.normalize_denominator(typ)
 }

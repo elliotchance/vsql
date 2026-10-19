@@ -128,7 +128,7 @@ fn binary_bigint_plus_bigint(conn &Connection, a Value, b Value) !Value {
 	y := big.integer_from_i64(b.as_int())
 	z := x + y
 	check_numeric_range(new_numeric_from_string(z.str()), .is_bigint)!
-	return new_bigint_value(z.int())
+	return new_bigint_value(big_integer_to_i64(z))
 }
 
 fn binary_double_precision_minus_double_precision(conn &Connection, a Value, b Value) !Value {
@@ -147,7 +147,7 @@ fn binary_bigint_minus_bigint(conn &Connection, a Value, b Value) !Value {
 	y := big.integer_from_i64(b.as_int())
 	z := x - y
 	check_numeric_range(new_numeric_from_string(z.str()), .is_bigint)!
-	return new_bigint_value(z.int())
+	return new_bigint_value(big_integer_to_i64(z))
 }
 
 fn binary_double_precision_multiply_double_precision(conn &Connection, a Value, b Value) !Value {
@@ -166,7 +166,7 @@ fn binary_bigint_multiply_bigint(conn &Connection, a Value, b Value) !Value {
 	y := big.integer_from_i64(b.as_int())
 	z := x * y
 	check_numeric_range(new_numeric_from_string(z.str()), .is_bigint)!
-	return new_bigint_value(z.int())
+	return new_bigint_value(big_integer_to_i64(z))
 }
 
 fn binary_double_precision_divide_double_precision(conn &Connection, a Value, b Value) !Value {

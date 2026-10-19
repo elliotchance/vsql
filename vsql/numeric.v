@@ -358,7 +358,13 @@ fn (n Numeric) greater_than(n2 Numeric) bool {
 }
 
 fn (n Numeric) i64() i64 {
-	return n.integer().int()
+	return big_integer_to_i64(n.integer())
+}
+
+// big_integer_to_i64 converts an integer that is known to fit into an i64.
+// big.Integer.int() can't be used because it only returns 32 bits.
+fn big_integer_to_i64(n big.Integer) i64 {
+	return n.str().i64()
 }
 
 fn (n Numeric) integer() big.Integer {

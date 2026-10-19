@@ -241,6 +241,22 @@ fn test_split_into_three_pages() ! {
 	assert rows == ['1 800 a', '2 1900 d', '3 800 c']
 }
 
+fn test_virtual_table_where() ! {
+	mut db := open(':memory:')!
+	db.register_virtual_table('CREATE TABLE foo (num INT, word VARCHAR(32))', fn (mut t VirtualTable) ! {
+		t.next_values([new_integer_value(1), new_varchar_value('hi')])
+		t.next_values([new_integer_value(2), new_varchar_value('there')])
+		t.done()
+	})!
+
+	mut result := db.query('SELECT word FROM foo WHERE num = 2')!
+	mut words := []string{}
+	for row in result {
+		words << row.get_string('WORD')!
+	}
+	assert words == ['there']
+}
+
 fn test_random_updates() ! {
 	file_name := 'test_random_updates.vsql'
 	if os.exists(file_name) {

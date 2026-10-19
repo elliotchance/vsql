@@ -106,6 +106,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			if allow_virtual && table_name_id in catalog.virtual_tables {
 				plan.operations << VirtualTableOperation{table_name_id, catalog.virtual_tables[table_name_id]}
 				table = catalog.virtual_tables[table_name_id].table()
+				add_where_plan(mut &plan, body, params, conn, table)
 			} else if table_name_id in catalog.storage.tables {
 				table = catalog.storage.tables[table_name_id]
 
@@ -134,14 +135,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				}
 
 				if !covered_by_pk {
-					if where := body.table_expression.where_clause {
-						last_operation := plan.operations[plan.operations.len - 1]
-						tables := {
-							table.name.id(): table
-						}
-						plan.operations << new_where_operation(where, params, conn,
-							last_operation.columns(), tables)
-					}
+					add_where_plan(mut &plan, body, params, conn, table)
 				}
 			} else {
 				return sqlstate_42p01('table', table_name.str())
@@ -177,6 +171,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			}
 
 			plan.operations << TableOperation{table_name, true, table, params, conn, plan.subplans}
+			add_where_plan(mut &plan, body, params, conn, table)
 		}
 	}
 
@@ -203,6 +198,19 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 	}
 
 	return plan, table
+}
+
+// add_where_plan filters the rows of the last operation with the WHERE clause,
+// if there is one.
+fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Value, conn &Connection, table Table) {
+	if where := body.table_expression.where_clause {
+		last_operation := plan.operations[plan.operations.len - 1]
+		tables := {
+			table.name.id(): table
+		}
+		plan.operations << new_where_operation(where, params, conn, last_operation.columns(),
+			tables)
+	}
 }
 
 fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []DerivedColumn, params map[string]Value, mut conn Connection, table Table, tables map[string]Table) ! {

@@ -354,7 +354,7 @@ fn new_row_from_bytes(t Table, data []u8, tid u64) Row {
 // write_key_integer writes an integer in a PRIMARY KEY as size bytes, so that
 // the keys sort in the same order as the values: big-endian with the sign bit
 // flipped. See "Primary Key" in the file format docs.
-fn write_key_integer(mut buf BytesReaderWriter, value i64, size int) {
+fn write_key_integer(mut buf Bytes, value i64, size int) {
 	flipped := u64(value) ^ (u64(1) << (size * 8 - 1))
 	for i := size - 1; i >= 0; i-- {
 		buf.write_u8(u8(flipped >> (i * 8)))

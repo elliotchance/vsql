@@ -129,3 +129,7 @@ SELECT CAST(x AS BIGINT) FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- error 22003: numeric value out of range
+
+/* types */
+VALUES -CAST(1.5 AS REAL);
+-- COL1: -1.5e0 (REAL)

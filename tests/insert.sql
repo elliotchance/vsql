@@ -165,3 +165,10 @@ SELECT * FROM foo;
 -- msg: INSERT 2
 -- A: 2
 -- A: 3
+
+CREATE TABLE t1 (x INT);
+INSERT INTO t1 (x) VALUES NULL;
+SELECT * FROM t1;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- X: NULL

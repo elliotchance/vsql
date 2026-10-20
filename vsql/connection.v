@@ -283,7 +283,7 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 		conn.options.mutex.unlock()
 		return err
 	}
-	if !conn.storage.header.is_writable() {
+	if !conn.storage.header.is_writable() || fault_reached('write_version') {
 		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.unlock()

@@ -136,6 +136,8 @@ fn (mut p FilePager) fetch_page(page_number int) !Page {
 		return new_page_from_bytes(data)
 	}
 
+	fault_point('read_page')!
+
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
 	p.file.seek(int(header_size) + (p.page_size * page_number), .start) or {

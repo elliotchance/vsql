@@ -16,12 +16,14 @@ fn C.flock(int, int) int
 struct DataFileLock {}
 
 fn flock_lock_exclusive(mut l DataFileLock, file os.File, path string) ! {
+	fault_point('lock')!
 	if C.flock(file.fd, C.LOCK_EX) != 0 {
 		return error('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
 	}
 }
 
 fn flock_lock_shared(mut l DataFileLock, file os.File, path string) ! {
+	fault_point('lock_shared')!
 	if C.flock(file.fd, C.LOCK_SH) != 0 {
 		return error('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
 	}

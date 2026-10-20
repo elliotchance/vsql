@@ -15,10 +15,12 @@ mut:
 }
 
 fn flock_lock_exclusive(mut l DataFileLock, file os.File, path string) ! {
+	fault_point('lock')!
 	l.lock = lock_data_file(path, .exclusive)!
 }
 
 fn flock_lock_shared(mut l DataFileLock, file os.File, path string) ! {
+	fault_point('lock_shared')!
 	l.lock = lock_data_file(path, .shared)!
 }
 

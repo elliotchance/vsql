@@ -61,6 +61,8 @@ fn get_tests() ![]SQLTest {
 					in_setup = true
 				} else if contents.starts_with('connection ') {
 					stmts << replace_unicode(contents)
+				} else if contents.starts_with('fault ') || contents.starts_with('disconnect ') {
+					stmts << replace_unicode(contents)
 				} else if contents.starts_with('create_catalog ') {
 					stmts << replace_unicode(contents)
 				} else if contents.starts_with('types') {
@@ -170,10 +172,12 @@ fn test_all() ! {
 	for test in get_tests()! {
 		// Every test runs in memory and on disk, and only passes if it passes on
 		// both. A test that needs more than one connection only runs on disk,
-		// because connections can't share a database in memory. MEMORY=0 or
-		// FILE=0 turns one of them off.
+		// because connections can't share a database in memory. So does a test
+		// with a fault, because faults are in reading and writing the file.
+		// MEMORY=0 or FILE=0 turns one of them off.
 		mut on_disk := []bool{}
-		if run_in_memory && !test.stmts.any(it.starts_with('connection ')) {
+		if run_in_memory
+			&& !test.stmts.any(it.starts_with('connection ') || it.starts_with('fault ')) {
 			on_disk << false
 		}
 		if run_on_disk {
@@ -292,7 +296,30 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, on_disk bool) !S
 	}
 
 	mut actual := ''
+	defer {
+		disarm_faults()
+	}
 	for stmt in test.stmts {
+		// "fault <name>" fails the next time it's reached, "fault <name> <n>"
+		// fails the nth time.
+		if stmt.starts_with('fault ') {
+			parts := stmt.split(' ')
+			arm_fault(parts[1], if parts.len > 2 { parts[2].int() } else { 1 })!
+			continue
+		}
+
+		// "disconnect <name>" closes a connection without rolling back its
+		// transaction, like a process that stopped.
+		if stmt.starts_with('disconnect ') {
+			connection_name := stmt[11..]
+			mut conn := connections[connection_name] or {
+				panic('unknown connection: ${connection_name}')
+			}
+			conn.close()
+			connections.delete(connection_name)
+			continue
+		}
+
 		if stmt.starts_with('create_catalog ') {
 			catalog_name := stmt[15..]
 			db.add_catalog(catalog_name, ':memory:', options)!

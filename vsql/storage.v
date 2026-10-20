@@ -143,6 +143,7 @@ fn new_storage(btree Btree) Storage {
 // open_file must be called before the file is locked, since the lock is placed
 // on the file that is opened.
 fn (mut f Storage) open_file(path string) ! {
+	fault_point('open')!
 	// The "b" is needed on Windows, otherwise the file is opened in text mode.
 	f.file = os.open_file(path, 'rb+') or { return error('unable to open ${path}: ${err}') }
 }
@@ -150,6 +151,7 @@ fn (mut f Storage) open_file(path string) ! {
 // open must be called after open_file and the file being locked. exclusive
 // must only be true if the file is locked exclusively.
 fn (mut f Storage) open(path string, catalog_name string, exclusive bool) ! {
+	fault_point('read_header')!
 	mut header := read_header(mut f.file)!
 	f.read_only = !exclusive
 

@@ -19,7 +19,7 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, params map[string]Val
 		conn.release_write_connection()
 	}
 
-	mut catalog := conn.catalog()
+	mut catalog := conn.catalog_for(conn.resolve_catalog_identifier(stmt.schema_name)!)
 	schema_name := stmt.schema_name.schema_name
 
 	if schema_name !in catalog.storage.schemas {

@@ -44,10 +44,10 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		conn:   conn
 		params: params
 	}
-	mut catalog := conn.catalog()
 	mut plan := create_plan(stmt, params, mut conn)!
 	mut rows := plan.execute([]Row{})!
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
+	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.tables[table_name.storage_id()]
 
 	for mut row in rows {

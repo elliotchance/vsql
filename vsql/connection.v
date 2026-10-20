@@ -166,12 +166,19 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 		catalog.storage.session = session_lock(session_path(path))!
 	}
 
+	in_transaction := conn.in_transaction()
 	conn.catalogs[catalog_name] = catalog
 
 	if path == ':memory:' {
 		conn.query("SET CATALOG '${catalog_name}'")!
 		conn.query('CREATE SCHEMA public')!
 		conn.query("SET CATALOG '${conn.current_catalog}'")!
+	}
+
+	// A catalog added during a transaction joins it.
+	if in_transaction { // coverage:ignore (add_catalog() is only called during a transaction from V, see catalog_transaction_test.v)
+		catalog.start_transaction()!
+		catalog.finish_write(true)!
 	}
 }
 
@@ -402,12 +409,24 @@ pub fn (mut conn Connection) query(sql_stmt string) !Result {
 	return prepared.query(map[string]Value{})
 }
 
+// in_transaction is true while START TRANSACTION is active. Every catalog is in
+// the same SQL-transaction.
+fn (conn Connection) in_transaction() bool {
+	for _, catalog in conn.catalogs {
+		if catalog.storage.transaction_state == .active {
+			return true
+		}
+	}
+
+	return false
+}
+
 // rollback_after_error rolls back the current transaction (if any) after a
 // statement raised an exception condition in class 40 (transaction rollback),
 // such as a serialization failure. Any other exception only cancels the
 // statement that raised it, see PreparedStmt.query.
 fn (mut conn Connection) rollback_after_error() {
-	if conn.catalog().storage.transaction_state != .active {
+	if !conn.in_transaction() {
 		return
 	}
 
@@ -422,6 +441,14 @@ fn (mut conn Connection) register_func(func Func) ! {
 pub fn (mut conn Connection) catalog() &CatalogConnection {
 	return conn.catalogs[conn.current_catalog] or {
 		panic('unknown catalog: ${conn.current_catalog}')
+	}
+}
+
+// catalog_for returns the catalog of a fully qualified identifier, such as one
+// from resolve_schema_identifier(), which has already checked that it exists.
+fn (mut conn Connection) catalog_for(ident Identifier) &CatalogConnection {
+	return conn.catalogs[ident.catalog_name] or { // coverage:ignore (the catalog is checked when the identifier is resolved)
+		panic('unknown catalog: ${ident.catalog_name}')
 	}
 }
 
@@ -551,7 +578,7 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 		}
 		conn.release_read_connection()
 
-		mut catalog := conn.catalog()
+		mut catalog := conn.catalog_for(table_name)
 		catalog.virtual_tables[table_name.storage_id()] = VirtualTable{
 			create_table_sql:  create_table
 			create_table_stmt: stmt
@@ -652,7 +679,7 @@ fn (conn Connection) resolve_catalog_identifier(identifier Identifier) !Identifi
 fn (mut conn Connection) resolve_schema_identifier(identifier Identifier) !Identifier {
 	ident := conn.resolve_catalog_identifier(identifier)!
 
-	if ident.schema_name !in conn.catalog().storage.schemas {
+	if ident.schema_name !in conn.catalog_for(ident).storage.schemas {
 		return sqlstate_3f000(ident.schema_name) // schema does not exist
 	}
 

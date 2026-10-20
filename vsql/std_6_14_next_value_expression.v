@@ -14,8 +14,8 @@ fn (e NextValueExpression) pstr(params map[string]Value) string {
 }
 
 fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
-	mut catalog := c.conn.catalog()
-	name := c.conn.resolve_identifier(e.name)
+	name := c.conn.resolve_catalog_identifier(e.name)!
+	mut catalog := c.conn.catalog_for(name)
 
 	return CompileResult{
 		run:          fn [name, mut catalog] (mut conn Connection, data Row, params map[string]Value) !Value {

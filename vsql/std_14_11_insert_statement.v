@@ -28,8 +28,8 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 		conn.release_write_connection()
 	}
 
-	mut catalog := conn.catalog()
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
+	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.tables[table_name.storage_id()]
 
 	// Each element of the VALUES is a row. All of the rows are checked before

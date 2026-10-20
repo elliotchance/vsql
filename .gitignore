@@ -22,3 +22,6 @@ standard_docs/
 
 # Test binaries left behind by V3, such as vsql/sql_test.
 vsql/*_test
+
+# Created by make sql-test.
+coverage/

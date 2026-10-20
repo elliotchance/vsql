@@ -546,7 +546,8 @@ LOWER
 
    LOWER(CHARACTER VARYING) CHARACTER VARYING
 
-Returns the input string converted to lower-case.
+Returns the input string converted to lower-case. The result has the same type
+as the input, such as ``CHARACTER(5)`` for ``LOWER('Hello')``.
 
 .. code-block:: sql
 
@@ -677,7 +678,8 @@ UPPER
 
    UPPER(CHARACTER VARYING) CHARACTER VARYING
 
-Returns the input string converted to upper-case.
+Returns the input string converted to upper-case. The result has the same type
+as the input, such as ``CHARACTER(5)`` for ``UPPER('Hello')``.
 
 .. code-block:: sql
 

@@ -75,6 +75,15 @@ pub fn new_null_value(typ SQLType) Value {
 	}
 }
 
+// with_type returns the value with a different declared type, such as the type
+// of the expression that produced it. The value itself isn't converted.
+fn (v Value) with_type(typ Type) Value {
+	return Value{
+		...v
+		typ: typ
+	}
+}
+
 // new_boolean_value creates a ``TRUE`` or ``FALSE`` value. For ``UNKNOWN`` (the
 // ``BOOLEAN`` equivilent of NULL) you will need to use ``new_unknown_value``.
 pub fn new_boolean_value(b bool) Value {

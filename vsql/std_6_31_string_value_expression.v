@@ -52,9 +52,10 @@ fn (e Concatenation) pstr(params map[string]Value) string {
 fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 	compiled_left := e.left.compile(mut c)!
 	compiled_right := e.right.compile(mut c)!
+	typ := concatenation_type(compiled_left.typ, compiled_right.typ)
 
 	return CompileResult{
-		run:          fn [compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [compiled_left, compiled_right, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 			mut left := compiled_left.run(mut conn, data, params)!
 			mut right := compiled_right.run(mut conn, data, params)!
 
@@ -63,15 +64,34 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 				// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, General
 				// Rules, 1
 				if left.is_null || right.is_null {
-					return new_null_value(.is_varchar)
+					return new_null_value(.is_varchar).with_type(typ)
 				}
 
-				return new_varchar_value(left.string_value() + right.string_value())
+				return new_varchar_value(left.string_value() + right.string_value()).with_type(typ)
 			}
 
 			return sqlstate_42883('operator does not exist: ${left.typ.typ} || ${right.typ.typ}')
 		}
-		typ:          new_type('CHARACTER VARYING', 0, 0)
+		typ:          typ
 		contains_agg: compiled_left.contains_agg || compiled_right.contains_agg
 	}
+}
+
+// concatenation_type is the declared type of a concatenation, which has the
+// combined length of both operands. It's only fixed-length (CHARACTER) when
+// both operands are.
+//
+// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, Syntax Rules, 3
+fn concatenation_type(left Type, right Type) Type {
+	if !left.typ.is_string() || !right.typ.is_string() {
+		return new_type('CHARACTER VARYING', 0, 0)
+	}
+
+	// A size of 0 means the length is unknown, so the result is too.
+	size := if left.size > 0 && right.size > 0 { left.size + right.size } else { 0 }
+	if left.typ == .is_character && right.typ == .is_character && size > 0 {
+		return new_type('CHARACTER', size, 0)
+	}
+
+	return new_type('CHARACTER VARYING', size, 0)
 }

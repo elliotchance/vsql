@@ -1,4 +1,4 @@
-// bench.v contains functionality to benchmark the performance of vsql. This is
+// benchmark.v contains functionality to benchmark the performance of vsql. This is
 // useful as a local tool and provides insights into changes for performance
 // between vsql versions. The test itself is inspired/copied from pgbench.
 //
@@ -8,21 +8,22 @@
 //
 // See https://github.com/elliotchance/vsql/blob/main/docs/benchmark.rst
 
-module vsql
+module main
 
 import rand
 import time
+import vsql
 
-pub struct Benchmark {
-pub mut:
-	conn         &Connection
+struct Benchmark {
+mut:
+	conn         &vsql.Connection
 	account_rows int
 	teller_rows  int
 	branch_rows  int
 	run_for      time.Duration
 }
 
-pub fn new_benchmark(conn &Connection) Benchmark {
+fn new_benchmark(conn &vsql.Connection) Benchmark {
 	return Benchmark{
 		account_rows: 100000
 		teller_rows:  10
@@ -32,10 +33,10 @@ pub fn new_benchmark(conn &Connection) Benchmark {
 	}
 }
 
-pub fn (mut b Benchmark) start() ! {
+fn (mut b Benchmark) start() ! {
 	b.conn.query('CREATE TABLE accounts ( aid INT, abalance INT, PRIMARY KEY ( aid ) ) ')!
 
-	mut t := start_timer()
+	mut t := vsql.start_timer()
 	for aid in 1 .. b.account_rows + 1 {
 		b.conn.query('INSERT INTO accounts (aid, abalance) VALUES (${aid}, 0)')!
 	}
@@ -55,12 +56,12 @@ pub fn (mut b Benchmark) start() ! {
 	//  multiple columns.
 	b.conn.query('CREATE TABLE history ( tid INT, bid INT, aid INT, delta INT, mtime VARCHAR(30) ) ')!
 
-	t = start_timer()
+	t = vsql.start_timer()
 
 	b.conn.query('SELECT abalance FROM accounts WHERE abalance = 0')!
 	b.print_stat('SELECT', b.account_rows, 'rows', t.elapsed())
 
-	t = start_timer()
+	t = vsql.start_timer()
 	mut txn_count := 0
 	for {
 		b.run_transaction()!

@@ -1,4 +1,4 @@
-module vsql
+module vorm
 
 import time
 
@@ -24,7 +24,7 @@ struct Order {
 	quantity ?int
 }
 
-fn new_db() !&Connection {
+fn new_db() !DB {
 	mut db := open(':memory:')!
 
 	sql db {
@@ -326,7 +326,7 @@ fn test_attributes() {
 		create table Attributes
 	}!
 
-	mut catalog := db.catalog()
+	mut catalog := db.conn.catalog()
 	mut columns := map[string]string{}
 	for t in catalog.schema_tables('PUBLIC')! {
 		assert t.primary_key == ['id']
@@ -447,4 +447,29 @@ fn test_where_operators() {
 		select from Price where (price < '2' || name like 'Ice%') && id != 1
 	}!
 	assert grouped.map(it.id) == [3]
+}
+
+// Converted is read from a table that wasn't created by the ORM, so the types of
+// its columns are different from the types of the fields.
+@[table: 'converted']
+struct Converted {
+	from_double  i64
+	from_integer u64
+	as_float     f64
+	from_numeric f64
+}
+
+fn test_converted_types() {
+	mut db := open(':memory:')!
+	db.conn.query('CREATE TABLE "converted" ("from_double" DOUBLE PRECISION, "from_integer" INTEGER, "as_float" INTEGER, "from_numeric" NUMERIC(10, 2))')!
+	db.conn.query('INSERT INTO "converted" ("from_double", "from_integer", "as_float", "from_numeric") VALUES (12.75e0, 7, 3, 2.5)')!
+
+	got := sql db {
+		select from Converted
+	}!
+	assert got.len == 1
+	assert got[0].from_double == 12
+	assert got[0].from_integer == 7
+	assert got[0].as_float == 3.0
+	assert got[0].from_numeric == 2.5
 }

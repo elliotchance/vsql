@@ -3,14 +3,14 @@ V ORM
 
 .. contents::
 
-A ``vsql.Connection`` can be used with V's built-in ORM (``sql db { ... }``).
+The ``vorm`` module is a driver for V's built-in ORM (``sql db { ... }``).
 
 Example
 -------
 
 .. code-block:: v
 
-   import elliotchance.vsql.vsql
+   import elliotchance.vsql.vorm
 
    struct Product {
      id    int @[primary; sql: serial]
@@ -19,7 +19,7 @@ Example
    }
 
    fn example() ! {
-     mut db := vsql.open('test.vsql')!
+     mut db := vorm.open('test.vsql')!
 
      sql db {
        create table Product
@@ -39,8 +39,14 @@ Example
      println(cheap_products)
    }
 
-Since it's the same connection, ORM statements can be mixed with
-``db.query()``.
+``db.conn`` is the ``vsql.Connection``, so ORM statements can be mixed with SQL
+in the same connection (and transaction) with ``db.conn.query()``. An existing
+connection can also be used with ``vorm.new()``:
+
+.. code-block:: v
+
+   mut conn := vsql.open('test.vsql')!
+   mut db := vorm.new(conn)
 
 See also ``examples/orm.v``.
 

@@ -12,17 +12,28 @@ and optional functionality you might need.
 Test Suites
 -----------
 
+``make test`` runs all of the test suites, which can also be run on their own:
+
+- ``make sql-test``: the SQL tests, see `SQL Tests`_.
+- ``make vorm-test``: the tests for the ORM driver.
+- ``make unit-test``: the other V tests in ``vsql/``.
+- ``make btree-test``: the B-Tree stress tests.
+- ``make examples-test``: runs each example.
+- ``make cli-test``: the CLI tests.
+
+CI runs ``make test``.
+
 B-Tree
 ^^^^^^
 
 The ``btree_test.v`` stress tests the B-Tree (on-disk and in-memory)
 implementation by creating a variety of sized trees/files with randomly ordered
-keys for insertion and deletion. All keys are inserted then all keys are
-removed. This test suite more specifically verifies:
+keys. This test suite more specifically verifies:
 
 1. Trees of different sizes (1, 10, 100 and 1000) keys can be created by inserting random order keys (one at a time).
 2. All keys are correctly iterated and in order.
-3. Removing all keys (one at a time) will correctly shrink the file as pages become empty.
+3. Keys can be expired by a transaction, which is how rows are deleted and
+   updated.
 
 The B-Tree tests are run as part of ``make test``. However, you can run this
 suite alone with:
@@ -129,7 +140,7 @@ Run all examples with:
 
 .. code-block:: sh
 
-   make examples
+   make examples-test
 
 Or, you can run a single example with (notice there is no ``.v`` extension on
 the path):
@@ -143,6 +154,24 @@ Connection
 
 The connection test suite is responsible for testing that various operations
 from concurrent connections do not cause race conditions and other anomalies.
+
+ORM
+^^^
+
+``vorm/vorm_test.v`` tests the ORM driver (see :doc:`v-orm`) with V's
+``sql db { ... }`` syntax. It's run as part of ``make test``, or on its own
+with:
+
+.. code-block:: sh
+
+   make vorm-test
+
+Like ``make sql-test``, it also prints how many lines of ``vorm/`` are covered
+(see Coverage below). ``make vorm-test-uncovered`` prints each line that wasn't
+covered.
+
+The tests must cover every line of ``vorm/``, so ``make vorm-test`` fails if
+they don't (unless ``$COVERAGE`` is ``0``).
 
 SQL
 ^^^
@@ -503,8 +532,9 @@ viewer (such as the "Coverage Gutters" extension for VS Code). When only some of
 the tests are run (such as with ``$TEST``, ``$MEMORY`` or ``$FILE``) the
 coverage is only for those tests.
 
-``make test`` runs the SQL tests with ``make sql-test``, so CI also shows the
-coverage (in the log and the summary of the run).
+``make test`` runs the SQL tests with ``make sql-test`` and the ORM tests with
+``make vorm-test``, so CI also shows the coverage (in the log and the summary of
+the run).
 
 Coverage makes the tests a few seconds slower. Set ``$COVERAGE`` to ``0`` to
 turn it off:
@@ -512,6 +542,10 @@ turn it off:
 .. code-block:: sh
 
    COVERAGE=0 make sql-test
+   COVERAGE=0 make vorm-test
+
+``make vorm-test`` doesn't require 100% coverage of ``vorm/`` when it's turned
+off.
 
 Using Different V Versions
 --------------------------

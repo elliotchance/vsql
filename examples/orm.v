@@ -1,5 +1,5 @@
 import os
-import vsql
+import vorm
 
 struct Product {
 	id    int @[primary; sql: serial]
@@ -14,7 +14,7 @@ fn main() {
 }
 
 fn example() ! {
-	mut db := vsql.open('test.vsql')!
+	mut db := vorm.open('test.vsql')!
 
 	sql db {
 		create table Product

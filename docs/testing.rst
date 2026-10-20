@@ -179,6 +179,13 @@ tests separated by an empty line:
 This describes two tests where each test is given an a brand new database (ie.
 no tables are carried between tests).
 
+Each test is run twice, first with an in-memory database and then with a
+database file, and only passes if both pass. A failure shows which one failed,
+such as ``(on disk)``. Both use 256 byte pages so that even small tests split
+pages and store large values across several pages. Tests that use the
+``connection`` directive only run on disk, and catalogs from ``create_catalog``
+are always in memory.
+
 All SQL statements are executed and each of the results collected and compared
 to the comment immediately below.
 
@@ -351,7 +358,7 @@ location of each failed test:
 .. code-block:: text
 
    SQL tests: 1549 passed, 1 failed, 1550 total
-     FAILED tests/arithmetic.sql:3
+     FAILED tests/arithmetic.sql:3 (in memory, on disk)
 
 The "Summary for running V tests" line printed by V does not include failed
 tests, so always check the SQL tests summary (or the exit code).
@@ -365,6 +372,23 @@ such as:
 .. code-block:: sh
 
    VERBOSE=1 make sql-test
+
+Running In Memory or On Disk Only
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Each test runs in memory and on disk. To only run one of them, set ``$MEMORY``
+or ``$FILE`` to ``0``:
+
+.. code-block:: sh
+
+   # only run tests on disk
+   MEMORY=0 make sql-test
+
+   # only run tests in memory
+   FILE=0 make sql-test
+
+Tests that use the ``connection`` directive only run on disk, so they are
+skipped with ``FILE=0``. These can be combined with ``$TEST`` below.
 
 Running Specific Test Files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -389,10 +413,10 @@ For example the output a failed test output might be:
 .. code-block:: text
 
        Left value:
-         at tests/subquery.sql:32:
+         at tests/subquery.sql:32 (in memory):
    X: 123 Y: hello
        Right value:
-         at tests/subquery.sql:32:
+         at tests/subquery.sql:32 (in memory):
    error 42601: syntax error: unknown column: Y
 
 Running the specific test again can be done with:

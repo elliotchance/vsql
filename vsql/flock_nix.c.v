@@ -72,6 +72,11 @@ fn (mut l SessionLock) shared() ! {
 	}
 }
 
+// close releases the lock by closing the file.
+fn (mut l SessionLock) close() {
+	l.file.close()
+}
+
 fn C.fsync(int) int
 
 // fsync waits for the file to be written to the disk. It must be flushed first.

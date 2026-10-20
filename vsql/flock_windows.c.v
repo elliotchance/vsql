@@ -89,6 +89,11 @@ fn (mut l SessionLock) shared() ! {
 	l.lock.acquire() or { return error('cannot acquire session lock: ${err}') }
 }
 
+// close releases the lock.
+fn (mut l SessionLock) close() {
+	l.lock.release()
+}
+
 #include <io.h>
 
 fn C._commit(int) int

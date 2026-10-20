@@ -144,6 +144,17 @@ fn open_connection(path string, options ConnectionOptions) !&Connection {
 	return conn
 }
 
+// close releases the session lock of each file catalog. There is no public way
+// to close a connection yet, but the SQL tests open thousands of them and would
+// otherwise run out of file descriptors.
+fn (mut conn Connection) close() {
+	for _, mut catalog in conn.catalogs {
+		if catalog.path != ':memory:' {
+			catalog.storage.session.close()
+		}
+	}
+}
+
 pub fn (mut conn Connection) add_catalog(catalog_name string, path string, options ConnectionOptions) ! {
 	if catalog_name in conn.catalogs {
 		return error('catalog already exists: ${catalog_name}')

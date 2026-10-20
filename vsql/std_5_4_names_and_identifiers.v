@@ -310,6 +310,21 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
+	// An unqualified column name must only be in one of the tables.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 8c
+	if e.entity_name == '' {
+		mut tables_with_column := map[string]bool{}
+		for _, table in c.tables {
+			if _ := table.column(e.sub_entity_name) {
+				tables_with_column[table.name.id()] = true
+			}
+		}
+		if tables_with_column.len > 1 {
+			return sqlstate_42702(e.sub_entity_name)
+		}
+	}
+
 	// 3. An bare field in a subquery tables.
 	ident = c.conn.resolve_identifier(e)
 	for _, table in c.tables {

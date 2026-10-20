@@ -345,8 +345,17 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 		correlation)!
 
 	if stmt.order.len > 0 {
+		// The expressions are only evaluated when rows are compared, so they're
+		// compiled here to catch errors (such as an ambiguous column) even when
+		// there are no rows.
+		mut c := Compiler{
+			conn:   conn
+			params: params
+			tables: tables
+		}
 		mut order := []SortSpecification{}
 		for spec in stmt.order {
+			spec.expr.compile(mut c)!
 			order << SortSpecification{
 				expr:   spec.expr
 				is_asc: spec.is_asc

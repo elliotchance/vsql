@@ -311,6 +311,21 @@ fn sqlstate_42601(message string) IError {
 	}
 }
 
+// ambiguous column
+struct SQLState42702 {
+	SQLState
+pub:
+	column_name string
+}
+
+fn sqlstate_42702(column_name string) IError {
+	return SQLState42702{
+		code:        sqlstate_to_int('42702')
+		msg:         'ambiguous column: ${column_name}'
+		column_name: column_name
+	}
+}
+
 // column does not exist
 struct SQLState42703 {
 	SQLState

@@ -14,3 +14,9 @@ SET SCHEMA 'foo';
 VALUES CURRENT_SCHEMA;
 -- error 3F000: invalid schema name: foo
 -- COL1: PUBLIC
+
+/* set foo 'PUBLIC' */
+SET SCHEMA :foo;
+VALUES CURRENT_SCHEMA;
+-- msg: SET SCHEMA 1
+-- COL1: PUBLIC

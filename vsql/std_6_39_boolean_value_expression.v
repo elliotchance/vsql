@@ -47,7 +47,7 @@ struct BooleanValueExpression {
 
 fn (e BooleanValueExpression) pstr(params map[string]Value) string {
 	if expr := e.expr {
-		return '${expr.pstr(params)} AND ${e.term.pstr(params)}'
+		return '${expr.pstr(params)} OR ${e.term.pstr(params)}'
 	}
 
 	return e.term.pstr(params)

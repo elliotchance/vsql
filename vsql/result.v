@@ -19,6 +19,10 @@ pub:
 	elapsed_parse time.Duration
 	// The time is took to execute the query.
 	elapsed_exec time.Duration
+	// msg is the status of a statement that doesn't return rows, such as
+	// "CREATE TABLE 1" or "INSERT 3". It is empty for a query, and a statement
+	// with a msg has no columns or rows.
+	msg string
 mut:
 	idx int
 }
@@ -33,15 +37,11 @@ pub fn new_result(columns Columns, rows []Row, elapsed_parse time.Duration, elap
 }
 
 fn new_result_msg(msg string, elapsed_parse time.Duration, elapsed_exec time.Duration) Result {
-	return new_result([
-		Column{Identifier{ sub_entity_name: 'msg' }, new_type('VARCHAR', msg.len_utf8(), 0), false},
-	], [
-		Row{
-			data: {
-				'msg': new_varchar_value(msg)
-			}
-		},
-	], elapsed_parse, elapsed_exec)
+	return Result{
+		msg:           msg
+		elapsed_parse: elapsed_parse
+		elapsed_exec:  elapsed_exec
+	}
 }
 
 // next provides the iteration for V, use it like:

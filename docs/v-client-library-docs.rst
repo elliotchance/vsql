@@ -563,6 +563,10 @@ struct Result
    	elapsed_parse time.Duration
    	// The time is took to execute the query.
    	elapsed_exec time.Duration
+   	// msg is the status of a statement that doesn't return rows, such as
+   	// "CREATE TABLE 1" or "INSERT 3". It is empty for a query, and a statement
+   	// with a msg has no columns or rows.
+   	msg string
    mut:
    	idx int
    }

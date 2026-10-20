@@ -58,6 +58,14 @@ fn cli_command(cmd cli.Command) ! {
 					print_error('Warning', warning)
 				}
 
+				if result.msg != '' {
+					println('${result.msg} (${time.ticks() - start} ms)')
+					if i > 0 {
+						println('')
+					}
+					continue
+				}
+
 				mut total_rows := 0
 				for row in result {
 					for column in result.columns {

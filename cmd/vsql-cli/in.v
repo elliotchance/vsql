@@ -54,14 +54,8 @@ fn in_command(cmd cli.Command) ! {
 				vsql.Result{}
 			}
 
-			if cmd.flags.get_bool('verbose') or { false } {
-				for row in result {
-					msg := row.get_string('msg') or { '' }
-					if msg != '' {
-						println(msg)
-						break
-					}
-				}
+			if result.msg != '' && (cmd.flags.get_bool('verbose') or { false }) {
+				println(result.msg)
 			}
 
 			stmt_count++

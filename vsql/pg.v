@@ -27,7 +27,9 @@ fn (mut c PGConn) accept() ! {
 }
 
 fn (mut c PGConn) write_result(result Result) ! {
-	if result.rows.len > 0 {
+	// A statement (such as CREATE TABLE) only sends its command tag. A query
+	// always describes its columns, even when there are no rows.
+	if result.msg == '' {
 		c.write_row_description(result)!
 		// Iterating the Result itself (rather than its rows) generates invalid C
 		// with the V3 compiler.
@@ -36,16 +38,19 @@ fn (mut c PGConn) write_result(result Result) ! {
 		}
 	}
 
-	c.write_command_complete(result)!
+	c.write_command_complete(pg_command_tag(result))!
 }
 
 fn (mut c PGConn) write_error_result(err IError) ! {
 	c.write_byte(`E`)!
 
+	// Errors that aren't a SQLState (code 0) are reported as internal_error.
+	sqlstate := if err.code() == 0 { 'XX000' } else { sqlstate_from_int(err.code()) }
+
 	mut msg_len := 4 // self
 	msg_len += 1 + 'ERROR'.len + 1 // NULL // S
 	msg_len += 1 + err.msg().len + 1 // NULL // M
-	msg_len += 1 + 5 + 1 // NULL // C
+	msg_len += 1 + sqlstate.len + 1 // NULL // C
 	msg_len += 1 // NULL
 	c.write_int32(msg_len)!
 
@@ -55,22 +60,29 @@ fn (mut c PGConn) write_error_result(err IError) ! {
 	c.write_byte(`M`)!
 	c.write_string(err.msg())!
 
-	// TODO(elliotchance): Use the correct SQL state.
 	c.write_byte(`C`)!
-	c.write_string('42601')!
+	c.write_string(sqlstate)!
 
 	c.write_byte(0)!
 }
 
-fn (mut c PGConn) write_command_complete(result Result) ! {
-	c.write_byte(`C`)!
-
-	// TODO(elliotchance): This is a hack that will probably cause issues.
-	mut tag := 'SELECT ${result.rows.len}'
-	if result.columns.len == 1 && result.columns[0].name.sub_entity_name == 'msg'
-		&& result.rows.len == 1 {
-		tag = result.rows[0].get_string('msg') or { '${err}' }
+// pg_command_tag is the tag sent in CommandComplete. It's the same as the
+// Result msg, except an INSERT tag also has an OID (always 0), like
+// "INSERT 0 3". A query is "SELECT" and the number of rows.
+fn pg_command_tag(result Result) string {
+	if result.msg == '' {
+		return 'SELECT ${result.rows.len}'
 	}
+
+	if result.msg.starts_with('INSERT ') {
+		return 'INSERT 0 ${result.msg.all_after('INSERT ')}'
+	}
+
+	return result.msg
+}
+
+fn (mut c PGConn) write_command_complete(tag string) ! {
+	c.write_byte(`C`)!
 
 	mut msg_len := 4 // self
 	msg_len += tag.len + 1 // NULL

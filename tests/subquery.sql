@@ -115,3 +115,25 @@ SELECT COUNT(*) FROM (SELECT x FROM t) AS s WHERE x > 1;
 SELECT * FROM (VALUES 1, 2, 3) AS v (n) WHERE n >= 2;
 -- N: 2
 -- N: 3
+
+CREATE TABLE t (a INT, b INT);
+INSERT INTO t (a, b) VALUES (1, 2);
+SELECT * FROM (SELECT a, b FROM t) AS x (c, d);
+SELECT x.d, c FROM (SELECT * FROM t) AS x (c, d) WHERE d = 2;
+SELECT * FROM (SELECT a + 1, b FROM t) AS x (c, d);
+SELECT * FROM (SELECT a FROM t) AS x (c, d);
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- C: 1 D: 2
+-- D: 2 C: 1
+-- C: 2 D: 2
+-- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
+
+CREATE TABLE t (a INT, b INT);
+EXPLAIN SELECT * FROM (SELECT a, b FROM t) AS x (c, d);
+-- msg: CREATE TABLE 1
+-- EXPLAIN: X:
+-- EXPLAIN:   TABLE ":memory:".PUBLIC.T (A INTEGER, B INTEGER)
+-- EXPLAIN:   EXPR (A INTEGER, B INTEGER)
+-- EXPLAIN: TABLE X (C INTEGER, D INTEGER)
+-- EXPLAIN: EXPR (X.C INTEGER, X.D INTEGER)

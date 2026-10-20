@@ -202,10 +202,19 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 	mut rows := []Row{}
 
 	if o.table_is_subplan {
-		for row in o.subplans[o.table_name.id()].execute([]Row{})! {
+		mut subplan := o.subplans[o.table_name.id()]
+
+		// The columns may have been renamed by a derived column list, such as
+		// "(SELECT a FROM t) AS x (b)".
+		mut names := map[string]string{}
+		for i, column in subplan.columns() {
+			names[column.name.sub_entity_name] = o.table.columns[i].name.sub_entity_name
+		}
+
+		for row in subplan.execute([]Row{})! {
 			mut data := map[string]Value{}
 			for k, v in row.data {
-				data['${o.table_name}.${k}'] = v
+				data['${o.table_name}.${names[k] or { k }}'] = v
 			}
 
 			rows << new_row(data)

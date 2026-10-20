@@ -228,11 +228,21 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				from_clause.correlation)!
 			plan.subplans[table_name.id()] = subplan
 
+			// A derived column list renames the columns of the subquery.
+			correlation_columns := from_clause.correlation.columns
+			if correlation_columns.len > 0 && correlation_columns.len != subplan.columns().len {
+				return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
+			}
+
 			mut subplan_columns := []Column{}
-			for col in subplan.columns() {
+			for i, col in subplan.columns() {
 				subplan_columns << Column{Identifier{
 					entity_name:     table_name.id()
-					sub_entity_name: col.name.sub_entity_name
+					sub_entity_name: if correlation_columns.len > 0 {
+						correlation_columns[i].sub_entity_name
+					} else {
+						col.name.sub_entity_name
+					}
 				}, col.typ, col.not_null}
 			}
 

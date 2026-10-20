@@ -1420,7 +1420,7 @@ Optional Features
    * - ❌ **T434**
      - **GROUP BY DISINCT**
 
-   * - ⭕ **T441**
+   * - ✅ **T441**
      - **ABS and MOD functions**
 
    * - ✅ **T461**

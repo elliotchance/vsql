@@ -378,6 +378,9 @@ fn cast_datetime(conn Connection, v Value, t Type) !Value {
 // check_store_assignment returns an error if a value can't be assigned to a
 // column (ISO/IEC 9075-2:2016(E), 9.2, Syntax Rules). Unlike CAST, a character
 // string can't be assigned to a number, or a number to a character string.
+//
+// A datetime can only be assigned to the same kind of datetime (4.6.2): both
+// DATE, both TIME or both TIMESTAMP (with or without a time zone).
 fn check_store_assignment(v Value, t Type) ! {
 	if v.is_null {
 		return
@@ -385,6 +388,16 @@ fn check_store_assignment(v Value, t Type) ! {
 
 	if (v.typ.typ.is_string() && t.typ.is_number()) || (v.typ.typ.is_number() && t.typ.is_string()) {
 		return sqlstate_42846(v.typ, t)
+	}
+
+	if v.typ.typ.is_datetime() || t.typ.is_datetime() {
+		time_kinds := [SQLType.is_time_with_time_zone, .is_time_without_time_zone]
+		timestamp_kinds := [SQLType.is_timestamp_with_time_zone, .is_timestamp_without_time_zone]
+		if !((v.typ.typ == .is_date && t.typ == .is_date)
+			|| (v.typ.typ in time_kinds && t.typ in time_kinds)
+			|| (v.typ.typ in timestamp_kinds && t.typ in timestamp_kinds)) {
+			return sqlstate_42846(v.typ, t)
+		}
 	}
 }
 

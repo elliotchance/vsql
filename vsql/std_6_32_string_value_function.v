@@ -1,5 +1,7 @@
 module vsql
 
+import math
+
 // ISO/IEC 9075-2:2016(E), 6.32, <string value function>
 //
 // Specify a function yielding a value of type character string or binary
@@ -49,6 +51,7 @@ fn (e CharacterSubstringFunction) pstr(params map[string]Value) string {
 fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 	compiled_value := e.value.compile(mut c)!
 	compiled_from := if f := e.from {
+		check_substring_argument('start position', f, f.compile(mut c)!.typ)!
 		f.compile(mut c)!
 	} else {
 		CompileResult{
@@ -58,6 +61,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 		}
 	}
 	compiled_for := if f := e.@for {
+		check_substring_argument('string length', f, f.compile(mut c)!.typ)!
 		f.compile(mut c)!
 	} else {
 		CompileResult{
@@ -92,21 +96,69 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 
 			if e.using == 'CHARACTERS' {
 				characters := value.string_value().runes()
-				start, end := substring_range(characters.len, from_value.as_int(),
-					e.@for != none, for_value.as_int())!
+				start, end := substring_range(characters.len, substring_position('start position',
+					from_value)!, e.@for != none, substring_position('string length', for_value)!)!
 
 				return new_varchar_value(characters[start..end].string()).with_type(typ)
 			}
 
 			str := value.string_value()
-			start, end := substring_range(str.len, from_value.as_int(), e.@for != none,
-				for_value.as_int())!
+			start, end := substring_range(str.len, substring_position('start position',
+				from_value)!, e.@for != none, substring_position('string length', for_value)!)!
 
 			return new_varchar_value(str.substr(start, end)).with_type(typ)
 		}
 		typ:          typ
 		contains_agg: compiled_value.contains_agg
 	}
+}
+
+// check_substring_argument returns an error if the start position or string
+// length of a SUBSTRING isn't an exact numeric with scale 0 (6.32 Syntax Rule
+// 3). Like OFFSET and FETCH FIRST, a host parameter may be any number that's a
+// whole number (see substring_position).
+fn check_substring_argument(name string, e NumericValueExpression, typ Type) ! {
+	if typ.typ in [.is_smallint, .is_integer, .is_bigint]
+		|| (typ.typ in [.is_numeric, .is_decimal] && typ.scale == 0) {
+		return
+	}
+
+	if is_numeric_host_parameter(e) && typ.typ.is_number() {
+		return
+	}
+
+	return sqlstate_42601('SUBSTRING ${name} must be an exact numeric with scale 0, got ${typ}')
+}
+
+// is_numeric_host_parameter is true if the expression is only a host parameter,
+// such as ":pos".
+fn is_numeric_host_parameter(e NumericValueExpression) bool {
+	if e.n != none || e.term.term != none {
+		return false
+	}
+
+	f := e.term.factor
+	if f is ValueExpressionPrimary {
+		if f is NonparenthesizedValueExpressionPrimary {
+			if f is ValueSpecification {
+				if f is GeneralValueSpecification {
+					return f is HostParameterName
+				}
+			}
+		}
+	}
+
+	return false
+}
+
+// substring_position returns the start position or string length of a
+// SUBSTRING. A host parameter must be a whole number.
+fn substring_position(name string, v Value) !i64 {
+	if !v.typ.uses_int() && v.as_f64()! != math.trunc(v.as_f64()!) {
+		return sqlstate_42601('SUBSTRING ${name} must be a whole number, got ${v.str()}')
+	}
+
+	return v.as_int()
 }
 
 // substring_range returns the zero-based start (inclusive) and end (exclusive)

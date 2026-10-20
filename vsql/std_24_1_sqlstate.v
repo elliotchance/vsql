@@ -170,6 +170,30 @@ fn sqlstate_22012() IError {
 	}
 }
 
+// Invalid argument for natural logarithm.
+struct SQLState2201E {
+	SQLState
+}
+
+fn sqlstate_2201e() IError {
+	return SQLState2201E{
+		code: sqlstate_to_int('2201E')
+		msg:  'invalid argument for natural logarithm'
+	}
+}
+
+// Invalid argument for power function.
+struct SQLState2201F {
+	SQLState
+}
+
+fn sqlstate_2201f() IError {
+	return SQLState2201F{
+		code: sqlstate_to_int('2201F')
+		msg:  'invalid argument for power function'
+	}
+}
+
 // Invalid character value for cast.
 struct SQLState22018 {
 	SQLState

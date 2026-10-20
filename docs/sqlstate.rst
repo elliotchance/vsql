@@ -198,6 +198,29 @@ The pattern of a ``SIMILAR TO`` is not a valid regular expression.
   VALUES 'abc' SIMILAR TO '(a';
   -- error 2201B: invalid regular expression
 
+``2201E`` invalid argument for natural logarithm
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES LN(0e0);
+  -- error 2201E: invalid argument for natural logarithm
+
+``2201F`` invalid argument for power function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES POWER(0e0, -1e0);
+  -- error 2201F: invalid argument for power function
+
+  VALUES SQRT(-1e0);
+  -- error 2201F: invalid argument for power function
+
 ``2201W`` invalid row count in fetch first clause
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

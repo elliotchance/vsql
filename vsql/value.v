@@ -4,6 +4,7 @@
 
 module vsql
 
+import math
 import regex
 
 // Possible values for a BOOLEAN.
@@ -123,6 +124,25 @@ pub fn new_bigint_value(x i64) Value {
 			int_value: x
 		}
 	}
+}
+
+// approximate_value is a DOUBLE PRECISION or REAL from the result of a
+// calculation. Infinity isn't an SQL value, so a result that's too large for the
+// type raises 22003 (numeric value out of range).
+fn approximate_value(x f64, typ SQLType) !Value {
+	if typ == .is_real {
+		if math.is_inf(f32(x), 0) {
+			return sqlstate_22003()
+		}
+
+		return new_real_value(f32(x))
+	}
+
+	if math.is_inf(x, 0) {
+		return sqlstate_22003()
+	}
+
+	return new_double_precision_value(x)
 }
 
 // new_real_value creates a ``REAL`` value.

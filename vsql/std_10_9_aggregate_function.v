@@ -105,7 +105,7 @@ fn func_sum(all_values []Value) !Value {
 		sum += value.f64_value()
 	}
 
-	return new_double_precision_value(sum)
+	return approximate_value(sum, .is_double_precision)
 }
 
 // AVG(DOUBLE PRECISION) DOUBLE PRECISION
@@ -120,5 +120,5 @@ fn func_avg(all_values []Value) !Value {
 		sum += value.f64_value()
 	}
 
-	return new_double_precision_value(sum / values.len)
+	return approximate_value(sum / values.len, .is_double_precision)
 }

@@ -489,10 +489,10 @@ fn cast_numeric(mut conn Connection, v Value, t Type) !Value {
 			return new_bigint_value(numeric_value.str().i64())
 		}
 		.is_real {
-			return new_real_value(f32(v.as_f64()!))
+			return approximate_value(v.as_f64()!, .is_real)
 		}
 		.is_double_precision {
-			return new_double_precision_value(v.as_f64()!)
+			return approximate_value(v.as_f64()!, .is_double_precision)
 		}
 		.is_numeric, .is_decimal {
 			// There is a special case where we should pass through an already

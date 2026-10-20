@@ -14,8 +14,8 @@ fn C.strtod(&char, &&char) f64
 // as "1.5e-3") as a whole, rather than multiplying the mantissa by a power of
 // 10, so that it's the closest DOUBLE PRECISION to the exact value. strtod is
 // used because strconv.atof64 isn't always the closest in every version of V.
-fn approximate_numeric_literal_value(x string) Value {
-	return new_double_precision_value(C.strtod(&char(x.str), unsafe { nil }))
+fn approximate_numeric_literal_value(x string) !Value {
+	return approximate_value(C.strtod(&char(x.str), unsafe { nil }), .is_double_precision)
 }
 
 fn numeric_literal(x string) !Value {

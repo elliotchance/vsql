@@ -9,25 +9,6 @@ struct Correlation {
 	columns []Identifier
 }
 
-fn (c Correlation) str() string {
-	if c.name.sub_entity_name == '' {
-		return ''
-	}
-
-	mut s := ' AS ${c.name}'
-
-	if c.columns.len > 0 {
-		mut columns := []string{}
-		for col in c.columns {
-			columns << col.sub_entity_name
-		}
-
-		s += ' (${columns.join(', ')})'
-	}
-
-	return s
-}
-
 struct TablePrimary {
 	body        TablePrimaryBody
 	correlation Correlation

@@ -632,11 +632,6 @@ fn (mut f Storage) isolation_end() ! {
 	// Revist any remaining pages to clean out any expired rows.
 	mut blob_refs := []PageObject{}
 	for page_number, _ in f.transaction_pages {
-		// Removing objects can move the last page and truncate the file.
-		if page_number >= f.btree.pager.total_pages() {
-			continue
-		}
-
 		mut page := f.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
 			// Only remove the objects expired in this transaction.
@@ -651,8 +646,6 @@ fn (mut f Storage) isolation_end() ! {
 		f.btree.pager.store_page(page_number, page)!
 	}
 
-	// Removing the blobs can move pages around, so it must be done after the
-	// pages above have been visited.
 	for obj in blob_refs {
 		f.btree.remove_blob(obj)!
 	}

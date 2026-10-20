@@ -32,11 +32,6 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 
 	mut schema_changed := false
 	for page_number, _ in catalog.storage.transaction_pages {
-		// Removing objects can move the last page and truncate the file.
-		if page_number >= catalog.storage.btree.pager.total_pages() {
-			continue
-		}
-
 		mut page := catalog.storage.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
 			if (obj.tid == catalog.storage.transaction_id

@@ -22,3 +22,6 @@ VALUES char_length('😊£');
 /* types */
 VALUES CHAR_LENGTH(CAST('hello Hello' AS CHAR(30)));
 -- COL1: 30 (INTEGER)
+
+VALUES ROW(CHAR_LENGTH(CAST('a' AS CHAR(3)) || 'b'), UPPER(CAST('a' AS CHAR(3)) || 'b'));
+-- COL1: 4 COL2: A  B

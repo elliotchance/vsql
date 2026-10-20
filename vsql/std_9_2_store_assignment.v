@@ -120,9 +120,11 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			s := cast_character_source(v)
 			chars := s.runes()
 
+			// A CHARACTER VARYING without a length (such as the declared type of an
+			// expression) has no maximum length.
 			l := t.size
 			m := chars.len
-			if m <= l {
+			if l == 0 || m <= l {
 				return new_varchar_value(s)
 			}
 

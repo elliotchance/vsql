@@ -337,7 +337,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	ident = c.conn.resolve_identifier(e)
 	for _, table in c.tables {
 		column := table.column(e.sub_entity_name) or { Column{} }
-		if column.name.sub_entity_name == e.sub_entity_name {
+		if e.entity_name == '' && column.name.sub_entity_name == e.sub_entity_name {
 			ident = column.name
 
 			return CompileResult{
@@ -373,11 +373,12 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		}
 	}
 
-	// 5. A bare table field.
+	// 5. A bare table field. A qualified name that didn't match a table above
+	// isn't one (its qualifier mustn't be ignored).
 	//
 	// TODO(elliotchance): Check for ambiguous field name.
 	for _, table in catalog.storage.tables {
-		if table.name.schema_name == ident.schema_name {
+		if e.entity_name == '' && table.name.schema_name == ident.schema_name {
 			column := table.column(ident.sub_entity_name) or { Column{} }
 			if column.name.sub_entity_name == ident.sub_entity_name {
 				ident = column.name

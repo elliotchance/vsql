@@ -145,12 +145,6 @@ fn new_table_from_bytes(key []u8, data []u8, tid u64, catalog_name string) !Tabl
 		mut buf := new_bytes(key[1..])
 		table.id = buf.read_u64()
 
-		// Only the columns include the catalog name.
-		table.name = Identifier{
-			schema_name: stmt.table_name.schema_name
-			entity_name: stmt.table_name.entity_name
-		}
-
 		return table
 	}
 

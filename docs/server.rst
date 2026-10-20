@@ -21,6 +21,38 @@ connection, so a transaction started by one client is not visible to the others
 until it is committed. A client that disconnects during a transaction will have
 that transaction rolled back.
 
+Embedding the Server
+--------------------
+
+The server can also be started from your own V application:
+
+.. code-block:: v
+
+   import vsql
+
+   fn main() {
+     mut server := vsql.new_server(
+       // Each client opens its own connection to the database. connect can be
+       // used instead of db_file to configure the connection, or to open a
+       // different database for each database name a client connects with.
+       db_file: 'mydb.vsql'
+
+       // A port of 0 uses any free port.
+       port: 0
+     )
+
+     server.listen()!
+     port := server.port()!
+     println('ready on 127.0.0.1:' + port.str())
+
+     // serve() accepts clients until stop() is called (from another thread).
+     server.serve()!
+   }
+
+Unlike ``vsql server``, the server doesn't add ``FROM singlerow`` to a ``SELECT``
+without a ``FROM`` (which many PostgreSQL clients send, but isn't valid SQL)
+unless ``select_without_from`` is set.
+
 Binary releases can be downloaded from the
 `Releases <https://github.com/elliotchance/vsql/releases>`_ page (under Assets).
 

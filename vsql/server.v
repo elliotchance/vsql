@@ -6,96 +6,138 @@ module vsql
 import net
 import sync
 
-struct Server {
-	options ServerOptions
-mut:
-	db &Connection
-}
+// ConnectFn opens the database for a client of a Server. database is the
+// database name that the client connected with, which may be empty.
+pub type ConnectFn = fn (database string) !&Connection
 
 pub struct ServerOptions {
 pub:
+	// db_file is opened for every client, unless connect is set.
 	db_file string
-	port    int
+	// port to listen on. If it's 0, any free port is used, see Server.port().
+	port int
+	// verbose prints every message in and out of the server.
 	verbose bool
+	// connect opens the database for each client, instead of db_file. This can
+	// be used to configure the connection (such as with register_function), or
+	// to choose the database from the name the client connected with. The
+	// server closes the connection when the client disconnects.
+	connect ConnectFn = unsafe { nil }
+	// select_without_from adds "FROM singlerow" to a query that has a SELECT
+	// but no FROM, which isn't valid SQL but is sent by many PostgreSQL clients.
+	// The singlerow table is created if it doesn't exist.
+	select_without_from bool
 }
 
-pub fn new_server(options ServerOptions) Server {
-	// The server never actually runs in memory mode. I guess it could with a
-	// server option, but for now we create a memory storage (that will be
-	// replaced with file storage) to satisfy the V check.
-	connection_options := default_connection_options()
-	mut pager := new_memory_pager()
-	btree := new_btree(pager, connection_options.page_size)
-	catalog_name := catalog_name_from_path(options.db_file)
+// Server accepts connections from PostgreSQL clients, see new_server.
+@[heap]
+pub struct Server {
+	options ServerOptions
+mut:
+	connect  ConnectFn        = unsafe { nil }
+	listener &net.TcpListener = unsafe { nil }
+	stopping bool
+}
 
-	catalog := &CatalogConnection{
-		catalog_name: catalog_name
-		storage:      new_storage(btree)
-		options:      default_connection_options()
-	}
-
-	return Server{options, &Connection{
-		now:      default_now
-		catalogs: {
-			catalog_name: catalog
+// new_server creates a server that can be started with start(), or with
+// listen() and serve() to be able to find its port before it accepts clients.
+pub fn new_server(options ServerOptions) &Server {
+	mut connect := options.connect
+	if connect == unsafe { nil } {
+		// Each client has its own connection (so they each have their own
+		// transaction) in its own thread. They must share the same mutex, see
+		// ConnectionOptions.
+		mut connection_options := default_connection_options()
+		connection_options.mutex = sync.new_rwmutex()
+		db_file := options.db_file
+		connect = fn [db_file, connection_options] (database string) !&Connection {
+			return open_database(db_file, connection_options)
 		}
-	}}
+	}
+
+	return &Server{
+		options: options
+		connect: connect
+	}
 }
 
+// start listens for clients and serves them until stop() is called.
 pub fn (mut s Server) start() ! {
-	// Each client has its own connection (so they each have their own
-	// transaction) in its own thread. They must share the same mutex, see
-	// ConnectionOptions.
-	mut connection_options := default_connection_options()
-	connection_options.mutex = sync.new_rwmutex()
+	s.listen()!
+	s.serve()!
+}
 
-	s.db = open_database(s.options.db_file, connection_options) or {
-		panic('cannot open database: ${err}')
-	}
-
-	// There are multiple compatibility changes we need to make during the
-	// connection. A missing "FROM" clause is valid in PostgreSQL, but it's not
-	// valid in the SQL standard so it's not supported by vsql. Make sure a
-	// dummy table exists that we can use instead. Also see similar comment
-	// below.
-	//
-	// TODO(elliotchance): Once supported, a VALUES() clause will be better.
-	mut table_exists := false
-	s.db.query('CREATE TABLE singlerow (x INT)') or { table_exists = true }
-
-	if !table_exists {
-		s.db.query('INSERT INTO singlerow (x) VALUES (0)')!
-	}
-
-	mut listener := net.listen_tcp(.ip6, ':${s.options.port}') or {
+// listen starts listening on the port, but clients aren't accepted until
+// serve() is called.
+pub fn (mut s Server) listen() ! {
+	s.listener = net.listen_tcp(.ip6, ':${s.options.port}') or {
 		return error('cannot listen on :${s.options.port}: ${err}')
 	}
-	println('ready on 127.0.0.1:${s.options.port}')
+}
+
+// port is the port the server is listening on, which is only known after
+// listen() when ServerOptions.port is 0.
+pub fn (s &Server) port() !int {
+	if s.listener == unsafe { nil } {
+		return error('server is not listening')
+	}
+
+	return s.listener.addr()!.port()!
+}
+
+// serve accepts clients until stop() is called. Each client is handled in its
+// own thread.
+pub fn (mut s Server) serve() ! {
+	if s.listener == unsafe { nil } {
+		return error('server is not listening')
+	}
 
 	for {
-		mut conn := listener.accept() or {
+		mut conn := s.listener.accept() or {
+			if s.stopping {
+				return
+			}
 			s.log('${err}')
 			continue
 		}
 
-		spawn s.handle_client(mut conn, connection_options)
+		spawn s.handle_client(mut conn)
+	}
+}
+
+// stop stops accepting new clients. Clients that are already connected are not
+// disconnected.
+pub fn (mut s Server) stop() ! {
+	s.stopping = true
+	if s.listener != unsafe { nil } {
+		s.listener.close()!
 	}
 }
 
 // handle_client runs in its own thread for each client. An error only
 // disconnects that client.
-fn (s &Server) handle_client(mut c net.TcpConn, connection_options ConnectionOptions) {
-	mut db := open_database(s.options.db_file, connection_options) or {
-		s.log('cannot open database: ${err}')
+fn (s &Server) handle_client(mut c net.TcpConn) {
+	mut conn := new_pg_conn(c)
+	database := conn.accept() or {
+		s.log('error: ${err}')
 		c.close() or {}
 		return
 	}
 
-	s.handle_conn(mut db, mut c) or { s.log('error: ${err}') }
+	mut db := s.connect(database) or {
+		s.log('cannot open database: ${err}')
+		conn.write_error_result(err) or {}
+		conn.flush() or {}
+		c.close() or {}
+		return
+	}
+
+	s.handle_conn(mut db, mut conn) or { s.log('error: ${err}') }
 
 	// A client that disconnects in the middle of a transaction implicitly rolls
 	// it back.
 	db.rollback_after_error()
+	db.close()
 
 	c.close() or {}
 	s.log('disconnected')
@@ -107,15 +149,20 @@ fn (s &Server) log(message string) {
 	}
 }
 
-fn (s &Server) handle_conn(mut db Connection, mut c net.TcpConn) ! {
-	mut conn := new_pg_conn(c)
-
+fn (s &Server) handle_conn(mut db Connection, mut conn PGConn) ! {
 	// We need to register some dummy functions commonly used in the connection
 	// phase.
 	register_pg_functions(mut db)!
 	register_pg_virtual_tables(mut db)!
 
-	conn.accept()!
+	if s.options.select_without_from {
+		db.query('CREATE TABLE singlerow (x INT)') or {}
+		if db.query('SELECT * FROM singlerow')!.rows.len == 0 {
+			db.query('INSERT INTO singlerow (x) VALUES (0)')!
+		}
+	}
+
+	conn.write_ready()!
 	s.log('connected')
 
 	for {
@@ -130,24 +177,24 @@ fn (s &Server) handle_conn(mut db Connection, mut c net.TcpConn) ! {
 				// TODO(elliotchance): Once supported, a VALUES() clause will be
 				//  better.
 				query_upper := query.to_upper()
-				if query_upper.contains('SELECT') && !query_upper.contains('FROM') {
+				if s.options.select_without_from && query_upper.contains('SELECT')
+					&& !query_upper.contains('FROM') {
 					query = query.trim('; ') + ' FROM singlerow;'
 				}
 
 				s.log('query: ${query}')
 
-				mut did_error := false
-				result := db.query(query) or {
-					did_error = true
-					s.log('error: ${err}')
+				db.clear_warnings()
+				if result := db.query(query) {
+					for warning in db.warnings {
+						conn.write_notice(warning)!
+					}
 
-					conn.write_error_result(err)!
-					new_result([]Column{}, []Row{}, 0, 0) // not used
-				}
-
-				if !did_error {
 					s.log('response: ${result}')
 					conn.write_result(result)!
+				} else {
+					s.log('error: ${err}')
+					conn.write_error_result(err)!
 				}
 
 				conn.write_ready_for_query()!

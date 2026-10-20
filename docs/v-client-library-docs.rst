@@ -157,9 +157,9 @@ fn new_server
 
 .. code-block:: v
 
-   pub fn new_server(options ServerOptions) Server
+   pub fn new_server(options ServerOptions) &Server
 
-
+new_server creates a server that can be started with start(), or with listen() and serve() to be able to find its port before it accepts clients.
 
 fn new_smallint_value
 ---------------------
@@ -293,14 +293,18 @@ type Column
 
 
 
+type ConnectFn
+--------------
+
+
+.. code-block:: v
+
+   pub type ConnectFn = fn (database string) !&Connection
+
+ConnectFn opens the database for a client of a Server. database is the database name that the client connected with, which may be empty.
+
 type Row
 --------
-
-
-
-
-type Server
------------
 
 
 
@@ -630,6 +634,23 @@ struct Sequence
 
 A SEQUENCE definition.
 
+struct Server
+-------------
+
+
+.. code-block:: v
+
+   @[heap]
+   pub struct Server {
+   	options ServerOptions
+   mut:
+   	connect  ConnectFn        = unsafe { nil }
+   	listener &net.TcpListener = unsafe { nil }
+   	stopping bool
+   }
+
+Server accepts connections from PostgreSQL clients, see new_server.
+
 struct ServerOptions
 --------------------
 
@@ -638,9 +659,21 @@ struct ServerOptions
 
    pub struct ServerOptions {
    pub:
+   	// db_file is opened for every client, unless connect is set.
    	db_file string
-   	port    int
+   	// port to listen on. If it's 0, any free port is used, see Server.port().
+   	port int
+   	// verbose prints every message in and out of the server.
    	verbose bool
+   	// connect opens the database for each client, instead of db_file. This can
+   	// be used to configure the connection (such as with register_function), or
+   	// to choose the database from the name the client connected with. The
+   	// server closes the connection when the client disconnects.
+   	connect ConnectFn = unsafe { nil }
+   	// select_without_from adds "FROM singlerow" to a query that has a SELECT
+   	// but no FROM, which isn't valid SQL but is sent by many PostgreSQL clients.
+   	// The singlerow table is created if it doesn't exist.
+   	select_without_from bool
    }
 
 

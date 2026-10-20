@@ -209,11 +209,19 @@ This describes two tests where each test is given an a brand new database (ie.
 no tables are carried between tests).
 
 Each test is run twice, first with an in-memory database and then with a
-database file, and only passes if both pass. A failure shows which one failed,
-such as ``(on disk)``. Both use 256 byte pages so that even small tests split
-pages and store large values across several pages. Tests that use the
-``connection`` directive only run on disk, and catalogs from ``create_catalog``
-are always in memory.
+database file, and only passes if both pass. Both use 256 byte pages so that
+even small tests split pages and store large values across several pages. Tests
+that use the ``connection`` directive only run on disk, and catalogs from
+``create_catalog`` are always in memory.
+
+The statements are sent through the PostgreSQL server, which is embedded in the
+test like an application would (see :doc:`server`), by a PostgreSQL client over
+TCP. One server is shared by all of the tests. A PostgreSQL client can't use
+some of the directives, so tests with ``types``, ``set``, ``fault``,
+``disconnect``, ``create_catalog`` or ``virtual_table`` use the database directly
+instead.
+
+A failure shows which one failed, such as ``(on disk through server)``.
 
 All SQL statements are executed and each of the results collected and compared
 to the comment immediately below.
@@ -464,7 +472,7 @@ location of each failed test:
 .. code-block:: text
 
    SQL tests: 1549 passed, 1 failed, 1550 total
-     FAILED tests/arithmetic.sql:3 (in memory, on disk)
+     FAILED tests/arithmetic.sql:3 (in memory through server, on disk through server)
 
 The "Summary for running V tests" line printed by V does not include failed
 tests, so always check the SQL tests summary (or the exit code).
@@ -479,11 +487,12 @@ such as:
 
    VERBOSE=1 make sql-test
 
-Running In Memory or On Disk Only
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Running In Memory, On Disk or Without the Server
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Each test runs in memory and on disk. To only run one of them, set ``$MEMORY``
-or ``$FILE`` to ``0``:
+or ``$FILE`` to ``0``. ``SERVER=0`` uses the database directly for every test
+instead of through the server:
 
 .. code-block:: sh
 
@@ -493,8 +502,11 @@ or ``$FILE`` to ``0``:
    # only run tests in memory
    FILE=0 make sql-test
 
-Tests that use the ``connection`` directive only run on disk, so they are
-skipped with ``FILE=0``. These can be combined with ``$TEST`` below.
+   # don't run tests through the server
+   SERVER=0 make sql-test
+
+Tests that use the ``connection`` or ``fault`` directive only run on disk, so
+they are skipped with ``FILE=0``. These can be combined with ``$TEST`` below.
 
 Running Specific Test Files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

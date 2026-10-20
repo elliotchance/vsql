@@ -351,6 +351,23 @@ fn (mut conn CatalogConnection) finish_write(success bool) ! {
 	}
 }
 
+// take_isolation_error returns the first error from the end of an isolation
+// block in any catalog, see Storage.end_isolation.
+fn (mut conn Connection) take_isolation_error() ! {
+	mut first_err := ?IError(none)
+	for _, mut catalog in conn.catalogs {
+		catalog.storage.take_isolation_error() or {
+			if first_err == none {
+				first_err = err
+			}
+		}
+	}
+
+	if err := first_err {
+		return err
+	}
+}
+
 fn (mut conn Connection) release_read_connection() {
 	for _, mut catalog in conn.catalogs {
 		catalog.release_read_connection()
@@ -614,6 +631,8 @@ pub fn (mut conn CatalogConnection) schemas() ![]Schema {
 		schemas << schema
 	}
 
+	conn.storage.take_isolation_error()!
+
 	return schemas
 }
 
@@ -632,6 +651,8 @@ pub fn (mut conn CatalogConnection) sequences(schema string) ![]Sequence {
 		}
 	}
 
+	conn.storage.take_isolation_error()!
+
 	return sequences
 }
 
@@ -649,6 +670,8 @@ pub fn (mut conn CatalogConnection) schema_tables(schema string) ![]Table {
 			tables << table
 		}
 	}
+
+	conn.storage.take_isolation_error()!
 
 	return tables
 }

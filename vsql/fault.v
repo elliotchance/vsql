@@ -32,9 +32,14 @@ module vsql
 //                      into the database file.
 //   recover:           copying a statement that was left in the write-ahead log
 //                      into the database file.
+//   isolation_start:   starting the isolation block of an operation on the
+//                      file, see Storage.isolation_start.
+//   isolation_end:     ending the isolation block of an operation on the file,
+//                      which removes the rows that were deleted outside of a
+//                      transaction, see Storage.isolation_end.
 const fault_names = ['open', 'lock', 'lock_shared', 'read_header', 'read_page', 'write_version',
 	'wal_write', 'wal_torn_frame', 'wal_corrupt_frame', 'wal_bad_magic', 'wal_bad_header',
-	'wal_unknown_frame', 'checkpoint', 'recover']
+	'wal_unknown_frame', 'checkpoint', 'recover', 'isolation_start', 'isolation_end']
 
 struct FaultPoints {
 mut:

@@ -246,3 +246,81 @@ SELECT COUNT(*) AS c FROM t;
 -- msg: INSERT 40
 -- C: 4
 -- C: 40
+
+-- # A statement fails if its isolation block can't be started.
+CREATE TABLE t (x INT);
+INSERT INTO t (x) VALUES (1);
+/* fault isolation_start */
+INSERT INTO t (x) VALUES (2);
+INSERT INTO t (x) VALUES (3);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 00000: isolation_start failed (fault injected by test)
+-- msg: INSERT 1
+-- X: 1
+-- X: 3
+
+-- # A statement that fails at the end of its isolation block has no effect,
+-- # rather than stopping the process (#485).
+CREATE TABLE t (x INT);
+INSERT INTO t (x) VALUES (1);
+/* fault isolation_end */
+INSERT INTO t (x) VALUES (2), (3);
+SELECT * FROM t;
+INSERT INTO t (x) VALUES (4);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 00000: isolation_end failed (fault injected by test)
+-- X: 1
+-- msg: INSERT 1
+-- X: 1
+-- X: 4
+
+-- # The same for the second row of an INSERT.
+CREATE TABLE t (x INT);
+/* fault isolation_end 2 */
+INSERT INTO t (x) VALUES (1), (2);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- error 00000: isolation_end failed (fault injected by test)
+
+-- # Reading is in an isolation block too.
+CREATE TABLE t (x INT);
+INSERT INTO t (x) VALUES (1);
+/* fault isolation_end */
+SELECT * FROM t;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 00000: isolation_end failed (fault injected by test)
+-- X: 1
+
+-- # A CREATE TABLE that fails at the end of its isolation block doesn't create
+-- # the table.
+/* fault isolation_end */
+CREATE TABLE t (x INT);
+CREATE TABLE t (x INT);
+SELECT * FROM t;
+-- error 00000: isolation_end failed (fault injected by test)
+-- msg: CREATE TABLE 1
+
+-- # In a transaction, only the statement fails and the transaction continues.
+CREATE TABLE t (x INT);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+/* fault isolation_end */
+INSERT INTO t (x) VALUES (2);
+INSERT INTO t (x) VALUES (3);
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- error 00000: isolation_end failed (fault injected by test)
+-- msg: INSERT 1
+-- msg: COMMIT
+-- X: 1
+-- X: 3
+

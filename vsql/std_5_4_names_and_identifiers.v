@@ -484,13 +484,7 @@ struct HostParameterName {
 }
 
 fn (e HostParameterName) pstr(params map[string]Value) string {
-	p := params[e.name]
-
-	if p.typ.typ != .is_numeric && (p.typ.uses_string() || p.typ.uses_time()) {
-		return "'${p.str()}'"
-	}
-
-	return p.str()
+	return params[e.name].pstr(params)
 }
 
 fn (e HostParameterName) compile(mut c Compiler) !CompileResult {

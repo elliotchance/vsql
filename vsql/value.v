@@ -350,6 +350,12 @@ fn (v Value) as_numeric() !Numeric {
 }
 
 fn (v Value) pstr(params map[string]Value) string {
+	// A datetime is shown as a literal, such as DATE '2022-06-30', rather than a
+	// character string.
+	if v.typ.typ.is_datetime() && !v.is_null {
+		return v.time_value().str_literal()
+	}
+
 	if v.typ.typ != .is_numeric && (v.typ.uses_string() || v.typ.uses_time()) {
 		return "'${v.str().replace("'", "''")}'"
 	}

@@ -205,8 +205,7 @@ fn (mut p Btree) read_blob(ref PageObject) !PageObject {
 // reference itself must be removed separately.
 //
 // Like COMMIT and ROLLBACK, the objects are removed from their pages without
-// removing pages that become empty. Removing a page moves the last page into
-// its place (see fill_empty_pages), which needs the last page to not be empty.
+// removing pages that become empty.
 fn (mut p Btree) remove_blob(ref PageObject) ! {
 	blob_peices, has_fragment := ref.blob_info()
 	mut keys := [][]u8{}
@@ -526,139 +525,6 @@ fn (p Btree) new_range_iterator(min []u8, max []u8) PageIterator {
 		btree: p
 		min:   min
 		max:   max
-	}
-}
-
-fn (mut p Btree) remove(key []u8, tid u64, handle_blob bool) ! {
-	// Find the page that will contain the key, if it exists.
-	mut path, _ := p.search_page(key)!
-	page_number := path[path.len - 1]
-	mut empty_pages := []int{}
-
-	mut page := p.pager.fetch_page(page_number)!
-	object_to_delete := page.get(key, tid)
-	if handle_blob && object_to_delete.is_blob_ref {
-		// Remove the associated blob.
-		blob_peices, has_fragment := object_to_delete.blob_info()
-
-		for part in 0 .. blob_peices {
-			p.remove(blob_object_key(key, part), tid, false)!
-		}
-
-		if has_fragment {
-			p.remove(fragment_object_key(key), tid, false)!
-		}
-
-		// There's an important edge case where the original key might be in one
-		// of the pages we just modified OR the pages have been moved around so
-		// that the page we deleted from is no longer valid.
-		//
-		// We handle this by calling remove again. Probably not the most ideal,
-		// but it will do for now.
-		return p.remove(key, tid, false)
-	}
-
-	// The object does not use blob storage, or it has already been cleared out.
-	page.delete(key, tid)
-	p.store_page(page_number, page)!
-
-	if page.is_empty() {
-		// If the root page becomes empty we need to truncate the file.
-		if page_number == p.pager.root_page() {
-			p.pager.truncate_all()!
-			return
-		}
-
-		empty_pages << page_number
-	}
-
-	// Update the lower boundary of all the ancestors.
-	if path.len > 1 {
-		for path_index := path.len - 2; path_index >= 0; path_index-- {
-			mut t := p.pager.fetch_page(path[path_index])!
-			did_delete := t.delete(key, 0)
-
-			lower_page := p.pager.fetch_page(path[path_index + 1])!
-			if !lower_page.is_empty() && did_delete {
-				lower_bound := lower_page.head().key
-
-				// The tids are zero here because non-leaf pages do not have
-				// transaction visibility for their nodes.
-				mut buf := new_empty_bytes()
-				buf.write_i32(path[path_index + 1])
-				obj := new_page_object(lower_bound.clone(), 0, 0, buf.bytes())
-
-				t.add(obj)!
-			}
-
-			p.store_page(path[path_index], t)!
-
-			if t.is_empty() {
-				// If the root page becomes empty we need to truncate the file.
-				if path[path_index] == p.pager.root_page() {
-					p.pager.truncate_all()!
-					return
-				}
-
-				empty_pages << path[path_index]
-			}
-		}
-	}
-
-	p.fill_empty_pages(mut empty_pages)!
-}
-
-fn (mut p Btree) fill_empty_pages(mut empty_pages []int) ! {
-	// I'm not sure why, but we must backfill pages starting with the last page
-	// first. Without sorting descending the B-tree stress test will always
-	// crash with a handful or more size=100 trees.
-	empty_pages.sort(a > b)
-
-	// If there were any pages that are now empty we swap out the gap with the
-	// last page. This allows the file to shrink as records are deleted.
-	//
-	// TOOD(elliotchance): We might want to consider setting a threshold for
-	//  pages that become close to empty so that they can be merged with another
-	//  page. This will help the file shrink if there are a lot of scattered
-	//  deletes.
-	for empty_page in empty_pages {
-		last_page := p.pager.fetch_page(p.pager.total_pages() - 1)!
-		last_page_key := last_page.head().key
-		mut path_to_last_page, _ := p.search_page(last_page_key)!
-
-		// The last page will be referred to somewhere in the path. We need
-		// to replace that element and its immediate child.
-		for path_index in 0 .. path_to_last_page.len - 1 {
-			if path_to_last_page[path_index + 1] == p.pager.total_pages() - 1 {
-				mut ancestor := p.pager.fetch_page(path_to_last_page[path_index])!
-
-				// All tids are zero here because non-leaf pages do not have
-				// transaction visibility for their nodes.
-				ancestor.delete(last_page_key, 0)
-
-				mut buf := new_empty_bytes()
-				buf.write_i32(empty_page)
-				new_object := new_page_object(last_page_key.clone(), 0, 0, buf.bytes())
-
-				ancestor.add(new_object)!
-				p.store_page(path_to_last_page[path_index], ancestor)!
-			}
-		}
-
-		p.store_page(empty_page, last_page)!
-
-		// Be careful of moving the root page.
-		if p.pager.root_page() == p.pager.total_pages() - 1 {
-			p.pager.set_root_page(empty_page)!
-		}
-
-		// Finally, truncate the last page.
-		p.pager.truncate_last_page()!
-	}
-
-	// If the root page becomes empty we need to truncate the file.
-	if (p.pager.fetch_page(p.pager.root_page())!).is_empty() {
-		p.pager.truncate_all()!
 	}
 }
 

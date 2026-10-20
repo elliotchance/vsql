@@ -14,8 +14,6 @@ mut:
 	fetch_page(page_number int) !Page
 	store_page(page_number int, page Page) !
 	append_page(page Page) !int
-	truncate_all() !
-	truncate_last_page() !
 	total_pages() int
 	root_page() int
 	set_root_page(page_number int) !
@@ -65,14 +63,6 @@ fn (mut p MemoryPager) append_page(page Page) !int {
 	p.total++
 
 	return p.total - 1
-}
-
-fn (mut p MemoryPager) truncate_all() ! {
-	p.total = 0
-}
-
-fn (mut p MemoryPager) truncate_last_page() ! {
-	p.total--
 }
 
 fn (mut p MemoryPager) root_page() int {
@@ -201,14 +191,6 @@ fn (mut p FilePager) append_page(page Page) !int {
 	p.total_pages++
 
 	return p.total_pages - 1
-}
-
-fn (mut p FilePager) truncate_all() ! {
-	p.total_pages = 0
-}
-
-fn (mut p FilePager) truncate_last_page() ! {
-	p.total_pages--
 }
 
 fn (mut p FilePager) root_page() int {

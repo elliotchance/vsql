@@ -83,17 +83,6 @@ fn run_btree_test(mut pager Pager, size int, object_size int, page_size int, ran
 	for i in 0 .. all.len {
 		assert all[i] == 'R${i:07d}'
 	}
-
-	expected_objects = objs.len
-	for obj in objs {
-		btree.remove(obj.key, transaction_id, true)!
-		expected_objects--
-
-		if run_validate {
-			total_found_objects := validate(mut pager)!
-			assert total_found_objects == expected_objects
-		}
-	}
 }
 
 fn visualize(mut p Pager) ! {
@@ -225,8 +214,8 @@ fn strobjects(p Page) []string {
 	return keys
 }
 
-// The expire test doesn't need to be as thorough as the add/remove test because
-// no keys are being removed. In fact, the usage of the pages isn't changing at
+// The expire test doesn't need to be as thorough as the add test because no
+// keys are being removed. In fact, the usage of the pages isn't changing at
 // all.
 //
 // We can start a decent sized tree then create two versions of every object
@@ -252,7 +241,7 @@ fn test_btree_expire_test() ! {
 	mut btree := new_btree(file_pager, page_size)
 
 	// 1. Insert a bunch of keys. We don't need to scrutinize this part becauase
-	// it's well covered in the add/remove test.
+	// it's well covered in the add test.
 	mut objs := []PageObject{len: size}
 	for i in 0 .. objs.len {
 		objs[i] = new_page_object('R${i:07d}'.bytes(), tid1, 0, []u8{len: 48})

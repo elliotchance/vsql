@@ -31,11 +31,6 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 
 	mut blob_refs := []PageObject{}
 	for page_number, _ in catalog.storage.transaction_pages {
-		// Removing objects can move the last page and truncate the file.
-		if page_number >= catalog.storage.btree.pager.total_pages() {
-			continue
-		}
-
 		mut page := catalog.storage.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
 			// Only remove the now expired records.
@@ -50,8 +45,6 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 		catalog.storage.btree.pager.store_page(page_number, page)!
 	}
 
-	// Removing the blobs can move pages around, so it must be done after the
-	// pages above have been visited.
 	for obj in blob_refs {
 		catalog.storage.btree.remove_blob(obj)!
 	}

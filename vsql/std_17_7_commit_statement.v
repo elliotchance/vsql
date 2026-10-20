@@ -11,17 +11,19 @@ struct CommitStatement {
 
 fn (stmt CommitStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
-	mut catalog := conn.catalog()
 
-	match catalog.storage.transaction_state {
-		.not_active {
-			return sqlstate_2d000()
-		}
-		.active {
-			// All good, continue below.
-		}
+	if !conn.in_transaction() {
+		return sqlstate_2d000()
 	}
 
+	for _, mut catalog in conn.catalogs {
+		catalog.commit_transaction()!
+	}
+
+	return new_result_msg('COMMIT', elapsed_parse, t.elapsed())
+}
+
+fn (mut catalog CatalogConnection) commit_transaction() ! {
 	catalog.open_write_connection()!
 	defer {
 		catalog.release_write_connection()
@@ -61,8 +63,6 @@ fn (stmt CommitStatement) execute(mut conn Connection, params map[string]Value, 
 
 	// We can erase these now.
 	catalog.storage.transaction_pages = map[int]bool{}
-
-	return new_result_msg('COMMIT', elapsed_parse, t.elapsed())
 }
 
 fn (stmt CommitStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {

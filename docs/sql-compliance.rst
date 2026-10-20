@@ -898,7 +898,7 @@ Optional Features
    * - ❌ **F641**
      - **Row and table constructors**
 
-   * - ⭕ **F651**
+   * - ✅ **F651**
      - **Catalog name qualifiers**
 
    * - ⭕ **F661**

@@ -30,8 +30,8 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 		conn.release_write_connection()
 	}
 
-	mut catalog := conn.catalog()
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
+	mut catalog := conn.catalog_for(table_name)
 	mut plan := create_plan(stmt, params, mut conn)!
 	mut rows := plan.execute([]Row{})!
 

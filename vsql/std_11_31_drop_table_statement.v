@@ -18,8 +18,8 @@ fn (stmt DropTableStatement) execute(mut conn Connection, params map[string]Valu
 		conn.release_write_connection()
 	}
 
-	mut catalog := conn.catalog()
 	table_name := conn.resolve_table_identifier(stmt.table_name, false)!
+	mut catalog := conn.catalog_for(table_name)
 
 	catalog.storage.delete_table(table_name.storage_id(),
 		catalog.storage.tables[table_name.storage_id()].tid)!

@@ -11,17 +11,21 @@ struct StartTransactionStatement {
 
 fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
-	mut catalog := conn.catalog()
 
-	match catalog.storage.transaction_state {
-		.not_active {
-			// All good, continue below.
-		}
-		.active {
-			return sqlstate_25001()
-		}
+	if conn.in_transaction() {
+		return sqlstate_25001()
 	}
 
+	// The SQL-transaction includes every catalog, since a statement can use any
+	// of them.
+	for _, mut catalog in conn.catalogs {
+		catalog.start_transaction()!
+	}
+
+	return new_result_msg('START TRANSACTION', elapsed_parse, t.elapsed())
+}
+
+fn (mut catalog CatalogConnection) start_transaction() ! {
 	catalog.open_write_connection()!
 	defer {
 		catalog.release_write_connection()
@@ -40,8 +44,6 @@ fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[stri
 	// TODO(elliotchance): Is this really needed? We should find a way to make
 	//  sure implicit transactions erase this at the end of their used as well.
 	catalog.storage.transaction_pages = map[int]bool{}
-
-	return new_result_msg('START TRANSACTION', elapsed_parse, t.elapsed())
 }
 
 fn (stmt StartTransactionStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {

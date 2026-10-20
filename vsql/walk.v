@@ -151,7 +151,7 @@ fn (mut o PrimaryKeyOperation) execute(_ []Row) ![]Row {
 	}
 	object_key := tmp_row.object_key(o.table)!
 
-	mut catalog := o.conn.catalog()
+	mut catalog := o.conn.catalog_for(o.table.name)
 	tid := catalog.storage.transaction_id
 	mut transaction_ids := catalog.storage.header.active_transaction_ids
 

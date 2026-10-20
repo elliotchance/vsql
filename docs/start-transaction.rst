@@ -30,9 +30,10 @@ rows) should seem atomic to all other readers and writers.
 Catalogs
 --------
 
-Transactions across catalogs are semi-supported. That is, transaction isolation
-is not guaranteed across catalogs for all operations. And ``COMMIT`` and
-``ROLLBACK`` may independently succeed or fail.
+A transaction includes every catalog, including one that is attached during the
+transaction. However, transaction isolation is not guaranteed across catalogs
+for all operations. And ``COMMIT`` and ``ROLLBACK`` are applied to each catalog
+in turn, so they may independently succeed or fail.
 
 Examples
 --------

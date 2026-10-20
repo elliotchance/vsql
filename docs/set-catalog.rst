@@ -24,6 +24,10 @@ schema.
 
 The catalog must exists for ``SET CATALOG`` to succeed.
 
+A table, schema or sequence in another catalog can also be used without
+changing the current catalog by qualifying its name with the catalog, such as
+``foo.public.products``.
+
 Examples
 --------
 

@@ -18,8 +18,8 @@ fn (stmt DropSequenceGeneratorStatement) execute(mut conn Connection, params map
 		conn.release_write_connection()
 	}
 
-	mut catalog := conn.catalog()
 	name := conn.resolve_schema_identifier(stmt.sequence_name)!
+	mut catalog := conn.catalog_for(name)
 	sequence := catalog.storage.sequence(name)!
 	catalog.storage.delete_sequence(name, sequence.tid)!
 

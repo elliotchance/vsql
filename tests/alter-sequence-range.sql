@@ -1,0 +1,93 @@
+-- # Without RESTART, the next value must be within a new MINVALUE or MAXVALUE.
+CREATE SEQUENCE seq1;
+VALUES NEXT VALUE FOR seq1, NEXT VALUE FOR seq1, NEXT VALUE FOR seq1;
+ALTER SEQUENCE seq1 MAXVALUE 2;
+VALUES NEXT VALUE FOR seq1;
+-- msg: CREATE SEQUENCE 1
+-- COL1: 1
+-- COL1: 2
+-- COL1: 3
+-- error 42601: syntax error: MAXVALUE (2) must not be less than the next value (4)
+-- COL1: 4
+
+CREATE SEQUENCE seq1;
+ALTER SEQUENCE seq1 MAXVALUE 1;
+VALUES NEXT VALUE FOR seq1;
+-- msg: CREATE SEQUENCE 1
+-- msg: ALTER SEQUENCE 1
+-- COL1: 1
+
+CREATE SEQUENCE seq1 START WITH 10;
+ALTER SEQUENCE seq1 MINVALUE 11;
+ALTER SEQUENCE seq1 MINVALUE 10;
+-- msg: CREATE SEQUENCE 1
+-- error 42601: syntax error: MINVALUE (11) must not be greater than the next value (10)
+-- msg: ALTER SEQUENCE 1
+
+CREATE SEQUENCE seq1 START WITH -5 INCREMENT BY -1;
+VALUES NEXT VALUE FOR seq1;
+ALTER SEQUENCE seq1 MINVALUE -5;
+ALTER SEQUENCE seq1 MINVALUE -6;
+-- msg: CREATE SEQUENCE 1
+-- COL1: -5
+-- error 42601: syntax error: MINVALUE (-5) must not be greater than the next value (-6)
+-- msg: ALTER SEQUENCE 1
+
+-- # RESTART is checked instead of the next value.
+CREATE SEQUENCE seq1;
+VALUES NEXT VALUE FOR seq1, NEXT VALUE FOR seq1, NEXT VALUE FOR seq1;
+ALTER SEQUENCE seq1 MAXVALUE 2 RESTART WITH 1;
+VALUES NEXT VALUE FOR seq1;
+-- msg: CREATE SEQUENCE 1
+-- COL1: 1
+-- COL1: 2
+-- COL1: 3
+-- msg: ALTER SEQUENCE 1
+-- COL1: 1
+
+-- # Limits that aren't changed aren't checked, so a sequence that has gone past
+-- # its limit can be revived with CYCLE, NO MAXVALUE or a higher MAXVALUE.
+CREATE SEQUENCE seq1 MAXVALUE 2;
+VALUES NEXT VALUE FOR seq1, NEXT VALUE FOR seq1;
+VALUES NEXT VALUE FOR seq1;
+ALTER SEQUENCE seq1 INCREMENT BY 2;
+ALTER SEQUENCE seq1 CYCLE;
+VALUES NEXT VALUE FOR seq1;
+-- msg: CREATE SEQUENCE 1
+-- COL1: 1
+-- COL1: 2
+-- error 2200H: sequence generator limit exceeded: PUBLIC.SEQ1
+-- msg: ALTER SEQUENCE 1
+-- msg: ALTER SEQUENCE 1
+-- COL1: 1
+
+CREATE SEQUENCE seq1 MAXVALUE 2;
+VALUES NEXT VALUE FOR seq1, NEXT VALUE FOR seq1;
+ALTER SEQUENCE seq1 NO MAXVALUE;
+VALUES NEXT VALUE FOR seq1;
+-- msg: CREATE SEQUENCE 1
+-- COL1: 1
+-- COL1: 2
+-- msg: ALTER SEQUENCE 1
+-- COL1: 3
+
+CREATE SEQUENCE seq1 MAXVALUE 2;
+VALUES NEXT VALUE FOR seq1, NEXT VALUE FOR seq1;
+ALTER SEQUENCE seq1 MAXVALUE 3;
+VALUES NEXT VALUE FOR seq1;
+-- msg: CREATE SEQUENCE 1
+-- COL1: 1
+-- COL1: 2
+-- msg: ALTER SEQUENCE 1
+-- COL1: 3
+
+-- # A sequence that has gone past the range of a BIGINT is past any new limit
+-- # in the direction it was going.
+CREATE SEQUENCE seq1 START WITH 9223372036854775807;
+VALUES NEXT VALUE FOR seq1;
+ALTER SEQUENCE seq1 MAXVALUE 9223372036854775807;
+ALTER SEQUENCE seq1 MINVALUE 0;
+-- msg: CREATE SEQUENCE 1
+-- COL1: 9223372036854775807
+-- error 42601: syntax error: MAXVALUE (9223372036854775807) must not be less than the next value
+-- msg: ALTER SEQUENCE 1

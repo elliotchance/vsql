@@ -36,6 +36,11 @@ Only ``RESTART`` changes the next value of the sequence. For example, changing
 the ``INCREMENT BY`` will still return the same next value, and the new
 increment is used after that.
 
+A new ``MINVALUE <number>`` or ``MAXVALUE <number>`` must not exclude the next
+value (or the ``RESTART`` value). Limits that aren't changed aren't checked, so
+a sequence that has gone past its ``MAXVALUE`` can be continued with ``CYCLE``,
+``NO MAXVALUE`` or a higher ``MAXVALUE``.
+
 Examples
 --------
 

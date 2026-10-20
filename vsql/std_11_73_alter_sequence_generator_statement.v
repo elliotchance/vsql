@@ -31,6 +31,8 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 	}
 	mut restart_value := ?i64(none)
 	mut restart_name := ''
+	mut new_min_value := false
+	mut new_max_value := false
 
 	for option in stmt.options {
 		match option {
@@ -56,6 +58,7 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 					sequence.min_value =
 						(v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 					sequence.has_min_value = true
+					new_min_value = true
 				} else {
 					sequence.has_min_value = false
 				}
@@ -65,6 +68,7 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 					sequence.max_value =
 						(v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 					sequence.has_max_value = true
+					new_max_value = true
 				} else {
 					sequence.has_max_value = false
 				}
@@ -87,10 +91,30 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 		sequence.exhausted = false
 	} else if old_sequence.exhausted {
 		// The current base value is past the range of a BIGINT, so the next
-		// value will be for any INCREMENT BY.
+		// value will be for any INCREMENT BY. It's past any new limit in the
+		// direction of the old INCREMENT BY.
+		if old_sequence.increment_by > 0 && new_max_value {
+			return sqlstate_42601('MAXVALUE (${sequence.max_value}) must not be less than the next value')
+		}
+		if old_sequence.increment_by < 0 && new_min_value {
+			return sqlstate_42601('MINVALUE (${sequence.min_value}) must not be greater than the next value')
+		}
+
 		sequence.current_value = if sequence.increment_by > 0 { max_i64 } else { min_i64 }
 	} else {
 		base_value := i64(u64(old_sequence.current_value) + u64(old_sequence.increment_by))
+
+		// The current base value must be within a new MINVALUE or MAXVALUE (9.31
+		// Syntax Rule 12). It isn't checked against limits that aren't changed,
+		// so CYCLE or NO MAXVALUE can revive a sequence that has gone past its
+		// limit.
+		if new_min_value && base_value < sequence.min_value {
+			return sqlstate_42601('MINVALUE (${sequence.min_value}) must not be greater than the next value (${base_value})')
+		}
+		if new_max_value && base_value > sequence.max_value {
+			return sqlstate_42601('MAXVALUE (${sequence.max_value}) must not be less than the next value (${base_value})')
+		}
+
 		sequence.current_value = i64(u64(base_value) - u64(sequence.increment_by))
 	}
 

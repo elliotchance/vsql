@@ -54,7 +54,15 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, params map[st
 	check_sequence_options(stmt.options)!
 
 	mut catalog := conn.catalog()
-	sequence := stmt.sequence(conn.resolve_schema_identifier(stmt.name)!)
+	sequence_name := conn.resolve_schema_identifier(stmt.name)!
+
+	// ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>, Syntax
+	// Rules, 3
+	if _ := catalog.storage.sequence(sequence_name) {
+		return sqlstate_42p07('sequence', sequence_name.str()) // duplicate sequence
+	}
+
+	sequence := stmt.sequence(sequence_name)
 	sequence.check()!
 	sequence.check_in_range('START WITH', sequence.start_value)!
 	catalog.storage.create_sequence(sequence)!

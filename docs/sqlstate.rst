@@ -429,8 +429,8 @@ A client that receives this error should retry the transaction.
   -- msg: CREATE SCHEMA 1
   -- error 42P06: duplicate schema: FOO
 
-``42P07`` table already exists
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``42P07`` table or sequence already exists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Examples**
 
@@ -440,3 +440,8 @@ A client that receives this error should retry the transaction.
   CREATE TABLE foo (baz CHARACTER VARYING(10));
   -- msg: CREATE TABLE 1
   -- error 42P07: duplicate table: FOO
+
+  CREATE SEQUENCE seq1;
+  CREATE SEQUENCE seq1;
+  -- msg: CREATE SEQUENCE 1
+  -- error 42P07: duplicate sequence: SEQ1

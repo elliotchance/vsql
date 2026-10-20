@@ -392,18 +392,22 @@ fn sqlstate_42p06(schema_name string) IError {
 	}
 }
 
-// duplicate table
+// duplicate table or sequence
 struct SQLState42P07 {
 	SQLState
 pub:
-	table_name string
+	// entity_type is 'table' or 'sequence'
+	entity_type string
+	// entity_name is the table name, sequence name, etc
+	entity_name string
 }
 
-fn sqlstate_42p07(table_name string) IError {
+fn sqlstate_42p07(entity_type string, entity_name string) IError {
 	return SQLState42P07{
-		code:       sqlstate_to_int('42P07')
-		msg:        'duplicate table: ${table_name}'
-		table_name: table_name
+		code:        sqlstate_to_int('42P07')
+		msg:         'duplicate ${entity_type}: ${entity_name}'
+		entity_type: entity_type
+		entity_name: entity_name
 	}
 }
 

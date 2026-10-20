@@ -46,21 +46,29 @@ mut:
 
 // Execute the prepared statement.
 pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
-	result := p.query_internal(params) or {
-		// A statement that fails must not change anything (ISO/IEC
-		// 9075-2:2016(E), 4.39.5), but the transaction it's in continues,
-		// unless the exception condition is a transaction rollback.
-		p.c.finish_write(false) or {}
-		if sqlstate_from_int(err.code()).starts_with('40') {
-			p.c.rollback_after_error()
-		}
+	result := p.query_internal(params) or { return p.fail(err) }
 
-		return err
-	}
+	// An isolation block that couldn't be ended also fails the statement, see
+	// Storage.end_isolation.
+	p.c.take_isolation_error() or { return p.fail(err) }
 
 	p.c.finish_write(true)!
 
 	return result
+}
+
+// fail ends a statement that failed with err.
+fn (mut p PreparedStmt) fail(err IError) IError {
+	// A statement that fails must not change anything (ISO/IEC 9075-2:2016(E),
+	// 4.39.5), but the transaction it's in continues, unless the exception
+	// condition is a transaction rollback.
+	p.c.take_isolation_error() or {}
+	p.c.finish_write(false) or {}
+	if sqlstate_from_int(err.code()).starts_with('40') {
+		p.c.rollback_after_error()
+	}
+
+	return err
 }
 
 fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {

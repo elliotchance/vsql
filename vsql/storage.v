@@ -59,6 +59,9 @@ mut:
 	// detect transactions left behind by connections that no longer exist. See
 	// recover().
 	session SessionLock
+	// isolation_error is the first error from isolation_end in end_isolation,
+	// which the statement must fail with, see take_isolation_error.
+	isolation_error ?IError
 }
 
 // StatementSnapshot is the state of Storage that is kept in memory, from before
@@ -185,7 +188,7 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 	// belong to an active transaction.
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	f.tables = map[string]Table{}
@@ -293,7 +296,7 @@ fn (mut f Storage) close_file() {
 fn (mut f Storage) create_table(table_name Identifier, columns Columns, primary_key []string) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	f.header.table_id++
@@ -309,7 +312,7 @@ fn (mut f Storage) create_table(table_name Identifier, columns Columns, primary_
 fn (mut f Storage) create_schema(schema_name string) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	schema := Schema{f.transaction_id, schema_name}
@@ -324,7 +327,7 @@ fn (mut f Storage) create_schema(schema_name string) ! {
 fn (mut f Storage) create_sequence(sequence Sequence) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	// The sequence defintion.
@@ -344,7 +347,7 @@ fn (mut f Storage) create_sequence(sequence Sequence) ! {
 fn (mut f Storage) sequence(name Identifier) !Sequence {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	value_object := f.sequence_value_object(name.storage_id()) or {
@@ -366,7 +369,7 @@ fn (mut f Storage) sequence(name Identifier) !Sequence {
 fn (mut f Storage) sequences() ![]Sequence {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	mut sequences := []Sequence{}
@@ -387,7 +390,7 @@ fn (mut f Storage) sequence_next_value(name Identifier) !i64 {
 
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	mut sequence := f.sequence(name)!
@@ -421,7 +424,7 @@ fn (mut f Storage) sequence_value_object(storage_id string) !PageObject {
 fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	mut canonical_name := new_sequence.name.storage_id()
@@ -444,7 +447,7 @@ fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence)
 fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	table_id := f.tables[table_name].id
@@ -463,7 +466,7 @@ fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 fn (mut f Storage) delete_schema(schema_name string, tid u64) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	f.btree.expire('S${schema_name}'.bytes(), tid, f.transaction_id)!
@@ -475,7 +478,7 @@ fn (mut f Storage) delete_schema(schema_name string, tid u64) ! {
 fn (mut f Storage) delete_sequence(name Identifier, tid u64) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	value_obj := f.sequence_value_object(name.storage_id())!
@@ -486,7 +489,7 @@ fn (mut f Storage) delete_sequence(name Identifier, tid u64) ! {
 fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	page_number := f.btree.expire(row.object_key(f.tables[table_name])!, row.tid, f.transaction_id)!
@@ -503,7 +506,7 @@ fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
 fn (mut f Storage) write_row(mut r Row, t Table) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	f.assign_row_id(mut r, t)
@@ -531,7 +534,7 @@ fn (mut f Storage) assign_row_id(mut r Row, t Table) {
 fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	f.assign_row_id(mut new, t)
@@ -546,7 +549,7 @@ fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ! {
 fn (mut f Storage) read_rows(table_name Identifier) ![]Row {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.end_isolation()
 	}
 
 	mut rows := []Row{}
@@ -578,6 +581,8 @@ fn (mut f Storage) read_objects(start []u8, end []u8) ![]PageObject {
 // transaction will be created. Otherwise, this isolation block will be part of
 // the current transaction.
 fn (mut f Storage) isolation_start() ! {
+	fault_point('isolation_start')!
+
 	match f.transaction_state {
 		.not_active {
 			// Fallthrough to the logic below.
@@ -602,11 +607,33 @@ fn (mut f Storage) isolation_start() ! {
 	f.header.active_transaction_ids.add(f.transaction_id)!
 }
 
+// end_isolation is isolation_end for a defer, which can't return an error. The
+// error is kept for take_isolation_error instead, so that the statement fails
+// (and is discarded) rather than the process stopping.
+fn (mut f Storage) end_isolation() {
+	f.isolation_end() or {
+		if f.isolation_error == none {
+			f.isolation_error = err
+		}
+	}
+}
+
+// take_isolation_error returns (and forgets) the error from end_isolation, if
+// there was one.
+fn (mut f Storage) take_isolation_error() ! {
+	if err := f.isolation_error {
+		f.isolation_error = none
+		return err
+	}
+}
+
 // isolation_end must be called at some point after isolation_start to signal
 // the end of the atomic blocks. At the moment blocks cannot be nested so the
 // state of the active or implicit transaction state is expected to be
 // maintained.
 fn (mut f Storage) isolation_end() ! {
+	fault_point('isolation_end')!
+
 	// The B-tree is replaced for each operation, so the pages it changed must
 	// be kept with the transaction before then.
 	for page_number, _ in f.btree.written_pages {

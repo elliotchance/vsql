@@ -333,6 +333,10 @@ The faults are:
   the database file.
 - ``recover``: copying a statement that was left in the write-ahead log into
   the database file.
+- ``isolation_start``: starting the isolation block of an operation on the
+  file.
+- ``isolation_end``: ending the isolation block of an operation on the file,
+  which removes the rows that were deleted outside of a transaction.
 
 Each fault is a ``fault_point()`` or ``fault_reached()`` call in the code, see
 ``vsql/fault.v``. A test with a fault only runs on disk.

@@ -72,6 +72,20 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, p
 // group_column finds the column for a GROUP BY expression in the tables of the
 // FROM clause. A qualified name (such as "b.x") must match the table name.
 fn group_column(expr Identifier, tables map[string]Table) !Column {
+	// An unqualified column name must only be in one of the tables (6.6 Syntax
+	// Rule 8c).
+	if expr.entity_name == '' {
+		mut tables_with_column := map[string]bool{}
+		for _, table in tables {
+			if _ := table.column(expr.sub_entity_name) {
+				tables_with_column[table.name.id()] = true
+			}
+		}
+		if tables_with_column.len > 1 {
+			return sqlstate_42702(expr.sub_entity_name)
+		}
+	}
+
 	for _, table in tables {
 		if expr.entity_name != '' && expr.entity_name != table.name.entity_name
 			&& expr.entity_name != table.name.sub_entity_name {

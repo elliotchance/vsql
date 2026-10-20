@@ -366,6 +366,22 @@ A client that receives this error should retry the transaction.
   CREATE TABLE ABS (x INT);
   -- error 42601: syntax error: table name cannot be reserved word: ABS
 
+``42702`` ambiguous column
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A column name without a table is in more than one table of the ``FROM`` clause.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE a (id INT);
+  CREATE TABLE b (id INT);
+  SELECT id FROM a JOIN b ON TRUE;
+  -- msg: CREATE TABLE 1
+  -- msg: CREATE TABLE 1
+  -- error 42702: ambiguous column: ID
+
 ``42703`` column does not exist
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

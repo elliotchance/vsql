@@ -28,6 +28,7 @@ struct ValuesOperation {
 	offset      Value
 	correlation Correlation
 	params      map[string]Value
+	columns     Columns
 mut:
 	conn &Connection
 }
@@ -38,28 +39,56 @@ mut:
 //  may be removed in the future. Run the test suite a few times and if it
 //  passes you're in the clear.
 fn new_values_operation(rows []RowValueConstructor, offset Value, correlation Correlation, mut conn Connection, params map[string]Value) !&ValuesOperation {
-	for row in rows {
-		match row {
-			ExplicitRowValueConstructor {
-				match row {
-					ExplicitRowValueConstructorRow {
-						if correlation.columns.len > 0 && row.exprs.len != correlation.columns.len {
-							return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
-						}
-					}
-					QueryExpression {
-						// TODO(elliotchance): Row subqueries (F641) are not supported yet.
-						return sqlstate_42601('subqueries are not supported in VALUES')
-					}
-				}
-			}
-			CommonValueExpression, BooleanValueExpression {
-				// Nothing to validate in this case.
+	mut c := Compiler{
+		conn:   conn
+		params: params
+	}
+
+	// All rows must have the same number of columns, and each column has the
+	// combined type of that column in every row (9.5).
+	//
+	// ISO/IEC 9075-2:2016(E), 7.3, <table value constructor>, Syntax Rules, 1
+	// and 4
+	mut types := []Type{}
+	for i, row in rows {
+		compiled := row.compile_elements(mut c)!
+		if i == 0 {
+			types = compiled.map(Type{it.typ.typ, it.typ.size, it.typ.scale, false})
+			continue
+		}
+
+		if compiled.len != types.len {
+			return sqlstate_42601('VALUES rows must have the same number of columns')
+		}
+
+		for j, column in compiled {
+			types[j] = combine_types(types[j], column.typ) or {
+				return sqlstate_42804('in row ${i + 1}, column ${j + 1} of VALUES',
+					types[j].str(), column.typ.str())
 			}
 		}
 	}
 
-	return &ValuesOperation{rows, offset, correlation, params, conn}
+	if correlation.columns.len > 0 && correlation.columns.len != types.len {
+		return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
+	}
+
+	mut columns := []Column{}
+	for i, typ in types {
+		name := if correlation.columns.len > 0 {
+			correlation.columns[i]
+		} else {
+			Identifier{
+				sub_entity_name: 'COL${i + 1}'
+			}
+		}
+		columns << Column{
+			name: name
+			typ:  typ
+		}
+	}
+
+	return &ValuesOperation{rows, offset, correlation, params, columns, conn}
 }
 
 fn (o &ValuesOperation) str() string {
@@ -72,75 +101,7 @@ fn (o &ValuesOperation) str() string {
 }
 
 fn (o &ValuesOperation) columns() Columns {
-	mut c := Compiler{
-		conn:   o.conn
-		params: o.params
-	}
-	e := o.rows[0]
-	if o.correlation.columns.len > 0 {
-		mut columns := []Column{}
-		for i, column in o.correlation.columns {
-			match e {
-				ExplicitRowValueConstructor {
-					match e {
-						ExplicitRowValueConstructorRow {
-							typ := (e.exprs[i].compile(mut c) or { panic(err) }).typ
-							columns << Column{
-								name: column
-								typ:  typ
-							}
-						}
-						QueryExpression {
-							panic('query expressions cannot be used in ROW constructors')
-						}
-					}
-				}
-				CommonValueExpression, BooleanValueExpression {
-					columns << Column{
-						name: column
-						typ:  (e.compile(mut c) or { panic(err) }).typ
-					}
-				}
-			}
-		}
-
-		return columns
-	}
-
-	mut columns := []Column{}
-
-	// TODO(elliotchance): All check all exprs are ExplicitRowValueConstructorRow
-	//  AND they have the right number of columns AND types.
-	match e {
-		ExplicitRowValueConstructor {
-			match e {
-				ExplicitRowValueConstructorRow {
-					for i in 1 .. e.exprs.len + 1 {
-						typ := (e.exprs[i - 1].compile(mut c) or { panic(err) }).typ
-						columns << Column{
-							name: Identifier{
-								sub_entity_name: 'COL${i}'
-							}
-							typ:  typ
-						}
-					}
-				}
-				QueryExpression {
-					panic('query expressions cannot be used in ROW constructors')
-				}
-			}
-		}
-		CommonValueExpression, BooleanValueExpression {
-			columns << Column{
-				name: Identifier{
-					sub_entity_name: 'COL1'
-				}
-				typ:  (e.compile(mut c) or { panic(err) }).typ
-			}
-		}
-	}
-
-	return columns
+	return o.columns
 }
 
 fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
@@ -167,8 +128,9 @@ fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
 		for mut row in rows {
 			mut data := map[string]Value{}
 			for i in 1 .. row.data.len + 1 {
-				name := columns[i - 1].name
-				data[name.sub_entity_name] = row.data['COL${i}']
+				column := columns[i - 1]
+				data[column.name.sub_entity_name] = convert_to_combined_type(mut o.conn,
+					'in VALUES', row.data['COL${i}'], column.typ)!
 			}
 
 			row = Row{

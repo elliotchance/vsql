@@ -692,10 +692,13 @@ COALESCE
 
 .. code-block:: sql
 
-   COALESCE(VALUE, ...)
+   COALESCE(VALUE, VALUE, ...)
 
 ``COALESCE`` returns the first value that is not ``NULL``. If all values are
-``NULL`` then ``NULL`` is also returned.
+``NULL`` then ``NULL`` is also returned. It needs at least two values and they
+must have compatible types (all character strings, all numbers, all
+``BOOLEAN`` or the same kind of date or time). The result has a type that can
+hold any of them, so ``COALESCE(1, 2.5)`` is a ``NUMERIC``.
 
 .. code-block:: sql
 

@@ -17,9 +17,7 @@ SELECT * FROM (VALUES 1.23);
 -- COL1: 1.23
 
 SELECT * FROM (VALUES 1, 'foo', TRUE);
--- COL1: 1
--- COL1: foo
--- COL1: TRUE
+-- error 42804: data type mismatch in row 2, column 1 of VALUES: expected SMALLINT but got CHARACTER(3)
 
 EXPLAIN SELECT * FROM (VALUES ROW(1, 'foo', TRUE));
 -- EXPLAIN: $1:
@@ -28,10 +26,7 @@ EXPLAIN SELECT * FROM (VALUES ROW(1, 'foo', TRUE));
 -- EXPLAIN: EXPR ($1.COL1 SMALLINT, $1.COL2 CHARACTER(3), $1.COL3 BOOLEAN)
 
 EXPLAIN SELECT * FROM (VALUES 1, 'foo', TRUE) AS t1 (abc, col2, "f");
--- EXPLAIN: T1:
--- EXPLAIN:   VALUES (ABC SMALLINT, COL2 SMALLINT, "f" SMALLINT) = ROW(1), ROW('foo'), ROW(TRUE)
--- EXPLAIN: TABLE T1 (ABC SMALLINT, COL2 SMALLINT, "f" SMALLINT)
--- EXPLAIN: EXPR (T1.ABC SMALLINT, T1.COL2 SMALLINT, T1."f" SMALLINT)
+-- error 42804: data type mismatch in row 2, column 1 of VALUES: expected SMALLINT but got CHARACTER(3)
 
 EXPLAIN SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t1 (abc, col2, "f");
 -- EXPLAIN: T1:
@@ -40,7 +35,7 @@ EXPLAIN SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t1 (abc, col2, "f");
 -- EXPLAIN: EXPR (T1.ABC SMALLINT, T1.COL2 CHARACTER(3), T1."f" BOOLEAN)
 
 SELECT * FROM (VALUES 1, 'foo', TRUE) AS t1 (abc, col2, "f");
--- error 42601: syntax error: unknown column: T1.COL2
+-- error 42804: data type mismatch in row 2, column 1 of VALUES: expected SMALLINT but got CHARACTER(3)
 
 SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t1 (abc, col2, "f");
 -- ABC: 1 COL2: foo f: TRUE
@@ -51,8 +46,7 @@ VALUES 'cool';
 
 /* types */
 VALUES 'cool', 12.3;
--- COL1: cool (CHARACTER(4))
--- COL1: 12.3 (NUMERIC(3, 1))
+-- error 42804: data type mismatch in row 2, column 1 of VALUES: expected CHARACTER(4) but got NUMERIC(3, 1)
 
 /* types */
 VALUES ROW('cool', 12.3);
@@ -70,7 +64,7 @@ EXPLAIN VALUES 'hello';
 -- EXPLAIN: VALUES (COL1 CHARACTER(5)) = ROW('hello')
 
 EXPLAIN VALUES 'hello', 1.22;
--- EXPLAIN: VALUES (COL1 CHARACTER(5)) = ROW('hello'), ROW(1.22)
+-- error 42804: data type mismatch in row 2, column 1 of VALUES: expected CHARACTER(5) but got NUMERIC(3, 2)
 
 EXPLAIN VALUES ROW('hello', 1.22);
 -- EXPLAIN: VALUES (COL1 CHARACTER(5), COL2 NUMERIC(3, 2)) = ROW('hello', 1.22)
@@ -91,9 +85,9 @@ SELECT * FROM (VALUES ROW(123, 'hi'), ROW(456, 'there'));
 
 EXPLAIN SELECT * FROM (VALUES ROW(123, 'hi'), ROW(456, 'there'));
 -- EXPLAIN: $1:
--- EXPLAIN:   VALUES (COL1 SMALLINT, COL2 CHARACTER(2)) = ROW(123, 'hi'), ROW(456, 'there')
--- EXPLAIN: TABLE $1 (COL1 SMALLINT, COL2 CHARACTER(2))
--- EXPLAIN: EXPR ($1.COL1 SMALLINT, $1.COL2 CHARACTER(2))
+-- EXPLAIN:   VALUES (COL1 SMALLINT, COL2 CHARACTER(5)) = ROW(123, 'hi'), ROW(456, 'there')
+-- EXPLAIN: TABLE $1 (COL1 SMALLINT, COL2 CHARACTER(5))
+-- EXPLAIN: EXPR ($1.COL1 SMALLINT, $1.COL2 CHARACTER(5))
 
 SELECT * FROM (VALUES ROW(123, 'hi'), ROW(456, 'there')) AS foo (bar, baz);
 -- BAR: 123 BAZ: hi
@@ -102,16 +96,16 @@ SELECT * FROM (VALUES ROW(123, 'hi'), ROW(456, 'there')) AS foo (bar, baz);
 EXPLAIN SELECT *
 FROM (VALUES ROW(123, 'hi'), ROW(456, 'there')) AS foo (bar, baz);
 -- EXPLAIN: FOO:
--- EXPLAIN:   VALUES (BAR SMALLINT, BAZ CHARACTER(2)) = ROW(123, 'hi'), ROW(456, 'there')
--- EXPLAIN: TABLE FOO (BAR SMALLINT, BAZ CHARACTER(2))
--- EXPLAIN: EXPR (FOO.BAR SMALLINT, FOO.BAZ CHARACTER(2))
+-- EXPLAIN:   VALUES (BAR SMALLINT, BAZ CHARACTER(5)) = ROW(123, 'hi'), ROW(456, 'there')
+-- EXPLAIN: TABLE FOO (BAR SMALLINT, BAZ CHARACTER(5))
+-- EXPLAIN: EXPR (FOO.BAR SMALLINT, FOO.BAZ CHARACTER(5))
 
 SELECT * FROM (VALUES 1, 2) AS t1 (foo);
 -- FOO: 1
 -- FOO: 2
 
 SELECT * FROM (VALUES 1, 2) AS t1 (foo, bar, baz);
--- error 42601: syntax error: unknown column: T1.BAR
+-- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
 
 SELECT * FROM (VALUES ROW(1, 2), ROW(3, 4)) AS t1 (foo, bar);
 -- FOO: 1 BAR: 2
@@ -121,7 +115,7 @@ SELECT * FROM (VALUES ROW(1, 2), ROW(3, 4)) AS t1 (foo);
 -- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
 
 SELECT * FROM (VALUES ROW(1), ROW(3, 4)) AS t1 (foo, bar);
--- error 42601: syntax error: ROW provides the wrong number of columns for the correlation
+-- error 42601: syntax error: VALUES rows must have the same number of columns
 
 EXPLAIN SELECT * FROM (VALUES ROW(1, 2), ROW(3, 4), ROW(5, 6)) AS t1 (foo, bar)
 FETCH FIRST 2 ROWS ONLY;
@@ -151,3 +145,24 @@ OFFSET 1 ROW;
 
 SELECT * FROM (VALUES ROW(1, 2), ROW(3, 4), ROW(5, 6)) AS t1 (foo, bar)
 OFFSET 10 ROWS;
+
+/* types */
+VALUES 1, 200000, 3;
+-- COL1: 1 (INTEGER)
+-- COL1: 200000 (INTEGER)
+-- COL1: 3 (INTEGER)
+
+EXPLAIN VALUES 'a', 'abc', CAST('de' AS VARCHAR(10));
+-- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW('a'), ROW('abc'), ROW(CAST('de' AS CHARACTER VARYING(10)))
+
+EXPLAIN VALUES ROW(1, 1.5), ROW(2.25, 3e0);
+-- EXPLAIN: VALUES (COL1 NUMERIC(7, 2), COL2 DOUBLE PRECISION) = ROW(1, 1.5), ROW(2.25, 3e0)
+
+VALUES TRUE, 1;
+-- error 42804: data type mismatch in row 2, column 1 of VALUES: expected BOOLEAN but got SMALLINT
+
+VALUES ROW(1, 'a'), ROW(2, DATE '2022-06-30');
+-- error 42804: data type mismatch in row 2, column 2 of VALUES: expected CHARACTER(1) but got DATE
+
+VALUES ROW(1, 2), ROW(3);
+-- error 42601: syntax error: VALUES rows must have the same number of columns

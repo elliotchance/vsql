@@ -25,6 +25,11 @@ but rather need to be wrapped in a ``SELECT``:
 
   SELECT * FROM (VALUES ROW(1, 2, 3)) AS t1 (foo, bar, baz);
 
+Every row must have the same number of columns, and the values in each column
+must have compatible types (all character strings, all numbers, all ``BOOLEAN``
+or the same kind of date or time). The column has a type that can hold all of
+them, such as ``INTEGER`` for ``VALUES 1, 200000``.
+
 EXPLAIN
 -------
 

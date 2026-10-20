@@ -36,7 +36,7 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 
 			return new_bigint_value(next)
 		}
-		typ:          new_type('INTEGER', 0, 0)
+		typ:          new_type('BIGINT', 0, 0)
 		contains_agg: false
 	}
 }

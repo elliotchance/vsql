@@ -10,8 +10,10 @@ case_abbreviation:
       $5.v as ValueExpression
     })
   }
-| COALESCE left_paren value_expression_list right_paren {
-    $$.v = CaseExpression(CaseExpressionCoalesce{$3.v as []ValueExpression})
+| COALESCE left_paren value_expression comma value_expression_list right_paren {
+    $$.v = CaseExpression(CaseExpressionCoalesce{
+      prepend_list($3.v as ValueExpression, $5.v as []ValueExpression)
+    })
   }
 
 // These are non-standard, just to simplify standard rules:

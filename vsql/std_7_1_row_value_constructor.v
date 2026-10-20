@@ -107,6 +107,27 @@ fn (e RowValueConstructor) compile(mut c Compiler) !CompileResult {
 	}
 }
 
+// compile_elements compiles each value in the row, so a ROW (or a parenthesized
+// list) has one for each column and anything else is a single column.
+fn (r RowValueConstructor) compile_elements(mut c Compiler) ![]CompileResult {
+	match r {
+		ExplicitRowValueConstructor {
+			match r {
+				ExplicitRowValueConstructorRow {
+					return r.exprs.map(it.compile(mut c)!)
+				}
+				QueryExpression {
+					// TODO(elliotchance): Row subqueries (F641) are not supported yet.
+					return sqlstate_42601('subqueries are not supported in VALUES')
+				}
+			}
+		}
+		CommonValueExpression, BooleanValueExpression {
+			return [r.compile(mut c)!]
+		}
+	}
+}
+
 fn (r RowValueConstructor) eval_row(mut conn Connection, data Row, params map[string]Value) !Row {
 	mut col_number := 1
 	mut row := map[string]Value{}

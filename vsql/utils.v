@@ -48,6 +48,12 @@ fn append_list[T](list []T, element T) []T {
 	return new_list
 }
 
+fn prepend_list[T](element T, list []T) []T {
+	mut new_list := [element]
+	new_list << list
+	return new_list
+}
+
 fn push_list[T](element T, list []T) []T {
 	mut new_list := [element]
 	for e in list {

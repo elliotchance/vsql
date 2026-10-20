@@ -50,7 +50,6 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	table := catalog.storage.tables[table_name.storage_id()]
 
-	mut modify_count := 0
 	for mut row in rows {
 		conn.begin_row()
 		mut did_modify := false
@@ -102,9 +101,9 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			}
 		}
 
+		// A row that doesn't change isn't written, but it's still counted.
 		if did_modify {
 			// To be able to write the row back we need to clean the column names.
-			modify_count++
 			catalog.storage.update_row(mut row.for_storage(), mut row2.for_storage(), table)!
 		}
 	}
@@ -117,7 +116,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	//
 	// We could do this before the UPDATE to catch the error earlier, but that
 	// comes at the cost of evaulating the row when we might not need to.
-	if modify_count == 0 {
+	if rows.len == 0 {
 		conn.dry_run = true
 		defer {
 			conn.dry_run = false
@@ -147,7 +146,11 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		}
 	}
 
-	return new_result_msg('UPDATE ${modify_count}', elapsed_parse, t.elapsed())
+	// The count is every row identified by the UPDATE, even if its values didn't
+	// change.
+	//
+	// ISO/IEC 9075-2:2016(E), 23.1, General Rules, f iii
+	return new_result_msg('UPDATE ${rows.len}', elapsed_parse, t.elapsed())
 }
 
 fn (stmt UpdateStatementSearched) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {

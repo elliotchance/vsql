@@ -28,11 +28,11 @@ VALUES 2.2 * 3.3;
 
 /* types */
 VALUES 6.0 / 2.5;
--- COL1: 2.4 (NUMERIC(4, 2))
+-- COL1: 2.40 (NUMERIC(4, 2))
 
 /* types */
 VALUES 0.0 / 2.5;
--- COL1: 0 (NUMERIC(4, 2))
+-- COL1: 0.00 (NUMERIC(4, 2))
 
 /* types */
 VALUES 2.5 / 0.0;
@@ -48,7 +48,7 @@ VALUES +1.23;
 
 /* types */
 VALUES 1.5 + 2.4 * 7.0;
--- COL1: 18.3 (NUMERIC(5, 2))
+-- COL1: 18.30 (NUMERIC(5, 2))
 
 VALUES 30000 + 30000;
 -- error 22003: numeric value out of range
@@ -102,4 +102,4 @@ INSERT INTO t (x, n) VALUES (1, 2.5);
 SELECT x + n, n + x, x - n, x * n FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- COL1: 3.5 COL2: 3.5 COL3: -1.5 COL4: 2.5
+-- COL1: 3.50 COL2: 3.50 COL3: -1.50 COL4: 2.50

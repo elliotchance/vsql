@@ -242,7 +242,7 @@ best understood with some examples:
 .. code-block:: sql
 
    VALUES CAST(1.23 AS NUMERIC(3,2)) / CAST(5 AS NUMERIC) * CAST(5 AS NUMERIC);
-   -- 1.2
+   -- 1.20
 
 Because:
 

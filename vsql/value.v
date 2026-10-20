@@ -418,12 +418,9 @@ pub fn (v Value) str() string {
 			v.time_value().str()
 		}
 		.is_decimal, .is_numeric {
-			s := v.numeric_value().str()
-			if s.contains('.') {
-				return s.trim_right('0').trim_right('.')
-			}
-
-			return s
+			// Trailing zeros up to the scale are part of the value, so 12.00 isn't
+			// shown as 12 (6.13 General Rule 11a).
+			v.numeric_value().str()
 		}
 	}
 }

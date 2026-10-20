@@ -11,3 +11,19 @@ VALUES NULLIF(123, 456);
 
 VALUES NULLIF(123, 'hello');
 -- error 42804: data type mismatch in NULLIF: expected SMALLINT but got CHARACTER(5)
+
+CREATE TABLE t (x INT);
+INSERT INTO t (x) VALUES (NULL), (1), (2);
+SELECT NULLIF(x, 1) FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 3
+-- COL1: NULL
+-- COL1: NULL
+-- COL1: 2
+
+/* types */
+VALUES ROW(NULLIF(2, 2e0), NULLIF(CAST(3 AS BIGINT), 1.5), NULLIF('a', CAST('b' AS VARCHAR(5))));
+-- COL1: NULL (SMALLINT) COL2: 3 (BIGINT) COL3: a (CHARACTER(1))
+
+VALUES NULLIF(TRUE, 1);
+-- error 42804: data type mismatch in NULLIF: expected BOOLEAN but got SMALLINT

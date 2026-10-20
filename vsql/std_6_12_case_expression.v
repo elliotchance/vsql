@@ -23,14 +23,18 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			compiled_a := e.a.compile(mut c)!
 			compiled_b := e.b.compile(mut c)!
 
+			// NULLIF(V1, V2) is CASE WHEN V1 = V2 THEN NULL ELSE V1 END, so the
+			// values only need to be comparable, such as an INTEGER and a SMALLINT.
+			//
+			// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 1c
+			if !comparable_types(compiled_a.typ.typ, compiled_b.typ.typ) {
+				return sqlstate_42804('in NULLIF', compiled_a.typ.str(), compiled_b.typ.str())
+			}
+
 			return CompileResult{
 				run:          fn [compiled_a, compiled_b] (mut conn Connection, data Row, params map[string]Value) !Value {
 					a := compiled_a.run(mut conn, data, params)!
 					b := compiled_b.run(mut conn, data, params)!
-
-					if a.typ.typ != b.typ.typ {
-						return sqlstate_42804('in NULLIF', a.typ.str(), b.typ.str())
-					}
 
 					cmp := compare(conn, a, b)!
 					if cmp == .is_equal {
@@ -92,4 +96,11 @@ struct CaseExpressionNullIf {
 
 struct CaseExpressionCoalesce {
 	exprs []ValueExpression
+}
+
+// comparable_types is true when values of the types can be compared, such as
+// two numbers or two character strings (4.2 to 4.7).
+fn comparable_types(t1 SQLType, t2 SQLType) bool {
+	return (t1.is_number() && t2.is_number()) || (t1.is_string() && t2.is_string())
+		|| (t1 == .is_boolean && t2 == .is_boolean) || (t1.is_datetime() && t2.is_datetime())
 }

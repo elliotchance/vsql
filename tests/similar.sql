@@ -175,6 +175,12 @@ VALUES 'a' SIMILAR TO 'a{0}';
 VALUES 'a' SIMILAR TO 'a{3,2}';
 -- error 2201B: invalid regular expression
 
+VALUES 'aab' SIMILAR TO 'a{,2}b';
+-- error 2201B: invalid regular expression
+
+VALUES 'a(' SIMILAR TO 'a(';
+-- error 2201B: invalid regular expression
+
 VALUES 'a' SIMILAR TO '[[:FOO:]]';
 -- error 2201B: invalid regular expression
 

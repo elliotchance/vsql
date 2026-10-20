@@ -109,6 +109,12 @@ VALUES '$5^' LIKE '$5^';
 VALUES 'a\b' LIKE 'a\b';
 -- COL1: TRUE
 
+VALUES ROW('ab' LIKE '%_', 'ab' LIKE '_%', 'ab' LIKE '__', 'ab' LIKE '%%');
+-- COL1: TRUE COL2: TRUE COL3: TRUE COL4: TRUE
+
+VALUES ROW('' LIKE '%_', 'a' LIKE '__', 'abc' LIKE '_%_', 'a' LIKE '_%_');
+-- COL1: FALSE COL2: FALSE COL3: TRUE COL4: FALSE
+
 VALUES 'abd' LIKE 'a(b|c)d';
 -- COL1: FALSE
 

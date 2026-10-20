@@ -41,7 +41,7 @@ sign:
 approximate_numeric_literal:
   mantissa E exponent {
     $$.v = approximate_numeric_literal_value(($1.v as Value).str() + 'e' +
-      ($3.v as Value).str())
+      ($3.v as Value).str())!
   }
 
 mantissa:

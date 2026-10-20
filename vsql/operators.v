@@ -113,7 +113,7 @@ fn unary_negate_real(conn &Connection, v Value) !Value {
 }
 
 fn binary_double_precision_plus_double_precision(conn &Connection, a Value, b Value) !Value {
-	return new_double_precision_value(a.f64_value() + b.f64_value())
+	return approximate_value(a.f64_value() + b.f64_value(), .is_double_precision)
 }
 
 fn binary_integer_plus_integer(conn &Connection, a Value, b Value) !Value {
@@ -132,7 +132,7 @@ fn binary_bigint_plus_bigint(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_double_precision_minus_double_precision(conn &Connection, a Value, b Value) !Value {
-	return new_double_precision_value(a.f64_value() - b.f64_value())
+	return approximate_value(a.f64_value() - b.f64_value(), .is_double_precision)
 }
 
 fn binary_integer_minus_integer(conn &Connection, a Value, b Value) !Value {
@@ -151,7 +151,7 @@ fn binary_bigint_minus_bigint(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_double_precision_multiply_double_precision(conn &Connection, a Value, b Value) !Value {
-	return new_double_precision_value(a.f64_value() * b.f64_value())
+	return approximate_value(a.f64_value() * b.f64_value(), .is_double_precision)
 }
 
 fn binary_integer_multiply_integer(conn &Connection, a Value, b Value) !Value {
@@ -174,7 +174,7 @@ fn binary_double_precision_divide_double_precision(conn &Connection, a Value, b 
 		return sqlstate_22012() // division by zero
 	}
 
-	return new_double_precision_value(a.f64_value() / b.f64_value())
+	return approximate_value(a.f64_value() / b.f64_value(), .is_double_precision)
 }
 
 fn binary_integer_divide_integer(conn &Connection, a Value, b Value) !Value {
@@ -256,15 +256,15 @@ fn binary_smallint_divide_smallint(conn &Connection, a Value, b Value) !Value {
 }
 
 fn binary_real_plus_real(conn &Connection, a Value, b Value) !Value {
-	return new_real_value(f32(a.f64_value() + b.f64_value()))
+	return approximate_value(a.f64_value() + b.f64_value(), .is_real)
 }
 
 fn binary_real_minus_real(conn &Connection, a Value, b Value) !Value {
-	return new_real_value(f32(a.f64_value() - b.f64_value()))
+	return approximate_value(a.f64_value() - b.f64_value(), .is_real)
 }
 
 fn binary_real_multiply_real(conn &Connection, a Value, b Value) !Value {
-	return new_real_value(f32(a.f64_value() * b.f64_value()))
+	return approximate_value(a.f64_value() * b.f64_value(), .is_real)
 }
 
 fn binary_real_divide_real(conn &Connection, a Value, b Value) !Value {
@@ -272,7 +272,7 @@ fn binary_real_divide_real(conn &Connection, a Value, b Value) !Value {
 		return sqlstate_22012() // division by zero
 	}
 
-	return new_real_value(f32(a.f64_value() / b.f64_value()))
+	return approximate_value(a.f64_value() / b.f64_value(), .is_real)
 }
 
 fn binary_decimal_plus_decimal(conn &Connection, a Value, b Value) !Value {

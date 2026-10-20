@@ -126,11 +126,23 @@ fn func_tanh(args []Value) !Value {
 
 // ASIN(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_asin(args []Value) !Value {
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules,
+	// 10b ii
+	if args[0].f64_value() < -1 || args[0].f64_value() > 1 {
+		return sqlstate_22003()
+	}
+
 	return new_double_precision_value(math.asin(args[0].f64_value()))
 }
 
 // ACOS(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_acos(args []Value) !Value {
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules,
+	// 10b i
+	if args[0].f64_value() < -1 || args[0].f64_value() > 1 {
+		return sqlstate_22003()
+	}
+
 	return new_double_precision_value(math.acos(args[0].f64_value()))
 }
 
@@ -182,27 +194,57 @@ fn func_mod_integer(args []Value) !Value {
 
 // LOG10(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_log10(args []Value) !Value {
+	// LOG10(x) is LOG(10, x).
+	//
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 11b
+	if args[0].f64_value() <= 0 {
+		return sqlstate_22003()
+	}
+
 	return new_double_precision_value(math.log10(args[0].f64_value()))
 }
 
 // LN(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_ln(args []Value) !Value {
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 12b
+	if args[0].f64_value() <= 0 {
+		return sqlstate_2201e()
+	}
+
 	return new_double_precision_value(math.log(args[0].f64_value()))
 }
 
 // EXP(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_exp(args []Value) !Value {
-	return new_double_precision_value(math.exp(args[0].f64_value()))
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 13b
+	return approximate_value(math.exp(args[0].f64_value()), .is_double_precision)
 }
 
 // SQRT(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_sqrt(args []Value) !Value {
+	// SQRT(x) is POWER(x, 0.5), so x can't be negative.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 19
+	if args[0].f64_value() < 0 {
+		return sqlstate_2201f()
+	}
+
 	return new_double_precision_value(math.sqrt(args[0].f64_value()))
 }
 
 // POWER(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
 fn func_power(args []Value) !Value {
-	return new_double_precision_value(math.pow(args[0].f64_value(), args[1].f64_value()))
+	base := args[0].f64_value()
+	exponent := args[1].f64_value()
+
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules,
+	// 14b and 14e: a zero base can't have a negative exponent, and a negative
+	// base needs a whole number exponent.
+	if (base == 0 && exponent < 0) || (base < 0 && exponent != math.trunc(exponent)) {
+		return sqlstate_2201f()
+	}
+
+	return approximate_value(math.pow(base, exponent), .is_double_precision)
 }
 
 // FLOOR(DOUBLE PRECISION) DOUBLE PRECISION

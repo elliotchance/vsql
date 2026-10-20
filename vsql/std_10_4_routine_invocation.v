@@ -65,14 +65,14 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 			for i, typ in arg_types {
 				// The argument may need to be implicitly cast to the parameter type,
 				// such as a SMALLINT to a DOUBLE PRECISION. The size is stripped so
-				// the value isn't truncated (see most_specific_type).
+				// the value isn't truncated (see implicit_cast_type).
+				arg := compiled_args[i].run(mut conn, data, params)!
 				mut target := typ
-				param_typ := found_func.arg_types[i].typ
-				if typ.typ != param_typ && typ.typ.is_number() {
-					target = Type{param_typ, 0, 0, false}
+				param_typ := found_func.arg_types[i]
+				if typ.typ != param_typ.typ && typ.typ.is_number() {
+					target = implicit_cast_type(arg, param_typ)
 				}
 
-				arg := compiled_args[i].run(mut conn, data, params)!
 				args << cast(mut conn, 'argument ${i + 1} in ${func_name}', arg, target)!
 			}
 

@@ -203,8 +203,8 @@ fn eval_binary(mut conn Connection, data Row, x Value, op string, y Value, param
 		supertype := most_specific_type(left.typ, right.typ) or {
 			return sqlstate_42883('operator does not exist: ${key}')
 		}
-		left = cast(mut conn, '', left, supertype)!
-		right = cast(mut conn, '', right, supertype)!
+		left = cast(mut conn, '', left, implicit_cast_type(left, supertype))!
+		right = cast(mut conn, '', right, implicit_cast_type(right, supertype))!
 		key = '${supertype.typ} ${op} ${supertype.typ}'
 	}
 

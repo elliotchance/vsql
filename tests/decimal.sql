@@ -1,5 +1,13 @@
 CREATE TABLE foo (bar DECIMAL);
--- error 42601: syntax error: column BAR: DECIMAL must specify a size
+INSERT INTO foo (bar) VALUES (12.7);
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- BAR: 12
+
+/* types */
+VALUES CAST(12.7 AS DECIMAL);
+-- COL1: 12 (DECIMAL)
 
 CREATE TABLE foo (bar DECIMAL(4, 2));
 INSERT INTO foo (bar) VALUES (1.23);
@@ -29,7 +37,7 @@ VALUES CAST(1234.5 AS DECIMAL(3, 0));
 -- error 22003: numeric value out of range
 
 VALUES CAST(-1.23 AS DECIMAL);
--- COL1: -1.23
+-- COL1: -1
 
 VALUES CAST(-12.34 AS DECIMAL(4, 2));
 -- COL1: -12.34

@@ -224,7 +224,7 @@ SELECT * FROM pk3;
 -- 1: msg: CREATE TABLE 1
 -- 1: msg: INSERT 1
 -- 1: msg: INSERT 1
--- 2: error 23505: violates unique constraint: PRIMARY KEY on PUBLIC.PK3
+-- 2: error 23505: violates unique constraint: PRIMARY KEY on "test".PUBLIC.PK3
 -- 2: A: 1 B: -2
 -- 2: A: 1 B: 2
 

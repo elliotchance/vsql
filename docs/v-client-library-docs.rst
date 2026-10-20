@@ -33,16 +33,6 @@ fn default_connection_options
 
 default_connection_options returns the sensible defaults used by open() and the correct base to provide your own option overrides. See ConnectionOptions.
 
-fn new_benchmark
-----------------
-
-
-.. code-block:: v
-
-   pub fn new_benchmark(conn &Connection) Benchmark
-
-
-
 fn new_bigint_value
 -------------------
 
@@ -330,23 +320,6 @@ enum Boolean
    }
 
 Possible values for a BOOLEAN.
-
-struct Benchmark
-----------------
-
-
-.. code-block:: v
-
-   pub struct Benchmark {
-   pub mut:
-   	conn         &Connection
-   	account_rows int
-   	teller_rows  int
-   	branch_rows  int
-   	run_for      time.Duration
-   }
-
-
 
 struct CatalogConnection
 ------------------------

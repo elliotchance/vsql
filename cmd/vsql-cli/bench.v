@@ -48,7 +48,7 @@ fn bench_command(cmd cli.Command) ! {
 
 	mut conn := vsql.open(file)!
 
-	mut benchmark := vsql.new_benchmark(conn)
+	mut benchmark := new_benchmark(conn)
 	accounts := cmd.flags.get_int('accounts') or { 0 }
 	if accounts > 0 {
 		benchmark.account_rows = accounts

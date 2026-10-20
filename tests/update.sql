@@ -13,7 +13,7 @@ SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- msg: INSERT 1
--- msg: UPDATE 1
+-- msg: UPDATE 2
 -- msg: UPDATE 2
 -- BAZ: other
 -- BAZ: other
@@ -27,8 +27,8 @@ UPDATE foo SET x = z;
 SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- msg: UPDATE 0
--- msg: UPDATE 0
+-- msg: UPDATE 1
+-- msg: UPDATE 1
 -- msg: UPDATE 0
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Z
 -- X: 1 Y: 2
@@ -43,7 +43,7 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- msg: INSERT 1
 -- msg: UPDATE 1
--- msg: UPDATE 0
+-- msg: UPDATE 1
 -- BAZ: 100e0
 -- BAZ: 78e0
 

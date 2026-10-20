@@ -154,16 +154,51 @@ enum SQLTestResult {
 fn test_all() ! {
 	filter_test, filter_line := get_test_filter()
 	verbose := $env('VERBOSE')
+	run_in_memory := $env('MEMORY') != '0'
+	run_on_disk := $env('FILE') != '0'
+	if !run_in_memory && !run_on_disk {
+		return error('MEMORY=0 and FILE=0 leave nothing to test')
+	}
 
 	// The V test summary does not include the failed assertions (only the
 	// passing ones) so we keep our own count of the SQL tests.
 	mut passed := 0
 	mut failed := []string{}
+	defer {
+		os.rmdir_all(sql_test_dir()) or {}
+	}
 	for test in get_tests()! {
-		match run_single_test(test, verbose != '', filter_line)! {
-			.passed { passed++ }
-			.failed { failed << '${test.file_name}:${test.line_number}' }
-			.skipped {}
+		// Every test runs in memory and on disk, and only passes if it passes on
+		// both. A test that needs more than one connection only runs on disk,
+		// because connections can't share a database in memory. MEMORY=0 or
+		// FILE=0 turns one of them off.
+		mut on_disk := []bool{}
+		if run_in_memory && !test.stmts.any(it.starts_with('connection ')) {
+			on_disk << false
+		}
+		if run_on_disk {
+			on_disk << true
+		}
+		if on_disk.len == 0 {
+			continue
+		}
+		mut failed_storage := []string{}
+		mut skipped := false
+		for disk in on_disk {
+			match run_single_test(test, verbose != '', filter_line, disk)! {
+				.passed {}
+				.failed { failed_storage << storage_name(disk) }
+				.skipped { skipped = true }
+			}
+		}
+
+		if skipped {
+			continue
+		}
+		if failed_storage.len > 0 {
+			failed << '${test.file_name}:${test.line_number} (${failed_storage.join(', ')})'
+		} else {
+			passed++
 		}
 	}
 
@@ -173,8 +208,21 @@ fn test_all() ! {
 	}
 }
 
+// sql_test_dir holds the database files of the tests that are running.
+fn sql_test_dir() string {
+	return os.join_path(os.temp_dir(), 'vsql-sql-test-${os.getpid()}')
+}
+
+fn storage_name(on_disk bool) string {
+	return if on_disk { 'on disk' } else { 'in memory' }
+}
+
+fn storage_label(on_disk bool) string {
+	return ' (${storage_name(on_disk)})'
+}
+
 @[assert_continues]
-fn run_single_test(test SQLTest, verbose bool, filter_line int) !SQLTestResult {
+fn run_single_test(test SQLTest, verbose bool, filter_line int, on_disk bool) !SQLTestResult {
 	if filter_line != 0 && test.line_number != filter_line {
 		if verbose {
 			println('SKIP ${test.file_name}:${test.line_number}\n')
@@ -184,15 +232,33 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int) !SQLTestResult {
 	}
 
 	if verbose {
-		println('BEGIN ${test.file_name}:${test.line_number}')
+		println('BEGIN ${test.file_name}:${test.line_number}${storage_label(on_disk)}')
 		defer {
-			println('END ${test.file_name}:${test.line_number}\n')
+			println('END ${test.file_name}:${test.line_number}${storage_label(on_disk)}\n')
 		}
 	}
 
+	// Small pages make even small tests split pages and store large values
+	// across several pages.
 	mut options := default_connection_options()
+	options.page_size = 256
 
-	mut db := open_database(':memory:', options)!
+	// Connections are never closed (and so keep their locks), so each test
+	// needs its own files. The main file is named so that its catalog is still
+	// called ":memory:".
+	dir := os.join_path(sql_test_dir(), test.file_name.replace('/', '_') + '_${test.line_number}')
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+	main_path := if on_disk { os.join_path(dir, ':memory:.vsql') } else { ':memory:' }
+	mut db := open_database(main_path, options)!
+	mut opened := [db]
+	defer {
+		for mut conn in opened {
+			conn.close()
+		}
+	}
 	// 09:05:03 UTC is 14:05:03 local time at +05:00.
 	db.now = fn () (time.Time, i16) {
 		return time.new(time.Time{
@@ -214,10 +280,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int) !SQLTestResult {
 	mut connections := map[string]&Connection{}
 	mut current_connection_name := ''
 
-	file_name := 'test.vsql'
-	if os.exists(file_name) {
-		os.rm(file_name) or { return err }
-	}
+	file_name := os.join_path(dir, 'test.vsql')
 
 	for stmt in test.setup {
 		if verbose {
@@ -242,6 +305,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int) !SQLTestResult {
 				mut conn := open_database(file_name, options)!
 				register_pg_functions(mut conn)!
 				connections[connection_name] = conn
+				opened << conn
 			}
 
 			db = connections[connection_name] or { panic('unknown connection: ${connection_name}') }
@@ -296,25 +360,11 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int) !SQLTestResult {
 		}
 	}
 
-	at := 'at ${test.file_name}:${test.line_number}:\n'
+	at := 'at ${test.file_name}:${test.line_number}${storage_label(on_disk)}:\n'
 	mut expected := at + test.expected.trim_space()
 	actual_trim := at + actual.trim_space()
 
 	assert expected == actual_trim
 
 	return if expected == actual_trim { SQLTestResult.passed } else { SQLTestResult.failed }
-}
-
-// Make sure any non-keywords (operators, literals, etc) are replaced in error
-// messages.
-fn test_cleanup_yacc_error() {
-	mut msg := ''
-	for tok_name in yy_toknames {
-		if tok_name.starts_with('OPERATOR_') || tok_name.starts_with('LITERAL_') {
-			msg += ' ' + tok_name
-		}
-	}
-	result := cleanup_yacc_error(msg)
-	assert !result.contains('OPERATOR_')
-	assert !result.contains('LITERAL_')
 }

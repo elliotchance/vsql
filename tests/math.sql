@@ -17,7 +17,7 @@ VALUES ABS(1, 2);
 
 /* types */
 VALUES MOD(232.0, 3.0);
--- COL1: 1 (NUMERIC(5, 1))
+-- COL1: 1.0 (NUMERIC(5, 1))
 
 /* types */
 VALUES MOD(10.7, 0.8);
@@ -25,11 +25,11 @@ VALUES MOD(10.7, 0.8);
 
 /* types */
 VALUES MOD(232.000, 3.0);
--- COL1: 1 (NUMERIC(7, 3))
+-- COL1: 1.000 (NUMERIC(7, 3))
 
 /* types */
 VALUES MOD(232., 3.0000);
--- COL1: 1 (NUMERIC(8, 4))
+-- COL1: 1.0000 (NUMERIC(8, 4))
 
 /* types */
 VALUES ROW(FLOOR(3.7), FLOOR(3.3), FLOOR(-3.7), FLOOR(-3.3));

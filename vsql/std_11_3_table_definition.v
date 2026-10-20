@@ -38,7 +38,7 @@ fn (stmt TableDefinition) execute(mut conn Connection, params map[string]Value, 
 	mut catalog := conn.catalog()
 	mut table_name := conn.resolve_schema_identifier(stmt.table_name)!
 	if table_name.storage_id() in catalog.storage.tables {
-		return sqlstate_42p07(table_name.str()) // duplicate table
+		return sqlstate_42p07('table', table_name.str()) // duplicate table
 	}
 
 	table := stmt.table(table_name, 0)!

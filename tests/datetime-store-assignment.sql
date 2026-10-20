@@ -1,0 +1,23 @@
+-- # A datetime can only be stored in a column of the same kind of datetime
+-- # (DATE, TIME or TIMESTAMP), not another datetime or a character string.
+CREATE TABLE t (d DATE, tm TIME, ts TIMESTAMP, c VARCHAR(30));
+INSERT INTO t (d) VALUES (TIMESTAMP '2020-01-01 10:00:00');
+INSERT INTO t (ts) VALUES (DATE '2020-01-01');
+INSERT INTO t (tm) VALUES (TIMESTAMP '2020-01-01 10:00:00');
+INSERT INTO t (c) VALUES (DATE '2020-01-01');
+-- msg: CREATE TABLE 1
+-- error 42846: cannot coerce TIMESTAMP(0) WITHOUT TIME ZONE to DATE
+-- error 42846: cannot coerce DATE to TIMESTAMP(6) WITHOUT TIME ZONE
+-- error 42846: cannot coerce TIMESTAMP(0) WITHOUT TIME ZONE to TIME(0) WITHOUT TIME ZONE
+-- error 42846: cannot coerce DATE to CHARACTER VARYING(30)
+
+CREATE TABLE t (d DATE, tm TIME, ts TIMESTAMP WITH TIME ZONE);
+INSERT INTO t (d, tm, ts) VALUES (DATE '2020-01-01', TIME '10:00:00', TIMESTAMP '2020-01-01 10:00:00+05:00');
+UPDATE t SET d = TIMESTAMP '2020-01-01 10:00:00';
+UPDATE t SET tm = TIME '11:00:00+05:00', d = CAST(TIMESTAMP '2020-01-02 10:00:00' AS DATE);
+SELECT d, tm FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 42846: cannot coerce TIMESTAMP(0) WITHOUT TIME ZONE to DATE
+-- msg: UPDATE 1
+-- D: 2020-01-02 TM: 11:00:00

@@ -499,9 +499,21 @@ fn cast_numeric(mut conn Connection, v Value, t Type) !Value {
 			// NUMERIC/DECIMAL value if there is no specified destination precision.
 			// This will prevent as_numeric() from truncating the extra NUMERIC
 			// precision. Technically this is not required for NUMERIC, but it's just
-			// more efficient to avoid the reparsing below.
+			// more efficient to avoid the reparsing below. Between NUMERIC and
+			// DECIMAL the value keeps its precision and scale, but has the new type.
 			if t.size == 0 && (v.typ.typ == .is_numeric || v.typ.typ == .is_decimal) {
-				return v
+				if v.typ.typ == t.typ {
+					return v
+				}
+
+				n := v.numeric_value()
+				typ := Type{t.typ, v.typ.size, v.typ.scale, false}
+				if t.typ == .is_numeric {
+					return new_numeric_value_from_numeric(new_numeric(typ, n.numerator,
+						n.denominator))
+				}
+
+				return new_decimal_value_from_numeric(new_numeric(typ, n.numerator, n.denominator))
 			}
 
 			mut numeric_value := v.as_numeric()!

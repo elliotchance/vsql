@@ -46,39 +46,32 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 		CaseExpressionCoalesce {
 			compiled_exprs := e.exprs.map(it.compile(mut c)!)
 
-			mut contains_agg := false
-			for _, compiled_expr in compiled_exprs {
+			// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 7: the
+			// result has the combined type of all the arguments (9.5).
+			mut typ := Type{compiled_exprs[0].typ.typ, compiled_exprs[0].typ.size, compiled_exprs[0].typ.scale, false}
+			mut contains_agg := compiled_exprs[0].contains_agg
+			for i, compiled_expr in compiled_exprs[1..] {
+				typ = combine_types(typ, compiled_expr.typ) or {
+					return sqlstate_42804('in argument ${i + 2} of COALESCE', typ.str(),
+						compiled_expr.typ.str())
+				}
 				contains_agg = contains_agg || compiled_expr.contains_agg
 			}
 
 			return CompileResult{
-				run:          fn [compiled_exprs] (mut conn Connection, data Row, params map[string]Value) !Value {
-					mut typ := SQLType.is_varchar
-					mut first := true
-					for i, compiled_expr in compiled_exprs {
-						typ2 := compiled_expr.typ
-
-						if first {
-							typ = typ2.typ
-							first = false
-						} else if typ != typ2.typ {
-							return sqlstate_42804('in argument ${i + 1} of COALESCE', typ.str(),
-								typ2.typ.str())
-						}
-					}
-
-					mut value := Value{}
+				run:          fn [compiled_exprs, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 					for compiled_expr in compiled_exprs {
-						value = compiled_expr.run(mut conn, data, params)!
+						value := compiled_expr.run(mut conn, data, params)!
 
 						if !value.is_null {
-							return value
+							return convert_to_combined_type(mut conn, 'in COALESCE', value,
+								typ)!
 						}
 					}
 
-					return new_null_value(value.typ.typ)
+					return new_null_value(typ.typ)
 				}
-				typ:          compiled_exprs[0].typ
+				typ:          typ
 				contains_agg: contains_agg
 			}
 		}

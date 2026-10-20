@@ -1,0 +1,37 @@
+-- # A cast between NUMERIC and DECIMAL without a size (such as for the argument
+-- # of a function) changes the type, but keeps the precision and scale.
+/* types */
+VALUES MOD(CAST(7.5 AS DECIMAL(2,1)), CAST(2 AS NUMERIC(1)));
+-- COL1: 1.5 (NUMERIC(4, 1))
+
+/* types */
+VALUES FLOOR(CAST(1.5 AS DECIMAL(2,1)));
+-- COL1: 1 (NUMERIC(1))
+
+-- # A cast without a size has a scale of 0, and the declared type is the target
+-- # type.
+/* types */
+VALUES CAST(CAST(1.25 AS DECIMAL(3,2)) AS NUMERIC);
+-- COL1: 1 (NUMERIC)
+
+/* types */
+VALUES CAST(CAST(1.25 AS NUMERIC(3,2)) AS DECIMAL);
+-- COL1: 1 (DECIMAL)
+
+-- # Operators keep the precision and scale of both sides.
+/* types */
+VALUES CAST(1.25 AS DECIMAL(3,2)) + CAST(1.5 AS NUMERIC(2,1));
+-- COL1: 2.75 (DECIMAL(4, 2))
+
+-- # A NUMERIC or DECIMAL without a precision has no limit on the number of
+-- # digits.
+CREATE TABLE foo (n NUMERIC, d DECIMAL);
+INSERT INTO foo (n, d) VALUES (123456789012345678901234567890123456789012345.6, -98765432109876543210987654321098765432109876.5);
+SELECT n, d, n * 1000 FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- N: 123456789012345678901234567890123456789012345 D: -98765432109876543210987654321098765432109876 COL3: 123456789012345678901234567890123456789012345000
+
+/* types */
+VALUES CAST(123456789012345678901234567890123456789012345 AS NUMERIC) + 1;
+-- COL1: 123456789012345678901234567890123456789012346 (NUMERIC)

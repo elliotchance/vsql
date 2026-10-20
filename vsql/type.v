@@ -169,6 +169,25 @@ fn (t Type) exact_precision() int {
 	}
 }
 
+// implicit_cast_type is the type to implicitly cast v to when it needs to be
+// the base type of t, such as for an operator or function argument. An exact
+// numeric keeps its own precision and scale because a NUMERIC or DECIMAL without
+// a size has a scale of 0, which would remove any fractional part. An integer
+// gets the precision of its digits, like a literal.
+fn implicit_cast_type(v Value, t Type) Type {
+	if t.typ == .is_numeric || t.typ == .is_decimal {
+		if v.typ.typ == .is_numeric || v.typ.typ == .is_decimal {
+			return Type{t.typ, v.typ.size, v.typ.scale, false}
+		}
+
+		if v.typ.typ in [.is_smallint, .is_integer, .is_bigint] && !v.is_null {
+			return Type{t.typ, v.str().trim_left('-').len, 0, false}
+		}
+	}
+
+	return Type{t.typ, 0, 0, false}
+}
+
 fn most_specific_type(t1 Type, t2 Type) !Type {
 	t1_category, t1_supertype := t1.typ.supertype()
 	t2_category, t2_supertype := t2.typ.supertype()

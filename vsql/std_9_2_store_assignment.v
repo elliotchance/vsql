@@ -495,32 +495,14 @@ fn cast_numeric(mut conn Connection, v Value, t Type) !Value {
 			return new_double_precision_value(v.as_f64()!)
 		}
 		.is_numeric, .is_decimal {
-			// There is a special case where we should pass through an already
-			// NUMERIC/DECIMAL value if there is no specified destination precision.
-			// This will prevent as_numeric() from truncating the extra NUMERIC
-			// precision. Technically this is not required for NUMERIC, but it's just
-			// more efficient to avoid the reparsing below.
-			if t.size == 0 && (v.typ.typ == .is_numeric || v.typ.typ == .is_decimal) {
-				return v
-			}
-
 			mut numeric_value := v.as_numeric()!
 
-			// If the destination size = 0, then this is a cast to NUMERIC/DECIMAL and
-			// so we determine the size and scale from the original rules of a NUMERIC
-			// literal.
-			if t.size == 0 {
-				if t.typ == .is_numeric {
-					return new_numeric_value(numeric_value.str())
-				}
-
-				return new_decimal_value(numeric_value.str())
-			}
-
-			// We must not lose any significant figures. We can't trust the size of
-			// the existing number as all the digits may not be used.
+			// A size of 0 is a NUMERIC/DECIMAL without a precision, which has no
+			// limit on the number of digits. Otherwise we must not lose any
+			// significant figures. We can't trust the size of the existing number as
+			// all the digits may not be used.
 			parts := numeric_value.str().split('.')
-			if parts[0].trim_left('-').len > t.size - t.scale {
+			if t.size > 0 && parts[0].trim_left('-').len > t.size - t.scale {
 				// numeric value out of range
 				return sqlstate_22003()
 			}

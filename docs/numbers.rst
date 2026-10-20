@@ -206,9 +206,11 @@ range a ``SQLSTATE 22003 numeric value out of range`` is raised.
 DECIMAL vs NUMERIC
 ^^^^^^^^^^^^^^^^^^
 
-``DECIMAL`` and ``NUMERIC`` are both exact numeric types that require a scale
-and precision. Both store their respective values as fractions. For example,
-``1.23`` could be represented as ``123/100``.
+``DECIMAL`` and ``NUMERIC`` are both exact numeric types with a precision and
+scale. If the scale is omitted it is 0. If the precision is also omitted there
+is no limit on the number of digits, so ``NUMERIC`` can hold an integer of any
+size. Both store their respective values as fractions. For example, ``1.23``
+could be represented as ``123/100``.
 
 The main difference between these two types comes down to the allowed
 denominators. In short, a ``DECIMAL`` may have any denominator, whereas a

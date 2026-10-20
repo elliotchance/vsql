@@ -72,7 +72,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 	}
 
 	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 4
-	typ := varying_string_type(compiled_value.typ)
+	typ := varying_string_type('SUBSTRING', compiled_value.typ)!
 
 	return CompileResult{
 		run:          fn [e, compiled_value, compiled_from, compiled_for, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
@@ -211,7 +211,12 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 	compiled_source := e.source.compile(mut c)!
 	compiled_character := e.character.compile(mut c)!
 	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 13
-	typ := varying_string_type(compiled_source.typ)
+	typ := varying_string_type('TRIM', compiled_source.typ)!
+
+	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 13c
+	if !compiled_character.typ.typ.is_string() {
+		return sqlstate_42883('function does not exist: TRIM(${compiled_character.typ} FROM ${compiled_source.typ})')
+	}
 
 	return CompileResult{
 		run:          fn [e, compiled_source, compiled_character, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
@@ -256,9 +261,9 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 
 // varying_string_type is the declared type of SUBSTRING and TRIM, which is a
 // CHARACTER VARYING with the (maximum) length of the source string.
-fn varying_string_type(source Type) Type {
+fn varying_string_type(function_name string, source Type) !Type {
 	if !source.typ.is_string() {
-		return new_type('CHARACTER VARYING', 0, 0)
+		return sqlstate_42883('function does not exist: ${function_name}(${source})')
 	}
 
 	return new_type('CHARACTER VARYING', source.size, 0)

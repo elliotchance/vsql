@@ -480,6 +480,39 @@ Running the specific test again can be done with:
 
    TEST=subquery:32 make sql-test
 
+Coverage
+^^^^^^^^
+
+``make sql-test`` also prints how many lines in ``vsql/`` are run by the SQL
+tests:
+
+.. code-block:: text
+
+   SQL test coverage: 87.22% (3379 of 3874 lines, run "make sql-test-uncovered" to see the rest)
+
+``make sql-test-uncovered`` prints each line that wasn't covered by the last
+``make sql-test``:
+
+.. code-block:: text
+
+   vsql/table.v:73: mut names := []string{}
+   vsql/table.v:78: return names
+
+The same results are in ``coverage/sql.lcov``, which can be opened with any LCOV
+viewer (such as the "Coverage Gutters" extension for VS Code). When only some of
+the tests are run (such as with ``$TEST``, ``$MEMORY`` or ``$FILE``) the
+coverage is only for those tests.
+
+``make test`` runs the SQL tests with ``make sql-test``, so CI also shows the
+coverage (in the log and the summary of the run).
+
+Coverage makes the tests a few seconds slower. Set ``$COVERAGE`` to ``0`` to
+turn it off:
+
+.. code-block:: sh
+
+   COVERAGE=0 make sql-test
+
 Using Different V Versions
 --------------------------
 

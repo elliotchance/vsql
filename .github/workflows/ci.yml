@@ -154,6 +154,10 @@ jobs:
         with:
           name: vsql-windows
 
+      # PostgreSQL is installed on the runner, but psql isn't on the PATH. It's
+      # used by the server tests.
       - name: Run Windows tests
         shell: bash
-        run: .github/workflows/windows-test.sh ./vsql.exe
+        run: |
+          export PATH="$(cygpath -u "$PGBIN"):$PATH"
+          .github/workflows/windows-test.sh ./vsql.exe

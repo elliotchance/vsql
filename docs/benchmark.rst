@@ -67,8 +67,12 @@ a single statement). Bulk inserts are not yet supported, although when they are
 this mechanic will probably not change.
 
 3. The ``bench`` command will create a file called ``bench.vsql`` for the test.
-If the file already exists the command will fail as it tries to create tables
-that already exist. You must delete ``bench.vsql`` between test runs.
+If the file already exists it's deleted first. Use ``-file`` to choose another
+file, or ``-file ':memory:'`` to run it in memory.
+
+4. ``-accounts`` changes the number of rows in the ``ACCOUNTS`` table and
+``-duration`` changes how many seconds the transactions are run for, such as
+``vsql bench -accounts 1000 -duration 5`` for a quick test.
 
 Results
 -------

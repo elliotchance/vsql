@@ -1,7 +1,8 @@
 #!/bin/sh
 
-# windows-test.sh runs a few statements with the Windows binary, since the CLI
-# tests aren't run on Windows. Each statement locks the database file again.
+# windows-test.sh runs a few statements, a short benchmark and the server with
+# the Windows binary, since the CLI tests aren't run on Windows. Each statement
+# locks the database file again.
 
 set -e
 
@@ -16,3 +17,7 @@ printf "START TRANSACTION;\nINSERT INTO products (title, price) VALUES ('Kettle'
 cat out.txt
 grep "TITLE: Instant Pot PRICE: 144.89" out.txt
 grep "TITLE: Kettle PRICE: 20" out.txt
+
+$VSQL bench -accounts 1000 -duration 2
+
+VSQL=$VSQL cmd/tests/server-concurrent.sh

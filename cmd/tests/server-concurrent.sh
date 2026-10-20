@@ -37,4 +37,5 @@ wait $!
 echo 'SELECT x FROM t;' | $PSQL >> $TXT_FILE
 
 cat $TXT_FILE
-test "$(cat $TXT_FILE | tr '\n' ' ')" = "2 2 "
+# psql on Windows ends lines with \r\n.
+test "$(cat $TXT_FILE | tr -d '\r' | tr '\n' ' ')" = "2 2 "

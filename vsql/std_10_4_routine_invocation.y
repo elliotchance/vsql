@@ -12,9 +12,12 @@ routine_name:
 
 sql_argument_list:
   left_paren right_paren { $$.v = []ValueExpression{} }
-| left_paren sql_argument right_paren { $$.v = [$2.v as ValueExpression] }
-| left_paren sql_argument_list comma sql_argument right_paren {
-    $$.v = append_list($2.v as []ValueExpression, $4.v as ValueExpression)
+| left_paren sql_arguments right_paren { $$.v = $2.v as []ValueExpression }
+
+sql_arguments:
+  sql_argument { $$.v = [$1.v as ValueExpression] }
+| sql_arguments comma sql_argument {
+    $$.v = append_list($1.v as []ValueExpression, $3.v as ValueExpression)
   }
 
 sql_argument:

@@ -20,3 +20,17 @@ fn test_custom_function_receives_null() ! {
 
 	assert results == [1.0, 0.0]
 }
+
+fn test_custom_function_with_two_arguments() ! {
+	mut db := open(':memory:')!
+	db.register_function('add_both(float, float) float', fn (a []Value) !Value {
+		return new_double_precision_value(a[0].f64_value() + a[1].f64_value())
+	})!
+
+	mut results := []f64{}
+	for row in db.query('VALUES add_both(1.5, 2)')! {
+		results << row.get_f64('COL1')!
+	}
+
+	assert results == [3.5]
+}

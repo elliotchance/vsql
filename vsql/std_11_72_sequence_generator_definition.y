@@ -16,6 +16,8 @@ sequence_generator_definition:
 sequence_generator_options:
   sequence_generator_option { $$.v = $1.v as []SequenceGeneratorOption }
 | sequence_generator_options sequence_generator_option {
+    // coverage:ignore (unreachable, common_sequence_generator_options is
+    // already a list)
     $$.v = $1.v as []SequenceGeneratorOption
   }
 

@@ -216,3 +216,9 @@ VALUES '$0.87' SIMILAR TO '$[0-9]+(.[0-9][0-9])?';
 
 VALUES 'abc' SIMILAR TO 'a.c';
 -- COL1: FALSE
+
+VALUES 'a' SIMILAR TO '(a*){3}';
+-- COL1: TRUE
+
+VALUES 'a b' SIMILAR TO 'a[[:WHITESPACE:]]b';
+-- COL1: TRUE

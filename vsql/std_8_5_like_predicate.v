@@ -20,7 +20,7 @@ fn (e CharacterLikePredicate) pstr(params map[string]Value) string {
 		return '${left.pstr(params)} LIKE ${e.right.pstr(params)}'
 	}
 
-	return e.right.pstr(params)
+	return e.right.pstr(params) // coverage:ignore (the grammar always gives LIKE a left side)
 }
 
 fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
@@ -52,7 +52,7 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
-	return compiled_right
+	return compiled_right // coverage:ignore (the grammar always gives LIKE a left side)
 }
 
 // like_matches reports whether s matches pattern, where "%" matches any number

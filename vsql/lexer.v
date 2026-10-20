@@ -115,6 +115,7 @@ fn yy_as[T](sym YYSym) T {
 	}
 
 	panic('expected ${T.name}')
+	// coverage:ignore (not possible after a panic)
 }
 
 struct YYSymType {

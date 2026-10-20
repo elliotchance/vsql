@@ -10,7 +10,7 @@ type ValueSpecification = GeneralValueSpecification | Value
 // str is defined explicitly because the auto-generated str() from V confuses
 // the sum type tag with Value.typ and produces invalid C.
 fn (e ValueSpecification) str() string {
-	return e.pstr(map[string]Value{})
+	return e.pstr(map[string]Value{}) // coverage:ignore (only exists so that V does not generate str())
 }
 
 fn (e ValueSpecification) pstr(params map[string]Value) string {
@@ -28,7 +28,7 @@ fn (e ValueSpecification) compile(mut c Compiler) !CompileResult {
 }
 
 fn (e ValueSpecification) resolve_identifiers(conn &Connection, tables map[string]Table) !ValueSpecification {
-	return e
+	return e // coverage:ignore (nothing calls resolve_identifiers())
 }
 
 type GeneralValueSpecification = CurrentCatalog | CurrentSchema | HostParameterName

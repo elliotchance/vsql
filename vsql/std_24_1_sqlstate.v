@@ -467,7 +467,7 @@ struct SQLState25006 {
 }
 
 fn sqlstate_25006(msg string) IError {
-	return SQLState25006{
+	return SQLState25006{ // coverage:ignore (needs a file from a newer version of vsql)
 		code: sqlstate_to_int('25006')
 		msg:  'read-only sql transaction: ${msg}'
 	}
@@ -491,7 +491,7 @@ struct SQLState0B000 {
 }
 
 fn sqlstate_0b000(msg string) IError {
-	return SQLState0B000{
+	return SQLState0B000{ // coverage:ignore (needs too many concurrent transactions)
 		code: sqlstate_to_int('0B000')
 		msg:  'invalid transaction initiation: ${msg}'
 	}

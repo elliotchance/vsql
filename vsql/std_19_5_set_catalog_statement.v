@@ -14,7 +14,7 @@ struct SetCatalogStatement {
 }
 
 fn (e SetCatalogStatement) pstr(params map[string]Value) string {
-	return 'SET CATALOG ${e.catalog_name.pstr(params)}'
+	return 'SET CATALOG ${e.catalog_name.pstr(params)}' // coverage:ignore (SET CATALOG cannot be EXPLAINed)
 }
 
 fn (stmt SetCatalogStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {

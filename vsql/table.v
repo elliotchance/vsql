@@ -69,7 +69,7 @@ pub mut:
 }
 
 // Convenience method for returning the ordered list of column names.
-pub fn (t Table) column_names() []string {
+pub fn (t Table) column_names() []string { // coverage:ignore (only used by the ORM and the CLI)
 	mut names := []string{}
 	for col in t.columns {
 		names << col.name.sub_entity_name
@@ -160,7 +160,7 @@ fn new_table_from_bytes(key []u8, data []u8, tid u64, catalog_name string) !Tabl
 // Returns the CREATE TABLE statement, including the ';'. It's the same as the
 // definition that's stored in the file.
 pub fn (t Table) str() string {
-	return t.bytes().bytestr() + ';'
+	return t.bytes().bytestr() + ';' // coverage:ignore (only used by the CLI)
 }
 
 // A TableOperation requires that up to rows in the table be read. The number of

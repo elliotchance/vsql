@@ -1,4 +1,4 @@
-.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples clean-grammar grammar sql-test docs clean-docs oldv
+.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test examples clean-grammar grammar sql-test sql-coverage docs clean-docs oldv
 
 # Is not used at the moment. It is useful for testing options like different
 # `-gc` values.
@@ -92,6 +92,15 @@ btree-test: oldv
 
 sql-test: oldv
 	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) vsql/sql_test.v
+
+# sql-coverage runs only the SQL tests with coverage. -no-skip-unused keeps
+# functions that are never called, otherwise they wouldn't be reported at all.
+# See "Coverage" in docs/testing.rst for ignoring blocks.
+sql-coverage: oldv
+	rm -rf coverage/data
+	$(V) $(V3_OPTIONS) -no-skip-unused -coverage coverage/data $(BUILD_OPTIONS) vsql/sql_test.v
+	$(V) cover coverage/data --filter "$(CURDIR)/vsql/" --lcov coverage/vsql.lcov > /dev/null
+	$(V) run scripts/coverage-report.vsh coverage/vsql.lcov coverage/sql.lcov
 
 # CLI Tests
 

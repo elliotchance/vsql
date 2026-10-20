@@ -19,13 +19,13 @@ mut:
 
 fn (mut iter PageIterator) next() ?PageObject {
 	// Special case for no data.
-	if iter.btree.pager.total_pages() == 0 {
+	if iter.btree.pager.total_pages() == 0 { // coverage:ignore (there is always at least one page, for the schema)
 		return none
 	}
 
 	// On the first iteration we fast-forward to the starting page.
 	if iter.path.len == 0 {
-		iter.path, iter.depth_iterator = iter.btree.search_page(iter.min) or { return none }
+		iter.path, iter.depth_iterator = iter.btree.search_page(iter.min) or { return none } // coverage:ignore (searching for a page failed)
 
 		// search_page does not include the last depth_iterator becuase that
 		// belongs to the leaf not which is does not search.
@@ -58,14 +58,17 @@ fn (mut iter PageIterator) next() ?PageObject {
 			iter.depth_iterator = iter.depth_iterator[..iter.depth_iterator.len - 1]
 			iter.depth_iterator[iter.depth_iterator.len - 1]++
 
-			if iter.depth_iterator[iter.depth_iterator.len - 1] < (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or {
-				return none
-			}).objects().len {
+			if iter.depth_iterator[iter.depth_iterator.len - 1] < (
+				iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or {
+					// coverage:ignore (fetching a page failed)
+					return none
+				}
+			).objects().len {
 				break
 			}
 		}
 
-		for (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return none }).kind == kind_not_leaf {
+		for (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return none }).kind == kind_not_leaf { // coverage:ignore-line (fetching a page failed)
 			objects :=
 				(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return none }).objects()
 

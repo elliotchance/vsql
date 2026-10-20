@@ -14,6 +14,7 @@ sql_argument_list:
   left_paren right_paren { $$.v = []ValueExpression{} }
 | left_paren sql_argument right_paren { $$.v = [$2.v as ValueExpression] }
 | left_paren sql_argument_list comma sql_argument right_paren {
+    // coverage:ignore (this rule is wrong, see #464)
     $$.v = append_list($2.v as []ValueExpression, $4.v as ValueExpression)
   }
 

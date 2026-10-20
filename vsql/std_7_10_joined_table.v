@@ -45,7 +45,7 @@ fn (mut o JoinOperation) execute(rows []Row) ![]Row {
 		'RIGHT' {
 			return o.execute_right(left_rows, right_rows)
 		}
-		else {
+		else { // coverage:ignore (not possible, the grammar only produces INNER, LEFT and RIGHT)
 			// Should not be possible.
 			//
 			// TODO(elliotchance): Make join_type exhaustive with an enum.

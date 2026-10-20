@@ -53,7 +53,7 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, p
 				if expr.expr is CharacterValueExpression {
 					if expr.expr is CharacterPrimary {
 						if expr.expr is CharacterValueFunction {
-							if expr.expr is RoutineInvocation {
+							if expr.expr is RoutineInvocation { // coverage:ignore (no SQL is parsed as a function call in this position)
 								expr_type := expr.expr.args[0].compile(mut c)!.typ
 								conn.find_function(expr.expr.function_name, [
 									expr_type,

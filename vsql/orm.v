@@ -1,5 +1,7 @@
 module vsql
 
+// coverage:ignore-file (tested by orm_test.v)
+
 // A Connection can be used with V's built-in ORM:
 //
 //   import vsql

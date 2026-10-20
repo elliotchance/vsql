@@ -262,7 +262,7 @@ fn new_type(name string, size int, scale i16) Type {
 		'NUMERIC' {
 			Type{.is_numeric, size, scale, false}
 		}
-		else {
+		else { // coverage:ignore (not possible, the grammar only produces known types)
 			panic(name_without_size)
 			Type{}
 		}

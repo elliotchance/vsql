@@ -25,7 +25,7 @@ fn (e ContextuallyTypedRowValueConstructor) compile(mut c Compiler) !CompileResu
 		CommonValueExpression, BooleanValueExpression, NullSpecification {
 			return e.compile(mut c)!
 		}
-		[]ContextuallyTypedRowValueConstructorElement {
+		[]ContextuallyTypedRowValueConstructorElement { // coverage:ignore (rows with more than one value are run by eval_row())
 			mut contains_agg := false
 			for element in e {
 				if element.compile(mut c)!.contains_agg {
@@ -146,7 +146,7 @@ fn (r RowValueConstructor) eval_row(mut conn Connection, data Row, params map[st
 				}
 				QueryExpression {
 					panic('query expressions cannot be used in ROW constructors')
-				}
+				} // coverage:ignore (not possible after a panic)
 			}
 		}
 		CommonValueExpression, BooleanValueExpression {

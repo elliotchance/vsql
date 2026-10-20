@@ -111,7 +111,7 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 }
 
 fn (e DatetimeValueFunction) resolve_identifiers(conn &Connection, tables map[string]Table) !DatetimeValueFunction {
-	return e
+	return e // coverage:ignore (nothing calls resolve_identifiers())
 }
 
 struct CurrentDate {}

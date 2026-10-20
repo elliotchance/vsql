@@ -15,7 +15,7 @@ struct QueryExpression {
 }
 
 fn (e QueryExpression) pstr(params map[string]Value) string {
-	return '<subquery>'
+	return '<subquery>' // coverage:ignore (subqueries in expressions are a syntax error)
 }
 
 // writes must be true if the query modifies the database, see
@@ -311,7 +311,7 @@ fn (o &LimitOperation) str() string {
 fn (o &LimitOperation) columns() Columns {
 	// Limit doesn't change the columns so just pass through from the last
 	// operation.
-	return o.columns
+	return o.columns // coverage:ignore (nothing asks a LIMIT for its columns)
 }
 
 fn (mut o LimitOperation) execute(rows []Row) ![]Row {

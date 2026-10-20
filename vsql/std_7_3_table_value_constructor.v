@@ -7,7 +7,7 @@ module vsql
 type SimpleTable = QuerySpecification | []RowValueConstructor
 
 fn (e SimpleTable) pstr(params map[string]Value) string {
-	match e {
+	match e { // coverage:ignore (never printed, EXPLAIN prints the VALUES operation instead)
 		QuerySpecification {
 			return '<subquery>'
 		}
@@ -113,7 +113,7 @@ fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
 
 	mut rows := []Row{}
 	if offset >= o.rows.len {
-		return rows
+		return rows // coverage:ignore (OFFSET is applied by the LIMIT operation)
 	}
 
 	for row in o.rows[offset..] {

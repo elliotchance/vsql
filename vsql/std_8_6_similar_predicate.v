@@ -20,7 +20,7 @@ fn (e SimilarPredicate) pstr(params map[string]Value) string {
 		return '${left.pstr(params)} SIMILAR TO ${e.right.pstr(params)}'
 	}
 
-	return e.right.pstr(params)
+	return e.right.pstr(params) // coverage:ignore (the grammar always gives SIMILAR TO a left side)
 }
 
 fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {

@@ -128,3 +128,9 @@ SELECT * FROM a."B.C";
 -- 1: msg: INSERT 1
 -- 2: X: 1
 -- 2: Y: 2
+
+SELECT * FROM (VALUES 1) t;
+-- COL1: 1
+
+SELECT * FROM (VALUES 1) t (x);
+-- X: 1

@@ -194,3 +194,111 @@ VALUES CAST('x' AS VARCHAR(0));
 
 VALUES CAST(1.23 AS NUMERIC(2, 3));
 -- error 42601: syntax error: NUMERIC scale (3) must not be greater than precision (2)
+
+-- # Only the most recent 100 warnings are kept.
+CREATE TABLE t1 (x VARCHAR(10));
+INSERT INTO t1 (x) VALUES ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab'), ('ab');
+SELECT COUNT(CAST(x AS CHAR(1))) FROM t1;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 101
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- warning 01004: string data, right truncation
+-- COL1: 101

@@ -168,7 +168,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				return error('unknown catalog: ${table_name.catalog_name}')
 			}
 
-			if allow_virtual && table_name_id in catalog.virtual_tables {
+			if allow_virtual && table_name_id in catalog.virtual_tables { // coverage:ignore (virtual tables can only be registered from V)
 				plan.operations << VirtualTableOperation{table_name_id, catalog.virtual_tables[table_name_id]}
 				table = catalog.virtual_tables[table_name_id].table()
 				if filter {
@@ -410,7 +410,7 @@ fn (mut o Plan) execute(_ []Row) ![]Row {
 }
 
 fn (p Plan) str() string {
-	return p.operations.map(it.str()).join('\n')
+	return p.operations.map(it.str()).join('\n') // coverage:ignore (nothing calls Plan.str())
 }
 
 fn (p Plan) columns() Columns {

@@ -1,5 +1,7 @@
 module vsql
 
+// coverage:ignore-file (virtual tables can only be registered from V, tested by custom_function_test.v)
+
 // A function than will provide rows to a virtual table.
 type VirtualTableProviderFn = fn (mut t VirtualTable) !
 

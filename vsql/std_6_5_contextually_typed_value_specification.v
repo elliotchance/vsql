@@ -30,5 +30,5 @@ fn (e NullSpecification) compile(mut c Compiler) !CompileResult {
 }
 
 fn (e NullSpecification) resolve_identifiers(conn &Connection, tables map[string]Table) !NullSpecification {
-	return e
+	return e // coverage:ignore (nothing calls resolve_identifiers())
 }

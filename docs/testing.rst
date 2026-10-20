@@ -160,6 +160,12 @@ Run all SQL tests with:
 
    make sql-test
 
+Each test runs in memory and then again on disk (in a temporary directory), both
+with 256 byte pages so that even small tests split pages and store large values
+across several pages. A failure says which one failed, such as
+``FAILED tests/foo.sql:12 (on disk)``. Tests that use more than one connection
+only run on disk.
+
 All tests are in the ``tests/`` directory and each file contains individual
 tests separated by an empty line:
 
@@ -400,6 +406,55 @@ Running the specific test again can be done with:
 .. code-block:: sh
 
    TEST=subquery:32 make sql-test
+
+Coverage
+--------
+
+Code coverage for only the SQL tests can be reported with:
+
+.. code-block:: sh
+
+   make sql-coverage
+
+This prints the files that are not fully covered, each block that was never
+run, and the total. It fails if anything is not covered, and CI runs it for
+every change, so new code needs SQL tests (or to be explicitly ignored).
+``coverage/sql.lcov`` can be used with other LCOV tools, such as ``genhtml``.
+``TEST`` works the same as it does for ``make sql-test``.
+
+V counts coverage per block (the first line of each block) rather than per
+line. Code that can't (or shouldn't) be reached from SQL can be excluded with a
+``// coverage:ignore`` comment. At the end of a line that opens a block, it
+ignores the whole block. On a line by itself, it applies to the next line, so
+it can ignore a whole function. Anywhere else, it ignores only that line:
+
+.. code-block:: v
+
+   else { // coverage:ignore (not possible, the grammar only produces known types)
+       panic('not possible')
+   }
+
+   // coverage:ignore (only used by the CLI)
+   pub fn pluralize(n int, word string) string {
+
+   return x // coverage:ignore (the SQL tests use a fixed time zone)
+
+Always give the reason in parentheses after the marker, so that it's clear why
+the code can't be covered by the SQL tests.
+
+``v fmt`` moves a comment at the end of a sum type ``match`` branch (like
+``QueryExpression {``), so put the marker on the line above those instead.
+
+``// coverage:ignore-line`` ignores only the line it's on, even if the line
+opens a block. This is for something like a ``for`` loop with an ``or`` that
+can't happen, where the loop itself is covered.
+
+A ``// coverage:ignore-file`` comment anywhere in a file ignores the whole
+file. This is used for code that the SQL tests don't use, like the server and
+the ORM.
+
+``vsql/y.v`` is generated, so markers for a grammar rule go inside its action
+in the ``.y`` file, which ignores the whole rule.
 
 Using Different V Versions
 --------------------------

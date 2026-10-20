@@ -29,7 +29,7 @@ pub:
 	custom_typ Type
 }
 
-fn (e Identifier) resolve_identifiers(conn &Connection, tables map[string]Table) !Identifier {
+fn (e Identifier) resolve_identifiers(conn &Connection, tables map[string]Table) !Identifier { // coverage:ignore (nothing calls resolve_identifiers())
 	if e.custom_id != '' {
 		return e
 	}
@@ -113,7 +113,7 @@ fn new_identifier2(s string) !Identifier {
 			}
 		}
 		3 {
-			return Identifier{
+			return Identifier{ // coverage:ignore (catalog qualified table names are a syntax error, see #463)
 				catalog_name: parts[0]
 				schema_name:  parts[1]
 				entity_name:  parts[2]
@@ -164,14 +164,14 @@ fn new_identifier3(s string) !Identifier {
 			}
 		}
 		3 {
-			return Identifier{
+			return Identifier{ // coverage:ignore (schema qualified column names are a syntax error, see #463)
 				schema_name:     parts[0]
 				entity_name:     parts[1]
 				sub_entity_name: parts[2]
 			}
 		}
 		4 {
-			return Identifier{
+			return Identifier{ // coverage:ignore (catalog qualified column names are a syntax error, see #463)
 				catalog_name:    parts[0]
 				schema_name:     parts[1]
 				entity_name:     parts[2]
@@ -186,7 +186,7 @@ fn new_identifier3(s string) !Identifier {
 
 // decode_identifier is only for internal use. It is the opposite of
 // Identifier.storage_id().
-fn decode_identifier(s string) Identifier {
+fn decode_identifier(s string) Identifier { // coverage:ignore (only used when reading identifiers from bytes, which the B-tree tests cover)
 	parts := split_identifier_parts(s) or { panic('cannot parse identifier: ${s}') }
 
 	return Identifier{
@@ -356,7 +356,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	if e.entity_name != '' {
 		for _, table in catalog.storage.tables {
 			if table.name.schema_name == ident.schema_name
-				&& table.name.entity_name == ident.entity_name {
+				&& table.name.entity_name == ident.entity_name { // coverage:ignore (schema qualified column names are a syntax error, see #463)
 				column := table.column(ident.sub_entity_name) or { Column{} }
 				if column.name.sub_entity_name == ident.sub_entity_name {
 					return CompileResult{
@@ -430,7 +430,7 @@ fn (e Identifier) id() string {
 // str() which is the human readable form.
 fn (e Identifier) storage_id() string {
 	if e.custom_id != '' {
-		return e.custom_id
+		return e.custom_id // coverage:ignore (custom IDs are only for computed columns, which are never stored)
 	}
 
 	mut parts := []string{}

@@ -206,7 +206,7 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 // CHARACTER VARYING with the (maximum) length of the source string.
 fn varying_string_type(source Type) Type {
 	if !source.typ.is_string() {
-		return new_type('CHARACTER VARYING', 0, 0)
+		return new_type('CHARACTER VARYING', 0, 0) // coverage:ignore (should be an error, see #462)
 	}
 
 	return new_type('CHARACTER VARYING', source.size, 0)

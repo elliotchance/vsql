@@ -10,6 +10,8 @@
 
 module vsql
 
+// coverage:ignore-file (only used by the CLI benchmark)
+
 import rand
 import time
 

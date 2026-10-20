@@ -21,3 +21,6 @@ SELECT 'foo' || 'bar' AS Str FROM t1;
 
 SELECT 1 + 2 AS total1, 3 + 4 AS total2 FROM t1;
 -- TOTAL1: 3 TOTAL2: 7
+
+SELECT 1 + 2 total FROM t1;
+-- TOTAL: 3

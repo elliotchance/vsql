@@ -31,7 +31,7 @@ fn new_numeric(typ Type, numerator big.Integer, denominator big.Integer) Numeric
 }
 
 fn new_null_numeric(typ Type) Numeric {
-	return Numeric{
+	return Numeric{ // coverage:ignore (NULL is a flag on Value, so a Numeric is never NULL)
 		typ:     typ
 		is_null: true
 	}
@@ -50,7 +50,7 @@ fn new_numeric_from_f64(x f64) Numeric {
 		if negative_exponent {
 			// It's not possible for the divide to fail because the exponent will
 			// always be >= 1.
-			n = n.divide(new_numeric_from_string(exponent)) or { panic(err) }
+			n = n.divide(new_numeric_from_string(exponent)) or { panic(err) } // coverage:ignore (nothing passes an exponent here from SQL)
 		} else {
 			n = n.multiply(new_numeric_from_string(exponent))
 		}
@@ -68,7 +68,7 @@ fn new_numeric_from_string(x string) Numeric {
 	// capable of representing the value of ENL exactly.
 
 	if x.contains('e') || x.contains('E') {
-		return new_numeric_from_f64(x.f64())
+		return new_numeric_from_f64(x.f64()) // coverage:ignore (nothing passes an exponent here from SQL)
 	}
 
 	mut n := x
@@ -110,7 +110,7 @@ fn (n Numeric) bytes() []u8 {
 	mut buf := new_bytes([]u8{})
 	mut flags := u8(0)
 	if n.is_null {
-		flags |= numeric_is_null
+		flags |= numeric_is_null // coverage:ignore (NULL is a flag on Value, so a Numeric is never NULL)
 	}
 	if n.is_zero() {
 		flags |= numeric_is_zero
@@ -141,7 +141,7 @@ fn new_numeric_from_bytes(typ Type, data []u8) Numeric {
 	flags := buf.read_u8()
 
 	if flags & numeric_is_null != 0 {
-		return new_null_numeric(typ)
+		return new_null_numeric(typ) // coverage:ignore (NULL is a flag on Value, so a Numeric is never NULL)
 	}
 
 	if flags & numeric_is_zero != 0 {
@@ -163,7 +163,7 @@ fn new_numeric_from_bytes(typ Type, data []u8) Numeric {
 
 fn (n Numeric) str() string {
 	if n.is_null {
-		return 'NULL'
+		return 'NULL' // coverage:ignore (NULL is a flag on Value, so a Numeric is never NULL)
 	}
 
 	denominator := big.integer_from_int(10).pow(u32(n.typ.scale))
@@ -202,7 +202,7 @@ fn (n Numeric) f64() f64 {
 // TODO(elliotchance): This doesn't correctly round, it just truncates the
 //  value. That because this is an extra expensive and hacky approach. Please
 //  improve it.
-fn (n Numeric) round(scale i16) Numeric {
+fn (n Numeric) round(scale i16) Numeric { // coverage:ignore (nothing calls round())
 	parts := n.str().split('.')
 
 	// Check if there's enough digits to round.

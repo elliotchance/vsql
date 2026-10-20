@@ -14,7 +14,7 @@ struct SetSchemaStatement {
 }
 
 fn (e SetSchemaStatement) pstr(params map[string]Value) string {
-	return 'SET SCHEMA ${e.schema_name.pstr(params)}'
+	return 'SET SCHEMA ${e.schema_name.pstr(params)}' // coverage:ignore (SET SCHEMA cannot be EXPLAINed)
 }
 
 fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {

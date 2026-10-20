@@ -461,7 +461,7 @@ fn time_zone_value(conn &Connection) string {
 
 	if offset < 0 {
 		s += '-'
-		offset *= -1
+		offset *= -1 // coverage:ignore (the SQL tests use a fixed time zone)
 	} else {
 		s += '+'
 	}
@@ -482,5 +482,5 @@ fn local_now(conn &Connection) time.Time {
 }
 
 fn default_now() (time.Time, i16) {
-	return time.utc(), i16(time.offset() / 60)
+	return time.utc(), i16(time.offset() / 60) // coverage:ignore (the SQL tests use a fixed time)
 }

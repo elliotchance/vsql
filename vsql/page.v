@@ -138,7 +138,7 @@ fn new_page(kind u8, page_size int) &Page {
 	}
 }
 
-fn (p Page) is_empty() bool {
+fn (p Page) is_empty() bool { // coverage:ignore (only used by Btree.remove())
 	return p.used == page_header_size
 }
 
@@ -203,6 +203,7 @@ fn (p Page) versions(key []u8, objects []PageObject) []u64 {
 fn (mut p Page) add(obj PageObject) ! {
 	if p.used + obj.length() > p.page_size() {
 		panic('page cannot fit object of ${obj.length()} b in page using ${p.used} b')
+		// coverage:ignore (not possible after a panic)
 	}
 
 	// If there are two versions, there must be one version that is
@@ -296,13 +297,13 @@ fn (mut p Page) expire(key []u8, tid u64, xid u64) bool {
 
 // replace will perform a delete and add operation. If the key does not exist it
 // will be created.
-fn (mut p Page) replace(key []u8, tid u64, value []u8) ! {
+fn (mut p Page) replace(key []u8, tid u64, value []u8) ! { // coverage:ignore (only used by btree_test.v)
 	p.delete(key, tid)
 	obj := new_page_object(key.clone(), tid, 0, value)
 	p.add(obj)!
 }
 
-fn (p Page) keys() [][]u8 {
+fn (p Page) keys() [][]u8 { // coverage:ignore (only used by btree_test.v)
 	mut keys := [][]u8{}
 	for object in p.objects() {
 		keys << object.key

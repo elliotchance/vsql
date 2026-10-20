@@ -5,6 +5,8 @@
 
 module vsql
 
+// coverage:ignore-file (half of this is only used on big-endian machines)
+
 import runtime
 
 // BytesWriter allows a buffer to be written to. All values are appended to the

@@ -160,10 +160,18 @@ fn test_all() ! {
 	mut passed := 0
 	mut failed := []string{}
 	for test in get_tests()! {
-		match run_single_test(test, verbose != '', filter_line)! {
-			.passed { passed++ }
-			.failed { failed << '${test.file_name}:${test.line_number}' }
-			.skipped {}
+		// Every test runs on disk, and also in memory unless it needs more than
+		// one connection (which can't share a database in memory).
+		mut on_disk := [true]
+		if !test.stmts.any(it.starts_with('connection ')) {
+			on_disk.prepend(false)
+		}
+		for disk in on_disk {
+			match run_single_test(test, verbose != '', filter_line, disk)! {
+				.passed { passed++ }
+				.failed { failed << '${test.file_name}:${test.line_number}${storage_label(disk)}' }
+				.skipped {}
+			}
 		}
 	}
 
@@ -173,8 +181,12 @@ fn test_all() ! {
 	}
 }
 
+fn storage_label(on_disk bool) string {
+	return if on_disk { ' (on disk)' } else { ' (in memory)' }
+}
+
 @[assert_continues]
-fn run_single_test(test SQLTest, verbose bool, filter_line int) !SQLTestResult {
+fn run_single_test(test SQLTest, verbose bool, filter_line int, on_disk bool) !SQLTestResult {
 	if filter_line != 0 && test.line_number != filter_line {
 		if verbose {
 			println('SKIP ${test.file_name}:${test.line_number}\n')
@@ -184,15 +196,28 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int) !SQLTestResult {
 	}
 
 	if verbose {
-		println('BEGIN ${test.file_name}:${test.line_number}')
+		println('BEGIN ${test.file_name}:${test.line_number}${storage_label(on_disk)}')
 		defer {
-			println('END ${test.file_name}:${test.line_number}\n')
+			println('END ${test.file_name}:${test.line_number}${storage_label(on_disk)}\n')
 		}
 	}
 
+	// Small pages make even small tests split pages and store large values
+	// across several pages.
 	mut options := default_connection_options()
+	options.page_size = 256
 
-	mut db := open_database(':memory:', options)!
+	// Connections are never closed (and so keep their locks), so each test
+	// needs its own files. The main file is named so that its catalog is still
+	// called ":memory:".
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-${os.getpid()}', test.file_name.replace('/', '_') +
+		'_${test.line_number}')
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+	main_path := if on_disk { os.join_path(dir, ':memory:.vsql') } else { ':memory:' }
+	mut db := open_database(main_path, options)!
 	// 09:05:03 UTC is 14:05:03 local time at +05:00.
 	db.now = fn () (time.Time, i16) {
 		return time.new(time.Time{
@@ -214,10 +239,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int) !SQLTestResult {
 	mut connections := map[string]&Connection{}
 	mut current_connection_name := ''
 
-	file_name := 'test.vsql'
-	if os.exists(file_name) {
-		os.rm(file_name) or { return err }
-	}
+	file_name := os.join_path(dir, 'test.vsql')
 
 	for stmt in test.setup {
 		if verbose {
@@ -296,7 +318,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int) !SQLTestResult {
 		}
 	}
 
-	at := 'at ${test.file_name}:${test.line_number}:\n'
+	at := 'at ${test.file_name}:${test.line_number}${storage_label(on_disk)}:\n'
 	mut expected := at + test.expected.trim_space()
 	actual_trim := at + actual.trim_space()
 

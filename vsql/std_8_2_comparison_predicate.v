@@ -51,7 +51,7 @@ fn (e ComparisonPredicate) compile(mut c Compiler) !CompileResult {
 				else {
 					// This should not be possible, but it's to satisfy the required else.
 					panic('invalid binary operator: ${e.op}')
-				}
+				} // coverage:ignore (not possible after a panic)
 			})
 		}
 		typ:          new_type('BOOLEAN', 0, 0)

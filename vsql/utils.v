@@ -4,7 +4,7 @@
 module vsql
 
 // TODO(elliotchance): Make private when CLI is moved into vsql package.
-pub fn pluralize(n int, word string) string {
+pub fn pluralize(n int, word string) string { // coverage:ignore (only used by the CLI)
 	if n == 1 {
 		return word
 	}

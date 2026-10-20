@@ -42,5 +42,5 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 }
 
 fn (e NextValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !NextValueExpression {
-	return NextValueExpression{conn.resolve_identifier(e.name)}
+	return NextValueExpression{conn.resolve_identifier(e.name)} // coverage:ignore (nothing calls resolve_identifiers())
 }

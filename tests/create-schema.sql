@@ -30,3 +30,6 @@ CREATE SCHEMA absolute;
 
 CREATE SCHEMA ABSOLUTE;
 -- msg: CREATE SCHEMA 1
+
+CREATE SCHEMA ":memory:".foo;
+-- msg: CREATE SCHEMA 1

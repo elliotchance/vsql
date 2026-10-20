@@ -41,7 +41,7 @@ pub mut:
 // str returns the CREATE SEQUENCE definition (including the ';') like:
 //
 //   CREATE SEQUENCE "PUBLIC"."foo" START WITH 12 MINVALUE 10;
-pub fn (s Sequence) str() string {
+pub fn (s Sequence) str() string { // coverage:ignore (only used by the CLI)
 	mut parts := ['CREATE SEQUENCE ${s.name.storage_sql()} START WITH ${s.start_value}']
 
 	if s.increment_by != 1 {

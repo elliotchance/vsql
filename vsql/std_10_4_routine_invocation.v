@@ -106,5 +106,5 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 }
 
 fn (e RoutineInvocation) resolve_identifiers(conn &Connection, tables map[string]Table) !RoutineInvocation {
-	return RoutineInvocation{e.function_name, e.args}
+	return RoutineInvocation{e.function_name, e.args} // coverage:ignore (nothing calls resolve_identifiers())
 }

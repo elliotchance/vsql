@@ -297,3 +297,9 @@ SELECT x.b FROM (SELECT a, b FROM t) AS x GROUP BY x.a;
 -- error 42803: column U.A must be in the GROUP BY clause or used in an aggregate function
 -- A: 1 COL2: 1
 -- error 42803: column X.B must be in the GROUP BY clause or used in an aggregate function
+
+INSERT INTO foo (x, y) VALUES (0.5, 'hello');
+SELECT y, min(x) FROM foo GROUP BY y;
+-- msg: INSERT 1
+-- Y: hello COL2: 0.5e0
+-- Y: world COL2: 1.234e0

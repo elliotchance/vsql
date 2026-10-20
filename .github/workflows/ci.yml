@@ -56,6 +56,23 @@ jobs:
       - name: Run CLI tests
         run: make cli-test
 
+  sql-coverage:
+    name: SQL test coverage
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up V
+        uses: vlang/setup-v@v1.7
+        with:
+          version-file: .v-version
+
+      # Fails if any code that isn't marked with "// coverage:ignore" is not
+      # covered by the SQL tests. See "Coverage" in docs/testing.rst.
+      - name: Check coverage
+        run: make sql-coverage
+
   macos-binary:
     name: Build for macOS
     runs-on: macos-latest

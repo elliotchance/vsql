@@ -204,7 +204,7 @@ pub fn new_numeric_value(x string) Value {
 //   -1.23   -> DECIMAL(3, 2)
 //   12.00   -> DECIMAL(4, 2)
 //
-pub fn new_decimal_value(x string) Value {
+pub fn new_decimal_value(x string) Value { // coverage:ignore (only used from V)
 	n := new_numeric_from_string(x)
 	typ := new_type('DECIMAL', n.typ.size, n.typ.scale)
 
@@ -311,7 +311,7 @@ fn (v Value) as_f64() !f64 {
 		return sqlstate_22003()
 	}
 
-	if v.typ.typ == .is_character || v.typ.typ == .is_varchar {
+	if v.typ.typ == .is_character || v.typ.typ == .is_varchar { // coverage:ignore (strings are rejected before they get here)
 		s := v.string_value()
 
 		mut re := regex.regex_opt(r'^\d+(\.\d+)?$') or {
@@ -369,7 +369,7 @@ fn (v Value) pstr(params map[string]Value) string {
 // literal returns the value as an SQL literal that results in the same value
 // when it's used in a statement, such as 'it''s' or DATE '2022-06-30'.
 pub fn (v Value) literal() string {
-	if v.is_null {
+	if v.is_null { // coverage:ignore (only used by the CLI)
 		return 'NULL'
 	}
 

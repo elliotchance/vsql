@@ -64,7 +64,7 @@ fn (mut p Btree) append_page(page Page) !int {
 // path - 1).
 fn (mut p Btree) search_page(key []u8) !([]int, []int) {
 	// Special condition if there are no pages.
-	if p.pager.total_pages() == 0 {
+	if p.pager.total_pages() == 0 { // coverage:ignore (there is always at least one page, for the schema)
 		return []int{}, []int{}
 	}
 
@@ -114,7 +114,7 @@ fn (mut p Btree) search_page(key []u8) !([]int, []int) {
 // The old and new must be provided separately because the key may change if the
 // PRIMARY KEY value has changed.
 fn (mut p Btree) update(old PageObject, new PageObject, tid u64) ![]int {
-	if p.pager.total_pages() == 0 {
+	if p.pager.total_pages() == 0 { // coverage:ignore (there is always at least one page, for the schema)
 		// The object does not exist to update.
 		return []int{}
 	}
@@ -141,7 +141,7 @@ fn (mut p Btree) update(old PageObject, new PageObject, tid u64) ![]int {
 }
 
 fn (mut p Btree) update_single(obj PageObject, tid u64) !int {
-	if p.pager.total_pages() == 0 {
+	if p.pager.total_pages() == 0 { // coverage:ignore (there is always at least one page, for the schema)
 		// The object does not exist to update.
 		return 0
 	}
@@ -440,7 +440,7 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 	// found again each time.
 	mut previous_path := path.clone()
 	for i in 1 .. pointers.len {
-		if i > 1 {
+		if i > 1 { // coverage:ignore (only when a split needs three pages, which needs two versions of a key on a full page)
 			search_path, _ := p.search_page(pointers[i - 1].key)!
 			index := search_path.index(page_numbers[i - 1])
 			if index < 1 {
@@ -529,7 +529,7 @@ fn (p Btree) new_range_iterator(min []u8, max []u8) PageIterator {
 	}
 }
 
-fn (mut p Btree) remove(key []u8, tid u64, handle_blob bool) ! {
+fn (mut p Btree) remove(key []u8, tid u64, handle_blob bool) ! { // coverage:ignore (only used by btree_test.v, vsql never removes pages)
 	// Find the page that will contain the key, if it exists.
 	mut path, _ := p.search_page(key)!
 	page_number := path[path.len - 1]
@@ -608,7 +608,7 @@ fn (mut p Btree) remove(key []u8, tid u64, handle_blob bool) ! {
 	p.fill_empty_pages(mut empty_pages)!
 }
 
-fn (mut p Btree) fill_empty_pages(mut empty_pages []int) ! {
+fn (mut p Btree) fill_empty_pages(mut empty_pages []int) ! { // coverage:ignore (only used by Btree.remove())
 	// I'm not sure why, but we must backfill pages starting with the last page
 	// first. Without sorting descending the B-tree stress test will always
 	// crash with a handful or more size=100 trees.
@@ -677,7 +677,7 @@ fn (mut p Btree) expire(key []u8, tid u64, xid u64) !int {
 		return page_number
 	}
 
-	return -1
+	return -1 // coverage:ignore (the object to expire always exists)
 }
 
 // replace_value changes the value of an existing object, without changing its

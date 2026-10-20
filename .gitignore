@@ -10,6 +10,7 @@
 .vlang_tmp_build/
 scripts/generate-v-client-library-docs
 scripts/generate-grammar
+scripts/coverage-report
 y.output
 vsql/y.v
 vsql/y.y
@@ -22,3 +23,6 @@ standard_docs/
 
 # Test binaries left behind by V3, such as vsql/sql_test.
 vsql/*_test
+
+# Coverage data and reports from `make sql-coverage`.
+coverage/

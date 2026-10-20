@@ -3,6 +3,8 @@
 
 module vsql
 
+// coverage:ignore-file (only used by the server)
+
 import encoding.binary
 import net
 

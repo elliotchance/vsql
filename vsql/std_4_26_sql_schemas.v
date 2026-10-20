@@ -27,5 +27,5 @@ fn new_schema_from_bytes(data []u8, tid u64) !Schema {
 
 // Returns the CREATE SCHEMA statement for this schema, including the ';'.
 fn (s Schema) str() string {
-	return 'CREATE SCHEMA ${delimit_identifier(s.name)};'
+	return 'CREATE SCHEMA ${delimit_identifier(s.name)};' // coverage:ignore (only used by the CLI)
 }

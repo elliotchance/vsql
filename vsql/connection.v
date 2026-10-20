@@ -190,9 +190,9 @@ fn (mut conn CatalogConnection) open_read_connection() ! {
 
 	conn.storage.open_file(conn.path) or {
 		conn.options.mutex.runlock()
-		return err
+		return err // coverage:ignore (opening the file failed)
 	}
-	flock_lock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path) or {
+	flock_lock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path) or { // coverage:ignore (file locking failed)
 		conn.storage.close_file()
 		conn.options.mutex.runlock()
 		return err
@@ -202,7 +202,7 @@ fn (mut conn CatalogConnection) open_read_connection() ! {
 	// into the database file (because the process stopped) must be copied
 	// before the file can be read. That needs the file to be locked
 	// exclusively.
-	if wal_needs_recovery(conn.path) {
+	if wal_needs_recovery(conn.path) { // coverage:ignore (WAL recovery is only for files)
 		flock_unlock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		flock_lock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path) or {
 			conn.storage.close_file()
@@ -222,7 +222,7 @@ fn (mut conn CatalogConnection) open_read_connection() ! {
 			return err
 		}
 	}
-	conn.storage.open(conn.path, conn.catalog_name, false) or {
+	conn.storage.open(conn.path, conn.catalog_name, false) or { // coverage:ignore (reading the file failed)
 		flock_unlock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.runlock()
@@ -246,26 +246,26 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 
 	conn.storage.open_file(conn.path) or {
 		conn.options.mutex.unlock()
-		return err
+		return err // coverage:ignore (opening the file failed)
 	}
-	flock_lock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path) or {
+	flock_lock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path) or { // coverage:ignore (file locking failed)
 		conn.storage.close_file()
 		conn.options.mutex.unlock()
 		return err
 	}
-	wal_recover(mut conn.storage.file, conn.path) or {
+	wal_recover(mut conn.storage.file, conn.path) or { // coverage:ignore (WAL recovery is only for files)
 		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.unlock()
 		return err
 	}
-	conn.storage.open(conn.path, conn.catalog_name, true) or {
+	conn.storage.open(conn.path, conn.catalog_name, true) or { // coverage:ignore (reading the file failed)
 		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.unlock()
 		return err
 	}
-	if !conn.storage.header.is_writable() {
+	if !conn.storage.header.is_writable() { // coverage:ignore (needs a file from a newer version of vsql)
 		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.unlock()
@@ -295,7 +295,7 @@ fn (mut conn Connection) finish_write(success bool) ! {
 	mut first_err := ?IError(none)
 	for _, mut catalog in conn.catalogs {
 		catalog.finish_write(success) or {
-			if first_err == none {
+			if first_err == none { // coverage:ignore (writing to the file failed)
 				first_err = err
 			}
 		}
@@ -314,12 +314,12 @@ fn (mut conn CatalogConnection) finish_write(success bool) ! {
 
 	mut commit_err := ?IError(none)
 	if success {
-		conn.storage.commit_statement(conn.path) or {
+		conn.storage.commit_statement(conn.path) or { // coverage:ignore (writing to the file failed)
 			conn.storage.discard_statement(conn.path) or {}
 			commit_err = err
 		}
 	} else {
-		conn.storage.discard_statement(conn.path) or { commit_err = err }
+		conn.storage.discard_statement(conn.path) or { commit_err = err } // coverage:ignore (writing to the file failed)
 	}
 
 	if conn.path != ':memory:' {
@@ -411,7 +411,7 @@ fn (mut conn Connection) rollback_after_error() {
 		return
 	}
 
-	RollbackStatement{}.execute(mut conn, map[string]Value{}, time.Duration(0)) or { return }
+	RollbackStatement{}.execute(mut conn, map[string]Value{}, time.Duration(0)) or { return } // coverage:ignore (ROLLBACK failed while handling another error)
 	conn.finish_write(true) or {}
 }
 
@@ -422,7 +422,7 @@ fn (mut conn Connection) register_func(func Func) ! {
 pub fn (mut conn Connection) catalog() &CatalogConnection {
 	return conn.catalogs[conn.current_catalog] or {
 		panic('unknown catalog: ${conn.current_catalog}')
-	}
+	} // coverage:ignore (the current catalog always exists)
 }
 
 fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
@@ -534,7 +534,7 @@ pub fn (mut conn Connection) register_function(prototype string, func fn ([]Valu
 
 // register_virtual_table will register a function that can provide data at
 // runtime to a virtual table.
-pub fn (mut conn Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ! {
+pub fn (mut conn Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ! { // coverage:ignore (virtual tables can only be registered from V)
 	// Registering virtual tables does not need use query cache.
 	mut tokens := tokenize(create_table)
 	mut lexer := Lexer{tokens, 0}
@@ -565,7 +565,7 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 }
 
 // schemas returns the schemas in this catalog (database).
-pub fn (mut conn CatalogConnection) schemas() ![]Schema {
+pub fn (mut conn CatalogConnection) schemas() ![]Schema { // coverage:ignore (only used from V)
 	conn.open_read_connection()!
 	defer {
 		conn.release_read_connection()
@@ -581,7 +581,7 @@ pub fn (mut conn CatalogConnection) schemas() ![]Schema {
 
 // schema_tables returns tables for the provided schema. If the schema does not
 // exist and empty list will be returned.
-pub fn (mut conn CatalogConnection) sequences(schema string) ![]Sequence {
+pub fn (mut conn CatalogConnection) sequences(schema string) ![]Sequence { // coverage:ignore (only used from V)
 	conn.open_read_connection()!
 	defer {
 		conn.release_read_connection()
@@ -599,7 +599,7 @@ pub fn (mut conn CatalogConnection) sequences(schema string) ![]Sequence {
 
 // schema_tables returns tables for the provided schema. If the schema does not
 // exist and empty list will be returned.
-pub fn (mut conn CatalogConnection) schema_tables(schema string) ![]Table {
+pub fn (mut conn CatalogConnection) schema_tables(schema string) ![]Table { // coverage:ignore (only used from V)
 	conn.open_read_connection()!
 	defer {
 		conn.release_read_connection()
@@ -673,7 +673,7 @@ fn (mut conn Connection) resolve_table_identifier(identifier Identifier, allow_v
 	}
 
 	if allow_virtual && id in catalog.virtual_tables {
-		return ident
+		return ident // coverage:ignore (virtual tables can only be registered from V)
 	}
 
 	return sqlstate_42p01('table', ident.str()) // table does not exist

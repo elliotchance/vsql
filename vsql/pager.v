@@ -67,11 +67,11 @@ fn (mut p MemoryPager) append_page(page Page) !int {
 	return p.total - 1
 }
 
-fn (mut p MemoryPager) truncate_all() ! {
+fn (mut p MemoryPager) truncate_all() ! { // coverage:ignore (only used by Btree.remove())
 	p.total = 0
 }
 
-fn (mut p MemoryPager) truncate_last_page() ! {
+fn (mut p MemoryPager) truncate_last_page() ! { // coverage:ignore (only used by Btree.remove())
 	p.total--
 }
 
@@ -201,11 +201,11 @@ fn (mut p FilePager) append_page(page Page) !int {
 	return p.total_pages - 1
 }
 
-fn (mut p FilePager) truncate_all() ! {
+fn (mut p FilePager) truncate_all() ! { // coverage:ignore (only used by Btree.remove())
 	p.total_pages = 0
 }
 
-fn (mut p FilePager) truncate_last_page() ! {
+fn (mut p FilePager) truncate_last_page() ! { // coverage:ignore (only used by Btree.remove())
 	p.total_pages--
 }
 

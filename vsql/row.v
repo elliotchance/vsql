@@ -23,7 +23,7 @@ fn new_row(data map[string]Value) Row {
 
 // get_null will return true if the column name is NULL. An error will be
 // returned if the column does not exist.
-pub fn (r Row) get_null(name string) !bool {
+pub fn (r Row) get_null(name string) !bool { // coverage:ignore (only used from V)
 	value := r.get(name)!
 
 	return value.is_null
@@ -31,7 +31,7 @@ pub fn (r Row) get_null(name string) !bool {
 
 // get_f64 will only work for columns that are numerical (DOUBLE PRECISION,
 // FLOAT, REAL, etc). If the value is NULL, 0 will be returned. See get_null().
-pub fn (r Row) get_f64(name string) !f64 {
+pub fn (r Row) get_f64(name string) !f64 { // coverage:ignore (only used from V)
 	value := r.get(name)!
 	if value.typ.uses_f64() {
 		return value.f64_value()
@@ -42,7 +42,7 @@ pub fn (r Row) get_f64(name string) !f64 {
 
 // get_int will only work for columns that are integers (SMALLINT, INTEGER or
 // BIGINT). If the value is NULL, 0 will be returned. See get_null().
-pub fn (r Row) get_int(name string) !int {
+pub fn (r Row) get_int(name string) !int { // coverage:ignore (only used from V)
 	value := r.get(name)!
 	if value.typ.uses_int() {
 		return int(value.int_value())
@@ -57,7 +57,7 @@ pub fn (r Row) get_int(name string) !int {
 //
 // An error is only returned if the column does not exist.
 pub fn (r Row) get_string(name string) !string {
-	return (r.get(name)!).str()
+	return (r.get(name)!).str() // coverage:ignore (only used from V)
 }
 
 // get_bool only works on a BOOLEAN value. If the column permits NULL values it
@@ -65,7 +65,7 @@ pub fn (r Row) get_string(name string) !string {
 //
 // An error is returned if the type is not a BOOLEAN or the column name does not
 // exist.
-pub fn (r Row) get_bool(name string) !Boolean {
+pub fn (r Row) get_bool(name string) !Boolean { // coverage:ignore (only used from V)
 	value := r.get(name)!
 
 	match value.typ.typ {
@@ -256,7 +256,7 @@ fn new_row_from_bytes(t Table, data []u8, tid u64) Row {
 				typ:     col.typ
 				is_null: true
 			}
-			continue
+			continue // coverage:ignore (there is no ALTER TABLE ADD COLUMN, so every row has every column)
 		}
 
 		// Some types do not need a NULL flag because it's built into the value.

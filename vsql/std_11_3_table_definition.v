@@ -14,7 +14,7 @@ struct TableDefinition {
 	table_elements []TableElement
 }
 
-fn (s TableDefinition) columns() Columns {
+fn (s TableDefinition) columns() Columns { // coverage:ignore (only used by virtual tables, which are registered from V)
 	mut columns := []Column{}
 	for c in s.table_elements {
 		if c is Column {

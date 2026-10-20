@@ -9,7 +9,7 @@ struct Correlation {
 	columns []Identifier
 }
 
-fn (c Correlation) str() string {
+fn (c Correlation) str() string { // coverage:ignore (never printed)
 	if c.name.sub_entity_name == '' {
 		return ''
 	}

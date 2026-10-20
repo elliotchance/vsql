@@ -628,9 +628,19 @@ fn (mut y Vyacc) setup() ! {
 				break
 			}
 			y.levprd[y.nprod] |= actflag
+			case_start := y.fcode.len
 			y.fcode.write_string('\n\t${y.nprod} {')
+			action_start := y.fcode.len
 			y.fcode.write_string('\n\t\t${y.prefix}_dollar = ${y.prefix}_s[${y.prefix}pt-${mem - 1}..${y.prefix}pt+1].clone()')
 			y.cpyact(curprod, mem)!
+
+			// A "// coverage:ignore" in the action ignores the whole case for
+			// scripts/coverage-report.vsh, including the line above.
+			action := y.fcode.after(action_start)
+			if action.contains('// coverage:ignore') {
+				y.fcode.go_back_to(case_start)
+				y.fcode.write_string('\n\t${y.nprod} { // coverage:ignore${action}')
+			}
 			y.fcode.write_string('\n\t}')
 
 			// action within rule...
@@ -3260,7 +3270,7 @@ mut:
 	char  int
 }
 
-fn (mut p YYParserImpl) lookahead() int {
+fn (mut p YYParserImpl) lookahead() int { // coverage:ignore (nothing calls lookahead())
 	return p.char
 }
 
@@ -3276,10 +3286,10 @@ fn $\$_tokname(c int) string {
 			return $\$_toknames[c-1]
 		}
 	}
-	return "tok-\$c"
+	return "tok-\$c" // coverage:ignore (every token has a name)
 }
 
-fn $\$_statname(s int) string {
+fn $\$_statname(s int) string { // coverage:ignore (only used for debug output)
 	if s >= 0 && s < $\$_statenames.len {
 		if $\$_statenames[s] != "" {
 			return $\$_statenames[s]
@@ -3291,12 +3301,12 @@ fn $\$_statname(s int) string {
 const tokstart = 4
 
 fn $\$_error_message(state int, look_ahead int) string {
-	if !$\$_error_verbose {
+	if !$\$_error_verbose { // coverage:ignore (error messages are always verbose)
 		return "syntax error"
 	}
 
 	for e in $\$_error_messages {
-		if e.state == state && e.token == look_ahead {
+		if e.state == state && e.token == look_ahead { // coverage:ignore (there are no custom error messages)
 			return "syntax error: " + e.msg
 		}
 	}
@@ -3320,7 +3330,7 @@ fn $\$_error_message(state int, look_ahead int) string {
 
 	if $\$_def[state] == -2 {
 		mut i := 0
-		for $\$_exca[i] != -1 || int($\$_exca[i+1]) != state {
+		for $\$_exca[i] != -1 || int($\$_exca[i+1]) != state { // coverage:ignore (only for some syntax errors)
 			i += 2
 		}
 
@@ -3330,14 +3340,14 @@ fn $\$_error_message(state int, look_ahead int) string {
 			if tok < tokstart || $\$_exca[i+1] == 0 {
 				continue
 			}
-			if expected.len == expected.cap {
+			if expected.len == expected.cap { // coverage:ignore (only for some syntax errors)
 				return res
 			}
 			expected << tok
 		}
 
 		// If the default action is to accept or reduce, give up.
-		if $\$_exca[i+1] != 0 {
+		if $\$_exca[i+1] != 0 { // coverage:ignore (only for some syntax errors)
 			return res
 		}
 	}
@@ -3360,7 +3370,7 @@ fn $\$lex1(mut lex YYLexer, mut lval YYSymType) (int, int) {
 		token = int($\$_tok1[0])
 		unsafe { goto out }
 	}
-	if ch < $\$_tok1.len {
+	if ch < $\$_tok1.len { // coverage:ignore (the lexer only returns private token numbers)
 		token = int($\$_tok1[ch])
 		unsafe { goto out }
 	}
@@ -3379,10 +3389,10 @@ fn $\$lex1(mut lex YYLexer, mut lval YYSymType) (int, int) {
 	}
 
 out:
-	if token == 0 {
+	if token == 0 { // coverage:ignore (the lexer only returns known tokens)
 		token = int($\$_tok2[1]) // unknown char
 	}
-	if $\$_debug >= 3 {
+	if $\$_debug >= 3 { // coverage:ignore (only for debug output)
 		println("lex \${$\$_tokname(token)}(\${u8(ch)})")
 	}
 	return ch, token
@@ -3418,11 +3428,11 @@ ret0:
 	return 0
 
 ret1:
-	return 1
+	return 1 // coverage:ignore (a syntax error returns an error before this)
 
 $\$stack:
 	// put a state and value onto the stack
-	if $\$_debug >= 4 {
+	if $\$_debug >= 4 { // coverage:ignore (only for debug output)
 		println("char \${$\$_tokname($\$token)} in \${$\$_statname($\$state)}")
 	}
 
@@ -3456,7 +3466,7 @@ $\$newstate:
 		$\$token = -1
 		$\$_val = $\$rcvr.lval
 		$\$state = $\$n
-		if err_flag > 0 {
+		if err_flag > 0 { // coverage:ignore (error recovery is not used)
 			err_flag--
 		}
 		unsafe { goto $\$stack }
@@ -3491,12 +3501,12 @@ $\$default:
 	}
 	if $\$n == 0 {
 		// error ... attempt to resume parsing
-		match err_flag {
+		match err_flag { // coverage:ignore (error recovery is not used)
 		0 {
 			// brand new error
 			$\$lex.error($\$_error_message($\$state, $\$token))!
 			n_errs++
-			if $\$_debug >= 1 {
+			if $\$_debug >= 1 { // coverage:ignore (only for debug output)
 				print($\$_statname($\$state))
 				println(" saw \${$\$_tokname($\$token)}")
 			}
@@ -3515,7 +3525,7 @@ $\$default:
 				}
 
 				// the current p has no shift on "error", pop stack
-				if $\$_debug >= 2 {
+				if $\$_debug >= 2 { // coverage:ignore (only for debug output)
 					println("error recovery pops state \${$\$_s[$\$p].yys}")
 				}
 				$\$p--
@@ -3539,7 +3549,7 @@ $\$default:
 				}
 
 				// the current p has no shift on "error", pop stack
-				if $\$_debug >= 2 {
+				if $\$_debug >= 2 { // coverage:ignore (only for debug output)
 					println("error recovery pops state \${$\$_s[$\$p].yys}")
 				}
 				$\$p--
@@ -3550,7 +3560,7 @@ $\$default:
 
 		3 {
 			// no shift yet; clobber input char
-			if $\$_debug >= 2 {
+			if $\$_debug >= 2 { // coverage:ignore (only for debug output)
 				println("error recovery discards \${$\$_tokname($\$token)}")
 			}
 			if $\$token == $\$_eof_code {
@@ -3569,7 +3579,7 @@ $\$default:
 	}
 
 	// reduction by production $\$n
-	if $\$_debug >= 2 {
+	if $\$_debug >= 2 { // coverage:ignore (only for debug output)
 		println("reduce \${$\$n} in:\\n\\t\${$\$_statname($\$state)}")
 	}
 
@@ -3580,7 +3590,7 @@ $\$default:
 	$\$p -= int($\$_r2[$\$n])
 	// $\$p is now the index of \$0. Perform the default action. Iff the
 	// reduced production is ε, \$1 is possibly out of range.
-	if $\$p+1 >= $\$_s.len {
+	if $\$p+1 >= $\$_s.len { // coverage:ignore (the stack is always big enough here)
 		mut nyys := []YYSymType{len: $\$_s.len*2}
 		gocopy(mut nyys, $\$_s)
 		$\$_s = nyys.clone()
@@ -3593,7 +3603,7 @@ $\$default:
 	$\$j := $\$g + $\$_s[$\$p].yys + 1
 
 	if $\$j >= $\$_last {
-		$\$state = int($\$_act[$\$g])
+		$\$state = int($\$_act[$\$g]) // coverage:ignore (only for some grammar states)
 	} else {
 		$\$state = int($\$_act[$\$j])
 		if int($\$_chk[$\$state]) != -$\$n {

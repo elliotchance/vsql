@@ -20,7 +20,7 @@ struct QualifiedAsteriskExpr {
 }
 
 fn (e QualifiedAsteriskExpr) str() string {
-	return '${e.table_name}.*'
+	return '${e.table_name}.*' // coverage:ignore (never printed)
 }
 
 struct QuerySpecification {

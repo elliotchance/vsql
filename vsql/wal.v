@@ -143,7 +143,7 @@ fn wal_needs_recovery(path string) bool {
 // a valid commit frame) is ignored, because the database file wasn't changed.
 //
 // It must only be called with the database file locked exclusively.
-fn wal_recover(mut file os.File, path string) ! {
+fn wal_recover(mut file os.File, path string) ! { // coverage:ignore (only after a crash)
 	if !wal_needs_recovery(path) {
 		return
 	}
@@ -184,7 +184,7 @@ struct WalCommit {
 // wal_read returns the last committed statement in the log, or none if there
 // isn't one. Reading stops at the first frame that isn't valid, which is where
 // a process stopped while writing the log.
-fn wal_read(data []u8) ?WalCommit {
+fn wal_read(data []u8) ?WalCommit { // coverage:ignore (only after a crash)
 	if data.len < wal_header_size || data[..wal_magic.len] != wal_magic {
 		return none
 	}
@@ -284,7 +284,7 @@ fn crash_point() {
 	}
 
 	state.count++
-	if state.count == state.at {
+	if state.count == state.at { // coverage:ignore (crashes are only tested by connection_test.v)
 		C._exit(1)
 	}
 }

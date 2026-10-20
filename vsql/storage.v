@@ -159,7 +159,7 @@ fn (mut f Storage) open(path string, catalog_name string, exclusive bool) ! {
 	if exclusive && f.other_transaction_ids(header).len > 0 {
 		if f.session.try_exclusive()! {
 			defer {
-				f.session.shared() or { panic(err) }
+				f.session.shared() or { panic(err) } // coverage:ignore (switching back to a shared lock failed)
 			}
 
 			f.recover(mut header)!
@@ -183,7 +183,7 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 	// belong to an active transaction.
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	f.tables = map[string]Table{}
@@ -245,10 +245,10 @@ fn (mut f Storage) recover(mut header Header) ! {
 
 		mut modified := false
 		for obj in page.objects() {
-			if obj.tid in dead_tids {
+			if obj.tid in dead_tids { // coverage:ignore (only after a crash left uncommitted changes)
 				page.delete(obj.key, obj.tid)
 				modified = true
-			} else if obj.xid in dead_tids {
+			} else if obj.xid in dead_tids { // coverage:ignore (only after a crash left uncommitted changes)
 				page.expire(obj.key, obj.tid, 0)
 				modified = true
 			}
@@ -291,7 +291,7 @@ fn (mut f Storage) close_file() {
 fn (mut f Storage) create_table(table_name Identifier, columns Columns, primary_key []string) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	f.header.table_id++
@@ -307,7 +307,7 @@ fn (mut f Storage) create_table(table_name Identifier, columns Columns, primary_
 fn (mut f Storage) create_schema(schema_name string) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	schema := Schema{f.transaction_id, schema_name}
@@ -322,7 +322,7 @@ fn (mut f Storage) create_schema(schema_name string) ! {
 fn (mut f Storage) create_sequence(sequence Sequence) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	// The sequence defintion.
@@ -342,7 +342,7 @@ fn (mut f Storage) create_sequence(sequence Sequence) ! {
 fn (mut f Storage) sequence(name Identifier) !Sequence {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	value_object := f.sequence_value_object(name.storage_id()) or {
@@ -364,7 +364,7 @@ fn (mut f Storage) sequence(name Identifier) !Sequence {
 fn (mut f Storage) sequences() ![]Sequence {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	mut sequences := []Sequence{}
@@ -385,7 +385,7 @@ fn (mut f Storage) sequence_next_value(name Identifier) !i64 {
 
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	mut sequence := f.sequence(name)!
@@ -419,7 +419,7 @@ fn (mut f Storage) sequence_value_object(storage_id string) !PageObject {
 fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	mut canonical_name := new_sequence.name.storage_id()
@@ -442,7 +442,7 @@ fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence)
 fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	table_id := f.tables[table_name].id
@@ -461,7 +461,7 @@ fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 fn (mut f Storage) delete_schema(schema_name string, tid u64) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	f.btree.expire('S${schema_name}'.bytes(), tid, f.transaction_id)!
@@ -473,7 +473,7 @@ fn (mut f Storage) delete_schema(schema_name string, tid u64) ! {
 fn (mut f Storage) delete_sequence(name Identifier, tid u64) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	value_obj := f.sequence_value_object(name.storage_id())!
@@ -484,7 +484,7 @@ fn (mut f Storage) delete_sequence(name Identifier, tid u64) ! {
 fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	page_number := f.btree.expire(row.object_key(f.tables[table_name])!, row.tid, f.transaction_id)!
@@ -501,7 +501,7 @@ fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
 fn (mut f Storage) write_row(mut r Row, t Table) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	f.assign_row_id(mut r, t)
@@ -529,7 +529,7 @@ fn (mut f Storage) assign_row_id(mut r Row, t Table) {
 fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ! {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	f.assign_row_id(mut new, t)
@@ -544,7 +544,7 @@ fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ! {
 fn (mut f Storage) read_rows(table_name Identifier) ![]Row {
 	f.isolation_start()!
 	defer {
-		f.isolation_end() or { panic(err) }
+		f.isolation_end() or { panic(err) } // coverage:ignore (isolation_end() failed)
 	}
 
 	mut rows := []Row{}
@@ -632,7 +632,7 @@ fn (mut f Storage) isolation_end() ! {
 	for page_number, _ in f.transaction_pages {
 		// Removing objects can move the last page and truncate the file.
 		if page_number >= f.btree.pager.total_pages() {
-			continue
+			continue // coverage:ignore (pages are never truncated, see Btree.remove())
 		}
 
 		mut page := f.btree.pager.fetch_page(page_number)!

@@ -34,11 +34,9 @@ qualified_asterisk:
     }
   }
 
+// was: asterisked_identifier [ { period asterisked_identifier }... ]
 asterisked_identifier_chain:
-  asterisked_identifier { $$.v = $1.v as IdentifierChain }
-
-asterisked_identifier:
-  identifier { $$.v = $1.v as IdentifierChain }
+  identifier_chain { $$.v = $1.v as IdentifierChain }
 
 derived_column:
   value_expression {

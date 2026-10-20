@@ -278,7 +278,12 @@ fn compare(conn &Connection, xv Value, yv Value) !CompareResult {
 	// Not applicable.
 
 	// 6) The comparison of two datetimes ...
-	if xv.typ.typ.is_datetime() && yv.typ.typ.is_datetime() {
+	//
+	// Datetimes are only comparable if they have the same primary datetime
+	// fields (4.6.2), so a DATE can't be compared with a TIME or TIMESTAMP
+	// without a CAST.
+	if xv.typ.typ.is_datetime() && yv.typ.typ.is_datetime()
+		&& datetime_fields(xv.typ.typ) == datetime_fields(yv.typ.typ) {
 		return compare_datetimes(conn, xv, yv)
 	}
 
@@ -319,6 +324,16 @@ fn compare(conn &Connection, xv Value, yv Value) !CompareResult {
 	// Not applicable.
 
 	return sqlstate_42883('cannot compare ${xv.typ} and ${yv.typ}')
+}
+
+// datetime_fields describes the primary datetime fields of a datetime type,
+// which is the same with or without a time zone.
+fn datetime_fields(t SQLType) string {
+	return match t {
+		.is_date { 'DATE' }
+		.is_time_with_time_zone, .is_time_without_time_zone { 'TIME' }
+		else { 'TIMESTAMP' }
+	}
 }
 
 fn compare_datetimes(conn &Connection, xv Value, yv Value) CompareResult {

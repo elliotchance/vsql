@@ -67,11 +67,11 @@ VALUES 12 * CAST(10.5e0 AS INTEGER);
 
 /* types */
 VALUES 1 + 2.5;
--- COL1: 3.5 (NUMERIC(3, 1))
+-- COL1: 3.5 (NUMERIC(7, 1))
 
 /* types */
 VALUES 2.5 + 1;
--- COL1: 3.5 (NUMERIC(3, 1))
+-- COL1: 3.5 (NUMERIC(7, 1))
 
 VALUES 1 - 0.5;
 -- COL1: 0.5

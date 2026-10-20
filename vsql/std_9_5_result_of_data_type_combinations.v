@@ -96,18 +96,20 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 	}
 }
 
-// convert_to_combined_type converts a value to the type from combine_types.
-// Only a value of a different type (such as a SMALLINT in an INTEGER column)
-// is cast, and it keeps its own length or precision. The declared sizes of some
-// expressions aren't exact yet, so casting to them could truncate the value.
+// convert_to_combined_type converts a value to the type from combine_types. A
+// NUMERIC or DECIMAL without a precision has no limit, so a value keeps its own
+// precision and scale rather than being rounded to a scale of 0.
 fn convert_to_combined_type(mut conn Connection, context string, v Value, typ Type) !Value {
-	if v.typ.typ == typ.typ {
+	mut to := Type{typ.typ, typ.size, typ.scale, false}
+	if typ.typ in fractional_types && typ.size == 0 && v.typ.typ in fractional_types {
+		to = Type{typ.typ, v.typ.size, v.typ.scale, false}
+	}
+
+	if v.typ.typ == to.typ && v.typ.size == to.size && v.typ.scale == to.scale {
 		return v
 	}
 
-	size := if typ.typ.is_number() { 0 } else { v.typ.size }
-
-	return cast(mut conn, context, v, Type{typ.typ, size, 0, false})!
+	return cast(mut conn, context, v, to)!.with_type(to)
 }
 
 // integer_digits is the number of digits before the decimal point that an exact

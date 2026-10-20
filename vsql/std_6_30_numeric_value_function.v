@@ -8,6 +8,13 @@ import math
 
 // POSITION(CHARACTER VARYING IN CHARACTER VARYING) INTEGER
 fn func_position(args []Value) !Value {
+	// An empty string is found at the start of any string, even an empty one.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 2a
+	if args[0].string_value() == '' {
+		return new_integer_value(1)
+	}
+
 	s := args[1].string_value()
 	index := s.index(args[0].string_value()) or { return new_integer_value(0) }
 

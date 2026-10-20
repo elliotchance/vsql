@@ -16,6 +16,13 @@ mut:
 	// expression (such as both in "MIN(x) * AVG(x)") so that they can be
 	// calculated for each group before the expression is evaluated.
 	aggregates []AggregateFunction
+	// grouping_columns is set when compiling the select list of a grouped query.
+	// A column reference must then be one of these, unless it's in the argument
+	// of an aggregate function (in_aggregate).
+	//
+	// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Conformance Rules, 3
+	grouping_columns ?[]Column
+	in_aggregate     bool
 }
 
 type CompiledFn = fn (mut conn Connection, data Row, params map[string]Value) !Value

@@ -242,6 +242,29 @@ fn requote_identifier(s string) string {
 }
 
 fn (e Identifier) compile(mut c Compiler) !CompileResult {
+	if grouping_columns := c.grouping_columns {
+		if e.custom_id == '' && !c.in_aggregate && !e.is_grouping_column(grouping_columns) {
+			return sqlstate_42803(e.str())
+		}
+	}
+
+	return e.compile_column(mut c)!
+}
+
+// is_grouping_column is true if the column reference is one of the grouping
+// columns. A qualified name must also match the table.
+fn (e Identifier) is_grouping_column(grouping_columns []Column) bool {
+	for column in grouping_columns {
+		if e.sub_entity_name == column.name.sub_entity_name
+			&& (e.entity_name == '' || e.entity_name == column.name.entity_name) {
+			return true
+		}
+	}
+
+	return false
+}
+
+fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	// There are lots of ways to reoslve an identifer...
 	//
 	// 1. custom_id is used as a hack to wrap aggregate functions. This should be

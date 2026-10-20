@@ -286,6 +286,17 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []De
 		return
 	}
 
+	// Every column in the select list must be grouped, or only used in an
+	// aggregate function.
+	mut grouping_columns := []Column{}
+	for col in group_clause {
+		grouping_columns << group_column(col, tables)!
+	}
+	c.grouping_columns = grouping_columns
+	for e in select_exprs {
+		e.expr.compile(mut c)!
+	}
+
 	mut order := []SortSpecification{}
 	for col in group_clause {
 		order << SortSpecification{

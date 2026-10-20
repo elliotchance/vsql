@@ -355,6 +355,18 @@ A client that receives this error should retry the transaction.
   -- msg: CREATE TABLE 1
   -- error 42703: no such column: C
 
+``42803`` grouping error
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t (a INT, b INT);
+  SELECT b, COUNT(*) FROM t GROUP BY a;
+  -- msg: CREATE TABLE 1
+  -- error 42803: column B must be in the GROUP BY clause or used in an aggregate function
+
 ``42804`` data type mismatch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

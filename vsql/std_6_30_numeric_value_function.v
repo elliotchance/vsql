@@ -278,3 +278,56 @@ fn func_ceil_numeric(args []Value) !Value {
 
 	return new_numeric_value_from_numeric(t)
 }
+
+// numeric_function_type is the declared type of ABS, MOD, FLOOR and CEIL when
+// they return an exact numeric (NUMERIC or DECIMAL), which depends on the
+// declared types of the arguments.
+fn numeric_function_type(name string, return_type Type, arg_types []Type) Type {
+	if return_type.typ != .is_numeric && return_type.typ != .is_decimal {
+		return return_type
+	}
+
+	p1, s1 := arg_types[0].exact_precision(), arg_types[0].scale
+
+	match name {
+		'ABS' {
+			// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 11
+			return Type{return_type.typ, p1, s1, false}
+		}
+		'MOD' {
+			// The declared type is that of the divisor, which must have a scale of 0
+			// (6.30 Syntax Rule 12). vsql also allows a scale, so the result has the
+			// larger scale of the two, and it's less than the divisor.
+			p2, s2 := arg_types[1].exact_precision(), arg_types[1].scale
+			scale := if s1 > s2 { s1 } else { s2 }
+			size := if p2 == 0 { 0 } else { p2 - s2 + scale }
+			return Type{return_type.typ, size, scale, false}
+		}
+		'FLOOR', 'CEIL', 'CEILING' {
+			// The precision is implementation-defined and the scale is 0 (6.30
+			// Syntax Rule 20). A fractional part may need one more digit, such as
+			// CEIL(9.5) = 10.
+			size := if p1 == 0 || s1 == 0 { p1 } else { p1 - s1 + 1 }
+			return Type{return_type.typ, size, 0, false}
+		}
+		else {
+			return return_type
+		}
+	}
+}
+
+// with_numeric_type gives an exact numeric result of a function its declared
+// type.
+fn with_numeric_type(v Value, typ Type) Value {
+	if v.is_null || (v.typ.typ != .is_numeric && v.typ.typ != .is_decimal) {
+		return v
+	}
+
+	n := v.numeric_value()
+	t := Type{v.typ.typ, typ.size, typ.scale, false}
+	if t.typ == .is_numeric {
+		return new_numeric_value_from_numeric(new_numeric(t, n.numerator, n.denominator))
+	}
+
+	return new_decimal_value_from_numeric(new_numeric(t, n.numerator, n.denominator))
+}

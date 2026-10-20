@@ -64,11 +64,13 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	return_type := if is_fold {
 		Type{arg_types[0].typ, arg_types[0].size, 0, false}
 	} else {
-		found_func.return_type
+		numeric_function_type(func_name, found_func.return_type, arg_types)
 	}
+	is_exact := func_name in ['ABS', 'MOD', 'FLOOR', 'CEIL', 'CEILING']
+		&& return_type.typ in [.is_numeric, .is_decimal]
 
 	return CompileResult{
-		run:          fn [found_func, func_name, arg_types, compiled_args, is_fold, return_type] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [found_func, func_name, arg_types, compiled_args, is_fold, is_exact, return_type] (mut conn Connection, data Row, params map[string]Value) !Value {
 			mut args := []Value{}
 			for i, typ in arg_types {
 				// The argument may need to be implicitly cast to the parameter type,
@@ -96,6 +98,9 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 			result := found_func.func(args)!
 			if is_fold {
 				return result.with_type(return_type)
+			}
+			if is_exact {
+				return with_numeric_type(result, return_type)
 			}
 
 			return result

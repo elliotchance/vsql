@@ -94,6 +94,11 @@ Otherwise, aggregation expressions are calculated from each set defined by the
 
   SELECT city, AVG(price) FROM products GROUP BY city;
 
+Each column in the ``SELECT`` expressions must be one of the ``GROUP BY``
+columns, or only be used in an aggregate function. Otherwise, a ``42803``
+error is returned because there could be more than one value for the column in
+each set.
+
 See full list of :doc:`functions`.
 
 ORDER BY

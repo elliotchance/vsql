@@ -326,6 +326,21 @@ fn sqlstate_42703(column_name string) IError {
 	}
 }
 
+// grouping error
+struct SQLState42803 {
+	SQLState
+pub:
+	column_name string
+}
+
+fn sqlstate_42803(column_name string) IError {
+	return SQLState42803{
+		code:        sqlstate_to_int('42803')
+		msg:         'column ${column_name} must be in the GROUP BY clause or used in an aggregate function'
+		column_name: column_name
+	}
+}
+
 // data type mismatch
 struct SQLState42804 {
 	SQLState

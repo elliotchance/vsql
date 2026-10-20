@@ -263,3 +263,37 @@ SELECT count(*), sum(x) FROM foo WHERE x > 100e0;
 
 SELECT count(*) + 1 FROM foo WHERE x > 100e0;
 -- COL1: 1
+
+CREATE TABLE t (a INT, b VARCHAR(10));
+INSERT INTO t (a, b) VALUES (1, 'x'), (2, 'y'), (2, 'z');
+SELECT b, COUNT(*) FROM t GROUP BY a;
+SELECT t.b, COUNT(*) FROM t GROUP BY a;
+SELECT a, COUNT(*) FROM t;
+SELECT a + 1, COUNT(b) FROM t GROUP BY t.a;
+SELECT t.a, COUNT(*) FROM t GROUP BY a;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 3
+-- error 42803: column B must be in the GROUP BY clause or used in an aggregate function
+-- error 42803: column T.B must be in the GROUP BY clause or used in an aggregate function
+-- error 42803: column A must be in the GROUP BY clause or used in an aggregate function
+-- COL1: 2 COL2: 1
+-- COL1: 3 COL2: 2
+-- A: 1 COL2: 1
+-- A: 2 COL2: 2
+
+CREATE TABLE t (a INT, b INT);
+CREATE TABLE u (a INT, c INT);
+INSERT INTO t (a, b) VALUES (1, 2);
+INSERT INTO u (a, c) VALUES (1, 3);
+SELECT t.a, COUNT(*) FROM t JOIN u ON t.a = u.a GROUP BY t.a;
+SELECT u.a, COUNT(*) FROM t JOIN u ON t.a = u.a GROUP BY t.a;
+SELECT x.a, COUNT(*) FROM (SELECT a, b FROM t) AS x GROUP BY a;
+SELECT x.b FROM (SELECT a, b FROM t) AS x GROUP BY x.a;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- A: 1 COL2: 1
+-- error 42803: column U.A must be in the GROUP BY clause or used in an aggregate function
+-- A: 1 COL2: 1
+-- error 42803: column X.B must be in the GROUP BY clause or used in an aggregate function

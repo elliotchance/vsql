@@ -2,7 +2,7 @@
 
 identifier_chain:
   identifier { $$.v = $1.v as IdentifierChain }
-| identifier period identifier {
+| identifier_chain period identifier {
     $$.v = IdentifierChain{
       ($1.v as IdentifierChain).identifier + '.' + ($3.v as IdentifierChain).identifier
     }

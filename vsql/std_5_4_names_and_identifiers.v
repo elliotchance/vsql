@@ -179,7 +179,10 @@ fn new_identifier3(s string) !Identifier {
 			}
 		}
 		else {
-			return error('invalid identifier: ${s}')
+			// More parts would be fields of a row type, which aren't supported.
+			//
+			// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 5
+			return sqlstate_42601('invalid column reference: ${parts.map(requote_identifier(it)).join('.')}')
 		}
 	}
 }
@@ -313,7 +316,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		sub_entity_name: e.sub_entity_name
 	})
 	mut catalog := c.conn.catalogs[ident.catalog_name] or {
-		panic('unknown catalog: ${ident.catalog_name}')
+		return sqlstate_42601('unknown column: ${ident}')
 	}
 	for _, table in catalog.storage.tables {
 		if table.name.schema_name == ident.schema_name

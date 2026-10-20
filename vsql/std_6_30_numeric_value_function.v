@@ -149,6 +149,30 @@ fn func_mod_numeric(args []Value) !Value {
 	return new_numeric_value_from_numeric(value.subtract(value.divide(modulus)!.trunc().multiply(modulus)))
 }
 
+// MOD(SMALLINT, SMALLINT) SMALLINT
+// MOD(INTEGER, INTEGER) INTEGER
+// MOD(BIGINT, BIGINT) BIGINT
+// (and the other combinations of integer types)
+//
+// The result has the sign of the dividend and the type of the divisor, which it
+// always fits in because it's smaller than the divisor.
+fn func_mod_integer(args []Value) !Value {
+	value := args[0].int_value()
+	modulus := args[1].int_value()
+	if modulus == 0 {
+		return sqlstate_22012() // division by zero
+	}
+
+	// The remainder of dividing by -1 is always 0, but min_i64 % -1 overflows.
+	result := if modulus == -1 { i64(0) } else { value % modulus }
+
+	return match args[1].typ.typ {
+		.is_smallint { new_smallint_value(i16(result)) }
+		.is_integer { new_integer_value(int(result)) }
+		else { new_bigint_value(result) }
+	}
+}
+
 // LOG10(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_log10(args []Value) !Value {
 	return new_double_precision_value(math.log10(args[0].f64_value()))

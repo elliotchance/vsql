@@ -54,6 +54,13 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'LOWER', [varchar], false, func_lower, varchar, false})!
 	conn.register_func(Func{'MOD', [double_precision, double_precision], false, func_mod, double_precision, false})!
 	conn.register_func(Func{'MOD', [numeric, numeric], false, func_mod_numeric, numeric, false})!
+	// The result of MOD has the type of the divisor (6.30 Syntax Rule 12), so
+	// there is one for each combination of integer types.
+	for dividend in [smallint, integer, bigint] {
+		for divisor in [smallint, integer, bigint] {
+			conn.register_func(Func{'MOD', [dividend, divisor], false, func_mod_integer, divisor, false})!
+		}
+	}
 	conn.register_func(Func{'OCTET_LENGTH', [varchar], false, func_octet_length, integer, false})!
 	conn.register_func(Func{'POSITION', [varchar, varchar], false, func_position, integer, false})!
 	conn.register_func(Func{'POWER', [double_precision, double_precision], false, func_power, double_precision, false})!

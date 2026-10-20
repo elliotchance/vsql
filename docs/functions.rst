@@ -399,9 +399,15 @@ MOD
 
    MOD(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
    MOD(NUMERIC, NUMERIC) NUMERIC
+   MOD(SMALLINT, SMALLINT) SMALLINT
+   MOD(INTEGER, INTEGER) INTEGER
+   MOD(BIGINT, BIGINT) BIGINT
 
-Modulus. When using ``NUMERIC`` the result will have a precision that is the
-highest precision between either parameter. The scale is undetermined.
+Modulus. The result has the same sign as the first argument. When both
+arguments are integers, the result has the type of the second argument (such
+as ``MOD(BIGINT, SMALLINT) SMALLINT``). When using
+``NUMERIC`` the result will have a precision that is the highest precision
+between either parameter. The scale is undetermined.
 
 **Examples**
 
@@ -415,6 +421,9 @@ highest precision between either parameter. The scale is undetermined.
 
   VALUES MOD(10.7, 0.8);
   -- COL1: 0.3
+
+  VALUES MOD(-7, 3);
+  -- COL1: -1
 
 POWER
 ^^^^^

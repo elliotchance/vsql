@@ -49,8 +49,18 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		compiled_args << e.args[i].compile(mut c)!
 	}
 
+	// UPPER and LOWER have the declared type of their operand.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 9
+	is_fold := func_name in ['UPPER', 'LOWER'] && arg_types[0].typ.is_string()
+	return_type := if is_fold {
+		Type{arg_types[0].typ, arg_types[0].size, 0, false}
+	} else {
+		found_func.return_type
+	}
+
 	return CompileResult{
-		run:          fn [found_func, func_name, arg_types, compiled_args] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [found_func, func_name, arg_types, compiled_args, is_fold, return_type] (mut conn Connection, data Row, params map[string]Value) !Value {
 			mut args := []Value{}
 			for i, typ in arg_types {
 				// The argument may need to be implicitly cast to the parameter type,
@@ -70,14 +80,19 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 			// NULL. Custom functions are always called.
 			if !found_func.called_on_null_input && args.any(it.is_null) {
 				return Value{
-					typ:     found_func.return_type
+					typ:     return_type
 					is_null: true
 				}
 			}
 
-			return found_func.func(args)!
+			result := found_func.func(args)!
+			if is_fold {
+				return result.with_type(return_type)
+			}
+
+			return result
 		}
-		typ:          found_func.return_type
+		typ:          return_type
 		contains_agg: found_func.is_agg
 	}
 }

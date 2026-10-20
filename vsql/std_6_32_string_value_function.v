@@ -67,8 +67,11 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
+	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 4
+	typ := varying_string_type(compiled_value.typ)
+
 	return CompileResult{
-		run:          fn [e, compiled_value, compiled_from, compiled_for] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e, compiled_value, compiled_from, compiled_for, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled_value.run(mut conn, data, params)!
 			from_value := if e.from != none {
 				compiled_from.run(mut conn, data, params)!
@@ -84,7 +87,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General
 			// Rules, 3d
 			if value.is_null || from_value.is_null || for_value.is_null {
-				return new_null_value(.is_varchar)
+				return new_null_value(.is_varchar).with_type(typ)
 			}
 
 			if e.using == 'CHARACTERS' {
@@ -92,16 +95,16 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 				start, end := substring_range(characters.len, from_value.as_int(),
 					e.@for != none, for_value.as_int())!
 
-				return new_varchar_value(characters[start..end].string())
+				return new_varchar_value(characters[start..end].string()).with_type(typ)
 			}
 
 			str := value.string_value()
 			start, end := substring_range(str.len, from_value.as_int(), e.@for != none,
 				for_value.as_int())!
 
-			return new_varchar_value(str.substr(start, end))
+			return new_varchar_value(str.substr(start, end)).with_type(typ)
 		}
-		typ:          new_type('CHARACTER VARYING', 0, 0)
+		typ:          typ
 		contains_agg: compiled_value.contains_agg
 	}
 }
@@ -155,16 +158,18 @@ fn (e TrimFunction) pstr(params map[string]Value) string {
 fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 	compiled_source := e.source.compile(mut c)!
 	compiled_character := e.character.compile(mut c)!
+	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 13
+	typ := varying_string_type(compiled_source.typ)
 
 	return CompileResult{
-		run:          fn [e, compiled_source, compiled_character] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e, compiled_source, compiled_character, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 			source := compiled_source.run(mut conn, data, params)!
 			character := compiled_character.run(mut conn, data, params)!
 
 			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General
 			// Rules, 11c
 			if source.is_null || character.is_null {
-				return new_null_value(.is_varchar)
+				return new_null_value(.is_varchar).with_type(typ)
 			}
 
 			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General
@@ -190,9 +195,19 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 				}
 			}
 
-			return new_varchar_value(chars[start..end].string())
+			return new_varchar_value(chars[start..end].string()).with_type(typ)
 		}
-		typ:          new_type('CHARACTER VARYING', 0, 0)
+		typ:          typ
 		contains_agg: compiled_source.contains_agg || compiled_character.contains_agg
 	}
+}
+
+// varying_string_type is the declared type of SUBSTRING and TRIM, which is a
+// CHARACTER VARYING with the (maximum) length of the source string.
+fn varying_string_type(source Type) Type {
+	if !source.typ.is_string() {
+		return new_type('CHARACTER VARYING', 0, 0)
+	}
+
+	return new_type('CHARACTER VARYING', source.size, 0)
 }

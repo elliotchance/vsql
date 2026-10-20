@@ -295,6 +295,61 @@ Connection names can be any single word including numbers for convienience. The
 default connection name is named "main" but this should not be used or
 referenced in tests to avoid unexpected behavior.
 
+Faults
+^^^^^^
+
+A ``fault`` directive makes an operation fail the next time it's reached, so
+that the code that handles the error can be tested:
+
+.. code-block:: sql
+
+   CREATE TABLE t (x INT);
+   /* fault wal_write */
+   INSERT INTO t (x) VALUES (1);
+   SELECT * FROM t;
+   -- msg: CREATE TABLE 1
+   -- error 00000: wal_write failed (fault injected by test)
+
+A number after the name makes it fail the nth time it's reached instead, such
+as ``/* fault lock_shared 2 */``.
+
+The faults are:
+
+- ``open``: opening the database file.
+- ``lock``: locking the database file to write to it.
+- ``lock_shared``: locking the database file to read it.
+- ``read_header``: reading the header of the database file.
+- ``read_page``: reading a page from the database file.
+- ``write_version``: the file needs a newer version of vsql to be changed.
+- ``wal_write``: writing a statement to the write-ahead log, before it's
+  committed.
+- ``wal_torn_frame``: only half of the commit frame is written to the
+  write-ahead log.
+- ``wal_corrupt_frame``: the commit frame in the write-ahead log has the wrong
+  checksum.
+- ``wal_bad_magic``, ``wal_bad_header`` and ``wal_unknown_frame``: the
+  write-ahead log is corrupt in other ways.
+- ``checkpoint``: copying a committed statement from the write-ahead log into
+  the database file.
+- ``recover``: copying a statement that was left in the write-ahead log into
+  the database file.
+
+Each fault is a ``fault_point()`` or ``fault_reached()`` call in the code, see
+``vsql/fault.v``. A test with a fault only runs on disk.
+
+A ``disconnect`` directive closes a connection without rolling back its
+transaction, like a process that stopped:
+
+.. code-block:: sql
+
+   /* connection 1 */
+   CREATE TABLE t (x INT);
+   START TRANSACTION;
+   INSERT INTO t (x) VALUES (1);
+   /* disconnect 1 */
+   /* connection 2 */
+   SELECT * FROM t;
+
 Multiple Catalogs
 ^^^^^^^^^^^^^^^^^
 

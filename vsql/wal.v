@@ -65,7 +65,9 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 		log.close()
 	}
 
-	log.write(wal_header(salt, pager.page_size))!
+	log_header := wal_header(salt, pager.page_size)
+	wal_corrupt_fault(mut log, log_header, salt)!
+	log.write(log_header)!
 
 	mut checksum := salt
 	for page_number in page_numbers {
@@ -77,7 +79,20 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 	}
 
 	crash_point()
+	fault_point('wal_write')!
 	commit_frame, _ := wal_frame(wal_frame_commit, pager.total_pages, header_bytes, checksum)
+	if fault_reached('wal_torn_frame') {
+		log.write(commit_frame[..commit_frame.len / 2])!
+		log.flush()
+		return fault_error('wal_torn_frame')
+	}
+	if fault_reached('wal_corrupt_frame') {
+		mut corrupt := commit_frame.clone()
+		corrupt[corrupt.len - 1] ^= 0xff
+		log.write(corrupt)!
+		log.flush()
+		return fault_error('wal_corrupt_frame')
+	}
 	log.write(commit_frame)!
 	log.flush()
 	fsync(log, log_path)!
@@ -90,6 +105,7 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 
 	// This is the point where the statement is committed.
 	crash_point()
+	fault_point('checkpoint')!
 
 	wal_checkpoint(mut file, path, pager.page_size, pages, header_bytes, pager.total_pages)!
 
@@ -97,6 +113,33 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 	// again (which doesn't change it) by wal_recover.
 	log.seek(wal_state_offset, .start)!
 	log.write([wal_state_checkpointed])!
+}
+
+// wal_corrupt_fault writes a log that is corrupt (and then returns an error) if
+// a test has armed one of the faults for a corrupt log. The log looks like it
+// has a committed statement, so it must be ignored by wal_recover.
+fn wal_corrupt_fault(mut log os.File, header []u8, salt u32) ! {
+	mut name := ''
+	mut corrupt := header.clone()
+	if fault_reached('wal_bad_magic') {
+		name = 'wal_bad_magic'
+		corrupt[0] ^= 0xff
+	} else if fault_reached('wal_bad_header') {
+		// The page size is covered by the checksum of the header.
+		name = 'wal_bad_header'
+		corrupt[12] ^= 0xff
+	} else if fault_reached('wal_unknown_frame') {
+		name = 'wal_unknown_frame'
+		frame, _ := wal_frame(0xff, 0, []u8{}, salt)
+		corrupt << frame
+	} else {
+		return
+	}
+
+	log.write(corrupt)!
+	log.flush()
+
+	return fault_error(name)
 }
 
 // wal_checkpoint copies the pages and header of a committed log into the
@@ -147,6 +190,7 @@ fn wal_recover(mut file os.File, path string) ! {
 	if !wal_needs_recovery(path) {
 		return
 	}
+	fault_point('recover')!
 
 	log_path := wal_path(path)
 	data := os.read_bytes(log_path) or { return error('unable to read ${log_path}: ${err}') }

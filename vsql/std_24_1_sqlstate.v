@@ -465,6 +465,18 @@ fn sqlstate_42p07(entity_type string, entity_name string) IError {
 	}
 }
 
+// A function with the same name and argument types already exists.
+struct SQLState42723 {
+	SQLState
+}
+
+fn sqlstate_42723(msg string) IError {
+	return SQLState42723{
+		code: sqlstate_to_int('42723')
+		msg:  'duplicate function: ${msg}'
+	}
+}
+
 // No such function or operator (since operators are functions).
 struct SQLState42883 {
 	SQLState

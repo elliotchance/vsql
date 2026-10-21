@@ -32,6 +32,41 @@ SELECT * FROM t;
 -- A: 1 B: x C: 1.5e0 D: TRUE E: 2022-06-30
 -- A: NULL B: NULL C: NULL D: UNKNOWN E: NULL
 
+-- # Each value is converted to the type of its column, like an INSERT.
+/* types */
+/* virtual_table CREATE TABLE t (a BIGINT, b VARCHAR(20), c NUMERIC(5, 2)) AS VALUES ROW(1, 'x', 1.5) */
+SELECT * FROM t;
+-- A: 1 (BIGINT) B: x (CHARACTER VARYING(20)) C: 1.50 (NUMERIC(5, 2))
+
+/* virtual_table CREATE TABLE t (b VARCHAR(2)) AS VALUES 'abc' */
+SELECT * FROM t;
+-- error 22001: string data right truncation for CHARACTER VARYING(2)
+
+/* virtual_table CREATE TABLE t (a INT) AS VALUES 'x' */
+SELECT * FROM t;
+-- error 42846: cannot coerce CHARACTER(1) to INTEGER
+
+-- # Each row must have a value for each column.
+/* virtual_table CREATE TABLE t (a INT, b INT) AS VALUES 1 */
+SELECT * FROM t;
+-- error 42601: syntax error: virtual table PUBLIC.T has 2 columns, but a row has 1 value
+
+-- # A virtual table can't have the same name as a table, or another virtual
+-- # table.
+CREATE TABLE fruits (id INT);
+/* virtual_table CREATE TABLE fruits (id INT) AS VALUES 1 */
+SELECT * FROM fruits;
+-- msg: CREATE TABLE 1
+-- error 42P07: duplicate table: ":memory:".PUBLIC.FRUITS
+
+/* virtual_table CREATE TABLE fruits (id INT) AS VALUES 1 */
+CREATE TABLE fruits (id INT);
+/* virtual_table CREATE TABLE fruits (id INT) AS VALUES 2 */
+SELECT * FROM fruits;
+-- error 42P07: duplicate table: ":memory:".PUBLIC.FRUITS
+-- error 42P07: duplicate table: ":memory:".PUBLIC.FRUITS
+-- ID: 1
+
 -- # A virtual table can be joined with a real table.
 /* virtual_table CREATE TABLE fruits (id INT, name VARCHAR(10)) AS VALUES ROW(1, 'kiwi'), ROW(2, 'pear') */
 CREATE TABLE prices (fruit_id INT, price INT);

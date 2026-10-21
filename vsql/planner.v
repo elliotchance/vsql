@@ -169,7 +169,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			}
 
 			if allow_virtual && table_name_id in catalog.virtual_tables {
-				plan.operations << VirtualTableOperation{table_name_id, catalog.virtual_tables[table_name_id]}
+				plan.operations << VirtualTableOperation{table_name_id, catalog.virtual_tables[table_name_id], conn}
 				table = catalog.virtual_tables[table_name_id].table()
 				if filter {
 					add_where_plan(mut &plan, body, params, conn, {

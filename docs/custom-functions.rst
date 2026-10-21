@@ -26,6 +26,14 @@ Unlike the builtin functions (which return ``NULL`` if any argument is
 ``NULL``), a custom function is always called. Use ``is_null`` on the argument
 values to handle ``NULL`` yourself.
 
+A function is identified by its name and argument types, so a function with the
+same name can be registered more than once with different argument types. A
+function with the same name and argument types as one that already exists (a
+custom or builtin function) is an error ``42723``, even if the return type is
+different, because only the arguments choose which function is called.
+A prototype that isn't ``name(type, ...) type``, or has a type that doesn't
+exist, is an error ``42601``.
+
 A function must return a value to match the return type. See the full list of
 ``Value`` constructors in
 `value.v <https://github.com/elliotchance/vsql/blob/main/vsql/value.v>`_.

@@ -820,6 +820,9 @@ struct VirtualTable
    mut:
    	is_done bool
    	rows    []Row
+   	// wrong_values is the number of values of a row that doesn't have one for
+   	// each column, or -1.
+   	wrong_values int = -1
    }
 
 

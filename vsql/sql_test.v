@@ -198,7 +198,8 @@ fn (test SQLTest) modes() []SQLTestMode {
 fn (test SQLTest) through_server() bool {
 	return $env('SERVER') != '0' && !test.show_types && test.params.len == 0
 		&& !test.stmts.any(it.starts_with('fault ') || it.starts_with('disconnect ')
-			|| it.starts_with('create_catalog ') || it.starts_with('virtual_table '))
+			|| it.starts_with('create_catalog ') || it.starts_with('virtual_table ')
+			|| it == 'out' || it == 'in')
 }
 
 fn test_all() ! {
@@ -423,7 +424,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 				return error('out cannot be used with connection')
 			}
 			mut sb := strings.new_builder(1024)
-			db.dump(mut sb)!
+			db.db.dump(mut sb)!
 			dumped := sb.str()
 			last_dump = dumped
 			for line in dumped.split_into_lines() {
@@ -440,19 +441,15 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 			}
 			restores++
 			mut path := ':memory:'
-			if on_disk {
+			if mode == .on_disk {
 				restored_dir := os.join_path(dir, 'in_${restores}')
 				os.mkdir_all(restored_dir)!
 				path = os.join_path(restored_dir, ':memory:.vsql')
 			}
-			now := db.now
-			db = open_database(path, options)!
+			db = new_sql_test_conn(false, path, options, port)!
 			opened << db
-			db.now = now
-			register_pg_functions(mut db)!
-			register_pg_virtual_tables(mut db)!
 			for dump_stmt in split_statements(last_dump) {
-				db.query(dump_stmt) or {
+				db.db.query(dump_stmt) or {
 					actual += 'error ${sqlstate_from_int(err.code())}: ${err.msg()}\n'
 				}
 			}

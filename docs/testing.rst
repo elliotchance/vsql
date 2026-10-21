@@ -218,8 +218,8 @@ The statements are sent through the PostgreSQL server, which is embedded in the
 test like an application would (see :doc:`server`), by a PostgreSQL client over
 TCP. One server is shared by all of the tests. A PostgreSQL client can't use
 some of the directives, so tests with ``types``, ``set``, ``fault``,
-``disconnect``, ``create_catalog`` or ``virtual_table`` use the database directly
-instead.
+``disconnect``, ``create_catalog``, ``virtual_table``, ``out`` or ``in`` use the
+database directly instead.
 
 A failure shows which one failed, such as ``(on disk through server)``.
 

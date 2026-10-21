@@ -30,9 +30,15 @@ fn (t JoinType) str() string {
 	}
 }
 
+// left_table and right_table are references because a TableReference can be a
+// QualifiedJoin, and V stores a sum type's value inline.
 struct QualifiedJoin {
-	left_table    TableReference
+	left_table    &TableReference
 	join_type     JoinType
-	right_table   TableReference
+	right_table   &TableReference
 	specification BooleanValueExpression // ON condition
+}
+
+fn new_qualified_join(left_table TableReference, join_type JoinType, right_table TableReference, specification BooleanValueExpression) QualifiedJoin {
+	return QualifiedJoin{&left_table, join_type, &right_table, specification}
 }

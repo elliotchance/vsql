@@ -1,0 +1,41 @@
+name: V master
+
+# CI uses the V commit in .v-version so that a change to V can't break the
+# build, but someone installing vsql gets the latest V from "v up". This builds
+# and tests vsql with V master every day, so a change to V that breaks vsql
+# is found before they find it.
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: Tests with V master
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build V master
+        run: |
+          git clone --depth 1 https://github.com/vlang/v "$HOME/vmaster"
+          make -C "$HOME/vmaster"
+          echo "$HOME/vmaster" >> $GITHUB_PATH
+
+      - name: Show V version
+        run: v version
+
+      # libpq is keg-only, so psql must be added to the PATH. It's used by the
+      # server tests.
+      - name: Install psql
+        run: |
+          brew install libpq
+          echo "$(brew --prefix libpq)/bin" >> $GITHUB_PATH
+
+      - name: Run tests
+        run: make test

@@ -27,11 +27,25 @@ fn (e CharacterValueFunction) compile(mut c Compiler) !CompileResult {
 	}
 }
 
+// value is a reference because it can contain another CharacterSubstringFunction,
+// and V stores a sum type's value inline.
 struct CharacterSubstringFunction {
-	value CharacterValueExpression
-	from  ?NumericValueExpression
-	@for  ?NumericValueExpression
+	value &CharacterValueExpression
+	from  ?&NumericValueExpression
+	@for  ?&NumericValueExpression
 	using string // CHARACTERS or OCTETS or ''
+}
+
+fn new_character_substring_function(value CharacterValueExpression, from NumericValueExpression, @for ?NumericValueExpression, using string) CharacterSubstringFunction {
+	mut for_ref := ?&NumericValueExpression(none)
+	if f := @for {
+		for_ref = ref_numeric_value_expression(f)
+	}
+	return CharacterSubstringFunction{&value, &from, for_ref, using}
+}
+
+fn ref_numeric_value_expression(e NumericValueExpression) &NumericValueExpression {
+	return &e
 }
 
 fn (e CharacterSubstringFunction) pstr(params map[string]Value) string {
@@ -195,12 +209,18 @@ fn substring_range(length int, from i64, has_for bool, @for i64) !(int, int) {
 	return int(start - 1), int(end - 1)
 }
 
+// character and source are references because a CharacterValueExpression can
+// contain a TrimFunction, and V stores a sum type's value inline.
 struct TrimFunction {
 	// LEADING, TRAILING or BOTH
 	specification string
 	// When not provided, it will default to ' '.
-	character CharacterValueExpression
-	source    CharacterValueExpression
+	character &CharacterValueExpression
+	source    &CharacterValueExpression
+}
+
+fn new_trim_function(specification string, character CharacterValueExpression, source CharacterValueExpression) TrimFunction {
+	return TrimFunction{specification, &character, &source}
 }
 
 fn (e TrimFunction) pstr(params map[string]Value) string {

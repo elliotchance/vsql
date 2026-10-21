@@ -137,13 +137,19 @@ fn (e BooleanTerm) compile(mut c Compiler) !CompileResult {
 }
 
 // BooleanTest for "IS [ NOT ] { TRUE | FALSE | UNKNOWN }".
+// expr is a reference because a BooleanPrimary can contain another BooleanTest
+// (such as in parentheses), and V stores a sum type's value inline.
 struct BooleanTest {
-	expr  BooleanPrimary
+	expr  &BooleanPrimary
 	not   bool
 	value ?Value
 	// If a unary NOT exists before. We do not need to keep this separate as
 	// stacking NOT operations simply inverts this value.
 	inverse bool
+}
+
+fn new_boolean_test(expr BooleanPrimary, not bool, value ?Value, inverse bool) BooleanTest {
+	return BooleanTest{&expr, not, value, inverse}
 }
 
 fn (e BooleanTest) pstr(params map[string]Value) string {

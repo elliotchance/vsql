@@ -2,9 +2,10 @@
 
 query_specification:
   SELECT select_list table_expression {
+    table_expression := $3.v as TableExpression
     $$.v = QuerySpecification{
       exprs:            $2.v as SelectList
-      table_expression: $3.v as TableExpression
+      table_expression: &table_expression
     }
   }
 

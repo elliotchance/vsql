@@ -40,9 +40,15 @@ fn (e CharacterPrimary) compile(mut c Compiler) !CompileResult {
 	}
 }
 
+// left and right are references because a CharacterValueExpression can be a
+// Concatenation, and V stores a sum type's value inline.
 struct Concatenation {
-	left  CharacterValueExpression
-	right CharacterValueExpression
+	left  &CharacterValueExpression
+	right &CharacterValueExpression
+}
+
+fn new_concatenation(left CharacterValueExpression, right CharacterValueExpression) Concatenation {
+	return Concatenation{&left, &right}
 }
 
 fn (e Concatenation) pstr(params map[string]Value) string {

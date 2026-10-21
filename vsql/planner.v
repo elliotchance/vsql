@@ -312,9 +312,8 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []De
 		order << SortSpecification{
 			expr:   ValueExpression(BooleanValueExpression{
 				term: BooleanTerm{
-					factor: BooleanTest{
-						expr: BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(col)))
-					}
+					factor: new_boolean_test(BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(col))),
+						false, none, false)
 				}
 			})
 			is_asc: true
@@ -332,7 +331,7 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []De
 fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut conn Connection) !Plan {
 	select_stmt := QuerySpecification{
 		exprs:            AsteriskExpr(true)
-		table_expression: TableExpression{
+		table_expression: &TableExpression{
 			from_clause:  TablePrimary{
 				body: stmt.table_name
 			}
@@ -348,7 +347,7 @@ fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut
 fn create_update_plan(stmt UpdateStatementSearched, params map[string]Value, mut conn Connection) !Plan {
 	select_stmt := QuerySpecification{
 		exprs:            AsteriskExpr(true)
-		table_expression: TableExpression{
+		table_expression: &TableExpression{
 			from_clause:  TablePrimary{
 				body: stmt.table_name
 			}
@@ -578,9 +577,8 @@ fn qualified_asterisk_table(e QualifiedAsteriskExpr, mut conn Connection, tables
 fn column_derived_column(column Column) DerivedColumn {
 	return DerivedColumn{ValueExpression(BooleanValueExpression{
 		term: BooleanTerm{
-			factor: BooleanTest{
-				expr: BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(column.name)))
-			}
+			factor: new_boolean_test(BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(column.name))),
+				false, none, false)
 		}
 	}), Identifier{
 		sub_entity_name: column.name.sub_entity_name

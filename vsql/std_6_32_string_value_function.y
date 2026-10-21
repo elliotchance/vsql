@@ -13,25 +13,25 @@ character_value_function:
 character_substring_function:
   SUBSTRING left_paren character_value_expression FROM start_position
   right_paren {
-    $$.v = CharacterSubstringFunction{$3.v as CharacterValueExpression,
-      $5.v as NumericValueExpression, none, 'CHARACTERS'}
+    $$.v = new_character_substring_function($3.v as CharacterValueExpression,
+      $5.v as NumericValueExpression, none, 'CHARACTERS')
   }
 | SUBSTRING left_paren character_value_expression FROM start_position FOR
   string_length right_paren {
-    $$.v = CharacterSubstringFunction{$3.v as CharacterValueExpression,
+    $$.v = new_character_substring_function($3.v as CharacterValueExpression,
       $5.v as NumericValueExpression, $7.v as NumericValueExpression,
-      'CHARACTERS'}
+      'CHARACTERS')
   }
 | SUBSTRING left_paren character_value_expression FROM start_position USING
   char_length_units right_paren {
-    $$.v = CharacterSubstringFunction{$3.v as CharacterValueExpression,
-      $5.v as NumericValueExpression, none, $7.v as string}
+    $$.v = new_character_substring_function($3.v as CharacterValueExpression,
+      $5.v as NumericValueExpression, none, $7.v as string)
   }
 | SUBSTRING left_paren character_value_expression FROM start_position FOR
   string_length USING char_length_units right_paren {
-    $$.v = CharacterSubstringFunction{$3.v as CharacterValueExpression,
+    $$.v = new_character_substring_function($3.v as CharacterValueExpression,
       $5.v as NumericValueExpression, $7.v as NumericValueExpression,
-      $9.v as string}
+      $9.v as string)
   }
 
 fold:
@@ -50,21 +50,21 @@ trim_function:
 trim_operands:
   trim_source {
     space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
-    $$.v = TrimFunction{'BOTH', space, $1.v as CharacterValueExpression}
+    $$.v = new_trim_function('BOTH', space, $1.v as CharacterValueExpression)
   }
 | FROM trim_source {
     space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
-    $$.v = TrimFunction{'BOTH', space, $2.v as CharacterValueExpression}
+    $$.v = new_trim_function('BOTH', space, $2.v as CharacterValueExpression)
   }
 | trim_specification FROM trim_source {
     space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
-    $$.v = TrimFunction{$1.v as string, space, $3.v as CharacterValueExpression}
+    $$.v = new_trim_function($1.v as string, space, $3.v as CharacterValueExpression)
   }
 | trim_character FROM trim_source {
-    $$.v = TrimFunction{'BOTH', $1.v as CharacterValueExpression, $3.v as CharacterValueExpression}
+    $$.v = new_trim_function('BOTH', $1.v as CharacterValueExpression, $3.v as CharacterValueExpression)
   }
 | trim_specification trim_character FROM trim_source   {
-    $$.v = TrimFunction{$1.v as string, $2.v as CharacterValueExpression, $4.v as CharacterValueExpression}
+    $$.v = new_trim_function($1.v as string, $2.v as CharacterValueExpression, $4.v as CharacterValueExpression)
   }
 
 trim_source:

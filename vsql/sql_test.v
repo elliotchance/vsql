@@ -63,7 +63,8 @@ fn get_tests() ![]SQLTest {
 					stmts << replace_unicode(contents)
 				} else if contents.starts_with('fault ') || contents.starts_with('disconnect ') {
 					stmts << replace_unicode(contents)
-				} else if contents.starts_with('create_catalog ') {
+				} else if contents.starts_with('create_catalog ')
+					|| contents.starts_with('virtual_table ') {
 					stmts << replace_unicode(contents)
 				} else if contents.starts_with('types') {
 					show_types = true
@@ -276,6 +277,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, on_disk bool) !S
 		}), 300
 	}
 	register_pg_functions(mut db)!
+	register_pg_virtual_tables(mut db)!
 
 	// If a test needs multiple connections we cannot rely on ":memory:".
 	// The default connection is called "main". The docs explain that "main"
@@ -326,11 +328,21 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, on_disk bool) !S
 			continue
 		}
 
+		// "virtual_table CREATE TABLE ... AS <query>" registers a virtual table
+		// on the current connection, with the rows of the query.
+		if stmt.starts_with('virtual_table ') {
+			register_test_virtual_table(mut db, stmt[14..]) or {
+				actual += 'error ${sqlstate_from_int(err.code())}: ${err.msg()}\n'
+			}
+			continue
+		}
+
 		if stmt.starts_with('connection ') {
 			connection_name := stmt[11..]
 			if connection_name !in connections {
 				mut conn := open_database(file_name, options)!
 				register_pg_functions(mut conn)!
+				register_pg_virtual_tables(mut conn)!
 				connections[connection_name] = conn
 				opened << conn
 			}
@@ -394,4 +406,31 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, on_disk bool) !S
 	assert expected == actual_trim
 
 	return if expected == actual_trim { SQLTestResult.passed } else { SQLTestResult.failed }
+}
+
+// register_test_virtual_table registers a virtual table from a "virtual_table"
+// directive, such as "CREATE TABLE t (x INT) AS VALUES 1, 2". The query is run
+// once, and then each call of the provider function adds the next row, so that
+// it's called once for each row (and once more to finish).
+fn register_test_virtual_table(mut db Connection, directive string) ! {
+	i := directive.index(') AS ') or { panic('bad virtual_table directive: ${directive}') }
+	create_table := directive[..i + 1]
+	result := db.query(directive[i + 5..])!
+
+	mut rows := [][]Value{}
+	for row in result {
+		mut values := []Value{}
+		for column in result.columns {
+			values << row.get_column(column)!
+		}
+		rows << values
+	}
+
+	db.register_virtual_table(create_table, fn [rows] (mut t VirtualTable) ! {
+		if t.rows.len < rows.len {
+			t.next_values(rows[t.rows.len])
+		} else {
+			t.done()
+		}
+	})!
 }

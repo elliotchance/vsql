@@ -19,5 +19,5 @@ echo 'VALUES NEXT VALUE FOR seq1;' | $VSQL cli $VSQL_FILE > $TXT_FILE
 echo 'VALUES NEXT VALUE FOR seq1;' | $VSQL cli $VSQL_FILE >> $TXT_FILE
 
 cat $TXT_FILE
-grep "COL1: 1" $TXT_FILE
-grep "COL1: 2" $TXT_FILE
+grep -Ex ' *1' $TXT_FILE
+grep -Ex ' *2' $TXT_FILE

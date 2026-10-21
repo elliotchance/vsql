@@ -18,5 +18,5 @@ wait
 echo 'SELECT * FROM t;' | $VSQL cli $VSQL_FILE > $TXT_FILE
 
 cat $TXT_FILE
-grep "ID: 1 X: 10" $TXT_FILE
-grep "ID: 2 X: 20" $TXT_FILE
+grep -Ex ' *1 \| *10' $TXT_FILE
+grep -Ex ' *2 \| *20' $TXT_FILE

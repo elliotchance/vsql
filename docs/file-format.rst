@@ -545,7 +545,9 @@ When it finishes (still holding the exclusive lock on the database file):
    committed.
 
 2. The pages and header are copied into the database file, the file is
-   truncated to the number of pages, and it is synced to the disk.
+   truncated to the number of pages, and it is synced to the disk. If this
+   fails, the statement still succeeds (it has been committed), and the log is
+   copied again before the file is next read.
 
 3. The *State* in the log header is changed to *Checkpointed*. This doesn't
    need to be synced, because copying the log into the database file again

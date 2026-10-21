@@ -449,13 +449,14 @@ fn (conn Connection) in_transaction() bool {
 // rollback_after_error rolls back the current transaction (if any) after a
 // statement raised an exception condition in class 40 (transaction rollback),
 // such as a serialization failure. Any other exception only cancels the
-// statement that raised it, see PreparedStmt.query.
-fn (mut conn Connection) rollback_after_error() {
+// statement that raised it, see PreparedStmt.query. If the rollback fails, the
+// transaction is still active.
+fn (mut conn Connection) rollback_after_error() ! {
 	if !conn.in_transaction() {
 		return
 	}
 
-	RollbackStatement{}.execute(mut conn, map[string]Value{}, time.Duration(0)) or { return }
+	RollbackStatement{}.execute(mut conn, map[string]Value{}, time.Duration(0))!
 	conn.finish_write(true) or {}
 }
 

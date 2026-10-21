@@ -103,11 +103,16 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 		fsync_dir(os.dir(os.real_path(log_path)))!
 	}
 
-	// This is the point where the statement is committed.
+	// This is the point where the statement is committed, so the statement must
+	// not fail after this. If the log can't be copied into the database file,
+	// it's left as it is, and it's copied by wal_recover before the file is
+	// read again (by the next statement or connection).
 	crash_point()
-	fault_point('checkpoint')!
+	fault_point('checkpoint') or { return }
 
-	wal_checkpoint(mut file, path, pager.page_size, pages, header_bytes, pager.total_pages)!
+	wal_checkpoint(mut file, path, pager.page_size, pages, header_bytes, pager.total_pages) or {
+		return
+	}
 
 	// If this doesn't reach the disk, the log is copied into the database file
 	// again (which doesn't change it) by wal_recover.

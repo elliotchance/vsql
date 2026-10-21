@@ -65,7 +65,13 @@ fn (mut p PreparedStmt) fail(err IError) IError {
 	p.c.take_isolation_error() or {}
 	p.c.finish_write(false) or {}
 	if sqlstate_from_int(err.code()).starts_with('40') {
-		p.c.rollback_after_error()
+		// The exception condition says that the transaction was rolled back, so
+		// if it wasn't, the client must be told that it's still active instead.
+		original := err
+		p.c.rollback_after_error() or {
+			return error_with_code('${original.msg()}, but the transaction is still active because it could not be rolled back: ${err.msg()}',
+				err.code())
+		}
 	}
 
 	return err

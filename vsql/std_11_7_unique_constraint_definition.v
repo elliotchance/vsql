@@ -17,7 +17,9 @@ fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 	}
 
 	key := r.object_key(t)!
-	for object in f.btree.new_range_iterator(key, key) {
+	mut iter := f.btree.new_range_iterator(key, key)
+	for {
+		object := iter.next() or { break }
 		// Another transaction is creating or deleting a row with this key, so
 		// it may or may not exist when that transaction finishes.
 		if (object.tid != f.transaction_id && f.header.active_transaction_ids.exists(object.tid))
@@ -31,5 +33,8 @@ fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 		if object.xid == 0 {
 			return sqlstate_23505('PRIMARY KEY on ${t.name}')
 		}
+	}
+	if err := iter.err {
+		return err
 	}
 }

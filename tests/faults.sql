@@ -20,8 +20,8 @@ SELECT * FROM t;
 -- X: 3
 
 -- # A statement that is committed to the write-ahead log is copied into the
--- # file by the next statement if it couldn't be copied before. It shouldn't be
--- # reported as failed, see #480.
+-- # file by the next statement if it couldn't be copied before. It doesn't fail,
+-- # since it was committed.
 CREATE TABLE t (x INT);
 /* fault checkpoint */
 INSERT INTO t (x) VALUES (1);
@@ -29,7 +29,7 @@ SELECT * FROM t;
 INSERT INTO t (x) VALUES (2);
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
--- error 00000: checkpoint failed (fault injected by test)
+-- msg: INSERT 1
 -- X: 1
 -- msg: INSERT 1
 -- X: 1
@@ -96,7 +96,7 @@ SELECT * FROM t;
 SELECT * FROM t;
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
--- error 00000: checkpoint failed (fault injected by test)
+-- msg: INSERT 1
 -- error 00000: recover failed (fault injected by test)
 -- error 00000: lock failed (fault injected by test)
 -- error 00000: lock_shared failed (fault injected by test)
@@ -110,7 +110,7 @@ INSERT INTO t (x) VALUES (1);
 INSERT INTO t (x) VALUES (2);
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
--- error 00000: checkpoint failed (fault injected by test)
+-- msg: INSERT 1
 -- error 00000: recover failed (fault injected by test)
 -- X: 1
 
@@ -167,8 +167,8 @@ SELECT * FROM t;
 -- X: 5
 
 -- # A serialization failure rolls back the transaction. If the rollback fails
--- # (the second lock is for the rollback), the transaction stays open and its
--- # INSERT is committed. It should be rolled back, see #482.
+-- # (the second lock is for the rollback), the transaction stays open, so the
+-- # error says so instead of being a 40001, and a COMMIT commits its INSERT.
 /* connection 1 */
 CREATE TABLE foo (bar INT);
 INSERT INTO foo (bar) VALUES (123);
@@ -187,7 +187,7 @@ SELECT * FROM foo;
 -- 1: msg: UPDATE 1
 -- 2: msg: START TRANSACTION
 -- 2: msg: INSERT 1
--- 2: error 40001: serialization failure: avoiding concurrent write on individual row
+-- 2: error 00000: serialization failure: avoiding concurrent write on individual row, but the transaction is still active because it could not be rolled back: lock failed (fault injected by test)
 -- 2: msg: COMMIT
 -- 2: BAR: 123
 -- 2: BAR: 999
@@ -235,8 +235,8 @@ SELECT * FROM t;
 -- 2: X: 2
 -- 2: X: 4
 
--- # A page that can't be read ends a scan early, so the query returns fewer
--- # rows. It should be an error, see #483.
+-- # A page that can't be read fails the statement, rather than ending the scan
+-- # early.
 CREATE TABLE t (x INT);
 INSERT INTO t (x) VALUES (1), (2), (3), (4), (5), (6), (7), (8), (9), (10), (11), (12), (13), (14), (15), (16), (17), (18), (19), (20), (21), (22), (23), (24), (25), (26), (27), (28), (29), (30), (31), (32), (33), (34), (35), (36), (37), (38), (39), (40);
 /* fault read_page 5 */
@@ -244,8 +244,19 @@ SELECT COUNT(*) AS c FROM t;
 SELECT COUNT(*) AS c FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 40
--- C: 4
+-- error 00000: read_page failed (fault injected by test)
 -- C: 40
+
+-- # The same for a page of a value that's stored across several pages.
+CREATE TABLE t (x VARCHAR(1000));
+INSERT INTO t (x) VALUES ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+/* fault read_page 5 */
+SELECT CHARACTER_LENGTH(x) AS len FROM t;
+SELECT CHARACTER_LENGTH(x) AS len FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 00000: read_page failed (fault injected by test)
+-- LEN: 600
 
 -- # A statement fails if its isolation block can't be started.
 CREATE TABLE t (x INT);
@@ -323,4 +334,3 @@ SELECT * FROM t;
 -- msg: COMMIT
 -- X: 1
 -- X: 3
-

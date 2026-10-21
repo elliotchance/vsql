@@ -15,6 +15,16 @@ mut:
 	// path describes the depth. At each depth is an iterator for that page.
 	path           []int
 	depth_iterator []int
+	// err is set if a page can't be read, which also ends the iteration. V
+	// iterators can't return an error, so the caller must check it after the
+	// loop.
+	err ?IError
+}
+
+// fail ends the iteration because of err, see PageIterator.err.
+fn (mut iter PageIterator) fail(err IError) ?PageObject {
+	iter.err = err
+	return none
 }
 
 fn (mut iter PageIterator) next() ?PageObject {
@@ -25,7 +35,7 @@ fn (mut iter PageIterator) next() ?PageObject {
 
 	// On the first iteration we fast-forward to the starting page.
 	if iter.path.len == 0 {
-		iter.path, iter.depth_iterator = iter.btree.search_page(iter.min) or { return none }
+		iter.path, iter.depth_iterator = iter.btree.search_page(iter.min) or { return iter.fail(err) }
 
 		// search_page does not include the last depth_iterator becuase that
 		// belongs to the leaf not which is does not search.
@@ -34,7 +44,7 @@ fn (mut iter PageIterator) next() ?PageObject {
 		// Load all the objects for this leaf. Making sure to skip over any keys
 		// that are out of bounds.
 		iter.objects =
-			(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return none }).objects()
+			(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).objects()
 		for object in iter.objects {
 			// TODO(elliotchance): It would be more efficient to do a binary
 			//  search here since the page is already sorted.
@@ -59,15 +69,15 @@ fn (mut iter PageIterator) next() ?PageObject {
 			iter.depth_iterator[iter.depth_iterator.len - 1]++
 
 			if iter.depth_iterator[iter.depth_iterator.len - 1] < (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or {
-				return none
+				return iter.fail(err)
 			}).objects().len {
 				break
 			}
 		}
 
-		for (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return none }).kind == kind_not_leaf {
+		for (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).kind == kind_not_leaf {
 			objects :=
-				(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return none }).objects()
+				(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).objects()
 
 			mut buf := new_bytes(objects[iter.depth_iterator[iter.depth_iterator.len - 1]].value)
 			iter.path << buf.read_i32()
@@ -75,7 +85,7 @@ fn (mut iter PageIterator) next() ?PageObject {
 		}
 
 		iter.objects =
-			(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return none }).objects()
+			(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).objects()
 	}
 
 	o := iter.objects[iter.depth_iterator[iter.depth_iterator.len - 1]]
@@ -87,7 +97,7 @@ fn (mut iter PageIterator) next() ?PageObject {
 	}
 
 	if o.is_blob_ref {
-		return iter.btree.read_blob(o) or { panic(err) }
+		return iter.btree.read_blob(o) or { return iter.fail(err) }
 	}
 
 	return o
@@ -156,10 +166,15 @@ fn (mut o PrimaryKeyOperation) execute(_ []Row) ![]Row {
 	mut transaction_ids := catalog.storage.header.active_transaction_ids
 
 	mut rows := []Row{}
-	for object in catalog.storage.btree.new_range_iterator(object_key, object_key) {
+	mut iter := catalog.storage.btree.new_range_iterator(object_key, object_key)
+	for {
+		object := iter.next() or { break }
 		if object_is_visible(object.tid, object.xid, tid, mut transaction_ids) {
 			rows << new_row_from_bytes(o.table, object.value, object.tid)
 		}
+	}
+	if err := iter.err {
+		return err
 	}
 
 	return rows

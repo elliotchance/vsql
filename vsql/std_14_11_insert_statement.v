@@ -37,6 +37,7 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 	// rows before it in the table.
 	mut rows := []Row{}
 	for row_value in stmt.values {
+		conn.begin_row()
 		rows << new_row(stmt.insert_row(mut conn, params, table, row_value)!)
 	}
 

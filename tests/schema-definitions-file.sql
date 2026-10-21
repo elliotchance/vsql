@@ -39,8 +39,8 @@ VALUES NEXT VALUE FOR "Mixed"."seq";
 -- 1: COL1: 100
 -- 2: COL1: 98
 -- 2: msg: ALTER SEQUENCE 1
--- 1: COL1: 96
 -- 1: COL1: -50
+-- 1: COL1: 0
 -- 1: COL1: 7
 -- 1: msg: DROP SEQUENCE 1
 -- 2: error 42P01: no such sequence: "test"."Mixed"."seq"

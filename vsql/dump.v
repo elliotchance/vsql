@@ -44,15 +44,16 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 			write_line(mut w, '${sequence}\n')!
 
 			// START WITH is kept for RESTART, so the current position (if it has
-			// moved) needs to be restored separately.
+			// moved) needs to be restored separately. A sequence that has been used
+			// returns its last value again, so that it's still used (which matters
+			// for ALTER SEQUENCE, see Sequence.unused).
 			name := sequence.name.storage_sql()
-			if next_value := sequence.next_value() {
+			if sequence.unused {
+				next_value := sequence.next_value() or { sequence.start_value }
 				if next_value != sequence.start_value {
 					write_line(mut w, 'ALTER SEQUENCE ${name} RESTART WITH ${next_value};\n')!
 				}
 			} else {
-				// The sequence has gone past its limit, so the next value can't be
-				// used with RESTART. Instead, the last value is returned again.
 				write_line(mut w, 'ALTER SEQUENCE ${name} RESTART WITH ${sequence.current_value};')!
 				write_line(mut w, 'VALUES NEXT VALUE FOR ${name};\n')!
 			}

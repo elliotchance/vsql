@@ -631,6 +631,12 @@ struct Sequence
    	// returned, because adding increment_by would go past the range of a BIGINT.
    	// See next.
    	exhausted bool
+   	// unused is true when current_value plus increment_by (the current base
+   	// value) hasn't been returned by NEXT VALUE FOR yet, which is a new sequence
+   	// or one that has been restarted. Otherwise current_value is the last value
+   	// that was returned. ALTER SEQUENCE needs to know which, see
+   	// AlterSequenceGeneratorStatement.
+   	unused bool
    pub mut:
    	// name contains the other parts such as the schema.
    	name Identifier

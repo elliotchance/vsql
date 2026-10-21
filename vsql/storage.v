@@ -437,7 +437,8 @@ fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence)
 	// A new value (such as from RESTART) is a new version, so that it's undone
 	// by a ROLLBACK.
 	if new_sequence.current_value != old_sequence.current_value
-		|| new_sequence.exhausted != old_sequence.exhausted {
+		|| new_sequence.exhausted != old_sequence.exhausted
+		|| new_sequence.unused != old_sequence.unused {
 		old_value_obj := f.sequence_value_object(canonical_name)!
 		new_value_obj := new_page_object(old_value_obj.key, f.transaction_id, 0, new_sequence.value_bytes())
 		f.btree.update(old_value_obj, new_value_obj, f.transaction_id)!

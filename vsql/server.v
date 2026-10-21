@@ -136,7 +136,7 @@ fn (s &Server) handle_client(mut c net.TcpConn) {
 
 	// A client that disconnects in the middle of a transaction implicitly rolls
 	// it back.
-	db.rollback_after_error()
+	db.rollback_after_error() or { s.log('error: ${err}') }
 	db.close()
 
 	c.close() or {}

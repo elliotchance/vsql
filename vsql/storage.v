@@ -192,7 +192,9 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 	}
 
 	f.tables = map[string]Table{}
-	for object in f.btree.new_range_iterator('T'.bytes(), 'U'.bytes()) {
+	mut iter := f.btree.new_range_iterator('T'.bytes(), 'U'.bytes())
+	for {
+		object := iter.next() or { break }
 		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
 			f.header.active_transaction_ids)
 		{
@@ -200,15 +202,23 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 			f.tables[table.name.storage_id()] = table
 		}
 	}
+	if err := iter.err {
+		return err
+	}
 
 	f.schemas = map[string]Schema{}
-	for object in f.btree.new_range_iterator('S'.bytes(), 'T'.bytes()) {
+	iter = f.btree.new_range_iterator('S'.bytes(), 'T'.bytes())
+	for {
+		object := iter.next() or { break }
 		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
 			f.header.active_transaction_ids)
 		{
 			schema := new_schema_from_bytes(object.value, object.tid)!
 			f.schemas[schema.name] = schema
 		}
+	}
+	if err := iter.err {
+		return err
 	}
 }
 
@@ -565,12 +575,17 @@ fn (mut f Storage) read_rows(table_name Identifier) ![]Row {
 
 fn (mut f Storage) read_objects(start []u8, end []u8) ![]PageObject {
 	mut objs := []PageObject{}
-	for object in f.btree.new_range_iterator(start, end) {
+	mut iter := f.btree.new_range_iterator(start, end)
+	for {
+		object := iter.next() or { break }
 		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
 			f.header.active_transaction_ids)
 		{
 			objs << object
 		}
+	}
+	if err := iter.err {
+		return err
 	}
 
 	return objs

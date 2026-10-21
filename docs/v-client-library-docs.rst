@@ -321,6 +321,32 @@ enum Boolean
 
 Possible values for a BOOLEAN.
 
+enum SQLType
+------------
+
+
+.. code-block:: v
+
+   pub enum SQLType {
+   	is_bigint                      // BIGINT
+   	is_boolean                     // BOOLEAN
+   	is_character                   // CHARACTER(n), CHAR(n), CHARACTER and CHAR
+   	is_double_precision            // DOUBLE PRECISION, FLOAT and FLOAT(n)
+   	is_integer                     // INTEGER and INT
+   	is_real                        // REAL
+   	is_smallint                    // SMALLINT
+   	is_varchar                     // CHARACTER VARYING, CHAR VARYING and VARCHAR
+   	is_date                        // DATE
+   	is_time_without_time_zone      // TIME, TIME WITHOUT TIME ZONE
+   	is_time_with_time_zone         // TIME WITH TIME ZONE
+   	is_timestamp_without_time_zone // TIMESTAMP, TIMESTAMP WITHOUT TIME ZONE
+   	is_timestamp_with_time_zone    // TIMESTAMP WITH TIME ZONE
+   	is_decimal                     // DECIMAL
+   	is_numeric                     // NUMERIC
+   }
+
+SQLType is the fundamental SQL type, without its size or precision.
+
 struct CatalogConnection
 ------------------------
 
@@ -378,9 +404,6 @@ struct Connection
    	// errors (such as an UPDATE that matched no rows). Expressions must not have
    	// side effects, like advancing a sequence.
    	dry_run bool
-   	// orm_last_id is the last value given to a serial field by the ORM. See
-   	// last_id() in orm.v.
-   	orm_last_id int
    pub mut:
    	// now allows you to override the wall clock that is used. The Time must be
    	// in UTC with a separate offset for the current local timezone (in positive
@@ -678,6 +701,26 @@ struct Timer
    }
 
 
+
+struct Type
+-----------
+
+
+.. code-block:: v
+
+   pub struct Type {
+   pub mut:
+   	// Base SQL type.
+   	typ SQLType
+   	// The size specified for the type.
+   	size int
+   	// The scale is only for numeric types.
+   	scale i16
+   	// Is NOT NULL?
+   	not_null bool
+   }
+
+Type is a fully-qualified SQL type, such as the type of a column or a value.
 
 struct Value
 ------------

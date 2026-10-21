@@ -22,6 +22,13 @@ const max_bigint = new_numeric_from_string('9223372036854775807')
 
 type CastFunc = fn (conn &Connection, v Value, to Type) !Value
 
+// store_assignment converts a value to a type in the same way as storing it in
+// a column of that type, such as a string to a NUMERIC. An error is returned if
+// the value can't be stored in that type.
+pub fn (mut conn Connection) store_assignment(v Value, to Type) !Value {
+	return cast(mut conn, 'for store assignment', v, to)
+}
+
 // explicit cast follows the rules outlined in Subclause 9.2,
 // "Store assignment", in ISO/IEC 9075-2.
 fn cast(mut conn Connection, msg string, v Value, t Type) !Value {

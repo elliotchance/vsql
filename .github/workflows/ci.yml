@@ -40,12 +40,6 @@ jobs:
           make clean-docs docs
           git diff --exit-code
 
-      - name: Run SQL and B-tree tests
-        run: make test
-
-      - name: Run examples
-        run: make examples
-
       # libpq is keg-only, so psql must be added to the PATH. It's used by the
       # server tests.
       - name: Install psql
@@ -53,8 +47,8 @@ jobs:
           brew install libpq
           echo "$(brew --prefix libpq)/bin" >> $GITHUB_PATH
 
-      - name: Run CLI tests
-        run: make cli-test
+      - name: Run tests
+        run: make test
 
   macos-binary:
     name: Build for macOS

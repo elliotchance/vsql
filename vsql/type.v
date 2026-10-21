@@ -2,9 +2,9 @@
 
 module vsql
 
-// Represents a fully-qualified SQL type.
-struct Type {
-mut:
+// Type is a fully-qualified SQL type, such as the type of a column or a value.
+pub struct Type {
+pub mut:
 	// Base SQL type.
 	typ SQLType
 	// The size specified for the type.
@@ -15,8 +15,8 @@ mut:
 	not_null bool
 }
 
-// Represents the fundamental SQL type.
-enum SQLType {
+// SQLType is the fundamental SQL type, without its size or precision.
+pub enum SQLType {
 	is_bigint                      // BIGINT
 	is_boolean                     // BOOLEAN
 	is_character                   // CHARACTER(n), CHAR(n), CHARACTER and CHAR
@@ -269,8 +269,8 @@ fn new_type(name string, size int, scale i16) Type {
 	}
 }
 
-// The SQL representation, such as ``TIME(3) WITHOUT TIME ZONE``.
-fn (t Type) str() string {
+// str is the SQL representation, such as ``TIME(3) WITHOUT TIME ZONE``.
+pub fn (t Type) str() string {
 	mut s := match t.typ {
 		.is_bigint {
 			'BIGINT'
@@ -341,7 +341,8 @@ fn (t Type) has_time_zone() bool {
 	return t.typ == .is_time_with_time_zone || t.typ == .is_timestamp_with_time_zone
 }
 
-fn (t Type) uses_int() bool {
+// uses_int is true if the value is stored as an int, see Value.int_value().
+pub fn (t Type) uses_int() bool {
 	return match t.typ {
 		.is_boolean, .is_bigint, .is_smallint, .is_integer {
 			true
@@ -354,7 +355,8 @@ fn (t Type) uses_int() bool {
 	}
 }
 
-fn (t Type) uses_f64() bool {
+// uses_f64 is true if the value is stored as an f64, see Value.f64_value().
+pub fn (t Type) uses_f64() bool {
 	return match t.typ {
 		.is_double_precision, .is_real, .is_date, .is_time_with_time_zone,
 		.is_time_without_time_zone, .is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
@@ -367,7 +369,8 @@ fn (t Type) uses_f64() bool {
 	}
 }
 
-fn (t Type) uses_string() bool {
+// uses_string is true if the value is stored as a string, see Value.string_value().
+pub fn (t Type) uses_string() bool {
 	return match t.typ {
 		.is_boolean, .is_double_precision, .is_bigint, .is_real, .is_smallint, .is_integer,
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,

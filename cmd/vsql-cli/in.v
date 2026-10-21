@@ -1,6 +1,7 @@
 module main
 
 import cli
+import io
 import os
 import vsql
 
@@ -31,35 +32,28 @@ fn register_in_command(mut cmd cli.Command) {
 
 fn in_command(cmd cli.Command) ! {
 	mut db := vsql.open(cmd.args[0]) or { return err }
-
-	mut f := os.stdin()
+	script := io.read_all(reader: os.stdin())!.bytestr()
+	continue_on_error := cmd.flags.get_bool('continue-on-error') or { false }
+	verbose := cmd.flags.get_bool('verbose') or { false }
 
 	// Keep running stats for the end.
 	mut stmt_count := 0
 	mut error_count := 0
 	timer := vsql.start_timer()
 
-	mut stmt := ''
-	for !f.eof() {
-		mut buf := []u8{len: 100}
-		f.read_bytes_with_newline(mut buf) or { return err }
-
-		line := buf.bytestr()
-		stmt += line.trim_right('\0 \n;')
-
-		if line.contains(';') {
-			result := db.query(stmt) or {
-				println(err)
-				error_count++
-				vsql.Result{}
+	for stmt in vsql.split_statements(script) {
+		stmt_count++
+		result := db.query(stmt) or {
+			println(err)
+			error_count++
+			if continue_on_error {
+				continue
 			}
+			break
+		}
 
-			if result.msg != '' && (cmd.flags.get_bool('verbose') or { false }) {
-				println(result.msg)
-			}
-
-			stmt_count++
-			stmt = ''
+		if result.msg != '' && verbose {
+			println(result.msg)
 		}
 	}
 

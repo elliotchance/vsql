@@ -255,6 +255,16 @@ fn pluralize
 
 TODO(elliotchance): Make private when CLI is moved into vsql package.
 
+fn split_statements
+-------------------
+
+
+.. code-block:: v
+
+   pub fn split_statements(script string) []string
+
+split_statements splits a SQL script into its statements, which are separated by semicolons. A semicolon inside a string or a delimited identifier doesn't end the statement. The statements are returned without the semicolon, and empty statements are left out.
+
 fn sqlstate_from_int
 --------------------
 
@@ -455,6 +465,22 @@ struct ConnectionOptions
    }
 
 ConnectionOptions can modify the behavior of a connection when it is opened. You should not create the ConnectionOptions instance manually. Instead, use default_connection_options() as a starting point and modify the attributes.
+
+struct DumpOptions
+------------------
+
+
+.. code-block:: v
+
+   @[params]
+   pub struct DumpOptions {
+   pub:
+   	// create_public_schema includes CREATE SCHEMA "PUBLIC". It's not included
+   	// by default because every catalog already has it.
+   	create_public_schema bool
+   }
+
+
 
 struct Identifier
 -----------------

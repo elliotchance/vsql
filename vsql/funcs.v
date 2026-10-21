@@ -75,9 +75,12 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'AVG', [double_precision], true, func_avg, double_precision, false})!
 	// COUNT accepts a value of any type because it only counts the non-NULL
 	// values (10.9 General Rule 7). Every SQLType is registered, so a new type
-	// is supported automatically.
+	// is supported automatically. CHARACTER uses the CHARACTER VARYING one, see
+	// find_function.
 	$for typ in SQLType.values {
-		conn.register_func(Func{'COUNT', [Type{typ.value, 0, 0, false}], true, func_count, integer, false})!
+		if typ.value != SQLType.is_character {
+			conn.register_func(Func{'COUNT', [Type{typ.value, 0, 0, false}], true, func_count, integer, false})!
+		}
 	}
 	conn.register_func(Func{'MAX', [double_precision], true, func_max, double_precision, false})!
 	conn.register_func(Func{'MIN', [double_precision], true, func_min, double_precision, false})!

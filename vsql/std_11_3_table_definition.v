@@ -37,7 +37,8 @@ fn (stmt TableDefinition) execute(mut conn Connection, params map[string]Value, 
 
 	mut table_name := conn.resolve_schema_identifier(stmt.table_name)!
 	mut catalog := conn.catalog_for(table_name)
-	if table_name.storage_id() in catalog.storage.tables {
+	if table_name.storage_id() in catalog.storage.tables
+		|| table_name.storage_id() in catalog.virtual_tables {
 		return sqlstate_42p07('table', table_name.str()) // duplicate table
 	}
 

@@ -460,8 +460,24 @@ fn (mut conn Connection) rollback_after_error() ! {
 	conn.finish_write(true) or {}
 }
 
+// register_func adds a function, unless one with the same name and argument
+// types already exists. Only the arguments choose which function is called, so
+// the return type doesn't matter (ISO/IEC 9075-2:2016(E), 11.60, <SQL-invoked
+// routine>, Syntax Rule 20). CHARACTER arguments are CHARACTER VARYING, see
+// find_function.
 fn (mut conn Connection) register_func(func Func) ! {
+	for f in conn.funcs {
+		if f.name == func.name && f.arg_types.len == func.arg_types.len
+			&& f.arg_types.map(function_arg_type(it)) == func.arg_types.map(function_arg_type(it)) {
+			return sqlstate_42723('${func.name}(${func.arg_types.map(it.str()).join(', ')})')
+		}
+	}
+
 	conn.funcs << func
+}
+
+fn function_arg_type(t Type) SQLType {
+	return if t.typ == .is_character { .is_varchar } else { t.typ }
 }
 
 pub fn (mut conn Connection) catalog() &CatalogConnection {
@@ -570,18 +586,22 @@ fn implicit_numeric_cast_cost(from SQLType, to SQLType) ?int {
 // register_function will register a function that can be used in SQL
 // expressions.
 pub fn (mut conn Connection) register_function(prototype string, func fn ([]Value) !Value) ! {
-	// TODO(elliotchance): A rather crude way to decode the prototype...
-	parts := prototype.replace('(', '|').replace(')', '|').split('|')
-	function_name := new_function_identifier(parts[0].trim_space())!.entity_name
-	raw_args := parts[1].split(',')
+	// The prototype is "name(type, ...) type".
+	open := prototype.index('(') or { -1 }
+	close := prototype.last_index(')') or { -1 }
+	if open < 1 || close < open || prototype[close + 1..].trim_space() == '' {
+		return sqlstate_42601('invalid function prototype: ${prototype}')
+	}
+
+	function_name := new_function_identifier(prototype[..open].trim_space())!.entity_name
 	mut arg_types := []Type{}
-	for arg in raw_args {
+	for arg in prototype[open + 1..close].split(',') {
 		if arg.trim_space() != '' {
-			arg_types << new_type(arg.trim_space().to_upper(), 0, 0)
+			arg_types << type_from_name(arg.trim_space().to_upper(), 0, 0)!
 		}
 	}
 
-	return_type := new_type(parts[2].trim_space().to_upper(), 0, 0)
+	return_type := type_from_name(prototype[close + 1..].trim_space().to_upper(), 0, 0)!
 	conn.register_func(Func{function_name, arg_types, false, func, return_type, true})!
 }
 
@@ -602,10 +622,17 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 			conn.release_read_connection()
 			return err
 		}
-		conn.release_read_connection()
 
+		// A virtual table would hide a table with the same name.
 		mut catalog := conn.catalog_for(table_name)
-		catalog.virtual_tables[table_name.storage_id()] = VirtualTable{
+		id := table_name.storage_id()
+		exists := id in catalog.storage.tables || id in catalog.virtual_tables
+		conn.release_read_connection()
+		if exists {
+			return sqlstate_42p07('table', table_name.str()) // duplicate table
+		}
+
+		catalog.virtual_tables[id] = VirtualTable{
 			create_table_sql:  create_table
 			create_table_stmt: stmt
 			data:              data

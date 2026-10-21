@@ -299,9 +299,19 @@ fn (mut c PGConn) close() ! {
 	c.conn.close() or { return error('cannot close connection: ${err}') }
 }
 
+// register_pg_functions registers the functions that PostgreSQL clients use,
+// unless the connection already has them (such as from ServerOptions.connect).
 fn register_pg_functions(mut db Connection) ! {
-	db.register_function('version() varchar', pg_version)!
-	db.register_function('current_setting(varchar) varchar', pg_current_setting)!
+	db.register_function('version() varchar', pg_version) or {
+		if err !is SQLState42723 {
+			return err
+		}
+	}
+	db.register_function('current_setting(varchar) varchar', pg_current_setting) or {
+		if err !is SQLState42723 {
+			return err
+		}
+	}
 }
 
 fn pg_version(a []Value) !Value {
@@ -313,6 +323,8 @@ fn pg_current_setting(a []Value) !Value {
 	return new_varchar_value('90310')
 }
 
+// register_pg_virtual_tables registers the tables that PostgreSQL clients
+// read, unless the connection already has a table with the same name.
 fn register_pg_virtual_tables(mut db Connection) ! {
 	db.register_virtual_table('CREATE TABLE pg_database ( datname VARCHAR(255) )', fn (mut t VirtualTable) ! {
 		t.next_values([
@@ -320,5 +332,9 @@ fn register_pg_virtual_tables(mut db Connection) ! {
 		])
 
 		t.done()
-	})!
+	}) or {
+		if err !is SQLState42P07 {
+			return err
+		}
+	}
 }

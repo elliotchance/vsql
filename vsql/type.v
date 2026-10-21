@@ -207,7 +207,15 @@ fn most_specific_type(t1 Type, t2 Type) !Type {
 	return sqlstate_42601('no supertype of both ${t1} and ${t2}')
 }
 
+// new_type is the type with a name that's known to exist, such as from the
+// parser. See type_from_name.
 fn new_type(name string, size int, scale i16) Type {
+	return type_from_name(name, size, scale) or { panic(err) }
+}
+
+// type_from_name returns an error if there's no type with the name, such as for
+// register_function.
+fn type_from_name(name string, size int, scale i16) !Type {
 	// The size may appear in the middle of the name, such as
 	// "TIME(6) WITH TIME ZONE".
 	name_without_size := if name.contains('(') {
@@ -263,8 +271,7 @@ fn new_type(name string, size int, scale i16) Type {
 			Type{.is_numeric, size, scale, false}
 		}
 		else {
-			panic(name_without_size)
-			Type{}
+			return sqlstate_42601('unknown type: ${name_without_size}')
 		}
 	}
 }

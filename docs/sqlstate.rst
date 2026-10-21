@@ -394,6 +394,12 @@ A column name without a table is in more than one table of the ``FROM`` clause.
   -- msg: CREATE TABLE 1
   -- error 42703: no such column: C
 
+``42723`` function already exists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A function with the same name and argument types has already been registered,
+see :doc:`custom-functions`.
+
 ``42803`` grouping error
 ^^^^^^^^^^^^^^^^^^^^^^^^
 

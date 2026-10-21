@@ -62,11 +62,17 @@ clean-docs:
 
 # Grammar
 
-vsql/y.y:
+# vsql/y.v is committed so that the module works after "v install". vsql/y.y is
+# only an intermediate file, made by joining the other vsql/*.y files.
+vsql/y.y: $(filter-out vsql/y.y,$(wildcard vsql/*.y))
 	./scripts/generate-grammar.vsh
 
+# v fmt has to run twice because the first pass leaves some of the long arrays
+# in a state that it would format differently again.
 vsql/y.v: vsql/y.y
 	v run scripts/vyacc.v -o vsql/y.v vsql/y.y
+	v fmt -w vsql/y.v
+	v fmt -w vsql/y.v
 
 clean-grammar:
 	rm -f vsql/y.v vsql/y.y

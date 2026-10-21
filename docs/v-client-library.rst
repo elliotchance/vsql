@@ -42,7 +42,7 @@ Outputs:
 
 .. code-block:: text
 
-   ['A']
+   ["test".PUBLIC.FOO.X DOUBLE PRECISION]
    1.23
    4.56
 

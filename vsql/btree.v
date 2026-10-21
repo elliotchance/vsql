@@ -247,6 +247,13 @@ fn (mut p Btree) add(object PageObject) !int {
 		// blob value size.
 		mut blob_size := maximum_size - page_object_prefix_length -
 			blob_object_key(obj.key, 0).len - 5
+
+		// The key is in every part, so it must leave room for the value. This is
+		// only possible with a small page and a long name, see
+		// max_identifier_length.
+		if blob_size < 1 {
+			return error('the key of an object (${obj.key.len} bytes) is too long for a page of ${p.page_size} bytes')
+		}
 		mut part_number := 0
 		mut remaining := obj_bytes.len
 		for remaining >= blob_size {

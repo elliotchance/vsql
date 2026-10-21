@@ -7,3 +7,6 @@ reserved words are the tokens listed under ``// reserved words`` in
 
 A reserved word can still be used as a name if it is quoted, such as
 ``"ORDER"``.
+
+A name can have up to 128 characters, quoted or not. Longer names are a
+``42601`` error.

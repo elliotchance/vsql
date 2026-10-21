@@ -224,8 +224,20 @@ fn split_identifier_parts(s string) ![]string {
 		}
 	}
 
+	// The maximum length of an identifier is implementation-defined, but F391
+	// (long identifiers) needs at least 128 characters. Some names (such as of a
+	// schema or sequence) are in the keys of objects in the file, which must fit
+	// in a page.
+	for part in parts {
+		if part.runes().len > max_identifier_length {
+			return sqlstate_42601('identifier is longer than ${max_identifier_length} characters: ${part}')
+		}
+	}
+
 	return parts
 }
+
+const max_identifier_length = 128
 
 // delimit_identifier always quotes the name, like "foo" or "FOO". Use this
 // (rather than requote_identifier) when the SQL needs to mean the same thing

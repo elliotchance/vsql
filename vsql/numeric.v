@@ -4,7 +4,6 @@
 module vsql
 
 import math.big
-import strings
 
 // These are used for encoding certain aspects for storage.
 const numeric_is_null = u8(1 << 0)
@@ -37,26 +36,10 @@ fn new_null_numeric(typ Type) Numeric {
 	}
 }
 
+// new_numeric_from_f64 is the exact value of the shortest decimal that is x,
+// such as 0.000015 for 1.5e-5.
 fn new_numeric_from_f64(x f64) Numeric {
-	parts := '${x}'.split('e')
-	mut n := new_numeric_from_string(parts[0])
-	if parts.len > 1 {
-		negative_exponent := parts[1].starts_with('-')
-		exponent := if negative_exponent {
-			'1' + strings.repeat(`0`, parts[1][1..].int())
-		} else {
-			'1' + strings.repeat(`0`, parts[1].int())
-		}
-		if negative_exponent {
-			// It's not possible for the divide to fail because the exponent will
-			// always be >= 1.
-			n = n.divide(new_numeric_from_string(exponent)) or { panic(err) }
-		} else {
-			n = n.multiply(new_numeric_from_string(exponent))
-		}
-	}
-
-	return n
+	return new_numeric_from_string(x.strlong())
 }
 
 // NOTE: numeric value is expected to be well formed.
@@ -261,33 +244,9 @@ fn (n Numeric) is_negative() bool {
 // scaled (larger or smaller) to match the denominator. Where denominator is
 // expected to be 10^x.
 fn (n Numeric) scale_numerator(denominator big.Integer) Numeric {
-	// Ideally we would just divide the existing denominator with denominator, but
-	// since we're dealing with integers we would almost certainly lose a lot of
-	// precision, for example:
-	//
-	//   187/90 (~2.07777) -> (187*x)/100
-	//
-	// Where x = 100/90, would be 1 (because it's an int), so the result would be:
-	//
-	//   (187*1)/100 = 187/100 (~1.87)
-	//
-	// Which is obviously incorrect. So to avoid this we need to scale up the
-	// divide operation:
-	//
-	// Where s = 1000, x = (100 * s)/90, would be 1111, so the result would be:
-	//
-	//   (187*1111)/(100 * s) = 207757/100000 (~2.07757)
-	//
-	// Now divide the numerator back down by s:
-	//
-	//   (207757/s)/100 = 207/100 (~2.07)
-
-	// scale+1 seems to be enough for most cases, however, it can result in x = 0,
-	// but using scale+2 as the multiplier seems to fix that.
-	s := denominator * big.integer_from_int(10).pow(u32(n.typ.scale + 2))
-
-	x := (denominator * s) / n.denominator
-	numerator := (n.numerator * x) / s
+	// Multiplying before dividing means that only the digits that don't fit are
+	// lost, for example 187/90 (~2.0777) -> (187*100)/90 = 207 -> 207/100.
+	numerator := (n.numerator * denominator) / n.denominator
 
 	return new_numeric(n.typ, numerator, denominator)
 }

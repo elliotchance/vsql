@@ -18,6 +18,38 @@ VALUES CAST(CAST(1.25 AS DECIMAL(3,2)) AS NUMERIC);
 VALUES CAST(CAST(1.25 AS NUMERIC(3,2)) AS DECIMAL);
 -- COL1: 1 (DECIMAL)
 
+-- # The digits that don't fit in the scale are truncated, however many there
+-- # are.
+/* types */
+VALUES CAST(2.250 AS DECIMAL);
+VALUES CAST(-2.250 AS NUMERIC);
+VALUES CAST(9.99999 AS NUMERIC(3, 1));
+-- COL1: 2 (DECIMAL)
+-- COL1: -2 (NUMERIC)
+-- COL1: 9.9 (NUMERIC(3, 1))
+
+CREATE TABLE t (i DECIMAL, j DECIMAL(5, 2), k NUMERIC);
+INSERT INTO t (i, j, k) VALUES (2.250, 2.250, 2.250);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- I: 2 J: 2.25 K: 2
+
+-- # An approximate number is converted from the shortest decimal that is the
+-- # same number, however small or large it is.
+VALUES CAST(0.0001e0 AS DECIMAL(10, 8)), CAST(0.00001e0 AS DECIMAL(10, 8)), CAST(-1.5e-5 AS NUMERIC(10, 8));
+-- COL1: 0.00010000
+-- COL1: 0.00001000
+-- COL1: -0.00001500
+
+VALUES CAST(1.5e-5 AS NUMERIC), CAST('1.5e-5' AS NUMERIC(10, 8));
+-- COL1: 0
+-- COL1: 0.00001500
+
+VALUES CAST(1.5e22 AS NUMERIC(30, 2)), CAST(123456789012345678901234.0e0 AS NUMERIC(30, 2));
+-- COL1: 15000000000000000000000.00
+-- COL1: 123456789012345690000000.00
+
 -- # Operators keep the precision and scale of both sides.
 /* types */
 VALUES CAST(1.25 AS DECIMAL(3,2)) + CAST(1.5 AS NUMERIC(2,1));

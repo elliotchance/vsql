@@ -535,7 +535,7 @@ fn (mut p Btree) expire(key []u8, tid u64, xid u64) !int {
 
 	mut page := p.pager.fetch_page(page_number)!
 
-	if page.expire(key, tid, xid) {
+	if page.expire(key, tid, xid)! {
 		p.store_page(page_number, page)!
 		return page_number
 	}

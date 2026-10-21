@@ -218,8 +218,10 @@ The statements are sent through the PostgreSQL server, which is embedded in the
 test like an application would (see :doc:`server`), by a PostgreSQL client over
 TCP. One server is shared by all of the tests. A PostgreSQL client can't use
 some of the directives, so tests with ``types``, ``set``, ``fault``,
-``disconnect``, ``create_catalog``, ``virtual_table``, ``out`` or ``in`` use the
-database directly instead.
+``disconnect``, ``create_catalog``, ``virtual_table``, ``out``, ``in`` or
+``clock`` use the database directly instead. When the database is used
+directly, every value is also read with the getters of a row (such as
+``get_int``), which must give the same value.
 
 A failure shows which one failed, such as ``(on disk through server)``.
 
@@ -367,13 +369,18 @@ The faults are:
 - ``wal_bad_magic``, ``wal_bad_header`` and ``wal_unknown_frame``: the
   write-ahead log is corrupt in other ways.
 - ``checkpoint``: copying a committed statement from the write-ahead log into
-  the database file.
+  the database file (including when it's recovered).
 - ``recover``: copying a statement that was left in the write-ahead log into
   the database file.
+- ``session_shared``: changing the session lock back to shared, after
+  recovering the transactions of a connection that stopped.
 - ``isolation_start``: starting the isolation block of an operation on the
   file.
 - ``isolation_end``: ending the isolation block of an operation on the file,
   which removes the rows that were deleted outside of a transaction.
+- ``accept``: a server accepting a client. A test with a ``fault`` doesn't run
+  through the server, so this is only used by the server tests in
+  ``vsql/sql_test.v``.
 
 Each fault is a ``fault_point()`` or ``fault_reached()`` call in the code, see
 ``vsql/fault.v``. A test with a fault only runs on disk.
@@ -390,6 +397,26 @@ transaction, like a process that stopped:
    /* disconnect 1 */
    /* connection 2 */
    SELECT * FROM t;
+
+If a connection can't be opened (such as because of a fault), the error is in
+the output, after the name of the connection, and the current connection
+doesn't change.
+
+Clock
+^^^^^
+
+Every test has the same time, 2022-07-04 09:05:03.120056 UTC, in a time zone
+of +05:00. A ``clock`` directive changes the time zone of the current
+connection, such as ``/* clock -05:00 */``, or ``/* clock real */`` uses the
+real time and time zone (so the output can't include them):
+
+.. code-block:: sql
+
+   /* clock -05:00 */
+   VALUES CURRENT_TIME;
+   -- COL1: 04:05:03-0500
+
+A test with ``clock`` doesn't run through the server.
 
 Virtual Tables
 ^^^^^^^^^^^^^^

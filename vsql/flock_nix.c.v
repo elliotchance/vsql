@@ -69,6 +69,7 @@ fn (mut l SessionLock) try_exclusive() !bool {
 }
 
 fn (mut l SessionLock) shared() ! {
+	fault_point('session_shared')!
 	if C.flock(l.file.fd, C.LOCK_SH) != 0 {
 		return error('cannot acquire session lock: ${os.posix_get_error_msg(C.errno)}')
 	}

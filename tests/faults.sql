@@ -235,6 +235,42 @@ SELECT * FROM t;
 -- 2: X: 2
 -- 2: X: 4
 
+-- # A statement that recovers the transactions of a connection that stopped
+-- # fails if the session lock can't be changed back to shared afterwards. The
+-- # next statement works.
+/* connection 1 */
+CREATE TABLE t (x INT);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+/* disconnect 1 */
+/* fault session_shared */
+/* connection 2 */
+INSERT INTO t (x) VALUES (2);
+INSERT INTO t (x) VALUES (3);
+SELECT * FROM t;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: INSERT 1
+-- 2: error 00000: session_shared failed (fault injected by test)
+-- 2: msg: INSERT 1
+-- 2: X: 3
+
+-- # A new file that fails while it's being created (before it has the PUBLIC
+-- # schema) can still be opened, but it doesn't have any objects yet.
+/* fault wal_write */
+/* connection 1 */
+/* connection 2 */
+VALUES NEXT VALUE FOR s;
+CREATE TABLE t (x INT);
+CREATE SCHEMA public;
+CREATE TABLE t (x INT);
+SELECT * FROM t;
+-- 1: error 00000: wal_write failed (fault injected by test)
+-- 2: error 42P01: no such sequence: "test".PUBLIC.S
+-- 2: error 3F000: invalid schema name: PUBLIC
+-- 2: msg: CREATE SCHEMA 1
+-- 2: msg: CREATE TABLE 1
+
 -- # A page that can't be read fails the statement, rather than ending the scan
 -- # early.
 CREATE TABLE t (x INT);

@@ -163,11 +163,13 @@ fn (mut f Storage) open(path string, catalog_name string, exclusive bool) ! {
 
 	if exclusive && f.other_transaction_ids(header).len > 0 {
 		if f.session.try_exclusive()! {
-			defer {
-				f.session.shared() or { panic(err) }
+			// The session lock must go back to shared even if recovering fails,
+			// otherwise no other connection can open the database.
+			f.recover(mut header) or {
+				f.session.shared() or {}
+				return err
 			}
-
-			f.recover(mut header)!
+			f.session.shared()!
 		}
 	}
 

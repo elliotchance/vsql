@@ -86,6 +86,7 @@ fn (mut l SessionLock) try_exclusive() !bool {
 }
 
 fn (mut l SessionLock) shared() ! {
+	fault_point('session_shared')!
 	l.lock.release()
 	l.lock = filelock.new_file(l.path, mode: .shared)
 	l.lock.acquire() or { return error('cannot acquire session lock: ${err}') }

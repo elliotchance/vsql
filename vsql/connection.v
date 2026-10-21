@@ -108,7 +108,11 @@ pub fn open_database(path string, options ConnectionOptions) !&Connection {
 
 	mut conn := open_connection(path, options)!
 	if init_schema {
-		conn.query('CREATE SCHEMA public')!
+		// The file is kept, but the connection must release its session lock.
+		conn.query('CREATE SCHEMA public') or {
+			conn.close()
+			return err
+		}
 	}
 
 	return conn

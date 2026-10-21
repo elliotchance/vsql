@@ -1,6 +1,7 @@
 module vsql
 
 import encoding.binary
+import math
 import net
 import os
 import regex
@@ -70,6 +71,8 @@ fn get_tests() ![]SQLTest {
 					|| contents.starts_with('virtual_table ') {
 					stmts << replace_unicode(contents)
 				} else if contents == 'out' || contents == 'in' {
+					stmts << contents
+				} else if contents.starts_with('clock ') {
 					stmts << contents
 				} else if contents.starts_with('types') {
 					show_types = true
@@ -199,7 +202,7 @@ fn (test SQLTest) through_server() bool {
 	return $env('SERVER') != '0' && !test.show_types && test.params.len == 0
 		&& !test.stmts.any(it.starts_with('fault ') || it.starts_with('disconnect ')
 			|| it.starts_with('create_catalog ') || it.starts_with('virtual_table ')
-			|| it == 'out' || it == 'in')
+			|| it == 'out' || it == 'in' || it.starts_with('clock '))
 }
 
 fn test_all() ! {
@@ -402,6 +405,14 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 			continue
 		}
 
+		// "clock <offset>" sets the time zone of the current connection, such as
+		// "-05:00" (the time is still sql_test_now). "clock real" uses the real
+		// clock and time zone.
+		if stmt.starts_with('clock ') {
+			set_sql_test_clock(mut db.db, stmt[6..])
+			continue
+		}
+
 		if stmt.starts_with('create_catalog ') {
 			db.db.add_catalog(stmt[15..], ':memory:', options)!
 			continue
@@ -459,7 +470,13 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 		if stmt.starts_with('connection ') {
 			connection_name := stmt[11..]
 			if connection_name !in connections {
-				conn := new_sql_test_conn(through_server, file_name, options, port)!
+				// A connection that can't be opened (such as because of a fault)
+				// is an error of the test, and the current connection stays the
+				// same.
+				conn := new_sql_test_conn(through_server, file_name, options, port) or {
+					actual += '${connection_name}: error ${sqlstate_from_int(err.code())}: ${err.msg()}\n'
+					continue
+				}
 				connections[connection_name] = conn
 				opened << conn
 			}
@@ -529,6 +546,22 @@ fn register_test_virtual_table(mut db Connection, directive string) ! {
 	})!
 }
 
+// set_sql_test_clock sets the clock of db for a "clock" directive.
+fn set_sql_test_clock(mut db Connection, clock string) {
+	if clock == 'real' {
+		db.now = default_now
+		return
+	}
+
+	sign := if clock.starts_with('-') { -1 } else { 1 }
+	parts := clock[1..].split(':')
+	offset := i16(sign * (parts[0].int() * 60 + parts[1].int()))
+	db.now = fn [offset] () (time.Time, i16) {
+		now, _ := sql_test_now()
+		return now, offset
+	}
+}
+
 // SQLTestOutput is what a statement returned, in the format of the expected
 // output of a test.
 struct SQLTestOutput {
@@ -557,8 +590,19 @@ fn new_sql_test_conn(through_server bool, path string, options ConnectionOptions
 
 	mut db := open_database(path, options)!
 	db.now = sql_test_now
-	register_pg_functions(mut db)!
-	register_pg_virtual_tables(mut db)!
+	register_pg_functions(mut db) or {
+		db.close()
+		return err
+	}
+
+	// A file that failed while it was being created doesn't have the PUBLIC
+	// schema for pg_database yet, see tests/faults.sql.
+	register_pg_virtual_tables(mut db) or {
+		if err !is SQLState3F000 {
+			db.close()
+			return err
+		}
+	}
 
 	return &SQLTestConn{
 		db: db
@@ -598,15 +642,36 @@ fn (mut c SQLTestConn) run(stmt string, params map[string]Value, show_types bool
 	for row in result {
 		mut line := ''
 		for col in result.columns {
-			line += '${col.name.sub_entity_name}: ${row.get_column(col)!.str()} '
+			value := row.get_column(col)!
+			check_sql_test_getters(row, col, value)!
+			line += '${col.name.sub_entity_name}: ${value.str()} '
 			if show_types {
-				line += '(${row.get_column(col)!.typ}) '
+				line += '(${value.typ}) '
 			}
 		}
 		output.rows << line.trim_space()
 	}
 
 	return output
+}
+
+// check_sql_test_getters returns an error if the getters of a row (which an
+// application would use) don't return the value of the column.
+fn check_sql_test_getters(row Row, col Column, value Value) ! {
+	name := if col.name.custom_id != '' { col.name.custom_id } else { col.name.sub_entity_name }
+	if row.get_null(name)! != value.is_null || row.get_string(name)! != value.str() {
+		return error('getters of ${name} are not ${value.str()}')
+	}
+	if value.typ.uses_int() && row.get_int(name)! != int(value.int_value()) {
+		return error('get_int(${name}) is not ${value.str()}')
+	}
+	if value.typ.uses_f64() && !math.is_nan(value.f64_value())
+		&& row.get_f64(name)! != value.f64_value() {
+		return error('get_f64(${name}) is not ${value.str()}')
+	}
+	if value.typ.typ == .is_boolean && row.get_bool(name)! != value.bool_value() {
+		return error('get_bool(${name}) is not ${value.str()}')
+	}
 }
 
 // PGTestClient is a minimal PostgreSQL client for running the tests through the
@@ -775,4 +840,135 @@ fn pg_test_read_int32(b []u8, at int) int {
 
 fn pg_test_read_int16(b []u8, at int) int {
 	return int(binary.big_endian_u16(b[at..at + 2]))
+}
+
+// The tests below are for what a SQL test can't reach, but they're in this file
+// so that they count towards the SQL test coverage.
+
+// start_sql_test_server_with starts another server, see start_sql_test_server.
+fn start_sql_test_server_with(options ServerOptions) !&Server {
+	mut server := new_server(options)
+	server.listen()!
+	spawn fn (mut server Server) {
+		server.serve() or { eprintln('server stopped: ${err}') }
+	}(mut server)
+
+	return server
+}
+
+// Without a connect function every client opens db_file. A SELECT without a
+// FROM is allowed with select_without_from.
+fn test_server_db_file() ! {
+	dir := os.join_path(sql_test_dir(), 'server_db_file')
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+
+	mut server := start_sql_test_server_with(ServerOptions{
+		db_file:             os.join_path(dir, 'test.vsql')
+		select_without_from: true
+	})!
+	defer {
+		server.stop() or {}
+	}
+
+	mut client1 := new_pg_test_client(server.port()!, 'ignored')!
+	defer {
+		client1.close()
+	}
+	assert client1.query('SELECT 1 AS x')!.rows == ['X: 1']
+	client1.query('CREATE TABLE t (x INT)')!
+	client1.query('INSERT INTO t (x) VALUES (123)')!
+
+	mut client2 := new_pg_test_client(server.port()!, 'ignored')!
+	defer {
+		client2.close()
+	}
+	assert client2.query('SELECT * FROM t')!.rows == ['X: 123']
+}
+
+// A client only gets an error (or is disconnected) when its database can't be
+// opened, it disconnects before sending its startup message or it disconnects
+// without saying goodbye. The server keeps running for other clients.
+fn test_server_client_errors() ! {
+	mut server := start_sql_test_server_with(ServerOptions{
+		connect: fn (database string) !&Connection {
+			if database == 'missing' {
+				return error('no such database: ${database}')
+			}
+
+			return open(':memory:')
+		}
+	})!
+	defer {
+		server.stop() or {}
+	}
+	port := server.port()!
+
+	if _ := new_pg_test_client(port, 'missing') {
+		assert false, 'connected to a missing database'
+	} else {
+		assert err.msg() == 'no such database: missing'
+	}
+
+	mut early := net.dial_tcp('127.0.0.1:${port}')!
+	early.close()!
+
+	mut abrupt := new_pg_test_client(port, 'db')!
+	abrupt.conn.close()!
+
+	// The server keeps accepting clients after it fails to accept one.
+	arm_fault('accept', 1)!
+	defer {
+		disarm_faults()
+	}
+	if _ := new_pg_test_client(port, 'db') {
+		assert false, 'connected while accept is failing'
+	}
+
+	mut client := new_pg_test_client(port, 'db')!
+	defer {
+		client.close()
+	}
+	assert client.query('VALUES 1')!.rows == ['COL1: 1']
+}
+
+// A file can't have more than 256 transactions at the same time, because that's
+// how many fit in its header.
+fn test_too_many_transactions() {
+	mut ids := TransactionIDs{}
+	for i in 0 .. 256 {
+		ids.add(u64(i + 1)) or { panic(err) }
+	}
+
+	ids.add(257) or {
+		assert sqlstate_from_int(err.code()) == '0B000'
+		assert err.msg() == 'invalid transaction initiation: max concurrent transactions reached'
+		return
+	}
+	assert false, '257th transaction was added'
+}
+
+// A custom function that returns a NUMERIC has the type it's registered with,
+// even if it has the name of a builtin numeric function, and it may return NULL.
+fn test_custom_function_returns_numeric() ! {
+	mut db := open(':memory:')!
+	db.register_function('half(numeric) numeric', fn (a []Value) !Value {
+		return new_numeric_value('${a[0].numeric_value().f64() / 2}')
+	})!
+	db.register_function('abs(varchar) numeric', fn (a []Value) !Value {
+		return new_null_value(.is_numeric)
+	})!
+
+	assert db.query('VALUES half(5)')!.rows[0].get_string('COL1')! == '2.5'
+	assert db.query("VALUES abs('x')")!.rows[0].get_null('COL1')!
+}
+
+// new_numeric_value and new_decimal_value (for an application) also accept an
+// exponent.
+fn test_new_numeric_and_decimal_value() {
+	assert new_numeric_value('1.5e3').str() == '1500.0'
+	assert new_decimal_value('1.25').str() == '1.25'
+	assert new_decimal_value('1.25').typ.str() == 'DECIMAL(3, 2)'
 }

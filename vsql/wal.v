@@ -108,8 +108,6 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 	// it's left as it is, and it's copied by wal_recover before the file is
 	// read again (by the next statement or connection).
 	crash_point()
-	fault_point('checkpoint') or { return }
-
 	wal_checkpoint(mut file, path, pager.page_size, pages, header_bytes, pager.total_pages) or {
 		return
 	}
@@ -150,6 +148,8 @@ fn wal_corrupt_fault(mut log os.File, header []u8, salt u32) ! {
 // wal_checkpoint copies the pages and header of a committed log into the
 // database file.
 fn wal_checkpoint(mut file os.File, path string, page_size int, pages map[int][]u8, header_bytes []u8, total_pages int) ! {
+	fault_point('checkpoint')!
+
 	for page_number, data in pages {
 		crash_point()
 		file.seek(i64(header_size) + i64(page_size) * page_number, .start)!

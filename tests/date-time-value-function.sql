@@ -6,6 +6,21 @@ VALUES CURRENT_DATE;
 VALUES CURRENT_TIME;
 -- COL1: 14:05:03+0500 (TIME(0) WITH TIME ZONE)
 
+-- # The time zone can be behind UTC, see the "clock" directive in
+-- # docs/testing.rst.
+/* clock -05:00 */
+VALUES CURRENT_TIME;
+VALUES LOCALTIME;
+VALUES CURRENT_TIMESTAMP;
+-- COL1: 04:05:03-0500
+-- COL1: 04:05:03
+-- COL1: 2022-07-04T04:05:03.120056-0500
+
+-- # The real clock is only checked to be after the time of the other tests.
+/* clock real */
+VALUES CURRENT_DATE > DATE '2022-07-04';
+-- COL1: TRUE
+
 /* types */
 VALUES CURRENT_TIME(0);
 -- COL1: 14:05:03+0500 (TIME(0) WITH TIME ZONE)

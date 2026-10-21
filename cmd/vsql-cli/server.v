@@ -35,10 +35,13 @@ fn server_command(cmd cli.Command) ! {
 	}
 
 	mut server := vsql.new_server(vsql.ServerOptions{
-		db_file: cmd.args[0]
-		port:    port
-		verbose: cmd.flags.get_bool('verbose') or { false }
+		db_file:             cmd.args[0]
+		port:                port
+		verbose:             cmd.flags.get_bool('verbose') or { false }
+		select_without_from: true
 	})
 
-	server.start() or { panic(err) }
+	server.listen()!
+	println('ready on 127.0.0.1:${server.port()!}')
+	server.serve()!
 }

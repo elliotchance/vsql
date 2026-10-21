@@ -11,17 +11,38 @@ import net
 struct PGConn {
 mut:
 	conn net.TcpConn
+	// out holds the messages that haven't been sent yet. They're sent together
+	// by flush(), rather than with a write for every field.
+	out []u8
+	// in holds what has been received but not read yet, so that reading each
+	// field doesn't need its own read from the connection.
+	in []u8
 }
 
 fn new_pg_conn(conn net.TcpConn) &PGConn {
-	return &PGConn{conn}
+	return &PGConn{
+		conn: conn
+	}
 }
 
-fn (mut c PGConn) accept() ! {
-	// The startup message consumes the basic credentials, but we don't check
-	// any of that. Let the client know the auth is fine and we're ready for
-	// queries.
-	c.read_startup_message()!
+// flush sends the messages that have been written.
+fn (mut c PGConn) flush() ! {
+	c.conn.write(c.out) or { return error('cannot write to tcp connection: ${err}') }
+	c.out = []u8{}
+}
+
+// accept reads the startup message and returns the database name the client
+// connected with (which may be empty). The client must then be sent
+// write_ready().
+fn (mut c PGConn) accept() !string {
+	// The startup message also has the basic credentials, but we don't check
+	// any of that.
+	return c.read_startup_message()
+}
+
+// write_ready lets the client know the auth is fine and we're ready for
+// queries.
+fn (mut c PGConn) write_ready() ! {
 	c.write_authentication_ok()!
 	c.write_ready_for_query()!
 }
@@ -42,20 +63,31 @@ fn (mut c PGConn) write_result(result Result) ! {
 }
 
 fn (mut c PGConn) write_error_result(err IError) ! {
-	c.write_byte(`E`)!
+	c.write_error_or_notice(`E`, 'ERROR', err)!
+}
+
+// write_notice sends a warning, such as when a CAST truncates a string.
+fn (mut c PGConn) write_notice(warning IError) ! {
+	c.write_error_or_notice(`N`, 'WARNING', warning)!
+}
+
+// write_error_or_notice sends an ErrorResponse (E) or NoticeResponse (N), which
+// have the same fields.
+fn (mut c PGConn) write_error_or_notice(msg_type u8, severity string, err IError) ! {
+	c.write_byte(msg_type)!
 
 	// Errors that aren't a SQLState (code 0) are reported as internal_error.
 	sqlstate := if err.code() == 0 { 'XX000' } else { sqlstate_from_int(err.code()) }
 
 	mut msg_len := 4 // self
-	msg_len += 1 + 'ERROR'.len + 1 // NULL // S
+	msg_len += 1 + severity.len + 1 // NULL // S
 	msg_len += 1 + err.msg().len + 1 // NULL // M
 	msg_len += 1 + sqlstate.len + 1 // NULL // C
 	msg_len += 1 // NULL
 	c.write_int32(msg_len)!
 
 	c.write_byte(`S`)!
-	c.write_string('ERROR')!
+	c.write_string(severity)!
 
 	c.write_byte(`M`)!
 	c.write_string(err.msg())!
@@ -91,13 +123,28 @@ fn (mut c PGConn) write_command_complete(tag string) ! {
 }
 
 fn (mut c PGConn) read_byte() !u8 {
-	mut bytes := []u8{len: 1}
-	c.conn.read(mut bytes)!
-
-	return bytes[0]
+	return c.read_bytes(1)![0]
 }
 
-fn (mut c PGConn) read_startup_message() ! {
+// read_bytes returns the next n bytes, waiting for them if they haven't been
+// received yet.
+fn (mut c PGConn) read_bytes(n int) ![]u8 {
+	for c.in.len < n {
+		mut buf := []u8{len: 4096}
+		read := c.conn.read(mut buf)!
+		if read == 0 {
+			return error('connection closed')
+		}
+		c.in << buf[..read]
+	}
+
+	bytes := c.in[..n].clone()
+	c.in = c.in[n..].clone()
+
+	return bytes
+}
+
+fn (mut c PGConn) read_startup_message() !string {
 	msg_len := c.read_int32()!
 
 	// We read the version, but we don't enforce it. Let's hope the client is
@@ -112,24 +159,30 @@ fn (mut c PGConn) read_startup_message() ! {
 		// indicating that it is willing or unwilling to perform SSL,
 		// respectively.
 		c.write_byte(`N`)!
+		c.flush()!
 
 		// It will then expect a StartupMessage.
-		c.read_startup_message()!
-		return
+		return c.read_startup_message()
 	}
 
 	// Read all the key/value pairs, such as user, database, etc. A zero byte is
 	// required after the last pair (hence the - 1).
+	mut database := ''
 	mut n := 8
 	for n < msg_len - 1 {
-		_, n1 := c.read_string()! // name
-		_, n2 := c.read_string()! // value
+		name, n1 := c.read_string()!
+		value, n2 := c.read_string()!
+		if name == 'database' {
+			database = value
+		}
 		n += n1 + n2
 	}
 
 	if c.read_byte()! != 0 {
 		return error('missing terminating zero byte')
 	}
+
+	return database
 }
 
 fn (mut c PGConn) read_query() !string {
@@ -141,11 +194,11 @@ fn (mut c PGConn) read_query() !string {
 }
 
 fn (mut c PGConn) write_byte(b u8) ! {
-	c.conn.write([b]) or { return error('cannot write to tcp connection: ${err}') }
+	c.out << b
 }
 
 fn (mut c PGConn) write_bytes(b []u8) ! {
-	c.conn.write(b) or { return error('cannot write to tcp connection: ${err}') }
+	c.out << b
 }
 
 fn (mut c PGConn) write_row_description(result Result) ! {
@@ -198,45 +251,43 @@ fn (mut c PGConn) write_authentication_ok() ! {
 	c.write_int32(0)!
 }
 
+// write_ready_for_query ends the response, so the messages are sent.
 fn (mut c PGConn) write_ready_for_query() ! {
 	c.write_byte(`Z`)!
 	c.write_int32(5)!
 	c.write_byte(`I`)!
+	c.flush()!
 }
 
 fn (mut c PGConn) read_int32() !int {
-	mut bytes := []u8{len: 4}
-	c.conn.read(mut bytes)!
-
-	return int(binary.big_endian_u32(bytes))
+	return int(binary.big_endian_u32(c.read_bytes(4)!))
 }
 
 fn (mut c PGConn) write_int16(x i16) ! {
 	mut bytes := []u8{len: 2}
 	binary.big_endian_put_u16(mut bytes, u16(x))
-	c.conn.write(bytes) or { return error('cannot write to tcp connection: ${err}') }
+	c.out << bytes
 }
 
 fn (mut c PGConn) write_int32(x int) ! {
 	mut bytes := []u8{len: 4}
 	binary.big_endian_put_u32(mut bytes, u32(x))
-	c.conn.write(bytes) or { return error('cannot write to tcp connection: ${err}') }
+	c.out << bytes
 }
 
+// read_string reads a string that ends with a zero byte. The number of bytes
+// read includes the zero byte.
 fn (mut c PGConn) read_string() !(string, int) {
-	mut bytes := []u8{len: 1}
-	mut read := 0
-	mut s := ''
+	mut bytes := []u8{}
 	for {
-		c.conn.read(mut bytes)!
-		read++
-		if bytes[0] == 0 {
+		b := c.read_byte()!
+		if b == 0 {
 			break
 		}
-		s += bytes.bytestr()
+		bytes << b
 	}
 
-	return s, read
+	return bytes.bytestr(), bytes.len + 1
 }
 
 fn (mut c PGConn) write_string(s string) ! {

@@ -81,41 +81,37 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 
 	sequence.check()!
 
-	// The current base value (the value NEXT VALUE FOR returns next) is only
-	// changed by RESTART (9.31 Syntax Rule 9 and General Rule 2e). The stored
-	// current_value is the last value returned, so it must be adjusted for the
-	// new INCREMENT BY. These wrap around like add_i64, see Sequence.next.
+	// The current base value is only changed by RESTART (9.31 Syntax Rule 9 and
+	// General Rule 2e). It's the last value returned by NEXT VALUE FOR, so the
+	// next value uses the new INCREMENT BY. Unless it hasn't been returned yet (a
+	// new or restarted sequence), then it's the next value, so current_value
+	// must be adjusted for the new INCREMENT BY. These wrap around like add_i64,
+	// see Sequence.next.
 	if v := restart_value {
 		sequence.check_in_range(restart_name, v)!
 		sequence.current_value = i64(u64(v) - u64(sequence.increment_by))
 		sequence.exhausted = false
-	} else if old_sequence.exhausted {
-		// The current base value is past the range of a BIGINT, so the next
-		// value will be for any INCREMENT BY. It's past any new limit in the
-		// direction of the old INCREMENT BY.
-		if old_sequence.increment_by > 0 && new_max_value {
-			return sqlstate_42601('MAXVALUE (${sequence.max_value}) must not be less than the next value')
-		}
-		if old_sequence.increment_by < 0 && new_min_value {
-			return sqlstate_42601('MINVALUE (${sequence.min_value}) must not be greater than the next value')
-		}
-
-		sequence.current_value = if sequence.increment_by > 0 { max_i64 } else { min_i64 }
+		sequence.unused = true
 	} else {
-		base_value := i64(u64(old_sequence.current_value) + u64(old_sequence.increment_by))
-
-		// The current base value must be within a new MINVALUE or MAXVALUE (9.31
-		// Syntax Rule 12). It isn't checked against limits that aren't changed,
-		// so CYCLE or NO MAXVALUE can revive a sequence that has gone past its
-		// limit.
-		if new_min_value && base_value < sequence.min_value {
-			return sqlstate_42601('MINVALUE (${sequence.min_value}) must not be greater than the next value (${base_value})')
-		}
-		if new_max_value && base_value > sequence.max_value {
-			return sqlstate_42601('MAXVALUE (${sequence.max_value}) must not be less than the next value (${base_value})')
+		mut next_value := i64(0)
+		mut has_next_value := true
+		if old_sequence.unused {
+			next_value = i64(u64(old_sequence.current_value) + u64(old_sequence.increment_by))
+			sequence.current_value = i64(u64(next_value) - u64(sequence.increment_by))
+		} else {
+			next_value, sequence.exhausted = add_i64(old_sequence.current_value, sequence.increment_by)
+			has_next_value = !sequence.exhausted
 		}
 
-		sequence.current_value = i64(u64(base_value) - u64(sequence.increment_by))
+		// The next value must be within a new MINVALUE or MAXVALUE (9.31 Syntax
+		// Rule 12). It isn't checked against limits that aren't changed, so CYCLE
+		// or NO MAXVALUE can revive a sequence that has gone past its limit.
+		if has_next_value && new_min_value && next_value < sequence.min_value {
+			return sqlstate_42601('MINVALUE (${sequence.min_value}) must not be greater than the next value (${next_value})')
+		}
+		if has_next_value && new_max_value && next_value > sequence.max_value {
+			return sqlstate_42601('MAXVALUE (${sequence.max_value}) must not be less than the next value (${next_value})')
+		}
 	}
 
 	catalog.storage.update_sequence(old_sequence, sequence)!

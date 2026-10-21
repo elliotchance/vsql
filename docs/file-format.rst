@@ -500,8 +500,12 @@ Sequence Value Object
 A Sequence Value Object (has the ``V`` prefix) contains the current value of a
 sequence (as an i64). It's followed by a bool that's true when the current value
 is the last value of the sequence, because adding the increment would go past
-the range of a ``BIGINT``. The bool is only written when it's true, so it's
-false if the object is only 8 bytes.
+the range of a ``BIGINT``. Then a bool that's true when the current value plus
+the increment hasn't been returned by ``NEXT VALUE FOR`` yet (a new sequence, or
+one that has been restarted), otherwise the current value is the last value that
+was returned. Each bool is only written when it, or the one after it, is true,
+so they're false if the object is shorter. Older versions of vsql didn't write
+the second bool.
 
 ``NEXT VALUE FOR`` is not part of the transaction (a value is never handed out
 twice, even if the transaction is rolled back), so it changes the value of the

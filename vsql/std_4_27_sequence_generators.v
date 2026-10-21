@@ -11,6 +11,12 @@ mut:
 	// returned, because adding increment_by would go past the range of a BIGINT.
 	// See next.
 	exhausted bool
+	// unused is true when current_value plus increment_by (the current base
+	// value) hasn't been returned by NEXT VALUE FOR yet, which is a new sequence
+	// or one that has been restarted. Otherwise current_value is the last value
+	// that was returned. ALTER SEQUENCE needs to know which, see
+	// AlterSequenceGeneratorStatement.
+	unused bool
 pub mut:
 	// name contains the other parts such as the schema.
 	name Identifier
@@ -137,6 +143,7 @@ fn (s Sequence) next() !Sequence {
 		...s
 		current_value: next_value
 		exhausted:     exhausted
+		unused:        false
 	}
 }
 
@@ -181,9 +188,14 @@ fn (s Sequence) value_bytes() []u8 {
 
 	b.write_i64(s.current_value)
 
-	// This is only written when it's true, so that a sequence that hasn't reached
-	// its limit is stored the same as before it existed.
-	if s.exhausted {
+	// These are only written when they're needed, so that a sequence that has
+	// been used and hasn't reached its limit is stored the same as before they
+	// existed. Only unused is new, so a version of vsql before it reads an unused
+	// sequence as a used one, which only differs for ALTER SEQUENCE.
+	if s.exhausted || s.unused {
+		b.write_bool(s.exhausted)
+	}
+	if s.unused {
 		b.write_bool(true)
 	}
 
@@ -201,8 +213,12 @@ fn new_sequence_from_bytes(definition_data []u8, value_data []u8, tid u64) !Sequ
 
 		mut b := new_bytes(value_data)
 		sequence.current_value = b.read_i64()
+		sequence.unused = false
 		if b.has_more() {
 			sequence.exhausted = b.read_bool()
+		}
+		if b.has_more() {
+			sequence.unused = b.read_bool()
 		}
 
 		return sequence

@@ -81,13 +81,13 @@ VALUES NEXT VALUE FOR seq1;
 -- msg: ALTER SEQUENCE 1
 -- COL1: 3
 
--- # A sequence that has gone past the range of a BIGINT is past any new limit
--- # in the direction it was going.
+-- # A sequence that has reached the end of the range of a BIGINT has no next
+-- # value, so only its last value must be within a new limit.
 CREATE SEQUENCE seq1 START WITH 9223372036854775807;
 VALUES NEXT VALUE FOR seq1;
 ALTER SEQUENCE seq1 MAXVALUE 9223372036854775807;
 ALTER SEQUENCE seq1 MINVALUE 0;
 -- msg: CREATE SEQUENCE 1
 -- COL1: 9223372036854775807
--- error 42601: syntax error: MAXVALUE (9223372036854775807) must not be less than the next value
+-- msg: ALTER SEQUENCE 1
 -- msg: ALTER SEQUENCE 1

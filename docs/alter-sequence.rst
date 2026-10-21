@@ -32,9 +32,11 @@ Each ``<option>`` can be one of (in any order):
 ``RESTART`` (without using ``WITH <number>``) will go back to the ``START WITH``
 value of the sequence.
 
-Only ``RESTART`` changes the next value of the sequence. For example, changing
-the ``INCREMENT BY`` will still return the same next value, and the new
-increment is used after that.
+Only ``RESTART`` changes the current value of the sequence, which is the last
+value that ``NEXT VALUE FOR`` returned. For example, after changing the
+``INCREMENT BY``, the next value is the last value plus the new increment. A
+sequence that hasn't returned a value yet (or has been restarted) will still
+return its ``START WITH`` (or ``RESTART``) value first.
 
 A new ``MINVALUE <number>`` or ``MAXVALUE <number>`` must not exclude the next
 value (or the ``RESTART`` value). Limits that aren't changed aren't checked, so
@@ -64,8 +66,8 @@ Examples
    -- msg: CREATE SEQUENCE 1
    -- COL1: 1
    -- msg: ALTER SEQUENCE 1
-   -- COL1: 2
-   -- COL1: 7
+   -- COL1: 6
+   -- COL1: 11
 
 See Also
 --------

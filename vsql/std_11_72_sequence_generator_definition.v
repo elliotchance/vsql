@@ -168,6 +168,7 @@ fn (stmt SequenceGeneratorDefinition) sequence(sequence_name Identifier) Sequenc
 		name:          sequence_name
 		start_value:   start_value
 		current_value: start_value - increment_by
+		unused:        true
 		increment_by:  increment_by
 		cycle:         cycle
 		has_min_value: has_min_value

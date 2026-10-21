@@ -383,6 +383,24 @@ transaction, like a process that stopped:
    /* connection 2 */
    SELECT * FROM t;
 
+Virtual Tables
+^^^^^^^^^^^^^^
+
+A ``virtual_table`` directive registers a virtual table (see
+:doc:`virtual-tables`) on the current connection. It's a ``CREATE TABLE``,
+followed by ``AS`` and a query for its rows:
+
+.. code-block:: sql
+
+   /* virtual_table CREATE TABLE fruits (id INT, name VARCHAR(10)) AS VALUES ROW(1, 'kiwi'), ROW(2, 'pear') */
+   SELECT * FROM fruits;
+   -- ID: 1 NAME: kiwi
+   -- ID: 2 NAME: pear
+
+The query is run when the virtual table is registered. If it can't be
+registered, the error is in the output. The ``pg_database`` virtual table that
+the server registers for PostgreSQL clients is also registered for each test.
+
 Multiple Catalogs
 ^^^^^^^^^^^^^^^^^
 

@@ -9,3 +9,11 @@ VALUES current_setting('server_version_num');
 /* types */
 SELECT * FROM (VALUES current_setting('server_version_num')) AS t1 (ver_num);
 -- VER_NUM: 90310 (CHARACTER VARYING)
+
+-- # pg_database is a virtual table that's registered for PostgreSQL clients.
+SELECT * FROM pg_database;
+-- DATNAME: vsql
+
+EXPLAIN SELECT datname FROM pg_database;
+-- EXPLAIN: VIRTUAL TABLE PUBLIC.PG_DATABASE (DATNAME CHARACTER VARYING(255))
+-- EXPLAIN: EXPR (DATNAME CHARACTER VARYING(255))

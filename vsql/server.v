@@ -93,7 +93,7 @@ pub fn (mut s Server) serve() ! {
 	}
 
 	for {
-		mut conn := s.listener.accept() or {
+		mut conn := s.accept() or {
 			if s.stopping {
 				return
 			}
@@ -103,6 +103,18 @@ pub fn (mut s Server) serve() ! {
 
 		spawn s.handle_client(mut conn)
 	}
+}
+
+// accept waits for the next client. A test can make it fail with the "accept"
+// fault, which disconnects the client, see fault.v.
+fn (mut s Server) accept() !&net.TcpConn {
+	mut conn := s.listener.accept()!
+	fault_point('accept') or {
+		conn.close() or {}
+		return err
+	}
+
+	return conn
 }
 
 // stop stops accepting new clients. Clients that are already connected are not

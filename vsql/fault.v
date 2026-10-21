@@ -29,17 +29,23 @@ module vsql
 //                      checksum.
 //   wal_unknown_frame: the write-ahead log has a frame of an unknown kind.
 //   checkpoint:        copying a committed statement from the write-ahead log
-//                      into the database file.
+//                      into the database file (including when it's
+//                      recovered).
 //   recover:           copying a statement that was left in the write-ahead log
 //                      into the database file.
+//   session_shared:    changing the session lock back to shared, after
+//                      recovering the transactions of a connection that
+//                      stopped, see Storage.recover.
 //   isolation_start:   starting the isolation block of an operation on the
 //                      file, see Storage.isolation_start.
 //   isolation_end:     ending the isolation block of an operation on the file,
 //                      which removes the rows that were deleted outside of a
 //                      transaction, see Storage.isolation_end.
+//   accept:            a server accepting a client, see Server.accept.
 const fault_names = ['open', 'lock', 'lock_shared', 'read_header', 'read_page', 'write_version',
 	'wal_write', 'wal_torn_frame', 'wal_corrupt_frame', 'wal_bad_magic', 'wal_bad_header',
-	'wal_unknown_frame', 'checkpoint', 'recover', 'isolation_start', 'isolation_end']
+	'wal_unknown_frame', 'checkpoint', 'recover', 'session_shared', 'isolation_start', 'isolation_end',
+	'accept']
 
 struct FaultPoints {
 mut:

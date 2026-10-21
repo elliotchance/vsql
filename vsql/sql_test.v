@@ -1202,17 +1202,19 @@ fn test_server_verbose() ! {
 	assert client.query('VALUES 1')!.rows == ['COL1: 1']
 	client.close()
 
-	// The server logs the disconnect after the client has gone.
+	// The server logs the disconnect after the client has gone. The message and
+	// its newline may be written separately, so it waits for the whole line.
 	mut stdout := ''
 	for _ in 0 .. 500 {
 		stdout = os.read_file(stdout_path)!
-		if stdout.contains('disconnected') {
+		if stdout.contains('disconnected\n') {
 			break
 		}
 		time.sleep(10 * time.millisecond)
 	}
 
-	assert stdout.contains('connected\n')
-	assert stdout.contains('query: VALUES 1\n')
-	assert stdout.contains('disconnected\n')
+	lines := stdout.split('\n')
+	assert 'connected' in lines
+	assert 'query: VALUES 1' in lines
+	assert 'disconnected' in lines
 }

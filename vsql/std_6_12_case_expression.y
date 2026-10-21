@@ -5,10 +5,8 @@ case_expression:
 
 case_abbreviation:
   NULLIF left_paren value_expression comma value_expression right_paren {
-    $$.v = CaseExpression(CaseExpressionNullIf{
-      $3.v as ValueExpression
-      $5.v as ValueExpression
-    })
+    $$.v = CaseExpression(new_case_expression_null_if($3.v as ValueExpression,
+      $5.v as ValueExpression))
   }
 | COALESCE left_paren value_expression comma value_expression_list right_paren {
     $$.v = CaseExpression(CaseExpressionCoalesce{

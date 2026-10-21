@@ -74,9 +74,11 @@ fn (e Term) compile(mut c Compiler) !CompileResult {
 	return compiled_factor
 }
 
+// e is a reference because NumericPrimary can be a SignedValueExpressionPrimary,
+// and V stores a sum type's value inline.
 struct SignedValueExpressionPrimary {
 	sign string
-	e    NumericPrimary
+	e    &NumericPrimary
 }
 
 fn (e SignedValueExpressionPrimary) pstr(params map[string]Value) string {
@@ -170,7 +172,7 @@ fn parse_factor_2(sign string, expr NumericPrimary) !NumericPrimary {
 		}
 	}
 
-	return SignedValueExpressionPrimary{sign, expr}
+	return SignedValueExpressionPrimary{sign, &expr}
 }
 
 // arithmetic_type is the declared type of a binary arithmetic expression. Two

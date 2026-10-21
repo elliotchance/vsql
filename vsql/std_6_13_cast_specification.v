@@ -24,9 +24,15 @@ fn (e CastOperand) compile(mut c Compiler) !CompileResult {
 	}
 }
 
+// expr is a reference because a CastOperand can contain a CastSpecification,
+// and V stores a sum type's value inline.
 struct CastSpecification {
-	expr   CastOperand
+	expr   &CastOperand
 	target Type
+}
+
+fn new_cast_specification(expr CastOperand, target Type) CastSpecification {
+	return CastSpecification{&expr, target}
 }
 
 fn (e CastSpecification) pstr(params map[string]Value) string {

@@ -23,8 +23,14 @@ fn (e ValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
 	}
 }
 
+// e is a reference because a ValueExpression can contain a
+// ParenthesizedValueExpression, and V stores a sum type's value inline.
 struct ParenthesizedValueExpression {
-	e ValueExpression
+	e &ValueExpression
+}
+
+fn new_parenthesized_value_expression(e ValueExpression) ParenthesizedValueExpression {
+	return ParenthesizedValueExpression{&e}
 }
 
 fn (e ParenthesizedValueExpression) pstr(params map[string]Value) string {

@@ -15,20 +15,12 @@ parenthesized_joined_table:
 
 qualified_join:
   table_reference JOIN table_reference join_specification {
-    $$.v = QualifiedJoin{
-      $1.v as TableReference
-      JoinType.inner
-      $3.v as TableReference
-      $4.v as BooleanValueExpression
-    }
+    $$.v = new_qualified_join($1.v as TableReference, JoinType.inner,
+      $3.v as TableReference, $4.v as BooleanValueExpression)
   }
 | table_reference join_type JOIN table_reference join_specification {
-    $$.v = QualifiedJoin{
-      $1.v as TableReference
-      $2.v as JoinType
-      $4.v as TableReference
-      $5.v as BooleanValueExpression
-    }
+    $$.v = new_qualified_join($1.v as TableReference, $2.v as JoinType,
+      $4.v as TableReference, $5.v as BooleanValueExpression)
   }
 
 table_factor:

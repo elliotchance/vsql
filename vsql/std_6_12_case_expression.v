@@ -82,9 +82,15 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 	}
 }
 
+// a and b are references because a ValueExpression can contain a CaseExpression,
+// and V stores a sum type's value inline.
 struct CaseExpressionNullIf {
-	a ValueExpression
-	b ValueExpression
+	a &ValueExpression
+	b &ValueExpression
+}
+
+fn new_case_expression_null_if(a ValueExpression, b ValueExpression) CaseExpressionNullIf {
+	return CaseExpressionNullIf{&a, &b}
 }
 
 struct CaseExpressionCoalesce {

@@ -9,10 +9,8 @@ character_value_expression:
 
 concatenation:
   character_value_expression concatenation_operator character_factor {
-    $$.v = Concatenation{
-      $1.v as CharacterValueExpression
-      $3.v as CharacterPrimary
-    }
+    $$.v = new_concatenation($1.v as CharacterValueExpression,
+      $3.v as CharacterPrimary)
   }
 
 character_factor:

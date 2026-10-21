@@ -19,9 +19,11 @@ struct QualifiedAsteriskExpr {
 	table_name Identifier
 }
 
+// table_expression is a reference because it can contain a subquery, which is a
+// QuerySpecification, and V stores a sum type's value inline.
 struct QuerySpecification {
 	exprs            SelectList
-	table_expression TableExpression
+	table_expression &TableExpression
 	offset           ?ValueExpression
 	fetch            ?ValueExpression
 }

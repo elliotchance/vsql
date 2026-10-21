@@ -10,7 +10,7 @@ value_expression_primary:
 
 parenthesized_value_expression:
   left_paren value_expression right_paren {
-    $$.v = ParenthesizedValueExpression{$2.v as ValueExpression}
+    $$.v = new_parenthesized_value_expression($2.v as ValueExpression)
   }
 
 nonparenthesized_value_expression_primary:

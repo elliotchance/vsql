@@ -2,7 +2,7 @@
 
 cast_specification:
   CAST left_paren cast_operand AS cast_target right_paren {
-	  $$.v = CastSpecification{$3.v as CastOperand, $5.v as Type}
+	  $$.v = new_cast_specification($3.v as CastOperand, $5.v as Type)
   }
 
 cast_operand:

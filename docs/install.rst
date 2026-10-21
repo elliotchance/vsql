@@ -32,7 +32,8 @@ V Package Manager
 This is the best method if you intend to build V applications using it as a
 library. See `v-client-library`. vsql is built and tested with the V commit in
 `.v-version <https://github.com/elliotchance/vsql/blob/main/.v-version>`_, and
-older versions of V may not be able to compile it.
+with the latest V every day. Older versions of V may not be able to compile it,
+so update V first with ``v up``.
 
 .. code-block:: sh
 

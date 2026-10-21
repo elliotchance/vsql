@@ -22,54 +22,30 @@ boolean_factor:
   }
 
 boolean_test:
-  boolean_primary { $$.v = BooleanTest{expr: $1.v as BooleanPrimary} }
+  boolean_primary { $$.v = new_boolean_test($1.v as BooleanPrimary, false, none, false) }
 | boolean_primary IS_TRUE {
-    $$.v = BooleanTest{
-      $1.v as BooleanPrimary
-      false
-      new_boolean_value(true)
-      false
-    }
+    $$.v = new_boolean_test($1.v as BooleanPrimary, false, new_boolean_value(true),
+      false)
   }
 | boolean_primary IS_FALSE {
-    $$.v = BooleanTest{
-      $1.v as BooleanPrimary
-      false
-      new_boolean_value(false)
-      false
-    }
+    $$.v = new_boolean_test($1.v as BooleanPrimary, false, new_boolean_value(false),
+      false)
   }
 | boolean_primary IS_UNKNOWN {
-    $$.v = BooleanTest{
-      $1.v as BooleanPrimary
-      false
-      new_unknown_value()
-      false
-    }
+    $$.v = new_boolean_test($1.v as BooleanPrimary, false, new_unknown_value(),
+      false)
   }
 | boolean_primary IS_NOT_TRUE {
-    $$.v = BooleanTest{
-      $1.v as BooleanPrimary
-      true
-      new_boolean_value(true)
-      false
-    }
+    $$.v = new_boolean_test($1.v as BooleanPrimary, true, new_boolean_value(true),
+      false)
   }
 | boolean_primary IS_NOT_FALSE {
-    $$.v = BooleanTest{
-      $1.v as BooleanPrimary
-      true
-      new_boolean_value(false)
-      false
-    }
+    $$.v = new_boolean_test($1.v as BooleanPrimary, true, new_boolean_value(false),
+      false)
   }
 | boolean_primary IS_NOT_UNKNOWN {
-    $$.v = BooleanTest{
-      $1.v as BooleanPrimary
-      true
-      new_unknown_value()
-      false
-    }
+    $$.v = new_boolean_test($1.v as BooleanPrimary, true, new_unknown_value(),
+      false)
   }
 
 boolean_primary:

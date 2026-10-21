@@ -29,24 +29,6 @@ pub:
 	custom_typ Type
 }
 
-fn (e Identifier) resolve_identifiers(conn &Connection, tables map[string]Table) !Identifier {
-	if e.custom_id != '' {
-		return e
-	}
-
-	// If the table name is not provided we need to find it.
-	if e.entity_name == '' {
-		for _, table in tables {
-			if (table.column(e.sub_entity_name) or { Column{} }).name.sub_entity_name == e.sub_entity_name {
-				return conn.resolve_identifier(new_column_identifier('${table.name}.${e.sub_entity_name}')!)
-			}
-		}
-	}
-
-	// TODO(elliotchance): Need tests for table qualifier not existing.
-	return conn.resolve_identifier(e)
-}
-
 // new_table_identifier is the correct way to create a new Identifier that
 // represents a table. It can take several forms:
 //
@@ -184,17 +166,6 @@ fn new_identifier3(s string) !Identifier {
 			// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 5
 			return sqlstate_42601('invalid column reference: ${parts.map(requote_identifier(it)).join('.')}')
 		}
-	}
-}
-
-// decode_identifier is only for internal use. It is the opposite of
-// Identifier.storage_id().
-fn decode_identifier(s string) Identifier {
-	parts := split_identifier_parts(s) or { panic('cannot parse identifier: ${s}') }
-
-	return Identifier{
-		schema_name: parts[0]
-		entity_name: parts[1]
 	}
 }
 
@@ -454,10 +425,6 @@ fn (e Identifier) id() string {
 // storage_id is the internal canonical name for disk storage, as opposed to
 // str() which is the human readable form.
 fn (e Identifier) storage_id() string {
-	if e.custom_id != '' {
-		return e.custom_id
-	}
-
 	mut parts := []string{}
 
 	// Note: The catalog name is not included here because its registered

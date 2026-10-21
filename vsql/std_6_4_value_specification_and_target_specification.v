@@ -7,12 +7,6 @@ module vsql
 
 type ValueSpecification = GeneralValueSpecification | Value
 
-// str is defined explicitly because the auto-generated str() from V confuses
-// the sum type tag with Value.typ and produces invalid C.
-fn (e ValueSpecification) str() string {
-	return e.pstr(map[string]Value{})
-}
-
 fn (e ValueSpecification) pstr(params map[string]Value) string {
 	return match e {
 		Value, GeneralValueSpecification { e.pstr(params) }
@@ -25,10 +19,6 @@ fn (e ValueSpecification) compile(mut c Compiler) !CompileResult {
 			return e.compile(mut c)!
 		}
 	}
-}
-
-fn (e ValueSpecification) resolve_identifiers(conn &Connection, tables map[string]Table) !ValueSpecification {
-	return e
 }
 
 type GeneralValueSpecification = CurrentCatalog | CurrentSchema | HostParameterName

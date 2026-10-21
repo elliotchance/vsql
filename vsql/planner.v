@@ -418,10 +418,6 @@ fn (mut o Plan) execute(_ []Row) ![]Row {
 	return rows
 }
 
-fn (p Plan) str() string {
-	return p.operations.map(it.str()).join('\n')
-}
-
 fn (p Plan) columns() Columns {
 	// The columns at the end of the plan will always be whatever the last
 	// operation returns.

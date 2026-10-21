@@ -122,3 +122,21 @@ SELECT * FROM (SELECT * FROM t1 WHERE x = 2) AS s (a);
 -- msg: INSERT 3
 -- X: 2
 -- A: 2
+
+-- # Two versions of a row must be on the same page. Updating the middle row of a
+-- # full page (with 256 byte pages in the tests) puts the new version and the
+-- # old one on a page of their own, so the page splits into three.
+CREATE TABLE t (x INT, s VARCHAR(4000));
+INSERT INTO t (x, s) VALUES (1, 'a');
+INSERT INTO t (x, s) VALUES (2, 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
+INSERT INTO t (x, s) VALUES (3, 'c');
+UPDATE t SET s = 'dddddddddddddddddddddddddddddddddddddddddddddddddd' WHERE x = 2;
+SELECT x, CHAR_LENGTH(s) AS l, SUBSTRING(s FROM 1 FOR 1) AS f FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- X: 1 L: 1 F: a
+-- X: 2 L: 50 F: d
+-- X: 3 L: 1 F: c

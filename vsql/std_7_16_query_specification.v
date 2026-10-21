@@ -19,10 +19,6 @@ struct QualifiedAsteriskExpr {
 	table_name Identifier
 }
 
-fn (e QualifiedAsteriskExpr) str() string {
-	return '${e.table_name}.*'
-}
-
 struct QuerySpecification {
 	exprs            SelectList
 	table_expression TableExpression

@@ -188,7 +188,7 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 	}
 
 	// A catalog added during a transaction joins it.
-	if in_transaction { // coverage:ignore (add_catalog() is only called during a transaction from V, see catalog_transaction_test.v)
+	if in_transaction {
 		catalog.start_transaction()!
 		catalog.finish_write(true)!
 	}
@@ -493,7 +493,7 @@ pub fn (mut conn Connection) catalog() &CatalogConnection {
 // catalog_for returns the catalog of a fully qualified identifier, such as one
 // from resolve_schema_identifier(), which has already checked that it exists.
 fn (mut conn Connection) catalog_for(ident Identifier) &CatalogConnection {
-	return conn.catalogs[ident.catalog_name] or { // coverage:ignore (the catalog is checked when the identifier is resolved)
+	return conn.catalogs[ident.catalog_name] or {
 		panic('unknown catalog: ${ident.catalog_name}')
 	}
 }

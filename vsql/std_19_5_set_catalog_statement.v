@@ -13,10 +13,6 @@ struct SetCatalogStatement {
 	catalog_name ValueSpecification
 }
 
-fn (e SetCatalogStatement) pstr(params map[string]Value) string {
-	return 'SET CATALOG ${e.catalog_name.pstr(params)}'
-}
-
 fn (stmt SetCatalogStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 

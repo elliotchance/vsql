@@ -109,7 +109,3 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		contains_agg: found_func.is_agg
 	}
 }
-
-fn (e RoutineInvocation) resolve_identifiers(conn &Connection, tables map[string]Table) !RoutineInvocation {
-	return RoutineInvocation{e.function_name, e.args}
-}

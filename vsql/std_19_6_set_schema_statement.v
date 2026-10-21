@@ -13,10 +13,6 @@ struct SetSchemaStatement {
 	schema_name ValueSpecification
 }
 
-fn (e SetSchemaStatement) pstr(params map[string]Value) string {
-	return 'SET SCHEMA ${e.schema_name.pstr(params)}'
-}
-
 fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 

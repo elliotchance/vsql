@@ -138,10 +138,6 @@ fn new_page(kind u8, page_size int) &Page {
 	}
 }
 
-fn (p Page) is_empty() bool {
-	return p.used == page_header_size
-}
-
 fn (p Page) page_size() int {
 	return p.data.len + page_header_size
 }
@@ -292,23 +288,6 @@ fn (mut p Page) expire(key []u8, tid u64, xid u64) bool {
 	}
 
 	return modified
-}
-
-// replace will perform a delete and add operation. If the key does not exist it
-// will be created.
-fn (mut p Page) replace(key []u8, tid u64, value []u8) ! {
-	p.delete(key, tid)
-	obj := new_page_object(key.clone(), tid, 0, value)
-	p.add(obj)!
-}
-
-fn (p Page) keys() [][]u8 {
-	mut keys := [][]u8{}
-	for object in p.objects() {
-		keys << object.key
-	}
-
-	return keys
 }
 
 fn (p Page) objects() []PageObject {

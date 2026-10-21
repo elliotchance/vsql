@@ -9,7 +9,3 @@ module vsql
 struct IdentifierChain {
 	identifier string
 }
-
-fn (identifier IdentifierChain) str() string {
-	return identifier.identifier
-}

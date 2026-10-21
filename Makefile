@@ -104,17 +104,22 @@ btree-test: oldv
 	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) $(PROD) vsql/btree_test.v
 
 # sql-test also prints how much of vsql/ the SQL tests cover, unless COVERAGE=0.
+# When all of the tests are run, every line must be covered.
 # -no-skip-unused keeps functions that are never called, otherwise they wouldn't
-# be counted at all. The LCOV file can be used for a line by line report. On
+# be counted at all. -d coverage lets the code know it's a coverage build (see
+# crash_point). The LCOV file can be used for a line by line report. On
 # GitHub Actions the coverage is also added to the job summary.
 sql-test: oldv
 ifeq ($(COVERAGE),0)
 	$(V) $(V3_OPTIONS) -stats $(BUILD_OPTIONS) vsql/sql_test.v
 else
 	rm -rf coverage/data
-	$(V) $(V3_OPTIONS) -stats -no-skip-unused -coverage coverage/data $(BUILD_OPTIONS) vsql/sql_test.v
+	$(V) $(V3_OPTIONS) -stats -no-skip-unused -coverage coverage/data -d coverage $(BUILD_OPTIONS) vsql/sql_test.v
 	$(V) cover coverage/data --filter "$(CURDIR)/vsql/" --lcov coverage/sql.lcov > /dev/null
 	$(call coverage_summary,coverage/sql.lcov,SQL test,sql-test-uncovered)
+ifeq ($(TEST)$(filter 0,$(MEMORY) $(FILE) $(SERVER)),)
+	$(call verify_full_coverage,coverage/sql.lcov)
+endif
 endif
 
 # sql-test-uncovered prints each line that the last "make sql-test" didn't

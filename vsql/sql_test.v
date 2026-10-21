@@ -859,7 +859,8 @@ fn start_sql_test_server_with(options ServerOptions) !&Server {
 // Without a connect function every client opens db_file. A SELECT without a
 // FROM is allowed with select_without_from.
 fn test_server_db_file() ! {
-	dir := os.join_path(sql_test_dir(), 'server_db_file')
+	// test_all has already removed sql_test_dir(), so this has its own.
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-server-db-file-${os.getpid()}')
 	os.mkdir_all(dir)!
 	defer {
 		os.rmdir_all(dir) or {}
@@ -965,10 +966,253 @@ fn test_custom_function_returns_numeric() ! {
 	assert db.query("VALUES abs('x')")!.rows[0].get_null('COL1')!
 }
 
+// Builtin functions return NULL when any argument is NULL, but custom functions
+// must still be called (CALLED ON NULL INPUT) so they can handle NULL
+// themselves.
+fn test_custom_function_receives_null() ! {
+	mut db := open(':memory:')!
+	db.register_function('is_missing(float) float', fn (a []Value) !Value {
+		return new_double_precision_value(if a[0].is_null { 1 } else { 0 })
+	})!
+
+	db.query('CREATE TABLE t (x FLOAT)')!
+	db.query('INSERT INTO t (x) VALUES (NULL)')!
+	db.query('INSERT INTO t (x) VALUES (1.5)')!
+
+	mut results := []f64{}
+	for row in db.query('SELECT is_missing(x) AS m FROM t')! {
+		results << row.get_f64('M')!
+	}
+
+	assert results == [1.0, 0.0]
+}
+
+fn test_custom_function_with_two_arguments() ! {
+	mut db := open(':memory:')!
+	db.register_function('add_both(float, float) float', fn (a []Value) !Value {
+		return new_double_precision_value(a[0].f64_value() + a[1].f64_value())
+	})!
+
+	mut results := []f64{}
+	for row in db.query('VALUES add_both(1.5, 2)')! {
+		results << row.get_f64('COL1')!
+	}
+
+	assert results == [3.5]
+}
+
+// A function is identified by its name and argument types, so another function
+// with the same ones can't be registered, even if it returns a different type.
+fn test_custom_function_already_exists() ! {
+	mut db := open(':memory:')!
+	db.register_function('foo(integer) integer', fn (a []Value) !Value {
+		return new_integer_value(1)
+	})!
+
+	assert register_function_error(mut db, 'foo(integer) varchar') == '42723 duplicate function: FOO(INTEGER)'
+
+	// The same for a builtin function, and for CHARACTER, which is the same as
+	// CHARACTER VARYING.
+	assert register_function_error(mut db, 'abs(double precision) double precision') == '42723 duplicate function: ABS(DOUBLE PRECISION)'
+	assert register_function_error(mut db, 'char_length(character) integer') == '42723 duplicate function: CHAR_LENGTH(CHARACTER)'
+
+	// A function with the same name and different argument types is fine.
+	db.register_function('foo(varchar) varchar', fn (a []Value) !Value {
+		return new_varchar_value('three')
+	})!
+
+	assert db.query('VALUES foo(5)')!.rows[0].get_string('COL1')! == '1'
+	assert db.query("VALUES foo('x')")!.rows[0].get_string('COL1')! == 'three'
+}
+
+fn register_function_error(mut db Connection, prototype string) string {
+	db.register_function(prototype, fn (a []Value) !Value {
+		return new_integer_value(0)
+	}) or { return '${sqlstate_from_int(err.code())} ${err.msg()}' }
+
+	return ''
+}
+
+// A prototype that can't be parsed, or has a type that doesn't exist, is an
+// error.
+fn test_custom_function_bad_prototype() ! {
+	mut db := open(':memory:')!
+	assert register_function_error(mut db, 'foo(nosuchtype) integer') == '42601 syntax error: unknown type: NOSUCHTYPE'
+	assert register_function_error(mut db, 'foo(integer) nosuchtype') == '42601 syntax error: unknown type: NOSUCHTYPE'
+	assert register_function_error(mut db, 'foo') == '42601 syntax error: invalid function prototype: foo'
+	assert register_function_error(mut db, 'foo(integer)') == '42601 syntax error: invalid function prototype: foo(integer)'
+	assert register_function_error(mut db, 'foo integer) integer') == '42601 syntax error: invalid function prototype: foo integer) integer'
+	assert register_function_error(mut db, '(integer) integer') == '42601 syntax error: invalid function prototype: (integer) integer'
+}
+
 // new_numeric_value and new_decimal_value (for an application) also accept an
 // exponent.
 fn test_new_numeric_and_decimal_value() {
 	assert new_numeric_value('1.5e3').str() == '1500.0'
 	assert new_decimal_value('1.25').str() == '1.25'
 	assert new_decimal_value('1.25').typ.str() == 'DECIMAL(3, 2)'
+}
+
+// run_in_child runs f in a child process, and returns its exit code and what it
+// wrote to stderr. It's for code that stops the process, such as a panic, which
+// can't be recovered from. The child's coverage is still counted, because it's
+// written when the child exits.
+fn run_in_child(f fn ()) !(int, string) {
+	stderr_path := os.join_path(os.temp_dir(), 'vsql-sql-test-child-${os.getpid()}.txt')
+	pid := os.fork()
+	if pid == 0 {
+		stderr_file := os.create(stderr_path) or { exit(100) }
+		C.dup2(stderr_file.fd, 2)
+		f()
+		exit(0)
+	}
+
+	mut status := 0
+	C.waitpid(pid, &status, 0)
+	stderr := os.read_file(stderr_path)!
+	os.rm(stderr_path)!
+
+	return (status >> 8) & 0xff, stderr
+}
+
+// A panic is for something that can't happen, so these break an invariant
+// directly to check that it's caught, rather than carrying on with bad data.
+fn test_panics() ! {
+	$if windows {
+		return
+	}
+
+	mut code, mut stderr := run_in_child(fn () {
+		mut db := open(':memory:') or { panic(err) }
+		db.current_catalog = 'NOPE'
+		_ := db.catalog()
+	})!
+	assert code == 1
+	assert stderr.contains('unknown catalog: NOPE')
+
+	code, stderr = run_in_child(fn () {
+		mut db := open(':memory:') or { panic(err) }
+		_ := db.catalog_for(Identifier{ catalog_name: 'NOPE' })
+	})!
+	assert code == 1
+	assert stderr.contains('unknown catalog: NOPE')
+
+	code, stderr = run_in_child(fn () {
+		_ := yy_as[Identifier](YYSym(true))
+	})!
+	assert code == 1
+	assert stderr.contains('V panic: expected vsql.Identifier')
+
+	code, stderr = run_in_child(fn () {
+		mut page := new_page(kind_leaf, 64)
+		page.add(new_page_object('k'.bytes(), 1, 0, []u8{len: 100})) or {}
+	})!
+	assert code == 1
+	assert stderr.contains('page cannot fit object of 124 b in page using 16 b')
+}
+
+// crash_point stops the process the VSQL_CRASH_AT'th time it's reached, without
+// flushing anything, see cmd/tests/crash-recovery.sh.
+fn test_crash_point() ! {
+	$if windows {
+		return
+	}
+
+	code, stderr := run_in_child(fn () {
+		mut state := unsafe { &CrashPoint(crash_point_state) }
+		unsafe {
+			*state = CrashPoint{
+				at: 2
+			}
+		}
+		crash_point()
+		eprintln('first crash point passed')
+		crash_point()
+		eprintln('second crash point passed')
+	})!
+	assert code == 1
+	assert stderr == 'first crash point passed\n'
+}
+
+// expire returns -1 when there's no object with the key and tid.
+fn test_btree_expire_missing_object() ! {
+	mut btree := new_btree(new_memory_pager(), 256)
+	btree.add(new_page_object('a'.bytes(), 1, 0, 'x'.bytes()))!
+
+	assert btree.expire('b'.bytes(), 1, 2)! == -1
+	assert btree.expire('a'.bytes(), 2, 3)! == -1
+	assert btree.expire('a'.bytes(), 1, 2)! >= 0
+}
+
+// A row only has the columns that the table had when it was written, so the
+// columns after them are NULL.
+fn test_row_with_fewer_columns() {
+	x := Column{
+		name: Identifier{
+			entity_name:     'T'
+			sub_entity_name: 'X'
+		}
+		typ:  new_type('INTEGER', 0, 0)
+	}
+	y := Column{
+		name: Identifier{
+			entity_name:     'T'
+			sub_entity_name: 'Y'
+		}
+		typ:  new_type('INTEGER', 0, 0)
+	}
+
+	row := new_row({
+		'X': new_integer_value(123)
+	})
+	data := row.bytes(Table{ columns: [x] })
+	read := new_row_from_bytes(Table{ columns: [x, y] }, data, 1)
+
+	assert read.data[x.name.id()].int_value() == 123
+	assert read.data[y.name.id()].is_null
+	assert read.data[y.name.id()].typ.typ == .is_integer
+}
+
+// verbose prints every message in and out of the server.
+fn test_server_verbose() ! {
+	$if windows {
+		return
+	}
+
+	stdout_path := os.join_path(os.temp_dir(), 'vsql-sql-test-stdout-${os.getpid()}.txt')
+	stdout_file := os.create(stdout_path)!
+	saved_stdout := C.dup(1)
+	C.dup2(stdout_file.fd, 1)
+	defer {
+		C.dup2(saved_stdout, 1)
+		os.rm(stdout_path) or {}
+	}
+
+	mut server := start_sql_test_server_with(ServerOptions{
+		connect: fn (database string) !&Connection {
+			return open(':memory:')
+		}
+		verbose: true
+	})!
+	defer {
+		server.stop() or {}
+	}
+
+	mut client := new_pg_test_client(server.port()!, 'db')!
+	assert client.query('VALUES 1')!.rows == ['COL1: 1']
+	client.close()
+
+	// The server logs the disconnect after the client has gone.
+	mut stdout := ''
+	for _ in 0 .. 500 {
+		stdout = os.read_file(stdout_path)!
+		if stdout.contains('disconnected') {
+			break
+		}
+		time.sleep(10 * time.millisecond)
+	}
+
+	assert stdout.contains('connected\n')
+	assert stdout.contains('query: VALUES 1\n')
+	assert stdout.contains('disconnected\n')
 }

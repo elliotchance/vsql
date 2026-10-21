@@ -40,7 +40,3 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 		contains_agg: false
 	}
 }
-
-fn (e NextValueExpression) resolve_identifiers(conn &Connection, tables map[string]Table) !NextValueExpression {
-	return NextValueExpression{conn.resolve_identifier(e.name)}
-}

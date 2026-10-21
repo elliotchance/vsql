@@ -334,7 +334,14 @@ fn crash_point() {
 
 	state.count++
 	if state.count == state.at {
-		C._exit(1)
+		// _exit doesn't run the atexit handlers, which is where a coverage build
+		// writes what it covered. So a coverage build exits normally instead (see
+		// test_crash_point).
+		$if coverage ? {
+			exit(1)
+		} $else {
+			C._exit(1)
+		}
 	}
 }
 

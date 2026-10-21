@@ -9,6 +9,9 @@ VALUES SUBSTRING('hello' FROM 1 FOR 2.9);
 VALUES SUBSTRING('hello' FROM 1e0);
 -- error 42601: syntax error: SUBSTRING start position must be an exact numeric with scale 0, got DOUBLE PRECISION
 
+VALUES SUBSTRING('hello' FROM 1.5 + 1);
+-- error 42601: syntax error: SUBSTRING start position must be an exact numeric with scale 0, got NUMERIC(7, 1)
+
 VALUES SUBSTRING('hello' FROM CAST(2 AS NUMERIC(3)) FOR CAST(2 AS BIGINT));
 -- COL1: el
 

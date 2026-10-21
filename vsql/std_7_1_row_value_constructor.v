@@ -115,7 +115,7 @@ fn (e ExplicitRowValueConstructor) compile(mut c Compiler) !CompileResult {
 }
 
 // unsupported_row_subquery is the error for a row subquery (F641), which isn't
-// supported yet. It's raised when it's parsed.
-fn unsupported_row_subquery() !ExplicitRowValueConstructor {
+// supported yet. It's returned by the parser.
+fn unsupported_row_subquery() IError {
 	return sqlstate_42601('subqueries are not supported in VALUES')
 }

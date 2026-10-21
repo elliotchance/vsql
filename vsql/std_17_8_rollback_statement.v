@@ -10,7 +10,7 @@ import time
 struct RollbackStatement {
 }
 
-fn (stmt RollbackStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt RollbackStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	if !conn.in_transaction() {
@@ -68,6 +68,6 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 	}
 }
 
-fn (stmt RollbackStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt RollbackStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN ROLLBACK')
 }

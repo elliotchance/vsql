@@ -29,7 +29,7 @@ fn (e NumericValueExpression) compile(mut c Compiler) !CompileResult {
 				mut left := compiled_n.run(mut conn, data, params)!
 				mut right := compiled_term.run(mut conn, data, params)!
 
-				return eval_binary(mut conn, data, left, e.op, right, params)!
+				return eval_binary(mut conn, left, e.op, right)!
 			}
 			typ:          arithmetic_type(compiled_n.typ, compiled_term.typ, e.op)
 			contains_agg: compiled_term.contains_agg || compiled_n.contains_agg
@@ -64,7 +64,7 @@ fn (e Term) compile(mut c Compiler) !CompileResult {
 				mut left := compiled_term.run(mut conn, data, params)!
 				mut right := compiled_factor.run(mut conn, data, params)!
 
-				return eval_binary(mut conn, data, left, e.op, right, params)!
+				return eval_binary(mut conn, left, e.op, right)!
 			}
 			typ:          arithmetic_type(compiled_term.typ, compiled_factor.typ, e.op)
 			contains_agg: compiled_factor.contains_agg || compiled_term.contains_agg
@@ -196,7 +196,7 @@ fn arithmetic_type(t1 Type, t2 Type, op string) Type {
 	return t1
 }
 
-fn eval_binary(mut conn Connection, data Row, x Value, op string, y Value, params map[string]Value) !Value {
+fn eval_binary(mut conn Connection, x Value, op string, y Value) !Value {
 	mut left := x
 	mut right := y
 

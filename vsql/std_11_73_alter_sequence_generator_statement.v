@@ -94,22 +94,22 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 		sequence.unused = true
 	} else {
 		mut next_value := i64(0)
-		mut has_next_value := true
+		mut has_next := true
 		if old_sequence.unused {
 			next_value = i64(u64(old_sequence.current_value) + u64(old_sequence.increment_by))
 			sequence.current_value = i64(u64(next_value) - u64(sequence.increment_by))
 		} else {
 			next_value, sequence.exhausted = add_i64(old_sequence.current_value, sequence.increment_by)
-			has_next_value = !sequence.exhausted
+			has_next = !sequence.exhausted
 		}
 
 		// The next value must be within a new MINVALUE or MAXVALUE (9.31 Syntax
 		// Rule 12). It isn't checked against limits that aren't changed, so CYCLE
 		// or NO MAXVALUE can revive a sequence that has gone past its limit.
-		if has_next_value && new_min_value && next_value < sequence.min_value {
+		if has_next && new_min_value && next_value < sequence.min_value {
 			return sqlstate_42601('MINVALUE (${sequence.min_value}) must not be greater than the next value (${next_value})')
 		}
-		if has_next_value && new_max_value && next_value > sequence.max_value {
+		if has_next && new_max_value && next_value > sequence.max_value {
 			return sqlstate_42601('MAXVALUE (${sequence.max_value}) must not be less than the next value (${next_value})')
 		}
 	}
@@ -119,6 +119,6 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 	return new_result_msg('ALTER SEQUENCE 1', elapsed_parse, t.elapsed())
 }
 
-fn (stmt AlterSequenceGeneratorStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt AlterSequenceGeneratorStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN ALTER SEQUENCE')
 }

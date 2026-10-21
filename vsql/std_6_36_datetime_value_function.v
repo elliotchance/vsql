@@ -10,7 +10,7 @@ type DatetimeValueFunction = CurrentDate
 	| LocalTime
 	| LocalTimestamp
 
-fn (e DatetimeValueFunction) pstr(params map[string]Value) string {
+fn (e DatetimeValueFunction) pstr(_ map[string]Value) string {
 	return match e {
 		CurrentDate { 'CURRENT_DATE' }
 		CurrentTime { 'CURRENT_TIME(${e.prec})' }

@@ -33,6 +33,6 @@ fn (stmt SetCatalogStatement) execute(mut conn Connection, params map[string]Val
 	return new_result_msg('SET CATALOG 1', elapsed_parse, t.elapsed())
 }
 
-fn (stmt SetCatalogStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt SetCatalogStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN SET CATALOG')
 }

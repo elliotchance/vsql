@@ -10,7 +10,7 @@ struct DropSequenceGeneratorStatement {
 	sequence_name Identifier
 }
 
-fn (stmt DropSequenceGeneratorStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt DropSequenceGeneratorStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	conn.open_write_connection()!
@@ -26,6 +26,6 @@ fn (stmt DropSequenceGeneratorStatement) execute(mut conn Connection, params map
 	return new_result_msg('DROP SEQUENCE 1', elapsed_parse, t.elapsed())
 }
 
-fn (stmt DropSequenceGeneratorStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt DropSequenceGeneratorStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN DROP SEQUENCE')
 }

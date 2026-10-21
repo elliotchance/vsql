@@ -9,7 +9,7 @@ import time
 struct StartTransactionStatement {
 }
 
-fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt StartTransactionStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	if conn.in_transaction() {
@@ -46,6 +46,6 @@ fn (mut catalog CatalogConnection) start_transaction() ! {
 	catalog.storage.transaction_pages = map[int]bool{}
 }
 
-fn (stmt StartTransactionStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt StartTransactionStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN START TRANSACTION')
 }

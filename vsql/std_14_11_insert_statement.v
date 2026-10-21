@@ -113,6 +113,6 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 	return row
 }
 
-fn (stmt InsertStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt InsertStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN INSERT')
 }

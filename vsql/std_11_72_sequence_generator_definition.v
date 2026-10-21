@@ -43,7 +43,7 @@ struct SequenceGeneratorDefinition {
 	options []SequenceGeneratorOption
 }
 
-fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	conn.open_write_connection()!
@@ -178,6 +178,6 @@ fn (stmt SequenceGeneratorDefinition) sequence(sequence_name Identifier) Sequenc
 	}
 }
 
-fn (stmt SequenceGeneratorDefinition) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt SequenceGeneratorDefinition) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN CREATE SEQUENCE')
 }

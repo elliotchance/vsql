@@ -153,7 +153,7 @@ fn (mut f Storage) open_file(path string) ! {
 
 // open must be called after open_file and the file being locked. exclusive
 // must only be true if the file is locked exclusively.
-fn (mut f Storage) open(path string, catalog_name string, exclusive bool) ! {
+fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
 	fault_point('read_header')!
 	mut header := read_header(mut f.file)!
 	f.read_only = !exclusive

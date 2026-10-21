@@ -69,19 +69,19 @@ fn register_binary_operators(mut conn Connection) {
 	conn.binary_operators['BIGINT / BIGINT'] = binary_bigint_divide_bigint
 }
 
-fn unary_passthru(conn &Connection, v Value) !Value {
+fn unary_passthru(_ &Connection, v Value) !Value {
 	return v
 }
 
-fn unary_negate_numeric(conn &Connection, v Value) !Value {
+fn unary_negate_numeric(_ &Connection, v Value) !Value {
 	return new_numeric_value_from_numeric(v.numeric_value().neg())
 }
 
-fn unary_negate_decimal(conn &Connection, v Value) !Value {
+fn unary_negate_decimal(_ &Connection, v Value) !Value {
 	return new_decimal_value_from_numeric(v.numeric_value().neg())
 }
 
-fn unary_negate_bigint(conn &Connection, v Value) !Value {
+fn unary_negate_bigint(_ &Connection, v Value) !Value {
 	// The smallest BIGINT has no positive equivalent.
 	if v.int_value() == min_i64 {
 		return sqlstate_22003()
@@ -90,40 +90,40 @@ fn unary_negate_bigint(conn &Connection, v Value) !Value {
 	return new_bigint_value(-v.int_value())
 }
 
-fn unary_negate_smallint(conn &Connection, v Value) !Value {
+fn unary_negate_smallint(_ &Connection, v Value) !Value {
 	x := -v.int_value()
 	check_integer_range(x, .is_smallint)!
 
 	return new_smallint_value(i16(x))
 }
 
-fn unary_negate_integer(conn &Connection, v Value) !Value {
+fn unary_negate_integer(_ &Connection, v Value) !Value {
 	x := -v.int_value()
 	check_integer_range(x, .is_integer)!
 
 	return new_integer_value(int(x))
 }
 
-fn unary_negate_double_precision(conn &Connection, v Value) !Value {
+fn unary_negate_double_precision(_ &Connection, v Value) !Value {
 	return new_double_precision_value(-v.f64_value())
 }
 
-fn unary_negate_real(conn &Connection, v Value) !Value {
+fn unary_negate_real(_ &Connection, v Value) !Value {
 	return new_real_value(f32(-v.f64_value()))
 }
 
-fn binary_double_precision_plus_double_precision(conn &Connection, a Value, b Value) !Value {
+fn binary_double_precision_plus_double_precision(_ &Connection, a Value, b Value) !Value {
 	return approximate_value(a.f64_value() + b.f64_value(), .is_double_precision)
 }
 
-fn binary_integer_plus_integer(conn &Connection, a Value, b Value) !Value {
+fn binary_integer_plus_integer(_ &Connection, a Value, b Value) !Value {
 	x := i64(a.int_value() + b.int_value())
 	check_integer_range(x, .is_integer)!
 
 	return new_integer_value(int(x))
 }
 
-fn binary_bigint_plus_bigint(conn &Connection, a Value, b Value) !Value {
+fn binary_bigint_plus_bigint(_ &Connection, a Value, b Value) !Value {
 	x := big.integer_from_i64(a.as_int())
 	y := big.integer_from_i64(b.as_int())
 	z := x + y
@@ -131,18 +131,18 @@ fn binary_bigint_plus_bigint(conn &Connection, a Value, b Value) !Value {
 	return new_bigint_value(big_integer_to_i64(z))
 }
 
-fn binary_double_precision_minus_double_precision(conn &Connection, a Value, b Value) !Value {
+fn binary_double_precision_minus_double_precision(_ &Connection, a Value, b Value) !Value {
 	return approximate_value(a.f64_value() - b.f64_value(), .is_double_precision)
 }
 
-fn binary_integer_minus_integer(conn &Connection, a Value, b Value) !Value {
+fn binary_integer_minus_integer(_ &Connection, a Value, b Value) !Value {
 	x := a.int_value() - b.int_value()
 	check_integer_range(x, .is_integer)!
 
 	return new_integer_value(int(x))
 }
 
-fn binary_bigint_minus_bigint(conn &Connection, a Value, b Value) !Value {
+fn binary_bigint_minus_bigint(_ &Connection, a Value, b Value) !Value {
 	x := big.integer_from_i64(a.as_int())
 	y := big.integer_from_i64(b.as_int())
 	z := x - y
@@ -150,18 +150,18 @@ fn binary_bigint_minus_bigint(conn &Connection, a Value, b Value) !Value {
 	return new_bigint_value(big_integer_to_i64(z))
 }
 
-fn binary_double_precision_multiply_double_precision(conn &Connection, a Value, b Value) !Value {
+fn binary_double_precision_multiply_double_precision(_ &Connection, a Value, b Value) !Value {
 	return approximate_value(a.f64_value() * b.f64_value(), .is_double_precision)
 }
 
-fn binary_integer_multiply_integer(conn &Connection, a Value, b Value) !Value {
+fn binary_integer_multiply_integer(_ &Connection, a Value, b Value) !Value {
 	x := a.int_value() * b.int_value()
 	check_integer_range(x, .is_integer)!
 
 	return new_integer_value(int(x))
 }
 
-fn binary_bigint_multiply_bigint(conn &Connection, a Value, b Value) !Value {
+fn binary_bigint_multiply_bigint(_ &Connection, a Value, b Value) !Value {
 	x := big.integer_from_i64(a.as_int())
 	y := big.integer_from_i64(b.as_int())
 	z := x * y
@@ -169,7 +169,7 @@ fn binary_bigint_multiply_bigint(conn &Connection, a Value, b Value) !Value {
 	return new_bigint_value(big_integer_to_i64(z))
 }
 
-fn binary_double_precision_divide_double_precision(conn &Connection, a Value, b Value) !Value {
+fn binary_double_precision_divide_double_precision(_ &Connection, a Value, b Value) !Value {
 	if b.f64_value() == 0 {
 		return sqlstate_22012() // division by zero
 	}
@@ -177,7 +177,7 @@ fn binary_double_precision_divide_double_precision(conn &Connection, a Value, b 
 	return approximate_value(a.f64_value() / b.f64_value(), .is_double_precision)
 }
 
-fn binary_integer_divide_integer(conn &Connection, a Value, b Value) !Value {
+fn binary_integer_divide_integer(_ &Connection, a Value, b Value) !Value {
 	if b.int_value() == 0 {
 		return sqlstate_22012() // division by zero
 	}
@@ -189,7 +189,7 @@ fn binary_integer_divide_integer(conn &Connection, a Value, b Value) !Value {
 	return new_integer_value(int(x))
 }
 
-fn binary_bigint_divide_bigint(conn &Connection, a Value, b Value) !Value {
+fn binary_bigint_divide_bigint(_ &Connection, a Value, b Value) !Value {
 	if b.int_value() == 0 {
 		return sqlstate_22012() // division by zero
 	}
@@ -202,19 +202,19 @@ fn binary_bigint_divide_bigint(conn &Connection, a Value, b Value) !Value {
 	return new_bigint_value(a.int_value() / b.int_value())
 }
 
-fn binary_numeric_plus_numeric(conn &Connection, a Value, b Value) !Value {
+fn binary_numeric_plus_numeric(_ &Connection, a Value, b Value) !Value {
 	return new_numeric_value_from_numeric(a.numeric_value().add(b.numeric_value()))
 }
 
-fn binary_numeric_minus_numeric(conn &Connection, a Value, b Value) !Value {
+fn binary_numeric_minus_numeric(_ &Connection, a Value, b Value) !Value {
 	return new_numeric_value_from_numeric(a.numeric_value().subtract(b.numeric_value()))
 }
 
-fn binary_numeric_multiply_numeric(conn &Connection, a Value, b Value) !Value {
+fn binary_numeric_multiply_numeric(_ &Connection, a Value, b Value) !Value {
 	return new_numeric_value_from_numeric(a.numeric_value().multiply(b.numeric_value()))
 }
 
-fn binary_numeric_divide_numeric(conn &Connection, a Value, b Value) !Value {
+fn binary_numeric_divide_numeric(_ &Connection, a Value, b Value) !Value {
 	if b.as_f64()! == 0 {
 		return sqlstate_22012() // division by zero
 	}
@@ -222,28 +222,28 @@ fn binary_numeric_divide_numeric(conn &Connection, a Value, b Value) !Value {
 	return new_numeric_value_from_numeric(a.numeric_value().divide(b.numeric_value())!)
 }
 
-fn binary_smallint_plus_smallint(conn &Connection, a Value, b Value) !Value {
+fn binary_smallint_plus_smallint(_ &Connection, a Value, b Value) !Value {
 	x := i64(a.int_value() + b.int_value())
 	check_integer_range(x, .is_smallint)!
 
 	return new_smallint_value(i16(x))
 }
 
-fn binary_smallint_minus_smallint(conn &Connection, a Value, b Value) !Value {
+fn binary_smallint_minus_smallint(_ &Connection, a Value, b Value) !Value {
 	x := i64(a.int_value() - b.int_value())
 	check_integer_range(x, .is_smallint)!
 
 	return new_smallint_value(i16(x))
 }
 
-fn binary_smallint_multiply_smallint(conn &Connection, a Value, b Value) !Value {
+fn binary_smallint_multiply_smallint(_ &Connection, a Value, b Value) !Value {
 	x := i64(a.int_value() * b.int_value())
 	check_integer_range(x, .is_smallint)!
 
 	return new_smallint_value(i16(x))
 }
 
-fn binary_smallint_divide_smallint(conn &Connection, a Value, b Value) !Value {
+fn binary_smallint_divide_smallint(_ &Connection, a Value, b Value) !Value {
 	if b.int_value() == 0 {
 		return sqlstate_22012() // division by zero
 	}
@@ -255,19 +255,19 @@ fn binary_smallint_divide_smallint(conn &Connection, a Value, b Value) !Value {
 	return new_smallint_value(i16(x))
 }
 
-fn binary_real_plus_real(conn &Connection, a Value, b Value) !Value {
+fn binary_real_plus_real(_ &Connection, a Value, b Value) !Value {
 	return approximate_value(a.f64_value() + b.f64_value(), .is_real)
 }
 
-fn binary_real_minus_real(conn &Connection, a Value, b Value) !Value {
+fn binary_real_minus_real(_ &Connection, a Value, b Value) !Value {
 	return approximate_value(a.f64_value() - b.f64_value(), .is_real)
 }
 
-fn binary_real_multiply_real(conn &Connection, a Value, b Value) !Value {
+fn binary_real_multiply_real(_ &Connection, a Value, b Value) !Value {
 	return approximate_value(a.f64_value() * b.f64_value(), .is_real)
 }
 
-fn binary_real_divide_real(conn &Connection, a Value, b Value) !Value {
+fn binary_real_divide_real(_ &Connection, a Value, b Value) !Value {
 	if b.f64_value() == 0 {
 		return sqlstate_22012() // division by zero
 	}
@@ -275,19 +275,19 @@ fn binary_real_divide_real(conn &Connection, a Value, b Value) !Value {
 	return approximate_value(a.f64_value() / b.f64_value(), .is_real)
 }
 
-fn binary_decimal_plus_decimal(conn &Connection, a Value, b Value) !Value {
+fn binary_decimal_plus_decimal(_ &Connection, a Value, b Value) !Value {
 	return new_decimal_value_from_numeric(a.numeric_value().add(b.numeric_value()))
 }
 
-fn binary_decimal_minus_decimal(conn &Connection, a Value, b Value) !Value {
+fn binary_decimal_minus_decimal(_ &Connection, a Value, b Value) !Value {
 	return new_decimal_value_from_numeric(a.numeric_value().subtract(b.numeric_value()))
 }
 
-fn binary_decimal_multiply_decimal(conn &Connection, a Value, b Value) !Value {
+fn binary_decimal_multiply_decimal(_ &Connection, a Value, b Value) !Value {
 	return new_decimal_value_from_numeric(a.numeric_value().multiply(b.numeric_value()))
 }
 
-fn binary_decimal_divide_decimal(conn &Connection, a Value, b Value) !Value {
+fn binary_decimal_divide_decimal(_ &Connection, a Value, b Value) !Value {
 	if b.as_f64()! == 0 {
 		return sqlstate_22012() // division by zero
 	}

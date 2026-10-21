@@ -14,21 +14,21 @@ mut:
 	lock filelock.FileLock
 }
 
-fn flock_lock_exclusive(mut l DataFileLock, file os.File, path string) ! {
+fn flock_lock_exclusive(mut l DataFileLock, _ os.File, path string) ! {
 	fault_point('lock')!
 	l.lock = lock_data_file(path, .exclusive)!
 }
 
-fn flock_lock_shared(mut l DataFileLock, file os.File, path string) ! {
+fn flock_lock_shared(mut l DataFileLock, _ os.File, path string) ! {
 	fault_point('lock_shared')!
 	l.lock = lock_data_file(path, .shared)!
 }
 
-fn flock_unlock_exclusive(mut l DataFileLock, file os.File, path string) {
+fn flock_unlock_exclusive(mut l DataFileLock, _ os.File, _ string) {
 	l.lock.release()
 }
 
-fn flock_unlock_shared(mut l DataFileLock, file os.File, path string) {
+fn flock_unlock_shared(mut l DataFileLock, _ os.File, _ string) {
 	l.lock.release()
 }
 
@@ -110,7 +110,7 @@ fn fsync(file os.File, path string) ! {
 
 // fsync_dir does nothing on Windows, where changes to the entries of a
 // directory don't need to be synced separately.
-fn fsync_dir(path string) ! {
+fn fsync_dir(_ string) ! {
 }
 
 // truncate_file changes the size of a file that is open. It must be flushed

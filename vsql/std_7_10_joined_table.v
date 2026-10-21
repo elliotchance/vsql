@@ -31,7 +31,7 @@ fn (o &JoinOperation) columns() Columns {
 	return columns
 }
 
-fn (mut o JoinOperation) execute(rows []Row) ![]Row {
+fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 	left_rows := o.plan.subplans['\$1'].execute([]Row{})!
 	right_rows := o.plan.subplans['\$2'].execute([]Row{})!
 

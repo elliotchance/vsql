@@ -11,7 +11,7 @@ module vsql
 // require "this should not be possible" comments and panics.
 struct NullSpecification {}
 
-fn (e NullSpecification) pstr(params map[string]Value) string {
+fn (e NullSpecification) pstr(_ map[string]Value) string {
 	return 'NULL'
 }
 

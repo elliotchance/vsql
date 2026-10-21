@@ -27,7 +27,7 @@ fn (s TableDefinition) columns() Columns {
 
 // TODO(elliotchance): A table is allowed to have zero columns.
 
-fn (stmt TableDefinition) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
 	conn.open_write_connection()!
@@ -116,6 +116,6 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	return Table{tid, 0, table_name, columns, primary_key, false}
 }
 
-fn (stmt TableDefinition) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt TableDefinition) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN CREATE TABLE')
 }

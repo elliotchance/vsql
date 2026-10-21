@@ -36,10 +36,10 @@ fn create_plan(stmt Stmt, params map[string]Value, mut conn Connection) !Plan {
 	}
 }
 
-fn create_basic_plan(body SimpleTable, offset ?ValueSpecification, params map[string]Value, mut conn Connection, allow_virtual bool, correlation Correlation) !(Plan, map[string]Table) {
+fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connection, allow_virtual bool, correlation Correlation) !(Plan, map[string]Table) {
 	match body {
 		QuerySpecification {
-			return create_select_plan(body, offset, params, mut conn, allow_virtual)
+			return create_select_plan(body, params, mut conn, allow_virtual)
 		}
 		// VALUES
 		[]RowValueConstructor {
@@ -53,7 +53,7 @@ fn create_basic_plan(body SimpleTable, offset ?ValueSpecification, params map[st
 	}
 }
 
-fn create_select_plan(body QuerySpecification, offset ?ValueSpecification, params map[string]Value, mut conn Connection, allow_virtual bool) !(Plan, map[string]Table) {
+fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn Connection, allow_virtual bool) !(Plan, map[string]Table) {
 	from_clause := body.table_expression.from_clause
 
 	mut plan := Plan{}
@@ -61,13 +61,13 @@ fn create_select_plan(body QuerySpecification, offset ?ValueSpecification, param
 
 	match from_clause {
 		TablePrimary {
-			table_plan, table := create_select_plan_without_join(body, from_clause, offset,
+			table_plan, table := create_select_plan_without_join(body, from_clause,
 				params, mut conn, allow_virtual, true)!
 			plan = table_plan
 			tables[table.name.id()] = table
 		}
 		QualifiedJoin {
-			plan = create_join_plan(body, from_clause, offset, params, mut conn, allow_virtual, mut
+			plan = create_join_plan(body, from_clause, params, mut conn, allow_virtual, mut
 				tables)!
 
 			// The WHERE clause applies to the joined rows, so it can't be used to
@@ -112,11 +112,11 @@ fn create_select_plan(body QuerySpecification, offset ?ValueSpecification, param
 // create_join_plan joins two table references. Either side may itself be a
 // join, such as "t1 LEFT JOIN t2 ON ... LEFT JOIN t3 ON ...". Each table used is
 // added to tables.
-fn create_join_plan(body QuerySpecification, join QualifiedJoin, offset ?ValueSpecification, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]Table) !Plan {
+fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]Table) !Plan {
 	mut plan := Plan{}
-	plan.subplans['\$1'] = create_table_reference_plan(body, join.left_table, offset,
+	plan.subplans['\$1'] = create_table_reference_plan(body, join.left_table,
 		params, mut conn, allow_virtual, mut tables)!
-	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table, offset,
+	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table,
 		params, mut conn, allow_virtual, mut tables)!
 
 	plan.operations << new_join_operation(plan.subplans['\$1'].columns(), join.join_type,
@@ -125,10 +125,10 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, offset ?ValueSp
 	return plan
 }
 
-fn create_table_reference_plan(body QuerySpecification, table_reference TableReference, offset ?ValueSpecification, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]Table) !Plan {
+fn create_table_reference_plan(body QuerySpecification, table_reference TableReference, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]Table) !Plan {
 	match table_reference {
 		TablePrimary {
-			plan, table := create_select_plan_without_join(body, table_reference, offset,
+			plan, table := create_select_plan_without_join(body, table_reference,
 				params, mut conn, allow_virtual, false)!
 
 			// Rows store each value by its table and column name, so the same
@@ -146,7 +146,7 @@ fn create_table_reference_plan(body QuerySpecification, table_reference TableRef
 			return plan
 		}
 		QualifiedJoin {
-			return create_join_plan(body, table_reference, offset, params, mut conn,
+			return create_join_plan(body, table_reference, params, mut conn,
 				allow_virtual, mut tables)
 		}
 	}
@@ -155,7 +155,7 @@ fn create_table_reference_plan(body QuerySpecification, table_reference TableRef
 // create_select_plan_without_join reads the rows of one table. The WHERE clause
 // is only applied (and used to choose a primary key lookup) with filter, when
 // the table is the whole FROM clause.
-fn create_select_plan_without_join(body QuerySpecification, from_clause TablePrimary, offset ?ValueSpecification, params map[string]Value, mut conn Connection, allow_virtual bool, filter bool) !(Plan, Table) {
+fn create_select_plan_without_join(body QuerySpecification, from_clause TablePrimary, params map[string]Value, mut conn Connection, allow_virtual bool, filter bool) !(Plan, Table) {
 	mut plan := Plan{}
 	mut covered_by_pk := false
 	mut table := Table{}
@@ -339,7 +339,7 @@ fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut
 		}
 	}
 
-	plan, _ := create_select_plan(select_stmt, none, params, mut conn, false)!
+	plan, _ := create_select_plan(select_stmt, params, mut conn, false)!
 
 	return plan
 }
@@ -355,13 +355,13 @@ fn create_update_plan(stmt UpdateStatementSearched, params map[string]Value, mut
 		}
 	}
 
-	plan, _ := create_select_plan(select_stmt, none, params, mut conn, false)!
+	plan, _ := create_select_plan(select_stmt, params, mut conn, false)!
 
 	return plan
 }
 
 fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, mut conn Connection, correlation Correlation) !Plan {
-	mut plan, tables := create_basic_plan(stmt.body, stmt.offset, params, mut conn, true,
+	mut plan, tables := create_basic_plan(stmt.body, params, mut conn, true,
 		correlation)!
 
 	if stmt.order.len > 0 {

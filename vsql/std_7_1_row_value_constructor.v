@@ -108,7 +108,7 @@ fn (r RowValueConstructor) eval_row(mut conn Connection, data Row, params map[st
 	}
 }
 
-fn (e ExplicitRowValueConstructor) compile(mut c Compiler) !CompileResult {
+fn (e ExplicitRowValueConstructor) compile(mut _ Compiler) !CompileResult {
 	// ExplicitRowValueConstructor should never make it to eval because it will
 	// be reformatted into a ValuesOperation.
 	return sqlstate_42601('missing or invalid expression provided')

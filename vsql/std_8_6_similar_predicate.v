@@ -447,14 +447,14 @@ fn (n RegularNode) ends(s []rune, starts []bool) []bool {
 			}
 
 			ends = current.clone()
-			mut count := n.min
-			for n.max == -1 || count < n.max {
+			mut repeats := n.min
+			for n.max == -1 || repeats < n.max {
 				next := child.ends(s, current)
 				if next == current || !next.any(it) {
 					break
 				}
 				current = next.clone()
-				count++
+				repeats++
 
 				for i in 0 .. ends.len {
 					ends[i] = ends[i] || current[i]

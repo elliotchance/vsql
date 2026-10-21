@@ -474,7 +474,7 @@ fn numeric_literal_kind(s string) NumericLiteralKind {
 	return .approximate
 }
 
-fn cast_numeric(mut conn Connection, v Value, t Type) !Value {
+fn cast_numeric(mut _ Connection, v Value, t Type) !Value {
 	// It would be more efficient to build a matrix of every combination, but for
 	// now it's easier to convert to a lossless number then the final destination
 	// type.
@@ -561,7 +561,7 @@ fn check_integer_range(x i64, typ SQLType) ! {
 }
 
 // '2022-06-30' => '2022-06-30 00:00:00.000000'
-fn cast_date_to_timestamp_without(conn &Connection, v Value, to Type) !Value {
+fn cast_date_to_timestamp_without(_ &Connection, v Value, to Type) !Value {
 	return new_timestamp_value(v.time_value().str_full_timestamp(to.size, false, true))
 }
 
@@ -572,7 +572,7 @@ fn cast_date_to_timestamp_with(conn &Connection, v Value, to Type) !Value {
 }
 
 // '12:34:56.000000+0500' => '12:34:56.000000'
-fn cast_time_with_to_time_without(conn &Connection, v Value, to Type) !Value {
+fn cast_time_with_to_time_without(_ &Connection, v Value, to Type) !Value {
 	return new_time_value(v.time_value().str_full_time(to.size, false, true))
 }
 
@@ -615,42 +615,42 @@ fn cast_time_without_to_timestamp_without(conn &Connection, v Value, to Type) !V
 }
 
 // '2022-06-30 12:34:56.999999+0500' => '2022-06-30'
-fn cast_timestamp_with_to_date(conn &Connection, v Value, to Type) !Value {
+fn cast_timestamp_with_to_date(_ &Connection, v Value, _ Type) !Value {
 	return new_date_value(v.time_value().str_date())
 }
 
 // '2022-06-30 12:34:56.999999+0500' => '12:34:56.999999+0500'
-fn cast_timestamp_with_to_time_with(conn &Connection, v Value, to Type) !Value {
+fn cast_timestamp_with_to_time_with(_ &Connection, v Value, to Type) !Value {
 	return new_time_value(v.time_value().str_full_time(to.size, true, true))
 }
 
 // '2022-06-30 12:34:56.999999+0500' => '12:34:56.999999'
-fn cast_timestamp_with_to_time_without(conn &Connection, v Value, to Type) !Value {
+fn cast_timestamp_with_to_time_without(_ &Connection, v Value, to Type) !Value {
 	return new_time_value(v.time_value().str_full_time(to.size, false, true))
 }
 
 // '2022-06-30 12:34:56.999999+0500' => '2022-06-30 12:34:56.999999'
-fn cast_timestamp_with_to_timestamp_without(conn &Connection, v Value, to Type) !Value {
+fn cast_timestamp_with_to_timestamp_without(_ &Connection, v Value, to Type) !Value {
 	return new_timestamp_value(v.time_value().str_full_timestamp(to.size, false, true))
 }
 
 // '12:34:56.999999+0500' => '12:34:56.999999+0500'
-fn cast_time_with_to_time_with(conn &Connection, v Value, to Type) !Value {
+fn cast_time_with_to_time_with(_ &Connection, v Value, to Type) !Value {
 	return new_time_value(v.time_value().str_full_time(to.size, true, true))
 }
 
 // '12:34:56.999999' => '12:34:56.999999'
-fn cast_time_without_to_time_without(conn &Connection, v Value, to Type) !Value {
+fn cast_time_without_to_time_without(_ &Connection, v Value, to Type) !Value {
 	return new_time_value(v.time_value().str_full_time(to.size, false, true))
 }
 
 // '2022-06-30 12:34:56.999999+0500' => '2022-06-30 12:34:56.999999+0500'
-fn cast_timestamp_with_to_timestamp_with(conn &Connection, v Value, to Type) !Value {
+fn cast_timestamp_with_to_timestamp_with(_ &Connection, v Value, to Type) !Value {
 	return new_timestamp_value(v.time_value().str_full_timestamp(to.size, true, true))
 }
 
 // '2022-06-30 12:34:56.999999' => '2022-06-30'
-fn cast_timestamp_without_to_date(conn &Connection, v Value, to Type) !Value {
+fn cast_timestamp_without_to_date(_ &Connection, v Value, _ Type) !Value {
 	return new_date_value(v.time_value().str_date())
 }
 
@@ -660,7 +660,7 @@ fn cast_timestamp_without_to_time_with(conn &Connection, v Value, to Type) !Valu
 }
 
 // '2022-06-30 12:34:56.999999' => '12:34:56.999999'
-fn cast_timestamp_without_to_time_without(conn &Connection, v Value, to Type) !Value {
+fn cast_timestamp_without_to_time_without(_ &Connection, v Value, to Type) !Value {
 	return new_time_value(v.time_value().str_full_time(to.size, false, true))
 }
 
@@ -671,7 +671,7 @@ fn cast_timestamp_without_to_timestamp_with(conn &Connection, v Value, to Type) 
 }
 
 // '2022-06-30 12:34:56.999999' => '2022-06-30 12:34:56.999999'
-fn cast_timestamp_without_to_timestamp_without(conn &Connection, v Value, to Type) !Value {
+fn cast_timestamp_without_to_timestamp_without(_ &Connection, v Value, to Type) !Value {
 	return new_timestamp_value(v.time_value().str_full_timestamp(to.size, false, true))
 }
 

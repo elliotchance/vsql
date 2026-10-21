@@ -9,7 +9,7 @@ struct NextValueExpression {
 	name Identifier
 }
 
-fn (e NextValueExpression) pstr(params map[string]Value) string {
+fn (e NextValueExpression) pstr(_ map[string]Value) string {
 	return 'NEXT VALUE FOR ${e.name}'
 }
 

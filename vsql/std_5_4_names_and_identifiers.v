@@ -462,7 +462,7 @@ pub fn (e Identifier) storage_sql() string {
 	return parts.join('.')
 }
 
-fn (e Identifier) pstr(params map[string]Value) string {
+fn (e Identifier) pstr(_ map[string]Value) string {
 	return e.str()
 }
 

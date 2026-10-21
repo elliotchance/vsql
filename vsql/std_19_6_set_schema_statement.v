@@ -33,6 +33,6 @@ fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Valu
 	return new_result_msg('SET SCHEMA 1', elapsed_parse, t.elapsed())
 }
 
-fn (stmt SetSchemaStatement) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt SetSchemaStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN SET SCHEMA')
 }

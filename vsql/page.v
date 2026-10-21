@@ -144,7 +144,7 @@ fn (p Page) page_size() int {
 
 // TODO(elliotchance): This really isn't the most efficient way to do this. Make
 //  me faster. Especially since the calls down will recount versions again, etc.
-fn (mut p Page) update(old PageObject, new PageObject, tid u64) ! {
+fn (mut p Page) update(old PageObject, tid u64) ! {
 	mut objects := p.objects()
 	old_versions := p.versions(old.key, objects)
 	match old_versions.len {

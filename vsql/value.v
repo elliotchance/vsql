@@ -36,7 +36,7 @@ pub mut:
 	v InternalValue
 }
 
-fn (e Value) compile(mut c Compiler) !CompileResult {
+fn (e Value) compile(mut _ Compiler) !CompileResult {
 	return CompileResult{
 		run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
 			return e
@@ -361,7 +361,7 @@ fn (v Value) as_numeric() !Numeric {
 	return new_numeric_from_string(s)
 }
 
-fn (v Value) pstr(params map[string]Value) string {
+fn (v Value) pstr(_ map[string]Value) string {
 	// A datetime is shown as a literal, such as DATE '2022-06-30', rather than a
 	// character string.
 	if v.typ.typ.is_datetime() && !v.is_null {

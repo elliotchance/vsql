@@ -116,7 +116,7 @@ fn (mut p Btree) update(old PageObject, new PageObject, tid u64) ![]int {
 	// If the pages are the same and we're updating an in-flight row we need to
 	// actually delete the existing row.
 	if compare_bytes(old.key, new.key) == 0 {
-		page_number := p.update_single(new, tid)!
+		page_number := p.update_single(new)!
 
 		return [page_number]
 	}
@@ -134,7 +134,7 @@ fn (mut p Btree) update(old PageObject, new PageObject, tid u64) ![]int {
 	return page_numbers
 }
 
-fn (mut p Btree) update_single(obj PageObject, tid u64) !int {
+fn (mut p Btree) update_single(obj PageObject) !int {
 	// Find the page that would contain our old object (if it exists).
 	mut path, _ := p.search_page(obj.key)!
 	page_number := path[path.len - 1]
@@ -145,7 +145,7 @@ fn (mut p Btree) update_single(obj PageObject, tid u64) !int {
 	// because the blob objects of both versions would have the same keys and
 	// tid.
 	own_version := page.get(obj.key, obj.tid)
-	page.update(obj, obj, obj.tid)!
+	page.update(obj, obj.tid)!
 	p.store_page(page_number, page)!
 	if own_version.is_blob_ref {
 		p.remove_blob(own_version)!

@@ -241,7 +241,7 @@ fn (mut conn CatalogConnection) open_read_connection() ! {
 			return err
 		}
 	}
-	conn.storage.open(conn.path, conn.catalog_name, false) or {
+	conn.storage.open(conn.catalog_name, false) or {
 		flock_unlock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.runlock()
@@ -278,7 +278,7 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 		conn.options.mutex.unlock()
 		return err
 	}
-	conn.storage.open(conn.path, conn.catalog_name, true) or {
+	conn.storage.open(conn.catalog_name, true) or {
 		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.unlock()
@@ -591,21 +591,21 @@ fn implicit_numeric_cast_cost(from SQLType, to SQLType) ?int {
 // expressions.
 pub fn (mut conn Connection) register_function(prototype string, func fn ([]Value) !Value) ! {
 	// The prototype is "name(type, ...) type".
-	open := prototype.index('(') or { -1 }
-	close := prototype.last_index(')') or { -1 }
-	if open < 1 || close < open || prototype[close + 1..].trim_space() == '' {
+	open_paren := prototype.index('(') or { -1 }
+	close_paren := prototype.last_index(')') or { -1 }
+	if open_paren < 1 || close_paren < open_paren || prototype[close_paren + 1..].trim_space() == '' {
 		return sqlstate_42601('invalid function prototype: ${prototype}')
 	}
 
-	function_name := new_function_identifier(prototype[..open].trim_space())!.entity_name
+	function_name := new_function_identifier(prototype[..open_paren].trim_space())!.entity_name
 	mut arg_types := []Type{}
-	for arg in prototype[open + 1..close].split(',') {
+	for arg in prototype[open_paren + 1..close_paren].split(',') {
 		if arg.trim_space() != '' {
 			arg_types << type_from_name(arg.trim_space().to_upper(), 0, 0)!
 		}
 	}
 
-	return_type := type_from_name(prototype[close + 1..].trim_space().to_upper(), 0, 0)!
+	return_type := type_from_name(prototype[close_paren + 1..].trim_space().to_upper(), 0, 0)!
 	conn.register_func(Func{function_name, arg_types, false, func, return_type, true})!
 }
 

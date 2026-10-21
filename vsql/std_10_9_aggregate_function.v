@@ -49,14 +49,14 @@ fn non_null_values(values []Value) []Value {
 
 // COUNT(ANY) INTEGER
 fn func_count(values []Value) !Value {
-	mut count := 0
+	mut non_null := 0
 	for value in values {
 		if !value.is_null {
-			count++
+			non_null++
 		}
 	}
 
-	return new_integer_value(count)
+	return new_integer_value(non_null)
 }
 
 // MIN(DOUBLE PRECISION) DOUBLE PRECISION

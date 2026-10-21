@@ -724,16 +724,6 @@ fn (mut y Vyacc) setup() ! {
 	}
 	y.ftable.write_string(']\n')!
 
-	// put out names of states.
-	// commented out to avoid a huge table just for debugging.
-	// re-enable to have the names in the binary.
-	y.ftable.write_string('\n')!
-	y.ftable.write_string('const ${y.prefix}_statenames = [\n')!
-	for j = tokstart; j <= y.ntokens; j++ {
-		y.ftable.write_string('\t"${y.tokset[j].name}",\n')!
-	}
-	y.ftable.write_string(']\n')!
-
 	y.ftable.write_string('\n')!
 	y.ftable.write_string('const ${y.prefix}_eof_code = 1\n')!
 	y.ftable.write_string('const ${y.prefix}_err_code = 2\n')!
@@ -2904,23 +2894,12 @@ fn (mut y Vyacc) others() ! {
 	y.arout('_tok3', v, v.len)!
 	y.ftable.write_string('\n')!
 
-	// Custom error messages.
-	y.ftable.write_string('\n')!
-	y.ftable.write_string('struct ErrorMessage {\n')!
-	y.ftable.write_string('\tstate int\n')!
-	y.ftable.write_string('\ttoken int\n')!
-	y.ftable.write_string('\tmsg   string\n')!
-	y.ftable.write_string('}\n\n')!
-	if y.errors.len == 0 {
-		y.ftable.write_string('const ${y.prefix}_error_messages = []ErrorMessage{}\n')!
-	} else {
-		y.ftable.write_string('const ${y.prefix}_error_messages = [\n')!
-		for _, err in y.errors {
-			y.lineno = err.lineno
-			state, token := y.run_machine(err.tokens)
-			y.ftable.write_string('\tErrorMessage{${state}, ${token}, ${err.msg}},\n')!
-		}
-		y.ftable.write_string(']\n')!
+	// Support for custom error messages (%error) was removed because vsql
+	// doesn't use them. See https://github.com/elliotchance/vsql/pull/495 to
+	// restore them if they're needed.
+	if y.errors.len > 0 {
+		y.lineno = y.errors[0].lineno
+		y.errorf('%error is not supported')
 	}
 
 	// copy parser text
@@ -3237,20 +3216,18 @@ fn unquote(s string) !string {
 
 const yaccpartext = '
 // parser for yacc output
-
-const $\$_debug        = 0
-const $\$_error_verbose = true
+//
+// The parser stops at the first syntax error, so there is no error recovery.
 
 interface YYLexer {
 mut:
 	lex(mut lval YYSymType) int
-	error(s string)!
+	error(s string) IError
 }
 
 interface YYParser {
 mut:
 	parse(mut YYLexer) !int
-	lookahead() int
 }
 
 struct YYParserImpl {
@@ -3260,47 +3237,21 @@ mut:
 	char  int
 }
 
-fn (mut p YYParserImpl) lookahead() int {
-	return p.char
-}
-
 fn $\$_new_parser() YYParser {
 	return YYParserImpl{}
 }
 
 const $\$_flag = -1000
 
+// $\$_tokname is only given tokens from the lexer and the tables, so they all
+// have a name.
 fn $\$_tokname(c int) string {
-	if c >= 1 && c-1 < $\$_toknames.len {
-		if $\$_toknames[c-1] != "" {
-			return $\$_toknames[c-1]
-		}
-	}
-	return "tok-\$c"
-}
-
-fn $\$_statname(s int) string {
-	if s >= 0 && s < $\$_statenames.len {
-		if $\$_statenames[s] != "" {
-			return $\$_statenames[s]
-		}
-	}
-	return "state-\$s"
+	return $\$_toknames[c-1]
 }
 
 const tokstart = 4
 
 fn $\$_error_message(state int, look_ahead int) string {
-	if !$\$_error_verbose {
-		return "syntax error"
-	}
-
-	for e in $\$_error_messages {
-		if e.state == state && e.token == look_ahead {
-			return "syntax error: " + e.msg
-		}
-	}
-
 	mut res := "syntax error: unexpected " + $\$_tokname(look_ahead)
 
 	// To match Bison, suggest at most four expected tokens.
@@ -3318,30 +3269,6 @@ fn $\$_error_message(state int, look_ahead int) string {
 		}
 	}
 
-	if $\$_def[state] == -2 {
-		mut i := 0
-		for $\$_exca[i] != -1 || int($\$_exca[i+1]) != state {
-			i += 2
-		}
-
-		// Look for tokens that we accept or reduce.
-		for i += 2; $\$_exca[i] >= 0; i += 2 {
-			tok := int($\$_exca[i])
-			if tok < tokstart || $\$_exca[i+1] == 0 {
-				continue
-			}
-			if expected.len == expected.cap {
-				return res
-			}
-			expected << tok
-		}
-
-		// If the default action is to accept or reduce, give up.
-		if $\$_exca[i+1] != 0 {
-			return res
-		}
-	}
-
 	for i, tok in expected {
 		if i == 0 {
 			res += ", expecting "
@@ -3354,38 +3281,18 @@ fn $\$_error_message(state int, look_ahead int) string {
 }
 
 fn $\$lex1(mut lex YYLexer, mut lval YYSymType) (int, int) {
-	mut token := 0
-	mut ch := lex.lex(mut lval)
+	ch := lex.lex(mut lval)
 	if ch <= 0 {
-		token = int($\$_tok1[0])
-		unsafe { goto out }
+		return ch, int($\$_tok1[0])
 	}
-	if ch < $\$_tok1.len {
-		token = int($\$_tok1[ch])
-		unsafe { goto out }
+	if ch < $\$_private+$\$_tok2.len {
+		return ch, int($\$_tok2[ch-$\$_private])
 	}
-	if ch >= $\$_private {
-		if ch < $\$_private+$\$_tok2.len {
-			token = int($\$_tok2[ch-$\$_private])
-			unsafe { goto out }
-		}
+	mut i := 0
+	for int($\$_tok3[i]) != ch {
+		i += 2
 	}
-	for i := 0; i < $\$_tok3.len; i += 2 {
-		token = int($\$_tok3[i+0])
-		if token == ch {
-			token = int($\$_tok3[i+1])
-			unsafe { goto out }
-		}
-	}
-
-out:
-	if token == 0 {
-		token = int($\$_tok2[1]) // unknown char
-	}
-	if $\$_debug >= 3 {
-		println("lex \${$\$_tokname(token)}(\${u8(ch)})")
-	}
-	return ch, token
+	return ch, int($\$_tok3[i+1])
 }
 
 fn $\$_parse(mut $\$lex YYLexer) !int {
@@ -3400,8 +3307,6 @@ fn (mut $\$rcvr YYParserImpl) parse(mut $\$lex YYLexer) !int {
 	_ = $\$_dollar // silence set and not used
 	mut $\$_s := $\$rcvr.stack[..].clone()
 
-	mut n_errs := 0   // number of errors
-	mut err_flag := 0 // error recovery flag
 	mut $\$state := 0
 	$\$rcvr.char = -1
 	mut $\$token := -1 // $\$rcvr.char translated into internal numbering
@@ -3417,17 +3322,11 @@ fn (mut $\$rcvr YYParserImpl) parse(mut $\$lex YYLexer) !int {
 ret0:
 	return 0
 
-ret1:
-	return 1
-
 $\$stack:
-	// put a state and value onto the stack
-	if $\$_debug >= 4 {
-		println("char \${$\$_tokname($\$token)} in \${$\$_statname($\$state)}")
-	}
-
+	// put a state and value onto the stack. There is always one more slot so
+	// that \$1 of an ε production is in range after a reduction.
 	$\$p++
-	if $\$p >= $\$_s.len {
+	if $\$p+1 >= $\$_s.len {
 		mut nyys := []YYSymType{len: $\$_s.len*2}
 		gocopy(mut nyys, $\$_s)
 		$\$_s = nyys.clone()
@@ -3435,7 +3334,6 @@ $\$stack:
 	$\$_s[$\$p] = $\$_val
 	$\$_s[$\$p].yys = $\$state
 
-$\$newstate:
 	$\$n = int($\$_pact[$\$state])
 	if $\$n <= $\$_flag {
 		unsafe {
@@ -3456,9 +3354,6 @@ $\$newstate:
 		$\$token = -1
 		$\$_val = $\$rcvr.lval
 		$\$state = $\$n
-		if err_flag > 0 {
-			err_flag--
-		}
 		unsafe { goto $\$stack }
 	}
 
@@ -3490,101 +3385,16 @@ $\$default:
 		}
 	}
 	if $\$n == 0 {
-		// error ... attempt to resume parsing
-		match err_flag {
-		0 {
-			// brand new error
-			$\$lex.error($\$_error_message($\$state, $\$token))!
-			n_errs++
-			if $\$_debug >= 1 {
-				print($\$_statname($\$state))
-				println(" saw \${$\$_tokname($\$token)}")
-			}
-
-			// Note: fallthrough copies the next case:
-			err_flag = 3
-
-			// find a state where "error" is a legal shift action
-			for $\$p >= 0 {
-				$\$n = int($\$_pact[$\$_s[$\$p].yys]) + $\$_err_code
-				if $\$n >= 0 && $\$n < $\$_last {
-					$\$state = int($\$_act[$\$n]) // simulate a shift of "error"
-					if int($\$_chk[$\$state]) == $\$_err_code {
-						unsafe { goto $\$stack }
-					}
-				}
-
-				// the current p has no shift on "error", pop stack
-				if $\$_debug >= 2 {
-					println("error recovery pops state \${$\$_s[$\$p].yys}")
-				}
-				$\$p--
-			}
-			// there is no state on the stack with an error shift ... abort
-			unsafe { goto ret1 }
-		}
-
-		1, 2 {
-			// incompletely recovered error ... try again
-			err_flag = 3
-
-			// find a state where "error" is a legal shift action
-			for $\$p >= 0 {
-				$\$n = int($\$_pact[$\$_s[$\$p].yys]) + $\$_err_code
-				if $\$n >= 0 && $\$n < $\$_last {
-					$\$state = int($\$_act[$\$n]) // simulate a shift of "error"
-					if int($\$_chk[$\$state]) == $\$_err_code {
-						unsafe { goto $\$stack }
-					}
-				}
-
-				// the current p has no shift on "error", pop stack
-				if $\$_debug >= 2 {
-					println("error recovery pops state \${$\$_s[$\$p].yys}")
-				}
-				$\$p--
-			}
-			// there is no state on the stack with an error shift ... abort
-			unsafe { goto ret1 }
-		}
-
-		3 {
-			// no shift yet; clobber input char
-			if $\$_debug >= 2 {
-				println("error recovery discards \${$\$_tokname($\$token)}")
-			}
-			if $\$token == $\$_eof_code {
-				unsafe { goto ret1 }
-			}
-			$\$rcvr.char = -1
-			$\$token = -1
-			unsafe {
-				goto $\$newstate
-				// try again in the same state
-			}
-		}
-
-		else {}
-		}
+		return $\$lex.error($\$_error_message($\$state, $\$token))
 	}
 
 	// reduction by production $\$n
-	if $\$_debug >= 2 {
-		println("reduce \${$\$n} in:\\n\\t\${$\$_statname($\$state)}")
-	}
-
 	$\$nt := $\$n
 	$\$pt := $\$p
 	_ = $\$pt // guard against "declared and not used"
 
 	$\$p -= int($\$_r2[$\$n])
-	// $\$p is now the index of \$0. Perform the default action. Iff the
-	// reduced production is ε, \$1 is possibly out of range.
-	if $\$p+1 >= $\$_s.len {
-		mut nyys := []YYSymType{len: $\$_s.len*2}
-		gocopy(mut nyys, $\$_s)
-		$\$_s = nyys.clone()
-	}
+	// $\$p is now the index of \$0. Perform the default action.
 	$\$_val = $\$_s[$\$p+1]
 
 	// consult goto table to find next state
@@ -3592,13 +3402,9 @@ $\$default:
 	$\$g := int($\$_pgo[$\$n])
 	$\$j := $\$g + $\$_s[$\$p].yys + 1
 
-	if $\$j >= $\$_last {
-		$\$state = int($\$_act[$\$g])
-	} else {
+	$\$state = int($\$_act[$\$g])
+	if $\$j < $\$_last && int($\$_chk[int($\$_act[$\$j])]) == -$\$n {
 		$\$state = int($\$_act[$\$j])
-		if int($\$_chk[$\$state]) != -$\$n {
-			$\$state = int($\$_act[$\$g])
-		}
 	}
 	// dummy call; replaced with literal code
 	$\$run()

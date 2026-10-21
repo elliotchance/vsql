@@ -106,6 +106,26 @@ SELECT * FROM foo;
 -- msg: UPDATE 1
 -- BAZ: -516.6e0
 
+-- # Only the table being updated is in scope, so a column of another table (or
+-- # a table that doesn't exist) can't be used, even if the table being updated
+-- # has a column with the same name.
+CREATE TABLE t (x INT, y INT);
+CREATE TABLE u (y INT, z INT);
+INSERT INTO t (x, y) VALUES (1, 100);
+UPDATE t SET x = u.y;
+UPDATE t SET x = nosuch.y;
+UPDATE t SET x = u.z;
+UPDATE t SET x = public.t.y + 1;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 42P01: no such table: ":memory:".PUBLIC.U
+-- error 42P01: no such table: ":memory:".PUBLIC.NOSUCH
+-- error 42P01: no such table: ":memory:".PUBLIC.U
+-- msg: UPDATE 1
+-- X: 101 Y: 100
+
 UPDATE foo.bar SET baz = baz * 4.2;
 -- error 3F000: invalid schema name: FOO
 

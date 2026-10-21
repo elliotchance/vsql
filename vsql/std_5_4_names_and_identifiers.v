@@ -296,7 +296,22 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		}
 	}
 
-	// 3. Try to use the context.
+	// 3. Try to use the context, which is the table of an UPDATE. Only that
+	// table is in scope, so a column qualified with another table isn't a column
+	// of it.
+	if c.context.entity_name != '' && e.entity_name != '' {
+		qualifier := c.conn.resolve_identifier(Identifier{
+			catalog_name: e.catalog_name
+			schema_name:  e.schema_name
+			entity_name:  e.entity_name
+		})
+		if qualifier.catalog_name != c.context.catalog_name
+			|| qualifier.schema_name != c.context.schema_name
+			|| qualifier.entity_name != c.context.entity_name {
+			return sqlstate_42p01('table', qualifier.str())
+		}
+	}
+
 	mut ident := c.conn.resolve_identifier(Identifier{
 		catalog_name:    if c.context.catalog_name != '' {
 			c.context.catalog_name
@@ -370,28 +385,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		}
 	}
 
-	// 4. A qualified table field.
-	if e.entity_name != '' {
-		for _, table in catalog.storage.tables {
-			if table.name.schema_name == ident.schema_name
-				&& table.name.entity_name == ident.entity_name {
-				column := table.column(ident.sub_entity_name) or { Column{} }
-				if column.name.sub_entity_name == ident.sub_entity_name {
-					return CompileResult{
-						run:          fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
-							return data.data[ident.id()] or {
-								return sqlstate_42601('unknown column: ${ident}')
-							}
-						}
-						typ:          column.typ
-						contains_agg: false
-					}
-				}
-			}
-		}
-	}
-
-	// 5. A bare table field. A qualified name that didn't match a table above
+	// 4. A bare table field. A qualified name that didn't match a table above
 	// isn't one (its qualifier mustn't be ignored).
 	//
 	// TODO(elliotchance): Check for ambiguous field name.

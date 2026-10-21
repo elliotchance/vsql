@@ -1,6 +1,7 @@
 module main
 
 import cli
+import os
 import vsql
 
 fn register_out_command(mut cmd cli.Command) {
@@ -23,67 +24,8 @@ fn register_out_command(mut cmd cli.Command) {
 
 fn out_command(cmd cli.Command) ! {
 	mut db := vsql.open(cmd.args[0])!
-	mut catalog := db.catalog()
-	mut schemas := catalog.schemas()!
-
-	// To make the output more deterministic, entities will be ordered by name.
-	// This is not true for the records however, which can potentially come out in
-	// any order.
-	schemas.sort_with_compare(fn (a &vsql.Schema, b &vsql.Schema) int {
-		return compare_strings(a.name, b.name)
-	})
-
-	for _, schema in schemas {
-		// We avoid "CREATE SCHEMA PUBLIC;" because it would break the import.
-		// Although, `-create-public-schema` can be used to enable it when
-		// dealing with other databases.
-		if schema.name != 'PUBLIC' || cmd.flags.get_bool('create-public-schema') or { false } {
-			println('${schema}\n')
-		}
-
-		mut sequences := catalog.sequences(schema.name)!
-		sequences.sort_with_compare(fn (a &vsql.Sequence, b &vsql.Sequence) int {
-			return compare_strings(a.name.str(), b.name.str())
-		})
-
-		for _, sequence in sequences {
-			println('${sequence}\n')
-
-			// START WITH is kept for RESTART, so the current position (if it has
-			// moved) needs to be restored separately.
-			name := sequence.name.storage_sql()
-			if next_value := sequence.next_value() {
-				if next_value != sequence.start_value {
-					println('ALTER SEQUENCE ${name} RESTART WITH ${next_value};\n')
-				}
-			} else {
-				// The sequence has gone past its limit, so the next value can't be
-				// used with RESTART. Instead, the last value is returned again.
-				println('ALTER SEQUENCE ${name} RESTART WITH ${sequence.current_value};')
-				println('VALUES NEXT VALUE FOR ${name};\n')
-			}
-		}
-
-		mut tables := catalog.schema_tables(schema.name) or { return err }
-		tables.sort_with_compare(fn (a &vsql.Table, b &vsql.Table) int {
-			return compare_strings(a.name.str(), b.name.str())
-		})
-
-		for _, table in tables {
-			println('${table}\n')
-
-			name := table.name.storage_sql()
-			columns := table.column_names().map('"${it}"').join(', ')
-			for row in db.query('SELECT * FROM ${name}')! {
-				mut data := []string{}
-				for col in table.column_names() {
-					data << (row.get(col)!).literal()
-				}
-
-				println('INSERT INTO ${name} (${columns}) VALUES (${data.join(', ')});')
-			}
-
-			println('')
-		}
-	}
+	mut stdout := os.stdout()
+	db.dump(mut stdout,
+		create_public_schema: cmd.flags.get_bool('create-public-schema') or { false }
+	)!
 }

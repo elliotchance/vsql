@@ -41,12 +41,7 @@ fn cli_command(cmd cli.Command) ! {
 		}
 
 		if raw_query != '' {
-			// TODO: This is a very poor way to handle multiple queries.
-			for i, query in raw_query.split(';') {
-				if query.trim_space() == '' {
-					continue
-				}
-
+			for i, query in vsql.split_statements(raw_query) {
 				start := time.ticks()
 				db.clear_warnings()
 				result := db.query(query) or {

@@ -401,6 +401,33 @@ The query is run when the virtual table is registered. If it can't be
 registered, the error is in the output. The ``pg_database`` virtual table that
 the server registers for PostgreSQL clients is also registered for each test.
 
+Dump and Restore
+^^^^^^^^^^^^^^^^
+
+The ``out`` directive dumps the database like ``vsql out`` (see :doc:`cli`).
+Each line of the dump is in the output, after ``out:``. The ``in`` directive
+then replaces the database with a new one, which the last dump is loaded into
+like ``vsql in``. Only the errors from loading the dump are in the output. The
+statements after it use the restored database, so they can check that it's the
+same:
+
+.. code-block:: sql
+
+   CREATE TABLE t (x INT);
+   INSERT INTO t (x) VALUES (1);
+   /* out */
+   /* in */
+   SELECT * FROM t;
+   -- msg: CREATE TABLE 1
+   -- msg: INSERT 1
+   -- out: CREATE TABLE "PUBLIC"."T" (
+   -- out:   "X" INTEGER
+   -- out: );
+   -- out: INSERT INTO "PUBLIC"."T" ("X") VALUES (1);
+   -- X: 1
+
+``out`` and ``in`` can't be used with the ``connection`` directive.
+
 Multiple Catalogs
 ^^^^^^^^^^^^^^^^^
 

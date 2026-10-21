@@ -2,6 +2,7 @@ module vsql
 
 import os
 import regex
+import strings
 import time
 
 struct SQLTest {
@@ -66,6 +67,8 @@ fn get_tests() ![]SQLTest {
 				} else if contents.starts_with('create_catalog ')
 					|| contents.starts_with('virtual_table ') {
 					stmts << replace_unicode(contents)
+				} else if contents == 'out' || contents == 'in' {
+					stmts << contents
 				} else if contents.starts_with('types') {
 					show_types = true
 				} else if contents.starts_with('set ') {
@@ -298,6 +301,8 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, on_disk bool) !S
 	}
 
 	mut actual := ''
+	mut last_dump := ?string(none)
+	mut restores := 0
 	defer {
 		disarm_faults()
 	}
@@ -333,6 +338,50 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, on_disk bool) !S
 		if stmt.starts_with('virtual_table ') {
 			register_test_virtual_table(mut db, stmt[14..]) or {
 				actual += 'error ${sqlstate_from_int(err.code())}: ${err.msg()}\n'
+			}
+			continue
+		}
+
+		// "out" dumps the database like "vsql out", and "in" replaces it with a
+		// new database that the dump is loaded into, like "vsql in". Only the
+		// errors from loading it are shown.
+		if stmt == 'out' {
+			if connections.len > 0 {
+				return error('out cannot be used with connection')
+			}
+			mut sb := strings.new_builder(1024)
+			db.dump(mut sb)!
+			dumped := sb.str()
+			last_dump = dumped
+			for line in dumped.split_into_lines() {
+				if line != '' {
+					actual += 'out: ${line}\n'
+				}
+			}
+			continue
+		}
+
+		if stmt == 'in' {
+			if last_dump == none {
+				return error('in needs an out before it')
+			}
+			restores++
+			mut path := ':memory:'
+			if on_disk {
+				restored_dir := os.join_path(dir, 'in_${restores}')
+				os.mkdir_all(restored_dir)!
+				path = os.join_path(restored_dir, ':memory:.vsql')
+			}
+			now := db.now
+			db = open_database(path, options)!
+			opened << db
+			db.now = now
+			register_pg_functions(mut db)!
+			register_pg_virtual_tables(mut db)!
+			for dump_stmt in split_statements(last_dump) {
+				db.query(dump_stmt) or {
+					actual += 'error ${sqlstate_from_int(err.code())}: ${err.msg()}\n'
+				}
 			}
 			continue
 		}

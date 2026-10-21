@@ -6,26 +6,9 @@ module vsql
 
 type SimpleTable = QuerySpecification | []RowValueConstructor
 
-fn (e SimpleTable) pstr(params map[string]Value) string {
-	match e {
-		QuerySpecification {
-			return '<subquery>'
-		}
-		[]RowValueConstructor {
-			mut elements := []string{}
-			for element in e {
-				elements << element.pstr(params)
-			}
-
-			return 'VALUES ${elements.join(', ')}'
-		}
-	}
-}
-
 // A ValuesOperation provides a VALUES derived implicit table.
 struct ValuesOperation {
 	rows        []RowValueConstructor
-	offset      Value
 	correlation Correlation
 	params      map[string]Value
 	columns     Columns
@@ -38,7 +21,7 @@ mut:
 //  suspect this is just immaturity with the garbage collector and the pointer
 //  may be removed in the future. Run the test suite a few times and if it
 //  passes you're in the clear.
-fn new_values_operation(rows []RowValueConstructor, offset Value, correlation Correlation, mut conn Connection, params map[string]Value) !&ValuesOperation {
+fn new_values_operation(rows []RowValueConstructor, correlation Correlation, mut conn Connection, params map[string]Value) !&ValuesOperation {
 	mut c := Compiler{
 		conn:   conn
 		params: params
@@ -88,7 +71,7 @@ fn new_values_operation(rows []RowValueConstructor, offset Value, correlation Co
 		}
 	}
 
-	return &ValuesOperation{rows, offset, correlation, params, columns, conn}
+	return &ValuesOperation{rows, correlation, params, columns, conn}
 }
 
 fn (o &ValuesOperation) str() string {
@@ -104,19 +87,10 @@ fn (o &ValuesOperation) columns() Columns {
 	return o.columns
 }
 
+// execute returns every row. OFFSET and FETCH are a LimitOperation.
 fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
-	mut c := Compiler{
-		conn:   o.conn
-		params: o.params
-	}
-	offset := int((o.offset.compile(mut c)!.run(mut o.conn, Row{}, o.params)!).f64_value())
-
 	mut rows := []Row{}
-	if offset >= o.rows.len {
-		return rows
-	}
-
-	for row in o.rows[offset..] {
+	for row in o.rows {
 		o.conn.begin_row()
 		rows << row.eval_row(mut o.conn, Row{
 			data: map[string]Value{}

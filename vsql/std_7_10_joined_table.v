@@ -6,7 +6,7 @@ module vsql
 
 struct JoinOperation {
 	left_columns  Columns
-	join_type     string
+	join_type     JoinType
 	right_columns Columns
 	specification BooleanValueExpression
 	params        map[string]Value
@@ -16,7 +16,7 @@ mut:
 	plan Plan
 }
 
-fn new_join_operation(left_columns Columns, join_type string, right_columns Columns, specification BooleanValueExpression, params map[string]Value, conn &Connection, plan Plan, tables map[string]Table) &JoinOperation {
+fn new_join_operation(left_columns Columns, join_type JoinType, right_columns Columns, specification BooleanValueExpression, params map[string]Value, conn &Connection, plan Plan, tables map[string]Table) &JoinOperation {
 	return &JoinOperation{left_columns, join_type, right_columns, specification, params, tables, conn, plan}
 }
 
@@ -36,20 +36,14 @@ fn (mut o JoinOperation) execute(rows []Row) ![]Row {
 	right_rows := o.plan.subplans['\$2'].execute([]Row{})!
 
 	match o.join_type {
-		'INNER' {
+		.inner {
 			return o.execute_inner(left_rows, right_rows)
 		}
-		'LEFT' {
+		.left {
 			return o.execute_left(left_rows, right_rows)
 		}
-		'RIGHT' {
+		.right {
 			return o.execute_right(left_rows, right_rows)
-		}
-		else {
-			// Should not be possible.
-			//
-			// TODO(elliotchance): Make join_type exhaustive with an enum.
-			return []Row{}
 		}
 	}
 }

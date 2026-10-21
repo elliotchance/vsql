@@ -16,9 +16,23 @@ struct TablePrimary {
 
 type TableReference = QualifiedJoin | TablePrimary
 
+enum JoinType {
+	inner
+	left
+	right
+}
+
+fn (t JoinType) str() string {
+	return match t {
+		.inner { 'INNER' }
+		.left { 'LEFT' }
+		.right { 'RIGHT' }
+	}
+}
+
 struct QualifiedJoin {
 	left_table    TableReference
-	join_type     string // 'INNER', 'LEFT' or 'RIGHT'
+	join_type     JoinType
 	right_table   TableReference
 	specification BooleanValueExpression // ON condition
 }

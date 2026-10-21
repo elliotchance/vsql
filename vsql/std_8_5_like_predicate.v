@@ -6,53 +6,51 @@ module vsql
 
 // CharacterLikePredicate for "LIKE" and "NOT LIKE".
 struct CharacterLikePredicate {
-	left  ?RowValueConstructorPredicand
+	left  RowValueConstructorPredicand
+	right CharacterValueExpression
+	not   bool
+}
+
+// CharacterLikePredicatePart2 is the "LIKE <pattern>" (or "NOT LIKE") while
+// it's being parsed, before it has the value on the left.
+struct CharacterLikePredicatePart2 {
 	right CharacterValueExpression
 	not   bool
 }
 
 fn (e CharacterLikePredicate) pstr(params map[string]Value) string {
-	if left := e.left {
-		if e.not {
-			return '${left.pstr(params)} NOT LIKE ${e.right.pstr(params)}'
-		}
-
-		return '${left.pstr(params)} LIKE ${e.right.pstr(params)}'
+	if e.not {
+		return '${e.left.pstr(params)} NOT LIKE ${e.right.pstr(params)}'
 	}
 
-	return e.right.pstr(params)
+	return '${e.left.pstr(params)} LIKE ${e.right.pstr(params)}'
 }
 
 fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 	compiled_right := e.right.compile(mut c)!
+	compiled_l := e.left.compile(mut c)!
 
-	if l := e.left {
-		compiled_l := l.compile(mut c)!
+	return CompileResult{
+		run:          fn [e, compiled_l, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
+			left := compiled_l.run(mut conn, data, params)!
+			right := compiled_right.run(mut conn, data, params)!
 
-		return CompileResult{
-			run:          fn [e, compiled_l, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
-				left := compiled_l.run(mut conn, data, params)!
-				right := compiled_right.run(mut conn, data, params)!
-
-				// ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, General Rules, 3a.i
-				if left.is_null || right.is_null {
-					return new_unknown_value()
-				}
-
-				result := like_matches(left.string_value(), right.string_value())
-
-				if e.not {
-					return new_boolean_value(!result)
-				}
-
-				return new_boolean_value(result)
+			// ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, General Rules, 3a.i
+			if left.is_null || right.is_null {
+				return new_unknown_value()
 			}
-			typ:          new_type('BOOLEAN', 0, 0)
-			contains_agg: compiled_right.contains_agg || compiled_l.contains_agg
-		}
-	}
 
-	return compiled_right
+			result := like_matches(left.string_value(), right.string_value())
+
+			if e.not {
+				return new_boolean_value(!result)
+			}
+
+			return new_boolean_value(result)
+		}
+		typ:          new_type('BOOLEAN', 0, 0)
+		contains_agg: compiled_right.contains_agg || compiled_l.contains_agg
+	}
 }
 
 // like_matches reports whether s matches pattern, where "%" matches any number

@@ -6,53 +6,52 @@ module vsql
 
 // SimilarPredicate for "SIMILAR TO" and "NOT SIMILAR TO".
 struct SimilarPredicate {
-	left  ?RowValueConstructorPredicand
+	left  RowValueConstructorPredicand
+	right CharacterValueExpression
+	not   bool
+}
+
+// SimilarPredicatePart2 is the "SIMILAR TO <pattern>" (or "NOT SIMILAR TO")
+// while it's being parsed, before it has the value on the left.
+struct SimilarPredicatePart2 {
 	right CharacterValueExpression
 	not   bool
 }
 
 fn (e SimilarPredicate) pstr(params map[string]Value) string {
-	if left := e.left {
-		if e.not {
-			return '${left.pstr(params)} NOT SIMILAR TO ${e.right.pstr(params)}'
-		}
-
-		return '${left.pstr(params)} SIMILAR TO ${e.right.pstr(params)}'
+	if e.not {
+		return '${e.left.pstr(params)} NOT SIMILAR TO ${e.right.pstr(params)}'
 	}
 
-	return e.right.pstr(params)
+	return '${e.left.pstr(params)} SIMILAR TO ${e.right.pstr(params)}'
 }
 
 fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
-	if l := e.left {
-		compiled_l := l.compile(mut c)!
-		compiled_right := e.right.compile(mut c)!
+	compiled_l := e.left.compile(mut c)!
+	compiled_right := e.right.compile(mut c)!
 
-		return CompileResult{
-			run:          fn [e, compiled_l, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
-				left := compiled_l.run(mut conn, data, params)!
-				right := compiled_right.run(mut conn, data, params)!
+	return CompileResult{
+		run:          fn [e, compiled_l, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
+			left := compiled_l.run(mut conn, data, params)!
+			right := compiled_right.run(mut conn, data, params)!
 
-				// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 4a
-				if left.is_null || right.is_null {
-					return new_unknown_value()
-				}
-
-				pattern := parse_similar_pattern(right.string_value())!
-				result := pattern.matches(left.string_value())
-
-				if e.not {
-					return new_boolean_value(!result)
-				}
-
-				return new_boolean_value(result)
+			// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 4a
+			if left.is_null || right.is_null {
+				return new_unknown_value()
 			}
-			typ:          new_type('BOOLEAN', 0, 0)
-			contains_agg: compiled_l.contains_agg || compiled_right.contains_agg
-		}
-	}
 
-	return e.right.compile(mut c)!
+			pattern := parse_similar_pattern(right.string_value())!
+			result := pattern.matches(left.string_value())
+
+			if e.not {
+				return new_boolean_value(!result)
+			}
+
+			return new_boolean_value(result)
+		}
+		typ:          new_type('BOOLEAN', 0, 0)
+		contains_agg: compiled_l.contains_agg || compiled_right.contains_agg
+	}
 }
 
 enum RegularKind {

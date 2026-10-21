@@ -7,8 +7,28 @@ import strings
 // Specify a comparison of two row values.
 struct ComparisonPredicate {
 	left  RowValueConstructorPredicand
-	op    string
+	op    ComparisonOperator
 	right RowValueConstructorPredicand
+}
+
+enum ComparisonOperator {
+	equal
+	not_equal
+	less_than
+	greater_than
+	less_than_or_equal
+	greater_than_or_equal
+}
+
+fn (op ComparisonOperator) str() string {
+	return match op {
+		.equal { '=' }
+		.not_equal { '<>' }
+		.less_than { '<' }
+		.greater_than { '>' }
+		.less_than_or_equal { '<=' }
+		.greater_than_or_equal { '>=' }
+	}
 }
 
 fn (e ComparisonPredicate) pstr(params map[string]Value) string {
@@ -30,27 +50,23 @@ fn (e ComparisonPredicate) compile(mut c Compiler) !CompileResult {
 			}
 
 			return new_boolean_value(match e.op {
-				'=' {
+				.equal {
 					cmp == .is_equal
 				}
-				'<>' {
+				.not_equal {
 					cmp != .is_equal
 				}
-				'>' {
+				.greater_than {
 					cmp == .is_greater
 				}
-				'<' {
+				.less_than {
 					cmp == .is_less
 				}
-				'>=' {
+				.greater_than_or_equal {
 					cmp == .is_greater || cmp == .is_equal
 				}
-				'<=' {
+				.less_than_or_equal {
 					cmp == .is_less || cmp == .is_equal
-				}
-				else {
-					// This should not be possible, but it's to satisfy the required else.
-					panic('invalid binary operator: ${e.op}')
 				}
 			})
 		}
@@ -60,7 +76,7 @@ fn (e ComparisonPredicate) compile(mut c Compiler) !CompileResult {
 }
 
 struct ComparisonPredicatePart2 {
-	op   string
+	op   ComparisonOperator
 	expr RowValueConstructorPredicand
 }
 

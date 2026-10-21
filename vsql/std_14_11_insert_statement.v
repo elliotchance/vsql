@@ -51,27 +51,19 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 // row with more than one value is in parentheses, otherwise the row has one
 // value.
 fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Value, table Table, row_value ContextuallyTypedRowValueConstructor) !map[string]Value {
-	mut values := []ContextuallyTypedRowValueConstructor{}
-	if row_value is []ContextuallyTypedRowValueConstructorElement {
-		for v in row_value {
-			match v {
-				ValueExpression {
-					match v {
-						CommonValueExpression {
-							values << ContextuallyTypedRowValueConstructor(v)
-						}
-						BooleanValueExpression {
-							values << ContextuallyTypedRowValueConstructor(v)
-						}
-					}
-				}
-				NullSpecification {
-					values << ContextuallyTypedRowValueConstructor(v)
-				}
-			}
+	values := match row_value {
+		[]ContextuallyTypedRowValueConstructorElement {
+			row_value
 		}
-	} else {
-		values << row_value
+		CommonValueExpression {
+			[ContextuallyTypedRowValueConstructorElement(ValueExpression(row_value))]
+		}
+		BooleanValueExpression {
+			[ContextuallyTypedRowValueConstructorElement(ValueExpression(row_value))]
+		}
+		NullSpecification {
+			[ContextuallyTypedRowValueConstructorElement(row_value)]
+		}
 	}
 
 	if stmt.columns.len < values.len {

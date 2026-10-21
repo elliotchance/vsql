@@ -9,35 +9,6 @@ type ContextuallyTypedRowValueConstructor = BooleanValueExpression
 	| NullSpecification
 	| []ContextuallyTypedRowValueConstructorElement
 
-fn (e ContextuallyTypedRowValueConstructor) pstr(params map[string]Value) string {
-	return match e {
-		CommonValueExpression, BooleanValueExpression, NullSpecification {
-			e.pstr(params)
-		}
-		[]ContextuallyTypedRowValueConstructorElement {
-			e.map(it.pstr(params)).join(', ')
-		}
-	}
-}
-
-fn (e ContextuallyTypedRowValueConstructor) compile(mut c Compiler) !CompileResult {
-	match e {
-		CommonValueExpression, BooleanValueExpression, NullSpecification {
-			return e.compile(mut c)!
-		}
-		[]ContextuallyTypedRowValueConstructorElement {
-			mut contains_agg := false
-			for element in e {
-				if element.compile(mut c)!.contains_agg {
-					contains_agg = true
-				}
-			}
-
-			return e[0].compile(mut c)!.with_agg(contains_agg)
-		}
-	}
-}
-
 type ContextuallyTypedRowValueConstructorElement = NullSpecification | ValueExpression
 
 fn (e ContextuallyTypedRowValueConstructorElement) pstr(params map[string]Value) string {
@@ -74,11 +45,13 @@ fn (e RowValueConstructorPredicand) compile(mut c Compiler) !CompileResult {
 	}
 }
 
-struct ExplicitRowValueConstructorRow {
+// ExplicitRowValueConstructor is a "ROW (...)". A row subquery (F641) isn't
+// supported yet, see unsupported_row_subquery.
+struct ExplicitRowValueConstructor {
 	exprs []ValueExpression
 }
 
-fn (e ExplicitRowValueConstructorRow) pstr(params map[string]Value) string {
+fn (e ExplicitRowValueConstructor) pstr(params map[string]Value) string {
 	mut values := []string{}
 	for expr in e.exprs {
 		values << expr.pstr(params)
@@ -112,15 +85,7 @@ fn (e RowValueConstructor) compile(mut c Compiler) !CompileResult {
 fn (r RowValueConstructor) compile_elements(mut c Compiler) ![]CompileResult {
 	match r {
 		ExplicitRowValueConstructor {
-			match r {
-				ExplicitRowValueConstructorRow {
-					return r.exprs.map(it.compile(mut c)!)
-				}
-				QueryExpression {
-					// TODO(elliotchance): Row subqueries (F641) are not supported yet.
-					return sqlstate_42601('subqueries are not supported in VALUES')
-				}
-			}
+			return r.exprs.map(it.compile(mut c)!)
 		}
 		CommonValueExpression, BooleanValueExpression {
 			return [r.compile(mut c)!]
@@ -129,29 +94,13 @@ fn (r RowValueConstructor) compile_elements(mut c Compiler) ![]CompileResult {
 }
 
 fn (r RowValueConstructor) eval_row(mut conn Connection, data Row, params map[string]Value) !Row {
-	mut col_number := 1
-	mut row := map[string]Value{}
 	mut c := Compiler{
 		conn:   conn
 		params: params
 	}
-	match r {
-		ExplicitRowValueConstructor {
-			match r {
-				ExplicitRowValueConstructorRow {
-					for expr in r.exprs {
-						row['COL${col_number}'] = expr.compile(mut c)!.run(mut conn, data, params)!
-						col_number++
-					}
-				}
-				QueryExpression {
-					panic('query expressions cannot be used in ROW constructors')
-				}
-			}
-		}
-		CommonValueExpression, BooleanValueExpression {
-			row['COL${col_number}'] = r.compile(mut c)!.run(mut conn, data, params)!
-		}
+	mut row := map[string]Value{}
+	for i, element in r.compile_elements(mut c)! {
+		row['COL${i + 1}'] = element.run(mut conn, data, params)!
 	}
 
 	return Row{
@@ -159,20 +108,14 @@ fn (r RowValueConstructor) eval_row(mut conn Connection, data Row, params map[st
 	}
 }
 
-type ExplicitRowValueConstructor = ExplicitRowValueConstructorRow | QueryExpression
-
-fn (e ExplicitRowValueConstructor) pstr(params map[string]Value) string {
-	return match e {
-		ExplicitRowValueConstructorRow, QueryExpression {
-			e.pstr(params)
-		}
-	}
+fn (e ExplicitRowValueConstructor) compile(mut c Compiler) !CompileResult {
+	// ExplicitRowValueConstructor should never make it to eval because it will
+	// be reformatted into a ValuesOperation.
+	return sqlstate_42601('missing or invalid expression provided')
 }
 
-fn (e ExplicitRowValueConstructor) compile(mut c Compiler) !CompileResult {
-	// ExplicitRowValueConstructorRow should never make it to eval because it will
-	// be reformatted into a ValuesOperation.
-	//
-	// QueryExpression will have already been resolved to a ValuesOperation.
-	return sqlstate_42601('missing or invalid expression provided')
+// unsupported_row_subquery is the error for a row subquery (F641), which isn't
+// supported yet. It's raised when it's parsed.
+fn unsupported_row_subquery() !ExplicitRowValueConstructor {
+	return sqlstate_42601('subqueries are not supported in VALUES')
 }

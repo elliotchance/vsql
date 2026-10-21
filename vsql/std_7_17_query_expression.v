@@ -14,10 +14,6 @@ struct QueryExpression {
 	order  []SortSpecification
 }
 
-fn (e QueryExpression) pstr(params map[string]Value) string {
-	return '<subquery>'
-}
-
 // writes must be true if the query modifies the database, see
 // PreparedStmt.writes.
 fn (stmt QueryExpression) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration, writes bool) !Result {

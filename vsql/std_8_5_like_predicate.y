@@ -5,7 +5,7 @@ like_predicate:
 
 character_like_predicate:
   row_value_predicand character_like_predicate_part_2 {
-    like := $2.v as CharacterLikePredicate
+    like := $2.v as CharacterLikePredicatePart2
     $$.v = CharacterLikePredicate{
       $1.v as RowValueConstructorPredicand
       like.right
@@ -15,10 +15,10 @@ character_like_predicate:
 
 character_like_predicate_part_2:
   LIKE character_pattern {
-    $$.v = CharacterLikePredicate{none, $2.v as CharacterValueExpression, false}
+    $$.v = CharacterLikePredicatePart2{$2.v as CharacterValueExpression, false}
   }
 | NOT LIKE character_pattern {
-    $$.v = CharacterLikePredicate{none, $3.v as CharacterValueExpression, true}
+    $$.v = CharacterLikePredicatePart2{$3.v as CharacterValueExpression, true}
   }
 
 character_pattern:

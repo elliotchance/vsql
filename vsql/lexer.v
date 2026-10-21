@@ -19,6 +19,7 @@ type YYSym = AggregateFunction
 	| CastOperand
 	| CastSpecification
 	| CharacterLikePredicate
+	| CharacterLikePredicatePart2
 	| CharacterPrimary
 	| CharacterSubstringFunction
 	| CharacterValueExpression
@@ -26,6 +27,7 @@ type YYSym = AggregateFunction
 	| Column
 	| CommonValueExpression
 	| ComparisonPredicate
+	| ComparisonOperator
 	| ComparisonPredicatePart2
 	| Concatenation
 	| ContextuallyTypedRowValueConstructor
@@ -42,6 +44,7 @@ type YYSym = AggregateFunction
 	| Identifier
 	| IdentifierChain
 	| InsertStatement
+	| JoinType
 	| LocalTime
 	| LocalTimestamp
 	| NextValueExpression
@@ -71,6 +74,7 @@ type YYSym = AggregateFunction
 	| SetClause
 	| SetSchemaStatement
 	| SimilarPredicate
+	| SimilarPredicatePart2
 	| SimpleTable
 	| SortSpecification
 	| Stmt

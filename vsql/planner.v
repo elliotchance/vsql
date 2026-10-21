@@ -45,7 +45,7 @@ fn create_basic_plan(body SimpleTable, offset ?ValueSpecification, params map[st
 		[]RowValueConstructor {
 			mut plan := Plan{}
 
-			plan.operations << new_values_operation(body, new_integer_value(0), correlation, mut
+			plan.operations << new_values_operation(body, correlation, mut
 				conn, params)!
 
 			return plan, map[string]Table{}

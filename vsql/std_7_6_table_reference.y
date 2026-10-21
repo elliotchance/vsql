@@ -17,7 +17,7 @@ qualified_join:
   table_reference JOIN table_reference join_specification {
     $$.v = QualifiedJoin{
       $1.v as TableReference
-      'INNER'
+      JoinType.inner
       $3.v as TableReference
       $4.v as BooleanValueExpression
     }
@@ -25,7 +25,7 @@ qualified_join:
 | table_reference join_type JOIN table_reference join_specification {
     $$.v = QualifiedJoin{
       $1.v as TableReference
-      $2.v as string
+      $2.v as JoinType
       $4.v as TableReference
       $5.v as BooleanValueExpression
     }

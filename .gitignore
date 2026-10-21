@@ -11,7 +11,6 @@
 scripts/generate-v-client-library-docs
 scripts/generate-grammar
 y.output
-vsql/y.v
 vsql/y.y
 
 # Temporary build directories created by the V3 compiler.

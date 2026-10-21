@@ -32,6 +32,12 @@ jobs:
       - name: Verify fmt
         run: make fmt-verify
 
+      # vsql/y.v is generated, but committed so that "v install" works.
+      - name: Verify grammar
+        run: |
+          make grammar
+          git diff --exit-code vsql/y.v
+
       - name: Verify docs
         run: |
           export PIP_BREAK_SYSTEM_PACKAGES=1

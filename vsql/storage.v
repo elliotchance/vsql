@@ -266,7 +266,7 @@ fn (mut f Storage) recover(mut header Header) ! {
 				page.delete(obj.key, obj.tid)
 				modified = true
 			} else if obj.xid in dead_tids {
-				page.expire(obj.key, obj.tid, 0)
+				page.expire(obj.key, obj.tid, 0)!
 				modified = true
 			}
 		}

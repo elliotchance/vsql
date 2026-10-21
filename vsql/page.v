@@ -156,7 +156,7 @@ fn (mut p Page) update(old PageObject, tid u64) ! {
 				p.delete(old.key, tid)
 			} else {
 				// Expire the existing record.
-				p.expire(old.key, old_versions[0], tid)
+				p.expire(old.key, old_versions[0], tid)!
 			}
 		}
 		2 {
@@ -271,11 +271,21 @@ fn (p Page) get(key []u8, tid u64) PageObject {
 
 // expire will set the expiry transaction ID on an existing object. True is
 // returned if the page was modified.
-fn (mut p Page) expire(key []u8, tid u64, xid u64) bool {
+//
+// An object that has already been expired by another transaction cannot be
+// expired again, because rolling back either transaction resets the xid to 0
+// and undoes the other one's delete. Instead, this returns a SQLSTATE 40001 so
+// that the client retries the transaction, the same as concurrent writes in
+// add(). An xid of 0 always succeeds, which is how a rollback or recovery makes
+// the object visible again.
+fn (mut p Page) expire(key []u8, tid u64, xid u64) !bool {
 	mut offset := 0
 	mut modified := false
 	for mut object in p.objects() {
 		if compare_bytes(key, object.key) == 0 && object.tid == tid {
+			if xid != 0 && object.xid != 0 && object.xid != xid {
+				return sqlstate_40001('avoiding concurrent write on individual row')
+			}
 			object.xid = xid
 			modified = true
 		}

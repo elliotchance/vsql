@@ -237,3 +237,70 @@ SELECT * FROM baz;
 -- 1: msg: ROLLBACK
 -- 1: error 42P01: no such table: "test".PUBLIC.BAZ
 -- 2: error 42P01: no such table: "test".PUBLIC.BAZ
+
+/* connection 1 */
+CREATE TABLE foo (bar INT);
+INSERT INTO foo (bar) VALUES (123);
+START TRANSACTION;
+SELECT * FROM foo;
+/* connection 2 */
+START TRANSACTION;
+DELETE FROM foo;
+/* connection 1 */
+DELETE FROM foo;
+/* connection 2 */
+COMMIT;
+/* connection 1 */
+SELECT * FROM foo;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: START TRANSACTION
+-- 1: BAR: 123
+-- 2: msg: START TRANSACTION
+-- 2: msg: DELETE 1
+-- 1: error 40001: serialization failure: avoiding concurrent write on individual row
+-- 2: msg: COMMIT
+
+/* connection 1 */
+CREATE TABLE foo (bar INT);
+INSERT INTO foo (bar) VALUES (123);
+/* connection 2 */
+START TRANSACTION;
+DELETE FROM foo;
+/* connection 1 */
+START TRANSACTION;
+UPDATE foo SET bar = 456;
+/* connection 2 */
+ROLLBACK;
+/* connection 1 */
+SELECT * FROM foo;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 2: msg: START TRANSACTION
+-- 2: msg: DELETE 1
+-- 1: msg: START TRANSACTION
+-- 1: error 40001: serialization failure: avoiding concurrent write on individual row
+-- 2: msg: ROLLBACK
+-- 1: BAR: 123
+
+/* connection 1 */
+CREATE TABLE foo (bar INT);
+INSERT INTO foo (bar) VALUES (123);
+/* connection 2 */
+START TRANSACTION;
+UPDATE foo SET bar = 456;
+/* connection 1 */
+START TRANSACTION;
+DELETE FROM foo;
+/* connection 2 */
+COMMIT;
+/* connection 1 */
+SELECT * FROM foo;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 2: msg: START TRANSACTION
+-- 2: msg: UPDATE 1
+-- 1: msg: START TRANSACTION
+-- 1: error 40001: serialization failure: avoiding concurrent write on individual row
+-- 2: msg: COMMIT
+-- 1: BAR: 456

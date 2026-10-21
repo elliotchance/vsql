@@ -45,7 +45,7 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 			} else if obj.xid == catalog.storage.transaction_id {
 				// Objects expired (deleted or updated) in this transaction are
 				// made visible again.
-				page.expire(obj.key, obj.tid, 0)
+				page.expire(obj.key, obj.tid, 0)!
 			}
 		}
 

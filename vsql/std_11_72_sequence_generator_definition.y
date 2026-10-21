@@ -13,11 +13,9 @@ sequence_generator_definition:
     }
   }
 
+// sequence_generator_option is already a list of options, so it can't repeat.
 sequence_generator_options:
   sequence_generator_option { $$.v = $1.v as []SequenceGeneratorOption }
-| sequence_generator_options sequence_generator_option {
-    $$.v = $1.v as []SequenceGeneratorOption
-  }
 
 sequence_generator_option:
   common_sequence_generator_options { $$.v = $1.v as []SequenceGeneratorOption }

@@ -141,7 +141,7 @@ fn (mut l Lexer) lex(mut lval YYSymType) int {
 	return l.tokens[l.pos - 1].token
 }
 
-fn (mut l Lexer) error(s string) ! {
+fn (mut l Lexer) error(s string) IError {
 	return sqlstate_42601(cleanup_yacc_error(s))
 }
 

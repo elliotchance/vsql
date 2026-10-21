@@ -5,7 +5,6 @@
 module vsql
 
 import math
-import regex
 
 // Possible values for a BOOLEAN.
 pub enum Boolean {
@@ -329,22 +328,6 @@ fn (v Value) as_f64() !f64 {
 	if v.typ.typ == .is_boolean {
 		// See the notes below about sqlstate_22003().
 		return sqlstate_22003()
-	}
-
-	if v.typ.typ == .is_character || v.typ.typ == .is_varchar {
-		s := v.string_value()
-
-		mut re := regex.regex_opt(r'^\d+(\.\d+)?$') or {
-			return error('cannot compile regex for number: ${err}')
-		}
-		if !re.matches_string(s) {
-			// This sounds a little counterintuitive, but the SQL standard says this
-			// situation must be classified as "data exception — numeric value out of
-			// range". See cast().
-			return sqlstate_22003()
-		}
-
-		return s.f64()
 	}
 
 	if v.typ.typ == .is_numeric || v.typ.typ == .is_decimal {

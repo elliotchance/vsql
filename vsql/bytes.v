@@ -10,8 +10,7 @@ module vsql
 import encoding.binary
 import math
 
-// Bytes is a buffer that can be read and written at any point. Values are
-// written at the current position, which overwrites existing data or appends
+// Bytes is a buffer that can be read from any point, and written to by appending
 // to the end.
 //
 // Bytes does not return errors because it's expected the caller knows when the
@@ -37,7 +36,7 @@ fn new_bytes(data []u8) Bytes {
 	}
 }
 
-// set_pos moves the position for future reads and writes.
+// set_pos moves the position for future reads.
 fn (mut b Bytes) set_pos(pos int) {
 	b.at = pos
 }
@@ -53,11 +52,7 @@ fn (b Bytes) has_more() bool {
 }
 
 fn (mut b Bytes) write_u8(d u8) {
-	if b.at < b.data.len {
-		b.data[b.at] = d
-	} else {
-		b.data << d
-	}
+	b.data << d
 	b.at++
 }
 

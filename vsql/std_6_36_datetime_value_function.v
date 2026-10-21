@@ -110,10 +110,6 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 	}
 }
 
-fn (e DatetimeValueFunction) resolve_identifiers(conn &Connection, tables map[string]Table) !DatetimeValueFunction {
-	return e
-}
-
 struct CurrentDate {}
 
 struct CurrentTime {

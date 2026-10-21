@@ -103,16 +103,3 @@ fn test_bytes_limits() {
 	assert r.read_u64() == max_u64
 	assert math.is_inf(r.read_f64(), -1)
 }
-
-// Writing at an earlier position overwrites the data rather than inserting.
-fn test_bytes_overwrite() {
-	mut b := new_bytes([u8(1), 2, 3, 4, 5])
-	b.set_pos(1)
-	b.write_u16(0xaabb)
-	assert b.bytes() == [u8(1), 0xaa, 0xbb, 4, 5]
-	assert b.has_more()
-	b.set_pos(4)
-	b.write_u16(0xccdd)
-	assert b.bytes() == [u8(1), 0xaa, 0xbb, 4, 0xcc, 0xdd]
-	assert !b.has_more()
-}

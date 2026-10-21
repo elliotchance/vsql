@@ -325,3 +325,16 @@ fn test_big_btree_test() ! {
 	total_found_objects = validate(mut memory_pager)!
 	assert total_found_objects == 0
 }
+
+fn (p Page) is_empty() bool {
+	return p.used == page_header_size
+}
+
+fn (p Page) keys() [][]u8 {
+	mut keys := [][]u8{}
+	for object in p.objects() {
+		keys << object.key
+	}
+
+	return keys
+}

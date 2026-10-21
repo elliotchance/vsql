@@ -25061,7 +25061,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
 			// line vsql/y.y:2672
 			{
-				yy_val.v = unsupported_row_subquery()!
+				return unsupported_row_subquery()
 			}
 		}
 		757 {

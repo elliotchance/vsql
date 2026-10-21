@@ -62,12 +62,11 @@ fn (mut p Btree) append_page(page Page) !int {
 // visited and the last element being the only leaf page). The second parameter
 // is the depth iterator at each non-leaf page (so it will have a len of the
 // path - 1).
+//
+// The B-tree must have at least one page. It's only searched for an object that
+// exists (to change or remove it), and add() and PageIterator check for an
+// empty B-tree themselves.
 fn (mut p Btree) search_page(key []u8) !([]int, []int) {
-	// Special condition if there are no pages.
-	if p.pager.total_pages() == 0 {
-		return []int{}, []int{}
-	}
-
 	mut path := []int{}
 	mut depth_iterator := []int{}
 	mut current_page := p.pager.root_page()
@@ -114,11 +113,6 @@ fn (mut p Btree) search_page(key []u8) !([]int, []int) {
 // The old and new must be provided separately because the key may change if the
 // PRIMARY KEY value has changed.
 fn (mut p Btree) update(old PageObject, new PageObject, tid u64) ![]int {
-	if p.pager.total_pages() == 0 {
-		// The object does not exist to update.
-		return []int{}
-	}
-
 	// If the pages are the same and we're updating an in-flight row we need to
 	// actually delete the existing row.
 	if compare_bytes(old.key, new.key) == 0 {
@@ -141,11 +135,6 @@ fn (mut p Btree) update(old PageObject, new PageObject, tid u64) ![]int {
 }
 
 fn (mut p Btree) update_single(obj PageObject, tid u64) !int {
-	if p.pager.total_pages() == 0 {
-		// The object does not exist to update.
-		return 0
-	}
-
 	// Find the page that would contain our old object (if it exists).
 	mut path, _ := p.search_page(obj.key)!
 	page_number := path[path.len - 1]
@@ -467,8 +456,9 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 // data more tightly. However, if the inserts are not sequential we will get a
 // lot of semi-full pages that hopefully become full over time.
 //
-// Usually this is two pages, but it can be more. For example, objects of 1500,
-// 3000 and 1500 bytes need three pages of 4096 bytes.
+// Usually this is two pages, but it can be three. Two versions of the same key
+// must be on the same page, so when they don't fit with the objects before
+// them they start a new page, and the objects after them may need another.
 fn (p Btree) split_objects(objects []PageObject) [][]PageObject {
 	max_allowed_in_page := p.max_allowed_in_page()
 	mut groups := [][]PageObject{}

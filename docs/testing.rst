@@ -607,8 +607,11 @@ tests:
 
    SQL test coverage: 87.22% (3379 of 3874 lines, run "make sql-test-uncovered" to see the rest)
 
-``make sql-test-uncovered`` prints each line that wasn't covered by the last
-``make sql-test``:
+When all of the tests are run, ``make sql-test`` fails unless every line is
+covered. This is every line that V measures: V's coverage doesn't measure some
+statements, such as a function call on its own line (including one ending in
+``!``), an ``if`` condition or assigning to a map key. ``make sql-test-uncovered`` prints each line that wasn't covered by the
+last ``make sql-test``:
 
 .. code-block:: text
 
@@ -619,6 +622,14 @@ The same results are in ``coverage/sql.lcov``, which can be opened with any LCOV
 viewer (such as the "Coverage Gutters" extension for VS Code). When only some of
 the tests are run (such as with ``$TEST``, ``$MEMORY`` or ``$FILE``) the
 coverage is only for those tests.
+
+Code that can't be reached with SQL (such as the V API, the server, or a check
+for something that can't happen) is tested by the V tests at the end of
+``vsql/sql_test.v``, so it's also counted. A panic stops the process, so
+``run_in_child()`` runs it in a child process and checks the message. The
+child's coverage is still counted because it's written when the process exits.
+The coverage build is compiled with ``-d coverage`` so that the code can tell
+(see ``crash_point()``, which would otherwise exit without writing it).
 
 ``make test`` runs the SQL tests with ``make sql-test`` and the ORM tests with
 ``make vorm-test``, so CI also shows the coverage (in the log and the summary of

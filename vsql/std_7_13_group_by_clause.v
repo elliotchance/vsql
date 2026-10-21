@@ -46,23 +46,6 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, p
 				custom_id:  expr.expr.pstr(params)
 				custom_typ: compiled_expr.typ
 			}, compiled_expr.typ, false}
-
-			// We need verify the expression type for the argument to the
-			// aggregate function is valid.
-			if expr.expr is CommonValueExpression {
-				if expr.expr is CharacterValueExpression {
-					if expr.expr is CharacterPrimary {
-						if expr.expr is CharacterValueFunction {
-							if expr.expr is RoutineInvocation {
-								expr_type := expr.expr.args[0].compile(mut c)!.typ
-								conn.find_function(expr.expr.function_name, [
-									expr_type,
-								])!
-							}
-						}
-					}
-				}
-			}
 		}
 	}
 

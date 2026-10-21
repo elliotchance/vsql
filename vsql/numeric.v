@@ -5,15 +5,14 @@ module vsql
 
 import math.big
 
-// These are used for encoding certain aspects for storage.
-const numeric_is_null = u8(1 << 0)
+// These are used for encoding certain aspects for storage. 1 << 0 was for a
+// NULL, which is never stored as a Numeric (see Value.is_null).
 const numeric_is_zero = u8(1 << 1)
 const numeric_is_negative = u8(1 << 2)
 
 struct Numeric {
 	// typ contains the precision and scale that affect calculations.
-	typ     Type
-	is_null bool
+	typ Type
 	// numerator contains the sign (+/-) and may be zero, however, you should
 	// always test the denominator for an actual zero.
 	numerator big.Integer
@@ -26,13 +25,6 @@ fn new_numeric(typ Type, numerator big.Integer, denominator big.Integer) Numeric
 		typ:         typ
 		numerator:   numerator
 		denominator: denominator
-	}
-}
-
-fn new_null_numeric(typ Type) Numeric {
-	return Numeric{
-		typ:     typ
-		is_null: true
 	}
 }
 
@@ -92,9 +84,6 @@ fn new_numeric_from_string(x string) Numeric {
 fn (n Numeric) bytes() []u8 {
 	mut buf := new_bytes([]u8{})
 	mut flags := u8(0)
-	if n.is_null {
-		flags |= numeric_is_null
-	}
 	if n.is_zero() {
 		flags |= numeric_is_zero
 	}
@@ -103,8 +92,8 @@ fn (n Numeric) bytes() []u8 {
 	}
 	buf.write_u8(flags)
 
-	// If the value is NULL or 0 we don't need to encode anything further.
-	if flags & numeric_is_null != 0 || flags & numeric_is_zero != 0 {
+	// If the value is 0 we don't need to encode anything further.
+	if flags & numeric_is_zero != 0 {
 		return buf.bytes()
 	}
 
@@ -122,10 +111,6 @@ fn (n Numeric) bytes() []u8 {
 fn new_numeric_from_bytes(typ Type, data []u8) Numeric {
 	mut buf := new_bytes(data)
 	flags := buf.read_u8()
-
-	if flags & numeric_is_null != 0 {
-		return new_null_numeric(typ)
-	}
 
 	if flags & numeric_is_zero != 0 {
 		return new_numeric(typ, big.zero_int, big.integer_from_int(10).pow(u32(typ.scale)))
@@ -145,10 +130,6 @@ fn new_numeric_from_bytes(typ Type, data []u8) Numeric {
 }
 
 fn (n Numeric) str() string {
-	if n.is_null {
-		return 'NULL'
-	}
-
 	denominator := big.integer_from_int(10).pow(u32(n.typ.scale))
 	denominator_str := denominator.str()
 	mut numerator := n.scale_numerator(denominator).numerator.str()
@@ -180,28 +161,6 @@ fn (n Numeric) neg() Numeric {
 
 fn (n Numeric) f64() f64 {
 	return n.numerator.str().f64() / n.denominator.str().f64()
-}
-
-// TODO(elliotchance): This doesn't correctly round, it just truncates the
-//  value. That because this is an extra expensive and hacky approach. Please
-//  improve it.
-fn (n Numeric) round(scale i16) Numeric {
-	parts := n.str().split('.')
-
-	// Check if there's enough digits to round.
-	if parts.len < 2 || parts[1].len <= scale {
-		return n
-	}
-
-	numerator := big.integer_from_string(parts[0] + parts[1][..scale]) or { big.one_int }
-	denominator := n.denominator / big.integer_from_int(10).pow(u32(-(scale - n.denominator.str().len) - 1))
-
-	return new_numeric(Type{
-		typ:      n.typ.typ
-		size:     n.typ.size
-		scale:    scale
-		not_null: n.typ.not_null
-	}, numerator, denominator)
 }
 
 fn (n Numeric) add(n2 Numeric) Numeric {

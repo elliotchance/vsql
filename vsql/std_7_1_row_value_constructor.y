@@ -15,7 +15,7 @@ explicit_row_value_constructor:
   ROW left_paren row_value_constructor_element_list right_paren {
     $$.v = ExplicitRowValueConstructor{$3.v as []ValueExpression}
   }
-| row_subquery { $$.v = unsupported_row_subquery()! }
+| row_subquery { return unsupported_row_subquery() }
 
 row_value_constructor_element_list:
   row_value_constructor_element { $$.v = [$1.v as ValueExpression] }

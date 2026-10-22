@@ -11,13 +11,25 @@ Syntax
 .. code-block:: text
 
   SELECT { * | { <expression> [ AS <name> ] | <table_name>.* } , ... }
-  FROM <table_name>
-  [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_name> ON <condition> ] ...
+  FROM <table_reference>
+  [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference> ON <condition> ] ...
   [ WHERE <condition> ]
   [ GROUP BY <column_name> , ... ]
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH FIRST [ <integer> ] { ROW | ROWS } ONLY ]
+
+  <table_reference> := <table_name>
+                     | ( <query> ) [ AS <name> [ ( <column_name> , ... ) ] ]
+
+A ``<query>`` in the ``FROM`` is a ``SELECT`` or ``VALUES``.
+
+A ``SELECT`` must have a ``FROM``. To calculate expressions without a table,
+use :doc:`values` (such as ``VALUES 1 + 2``).
+
+Not supported yet: ``DISTINCT``, ``HAVING``, ``UNION`` and ``EXCEPT``,
+subqueries outside of the ``FROM``, and naming a table in the ``FROM`` (such as
+``FROM products AS p``). See :doc:`sql-compliance`.
 
 SELECT
 ------
@@ -25,7 +37,7 @@ SELECT
 For each *expression*, the naming convention follows:
 
 1. If ``name`` is provided, that will be used.
-2. If ``expression`` refered to a column, the column name will be used.
+2. If ``expression`` referred to a column, the column name will be used.
 3. Otherwise, the name ``COL<number>`` will be used where *number* is the position of the column (starting at 1).
 
 ``*`` selects every column of every table in the ``FROM`` clause. It must be
@@ -78,9 +90,9 @@ GROUP BY
 --------
 
 The ``GROUP BY`` clause is used to group rows such that aggregation functions
-such as `count`, `min`, `max`, etc can be performed against them.
+such as ``COUNT``, ``MIN``, ``MAX``, etc can be performed against them.
 
-If an aggregate function is used is the ``SELECT`` expressions it will cause
+If an aggregate function is used in the ``SELECT`` expressions it will cause
 *all* rows to be included in a single set. For example:
 
 .. code-block:: sql
@@ -107,7 +119,7 @@ ORDER BY
 The ``ORDER BY`` clause can be used to sort records.
 
 Without an ``ORDER BY`` clause the rows might come out in a predictable order,
-such as the order or insertion or the order of the PRIMARY KEY. However, you
+such as the order of insertion or the order of the ``PRIMARY KEY``. However, you
 should never depend on this since it's subject to change either through
 deliberate or emergent behavior. If you need the rows to be returned in a
 specific order you should always specify an appropriate ``ORDER BY`` clause.
@@ -116,7 +128,7 @@ The ``ORDER BY`` contains one or more expressions. Each specifying an ``ASC`` or
 ``DESC`` for ascending or descending respectively. If no qualifier is specified
 then ``ASC`` is used.
 
-The SQL standard doesn't define if ``NULL`` should be always be ordered first or
+The SQL standard doesn't define if ``NULL`` should always be ordered first or
 last. In vsql, ``NULL`` is always considered to be less than any other non
 ``NULL`` value.
 
@@ -130,7 +142,7 @@ The ``OFFSET`` must be an integer that is zero or more, otherwise a 2201X
 (invalid row count in result offset clause) error is raised.
 
 Using ``ROW`` or ``ROWS`` has no functional difference and either can be used
-with any value. Both words are provided soley for grammatical benefit.
+with any value. Both words are provided solely for grammatical benefit.
 
 FETCH
 -----
@@ -150,7 +162,7 @@ When the ``<integer>`` is omitted (for example ``FETCH FIRST ROW ONLY``) it
 defaults to ``1``, so only the first row is returned.
 
 Using ``ROW`` or ``ROWS`` has no functional difference and either can be used
-with any value. Both words are provided soley for grammatical benefit.
+with any value. Both words are provided solely for grammatical benefit.
 
 EXPLAIN
 -------

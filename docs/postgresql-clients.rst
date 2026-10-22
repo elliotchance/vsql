@@ -59,7 +59,7 @@ You can view some
 ✔ SQLTools (mtxr.sqltools)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This is extension is supported. There are some queries executed that are not
+This extension is supported. There are some queries executed that are not
 compatible, but this doesn't block the connection or execution of custom
 queries.
 

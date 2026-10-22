@@ -5,12 +5,28 @@ There are lots of ways to install vsql depending on how you want to use it.
 
 .. contents::
 
+Prebuilt Binaries
+-----------------
+
+This is the best way to use the ``vsql`` command (see :doc:`cli`) on most
+platforms, without installing anything else.
+
+Download the zip for macOS (Apple silicon), Linux (x86-64) or Windows from the
+`latest release <https://github.com/elliotchance/vsql/releases/latest>`_ and
+unzip it. To update, download the latest release again.
+
+The binaries aren't signed, so macOS may refuse to open one that was downloaded
+with a web browser. You can remove the quarantine flag with:
+
+.. code-block:: sh
+
+   xattr -d com.apple.quarantine vsql
+
 Docker
 ------
 
-Docker is the easiest way to get up and running (if you have
-`Docker installed <https://docs.docker.com/get-docker/>`_.). Pull the latest
-stable version with:
+If you have `Docker installed <https://docs.docker.com/get-docker/>`_, pull the
+latest stable version with:
 
 .. code-block:: sh
 
@@ -18,32 +34,25 @@ stable version with:
 
 See :doc:`docker` for more information.
 
-Prebuilt Binaries
------------------
-
-This is the best way to use vsql on most platforms without any dependencies.
-
-Prebuilt binaries for macOS, Windows and Linux are available on the
-`GitHub Releases Page <https://github.com/elliotchance/vsql/releases>`_.
-
 V Package Manager
 -----------------
 
 This is the best method if you intend to build V applications using it as a
-library. See `v-client-library`. vsql is built and tested with the V commit in
-`.v-version <https://github.com/elliotchance/vsql/blob/main/.v-version>`_, and
-with the latest V every day. Older versions of V may not be able to compile it,
-so update V first with ``v up``.
+library (see :doc:`v-client-library`):
 
 .. code-block:: sh
 
    v install elliotchance.vsql
 
+Run the same command to update it. vsql is built and tested with the latest V
+every day, and older versions of V may not be able to compile it, so update V
+first with ``v up``.
+
 Compiling From Source
 ---------------------
 
-This is the best choice if you want to modify vsql source or contribute to the
-project. See :doc:`contributing`:
+This is the best choice if you want to modify vsql or contribute to the project
+(see :doc:`contributing`):
 
 .. code-block:: sh
 

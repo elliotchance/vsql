@@ -22,8 +22,8 @@ Syntax
 Implicit Transactions
 ---------------------
 
-When a transaction is not explicitely used, each statement will be automatically
-wrapped in an implicit transaction. Internally this is important becuase any
+When a transaction is not explicitly used, each statement will be automatically
+wrapped in an implicit transaction. Internally this is important because any
 statements that may make changes (such as a ``DELETE`` that removes multiple
 rows) should seem atomic to all other readers and writers.
 

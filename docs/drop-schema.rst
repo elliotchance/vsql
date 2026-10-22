@@ -15,15 +15,17 @@ Drop (delete) a schema.
 If ``RESTRICT`` is specified and the schema is not empty, an error will be
 returned and no action will be taken.
 
-If ``CASCADE`` is specified then schema is dropped including any objects within
-it.
+If ``CASCADE`` is specified then the schema is dropped, including any objects
+within it.
+
+One of ``CASCADE`` or ``RESTRICT`` must be provided.
 
 Examples
 --------
 
 .. code-block:: sql
 
-  DROP SCHEMA warehouse;
+  DROP SCHEMA warehouse CASCADE;
 
 See Also
 --------

@@ -1,7 +1,8 @@
 Limitations
 ===========
 
-These have not been tested, but are based on fundamental design choices:
+These limits come from the design of vsql and the :doc:`file-format`. Some of
+them (such as the maximum file size) are theoretical and have not been tested.
 
 .. list-table::
   :header-rows: 1
@@ -10,22 +11,33 @@ These have not been tested, but are based on fundamental design choices:
     - Limit
 
   * - The maximum page size (when creating a new file)
-    - 65536 bytes (64 KB)
+    - 65535 bytes (64 KB)
 
   * - The maximum number of pages in a file
     - 2147483647 (~2.1 billion)
 
   * - The maximum number of transactions over the life of a file
-    - 18446744073709551613 (~18 quintillion)
+    - 18446744073709551615 (~18 quintillion)
+
+  * - The maximum number of transactions that are active at the same time
+      (across all connections and processes)
+    - 256
 
   * - The maximum file size (using the default page size)
-    - 8 PB
-
-  * - The maximum file size (using the maximum page size)
-    - 128 PB
-
-  * - The maximum object size (using the default page size)
     - 8 TB
 
-  * - The maximum object size (using the maximum page size)
+  * - The maximum file size (using the maximum page size)
     - 128 TB
+
+  * - The maximum size of a row
+    - 2147483647 bytes (~2 GB)
+
+  * - The maximum length of a name (such as a table or column)
+    - 128 characters
+
+  * - The types that can be used in a ``PRIMARY KEY``
+    - ``SMALLINT``, ``INTEGER`` and ``BIGINT``
+
+  * - The number of uncommitted versions of a row
+    - 1 (another transaction that changes the same row gets a ``40001``
+      serialization failure)

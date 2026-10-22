@@ -2,11 +2,12 @@ Server
 ======
 
 vsql can be run as a server and any PostgreSQL-compatible driver can access it.
-This is ideal if you want to use a more familar or feature rich database client.
+This is ideal if you want to use a more familiar or feature rich database
+client.
 
 See the :doc:`list of supported clients here<postgresql-clients>`.
 
-Now run it with (if the file does not exist it will be created):
+Start it with a database file (if the file does not exist it will be created):
 
 .. code-block:: text
 
@@ -14,9 +15,22 @@ Now run it with (if the file does not exist it will be created):
    ready on 127.0.0.1:3210
 
 vsql will ignore any authentication values (such as user, password, database,
-etc). Simply connect using ``127.0.0.1:3210``.
+etc). Simply connect using ``127.0.0.1:3210``. Use ``-port`` to listen on a
+different port, see :doc:`cli`.
 
-Any number of clients can be connected at the same time. Each client has its own
+.. warning::
+
+   The server listens on every network interface (not only ``127.0.0.1``) and
+   doesn't check passwords, so anyone who can connect to the port can read and
+   change the database. Only run it on a trusted network, or block the port
+   with a firewall.
+
+Many PostgreSQL clients send a ``SELECT`` without a ``FROM`` (such as
+``SELECT 1``), which isn't valid SQL. ``vsql server`` runs these as if they had
+``FROM singlerow``, a table with a single row.
+
+Any number of clients can be connected at the same time (although no more than
+256 can be in a transaction at once). Each client has its own
 connection, so a transaction started by one client is not visible to the others
 until it is committed. A client that disconnects during a transaction will have
 that transaction rolled back.
@@ -53,13 +67,4 @@ Unlike ``vsql server``, the server doesn't add ``FROM singlerow`` to a ``SELECT`
 without a ``FROM`` (which many PostgreSQL clients send, but isn't valid SQL)
 unless ``select_without_from`` is set.
 
-Binary releases can be downloaded from the
-`Releases <https://github.com/elliotchance/vsql/releases>`_ page (under Assets).
-
-These binary releases do not require V to be installed. Or, you can compile from
-source with:
-
-.. code-block:: sh
-
-   make bin/vsql       # macOS and linux
-   make bin/vsql.exe   # windows
+See :doc:`install` to get the ``vsql`` command.

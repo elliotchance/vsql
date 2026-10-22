@@ -3,8 +3,8 @@ Testing
 
 .. contents::
 
-vsql is tested in a variety of ways, but all functional tests are through the
-SQL files.
+vsql is tested in a variety of ways, but most functional tests are SQL files
+(see `SQL Tests`_).
 
 This page explains what each test suite does and describes how to write tests
 and optional functionality you might need.
@@ -50,6 +50,7 @@ and ok while developing, but before making a PR or a release, you should use:
    TIMES=10 make btree-test
 
 or even ideally:
+
 .. code-block:: sh
 
    TIMES=100 make btree-test
@@ -71,7 +72,7 @@ Or, to run a single command test use the path without the ``.sh`` suffix:
 
 .. code-block:: sh
 
-   make cmd/tests/in-success
+   make cmd/tests/in
 
 Each shell file must return a 0 (success) exit code. However, there are many
 ways to verify that certain commands fail on purpose within the script itself.
@@ -82,7 +83,7 @@ installed, except on CI (when ``CI`` is set) where they fail instead.
 There are some things to consider when writing CLI tests:
 
 1. The file must end with ``.sh`` and contain a
-`https://en.wikipedia.org/wiki/Shebang_(Unix) <shebang>`_ on the first line.
+`shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`_ on the first line.
 
 2. Remember to put ``set -e`` before any other commands. This will ensure that
 if a command fails, that the script itself will halt and return the exit code.
@@ -95,7 +96,7 @@ Debugging
 *********
 
 Modify the ``set -e`` at the start of the file to be ``set -ex``. This will
-print out each of the commmands before they run.
+print out each of the commands before they run.
 
 Temporary Files
 ***************
@@ -116,7 +117,7 @@ match the whole line):
 
 .. code-block:: sh
 
-   grep -R "CREATE TABLE PUBLIC.FOO" $SQL_FILE
+   grep -R 'CREATE TABLE "PUBLIC"."FOO"' $SQL_FILE
 
 Conversely, ``grep -vR`` can be used to check a file does not contain a string.
 
@@ -147,13 +148,7 @@ the path):
 
 .. code-block:: sh
 
-   make examples/virtual-table
-
-Connection
-^^^^^^^^^^
-
-The connection test suite is responsible for testing that various operations
-from concurrent connections do not cause race conditions and other anomalies.
+   make examples/virtual-tables
 
 ORM
 ^^^
@@ -176,9 +171,9 @@ they don't (unless ``$COVERAGE`` is ``0``).
 SQL
 ^^^
 
-The SQL test suite contains all the functional tests. This is likely the only
-test suite you will use when adding functionality or fixing bugs in vsql. More
-description below.
+The SQL test suite contains most of the functional tests. This is likely the
+only test suite you will use when adding functionality or fixing bugs in vsql.
+More description below.
 
 SQL Tests
 ---------
@@ -228,7 +223,7 @@ A failure shows which one failed, such as ``(on disk through server)``.
 All SQL statements are executed and each of the results collected and compared
 to the comment immediately below.
 
-A statement can span multiple lines but must me terminated by a `;`.
+A statement can span multiple lines but must be terminated by a ``;``.
 
 Errors will be in the form of ``error SQLSTATE: message``.
 
@@ -327,10 +322,10 @@ Multiple connections only exist for the lifetime of this test. The first time a
 connection name is seen it will spawn a new connection and subsequent references
 will use the existing connection.
 
-All SQL statements are still run syncronously and sequentially and their output
+All SQL statements are still run synchronously and sequentially and their output
 is prefixed with the connection name.
 
-Connection names can be any single word including numbers for convienience. The
+Connection names can be any single word including numbers for convenience. The
 default connection name is named "main" but this should not be used or
 referenced in tests to avoid unexpected behavior.
 
@@ -511,7 +506,7 @@ expected type.
 
    /* types */
    VALUES ROW(2 + 3 * 5, (2 + 3) * 5);
-   -- COL1: 17 (INTEGER) COL2: 25 (INTEGER)
+   -- COL1: 17 (SMALLINT) COL2: 25 (SMALLINT)
 
 Debugging Tests
 ---------------
@@ -568,7 +563,7 @@ Running Specific Test Files
 If you need to debug a specific sql test file, or just want quicker iterations,
 you can use the ``$TEST`` environment variable:
 
-.. code-block:: sql
+.. code-block:: sh
 
    # only run tests/transaction.sql
    TEST=transaction make sql-test
@@ -650,13 +645,13 @@ Using Different V Versions
 --------------------------
 
 Sometimes there are V language changes which might break tests, or otherwise
-cause issues on newer versions. Fortunatly there is a `oldv` tool which can be
-used to compile older version of `v` for testing. You can run tests simply by
-supplying a different version of V:
+cause issues on newer versions. Fortunately there is an ``oldv`` tool which can
+be used to compile another version of ``v`` for testing. You can run tests
+simply by supplying a different version of V:
 
 .. code-block:: sh
 
-   OLDV=0.3.5 make sql-test
+   OLDV=a853af2 make sql-test
 
 You can use any commit or tag for ``OLDV``. All tags can be
 `found here <https://github.com/vlang/v/tags>`_.

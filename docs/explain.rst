@@ -1,10 +1,9 @@
 EXPLAIN
 =======
 
-An ``EXPLAIN`` is not actually a statement, but rather a string prefix that can
-be placed before most SQL statements that will cause the query planner to return
-the strategy for executing the query without actually running it. This is useful
-for debugging query performance.
+``EXPLAIN`` can be placed before a ``SELECT``, ``VALUES``, ``UPDATE`` or
+``DELETE`` to return the plan that the query planner chose, without running
+the statement. This is useful for debugging query performance.
 
 .. contents::
 
@@ -13,31 +12,51 @@ Syntax
 
 .. code-block:: text
 
-  EXPLAIN ...
+  EXPLAIN <statement>
+
+Each line of the plan is a row with a single ``EXPLAIN`` column. The format of
+the plan is meant for people to read, and may change between versions.
 
 Examples
 --------
 
+These examples use this table:
+
 .. code-block:: sql
 
-   EXPLAIN SELECT * FROM products
-   WHERE product_id >= 123 AND product_id <= 456
-   OFFSET 3 ROWS FETCH FIRST 2 ROWS ONLY;
+   CREATE TABLE products (
+     product_id INT NOT NULL,
+     name VARCHAR(50),
+     price NUMERIC(10, 2),
+     PRIMARY KEY (product_id)
+   );
 
-   -- TABLE PRODUCTS OFFSET 3 ROWS
-   -- WHERE PRODUCT_ID >= 123 AND PRODUCT_ID <= 456
-   -- FETCH FIRST 2 ROWS ONLY
+A ``TABLE`` reads every row of the table:
+
+.. code-block:: sql
+
+   EXPLAIN SELECT name FROM products
+   WHERE price > 10
+   ORDER BY name
+   FETCH FIRST 2 ROWS ONLY;
+   -- EXPLAIN: TABLE ":memory:".PUBLIC.PRODUCTS (PRODUCT_ID INTEGER NOT NULL, NAME CHARACTER VARYING(50), PRICE NUMERIC(10, 2))
+   -- EXPLAIN: WHERE PRICE > 10
+   -- EXPLAIN: ORDER BY NAME ASC
+   -- EXPLAIN: FETCH FIRST 2 ROWS ONLY
+   -- EXPLAIN: EXPR (NAME CHARACTER VARYING(50))
+
+Comparing the ``PRIMARY KEY`` with ``=`` only reads the matching row:
 
 .. code-block:: sql
 
    EXPLAIN DELETE FROM products
    WHERE product_id = 100;
+   -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.PRODUCTS (PRODUCT_ID INTEGER NOT NULL, NAME CHARACTER VARYING(50), PRICE NUMERIC(10, 2)) BETWEEN 100 AND 100
 
-   -- TABLE PRODUCTS
-   -- WHERE PRODUCT_ID = 100
+See Also
+--------
 
-.. code-block:: sql
-
-   EXPLAIN UPDATE products SET price = price * 1.1;
-
-   -- TABLE PRODUCTS
+- :doc:`delete`
+- :doc:`select`
+- :doc:`update`
+- :doc:`values`

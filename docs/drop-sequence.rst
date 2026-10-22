@@ -15,9 +15,6 @@ Delete a sequence.
 Examples
 --------
 
-The simplest case is to create a sequence with no options. By default a sequence
-will start at 1 and increment by 1:
-
 .. code-block:: sql
 
    CREATE SEQUENCE foo;

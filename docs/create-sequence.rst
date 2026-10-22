@@ -13,9 +13,8 @@ Syntax
 A sequence is used as an atomic counter. It is useful for generating unique and
 sequential numbers.
 
-The sequence can have an separately optional min and max values, as well as
-being able to specify if numbers are allowed to cycle (wrap around) between
-these boundaries.
+A sequence can have a minimum and maximum value, and can be allowed to cycle
+(wrap around) between them.
 
 Options
 -------
@@ -30,6 +29,14 @@ Each ``<option>`` can be one of (in any order):
    NO MINVALUE
    MAXVALUE <number>
    NO MAXVALUE
+   CYCLE
+   NO CYCLE
+
+A sequence starts at the ``MINVALUE`` (or ``MAXVALUE`` for a sequence with a
+negative ``INCREMENT BY``) unless ``START WITH`` is provided, and it doesn't
+cycle unless ``CYCLE`` is provided.
+
+The values of a sequence are ``BIGINT``.
 
 Examples
 --------
@@ -46,7 +53,7 @@ will start at 1 and increment by 1:
   -- COL1: 1
   -- COL1: 2
 
-A sequence will return an error if tries to go beyond the allowed limits:
+A sequence will return an error if it tries to go beyond the allowed limits:
 
 .. code-block:: sql
 
@@ -61,7 +68,7 @@ A sequence will return an error if tries to go beyond the allowed limits:
   -- COL1: 20
   -- error 2200H: sequence generator limit exceeded: PUBLIC.SEQ1
 
-However, we can use `CYCLE` to allow the sequence to wrap around:
+However, we can use ``CYCLE`` to allow the sequence to wrap around:
 
 .. code-block:: sql
 
@@ -75,6 +82,9 @@ However, we can use `CYCLE` to allow the sequence to wrap around:
   -- COL1: 10
   -- COL1: 15
   -- COL1: 20
+
+``NEXT VALUE FOR`` is not part of the transaction, so a value is never handed
+out twice, even if the transaction that used it is rolled back.
 
 See Also
 --------

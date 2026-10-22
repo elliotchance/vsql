@@ -13,6 +13,11 @@ Syntax
 
   VALUES <expression>, ...
   VALUES ROW(<expression>, ...), ...
+  [ OFFSET <integer> { ROW | ROWS } ]
+  [ FETCH FIRST [ <integer> ] { ROW | ROWS } ONLY ]
+
+``VALUES 1, 2`` is two rows of one column. Use ``ROW`` for more than one column
+in a row, such as ``VALUES ROW(1, 2)``.
 
 VALUES
 ------
@@ -33,16 +38,20 @@ them, such as ``INTEGER`` for ``VALUES 1, 200000``.
 EXPLAIN
 -------
 
-The query planner will uses a plan operation for the ``VALUES`` and it can be explained:
+The query planner uses a plan operation for the ``VALUES`` and it can be
+explained:
 
 .. code-block:: sql
 
   EXPLAIN VALUES ROW('hello', 1.22);
-  -- EXPLAIN: VALUES ROW('hello', 1.22)
+  -- EXPLAIN: VALUES (COL1 CHARACTER(5), COL2 NUMERIC(3, 2)) = ROW('hello', 1.22)
 
   EXPLAIN SELECT *
   FROM (VALUES ROW(123, 'hi'), ROW(456, 'there')) AS foo (bar, baz);
-  -- EXPLAIN: VALUES ROW(123, 'hi'), ROW(456, 'there') AS FOO (BAR, BAZ)
+  -- EXPLAIN: FOO:
+  -- EXPLAIN:   VALUES (BAR SMALLINT, BAZ CHARACTER(5)) = ROW(123, 'hi'), ROW(456, 'there')
+  -- EXPLAIN: TABLE FOO (BAR SMALLINT, BAZ CHARACTER(5))
+  -- EXPLAIN: EXPR (FOO.BAR SMALLINT, FOO.BAZ CHARACTER(5))
 
 Examples
 --------

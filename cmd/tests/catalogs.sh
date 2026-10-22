@@ -15,5 +15,5 @@ echo 'INSERT INTO foo (baz) VALUES (456);' | $VSQL cli $VSQL2_FILE
 echo "SET CATALOG 'file1'; SELECT * FROM public.foo;" | $VSQL cli $VSQL1_FILE $VSQL2_FILE > $TXT_FILE
 echo "SET CATALOG 'file2'; SELECT * FROM public.foo;" | $VSQL cli $VSQL1_FILE $VSQL2_FILE >> $TXT_FILE
 
-grep -R "BAR: 123" $TXT_FILE
-grep -R "BAZ: 456" $TXT_FILE
+grep -Ex ' *123' $TXT_FILE
+grep -Ex ' *456' $TXT_FILE

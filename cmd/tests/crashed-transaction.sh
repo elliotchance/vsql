@@ -23,7 +23,7 @@ CREATE TABLE t2 (y INT);' | $VSQL cli $VSQL_FILE > $TXT_FILE
 
 cat $TXT_FILE
 grep "UPDATE 1" $TXT_FILE
-grep "ID: 1 X: 12" $TXT_FILE
-grep "ID: 2 X: 20" $TXT_FILE
-! grep "ID: 3" $TXT_FILE
+grep -Ex ' *1 \| *12' $TXT_FILE
+grep -Ex ' *2 \| *20' $TXT_FILE
+! grep -E '^ *3 \|' $TXT_FILE
 grep "CREATE TABLE 1" $TXT_FILE

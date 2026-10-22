@@ -21,10 +21,10 @@ ROLLBACK;
 SELECT * FROM t;' | $VSQL cli $VSQL_FILE > $TXT_FILE
 
 cat $TXT_FILE
-grep "X: 3" $TXT_FILE
-grep "X: 2" $TXT_FILE
-! grep "X: 1" $TXT_FILE
-! grep "X: 4" $TXT_FILE
+grep -Ex ' *3' $TXT_FILE
+grep -Ex ' *2' $TXT_FILE
+! grep -Ex ' *1' $TXT_FILE
+! grep -Ex ' *4' $TXT_FILE
 
 # The transaction ID kept counting past 32 bits.
 test "$(dd if=$VSQL_FILE bs=1 skip=24 count=4 2>/dev/null | od -A n -t x1 | tr -d ' \n')" = "00000001"

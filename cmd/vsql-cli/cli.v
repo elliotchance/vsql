@@ -61,17 +61,7 @@ fn cli_command(cmd cli.Command) ! {
 					continue
 				}
 
-				mut total_rows := 0
-				for row in result {
-					for column in result.columns {
-						print('${column.name.sub_entity_name}: ${row.get_column(column)!.str()} ')
-					}
-					total_rows++
-				}
-
-				if total_rows > 0 {
-					println('')
-				}
+				total_rows := print_table(result)!
 
 				println('${total_rows} ${vsql.pluralize(total_rows, 'row')} (${time.ticks() - start} ms)')
 
@@ -98,4 +88,75 @@ fn print_error(prefix string, err IError) {
 	} else {
 		println('ERROR: ${err}\n')
 	}
+}
+
+// print_table prints the rows of a result as a table, and returns the number of
+// rows:
+//
+//   NAME   | PRICE
+//   -------+------
+//   Bagel  |  2.25
+//   Coffee |  4.50
+//
+// Numbers are right-aligned so that their digits line up. Nothing is printed
+// when there are no rows.
+fn print_table(result vsql.Result) !int {
+	mut rows := [][]string{}
+	for row in result {
+		mut cells := []string{}
+		for column in result.columns {
+			cells << row.get_column(column)!.str()
+		}
+		rows << cells
+	}
+
+	if rows.len == 0 {
+		return 0
+	}
+
+	mut header := []string{}
+	mut widths := []int{}
+	mut right_align := []bool{}
+	for column in result.columns {
+		header << column.name.sub_entity_name
+		widths << utf8_str_visible_length(column.name.sub_entity_name)
+		right_align << is_number(column.typ)
+	}
+
+	for cells in rows {
+		for i, cell in cells {
+			widths[i] = int_max(widths[i], utf8_str_visible_length(cell))
+		}
+	}
+
+	println(table_line(header, widths, right_align))
+	println(widths.map('-'.repeat(it)).join('-+-'))
+	for cells in rows {
+		println(table_line(cells, widths, right_align))
+	}
+
+	return rows.len
+}
+
+// table_line pads each cell to the width of its column. The last cell isn't
+// padded on the right, so that lines don't end with spaces.
+fn table_line(cells []string, widths []int, right_align []bool) string {
+	mut padded := []string{}
+	for i, cell in cells {
+		padding := ' '.repeat(widths[i] - utf8_str_visible_length(cell))
+		padded << if right_align[i] {
+			padding + cell
+		} else if i == cells.len - 1 {
+			cell
+		} else {
+			cell + padding
+		}
+	}
+
+	return padded.join(' | ')
+}
+
+fn is_number(typ vsql.Type) bool {
+	return typ.typ in [.is_smallint, .is_integer, .is_bigint, .is_real, .is_double_precision,
+		.is_numeric, .is_decimal]
 }

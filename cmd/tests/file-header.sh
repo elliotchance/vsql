@@ -30,9 +30,9 @@ test "$(dd if=$VSQL_FILE bs=1 skip=4000 count=2 2>/dev/null | od -A n -t x1 | tr
 
 # A file with a newer write version can be read, but not changed.
 set_header_bytes 10 '\377\377'
-echo 'SELECT * FROM foo;' | $VSQL cli $VSQL_FILE | grep 'BAR: 1'
+echo 'SELECT * FROM foo;' | $VSQL cli $VSQL_FILE | grep -Ex ' *1'
 echo 'INSERT INTO foo (bar) VALUES (2);' | $VSQL cli $VSQL_FILE | grep 'Error 25006: read-only sql transaction: database needs file format 65535 to be changed'
-if echo 'SELECT * FROM foo;' | $VSQL cli $VSQL_FILE | grep 'BAR: 2'; then
+if echo 'SELECT * FROM foo;' | $VSQL cli $VSQL_FILE | grep -Ex ' *2'; then
   exit 1
 fi
 

@@ -33,9 +33,9 @@ while true; do
 
   # Reading recovers the file, which must contain all or none of the UPDATE.
   echo "SELECT COUNT(*) FROM t; SELECT COUNT(*) FROM t WHERE s = '$B';" | $VSQL cli $VSQL_FILE > $TXT_FILE
-  total=$(grep -o 'COL1: [0-9]*' $TXT_FILE | sed -n 1p)
-  changed=$(grep -o 'COL1: [0-9]*' $TXT_FILE | sed -n 2p)
-  if [ "$total" != "COL1: 40" ] || { [ "$changed" != "COL1: 0" ] && [ "$changed" != "COL1: 40" ]; }; then
+  total=$(grep -Ex ' *[0-9]+' $TXT_FILE | tr -d ' ' | sed -n 1p)
+  changed=$(grep -Ex ' *[0-9]+' $TXT_FILE | tr -d ' ' | sed -n 2p)
+  if [ "$total" != "40" ] || { [ "$changed" != "0" ] && [ "$changed" != "40" ]; }; then
     echo "crash at $crash_at: expected 40 rows with 0 or 40 changed, got: $total, $changed"
     cat $TXT_FILE
     exit 1
@@ -43,7 +43,7 @@ while true; do
 
   # The file can still be changed.
   echo "DELETE FROM t WHERE id = 0; SELECT COUNT(*) FROM t;" | $VSQL cli $VSQL_FILE > $TXT_FILE
-  grep -q 'COL1: 39' $TXT_FILE || { echo "crash at $crash_at: cannot change file"; cat $TXT_FILE; exit 1; }
+  grep -qEx ' *39' $TXT_FILE || { echo "crash at $crash_at: cannot change file"; cat $TXT_FILE; exit 1; }
 
   crash_at=$((crash_at + 1))
 done

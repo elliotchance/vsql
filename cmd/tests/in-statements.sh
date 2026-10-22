@@ -18,6 +18,6 @@ EOF2
 
 echo 'SELECT * FROM "a;b";' | $VSQL cli $VSQL_FILE > $TXT_FILE
 cat $TXT_FILE
-grep "S: $A b" $TXT_FILE
-grep "S: x; y" $TXT_FILE
-grep "S: it's; ok" $TXT_FILE
+grep -Fx "$A b" $TXT_FILE
+grep -Fx "x; y" $TXT_FILE
+grep -Fx "it's; ok" $TXT_FILE

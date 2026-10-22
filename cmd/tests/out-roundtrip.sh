@@ -48,7 +48,7 @@ diff $SQL_FILE $SQL_FILE2
 # The sequences must also continue from the same place.
 for f in $VSQL_FILE $VSQL_FILE2; do
   for seq in unused moved '"Mixed"."seq"' past_max past_bigint cycles; do
-    echo "VALUES NEXT VALUE FOR $seq;" | $VSQL cli $f 2>&1 | grep "COL1\|Error"
+    echo "VALUES NEXT VALUE FOR $seq;" | $VSQL cli $f 2>&1 | grep -E '^ *-?[0-9]+$|Error'
   done
 done > $TXT_FILE
 cat $TXT_FILE

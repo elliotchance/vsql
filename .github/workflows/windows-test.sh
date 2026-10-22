@@ -15,8 +15,8 @@ echo "INSERT INTO products (title, price) VALUES ('Instant Pot', 144.89);" | $VS
 printf "START TRANSACTION;\nINSERT INTO products (title, price) VALUES ('Kettle', 20);\nCOMMIT;\nSELECT * FROM products;\n" | $VSQL cli $VSQL_FILE > out.txt
 
 cat out.txt
-grep "TITLE: Instant Pot PRICE: 144.89" out.txt
-grep "TITLE: Kettle PRICE: 20" out.txt
+grep "^Instant Pot | 144.89e0" out.txt
+grep "^Kettle      |     20e0" out.txt
 
 $VSQL bench -accounts 1000 -duration 2
 

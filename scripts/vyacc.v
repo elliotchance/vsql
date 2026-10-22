@@ -3295,11 +3295,6 @@ fn $\$lex1(mut lex YYLexer, mut lval YYSymType) (int, int) {
 	return ch, int($\$_tok3[i+1])
 }
 
-fn $\$_parse(mut $\$lex YYLexer) !int {
-	mut parser := $\$_new_parser()
-	return parser.parse(mut $\$lex)
-}
-
 fn (mut $\$rcvr YYParserImpl) parse(mut $\$lex YYLexer) !int {
 	mut $\$n := 0
 	mut $\$_val := YYSymType{}

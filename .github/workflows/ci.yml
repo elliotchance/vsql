@@ -1,7 +1,18 @@
 name: CI
 
+# Pull requests are tested by the pull_request event, so pushes only build
+# main and the release tags (paths-ignore doesn't apply to tags). It also runs
+# every day, so that a change to V master that breaks vsql is found before
+# users find it.
 on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
   push:
+    branches:
+      - main
+    tags:
+      - "v*"
     paths-ignore:
       - "**.md"
       - "**.rst"
@@ -10,24 +21,37 @@ on:
       - "**.md"
       - "**.rst"
 
+# A new push to a pull request cancels its previous run. Other runs are never
+# cancelled, since a release tag has the same commit as the push to main.
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.sha }}
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
+# There's one job for each OS. Each one runs the tests that work there and
+# builds the binary for the release. Checks that don't depend on the OS only
+# run on Linux, which has the fastest and least limited runners.
+#
+# The release binary is built after the tests, because set_version.sh changes
+# version.v (the tests expect no version, and the checks expect no changes).
+# The zip contains a folder named after the release, like vsql-v0.34.0-macos,
+# so that versions can be unzipped side by side.
 jobs:
-  tests:
-    name: Tests
-    runs-on: macos-latest
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # V is pinned in .v-version so that it's cached between runs, and a new
-      # commit on V master can't break the build.
-      - name: Set up V
+      # Users get V master from "v up", so that's what vsql is tested and
+      # released with.
+      - name: Set up V master
         uses: vlang/setup-v@v1.7
         with:
-          version-file: .v-version
+          check-latest: true
+
+      - name: Show V version
+        run: v version
 
       - name: Verify fmt
         run: make fmt-verify
@@ -38,13 +62,50 @@ jobs:
           make grammar
           git diff --exit-code vsql/y.v
 
+      # The venv keeps the system's Python packages out, since Ubuntu's Pygments
+      # is too old for Sphinx.
       - name: Verify docs
         run: |
-          export PIP_BREAK_SYSTEM_PACKAGES=1
-          pip install sphinx sphinx_rtd_theme
-          cd docs && python3 -m pip install -r requirements.txt && cd -
+          python3 -m venv "$RUNNER_TEMP/docs-venv"
+          . "$RUNNER_TEMP/docs-venv/bin/activate"
+          pip install -r docs/requirements.txt
           make clean-docs docs
           git diff --exit-code
+
+      # psql is already installed on the runner. It's used by the server tests.
+      - name: Run tests
+        run: make test
+
+      - name: Build binary
+        run: |
+          .github/workflows/set_version.sh
+          make bin/vsql
+          .github/workflows/hello-test.sh bin/vsql
+          dir=vsql-${GITHUB_REF##*/}-linux
+          mkdir $dir && cp bin/vsql $dir/
+          zip -r $dir.zip $dir
+
+      - name: Release
+        uses: softprops/action-gh-release@v3
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            vsql-*-linux.zip
+
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up V master
+        uses: vlang/setup-v@v1.7
+        with:
+          check-latest: true
+
+      - name: Show V version
+        run: v version
 
       # libpq is keg-only, so psql must be added to the PATH. It's used by the
       # server tests.
@@ -56,108 +117,66 @@ jobs:
       - name: Run tests
         run: make test
 
-  macos-binary:
-    name: Build for macOS
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Set up V
-        uses: vlang/setup-v@v1.7
-        with:
-          version-file: .v-version
-
-      - name: Build macOS binaries
+      - name: Build binary
         run: |
           .github/workflows/set_version.sh
           make bin/vsql
-          zip -j vsql-macos.zip bin/vsql
+          .github/workflows/hello-test.sh bin/vsql
+          dir=vsql-${GITHUB_REF##*/}-macos
+          mkdir $dir && cp bin/vsql $dir/
+          zip -r $dir.zip $dir
 
       - name: Release
         uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            vsql-macos.zip
+            vsql-*-macos.zip
 
-  linux-binary:
-    name: Build for Linux
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Set up V
-        uses: vlang/setup-v@v1.7
-        with:
-          version-file: .v-version
-
-      - name: Build linux binaries
-        run: |
-          .github/workflows/set_version.sh
-          make bin/vsql
-          zip -j vsql-linux.zip bin/vsql
-
-      - name: Release
-        uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            vsql-linux.zip
-
-  # I know it seems pretty silly that we're using macOS and cross compling for
-  # Windows. But I couldn't get window-latest to work. If you use windows please
-  # put in a PR to fix this.
-  windows-binary:
-    name: Build for Windows
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Set up V
-        uses: vlang/setup-v@v1.7
-        with:
-          version-file: .v-version
-
-      - name: Build Windows binaries
-        run: |
-          brew install mingw-w64
-          .github/workflows/set_version.sh
-          make bin/vsql.exe
-          zip -j vsql-windows.zip bin/vsql.exe
-
-      - name: Upload Windows binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: vsql-windows
-          path: bin/vsql.exe
-
-      - name: Release
-        uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            vsql-windows.zip
-
-  windows-test:
-    name: Test on Windows
-    needs: windows-binary
+  # The test suites don't run on Windows yet, so this builds the binary and runs
+  # some statements, a short benchmark and the server with it.
+  windows:
+    name: Windows
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Download Windows binary
-        uses: actions/download-artifact@v4
+      - name: Set up V master
+        uses: vlang/setup-v@v1.7
         with:
-          name: vsql-windows
+          check-latest: true
+
+      - name: Show V version
+        run: v version
+
+      - name: Build binary
+        run: |
+          .github/workflows/set_version.sh
+          v -n -nocache -prod -cc gcc cmd/vsql-cli -o bin/vsql.exe
+          .github/workflows/hello-test.sh bin/vsql.exe
 
       # PostgreSQL is installed on the runner, but psql isn't on the PATH. It's
       # used by the server tests.
-      - name: Run Windows tests
-        shell: bash
+      - name: Run tests
         run: |
           export PATH="$(cygpath -u "$PGBIN"):$PATH"
-          .github/workflows/windows-test.sh ./vsql.exe
+          .github/workflows/windows-test.sh bin/vsql.exe
+
+      - name: Zip binary
+        shell: pwsh
+        run: |
+          $dir = "vsql-$("$env:GITHUB_REF".Split('/')[-1])-windows"
+          New-Item -ItemType Directory $dir
+          Copy-Item bin/vsql.exe $dir
+          Compress-Archive -Path $dir -DestinationPath "$dir.zip"
+
+      - name: Release
+        uses: softprops/action-gh-release@v3
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            vsql-*-windows.zip

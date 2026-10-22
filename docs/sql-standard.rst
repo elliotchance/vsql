@@ -10,16 +10,19 @@ Each version is split into multiple parts.
 is the largest part (in terms of pages) and covers the syntax and behavior for
 the core SQL language. It's also the most relevant part for this project.
 
-Each version brings new features, but most of the general features commonly used
-have been published by 2003 **and that will be the ideal standard for us to work
-against.** Older versions (such as 1999) are still relevant and helpful because
-they still contain most of the core features.
+vsql works against **SQL:2016** (ISO/IEC 9075-2:2016). The source files are
+named after the section of the standard that they implement (such as
+``std_14_14_update_statement_searched.v`` for section 14.14), and
+:doc:`sql-compliance` lists which features are supported. Most of the features
+in common use were published by 2003, so older versions (such as 1999) are
+still relevant and helpful because they contain most of the core features.
 
 **Unfortunately, the SQL Standard is not free (and is very expensive).** This
 includes all previous versions. This is obviously a challenge for an open-source
 project. While we cannot include a copy of the standard, the next best option is
 to provide a list of locations where it exists:
 
+* `SQL:2016 Foundation Grammar (BNF) <https://jakewheat.github.io/sql-overview/sql-2016-foundation-grammar.html>`_
 * `SQL:2003 (working draft) <https://synthesis.frccsc.ru/synthesis/student/oodb/essayRef/sqlFoundation.pdf>`_
 * `SQL:1999 (final draft) (1) <https://web.cecs.pdx.edu/~len/sql1999.pdf>`_
 * `SQL:1999 (final draft) (2) <http://courses.cms.caltech.edu/cs123/sql99std/ansi-iso-9075-2-1999.pdf>`_

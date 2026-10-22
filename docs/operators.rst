@@ -5,7 +5,7 @@ Operators
 
 For the tables below:
 
-- ``number`` is any of the numer types: ``FLOAT``, ``DOUBLE PRECISION``, etc.
+- ``number`` is any of the number types: ``INTEGER``, ``DOUBLE PRECISION``, etc.
 - ``text`` is any of the character types: ``CHARACTER VARYING``, ``CHARACTER``, etc.
 - ``any`` is any data type.
 
@@ -63,7 +63,7 @@ Binary Operations
      - 4
      - Less than
 
-   * - ``text <= text``
+   * - ``text < text``
      - 4
      - Less than
 
@@ -90,6 +90,9 @@ Binary Operations
    * - ``boolean OR boolean``
      - 7
      - Logical or
+
+Dates and times can also be compared with each other (see :doc:`dates-times`),
+and so can ``BOOLEAN`` values.
 
 The *Precedence* dictates the order of operations. For example ``2 + 3 * 5`` is
 evaluated as ``2 + (3 * 5)`` because ``*`` has a lower precedence so it happens

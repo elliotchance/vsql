@@ -12,17 +12,21 @@ Syntax
 
 ``SET CATALOG`` changes the currently selected catalog.
 
-The default catalog depends on the first database file opened and does not
-change if other databases are attached.
+A catalog is a database file. A connection starts with the catalog of the file
+that it opened, and more files can be attached as other catalogs, with
+``Connection.add_catalog()`` in V or by passing more files to ``vsql cli`` (see
+:doc:`cli`).
 
-The name of a catalog is based on the file path using the paths base name up to
+The name of a catalog is based on the file path using the path's base name up to
 the first ``.``. So, if the complete file path is ``/tmp/mydb.cool.vsql`` the
-``CURRENT_CATALOG`` would be ``mydb``.
+catalog would be ``mydb``. The catalog of an in-memory database is
+``:memory:``.
 
 ``CURRENT_CATALOG`` can be used in expressions to get the currently selected
-schema.
+catalog.
 
-The catalog must exists for ``SET CATALOG`` to succeed.
+The catalog must exist for ``SET CATALOG`` to succeed, otherwise it's an error
+``3D000``.
 
 A table, schema or sequence in another catalog can also be used without
 changing the current catalog by qualifying its name with the catalog, such as
@@ -31,7 +35,9 @@ changing the current catalog by qualifying its name with the catalog, such as
 Examples
 --------
 
-.. code-block:: sql
+With ``mydb.vsql`` opened, and ``foo.vsql`` attached:
+
+.. code-block:: text
 
    VALUES CURRENT_CATALOG;
    SET CATALOG 'foo';
@@ -39,3 +45,9 @@ Examples
    -- COL1: mydb
    -- msg: SET CATALOG 1
    -- COL1: foo
+
+See Also
+--------
+
+- :doc:`set-schema`
+- :doc:`start-transaction` (for transactions across catalogs)

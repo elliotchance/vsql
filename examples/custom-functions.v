@@ -18,7 +18,7 @@ fn example() ! {
 
 	db.query('CREATE TABLE products (product_name VARCHAR(100), price FLOAT)')!
 	db.query("INSERT INTO products (product_name, price) VALUES ('Ice Cream', 5.99)")!
-	db.query("INSERT INTO products (product_name, price) VALUES ('Ham Sandwhich', 3.47)")!
+	db.query("INSERT INTO products (product_name, price) VALUES ('Ham Sandwich', 3.47)")!
 	db.query("INSERT INTO products (product_name, price) VALUES ('Bagel', 1.25)")!
 
 	result := db.query('SELECT product_name, no_pennies(price) as total FROM products')!

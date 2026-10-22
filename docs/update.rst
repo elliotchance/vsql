@@ -9,13 +9,28 @@ Syntax
 .. code-block:: text
 
   UPDATE <table_name>
-  SET <col> = <value> , ...
-  [ WHERE <expr> ]
+  SET <column_name> = <value> , ...
+  [ WHERE <condition> ]
 
 If ``WHERE`` is not provided, all records will be updated.
 
-The result (eg. ``UPDATE 8``) contains the number of records matched, including
-records that already had the new values.
+The result (such as ``UPDATE 8``) contains the number of records matched,
+including records that already had the new values.
+
+Examples
+--------
+
+.. code-block:: sql
+
+  CREATE TABLE products (name VARCHAR(50), price NUMERIC(10, 2));
+  INSERT INTO products (name, price) VALUES ('Coffee', 4.50), ('Bagel', 2.25);
+  UPDATE products SET price = price * 2 WHERE name = 'Bagel';
+  SELECT * FROM products;
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 2
+  -- msg: UPDATE 1
+  -- NAME: Coffee PRICE: 4.50
+  -- NAME: Bagel PRICE: 4.50
 
 EXPLAIN
 -------
@@ -28,10 +43,11 @@ Errors
 
 Only one transaction is allowed to hold a modified version of a record at one
 time. This allows all other transactions to see the previous (frozen) version
-and the in-flight transaction to see it's own version.
+and the in-flight transaction to see its own version.
 
 It's not possible for multiple in-flight transactions to hold different versions
 of the same semantic row. This would break the serialization rules of the
-transaction since this would cause a conflict as to whos version is "correct".
-This situation will return a SQLSTATE 40001 "serialization failure" error.
-Clients that receive this error should start the entire transaction again.
+transaction since this would cause a conflict as to whose version is "correct".
+This situation will return a SQLSTATE 40001 "serialization failure" error, and
+the transaction is rolled back. Clients that receive this error should start
+the entire transaction again.

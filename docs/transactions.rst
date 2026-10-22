@@ -4,10 +4,21 @@ Transactions
 vsql supports transactions through the :doc:`start-transaction`, :doc:`commit`
 and :doc:`rollback` statements.
 
-Internally, transactions use :doc:`mvcc` that allow multiple connections to both
-read and write to the database at the same time. This is different from SQLite
-which serializes all transactions by having a write transaction have an
-exclusive write lock on the file until it is comitted or rolled back.
+Internally, transactions use :doc:`mvcc`, so many connections (including ones
+in different processes) can each have a transaction open on the same database
+file at the same time. A statement only locks the file while it runs, rather
+than for the whole transaction. This is different from SQLite, where a write
+transaction holds an exclusive lock on the file until it is committed or rolled
+back.
+
+Transactions use the ``READ COMMITTED`` isolation level: a statement sees the
+changes that other transactions have committed before it started. Two
+transactions can't change the same row at the same time. The second one gets a
+``40001`` serialization failure, and its transaction is rolled back so that it
+can be retried.
+
+A statement that isn't inside a ``START TRANSACTION`` runs in a transaction of
+its own, which is committed when the statement finishes.
 
 Examples
 --------

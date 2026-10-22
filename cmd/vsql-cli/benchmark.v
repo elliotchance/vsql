@@ -72,7 +72,7 @@ fn (mut b Benchmark) start() ! {
 		}
 	}
 
-	b.print_stat('TCP-B (sort of)', txn_count, 'transactions', t.elapsed())
+	b.print_stat('TPC-B (sort of)', txn_count, 'transactions', t.elapsed())
 }
 
 fn (mut b Benchmark) print_stat(name string, n int, unit string, elapsed time.Duration) {

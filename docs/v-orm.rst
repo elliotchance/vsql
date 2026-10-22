@@ -166,10 +166,20 @@ Limitations
   vsql cannot declare them yet. Creating a table that uses them returns an
   error.
 
-- Indexes (``@[index]``) are ignored.
+- Indexes (``@[index]``) and comments (``@[comment]``) are ignored.
 
-- ``in`` and ``!in`` in a ``where`` are not supported, because vsql doesn't
-  have the ``IN`` predicate yet.
+- A ``PRIMARY KEY`` must be a ``SMALLINT``, ``INTEGER`` or ``BIGINT`` field,
+  so a ``string`` field can't be ``@[primary]``.
 
-- A ``PRIMARY KEY`` must be a single ``SMALLINT``, ``INTEGER`` or ``BIGINT``
-  field.
+- These are not supported, because vsql doesn't support the SQL that the ORM
+  generates for them yet:
+
+  - ``in`` and ``!in`` in a ``where`` (the ``IN`` predicate).
+  - ``select distinct``.
+  - ``sum``, ``min`` and ``max`` of a field that isn't an ``f64``.
+  - Updating rows from an array (``set name = rows.name where id ==
+    rows.id``), which uses ``CASE``.
+  - ``ilike``, which isn't part of the SQL standard.
+  - Nested transactions, which use savepoints (see `Transactions`_).
+
+  Each of these returns an error from vsql when the query runs.

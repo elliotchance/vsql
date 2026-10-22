@@ -10,25 +10,32 @@ Syntax
 
   CREATE TABLE <table_name> ( <element> , ... )
 
-  <element> := <column_name> <column_type> [ NULL | NOT NULL ]
+  <element> := <column_name> <data_type> [ NOT NULL ]
              | PRIMARY KEY ( <column_name> , ... )
 
 1. ``column_name`` must start with a letter, but can be followed by any letter,
-   underscore (``_``) or digit for a maximum length of 128 characters.
-2. ``column_type`` must be a data type.
+   underscore (``_``) or digit for a maximum length of 128 characters. A
+   quoted name (such as ``"order"``) can contain any characters. See
+   :doc:`keywords`.
+2. ``data_type`` is one of the types in :doc:`booleans`, :doc:`dates-times`,
+   :doc:`numbers` and :doc:`text`.
+
+Columns allow ``NULL`` unless they are ``NOT NULL``. Column defaults, and
+``UNIQUE``, ``FOREIGN KEY`` and ``CHECK`` constraints are not supported yet.
 
 Primary Keys
 ------------
 
-One or more columns can be defined in the PRIMARY KEY. A column may only appear
-once in the PRIMARY KEY and only integer types are supported at the moment.
+One or more columns can be defined in the ``PRIMARY KEY``. A column may only
+appear once in the ``PRIMARY KEY`` and only integer types (``SMALLINT``,
+``INTEGER`` and ``BIGINT``) are supported at the moment. The ``PRIMARY KEY``
+must be listed separately, after the columns.
 
-The PRIMARY KEY both prevents the same value from being inserted and dictates
-the order that data will naturally be retreived in (even if the PRIMARY KEY is
-not used).
+The ``PRIMARY KEY`` both prevents the same value from being inserted (an error
+``23505``) and makes a ``WHERE`` that compares it with ``=`` fast.
 
-A PRIMARY KEY does not allow NULLs, so all columns used in the PRIMARY KEY are
-``NOT NULL``, even if they are not declared that way.
+A ``PRIMARY KEY`` does not allow ``NULL``, so all columns used in the
+``PRIMARY KEY`` are ``NOT NULL``, even if they are not declared that way.
 
 Examples
 --------
@@ -36,6 +43,14 @@ Examples
 .. code-block:: sql
 
   CREATE TABLE products (
+      product_id INTEGER NOT NULL,
       title CHARACTER VARYING(100),
-      price FLOAT
+      price NUMERIC(10, 2),
+      PRIMARY KEY (product_id)
   );
+
+See Also
+--------
+
+- :doc:`drop-table`
+- :doc:`insert`

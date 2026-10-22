@@ -1,17 +1,24 @@
 Contributing
 ============
 
-This page is aimed to developers of vsql.
+This page is aimed at developers of vsql. Bug reports and ideas are welcome as
+`GitHub issues <https://github.com/elliotchance/vsql/issues>`_.
 
 .. contents::
 
 Building from Source
 --------------------
 
+vsql is built and tested with the latest V, so update V first with ``v up``.
+Then:
+
 .. code-block:: sh
 
   make bin/vsql       # macOS and linux
   make bin/vsql.exe   # windows
+
+Before sending a pull request, run ``make fmt`` and make sure ``make test``
+passes (see :doc:`testing`).
 
 Debugging
 ---------
@@ -27,7 +34,7 @@ Documentation
 -------------
 
 Documentation is built and published automatically at
-`vsql.readthedocs.com <https://vsql.readthedocs.io/en/latest/>`_.
+`vsql.readthedocs.io <https://vsql.readthedocs.io/en/latest/>`_.
 
 You can generate the documentation locally with:
 
@@ -52,8 +59,8 @@ rebuild the entire docs you can use:
 Parser & SQL Grammar
 --------------------
 
-To make changes to the SQL grammar you will need to modify the ``*.y`` files.
-These rules are partial or complete BNF rules from the
+To make changes to the SQL grammar you will need to modify the ``vsql/*.y``
+files. These rules are partial or complete BNF rules from the
 `2016 SQL standard <https://jakewheat.github.io/sql-overview/sql-2016-foundation-grammar.html>`_.
 
 After making changes to grammar file(s) you will need to run:
@@ -65,4 +72,4 @@ After making changes to grammar file(s) you will need to run:
 Testing
 -------
 
-vsql is tested exclusively with SQL test files. See :doc:`testing`.
+Most tests are SQL files in ``tests/``. See :doc:`testing`.

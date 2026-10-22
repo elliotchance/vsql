@@ -3,8 +3,14 @@ MVCC
 
 vsql transactions are implemented using Multiversion Concurrency Control (MVCC).
 In a nutshell, MVCC maintains multiple copies of rows that are visible to
-respective transactions. MVCC is one method to ensure readers and writers do not
-block readers or writers.
+respective transactions. MVCC is one method to ensure that a transaction doesn't
+block other readers or writers until it finishes. Each statement still locks the
+database file while it runs (a shared lock to read, or an exclusive lock to
+write), but only for the duration of that statement.
+
+At most 256 transactions can be active at the same time, because their IDs are
+kept in the header of the database file (see :doc:`file-format`). Starting
+another one is an error ``0B000``.
 
 Recovering Expired Rows
 -----------------------
@@ -44,7 +50,7 @@ connection to the database is open.
 Wraparound Transaction IDs
 --------------------------
 
-Another challange with MVCC is that it requires transactions IDs to increment.
+Another challenge with MVCC is that it requires transactions IDs to increment.
 Some databases use 32-bit transaction IDs, which can run out and have to wrap
 around. vsql uses 64-bit transaction IDs, so even at one million transactions
 per second a database would take more than 500,000 years to run out. Transaction

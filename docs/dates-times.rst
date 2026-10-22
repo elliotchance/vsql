@@ -27,7 +27,8 @@ Holds a time as hour-minute-second-timezone (without respect to a date),
 for example: ``15:12:47+05:30``.
 
 The hours, minutes and seconds must be two digits each. Seconds may be ``60`` or
-``61`` to allow for leap seconds, but these will roll over into the next minute.
+``61`` to allow for leap seconds, but these will roll over into the next minute
+(so ``TIME '23:59:60'`` is ``00:00:00``).
 The time zone must be between ``-14:00`` and ``+14:00``.
 
 The ``(n)`` describes the sub-second resolution to be stored. It must be
@@ -181,8 +182,8 @@ date and time component, but without the time zone.
 LOCALTIME(p)
 ^^^^^^^^^^^^
 
-Provides the time with the time zone (eg. ``15:45:55``) within the time zone
-of the session as a ``TIME(p) WITHOUT TIME ZONE`` type.
+Provides the time without the time zone (eg. ``15:45:55``) within the time
+zone of the session as a ``TIME(p) WITHOUT TIME ZONE`` type.
 
 The ``(p)`` is optional and if not provided will use a value of ``0``.
 Otherwise, the value of ``p`` must be between ``0`` and ``6`` and controls both

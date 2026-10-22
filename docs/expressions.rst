@@ -11,12 +11,12 @@ BETWEEN
   X [ NOT ] BETWEEN [ ASYMMETRIC | SYMMETRIC ] Y AND Z
 
 A ``BETWEEN`` expression returns ``TRUE`` if ``X`` is inclusively between
-``Y`` and ``Z``. Or, put another way ``X >= Y AND Z <= Z``.
+``Y`` and ``Z``. Or, put another way ``X >= Y AND X <= Z``.
 
 If ``SYMMETRIC`` is provided, the orders of ``Y`` and ``Z`` are irrelevant. Such
 that they will be swapped if ``Y > Z``.
 
-If neither ``ASYMMETRIC`` or ``SYMMETRIC`` is provided then ``ASYMMETRIC`` is
+If neither ``ASYMMETRIC`` nor ``SYMMETRIC`` is provided then ``ASYMMETRIC`` is
 assumed.
 
 *Examples*
@@ -26,7 +26,7 @@ assumed.
   30 BETWEEN 25 AND 45             -- TRUE
   30 BETWEEN 45 AND 32             -- FALSE
   30 NOT BETWEEN 25 AND 45         -- FALSE
-  30 BETWEEN SYMMETRIC 45 AND 32   -- TRUE
+  30 BETWEEN SYMMETRIC 45 AND 25   -- TRUE
 
 IS NULL
 -------
@@ -44,8 +44,8 @@ LIKE
 
   X [ NOT ] LIKE Y
 
-Tests if ``X`` matches the like-expression of ``Y``. Apart from simple regexp
-matching, this is very useful for testing the prefix or suffix of a string.
+Tests if ``X`` matches the pattern ``Y``. This is very useful for testing the
+prefix or suffix of a string. The ``ESCAPE`` clause is not supported yet.
 
 Matching is always against the entire string (not a partial match) and is
 case-sensitive. You can use the following characters in ``Y``:
@@ -88,11 +88,12 @@ within a row. Each new row will get the next value.
 
 .. code-block:: sql
 
+  CREATE SEQUENCE my_sequence;
   VALUES NEXT VALUE FOR my_sequence, NEXT VALUE FOR my_sequence;
+  VALUES ROW(NEXT VALUE FOR my_sequence, NEXT VALUE FOR my_sequence);
+  -- msg: CREATE SEQUENCE 1
   -- COL1: 1
   -- COL1: 2
-
-  VALUES ROW(NEXT VALUE FOR my_sequence, NEXT VALUE FOR my_sequence);
   -- COL1: 3 COL2: 3
 
 SIMILAR TO

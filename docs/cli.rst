@@ -6,51 +6,72 @@ Command Line Interface (CLI)
 Installing
 ----------
 
-Binary releases can be downloaded from the
+Download a binary from the
 `Releases <https://github.com/elliotchance/vsql/releases>`_ page (under Assets).
-
-These binary releases do not require V to be installed.
-
-Compiling From Source
----------------------
-
-You can compile from source with:
-
-.. code-block:: sh
-
-   make bin/vsql       # macOS and linux
-   make bin/vsql.exe   # windows
+These binaries do not require V to be installed. See :doc:`install` for other
+options.
 
 Commands
 --------
 
+Run ``vsql help`` to list the commands, or ``vsql <command> -help`` to see the
+options for a command.
+
 bench
 ^^^^^
 
-``bench`` is used to run benchmarks:
+``bench`` runs a benchmark (see :doc:`benchmark`):
 
 .. code-block:: sh
 
-   vsql bench                    # on disk
-   vsql bench -file ':memory:'   # in memory
+   vsql bench                                 # on disk, in bench.vsql
+   vsql bench -file ':memory:'                # in memory
+   vsql bench -accounts 1000 -duration 5      # a quick test
+
+Options are:
+
+- ``-file`` or ``-f``: The database file, which is deleted and created for the
+  test (default ``bench.vsql``). Use ``:memory:`` for an in-memory database.
+- ``-accounts``: The number of rows in the ``ACCOUNTS`` table (default 100000).
+- ``-duration``: The number of seconds to run transactions for (default 60).
 
 cli
 ^^^
 
-``cli`` provides a command prompt for running SQL commands (ctrl+c to exit):
+``cli`` provides a command prompt for running SQL statements. The file is
+created if it doesn't exist. Results are shown as a table, with numbers
+right-aligned. Type ``exit`` (or press ctrl+c) to leave:
 
 .. code-block:: text
 
    $ vsql cli test.vsql
-   vsql> select * from foo;
-   A: 1234 
-   1 row (1 ms)
+   vsql> CREATE TABLE foo (a INT);
+   CREATE TABLE 1 (0 ms)
 
-   vsql> select * from bar;
-   0 rows (0 ms)
+   vsql> INSERT INTO foo (a) VALUES (1234);
+   INSERT 1 (1 ms)
+
+   vsql> SELECT * FROM foo;
+      A
+   ----
+   1234
+   1 row (0 ms)
+
+   vsql> exit
+
+Use ``:memory:`` as the file name for an in-memory database.
+
+Any other files after the first one are attached as more catalogs (see
+:doc:`set-catalog`). Each catalog is named after its file, up to the first
+``.``:
+
+.. code-block:: text
+
+   $ vsql cli main.vsql archive.vsql
+   vsql> SELECT * FROM archive.public.orders;
 
 in
-^^^
+^^
 
 ``in`` is used to load a SQL file into a database:
 
@@ -91,23 +112,25 @@ are restored to the same next value.
 Options are:
 
 - ``-create-public-schema``: When enabled, ``CREATE SCHEMA "PUBLIC";`` will be
-  included in the output. By default it not included because it is provided
+  included in the output. By default it is not included because it is provided
   implicitly with a vsql database.
 
 server
 ^^^^^^
 
-``server`` will start the PostgreSQL-compatible server. You may connect to it
-with on of the :doc:`supported PostgreSQL clients here<postgresql-clients>`.
+``server`` will start the PostgreSQL-compatible server for a database file. You
+may connect to it with one of the :doc:`supported PostgreSQL clients
+<postgresql-clients>`. See :doc:`server`.
 
-.. code-block:: sh
+.. code-block:: text
 
-   vsql server
+   $ vsql server mydb.vsql
+   ready on 127.0.0.1:3210
 
 Options are:
 
-- ``--port`` or ``-p``: Port number (default 3210).
-- ``--verbose`` or ``-v``: Verbose (show all messages in and out of the server).
+- ``-port`` or ``-p``: Port number (default 3210).
+- ``-verbose`` or ``-v``: Verbose (show all messages in and out of the server).
 
 version
 ^^^^^^^

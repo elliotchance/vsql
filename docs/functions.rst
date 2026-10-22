@@ -6,6 +6,21 @@ Functions
 Aggregate Functions
 -------------------
 
+Aggregate functions calculate a single value from a set of rows (see
+``GROUP BY`` in :doc:`select`). ``NULL`` values are ignored, with a ``01003``
+warning. If all of the values are ``NULL`` (or there are no rows) the result is
+``NULL``, except for ``COUNT``.
+
+The examples use this table:
+
+.. code-block:: sql
+
+  CREATE TABLE products (city VARCHAR(20), price FLOAT);
+  INSERT INTO products (city, price) VALUES
+    ('New York', 8.05e0), ('New York', 18.05e0),
+    ('San Francisco', 7.5e0), ('San Francisco', 17.5e0),
+    ('San Francisco', NULL);
+
 AVG
 ^^^
 
@@ -13,19 +28,18 @@ AVG
 
    AVG(DOUBLE PRECISION) DOUBLE PRECISION
 
-Returns the average value. ``NULL`` expressions are ignored. If all of the
-expressions are ``NULL`` the result will also be ``NULL``.
+Returns the average value.
 
 **Examples**
 
 .. code-block:: sql
 
   SELECT AVG(price) FROM products;
-  -- COL1: 4.36666
-  
+  -- COL1: 12.775e0
+
   SELECT city, AVG(price) FROM products GROUP BY city;
-  -- CITY: New York COL1: 8.96666
-  -- CITY: San Francisco COL1: 6.5
+  -- CITY: New York COL2: 13.05e0
+  -- CITY: San Francisco COL2: 12.5e0
 
 COUNT
 ^^^^^
@@ -34,22 +48,22 @@ COUNT
 
    COUNT(ANY) INTEGER
 
-Count the number of non-``NULL`` expressions.
+Count the number of non-``NULL`` values.
 
 There is a special form ``COUNT(*)`` that will count all rows.
 
 **Examples**
 
-These example show the difference between count all rows and only counting those
-that have a non-``NULL`` ``first_name``.
+These examples show the difference between counting all rows and only counting
+those that have a non-``NULL`` ``price``.
 
 .. code-block:: sql
 
-  SELECT COUNT(*) FROM people;
-  -- 12
-  
-  SELECT COUNT(first_name) FROM people;
-  -- 10
+  SELECT COUNT(*) FROM products;
+  -- COL1: 5
+
+  SELECT COUNT(price) FROM products;
+  -- COL1: 4
 
 MAX
 ^^^
@@ -58,19 +72,18 @@ MAX
 
    MAX(DOUBLE PRECISION) DOUBLE PRECISION
 
-Returns the maximum value. ``NULL`` expressions are ignored. If all of the
-expressions are ``NULL`` the result will also be ``NULL``.
+Returns the maximum value.
 
 **Examples**
 
 .. code-block:: sql
 
   SELECT MAX(price) FROM products;
-  -- COL1: 20.45
-  
+  -- COL1: 18.05e0
+
   SELECT city, MAX(price) FROM products GROUP BY city;
-  -- CITY: New York COL1: 18.05
-  -- CITY: San Francisco COL1: 17.5
+  -- CITY: New York COL2: 18.05e0
+  -- CITY: San Francisco COL2: 17.5e0
 
 MIN
 ^^^
@@ -79,19 +92,18 @@ MIN
 
    MIN(DOUBLE PRECISION) DOUBLE PRECISION
 
-Returns the minimum value. ``NULL`` expressions are ignored. If all of the
-expressions are ``NULL`` the result will also be ``NULL``.
+Returns the minimum value.
 
 **Examples**
 
 .. code-block:: sql
 
   SELECT MIN(price) FROM products;
-  -- COL1: 10.45
-  
+  -- COL1: 7.5e0
+
   SELECT city, MIN(price) FROM products GROUP BY city;
-  -- CITY: New York COL1: 8.05
-  -- CITY: San Francisco COL1: 7.5
+  -- CITY: New York COL2: 8.05e0
+  -- CITY: San Francisco COL2: 7.5e0
 
 SUM
 ^^^
@@ -100,19 +112,18 @@ SUM
 
    SUM(DOUBLE PRECISION) DOUBLE PRECISION
 
-Returns the sum (total) of all values. ``NULL`` expressions are ignored. If all
-of the expressions are ``NULL`` the result will also be ``NULL``.
+Returns the sum (total) of all values.
 
 **Examples**
 
 .. code-block:: sql
 
   SELECT SUM(price) FROM products;
-  -- COL1: 487.75
-  
+  -- COL1: 51.1e0
+
   SELECT city, SUM(price) FROM products GROUP BY city;
-  -- CITY: New York COL1: 196.35
-  -- CITY: San Francisco COL1: 291.4
+  -- CITY: New York COL2: 26.1e0
+  -- CITY: San Francisco COL2: 25e0
 
 Date & Time
 -----------
@@ -174,13 +185,13 @@ Absolute value. The result is the same type as the argument. When using
 .. code-block:: sql
 
   VALUES ABS(1.2e0);
-  -- 1.2e0
-  
+  -- COL1: 1.2e0
+
   VALUES ABS(-1.23e0);
-  -- 1.23e0
-  
+  -- COL1: 1.23e0
+
   VALUES ABS(-1.23);
-  -- 1.23
+  -- COL1: 1.23
 
 ACOS
 ^^^^
@@ -196,7 +207,7 @@ Inverse (arc) cosine.
 .. code-block:: sql
 
   VALUES ACOS(0.2);
-  -- COL1: 1.369438
+  -- COL1: 1.369438406005e0
 
 ASIN
 ^^^^
@@ -212,7 +223,7 @@ Inverse (arc) sine.
 .. code-block:: sql
 
   VALUES ASIN(0.2);
-  -- COL1: 0.201358
+  -- COL1: 0.20135792079e0
 
 ATAN
 ^^^^
@@ -228,7 +239,7 @@ Inverse (arc) tangent.
 .. code-block:: sql
 
   VALUES ATAN(0.2);
-  -- COL1: 0.197396
+  -- COL1: 0.19739555985e0
 
 CEIL
 ^^^^
@@ -249,13 +260,13 @@ Round up to the nearest integer. Any exact numeric argument (such as
   -- COL1: 4e0
 
   VALUES CEIL(3.3e0);
-  -- COL2: 4e0
+  -- COL1: 4e0
 
   VALUES CEIL(-3.7e0);
-  -- COL3: -3e0
+  -- COL1: -3e0
 
   VALUES CEIL(-3.3e0);
-  -- COL4: -3e0
+  -- COL1: -3e0
 
   VALUES CEILING(3.7e0);
   -- COL1: 4e0
@@ -290,7 +301,7 @@ Cosine.
 .. code-block:: sql
 
   VALUES COS(1.2);
-  -- COL1: 0.362358
+  -- COL1: 0.362357754477e0
 
 COSH
 ^^^^
@@ -306,7 +317,7 @@ Hyperbolic cosine.
 .. code-block:: sql
 
   VALUES COSH(1.2);
-  -- COL1: 1.810656
+  -- COL1: 1.810655567324e0
 
 EXP
 ^^^
@@ -322,7 +333,7 @@ Exponential.
 .. code-block:: sql
 
   VALUES EXP(3.7);
-  -- COL1: 40.447304
+  -- COL1: 40.447304360067e0
 
 FLOOR
 ^^^^^
@@ -374,7 +385,7 @@ Natural logarithm (base e).
 .. code-block:: sql
 
   VALUES LN(13.7);
-  -- COL1: 2.617396
+  -- COL1: 2.617395832834e0
 
 LOG10
 ^^^^^
@@ -390,7 +401,7 @@ Logarithm in base 10.
 .. code-block:: sql
 
   VALUES LOG10(13.7);
-  -- COL1: 1.136721
+  -- COL1: 1.136720567156e0
 
 MOD
 ^^^
@@ -439,7 +450,7 @@ Power.
 .. code-block:: sql
 
   VALUES POWER(3.7, 2.5);
-  -- COL1: 26.333241
+  -- COL1: 26.333240780428e0
 
 SIN
 ^^^
@@ -455,7 +466,7 @@ Sine.
 .. code-block:: sql
 
   VALUES SIN(1.2);
-  -- COL1: 0.932039
+  -- COL1: 0.932039085967e0
 
 SINH
 ^^^^
@@ -471,7 +482,7 @@ Hyperbolic sine.
 .. code-block:: sql
 
   VALUES SINH(1.2);
-  -- COL1: 1.509461
+  -- COL1: 1.509461355412e0
 
 SQRT
 ^^^^
@@ -487,7 +498,7 @@ Square root.
 .. code-block:: sql
 
   VALUES SQRT(3.7);
-  -- COL1: 1.923538
+  -- COL1: 1.923538406167e0
 
 TAN
 ^^^
@@ -503,7 +514,7 @@ Tangent.
 .. code-block:: sql
 
   VALUES TAN(1.2);
-  -- COL1: 2.572152
+  -- COL1: 2.572151622126e0
 
 TANH
 ^^^^
@@ -519,7 +530,7 @@ Hyperbolic tangent.
 .. code-block:: sql
 
   VALUES TANH(1.2);
-  -- COL1: 0.833655
+  -- COL1: 0.833654607012e0
 
 String Functions
 ----------------
@@ -531,7 +542,7 @@ CHAR_LENGTH
 
    CHAR_LENGTH(CHARACTER VARYING) INTEGER
 
-Returns the character length (multibyte chatracters are counted as a single
+Returns the character length (multibyte characters are counted as a single
 character).
 
 .. code-block:: sql
@@ -570,7 +581,7 @@ OCTET_LENGTH
 
    OCTET_LENGTH(CHARACTER VARYING) INTEGER
 
-Returns the byte length (multibyte chatracters are ignored).
+Returns the length in bytes (UTF-8).
 
 .. code-block:: sql
 
@@ -668,7 +679,7 @@ TRIM
 
 If ``LEADING``, ``TRAILING`` or ``BOTH`` is not provided, ``BOTH`` is used.
 
-If ``trim_character`` is not provided, a space (`' '`) is used.
+If ``trim_character`` is not provided, a space (``' '``) is used.
 
 .. code-block:: sql
 
@@ -684,7 +695,7 @@ If ``trim_character`` is not provided, a space (`' '`) is used.
   VALUES TRIM(TRAILING 'a' FROM 'aaababccaa');
   -- COL1: aaababcc
 
-UPPER 
+UPPER
 ^^^^^
 
 .. code-block:: sql
@@ -727,9 +738,10 @@ CURRENT_CATALOG
 
    CURRENT_CATALOG
 
-``CURRENT_CATALOG`` always reflects the file name, only up to the first ``.``.
-So, if the complete file path is ``/tmp/mydb.cool.vsql`` the ``CURRENT_CATALOG``
-would be ``mydb``.
+``CURRENT_CATALOG`` is the name of the current catalog, which is the file name
+up to the first ``.``. So, if the complete file path is ``/tmp/mydb.cool.vsql``
+the ``CURRENT_CATALOG`` would be ``mydb``. It can be changed with
+:doc:`set-catalog`.
 
 When using in-memory databases, the ``CURRENT_CATALOG`` will be ``:memory:``.
 
@@ -754,7 +766,7 @@ NULLIF
 If ``X`` and ``Y`` are equal, ``NULL`` will be returned. Otherwise ``X`` is
 returned.
 
-``NULLIF`` is equivilent to:
+``NULLIF`` is equivalent to:
 
 .. code-block:: sql
 

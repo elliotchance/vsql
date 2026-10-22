@@ -6,8 +6,6 @@ File Format
 Overview
 --------
 
-.. image:: img/file-format-layout.png
-
 vsql stores the entire database (also known as the catalog) in a single file.
 The default extension is ``.vsql``, although that is not required.
 
@@ -30,6 +28,29 @@ be changed after the file is created (the page size is stored in the *Header*).
 A page can be one of two types: leaf and non-leaf, and they may appear in any
 order in the file. They may also be reordered or removed as the file expands and
 contracts.
+
+.. list-table::
+  :header-rows: 1
+
+  * - Offset
+    - Part
+    - Size
+
+  * - 0
+    - `Header`_
+    - 4096 bytes
+
+  * - 4096
+    - Page 0
+    - *Page Size*
+
+  * - 4096 + *Page Size*
+    - Page 1
+    - *Page Size*
+
+  * - 4096 + (*N* x *Page Size*)
+    - Page *N*
+    - *Page Size*
 
 Also see :doc:`limitations`.
 
@@ -111,14 +132,10 @@ remaining space is reserved (see `Compatibility`_).
 Compatibility
 -------------
 
-The version of the file format that vsql reads and writes is 1. Before v1.0.0,
-any change to the file format increases this version, and vsql will refuse to
-open a file that uses an older version. You will need to recreate it.
-
-From v1.0.0 the aim is that every version of vsql can open a file created by
-an older version, and that most features don't need to change the file format
-at all. The *Read Version* and *Write Version* in the `Header`_ work the same
-way as the read and write versions of SQLite:
+The version of the file format that vsql reads and writes is 1. Every version
+of vsql can open a file created by an older version, and most features don't
+need to change the file format at all. The *Read Version* and *Write Version*
+in the `Header`_ work the same way as the read and write versions of SQLite:
 
 - If the *Read Version* is newer than the version of the file format that vsql
   supports, the file is refused. Some part of the file can't be understood.
@@ -225,36 +242,124 @@ to the page size.
 Leaf Page
 ---------
 
-.. image:: img/file-format-leaf-page.png
-
 The *Page Header* has a *Kind* of ``0``.
 
 The *Data* will contain zero or more objects. Although, zero objects is valid if
 that were the case the page should be removed as part of the garbage collection.
 
 Each `Object`_ may be variable length and can be any number of bytes so long as
-the *Object* size is equal to or less than the (page size - 16). For objects that
-cannot fit into a page, they are stored in as a `Blob Object`_ and referenced
-from the *Object*.
+the *Object* size is equal to or less than the (page size - 16). For objects
+that cannot fit into a page, they are stored in as a `Blob Object`_ and
+referenced from the *Object*.
 
 Objects within a page are kept sorted by key and unused space is always located
 after the used data. You should not assume that the unused portion is zeroed.
+For example, a leaf page of 4096 bytes that contains three objects:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Offset
+    - Part
+    - Size
+
+  * - 0
+    - *Page Header* (*Used* is 979)
+    - 16 bytes
+
+  * - 16
+    - Object 0
+    - 230 bytes
+
+  * - 246
+    - Object 1
+    - 512 bytes
+
+  * - 758
+    - Object 2
+    - 221 bytes
+
+  * - 979
+    - Unused
+    - 3117 bytes
 
 Non-leaf Page
 -------------
 
-.. image:: img/file-format-non-leaf-page.png
-
 A non-leaf page share a lot of similarities with a `Leaf Page`_. However, the
 Objects are pointers to Leaf pages. That is the *Value* within the *Object* is a
-i32 that references the `Leaf Page`_ number.
+i32 that references the `Leaf Page`_ number. For example, a non-leaf page of
+4096 bytes that contains three objects:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Offset
+    - Part
+    - Size
+
+  * - 0
+    - *Page Header* (*Kind* is 1, *Used* is 120)
+    - 16 bytes
+
+  * - 16
+    - Object 0 (23 bytes of metadata, a 5 byte *Key* and an i32 *Value*)
+    - 32 bytes
+
+  * - 48
+    - Object 1 (a 13 byte *Key*)
+    - 40 bytes
+
+  * - 88
+    - Object 2 (a 5 byte *Key*)
+    - 32 bytes
+
+  * - 120
+    - Unused
+    - 3976 bytes
 
 Objects within a non-leaf page are ordered based on the objects *Key*. This is
 important for scanning (such as range queries) to improve performance as the
 *Key* itself is the first *Key* in the referenced `Leaf Page`_. Here is an
-example of how a `Non-leaf Page`_ references a `Leaf Page`_:
+example of how a `Non-leaf Page`_ references a `Leaf Page`_ (the keys are
+written as text to keep them short):
 
-.. image:: img/file-format-non-leaf-reference.png
+.. list-table:: Page 123 (non-leaf)
+  :header-rows: 1
+
+  * - Object
+    - *Key*
+    - *Value*
+
+  * - 0
+    - ``apple``
+    - 234 (i32)
+
+  * - 1
+    - ``mango``
+    - 345 (i32)
+
+.. list-table:: Page 234 (leaf)
+  :header-rows: 1
+
+  * - Object
+    - *Key*
+    - *Value*
+
+  * - 0
+    - ``apple``
+    - ...
+
+  * - 1
+    - ``banana``
+    - ...
+
+  * - 2
+    - ``kiwi``
+    - ...
+
+Any key from ``apple`` up to (but not including) ``mango`` is in page 234, and
+keys from ``mango`` onwards are in page 345.
 
 It's also important to note that as the B-tree gets larger, there may be
 multiple non-leaf pages that need to be traversed this way. The process will
@@ -263,10 +368,6 @@ non-leaf) uses the *Key* that points to the first *Key* in the child page.
 
 Object
 ------
-
-An Object may be any length, but this example uses an object of 230 bytes:
-
-.. image:: img/file-format-object.png
 
 Individual objects can be of different types and are encoded/decoded based on
 the first byte of the *Key*. Objects with a first byte that isn't listed here
@@ -300,7 +401,8 @@ are ignored, so that new types of objects can be added (see
   * - ``V``
     - `Sequence Value Object`_
 
-Every object contains 23 bytes of metadata:
+Every object has this layout. Everything except the *Key* and *Value* is
+metadata, which is 23 bytes in total:
 
 .. list-table::
   :header-rows: 1
@@ -321,16 +423,60 @@ Every object contains 23 bytes of metadata:
     - u64 (8 bytes)
     - Transaction ID that expired this object. [2]_
 
-  * - *Ref*
-    - u8 (1 byte)
-    - When ``true``, the *Value* will be 5 bytes containing. See `Blob Object`_.
-
   * - *Key Len*
     - i16 (2 bytes)
-    - The number of bytes in the proceeding *Key*.
+    - The number of bytes in the *Key*.
+
+  * - *Key*
+    - *Key Len* bytes
+    - The key. The first byte is the type of the object (see above).
+
+  * - *Ref*
+    - bool (1 byte)
+    - When ``true``, the *Value* is a reference to blob objects. See
+      `Blob Object`_.
+
+  * - *Value*
+    - The rest of the object
+    - Depends on the type of the object.
 
 Using this metadata we can say that the length of *Value* will be: (*Length* -
-23 - *Key Length*).
+23 - *Key Len*). For example, an object of 230 bytes with a 4 byte *Key*:
+
+.. list-table::
+  :header-rows: 1
+
+  * - Offset
+    - Part
+    - Size
+
+  * - 0
+    - *Length* (230)
+    - 4 bytes
+
+  * - 4
+    - *TID*
+    - 8 bytes
+
+  * - 12
+    - *XID*
+    - 8 bytes
+
+  * - 20
+    - *Key Len* (4)
+    - 2 bytes
+
+  * - 22
+    - *Key*
+    - 4 bytes
+
+  * - 26
+    - *Ref*
+    - 1 byte
+
+  * - 27
+    - *Value*
+    - 203 bytes (230 - 23 - 4)
 
 Blob Object
 -----------
@@ -338,8 +484,8 @@ Blob Object
 When an object is added to the B-tree that is larger than half a page, it must
 be split into *blob* (B) and *fragment* (F) objects. Half a page, rather than a
 whole page, because two versions of the same key (such as the row before and
-after an ``UPDATE`` that hasn't been committed yet) must always fit into the same
-page, and that includes their blob and fragment objects.
+after an ``UPDATE`` that hasn't been committed yet) must always fit into the
+same page, and that includes their blob and fragment objects.
 
 All of the bytes of the original object (including its metadata, see
 `Object`_) are divided, in order, into blob objects that are each as large as

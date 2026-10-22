@@ -3,9 +3,9 @@ Docker
 
 .. contents::
 
-Docker is the easiest way to get up and running (if you have
-`Docker installed <https://docs.docker.com/get-docker/>`_.). Pull the latest
-stable version with:
+If you have `Docker installed <https://docs.docker.com/get-docker/>`_, you
+can run vsql without installing anything else. Pull the latest stable version
+with:
 
 .. code-block:: sh
 
@@ -25,34 +25,33 @@ Run the CLI directly:
    docker run --mount type=bind,source="$(pwd)",target=/db -it elliotchance/vsql:latest cli /db/mydb.vsql
 
 Modify ``source`` to where you want the host directory (it is the current
-directory by default). Exit the shell with ``exit``.
+directory by default). Exit the shell with ``exit``. See :doc:`cli`.
 
 **Important:** While it is possible to run vsql without using a mount, this is
-not recommended as it will leave the database file on the containers file
-system. This will cause the database file will be lost with the container.
-Although, sometimes this is the desired behavior:
+not recommended as it will leave the database file on the container's file
+system, so the database file will be lost with the container. Although,
+sometimes this is the desired behavior:
 
 .. code-block:: sh
 
    docker run -it elliotchance/vsql:latest cli mydb.vsql
 
-See :doc:`cli`.
-
 Server
 ------
 
-Start the PostgreSQL-compatible server:
+Start the PostgreSQL-compatible server, and publish its port:
 
 .. code-block:: sh
 
-   docker run --mount type=bind,source="$(pwd)",target=/db -it elliotchance/vsql:latest server /db/mydb.vsql
+   docker run --mount type=bind,source="$(pwd)",target=/db -p 3210:3210 -it elliotchance/vsql:latest server /db/mydb.vsql
 
 See :doc:`server`.
 
-Apple M1 Macs
--------------
+Apple Silicon Macs
+------------------
 
-If you're running on an M1 mac, you might see the following issue warning when
+The image is only built for ``linux/amd64``. If you're running on an Apple
+silicon Mac, you might see the following issue warning when
 running the container:
 
 .. code-block:: text

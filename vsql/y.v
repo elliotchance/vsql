@@ -21600,11 +21600,6 @@ fn yylex1(mut lex YYLexer, mut lval YYSymType) (int, int) {
 	return ch, int(yy_tok3[i + 1])
 }
 
-fn yy_parse(mut yylex YYLexer) !int {
-	mut parser := yy_new_parser()
-	return parser.parse(mut yylex)
-}
-
 fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 	mut yyn := 0
 	mut yy_val := YYSymType{}

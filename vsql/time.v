@@ -342,9 +342,11 @@ fn (t Time) str_literal() string {
 	}
 }
 
-// str_date returns the date portion, such as '2022-06-30'.
+// str_date returns the date portion, such as '2022-06-30'. It doesn't use
+// strftime because the C library on Linux doesn't pad years before 1000 with
+// zeros.
 fn (t Time) str_date() string {
-	return t.t.strftime('%Y-%m-%d')
+	return '${t.t.year:04}-${t.t.month:02}-${t.t.day:02}'
 }
 
 // str_time returns the time portion, such as '12:34:56'. This does not include

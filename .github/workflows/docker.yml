@@ -12,12 +12,10 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v7
 
-      # V is pinned in .v-version so that it's cached between runs, and a new
-      # commit on V master can't break the build.
-      - name: Set up V
+      - name: Set up V master
         uses: vlang/setup-v@v1.7
         with:
-          version-file: .v-version
+          check-latest: true
 
       - name: Build linux binaries
         run: |

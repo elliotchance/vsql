@@ -263,7 +263,7 @@ fn split_statements
 
    pub fn split_statements(script string) []string
 
-split_statements splits a SQL script into its statements, which are separated by semicolons. A semicolon inside a string or a delimited identifier doesn't end the statement. The statements are returned without the semicolon, and empty statements are left out.
+split_statements splits a SQL script into its statements, which are separated by semicolons. A semicolon inside a string, a delimited identifier or a comment doesn't end the statement. The statements are returned without the semicolon, and empty statements (including ones that are only comments) are left out.
 
 fn sqlstate_from_int
 --------------------

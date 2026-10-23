@@ -1262,3 +1262,15 @@ fn test_server_verbose() ! {
 	assert 'query: VALUES 1' in lines
 	assert 'disconnected' in lines
 }
+
+// A comment doesn't end a statement, even with a semicolon or quote in it, and
+// a statement that is only a comment is left out.
+fn test_split_statements_with_comments() {
+	assert split_statements("VALUES 1; -- it's; done") == ['VALUES 1']
+	assert split_statements('VALUES 1 -- a;b\n, 2;\n-- end') == ['VALUES 1 -- a;b\n, 2']
+	assert split_statements("VALUES '--';VALUES 2") == ["VALUES '--'", 'VALUES 2']
+
+	// A comment may also end the SQL without a new line.
+	mut db := open(':memory:')!
+	assert db.query('VALUES 1 -- one')!.rows[0].get_string('COL1')! == '1'
+}

@@ -8,12 +8,15 @@ TXT_FILE="$(mktemp)" || exit 1
 
 # Statements can be longer than a line, or share one. A semicolon in a string
 # or delimited identifier doesn't end the statement, and spaces are kept (they
-# used to be lost at every 100th byte, see #476).
+# used to be lost at every 100th byte, see #476). A comment doesn't end the
+# statement either, even with a semicolon or quote in it.
 A=$(head -c 72 /dev/zero | tr '\0' a)
 cat <<EOF2 | $VSQL in $VSQL_FILE
 CREATE TABLE "a;b" (s VARCHAR(200));
 INSERT INTO "a;b" (s) VALUES ('$A b'); INSERT INTO "a;b" (s)
-  VALUES ('x; y'), ('it''s; ok')
+  VALUES ('x; y'), -- it's; a comment
+  ('it''s; ok')
+-- the end
 EOF2
 
 echo 'SELECT * FROM "a;b";' | $VSQL cli $VSQL_FILE > $TXT_FILE

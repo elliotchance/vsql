@@ -11,6 +11,9 @@ Aggregate functions calculate a single value from a set of rows (see
 warning. If all of the values are ``NULL`` (or there are no rows) the result is
 ``NULL``, except for ``COUNT``.
 
+``AVG`` and ``SUM`` accept any number. ``COUNT``, ``MAX`` and ``MIN`` accept any
+type.
+
 The examples use this table:
 
 .. code-block:: sql
@@ -26,9 +29,18 @@ AVG
 
 .. code-block:: sql
 
+   AVG(SMALLINT) SMALLINT
+   AVG(INTEGER) INTEGER
+   AVG(BIGINT) BIGINT
+   AVG(NUMERIC(p, s)) NUMERIC(p, s)
+   AVG(DECIMAL(p, s)) DECIMAL(p, s)
+   AVG(REAL) REAL
    AVG(DOUBLE PRECISION) DOUBLE PRECISION
 
-Returns the average value.
+Returns the average value. The result has the same type as the values, so the
+average of exact numbers is truncated to their scale. For example, the average
+of the ``INTEGER`` values 1, 2 and 4 is 2. Use a ``CAST`` to get more digits,
+such as ``AVG(CAST(x AS NUMERIC(10, 2)))`` which is 2.33.
 
 **Examples**
 
@@ -70,9 +82,10 @@ MAX
 
 .. code-block:: sql
 
-   MAX(DOUBLE PRECISION) DOUBLE PRECISION
+   MAX(ANY) ANY
 
-Returns the maximum value.
+Returns the maximum value, using the same rules as ``>``. The result has the
+same type as the values.
 
 **Examples**
 
@@ -90,9 +103,10 @@ MIN
 
 .. code-block:: sql
 
-   MIN(DOUBLE PRECISION) DOUBLE PRECISION
+   MIN(ANY) ANY
 
-Returns the minimum value.
+Returns the minimum value, using the same rules as ``<``. The result has the
+same type as the values.
 
 **Examples**
 
@@ -110,9 +124,17 @@ SUM
 
 .. code-block:: sql
 
+   SUM(SMALLINT) BIGINT
+   SUM(INTEGER) BIGINT
+   SUM(BIGINT) BIGINT
+   SUM(NUMERIC(p, s)) NUMERIC
+   SUM(DECIMAL(p, s)) DECIMAL
+   SUM(REAL) REAL
    SUM(DOUBLE PRECISION) DOUBLE PRECISION
 
-Returns the sum (total) of all values.
+Returns the sum (total) of all values. The sum of exact numbers keeps their
+scale but has no limit on the precision. A ``22003`` error is returned if the
+sum is out of range for the result type.
 
 **Examples**
 

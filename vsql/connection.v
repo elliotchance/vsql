@@ -405,7 +405,7 @@ fn has_next_value(tokens []Token) bool {
 pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 	t := start_timer()
 
-	mut tokens := tokenize(sql_stmt)
+	mut tokens := tokenize(sql_stmt)!
 
 	// EXPLAIN is super helpful, but not part of the SQL standard so we only
 	// treat it as a prefix that is trimmed off before parsing.
@@ -613,7 +613,7 @@ pub fn (mut conn Connection) register_function(prototype string, func fn ([]Valu
 // runtime to a virtual table.
 pub fn (mut conn Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ! {
 	// Registering virtual tables does not need use query cache.
-	mut tokens := tokenize(create_table)
+	mut tokens := tokenize(create_table)!
 	mut lexer := Lexer{tokens, 0}
 	mut parser := yy_new_parser()
 	parser.parse(mut lexer)!

@@ -44,7 +44,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 
 		return Identifier{
 			custom_id:  e.pstr(c.params)
-			custom_typ: found_func.return_type
+			custom_typ: set_function_type(func_name, arg_types[0])
 		}.compile(mut c)!.with_agg(true)
 	}
 

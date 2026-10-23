@@ -36,11 +36,11 @@ character_substring_function:
 
 fold:
   UPPER left_paren character_value_expression right_paren {
-    $$.v = RoutineInvocation{'UPPER', [
+    $$.v = RoutineInvocation{function_name: 'UPPER', args: [
       ValueExpression(CommonValueExpression($3.v as CharacterValueExpression))]}
   }
 | LOWER left_paren character_value_expression right_paren {
-    $$.v = RoutineInvocation{'LOWER', [
+    $$.v = RoutineInvocation{function_name: 'LOWER', args: [
       ValueExpression(CommonValueExpression($3.v as CharacterValueExpression))]}
   }
 

@@ -14,6 +14,11 @@ warning. If all of the values are ``NULL`` (or there are no rows) the result is
 ``AVG`` and ``SUM`` accept any number. ``COUNT``, ``MAX`` and ``MIN`` accept any
 type.
 
+The value can be preceded by ``DISTINCT`` to only use each value once, so
+``COUNT(DISTINCT city)`` is the number of different cities. Values are the same
+if they are equal with ``=``, such as ``1.5`` and ``1.50``. It can also be
+preceded by ``ALL``, which is the same as not having either.
+
 The examples use this table:
 
 .. code-block:: sql

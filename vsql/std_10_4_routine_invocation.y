@@ -2,7 +2,10 @@
 
 routine_invocation:
   routine_name sql_argument_list {
-    $$.v = RoutineInvocation{($1.v as Identifier).entity_name, $2.v as []ValueExpression}
+    $$.v = RoutineInvocation{
+      function_name: ($1.v as Identifier).entity_name
+      args:          $2.v as []ValueExpression
+    }
   }
 
 routine_name:

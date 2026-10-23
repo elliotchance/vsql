@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 78 of the 164 mandatory features** of the
+**vsql supports 79 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -334,7 +334,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ **E153**
      - **Updatable queries with subqueries**
 
-   * - ❌ **E161**
+   * - ✅ **E161**
      - **SQL comments using leading double minus**
 
    * - ✅ **E171**

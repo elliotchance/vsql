@@ -88,28 +88,46 @@ fn write_line(mut w io.Writer, line string) ! {
 }
 
 // split_statements splits a SQL script into its statements, which are separated
-// by semicolons. A semicolon inside a string or a delimited identifier doesn't
-// end the statement. The statements are returned without the semicolon, and
-// empty statements are left out.
+// by semicolons. A semicolon inside a string, a delimited identifier or a
+// comment doesn't end the statement. The statements are returned without the
+// semicolon, and empty statements (including ones that are only comments) are
+// left out.
 pub fn split_statements(script string) []string {
 	mut statements := []string{}
 	mut start := 0
 	mut quote := u8(0)
-	for i, c in script {
+	mut is_empty := true
+	mut i := 0
+	for i < script.len {
+		c := script[i]
 		if quote != 0 {
 			// A doubled quote ('' or "") is read as two strings next to each
 			// other, which is the same for finding the end of the statement.
 			if c == quote {
 				quote = 0
 			}
+		} else if c == `-` && i + 1 < script.len && script[i + 1] == `-` {
+			for i < script.len && script[i] != `\n` {
+				i++
+			}
+			continue
+		} else if c == `;` {
+			if !is_empty {
+				statements << script[start..i].trim_space()
+			}
+			start = i + 1
+			is_empty = true
 		} else if c == `'` || c == `"` {
 			quote = c
-		} else if c == `;` {
-			statements << script[start..i]
-			start = i + 1
+			is_empty = false
+		} else if !c.is_space() {
+			is_empty = false
 		}
+		i++
 	}
-	statements << script[start..]
+	if !is_empty {
+		statements << script[start..].trim_space()
+	}
 
-	return statements.map(it.trim_space()).filter(it != '')
+	return statements
 }

@@ -190,6 +190,12 @@ fn tokenize(sql_stmt string) ![]Token {
 	mut i := 0
 
 	for i < cs.len {
+		// A comment is a separator, the same as a space.
+		if is_comment(cs, i) {
+			i = skip_comment(cs, i)
+			continue
+		}
+
 		// Numbers
 		if cs[i] >= `0` && cs[i] <= `9` {
 			mut word := ''
@@ -389,9 +395,15 @@ fn read_string_literal(cs []rune, start int) (string, int) {
 
 	mut j := i
 	mut has_newline := false
-	for j < cs.len && cs[j].str().trim_space() == '' {
-		has_newline = has_newline || cs[j] == `\n`
-		j++
+	for j < cs.len {
+		if is_comment(cs, j) {
+			j = skip_comment(cs, j)
+		} else if cs[j].str().trim_space() == '' {
+			has_newline = has_newline || cs[j] == `\n`
+			j++
+		} else {
+			break
+		}
 	}
 	if has_newline && j < cs.len && cs[j] == `'` {
 		next_word, end := read_string_literal(cs, j)
@@ -399,6 +411,24 @@ fn read_string_literal(cs []rune, start int) (string, int) {
 	}
 
 	return word, i
+}
+
+// is_comment returns true if a simple comment starts at cs[i]. A simple comment
+// starts with two (or more) minus signs and continues to the end of the line.
+//
+// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>
+fn is_comment(cs []rune, i int) bool {
+	return i + 1 < cs.len && cs[i] == `-` && cs[i + 1] == `-`
+}
+
+// skip_comment returns the position of the new line that ends the comment that
+// starts at cs[i], or the end of the SQL if there isn't one.
+fn skip_comment(cs []rune, start int) int {
+	mut i := start
+	for i < cs.len && cs[i] != `\n` {
+		i++
+	}
+	return i
 }
 
 // read_unicode_escape_specifier returns the escape character of a Unicode

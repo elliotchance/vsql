@@ -442,9 +442,8 @@ fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence)
 	mut canonical_name := new_sequence.name.storage_id()
 	definition_key := 'Q${canonical_name}'.bytes()
 
-	old_obj := new_page_object(definition_key, old_sequence.tid, 0, old_sequence.definition_bytes())
 	new_obj := new_page_object(definition_key, f.transaction_id, 0, new_sequence.definition_bytes())
-	f.btree.update(old_obj, new_obj, f.transaction_id)!
+	f.btree.update(new_obj)!
 
 	// A new value (such as from RESTART) is a new version, so that it's undone
 	// by a ROLLBACK.
@@ -453,7 +452,7 @@ fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence)
 		|| new_sequence.unused != old_sequence.unused {
 		old_value_obj := f.sequence_value_object(canonical_name)!
 		new_value_obj := new_page_object(old_value_obj.key, f.transaction_id, 0, new_sequence.value_bytes())
-		f.btree.update(old_value_obj, new_value_obj, f.transaction_id)!
+		f.btree.update(new_value_obj)!
 	}
 }
 
@@ -544,19 +543,17 @@ fn (mut f Storage) assign_row_id(mut r Row, t Table) {
 	r.id = buf.bytes()
 }
 
-fn (mut f Storage) update_row(mut old Row, mut new Row, t Table) ! {
+// update_row replaces a row with a new version that has the same key. A row
+// that gets a new PRIMARY KEY is deleted and written again instead (see
+// UpdateStatementSearched).
+fn (mut f Storage) update_row(mut new Row, t Table) ! {
 	f.isolation_start()!
 	defer {
 		f.end_isolation()
 	}
 
 	f.assign_row_id(mut new, t)
-	if new.object_key(t)! != old.object_key(t)! {
-		f.check_primary_key(mut new, t)!
-	}
-	old_obj := new_page_object(old.object_key(t)!, old.tid, 0, old.bytes(t))
-	new_obj := new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t))
-	f.btree.update(old_obj, new_obj, f.transaction_id)!
+	f.btree.update(new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t)))!
 }
 
 fn (mut f Storage) read_rows(table_name Identifier) ![]Row {

@@ -81,6 +81,19 @@ fn sqlstate_01003() IError {
 	}
 }
 
+// No data (a completion condition, not an error): an UPDATE or DELETE didn't
+// match any rows.
+struct SQLState02000 {
+	SQLState
+}
+
+fn sqlstate_02000() IError {
+	return SQLState02000{
+		code: sqlstate_to_int('02000')
+		msg:  'no data'
+	}
+}
+
 // Warning: string data, right truncation. A CAST removed characters that
 // weren't spaces.
 struct SQLState01004 {

@@ -11,6 +11,7 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- msg: INSERT 1
 -- msg: DELETE 2
+-- warning 02000: no data
 -- msg: DELETE 0
 
 CREATE TABLE foo (baz FLOAT);
@@ -23,6 +24,7 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- msg: INSERT 1
 -- msg: DELETE 1
+-- warning 02000: no data
 -- msg: DELETE 0
 -- BAZ: 78e0
 
@@ -34,6 +36,7 @@ CREATE TABLE foo.bar (baz BIGINT);
 DELETE FROM foo.bar;
 -- msg: CREATE SCHEMA 1
 -- msg: CREATE TABLE 1
+-- warning 02000: no data
 -- msg: DELETE 0
 
 -- # https://github.com/elliotchance/vsql/issues/200

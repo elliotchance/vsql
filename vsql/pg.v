@@ -66,9 +66,11 @@ fn (mut c PGConn) write_error_result(err IError) ! {
 	c.write_error_or_notice(`E`, 'ERROR', err)!
 }
 
-// write_notice sends a warning, such as when a CAST truncates a string.
+// write_notice sends a warning, such as when a CAST truncates a string. A
+// completion condition that isn't a warning (02000 no data) is a NOTICE.
 fn (mut c PGConn) write_notice(warning IError) ! {
-	c.write_error_or_notice(`N`, 'WARNING', warning)!
+	severity := if warning is SQLState02000 { 'NOTICE' } else { 'WARNING' }
+	c.write_error_or_notice(`N`, severity, warning)!
 }
 
 // write_error_or_notice sends an ErrorResponse (E) or NoticeResponse (N), which

@@ -95,6 +95,23 @@ aren't spaces. The value is truncated. Storing the same value in a column with
   -- warning 01004: string data, right truncation
   -- COL1: he
 
+``02000`` no data
+^^^^^^^^^^^^^^^^^
+
+``02000`` is a completion condition (the statement still succeeds, like a
+warning) when an ``UPDATE`` or ``DELETE`` doesn't match any rows. The server
+sends it as a ``NOTICE``.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE foo (x INT);
+  DELETE FROM foo;
+  -- msg: CREATE TABLE 1
+  -- warning 02000: no data
+  -- msg: DELETE 0
+
 ``0B000`` invalid transaction initiation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

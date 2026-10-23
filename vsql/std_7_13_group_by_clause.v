@@ -184,6 +184,10 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 							values << value
 						}
 
+						if aggregate.distinct {
+							values = distinct_values(o.conn, values)!
+						}
+
 						final_rows[i].data[key] = eval_set_function(mut o.conn, aggregate.function_name,
 							values, arg.typ)!
 					}

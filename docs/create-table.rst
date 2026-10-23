@@ -10,8 +10,11 @@ Syntax
 
   CREATE TABLE <table_name> ( <element> , ... )
 
-  <element> := <column_name> <data_type> [ NOT NULL ]
+  <element> := <column_name> <data_type> [ <column_constraint> ... ]
              | PRIMARY KEY ( <column_name> , ... )
+
+  <column_constraint> := NOT NULL
+                       | PRIMARY KEY
 
 1. ``column_name`` must start with a letter, but can be followed by any letter,
    underscore (``_``) or digit for a maximum length of 128 characters. A
@@ -26,13 +29,18 @@ Columns allow ``NULL`` unless they are ``NOT NULL``. Column defaults, and
 Primary Keys
 ------------
 
-One or more columns can be defined in the ``PRIMARY KEY``. A column may only
-appear once in the ``PRIMARY KEY`` and only integer types (``SMALLINT``,
-``INTEGER`` and ``BIGINT``) are supported at the moment. The ``PRIMARY KEY``
-must be listed separately, after the columns.
+One or more columns, of any type, can be defined in the ``PRIMARY KEY``. A
+column may only appear once in the ``PRIMARY KEY``.
 
-The ``PRIMARY KEY`` both prevents the same value from being inserted (an error
-``23505``) and makes a ``WHERE`` that compares it with ``=`` fast.
+A ``PRIMARY KEY`` of a single column can also be written on the column, so
+``id INTEGER PRIMARY KEY`` is the same as ``id INTEGER, PRIMARY KEY (id)``. A
+table can only have one ``PRIMARY KEY``.
+
+The ``PRIMARY KEY`` prevents the same value from being inserted (an error
+``23505``). Values that are equal are the same, such as ``1.5`` and ``1.50``,
+``'a'`` and ``'a '``, or two times with a time zone that are the same in UTC.
+For a ``PRIMARY KEY`` of one integer column, a ``WHERE`` that compares it with
+``=`` is also fast.
 
 A ``PRIMARY KEY`` does not allow ``NULL``, so all columns used in the
 ``PRIMARY KEY`` are ``NOT NULL``, even if they are not declared that way.
@@ -47,6 +55,11 @@ Examples
       title CHARACTER VARYING(100),
       price NUMERIC(10, 2),
       PRIMARY KEY (product_id)
+  );
+
+  CREATE TABLE categories (
+      category_id INTEGER PRIMARY KEY,
+      name CHARACTER VARYING(100) NOT NULL
   );
 
 See Also

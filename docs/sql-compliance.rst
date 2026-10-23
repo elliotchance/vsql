@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 73 of the 164 mandatory features** of the
+**vsql supports 77 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -214,7 +214,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ E081-10
      - ``EXECUTE`` privilege
 
-   * - ⭕ **E091**
+   * - ✅ **E091**
      - **Set functions**
 
    * - ✅ E091-01
@@ -232,10 +232,10 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E091-05
      - ``SUM``
 
-   * - ❌ E091-06
+   * - ✅ E091-06
      - ``ALL`` quantifier
 
-   * - ❌ E091-07
+   * - ✅ E091-07
      - ``DISTINCT`` quantifier
 
    * - ✅ **E101**
@@ -295,7 +295,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ E141-02
      - ``UNIQUE`` constraints of ``NOT NULL`` columns
 
-   * - ⭕ E141-03
+   * - ✅ E141-03
      - ``PRIMARY KEY`` constraints
 
    * - ❌ E141-04

@@ -50,6 +50,14 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.tables[table_name.storage_id()]
 
+	// The PRIMARY KEY is checked once all of the rows have changed, not after
+	// each row. Otherwise, "SET id = id + 1" would fail on the old key of the
+	// next row. So a row that gets a new key is deleted first, and only added
+	// back after every row has been updated.
+	//
+	// ISO/IEC 9075-2:2016(E), 4.23.2, Checking of constraints
+	mut moved := []Row{}
+
 	for mut row in rows {
 		conn.begin_row()
 		mut did_modify := false
@@ -104,8 +112,19 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		// A row that doesn't change isn't written, but it's still counted.
 		if did_modify {
 			// To be able to write the row back we need to clean the column names.
-			catalog.storage.update_row(mut row.for_storage(), mut row2.for_storage(), table)!
+			mut before := row.for_storage()
+			mut after := row2.for_storage()
+			if before.object_key(table)! != after.object_key(table)! {
+				catalog.storage.delete_row(table_name.storage_id(), mut before)!
+				moved << after
+			} else {
+				catalog.storage.update_row(mut after, table)!
+			}
 		}
+	}
+
+	for mut row in moved {
+		catalog.storage.write_row(mut row, table)!
 	}
 
 	// There is a case where no records were updated. The potential problem is

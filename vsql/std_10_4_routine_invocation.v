@@ -7,11 +7,15 @@ module vsql
 struct RoutineInvocation {
 	function_name string
 	args          []ValueExpression
+	// distinct is only for an aggregate function, such as COUNT(DISTINCT x),
+	// see distinct_values.
+	distinct bool
 }
 
 fn (e RoutineInvocation) pstr(params map[string]Value) string {
 	args := e.args.map(it.pstr(params)).join(', ')
-	return '${e.function_name}(${args})'
+	quantifier := if e.distinct { 'DISTINCT ' } else { '' }
+	return '${e.function_name}(${quantifier}${args})'
 }
 
 fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {

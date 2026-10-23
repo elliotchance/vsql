@@ -50,7 +50,12 @@ fn cli_command(cmd cli.Command) ! {
 				}
 
 				for warning in db.warnings {
-					print_error('Warning', warning)
+					// 02000 (no data) is a completion condition, not a warning.
+					if vsql.sqlstate_from_int(warning.code()).starts_with('02') {
+						print_error('Notice', warning)
+					} else {
+						print_error('Warning', warning)
+					}
 				}
 
 				if result.msg != '' {

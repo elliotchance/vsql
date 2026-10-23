@@ -29,6 +29,7 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- msg: UPDATE 1
 -- msg: UPDATE 1
+-- warning 02000: no data
 -- msg: UPDATE 0
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Z
 -- X: 1 Y: 2

@@ -47,6 +47,7 @@ SELECT * FROM t1;
 -- X: 321e0
 
 DELETE FROM t1 WHERE x = :foo;
+-- warning 02000: no data
 -- msg: DELETE 0
 
 INSERT INTO t1 (x) VALUES (200);

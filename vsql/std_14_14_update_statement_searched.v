@@ -136,6 +136,9 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// We could do this before the UPDATE to catch the error earlier, but that
 	// comes at the cost of evaulating the row when we might not need to.
 	if rows.len == 0 {
+		// ISO/IEC 9075-2:2016(E), 14.14, General Rules, 15
+		conn.add_warning(sqlstate_02000())
+
 		conn.dry_run = true
 		defer {
 			conn.dry_run = false

@@ -306,6 +306,7 @@ UPDATE bar SET baz = NEXT VALUE FOR seq1;
 VALUES NEXT VALUE FOR seq1;
 -- msg: CREATE SEQUENCE 1
 -- msg: CREATE TABLE 1
+-- warning 02000: no data
 -- msg: UPDATE 0
 -- COL1: 1
 

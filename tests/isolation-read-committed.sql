@@ -83,6 +83,7 @@ SELECT * FROM foo;
 -- 1: msg: START TRANSACTION
 -- 1: msg: INSERT 1
 -- 1: msg: ROLLBACK
+-- warning 02000: no data
 -- 2: msg: DELETE 0
 
 /* connection 1 */
@@ -97,6 +98,7 @@ SELECT * FROM foo;
 -- 1: msg: CREATE TABLE 1
 -- 1: msg: START TRANSACTION
 -- 1: msg: INSERT 1
+-- warning 02000: no data
 -- 2: msg: DELETE 0
 -- 1: BAR: 123
 
@@ -132,6 +134,7 @@ SELECT * FROM foo;
 -- 1: msg: START TRANSACTION
 -- 1: msg: INSERT 1
 -- 1: msg: ROLLBACK
+-- warning 02000: no data
 -- 2: msg: UPDATE 0
 
 /* connection 1 */
@@ -146,6 +149,7 @@ SELECT * FROM foo;
 -- 1: msg: CREATE TABLE 1
 -- 1: msg: START TRANSACTION
 -- 1: msg: INSERT 1
+-- warning 02000: no data
 -- 2: msg: UPDATE 0
 -- 1: BAR: 123
 

@@ -41,5 +41,10 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 		catalog.storage.delete_row(table_name.storage_id(), mut row.for_storage())!
 	}
 
+	// ISO/IEC 9075-2:2016(E), 14.9, General Rules, 10
+	if rows.len == 0 {
+		conn.add_warning(sqlstate_02000())
+	}
+
 	return new_result_msg('DELETE ${rows.len}', elapsed_parse, t.elapsed())
 }

@@ -14,7 +14,9 @@ Syntax
 Deletes the rows of a table that match the ``WHERE`` condition. If ``WHERE`` is
 not provided, all rows will be deleted.
 
-The result (such as ``DELETE 3``) contains the number of rows deleted.
+The result (such as ``DELETE 3``) contains the number of rows deleted. If no
+rows are deleted, the result is ``DELETE 0`` with the completion condition
+``02000`` (no data), see :doc:`sqlstate`.
 
 Examples
 --------

@@ -4,34 +4,53 @@ module vsql
 //
 // Specify a character string similarity by means of a regular expression.
 
-// SimilarPredicate for "SIMILAR TO" and "NOT SIMILAR TO".
+// SimilarPredicate for "SIMILAR TO" and "NOT SIMILAR TO", with an optional
+// "ESCAPE".
 struct SimilarPredicate {
-	left  RowValueConstructorPredicand
-	right CharacterValueExpression
-	not   bool
+	left   RowValueConstructorPredicand
+	right  CharacterValueExpression
+	escape ?&CharacterValueExpression
+	not    bool
 }
 
 // SimilarPredicatePart2 is the "SIMILAR TO <pattern>" (or "NOT SIMILAR TO")
 // while it's being parsed, before it has the value on the left.
 struct SimilarPredicatePart2 {
-	right CharacterValueExpression
-	not   bool
+	right  CharacterValueExpression
+	escape ?&CharacterValueExpression
+	not    bool
 }
 
 fn (e SimilarPredicate) pstr(params map[string]Value) string {
+	mut s := e.left.pstr(params)
 	if e.not {
-		return '${e.left.pstr(params)} NOT SIMILAR TO ${e.right.pstr(params)}'
+		s += ' NOT'
+	}
+	s += ' SIMILAR TO ${e.right.pstr(params)}'
+
+	if escape := e.escape {
+		s += ' ESCAPE ${escape.pstr(params)}'
 	}
 
-	return '${e.left.pstr(params)} SIMILAR TO ${e.right.pstr(params)}'
+	return s
 }
 
 fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 	compiled_l := e.left.compile(mut c)!
 	compiled_right := e.right.compile(mut c)!
+	compiled_escape := if escape := e.escape {
+		escape.compile(mut c)!
+	} else {
+		CompileResult{
+			run:          unsafe { nil }
+			typ:          Type{}
+			contains_agg: false
+		}
+	}
+	has_escape := e.escape != none
 
 	return CompileResult{
-		run:          fn [e, compiled_l, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [e, compiled_l, compiled_right, compiled_escape, has_escape] (mut conn Connection, data Row, params map[string]Value) !Value {
 			left := compiled_l.run(mut conn, data, params)!
 			right := compiled_right.run(mut conn, data, params)!
 
@@ -40,7 +59,20 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 				return new_unknown_value()
 			}
 
-			pattern := parse_similar_pattern(right.string_value())!
+			mut escape := ?rune(none)
+			if has_escape {
+				escape_value := compiled_escape.run(mut conn, data, params)!
+
+				// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General
+				// Rules, 4b
+				if escape_value.is_null {
+					return new_unknown_value()
+				}
+
+				escape = escape_character(escape_value)!
+			}
+
+			pattern := parse_similar_pattern(right.string_value(), escape)!
 			result := pattern.matches(left.string_value())
 
 			if e.not {
@@ -51,6 +83,7 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 		}
 		typ:          new_type('BOOLEAN', 0, 0)
 		contains_agg: compiled_l.contains_agg || compiled_right.contains_agg
+			|| compiled_escape.contains_agg
 	}
 }
 
@@ -92,16 +125,32 @@ struct RegularRange {
 	class string
 }
 
+// The characters that have a special meaning in a <regular expression>, unless
+// they are an <escaped character> (8.6 Syntax Rules 5 and 6).
+const regular_special_characters = [`[`, `]`, `(`, `)`, `|`, `^`, `-`, `+`, `*`, `_`, `%`, `?`,
+	`{`]
+
 struct RegularParser {
 	pattern []rune
+	// escaped is true for each character of pattern that was an <escaped
+	// character>, so it only stands for itself.
+	escaped []bool
+	escape  ?rune
+	// unescaped_escape is true if the escape character is in pattern other
+	// than in an <escaped character>.
+	unescaped_escape bool
 mut:
 	pos int
+	// has_class is true once a <regular character set identifier> (such as
+	// "[:ALPHA:]") has been parsed.
+	has_class bool
 }
 
 // parse_similar_pattern parses the pattern of a SIMILAR TO, or returns a
 // SQLSTATE 2201B error if it's not a valid <regular expression> (8.6 General
-// Rule 2).
-fn parse_similar_pattern(pattern string) !RegularNode {
+// Rule 2). With an escape character, the escape character followed by a
+// special character (or itself) is that character, see regular_special_characters.
+fn parse_similar_pattern(pattern string, escape ?rune) !RegularNode {
 	// The zero-length pattern only matches the zero-length string (8.6
 	// General Rule 7u).
 	if pattern == '' {
@@ -110,9 +159,18 @@ fn parse_similar_pattern(pattern string) !RegularNode {
 		}
 	}
 
-	mut p := RegularParser{
-		pattern: pattern.runes()
+	if esc := escape {
+		// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 3c
+		//
+		// With ":" as the escape character, the ":]" of "[:ALPHA:]" would be
+		// an escaped "]", so the class is found by parsing the pattern as if it
+		// had no escape character.
+		if esc == `:` && regular_pattern_has_class(pattern) {
+			return sqlstate_2200b()
+		}
 	}
+
+	mut p := new_regular_parser(pattern, escape)
 	node := p.parse_expression()!
 
 	// For example, an unmatched ")".
@@ -120,23 +178,71 @@ fn parse_similar_pattern(pattern string) !RegularNode {
 		return sqlstate_2201b()
 	}
 
+	// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 3b
+	if esc := escape {
+		if p.unescaped_escape && esc in regular_special_characters {
+			return sqlstate_2200c()
+		}
+	}
+
 	return node
 }
 
-fn (p RegularParser) peek() ?rune {
-	if p.pos < p.pattern.len {
-		return p.pattern[p.pos]
+// new_regular_parser finds the <escaped character>s in pattern: the escape
+// character followed by one of regular_special_characters, or by itself.
+fn new_regular_parser(pattern string, escape ?rune) RegularParser {
+	runes := pattern.runes()
+	mut chars := []rune{cap: runes.len}
+	mut escaped := []bool{cap: runes.len}
+	mut unescaped_escape := false
+	mut i := 0
+	for i < runes.len {
+		if esc := escape {
+			if runes[i] == esc {
+				if i + 1 < runes.len && (runes[i + 1] in regular_special_characters
+					|| runes[i + 1] == esc) {
+					chars << runes[i + 1]
+					escaped << true
+					i += 2
+					continue
+				}
+				unescaped_escape = true
+			}
+		}
+
+		chars << runes[i]
+		escaped << false
+		i++
 	}
 
-	return none
+	return RegularParser{
+		pattern:          chars
+		escaped:          escaped
+		escape:           escape
+		unescaped_escape: unescaped_escape
+	}
+}
+
+// regular_pattern_has_class reports whether pattern is a valid <regular
+// expression> (without an escape character) that has a <regular character set
+// identifier>, such as "[:ALPHA:]".
+fn regular_pattern_has_class(pattern string) bool {
+	mut p := new_regular_parser(pattern, none)
+	p.parse_expression() or { return false }
+
+	return p.pos == p.pattern.len && p.has_class
+}
+
+// next_is reports whether the next character is ch, and not an <escaped
+// character>.
+fn (p RegularParser) next_is(ch rune) bool {
+	return p.pos < p.pattern.len && !p.escaped[p.pos] && p.pattern[p.pos] == ch
 }
 
 fn (mut p RegularParser) expect(ch rune) ! {
-	if next := p.peek() {
-		if next == ch {
-			p.pos++
-			return
-		}
+	if p.next_is(ch) {
+		p.pos++
+		return
 	}
 
 	return sqlstate_2201b()
@@ -145,7 +251,7 @@ fn (mut p RegularParser) expect(ch rune) ! {
 // <regular expression> ::= <regular term> | <regular expression> "|" <regular term>
 fn (mut p RegularParser) parse_expression() !RegularNode {
 	mut terms := [p.parse_term()!]
-	for p.peek() or { 0 } == `|` {
+	for p.next_is(`|`) {
 		p.pos++
 		terms << p.parse_term()!
 	}
@@ -163,12 +269,7 @@ fn (mut p RegularParser) parse_expression() !RegularNode {
 // <regular term> ::= <regular factor> | <regular term> <regular factor>
 fn (mut p RegularParser) parse_term() !RegularNode {
 	mut factors := []RegularNode{}
-	for {
-		next := p.peek() or { break }
-		if next == `|` || next == `)` {
-			break
-		}
-
+	for p.pos < p.pattern.len && !p.next_is(`|`) && !p.next_is(`)`) {
 		factors << p.parse_factor()!
 	}
 
@@ -191,8 +292,12 @@ fn (mut p RegularParser) parse_term() !RegularNode {
 fn (mut p RegularParser) parse_factor() !RegularNode {
 	primary := p.parse_primary()!
 
+	if p.pos >= p.pattern.len || p.escaped[p.pos] {
+		return primary
+	}
+
 	mut min, mut max := 0, 0
-	match p.peek() or { 0 } {
+	match p.pattern[p.pos] {
 		`*` {
 			min, max = 0, -1
 		}
@@ -231,9 +336,9 @@ fn (mut p RegularParser) parse_repeat_factor() !(int, int) {
 	p.expect(`{`)!
 	low := p.parse_unsigned_integer()!
 	mut high := low
-	if p.peek() or { 0 } == `,` {
+	if p.next_is(`,`) {
 		p.pos++
-		high = if p.peek() or { 0 } == `}` { -1 } else { p.parse_unsigned_integer()! }
+		high = if p.next_is(`}`) { -1 } else { p.parse_unsigned_integer()! }
 	}
 	p.expect(`}`)!
 
@@ -248,7 +353,8 @@ fn (mut p RegularParser) parse_repeat_factor() !(int, int) {
 
 fn (mut p RegularParser) parse_unsigned_integer() !int {
 	start := p.pos
-	for p.pos < p.pattern.len && p.pattern[p.pos] >= `0` && p.pattern[p.pos] <= `9` {
+	for p.pos < p.pattern.len && !p.escaped[p.pos] && p.pattern[p.pos] >= `0`
+		&& p.pattern[p.pos] <= `9` {
 		p.pos++
 	}
 
@@ -263,8 +369,17 @@ fn (mut p RegularParser) parse_unsigned_integer() !int {
 // <regular primary> ::= <character specifier> | "%" | <regular character set>
 //   | "(" <regular expression> ")"
 fn (mut p RegularParser) parse_primary() !RegularNode {
-	ch := p.peek() or { return sqlstate_2201b() }
-	match ch {
+	if p.pos >= p.pattern.len {
+		return sqlstate_2201b()
+	}
+	if p.escaped[p.pos] {
+		return RegularNode{
+			kind: .character
+			ch:   p.parse_character_specifier()!
+		}
+	}
+
+	match p.pattern[p.pos] {
 		`%` {
 			p.pos++
 			return RegularNode{
@@ -298,11 +413,16 @@ fn (mut p RegularParser) parse_primary() !RegularNode {
 	}
 }
 
-// <character specifier> is any character other than the ones that have a
-// special meaning (8.6 Syntax Rule 5).
+// <character specifier> is an <escaped character>, or any character other than
+// the escape character and the ones that have a special meaning (8.6 Syntax
+// Rules 5 and 6).
 fn (mut p RegularParser) parse_character_specifier() !rune {
-	ch := p.peek() or { return sqlstate_2201b() }
-	if ch in [`[`, `]`, `(`, `)`, `|`, `^`, `-`, `+`, `*`, `_`, `%`, `?`, `{`] {
+	if p.pos >= p.pattern.len {
+		return sqlstate_2201b()
+	}
+	ch := p.pattern[p.pos]
+	is_escape := if esc := p.escape { ch == esc } else { false }
+	if !p.escaped[p.pos] && (ch in regular_special_characters || is_escape) {
 		return sqlstate_2201b()
 	}
 	p.pos++
@@ -317,14 +437,14 @@ fn (mut p RegularParser) parse_set() !RegularSet {
 	p.expect(`[`)!
 
 	mut negated := false
-	if p.peek() or { 0 } == `^` {
+	if p.next_is(`^`) {
 		p.pos++
 		negated = true
 	}
 
 	include := p.parse_enumerations()!
 	mut exclude := []RegularRange{}
-	if !negated && p.peek() or { 0 } == `^` {
+	if !negated && p.next_is(`^`) {
 		p.pos++
 		exclude = p.parse_enumerations()!
 	}
@@ -337,18 +457,13 @@ fn (mut p RegularParser) parse_set() !RegularSet {
 // parse_enumerations reads one or more <character enumeration>s.
 fn (mut p RegularParser) parse_enumerations() ![]RegularRange {
 	mut ranges := []RegularRange{}
-	for {
-		next := p.peek() or { break }
-		if next == `]` || next == `^` {
-			break
-		}
-
+	for p.pos < p.pattern.len && !p.next_is(`]`) && !p.next_is(`^`) {
 		// "[:ALPHA:]" and the other named classes (8.6 Syntax Rule 3).
-		if next == `[` {
+		if p.next_is(`[`) {
 			p.pos++
 			p.expect(`:`)!
 			start := p.pos
-			for p.pos < p.pattern.len && p.pattern[p.pos] != `:` {
+			for p.pos < p.pattern.len && !p.next_is(`:`) {
 				p.pos++
 			}
 			class := p.pattern[start..p.pos].string().to_upper()
@@ -359,6 +474,7 @@ fn (mut p RegularParser) parse_enumerations() ![]RegularRange {
 				return sqlstate_2201b()
 			}
 
+			p.has_class = true
 			ranges << RegularRange{
 				class: class
 			}
@@ -367,7 +483,7 @@ fn (mut p RegularParser) parse_enumerations() ![]RegularRange {
 
 		from := p.parse_character_specifier()!
 		mut to := from
-		if p.peek() or { 0 } == `-` {
+		if p.next_is(`-`) {
 			p.pos++
 			to = p.parse_character_specifier()!
 		}

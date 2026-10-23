@@ -47,78 +47,87 @@ fn non_null_values(values []Value) []Value {
 	return values.filter(!it.is_null)
 }
 
-// COUNT(ANY) INTEGER
-fn func_count(values []Value) !Value {
-	mut non_null := 0
-	for value in values {
-		if !value.is_null {
-			non_null++
+// set_function_type is the declared type of the result of a general set
+// function with an argument of type t.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 7
+fn set_function_type(name string, t Type) Type {
+	if name == 'COUNT' {
+		return new_type('INTEGER', 0, 0)
+	}
+
+	// The sum of exact numbers keeps the scale (7g ii). It has no limit on the
+	// precision because the sum may need more digits than any of the values. The
+	// sum of integers is a BIGINT so that it's less likely to overflow.
+	if name == 'SUM' {
+		return match t.typ {
+			.is_smallint, .is_integer, .is_bigint { new_type('BIGINT', 0, 0) }
+			.is_numeric, .is_decimal { Type{t.typ, 0, t.scale, false} }
+			else { Type{t.typ, 0, 0, false} }
 		}
 	}
 
-	return new_integer_value(non_null)
+	// MAX and MIN have the type of their argument (7f). So does AVG, which is
+	// allowed because an exact numeric only needs at least the same precision
+	// and scale (7g iii). The average is truncated to that scale.
+	return Type{t.typ, t.size, t.scale, false}
 }
 
-// MIN(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_min(all_values []Value) !Value {
+// eval_set_function returns the result of the general set function (such as
+// SUM) for the values of one group, where t is the declared type of the
+// argument.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7
+fn eval_set_function(mut conn Connection, name string, all_values []Value, t Type) !Value {
 	values := non_null_values(all_values)
-	if values.len == 0 {
-		return new_null_value(.is_double_precision)
+	typ := set_function_type(name, t)
+
+	if name == 'COUNT' {
+		return new_integer_value(values.len)
 	}
 
-	mut min := values[0].f64_value()
-	for value in values {
-		if value.f64_value() < min {
-			min = value.f64_value()
+	if values.len == 0 {
+		return Value{
+			typ:     typ
+			is_null: true
 		}
 	}
 
-	return new_double_precision_value(min)
-}
-
-// MAX(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_max(all_values []Value) !Value {
-	values := non_null_values(all_values)
-	if values.len == 0 {
-		return new_null_value(.is_double_precision)
-	}
-
-	mut max := values[0].f64_value()
-	for value in values {
-		if value.f64_value() > max {
-			max = value.f64_value()
+	if name in ['MAX', 'MIN'] {
+		// The comparison rules are the same as the comparison predicate (7d iv).
+		want := if name == 'MAX' { CompareResult.is_greater } else { CompareResult.is_less }
+		mut result := values[0]
+		for value in values[1..] {
+			if compare(conn, value, result)! == want {
+				result = value
+			}
 		}
+
+		return result
 	}
 
-	return new_double_precision_value(max)
-}
+	// SUM or AVG. An approximate numeric is added as a DOUBLE PRECISION, and an
+	// exact numeric is added exactly before it's cast to the result type, which
+	// raises 22003 when the sum doesn't fit (7d v).
+	if typ.typ in approximate_types {
+		mut sum := 0.0
+		for value in values {
+			sum += value.f64_value()
+		}
+		if name == 'AVG' {
+			sum /= values.len
+		}
 
-// SUM(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_sum(all_values []Value) !Value {
-	values := non_null_values(all_values)
-	if values.len == 0 {
-		return new_null_value(.is_double_precision)
+		return approximate_value(sum, typ.typ)
 	}
 
-	mut sum := 0.0
-	for value in values {
-		sum += value.f64_value()
+	mut sum := values[0].as_numeric()!
+	for value in values[1..] {
+		sum = sum.add(value.as_numeric()!)
+	}
+	if name == 'AVG' {
+		sum = sum.divide(new_numeric_from_string(values.len.str()))!
 	}
 
-	return approximate_value(sum, .is_double_precision)
-}
-
-// AVG(DOUBLE PRECISION) DOUBLE PRECISION
-fn func_avg(all_values []Value) !Value {
-	values := non_null_values(all_values)
-	if values.len == 0 {
-		return new_null_value(.is_double_precision)
-	}
-
-	mut sum := 0.0
-	for value in values {
-		sum += value.f64_value()
-	}
-
-	return approximate_value(sum / values.len, .is_double_precision)
+	return cast(mut conn, name, new_numeric_value_from_numeric(sum), typ)!
 }

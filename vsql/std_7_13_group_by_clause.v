@@ -184,10 +184,8 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 							values << value
 						}
 
-						func := o.conn.find_function(aggregate.function_name, [
-							arg.typ,
-						])!
-						final_rows[i].data[key] = func.func(values)!
+						final_rows[i].data[key] = eval_set_function(mut o.conn, aggregate.function_name,
+							values, arg.typ)!
 					}
 				}
 			}

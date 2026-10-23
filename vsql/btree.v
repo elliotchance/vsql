@@ -110,31 +110,11 @@ fn (mut p Btree) search_page(key []u8) !([]int, []int) {
 	return path, depth_iterator
 }
 
-// The old and new must be provided separately because the key may change if the
-// PRIMARY KEY value has changed.
-fn (mut p Btree) update(old PageObject, new PageObject, tid u64) ![]int {
-	// If the pages are the same and we're updating an in-flight row we need to
-	// actually delete the existing row.
-	if compare_bytes(old.key, new.key) == 0 {
-		page_number := p.update_single(new)!
-
-		return [page_number]
-	}
-
-	// Otherwise we have to deal with two pages, but we're dealing with them
-	// differently because the operations and not symmetrical.
-	old_page_number := p.expire(old.key, old.tid, tid)!
-	new_page_number := p.add(new)!
-
-	mut page_numbers := [new_page_number]
-	if old_page_number >= 0 && old_page_number != new_page_number {
-		page_numbers << old_page_number
-	}
-
-	return page_numbers
-}
-
-fn (mut p Btree) update_single(obj PageObject) !int {
+// update replaces the version of the object with the same key that was created
+// by obj.tid (the current transaction), or expires the visible version, and adds
+// obj as the new version. The key never changes, because a row that gets a new
+// PRIMARY KEY is deleted and added again (see UpdateStatementSearched).
+fn (mut p Btree) update(obj PageObject) !int {
 	// Find the page that would contain our old object (if it exists).
 	mut path, _ := p.search_page(obj.key)!
 	page_number := path[path.len - 1]

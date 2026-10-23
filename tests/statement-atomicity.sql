@@ -2,7 +2,7 @@ CREATE TABLE t (a INT, PRIMARY KEY (a));
 INSERT INTO t (a) VALUES (1);
 INSERT INTO t (a) VALUES (2);
 INSERT INTO t (a) VALUES (10);
-UPDATE t SET a = a + 8;
+UPDATE t SET a = a + 8 WHERE a < 10;
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1

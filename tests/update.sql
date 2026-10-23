@@ -167,6 +167,82 @@ SELECT * FROM PrimaryProduct;
 -- msg: UPDATE 1
 -- ID: 2
 
+-- # The PRIMARY KEY is checked once every row has changed, so a new key can be
+-- # the old key of another row (#523).
+CREATE TABLE PrimaryProduct (id INT NOT NULL, PRIMARY KEY(id));
+INSERT INTO PrimaryProduct (id) VALUES (1);
+INSERT INTO PrimaryProduct (id) VALUES (2);
+INSERT INTO PrimaryProduct (id) VALUES (3);
+UPDATE PrimaryProduct SET id = id + 1;
+SELECT * FROM PrimaryProduct;
+UPDATE PrimaryProduct SET id = 6 - id;
+SELECT * FROM PrimaryProduct;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: UPDATE 3
+-- ID: 2
+-- ID: 3
+-- ID: 4
+-- msg: UPDATE 3
+-- ID: 2
+-- ID: 3
+-- ID: 4
+
+CREATE TABLE PrimaryProduct (id INT NOT NULL, PRIMARY KEY(id));
+INSERT INTO PrimaryProduct (id) VALUES (1);
+INSERT INTO PrimaryProduct (id) VALUES (2);
+INSERT INTO PrimaryProduct (id) VALUES (3);
+UPDATE PrimaryProduct SET id = 3 WHERE id < 3;
+SELECT * FROM PrimaryProduct;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.PRIMARYPRODUCT
+-- ID: 1
+-- ID: 2
+-- ID: 3
+
+CREATE TABLE PrimaryProduct (id INT NOT NULL, PRIMARY KEY(id));
+INSERT INTO PrimaryProduct (id) VALUES (1);
+INSERT INTO PrimaryProduct (id) VALUES (2);
+INSERT INTO PrimaryProduct (id) VALUES (3);
+UPDATE PrimaryProduct SET id = 4 WHERE id < 3;
+SELECT * FROM PrimaryProduct;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.PRIMARYPRODUCT
+-- ID: 1
+-- ID: 2
+-- ID: 3
+
+CREATE TABLE PrimaryProduct (id INT NOT NULL, x INT, PRIMARY KEY(id));
+INSERT INTO PrimaryProduct (id, x) VALUES (1, 10);
+INSERT INTO PrimaryProduct (id, x) VALUES (2, 20);
+START TRANSACTION;
+UPDATE PrimaryProduct SET id = id + 1, x = x + 1;
+UPDATE PrimaryProduct SET x = x + 1;
+UPDATE PrimaryProduct SET id = id - 1;
+SELECT * FROM PrimaryProduct;
+ROLLBACK;
+SELECT * FROM PrimaryProduct;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: UPDATE 2
+-- msg: UPDATE 2
+-- msg: UPDATE 2
+-- ID: 1 X: 12
+-- ID: 2 X: 22
+-- msg: ROLLBACK
+-- ID: 1 X: 10
+-- ID: 2 X: 20
+
 CREATE TABLE foo (a INT, c VARCHAR(5));
 INSERT INTO foo (a, c) VALUES (3, 'z');
 UPDATE foo SET a = 1, a = 2;

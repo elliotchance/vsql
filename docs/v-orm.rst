@@ -178,7 +178,7 @@ Limitations
   - ``select distinct``.
   - ``sum``, ``min`` and ``max`` of a field that isn't an ``f64``.
   - Updating rows from an array (``set name = rows.name where id ==
-    rows.id``), which uses ``CASE``.
+    rows.id``), which uses ``IN``.
   - ``ilike``, which isn't part of the SQL standard.
   - Nested transactions, which use savepoints (see `Transactions`_).
 

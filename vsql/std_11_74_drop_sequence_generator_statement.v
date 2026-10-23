@@ -6,8 +6,12 @@ import time
 //
 // Destroy an external sequence generator.
 
+// The behavior is RESTRICT when it's not provided (the standard requires it).
+// Nothing can depend on a sequence yet (such as a column default), so CASCADE
+// and RESTRICT are the same.
 struct DropSequenceGeneratorStatement {
 	sequence_name Identifier
+	behavior      string // CASCADE or RESTRICT
 }
 
 fn (stmt DropSequenceGeneratorStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {

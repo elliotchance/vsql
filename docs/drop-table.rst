@@ -8,9 +8,17 @@ Syntax
 
 .. code-block:: text
 
-  DROP TABLE <table_name>
+  DROP TABLE <table_name> [ CASCADE | RESTRICT ]
 
 Deletes a table, including all of its rows.
+
+``RESTRICT`` returns an error (and takes no action) if any other object depends
+on the table. ``CASCADE`` also drops the objects that depend on the table.
+Nothing can depend on a table yet (such as a view or a foreign key), so they are
+currently the same.
+
+The SQL standard requires one of ``CASCADE`` or ``RESTRICT``, but vsql also
+allows neither, which is the same as ``RESTRICT``.
 
 Examples
 --------

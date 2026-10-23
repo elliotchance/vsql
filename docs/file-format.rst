@@ -589,11 +589,48 @@ be read without reading the whole table.
       ``INTEGER`` values -1, 0 and 1 are ``7fffffff``, ``80000000`` and
       ``80000001``.
 
-Other types can't be used in a ``PRIMARY KEY`` yet. The encoding of any type
-added later must also keep the order of the values, and must be self-delimiting
-(the length can be worked out from the bytes themselves), so that the values of
-each column in a ``PRIMARY KEY`` with more than one column can be put one after
-another and still be in order.
+  * - ``BOOLEAN``
+    - One byte, 1 for ``FALSE`` and 2 for ``TRUE``.
+
+  * - ``REAL``, ``DOUBLE PRECISION``
+    - The IEEE 754 bits, big-endian, 4 and 8 bytes respectively. A positive
+      number has the sign bit flipped and a negative number has every bit
+      flipped. -0 is written as 0, because they are equal.
+
+  * - ``NUMERIC``, ``DECIMAL``
+    - One byte for the sign (0 negative, 1 zero, 2 positive). A zero has nothing
+      else. Otherwise, the exponent as a 2 byte integer (like ``SMALLINT``),
+      which is the number of digits before the decimal point, or minus the
+      number of zeros after the decimal point for a number less than 1. Then
+      each significant digit plus 1 as a byte, without leading or trailing
+      zeros, and a 0 byte. Every byte after the sign is flipped for a negative
+      number. For example, 1.5 and 1.50 are both ``02 8001 02 06 00``, and
+      0.05 is ``02 7fff 06 00``. A ``DECIMAL`` can hold a fraction with more
+      digits than its scale *s* (such as 123/500 in a ``DECIMAL(3, 2)``), so
+      the digits are of the value truncated to 2 × *s* + 3 decimal places,
+      which is enough to keep different values apart.
+
+  * - ``CHARACTER``, ``CHARACTER VARYING``
+    - The UTF-8 bytes of the string, without trailing spaces (because 'a' is
+      equal to 'a '). Each space is followed by ``02`` if the next character
+      that isn't a space sorts after a space, or ``00`` if it sorts before a
+      space (such as a tab). The string ends with ``20 01``. This sorts the
+      same way as comparing the strings, where the shorter one is padded with
+      spaces. For example, 'a b' is ``61 20 02 62 20 01``.
+
+  * - ``DATE``, ``TIME WITHOUT TIME ZONE``, ``TIMESTAMP WITHOUT TIME ZONE``
+    - The value in the internal datetime format (the same number that is used to
+      compare them) as an 8 byte integer (like ``BIGINT``).
+
+  * - ``TIME WITH TIME ZONE``, ``TIMESTAMP WITH TIME ZONE``
+    - The number of microseconds in UTC as an 8 byte integer (like ``BIGINT``),
+      so that values in different time zones that are equal have the same key.
+      The time zone is kept in the row.
+
+The encoding of any type added later must also keep the order of the values,
+and must be self-delimiting (the length can be worked out from the bytes
+themselves), so that the values of each column in a ``PRIMARY KEY`` with more
+than one column can be put one after another and still be in order.
 
 Schema Objects
 --------------

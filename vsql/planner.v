@@ -180,8 +180,10 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				table = catalog.storage.tables[table_name_id]
 
 				// This is a special case to handle "PRIMARY KEY = INTEGER". It only
-				// applies to a PRIMARY KEY with one column.
-				if filter && table.primary_key.len == 1 {
+				// applies to a PRIMARY KEY with one integer column.
+				if filter && table.primary_key.len == 1
+					&& table.column(table.primary_key[0])!.typ.typ in [.is_smallint, .is_integer,
+						.is_bigint] {
 					if where := body.table_expression.where_clause {
 						where_str := where.pstr(params)
 						mut re := regex.regex_opt('^(\\w+) = (\\d+)$') or {

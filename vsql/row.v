@@ -3,6 +3,9 @@
 
 module vsql
 
+import math
+import math.big
+
 // Represents a single row which may contain one or more columns.
 struct Row {
 mut:
@@ -361,27 +364,144 @@ fn write_key_integer(mut buf Bytes, value i64, size int) {
 	}
 }
 
+// write_key_float writes a REAL (size 4) or DOUBLE PRECISION (size 8) in a
+// PRIMARY KEY. A positive number has the sign bit flipped, and a negative number
+// has every bit flipped, so that the keys sort in the same order as the values.
+// -0 is the same key as 0 because they're equal.
+fn write_key_float(mut buf Bytes, value f64, size int) {
+	x := if value == 0 { f64(0) } else { value }
+	bits := if size == 4 { u64(math.f32_bits(f32(x))) } else { math.f64_bits(x) }
+	sign := u64(1) << (size * 8 - 1)
+	flipped := if bits & sign != 0 { ~bits } else { bits | sign }
+	for i := size - 1; i >= 0; i-- {
+		buf.write_u8(u8(flipped >> (i * 8)))
+	}
+}
+
+// write_key_numeric writes a NUMERIC or DECIMAL in a PRIMARY KEY. Values that
+// are equal (such as 1.5 and 1.50) have the same key. It's a byte for the sign
+// (0 negative, 1 zero, 2 positive), followed by (for a non-zero) the position
+// of the first significant digit as an i16 (like write_key_integer) and each
+// significant digit plus 1, ending with a 0. Every byte after the sign is
+// flipped for a negative number, so a larger magnitude sorts first.
+fn write_key_numeric(mut buf Bytes, value Numeric) {
+	if value.is_zero() {
+		buf.write_u8(1)
+		return
+	}
+
+	// A DECIMAL can hold more digits than its scale (#223), such as 123/500 in a
+	// DECIMAL(3, 2), which is shown as 0.24 but isn't equal to 0.24. The
+	// denominator is always less than 10^(scale + 1) (see normalize_denominator),
+	// so two values that aren't equal differ by more than 10^-(2 * scale + 2).
+	// The digits are truncated to one more place than that, which keeps those
+	// values apart, and keeps equal values (such as 1/2 and 5/10) the same.
+	places := 2 * int(value.typ.scale) + 3
+	magnitude := value.numerator.abs() * big.integer_from_int(10).pow(u32(places)) / value.denominator
+	mut s := magnitude.str()
+	if s.len <= places {
+		s = '0'.repeat(places + 1 - s.len) + s
+	}
+	is_negative := value.is_negative()
+	integer_digits := s[..s.len - places].trim_left('0')
+	fraction_digits := s[s.len - places..]
+	digits := (integer_digits + fraction_digits).trim_left('0').trim_right('0')
+
+	// The leading zeros of a number less than 1 make the exponent zero or
+	// negative, such as 0 for 0.5 and -1 for 0.05.
+	exponent := if integer_digits != '' {
+		integer_digits.len
+	} else {
+		fraction_digits.trim_left('0').len - fraction_digits.len
+	}
+
+	mut key := new_empty_bytes()
+	write_key_integer(mut key, exponent, 2)
+	for digit in digits {
+		key.write_u8(digit - `0` + 1)
+	}
+	key.write_u8(0)
+
+	buf.write_u8(if is_negative { 0 } else { 2 })
+	for b in key.bytes() {
+		buf.write_u8(if is_negative { ~b } else { b })
+	}
+}
+
+// write_key_string writes a CHARACTER or CHARACTER VARYING in a PRIMARY KEY.
+// Strings are compared as if the shorter one is padded with spaces (the PAD
+// SPACE characteristic of the default collation, 10.5 Syntax Rule 2), so the
+// keys must sort that way too. For example, 'a' is equal to 'a ' and greater
+// than 'a' followed by a tab, but less than 'a b'.
+//
+// Trailing spaces are removed. Each other space is written as a space and then
+// a byte for whether the next character that isn't a space sorts after a space
+// (2) or before it (0). The string ends with a space and 1, which is like spaces
+// that go on forever. That can't appear anywhere else, so it's also where the
+// string ends when there are more columns in the key.
+fn write_key_string(mut buf Bytes, value string) {
+	bytes := value.trim_right(' ').bytes()
+	for i, b in bytes {
+		buf.write_u8(b)
+		if b == ` ` {
+			mut next := i + 1
+			for bytes[next] == ` ` {
+				next++
+			}
+			buf.write_u8(if bytes[next] > ` ` { 2 } else { 0 })
+		}
+	}
+	buf.write_u8(` `)
+	buf.write_u8(1)
+}
+
+// write_key_value writes one value of a PRIMARY KEY column of type typ. See
+// "Primary Key" in the file format docs.
+fn write_key_value(mut buf Bytes, value Value, typ SQLType) {
+	match typ {
+		.is_boolean {
+			buf.write_u8(u8(value.bool_value()))
+		}
+		.is_smallint {
+			write_key_integer(mut buf, value.int_value(), 2)
+		}
+		.is_integer {
+			write_key_integer(mut buf, value.int_value(), 4)
+		}
+		.is_bigint {
+			write_key_integer(mut buf, value.int_value(), 8)
+		}
+		.is_real {
+			write_key_float(mut buf, value.f64_value(), 4)
+		}
+		.is_double_precision {
+			write_key_float(mut buf, value.f64_value(), 8)
+		}
+		.is_numeric, .is_decimal {
+			write_key_numeric(mut buf, value.numeric_value())
+		}
+		.is_character, .is_varchar {
+			write_key_string(mut buf, value.string_value())
+		}
+		// Datetimes with a time zone are compared in UTC, so 12:00:00+05:00 is
+		// the same key as 07:00:00+00:00.
+		.is_time_with_time_zone, .is_timestamp_with_time_zone {
+			t := value.time_value()
+			write_key_integer(mut buf, t.utc_micros(t.time_zone), 8)
+		}
+		.is_date, .is_time_without_time_zone, .is_timestamp_without_time_zone {
+			write_key_integer(mut buf, value.time_value().i64(), 8)
+		}
+	}
+}
+
 fn (mut r Row) object_key(t Table) ![]u8 {
 	// If there is a PRIMARY KEY, generate the row key.
 	if t.primary_key.len > 0 {
 		mut pk := new_empty_bytes()
 
 		for col_name in t.primary_key {
-			col := t.column(col_name)!
-			match col.typ.typ {
-				.is_bigint {
-					write_key_integer(mut pk, r.data[col_name].int_value(), 8)
-				}
-				.is_integer {
-					write_key_integer(mut pk, r.data[col_name].int_value(), 4)
-				}
-				.is_smallint {
-					write_key_integer(mut pk, r.data[col_name].int_value(), 2)
-				}
-				else {
-					return error('cannot use ${col.typ.str()} in PRIMARY KEY')
-				}
-			}
+			write_key_value(mut pk, r.data[col_name], t.column(col_name)!.typ.typ)
 		}
 
 		r.id = pk.bytes()

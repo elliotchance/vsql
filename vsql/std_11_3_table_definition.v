@@ -79,20 +79,13 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 						return sqlstate_42601('column ${column.sub_entity_name} appears more than once in PRIMARY KEY')
 					}
 
-					// Only some types are allowed in the PRIMARY KEY.
+					// A column of any type can be in the PRIMARY KEY, because they
+					// can all be grouped (11.7 Syntax Rule 1).
 					mut found := false
 					for e in stmt.table_elements {
 						if e is Column {
 							if e.name.sub_entity_name == column.sub_entity_name {
-								match e.typ.typ {
-									.is_smallint, .is_integer, .is_bigint {
-										primary_key << column.sub_entity_name
-									}
-									else {
-										return sqlstate_42601('PRIMARY KEY does not support ${e.typ}')
-									}
-								}
-
+								primary_key << column.sub_entity_name
 								found = true
 							}
 						}

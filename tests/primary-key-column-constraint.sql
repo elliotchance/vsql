@@ -65,6 +65,3 @@ CREATE TABLE t (id INT PRIMARY KEY, PRIMARY KEY (id));
 
 CREATE TABLE t (id INT PRIMARY KEY PRIMARY KEY);
 -- error 42601: syntax error: only one PRIMARY KEY can be defined
-
-CREATE TABLE t (id BOOLEAN PRIMARY KEY);
--- error 42601: syntax error: PRIMARY KEY does not support BOOLEAN

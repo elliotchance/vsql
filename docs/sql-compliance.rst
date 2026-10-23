@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 73 of the 164 mandatory features** of the
+**vsql supports 74 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -295,7 +295,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ E141-02
      - ``UNIQUE`` constraints of ``NOT NULL`` columns
 
-   * - ⭕ E141-03
+   * - ✅ E141-03
      - ``PRIMARY KEY`` constraints
 
    * - ❌ E141-04

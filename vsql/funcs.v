@@ -6,7 +6,7 @@ struct Func {
 	name        string
 	arg_types   []Type
 	is_agg      bool
-	func        fn ([]Value) !Value @[required]
+	func        fn ([]Value) !Value // not used by aggregates, see eval_set_function
 	return_type Type
 	// called_on_null_input means the function is still called when one of the
 	// arguments is NULL. Otherwise, the result will be NULL without calling the
@@ -71,18 +71,28 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'TANH', [double_precision], false, func_tanh, double_precision, false})!
 	conn.register_func(Func{'UPPER', [varchar], false, func_upper, varchar, false})!
 
-	// Aggregate functions.
-	conn.register_func(Func{'AVG', [double_precision], true, func_avg, double_precision, false})!
-	// COUNT accepts a value of any type because it only counts the non-NULL
-	// values (10.9 General Rule 7). Every SQLType is registered, so a new type
-	// is supported automatically. CHARACTER uses the CHARACTER VARYING one, see
-	// find_function.
+	// Aggregate functions. COUNT accepts a value of any type because it only
+	// counts the non-NULL values (10.9 General Rule 7). MAX and MIN accept any
+	// type that can be ordered, which is every type, and SUM and AVG accept any
+	// number (10.9 Syntax Rule 7). Every SQLType is registered, so a new type is
+	// supported automatically. CHARACTER uses the CHARACTER VARYING one, see
+	// find_function. The result type depends on the argument (see
+	// set_function_type) and the result is calculated by eval_set_function.
 	$for typ in SQLType.values {
 		if typ.value != SQLType.is_character {
-			conn.register_func(Func{'COUNT', [Type{typ.value, 0, 0, false}], true, func_count, integer, false})!
+			arg := Type{typ.value, 0, 0, false}
+			mut names := ['COUNT', 'MAX', 'MIN']
+			if typ.value.is_number() {
+				names << ['AVG', 'SUM']
+			}
+			for name in names {
+				conn.register_func(Func{
+					name:        name
+					arg_types:   [arg]
+					is_agg:      true
+					return_type: set_function_type(name, arg)
+				})!
+			}
 		}
 	}
-	conn.register_func(Func{'MAX', [double_precision], true, func_max, double_precision, false})!
-	conn.register_func(Func{'MIN', [double_precision], true, func_min, double_precision, false})!
-	conn.register_func(Func{'SUM', [double_precision], true, func_sum, double_precision, false})!
 }

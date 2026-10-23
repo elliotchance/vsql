@@ -802,7 +802,7 @@ Optional Features
    * - ❌ **F392**
      - **Unicode escapes in identifiers**
 
-   * - ❌ **F393**
+   * - ✅ **F393**
      - **Unicode escapes in literals**
 
    * - ❌ **F394**

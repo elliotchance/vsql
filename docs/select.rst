@@ -19,17 +19,20 @@ Syntax
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH FIRST [ <integer> ] { ROW | ROWS } ONLY ]
 
-  <table_reference> := <table_name>
-                     | ( <query> ) [ AS <name> [ ( <column_name> , ... ) ] ]
+  <table_reference> := { <table_name> | ( <query> ) }
+                       [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
 
 A ``<query>`` in the ``FROM`` is a ``SELECT`` or ``VALUES``.
+
+``AS <name>`` gives the table a *correlation name*. The table must then be
+referred to by that name instead (such as ``p.price``). The optional list of
+column names renames each of the table's columns, in order.
 
 A ``SELECT`` must have a ``FROM``. To calculate expressions without a table,
 use :doc:`values` (such as ``VALUES 1 + 2``).
 
-Not supported yet: ``DISTINCT``, ``HAVING``, ``UNION`` and ``EXCEPT``,
-subqueries outside of the ``FROM``, and naming a table in the ``FROM`` (such as
-``FROM products AS p``). See :doc:`sql-compliance`.
+Not supported yet: ``DISTINCT``, ``HAVING``, ``UNION`` and ``EXCEPT``, and
+subqueries outside of the ``FROM``. See :doc:`sql-compliance`.
 
 SELECT
 ------
@@ -79,7 +82,14 @@ before it as its *left* table, unless parentheses are used to change the order:
   SELECT * FROM t1
   LEFT JOIN (t2 JOIN t3 ON t2.b = t3.c) ON t1.a = t2.b;
 
-The same table name cannot be used more than once in a ``FROM`` clause.
+The same table name cannot be used more than once in a ``FROM`` clause. Use
+correlation names to join a table to itself:
+
+.. code-block:: sql
+
+  SELECT child.name, parent.name
+  FROM categories AS child
+  JOIN categories AS parent ON child.parent_id = parent.id;
 
 WHERE
 -----

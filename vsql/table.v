@@ -199,10 +199,12 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 		mut subplan := o.subplans[o.table_name.id()]
 
 		// The columns may have been renamed by a derived column list, such as
-		// "(SELECT a FROM t) AS x (b)".
+		// "(SELECT a FROM t) AS x (b)". A row of a table (such as "t AS x (b)")
+		// uses the fully qualified column name, but a subquery may not.
 		mut names := map[string]string{}
 		for i, column in subplan.columns() {
 			names[column.name.sub_entity_name] = o.table.columns[i].name.sub_entity_name
+			names[column.name.id()] = o.table.columns[i].name.sub_entity_name
 		}
 
 		for row in subplan.execute([]Row{})! {

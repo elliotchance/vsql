@@ -43,6 +43,7 @@ type YYSym = AggregateFunction
 	| GeneralValueSpecification
 	| Identifier
 	| IdentifierChain
+	| InPredicate
 	| InsertStatement
 	| JoinType
 	| LocalTime
@@ -97,6 +98,7 @@ type YYSym = AggregateFunction
 	| []DerivedColumn
 	| []Identifier
 	| []RowValueConstructor
+	| []RowValueConstructorPredicand
 	| []SelectSublist
 	| []SequenceGeneratorOption
 	| []SetClause

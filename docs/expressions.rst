@@ -28,6 +28,29 @@ assumed.
   30 NOT BETWEEN 25 AND 45         -- FALSE
   30 BETWEEN SYMMETRIC 45 AND 25   -- TRUE
 
+IN
+--
+
+.. code-block:: text
+
+  X [ NOT ] IN ( Y1 [ , Y2 ... ] )
+
+An ``IN`` expression returns ``TRUE`` if ``X`` is equal to any of the values in
+the list. Or, put another way ``X = Y1 OR X = Y2 ...``. ``X NOT IN (...)`` is the
+same as ``NOT (X IN (...))``.
+
+This means that if ``X`` is ``NULL``, or none of the values are equal but at
+least one of them is ``NULL``, the result is ``UNKNOWN``.
+
+*Examples*
+
+.. code-block:: sql
+
+  30 IN (25, 30, 45)               -- TRUE
+  30 IN (45)                       -- FALSE
+  30 NOT IN (25, 30, 45)           -- FALSE
+  30 IN (45, CAST(NULL AS INT))    -- UNKNOWN
+
 IS NULL
 -------
 

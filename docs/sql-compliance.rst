@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 79 of the 164 mandatory features** of the
+**vsql supports 81 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -130,7 +130,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E061-02
      - ``BETWEEN`` predicate
 
-   * - ❌ E061-03
+   * - ✅ E061-03
      - ``IN`` predicate with list of values
 
    * - ✅ E061-04
@@ -511,7 +511,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ T321-05
      - ``RETURN`` statement
 
-   * - ❌ **T631**
+   * - ✅ **T631**
      - **IN predicate with one list element**
 
 Optional Features

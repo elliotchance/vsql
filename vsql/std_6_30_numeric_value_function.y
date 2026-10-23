@@ -20,7 +20,7 @@ position_expression:
 character_position_expression:
   POSITION left_paren character_value_expression_1 IN
   character_value_expression_2 right_paren {
-    $$.v = RoutineInvocation{'POSITION', [
+    $$.v = RoutineInvocation{function_name: 'POSITION', args: [
       ValueExpression(CommonValueExpression($3.v as CharacterValueExpression)),
       ValueExpression(CommonValueExpression($5.v as CharacterValueExpression)),
     ]}
@@ -38,26 +38,26 @@ length_expression:
 
 char_length_expression:
   CHAR_LENGTH left_paren character_value_expression right_paren {
-    $$.v = RoutineInvocation{'CHAR_LENGTH', [
+    $$.v = RoutineInvocation{function_name: 'CHAR_LENGTH', args: [
       ValueExpression(CommonValueExpression($3.v as CharacterValueExpression)),
     ]}
   }
 | CHARACTER_LENGTH left_paren character_value_expression right_paren {
-    $$.v = RoutineInvocation{'CHAR_LENGTH', [
+    $$.v = RoutineInvocation{function_name: 'CHAR_LENGTH', args: [
       ValueExpression(CommonValueExpression($3.v as CharacterValueExpression)),
     ]}
   }
 
 octet_length_expression:
   OCTET_LENGTH left_paren string_value_expression right_paren {
-    $$.v = RoutineInvocation{'OCTET_LENGTH', [
+    $$.v = RoutineInvocation{function_name: 'OCTET_LENGTH', args: [
       ValueExpression(CommonValueExpression($3.v as CharacterValueExpression)),
     ]}
   }
 
 absolute_value_expression:
   ABS left_paren numeric_value_expression right_paren {
-    $$.v = RoutineInvocation{'ABS', [
+    $$.v = RoutineInvocation{function_name: 'ABS', args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression))
     ]}
   }
@@ -65,7 +65,7 @@ absolute_value_expression:
 modulus_expression:
   MOD left_paren numeric_value_expression_dividend comma
   numeric_value_expression_divisor right_paren { 
-    $$.v = RoutineInvocation{'MOD', [
+    $$.v = RoutineInvocation{function_name: 'MOD', args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression))
       ValueExpression(CommonValueExpression($5.v as NumericValueExpression))
     ]}
@@ -79,7 +79,7 @@ numeric_value_expression_divisor:
 
 trigonometric_function:
   trigonometric_function_name left_paren numeric_value_expression right_paren {
-    $$.v = RoutineInvocation{$1.v as string, [
+    $$.v = RoutineInvocation{function_name: $1.v as string, args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression)),
     ]}
   }
@@ -97,21 +97,21 @@ trigonometric_function_name:
 
 common_logarithm:
   LOG10 left_paren numeric_value_expression right_paren {
-    $$.v = RoutineInvocation{'LOG10', [
+    $$.v = RoutineInvocation{function_name: 'LOG10', args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression))
     ]}
   }
 
 natural_logarithm:
   LN left_paren numeric_value_expression right_paren {
-    $$.v = RoutineInvocation{'LN', [
+    $$.v = RoutineInvocation{function_name: 'LN', args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression))
     ]}
   }
 
 exponential_function:
   EXP left_paren numeric_value_expression right_paren {
-    $$.v = RoutineInvocation{'EXP', [
+    $$.v = RoutineInvocation{function_name: 'EXP', args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression))
     ]}
   }
@@ -119,7 +119,7 @@ exponential_function:
 power_function:
   POWER left_paren numeric_value_expression_base comma
   numeric_value_expression_exponent right_paren {
-    $$.v = RoutineInvocation{'POWER', [
+    $$.v = RoutineInvocation{function_name: 'POWER', args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression)),
       ValueExpression(CommonValueExpression($5.v as NumericValueExpression))
     ]}
@@ -133,26 +133,26 @@ numeric_value_expression_exponent:
 
 square_root:
   SQRT left_paren numeric_value_expression right_paren {
-    $$.v = RoutineInvocation{'SQRT', [
+    $$.v = RoutineInvocation{function_name: 'SQRT', args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression))
     ]}
   }
 
 floor_function:
   FLOOR left_paren numeric_value_expression right_paren {
-    $$.v = RoutineInvocation{'FLOOR', [
+    $$.v = RoutineInvocation{function_name: 'FLOOR', args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression))
     ]}
   }
 
 ceiling_function:
   CEIL left_paren numeric_value_expression right_paren {
-    $$.v = RoutineInvocation{'CEILING', [
+    $$.v = RoutineInvocation{function_name: 'CEILING', args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression))
     ]}
   }
 | CEILING left_paren numeric_value_expression right_paren   { 
-    $$.v = RoutineInvocation{'CEILING', [
+    $$.v = RoutineInvocation{function_name: 'CEILING', args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression))
     ]}
   }

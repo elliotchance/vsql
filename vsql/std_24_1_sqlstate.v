@@ -529,6 +529,21 @@ fn sqlstate_42p07(entity_type string, entity_name string) IError {
 	}
 }
 
+// invalid column reference
+struct SQLState42P10 {
+	SQLState
+pub:
+	column_name string
+}
+
+fn sqlstate_42p10(column_name string) IError {
+	return SQLState42P10{
+		code:        sqlstate_to_int('42P10')
+		msg:         'column ${column_name} must be in the select list to be used in ORDER BY with SELECT DISTINCT'
+		column_name: column_name
+	}
+}
+
 // A function with the same name and argument types already exists.
 struct SQLState42723 {
 	SQLState

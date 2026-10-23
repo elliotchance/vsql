@@ -10,7 +10,7 @@ Syntax
 
 .. code-block:: text
 
-  SELECT { * | { <expression> [ AS <name> ] | <table_name>.* } , ... }
+  SELECT [ ALL | DISTINCT ] { * | { <expression> [ AS <name> ] | <table_name>.* } , ... }
   FROM <table_reference>
   [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference> ON <condition> ] ...
   [ WHERE <condition> ]
@@ -31,8 +31,8 @@ column names renames each of the table's columns, in order.
 A ``SELECT`` must have a ``FROM``. To calculate expressions without a table,
 use :doc:`values` (such as ``VALUES 1 + 2``).
 
-Not supported yet: ``DISTINCT``, ``HAVING``, ``UNION`` and ``EXCEPT``, and
-subqueries outside of the ``FROM``. See :doc:`sql-compliance`.
+Not supported yet: ``HAVING``, ``UNION`` and ``EXCEPT``, and subqueries
+outside of the ``FROM``. See :doc:`sql-compliance`.
 
 SELECT
 ------
@@ -122,6 +122,23 @@ error is returned because there could be more than one value for the column in
 each set.
 
 See full list of :doc:`functions`.
+
+DISTINCT
+--------
+
+``SELECT DISTINCT`` removes duplicate rows from the result. Rows are duplicates
+when every column is equal, and ``NULL`` is equal to ``NULL`` for this:
+
+.. code-block:: sql
+
+  SELECT DISTINCT city FROM products;
+
+``SELECT ALL`` is the same as ``SELECT`` and keeps all of the rows.
+
+With ``DISTINCT``, the ``ORDER BY`` can only use the columns in the ``SELECT``
+expressions, or an expression that is also in the ``SELECT`` expressions. For
+example, ``SELECT DISTINCT city FROM products ORDER BY price`` returns a
+``42P10`` error because each city could have more than one price.
 
 ORDER BY
 --------

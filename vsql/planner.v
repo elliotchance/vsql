@@ -106,6 +106,11 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 		}
 	}
 
+	if body.distinct {
+		plan.operations << new_distinct_operation(mut conn, params, body.exprs, tables,
+			plan.columns())!
+	}
+
 	return plan, tables
 }
 
@@ -432,6 +437,7 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 		}
 		mut order := []SortSpecification{}
 		for spec in stmt.order {
+			c.set_distinct_columns(stmt.body, spec.expr)!
 			spec.expr.compile(mut c)!
 			order << SortSpecification{
 				expr:   spec.expr
@@ -552,15 +558,8 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 						mut column_name := 'COL${columns.len + 1}'
 						if item.as_clause.sub_entity_name != '' {
 							column_name = item.as_clause.sub_entity_name
-						} else if item.expr is BooleanValueExpression {
-							e := item.expr.term.factor.expr
-							if e is BooleanPredicand {
-								if e is NonparenthesizedValueExpressionPrimary {
-									if e is Identifier {
-										column_name = e.sub_entity_name
-									}
-								}
-							}
+						} else if column := item.column_reference() {
+							column_name = column.sub_entity_name
 						}
 
 						expr := item.expr

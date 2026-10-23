@@ -28,6 +28,14 @@ mut:
 	// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Conformance Rules, 3
 	grouping_columns ?[]Column
 	in_aggregate     bool
+	// distinct is set when compiling the select list of a "SELECT DISTINCT".
+	distinct bool
+	// distinct_columns is set when compiling an ORDER BY of a "SELECT DISTINCT".
+	// A column reference must then be one of these columns of the select list,
+	// unless the whole sort key is also in the select list.
+	//
+	// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28d
+	distinct_columns ?[]Column
 }
 
 type CompiledFn = fn (mut conn Connection, data Row, params map[string]Value) !Value

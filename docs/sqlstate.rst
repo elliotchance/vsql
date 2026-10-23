@@ -628,6 +628,18 @@ the connection.
   -- msg: CREATE SEQUENCE 1
   -- error 42P07: duplicate sequence: ":memory:".PUBLIC.SEQ1
 
+``42P10`` invalid column reference
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t (a INT, b INT);
+  SELECT DISTINCT a FROM t ORDER BY b;
+  -- msg: CREATE TABLE 1
+  -- error 42P10: column B must be in the select list to be used in ORDER BY with SELECT DISTINCT
+
 ``54000`` program limit exceeded
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

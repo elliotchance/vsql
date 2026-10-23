@@ -14,6 +14,11 @@ fn (e NextValueExpression) pstr(_ map[string]Value) string {
 }
 
 fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
+	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 2
+	if c.distinct {
+		return sqlstate_42601('NEXT VALUE FOR cannot be used in SELECT DISTINCT')
+	}
+
 	name := c.conn.resolve_catalog_identifier(e.name)!
 	mut catalog := c.conn.catalog_for(name)
 

@@ -10,8 +10,11 @@ Syntax
 
   CREATE TABLE <table_name> ( <element> , ... )
 
-  <element> := <column_name> <data_type> [ NOT NULL ]
+  <element> := <column_name> <data_type> [ <column_constraint> ... ]
              | PRIMARY KEY ( <column_name> , ... )
+
+  <column_constraint> := NOT NULL
+                       | PRIMARY KEY
 
 1. ``column_name`` must start with a letter, but can be followed by any letter,
    underscore (``_``) or digit for a maximum length of 128 characters. A
@@ -28,8 +31,11 @@ Primary Keys
 
 One or more columns can be defined in the ``PRIMARY KEY``. A column may only
 appear once in the ``PRIMARY KEY`` and only integer types (``SMALLINT``,
-``INTEGER`` and ``BIGINT``) are supported at the moment. The ``PRIMARY KEY``
-must be listed separately, after the columns.
+``INTEGER`` and ``BIGINT``) are supported at the moment.
+
+A ``PRIMARY KEY`` of a single column can also be written on the column, so
+``id INTEGER PRIMARY KEY`` is the same as ``id INTEGER, PRIMARY KEY (id)``. A
+table can only have one ``PRIMARY KEY``.
 
 The ``PRIMARY KEY`` both prevents the same value from being inserted (an error
 ``23505``) and makes a ``WHERE`` that compares it with ``=`` fast.
@@ -47,6 +53,11 @@ Examples
       title CHARACTER VARYING(100),
       price NUMERIC(10, 2),
       PRIMARY KEY (product_id)
+  );
+
+  CREATE TABLE categories (
+      category_id INTEGER PRIMARY KEY,
+      name CHARACTER VARYING(100) NOT NULL
   );
 
 See Also

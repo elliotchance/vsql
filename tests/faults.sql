@@ -13,7 +13,7 @@ INSERT INTO t (x) VALUES (3);
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- error 00000: wal_write failed (fault injected by test)
+-- error 58030: wal_write failed (fault injected by test)
 -- X: 1
 -- msg: INSERT 1
 -- X: 1
@@ -43,7 +43,7 @@ SELECT * FROM t;
 INSERT INTO t (x) VALUES (2);
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
--- error 00000: lock failed (fault injected by test)
+-- error 58030: lock failed (fault injected by test)
 -- msg: INSERT 1
 -- X: 2
 
@@ -53,7 +53,7 @@ SELECT * FROM t;
 START TRANSACTION;
 CREATE TABLE t (x INT);
 COMMIT;
--- error 00000: lock failed (fault injected by test)
+-- error 58030: lock failed (fault injected by test)
 -- msg: CREATE TABLE 1
 -- error 2D000: invalid transaction termination
 
@@ -73,11 +73,11 @@ INSERT INTO t (x) VALUES (2);
 INSERT INTO t (x) VALUES (3);
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
--- error 00000: open failed (fault injected by test)
--- error 00000: open failed (fault injected by test)
--- error 00000: lock_shared failed (fault injected by test)
--- error 00000: read_header failed (fault injected by test)
--- error 00000: read_header failed (fault injected by test)
+-- error 58030: open failed (fault injected by test)
+-- error 58030: open failed (fault injected by test)
+-- error 58030: lock_shared failed (fault injected by test)
+-- error 58030: read_header failed (fault injected by test)
+-- error 58030: read_header failed (fault injected by test)
 -- msg: INSERT 1
 -- X: 3
 
@@ -97,9 +97,9 @@ SELECT * FROM t;
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- error 00000: recover failed (fault injected by test)
--- error 00000: lock failed (fault injected by test)
--- error 00000: lock_shared failed (fault injected by test)
+-- error 58030: recover failed (fault injected by test)
+-- error 58030: lock failed (fault injected by test)
+-- error 58030: lock_shared failed (fault injected by test)
 -- X: 1
 
 -- # The same for a statement that writes.
@@ -111,7 +111,7 @@ INSERT INTO t (x) VALUES (2);
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- error 00000: recover failed (fault injected by test)
+-- error 58030: recover failed (fault injected by test)
 -- X: 1
 
 -- # A file that needs a newer version of vsql to be changed can only be read.
@@ -134,9 +134,9 @@ INSERT INTO t (x) VALUES (3);
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- error 00000: wal_torn_frame failed (fault injected by test)
+-- error 58030: wal_torn_frame failed (fault injected by test)
 -- X: 1
--- error 00000: wal_corrupt_frame failed (fault injected by test)
+-- error 58030: wal_corrupt_frame failed (fault injected by test)
 -- X: 1
 
 -- # A write-ahead log that is corrupt is ignored when it's recovered, so the
@@ -156,11 +156,11 @@ INSERT INTO t (x) VALUES (5);
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- error 00000: wal_bad_magic failed (fault injected by test)
+-- error 58030: wal_bad_magic failed (fault injected by test)
 -- X: 1
--- error 00000: wal_bad_header failed (fault injected by test)
+-- error 58030: wal_bad_header failed (fault injected by test)
 -- X: 1
--- error 00000: wal_unknown_frame failed (fault injected by test)
+-- error 58030: wal_unknown_frame failed (fault injected by test)
 -- X: 1
 -- msg: INSERT 1
 -- X: 1
@@ -187,7 +187,7 @@ SELECT * FROM foo;
 -- 1: msg: UPDATE 1
 -- 2: msg: START TRANSACTION
 -- 2: msg: INSERT 1
--- 2: error 00000: serialization failure: avoiding concurrent write on individual row, but the transaction is still active because it could not be rolled back: lock failed (fault injected by test)
+-- 2: error 58030: serialization failure: avoiding concurrent write on individual row, but the transaction is still active because it could not be rolled back: lock failed (fault injected by test)
 -- 2: msg: COMMIT
 -- 2: BAR: 123
 -- 2: BAR: 999
@@ -251,7 +251,7 @@ SELECT * FROM t;
 -- 1: msg: CREATE TABLE 1
 -- 1: msg: START TRANSACTION
 -- 1: msg: INSERT 1
--- 2: error 00000: session_shared failed (fault injected by test)
+-- 2: error 58030: session_shared failed (fault injected by test)
 -- 2: msg: INSERT 1
 -- 2: X: 3
 
@@ -265,7 +265,7 @@ CREATE TABLE t (x INT);
 CREATE SCHEMA public;
 CREATE TABLE t (x INT);
 SELECT * FROM t;
--- 1: error 00000: wal_write failed (fault injected by test)
+-- 1: error 58030: wal_write failed (fault injected by test)
 -- 2: error 42P01: no such sequence: "test".PUBLIC.S
 -- 2: error 3F000: invalid schema name: PUBLIC
 -- 2: msg: CREATE SCHEMA 1
@@ -280,7 +280,7 @@ SELECT COUNT(*) AS c FROM t;
 SELECT COUNT(*) AS c FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 40
--- error 00000: read_page failed (fault injected by test)
+-- error 58030: read_page failed (fault injected by test)
 -- C: 40
 
 -- # The same for a page of a value that's stored across several pages.
@@ -291,7 +291,7 @@ SELECT CHARACTER_LENGTH(x) AS len FROM t;
 SELECT CHARACTER_LENGTH(x) AS len FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- error 00000: read_page failed (fault injected by test)
+-- error 58030: read_page failed (fault injected by test)
 -- LEN: 600
 
 -- # A statement fails if its isolation block can't be started.
@@ -303,7 +303,7 @@ INSERT INTO t (x) VALUES (3);
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- error 00000: isolation_start failed (fault injected by test)
+-- error 58030: isolation_start failed (fault injected by test)
 -- msg: INSERT 1
 -- X: 1
 -- X: 3
@@ -319,7 +319,7 @@ INSERT INTO t (x) VALUES (4);
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- error 00000: isolation_end failed (fault injected by test)
+-- error 58030: isolation_end failed (fault injected by test)
 -- X: 1
 -- msg: INSERT 1
 -- X: 1
@@ -331,7 +331,7 @@ CREATE TABLE t (x INT);
 INSERT INTO t (x) VALUES (1), (2);
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
--- error 00000: isolation_end failed (fault injected by test)
+-- error 58030: isolation_end failed (fault injected by test)
 
 -- # Reading is in an isolation block too.
 CREATE TABLE t (x INT);
@@ -341,7 +341,7 @@ SELECT * FROM t;
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- error 00000: isolation_end failed (fault injected by test)
+-- error 58030: isolation_end failed (fault injected by test)
 -- X: 1
 
 -- # A CREATE TABLE that fails at the end of its isolation block doesn't create
@@ -350,7 +350,7 @@ SELECT * FROM t;
 CREATE TABLE t (x INT);
 CREATE TABLE t (x INT);
 SELECT * FROM t;
--- error 00000: isolation_end failed (fault injected by test)
+-- error 58030: isolation_end failed (fault injected by test)
 -- msg: CREATE TABLE 1
 
 -- # In a transaction, only the statement fails and the transaction continues.
@@ -365,7 +365,7 @@ SELECT * FROM t;
 -- msg: CREATE TABLE 1
 -- msg: START TRANSACTION
 -- msg: INSERT 1
--- error 00000: isolation_end failed (fault injected by test)
+-- error 58030: isolation_end failed (fault injected by test)
 -- msg: INSERT 1
 -- msg: COMMIT
 -- X: 1

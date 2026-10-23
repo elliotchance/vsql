@@ -12,6 +12,12 @@ specific fields appropriate for that error. See
 `std_24_1_sqlstate.v <https://github.com/elliotchance/vsql/blob/main/vsql/std_24_1_sqlstate.v>`_
 for struct definitions.
 
+This includes errors that aren't caused by the SQL itself, such as reading a
+file (``58030``) or a file that isn't a vsql database (``XX001``). The only
+exception is an error returned by your own code, such as a custom function (see
+:doc:`custom-functions`) or a virtual table (see :doc:`virtual-tables`), which
+is returned as it is.
+
 You can match on these to inspect the error further:
 
 .. code-block:: text
@@ -111,6 +117,13 @@ sends it as a ``NOTICE``.
   -- msg: CREATE TABLE 1
   -- warning 02000: no data
   -- msg: DELETE 0
+
+``0A000`` feature not supported
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``0A000`` is returned when opening a database file (or its write-ahead log)
+that needs a newer version of vsql, or was created by a version of vsql that is
+too old. See *Compatibility* in :doc:`file-format`.
 
 ``0B000`` invalid transaction initiation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -412,6 +425,12 @@ A client that receives this error should retry the transaction. See
   CREATE TABLE ABS (x INT);
   -- error 42601: syntax error: unexpected ABS
 
+``42602`` invalid name
+^^^^^^^^^^^^^^^^^^^^^^
+
+An identifier given to the API, such as the name in the prototype of a custom
+function, can't be parsed.
+
 ``42702`` ambiguous column
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -523,6 +542,12 @@ There is no function or operator with that name for the types of its arguments.
   -- msg: CREATE TABLE 1
   -- error 42P02: parameter does not exist: foo
 
+``42P04`` catalog already exists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``add_catalog()`` was called with the name of a catalog that already exists on
+the connection.
+
 ``42P06`` schema already exists
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -551,3 +576,27 @@ There is no function or operator with that name for the types of its arguments.
   CREATE SEQUENCE seq1;
   -- msg: CREATE SEQUENCE 1
   -- error 42P07: duplicate sequence: ":memory:".PUBLIC.SEQ1
+
+``54000`` program limit exceeded
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The name of a schema or sequence is part of the key of an object in the file,
+so it must fit in a page. This can only happen with a small page size.
+
+``58030`` io error
+^^^^^^^^^^^^^^^^^^
+
+Opening, locking, reading or writing a file (including the write-ahead log)
+failed. The message has the reason from the operating system. The statement has
+no effect.
+
+``XX000`` internal error
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Something that should never happen, which is a bug in vsql. Please
+`report it <https://github.com/elliotchance/vsql/issues>`_.
+
+``XX001`` data corrupted
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The file is not a vsql database, or something in it isn't valid.

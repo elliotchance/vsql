@@ -107,9 +107,9 @@ mut:
 // new_file_pager requires that the path already exists and has already been
 // initialized as a new database.
 fn new_file_pager(mut file os.File, page_size int, root_page int) !&FilePager {
-	file.seek(0, .end) or { return error('unable seek end: ${err}') }
+	file.seek(0, .end) or { return sqlstate_58030('unable seek end: ${err}') }
 
-	file_len := file.tell() or { return error('unable to get file length: ${err}') }
+	file_len := file.tell() or { return sqlstate_58030('unable to get file length: ${err}') }
 
 	return &FilePager{
 		file:        file
@@ -131,11 +131,11 @@ fn (mut p FilePager) fetch_page(page_number int) !Page {
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
 	p.file.seek(int(header_size) + (p.page_size * page_number), .start) or {
-		return error('unable to seek: ${err}')
+		return sqlstate_58030('unable to seek: ${err}')
 	}
 
 	mut buf := []u8{len: p.page_size}
-	p.file.read(mut buf) or { return error('unable to read from file: ${err}') }
+	p.file.read(mut buf) or { return sqlstate_58030('unable to read from file: ${err}') }
 
 	return new_page_from_bytes(buf)
 }
@@ -187,7 +187,7 @@ fn (mut p FilePager) total_pages() int {
 fn (mut p FilePager) append_page(page Page) !int {
 	// The first page is reserved for header information. We do not include this
 	// in the pages.
-	p.store_page(p.total_pages, page) or { return error('unable to store page: ${err}') }
+	p.store_page(p.total_pages, page) or { return sqlstate_58030('unable to store page: ${err}') }
 	p.total_pages++
 
 	return p.total_pages - 1

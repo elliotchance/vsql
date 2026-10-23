@@ -145,7 +145,7 @@ fn (mut p Btree) get(key []u8, tid u64) !PageObject {
 	page := p.pager.fetch_page(path[path.len - 1])!
 	obj := page.get(key, tid)
 	if obj.key.len == 0 {
-		return error('object does not exist: ${key.bytestr()}')
+		return sqlstate_xx001('object does not exist: ${key.bytestr()}')
 	}
 
 	return obj
@@ -221,7 +221,7 @@ fn (mut p Btree) add(object PageObject) !int {
 		// only possible with a small page and a long name, see
 		// max_identifier_length.
 		if blob_size < 1 {
-			return error('the key of an object (${obj.key.len} bytes) is too long for a page of ${p.page_size} bytes')
+			return sqlstate_54000('the key of an object (${obj.key.len} bytes) is too long for a page of ${p.page_size} bytes')
 		}
 		mut part_number := 0
 		mut remaining := obj_bytes.len
@@ -419,7 +419,7 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 			search_path, _ := p.search_page(pointers[i - 1].key)!
 			index := search_path.index(page_numbers[i - 1])
 			if index < 1 {
-				return error('cannot find page ${page_numbers[i - 1]} after split')
+				return sqlstate_xx001('cannot find page ${page_numbers[i - 1]} after split')
 			}
 			previous_path = search_path[..index + 1].clone()
 		}
@@ -530,7 +530,7 @@ fn (mut p Btree) replace_value(obj PageObject, value []u8) ! {
 	page_number := path[path.len - 1]
 	mut page := p.pager.fetch_page(page_number)!
 	if !page.delete(obj.key, obj.tid) {
-		return error('object does not exist: ${obj.key.bytestr()}')
+		return sqlstate_xx001('object does not exist: ${obj.key.bytestr()}')
 	}
 
 	page.add(PageObject{obj.key, value, false, obj.tid, obj.xid})!

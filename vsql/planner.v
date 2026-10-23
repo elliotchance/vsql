@@ -31,7 +31,7 @@ fn create_plan(stmt Stmt, params map[string]Value, mut conn Connection) !Plan {
 			return create_update_plan(stmt, params, mut conn)
 		}
 		else {
-			return error('cannot create plan for ${stmt}')
+			return sqlstate_xx000('cannot create plan for ${stmt}')
 		}
 	}
 }
@@ -165,7 +165,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			mut table_name := conn.resolve_table_identifier(from_clause.body, allow_virtual)!
 			table_name_id := table_name.storage_id()
 			mut catalog := conn.catalogs[table_name.catalog_name] or {
-				return error('unknown catalog: ${table_name.catalog_name}')
+				return sqlstate_3d000(table_name.catalog_name)
 			}
 
 			if allow_virtual && table_name_id in catalog.virtual_tables {
@@ -187,7 +187,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 					if where := body.table_expression.where_clause {
 						where_str := where.pstr(params)
 						mut re := regex.regex_opt('^(\\w+) = (\\d+)$') or {
-							return error('cannot compile regexp: ${err}')
+							return sqlstate_xx000('cannot compile regexp: ${err}')
 						}
 						if re.matches_string(where_str) {
 							parts := where_str.split(' = ')

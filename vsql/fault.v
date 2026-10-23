@@ -100,5 +100,5 @@ fn fault_point(name string) ! {
 }
 
 fn fault_error(name string) IError {
-	return error('${name} failed (fault injected by test)')
+	return sqlstate_58030('${name} failed (fault injected by test)')
 }

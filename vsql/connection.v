@@ -158,7 +158,7 @@ fn (mut conn Connection) close() {
 
 pub fn (mut conn Connection) add_catalog(catalog_name string, path string, options ConnectionOptions) ! {
 	if catalog_name in conn.catalogs {
-		return error('catalog already exists: ${catalog_name}')
+		return sqlstate_42p04(catalog_name)
 	}
 
 	// This is really only used when path == ':memory:' but we must supply
@@ -232,7 +232,7 @@ fn (mut conn CatalogConnection) open_read_connection() ! {
 			flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 			conn.storage.close_file()
 			conn.options.mutex.runlock()
-			return err
+			return io_error(err)
 		}
 		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		flock_lock_shared(mut conn.storage.data_lock, conn.storage.file, conn.path) or {
@@ -276,7 +276,7 @@ fn (mut conn CatalogConnection) open_write_connection() ! {
 		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
 		conn.storage.close_file()
 		conn.options.mutex.unlock()
-		return err
+		return io_error(err)
 	}
 	conn.storage.open(conn.catalog_name, true) or {
 		flock_unlock_exclusive(mut conn.storage.data_lock, conn.storage.file, conn.path)
@@ -645,7 +645,7 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 		return
 	}
 
-	return error('must provide a CREATE TABLE statement')
+	return sqlstate_42601('must provide a CREATE TABLE statement')
 }
 
 // schemas returns the schemas in this catalog (database).
@@ -755,7 +755,7 @@ fn (mut conn Connection) resolve_table_identifier(identifier Identifier, allow_v
 	ident := conn.resolve_schema_identifier(identifier)!
 	id := ident.storage_id()
 	mut catalog := conn.catalogs[ident.catalog_name] or {
-		return error('unknown catalog: ${ident.catalog_name}')
+		return sqlstate_3d000(ident.catalog_name)
 	}
 
 	if id in catalog.storage.tables {

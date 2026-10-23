@@ -96,7 +96,7 @@ SELECT * FROM nope.t;
 
 -- # Only a CREATE TABLE can be registered.
 /* virtual_table VALUES (1) AS VALUES 1 */
--- error 00000: must provide a CREATE TABLE statement
+-- error 42601: syntax error: must provide a CREATE TABLE statement
 
 -- # A virtual table can only be read.
 /* virtual_table CREATE TABLE fruits (id INT, name VARCHAR(10)) AS VALUES ROW(1, 'kiwi') */

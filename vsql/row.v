@@ -507,7 +507,7 @@ fn (mut r Row) object_key(t Table) ![]u8 {
 		r.id = pk.bytes()
 	} else {
 		if r.id.len == 0 {
-			return error('row in ${t.name} has no row ID')
+			return sqlstate_xx000('row in ${t.name} has no row ID')
 		}
 	}
 

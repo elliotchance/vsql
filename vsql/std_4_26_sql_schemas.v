@@ -22,7 +22,7 @@ fn new_schema_from_bytes(data []u8, tid u64) !Schema {
 		return Schema{tid, stmt.schema_name.schema_name}
 	}
 
-	return error('not a schema definition: ${data.bytestr()}')
+	return sqlstate_xx001('not a schema definition: ${data.bytestr()}')
 }
 
 // Returns the CREATE SCHEMA statement for this schema, including the ';'.

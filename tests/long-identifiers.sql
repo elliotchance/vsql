@@ -15,9 +15,9 @@ CREATE TABLE "txxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 -- # so it must also fit in a page. These tests use 256 byte pages, see
 -- # docs/testing.rst.
 CREATE SCHEMA sxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
--- error 00000: the key of an object (101 bytes) is too long for a page of 256 bytes
+-- error 54000: the key of an object (101 bytes) is too long for a page of 256 bytes
 
 CREATE SEQUENCE qxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
 VALUES NEXT VALUE FOR qxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
--- error 00000: the key of an object (108 bytes) is too long for a page of 256 bytes
+-- error 54000: the key of an object (108 bytes) is too long for a page of 256 bytes
 -- error 42P01: no such sequence: ":memory:".PUBLIC.QXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

@@ -104,7 +104,7 @@ fn (h Header) is_writable() bool {
 fn init_database_file(path string, page_size int) ! {
 	header := new_header(page_size)
 
-	mut tmpf := os.create(path) or { return error('cannot create file ${path}: ${err}') }
+	mut tmpf := os.create(path) or { return sqlstate_58030('cannot create file ${path}: ${err}') }
 	write_header(mut tmpf, header)!
 	tmpf.close()
 }
@@ -131,7 +131,7 @@ fn (h Header) bytes() []u8 {
 
 fn new_header_from_bytes(data []u8) !Header {
 	if data.len < header_size || data[..header_magic.len] != header_magic {
-		return error('not a vsql database, or it was created by a version of vsql before the file format had a magic number')
+		return sqlstate_xx001('not a vsql database, or it was created by a version of vsql before the file format had a magic number')
 	}
 
 	mut b := new_bytes(data)
@@ -140,10 +140,10 @@ fn new_header_from_bytes(data []u8) !Header {
 	read_version := b.read_u16()
 	write_version := b.read_u16()
 	if read_version > file_format_version {
-		return error('database needs file format ${read_version} to be read, but this version of vsql only supports up to ${file_format_version}, upgrade vsql to open it')
+		return sqlstate_0a000('database needs file format ${read_version} to be read, but this version of vsql only supports up to ${file_format_version}, upgrade vsql to open it')
 	}
 	if read_version < oldest_file_format_version {
-		return error('database uses file format ${read_version}, which is older than this version of vsql supports (${oldest_file_format_version}), you will need to recreate it')
+		return sqlstate_0a000('database uses file format ${read_version}, which is older than this version of vsql supports (${oldest_file_format_version}), you will need to recreate it')
 	}
 
 	mut header := Header{
@@ -162,14 +162,14 @@ fn new_header_from_bytes(data []u8) !Header {
 	header.reserved = b.read_u8s(header_size - header_reserved_offset)
 
 	if header.page_size <= page_header_size {
-		return error('invalid page size ${header.page_size}')
+		return sqlstate_xx001('invalid page size ${header.page_size}')
 	}
 
 	return header
 }
 
 fn read_header(mut file os.File) !Header {
-	file.seek(0, .start) or { return error('unable seek start: ${err}') }
+	file.seek(0, .start) or { return sqlstate_58030('unable seek start: ${err}') }
 
 	mut data := []u8{len: header_size}
 	n := file.read(mut data) or { 0 }
@@ -178,7 +178,7 @@ fn read_header(mut file os.File) !Header {
 }
 
 fn write_header(mut file os.File, header Header) ! {
-	file.seek(0, .start) or { return error('unable seek start: ${err}') }
+	file.seek(0, .start) or { return sqlstate_58030('unable seek start: ${err}') }
 
-	file.write(header.bytes()) or { return error('unable to write header: ${err}') }
+	file.write(header.bytes()) or { return sqlstate_58030('unable to write header: ${err}') }
 }

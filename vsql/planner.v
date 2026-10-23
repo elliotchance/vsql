@@ -76,14 +76,11 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 		}
 	}
 
-	// GROUP BY.
-	//
-	// TODO(elliotchance): This will break if trying to use GROUP BY on
-	// "SELECT *".
+	// GROUP BY. An asterisk is the same as listing every column, so each one must
+	// be a grouping column.
+	mut select_exprs := []DerivedColumn{}
 	match body.exprs {
 		[]SelectSublist {
-			group_exprs := body.table_expression.group_clause
-			mut select_exprs := []DerivedColumn{}
 			for item in body.exprs {
 				match item {
 					DerivedColumn {
@@ -97,14 +94,18 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 					}
 				}
 			}
-
-			add_group_by_plan(mut &plan, group_exprs, select_exprs, params, mut conn,
-				tables)!
 		}
 		AsteriskExpr {
-			// It's not possible to have a GROUP BY in this case.
+			for _, table in tables {
+				for column in table.columns {
+					select_exprs << column_derived_column(column)
+				}
+			}
 		}
 	}
+
+	add_group_by_plan(mut &plan, body.table_expression.group_clause, body.table_expression.having_clause,
+		select_exprs, params, mut conn, tables)!
 
 	if body.distinct {
 		plan.operations << new_distinct_operation(mut conn, params, body.exprs, tables,
@@ -336,16 +337,18 @@ fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Valu
 	}
 }
 
-fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []DerivedColumn, params map[string]Value, mut conn Connection, tables map[string]Table) ! {
+fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?BooleanValueExpression, select_exprs []DerivedColumn, params map[string]Value, mut conn Connection, tables map[string]Table) ! {
 	// There can be an explicit GROUP BY clause. However, if any of the
-	// expressions contain an aggregate function we need to have an implicit
-	// GROUP BY for the whole set.
+	// expressions contain an aggregate function (or there is a HAVING) we need to
+	// have an implicit GROUP BY for the whole set.
+	//
+	// ISO/IEC 9075-2:2016(E), 7.14, <having clause>, Syntax Rules, 1
 	mut c := Compiler{
 		conn:   conn
 		params: params
 		tables: tables
 	}
-	mut has_agg := false
+	mut has_agg := having_clause != none
 	for e in select_exprs {
 		if e.expr.compile(mut c)!.contains_agg {
 			has_agg = true
@@ -368,6 +371,15 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []De
 		e.expr.compile(mut c)!
 	}
 
+	// The HAVING has the same rule (7.14, Syntax Rules, 2) and must be a boolean.
+	if having := having_clause {
+		c.next_value_not_allowed = 'HAVING'
+		compiled_having := having.compile(mut c)!
+		if compiled_having.typ.typ != .is_boolean {
+			return sqlstate_42804('in HAVING', 'BOOLEAN', compiled_having.typ.str())
+		}
+	}
+
 	mut order := []SortSpecification{}
 	for col in group_clause {
 		order << SortSpecification{
@@ -386,7 +398,13 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []De
 		plan.operations << new_order_operation(order, params, conn, plan.columns(), tables)
 	}
 
-	plan.operations << new_group_operation(select_exprs, group_clause, params, mut conn, tables)!
+	plan.operations << new_group_operation(select_exprs, group_clause, having_clause,
+		params, mut conn, tables)!
+
+	if having := having_clause {
+		plan.operations << new_where_operation(having, params, conn, plan.columns(),
+			tables)
+	}
 }
 
 fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut conn Connection) !Plan {

@@ -189,6 +189,7 @@ INSERT INTO u (a, d) VALUES (2, 10);
 SELECT DISTINCT t.a, u.d FROM t JOIN u ON t.a = u.a ORDER BY u.d, t.a;
 SELECT DISTINCT u.* FROM t JOIN u ON t.a = u.a ORDER BY d DESC, u.a;
 SELECT DISTINCT u.* FROM t JOIN u ON t.a = u.a ORDER BY t.b;
+SELECT DISTINCT d FROM t JOIN u ON t.a = u.a ORDER BY u.a;
 SELECT DISTINCT d FROM t JOIN u ON t.a = u.a ORDER BY a;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
@@ -201,7 +202,8 @@ SELECT DISTINCT d FROM t JOIN u ON t.a = u.a ORDER BY a;
 -- A: 1 D: 10
 -- A: 2 D: 10
 -- error 42P10: column T.B must be in the select list to be used in ORDER BY with SELECT DISTINCT
--- error 42P10: column A must be in the select list to be used in ORDER BY with SELECT DISTINCT
+-- error 42P10: column U.A must be in the select list to be used in ORDER BY with SELECT DISTINCT
+-- error 42702: ambiguous column: A
 
 -- # Only a SELECT DISTINCT limits the ORDER BY.
 VALUES 3, 1, 2 ORDER BY 1;

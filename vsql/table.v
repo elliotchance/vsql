@@ -148,7 +148,7 @@ fn new_table_from_bytes(key []u8, data []u8, tid u64, catalog_name string) !Tabl
 		return table
 	}
 
-	return error('not a table definition: ${data.bytestr()}')
+	return sqlstate_xx001('not a table definition: ${data.bytestr()}')
 }
 
 // Returns the CREATE TABLE statement, including the ';'. It's the same as the
@@ -215,7 +215,7 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 		}
 	} else {
 		mut catalog := o.conn.catalogs[o.table_name.catalog_name] or {
-			return error('unknown catalog: ${o.table_name.catalog_name}')
+			return sqlstate_3d000(o.table_name.catalog_name)
 		}
 		rows = catalog.storage.read_rows(o.table_name)!
 	}

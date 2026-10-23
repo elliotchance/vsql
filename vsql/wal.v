@@ -60,7 +60,7 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 
 	log_path := wal_path(path)
 	is_new := !os.exists(log_path)
-	mut log := os.create(log_path) or { return error('unable to create ${log_path}: ${err}') }
+	mut log := os.create(log_path) or { return sqlstate_58030('unable to create ${log_path}: ${err}') }
 	defer {
 		log.close()
 	}
@@ -198,12 +198,12 @@ fn wal_recover(mut file os.File, path string) ! {
 	fault_point('recover')!
 
 	log_path := wal_path(path)
-	data := os.read_bytes(log_path) or { return error('unable to read ${log_path}: ${err}') }
+	data := os.read_bytes(log_path) or { return sqlstate_58030('unable to read ${log_path}: ${err}') }
 
 	if data.len >= wal_header_size && data[..wal_magic.len] == wal_magic {
 		version := binary.big_endian_u16_at(data, wal_magic.len)
 		if version > wal_version {
-			return error('${log_path} uses version ${version} of the write-ahead log, but this version of vsql only supports up to ${wal_version}')
+			return sqlstate_0a000('${log_path} uses version ${version} of the write-ahead log, but this version of vsql only supports up to ${wal_version}')
 		}
 	}
 
@@ -214,7 +214,7 @@ fn wal_recover(mut file os.File, path string) ! {
 
 	// The "b" is needed on Windows, otherwise the file is opened in text mode.
 	mut log := os.open_file(log_path, 'rb+') or {
-		return error('unable to open ${log_path}: ${err}')
+		return sqlstate_58030('unable to open ${log_path}: ${err}')
 	}
 	defer {
 		log.close()

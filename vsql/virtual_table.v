@@ -88,7 +88,7 @@ fn (mut o VirtualTableOperation) execute(_ []Row) ![]Row {
 		mut data := map[string]Value{}
 		for column in columns {
 			name := column.name.sub_entity_name
-			value := row.data[name] or { return error('missing value for ${name}') }
+			value := row.data[name] or { return sqlstate_xx000('missing value for ${name}') }
 			check_store_assignment(value, column.typ)!
 			// A value has the type of its column, like when it's read from a table.
 			data[name] = Value{

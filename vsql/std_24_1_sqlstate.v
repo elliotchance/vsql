@@ -576,3 +576,102 @@ fn sqlstate_40001(message string) IError {
 		msg:  'serialization failure: ${message}'
 	}
 }
+
+// feature not supported, such as a file that needs a different version of vsql
+// to be opened.
+struct SQLState0A000 {
+	SQLState
+}
+
+fn sqlstate_0a000(msg string) IError {
+	return SQLState0A000{
+		code: sqlstate_to_int('0A000')
+		msg:  msg
+	}
+}
+
+// duplicate catalog
+struct SQLState42P04 {
+	SQLState
+pub:
+	catalog_name string
+}
+
+fn sqlstate_42p04(catalog_name string) IError {
+	return SQLState42P04{
+		code:         sqlstate_to_int('42P04')
+		msg:          'duplicate catalog: ${catalog_name}'
+		catalog_name: catalog_name
+	}
+}
+
+// invalid name, such as an identifier passed to the API that can't be parsed.
+struct SQLState42602 {
+	SQLState
+}
+
+fn sqlstate_42602(msg string) IError {
+	return SQLState42602{
+		code: sqlstate_to_int('42602')
+		msg:  msg
+	}
+}
+
+// program limit exceeded, such as a key that doesn't fit in a page.
+struct SQLState54000 {
+	SQLState
+}
+
+fn sqlstate_54000(msg string) IError {
+	return SQLState54000{
+		code: sqlstate_to_int('54000')
+		msg:  msg
+	}
+}
+
+// io error: reading, writing or locking a file failed.
+struct SQLState58030 {
+	SQLState
+}
+
+fn sqlstate_58030(msg string) IError {
+	return SQLState58030{
+		code: sqlstate_to_int('58030')
+		msg:  msg
+	}
+}
+
+// io_error returns err as a 58030 io error, unless it already has a SQLSTATE.
+// Errors from the os module have no SQLSTATE (some have an errno as their
+// code).
+fn io_error(err IError) IError {
+	if err.code() >= sqlstate_to_int('01000') {
+		return err
+	}
+
+	return sqlstate_58030(err.msg())
+}
+
+// internal error: something that can't happen, unless there's a bug in vsql.
+struct SQLStateXX000 {
+	SQLState
+}
+
+fn sqlstate_xx000(msg string) IError {
+	return SQLStateXX000{
+		code: sqlstate_to_int('XX000')
+		msg:  msg
+	}
+}
+
+// data corrupted: a file isn't a vsql database, or its contents are not valid.
+struct SQLStateXX001 {
+	SQLState
+}
+
+fn sqlstate_xx001(msg string) IError {
+	return SQLStateXX001{
+		code: sqlstate_to_int('XX001')
+		msg:  msg
+	}
+}

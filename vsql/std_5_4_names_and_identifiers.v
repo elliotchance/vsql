@@ -74,7 +74,7 @@ fn new_identifier1(s string) !Identifier {
 			}
 		}
 		else {
-			return error('invalid identifier: ${s}')
+			return sqlstate_42602('invalid identifier: ${s}')
 		}
 	}
 }
@@ -102,7 +102,7 @@ fn new_identifier2(s string) !Identifier {
 			}
 		}
 		else {
-			return error('invalid identifier: ${s}')
+			return sqlstate_42602('invalid identifier: ${s}')
 		}
 	}
 }
@@ -171,7 +171,7 @@ fn new_identifier3(s string) !Identifier {
 
 fn split_identifier_parts(s string) ![]string {
 	if s == '' {
-		return error('cannot use empty string for identifier')
+		return sqlstate_42602('cannot use empty string for identifier')
 	}
 
 	mut parts := []string{}
@@ -179,7 +179,7 @@ fn split_identifier_parts(s string) ![]string {
 	for s2 != '' {
 		if s2[0] == `"` {
 			s2 = s2[1..]
-			index := s2.index('"') or { return error('invalid identifier chain: ${s}') }
+			index := s2.index('"') or { return sqlstate_42602('invalid identifier chain: ${s}') }
 			parts << s2[..index]
 			s2 = s2[index + 1..]
 		} else {

@@ -37,12 +37,12 @@ fn lock_data_file(path string, mode filelock.LockMode) !filelock.FileLock {
 
 	// Make sure the file exists without truncating it.
 	mut file := os.open_append(lock_path) or {
-		return error('unable to open ${lock_path}: ${err}')
+		return sqlstate_58030('unable to open ${lock_path}: ${err}')
 	}
 	file.close()
 
 	mut l := filelock.new_file(lock_path, mode: mode)
-	l.acquire() or { return error('cannot acquire lock on ${lock_path}: ${err}') }
+	l.acquire() or { return sqlstate_58030('cannot acquire lock on ${lock_path}: ${err}') }
 
 	return l
 }
@@ -59,14 +59,14 @@ mut:
 
 fn session_lock(path string) !SessionLock {
 	// Make sure the file exists without truncating it.
-	mut file := os.open_append(path) or { return error('unable to open ${path}: ${err}') }
+	mut file := os.open_append(path) or { return sqlstate_58030('unable to open ${path}: ${err}') }
 	file.close()
 
 	mut l := SessionLock{
 		path: path
 		lock: filelock.new_file(path, mode: .shared)
 	}
-	l.lock.acquire() or { return error('cannot acquire lock on ${path}: ${err}') }
+	l.lock.acquire() or { return sqlstate_58030('cannot acquire lock on ${path}: ${err}') }
 
 	return l
 }
@@ -89,7 +89,7 @@ fn (mut l SessionLock) shared() ! {
 	fault_point('session_shared')!
 	l.lock.release()
 	l.lock = filelock.new_file(l.path, mode: .shared)
-	l.lock.acquire() or { return error('cannot acquire session lock: ${err}') }
+	l.lock.acquire() or { return sqlstate_58030('cannot acquire session lock: ${err}') }
 }
 
 // close releases the lock.
@@ -104,7 +104,7 @@ fn C._commit(int) int
 // fsync waits for the file to be written to the disk. It must be flushed first.
 fn fsync(file os.File, path string) ! {
 	if C._commit(file.fd) != 0 {
-		return error('cannot fsync ${path}')
+		return sqlstate_58030('cannot fsync ${path}')
 	}
 }
 
@@ -117,6 +117,6 @@ fn fsync_dir(_ string) ! {
 // first.
 fn truncate_file(file os.File, path string, len u64) ! {
 	if C._chsize_s(file.fd, len) != 0 {
-		return error('cannot truncate ${path}')
+		return sqlstate_58030('cannot truncate ${path}')
 	}
 }

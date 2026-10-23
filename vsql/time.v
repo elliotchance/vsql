@@ -71,7 +71,7 @@ fn new_timestamp_from_string(s string) !Time {
 	mut re := regex.regex_opt(match expects_time_zone {
 		true { unquoted_timestamp_with_time_zone_string }
 		false { unquoted_timestamp_without_time_zone_string }
-	}) or { return error('cannot compile regex for timestamp: ${err}') }
+	}) or { return sqlstate_xx000('cannot compile regex for timestamp: ${err}') }
 	if !re.matches_string(s) {
 		return sqlstate_42601("TIMESTAMP '${s}' is not valid")
 	}

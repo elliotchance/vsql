@@ -224,5 +224,5 @@ fn new_sequence_from_bytes(definition_data []u8, value_data []u8, tid u64) !Sequ
 		return sequence
 	}
 
-	return error('not a sequence definition: ${definition_data.bytestr()}')
+	return sqlstate_xx001('not a sequence definition: ${definition_data.bytestr()}')
 }

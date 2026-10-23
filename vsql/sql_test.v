@@ -951,6 +951,48 @@ fn test_too_many_transactions() {
 	assert false, '257th transaction was added'
 }
 
+// Every error has a SQLSTATE, including the ones that aren't caused by SQL,
+// such as a file that isn't a vsql database (E171).
+fn test_sqlstate_for_other_errors() ! {
+	assert header_error('nope'.bytes()) == 'XX001 not a vsql database, or it was created by a version of vsql before the file format had a magic number'
+
+	mut data := new_header(4096).bytes()
+	binary.big_endian_put_u16_at(mut data, file_format_version + 1, header_magic.len)
+	assert header_error(data) == '0A000 database needs file format ${file_format_version + 1} to be read, but this version of vsql only supports up to ${file_format_version}, upgrade vsql to open it'
+
+	binary.big_endian_put_u16_at(mut data, oldest_file_format_version - 1, header_magic.len)
+	assert header_error(data) == '0A000 database uses file format ${oldest_file_format_version - 1}, which is older than this version of vsql supports (${oldest_file_format_version}), you will need to recreate it'
+
+	data = new_header(4096).bytes()
+	binary.big_endian_put_u32_at(mut data, 0, header_magic.len + 8)
+	assert header_error(data) == 'XX001 invalid page size 0'
+
+	mut db := open(':memory:')!
+	db.add_catalog('FOO', ':memory:', default_connection_options())!
+	mut got := ''
+	db.add_catalog('FOO', ':memory:', default_connection_options()) or {
+		got = '${sqlstate_from_int(err.code())} ${err.msg()}'
+	}
+	assert got == '42P04 duplicate catalog: FOO'
+
+	got = ''
+	create_plan(CommitStatement{}, map[string]Value{}, mut db) or {
+		got = sqlstate_from_int(err.code())
+	}
+	assert got == 'XX000'
+
+	// An error from the os module has no SQLSTATE, but one that already has a
+	// SQLSTATE keeps it.
+	assert sqlstate_from_int(io_error(error_with_code('no space left on device', 28)).code()) == '58030'
+	assert sqlstate_from_int(io_error(sqlstate_22012()).code()) == '22012'
+}
+
+fn header_error(data []u8) string {
+	new_header_from_bytes(data) or { return '${sqlstate_from_int(err.code())} ${err.msg()}' }
+
+	return ''
+}
+
 // A custom function that returns a NUMERIC has the type it's registered with,
 // even if it has the name of a builtin numeric function, and it may return NULL.
 fn test_custom_function_returns_numeric() ! {
@@ -1043,6 +1085,8 @@ fn test_custom_function_bad_prototype() ! {
 	assert register_function_error(mut db, 'foo(integer)') == '42601 syntax error: invalid function prototype: foo(integer)'
 	assert register_function_error(mut db, 'foo integer) integer') == '42601 syntax error: invalid function prototype: foo integer) integer'
 	assert register_function_error(mut db, '(integer) integer') == '42601 syntax error: invalid function prototype: (integer) integer'
+	assert register_function_error(mut db, 'a.b.c.d(integer) integer') == '42602 invalid identifier: a.b.c.d'
+	assert register_function_error(mut db, '"foo(integer) integer') == '42602 invalid identifier chain: "foo'
 }
 
 // new_numeric_value and new_decimal_value (for an application) also accept an

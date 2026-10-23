@@ -18,14 +18,14 @@ struct DataFileLock {}
 fn flock_lock_exclusive(mut _ DataFileLock, file os.File, path string) ! {
 	fault_point('lock')!
 	if C.flock(file.fd, C.LOCK_EX) != 0 {
-		return error('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
+		return sqlstate_58030('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
 	}
 }
 
 fn flock_lock_shared(mut _ DataFileLock, file os.File, path string) ! {
 	fault_point('lock_shared')!
 	if C.flock(file.fd, C.LOCK_SH) != 0 {
-		return error('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
+		return sqlstate_58030('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
 	}
 }
 
@@ -47,9 +47,9 @@ mut:
 }
 
 fn session_lock(path string) !SessionLock {
-	file := os.open_file(path, 'a') or { return error('unable to open ${path}: ${err}') }
+	file := os.open_file(path, 'a') or { return sqlstate_58030('unable to open ${path}: ${err}') }
 	if C.flock(file.fd, C.LOCK_SH) != 0 {
-		return error('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
+		return sqlstate_58030('cannot acquire lock on ${path}: ${os.posix_get_error_msg(C.errno)}')
 	}
 
 	return SessionLock{file}
@@ -71,7 +71,7 @@ fn (mut l SessionLock) try_exclusive() !bool {
 fn (mut l SessionLock) shared() ! {
 	fault_point('session_shared')!
 	if C.flock(l.file.fd, C.LOCK_SH) != 0 {
-		return error('cannot acquire session lock: ${os.posix_get_error_msg(C.errno)}')
+		return sqlstate_58030('cannot acquire session lock: ${os.posix_get_error_msg(C.errno)}')
 	}
 }
 
@@ -85,7 +85,7 @@ fn C.fsync(int) int
 // fsync waits for the file to be written to the disk. It must be flushed first.
 fn fsync(file os.File, path string) ! {
 	if C.fsync(file.fd) != 0 {
-		return error('cannot fsync ${path}: ${os.posix_get_error_msg(C.errno)}')
+		return sqlstate_58030('cannot fsync ${path}: ${os.posix_get_error_msg(C.errno)}')
 	}
 }
 
@@ -94,14 +94,14 @@ fn fsync(file os.File, path string) ! {
 fn fsync_dir(path string) ! {
 	fd := C.open(&char(path.str), C.O_RDONLY)
 	if fd < 0 {
-		return error('cannot open ${path}: ${os.posix_get_error_msg(C.errno)}')
+		return sqlstate_58030('cannot open ${path}: ${os.posix_get_error_msg(C.errno)}')
 	}
 	defer {
 		C.close(fd)
 	}
 
 	if C.fsync(fd) != 0 {
-		return error('cannot fsync ${path}: ${os.posix_get_error_msg(C.errno)}')
+		return sqlstate_58030('cannot fsync ${path}: ${os.posix_get_error_msg(C.errno)}')
 	}
 }
 
@@ -109,6 +109,6 @@ fn fsync_dir(path string) ! {
 // first.
 fn truncate_file(file os.File, path string, len u64) ! {
 	if C.ftruncate(file.fd, len) != 0 {
-		return error('cannot truncate ${path}: ${os.posix_get_error_msg(C.errno)}')
+		return sqlstate_58030('cannot truncate ${path}: ${os.posix_get_error_msg(C.errno)}')
 	}
 }

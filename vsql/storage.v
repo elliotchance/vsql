@@ -148,7 +148,7 @@ fn new_storage(btree Btree) Storage {
 fn (mut f Storage) open_file(path string) ! {
 	fault_point('open')!
 	// The "b" is needed on Windows, otherwise the file is opened in text mode.
-	f.file = os.open_file(path, 'rb+') or { return error('unable to open ${path}: ${err}') }
+	f.file = os.open_file(path, 'rb+') or { return sqlstate_58030('unable to open ${path}: ${err}') }
 }
 
 // open must be called after open_file and the file being locked. exclusive
@@ -298,7 +298,7 @@ fn (mut f Storage) schema_changed() {
 fn (mut f Storage) commit(path string) ! {
 	f.header.root_page = f.btree.pager.root_page()
 
-	wal_commit(mut f.file, path, f.header, f.file_pager)!
+	wal_commit(mut f.file, path, f.header, f.file_pager) or { return io_error(err) }
 }
 
 fn (mut f Storage) close_file() {
@@ -397,7 +397,7 @@ fn (mut f Storage) sequences() ![]Sequence {
 fn (mut f Storage) sequence_next_value(name Identifier) !i64 {
 	// This would be a bug. See PreparedStmt.writes.
 	if f.read_only {
-		return error('cannot use NEXT VALUE FOR without a write connection')
+		return sqlstate_xx000('cannot use NEXT VALUE FOR without a write connection')
 	}
 
 	f.isolation_start()!
@@ -427,7 +427,7 @@ fn (mut f Storage) sequence_value_object(storage_id string) !PageObject {
 	key := 'V${storage_id}'.bytes()
 	objects := f.read_objects(key, key)!
 	if objects.len == 0 {
-		return error('no value for sequence ${storage_id}')
+		return sqlstate_xx001('no value for sequence ${storage_id}')
 	}
 
 	return objects[0]
@@ -511,7 +511,7 @@ fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
 	// issued on a row that already exists, but I guess to be safe let's not let
 	// it panic.
 	if page_number < 0 {
-		return error('DELETE: integrity issue, preventing panic')
+		return sqlstate_xx001('DELETE: integrity issue, preventing panic')
 	}
 }
 

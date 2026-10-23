@@ -228,7 +228,7 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 // which is stored in the file as SQL. See "Schema Objects" in the "File Format"
 // docs.
 fn parse_definition(data []u8) !Stmt {
-	return parse_tokens(tokenize(data.bytestr()))
+	return parse_tokens(tokenize(data.bytestr())!)
 }
 
 // other_transaction_ids returns the active transaction IDs that do not belong

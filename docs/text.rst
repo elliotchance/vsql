@@ -37,6 +37,32 @@ Text Types
     - See ``CHARACTER(n)``.
     - Is an alias for ``CHARACTER(1)``.
 
+Literals
+--------
+
+A string is written in single quotes, such as ``'hello'``. A single quote in
+the string is written twice: ``'it''s'``. Strings that are only separated by
+spaces that include a new line are one string:
+
+.. code-block:: sql
+
+  VALUES 'Hello, '
+    'World';
+  -- COL1: Hello, World
+
+A Unicode string starts with ``U&`` and can contain escapes for any character:
+a backslash followed by 4 hex digits, or a backslash, a plus and 6 hex digits.
+Two backslashes are one backslash. Another escape character can be chosen with
+``UESCAPE``:
+
+.. code-block:: sql
+
+  VALUES U&'caf\00e9 \+01F600';
+  -- COL1: café 😀
+
+  VALUES U&'caf!00e9 \' UESCAPE '!';
+  -- COL1: café \
+
 Casting
 -------
 

@@ -184,7 +184,7 @@ struct Token {
 	sym   YYSymType
 }
 
-fn tokenize(sql_stmt string) []Token {
+fn tokenize(sql_stmt string) ![]Token {
 	mut tokens := []Token{}
 	cs := sql_stmt.trim(';').runes()
 	mut i := 0
@@ -223,24 +223,22 @@ fn tokenize(sql_stmt string) []Token {
 			}
 		}
 
-		// Strings
-		if cs[i] == `'` {
-			mut word := ''
-			i++
-			for i < cs.len {
-				if cs[i] == `'` {
-					// A doubled quote ('') represents a single quote character.
-					if i + 1 < cs.len && cs[i + 1] == `'` {
-						word += "'"
-						i += 2
-						continue
-					}
-					break
-				}
-				word += '${cs[i]}'
-				i++
+		// Strings, including a Unicode string like U&'\0041' (5.3). The U may be
+		// lower case, but there must not be a space before the quote (5.3 Syntax
+		// Rules 3 and 11).
+		is_unicode := i + 2 < cs.len && (cs[i] == `U` || cs[i] == `u`) && cs[i + 1] == `&`
+			&& cs[i + 2] == `'`
+		if cs[i] == `'` || is_unicode {
+			if is_unicode {
+				i += 2
 			}
-			i++
+			mut word, end := read_string_literal(cs, i)
+			i = end
+			if is_unicode {
+				escape, escape_end := read_unicode_escape_specifier(cs, i)!
+				i = escape_end
+				word = unescape_unicode(word, escape)!
+			}
 			tokens << Token{token_literal_string, YYSymType{
 				v: new_character_value(word)
 			}}
@@ -360,6 +358,133 @@ fn tokenize(sql_stmt string) []Token {
 	}
 
 	return tokens
+}
+
+// read_string_literal returns the characters of the string that starts with
+// the quote at cs[i], and the position after it. A doubled quote ('') is a
+// single quote. Strings that are only separated by spaces that include a new
+// line are one string, so 'ab' is the same as:
+//
+//   'a'
+//   'b'
+//
+// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules 1, 2 and 7
+fn read_string_literal(cs []rune, start int) (string, int) {
+	mut word := ''
+	mut i := start + 1
+	for i < cs.len {
+		if cs[i] == `'` {
+			// A doubled quote ('') represents a single quote character.
+			if i + 1 < cs.len && cs[i + 1] == `'` {
+				word += "'"
+				i += 2
+				continue
+			}
+			break
+		}
+		word += '${cs[i]}'
+		i++
+	}
+	i++
+
+	mut j := i
+	mut has_newline := false
+	for j < cs.len && cs[j].str().trim_space() == '' {
+		has_newline = has_newline || cs[j] == `\n`
+		j++
+	}
+	if has_newline && j < cs.len && cs[j] == `'` {
+		next_word, end := read_string_literal(cs, j)
+		return word + next_word, end
+	}
+
+	return word, i
+}
+
+// read_unicode_escape_specifier returns the escape character of a Unicode
+// string, from the optional UESCAPE '<character>' after the string at cs[i],
+// and the position after it. Otherwise, the escape character is a backslash.
+//
+// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Syntax Rules 16 to 18
+fn read_unicode_escape_specifier(cs []rune, start int) !(rune, int) {
+	mut i := start
+	for i < cs.len && cs[i].str().trim_space() == '' {
+		i++
+	}
+	if i + 7 > cs.len || cs[i..i + 7].string().to_upper() != 'UESCAPE'
+		|| (i + 7 < cs.len && is_identifier_char(cs[i + 7], true)) {
+		return `\\`, start
+	}
+
+	i += 7
+	for i < cs.len && cs[i].str().trim_space() == '' {
+		i++
+	}
+	if i + 2 >= cs.len || cs[i] != `'` || cs[i + 2] != `'` {
+		return sqlstate_42601('UESCAPE must be followed by a single character in quotes')
+	}
+
+	escape := cs[i + 1]
+	if is_hexit(escape) || escape in [`+`, `'`, `"`] || escape.str().trim_space() == '' {
+		return sqlstate_42601("invalid Unicode escape character: '${escape}'")
+	}
+
+	return escape, i + 3
+}
+
+// unescape_unicode replaces each escape in a Unicode string: the escape
+// character followed by 4 hexits (such as \0041 for A), a plus and 6 hexits
+// (such as \+01F600), or another escape character (for the escape character
+// itself).
+//
+// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Syntax Rules 19 to 23
+fn unescape_unicode(s string, escape rune) !string {
+	cs := s.runes()
+	mut result := []rune{}
+	mut i := 0
+	for i < cs.len {
+		if cs[i] != escape {
+			result << cs[i]
+			i++
+			continue
+		}
+
+		if i + 1 < cs.len && cs[i + 1] == escape {
+			result << escape
+			i += 2
+			continue
+		}
+
+		start, digits := if i + 1 < cs.len && cs[i + 1] == `+` { i + 2, 6 } else { i + 1, 4 }
+		if start + digits > cs.len || !cs[start..start + digits].all(is_hexit(it)) {
+			return sqlstate_42601('invalid Unicode escape: ${cs[i..].string()}')
+		}
+
+		mut code_point := u32(0)
+		for c in cs[start..start + digits] {
+			code_point = code_point * 16 + u32(hexit_value(c))
+		}
+		if code_point > 0x10FFFF || (code_point >= 0xD800 && code_point <= 0xDFFF) {
+			return sqlstate_42601('invalid Unicode code point: ${cs[i..start + digits].string()}')
+		}
+
+		result << rune(code_point)
+		i = start + digits
+	}
+
+	return result.string()
+}
+
+fn is_hexit(c rune) bool {
+	return (c >= `0` && c <= `9`) || (c >= `a` && c <= `f`) || (c >= `A` && c <= `F`)
+}
+
+fn hexit_value(c rune) int {
+	return match true {
+		c >= `a` { int(c - `a`) + 10 }
+		c >= `A` { int(c - `A`) + 10 }
+		else { int(c - `0`) }
+	}
 }
 
 // is_exponent returns true if cs[i] is the E of an approximate numeric literal

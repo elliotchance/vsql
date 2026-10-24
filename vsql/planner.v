@@ -171,6 +171,24 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 
 	match from_clause.body {
 		Identifier {
+			// A table with a correlation name, such as "t AS x (c1, c2)", is
+			// read like a derived table so that its rows use the new names.
+			if from_clause.correlation.name.sub_entity_name != '' {
+				subplan, _ := create_select_plan_without_join(body, TablePrimary{
+					body: from_clause.body
+				}, params, mut conn, allow_virtual, false)!
+				table = add_correlation_plan(mut &plan, from_clause.correlation.name,
+					subplan, from_clause.correlation, params, conn)!
+
+				if filter {
+					add_where_plan(mut &plan, body, params, conn, {
+						table.name.id(): table
+					})!
+				}
+
+				return plan, table
+			}
+
 			mut table_name := conn.resolve_table_identifier(from_clause.body, allow_virtual)!
 			table_name_id := table_name.storage_id()
 			mut catalog := conn.catalogs[table_name.catalog_name] or {
@@ -237,34 +255,9 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 
 			subplan := create_query_expression_plan(from_clause.body, params, mut conn,
 				from_clause.correlation)!
-			plan.subplans[table_name.id()] = subplan
+			table = add_correlation_plan(mut &plan, table_name, subplan, from_clause.correlation,
+				params, conn)!
 
-			// A derived column list renames the columns of the subquery.
-			correlation_columns := from_clause.correlation.columns
-			if correlation_columns.len > 0 && correlation_columns.len != subplan.columns().len {
-				return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
-			}
-
-			mut subplan_columns := []Column{}
-			for i, col in subplan.columns() {
-				subplan_columns << Column{Identifier{
-					entity_name:     table_name.id()
-					sub_entity_name: if correlation_columns.len > 0 {
-						correlation_columns[i].sub_entity_name
-					} else {
-						col.name.sub_entity_name
-					}
-				}, col.typ, col.not_null}
-			}
-
-			// NOTE: This has to be assigned to a variable otherwise the value
-			// is lost. This must be a bug in V.
-			table = Table{
-				name:    table_name
-				columns: subplan_columns
-			}
-
-			plan.operations << TableOperation{table_name, true, table, params, conn, plan.subplans}
 			if filter {
 				add_where_plan(mut &plan, body, params, conn, {
 					table.name.id(): table
@@ -274,6 +267,49 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 	}
 
 	return plan, table
+}
+
+// add_correlation_plan reads the rows of subplan as the table table_name. A
+// derived column list in the correlation renames the columns.
+fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, correlation Correlation, params map[string]Value, conn &Connection) !Table {
+	plan.subplans[table_name.id()] = subplan
+
+	correlation_columns := correlation.columns
+	if correlation_columns.len > 0 && correlation_columns.len != subplan.columns().len {
+		return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
+	}
+
+	// ISO/IEC 9075-2:2016(E), 7.6, <table reference>, Syntax Rule 11b
+	mut seen := map[string]bool{}
+	for column in correlation_columns {
+		if column.sub_entity_name in seen {
+			return sqlstate_42601('column ${column.sub_entity_name} is specified more than once')
+		}
+		seen[column.sub_entity_name] = true
+	}
+
+	mut columns := []Column{}
+	for i, col in subplan.columns() {
+		columns << Column{Identifier{
+			entity_name:     table_name.id()
+			sub_entity_name: if correlation_columns.len > 0 {
+				correlation_columns[i].sub_entity_name
+			} else {
+				col.name.sub_entity_name
+			}
+		}, col.typ, col.not_null}
+	}
+
+	// NOTE: This has to be assigned to a variable otherwise the value is lost.
+	// This must be a bug in V.
+	table := Table{
+		name:    table_name
+		columns: columns
+	}
+
+	plan.operations << TableOperation{table_name, true, table, params, conn, plan.subplans}
+
+	return table
 }
 
 // add_where_plan filters the rows of the last operation with the WHERE clause,

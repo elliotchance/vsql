@@ -146,6 +146,32 @@ fn sqlstate_22007() IError {
 	}
 }
 
+// Escape character conflict: the ESCAPE of a SIMILAR TO is ":" and the pattern
+// has a character class such as "[:ALPHA:]".
+struct SQLState2200B {
+	SQLState
+}
+
+fn sqlstate_2200b() IError {
+	return SQLState2200B{
+		code: sqlstate_to_int('2200B')
+		msg:  'escape character conflict'
+	}
+}
+
+// Invalid use of escape character: the ESCAPE of a SIMILAR TO is a special
+// character, and the pattern uses it other than to escape a character.
+struct SQLState2200C {
+	SQLState
+}
+
+fn sqlstate_2200c() IError {
+	return SQLState2200C{
+		code: sqlstate_to_int('2200C')
+		msg:  'invalid use of escape character'
+	}
+}
+
 // Sequence generator limit exceeded.
 struct SQLState2200H {
 	SQLState
@@ -219,6 +245,18 @@ fn sqlstate_22018() IError {
 	}
 }
 
+// Invalid escape character: the ESCAPE of a LIKE isn't exactly one character.
+struct SQLState22019 {
+	SQLState
+}
+
+fn sqlstate_22019() IError {
+	return SQLState22019{
+		code: sqlstate_to_int('22019')
+		msg:  'invalid escape character'
+	}
+}
+
 // Invalid regular expression.
 struct SQLState2201B {
 	SQLState
@@ -252,6 +290,19 @@ fn sqlstate_2201x() IError {
 	return SQLState2201X{
 		code: sqlstate_to_int('2201X')
 		msg:  'invalid row count in result offset clause'
+	}
+}
+
+// Invalid escape sequence: the escape character in a LIKE pattern isn't
+// followed by "%", "_" or itself.
+struct SQLState22025 {
+	SQLState
+}
+
+fn sqlstate_22025() IError {
+	return SQLState22025{
+		code: sqlstate_to_int('22025')
+		msg:  'invalid escape sequence'
 	}
 }
 

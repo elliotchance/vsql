@@ -717,6 +717,10 @@ from the *Row ID* in the `Header`_ for a table without a ``PRIMARY KEY``.
 Since rows are keyed by the table ID rather than its name, a table or schema
 can be renamed without changing its rows.
 
+``ALTER TABLE ... ADD COLUMN`` replaces the definition with a new version that
+has the same table ID. The new column is NULL for the existing rows (see
+`Row Object`_), so they're only rewritten when its ``DEFAULT`` isn't ``NULL``.
+
 Write-Ahead Log
 ---------------
 

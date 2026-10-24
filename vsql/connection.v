@@ -184,6 +184,8 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 		catalog.storage.session = session_lock(session_path(path))!
 	}
 
+	register_information_schema(mut catalog)!
+
 	in_transaction := conn.in_transaction()
 	conn.catalogs[catalog_name] = catalog
 
@@ -634,6 +636,10 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 			conn.release_read_connection()
 			return err
 		}
+		check_writable_schema(table_name) or {
+			conn.release_read_connection()
+			return err
+		}
 
 		// A virtual table would hide a table with the same name.
 		mut catalog := conn.catalog_for(table_name)
@@ -646,7 +652,10 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 
 		catalog.virtual_tables[id] = VirtualTable{
 			create_table_sql:  create_table
-			create_table_stmt: stmt
+			create_table_stmt: TableDefinition{
+				...stmt
+				table_name: table_name
+			}
 			data:              data
 		}
 
@@ -750,7 +759,8 @@ fn (conn Connection) resolve_catalog_identifier(identifier Identifier) !Identifi
 fn (mut conn Connection) resolve_schema_identifier(identifier Identifier) !Identifier {
 	ident := conn.resolve_catalog_identifier(identifier)!
 
-	if ident.schema_name !in conn.catalog_for(ident).storage.schemas {
+	if ident.schema_name !in conn.catalog_for(ident).storage.schemas
+		&& ident.schema_name != information_schema_name {
 		return sqlstate_3f000(ident.schema_name) // schema does not exist
 	}
 
@@ -772,6 +782,11 @@ fn (mut conn Connection) resolve_table_identifier(identifier Identifier, allow_v
 
 	if allow_virtual && id in catalog.virtual_tables {
 		return ident
+	}
+
+	// A table that's going to be changed can't be in the INFORMATION_SCHEMA.
+	if !allow_virtual {
+		check_writable_schema(ident)!
 	}
 
 	return sqlstate_42p01('table', ident.str()) // table does not exist

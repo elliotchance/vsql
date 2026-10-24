@@ -22,6 +22,7 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 	}
 
 	name := conn.resolve_schema_identifier(stmt.name)!
+	check_writable_schema(name)!
 	mut catalog := conn.catalog_for(name)
 	old_sequence := catalog.storage.sequence(name)!
 	mut sequence := old_sequence.copy()

@@ -54,6 +54,7 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, _ map[string]
 	check_sequence_options(stmt.options)!
 
 	sequence_name := conn.resolve_schema_identifier(stmt.name)!
+	check_writable_schema(sequence_name)!
 	mut catalog := conn.catalog_for(sequence_name)
 
 	// ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>, Syntax

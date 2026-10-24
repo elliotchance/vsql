@@ -46,9 +46,25 @@ pub fn (mut v VirtualTable) done() {
 }
 
 pub fn (v VirtualTable) table() Table {
+	// Like a table from the file, each column is fully qualified (see
+	// TableDefinition.table).
+	table_name := v.create_table_stmt.table_name
+	mut columns := []Column{}
+	for column in v.create_table_stmt.columns() {
+		columns << Column{
+			...column
+			name: Identifier{
+				catalog_name:    table_name.catalog_name
+				schema_name:     table_name.schema_name
+				entity_name:     table_name.entity_name
+				sub_entity_name: column.name.sub_entity_name
+			}
+		}
+	}
+
 	return Table{
-		name:       v.create_table_stmt.table_name
-		columns:    v.create_table_stmt.columns()
+		name:       table_name
+		columns:    columns
 		is_virtual: true
 	}
 }
@@ -64,11 +80,11 @@ mut:
 }
 
 fn (o VirtualTableOperation) str() string {
-	return 'VIRTUAL TABLE ${o.table_name} (${o.columns()})'
+	return 'VIRTUAL TABLE ${o.table_name} (${o.table.create_table_stmt.columns()})'
 }
 
 fn (o VirtualTableOperation) columns() Columns {
-	return o.table.create_table_stmt.columns()
+	return o.table.table().columns
 }
 
 fn (mut o VirtualTableOperation) execute(_ []Row) ![]Row {
@@ -91,7 +107,7 @@ fn (mut o VirtualTableOperation) execute(_ []Row) ![]Row {
 			value := row.data[name] or { return sqlstate_xx000('missing value for ${name}') }
 			check_store_assignment(value, column.typ)!
 			// A value has the type of its column, like when it's read from a table.
-			data[name] = Value{
+			data[column.name.id()] = Value{
 				...cast(mut o.conn, 'for column ${name}', value, column.typ)!
 				typ: column.typ
 			}

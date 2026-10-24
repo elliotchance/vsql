@@ -4,13 +4,18 @@ SQL Compliance
 .. contents::
 
 vsql aims to be SQL compliant by following the 2016 SQL Standard in both BNF
-syntax and mandatory features.
+syntax and mandatory features. The standard is split into parts. vsql follows
+Part 2 (Foundation), which defines the SQL language, and Part 11 (Information
+and Definition Schemas), which defines the tables that describe a database.
 
 There are still many features to be implemented before it can be considered
-fully compliant - as shown by the Mandatory Features table below.
+fully compliant - as shown by the Mandatory Features tables below.
+
+Part 2: Foundation
+------------------
 
 Mandatory Features
-------------------
+~~~~~~~~~~~~~~~~~~
 
 As of the latest version (or at least the version of this documentation)
 **vsql supports 100 of the 164 mandatory features** of the
@@ -515,7 +520,7 @@ As of the latest version (or at least the version of this documentation)
      - **IN predicate with one list element**
 
 Optional Features
------------------
+~~~~~~~~~~~~~~~~~
 
 .. list-table:: Table 44 — Feature taxonomy for optional features
    :header-rows: 1
@@ -1619,8 +1624,160 @@ Optional Features
    embedded language or to support the SQL-client module binding for at least
    one host language.
 
+Part 11: Information and Definition Schemas
+-------------------------------------------
+
+Part 11 defines the ``INFORMATION_SCHEMA`` (see :doc:`information-schema`), a
+set of read-only tables that describe the schemas, tables and other objects in
+a database. The features
+below are the ones that Part 11 adds to, or extends from, Part 2.
+
+Mandatory Features
+~~~~~~~~~~~~~~~~~~
+
+As of the latest version (or at least the version of this documentation)
+**vsql supports 2 of the 15 mandatory features** of
+`SQL:2016 Part 11 <https://www.iso.org/standard/63565.html>`_.
+
+.. list-table:: Table 2 — Feature taxonomy and definition for mandatory features
+   :header-rows: 1
+
+   * - Feature ID
+     - Feature Name
+
+   * - ⭕ **F021**
+     - **Basic information schema**
+
+   * - ✅ F021-01
+     - ``COLUMNS`` view
+
+   * - ✅ F021-02
+     - ``TABLES`` view
+
+   * - ❌ F021-03
+     - ``VIEWS`` view
+
+   * - ❌ F021-04
+     - ``TABLE_CONSTRAINTS`` view
+
+   * - ❌ F021-05
+     - ``REFERENTIAL_CONSTRAINTS`` view
+
+   * - ❌ F021-06
+     - ``CHECK_CONSTRAINTS`` view
+
+   * - ❌ **F501**
+     - **Features and conformance views**
+
+   * - ❌ F501-01
+     - ``SQL_FEATURES`` view
+
+   * - ❌ F501-02
+     - ``SQL_SIZING`` view
+
+   * - ❌ **S011**
+     - **Distinct data types**
+
+   * - ❌ S011-01
+     - ``USER_DEFINED_TYPES`` view
+
+   * - ❌ **T321**
+     - **Basic SQL-invoked routines**
+
+   * - ❌ T321-06
+     - ``ROUTINES`` view
+
+   * - ❌ T321-07
+     - ``PARAMETERS`` view
+
+Optional Features
+~~~~~~~~~~~~~~~~~
+
+The optional features in Part 11 are the ``INFORMATION_SCHEMA`` parts of
+features in Part 2. A feature that's supported in Part 2 may not be supported
+here.
+
+.. list-table:: Table 3 — Feature taxonomy for optional features
+   :header-rows: 1
+
+   * - Feature ID
+     - Feature Name
+
+   * - ❌ **F231**
+     - **Privilege tables**
+
+   * - ❌ **F251**
+     - **Domain support**
+
+   * - ❌ **F341**
+     - **Usage tables**
+
+   * - ❌ **F391**
+     - **Long identifiers**
+
+   * - ❌ **F502**
+     - **Enhanced documentation tables**
+
+   * - ❌ **F521**
+     - **Assertions**
+
+   * - ❌ **F651**
+     - **Catalog name qualifiers**
+
+   * - ❌ **F690**
+     - **Collation support**
+
+   * - ❌ **F695**
+     - **Translation support**
+
+   * - ❌ **F696**
+     - **Additional translation documentation**
+
+   * - ❌ **S023**
+     - **Basic structured types**
+
+   * - ❌ **S024**
+     - **Enhanced structured types**
+
+   * - ❌ **S041**
+     - **Basic reference types**
+
+   * - ❌ **S081**
+     - **Subtables**
+
+   * - ❌ **S091**
+     - **Basic array support**
+
+   * - ❌ **S241**
+     - **Transform functions**
+
+   * - ❌ **S271**
+     - **Basic multiset support**
+
+   * - ❌ **T011**
+     - **Timestamp in Information Schema**
+
+   * - ❌ **T051**
+     - **Row types**
+
+   * - ❌ **T175**
+     - **Generated columns**
+
+   * - ❌ **T176**
+     - **Sequence generator support**
+
+   * - ❌ **T211**
+     - **Basic trigger capability**
+
+   * - ❌ **T272**
+     - **Enhanced savepoint management**
+
+   * - ❌ **T331**
+     - **Basic roles**
+
 See Also
 --------
 
 - `ISO/IEC 9075-2:2016 - Information technology — Database languages — SQL — Part 2: Foundation (SQL/Foundation) <https://www.iso.org/standard/63556.html>`_
+- `ISO/IEC 9075-11:2016 - Information technology — Database languages — SQL — Part 11: Information and Definition Schemas (SQL/Schemata) <https://www.iso.org/standard/63565.html>`_
 - `SQL compliance on Wikipedia <https://en.wikipedia.org/wiki/SQL_compliance>`_

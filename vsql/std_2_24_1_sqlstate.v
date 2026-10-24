@@ -656,6 +656,18 @@ fn sqlstate_0a000(msg string) IError {
 	}
 }
 
+// insufficient privilege, such as changing the INFORMATION_SCHEMA.
+struct SQLState42501 {
+	SQLState
+}
+
+fn sqlstate_42501(msg string) IError {
+	return SQLState42501{
+		code: sqlstate_to_int('42501')
+		msg:  'insufficient privilege: ${msg}'
+	}
+}
+
 // duplicate catalog
 struct SQLState42P04 {
 	SQLState

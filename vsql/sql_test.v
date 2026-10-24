@@ -1364,3 +1364,17 @@ fn test_split_statements_with_comments() {
 	mut db := open(':memory:')!
 	assert db.query('VALUES 1 -- one')!.rows[0].get_string('COL1')! == '1'
 }
+
+// A DEFAULT can be up to the maximum length of a VARCHAR, but its text (with
+// the quotes) is then too long for the COLUMN_DEFAULT of the COLUMNS view.
+fn test_information_schema_truncated_column_default() {
+	column := Column{
+		name:          Identifier{
+			sub_entity_name: 'X'
+		}
+		typ:           new_type('CHARACTER VARYING', max_character_length, 0)
+		default_value: DefaultOption(new_varchar_value('a'.repeat(max_character_length)))
+	}
+
+	assert column_default(column).string_value() == 'TRUNCATED'
+}

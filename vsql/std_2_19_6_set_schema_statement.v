@@ -24,7 +24,7 @@ fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Valu
 	}
 	new_schema := stmt.schema_name.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!.str()
 
-	if new_schema !in conn.catalog().storage.schemas {
+	if new_schema !in conn.catalog().storage.schemas && new_schema != information_schema_name {
 		return sqlstate_3f000(new_schema) // schema does not exist
 	}
 

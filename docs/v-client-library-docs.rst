@@ -729,6 +729,9 @@ struct Table
    	// The id is unique for each table in the file and never reused. Rows are
    	// keyed by it, see row_key_prefix.
    	id u64
+   	// The CHECK constraints of the table, in the order they were defined. A
+   	// CHECK on a column is the same as a CHECK on the table.
+   	check_constraints []CheckConstraintDefinition
    pub mut:
    	// The name of the table including the schema.
    	name Identifier

@@ -30,15 +30,18 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
-	table := catalog.storage.tables[table_name.storage_id()]
+	table := catalog.storage.table(table_name.storage_id())
 
 	// Each element of the VALUES is a row. All of the rows are checked before
 	// any of them are written, so that an error in one row doesn't leave the
 	// rows before it in the table.
+	check_constraints := new_check_constraints(mut conn, table)!
 	mut rows := []Row{}
 	for row_value in stmt.values {
 		conn.begin_row()
-		rows << new_row(stmt.insert_row(mut conn, params, table, row_value)!)
+		row := new_row(stmt.insert_row(mut conn, params, table, row_value)!)
+		check_constraints.verify(mut conn, row)!
+		rows << row
 	}
 
 	for mut row in rows {

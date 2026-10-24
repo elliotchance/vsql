@@ -7,7 +7,7 @@ import time
 // Define a persistent base table, a created local temporary table, or a global
 // temporary table.
 
-type TableElement = Column | UniqueConstraintDefinition
+type TableElement = CheckConstraintDefinition | Column | UniqueConstraintDefinition
 
 // max_columns is the maximum number of columns in a table.
 const max_columns = 1600
@@ -65,8 +65,9 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 	for column in table.columns {
 		check_default_clause(mut conn, column)!
 	}
+	new_check_constraints(mut conn, table)!
 
-	catalog.storage.create_table(table_name, table.columns, table.primary_key)!
+	catalog.storage.create_table(table)!
 
 	return new_result_msg('CREATE TABLE 1', elapsed_parse, t.elapsed())
 }
@@ -76,6 +77,7 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	mut columns := []Column{}
 	mut primary_key := []string{}
+	mut check_constraints := []CheckConstraintDefinition{}
 	mut column_names := map[string]bool{}
 	for table_element in stmt.table_elements {
 		match table_element {
@@ -94,6 +96,9 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 						sub_entity_name: table_element.name.sub_entity_name
 					}
 				}
+			}
+			CheckConstraintDefinition {
+				check_constraints << table_element
 			}
 			UniqueConstraintDefinition {
 				if primary_key.len > 0 {
@@ -135,7 +140,13 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 		}
 	}
 
-	return Table{tid, 0, table_name, columns, primary_key, false}
+	return Table{
+		tid:               tid
+		name:              table_name
+		columns:           columns
+		primary_key:       primary_key
+		check_constraints: check_constraints
+	}
 }
 
 fn (stmt TableDefinition) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {

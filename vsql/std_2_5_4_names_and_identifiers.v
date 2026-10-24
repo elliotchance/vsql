@@ -238,11 +238,33 @@ fn delimit_identifier(s string) string {
 // requote_identifier only quotes the name if it needs to be, so that the
 // result can be parsed back into the same name.
 fn requote_identifier(s string) string {
-	if s.to_upper() == s && !s.contains('.') && !s.contains('"') {
+	// The names of subqueries (such as $1) aren't parsed, so they aren't quoted.
+	if s.starts_with('$') || (s.to_upper() == s && is_regular_identifier(s)) {
 		return s
 	}
 
 	return delimit_identifier(s)
+}
+
+// is_regular_identifier is true if s is read as a name without quotes. It must
+// only contain identifier characters, and not be a token other than a
+// non-reserved word (see tokenize and "non-reserved words" in grammar.y).
+fn is_regular_identifier(s string) bool {
+	for i, c in s.runes() {
+		if !is_identifier_char(c, i > 0) {
+			return false
+		}
+	}
+
+	upper := s.to_upper()
+	for tok_pos, tok_name in yy_toknames {
+		if tok_name == upper && upper != 'E' {
+			tok_number := tok_pos + 57343
+			return tok_number >= token_a && tok_number <= token_zone
+		}
+	}
+
+	return true
 }
 
 fn (e Identifier) compile(mut c Compiler) !CompileResult {
@@ -260,6 +282,11 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 		if e.custom_id == '' && !e.is_grouping_column(distinct_columns) {
 			return sqlstate_42p10(e.str())
 		}
+	}
+
+	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rule 17d
+	if c.check_column != '' && e.custom_id == '' && e.sub_entity_name != c.check_column {
+		return sqlstate_42601('CHECK on column ${c.check_column} cannot use column ${e.sub_entity_name}')
 	}
 
 	return compiled
@@ -320,6 +347,22 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 			|| qualifier.schema_name != c.context.schema_name
 			|| qualifier.entity_name != c.context.entity_name {
 			return sqlstate_42p01('table', qualifier.str())
+		}
+
+		// The table of a CHECK constraint doesn't exist yet when the CREATE TABLE
+		// is checked (see CheckConstraintDefinition.compile).
+		if table := c.tables[qualifier.id()] {
+			if column := table.column(e.sub_entity_name) {
+				return CompileResult{
+					run:          fn [column] (mut conn Connection, data Row, params map[string]Value) !Value {
+						return data.data[column.name.id()] or {
+							return sqlstate_42601('unknown column: ${column.name}')
+						}
+					}
+					typ:          column.typ
+					contains_agg: false
+				}
+			}
 		}
 	}
 
@@ -401,11 +444,13 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	}
 
 	// 4. A bare table field. A qualified name that didn't match a table above
-	// isn't one (its qualifier mustn't be ignored).
+	// isn't one (its qualifier mustn't be ignored). Neither is a column of
+	// another table when only the context is in scope.
 	//
 	// TODO(elliotchance): Check for ambiguous field name.
 	for _, table in catalog.storage.tables {
-		if e.entity_name == '' && table.name.schema_name == ident.schema_name {
+		if e.entity_name == '' && c.context.entity_name == ''
+			&& table.name.schema_name == ident.schema_name {
 			column := table.column(ident.sub_entity_name) or { Column{} }
 			if column.name.sub_entity_name == ident.sub_entity_name {
 				ident = column.name
@@ -540,6 +585,11 @@ fn (e HostParameterName) pstr(params map[string]Value) string {
 }
 
 fn (e HostParameterName) compile(mut c Compiler) !CompileResult {
+	// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rule 1
+	if c.check_constraint {
+		return sqlstate_42601('parameter :${e.name} cannot be used in a CHECK constraint')
+	}
+
 	p := c.params[e.name] or { return sqlstate_42p02(e.name) }
 
 	return CompileResult{

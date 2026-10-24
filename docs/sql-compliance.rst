@@ -18,7 +18,7 @@ Mandatory Features
 ~~~~~~~~~~~~~~~~~~
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 100 of the 164 mandatory features** of the
+**vsql supports 101 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -306,7 +306,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ E141-04
      - Basic ``FOREIGN KEY`` constraint with the ``NO ACTION`` default for both referential delete action and referential update action
 
-   * - ❌ E141-06
+   * - ✅ E141-06
      - ``CHECK`` constraints
 
    * - ✅ E141-07

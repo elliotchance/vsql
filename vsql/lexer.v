@@ -29,7 +29,9 @@ type YYSym = AggregateFunction
 	| CharacterSubstringFunction
 	| CharacterValueExpression
 	| CharacterValueFunction
+	| CheckConstraintDefinition
 	| Column
+	| ColumnConstraint
 	| CommonValueExpression
 	| ComparisonPredicate
 	| ComparisonOperator

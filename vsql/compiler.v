@@ -39,6 +39,36 @@ mut:
 	//
 	// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28d
 	distinct_columns ?[]Column
+	// check_constraint is set when compiling the search condition of a CHECK
+	// constraint, which must be deterministic (see check_deterministic). A CHECK
+	// on a column can only use that column, check_column.
+	check_constraint bool
+	check_column     string
+}
+
+// check_deterministic returns an error if the expression (described by what)
+// is possibly non-deterministic and it's in a CHECK constraint. Otherwise, the
+// constraint could be satisfied when a row is written but not later.
+//
+// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rule 5
+// ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rule 7
+fn (c Compiler) check_deterministic(what string) ! {
+	if c.check_constraint {
+		return sqlstate_42601('${what} cannot be used in a CHECK constraint')
+	}
+}
+
+// check_time_zone_comparison returns an error if a datetime with a time zone is
+// compared with one without a time zone in a CHECK constraint. The one without
+// a time zone is in the time zone of the session, so the result depends on the
+// session.
+//
+// ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rule 7g
+fn (c Compiler) check_time_zone_comparison(left Type, right Type) ! {
+	if left.typ.is_datetime() && right.typ.is_datetime()
+		&& left.has_time_zone() != right.has_time_zone() {
+		c.check_deterministic('comparing ${left} with ${right}')!
+	}
 }
 
 type CompiledFn = fn (mut conn Connection, data Row, params map[string]Value) !Value

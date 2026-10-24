@@ -68,6 +68,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			if !comparable_types(compiled_a.typ.typ, compiled_b.typ.typ) {
 				return sqlstate_42804('in NULLIF', compiled_a.typ.str(), compiled_b.typ.str())
 			}
+			c.check_time_zone_comparison(compiled_a.typ, compiled_b.typ)!
 
 			return CompileResult{
 				run:          fn [compiled_a, compiled_b] (mut conn Connection, data Row, params map[string]Value) !Value {
@@ -132,6 +133,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 					return sqlstate_42804('in CASE WHEN', compiled_operand.typ.str(),
 						compiled_when.typ.str())
 				}
+				c.check_time_zone_comparison(compiled_operand.typ, compiled_when.typ)!
 
 				compiled_whens << compiled_when
 				contains_agg = contains_agg || compiled_when.contains_agg

@@ -17,6 +17,9 @@ If ``WHERE`` is not provided, all records will be updated.
 A value can be ``DEFAULT``, which is the default value of the column (see
 :doc:`create-table`).
 
+A changed row that violates a ``CHECK`` constraint is an error ``23514``, and
+none of the rows are updated.
+
 The result (such as ``UPDATE 8``) contains the number of records matched,
 including records that already had the new values. If no records are matched,
 the result is ``UPDATE 0`` with the completion condition ``02000`` (no data),

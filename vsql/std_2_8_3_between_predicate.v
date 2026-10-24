@@ -28,6 +28,8 @@ fn (e BetweenPredicate) compile(mut c Compiler) !CompileResult {
 	compiled_expr := e.expr.compile(mut c)!
 	compiled_left := e.left.compile(mut c)!
 	compiled_right := e.right.compile(mut c)!
+	c.check_time_zone_comparison(compiled_expr.typ, compiled_left.typ)!
+	c.check_time_zone_comparison(compiled_expr.typ, compiled_right.typ)!
 
 	return CompileResult{
 		run:          fn [e, compiled_expr, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {

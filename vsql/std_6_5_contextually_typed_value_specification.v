@@ -42,10 +42,13 @@ fn (e NullSpecification) compile(mut c Compiler) !CompileResult {
 }
 
 // DefaultSpecification is the DEFAULT keyword, which is the default value of the
-// column it's assigned to. A column can't declare a default yet (E141-07), so
-// the default is always NULL.
+// column it's assigned to (see Compiler.default_value).
 struct DefaultSpecification {}
 
 fn (e DefaultSpecification) compile(mut c Compiler) !CompileResult {
+	if default_value := c.default_value {
+		return default_value.compile(mut c)!
+	}
+
 	return NullSpecification{}.compile(mut c)!
 }

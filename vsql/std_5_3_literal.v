@@ -18,6 +18,16 @@ fn approximate_numeric_literal_value(x string) !Value {
 	return approximate_value(C.strtod(&char(x.str), unsafe { nil }), .is_double_precision)
 }
 
+// signed_numeric_literal applies a sign to an unsigned numeric literal, such as
+// -1.5 or -1.5e2.
+fn signed_numeric_literal(sign string, v Value) !Value {
+	if v.typ.typ == .is_double_precision {
+		return new_double_precision_value(if sign == '-' { -v.f64_value() } else { v.f64_value() })
+	}
+
+	return numeric_literal(sign + v.str())!
+}
+
 fn numeric_literal(x string) !Value {
 	// Any number that contains a decimal (even if its a whole number) must be
 	// treated as a NUMERIC.

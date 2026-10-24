@@ -77,40 +77,39 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 
 	mut row := map[string]Value{}
 	for i, column in stmt.columns {
-		column_name := column.sub_entity_name
-		table_column := table.column(column_name)!
-
-		mut c := Compiler{
-			conn:      conn
-			params:    params
-			null_type: table_column.typ
-		}
-		raw_value := values[i].compile(mut c)!.run(mut conn, Row{}, params)!
-
-		check_store_assignment(raw_value, table_column.typ)!
-		value := cast(mut conn, 'for column ${column_name}', raw_value, table_column.typ)!
-
-		if value.is_null && table_column.not_null {
-			return sqlstate_23502('column ${column_name}')
-		}
-
-		row[column_name] = value
+		table_column := table.column(column.sub_entity_name)!
+		row[column.sub_entity_name] = insert_value(mut conn, params, table_column, values[i])!
 	}
 
-	// Fill in unspecified columns with NULL
+	// A column that isn't listed gets its default.
 	for col in table.columns {
-		if col.name.sub_entity_name in row {
-			continue
+		if col.name.sub_entity_name !in row {
+			row[col.name.sub_entity_name] = insert_value(mut conn, params, col, ContextuallyTypedValueSpecification(DefaultSpecification{}))!
 		}
-
-		if col.not_null {
-			return sqlstate_23502('column ${col.name}')
-		}
-
-		row[col.name.sub_entity_name] = new_null_value(col.typ.typ)
 	}
 
 	return row
+}
+
+// insert_value returns the value to store in a column, which may be DEFAULT.
+fn insert_value(mut conn Connection, params map[string]Value, column Column, element ContextuallyTypedRowValueConstructorElement) !Value {
+	column_name := column.name.sub_entity_name
+	mut c := Compiler{
+		conn:          conn
+		params:        params
+		null_type:     column.typ
+		default_value: column.default_value
+	}
+	raw_value := element.compile(mut c)!.run(mut conn, Row{}, params)!
+
+	check_store_assignment(raw_value, column.typ)!
+	value := cast(mut conn, 'for column ${column_name}', raw_value, column.typ)!
+
+	if value.is_null && column.not_null {
+		return sqlstate_23502('column ${column_name}')
+	}
+
+	return value
 }
 
 fn (stmt InsertStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {

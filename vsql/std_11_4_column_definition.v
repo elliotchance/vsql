@@ -13,7 +13,10 @@ fn add_column_constraint(elements []TableElement, constraint string) []TableElem
 	column := elements[0] as Column
 	if constraint == 'NOT NULL' {
 		mut new_elements := elements.clone()
-		new_elements[0] = Column{column.name, column.typ, true}
+		new_elements[0] = Column{
+			...column
+			not_null: true
+		}
 		return new_elements
 	}
 

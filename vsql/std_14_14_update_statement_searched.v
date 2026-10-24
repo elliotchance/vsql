@@ -78,17 +78,10 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 				schema_name:  table_column.name.schema_name
 				entity_name:  table.name.entity_name
 			}
+			c.null_type = table_column.typ
+			c.default_value = table_column.default_value
 
-			raw_value := match clause.source {
-				ValueExpression {
-					clause.source.compile(mut c)!.run(mut conn, row, params)!
-				}
-				// The DEFAULT of a column is always NULL until column defaults
-				// are supported (E141-07).
-				ContextuallyTypedValueSpecification {
-					new_null_value(table_column.typ.typ)
-				}
-			}
+			raw_value := clause.source.compile(mut c)!.run(mut conn, row, params)!
 
 			if table_column.not_null && raw_value.is_null {
 				return sqlstate_23502('column ${column_name}')
@@ -150,22 +143,14 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		for clause in stmt.set {
 			column_name := clause.column_name
 			table_column := table.column(column_name)!
-			match clause.source {
-				ValueExpression {
-					raw_value := clause.source.compile(mut c)!.run(mut conn, empty_row, params)!
-					check_store_assignment(raw_value, table_column.typ)!
-					value := cast(mut conn, 'for column ${column_name}', raw_value,
-						table_column.typ)!
+			c.null_type = table_column.typ
+			c.default_value = table_column.default_value
+			raw_value := clause.source.compile(mut c)!.run(mut conn, empty_row, params)!
+			check_store_assignment(raw_value, table_column.typ)!
+			value := cast(mut conn, 'for column ${column_name}', raw_value, table_column.typ)!
 
-					if table_column.not_null && value.is_null {
-						return sqlstate_23502('column ${column_name}')
-					}
-				}
-				ContextuallyTypedValueSpecification {
-					if table_column.not_null {
-						return sqlstate_23502('column ${column_name}')
-					}
-				}
+			if table_column.not_null && value.is_null {
+				return sqlstate_23502('column ${column_name}')
 			}
 		}
 	}

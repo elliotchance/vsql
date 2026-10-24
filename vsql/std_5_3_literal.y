@@ -19,7 +19,7 @@ character_string_literal:
 signed_numeric_literal:
   unsigned_numeric_literal { $$.v = $1.v as Value }
 | sign unsigned_numeric_literal {
-    $$.v = numeric_literal($1.v as string + ($2.v as Value).str())!
+    $$.v = signed_numeric_literal($1.v as string, $2.v as Value)!
   }
 
 unsigned_numeric_literal:

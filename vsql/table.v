@@ -12,12 +12,18 @@ pub:
 	typ Type
 	// not_null will be true if ``NOT NULL`` was specified on the column.
 	not_null bool
+	// default_value is the ``DEFAULT`` of the column, if there is one. A column
+	// without a default has a default of ``NULL``.
+	default_value ?DefaultOption
 }
 
 // str returns the column definition like:
 //
 //   "foo" INT
 //   BAR DOUBLE PRECISION NOT NULL
+//
+// The DEFAULT isn't included, it's only part of the table definition (see
+// Table.bytes).
 pub fn (c Column) str() string {
 	// A column with the same name as another column in a result has a
 	// custom_id (see new_expr_operation), which isn't part of its name.
@@ -94,13 +100,16 @@ pub fn (t Table) column(name string) !Column {
 //
 //   CREATE TABLE "PUBLIC"."FOO" (
 //     "ID" INTEGER NOT NULL,
-//     "BAR" CHARACTER VARYING(10),
+//     "BAR" CHARACTER VARYING(10) DEFAULT 'baz',
 //     PRIMARY KEY ("ID")
 //   )
 fn (t Table) bytes() []u8 {
 	mut elements := []string{}
 	for col in t.columns {
 		mut element := '${delimit_identifier(col.name.sub_entity_name)} ${col.typ}'
+		if default_value := col.default_value {
+			element += ' DEFAULT ${default_value}'
+		}
 		if col.not_null {
 			element += ' NOT NULL'
 		}
@@ -182,7 +191,7 @@ fn (o TableOperation) pretty_columns() Columns {
 	for c in o.table.columns {
 		cols << Column{Identifier{
 			sub_entity_name: c.name.sub_entity_name
-		}, c.typ, c.not_null}
+		}, c.typ, c.not_null, none}
 	}
 
 	return cols

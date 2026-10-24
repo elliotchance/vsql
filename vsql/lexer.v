@@ -44,6 +44,7 @@ type YYSym = AggregateFunction
 	| CurrentTimestamp
 	| DatetimePrimary
 	| DatetimeValueFunction
+	| DefaultOption
 	| DefaultSpecification
 	| DerivedColumn
 	| ExplicitRowValueConstructor

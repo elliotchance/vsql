@@ -12,11 +12,11 @@ Syntax
   VALUES ( <value> , ... ) , ...
 
 Each row in ``VALUES`` must have the same number of values as there are
-columns. Columns that aren't listed are ``NULL``, which is an error ``23502``
-for a ``NOT NULL`` column.
+columns. Columns that aren't listed get their default (see
+:doc:`create-table`), which is ``NULL`` if the column doesn't have one. ``NULL``
+is an error ``23502`` for a ``NOT NULL`` column.
 
-A value can be ``DEFAULT``, which is the default value of the column. A column
-can't declare a default yet, so ``DEFAULT`` is always ``NULL``.
+A value can be ``DEFAULT``, which is the default value of the column.
 
 The values are converted to the types of the columns. For example, a number
 that's too large for the column is an error ``22003``, and a string that's too

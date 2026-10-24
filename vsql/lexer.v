@@ -240,7 +240,7 @@ fn tokenize(sql_stmt string) ![]Token {
 			if is_unicode {
 				i += 2
 			}
-			mut word, end := read_string_literal(cs, i)
+			mut word, end := read_string_literal(cs, i)!
 			i = end
 			if is_unicode {
 				escape, escape_end := read_unicode_escape_specifier(cs, i)!
@@ -255,13 +255,20 @@ fn tokenize(sql_stmt string) ![]Token {
 			}
 		}
 
-		// Delimited identifiers
+		// Delimited identifiers. The body must have at least one character (5.2).
 		if cs[i] == `"` {
+			start := i
 			mut word := ''
 			i++
 			for i < cs.len && cs[i] != `"` {
 				word += '${cs[i]}'
 				i++
+			}
+			if i >= cs.len {
+				return sqlstate_42601('unterminated delimited identifier: ${cs[start..].string()}')
+			}
+			if word == '' {
+				return sqlstate_42601('a delimited identifier cannot be empty')
 			}
 			i++
 			tokens << Token{token_literal_identifier, YYSymType{
@@ -376,11 +383,16 @@ fn tokenize(sql_stmt string) ![]Token {
 //   'a'
 //   'b'
 //
+// A string without a closing quote is a syntax error.
+//
 // ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules 1, 2 and 7
-fn read_string_literal(cs []rune, start int) (string, int) {
+fn read_string_literal(cs []rune, start int) !(string, int) {
 	mut word := ''
 	mut i := start + 1
-	for i < cs.len {
+	for {
+		if i >= cs.len {
+			return sqlstate_42601('unterminated string: ${cs[start..].string()}')
+		}
 		if cs[i] == `'` {
 			// A doubled quote ('') represents a single quote character.
 			if i + 1 < cs.len && cs[i + 1] == `'` {
@@ -408,7 +420,7 @@ fn read_string_literal(cs []rune, start int) (string, int) {
 		}
 	}
 	if has_newline && j < cs.len && cs[j] == `'` {
-		next_word, end := read_string_literal(cs, j)
+		next_word, end := read_string_literal(cs, j)!
 		return word + next_word, end
 	}
 

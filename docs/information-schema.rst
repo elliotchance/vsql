@@ -4,7 +4,7 @@ Information Schema
 .. contents::
 
 Every catalog has an ``INFORMATION_SCHEMA`` schema with tables that describe the
-tables and columns in the catalog. They can be queried like any other table:
+tables, columns and constraints in the catalog. They can be queried like any other table:
 
 .. code-block:: sql
 
@@ -136,6 +136,43 @@ One row for each column of each table in ``TABLES``.
     - Always ``NULL`` (intervals, collations, domains, user-defined types,
       reference types, arrays, identity columns and generated columns are not
       supported).
+
+``CHECK_CONSTRAINTS``
+---------------------
+
+One row for each check constraint of each table (but not the tables of the
+``INFORMATION_SCHEMA``). A ``NOT NULL`` column is the same as a
+``CHECK (column IS NOT NULL)``, so it's a check constraint too. That includes
+the columns of a ``PRIMARY KEY``, which are always ``NOT NULL``. Rows are
+ordered by schema and table name, then the ``NOT NULL`` columns in the order of
+the columns, and then the ``CHECK`` constraints in the order they're defined.
+
+.. code-block:: sql
+
+  CREATE TABLE products (id INT PRIMARY KEY, price INT CHECK (price > 0));
+
+  SELECT constraint_name, check_clause FROM information_schema.check_constraints;
+  -- CONSTRAINT_NAME: PRODUCTS_NOT_NULL_1 CHECK_CLAUSE: ID IS NOT NULL
+  -- CONSTRAINT_NAME: PRODUCTS_CHECK_1 CHECK_CLAUSE: PRICE > 0
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``CONSTRAINT_CATALOG``, ``CONSTRAINT_SCHEMA``
+    - The catalog and schema of the table.
+
+  * - ``CONSTRAINT_NAME``
+    - Constraints can't be named yet, so each one is named after its table:
+      ``<table>_NOT_NULL_<n>`` for the ``NOT NULL`` of the nth column, or
+      ``<table>_CHECK_<n>`` for the nth ``CHECK`` constraint (counting
+      ``CHECK`` constraints on columns and on the table together).
+
+  * - ``CHECK_CLAUSE``
+    - The SQL of the condition, such as ``PRICE > 0``, or ``NULL`` if it's
+      longer than 10485760 characters.
 
 The types of the columns of these tables are the domains of the
 ``INFORMATION_SCHEMA`` in the standard: a name is a ``CHARACTER VARYING(128)``,

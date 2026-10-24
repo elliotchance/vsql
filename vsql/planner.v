@@ -72,7 +72,7 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 
 			// The WHERE clause applies to the joined rows, so it can't be used to
 			// filter either side before the join.
-			add_where_plan(mut &plan, body, params, conn, tables)
+			add_where_plan(mut &plan, body, params, conn, tables)!
 		}
 	}
 
@@ -118,6 +118,15 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 		params, mut conn, allow_virtual, mut tables)!
 	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table,
 		params, mut conn, allow_virtual, mut tables)!
+
+	// Like WHERE, the condition is compiled to catch errors without any rows.
+	mut c := Compiler{
+		conn:                   conn
+		params:                 params
+		tables:                 tables
+		next_value_not_allowed: 'a join condition'
+	}
+	join.specification.compile(mut c)!
 
 	plan.operations << new_join_operation(plan.subplans['\$1'].columns(), join.join_type,
 		plan.subplans['\$2'].columns(), join.specification, params, conn, plan, tables.clone())
@@ -174,7 +183,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				if filter {
 					add_where_plan(mut &plan, body, params, conn, {
 						table.name.id(): table
-					})
+					})!
 				}
 			} else if table_name_id in catalog.storage.tables {
 				table = catalog.storage.tables[table_name_id]
@@ -209,7 +218,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 					if filter {
 						add_where_plan(mut &plan, body, params, conn, {
 							table.name.id(): table
-						})
+						})!
 					}
 				}
 			} else {
@@ -259,7 +268,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			if filter {
 				add_where_plan(mut &plan, body, params, conn, {
 					table.name.id(): table
-				})
+				})!
 			}
 		}
 	}
@@ -268,9 +277,18 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 }
 
 // add_where_plan filters the rows of the last operation with the WHERE clause,
-// if there is one.
-fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Value, conn &Connection, tables map[string]Table) {
+// if there is one. The condition is only evaluated for each row, so it's
+// compiled here to catch errors even when there are no rows.
+fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Value, conn &Connection, tables map[string]Table) ! {
 	if where := body.table_expression.where_clause {
+		mut c := Compiler{
+			conn:                   conn
+			params:                 params
+			tables:                 tables
+			next_value_not_allowed: 'WHERE'
+		}
+		where.compile(mut c)!
+
 		last_operation := plan.operations[plan.operations.len - 1]
 		plan.operations << new_where_operation(where, params, conn, last_operation.columns(),
 			tables)
@@ -371,9 +389,10 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 		// compiled here to catch errors (such as an ambiguous column) even when
 		// there are no rows.
 		mut c := Compiler{
-			conn:   conn
-			params: params
-			tables: tables
+			conn:                   conn
+			params:                 params
+			tables:                 tables
+			next_value_not_allowed: 'ORDER BY'
 		}
 		mut order := []SortSpecification{}
 		for spec in stmt.order {

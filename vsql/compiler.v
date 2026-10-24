@@ -16,6 +16,11 @@ mut:
 	// expression (such as both in "MIN(x) * AVG(x)") so that they can be
 	// calculated for each group before the expression is evaluated.
 	aggregates []AggregateFunction
+	// next_value_not_allowed is set to the clause being compiled (such as
+	// "WHERE") when it can't contain a NEXT VALUE FOR.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 2
+	next_value_not_allowed string
 	// grouping_columns is set when compiling the select list of a grouped query.
 	// A column reference must then be one of these, unless it's in the argument
 	// of an aggregate function (in_aggregate).

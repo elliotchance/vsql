@@ -46,9 +46,9 @@ SELECT * FROM t1;
 -- msg: UPDATE 1
 -- X: 321e0
 
+-- # The WHERE is checked even when there are no rows.
 DELETE FROM t1 WHERE x = :foo;
--- warning 02000: no data
--- msg: DELETE 0
+-- error 42P02: parameter does not exist: foo
 
 INSERT INTO t1 (x) VALUES (200);
 DELETE FROM t1 WHERE x = :foo;

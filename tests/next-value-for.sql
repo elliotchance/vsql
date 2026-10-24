@@ -310,6 +310,46 @@ VALUES NEXT VALUE FOR seq1;
 -- msg: UPDATE 0
 -- COL1: 1
 
+-- # NEXT VALUE FOR can't be in a search condition, ORDER BY, aggregate function
+-- # or grouped query, even when there are no rows. No value is used.
+CREATE SEQUENCE seq1;
+CREATE TABLE bar (baz INTEGER);
+SELECT * FROM bar WHERE baz < NEXT VALUE FOR seq1;
+SELECT * FROM bar ORDER BY NEXT VALUE FOR seq1;
+SELECT COUNT(NEXT VALUE FOR seq1) FROM bar;
+SELECT COUNT(*), NEXT VALUE FOR seq1 FROM bar;
+SELECT baz, NEXT VALUE FOR seq1 FROM bar GROUP BY baz;
+UPDATE bar SET baz = 1 WHERE baz = NEXT VALUE FOR seq1;
+DELETE FROM bar WHERE baz = NEXT VALUE FOR seq1;
+CREATE TABLE qux (x INTEGER);
+SELECT * FROM bar JOIN qux ON baz = NEXT VALUE FOR seq1;
+VALUES NEXT VALUE FOR seq1;
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in WHERE
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in ORDER BY
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in an aggregate function
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in a grouped query
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in a grouped query
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in WHERE
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in WHERE
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in a join condition
+-- COL1: 1
+
+CREATE SEQUENCE seq1;
+CREATE TABLE bar (baz INTEGER);
+INSERT INTO bar (baz) VALUES (1);
+SELECT * FROM bar WHERE baz < NEXT VALUE FOR seq1;
+SELECT * FROM (SELECT NEXT VALUE FOR seq1 AS x FROM bar) AS t WHERE x > 0;
+VALUES NEXT VALUE FOR seq1 > 1;
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in WHERE
+-- X: 1
+-- COL1: TRUE
+
 CREATE TABLE bar (baz INTEGER);
 UPDATE bar SET baz = NEXT VALUE FOR seq1;
 -- msg: CREATE TABLE 1

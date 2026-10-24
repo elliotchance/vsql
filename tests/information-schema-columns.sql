@@ -50,6 +50,7 @@ SELECT column_name, column_default IS NULL FROM information_schema.columns WHERE
 -- # The views of the INFORMATION_SCHEMA describe themselves.
 SELECT table_name, COUNT(*) FROM information_schema.columns WHERE table_schema = 'INFORMATION_SCHEMA' GROUP BY table_name;
 SELECT column_name, is_nullable, data_type, character_maximum_length, is_updatable FROM information_schema.columns WHERE table_name = 'TABLES';
+-- TABLE_NAME: CHECK_CONSTRAINTS COL2: 4
 -- TABLE_NAME: COLUMNS COL2: 44
 -- TABLE_NAME: TABLES COL2: 12
 -- COLUMN_NAME: TABLE_CATALOG IS_NULLABLE: NO DATA_TYPE: CHARACTER VARYING CHARACTER_MAXIMUM_LENGTH: 128 IS_UPDATABLE: NO

@@ -42,3 +42,33 @@ SELECT * FROM "FOO:BAR";
 -- msg: INSERT 1
 -- msg: DROP TABLE 1
 -- Y: 2
+
+CREATE TABLE foo (x INT);
+DROP TABLE foo RESTRICT;
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: DROP TABLE 1
+-- error 42P01: no such table: ":memory:".PUBLIC.FOO
+
+CREATE TABLE foo (x INT);
+INSERT INTO foo (x) VALUES (1);
+DROP TABLE foo CASCADE;
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: DROP TABLE 1
+-- error 42P01: no such table: ":memory:".PUBLIC.FOO
+
+DROP TABLE foo RESTRICT;
+-- error 42P01: no such table: ":memory:".PUBLIC.FOO
+
+DROP TABLE foo CASCADE;
+-- error 42P01: no such table: ":memory:".PUBLIC.FOO
+
+EXPLAIN DROP TABLE foo CASCADE;
+-- error 42601: syntax error: Cannot EXPLAIN DROP TABLE
+
+CREATE TABLE foo (x INT);
+DROP TABLE foo RESTRICT CASCADE;
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: unexpected CASCADE

@@ -1,0 +1,217 @@
+CREATE TABLE t (a INT DEFAULT 3, b VARCHAR(10) DEFAULT 'it''s', c INT);
+INSERT INTO t (c) VALUES (1), (2);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- A: 3 B: it's C: 1
+-- A: 3 B: it's C: 2
+
+CREATE TABLE t (a INT DEFAULT 3, b VARCHAR(10) DEFAULT 'foo', c INT);
+INSERT INTO t (a, b, c) VALUES (DEFAULT, 'bar', DEFAULT), (1, DEFAULT, 2);
+INSERT INTO t (a) VALUES DEFAULT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: INSERT 1
+-- A: 3 B: bar C: NULL
+-- A: 1 B: foo C: 2
+-- A: 3 B: foo C: NULL
+
+CREATE TABLE t (a INT DEFAULT 3, b VARCHAR(10) DEFAULT 'foo');
+INSERT INTO t (a, b) VALUES (1, 'bar'), (2, 'baz');
+UPDATE t SET a = DEFAULT WHERE b = 'bar';
+SELECT * FROM t;
+UPDATE t SET a = DEFAULT, b = DEFAULT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: UPDATE 1
+-- A: 3 B: bar
+-- A: 2 B: baz
+-- msg: UPDATE 2
+-- A: 3 B: foo
+-- A: 3 B: foo
+
+-- # A default is converted to the type of the column when it's used.
+/* types */
+CREATE TABLE t (a CHAR(5) DEFAULT 'ab', b BIGINT DEFAULT 1, c DOUBLE PRECISION DEFAULT 5, d NUMERIC(5, 2) DEFAULT 1.5);
+INSERT INTO t (a) VALUES (DEFAULT);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- A: ab    (CHARACTER(5)) B: 1 (BIGINT) C: 5e0 (DOUBLE PRECISION) D: 1.50 (NUMERIC(5, 2))
+
+/* types */
+CREATE TABLE t (a SMALLINT DEFAULT -32768, b DECIMAL(5, 1) DEFAULT 1.50, c REAL DEFAULT -1.5e2, cc DOUBLE PRECISION DEFAULT +1.5e2, d BOOLEAN DEFAULT TRUE, e BOOLEAN DEFAULT UNKNOWN, f VARCHAR(10) DEFAULT NULL, x INT);
+INSERT INTO t (x) VALUES (1);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- A: -32768 (SMALLINT) B: 1.5 (DECIMAL(5, 1)) C: -150e0 (REAL) CC: 150e0 (DOUBLE PRECISION) D: TRUE (BOOLEAN) E: UNKNOWN (BOOLEAN) F: NULL (CHARACTER VARYING(10)) X: 1 (INTEGER)
+
+/* types */
+CREATE TABLE t (a DATE DEFAULT DATE '2020-01-02', b TIME(2) DEFAULT TIME '12:34:56.78', c TIMESTAMP WITH TIME ZONE DEFAULT TIMESTAMP '2020-01-02 03:04:05+05:00', d TIMESTAMP DEFAULT TIMESTAMP '2020-01-02 03:04:05+05:00', x INT);
+INSERT INTO t (x) VALUES (1);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- A: 2020-01-02 (DATE) B: 12:34:56.78 (TIME(2) WITHOUT TIME ZONE) C: 2020-01-02T03:04:05.000000+0500 (TIMESTAMP(6) WITH TIME ZONE) D: 2020-01-02T03:04:05.000000 (TIMESTAMP(6) WITHOUT TIME ZONE) X: 1 (INTEGER)
+
+-- # A datetime value function is evaluated when the default is used.
+/* types */
+CREATE TABLE t (a DATE DEFAULT CURRENT_DATE, b TIME WITH TIME ZONE DEFAULT CURRENT_TIME, c TIME(3) DEFAULT LOCALTIME(3), d TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(0), e TIMESTAMP DEFAULT LOCALTIMESTAMP, f TIMESTAMP WITH TIME ZONE DEFAULT LOCALTIMESTAMP, x INT);
+INSERT INTO t (x) VALUES (1);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- A: 2022-07-04 (DATE) B: 14:05:03+0500 (TIME(0) WITH TIME ZONE) C: 14:05:03.120 (TIME(3) WITHOUT TIME ZONE) D: 2022-07-04T14:05:03.000000+0500 (TIMESTAMP(6) WITH TIME ZONE) E: 2022-07-04T14:05:03.120056 (TIMESTAMP(6) WITHOUT TIME ZONE) F: 2022-07-04T14:05:03.120056+0500 (TIMESTAMP(6) WITH TIME ZONE) X: 1 (INTEGER)
+
+CREATE TABLE t (a VARCHAR(20) DEFAULT CURRENT_CATALOG, b CHAR(10) DEFAULT CURRENT_SCHEMA, x INT);
+INSERT INTO t (x) VALUES (1);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- A: :memory: B: PUBLIC     X: 1
+
+-- # A default that's too long is an error when it's used.
+CREATE TABLE t (a VARCHAR(2) DEFAULT CURRENT_SCHEMA, x INT);
+INSERT INTO t (x) VALUES (1);
+-- msg: CREATE TABLE 1
+-- error 22001: string data right truncation for CHARACTER VARYING(2)
+
+CREATE TABLE t (a INT DEFAULT 3 NOT NULL, x INT);
+INSERT INTO t (x) VALUES (1);
+INSERT INTO t (a, x) VALUES (DEFAULT, 2);
+UPDATE t SET a = DEFAULT WHERE x = 3;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- warning 02000: no data
+-- msg: UPDATE 0
+-- A: 3 X: 1
+-- A: 3 X: 2
+
+CREATE TABLE t (a INT DEFAULT NULL NOT NULL, x INT);
+INSERT INTO t (x) VALUES (1);
+-- msg: CREATE TABLE 1
+-- error 23502: violates non-null constraint: column A
+
+CREATE TABLE t (a INT DEFAULT NULL NOT NULL, x INT);
+UPDATE t SET a = DEFAULT;
+-- msg: CREATE TABLE 1
+-- error 23502: violates non-null constraint: column A
+
+-- # A PRIMARY KEY column can have a default, but only one row can use it.
+CREATE TABLE t (id INT DEFAULT 1 PRIMARY KEY, x INT);
+INSERT INTO t (x) VALUES (1);
+INSERT INTO t (x) VALUES (2);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.T
+-- ID: 1 X: 1
+
+-- # The DEFAULT must be before any constraints.
+CREATE TABLE t (a INT NOT NULL DEFAULT 3);
+-- error 42601: syntax error: unexpected DEFAULT, expecting ")" or ","
+
+CREATE TABLE t (a INT DEFAULT 1 + 2);
+-- error 42601: syntax error: unexpected "+", expecting ")" or ","
+
+CREATE TABLE t (a INT DEFAULT (1));
+-- error 42601: syntax error: unexpected "("
+
+CREATE TABLE t (a INT DEFAULT :x);
+-- error 42601: syntax error: unexpected ":"
+
+CREATE TABLE t (a INT DEFAULT 'foo');
+-- error 42601: syntax error: DEFAULT 'foo' is not valid for column A INTEGER
+
+CREATE TABLE t (a VARCHAR(10) DEFAULT 1);
+-- error 42601: syntax error: DEFAULT 1 is not valid for column A CHARACTER VARYING(10)
+
+CREATE TABLE t (a VARCHAR(2) DEFAULT 'abc');
+-- error 42601: syntax error: DEFAULT 'abc' is not valid for column A CHARACTER VARYING(2)
+
+CREATE TABLE t (a CHAR(2) DEFAULT 'ab ');
+-- error 42601: syntax error: DEFAULT 'ab ' is not valid for column A CHARACTER(2)
+
+CREATE TABLE t (a INT DEFAULT 1.5);
+-- error 42601: syntax error: DEFAULT 1.5 is not valid for column A INTEGER
+
+CREATE TABLE t (a INT DEFAULT 1.0);
+-- msg: CREATE TABLE 1
+
+CREATE TABLE t (a SMALLINT DEFAULT 32768);
+-- error 42601: syntax error: DEFAULT 32768 is not valid for column A SMALLINT
+
+CREATE TABLE t (a NUMERIC(5, 1) DEFAULT 1.55);
+-- error 42601: syntax error: DEFAULT 1.55 is not valid for column A NUMERIC(5, 1)
+
+CREATE TABLE t (a INT DEFAULT 1e2);
+-- error 42601: syntax error: DEFAULT 100.0e0 is not valid for column A INTEGER
+
+CREATE TABLE t (a DOUBLE PRECISION DEFAULT TRUE);
+-- error 42601: syntax error: DEFAULT TRUE is not valid for column A DOUBLE PRECISION
+
+CREATE TABLE t (a BOOLEAN DEFAULT 1);
+-- error 42601: syntax error: DEFAULT 1 is not valid for column A BOOLEAN
+
+CREATE TABLE t (a INT DEFAULT UNKNOWN);
+-- error 42601: syntax error: DEFAULT NULL is not valid for column A INTEGER
+
+CREATE TABLE t (a DATE DEFAULT '2020-01-02');
+-- error 42601: syntax error: DEFAULT '2020-01-02' is not valid for column A DATE
+
+CREATE TABLE t (a DATE DEFAULT TIMESTAMP '2020-01-02 03:04:05');
+-- error 42601: syntax error: DEFAULT TIMESTAMP '2020-01-02 03:04:05' is not valid for column A DATE
+
+CREATE TABLE t (a TIMESTAMP WITH TIME ZONE DEFAULT TIMESTAMP '2020-01-02 03:04:05');
+-- error 42601: syntax error: DEFAULT TIMESTAMP '2020-01-02 03:04:05' is not valid for column A TIMESTAMP(6) WITH TIME ZONE
+
+CREATE TABLE t (a TIME WITH TIME ZONE DEFAULT TIME '03:04:05+05:00');
+-- msg: CREATE TABLE 1
+
+CREATE TABLE t (a DATE DEFAULT CURRENT_TIMESTAMP);
+-- error 42601: syntax error: DEFAULT CURRENT_TIMESTAMP(6) is not valid for column A DATE
+
+CREATE TABLE t (a INT DEFAULT CURRENT_DATE);
+-- error 42601: syntax error: DEFAULT CURRENT_DATE is not valid for column A INTEGER
+
+CREATE TABLE t (a TIME DEFAULT CURRENT_TIME(7));
+-- error 42601: syntax error: CURRENT_TIME(7): cannot have precision greater than 6
+
+CREATE TABLE t (a INT DEFAULT CURRENT_CATALOG);
+-- error 42601: syntax error: DEFAULT CURRENT_CATALOG is not valid for column A INTEGER
+
+CREATE TABLE t (a BOOLEAN DEFAULT CURRENT_SCHEMA);
+-- error 42601: syntax error: DEFAULT CURRENT_SCHEMA is not valid for column A BOOLEAN
+
+-- # The default is part of the table definition in the file.
+/* connection 1 */
+CREATE TABLE t (a INT DEFAULT -3 NOT NULL, b VARCHAR(10) DEFAULT 'it''s', c DOUBLE PRECISION DEFAULT 1.5e0, d TIMESTAMP(0) DEFAULT LOCALTIMESTAMP(0), e TIMESTAMP DEFAULT TIMESTAMP '2020-01-02 03:04:05', f INT DEFAULT NULL, g VARCHAR(10) DEFAULT CURRENT_SCHEMA, x INT);
+/* connection 2 */
+INSERT INTO t (x) VALUES (1);
+SELECT * FROM t;
+-- 1: msg: CREATE TABLE 1
+-- 2: msg: INSERT 1
+-- 2: A: -3 B: it's C: 1.5e0 D: 2022-07-04T14:05:03 E: 2020-01-02T03:04:05.000000 F: NULL G: PUBLIC X: 1
+
+CREATE TABLE t (a INT DEFAULT -3 NOT NULL, b VARCHAR(10) DEFAULT 'it''s', c DOUBLE PRECISION DEFAULT 1.5e0, d TIMESTAMP(0) DEFAULT LOCALTIMESTAMP(0), e TIMESTAMP DEFAULT TIMESTAMP '2020-01-02 03:04:05', f INT DEFAULT NULL, g VARCHAR(10) DEFAULT CURRENT_SCHEMA);
+/* out */
+/* in */
+INSERT INTO t (a) VALUES (1);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- out: CREATE TABLE "PUBLIC"."T" (
+-- out:   "A" INTEGER DEFAULT -3 NOT NULL,
+-- out:   "B" CHARACTER VARYING(10) DEFAULT 'it''s',
+-- out:   "C" DOUBLE PRECISION DEFAULT 1.5e0,
+-- out:   "D" TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT LOCALTIMESTAMP(0),
+-- out:   "E" TIMESTAMP(6) WITHOUT TIME ZONE DEFAULT TIMESTAMP '2020-01-02 03:04:05',
+-- out:   "F" INTEGER DEFAULT NULL,
+-- out:   "G" CHARACTER VARYING(10) DEFAULT CURRENT_SCHEMA
+-- out: );
+-- msg: INSERT 1
+-- A: 1 B: it's C: 1.5e0 D: 2022-07-04T14:05:03 E: 2020-01-02T03:04:05.000000 F: NULL G: PUBLIC

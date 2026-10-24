@@ -5,7 +5,7 @@ fn row_test_table(column_names ...string) Table {
 	for name in column_names {
 		columns << Column{Identifier{
 			sub_entity_name: name
-		}, Type{.is_integer, 0, 0, false}, false}
+		}, Type{.is_integer, 0, 0, false}, false, none}
 	}
 
 	return Table{

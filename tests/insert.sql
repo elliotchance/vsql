@@ -97,7 +97,7 @@ CREATE TABLE t1 (f1 CHARACTER VARYING(10), f2 FLOAT NOT NULL);
 INSERT INTO t1 (f1) VALUES ('a');
 SELECT * FROM t1;
 -- msg: CREATE TABLE 1
--- error 23502: violates non-null constraint: column ":memory:".PUBLIC.T1.F2
+-- error 23502: violates non-null constraint: column F2
 
 CREATE TABLE t1 (f1 FLOAT NOT NULL);
 INSERT INTO t1 (f1) VALUES (-123.0 * 4.2);

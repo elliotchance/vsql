@@ -14,8 +14,8 @@ Syntax
 
 If ``WHERE`` is not provided, all records will be updated.
 
-A value can be ``DEFAULT``, which is the default value of the column. A column
-can't declare a default yet, so ``DEFAULT`` is always ``NULL``.
+A value can be ``DEFAULT``, which is the default value of the column (see
+:doc:`create-table`).
 
 The result (such as ``UPDATE 8``) contains the number of records matched,
 including records that already had the new values. If no records are matched,

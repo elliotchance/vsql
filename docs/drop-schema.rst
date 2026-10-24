@@ -16,7 +16,8 @@ If ``RESTRICT`` is specified and the schema is not empty, an error will be
 returned and no action will be taken.
 
 If ``CASCADE`` is specified then the schema is dropped, including any objects
-within it.
+within it. A ``FOREIGN KEY`` of a table in another schema that
+references one of its tables is also dropped (see :doc:`drop-table`).
 
 One of ``CASCADE`` or ``RESTRICT`` must be provided.
 

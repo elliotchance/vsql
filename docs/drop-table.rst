@@ -12,10 +12,12 @@ Syntax
 
 Deletes a table, including all of its rows.
 
-``RESTRICT`` returns an error (and takes no action) if any other object depends
-on the table. ``CASCADE`` also drops the objects that depend on the table.
-Nothing can depend on a table yet (such as a view or a foreign key), so they are
-currently the same.
+``RESTRICT`` returns an error ``2BP01`` (and takes no action) if any other
+object depends on the table. ``CASCADE`` also drops the objects that depend on
+the table. The only objects that can depend on a table are the
+``FOREIGN KEY`` constraints of other tables that reference it (see
+:doc:`create-table`), so ``CASCADE`` drops those constraints, but not the
+other tables or their rows.
 
 The SQL standard requires one of ``CASCADE`` or ``RESTRICT``, but vsql also
 allows neither, which is the same as ``RESTRICT``.

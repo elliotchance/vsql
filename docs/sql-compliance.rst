@@ -18,7 +18,7 @@ Mandatory Features
 ~~~~~~~~~~~~~~~~~~
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 103 of the 164 mandatory features** of the
+**vsql supports 106 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -291,7 +291,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ **E131**
      - **Null value support (nulls in lieu of values)**
 
-   * - ⭕ **E141**
+   * - ✅ **E141**
      - **Basic integrity constraints**
 
    * - ✅ E141-01
@@ -303,7 +303,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E141-03
      - ``PRIMARY KEY`` constraints
 
-   * - ❌ E141-04
+   * - ✅ E141-04
      - Basic ``FOREIGN KEY`` constraint with the ``NO ACTION`` default for both referential delete action and referential update action
 
    * - ✅ E141-06
@@ -315,7 +315,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E141-08
      - ``NOT NULL`` inferred on ``PRIMARY KEY``
 
-   * - ❌ E141-10
+   * - ✅ E141-10
      - Names in a foreign key can be specified in any order
 
    * - ✅ **E151**
@@ -1323,7 +1323,7 @@ Optional Features
    * - ❌ **T191**
      - **Referential action RESTRICT**
 
-   * - ❌ **T201**
+   * - ⭕ **T201**
      - **Comparable data types for referential constraints**
 
    * - ❌ **T211**

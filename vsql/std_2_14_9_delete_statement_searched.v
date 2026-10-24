@@ -35,11 +35,19 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 	mut plan := create_plan(stmt, params, mut conn)!
 	mut rows := plan.execute([]Row{})!
 
-	for mut row in rows {
+	mut deleted := []Row{}
+	for row in rows {
 		// for_storage() here is important because it will strip the qualified
 		// identifiers down to just their names used in storage.
-		catalog.storage.delete_row(table_name.storage_id(), mut row.for_storage())!
+		mut before := row.for_storage()
+		catalog.storage.delete_row(table_name.storage_id(), mut before)!
+		deleted << before
 	}
+
+	// A FOREIGN KEY is checked once all of the rows have been deleted, so a
+	// DELETE can include rows that reference each other.
+	catalog.storage.check_referencing_rows(catalog.storage.table(table_name.storage_id()),
+		deleted, [])!
 
 	// ISO/IEC 9075-2:2016(E), 14.9, General Rules, 10
 	if rows.len == 0 {

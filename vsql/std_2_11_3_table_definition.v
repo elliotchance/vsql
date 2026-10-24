@@ -7,7 +7,10 @@ import time
 // Define a persistent base table, a created local temporary table, or a global
 // temporary table.
 
-type TableElement = CheckConstraintDefinition | Column | UniqueConstraintDefinition
+type TableElement = CheckConstraintDefinition
+	| Column
+	| ReferentialConstraintDefinition
+	| UniqueConstraintDefinition
 
 // max_columns is the maximum number of columns in a table.
 const max_columns = 1600
@@ -61,7 +64,8 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 	}
 
 	stmt.check_limits(table_name)!
-	table := stmt.table(table_name, 0)!
+	mut table := stmt.table(table_name, 0)!
+	resolve_foreign_keys(mut conn, mut table)!
 	for column in table.columns {
 		check_default_clause(mut conn, column)!
 	}
@@ -79,6 +83,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	mut primary_key := []string{}
 	mut check_constraints := []CheckConstraintDefinition{}
 	mut unique_constraints := [][]string{}
+	mut foreign_keys := []ForeignKey{}
 	mut column_names := map[string]bool{}
 	for table_element in stmt.table_elements {
 		match table_element {
@@ -115,25 +120,52 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 
 					// A column of any type can be in a PRIMARY KEY or UNIQUE,
 					// because they can all be grouped (11.7 Syntax Rule 1).
-					mut found := false
-					for e in stmt.table_elements {
-						if e is Column {
-							if e.name.sub_entity_name == column.sub_entity_name {
-								unique_columns << column.sub_entity_name
-								found = true
-							}
-						}
-					}
-
-					if !found {
+					if !stmt.has_column(column.sub_entity_name) {
 						return sqlstate_42601('unknown column ${column} in ${constraint}')
 					}
+					unique_columns << column.sub_entity_name
 				}
 
 				if table_element.is_primary_key {
 					primary_key = unique_columns.clone()
 				} else {
 					unique_constraints << unique_columns
+				}
+			}
+			ReferentialConstraintDefinition {
+				// 11.8 Syntax Rule 8.
+				mut referencing_columns := []string{}
+				for column in table_element.columns {
+					if column.sub_entity_name in referencing_columns {
+						return sqlstate_42601('column ${column.sub_entity_name} appears more than once in FOREIGN KEY')
+					}
+					if !stmt.has_column(column.sub_entity_name) {
+						return sqlstate_42601('unknown column ${column} in FOREIGN KEY')
+					}
+					referencing_columns << column.sub_entity_name
+				}
+
+				// 11.8 Syntax Rule 4a. The rest of the referenced table and
+				// columns are checked by resolve_foreign_keys.
+				mut referenced_columns := []string{}
+				for column in table_element.referenced_columns {
+					if column.sub_entity_name in referenced_columns {
+						return sqlstate_42601('column ${column.sub_entity_name} appears more than once in REFERENCES')
+					}
+					referenced_columns << column.sub_entity_name
+				}
+
+				foreign_keys << ForeignKey{
+					columns:            referencing_columns
+					referenced_table:   Identifier{
+						...table_element.referenced_table
+						catalog_name: if table_element.referenced_table.catalog_name == '' {
+							table_name.catalog_name
+						} else {
+							table_element.referenced_table.catalog_name
+						}
+					}
+					referenced_columns: referenced_columns
 				}
 			}
 		}
@@ -174,7 +206,19 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 		primary_key:        primary_key
 		check_constraints:  check_constraints
 		unique_constraints: unique_constraints
+		foreign_keys:       foreign_keys
 	}
+}
+
+// has_column is true if one of the table elements is the column.
+fn (stmt TableDefinition) has_column(name string) bool {
+	for e in stmt.table_elements {
+		if e is Column && e.name.sub_entity_name == name {
+			return true
+		}
+	}
+
+	return false
 }
 
 fn (stmt TableDefinition) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {

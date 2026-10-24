@@ -69,6 +69,9 @@ mut:
 	// PRIMARY KEY), in the order they were defined. A UNIQUE on a column is the
 	// same as a UNIQUE on the table.
 	unique_constraints [][]string
+	// The FOREIGN KEY constraints of the table, in the order they were defined.
+	// A REFERENCES on a column is the same as a FOREIGN KEY on the table.
+	foreign_keys []ForeignKey
 pub mut:
 	// The name of the table including the schema.
 	name Identifier
@@ -110,6 +113,7 @@ pub fn (t Table) column(name string) !Column {
 //     "BAR" CHARACTER VARYING(10) DEFAULT 'baz',
 //     PRIMARY KEY ("ID"),
 //     UNIQUE ("BAR"),
+//     FOREIGN KEY ("BAR") REFERENCES "PUBLIC"."BAZ" ("NAME"),
 //     CHECK ("ID" > 0)
 //   )
 fn (t Table) bytes() []u8 {
@@ -131,6 +135,10 @@ fn (t Table) bytes() []u8 {
 
 	for columns in t.unique_constraints {
 		elements << '  UNIQUE (${columns.map(delimit_identifier(it)).join(', ')})'
+	}
+
+	for key in t.foreign_keys {
+		elements << '  ${key}'
 	}
 
 	for constraint in t.check_constraints {

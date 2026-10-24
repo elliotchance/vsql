@@ -21,11 +21,7 @@ fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 	mut iter := f.btree.new_range_iterator(key, key)
 	for {
 		object := iter.next() or { break }
-		// Another transaction is creating or deleting a row with this key, so
-		// it may or may not exist when that transaction finishes.
-		if (object.tid != f.transaction_id && f.header.active_transaction_ids.exists(object.tid))
-			|| (object.xid != 0 && object.xid != f.transaction_id
-				&& f.header.active_transaction_ids.exists(object.xid)) {
+		if f.is_concurrent_write(object) {
 			return sqlstate_40001('avoiding concurrent write on individual row')
 		}
 
@@ -88,10 +84,7 @@ fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
 				continue
 			}
 
-			// The same as check_primary_key.
-			if (object.tid != f.transaction_id && f.header.active_transaction_ids.exists(object.tid))
-				|| (object.xid != 0 && object.xid != f.transaction_id
-					&& f.header.active_transaction_ids.exists(object.xid)) {
+			if f.is_concurrent_write(object) {
 				return sqlstate_40001('avoiding concurrent write on individual row')
 			}
 
@@ -109,14 +102,30 @@ fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
 // are equal have the same key (like the PRIMARY KEY, see Row.object_key). It's
 // empty if any of the values are NULL.
 fn unique_key(row Row, t Table, columns []string) ![]u8 {
+	return key_value(row, columns, key_types(t, columns)!)
+}
+
+// key_value is the values of the columns in a row, encoded as the types (which
+// are in the same order as the columns). It's empty if any of the values are
+// NULL.
+fn key_value(row Row, columns []string, types []SQLType) []u8 {
 	mut key := new_empty_bytes()
-	for column in columns {
+	for i, column in columns {
 		value := row.data[column]
 		if value.is_null {
 			return []u8{}
 		}
-		write_key_value(mut key, value, t.column(column)!.typ.typ)
+		write_key_value(mut key, value, types[i])
 	}
 
 	return key.bytes()
+}
+
+// is_concurrent_write is true if another transaction is creating or deleting
+// the object, so it may or may not exist when that transaction finishes. It
+// must be called from inside an isolation block.
+fn (mut f Storage) is_concurrent_write(object PageObject) bool {
+	return (object.tid != f.transaction_id && f.header.active_transaction_ids.exists(object.tid))
+		|| (object.xid != 0 && object.xid != f.transaction_id
+			&& f.header.active_transaction_ids.exists(object.xid))
 }

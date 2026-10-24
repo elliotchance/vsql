@@ -6,16 +6,20 @@ module vsql
 
 // A <column constraint>. NOT NULL is the only one that isn't added to the table
 // as a table constraint.
-type ColumnConstraint = CheckConstraintDefinition | NotNullConstraint | UniqueConstraintDefinition
+type ColumnConstraint = CheckConstraintDefinition
+	| NotNullConstraint
+	| ReferentialConstraintDefinition
+	| UniqueConstraintDefinition
 
 struct NotNullConstraint {}
 
 // add_column_constraint applies a <column constraint> to the column, which is
-// the first of the elements. A PRIMARY KEY or CHECK on a column is the same as
-// the table constraint, such as PRIMARY KEY (column), so it's added as one
-// (Syntax Rule 17). It's checked with the other table elements, so it's also an
-// error if the table has another PRIMARY KEY. A CHECK on a column can only use
-// that column (Syntax Rule 17d).
+// the first of the elements. A PRIMARY KEY, UNIQUE, REFERENCES or CHECK on a
+// column is the same as the table constraint, such as PRIMARY KEY (column) or
+// FOREIGN KEY (column) REFERENCES ..., so it's added as one (Syntax Rule 17).
+// It's checked with the other table elements, so it's also an error if the
+// table has another PRIMARY KEY. A CHECK on a column can only use that column
+// (Syntax Rule 17d).
 fn add_column_constraint(elements []TableElement, constraint ColumnConstraint) []TableElement {
 	column := elements[0] as Column
 	match constraint {
@@ -29,6 +33,12 @@ fn add_column_constraint(elements []TableElement, constraint ColumnConstraint) [
 		}
 		UniqueConstraintDefinition {
 			return append_list(elements, TableElement(UniqueConstraintDefinition{
+				...constraint
+				columns: [column.name]
+			}))
+		}
+		ReferentialConstraintDefinition {
+			return append_list(elements, TableElement(ReferentialConstraintDefinition{
 				...constraint
 				columns: [column.name]
 			}))

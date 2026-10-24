@@ -15,6 +15,7 @@ Syntax
   [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference> ON <condition> ] ...
   [ WHERE <condition> ]
   [ GROUP BY <column_name> , ... ]
+  [ HAVING <condition> ]
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH FIRST [ <integer> ] { ROW | ROWS } ONLY ]
@@ -31,8 +32,8 @@ column names renames each of the table's columns, in order.
 A ``SELECT`` must have a ``FROM``. To calculate expressions without a table,
 use :doc:`values` (such as ``VALUES 1 + 2``).
 
-Not supported yet: ``HAVING``, ``UNION`` and ``EXCEPT``, and subqueries
-outside of the ``FROM``. See :doc:`sql-compliance`.
+Not supported yet: ``UNION`` and ``EXCEPT``, and subqueries outside of the
+``FROM``. See :doc:`sql-compliance`.
 
 SELECT
 ------
@@ -119,7 +120,8 @@ Otherwise, aggregation expressions are calculated from each set defined by the
 Each column in the ``SELECT`` expressions must be one of the ``GROUP BY``
 columns, or only be used in an aggregate function. Otherwise, a ``42803``
 error is returned because there could be more than one value for the column in
-each set.
+each set. ``*`` counts as every column, so it can only be used when all of the
+columns are grouped.
 
 See full list of :doc:`functions`.
 
@@ -139,6 +141,28 @@ With ``DISTINCT``, the ``ORDER BY`` can only use the columns in the ``SELECT``
 expressions, or an expression that is also in the ``SELECT`` expressions. For
 example, ``SELECT DISTINCT city FROM products ORDER BY price`` returns a
 ``42P10`` error because each city could have more than one price.
+
+HAVING
+------
+
+The ``HAVING`` clause removes groups, in the same way that ``WHERE`` removes
+rows. Only the groups where the condition is ``TRUE`` are kept. For example, to
+find the cities with more than 10 products:
+
+.. code-block:: sql
+
+  SELECT city, COUNT(*) FROM products GROUP BY city HAVING COUNT(*) > 10;
+
+The condition can use aggregate functions, even if they are not in the
+``SELECT`` expressions. Like the ``SELECT`` expressions, any other column must
+be one of the ``GROUP BY`` columns (or a ``42803`` error is returned).
+
+Without a ``GROUP BY``, the whole table is a single group. So the result has at
+most one row, even when the table is empty:
+
+.. code-block:: sql
+
+  SELECT COUNT(*) FROM products HAVING COUNT(*) = 0;
 
 ORDER BY
 --------

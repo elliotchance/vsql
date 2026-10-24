@@ -132,6 +132,29 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			}
 			t.done()
 		})!
+
+	// ISO/IEC 9075-11:2016(E), 5.58, TABLE_CONSTRAINTS view. ENFORCED is whether
+	// the table constraint is enforced (ISO/IEC 9075-2:2016(E), 4.23.3.1).
+	catalog.add_information_schema_table('CREATE TABLE TABLE_CONSTRAINTS (
+		CONSTRAINT_CATALOG ${id} NOT NULL,
+		CONSTRAINT_SCHEMA ${id} NOT NULL,
+		CONSTRAINT_NAME ${id} NOT NULL,
+		TABLE_CATALOG ${id} NOT NULL,
+		TABLE_SCHEMA ${id} NOT NULL,
+		TABLE_NAME ${id} NOT NULL,
+		CONSTRAINT_TYPE ${cd} NOT NULL,
+		IS_DEFERRABLE ${yn} NOT NULL,
+		INITIALLY_DEFERRED ${yn} NOT NULL,
+		ENFORCED ${yn} NOT NULL
+	)',
+		fn [c] (mut t VirtualTable) ! {
+			for table in c.information_schema_tables() {
+				for row in table_constraints_view_rows(c.catalog_name, table) {
+					t.next_values(row)
+				}
+			}
+			t.done()
+		})!
 }
 
 // add_information_schema_table adds a view of the INFORMATION_SCHEMA from its
@@ -275,6 +298,45 @@ fn check_constraints_view_rows(catalog_name string, table Table) [][]Value {
 	return rows
 }
 
+// table_constraints_view_rows are the rows of the TABLE_CONSTRAINTS view
+// (ISO/IEC 9075-11:2016(E), 6.47, TABLE_CONSTRAINTS base table) for a table:
+// the PRIMARY KEY, then the same check constraints as the CHECK_CONSTRAINTS
+// view, in the same order and with the same names. Constraints can't be
+// deferred or NOT ENFORCED yet.
+fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
+	if table.is_virtual {
+		return [][]Value{}
+	}
+
+	mut rows := [][]Value{}
+	if table.primary_key.len > 0 {
+		rows << table_constraints_view_row(catalog_name, table, '${table.name.entity_name}_PRIMARY_KEY',
+			'PRIMARY KEY')
+	}
+	for row in check_constraints_view_rows(catalog_name, table) {
+		rows << table_constraints_view_row(catalog_name, table, row[2].string_value(),
+			'CHECK')
+	}
+
+	return rows
+}
+
+// table_constraints_view_row is a row of the TABLE_CONSTRAINTS view.
+fn table_constraints_view_row(catalog_name string, table Table, name string, constraint_type string) []Value {
+	return [
+		new_varchar_value(catalog_name), // CONSTRAINT_CATALOG
+		new_varchar_value(table.name.schema_name), // CONSTRAINT_SCHEMA
+		new_varchar_value(name), // CONSTRAINT_NAME
+		new_varchar_value(catalog_name), // TABLE_CATALOG
+		new_varchar_value(table.name.schema_name), // TABLE_SCHEMA
+		new_varchar_value(table.name.entity_name), // TABLE_NAME
+		new_varchar_value(constraint_type), // CONSTRAINT_TYPE
+		new_varchar_value('NO'), // IS_DEFERRABLE
+		new_varchar_value('NO'), // INITIALLY_DEFERRED
+		new_varchar_value('YES'), // ENFORCED
+	]
+}
+
 // check_constraints_view_row is a row of the CHECK_CONSTRAINTS view. A
 // CHECK_CLAUSE that's longer than CHARACTER_DATA can hold is NULL (6.14,
 // Description 2b).
@@ -296,7 +358,8 @@ fn check_constraints_view_row(catalog_name string, table Table, name string, che
 // T_CHECK_1 for the first CHECK of table T, or T_NOT_NULL_2 for the NOT NULL of
 // its second column. It's the same each time the table is read, and unique in
 // the schema, because the number after the last "_CHECK_" or "_NOT_NULL_"
-// separates it from the table name.
+// separates it from the table name. (A PRIMARY KEY is T_PRIMARY_KEY, which
+// doesn't end in a number.)
 fn constraint_name(table Table, kind string, i int) string {
 	return '${table.name.entity_name}_${kind}_${i + 1}'
 }

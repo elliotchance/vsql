@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 99 of the 164 mandatory features** of the
+**vsql supports 100 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -484,7 +484,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ **F471**
      - **Scalar subquery values**
 
-   * - ❌ **F481**
+   * - ✅ **F481**
      - **Expanded NULL predicate**
 
    * - ❌ **F812**

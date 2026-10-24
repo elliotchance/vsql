@@ -90,8 +90,24 @@ IS NULL
 .. code-block:: text
 
   X IS [ NOT ] NULL
+  ( X1 , X2 [ , X3 ... ] ) IS [ NOT ] NULL
+  ROW ( X1 [ , X2 ... ] ) IS [ NOT ] NULL
 
 Tests if ``X`` is (or is not) ``NULL``.
+
+For a row, ``IS NULL`` is ``TRUE`` only if every value is ``NULL``, and
+``IS NOT NULL`` is ``TRUE`` only if none of the values are ``NULL``. So a row
+that contains some ``NULL`` values is neither, and ``NOT (... IS NULL)`` isn't
+the same as ``... IS NOT NULL``.
+
+*Examples*
+
+.. code-block:: sql
+
+  (1, 2) IS NOT NULL                                   -- TRUE
+  (CAST(NULL AS INT), CAST(NULL AS INT)) IS NULL       -- TRUE
+  (1, CAST(NULL AS INT)) IS NULL                       -- FALSE
+  (1, CAST(NULL AS INT)) IS NOT NULL                   -- FALSE
 
 LIKE
 ----

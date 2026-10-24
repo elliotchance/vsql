@@ -38,6 +38,11 @@ cycle unless ``CYCLE`` is provided.
 
 The values of a sequence are ``BIGINT``.
 
+``NEXT VALUE FOR`` can't be used in a ``WHERE``, a join condition, an
+``ORDER BY``, an aggregate function or a grouped query (a ``GROUP BY`` or an
+aggregate function in the select list), since the value would depend on how
+many times the expression is evaluated.
+
 Examples
 --------
 

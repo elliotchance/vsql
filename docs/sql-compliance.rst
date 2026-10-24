@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 81 of the 164 mandatory features** of the
+**vsql supports 83 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -136,7 +136,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E061-04
      - ``LIKE`` predicate
 
-   * - ❌ E061-05
+   * - ✅ E061-05
      - ``LIKE`` predicate: ``ESCAPE`` clause
 
    * - ✅ E061-06
@@ -358,7 +358,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ F031-04
      - ``ALTER TABLE`` statement: ``ADD COLUMN`` clause
 
-   * - ❌ F031-13
+   * - ✅ F031-13
      - ``DROP TABLE`` statement: ``RESTRICT`` clause
 
    * - ❌ F031-16

@@ -6,8 +6,12 @@ import time
 //
 // Destroy a table.
 
+// The behavior is RESTRICT when it's not provided (the standard requires it).
+// Nothing can depend on a table yet (such as a view or a foreign key), so
+// CASCADE and RESTRICT are the same.
 struct DropTableStatement {
 	table_name Identifier
+	behavior   string // CASCADE or RESTRICT
 }
 
 fn (stmt DropTableStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {

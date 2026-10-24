@@ -73,6 +73,26 @@ CREATE TABLE foo ("" INT);
 CREATE TABLE "foo (x INT);
 -- error 42601: syntax error: unterminated delimited identifier: "foo (x INT)
 
+-- # A doubled quote is a quote character in the name.
+CREATE TABLE "a""b" ("x""y" INT, "ü""ö" INT);
+INSERT INTO "a""b" ("x""y", "ü""ö") VALUES (1, 2);
+SELECT * FROM "a""b";
+SELECT "a""b"."x""y" AS """q""" FROM "a""b";
+SELECT nope FROM "a""b";
+CREATE TABLE """" (x INT);
+SELECT * FROM """";
+SELECT * FROM "no""pe";
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- x"y: 1 ü"ö: 2
+-- "q": 1
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.NOPE
+-- msg: CREATE TABLE 1
+-- error 42P01: no such table: ":memory:".PUBLIC."no""pe"
+
+CREATE TABLE "foo"" (x INT);
+-- error 42601: syntax error: unterminated delimited identifier: "foo"" (x INT)
+
 CREATE TABLE t1 (f1 CHARACTER VARYING(10), f2 FLOAT NOT NULL);
 -- msg: CREATE TABLE 1
 

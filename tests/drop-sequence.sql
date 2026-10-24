@@ -28,3 +28,28 @@ DROP SEQUENCE foo;
 -- msg: CREATE SEQUENCE 1
 -- COL1: 1
 -- msg: DROP SEQUENCE 1
+
+CREATE SEQUENCE foo;
+DROP SEQUENCE foo RESTRICT;
+VALUES NEXT VALUE FOR foo;
+-- msg: CREATE SEQUENCE 1
+-- msg: DROP SEQUENCE 1
+-- error 42P01: no such sequence: ":memory:".PUBLIC.FOO
+
+CREATE SEQUENCE foo;
+VALUES NEXT VALUE FOR foo;
+DROP SEQUENCE foo CASCADE;
+VALUES NEXT VALUE FOR foo;
+-- msg: CREATE SEQUENCE 1
+-- COL1: 1
+-- msg: DROP SEQUENCE 1
+-- error 42P01: no such sequence: ":memory:".PUBLIC.FOO
+
+DROP SEQUENCE foo RESTRICT;
+-- error 42P01: no such sequence: ":memory:".PUBLIC.FOO
+
+DROP SEQUENCE foo CASCADE;
+-- error 42P01: no such sequence: ":memory:".PUBLIC.FOO
+
+EXPLAIN DROP SEQUENCE foo RESTRICT;
+-- error 42601: syntax error: Cannot EXPLAIN DROP SEQUENCE

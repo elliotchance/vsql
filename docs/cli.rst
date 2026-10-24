@@ -129,6 +129,8 @@ may connect to it with one of the :doc:`supported PostgreSQL clients
 
 Options are:
 
+- ``-host``: Address to listen on (default 127.0.0.1). Use ``0.0.0.0`` or
+  ``::`` to accept clients from other machines.
 - ``-port`` or ``-p``: Port number (default 3210).
 - ``-verbose`` or ``-v``: Verbose (show all messages in and out of the server).
 

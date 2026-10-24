@@ -10,26 +10,36 @@ Syntax
 
 .. code-block:: text
 
-  SELECT { * | { <expression> [ AS <name> ] | <table_name>.* } , ... }
+  SELECT [ ALL | DISTINCT ] { * | { <expression> [ AS <name> ] | <table_name>.* } , ... }
   FROM <table_reference>
   [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference> ON <condition> ] ...
   [ WHERE <condition> ]
   [ GROUP BY <column_name> , ... ]
+  [ HAVING <condition> ]
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH FIRST [ <integer> ] { ROW | ROWS } ONLY ]
 
-  <table_reference> := <table_name>
-                     | ( <query> ) [ AS <name> [ ( <column_name> , ... ) ] ]
+  <table_reference> := { <table_name> | ( <query> ) }
+                       [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
 
-A ``<query>`` in the ``FROM`` is a ``SELECT`` or ``VALUES``.
+  <query> { UNION | EXCEPT } [ ALL | DISTINCT ] <query>
+  [ ORDER BY <expr> [ ASC | DESC ] , ... ]
+  [ OFFSET <integer> { ROW | ROWS } ]
+  [ FETCH FIRST [ <integer> ] { ROW | ROWS } ONLY ]
+
+A ``<query>`` is a ``SELECT``, ``VALUES``, ``UNION`` or ``EXCEPT``. It can be in
+parentheses, such as ``(SELECT ... FETCH FIRST 1 ROW ONLY)``.
+
+``AS <name>`` gives the table a *correlation name*. The table must then be
+referred to by that name instead (such as ``p.price``). The optional list of
+column names renames each of the table's columns, in order.
 
 A ``SELECT`` must have a ``FROM``. To calculate expressions without a table,
 use :doc:`values` (such as ``VALUES 1 + 2``).
 
-Not supported yet: ``DISTINCT``, ``HAVING``, ``UNION`` and ``EXCEPT``,
-subqueries outside of the ``FROM``, and naming a table in the ``FROM`` (such as
-``FROM products AS p``). See :doc:`sql-compliance`.
+Not supported yet: ``INTERSECT``, and subqueries outside of the ``FROM``. See
+:doc:`sql-compliance`.
 
 SELECT
 ------
@@ -79,7 +89,14 @@ before it as its *left* table, unless parentheses are used to change the order:
   SELECT * FROM t1
   LEFT JOIN (t2 JOIN t3 ON t2.b = t3.c) ON t1.a = t2.b;
 
-The same table name cannot be used more than once in a ``FROM`` clause.
+The same table name cannot be used more than once in a ``FROM`` clause. Use
+correlation names to join a table to itself:
+
+.. code-block:: sql
+
+  SELECT child.name, parent.name
+  FROM categories AS child
+  JOIN categories AS parent ON child.parent_id = parent.id;
 
 WHERE
 -----
@@ -109,9 +126,92 @@ Otherwise, aggregation expressions are calculated from each set defined by the
 Each column in the ``SELECT`` expressions must be one of the ``GROUP BY``
 columns, or only be used in an aggregate function. Otherwise, a ``42803``
 error is returned because there could be more than one value for the column in
-each set.
+each set. ``*`` counts as every column, so it can only be used when all of the
+columns are grouped.
 
 See full list of :doc:`functions`.
+
+DISTINCT
+--------
+
+``SELECT DISTINCT`` removes duplicate rows from the result. Rows are duplicates
+when every column is equal, and ``NULL`` is equal to ``NULL`` for this:
+
+.. code-block:: sql
+
+  SELECT DISTINCT city FROM products;
+
+``SELECT ALL`` is the same as ``SELECT`` and keeps all of the rows.
+
+With ``DISTINCT``, the ``ORDER BY`` can only use the columns in the ``SELECT``
+expressions, or an expression that is also in the ``SELECT`` expressions. For
+example, ``SELECT DISTINCT city FROM products ORDER BY price`` returns a
+``42P10`` error because each city could have more than one price.
+
+HAVING
+------
+
+The ``HAVING`` clause removes groups, in the same way that ``WHERE`` removes
+rows. Only the groups where the condition is ``TRUE`` are kept. For example, to
+find the cities with more than 10 products:
+
+.. code-block:: sql
+
+  SELECT city, COUNT(*) FROM products GROUP BY city HAVING COUNT(*) > 10;
+
+The condition can use aggregate functions, even if they are not in the
+``SELECT`` expressions. Like the ``SELECT`` expressions, any other column must
+be one of the ``GROUP BY`` columns (or a ``42803`` error is returned).
+
+Without a ``GROUP BY``, the whole table is a single group. So the result has at
+most one row, even when the table is empty:
+
+.. code-block:: sql
+
+  SELECT COUNT(*) FROM products HAVING COUNT(*) = 0;
+
+UNION and EXCEPT
+----------------
+
+``UNION`` and ``EXCEPT`` combine the rows of two queries:
+
+- ``UNION ALL`` returns the rows of both queries.
+- ``UNION`` (or ``UNION DISTINCT``) returns each distinct row of both queries.
+- ``EXCEPT ALL`` returns the rows of the left query, with one fewer of each
+  row for every time that row is in the right query.
+- ``EXCEPT`` (or ``EXCEPT DISTINCT``) returns each distinct row of the left
+  query that is not in the right query.
+
+Rows are the same when each of their values are equal, and two ``NULL`` values
+are considered the same. For example:
+
+.. code-block:: sql
+
+  SELECT city FROM customers
+  UNION
+  SELECT city FROM suppliers;
+
+  SELECT id FROM products
+  EXCEPT
+  SELECT product_id FROM orders;
+
+Both queries must have the same number of columns, and each column must have
+compatible types (such as ``INTEGER`` and ``BIGINT``, or ``CHAR`` and
+``VARCHAR``). Each column of the result has a type that fits the values of
+both queries, and the name of that column in the left query.
+
+The operators are evaluated left to right. Use parentheses to change the order.
+
+The ``ORDER BY``, ``OFFSET`` and ``FETCH FIRST`` at the end apply to the whole
+result, so the ``ORDER BY`` can only use the columns of the result. A query in
+parentheses can have its own:
+
+.. code-block:: sql
+
+  (SELECT name FROM products ORDER BY price DESC FETCH FIRST 3 ROWS ONLY)
+  UNION ALL
+  (SELECT name FROM products ORDER BY price FETCH FIRST 3 ROWS ONLY)
+  ORDER BY name;
 
 ORDER BY
 --------

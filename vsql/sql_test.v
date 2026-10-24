@@ -892,6 +892,48 @@ fn test_server_db_file() ! {
 // A client only gets an error (or is disconnected) when its database can't be
 // opened, it disconnects before sending its startup message or it disconnects
 // without saying goodbye. The server keeps running for other clients.
+fn test_server_host() ! {
+	connect := fn (database string) !&Connection {
+		return open(':memory:')
+	}
+
+	// Only clients on the same machine can connect by default.
+	mut local := new_server(ServerOptions{
+		connect: connect
+	})
+	if _ := local.address() {
+		assert false, 'has an address before listening'
+	} else {
+		assert err.msg() == 'server is not listening'
+	}
+	local.listen()!
+	defer {
+		local.stop() or {}
+	}
+	assert local.address()! == '127.0.0.1:${local.port()!}'
+
+	mut ip6 := new_server(ServerOptions{
+		connect: connect
+		host:    '::1'
+	})
+	ip6.listen()!
+	defer {
+		ip6.stop() or {}
+	}
+	assert ip6.address()! == '[::1]:${ip6.port()!}'
+
+	// 192.0.2.1 is reserved for documentation, so it can't be a local address.
+	mut remote := new_server(ServerOptions{
+		connect: connect
+		host:    '192.0.2.1'
+	})
+	if _ := remote.listen() {
+		assert false, 'listened on an address that is not local'
+	} else {
+		assert err.msg().starts_with('cannot listen on 192.0.2.1:0: ')
+	}
+}
+
 fn test_server_client_errors() ! {
 	mut server := start_sql_test_server_with(ServerOptions{
 		connect: fn (database string) !&Connection {
@@ -991,6 +1033,54 @@ fn header_error(data []u8) string {
 	new_header_from_bytes(data) or { return '${sqlstate_from_int(err.code())} ${err.msg()}' }
 
 	return ''
+}
+
+// A page can't be larger than 65535 bytes, because the Used field of the page
+// header is a u16 (#519).
+fn test_page_size_limits() ! {
+	data := new_header(65536).bytes()
+	assert header_error(data) == 'XX001 invalid page size 65536'
+
+	for page_size in [16, 65536] {
+		mut options := default_connection_options()
+		options.page_size = page_size
+		message := '54000 page size ${page_size} must be more than 16 and at most 65535 bytes'
+
+		if _ := open_database(':memory:', options) {
+			assert false, 'opened :memory: with a page size of ${page_size}'
+		} else {
+			assert '${sqlstate_from_int(err.code())} ${err.msg()}' == message
+		}
+
+		// The file isn't created.
+		path := os.join_path(os.temp_dir(), 'vsql-sql-test-page-size-${os.getpid()}.vsql')
+		if _ := open_database(path, options) {
+			assert false, 'created a file with a page size of ${page_size}'
+		} else {
+			assert '${sqlstate_from_int(err.code())} ${err.msg()}' == message
+		}
+		assert !os.exists(path)
+	}
+
+	// The largest page holds a value that fills most of it.
+	path := os.join_path(os.temp_dir(), 'vsql-sql-test-page-size-${os.getpid()}.vsql')
+	defer {
+		os.rm(path) or {}
+		os.rm(session_path(path)) or {}
+	}
+	mut options := default_connection_options()
+	options.page_size = 65535
+	mut db := open_database(path, options)!
+	db.query('CREATE TABLE t (x VARCHAR(65000))')!
+	db.query("INSERT INTO t (x) VALUES ('${'a'.repeat(60000)}')")!
+	db.close()
+
+	db = open_database(path, default_connection_options())!
+	defer {
+		db.close()
+	}
+	mut result := db.query('SELECT CHAR_LENGTH(x) AS l FROM t')!
+	assert result.next()?.get_int('L')! == 60000
 }
 
 // A custom function that returns a NUMERIC has the type it's registered with,

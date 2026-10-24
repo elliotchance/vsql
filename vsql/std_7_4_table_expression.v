@@ -5,7 +5,8 @@ module vsql
 // Specify a table or a grouped table.
 
 struct TableExpression {
-	from_clause  TableReference
-	where_clause ?BooleanValueExpression
-	group_clause []Identifier
+	from_clause   TableReference
+	where_clause  ?BooleanValueExpression
+	group_clause  []Identifier
+	having_clause ?BooleanValueExpression
 }

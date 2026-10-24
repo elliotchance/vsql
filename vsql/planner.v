@@ -50,6 +50,21 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 
 			return plan, map[string]Table{}
 		}
+		SetOperation {
+			mut plan := Plan{}
+			plan.subplans['\$1'] = create_query_expression_plan(*body.left, params, mut
+				conn, Correlation{})!
+			plan.subplans['\$2'] = create_query_expression_plan(*body.right, params, mut
+				conn, Correlation{})!
+
+			plan.operations << new_set_operation_operation(body, plan.subplans['\$1'],
+				plan.subplans['\$2'], mut conn)!
+
+			return plan, map[string]Table{}
+		}
+		ParenthesizedQueryExpression {
+			return create_query_expression_plan(*body.expr, params, mut conn, correlation)!, map[string]Table{}
+		}
 	}
 }
 
@@ -72,18 +87,15 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 
 			// The WHERE clause applies to the joined rows, so it can't be used to
 			// filter either side before the join.
-			add_where_plan(mut &plan, body, params, conn, tables)
+			add_where_plan(mut &plan, body, params, conn, tables)!
 		}
 	}
 
-	// GROUP BY.
-	//
-	// TODO(elliotchance): This will break if trying to use GROUP BY on
-	// "SELECT *".
+	// GROUP BY. An asterisk is the same as listing every column, so each one must
+	// be a grouping column.
+	mut select_exprs := []DerivedColumn{}
 	match body.exprs {
 		[]SelectSublist {
-			group_exprs := body.table_expression.group_clause
-			mut select_exprs := []DerivedColumn{}
 			for item in body.exprs {
 				match item {
 					DerivedColumn {
@@ -97,13 +109,22 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 					}
 				}
 			}
-
-			add_group_by_plan(mut &plan, group_exprs, select_exprs, params, mut conn,
-				tables)!
 		}
 		AsteriskExpr {
-			// It's not possible to have a GROUP BY in this case.
+			for _, table in tables {
+				for column in table.columns {
+					select_exprs << column_derived_column(column)
+				}
+			}
 		}
+	}
+
+	add_group_by_plan(mut &plan, body.table_expression.group_clause, body.table_expression.having_clause,
+		select_exprs, params, mut conn, tables)!
+
+	if body.distinct {
+		plan.operations << new_distinct_operation(mut conn, params, body.exprs, tables,
+			plan.columns())!
 	}
 
 	return plan, tables
@@ -118,6 +139,15 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 		params, mut conn, allow_virtual, mut tables)!
 	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table,
 		params, mut conn, allow_virtual, mut tables)!
+
+	// Like WHERE, the condition is compiled to catch errors without any rows.
+	mut c := Compiler{
+		conn:                   conn
+		params:                 params
+		tables:                 tables
+		next_value_not_allowed: 'a join condition'
+	}
+	join.specification.compile(mut c)!
 
 	plan.operations << new_join_operation(plan.subplans['\$1'].columns(), join.join_type,
 		plan.subplans['\$2'].columns(), join.specification, params, conn, plan, tables.clone())
@@ -162,6 +192,24 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 
 	match from_clause.body {
 		Identifier {
+			// A table with a correlation name, such as "t AS x (c1, c2)", is
+			// read like a derived table so that its rows use the new names.
+			if from_clause.correlation.name.sub_entity_name != '' {
+				subplan, _ := create_select_plan_without_join(body, TablePrimary{
+					body: from_clause.body
+				}, params, mut conn, allow_virtual, false)!
+				table = add_correlation_plan(mut &plan, from_clause.correlation.name,
+					subplan, from_clause.correlation, params, conn)!
+
+				if filter {
+					add_where_plan(mut &plan, body, params, conn, {
+						table.name.id(): table
+					})!
+				}
+
+				return plan, table
+			}
+
 			mut table_name := conn.resolve_table_identifier(from_clause.body, allow_virtual)!
 			table_name_id := table_name.storage_id()
 			mut catalog := conn.catalogs[table_name.catalog_name] or {
@@ -174,7 +222,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				if filter {
 					add_where_plan(mut &plan, body, params, conn, {
 						table.name.id(): table
-					})
+					})!
 				}
 			} else if table_name_id in catalog.storage.tables {
 				table = catalog.storage.tables[table_name_id]
@@ -209,7 +257,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 					if filter {
 						add_where_plan(mut &plan, body, params, conn, {
 							table.name.id(): table
-						})
+						})!
 					}
 				}
 			} else {
@@ -228,38 +276,13 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 
 			subplan := create_query_expression_plan(from_clause.body, params, mut conn,
 				from_clause.correlation)!
-			plan.subplans[table_name.id()] = subplan
+			table = add_correlation_plan(mut &plan, table_name, subplan, from_clause.correlation,
+				params, conn)!
 
-			// A derived column list renames the columns of the subquery.
-			correlation_columns := from_clause.correlation.columns
-			if correlation_columns.len > 0 && correlation_columns.len != subplan.columns().len {
-				return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
-			}
-
-			mut subplan_columns := []Column{}
-			for i, col in subplan.columns() {
-				subplan_columns << Column{Identifier{
-					entity_name:     table_name.id()
-					sub_entity_name: if correlation_columns.len > 0 {
-						correlation_columns[i].sub_entity_name
-					} else {
-						col.name.sub_entity_name
-					}
-				}, col.typ, col.not_null}
-			}
-
-			// NOTE: This has to be assigned to a variable otherwise the value
-			// is lost. This must be a bug in V.
-			table = Table{
-				name:    table_name
-				columns: subplan_columns
-			}
-
-			plan.operations << TableOperation{table_name, true, table, params, conn, plan.subplans}
 			if filter {
 				add_where_plan(mut &plan, body, params, conn, {
 					table.name.id(): table
-				})
+				})!
 			}
 		}
 	}
@@ -267,26 +290,80 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 	return plan, table
 }
 
+// add_correlation_plan reads the rows of subplan as the table table_name. A
+// derived column list in the correlation renames the columns.
+fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, correlation Correlation, params map[string]Value, conn &Connection) !Table {
+	plan.subplans[table_name.id()] = subplan
+
+	correlation_columns := correlation.columns
+	if correlation_columns.len > 0 && correlation_columns.len != subplan.columns().len {
+		return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
+	}
+
+	// ISO/IEC 9075-2:2016(E), 7.6, <table reference>, Syntax Rule 11b
+	mut seen := map[string]bool{}
+	for column in correlation_columns {
+		if column.sub_entity_name in seen {
+			return sqlstate_42601('column ${column.sub_entity_name} is specified more than once')
+		}
+		seen[column.sub_entity_name] = true
+	}
+
+	mut columns := []Column{}
+	for i, col in subplan.columns() {
+		columns << Column{Identifier{
+			entity_name:     table_name.id()
+			sub_entity_name: if correlation_columns.len > 0 {
+				correlation_columns[i].sub_entity_name
+			} else {
+				col.name.sub_entity_name
+			}
+		}, col.typ, col.not_null, none}
+	}
+
+	// NOTE: This has to be assigned to a variable otherwise the value is lost.
+	// This must be a bug in V.
+	table := Table{
+		name:    table_name
+		columns: columns
+	}
+
+	plan.operations << TableOperation{table_name, true, table, params, conn, plan.subplans}
+
+	return table
+}
+
 // add_where_plan filters the rows of the last operation with the WHERE clause,
-// if there is one.
-fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Value, conn &Connection, tables map[string]Table) {
+// if there is one. The condition is only evaluated for each row, so it's
+// compiled here to catch errors even when there are no rows.
+fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Value, conn &Connection, tables map[string]Table) ! {
 	if where := body.table_expression.where_clause {
+		mut c := Compiler{
+			conn:                   conn
+			params:                 params
+			tables:                 tables
+			next_value_not_allowed: 'WHERE'
+		}
+		where.compile(mut c)!
+
 		last_operation := plan.operations[plan.operations.len - 1]
 		plan.operations << new_where_operation(where, params, conn, last_operation.columns(),
 			tables)
 	}
 }
 
-fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []DerivedColumn, params map[string]Value, mut conn Connection, tables map[string]Table) ! {
+fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?BooleanValueExpression, select_exprs []DerivedColumn, params map[string]Value, mut conn Connection, tables map[string]Table) ! {
 	// There can be an explicit GROUP BY clause. However, if any of the
-	// expressions contain an aggregate function we need to have an implicit
-	// GROUP BY for the whole set.
+	// expressions contain an aggregate function (or there is a HAVING) we need to
+	// have an implicit GROUP BY for the whole set.
+	//
+	// ISO/IEC 9075-2:2016(E), 7.14, <having clause>, Syntax Rules, 1
 	mut c := Compiler{
 		conn:   conn
 		params: params
 		tables: tables
 	}
-	mut has_agg := false
+	mut has_agg := having_clause != none
 	for e in select_exprs {
 		if e.expr.compile(mut c)!.contains_agg {
 			has_agg = true
@@ -309,6 +386,15 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []De
 		e.expr.compile(mut c)!
 	}
 
+	// The HAVING has the same rule (7.14, Syntax Rules, 2) and must be a boolean.
+	if having := having_clause {
+		c.next_value_not_allowed = 'HAVING'
+		compiled_having := having.compile(mut c)!
+		if compiled_having.typ.typ != .is_boolean {
+			return sqlstate_42804('in HAVING', 'BOOLEAN', compiled_having.typ.str())
+		}
+	}
+
 	mut order := []SortSpecification{}
 	for col in group_clause {
 		order << SortSpecification{
@@ -327,7 +413,13 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, select_exprs []De
 		plan.operations << new_order_operation(order, params, conn, plan.columns(), tables)
 	}
 
-	plan.operations << new_group_operation(select_exprs, group_clause, params, mut conn, tables)!
+	plan.operations << new_group_operation(select_exprs, group_clause, having_clause,
+		params, mut conn, tables)!
+
+	if having := having_clause {
+		plan.operations << new_where_operation(having, params, conn, plan.columns(),
+			tables)
+	}
 }
 
 fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut conn Connection) !Plan {
@@ -363,20 +455,32 @@ fn create_update_plan(stmt UpdateStatementSearched, params map[string]Value, mut
 }
 
 fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, mut conn Connection, correlation Correlation) !Plan {
-	mut plan, tables := create_basic_plan(stmt.body, params, mut conn, true,
+	mut plan, mut tables := create_basic_plan(stmt.body, params, mut conn, true,
 		correlation)!
+
+	// Only a query specification has its own tables. Otherwise, the ORDER BY can
+	// only use the columns of the result (7.17, Syntax Rule 28d).
+	if stmt.body !is QuerySpecification {
+		tables = {
+			'': Table{
+				columns: plan.columns()
+			}
+		}
+	}
 
 	if stmt.order.len > 0 {
 		// The expressions are only evaluated when rows are compared, so they're
 		// compiled here to catch errors (such as an ambiguous column) even when
 		// there are no rows.
 		mut c := Compiler{
-			conn:   conn
-			params: params
-			tables: tables
+			conn:                   conn
+			params:                 params
+			tables:                 tables
+			next_value_not_allowed: 'ORDER BY'
 		}
 		mut order := []SortSpecification{}
 		for spec in stmt.order {
+			c.set_distinct_columns(stmt.body, spec.expr)!
 			spec.expr.compile(mut c)!
 			order << SortSpecification{
 				expr:   spec.expr
@@ -434,7 +538,7 @@ fn (p Plan) explain(elapsed_parse time.Duration) Result {
 	}
 
 	return new_result([
-		Column{Identifier{ sub_entity_name: 'EXPLAIN' }, new_type('VARCHAR', 0, 0), false},
+		Column{Identifier{ sub_entity_name: 'EXPLAIN' }, new_type('VARCHAR', 0, 0), false, none},
 	], rows, elapsed_parse, 0)
 }
 
@@ -497,15 +601,8 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 						mut column_name := 'COL${columns.len + 1}'
 						if item.as_clause.sub_entity_name != '' {
 							column_name = item.as_clause.sub_entity_name
-						} else if item.expr is BooleanValueExpression {
-							e := item.expr.term.factor.expr
-							if e is BooleanPredicand {
-								if e is NonparenthesizedValueExpressionPrimary {
-									if e is Identifier {
-										column_name = e.sub_entity_name
-									}
-								}
-							}
+						} else if column := item.column_reference() {
+							column_name = column.sub_entity_name
 						}
 
 						expr := item.expr
@@ -518,7 +615,7 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 							tables: tables
 						}
 
-						columns << Column{col, expr.compile(mut c)!.typ, false}
+						columns << Column{col, expr.compile(mut c)!.typ, false, none}
 
 						exprs << DerivedColumn{expr, col}
 					}
@@ -543,7 +640,7 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 			columns[i] = Column{Identifier{
 				...columns[i].name
 				custom_id: key
-			}, columns[i].typ, columns[i].not_null}
+			}, columns[i].typ, columns[i].not_null, none}
 		}
 	}
 

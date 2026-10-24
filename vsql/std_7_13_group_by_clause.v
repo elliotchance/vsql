@@ -19,6 +19,9 @@ struct GroupOperation {
 	// to be used in GROUP BY expressions, but well keep them as []Identifier
 	// because it's easier.
 	group_exprs []Identifier
+	// having is also used to find aggregate functions that need to be calculated
+	// for each group, such as "COUNT(*)" in "HAVING COUNT(*) > 1".
+	having ?BooleanValueExpression
 
 	params  map[string]Value
 	columns Columns
@@ -27,7 +30,7 @@ mut:
 	conn &Connection
 }
 
-fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, params map[string]Value, mut conn Connection, tables map[string]Table) !&GroupOperation {
+fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, having ?BooleanValueExpression, params map[string]Value, mut conn Connection, tables map[string]Table) !&GroupOperation {
 	mut columns := []Column{}
 
 	for expr in group_exprs {
@@ -45,11 +48,11 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, p
 			columns << Column{Identifier{
 				custom_id:  expr.expr.pstr(params)
 				custom_typ: compiled_expr.typ
-			}, compiled_expr.typ, false}
+			}, compiled_expr.typ, false, none}
 		}
 	}
 
-	return &GroupOperation{select_exprs, group_exprs, params, columns, tables, conn}
+	return &GroupOperation{select_exprs, group_exprs, having, params, columns, tables, conn}
 }
 
 // group_column finds the column for a GROUP BY expression in the tables of the
@@ -154,43 +157,45 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 
 	// Perform the aggregations functions. An expression may contain several
 	// aggregate functions (such as "MIN(x) * AVG(x)"), each result is stored in
-	// the row so that it can be used when the expression is evaluated.
-	mut null_eliminated := false
+	// the row so that it can be used when the expression is evaluated. The
+	// HAVING may also use aggregate functions that are not in the select list.
+	mut agg_c := Compiler{
+		conn:   o.conn
+		params: o.params
+		tables: o.tables
+	}
 	for expr in o.select_exprs {
-		mut agg_c := Compiler{
-			conn:   o.conn
-			params: o.params
-			tables: o.tables
-		}
-		if !expr.expr.compile(mut agg_c)!.contains_agg {
-			continue
-		}
+		expr.expr.compile(mut agg_c)!
+	}
+	if having := o.having {
+		having.compile(mut agg_c)!
+	}
 
-		for aggregate in agg_c.aggregates {
-			key := aggregate.pstr(o.params)
-			for i, set in sets {
-				match aggregate {
-					AggregateFunctionCount {
-						final_rows[i].data[key] = new_integer_value(set.len)
-					}
-					RoutineInvocation {
-						arg := aggregate.args[0].compile(mut c)!
-						mut values := []Value{}
-						for row in set {
-							value := arg.run(mut o.conn, row, o.params)!
-							if value.is_null {
-								null_eliminated = true
-							}
-							values << value
+	mut null_eliminated := false
+	for aggregate in agg_c.aggregates {
+		key := aggregate.pstr(o.params)
+		for i, set in sets {
+			match aggregate {
+				AggregateFunctionCount {
+					final_rows[i].data[key] = new_integer_value(set.len)
+				}
+				RoutineInvocation {
+					arg := aggregate.args[0].compile(mut c)!
+					mut values := []Value{}
+					for row in set {
+						value := arg.run(mut o.conn, row, o.params)!
+						if value.is_null {
+							null_eliminated = true
 						}
-
-						if aggregate.distinct {
-							values = distinct_values(o.conn, values)!
-						}
-
-						final_rows[i].data[key] = eval_set_function(mut o.conn, aggregate.function_name,
-							values, arg.typ)!
+						values << value
 					}
+
+					if aggregate.distinct {
+						values = distinct_values(o.conn, values)!
+					}
+
+					final_rows[i].data[key] = eval_set_function(mut o.conn, aggregate.function_name,
+						values, arg.typ)!
 				}
 			}
 		}

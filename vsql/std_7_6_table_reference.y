@@ -32,6 +32,12 @@ table_primary:
       body: $1.v as Identifier
     }
   }
+| table_or_query_name correlation_or_recognition {
+    $$.v = TablePrimary{
+      body:        $1.v as Identifier
+      correlation: $2.v as Correlation
+    }
+  }
 | derived_table { $$.v = $1.v as TablePrimary }
 | derived_table correlation_or_recognition {
     $$.v = TablePrimary{

@@ -11,5 +11,8 @@ table_constraint:
   unique_constraint_definition {
     $$.v = TableElement($1.v as UniqueConstraintDefinition)
   }
+| check_constraint_definition {
+    $$.v = TableElement($1.v as CheckConstraintDefinition)
+  }
 
 %%

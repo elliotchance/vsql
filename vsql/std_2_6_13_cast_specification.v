@@ -59,6 +59,17 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 
 	compiled_expr := e.expr.compile(mut c)!
 
+	// A datetime without a time zone gets the time zone of the session, and a
+	// TIME becomes a TIMESTAMP on the CURRENT_DATE (General Rules 18 and 19).
+	//
+	// ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rule 7c
+	from := compiled_expr.typ
+	if (e.target.has_time_zone() && !from.has_time_zone())
+		|| (from.typ in [.is_time_with_time_zone, .is_time_without_time_zone]
+			&& e.target.typ in [.is_timestamp_with_time_zone, .is_timestamp_without_time_zone]) {
+		c.check_deterministic('CAST from ${from} to ${e.target}')!
+	}
+
 	return CompileResult{
 		run:          fn [e, compiled_expr] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled_expr.run(mut conn, data, params)!

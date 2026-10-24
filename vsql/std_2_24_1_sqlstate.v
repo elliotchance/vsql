@@ -342,6 +342,18 @@ fn sqlstate_23505(msg string) IError {
 	}
 }
 
+// violates check constraint
+struct SQLState23514 {
+	SQLState
+}
+
+fn sqlstate_23514(msg string) IError {
+	return SQLState23514{
+		code: sqlstate_to_int('23514')
+		msg:  'violates check constraint: ${msg}'
+	}
+}
+
 // dependent objects still exist
 struct SQLState2BP01 {
 	SQLState

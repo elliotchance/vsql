@@ -62,6 +62,9 @@ mut:
 	// The id is unique for each table in the file and never reused. Rows are
 	// keyed by it, see row_key_prefix.
 	id u64
+	// The CHECK constraints of the table, in the order they were defined. A
+	// CHECK on a column is the same as a CHECK on the table.
+	check_constraints []CheckConstraintDefinition
 pub mut:
 	// The name of the table including the schema.
 	name Identifier
@@ -101,7 +104,8 @@ pub fn (t Table) column(name string) !Column {
 //   CREATE TABLE "PUBLIC"."FOO" (
 //     "ID" INTEGER NOT NULL,
 //     "BAR" CHARACTER VARYING(10) DEFAULT 'baz',
-//     PRIMARY KEY ("ID")
+//     PRIMARY KEY ("ID"),
+//     CHECK ("ID" > 0)
 //   )
 fn (t Table) bytes() []u8 {
 	mut elements := []string{}
@@ -118,6 +122,10 @@ fn (t Table) bytes() []u8 {
 
 	if t.primary_key.len > 0 {
 		elements << '  PRIMARY KEY (${t.primary_key.map(delimit_identifier(it)).join(', ')})'
+	}
+
+	for constraint in t.check_constraints {
+		elements << '  ${constraint}'
 	}
 
 	return 'CREATE TABLE ${t.name.storage_sql()} (\n${elements.join(',\n')}\n)'.bytes()

@@ -225,7 +225,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 					})!
 				}
 			} else if table_name_id in catalog.storage.tables {
-				table = catalog.storage.tables[table_name_id]
+				table = catalog.storage.table(table_name_id)
 
 				// This is a special case to handle "PRIMARY KEY = INTEGER". It only
 				// applies to a PRIMARY KEY with one integer column.

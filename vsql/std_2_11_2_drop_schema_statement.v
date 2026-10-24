@@ -47,7 +47,7 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 	}
 
 	for table_name in table_names {
-		catalog.storage.delete_table(table_name, catalog.storage.tables[table_name].tid)!
+		catalog.storage.delete_table(table_name, catalog.storage.table(table_name).tid)!
 	}
 
 	for sequence in sequences {

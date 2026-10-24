@@ -14,7 +14,9 @@ Syntax
 Each row in ``VALUES`` must have the same number of values as there are
 columns. Columns that aren't listed get their default (see
 :doc:`create-table`), which is ``NULL`` if the column doesn't have one. ``NULL``
-is an error ``23502`` for a ``NOT NULL`` column.
+is an error ``23502`` for a ``NOT NULL`` column, and a row that violates a
+``CHECK`` constraint is an error ``23514``. If any row fails, none of the rows
+are inserted.
 
 A value can be ``DEFAULT``, which is the default value of the column.
 

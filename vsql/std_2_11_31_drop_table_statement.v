@@ -26,7 +26,7 @@ fn (stmt DropTableStatement) execute(mut conn Connection, _ map[string]Value, el
 	mut catalog := conn.catalog_for(table_name)
 
 	catalog.storage.delete_table(table_name.storage_id(),
-		catalog.storage.tables[table_name.storage_id()].tid)!
+		catalog.storage.table(table_name.storage_id()).tid)!
 
 	return new_result_msg('DROP TABLE 1', elapsed_parse, t.elapsed())
 }

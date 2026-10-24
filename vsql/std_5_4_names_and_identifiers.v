@@ -234,6 +234,12 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
+	if distinct_columns := c.distinct_columns {
+		if e.custom_id == '' && !e.is_grouping_column(distinct_columns) {
+			return sqlstate_42p10(e.str())
+		}
+	}
+
 	return e.compile_column(mut c)!
 }
 

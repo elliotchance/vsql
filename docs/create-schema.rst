@@ -16,6 +16,9 @@ The names of objects only need to be unique within a single schema and referring
 to an object in a particular schema is done by prepending the schema name
 followed by a period (see examples).
 
+Every catalog already has an ``INFORMATION_SCHEMA`` schema (see
+:doc:`information-schema`), so it can't be created.
+
 Examples
 --------
 

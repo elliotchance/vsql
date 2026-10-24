@@ -21,6 +21,7 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 
 	mut catalog := conn.catalog_for(conn.resolve_catalog_identifier(stmt.schema_name)!)
 	schema_name := stmt.schema_name.schema_name
+	check_writable_schema(stmt.schema_name)!
 
 	if schema_name !in catalog.storage.schemas {
 		return sqlstate_3f000(schema_name) // schema does not exist

@@ -6,5 +6,6 @@ The SQL Language
 
    booleans.rst
    dates-times.rst
+   information-schema.rst
    numbers.rst
    text.rst

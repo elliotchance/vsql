@@ -344,7 +344,11 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	mut catalog := c.conn.catalogs[ident.catalog_name] or {
 		return sqlstate_42601('unknown column: ${ident}')
 	}
-	for _, table in catalog.storage.tables {
+	mut catalog_tables := catalog.storage.tables.values()
+	for _, virtual_table in catalog.virtual_tables {
+		catalog_tables << virtual_table.table()
+	}
+	for table in catalog_tables {
 		if table.name.schema_name == ident.schema_name
 			&& table.name.entity_name == ident.entity_name {
 			column := table.column(ident.sub_entity_name) or { Column{} }

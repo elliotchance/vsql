@@ -21,7 +21,7 @@ fn (stmt SchemaDefinition) execute(mut conn Connection, _ map[string]Value, elap
 	mut catalog := conn.catalog_for(conn.resolve_catalog_identifier(stmt.schema_name)!)
 	schema_name := stmt.schema_name.schema_name
 
-	if schema_name in catalog.storage.schemas {
+	if schema_name in catalog.storage.schemas || schema_name == information_schema_name {
 		return sqlstate_42p06(schema_name) // duplicate schema
 	}
 

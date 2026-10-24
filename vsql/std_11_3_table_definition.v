@@ -53,6 +53,7 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 	}
 
 	mut table_name := conn.resolve_schema_identifier(stmt.table_name)!
+	check_writable_schema(table_name)!
 	mut catalog := conn.catalog_for(table_name)
 	if table_name.storage_id() in catalog.storage.tables
 		|| table_name.storage_id() in catalog.virtual_tables {

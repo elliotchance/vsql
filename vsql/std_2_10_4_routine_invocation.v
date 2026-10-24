@@ -13,6 +13,12 @@ struct RoutineInvocation {
 }
 
 fn (e RoutineInvocation) pstr(params map[string]Value) string {
+	// The only builtin function that doesn't separate its arguments with commas
+	// (see character_position_expression).
+	if e.function_name == 'POSITION' && e.args.len == 2 {
+		return 'POSITION(${e.args[0].pstr(params)} IN ${e.args[1].pstr(params)})'
+	}
+
 	args := e.args.map(it.pstr(params)).join(', ')
 	quantifier := if e.distinct { 'DISTINCT ' } else { '' }
 	return '${e.function_name}(${quantifier}${args})'
@@ -35,6 +41,9 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	func_name := e.function_name
 
 	found_func := c.conn.find_function(func_name, arg_types)!
+	if !found_func.is_deterministic && !found_func.is_agg {
+		c.check_deterministic('non-deterministic function ${func_name}')!
+	}
 
 	if found_func.is_agg {
 		// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 1

@@ -512,3 +512,27 @@ VALUES NEXT VALUE FOR s.seq;
 -- out: );
 -- out: INSERT INTO "S"."T" ("X", "Y") VALUES (1, 'a');
 -- out: INSERT INTO "S"."T" ("X", "Y") VALUES (NULL, NULL);
+
+-- # Sequences and tables are ordered by their names, not how they're quoted.
+CREATE TABLE "select" (x INT);
+CREATE TABLE "SELECT" (x INT);
+CREATE TABLE a (x INT);
+CREATE SEQUENCE "ORDER";
+CREATE SEQUENCE b;
+/* out */
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE SEQUENCE 1
+-- out: CREATE SEQUENCE "PUBLIC"."B" START WITH 1;
+-- out: CREATE SEQUENCE "PUBLIC"."ORDER" START WITH 1;
+-- out: CREATE TABLE "PUBLIC"."A" (
+-- out:   "X" INTEGER
+-- out: );
+-- out: CREATE TABLE "PUBLIC"."SELECT" (
+-- out:   "X" INTEGER
+-- out: );
+-- out: CREATE TABLE "PUBLIC"."select" (
+-- out:   "X" INTEGER
+-- out: );

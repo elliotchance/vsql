@@ -38,6 +38,7 @@ fn (e ComparisonPredicate) pstr(params map[string]Value) string {
 fn (e ComparisonPredicate) compile(mut c Compiler) !CompileResult {
 	compiled_left := e.left.compile(mut c)!
 	compiled_right := e.right.compile(mut c)!
+	c.check_time_zone_comparison(compiled_left.typ, compiled_right.typ)!
 
 	return CompileResult{
 		run:          fn [e, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {

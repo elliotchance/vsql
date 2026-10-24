@@ -20,9 +20,9 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 	mut catalog := conn.catalog()
 	mut schemas := catalog.schemas()!
 
-	// To make the output more deterministic, entities will be ordered by name.
-	// This is not true for the records however, which can potentially come out in
-	// any order.
+	// To make the output more deterministic, entities will be ordered by name
+	// (not how the name is printed, which may be quoted). This is not true for
+	// the records however, which can potentially come out in any order.
 	schemas.sort_with_compare(fn (a &Schema, b &Schema) int {
 		return a.name.compare(b.name)
 	})
@@ -37,7 +37,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 
 		mut sequences := catalog.sequences(schema.name)!
 		sequences.sort_with_compare(fn (a &Sequence, b &Sequence) int {
-			return a.name.str().compare(b.name.str())
+			return a.name.entity_name.compare(b.name.entity_name)
 		})
 
 		for _, sequence in sequences {
@@ -61,7 +61,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 
 		mut tables := catalog.schema_tables(schema.name)!
 		tables.sort_with_compare(fn (a &Table, b &Table) int {
-			return a.name.str().compare(b.name.str())
+			return a.name.entity_name.compare(b.name.entity_name)
 		})
 
 		for _, table in tables {

@@ -29,6 +29,7 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 	mut compiled_values := []CompileResult{}
 	for value in e.values {
 		compiled := value.compile(mut c)!
+		c.check_time_zone_comparison(compiled_expr.typ, compiled.typ)!
 		contains_agg = contains_agg || compiled.contains_agg
 		compiled_values << compiled
 	}

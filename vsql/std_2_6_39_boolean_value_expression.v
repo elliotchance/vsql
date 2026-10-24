@@ -26,9 +26,10 @@ type BooleanPredicand = BooleanValueExpression | NonparenthesizedValueExpression
 
 fn (e BooleanPredicand) pstr(params map[string]Value) string {
 	return match e {
-		BooleanValueExpression, NonparenthesizedValueExpressionPrimary {
-			e.pstr(params)
-		}
+		// The parentheses can't be left out, otherwise "NOT (a AND b)" would be
+		// "NOT a AND b".
+		BooleanValueExpression { '(${e.pstr(params)})' }
+		NonparenthesizedValueExpressionPrimary { e.pstr(params) }
 	}
 }
 

@@ -21,6 +21,8 @@ fn (e DatetimeValueFunction) pstr(_ map[string]Value) string {
 }
 
 fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
+	c.check_deterministic(e.pstr(c.params))!
+
 	match e {
 		CurrentDate {
 			now := local_now(c.conn)

@@ -45,6 +45,8 @@ fn (e GeneralValueSpecification) compile(mut c Compiler) !CompileResult {
 			return e.compile(mut c)!
 		}
 		CurrentCatalog {
+			c.check_deterministic('CURRENT_CATALOG')!
+
 			return CompileResult{
 				run:          fn (mut conn Connection, data Row, params map[string]Value) !Value {
 					return new_varchar_value(conn.current_catalog)
@@ -54,6 +56,8 @@ fn (e GeneralValueSpecification) compile(mut c Compiler) !CompileResult {
 			}
 		}
 		CurrentSchema {
+			c.check_deterministic('CURRENT_SCHEMA')!
+
 			return CompileResult{
 				run:          fn (mut conn Connection, data Row, params map[string]Value) !Value {
 					return new_varchar_value(conn.current_schema)

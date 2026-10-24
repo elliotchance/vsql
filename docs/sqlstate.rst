@@ -583,6 +583,9 @@ the connection.
 The name of a schema or sequence is part of the key of an object in the file,
 so it must fit in a page. This can only happen with a small page size.
 
+``ConnectionOptions.page_size`` must be more than 16 and at most 65535 bytes
+when a database is created.
+
 ``58030`` io error
 ^^^^^^^^^^^^^^^^^^
 

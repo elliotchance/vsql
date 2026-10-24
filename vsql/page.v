@@ -123,6 +123,17 @@ fn parse_page_object(data []u8) (int, PageObject) {
 // format docs for the layout.
 const page_header_size = 16
 
+// max_page_size is the largest page possible, because Used in the page header
+// is a u16.
+const max_page_size = 65535
+
+// check_page_size returns an error if a page can't be page_size bytes.
+fn check_page_size(page_size int) ! {
+	if page_size <= page_header_size || page_size > max_page_size {
+		return sqlstate_54000('page size ${page_size} must be more than ${page_header_size} and at most ${max_page_size} bytes')
+	}
+}
+
 struct Page {
 	kind u8 // 0 = leaf, 1 = non-leaf, see constants at the top of the file.
 mut:

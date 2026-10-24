@@ -102,6 +102,7 @@ pub fn open_database(path string, options ConnectionOptions) !&Connection {
 
 	// If the file doesn't exist we initialize it and reopen it.
 	if !os.exists(path) && path != ':memory:' {
+		check_page_size(options.page_size)!
 		init_database_file(path, options.page_size)!
 		init_schema = true
 	}
@@ -159,6 +160,11 @@ fn (mut conn Connection) close() {
 pub fn (mut conn Connection) add_catalog(catalog_name string, path string, options ConnectionOptions) ! {
 	if catalog_name in conn.catalogs {
 		return sqlstate_42p04(catalog_name)
+	}
+
+	// A file uses the page size it was created with.
+	if path == ':memory:' {
+		check_page_size(options.page_size)!
 	}
 
 	// This is really only used when path == ':memory:' but we must supply
@@ -774,8 +780,9 @@ fn (mut conn Connection) resolve_table_identifier(identifier Identifier, allow_v
 // default_connection_options() as a starting point and modify the attributes.
 pub struct ConnectionOptions {
 pub mut:
-	// Warning: This only works for :memory: databases. Configuring it for
-	// file-based databases will either be ignored or causes crashes.
+	// page_size is the size of each page in bytes, which must be more than 16
+	// and at most 65535. It's only used for :memory: databases and new files, a
+	// file always uses the page size it was created with.
 	page_size int
 	// In short, vsql (with default options) when dealing with concurrent
 	// read/write access to single file provides the following protections:

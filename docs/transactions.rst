@@ -42,10 +42,15 @@ Examples
   SELECT * FROM products;
   -- NAME: Coffee Machine PRICE: 150
 
+Transactions are ``READ WRITE`` by default. A ``READ ONLY`` transaction can be
+started with ``START TRANSACTION READ ONLY``, or with :doc:`set-transaction`
+before the next transaction (including the transaction of a single statement).
+
 See Also
 --------
 
 - :doc:`commit`
 - :doc:`mvcc`
 - :doc:`rollback`
+- :doc:`set-transaction`
 - :doc:`start-transaction`

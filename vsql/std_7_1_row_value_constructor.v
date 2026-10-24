@@ -6,22 +6,15 @@ module vsql
 
 type ContextuallyTypedRowValueConstructor = BooleanValueExpression
 	| CommonValueExpression
-	| NullSpecification
+	| ContextuallyTypedValueSpecification
 	| []ContextuallyTypedRowValueConstructorElement
 
-type ContextuallyTypedRowValueConstructorElement = NullSpecification | ValueExpression
-
-fn (e ContextuallyTypedRowValueConstructorElement) pstr(params map[string]Value) string {
-	return match e {
-		ValueExpression, NullSpecification {
-			e.pstr(params)
-		}
-	}
-}
+type ContextuallyTypedRowValueConstructorElement = ContextuallyTypedValueSpecification
+	| ValueExpression
 
 fn (e ContextuallyTypedRowValueConstructorElement) compile(mut c Compiler) !CompileResult {
 	match e {
-		ValueExpression, NullSpecification {
+		ValueExpression, ContextuallyTypedValueSpecification {
 			return e.compile(mut c)!
 		}
 	}

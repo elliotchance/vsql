@@ -83,7 +83,9 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 				ValueExpression {
 					clause.source.compile(mut c)!.run(mut conn, row, params)!
 				}
-				NullSpecification {
+				// The DEFAULT of a column is always NULL until column defaults
+				// are supported (E141-07).
+				ContextuallyTypedValueSpecification {
 					new_null_value(table_column.typ.typ)
 				}
 			}
@@ -159,7 +161,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 						return sqlstate_23502('column ${column_name}')
 					}
 				}
-				NullSpecification {
+				ContextuallyTypedValueSpecification {
 					if table_column.not_null {
 						return sqlstate_23502('column ${column_name}')
 					}

@@ -62,7 +62,7 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 		BooleanValueExpression {
 			[ContextuallyTypedRowValueConstructorElement(ValueExpression(row_value))]
 		}
-		NullSpecification {
+		ContextuallyTypedValueSpecification {
 			[ContextuallyTypedRowValueConstructorElement(row_value)]
 		}
 	}

@@ -37,12 +37,14 @@ type YYSym = AggregateFunction
 	| Concatenation
 	| ContextuallyTypedRowValueConstructor
 	| ContextuallyTypedRowValueConstructorElement
+	| ContextuallyTypedValueSpecification
 	| Correlation
 	| CurrentDate
 	| CurrentTime
 	| CurrentTimestamp
 	| DatetimePrimary
 	| DatetimeValueFunction
+	| DefaultSpecification
 	| DerivedColumn
 	| ExplicitRowValueConstructor
 	| GeneralValueSpecification

@@ -37,6 +37,9 @@ Text Types
     - See ``CHARACTER(n)``.
     - Is an alias for ``CHARACTER(1)``.
 
+The length *n* must be from 1 to 10485760. A ``CHARACTER VARYING`` must have a
+length.
+
 Literals
 --------
 

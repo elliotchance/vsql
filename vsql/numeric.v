@@ -191,6 +191,20 @@ fn (n Numeric) divide(n2 Numeric) !Numeric {
 	return n.multiply(n2.reciprocal())
 }
 
+// check_numeric_precision returns n, or an error if its integer part has more
+// digits than its type can hold (ISO/IEC 9075-2:2016(E), 6.29, General Rule
+// 5). The type of an arithmetic result is limited to the maximum precision, see
+// exact_arithmetic_type.
+fn check_numeric_precision(n Numeric) !Numeric {
+	integer := n.integer().str().trim_left('-')
+	digits := if integer == '0' { 0 } else { integer.len }
+	if digits > n.typ.numeric_precision() - n.typ.scale {
+		return sqlstate_22003() // numeric value out of range
+	}
+
+	return n
+}
+
 fn (n Numeric) is_zero() bool {
 	return n.numerator == big.zero_int
 }

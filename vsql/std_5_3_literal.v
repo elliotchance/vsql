@@ -29,6 +29,15 @@ fn signed_numeric_literal(sign string, v Value) !Value {
 }
 
 fn numeric_literal(x string) !Value {
+	// There must be an exact numeric type that can hold the literal (Syntax Rule
+	// 22), so it can't have more digits than the maximum precision. Leading
+	// zeros don't count.
+	parts := x.trim_left('+-').split('.')
+	digits := parts[0].trim_left('0').len + if parts.len > 1 { parts[1].len } else { 0 }
+	if digits > max_numeric_precision {
+		return sqlstate_42601('numeric literal has more than ${max_numeric_precision} digits')
+	}
+
 	// Any number that contains a decimal (even if its a whole number) must be
 	// treated as a NUMERIC.
 	if x.contains('.') {

@@ -519,12 +519,11 @@ fn cast_numeric(mut _ Connection, v Value, t Type) !Value {
 		.is_numeric, .is_decimal {
 			mut numeric_value := v.as_numeric()!
 
-			// A size of 0 is a NUMERIC/DECIMAL without a precision, which has no
-			// limit on the number of digits. Otherwise we must not lose any
-			// significant figures. We can't trust the size of the existing number as
-			// all the digits may not be used.
+			// We must not lose any significant figures. A NUMERIC/DECIMAL without a
+			// precision has the maximum precision. We can't trust the size of the
+			// existing number as all the digits may not be used.
 			parts := numeric_value.str().split('.')
-			if t.size > 0 && parts[0].trim_left('-').len > t.size - t.scale {
+			if parts[0].trim_left('-').len > t.numeric_precision() - t.scale {
 				// numeric value out of range
 				return sqlstate_22003()
 			}

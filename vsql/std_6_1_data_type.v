@@ -4,6 +4,44 @@ module vsql
 //
 // Specify a data type.
 
+// max_character_length is the maximum <length> of a CHARACTER or CHARACTER
+// VARYING (6.1 Syntax Rule 15).
+const max_character_length = 10485760
+
+// max_numeric_precision is the maximum <precision> of a NUMERIC or DECIMAL (6.1
+// Syntax Rule 25). It's also the precision of a NUMERIC or DECIMAL that doesn't
+// specify one (6.1 Syntax Rule 20), see Type.numeric_precision.
+const max_numeric_precision = 1000
+
+// max_float_precision is the maximum <precision> of a FLOAT (6.1 Syntax Rule
+// 29). A FLOAT is always a DOUBLE PRECISION, which has a binary precision of 53.
+const max_float_precision = 53
+
+// check_data_type returns an error if a declared type is larger than the
+// maximum allowed. It's checked when a statement declares the type (such as
+// CREATE TABLE or CAST) rather than by the parser, so that a table definition
+// read from the file is never rejected.
+fn check_data_type(t Type) ! {
+	match t.typ {
+		.is_character, .is_varchar {
+			if t.size > max_character_length {
+				return sqlstate_42601('${t.typ} length must not be greater than ${max_character_length}')
+			}
+		}
+		.is_numeric, .is_decimal {
+			if t.size > max_numeric_precision {
+				return sqlstate_42601('${t.typ} precision must not be greater than ${max_numeric_precision}')
+			}
+		}
+		.is_double_precision {
+			if t.size > max_float_precision {
+				return sqlstate_42601('FLOAT precision must not be greater than ${max_float_precision}')
+			}
+		}
+		else {}
+	}
+}
+
 // parse_type_with_length is used for a data type with an explicit <length>,
 // which must be greater than 0 (6.1 Syntax Rule 4).
 fn parse_type_with_length(name string, length string) !Type {

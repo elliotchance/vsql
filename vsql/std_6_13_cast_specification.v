@@ -40,6 +40,8 @@ fn (e CastSpecification) pstr(params map[string]Value) string {
 }
 
 fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
+	check_data_type(e.target)!
+
 	// CAST(NULL AS T) is the null value of type T (General Rule 2). The NULL has
 	// no type of its own to cast from.
 	if e.expr is NullSpecification {

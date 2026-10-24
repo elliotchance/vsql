@@ -48,3 +48,15 @@ DROP TABLE t;
 SELECT * FROM information_schema.table_constraints;
 -- msg: CREATE TABLE 1
 -- msg: DROP TABLE 1
+
+-- # Each UNIQUE comes after the PRIMARY KEY, numbered in the order they're
+-- # defined, on a column or the table.
+CREATE TABLE t (a INT UNIQUE, b INT CHECK (b > 0), PRIMARY KEY (b), UNIQUE (a, b), c INT UNIQUE);
+SELECT constraint_name, constraint_type FROM information_schema.table_constraints;
+-- msg: CREATE TABLE 1
+-- CONSTRAINT_NAME: T_PRIMARY_KEY CONSTRAINT_TYPE: PRIMARY KEY
+-- CONSTRAINT_NAME: T_UNIQUE_1 CONSTRAINT_TYPE: UNIQUE
+-- CONSTRAINT_NAME: T_UNIQUE_2 CONSTRAINT_TYPE: UNIQUE
+-- CONSTRAINT_NAME: T_UNIQUE_3 CONSTRAINT_TYPE: UNIQUE
+-- CONSTRAINT_NAME: T_NOT_NULL_2 CONSTRAINT_TYPE: CHECK
+-- CONSTRAINT_NAME: T_CHECK_1 CONSTRAINT_TYPE: CHECK

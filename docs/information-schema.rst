@@ -178,15 +178,17 @@ the columns, and then the ``CHECK`` constraints in the order they're defined.
 ---------------------
 
 One row for each constraint of each table (but not the tables of the
-``INFORMATION_SCHEMA``): the ``PRIMARY KEY``, then the same check constraints
-as ``CHECK_CONSTRAINTS``, in the same order and with the same names.
+``INFORMATION_SCHEMA``): the ``PRIMARY KEY``, then each ``UNIQUE``, then the
+same check constraints as ``CHECK_CONSTRAINTS``, in the same order and with the
+same names.
 
 .. code-block:: sql
 
-  CREATE TABLE products (id INT PRIMARY KEY, price INT CHECK (price > 0));
+  CREATE TABLE products (id INT PRIMARY KEY, code INT UNIQUE, price INT CHECK (price > 0));
 
   SELECT constraint_name, constraint_type FROM information_schema.table_constraints;
   -- CONSTRAINT_NAME: PRODUCTS_PRIMARY_KEY CONSTRAINT_TYPE: PRIMARY KEY
+  -- CONSTRAINT_NAME: PRODUCTS_UNIQUE_1 CONSTRAINT_TYPE: UNIQUE
   -- CONSTRAINT_NAME: PRODUCTS_NOT_NULL_1 CONSTRAINT_TYPE: CHECK
   -- CONSTRAINT_NAME: PRODUCTS_CHECK_1 CONSTRAINT_TYPE: CHECK
 
@@ -200,15 +202,16 @@ as ``CHECK_CONSTRAINTS``, in the same order and with the same names.
     - The catalog and schema of the table.
 
   * - ``CONSTRAINT_NAME``
-    - ``<table>_PRIMARY_KEY`` for the ``PRIMARY KEY``, otherwise the same as
-      ``CHECK_CONSTRAINTS``.
+    - ``<table>_PRIMARY_KEY`` for the ``PRIMARY KEY``, ``<table>_UNIQUE_<n>``
+      for the nth ``UNIQUE`` (counting ``UNIQUE`` on columns and on the table
+      together), otherwise the same as ``CHECK_CONSTRAINTS``.
 
   * - ``TABLE_CATALOG``, ``TABLE_SCHEMA``, ``TABLE_NAME``
     - The table the constraint is on.
 
   * - ``CONSTRAINT_TYPE``
-    - ``PRIMARY KEY`` or ``CHECK`` (``UNIQUE`` and ``FOREIGN KEY`` constraints
-      are not supported).
+    - ``PRIMARY KEY``, ``UNIQUE`` or ``CHECK`` (``FOREIGN KEY`` constraints are
+      not supported).
 
   * - ``IS_DEFERRABLE``, ``INITIALLY_DEFERRED``
     - Always ``NO`` (constraints can't be deferred).

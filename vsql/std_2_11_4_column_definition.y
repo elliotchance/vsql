@@ -28,7 +28,7 @@ column_constraint_definition:
 column_constraint:
   NOT NULL { $$.v = ColumnConstraint(NotNullConstraint{}) }
 | unique_specification {
-    $$.v = ColumnConstraint(UniqueConstraintDefinition{})
+    $$.v = ColumnConstraint(UniqueConstraintDefinition{is_primary_key: $1.v as bool})
   }
 | check_constraint_definition {
     $$.v = ColumnConstraint($1.v as CheckConstraintDefinition)

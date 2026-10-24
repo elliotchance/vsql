@@ -9,7 +9,7 @@ Handling Errors
 The error returned from ``query()`` will always be one of the ``SQLState``
 struct types. Each type describes the error situation, but may also contain
 specific fields appropriate for that error. See
-`std_24_1_sqlstate.v <https://github.com/elliotchance/vsql/blob/main/vsql/std_24_1_sqlstate.v>`_
+`std_2_24_1_sqlstate.v <https://github.com/elliotchance/vsql/blob/main/vsql/std_2_24_1_sqlstate.v>`_
 for struct definitions.
 
 This includes errors that aren't caused by the SQL itself, such as reading a

@@ -116,6 +116,22 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			}
 			t.done()
 		})!
+
+	// ISO/IEC 9075-11:2016(E), 5.14, CHECK_CONSTRAINTS view
+	catalog.add_information_schema_table('CREATE TABLE CHECK_CONSTRAINTS (
+		CONSTRAINT_CATALOG ${id} NOT NULL,
+		CONSTRAINT_SCHEMA ${id} NOT NULL,
+		CONSTRAINT_NAME ${id} NOT NULL,
+		CHECK_CLAUSE ${cd}
+	)',
+		fn [c] (mut t VirtualTable) ! {
+			for table in c.information_schema_tables() {
+				for row in check_constraints_view_rows(c.catalog_name, table) {
+					t.next_values(row)
+				}
+			}
+			t.done()
+		})!
 }
 
 // add_information_schema_table adds a view of the INFORMATION_SCHEMA from its
@@ -228,6 +244,61 @@ fn columns_view_row(catalog_name string, table Table, i int, column Column) []Va
 	]
 
 	return row
+}
+
+// check_constraints_view_rows are the rows of the CHECK_CONSTRAINTS view
+// (ISO/IEC 9075-11:2016(E), 6.14, CHECK_CONSTRAINTS base table) for a table. A
+// NOT NULL column is the same as a CHECK (column IS NOT NULL) constraint
+// (ISO/IEC 9075-2:2016(E), 11.4, Syntax Rule 17a), so it's included, in the
+// order of the columns, before the CHECK constraints in the order they were
+// defined. The views of the INFORMATION_SCHEMA don't have constraints.
+//
+// Constraints can't be named, so they get the names that a constraint without
+// a <constraint name definition> is given (see constraint_name).
+fn check_constraints_view_rows(catalog_name string, table Table) [][]Value {
+	if table.is_virtual {
+		return [][]Value{}
+	}
+
+	mut rows := [][]Value{}
+	for i, column in table.columns {
+		if column.not_null {
+			rows << check_constraints_view_row(catalog_name, table, constraint_name(table,
+				'NOT_NULL', i), '${requote_identifier(column.name.sub_entity_name)} IS NOT NULL')
+		}
+	}
+	for i, constraint in table.check_constraints {
+		rows << check_constraints_view_row(catalog_name, table, constraint_name(table,
+			'CHECK', i), constraint.search_condition.pstr(map[string]Value{}))
+	}
+
+	return rows
+}
+
+// check_constraints_view_row is a row of the CHECK_CONSTRAINTS view. A
+// CHECK_CLAUSE that's longer than CHARACTER_DATA can hold is NULL (6.14,
+// Description 2b).
+fn check_constraints_view_row(catalog_name string, table Table, name string, check_clause string) []Value {
+	return [
+		new_varchar_value(catalog_name), // CONSTRAINT_CATALOG
+		new_varchar_value(table.name.schema_name), // CONSTRAINT_SCHEMA
+		new_varchar_value(name), // CONSTRAINT_NAME
+		if check_clause.runes().len > max_character_length {
+			new_null_value(.is_varchar)
+		} else {
+			new_varchar_value(check_clause)
+		}, // CHECK_CLAUSE
+	]
+}
+
+// constraint_name is the implementation-dependent name of a constraint that
+// wasn't given one (ISO/IEC 9075-2:2016(E), 11.6, Syntax Rule 3), such as
+// T_CHECK_1 for the first CHECK of table T, or T_NOT_NULL_2 for the NOT NULL of
+// its second column. It's the same each time the table is read, and unique in
+// the schema, because the number after the last "_CHECK_" or "_NOT_NULL_"
+// separates it from the table name.
+fn constraint_name(table Table, kind string, i int) string {
+	return '${table.name.entity_name}_${kind}_${i + 1}'
 }
 
 // column_default is the text of the DEFAULT of a column, or NULL if it doesn't

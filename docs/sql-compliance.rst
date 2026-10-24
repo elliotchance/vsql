@@ -1636,7 +1636,7 @@ Mandatory Features
 ~~~~~~~~~~~~~~~~~~
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 2 of the 15 mandatory features** of
+**vsql supports 3 of the 15 mandatory features** of
 `SQL:2016 Part 11 <https://www.iso.org/standard/63565.html>`_.
 
 .. list-table:: Table 2 — Feature taxonomy and definition for mandatory features
@@ -1663,7 +1663,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ F021-05
      - ``REFERENTIAL_CONSTRAINTS`` view
 
-   * - ❌ F021-06
+   * - ✅ F021-06
      - ``CHECK_CONSTRAINTS`` view
 
    * - ❌ **F501**

@@ -1393,3 +1393,10 @@ fn test_information_schema_truncated_column_default() {
 
 	assert column_default(column).string_value() == 'TRUNCATED'
 }
+
+// A CHECK_CLAUSE that's too long for the INFORMATION_SCHEMA is NULL.
+fn test_information_schema_truncated_check_clause() {
+	row := check_constraints_view_row('C', Table{}, 'T_CHECK_1', 'a'.repeat(max_character_length + 1))
+
+	assert row[3].is_null
+}

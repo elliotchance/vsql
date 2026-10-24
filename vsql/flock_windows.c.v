@@ -97,6 +97,45 @@ fn (mut l SessionLock) close() {
 	l.lock.release()
 }
 
+// IsolationLock is held on the isolation file by REPEATABLE READ and
+// SERIALIZABLE transactions, and by a statement that commits changes. See
+// isolation.v.
+struct IsolationLock {
+	path string
+mut:
+	lock  filelock.FileLock
+	state IsolationLockState
+}
+
+// try_lock gets the lock, which must not be held yet. It returns false if
+// another connection holds a lock that conflicts.
+fn (mut l IsolationLock) try_lock(state IsolationLockState) !bool {
+	fault_point('isolation_lock')!
+
+	// Make sure the file exists without truncating it.
+	mut file := os.open_append(l.path) or {
+		return sqlstate_58030('unable to open ${l.path}: ${err}')
+	}
+	file.close()
+
+	mode := if state == .shared { filelock.LockMode.shared } else { filelock.LockMode.exclusive }
+	l.lock = filelock.new_file(l.path, mode: mode)
+	if !l.lock.try_acquire() {
+		return false
+	}
+	l.state = state
+
+	return true
+}
+
+// release unlocks the lock, if it's held.
+fn (mut l IsolationLock) release() {
+	if l.state != .unlocked {
+		l.lock.release()
+	}
+	l.state = .unlocked
+}
+
 #include <io.h>
 
 fn C._commit(int) int

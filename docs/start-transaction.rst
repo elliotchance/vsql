@@ -17,15 +17,31 @@ Syntax
 
 .. code-block:: text
 
-  START TRANSACTION [ READ ONLY | READ WRITE ]
+  START TRANSACTION [ <transaction_mode> [ , <transaction_mode> ] ]
 
-Access Mode
------------
+  <transaction_mode> ::=
+      READ ONLY
+    | READ WRITE
+    | ISOLATION LEVEL <level_of_isolation>
+
+  <level_of_isolation> ::=
+      READ UNCOMMITTED
+    | READ COMMITTED
+    | REPEATABLE READ
+    | SERIALIZABLE
+
+Characteristics
+---------------
 
 A ``READ ONLY`` transaction can query the database, but any statement that
-changes it fails with ``25006``. ``READ WRITE`` is the default, unless
-:doc:`set-transaction` was used to set the access mode of the next transaction.
-See :doc:`set-transaction` for more details.
+changes it fails with ``25006``. The isolation level decides which changes from
+other transactions it can see (see *Isolation Levels* in :doc:`transactions`).
+
+Without any characteristics, the transaction uses the ones from
+:doc:`set-transaction`, or the defaults (``READ WRITE`` and
+``SERIALIZABLE``). Characteristics given to ``START TRANSACTION`` replace all
+of the ones from ``SET TRANSACTION``, so the ones it doesn't give have their
+defaults. See :doc:`set-transaction` for more details.
 
 Implicit Transactions
 ---------------------

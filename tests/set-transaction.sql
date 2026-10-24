@@ -14,10 +14,10 @@ EXPLAIN SET TRANSACTION READ ONLY;
 -- error 42601: syntax error: Cannot EXPLAIN SET TRANSACTION
 
 SET TRANSACTION READ ONLY, READ WRITE;
--- error 42601: syntax error: unexpected ","
+-- error 42601: syntax error: transaction access mode is specified more than once
 
 SET TRANSACTION;
--- error 42601: syntax error: unexpected $end, expecting READ
+-- error 42601: syntax error: unexpected $end, expecting ISOLATION or READ
 
 -- # A read-only transaction can read, but not change, the database.
 CREATE TABLE t (x INT);

@@ -62,6 +62,8 @@ mut:
 	// read_only is the access mode of the current SQL-transaction, see
 	// begin_access_mode.
 	read_only bool
+	// isolation_level is the isolation level of the current SQL-transaction.
+	isolation_level IsolationLevel = .serializable
 pub mut:
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive
@@ -158,6 +160,7 @@ fn (mut conn Connection) close() {
 	for _, mut catalog in conn.catalogs {
 		if catalog.path != ':memory:' {
 			catalog.storage.session.close()
+			catalog.storage.isolation.release()
 		}
 	}
 }
@@ -182,9 +185,21 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 
 	if path != ':memory:' {
 		catalog.storage.session = session_lock(session_path(path))!
+		catalog.storage.isolation = IsolationLock{
+			path: isolation_path(path)
+		}
 	}
 
 	in_transaction := conn.in_transaction()
+
+	// A catalog added during a transaction joins it, so it must be locked
+	// first, see isolation.v.
+	if in_transaction && conn.isolation_level.locks_transaction() {
+		catalog.lock_transaction(conn.read_only) or {
+			catalog.storage.session.close()
+			return err
+		}
+	}
 	conn.catalogs[catalog_name] = catalog
 
 	if path == ':memory:' {
@@ -193,7 +208,6 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 		conn.query("SET CATALOG '${conn.current_catalog}'")!
 	}
 
-	// A catalog added during a transaction joins it.
 	if in_transaction {
 		catalog.start_transaction()!
 		catalog.finish_write(true)!
@@ -803,14 +817,20 @@ pub mut:
 	// Since locking all database isn't ideal. You could provide a consistent
 	// RwMutex that belongs to each file - such as from a map.
 	mutex &sync.RwMutex = unsafe { nil }
+	// lock_timeout is how long a REPEATABLE READ or SERIALIZABLE transaction
+	// (including a statement that changes the database outside of a
+	// transaction) waits for another connection's transaction to finish, before
+	// it fails with a 40001 serialization failure. The default is 5 seconds.
+	lock_timeout time.Duration
 }
 
 // default_connection_options returns the sensible defaults used by open() and
 // the correct base to provide your own option overrides. See ConnectionOptions.
 pub fn default_connection_options() ConnectionOptions {
 	return ConnectionOptions{
-		page_size: 4096
-		mutex:     sync.new_rwmutex()
+		page_size:    4096
+		mutex:        sync.new_rwmutex()
+		lock_timeout: 5 * time.second
 	}
 }
 

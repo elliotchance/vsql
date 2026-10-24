@@ -161,7 +161,7 @@ fn new_header_from_bytes(data []u8) !Header {
 	header.table_id = b.read_u64()
 	header.reserved = b.read_u8s(header_size - header_reserved_offset)
 
-	if header.page_size <= page_header_size {
+	if header.page_size <= page_header_size || header.page_size > max_page_size {
 		return sqlstate_xx001('invalid page size ${header.page_size}')
 	}
 

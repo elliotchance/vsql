@@ -443,8 +443,9 @@ struct ConnectionOptions
 
    pub struct ConnectionOptions {
    pub mut:
-   	// Warning: This only works for :memory: databases. Configuring it for
-   	// file-based databases will either be ignored or causes crashes.
+   	// page_size is the size of each page in bytes, which must be more than 16
+   	// and at most 65535. It's only used for :memory: databases and new files, a
+   	// file always uses the page size it was created with.
    	page_size int
    	// In short, vsql (with default options) when dealing with concurrent
    	// read/write access to single file provides the following protections:

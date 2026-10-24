@@ -1133,6 +1133,21 @@ fn test_custom_function_with_two_arguments() ! {
 	assert results == [3.5]
 }
 
+// A custom function is NOT DETERMINISTIC, so it can't be used in a CHECK
+// constraint.
+fn test_custom_function_in_check_constraint() ! {
+	mut db := open(':memory:')!
+	db.register_function('double_it(integer) integer', fn (a []Value) !Value {
+		return new_integer_value(int(a[0].int_value() * 2))
+	})!
+
+	db.query('CREATE TABLE t (x INTEGER CHECK (double_it(x) > 0))') or {
+		assert err.msg() == 'syntax error: non-deterministic function DOUBLE_IT cannot be used in a CHECK constraint'
+		return
+	}
+	assert false
+}
+
 // A function is identified by its name and argument types, so another function
 // with the same ones can't be registered, even if it returns a different type.
 fn test_custom_function_already_exists() ! {

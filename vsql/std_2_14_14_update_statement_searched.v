@@ -48,7 +48,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	mut rows := plan.execute([]Row{})!
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
-	table := catalog.storage.tables[table_name.storage_id()]
+	table := catalog.storage.table(table_name.storage_id())
 
 	// The PRIMARY KEY is checked once all of the rows have changed, not after
 	// each row. Otherwise, "SET id = id + 1" would fail on the old key of the
@@ -57,6 +57,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	//
 	// ISO/IEC 9075-2:2016(E), 4.23.2, Checking of constraints
 	mut moved := []Row{}
+	check_constraints := new_check_constraints(mut conn, table)!
 
 	for mut row in rows {
 		conn.begin_row()
@@ -109,6 +110,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			// To be able to write the row back we need to clean the column names.
 			mut before := row.for_storage()
 			mut after := row2.for_storage()
+			check_constraints.verify(mut conn, after)!
 			if before.object_key(table)! != after.object_key(table)! {
 				catalog.storage.delete_row(table_name.storage_id(), mut before)!
 				moved << after

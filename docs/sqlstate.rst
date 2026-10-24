@@ -378,6 +378,20 @@ A row with the same ``PRIMARY KEY`` already exists.
   -- msg: INSERT 1
   -- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.T1
 
+``23514`` violates check constraint
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A row doesn't satisfy a ``CHECK`` constraint of the table.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t1 (price INT CHECK (price > 0));
+  INSERT INTO t1 (price) VALUES (0);
+  -- msg: CREATE TABLE 1
+  -- error 23514: violates check constraint: CHECK (PRICE > 0) on ":memory:".PUBLIC.T1
+
 ``25001`` invalid transaction state: active sql transaction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -13,6 +13,7 @@ Syntax
   <element> := <column_name> <data_type> [ DEFAULT <default> ]
                [ <column_constraint> ... ]
              | PRIMARY KEY ( <column_name> , ... )
+             | CHECK ( <condition> )
 
   <default> := <literal>
              | CURRENT_DATE | CURRENT_TIME | CURRENT_TIMESTAMP
@@ -22,6 +23,7 @@ Syntax
 
   <column_constraint> := NOT NULL
                        | PRIMARY KEY
+                       | CHECK ( <condition> )
 
 1. ``column_name`` must start with a letter, but can be followed by any letter,
    underscore (``_``) or digit for a maximum length of 128 characters. A
@@ -31,8 +33,9 @@ Syntax
    :doc:`numbers` and :doc:`text`.
 3. A table can have up to 1600 columns.
 
-Columns allow ``NULL`` unless they are ``NOT NULL``. ``UNIQUE``,
-``FOREIGN KEY`` and ``CHECK`` constraints are not supported yet.
+Columns allow ``NULL`` unless they are ``NOT NULL``. ``UNIQUE`` and
+``FOREIGN KEY`` constraints are not supported yet, and constraints can't be
+named (with ``CONSTRAINT <name>``).
 
 Defaults
 --------
@@ -81,6 +84,37 @@ For a ``PRIMARY KEY`` of one integer column, a ``WHERE`` that compares it with
 A ``PRIMARY KEY`` does not allow ``NULL``, so all columns used in the
 ``PRIMARY KEY`` are ``NOT NULL``, even if they are not declared that way.
 
+Check Constraints
+-----------------
+
+A ``CHECK`` constraint is a condition that every row of the table must satisfy.
+It's checked for each row of an :doc:`insert` or :doc:`update`, after the
+values are converted to the types of the columns (and defaults are used). A row
+that makes the condition ``FALSE`` is an error ``23514``, and none of the rows
+of the statement are changed. The condition is only violated when it's
+``FALSE``, so ``CHECK (price > 0)`` allows a ``NULL`` price. Add ``NOT NULL``
+to prevent that.
+
+A ``CHECK`` on the table can use any of the columns of the table, such as
+``CHECK (low <= high)``. A ``CHECK`` on a column can only use that column. A
+table can have any number of ``CHECK`` constraints, and they are checked in the
+order they're defined.
+
+The condition must always give the same result for the same row, so it can't
+contain (an error ``42601``):
+
+- An aggregate function (such as ``COUNT(*)``), ``NEXT VALUE FOR`` or a
+  parameter.
+- ``CURRENT_DATE``, ``CURRENT_TIME``, ``CURRENT_TIMESTAMP``, ``LOCALTIME``,
+  ``LOCALTIMESTAMP``, ``CURRENT_CATALOG`` or ``CURRENT_SCHEMA``.
+- A :doc:`custom function <custom-functions>`.
+- Anything that depends on the time zone of the session: comparing a date or
+  time without a time zone with one that has a time zone, a ``CAST`` to a type
+  ``WITH TIME ZONE`` from one without a time zone, or a ``CAST`` from a
+  ``TIME`` to a ``TIMESTAMP`` (which uses ``CURRENT_DATE``).
+
+A condition that isn't a ``BOOLEAN`` is an error ``42804``.
+
 Examples
 --------
 
@@ -100,8 +134,14 @@ Examples
 
   CREATE TABLE orders (
       order_id INTEGER PRIMARY KEY,
-      quantity INTEGER DEFAULT 1 NOT NULL,
+      quantity INTEGER DEFAULT 1 NOT NULL CHECK (quantity > 0),
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE discounts (
+      min_quantity INTEGER,
+      max_quantity INTEGER,
+      CHECK (min_quantity <= max_quantity)
   );
 
 See Also

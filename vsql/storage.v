@@ -305,19 +305,31 @@ fn (mut f Storage) close_file() {
 	f.file.close()
 }
 
-fn (mut f Storage) create_table(table_name Identifier, columns Columns, primary_key []string) ! {
+// table returns the definition of a table, which the caller has already found
+// (such as with Connection.resolve_table_identifier). A Table contains pointers
+// (in the search condition of a CHECK constraint), so V would otherwise need an
+// "or" block that's never used.
+fn (f Storage) table(storage_id string) Table {
+	return unsafe { f.tables[storage_id] }
+}
+
+fn (mut f Storage) create_table(definition Table) ! {
 	f.isolation_start()!
 	defer {
 		f.end_isolation()
 	}
 
 	f.header.table_id++
-	table := Table{f.transaction_id, f.header.table_id, table_name, columns, primary_key, false}
+	table := Table{
+		...definition
+		tid: f.transaction_id
+		id:  f.header.table_id
+	}
 
 	obj := new_page_object(table_object_key(table.id), f.transaction_id, 0, table.bytes())
 	f.btree.add(obj)!
 
-	f.tables[table_name.storage_id()] = table
+	f.tables[table.name.storage_id()] = table
 	f.schema_changed()
 }
 
@@ -462,7 +474,7 @@ fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 		f.end_isolation()
 	}
 
-	table_id := f.tables[table_name].id
+	table_id := f.table(table_name).id
 	f.btree.expire(table_object_key(table_id), tid, f.transaction_id)!
 
 	// The rows are expired the same way as a DELETE, so they are removed when
@@ -504,7 +516,7 @@ fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
 		f.end_isolation()
 	}
 
-	page_number := f.btree.expire(row.object_key(f.tables[table_name])!, row.tid, f.transaction_id)!
+	page_number := f.btree.expire(row.object_key(f.table(table_name))!, row.tid, f.transaction_id)!
 
 	// A negative page_number means the object didn't exist so there's nothing to
 	// save. This should not be possible because the delete_row will only be
@@ -564,10 +576,9 @@ fn (mut f Storage) read_rows(table_name Identifier) ![]Row {
 
 	mut rows := []Row{}
 
-	table_storage_id := table_name.storage_id()
-	table_id := f.tables[table_storage_id].id
-	for object in f.read_objects(row_key_prefix(table_id), row_key_prefix(table_id + 1))! {
-		rows << new_row_from_bytes(f.tables[table_storage_id], object.value, object.tid)
+	table := f.table(table_name.storage_id())
+	for object in f.read_objects(row_key_prefix(table.id), row_key_prefix(table.id + 1))! {
+		rows << new_row_from_bytes(table, object.value, object.tid)
 	}
 
 	return rows

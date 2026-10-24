@@ -33,6 +33,11 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 	for page_number, _ in catalog.storage.transaction_pages {
 		mut page := catalog.storage.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
+			if obj.tid == catalog.storage.transaction_id
+				|| obj.xid == catalog.storage.transaction_id {
+				catalog.storage.lock_commit()!
+			}
+
 			// Only remove the now expired records.
 			if obj.xid == catalog.storage.transaction_id {
 				page.delete(obj.key, obj.tid)

@@ -7,17 +7,19 @@ import time
 // Set the characteristics of the next SQL-transaction for the SQL-agent.
 
 struct SetTransactionStatement {
-	characteristics TransactionCharacteristics
+	modes []TransactionMode
 }
 
 fn (stmt SetTransactionStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
+	characteristics := new_transaction_characteristics(stmt.modes)!
+
 	if conn.in_transaction() {
 		return sqlstate_25001()
 	}
 
-	conn.next_transaction = stmt.characteristics
+	conn.next_transaction = characteristics
 
 	return new_result_msg('SET TRANSACTION', elapsed_parse, t.elapsed())
 }

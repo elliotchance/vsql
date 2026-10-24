@@ -469,6 +469,12 @@ this also might be a deadlock in some situations. However, the deadlock is
 always avoided because the current transaction that receives this error will be
 rolled back.
 
+It also occurs when a ``REPEATABLE READ`` or ``SERIALIZABLE`` transaction
+(including a statement on its own) waited too long for another connection's
+transaction to finish, or when a ``READ COMMITTED`` transaction commits changes
+while another connection has a ``REPEATABLE READ`` or ``SERIALIZABLE``
+transaction. See *Isolation Levels* in :doc:`transactions`.
+
 A client that receives this error should retry the transaction. See
 :doc:`transactions`.
 

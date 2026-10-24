@@ -424,6 +424,8 @@ struct Connection
    	// read_only is the access mode of the current SQL-transaction, see
    	// begin_access_mode.
    	read_only bool
+   	// isolation_level is the isolation level of the current SQL-transaction.
+   	isolation_level IsolationLevel = .serializable
    pub mut:
    	// now allows you to override the wall clock that is used. The Time must be
    	// in UTC with a separate offset for the current local timezone (in positive
@@ -472,6 +474,11 @@ struct ConnectionOptions
    	// Since locking all database isn't ideal. You could provide a consistent
    	// RwMutex that belongs to each file - such as from a map.
    	mutex &sync.RwMutex = unsafe { nil }
+   	// lock_timeout is how long a REPEATABLE READ or SERIALIZABLE transaction
+   	// (including a statement that changes the database outside of a
+   	// transaction) waits for another connection's transaction to finish, before
+   	// it fails with a 40001 serialization failure. The default is 5 seconds.
+   	lock_timeout time.Duration
    }
 
 ConnectionOptions can modify the behavior of a connection when it is opened. You should not create the ConnectionOptions instance manually. Instead, use default_connection_options() as a starting point and modify the attributes.

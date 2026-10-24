@@ -45,6 +45,7 @@ type YYSym = AggregateFunction
 	| IdentifierChain
 	| InPredicate
 	| InsertStatement
+	| IsolationLevel
 	| JoinType
 	| LocalTime
 	| LocalTimestamp
@@ -85,7 +86,8 @@ type YYSym = AggregateFunction
 	| TablePrimary
 	| TableReference
 	| Term
-	| TransactionCharacteristics
+	| TransactionAccessMode
+	| TransactionMode
 	| TrimFunction
 	| Type
 	| UniqueConstraintDefinition
@@ -105,6 +107,7 @@ type YYSym = AggregateFunction
 	| []SetClause
 	| []SortSpecification
 	| []TableElement
+	| []TransactionMode
 	| []ValueExpression
 	| bool
 	| string

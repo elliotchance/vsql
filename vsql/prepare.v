@@ -53,7 +53,11 @@ pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
 	// Storage.end_isolation.
 	p.c.take_isolation_error() or { return p.fail(err) }
 
-	p.c.finish_write(true)!
+	p.c.finish_write(true) or {
+		p.c.unlock_transactions()
+		return err
+	}
+	p.c.unlock_transactions()
 
 	return result
 }
@@ -74,6 +78,7 @@ fn (mut p PreparedStmt) fail(err IError) IError {
 				err.code())
 		}
 	}
+	p.c.unlock_transactions()
 
 	return err
 }

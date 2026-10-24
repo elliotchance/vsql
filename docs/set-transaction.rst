@@ -8,17 +8,33 @@ Syntax
 
 .. code-block:: text
 
-  SET TRANSACTION { READ ONLY | READ WRITE }
+  SET TRANSACTION <transaction_mode> [ , <transaction_mode> ]
 
-``SET TRANSACTION`` sets the access mode of the next transaction. It's an error
-(``25001``) to use it inside a transaction.
+  <transaction_mode> ::=
+      READ ONLY
+    | READ WRITE
+    | ISOLATION LEVEL <level_of_isolation>
+
+  <level_of_isolation> ::=
+      READ UNCOMMITTED
+    | READ COMMITTED
+    | REPEATABLE READ
+    | SERIALIZABLE
+
+``SET TRANSACTION`` sets the access mode and isolation level of the next
+transaction. It's an error (``25001``) to use it inside a transaction. Each of
+them can only be given once, in any order, and the ones that aren't given have
+their defaults.
 
 The next transaction is either started by :doc:`start-transaction` (unless it
-sets its own access mode), or is the transaction of the next statement that
+sets its own characteristics), or is the transaction of the next statement that
 runs on its own, outside of ``START TRANSACTION``. ``SET CATALOG`` and
 ``SET SCHEMA`` don't start a transaction, and nor does ``EXPLAIN``. After that
-transaction ends, the access mode goes back to ``READ WRITE``. If
+transaction ends, the characteristics go back to their defaults. If
 ``SET TRANSACTION`` is used more than once, the last one wins.
+
+Access Mode
+-----------
 
 A ``READ ONLY`` transaction can query the database, but any statement that
 changes it fails with ``25006``. That includes ``INSERT``, ``UPDATE``,
@@ -26,7 +42,20 @@ changes it fails with ``25006``. That includes ``INSERT``, ``UPDATE``,
 ``NEXT VALUE FOR`` is allowed, because changes to sequences are not part of a
 transaction anyway (they are not undone by ``ROLLBACK``).
 
-``READ WRITE`` is the default.
+``READ WRITE`` is the default, except for ``READ UNCOMMITTED`` which is always
+``READ ONLY``.
+
+Isolation Level
+---------------
+
+``SERIALIZABLE`` is the default. ``REPEATABLE READ`` runs the same way as
+``SERIALIZABLE``, which stops other connections from committing until the
+transaction ends, and ``READ UNCOMMITTED`` runs the same way as
+``READ COMMITTED``. See *Isolation Levels* in :doc:`transactions`.
+
+For a statement that runs on its own, ``READ COMMITTED`` means it doesn't wait
+for other connections' ``SERIALIZABLE`` transactions to finish (but it fails if
+it needs to commit changes while one is active).
 
 Examples
 --------
@@ -50,6 +79,11 @@ Examples
   -- msg: SET TRANSACTION
   -- error 25006: read-only sql transaction: cannot execute DELETE
   -- msg: DELETE 1
+
+  SET TRANSACTION ISOLATION LEVEL SERIALIZABLE, READ ONLY;
+  START TRANSACTION;
+  -- msg: SET TRANSACTION
+  -- msg: START TRANSACTION
 
 See Also
 --------

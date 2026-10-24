@@ -27,6 +27,8 @@ bench
    vsql bench                                 # on disk, in bench.vsql
    vsql bench -file ':memory:'                # in memory
    vsql bench -accounts 1000 -duration 5      # a quick test
+   vsql bench -isolation serializable         # with SERIALIZABLE transactions
+   vsql bench -connections 10                 # 10 connections at the same time
 
 Options are:
 
@@ -34,6 +36,16 @@ Options are:
   test (default ``bench.vsql``). Use ``:memory:`` for an in-memory database.
 - ``-accounts``: The number of rows in the ``ACCOUNTS`` table (default 100000).
 - ``-duration``: The number of seconds to run transactions for (default 60).
+- ``-connections``: The number of connections running transactions at the same
+  time, each in its own thread (default 1). It can only be used with a file.
+- ``-scale``: The number of rows in the ``BRANCHES`` table, with 10 rows in the
+  ``TELLERS`` table for each one (default is the number of connections). It
+  should be at least the number of connections, see :doc:`benchmark`.
+- ``-isolation``: The isolation level of the transactions: ``READ COMMITTED``,
+  ``REPEATABLE READ`` or ``SERIALIZABLE``, which can also be written in
+  lowercase or with underscores, such as ``read_committed``. Without it, the
+  transactions use the default (``SERIALIZABLE``). ``READ UNCOMMITTED`` can't
+  be used, because it's always ``READ ONLY``. See :doc:`transactions`.
 
 cli
 ^^^

@@ -21,6 +21,20 @@ mut:
 	teller_rows  int
 	branch_rows  int
 	run_for      time.Duration
+	// isolation_level is used to start each transaction, unless it's empty.
+	isolation_level string
+	// connections run transactions at the same time, each in its own thread.
+	connections int
+	file        string
+	options     vsql.ConnectionOptions
+}
+
+// BenchmarkWorker is one of the connections running transactions.
+struct BenchmarkWorker {
+mut:
+	b         Benchmark
+	committed int
+	failed    int
 }
 
 fn new_benchmark(conn &vsql.Connection) Benchmark {
@@ -30,10 +44,13 @@ fn new_benchmark(conn &vsql.Connection) Benchmark {
 		branch_rows:  1
 		run_for:      time.minute
 		conn:         conn
+		connections:  1
 	}
 }
 
 fn (mut b Benchmark) start() ! {
+	println('${b.account_rows} accounts, ${b.teller_rows} tellers, ${b.branch_rows} branches, ${b.connections} connections')
+
 	b.conn.query('CREATE TABLE accounts ( aid INT, abalance INT, PRIMARY KEY ( aid ) ) ')!
 
 	mut t := vsql.start_timer()
@@ -61,18 +78,46 @@ fn (mut b Benchmark) start() ! {
 	b.conn.query('SELECT abalance FROM accounts WHERE abalance = 0')!
 	b.print_stat('SELECT', b.account_rows, 'rows', t.elapsed())
 
-	t = vsql.start_timer()
-	mut txn_count := 0
-	for {
-		b.run_transaction()!
-		txn_count++
-
-		if t.elapsed() > b.run_for {
-			break
+	mut workers := []&BenchmarkWorker{}
+	for i in 0 .. b.connections {
+		mut worker := &BenchmarkWorker{
+			b: b
 		}
+		if i > 0 {
+			worker.b.conn = vsql.open_database(b.file, b.options)!
+		}
+		workers << worker
 	}
 
-	b.print_stat('TPC-B (sort of)', txn_count, 'transactions', t.elapsed())
+	t = vsql.start_timer()
+	mut threads := []thread !{}
+	for mut worker in workers {
+		threads << spawn worker.run()
+	}
+	for th in threads {
+		th.wait()!
+	}
+	elapsed := t.elapsed()
+
+	mut committed := 0
+	mut failed := 0
+	for worker in workers {
+		committed += worker.committed
+		failed += worker.failed
+	}
+
+	mut name := 'TPC-B (sort of'
+	if b.isolation_level != '' {
+		name += ', ${b.isolation_level}'
+	}
+	if b.connections > 1 {
+		name += ', ${b.connections} connections'
+	}
+	name += ')'
+	b.print_stat(name, committed, 'transactions', elapsed)
+	if failed > 0 {
+		b.print_stat('40001 serialization failures', failed, 'transactions', elapsed)
+	}
 }
 
 fn (mut b Benchmark) print_stat(name string, n int, unit string, elapsed time.Duration) {
@@ -85,7 +130,11 @@ fn (mut b Benchmark) run_transaction() ! {
 	tid := b.random(1, b.teller_rows)
 	delta := b.random(-5000, 5000)
 
-	b.conn.query('START TRANSACTION')!
+	if b.isolation_level == '' {
+		b.conn.query('START TRANSACTION')!
+	} else {
+		b.conn.query('START TRANSACTION ISOLATION LEVEL ${b.isolation_level}')!
+	}
 
 	b.conn.query('UPDATE accounts SET abalance = abalance + ${delta} WHERE aid = ${aid}')!
 	b.conn.query('SELECT abalance FROM accounts WHERE aid = ${aid}')!
@@ -102,10 +151,22 @@ fn (mut b Benchmark) run_transaction() ! {
 	b.conn.query('COMMIT')!
 }
 
-fn (b Benchmark) random(min int, max int) int {
-	if min == max {
-		return min
+// run runs transactions until the time is up. A transaction that fails with a
+// serialization failure has been rolled back, so it's counted and skipped.
+fn (mut w BenchmarkWorker) run() ! {
+	t := vsql.start_timer()
+	for t.elapsed() <= w.b.run_for {
+		w.b.run_transaction() or {
+			if vsql.sqlstate_from_int(err.code()) == '40001' {
+				w.failed++
+				continue
+			}
+			return err
+		}
+		w.committed++
 	}
+}
 
-	return (rand.int31() % (max - min)) + min
+fn (b Benchmark) random(min int, max int) int {
+	return (rand.int31() % (max - min + 1)) + min
 }

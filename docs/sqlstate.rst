@@ -242,8 +242,10 @@ The length of a ``SUBSTRING`` must not be negative.
 ``22018`` invalid character value for cast
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A character string cast to a number must be a valid number, once leading and
-trailing spaces are removed.
+A character string cast to a number or a ``BOOLEAN`` must be a valid number or
+boolean literal, once leading and trailing spaces are removed. A ``BOOLEAN``
+cast to a character string that's too short for ``TRUE`` or ``FALSE`` is also
+an error.
 
 **Examples**
 

@@ -12,6 +12,28 @@ aliases that mean the same thing).
 
 A ``BOOLEAN`` is stored as a single byte, even if it permits ``UNKNOWN``.
 
+Casting
+-------
+
+A character string can be cast to a ``BOOLEAN`` if it's ``TRUE``, ``FALSE`` or
+``UNKNOWN`` (in any case), once leading and trailing spaces are removed.
+Anything else is an error (``22018``). A ``BOOLEAN`` cast to a character string
+is ``'TRUE'`` or ``'FALSE'``, which must fit without being truncated:
+
+.. code-block:: sql
+
+  VALUES CAST(' true ' AS BOOLEAN);
+  -- COL1: TRUE
+
+  VALUES CAST('yes' AS BOOLEAN);
+  -- error 22018: invalid character value for cast
+
+  VALUES CAST(FALSE AS VARCHAR(10));
+  -- COL1: FALSE
+
+  VALUES CAST(FALSE AS VARCHAR(4));
+  -- error 22018: invalid character value for cast
+
 Logical Operations
 ------------------
 

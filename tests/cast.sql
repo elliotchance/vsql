@@ -59,6 +59,56 @@ VALUES CAST(123 AS SMALLINT);
 VALUES CAST(123 AS BOOLEAN);
 -- error 42846: cannot coerce SMALLINT to BOOLEAN
 
+/* types */
+VALUES CAST('true' AS BOOLEAN);
+-- COL1: TRUE (BOOLEAN)
+
+VALUES CAST('  FaLsE ' AS BOOLEAN);
+-- COL1: FALSE
+
+VALUES CAST('unknown' AS BOOLEAN);
+-- COL1: UNKNOWN
+
+VALUES CAST(CAST('false' AS VARCHAR(10)) AS BOOLEAN);
+-- COL1: FALSE
+
+VALUES CAST(CAST(NULL AS VARCHAR(10)) AS BOOLEAN);
+-- COL1: UNKNOWN
+
+VALUES CAST('abc' AS BOOLEAN);
+-- error 22018: invalid character value for cast
+
+VALUES CAST('' AS BOOLEAN);
+-- error 22018: invalid character value for cast
+
+VALUES CAST('t' AS BOOLEAN);
+-- error 22018: invalid character value for cast
+
+VALUES CAST('1' AS BOOLEAN);
+-- error 22018: invalid character value for cast
+
+VALUES CAST('TRUE x' AS BOOLEAN);
+-- error 22018: invalid character value for cast
+
+/* types */
+VALUES CAST(TRUE AS VARCHAR(10));
+-- COL1: TRUE (CHARACTER VARYING(10))
+
+VALUES CAST(FALSE AS CHAR(10)) || 'x';
+-- COL1: FALSE     x
+
+VALUES CAST(TRUE AS VARCHAR(4));
+-- COL1: TRUE
+
+VALUES CAST(UNKNOWN AS VARCHAR(10));
+-- COL1: NULL
+
+VALUES CAST(TRUE AS CHAR(3));
+-- error 22018: invalid character value for cast
+
+VALUES CAST(FALSE AS VARCHAR(4));
+-- error 22018: invalid character value for cast
+
 EXPLAIN VALUES CAST(123 AS SMALLINT);
 -- EXPLAIN: VALUES (COL1 SMALLINT) = ROW(CAST(123 AS SMALLINT))
 

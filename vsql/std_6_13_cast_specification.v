@@ -69,6 +69,14 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 				return cast_character_to_character(mut conn, value, e.target)
 			}
 
+			if !value.is_null && value.typ.typ.is_string() && e.target.typ == .is_boolean {
+				return cast_character_to_boolean(value)!
+			}
+
+			if !value.is_null && value.typ.typ == .is_boolean && e.target.typ.is_string() {
+				return cast_boolean_to_character(mut conn, value, e.target)!
+			}
+
 			mut result := cast(mut conn, 'for CAST', value, e.target)!
 
 			// The declared type of a CAST is the target type (Syntax Rule 2), even
@@ -110,6 +118,34 @@ fn cast_character_to_character(mut conn Connection, v Value, to Type) Value {
 			string_value: s
 		}
 	}
+}
+
+// cast_character_to_boolean casts a character string to a BOOLEAN. Leading and
+// trailing spaces are ignored, then the string must be a <boolean literal>
+// (TRUE, FALSE or UNKNOWN, in any case). UNKNOWN is the null value.
+//
+// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rule 21a
+fn cast_character_to_boolean(v Value) !Value {
+	return match v.string_value().trim(' ').to_upper_ascii() {
+		'TRUE' { new_boolean_value(true) }
+		'FALSE' { new_boolean_value(false) }
+		'UNKNOWN' { new_unknown_value() }
+		else { return sqlstate_22018() }
+	}
+}
+
+// cast_boolean_to_character casts a BOOLEAN to 'TRUE' or 'FALSE'. Unlike other
+// strings, it's an error (22018) if the target is too short, rather than being
+// truncated.
+//
+// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules 11f and 12f
+fn cast_boolean_to_character(mut conn Connection, v Value, to Type) !Value {
+	s := if v.bool_value() == .is_true { 'TRUE' } else { 'FALSE' }
+	if s.len > to.size {
+		return sqlstate_22018()
+	}
+
+	return cast_character_to_character(mut conn, new_varchar_value(s), to)
 }
 
 // cast_string_to_datetime converts a character string to a DATE, TIME or

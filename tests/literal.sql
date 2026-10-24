@@ -80,6 +80,16 @@ VALUES CHARACTER_LENGTH('it''s');
 EXPLAIN VALUES 'it''s';
 -- EXPLAIN: VALUES (COL1 CHARACTER(4)) = ROW('it''s')
 
+VALUES 'abc;
+-- error 42601: syntax error: unterminated string: 'abc
+
+VALUES 'it'';
+-- error 42601: syntax error: unterminated string: 'it''
+
+VALUES 'a'
+'b;
+-- error 42601: syntax error: unterminated string: 'b
+
 /* types */
 VALUES ROW(123, 456);
 -- COL1: 123 (SMALLINT) COL2: 456 (SMALLINT)

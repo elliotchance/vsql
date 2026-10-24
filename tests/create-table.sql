@@ -64,6 +64,15 @@ CREATE TABLE "Foo" (baz CHARACTER VARYING(10));
 -- msg: CREATE TABLE 1
 -- msg: CREATE TABLE 1
 
+CREATE TABLE "" (x INT);
+-- error 42601: syntax error: a delimited identifier cannot be empty
+
+CREATE TABLE foo ("" INT);
+-- error 42601: syntax error: a delimited identifier cannot be empty
+
+CREATE TABLE "foo (x INT);
+-- error 42601: syntax error: unterminated delimited identifier: "foo (x INT)
+
 CREATE TABLE t1 (f1 CHARACTER VARYING(10), f2 FLOAT NOT NULL);
 -- msg: CREATE TABLE 1
 

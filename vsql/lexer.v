@@ -16,6 +16,11 @@ type YYSym = AggregateFunction
 	| BooleanTest
 	| BooleanValueExpression
 	| CaseExpression
+	| CaseExpressionSearched
+	| CaseExpressionSearchedWhen
+	| CaseExpressionSimple
+	| CaseExpressionSimpleWhen
+	| CaseResult
 	| CastOperand
 	| CastSpecification
 	| CharacterLikePredicate
@@ -93,6 +98,8 @@ type YYSym = AggregateFunction
 	| ValueExpression
 	| ValueExpressionPrimary
 	| ValueSpecification
+	| []CaseExpressionSearchedWhen
+	| []CaseExpressionSimpleWhen
 	| []ContextuallyTypedRowValueConstructor
 	| []ContextuallyTypedRowValueConstructorElement
 	| []DerivedColumn

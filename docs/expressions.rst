@@ -51,6 +51,39 @@ least one of them is ``NULL``, the result is ``UNKNOWN``.
   30 NOT IN (25, 30, 45)           -- FALSE
   30 IN (45, CAST(NULL AS INT))    -- UNKNOWN
 
+CASE
+----
+
+.. code-block:: text
+
+  CASE X WHEN Y1 THEN R1 [ WHEN Y2 THEN R2 ... ] [ ELSE R ] END
+
+  CASE WHEN C1 THEN R1 [ WHEN C2 THEN R2 ... ] [ ELSE R ] END
+
+The first form (a simple ``CASE``) returns the result for the first ``WHEN``
+value that is equal to ``X``. ``X`` is only evaluated once. ``NULL`` is never
+equal to anything, so ``CASE NULL WHEN NULL ...`` does not match.
+
+The second form (a searched ``CASE``) returns the result for the first ``WHEN``
+condition that is ``TRUE``. Conditions that are ``FALSE`` or ``UNKNOWN`` are
+skipped.
+
+If nothing matches, the ``ELSE`` result is returned, or ``NULL`` if there is no
+``ELSE``. A result can be ``NULL``, but at least one of them must be something
+else. The results must have compatible types, and the ``CASE`` has a type that
+can hold any of them, like ``COALESCE``.
+
+``NEXT VALUE FOR`` can't be used in a ``CASE`` (or ``NULLIF`` or ``COALESCE``),
+since whether it's evaluated depends on the other values.
+
+*Examples*
+
+.. code-block:: sql
+
+  CASE 2 WHEN 1 THEN 10 WHEN 2 THEN 20 ELSE 0 END               -- 20
+  CASE 3 WHEN 1 THEN 'one' END                                 -- NULL
+  CASE WHEN 5 > 10 THEN 'big' ELSE 'small' END                 -- 'small'
+
 IS NULL
 -------
 

@@ -1,0 +1,161 @@
+EXPLAIN VALUES CASE 1 WHEN 1 THEN 'a' WHEN 2 THEN NULL ELSE 'b' END;
+-- EXPLAIN: VALUES (COL1 CHARACTER(1)) = ROW(CASE 1 WHEN 1 THEN 'a' WHEN 2 THEN NULL ELSE 'b' END)
+
+EXPLAIN VALUES CASE 1 WHEN 1 THEN 'a' END;
+-- EXPLAIN: VALUES (COL1 CHARACTER(1)) = ROW(CASE 1 WHEN 1 THEN 'a' ELSE NULL END)
+
+EXPLAIN VALUES CASE WHEN 1 = 2 THEN 1.5 WHEN TRUE THEN 3 ELSE NULL END;
+-- EXPLAIN: VALUES (COL1 NUMERIC(6, 1)) = ROW(CASE WHEN 1 = 2 THEN 1.5 WHEN TRUE THEN 3 ELSE NULL END)
+
+EXPLAIN VALUES CASE WHEN TRUE THEN 'a' END;
+-- EXPLAIN: VALUES (COL1 CHARACTER(1)) = ROW(CASE WHEN TRUE THEN 'a' ELSE NULL END)
+
+/* types */
+VALUES CASE 2 WHEN 1 THEN 'one' WHEN 2 THEN 'two' ELSE 'other' END;
+-- COL1: two   (CHARACTER(5))
+
+/* types */
+VALUES CASE 3 WHEN 1 THEN 'one' WHEN 2 THEN 'two' ELSE 'other' END;
+-- COL1: other (CHARACTER(5))
+
+/* types */
+VALUES CASE 3 WHEN 1 THEN 'one' END;
+-- COL1: NULL (CHARACTER(3))
+
+/* types */
+VALUES CASE 1 WHEN 1 THEN NULL ELSE 2 END;
+-- COL1: NULL (SMALLINT)
+
+/* types */
+VALUES CASE 1 WHEN 1 THEN 2 ELSE 2.5e0 END;
+-- COL1: 2e0 (DOUBLE PRECISION)
+
+/* types */
+VALUES CASE WHEN 1 > 2 THEN 'a' WHEN 2 > 1 THEN 'b' ELSE 'c' END;
+-- COL1: b (CHARACTER(1))
+
+/* types */
+VALUES CASE WHEN 1 > 2 THEN 'a' ELSE 'c' END;
+-- COL1: c (CHARACTER(1))
+
+/* types */
+VALUES CASE WHEN 1 > 2 THEN 'a' END;
+-- COL1: NULL (CHARACTER(1))
+
+/* types */
+VALUES CASE WHEN TRUE THEN NULL ELSE CAST(1 AS BIGINT) END;
+-- COL1: NULL (BIGINT)
+
+/* types */
+VALUES CASE WHEN TRUE THEN CAST(NULL AS INT) ELSE 1.5 END;
+-- COL1: NULL (NUMERIC(11, 1))
+
+VALUES CASE 1 WHEN 1 THEN 'a' WHEN 1 THEN 'b' END;
+VALUES CASE WHEN TRUE THEN 'a' WHEN TRUE THEN 'b' END;
+-- COL1: a
+-- COL1: a
+
+VALUES CASE CAST(NULL AS INT) WHEN 1 THEN 'a' WHEN CAST(NULL AS INT) THEN 'b' ELSE 'c' END;
+-- COL1: c
+
+VALUES CASE WHEN CAST(NULL AS BOOLEAN) THEN 'a' WHEN 1 = CAST(NULL AS INT) THEN 'b' ELSE 'c' END;
+-- COL1: c
+
+VALUES CASE 1 WHEN 1 THEN CASE WHEN 1 = 2 THEN 'a' ELSE 'b' END END;
+-- COL1: b
+
+VALUES CASE 1 WHEN 1 THEN NULL END;
+-- error 42601: syntax error: CASE needs at least one result that is not NULL
+
+VALUES CASE WHEN TRUE THEN NULL ELSE NULL END;
+-- error 42601: syntax error: CASE needs at least one result that is not NULL
+
+VALUES CASE 1 WHEN 'a' THEN 1 END;
+-- error 42804: data type mismatch in CASE WHEN: expected SMALLINT but got CHARACTER(1)
+
+VALUES CASE WHEN 1 THEN 1 END;
+-- error 42804: data type mismatch in CASE WHEN: expected BOOLEAN but got SMALLINT
+
+VALUES CASE 1 WHEN 1 THEN 1 ELSE 'a' END;
+-- error 42804: data type mismatch in CASE: expected SMALLINT but got CHARACTER(1)
+
+VALUES CASE WHEN TRUE THEN 'a' WHEN FALSE THEN 1 END;
+-- error 42804: data type mismatch in CASE: expected CHARACTER(1) but got SMALLINT
+
+VALUES CASE 1 WHEN 1 THEN 'a' END END;
+-- error 42601: syntax error: unexpected END
+
+VALUES CASE 1 END;
+-- error 42601: syntax error: unexpected END, expecting WHEN
+
+VALUES CASE ELSE 1 END;
+-- error 42601: syntax error: unexpected ELSE
+
+CREATE TABLE t (a INT, b VARCHAR(10));
+INSERT INTO t (a, b) VALUES (1, 'x'), (2, 'y'), (NULL, 'z');
+SELECT a, CASE a WHEN 1 THEN 'one' WHEN 2 THEN 'two' ELSE b END FROM t;
+SELECT CASE WHEN a > 1 THEN a * 10 WHEN a IS NULL THEN -1 END FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 3
+-- A: 1 COL2: one
+-- A: 2 COL2: two
+-- A: NULL COL2: z
+-- COL1: NULL
+-- COL1: 20
+-- COL1: -1
+
+CREATE TABLE t (a INT, b VARCHAR(10));
+INSERT INTO t (a, b) VALUES (1, 'x'), (2, 'y'), (NULL, 'z');
+EXPLAIN SELECT * FROM t WHERE CASE a WHEN 2 THEN TRUE ELSE FALSE END;
+SELECT * FROM t WHERE CASE a WHEN 2 THEN TRUE ELSE FALSE END;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 3
+-- EXPLAIN: TABLE ":memory:".PUBLIC.T (A INTEGER, B CHARACTER VARYING(10))
+-- EXPLAIN: WHERE CASE A WHEN 2 THEN TRUE ELSE FALSE END
+-- EXPLAIN: EXPR (":memory:".PUBLIC.T.A INTEGER, ":memory:".PUBLIC.T.B CHARACTER VARYING(10))
+-- A: 2 B: y
+
+CREATE TABLE t (a INT, b VARCHAR(10));
+INSERT INTO t (a, b) VALUES (1, 'x'), (2, 'y'), (NULL, 'z');
+UPDATE t SET b = CASE a WHEN 1 THEN 'uno' WHEN 2 THEN NULL ELSE b END;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 3
+-- msg: UPDATE 3
+-- A: 1 B: uno
+-- A: 2 B: NULL
+-- A: NULL B: z
+
+CREATE TABLE t (a INT);
+INSERT INTO t (a) VALUES (1), (2), (NULL);
+SELECT SUM(CASE WHEN a > 1 THEN a ELSE 0 END) FROM t;
+SELECT CASE WHEN COUNT(*) > 2 THEN 'many' ELSE 'few' END FROM t;
+SELECT CASE COUNT(a) WHEN 2 THEN 'two' END FROM t;
+SELECT CASE 1 WHEN 1 THEN MAX(a) END FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 3
+-- COL1: 2
+-- COL1: many
+-- warning 01003: null value eliminated in set function
+-- COL1: two
+-- warning 01003: null value eliminated in set function
+-- COL1: 2
+
+-- # NEXT VALUE FOR can't be used in a CASE, NULLIF or COALESCE, because
+-- # whether it's evaluated depends on the other values. No value is used.
+CREATE SEQUENCE s;
+VALUES CASE WHEN TRUE THEN NEXT VALUE FOR s END;
+VALUES CASE NEXT VALUE FOR s WHEN 1 THEN 'one' END;
+VALUES CASE 1 WHEN NEXT VALUE FOR s THEN 'one' END;
+VALUES CASE WHEN NEXT VALUE FOR s > 0 THEN 1 END;
+VALUES NULLIF(NEXT VALUE FOR s, 1);
+VALUES COALESCE(CAST(NULL AS BIGINT), NEXT VALUE FOR s);
+VALUES NEXT VALUE FOR s;
+-- msg: CREATE SEQUENCE 1
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in CASE
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in CASE
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in CASE
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in CASE
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in NULLIF
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in COALESCE
+-- COL1: 1

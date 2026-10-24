@@ -85,6 +85,7 @@ type YYSym = AggregateFunction
 	| TablePrimary
 	| TableReference
 	| Term
+	| TransactionCharacteristics
 	| TrimFunction
 	| Type
 	| UniqueConstraintDefinition

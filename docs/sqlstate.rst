@@ -394,10 +394,24 @@ already active transaction.
 ``25006`` read-only sql transaction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``25006`` is returned for a statement that would change a database file that
-was changed by a newer version of vsql, in a way that this version cannot
-safely change it. The file can still be read. See *Compatibility* in
+``25006`` is returned for a statement that would change the database in a
+``READ ONLY`` transaction (see :doc:`set-transaction`).
+
+It's also returned for a statement that would change a database file that was
+changed by a newer version of vsql, in a way that this version cannot safely
+change it. The file can still be read. See *Compatibility* in
 :doc:`file-format`.
+
+**Examples**
+
+.. code-block:: sql
+
+   CREATE TABLE t (x INT);
+   START TRANSACTION READ ONLY;
+   INSERT INTO t (x) VALUES (1);
+   -- msg: CREATE TABLE 1
+   -- msg: START TRANSACTION
+   -- error 25006: read-only sql transaction: cannot execute INSERT
 
 ``2BP01`` dependent objects still exist
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

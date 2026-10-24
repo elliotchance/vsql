@@ -18,6 +18,7 @@ type Stmt = AlterSequenceGeneratorStatement
 	| SequenceGeneratorDefinition
 	| SetCatalogStatement
 	| SetSchemaStatement
+	| SetTransactionStatement
 	| StartTransactionStatement
 	| TableDefinition
 	| UpdateStatementSearched
@@ -88,6 +89,10 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 	p.c.begin_row()
 
 	stmt := p.stmt
+	if !p.explain {
+		p.c.begin_access_mode(stmt)!
+	}
+
 	match stmt {
 		AlterSequenceGeneratorStatement {
 			if p.explain {
@@ -186,6 +191,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			}
 
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse, p.writes)
+		}
+		SetTransactionStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		StartTransactionStatement {
 			if p.explain {

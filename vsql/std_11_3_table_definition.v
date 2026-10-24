@@ -9,6 +9,9 @@ import time
 
 type TableElement = Column | UniqueConstraintDefinition
 
+// max_columns is the maximum number of columns in a table.
+const max_columns = 1600
+
 struct TableDefinition {
 	table_name     Identifier
 	table_elements []TableElement
@@ -23,6 +26,20 @@ fn (s TableDefinition) columns() Columns {
 	}
 
 	return columns
+}
+
+// check_limits returns an error if the table has more columns, or a column has
+// a larger type, than allowed. Like check_data_type, it's not used when a table
+// definition is read from the file.
+fn (s TableDefinition) check_limits(table_name Identifier) ! {
+	columns := s.columns()
+	if columns.len > max_columns {
+		return sqlstate_54000('table ${table_name} has ${columns.len} columns, but the maximum is ${max_columns}')
+	}
+
+	for column in columns {
+		check_data_type(column.typ)!
+	}
 }
 
 // TODO(elliotchance): A table is allowed to have zero columns.
@@ -42,6 +59,7 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 		return sqlstate_42p07('table', table_name.str()) // duplicate table
 	}
 
+	stmt.check_limits(table_name)!
 	table := stmt.table(table_name, 0)!
 	for column in table.columns {
 		check_default_clause(mut conn, column)!

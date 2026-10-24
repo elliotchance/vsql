@@ -210,9 +210,11 @@ DECIMAL vs NUMERIC
 ^^^^^^^^^^^^^^^^^^
 
 ``DECIMAL(p, s)`` and ``NUMERIC(p, s)`` are both exact numeric types with a
-precision (``p``) and scale (``s``). If the scale is omitted it is 0. If the
-precision is also omitted there is no limit on the number of digits, so
-``NUMERIC`` can hold an integer of any size. Both store their respective values
+precision (``p``) and scale (``s``). The precision can be up to 1000. If the
+scale is omitted it is 0. If the precision is also omitted it is 1000, so
+``NUMERIC`` can hold an integer of up to 1000 digits. The result of an
+arithmetic operation also can't have more than 1000 digits, otherwise it's a
+``22003`` (numeric value out of range) error. Both store their respective values
 as fractions. For example, ``1.23`` could be represented as ``123/100``.
 
 The main difference between these two types comes down to the allowed
@@ -453,4 +455,5 @@ Notes
 .. [2] A type that allows for ``NULL`` will consume 1 extra byte of storage.
 
 .. [3] ``FLOAT`` and ``FLOAT(p)`` are aliases for ``DOUBLE PRECISION``. If you
-   use ``FLOAT`` the type will show as ``DOUBLE PRECISION``.
+   use ``FLOAT`` the type will show as ``DOUBLE PRECISION``. The precision
+   ``p`` can be up to 53.

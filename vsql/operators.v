@@ -203,15 +203,15 @@ fn binary_bigint_divide_bigint(_ &Connection, a Value, b Value) !Value {
 }
 
 fn binary_numeric_plus_numeric(_ &Connection, a Value, b Value) !Value {
-	return new_numeric_value_from_numeric(a.numeric_value().add(b.numeric_value()))
+	return new_numeric_value_from_numeric(check_numeric_precision(a.numeric_value().add(b.numeric_value()))!)
 }
 
 fn binary_numeric_minus_numeric(_ &Connection, a Value, b Value) !Value {
-	return new_numeric_value_from_numeric(a.numeric_value().subtract(b.numeric_value()))
+	return new_numeric_value_from_numeric(check_numeric_precision(a.numeric_value().subtract(b.numeric_value()))!)
 }
 
 fn binary_numeric_multiply_numeric(_ &Connection, a Value, b Value) !Value {
-	return new_numeric_value_from_numeric(a.numeric_value().multiply(b.numeric_value()))
+	return new_numeric_value_from_numeric(check_numeric_precision(a.numeric_value().multiply(b.numeric_value()))!)
 }
 
 fn binary_numeric_divide_numeric(_ &Connection, a Value, b Value) !Value {
@@ -219,7 +219,7 @@ fn binary_numeric_divide_numeric(_ &Connection, a Value, b Value) !Value {
 		return sqlstate_22012() // division by zero
 	}
 
-	return new_numeric_value_from_numeric(a.numeric_value().divide(b.numeric_value())!)
+	return new_numeric_value_from_numeric(check_numeric_precision(a.numeric_value().divide(b.numeric_value())!)!)
 }
 
 fn binary_smallint_plus_smallint(_ &Connection, a Value, b Value) !Value {
@@ -276,15 +276,15 @@ fn binary_real_divide_real(_ &Connection, a Value, b Value) !Value {
 }
 
 fn binary_decimal_plus_decimal(_ &Connection, a Value, b Value) !Value {
-	return new_decimal_value_from_numeric(a.numeric_value().add(b.numeric_value()))
+	return new_decimal_value_from_numeric(check_numeric_precision(a.numeric_value().add(b.numeric_value()))!)
 }
 
 fn binary_decimal_minus_decimal(_ &Connection, a Value, b Value) !Value {
-	return new_decimal_value_from_numeric(a.numeric_value().subtract(b.numeric_value()))
+	return new_decimal_value_from_numeric(check_numeric_precision(a.numeric_value().subtract(b.numeric_value()))!)
 }
 
 fn binary_decimal_multiply_decimal(_ &Connection, a Value, b Value) !Value {
-	return new_decimal_value_from_numeric(a.numeric_value().multiply(b.numeric_value()))
+	return new_decimal_value_from_numeric(check_numeric_precision(a.numeric_value().multiply(b.numeric_value()))!)
 }
 
 fn binary_decimal_divide_decimal(_ &Connection, a Value, b Value) !Value {
@@ -292,5 +292,5 @@ fn binary_decimal_divide_decimal(_ &Connection, a Value, b Value) !Value {
 		return sqlstate_22012() // division by zero
 	}
 
-	return new_decimal_value_from_numeric(a.numeric_value().divide(b.numeric_value())!)
+	return new_decimal_value_from_numeric(check_numeric_precision(a.numeric_value().divide(b.numeric_value())!)!)
 }

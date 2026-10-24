@@ -645,6 +645,13 @@ the connection.
 ``54000`` program limit exceeded
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+A table has more than 1600 columns:
+
+.. code-block:: sql
+
+  CREATE TABLE t (c1 INT, c2 INT, ..., c1601 INT);
+  -- error 54000: table PUBLIC.T has 1601 columns, but the maximum is 1600
+
 The name of a schema or sequence is part of the key of an object in the file,
 so it must fit in a page. This can only happen with a small page size.
 

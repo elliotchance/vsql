@@ -39,7 +39,7 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 		}
 		// Syntax Rule 3c: exact numeric with the largest scale. The precision is
 		// implementation-defined, so it's enough for the largest integer part and
-		// scale.
+		// scale, up to the maximum precision.
 		t1.typ.is_number() && t2.typ.is_number() {
 			if t1.typ !in fractional_types && t2.typ !in fractional_types {
 				return most_specific_type(t1, t2) or { return none }
@@ -60,7 +60,7 @@ fn combine_types(t1 Type, t2 Type) ?Type {
 			scale := math.max(t1.scale, t2.scale)
 			digits := math.max(t1.integer_digits(), t2.integer_digits())
 
-			return Type{typ, digits + scale, scale, false}
+			return Type{typ, math.min(digits + scale, max_numeric_precision), scale, false}
 		}
 		// Syntax Rule 3f: all BOOLEAN.
 		t1.typ == .is_boolean && t2.typ == .is_boolean {

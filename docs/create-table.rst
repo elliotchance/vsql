@@ -29,6 +29,7 @@ Syntax
    :doc:`keywords`.
 2. ``data_type`` is one of the types in :doc:`booleans`, :doc:`dates-times`,
    :doc:`numbers` and :doc:`text`.
+3. A table can have up to 1600 columns.
 
 Columns allow ``NULL`` unless they are ``NOT NULL``. ``UNIQUE``,
 ``FOREIGN KEY`` and ``CHECK`` constraints are not supported yet.

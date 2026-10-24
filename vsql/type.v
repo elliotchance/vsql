@@ -2,6 +2,8 @@
 
 module vsql
 
+import math
+
 // Type is a fully-qualified SQL type, such as the type of a column or a value.
 pub struct Type {
 pub mut:
@@ -135,8 +137,8 @@ fn (t SQLType) supertype() (i16, i16) {
 // exact_arithmetic_type is the type of the result of +, - or * with two exact
 // numeric operands (ISO/IEC 9075-2:2016(E), 6.29, Syntax Rule 1c). The scale is
 // max(S1, S2) for + and -, and S1 + S2 for *. The precision is
-// implementation-defined, so it's large enough to hold any result. It's 0
-// (unknown) if either precision is unknown.
+// implementation-defined, so it's large enough to hold any result, up to the
+// maximum precision. It's 0 (the maximum) if either precision is unknown.
 fn exact_arithmetic_type(t1 Type, t2 Type, op string) Type {
 	typ := if t1.typ == .is_decimal || t2.typ == .is_decimal {
 		SQLType.is_decimal
@@ -148,14 +150,14 @@ fn exact_arithmetic_type(t1 Type, t2 Type, op string) Type {
 
 	if op == '*' {
 		size := if p1 == 0 || p2 == 0 { 0 } else { p1 + p2 }
-		return Type{typ, size, s1 + s2, false}
+		return Type{typ, math.min(size, max_numeric_precision), s1 + s2, false}
 	}
 
 	scale := if s1 > s2 { s1 } else { s2 }
 	integer_digits := if p1 - s1 > p2 - s2 { p1 - s1 } else { p2 - s2 }
 	size := if p1 == 0 || p2 == 0 { 0 } else { integer_digits + scale + 1 }
 
-	return Type{typ, size, scale, false}
+	return Type{typ, math.min(size, max_numeric_precision), scale, false}
 }
 
 // exact_precision is the number of decimal digits that an exact numeric type
@@ -167,6 +169,16 @@ fn (t Type) exact_precision() int {
 		.is_bigint { 19 }
 		else { t.size }
 	}
+}
+
+// numeric_precision is the precision of a NUMERIC or DECIMAL. One without a
+// precision (a size of 0) has the maximum precision.
+fn (t Type) numeric_precision() int {
+	if t.size == 0 {
+		return max_numeric_precision
+	}
+
+	return t.size
 }
 
 // implicit_cast_type is the type to implicitly cast v to when it needs to be

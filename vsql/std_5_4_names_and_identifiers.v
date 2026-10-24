@@ -178,10 +178,26 @@ fn split_identifier_parts(s string) ![]string {
 	mut s2 := s
 	for s2 != '' {
 		if s2[0] == `"` {
-			s2 = s2[1..]
-			index := s2.index('"') or { return sqlstate_42602('invalid identifier chain: ${s}') }
-			parts << s2[..index]
-			s2 = s2[index + 1..]
+			// A doubled quote ("") is one quote character of the name.
+			mut part := []u8{}
+			mut i := 1
+			for {
+				if i >= s2.len {
+					return sqlstate_42602('invalid identifier chain: ${s}')
+				}
+				if s2[i] == `"` {
+					if i + 1 < s2.len && s2[i + 1] == `"` {
+						part << `"`
+						i += 2
+						continue
+					}
+					break
+				}
+				part << s2[i]
+				i++
+			}
+			parts << part.bytestr()
+			s2 = s2[i + 1..]
 		} else {
 			mut index := s2.index('.') or { -1 }
 			if index < 0 {
@@ -213,18 +229,20 @@ const max_identifier_length = 128
 // delimit_identifier always quotes the name, like "foo" or "FOO". Use this
 // (rather than requote_identifier) when the SQL needs to mean the same thing
 // in every version of vsql, even if new reserved words are added.
+//
+// A quote in the name is doubled ("").
 fn delimit_identifier(s string) string {
-	return '"${s}"'
+	return '"${s.replace('"', '""')}"'
 }
 
 // requote_identifier only quotes the name if it needs to be, so that the
 // result can be parsed back into the same name.
 fn requote_identifier(s string) string {
-	if s.to_upper() == s && !s.contains('.') {
+	if s.to_upper() == s && !s.contains('.') && !s.contains('"') {
 		return s
 	}
 
-	return '"${s}"'
+	return delimit_identifier(s)
 }
 
 fn (e Identifier) compile(mut c Compiler) !CompileResult {
@@ -441,10 +459,15 @@ fn (e Identifier) storage_id() string {
 	// virtually on the connection to the storage.
 
 	// A name that contains a '.' is quoted, otherwise "A.B".C and A."B.C" would
-	// be the same.
+	// be the same. So is a name with a quote, so that it can't be mistaken for
+	// a quoted name.
 	for part in [e.schema_name, e.entity_name, e.sub_entity_name] {
 		if part != '' {
-			parts << if part.contains('.') { delimit_identifier(part) } else { part }
+			parts << if part.contains('.') || part.contains('"') {
+				delimit_identifier(part)
+			} else {
+				part
+			}
 		}
 	}
 

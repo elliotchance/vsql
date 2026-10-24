@@ -266,16 +266,27 @@ fn tokenize(sql_stmt string) ![]Token {
 		}
 
 		// Delimited identifiers. The body must have at least one character (5.2).
+		// A doubled quote ("") is a quote character in the name, but it's kept
+		// doubled here so that split_identifier_parts can find the end of each
+		// part of the chain.
 		if cs[i] == `"` {
 			start := i
 			mut word := ''
 			i++
-			for i < cs.len && cs[i] != `"` {
+			for {
+				if i >= cs.len {
+					return sqlstate_42601('unterminated delimited identifier: ${cs[start..].string()}')
+				}
+				if cs[i] == `"` {
+					if i + 1 < cs.len && cs[i + 1] == `"` {
+						word += '""'
+						i += 2
+						continue
+					}
+					break
+				}
 				word += '${cs[i]}'
 				i++
-			}
-			if i >= cs.len {
-				return sqlstate_42601('unterminated delimited identifier: ${cs[start..].string()}')
 			}
 			if word == '' {
 				return sqlstate_42601('a delimited identifier cannot be empty')

@@ -36,6 +36,32 @@ INSERT INTO t (x) VALUES (1);
 -- out: );
 -- msg: INSERT 1
 
+-- # A quote in a name is doubled.
+CREATE SCHEMA "s""1";
+CREATE SEQUENCE "s""1"."q""";
+CREATE TABLE "s""1"."a""b" ("x""y" INT);
+INSERT INTO "s""1"."a""b" ("x""y") VALUES (1);
+VALUES NEXT VALUE FOR "s""1"."q""";
+/* out */
+/* in */
+SELECT * FROM "s""1"."a""b";
+VALUES NEXT VALUE FOR "s""1"."q""";
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- COL1: 1
+-- out: CREATE SCHEMA "s""1";
+-- out: CREATE SEQUENCE "s""1"."q""" START WITH 1;
+-- out: ALTER SEQUENCE "s""1"."q""" RESTART WITH 1;
+-- out: VALUES NEXT VALUE FOR "s""1"."q""";
+-- out: CREATE TABLE "s""1"."a""b" (
+-- out:   "x""y" INTEGER
+-- out: );
+-- out: INSERT INTO "s""1"."a""b" ("x""y") VALUES (1);
+-- x"y: 1
+-- COL1: 2
+
 -- # Schemas, then the sequences and tables in each one, are in order of their
 -- # names, so that the dump is the same each time.
 CREATE SCHEMA z;

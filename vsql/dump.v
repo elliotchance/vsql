@@ -68,7 +68,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 			write_line(mut w, '${table}\n')!
 
 			name := table.name.storage_sql()
-			columns := table.column_names().map('"${it}"').join(', ')
+			columns := table.column_names().map(delimit_identifier(it)).join(', ')
 			for row in conn.query('SELECT * FROM ${name}')! {
 				mut data := []string{}
 				for col in table.column_names() {

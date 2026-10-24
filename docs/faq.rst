@@ -25,6 +25,10 @@ etc). So, using delimited identifiers also allows you to control the alias, for
 example: ``SELECT 1 + 2 AS "the Total"`` will keep the column name
 ``the Total``.
 
+A delimited identifier can contain any character. A double-quote is written
+twice, so ``"say ""hi"""`` is the name ``say "hi"``. It can't be empty
+(``""``).
+
 Why is there no "LIMIT" syntax?
 -------------------------------
 

@@ -4,6 +4,18 @@ module vsql
 //
 // Specify a value whose data type is to be inferred from its context.
 
+// ContextuallyTypedValueSpecification is a NULL or DEFAULT that takes its type
+// from the column it's assigned to.
+type ContextuallyTypedValueSpecification = DefaultSpecification | NullSpecification
+
+fn (e ContextuallyTypedValueSpecification) compile(mut c Compiler) !CompileResult {
+	match e {
+		DefaultSpecification, NullSpecification {
+			return e.compile(mut c)!
+		}
+	}
+}
+
 // NullSpecification (not to be confused with NullPredicate) represents an
 // untyped NULL. This exists as an expression (rather than a special value)
 // because it's devoid of a type until it's used in an actual expression. Also,
@@ -27,4 +39,16 @@ fn (e NullSpecification) compile(mut c Compiler) !CompileResult {
 	}
 
 	return sqlstate_42601('cannot determine value of untyped NULL')
+}
+
+// DefaultSpecification is the DEFAULT keyword, which is the default value of the
+// column it's assigned to (see Compiler.default_value).
+struct DefaultSpecification {}
+
+fn (e DefaultSpecification) compile(mut c Compiler) !CompileResult {
+	if default_value := c.default_value {
+		return default_value.compile(mut c)!
+	}
+
+	return NullSpecification{}.compile(mut c)!
 }

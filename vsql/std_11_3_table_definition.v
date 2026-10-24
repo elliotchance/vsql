@@ -43,6 +43,10 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 	}
 
 	table := stmt.table(table_name, 0)!
+	for column in table.columns {
+		check_default_clause(mut conn, column)!
+	}
+
 	catalog.storage.create_table(table_name, table.columns, table.primary_key)!
 
 	return new_result_msg('CREATE TABLE 1', elapsed_parse, t.elapsed())
@@ -62,12 +66,15 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				}
 				column_names[table_element.name.sub_entity_name] = true
 
-				columns << Column{Identifier{
-					catalog_name:    table_name.catalog_name
-					schema_name:     table_name.schema_name
-					entity_name:     table_name.entity_name
-					sub_entity_name: table_element.name.sub_entity_name
-				}, table_element.typ, table_element.not_null}
+				columns << Column{
+					...table_element
+					name: Identifier{
+						catalog_name:    table_name.catalog_name
+						schema_name:     table_name.schema_name
+						entity_name:     table_name.entity_name
+						sub_entity_name: table_element.name.sub_entity_name
+					}
+				}
 			}
 			UniqueConstraintDefinition {
 				if primary_key.len > 0 {
@@ -102,7 +109,10 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	// Columns in the PRIMARY KEY are implicitly NOT NULL (11.7).
 	for i, column in columns {
 		if column.name.sub_entity_name in primary_key {
-			columns[i] = Column{column.name, column.typ, true}
+			columns[i] = Column{
+				...column
+				not_null: true
+			}
 		}
 	}
 

@@ -37,7 +37,7 @@ INSERT INTO pk1 (id) VALUES (NULL);
 CREATE TABLE pk2 (id INT, x INT, PRIMARY KEY (id));
 INSERT INTO pk2 (x) VALUES (1);
 -- msg: CREATE TABLE 1
--- error 23502: violates non-null constraint: column ":memory:".PUBLIC.PK2.ID
+-- error 23502: violates non-null constraint: column ID
 
 UPDATE pk1 SET id = 3 WHERE id = 2;
 SELECT * FROM pk1;

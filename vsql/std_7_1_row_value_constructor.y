@@ -34,10 +34,10 @@ contextually_typed_row_value_constructor:
     $$.v = ContextuallyTypedRowValueConstructor($1.v as BooleanValueExpression)
   }
 | contextually_typed_value_specification {
-    $$.v = ContextuallyTypedRowValueConstructor($1.v as NullSpecification)
+    $$.v = ContextuallyTypedRowValueConstructor($1.v as ContextuallyTypedValueSpecification)
   }
 | left_paren contextually_typed_value_specification right_paren {
-    $$.v = ContextuallyTypedRowValueConstructor($2.v as NullSpecification)
+    $$.v = ContextuallyTypedRowValueConstructor($2.v as ContextuallyTypedValueSpecification)
   }
 | left_paren contextually_typed_row_value_constructor_element comma
   contextually_typed_row_value_constructor_element_list right_paren {
@@ -61,7 +61,7 @@ contextually_typed_row_value_constructor_element:
     $$.v = ContextuallyTypedRowValueConstructorElement($1.v as ValueExpression)
   }
 | contextually_typed_value_specification {
-    $$.v = ContextuallyTypedRowValueConstructorElement($1.v as NullSpecification)
+    $$.v = ContextuallyTypedRowValueConstructorElement($1.v as ContextuallyTypedValueSpecification)
   }
 
 row_value_constructor_predicand:

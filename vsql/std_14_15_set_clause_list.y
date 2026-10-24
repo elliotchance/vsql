@@ -20,7 +20,7 @@ update_target:
 update_source:
   value_expression { $$.v = UpdateSource($1.v as ValueExpression) }
 | contextually_typed_value_specification {
-    $$.v = UpdateSource($1.v as NullSpecification)
+    $$.v = UpdateSource($1.v as ContextuallyTypedValueSpecification)
   }
 
 object_column:

@@ -694,6 +694,11 @@ struct ServerOptions
    pub:
    	// db_file is opened for every client, unless connect is set.
    	db_file string
+   	// host is the address to listen on. If it's empty, 127.0.0.1 is used, which
+   	// only accepts clients on the same machine. Use 0.0.0.0 (every IPv4
+   	// interface) or :: (every interface) to accept clients from other machines.
+   	// An IPv6 address doesn't need brackets.
+   	host string
    	// port to listen on. If it's 0, any free port is used, see Server.port().
    	port int
    	// verbose prints every message in and out of the server.

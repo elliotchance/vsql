@@ -12,10 +12,18 @@ mut:
 	context Identifier
 	// Untyped NULLs should be treated as this type.
 	null_type ?Type
+	// default_value is the default of the column that a DEFAULT is assigned to.
+	// A column without a default (or when it's not set) has a default of NULL.
+	default_value ?DefaultOption
 	// aggregates collects every aggregate function found while compiling an
 	// expression (such as both in "MIN(x) * AVG(x)") so that they can be
 	// calculated for each group before the expression is evaluated.
 	aggregates []AggregateFunction
+	// next_value_not_allowed is set to the clause being compiled (such as
+	// "WHERE") when it can't contain a NEXT VALUE FOR.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 2
+	next_value_not_allowed string
 	// grouping_columns is set when compiling the select list of a grouped query.
 	// A column reference must then be one of these, unless it's in the argument
 	// of an aggregate function (in_aggregate).
@@ -23,6 +31,14 @@ mut:
 	// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Conformance Rules, 3
 	grouping_columns ?[]Column
 	in_aggregate     bool
+	// distinct is set when compiling the select list of a "SELECT DISTINCT".
+	distinct bool
+	// distinct_columns is set when compiling an ORDER BY of a "SELECT DISTINCT".
+	// A column reference must then be one of these columns of the select list,
+	// unless the whole sort key is also in the select list.
+	//
+	// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28d
+	distinct_columns ?[]Column
 }
 
 type CompiledFn = fn (mut conn Connection, data Row, params map[string]Value) !Value

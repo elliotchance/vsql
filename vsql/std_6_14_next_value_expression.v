@@ -14,8 +14,28 @@ fn (e NextValueExpression) pstr(_ map[string]Value) string {
 }
 
 fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
+	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 2
+	if c.distinct {
+		return sqlstate_42601('NEXT VALUE FOR cannot be used in SELECT DISTINCT')
+	}
+
 	name := c.conn.resolve_catalog_identifier(e.name)!
 	mut catalog := c.conn.catalog_for(name)
+
+	// The value would depend on how many times (and in which order) a search
+	// condition, sort key or aggregate argument is evaluated, so it can only be
+	// used where it's evaluated once for each row of the result.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 2
+	if c.next_value_not_allowed != '' {
+		return sqlstate_42601('NEXT VALUE FOR cannot be used in ${c.next_value_not_allowed}')
+	}
+	if c.in_aggregate {
+		return sqlstate_42601('NEXT VALUE FOR cannot be used in an aggregate function')
+	}
+	if _ := c.grouping_columns {
+		return sqlstate_42601('NEXT VALUE FOR cannot be used in a grouped query')
+	}
 
 	return CompileResult{
 		run:          fn [name, mut catalog] (mut conn Connection, data Row, params map[string]Value) !Value {

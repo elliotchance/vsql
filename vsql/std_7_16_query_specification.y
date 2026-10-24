@@ -8,6 +8,14 @@ query_specification:
       table_expression: &table_expression
     }
   }
+| SELECT set_quantifier select_list table_expression {
+    table_expression := $4.v as TableExpression
+    $$.v = QuerySpecification{
+      exprs:            $3.v as SelectList
+      table_expression: &table_expression
+      distinct:         $2.v as bool
+    }
+  }
 
 // A bare asterisk can only appear alone (Syntax Rule 7.16), unlike a qualified
 // asterisk which can be mixed with other items.

@@ -173,6 +173,32 @@ type.
   VALUES CAST('2022-02-30' AS DATE);
   -- error 22007: invalid datetime format
 
+``2200B`` escape character conflict
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``ESCAPE`` of a ``SIMILAR TO`` can't be ``:`` when the pattern has a
+character class such as ``[:ALPHA:]``.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES 'a' SIMILAR TO '[[:ALPHA:]]' ESCAPE ':';
+  -- error 2200B: escape character conflict
+
+``2200C`` invalid use of escape character
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When the ``ESCAPE`` of a ``SIMILAR TO`` is a character with a special meaning
+(such as ``%``), it can only be used in the pattern to escape a character.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES 'abc' SIMILAR TO 'a%' ESCAPE '%';
+  -- error 2200C: invalid use of escape character
+
 ``2200H`` sequence generator limit exceeded
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -225,6 +251,18 @@ trailing spaces are removed.
 
   VALUES CAST('abc' AS INT);
   -- error 22018: invalid character value for cast
+
+``22019`` invalid escape character
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``ESCAPE`` of a ``LIKE`` or ``SIMILAR TO`` must be exactly one character.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES 'abc' LIKE 'a%' ESCAPE '!!';
+  -- error 22019: invalid escape character
 
 ``2201B`` invalid regular expression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -284,6 +322,19 @@ The row count of an ``OFFSET`` must not be negative.
 
   VALUES 1, 2, 3 OFFSET -1 ROWS;
   -- error 2201X: invalid row count in result offset clause
+
+``22025`` invalid escape sequence
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the pattern of a ``LIKE`` with an ``ESCAPE``, the escape character must be
+followed by ``%``, ``_`` or the escape character.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES 'abc' LIKE 'a!bc' ESCAPE '!';
+  -- error 22025: invalid escape sequence
 
 ``22027`` trim error
 ^^^^^^^^^^^^^^^^^^^^
@@ -576,6 +627,18 @@ the connection.
   CREATE SEQUENCE seq1;
   -- msg: CREATE SEQUENCE 1
   -- error 42P07: duplicate sequence: ":memory:".PUBLIC.SEQ1
+
+``42P10`` invalid column reference
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t (a INT, b INT);
+  SELECT DISTINCT a FROM t ORDER BY b;
+  -- msg: CREATE TABLE 1
+  -- error 42P10: column B must be in the select list to be used in ORDER BY with SELECT DISTINCT
 
 ``54000`` program limit exceeded
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

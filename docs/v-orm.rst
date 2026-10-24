@@ -162,9 +162,10 @@ savepoint functions return an error.
 Limitations
 -----------
 
-- ``UNIQUE``, ``@[default]`` and ``@[references]`` cannot be used, because
-  vsql cannot declare them yet. Creating a table that uses them returns an
-  error.
+- ``UNIQUE`` and ``@[references]`` cannot be used, because vsql cannot declare
+  them yet. ``@[default]`` cannot be used either, because the V ORM doesn't
+  allow it for vsql (even though vsql supports column defaults). Creating a
+  table that uses them returns an error.
 
 - Indexes (``@[index]``) and comments (``@[comment]``) are ignored.
 
@@ -178,7 +179,7 @@ Limitations
   - ``select distinct``.
   - ``sum``, ``min`` and ``max`` of a field that isn't an ``f64``.
   - Updating rows from an array (``set name = rows.name where id ==
-    rows.id``), which uses ``CASE``.
+    rows.id``), which uses ``IN``.
   - ``ilike``, which isn't part of the SQL standard.
   - Nested transactions, which use savepoints (see `Transactions`_).
 

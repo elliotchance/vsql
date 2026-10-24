@@ -228,13 +228,23 @@ fn requote_identifier(s string) string {
 }
 
 fn (e Identifier) compile(mut c Compiler) !CompileResult {
+	// The column must exist before it can be checked against the grouping
+	// columns, otherwise an unknown column would be reported as not grouped.
+	compiled := e.compile_column(mut c)!
+
 	if grouping_columns := c.grouping_columns {
 		if e.custom_id == '' && !c.in_aggregate && !e.is_grouping_column(grouping_columns) {
 			return sqlstate_42803(e.str())
 		}
 	}
 
-	return e.compile_column(mut c)!
+	if distinct_columns := c.distinct_columns {
+		if e.custom_id == '' && !e.is_grouping_column(distinct_columns) {
+			return sqlstate_42p10(e.str())
+		}
+	}
+
+	return compiled
 }
 
 // is_grouping_column is true if the column reference is one of the grouping

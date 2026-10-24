@@ -365,7 +365,8 @@ The trim character must be exactly one character.
 ``23505`` violates unique constraint
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A row with the same ``PRIMARY KEY`` already exists.
+A row with the same ``PRIMARY KEY``, or the same values for the columns of a
+``UNIQUE`` constraint, already exists.
 
 **Examples**
 

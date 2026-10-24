@@ -162,10 +162,10 @@ savepoint functions return an error.
 Limitations
 -----------
 
-- ``UNIQUE`` and ``@[references]`` cannot be used, because vsql cannot declare
-  them yet. ``@[default]`` cannot be used either, because the V ORM doesn't
-  allow it for vsql (even though vsql supports column defaults). Creating a
-  table that uses them returns an error.
+- ``@[references]`` cannot be used, because vsql cannot declare foreign keys
+  yet. ``@[unique]`` and ``@[default]`` cannot be used either, because the V
+  ORM doesn't allow them for vsql (even though vsql supports ``UNIQUE`` and
+  column defaults). Creating a table that uses them returns an error.
 
 - Indexes (``@[index]``) and comments (``@[comment]``) are ignored.
 

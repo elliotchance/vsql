@@ -19,16 +19,27 @@ struct AddColumnDefinition {
 // read with NULL for it (see new_row_from_bytes), so the rows only need to be
 // rewritten when the default isn't NULL. The rows must satisfy the constraints
 // of the new column, so a NOT NULL column without a default can only be added
-// to an empty table.
+// to an empty table, and a UNIQUE column with a default to a table with at most
+// one row.
 fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table, params map[string]Value) ! {
 	mut elements := []TableElement{}
 	for column in table.columns {
 		elements << column
 	}
 	if table.primary_key.len > 0 {
-		elements << UniqueConstraintDefinition{table.primary_key.map(Identifier{
-			sub_entity_name: it
-		})}
+		elements << UniqueConstraintDefinition{
+			columns:        table.primary_key.map(Identifier{
+				sub_entity_name: it
+			})
+			is_primary_key: true
+		}
+	}
+	for columns in table.unique_constraints {
+		elements << UniqueConstraintDefinition{
+			columns: columns.map(Identifier{
+				sub_entity_name: it
+			})
+		}
 	}
 	for constraint in table.check_constraints {
 		elements << constraint
@@ -52,6 +63,7 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	// A row that gets a new key, because the column is the PRIMARY KEY, is
 	// deleted and written again (like an UPDATE).
 	mut moved := []Row{}
+	mut updated := []Row{}
 	if !value.is_null || column.not_null {
 		for row in catalog.storage.read_rows(table.name)! {
 			if value.is_null {
@@ -67,6 +79,7 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 				moved << after
 			} else {
 				catalog.storage.update_row(mut after, new_table)!
+				updated << after
 			}
 		}
 	}
@@ -76,4 +89,6 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	for mut row in moved {
 		catalog.storage.write_row(mut row, new_table)!
 	}
+	updated << moved
+	catalog.storage.check_unique_constraints(new_table, updated)!
 }

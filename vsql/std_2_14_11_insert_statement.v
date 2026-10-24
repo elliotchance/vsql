@@ -47,6 +47,7 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 	for mut row in rows {
 		catalog.storage.write_row(mut row, table)!
 	}
+	catalog.storage.check_unique_constraints(table, rows)!
 
 	return new_result_msg('INSERT ${rows.len}', elapsed_parse, t.elapsed())
 }

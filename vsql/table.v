@@ -65,6 +65,10 @@ mut:
 	// The CHECK constraints of the table, in the order they were defined. A
 	// CHECK on a column is the same as a CHECK on the table.
 	check_constraints []CheckConstraintDefinition
+	// The columns of each UNIQUE constraint of the table (other than the
+	// PRIMARY KEY), in the order they were defined. A UNIQUE on a column is the
+	// same as a UNIQUE on the table.
+	unique_constraints [][]string
 pub mut:
 	// The name of the table including the schema.
 	name Identifier
@@ -105,6 +109,7 @@ pub fn (t Table) column(name string) !Column {
 //     "ID" INTEGER NOT NULL,
 //     "BAR" CHARACTER VARYING(10) DEFAULT 'baz',
 //     PRIMARY KEY ("ID"),
+//     UNIQUE ("BAR"),
 //     CHECK ("ID" > 0)
 //   )
 fn (t Table) bytes() []u8 {
@@ -122,6 +127,10 @@ fn (t Table) bytes() []u8 {
 
 	if t.primary_key.len > 0 {
 		elements << '  PRIMARY KEY (${t.primary_key.map(delimit_identifier(it)).join(', ')})'
+	}
+
+	for columns in t.unique_constraints {
+		elements << '  UNIQUE (${columns.map(delimit_identifier(it)).join(', ')})'
 	}
 
 	for constraint in t.check_constraints {

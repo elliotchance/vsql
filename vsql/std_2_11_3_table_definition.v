@@ -78,6 +78,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	mut columns := []Column{}
 	mut primary_key := []string{}
 	mut check_constraints := []CheckConstraintDefinition{}
+	mut unique_constraints := [][]string{}
 	mut column_names := map[string]bool{}
 	for table_element in stmt.table_elements {
 		match table_element {
@@ -101,33 +102,59 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				check_constraints << table_element
 			}
 			UniqueConstraintDefinition {
-				if primary_key.len > 0 {
+				if table_element.is_primary_key && primary_key.len > 0 {
 					return sqlstate_42601('only one PRIMARY KEY can be defined')
 				}
 
+				constraint := if table_element.is_primary_key { 'PRIMARY KEY' } else { 'UNIQUE' }
+				mut unique_columns := []string{}
 				for column in table_element.columns {
-					if column.sub_entity_name in primary_key {
-						return sqlstate_42601('column ${column.sub_entity_name} appears more than once in PRIMARY KEY')
+					if column.sub_entity_name in unique_columns {
+						return sqlstate_42601('column ${column.sub_entity_name} appears more than once in ${constraint}')
 					}
 
-					// A column of any type can be in the PRIMARY KEY, because they
-					// can all be grouped (11.7 Syntax Rule 1).
+					// A column of any type can be in a PRIMARY KEY or UNIQUE,
+					// because they can all be grouped (11.7 Syntax Rule 1).
 					mut found := false
 					for e in stmt.table_elements {
 						if e is Column {
 							if e.name.sub_entity_name == column.sub_entity_name {
-								primary_key << column.sub_entity_name
+								unique_columns << column.sub_entity_name
 								found = true
 							}
 						}
 					}
 
 					if !found {
-						return sqlstate_42601('unknown column ${column} in PRIMARY KEY')
+						return sqlstate_42601('unknown column ${column} in ${constraint}')
 					}
+				}
+
+				if table_element.is_primary_key {
+					primary_key = unique_columns.clone()
+				} else {
+					unique_constraints << unique_columns
 				}
 			}
 		}
+	}
+
+	// Each unique constraint must have a different set of columns (11.7 Syntax
+	// Rule 5c), in any order.
+	mut column_sets := map[string]bool{}
+	mut all_unique_columns := [primary_key]
+	all_unique_columns << unique_constraints
+	for unique_columns in all_unique_columns {
+		if unique_columns.len == 0 {
+			continue
+		}
+		mut sorted := unique_columns.clone()
+		sorted.sort()
+		set := sorted.map(delimit_identifier(it)).join(', ')
+		if set in column_sets {
+			return sqlstate_42601('UNIQUE (${unique_columns.map(requote_identifier(it)).join(', ')}) has the same columns as another unique constraint')
+		}
+		column_sets[set] = true
 	}
 
 	// Columns in the PRIMARY KEY are implicitly NOT NULL (11.7).
@@ -141,11 +168,12 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	}
 
 	return Table{
-		tid:               tid
-		name:              table_name
-		columns:           columns
-		primary_key:       primary_key
-		check_constraints: check_constraints
+		tid:                tid
+		name:               table_name
+		columns:            columns
+		primary_key:        primary_key
+		check_constraints:  check_constraints
+		unique_constraints: unique_constraints
 	}
 }
 

@@ -13,6 +13,7 @@ Syntax
   <element> := <column_name> <data_type> [ DEFAULT <default> ]
                [ <column_constraint> ... ]
              | PRIMARY KEY ( <column_name> , ... )
+             | UNIQUE ( <column_name> , ... )
              | CHECK ( <condition> )
 
   <default> := <literal>
@@ -23,6 +24,7 @@ Syntax
 
   <column_constraint> := NOT NULL
                        | PRIMARY KEY
+                       | UNIQUE
                        | CHECK ( <condition> )
 
 1. ``column_name`` must start with a letter, but can be followed by any letter,
@@ -33,9 +35,9 @@ Syntax
    :doc:`numbers` and :doc:`text`.
 3. A table can have up to 1600 columns.
 
-Columns allow ``NULL`` unless they are ``NOT NULL``. ``UNIQUE`` and
-``FOREIGN KEY`` constraints are not supported yet, and constraints can't be
-named (with ``CONSTRAINT <name>``).
+Columns allow ``NULL`` unless they are ``NOT NULL``. ``FOREIGN KEY``
+constraints are not supported yet, and constraints can't be named (with
+``CONSTRAINT <name>``).
 
 Defaults
 --------
@@ -84,6 +86,25 @@ For a ``PRIMARY KEY`` of one integer column, a ``WHERE`` that compares it with
 A ``PRIMARY KEY`` does not allow ``NULL``, so all columns used in the
 ``PRIMARY KEY`` are ``NOT NULL``, even if they are not declared that way.
 
+Unique Constraints
+------------------
+
+A ``UNIQUE`` constraint prevents two rows from having the same values for its
+columns (an error ``23505``), like a ``PRIMARY KEY``. Values that are equal are
+the same in the same way. A row with a ``NULL`` in any of the columns never
+conflicts, so a ``UNIQUE`` column can have any number of ``NULL`` values.
+
+A ``UNIQUE`` of a single column can also be written on the column, so
+``code INTEGER UNIQUE`` is the same as ``code INTEGER, UNIQUE (code)``. A table
+can have any number of ``UNIQUE`` constraints, but each one (and the
+``PRIMARY KEY``) must have a different set of columns. A column may only appear
+once in each ``UNIQUE``.
+
+The constraints are checked once all of the rows of an :doc:`insert` or
+:doc:`update` have been changed, so ``UPDATE t SET code = code + 1`` works. If
+any row conflicts, none of the rows are changed. Every row of the table is read
+to check the constraints, because there are no indexes yet.
+
 Check Constraints
 -----------------
 
@@ -129,7 +150,7 @@ Examples
 
   CREATE TABLE categories (
       category_id INTEGER PRIMARY KEY,
-      name CHARACTER VARYING(100) NOT NULL
+      name CHARACTER VARYING(100) NOT NULL UNIQUE
   );
 
   CREATE TABLE orders (

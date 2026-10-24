@@ -32,6 +32,8 @@ column isn't added:
 - A column can only be the ``PRIMARY KEY`` if the table doesn't have one yet
   (an error ``42601``). Every existing row gets the same default, so it's an
   error ``23505`` if there's more than one row.
+- A ``UNIQUE`` column with a ``DEFAULT`` (that isn't ``NULL``) is an error
+  ``23505`` if there's more than one row, for the same reason.
 
 Examples
 --------

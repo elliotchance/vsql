@@ -28,7 +28,10 @@ fn add_column_constraint(elements []TableElement, constraint ColumnConstraint) [
 			return new_elements
 		}
 		UniqueConstraintDefinition {
-			return append_list(elements, TableElement(UniqueConstraintDefinition{[column.name]}))
+			return append_list(elements, TableElement(UniqueConstraintDefinition{
+				...constraint
+				columns: [column.name]
+			}))
 		}
 		CheckConstraintDefinition {
 			return append_list(elements, TableElement(CheckConstraintDefinition{

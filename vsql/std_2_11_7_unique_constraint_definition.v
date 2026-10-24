@@ -5,7 +5,8 @@ module vsql
 // Specify a uniqueness constraint for a table.
 
 struct UniqueConstraintDefinition {
-	columns []Identifier
+	columns        []Identifier
+	is_primary_key bool
 }
 
 // check_primary_key returns an error if a row with the same PRIMARY KEY as r
@@ -37,4 +38,85 @@ fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 	if err := iter.err {
 		return err
 	}
+}
+
+// check_unique_constraints returns an error if a row in rows has the same values
+// for the columns of a UNIQUE constraint as another row in t, or might once
+// another transaction finishes. A row with a NULL in any of the columns never
+// conflicts. The rows must have already been written, because the constraints
+// are checked once all of the rows of a statement have been written (ISO/IEC
+// 9075-2:2016(E), 4.23.2), so that UPDATE t SET u = u + 1 works.
+//
+// Every row of t is read, there is no index.
+fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
+	if t.unique_constraints.len == 0 || rows.len == 0 {
+		return
+	}
+
+	f.isolation_start()!
+	defer {
+		f.end_isolation()
+	}
+
+	// For each constraint, the object key of the row that has each unique key.
+	mut new_keys := []map[string][]u8{len: t.unique_constraints.len}
+	for row in rows {
+		mut r := row
+		object_key := r.object_key(t)!
+		for i, columns in t.unique_constraints {
+			key := unique_key(row, t, columns)!
+			if key.len > 0 {
+				new_keys[i][key.bytestr()] = object_key
+			}
+		}
+	}
+
+	mut iter := f.btree.new_range_iterator(row_key_prefix(t.id), row_key_prefix(t.id + 1))
+	for {
+		object := iter.next() or { break }
+		row := new_row_from_bytes(t, object.value, object.tid).for_storage()
+		for i, columns in t.unique_constraints {
+			key := unique_key(row, t, columns)!
+			if key.len == 0 {
+				continue
+			}
+
+			// A row only conflicts with a different row, and two new rows
+			// with the same key are different rows.
+			object_key := new_keys[i][key.bytestr()] or { continue }
+			if object.key == object_key {
+				continue
+			}
+
+			// The same as check_primary_key.
+			if (object.tid != f.transaction_id && f.header.active_transaction_ids.exists(object.tid))
+				|| (object.xid != 0 && object.xid != f.transaction_id
+					&& f.header.active_transaction_ids.exists(object.xid)) {
+				return sqlstate_40001('avoiding concurrent write on individual row')
+			}
+
+			if object.xid == 0 {
+				return sqlstate_23505('UNIQUE (${columns.map(requote_identifier(it)).join(', ')}) on ${t.name}')
+			}
+		}
+	}
+	if err := iter.err {
+		return err
+	}
+}
+
+// unique_key is the values of the columns in a row, encoded so that values that
+// are equal have the same key (like the PRIMARY KEY, see Row.object_key). It's
+// empty if any of the values are NULL.
+fn unique_key(row Row, t Table, columns []string) ![]u8 {
+	mut key := new_empty_bytes()
+	for column in columns {
+		value := row.data[column]
+		if value.is_null {
+			return []u8{}
+		}
+		write_key_value(mut key, value, t.column(column)!.typ.typ)
+	}
+
+	return key.bytes()
 }

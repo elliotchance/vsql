@@ -6,6 +6,7 @@ import time
 
 // All possible root statments.
 type Stmt = AlterSequenceGeneratorStatement
+	| AlterTableStatement
 	| CommitStatement
 	| DeleteStatementSearched
 	| DropSchemaStatement
@@ -90,6 +91,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 	stmt := p.stmt
 	match stmt {
 		AlterSequenceGeneratorStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		AlterTableStatement {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}

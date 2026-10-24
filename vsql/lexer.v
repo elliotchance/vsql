@@ -6,7 +6,8 @@ module vsql
 // YYSym allows for every possible type that needs to pass through $$ rules in
 // the grammar. If V ever supports some kind of "any" type this would be a
 // little easier.
-type YYSym = AggregateFunction
+type YYSym = AddColumnDefinition
+	| AggregateFunction
 	| AggregateFunctionCount
 	| AlterSequenceGeneratorStatement
 	| BetweenPredicate

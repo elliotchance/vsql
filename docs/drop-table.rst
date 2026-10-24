@@ -35,4 +35,5 @@ Examples
 See Also
 --------
 
+- :doc:`alter-table`
 - :doc:`create-table`

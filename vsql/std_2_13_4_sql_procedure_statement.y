@@ -15,6 +15,7 @@ sql_schema_definition_statement:
 
 sql_schema_manipulation_statement:
   drop_schema_statement { $$.v = $1.v as Stmt }
+| alter_table_statement { $$.v = $1.v as Stmt }
 | drop_table_statement { $$.v = $1.v as Stmt }
 | alter_sequence_generator_statement { $$.v = Stmt($1.v as AlterSequenceGeneratorStatement) }
 | drop_sequence_generator_statement { $$.v = $1.v as Stmt }

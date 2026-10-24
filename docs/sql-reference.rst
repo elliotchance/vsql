@@ -5,6 +5,7 @@ SQL Reference
    :maxdepth: 1
 
    alter-sequence.rst
+   alter-table.rst
    commit.rst
    create-schema.rst
    create-sequence.rst

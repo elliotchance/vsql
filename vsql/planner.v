@@ -50,6 +50,21 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 
 			return plan, map[string]Table{}
 		}
+		SetOperation {
+			mut plan := Plan{}
+			plan.subplans['\$1'] = create_query_expression_plan(*body.left, params, mut
+				conn, Correlation{})!
+			plan.subplans['\$2'] = create_query_expression_plan(*body.right, params, mut
+				conn, Correlation{})!
+
+			plan.operations << new_set_operation_operation(body, plan.subplans['\$1'],
+				plan.subplans['\$2'], mut conn)!
+
+			return plan, map[string]Table{}
+		}
+		ParenthesizedQueryExpression {
+			return create_query_expression_plan(*body.expr, params, mut conn, correlation)!, map[string]Table{}
+		}
 	}
 }
 
@@ -440,8 +455,18 @@ fn create_update_plan(stmt UpdateStatementSearched, params map[string]Value, mut
 }
 
 fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, mut conn Connection, correlation Correlation) !Plan {
-	mut plan, tables := create_basic_plan(stmt.body, params, mut conn, true,
+	mut plan, mut tables := create_basic_plan(stmt.body, params, mut conn, true,
 		correlation)!
+
+	// Only a query specification has its own tables. Otherwise, the ORDER BY can
+	// only use the columns of the result (7.17, Syntax Rule 28d).
+	if stmt.body !is QuerySpecification {
+		tables = {
+			'': Table{
+				columns: plan.columns()
+			}
+		}
+	}
 
 	if stmt.order.len > 0 {
 		// The expressions are only evaluated when rows are compared, so they're

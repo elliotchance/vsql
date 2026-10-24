@@ -4,7 +4,12 @@ module vsql
 //
 // Specify a set of <row value expression>s to be constructed into a table.
 
-type SimpleTable = QuerySpecification | []RowValueConstructor
+// SimpleTable is also used for the other forms of a <query expression body>
+// (see 7.17), which can contain a SimpleTable.
+type SimpleTable = ParenthesizedQueryExpression
+	| QuerySpecification
+	| SetOperation
+	| []RowValueConstructor
 
 // A ValuesOperation provides a VALUES derived implicit table.
 struct ValuesOperation {

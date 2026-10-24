@@ -174,6 +174,48 @@ the columns, and then the ``CHECK`` constraints in the order they're defined.
     - The SQL of the condition, such as ``PRICE > 0``, or ``NULL`` if it's
       longer than 10485760 characters.
 
+``TABLE_CONSTRAINTS``
+---------------------
+
+One row for each constraint of each table (but not the tables of the
+``INFORMATION_SCHEMA``): the ``PRIMARY KEY``, then the same check constraints
+as ``CHECK_CONSTRAINTS``, in the same order and with the same names.
+
+.. code-block:: sql
+
+  CREATE TABLE products (id INT PRIMARY KEY, price INT CHECK (price > 0));
+
+  SELECT constraint_name, constraint_type FROM information_schema.table_constraints;
+  -- CONSTRAINT_NAME: PRODUCTS_PRIMARY_KEY CONSTRAINT_TYPE: PRIMARY KEY
+  -- CONSTRAINT_NAME: PRODUCTS_NOT_NULL_1 CONSTRAINT_TYPE: CHECK
+  -- CONSTRAINT_NAME: PRODUCTS_CHECK_1 CONSTRAINT_TYPE: CHECK
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``CONSTRAINT_CATALOG``, ``CONSTRAINT_SCHEMA``
+    - The catalog and schema of the table.
+
+  * - ``CONSTRAINT_NAME``
+    - ``<table>_PRIMARY_KEY`` for the ``PRIMARY KEY``, otherwise the same as
+      ``CHECK_CONSTRAINTS``.
+
+  * - ``TABLE_CATALOG``, ``TABLE_SCHEMA``, ``TABLE_NAME``
+    - The table the constraint is on.
+
+  * - ``CONSTRAINT_TYPE``
+    - ``PRIMARY KEY`` or ``CHECK`` (``UNIQUE`` and ``FOREIGN KEY`` constraints
+      are not supported).
+
+  * - ``IS_DEFERRABLE``, ``INITIALLY_DEFERRED``
+    - Always ``NO`` (constraints can't be deferred).
+
+  * - ``ENFORCED``
+    - Always ``YES`` (``NOT ENFORCED`` is not supported).
+
 The types of the columns of these tables are the domains of the
 ``INFORMATION_SCHEMA`` in the standard: a name is a ``CHARACTER VARYING(128)``,
 other text is a ``CHARACTER VARYING(10485760)``, a number is an ``INTEGER`` and

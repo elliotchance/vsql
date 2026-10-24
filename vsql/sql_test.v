@@ -892,6 +892,48 @@ fn test_server_db_file() ! {
 // A client only gets an error (or is disconnected) when its database can't be
 // opened, it disconnects before sending its startup message or it disconnects
 // without saying goodbye. The server keeps running for other clients.
+fn test_server_host() ! {
+	connect := fn (database string) !&Connection {
+		return open(':memory:')
+	}
+
+	// Only clients on the same machine can connect by default.
+	mut local := new_server(ServerOptions{
+		connect: connect
+	})
+	if _ := local.address() {
+		assert false, 'has an address before listening'
+	} else {
+		assert err.msg() == 'server is not listening'
+	}
+	local.listen()!
+	defer {
+		local.stop() or {}
+	}
+	assert local.address()! == '127.0.0.1:${local.port()!}'
+
+	mut ip6 := new_server(ServerOptions{
+		connect: connect
+		host:    '::1'
+	})
+	ip6.listen()!
+	defer {
+		ip6.stop() or {}
+	}
+	assert ip6.address()! == '[::1]:${ip6.port()!}'
+
+	// 192.0.2.1 is reserved for documentation, so it can't be a local address.
+	mut remote := new_server(ServerOptions{
+		connect: connect
+		host:    '192.0.2.1'
+	})
+	if _ := remote.listen() {
+		assert false, 'listened on an address that is not local'
+	} else {
+		assert err.msg().starts_with('cannot listen on 192.0.2.1:0: ')
+	}
+}
+
 fn test_server_client_errors() ! {
 	mut server := start_sql_test_server_with(ServerOptions{
 		connect: fn (database string) !&Connection {

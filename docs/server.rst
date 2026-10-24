@@ -18,11 +18,20 @@ vsql will ignore any authentication values (such as user, password, database,
 etc). Simply connect using ``127.0.0.1:3210``. Use ``-port`` to listen on a
 different port, see :doc:`cli`.
 
+By default, the server only listens on ``127.0.0.1``, so only clients on the
+same machine can connect. Use ``-host`` to listen on another address, such as
+``0.0.0.0`` (every IPv4 interface) or ``::`` (every interface):
+
+.. code-block:: text
+
+   $ vsql server -host :: mydb.vsql
+   ready on [::]:3210
+
 .. warning::
 
-   The server listens on every network interface (not only ``127.0.0.1``) and
-   doesn't check passwords, so anyone who can connect to the port can read and
-   change the database. Only run it on a trusted network, or block the port
+   The server doesn't check passwords, so when it listens on an address that
+   other machines can reach, anyone who can connect to the port can read and
+   change the database. Only do this on a trusted network, or block the port
    with a firewall.
 
 Many PostgreSQL clients send a ``SELECT`` without a ``FROM`` (such as
@@ -51,13 +60,12 @@ The server can also be started from your own V application:
        // different database for each database name a client connects with.
        db_file: 'mydb.vsql'
 
-       // A port of 0 uses any free port.
+       // A port of 0 uses any free port. host defaults to 127.0.0.1.
        port: 0
      )
 
      server.listen()!
-     port := server.port()!
-     println('ready on 127.0.0.1:' + port.str())
+     println('ready on ' + server.address()!)
 
      // serve() accepts clients until stop() is called (from another thread).
      server.serve()!

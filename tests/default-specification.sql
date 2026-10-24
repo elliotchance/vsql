@@ -71,7 +71,7 @@ SELECT * FROM t1 WHERE x = DEFAULT;
 -- error 42601: syntax error: unexpected DEFAULT
 
 VALUES (DEFAULT);
--- error 42601: syntax error: unexpected DEFAULT
+-- error 42601: syntax error: unexpected ")", expecting ","
 
 VALUES CAST(DEFAULT AS INT);
 -- error 42601: syntax error: unexpected DEFAULT

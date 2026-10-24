@@ -1,0 +1,96 @@
+VALUES ROW(ROW(1, 2) IS NULL, ROW(1, 2) IS NOT NULL);
+-- COL1: FALSE COL2: TRUE
+
+VALUES ROW((1, 2) IS NULL, (1, 2) IS NOT NULL);
+-- COL1: FALSE COL2: TRUE
+
+VALUES (CAST(NULL AS INT), CAST(NULL AS VARCHAR(10))) IS NULL;
+-- COL1: TRUE
+
+VALUES (CAST(NULL AS INT), CAST(NULL AS VARCHAR(10))) IS NOT NULL;
+-- COL1: FALSE
+
+VALUES ROW((1, CAST(NULL AS INT)) IS NULL, (1, CAST(NULL AS INT)) IS NOT NULL);
+-- COL1: FALSE COL2: FALSE
+
+VALUES NOT (1, CAST(NULL AS INT)) IS NULL;
+-- COL1: TRUE
+
+VALUES ROW(ROW(CAST(NULL AS INT)) IS NULL, ROW(1) IS NULL);
+-- COL1: TRUE COL2: FALSE
+
+VALUES ROW(ROW(CAST(NULL AS INT)) IS NOT NULL, ROW(1) IS NOT NULL);
+-- COL1: FALSE COL2: TRUE
+
+VALUES (1, 2, 3 + 4) IS NOT NULL;
+-- COL1: TRUE
+
+CREATE TABLE foo (x INT, y INT);
+INSERT INTO foo (x, y) VALUES (1, 2);
+INSERT INTO foo (x, y) VALUES (3, NULL);
+INSERT INTO foo (x, y) VALUES (NULL, NULL);
+VALUES 'is null';
+SELECT * FROM foo WHERE (x, y) IS NULL;
+VALUES 'is not null';
+SELECT * FROM foo WHERE ROW(x, y) IS NOT NULL;
+VALUES 'neither';
+SELECT * FROM foo WHERE NOT (x, y) IS NULL AND NOT (x, y) IS NOT NULL;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- COL1: is null
+-- X: NULL Y: NULL
+-- COL1: is not null
+-- X: 1 Y: 2
+-- COL1: neither
+-- X: 3 Y: NULL
+
+CREATE TABLE foo (x INT, y INT);
+INSERT INTO foo (x, y) VALUES (1, NULL);
+INSERT INTO foo (x, y) VALUES (2, 3);
+SELECT x, (x, y) IS NOT NULL AS ok FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- X: 1 OK: FALSE
+-- X: 2 OK: TRUE
+
+CREATE TABLE foo (x BOOLEAN, y INT);
+INSERT INTO foo (x, y) VALUES ((1, 2) IS NULL, 3);
+INSERT INTO foo (x, y) VALUES ((1, 2) IS NOT NULL, 4);
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- X: FALSE Y: 3
+-- X: TRUE Y: 4
+
+CREATE TABLE foo (x INT, y INT);
+INSERT INTO foo (x, y) VALUES (1, NULL);
+INSERT INTO foo (x, y) VALUES (2, NULL);
+SELECT (count(x), max(y)) IS NOT NULL FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- warning 01003: null value eliminated in set function
+-- COL1: FALSE
+
+CREATE TABLE foo (x INT);
+EXPLAIN SELECT * FROM foo WHERE (x, x + 1) IS NOT NULL;
+-- msg: CREATE TABLE 1
+-- EXPLAIN: TABLE ":memory:".PUBLIC.FOO (X INTEGER)
+-- EXPLAIN: WHERE ROW(X, X + 1) IS NOT NULL
+-- EXPLAIN: EXPR (":memory:".PUBLIC.FOO.X INTEGER)
+
+VALUES (1, NULL) IS NULL;
+-- error 42601: syntax error: unexpected NULL
+
+VALUES ROW(1, NULL) IS NULL;
+-- error 42601: syntax error: unexpected NULL
+
+VALUES (1, DEFAULT) IS NULL;
+-- error 42601: syntax error: unexpected DEFAULT
+
+VALUES (1, no_such_column) IS NULL;
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.NO_SUCH_COLUMN

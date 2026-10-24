@@ -4,24 +4,16 @@ module vsql
 //
 // Specify a list of updates.
 
-type UpdateSource = NullSpecification | ValueExpression
+type UpdateSource = ContextuallyTypedValueSpecification | ValueExpression
 
 struct SetClause {
 	column_name string
 	source      UpdateSource
 }
 
-fn (e UpdateSource) pstr(params map[string]Value) string {
-	return match e {
-		ValueExpression, NullSpecification {
-			e.pstr(params)
-		}
-	}
-}
-
 fn (e UpdateSource) compile(mut c Compiler) !CompileResult {
 	match e {
-		ValueExpression, NullSpecification {
+		ValueExpression, ContextuallyTypedValueSpecification {
 			return e.compile(mut c)!
 		}
 	}

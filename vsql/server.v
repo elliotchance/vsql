@@ -14,6 +14,11 @@ pub struct ServerOptions {
 pub:
 	// db_file is opened for every client, unless connect is set.
 	db_file string
+	// host is the address to listen on. If it's empty, 127.0.0.1 is used, which
+	// only accepts clients on the same machine. Use 0.0.0.0 (every IPv4
+	// interface) or :: (every interface) to accept clients from other machines.
+	// An IPv6 address doesn't need brackets.
+	host string
 	// port to listen on. If it's 0, any free port is used, see Server.port().
 	port int
 	// verbose prints every message in and out of the server.
@@ -70,9 +75,27 @@ pub fn (mut s Server) start() ! {
 // listen starts listening on the port, but clients aren't accepted until
 // serve() is called.
 pub fn (mut s Server) listen() ! {
-	s.listener = net.listen_tcp(.ip6, ':${s.options.port}') or {
-		return error('cannot listen on :${s.options.port}: ${err}')
+	host := if s.options.host == '' { '127.0.0.1' } else { s.options.host }
+	mut family := net.AddrFamily.ip
+	mut address := '${host}:${s.options.port}'
+	if host.contains(':') {
+		family = .ip6
+		address = '[${host}]:${s.options.port}'
 	}
+
+	s.listener = net.listen_tcp(family, address) or {
+		return error('cannot listen on ${address}: ${err}')
+	}
+}
+
+// address is the address and port the server is listening on, such as
+// "127.0.0.1:3210" or "[::]:3210".
+pub fn (s &Server) address() !string {
+	if s.listener == unsafe { nil } {
+		return error('server is not listening')
+	}
+
+	return s.listener.addr()!.str()
 }
 
 // port is the port the server is listening on, which is only known after

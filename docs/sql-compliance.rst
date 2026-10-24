@@ -13,7 +13,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 92 of the 164 mandatory features** of the
+**vsql supports 98 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -163,22 +163,22 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E061-14
      - Search condition
 
-   * - ❌ **E071**
+   * - ✅ **E071**
      - **Basic query expressions**
 
-   * - ❌ E071-01
+   * - ✅ E071-01
      - ``UNION DISTINCT`` table operator
 
-   * - ❌ E071-02
+   * - ✅ E071-02
      - ``UNION ALL`` table operator
 
-   * - ❌ E071-03
+   * - ✅ E071-03
      - ``EXCEPT DISTINCT`` table operator
 
-   * - ❌ E071-05
+   * - ✅ E071-05
      - Columns combined via table operators need not have exactly the same data type.
 
-   * - ❌ E071-06
+   * - ✅ E071-06
      - Table operators in subqueries
 
    * - ❌ **E081**
@@ -751,7 +751,7 @@ Optional Features
    * - ❌ F302-02
      - INTERSECT ALL table operator
 
-   * - ❌ **F304**
+   * - ✅ **F304**
      - **EXCEPT ALL table operator**
 
    * - ❌ **F312**
@@ -1009,10 +1009,10 @@ Optional Features
    * - ❌ **F852**
      - **Top-level <order by clause> in views**
 
-   * - ❌ **F855**
+   * - ✅ **F855**
      - **Nested <order by clause> in <query expression>**
 
-   * - ❌ **F856**
+   * - ✅ **F856**
      - **Nested <fetch first clause> in <query expression>**
 
    * - ✅ **F857**
@@ -1033,7 +1033,7 @@ Optional Features
    * - ✅ **F862**
      - **<result offset clause> in subqueries**
 
-   * - ❌ **F863**
+   * - ✅ **F863**
      - **Nested <result offset clause> in <query expression>**
 
    * - ❌ **F864**
@@ -1462,7 +1462,7 @@ Optional Features
    * - ❌ **T525**
      - **Default values for parameters of SQL-invoked functions**
 
-   * - ❌ **T551**
+   * - ⭕ **T551**
      - **Optional key words for default syntax**
 
    * - ❌ **T561**

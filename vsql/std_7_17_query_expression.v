@@ -14,6 +14,49 @@ struct QueryExpression {
 	order  []SortSpecification
 }
 
+// SetOperation is "<left> UNION <right>" or "<left> EXCEPT <right>". Each side
+// is a reference because it can contain another SetOperation, and V stores a
+// sum type's value inline.
+struct SetOperation {
+	left  &QueryExpression
+	op    string // UNION or EXCEPT
+	all   bool   // DISTINCT is the default (Syntax Rule 6).
+	right &QueryExpression
+}
+
+fn new_set_operation(left SimpleTable, op string, all bool, right SimpleTable) SimpleTable {
+	return SimpleTable(SetOperation{
+		left:  &QueryExpression{
+			body: left
+		}
+		op:    op
+		all:   all
+		right: &QueryExpression{
+			body: right
+		}
+	})
+}
+
+// ParenthesizedQueryExpression is a <query primary> with its own ORDER BY,
+// OFFSET or FETCH FIRST, such as "(SELECT ... FETCH FIRST 1 ROW ONLY) UNION
+// ...".
+struct ParenthesizedQueryExpression {
+	expr &QueryExpression
+}
+
+// new_parenthesized_query_expression returns the body of a parenthesized
+// <query expression>, unless it needs to be evaluated before an outer ORDER BY,
+// OFFSET or FETCH FIRST.
+fn new_parenthesized_query_expression(expr QueryExpression) SimpleTable {
+	if expr.order.len == 0 && expr.offset == none && expr.fetch == none {
+		return expr.body
+	}
+
+	return SimpleTable(ParenthesizedQueryExpression{&QueryExpression{
+		...expr
+	}})
+}
+
 // writes must be true if the query modifies the database, see
 // PreparedStmt.writes.
 fn (stmt QueryExpression) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration, writes bool) !Result {
@@ -386,4 +429,138 @@ fn row_count(clause string, spec ValueSpecification, value Value) !i64 {
 
 fn is_whole_number(f f64) bool {
 	return f == math.trunc(f)
+}
+
+// A SetOperationOperation combines the rows of two queries for UNION or EXCEPT.
+// Each column has the combined type of that column in both queries (9.5), and
+// the name of that column in the left query.
+//
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 16b and 19b
+struct SetOperationOperation {
+	op      string
+	all     bool
+	columns Columns
+mut:
+	conn  &Connection
+	left  Plan
+	right Plan
+}
+
+fn new_set_operation_operation(op SetOperation, left Plan, right Plan, mut conn Connection) !&SetOperationOperation {
+	left_columns := left.columns()
+	right_columns := right.columns()
+	if left_columns.len != right_columns.len {
+		return sqlstate_42601('each ${op.op} query must have the same number of columns')
+	}
+
+	mut columns := []Column{}
+	for i, column in left_columns {
+		typ := combine_types(column.typ, right_columns[i].typ) or {
+			return sqlstate_42804('in column ${i + 1} of ${op.op}', column.typ.str(),
+				right_columns[i].typ.str())
+		}
+		columns << Column{column.name, typ, false}
+	}
+
+	return &SetOperationOperation{op.op, op.all, columns, conn, left, right}
+}
+
+fn (o &SetOperationOperation) str() string {
+	quantifier := if o.all { 'ALL' } else { 'DISTINCT' }
+
+	return '${o.op} ${quantifier} (${o.columns})'
+}
+
+fn (o &SetOperationOperation) columns() Columns {
+	return o.columns
+}
+
+// execute follows General Rule 3b of 7.17. A row R that appears m times on the
+// left and n times on the right appears in the result:
+//
+//   UNION ALL:       m + n times
+//   UNION DISTINCT:  once, if m > 0 or n > 0
+//   EXCEPT ALL:      max(m - n, 0) times
+//   EXCEPT DISTINCT: once, if m > 0 and n = 0
+//
+// Rows are duplicates when every value is equal, where NULLs are equal to each
+// other (4.1.5).
+fn (mut o SetOperationOperation) execute(_ []Row) ![]Row {
+	left := o.values(o.left.execute([]Row{})!, o.left.columns())!
+	right := o.values(o.right.execute([]Row{})!, o.right.columns())!
+
+	mut kept := [][]Value{}
+	if o.op == 'UNION' {
+		for values in left {
+			if o.all || find_duplicate_row(o.conn, kept, values)! < 0 {
+				kept << values
+			}
+		}
+		for values in right {
+			if o.all || find_duplicate_row(o.conn, kept, values)! < 0 {
+				kept << values
+			}
+		}
+	} else {
+		// Each row on the right removes one duplicate from the left for EXCEPT
+		// ALL, or every duplicate for EXCEPT DISTINCT.
+		mut removed := []bool{len: right.len}
+		for values in left {
+			if !o.all && find_duplicate_row(o.conn, kept, values)! >= 0 {
+				continue
+			}
+
+			mut is_removed := false
+			for j, other in right {
+				if !removed[j] && is_duplicate_row(o.conn, values, other)! {
+					removed[j] = o.all
+					is_removed = true
+					break
+				}
+			}
+
+			if !is_removed {
+				kept << values
+			}
+		}
+	}
+
+	mut rows := []Row{}
+	for values in kept {
+		mut data := map[string]Value{}
+		for i, column in o.columns {
+			data[column.name.id()] = values[i]
+		}
+		rows << new_row(data)
+	}
+
+	return rows
+}
+
+// values returns the values of each row, cast to the type of each column of the
+// result.
+fn (mut o SetOperationOperation) values(rows []Row, columns Columns) ![][]Value {
+	mut all_values := [][]Value{}
+	for row in rows {
+		mut values := []Value{}
+		for i, column in columns {
+			values << convert_to_combined_type(mut o.conn, 'in ${o.op}', row.get_column(column)!,
+				o.columns[i].typ)!
+		}
+		all_values << values
+	}
+
+	return all_values
+}
+
+// find_duplicate_row returns the index of the first row that is a duplicate of
+// values, or -1.
+fn find_duplicate_row(conn &Connection, rows [][]Value, values []Value) !int {
+	for i, row in rows {
+		if is_duplicate_row(conn, row, values)! {
+			return i
+		}
+	}
+
+	return -1
 }

@@ -23,7 +23,13 @@ Syntax
   <table_reference> := { <table_name> | ( <query> ) }
                        [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
 
-A ``<query>`` in the ``FROM`` is a ``SELECT`` or ``VALUES``.
+  <query> { UNION | EXCEPT } [ ALL | DISTINCT ] <query>
+  [ ORDER BY <expr> [ ASC | DESC ] , ... ]
+  [ OFFSET <integer> { ROW | ROWS } ]
+  [ FETCH FIRST [ <integer> ] { ROW | ROWS } ONLY ]
+
+A ``<query>`` is a ``SELECT``, ``VALUES``, ``UNION`` or ``EXCEPT``. It can be in
+parentheses, such as ``(SELECT ... FETCH FIRST 1 ROW ONLY)``.
 
 ``AS <name>`` gives the table a *correlation name*. The table must then be
 referred to by that name instead (such as ``p.price``). The optional list of
@@ -32,8 +38,8 @@ column names renames each of the table's columns, in order.
 A ``SELECT`` must have a ``FROM``. To calculate expressions without a table,
 use :doc:`values` (such as ``VALUES 1 + 2``).
 
-Not supported yet: ``UNION`` and ``EXCEPT``, and subqueries outside of the
-``FROM``. See :doc:`sql-compliance`.
+Not supported yet: ``INTERSECT``, and subqueries outside of the ``FROM``. See
+:doc:`sql-compliance`.
 
 SELECT
 ------
@@ -163,6 +169,49 @@ most one row, even when the table is empty:
 .. code-block:: sql
 
   SELECT COUNT(*) FROM products HAVING COUNT(*) = 0;
+
+UNION and EXCEPT
+----------------
+
+``UNION`` and ``EXCEPT`` combine the rows of two queries:
+
+- ``UNION ALL`` returns the rows of both queries.
+- ``UNION`` (or ``UNION DISTINCT``) returns each distinct row of both queries.
+- ``EXCEPT ALL`` returns the rows of the left query, with one fewer of each
+  row for every time that row is in the right query.
+- ``EXCEPT`` (or ``EXCEPT DISTINCT``) returns each distinct row of the left
+  query that is not in the right query.
+
+Rows are the same when each of their values are equal, and two ``NULL`` values
+are considered the same. For example:
+
+.. code-block:: sql
+
+  SELECT city FROM customers
+  UNION
+  SELECT city FROM suppliers;
+
+  SELECT id FROM products
+  EXCEPT
+  SELECT product_id FROM orders;
+
+Both queries must have the same number of columns, and each column must have
+compatible types (such as ``INTEGER`` and ``BIGINT``, or ``CHAR`` and
+``VARCHAR``). Each column of the result has a type that fits the values of
+both queries, and the name of that column in the left query.
+
+The operators are evaluated left to right. Use parentheses to change the order.
+
+The ``ORDER BY``, ``OFFSET`` and ``FETCH FIRST`` at the end apply to the whole
+result, so the ``ORDER BY`` can only use the columns of the result. A query in
+parentheses can have its own:
+
+.. code-block:: sql
+
+  (SELECT name FROM products ORDER BY price DESC FETCH FIRST 3 ROWS ONLY)
+  UNION ALL
+  (SELECT name FROM products ORDER BY price FETCH FIRST 3 ROWS ONLY)
+  ORDER BY name;
 
 ORDER BY
 --------

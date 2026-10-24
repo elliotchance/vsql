@@ -53,12 +53,31 @@ query_expression:
 
 query_expression_body:
   query_term { $$.v = $1.v as SimpleTable }
+| query_expression_body UNION query_term {
+    $$.v = new_set_operation($1.v as SimpleTable, 'UNION', false,
+      $3.v as SimpleTable)
+  }
+| query_expression_body UNION set_quantifier query_term {
+    $$.v = new_set_operation($1.v as SimpleTable, 'UNION', !($3.v as bool),
+      $4.v as SimpleTable)
+  }
+| query_expression_body EXCEPT query_term {
+    $$.v = new_set_operation($1.v as SimpleTable, 'EXCEPT', false,
+      $3.v as SimpleTable)
+  }
+| query_expression_body EXCEPT set_quantifier query_term {
+    $$.v = new_set_operation($1.v as SimpleTable, 'EXCEPT', !($3.v as bool),
+      $4.v as SimpleTable)
+  }
 
 query_term:
   query_primary { $$.v = $1.v as SimpleTable }
 
 query_primary:
   simple_table { $$.v = $1.v as SimpleTable }
+| left_paren query_expression right_paren {
+    $$.v = new_parenthesized_query_expression($2.v as QueryExpression)
+  }
 
 simple_table:
   query_specification { $$.v = SimpleTable($1.v as QuerySpecification) }

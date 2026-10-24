@@ -19,6 +19,7 @@ SQL Reference
    select.rst
    set-catalog.rst
    set-schema.rst
+   set-transaction.rst
    start-transaction.rst
    update.rst
    values.rst

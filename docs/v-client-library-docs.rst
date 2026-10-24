@@ -418,6 +418,12 @@ struct Connection
    	// errors (such as an UPDATE that matched no rows). Expressions must not have
    	// side effects, like advancing a sequence.
    	dry_run bool
+   	// next_transaction is set by SET TRANSACTION for the next SQL-transaction,
+   	// whether it's started by START TRANSACTION or implicitly by a statement.
+   	next_transaction ?TransactionCharacteristics
+   	// read_only is the access mode of the current SQL-transaction, see
+   	// begin_access_mode.
+   	read_only bool
    pub mut:
    	// now allows you to override the wall clock that is used. The Time must be
    	// in UTC with a separate offset for the current local timezone (in positive

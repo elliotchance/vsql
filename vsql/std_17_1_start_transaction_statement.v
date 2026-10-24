@@ -7,6 +7,7 @@ import time
 // Start an SQL-transaction and set its characteristics.
 
 struct StartTransactionStatement {
+	characteristics ?TransactionCharacteristics
 }
 
 fn (stmt StartTransactionStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
@@ -15,6 +16,14 @@ fn (stmt StartTransactionStatement) execute(mut conn Connection, _ map[string]Va
 	if conn.in_transaction() {
 		return sqlstate_25001()
 	}
+
+	// Characteristics from SET TRANSACTION are for this SQL-transaction, unless
+	// they are replaced.
+	characteristics := stmt.characteristics or {
+		conn.next_transaction or { TransactionCharacteristics{} }
+	}
+	conn.read_only = characteristics.read_only
+	conn.next_transaction = none
 
 	// The SQL-transaction includes every catalog, since a statement can use any
 	// of them.

@@ -17,7 +17,15 @@ Syntax
 
 .. code-block:: text
 
-  START TRANSACTION
+  START TRANSACTION [ READ ONLY | READ WRITE ]
+
+Access Mode
+-----------
+
+A ``READ ONLY`` transaction can query the database, but any statement that
+changes it fails with ``25006``. ``READ WRITE`` is the default, unless
+:doc:`set-transaction` was used to set the access mode of the next transaction.
+See :doc:`set-transaction` for more details.
 
 Implicit Transactions
 ---------------------
@@ -62,3 +70,4 @@ See Also
 
 - :doc:`commit`
 - :doc:`rollback`
+- :doc:`set-transaction`

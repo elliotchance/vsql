@@ -147,5 +147,6 @@ Examples
 See Also
 --------
 
+- :doc:`alter-table`
 - :doc:`drop-table`
 - :doc:`insert`

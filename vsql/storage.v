@@ -333,6 +333,25 @@ fn (mut f Storage) create_table(definition Table) ! {
 	f.schema_changed()
 }
 
+// update_table replaces the definition of a table, which has the same id, with
+// a new version (such as from an ALTER TABLE).
+fn (mut f Storage) update_table(definition Table) ! {
+	f.isolation_start()!
+	defer {
+		f.end_isolation()
+	}
+
+	table := Table{
+		...definition
+		tid: f.transaction_id
+	}
+	f.btree.update(new_page_object(table_object_key(table.id), f.transaction_id, 0,
+		table.bytes()))!
+
+	f.tables[table.name.storage_id()] = table
+	f.schema_changed()
+}
+
 fn (mut f Storage) create_schema(schema_name string) ! {
 	f.isolation_start()!
 	defer {

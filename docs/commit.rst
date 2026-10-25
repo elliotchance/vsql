@@ -10,6 +10,10 @@ until all changes are applied with ``COMMIT`` or all changes are discarded with
 Nested transactions are not supported and ``COMMIT`` or ``ROLLBACK`` cannot be
 used when not in a transaction, otherwise an error is returned.
 
+Each deferred constraint (see "Deferrable Constraints" in :doc:`create-table`)
+is checked first. If one isn't satisfied, the whole transaction is rolled back
+and the error is ``40002``.
+
 .. contents::
 
 Syntax

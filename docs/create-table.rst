@@ -403,20 +403,38 @@ but not by another schema (an error ``42601``). A column can only have one named
 Deferrable Constraints
 ----------------------
 
-A ``UNIQUE``, ``FOREIGN KEY`` or ``CHECK`` can be ``DEFERRABLE`` or ``NOT
-DEFERRABLE`` (the default), and ``INITIALLY IMMEDIATE``. Constraints can't be
-deferred yet, so even a ``DEFERRABLE`` constraint is checked at the end of each
-statement that changes a table. ``INITIALLY DEFERRED`` is not supported (an
-error ``0A000``).
+A constraint is checked at the end of each statement that changes a table,
+unless it's deferred. Then it's only checked at the ``COMMIT`` (see
+:doc:`commit`), so that a transaction can break it for a while, such as to
+insert a row before the row that it references.
 
-A ``PRIMARY KEY`` or ``NOT NULL`` can't be ``DEFERRABLE`` (an error ``0A000``).
-``NOT ENFORCED`` is not supported.
+- ``INITIALLY DEFERRED`` constraints are deferred at the start of each
+  transaction, and are also ``DEFERRABLE``.
+- ``DEFERRABLE`` (or ``DEFERRABLE INITIALLY IMMEDIATE``) constraints are
+  checked immediately, because ``SET CONSTRAINTS`` is not supported yet.
+- ``NOT DEFERRABLE`` (or ``INITIALLY IMMEDIATE``, or nothing) constraints are
+  always checked immediately.
+
+Outside of a transaction, each statement is its own transaction, so a deferred
+constraint is still checked when the statement finishes. A ``UNIQUE``,
+``FOREIGN KEY`` or ``CHECK`` can be deferred, but a ``PRIMARY KEY`` or ``NOT
+NULL`` can't (an error ``0A000``). The referential actions of a ``FOREIGN KEY``
+(such as ``ON DELETE CASCADE``) are never deferred.
+
+A deferred constraint is checked against every row of its table, rather than
+just the rows that were changed. ``NOT ENFORCED`` is not supported.
 
 .. code-block:: sql
 
+  CREATE TABLE parent (id INT PRIMARY KEY);
   CREATE TABLE child (
-    parent_id INT REFERENCES parent DEFERRABLE INITIALLY IMMEDIATE
+    parent_id INT REFERENCES parent INITIALLY DEFERRED
   );
+
+  START TRANSACTION;
+  INSERT INTO child (parent_id) VALUES (1);
+  INSERT INTO parent (id) VALUES (1);
+  COMMIT;
 
 See Also
 --------

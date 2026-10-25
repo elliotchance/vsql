@@ -207,6 +207,7 @@ fn foreign_key_type(a SQLType, b SQLType) SQLType {
 // FOREIGN KEY doesn't need to reference a row (MATCH SIMPLE). Like
 // check_unique_constraints, the rows must have already been written, so a row
 // can reference a row of the same table that's written by the same statement.
+// A deferred constraint isn't checked (see defer_check).
 //
 // A datetime without a time zone is in the session time zone (time_zone, in
 // minutes) when it's compared with one with a time zone.
@@ -233,7 +234,7 @@ fn (mut f Storage) check_foreign_keys(t Table, rows []Row, time_zone i16) ! {
 				missing[value.bytestr()] = true
 			}
 		}
-		if missing.len == 0 {
+		if missing.len == 0 || f.defer_check(t, key.name, key.characteristics) {
 			continue
 		}
 
@@ -283,7 +284,8 @@ fn (mut f Storage) check_foreign_keys(t Table, rows []Row, time_zone i16) ! {
 // The referenced columns are a unique constraint (which has already been
 // checked), so another row of t can't have the same key. time_zone is the same
 // as for check_foreign_keys. Every row of each referencing table is read, there
-// is no index.
+// is no index. A deferred constraint isn't checked (see defer_check), it's
+// checked against every referencing row instead.
 fn (mut f Storage) check_referencing_rows(t Table, old_rows []Row, new_rows []Row, time_zone i16) ! {
 	if old_rows.len == 0 {
 		return
@@ -315,7 +317,7 @@ fn (mut f Storage) check_referencing_rows(t Table, old_rows []Row, new_rows []Ro
 			for row in new_rows {
 				removed.delete(key_value(row, key.referenced_columns, types, time_zone).bytestr())
 			}
-			if removed.len == 0 {
+			if removed.len == 0 || f.defer_check(referencing, key.name, key.characteristics) {
 				continue
 			}
 

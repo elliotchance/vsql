@@ -38,6 +38,17 @@ fn (e Subquery) plan(mut c Compiler) !Plan {
 	return create_query_expression_plan(*e.query, c.params, mut c.conn, Correlation{})!
 }
 
+// plan_column is plan for a subquery that must have one column, such as for
+// "x IN (SELECT ...)".
+fn (e Subquery) plan_column(mut c Compiler) !Plan {
+	plan := e.plan(mut c)!
+	if plan.columns().len != 1 {
+		return sqlstate_42601('subquery must return only one column')
+	}
+
+	return plan
+}
+
 // run_subquery returns the rows of a subquery from its plan.
 fn run_subquery(mut conn Connection, plan Plan) ![]Row {
 	conn.subquery_depth++
@@ -48,4 +59,16 @@ fn run_subquery(mut conn Connection, plan Plan) ![]Row {
 	mut p := plan
 
 	return p.execute([]Row{})!
+}
+
+// subquery_values runs the plan of a subquery and returns the values of the
+// first (and only) column of every row.
+fn subquery_values(mut conn Connection, plan Plan) ![]Value {
+	column := plan.columns()[0]
+	mut values := []Value{}
+	for row in run_subquery(mut conn, plan)! {
+		values << row.get_column(column)!
+	}
+
+	return values
 }

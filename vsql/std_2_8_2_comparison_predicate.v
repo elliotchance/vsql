@@ -31,6 +31,24 @@ fn (op ComparisonOperator) str() string {
 	}
 }
 
+// truth is the result of "X <op> Y", given the comparison of X with Y.
+fn (op ComparisonOperator) truth(cmp CompareResult) Truth {
+	if cmp == .is_unknown {
+		return .is_unknown
+	}
+
+	result := match op {
+		.equal { cmp == .is_equal }
+		.not_equal { cmp != .is_equal }
+		.greater_than { cmp == .is_greater }
+		.less_than { cmp == .is_less }
+		.greater_than_or_equal { cmp == .is_greater || cmp == .is_equal }
+		.less_than_or_equal { cmp == .is_less || cmp == .is_equal }
+	}
+
+	return if result { Truth.is_true } else { Truth.is_false }
+}
+
 fn (e ComparisonPredicate) pstr(params map[string]Value) string {
 	return '${e.left.pstr(params)} ${e.op} ${e.right.pstr(params)}'
 }
@@ -45,31 +63,7 @@ fn (e ComparisonPredicate) compile(mut c Compiler) !CompileResult {
 			mut left := compiled_left.run(mut conn, data, params)!
 			mut right := compiled_right.run(mut conn, data, params)!
 
-			cmp := compare(conn, left, right)!
-			if cmp == .is_unknown {
-				return new_unknown_value()
-			}
-
-			return new_boolean_value(match e.op {
-				.equal {
-					cmp == .is_equal
-				}
-				.not_equal {
-					cmp != .is_equal
-				}
-				.greater_than {
-					cmp == .is_greater
-				}
-				.less_than {
-					cmp == .is_less
-				}
-				.greater_than_or_equal {
-					cmp == .is_greater || cmp == .is_equal
-				}
-				.less_than_or_equal {
-					cmp == .is_less || cmp == .is_equal
-				}
-			})
+			return e.op.truth(compare(conn, left, right)!).value()
 		}
 		typ:          new_type('BOOLEAN', 0, 0)
 		contains_agg: compiled_left.contains_agg || compiled_right.contains_agg

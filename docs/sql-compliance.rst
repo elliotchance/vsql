@@ -18,7 +18,7 @@ Mandatory Features
 ~~~~~~~~~~~~~~~~~~
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 107 of the 164 mandatory features** of the
+**vsql supports 110 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -147,7 +147,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E061-06
      - ``NULL`` predicate
 
-   * - ❌ E061-07
+   * - ✅ E061-07
      - Quantified comparison predicate
 
    * - ✅ E061-08
@@ -156,10 +156,10 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ E061-09
      - Subqueries in comparison predicate
 
-   * - ❌ E061-11
+   * - ✅ E061-11
      - Subqueries in ``IN`` predicate
 
-   * - ❌ E061-12
+   * - ✅ E061-12
      - Subqueries in quantified comparison predicate
 
    * - ❌ E061-13

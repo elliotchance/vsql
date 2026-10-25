@@ -56,11 +56,7 @@ fn (e BetweenPredicate) compile(mut c Compiler) !CompileResult {
 				result = truth_not(result)
 			}
 
-			return match result {
-				.is_true { new_boolean_value(true) }
-				.is_false { new_boolean_value(false) }
-				.is_unknown { new_unknown_value() }
-			}
+			return result.value()
 		}
 		typ:          new_type('BOOLEAN', 0, 0)
 		contains_agg: compiled_expr.contains_agg || compiled_left.contains_agg
@@ -73,6 +69,14 @@ enum Truth {
 	is_false
 	is_true
 	is_unknown
+}
+
+fn (t Truth) value() Value {
+	return match t {
+		.is_true { new_boolean_value(true) }
+		.is_false { new_boolean_value(false) }
+		.is_unknown { new_unknown_value() }
+	}
 }
 
 // between_asymmetric is "X >= Y AND X <= Z", given the comparisons of X with Y

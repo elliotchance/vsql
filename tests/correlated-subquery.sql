@@ -114,9 +114,50 @@ SELECT x FROM t1 GROUP BY x HAVING EXISTS (SELECT * FROM t2 WHERE t2.x = t1.x);
 -- X: 2
 -- X: 3
 
--- # An aggregate function of only outer columns would be of the outer query.
-SELECT (SELECT MAX(t1.x) FROM t2) FROM t1;
--- error 0A000: an aggregate function of an outer reference (T1.X) is not supported
+-- # An aggregate function of only outer columns is of the outer query, which is then grouped.
+SELECT (SELECT MAX(t1.x) FROM t2 WHERE z = 20) AS m FROM t1;
+-- warning 01003: null value eliminated in set function
+-- M: 3
+
+SELECT (SELECT MAX(t1.x) FROM t2 WHERE z = 20) AS m FROM t1 WHERE x > 5;
+-- M: NULL
+
+SELECT x, (SELECT MAX(t1.x) FROM t2 WHERE z = 20) AS m FROM t1;
+-- error 42803: column X must be in the GROUP BY clause or used in an aggregate function
+
+SELECT y, (SELECT COUNT(t1.x) + COUNT(*) FROM t2 WHERE z = 20) AS c FROM t1 GROUP BY y;
+-- warning 01003: null value eliminated in set function
+-- Y: a C: 2
+-- Y: b C: 3
+-- Y: c C: 1
+
+SELECT y FROM t1 GROUP BY y HAVING EXISTS (SELECT * FROM t2 WHERE t2.x = MAX(t1.x));
+-- warning 01003: null value eliminated in set function
+-- Y: b
+
+SELECT 1 IN (SELECT MIN(t1.x) FROM t2 WHERE z = 20) AS a, 1 = ANY (SELECT MIN(t1.x) FROM t2 WHERE z = 20) AS b FROM t1;
+-- warning 01003: null value eliminated in set function
+-- A: TRUE B: TRUE
+
+SELECT (SELECT (SELECT COUNT(DISTINCT t1.y) FROM t2 AS b WHERE b.z = 20) FROM t2 WHERE z = 20) AS c FROM t1;
+-- C: 3
+
+SELECT * FROM t1 WHERE EXISTS (SELECT * FROM t2 WHERE t2.x = MAX(t1.x));
+-- error 42601: syntax error: an aggregate function cannot be used in WHERE
+
+SELECT * FROM t1 WHERE MAX(x) > 1;
+-- error 42601: syntax error: an aggregate function cannot be used in WHERE
+
+-- # An aggregate function that also uses a column of the subquery is of the subquery.
+SELECT x, (SELECT MAX(t2.z + t1.x) FROM t2) AS m FROM t1;
+-- warning 01003: null value eliminated in set function
+-- X: 1 M: 32
+-- X: 2 M: 33
+-- X: 3 M: 34
+-- X: NULL M: NULL
+
+SELECT y FROM t1 GROUP BY y HAVING (SELECT MAX(t2.z + t1.x) FROM t2) > 0;
+-- error 42803: column T1.X must be in the GROUP BY clause or used in an aggregate function
 
 -- # A column must be in the FROM clause of a query that contains it.
 SELECT * FROM t3 WHERE EXISTS (SELECT * FROM t2 WHERE t2.x = t1.x);

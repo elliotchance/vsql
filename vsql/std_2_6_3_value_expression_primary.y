@@ -35,5 +35,8 @@ nonparenthesized_value_expression_primary:
 | next_value_expression {
     $$.v = NonparenthesizedValueExpressionPrimary($1.v as NextValueExpression)
   }
+| scalar_subquery {
+    $$.v = NonparenthesizedValueExpressionPrimary($1.v as Subquery)
+  }
 
 %%

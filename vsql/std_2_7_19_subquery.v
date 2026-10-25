@@ -7,7 +7,7 @@ module vsql
 type TablePrimaryBody = Identifier | QueryExpression
 
 // A Subquery is a <query expression> used in an expression, such as in EXISTS
-// or IN. query is a reference
+// or IN. In a value expression it's a <scalar subquery>. query is a reference
 // because a QueryExpression can contain a Subquery, and V stores a sum type's
 // value inline.
 struct Subquery {
@@ -28,6 +28,11 @@ fn (e Subquery) plan(mut c Compiler) !Plan {
 	// Rule 1 (Feature F671)
 	if c.check_constraint {
 		return sqlstate_42601('a subquery cannot be used in a CHECK constraint')
+	}
+
+	// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rule 1
+	if c.in_aggregate {
+		return sqlstate_42601('a subquery cannot be used in an aggregate function')
 	}
 
 	c.conn.subquery_depth++
@@ -71,4 +76,32 @@ fn subquery_values(mut conn Connection, plan Plan) ![]Value {
 	}
 
 	return values
+}
+
+// compile is a <scalar subquery>. It's NULL when there are no rows.
+//
+// ISO/IEC 9075-2:2016(E), 7.19, <subquery>, Syntax Rules 2 and 5, General Rule 3
+fn (e Subquery) compile(mut c Compiler) !CompileResult {
+	plan := e.plan_column(mut c)!
+	typ := plan.columns()[0].typ
+
+	return CompileResult{
+		run:          fn [plan, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+			values := subquery_values(mut conn, plan)!
+			if values.len > 1 {
+				return sqlstate_21000()
+			}
+
+			if values.len == 0 {
+				return Value{
+					typ:     typ
+					is_null: true
+				}
+			}
+
+			return values[0]
+		}
+		typ:          typ
+		contains_agg: false
+	}
 }

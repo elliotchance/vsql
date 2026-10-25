@@ -87,6 +87,13 @@ VALUES 'b ' IN (SELECT y FROM t1);
 VALUES 3 IN ((SELECT x FROM t2));
 -- COL1: TRUE
 
+-- # A subquery in a list of values is a scalar subquery, so it can only have one row.
+VALUES 3 IN ((SELECT x FROM t2 WHERE x = 3), 5);
+-- COL1: TRUE
+
+VALUES 3 IN ((SELECT x FROM t2), 5);
+-- error 21000: cardinality violation: more than one row returned by a subquery used as an expression
+
 -- # The subquery must have one column.
 VALUES 1 IN (SELECT * FROM t1);
 -- error 42601: syntax error: subquery must return only one column

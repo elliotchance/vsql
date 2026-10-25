@@ -99,6 +99,7 @@ type YYSym = AddColumnDefinition
 	| SimilarPredicatePart2
 	| SimpleTable
 	| SortSpecification
+	| Subquery
 	| Stmt
 	| Table
 	| TableElement

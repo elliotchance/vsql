@@ -107,6 +107,18 @@ fn sqlstate_01004() IError {
 	}
 }
 
+// Cardinality violation: a scalar subquery returned more than one row.
+struct SQLState21000 {
+	SQLState
+}
+
+fn sqlstate_21000() IError {
+	return SQLState21000{
+		code: sqlstate_to_int('21000')
+		msg:  'cardinality violation: more than one row returned by a subquery used as an expression'
+	}
+}
+
 // string data right truncation - the character value is too long for the
 // destination.
 struct SQLState22001 {

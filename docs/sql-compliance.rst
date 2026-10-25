@@ -18,7 +18,7 @@ Mandatory Features
 ~~~~~~~~~~~~~~~~~~
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 110 of the 164 mandatory features** of the
+**vsql supports 112 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -153,7 +153,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E061-08
      - ``EXISTS`` predicate
 
-   * - ❌ E061-09
+   * - ✅ E061-09
      - Subqueries in comparison predicate
 
    * - ✅ E061-11
@@ -486,7 +486,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ F311-05
      - ``GRANT`` statement
 
-   * - ❌ **F471**
+   * - ✅ **F471**
      - **Scalar subquery values**
 
    * - ✅ **F481**

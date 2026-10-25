@@ -231,6 +231,31 @@ the number of times it's evaluated depends on the query that contains it.
   -- COL1: 2
   -- COL1: 3 COL2: 3
 
+Scalar Subquery
+---------------
+
+.. code-block:: text
+
+  ( <query> )
+
+A subquery can be used as a value anywhere an expression can, such as in a
+comparison (``x = (SELECT MAX(x) FROM t)``), the select list or the ``SET`` of an
+``UPDATE``. It must have one column, and it's the value of that column in its
+only row. It's ``NULL`` if there are no rows, and a 21000 cardinality violation
+error if there is more than one row.
+
+A subquery can't be used in a ``CHECK`` constraint, or in the argument of an
+aggregate function (such as ``MAX``). A subquery can't refer to
+the columns of the query that contains it (a *correlated subquery*) yet.
+
+*Examples*
+
+.. code-block:: sql
+
+  SELECT * FROM products WHERE price = (SELECT MAX(price) FROM products)
+  VALUES (SELECT COUNT(*) FROM products) + 1
+  VALUES (SELECT x FROM t WHERE x > 100)               -- NULL (no rows)
+
 SIMILAR TO
 ----------
 

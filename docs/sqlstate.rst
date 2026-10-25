@@ -131,6 +131,19 @@ too old. See *Compatibility* in :doc:`file-format`.
 ``0B000`` is caused when attempting to start a transaction but the pool of
 in-flight transactions is full (see :doc:`limitations`).
 
+``21000`` cardinality violation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A subquery used as a value (a scalar subquery) returned more than one row. A
+scalar subquery that returns no rows is ``NULL``.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES (SELECT x FROM (VALUES 1, 2) AS t (x));
+  -- error 21000: cardinality violation: more than one row returned by a subquery used as an expression
+
 ``22001`` string data right truncation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

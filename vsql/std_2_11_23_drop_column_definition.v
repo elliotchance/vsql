@@ -23,7 +23,8 @@ struct DropColumnDefinition {
 // because it also uses the columns of the other side.
 //
 // The rows are written again, because the values of a row are stored in the
-// order of the columns (see Row.bytes).
+// order of the columns (see Row.bytes). The current value of the sequence of
+// an identity column is dropped with it.
 fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table) ! {
 	column := table.column(d.column_name.sub_entity_name)!
 	name := column.name.sub_entity_name
@@ -119,4 +120,7 @@ fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConn
 		catalog.storage.update_table(referencing)!
 	}
 	replace_table_definition(mut conn, mut catalog, table, new_table)!
+	if _ := column.identity {
+		catalog.storage.delete_identity(table.id)!
+	}
 }

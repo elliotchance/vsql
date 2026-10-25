@@ -453,10 +453,10 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 								v
 							}
 							'SET NULL' {
-								insert_value(mut conn, map[string]Value{}, column, ContextuallyTypedValueSpecification(NullSpecification{}))!
+								insert_value(mut conn, map[string]Value{}, referencing, column, ContextuallyTypedValueSpecification(NullSpecification{}))!
 							}
 							else {
-								insert_value(mut conn, map[string]Value{}, column, ContextuallyTypedValueSpecification(DefaultSpecification{}))!
+								insert_value(mut conn, map[string]Value{}, referencing, column, ContextuallyTypedValueSpecification(DefaultSpecification{}))!
 							}
 						}
 					}

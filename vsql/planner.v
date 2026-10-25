@@ -376,14 +376,18 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 
 	mut columns := []Column{}
 	for i, col in subplan.columns() {
-		columns << Column{Identifier{
-			entity_name:     table_name.id()
-			sub_entity_name: if correlation_columns.len > 0 {
-				correlation_columns[i].sub_entity_name
-			} else {
-				col.name.sub_entity_name
+		columns << Column{
+			name:     Identifier{
+				entity_name:     table_name.id()
+				sub_entity_name: if correlation_columns.len > 0 {
+					correlation_columns[i].sub_entity_name
+				} else {
+					col.name.sub_entity_name
+				}
 			}
-		}, col.typ, col.not_null, none}
+			typ:      col.typ
+			not_null: col.not_null
+		}
 	}
 
 	// NOTE: This has to be assigned to a variable otherwise the value is lost.
@@ -603,7 +607,12 @@ fn (p Plan) explain(elapsed_parse time.Duration) Result {
 	}
 
 	return new_result([
-		Column{Identifier{ sub_entity_name: 'EXPLAIN' }, new_type('VARCHAR', 0, 0), false, none},
+		Column{
+			name: Identifier{
+				sub_entity_name: 'EXPLAIN'
+			}
+			typ:  new_type('VARCHAR', 0, 0)
+		},
 	], rows, elapsed_parse, 0)
 }
 
@@ -680,7 +689,10 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 							tables: tables
 						}
 
-						columns << Column{col, expr.compile(mut c)!.typ, false, none}
+						columns << Column{
+							name: col
+							typ:  expr.compile(mut c)!.typ
+						}
 
 						exprs << DerivedColumn{expr, col}
 					}
@@ -702,10 +714,14 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 				custom_id:       key
 				sub_entity_name: expr.as_clause.sub_entity_name
 			}}
-			columns[i] = Column{Identifier{
-				...columns[i].name
-				custom_id: key
-			}, columns[i].typ, columns[i].not_null, none}
+			columns[i] = Column{
+				name:     Identifier{
+					...columns[i].name
+					custom_id: key
+				}
+				typ:      columns[i].typ
+				not_null: columns[i].not_null
+			}
 		}
 	}
 

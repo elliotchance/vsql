@@ -45,10 +45,14 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, h
 	for expr in select_exprs {
 		compiled_expr := expr.expr.compile(mut c)!
 		if compiled_expr.contains_agg {
-			columns << Column{Identifier{
-				custom_id:  expr.expr.pstr(params)
-				custom_typ: compiled_expr.typ
-			}, compiled_expr.typ, false, none}
+			columns << Column{
+				name:     Identifier{
+					custom_id:  expr.expr.pstr(params)
+					custom_typ: compiled_expr.typ
+				}
+				typ:      compiled_expr.typ
+				not_null: false
+			}
 		}
 	}
 

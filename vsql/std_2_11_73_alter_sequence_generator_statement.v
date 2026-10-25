@@ -25,6 +25,19 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 	check_writable_schema(name)!
 	mut catalog := conn.catalog_for(name)
 	old_sequence := catalog.storage.sequence(name)!
+	sequence := alter_sequence(mut conn, params, old_sequence, stmt.options)!
+	catalog.storage.update_sequence(old_sequence, sequence)!
+
+	return new_result_msg('ALTER SEQUENCE 1', elapsed_parse, t.elapsed())
+}
+
+fn (stmt AlterSequenceGeneratorStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
+	return sqlstate_42601('Cannot EXPLAIN ALTER SEQUENCE')
+}
+
+// alter_sequence returns the sequence (an external sequence or the sequence of
+// an identity column) with the options of an ALTER (9.31).
+fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Sequence, options []SequenceGeneratorOption) !Sequence {
 	mut sequence := old_sequence.copy()
 	mut c := Compiler{
 		conn:   conn
@@ -35,7 +48,7 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 	mut new_min_value := false
 	mut new_max_value := false
 
-	for option in stmt.options {
+	for option in options {
 		match option {
 			SequenceGeneratorStartWithOption {
 				// Not possible.
@@ -115,11 +128,5 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 		}
 	}
 
-	catalog.storage.update_sequence(old_sequence, sequence)!
-
-	return new_result_msg('ALTER SEQUENCE 1', elapsed_parse, t.elapsed())
-}
-
-fn (stmt AlterSequenceGeneratorStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
-	return sqlstate_42601('Cannot EXPLAIN ALTER SEQUENCE')
+	return sequence
 }

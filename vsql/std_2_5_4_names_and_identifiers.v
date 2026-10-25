@@ -288,7 +288,7 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	if c.check_column != '' && e.custom_id == '' && e.sub_entity_name != c.check_column {
 		return sqlstate_42601('CHECK on column ${c.check_column} cannot use column ${e.sub_entity_name}')
 	}
-	if c.check_constraint && e.custom_id == '' {
+	if c.restricted != '' && e.custom_id == '' {
 		c.check_columns[e.sub_entity_name] = true
 	}
 
@@ -701,8 +701,8 @@ fn (e HostParameterName) pstr(params map[string]Value) string {
 
 fn (e HostParameterName) compile(mut c Compiler) !CompileResult {
 	// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rule 1
-	if c.check_constraint {
-		return sqlstate_42601('parameter :${e.name} cannot be used in a CHECK constraint')
+	if c.restricted != '' {
+		return sqlstate_42601('parameter :${e.name} cannot be used in ${c.restricted}')
 	}
 
 	p := c.params[e.name] or { return sqlstate_42p02(e.name) }

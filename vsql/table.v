@@ -476,9 +476,13 @@ fn (o TableOperation) str() string {
 fn (o TableOperation) pretty_columns() Columns {
 	mut cols := []Column{}
 	for c in o.table.columns {
-		cols << Column{Identifier{
-			sub_entity_name: c.name.sub_entity_name
-		}, c.typ, c.not_null, none}
+		cols << Column{
+			name:     Identifier{
+				sub_entity_name: c.name.sub_entity_name
+			}
+			typ:      c.typ
+			not_null: c.not_null
+		}
 	}
 
 	return cols

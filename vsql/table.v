@@ -217,6 +217,7 @@ fn (t Table) elements() []TableElement {
 			referenced_columns: key.referenced_columns.map(Identifier{
 				sub_entity_name: it
 			})
+			delete_rule:        key.delete_rule
 		}
 	}
 	for constraint in t.check_constraints {

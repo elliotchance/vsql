@@ -32,6 +32,9 @@ Syntax
                        | CHECK ( <condition> )
 
   <references> := REFERENCES <table_name> [ ( <column_name> , ... ) ]
+                  [ ON DELETE <referential_action> ]
+
+  <referential_action> := CASCADE | SET NULL | SET DEFAULT | NO ACTION
 
 1. ``column_name`` must start with a letter, but can be followed by any letter,
    underscore (``_``) or digit for a maximum length of 128 characters. A
@@ -160,8 +163,39 @@ changed, otherwise it's an error ``23503``. A ``FOREIGN KEY`` is checked once
 all of the rows of an :doc:`insert`, :doc:`update` or :doc:`delete` have been
 changed, so a statement can delete a row along with the rows that reference
 it, or insert a row along with a row that references it. If any row violates
-the constraint, none of the rows are changed. ``ON DELETE`` and ``ON UPDATE``
-actions (such as ``CASCADE``) and ``MATCH`` are not supported yet.
+the constraint, none of the rows are changed. ``ON UPDATE`` and ``MATCH`` are
+not supported yet.
+
+``ON DELETE`` says what happens to the rows that reference a row that's
+deleted:
+
+- ``NO ACTION`` (the default) is the error ``23503`` described above.
+- ``CASCADE`` deletes the rows that reference it, which can delete the rows that
+  reference them, and so on.
+- ``SET NULL`` sets each column of the ``FOREIGN KEY`` to ``NULL`` in the rows
+  that reference it.
+- ``SET DEFAULT`` sets each column of the ``FOREIGN KEY`` to its ``DEFAULT``
+  (or ``NULL`` when there isn't one) in the rows that reference it.
+
+.. code-block:: sql
+
+  CREATE TABLE orders (order_id INTEGER PRIMARY KEY);
+  CREATE TABLE order_lines (
+      order_id INTEGER REFERENCES orders ON DELETE CASCADE,
+      line_number INTEGER
+  );
+  INSERT INTO orders (order_id) VALUES (1), (2);
+  INSERT INTO order_lines (order_id, line_number) VALUES (1, 1), (1, 2), (2, 1);
+
+  DELETE FROM orders WHERE order_id = 1;
+  SELECT * FROM order_lines;
+  -- ORDER_ID: 2 LINE_NUMBER: 1
+
+A row that's changed by ``SET NULL`` or ``SET DEFAULT`` must still satisfy
+every constraint of its table, including the ``FOREIGN KEY`` itself, so
+``SET DEFAULT`` is an error ``23503`` if the default doesn't reference a row.
+These changes are part of the :doc:`delete`, so if any of them fail, no rows
+are deleted or changed.
 
 A table that's referenced can only be dropped with ``CASCADE``, which also
 drops the ``FOREIGN KEY`` constraints that reference it (see :doc:`drop-table`).

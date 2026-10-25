@@ -250,8 +250,12 @@ and with the same names as ``TABLE_CONSTRAINTS``.
   * - ``MATCH_OPTION``
     - Always ``NONE`` (``MATCH`` is not supported).
 
-  * - ``UPDATE_RULE``, ``DELETE_RULE``
-    - Always ``NO ACTION`` (``ON UPDATE`` and ``ON DELETE`` are not supported).
+  * - ``UPDATE_RULE``
+    - Always ``NO ACTION`` (``ON UPDATE`` is not supported).
+
+  * - ``DELETE_RULE``
+    - ``CASCADE``, ``SET NULL``, ``SET DEFAULT`` or ``NO ACTION`` (the
+      ``ON DELETE``).
 
 The types of the columns of these tables are the domains of the
 ``INFORMATION_SCHEMA`` in the standard: a name is a ``CHARACTER VARYING(128)``,

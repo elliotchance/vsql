@@ -714,7 +714,7 @@ Optional Features
    * - ✅ **F171**
      - **Multiple schemas per user**
 
-   * - ❌ **F191**
+   * - ✅ **F191**
      - **Referential delete actions**
 
    * - ❌ **F200**

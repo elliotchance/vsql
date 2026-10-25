@@ -6,14 +6,15 @@ module vsql
 
 // A FOREIGN KEY, or a REFERENCES on a column. The referenced_columns are empty
 // when they aren't given, which means the PRIMARY KEY of the referenced table
-// (Syntax Rule 4b). There is no MATCH or referential action, so it's always
-// MATCH SIMPLE (Syntax Rule 1) with ON UPDATE NO ACTION and ON DELETE NO ACTION
-// (Syntax Rules 12 and 13).
+// (Syntax Rule 4b). There is no MATCH or ON UPDATE, so it's always MATCH
+// SIMPLE (Syntax Rule 1) with ON UPDATE NO ACTION (Syntax Rule 12). The
+// delete_rule is empty when there's no ON DELETE.
 struct ReferentialConstraintDefinition {
 	name               Identifier
 	columns            []Identifier
 	referenced_table   Identifier
 	referenced_columns []Identifier
+	delete_rule        string // CASCADE, SET NULL, SET DEFAULT or NO ACTION
 }
 
 fn new_referential_constraint_definition(columns []Identifier, references ReferentialConstraintDefinition) ReferentialConstraintDefinition {
@@ -26,18 +27,29 @@ fn new_referential_constraint_definition(columns []Identifier, references Refere
 // A ForeignKey is a referential constraint of a table. Once the table has been
 // created, the referenced_table is fully qualified and the referenced_columns
 // are always known (see resolve_foreign_keys), in the order of the columns that
-// they correspond to.
+// they correspond to. The delete_rule is empty for ON DELETE NO ACTION.
 struct ForeignKey {
 	name               string
 	columns            []string
 	referenced_table   Identifier
 	referenced_columns []string
+	delete_rule        string // CASCADE, SET NULL or SET DEFAULT
 }
 
 // str is how the constraint is stored in the file as part of the CREATE TABLE
 // (see Table.bytes).
 fn (k ForeignKey) str() string {
-	return 'FOREIGN KEY (${k.columns.map(delimit_identifier(it)).join(', ')}) REFERENCES ${k.referenced_table.storage_sql()} (${k.referenced_columns.map(delimit_identifier(it)).join(', ')})'
+	mut s := 'FOREIGN KEY (${k.columns.map(delimit_identifier(it)).join(', ')}) REFERENCES ${k.referenced_table.storage_sql()} (${k.referenced_columns.map(delimit_identifier(it)).join(', ')})'
+	if k.delete_rule != '' {
+		s += ' ON DELETE ${k.delete_rule}'
+	}
+
+	return s
+}
+
+// delete_action is the referential action of the ON DELETE.
+fn (k ForeignKey) delete_action() string {
+	return if k.delete_rule == '' { 'NO ACTION' } else { k.delete_rule }
 }
 
 // violation is the error for a row of t (the referencing table) that doesn't
@@ -237,9 +249,10 @@ fn (mut f Storage) check_foreign_keys(t Table, rows []Row, time_zone i16) ! {
 // t (including t itself) references a key that's in old_rows but not new_rows,
 // or might once another transaction finishes. The old_rows are the rows of t
 // that a statement deleted or updated, and new_rows are the rows that it wrote.
-// A FOREIGN KEY is always ON DELETE NO ACTION and ON UPDATE NO ACTION, so it's
-// checked once the whole statement has finished (ISO/IEC 9075-2:2016(E), 15.17
-// and 4.23.2).
+// The referential delete actions (see apply_delete_rules) have already been
+// carried out, and a FOREIGN KEY is always ON UPDATE NO ACTION, so it's checked
+// once the whole statement has finished (ISO/IEC 9075-2:2016(E), 15.17 and
+// 4.23.2).
 //
 // The referenced columns are a unique constraint (which has already been
 // checked), so another row of t can't have the same key. time_zone is the same
@@ -306,6 +319,156 @@ fn (mut f Storage) check_referencing_rows(t Table, old_rows []Row, new_rows []Ro
 			}
 		}
 	}
+}
+
+// apply_delete_rules carries out the referential delete actions of the
+// FOREIGN KEYs that reference t (including t itself) for the rows of t that a
+// DELETE deleted, and then checks the FOREIGN KEYs that reference each table
+// that has deleted rows. A row that's deleted by ON DELETE CASCADE can have its
+// own referencing rows, so this repeats until no more rows are deleted. A row
+// that's replaced by ON DELETE SET NULL or SET DEFAULT is checked like a row
+// that's changed by an UPDATE.
+//
+// The referencing tables are in the same catalog as t (see
+// resolve_foreign_keys), so they're all in f.
+//
+// ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General
+// Rule 9a
+fn apply_delete_rules(mut conn Connection, mut f Storage, t Table, rows []Row) ! {
+	_, time_zone := conn.now()
+	mut deleted := map[string][]Row{}
+	mut old := map[string][]Row{}
+	mut new := map[string][]Row{}
+
+	// The tables are sorted so that the rows are always changed in the same
+	// order.
+	mut table_names := f.tables.keys()
+	table_names.sort()
+
+	mut pending_tables := [t.name.storage_id()]
+	mut pending_rows := [rows]
+	for pending_tables.len > 0 {
+		table := f.table(pending_tables.pop())
+		removed_rows := pending_rows.pop()
+		deleted[table.name.storage_id()] << removed_rows
+
+		for table_name in table_names {
+			referencing := f.table(table_name)
+			for key in referencing.foreign_keys {
+				if key.delete_rule == ''
+					|| key.referenced_table.storage_id() != table.name.storage_id() {
+					continue
+				}
+
+				matching := f.matching_rows(key, referencing, table, removed_rows,
+					time_zone)!
+				if matching.len == 0 {
+					continue
+				}
+
+				if key.delete_rule == 'CASCADE' {
+					for row in matching {
+						mut before := row
+						f.delete_row(table_name, mut before)!
+					}
+					pending_tables << table_name
+					pending_rows << matching
+					continue
+				}
+
+				check_constraints := new_check_constraints(mut conn, referencing)!
+				for row in matching {
+					mut before := row
+					mut after := Row{
+						id:   row.id
+						tid:  row.tid
+						data: row.data.clone()
+					}
+					for column in key.columns {
+						value := if key.delete_rule == 'SET NULL' {
+							ContextuallyTypedValueSpecification(NullSpecification{})
+						} else {
+							ContextuallyTypedValueSpecification(DefaultSpecification{})
+						}
+						after.data[column] = insert_value(mut conn, map[string]Value{},
+							referencing.column(column)!, value)!
+					}
+					check_constraints.verify(mut conn, after)!
+
+					// Like an UPDATE, a row that gets a new PRIMARY KEY is
+					// deleted and written again.
+					if before.object_key(referencing)! != after.object_key(referencing)! {
+						f.delete_row(table_name, mut before)!
+						f.write_row(mut after, referencing)!
+					} else {
+						f.update_row(mut after, referencing)!
+					}
+					old[table_name] << before
+					new[table_name] << after
+				}
+			}
+		}
+	}
+
+	for table_name in table_names {
+		table := f.table(table_name)
+		if table_name in new {
+			f.check_unique_constraints(table, new[table_name])!
+			f.check_foreign_keys(table, new[table_name], time_zone)!
+			f.check_referencing_rows(table, old[table_name], new[table_name], time_zone)!
+		}
+		if table_name in deleted {
+			f.check_referencing_rows(table, deleted[table_name], [], time_zone)!
+		}
+	}
+}
+
+// matching_rows are the rows of the referencing table that reference one of
+// the rows of the referenced table by the FOREIGN KEY. The matching rows are
+// changed by the referential action, so it's an error if another transaction is
+// writing one of them.
+//
+// ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General
+// Rule 6a
+fn (mut f Storage) matching_rows(key ForeignKey, referencing Table, referenced Table, rows []Row, time_zone i16) ![]Row {
+	types := foreign_key_types(referencing, key.columns, referenced, key.referenced_columns)!
+	mut keys := map[string]bool{}
+	for row in rows {
+		value := key_value(row, key.referenced_columns, types, time_zone)
+		if value.len > 0 {
+			keys[value.bytestr()] = true
+		}
+	}
+	if keys.len == 0 {
+		return []Row{}
+	}
+
+	f.isolation_start()!
+	defer {
+		f.end_isolation()
+	}
+
+	mut matching := []Row{}
+	mut iter := f.btree.new_range_iterator(row_key_prefix(referencing.id), row_key_prefix(referencing.id + 1))
+	for {
+		object := iter.next() or { break }
+		row := new_row_from_bytes(referencing, object.value, object.tid).for_storage()
+		if key_value(row, key.columns, types, time_zone).bytestr() !in keys {
+			continue
+		}
+
+		if f.is_concurrent_write(object) {
+			return sqlstate_40001('avoiding concurrent write on individual row')
+		}
+		if object.xid == 0 {
+			matching << row
+		}
+	}
+	if err := iter.err {
+		return err
+	}
+
+	return matching
 }
 
 // referencing_tables are the names of the other tables that reference t.

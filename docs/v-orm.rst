@@ -129,6 +129,24 @@ Attributes
   * - ``@[sql: serial]``
     - See *Serial Fields*.
 
+  * - ``@[unique]``
+    - Adds a ``UNIQUE`` constraint for the field.
+
+  * - ``@[unique_key: 'a, b']``
+    - On the struct, adds a ``UNIQUE`` constraint for the fields.
+
+  * - ``@[references]``
+    - Adds a ``REFERENCES`` constraint. A field named ``parent_id`` references
+      the ``id`` of the ``parent`` table. Use ``@[references: 'table']`` or
+      ``@[references: 'table(field)']`` to name the table or field. The
+      referenced table must be created first.
+
+  * - ``@[default: 7]``
+    - Sets the column default. The value is SQL, so it must be a literal,
+      ``NULL``, or one of the values that vsql allows for a default, such as
+      ``CURRENT_TIMESTAMP``. Put a string in backticks (``@[default:
+      '`none`']``).
+
   * - ``@[skip]`` or ``@[sql: '-']``
     - The field is not stored.
 
@@ -162,10 +180,8 @@ savepoint functions return an error.
 Limitations
 -----------
 
-- ``@[references]``, ``@[unique]`` and ``@[default]`` cannot be used, because
-  the V ORM doesn't allow them for vsql (even though vsql supports
-  ``REFERENCES``, ``UNIQUE`` and column defaults). Creating a table that uses
-  them returns an error.
+- ``@[unique: 'group']`` cannot be used, because the ORM puts the group name in
+  a ``/* */`` comment, and vsql doesn't support bracketed comments yet.
 
 - Indexes (``@[index]``) and comments (``@[comment]``) are ignored.
 

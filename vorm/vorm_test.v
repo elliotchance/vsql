@@ -280,20 +280,119 @@ fn test_execute() {
 	assert rows[0].vals == ['Bagel', '20']
 }
 
-fn test_unsupported() {
+fn test_unique() {
 	mut db := open(':memory:')!
 
 	sql db {
 		create table UniqueName
+	}!
+
+	first := UniqueName{
+		name:  'a'
+		first: 'b'
+		last:  'c'
+	}
+	sql db {
+		insert first into UniqueName
+	}!
+
+	same_name := UniqueName{
+		name:  'a'
+		first: 'x'
+		last:  'y'
+	}
+	mut failed := false
+	sql db {
+		insert same_name into UniqueName
 	} or {
-		assert err.msg() == 'orm: vsql does not support a UNIQUE constraint for column `name` in table `uniquename`'
+		assert err.msg() == 'violates unique constraint: UNIQUE ("name") on ":memory:".PUBLIC."uniquename"'
+		failed = true
+	}
+	assert failed
+
+	same_key := UniqueName{
+		name:  'd'
+		first: 'b'
+		last:  'c'
+	}
+	sql db {
+		insert same_key into UniqueName
+	} or {
+		assert err.msg() == 'violates unique constraint: UNIQUE ("first", "last") on ":memory:".PUBLIC."uniquename"'
 		return
 	}
 	assert false
 }
 
+@[unique_key: 'first, last']
 struct UniqueName {
-	name string @[unique]
+	name  string @[unique]
+	first string
+	last  string
+}
+
+fn test_references() {
+	mut db := open(':memory:')!
+
+	sql db {
+		create table Parent
+		create table Child
+	}!
+
+	parent := Parent{}
+	sql db {
+		insert parent into Parent
+	}!
+	child := Child{
+		parent_id: 1
+	}
+	sql db {
+		insert child into Child
+	}!
+
+	orphan := Child{
+		parent_id: 2
+	}
+	sql db {
+		insert orphan into Child
+	} or {
+		assert err.msg().starts_with('violates foreign key constraint: ')
+		return
+	}
+	assert false
+}
+
+struct Parent {
+	id int @[primary; sql: serial]
+}
+
+struct Child {
+	id        int @[primary; sql: serial]
+	parent_id int @[references]
+}
+
+fn test_default() {
+	mut db := open(':memory:')!
+
+	sql db {
+		create table WithDefault
+	}!
+
+	db.execute('INSERT INTO "withdefault" ("id") VALUES (1)')!
+	rows := sql db {
+		select from WithDefault
+	}!
+	assert rows == [WithDefault{
+		id:    1
+		count: 7
+		label: 'none'
+	}]
+}
+
+struct WithDefault {
+	id    int
+	count int    @[default: 7]
+	label string @[default: '`none`']
 }
 
 enum Color {

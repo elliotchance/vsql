@@ -326,6 +326,36 @@ fn test_big_btree_test() ! {
 	assert total_found_objects == 0
 }
 
+// Keys of different lengths mean that a new head key for a page can be longer
+// than the parent's key for it, so replacing the parent's key can split the
+// parent (#564).
+fn test_btree_variable_length_keys() ! {
+	for tt in 0 .. times * 20 {
+		rand.seed([u32(tt), 564])
+		mut pager := new_memory_pager()
+		mut btree := new_btree(pager, 256)
+		mut keys := map[string]bool{}
+		for _ in 0 .. 300 {
+			key := 'R' + rand.string_from_set('ab', rand.intn(40)!)
+			if key in keys {
+				continue
+			}
+
+			keys[key] = true
+			btree.add(new_page_object(key.bytes(), 1, 0, []u8{len: rand.intn(400)!}))!
+		}
+
+		mut expected := keys.keys()
+		expected.sort()
+		mut all := []string{}
+		for object in btree.new_range_iterator('R'.bytes(), 'S'.bytes()) {
+			all << object.key.bytestr()
+		}
+
+		assert all == expected
+	}
+}
+
 fn (p Page) is_empty() bool {
 	return p.used == page_header_size
 }

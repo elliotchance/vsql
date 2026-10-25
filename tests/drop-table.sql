@@ -59,6 +59,16 @@ SELECT * FROM foo;
 -- msg: DROP TABLE 1
 -- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
+-- # A FOREIGN KEY of the table itself doesn't stop RESTRICT.
+CREATE TABLE foo (id INT PRIMARY KEY, parent INT REFERENCES foo);
+INSERT INTO foo (id, parent) VALUES (1, NULL), (2, 1);
+DROP TABLE foo RESTRICT;
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: DROP TABLE 1
+-- error 42P01: no such table: ":memory:".PUBLIC.FOO
+
 DROP TABLE foo RESTRICT;
 -- error 42P01: no such table: ":memory:".PUBLIC.FOO
 

@@ -657,7 +657,7 @@ Optional Features
    * - ❌ **B221**
      - **Routine language Ada: VARCHAR and NUMERIC support**
 
-   * - ⭕ **F032**
+   * - ✅ **F032**
      - **CASCADE drop behavior**
 
    * - ✅ **F033**

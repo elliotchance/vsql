@@ -73,5 +73,6 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	}
 	updated << moved
 	catalog.storage.check_unique_constraints(new_table, updated)!
-	catalog.storage.check_foreign_keys(new_table, updated)!
+	_, time_zone := conn.now()
+	catalog.storage.check_foreign_keys(new_table, updated, time_zone)!
 }

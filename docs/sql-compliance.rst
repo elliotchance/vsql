@@ -714,7 +714,7 @@ Optional Features
    * - ✅ **F171**
      - **Multiple schemas per user**
 
-   * - ❌ **F191**
+   * - ✅ **F191**
      - **Referential delete actions**
 
    * - ❌ **F200**
@@ -930,7 +930,7 @@ Optional Features
    * - ❌ **F695**
      - **Translation support**
 
-   * - ❌ **F701**
+   * - ✅ **F701**
      - **Referential update actions**
 
    * - ❌ **F711**
@@ -1323,7 +1323,7 @@ Optional Features
    * - ❌ **T191**
      - **Referential action RESTRICT**
 
-   * - ⭕ **T201**
+   * - ✅ **T201**
      - **Comparable data types for referential constraints**
 
    * - ❌ **T211**

@@ -355,6 +355,8 @@ fn (mut f Storage) update_table(definition Table) ! {
 		f.end_isolation()
 	}
 
+	f.check_concurrent_rows(definition)!
+
 	table := Table{
 		...definition
 		tid: f.transaction_id
@@ -507,6 +509,8 @@ fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 		f.end_isolation()
 	}
 
+	f.check_concurrent_rows(f.table(table_name))!
+
 	table_id := f.table(table_name).id
 	f.btree.expire(table_object_key(table_id), tid, f.transaction_id)!
 
@@ -549,6 +553,7 @@ fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
 		f.end_isolation()
 	}
 
+	f.check_concurrent_definition(f.table(table_name))!
 	page_number := f.btree.expire(row.object_key(f.table(table_name))!, row.tid, f.transaction_id)!
 
 	// A negative page_number means the object didn't exist so there's nothing to
@@ -566,6 +571,7 @@ fn (mut f Storage) write_row(mut r Row, t Table) ! {
 		f.end_isolation()
 	}
 
+	f.check_concurrent_definition(t)!
 	f.assign_row_id(mut r, t)
 	f.check_primary_key(mut r, t)!
 	obj := new_page_object(r.object_key(t)!, f.transaction_id, 0, r.bytes(t))
@@ -597,8 +603,39 @@ fn (mut f Storage) update_row(mut new Row, t Table) ! {
 		f.end_isolation()
 	}
 
+	f.check_concurrent_definition(t)!
 	f.assign_row_id(mut new, t)
 	f.btree.update(new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t)))!
+}
+
+// check_concurrent_definition returns a SQLSTATE 40001 if another active
+// transaction has changed or dropped the definition of t. Otherwise, a row
+// written with the old definition would not have the columns (or pass the
+// constraints) of the new one, or would be written into a dropped table. It must
+// be called from inside an isolation block.
+fn (mut f Storage) check_concurrent_definition(t Table) ! {
+	f.check_concurrent_objects(table_object_key(t.id), table_object_key(t.id))!
+}
+
+// check_concurrent_rows returns a SQLSTATE 40001 if another active transaction
+// has written or deleted a row of t. Those rows are not visible, so ALTER TABLE
+// and DROP TABLE would otherwise miss them. It must be called from inside an
+// isolation block.
+fn (mut f Storage) check_concurrent_rows(t Table) ! {
+	f.check_concurrent_objects(row_key_prefix(t.id), row_key_prefix(t.id + 1))!
+}
+
+fn (mut f Storage) check_concurrent_objects(start []u8, end []u8) ! {
+	mut iter := f.btree.new_range_iterator(start, end)
+	for {
+		object := iter.next() or { break }
+		if f.is_concurrent_write(object) {
+			return sqlstate_40001('avoiding concurrent write on table definition')
+		}
+	}
+	if err := iter.err {
+		return err
+	}
 }
 
 fn (mut f Storage) read_rows(table_name Identifier) ![]Row {

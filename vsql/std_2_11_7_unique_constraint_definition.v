@@ -118,23 +118,60 @@ fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
 // are equal have the same key (like the PRIMARY KEY, see Row.object_key). It's
 // empty if any of the values are NULL.
 fn unique_key(row Row, t Table, columns []string) ![]u8 {
-	return key_value(row, columns, key_types(t, columns)!)
+	return key_value(row, columns, key_types(t, columns)!, 0)
 }
 
 // key_value is the values of the columns in a row, encoded as the types (which
 // are in the same order as the columns). It's empty if any of the values are
 // NULL.
-fn key_value(row Row, columns []string, types []SQLType) []u8 {
+fn key_value(row Row, columns []string, types []SQLType, time_zone i16) []u8 {
 	mut key := new_empty_bytes()
 	for i, column in columns {
 		value := row.data[column]
 		if value.is_null {
 			return []u8{}
 		}
-		write_key_value(mut key, value, types[i])
+		write_key_value(mut key, key_type_value(value, types[i], time_zone), types[i])
 	}
 
 	return key.bytes()
+}
+
+// key_type_value converts an exact numeric value, or a datetime without a time
+// zone, to the type that it's compared as in a key (see foreign_key_type). A
+// datetime without a time zone is in the session time zone (time_zone, in
+// minutes). Any other value is already that type.
+fn key_type_value(value Value, typ SQLType, time_zone i16) Value {
+	match value.typ.typ {
+		.is_time_without_time_zone, .is_timestamp_without_time_zone {
+			if typ == .is_time_with_time_zone || typ == .is_timestamp_with_time_zone {
+				mut t := value.time_value()
+				t.time_zone = time_zone
+				return Value{
+					typ: value.typ
+					v:   InternalValue{
+						time_value: t
+					}
+				}
+			}
+		}
+		.is_smallint, .is_integer, .is_bigint {
+			if typ == .is_double_precision {
+				return new_double_precision_value(f64(value.int_value()))
+			}
+			if typ == .is_numeric {
+				return new_numeric_value(value.int_value().str())
+			}
+		}
+		.is_numeric, .is_decimal {
+			if typ == .is_double_precision {
+				return new_double_precision_value(value.numeric_value().f64())
+			}
+		}
+		else {}
+	}
+
+	return value
 }
 
 // is_concurrent_write is true if another transaction is creating or deleting

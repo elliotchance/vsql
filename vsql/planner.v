@@ -5,7 +5,6 @@
 
 module vsql
 
-import regex
 import time
 
 interface PlanOperation {
@@ -195,13 +194,28 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			// A table with a correlation name, such as "t AS x (c1, c2)", is
 			// read like a derived table so that its rows use the new names.
 			if from_clause.correlation.name.sub_entity_name != '' {
-				subplan, _ := create_select_plan_without_join(body, TablePrimary{
+				subplan, base_table := create_select_plan_without_join(body, TablePrimary{
 					body: from_clause.body
 				}, params, mut conn, allow_virtual, false)!
 				table = add_correlation_plan(mut &plan, from_clause.correlation.name,
 					subplan, from_clause.correlation, params, conn)!
 
+				// The primary key can only be found once the columns have their
+				// new names, then the table is read again with the lookup.
 				if filter {
+					if value := primary_key_value(body, base_table, table, params, conn) {
+						plan = Plan{}
+						table = add_correlation_plan(mut &plan, from_clause.correlation.name,
+							Plan{
+								operations: [
+									new_primary_key_operation(base_table, value, value, params,
+										conn),
+								]
+							}, from_clause.correlation, params, conn)!
+
+						return plan, table
+					}
+
 					add_where_plan(mut &plan, body, params, conn, {
 						table.name.id(): table
 					})!
@@ -227,25 +241,11 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			} else if table_name_id in catalog.storage.tables {
 				table = catalog.storage.table(table_name_id)
 
-				// This is a special case to handle "PRIMARY KEY = INTEGER". It only
-				// applies to a PRIMARY KEY with one integer column.
-				if filter && table.primary_key.len == 1
-					&& table.column(table.primary_key[0])!.typ.typ in [.is_smallint, .is_integer,
-						.is_bigint] {
-					if where := body.table_expression.where_clause {
-						where_str := where.pstr(params)
-						mut re := regex.regex_opt('^(\\w+) = (\\d+)$') or {
-							return sqlstate_xx000('cannot compile regexp: ${err}')
-						}
-						if re.matches_string(where_str) {
-							parts := where_str.split(' = ')
-							if parts[0] == table.primary_key[0] {
-								covered_by_pk = true
-								plan.operations << new_primary_key_operation(table,
-									new_numeric_value(parts[1]), new_numeric_value(parts[1]),
-									params, conn)
-							}
-						}
+				if filter {
+					if value := primary_key_value(body, table, table, params, conn) {
+						covered_by_pk = true
+						plan.operations << new_primary_key_operation(table, value, value,
+							params, conn)
 					}
 				}
 
@@ -288,6 +288,71 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 	}
 
 	return plan, table
+}
+
+// primary_key_value is the integer that the WHERE clause compares the primary
+// key to, if the WHERE clause is only "column = integer" (in either order) and
+// the primary key is that one integer column. The rows can then be found with
+// the primary key instead of reading the whole table.
+//
+// base_table is the stored table and table is how the query names it, which is
+// different with a correlation name, such as "t AS x (a, b)".
+fn primary_key_value(body QuerySpecification, base_table Table, table Table, params map[string]Value, conn &Connection) ?Value {
+	if base_table.primary_key.len != 1 {
+		return none
+	}
+
+	mut pk_index := 0
+	for base_table.columns[pk_index].name.sub_entity_name != base_table.primary_key[0] {
+		pk_index++
+	}
+	if base_table.columns[pk_index].typ.typ !in [.is_smallint, .is_integer, .is_bigint] {
+		return none
+	}
+
+	where := body.table_expression.where_clause or { return none }
+	if _ := where.expr {
+		return none
+	}
+	if _ := where.term.term {
+		return none
+	}
+	test := where.term.factor
+	if _ := test.value {
+		return none
+	}
+	if test.inverse {
+		return none
+	}
+
+	primary := *test.expr
+	comparison := match primary {
+		Predicate {
+			match primary {
+				ComparisonPredicate { primary }
+				else { return none }
+			}
+		}
+		else {
+			return none
+		}
+	}
+	if comparison.op != .equal {
+		return none
+	}
+
+	pk_column := table.columns[pk_index].name.sub_entity_name
+	for sides in [[comparison.left, comparison.right], [comparison.right, comparison.left]] {
+		column := new_column_identifier(sides[0].pstr(params)) or { continue }
+		value := sides[1].pstr(params)
+		if column.custom_id == '' && column.sub_entity_name == pk_column
+			&& column.is_column_of_table(conn, table) && value != ''
+			&& value.bytes().all(it.is_digit()) {
+			return new_numeric_value(value)
+		}
+	}
+
+	return none
 }
 
 // add_correlation_plan reads the rows of subplan as the table table_name. A

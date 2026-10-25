@@ -128,7 +128,7 @@ fn (o &PrimaryKeyOperation) pretty_columns() Columns {
 	for c in o.table.columns {
 		cols << Column{Identifier{
 			sub_entity_name: c.name.sub_entity_name
-		}, c.typ, c.not_null, none, none}
+		}, c.typ, c.not_null, none, none, none}
 	}
 
 	return cols
@@ -138,7 +138,7 @@ fn (o &PrimaryKeyOperation) columns() Columns {
 	mut columns := []Column{}
 
 	for column in o.table.columns {
-		columns << Column{column.name, column.typ, column.not_null, none, none}
+		columns << Column{column.name, column.typ, column.not_null, none, none, none}
 	}
 
 	return columns

@@ -383,7 +383,7 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 			} else {
 				col.name.sub_entity_name
 			}
-		}, col.typ, col.not_null, none, none}
+		}, col.typ, col.not_null, none, none, none}
 	}
 
 	// NOTE: This has to be assigned to a variable otherwise the value is lost.
@@ -603,7 +603,7 @@ fn (p Plan) explain(elapsed_parse time.Duration) Result {
 	}
 
 	return new_result([
-		Column{Identifier{ sub_entity_name: 'EXPLAIN' }, new_type('VARCHAR', 0, 0), false, none, none},
+		Column{Identifier{ sub_entity_name: 'EXPLAIN' }, new_type('VARCHAR', 0, 0), false, none, none, none},
 	], rows, elapsed_parse, 0)
 }
 
@@ -680,7 +680,7 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 							tables: tables
 						}
 
-						columns << Column{col, expr.compile(mut c)!.typ, false, none, none}
+						columns << Column{col, expr.compile(mut c)!.typ, false, none, none, none}
 
 						exprs << DerivedColumn{expr, col}
 					}
@@ -705,7 +705,7 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 			columns[i] = Column{Identifier{
 				...columns[i].name
 				custom_id: key
-			}, columns[i].typ, columns[i].not_null, none, none}
+			}, columns[i].typ, columns[i].not_null, none, none, none}
 		}
 	}
 

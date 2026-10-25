@@ -36,10 +36,12 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 	// any of them are written, so that an error in one row doesn't leave the
 	// rows before it in the table.
 	check_constraints := new_check_constraints(mut conn, table)!
+	generated_columns := new_generated_columns(mut conn, table)!
 	mut rows := []Row{}
 	for row_value in stmt.values {
 		conn.begin_row()
-		row := new_row(stmt.insert_row(mut conn, params, table, row_value)!)
+		mut row := new_row(stmt.insert_row(mut conn, params, table, row_value)!)
+		generated_columns.apply(mut conn, mut row)!
 		check_constraints.verify(mut conn, row)!
 		rows << row
 	}
@@ -85,11 +87,16 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 	for i, column in stmt.columns {
 		table_column := table.column(column.sub_entity_name)!
 
-		// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rule 11b
-		if identity := table_column.identity {
-			if identity.always && !is_default_specification(values[i]) {
-				return sqlstate_428c9(column.sub_entity_name)
-			}
+		// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules 10 and
+		// 11b
+		if table_column.is_generated_always() && !is_default_specification(values[i]) {
+			return sqlstate_428c9(column.sub_entity_name)
+		}
+
+		// A generated column is set once the other columns are known (see
+		// GeneratedColumns.apply).
+		if table_column.generated != none {
+			continue
 		}
 
 		row[column.sub_entity_name] = insert_value(mut conn, params, table, table_column,
@@ -98,7 +105,7 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 
 	// A column that isn't listed gets its default.
 	for col in table.columns {
-		if col.name.sub_entity_name !in row {
+		if col.name.sub_entity_name !in row && col.generated == none {
 			row[col.name.sub_entity_name] = insert_value(mut conn, params, table, col,
 				ContextuallyTypedValueSpecification(DefaultSpecification{}))!
 		}

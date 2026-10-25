@@ -34,7 +34,7 @@ fn (e CheckConstraintDefinition) compile(mut conn Connection, table Table) !Comp
 		}
 		context:                table.name
 		next_value_not_allowed: 'a CHECK constraint'
-		check_constraint:       true
+		restricted:             'a CHECK constraint'
 		check_column:           e.column_name
 	}
 	compiled := e.search_condition.compile(mut c)!

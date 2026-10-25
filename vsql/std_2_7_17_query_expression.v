@@ -499,7 +499,7 @@ fn new_set_operation_operation(op SetOperation, left Plan, right Plan, mut conn 
 			return sqlstate_42804('in column ${i + 1} of ${op.op}', column.typ.str(),
 				right_columns[i].typ.str())
 		}
-		columns << Column{column.name, typ, false, none, none}
+		columns << Column{column.name, typ, false, none, none, none}
 	}
 
 	return &SetOperationOperation{op.op, op.all, columns, conn, left, right}

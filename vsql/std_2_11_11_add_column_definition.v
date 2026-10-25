@@ -17,7 +17,9 @@ struct AddColumnDefinition {
 // Every existing row gets the default of the column (General Rule 3), which is
 // only evaluated once. A row that was written before the column was added is
 // read with NULL for it (see new_row_from_bytes), so the rows only need to be
-// rewritten when the default isn't NULL. The rows must satisfy the constraints
+// rewritten when the default isn't NULL, or the column is a generated column,
+// which is the result of its generation expression for each row (General Rule
+// 2a). The rows must satisfy the constraints
 // of the new column, so a NOT NULL column without a default can only be added
 // to an empty table, a UNIQUE column with a default to a table with at most
 // one row, and a REFERENCES column with a default to a table whose rows can all
@@ -34,9 +36,11 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	}
 	new_table.name_constraints(catalog.storage.schema_constraint_names(table.name))!
 	resolve_foreign_keys(mut conn, mut new_table)!
+	resolve_generated_columns(mut conn, mut new_table)!
 	column := new_table.columns.last()
 	check_default_clause(mut conn, column)!
 	check_constraints := new_check_constraints(mut conn, new_table)!
+	generated_columns := new_generated_columns(mut conn, new_table)!
 
 	// NOT NULL is checked here, so that it's only an error when there are rows.
 	// An identity column gets the next value of its sequence for each row
@@ -56,7 +60,7 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	// deleted and written again (like an UPDATE).
 	mut moved := []Row{}
 	mut updated := []Row{}
-	if !value.is_null || column.not_null {
+	if !value.is_null || column.not_null || column.generated != none {
 		for row in catalog.storage.read_rows(table.name)! {
 			if sequence := identity_sequence {
 				next_sequence := sequence.next()!
@@ -64,13 +68,13 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 					column.typ)!
 				identity_sequence = next_sequence
 			}
-			if value.is_null {
-				return sqlstate_23502('column ${column.name.sub_entity_name}')
-			}
-
 			mut before := row.for_storage()
 			mut after := row.for_storage()
 			after.data[column.name.sub_entity_name] = value
+			generated_columns.apply(mut conn, mut after)!
+			if column.not_null && after.data[column.name.sub_entity_name].is_null {
+				return sqlstate_23502('column ${column.name.sub_entity_name}')
+			}
 			check_constraints.verify(mut conn, after)!
 			if before.object_key(table)! != after.object_key(new_table)! {
 				catalog.storage.delete_row(table.name.storage_id(), mut before)!

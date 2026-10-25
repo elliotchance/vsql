@@ -279,12 +279,20 @@ fn columns_view_row(catalog_name string, table Table, i int, column Column) []Va
 	]
 	row << identity_descriptor(column)
 	row << [
-		new_varchar_value('NEVER'), // IS_GENERATED
-		new_null_value(.is_varchar), // GENERATION_EXPRESSION
+		new_varchar_value(if column.generated != none { 'ALWAYS' } else { 'NEVER' }), // IS_GENERATED
+		generation_expression(column), // GENERATION_EXPRESSION
 		yes_or_no(!table.is_virtual), // IS_UPDATABLE
 	]
 
 	return row
+}
+
+// generation_expression is the GENERATION_EXPRESSION of the COLUMNS view, which
+// is NULL for a column that isn't a generated column.
+fn generation_expression(column Column) Value {
+	generated := column.generated or { return new_null_value(.is_varchar) }
+
+	return new_varchar_value(generated.expr.pstr(map[string]Value{}))
 }
 
 // identity_descriptor is IS_IDENTITY to IDENTITY_CYCLE of the COLUMNS view,

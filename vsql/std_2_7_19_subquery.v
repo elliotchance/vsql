@@ -54,8 +54,9 @@ struct SubqueryPlan {
 fn (e Subquery) plan(mut c Compiler) !SubqueryPlan {
 	// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Conformance
 	// Rule 1 (Feature F671)
-	if c.check_constraint {
-		return sqlstate_42601('a subquery cannot be used in a CHECK constraint')
+	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rule 10f
+	if c.restricted != '' {
+		return sqlstate_42601('a subquery cannot be used in ${c.restricted}')
 	}
 
 	// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rule 1

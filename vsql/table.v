@@ -18,6 +18,23 @@ pub:
 	// identity is set when the column is the identity column of the table (see
 	// Table.identity_column).
 	identity ?IdentityColumn
+	// generated is set when the column is a generated column, whose value is
+	// always the result of its generation expression.
+	generated ?GenerationClause
+}
+
+// is_generated_always is true if a value can't be assigned to the column, other
+// than DEFAULT, because it's a generated column or an identity column that's
+// GENERATED ALWAYS.
+//
+// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules 10 and 11b
+// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Syntax Rule 5
+fn (c Column) is_generated_always() bool {
+	if identity := c.identity {
+		return identity.always
+	}
+
+	return c.generated != none
 }
 
 // str returns the column definition like:
@@ -147,6 +164,9 @@ fn (t Table) bytes() []u8 {
 		}
 		if identity := col.identity {
 			element += ' ${identity}'
+		}
+		if generated := col.generated {
+			element += ' ${generated}'
 		}
 		if col.not_null {
 			element += ' ${constraint_name_definition(t.not_null_names[col.name.sub_entity_name], constraint_name(t, 'NOT_NULL', i))}NOT NULL'
@@ -504,7 +524,7 @@ fn (o TableOperation) pretty_columns() Columns {
 	for c in o.table.columns {
 		cols << Column{Identifier{
 			sub_entity_name: c.name.sub_entity_name
-		}, c.typ, c.not_null, none, none}
+		}, c.typ, c.not_null, none, none, none}
 	}
 
 	return cols

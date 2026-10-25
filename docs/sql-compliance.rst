@@ -1302,7 +1302,7 @@ Optional Features
    * - ✅ **T174**
      - **Identity columns**
 
-   * - ❌ **T175**
+   * - ✅ **T175**
      - **Generated columns**
 
    * - ✅ **T176**

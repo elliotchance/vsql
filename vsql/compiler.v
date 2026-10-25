@@ -42,22 +42,28 @@ mut:
 	//
 	// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28d
 	distinct_columns ?[]Column
-	// check_constraint is set when compiling the search condition of a CHECK
-	// constraint, which must be deterministic (see check_deterministic). A CHECK
-	// on a column can only use that column, check_column.
-	check_constraint bool
-	check_column     string
+	// restricted is set to what's being compiled (such as "a CHECK constraint")
+	// when it must be deterministic (see check_deterministic) and can't contain a
+	// subquery or a parameter. A CHECK on a column can only use that column,
+	// check_column. A generation expression can't use a generated column, and
+	// generation_column is the column it's for.
+	restricted        string
+	check_column      string
+	generation_column string
 }
 
 // check_deterministic returns an error if the expression (described by what)
-// is possibly non-deterministic and it's in a CHECK constraint. Otherwise, the
-// constraint could be satisfied when a row is written but not later.
+// is possibly non-deterministic and it's in a CHECK constraint or a generation
+// expression. Otherwise, the constraint could be satisfied when a row is
+// written but not later, or a generated column could have a different value if
+// the row was written again.
 //
 // ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rule 5
+// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rule 10d
 // ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rule 7
 fn (c Compiler) check_deterministic(what string) ! {
-	if c.check_constraint {
-		return sqlstate_42601('${what} cannot be used in a CHECK constraint')
+	if c.restricted != '' {
+		return sqlstate_42601('${what} cannot be used in ${c.restricted}')
 	}
 }
 

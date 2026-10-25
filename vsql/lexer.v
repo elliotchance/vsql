@@ -60,6 +60,7 @@ type YYSym = AddColumnDefinition
 	| ExistsPredicate
 	| ExplicitRowValueConstructor
 	| GeneralValueSpecification
+	| GenerationClause
 	| Identifier
 	| IdentityColumn
 	| IdentifierChain

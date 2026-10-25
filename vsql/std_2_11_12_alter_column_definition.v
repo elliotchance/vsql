@@ -31,6 +31,11 @@ fn (d AlterColumnDefinition) execute(mut conn Connection, mut catalog CatalogCon
 		})
 	}
 
+	// ISO/IEC 9075-2:2016(E), 11.12, <alter column definition>, Syntax Rule 9
+	if column.generated != none && d.action is SetColumnDefaultClause {
+		return sqlstate_42601('cannot set the default of generated column ${column.name.sub_entity_name}')
+	}
+
 	mut sequence := ?Sequence(none)
 	new_column := match d.action {
 		AlterIdentityColumnSpecification {

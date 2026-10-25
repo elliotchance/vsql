@@ -77,6 +77,9 @@ EXPLAIN SELECT * FROM t1 WHERE EXISTS (SELECT x FROM t2 WHERE x > 1);
 CREATE TABLE t3 (x INT CHECK (EXISTS (SELECT * FROM t1)));
 -- error 42601: syntax error: a subquery cannot be used in a CHECK constraint
 
+CREATE TABLE t3 (x INT, CHECK (x IN (SELECT x FROM t1)));
+-- error 42601: syntax error: a subquery cannot be used in a CHECK constraint
+
 -- # NEXT VALUE FOR can't be used in a subquery.
 SELECT * FROM t1 WHERE EXISTS (SELECT NEXT VALUE FOR seq1 FROM t1);
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in a subquery

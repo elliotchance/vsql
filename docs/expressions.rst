@@ -34,13 +34,17 @@ IN
 .. code-block:: text
 
   X [ NOT ] IN ( Y1 [ , Y2 ... ] )
+  X [ NOT ] IN ( <query> )
 
 An ``IN`` expression returns ``TRUE`` if ``X`` is equal to any of the values in
-the list. Or, put another way ``X = Y1 OR X = Y2 ...``. ``X NOT IN (...)`` is the
-same as ``NOT (X IN (...))``.
+the list, or any of the rows of the subquery (which must have one column). Or,
+put another way ``X = Y1 OR X = Y2 ...``, which is the same as
+``X = ANY (...)``. ``X NOT IN (...)`` is the same as ``NOT (X IN (...))``.
 
 This means that if ``X`` is ``NULL``, or none of the values are equal but at
-least one of them is ``NULL``, the result is ``UNKNOWN``.
+least one of them is ``NULL``, the result is ``UNKNOWN``. So ``NOT IN`` is never
+``TRUE`` when a subquery returns a ``NULL``. A subquery without any rows is
+``FALSE`` for ``IN`` (and ``TRUE`` for ``NOT IN``), even when ``X`` is ``NULL``.
 
 *Examples*
 
@@ -50,6 +54,36 @@ least one of them is ``NULL``, the result is ``UNKNOWN``.
   30 IN (45)                       -- FALSE
   30 NOT IN (25, 30, 45)           -- FALSE
   30 IN (45, CAST(NULL AS INT))    -- UNKNOWN
+  30 IN (SELECT price FROM products)
+  30 IN (VALUES 25, 30)            -- TRUE
+
+ALL, SOME and ANY
+-----------------
+
+.. code-block:: text
+
+  X <op> ALL ( <query> )
+  X <op> { SOME | ANY } ( <query> )
+
+Compares ``X`` with each row of the subquery (which must have one column), where
+``<op>`` is ``=``, ``<>``, ``<``, ``>``, ``<=`` or ``>=``. ``SOME`` and ``ANY``
+are the same.
+
+``ALL`` is ``TRUE`` if the comparison is ``TRUE`` for every row (or there are no
+rows), and ``FALSE`` if it's ``FALSE`` for any row. ``SOME`` is ``TRUE`` if the
+comparison is ``TRUE`` for any row, and ``FALSE`` if it's ``FALSE`` for every row
+(or there are no rows). Otherwise, because of a ``NULL``, the result is
+``UNKNOWN``.
+
+*Examples*
+
+.. code-block:: sql
+
+  4 > ALL (VALUES 1, 2, 3)                     -- TRUE
+  2 > ALL (VALUES 1, 2, 3)                     -- FALSE
+  2 > SOME (VALUES 1, 2, 3)                    -- TRUE
+  1 = ANY (VALUES 2, CAST(NULL AS INT))        -- UNKNOWN
+  1 = ALL (SELECT x FROM t WHERE x > 100)      -- TRUE (no rows)
 
 CASE
 ----

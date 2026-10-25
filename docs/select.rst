@@ -38,11 +38,11 @@ column names renames each of the table's columns, in order.
 A ``SELECT`` must have a ``FROM``. To calculate expressions without a table,
 use :doc:`values` (such as ``VALUES 1 + 2``).
 
-A subquery can also be used in an expression with ``EXISTS``. See
-:doc:`expressions`.
+A subquery can also be used in an expression with ``EXISTS``, ``IN``, ``ALL``
+and ``SOME``. See :doc:`expressions`.
 
-Not supported yet: ``INTERSECT``, a subquery in ``IN``, ``ALL``, ``SOME`` or as
-a value, and correlated subqueries (a subquery that refers to the columns of the query that contains
+Not supported yet: ``INTERSECT``, a subquery used as a value, and correlated
+subqueries (a subquery that refers to the columns of the query that contains
 it). See :doc:`sql-compliance`.
 
 SELECT

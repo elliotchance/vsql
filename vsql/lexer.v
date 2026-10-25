@@ -75,6 +75,7 @@ type YYSym = AddColumnDefinition
 	| ParenthesizedValueExpression
 	| Predicate
 	| QualifiedAsteriskExpr
+	| QuantifiedComparisonPredicate
 	| QualifiedJoin
 	| QueryExpression
 	| QuerySpecification

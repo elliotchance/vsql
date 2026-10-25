@@ -930,7 +930,7 @@ Optional Features
    * - ❌ **F695**
      - **Translation support**
 
-   * - ❌ **F701**
+   * - ✅ **F701**
      - **Referential update actions**
 
    * - ❌ **F711**

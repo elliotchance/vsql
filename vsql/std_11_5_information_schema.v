@@ -351,8 +351,7 @@ fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 // the ith FOREIGN KEY of a table, which references the referenced table. The
 // unique constraint is the PRIMARY KEY or UNIQUE of the referenced table that
 // has the referenced columns, with its name in the TABLE_CONSTRAINTS view. A
-// FOREIGN KEY can't have a MATCH (so it's NONE, Description 3) or an ON UPDATE
-// yet.
+// FOREIGN KEY can't have a MATCH yet (so it's NONE, Description 3).
 fn referential_constraints_view_row(catalog_name string, table Table, i int, referenced Table) []Value {
 	mut columns := table.foreign_keys[i].referenced_columns.clone()
 	columns.sort()
@@ -373,7 +372,7 @@ fn referential_constraints_view_row(catalog_name string, table Table, i int, ref
 		new_varchar_value(referenced.name.schema_name), // UNIQUE_CONSTRAINT_SCHEMA
 		new_varchar_value(unique_constraint_name), // UNIQUE_CONSTRAINT_NAME
 		new_varchar_value('NONE'), // MATCH_OPTION
-		new_varchar_value('NO ACTION'), // UPDATE_RULE
+		new_varchar_value(table.foreign_keys[i].update_action()), // UPDATE_RULE
 		new_varchar_value(table.foreign_keys[i].delete_action()), // DELETE_RULE
 	]
 }

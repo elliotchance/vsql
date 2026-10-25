@@ -251,7 +251,8 @@ and with the same names as ``TABLE_CONSTRAINTS``.
     - Always ``NONE`` (``MATCH`` is not supported).
 
   * - ``UPDATE_RULE``
-    - Always ``NO ACTION`` (``ON UPDATE`` is not supported).
+    - ``CASCADE``, ``SET NULL``, ``SET DEFAULT`` or ``NO ACTION`` (the
+      ``ON UPDATE``).
 
   * - ``DELETE_RULE``
     - ``CASCADE``, ``SET NULL``, ``SET DEFAULT`` or ``NO ACTION`` (the

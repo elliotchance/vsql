@@ -6,14 +6,15 @@ module vsql
 
 // A FOREIGN KEY, or a REFERENCES on a column. The referenced_columns are empty
 // when they aren't given, which means the PRIMARY KEY of the referenced table
-// (Syntax Rule 4b). There is no MATCH or ON UPDATE, so it's always MATCH
-// SIMPLE (Syntax Rule 1) with ON UPDATE NO ACTION (Syntax Rule 12). The
-// delete_rule is empty when there's no ON DELETE.
+// (Syntax Rule 4b). There is no MATCH, so it's always MATCH
+// SIMPLE (Syntax Rule 1). The update_rule and delete_rule are empty when
+// there's no ON UPDATE or ON DELETE.
 struct ReferentialConstraintDefinition {
 	name               Identifier
 	columns            []Identifier
 	referenced_table   Identifier
 	referenced_columns []Identifier
+	update_rule        string // CASCADE, SET NULL, SET DEFAULT or NO ACTION
 	delete_rule        string // CASCADE, SET NULL, SET DEFAULT or NO ACTION
 }
 
@@ -27,12 +28,13 @@ fn new_referential_constraint_definition(columns []Identifier, references Refere
 // A ForeignKey is a referential constraint of a table. Once the table has been
 // created, the referenced_table is fully qualified and the referenced_columns
 // are always known (see resolve_foreign_keys), in the order of the columns that
-// they correspond to. The delete_rule is empty for ON DELETE NO ACTION.
+// they correspond to. The update_rule and delete_rule are empty for NO ACTION.
 struct ForeignKey {
 	name               string
 	columns            []string
 	referenced_table   Identifier
 	referenced_columns []string
+	update_rule        string // CASCADE, SET NULL or SET DEFAULT
 	delete_rule        string // CASCADE, SET NULL or SET DEFAULT
 }
 
@@ -40,11 +42,19 @@ struct ForeignKey {
 // (see Table.bytes).
 fn (k ForeignKey) str() string {
 	mut s := 'FOREIGN KEY (${k.columns.map(delimit_identifier(it)).join(', ')}) REFERENCES ${k.referenced_table.storage_sql()} (${k.referenced_columns.map(delimit_identifier(it)).join(', ')})'
+	if k.update_rule != '' {
+		s += ' ON UPDATE ${k.update_rule}'
+	}
 	if k.delete_rule != '' {
 		s += ' ON DELETE ${k.delete_rule}'
 	}
 
 	return s
+}
+
+// update_action is the referential action of the ON UPDATE.
+fn (k ForeignKey) update_action() string {
+	return if k.update_rule == '' { 'NO ACTION' } else { k.update_rule }
 }
 
 // delete_action is the referential action of the ON DELETE.
@@ -249,10 +259,9 @@ fn (mut f Storage) check_foreign_keys(t Table, rows []Row, time_zone i16) ! {
 // t (including t itself) references a key that's in old_rows but not new_rows,
 // or might once another transaction finishes. The old_rows are the rows of t
 // that a statement deleted or updated, and new_rows are the rows that it wrote.
-// The referential delete actions (see apply_delete_rules) have already been
-// carried out, and a FOREIGN KEY is always ON UPDATE NO ACTION, so it's checked
-// once the whole statement has finished (ISO/IEC 9075-2:2016(E), 15.17 and
-// 4.23.2).
+// The referential actions (see apply_referential_actions) have already been
+// carried out, so it's checked once the whole statement has finished
+// (ISO/IEC 9075-2:2016(E), 15.17 and 4.23.2).
 //
 // The referenced columns are a unique constraint (which has already been
 // checked), so another row of t can't have the same key. time_zone is the same
@@ -321,24 +330,46 @@ fn (mut f Storage) check_referencing_rows(t Table, old_rows []Row, new_rows []Ro
 	}
 }
 
-// apply_delete_rules carries out the referential delete actions of the
+// A RowChange is a row of a table that a statement (or a referential action)
+// deleted or replaced. The new row is only used when it isn't a delete.
+struct RowChange {
+	old       Row
+	new       Row
+	is_delete bool
+}
+
+// apply_referential_actions carries out the referential actions of the
 // FOREIGN KEYs that reference t (including t itself) for the rows of t that a
-// DELETE deleted, and then checks the FOREIGN KEYs that reference each table
-// that has deleted rows. A row that's deleted by ON DELETE CASCADE can have its
-// own referencing rows, so this repeats until no more rows are deleted. A row
-// that's replaced by ON DELETE SET NULL or SET DEFAULT is checked like a row
+// DELETE or UPDATE changed, and then checks the constraints of each table that
+// has changed rows. A row that's deleted or replaced by a referential action
+// can have its own referencing rows, so this repeats until there are no more
+// changes. A row that's replaced by a referential action is checked like a row
 // that's changed by an UPDATE.
+//
+// The rows of t must have already been written, and their UNIQUE and
+// FOREIGN KEY constraints are checked here, after the referential actions,
+// since a referential action can change a row of t when t references itself.
 //
 // The referencing tables are in the same catalog as t (see
 // resolve_foreign_keys), so they're all in f.
 //
 // ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General
-// Rule 9a
-fn apply_delete_rules(mut conn Connection, mut f Storage, t Table, rows []Row) ! {
+// Rules 9a, 10a and 17
+fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, changes []RowChange) ! {
 	_, time_zone := conn.now()
-	mut deleted := map[string][]Row{}
+
+	// The old rows of each table are the rows that were deleted or replaced,
+	// and the written rows are the latest version of each row that was written
+	// (by its object key).
 	mut old := map[string][]Row{}
-	mut new := map[string][]Row{}
+	mut written := map[string]map[string]Row{}
+	for change in changes {
+		old[t.name.storage_id()] << change.old
+		if !change.is_delete {
+			mut row := change.new
+			written[t.name.storage_id()][row.object_key(t)!.bytestr()] = row
+		}
+	}
 
 	// The tables are sorted so that the rows are always changed in the same
 	// order.
@@ -346,103 +377,146 @@ fn apply_delete_rules(mut conn Connection, mut f Storage, t Table, rows []Row) !
 	table_names.sort()
 
 	mut pending_tables := [t.name.storage_id()]
-	mut pending_rows := [rows]
+	mut pending_changes := [changes]
 	for pending_tables.len > 0 {
 		table := f.table(pending_tables.pop())
-		removed_rows := pending_rows.pop()
-		deleted[table.name.storage_id()] << removed_rows
+		table_changes := pending_changes.pop()
 
 		for table_name in table_names {
 			referencing := f.table(table_name)
 			for key in referencing.foreign_keys {
-				if key.delete_rule == ''
-					|| key.referenced_table.storage_id() != table.name.storage_id() {
+				if key.referenced_table.storage_id() != table.name.storage_id() {
 					continue
 				}
 
-				matching := f.matching_rows(key, referencing, table, removed_rows,
-					time_zone)!
+				// A key is deleted when its row is deleted, and updated when a
+				// row has a different key afterwards (General Rule 10).
+				types := foreign_key_types(referencing, key.columns, table, key.referenced_columns)!
+				mut deleted_keys := map[string]bool{}
+				mut updated_keys := map[string]Row{}
+				for change in table_changes {
+					value := key_value(change.old, key.referenced_columns, types, time_zone)
+					if value.len == 0 {
+						continue
+					}
+
+					if change.is_delete {
+						if key.delete_rule != '' {
+							deleted_keys[value.bytestr()] = true
+						}
+					} else if key.update_rule != ''
+						&& key_value(change.new, key.referenced_columns, types, time_zone) != value {
+						updated_keys[value.bytestr()] = change.new
+					}
+				}
+				if deleted_keys.len == 0 && updated_keys.len == 0 {
+					continue
+				}
+
+				mut keys := deleted_keys.clone()
+				for value, _ in updated_keys {
+					keys[value] = true
+				}
+				matching := f.matching_rows(key, referencing, types, keys, time_zone)!
 				if matching.len == 0 {
 					continue
 				}
 
-				if key.delete_rule == 'CASCADE' {
-					for row in matching {
-						mut before := row
-						f.delete_row(table_name, mut before)!
-					}
-					pending_tables << table_name
-					pending_rows << matching
-					continue
-				}
-
 				check_constraints := new_check_constraints(mut conn, referencing)!
+				mut new_changes := []RowChange{}
 				for row in matching {
-					mut before := row
+					value := key_value(row, key.columns, types, time_zone).bytestr()
+					is_delete := value in deleted_keys
+					rule := if is_delete { key.delete_rule } else { key.update_rule }
+					if rule == 'CASCADE' && is_delete {
+						new_changes << RowChange{
+							old:       row
+							is_delete: true
+						}
+						continue
+					}
+
 					mut after := Row{
 						id:   row.id
 						tid:  row.tid
 						data: row.data.clone()
 					}
-					for column in key.columns {
-						value := if key.delete_rule == 'SET NULL' {
-							ContextuallyTypedValueSpecification(NullSpecification{})
-						} else {
-							ContextuallyTypedValueSpecification(DefaultSpecification{})
+					for i, column_name in key.columns {
+						column := referencing.column(column_name)!
+						after.data[column_name] = match rule {
+							'CASCADE' {
+								v := cast(mut conn, 'for column ${column_name}', updated_keys[value].data[key.referenced_columns[i]],
+									column.typ)!
+								if column.not_null && v.is_null {
+									return sqlstate_23502('column ${column_name}')
+								}
+								v
+							}
+							'SET NULL' {
+								insert_value(mut conn, map[string]Value{}, column, ContextuallyTypedValueSpecification(NullSpecification{}))!
+							}
+							else {
+								insert_value(mut conn, map[string]Value{}, column, ContextuallyTypedValueSpecification(DefaultSpecification{}))!
+							}
 						}
-						after.data[column] = insert_value(mut conn, map[string]Value{},
-							referencing.column(column)!, value)!
 					}
 					check_constraints.verify(mut conn, after)!
+					new_changes << RowChange{
+						old: row
+						new: after
+					}
+				}
 
-					// Like an UPDATE, a row that gets a new PRIMARY KEY is
-					// deleted and written again.
+				// Like an UPDATE, a row that gets a new PRIMARY KEY is deleted
+				// and only written again once all of the rows have been
+				// deleted.
+				mut moved := []Row{}
+				for change in new_changes {
+					mut before := change.old
+					old[table_name] << before
+					written[table_name].delete(before.object_key(referencing)!.bytestr())
+					if change.is_delete {
+						f.delete_row(table_name, mut before)!
+						continue
+					}
+
+					mut after := change.new
 					if before.object_key(referencing)! != after.object_key(referencing)! {
 						f.delete_row(table_name, mut before)!
-						f.write_row(mut after, referencing)!
+						moved << after
 					} else {
 						f.update_row(mut after, referencing)!
+						written[table_name][after.object_key(referencing)!.bytestr()] = after
 					}
-					old[table_name] << before
-					new[table_name] << after
 				}
+				for mut row in moved {
+					f.write_row(mut row, referencing)!
+					written[table_name][row.object_key(referencing)!.bytestr()] = row
+				}
+
+				pending_tables << table_name
+				pending_changes << new_changes
 			}
 		}
 	}
 
 	for table_name in table_names {
 		table := f.table(table_name)
-		if table_name in new {
-			f.check_unique_constraints(table, new[table_name])!
-			f.check_foreign_keys(table, new[table_name], time_zone)!
-			f.check_referencing_rows(table, old[table_name], new[table_name], time_zone)!
-		}
-		if table_name in deleted {
-			f.check_referencing_rows(table, deleted[table_name], [], time_zone)!
-		}
+		rows := written[table_name].values()
+		f.check_unique_constraints(table, rows)!
+		f.check_foreign_keys(table, rows, time_zone)!
+		f.check_referencing_rows(table, old[table_name], rows, time_zone)!
 	}
 }
 
 // matching_rows are the rows of the referencing table that reference one of
-// the rows of the referenced table by the FOREIGN KEY. The matching rows are
-// changed by the referential action, so it's an error if another transaction is
-// writing one of them.
+// the keys (see key_value) of the referenced table by the FOREIGN KEY. The
+// matching rows are changed by the referential action, so it's an error if
+// another transaction is writing one of them.
 //
 // ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General
-// Rule 6a
-fn (mut f Storage) matching_rows(key ForeignKey, referencing Table, referenced Table, rows []Row, time_zone i16) ![]Row {
-	types := foreign_key_types(referencing, key.columns, referenced, key.referenced_columns)!
-	mut keys := map[string]bool{}
-	for row in rows {
-		value := key_value(row, key.referenced_columns, types, time_zone)
-		if value.len > 0 {
-			keys[value.bytestr()] = true
-		}
-	}
-	if keys.len == 0 {
-		return []Row{}
-	}
-
+// Rule 6
+fn (mut f Storage) matching_rows(key ForeignKey, referencing Table, types []SQLType, keys map[string]bool, time_zone i16) ![]Row {
 	f.isolation_start()!
 	defer {
 		f.end_isolation()

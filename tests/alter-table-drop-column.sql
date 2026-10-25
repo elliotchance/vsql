@@ -31,6 +31,68 @@ SELECT column_name, ordinal_position FROM information_schema.columns WHERE table
 -- COLUMN_NAME: D ORDINAL_POSITION: 2
 -- COLUMN_NAME: B ORDINAL_POSITION: 3
 
+-- # The dropped column isn't in a dump, in the table or in any of its rows,
+-- # including a row that was written before it was dropped and a row whose
+-- # value for it was never written (because it was added later). The dump can
+-- # be loaded again.
+CREATE TABLE t (a INT NOT NULL, b VARCHAR(10) DEFAULT 'z', c BOOLEAN);
+INSERT INTO t (a, b, c) VALUES (1, 'x', TRUE);
+ALTER TABLE t ADD COLUMN d INT;
+INSERT INTO t (a, b, c, d) VALUES (2, 'y', FALSE, 7);
+ALTER TABLE t DROP COLUMN b;
+ALTER TABLE t DROP d;
+/* out */
+/* in */
+INSERT INTO t (a, c) VALUES (3, NULL);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: ALTER TABLE 1
+-- msg: INSERT 1
+-- msg: ALTER TABLE 1
+-- msg: ALTER TABLE 1
+-- out: CREATE TABLE "PUBLIC"."T" (
+-- out:   "A" INTEGER NOT NULL,
+-- out:   "C" BOOLEAN
+-- out: );
+-- out: INSERT INTO "PUBLIC"."T" ("A", "C") VALUES (1, TRUE);
+-- out: INSERT INTO "PUBLIC"."T" ("A", "C") VALUES (2, FALSE);
+-- msg: INSERT 1
+-- A: 1 C: TRUE
+-- A: 2 C: FALSE
+-- A: 3 C: UNKNOWN
+
+-- # The constraints dropped with the column (and by CASCADE) aren't in a dump
+-- # either, but the other constraints are.
+CREATE TABLE parent (id INT PRIMARY KEY, code INT UNIQUE);
+CREATE TABLE child (a INT NOT NULL CHECK (a > 0), b INT UNIQUE, c INT REFERENCES parent (code), d INT REFERENCES parent, CHECK (a < b));
+ALTER TABLE child DROP COLUMN a CASCADE;
+ALTER TABLE child DROP COLUMN c CASCADE;
+/* out */
+/* in */
+SELECT constraint_name, table_name, constraint_type FROM information_schema.table_constraints;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: ALTER TABLE 1
+-- msg: ALTER TABLE 1
+-- out: CREATE TABLE "PUBLIC"."CHILD" (
+-- out:   "B" INTEGER,
+-- out:   "D" INTEGER,
+-- out:   UNIQUE ("B")
+-- out: );
+-- out: CREATE TABLE "PUBLIC"."PARENT" (
+-- out:   "ID" INTEGER NOT NULL,
+-- out:   "CODE" INTEGER,
+-- out:   PRIMARY KEY ("ID"),
+-- out:   UNIQUE ("CODE")
+-- out: );
+-- out: ALTER TABLE "PUBLIC"."CHILD" ADD CONSTRAINT "CHILD_FOREIGN_KEY_2" FOREIGN KEY ("D") REFERENCES "PUBLIC"."PARENT" ("ID");
+-- CONSTRAINT_NAME: CHILD_UNIQUE_1 TABLE_NAME: CHILD CONSTRAINT_TYPE: UNIQUE
+-- CONSTRAINT_NAME: CHILD_FOREIGN_KEY_2 TABLE_NAME: CHILD CONSTRAINT_TYPE: FOREIGN KEY
+-- CONSTRAINT_NAME: PARENT_PRIMARY_KEY TABLE_NAME: PARENT CONSTRAINT_TYPE: PRIMARY KEY
+-- CONSTRAINT_NAME: PARENT_UNIQUE_1 TABLE_NAME: PARENT CONSTRAINT_TYPE: UNIQUE
+-- CONSTRAINT_NAME: PARENT_NOT_NULL_1 TABLE_NAME: PARENT CONSTRAINT_TYPE: CHECK
+
 -- # The column must exist, and can't be the only column.
 CREATE TABLE t (a INT);
 ALTER TABLE t DROP COLUMN b;

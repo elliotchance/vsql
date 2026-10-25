@@ -1299,7 +1299,7 @@ Optional Features
    * - ❌ **T173**
      - **Extended LIKE clause in table definition**
 
-   * - ❌ **T174**
+   * - ✅ **T174**
      - **Identity columns**
 
    * - ❌ **T175**

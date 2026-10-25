@@ -510,6 +510,17 @@ fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence)
 	}
 }
 
+// create_identity stores the current value of the sequence of the identity
+// column that's added to a table (see AddColumnDefinition).
+fn (mut f Storage) create_identity(table_id u64, sequence Sequence) ! {
+	f.isolation_start()!
+	defer {
+		f.end_isolation()
+	}
+
+	f.add_identity(table_id, sequence)!
+}
+
 // add_identity adds the current value of the sequence of the identity column of
 // a table. Like the value of a sequence (see create_sequence), it's a separate
 // object, so that it can be changed outside of any transaction isolation (see

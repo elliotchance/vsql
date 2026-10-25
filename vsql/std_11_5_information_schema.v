@@ -155,6 +155,28 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			}
 			t.done()
 		})!
+
+	// ISO/IEC 9075-11:2016(E), 5.37, REFERENTIAL_CONSTRAINTS view
+	catalog.add_information_schema_table('CREATE TABLE REFERENTIAL_CONSTRAINTS (
+		CONSTRAINT_CATALOG ${id} NOT NULL,
+		CONSTRAINT_SCHEMA ${id} NOT NULL,
+		CONSTRAINT_NAME ${id} NOT NULL,
+		UNIQUE_CONSTRAINT_CATALOG ${id} NOT NULL,
+		UNIQUE_CONSTRAINT_SCHEMA ${id} NOT NULL,
+		UNIQUE_CONSTRAINT_NAME ${id} NOT NULL,
+		MATCH_OPTION ${cd} NOT NULL,
+		UPDATE_RULE ${cd} NOT NULL,
+		DELETE_RULE ${cd} NOT NULL
+	)',
+		fn [c] (mut t VirtualTable) ! {
+			for table in c.information_schema_tables() {
+				for i, key in table.foreign_keys {
+					t.next_values(referential_constraints_view_row(c.catalog_name, table,
+						i, c.storage.table(key.referenced_table.storage_id())))
+				}
+			}
+			t.done()
+		})!
 }
 
 // add_information_schema_table adds a view of the INFORMATION_SCHEMA from its
@@ -301,8 +323,8 @@ fn check_constraints_view_rows(catalog_name string, table Table) [][]Value {
 // table_constraints_view_rows are the rows of the TABLE_CONSTRAINTS view
 // (ISO/IEC 9075-11:2016(E), 6.47, TABLE_CONSTRAINTS base table) for a table:
 // the PRIMARY KEY, then each UNIQUE, then each FOREIGN KEY, then the same check
-// constraints as the CHECK_CONSTRAINTS view, in the same order and with the same names.
-// Constraints can't be deferred or NOT ENFORCED yet.
+// constraints as the CHECK_CONSTRAINTS view, in the same order and with the
+// same names. Constraints can't be deferred or NOT ENFORCED yet.
 fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 	if table.is_virtual {
 		return [][]Value{}
@@ -327,6 +349,38 @@ fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 	}
 
 	return rows
+}
+
+// referential_constraints_view_row is the row of the REFERENTIAL_CONSTRAINTS
+// view (ISO/IEC 9075-11:2016(E), 6.33, REFERENTIAL_CONSTRAINTS base table) for
+// the ith FOREIGN KEY of a table, which references the referenced table. The
+// unique constraint is the PRIMARY KEY or UNIQUE of the referenced table that
+// has the referenced columns, with its name in the TABLE_CONSTRAINTS view. A
+// FOREIGN KEY can't have a MATCH (so it's NONE, Description 3) or referential
+// actions yet.
+fn referential_constraints_view_row(catalog_name string, table Table, i int, referenced Table) []Value {
+	mut columns := table.foreign_keys[i].referenced_columns.clone()
+	columns.sort()
+	mut unique_constraint_name := '${referenced.name.entity_name}_PRIMARY_KEY'
+	for j, unique_columns in referenced.unique_constraints {
+		mut sorted := unique_columns.clone()
+		sorted.sort()
+		if sorted == columns {
+			unique_constraint_name = constraint_name(referenced, 'UNIQUE', j)
+		}
+	}
+
+	return [
+		new_varchar_value(catalog_name), // CONSTRAINT_CATALOG
+		new_varchar_value(table.name.schema_name), // CONSTRAINT_SCHEMA
+		new_varchar_value(constraint_name(table, 'FOREIGN_KEY', i)), // CONSTRAINT_NAME
+		new_varchar_value(catalog_name), // UNIQUE_CONSTRAINT_CATALOG
+		new_varchar_value(referenced.name.schema_name), // UNIQUE_CONSTRAINT_SCHEMA
+		new_varchar_value(unique_constraint_name), // UNIQUE_CONSTRAINT_NAME
+		new_varchar_value('NONE'), // MATCH_OPTION
+		new_varchar_value('NO ACTION'), // UPDATE_RULE
+		new_varchar_value('NO ACTION'), // DELETE_RULE
+	]
 }
 
 // table_constraints_view_row is a row of the TABLE_CONSTRAINTS view.

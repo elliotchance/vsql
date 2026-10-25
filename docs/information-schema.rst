@@ -219,6 +219,40 @@ the same order and with the same names.
   * - ``ENFORCED``
     - Always ``YES`` (``NOT ENFORCED`` is not supported).
 
+``REFERENTIAL_CONSTRAINTS``
+---------------------------
+
+One row for each ``FOREIGN KEY`` (see :doc:`create-table`), in the same order
+and with the same names as ``TABLE_CONSTRAINTS``.
+
+.. code-block:: sql
+
+  CREATE TABLE categories (id INT PRIMARY KEY);
+  CREATE TABLE products (category_id INT REFERENCES categories);
+
+  SELECT constraint_name, unique_constraint_name FROM information_schema.referential_constraints;
+  -- CONSTRAINT_NAME: PRODUCTS_FOREIGN_KEY_1 UNIQUE_CONSTRAINT_NAME: CATEGORIES_PRIMARY_KEY
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``CONSTRAINT_CATALOG``, ``CONSTRAINT_SCHEMA``, ``CONSTRAINT_NAME``
+    - The ``FOREIGN KEY``, which has the catalog and schema of its table.
+
+  * - ``UNIQUE_CONSTRAINT_CATALOG``, ``UNIQUE_CONSTRAINT_SCHEMA``,
+      ``UNIQUE_CONSTRAINT_NAME``
+    - The ``PRIMARY KEY`` or ``UNIQUE`` of the referenced table that has the
+      referenced columns, with its name in ``TABLE_CONSTRAINTS``.
+
+  * - ``MATCH_OPTION``
+    - Always ``NONE`` (``MATCH`` is not supported).
+
+  * - ``UPDATE_RULE``, ``DELETE_RULE``
+    - Always ``NO ACTION`` (``ON UPDATE`` and ``ON DELETE`` are not supported).
+
 The types of the columns of these tables are the domains of the
 ``INFORMATION_SCHEMA`` in the standard: a name is a ``CHARACTER VARYING(128)``,
 other text is a ``CHARACTER VARYING(10485760)``, a number is an ``INTEGER`` and

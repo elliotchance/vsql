@@ -132,6 +132,9 @@ Attributes
   * - ``@[unique]``
     - Adds a ``UNIQUE`` constraint for the field.
 
+  * - ``@[unique: 'group']``
+    - Adds one ``UNIQUE`` constraint for all of the fields in the group.
+
   * - ``@[unique_key: 'a, b']``
     - On the struct, adds a ``UNIQUE`` constraint for the fields.
 
@@ -179,9 +182,6 @@ savepoint functions return an error.
 
 Limitations
 -----------
-
-- ``@[unique: 'group']`` cannot be used, because the ORM puts the group name in
-  a ``/* */`` comment, and vsql doesn't support bracketed comments yet.
 
 - Indexes (``@[index]``) and comments (``@[comment]``) are ignored.
 

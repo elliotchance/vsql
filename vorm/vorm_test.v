@@ -288,6 +288,7 @@ fn test_unique() {
 	}!
 
 	first := UniqueName{
+		city:  'p'
 		name:  'a'
 		first: 'b'
 		last:  'c'
@@ -297,6 +298,7 @@ fn test_unique() {
 	}!
 
 	same_name := UniqueName{
+		city:  'q'
 		name:  'a'
 		first: 'x'
 		last:  'y'
@@ -311,14 +313,30 @@ fn test_unique() {
 	assert failed
 
 	same_key := UniqueName{
+		city:  'r'
 		name:  'd'
 		first: 'b'
 		last:  'c'
 	}
+	failed = false
 	sql db {
 		insert same_key into UniqueName
 	} or {
 		assert err.msg() == 'violates unique constraint: UNIQUE ("first", "last") on ":memory:".PUBLIC."uniquename"'
+		failed = true
+	}
+	assert failed
+
+	same_group := UniqueName{
+		city:  'p'
+		name:  'e'
+		first: 'f'
+		last:  'g'
+	}
+	sql db {
+		insert same_group into UniqueName
+	} or {
+		assert err.msg() == 'violates unique constraint: UNIQUE ("city", "zip") on ":memory:".PUBLIC."uniquename"'
 		return
 	}
 	assert false
@@ -329,6 +347,8 @@ struct UniqueName {
 	name  string @[unique]
 	first string
 	last  string
+	city  string @[unique: 'address']
+	zip   string @[unique: 'address']
 }
 
 fn test_references() {

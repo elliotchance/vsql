@@ -402,9 +402,8 @@ DELETE FROM "my schema"."my parent";
 -- 2: error 23503: violates foreign key constraint: FOREIGN KEY (Y, X) REFERENCES "test"."my schema"."my parent" ("a b", C) on "test".PUBLIC."my child"
 -- 2: error 23503: violates foreign key constraint: FOREIGN KEY (Y, X) REFERENCES "test"."my schema"."my parent" ("a b", C) on "test".PUBLIC."my child"
 
--- # The constraints are dumped as table constraints, after the UNIQUE
--- # constraints, with the referenced columns. The referenced table must come
--- # first.
+-- # The constraints are dumped with the referenced columns, once all of the
+-- # tables and rows have been dumped, so that they can be loaded in any order.
 CREATE TABLE a (id INT PRIMARY KEY);
 CREATE TABLE b (a_id INT REFERENCES a, id INT UNIQUE, CHECK (id > 0));
 INSERT INTO a (id) VALUES (1);
@@ -426,10 +425,10 @@ INSERT INTO b (a_id, id) VALUES (2, 2);
 -- out:   "A_ID" INTEGER,
 -- out:   "ID" INTEGER,
 -- out:   UNIQUE ("ID"),
--- out:   FOREIGN KEY ("A_ID") REFERENCES "PUBLIC"."A" ("ID"),
 -- out:   CHECK (ID > 0)
 -- out: );
 -- out: INSERT INTO "PUBLIC"."B" ("A_ID", "ID") VALUES (1, 1);
+-- out: ALTER TABLE "PUBLIC"."B" ADD CONSTRAINT "B_FOREIGN_KEY_1" FOREIGN KEY ("A_ID") REFERENCES "PUBLIC"."A" ("ID");
 -- out: CREATE TABLE "PUBLIC"."A" (
 -- out:   "ID" INTEGER NOT NULL,
 -- out:   PRIMARY KEY ("ID")
@@ -439,10 +438,10 @@ INSERT INTO b (a_id, id) VALUES (2, 2);
 -- out:   "A_ID" INTEGER,
 -- out:   "ID" INTEGER,
 -- out:   UNIQUE ("ID"),
--- out:   FOREIGN KEY ("A_ID") REFERENCES "PUBLIC"."A" ("ID"),
 -- out:   CHECK (ID > 0)
 -- out: );
 -- out: INSERT INTO "PUBLIC"."B" ("A_ID", "ID") VALUES (1, 1);
+-- out: ALTER TABLE "PUBLIC"."B" ADD CONSTRAINT "B_FOREIGN_KEY_1" FOREIGN KEY ("A_ID") REFERENCES "PUBLIC"."A" ("ID");
 -- error 23503: violates foreign key constraint: FOREIGN KEY (A_ID) REFERENCES ":memory:".PUBLIC.A (ID) on ":memory:".PUBLIC.B
 
 -- # ALTER TABLE ADD COLUMN keeps the FOREIGN KEYs of the table, and every row

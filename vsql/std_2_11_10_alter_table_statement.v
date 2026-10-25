@@ -6,9 +6,11 @@ import time
 //
 // Change the definition of a table.
 
-// ADD COLUMN and ALTER COLUMN are the only <alter table action>s that are
-// supported.
-type AlterTableAction = AddColumnDefinition | AlterColumnDefinition
+// ADD COLUMN, ALTER COLUMN and ADD CONSTRAINT are the only <alter table
+// action>s that are supported.
+type AlterTableAction = AddColumnDefinition
+	| AddTableConstraintDefinition
+	| AlterColumnDefinition
 
 struct AlterTableStatement {
 	table_name Identifier
@@ -29,6 +31,7 @@ fn (stmt AlterTableStatement) execute(mut conn Connection, params map[string]Val
 
 	match stmt.action {
 		AddColumnDefinition { stmt.action.execute(mut conn, mut catalog, table, params)! }
+		AddTableConstraintDefinition { stmt.action.execute(mut conn, mut catalog, table)! }
 		AlterColumnDefinition { stmt.action.execute(mut conn, mut catalog, table)! }
 	}
 

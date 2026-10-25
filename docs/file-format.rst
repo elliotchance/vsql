@@ -740,6 +740,10 @@ that only has default names can still be read by older versions of vsql:
     CHECK (ID > 0)
   )
 
+``ALTER TABLE ... ADD CONSTRAINT`` replaces the definition. The rows are only
+rewritten when a ``PRIMARY KEY`` is added, because it changes the row ID of
+every row.
+
 Write-Ahead Log
 ---------------
 

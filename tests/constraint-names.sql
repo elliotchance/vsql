@@ -149,10 +149,10 @@ SELECT constraint_name FROM information_schema.table_constraints;
 -- out:   "B" INTEGER NOT NULL,
 -- out:   CONSTRAINT "PK" PRIMARY KEY ("B"),
 -- out:   UNIQUE ("A"),
--- out:   CONSTRAINT "FK" FOREIGN KEY ("A") REFERENCES "PUBLIC"."T" ("B"),
 -- out:   CONSTRAINT "B_CHECK" CHECK (B > 0),
 -- out:   CONSTRAINT "T_CHECK_1" CHECK (B > 1)
 -- out: );
+-- out: ALTER TABLE "PUBLIC"."T" ADD CONSTRAINT "FK" FOREIGN KEY ("A") REFERENCES "PUBLIC"."T" ("B");
 -- CONSTRAINT_NAME: PK
 -- CONSTRAINT_NAME: T_UNIQUE_1
 -- CONSTRAINT_NAME: FK

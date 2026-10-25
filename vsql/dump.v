@@ -17,6 +17,10 @@ pub:
 // as SQL. The output can be loaded into a new database by running each
 // statement from split_statements.
 pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
+	// The FOREIGN KEYs are added once all of the tables and rows have been
+	// loaded, because a table can reference a table that comes after it, or a
+	// row that comes after it in the same table.
+	mut foreign_keys := []string{}
 	mut catalog := conn.catalog()
 	mut schemas := catalog.schemas()!
 
@@ -65,9 +69,12 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 		})
 
 		for _, table in tables {
-			write_line(mut w, '${table}\n')!
+			write_line(mut w, '${Table{ ...table, foreign_keys: []ForeignKey{} }}\n')!
 
 			name := table.name.storage_sql()
+			for key in table.foreign_keys {
+				foreign_keys << 'ALTER TABLE ${name} ADD CONSTRAINT ${delimit_identifier(key.name)} ${key};'
+			}
 			columns := table.column_names().map(delimit_identifier(it)).join(', ')
 			for row in conn.query('SELECT * FROM ${name}')! {
 				mut data := []string{}
@@ -80,6 +87,10 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 
 			write_line(mut w, '')!
 		}
+	}
+
+	for foreign_key in foreign_keys {
+		write_line(mut w, foreign_key)!
 	}
 }
 

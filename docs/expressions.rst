@@ -264,8 +264,11 @@ a correlation name to tell apart the same table, such as
 
 In a grouped query (or ``HAVING``), a column of the outer query must be one of
 its ``GROUP BY`` columns. An aggregate function of only outer columns (such as
-``(SELECT MAX(t1.x) FROM t2)``) would be an aggregate of the outer query, which
-isn't supported yet (a ``0A000`` error).
+``SELECT (SELECT MAX(t1.x) FROM t2) FROM t1``) is an aggregate of the outer
+query, so the outer query is grouped (like any other aggregate function in its
+select list) and the subquery uses the result. It can't be in the ``WHERE`` of
+the outer query. An aggregate function that also uses a column of the subquery
+(such as ``MAX(t2.z + t1.x)``) is an aggregate of the subquery.
 
 *Examples*
 

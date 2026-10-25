@@ -270,7 +270,16 @@ fn is_regular_identifier(s string) bool {
 fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	// The column must exist before it can be checked against the grouping
 	// columns, otherwise an unknown column would be reported as not grouped.
+	aggregated_columns := c.aggregated_columns.len
 	compiled := e.compile_column(mut c)!
+
+	// A column of this query, rather than an outer reference (which is added by
+	// compile_outer).
+	if c.in_aggregate && e.custom_id == '' && c.aggregated_columns.len == aggregated_columns {
+		c.aggregated_columns << AggregatedColumn{
+			scope: -1
+		}
+	}
 
 	if grouping_columns := c.grouping_columns {
 		if e.custom_id == '' && !c.in_aggregate && !e.is_grouping_column(grouping_columns) {
@@ -545,20 +554,20 @@ fn (e Identifier) is_column_of_table(conn &Connection, table Table) bool {
 fn (e Identifier) compile_outer(mut c Compiler, i int) !CompileResult {
 	scope := c.conn.subquery_scopes[i]
 
-	// The aggregate function would be of the outer query, such as the MAX in
-	// "SELECT (SELECT MAX(t1.x) FROM t2) FROM t1".
-	//
-	// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rule 6
-	if c.in_aggregate {
-		return sqlstate_0a000('an aggregate function of an outer reference (${e}) is not supported')
-	}
-
 	// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rule 17
 	// ISO/IEC 9075-2:2016(E), 7.14, <having clause>, Syntax Rule 4
+	mut ungrouped := false
 	if grouping_columns := scope.grouping_columns {
-		if !e.is_grouping_column(grouping_columns) {
-			return sqlstate_42803(e.str())
-		}
+		ungrouped = !e.is_grouping_column(grouping_columns)
+	}
+
+	// In the argument of an aggregate function it might not need to be grouped,
+	// because the aggregate function may be of the outer query (see
+	// Compiler.aggregation_scope).
+	if c.in_aggregate {
+		c.aggregated_columns << AggregatedColumn{i, e.str(), ungrouped}
+	} else if ungrouped {
+		return sqlstate_42803(e.str())
 	}
 
 	// It's compiled like it is in that query, which can only see the queries that

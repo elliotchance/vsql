@@ -28,9 +28,17 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	// The arguments of an aggregate function may use any column of a grouped
 	// query.
 	in_aggregate := c.in_aggregate
-	c.in_aggregate = in_aggregate || c.conn.funcs.any(it.name == e.function_name && it.is_agg)
+	is_agg := c.conn.funcs.any(it.name == e.function_name && it.is_agg)
+	c.in_aggregate = in_aggregate || is_agg
+	aggregated_columns := c.aggregated_columns
+	if is_agg {
+		c.aggregated_columns = []
+	}
 	defer {
 		c.in_aggregate = in_aggregate
+		if is_agg {
+			c.aggregated_columns = aggregated_columns
+		}
 	}
 
 	mut arg_types := []Type{}
@@ -53,12 +61,29 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 			}
 		}
 
-		c.aggregates << AggregateFunction(e)
-
-		return Identifier{
+		compiled := Identifier{
 			custom_id:  e.pstr(c.params)
 			custom_typ: set_function_type(func_name, arg_types[0])
-		}.compile(mut c)!.with_agg(true)
+		}.compile(mut c)!
+
+		// An aggregate function of an outer query is calculated by that query
+		// (see Subquery.plan), and is a value of its row.
+		scope := c.aggregation_scope()!
+		if scope >= 0 {
+			c.conn.subquery_scopes[scope].aggregates << AggregateFunction(e)
+
+			return CompileResult{
+				run:          fn [compiled, scope] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return compiled.run(mut conn, conn.subquery_scopes[scope].row, params)!
+				}
+				typ:          compiled.typ
+				contains_agg: false
+			}
+		}
+
+		c.aggregates << AggregateFunction(e)
+
+		return compiled.with_agg(true)
 	}
 
 	if e.args.len != found_func.arg_types.len {

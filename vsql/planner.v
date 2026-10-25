@@ -409,7 +409,13 @@ fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Valu
 			tables:                 tables
 			next_value_not_allowed: 'WHERE'
 		}
-		where.compile(mut c)!
+
+		// An aggregate function of an outer query (which is a value here) is allowed.
+		//
+		// ISO/IEC 9075-2:2016(E), 7.12, <where clause>, Syntax Rule 1
+		if where.compile(mut c)!.contains_agg {
+			return sqlstate_42601('an aggregate function cannot be used in WHERE')
+		}
 
 		last_operation := plan.operations[plan.operations.len - 1]
 		plan.operations << new_where_operation(where, params, conn, last_operation.columns(),

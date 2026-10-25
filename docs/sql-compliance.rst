@@ -774,7 +774,7 @@ Optional Features
    * - ❌ **F361**
      - **Subprogram support**
 
-   * - ⭕ **F381**
+   * - ✅ **F381**
      - **Extended schema manipulation**
 
    * - ✅ F381-01
@@ -783,7 +783,7 @@ Optional Features
    * - ✅ F381-02
      - ``ALTER TABLE`` statement: ``ADD CONSTRAINT`` clause
 
-   * - ❌ F381-03
+   * - ✅ F381-03
      - ``ALTER TABLE`` statement: ``DROP CONSTRAINT`` clause
 
    * - ❌ **F382**

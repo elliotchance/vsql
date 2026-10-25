@@ -15,6 +15,7 @@ Syntax
     | ALTER [ COLUMN ] <column_name> SET DEFAULT <default>
     | ALTER [ COLUMN ] <column_name> DROP DEFAULT
     | ADD [ CONSTRAINT <constraint_name> ] <table_constraint>
+    | DROP CONSTRAINT <constraint_name> [ CASCADE | RESTRICT ]
 
   <column_definition> := <column_name> <data_type> [ DEFAULT <default> ]
                          [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
@@ -78,6 +79,23 @@ an error ``23514`` for a ``CHECK``, ``23505`` for a ``PRIMARY KEY`` or
 are ``NULL``. Every row of the table is read to check the constraint, and the
 rows are rewritten for a new ``PRIMARY KEY``, because they're stored by it.
 
+DROP CONSTRAINT
+---------------
+
+Drops a constraint of the table, which can be any of its constraints,
+including a ``NOT NULL``. It's an error ``42704`` if the table doesn't have a
+constraint with that name. The other constraints keep their names.
+
+A ``PRIMARY KEY`` or ``UNIQUE`` that's referenced by a ``FOREIGN KEY`` (of any
+table, including itself) can only be dropped with ``CASCADE``, which also drops
+the ``FOREIGN KEY``. Otherwise, it's an error ``2BP01``. ``RESTRICT`` is used
+when neither is given.
+
+The ``NOT NULL`` of a column in the ``PRIMARY KEY`` can't be dropped (an
+error ``42601``). Dropping the ``PRIMARY KEY`` doesn't drop the ``NOT NULL`` of
+its columns, which can be dropped separately. The rows are rewritten when the
+``PRIMARY KEY`` is dropped, because they're stored by it.
+
 Examples
 --------
 
@@ -114,10 +132,14 @@ Examples
   INSERT INTO products (name, price) VALUES ('Bread', 3);
   ALTER TABLE products ADD CONSTRAINT positive_price CHECK (price > 0);
   INSERT INTO products (name, price) VALUES ('Milk', -1);
+  ALTER TABLE products DROP CONSTRAINT positive_price;
+  INSERT INTO products (name, price) VALUES ('Milk', -1);
   -- msg: CREATE TABLE 1
   -- msg: INSERT 1
   -- msg: ALTER TABLE 1
   -- error 23514: violates check constraint: CHECK (PRICE > 0) on ":memory:".PUBLIC.PRODUCTS
+  -- msg: ALTER TABLE 1
+  -- msg: INSERT 1
 
 See Also
 --------

@@ -15,5 +15,8 @@ alter_table_action:
 | add_table_constraint_definition {
     $$.v = AlterTableAction($1.v as AddTableConstraintDefinition)
   }
+| drop_table_constraint_definition {
+    $$.v = AlterTableAction($1.v as DropTableConstraintDefinition)
+  }
 
 %%

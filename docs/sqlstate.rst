@@ -437,7 +437,8 @@ safely change it. The file can still be read. See *Compatibility* in
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``2BP01`` occurs if trying to drop a schema with ``RESTRICT`` and there are
-still objects that exist in the schema.
+still objects that exist in the schema, or a table or constraint that's
+referenced by a ``FOREIGN KEY``.
 
 ``2D000`` invalid transaction termination
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -555,6 +556,30 @@ A column name without a table is in more than one table of the ``FROM`` clause.
   INSERT INTO foo (c) VALUES (true);
   -- msg: CREATE TABLE 1
   -- error 42703: no such column: C
+
+``42704`` object does not exist
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t (a INT);
+  ALTER TABLE t DROP CONSTRAINT foo;
+  -- msg: CREATE TABLE 1
+  -- error 42704: no such constraint: FOO on ":memory:".PUBLIC.T
+
+``42710`` object already exists
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t (a INT CONSTRAINT foo CHECK (a > 0));
+  CREATE TABLE u (a INT CONSTRAINT foo UNIQUE);
+  -- msg: CREATE TABLE 1
+  -- error 42710: duplicate constraint: FOO
 
 ``42723`` function already exists
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

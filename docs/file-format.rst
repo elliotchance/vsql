@@ -720,6 +720,8 @@ can be renamed without changing its rows.
 ``ALTER TABLE ... ADD COLUMN`` replaces the definition with a new version that
 has the same table ID. The new column is NULL for the existing rows (see
 `Row Object`_), so they're only rewritten when its ``DEFAULT`` isn't ``NULL``.
+``ALTER TABLE ... ALTER COLUMN`` only replaces the definition, the rows aren't
+changed.
 
 Write-Ahead Log
 ---------------

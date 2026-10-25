@@ -777,8 +777,8 @@ Optional Features
    * - ⭕ **F381**
      - **Extended schema manipulation**
 
-   * - ❌ F381-01
-     - ALTER TABLE statement: ALTER COLUMN clause
+   * - ✅ F381-01
+     - ``ALTER TABLE`` statement: ``ALTER COLUMN`` clause
 
    * - ❌ F381-02
      - ALTER TABLE statement: ADD CONSTRAINT clause

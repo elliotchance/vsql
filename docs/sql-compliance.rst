@@ -873,7 +873,7 @@ Optional Features
    * - ❌ **F461**
      - **Named character sets**
 
-   * - ❌ **F491**
+   * - ✅ **F491**
      - **Constraint management**
 
    * - ❌ **F492**

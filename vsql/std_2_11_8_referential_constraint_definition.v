@@ -10,6 +10,7 @@ module vsql
 // MATCH SIMPLE (Syntax Rule 1) with ON UPDATE NO ACTION and ON DELETE NO ACTION
 // (Syntax Rules 12 and 13).
 struct ReferentialConstraintDefinition {
+	name               Identifier
 	columns            []Identifier
 	referenced_table   Identifier
 	referenced_columns []Identifier
@@ -27,6 +28,7 @@ fn new_referential_constraint_definition(columns []Identifier, references Refere
 // are always known (see resolve_foreign_keys), in the order of the columns that
 // they correspond to.
 struct ForeignKey {
+	name               string
 	columns            []string
 	referenced_table   Identifier
 	referenced_columns []string
@@ -90,7 +92,7 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 		sorted.sort()
 		mut found := false
 		mut all_unique_columns := [referenced.primary_key]
-		all_unique_columns << referenced.unique_constraints
+		all_unique_columns << referenced.unique_constraints.map(it.columns)
 		for unique_columns in all_unique_columns {
 			mut sorted_unique := unique_columns.clone()
 			sorted_unique.sort()

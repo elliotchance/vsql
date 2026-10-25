@@ -61,6 +61,11 @@ correlation_name:
     $$.v = new_column_identifier(($1.v as IdentifierChain).identifier)!
   }
 
+constraint_name:
+  schema_qualified_name {
+    $$.v = new_table_identifier(($1.v as IdentifierChain).identifier)!
+  }
+
 sequence_generator_name:
   schema_qualified_name {
     $$.v = new_table_identifier(($1.v as IdentifierChain).identifier)!

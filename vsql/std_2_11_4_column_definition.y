@@ -25,6 +25,27 @@ data_type_or_domain_name:
 
 column_constraint_definition:
   column_constraint { $$.v = $1.v as ColumnConstraint }
+| constraint_name_definition NOT NULL {
+    $$.v = ColumnConstraint(NotNullConstraint{name: $1.v as Identifier})
+  }
+| constraint_name_definition unique_specification {
+    $$.v = ColumnConstraint(UniqueConstraintDefinition{
+      name:           $1.v as Identifier
+      is_primary_key: $2.v as bool
+    })
+  }
+| constraint_name_definition references_specification {
+    $$.v = ColumnConstraint(ReferentialConstraintDefinition{
+      ...$2.v as ReferentialConstraintDefinition
+      name: $1.v as Identifier
+    })
+  }
+| constraint_name_definition check_constraint_definition {
+    $$.v = ColumnConstraint(CheckConstraintDefinition{
+      ...$2.v as CheckConstraintDefinition
+      name: $1.v as Identifier
+    })
+  }
 
 column_constraint:
   NOT NULL { $$.v = ColumnConstraint(NotNullConstraint{}) }

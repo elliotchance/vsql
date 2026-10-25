@@ -453,6 +453,25 @@ fn sqlstate_42703(column_name string) IError {
 	}
 }
 
+// duplicate object, such as a constraint
+struct SQLState42710 {
+	SQLState
+pub:
+	// entity_type is 'constraint'
+	entity_type string
+	// entity_name is the name of the object
+	entity_name string
+}
+
+fn sqlstate_42710(entity_type string, entity_name string) IError {
+	return SQLState42710{
+		code:        sqlstate_to_int('42710')
+		msg:         'duplicate ${entity_type}: ${entity_name}'
+		entity_type: entity_type
+		entity_name: entity_name
+	}
+}
+
 // grouping error
 struct SQLState42803 {
 	SQLState

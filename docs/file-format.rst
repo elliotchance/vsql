@@ -160,9 +160,10 @@ These rules keep changes compatible:
 
 3. Schema objects, such as tables, are stored as SQL (see `Schema Objects`_).
    Most features that add to a definition, such as ``DEFAULT`` or ``CHECK``,
-   only need the SQL to be extended, rather than a new layout. An older version
-   can't parse the new syntax, so using such a feature raises the *Read
-   Version*.
+   only need the SQL to be extended, rather than a new layout. This doesn't
+   raise the *Read Version*: an older version can't parse the new syntax, so
+   it already refuses to open the file (every definition is parsed when the
+   file is opened).
 
 4. Things that can be described separately from the object they belong to
    should be stored as their own objects, with a new key prefix (see
@@ -722,6 +723,22 @@ has the same table ID. The new column is NULL for the existing rows (see
 `Row Object`_), so they're only rewritten when its ``DEFAULT`` isn't ``NULL``.
 ``ALTER TABLE ... ALTER COLUMN`` only replaces the definition, the rows aren't
 changed.
+
+A constraint only has a ``CONSTRAINT "<name>"`` when its name isn't the
+default for its position (``<table>_CHECK_2`` for the second ``CHECK``, see
+:doc:`create-table`), such as a name that was given by the ``CREATE TABLE``,
+or the name of a constraint that has moved because an earlier constraint was
+dropped. A constraint without one gets the default name for its position when
+the file is opened, so the name of a constraint never changes, and a table
+that only has default names can still be read by older versions of vsql:
+
+.. code-block:: sql
+
+  CREATE TABLE "PUBLIC"."FOO" (
+    "ID" INTEGER CONSTRAINT "ID_NOT_NULL" NOT NULL,
+    CONSTRAINT "FOO_PK" PRIMARY KEY ("ID"),
+    CHECK (ID > 0)
+  )
 
 Write-Ahead Log
 ---------------

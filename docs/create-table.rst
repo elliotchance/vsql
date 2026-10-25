@@ -11,11 +11,13 @@ Syntax
   CREATE TABLE <table_name> ( <element> , ... )
 
   <element> := <column_name> <data_type> [ DEFAULT <default> ]
-               [ <column_constraint> ... ]
-             | PRIMARY KEY ( <column_name> , ... )
-             | UNIQUE ( <column_name> , ... )
-             | FOREIGN KEY ( <column_name> , ... ) <references>
-             | CHECK ( <condition> )
+               [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
+             | [ CONSTRAINT <constraint_name> ] <table_constraint>
+
+  <table_constraint> := PRIMARY KEY ( <column_name> , ... )
+                      | UNIQUE ( <column_name> , ... )
+                      | FOREIGN KEY ( <column_name> , ... ) <references>
+                      | CHECK ( <condition> )
 
   <default> := <literal>
              | CURRENT_DATE | CURRENT_TIME | CURRENT_TIMESTAMP
@@ -39,8 +41,7 @@ Syntax
    :doc:`numbers` and :doc:`text`.
 3. A table can have up to 1600 columns.
 
-Columns allow ``NULL`` unless they are ``NOT NULL``. Constraints can't be named
-(with ``CONSTRAINT <name>``).
+Columns allow ``NULL`` unless they are ``NOT NULL``.
 
 Defaults
 --------
@@ -229,6 +230,42 @@ Examples
       max_quantity INTEGER,
       CHECK (min_quantity <= max_quantity)
   );
+
+Constraint Names
+----------------
+
+Every constraint has a name, which is in the :doc:`information-schema`. A
+constraint is named with ``CONSTRAINT <constraint_name>`` before it, on a
+column or the table:
+
+.. code-block:: sql
+
+  CREATE TABLE products (
+      id INTEGER CONSTRAINT products_pk PRIMARY KEY,
+      price INTEGER CONSTRAINT price_not_null NOT NULL,
+      CONSTRAINT positive_price CHECK (price > 0)
+  );
+
+A constraint without a name gets one from its table: ``<table>_PRIMARY_KEY``
+for the ``PRIMARY KEY``, ``<table>_NOT_NULL_<n>`` for the ``NOT NULL`` of the
+nth column, and ``<table>_UNIQUE_<n>``, ``<table>_FOREIGN_KEY_<n>`` or
+``<table>_CHECK_<n>`` for the other kinds, where ``n`` is the first number
+(counting from 1) that gives a name that isn't already used in the schema. For
+example, the ``CHECK`` constraints of ``CREATE TABLE t (a INT CHECK (a > 0),
+b INT CHECK (b > 0))`` are ``T_CHECK_1`` and ``T_CHECK_2``. A ``NOT NULL``
+counts from the position of its column, and a second ``PRIMARY KEY`` name is
+``<table>_PRIMARY_KEY_2``. A constraint keeps its name when other constraints
+are added or dropped, and a constraint that's added after another is dropped
+can get the name of the dropped constraint.
+
+The names of the constraints must be unique in the schema (an error
+``42710``), but the same name can be used in different schemas. A name can be
+qualified by the schema of the table, such as ``CONSTRAINT s.positive_price``,
+but not by another schema (an error ``42601``). A column can only have one named
+``NOT NULL``.
+
+``INITIALLY DEFERRED``, ``DEFERRABLE`` and ``NOT ENFORCED`` are not supported,
+so every constraint is checked immediately.
 
 See Also
 --------

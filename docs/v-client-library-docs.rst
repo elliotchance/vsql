@@ -732,10 +732,14 @@ struct Table
    	// The CHECK constraints of the table, in the order they were defined. A
    	// CHECK on a column is the same as a CHECK on the table.
    	check_constraints []CheckConstraintDefinition
-   	// The columns of each UNIQUE constraint of the table (other than the
-   	// PRIMARY KEY), in the order they were defined. A UNIQUE on a column is the
-   	// same as a UNIQUE on the table.
-   	unique_constraints [][]string
+   	// The UNIQUE constraints of the table (other than the PRIMARY KEY), in the
+   	// order they were defined. A UNIQUE on a column is the same as a UNIQUE on
+   	// the table.
+   	unique_constraints []UniqueConstraint
+   	// The name of the PRIMARY KEY, if there is one.
+   	primary_key_name string
+   	// The names of the NOT NULL constraints, keyed by the column name.
+   	not_null_names map[string]string
    	// The FOREIGN KEY constraints of the table, in the order they were defined.
    	// A REFERENCES on a column is the same as a FOREIGN KEY on the table.
    	foreign_keys []ForeignKey

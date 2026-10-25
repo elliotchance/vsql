@@ -6,10 +6,13 @@ import time
 //
 // Change the definition of a table.
 
-// ADD COLUMN is the only <alter table action> that's supported.
+// ADD COLUMN and ALTER COLUMN are the only <alter table action>s that are
+// supported.
+type AlterTableAction = AddColumnDefinition | AlterColumnDefinition
+
 struct AlterTableStatement {
 	table_name Identifier
-	action     AddColumnDefinition
+	action     AlterTableAction
 }
 
 fn (stmt AlterTableStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
@@ -24,7 +27,10 @@ fn (stmt AlterTableStatement) execute(mut conn Connection, params map[string]Val
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
 
-	stmt.action.execute(mut conn, mut catalog, table, params)!
+	match stmt.action {
+		AddColumnDefinition { stmt.action.execute(mut conn, mut catalog, table, params)! }
+		AlterColumnDefinition { stmt.action.execute(mut conn, mut catalog, table)! }
+	}
 
 	return new_result_msg('ALTER TABLE 1', elapsed_parse, t.elapsed())
 }

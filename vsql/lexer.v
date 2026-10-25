@@ -9,7 +9,10 @@ module vsql
 type YYSym = AddColumnDefinition
 	| AggregateFunction
 	| AggregateFunctionCount
+	| AlterColumnAction
+	| AlterColumnDefinition
 	| AlterSequenceGeneratorStatement
+	| AlterTableAction
 	| BetweenPredicate
 	| BooleanPredicand
 	| BooleanPrimary
@@ -50,6 +53,7 @@ type YYSym = AddColumnDefinition
 	| DefaultOption
 	| DefaultSpecification
 	| DerivedColumn
+	| DropColumnDefaultClause
 	| ExplicitRowValueConstructor
 	| GeneralValueSpecification
 	| Identifier
@@ -85,6 +89,7 @@ type YYSym = AddColumnDefinition
 	| SequenceGeneratorRestartOption
 	| SequenceGeneratorStartWithOption
 	| SetClause
+	| SetColumnDefaultClause
 	| SetSchemaStatement
 	| SimilarPredicate
 	| SimilarPredicatePart2

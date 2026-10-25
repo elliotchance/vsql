@@ -23,39 +23,7 @@ struct AddColumnDefinition {
 // one row, and a REFERENCES column with a default to a table whose rows can all
 // reference that default.
 fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table, params map[string]Value) ! {
-	mut elements := []TableElement{}
-	for column in table.columns {
-		elements << column
-	}
-	if table.primary_key.len > 0 {
-		elements << UniqueConstraintDefinition{
-			columns:        table.primary_key.map(Identifier{
-				sub_entity_name: it
-			})
-			is_primary_key: true
-		}
-	}
-	for columns in table.unique_constraints {
-		elements << UniqueConstraintDefinition{
-			columns: columns.map(Identifier{
-				sub_entity_name: it
-			})
-		}
-	}
-	for key in table.foreign_keys {
-		elements << ReferentialConstraintDefinition{
-			columns:            key.columns.map(Identifier{
-				sub_entity_name: it
-			})
-			referenced_table:   key.referenced_table
-			referenced_columns: key.referenced_columns.map(Identifier{
-				sub_entity_name: it
-			})
-		}
-	}
-	for constraint in table.check_constraints {
-		elements << constraint
-	}
+	mut elements := table.elements()
 	elements << d.column_definition
 
 	definition := TableDefinition{table.name, elements}
@@ -64,6 +32,7 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 		...definition.table(table.name, table.tid)!
 		id: table.id
 	}
+	new_table.name_constraints(catalog.storage.schema_constraint_names(table.name))!
 	resolve_foreign_keys(mut conn, mut new_table)!
 	column := new_table.columns.last()
 	check_default_clause(mut conn, column)!

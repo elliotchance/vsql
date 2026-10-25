@@ -36,7 +36,8 @@ SELECT rc.constraint_name, tc1.constraint_type, tc1.table_name, tc2.constraint_t
 -- CONSTRAINT_NAME: CHILD_FOREIGN_KEY_1 CONSTRAINT_TYPE: FOREIGN KEY TABLE_NAME: CHILD UNIQUE_TYPE: UNIQUE UNIQUE_TABLE: PARENT
 -- CONSTRAINT_NAME: CHILD_FOREIGN_KEY_2 CONSTRAINT_TYPE: FOREIGN KEY TABLE_NAME: CHILD UNIQUE_TYPE: PRIMARY KEY UNIQUE_TABLE: PARENT
 
--- # A FOREIGN KEY that's dropped by a DROP TABLE CASCADE is removed.
+-- # A FOREIGN KEY that's dropped by a DROP TABLE CASCADE is removed, and the
+-- # other FOREIGN KEY keeps its name.
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (parent_id INT REFERENCES parent, id INT PRIMARY KEY REFERENCES child);
 DROP TABLE parent CASCADE;
@@ -44,7 +45,7 @@ SELECT constraint_name, unique_constraint_name FROM information_schema.referenti
 -- msg: CREATE TABLE 1
 -- msg: CREATE TABLE 1
 -- msg: DROP TABLE 1
--- CONSTRAINT_NAME: CHILD_FOREIGN_KEY_1 UNIQUE_CONSTRAINT_NAME: CHILD_PRIMARY_KEY
+-- CONSTRAINT_NAME: CHILD_FOREIGN_KEY_2 UNIQUE_CONSTRAINT_NAME: CHILD_PRIMARY_KEY
 
 -- # The constraints are read back from the file the same.
 /* connection 1 */

@@ -10,6 +10,9 @@ struct CheckConstraintDefinition {
 	// (11.4, Syntax Rule 17d). It's not in the file, so a CHECK that's read from
 	// the file is always a table constraint.
 	column_name string
+	// name is empty when the constraint doesn't have a <constraint name
+	// definition> (see Table.name_constraints).
+	name Identifier
 }
 
 // str is the SQL of the constraint, which is how it's stored in the file as part

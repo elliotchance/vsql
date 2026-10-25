@@ -4,9 +4,25 @@ module vsql
 //
 // Specify a uniqueness constraint for a table.
 
+// The name is empty when the constraint doesn't have a <constraint name
+// definition> (see Table.name_constraints).
 struct UniqueConstraintDefinition {
+	name           Identifier
 	columns        []Identifier
 	is_primary_key bool
+}
+
+// A UniqueConstraint is a UNIQUE (other than the PRIMARY KEY) of a table, with
+// the names of its columns.
+struct UniqueConstraint {
+	name    string
+	columns []string
+}
+
+// str is how the constraint is stored in the file as part of the CREATE TABLE
+// (see Table.bytes).
+fn (c UniqueConstraint) str() string {
+	return 'UNIQUE (${c.columns.map(delimit_identifier(it)).join(', ')})'
 }
 
 // check_primary_key returns an error if a row with the same PRIMARY KEY as r
@@ -59,8 +75,8 @@ fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
 	for row in rows {
 		mut r := row
 		object_key := r.object_key(t)!
-		for i, columns in t.unique_constraints {
-			key := unique_key(row, t, columns)!
+		for i, constraint in t.unique_constraints {
+			key := unique_key(row, t, constraint.columns)!
 			if key.len > 0 {
 				new_keys[i][key.bytestr()] = object_key
 			}
@@ -71,8 +87,8 @@ fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
 	for {
 		object := iter.next() or { break }
 		row := new_row_from_bytes(t, object.value, object.tid).for_storage()
-		for i, columns in t.unique_constraints {
-			key := unique_key(row, t, columns)!
+		for i, constraint in t.unique_constraints {
+			key := unique_key(row, t, constraint.columns)!
 			if key.len == 0 {
 				continue
 			}
@@ -89,7 +105,7 @@ fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
 			}
 
 			if object.xid == 0 {
-				return sqlstate_23505('UNIQUE (${columns.map(requote_identifier(it)).join(', ')}) on ${t.name}')
+				return sqlstate_23505('UNIQUE (${constraint.columns.map(requote_identifier(it)).join(', ')}) on ${t.name}')
 			}
 		}
 	}

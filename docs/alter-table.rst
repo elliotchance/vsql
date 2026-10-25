@@ -16,7 +16,7 @@ Syntax
     | ALTER [ COLUMN ] <column_name> DROP DEFAULT
 
   <column_definition> := <column_name> <data_type> [ DEFAULT <default> ]
-                         [ <column_constraint> ... ]
+                         [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
 
 ADD COLUMN
 ----------

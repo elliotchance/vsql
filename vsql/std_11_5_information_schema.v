@@ -297,24 +297,21 @@ fn columns_view_row(catalog_name string, table Table, i int, column Column) []Va
 // (ISO/IEC 9075-2:2016(E), 11.4, Syntax Rule 17a), so it's included, in the
 // order of the columns, before the CHECK constraints in the order they were
 // defined. The views of the INFORMATION_SCHEMA don't have constraints.
-//
-// Constraints can't be named, so they get the names that a constraint without
-// a <constraint name definition> is given (see constraint_name).
 fn check_constraints_view_rows(catalog_name string, table Table) [][]Value {
 	if table.is_virtual {
 		return [][]Value{}
 	}
 
 	mut rows := [][]Value{}
-	for i, column in table.columns {
+	for column in table.columns {
 		if column.not_null {
-			rows << check_constraints_view_row(catalog_name, table, constraint_name(table,
-				'NOT_NULL', i), '${requote_identifier(column.name.sub_entity_name)} IS NOT NULL')
+			rows << check_constraints_view_row(catalog_name, table, table.not_null_names[column.name.sub_entity_name],
+				'${requote_identifier(column.name.sub_entity_name)} IS NOT NULL')
 		}
 	}
-	for i, constraint in table.check_constraints {
-		rows << check_constraints_view_row(catalog_name, table, constraint_name(table,
-			'CHECK', i), constraint.search_condition.pstr(map[string]Value{}))
+	for constraint in table.check_constraints {
+		rows << check_constraints_view_row(catalog_name, table, constraint.name.entity_name,
+			constraint.search_condition.pstr(map[string]Value{}))
 	}
 
 	return rows
@@ -332,16 +329,14 @@ fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 
 	mut rows := [][]Value{}
 	if table.primary_key.len > 0 {
-		rows << table_constraints_view_row(catalog_name, table, '${table.name.entity_name}_PRIMARY_KEY',
+		rows << table_constraints_view_row(catalog_name, table, table.primary_key_name,
 			'PRIMARY KEY')
 	}
-	for i, _ in table.unique_constraints {
-		rows << table_constraints_view_row(catalog_name, table, constraint_name(table,
-			'UNIQUE', i), 'UNIQUE')
+	for constraint in table.unique_constraints {
+		rows << table_constraints_view_row(catalog_name, table, constraint.name, 'UNIQUE')
 	}
-	for i, _ in table.foreign_keys {
-		rows << table_constraints_view_row(catalog_name, table, constraint_name(table,
-			'FOREIGN_KEY', i), 'FOREIGN KEY')
+	for key in table.foreign_keys {
+		rows << table_constraints_view_row(catalog_name, table, key.name, 'FOREIGN KEY')
 	}
 	for row in check_constraints_view_rows(catalog_name, table) {
 		rows << table_constraints_view_row(catalog_name, table, row[2].string_value(),
@@ -361,19 +356,19 @@ fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 fn referential_constraints_view_row(catalog_name string, table Table, i int, referenced Table) []Value {
 	mut columns := table.foreign_keys[i].referenced_columns.clone()
 	columns.sort()
-	mut unique_constraint_name := '${referenced.name.entity_name}_PRIMARY_KEY'
-	for j, unique_columns in referenced.unique_constraints {
-		mut sorted := unique_columns.clone()
+	mut unique_constraint_name := referenced.primary_key_name
+	for constraint in referenced.unique_constraints {
+		mut sorted := constraint.columns.clone()
 		sorted.sort()
 		if sorted == columns {
-			unique_constraint_name = constraint_name(referenced, 'UNIQUE', j)
+			unique_constraint_name = constraint.name
 		}
 	}
 
 	return [
 		new_varchar_value(catalog_name), // CONSTRAINT_CATALOG
 		new_varchar_value(table.name.schema_name), // CONSTRAINT_SCHEMA
-		new_varchar_value(constraint_name(table, 'FOREIGN_KEY', i)), // CONSTRAINT_NAME
+		new_varchar_value(table.foreign_keys[i].name), // CONSTRAINT_NAME
 		new_varchar_value(catalog_name), // UNIQUE_CONSTRAINT_CATALOG
 		new_varchar_value(referenced.name.schema_name), // UNIQUE_CONSTRAINT_SCHEMA
 		new_varchar_value(unique_constraint_name), // UNIQUE_CONSTRAINT_NAME
@@ -413,18 +408,6 @@ fn check_constraints_view_row(catalog_name string, table Table, name string, che
 			new_varchar_value(check_clause)
 		}, // CHECK_CLAUSE
 	]
-}
-
-// constraint_name is the implementation-dependent name of a constraint that
-// wasn't given one (ISO/IEC 9075-2:2016(E), 11.6, Syntax Rule 3), such as
-// T_CHECK_1 for the first CHECK of table T, T_UNIQUE_1 for its first UNIQUE,
-// T_FOREIGN_KEY_1 for its first FOREIGN KEY, or T_NOT_NULL_2 for the NOT NULL
-// of its second column. It's the same each time the table is read, and unique
-// in the schema, because the number after the last "_CHECK_", "_UNIQUE_",
-// "_FOREIGN_KEY_" or "_NOT_NULL_" separates it from the table name. (A PRIMARY
-// KEY is T_PRIMARY_KEY, which doesn't end in a number.)
-fn constraint_name(table Table, kind string, i int) string {
-	return '${table.name.entity_name}_${kind}_${i + 1}'
 }
 
 // column_default is the text of the DEFAULT of a column, or NULL if it doesn't

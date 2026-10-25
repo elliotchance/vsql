@@ -9,6 +9,7 @@ import time
 
 type TableElement = CheckConstraintDefinition
 	| Column
+	| NotNullConstraint
 	| ReferentialConstraintDefinition
 	| UniqueConstraintDefinition
 
@@ -65,6 +66,7 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 
 	stmt.check_limits(table_name)!
 	mut table := stmt.table(table_name, 0)!
+	table.name_constraints(catalog.storage.schema_constraint_names(table_name))!
 	resolve_foreign_keys(mut conn, mut table)!
 	for column in table.columns {
 		check_default_clause(mut conn, column)!
@@ -77,12 +79,16 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 }
 
 // table checks the definition and returns the table that it describes. It's
-// also used when reading a table definition from the file.
+// also used when reading a table definition from the file. A constraint that
+// doesn't have a <constraint name definition> has an empty name, see
+// Table.name_constraints.
 fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	mut columns := []Column{}
 	mut primary_key := []string{}
+	mut primary_key_name := ''
+	mut not_null_names := map[string]string{}
 	mut check_constraints := []CheckConstraintDefinition{}
-	mut unique_constraints := [][]string{}
+	mut unique_constraints := []UniqueConstraint{}
 	mut foreign_keys := []ForeignKey{}
 	mut column_names := map[string]bool{}
 	for table_element in stmt.table_elements {
@@ -104,7 +110,19 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				}
 			}
 			CheckConstraintDefinition {
-				check_constraints << table_element
+				check_constraints << CheckConstraintDefinition{
+					...table_element
+					name: Identifier{
+						entity_name: table_constraint_name(table_element.name, table_name)!
+					}
+				}
+			}
+			NotNullConstraint {
+				if not_null_names[table_element.column] != '' {
+					return sqlstate_42601('column ${table_element.column} has more than one named NOT NULL')
+				}
+				not_null_names[table_element.column] = table_constraint_name(table_element.name,
+					table_name)!
 			}
 			UniqueConstraintDefinition {
 				if table_element.is_primary_key && primary_key.len > 0 {
@@ -126,10 +144,12 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					unique_columns << column.sub_entity_name
 				}
 
+				name := table_constraint_name(table_element.name, table_name)!
 				if table_element.is_primary_key {
 					primary_key = unique_columns.clone()
+					primary_key_name = name
 				} else {
-					unique_constraints << unique_columns
+					unique_constraints << UniqueConstraint{name, unique_columns}
 				}
 			}
 			ReferentialConstraintDefinition {
@@ -156,6 +176,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				}
 
 				foreign_keys << ForeignKey{
+					name:               table_constraint_name(table_element.name, table_name)!
 					columns:            referencing_columns
 					referenced_table:   Identifier{
 						...table_element.referenced_table
@@ -175,7 +196,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 	// Rule 5c), in any order.
 	mut column_sets := map[string]bool{}
 	mut all_unique_columns := [primary_key]
-	all_unique_columns << unique_constraints
+	all_unique_columns << unique_constraints.map(it.columns)
 	for unique_columns in all_unique_columns {
 		if unique_columns.len == 0 {
 			continue
@@ -204,10 +225,24 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 		name:               table_name
 		columns:            columns
 		primary_key:        primary_key
+		primary_key_name:   primary_key_name
+		not_null_names:     not_null_names
 		check_constraints:  check_constraints
 		unique_constraints: unique_constraints
 		foreign_keys:       foreign_keys
 	}
+}
+
+// table_constraint_name is the name of a constraint of a table, or empty if it
+// wasn't given one. The name can only be qualified by the schema of the table
+// (11.6, Syntax Rule 2), which is also the schema of an unqualified name.
+fn table_constraint_name(name Identifier, table_name Identifier) !string {
+	if (name.catalog_name != '' && name.catalog_name != table_name.catalog_name)
+		|| (name.schema_name != '' && name.schema_name != table_name.schema_name) {
+		return sqlstate_42601('constraint ${name} must be in the same schema as table ${table_name}')
+	}
+
+	return name.entity_name
 }
 
 // has_column is true if one of the table elements is the column.

@@ -6,7 +6,9 @@
 
 check_constraint_definition:
   CHECK left_paren search_condition right_paren {
-    $$.v = CheckConstraintDefinition{$3.v as BooleanValueExpression, ''}
+    $$.v = CheckConstraintDefinition{
+      search_condition: $3.v as BooleanValueExpression
+    }
   }
 
 %%

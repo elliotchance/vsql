@@ -333,6 +333,20 @@ fn (mut f Storage) create_table(definition Table) ! {
 	f.schema_changed()
 }
 
+// schema_constraint_names are the names of the constraints of the tables in the
+// schema of the table, other than the table itself.
+fn (f Storage) schema_constraint_names(table_name Identifier) []string {
+	mut names := []string{}
+	for _, table in f.tables {
+		if table.name.schema_name == table_name.schema_name
+			&& table.name.storage_id() != table_name.storage_id() {
+			names << table.constraint_names()
+		}
+	}
+
+	return names
+}
+
 // update_table replaces the definition of a table, which has the same id, with
 // a new version (such as from an ALTER TABLE).
 fn (mut f Storage) update_table(definition Table) ! {

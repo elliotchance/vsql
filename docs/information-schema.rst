@@ -165,10 +165,10 @@ the columns, and then the ``CHECK`` constraints in the order they're defined.
     - The catalog and schema of the table.
 
   * - ``CONSTRAINT_NAME``
-    - Constraints can't be named yet, so each one is named after its table:
-      ``<table>_NOT_NULL_<n>`` for the ``NOT NULL`` of the nth column, or
-      ``<table>_CHECK_<n>`` for the nth ``CHECK`` constraint (counting
-      ``CHECK`` constraints on columns and on the table together).
+    - The name of the constraint. A constraint that wasn't given a name is
+      named after its table (see "Constraint Names" in :doc:`create-table`),
+      such as ``<table>_NOT_NULL_<n>`` for the ``NOT NULL`` of the nth column,
+      or ``<table>_CHECK_<n>`` for a ``CHECK`` constraint.
 
   * - ``CHECK_CLAUSE``
     - The SQL of the condition, such as ``PRICE > 0``, or ``NULL`` if it's
@@ -202,10 +202,10 @@ the same order and with the same names.
     - The catalog and schema of the table.
 
   * - ``CONSTRAINT_NAME``
-    - ``<table>_PRIMARY_KEY`` for the ``PRIMARY KEY``, ``<table>_UNIQUE_<n>``
-      for the nth ``UNIQUE`` and ``<table>_FOREIGN_KEY_<n>`` for the nth
-      ``FOREIGN KEY`` (counting constraints on columns and on the table
-      together), otherwise the same as ``CHECK_CONSTRAINTS``.
+    - The name of the constraint, such as ``<table>_PRIMARY_KEY``,
+      ``<table>_UNIQUE_<n>`` or ``<table>_FOREIGN_KEY_<n>`` for a constraint
+      that wasn't given a name (see "Constraint Names" in
+      :doc:`create-table`).
 
   * - ``TABLE_CATALOG``, ``TABLE_SCHEMA``, ``TABLE_NAME``
     - The table the constraint is on.

@@ -34,7 +34,7 @@ fn (e CheckConstraintDefinition) compile(mut conn Connection, table Table) !Comp
 		}
 		context:                table.name
 		next_value_not_allowed: 'a CHECK constraint'
-		check_constraint:       true
+		restricted:             'a CHECK constraint'
 		check_column:           e.column_name
 	}
 	return e.compile_with(mut c)
@@ -43,13 +43,13 @@ fn (e CheckConstraintDefinition) compile(mut conn Connection, table Table) !Comp
 // columns are the names of the columns of the table that the constraint uses.
 fn (e CheckConstraintDefinition) columns(mut conn Connection, table Table) ![]string {
 	mut c := Compiler{
-		conn:             conn
-		params:           map[string]Value{}
-		tables:           {
+		conn:       conn
+		params:     map[string]Value{}
+		tables:     {
 			table.name.id(): table
 		}
-		context:          table.name
-		check_constraint: true
+		context:    table.name
+		restricted: 'a CHECK constraint'
 	}
 	e.compile_with(mut c)!
 

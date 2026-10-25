@@ -43,13 +43,14 @@ mut:
 	//
 	// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28d
 	distinct_columns ?[]Column
-	// check_constraint is set when compiling the search condition of a CHECK
-	// constraint, which must be deterministic (see check_deterministic). A CHECK
-	// on a column can only use that column, check_column. The columns that it
-	// uses are collected in check_columns (see CheckConstraintDefinition.columns).
-	check_constraint bool
-	check_column     string
-	check_columns    map[string]bool
+	// restricted is set to what's being compiled (such as "a CHECK constraint")
+	// when it must be deterministic (see check_deterministic) and can't contain a
+	// subquery or a parameter. A CHECK on a column can only use that column,
+	// check_column. The columns that a CHECK uses are collected in check_columns
+	// (see CheckConstraintDefinition.columns).
+	restricted    string
+	check_column  string
+	check_columns map[string]bool
 }
 
 // An AggregatedColumn is a column reference in the argument of an aggregate
@@ -97,8 +98,8 @@ fn (c Compiler) aggregation_scope() !int {
 // ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rule 5
 // ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rule 7
 fn (c Compiler) check_deterministic(what string) ! {
-	if c.check_constraint {
-		return sqlstate_42601('${what} cannot be used in a CHECK constraint')
+	if c.restricted != '' {
+		return sqlstate_42601('${what} cannot be used in ${c.restricted}')
 	}
 }
 

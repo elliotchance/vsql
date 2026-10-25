@@ -1359,7 +1359,7 @@ const yy_eof_code = 1
 const yy_err_code = 2
 const yy_initial_stack_size = 16
 
-// line vsql/y.y:3590
+// line vsql/y.y:3594
 
 // line yacctab:1
 const yy_exca = [
@@ -31333,7 +31333,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
 			// line vsql/y.y:961
 			{
-				yy_val.v = [TableElement(Column{yy_as[Identifier](yy_dollar[1].v), yy_as[Type](yy_dollar[2].v), false, none})]
+				yy_val.v = [TableElement(Column{ name: yy_as[Identifier](yy_dollar[1].v), typ: yy_as[Type](yy_dollar[2].v) })]
 			}
 		}
 		67 {
@@ -31341,41 +31341,45 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 			// line vsql/y.y:964
 			{
 				yy_val.v = [
-					TableElement(Column{yy_as[Identifier](yy_dollar[1].v), yy_as[Type](yy_dollar[2].v), false, yy_as[DefaultOption](yy_dollar[3].v)}),
+					TableElement(Column{
+						name:          yy_as[Identifier](yy_dollar[1].v)
+						typ:           yy_as[Type](yy_dollar[2].v)
+						default_value: yy_as[DefaultOption](yy_dollar[3].v)
+					}),
 				]
 			}
 		}
 		68 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:969
+			// line vsql/y.y:973
 			{
 				yy_val.v = add_column_constraint(yy_as[[]TableElement](yy_dollar[1].v), yy_as[ColumnConstraint](yy_dollar[2].v))
 			}
 		}
 		69 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:974
+			// line vsql/y.y:978
 			{
 				yy_val.v = yy_as[Type](yy_dollar[1].v)
 			}
 		}
 		70 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:977
+			// line vsql/y.y:981
 			{
 				yy_val.v = yy_as[ColumnConstraint](yy_dollar[1].v)
 			}
 		}
 		71 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:978
+			// line vsql/y.y:982
 			{
 				yy_val.v = ColumnConstraint(NotNullConstraint{ name: yy_as[Identifier](yy_dollar[1].v) })
 			}
 		}
 		72 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:981
+			// line vsql/y.y:985
 			{
 				yy_val.v = ColumnConstraint(UniqueConstraintDefinition{
 					name:           yy_as[Identifier](yy_dollar[1].v)
@@ -31385,7 +31389,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		73 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:987
+			// line vsql/y.y:991
 			{
 				yy_val.v = ColumnConstraint(ReferentialConstraintDefinition{
 					...yy_as[ReferentialConstraintDefinition](yy_dollar[2].v)
@@ -31395,7 +31399,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		74 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:993
+			// line vsql/y.y:997
 			{
 				yy_val.v = ColumnConstraint(CheckConstraintDefinition{
 					...yy_as[CheckConstraintDefinition](yy_dollar[2].v)
@@ -31405,84 +31409,84 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		75 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1001
+			// line vsql/y.y:1005
 			{
 				yy_val.v = ColumnConstraint(NotNullConstraint{})
 			}
 		}
 		76 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1002
+			// line vsql/y.y:1006
 			{
 				yy_val.v = ColumnConstraint(UniqueConstraintDefinition{ is_primary_key: yy_as[bool](yy_dollar[1].v) })
 			}
 		}
 		77 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1005
+			// line vsql/y.y:1009
 			{
 				yy_val.v = ColumnConstraint(yy_as[ReferentialConstraintDefinition](yy_dollar[1].v))
 			}
 		}
 		78 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1008
+			// line vsql/y.y:1012
 			{
 				yy_val.v = ColumnConstraint(yy_as[CheckConstraintDefinition](yy_dollar[1].v))
 			}
 		}
 		79 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1015
+			// line vsql/y.y:1019
 			{
 				yy_val.v = yy_as[DefaultOption](yy_dollar[2].v)
 			}
 		}
 		80 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1018
+			// line vsql/y.y:1022
 			{
 				yy_val.v = DefaultOption(yy_as[Value](yy_dollar[1].v))
 			}
 		}
 		81 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1019
+			// line vsql/y.y:1023
 			{
 				yy_val.v = DefaultOption(yy_as[DatetimeValueFunction](yy_dollar[1].v))
 			}
 		}
 		82 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1022
+			// line vsql/y.y:1026
 			{
 				yy_val.v = DefaultOption(CurrentCatalog{})
 			}
 		}
 		83 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1023
+			// line vsql/y.y:1027
 			{
 				yy_val.v = DefaultOption(CurrentSchema{})
 			}
 		}
 		84 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1024
+			// line vsql/y.y:1028
 			{
 				yy_val.v = DefaultOption(yy_as[NullSpecification](yy_dollar[1].v))
 			}
 		}
 		85 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1035
+			// line vsql/y.y:1039
 			{
 				yy_val.v = yy_as[TableElement](yy_dollar[1].v)
 			}
 		}
 		86 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1036
+			// line vsql/y.y:1040
 			{
 				yy_val.v = TableElement(UniqueConstraintDefinition{
 					...yy_as[UniqueConstraintDefinition](yy_dollar[2].v)
@@ -31492,7 +31496,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		87 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1042
+			// line vsql/y.y:1046
 			{
 				yy_val.v = TableElement(ReferentialConstraintDefinition{
 					...yy_as[ReferentialConstraintDefinition](yy_dollar[2].v)
@@ -31502,7 +31506,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		88 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1048
+			// line vsql/y.y:1052
 			{
 				yy_val.v = TableElement(CheckConstraintDefinition{
 					...yy_as[CheckConstraintDefinition](yy_dollar[2].v)
@@ -31512,28 +31516,28 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		89 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1056
+			// line vsql/y.y:1060
 			{
 				yy_val.v = TableElement(yy_as[UniqueConstraintDefinition](yy_dollar[1].v))
 			}
 		}
 		90 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1059
+			// line vsql/y.y:1063
 			{
 				yy_val.v = TableElement(yy_as[ReferentialConstraintDefinition](yy_dollar[1].v))
 			}
 		}
 		91 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1062
+			// line vsql/y.y:1066
 			{
 				yy_val.v = TableElement(yy_as[CheckConstraintDefinition](yy_dollar[1].v))
 			}
 		}
 		92 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1069
+			// line vsql/y.y:1073
 			{
 				yy_val.v = SequenceGeneratorDefinition{
 					name: yy_as[Identifier](yy_dollar[3].v)
@@ -31542,7 +31546,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		93 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:1074
+			// line vsql/y.y:1078
 			{
 				yy_val.v = SequenceGeneratorDefinition{
 					name:    yy_as[Identifier](yy_dollar[3].v)
@@ -31552,28 +31556,28 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		94 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1083
+			// line vsql/y.y:1087
 			{
 				yy_val.v = yy_as[[]SequenceGeneratorOption](yy_dollar[1].v)
 			}
 		}
 		95 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1086
+			// line vsql/y.y:1090
 			{
 				yy_val.v = yy_as[[]SequenceGeneratorOption](yy_dollar[1].v)
 			}
 		}
 		96 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1089
+			// line vsql/y.y:1093
 			{
 				yy_val.v = [yy_as[SequenceGeneratorOption](yy_dollar[1].v)]
 			}
 		}
 		97 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1090
+			// line vsql/y.y:1094
 			{
 				yy_val.v = append_list(yy_as[[]SequenceGeneratorOption](yy_dollar[1].v),
 					yy_as[SequenceGeneratorOption](yy_dollar[2].v))
@@ -31581,49 +31585,49 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		98 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1096
+			// line vsql/y.y:1100
 			{
 				yy_val.v = SequenceGeneratorOption(yy_as[SequenceGeneratorStartWithOption](yy_dollar[1].v))
 			}
 		}
 		99 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1099
+			// line vsql/y.y:1103
 			{
 				yy_val.v = yy_as[SequenceGeneratorOption](yy_dollar[1].v)
 			}
 		}
 		100 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1102
+			// line vsql/y.y:1106
 			{
 				yy_val.v = SequenceGeneratorOption(yy_as[SequenceGeneratorIncrementByOption](yy_dollar[1].v))
 			}
 		}
 		101 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1105
+			// line vsql/y.y:1109
 			{
 				yy_val.v = SequenceGeneratorOption(yy_as[SequenceGeneratorMaxvalueOption](yy_dollar[1].v))
 			}
 		}
 		102 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1108
+			// line vsql/y.y:1112
 			{
 				yy_val.v = SequenceGeneratorOption(yy_as[SequenceGeneratorMinvalueOption](yy_dollar[1].v))
 			}
 		}
 		103 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1111
+			// line vsql/y.y:1115
 			{
 				yy_val.v = SequenceGeneratorOption(SequenceGeneratorCycleOption{yy_as[bool](yy_dollar[1].v)})
 			}
 		}
 		104 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1116
+			// line vsql/y.y:1120
 			{
 				yy_val.v = SequenceGeneratorStartWithOption{
 					start_value: yy_as[Value](yy_dollar[3].v)
@@ -31632,14 +31636,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		105 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1123
+			// line vsql/y.y:1127
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		106 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1126
+			// line vsql/y.y:1130
 			{
 				yy_val.v = SequenceGeneratorIncrementByOption{
 					increment_by: yy_as[Value](yy_dollar[3].v)
@@ -31648,14 +31652,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		107 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1133
+			// line vsql/y.y:1137
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		108 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1136
+			// line vsql/y.y:1140
 			{
 				yy_val.v = SequenceGeneratorMaxvalueOption{
 					max_value: yy_as[Value](yy_dollar[2].v)
@@ -31664,21 +31668,21 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		109 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1141
+			// line vsql/y.y:1145
 			{
 				yy_val.v = SequenceGeneratorMaxvalueOption{}
 			}
 		}
 		110 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1144
+			// line vsql/y.y:1148
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		111 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1147
+			// line vsql/y.y:1151
 			{
 				yy_val.v = SequenceGeneratorMinvalueOption{
 					min_value: yy_as[Value](yy_dollar[2].v)
@@ -31687,35 +31691,35 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		112 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1152
+			// line vsql/y.y:1156
 			{
 				yy_val.v = SequenceGeneratorMinvalueOption{}
 			}
 		}
 		113 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1155
+			// line vsql/y.y:1159
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		114 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1158
+			// line vsql/y.y:1162
 			{
 				yy_val.v = true
 			}
 		}
 		115 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1159
+			// line vsql/y.y:1163
 			{
 				yy_val.v = false
 			}
 		}
 		116 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:1164
+			// line vsql/y.y:1168
 			{
 				yy_val.v = AlterSequenceGeneratorStatement{
 					name:    yy_as[Identifier](yy_dollar[3].v)
@@ -31725,14 +31729,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		117 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1172
+			// line vsql/y.y:1176
 			{
 				yy_val.v = [yy_as[SequenceGeneratorOption](yy_dollar[1].v)]
 			}
 		}
 		118 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1173
+			// line vsql/y.y:1177
 			{
 				yy_val.v = append_list(yy_as[[]SequenceGeneratorOption](yy_dollar[1].v),
 					yy_as[SequenceGeneratorOption](yy_dollar[2].v))
@@ -31740,28 +31744,28 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		119 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1179
+			// line vsql/y.y:1183
 			{
 				yy_val.v = SequenceGeneratorOption(yy_as[SequenceGeneratorRestartOption](yy_dollar[1].v))
 			}
 		}
 		120 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1182
+			// line vsql/y.y:1186
 			{
 				yy_val.v = yy_as[SequenceGeneratorOption](yy_dollar[1].v)
 			}
 		}
 		121 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1185
+			// line vsql/y.y:1189
 			{
 				yy_val.v = SequenceGeneratorRestartOption{}
 			}
 		}
 		122 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1186
+			// line vsql/y.y:1190
 			{
 				yy_val.v = SequenceGeneratorRestartOption{
 					restart_value: yy_as[Value](yy_dollar[3].v)
@@ -31770,28 +31774,28 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		123 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1193
+			// line vsql/y.y:1197
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		124 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1198
+			// line vsql/y.y:1202
 			{
 				yy_val.v = Stmt(DropSequenceGeneratorStatement{yy_as[Identifier](yy_dollar[3].v), 'RESTRICT'})
 			}
 		}
 		125 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:1201
+			// line vsql/y.y:1205
 			{
 				yy_val.v = Stmt(DropSequenceGeneratorStatement{yy_as[Identifier](yy_dollar[3].v), yy_as[string](yy_dollar[4].v)})
 			}
 		}
 		126 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:1208
+			// line vsql/y.y:1212
 			{
 				yy_val.v = UniqueConstraintDefinition{
 					columns:        yy_as[[]Identifier](yy_dollar[3].v)
@@ -31801,28 +31805,28 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		127 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1216
+			// line vsql/y.y:1220
 			{
 				yy_val.v = false
 			}
 		}
 		128 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1217
+			// line vsql/y.y:1221
 			{
 				yy_val.v = true
 			}
 		}
 		129 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1220
+			// line vsql/y.y:1224
 			{
 				yy_val.v = yy_as[[]Identifier](yy_dollar[1].v)
 			}
 		}
 		130 {
 			yy_dollar = yy_s[yypt - 6..yypt + 1].clone()
-			// line vsql/y.y:1230
+			// line vsql/y.y:1234
 			{
 				yy_val.v = new_referential_constraint_definition(yy_as[[]Identifier](yy_dollar[4].v),
 					yy_as[ReferentialConstraintDefinition](yy_dollar[6].v))
@@ -31830,14 +31834,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		131 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1236
+			// line vsql/y.y:1240
 			{
 				yy_val.v = yy_as[ReferentialConstraintDefinition](yy_dollar[2].v)
 			}
 		}
 		132 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1239
+			// line vsql/y.y:1243
 			{
 				yy_val.v = ReferentialConstraintDefinition{
 					...yy_as[ReferentialConstraintDefinition](yy_dollar[2].v)
@@ -31848,14 +31852,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		133 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1248
+			// line vsql/y.y:1252
 			{
 				yy_val.v = yy_as[[]Identifier](yy_dollar[1].v)
 			}
 		}
 		134 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1251
+			// line vsql/y.y:1255
 			{
 				yy_val.v = ReferentialConstraintDefinition{
 					referenced_table: yy_as[Identifier](yy_dollar[1].v)
@@ -31864,7 +31868,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		135 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:1256
+			// line vsql/y.y:1260
 			{
 				yy_val.v = ReferentialConstraintDefinition{
 					referenced_table:   yy_as[Identifier](yy_dollar[1].v)
@@ -31874,14 +31878,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		136 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1264
+			// line vsql/y.y:1268
 			{
 				yy_val.v = yy_as[[]Identifier](yy_dollar[1].v)
 			}
 		}
 		137 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1267
+			// line vsql/y.y:1271
 			{
 				yy_val.v = ReferentialConstraintDefinition{
 					update_rule: yy_as[string](yy_dollar[1].v)
@@ -31890,7 +31894,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		138 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1272
+			// line vsql/y.y:1276
 			{
 				yy_val.v = ReferentialConstraintDefinition{
 					update_rule: yy_as[string](yy_dollar[1].v)
@@ -31900,7 +31904,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		139 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1278
+			// line vsql/y.y:1282
 			{
 				yy_val.v = ReferentialConstraintDefinition{
 					delete_rule: yy_as[string](yy_dollar[1].v)
@@ -31909,7 +31913,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		140 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1283
+			// line vsql/y.y:1287
 			{
 				yy_val.v = ReferentialConstraintDefinition{
 					update_rule: yy_as[string](yy_dollar[2].v)
@@ -31919,49 +31923,49 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		141 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1291
+			// line vsql/y.y:1295
 			{
 				yy_val.v = yy_as[string](yy_dollar[3].v)
 			}
 		}
 		142 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1294
+			// line vsql/y.y:1298
 			{
 				yy_val.v = yy_as[string](yy_dollar[3].v)
 			}
 		}
 		143 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1297
+			// line vsql/y.y:1301
 			{
 				yy_val.v = 'CASCADE'
 			}
 		}
 		144 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1298
+			// line vsql/y.y:1302
 			{
 				yy_val.v = 'SET NULL'
 			}
 		}
 		145 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1299
+			// line vsql/y.y:1303
 			{
 				yy_val.v = 'SET DEFAULT'
 			}
 		}
 		146 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1300
+			// line vsql/y.y:1304
 			{
 				yy_val.v = 'NO ACTION'
 			}
 		}
 		147 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:1309
+			// line vsql/y.y:1313
 			{
 				yy_val.v = CheckConstraintDefinition{
 					search_condition: yy_as[BooleanValueExpression](yy_dollar[3].v)
@@ -31970,112 +31974,112 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		148 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1322
+			// line vsql/y.y:1326
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		149 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1323
+			// line vsql/y.y:1327
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		150 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1326
+			// line vsql/y.y:1330
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		151 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1327
+			// line vsql/y.y:1331
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		152 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1328
+			// line vsql/y.y:1332
 			{
 				yy_val.v = Stmt(yy_as[SequenceGeneratorDefinition](yy_dollar[1].v))
 			}
 		}
 		153 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1331
+			// line vsql/y.y:1335
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		154 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1332
+			// line vsql/y.y:1336
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		155 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1333
+			// line vsql/y.y:1337
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		156 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1334
+			// line vsql/y.y:1338
 			{
 				yy_val.v = Stmt(yy_as[AlterSequenceGeneratorStatement](yy_dollar[1].v))
 			}
 		}
 		157 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1335
+			// line vsql/y.y:1339
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		158 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1338
+			// line vsql/y.y:1342
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		159 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1339
+			// line vsql/y.y:1343
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		160 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1340
+			// line vsql/y.y:1344
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		161 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1343
+			// line vsql/y.y:1347
 			{
 				yy_val.v = Stmt(yy_as[SetSchemaStatement](yy_dollar[1].v))
 			}
 		}
 		162 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1344
+			// line vsql/y.y:1348
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		163 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:1349
+			// line vsql/y.y:1353
 			{
 				stmt := yy_as[InsertStatement](yy_dollar[4].v)
 				yy_val.v = Stmt(InsertStatement{yy_as[Identifier](yy_dollar[3].v), stmt.columns, stmt.values})
@@ -32083,21 +32087,21 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		164 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1355
+			// line vsql/y.y:1359
 			{
 				yy_val.v = yy_as[Identifier](yy_dollar[1].v)
 			}
 		}
 		165 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1358
+			// line vsql/y.y:1362
 			{
 				yy_val.v = yy_as[InsertStatement](yy_dollar[1].v)
 			}
 		}
 		166 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:1362
+			// line vsql/y.y:1366
 			{
 				yy_val.v = InsertStatement{
 					columns: yy_as[[]Identifier](yy_dollar[2].v)
@@ -32107,441 +32111,441 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		167 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1370
+			// line vsql/y.y:1374
 			{
 				yy_val.v = yy_as[[]Identifier](yy_dollar[1].v)
 			}
 		}
 		168 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:1375
+			// line vsql/y.y:1379
 			{
 				yy_val.v = Stmt(UpdateStatementSearched{yy_as[Identifier](yy_dollar[2].v), yy_as[[]SetClause](yy_dollar[4].v), none})
 			}
 		}
 		169 {
 			yy_dollar = yy_s[yypt - 6..yypt + 1].clone()
-			// line vsql/y.y:1379
+			// line vsql/y.y:1383
 			{
 				yy_val.v = Stmt(UpdateStatementSearched{yy_as[Identifier](yy_dollar[2].v), yy_as[[]SetClause](yy_dollar[4].v), yy_as[BooleanValueExpression](yy_dollar[6].v)})
 			}
 		}
 		170 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1387
+			// line vsql/y.y:1391
 			{
 				yy_val.v = [yy_as[SetClause](yy_dollar[1].v)]
 			}
 		}
 		171 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1388
+			// line vsql/y.y:1392
 			{
 				yy_val.v = append_list(yy_as[[]SetClause](yy_dollar[1].v), yy_as[SetClause](yy_dollar[3].v))
 			}
 		}
 		172 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1393
+			// line vsql/y.y:1397
 			{
 				yy_val.v = SetClause{(yy_as[Identifier](yy_dollar[1].v)).sub_entity_name, yy_as[UpdateSource](yy_dollar[3].v)}
 			}
 		}
 		173 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1398
+			// line vsql/y.y:1402
 			{
 				yy_val.v = yy_as[Identifier](yy_dollar[1].v)
 			}
 		}
 		174 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1401
+			// line vsql/y.y:1405
 			{
 				yy_val.v = yy_as[Identifier](yy_dollar[1].v)
 			}
 		}
 		175 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1404
+			// line vsql/y.y:1408
 			{
 				yy_val.v = UpdateSource(yy_as[ValueExpression](yy_dollar[1].v))
 			}
 		}
 		176 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1405
+			// line vsql/y.y:1409
 			{
 				yy_val.v = UpdateSource(yy_as[ContextuallyTypedValueSpecification](yy_dollar[1].v))
 			}
 		}
 		177 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1410
+			// line vsql/y.y:1414
 			{
 				yy_val.v = yy_as[Identifier](yy_dollar[1].v)
 			}
 		}
 		178 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1419
+			// line vsql/y.y:1423
 			{
 				yy_val.v = Stmt(yy_as[QueryExpression](yy_dollar[1].v))
 			}
 		}
 		179 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1428
+			// line vsql/y.y:1432
 			{
 				yy_val.v = yy_as[Identifier](yy_dollar[1].v)
 			}
 		}
 		180 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1433
+			// line vsql/y.y:1437
 			{
 				yy_val.v = Stmt(DeleteStatementSearched{yy_as[Identifier](yy_dollar[3].v), none})
 			}
 		}
 		181 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:1436
+			// line vsql/y.y:1440
 			{
 				yy_val.v = Stmt(DeleteStatementSearched{yy_as[Identifier](yy_dollar[3].v), yy_as[BooleanValueExpression](yy_dollar[5].v)})
 			}
 		}
 		182 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1446
+			// line vsql/y.y:1450
 			{
 				yy_val.v = Stmt(StartTransactionStatement{})
 			}
 		}
 		183 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1451
+			// line vsql/y.y:1455
 			{
 				yy_val.v = Stmt(CommitStatement{})
 			}
 		}
 		184 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1452
+			// line vsql/y.y:1456
 			{
 				yy_val.v = Stmt(CommitStatement{})
 			}
 		}
 		185 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1457
+			// line vsql/y.y:1461
 			{
 				yy_val.v = Stmt(RollbackStatement{})
 			}
 		}
 		186 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1458
+			// line vsql/y.y:1462
 			{
 				yy_val.v = Stmt(RollbackStatement{})
 			}
 		}
 		187 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1463
+			// line vsql/y.y:1467
 			{
 				yy_val.v = Stmt(SetCatalogStatement{yy_as[ValueSpecification](yy_dollar[2].v)})
 			}
 		}
 		188 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1468
+			// line vsql/y.y:1472
 			{
 				yy_val.v = yy_as[ValueSpecification](yy_dollar[2].v)
 			}
 		}
 		189 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1473
+			// line vsql/y.y:1477
 			{
 				yy_val.v = SetSchemaStatement{yy_as[ValueSpecification](yy_dollar[2].v)}
 			}
 		}
 		190 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1478
+			// line vsql/y.y:1482
 			{
 				yy_val.v = yy_dollar[2].v
 			}
 		}
 		191 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1487
+			// line vsql/y.y:1491
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		192 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1488
+			// line vsql/y.y:1492
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		193 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1489
+			// line vsql/y.y:1493
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		194 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1490
+			// line vsql/y.y:1494
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		195 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1493
+			// line vsql/y.y:1497
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		196 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1494
+			// line vsql/y.y:1498
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		197 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1495
+			// line vsql/y.y:1499
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		198 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1496
+			// line vsql/y.y:1500
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		199 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1499
+			// line vsql/y.y:1503
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		200 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1502
+			// line vsql/y.y:1506
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		201 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1505
+			// line vsql/y.y:1509
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		202 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1508
+			// line vsql/y.y:1512
 			{
 				yy_val.v = yy_as[Stmt](yy_dollar[1].v)
 			}
 		}
 		205 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1520
+			// line vsql/y.y:1524
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		206 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1522
+			// line vsql/y.y:1526
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		208 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1526
+			// line vsql/y.y:1530
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		210 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1530
+			// line vsql/y.y:1534
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		216 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1546
+			// line vsql/y.y:1550
 			{
 				yy_val.v = yy_as[IdentifierChain](yy_dollar[1].v)
 			}
 		}
 		217 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1547
+			// line vsql/y.y:1551
 			{
 				yy_val.v = IdentifierChain{yy_as[string](yy_dollar[1].v)}
 			}
 		}
 		218 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1550
+			// line vsql/y.y:1554
 			{
 				yy_val.v = yy_as[IdentifierChain](yy_dollar[1].v)
 			}
 		}
 		219 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1553
+			// line vsql/y.y:1557
 			{
 				yy_val.v = yy_as[IdentifierChain](yy_dollar[1].v)
 			}
 		}
 		503 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1846
+			// line vsql/y.y:1850
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		504 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1847
+			// line vsql/y.y:1851
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		505 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1850
+			// line vsql/y.y:1854
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		506 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1851
+			// line vsql/y.y:1855
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		507 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1854
+			// line vsql/y.y:1858
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		508 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1855
+			// line vsql/y.y:1859
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		509 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1856
+			// line vsql/y.y:1860
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		510 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1859
+			// line vsql/y.y:1863
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		511 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1862
+			// line vsql/y.y:1866
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		512 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1863
+			// line vsql/y.y:1867
 			{
 				yy_val.v = signed_numeric_literal(yy_as[string](yy_dollar[1].v), yy_as[Value](yy_dollar[2].v))!
 			}
 		}
 		513 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1868
+			// line vsql/y.y:1872
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		514 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1869
+			// line vsql/y.y:1873
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		515 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1872
+			// line vsql/y.y:1876
 			{
 				yy_val.v = numeric_literal(yy_as[string](yy_dollar[1].v))!
 			}
 		}
 		516 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1873
+			// line vsql/y.y:1877
 			{
 				yy_val.v = numeric_literal((yy_as[string](yy_dollar[1].v)) + '.')!
 			}
 		}
 		517 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1874
+			// line vsql/y.y:1878
 			{
 				yy_val.v = numeric_literal((yy_as[string](yy_dollar[1].v)) + '.' + (yy_as[string](yy_dollar[3].v)))!
 			}
 		}
 		518 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1877
+			// line vsql/y.y:1881
 			{
 				yy_val.v = numeric_literal('0.' + (yy_as[string](yy_dollar[2].v)))!
 			}
 		}
 		519 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1880
+			// line vsql/y.y:1884
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		520 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1881
+			// line vsql/y.y:1885
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		521 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1884
+			// line vsql/y.y:1888
 			{
 				yy_val.v = approximate_numeric_literal_value((yy_as[Value](yy_dollar[1].v)).str() + 'e' +
 					(yy_as[Value](yy_dollar[3].v)).str())!
@@ -32549,28 +32553,28 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		522 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1890
+			// line vsql/y.y:1894
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		523 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1893
+			// line vsql/y.y:1897
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		524 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1896
+			// line vsql/y.y:1900
 			{
 				yy_val.v = new_numeric_value(yy_as[string](yy_dollar[1].v))
 			}
 		}
 		525 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1897
+			// line vsql/y.y:1901
 			{
 				yy_val.v = if yy_as[string](yy_dollar[1].v) == '-' {
 					new_numeric_value('-' + (yy_as[string](yy_dollar[2].v)))
@@ -32581,126 +32585,126 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		526 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1906
+			// line vsql/y.y:1910
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		527 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1909
+			// line vsql/y.y:1913
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		528 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1910
+			// line vsql/y.y:1914
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		529 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1911
+			// line vsql/y.y:1915
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		530 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1914
+			// line vsql/y.y:1918
 			{
 				yy_val.v = new_date_value((yy_as[Value](yy_dollar[2].v)).string_value())!
 			}
 		}
 		531 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1917
+			// line vsql/y.y:1921
 			{
 				yy_val.v = new_time_value((yy_as[Value](yy_dollar[2].v)).string_value())!
 			}
 		}
 		532 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1920
+			// line vsql/y.y:1924
 			{
 				yy_val.v = new_timestamp_value((yy_as[Value](yy_dollar[2].v)).string_value())!
 			}
 		}
 		533 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1925
+			// line vsql/y.y:1929
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		534 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1928
+			// line vsql/y.y:1932
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		535 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1931
+			// line vsql/y.y:1935
 			{
 				yy_val.v = yy_as[Value](yy_dollar[1].v)
 			}
 		}
 		536 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1934
+			// line vsql/y.y:1938
 			{
 				yy_val.v = new_boolean_value(true)
 			}
 		}
 		537 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1935
+			// line vsql/y.y:1939
 			{
 				yy_val.v = new_boolean_value(false)
 			}
 		}
 		538 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1936
+			// line vsql/y.y:1940
 			{
 				yy_val.v = new_unknown_value()
 			}
 		}
 		539 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1941
+			// line vsql/y.y:1945
 			{
 				yy_val.v = yy_as[IdentifierChain](yy_dollar[1].v)
 			}
 		}
 		540 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1944
+			// line vsql/y.y:1948
 			{
 				yy_val.v = yy_as[IdentifierChain](yy_dollar[1].v)
 			}
 		}
 		541 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1947
+			// line vsql/y.y:1951
 			{
 				yy_val.v = new_table_identifier((yy_as[IdentifierChain](yy_dollar[1].v)).identifier)!
 			}
 		}
 		542 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1957
+			// line vsql/y.y:1961
 			{
 				yy_val.v = new_schema_identifier((yy_as[IdentifierChain](yy_dollar[1].v)).identifier)!
 			}
 		}
 		543 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1960
+			// line vsql/y.y:1964
 			{
 				yy_val.v = new_schema_identifier((yy_as[IdentifierChain](yy_dollar[1].v)).identifier + '.' +
 					(yy_as[IdentifierChain](yy_dollar[3].v)).identifier)!
@@ -32708,21 +32712,21 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		544 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1967
+			// line vsql/y.y:1971
 			{
 				yy_val.v = yy_as[IdentifierChain](yy_dollar[1].v)
 			}
 		}
 		545 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1971
+			// line vsql/y.y:1975
 			{
 				yy_val.v = yy_as[IdentifierChain](yy_dollar[1].v)
 			}
 		}
 		546 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:1972
+			// line vsql/y.y:1976
 			{
 				yy_val.v = IdentifierChain{(yy_as[IdentifierChain](yy_dollar[1].v)).identifier + '.' +
 					(yy_as[IdentifierChain](yy_dollar[3].v)).identifier}
@@ -32730,7 +32734,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		547 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:1976
+			// line vsql/y.y:1980
 			{
 				yy_val.v = IdentifierChain{(yy_as[IdentifierChain](yy_dollar[1].v)).identifier + '.' +
 					(yy_as[IdentifierChain](yy_dollar[3].v)).identifier + '.' + (yy_as[IdentifierChain](yy_dollar[5].v)).identifier}
@@ -32738,63 +32742,63 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		548 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1982
+			// line vsql/y.y:1986
 			{
 				yy_val.v = yy_as[IdentifierChain](yy_dollar[1].v)
 			}
 		}
 		549 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1985
+			// line vsql/y.y:1989
 			{
 				yy_val.v = new_column_identifier((yy_as[IdentifierChain](yy_dollar[1].v)).identifier)!
 			}
 		}
 		550 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:1990
+			// line vsql/y.y:1994
 			{
 				yy_val.v = GeneralValueSpecification(HostParameterName{(yy_as[IdentifierChain](yy_dollar[2].v)).identifier})
 			}
 		}
 		551 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:1997
+			// line vsql/y.y:2001
 			{
 				yy_val.v = new_column_identifier((yy_as[IdentifierChain](yy_dollar[1].v)).identifier)!
 			}
 		}
 		552 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2002
+			// line vsql/y.y:2006
 			{
 				yy_val.v = new_table_identifier((yy_as[IdentifierChain](yy_dollar[1].v)).identifier)!
 			}
 		}
 		553 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2007
+			// line vsql/y.y:2011
 			{
 				yy_val.v = new_table_identifier((yy_as[IdentifierChain](yy_dollar[1].v)).identifier)!
 			}
 		}
 		554 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2014
+			// line vsql/y.y:2018
 			{
 				yy_val.v = yy_as[CaseExpression](yy_dollar[1].v)
 			}
 		}
 		555 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2015
+			// line vsql/y.y:2019
 			{
 				yy_val.v = yy_as[CaseExpression](yy_dollar[1].v)
 			}
 		}
 		556 {
 			yy_dollar = yy_s[yypt - 6..yypt + 1].clone()
-			// line vsql/y.y:2018
+			// line vsql/y.y:2022
 			{
 				yy_val.v = CaseExpression(new_case_expression_null_if(yy_as[ValueExpression](yy_dollar[3].v),
 					yy_as[ValueExpression](yy_dollar[5].v)))
@@ -32802,28 +32806,28 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		557 {
 			yy_dollar = yy_s[yypt - 6..yypt + 1].clone()
-			// line vsql/y.y:2022
+			// line vsql/y.y:2026
 			{
 				yy_val.v = CaseExpression(CaseExpressionCoalesce{prepend_list(yy_as[ValueExpression](yy_dollar[3].v), yy_as[[]ValueExpression](yy_dollar[5].v))})
 			}
 		}
 		558 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2029
+			// line vsql/y.y:2033
 			{
 				yy_val.v = CaseExpression(yy_as[CaseExpressionSimple](yy_dollar[1].v))
 			}
 		}
 		559 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2030
+			// line vsql/y.y:2034
 			{
 				yy_val.v = CaseExpression(yy_as[CaseExpressionSearched](yy_dollar[1].v))
 			}
 		}
 		560 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2033
+			// line vsql/y.y:2037
 			{
 				yy_val.v = new_case_expression_simple(yy_as[RowValueConstructorPredicand](yy_dollar[2].v),
 					yy_as[[]CaseExpressionSimpleWhen](yy_dollar[3].v), CaseResult(NullSpecification{}))
@@ -32831,7 +32835,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		561 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:2037
+			// line vsql/y.y:2041
 			{
 				yy_val.v = new_case_expression_simple(yy_as[RowValueConstructorPredicand](yy_dollar[2].v),
 					yy_as[[]CaseExpressionSimpleWhen](yy_dollar[3].v), yy_as[CaseResult](yy_dollar[4].v))
@@ -32839,7 +32843,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		562 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2043
+			// line vsql/y.y:2047
 			{
 				yy_val.v = new_case_expression_searched(yy_as[[]CaseExpressionSearchedWhen](yy_dollar[2].v),
 					CaseResult(NullSpecification{}))
@@ -32847,7 +32851,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		563 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2047
+			// line vsql/y.y:2051
 			{
 				yy_val.v = new_case_expression_searched(yy_as[[]CaseExpressionSearchedWhen](yy_dollar[2].v),
 					yy_as[CaseResult](yy_dollar[3].v))
@@ -32855,91 +32859,91 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		564 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2053
+			// line vsql/y.y:2057
 			{
 				yy_val.v = CaseExpressionSimpleWhen{yy_as[RowValueConstructorPredicand](yy_dollar[2].v), yy_as[CaseResult](yy_dollar[4].v)}
 			}
 		}
 		565 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2061
+			// line vsql/y.y:2065
 			{
 				yy_val.v = CaseExpressionSearchedWhen{yy_as[BooleanValueExpression](yy_dollar[2].v), yy_as[CaseResult](yy_dollar[4].v)}
 			}
 		}
 		566 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2069
+			// line vsql/y.y:2073
 			{
 				yy_val.v = yy_as[CaseResult](yy_dollar[2].v)
 			}
 		}
 		567 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2072
+			// line vsql/y.y:2076
 			{
 				yy_val.v = yy_as[RowValueConstructorPredicand](yy_dollar[1].v)
 			}
 		}
 		568 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2075
+			// line vsql/y.y:2079
 			{
 				yy_val.v = yy_as[RowValueConstructorPredicand](yy_dollar[1].v)
 			}
 		}
 		569 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2078
+			// line vsql/y.y:2082
 			{
 				yy_val.v = yy_as[RowValueConstructorPredicand](yy_dollar[1].v)
 			}
 		}
 		570 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2081
+			// line vsql/y.y:2085
 			{
 				yy_val.v = CaseResult(yy_as[ValueExpression](yy_dollar[1].v))
 			}
 		}
 		571 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2082
+			// line vsql/y.y:2086
 			{
 				yy_val.v = CaseResult(NullSpecification{})
 			}
 		}
 		572 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2085
+			// line vsql/y.y:2089
 			{
 				yy_val.v = yy_as[ValueExpression](yy_dollar[1].v)
 			}
 		}
 		573 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2090
+			// line vsql/y.y:2094
 			{
 				yy_val.v = [yy_as[ValueExpression](yy_dollar[1].v)]
 			}
 		}
 		574 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2091
+			// line vsql/y.y:2095
 			{
 				yy_val.v = append_list(yy_as[[]ValueExpression](yy_dollar[1].v), yy_as[ValueExpression](yy_dollar[3].v))
 			}
 		}
 		575 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2096
+			// line vsql/y.y:2100
 			{
 				yy_val.v = [yy_as[CaseExpressionSimpleWhen](yy_dollar[1].v)]
 			}
 		}
 		576 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2097
+			// line vsql/y.y:2101
 			{
 				yy_val.v = append_list(yy_as[[]CaseExpressionSimpleWhen](yy_dollar[1].v),
 					yy_as[CaseExpressionSimpleWhen](yy_dollar[2].v))
@@ -32947,14 +32951,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		577 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2103
+			// line vsql/y.y:2107
 			{
 				yy_val.v = [yy_as[CaseExpressionSearchedWhen](yy_dollar[1].v)]
 			}
 		}
 		578 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2104
+			// line vsql/y.y:2108
 			{
 				yy_val.v = append_list(yy_as[[]CaseExpressionSearchedWhen](yy_dollar[1].v),
 					yy_as[CaseExpressionSearchedWhen](yy_dollar[2].v))
@@ -32962,35 +32966,35 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		579 {
 			yy_dollar = yy_s[yypt - 6..yypt + 1].clone()
-			// line vsql/y.y:2112
+			// line vsql/y.y:2116
 			{
 				yy_val.v = new_cast_specification(yy_as[CastOperand](yy_dollar[3].v), yy_as[Type](yy_dollar[5].v))
 			}
 		}
 		580 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2117
+			// line vsql/y.y:2121
 			{
 				yy_val.v = CastOperand(yy_as[ValueExpression](yy_dollar[1].v))
 			}
 		}
 		581 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2118
+			// line vsql/y.y:2122
 			{
 				yy_val.v = CastOperand(yy_as[NullSpecification](yy_dollar[1].v))
 			}
 		}
 		582 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2123
+			// line vsql/y.y:2127
 			{
 				yy_val.v = yy_as[Type](yy_dollar[1].v)
 			}
 		}
 		583 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2128
+			// line vsql/y.y:2132
 			{
 				yy_val.v = NextValueExpression{
 					name: yy_as[Identifier](yy_dollar[4].v)
@@ -32999,287 +33003,287 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		584 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2137
+			// line vsql/y.y:2141
 			{
 				yy_val.v = yy_as[Type](yy_dollar[1].v)
 			}
 		}
 		585 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2140
+			// line vsql/y.y:2144
 			{
 				yy_val.v = yy_as[Type](yy_dollar[1].v)
 			}
 		}
 		586 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2141
+			// line vsql/y.y:2145
 			{
 				yy_val.v = yy_as[Type](yy_dollar[1].v)
 			}
 		}
 		587 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2142
+			// line vsql/y.y:2146
 			{
 				yy_val.v = yy_as[Type](yy_dollar[1].v)
 			}
 		}
 		588 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2143
+			// line vsql/y.y:2147
 			{
 				yy_val.v = yy_as[Type](yy_dollar[1].v)
 			}
 		}
 		589 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2146
+			// line vsql/y.y:2150
 			{
 				yy_val.v = new_type('CHARACTER', 1, 0)
 			}
 		}
 		590 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2147
+			// line vsql/y.y:2151
 			{
 				yy_val.v = parse_type_with_length('CHARACTER', yy_as[string](yy_dollar[3].v))!
 			}
 		}
 		591 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2150
+			// line vsql/y.y:2154
 			{
 				yy_val.v = new_type('CHARACTER', 1, 0)
 			}
 		}
 		592 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2151
+			// line vsql/y.y:2155
 			{
 				yy_val.v = parse_type_with_length('CHARACTER', yy_as[string](yy_dollar[3].v))!
 			}
 		}
 		593 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:2154
+			// line vsql/y.y:2158
 			{
 				yy_val.v = parse_type_with_length('CHARACTER VARYING', yy_as[string](yy_dollar[4].v))!
 			}
 		}
 		594 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:2157
+			// line vsql/y.y:2161
 			{
 				yy_val.v = parse_type_with_length('CHARACTER VARYING', yy_as[string](yy_dollar[4].v))!
 			}
 		}
 		595 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2160
+			// line vsql/y.y:2164
 			{
 				yy_val.v = parse_type_with_length('CHARACTER VARYING', yy_as[string](yy_dollar[3].v))!
 			}
 		}
 		596 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2165
+			// line vsql/y.y:2169
 			{
 				yy_val.v = yy_as[Type](yy_dollar[1].v)
 			}
 		}
 		597 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2166
+			// line vsql/y.y:2170
 			{
 				yy_val.v = yy_as[Type](yy_dollar[1].v)
 			}
 		}
 		598 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2169
+			// line vsql/y.y:2173
 			{
 				yy_val.v = new_type('NUMERIC', 0, 0)
 			}
 		}
 		599 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2170
+			// line vsql/y.y:2174
 			{
 				yy_val.v = parse_type_with_precision('NUMERIC', yy_as[string](yy_dollar[3].v), '0')!
 			}
 		}
 		600 {
 			yy_dollar = yy_s[yypt - 6..yypt + 1].clone()
-			// line vsql/y.y:2173
+			// line vsql/y.y:2177
 			{
 				yy_val.v = parse_type_with_precision('NUMERIC', yy_as[string](yy_dollar[3].v), yy_as[string](yy_dollar[5].v))!
 			}
 		}
 		601 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2176
+			// line vsql/y.y:2180
 			{
 				yy_val.v = new_type('DECIMAL', 0, 0)
 			}
 		}
 		602 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2177
+			// line vsql/y.y:2181
 			{
 				yy_val.v = parse_type_with_precision('DECIMAL', yy_as[string](yy_dollar[3].v), '0')!
 			}
 		}
 		603 {
 			yy_dollar = yy_s[yypt - 6..yypt + 1].clone()
-			// line vsql/y.y:2180
+			// line vsql/y.y:2184
 			{
 				yy_val.v = parse_type_with_precision('DECIMAL', yy_as[string](yy_dollar[3].v), yy_as[string](yy_dollar[5].v))!
 			}
 		}
 		604 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2183
+			// line vsql/y.y:2187
 			{
 				yy_val.v = new_type('SMALLINT', 0, 0)
 			}
 		}
 		605 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2184
+			// line vsql/y.y:2188
 			{
 				yy_val.v = new_type('INTEGER', 0, 0)
 			}
 		}
 		606 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2185
+			// line vsql/y.y:2189
 			{
 				yy_val.v = new_type('INTEGER', 0, 0)
 			}
 		}
 		607 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2186
+			// line vsql/y.y:2190
 			{
 				yy_val.v = new_type('BIGINT', 0, 0)
 			}
 		}
 		608 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2189
+			// line vsql/y.y:2193
 			{
 				yy_val.v = new_type('FLOAT', 0, 0)
 			}
 		}
 		609 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2190
+			// line vsql/y.y:2194
 			{
 				yy_val.v = parse_type_with_precision('FLOAT', yy_as[string](yy_dollar[3].v), '0')!
 			}
 		}
 		610 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2193
+			// line vsql/y.y:2197
 			{
 				yy_val.v = new_type('REAL', 0, 0)
 			}
 		}
 		611 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2194
+			// line vsql/y.y:2198
 			{
 				yy_val.v = new_type('DOUBLE PRECISION', 0, 0)
 			}
 		}
 		612 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2197
+			// line vsql/y.y:2201
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		613 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2200
+			// line vsql/y.y:2204
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		614 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2203
+			// line vsql/y.y:2207
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		615 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2204
+			// line vsql/y.y:2208
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		616 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2207
+			// line vsql/y.y:2211
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		617 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2210
+			// line vsql/y.y:2214
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		618 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2213
+			// line vsql/y.y:2217
 			{
 				yy_val.v = new_type('BOOLEAN', 0, 0)
 			}
 		}
 		619 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2216
+			// line vsql/y.y:2220
 			{
 				yy_val.v = new_type('DATE', 0, 0)
 			}
 		}
 		620 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2217
+			// line vsql/y.y:2221
 			{
 				yy_val.v = parse_time_prec_tz_type('0', false)!
 			}
 		}
 		621 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2218
+			// line vsql/y.y:2222
 			{
 				yy_val.v = parse_time_prec_tz_type(yy_as[string](yy_dollar[3].v), false)!
 			}
 		}
 		622 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2221
+			// line vsql/y.y:2225
 			{
 				yy_val.v = parse_time_prec_tz_type('0', yy_as[bool](yy_dollar[2].v))!
 			}
 		}
 		623 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:2224
+			// line vsql/y.y:2228
 			{
 				yy_val.v = parse_time_prec_tz_type(yy_as[string](yy_dollar[3].v), yy_as[bool](yy_dollar[5].v))!
 			}
 		}
 		624 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2227
+			// line vsql/y.y:2231
 			{
 				// ISO/IEC 9075-2:2016(E), 6.1, 36) If <timestamp precision> is not
 				// specified, then 6 is implicit.
@@ -33288,105 +33292,105 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		625 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2232
+			// line vsql/y.y:2236
 			{
 				yy_val.v = parse_timestamp_prec_tz_type(yy_as[string](yy_dollar[3].v), false)!
 			}
 		}
 		626 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2235
+			// line vsql/y.y:2239
 			{
 				yy_val.v = parse_timestamp_prec_tz_type('6', yy_as[bool](yy_dollar[2].v))!
 			}
 		}
 		627 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:2239
+			// line vsql/y.y:2243
 			{
 				yy_val.v = parse_timestamp_prec_tz_type(yy_as[string](yy_dollar[3].v), yy_as[bool](yy_dollar[5].v))!
 			}
 		}
 		628 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2244
+			// line vsql/y.y:2248
 			{
 				yy_val.v = true
 			}
 		}
 		629 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2245
+			// line vsql/y.y:2249
 			{
 				yy_val.v = false
 			}
 		}
 		630 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2248
+			// line vsql/y.y:2252
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		631 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2251
+			// line vsql/y.y:2255
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		632 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2254
+			// line vsql/y.y:2258
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		633 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2259
+			// line vsql/y.y:2263
 			{
 				yy_val.v = ValueExpression(yy_as[CommonValueExpression](yy_dollar[1].v))
 			}
 		}
 		634 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2262
+			// line vsql/y.y:2266
 			{
 				yy_val.v = ValueExpression(yy_as[BooleanValueExpression](yy_dollar[1].v))
 			}
 		}
 		635 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2267
+			// line vsql/y.y:2271
 			{
 				yy_val.v = CommonValueExpression(yy_as[NumericValueExpression](yy_dollar[1].v))
 			}
 		}
 		636 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2270
+			// line vsql/y.y:2274
 			{
 				yy_val.v = CommonValueExpression(yy_as[CharacterValueExpression](yy_dollar[1].v))
 			}
 		}
 		637 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2273
+			// line vsql/y.y:2277
 			{
 				yy_val.v = CommonValueExpression(yy_as[DatetimePrimary](yy_dollar[1].v))
 			}
 		}
 		638 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2280
+			// line vsql/y.y:2284
 			{
 				yy_val.v = NumericValueExpression{ term: yy_as[Term](yy_dollar[1].v) }
 			}
 		}
 		639 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2281
+			// line vsql/y.y:2285
 			{
 				n := yy_as[NumericValueExpression](yy_dollar[1].v)
 				yy_val.v = NumericValueExpression{&n, '+', yy_as[Term](yy_dollar[3].v)}
@@ -33394,7 +33398,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		640 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2285
+			// line vsql/y.y:2289
 			{
 				n := yy_as[NumericValueExpression](yy_dollar[1].v)
 				yy_val.v = NumericValueExpression{&n, '-', yy_as[Term](yy_dollar[3].v)}
@@ -33402,14 +33406,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		641 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2291
+			// line vsql/y.y:2295
 			{
 				yy_val.v = Term{ factor: yy_as[NumericPrimary](yy_dollar[1].v) }
 			}
 		}
 		642 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2292
+			// line vsql/y.y:2296
 			{
 				t := yy_as[Term](yy_dollar[1].v)
 				yy_val.v = Term{&t, '*', yy_as[NumericPrimary](yy_dollar[3].v)}
@@ -33417,7 +33421,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		643 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2296
+			// line vsql/y.y:2300
 			{
 				t := yy_as[Term](yy_dollar[1].v)
 				yy_val.v = Term{&t, '/', yy_as[NumericPrimary](yy_dollar[3].v)}
@@ -33425,126 +33429,126 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		644 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2302
+			// line vsql/y.y:2306
 			{
 				yy_val.v = yy_as[NumericPrimary](yy_dollar[1].v)
 			}
 		}
 		645 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2303
+			// line vsql/y.y:2307
 			{
 				yy_val.v = parse_factor_2(yy_as[string](yy_dollar[1].v), yy_as[NumericPrimary](yy_dollar[2].v))!
 			}
 		}
 		646 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2308
+			// line vsql/y.y:2312
 			{
 				yy_val.v = NumericPrimary(yy_as[ValueExpressionPrimary](yy_dollar[1].v))
 			}
 		}
 		647 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2311
+			// line vsql/y.y:2315
 			{
 				yy_val.v = NumericPrimary(yy_as[RoutineInvocation](yy_dollar[1].v))
 			}
 		}
 		648 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2316
+			// line vsql/y.y:2320
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		649 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2317
+			// line vsql/y.y:2321
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		650 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2318
+			// line vsql/y.y:2322
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		651 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2319
+			// line vsql/y.y:2323
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		652 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2320
+			// line vsql/y.y:2324
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		653 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2321
+			// line vsql/y.y:2325
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		654 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2322
+			// line vsql/y.y:2326
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		655 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2323
+			// line vsql/y.y:2327
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		656 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2324
+			// line vsql/y.y:2328
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		657 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2325
+			// line vsql/y.y:2329
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		658 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2326
+			// line vsql/y.y:2330
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		659 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2327
+			// line vsql/y.y:2331
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		660 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2330
+			// line vsql/y.y:2334
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		661 {
 			yy_dollar = yy_s[yypt - 6..yypt + 1].clone()
-			// line vsql/y.y:2334
+			// line vsql/y.y:2338
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'POSITION'
@@ -33557,35 +33561,35 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		662 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2342
+			// line vsql/y.y:2346
 			{
 				yy_val.v = yy_as[CharacterValueExpression](yy_dollar[1].v)
 			}
 		}
 		663 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2345
+			// line vsql/y.y:2349
 			{
 				yy_val.v = yy_as[CharacterValueExpression](yy_dollar[1].v)
 			}
 		}
 		664 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2348
+			// line vsql/y.y:2352
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		665 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2349
+			// line vsql/y.y:2353
 			{
 				yy_val.v = yy_as[RoutineInvocation](yy_dollar[1].v)
 			}
 		}
 		666 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2352
+			// line vsql/y.y:2356
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'CHAR_LENGTH'
@@ -33597,7 +33601,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		667 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2357
+			// line vsql/y.y:2361
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'CHAR_LENGTH'
@@ -33609,7 +33613,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		668 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2364
+			// line vsql/y.y:2368
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'OCTET_LENGTH'
@@ -33621,7 +33625,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		669 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2371
+			// line vsql/y.y:2375
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'ABS'
@@ -33633,7 +33637,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		670 {
 			yy_dollar = yy_s[yypt - 6..yypt + 1].clone()
-			// line vsql/y.y:2379
+			// line vsql/y.y:2383
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'MOD'
@@ -33646,21 +33650,21 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		671 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2387
+			// line vsql/y.y:2391
 			{
 				yy_val.v = yy_as[NumericValueExpression](yy_dollar[1].v)
 			}
 		}
 		672 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2390
+			// line vsql/y.y:2394
 			{
 				yy_val.v = yy_as[NumericValueExpression](yy_dollar[1].v)
 			}
 		}
 		673 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2393
+			// line vsql/y.y:2397
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: yy_as[string](yy_dollar[1].v)
@@ -33672,70 +33676,70 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		674 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2400
+			// line vsql/y.y:2404
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		675 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2401
+			// line vsql/y.y:2405
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		676 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2402
+			// line vsql/y.y:2406
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		677 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2403
+			// line vsql/y.y:2407
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		678 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2404
+			// line vsql/y.y:2408
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		679 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2405
+			// line vsql/y.y:2409
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		680 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2406
+			// line vsql/y.y:2410
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		681 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2407
+			// line vsql/y.y:2411
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		682 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2408
+			// line vsql/y.y:2412
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		683 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2411
+			// line vsql/y.y:2415
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'LOG10'
@@ -33747,7 +33751,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		684 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2418
+			// line vsql/y.y:2422
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'LN'
@@ -33759,7 +33763,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		685 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2425
+			// line vsql/y.y:2429
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'EXP'
@@ -33771,7 +33775,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		686 {
 			yy_dollar = yy_s[yypt - 6..yypt + 1].clone()
-			// line vsql/y.y:2433
+			// line vsql/y.y:2437
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'POWER'
@@ -33784,21 +33788,21 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		687 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2441
+			// line vsql/y.y:2445
 			{
 				yy_val.v = yy_as[NumericValueExpression](yy_dollar[1].v)
 			}
 		}
 		688 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2444
+			// line vsql/y.y:2448
 			{
 				yy_val.v = yy_as[NumericValueExpression](yy_dollar[1].v)
 			}
 		}
 		689 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2447
+			// line vsql/y.y:2451
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'SQRT'
@@ -33810,7 +33814,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		690 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2454
+			// line vsql/y.y:2458
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'FLOOR'
@@ -33822,7 +33826,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		691 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2461
+			// line vsql/y.y:2465
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'CEILING'
@@ -33834,7 +33838,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		692 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2466
+			// line vsql/y.y:2470
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'CEILING'
@@ -33846,28 +33850,28 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		693 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2475
+			// line vsql/y.y:2479
 			{
 				yy_val.v = yy_as[CharacterValueExpression](yy_dollar[1].v)
 			}
 		}
 		694 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2478
+			// line vsql/y.y:2482
 			{
 				yy_val.v = CharacterValueExpression(yy_as[Concatenation](yy_dollar[1].v))
 			}
 		}
 		695 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2479
+			// line vsql/y.y:2483
 			{
 				yy_val.v = CharacterValueExpression(yy_as[CharacterPrimary](yy_dollar[1].v))
 			}
 		}
 		696 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2482
+			// line vsql/y.y:2486
 			{
 				yy_val.v = new_concatenation(yy_as[CharacterValueExpression](yy_dollar[1].v),
 					yy_as[CharacterPrimary](yy_dollar[3].v))
@@ -33875,56 +33879,56 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		697 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2488
+			// line vsql/y.y:2492
 			{
 				yy_val.v = yy_as[CharacterPrimary](yy_dollar[1].v)
 			}
 		}
 		698 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2491
+			// line vsql/y.y:2495
 			{
 				yy_val.v = CharacterPrimary(yy_as[ValueExpressionPrimary](yy_dollar[1].v))
 			}
 		}
 		699 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2494
+			// line vsql/y.y:2498
 			{
 				yy_val.v = CharacterPrimary(yy_as[CharacterValueFunction](yy_dollar[1].v))
 			}
 		}
 		700 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2501
+			// line vsql/y.y:2505
 			{
 				yy_val.v = yy_as[CharacterValueFunction](yy_dollar[1].v)
 			}
 		}
 		701 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2504
+			// line vsql/y.y:2508
 			{
 				yy_val.v = CharacterValueFunction(yy_as[CharacterSubstringFunction](yy_dollar[1].v))
 			}
 		}
 		702 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2507
+			// line vsql/y.y:2511
 			{
 				yy_val.v = CharacterValueFunction(yy_as[RoutineInvocation](yy_dollar[1].v))
 			}
 		}
 		703 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2508
+			// line vsql/y.y:2512
 			{
 				yy_val.v = CharacterValueFunction(yy_as[TrimFunction](yy_dollar[1].v))
 			}
 		}
 		704 {
 			yy_dollar = yy_s[yypt - 6..yypt + 1].clone()
-			// line vsql/y.y:2512
+			// line vsql/y.y:2516
 			{
 				yy_val.v = new_character_substring_function(yy_as[CharacterValueExpression](yy_dollar[3].v),
 					yy_as[NumericValueExpression](yy_dollar[5].v), none, 'CHARACTERS')
@@ -33932,7 +33936,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		705 {
 			yy_dollar = yy_s[yypt - 8..yypt + 1].clone()
-			// line vsql/y.y:2517
+			// line vsql/y.y:2521
 			{
 				yy_val.v = new_character_substring_function(yy_as[CharacterValueExpression](yy_dollar[3].v),
 					yy_as[NumericValueExpression](yy_dollar[5].v), yy_as[NumericValueExpression](yy_dollar[7].v),
@@ -33941,7 +33945,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		706 {
 			yy_dollar = yy_s[yypt - 8..yypt + 1].clone()
-			// line vsql/y.y:2523
+			// line vsql/y.y:2527
 			{
 				yy_val.v = new_character_substring_function(yy_as[CharacterValueExpression](yy_dollar[3].v),
 					yy_as[NumericValueExpression](yy_dollar[5].v), none, yy_as[string](yy_dollar[7].v))
@@ -33949,7 +33953,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		707 {
 			yy_dollar = yy_s[yypt - 10..yypt + 1].clone()
-			// line vsql/y.y:2528
+			// line vsql/y.y:2532
 			{
 				yy_val.v = new_character_substring_function(yy_as[CharacterValueExpression](yy_dollar[3].v),
 					yy_as[NumericValueExpression](yy_dollar[5].v), yy_as[NumericValueExpression](yy_dollar[7].v),
@@ -33958,7 +33962,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		708 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2535
+			// line vsql/y.y:2539
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'UPPER'
@@ -33970,7 +33974,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		709 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2539
+			// line vsql/y.y:2543
 			{
 				yy_val.v = RoutineInvocation{
 					function_name: 'LOWER'
@@ -33982,14 +33986,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		710 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2545
+			// line vsql/y.y:2549
 			{
 				yy_val.v = yy_as[TrimFunction](yy_dollar[3].v)
 			}
 		}
 		711 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2548
+			// line vsql/y.y:2552
 			{
 				space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
 				yy_val.v = new_trim_function('BOTH', space, yy_as[CharacterValueExpression](yy_dollar[1].v))
@@ -33997,7 +34001,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		712 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2552
+			// line vsql/y.y:2556
 			{
 				space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
 				yy_val.v = new_trim_function('BOTH', space, yy_as[CharacterValueExpression](yy_dollar[2].v))
@@ -34005,7 +34009,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		713 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2556
+			// line vsql/y.y:2560
 			{
 				space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
 				yy_val.v = new_trim_function(yy_as[string](yy_dollar[1].v), space, yy_as[CharacterValueExpression](yy_dollar[3].v))
@@ -34013,196 +34017,196 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		714 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2560
+			// line vsql/y.y:2564
 			{
 				yy_val.v = new_trim_function('BOTH', yy_as[CharacterValueExpression](yy_dollar[1].v), yy_as[CharacterValueExpression](yy_dollar[3].v))
 			}
 		}
 		715 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2563
+			// line vsql/y.y:2567
 			{
 				yy_val.v = new_trim_function(yy_as[string](yy_dollar[1].v), yy_as[CharacterValueExpression](yy_dollar[2].v), yy_as[CharacterValueExpression](yy_dollar[4].v))
 			}
 		}
 		716 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2568
+			// line vsql/y.y:2572
 			{
 				yy_val.v = yy_as[CharacterValueExpression](yy_dollar[1].v)
 			}
 		}
 		717 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2571
+			// line vsql/y.y:2575
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		718 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2572
+			// line vsql/y.y:2576
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		719 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2573
+			// line vsql/y.y:2577
 			{
 				yy_val.v = yy_as[string](yy_dollar[1].v)
 			}
 		}
 		720 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2576
+			// line vsql/y.y:2580
 			{
 				yy_val.v = yy_as[CharacterValueExpression](yy_dollar[1].v)
 			}
 		}
 		721 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2579
+			// line vsql/y.y:2583
 			{
 				yy_val.v = yy_as[NumericValueExpression](yy_dollar[1].v)
 			}
 		}
 		722 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2582
+			// line vsql/y.y:2586
 			{
 				yy_val.v = yy_as[NumericValueExpression](yy_dollar[1].v)
 			}
 		}
 		723 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2587
+			// line vsql/y.y:2591
 			{
 				yy_val.v = yy_as[DatetimePrimary](yy_dollar[1].v)
 			}
 		}
 		724 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2590
+			// line vsql/y.y:2594
 			{
 				yy_val.v = yy_as[DatetimePrimary](yy_dollar[1].v)
 			}
 		}
 		725 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2593
+			// line vsql/y.y:2597
 			{
 				yy_val.v = yy_as[DatetimePrimary](yy_dollar[1].v)
 			}
 		}
 		726 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2600
+			// line vsql/y.y:2604
 			{
 				yy_val.v = DatetimeValueFunction(yy_as[CurrentDate](yy_dollar[1].v))
 			}
 		}
 		727 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2603
+			// line vsql/y.y:2607
 			{
 				yy_val.v = DatetimeValueFunction(yy_as[CurrentTime](yy_dollar[1].v))
 			}
 		}
 		728 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2606
+			// line vsql/y.y:2610
 			{
 				yy_val.v = DatetimeValueFunction(yy_as[CurrentTimestamp](yy_dollar[1].v))
 			}
 		}
 		729 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2609
+			// line vsql/y.y:2613
 			{
 				yy_val.v = DatetimeValueFunction(yy_as[LocalTime](yy_dollar[1].v))
 			}
 		}
 		730 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2612
+			// line vsql/y.y:2616
 			{
 				yy_val.v = DatetimeValueFunction(yy_as[LocalTimestamp](yy_dollar[1].v))
 			}
 		}
 		731 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2617
+			// line vsql/y.y:2621
 			{
 				yy_val.v = CurrentDate{}
 			}
 		}
 		732 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2620
+			// line vsql/y.y:2624
 			{
 				yy_val.v = CurrentTime{default_time_precision}
 			}
 		}
 		733 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2621
+			// line vsql/y.y:2625
 			{
 				yy_val.v = CurrentTime{(yy_as[string](yy_dollar[3].v)).int()}
 			}
 		}
 		734 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2626
+			// line vsql/y.y:2630
 			{
 				yy_val.v = LocalTime{0}
 			}
 		}
 		735 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2627
+			// line vsql/y.y:2631
 			{
 				yy_val.v = LocalTime{(yy_as[string](yy_dollar[3].v)).int()}
 			}
 		}
 		736 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2632
+			// line vsql/y.y:2636
 			{
 				yy_val.v = CurrentTimestamp{default_timestamp_precision}
 			}
 		}
 		737 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2633
+			// line vsql/y.y:2637
 			{
 				yy_val.v = CurrentTimestamp{(yy_as[string](yy_dollar[3].v)).int()}
 			}
 		}
 		738 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2638
+			// line vsql/y.y:2642
 			{
 				yy_val.v = LocalTimestamp{6}
 			}
 		}
 		739 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2639
+			// line vsql/y.y:2643
 			{
 				yy_val.v = LocalTimestamp{(yy_as[string](yy_dollar[3].v)).int()}
 			}
 		}
 		740 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2646
+			// line vsql/y.y:2650
 			{
 				yy_val.v = BooleanValueExpression{ term: yy_as[BooleanTerm](yy_dollar[1].v) }
 			}
 		}
 		741 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2647
+			// line vsql/y.y:2651
 			{
 				expr := yy_as[BooleanValueExpression](yy_dollar[1].v)
 				yy_val.v = BooleanValueExpression{&expr, yy_as[BooleanTerm](yy_dollar[3].v)}
@@ -34210,14 +34214,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		742 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2653
+			// line vsql/y.y:2657
 			{
 				yy_val.v = BooleanTerm{ factor: yy_as[BooleanTest](yy_dollar[1].v) }
 			}
 		}
 		743 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2654
+			// line vsql/y.y:2658
 			{
 				term := yy_as[BooleanTerm](yy_dollar[1].v)
 				yy_val.v = BooleanTerm{&term, yy_as[BooleanTest](yy_dollar[3].v)}
@@ -34225,14 +34229,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		744 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2660
+			// line vsql/y.y:2664
 			{
 				yy_val.v = yy_as[BooleanTest](yy_dollar[1].v)
 			}
 		}
 		745 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2661
+			// line vsql/y.y:2665
 			{
 				b := yy_as[BooleanTest](yy_dollar[2].v)
 				yy_val.v = BooleanTest{b.expr, b.not, b.value, !b.inverse}
@@ -34240,14 +34244,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		746 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2667
+			// line vsql/y.y:2671
 			{
 				yy_val.v = new_boolean_test(yy_as[BooleanPrimary](yy_dollar[1].v), false, none, false)
 			}
 		}
 		747 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2668
+			// line vsql/y.y:2672
 			{
 				yy_val.v = new_boolean_test(yy_as[BooleanPrimary](yy_dollar[1].v), false, new_boolean_value(true),
 					false)
@@ -34255,7 +34259,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		748 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2672
+			// line vsql/y.y:2676
 			{
 				yy_val.v = new_boolean_test(yy_as[BooleanPrimary](yy_dollar[1].v), false, new_boolean_value(false),
 					false)
@@ -34263,7 +34267,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		749 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2676
+			// line vsql/y.y:2680
 			{
 				yy_val.v = new_boolean_test(yy_as[BooleanPrimary](yy_dollar[1].v), false, new_unknown_value(),
 					false)
@@ -34271,7 +34275,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		750 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2680
+			// line vsql/y.y:2684
 			{
 				yy_val.v = new_boolean_test(yy_as[BooleanPrimary](yy_dollar[1].v), true, new_boolean_value(true),
 					false)
@@ -34279,7 +34283,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		751 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2684
+			// line vsql/y.y:2688
 			{
 				yy_val.v = new_boolean_test(yy_as[BooleanPrimary](yy_dollar[1].v), true, new_boolean_value(false),
 					false)
@@ -34287,7 +34291,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		752 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2688
+			// line vsql/y.y:2692
 			{
 				yy_val.v = new_boolean_test(yy_as[BooleanPrimary](yy_dollar[1].v), true, new_unknown_value(),
 					false)
@@ -34295,371 +34299,371 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		753 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2694
+			// line vsql/y.y:2698
 			{
 				yy_val.v = BooleanPrimary(yy_as[Predicate](yy_dollar[1].v))
 			}
 		}
 		754 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2695
+			// line vsql/y.y:2699
 			{
 				yy_val.v = BooleanPrimary(yy_as[BooleanPredicand](yy_dollar[1].v))
 			}
 		}
 		755 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2698
+			// line vsql/y.y:2702
 			{
 				yy_val.v = BooleanPredicand(yy_as[BooleanValueExpression](yy_dollar[1].v))
 			}
 		}
 		756 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2701
+			// line vsql/y.y:2705
 			{
 				yy_val.v = BooleanPredicand(yy_as[NonparenthesizedValueExpressionPrimary](yy_dollar[1].v))
 			}
 		}
 		757 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2706
+			// line vsql/y.y:2710
 			{
 				yy_val.v = yy_dollar[2].v
 			}
 		}
 		758 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2711
+			// line vsql/y.y:2715
 			{
 				yy_val.v = ValueExpressionPrimary(yy_as[ParenthesizedValueExpression](yy_dollar[1].v))
 			}
 		}
 		759 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2714
+			// line vsql/y.y:2718
 			{
 				yy_val.v = ValueExpressionPrimary(yy_as[NonparenthesizedValueExpressionPrimary](yy_dollar[1].v))
 			}
 		}
 		760 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2719
+			// line vsql/y.y:2723
 			{
 				yy_val.v = new_parenthesized_value_expression(yy_as[ValueExpression](yy_dollar[2].v))
 			}
 		}
 		761 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2724
+			// line vsql/y.y:2728
 			{
 				yy_val.v = NonparenthesizedValueExpressionPrimary(yy_as[ValueSpecification](yy_dollar[1].v))
 			}
 		}
 		762 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2727
+			// line vsql/y.y:2731
 			{
 				yy_val.v = NonparenthesizedValueExpressionPrimary(yy_as[Identifier](yy_dollar[1].v))
 			}
 		}
 		763 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2730
+			// line vsql/y.y:2734
 			{
 				yy_val.v = NonparenthesizedValueExpressionPrimary(yy_as[AggregateFunction](yy_dollar[1].v))
 			}
 		}
 		764 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2733
+			// line vsql/y.y:2737
 			{
 				yy_val.v = NonparenthesizedValueExpressionPrimary(yy_as[RoutineInvocation](yy_dollar[1].v))
 			}
 		}
 		765 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2736
+			// line vsql/y.y:2740
 			{
 				yy_val.v = NonparenthesizedValueExpressionPrimary(yy_as[CaseExpression](yy_dollar[1].v))
 			}
 		}
 		766 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2739
+			// line vsql/y.y:2743
 			{
 				yy_val.v = NonparenthesizedValueExpressionPrimary(yy_as[CastSpecification](yy_dollar[1].v))
 			}
 		}
 		767 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2742
+			// line vsql/y.y:2746
 			{
 				yy_val.v = NonparenthesizedValueExpressionPrimary(yy_as[NextValueExpression](yy_dollar[1].v))
 			}
 		}
 		768 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2745
+			// line vsql/y.y:2749
 			{
 				yy_val.v = NonparenthesizedValueExpressionPrimary(yy_as[Subquery](yy_dollar[1].v))
 			}
 		}
 		769 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2752
+			// line vsql/y.y:2756
 			{
 				yy_val.v = ValueSpecification(yy_as[Value](yy_dollar[1].v))
 			}
 		}
 		770 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2753
+			// line vsql/y.y:2757
 			{
 				yy_val.v = ValueSpecification(yy_as[GeneralValueSpecification](yy_dollar[1].v))
 			}
 		}
 		771 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2758
+			// line vsql/y.y:2762
 			{
 				yy_val.v = ValueSpecification(yy_as[Value](yy_dollar[1].v))
 			}
 		}
 		772 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2759
+			// line vsql/y.y:2763
 			{
 				yy_val.v = ValueSpecification(yy_as[GeneralValueSpecification](yy_dollar[1].v))
 			}
 		}
 		773 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2764
+			// line vsql/y.y:2768
 			{
 				yy_val.v = yy_as[GeneralValueSpecification](yy_dollar[1].v)
 			}
 		}
 		774 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2765
+			// line vsql/y.y:2769
 			{
 				yy_val.v = GeneralValueSpecification(CurrentCatalog{})
 			}
 		}
 		775 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2766
+			// line vsql/y.y:2770
 			{
 				yy_val.v = GeneralValueSpecification(CurrentSchema{})
 			}
 		}
 		776 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2769
+			// line vsql/y.y:2773
 			{
 				yy_val.v = ValueSpecification(yy_as[Value](yy_dollar[1].v))
 			}
 		}
 		777 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2770
+			// line vsql/y.y:2774
 			{
 				yy_val.v = ValueSpecification(yy_as[GeneralValueSpecification](yy_dollar[1].v))
 			}
 		}
 		778 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2775
+			// line vsql/y.y:2779
 			{
 				yy_val.v = yy_as[GeneralValueSpecification](yy_dollar[1].v)
 			}
 		}
 		779 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2780
+			// line vsql/y.y:2784
 			{
 				yy_val.v = ContextuallyTypedValueSpecification(yy_as[NullSpecification](yy_dollar[1].v))
 			}
 		}
 		780 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2783
+			// line vsql/y.y:2787
 			{
 				yy_val.v = ContextuallyTypedValueSpecification(yy_as[DefaultSpecification](yy_dollar[1].v))
 			}
 		}
 		781 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2788
+			// line vsql/y.y:2792
 			{
 				yy_val.v = yy_as[NullSpecification](yy_dollar[1].v)
 			}
 		}
 		782 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2791
+			// line vsql/y.y:2795
 			{
 				yy_val.v = NullSpecification{}
 			}
 		}
 		783 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2794
+			// line vsql/y.y:2798
 			{
 				yy_val.v = DefaultSpecification{}
 			}
 		}
 		784 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2799
+			// line vsql/y.y:2803
 			{
 				yy_val.v = yy_as[IdentifierChain](yy_dollar[1].v)
 			}
 		}
 		785 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2800
+			// line vsql/y.y:2804
 			{
 				yy_val.v = IdentifierChain{(yy_as[IdentifierChain](yy_dollar[1].v)).identifier + '.' + (yy_as[IdentifierChain](yy_dollar[3].v)).identifier}
 			}
 		}
 		786 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2807
+			// line vsql/y.y:2811
 			{
 				yy_val.v = yy_as[IdentifierChain](yy_dollar[1].v)
 			}
 		}
 		787 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2816
+			// line vsql/y.y:2820
 			{
 				yy_val.v = new_column_identifier((yy_as[IdentifierChain](yy_dollar[1].v)).identifier)!
 			}
 		}
 		788 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2827
+			// line vsql/y.y:2831
 			{
 				yy_val.v = yy_as[AggregateFunction](yy_dollar[1].v)
 			}
 		}
 		789 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2832
+			// line vsql/y.y:2836
 			{
 				yy_val.v = yy_as[QualifiedJoin](yy_dollar[1].v)
 			}
 		}
 		790 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2835
+			// line vsql/y.y:2839
 			{
 				yy_val.v = yy_as[BooleanValueExpression](yy_dollar[1].v)
 			}
 		}
 		791 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2838
+			// line vsql/y.y:2842
 			{
 				yy_val.v = yy_dollar[2].v
 			}
 		}
 		792 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2841
+			// line vsql/y.y:2845
 			{
 				yy_val.v = JoinType.inner
 			}
 		}
 		793 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2842
+			// line vsql/y.y:2846
 			{
 				yy_val.v = yy_as[JoinType](yy_dollar[1].v)
 			}
 		}
 		794 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2843
+			// line vsql/y.y:2847
 			{
 				yy_val.v = yy_as[JoinType](yy_dollar[1].v)
 			}
 		}
 		795 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2846
+			// line vsql/y.y:2850
 			{
 				yy_val.v = JoinType.left
 			}
 		}
 		796 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2847
+			// line vsql/y.y:2851
 			{
 				yy_val.v = JoinType.right
 			}
 		}
 		797 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2857
+			// line vsql/y.y:2861
 			{
 				yy_val.v = yy_as[BooleanValueExpression](yy_dollar[2].v)
 			}
 		}
 		798 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2862
+			// line vsql/y.y:2866
 			{
 				yy_val.v = yy_dollar[3].v
 			}
 		}
 		799 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2865
+			// line vsql/y.y:2869
 			{
 				yy_val.v = [yy_as[Identifier](yy_dollar[1].v)]
 			}
 		}
 		800 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2866
+			// line vsql/y.y:2870
 			{
 				yy_val.v = append_list(yy_as[[]Identifier](yy_dollar[1].v), yy_as[Identifier](yy_dollar[3].v))
 			}
 		}
 		801 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2871
+			// line vsql/y.y:2875
 			{
 				yy_val.v = yy_as[Identifier](yy_dollar[1].v)
 			}
 		}
 		802 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2874
+			// line vsql/y.y:2878
 			{
 				yy_val.v = yy_as[Identifier](yy_dollar[1].v)
 			}
 		}
 		803 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2877
+			// line vsql/y.y:2881
 			{
 				yy_val.v = yy_as[Identifier](yy_dollar[1].v)
 			}
 		}
 		804 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2887
+			// line vsql/y.y:2891
 			{
 				yy_val.v = yy_as[BooleanValueExpression](yy_dollar[2].v)
 			}
 		}
 		805 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2892
+			// line vsql/y.y:2896
 			{
 				table_expression := yy_as[TableExpression](yy_dollar[3].v)
 				yy_val.v = QuerySpecification{
@@ -34670,7 +34674,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		806 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2899
+			// line vsql/y.y:2903
 			{
 				table_expression := yy_as[TableExpression](yy_dollar[4].v)
 				yy_val.v = QuerySpecification{
@@ -34682,28 +34686,28 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		807 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2911
+			// line vsql/y.y:2915
 			{
 				yy_val.v = SelectList(AsteriskExpr(true))
 			}
 		}
 		808 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2912
+			// line vsql/y.y:2916
 			{
 				yy_val.v = SelectList(yy_as[[]SelectSublist](yy_dollar[1].v))
 			}
 		}
 		809 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2915
+			// line vsql/y.y:2919
 			{
 				yy_val.v = [yy_as[SelectSublist](yy_dollar[1].v)]
 			}
 		}
 		810 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2916
+			// line vsql/y.y:2920
 			{
 				mut new_select_list := (yy_as[[]SelectSublist](yy_dollar[1].v)).clone()
 				new_select_list << yy_as[SelectSublist](yy_dollar[3].v)
@@ -34712,70 +34716,70 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		811 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2923
+			// line vsql/y.y:2927
 			{
 				yy_val.v = SelectSublist(yy_as[DerivedColumn](yy_dollar[1].v))
 			}
 		}
 		812 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2924
+			// line vsql/y.y:2928
 			{
 				yy_val.v = SelectSublist(yy_as[QualifiedAsteriskExpr](yy_dollar[1].v))
 			}
 		}
 		813 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2928
+			// line vsql/y.y:2932
 			{
 				yy_val.v = QualifiedAsteriskExpr{new_table_identifier((yy_as[IdentifierChain](yy_dollar[1].v)).identifier)!}
 			}
 		}
 		814 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2936
+			// line vsql/y.y:2940
 			{
 				yy_val.v = yy_as[IdentifierChain](yy_dollar[1].v)
 			}
 		}
 		815 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2939
+			// line vsql/y.y:2943
 			{
 				yy_val.v = DerivedColumn{yy_as[ValueExpression](yy_dollar[1].v), Identifier{}}
 			}
 		}
 		816 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2942
+			// line vsql/y.y:2946
 			{
 				yy_val.v = DerivedColumn{yy_as[ValueExpression](yy_dollar[1].v), yy_as[Identifier](yy_dollar[2].v)}
 			}
 		}
 		817 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2947
+			// line vsql/y.y:2951
 			{
 				yy_val.v = yy_as[Identifier](yy_dollar[2].v)
 			}
 		}
 		818 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2948
+			// line vsql/y.y:2952
 			{
 				yy_val.v = yy_as[Identifier](yy_dollar[1].v)
 			}
 		}
 		819 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:2953
+			// line vsql/y.y:2957
 			{
 				yy_val.v = QueryExpression{ body: yy_as[SimpleTable](yy_dollar[1].v) }
 			}
 		}
 		820 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2954
+			// line vsql/y.y:2958
 			{
 				yy_val.v = QueryExpression{
 					body:  yy_as[SimpleTable](yy_dollar[1].v)
@@ -34785,7 +34789,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		821 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2960
+			// line vsql/y.y:2964
 			{
 				yy_val.v = QueryExpression{
 					body:   yy_as[SimpleTable](yy_dollar[1].v)
@@ -34795,7 +34799,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		822 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2966
+			// line vsql/y.y:2970
 			{
 				yy_val.v = QueryExpression{
 					body:   yy_as[SimpleTable](yy_dollar[1].v)
@@ -34806,7 +34810,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		823 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:2973
+			// line vsql/y.y:2977
 			{
 				yy_val.v = QueryExpression{
 					body:  yy_as[SimpleTable](yy_dollar[1].v)
@@ -34816,7 +34820,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		824 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2979
+			// line vsql/y.y:2983
 			{
 				yy_val.v = QueryExpression{
 					body:  yy_as[SimpleTable](yy_dollar[1].v)
@@ -34827,7 +34831,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		825 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:2987
+			// line vsql/y.y:2991
 			{
 				yy_val.v = QueryExpression{
 					body:   yy_as[SimpleTable](yy_dollar[1].v)
@@ -34839,7 +34843,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		826 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:2995
+			// line vsql/y.y:2999
 			{
 				yy_val.v = QueryExpression{
 					body:   yy_as[SimpleTable](yy_dollar[1].v)
@@ -34850,14 +34854,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		827 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3004
+			// line vsql/y.y:3008
 			{
 				yy_val.v = yy_as[SimpleTable](yy_dollar[1].v)
 			}
 		}
 		828 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3005
+			// line vsql/y.y:3009
 			{
 				yy_val.v = new_set_operation(yy_as[SimpleTable](yy_dollar[1].v), 'UNION', false,
 					yy_as[SimpleTable](yy_dollar[3].v))
@@ -34865,7 +34869,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		829 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:3009
+			// line vsql/y.y:3013
 			{
 				yy_val.v = new_set_operation(yy_as[SimpleTable](yy_dollar[1].v), 'UNION', !(yy_as[bool](yy_dollar[3].v)),
 					yy_as[SimpleTable](yy_dollar[4].v))
@@ -34873,7 +34877,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		830 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3013
+			// line vsql/y.y:3017
 			{
 				yy_val.v = new_set_operation(yy_as[SimpleTable](yy_dollar[1].v), 'EXCEPT', false,
 					yy_as[SimpleTable](yy_dollar[3].v))
@@ -34881,7 +34885,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		831 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:3017
+			// line vsql/y.y:3021
 			{
 				yy_val.v = new_set_operation(yy_as[SimpleTable](yy_dollar[1].v), 'EXCEPT', !(yy_as[bool](yy_dollar[3].v)),
 					yy_as[SimpleTable](yy_dollar[4].v))
@@ -34889,105 +34893,105 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		832 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3023
+			// line vsql/y.y:3027
 			{
 				yy_val.v = yy_as[SimpleTable](yy_dollar[1].v)
 			}
 		}
 		833 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3026
+			// line vsql/y.y:3030
 			{
 				yy_val.v = yy_as[SimpleTable](yy_dollar[1].v)
 			}
 		}
 		834 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3027
+			// line vsql/y.y:3031
 			{
 				yy_val.v = new_parenthesized_query_expression(yy_as[QueryExpression](yy_dollar[2].v))
 			}
 		}
 		835 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3032
+			// line vsql/y.y:3036
 			{
 				yy_val.v = SimpleTable(yy_as[QuerySpecification](yy_dollar[1].v))
 			}
 		}
 		836 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3033
+			// line vsql/y.y:3037
 			{
 				yy_val.v = yy_as[SimpleTable](yy_dollar[1].v)
 			}
 		}
 		837 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3036
+			// line vsql/y.y:3040
 			{
 				yy_val.v = yy_dollar[3].v
 			}
 		}
 		838 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3039
+			// line vsql/y.y:3043
 			{
 				yy_val.v = yy_dollar[2].v
 			}
 		}
 		839 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:3042
+			// line vsql/y.y:3046
 			{
 				yy_val.v = yy_dollar[3].v
 			}
 		}
 		840 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:3043
+			// line vsql/y.y:3047
 			{
 				yy_val.v = ValueSpecification(new_integer_value(1))
 			}
 		}
 		841 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3046
+			// line vsql/y.y:3050
 			{
 				yy_val.v = yy_as[ValueSpecification](yy_dollar[1].v)
 			}
 		}
 		842 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3049
+			// line vsql/y.y:3053
 			{
 				yy_val.v = yy_as[ValueSpecification](yy_dollar[1].v)
 			}
 		}
 		843 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3052
+			// line vsql/y.y:3056
 			{
 				yy_val.v = yy_as[ValueSpecification](yy_dollar[1].v)
 			}
 		}
 		846 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3063
+			// line vsql/y.y:3067
 			{
 				yy_val.v = new_subquery((yy_as[TablePrimary](yy_dollar[1].v)).body as QueryExpression)
 			}
 		}
 		847 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3066
+			// line vsql/y.y:3070
 			{
 				yy_val.v = yy_as[TablePrimary](yy_dollar[1].v)
 			}
 		}
 		848 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3069
+			// line vsql/y.y:3073
 			{
 				yy_val.v = TablePrimary{
 					body: yy_as[QueryExpression](yy_dollar[2].v)
@@ -34996,84 +35000,84 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		849 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3078
+			// line vsql/y.y:3082
 			{
 				yy_val.v = RowValueConstructor(yy_as[CommonValueExpression](yy_dollar[1].v))
 			}
 		}
 		850 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3081
+			// line vsql/y.y:3085
 			{
 				yy_val.v = RowValueConstructor(yy_as[BooleanValueExpression](yy_dollar[1].v))
 			}
 		}
 		851 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3084
+			// line vsql/y.y:3088
 			{
 				yy_val.v = RowValueConstructor(yy_as[ExplicitRowValueConstructor](yy_dollar[1].v))
 			}
 		}
 		852 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:3089
+			// line vsql/y.y:3093
 			{
 				yy_val.v = ExplicitRowValueConstructor{yy_as[[]ValueExpression](yy_dollar[3].v)}
 			}
 		}
 		853 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3094
+			// line vsql/y.y:3098
 			{
 				yy_val.v = [yy_as[ValueExpression](yy_dollar[1].v)]
 			}
 		}
 		854 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3095
+			// line vsql/y.y:3099
 			{
 				yy_val.v = append_list(yy_as[[]ValueExpression](yy_dollar[1].v), yy_as[ValueExpression](yy_dollar[3].v))
 			}
 		}
 		855 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3100
+			// line vsql/y.y:3104
 			{
 				yy_val.v = yy_as[ValueExpression](yy_dollar[1].v)
 			}
 		}
 		856 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3103
+			// line vsql/y.y:3107
 			{
 				yy_val.v = ContextuallyTypedRowValueConstructor(yy_as[CommonValueExpression](yy_dollar[1].v))
 			}
 		}
 		857 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3106
+			// line vsql/y.y:3110
 			{
 				yy_val.v = ContextuallyTypedRowValueConstructor(yy_as[BooleanValueExpression](yy_dollar[1].v))
 			}
 		}
 		858 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3109
+			// line vsql/y.y:3113
 			{
 				yy_val.v = ContextuallyTypedRowValueConstructor(yy_as[ContextuallyTypedValueSpecification](yy_dollar[1].v))
 			}
 		}
 		859 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3112
+			// line vsql/y.y:3116
 			{
 				yy_val.v = ContextuallyTypedRowValueConstructor(yy_as[ContextuallyTypedValueSpecification](yy_dollar[2].v))
 			}
 		}
 		860 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:3116
+			// line vsql/y.y:3120
 			{
 				yy_val.v = ContextuallyTypedRowValueConstructor(push_list(yy_as[ContextuallyTypedRowValueConstructorElement](yy_dollar[2].v),
 					yy_as[[]ContextuallyTypedRowValueConstructorElement](yy_dollar[4].v)))
@@ -35081,14 +35085,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		861 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3123
+			// line vsql/y.y:3127
 			{
 				yy_val.v = [yy_as[ContextuallyTypedRowValueConstructorElement](yy_dollar[1].v)]
 			}
 		}
 		862 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3127
+			// line vsql/y.y:3131
 			{
 				yy_val.v = append_list(yy_as[[]ContextuallyTypedRowValueConstructorElement](yy_dollar[1].v),
 					yy_as[ContextuallyTypedRowValueConstructorElement](yy_dollar[3].v))
@@ -35096,70 +35100,70 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		863 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3133
+			// line vsql/y.y:3137
 			{
 				yy_val.v = ContextuallyTypedRowValueConstructorElement(yy_as[ValueExpression](yy_dollar[1].v))
 			}
 		}
 		864 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3136
+			// line vsql/y.y:3140
 			{
 				yy_val.v = ContextuallyTypedRowValueConstructorElement(yy_as[ContextuallyTypedValueSpecification](yy_dollar[1].v))
 			}
 		}
 		865 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3141
+			// line vsql/y.y:3145
 			{
 				yy_val.v = RowValueConstructorPredicand(yy_as[CommonValueExpression](yy_dollar[1].v))
 			}
 		}
 		866 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3144
+			// line vsql/y.y:3148
 			{
 				yy_val.v = RowValueConstructorPredicand(yy_as[BooleanPredicand](yy_dollar[1].v))
 			}
 		}
 		867 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3155
+			// line vsql/y.y:3159
 			{
 				yy_val.v = yy_as[RowValueConstructor](yy_dollar[1].v)
 			}
 		}
 		868 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3158
+			// line vsql/y.y:3162
 			{
 				yy_val.v = yy_as[ContextuallyTypedRowValueConstructor](yy_dollar[1].v)
 			}
 		}
 		869 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3163
+			// line vsql/y.y:3167
 			{
 				yy_val.v = yy_as[RowValueConstructorPredicand](yy_dollar[1].v)
 			}
 		}
 		870 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3170
+			// line vsql/y.y:3174
 			{
 				yy_val.v = SimpleTable(yy_as[[]RowValueConstructor](yy_dollar[2].v))
 			}
 		}
 		871 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3175
+			// line vsql/y.y:3179
 			{
 				yy_val.v = [yy_as[RowValueConstructor](yy_dollar[1].v)]
 			}
 		}
 		872 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3176
+			// line vsql/y.y:3180
 			{
 				yy_val.v = append_list(yy_as[[]RowValueConstructor](yy_dollar[1].v),
 					yy_as[RowValueConstructor](yy_dollar[3].v))
@@ -35167,21 +35171,21 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		873 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3182
+			// line vsql/y.y:3186
 			{
 				yy_val.v = yy_as[[]ContextuallyTypedRowValueConstructor](yy_dollar[2].v)
 			}
 		}
 		874 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3187
+			// line vsql/y.y:3191
 			{
 				yy_val.v = [yy_as[ContextuallyTypedRowValueConstructor](yy_dollar[1].v)]
 			}
 		}
 		875 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3191
+			// line vsql/y.y:3195
 			{
 				yy_val.v = append_list(yy_as[[]ContextuallyTypedRowValueConstructor](yy_dollar[1].v),
 					yy_as[ContextuallyTypedRowValueConstructor](yy_dollar[3].v))
@@ -35189,14 +35193,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		876 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3199
+			// line vsql/y.y:3203
 			{
 				yy_val.v = yy_as[TableExpression](yy_dollar[1].v)
 			}
 		}
 		877 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3200
+			// line vsql/y.y:3204
 			{
 				table_expression := yy_as[TableExpression](yy_dollar[1].v)
 				yy_val.v = TableExpression{
@@ -35207,84 +35211,84 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		878 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3209
+			// line vsql/y.y:3213
 			{
 				yy_val.v = TableExpression{yy_as[TableReference](yy_dollar[1].v), none, []Identifier{}, none}
 			}
 		}
 		879 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3212
+			// line vsql/y.y:3216
 			{
 				yy_val.v = TableExpression{yy_as[TableReference](yy_dollar[1].v), yy_as[BooleanValueExpression](yy_dollar[2].v), []Identifier{}, none}
 			}
 		}
 		880 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3220
+			// line vsql/y.y:3224
 			{
 				yy_val.v = TableExpression{yy_as[TableReference](yy_dollar[1].v), none, yy_as[[]Identifier](yy_dollar[2].v), none}
 			}
 		}
 		881 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3223
+			// line vsql/y.y:3227
 			{
 				yy_val.v = TableExpression{yy_as[TableReference](yy_dollar[1].v), yy_as[BooleanValueExpression](yy_dollar[2].v), yy_as[[]Identifier](yy_dollar[3].v), none}
 			}
 		}
 		882 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3239
+			// line vsql/y.y:3243
 			{
 				yy_val.v = yy_as[TableReference](yy_dollar[2].v)
 			}
 		}
 		883 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3242
+			// line vsql/y.y:3246
 			{
 				yy_val.v = yy_as[TableReference](yy_dollar[1].v)
 			}
 		}
 		884 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3247
+			// line vsql/y.y:3251
 			{
 				yy_val.v = TableReference(yy_as[TablePrimary](yy_dollar[1].v))
 			}
 		}
 		885 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3248
+			// line vsql/y.y:3252
 			{
 				yy_val.v = TableReference(yy_as[QualifiedJoin](yy_dollar[1].v))
 			}
 		}
 		886 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3249
+			// line vsql/y.y:3253
 			{
 				yy_val.v = TableReference(yy_as[QualifiedJoin](yy_dollar[1].v))
 			}
 		}
 		887 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3254
+			// line vsql/y.y:3258
 			{
 				yy_val.v = yy_as[QualifiedJoin](yy_dollar[2].v)
 			}
 		}
 		888 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3257
+			// line vsql/y.y:3261
 			{
 				yy_val.v = yy_as[QualifiedJoin](yy_dollar[2].v)
 			}
 		}
 		889 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:3260
+			// line vsql/y.y:3264
 			{
 				yy_val.v = new_qualified_join(yy_as[TableReference](yy_dollar[1].v), JoinType.inner,
 					yy_as[TableReference](yy_dollar[3].v), yy_as[BooleanValueExpression](yy_dollar[4].v))
@@ -35292,7 +35296,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		890 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:3264
+			// line vsql/y.y:3268
 			{
 				yy_val.v = new_qualified_join(yy_as[TableReference](yy_dollar[1].v), yy_as[JoinType](yy_dollar[2].v),
 					yy_as[TableReference](yy_dollar[4].v), yy_as[BooleanValueExpression](yy_dollar[5].v))
@@ -35300,14 +35304,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		891 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3270
+			// line vsql/y.y:3274
 			{
 				yy_val.v = yy_as[TablePrimary](yy_dollar[1].v)
 			}
 		}
 		892 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3273
+			// line vsql/y.y:3277
 			{
 				yy_val.v = TablePrimary{
 					body: yy_as[Identifier](yy_dollar[1].v)
@@ -35316,7 +35320,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		893 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3278
+			// line vsql/y.y:3282
 			{
 				yy_val.v = TablePrimary{
 					body:        yy_as[Identifier](yy_dollar[1].v)
@@ -35326,14 +35330,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		894 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3284
+			// line vsql/y.y:3288
 			{
 				yy_val.v = yy_as[TablePrimary](yy_dollar[1].v)
 			}
 		}
 		895 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3285
+			// line vsql/y.y:3289
 			{
 				yy_val.v = TablePrimary{
 					body:        (yy_as[TablePrimary](yy_dollar[1].v)).body
@@ -35343,7 +35347,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		896 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3293
+			// line vsql/y.y:3297
 			{
 				yy_val.v = Correlation{
 					name: yy_as[Identifier](yy_dollar[1].v)
@@ -35352,7 +35356,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		897 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3298
+			// line vsql/y.y:3302
 			{
 				yy_val.v = Correlation{
 					name: yy_as[Identifier](yy_dollar[2].v)
@@ -35361,7 +35365,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		898 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3303
+			// line vsql/y.y:3307
 			{
 				yy_val.v = Correlation{
 					name:    yy_as[Identifier](yy_dollar[1].v)
@@ -35371,7 +35375,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		899 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3309
+			// line vsql/y.y:3313
 			{
 				yy_val.v = Correlation{
 					name:    yy_as[Identifier](yy_dollar[2].v)
@@ -35381,119 +35385,119 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		900 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3317
+			// line vsql/y.y:3321
 			{
 				yy_val.v = yy_as[TablePrimary](yy_dollar[1].v)
 			}
 		}
 		901 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3320
+			// line vsql/y.y:3324
 			{
 				yy_val.v = yy_as[Identifier](yy_dollar[1].v)
 			}
 		}
 		902 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3323
+			// line vsql/y.y:3327
 			{
 				yy_val.v = yy_as[[]Identifier](yy_dollar[1].v)
 			}
 		}
 		903 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3326
+			// line vsql/y.y:3330
 			{
 				yy_val.v = [yy_as[Identifier](yy_dollar[1].v)]
 			}
 		}
 		904 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3327
+			// line vsql/y.y:3331
 			{
 				yy_val.v = append_list(yy_as[[]Identifier](yy_dollar[1].v), yy_as[Identifier](yy_dollar[3].v))
 			}
 		}
 		905 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3332
+			// line vsql/y.y:3336
 			{
 				yy_val.v = yy_dollar[2].v
 			}
 		}
 		906 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3337
+			// line vsql/y.y:3341
 			{
 				yy_val.v = ExistsPredicate{new_subquery((yy_as[TablePrimary](yy_dollar[2].v)).body as QueryExpression)}
 			}
 		}
 		907 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3344
+			// line vsql/y.y:3348
 			{
 				yy_val.v = Predicate(yy_as[ComparisonPredicate](yy_dollar[1].v))
 			}
 		}
 		908 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3345
+			// line vsql/y.y:3349
 			{
 				yy_val.v = Predicate(yy_as[BetweenPredicate](yy_dollar[1].v))
 			}
 		}
 		909 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3346
+			// line vsql/y.y:3350
 			{
 				yy_val.v = Predicate(yy_as[InPredicate](yy_dollar[1].v))
 			}
 		}
 		910 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3347
+			// line vsql/y.y:3351
 			{
 				yy_val.v = Predicate(yy_as[CharacterLikePredicate](yy_dollar[1].v))
 			}
 		}
 		911 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3348
+			// line vsql/y.y:3352
 			{
 				yy_val.v = Predicate(yy_as[SimilarPredicate](yy_dollar[1].v))
 			}
 		}
 		912 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3349
+			// line vsql/y.y:3353
 			{
 				yy_val.v = Predicate(yy_as[NullPredicate](yy_dollar[1].v))
 			}
 		}
 		913 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3350
+			// line vsql/y.y:3354
 			{
 				yy_val.v = Predicate(yy_as[QuantifiedComparisonPredicate](yy_dollar[1].v))
 			}
 		}
 		914 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3353
+			// line vsql/y.y:3357
 			{
 				yy_val.v = Predicate(yy_as[ExistsPredicate](yy_dollar[1].v))
 			}
 		}
 		915 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3358
+			// line vsql/y.y:3362
 			{
 				yy_val.v = yy_as[BooleanValueExpression](yy_dollar[1].v)
 			}
 		}
 		916 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3363
+			// line vsql/y.y:3367
 			{
 				comp := yy_as[ComparisonPredicatePart2](yy_dollar[2].v)
 				yy_val.v = ComparisonPredicate{yy_as[RowValueConstructorPredicand](yy_dollar[1].v), comp.op, comp.expr}
@@ -35501,56 +35505,56 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		917 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3373
+			// line vsql/y.y:3377
 			{
 				yy_val.v = ComparisonPredicatePart2{yy_as[ComparisonOperator](yy_dollar[1].v), yy_as[RowValueConstructorPredicand](yy_dollar[2].v)}
 			}
 		}
 		918 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3381
+			// line vsql/y.y:3385
 			{
 				yy_val.v = ComparisonOperator.equal
 			}
 		}
 		919 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3382
+			// line vsql/y.y:3386
 			{
 				yy_val.v = ComparisonOperator.not_equal
 			}
 		}
 		920 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3383
+			// line vsql/y.y:3387
 			{
 				yy_val.v = ComparisonOperator.less_than
 			}
 		}
 		921 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3384
+			// line vsql/y.y:3388
 			{
 				yy_val.v = ComparisonOperator.greater_than
 			}
 		}
 		922 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3385
+			// line vsql/y.y:3389
 			{
 				yy_val.v = ComparisonOperator.less_than_or_equal
 			}
 		}
 		923 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3386
+			// line vsql/y.y:3390
 			{
 				yy_val.v = ComparisonOperator.greater_than_or_equal
 			}
 		}
 		924 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3391
+			// line vsql/y.y:3395
 			{
 				between := yy_as[BetweenPredicate](yy_dollar[2].v)
 				yy_val.v = BetweenPredicate{
@@ -35564,7 +35568,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		925 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:3403
+			// line vsql/y.y:3407
 			{
 				yy_val.v = BetweenPredicate{
 					not:       !(yy_as[bool](yy_dollar[1].v))
@@ -35576,7 +35580,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		926 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:3412
+			// line vsql/y.y:3416
 			{
 				yy_val.v = BetweenPredicate{
 					not:       !(yy_as[bool](yy_dollar[1].v))
@@ -35588,35 +35592,35 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		927 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3422
+			// line vsql/y.y:3426
 			{
 				yy_val.v = true
 			}
 		}
 		928 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3423
+			// line vsql/y.y:3427
 			{
 				yy_val.v = false
 			}
 		}
 		929 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3426
+			// line vsql/y.y:3430
 			{
 				yy_val.v = true
 			}
 		}
 		930 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3427
+			// line vsql/y.y:3431
 			{
 				yy_val.v = false
 			}
 		}
 		931 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3432
+			// line vsql/y.y:3436
 			{
 				part := yy_as[InPredicate](yy_dollar[2].v)
 				yy_val.v = InPredicate{
@@ -35627,14 +35631,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		932 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3441
+			// line vsql/y.y:3445
 			{
 				yy_val.v = yy_as[InPredicate](yy_dollar[2].v)
 			}
 		}
 		933 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3442
+			// line vsql/y.y:3446
 			{
 				part := yy_as[InPredicate](yy_dollar[3].v)
 				yy_val.v = InPredicate{
@@ -35645,7 +35649,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		934 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3451
+			// line vsql/y.y:3455
 			{
 				yy_val.v = InPredicate{
 					subquery: new_subquery((yy_as[TablePrimary](yy_dollar[1].v)).body as QueryExpression)
@@ -35654,7 +35658,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		935 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3456
+			// line vsql/y.y:3460
 			{
 				yy_val.v = InPredicate{
 					values: yy_as[[]RowValueConstructorPredicand](yy_dollar[2].v)
@@ -35663,14 +35667,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		936 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3463
+			// line vsql/y.y:3467
 			{
 				yy_val.v = [yy_as[RowValueConstructorPredicand](yy_dollar[1].v)]
 			}
 		}
 		937 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3464
+			// line vsql/y.y:3468
 			{
 				yy_val.v = append_list(yy_as[[]RowValueConstructorPredicand](yy_dollar[1].v),
 					yy_as[RowValueConstructorPredicand](yy_dollar[3].v))
@@ -35678,14 +35682,14 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		938 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3472
+			// line vsql/y.y:3476
 			{
 				yy_val.v = yy_as[CharacterLikePredicate](yy_dollar[1].v)
 			}
 		}
 		939 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3475
+			// line vsql/y.y:3479
 			{
 				like := yy_as[CharacterLikePredicatePart2](yy_dollar[2].v)
 				yy_val.v = CharacterLikePredicate{yy_as[RowValueConstructorPredicand](yy_dollar[1].v), like.right, like.escape, like.not}
@@ -35693,49 +35697,49 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		940 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3486
+			// line vsql/y.y:3490
 			{
 				yy_val.v = CharacterLikePredicatePart2{yy_as[CharacterValueExpression](yy_dollar[2].v), none, false}
 			}
 		}
 		941 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3490
+			// line vsql/y.y:3494
 			{
 				yy_val.v = CharacterLikePredicatePart2{yy_as[CharacterValueExpression](yy_dollar[3].v), none, true}
 			}
 		}
 		942 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:3494
+			// line vsql/y.y:3498
 			{
 				yy_val.v = CharacterLikePredicatePart2{yy_as[CharacterValueExpression](yy_dollar[2].v), ref_character_value_expression(yy_as[CharacterValueExpression](yy_dollar[4].v)), false}
 			}
 		}
 		943 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:3498
+			// line vsql/y.y:3502
 			{
 				yy_val.v = CharacterLikePredicatePart2{yy_as[CharacterValueExpression](yy_dollar[3].v), ref_character_value_expression(yy_as[CharacterValueExpression](yy_dollar[5].v)), true}
 			}
 		}
 		944 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3504
+			// line vsql/y.y:3508
 			{
 				yy_val.v = yy_as[CharacterValueExpression](yy_dollar[1].v)
 			}
 		}
 		945 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3507
+			// line vsql/y.y:3511
 			{
 				yy_val.v = yy_as[CharacterValueExpression](yy_dollar[1].v)
 			}
 		}
 		946 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3512
+			// line vsql/y.y:3516
 			{
 				like := yy_as[SimilarPredicatePart2](yy_dollar[2].v)
 				yy_val.v = SimilarPredicate{yy_as[RowValueConstructorPredicand](yy_dollar[1].v), like.right, like.escape, like.not}
@@ -35743,56 +35747,56 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		947 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3519
+			// line vsql/y.y:3523
 			{
 				yy_val.v = SimilarPredicatePart2{yy_as[CharacterValueExpression](yy_dollar[3].v), none, false}
 			}
 		}
 		948 {
 			yy_dollar = yy_s[yypt - 4..yypt + 1].clone()
-			// line vsql/y.y:3522
+			// line vsql/y.y:3526
 			{
 				yy_val.v = SimilarPredicatePart2{yy_as[CharacterValueExpression](yy_dollar[4].v), none, true}
 			}
 		}
 		949 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:3525
+			// line vsql/y.y:3529
 			{
 				yy_val.v = SimilarPredicatePart2{yy_as[CharacterValueExpression](yy_dollar[3].v), ref_character_value_expression(yy_as[CharacterValueExpression](yy_dollar[5].v)), false}
 			}
 		}
 		950 {
 			yy_dollar = yy_s[yypt - 6..yypt + 1].clone()
-			// line vsql/y.y:3529
+			// line vsql/y.y:3533
 			{
 				yy_val.v = SimilarPredicatePart2{yy_as[CharacterValueExpression](yy_dollar[4].v), ref_character_value_expression(yy_as[CharacterValueExpression](yy_dollar[6].v)), true}
 			}
 		}
 		951 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3535
+			// line vsql/y.y:3539
 			{
 				yy_val.v = yy_as[CharacterValueExpression](yy_dollar[1].v)
 			}
 		}
 		952 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3543
+			// line vsql/y.y:3547
 			{
 				yy_val.v = NullPredicate{NullPredicand(yy_as[RowValueConstructorPredicand](yy_dollar[1].v)), !(yy_as[bool](yy_dollar[2].v))}
 			}
 		}
 		953 {
 			yy_dollar = yy_s[yypt - 5..yypt + 1].clone()
-			// line vsql/y.y:3548
+			// line vsql/y.y:3552
 			{
 				yy_val.v = NullPredicate{NullPredicand(ExplicitRowValueConstructor{yy_as[[]ValueExpression](yy_dollar[3].v)}), !(yy_as[bool](yy_dollar[5].v))}
 			}
 		}
 		954 {
 			yy_dollar = yy_s[yypt - 6..yypt + 1].clone()
-			// line vsql/y.y:3554
+			// line vsql/y.y:3558
 			{
 				yy_val.v = new_null_predicate_row(push_list(yy_as[ContextuallyTypedRowValueConstructorElement](yy_dollar[2].v),
 					yy_as[[]ContextuallyTypedRowValueConstructorElement](yy_dollar[4].v)),
@@ -35801,21 +35805,21 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		955 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3562
+			// line vsql/y.y:3566
 			{
 				yy_val.v = true
 			}
 		}
 		956 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3563
+			// line vsql/y.y:3567
 			{
 				yy_val.v = false
 			}
 		}
 		957 {
 			yy_dollar = yy_s[yypt - 2..yypt + 1].clone()
-			// line vsql/y.y:3568
+			// line vsql/y.y:3572
 			{
 				part := yy_as[QuantifiedComparisonPredicate](yy_dollar[2].v)
 				yy_val.v = QuantifiedComparisonPredicate{
@@ -35826,7 +35830,7 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		958 {
 			yy_dollar = yy_s[yypt - 3..yypt + 1].clone()
-			// line vsql/y.y:3577
+			// line vsql/y.y:3581
 			{
 				yy_val.v = QuantifiedComparisonPredicate{
 					op:       yy_as[ComparisonOperator](yy_dollar[1].v)
@@ -35837,21 +35841,21 @@ fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 		}
 		959 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3587
+			// line vsql/y.y:3591
 			{
 				yy_val.v = true
 			}
 		}
 		960 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3588
+			// line vsql/y.y:3592
 			{
 				yy_val.v = false
 			}
 		}
 		961 {
 			yy_dollar = yy_s[yypt - 1..yypt + 1].clone()
-			// line vsql/y.y:3589
+			// line vsql/y.y:3593
 			{
 				yy_val.v = false
 			}

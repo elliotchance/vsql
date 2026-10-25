@@ -3,9 +3,13 @@ module vsql
 fn row_test_table(column_names ...string) Table {
 	mut columns := []Column{}
 	for name in column_names {
-		columns << Column{Identifier{
-			sub_entity_name: name
-		}, Type{.is_integer, 0, 0, false}, false, none}
+		columns << Column{
+			name:     Identifier{
+				sub_entity_name: name
+			}
+			typ:      Type{.is_integer, 0, 0, false}
+			not_null: false
+		}
 	}
 
 	return Table{

@@ -9,11 +9,15 @@
 // constraint (see add_column_constraint).
 column_definition:
   column_name data_type_or_domain_name {
-    $$.v = [TableElement(Column{$1.v as Identifier, $2.v as Type, false, none})]
+    $$.v = [TableElement(Column{name: $1.v as Identifier, typ: $2.v as Type})]
   }
 | column_name data_type_or_domain_name default_clause {
     $$.v = [
-      TableElement(Column{$1.v as Identifier, $2.v as Type, false, $3.v as DefaultOption}),
+      TableElement(Column{
+        name:          $1.v as Identifier
+        typ:           $2.v as Type
+        default_value: $3.v as DefaultOption
+      }),
     ]
   }
 | column_definition column_constraint_definition {

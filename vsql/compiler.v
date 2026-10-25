@@ -41,9 +41,11 @@ mut:
 	distinct_columns ?[]Column
 	// check_constraint is set when compiling the search condition of a CHECK
 	// constraint, which must be deterministic (see check_deterministic). A CHECK
-	// on a column can only use that column, check_column.
+	// on a column can only use that column, check_column. The columns that it
+	// uses are collected in check_columns (see CheckConstraintDefinition.columns).
 	check_constraint bool
 	check_column     string
+	check_columns    map[string]bool
 }
 
 // check_deterministic returns an error if the expression (described by what)

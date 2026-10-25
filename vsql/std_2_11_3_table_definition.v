@@ -187,6 +187,18 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 						}
 					}
 					referenced_columns: referenced_columns
+					// NO ACTION is the same as no ON UPDATE or ON DELETE
+					// (Syntax Rules 12 and 13).
+					update_rule:        if table_element.update_rule == 'NO ACTION' {
+						''
+					} else {
+						table_element.update_rule
+					}
+					delete_rule:        if table_element.delete_rule == 'NO ACTION' {
+						''
+					} else {
+						table_element.delete_rule
+					}
 				}
 			}
 		}

@@ -660,7 +660,7 @@ Optional Features
    * - ✅ **F032**
      - **CASCADE drop behavior**
 
-   * - ❌ **F033**
+   * - ✅ **F033**
      - **ALTER TABLE statement: DROP COLUMN clause**
 
    * - ❌ **F034**
@@ -714,7 +714,7 @@ Optional Features
    * - ✅ **F171**
      - **Multiple schemas per user**
 
-   * - ❌ **F191**
+   * - ✅ **F191**
      - **Referential delete actions**
 
    * - ❌ **F200**
@@ -930,7 +930,7 @@ Optional Features
    * - ❌ **F695**
      - **Translation support**
 
-   * - ❌ **F701**
+   * - ✅ **F701**
      - **Referential update actions**
 
    * - ❌ **F711**

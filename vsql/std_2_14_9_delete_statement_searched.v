@@ -46,9 +46,8 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 
 	// A FOREIGN KEY is checked once all of the rows have been deleted, so a
 	// DELETE can include rows that reference each other.
-	_, time_zone := conn.now()
-	catalog.storage.check_referencing_rows(catalog.storage.table(table_name.storage_id()),
-		deleted, [], time_zone)!
+	apply_referential_actions(mut conn, mut catalog.storage, catalog.storage.table(table_name.storage_id()),
+		deleted.map(RowChange{ old: it, is_delete: true }))!
 
 	// ISO/IEC 9075-2:2016(E), 14.9, General Rules, 10
 	if rows.len == 0 {

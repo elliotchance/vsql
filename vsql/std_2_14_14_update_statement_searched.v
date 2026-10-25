@@ -54,13 +54,11 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// each row. Otherwise, "SET id = id + 1" would fail on the old key of the
 	// next row. So a row that gets a new key is deleted first, and only added
 	// back after every row has been updated. UNIQUE and FOREIGN KEY constraints
-	// are checked after that, see check_unique_constraints, check_foreign_keys
-	// and check_referencing_rows.
+	// are checked after that, and after the referential actions (see
+	// apply_referential_actions).
 	//
 	// ISO/IEC 9075-2:2016(E), 4.23.2, Checking of constraints
 	mut moved := []Row{}
-	mut updated := []Row{}
-	mut old := []Row{}
 	check_constraints := new_check_constraints(mut conn, table)!
 
 	// Every new row is found before any of them are written. Otherwise, a
@@ -128,24 +126,21 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	for change in changes {
 		mut before := change[0]
 		mut after := change[1]
-		old << before
 		if before.object_key(table)! != after.object_key(table)! {
 			catalog.storage.delete_row(table_name.storage_id(), mut before)!
 			moved << after
 		} else {
 			catalog.storage.update_row(mut after, table)!
-			updated << after
 		}
 	}
 
 	for mut row in moved {
 		catalog.storage.write_row(mut row, table)!
 	}
-	updated << moved
-	catalog.storage.check_unique_constraints(table, updated)!
-	_, time_zone := conn.now()
-	catalog.storage.check_foreign_keys(table, updated, time_zone)!
-	catalog.storage.check_referencing_rows(table, old, updated, time_zone)!
+	apply_referential_actions(mut conn, mut catalog.storage, table, changes.map(RowChange{
+		old: it[0]
+		new: it[1]
+	}))!
 
 	// There is a case where no records were updated. The potential problem is
 	// that the field assignments might be wrong, but we never knew they were

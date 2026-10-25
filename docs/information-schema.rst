@@ -178,9 +178,9 @@ the columns, and then the ``CHECK`` constraints in the order they're defined.
 ---------------------
 
 One row for each constraint of each table (but not the tables of the
-``INFORMATION_SCHEMA``): the ``PRIMARY KEY``, then each ``UNIQUE``, then the
-same check constraints as ``CHECK_CONSTRAINTS``, in the same order and with the
-same names.
+``INFORMATION_SCHEMA``): the ``PRIMARY KEY``, then each ``UNIQUE``, then each
+``FOREIGN KEY``, then the same check constraints as ``CHECK_CONSTRAINTS``, in
+the same order and with the same names.
 
 .. code-block:: sql
 
@@ -203,15 +203,15 @@ same names.
 
   * - ``CONSTRAINT_NAME``
     - ``<table>_PRIMARY_KEY`` for the ``PRIMARY KEY``, ``<table>_UNIQUE_<n>``
-      for the nth ``UNIQUE`` (counting ``UNIQUE`` on columns and on the table
+      for the nth ``UNIQUE`` and ``<table>_FOREIGN_KEY_<n>`` for the nth
+      ``FOREIGN KEY`` (counting constraints on columns and on the table
       together), otherwise the same as ``CHECK_CONSTRAINTS``.
 
   * - ``TABLE_CATALOG``, ``TABLE_SCHEMA``, ``TABLE_NAME``
     - The table the constraint is on.
 
   * - ``CONSTRAINT_TYPE``
-    - ``PRIMARY KEY``, ``UNIQUE`` or ``CHECK`` (``FOREIGN KEY`` constraints are
-      not supported).
+    - ``PRIMARY KEY``, ``UNIQUE``, ``FOREIGN KEY`` or ``CHECK``.
 
   * - ``IS_DEFERRABLE``, ``INITIALLY_DEFERRED``
     - Always ``NO`` (constraints can't be deferred).

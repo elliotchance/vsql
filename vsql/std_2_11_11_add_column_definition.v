@@ -19,8 +19,9 @@ struct AddColumnDefinition {
 // read with NULL for it (see new_row_from_bytes), so the rows only need to be
 // rewritten when the default isn't NULL. The rows must satisfy the constraints
 // of the new column, so a NOT NULL column without a default can only be added
-// to an empty table, and a UNIQUE column with a default to a table with at most
-// one row.
+// to an empty table, a UNIQUE column with a default to a table with at most
+// one row, and a REFERENCES column with a default to a table whose rows can all
+// reference that default.
 fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table, params map[string]Value) ! {
 	mut elements := []TableElement{}
 	for column in table.columns {
@@ -41,6 +42,17 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 			})
 		}
 	}
+	for key in table.foreign_keys {
+		elements << ReferentialConstraintDefinition{
+			columns:            key.columns.map(Identifier{
+				sub_entity_name: it
+			})
+			referenced_table:   key.referenced_table
+			referenced_columns: key.referenced_columns.map(Identifier{
+				sub_entity_name: it
+			})
+		}
+	}
 	for constraint in table.check_constraints {
 		elements << constraint
 	}
@@ -48,10 +60,11 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 
 	definition := TableDefinition{table.name, elements}
 	definition.check_limits(table.name)!
-	new_table := Table{
+	mut new_table := Table{
 		...definition.table(table.name, table.tid)!
 		id: table.id
 	}
+	resolve_foreign_keys(mut conn, mut new_table)!
 	column := new_table.columns.last()
 	check_default_clause(mut conn, column)!
 	check_constraints := new_check_constraints(mut conn, new_table)!
@@ -91,4 +104,5 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	}
 	updated << moved
 	catalog.storage.check_unique_constraints(new_table, updated)!
+	catalog.storage.check_foreign_keys(new_table, updated)!
 }

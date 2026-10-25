@@ -46,6 +46,10 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 		return sqlstate_2bp01(schema_name)
 	}
 
+	// The FOREIGN KEYs of the tables in other schemas that reference the
+	// tables are dropped.
+	catalog.storage.drop_foreign_keys_referencing(table_names)!
+
 	for table_name in table_names {
 		catalog.storage.delete_table(table_name, catalog.storage.table(table_name).tid)!
 	}

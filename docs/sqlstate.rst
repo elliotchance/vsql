@@ -362,6 +362,23 @@ The trim character must be exactly one character.
   -- msg: CREATE TABLE 1
   -- error 23502: violates non-null constraint: column F2
 
+``23503`` violates foreign key constraint
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A row doesn't reference a row of the table that a ``FOREIGN KEY`` references,
+or a row that's referenced was deleted or its referenced columns were changed.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t1 (id INT PRIMARY KEY);
+  CREATE TABLE t2 (t1_id INT REFERENCES t1);
+  INSERT INTO t2 (t1_id) VALUES (1);
+  -- msg: CREATE TABLE 1
+  -- msg: CREATE TABLE 1
+  -- error 23503: violates foreign key constraint: FOREIGN KEY (T1_ID) REFERENCES ":memory:".PUBLIC.T1 (ID) on ":memory:".PUBLIC.T2
+
 ``23505`` violates unique constraint
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -566,6 +583,22 @@ see :doc:`custom-functions`.
 
   VALUES 1, 'a';
   -- error 42804: data type mismatch in row 2, column 1 of VALUES: expected SMALLINT but got CHARACTER(1)
+
+``42830`` invalid foreign key
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The columns that a ``FOREIGN KEY`` references aren't the ``PRIMARY KEY`` or a
+``UNIQUE`` constraint of the referenced table, or there's a different number of
+them.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t1 (id INT);
+  CREATE TABLE t2 (t1_id INT REFERENCES t1);
+  -- msg: CREATE TABLE 1
+  -- error 42830: invalid foreign key: ":memory:".PUBLIC.T1 has no PRIMARY KEY
 
 ``42846`` cannot coerce
 ^^^^^^^^^^^^^^^^^^^^^^^

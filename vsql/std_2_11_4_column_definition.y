@@ -4,8 +4,9 @@
 //
 // Define a column of a base table.
 
-// The column is the first element, and each <unique specification> or <check
-// constraint definition> adds a table constraint (see add_column_constraint).
+// The column is the first element, and each <unique specification>,
+// <references specification> or <check constraint definition> adds a table
+// constraint (see add_column_constraint).
 column_definition:
   column_name data_type_or_domain_name {
     $$.v = [TableElement(Column{$1.v as Identifier, $2.v as Type, false, none})]
@@ -29,6 +30,9 @@ column_constraint:
   NOT NULL { $$.v = ColumnConstraint(NotNullConstraint{}) }
 | unique_specification {
     $$.v = ColumnConstraint(UniqueConstraintDefinition{is_primary_key: $1.v as bool})
+  }
+| references_specification {
+    $$.v = ColumnConstraint($1.v as ReferentialConstraintDefinition)
   }
 | check_constraint_definition {
     $$.v = ColumnConstraint($1.v as CheckConstraintDefinition)

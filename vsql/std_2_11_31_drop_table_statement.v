@@ -7,8 +7,8 @@ import time
 // Destroy a table.
 
 // The behavior is RESTRICT when it's not provided (the standard requires it).
-// Nothing can depend on a table yet (such as a view or a foreign key), so
-// CASCADE and RESTRICT are the same.
+// With RESTRICT, a table that's referenced by a FOREIGN KEY of another table
+// can't be dropped (Syntax Rule 7d). CASCADE drops those FOREIGN KEYs instead.
 struct DropTableStatement {
 	table_name Identifier
 	behavior   string // CASCADE or RESTRICT
@@ -24,6 +24,11 @@ fn (stmt DropTableStatement) execute(mut conn Connection, _ map[string]Value, el
 
 	table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
+	table := catalog.storage.table(table_name.storage_id())
+	if stmt.behavior == 'RESTRICT' && catalog.storage.referencing_tables(table).len > 0 {
+		return sqlstate_2bp01(table_name.str())
+	}
+	catalog.storage.drop_foreign_keys_referencing([table_name.storage_id()])!
 
 	catalog.storage.delete_table(table_name.storage_id(),
 		catalog.storage.table(table_name.storage_id()).tid)!

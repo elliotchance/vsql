@@ -34,6 +34,9 @@ column isn't added:
   error ``23505`` if there's more than one row.
 - A ``UNIQUE`` column with a ``DEFAULT`` (that isn't ``NULL``) is an error
   ``23505`` if there's more than one row, for the same reason.
+- A ``REFERENCES`` column with a ``DEFAULT`` (that isn't ``NULL``) is an
+  error ``23503`` if the default doesn't reference a row, unless the table is
+  empty.
 
 Examples
 --------

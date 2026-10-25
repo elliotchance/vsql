@@ -14,6 +14,7 @@ Syntax
                [ <column_constraint> ... ]
              | PRIMARY KEY ( <column_name> , ... )
              | UNIQUE ( <column_name> , ... )
+             | FOREIGN KEY ( <column_name> , ... ) <references>
              | CHECK ( <condition> )
 
   <default> := <literal>
@@ -25,7 +26,10 @@ Syntax
   <column_constraint> := NOT NULL
                        | PRIMARY KEY
                        | UNIQUE
+                       | <references>
                        | CHECK ( <condition> )
+
+  <references> := REFERENCES <table_name> [ ( <column_name> , ... ) ]
 
 1. ``column_name`` must start with a letter, but can be followed by any letter,
    underscore (``_``) or digit for a maximum length of 128 characters. A
@@ -35,9 +39,8 @@ Syntax
    :doc:`numbers` and :doc:`text`.
 3. A table can have up to 1600 columns.
 
-Columns allow ``NULL`` unless they are ``NOT NULL``. ``FOREIGN KEY``
-constraints are not supported yet, and constraints can't be named (with
-``CONSTRAINT <name>``).
+Columns allow ``NULL`` unless they are ``NOT NULL``. Constraints can't be named
+(with ``CONSTRAINT <name>``).
 
 Defaults
 --------
@@ -105,6 +108,67 @@ The constraints are checked once all of the rows of an :doc:`insert` or
 any row conflicts, none of the rows are changed. Every row of the table is read
 to check the constraints, because there are no indexes yet.
 
+Foreign Keys
+------------
+
+A ``FOREIGN KEY`` constraint (also called a referential constraint) means that
+each row must reference a row of another table, the referenced table. The
+values of its columns must be the same as the values of the referenced columns
+of a row of the referenced table, otherwise it's an error ``23503``. A row with
+a ``NULL`` in any of the columns doesn't need to reference a row.
+
+.. code-block:: sql
+
+  CREATE TABLE categories (category_id INTEGER PRIMARY KEY);
+  CREATE TABLE products (
+      product_id INTEGER PRIMARY KEY,
+      category_id INTEGER REFERENCES categories
+  );
+  INSERT INTO categories (category_id) VALUES (1);
+  INSERT INTO products (product_id, category_id) VALUES (1, 1);
+  INSERT INTO products (product_id, category_id) VALUES (2, 2);
+  -- msg: CREATE TABLE 1
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 1
+  -- msg: INSERT 1
+  -- error 23503: violates foreign key constraint: FOREIGN KEY (CATEGORY_ID) REFERENCES ":memory:".PUBLIC.CATEGORIES (CATEGORY_ID) on ":memory:".PUBLIC.PRODUCTS
+
+A ``FOREIGN KEY`` of a single column can also be written on the column, so
+``category_id INTEGER REFERENCES categories`` is the same as
+``category_id INTEGER, FOREIGN KEY (category_id) REFERENCES categories``. A
+table can have any number of ``FOREIGN KEY`` constraints.
+
+The referenced columns are the ``PRIMARY KEY`` of the referenced table, unless
+they're listed after the table name. Listed columns must be the columns of the
+``PRIMARY KEY`` or a ``UNIQUE`` constraint of the referenced table, in any
+order. Each column of the ``FOREIGN KEY`` corresponds to the referenced column
+in the same position, so ``FOREIGN KEY (a, b) REFERENCES t (x, y)`` means that
+``a`` must be the same as ``x``, and ``b`` the same as ``y``. Otherwise, it's an
+error ``42830``. The types of the corresponding columns must be compatible (an
+error ``42804``): both are integers (``SMALLINT``, ``INTEGER`` or ``BIGINT``),
+``REAL`` or ``DOUBLE PRECISION``, ``NUMERIC`` or ``DECIMAL``, ``CHARACTER`` or
+``CHARACTER VARYING``, or both are the same type for any other type. The values
+are compared like a ``PRIMARY KEY``.
+
+The referenced table must already exist and be in the same catalog, but it can
+be the table that's being created (such as an ``employees`` table where each
+employee references their manager).
+
+A row that's referenced can't be deleted, and its referenced columns can't be
+changed, otherwise it's an error ``23503``. A ``FOREIGN KEY`` is checked once
+all of the rows of an :doc:`insert`, :doc:`update` or :doc:`delete` have been
+changed, so a statement can delete a row along with the rows that reference
+it, or insert a row along with a row that references it. If any row violates
+the constraint, none of the rows are changed. ``ON DELETE`` and ``ON UPDATE``
+actions (such as ``CASCADE``) and ``MATCH`` are not supported yet.
+
+A table that's referenced can only be dropped with ``CASCADE``, which also
+drops the ``FOREIGN KEY`` constraints that reference it (see :doc:`drop-table`).
+
+Every row of the referenced table is read to check the new rows of a
+statement, and every row of each table that references a table is read when
+its rows are deleted or updated, because there are no indexes yet.
+
 Check Constraints
 -----------------
 
@@ -155,6 +219,7 @@ Examples
 
   CREATE TABLE orders (
       order_id INTEGER PRIMARY KEY,
+      product_id INTEGER NOT NULL REFERENCES products,
       quantity INTEGER DEFAULT 1 NOT NULL CHECK (quantity > 0),
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
   );

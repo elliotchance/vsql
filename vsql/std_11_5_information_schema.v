@@ -300,8 +300,8 @@ fn check_constraints_view_rows(catalog_name string, table Table) [][]Value {
 
 // table_constraints_view_rows are the rows of the TABLE_CONSTRAINTS view
 // (ISO/IEC 9075-11:2016(E), 6.47, TABLE_CONSTRAINTS base table) for a table:
-// the PRIMARY KEY, then each UNIQUE, then the same check constraints as the
-// CHECK_CONSTRAINTS view, in the same order and with the same names.
+// the PRIMARY KEY, then each UNIQUE, then each FOREIGN KEY, then the same check
+// constraints as the CHECK_CONSTRAINTS view, in the same order and with the same names.
 // Constraints can't be deferred or NOT ENFORCED yet.
 fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 	if table.is_virtual {
@@ -316,6 +316,10 @@ fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 	for i, _ in table.unique_constraints {
 		rows << table_constraints_view_row(catalog_name, table, constraint_name(table,
 			'UNIQUE', i), 'UNIQUE')
+	}
+	for i, _ in table.foreign_keys {
+		rows << table_constraints_view_row(catalog_name, table, constraint_name(table,
+			'FOREIGN_KEY', i), 'FOREIGN KEY')
 	}
 	for row in check_constraints_view_rows(catalog_name, table) {
 		rows << table_constraints_view_row(catalog_name, table, row[2].string_value(),
@@ -359,11 +363,12 @@ fn check_constraints_view_row(catalog_name string, table Table, name string, che
 
 // constraint_name is the implementation-dependent name of a constraint that
 // wasn't given one (ISO/IEC 9075-2:2016(E), 11.6, Syntax Rule 3), such as
-// T_CHECK_1 for the first CHECK of table T, T_UNIQUE_1 for its first UNIQUE, or
-// T_NOT_NULL_2 for the NOT NULL of its second column. It's the same each time
-// the table is read, and unique in the schema, because the number after the
-// last "_CHECK_", "_UNIQUE_" or "_NOT_NULL_" separates it from the table name. (A PRIMARY KEY is T_PRIMARY_KEY, which
-// doesn't end in a number.)
+// T_CHECK_1 for the first CHECK of table T, T_UNIQUE_1 for its first UNIQUE,
+// T_FOREIGN_KEY_1 for its first FOREIGN KEY, or T_NOT_NULL_2 for the NOT NULL
+// of its second column. It's the same each time the table is read, and unique
+// in the schema, because the number after the last "_CHECK_", "_UNIQUE_",
+// "_FOREIGN_KEY_" or "_NOT_NULL_" separates it from the table name. (A PRIMARY
+// KEY is T_PRIMARY_KEY, which doesn't end in a number.)
 fn constraint_name(table Table, kind string, i int) string {
 	return '${table.name.entity_name}_${kind}_${i + 1}'
 }

@@ -71,6 +71,7 @@ type YYSym = AddColumnDefinition
 	| QualifiedJoin
 	| QueryExpression
 	| QuerySpecification
+	| ReferentialConstraintDefinition
 	| RoutineInvocation
 	| RowValueConstructor
 	| RowValueConstructorPredicand

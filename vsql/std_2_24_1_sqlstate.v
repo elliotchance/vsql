@@ -330,6 +330,18 @@ fn sqlstate_23502(msg string) IError {
 	}
 }
 
+// violates foreign key constraint
+struct SQLState23503 {
+	SQLState
+}
+
+fn sqlstate_23503(msg string) IError {
+	return SQLState23503{
+		code: sqlstate_to_int('23503')
+		msg:  'violates foreign key constraint: ${msg}'
+	}
+}
+
 // violates unique constraint
 struct SQLState23505 {
 	SQLState
@@ -469,6 +481,18 @@ fn sqlstate_42804(msg string, expected string, actual string) IError {
 		msg:      'data type mismatch ${msg}: expected ${expected} but got ${actual}'
 		expected: expected
 		actual:   actual
+	}
+}
+
+// invalid foreign key
+struct SQLState42830 {
+	SQLState
+}
+
+fn sqlstate_42830(msg string) IError {
+	return SQLState42830{
+		code: sqlstate_to_int('42830')
+		msg:  'invalid foreign key: ${msg}'
 	}
 }
 

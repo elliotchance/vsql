@@ -169,7 +169,7 @@ SELECT x AS a FROM t1 UNION SELECT x AS b FROM t2 ORDER BY b;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.B
 
 SELECT x FROM t1 UNION SELECT x FROM t2 ORDER BY y;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.Y
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y
 
 SELECT x FROM t1 UNION SELECT x FROM t2 ORDER BY t1.x;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.X

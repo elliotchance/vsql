@@ -418,9 +418,10 @@ struct Connection
    	// errors (such as an UPDATE that matched no rows). Expressions must not have
    	// side effects, like advancing a sequence.
    	dry_run bool
-   	// subquery_depth is the number of subqueries (in an expression, such as
-   	// EXISTS) that are being planned or evaluated. See Subquery.
-   	subquery_depth int
+   	// subquery_scopes has one scope for each subquery (in an expression, such as
+   	// EXISTS) that's being planned or evaluated, the innermost last. A subquery
+   	// can refer to the columns of the queries that contain it, see SubqueryScope.
+   	subquery_scopes []SubqueryScope
    pub mut:
    	// now allows you to override the wall clock that is used. The Time must be
    	// in UTC with a separate offset for the current local timezone (in positive

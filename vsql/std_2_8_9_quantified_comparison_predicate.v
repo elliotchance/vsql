@@ -22,12 +22,12 @@ fn (e QuantifiedComparisonPredicate) pstr(params map[string]Value) string {
 fn (e QuantifiedComparisonPredicate) compile(mut c Compiler) !CompileResult {
 	compiled_expr := e.expr.compile(mut c)!
 	plan := e.subquery.plan_column(mut c)!
-	c.check_time_zone_comparison(compiled_expr.typ, plan.columns()[0].typ)!
+	c.check_time_zone_comparison(compiled_expr.typ, plan.plan.columns()[0].typ)!
 
 	return CompileResult{
 		run:          fn [e, compiled_expr, plan] (mut conn Connection, data Row, params map[string]Value) !Value {
 			expr := compiled_expr.run(mut conn, data, params)!
-			values := subquery_values(mut conn, plan)!
+			values := subquery_values(mut conn, plan, data)!
 
 			return quantified_comparison(conn, expr, e.op, e.all, values)!.value()
 		}

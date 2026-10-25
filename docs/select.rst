@@ -41,8 +41,10 @@ use :doc:`values` (such as ``VALUES 1 + 2``).
 A subquery can also be used in an expression, such as ``EXISTS``, ``IN``,
 ``ALL`` and ``SOME``, or as a value. See :doc:`expressions`.
 
-Not supported yet: ``INTERSECT``, and correlated subqueries (a subquery that
-refers to the columns of the query that contains it). See :doc:`sql-compliance`.
+A subquery can refer to the columns of the query that contains it (a correlated
+subquery).
+
+Not supported yet: ``INTERSECT``. See :doc:`sql-compliance`.
 
 SELECT
 ------

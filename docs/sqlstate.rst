@@ -125,6 +125,10 @@ sends it as a ``NOTICE``.
 that needs a newer version of vsql, or was created by a version of vsql that is
 too old. See *Compatibility* in :doc:`file-format`.
 
+It's also returned for an aggregate function of only the columns of an outer
+query in a correlated subquery, such as ``(SELECT MAX(t1.x) FROM t2)``, which
+isn't supported yet.
+
 ``0B000`` invalid transaction initiation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

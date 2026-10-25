@@ -43,10 +43,10 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 		compiled_values << compiled
 	}
 
-	mut plan := ?Plan(none)
+	mut plan := ?SubqueryPlan(none)
 	if subquery := e.subquery {
 		subquery_plan := subquery.plan_column(mut c)!
-		c.check_time_zone_comparison(compiled_expr.typ, subquery_plan.columns()[0].typ)!
+		c.check_time_zone_comparison(compiled_expr.typ, subquery_plan.plan.columns()[0].typ)!
 		plan = subquery_plan
 	}
 
@@ -56,7 +56,7 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 
 			mut values := []Value{}
 			if subquery_plan := plan {
-				values = subquery_values(mut conn, subquery_plan)!
+				values = subquery_values(mut conn, subquery_plan, data)!
 			}
 			for compiled_value in compiled_values {
 				values << compiled_value.run(mut conn, data, params)!

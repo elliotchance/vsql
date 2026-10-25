@@ -18,7 +18,7 @@ Mandatory Features
 ~~~~~~~~~~~~~~~~~~
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 112 of the 164 mandatory features** of the
+**vsql supports 114 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -126,7 +126,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E051-09
      - Rename columns in the ``FROM`` clause
 
-   * - ⭕ **E061**
+   * - ✅ **E061**
      - **Basic predicates and search conditions**
 
    * - ✅ E061-01
@@ -162,7 +162,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E061-12
      - Subqueries in quantified comparison predicate
 
-   * - ❌ E061-13
+   * - ✅ E061-13
      - Correlated subqueries
 
    * - ✅ E061-14

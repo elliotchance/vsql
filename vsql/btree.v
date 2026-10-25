@@ -301,14 +301,33 @@ fn (mut p Btree) fix_parent_pages(path []int) ! {
 
 		t_head := t.head()
 		if compare_bytes(min_key, t_head.key) < 0 {
-			t.delete(t_head.key, 0)
-
 			new_object := new_page_object(min_key.clone(), 0, 0, t_head.value.clone())
-			t.add(new_object)!
+			if p.replace_pointer(path[..path_index + 1], mut t, t_head.key, new_object)! {
+				// The page was split, so the rest of the path has changed.
+				new_path, _ := p.search_page(min_key)!
+				return p.fix_parent_pages(new_path)
+			}
 		}
-
-		p.store_page(path[path_index], t)!
 	}
+}
+
+// replace_pointer replaces the pointer with old_key (if any) in the non-leaf
+// page at the end of path. The new key may be longer than the old one, so the
+// page is split if it no longer fits. It returns true if the page was split.
+fn (mut p Btree) replace_pointer(path []int, mut page Page, old_key []u8, pointer PageObject) !bool {
+	if old_key.len > 0 {
+		page.delete(old_key, 0)
+	}
+
+	if page.used + pointer.length() > p.page_size {
+		p.split_page(path, page, pointer, kind_not_leaf)!
+		return true
+	}
+
+	page.add(pointer)!
+	p.store_page(path[path.len - 1], page)!
+
+	return false
 }
 
 // max_allowed_in_page returns the maximum bytes a page can hold of data. That
@@ -397,25 +416,27 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 	// The parent's key for the left page may be older than the head of the
 	// page, because removing objects from a page (see isolation_end) does not
 	// update the parent. So we find it by the page number instead.
+	mut parent_split := false
 	if inserted_at == 0 {
 		mut parent := p.pager.fetch_page(path[path.len - 2])!
+		mut old_key := []u8{}
 		for parent_object in parent.objects() {
 			mut buf := new_bytes(parent_object.value)
 			if buf.read_i32() == left_page_number {
-				parent.delete(parent_object.key, 0)
+				old_key = parent_object.key.clone()
 				break
 			}
 		}
-		parent.add(pointers[0])!
-		p.store_page(path[path.len - 2], parent)!
+		parent_split = p.replace_pointer(path[..path.len - 1], mut parent, old_key,
+			pointers[0])!
 	}
 
 	// Register each new page with the parent of the page before it. Adding a
-	// page can split the parent, so the path to the page before it has to be
-	// found again each time.
+	// page (or replacing the pointer above) can split the parent, so the path
+	// to the page before it has to be found again.
 	mut previous_path := path.clone()
 	for i in 1 .. pointers.len {
-		if i > 1 {
+		if i > 1 || parent_split {
 			search_path, _ := p.search_page(pointers[i - 1].key)!
 			index := search_path.index(page_numbers[i - 1])
 			if index < 1 {

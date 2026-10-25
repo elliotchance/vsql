@@ -76,5 +76,6 @@ fn replace_table_definition(mut conn Connection, mut catalog CatalogConnection, 
 	}
 	rows << moved
 	catalog.storage.check_unique_constraints(new_table, rows)!
-	catalog.storage.check_foreign_keys(new_table, rows)!
+	_, time_zone := conn.now()
+	catalog.storage.check_foreign_keys(new_table, rows, time_zone)!
 }

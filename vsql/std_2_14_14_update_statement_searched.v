@@ -143,8 +143,9 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	}
 	updated << moved
 	catalog.storage.check_unique_constraints(table, updated)!
-	catalog.storage.check_foreign_keys(table, updated)!
-	catalog.storage.check_referencing_rows(table, old, updated)!
+	_, time_zone := conn.now()
+	catalog.storage.check_foreign_keys(table, updated, time_zone)!
+	catalog.storage.check_referencing_rows(table, old, updated, time_zone)!
 
 	// There is a case where no records were updated. The potential problem is
 	// that the field assignments might be wrong, but we never knew they were

@@ -1323,7 +1323,7 @@ Optional Features
    * - ❌ **T191**
      - **Referential action RESTRICT**
 
-   * - ⭕ **T201**
+   * - ✅ **T201**
      - **Comparable data types for referential constraints**
 
    * - ❌ **T211**

@@ -106,6 +106,23 @@ DELETE FROM parent;
 -- error 23503: violates foreign key constraint: FOREIGN KEY (I) REFERENCES ":memory:".PUBLIC.PARENT (R) on ":memory:".PUBLIC.CHILD
 -- error 23503: violates foreign key constraint: FOREIGN KEY (N) REFERENCES ":memory:".PUBLIC.PARENT (I) on ":memory:".PUBLIC.CHILD
 
+-- # A datetime without a time zone is comparable with one with a time zone
+-- # (T201), and is in the session time zone (+05:00).
+CREATE TABLE parent (t TIME WITH TIME ZONE PRIMARY KEY, ts TIMESTAMP UNIQUE);
+CREATE TABLE child (t TIME REFERENCES parent, ts TIMESTAMP WITH TIME ZONE REFERENCES parent (ts));
+INSERT INTO parent (t, ts) VALUES (TIME '07:00:00+00:00', TIMESTAMP '2020-01-01 12:00:00');
+INSERT INTO child (t, ts) VALUES (TIME '12:00:00', TIMESTAMP '2020-01-01 07:00:00+00:00');
+INSERT INTO child (t) VALUES (TIME '07:00:00');
+INSERT INTO child (ts) VALUES (TIMESTAMP '2020-01-01 12:00:00+00:00');
+DELETE FROM parent;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- error 23503: violates foreign key constraint: FOREIGN KEY (T) REFERENCES ":memory:".PUBLIC.PARENT (T) on ":memory:".PUBLIC.CHILD
+-- error 23503: violates foreign key constraint: FOREIGN KEY (TS) REFERENCES ":memory:".PUBLIC.PARENT (TS) on ":memory:".PUBLIC.CHILD
+-- error 23503: violates foreign key constraint: FOREIGN KEY (T) REFERENCES ":memory:".PUBLIC.PARENT (T) on ":memory:".PUBLIC.CHILD
+
 -- # A BIGINT that references an INTEGER is compared as a BIGINT.
 CREATE TABLE parent (i INT PRIMARY KEY);
 CREATE TABLE child (i BIGINT REFERENCES parent);
@@ -268,6 +285,7 @@ CREATE TABLE child (x INT, FOREIGN KEY (z) REFERENCES parent);
 CREATE TABLE child (x VARCHAR(10) REFERENCES parent);
 CREATE TABLE child (x INT REFERENCES parent (v));
 CREATE TABLE child (x TIMESTAMP REFERENCES parent (d));
+CREATE TABLE child (x TIME WITH TIME ZONE REFERENCES parent (d));
 CREATE TABLE child (x INT REFERENCES information_schema.tables);
 CREATE TABLE child (x INT REFERENCES other.public.parent);
 CREATE TABLE child (x INT REFERENCES missing.parent);
@@ -285,6 +303,7 @@ CREATE TABLE child (x INT REFERENCES missing.parent);
 -- error 42804: data type mismatch in FOREIGN KEY: expected INTEGER but got CHARACTER VARYING(10)
 -- error 42804: data type mismatch in FOREIGN KEY: expected CHARACTER VARYING(10) but got INTEGER
 -- error 42804: data type mismatch in FOREIGN KEY: expected DATE but got TIMESTAMP(6) WITHOUT TIME ZONE
+-- error 42804: data type mismatch in FOREIGN KEY: expected DATE but got TIME(0) WITH TIME ZONE
 -- error 42501: insufficient privilege: INFORMATION_SCHEMA is read-only
 -- error 0A000: FOREIGN KEY cannot reference a table in another catalog: OTHER.PUBLIC.PARENT
 -- error 3F000: invalid schema name: MISSING

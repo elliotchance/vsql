@@ -15,6 +15,9 @@ pub:
 	// default_value is the ``DEFAULT`` of the column, if there is one. A column
 	// without a default has a default of ``NULL``.
 	default_value ?DefaultOption
+	// identity is set when the column is the identity column of the table (see
+	// Table.identity_column).
+	identity ?IdentityColumn
 }
 
 // str returns the column definition like:
@@ -98,6 +101,18 @@ pub fn (t Table) column_names() []string {
 	return names
 }
 
+// identity_column returns the identity column of the table, if it has one. A
+// table can have at most one (ISO/IEC 9075-2:2016(E), 11.3, Syntax Rule 15).
+fn (t Table) identity_column() ?Column {
+	for col in t.columns {
+		if _ := col.identity {
+			return col
+		}
+	}
+
+	return none
+}
+
 // Find a column by name, or return a SQLSTATE 42703 error.
 pub fn (t Table) column(name string) !Column {
 	for col in t.columns {
@@ -129,6 +144,9 @@ fn (t Table) bytes() []u8 {
 		mut element := '${delimit_identifier(col.name.sub_entity_name)} ${col.typ}'
 		if default_value := col.default_value {
 			element += ' DEFAULT ${default_value}'
+		}
+		if identity := col.identity {
+			element += ' ${identity}'
 		}
 		if col.not_null {
 			element += ' ${constraint_name_definition(t.not_null_names[col.name.sub_entity_name], constraint_name(t, 'NOT_NULL', i))}NOT NULL'
@@ -416,6 +434,16 @@ fn table_object_key(table_id u64) []u8 {
 	return key.bytes()
 }
 
+// identity_key is the key of the current value of the sequence of the identity
+// column of a table (see Storage.add_identity).
+fn identity_key(table_id u64) []u8 {
+	mut key := new_empty_bytes()
+	key.write_u8(`I`)
+	key.write_u64(table_id)
+
+	return key.bytes()
+}
+
 // row_key_prefix is the start of the key of every row in a table. The rows of
 // a table are in the range from row_key_prefix(id) to row_key_prefix(id + 1).
 fn row_key_prefix(table_id u64) []u8 {
@@ -476,7 +504,7 @@ fn (o TableOperation) pretty_columns() Columns {
 	for c in o.table.columns {
 		cols << Column{Identifier{
 			sub_entity_name: c.name.sub_entity_name
-		}, c.typ, c.not_null, none}
+		}, c.typ, c.not_null, none, none}
 	}
 
 	return cols

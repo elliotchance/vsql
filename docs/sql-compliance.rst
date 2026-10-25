@@ -1299,7 +1299,7 @@ Optional Features
    * - ❌ **T173**
      - **Extended LIKE clause in table definition**
 
-   * - ❌ **T174**
+   * - ✅ **T174**
      - **Identity columns**
 
    * - ❌ **T175**
@@ -1311,7 +1311,7 @@ Optional Features
    * - ✅ **T177**
      - **Sequence generator support: simple restart option**
 
-   * - ❌ **T178**
+   * - ✅ **T178**
      - **Identity columns: simple restart option**
 
    * - ❌ **T180**

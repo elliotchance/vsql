@@ -15,6 +15,9 @@ mut:
 	// default_value is the default of the column that a DEFAULT is assigned to.
 	// A column without a default (or when it's not set) has a default of NULL.
 	default_value ?DefaultOption
+	// identity is the table when a DEFAULT is assigned to its identity column,
+	// so that it's the next value of the sequence of the column instead.
+	identity ?Table
 	// aggregates collects every aggregate function found while compiling an
 	// expression (such as both in "MIN(x) * AVG(x)") so that they can be
 	// calculated for each group before the expression is evaluated.

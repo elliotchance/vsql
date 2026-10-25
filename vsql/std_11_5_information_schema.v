@@ -248,7 +248,7 @@ fn tables_view_row(catalog_name string, table Table) []Value {
 
 // columns_view_row is a row of the COLUMNS view (ISO/IEC 9075-11:2016(E), 6.20,
 // COLUMNS base table) for the column at index i of a table. There are no
-// domains, identity columns or generated columns.
+// domains or generated columns.
 fn columns_view_row(catalog_name string, table Table, i int, column Column) []Value {
 	column_name := column.name.sub_entity_name
 	mut row := [
@@ -276,19 +276,35 @@ fn columns_view_row(catalog_name string, table Table, i int, column Column) []Va
 		// data type of the column within the table (6.21, Description 2).
 		new_varchar_value('${i + 1}'), // DTD_IDENTIFIER
 		yes_or_no(false), // IS_SELF_REFERENCING
-		yes_or_no(false), // IS_IDENTITY
-		new_null_value(.is_varchar), // IDENTITY_GENERATION
-		new_null_value(.is_varchar), // IDENTITY_START
-		new_null_value(.is_varchar), // IDENTITY_INCREMENT
-		new_null_value(.is_varchar), // IDENTITY_MAXIMUM
-		new_null_value(.is_varchar), // IDENTITY_MINIMUM
-		new_null_value(.is_varchar), // IDENTITY_CYCLE
+	]
+	row << identity_descriptor(column)
+	row << [
 		new_varchar_value('NEVER'), // IS_GENERATED
 		new_null_value(.is_varchar), // GENERATION_EXPRESSION
 		yes_or_no(!table.is_virtual), // IS_UPDATABLE
 	]
 
 	return row
+}
+
+// identity_descriptor is IS_IDENTITY to IDENTITY_CYCLE of the COLUMNS view,
+// which describe the identity column and its sequence.
+fn identity_descriptor(column Column) []Value {
+	identity := column.identity or {
+		return [yes_or_no(false), new_null_value(.is_varchar), new_null_value(.is_varchar),
+			new_null_value(.is_varchar), new_null_value(.is_varchar), new_null_value(.is_varchar),
+			new_null_value(.is_varchar)]
+	}
+
+	return [
+		yes_or_no(true), // IS_IDENTITY
+		new_varchar_value(if identity.always { 'ALWAYS' } else { 'BY DEFAULT' }), // IDENTITY_GENERATION
+		new_varchar_value('${identity.sequence.start_value}'), // IDENTITY_START
+		new_varchar_value('${identity.sequence.increment_by}'), // IDENTITY_INCREMENT
+		new_varchar_value('${identity.sequence.max_value}'), // IDENTITY_MAXIMUM
+		new_varchar_value('${identity.sequence.min_value}'), // IDENTITY_MINIMUM
+		yes_or_no(identity.sequence.cycle), // IDENTITY_CYCLE
+	]
 }
 
 // check_constraints_view_rows are the rows of the CHECK_CONSTRAINTS view

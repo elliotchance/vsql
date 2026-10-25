@@ -211,18 +211,44 @@ fn new_sequence_from_bytes(definition_data []u8, value_data []u8, tid u64) !Sequ
 		})
 		sequence.tid = tid
 
-		mut b := new_bytes(value_data)
-		sequence.current_value = b.read_i64()
-		sequence.unused = false
-		if b.has_more() {
-			sequence.exhausted = b.read_bool()
-		}
-		if b.has_more() {
-			sequence.unused = b.read_bool()
-		}
-
-		return sequence
+		return sequence.with_value(value_data)
 	}
 
 	return sqlstate_xx001('not a sequence definition: ${definition_data.bytestr()}')
+}
+
+// with_value returns the sequence with the current value that was stored by
+// value_bytes.
+fn (s Sequence) with_value(value_data []u8) Sequence {
+	mut b := new_bytes(value_data)
+	mut sequence := Sequence{
+		...s
+		current_value: b.read_i64()
+		exhausted:     false
+		unused:        false
+	}
+	if b.has_more() {
+		sequence.exhausted = b.read_bool()
+	}
+	if b.has_more() {
+		sequence.unused = b.read_bool()
+	}
+
+	return sequence
+}
+
+// identity_options are the options that define the sequence of an identity
+// column (see IdentityColumn.str).
+fn (s Sequence) identity_options() []SequenceGeneratorOption {
+	mut options := [
+		SequenceGeneratorOption(SequenceGeneratorStartWithOption{new_bigint_value(s.start_value)}),
+		SequenceGeneratorIncrementByOption{new_bigint_value(s.increment_by)},
+		SequenceGeneratorMinvalueOption{new_bigint_value(s.min_value)},
+		SequenceGeneratorMaxvalueOption{new_bigint_value(s.max_value)},
+	]
+	if s.cycle {
+		options << SequenceGeneratorCycleOption{true}
+	}
+
+	return options
 }

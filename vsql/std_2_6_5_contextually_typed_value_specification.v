@@ -46,9 +46,48 @@ fn (e NullSpecification) compile(mut c Compiler) !CompileResult {
 struct DefaultSpecification {}
 
 fn (e DefaultSpecification) compile(mut c Compiler) !CompileResult {
+	if table := c.identity {
+		mut catalog := c.conn.catalog_for(table.name)
+		start_value := ((table.identity_column() or { Column{} }).identity or { IdentityColumn{} }).sequence.start_value
+
+		return CompileResult{
+			run:          fn [table, mut catalog, start_value] (mut conn Connection, data Row, params map[string]Value) !Value {
+				// Like NEXT VALUE FOR, a value isn't used up when the expression is
+				// only being checked.
+				if conn.dry_run {
+					return new_bigint_value(start_value)
+				}
+
+				return new_bigint_value(catalog.storage.identity_next_value(table)!)
+			}
+			typ:          new_type('BIGINT', 0, 0)
+			contains_agg: false
+		}
+	}
+
 	if default_value := c.default_value {
 		return default_value.compile(mut c)!
 	}
 
 	return NullSpecification{}.compile(mut c)!
+}
+
+// identity_of returns the table when the column is its identity column, for
+// Compiler.identity.
+fn identity_of(table Table, column Column) ?Table {
+	if _ := column.identity {
+		return table
+	}
+
+	return none
+}
+
+// is_default_specification is true when the value is DEFAULT, which is the only
+// value that can be assigned to a GENERATED ALWAYS identity column.
+fn is_default_specification(e ContextuallyTypedRowValueConstructorElement) bool {
+	if e is ContextuallyTypedValueSpecification {
+		return e is DefaultSpecification
+	}
+
+	return false
 }

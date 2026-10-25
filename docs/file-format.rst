@@ -387,6 +387,9 @@ are ignored, so that new types of objects can be added (see
   * - ``F``
     - `Fragment Object`_
 
+  * - ``I``
+    - `Identity Value Object`_
+
   * - ``Q``
     - `Sequence Object`_
 
@@ -697,6 +700,17 @@ visible version in place, without changing its *TID* or *XID*. However,
 ``CREATE SEQUENCE``, ``DROP SEQUENCE`` and an ``ALTER SEQUENCE`` that changes
 the value (such as ``RESTART``) create or expire versions like any other object,
 so they are undone by a ``ROLLBACK``.
+
+Identity Value Object
+---------------------
+
+An Identity Value Object (has the ``I`` prefix, followed by the table ID as a
+u64) contains the current value of the sequence of the identity column of the
+table, the same as a `Sequence Value Object`_. The options of the sequence are
+part of the column in the `Table Object`_. It's created with the table (or by
+``ALTER TABLE ... ADD COLUMN``), and expired when the table is dropped. Like a
+sequence, the value is changed in place, but ``ALTER TABLE ... ALTER COLUMN``
+creates a new version.
 
 Table Object
 ------------

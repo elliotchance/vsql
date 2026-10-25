@@ -84,27 +84,39 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 	mut row := map[string]Value{}
 	for i, column in stmt.columns {
 		table_column := table.column(column.sub_entity_name)!
-		row[column.sub_entity_name] = insert_value(mut conn, params, table_column, values[i])!
+
+		// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rule 11b
+		if identity := table_column.identity {
+			if identity.always && !is_default_specification(values[i]) {
+				return sqlstate_428c9(column.sub_entity_name)
+			}
+		}
+
+		row[column.sub_entity_name] = insert_value(mut conn, params, table, table_column,
+			values[i])!
 	}
 
 	// A column that isn't listed gets its default.
 	for col in table.columns {
 		if col.name.sub_entity_name !in row {
-			row[col.name.sub_entity_name] = insert_value(mut conn, params, col, ContextuallyTypedValueSpecification(DefaultSpecification{}))!
+			row[col.name.sub_entity_name] = insert_value(mut conn, params, table, col,
+				ContextuallyTypedValueSpecification(DefaultSpecification{}))!
 		}
 	}
 
 	return row
 }
 
-// insert_value returns the value to store in a column, which may be DEFAULT.
-fn insert_value(mut conn Connection, params map[string]Value, column Column, element ContextuallyTypedRowValueConstructorElement) !Value {
+// insert_value returns the value to store in a column of the table, which may
+// be DEFAULT.
+fn insert_value(mut conn Connection, params map[string]Value, table Table, column Column, element ContextuallyTypedRowValueConstructorElement) !Value {
 	column_name := column.name.sub_entity_name
 	mut c := Compiler{
 		conn:          conn
 		params:        params
 		null_type:     column.typ
 		default_value: column.default_value
+		identity:      identity_of(table, column)
 	}
 	raw_value := element.compile(mut c)!.run(mut conn, Row{}, params)!
 

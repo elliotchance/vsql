@@ -48,7 +48,7 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, h
 			columns << Column{Identifier{
 				custom_id:  expr.expr.pstr(params)
 				custom_typ: compiled_expr.typ
-			}, compiled_expr.typ, false, none}
+			}, compiled_expr.typ, false, none, none}
 		}
 	}
 

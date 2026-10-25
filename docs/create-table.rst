@@ -11,10 +11,13 @@ Syntax
   CREATE TABLE <table_name> ( <element> , ... )
 
   <element> := <column_name> <data_type> [ DEFAULT <default> | <identity> | <generated> ]
-               [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
+               [ [ CONSTRAINT <constraint_name> ] <column_constraint>
+                 [ <characteristics> ] ... ]
              | <column_name> <generated>
-               [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
+               [ [ CONSTRAINT <constraint_name> ] <column_constraint>
+                 [ <characteristics> ] ... ]
              | [ CONSTRAINT <constraint_name> ] <table_constraint>
+               [ <characteristics> ]
 
   <table_constraint> := PRIMARY KEY ( <column_name> , ... )
                       | UNIQUE ( <column_name> , ... )
@@ -49,6 +52,9 @@ Syntax
                   [ ON DELETE <referential_action> ]
 
   <referential_action> := CASCADE | SET NULL | SET DEFAULT | NO ACTION
+
+  <characteristics> := [ NOT ] DEFERRABLE [ INITIALLY { DEFERRED | IMMEDIATE } ]
+                     | INITIALLY { DEFERRED | IMMEDIATE } [ [ NOT ] DEFERRABLE ]
 
 1. ``column_name`` must start with a letter, but can be followed by any letter,
    underscore (``_``) or digit for a maximum length of 128 characters. A
@@ -394,8 +400,23 @@ qualified by the schema of the table, such as ``CONSTRAINT s.positive_price``,
 but not by another schema (an error ``42601``). A column can only have one named
 ``NOT NULL``.
 
-``INITIALLY DEFERRED``, ``DEFERRABLE`` and ``NOT ENFORCED`` are not supported,
-so every constraint is checked immediately.
+Deferrable Constraints
+----------------------
+
+A ``UNIQUE``, ``FOREIGN KEY`` or ``CHECK`` can be ``DEFERRABLE`` or ``NOT
+DEFERRABLE`` (the default), and ``INITIALLY IMMEDIATE``. Constraints can't be
+deferred yet, so even a ``DEFERRABLE`` constraint is checked at the end of each
+statement that changes a table. ``INITIALLY DEFERRED`` is not supported (an
+error ``0A000``).
+
+A ``PRIMARY KEY`` or ``NOT NULL`` can't be ``DEFERRABLE`` (an error ``0A000``).
+``NOT ENFORCED`` is not supported.
+
+.. code-block:: sql
+
+  CREATE TABLE child (
+    parent_id INT REFERENCES parent DEFERRABLE INITIALLY IMMEDIATE
+  );
 
 See Also
 --------

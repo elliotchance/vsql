@@ -5,9 +5,18 @@
 //
 // Specify the name of a constraint and its characteristics.
 
-// <constraint characteristics> aren't supported, so every constraint is
-// INITIALLY IMMEDIATE NOT DEFERRABLE ENFORCED (Syntax Rules 1 to 3).
 constraint_name_definition:
   CONSTRAINT constraint_name { $$.v = $2.v as Identifier }
+
+// Each <constraint characteristic> is added to the constraint before it (see
+// with_constraint_characteristic), so that a NOT DEFERRABLE after a column
+// constraint can't be mistaken for the start of a NOT NULL. <constraint
+// enforcement> isn't supported, so every constraint is ENFORCED (Syntax Rule
+// 3).
+constraint_characteristic:
+  DEFERRABLE { $$.v = 'DEFERRABLE' }
+| NOT DEFERRABLE { $$.v = 'NOT DEFERRABLE' }
+| INITIALLY DEFERRED { $$.v = 'INITIALLY DEFERRED' }
+| INITIALLY IMMEDIATE { $$.v = 'INITIALLY IMMEDIATE' }
 
 %%

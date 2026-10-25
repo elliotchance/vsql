@@ -16,6 +16,7 @@ struct ReferentialConstraintDefinition {
 	referenced_columns []Identifier
 	update_rule        string // CASCADE, SET NULL, SET DEFAULT or NO ACTION
 	delete_rule        string // CASCADE, SET NULL, SET DEFAULT or NO ACTION
+	characteristics    ConstraintCharacteristics
 }
 
 fn new_referential_constraint_definition(columns []Identifier, references ReferentialConstraintDefinition) ReferentialConstraintDefinition {
@@ -36,6 +37,7 @@ struct ForeignKey {
 	referenced_columns []string
 	update_rule        string // CASCADE, SET NULL or SET DEFAULT
 	delete_rule        string // CASCADE, SET NULL or SET DEFAULT
+	characteristics    ConstraintCharacteristics
 }
 
 // str is how the constraint is stored in the file as part of the CREATE TABLE
@@ -49,7 +51,7 @@ fn (k ForeignKey) str() string {
 		s += ' ON DELETE ${k.delete_rule}'
 	}
 
-	return s
+	return s + k.characteristics.str()
 }
 
 // update_action is the referential action of the ON UPDATE.

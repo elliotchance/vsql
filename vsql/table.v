@@ -235,12 +235,13 @@ fn (t Table) elements() []TableElement {
 	}
 	for constraint in t.unique_constraints {
 		elements << UniqueConstraintDefinition{
-			name:    Identifier{
+			name:            Identifier{
 				entity_name: constraint.name
 			}
-			columns: constraint.columns.map(Identifier{
+			columns:         constraint.columns.map(Identifier{
 				sub_entity_name: it
 			})
+			characteristics: constraint.characteristics
 		}
 	}
 	for key in t.foreign_keys {
@@ -257,6 +258,7 @@ fn (t Table) elements() []TableElement {
 			})
 			update_rule:        key.update_rule
 			delete_rule:        key.delete_rule
+			characteristics:    key.characteristics
 		}
 	}
 	for constraint in t.check_constraints {

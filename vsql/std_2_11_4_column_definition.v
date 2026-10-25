@@ -5,7 +5,8 @@ module vsql
 // Define a column of a base table.
 
 // A <column constraint>. NOT NULL is the only one that isn't added to the table
-// as a table constraint, but it's also a table element when it has a name.
+// as a table constraint, but it's also a table element so that it can have a
+// name and <constraint characteristics>.
 type ColumnConstraint = CheckConstraintDefinition
 	| NotNullConstraint
 	| ReferentialConstraintDefinition
@@ -13,8 +14,9 @@ type ColumnConstraint = CheckConstraintDefinition
 
 // The column of a NotNullConstraint is only set once it's a table element.
 struct NotNullConstraint {
-	name   Identifier
-	column string
+	name            Identifier
+	column          string
+	characteristics ConstraintCharacteristics
 }
 
 // add_column_constraint applies a <column constraint> to the column, which is
@@ -33,11 +35,9 @@ fn add_column_constraint(elements []TableElement, constraint ColumnConstraint) [
 				...column
 				not_null: true
 			}
-			if constraint.name.entity_name != '' {
-				new_elements << NotNullConstraint{
-					...constraint
-					column: column.name.sub_entity_name
-				}
+			new_elements << NotNullConstraint{
+				...constraint
+				column: column.name.sub_entity_name
 			}
 			return new_elements
 		}

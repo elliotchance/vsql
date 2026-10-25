@@ -24,6 +24,9 @@ table_constraint_definition:
       name: $1.v as Identifier
     })
   }
+| table_constraint_definition constraint_characteristic {
+    $$.v = with_constraint_characteristic([$1.v as TableElement], $2.v as string)![0]
+  }
 
 table_constraint:
   unique_constraint_definition {

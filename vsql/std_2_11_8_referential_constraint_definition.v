@@ -83,7 +83,7 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 		for j, column in referenced_columns {
 			typ := referenced.column(column)!.typ
 			referencing_typ := table.column(key.columns[j])!.typ
-			if key_type(typ.typ) != key_type(referencing_typ.typ) {
+			if !is_comparable_key_type(typ.typ, referencing_typ.typ) {
 				return sqlstate_42804('in FOREIGN KEY', typ.str(), referencing_typ.str())
 			}
 		}
@@ -115,9 +115,7 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 
 // key_type is the same for types that can be compared as keys, because a value
 // of one type has the same key (see write_key_value) as the same value of the
-// other type. A referencing column must be comparable with its referenced
-// column (Syntax Rule 11). Values that are only comparable after they're cast
-// (such as an INTEGER and a NUMERIC) can't be referenced yet.
+// other type.
 fn key_type(typ SQLType) SQLType {
 	return match typ {
 		.is_smallint, .is_integer, .is_bigint { .is_bigint }
@@ -128,6 +126,42 @@ fn key_type(typ SQLType) SQLType {
 	}
 }
 
+// is_comparable_key_type is true if a referencing column of type a can reference
+// a column of type b. They must be comparable (Syntax Rule 11), so any two
+// numeric types, and datetimes with the same datetime fields (with or without a
+// time zone), can be used (Feature T201).
+fn is_comparable_key_type(a SQLType, b SQLType) bool {
+	return key_type(a) == key_type(b) || (a.is_number() && b.is_number())
+		|| (a.is_datetime() && b.is_datetime() && datetime_fields(a) == datetime_fields(b))
+}
+
+// foreign_key_type is the type that the values of a referencing column of type
+// a and its referenced column of type b are compared as. An exact numeric is
+// compared with an approximate numeric as a DOUBLE PRECISION, and a datetime
+// without a time zone is compared with one with a time zone in UTC, like any
+// other comparison (ISO/IEC 9075-2:2016(E), 8.2 <comparison predicate>, General
+// Rules 2 and 6).
+fn foreign_key_type(a SQLType, b SQLType) SQLType {
+	ka, kb := key_type(a), key_type(b)
+	if ka == kb {
+		return ka
+	}
+
+	if a.is_datetime() {
+		return if datetime_fields(a) == 'TIME' {
+			SQLType.is_time_with_time_zone
+		} else {
+			SQLType.is_timestamp_with_time_zone
+		}
+	}
+
+	if ka == .is_double_precision || kb == .is_double_precision {
+		return .is_double_precision
+	}
+
+	return .is_numeric
+}
+
 // check_foreign_keys returns an error if a row in rows doesn't reference a row
 // of the referenced table of each FOREIGN KEY of t, or might not once another
 // transaction finishes. A row that has a NULL in any of the columns of the
@@ -135,8 +169,11 @@ fn key_type(typ SQLType) SQLType {
 // check_unique_constraints, the rows must have already been written, so a row
 // can reference a row of the same table that's written by the same statement.
 //
+// A datetime without a time zone is in the session time zone (time_zone, in
+// minutes) when it's compared with one with a time zone.
+//
 // Every row of the referenced table is read, there is no index.
-fn (mut f Storage) check_foreign_keys(t Table, rows []Row) ! {
+fn (mut f Storage) check_foreign_keys(t Table, rows []Row, time_zone i16) ! {
 	if t.foreign_keys.len == 0 || rows.len == 0 {
 		return
 	}
@@ -148,11 +185,11 @@ fn (mut f Storage) check_foreign_keys(t Table, rows []Row) ! {
 
 	for key in t.foreign_keys {
 		referenced := f.table(key.referenced_table.storage_id())
-		types := key_types(referenced, key.referenced_columns)!
+		types := foreign_key_types(t, key.columns, referenced, key.referenced_columns)!
 
 		mut missing := map[string]bool{}
 		for row in rows {
-			value := key_value(row, key.columns, types)
+			value := key_value(row, key.columns, types, time_zone)
 			if value.len > 0 {
 				missing[value.bytestr()] = true
 			}
@@ -169,7 +206,7 @@ fn (mut f Storage) check_foreign_keys(t Table, rows []Row) ! {
 		for {
 			object := iter.next() or { break }
 			row := new_row_from_bytes(referenced, object.value, object.tid).for_storage()
-			value := key_value(row, key.referenced_columns, types).bytestr()
+			value := key_value(row, key.referenced_columns, types, time_zone).bytestr()
 			if value !in missing {
 				continue
 			}
@@ -205,9 +242,10 @@ fn (mut f Storage) check_foreign_keys(t Table, rows []Row) ! {
 // and 4.23.2).
 //
 // The referenced columns are a unique constraint (which has already been
-// checked), so another row of t can't have the same key. Every row of each
-// referencing table is read, there is no index.
-fn (mut f Storage) check_referencing_rows(t Table, old_rows []Row, new_rows []Row) ! {
+// checked), so another row of t can't have the same key. time_zone is the same
+// as for check_foreign_keys. Every row of each referencing table is read, there
+// is no index.
+fn (mut f Storage) check_referencing_rows(t Table, old_rows []Row, new_rows []Row, time_zone i16) ! {
 	if old_rows.len == 0 {
 		return
 	}
@@ -227,16 +265,16 @@ fn (mut f Storage) check_referencing_rows(t Table, old_rows []Row, new_rows []Ro
 				continue
 			}
 
-			types := key_types(t, key.referenced_columns)!
+			types := foreign_key_types(referencing, key.columns, t, key.referenced_columns)!
 			mut removed := map[string]bool{}
 			for row in old_rows {
-				value := key_value(row, key.referenced_columns, types)
+				value := key_value(row, key.referenced_columns, types, time_zone)
 				if value.len > 0 {
 					removed[value.bytestr()] = true
 				}
 			}
 			for row in new_rows {
-				removed.delete(key_value(row, key.referenced_columns, types).bytestr())
+				removed.delete(key_value(row, key.referenced_columns, types, time_zone).bytestr())
 			}
 			if removed.len == 0 {
 				continue
@@ -249,7 +287,7 @@ fn (mut f Storage) check_referencing_rows(t Table, old_rows []Row, new_rows []Ro
 			for {
 				object := iter.next() or { break }
 				row := new_row_from_bytes(referencing, object.value, object.tid).for_storage()
-				if key_value(row, key.columns, types).bytestr() !in removed {
+				if key_value(row, key.columns, types, time_zone).bytestr() !in removed {
 					continue
 				}
 
@@ -308,6 +346,18 @@ fn (mut f Storage) drop_foreign_keys_referencing(table_names []string) ! {
 			f.update_table(table)!
 		}
 	}
+}
+
+// foreign_key_types are the types that the columns of a FOREIGN KEY of
+// referencing and the columns of referenced are compared as (see
+// foreign_key_type and key_value).
+fn foreign_key_types(referencing Table, columns []string, referenced Table, referenced_columns []string) ![]SQLType {
+	mut types := []SQLType{}
+	for i, column in columns {
+		types << foreign_key_type(referencing.column(column)!.typ.typ, referenced.column(referenced_columns[i])!.typ.typ)
+	}
+
+	return types
 }
 
 // key_types are the types of the columns of t, which are used for the key of

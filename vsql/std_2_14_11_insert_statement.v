@@ -48,7 +48,8 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 		catalog.storage.write_row(mut row, table)!
 	}
 	catalog.storage.check_unique_constraints(table, rows)!
-	catalog.storage.check_foreign_keys(table, rows)!
+	_, time_zone := conn.now()
+	catalog.storage.check_foreign_keys(table, rows, time_zone)!
 
 	return new_result_msg('INSERT ${rows.len}', elapsed_parse, t.elapsed())
 }

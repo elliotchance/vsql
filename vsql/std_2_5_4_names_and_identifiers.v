@@ -320,6 +320,23 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		}
 	}
 
+	// A column of a query that contains this subquery (an outer reference),
+	// unless it's a column of this query.
+	if c.conn.subquery_scopes.len > 0 && !e.is_column_of(c.conn, c.tables, c.context) {
+		for i := c.conn.subquery_scopes.len - 1; i >= 0; i-- {
+			scope := c.conn.subquery_scopes[i]
+			if e.is_column_of(c.conn, scope.tables, scope.context) {
+				return e.compile_outer(mut c, i)
+			}
+		}
+	}
+
+	// A column must be in one of the tables in the FROM clause.
+	if c.tables.len > 0 && c.context.entity_name == ''
+		&& !e.is_column_of(c.conn, c.tables, c.context) {
+		return sqlstate_42601('unknown column: ${c.conn.resolve_identifier(e)}')
+	}
+
 	// 2. A qualified field in a subquery table.
 	if table := c.tables[e.entity_name] {
 		column := table.column(e.sub_entity_name) or { Column{} }
@@ -469,6 +486,101 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	}
 
 	return sqlstate_42601('unknown column: ${ident}')
+}
+
+// is_column_of is true if the column reference is a column of one of the
+// tables, or of the table of the context (such as the table of an UPDATE).
+fn (e Identifier) is_column_of(conn &Connection, tables map[string]Table, context Identifier) bool {
+	for _, table in tables {
+		if e.is_column_of_table(conn, table) {
+			return true
+		}
+	}
+
+	if context.entity_name != '' {
+		table_name := conn.resolve_identifier(context)
+		if catalog := conn.catalogs[table_name.catalog_name] {
+			if table := catalog.storage.tables[table_name.storage_id()] {
+				return e.is_column_of_table(conn, table)
+			}
+		}
+	}
+
+	return false
+}
+
+fn (e Identifier) is_column_of_table(conn &Connection, table Table) bool {
+	table.column(e.sub_entity_name) or { return false }
+
+	if e.entity_name == '' {
+		return true
+	}
+
+	// A derived table, or a table with a correlation name, is only known by that
+	// name.
+	if table.name.schema_name == '' {
+		return e.schema_name == '' && e.catalog_name == '' && table.name.id() == e.entity_name
+	}
+
+	qualifier := conn.resolve_identifier(Identifier{
+		catalog_name: e.catalog_name
+		schema_name:  e.schema_name
+		entity_name:  e.entity_name
+	})
+
+	return table.name.schema_name == qualifier.schema_name
+		&& table.name.entity_name == qualifier.entity_name
+		&& table.name.catalog_name in ['', qualifier.catalog_name]
+}
+
+// compile_outer compiles a reference to a column of the query of
+// conn.subquery_scopes[i], which contains the subquery being compiled. It's the
+// value of the column in the row of that query that the subquery is being
+// evaluated for.
+//
+// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rule 8
+fn (e Identifier) compile_outer(mut c Compiler, i int) !CompileResult {
+	scope := c.conn.subquery_scopes[i]
+
+	// The aggregate function would be of the outer query, such as the MAX in
+	// "SELECT (SELECT MAX(t1.x) FROM t2) FROM t1".
+	//
+	// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rule 6
+	if c.in_aggregate {
+		return sqlstate_0a000('an aggregate function of an outer reference (${e}) is not supported')
+	}
+
+	// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rule 17
+	// ISO/IEC 9075-2:2016(E), 7.14, <having clause>, Syntax Rule 4
+	if grouping_columns := scope.grouping_columns {
+		if !e.is_grouping_column(grouping_columns) {
+			return sqlstate_42803(e.str())
+		}
+	}
+
+	// It's compiled like it is in that query, which can only see the queries that
+	// contain it.
+	mut outer := Compiler{
+		conn:    c.conn
+		params:  c.params
+		tables:  scope.tables
+		context: scope.context
+	}
+	scopes := c.conn.subquery_scopes.clone()
+	c.conn.subquery_scopes = scopes[..i].clone()
+	compiled := e.compile_column(mut outer) or {
+		c.conn.subquery_scopes = scopes
+		return err
+	}
+	c.conn.subquery_scopes = scopes
+
+	return CompileResult{
+		run:          fn [i, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
+			return compiled.run(mut conn, conn.subquery_scopes[i].row, params)!
+		}
+		typ:          compiled.typ
+		contains_agg: false
+	}
 }
 
 // id is the internal canonical name. How it is represented in memory during

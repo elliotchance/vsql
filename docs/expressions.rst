@@ -245,8 +245,27 @@ only row. It's ``NULL`` if there are no rows, and a 21000 cardinality violation
 error if there is more than one row.
 
 A subquery can't be used in a ``CHECK`` constraint, or in the argument of an
-aggregate function (such as ``MAX``). A subquery can't refer to
-the columns of the query that contains it (a *correlated subquery*) yet.
+aggregate function (such as ``MAX``).
+
+Correlated Subqueries
+^^^^^^^^^^^^^^^^^^^^^
+
+Any subquery (including in ``EXISTS``, ``IN``, ``ALL`` and ``SOME``) can refer
+to the columns of the queries that contain it, such as ``t1.x`` in:
+
+.. code-block:: sql
+
+  SELECT * FROM t1 WHERE EXISTS (SELECT * FROM t2 WHERE t2.x = t1.x)
+
+The subquery is evaluated for each row of the outer query. A column name is
+found in the innermost query that has it, so ``x`` would be ``t2.x`` above. Use
+a correlation name to tell apart the same table, such as
+``SELECT * FROM t AS a WHERE EXISTS (SELECT * FROM t AS b WHERE b.x > a.x)``.
+
+In a grouped query (or ``HAVING``), a column of the outer query must be one of
+its ``GROUP BY`` columns. An aggregate function of only outer columns (such as
+``(SELECT MAX(t1.x) FROM t2)``) would be an aggregate of the outer query, which
+isn't supported yet (a ``0A000`` error).
 
 *Examples*
 

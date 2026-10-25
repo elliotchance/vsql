@@ -56,9 +56,10 @@ mut:
 	// errors (such as an UPDATE that matched no rows). Expressions must not have
 	// side effects, like advancing a sequence.
 	dry_run bool
-	// subquery_depth is the number of subqueries (in an expression, such as
-	// EXISTS) that are being planned or evaluated. See Subquery.
-	subquery_depth int
+	// subquery_scopes has one scope for each subquery (in an expression, such as
+	// EXISTS) that's being planned or evaluated, the innermost last. A subquery
+	// can refer to the columns of the queries that contain it, see SubqueryScope.
+	subquery_scopes []SubqueryScope
 pub mut:
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive
@@ -855,7 +856,7 @@ pub fn (mut conn Connection) clear_warnings() {
 // they're part of the row that contains the subquery, and NEXT VALUE FOR can't
 // be used in a subquery.
 fn (mut conn Connection) begin_row() {
-	if conn.subquery_depth == 0 {
+	if conn.subquery_scopes.len == 0 {
 		conn.row_sequence_values = map[string]i64{}
 	}
 }

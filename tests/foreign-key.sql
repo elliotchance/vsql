@@ -87,6 +87,35 @@ INSERT INTO child2 (d) VALUES (2.5);
 -- msg: INSERT 1
 -- error 23503: violates foreign key constraint: FOREIGN KEY (D) REFERENCES ":memory:".PUBLIC.PARENT2 (R) on ":memory:".PUBLIC.CHILD2
 
+-- # Any two numeric types are comparable (T201). An exact numeric is compared
+-- # with an approximate numeric as a DOUBLE PRECISION.
+CREATE TABLE parent (i INT PRIMARY KEY, n NUMERIC(5, 2) UNIQUE, r REAL UNIQUE);
+CREATE TABLE child (n NUMERIC(10, 1) REFERENCES parent, d DOUBLE PRECISION REFERENCES parent (n), i BIGINT REFERENCES parent (r));
+INSERT INTO parent (i, n, r) VALUES (1, 1.5, 2);
+INSERT INTO child (n, d, i) VALUES (1.0, 1.5e0, 2);
+INSERT INTO child (n) VALUES (1.5);
+INSERT INTO child (d) VALUES (1.25e0);
+INSERT INTO child (i) VALUES (3);
+DELETE FROM parent;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- error 23503: violates foreign key constraint: FOREIGN KEY (N) REFERENCES ":memory:".PUBLIC.PARENT (I) on ":memory:".PUBLIC.CHILD
+-- error 23503: violates foreign key constraint: FOREIGN KEY (D) REFERENCES ":memory:".PUBLIC.PARENT (N) on ":memory:".PUBLIC.CHILD
+-- error 23503: violates foreign key constraint: FOREIGN KEY (I) REFERENCES ":memory:".PUBLIC.PARENT (R) on ":memory:".PUBLIC.CHILD
+-- error 23503: violates foreign key constraint: FOREIGN KEY (N) REFERENCES ":memory:".PUBLIC.PARENT (I) on ":memory:".PUBLIC.CHILD
+
+-- # A BIGINT that references an INTEGER is compared as a BIGINT.
+CREATE TABLE parent (i INT PRIMARY KEY);
+CREATE TABLE child (i BIGINT REFERENCES parent);
+INSERT INTO parent (i) VALUES (1);
+INSERT INTO child (i) VALUES (4294967297);
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 23503: violates foreign key constraint: FOREIGN KEY (I) REFERENCES ":memory:".PUBLIC.PARENT (I) on ":memory:".PUBLIC.CHILD
+
 -- # A multi-row INSERT is checked once all of its rows have been written, so a
 -- # row can reference another row of the same INSERT. If any row doesn't
 -- # reference a row, none of them are inserted.
@@ -238,7 +267,6 @@ CREATE TABLE child (x INT, FOREIGN KEY (x, x) REFERENCES parent (a, b));
 CREATE TABLE child (x INT, FOREIGN KEY (z) REFERENCES parent);
 CREATE TABLE child (x VARCHAR(10) REFERENCES parent);
 CREATE TABLE child (x INT REFERENCES parent (v));
-CREATE TABLE child (x NUMERIC(10, 0) REFERENCES parent);
 CREATE TABLE child (x TIMESTAMP REFERENCES parent (d));
 CREATE TABLE child (x INT REFERENCES information_schema.tables);
 CREATE TABLE child (x INT REFERENCES other.public.parent);
@@ -256,7 +284,6 @@ CREATE TABLE child (x INT REFERENCES missing.parent);
 -- error 42601: syntax error: unknown column Z in FOREIGN KEY
 -- error 42804: data type mismatch in FOREIGN KEY: expected INTEGER but got CHARACTER VARYING(10)
 -- error 42804: data type mismatch in FOREIGN KEY: expected CHARACTER VARYING(10) but got INTEGER
--- error 42804: data type mismatch in FOREIGN KEY: expected INTEGER but got NUMERIC(10)
 -- error 42804: data type mismatch in FOREIGN KEY: expected DATE but got TIMESTAMP(6) WITHOUT TIME ZONE
 -- error 42501: insufficient privilege: INFORMATION_SCHEMA is read-only
 -- error 0A000: FOREIGN KEY cannot reference a table in another catalog: OTHER.PUBLIC.PARENT

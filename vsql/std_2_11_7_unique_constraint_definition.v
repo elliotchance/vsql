@@ -131,10 +131,33 @@ fn key_value(row Row, columns []string, types []SQLType) []u8 {
 		if value.is_null {
 			return []u8{}
 		}
-		write_key_value(mut key, value, types[i])
+		write_key_value(mut key, key_type_value(value, types[i]), types[i])
 	}
 
 	return key.bytes()
+}
+
+// key_type_value converts an exact numeric value to the type that it's compared
+// as in a key (see foreign_key_type). Any other value is already that type.
+fn key_type_value(value Value, typ SQLType) Value {
+	match value.typ.typ {
+		.is_smallint, .is_integer, .is_bigint {
+			if typ == .is_double_precision {
+				return new_double_precision_value(f64(value.int_value()))
+			}
+			if typ == .is_numeric {
+				return new_numeric_value(value.int_value().str())
+			}
+		}
+		.is_numeric, .is_decimal {
+			if typ == .is_double_precision {
+				return new_double_precision_value(value.numeric_value().f64())
+			}
+		}
+		else {}
+	}
+
+	return value
 }
 
 // is_concurrent_write is true if another transaction is creating or deleting

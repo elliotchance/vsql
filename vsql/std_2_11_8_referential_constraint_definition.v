@@ -83,7 +83,7 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 		for j, column in referenced_columns {
 			typ := referenced.column(column)!.typ
 			referencing_typ := table.column(key.columns[j])!.typ
-			if key_type(typ.typ) != key_type(referencing_typ.typ) {
+			if !is_comparable_key_type(typ.typ, referencing_typ.typ) {
 				return sqlstate_42804('in FOREIGN KEY', typ.str(), referencing_typ.str())
 			}
 		}
@@ -115,9 +115,7 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 
 // key_type is the same for types that can be compared as keys, because a value
 // of one type has the same key (see write_key_value) as the same value of the
-// other type. A referencing column must be comparable with its referenced
-// column (Syntax Rule 11). Values that are only comparable after they're cast
-// (such as an INTEGER and a NUMERIC) can't be referenced yet.
+// other type.
 fn key_type(typ SQLType) SQLType {
 	return match typ {
 		.is_smallint, .is_integer, .is_bigint { .is_bigint }
@@ -126,6 +124,31 @@ fn key_type(typ SQLType) SQLType {
 		.is_character, .is_varchar { .is_varchar }
 		else { typ }
 	}
+}
+
+// is_comparable_key_type is true if a referencing column of type a can reference
+// a column of type b. They must be comparable (Syntax Rule 11), and any two
+// numeric types are comparable (Feature T201).
+fn is_comparable_key_type(a SQLType, b SQLType) bool {
+	return key_type(a) == key_type(b) || (a.is_number() && b.is_number())
+}
+
+// foreign_key_type is the type that the values of a referencing column of type
+// a and its referenced column of type b are compared as. An exact numeric is
+// compared with an approximate numeric as a DOUBLE PRECISION, like any other
+// comparison (ISO/IEC 9075-2:2016(E), 8.2 <comparison predicate>, General
+// Rule 2).
+fn foreign_key_type(a SQLType, b SQLType) SQLType {
+	ka, kb := key_type(a), key_type(b)
+	if ka == kb {
+		return ka
+	}
+
+	if ka == .is_double_precision || kb == .is_double_precision {
+		return .is_double_precision
+	}
+
+	return .is_numeric
 }
 
 // check_foreign_keys returns an error if a row in rows doesn't reference a row
@@ -148,7 +171,7 @@ fn (mut f Storage) check_foreign_keys(t Table, rows []Row) ! {
 
 	for key in t.foreign_keys {
 		referenced := f.table(key.referenced_table.storage_id())
-		types := key_types(referenced, key.referenced_columns)!
+		types := foreign_key_types(t, key.columns, referenced, key.referenced_columns)!
 
 		mut missing := map[string]bool{}
 		for row in rows {
@@ -227,7 +250,7 @@ fn (mut f Storage) check_referencing_rows(t Table, old_rows []Row, new_rows []Ro
 				continue
 			}
 
-			types := key_types(t, key.referenced_columns)!
+			types := foreign_key_types(referencing, key.columns, t, key.referenced_columns)!
 			mut removed := map[string]bool{}
 			for row in old_rows {
 				value := key_value(row, key.referenced_columns, types)
@@ -308,6 +331,18 @@ fn (mut f Storage) drop_foreign_keys_referencing(table_names []string) ! {
 			f.update_table(table)!
 		}
 	}
+}
+
+// foreign_key_types are the types that the columns of a FOREIGN KEY of
+// referencing and the columns of referenced are compared as (see
+// foreign_key_type and key_value).
+fn foreign_key_types(referencing Table, columns []string, referenced Table, referenced_columns []string) ![]SQLType {
+	mut types := []SQLType{}
+	for i, column in columns {
+		types << foreign_key_type(referencing.column(column)!.typ.typ, referenced.column(referenced_columns[i])!.typ.typ)
+	}
+
+	return types
 }
 
 // key_types are the types of the columns of t, which are used for the key of

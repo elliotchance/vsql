@@ -63,6 +63,12 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	mut old := []Row{}
 	check_constraints := new_check_constraints(mut conn, table)!
 
+	// Every new row is found before any of them are written. Otherwise, a
+	// subquery (such as "SET x = (SELECT MAX(x) FROM t)") would see the rows that
+	// have already been updated.
+	//
+	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rule 10
+	mut changes := [][]Row{}
 	for mut row in rows {
 		conn.begin_row()
 		mut did_modify := false
@@ -112,17 +118,23 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		// A row that doesn't change isn't written, but it's still counted.
 		if did_modify {
 			// To be able to write the row back we need to clean the column names.
-			mut before := row.for_storage()
-			mut after := row2.for_storage()
+			before := row.for_storage()
+			after := row2.for_storage()
 			check_constraints.verify(mut conn, after)!
-			old << before
-			if before.object_key(table)! != after.object_key(table)! {
-				catalog.storage.delete_row(table_name.storage_id(), mut before)!
-				moved << after
-			} else {
-				catalog.storage.update_row(mut after, table)!
-				updated << after
-			}
+			changes << [before, after]
+		}
+	}
+
+	for change in changes {
+		mut before := change[0]
+		mut after := change[1]
+		old << before
+		if before.object_key(table)! != after.object_key(table)! {
+			catalog.storage.delete_row(table_name.storage_id(), mut before)!
+			moved << after
+		} else {
+			catalog.storage.update_row(mut after, table)!
+			updated << after
 		}
 	}
 

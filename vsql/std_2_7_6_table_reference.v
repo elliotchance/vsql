@@ -16,6 +16,34 @@ struct TablePrimary {
 
 type TableReference = QualifiedJoin | TablePrimary
 
+fn (e TableReference) pstr(params map[string]Value) string {
+	match e {
+		QualifiedJoin {
+			return '${e.left_table.pstr(params)} ${e.join_type} JOIN ${e.right_table.pstr(params)} ON ${e.specification.pstr(params)}'
+		}
+		TablePrimary {
+			mut s := match e.body {
+				Identifier { e.body.str() }
+				QueryExpression { '(${e.body.pstr(params)})' }
+			}
+
+			if e.correlation.name.sub_entity_name != '' {
+				s += ' AS ${e.correlation.name}'
+			}
+
+			if e.correlation.columns.len > 0 {
+				mut columns := []string{}
+				for column in e.correlation.columns {
+					columns << column.str()
+				}
+				s += ' (${columns.join(', ')})'
+			}
+
+			return s
+		}
+	}
+}
+
 enum JoinType {
 	inner
 	left

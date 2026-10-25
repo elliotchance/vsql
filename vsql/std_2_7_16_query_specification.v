@@ -31,6 +31,36 @@ struct QuerySpecification {
 	distinct bool
 }
 
+fn (e QuerySpecification) pstr(params map[string]Value) string {
+	mut s := if e.distinct { 'SELECT DISTINCT ' } else { 'SELECT ' }
+
+	match e.exprs {
+		AsteriskExpr {
+			s += '*'
+		}
+		[]SelectSublist {
+			mut items := []string{}
+			for item in e.exprs {
+				items << match item {
+					DerivedColumn {
+						if item.as_clause.sub_entity_name != '' {
+							'${item.expr.pstr(params)} AS ${item.as_clause}'
+						} else {
+							item.expr.pstr(params)
+						}
+					}
+					QualifiedAsteriskExpr {
+						'${item.table_name}.*'
+					}
+				}
+			}
+			s += items.join(', ')
+		}
+	}
+
+	return '${s} ${e.table_expression.pstr(params)}'
+}
+
 // column_reference returns the column if the select list item is only a column
 // reference, such as "a" or "t.a".
 fn (e DerivedColumn) column_reference() ?Identifier {

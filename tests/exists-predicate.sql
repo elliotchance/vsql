@@ -1,0 +1,97 @@
+/* setup */
+CREATE TABLE t1 (x INT, y VARCHAR(10));
+CREATE TABLE t2 (x INT);
+CREATE SEQUENCE seq1;
+INSERT INTO t1 (x, y) VALUES (1, 'a'), (2, 'b'), (3, NULL);
+
+-- # EXISTS is TRUE when the subquery has any rows (E061-08).
+VALUES EXISTS (SELECT * FROM t1);
+-- COL1: TRUE
+
+VALUES EXISTS (SELECT x FROM t1 WHERE x > 2);
+-- COL1: TRUE
+
+-- # It's FALSE (never UNKNOWN) when there are no rows.
+VALUES EXISTS (SELECT * FROM t2);
+-- COL1: FALSE
+
+VALUES EXISTS (SELECT x FROM t1 WHERE x > 3);
+-- COL1: FALSE
+
+VALUES NOT EXISTS (SELECT * FROM t2);
+-- COL1: TRUE
+
+-- # A row of NULLs is still a row.
+VALUES EXISTS (SELECT y FROM t1 WHERE y IS NULL);
+-- COL1: TRUE
+
+-- # The subquery can have any number of columns (T501).
+VALUES EXISTS (SELECT x, y, x + 1 FROM t1);
+-- COL1: TRUE
+
+VALUES EXISTS (VALUES ROW(1, 2));
+-- COL1: TRUE
+
+SELECT * FROM t1 WHERE EXISTS (SELECT * FROM t1 WHERE x > 2);
+-- X: 1 Y: a
+-- X: 2 Y: b
+-- X: 3 Y: NULL
+
+SELECT * FROM t1 WHERE EXISTS (SELECT * FROM t2);
+
+SELECT x, EXISTS (SELECT * FROM t2) AS e FROM t1 WHERE NOT EXISTS (SELECT * FROM t2);
+-- X: 1 E: FALSE
+-- X: 2 E: FALSE
+-- X: 3 E: FALSE
+
+-- # The subquery can use ORDER BY, OFFSET, FETCH FIRST and set operations.
+VALUES EXISTS (SELECT x FROM t1 ORDER BY x OFFSET 3 ROWS);
+-- COL1: FALSE
+
+VALUES EXISTS (SELECT x FROM t1 FETCH FIRST 1 ROW ONLY);
+-- COL1: TRUE
+
+VALUES EXISTS (SELECT x FROM t1 EXCEPT SELECT x FROM t1);
+-- COL1: FALSE
+
+VALUES EXISTS (SELECT x FROM t2 UNION ALL VALUES 1);
+-- COL1: TRUE
+
+-- # A subquery can be nested in another subquery.
+VALUES EXISTS (SELECT * FROM t1 WHERE EXISTS (SELECT * FROM t2));
+-- COL1: FALSE
+
+-- # Errors in the subquery are found even when there are no rows to test.
+SELECT * FROM t2 WHERE EXISTS (SELECT * FROM t3);
+-- error 42P01: no such table: ":memory:".PUBLIC.T3
+
+SELECT * FROM t2 WHERE EXISTS (SELECT foo FROM t1);
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.FOO
+
+EXPLAIN SELECT * FROM t1 WHERE EXISTS (SELECT x FROM t2 WHERE x > 1);
+-- EXPLAIN: TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(10))
+-- EXPLAIN: WHERE EXISTS (SELECT X FROM T2 WHERE X > 1)
+-- EXPLAIN: EXPR (":memory:".PUBLIC.T1.X INTEGER, ":memory:".PUBLIC.T1.Y CHARACTER VARYING(10))
+
+-- # A subquery can't be used in a CHECK constraint (F671).
+CREATE TABLE t3 (x INT CHECK (EXISTS (SELECT * FROM t1)));
+-- error 42601: syntax error: a subquery cannot be used in a CHECK constraint
+
+-- # NEXT VALUE FOR can't be used in a subquery.
+SELECT * FROM t1 WHERE EXISTS (SELECT NEXT VALUE FOR seq1 FROM t1);
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in a subquery
+
+-- # UPDATE finds every new row before any rows are changed.
+UPDATE t1 SET x = 10 WHERE NOT EXISTS (SELECT * FROM t1 WHERE x = 10);
+SELECT * FROM t1;
+-- msg: UPDATE 3
+-- X: 10 Y: a
+-- X: 10 Y: b
+-- X: 10 Y: NULL
+
+-- # EXPLAIN shows the whole subquery.
+EXPLAIN VALUES EXISTS (SELECT DISTINCT a.x AS foo FROM t1 AS a (x, y) LEFT JOIN t2 ON a.x = t2.x WHERE a.x > 1 GROUP BY a.x HAVING COUNT(*) > 1 ORDER BY a.x DESC OFFSET 1 ROW FETCH FIRST 2 ROWS ONLY);
+-- EXPLAIN: VALUES (COL1 BOOLEAN) = ROW(EXISTS (SELECT DISTINCT A.X AS FOO FROM T1 AS A (X, Y) LEFT JOIN T2 ON A.X = T2.X WHERE A.X > 1 GROUP BY A.X HAVING COUNT(*) > 1 ORDER BY A.X DESC OFFSET 1 ROWS FETCH FIRST 2 ROWS ONLY))
+
+EXPLAIN VALUES EXISTS (VALUES 1, ROW(2) UNION ALL (VALUES 3 EXCEPT VALUES 4) UNION (SELECT x FROM t2 FETCH FIRST 1 ROW ONLY));
+-- EXPLAIN: VALUES (COL1 BOOLEAN) = ROW(EXISTS (VALUES 1, ROW(2) UNION ALL (VALUES 3 EXCEPT VALUES 4) UNION (SELECT X FROM T2 FETCH FIRST 1 ROWS ONLY)))

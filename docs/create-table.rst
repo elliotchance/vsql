@@ -234,9 +234,9 @@ Examples
 Constraint Names
 ----------------
 
-Every constraint has a name, which is in the :doc:`information-schema`. A
-constraint is named with ``CONSTRAINT <constraint_name>`` before it, on a
-column or the table:
+Every constraint has a name, which is used to drop it (see :doc:`alter-table`)
+and is in the :doc:`information-schema`. A constraint is named with
+``CONSTRAINT <constraint_name>`` before it, on a column or the table:
 
 .. code-block:: sql
 

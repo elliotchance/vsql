@@ -364,6 +364,49 @@ fn constraint_name(table Table, kind string, i int) string {
 	return '${table.name.entity_name}_${kind}_${i + 1}'
 }
 
+// ConstraintKind is the kind of a constraint of a table.
+enum ConstraintKind {
+	not_null
+	primary_key
+	unique
+	foreign_key
+	check
+}
+
+// find_constraint returns the kind of the constraint of the table that has the
+// name, and its position (the column of a NOT NULL, otherwise in the list of
+// that kind), or an error if the table doesn't have it. The name can be
+// qualified by the schema (and catalog) of the table.
+fn (t Table) find_constraint(name Identifier) !(ConstraintKind, int) {
+	if name.catalog_name in ['', t.name.catalog_name] && name.schema_name in ['', t.name.schema_name] {
+		for i, column in t.columns {
+			if column.not_null && t.not_null_names[column.name.sub_entity_name] == name.entity_name {
+				return .not_null, i
+			}
+		}
+		if t.primary_key.len > 0 && t.primary_key_name == name.entity_name {
+			return .primary_key, 0
+		}
+		for i, constraint in t.unique_constraints {
+			if constraint.name == name.entity_name {
+				return .unique, i
+			}
+		}
+		for i, key in t.foreign_keys {
+			if key.name == name.entity_name {
+				return .foreign_key, i
+			}
+		}
+		for i, constraint in t.check_constraints {
+			if constraint.name.entity_name == name.entity_name {
+				return .check, i
+			}
+		}
+	}
+
+	return sqlstate_42704('constraint', '${name} on ${t.name}')
+}
+
 // table_object_key is the key of the definition of a table.
 fn table_object_key(table_id u64) []u8 {
 	mut key := new_empty_bytes()

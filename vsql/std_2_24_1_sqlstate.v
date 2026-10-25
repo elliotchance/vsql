@@ -453,6 +453,25 @@ fn sqlstate_42703(column_name string) IError {
 	}
 }
 
+// no such object, such as a constraint
+struct SQLState42704 {
+	SQLState
+pub:
+	// entity_type is 'constraint'
+	entity_type string
+	// entity_name is the name of the object
+	entity_name string
+}
+
+fn sqlstate_42704(entity_type string, entity_name string) IError {
+	return SQLState42704{
+		code:        sqlstate_to_int('42704')
+		msg:         'no such ${entity_type}: ${entity_name}'
+		entity_type: entity_type
+		entity_name: entity_name
+	}
+}
+
 // duplicate object, such as a constraint
 struct SQLState42710 {
 	SQLState

@@ -34,10 +34,13 @@ fn (d AddTableConstraintDefinition) execute(mut conn Connection, mut catalog Cat
 // an error if a row doesn't satisfy one of them (in the same way as an INSERT,
 // but for every row of the table). The rows are moved when the PRIMARY KEY
 // changes, because they're stored by their PRIMARY KEY (or a row ID when there
-// isn't one, see Row.object_key).
+// isn't one, see Row.object_key). They're written again when a column's NOT
+// NULL changes, because only a nullable column stores whether it's NULL (see
+// Row.bytes).
 fn replace_table_definition(mut conn Connection, mut catalog CatalogConnection, table Table, new_table Table) ! {
 	check_constraints := new_check_constraints(mut conn, new_table)!
 	is_moved := new_table.primary_key != table.primary_key
+	is_rewritten := new_table.columns.map(it.not_null) != table.columns.map(it.not_null)
 
 	mut rows := []Row{}
 	mut moved := []Row{}
@@ -63,6 +66,11 @@ fn replace_table_definition(mut conn Connection, mut catalog CatalogConnection, 
 
 	catalog.storage.update_table(new_table)!
 
+	if is_rewritten {
+		for mut row in rows {
+			catalog.storage.update_row(mut row, new_table)!
+		}
+	}
 	for mut row in moved {
 		catalog.storage.write_row(mut row, new_table)!
 	}

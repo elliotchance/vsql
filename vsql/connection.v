@@ -56,6 +56,9 @@ mut:
 	// errors (such as an UPDATE that matched no rows). Expressions must not have
 	// side effects, like advancing a sequence.
 	dry_run bool
+	// subquery_depth is the number of subqueries (in an expression, such as
+	// EXISTS) that are being planned or evaluated. See Subquery.
+	subquery_depth int
 pub mut:
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive
@@ -847,8 +850,14 @@ pub fn (mut conn Connection) clear_warnings() {
 // so that NEXT VALUE FOR returns a new value.
 //
 // ISO/IEC 9075-2:2016(E), 4.27, Sequence generators
+//
+// The rows of a subquery (in an expression) don't begin a new row because
+// they're part of the row that contains the subquery, and NEXT VALUE FOR can't
+// be used in a subquery.
 fn (mut conn Connection) begin_row() {
-	conn.row_sequence_values = map[string]i64{}
+	if conn.subquery_depth == 0 {
+		conn.row_sequence_values = map[string]i64{}
+	}
 }
 
 fn (mut conn Connection) add_warning(warning IError) {

@@ -38,8 +38,12 @@ column names renames each of the table's columns, in order.
 A ``SELECT`` must have a ``FROM``. To calculate expressions without a table,
 use :doc:`values` (such as ``VALUES 1 + 2``).
 
-Not supported yet: ``INTERSECT``, and subqueries outside of the ``FROM``. See
-:doc:`sql-compliance`.
+A subquery can also be used in an expression with ``EXISTS``. See
+:doc:`expressions`.
+
+Not supported yet: ``INTERSECT``, a subquery in ``IN``, ``ALL``, ``SOME`` or as
+a value, and correlated subqueries (a subquery that refers to the columns of the query that contains
+it). See :doc:`sql-compliance`.
 
 SELECT
 ------

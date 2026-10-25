@@ -84,6 +84,24 @@ since whether it's evaluated depends on the other values.
   CASE 3 WHEN 1 THEN 'one' END                                 -- NULL
   CASE WHEN 5 > 10 THEN 'big' ELSE 'small' END                 -- 'small'
 
+EXISTS
+------
+
+.. code-block:: text
+
+  EXISTS ( <query> )
+
+Returns ``TRUE`` if the subquery returns any rows, otherwise ``FALSE``. It's
+never ``UNKNOWN``, and the subquery can have any number of columns.
+
+*Examples*
+
+.. code-block:: sql
+
+  EXISTS (SELECT * FROM products WHERE price > 100)
+  EXISTS (VALUES 1)                                    -- TRUE
+  NOT EXISTS (SELECT * FROM products)
+
 IS NULL
 -------
 
@@ -163,6 +181,9 @@ Returns the next value for a SEQUENCE called ``X``.
 
 All ``NEXT VALUE FOR`` expressions for the same sequence return the same value
 within a row. Each new row will get the next value.
+
+``NEXT VALUE FOR`` can't be used in a subquery (such as in ``EXISTS``), since
+the number of times it's evaluated depends on the query that contains it.
 
 *Examples*
 

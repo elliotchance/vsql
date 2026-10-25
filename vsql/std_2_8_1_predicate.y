@@ -7,5 +7,6 @@ predicate:
 | like_predicate { $$.v = Predicate($1.v as CharacterLikePredicate) }
 | similar_predicate { $$.v = Predicate($1.v as SimilarPredicate) }
 | null_predicate { $$.v = Predicate($1.v as NullPredicate) }
+| exists_predicate { $$.v = Predicate($1.v as ExistsPredicate) }
 
 %%

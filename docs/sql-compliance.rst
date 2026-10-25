@@ -18,7 +18,7 @@ Mandatory Features
 ~~~~~~~~~~~~~~~~~~
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 106 of the 164 mandatory features** of the
+**vsql supports 107 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -150,7 +150,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ E061-07
      - Quantified comparison predicate
 
-   * - ❌ E061-08
+   * - ✅ E061-08
      - ``EXISTS`` predicate
 
    * - ❌ E061-09
@@ -1443,7 +1443,7 @@ Optional Features
    * - ❌ **T495**
      - **Combined data change and retrieval**
 
-   * - ❌ **T501**
+   * - ✅ **T501**
      - **Enhanced EXISTS predicate**
 
    * - ❌ **T502**

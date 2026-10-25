@@ -56,6 +56,7 @@ type YYSym = AddColumnDefinition
 	| DerivedColumn
 	| DropColumnDefaultClause
 	| DropTableConstraintDefinition
+	| ExistsPredicate
 	| ExplicitRowValueConstructor
 	| GeneralValueSpecification
 	| Identifier

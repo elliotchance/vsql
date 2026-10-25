@@ -11,6 +11,25 @@ type SimpleTable = ParenthesizedQueryExpression
 	| SetOperation
 	| []RowValueConstructor
 
+fn (e SimpleTable) pstr(params map[string]Value) string {
+	match e {
+		QuerySpecification, SetOperation, ParenthesizedQueryExpression {
+			return e.pstr(params)
+		}
+		[]RowValueConstructor {
+			mut rows := []string{}
+			for row in e {
+				rows << match row {
+					CommonValueExpression, BooleanValueExpression { row.pstr(params) }
+					ExplicitRowValueConstructor { 'ROW(${row.pstr(params)})' }
+				}
+			}
+
+			return 'VALUES ${rows.join(', ')}'
+		}
+	}
+}
+
 // A ValuesOperation provides a VALUES derived implicit table.
 struct ValuesOperation {
 	rows        []RowValueConstructor

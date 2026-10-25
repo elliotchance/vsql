@@ -14,6 +14,28 @@ struct QueryExpression {
 	order  []SortSpecification
 }
 
+fn (e QueryExpression) pstr(params map[string]Value) string {
+	mut s := e.body.pstr(params)
+
+	if e.order.len > 0 {
+		mut specs := []string{}
+		for spec in e.order {
+			specs << spec.pstr(params)
+		}
+		s += ' ORDER BY ${specs.join(', ')}'
+	}
+
+	if offset := e.offset {
+		s += ' OFFSET ${offset.pstr(params)} ROWS'
+	}
+
+	if fetch := e.fetch {
+		s += ' FETCH FIRST ${fetch.pstr(params)} ROWS ONLY'
+	}
+
+	return s
+}
+
 // SetOperation is "<left> UNION <right>" or "<left> EXCEPT <right>". Each side
 // is a reference because it can contain another SetOperation, and V stores a
 // sum type's value inline.
@@ -22,6 +44,20 @@ struct SetOperation {
 	op    string // UNION or EXCEPT
 	all   bool   // DISTINCT is the default (Syntax Rule 6).
 	right &QueryExpression
+}
+
+fn (e SetOperation) pstr(params map[string]Value) string {
+	op := if e.all { '${e.op} ALL' } else { e.op }
+
+	// A set operation is left associative, so one on the right must have been in
+	// parentheses.
+	right := if e.right.body is SetOperation {
+		'(${e.right.pstr(params)})'
+	} else {
+		e.right.pstr(params)
+	}
+
+	return '${e.left.pstr(params)} ${op} ${right}'
 }
 
 fn new_set_operation(left SimpleTable, op string, all bool, right SimpleTable) SimpleTable {
@@ -42,6 +78,10 @@ fn new_set_operation(left SimpleTable, op string, all bool, right SimpleTable) S
 // ...".
 struct ParenthesizedQueryExpression {
 	expr &QueryExpression
+}
+
+fn (e ParenthesizedQueryExpression) pstr(params map[string]Value) string {
+	return '(${e.expr.pstr(params)})'
 }
 
 // new_parenthesized_query_expression returns the body of a parenthesized

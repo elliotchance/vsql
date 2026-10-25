@@ -7,6 +7,7 @@ module vsql
 // the grammar. If V ever supports some kind of "any" type this would be a
 // little easier.
 type YYSym = AddColumnDefinition
+	| AddTableConstraintDefinition
 	| AggregateFunction
 	| AggregateFunctionCount
 	| AlterColumnAction

@@ -14,6 +14,7 @@ Syntax
       ADD [ COLUMN ] <column_definition>
     | ALTER [ COLUMN ] <column_name> SET DEFAULT <default>
     | ALTER [ COLUMN ] <column_name> DROP DEFAULT
+    | ADD [ CONSTRAINT <constraint_name> ] <table_constraint>
 
   <column_definition> := <column_name> <data_type> [ DEFAULT <default> ]
                          [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
@@ -61,6 +62,22 @@ values, and the new default is used by the rows that are inserted after it.
 Changing the type of a column, or whether it's ``NOT NULL``, isn't supported
 yet.
 
+ADD CONSTRAINT
+--------------
+
+Adds a ``PRIMARY KEY``, ``UNIQUE``, ``FOREIGN KEY`` or ``CHECK`` constraint
+to a table. It's defined the same way as a constraint of a
+:doc:`create-table`, with the same rules (such as a table only having one
+``PRIMARY KEY``), and gets a name in the same way if it isn't given one
+(see "Constraint Names" in :doc:`create-table`).
+
+Every existing row must satisfy the new constraint, otherwise it isn't added:
+an error ``23514`` for a ``CHECK``, ``23505`` for a ``PRIMARY KEY`` or
+``UNIQUE``, or ``23503`` for a ``FOREIGN KEY``. The columns of a new
+``PRIMARY KEY`` become ``NOT NULL``, so it's an error ``23502`` if any of them
+are ``NULL``. Every row of the table is read to check the constraint, and the
+rows are rewritten for a new ``PRIMARY KEY``, because they're stored by it.
+
 Examples
 --------
 
@@ -90,6 +107,17 @@ Examples
   -- msg: INSERT 1
   -- NAME: Bread QUANTITY: NULL
   -- NAME: Milk QUANTITY: 1
+
+.. code-block:: sql
+
+  CREATE TABLE products (name VARCHAR(50), price INTEGER);
+  INSERT INTO products (name, price) VALUES ('Bread', 3);
+  ALTER TABLE products ADD CONSTRAINT positive_price CHECK (price > 0);
+  INSERT INTO products (name, price) VALUES ('Milk', -1);
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 1
+  -- msg: ALTER TABLE 1
+  -- error 23514: violates check constraint: CHECK (PRICE > 0) on ":memory:".PUBLIC.PRODUCTS
 
 See Also
 --------

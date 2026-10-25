@@ -12,5 +12,8 @@ alter_table_action:
 | alter_column_definition {
     $$.v = AlterTableAction($1.v as AlterColumnDefinition)
   }
+| add_table_constraint_definition {
+    $$.v = AlterTableAction($1.v as AddTableConstraintDefinition)
+  }
 
 %%

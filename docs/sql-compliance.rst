@@ -780,11 +780,11 @@ Optional Features
    * - ✅ F381-01
      - ``ALTER TABLE`` statement: ``ALTER COLUMN`` clause
 
-   * - ❌ F381-02
-     - ALTER TABLE statement: ADD CONSTRAINT clause
+   * - ✅ F381-02
+     - ``ALTER TABLE`` statement: ``ADD CONSTRAINT`` clause
 
    * - ❌ F381-03
-     - ALTER TABLE statement: DROP CONSTRAINT clause
+     - ``ALTER TABLE`` statement: ``DROP CONSTRAINT`` clause
 
    * - ❌ **F382**
      - **Alter column data type**

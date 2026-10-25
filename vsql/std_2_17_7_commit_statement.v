@@ -30,9 +30,15 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 	}
 
 	mut blob_refs := []PageObject{}
+	mut schema_changed := false
 	for page_number, _ in catalog.storage.transaction_pages {
 		mut page := catalog.storage.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
+			if (obj.tid == catalog.storage.transaction_id
+				|| obj.xid == catalog.storage.transaction_id) && obj.key[0] in [`T`, `S`] {
+				schema_changed = true
+			}
+
 			// Only remove the now expired records.
 			if obj.xid == catalog.storage.transaction_id {
 				page.delete(obj.key, obj.tid)
@@ -56,6 +62,13 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 
 	// We can erase these now.
 	catalog.storage.transaction_pages = map[int]bool{}
+
+	// Other connections may have loaded the schema while this transaction was
+	// active, so they could not see the tables and schemas it created or
+	// dropped. They must reload it now that the changes are committed.
+	if schema_changed {
+		catalog.storage.schema_changed()
+	}
 }
 
 fn (stmt CommitStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {

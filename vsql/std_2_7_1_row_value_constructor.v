@@ -39,7 +39,8 @@ fn (e RowValueConstructorPredicand) compile(mut c Compiler) !CompileResult {
 }
 
 // ExplicitRowValueConstructor is a "ROW (...)". A row subquery (F641) isn't
-// supported yet, see unsupported_row_subquery.
+// supported yet. A subquery in a row is a scalar subquery, so it must have one
+// column.
 struct ExplicitRowValueConstructor {
 	exprs []ValueExpression
 }
@@ -105,10 +106,4 @@ fn (e ExplicitRowValueConstructor) compile(mut _ Compiler) !CompileResult {
 	// ExplicitRowValueConstructor should never make it to eval because it will
 	// be reformatted into a ValuesOperation.
 	return sqlstate_42601('missing or invalid expression provided')
-}
-
-// unsupported_row_subquery is the error for a row subquery (F641), which isn't
-// supported yet. It's returned by the parser.
-fn unsupported_row_subquery() IError {
-	return sqlstate_42601('subqueries are not supported in VALUES')
 }

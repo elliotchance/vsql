@@ -42,12 +42,18 @@ struct SubqueryScope {
 	grouping_columns ?[]Column
 mut:
 	row Row
+	// aggregates collects the aggregate functions in the subquery that are of
+	// the containing query, see Compiler.aggregation_scope.
+	aggregates []AggregateFunction
 }
 
 // SubqueryPlan is the plan of a subquery, and the scope it's evaluated in.
+// contains_agg is true if the subquery has an aggregate function of the
+// containing query, which makes that query grouped.
 struct SubqueryPlan {
-	plan  Plan
-	scope SubqueryScope
+	plan         Plan
+	scope        SubqueryScope
+	contains_agg bool
 }
 
 // plan creates the plan for the subquery. It's evaluated with run_subquery.
@@ -69,12 +75,17 @@ fn (e Subquery) plan(mut c Compiler) !SubqueryPlan {
 		grouping_columns: c.grouping_columns
 	}
 	c.conn.subquery_scopes << scope
-	defer {
+	plan := create_query_expression_plan(*e.query, c.params, mut c.conn, Correlation{}) or {
 		c.conn.subquery_scopes.pop()
+		return err
 	}
 
-	return SubqueryPlan{create_query_expression_plan(*e.query, c.params, mut c.conn,
-		Correlation{})!, scope}
+	// The aggregate functions of this query are calculated with its other
+	// aggregate functions (see GroupOperation).
+	aggregates := c.conn.subquery_scopes.pop().aggregates
+	c.aggregates << aggregates
+
+	return SubqueryPlan{plan, scope, aggregates.len > 0}
 }
 
 // plan_column is plan for a subquery that must have one column, such as for
@@ -140,6 +151,6 @@ fn (e Subquery) compile(mut c Compiler) !CompileResult {
 			return values[0]
 		}
 		typ:          typ
-		contains_agg: false
+		contains_agg: plan.contains_agg
 	}
 }

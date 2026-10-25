@@ -47,6 +47,7 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 	if subquery := e.subquery {
 		subquery_plan := subquery.plan_column(mut c)!
 		c.check_time_zone_comparison(compiled_expr.typ, subquery_plan.plan.columns()[0].typ)!
+		contains_agg = contains_agg || subquery_plan.contains_agg
 		plan = subquery_plan
 	}
 

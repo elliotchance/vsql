@@ -23,6 +23,6 @@ fn (e ExistsPredicate) compile(mut c Compiler) !CompileResult {
 			return new_boolean_value(run_subquery(mut conn, plan, data)!.len > 0)
 		}
 		typ:          new_type('BOOLEAN', 0, 0)
-		contains_agg: false
+		contains_agg: plan.contains_agg
 	}
 }

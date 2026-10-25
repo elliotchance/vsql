@@ -32,7 +32,7 @@ fn (e QuantifiedComparisonPredicate) compile(mut c Compiler) !CompileResult {
 			return quantified_comparison(conn, expr, e.op, e.all, values)!.value()
 		}
 		typ:          new_type('BOOLEAN', 0, 0)
-		contains_agg: compiled_expr.contains_agg
+		contains_agg: compiled_expr.contains_agg || plan.contains_agg
 	}
 }
 

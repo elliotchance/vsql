@@ -31,6 +31,10 @@ mut:
 	// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Conformance Rules, 3
 	grouping_columns ?[]Column
 	in_aggregate     bool
+	// aggregated_columns collects the column references in the argument of the
+	// aggregate function being compiled, to find the query that it's an
+	// aggregate of (see aggregation_scope).
+	aggregated_columns []AggregatedColumn
 	// distinct is set when compiling the select list of a "SELECT DISTINCT".
 	distinct bool
 	// distinct_columns is set when compiling an ORDER BY of a "SELECT DISTINCT".
@@ -47,6 +51,44 @@ mut:
 	restricted    string
 	check_column  string
 	check_columns map[string]bool
+}
+
+// An AggregatedColumn is a column reference in the argument of an aggregate
+// function. scope is the subquery scope of the query that the column is from
+// (see Identifier.compile_outer), or -1 for a column of this query. ungrouped
+// is set for an outer reference that isn't a grouping column of its (grouped)
+// query.
+struct AggregatedColumn {
+	scope     int
+	name      string
+	ungrouped bool
+}
+
+// aggregation_scope is the subquery scope of the query that the aggregate
+// function being compiled is an aggregate of, or -1 if it's of this query. It's
+// the innermost query of its column references, so only an aggregate function
+// of outer references is an aggregate of another query, such as the MAX in
+// "SELECT (SELECT MAX(t1.x) FROM t2) FROM t1". Any other outer reference must
+// still be a grouping column of its query.
+//
+// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rule 6
+fn (c Compiler) aggregation_scope() !int {
+	mut scope := -1
+	if c.aggregated_columns.len > 0 && c.aggregated_columns.all(it.scope >= 0) {
+		for column in c.aggregated_columns {
+			if column.scope > scope {
+				scope = column.scope
+			}
+		}
+	}
+
+	for column in c.aggregated_columns {
+		if column.ungrouped && column.scope != scope {
+			return sqlstate_42803(column.name)
+		}
+	}
+
+	return scope
 }
 
 // check_deterministic returns an error if the expression (described by what)

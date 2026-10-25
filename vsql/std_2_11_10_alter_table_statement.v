@@ -6,11 +6,12 @@ import time
 //
 // Change the definition of a table.
 
-// ADD COLUMN, ALTER COLUMN, ADD CONSTRAINT and DROP CONSTRAINT are the only
-// <alter table action>s that are supported.
+// ADD COLUMN, ALTER COLUMN, DROP COLUMN, ADD CONSTRAINT and DROP CONSTRAINT
+// are the only <alter table action>s that are supported.
 type AlterTableAction = AddColumnDefinition
 	| AddTableConstraintDefinition
 	| AlterColumnDefinition
+	| DropColumnDefinition
 	| DropTableConstraintDefinition
 
 struct AlterTableStatement {
@@ -34,6 +35,7 @@ fn (stmt AlterTableStatement) execute(mut conn Connection, params map[string]Val
 		AddColumnDefinition { stmt.action.execute(mut conn, mut catalog, table, params)! }
 		AddTableConstraintDefinition { stmt.action.execute(mut conn, mut catalog, table)! }
 		AlterColumnDefinition { stmt.action.execute(mut conn, mut catalog, table)! }
+		DropColumnDefinition { stmt.action.execute(mut conn, mut catalog, table)! }
 		DropTableConstraintDefinition { stmt.action.execute(mut conn, mut catalog, table)! }
 	}
 

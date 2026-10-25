@@ -30,17 +30,18 @@ fn (d AddTableConstraintDefinition) execute(mut conn Connection, mut catalog Cat
 }
 
 // replace_table_definition replaces the definition of a table with a new
-// definition that has the same columns and different constraints, and returns
+// definition that has different constraints (or fewer columns), and returns
 // an error if a row doesn't satisfy one of them (in the same way as an INSERT,
 // but for every row of the table). The rows are moved when the PRIMARY KEY
 // changes, because they're stored by their PRIMARY KEY (or a row ID when there
 // isn't one, see Row.object_key). They're written again when a column's NOT
-// NULL changes, because only a nullable column stores whether it's NULL (see
-// Row.bytes).
+// NULL changes, because only a nullable column stores whether it's NULL, or
+// when a column is dropped (see Row.bytes).
 fn replace_table_definition(mut conn Connection, mut catalog CatalogConnection, table Table, new_table Table) ! {
 	check_constraints := new_check_constraints(mut conn, new_table)!
 	is_moved := new_table.primary_key != table.primary_key
 	is_rewritten := new_table.columns.map(it.not_null) != table.columns.map(it.not_null)
+		|| new_table.columns.len != table.columns.len
 
 	mut rows := []Row{}
 	mut moved := []Row{}

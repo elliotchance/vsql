@@ -288,6 +288,9 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 	if c.check_column != '' && e.custom_id == '' && e.sub_entity_name != c.check_column {
 		return sqlstate_42601('CHECK on column ${c.check_column} cannot use column ${e.sub_entity_name}')
 	}
+	if c.check_constraint && e.custom_id == '' {
+		c.check_columns[e.sub_entity_name] = true
+	}
 
 	return compiled
 }

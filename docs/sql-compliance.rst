@@ -660,7 +660,7 @@ Optional Features
    * - ⭕ **F032**
      - **CASCADE drop behavior**
 
-   * - ❌ **F033**
+   * - ✅ **F033**
      - **ALTER TABLE statement: DROP COLUMN clause**
 
    * - ❌ **F034**

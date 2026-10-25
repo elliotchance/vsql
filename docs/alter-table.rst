@@ -14,6 +14,7 @@ Syntax
       ADD [ COLUMN ] <column_definition>
     | ALTER [ COLUMN ] <column_name> SET DEFAULT <default>
     | ALTER [ COLUMN ] <column_name> DROP DEFAULT
+    | DROP [ COLUMN ] <column_name> [ CASCADE | RESTRICT ]
     | ADD [ CONSTRAINT <constraint_name> ] <table_constraint>
     | DROP CONSTRAINT <constraint_name> [ CASCADE | RESTRICT ]
 
@@ -62,6 +63,32 @@ Only the definition of the table is changed. The existing rows keep their
 values, and the new default is used by the rows that are inserted after it.
 Changing the type of a column, or whether it's ``NOT NULL``, isn't supported
 yet.
+
+DROP COLUMN
+-----------
+
+Drops a column of a table, along with its value in every row. The columns after
+it move up one position. A table must have at least one column, so the only
+column can't be dropped (an error ``42601``). It's an error ``42703`` if the
+column doesn't exist.
+
+The constraints that only use the column are dropped with it: its
+``NOT NULL``, a ``CHECK`` that only uses the column, and a ``PRIMARY KEY`` or
+``UNIQUE`` of only that column. Any other constraint that uses the column can
+only be dropped with ``CASCADE``, which drops it too. Otherwise, it's an error
+``2BP01``. ``RESTRICT`` is used when neither is given. These constraints are:
+
+- A ``PRIMARY KEY`` or ``UNIQUE`` of more than one column. The ``NOT NULL`` of
+  the other columns of a ``PRIMARY KEY`` isn't dropped.
+- A ``CHECK`` that also uses other columns.
+- A ``FOREIGN KEY`` of the table with the column as one of its columns, or a
+  ``FOREIGN KEY`` (of any table) that references the column, because it also
+  uses the columns of the other table. A ``FOREIGN KEY`` that only references
+  the same column of the same table is dropped with the column.
+
+Every row of the table is written again, because the values of a row are
+stored in the order of its columns. The rows are also moved when the
+``PRIMARY KEY`` is dropped.
 
 ADD CONSTRAINT
 --------------
@@ -140,6 +167,17 @@ Examples
   -- error 23514: violates check constraint: CHECK (PRICE > 0) on ":memory:".PUBLIC.PRODUCTS
   -- msg: ALTER TABLE 1
   -- msg: INSERT 1
+
+.. code-block:: sql
+
+  CREATE TABLE products (name VARCHAR(50), price INTEGER CHECK (price > 0));
+  INSERT INTO products (name, price) VALUES ('Bread', 3);
+  ALTER TABLE products DROP COLUMN price;
+  SELECT * FROM products;
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 1
+  -- msg: ALTER TABLE 1
+  -- NAME: Bread
 
 See Also
 --------

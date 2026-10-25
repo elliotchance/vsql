@@ -319,6 +319,8 @@ fn (mut f Storage) create_table(definition Table) ! {
 		f.end_isolation()
 	}
 
+	f.check_concurrent_referenced_tables(definition, [])!
+
 	f.header.table_id++
 	table := Table{
 		...definition
@@ -356,6 +358,7 @@ fn (mut f Storage) update_table(definition Table) ! {
 	}
 
 	f.check_concurrent_rows(definition)!
+	f.check_concurrent_referenced_tables(definition, f.table(definition.name.storage_id()).foreign_keys)!
 
 	table := Table{
 		...definition
@@ -510,6 +513,7 @@ fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 	}
 
 	f.check_concurrent_rows(f.table(table_name))!
+	f.check_concurrent_references(f.table(table_name))!
 
 	table_id := f.table(table_name).id
 	f.btree.expire(table_object_key(table_id), tid, f.transaction_id)!
@@ -554,6 +558,7 @@ fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
 	}
 
 	f.check_concurrent_definition(f.table(table_name))!
+	f.check_concurrent_references(f.table(table_name))!
 	page_number := f.btree.expire(row.object_key(f.table(table_name))!, row.tid, f.transaction_id)!
 
 	// A negative page_number means the object didn't exist so there's nothing to
@@ -604,6 +609,7 @@ fn (mut f Storage) update_row(mut new Row, t Table) ! {
 	}
 
 	f.check_concurrent_definition(t)!
+	f.check_concurrent_references(t)!
 	f.assign_row_id(mut new, t)
 	f.btree.update(new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t)))!
 }
@@ -623,6 +629,48 @@ fn (mut f Storage) check_concurrent_definition(t Table) ! {
 // isolation block.
 fn (mut f Storage) check_concurrent_rows(t Table) ! {
 	f.check_concurrent_objects(row_key_prefix(t.id), row_key_prefix(t.id + 1))!
+}
+
+// check_concurrent_referenced_tables returns a SQLSTATE 40001 if another active
+// transaction has changed, dropped or written a row of a table that's
+// referenced by a FOREIGN KEY of definition (other than the old_keys it already
+// had). Those changes are not visible, so the rows of definition would otherwise
+// not be checked against them. It must be called from inside an isolation
+// block.
+fn (mut f Storage) check_concurrent_referenced_tables(definition Table, old_keys []ForeignKey) ! {
+	old := old_keys.map(it.str())
+	for key in definition.foreign_keys {
+		referenced := f.tables[key.referenced_table.storage_id()] or { continue }
+		if key.str() !in old {
+			f.check_concurrent_definition(referenced)!
+			f.check_concurrent_rows(referenced)!
+		}
+	}
+}
+
+// check_concurrent_references returns a SQLSTATE 40001 if another active
+// transaction has created, changed or dropped a table with a FOREIGN KEY that
+// references t. That definition is not visible, so deleting or updating a row
+// of t would otherwise not check the rows that reference it. It must be called
+// from inside an isolation block.
+fn (mut f Storage) check_concurrent_references(t Table) ! {
+	mut iter := f.btree.new_range_iterator('T'.bytes(), 'U'.bytes())
+	for {
+		object := iter.next() or { break }
+		if !f.is_concurrent_write(object) {
+			continue
+		}
+
+		referencing := new_table_from_bytes(object.key, object.value, object.tid, t.name.catalog_name)!
+		for key in referencing.foreign_keys {
+			if key.referenced_table.storage_id() == t.name.storage_id() {
+				return sqlstate_40001('avoiding concurrent write on referencing table definition')
+			}
+		}
+	}
+	if err := iter.err {
+		return err
+	}
 }
 
 fn (mut f Storage) check_concurrent_objects(start []u8, end []u8) ! {

@@ -936,7 +936,7 @@ Optional Features
    * - ❌ **F711**
      - **ALTER domain**
 
-   * - ❌ **F721**
+   * - ⭕ **F721**
      - **Deferrable constraints**
 
    * - ❌ **F731**

@@ -197,12 +197,13 @@ fn (t Table) elements() []TableElement {
 	}
 	for constraint in t.unique_constraints {
 		elements << UniqueConstraintDefinition{
-			name:    Identifier{
+			name:            Identifier{
 				entity_name: constraint.name
 			}
-			columns: constraint.columns.map(Identifier{
+			columns:         constraint.columns.map(Identifier{
 				sub_entity_name: it
 			})
+			characteristics: constraint.characteristics
 		}
 	}
 	for key in t.foreign_keys {
@@ -219,6 +220,7 @@ fn (t Table) elements() []TableElement {
 			})
 			update_rule:        key.update_rule
 			delete_rule:        key.delete_rule
+			characteristics:    key.characteristics
 		}
 	}
 	for constraint in t.check_constraints {
@@ -407,6 +409,17 @@ fn (t Table) find_constraint(name Identifier) !(ConstraintKind, int) {
 	}
 
 	return sqlstate_42704('constraint', '${name} on ${t.name}')
+}
+
+// constraint_characteristics are the characteristics of the constraint that
+// find_constraint found. A NOT NULL or PRIMARY KEY is never deferrable.
+fn (t Table) constraint_characteristics(kind ConstraintKind, i int) ConstraintCharacteristics {
+	return match kind {
+		.unique { t.unique_constraints[i].characteristics }
+		.foreign_key { t.foreign_keys[i].characteristics }
+		.check { t.check_constraints[i].characteristics }
+		else { ConstraintCharacteristics{} }
+	}
 }
 
 // table_object_key is the key of the definition of a table.

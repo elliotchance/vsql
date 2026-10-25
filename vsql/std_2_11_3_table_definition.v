@@ -118,6 +118,10 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				}
 			}
 			NotNullConstraint {
+				table_element.characteristics.check_not_deferrable('NOT NULL')!
+				if table_element.name.entity_name == '' {
+					continue
+				}
 				if not_null_names[table_element.column] != '' {
 					return sqlstate_42601('column ${table_element.column} has more than one named NOT NULL')
 				}
@@ -146,10 +150,11 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 
 				name := table_constraint_name(table_element.name, table_name)!
 				if table_element.is_primary_key {
+					table_element.characteristics.check_not_deferrable('PRIMARY KEY')!
 					primary_key = unique_columns.clone()
 					primary_key_name = name
 				} else {
-					unique_constraints << UniqueConstraint{name, unique_columns}
+					unique_constraints << UniqueConstraint{name, unique_columns, table_element.characteristics}
 				}
 			}
 			ReferentialConstraintDefinition {
@@ -199,6 +204,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					} else {
 						table_element.delete_rule
 					}
+					characteristics:    table_element.characteristics
 				}
 			}
 		}

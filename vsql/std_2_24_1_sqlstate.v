@@ -729,6 +729,18 @@ fn sqlstate_40001(message string) IError {
 	}
 }
 
+// transaction rollback: integrity constraint violation
+struct SQLState40002 {
+	SQLState
+}
+
+fn sqlstate_40002(message string) IError {
+	return SQLState40002{
+		code: sqlstate_to_int('40002')
+		msg:  'integrity constraint violation: ${message}'
+	}
+}
+
 // feature not supported, such as a file that needs a different version of vsql
 // to be opened.
 struct SQLState0A000 {

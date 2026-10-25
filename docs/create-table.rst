@@ -11,8 +11,10 @@ Syntax
   CREATE TABLE <table_name> ( <element> , ... )
 
   <element> := <column_name> <data_type> [ DEFAULT <default> ]
-               [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
+               [ [ CONSTRAINT <constraint_name> ] <column_constraint>
+                 [ <characteristics> ] ... ]
              | [ CONSTRAINT <constraint_name> ] <table_constraint>
+               [ <characteristics> ]
 
   <table_constraint> := PRIMARY KEY ( <column_name> , ... )
                       | UNIQUE ( <column_name> , ... )
@@ -36,6 +38,9 @@ Syntax
                   [ ON DELETE <referential_action> ]
 
   <referential_action> := CASCADE | SET NULL | SET DEFAULT | NO ACTION
+
+  <characteristics> := [ NOT ] DEFERRABLE [ INITIALLY { DEFERRED | IMMEDIATE } ]
+                     | INITIALLY { DEFERRED | IMMEDIATE } [ [ NOT ] DEFERRABLE ]
 
 1. ``column_name`` must start with a letter, but can be followed by any letter,
    underscore (``_``) or digit for a maximum length of 128 characters. A
@@ -315,8 +320,42 @@ qualified by the schema of the table, such as ``CONSTRAINT s.positive_price``,
 but not by another schema (an error ``42601``). A column can only have one named
 ``NOT NULL``.
 
-``INITIALLY DEFERRED``, ``DEFERRABLE`` and ``NOT ENFORCED`` are not supported,
-so every constraint is checked immediately.
+Deferrable Constraints
+----------------------
+
+A constraint is checked at the end of each statement that changes a table,
+unless it's ``DEFERRABLE`` and deferred. Then it's only checked at the
+``COMMIT`` (see :doc:`commit`), or when :doc:`set-constraints` makes it
+immediate again, so that a transaction can break it for a while, such as to
+insert a row before the row that it references.
+
+- ``INITIALLY DEFERRED`` constraints are deferred at the start of each
+  transaction, and are also ``DEFERRABLE``.
+- ``DEFERRABLE`` (or ``DEFERRABLE INITIALLY IMMEDIATE``) constraints are
+  checked immediately, unless they're deferred with :doc:`set-constraints`.
+- ``NOT DEFERRABLE`` (or ``INITIALLY IMMEDIATE``, or nothing) constraints are
+  always checked immediately.
+
+Outside of a transaction, each statement is its own transaction, so a deferred
+constraint is still checked when the statement finishes. A ``UNIQUE``,
+``FOREIGN KEY`` or ``CHECK`` can be deferred, but a ``PRIMARY KEY`` or ``NOT
+NULL`` can't (an error ``0A000``). The referential actions of a ``FOREIGN KEY``
+(such as ``ON DELETE CASCADE``) are never deferred.
+
+A deferred constraint is checked against every row of its table, rather than
+just the rows that were changed. ``NOT ENFORCED`` is not supported.
+
+.. code-block:: sql
+
+  CREATE TABLE parent (id INT PRIMARY KEY);
+  CREATE TABLE child (
+    parent_id INT REFERENCES parent INITIALLY DEFERRED
+  );
+
+  START TRANSACTION;
+  INSERT INTO child (parent_id) VALUES (1);
+  INSERT INTO parent (id) VALUES (1);
+  COMMIT;
 
 See Also
 --------
@@ -324,3 +363,4 @@ See Also
 - :doc:`alter-table`
 - :doc:`drop-table`
 - :doc:`insert`
+- :doc:`set-constraints`

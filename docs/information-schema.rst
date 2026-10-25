@@ -214,7 +214,7 @@ the same order and with the same names.
     - ``PRIMARY KEY``, ``UNIQUE``, ``FOREIGN KEY`` or ``CHECK``.
 
   * - ``IS_DEFERRABLE``, ``INITIALLY_DEFERRED``
-    - Always ``NO`` (constraints can't be deferred).
+    - ``YES`` or ``NO`` (see "Deferrable Constraints" in :doc:`create-table`).
 
   * - ``ENFORCED``
     - Always ``YES`` (``NOT ENFORCED`` is not supported).

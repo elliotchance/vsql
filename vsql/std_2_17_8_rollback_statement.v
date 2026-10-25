@@ -59,6 +59,7 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 
 	// We can erase these now.
 	catalog.storage.transaction_pages = map[int]bool{}
+	catalog.storage.end_constraint_modes()
 
 	// Tables and schemas that were created or dropped in this transaction must
 	// be reloaded, here and in other connections.

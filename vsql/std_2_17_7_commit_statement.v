@@ -16,6 +16,20 @@ fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elaps
 		return sqlstate_2d000()
 	}
 
+	conn.open_write_connection()!
+	defer {
+		conn.release_write_connection()
+	}
+
+	// Every deferred constraint is checked first, as if by SET CONSTRAINTS ALL
+	// IMMEDIATE, so that nothing is committed if one isn't satisfied (General
+	// Rules 5 and 6a). The transaction is then rolled back, see
+	// PreparedStmt.fail.
+	for _, mut catalog in conn.catalogs {
+		catalog.storage.set_all_constraint_modes(false)
+	}
+	conn.check_deferred_constraints() or { return commit_error(err) }
+
 	for _, mut catalog in conn.catalogs {
 		catalog.commit_transaction()!
 	}
@@ -23,12 +37,16 @@ fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elaps
 	return new_result_msg('COMMIT', elapsed_parse, t.elapsed())
 }
 
-fn (mut catalog CatalogConnection) commit_transaction() ! {
-	catalog.open_write_connection()!
-	defer {
-		catalog.release_write_connection()
-	}
+// commit_error is the error for a deferred constraint that isn't satisfied at
+// the COMMIT (General Rule 6a), or another error (such as a serialization
+// failure) as it is.
+fn commit_error(err IError) IError {
+	is_violation := sqlstate_from_int(err.code()).starts_with('23')
+	return if is_violation { sqlstate_40002(err.msg()) } else { err }
+}
 
+// commit_transaction must be called with the write connection open.
+fn (mut catalog CatalogConnection) commit_transaction() ! {
 	mut blob_refs := []PageObject{}
 	mut schema_changed := false
 	for page_number, _ in catalog.storage.transaction_pages {
@@ -62,6 +80,7 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 
 	// We can erase these now.
 	catalog.storage.transaction_pages = map[int]bool{}
+	catalog.storage.end_constraint_modes()
 
 	// Other connections may have loaded the schema while this transaction was
 	// active, so they could not see the tables and schemas it created or

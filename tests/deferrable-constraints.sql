@@ -1,0 +1,395 @@
+-- # A deferred UNIQUE is only checked at the COMMIT, so a duplicate can be
+-- # fixed before then.
+CREATE TABLE t (id INT, x INT UNIQUE DEFERRABLE INITIALLY DEFERRED);
+INSERT INTO t (id, x) VALUES (1, 1);
+START TRANSACTION;
+INSERT INTO t (id, x) VALUES (2, 1);
+SELECT * FROM t;
+UPDATE t SET x = 2 WHERE id = 2;
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- ID: 1 X: 1
+-- ID: 2 X: 1
+-- msg: UPDATE 1
+-- msg: COMMIT
+-- ID: 1 X: 1
+-- ID: 2 X: 2
+
+-- # The transaction is rolled back when a deferred constraint isn't satisfied
+-- # at the COMMIT.
+CREATE TABLE t (x INT UNIQUE DEFERRABLE INITIALLY DEFERRED);
+INSERT INTO t (x) VALUES (1);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+COMMIT;
+SELECT * FROM t;
+ROLLBACK;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- error 40002: integrity constraint violation: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+-- X: 1
+-- error 2D000: invalid transaction termination
+
+CREATE TABLE t (x INT UNIQUE DEFERRABLE INITIALLY DEFERRED);
+INSERT INTO t (x) VALUES (1);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+DELETE FROM t WHERE x = 1;
+INSERT INTO t (x) VALUES (3);
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: DELETE 2
+-- msg: INSERT 1
+-- msg: COMMIT
+-- X: 3
+
+-- # Outside of a transaction, each statement is checked when it finishes.
+CREATE TABLE t (x INT UNIQUE DEFERRABLE INITIALLY DEFERRED);
+INSERT INTO t (x) VALUES (1);
+INSERT INTO t (x) VALUES (1);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 23505: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+-- X: 1
+
+-- # A row can reference a row that's only inserted later in the transaction.
+CREATE TABLE p (id INT PRIMARY KEY);
+CREATE TABLE c (pid INT, FOREIGN KEY (pid) REFERENCES p INITIALLY DEFERRED);
+START TRANSACTION;
+INSERT INTO c (pid) VALUES (1);
+INSERT INTO p (id) VALUES (1);
+COMMIT;
+SELECT * FROM c;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: COMMIT
+-- PID: 1
+
+CREATE TABLE p (id INT PRIMARY KEY);
+CREATE TABLE c (pid INT REFERENCES p DEFERRABLE INITIALLY DEFERRED);
+START TRANSACTION;
+INSERT INTO c (pid) VALUES (1);
+COMMIT;
+SELECT * FROM c;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- error 40002: integrity constraint violation: violates foreign key constraint: FOREIGN KEY (PID) REFERENCES ":memory:".PUBLIC.P (ID) on ":memory:".PUBLIC.C
+
+-- # A referenced row can be deleted and inserted again.
+CREATE TABLE p (id INT PRIMARY KEY);
+CREATE TABLE c (pid INT REFERENCES p INITIALLY DEFERRED);
+INSERT INTO p (id) VALUES (1);
+INSERT INTO c (pid) VALUES (1);
+START TRANSACTION;
+DELETE FROM p;
+INSERT INTO p (id) VALUES (1);
+COMMIT;
+START TRANSACTION;
+DELETE FROM p;
+COMMIT;
+SELECT * FROM p;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: DELETE 1
+-- msg: INSERT 1
+-- msg: COMMIT
+-- msg: START TRANSACTION
+-- msg: DELETE 1
+-- error 40002: integrity constraint violation: violates foreign key constraint: FOREIGN KEY (PID) REFERENCES ":memory:".PUBLIC.P (ID) on ":memory:".PUBLIC.C
+-- ID: 1
+
+CREATE TABLE t (x INT, CHECK (x > 0) INITIALLY DEFERRED);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (-1);
+UPDATE t SET x = 1;
+COMMIT;
+START TRANSACTION;
+INSERT INTO t (x) VALUES (-2);
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- msg: COMMIT
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- error 40002: integrity constraint violation: violates check constraint: CHECK (X > 0) INITIALLY DEFERRED on ":memory:".PUBLIC.T
+-- X: 1
+
+-- # A DEFERRABLE constraint is immediate until SET CONSTRAINTS defers it.
+CREATE TABLE t (x INT CONSTRAINT u UNIQUE DEFERRABLE);
+INSERT INTO t (x) VALUES (1);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+SET CONSTRAINTS u DEFERRED;
+INSERT INTO t (x) VALUES (1);
+SET CONSTRAINTS u IMMEDIATE;
+DELETE FROM t WHERE x = 1;
+INSERT INTO t (x) VALUES (1);
+SET CONSTRAINTS u IMMEDIATE;
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- error 23505: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+-- msg: SET CONSTRAINTS
+-- msg: INSERT 1
+-- error 23505: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+-- msg: DELETE 2
+-- msg: INSERT 1
+-- msg: SET CONSTRAINTS
+-- msg: COMMIT
+-- X: 1
+
+-- # When SET CONSTRAINTS IMMEDIATE fails, the constraint stays deferred.
+CREATE TABLE t (x INT CONSTRAINT u UNIQUE DEFERRABLE);
+INSERT INTO t (x) VALUES (1);
+START TRANSACTION;
+SET CONSTRAINTS u DEFERRED;
+INSERT INTO t (x) VALUES (1);
+SET CONSTRAINTS u IMMEDIATE;
+INSERT INTO t (x) VALUES (1);
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: SET CONSTRAINTS
+-- msg: INSERT 1
+-- error 23505: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+-- msg: INSERT 1
+-- error 40002: integrity constraint violation: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+-- X: 1
+
+-- # SET CONSTRAINTS ALL only changes the deferrable constraints, and a
+-- # constraint that's still deferred isn't checked by SET CONSTRAINTS
+-- # IMMEDIATE for another one.
+CREATE TABLE p (id INT PRIMARY KEY);
+CREATE TABLE t (
+  x INT NOT NULL UNIQUE REFERENCES p CHECK (x > 0),
+  y INT CONSTRAINT u UNIQUE DEFERRABLE,
+  z INT CONSTRAINT c CHECK (z > 0) DEFERRABLE INITIALLY IMMEDIATE,
+  CONSTRAINT f FOREIGN KEY (y) REFERENCES p NOT DEFERRABLE
+);
+INSERT INTO p (id) VALUES (1), (2);
+START TRANSACTION;
+SET CONSTRAINTS ALL DEFERRED;
+INSERT INTO t (x, y, z) VALUES (1, 1, -1);
+INSERT INTO t (x, y, z) VALUES (1, 1, 1);
+INSERT INTO t (x, y, z) VALUES (4, 1, 1);
+INSERT INTO t (x, y, z) VALUES (2, 4, 1);
+INSERT INTO t (x, y, z) VALUES (-1, 1, 1);
+SET CONSTRAINTS c IMMEDIATE;
+UPDATE t SET z = 1;
+SET CONSTRAINTS c IMMEDIATE;
+SET CONSTRAINTS ALL IMMEDIATE;
+COMMIT;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: START TRANSACTION
+-- msg: SET CONSTRAINTS
+-- msg: INSERT 1
+-- error 23505: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+-- error 23503: violates foreign key constraint: FOREIGN KEY (X) REFERENCES ":memory:".PUBLIC.P (ID) on ":memory:".PUBLIC.T
+-- error 23503: violates foreign key constraint: FOREIGN KEY (Y) REFERENCES ":memory:".PUBLIC.P (ID) on ":memory:".PUBLIC.T
+-- error 23514: violates check constraint: CHECK (X > 0) on ":memory:".PUBLIC.T
+-- error 23514: violates check constraint: CHECK (Z > 0) DEFERRABLE INITIALLY IMMEDIATE on ":memory:".PUBLIC.T
+-- msg: UPDATE 1
+-- msg: SET CONSTRAINTS
+-- msg: SET CONSTRAINTS
+-- msg: COMMIT
+
+-- # SET CONSTRAINTS outside of a transaction is for the next transaction.
+CREATE TABLE t (x INT CONSTRAINT u UNIQUE DEFERRABLE);
+INSERT INTO t (x) VALUES (1);
+SET CONSTRAINTS s.u, u DEFERRED;
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+ROLLBACK;
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+ROLLBACK;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 42704: no such constraint: S.U
+-- msg: START TRANSACTION
+-- error 23505: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+-- msg: ROLLBACK
+-- msg: START TRANSACTION
+-- error 23505: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+-- msg: ROLLBACK
+
+CREATE TABLE t (x INT CONSTRAINT u UNIQUE DEFERRABLE);
+INSERT INTO t (x) VALUES (1);
+SET CONSTRAINTS public.u, u DEFERRED;
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+ROLLBACK;
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+ROLLBACK;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: SET CONSTRAINTS
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: ROLLBACK
+-- msg: START TRANSACTION
+-- error 23505: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+-- msg: ROLLBACK
+
+-- # Only a deferrable constraint can be deferred.
+CREATE TABLE t (
+  x INT CONSTRAINT nn NOT NULL CONSTRAINT pk PRIMARY KEY,
+  y INT CONSTRAINT u UNIQUE,
+  z INT CONSTRAINT f REFERENCES t,
+  CONSTRAINT c CHECK (z > 0) NOT DEFERRABLE
+);
+SET CONSTRAINTS nn DEFERRED;
+SET CONSTRAINTS pk DEFERRED;
+SET CONSTRAINTS u DEFERRED;
+SET CONSTRAINTS f DEFERRED;
+SET CONSTRAINTS c DEFERRED;
+SET CONSTRAINTS nope DEFERRED;
+SET CONSTRAINTS nope.public.c DEFERRED;
+EXPLAIN SET CONSTRAINTS ALL DEFERRED;
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: constraint NN is not DEFERRABLE
+-- error 42601: syntax error: constraint PK is not DEFERRABLE
+-- error 42601: syntax error: constraint U is not DEFERRABLE
+-- error 42601: syntax error: constraint F is not DEFERRABLE
+-- error 42601: syntax error: constraint C is not DEFERRABLE
+-- error 42704: no such constraint: NOPE
+-- error 42704: no such constraint: NOPE.PUBLIC.C
+-- error 42601: syntax error: Cannot EXPLAIN SET CONSTRAINTS
+
+-- # A PRIMARY KEY or NOT NULL can't be deferred.
+CREATE TABLE t (x INT PRIMARY KEY DEFERRABLE);
+CREATE TABLE t (x INT, PRIMARY KEY (x) INITIALLY DEFERRED);
+CREATE TABLE t (x INT NOT NULL DEFERRABLE);
+CREATE TABLE t (x INT CONSTRAINT nn NOT NULL INITIALLY DEFERRED);
+CREATE TABLE t (x INT NOT NULL NOT DEFERRABLE PRIMARY KEY INITIALLY IMMEDIATE);
+-- error 0A000: PRIMARY KEY cannot be DEFERRABLE
+-- error 0A000: PRIMARY KEY cannot be DEFERRABLE
+-- error 0A000: NOT NULL cannot be DEFERRABLE
+-- error 0A000: NOT NULL cannot be DEFERRABLE
+-- msg: CREATE TABLE 1
+
+CREATE TABLE t (x INT DEFERRABLE);
+CREATE TABLE t (x INT UNIQUE DEFERRABLE NOT DEFERRABLE);
+CREATE TABLE t (x INT UNIQUE INITIALLY DEFERRED INITIALLY IMMEDIATE);
+CREATE TABLE t (x INT UNIQUE INITIALLY DEFERRED NOT DEFERRABLE);
+CREATE TABLE t (x INT, UNIQUE (x) NOT DEFERRABLE INITIALLY DEFERRED);
+-- error 42601: syntax error: DEFERRABLE must follow a constraint
+-- error 42601: syntax error: invalid constraint characteristics: DEFERRABLE NOT DEFERRABLE
+-- error 42601: syntax error: invalid constraint characteristics: INITIALLY DEFERRED INITIALLY IMMEDIATE
+-- error 42601: syntax error: invalid constraint characteristics: INITIALLY DEFERRED NOT DEFERRABLE
+-- error 42601: syntax error: invalid constraint characteristics: NOT DEFERRABLE INITIALLY DEFERRED
+
+-- # A constraint that's dropped, or whose table is dropped, isn't checked at
+-- # the COMMIT.
+CREATE TABLE t (x INT CONSTRAINT u UNIQUE INITIALLY DEFERRED);
+CREATE TABLE t2 (x INT CONSTRAINT u2 UNIQUE INITIALLY DEFERRED);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1), (1);
+INSERT INTO t2 (x) VALUES (1), (1);
+ALTER TABLE t DROP CONSTRAINT u;
+DROP TABLE t2;
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 2
+-- msg: INSERT 2
+-- msg: ALTER TABLE 1
+-- msg: DROP TABLE 1
+-- msg: COMMIT
+-- X: 1
+-- X: 1
+
+-- # A deferred constraint that's added is checked at the COMMIT.
+CREATE TABLE t (x INT);
+INSERT INTO t (x) VALUES (1), (1);
+START TRANSACTION;
+ALTER TABLE t ADD CONSTRAINT u UNIQUE (x) INITIALLY DEFERRED;
+ALTER TABLE t ADD COLUMN y INT DEFAULT 0 CHECK (y > 0) INITIALLY DEFERRED;
+DELETE FROM t;
+COMMIT;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: START TRANSACTION
+-- msg: ALTER TABLE 1
+-- msg: ALTER TABLE 1
+-- msg: DELETE 2
+-- msg: COMMIT
+
+CREATE TABLE t (
+  a INT UNIQUE,
+  b INT UNIQUE DEFERRABLE,
+  c INT UNIQUE INITIALLY DEFERRED DEFERRABLE,
+  d INT REFERENCES t (a) DEFERRABLE INITIALLY IMMEDIATE,
+  e INT CHECK (e > 0) NOT DEFERRABLE INITIALLY IMMEDIATE
+);
+SELECT CONSTRAINT_NAME, CONSTRAINT_TYPE, IS_DEFERRABLE, INITIALLY_DEFERRED FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS;
+-- msg: CREATE TABLE 1
+-- CONSTRAINT_NAME: T_UNIQUE_1 CONSTRAINT_TYPE: UNIQUE IS_DEFERRABLE: NO INITIALLY_DEFERRED: NO
+-- CONSTRAINT_NAME: T_UNIQUE_2 CONSTRAINT_TYPE: UNIQUE IS_DEFERRABLE: YES INITIALLY_DEFERRED: NO
+-- CONSTRAINT_NAME: T_UNIQUE_3 CONSTRAINT_TYPE: UNIQUE IS_DEFERRABLE: YES INITIALLY_DEFERRED: YES
+-- CONSTRAINT_NAME: T_FOREIGN_KEY_1 CONSTRAINT_TYPE: FOREIGN KEY IS_DEFERRABLE: YES INITIALLY_DEFERRED: NO
+-- CONSTRAINT_NAME: T_CHECK_1 CONSTRAINT_TYPE: CHECK IS_DEFERRABLE: NO INITIALLY_DEFERRED: NO
+
+-- # The characteristics are kept in the file, and in a dump.
+CREATE TABLE p (id INT PRIMARY KEY);
+CREATE TABLE t (x INT UNIQUE INITIALLY DEFERRED, y INT REFERENCES p DEFERRABLE, z INT CHECK (z > 0) NOT DEFERRABLE INITIALLY IMMEDIATE);
+/* out */
+/* in */
+/* out */
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- out: CREATE TABLE "PUBLIC"."P" (
+-- out:   "ID" INTEGER NOT NULL,
+-- out:   PRIMARY KEY ("ID")
+-- out: );
+-- out: CREATE TABLE "PUBLIC"."T" (
+-- out:   "X" INTEGER,
+-- out:   "Y" INTEGER,
+-- out:   "Z" INTEGER,
+-- out:   UNIQUE ("X") INITIALLY DEFERRED,
+-- out:   CHECK (Z > 0) NOT DEFERRABLE INITIALLY IMMEDIATE
+-- out: );
+-- out: ALTER TABLE "PUBLIC"."T" ADD CONSTRAINT "T_FOREIGN_KEY_1" FOREIGN KEY ("Y") REFERENCES "PUBLIC"."P" ("ID") DEFERRABLE;
+-- out: CREATE TABLE "PUBLIC"."P" (
+-- out:   "ID" INTEGER NOT NULL,
+-- out:   PRIMARY KEY ("ID")
+-- out: );
+-- out: CREATE TABLE "PUBLIC"."T" (
+-- out:   "X" INTEGER,
+-- out:   "Y" INTEGER,
+-- out:   "Z" INTEGER,
+-- out:   UNIQUE ("X") INITIALLY DEFERRED,
+-- out:   CHECK (Z > 0) NOT DEFERRABLE INITIALLY IMMEDIATE
+-- out: );
+-- out: ALTER TABLE "PUBLIC"."T" ADD CONSTRAINT "T_FOREIGN_KEY_1" FOREIGN KEY ("Y") REFERENCES "PUBLIC"."P" ("ID") DEFERRABLE;

@@ -321,7 +321,7 @@ fn check_constraints_view_rows(catalog_name string, table Table) [][]Value {
 // (ISO/IEC 9075-11:2016(E), 6.47, TABLE_CONSTRAINTS base table) for a table:
 // the PRIMARY KEY, then each UNIQUE, then each FOREIGN KEY, then the same check
 // constraints as the CHECK_CONSTRAINTS view, in the same order and with the
-// same names. Constraints can't be deferred or NOT ENFORCED yet.
+// same names. Constraints can't be NOT ENFORCED yet.
 fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 	if table.is_virtual {
 		return [][]Value{}
@@ -330,17 +330,25 @@ fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 	mut rows := [][]Value{}
 	if table.primary_key.len > 0 {
 		rows << table_constraints_view_row(catalog_name, table, table.primary_key_name,
-			'PRIMARY KEY')
+			'PRIMARY KEY', ConstraintCharacteristics{})
 	}
 	for constraint in table.unique_constraints {
-		rows << table_constraints_view_row(catalog_name, table, constraint.name, 'UNIQUE')
+		rows << table_constraints_view_row(catalog_name, table, constraint.name, 'UNIQUE',
+			constraint.characteristics)
 	}
 	for key in table.foreign_keys {
-		rows << table_constraints_view_row(catalog_name, table, key.name, 'FOREIGN KEY')
+		rows << table_constraints_view_row(catalog_name, table, key.name, 'FOREIGN KEY',
+			key.characteristics)
 	}
-	for row in check_constraints_view_rows(catalog_name, table) {
-		rows << table_constraints_view_row(catalog_name, table, row[2].string_value(),
-			'CHECK')
+	for column in table.columns {
+		if column.not_null {
+			rows << table_constraints_view_row(catalog_name, table, table.not_null_names[column.name.sub_entity_name],
+				'CHECK', ConstraintCharacteristics{})
+		}
+	}
+	for constraint in table.check_constraints {
+		rows << table_constraints_view_row(catalog_name, table, constraint.name.entity_name,
+			'CHECK', constraint.characteristics)
 	}
 
 	return rows
@@ -378,7 +386,7 @@ fn referential_constraints_view_row(catalog_name string, table Table, i int, ref
 }
 
 // table_constraints_view_row is a row of the TABLE_CONSTRAINTS view.
-fn table_constraints_view_row(catalog_name string, table Table, name string, constraint_type string) []Value {
+fn table_constraints_view_row(catalog_name string, table Table, name string, constraint_type string, characteristics ConstraintCharacteristics) []Value {
 	return [
 		new_varchar_value(catalog_name), // CONSTRAINT_CATALOG
 		new_varchar_value(table.name.schema_name), // CONSTRAINT_SCHEMA
@@ -387,8 +395,8 @@ fn table_constraints_view_row(catalog_name string, table Table, name string, con
 		new_varchar_value(table.name.schema_name), // TABLE_SCHEMA
 		new_varchar_value(table.name.entity_name), // TABLE_NAME
 		new_varchar_value(constraint_type), // CONSTRAINT_TYPE
-		new_varchar_value('NO'), // IS_DEFERRABLE
-		new_varchar_value('NO'), // INITIALLY_DEFERRED
+		yes_or_no(characteristics.is_deferrable()), // IS_DEFERRABLE
+		yes_or_no(characteristics.is_initially_deferred()), // INITIALLY_DEFERRED
 		new_varchar_value('YES'), // ENFORCED
 	]
 }

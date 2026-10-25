@@ -449,6 +449,17 @@ fn (t Table) find_constraint(name Identifier) !(ConstraintKind, int) {
 	return sqlstate_42704('constraint', '${name} on ${t.name}')
 }
 
+// constraint_characteristics are the characteristics of the constraint that
+// find_constraint found. A NOT NULL or PRIMARY KEY is never deferrable.
+fn (t Table) constraint_characteristics(kind ConstraintKind, i int) ConstraintCharacteristics {
+	return match kind {
+		.unique { t.unique_constraints[i].characteristics }
+		.foreign_key { t.foreign_keys[i].characteristics }
+		.check { t.check_constraints[i].characteristics }
+		else { ConstraintCharacteristics{} }
+	}
+}
+
 // table_object_key is the key of the definition of a table.
 fn table_object_key(table_id u64) []u8 {
 	mut key := new_empty_bytes()

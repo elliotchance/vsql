@@ -37,6 +37,26 @@ fn (e CheckConstraintDefinition) compile(mut conn Connection, table Table) !Comp
 		check_constraint:       true
 		check_column:           e.column_name
 	}
+	return e.compile_with(mut c)
+}
+
+// columns are the names of the columns of the table that the constraint uses.
+fn (e CheckConstraintDefinition) columns(mut conn Connection, table Table) ![]string {
+	mut c := Compiler{
+		conn:             conn
+		params:           map[string]Value{}
+		tables:           {
+			table.name.id(): table
+		}
+		context:          table.name
+		check_constraint: true
+	}
+	e.compile_with(mut c)!
+
+	return c.check_columns.keys()
+}
+
+fn (e CheckConstraintDefinition) compile_with(mut c Compiler) !CompileResult {
 	compiled := e.search_condition.compile(mut c)!
 
 	if compiled.contains_agg {

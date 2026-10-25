@@ -17,6 +17,12 @@ transactions can't change the same row at the same time. The second one gets a
 ``40001`` serialization failure, and its transaction is rolled back so that it
 can be retried.
 
+The same applies to a table definition that's changed by a transaction that
+isn't committed yet (such as with ``CREATE TABLE`` or ``ALTER TABLE``). Another
+transaction can't write to that table, or delete or update rows of a table that
+a new ``FOREIGN KEY`` references, until it's committed or rolled back. Either
+transaction (whichever is second) gets a ``40001``.
+
 A statement that isn't inside a ``START TRANSACTION`` runs in a transaction of
 its own, which is committed when the statement finishes.
 

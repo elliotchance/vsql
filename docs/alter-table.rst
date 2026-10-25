@@ -39,6 +39,8 @@ Every existing row gets the ``DEFAULT`` of the new column, which is ``NULL``
 if the column doesn't have one. A default such as ``CURRENT_TIMESTAMP`` is
 evaluated once, so all of the existing rows get the same value. Except for an
 identity column, where each existing row gets the next value of its sequence.
+A generated column (see :doc:`create-table`) can't be added yet, it's an error
+``0A000``.
 
 The existing rows must satisfy the constraints of the new column, otherwise the
 column isn't added:
@@ -72,7 +74,8 @@ The options of an identity column change its sequence, the same way as
 ``START WITH``. ``SET NO MINVALUE`` and ``SET NO MAXVALUE`` use the defaults of
 an identity column (see :doc:`create-table`). The ``DEFAULT`` of an identity
 column can't be changed, and the options can only be used for an identity column
-(both are an error ``42601``).
+(both are an error ``42601``). A generated column can't have a ``DEFAULT``
+(an error ``42601``).
 
 Only the definition of the table is changed. The existing rows keep their
 values, and the new default is used by the rows that are inserted after it.

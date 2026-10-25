@@ -173,3 +173,136 @@ fn check_identity_sequence(t Type, s Sequence) ! {
 
 	s.check()!
 }
+
+// GenerationClause is the <generation clause> of a generated column. The value
+// of the column in a row is the result of its generation expression for the
+// row (4.15.13), which can only use the base columns of the table.
+struct GenerationClause {
+	expr ValueExpression
+	// infer_type is set when the column definition doesn't have a data type, so
+	// the column has the declared type of the expression (Syntax Rule 13c). It's
+	// not in the file, which always has the data type (see Table.bytes).
+	infer_type bool
+}
+
+// str is how the generated column is stored in the file as part of the CREATE
+// TABLE (see Table.bytes).
+fn (g GenerationClause) str() string {
+	return 'GENERATED ALWAYS AS (${g.expr.pstr(map[string]Value{})})'
+}
+
+// compile returns the generation expression of the column, to be evaluated for
+// a row of the table, or an error if it can't be used in a generation
+// expression (Syntax Rules 1 and 10). The table doesn't need to exist yet, so
+// it can be checked by the CREATE TABLE.
+fn (g GenerationClause) compile(mut conn Connection, table Table, column Column) !CompileResult {
+	mut c := Compiler{
+		conn:                   conn
+		params:                 map[string]Value{}
+		tables:                 {
+			table.name.id(): table
+		}
+		context:                table.name
+		next_value_not_allowed: 'a generation expression'
+		restricted:             'a generation expression'
+		generation_column:      column.name.sub_entity_name
+	}
+	compiled := g.expr.compile(mut c)!
+
+	if compiled.contains_agg {
+		return sqlstate_42601('an aggregate function cannot be used in a generation expression')
+	}
+
+	return compiled
+}
+
+// columns are the names of the columns of the table that the generation
+// expression uses.
+fn (g GenerationClause) columns(mut conn Connection, table Table, column Column) ![]string {
+	mut c := Compiler{
+		conn:              conn
+		params:            map[string]Value{}
+		tables:            {
+			table.name.id(): table
+		}
+		context:           table.name
+		restricted:        'a generation expression'
+		generation_column: column.name.sub_entity_name
+	}
+	g.expr.compile(mut c)!
+
+	return c.check_columns.keys()
+}
+
+// resolve_generated_columns checks the generation expression of each generated
+// column of a new table. A generated column without a data type gets the
+// declared type of its expression, otherwise the expression must be assignable
+// to the data type (Syntax Rule 13).
+fn resolve_generated_columns(mut conn Connection, mut table Table) ! {
+	for i, column in table.columns {
+		generated := column.generated or { continue }
+		typ := generated.compile(mut conn, table, column)!.typ
+		if generated.infer_type {
+			table.columns[i] = Column{
+				...column
+				typ: typ
+			}
+		} else {
+			check_assignable(typ, column.typ)!
+		}
+	}
+}
+
+// GeneratedColumns are the compiled generation expressions of a table, so
+// they're only compiled once for a statement that writes many rows.
+struct GeneratedColumns {
+	table   Table
+	columns []Column
+	exprs   []CompileResult
+}
+
+fn new_generated_columns(mut conn Connection, table Table) !GeneratedColumns {
+	mut columns := []Column{}
+	mut exprs := []CompileResult{}
+	for column in table.columns {
+		if generated := column.generated {
+			columns << column
+			exprs << generated.compile(mut conn, table, column)!
+		}
+	}
+
+	return GeneratedColumns{table, columns, exprs}
+}
+
+// apply sets each generated column of a new row to the result of its generation
+// expression. The row is how it's written to the table, keyed by the column
+// names (see Row.for_storage). A generated column can't use another generated
+// column, so the order doesn't matter.
+//
+// ISO/IEC 9075-2:2016(E), 15.10, Effect of inserting tables into base tables,
+// General Rule 5a
+// ISO/IEC 9075-2:2016(E), 15.13, Effect of replacing rows in base tables,
+// General Rule 8
+fn (g GeneratedColumns) apply(mut conn Connection, mut row Row) ! {
+	if g.columns.len == 0 {
+		return
+	}
+
+	// The expressions use the full column names, like a row that's read from
+	// the table.
+	mut data := map[string]Value{}
+	for column in g.table.columns {
+		data[column.name.id()] = row.data[column.name.sub_entity_name]
+	}
+	full_row := new_row(data)
+
+	for i, column in g.columns {
+		column_name := column.name.sub_entity_name
+		raw_value := g.exprs[i].run(mut conn, full_row, map[string]Value{})!
+		value := cast(mut conn, 'for column ${column_name}', raw_value, column.typ)!
+		if value.is_null && column.not_null {
+			return sqlstate_23502('column ${column_name}')
+		}
+		row.data[column_name] = value
+	}
+}

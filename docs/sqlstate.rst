@@ -678,8 +678,8 @@ There is no function or operator with that name for the types of its arguments.
 ``428C9`` generated always
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-An identity column that's ``GENERATED ALWAYS`` can only be assigned
-``DEFAULT``, see :doc:`create-table`.
+A generated column, or an identity column that's ``GENERATED ALWAYS``, can only
+be assigned ``DEFAULT``, see :doc:`create-table`.
 
 **Examples**
 

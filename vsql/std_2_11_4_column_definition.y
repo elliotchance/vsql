@@ -29,6 +29,26 @@ column_definition:
       }),
     ]
   }
+| column_name data_type_or_domain_name generation_clause {
+    $$.v = [
+      TableElement(Column{
+        name:      $1.v as Identifier
+        typ:       $2.v as Type
+        generated: $3.v as GenerationClause
+      }),
+    ]
+  }
+| column_name generation_clause {
+    $$.v = [
+      TableElement(Column{
+        name:      $1.v as Identifier
+        generated: GenerationClause{
+          ...$2.v as GenerationClause
+          infer_type: true
+        }
+      }),
+    ]
+  }
 | column_definition column_constraint_definition {
     $$.v = add_column_constraint($1.v as []TableElement, $2.v as ColumnConstraint)
   }
@@ -88,5 +108,15 @@ identity_column_specification:
       options: $7.v as []SequenceGeneratorOption
     }
   }
+
+// The <generation rule> (GENERATED ALWAYS) isn't its own rule, otherwise it
+// would conflict with the <identity column specification>.
+generation_clause:
+  GENERATED ALWAYS AS generation_expression {
+    $$.v = GenerationClause{expr: $4.v as ValueExpression}
+  }
+
+generation_expression:
+  left_paren value_expression right_paren { $$.v = $2.v as ValueExpression }
 
 %%

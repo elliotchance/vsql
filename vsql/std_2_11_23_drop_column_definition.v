@@ -22,14 +22,35 @@ struct DropColumnDefinition {
 // has the column as one of its columns or referenced columns (of any table),
 // because it also uses the columns of the other side.
 //
+// A generated column whose generation expression uses the column can also only
+// be dropped with CASCADE (Syntax Rule 7f), which drops it first (General Rule
+// 3).
+//
 // The rows are written again, because the values of a row are stored in the
 // order of the columns (see Row.bytes). The current value of the sequence of
 // an identity column is dropped with it.
-fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table) ! {
+fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConnection, original_table Table) ! {
+	mut table := original_table
 	column := table.column(d.column_name.sub_entity_name)!
 	name := column.name.sub_entity_name
-	if table.columns.len == 1 {
+	mut generated_columns := []Column{}
+	for generated_column in table.columns {
+		generated := generated_column.generated or { continue }
+		if generated_column.name.sub_entity_name != name
+			&& name in generated.columns(mut conn, table, generated_column)! {
+			generated_columns << generated_column
+		}
+	}
+	if table.columns.len - generated_columns.len == 1 {
 		return sqlstate_42601('cannot drop the only column of ${table.name}')
+	}
+	if generated_columns.len > 0 && d.behavior == 'RESTRICT' {
+		return sqlstate_2bp01('column ${requote_identifier(generated_columns[0].name.sub_entity_name)} on ${table.name}')
+	}
+	for generated_column in generated_columns {
+		DropColumnDefinition{generated_column.name, 'CASCADE'}.execute(mut conn, mut catalog,
+			table)!
+		table = catalog.storage.table(table.name.storage_id())
 	}
 
 	// The constraints that need CASCADE, as the table and constraint names.

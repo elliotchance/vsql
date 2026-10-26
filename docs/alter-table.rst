@@ -19,7 +19,9 @@ Syntax
     | ADD [ CONSTRAINT <constraint_name> ] <table_constraint>
     | DROP CONSTRAINT <constraint_name> [ CASCADE | RESTRICT ]
 
-  <column_definition> := <column_name> <data_type> [ DEFAULT <default> | <identity> ]
+  <column_definition> := <column_name> <data_type> [ DEFAULT <default> | <identity> | <generated> ]
+                         [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
+                       | <column_name> <generated>
                          [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
 
   <identity_option> := RESTART [ WITH <value> ]
@@ -38,9 +40,9 @@ name, ``DEFAULT`` and constraints.
 Every existing row gets the ``DEFAULT`` of the new column, which is ``NULL``
 if the column doesn't have one. A default such as ``CURRENT_TIMESTAMP`` is
 evaluated once, so all of the existing rows get the same value. Except for an
-identity column, where each existing row gets the next value of its sequence.
-A generated column (see :doc:`create-table`) can't be added yet, it's an error
-``0A000``.
+identity column, where each existing row gets the next value of its sequence,
+and a generated column, where each existing row gets the result of its
+expression for that row.
 
 The existing rows must satisfy the constraints of the new column, otherwise the
 column isn't added:

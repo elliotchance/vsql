@@ -156,6 +156,48 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			t.done()
 		})!
 
+	// ISO/IEC 9075-11:2016(E), 5.32, KEY_COLUMN_USAGE view
+	catalog.add_information_schema_table('CREATE TABLE KEY_COLUMN_USAGE (
+		CONSTRAINT_CATALOG ${id} NOT NULL,
+		CONSTRAINT_SCHEMA ${id} NOT NULL,
+		CONSTRAINT_NAME ${id} NOT NULL,
+		TABLE_CATALOG ${id} NOT NULL,
+		TABLE_SCHEMA ${id} NOT NULL,
+		TABLE_NAME ${id} NOT NULL,
+		COLUMN_NAME ${id} NOT NULL,
+		ORDINAL_POSITION ${cn} NOT NULL,
+		POSITION_IN_UNIQUE_CONSTRAINT ${cn}
+	)',
+		fn [c] (mut t VirtualTable) ! {
+			for table in c.information_schema_tables() {
+				if table.is_virtual {
+					continue
+				}
+				if table.primary_key.len > 0 {
+					for row in key_column_usage_view_rows(c.catalog_name, table, table.primary_key_name,
+						table.primary_key, []int{}) {
+						t.next_values(row)
+					}
+				}
+				for constraint in table.unique_constraints {
+					for row in key_column_usage_view_rows(c.catalog_name, table, constraint.name,
+						constraint.columns, []int{}) {
+						t.next_values(row)
+					}
+				}
+				for key in table.foreign_keys {
+					referenced := c.storage.table(key.referenced_table.storage_id())
+					_, unique_columns := unique_constraint_for(referenced, key.referenced_columns)
+					positions := key.referenced_columns.map(unique_columns.index(it) + 1)
+					for row in key_column_usage_view_rows(c.catalog_name, table, key.name,
+						key.columns, positions) {
+						t.next_values(row)
+					}
+				}
+			}
+			t.done()
+		})!
+
 	// ISO/IEC 9075-11:2016(E), 5.37, REFERENTIAL_CONSTRAINTS view
 	catalog.add_information_schema_table('CREATE TABLE REFERENTIAL_CONSTRAINTS (
 		CONSTRAINT_CATALOG ${id} NOT NULL,
@@ -385,16 +427,7 @@ fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 // has the referenced columns, with its name in the TABLE_CONSTRAINTS view. A
 // FOREIGN KEY can't have a MATCH yet (so it's NONE, Description 3).
 fn referential_constraints_view_row(catalog_name string, table Table, i int, referenced Table) []Value {
-	mut columns := table.foreign_keys[i].referenced_columns.clone()
-	columns.sort()
-	mut unique_constraint_name := referenced.primary_key_name
-	for constraint in referenced.unique_constraints {
-		mut sorted := constraint.columns.clone()
-		sorted.sort()
-		if sorted == columns {
-			unique_constraint_name = constraint.name
-		}
-	}
+	unique_constraint_name, _ := unique_constraint_for(referenced, table.foreign_keys[i].referenced_columns)
 
 	return [
 		new_varchar_value(catalog_name), // CONSTRAINT_CATALOG
@@ -407,6 +440,51 @@ fn referential_constraints_view_row(catalog_name string, table Table, i int, ref
 		new_varchar_value(table.foreign_keys[i].update_action()), // UPDATE_RULE
 		new_varchar_value(table.foreign_keys[i].delete_action()), // DELETE_RULE
 	]
+}
+
+// unique_constraint_for returns the name and columns of the PRIMARY KEY or
+// UNIQUE of a table that has the referenced columns of a FOREIGN KEY (in any
+// order).
+fn unique_constraint_for(referenced Table, referenced_columns []string) (string, []string) {
+	mut columns := referenced_columns.clone()
+	columns.sort()
+	for constraint in referenced.unique_constraints {
+		mut sorted := constraint.columns.clone()
+		sorted.sort()
+		if sorted == columns {
+			return constraint.name, constraint.columns
+		}
+	}
+
+	return referenced.primary_key_name, referenced.primary_key
+}
+
+// key_column_usage_view_rows are the rows of the KEY_COLUMN_USAGE view (ISO/IEC
+// 9075-11:2016(E), 6.28, KEY_COLUMN_USAGE base table) for the columns of a
+// PRIMARY KEY, UNIQUE or FOREIGN KEY. The positions are the
+// POSITION_IN_UNIQUE_CONSTRAINT of each column of a FOREIGN KEY: the position
+// of the referenced column in the unique constraint that it references.
+fn key_column_usage_view_rows(catalog_name string, table Table, name string, columns []string, positions []int) [][]Value {
+	mut rows := [][]Value{}
+	for i, column in columns {
+		rows << [
+			new_varchar_value(catalog_name), // CONSTRAINT_CATALOG
+			new_varchar_value(table.name.schema_name), // CONSTRAINT_SCHEMA
+			new_varchar_value(name), // CONSTRAINT_NAME
+			new_varchar_value(catalog_name), // TABLE_CATALOG
+			new_varchar_value(table.name.schema_name), // TABLE_SCHEMA
+			new_varchar_value(table.name.entity_name), // TABLE_NAME
+			new_varchar_value(column), // COLUMN_NAME
+			new_integer_value(i + 1), // ORDINAL_POSITION
+			if positions.len > 0 {
+				new_integer_value(positions[i])
+			} else {
+				new_null_value(.is_integer)
+			}, // POSITION_IN_UNIQUE_CONSTRAINT
+		]
+	}
+
+	return rows
 }
 
 // table_constraints_view_row is a row of the TABLE_CONSTRAINTS view.

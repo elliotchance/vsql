@@ -1943,7 +1943,7 @@ here.
    * - ❌ **F251**
      - **Domain support**
 
-   * - ❌ **F341**
+   * - ⭕ **F341**
      - **Usage tables**
 
    * - ❌ **F391**

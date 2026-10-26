@@ -249,6 +249,12 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_TRANSACTION_REPEATABLE_READ  0x00000004L /* not supported */
 #define SQL_TRANSACTION_SERIALIZABLE     0x00000008L /* not supported */
 
+/* Special values for the catalog routines. */
+#define SQL_ALL_CATALOGS    "%" /* every catalog (SQLTables) */
+#define SQL_ALL_SCHEMAS     "%" /* every schema (SQLTables) */
+#define SQL_ALL_TABLE_TYPES "%" /* every table type (SQLTables) */
+#define SQL_ALL_TYPES       0   /* every data type (SQLGetTypeInfo) */
+
 /* SQLBindParameter InputOutputModes. */
 #define SQL_PARAM_MODE_IN    1 /* an input parameter */
 #define SQL_PARAM_MODE_INOUT 2 /* the same as an input parameter */
@@ -505,6 +511,36 @@ SQLRETURN SQLColAttribute(
     SQLSMALLINT  BufferLength,
     SQLSMALLINT *StringLength,
     SQLINTEGER  *NumericAttribute
+);
+
+/*
+ * SQLColumns returns a result set (like a query) that describes the columns of
+ * tables, from the INFORMATION_SCHEMA. Its columns are TABLE_CAT, TABLE_SCHEM,
+ * TABLE_NAME, COLUMN_NAME, DATA_TYPE (such as SQL_INTEGER), TYPE_NAME,
+ * COLUMN_SIZE, BUFFER_LENGTH, DECIMAL_DIGITS, NUM_PREC_RADIX, NULLABLE,
+ * REMARKS, COLUMN_DEF, SQL_DATA_TYPE, SQL_DATETIME_SUB, CHAR_OCTET_LENGTH,
+ * ORDINAL_POSITION and IS_NULLABLE (and others, see the standard).
+ *
+ * Each name argument is a LIKE pattern (where "\" escapes "%" and "_"), and a
+ * null pointer (or a zero-length string) matches anything. If the statement's
+ * SQL_ATTR_METADATA_ID is SQL_TRUE, they are identifiers instead: they can't
+ * be null pointers, and they're case insensitive unless they're quoted.
+ *
+ *   SQLColumns(stmt, NULL, 0, NULL, 0, (SQLCHAR *)"FOO", SQL_NTS, NULL, 0);
+ *   while (SQLFetch(stmt) == SQL_SUCCESS) {
+ *     SQLGetData(stmt, 4, SQL_CHAR, name, sizeof(name), NULL);
+ *   }
+ */
+SQLRETURN SQLColumns(
+    SQLHSTMT     StatementHandle,
+    SQLCHAR     *CatalogName,
+    SQLSMALLINT  NameLength1,
+    SQLCHAR     *SchemaName,
+    SQLSMALLINT  NameLength2,
+    SQLCHAR     *TableName,
+    SQLSMALLINT  NameLength3,
+    SQLCHAR     *ColumnName,
+    SQLSMALLINT  NameLength4
 );
 
 /*
@@ -967,6 +1003,19 @@ SQLRETURN SQLGetStmtAttr(
 );
 
 /*
+ * SQLGetTypeInfo returns a result set that describes a data type (such as
+ * SQL_VARCHAR), or each data type (SQL_ALL_TYPES). Its columns are TYPE_NAME,
+ * DATA_TYPE, COLUMN_SIZE, LITERAL_PREFIX, LITERAL_SUFFIX, CREATE_PARAMS,
+ * NULLABLE, CASE_SENSITIVE, SEARCHABLE, UNSIGNED_ATTRIBUTE, FIXED_PREC_SCALE,
+ * AUTO_UNIQUE_VALUE, LOCAL_TYPE_NAME, MINIMUM_SCALE, MAXIMUM_SCALE,
+ * SQL_DATA_TYPE, SQL_DATETIME_SUB, NUM_PREC_RADIX and INTERVAL_PRECISION.
+ */
+SQLRETURN SQLGetTypeInfo(
+    SQLHSTMT    StatementHandle,
+    SQLSMALLINT DataType
+);
+
+/*
  * SQLNumResultCols sets ColumnCount to the number of columns of the cursor, or
  * 0 for a statement that isn't a query.
  *
@@ -1160,6 +1209,33 @@ SQLRETURN SQLStartTran(
     SQLINTEGER  Handle,
     SQLINTEGER  AccessMode,
     SQLINTEGER  IsolationLevel
+);
+
+/*
+ * SQLTables returns a result set that describes tables, from the
+ * INFORMATION_SCHEMA. Its columns are TABLE_CAT, TABLE_SCHEM, TABLE_NAME,
+ * TABLE_TYPE ("TABLE", "VIEW" or "SYSTEM TABLE"), REMARKS, SELF_REF_COLUMN,
+ * REF_GENERATION, UDT_CAT, UDT_SCHEM and UDT_NAME. The name arguments are the
+ * same as SQLColumns, and TableType is a comma-separated list of types (each
+ * may be quoted), or a null pointer for any type.
+ *
+ * SQL_ALL_CATALOGS (with no SchemaName or TableName) returns the catalogs,
+ * SQL_ALL_SCHEMAS (with no CatalogName or TableName) returns the schemas, and
+ * SQL_ALL_TABLE_TYPES (with no other names) returns the table types.
+ *
+ *   SQLTables(stmt, NULL, 0, (SQLCHAR *)"PUBLIC", SQL_NTS, NULL, 0,
+ *             (SQLCHAR *)"TABLE", SQL_NTS);
+ */
+SQLRETURN SQLTables(
+    SQLHSTMT     StatementHandle,
+    SQLCHAR     *CatalogName,
+    SQLSMALLINT  NameLength1,
+    SQLCHAR     *SchemaName,
+    SQLSMALLINT  NameLength2,
+    SQLCHAR     *TableName,
+    SQLSMALLINT  NameLength3,
+    SQLCHAR     *TableType,
+    SQLSMALLINT  NameLength4
 );
 
 #ifdef __cplusplus

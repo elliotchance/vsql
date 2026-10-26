@@ -11,7 +11,9 @@ fn main() {
 	for line in os.read_lines('libvsql/libvsql.h')! {
 		if line.starts_with('#define SQL_') {
 			fields := line.fields()
-			c_consts[fields[1].to_lower()] = fields[2].trim('()').trim_right('L')
+			// A string is "..." in C and '...' in V.
+			c_consts[fields[1].to_lower()] = fields[2].trim('()').trim_right('L').replace('"',
+				"'")
 		}
 	}
 

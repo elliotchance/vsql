@@ -122,6 +122,31 @@ static const char *desc_string(SQLHDESC desc, SQLSMALLINT rn,
   return (const char *)value;
 }
 
+/* fetch_strings fetches every row of the cursor and joins the string value of
+ * a column of each row with ",", then closes the cursor. A NULL is "NULL". */
+static const char *fetch_strings(SQLHSTMT stmt, SQLSMALLINT column) {
+  static char result[2000];
+  char value[200];
+  SQLINTEGER ind;
+
+  result[0] = 0;
+  while (SQLFetch(stmt) == SQL_SUCCESS) {
+    if (SQLGetData(stmt, column, SQL_CHAR, value, sizeof(value), &ind) !=
+        SQL_SUCCESS) {
+      strcpy(value, "(error)");
+    } else if (ind == SQL_NULL_DATA) {
+      strcpy(value, "NULL");
+    }
+    if (result[0]) {
+      strcat(result, ",");
+    }
+    strcat(result, value);
+  }
+  SQLCloseCursor(stmt);
+
+  return result;
+}
+
 /* The handles are freed even if the test already freed some of them, so the
  * return values are ignored. */
 static void free_handles(SQLHENV env, SQLHDBC dbc, SQLHSTMT stmt) {
@@ -801,6 +826,97 @@ UTEST_F(db, 6_9_col_attribute_not_a_query) {
                             NULL, &value),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07005");
+}
+
+/* 6.11 Columns */
+
+UTEST_F(db, 6_11_columns) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "CREATE TABLE t (a INT NOT NULL, b VARCHAR(10) DEFAULT "
+                    "'x', c NUMERIC(5, 2), d TIMESTAMP(3))"),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE u (x INT)"),
+            SQL_SUCCESS);
+
+#define COLUMNS(column)                                                        \
+  (SQLColumns(utest_fixture->stmt, NULL, 0, NULL, 0, (SQLCHAR *)"T", SQL_NTS,  \
+              NULL, 0) == SQL_SUCCESS                                          \
+       ? fetch_strings(utest_fixture->stmt, column)                            \
+       : "(error)")
+
+  EXPECT_STREQ(COLUMNS(1), ":memory:,:memory:,:memory:,:memory:");
+  EXPECT_STREQ(COLUMNS(2), "PUBLIC,PUBLIC,PUBLIC,PUBLIC");
+  EXPECT_STREQ(COLUMNS(3), "T,T,T,T");
+  EXPECT_STREQ(COLUMNS(4), "A,B,C,D");
+  EXPECT_STREQ(COLUMNS(5), "4,12,2,93");
+  EXPECT_STREQ(COLUMNS(6), "INTEGER,CHARACTER VARYING,NUMERIC,TIMESTAMP");
+  EXPECT_STREQ(COLUMNS(7), "10,10,5,23");
+  EXPECT_STREQ(COLUMNS(9), "0,NULL,2,3");
+  EXPECT_STREQ(COLUMNS(10), "2,NULL,10,NULL");
+  EXPECT_STREQ(COLUMNS(11), "0,1,1,1");
+  EXPECT_STREQ(COLUMNS(13), "NULL,'x',NULL,NULL");
+  EXPECT_STREQ(COLUMNS(14), "4,12,2,9");
+  EXPECT_STREQ(COLUMNS(15), "NULL,NULL,NULL,3");
+  EXPECT_STREQ(COLUMNS(16), "NULL,40,NULL,NULL");
+  EXPECT_STREQ(COLUMNS(17), "1,2,3,4");
+  EXPECT_STREQ(COLUMNS(18), "NO,YES,YES,YES");
+  EXPECT_STREQ(COLUMNS(21), "NULL,UTF8,NULL,NULL");
+#undef COLUMNS
+}
+
+/* The names are patterns. */
+UTEST_F(db, 6_11_columns_pattern) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (a_b INT, axb INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLColumns(utest_fixture->stmt, NULL, 0, NULL, 0, (SQLCHAR *)"%",
+                       SQL_NTS, (SQLCHAR *)"A\\_%", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 4), "A_B");
+  ASSERT_EQ(SQLColumns(utest_fixture->stmt, NULL, 0, NULL, 0, (SQLCHAR *)"T",
+                       SQL_NTS, (SQLCHAR *)"A_B", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 4), "A_B,AXB");
+}
+
+/* With METADATA ID, the names are identifiers. */
+UTEST_F(db, 6_11_columns_metadata_id) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (a INT, \"b\" INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID,
+                           (SQLPOINTER)SQL_TRUE, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLColumns(utest_fixture->stmt, (SQLCHAR *)"", SQL_NTS,
+                       (SQLCHAR *)"public", SQL_NTS, (SQLCHAR *)"t", SQL_NTS,
+                       (SQLCHAR *)"a", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 4), "A");
+  ASSERT_EQ(SQLColumns(utest_fixture->stmt, (SQLCHAR *)"", SQL_NTS,
+                       (SQLCHAR *)"public", SQL_NTS, (SQLCHAR *)"t", SQL_NTS,
+                       (SQLCHAR *)"\"b\"", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 4), "b");
+  ASSERT_EQ(SQLColumns(utest_fixture->stmt, (SQLCHAR *)"", SQL_NTS,
+                       (SQLCHAR *)"public", SQL_NTS, (SQLCHAR *)"t", SQL_NTS,
+                       (SQLCHAR *)"\"B\"", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 4), "");
+
+  EXPECT_EQ(SQLColumns(utest_fixture->stmt, NULL, 0, (SQLCHAR *)"public",
+                       SQL_NTS, (SQLCHAR *)"t", SQL_NTS, (SQLCHAR *)"a",
+                       SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
+}
+
+UTEST_F(db, 6_11_columns_invalid) {
+  EXPECT_EQ(SQLColumns(utest_fixture->stmt, NULL, 0, NULL, 0, (SQLCHAR *)"T",
+                       -5, NULL, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY090");
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLColumns(utest_fixture->stmt, NULL, 0, NULL, 0, NULL, 0, NULL, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
 }
 
 /* 6.12 Connect */
@@ -3196,6 +3312,37 @@ UTEST_F(db, 6_43_get_stmt_attr_invalid) {
       SQL_INVALID_HANDLE);
 }
 
+/* 6.45 GetTypeInfo */
+
+UTEST_F(db, 6_45_get_type_info) {
+  ASSERT_EQ(SQLGetTypeInfo(utest_fixture->stmt, SQL_ALL_TYPES), SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 2),
+               "1,2,3,4,5,6,7,8,12,16,25,91,92,93,94,95");
+
+  ASSERT_EQ(SQLGetTypeInfo(utest_fixture->stmt, SQL_ALL_TYPES), SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 1),
+               "CHARACTER,NUMERIC,DECIMAL,INTEGER,SMALLINT,FLOAT,REAL,DOUBLE "
+               "PRECISION,CHARACTER VARYING,BOOLEAN,BIGINT,DATE,TIME,"
+               "TIMESTAMP,TIME WITH TIME ZONE,TIMESTAMP WITH TIME ZONE");
+}
+
+UTEST_F(db, 6_45_get_type_info_one) {
+  ASSERT_EQ(SQLGetTypeInfo(utest_fixture->stmt, SQL_TYPE_DATE), SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 4), "DATE '");
+  ASSERT_EQ(SQLGetTypeInfo(utest_fixture->stmt, SQL_VARCHAR), SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 6), "LENGTH");
+  ASSERT_EQ(SQLGetTypeInfo(utest_fixture->stmt, SQL_NUMERIC), SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 15), "1000");
+}
+
+/* A data type that vsql doesn't support has no rows. */
+UTEST_F(db, 6_45_get_type_info_unsupported) {
+  ASSERT_EQ(SQLGetTypeInfo(utest_fixture->stmt, 30), SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 1), "");
+  EXPECT_EQ(SQLGetTypeInfo(utest_fixture->stmt, 999), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY004");
+}
+
 /* 6.48 NumResultCols */
 
 UTEST_F(db, 6_48_num_result_cols) {
@@ -4180,6 +4327,79 @@ UTEST_F(env, 6_61_start_tran_not_connected) {
                          SQL_TRANSACTION_READ_WRITE,
                          SQL_TRANSACTION_READ_COMMITTED),
             SQL_SUCCESS);
+}
+
+/* 6.63 Tables */
+
+UTEST_F(db, 6_63_tables) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t2 (x INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t1 (x INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLTables(utest_fixture->stmt, NULL, 0, NULL, 0, NULL, 0,
+                      (SQLCHAR *)"TABLE", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 3), "T1,T2");
+
+  ASSERT_EQ(SQLTables(utest_fixture->stmt, (SQLCHAR *)":memory:", SQL_NTS,
+                      (SQLCHAR *)"PUB%", SQL_NTS, (SQLCHAR *)"T1", SQL_NTS,
+                      NULL, 0),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 4), "TABLE");
+}
+
+/* The views of the INFORMATION_SCHEMA are SYSTEM TABLEs. */
+UTEST_F(db, 6_63_tables_system) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLTables(utest_fixture->stmt, NULL, 0, NULL, 0,
+                      (SQLCHAR *)"TABLES", SQL_NTS,
+                      (SQLCHAR *)"'SYSTEM TABLE', TABLE", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 2), "INFORMATION_SCHEMA");
+}
+
+/* The special values return the catalogs, schemas or table types. */
+UTEST_F(db, 6_63_tables_special) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLTables(utest_fixture->stmt, (SQLCHAR *)SQL_ALL_CATALOGS, SQL_NTS,
+                      (SQLCHAR *)"", 0, (SQLCHAR *)"", 0, NULL, 0),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 1), ":memory:");
+  ASSERT_EQ(SQLTables(utest_fixture->stmt, (SQLCHAR *)"", 0,
+                      (SQLCHAR *)SQL_ALL_SCHEMAS, SQL_NTS, (SQLCHAR *)"", 0,
+                      NULL, 0),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 2),
+               "INFORMATION_SCHEMA,PUBLIC");
+  ASSERT_EQ(SQLTables(utest_fixture->stmt, (SQLCHAR *)"", 0, (SQLCHAR *)"", 0,
+                      (SQLCHAR *)"", 0, (SQLCHAR *)SQL_ALL_TABLE_TYPES,
+                      SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 4), "SYSTEM TABLE,TABLE");
+}
+
+/* "\" escapes a "_" in a pattern. */
+UTEST_F(db, 6_63_tables_escape) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE a_b (x INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE axb (x INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLTables(utest_fixture->stmt, NULL, 0, NULL, 0, (SQLCHAR *)"A\\_B",
+                      SQL_NTS, NULL, 0),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 3), "A_B");
+}
+
+UTEST_F(db, 6_63_tables_metadata_id) {
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID,
+                           (SQLPOINTER)SQL_TRUE, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLTables(utest_fixture->stmt, (SQLCHAR *)"", 0, NULL, 0,
+                      (SQLCHAR *)"T", SQL_NTS, NULL, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
 }
 
 UTEST_MAIN()

@@ -510,6 +510,23 @@ rolled back.
 A client that receives this error should retry the transaction. See
 :doc:`transactions`.
 
+``40002`` integrity constraint violation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A deferred constraint (see "Deferrable Constraints" in :doc:`create-table`)
+isn't satisfied at the ``COMMIT``. The whole transaction is rolled back.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE t (x INT UNIQUE INITIALLY DEFERRED);
+  INSERT INTO t (x) VALUES (1);
+  START TRANSACTION;
+  INSERT INTO t (x) VALUES (1);
+  COMMIT;
+  -- error 40002: integrity constraint violation: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+
 ``42501`` insufficient privilege
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

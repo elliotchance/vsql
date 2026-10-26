@@ -24,9 +24,6 @@ fn (c ConstraintCharacteristics) add(clause string) !ConstraintCharacteristics {
 		|| ('INITIALLY DEFERRED' in clauses && 'NOT DEFERRABLE' in clauses) {
 		return sqlstate_42601('invalid constraint characteristics: ${clauses.join(' ')}')
 	}
-	if clause == 'INITIALLY DEFERRED' {
-		return sqlstate_0a000('INITIALLY DEFERRED is not supported')
-	}
 
 	return ConstraintCharacteristics{clauses}
 }
@@ -98,4 +95,103 @@ fn with_constraint_characteristic(elements []TableElement, clause string) ![]Tab
 	}
 
 	return new_elements
+}
+
+// constraint_key identifies a constraint in a catalog, because its name is
+// unique in its schema.
+fn constraint_key(t Table, name string) string {
+	return '${t.name.schema_name}.${name}'
+}
+
+// set_constraint_mode sets the constraint mode of a constraint of t, which
+// must be deferrable (ISO/IEC 9075-2:2016(E), 17.4, Syntax Rule 2).
+fn (mut f Storage) set_constraint_mode(t Table, name string, characteristics ConstraintCharacteristics, is_deferred bool) ! {
+	if !characteristics.is_deferrable() {
+		return sqlstate_42601('constraint ${name} is not DEFERRABLE')
+	}
+
+	f.constraint_modes[constraint_key(t, name)] = is_deferred
+}
+
+// set_all_constraint_modes sets the constraint mode of every deferrable
+// constraint, for ALL.
+fn (mut f Storage) set_all_constraint_modes(is_deferred bool) {
+	for _, t in f.tables {
+		for constraint in t.unique_constraints {
+			f.set_constraint_mode(t, constraint.name, constraint.characteristics, is_deferred) or {}
+		}
+		for key in t.foreign_keys {
+			f.set_constraint_mode(t, key.name, key.characteristics, is_deferred) or {}
+		}
+		for constraint in t.check_constraints {
+			f.set_constraint_mode(t, constraint.name.entity_name, constraint.characteristics,
+				is_deferred) or {}
+		}
+	}
+}
+
+// end_constraint_modes forgets the constraint modes and deferred checks at the
+// end of a transaction, so that the next one starts with the initial
+// constraint modes.
+fn (mut f Storage) end_constraint_modes() {
+	f.constraint_modes = map[string]bool{}
+	f.deferred_checks = map[string]string{}
+}
+
+// is_deferred is true if the constraint mode of a constraint of t is deferred.
+// It's always immediate outside of a transaction, because a statement on its
+// own is in a transaction that ends with the statement.
+fn (f Storage) is_deferred(t Table, name string, characteristics ConstraintCharacteristics) bool {
+	if f.transaction_state != .active || !characteristics.is_deferrable() {
+		return false
+	}
+
+	return f.constraint_modes[constraint_key(t, name)] or {
+		characteristics.is_initially_deferred()
+	}
+}
+
+// defer_check is true if a constraint of t is deferred, so a statement doesn't
+// check it. It's remembered so that it's checked once it's immediate (see
+// check_deferred_constraints).
+fn (mut f Storage) defer_check(t Table, name string, characteristics ConstraintCharacteristics) bool {
+	if !f.is_deferred(t, name, characteristics) {
+		return false
+	}
+
+	f.deferred_checks[constraint_key(t, name)] = t.name.storage_id()
+	return true
+}
+
+// check_deferred_constraints checks each constraint that a statement didn't
+// check (see defer_check), and is now immediate, against every row of its
+// table. A constraint that's still deferred is remembered again, and one that
+// has been dropped (or whose table has been dropped) doesn't need to be checked.
+fn (mut conn Connection) check_deferred_constraints() ! {
+	_, time_zone := conn.now()
+	for _, mut catalog in conn.catalogs {
+		mut keys := catalog.storage.deferred_checks.keys()
+		keys.sort()
+		for key in keys {
+			storage_id := catalog.storage.deferred_checks[key]
+			catalog.storage.deferred_checks.delete(key)
+			table := catalog.storage.tables[storage_id] or { continue }
+
+			constraint := Table{
+				...table
+				unique_constraints: table.unique_constraints.filter(constraint_key(table,
+					it.name) == key)
+				foreign_keys:       table.foreign_keys.filter(constraint_key(table, it.name) == key)
+				check_constraints:  table.check_constraints.filter(constraint_key(table,
+					it.name.entity_name) == key)
+			}
+			rows := catalog.storage.read_rows(table.name)!.map(it.for_storage())
+			check_constraints := new_check_constraints(mut conn, constraint)!
+			for row in rows {
+				check_constraints.verify(mut conn, row)!
+			}
+			catalog.storage.check_unique_constraints(constraint, rows)!
+			catalog.storage.check_foreign_keys(constraint, rows, time_zone)!
+		}
+	}
 }

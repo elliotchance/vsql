@@ -59,7 +59,8 @@ fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 // another transaction finishes. A row with a NULL in any of the columns never
 // conflicts. The rows must have already been written, because the constraints
 // are checked once all of the rows of a statement have been written (ISO/IEC
-// 9075-2:2016(E), 4.23.2), so that UPDATE t SET u = u + 1 works.
+// 9075-2:2016(E), 4.23.2), so that UPDATE t SET u = u + 1 works. A deferred
+// constraint isn't checked (see defer_check).
 //
 // Every row of t is read, there is no index.
 fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
@@ -74,13 +75,16 @@ fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
 
 	// For each constraint, the object key of the row that has each unique key.
 	mut new_keys := []map[string][]u8{len: t.unique_constraints.len}
-	for row in rows {
-		mut r := row
-		object_key := r.object_key(t)!
-		for i, constraint in t.unique_constraints {
+	for i, constraint in t.unique_constraints {
+		if f.defer_check(t, constraint.name, constraint.characteristics) {
+			continue
+		}
+
+		for row in rows {
+			mut r := row
 			key := unique_key(row, t, constraint.columns)!
 			if key.len > 0 {
-				new_keys[i][key.bytestr()] = object_key
+				new_keys[i][key.bytestr()] = r.object_key(t)!
 			}
 		}
 	}

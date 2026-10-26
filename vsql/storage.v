@@ -62,6 +62,16 @@ mut:
 	// isolation_error is the first error from isolation_end in end_isolation,
 	// which the statement must fail with, see take_isolation_error.
 	isolation_error ?IError
+	// constraint_modes are the constraint modes that have been set for the
+	// current transaction (see set_constraint_mode), true for DEFERRED, keyed
+	// by the schema and name of the constraint (see constraint_key). A
+	// deferrable constraint that isn't here has its initial constraint mode.
+	constraint_modes map[string]bool
+	// deferred_checks are the deferred constraints that a statement in the
+	// current transaction didn't check, with the storage ID of their table.
+	// Each is checked against every row of its table once it's immediate (see
+	// check_deferred_constraints).
+	deferred_checks map[string]string
 }
 
 // StatementSnapshot is the state of Storage that is kept in memory, from before

@@ -142,16 +142,3 @@ fn handle_diagnostics(handle_type i16, h i64) ?&Diagnostics {
 		}
 	}
 }
-
-// end_transaction counts an SQL-transaction that was active before a statement
-// was executed, and isn't any more, as committed (by a successful COMMIT) or
-// rolled back (by a ROLLBACK, or an error).
-fn (mut d Diagnostics) end_transaction(was_active bool, is_active bool, ok bool) {
-	if was_active && !is_active {
-		if ok && d.dynamic_function == 'COMMIT WORK' {
-			d.transactions_committed++
-		} else {
-			d.transactions_rolled_back++
-		}
-	}
-}

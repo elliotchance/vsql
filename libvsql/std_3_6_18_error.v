@@ -34,7 +34,7 @@ fn sql_error_routine(environment_handle SQLInteger, connection_handle SQLInteger
 	// completion condition is raised: no data, and Sqlstate is set to '00000'.
 	if diag.processed >= diag.records.len {
 		if sqlstate != unsafe { nil } {
-			copy_c_string(sqlstate, '00000', 6)
+			copy_c_string(sqlstate, '00000', 6, null_termination(handle_env(ht, ih)))
 		}
 		return sql_no_data
 	}

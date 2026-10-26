@@ -26,8 +26,12 @@ fn sql_get_diag_rec(handle_type i16, handle SQLInteger, record_number i16, sqlst
 
 	record := diag.records[record_number - 1]
 
+	nts := null_termination(handle_env(handle_type, i64(handle)))
+
+	// - 9.a. Sqlstate is a CHARACTER(5), and the null terminator when null
+	// termination is True.
 	if sqlstate != unsafe { nil } {
-		copy_c_string(sqlstate, record.sqlstate, 6)
+		copy_c_string(sqlstate, record.sqlstate, 6, nts)
 	}
 
 	if native_error != unsafe { nil } {
@@ -36,15 +40,18 @@ fn sql_get_diag_rec(handle_type i16, handle SQLInteger, record_number i16, sqlst
 		}
 	}
 
+	// - 9.c.i. If null termination is False for the current SQL-environment and
+	// BL is zero, then no further rules of this Subclause are applied.
+	//
 	// - 9.c.ii. If BL is not greater than zero, then an exception condition is
 	// raised: CLI-specific condition — invalid string length or buffer length.
 	// The message is truncated without a warning.
-	if message_text != unsafe { nil } {
+	if message_text != unsafe { nil } && (nts || buffer_length != 0) {
 		if buffer_length <= 0 {
 			return sql_error
 		}
 		set_length(text_length, 2, record.msg.len)
-		copy_c_string(message_text, record.msg, buffer_length)
+		copy_c_string(message_text, record.msg, buffer_length, nts)
 	}
 
 	return sql_success

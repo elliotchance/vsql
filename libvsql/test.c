@@ -47,12 +47,38 @@ static SQLRETURN connect_memory(SQLHDBC dbc) {
   return SQLConnect(dbc, (SQLCHAR *)":memory:", SQL_NTS, NULL, 0, NULL, 0);
 }
 
+/* diag_int reads an SQLINTEGER header field. */
+static SQLINTEGER diag_int(SQLSMALLINT type, SQLINTEGER handle,
+                           SQLSMALLINT field) {
+  SQLINTEGER value = -123;
+
+  if (SQLGetDiagField(type, handle, 0, field, &value, 0, NULL) != SQL_SUCCESS) {
+    return -456;
+  }
+
+  return value;
+}
+
+/* diag_string reads a string field of the first record (or a header field). */
+static const char *diag_string(SQLSMALLINT type, SQLINTEGER handle,
+                               SQLSMALLINT field) {
+  static SQLCHAR value[100];
+
+  if (SQLGetDiagField(type, handle, 1, field, value, sizeof(value), NULL) !=
+      SQL_SUCCESS) {
+    return "(error)";
+  }
+
+  return (const char *)value;
+}
+
 /* The handles are freed even if the test already freed some of them, so the
  * return values are ignored. */
 static void free_handles(SQLHENV env, SQLHDBC dbc, SQLHSTMT stmt) {
   if (stmt != SQL_NULL_HANDLE) {
     SQLFreeHandle(SQL_HANDLE_STMT, stmt);
   }
+  SQLEndTran(SQL_HANDLE_DBC, dbc, SQL_ROLLBACK);
   SQLDisconnect(dbc);
   SQLFreeHandle(SQL_HANDLE_DBC, dbc);
   SQLFreeHandle(SQL_HANDLE_ENV, env);
@@ -535,12 +561,14 @@ UTEST_F(db, 6_15_describe_col_null_data_type) {
 
 /* 6.16 Disconnect */
 
-/* An active transaction must be finished first. */
+/* An active transaction must be ended first. */
 UTEST_F(db, 6_16_disconnect_active_transaction) {
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "START TRANSACTION"), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
   EXPECT_EQ(SQLDisconnect(utest_fixture->dbc), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "25001");
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "ROLLBACK"), SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_ROLLBACK),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLDisconnect(utest_fixture->dbc), SQL_SUCCESS);
 }
 
 UTEST_F(db, 6_16_disconnect_frees_statements) {
@@ -567,6 +595,8 @@ UTEST_F(env, 6_16_disconnect_reopen_file) {
             SQL_SUCCESS);
   EXPECT_EQ(run_sql(stmt, "CREATE TABLE t (x DOUBLE PRECISION)"), SQL_SUCCESS);
   EXPECT_EQ(run_sql(stmt, "INSERT INTO t (x) VALUES (1.5)"), SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
   EXPECT_EQ(SQLDisconnect(utest_fixture->dbc), SQL_SUCCESS);
 
   ASSERT_EQ(SQLConnect(utest_fixture->dbc, (SQLCHAR *)"libvsql_test.vsql",
@@ -578,9 +608,154 @@ UTEST_F(env, 6_16_disconnect_reopen_file) {
   EXPECT_EQ(SQLFetch(stmt), SQL_SUCCESS);
   EXPECT_EQ(SQLGetData(stmt, 1, SQL_DOUBLE, &x, 0, NULL), SQL_SUCCESS);
   EXPECT_EQ(x, 1.5);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_ROLLBACK),
+            SQL_SUCCESS);
   EXPECT_EQ(SQLDisconnect(utest_fixture->dbc), SQL_SUCCESS);
 
   remove("libvsql_test.vsql");
+}
+
+/* 6.17 EndTran */
+
+/* count_rows returns the number of rows in the table t. */
+static SQLINTEGER count_rows(SQLHSTMT stmt) {
+  SQLINTEGER count = -1;
+
+  if (run_sql(stmt, "SELECT COUNT(*) FROM t") != SQL_SUCCESS ||
+      SQLFetch(stmt) != SQL_SUCCESS ||
+      SQLGetData(stmt, 1, SQL_INTEGER, &count, 0, NULL) != SQL_SUCCESS) {
+    count = -2;
+  }
+  SQLCloseCursor(stmt);
+
+  return count;
+}
+
+UTEST_F(db, 6_17_end_tran_commit) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "INSERT INTO t (x) VALUES (1)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "INSERT INTO t (x) VALUES (2)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_ROLLBACK),
+            SQL_SUCCESS);
+  EXPECT_EQ(count_rows(utest_fixture->stmt), 1);
+}
+
+/* A rollback also undoes a CREATE TABLE. */
+UTEST_F(db, 6_17_end_tran_rollback) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_ROLLBACK),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "SELECT * FROM t"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42P01");
+}
+
+/* Every cursor is holdable, so a commit doesn't close it. */
+UTEST_F(db, 6_17_end_tran_commit_keeps_cursor) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+}
+
+UTEST_F(db, 6_17_end_tran_rollback_closes_cursor) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2"), SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_ROLLBACK),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
+}
+
+/* AND CHAIN starts another transaction. */
+UTEST_F(db, 6_17_end_tran_chain) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT_AND_CHAIN),
+      SQL_SUCCESS);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      1);
+  EXPECT_EQ(
+      SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_ROLLBACK_AND_CHAIN),
+      SQL_SUCCESS);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      1);
+  EXPECT_EQ(diag_int(SQL_HANDLE_DBC, utest_fixture->dbc,
+                     SQL_DIAG_TRANSACTIONS_ROLLED_BACK),
+            1);
+}
+
+/* The environment ends the transaction of each of its connections. */
+UTEST_F(db, 6_17_end_tran_environment) {
+  SQLHDBC dbc2;
+  SQLHSTMT stmt2;
+
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_DBC, utest_fixture->env, &dbc2),
+            SQL_SUCCESS);
+  ASSERT_EQ(connect_memory(dbc2), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_STMT, dbc2, &stmt2), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt2, "VALUES 1"), SQL_SUCCESS);
+
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env, SQL_COMMIT),
+            SQL_SUCCESS);
+  EXPECT_EQ(diag_int(SQL_HANDLE_ENV, utest_fixture->env,
+                     SQL_DIAG_TRANSACTIONS_COMMITTED),
+            2);
+  EXPECT_EQ(SQLDisconnect(dbc2), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_DBC, dbc2), SQL_SUCCESS);
+}
+
+/* There may not be an active transaction, or an established connection. */
+UTEST_F(env, 6_17_end_tran_no_transaction) {
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
+  ASSERT_EQ(connect_memory(utest_fixture->dbc), SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_ROLLBACK),
+            SQL_SUCCESS);
+  EXPECT_EQ(diag_int(SQL_HANDLE_DBC, utest_fixture->dbc,
+                     SQL_DIAG_TRANSACTIONS_ROLLED_BACK),
+            0);
+}
+
+UTEST_F(db, 6_17_end_tran_invalid_completion_type) {
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, 3), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY012");
+}
+
+/* There are no savepoints. */
+UTEST_F(db, 6_17_end_tran_savepoint) {
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                       SQL_SAVEPOINT_NAME_ROLLBACK),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "3B001");
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                       SQL_SAVEPOINT_NAME_RELEASE),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "3B001");
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env,
+                       SQL_SAVEPOINT_NAME_ROLLBACK),
+            SQL_INVALID_HANDLE);
+}
+
+UTEST_F(db, 6_17_end_tran_statement) {
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_COMMIT),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY092");
+}
+
+UTEST_F(db, 6_17_end_tran_invalid_handle) {
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->stmt, SQL_COMMIT),
+            SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLEndTran(7, utest_fixture->dbc, SQL_COMMIT), SQL_INVALID_HANDLE);
 }
 
 /* 6.18 Error */
@@ -738,6 +913,51 @@ UTEST_F(db, 6_19_exec_direct_open_cursor) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
 }
 
+/* A transaction is started when there isn't one, and it stays active after an
+ * error. */
+UTEST_F(db, 6_19_exec_direct_starts_transaction) {
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      0);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "SELECT * FROM bar"), SQL_ERROR);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      1);
+}
+
+/* A transaction is ended with EndTran. */
+UTEST_F(db, 6_19_exec_direct_transaction_statements) {
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "START TRANSACTION"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42000");
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "COMMIT"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42000");
+  EXPECT_EQ(run_sql(utest_fixture->stmt, " rollback"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42000");
+}
+
+UTEST_F(db, 6_19_exec_direct_simple_comment) {
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1 -- one"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42000");
+}
+
+/* "--" in a literal or a delimited identifier isn't a simple comment. */
+UTEST_F(db, 6_19_exec_direct_not_simple_comment) {
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES '--', 'it''s --'"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt,
+                    "SELECT x AS \"a--\" FROM (VALUES 1) AS t (x)"),
+            SQL_SUCCESS);
+}
+
+/* A bracketed comment is allowed, and "--" inside one isn't a simple comment.
+ * (The statement is a syntax error, rather than 42000, until vsql supports
+ * bracketed comments.) */
+UTEST_F(db, 6_19_exec_direct_bracketed_comment) {
+  run_sql(utest_fixture->stmt, "VALUES 1 /* -- not a simple comment */");
+  EXPECT_STRNE(sqlstate(SQL_HANDLE_STMT, utest_fixture->stmt), "42000");
+}
+
 /* 6.21 Fetch */
 
 UTEST_F(db, 6_21_fetch) {
@@ -882,6 +1102,60 @@ UTEST_F(db, 6_27_free_stmt_invalid_option) {
 
 UTEST_F(db, 6_27_free_stmt_invalid_handle) {
   EXPECT_EQ(SQLFreeStmt(utest_fixture->dbc, SQL_CLOSE), SQL_INVALID_HANDLE);
+}
+
+/* 6.28 GetConnectAttr */
+
+UTEST_F(db, 6_28_get_connect_attr_auto_ipd) {
+  SQLINTEGER value = 123;
+
+  EXPECT_EQ(
+      SQLGetConnectAttr(utest_fixture->dbc, SQL_ATTR_AUTO_IPD, &value, 0, NULL),
+      SQL_SUCCESS);
+  EXPECT_EQ(value, SQL_FALSE);
+}
+
+UTEST_F(env, 6_28_get_connect_attr_auto_ipd_not_connected) {
+  SQLINTEGER value;
+
+  EXPECT_EQ(
+      SQLGetConnectAttr(utest_fixture->dbc, SQL_ATTR_AUTO_IPD, &value, 0, NULL),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "08003");
+}
+
+UTEST_F(env, 6_28_get_connect_attr_savepoint_name) {
+  SQLCHAR name[10] = "x";
+  SQLINTEGER len = 123;
+
+  EXPECT_EQ(SQLGetConnectAttr(utest_fixture->dbc, SQL_ATTR_SAVEPOINT_NAME, name,
+                              sizeof(name), &len),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)name, "");
+  EXPECT_EQ(len, 0);
+}
+
+UTEST_F(env, 6_28_get_connect_attr_unknown) {
+  SQLINTEGER value;
+
+  EXPECT_EQ(SQLGetConnectAttr(utest_fixture->dbc, 123, &value, 0, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY092");
+}
+
+UTEST_F(env, 6_28_get_connect_attr_null_value) {
+  EXPECT_EQ(SQLGetConnectAttr(utest_fixture->dbc, SQL_ATTR_SAVEPOINT_NAME, NULL,
+                              10, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY009");
+}
+
+UTEST_F(env, 6_28_get_connect_attr_invalid_handle) {
+  SQLINTEGER value;
+
+  EXPECT_EQ(
+      SQLGetConnectAttr(utest_fixture->env, SQL_ATTR_AUTO_IPD, &value, 0, NULL),
+      SQL_INVALID_HANDLE);
 }
 
 /* 6.30 GetData */
@@ -1106,31 +1380,6 @@ UTEST_F(row, 6_30_get_data_after_last_row) {
 
 /* 6.33 GetDiagField */
 
-/* diag_int reads an SQLINTEGER header field. */
-static SQLINTEGER diag_int(SQLSMALLINT type, SQLINTEGER handle,
-                           SQLSMALLINT field) {
-  SQLINTEGER value = -123;
-
-  if (SQLGetDiagField(type, handle, 0, field, &value, 0, NULL) != SQL_SUCCESS) {
-    return -456;
-  }
-
-  return value;
-}
-
-/* diag_string reads a string field of the first record (or a header field). */
-static const char *diag_string(SQLSMALLINT type, SQLINTEGER handle,
-                               SQLSMALLINT field) {
-  static SQLCHAR value[100];
-
-  if (SQLGetDiagField(type, handle, 1, field, value, sizeof(value), NULL) !=
-      SQL_SUCCESS) {
-    return "(error)";
-  }
-
-  return (const char *)value;
-}
-
 UTEST_F(db, 6_33_get_diag_field_number) {
   EXPECT_EQ(run_sql(utest_fixture->stmt, "SELECT * FROM bar"), SQL_ERROR);
   EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_NUMBER), 1);
@@ -1230,12 +1479,11 @@ UTEST_F(db, 6_33_get_diag_field_dynamic_function) {
             SQL_DIAG_SELECT_CURSOR);
 }
 
-/* Comments before the statement are skipped, and bracketed comments can be
- * nested. */
+/* Spaces and bracketed comments (which can be nested) before the statement
+ * are skipped. */
 UTEST_F(db, 6_33_get_diag_field_dynamic_function_comments) {
   ASSERT_EQ(run_sql(utest_fixture->stmt,
-                    "/* a /* nested */ comment */ -- another\n"
-                    " UPDATE bar SET x = 1"),
+                    "  /* a /* nested */ comment */ UPDATE bar SET x = 1"),
             SQL_ERROR);
   EXPECT_STREQ(diag_string(SQL_HANDLE_STMT, utest_fixture->stmt,
                            SQL_DIAG_DYNAMIC_FUNCTION),
@@ -1268,7 +1516,7 @@ UTEST_F(db, 6_33_get_diag_field_dynamic_function_fetch) {
 }
 
 UTEST_F(db, 6_33_get_diag_field_transactions) {
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "START TRANSACTION"), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
   EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt,
                      SQL_DIAG_TRANSACTION_ACTIVE),
             1);
@@ -1279,26 +1527,26 @@ UTEST_F(db, 6_33_get_diag_field_transactions) {
       diag_int(SQL_HANDLE_ENV, utest_fixture->env, SQL_DIAG_TRANSACTION_ACTIVE),
       1);
 
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "COMMIT"), SQL_SUCCESS);
-  EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt,
+  ASSERT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
+  EXPECT_EQ(diag_int(SQL_HANDLE_DBC, utest_fixture->dbc,
                      SQL_DIAG_TRANSACTIONS_COMMITTED),
             1);
-  EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt,
+  EXPECT_EQ(diag_int(SQL_HANDLE_DBC, utest_fixture->dbc,
                      SQL_DIAG_TRANSACTIONS_ROLLED_BACK),
             0);
-  EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt,
-                     SQL_DIAG_TRANSACTION_ACTIVE),
-            0);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      0);
 
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "START TRANSACTION"), SQL_SUCCESS);
-  EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt,
+  ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  ASSERT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env, SQL_ROLLBACK),
+            SQL_SUCCESS);
+  EXPECT_EQ(diag_int(SQL_HANDLE_ENV, utest_fixture->env,
                      SQL_DIAG_TRANSACTIONS_COMMITTED),
             0);
-  ASSERT_EQ(run_sql(utest_fixture->stmt, "ROLLBACK"), SQL_SUCCESS);
-  EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt,
-                     SQL_DIAG_TRANSACTIONS_COMMITTED),
-            0);
-  EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt,
+  EXPECT_EQ(diag_int(SQL_HANDLE_ENV, utest_fixture->env,
                      SQL_DIAG_TRANSACTIONS_ROLLED_BACK),
             1);
 }
@@ -1541,6 +1789,39 @@ UTEST_F(db, 6_34_get_diag_rec_null_pointers) {
             SQL_SUCCESS);
 }
 
+/* 6.35 GetEnvAttr */
+
+UTEST_F(env, 6_35_get_env_attr) {
+  SQLINTEGER value = 123;
+
+  EXPECT_EQ(
+      SQLGetEnvAttr(utest_fixture->env, SQL_ATTR_OUTPUT_NTS, &value, 0, NULL),
+      SQL_SUCCESS);
+  EXPECT_EQ(value, SQL_TRUE);
+}
+
+UTEST_F(env, 6_35_get_env_attr_unknown) {
+  SQLINTEGER value;
+
+  EXPECT_EQ(SQLGetEnvAttr(utest_fixture->env, 123, &value, 0, NULL), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_ENV, utest_fixture->env, "HY092");
+}
+
+UTEST_F(env, 6_35_get_env_attr_null_value) {
+  EXPECT_EQ(
+      SQLGetEnvAttr(utest_fixture->env, SQL_ATTR_OUTPUT_NTS, NULL, 0, NULL),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_ENV, utest_fixture->env, "HY009");
+}
+
+UTEST_F(env, 6_35_get_env_attr_invalid_handle) {
+  SQLINTEGER value;
+
+  EXPECT_EQ(
+      SQLGetEnvAttr(utest_fixture->dbc, SQL_ATTR_OUTPUT_NTS, &value, 0, NULL),
+      SQL_INVALID_HANDLE);
+}
+
 /* 6.48 NumResultCols */
 
 UTEST_F(db, 6_48_num_result_cols) {
@@ -1629,6 +1910,248 @@ UTEST_F(db, 6_53_row_count_invalid_handle) {
   SQLINTEGER rows;
 
   EXPECT_EQ(SQLRowCount(utest_fixture->dbc, &rows), SQL_INVALID_HANDLE);
+}
+
+/* 6.54 SetConnectAttr */
+
+UTEST_F(env, 6_54_set_connect_attr_savepoint_name) {
+  SQLCHAR name[10];
+  SQLINTEGER len;
+
+  EXPECT_EQ(SQLSetConnectAttr(utest_fixture->dbc, SQL_ATTR_SAVEPOINT_NAME,
+                              (SQLPOINTER) "sp1", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetConnectAttr(utest_fixture->dbc, SQL_ATTR_SAVEPOINT_NAME, name,
+                              sizeof(name), &len),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)name, "sp1");
+  EXPECT_EQ(len, 3);
+
+  EXPECT_EQ(SQLSetConnectAttr(utest_fixture->dbc, SQL_ATTR_SAVEPOINT_NAME,
+                              (SQLPOINTER) "abcdef", 2),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetConnectAttr(utest_fixture->dbc, SQL_ATTR_SAVEPOINT_NAME, name,
+                              sizeof(name), &len),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)name, "ab");
+}
+
+/* A name that doesn't fit is truncated with a warning. */
+UTEST_F(env, 6_54_set_connect_attr_savepoint_name_truncated) {
+  SQLCHAR name[3];
+  SQLINTEGER len;
+
+  EXPECT_EQ(SQLSetConnectAttr(utest_fixture->dbc, SQL_ATTR_SAVEPOINT_NAME,
+                              (SQLPOINTER) "sp1", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetConnectAttr(utest_fixture->dbc, SQL_ATTR_SAVEPOINT_NAME, name,
+                              sizeof(name), &len),
+            SQL_SUCCESS_WITH_INFO);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "01004");
+  EXPECT_STREQ((char *)name, "sp");
+  EXPECT_EQ(len, 3);
+}
+
+UTEST_F(env, 6_54_set_connect_attr_negative_length) {
+  EXPECT_EQ(SQLSetConnectAttr(utest_fixture->dbc, SQL_ATTR_SAVEPOINT_NAME,
+                              (SQLPOINTER) "sp1", -5),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY090");
+}
+
+/* POPULATE IPD can't be set. */
+UTEST_F(db, 6_54_set_connect_attr_auto_ipd) {
+  EXPECT_EQ(SQLSetConnectAttr(utest_fixture->dbc, SQL_ATTR_AUTO_IPD,
+                              (SQLPOINTER)SQL_TRUE, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY092");
+}
+
+UTEST_F(env, 6_54_set_connect_attr_invalid_handle) {
+  EXPECT_EQ(SQLSetConnectAttr(utest_fixture->env, SQL_ATTR_SAVEPOINT_NAME,
+                              (SQLPOINTER) "sp1", SQL_NTS),
+            SQL_INVALID_HANDLE);
+}
+
+/* 6.58 SetEnvAttr */
+
+UTEST(libvsql, 6_58_set_env_attr) {
+  SQLHENV env;
+  SQLINTEGER value;
+
+  ASSERT_EQ(SQLAllocEnv(&env), SQL_SUCCESS);
+  EXPECT_EQ(SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, (SQLPOINTER)SQL_FALSE, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, &value, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(value, SQL_FALSE);
+  EXPECT_EQ(SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, (SQLPOINTER)SQL_TRUE, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, &value, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(value, SQL_TRUE);
+  EXPECT_EQ(SQLFreeEnv(env), SQL_SUCCESS);
+}
+
+/* The attributes can only be set before allocating a connection. */
+UTEST_F(env, 6_58_set_env_attr_with_connection) {
+  EXPECT_EQ(SQLSetEnvAttr(utest_fixture->env, SQL_ATTR_OUTPUT_NTS,
+                          (SQLPOINTER)SQL_FALSE, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_ENV, utest_fixture->env, "HY011");
+}
+
+UTEST(libvsql, 6_58_set_env_attr_invalid) {
+  SQLHENV env;
+
+  ASSERT_EQ(SQLAllocEnv(&env), SQL_SUCCESS);
+  EXPECT_EQ(SQLSetEnvAttr(env, 123, (SQLPOINTER)SQL_FALSE, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_ENV, env, "HY092");
+  EXPECT_EQ(SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, (SQLPOINTER)2, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_ENV, env, "HY024");
+  EXPECT_EQ(
+      SQLSetEnvAttr(env + 1000, SQL_ATTR_OUTPUT_NTS, (SQLPOINTER)SQL_FALSE, 0),
+      SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLFreeEnv(env), SQL_SUCCESS);
+}
+
+/* Without null termination, strings are returned without a null terminator,
+ * and a value that fills the buffer isn't truncated. */
+UTEST(libvsql, 6_58_set_env_attr_no_null_termination) {
+  SQLHENV env;
+  SQLHDBC dbc;
+  SQLHSTMT stmt;
+  SQLCHAR buf[6];
+  SQLINTEGER ind;
+
+  ASSERT_EQ(SQLAllocEnv(&env), SQL_SUCCESS);
+  ASSERT_EQ(SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, (SQLPOINTER)SQL_FALSE, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocConnect(env, &dbc), SQL_SUCCESS);
+  ASSERT_EQ(connect_memory(dbc), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocStmt(dbc, &stmt), SQL_SUCCESS);
+
+  ASSERT_EQ(run_sql(stmt, "VALUES 'abc'"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(stmt), SQL_SUCCESS);
+  memset(buf, 'x', sizeof(buf));
+  EXPECT_EQ(SQLGetData(stmt, 1, SQL_CHAR, buf, 3, &ind), SQL_SUCCESS);
+  EXPECT_EQ(memcmp(buf, "abcxxx", 6), 0);
+  EXPECT_EQ(ind, 3);
+
+  /* Retrieving it in pieces uses the whole buffer each time. */
+  ASSERT_EQ(SQLCloseCursor(stmt), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt, "VALUES 'hello world'"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(stmt), SQL_SUCCESS);
+  memset(buf, 'x', sizeof(buf));
+  EXPECT_EQ(SQLGetData(stmt, 1, SQL_CHAR, buf, 5, &ind), SQL_SUCCESS_WITH_INFO);
+  EXPECT_EQ(memcmp(buf, "hellox", 6), 0);
+  EXPECT_EQ(ind, 11);
+  EXPECT_EQ(SQLGetData(stmt, 1, SQL_CHAR, buf, 5, &ind), SQL_SUCCESS_WITH_INFO);
+  EXPECT_EQ(memcmp(buf, " worlx", 6), 0);
+  EXPECT_EQ(SQLGetData(stmt, 1, SQL_CHAR, buf, 5, &ind), SQL_SUCCESS);
+  EXPECT_EQ(memcmp(buf, "dworlx", 6), 0);
+  EXPECT_EQ(ind, 1);
+
+  /* The SQLSTATE is 5 octets. */
+  ASSERT_EQ(SQLCloseCursor(stmt), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt, "SELECT * FROM bar"), SQL_ERROR);
+  memset(buf, 'x', sizeof(buf));
+  EXPECT_EQ(SQLGetDiagRec(SQL_HANDLE_STMT, stmt, 1, buf, NULL, NULL, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(memcmp(buf, "42P01x", 6), 0);
+
+  /* A zero BufferLength is the same as a null pointer. */
+  memset(buf, 'x', sizeof(buf));
+  EXPECT_EQ(SQLGetDiagRec(SQL_HANDLE_STMT, stmt, 1, NULL, NULL, buf, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(buf[0], 'x');
+
+  free_handles(env, dbc, stmt);
+}
+
+/* 6.61 StartTran */
+
+UTEST_F(db, 6_61_start_tran) {
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      1);
+}
+
+/* READ UNCOMMITTED is satisfied by READ COMMITTED. */
+UTEST_F(db, 6_61_start_tran_read_uncommitted) {
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, utest_fixture->env,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_UNCOMMITTED),
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      1);
+}
+
+UTEST_F(db, 6_61_start_tran_active) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "25001");
+}
+
+UTEST_F(db, 6_61_start_tran_not_supported) {
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                         SQL_TRANSACTION_READ_ONLY,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HYC00");
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_SERIALIZABLE),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HYC00");
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_REPEATABLE_READ),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HYC00");
+}
+
+UTEST_F(db, 6_61_start_tran_invalid) {
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc, 3,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY092");
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                         SQL_TRANSACTION_READ_WRITE, 3),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY092");
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_STMT, utest_fixture->stmt,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY092");
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->env,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_INVALID_HANDLE);
+}
+
+UTEST_F(env, 6_61_start_tran_not_connected) {
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "08003");
+
+  /* An environment without established connections has nothing to start. */
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, utest_fixture->env,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_SUCCESS);
 }
 
 UTEST_MAIN()

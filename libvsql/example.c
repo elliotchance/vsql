@@ -59,6 +59,9 @@ int main(void) {
                       SQL_NTS),
         SQL_HANDLE_STMT, stmt);
 
+  /* The changes are kept once the transaction is committed: */
+  check(SQLEndTran(SQL_HANDLE_DBC, dbc, SQL_COMMIT), SQL_HANDLE_DBC, dbc);
+
   /* Iterate through a result: */
   check(SQLExecDirect(stmt, (SQLCHAR *)"SELECT * FROM foo", SQL_NTS),
         SQL_HANDLE_STMT, stmt);
@@ -72,6 +75,7 @@ int main(void) {
   }
 
   check(SQLCloseCursor(stmt), SQL_HANDLE_STMT, stmt);
+  check(SQLEndTran(SQL_HANDLE_DBC, dbc, SQL_COMMIT), SQL_HANDLE_DBC, dbc);
   check(SQLFreeHandle(SQL_HANDLE_STMT, stmt), SQL_HANDLE_STMT, stmt);
   check(SQLDisconnect(dbc), SQL_HANDLE_DBC, dbc);
   check(SQLFreeHandle(SQL_HANDLE_DBC, dbc), SQL_HANDLE_DBC, dbc);

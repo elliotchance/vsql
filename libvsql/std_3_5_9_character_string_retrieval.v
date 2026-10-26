@@ -5,12 +5,16 @@ module main
 // Specify the rules for retrieving character string values.
 
 // retrieve_string copies value into target (which has room for target_length
-// octets) as a null terminated string, and sets returned_length to the length
-// of value. A truncated value raises a warning.
-fn retrieve_string(mut diag Diagnostics, target &char, value string, target_length i64, returned_length voidptr, returned_length_size int) ! {
+// octets), and sets returned_length to the length of value. It's null
+// terminated if nts (the NULL TERMINATION of the SQL-environment) is true. A
+// truncated value raises a warning.
+fn retrieve_string(mut diag Diagnostics, nts bool, target &char, value string, target_length i64, returned_length voidptr, returned_length_size int) ! {
 	// - 2. If TL is not greater than zero, then an exception condition is
 	// raised: CLI-specific condition — invalid string length or buffer length.
-	if target_length <= 0 {
+	//
+	// When null termination is False, a zero buffer size is the same as a null
+	// pointer (see 4.4.3, "Null pointers"), so nothing is copied.
+	if target_length < 0 || (target_length == 0 && nts) {
 		return cli_error('HY090', 'invalid string length or buffer length')
 	}
 
@@ -18,19 +22,22 @@ fn retrieve_string(mut diag Diagnostics, target &char, value string, target_leng
 	// addressed by RL is set to L.
 	set_length(returned_length, returned_length_size, value.len)
 
-	// - 5.b. Null termination is always True.
-	if !copy_c_string(target, value, target_length) {
+	// - 5. The value is copied, and truncated with a warning if it doesn't fit.
+	if !copy_c_string(target, value, target_length, nts) {
 		diag.warning('01004', 'string data, right truncation')
 	}
 }
 
 // copy_c_string copies as much of value as fits into target (including the
-// null terminator), returning false if it was truncated.
-fn copy_c_string(target &char, value string, target_length i64) bool {
-	n := if value.len <= target_length - 1 { value.len } else { int(target_length - 1) }
+// null terminator when nts is true), returning false if it was truncated.
+fn copy_c_string(target &char, value string, target_length i64, nts bool) bool {
+	room := if nts { target_length - 1 } else { target_length }
+	n := if value.len <= room { value.len } else { int(room) }
 	unsafe {
 		vmemcpy(target, value.str, n)
-		target[n] = 0
+		if nts {
+			target[n] = 0
+		}
 	}
 
 	return n == value.len

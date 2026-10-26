@@ -143,10 +143,11 @@ fn get_diag_field(handle_type i16, h i64, diag &Diagnostics, record_number i16, 
 				return cli_error('HY090', 'invalid string length or buffer length')
 			}
 
-			// - 17, 18, 19. The value is truncated (without a warning) and null
-			// terminated.
+			// - 17, 18, 19. The value is truncated (without a warning), and null
+			// terminated if null termination is True.
 			set_length(string_length, 2, value.len)
-			copy_c_string(diag_info, value, buffer_length)
+			copy_c_string(diag_info, value, buffer_length, null_termination(handle_env(handle_type,
+				h)))
 		}
 	}
 

@@ -138,12 +138,16 @@ fn get_data(mut stmt Stmt, column_number i16, target_type i16, target_value void
 // retrieve_piece retrieves the rest of the fetched value from the fetched
 // length.
 fn retrieve_piece(mut stmt Stmt, cn int, target_value voidptr, buffer_length i64, str_len_or_ind &SQLInteger) !i16 {
-	retrieve_string(mut stmt.diag, target_value, stmt.fetched_value[stmt.fetched_length..],
+	retrieve_string(mut stmt.diag, stmt.null_termination(), target_value, stmt.fetched_value[stmt.fetched_length..],
 		buffer_length, str_len_or_ind, 4)!
 
 	// - 30.b.ii.4, 5. If FL is less than DL, then –CN becomes the fetched column
 	// number.
-	stmt.fetched_length += int(buffer_length - 1)
+	stmt.fetched_length += int(if stmt.null_termination() {
+		buffer_length - 1
+	} else {
+		buffer_length
+	})
 	stmt.fetched_column = if stmt.fetched_length < stmt.fetched_value.len { -cn } else { cn }
 
 	return stmt.diag.result()

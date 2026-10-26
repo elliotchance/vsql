@@ -25,6 +25,9 @@ __global last_handle = i64(0)
 struct Env {
 mut:
 	diag Diagnostics
+	// null_termination is the NULL TERMINATION attribute (see 4.4.2, "Null
+	// terminated strings").
+	null_termination bool = true
 }
 
 // An allocated SQL-connection. conn is the established SQL-connection, if any.
@@ -37,6 +40,8 @@ mut:
 	is_default bool
 	// server_name is the ServerName of the last Connect, or 'DEFAULT'.
 	server_name string
+	// savepoint_name is the SAVEPOINT NAME attribute.
+	savepoint_name string
 }
 
 // An allocated SQL-statement.
@@ -74,4 +79,24 @@ fn (mut stmt Stmt) close_cursor() {
 	stmt.fetched = false
 	stmt.row = none
 	stmt.fetched_column = 0
+}
+
+// handle_env is the SQL-environment of a handle, or zero if the handle isn't
+// allocated.
+fn handle_env(handle_type i16, h i64) i64 {
+	return match handle_type {
+		sql_handle_env { h }
+		sql_handle_dbc { (dbcs[h] or { return 0 }).env }
+		sql_handle_stmt { (dbcs[(stmts[h] or { return 0 }).dbc] or { return 0 }).env }
+		else { 0 }
+	}
+}
+
+// null_termination is the NULL TERMINATION attribute of an SQL-environment.
+fn null_termination(env i64) bool {
+	return (envs[env] or { return true }).null_termination
+}
+
+fn (stmt &Stmt) null_termination() bool {
+	return null_termination((dbcs[stmt.dbc] or { return true }).env)
 }

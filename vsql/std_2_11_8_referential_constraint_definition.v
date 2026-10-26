@@ -100,6 +100,21 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 			return sqlstate_42830('FOREIGN KEY has ${key.columns.len} ${pluralize(key.columns.len, 'column')} but REFERENCES ${name} has ${referenced_columns.len}')
 		}
 
+		// Syntax Rule 14.
+		for column in key.columns {
+			if table.column(column)!.generated == none {
+				continue
+			}
+			action := if key.update_rule != '' {
+				'ON UPDATE ${key.update_rule}'
+			} else if key.delete_rule in ['SET NULL', 'SET DEFAULT'] {
+				'ON DELETE ${key.delete_rule}'
+			} else {
+				continue
+			}
+			return sqlstate_42601('FOREIGN KEY on generated column ${column} cannot use ${action}')
+		}
+
 		// The referenced columns must be the columns of a unique constraint
 		// (Syntax Rule 4a), in any order.
 		for j, column in referenced_columns {
@@ -423,6 +438,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 				}
 
 				check_constraints := new_check_constraints(mut conn, referencing)!
+				generated_columns := new_generated_columns(mut conn, referencing)!
 				mut new_changes := []RowChange{}
 				for row in matching {
 					value := key_value(row, key.columns, types, time_zone).bytestr()
@@ -460,6 +476,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 							}
 						}
 					}
+					generated_columns.apply(mut conn, mut after)!
 					check_constraints.verify(mut conn, after)!
 					new_changes << RowChange{
 						old: row

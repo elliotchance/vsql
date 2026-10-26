@@ -49,11 +49,14 @@ mut:
 	// restricted is set to what's being compiled (such as "a CHECK constraint")
 	// when it must be deterministic (see check_deterministic) and can't contain a
 	// subquery or a parameter. A CHECK on a column can only use that column,
-	// check_column. The columns that a CHECK uses are collected in check_columns
-	// (see CheckConstraintDefinition.columns).
-	restricted    string
-	check_column  string
-	check_columns map[string]bool
+	// check_column. A generation expression can't use a generated column, and
+	// generation_column is the column it's for. The columns that a CHECK or a
+	// generation expression uses are collected in check_columns (see
+	// CheckConstraintDefinition.columns).
+	restricted        string
+	check_column      string
+	generation_column string
+	check_columns     map[string]bool
 }
 
 // An AggregatedColumn is a column reference in the argument of an aggregate
@@ -95,10 +98,13 @@ fn (c Compiler) aggregation_scope() !int {
 }
 
 // check_deterministic returns an error if the expression (described by what)
-// is possibly non-deterministic and it's in a CHECK constraint. Otherwise, the
-// constraint could be satisfied when a row is written but not later.
+// is possibly non-deterministic and it's in a CHECK constraint or a generation
+// expression. Otherwise, the constraint could be satisfied when a row is
+// written but not later, or a generated column could have a different value if
+// the row was written again.
 //
 // ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rule 5
+// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rule 10d
 // ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rule 7
 fn (c Compiler) check_deterministic(what string) ! {
 	if c.restricted != '' {

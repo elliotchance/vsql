@@ -10,7 +10,9 @@ Syntax
 
   CREATE TABLE <table_name> ( <element> , ... )
 
-  <element> := <column_name> <data_type> [ DEFAULT <default> | <identity> ]
+  <element> := <column_name> <data_type> [ DEFAULT <default> | <identity> | <generated> ]
+               [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
+             | <column_name> <generated>
                [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
              | [ CONSTRAINT <constraint_name> ] <table_constraint>
 
@@ -27,6 +29,8 @@ Syntax
 
   <identity> := GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY
                 [ ( <sequence_option> ... ) ]
+
+  <generated> := GENERATED ALWAYS AS ( <expr> )
 
   <sequence_option> := START WITH <value>
                      | INCREMENT BY <value>
@@ -119,6 +123,36 @@ transaction is rolled back. The sequence can be changed with :doc:`alter-table`.
   -- msg: INSERT 2
   -- ID: 100 ITEM: apple
   -- ID: 101 ITEM: banana
+
+Generated Columns
+-----------------
+
+The value of a generated column is always the result of its expression for the
+row. It's set when a row is inserted, and again when a row is updated, so it
+can't be listed in an :doc:`insert` or :doc:`update`, except as ``DEFAULT``
+(any other value is an error ``428C9``). Without a data type, the column has
+the type of the expression. Otherwise, the result is converted to the data
+type of the column, the same way as a value in an :doc:`insert`.
+
+The expression can only use the other columns of the table that aren't
+generated columns. It can't contain a subquery, an aggregate function, a
+parameter, ``NEXT VALUE FOR`` or anything else that might not give the same
+result each time, such as ``CURRENT_TIMESTAMP`` (all are an error ``42601``).
+
+A generated column can have constraints, which are checked with its value.
+
+.. code-block:: sql
+
+  CREATE TABLE products (
+    price NUMERIC(10, 2),
+    quantity INTEGER,
+    total NUMERIC(12, 2) GENERATED ALWAYS AS (price * quantity)
+  );
+  INSERT INTO products (price, quantity) VALUES (1.25, 4);
+  SELECT * FROM products;
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 1
+  -- PRICE: 1.25 QUANTITY: 4 TOTAL: 5.00
 
 Primary Keys
 ------------

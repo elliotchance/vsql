@@ -35,6 +35,9 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	new_table.name_constraints(catalog.storage.schema_constraint_names(table.name))!
 	resolve_foreign_keys(mut conn, mut new_table)!
 	column := new_table.columns.last()
+	if column.generated != none {
+		return sqlstate_0a000('cannot add generated column ${column.name.sub_entity_name}')
+	}
 	check_default_clause(mut conn, column)!
 	check_constraints := new_check_constraints(mut conn, new_table)!
 

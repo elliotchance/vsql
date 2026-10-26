@@ -67,6 +67,7 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 	stmt.check_limits(table_name)!
 	mut table := stmt.table(table_name, 0)!
 	table.name_constraints(catalog.storage.schema_constraint_names(table_name))!
+	resolve_generated_columns(mut conn, mut table)!
 	resolve_foreign_keys(mut conn, mut table)!
 	for column in table.columns {
 		check_default_clause(mut conn, column)!

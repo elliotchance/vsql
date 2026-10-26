@@ -135,7 +135,10 @@ One row for each column of each table in ``TABLES``.
     - ``YES`` or ``NO`` for an identity column, otherwise ``NULL``.
 
   * - ``IS_GENERATED``
-    - Always ``NEVER``.
+    - ``ALWAYS`` for a generated column, otherwise ``NEVER``.
+
+  * - ``GENERATION_EXPRESSION``
+    - The expression of a generated column, otherwise ``NULL``.
 
   * - ``IS_UPDATABLE``
     - ``YES``, or ``NO`` for the tables of the ``INFORMATION_SCHEMA``.
@@ -144,9 +147,9 @@ One row for each column of each table in ``TABLES``.
       ``COLLATION_SCHEMA``, ``COLLATION_NAME``, ``DOMAIN_CATALOG``,
       ``DOMAIN_SCHEMA``, ``DOMAIN_NAME``, ``UDT_CATALOG``, ``UDT_SCHEMA``,
       ``UDT_NAME``, ``SCOPE_CATALOG``, ``SCOPE_SCHEMA``, ``SCOPE_NAME``,
-      ``MAXIMUM_CARDINALITY``, ``GENERATION_EXPRESSION``
+      ``MAXIMUM_CARDINALITY``
     - Always ``NULL`` (intervals, collations, domains, user-defined types,
-      reference types, arrays and generated columns are not supported).
+      reference types and arrays are not supported).
 
 ``CHECK_CONSTRAINTS``
 ---------------------

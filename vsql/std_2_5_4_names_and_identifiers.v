@@ -301,6 +301,15 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 		c.check_columns[e.sub_entity_name] = true
 	}
 
+	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rule 10c
+	if c.generation_column != '' && e.custom_id == '' {
+		table := c.tables[c.context.id()] or { Table{} }
+		column := table.column(e.sub_entity_name) or { Column{} }
+		if _ := column.generated {
+			return sqlstate_42601('generation expression of ${c.generation_column} cannot use generated column ${e.sub_entity_name}')
+		}
+	}
+
 	return compiled
 }
 
@@ -710,6 +719,7 @@ fn (e HostParameterName) pstr(params map[string]Value) string {
 
 fn (e HostParameterName) compile(mut c Compiler) !CompileResult {
 	// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rule 1
+	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rule 1
 	if c.restricted != '' {
 		return sqlstate_42601('parameter :${e.name} cannot be used in ${c.restricted}')
 	}

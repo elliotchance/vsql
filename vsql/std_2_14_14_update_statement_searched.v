@@ -52,13 +52,13 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 
 	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Syntax Rule 5
 	for clause in stmt.set {
-		if identity := table.column(clause.column_name)!.identity {
+		if table.column(clause.column_name)!.is_generated_always() {
 			is_default := if clause.source is ContextuallyTypedValueSpecification {
 				clause.source is DefaultSpecification
 			} else {
 				false
 			}
-			if identity.always && !is_default {
+			if !is_default {
 				return sqlstate_428c9(clause.column_name)
 			}
 		}
@@ -74,6 +74,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// ISO/IEC 9075-2:2016(E), 4.23.2, Checking of constraints
 	mut moved := []Row{}
 	check_constraints := new_check_constraints(mut conn, table)!
+	generated_columns := new_generated_columns(mut conn, table)!
 
 	// Every new row is found before any of them are written. Otherwise, a
 	// subquery (such as "SET x = (SELECT MAX(x) FROM t)") would see the rows that
@@ -96,6 +97,13 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		for clause in stmt.set {
 			column_name := clause.column_name
 			table_column := table.column(column_name)!
+
+			// A generated column is set once the other columns are known (see
+			// GeneratedColumns.apply).
+			if table_column.generated != none {
+				continue
+			}
+
 			c.context = Identifier{
 				catalog_name: table_column.name.catalog_name
 				schema_name:  table_column.name.schema_name
@@ -132,7 +140,8 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		if did_modify {
 			// To be able to write the row back we need to clean the column names.
 			before := row.for_storage()
-			after := row2.for_storage()
+			mut after := row2.for_storage()
+			generated_columns.apply(mut conn, mut after)!
 			check_constraints.verify(mut conn, after)!
 			changes << [before, after]
 		}
@@ -178,6 +187,9 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		for clause in stmt.set {
 			column_name := clause.column_name
 			table_column := table.column(column_name)!
+			if table_column.generated != none {
+				continue
+			}
 			c.null_type = table_column.typ
 			c.default_value = table_column.default_value
 			c.identity = identity_of(table, table_column)

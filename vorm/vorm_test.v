@@ -116,6 +116,69 @@ fn test_update() {
 	assert products == [Product{3, 'Bagel', 1.5, 25}]
 }
 
+fn test_update_from_array() {
+	mut db := new_db()!
+
+	rows := [Product{
+		id:   1
+		name: 'Gelato'
+	}, Product{
+		id:   3
+		name: 'Bun'
+	}]
+	sql db {
+		update Product set name = rows.name where id == rows.id
+	}!
+
+	products := sql db {
+		select from Product order by id
+	}!
+	assert products.map(it.name) == ['Gelato', 'Ham Sandwhich', 'Bun']
+}
+
+fn test_in() {
+	mut db := new_db()!
+
+	ids := [1, 3]
+	in_ids := sql db {
+		select from Product where id in ids order by id
+	}!
+	assert in_ids.map(it.id) == [1, 3]
+
+	not_in_ids := sql db {
+		select from Product where id !in ids
+	}!
+	assert not_in_ids.map(it.id) == [2]
+}
+
+fn test_distinct() {
+	mut db := new_db()!
+
+	products := sql db {
+		select distinct from Product where stock >= 10 order by id
+	}!
+	assert products.map(it.id) == [1, 3]
+}
+
+fn test_aggregates() {
+	mut db := new_db()!
+
+	sum := sql db {
+		select sum(stock) from Product
+	}!
+	assert (sum or { 0 }) == 35
+
+	min := sql db {
+		select min(name) from Product
+	}!
+	assert (min or { '' }) == 'Bagel'
+
+	max := sql db {
+		select max(price) from Product
+	}!
+	assert (max or { 0 }) == 5.99
+}
+
 fn test_delete() {
 	mut db := new_db()!
 
@@ -280,20 +343,139 @@ fn test_execute() {
 	assert rows[0].vals == ['Bagel', '20']
 }
 
-fn test_unsupported() {
+fn test_unique() {
 	mut db := open(':memory:')!
 
 	sql db {
 		create table UniqueName
+	}!
+
+	first := UniqueName{
+		city:  'p'
+		name:  'a'
+		first: 'b'
+		last:  'c'
+	}
+	sql db {
+		insert first into UniqueName
+	}!
+
+	same_name := UniqueName{
+		city:  'q'
+		name:  'a'
+		first: 'x'
+		last:  'y'
+	}
+	mut failed := false
+	sql db {
+		insert same_name into UniqueName
 	} or {
-		assert err.msg() == 'orm: vsql does not support a UNIQUE constraint for column `name` in table `uniquename`'
+		assert err.msg() == 'violates unique constraint: UNIQUE ("name") on ":memory:".PUBLIC."uniquename"'
+		failed = true
+	}
+	assert failed
+
+	same_key := UniqueName{
+		city:  'r'
+		name:  'd'
+		first: 'b'
+		last:  'c'
+	}
+	failed = false
+	sql db {
+		insert same_key into UniqueName
+	} or {
+		assert err.msg() == 'violates unique constraint: UNIQUE ("first", "last") on ":memory:".PUBLIC."uniquename"'
+		failed = true
+	}
+	assert failed
+
+	same_group := UniqueName{
+		city:  'p'
+		name:  'e'
+		first: 'f'
+		last:  'g'
+	}
+	sql db {
+		insert same_group into UniqueName
+	} or {
+		assert err.msg() == 'violates unique constraint: UNIQUE ("city", "zip") on ":memory:".PUBLIC."uniquename"'
 		return
 	}
 	assert false
 }
 
+@[unique_key: 'first, last']
 struct UniqueName {
-	name string @[unique]
+	name  string @[unique]
+	first string
+	last  string
+	city  string @[unique: 'address']
+	zip   string @[unique: 'address']
+}
+
+fn test_references() {
+	mut db := open(':memory:')!
+
+	sql db {
+		create table Parent
+		create table Child
+	}!
+
+	parent := Parent{}
+	sql db {
+		insert parent into Parent
+	}!
+	child := Child{
+		parent_id: 1
+	}
+	sql db {
+		insert child into Child
+	}!
+
+	orphan := Child{
+		parent_id: 2
+	}
+	sql db {
+		insert orphan into Child
+	} or {
+		assert err.msg().starts_with('violates foreign key constraint: ')
+		return
+	}
+	assert false
+}
+
+struct Parent {
+	id int @[primary; sql: serial]
+}
+
+struct Child {
+	id        int @[primary; sql: serial]
+	parent_id int @[references]
+}
+
+fn test_default() {
+	mut db := open(':memory:')!
+
+	sql db {
+		create table WithDefault
+	}!
+
+	db.execute('INSERT INTO "withdefault" ("id") VALUES (1)')!
+	rows := sql db {
+		select from WithDefault
+	}!
+	assert rows == [WithDefault{
+		id:    1
+		count: 7
+		label: 'none'
+	}]
+}
+
+struct WithDefault {
+	id    int
+	count int    @[default: 7]
+	label string @[default: '`none`']
 }
 
 enum Color {

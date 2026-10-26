@@ -4,8 +4,8 @@ module main
 //
 // Set a field in a CLI descriptor area.
 //
-// An INTEGER or SMALLINT field is passed as the Value itself (rather than a
-// pointer to it), the same as ODBC. A pointer field is passed as the pointer.
+// Value points to an INTEGER or SMALLINT field (see 5.1, "<CLI routine>"). A
+// pointer field is set to Value itself.
 
 @[export: 'SQLSetDescField']
 fn sql_set_desc_field(descriptor_handle SQLInteger, record_number i16, field_identifier i16, value voidptr, buffer_length SQLInteger) i16 {
@@ -40,10 +40,14 @@ fn set_desc_field(mut desc Desc, rn int, fi int, value voidptr, buffer_length i6
 
 	// - 12. The value is checked before anything is set, so that the descriptor
 	// is unchanged by an exception condition.
-	v := if info.kind == .string {
-		DescValue(desc_string_value(mut desc.diag, fi, value, buffer_length)!)
-	} else {
-		DescValue(i64(value))
+	//
+	// Value points to an INTEGER or SMALLINT field (see 5.1, "<CLI routine>").
+	// A pointer field is set to the address of Value (13.c to 13.h).
+	v := match info.kind {
+		.string { DescValue(desc_string_value(mut desc.diag, fi, value, buffer_length)!) }
+		.integer { DescValue(read_integer(value)!) }
+		.smallint { DescValue(read_smallint(value)!) }
+		.pointer { DescValue(i64(value)) }
 	}
 	n := if v is i64 { v } else { 0 }
 	match fi {

@@ -20,7 +20,6 @@
 #ifndef LIBVSQL_TEST_H
 #define LIBVSQL_TEST_H
 
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -32,8 +31,11 @@
 #include "utest.h"
 #pragma GCC diagnostic pop
 
-/* HANDLE_VALUE passes a handle as the Value of SQLSetStmtAttr. */
-#define HANDLE_VALUE(h) ((SQLPOINTER)(intptr_t)(h))
+/* INTEGER_VALUE and SMALLINT_VALUE pass a value by reference, such as the Value
+ * of SQLSetStmtAttr. HANDLE_VALUE passes a descriptor handle the same way. */
+#define INTEGER_VALUE(n) ((SQLPOINTER) & (SQLINTEGER){(n)})
+#define SMALLINT_VALUE(n) ((SQLPOINTER) & (SQLSMALLINT){(n)})
+#define HANDLE_VALUE(h) INTEGER_VALUE(h)
 
 /* EXPECT_STATE checks the SQLSTATE of the first diagnostic record. */
 #define EXPECT_STATE(type, handle, expected)                                   \

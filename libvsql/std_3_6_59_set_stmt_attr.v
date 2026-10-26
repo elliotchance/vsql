@@ -4,8 +4,8 @@ module main
 //
 // Set the value of an SQL-statement attribute.
 //
-// The attribute is passed as the Value itself (rather than a pointer to it),
-// the same as ODBC.
+// Value points to the attribute (see 5.1, "<CLI routine>"), which is an
+// INTEGER. For APD and ARD it's a descriptor handle.
 //
 // A cursor is a copy of the result, so it can be scrollable and holdable, and
 // it's ASENSITIVE or INSENSITIVE (a SENSITIVE cursor can't be opened).
@@ -18,7 +18,9 @@ fn sql_set_stmt_attr(statement_handle SQLInteger, attribute SQLInteger, value vo
 	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.6.
 	stmt.check_deferred() or { return stmt.diag.error(err) }
 
-	return set_stmt_attr(mut stmt, attribute, i64(value)) or { stmt.diag.error(err) }
+	v := read_integer(value) or { return stmt.diag.error(err) }
+
+	return set_stmt_attr(mut stmt, attribute, v) or { stmt.diag.error(err) }
 }
 
 fn set_stmt_attr(mut stmt Stmt, attribute SQLInteger, v i64) !i16 {

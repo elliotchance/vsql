@@ -65,7 +65,7 @@ UTEST_F(db, 6_63_tables_escape) {
 
 UTEST_F(db, 6_63_tables_metadata_id) {
   ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID,
-                           (SQLPOINTER)SQL_TRUE, 0),
+                           INTEGER_VALUE(SQL_TRUE), 0),
             SQL_SUCCESS);
   EXPECT_EQ(SQLTables(utest_fixture->stmt, (SQLCHAR *)"", 0, NULL, 0,
                       (SQLCHAR *)"T", SQL_NTS, NULL, 0),

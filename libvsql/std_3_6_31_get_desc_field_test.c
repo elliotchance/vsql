@@ -90,7 +90,7 @@ UTEST_F(db, 6_31_get_desc_field_ard_defaults) {
   EXPECT_EQ(SQLGetDescField(ard, 1, SQL_DESC_TYPE, &i, 0, NULL), SQL_NO_DATA);
 
   /* A new record has the defaults. */
-  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, (SQLPOINTER)1, 0),
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, SMALLINT_VALUE(1), 0),
             SQL_SUCCESS);
   EXPECT_EQ(desc_short(ard, 1, SQL_DESC_TYPE), SQL_DEFAULT);
   EXPECT_EQ(desc_int(ard, 1, SQL_DESC_LEVEL), 0);
@@ -105,7 +105,7 @@ UTEST_F(db, 6_31_get_desc_field_undefined) {
   SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
   SQLINTEGER i;
 
-  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, (SQLPOINTER)1, 0),
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, SMALLINT_VALUE(1), 0),
             SQL_SUCCESS);
   EXPECT_EQ(SQLGetDescField(ard, 1, SQL_DESC_LENGTH, &i, 0, NULL), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY091");

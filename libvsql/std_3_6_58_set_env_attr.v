@@ -4,8 +4,7 @@ module main
 //
 // Set the value of an SQL-environment attribute.
 //
-// An INTEGER attribute is passed as the Value itself (rather than a pointer to
-// it), the same as ODBC.
+// Value points to the attribute (see 5.1, "<CLI routine>").
 
 @[export: 'SQLSetEnvAttr']
 fn sql_set_env_attr(environment_handle SQLInteger, attribute SQLInteger, value voidptr, string_length SQLInteger) i16 {
@@ -32,7 +31,8 @@ fn sql_set_env_attr(environment_handle SQLInteger, attribute SQLInteger, value v
 	// - 5. If A indicates NULL TERMINATION, then Value must be TRUE or FALSE,
 	// otherwise an exception condition is raised: CLI-specific condition —
 	// invalid attribute value.
-	env.null_termination = match i64(value) {
+	v := read_integer(value) or { return env.diag.error(err) }
+	env.null_termination = match v {
 		sql_true { true }
 		sql_false { false }
 		else { return env.diag.error(cli_error('HY024', 'invalid attribute value')) }

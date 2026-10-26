@@ -24,8 +24,9 @@ UTEST_F(db, 6_13_copy_desc_replaces) {
 
   ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, utest_fixture->dbc, &desc),
             SQL_SUCCESS);
-  ASSERT_EQ(SQLSetDescField(desc, 3, SQL_DESC_TYPE, (SQLPOINTER)SQL_INTEGER, 0),
-            SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLSetDescField(desc, 3, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_INTEGER), 0),
+      SQL_SUCCESS);
   EXPECT_EQ(SQLCopyDesc(ard, desc), SQL_SUCCESS);
   EXPECT_EQ(desc_short(desc, 0, SQL_DESC_COUNT), 0);
   EXPECT_EQ(desc_short(ard, 0, SQL_DESC_ALLOC_TYPE), SQL_DESC_ALLOC_AUTO);

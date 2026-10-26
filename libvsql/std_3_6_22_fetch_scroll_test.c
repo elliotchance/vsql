@@ -28,7 +28,7 @@ UTEST_F_SETUP(scroll) {
   ASSERT_EQ(SQLAllocStmt(utest_fixture->dbc, &utest_fixture->stmt),
             SQL_SUCCESS);
   ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
-                           (SQLPOINTER)SQL_SCROLLABLE, 0),
+                           INTEGER_VALUE(SQL_SCROLLABLE), 0),
             SQL_SUCCESS);
   ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2, 3, 4, 5"), SQL_SUCCESS);
   ASSERT_EQ(SQLBindCol(utest_fixture->stmt, 1, SQL_INTEGER, &utest_fixture->x,
@@ -88,10 +88,10 @@ UTEST_F(db, 6_22_fetch_scroll_rowset) {
   SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
   SQLINTEGER x[2];
 
-  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, (SQLPOINTER)2, 0),
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, INTEGER_VALUE(2), 0),
             SQL_SUCCESS);
   ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
-                           (SQLPOINTER)SQL_SCROLLABLE, 0),
+                           INTEGER_VALUE(SQL_SCROLLABLE), 0),
             SQL_SUCCESS);
   ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2, 3, 4, 5"), SQL_SUCCESS);
   ASSERT_EQ(
@@ -141,7 +141,7 @@ UTEST_F(db, 6_22_fetch_scroll_no_cursor) {
 /* An empty result has no rows to scroll to. */
 UTEST_F(db, 6_22_fetch_scroll_empty) {
   ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
-                           (SQLPOINTER)SQL_SCROLLABLE, 0),
+                           INTEGER_VALUE(SQL_SCROLLABLE), 0),
             SQL_SUCCESS);
   ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
             SQL_SUCCESS);

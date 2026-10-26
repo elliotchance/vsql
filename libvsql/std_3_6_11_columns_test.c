@@ -55,7 +55,7 @@ UTEST_F(db, 6_11_columns_metadata_id) {
   ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (a INT, \"b\" INT)"),
             SQL_SUCCESS);
   ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID,
-                           (SQLPOINTER)SQL_TRUE, 0),
+                           INTEGER_VALUE(SQL_TRUE), 0),
             SQL_SUCCESS);
   ASSERT_EQ(SQLColumns(utest_fixture->stmt, (SQLCHAR *)"", SQL_NTS,
                        (SQLCHAR *)"public", SQL_NTS, (SQLCHAR *)"t", SQL_NTS,

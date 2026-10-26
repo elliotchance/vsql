@@ -1440,18 +1440,19 @@ SQLRETURN SQLSetCursorName(
 
 /*
  * SQLSetDescField sets a field of a descriptor (see SQLGetDescField). A record
- * field adds records up to RecordNumber. An SQLSMALLINT or SQLINTEGER is the
- * Value itself (not a pointer to it), a pointer field is the pointer, and a
- * string is BufferLength octets (or SQL_NTS). Setting SQL_DESC_TYPE resets the
+ * field adds records up to RecordNumber. Value points to an SQLSMALLINT or
+ * SQLINTEGER field, a pointer field is Value itself, and a string is
+ * BufferLength octets (or SQL_NTS). Setting SQL_DESC_TYPE resets the
  * length, precision and scale for the type, and SQL_DESC_DATA_POINTER (which
  * must have a C type, otherwise it's HY021). The fields of an IRD can't be set
  * (HY091).
  *
  *   SQLHDESC ard;
  *   SQLDOUBLE x;
+ *   SQLSMALLINT type = SQL_DOUBLE;
  *
  *   SQLGetStmtAttr(stmt, SQL_ATTR_APP_ROW_DESC, &ard, 0, NULL);
- *   SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_DOUBLE, 0);
+ *   SQLSetDescField(ard, 1, SQL_DESC_TYPE, &type, 0);
  *   SQLSetDescField(ard, 1, SQL_DESC_DATA_POINTER, &x, 0);
  */
 SQLRETURN SQLSetDescField(
@@ -1492,9 +1493,11 @@ SQLRETURN SQLSetDescRec(
  * SQLSetEnvAttr sets an attribute of an environment, before it has any
  * connections. The only one is SQL_ATTR_OUTPUT_NTS: SQL_TRUE (the default)
  * null terminates every string that's returned, and SQL_FALSE doesn't. Value
- * is the value itself (not a pointer to it), and StringLength isn't used.
+ * points to an SQLINTEGER, and StringLength isn't used.
  *
- *   SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, (SQLPOINTER)SQL_FALSE, 0);
+ *   SQLINTEGER nts = SQL_FALSE;
+ *
+ *   SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, &nts, 0);
  */
 SQLRETURN SQLSetEnvAttr(
     SQLHENV    EnvironmentHandle,
@@ -1504,8 +1507,9 @@ SQLRETURN SQLSetEnvAttr(
 );
 
 /*
- * SQLSetStmtAttr sets an attribute of a statement. Value is the value itself
- * (not a pointer to it), and StringLength isn't used. The attributes are:
+ * SQLSetStmtAttr sets an attribute of a statement. Value points to an
+ * SQLINTEGER (or an SQLHDESC), and StringLength isn't used. The attributes
+ * are:
  *
  *   SQL_ATTR_APP_ROW_DESC         a descriptor from SQLAllocHandle, or the
  *   SQL_ATTR_APP_PARAM_DESC       statement's own one
@@ -1519,8 +1523,9 @@ SQLRETURN SQLSetEnvAttr(
  * The cursor attributes can't be changed while a cursor is open. Every cursor
  * is a copy of the result, so a SQL_SENSITIVE cursor can't be opened (36001).
  *
- *   SQLSetStmtAttr(stmt, SQL_ATTR_CURSOR_HOLDABLE,
- *                  (SQLPOINTER)SQL_NONHOLDABLE, 0);
+ *   SQLINTEGER holdable = SQL_NONHOLDABLE;
+ *
+ *   SQLSetStmtAttr(stmt, SQL_ATTR_CURSOR_HOLDABLE, &holdable, 0);
  */
 SQLRETURN SQLSetStmtAttr(
     SQLHSTMT   StatementHandle,

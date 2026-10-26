@@ -150,10 +150,9 @@ fn open_connection(path string, options ConnectionOptions) !&Connection {
 	return conn
 }
 
-// close releases the session lock of each file catalog. There is no public way
-// to close a connection yet, but the SQL tests open thousands of them and would
-// otherwise run out of file descriptors.
-fn (mut conn Connection) close() {
+// close releases the session lock of each file catalog. The connection must not
+// be used after it's closed.
+pub fn (mut conn Connection) close() {
 	for _, mut catalog in conn.catalogs {
 		if catalog.path != ':memory:' {
 			catalog.storage.session.close()
@@ -452,7 +451,7 @@ pub fn (mut conn Connection) query(sql_stmt string) !Result {
 
 // in_transaction is true while START TRANSACTION is active. Every catalog is in
 // the same SQL-transaction.
-fn (conn Connection) in_transaction() bool {
+pub fn (conn Connection) in_transaction() bool {
 	for _, catalog in conn.catalogs {
 		if catalog.storage.transaction_state == .active {
 			return true

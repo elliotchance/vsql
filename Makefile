@@ -1,4 +1,4 @@
-.PHONY: bench bench-on-disk bench-memory fmt fmt-verify test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: libvsql libvsql-example libvsql-test release bench bench-on-disk bench-memory fmt fmt-verify test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # Is not used at the moment. It is useful for testing options like different
 # `-gc` values.
@@ -37,6 +37,57 @@ bin/vsql: $(SOURCES)
 bin/vsql.exe: $(SOURCES)
 	mkdir -p bin
 	v $(V3_OPTIONS) -os windows $(BUILD_OPTIONS) $(PROD) cmd/vsql-cli -o bin/vsql.exe
+
+# libvsql is the SQL/CLI (ISO/IEC 9075-3) shared library, see
+# libvsql/libvsql.h. On macOS the install name must be set so that programs can
+# find it by rpath. Windows has no rpath (a program finds the DLL in its own
+# folder or on the PATH), and it's built with MinGW, since that's what CI has.
+# libgcc is linked statically so that the DLL doesn't need the MinGW runtime,
+# and libvsql.def gives the DLL its name.
+ifeq ($(OS),Windows_NT)
+LIBVSQL = bin/libvsql.dll
+LIBVSQL_OPTIONS = -cc gcc -ldflags '-static-libgcc -Wl,--export-all-symbols $(CURDIR)/libvsql/libvsql.def'
+LIBVSQL_C = gcc
+LIBVSQL_CPP = g++
+else ifeq ($(shell uname),Darwin)
+LIBVSQL = bin/libvsql.dylib
+LIBVSQL_OPTIONS = -ldflags '-Wl,-install_name,@rpath/libvsql.dylib'
+LIBVSQL_RPATH = -Wl,-rpath,$(CURDIR)/bin
+else
+LIBVSQL = bin/libvsql.so
+LIBVSQL_RPATH = -Wl,-rpath,$(CURDIR)/bin
+endif
+LIBVSQL_C ?= cc
+LIBVSQL_CPP ?= c++
+
+libvsql: $(LIBVSQL)
+
+$(LIBVSQL): $(SOURCES) $(wildcard libvsql/*.v)
+	mkdir -p bin
+	v $(V3_OPTIONS) $(BUILD_OPTIONS) $(PROD) -enable-globals -shared $(LIBVSQL_OPTIONS) libvsql -o bin/libvsql
+
+# The release is a zip of a folder named after the release (VERSION, such as
+# v0.34.0) and OS, so that versions can be unzipped side by side:
+#
+#   vsql-v0.34.0-macos/bin/vsql
+#   vsql-v0.34.0-macos/include/libvsql.h
+#   vsql-v0.34.0-macos/lib/libvsql.dylib (libvsql.so on Linux)
+#   vsql-v0.34.0-macos/example.c
+#
+# bin/, include/ and lib/ are the usual layout of an install prefix (such as
+# /usr/local), so the folder can be used as one.
+VERSION ?= dev
+RELEASE = vsql-$(VERSION)-$(if $(filter Darwin,$(shell uname)),macos,linux)
+
+release: bin/vsql $(LIBVSQL)
+	rm -rf $(RELEASE) $(RELEASE).zip
+	mkdir -p $(RELEASE)/bin $(RELEASE)/include $(RELEASE)/lib
+	cp bin/vsql $(RELEASE)/bin/
+	cp libvsql/libvsql.h $(RELEASE)/include/
+	cp $(LIBVSQL) $(RELEASE)/lib/
+	cp libvsql/example.c $(RELEASE)/
+	zip -r $(RELEASE).zip $(RELEASE)
+	rm -rf $(RELEASE)
 
 oldv: vsql/y.v
 ifdef OLDV
@@ -82,15 +133,15 @@ grammar: clean-grammar vsql/y.v
 # Formatting
 
 fmt:
-	v fmt -w cmd examples scripts vsql
+	v fmt -w cmd examples libvsql scripts vsql
 
 fmt-verify:
-	v fmt -verify cmd examples scripts vsql
+	v fmt -verify cmd examples libvsql scripts vsql
 
 # Tests
 
 # test runs every test suite. Each one can also be run on its own.
-test: sql-test vorm-test unit-test btree-test examples-test cli-test
+test: sql-test vorm-test unit-test btree-test examples-test cli-test libvsql-test
 
 # unit-test runs the V tests in vsql/, except for the SQL and B-tree tests that
 # have their own targets.
@@ -188,6 +239,24 @@ examples-test:
 	for f in `ls examples/*.v`; do \
 		echo $$f; v $(V3_OPTIONS) run $$f || exit 1; \
 	done
+	$(MAKE) libvsql-example
+
+# The C programs that use libvsql must be C99.
+LIBVSQL_CC = $(LIBVSQL_C) -std=c99 -pedantic-errors -Wall -Wextra -Werror -Ilibvsql
+
+# libvsql.h and example.c must also work with C++.
+LIBVSQL_CXX = $(LIBVSQL_CPP) -x c++ -std=c++11 -pedantic-errors -Wall -Wextra -Werror -Ilibvsql
+
+libvsql-example: $(LIBVSQL)
+	$(LIBVSQL_CC) libvsql/example.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-example
+	bin/libvsql-example
+	$(LIBVSQL_CXX) libvsql/example.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-example-cpp
+	bin/libvsql-example-cpp
+
+libvsql-test: $(LIBVSQL)
+	v run scripts/check-libvsql-constants.vsh
+	$(LIBVSQL_CC) libvsql/test.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-test
+	bin/libvsql-test
 
 examples/%: vsql/y.v
 	v $(V3_OPTIONS) run examples/$*.v

@@ -1,5 +1,5 @@
-Server
-======
+PostgreSQL Server
+=================
 
 vsql can be run as a server and any PostgreSQL-compatible driver can access it.
 This is ideal if you want to use a more familiar or feature rich database
@@ -76,3 +76,8 @@ without a ``FROM`` (which many PostgreSQL clients send, but isn't valid SQL)
 unless ``select_without_from`` is set.
 
 See :doc:`install` to get the ``vsql`` command.
+
+.. toctree::
+   :maxdepth: 1
+
+   postgresql-clients.rst

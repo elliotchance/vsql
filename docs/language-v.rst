@@ -1,12 +1,63 @@
-V ORM
-=====
+Language: V
+===========
+
+A V program uses vsql directly as a module. It can execute SQL statements, or
+use V's built-in ORM (see `ORM`_).
 
 .. contents::
+
+Install/Update
+--------------
+
+Install or update to the latest with:
+
+.. code-block:: sh
+
+   v install elliotchance.vsql
+
+Example
+-------
+
+.. code-block:: v
+
+   import elliotchance.vsql.vsql
+
+   fn example() ! {
+   	mut db := vsql.open(':memory:')!
+
+   	// All SQL commands use query():
+   	db.query('CREATE TABLE foo (x DOUBLE PRECISION)')!
+   	db.query('INSERT INTO foo (x) VALUES (1.23)')!
+   	db.query('INSERT INTO foo (x) VALUES (4.56)')!
+
+   	// Iterate through a result:
+   	result := db.query('SELECT * FROM foo')!
+   	println(result.columns)
+
+   	for row in result {
+   		println(row.get_f64('X')!)
+   	}
+   }
+
+Outputs:
+
+.. code-block:: text
+
+   [":memory:".PUBLIC.FOO.X DOUBLE PRECISION]
+   1.23
+   4.56
+
+Errors are returned as ``SQLState`` values, see :doc:`sqlstate`. More examples
+are in the
+`examples directory <https://github.com/elliotchance/vsql/tree/main/examples>`_.
+
+ORM
+---
 
 The ``vorm`` module is a driver for V's built-in ORM (``sql db { ... }``).
 
 Example
--------
+^^^^^^^
 
 .. code-block:: v
 
@@ -51,7 +102,7 @@ connection can also be used with ``vorm.new()``:
 See also ``examples/orm.v``.
 
 Tables and Columns
-------------------
+^^^^^^^^^^^^^^^^^^
 
 Table and column names are always quoted, so they keep the same case as the ORM
 uses (the ORM uses the struct name in lower case, unless you use
@@ -102,7 +153,7 @@ of the column, so the V type of a field can be different to its SQL type, such
 as a ``string`` that is stored as ``NUMERIC(5,2)``.
 
 Attributes
-----------
+^^^^^^^^^^
 
 .. list-table::
   :header-rows: 1
@@ -154,7 +205,7 @@ Attributes
     - The field is not stored.
 
 Serial Fields
--------------
+^^^^^^^^^^^^^
 
 vsql does not have identity columns, so each ``@[sql: serial]`` field gets a
 sequence called ``"<table>_<field>_seq"`` when the table is created. A row that
@@ -162,7 +213,7 @@ is inserted with the field set to zero is given the next value of
 the sequence. The sequence is dropped with the table.
 
 Where
------
+^^^^^
 
 A ``where`` can use ``==``, ``!=``, ``<``, ``<=``, ``>``, ``>=``, ``like``,
 ``is none`` and ``!is none``, combined with ``&&``, ``||`` and parentheses:
@@ -174,14 +225,14 @@ A ``where`` can use ``==``, ``!=``, ``<``, ``<=``, ``>``, ``>=``, ``like``,
    }!
 
 Transactions
-------------
+^^^^^^^^^^^^
 
 ``orm_begin()``, ``orm_commit()`` and ``orm_rollback()`` use ``START
 TRANSACTION``, ``COMMIT`` and ``ROLLBACK``. vsql doesn't have savepoints, so the
 savepoint functions return an error.
 
 Limitations
------------
+^^^^^^^^^^^
 
 - Indexes (``@[index]``) and comments (``@[comment]``) are ignored.
 
@@ -194,3 +245,5 @@ Limitations
   - Nested transactions, which use savepoints (see `Transactions`_).
 
   Each of these returns an error from vsql when the query runs.
+
+.. include:: v-client-library-docs.rst

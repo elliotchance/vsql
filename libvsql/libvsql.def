@@ -1,0 +1,4 @@
+; libvsql.def names libvsql.dll on Windows (see the Makefile). V links the DLL
+; with a temporary name, which would otherwise be the name that programs
+; linked against it look for.
+LIBRARY libvsql.dll

@@ -43,7 +43,7 @@ A prototype that isn't ``name(type, ...) type``, or has a type that doesn't
 exist, is an error ``42601``.
 
 A function must return a value to match the return type. See the full list of
-``Value`` constructors in :doc:`v-client-library`.
+``Value`` constructors in :doc:`language-v`.
 
 See also
 `examples/custom-functions.v <https://github.com/elliotchance/vsql/blob/main/examples/custom-functions.v>`_.

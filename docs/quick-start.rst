@@ -96,5 +96,5 @@ Then open a database and run SQL:
    	}
    }
 
-This prints ``Bagel costs 2.25``. See :doc:`v-client-library`, or
-:doc:`v-orm` to use V's built-in ORM.
+This prints ``Bagel costs 2.25``. See :doc:`language-v`, which
+also shows how to use V's built-in ORM.

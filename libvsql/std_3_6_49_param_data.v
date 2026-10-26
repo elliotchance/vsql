@@ -14,6 +14,9 @@ fn sql_param_data(statement_handle SQLInteger, value &voidptr) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	stmt.invoke(true) or { return stmt.diag.error(err) }
+
 	return param_data(mut stmt, value) or {
 		// The statement can't continue after an exception condition.
 		if err !is NoData {

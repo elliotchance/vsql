@@ -59,6 +59,11 @@ fn get_feature_info(mut dbc Dbc, feature_type &char, feature_type_length i16, fe
 		return cli_error('08003', 'connection does not exist')
 	}
 
+	// - 3. If EC is not the current SQL-connection, then the General Rules of
+	// Subclause 5.3, "Implicit set connection", are applied to EC as the
+	// dormant SQL-connection.
+	implicit_set_connection(dbc.handle)!
+
 	// - 4 to 11. The arguments, which can't be zero-length strings.
 	ft := feature_info_arg(feature_type, feature_type_length)!
 	if ft !in ['FEATURE', 'SUBFEATURE', 'PACKAGE'] {

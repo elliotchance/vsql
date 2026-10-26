@@ -13,8 +13,8 @@ fn sql_get_data(statement_handle SQLInteger, column_number i16, target_type i16,
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.6.
-	stmt.check_deferred() or { return stmt.diag.error(err) }
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	rc := get_data(mut stmt, column_number, target_type, target_value, i64(buffer_length),
 		str_len_or_ind) or { stmt.diag.error(err) }

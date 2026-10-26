@@ -14,7 +14,7 @@ fn sql_execute(statement_handle SQLInteger) i16 {
 }
 
 fn execute(mut stmt Stmt) !i16 {
-	stmt.check_deferred()!
+	stmt.invoke(false)!
 
 	// - 2. If there is no prepared statement associated with S, then an
 	// exception condition is raised: CLI-specific condition — function sequence

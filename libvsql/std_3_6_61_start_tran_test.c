@@ -83,3 +83,40 @@ UTEST_F(env, 6_61_start_tran_not_connected) {
                          SQL_TRANSACTION_READ_COMMITTED),
             SQL_SUCCESS);
 }
+
+/* A transaction can only be started in one connection, which becomes the
+ * current connection. */
+UTEST_F(db, 6_61_start_tran_multiple_connections) {
+  SQLHDBC dbc2;
+  SQLHSTMT stmt2;
+
+  ASSERT_EQ(SQLAllocConnect(utest_fixture->env, &dbc2), SQL_SUCCESS);
+  ASSERT_EQ(connect_memory(dbc2), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocStmt(dbc2, &stmt2), SQL_SUCCESS);
+
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, utest_fixture->env,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_ENV, utest_fixture->env, "0A001");
+
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, dbc2, SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, dbc2, "0A001");
+  EXPECT_EQ(run_sql(stmt2, "VALUES 1"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "0A001");
+
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env, SQL_COMMIT),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, dbc2, SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, dbc2, SQL_COMMIT), SQL_SUCCESS);
+  EXPECT_EQ(SQLDisconnect(dbc2), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeConnect(dbc2), SQL_SUCCESS);
+}

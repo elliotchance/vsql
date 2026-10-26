@@ -12,14 +12,23 @@ import vsql
 
 @[export: 'SQLConnect']
 fn sql_connect(connection_handle SQLInteger, server_name &char, name_length1 i16, user_name &char, name_length2 i16, authentication &char, name_length3 i16) i16 {
-	mut dbc := dbcs[i64(connection_handle)] or { return sql_invalid_handle }
+	h := i64(connection_handle)
+	mut dbc := dbcs[h] or { return sql_invalid_handle }
 	dbc.diag.clear()
 
-	return connect(mut dbc, server_name, name_length1, user_name, name_length2, authentication,
+	return connect(mut dbc, h, server_name, name_length1, user_name, name_length2, authentication,
 		name_length3) or { dbc.diag.error(err) }
 }
 
-fn connect(mut dbc Dbc, server_name &char, name_length1 i16, user_name &char, name_length2 i16, authentication &char, name_length3 i16) !i16 {
+fn connect(mut dbc Dbc, h i64, server_name &char, name_length1 i16, user_name &char, name_length2 i16, authentication &char, name_length3 i16) !i16 {
+	// - 2. If an SQL-transaction is active for the current SQL-connection and
+	// the implementation does not support transactions that affect more than
+	// one SQL-server, then an exception condition is raised: feature not
+	// supported — multiple server transactions.
+	if current_connection != 0 && transaction_active(sql_handle_dbc, current_connection) {
+		return cli_error('0A001', 'multiple server transactions')
+	}
+
 	// - 3. If there is an established SQL-connection associated with C, then an
 	// exception condition is raised: connection exception — connection name in
 	// use.
@@ -62,6 +71,10 @@ fn connect(mut dbc Dbc, server_name &char, name_length1 i16, user_name &char, na
 		return cli_error('08001', 'SQL-client unable to establish SQL-connection: ${err.msg()}')
 	}
 	dbc.is_default = is_default
+
+	// - 14. The current SQL-connection becomes dormant, and the new one becomes
+	// the current SQL-connection.
+	current_connection = h
 
 	return sql_success
 }

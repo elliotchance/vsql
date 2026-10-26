@@ -30,8 +30,8 @@ fn sql_get_stmt_attr(statement_handle SQLInteger, attribute SQLInteger, value vo
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.6.
-	stmt.check_deferred() or { return stmt.diag.error(err) }
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return get_stmt_attr(stmt, attribute, value) or { stmt.diag.error(err) }
 }

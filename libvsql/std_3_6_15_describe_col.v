@@ -11,8 +11,8 @@ fn sql_describe_col(statement_handle SQLInteger, column_number i16, column_name 
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.6.
-	stmt.check_deferred() or { return stmt.diag.error(err) }
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return describe_col(mut stmt, column_number, column_name, buffer_length, name_length,
 		data_type, column_size, decimal_digits, nullable) or { stmt.diag.error(err) }

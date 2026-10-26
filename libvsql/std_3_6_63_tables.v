@@ -33,7 +33,7 @@ const tables_query = "(SELECT
 fn sql_tables(statement_handle SQLInteger, catalog_name &char, name_length1 i16, schema_name &char, name_length2 i16, table_name &char, name_length3 i16, table_type &char, name_length4 i16) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
-	stmt.check_deferred() or { return stmt.diag.error(err) }
+	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return tables(mut stmt, catalog_name, name_length1, schema_name, name_length2, table_name,
 		name_length3, table_type, name_length4) or { stmt.diag.error(err) }

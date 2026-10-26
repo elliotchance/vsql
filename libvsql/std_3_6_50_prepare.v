@@ -22,7 +22,7 @@ fn sql_prepare(statement_handle SQLInteger, statement_text &char, text_length SQ
 }
 
 fn prepare(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16 {
-	stmt.check_deferred()!
+	stmt.invoke(false)!
 
 	// - 2 to 7. The same as ExecDirect.
 	p := preparable_statement(mut stmt, statement_text, text_length)!

@@ -12,8 +12,8 @@ fn sql_fetch(statement_handle SQLInteger) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.6.
-	stmt.check_deferred() or { return stmt.diag.error(err) }
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return fetch(mut stmt, sql_fetch_next, 0) or { stmt.diag.error(err) }
 }

@@ -23,7 +23,7 @@ fn sql_bind_parameter(statement_handle SQLInteger, parameter_number i16, input_o
 }
 
 fn bind_parameter(mut stmt Stmt, parameter_number i16, iom i16, value_type i16, parameter_type i16, column_size i64, decimal_digits i16, parameter_value voidptr, buffer_length i64, str_len_or_ind &SQLInteger) !i16 {
-	stmt.check_deferred()!
+	stmt.invoke(false)!
 	mut apd := descs[stmt.apd] or { return cli_error('HY010', 'function sequence error') }
 	mut ipd := descs[stmt.ipd] or { return cli_error('HY010', 'function sequence error') }
 

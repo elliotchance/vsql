@@ -9,6 +9,9 @@ fn sql_set_desc_rec(descriptor_handle SQLInteger, record_number i16, type_ i16, 
 	mut desc := descs[i64(descriptor_handle)] or { return sql_invalid_handle }
 	desc.diag.clear()
 
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.ii.
+	desc.invoke() or { return desc.diag.error(err) }
+
 	// See 5.11, "Deferred parameter check".
 	check_desc_deferred(i64(descriptor_handle)) or { return desc.diag.error(err) }
 

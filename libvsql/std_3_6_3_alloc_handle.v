@@ -30,7 +30,8 @@ fn sql_alloc_handle(handle_type i16, input_handle SQLInteger, output_handle &SQL
 			}
 			h := new_handle()
 			dbcs[h] = &Dbc{
-				env: ih
+				handle: h
+				env:    ih
 			}
 			unsafe {
 				*output_handle = SQLInteger(h)
@@ -48,6 +49,13 @@ fn sql_alloc_handle(handle_type i16, input_handle SQLInteger, output_handle &SQL
 			// raised: connection exception — connection does not exist.
 			if dbc.conn == none {
 				return set_zero(output_handle, dbc.diag.error(cli_error('08003', 'connection does not exist')))
+			}
+
+			// - 3.c.vi, 3.d.vi. If EC is not the current SQL-connection, then
+			// the General Rules of Subclause 5.3, "Implicit set connection", are
+			// applied to EC as the dormant SQL-connection.
+			implicit_set_connection(ih) or {
+				return set_zero(output_handle, dbc.diag.error(err))
 			}
 
 			// - 3.c.ix, 3.c.x. A statement is allocated with its own ARD, APD,

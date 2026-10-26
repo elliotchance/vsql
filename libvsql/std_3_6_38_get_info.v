@@ -117,6 +117,11 @@ fn get_info(mut dbc Dbc, info_type i16, info_value voidptr, buffer_length i16, s
 		return cli_error('08003', 'connection does not exist')
 	}
 
+	// - 3. If EC is not the current SQL-connection, then the General Rules of
+	// Subclause 5.3, "Implicit set connection", are applied to EC as the
+	// dormant SQL-connection.
+	implicit_set_connection(dbc.handle)!
+
 	// - 6, 10. The value of IT, or an exception condition is raised:
 	// CLI-specific condition — invalid information type.
 	v := info_value_of(dbc, info_type) or {

@@ -204,7 +204,7 @@ const type_info = [
 fn sql_get_type_info(statement_handle SQLInteger, data_type i16) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
-	stmt.check_deferred() or { return stmt.diag.error(err) }
+	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return get_type_info(mut stmt, data_type) or { stmt.diag.error(err) }
 }

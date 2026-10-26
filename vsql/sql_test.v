@@ -1400,3 +1400,13 @@ fn test_information_schema_truncated_check_clause() {
 
 	assert row[3].is_null
 }
+
+// column_names is only used by vorm, so it's tested directly.
+fn test_table_column_names() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE TABLE t (x INTEGER, y INTEGER GENERATED ALWAYS AS (x + 1))')!
+	tables := db.catalog().schema_tables('PUBLIC')!
+
+	assert tables.len == 1
+	assert tables[0].column_names() == ['X', 'Y']
+}

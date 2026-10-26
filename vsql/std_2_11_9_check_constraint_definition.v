@@ -12,13 +12,14 @@ struct CheckConstraintDefinition {
 	column_name string
 	// name is empty when the constraint doesn't have a <constraint name
 	// definition> (see Table.name_constraints).
-	name Identifier
+	name            Identifier
+	characteristics ConstraintCharacteristics
 }
 
 // str is the SQL of the constraint, which is how it's stored in the file as part
 // of the CREATE TABLE (see Table.bytes).
 fn (e CheckConstraintDefinition) str() string {
-	return 'CHECK (${e.search_condition.pstr(map[string]Value{})})'
+	return 'CHECK (${e.search_condition.pstr(map[string]Value{})})${e.characteristics}'
 }
 
 // compile returns the search condition to be evaluated for a row of the table,

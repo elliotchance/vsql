@@ -7,22 +7,24 @@ module vsql
 // The name is empty when the constraint doesn't have a <constraint name
 // definition> (see Table.name_constraints).
 struct UniqueConstraintDefinition {
-	name           Identifier
-	columns        []Identifier
-	is_primary_key bool
+	name            Identifier
+	columns         []Identifier
+	is_primary_key  bool
+	characteristics ConstraintCharacteristics
 }
 
 // A UniqueConstraint is a UNIQUE (other than the PRIMARY KEY) of a table, with
 // the names of its columns.
 struct UniqueConstraint {
-	name    string
-	columns []string
+	name            string
+	columns         []string
+	characteristics ConstraintCharacteristics
 }
 
 // str is how the constraint is stored in the file as part of the CREATE TABLE
 // (see Table.bytes).
 fn (c UniqueConstraint) str() string {
-	return 'UNIQUE (${c.columns.map(delimit_identifier(it)).join(', ')})'
+	return 'UNIQUE (${c.columns.map(delimit_identifier(it)).join(', ')})${c.characteristics}'
 }
 
 // check_primary_key returns an error if a row with the same PRIMARY KEY as r

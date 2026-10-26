@@ -2043,6 +2043,88 @@ UTEST_F(db, 6_22_fetch_scroll_empty) {
             SQL_NO_DATA);
 }
 
+/* 6.23 ForeignKeys */
+
+static SQLRETURN create_foreign_keys(SQLHSTMT stmt) {
+  SQLRETURN rc =
+      run_sql(stmt, "CREATE TABLE parent (id INT PRIMARY KEY, u INT UNIQUE)");
+
+  return rc == SQL_SUCCESS
+             ? run_sql(stmt, "CREATE TABLE child (x INT REFERENCES parent ON "
+                             "DELETE CASCADE, y INT REFERENCES parent (u))")
+             : rc;
+}
+
+/* The foreign keys of a table. */
+UTEST_F(db, 6_23_foreign_keys_fk) {
+  ASSERT_EQ(create_foreign_keys(utest_fixture->stmt), SQL_SUCCESS);
+
+#define FKS(column)                                                            \
+  (SQLForeignKeys(utest_fixture->stmt, NULL, 0, NULL, 0, NULL, 0, NULL, 0,     \
+                  NULL, 0, (SQLCHAR *)"CHILD", SQL_NTS) == SQL_SUCCESS         \
+       ? fetch_strings(utest_fixture->stmt, column)                            \
+       : "(error)")
+
+  EXPECT_STREQ(FKS(3), "PARENT,PARENT");
+  EXPECT_STREQ(FKS(4), "ID,U");
+  EXPECT_STREQ(FKS(7), "CHILD,CHILD");
+  EXPECT_STREQ(FKS(8), "X,Y");
+  EXPECT_STREQ(FKS(9), "1,1");
+  EXPECT_STREQ(FKS(10), "3,3");
+  EXPECT_STREQ(FKS(11), "0,3");
+  EXPECT_STREQ(FKS(12), "CHILD_FOREIGN_KEY_1,CHILD_FOREIGN_KEY_2");
+  EXPECT_STREQ(FKS(13), "PARENT_PRIMARY_KEY,PARENT_UNIQUE_1");
+  EXPECT_STREQ(FKS(14), "7,7");
+  EXPECT_STREQ(FKS(15), "PRIMARY,UNIQUE ");
+#undef FKS
+}
+
+/* The foreign keys that reference the PRIMARY KEY of a table. */
+UTEST_F(db, 6_23_foreign_keys_pk) {
+  ASSERT_EQ(create_foreign_keys(utest_fixture->stmt), SQL_SUCCESS);
+  ASSERT_EQ(SQLForeignKeys(utest_fixture->stmt, NULL, 0, NULL, 0,
+                           (SQLCHAR *)"PARENT", SQL_NTS, NULL, 0, NULL, 0, NULL,
+                           0),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 8), "X");
+}
+
+/* With both tables (or neither), the foreign keys between them. */
+UTEST_F(db, 6_23_foreign_keys_both) {
+  ASSERT_EQ(create_foreign_keys(utest_fixture->stmt), SQL_SUCCESS);
+  ASSERT_EQ(SQLForeignKeys(utest_fixture->stmt, NULL, 0, NULL, 0,
+                           (SQLCHAR *)"PARENT", SQL_NTS, NULL, 0,
+                           (SQLCHAR *)"PUBLIC", SQL_NTS, (SQLCHAR *)"CHILD",
+                           SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 8), "X,Y");
+  ASSERT_EQ(SQLForeignKeys(utest_fixture->stmt, NULL, 0, NULL, 0,
+                           (SQLCHAR *)"CHILD", SQL_NTS, NULL, 0, NULL, 0,
+                           (SQLCHAR *)"PARENT", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 8), "");
+  ASSERT_EQ(SQLForeignKeys(utest_fixture->stmt, NULL, 0, NULL, 0, NULL, 0, NULL,
+                           0, NULL, 0, NULL, 0),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 8), "X,Y");
+}
+
+/* A multi-column foreign key, which references the columns of a UNIQUE in a
+ * different order. */
+UTEST_F(db, 6_23_foreign_keys_columns) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "CREATE TABLE p (a INT, b INT, UNIQUE (a, b))"),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "CREATE TABLE c (x INT, y INT, FOREIGN KEY (x, y) "
+                    "REFERENCES p (b, a))"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLForeignKeys(utest_fixture->stmt, NULL, 0, NULL, 0, NULL, 0, NULL,
+                           0, NULL, 0, (SQLCHAR *)"C", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 4), "B,A");
+}
+
 /* 6.24 FreeConnect */
 
 UTEST(libvsql, 6_24_free_connect) {
@@ -3543,6 +3625,50 @@ UTEST_F(db, 6_50_prepare_open_cursor) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
 }
 
+/* 6.51 PrimaryKeys */
+
+UTEST_F(db, 6_51_primary_keys) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "CREATE TABLE t (a INT, b INT, PRIMARY KEY (b, a))"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLPrimaryKeys(utest_fixture->stmt, NULL, 0, NULL, 0,
+                           (SQLCHAR *)"T", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 4), "B,A");
+  ASSERT_EQ(SQLPrimaryKeys(utest_fixture->stmt, NULL, 0, NULL, 0,
+                           (SQLCHAR *)"T", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 5), "1,2");
+  ASSERT_EQ(SQLPrimaryKeys(utest_fixture->stmt, (SQLCHAR *)":memory:", SQL_NTS,
+                           (SQLCHAR *)"PUBLIC", SQL_NTS, (SQLCHAR *)"T",
+                           SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 6),
+               "T_PRIMARY_KEY,T_PRIMARY_KEY");
+}
+
+/* The name isn't a pattern, and a table without a PRIMARY KEY has no rows. */
+UTEST_F(db, 6_51_primary_keys_none) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (a INT PRIMARY KEY)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE u (a INT UNIQUE)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLPrimaryKeys(utest_fixture->stmt, NULL, 0, NULL, 0,
+                           (SQLCHAR *)"%", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 4), "");
+  ASSERT_EQ(SQLPrimaryKeys(utest_fixture->stmt, NULL, 0, NULL, 0,
+                           (SQLCHAR *)"U", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 4), "");
+}
+
+UTEST_F(db, 6_51_primary_keys_null_table) {
+  EXPECT_EQ(SQLPrimaryKeys(utest_fixture->stmt, NULL, 0, NULL, 0, NULL, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
+}
+
 /* 6.52 PutData */
 
 /* A number can't be given in pieces. */
@@ -4243,6 +4369,63 @@ UTEST_F(db, 6_59_set_stmt_attr_invalid_handle) {
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->dbc, SQL_ATTR_METADATA_ID,
                            (SQLPOINTER)SQL_TRUE, 0),
             SQL_INVALID_HANDLE);
+}
+
+/* 6.60 SpecialColumns */
+
+UTEST_F(db, 6_60_special_columns) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "CREATE TABLE t (a INT, b VARCHAR(10), c INT, PRIMARY KEY "
+                    "(b, a))"),
+            SQL_SUCCESS);
+
+#define SPECIAL(column, scope)                                                 \
+  (SQLSpecialColumns(utest_fixture->stmt, SQL_BEST_ROWID, NULL, 0, NULL, 0,    \
+                     (SQLCHAR *)"T", SQL_NTS, scope,                           \
+                     SQL_NO_NULLS) == SQL_SUCCESS                              \
+       ? fetch_strings(utest_fixture->stmt, column)                            \
+       : "(error)")
+
+  EXPECT_STREQ(SPECIAL(1, SQL_SCOPE_CURROW), "2,2");
+  EXPECT_STREQ(SPECIAL(2, SQL_SCOPE_CURROW), "B,A");
+  EXPECT_STREQ(SPECIAL(3, SQL_SCOPE_CURROW), "12,4");
+  EXPECT_STREQ(SPECIAL(4, SQL_SCOPE_CURROW), "CHARACTER VARYING,INTEGER");
+  EXPECT_STREQ(SPECIAL(5, SQL_SCOPE_CURROW), "10,10");
+  EXPECT_STREQ(SPECIAL(8, SQL_SCOPE_CURROW), "1,1");
+  EXPECT_STREQ(SPECIAL(2, SQL_SCOPE_SESSION), "B,A");
+#undef SPECIAL
+}
+
+UTEST_F(db, 6_60_special_columns_no_key) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (a INT UNIQUE)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSpecialColumns(utest_fixture->stmt, SQL_BEST_ROWID, NULL, 0,
+                              NULL, 0, (SQLCHAR *)"T", SQL_NTS,
+                              SQL_SCOPE_CURROW, SQL_NULLABLE),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 2), "");
+}
+
+UTEST_F(db, 6_60_special_columns_invalid) {
+  EXPECT_EQ(SQLSpecialColumns(utest_fixture->stmt, 2, NULL, 0, NULL, 0,
+                              (SQLCHAR *)"T", SQL_NTS, SQL_SCOPE_CURROW,
+                              SQL_NULLABLE),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY097");
+  EXPECT_EQ(SQLSpecialColumns(utest_fixture->stmt, SQL_BEST_ROWID, NULL, 0,
+                              NULL, 0, (SQLCHAR *)"T", SQL_NTS, 3,
+                              SQL_NULLABLE),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY098");
+  EXPECT_EQ(SQLSpecialColumns(utest_fixture->stmt, SQL_BEST_ROWID, NULL, 0,
+                              NULL, 0, (SQLCHAR *)"T", SQL_NTS,
+                              SQL_SCOPE_CURROW, 2),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY099");
+  EXPECT_EQ(SQLSpecialColumns(utest_fixture->stmt, SQL_BEST_ROWID, NULL, 0,
+                              NULL, 0, NULL, 0, SQL_SCOPE_CURROW, SQL_NULLABLE),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
 }
 
 /* 6.61 StartTran */

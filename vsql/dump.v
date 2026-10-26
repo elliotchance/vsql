@@ -75,7 +75,15 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 			for key in table.foreign_keys {
 				foreign_keys << 'ALTER TABLE ${name} ADD CONSTRAINT ${delimit_identifier(key.name)} ${key};'
 			}
-			columns := table.column_names().map(delimit_identifier(it)).join(', ')
+			// A generated column can't be inserted, it's set again from the
+			// other columns.
+			mut column_names := []string{}
+			for col in table.columns {
+				if col.generated == none {
+					column_names << col.name.sub_entity_name
+				}
+			}
+			columns := column_names.map(delimit_identifier(it)).join(', ')
 
 			// The values of a GENERATED ALWAYS identity column can only be
 			// inserted with OVERRIDING SYSTEM VALUE.
@@ -89,7 +97,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 
 			for row in conn.query('SELECT * FROM ${name}')! {
 				mut data := []string{}
-				for col in table.column_names() {
+				for col in column_names {
 					data << (row.get(col)!).literal()
 				}
 

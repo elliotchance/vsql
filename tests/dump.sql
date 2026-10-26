@@ -748,3 +748,65 @@ SELECT * FROM t;
 -- ID: 1 X: 10
 -- ID: 2 X: 20
 -- ID: 2 X: 30
+
+-- # A generated column has its generation expression, and its values are set
+-- # again from the other columns instead of being inserted.
+CREATE TABLE t (x INT, y INT GENERATED ALWAYS AS (x * 10), z VARCHAR(10));
+INSERT INTO t (x, z) VALUES (1, 'a'), (2, 'b');
+/* out */
+/* in */
+INSERT INTO t (x, z) VALUES (3, 'c');
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- out: CREATE TABLE "PUBLIC"."T" (
+-- out:   "X" INTEGER,
+-- out:   "Y" INTEGER GENERATED ALWAYS AS (X * 10),
+-- out:   "Z" CHARACTER VARYING(10)
+-- out: );
+-- out: INSERT INTO "PUBLIC"."T" ("X", "Z") VALUES (1, 'a');
+-- out: INSERT INTO "PUBLIC"."T" ("X", "Z") VALUES (2, 'b');
+-- msg: INSERT 1
+-- X: 1 Y: 10 Z: a
+-- X: 2 Y: 20 Z: b
+-- X: 3 Y: 30 Z: c
+
+-- # A generated column without a data type, with a delimited identifier and a
+-- # string in its expression.
+CREATE TABLE t ("first name" VARCHAR(10), x INT, greeting GENERATED ALWAYS AS ('Hi ' || "first name"), "y" GENERATED ALWAYS AS (x + 1));
+INSERT INTO t ("first name", x) VALUES ('Bob', 1);
+/* out */
+/* in */
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- out: CREATE TABLE "PUBLIC"."T" (
+-- out:   "first name" CHARACTER VARYING(10),
+-- out:   "X" INTEGER,
+-- out:   "GREETING" CHARACTER VARYING(13) GENERATED ALWAYS AS ('Hi ' || "first name"),
+-- out:   "y" INTEGER GENERATED ALWAYS AS (X + 1)
+-- out: );
+-- out: INSERT INTO "PUBLIC"."T" ("first name", "X") VALUES ('Bob', 1);
+-- first name: Bob X: 1 GREETING: Hi Bob y: 2
+
+-- # A table with an identity column and a generated column.
+CREATE TABLE t (id INT GENERATED ALWAYS AS IDENTITY, x INT, y INT GENERATED ALWAYS AS (id + x));
+INSERT INTO t (x) VALUES (10), (20);
+/* out */
+/* in */
+INSERT INTO t (x) VALUES (30);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- out: CREATE TABLE "PUBLIC"."T" (
+-- out:   "ID" INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647) NOT NULL,
+-- out:   "X" INTEGER,
+-- out:   "Y" INTEGER GENERATED ALWAYS AS (ID + X)
+-- out: );
+-- out: INSERT INTO "PUBLIC"."T" ("ID", "X") OVERRIDING SYSTEM VALUE VALUES (1, 10);
+-- out: INSERT INTO "PUBLIC"."T" ("ID", "X") OVERRIDING SYSTEM VALUE VALUES (2, 20);
+-- out: ALTER TABLE "PUBLIC"."T" ALTER COLUMN "ID" RESTART WITH 3;
+-- msg: INSERT 1
+-- ID: 1 X: 10 Y: 11
+-- ID: 2 X: 20 Y: 22
+-- ID: 3 X: 30 Y: 33

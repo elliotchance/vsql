@@ -15,6 +15,9 @@ fn sql_set_stmt_attr(statement_handle SQLInteger, attribute SQLInteger, value vo
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.6.
+	stmt.check_deferred() or { return stmt.diag.error(err) }
+
 	return set_stmt_attr(mut stmt, attribute, i64(value)) or { stmt.diag.error(err) }
 }
 
@@ -71,7 +74,7 @@ fn set_stmt_attr(mut stmt Stmt, attribute SQLInteger, v i64) !i16 {
 			// - 5.h.i. If there is a prepared statement associated with
 			// StatementHandle, then an exception condition is raised:
 			// CLI-specific condition — function sequence error.
-			if stmt.executed {
+			if stmt.executed || stmt.prepared != none {
 				return cli_error('HY010', 'function sequence error')
 			}
 			stmt.nest_descriptor = check_attr_value(v, [i64(sql_false), sql_true])!

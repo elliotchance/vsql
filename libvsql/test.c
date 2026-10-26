@@ -468,6 +468,174 @@ UTEST_F(db, 6_5_bind_col_after_last) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07009");
 }
 
+/* 6.6 BindParameter */
+
+UTEST_F(db, 6_6_bind_parameter) {
+  SQLINTEGER x = 0;
+  char s[10] = "";
+  SQLINTEGER len = SQL_NTS;
+
+  ASSERT_EQ(
+      run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT, s VARCHAR(5))"),
+      SQL_SUCCESS);
+  ASSERT_EQ(SQLPrepare(utest_fixture->stmt,
+                       (SQLCHAR *)"INSERT INTO t (x, s) VALUES (?, ?)",
+                       SQL_NTS),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
+                             NULL),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 2, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_VARCHAR, 5, 0, s, sizeof(s), &len),
+            SQL_SUCCESS);
+
+  x = 1;
+  strcpy(s, "a");
+  EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_SUCCESS);
+  x = 2;
+  strcpy(s, "bcd");
+  EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_SUCCESS);
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "SELECT SUM(x), MAX(s) FROM t"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_INTEGER, &x, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(x, 3);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 2, SQL_CHAR, s, sizeof(s), NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ(s, "bcd");
+}
+
+/* BindParameter sets the APD and the IPD. */
+UTEST_F(db, 6_6_bind_parameter_descriptors) {
+  SQLHDESC apd = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_PARAM_DESC);
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+  SQLDOUBLE d;
+  SQLINTEGER ind;
+  SQLPOINTER p;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 2, SQL_PARAM_MODE_IN,
+                             SQL_DOUBLE, SQL_NUMERIC, 10, 2, &d, sizeof(d),
+                             &ind),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(apd, 0, SQL_DESC_COUNT), 2);
+  EXPECT_EQ(desc_short(apd, 2, SQL_DESC_TYPE), SQL_DOUBLE);
+  EXPECT_EQ(SQLGetDescField(apd, 2, SQL_DESC_DATA_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == &d);
+  EXPECT_EQ(SQLGetDescField(apd, 2, SQL_DESC_INDICATOR_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == &ind);
+  EXPECT_EQ(desc_short(ipd, 0, SQL_DESC_COUNT), 2);
+  EXPECT_EQ(desc_short(ipd, 2, SQL_DESC_TYPE), SQL_NUMERIC);
+  EXPECT_EQ(desc_short(ipd, 2, SQL_DESC_PRECISION), 10);
+  EXPECT_EQ(desc_short(ipd, 2, SQL_DESC_SCALE), 2);
+  EXPECT_EQ(desc_short(ipd, 2, SQL_DESC_PARAMETER_MODE), SQL_PARAM_MODE_IN);
+
+  /* A datetime has the concise code's DATETIME_INTERVAL_CODE. */
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_TYPE_TIMESTAMP, 26, 6, &d, 10, &ind),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_TYPE), SQL_DATETIME);
+  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_DATETIME_INTERVAL_CODE),
+            SQL_CODE_TIMESTAMP);
+  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_PRECISION), 6);
+}
+
+UTEST_F(db, 6_6_bind_parameter_invalid) {
+  SQLINTEGER x;
+
+  EXPECT_EQ(SQLBindParameter(utest_fixture->stmt, 0, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, 4, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07009");
+  EXPECT_EQ(SQLBindParameter(utest_fixture->stmt, 1, 3, SQL_INTEGER,
+                             SQL_INTEGER, 0, 0, &x, 4, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY105");
+  EXPECT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_NUMERIC, SQL_INTEGER, 0, 0, &x, 4, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY003");
+  EXPECT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, 999, 0, 0, &x, 4, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY004");
+  EXPECT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_INOUT,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, 0, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY090");
+
+  /* The descriptors are unchanged. */
+  EXPECT_EQ(desc_short(stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_PARAM_DESC),
+                       0, SQL_DESC_COUNT),
+            0);
+}
+
+/* A NULL is given with SQL_NULL_DATA. */
+UTEST_F(db, 6_6_bind_parameter_null) {
+  SQLINTEGER x = 5, ind = SQL_NULL_DATA;
+  SQLCHAR value[10];
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
+                             &ind),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ? IS NULL"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, value, sizeof(value),
+                       NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)value, "TRUE");
+}
+
+/* The C value is cast to the ParameterType. */
+UTEST_F(db, 6_6_bind_parameter_cast) {
+  char s[] = "2026-10-26 12:34:56";
+  char out[30];
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_TYPE_DATE, 10, 0, s, sizeof(s),
+                             NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22007");
+
+  s[10] = 0;
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, out, sizeof(out), NULL),
+      SQL_SUCCESS);
+  EXPECT_STREQ(out, "2026-10-26");
+}
+
+/* A number is out of range for a smaller ParameterType. */
+UTEST_F(db, 6_6_bind_parameter_out_of_range) {
+  SQLBIGINT x = 100000;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_BIGINT, SQL_SMALLINT, 0, 0, &x, sizeof(x),
+                             NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22003");
+}
+
+/* A number can't be cast to a DATE. */
+UTEST_F(db, 6_6_bind_parameter_restricted) {
+  SQLINTEGER x = 1;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_TYPE_DATE, 10, 0, &x, sizeof(x),
+                             NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07006");
+}
+
 /* 6.7 Cancel */
 
 /* With nothing to cancel, Cancel only empties the diagnostics area. */
@@ -1329,6 +1497,88 @@ UTEST_F(db, 6_19_exec_direct_not_simple_comment) {
 UTEST_F(db, 6_19_exec_direct_bracketed_comment) {
   run_sql(utest_fixture->stmt, "VALUES 1 /* -- not a simple comment */");
   EXPECT_STRNE(sqlstate(SQL_HANDLE_STMT, utest_fixture->stmt), "42000");
+}
+
+/* Every parameter must be bound. */
+UTEST_F(db, 6_19_exec_direct_parameters) {
+  SQLINTEGER x = 7, y = 0;
+
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
+                             NULL),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ? + 1"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_INTEGER, &y, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(y, 8);
+}
+
+/* The IPD must be valid. */
+UTEST_F(db, 6_19_exec_direct_invalid_ipd) {
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+  SQLINTEGER x = 7;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_VARCHAR, 0, 0, &x, sizeof(x),
+                             NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
+
+  ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_LENGTH, (SQLPOINTER)10, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+}
+
+/* 6.20 Execute */
+
+UTEST_F(db, 6_20_execute_not_prepared) {
+  EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+
+  /* ExecDirect doesn't leave a prepared statement. */
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+}
+
+UTEST_F(db, 6_20_execute_open_cursor) {
+  ASSERT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"VALUES 1", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
+  EXPECT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_SUCCESS);
+}
+
+/* The DYNAMIC_FUNCTION and ROW_COUNT are from the prepared statement. */
+UTEST_F(db, 6_20_execute_diagnostics) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLPrepare(utest_fixture->stmt,
+                       (SQLCHAR *)"INSERT INTO t (x) VALUES (1), (2)", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_STREQ(diag_string(SQL_HANDLE_STMT, utest_fixture->stmt,
+                           SQL_DIAG_DYNAMIC_FUNCTION),
+               "INSERT");
+  EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_ROW_COUNT),
+            2);
+}
+
+/* An error that isn't a syntax error is returned by Execute. */
+UTEST_F(db, 6_20_execute_error) {
+  ASSERT_EQ(
+      SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"SELECT * FROM bar", SQL_NTS),
+      SQL_SUCCESS);
+  EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42P01");
 }
 
 /* 6.21 Fetch */
@@ -2989,6 +3239,216 @@ UTEST_F(row, 6_48_num_result_cols_closed_cursor) {
   ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
   EXPECT_EQ(SQLNumResultCols(utest_fixture->stmt, &columns), SQL_SUCCESS);
   EXPECT_EQ(columns, 6);
+}
+
+/* 6.49 ParamData */
+
+UTEST_F(db, 6_49_param_data) {
+  SQLINTEGER at_exec = SQL_DATA_AT_EXEC, x = 3, n = 0;
+  char s[20];
+  SQLPOINTER p = NULL;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_VARCHAR, 20, 0, s, sizeof(s),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 2, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
+                             NULL),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 3, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &n, sizeof(n),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ROW(?, ? + ?)"),
+            SQL_NEED_DATA);
+
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
+  EXPECT_TRUE(p == s);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "hello", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) " worldXYZ", 6),
+            SQL_SUCCESS);
+
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
+  EXPECT_TRUE(p == &n);
+  n = 10;
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, &n, 0), SQL_SUCCESS);
+
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, s, sizeof(s), NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ(s, "hello world");
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 2, SQL_INTEGER, &x, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(x, 13);
+}
+
+UTEST_F(db, 6_49_param_data_not_deferred) {
+  SQLPOINTER p;
+
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+}
+
+/* While a parameter is deferred, the other statement routines can't be
+ * used, until it's cancelled. */
+UTEST_F(db, 6_49_param_data_sequence) {
+  SQLINTEGER at_exec = SQL_DATA_AT_EXEC, x;
+  SQLPOINTER p;
+  SQLSMALLINT n;
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+  EXPECT_EQ(SQLNumResultCols(utest_fixture->stmt, &n), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+  EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_STMT, utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY010");
+  EXPECT_EQ(SQLGetDescField(ipd, 1, SQL_DESC_TYPE, &n, 0, NULL), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ipd, "HY010");
+
+  /* PutData needs ParamData first. */
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, &x, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+
+  /* An error ends the statement. */
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+}
+
+UTEST_F(db, 6_49_param_data_cancel) {
+  SQLINTEGER at_exec = SQL_DATA_AT_EXEC, x;
+  SQLPOINTER p;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  EXPECT_EQ(SQLCancel(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+}
+
+/* 6.50 Prepare */
+
+/* A prepared query is described before it's executed. */
+UTEST_F(db, 6_50_prepare_describe) {
+  SQLSMALLINT n = 0;
+  struct column col;
+
+  ASSERT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"VALUES ROW(1, 'abc')",
+                       SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLNumResultCols(utest_fixture->stmt, &n), SQL_SUCCESS);
+  EXPECT_EQ(n, 2);
+  EXPECT_EQ(describe(utest_fixture->stmt, 2, &col), SQL_SUCCESS);
+  EXPECT_EQ(col.type, SQL_CHAR);
+
+  /* But it can't be fetched yet. */
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+}
+
+/* A parameter's type is from the IPD. */
+UTEST_F(db, 6_50_prepare_describe_parameter) {
+  struct column col;
+  SQLINTEGER x;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_BIGINT, 0, 0, &x, sizeof(x),
+                             NULL),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"VALUES ?", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(describe(utest_fixture->stmt, 1, &col), SQL_SUCCESS);
+  EXPECT_EQ(col.type, SQL_BIGINT);
+}
+
+UTEST_F(db, 6_50_prepare_syntax_error) {
+  EXPECT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"SELEC 1", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42601");
+  EXPECT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"COMMIT", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42000");
+  EXPECT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"", SQL_NTS), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY090");
+}
+
+UTEST_F(db, 6_50_prepare_open_cursor) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"VALUES 2", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
+}
+
+/* 6.52 PutData */
+
+/* A number can't be given in pieces. */
+UTEST_F(db, 6_52_put_data_pieces) {
+  SQLINTEGER at_exec = SQL_DATA_AT_EXEC, x = 1;
+  SQLPOINTER p;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, &x, 0), SQL_SUCCESS);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, &x, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY019");
+}
+
+/* A NULL can be given, but not in pieces. */
+UTEST_F(db, 6_52_put_data_null) {
+  SQLINTEGER at_exec = SQL_DATA_AT_EXEC;
+  char s[10];
+  SQLPOINTER p;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_VARCHAR, 10, 0, s, sizeof(s),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ? IS NULL"), SQL_NEED_DATA);
+  ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, NULL, SQL_NULL_DATA), SQL_SUCCESS);
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, s, sizeof(s), NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ(s, "TRUE");
+  ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ? IS NULL"), SQL_NEED_DATA);
+  ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "a", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, NULL, SQL_NULL_DATA), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY020");
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+}
+
+UTEST_F(db, 6_52_put_data_not_deferred) {
+  SQLINTEGER x = 1;
+
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, &x, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
 }
 
 /* 6.53 RowCount */

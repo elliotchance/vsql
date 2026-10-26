@@ -9,6 +9,9 @@ fn sql_col_attribute(statement_handle SQLInteger, column_number i16, field_ident
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.6.
+	stmt.check_deferred() or { return stmt.diag.error(err) }
+
 	return col_attribute(mut stmt, column_number, field_identifier, character_attribute,
 		buffer_length, string_length, numeric_attribute) or { stmt.diag.error(err) }
 }
@@ -17,7 +20,7 @@ fn col_attribute(mut stmt Stmt, column_number i16, fi i16, character_attribute &
 	// - 2. If there is no prepared or executed statement associated with S, then
 	// an exception condition is raised: CLI-specific condition — function
 	// sequence error.
-	if !stmt.executed {
+	if !stmt.executed && stmt.prepared == none {
 		return cli_error('HY010', 'function sequence error')
 	}
 

@@ -9,6 +9,9 @@ fn sql_get_desc_field(descriptor_handle SQLInteger, record_number i16, field_ide
 	mut desc := descs[i64(descriptor_handle)] or { return sql_invalid_handle }
 	desc.diag.clear()
 
+	// See 5.11, "Deferred parameter check".
+	check_desc_deferred(i64(descriptor_handle)) or { return desc.diag.error(err) }
+
 	v := desc_field_value(desc, record_number, field_identifier) or {
 		return desc.diag.error(err)
 	}

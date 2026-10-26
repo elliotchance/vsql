@@ -9,10 +9,13 @@ fn sql_num_result_cols(statement_handle SQLInteger, column_count &i16) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.6.
+	stmt.check_deferred() or { return stmt.diag.error(err) }
+
 	// - 2.a. If there is no prepared or executed statement associated with S,
 	// then an exception condition is raised: CLI-specific condition — function
 	// sequence error.
-	if !stmt.executed {
+	if !stmt.executed && stmt.prepared == none {
 		return stmt.diag.error(cli_error('HY010', 'function sequence error'))
 	}
 

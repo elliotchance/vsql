@@ -1415,3 +1415,38 @@ fn test_current_catalog_name() {
 	mut db := open(':memory:')!
 	assert db.current_catalog_name() == ':memory:'
 }
+
+fn test_prepared_stmt_dynamic_parameters() {
+	mut db := open(':memory:')!
+	mut stmt := db.prepare("VALUES ROW(?, '?', ?)")!
+	assert stmt.dynamic_parameter_count() == 2
+
+	columns := stmt.columns({
+		'?1': new_integer_value(1)
+		'?2': new_varchar_value('a')
+	})!
+	assert columns.map(it.typ.str()) == ['INTEGER', 'CHARACTER(1)', 'CHARACTER VARYING(1)']
+
+	// A statement that doesn't return rows has no columns.
+	mut create := db.prepare('CREATE TABLE t (x INT)')!
+	assert create.columns({})!.len == 0
+
+	mut explain := db.prepare('EXPLAIN VALUES 1')!
+	assert explain.columns({})!.map(it.name.sub_entity_name) == ['EXPLAIN']
+}
+
+fn test_cast() {
+	mut db := open(':memory:')!
+	assert db.cast(new_varchar_value('12'), new_type('INTEGER', 0, 0))!.int_value() == 12
+	assert db.cast(new_null_value(.is_integer), new_type('DATE', 0, 0))!.is_null
+	assert db.cast(new_varchar_value('2026-10-26'), new_type('DATE', 0, 0))!.str() == '2026-10-26'
+	assert db.cast(new_varchar_value('abc'), new_type('CHARACTER VARYING', 2, 0))!.str() == 'ab'
+	assert db.cast(new_varchar_value('true'), new_type('BOOLEAN', 0, 0))!.bool_value() == .is_true
+	assert db.cast(new_boolean_value(true), new_type('CHARACTER VARYING', 10, 0))!.str() == 'TRUE'
+	db.cast(new_varchar_value('a'), new_type('CHARACTER VARYING', max_character_length + 1,
+		0)) or {
+		assert err.code() != 0
+		return
+	}
+	assert false
+}

@@ -35,6 +35,8 @@ mut:
 	conn ?&vsql.Connection
 	// is_default is true when the connection was made to the 'DEFAULT' server.
 	is_default bool
+	// server_name is the ServerName of the last Connect, or 'DEFAULT'.
+	server_name string
 }
 
 // An allocated SQL-statement.

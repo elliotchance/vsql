@@ -11,6 +11,7 @@ module main
 fn sql_exec_direct(statement_handle SQLInteger, statement_text &char, text_length SQLInteger) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
+	stmt.diag.is_execute = true
 
 	return exec_direct(mut stmt, statement_text, text_length) or { stmt.diag.error(err) }
 }
@@ -33,6 +34,8 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 		return cli_error('HY090', 'invalid string length or buffer length')
 	}
 
+	stmt.diag.dynamic_function, stmt.diag.dynamic_function_code = dynamic_function(p)
+
 	// - 10. Any prepared statement, cursor and select source associated with S
 	// are destroyed.
 	stmt.executed = false
@@ -41,11 +44,17 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 	mut conn := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }.conn or {
 		return cli_error('08003', 'connection does not exist')
 	}
-	result := conn.query(p)!
+	was_active := conn.in_transaction()
+	result := conn.query(p) or {
+		stmt.diag.end_transaction(was_active, conn.in_transaction(), false)
+		return err
+	}
+	stmt.diag.end_transaction(was_active, conn.in_transaction(), true)
 	stmt.executed = true
 
 	// - 13, 14. The ROW_COUNT becomes the row count associated with S.
 	stmt.row_count = row_count_of(result)
+	stmt.diag.row_count = stmt.row_count
 
 	// - 12.a. A <dynamic select statement> opens a cursor (see 5.4, "Implicit
 	// cursor"). A statement that doesn't return rows has a msg instead.

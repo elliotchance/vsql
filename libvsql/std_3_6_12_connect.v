@@ -33,6 +33,7 @@ fn connect(mut dbc Dbc, server_name &char, name_length1 i16, user_name &char, na
 	if sn.len > 128 {
 		return cli_error('HY090', 'invalid string length or buffer length')
 	}
+	dbc.server_name = if sn == '' { 'DEFAULT' } else { sn }
 
 	// - 8, 9, 10, 11. UserName and Authentication may also be null pointers.
 	un := input_string(user_name, name_length2)!

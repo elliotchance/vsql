@@ -15,8 +15,20 @@ fn sql_get_data(statement_handle SQLInteger, column_number i16, target_type i16,
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	return get_data(mut stmt, column_number, target_type, target_value, i64(buffer_length),
+	rc := get_data(mut stmt, column_number, target_type, target_value, i64(buffer_length),
 		str_len_or_ind) or { stmt.diag.error(err) }
+
+	// The conditions apply to the column (see 4.3, "Diagnostics areas in
+	// SQL/CLI").
+	if cursor := stmt.cursor {
+		if column_number >= 1 && column_number <= cursor.columns.len {
+			for mut record in stmt.diag.records {
+				record.column_number = column_number
+			}
+		}
+	}
+
+	return rc
 }
 
 fn get_data(mut stmt Stmt, column_number i16, target_type i16, target_value voidptr, buffer_length i64, str_len_or_ind &SQLInteger) !i16 {
@@ -29,7 +41,7 @@ fn get_data(mut stmt Stmt, column_number i16, target_type i16, target_value void
 
 	// - 2.b. If the fetched rowset associated with S is empty, then a completion
 	// condition is raised: no data.
-	row := stmt.row or { return sql_no_data }
+	row := stmt.row or { return stmt.diag.no_data() }
 
 	// - 10. If CN is less than 1 (one) or greater than D, then an exception
 	// condition is raised: dynamic SQL error — invalid descriptor index.

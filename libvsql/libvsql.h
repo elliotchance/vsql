@@ -107,62 +107,123 @@ typedef SQLINTEGER SQLHSTMT;
 typedef SQLINTEGER SQLHDESC;
 
 /* Special length/indicator values. */
-#define SQL_NULL_DATA                    (-1)  /* the value is NULL */
-#define SQL_NTS                          (-3)  /* a null terminated string */
+#define SQL_NULL_DATA (-1) /* the value is NULL */
+#define SQL_NTS       (-3) /* a null terminated string */
 
 /* Return codes. */
-#define SQL_SUCCESS                      0     /* completed */
-#define SQL_SUCCESS_WITH_INFO            1     /* completed with a warning */
-#define SQL_NO_DATA                      100   /* no more rows or records */
-#define SQL_ERROR                        (-1)  /* failed, see SQLGetDiagRec */
-#define SQL_INVALID_HANDLE               (-2)  /* not an allocated handle */
+#define SQL_SUCCESS           0    /* completed */
+#define SQL_SUCCESS_WITH_INFO 1    /* completed with a warning */
+#define SQL_NO_DATA           100  /* no more rows or records */
+#define SQL_ERROR             (-1) /* failed, see SQLGetDiagRec */
+#define SQL_INVALID_HANDLE    (-2) /* not an allocated handle */
 
 /* Handle types. */
-#define SQL_HANDLE_ENV                   1     /* an environment */
-#define SQL_HANDLE_DBC                   2     /* a connection */
-#define SQL_HANDLE_STMT                  3     /* a statement */
-#define SQL_HANDLE_DESC                  4     /* a descriptor (unsupported) */
-#define SQL_NULL_HANDLE                  0L    /* no handle */
+#define SQL_HANDLE_ENV  1  /* an environment */
+#define SQL_HANDLE_DBC  2  /* a connection */
+#define SQL_HANDLE_STMT 3  /* a statement */
+#define SQL_HANDLE_DESC 4  /* a descriptor (unsupported) */
+#define SQL_NULL_HANDLE 0L /* no handle */
 
 /* Data type codes. */
-#define SQL_CHAR                         1     /* CHARACTER, or a C string */
-#define SQL_NUMERIC                      2     /* NUMERIC */
-#define SQL_DECIMAL                      3     /* DECIMAL */
-#define SQL_INTEGER                      4     /* INTEGER, or SQLINTEGER */
-#define SQL_SMALLINT                     5     /* SMALLINT, or SQLSMALLINT */
-#define SQL_FLOAT                        6     /* FLOAT, see SQL_DOUBLE */
-#define SQL_REAL                         7     /* REAL, or SQLREAL */
-#define SQL_DOUBLE                       8     /* DOUBLE PRECISION, SQLDOUBLE */
-#define SQL_DATETIME                     9     /* any datetime type */
-#define SQL_VARCHAR                      12    /* CHARACTER VARYING */
-#define SQL_BOOLEAN                      16    /* BOOLEAN */
-#define SQL_BIGINT                       25    /* BIGINT, or SQLBIGINT */
+#define SQL_CHAR     1  /* CHARACTER, or a C string */
+#define SQL_NUMERIC  2  /* NUMERIC */
+#define SQL_DECIMAL  3  /* DECIMAL */
+#define SQL_INTEGER  4  /* INTEGER, or SQLINTEGER */
+#define SQL_SMALLINT 5  /* SMALLINT, or SQLSMALLINT */
+#define SQL_FLOAT    6  /* FLOAT, see SQL_DOUBLE */
+#define SQL_REAL     7  /* REAL, or SQLREAL */
+#define SQL_DOUBLE   8  /* DOUBLE PRECISION, SQLDOUBLE */
+#define SQL_DATETIME 9  /* any datetime type */
+#define SQL_VARCHAR  12 /* CHARACTER VARYING */
+#define SQL_BOOLEAN  16 /* BOOLEAN */
+#define SQL_BIGINT   25 /* BIGINT, or SQLBIGINT */
 
 /* Concise codes for datetime data types. */
-#define SQL_TYPE_DATE                    91    /* DATE */
-#define SQL_TYPE_TIME                    92    /* TIME */
-#define SQL_TYPE_TIMESTAMP               93    /* TIMESTAMP */
-#define SQL_TYPE_TIME_WITH_TIMEZONE      94    /* TIME WITH TIME ZONE */
-#define SQL_TYPE_TIMESTAMP_WITH_TIMEZONE 95    /* TIMESTAMP WITH TIME ZONE */
+#define SQL_TYPE_DATE                    91 /* DATE */
+#define SQL_TYPE_TIME                    92 /* TIME */
+#define SQL_TYPE_TIMESTAMP               93 /* TIMESTAMP */
+#define SQL_TYPE_TIME_WITH_TIMEZONE      94 /* TIME WITH TIME ZONE */
+#define SQL_TYPE_TIMESTAMP_WITH_TIMEZONE 95 /* TIMESTAMP WITH TIME ZONE */
 
 /* Special TargetType values for SQLGetData. */
-#define SQL_ARD_TYPE                     (-99) /* same as SQL_DEFAULT */
-#define SQL_DEFAULT                      99    /* the type of the column */
+#define SQL_ARD_TYPE (-99) /* same as SQL_DEFAULT */
+#define SQL_DEFAULT  99    /* the type of the column */
+
+/* Header fields for SQLGetDiagField. */
+#define SQL_DIAG_RETURNCODE               1  /* the return code */
+#define SQL_DIAG_NUMBER                   2  /* the number of records */
+#define SQL_DIAG_ROW_COUNT                3  /* see SQLRowCount */
+#define SQL_DIAG_DYNAMIC_FUNCTION         7  /* the statement executed */
+#define SQL_DIAG_DYNAMIC_FUNCTION_CODE    12 /* the code of the statement */
+#define SQL_DIAG_MORE                     13 /* always 0 */
+#define SQL_DIAG_TRANSACTIONS_COMMITTED   34 /* transactions committed */
+#define SQL_DIAG_TRANSACTIONS_ROLLED_BACK 35 /* transactions rolled back */
+#define SQL_DIAG_TRANSACTION_ACTIVE       36 /* 1 if one is active */
+
+/* Record fields for SQLGetDiagField. */
+#define SQL_DIAG_SQLSTATE                   4       /* the SQLSTATE */
+#define SQL_DIAG_NATIVE_CODE                5       /* always 0 */
+#define SQL_DIAG_MESSAGE_TEXT               6       /* the message */
+#define SQL_DIAG_CLASS_ORIGIN               8       /* who defined the class */
+#define SQL_DIAG_SUBCLASS_ORIGIN            9       /* and the subclass */
+#define SQL_DIAG_CONNECTION_NAME            10      /* the ServerName */
+#define SQL_DIAG_SERVER_NAME                11      /* the ServerName */
+#define SQL_DIAG_CONDITION_NUMBER           14      /* the record number */
+#define SQL_DIAG_CONSTRAINT_CATALOG         15      /* always "" */
+#define SQL_DIAG_CONSTRAINT_SCHEMA          16      /* always "" */
+#define SQL_DIAG_CONSTRAINT_NAME            17      /* always "" */
+#define SQL_DIAG_CATALOG_NAME               18      /* always "" */
+#define SQL_DIAG_SCHEMA_NAME                19      /* always "" */
+#define SQL_DIAG_TABLE_NAME                 20      /* always "" */
+#define SQL_DIAG_COLUMN_NAME                21      /* always "" */
+#define SQL_DIAG_CURSOR_NAME                22      /* always "" */
+#define SQL_DIAG_MESSAGE_LENGTH             23      /* in characters */
+#define SQL_DIAG_MESSAGE_OCTET_LENGTH       24      /* in octets */
+#define SQL_DIAG_CONDITION_IDENTIFIER       25      /* always "" */
+#define SQL_DIAG_PARAMETER_NAME             26      /* always "" */
+#define SQL_DIAG_ROUTINE_CATALOG            27      /* always "" */
+#define SQL_DIAG_ROUTINE_SCHEMA             28      /* always "" */
+#define SQL_DIAG_ROUTINE_NAME               29      /* always "" */
+#define SQL_DIAG_SPECIFIC_NAME              30      /* always "" */
+#define SQL_DIAG_TRIGGER_CATALOG            31      /* always "" */
+#define SQL_DIAG_TRIGGER_SCHEMA             32      /* always "" */
+#define SQL_DIAG_TRIGGER_NAME               33      /* always "" */
+#define SQL_DIAG_PARAMETER_MODE             37      /* always "" */
+#define SQL_DIAG_PARAMETER_ORDINAL_POSITION 38      /* always 0 */
+#define SQL_DIAG_ROW_NUMBER                 (-1248) /* the row, or 0 */
+#define SQL_DIAG_COLUMN_NUMBER              (-1247) /* the column, or 0 */
+
+/* SQL_DIAG_DYNAMIC_FUNCTION_CODEs. The other statements have the codes from
+ * ISO/IEC 9075-2: ALTER SEQUENCE (134), COMMIT WORK (11), CREATE SEQUENCE
+ * (133), DROP SEQUENCE (135), ROLLBACK WORK (62) and START TRANSACTION (111).
+ * EXPLAIN is -1. */
+#define SQL_DIAG_UNKNOWN_STATEMENT 0  /* no statement */
+#define SQL_DIAG_ALTER_TABLE       4  /* ALTER TABLE */
+#define SQL_DIAG_DELETE_WHERE      19 /* DELETE */
+#define SQL_DIAG_DROP_SCHEMA       31 /* DROP SCHEMA */
+#define SQL_DIAG_DROP_TABLE        32 /* DROP TABLE */
+#define SQL_DIAG_INSERT            50 /* INSERT */
+#define SQL_DIAG_CREATE_SCHEMA     64 /* CREATE SCHEMA */
+#define SQL_DIAG_SET_CATALOG       66 /* SET CATALOG */
+#define SQL_DIAG_SET_SCHEMA        74 /* SET SCHEMA */
+#define SQL_DIAG_CREATE_TABLE      77 /* CREATE TABLE */
+#define SQL_DIAG_UPDATE_WHERE      82 /* UPDATE */
+#define SQL_DIAG_SELECT_CURSOR     85 /* a query */
 
 /* SQLFreeStmt options (and their ODBC names). */
-#define SQL_CLOSE_CURSOR                 0     /* close the cursor */
-#define SQL_FREE_HANDLE                  1     /* free the statement */
-#define SQL_UNBIND_COLUMNS               2     /* unbind every column */
-#define SQL_UNBIND_PARAMETERS            3     /* unbind every parameter */
-#define SQL_REALLOCATE                   4     /* forget the statement */
-#define SQL_CLOSE                        0     /* SQL_CLOSE_CURSOR */
-#define SQL_DROP                         1     /* SQL_FREE_HANDLE */
-#define SQL_UNBIND                       2     /* SQL_UNBIND_COLUMNS */
-#define SQL_RESET_PARAMS                 3     /* SQL_UNBIND_PARAMETERS */
+#define SQL_CLOSE_CURSOR      0 /* close the cursor */
+#define SQL_FREE_HANDLE       1 /* free the statement */
+#define SQL_UNBIND_COLUMNS    2 /* unbind every column */
+#define SQL_UNBIND_PARAMETERS 3 /* unbind every parameter */
+#define SQL_REALLOCATE        4 /* forget the statement */
+#define SQL_CLOSE             0 /* SQL_CLOSE_CURSOR */
+#define SQL_DROP              1 /* SQL_FREE_HANDLE */
+#define SQL_UNBIND            2 /* SQL_UNBIND_COLUMNS */
+#define SQL_RESET_PARAMS      3 /* SQL_UNBIND_PARAMETERS */
 
 /* Nullability. */
-#define SQL_NO_NULLS                     0     /* the column is never NULL */
-#define SQL_NULLABLE                     1     /* the column may be NULL */
+#define SQL_NO_NULLS 0 /* the column is never NULL */
+#define SQL_NULLABLE 1 /* the column may be NULL */
 
 /*
  * SQLAllocConnect is the same as SQLAllocHandle(SQL_HANDLE_DBC,
@@ -436,6 +497,63 @@ SQLRETURN SQLGetData(
     SQLPOINTER   TargetValue,
     SQLINTEGER   BufferLength,
     SQLINTEGER  *StrLen_or_Ind
+);
+
+/*
+ * SQLGetDiagField reads one field of the diagnostics for the last routine that
+ * was called with a handle (other than SQLError, SQLGetDiagField and
+ * SQLGetDiagRec). A header field (such as SQL_DIAG_NUMBER, the number of
+ * records) ignores RecordNumber, and a record field (such as
+ * SQL_DIAG_SQLSTATE) reads the record numbered from 1. It returns SQL_NO_DATA
+ * if there isn't a record with that number.
+ *
+ * DiagInfo is an SQLSMALLINT for SQL_DIAG_RETURNCODE, an SQLINTEGER for the
+ * other numbers, or a null terminated string that's truncated to fit in
+ * BufferLength. StringLength may be a null pointer, otherwise it's set to the
+ * length of the whole string. The fields are:
+ *
+ *   SQL_DIAG_NUMBER                    the number of records
+ *   SQL_DIAG_RETURNCODE                what the routine returned
+ *   SQL_DIAG_ROW_COUNT                 see SQLRowCount (only for statements)
+ *   SQL_DIAG_DYNAMIC_FUNCTION          such as "INSERT", or "" if the routine
+ *                                      didn't execute a statement
+ *   SQL_DIAG_DYNAMIC_FUNCTION_CODE     such as SQL_DIAG_INSERT, or 0
+ *   SQL_DIAG_TRANSACTIONS_COMMITTED    transactions committed by the routine
+ *   SQL_DIAG_TRANSACTIONS_ROLLED_BACK  transactions rolled back by the routine
+ *   SQL_DIAG_TRANSACTION_ACTIVE        1 if a transaction is active, or 0
+ *   SQL_DIAG_MORE                      always 0
+ *
+ *   SQL_DIAG_SQLSTATE                  the SQLSTATE
+ *   SQL_DIAG_MESSAGE_TEXT              the message
+ *   SQL_DIAG_MESSAGE_LENGTH            the length of the message in characters
+ *   SQL_DIAG_MESSAGE_OCTET_LENGTH      the length of the message in octets
+ *   SQL_DIAG_CLASS_ORIGIN              "ISO 9075" if the class of the SQLSTATE
+ *                                      is from the standard, otherwise "vsql"
+ *   SQL_DIAG_SUBCLASS_ORIGIN           the same, for the subclass
+ *   SQL_DIAG_SERVER_NAME               the ServerName of the connection
+ *   SQL_DIAG_CONNECTION_NAME           the same as SQL_DIAG_SERVER_NAME
+ *   SQL_DIAG_CONDITION_NUMBER          the record number
+ *   SQL_DIAG_COLUMN_NUMBER             the column, or 0
+ *   SQL_DIAG_ROW_NUMBER                the row, or 0
+ *   SQL_DIAG_NATIVE_CODE               always 0
+ *
+ * Every other record field is "" (or 0 for
+ * SQL_DIAG_PARAMETER_ORDINAL_POSITION).
+ *
+ *   SQLINTEGER rows;
+ *
+ *   SQLExecDirect(stmt, (SQLCHAR *)"DELETE FROM foo", SQL_NTS);
+ *   SQLGetDiagField(SQL_HANDLE_STMT, stmt, 0, SQL_DIAG_ROW_COUNT, &rows, 0,
+ *                   NULL);
+ */
+SQLRETURN SQLGetDiagField(
+    SQLSMALLINT  HandleType,
+    SQLINTEGER   Handle,
+    SQLSMALLINT  RecordNumber,
+    SQLSMALLINT  DiagIdentifier,
+    SQLPOINTER   DiagInfo,
+    SQLSMALLINT  BufferLength,
+    SQLSMALLINT *StringLength
 );
 
 /*

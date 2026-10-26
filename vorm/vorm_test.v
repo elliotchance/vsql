@@ -116,6 +116,69 @@ fn test_update() {
 	assert products == [Product{3, 'Bagel', 1.5, 25}]
 }
 
+fn test_update_from_array() {
+	mut db := new_db()!
+
+	rows := [Product{
+		id:   1
+		name: 'Gelato'
+	}, Product{
+		id:   3
+		name: 'Bun'
+	}]
+	sql db {
+		update Product set name = rows.name where id == rows.id
+	}!
+
+	products := sql db {
+		select from Product order by id
+	}!
+	assert products.map(it.name) == ['Gelato', 'Ham Sandwhich', 'Bun']
+}
+
+fn test_in() {
+	mut db := new_db()!
+
+	ids := [1, 3]
+	in_ids := sql db {
+		select from Product where id in ids order by id
+	}!
+	assert in_ids.map(it.id) == [1, 3]
+
+	not_in_ids := sql db {
+		select from Product where id !in ids
+	}!
+	assert not_in_ids.map(it.id) == [2]
+}
+
+fn test_distinct() {
+	mut db := new_db()!
+
+	products := sql db {
+		select distinct from Product where stock >= 10 order by id
+	}!
+	assert products.map(it.id) == [1, 3]
+}
+
+fn test_aggregates() {
+	mut db := new_db()!
+
+	sum := sql db {
+		select sum(stock) from Product
+	}!
+	assert (sum or { 0 }) == 35
+
+	min := sql db {
+		select min(name) from Product
+	}!
+	assert (min or { '' }) == 'Bagel'
+
+	max := sql db {
+		select max(price) from Product
+	}!
+	assert (max or { 0 }) == 5.99
+}
+
 fn test_delete() {
 	mut db := new_db()!
 

@@ -89,7 +89,28 @@ fn (mut db DB) params(table string, data []orm.QueryData) !map[string]vsql.Value
 		}
 
 		for i, p in d.data {
-			typ := if i < fields.len { column_types[fields[i]] } else { none }
+			// Updating rows from an array sets each field with a CASE that has a
+			// WHEN (the key) and a THEN (the field) for each row.
+			typ := if d.batch_rows > 0 {
+				if i % 2 == 0 {
+					?vsql.Type(column_types[d.batch_key])
+				} else {
+					column_types[fields[i / (2 * d.batch_rows)]]
+				}
+			} else if i < fields.len {
+				column_types[fields[i]]
+			} else {
+				none
+			}
+
+			// The array of an "in" or "!in" has a placeholder for each value.
+			if p is []orm.Primitive {
+				for element in p {
+					values['p${values.len + 1}'] = db.to_column_value(element, typ)!
+				}
+				continue
+			}
+
 			values['p${values.len + 1}'] = db.to_column_value(p, typ)!
 		}
 	}

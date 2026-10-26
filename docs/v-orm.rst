@@ -188,14 +188,8 @@ Limitations
 - A ``PRIMARY KEY`` must be a ``SMALLINT``, ``INTEGER`` or ``BIGINT`` field,
   so a ``string`` field can't be ``@[primary]``.
 
-- These are not supported, because vsql doesn't support the SQL that the ORM
-  generates for them yet:
+- These are not supported:
 
-  - ``in`` and ``!in`` in a ``where`` (the ``IN`` predicate).
-  - ``select distinct``.
-  - ``sum``, ``min`` and ``max`` of a field that isn't an ``f64``.
-  - Updating rows from an array (``set name = rows.name where id ==
-    rows.id``), which uses ``IN``.
   - ``ilike``, which isn't part of the SQL standard.
   - Nested transactions, which use savepoints (see `Transactions`_).
 

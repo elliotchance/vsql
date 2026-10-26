@@ -46,6 +46,7 @@ mut:
 
 // An allocated SQL-statement.
 struct Stmt {
+	handle i64
 mut:
 	diag Diagnostics
 	dbc  i64
@@ -71,6 +72,11 @@ mut:
 	fetched_column int
 	fetched_length int
 	fetched_value  string
+	// cursor_name is the name of the cursor, or empty if it doesn't have one
+	// yet (see cursor_name). is_query is true if the executed statement opened
+	// a cursor (which may be closed now).
+	cursor_name string
+	is_query    bool
 	// prepared is the statement prepared by Prepare, if any, and the
 	// DYNAMIC_FUNCTION and DYNAMIC_FUNCTION_CODE that identify it.
 	prepared               ?&vsql.PreparedStmt
@@ -114,6 +120,7 @@ fn new_stmt(dbc i64) i64 {
 	ard := new_desc(dbc, .ard, h)
 	apd := new_desc(dbc, .apd, h)
 	stmts[h] = &Stmt{
+		handle:   h
 		dbc:      dbc
 		ard:      ard
 		apd:      apd
@@ -207,4 +214,14 @@ fn (stmt &Stmt) check_deferred() ! {
 	if stmt.deferred() > 0 {
 		return cli_error('HY010', 'function sequence error')
 	}
+}
+
+// get_cursor_name is the name of the cursor of a statement. A statement that
+// doesn't have one gets a unique name that starts with "SQL_CUR".
+fn (mut stmt Stmt) get_cursor_name() string {
+	if stmt.cursor_name == '' {
+		stmt.cursor_name = 'SQL_CUR${stmt.handle}'
+	}
+
+	return stmt.cursor_name
 }

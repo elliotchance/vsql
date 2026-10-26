@@ -2365,6 +2365,37 @@ UTEST_F(env, 6_28_get_connect_attr_invalid_handle) {
       SQL_INVALID_HANDLE);
 }
 
+/* 6.29 GetCursorName */
+
+/* A statement gets a unique name. */
+UTEST_F(db, 6_29_get_cursor_name) {
+  SQLHSTMT stmt2;
+  SQLCHAR name1[32], name2[32];
+  SQLSMALLINT len;
+
+  ASSERT_EQ(SQLAllocStmt(utest_fixture->dbc, &stmt2), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetCursorName(utest_fixture->stmt, name1, sizeof(name1), &len),
+            SQL_SUCCESS);
+  EXPECT_EQ(strncmp((char *)name1, "SQL_CUR", 7), 0);
+  EXPECT_EQ(len, (SQLSMALLINT)strlen((char *)name1));
+  EXPECT_EQ(SQLGetCursorName(stmt2, name2, sizeof(name2), NULL), SQL_SUCCESS);
+  EXPECT_STRNE((char *)name1, (char *)name2);
+
+  /* It stays the same. */
+  EXPECT_EQ(SQLGetCursorName(utest_fixture->stmt, name2, sizeof(name2), NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)name1, (char *)name2);
+}
+
+UTEST_F(db, 6_29_get_cursor_name_truncated) {
+  SQLCHAR name[4];
+
+  EXPECT_EQ(SQLGetCursorName(utest_fixture->stmt, name, sizeof(name), NULL),
+            SQL_SUCCESS_WITH_INFO);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "01004");
+  EXPECT_STREQ((char *)name, "SQL");
+}
+
 /* 6.30 GetData */
 
 UTEST_F(db, 6_30_get_data_not_fetched) {
@@ -3221,6 +3252,19 @@ UTEST_F(db, 6_33_get_diag_field_unchanged) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42P01");
 }
 
+/* The CURSOR_NAME of an invalid cursor state. */
+UTEST_F(db, 6_33_get_diag_field_cursor_name) {
+  ASSERT_EQ(SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"c1", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_ERROR);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 2"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_CURSOR_NAME),
+      "c1");
+}
+
 /* 6.34 GetDiagRec */
 
 /* There are no diagnostics after a success. */
@@ -3423,6 +3467,50 @@ UTEST_F(db, 6_45_get_type_info_unsupported) {
   EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 1), "");
   EXPECT_EQ(SQLGetTypeInfo(utest_fixture->stmt, 999), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY004");
+}
+
+/* 6.46 MoreResults */
+
+/* A query has only one result set, which is closed. */
+UTEST_F(db, 6_46_more_results) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLMoreResults(utest_fixture->stmt), SQL_NO_DATA);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "02001");
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
+}
+
+UTEST_F(db, 6_46_more_results_not_executed) {
+  EXPECT_EQ(SQLMoreResults(utest_fixture->stmt), SQL_NO_DATA);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "02001");
+}
+
+UTEST_F(db, 6_46_more_results_not_a_query) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLMoreResults(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+}
+
+/* 6.47 NextResult */
+
+UTEST_F(db, 6_47_next_result) {
+  SQLHSTMT stmt2;
+
+  ASSERT_EQ(SQLAllocStmt(utest_fixture->dbc, &stmt2), SQL_SUCCESS);
+  EXPECT_EQ(SQLNextResult(utest_fixture->stmt, stmt2), SQL_NO_DATA);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLNextResult(utest_fixture->stmt, stmt2), SQL_NO_DATA);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "02001");
+
+  /* The first cursor stays open. */
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+
+  ASSERT_EQ(SQLPrepare(stmt2, (SQLCHAR *)"VALUES 2", SQL_NTS), SQL_SUCCESS);
+  EXPECT_EQ(SQLNextResult(utest_fixture->stmt, stmt2), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+  EXPECT_EQ(SQLNextResult(utest_fixture->stmt, utest_fixture->dbc),
+            SQL_INVALID_HANDLE);
 }
 
 /* 6.48 NumResultCols */
@@ -3837,6 +3925,72 @@ UTEST_F(env, 6_54_set_connect_attr_invalid_handle) {
   EXPECT_EQ(SQLSetConnectAttr(utest_fixture->env, SQL_ATTR_SAVEPOINT_NAME,
                               (SQLPOINTER) "sp1", SQL_NTS),
             SQL_INVALID_HANDLE);
+}
+
+/* 6.55 SetCursorName */
+
+UTEST_F(db, 6_55_set_cursor_name) {
+  SQLCHAR name[200];
+
+  EXPECT_EQ(SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"  c1  ", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetCursorName(utest_fixture->stmt, name, sizeof(name), NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)name, "c1");
+
+  EXPECT_EQ(SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"\"my cursor\"",
+                             SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetCursorName(utest_fixture->stmt, name, sizeof(name), NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)name, "\"my cursor\"");
+}
+
+/* Two statements can't have the same name (regular identifiers are case
+ * insensitive). */
+UTEST_F(db, 6_55_set_cursor_name_duplicate) {
+  SQLHSTMT stmt2;
+
+  ASSERT_EQ(SQLAllocStmt(utest_fixture->dbc, &stmt2), SQL_SUCCESS);
+  ASSERT_EQ(SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"c1", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLSetCursorName(stmt2, (SQLCHAR *)"C1", SQL_NTS), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "34000");
+  EXPECT_EQ(SQLSetCursorName(stmt2, (SQLCHAR *)"\"C1\"", SQL_NTS), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "34000");
+  EXPECT_EQ(SQLSetCursorName(stmt2, (SQLCHAR *)"\"c1\"", SQL_NTS), SQL_SUCCESS);
+
+  /* The same statement can use its own name again. */
+  EXPECT_EQ(SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"c1", SQL_NTS),
+            SQL_SUCCESS);
+}
+
+UTEST_F(db, 6_55_set_cursor_name_invalid) {
+  EXPECT_EQ(SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"1abc", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "34000");
+  EXPECT_EQ(
+      SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"sql_cur1", SQL_NTS),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "34000");
+  EXPECT_EQ(SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"SQLCUR", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "34000");
+  EXPECT_EQ(SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY090");
+
+  /* An incomplete UTF-8 character. */
+  EXPECT_EQ(SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"a\xc3\xa9", 2),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "34000");
+}
+
+UTEST_F(db, 6_55_set_cursor_name_open_cursor) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"c1", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
 }
 
 /* 6.56 SetDescField */

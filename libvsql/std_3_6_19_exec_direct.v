@@ -130,7 +130,8 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	// cursor"). A statement that doesn't return rows has a msg instead. Either
 	// way, the IRD describes its result columns (see 5.5, "Implicit DESCRIBE
 	// USING clause").
-	if result.msg == '' {
+	stmt.is_query = result.msg == ''
+	if stmt.is_query {
 		stmt.open_cursor(result)
 	}
 	describe(stmt, mut conn, result.columns)

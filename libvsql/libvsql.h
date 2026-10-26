@@ -838,6 +838,18 @@ SQLRETURN SQLGetConnectAttr(
 );
 
 /*
+ * SQLGetCursorName reads the name of the statement's cursor (see
+ * SQLGetData for SQL_CHAR). A statement that doesn't have one is given a
+ * unique name that starts with "SQL_CUR".
+ */
+SQLRETURN SQLGetCursorName(
+    SQLHSTMT     StatementHandle,
+    SQLCHAR     *CursorName,
+    SQLSMALLINT  BufferLength,
+    SQLSMALLINT *NameLength
+);
+
+/*
  * SQLGetData reads a column (starting at 1) of the fetched row, converted to
  * TargetType:
  *
@@ -1066,6 +1078,25 @@ SQLRETURN SQLGetTypeInfo(
 );
 
 /*
+ * SQLMoreResults closes the cursor, and moves to the next result set of the
+ * executed statement. There's only ever one, so it returns SQL_NO_DATA (with
+ * SQLSTATE 02001).
+ */
+SQLRETURN SQLMoreResults(
+    SQLHSTMT StatementHandle
+);
+
+/*
+ * SQLNextResult opens the next result set of StatementHandle1 on
+ * StatementHandle2. There's only ever one result set, so it returns
+ * SQL_NO_DATA (with SQLSTATE 02001).
+ */
+SQLRETURN SQLNextResult(
+    SQLHSTMT StatementHandle1,
+    SQLHSTMT StatementHandle2
+);
+
+/*
  * SQLNumResultCols sets ColumnCount to the number of columns of the cursor, or
  * 0 for a statement that isn't a query.
  *
@@ -1166,6 +1197,18 @@ SQLRETURN SQLSetConnectAttr(
     SQLINTEGER Attribute,
     SQLPOINTER Value,
     SQLINTEGER StringLength
+);
+
+/*
+ * SQLSetCursorName names the statement's cursor. The name is an identifier
+ * (that doesn't start with SQL_CUR or SQLCUR), and two statements of a
+ * connection can't have the same name. It isn't used yet, since positioned
+ * UPDATE and DELETE are not supported.
+ */
+SQLRETURN SQLSetCursorName(
+    SQLHSTMT     StatementHandle,
+    SQLCHAR     *CursorName,
+    SQLSMALLINT  NameLength
 );
 
 /*

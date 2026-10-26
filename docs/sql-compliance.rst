@@ -1660,7 +1660,7 @@ As of the latest version (or at least the version of this documentation)
 CLI Routines
 ~~~~~~~~~~~~
 
-C011 requires all of the routines in Clause 6. **vsql supports 35 of the
+C011 requires all of the routines in Clause 6. **vsql supports 37 of the
 63 routines.**
 
 .. list-table:: Clause 6 — SQL/CLI routines
@@ -1681,7 +1681,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 35 of the
    * - ✅ 6.4
      - ``SQLAllocStmt``
 
-   * - ❌ 6.5
+   * - ✅ 6.5
      - ``SQLBindCol``
 
    * - ❌ 6.6
@@ -1732,7 +1732,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 35 of the
    * - ✅ 6.21
      - ``SQLFetch``
 
-   * - ❌ 6.22
+   * - ✅ 6.22
      - ``SQLFetchScroll``
 
    * - ❌ 6.23

@@ -247,6 +247,20 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_TRANSACTION_REPEATABLE_READ  0x00000004L /* not supported */
 #define SQL_TRANSACTION_SERIALIZABLE     0x00000008L /* not supported */
 
+/* SQLFetchScroll FetchOrientations. */
+#define SQL_FETCH_NEXT     1 /* the next rowset */
+#define SQL_FETCH_FIRST    2 /* the first rowset */
+#define SQL_FETCH_LAST     3 /* the last rowset */
+#define SQL_FETCH_PRIOR    4 /* the rowset before */
+#define SQL_FETCH_ABSOLUTE 5 /* from the first (or last) row */
+#define SQL_FETCH_RELATIVE 6 /* from the first row of the rowset */
+
+/* The status of each row of a rowset (SQL_DESC_ARRAY_STATUS_POINTER). */
+#define SQL_ROW_SUCCESS           0 /* fetched */
+#define SQL_ROW_NO_ROW            3 /* there isn't a row */
+#define SQL_ROW_ERROR             5 /* couldn't be fetched */
+#define SQL_ROW_SUCCESS_WITH_INFO 6 /* fetched with a warning */
+
 /* Statement attributes. */
 #define SQL_ATTR_CURSOR_HOLDABLE     (-3)  /* SQL_HOLDABLE (the default) */
 #define SQL_ATTR_CURSOR_SENSITIVITY  (-2)  /* SQL_ASENSITIVE (the default) */
@@ -270,7 +284,7 @@ typedef SQLINTEGER SQLHDESC;
 
 /* Descriptor header fields. */
 #define SQL_DESC_ARRAY_SIZE             20   /* the number of rows */
-#define SQL_DESC_ARRAY_STATUS_POINTER   21   /* SQLSMALLINT[] row statuses */
+#define SQL_DESC_ARRAY_STATUS_POINTER   21   /* SQLINTEGER[] row statuses */
 #define SQL_DESC_ROWS_PROCESSED_POINTER 34   /* SQLINTEGER * rows fetched */
 #define SQL_DESC_COUNT                  1001 /* the number of records */
 #define SQL_DESC_KEY_TYPE               1029 /* always 0 */
@@ -389,6 +403,22 @@ SQLRETURN SQLAllocHandle(
 SQLRETURN SQLAllocStmt(
     SQLHDBC   ConnectionHandle,
     SQLHSTMT *StatementHandle
+);
+
+/*
+ * SQLBindCol binds a column (starting at 1) so that SQLFetch and
+ * SQLFetchScroll set TargetValue (of TargetType, see SQLGetData) and
+ * StrLen_or_Ind. With a SQL_DESC_ARRAY_SIZE (in the ARD) greater than 1, they
+ * are arrays with an element for each row of the rowset. A null TargetValue
+ * unbinds the column. BufferLength must be greater than 0.
+ */
+SQLRETURN SQLBindCol(
+    SQLHSTMT     StatementHandle,
+    SQLSMALLINT  ColumnNumber,
+    SQLSMALLINT  TargetType,
+    SQLPOINTER   TargetValue,
+    SQLINTEGER   BufferLength,
+    SQLINTEGER  *StrLen_or_Ind
 );
 
 /*
@@ -573,8 +603,18 @@ SQLRETURN SQLExecDirect(
 );
 
 /*
- * SQLFetch moves the cursor to the next row, which is read with SQLGetData. It
- * returns SQL_NO_DATA after the last row.
+ * SQLFetch moves the cursor to the next row, which is read with SQLGetData (or
+ * set in the columns bound with SQLBindCol). It returns SQL_NO_DATA after the
+ * last row.
+ *
+ * With an SQL_DESC_ARRAY_SIZE greater than 1 in the ARD, it fetches a rowset of
+ * that many rows into the bound arrays. The SQL_DESC_ROWS_PROCESSED_POINTER of
+ * the IRD is set to the number of rows fetched, and its
+ * SQL_DESC_ARRAY_STATUS_POINTER (an SQLINTEGER array) to the status of each
+ * row, such as SQL_ROW_SUCCESS or SQL_ROW_NO_ROW. A row that can't be fetched
+ * (such as a number that's out of range) is SQL_ROW_ERROR and returns
+ * SQL_SUCCESS_WITH_INFO (or SQL_ERROR if no rows could be fetched), and its
+ * diagnostics have the SQL_DIAG_ROW_NUMBER and SQL_DIAG_COLUMN_NUMBER.
  *
  *   SQLRETURN rc;
  *   SQLDOUBLE x;
@@ -586,6 +626,17 @@ SQLRETURN SQLExecDirect(
  */
 SQLRETURN SQLFetch(
     SQLHSTMT StatementHandle
+);
+
+/*
+ * SQLFetchScroll moves the cursor to a rowset (see SQL_FETCH_NEXT and the
+ * others). Anything other than SQL_FETCH_NEXT needs SQL_ATTR_CURSOR_SCROLLABLE
+ * to be SQL_SCROLLABLE. It returns SQL_NO_DATA when there's no rowset there.
+ */
+SQLRETURN SQLFetchScroll(
+    SQLHSTMT    StatementHandle,
+    SQLSMALLINT FetchOrientation,
+    SQLINTEGER  FetchOffset
 );
 
 /*

@@ -12,8 +12,10 @@ struct DiagnosticRecord {
 	sqlstate string
 	msg      string
 mut:
-	// column_number is the column that the condition applies to, or 0 (zero)
-	// if it doesn't apply to a column.
+	// row_number and column_number are the row of the rowset and the column
+	// that the condition applies to, or 0 (zero) if it doesn't apply to one
+	// (see 4.3.1, "Setting of ROW_NUMBER and COLUMN_NUMBER fields").
+	row_number    int
 	column_number int
 }
 
@@ -85,6 +87,24 @@ fn (mut d Diagnostics) warning(sqlstate string, msg string) i16 {
 	}
 
 	return sql_success_with_info
+}
+
+// row_condition records a condition raised for a column of a row of a rowset
+// by Fetch or FetchScroll, without changing the return code.
+fn (mut d Diagnostics) row_condition(err IError, row_number int, column_number int) {
+	sqlstate := if err is CLIError {
+		err.sqlstate
+	} else if err.code() == 0 {
+		'HY000'
+	} else {
+		vsql.sqlstate_from_int(err.code())
+	}
+	d.records << DiagnosticRecord{
+		sqlstate:      sqlstate
+		msg:           err.msg()
+		row_number:    row_number
+		column_number: column_number
+	}
 }
 
 // no_data raises a completion condition: no data. There isn't a status record

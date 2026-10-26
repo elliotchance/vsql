@@ -353,6 +353,121 @@ UTEST_F(env, 6_4_alloc_stmt_not_connected) {
   EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "08003");
 }
 
+/* 6.5 BindCol */
+
+UTEST_F(db, 6_5_bind_col) {
+  SQLINTEGER x, ind;
+  char s[10];
+  SQLINTEGER len;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ROW(1, 'a'), ROW(2, 'bc')"),
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLBindCol(utest_fixture->stmt, 1, SQL_INTEGER, &x, sizeof(x), &ind),
+      SQL_SUCCESS);
+  EXPECT_EQ(SQLBindCol(utest_fixture->stmt, 2, SQL_CHAR, s, sizeof(s), &len),
+            SQL_SUCCESS);
+
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(x, 1);
+  EXPECT_EQ(ind, 0);
+  EXPECT_STREQ(s, "a ");
+  EXPECT_EQ(len, 2);
+
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(x, 2);
+  EXPECT_STREQ(s, "bc");
+  EXPECT_EQ(len, 2);
+
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_NO_DATA);
+}
+
+/* BindCol sets the record of the column in the ARD. */
+UTEST_F(db, 6_5_bind_col_ard) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLDOUBLE d;
+  SQLINTEGER ind;
+  SQLPOINTER p;
+
+  EXPECT_EQ(SQLBindCol(utest_fixture->stmt, 3, SQL_DOUBLE, &d, sizeof(d), &ind),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ard, 0, SQL_DESC_COUNT), 3);
+  EXPECT_EQ(desc_short(ard, 3, SQL_DESC_TYPE), SQL_DOUBLE);
+  EXPECT_EQ(desc_int(ard, 3, SQL_DESC_OCTET_LENGTH), (SQLINTEGER)sizeof(d));
+  EXPECT_EQ(SQLGetDescField(ard, 3, SQL_DESC_DATA_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == &d);
+  EXPECT_EQ(SQLGetDescField(ard, 3, SQL_DESC_INDICATOR_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == &ind);
+  EXPECT_EQ(SQLGetDescField(ard, 3, SQL_DESC_OCTET_LENGTH_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == &ind);
+
+  /* A null TargetValue unbinds the column. */
+  EXPECT_EQ(
+      SQLBindCol(utest_fixture->stmt, 3, SQL_DOUBLE, NULL, sizeof(d), NULL),
+      SQL_SUCCESS);
+  EXPECT_EQ(SQLGetDescField(ard, 3, SQL_DESC_DATA_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == NULL);
+}
+
+UTEST_F(db, 6_5_bind_col_invalid) {
+  SQLINTEGER x;
+
+  EXPECT_EQ(
+      SQLBindCol(utest_fixture->stmt, 0, SQL_INTEGER, &x, sizeof(x), NULL),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07009");
+  EXPECT_EQ(
+      SQLBindCol(utest_fixture->stmt, 1, SQL_NUMERIC, &x, sizeof(x), NULL),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY003");
+  EXPECT_EQ(
+      SQLBindCol(utest_fixture->stmt, 1, SQL_VARCHAR, &x, sizeof(x), NULL),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY003");
+  EXPECT_EQ(SQLBindCol(utest_fixture->stmt, 1, SQL_INTEGER, &x, 0, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY090");
+  EXPECT_EQ(SQLBindCol(utest_fixture->dbc, 1, SQL_INTEGER, &x, 4, NULL),
+            SQL_INVALID_HANDLE);
+}
+
+/* SQL_DEFAULT is the type of the column, which needs a C type. */
+UTEST_F(db, 6_5_bind_col_default) {
+  SQLDOUBLE d = 0;
+  char s[10];
+
+  ASSERT_EQ(
+      run_sql(utest_fixture->stmt,
+              "VALUES ROW(CAST(1.5 AS DOUBLE PRECISION), DATE '2026-10-26')"),
+      SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLBindCol(utest_fixture->stmt, 1, SQL_DEFAULT, &d, sizeof(d), NULL),
+      SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(d, 1.5);
+
+  ASSERT_EQ(SQLBindCol(utest_fixture->stmt, 2, SQL_DEFAULT, s, sizeof(s), NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07002");
+}
+
+/* A bound column after the last column of the cursor. */
+UTEST_F(db, 6_5_bind_col_after_last) {
+  SQLINTEGER x;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLBindCol(utest_fixture->stmt, 2, SQL_INTEGER, &x, sizeof(x), NULL),
+      SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07009");
+}
+
 /* 6.7 Cancel */
 
 /* With nothing to cancel, Cancel only empties the diagnostics area. */
@@ -1236,6 +1351,330 @@ UTEST_F(db, 6_21_fetch_not_a_query) {
             SQL_SUCCESS);
   EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
+}
+
+UTEST_F(db, 6_21_fetch_null) {
+  SQLINTEGER x = 5, ind = 5;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(NULL AS INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLBindCol(utest_fixture->stmt, 1, SQL_INTEGER, &x, sizeof(x), &ind),
+      SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(ind, SQL_NULL_DATA);
+}
+
+/* A NULL needs an indicator, so the row is an error. */
+UTEST_F(db, 6_21_fetch_null_no_indicator) {
+  SQLINTEGER x;
+  SQLINTEGER row = -1;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(NULL AS INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLBindCol(utest_fixture->stmt, 1, SQL_INTEGER, &x, sizeof(x), NULL),
+      SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22002");
+  EXPECT_EQ(SQLGetDiagField(SQL_HANDLE_STMT, utest_fixture->stmt, 1,
+                            SQL_DIAG_ROW_NUMBER, &row, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(row, 1);
+}
+
+/* A string that doesn't fit is truncated with a warning. */
+UTEST_F(db, 6_21_fetch_truncated) {
+  char s[4];
+  SQLINTEGER len;
+  SQLINTEGER column = -1;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 'hello'"), SQL_SUCCESS);
+  ASSERT_EQ(SQLBindCol(utest_fixture->stmt, 1, SQL_CHAR, s, sizeof(s), &len),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS_WITH_INFO);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "01004");
+  EXPECT_STREQ(s, "hel");
+  EXPECT_EQ(len, 5);
+  EXPECT_EQ(SQLGetDiagField(SQL_HANDLE_STMT, utest_fixture->stmt, 1,
+                            SQL_DIAG_COLUMN_NUMBER, &column, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(column, 1);
+}
+
+/* With an ARRAY_SIZE, each Fetch assigns a rowset of rows to arrays. The
+ * strings are a CHARACTER(3), so they're padded. */
+UTEST_F(db, 6_21_fetch_rowset) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+  SQLINTEGER x[3], ind[3], statuses[3], processed = -1;
+  char s[3][5];
+
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, (SQLPOINTER)3, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetDescField(ird, 0, SQL_DESC_ARRAY_STATUS_POINTER, statuses, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLSetDescField(ird, 0, SQL_DESC_ROWS_PROCESSED_POINTER, &processed, 0),
+      SQL_SUCCESS);
+  ASSERT_EQ(
+      run_sql(utest_fixture->stmt,
+              "VALUES ROW(1, 'a'), ROW(2, 'bb'), ROW(3, 'ccc'), ROW(4, 'd')"),
+      SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLBindCol(utest_fixture->stmt, 1, SQL_INTEGER, x, sizeof(x[0]), ind),
+      SQL_SUCCESS);
+  ASSERT_EQ(SQLBindCol(utest_fixture->stmt, 2, SQL_CHAR, s, sizeof(s[0]), NULL),
+            SQL_SUCCESS);
+
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(processed, 3);
+  EXPECT_EQ(x[0], 1);
+  EXPECT_EQ(x[1], 2);
+  EXPECT_EQ(x[2], 3);
+  EXPECT_STREQ(s[0], "a  ");
+  EXPECT_STREQ(s[1], "bb ");
+  EXPECT_STREQ(s[2], "ccc");
+  EXPECT_EQ(statuses[0], SQL_ROW_SUCCESS);
+  EXPECT_EQ(statuses[2], SQL_ROW_SUCCESS);
+
+  /* The last rowset is partial. */
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(processed, 1);
+  EXPECT_EQ(x[0], 4);
+  EXPECT_STREQ(s[0], "d  ");
+  EXPECT_EQ(statuses[0], SQL_ROW_SUCCESS);
+  EXPECT_EQ(statuses[1], SQL_ROW_NO_ROW);
+  EXPECT_EQ(statuses[2], SQL_ROW_NO_ROW);
+
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_NO_DATA);
+}
+
+/* A row that can't be assigned is a row error, and the others are still
+ * fetched. */
+UTEST_F(db, 6_21_fetch_row_error) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+  SQLSMALLINT x[2];
+  SQLINTEGER statuses[2], processed = -1, row = -1;
+
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, (SQLPOINTER)2, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetDescField(ird, 0, SQL_DESC_ARRAY_STATUS_POINTER, statuses, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLSetDescField(ird, 0, SQL_DESC_ROWS_PROCESSED_POINTER, &processed, 0),
+      SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 100000"), SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLBindCol(utest_fixture->stmt, 1, SQL_SMALLINT, x, sizeof(x[0]), NULL),
+      SQL_SUCCESS);
+
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS_WITH_INFO);
+  EXPECT_EQ(processed, 1);
+  EXPECT_EQ(x[0], 1);
+  EXPECT_EQ(statuses[0], SQL_ROW_SUCCESS);
+  EXPECT_EQ(statuses[1], SQL_ROW_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "01000");
+  EXPECT_EQ(SQLGetDiagField(SQL_HANDLE_STMT, utest_fixture->stmt, 2,
+                            SQL_DIAG_ROW_NUMBER, &row, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(row, 2);
+}
+
+/* A rowset of more than one row needs a scrollable cursor for GetData. */
+UTEST_F(db, 6_21_fetch_rowset_get_data) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLINTEGER x;
+
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, (SQLPOINTER)2, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2, 3"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_INTEGER, &x, 0, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY109");
+
+  ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
+                           (SQLPOINTER)SQL_SCROLLABLE, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2, 3"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_INTEGER, &x, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(x, 1);
+
+  /* The CURRENT OF POSITION selects the row of the rowset. */
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURRENT_OF_POSITION,
+                           (SQLPOINTER)2, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_INTEGER, &x, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(x, 2);
+
+  /* The last rowset only has one row. */
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURRENT_OF_POSITION,
+                           (SQLPOINTER)2, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_INTEGER, &x, 0, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY109");
+}
+
+/* 6.22 FetchScroll */
+
+/* fetch_x fetches with FetchScroll and returns the bound value, or -1. */
+static SQLINTEGER fetch_x(SQLHSTMT stmt, SQLSMALLINT orientation,
+                          SQLINTEGER offset, SQLINTEGER *x) {
+  *x = -1;
+  if (SQLFetchScroll(stmt, orientation, offset) != SQL_SUCCESS) {
+    return -1;
+  }
+
+  return *x;
+}
+
+struct scroll {
+  SQLHENV env;
+  SQLHDBC dbc;
+  SQLHSTMT stmt;
+  SQLINTEGER x;
+};
+
+UTEST_F_SETUP(scroll) {
+  ASSERT_EQ(SQLAllocEnv(&utest_fixture->env), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocConnect(utest_fixture->env, &utest_fixture->dbc),
+            SQL_SUCCESS);
+  ASSERT_EQ(connect_memory(utest_fixture->dbc), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocStmt(utest_fixture->dbc, &utest_fixture->stmt),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
+                           (SQLPOINTER)SQL_SCROLLABLE, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2, 3, 4, 5"), SQL_SUCCESS);
+  ASSERT_EQ(SQLBindCol(utest_fixture->stmt, 1, SQL_INTEGER, &utest_fixture->x,
+                       sizeof(SQLINTEGER), NULL),
+            SQL_SUCCESS);
+}
+
+UTEST_F_TEARDOWN(scroll) {
+  (void)utest_result;
+  free_handles(utest_fixture->env, utest_fixture->dbc, utest_fixture->stmt);
+}
+
+#define SCROLL(o, j) fetch_x(utest_fixture->stmt, o, j, &utest_fixture->x)
+
+UTEST_F(scroll, 6_22_fetch_scroll) {
+  EXPECT_EQ(SCROLL(SQL_FETCH_NEXT, 0), 1);
+  EXPECT_EQ(SCROLL(SQL_FETCH_NEXT, 0), 2);
+  EXPECT_EQ(SCROLL(SQL_FETCH_LAST, 0), 5);
+  EXPECT_EQ(SCROLL(SQL_FETCH_PRIOR, 0), 4);
+  EXPECT_EQ(SCROLL(SQL_FETCH_FIRST, 0), 1);
+  EXPECT_EQ(SCROLL(SQL_FETCH_ABSOLUTE, 3), 3);
+  EXPECT_EQ(SCROLL(SQL_FETCH_ABSOLUTE, -2), 4);
+  EXPECT_EQ(SCROLL(SQL_FETCH_RELATIVE, -2), 2);
+  EXPECT_EQ(SCROLL(SQL_FETCH_RELATIVE, 2), 4);
+  EXPECT_EQ(SCROLL(SQL_FETCH_RELATIVE, 0), 4);
+}
+
+/* Moving past the last row (or before the first) is no data, and the next
+ * fetch continues from there. */
+UTEST_F(scroll, 6_22_fetch_scroll_no_data) {
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_ABSOLUTE, 6),
+            SQL_NO_DATA);
+  EXPECT_EQ(SCROLL(SQL_FETCH_PRIOR, 0), 5);
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_RELATIVE, -10),
+            SQL_NO_DATA);
+  EXPECT_EQ(SCROLL(SQL_FETCH_NEXT, 0), 1);
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_PRIOR, 0),
+            SQL_NO_DATA);
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_PRIOR, 0),
+            SQL_NO_DATA);
+  EXPECT_EQ(SCROLL(SQL_FETCH_RELATIVE, 2), 2);
+  EXPECT_EQ(SCROLL(SQL_FETCH_LAST, 0), 5);
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_NEXT, 0),
+            SQL_NO_DATA);
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_RELATIVE, 1),
+            SQL_NO_DATA);
+}
+
+/* ABSOLUTE 0 is the first row. */
+UTEST_F(scroll, 6_22_fetch_scroll_absolute_zero) {
+  EXPECT_EQ(SCROLL(SQL_FETCH_LAST, 0), 5);
+  EXPECT_EQ(SCROLL(SQL_FETCH_ABSOLUTE, 0), 1);
+}
+
+/* A rowset moves by ARRAY_SIZE rows. */
+UTEST_F(db, 6_22_fetch_scroll_rowset) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLINTEGER x[2];
+
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, (SQLPOINTER)2, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
+                           (SQLPOINTER)SQL_SCROLLABLE, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2, 3, 4, 5"), SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLBindCol(utest_fixture->stmt, 1, SQL_INTEGER, x, sizeof(x[0]), NULL),
+      SQL_SUCCESS);
+
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_LAST, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(x[0], 4);
+  EXPECT_EQ(x[1], 5);
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_PRIOR, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(x[0], 2);
+  EXPECT_EQ(x[1], 3);
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_PRIOR, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(x[0], 1);
+  EXPECT_EQ(x[1], 2);
+  /* There's nothing before the first rowset. */
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_RELATIVE, -1),
+            SQL_NO_DATA);
+}
+
+/* Only NEXT can be used without a scrollable cursor. */
+UTEST_F(db, 6_22_fetch_scroll_not_scrollable) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2"), SQL_SUCCESS);
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_NEXT, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_FIRST, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY106");
+}
+
+UTEST_F(scroll, 6_22_fetch_scroll_invalid_orientation) {
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, 7, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY106");
+}
+
+UTEST_F(db, 6_22_fetch_scroll_no_cursor) {
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_NEXT, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_NEXT, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
+}
+
+/* An empty result has no rows to scroll to. */
+UTEST_F(db, 6_22_fetch_scroll_empty) {
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
+                           (SQLPOINTER)SQL_SCROLLABLE, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "SELECT * FROM t"), SQL_SUCCESS);
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_FIRST, 0),
+            SQL_NO_DATA);
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_LAST, 0),
+            SQL_NO_DATA);
+  EXPECT_EQ(SQLFetchScroll(utest_fixture->stmt, SQL_FETCH_ABSOLUTE, 1),
+            SQL_NO_DATA);
 }
 
 /* 6.24 FreeConnect */

@@ -55,12 +55,16 @@ mut:
 	// row_count is the number of rows affected by the executed statement (see
 	// RowCount).
 	row_count int
-	// cursor is the open cursor, if any.
-	cursor ?vsql.Result
-	// fetched is true after the first Fetch on the cursor and row is the
-	// fetched row (none after the last row).
+	// cursor is the open cursor, if any, and rows are its rows. The cursor is
+	// positioned on the rowset of rowset_len rows from rowset_start, which is
+	// -1 before the first row, and rows.len after the last row.
+	cursor       ?vsql.Result
+	rows         []vsql.Row
+	rowset_start int = -1
+	rowset_len   int
+	// fetched is true once the cursor has been positioned on a rowset (which
+	// is empty after the last row) by Fetch or FetchScroll.
 	fetched bool
-	row     ?vsql.Row
 	// fetched_column is the fetched column number, which is negative while a
 	// character value is being retrieved in pieces by GetData. fetched_length
 	// is the number of octets of fetched_value already retrieved.
@@ -122,9 +126,24 @@ fn new_handle() i64 {
 
 fn (mut stmt Stmt) close_cursor() {
 	stmt.cursor = none
+	stmt.rows = []
+	stmt.rowset_start = -1
+	stmt.rowset_len = 0
 	stmt.fetched = false
-	stmt.row = none
 	stmt.fetched_column = 0
+}
+
+// open_cursor opens a cursor on the result of a query, positioned before the
+// first row.
+fn (mut stmt Stmt) open_cursor(result vsql.Result) {
+	mut r := result
+	mut rows := []vsql.Row{}
+	for row in r {
+		rows << row
+	}
+	stmt.close_cursor()
+	stmt.cursor = result
+	stmt.rows = rows
 }
 
 // handle_env is the SQL-environment of a handle, or zero if the handle isn't

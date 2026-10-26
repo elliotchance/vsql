@@ -707,10 +707,10 @@ Identity Value Object
 An Identity Value Object (has the ``I`` prefix, followed by the table ID as a
 u64) contains the current value of the sequence of the identity column of the
 table, the same as a `Sequence Value Object`_. The options of the sequence are
-part of the column in the `Table Object`_. It's created with the table, and
-expired when the table or the column is dropped. Like a sequence, the value is
-changed in place, but ``ALTER TABLE ... ALTER COLUMN ... RESTART`` creates a new
-version.
+part of the column in the `Table Object`_. It's created with the table (or by
+``ALTER TABLE ... ADD COLUMN``), and expired when the table or the column is
+dropped. Like a sequence, the value is changed in place, but
+``ALTER TABLE ... ALTER COLUMN`` creates a new version.
 
 Table Object
 ------------

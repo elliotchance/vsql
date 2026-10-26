@@ -236,3 +236,19 @@ fn (s Sequence) with_value(value_data []u8) Sequence {
 
 	return sequence
 }
+
+// identity_options are the options that define the sequence of an identity
+// column (see IdentityColumn.str).
+fn (s Sequence) identity_options() []SequenceGeneratorOption {
+	mut options := [
+		SequenceGeneratorOption(SequenceGeneratorStartWithOption{new_bigint_value(s.start_value)}),
+		SequenceGeneratorIncrementByOption{new_bigint_value(s.increment_by)},
+		SequenceGeneratorMinvalueOption{new_bigint_value(s.min_value)},
+		SequenceGeneratorMaxvalueOption{new_bigint_value(s.max_value)},
+	]
+	if s.cycle {
+		options << SequenceGeneratorCycleOption{true}
+	}
+
+	return options
+}

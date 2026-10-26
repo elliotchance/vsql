@@ -35,15 +35,22 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	new_table.name_constraints(catalog.storage.schema_constraint_names(table.name))!
 	resolve_foreign_keys(mut conn, mut new_table)!
 	column := new_table.columns.last()
-	if _ := column.identity {
-		return sqlstate_0a000('cannot add identity column ${column.name.sub_entity_name}')
-	}
 	check_default_clause(mut conn, column)!
 	check_constraints := new_check_constraints(mut conn, new_table)!
 
 	// NOT NULL is checked here, so that it's only an error when there are rows.
-	value := insert_value(mut conn, params, table, Column{ ...column, not_null: false },
-		ContextuallyTypedValueSpecification(DefaultSpecification{}))!
+	// An identity column gets the next value of its sequence for each row
+	// (General Rule 2bi). The sequence is only stored once the column is added,
+	// so the values come from a copy of it.
+	mut value := insert_value(mut conn, params, table, Column{
+		...column
+		not_null: false
+		identity: none
+	}, ContextuallyTypedValueSpecification(DefaultSpecification{}))!
+	mut identity_sequence := ?Sequence(none)
+	if identity := column.identity {
+		identity_sequence = identity.sequence
+	}
 
 	// A row that gets a new key, because the column is the PRIMARY KEY, is
 	// deleted and written again (like an UPDATE).
@@ -51,6 +58,12 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	mut updated := []Row{}
 	if !value.is_null || column.not_null {
 		for row in catalog.storage.read_rows(table.name)! {
+			if sequence := identity_sequence {
+				next_sequence := sequence.next()!
+				value = cast(mut conn, 'for column ${column.name.sub_entity_name}', new_bigint_value(next_sequence.current_value),
+					column.typ)!
+				identity_sequence = next_sequence
+			}
 			if value.is_null {
 				return sqlstate_23502('column ${column.name.sub_entity_name}')
 			}
@@ -70,6 +83,9 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	}
 
 	catalog.storage.update_table(new_table)!
+	if sequence := identity_sequence {
+		catalog.storage.create_identity(new_table.id, sequence)!
+	}
 
 	for mut row in moved {
 		catalog.storage.write_row(mut row, new_table)!

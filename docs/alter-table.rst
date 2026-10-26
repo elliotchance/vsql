@@ -14,13 +14,19 @@ Syntax
       ADD [ COLUMN ] <column_definition>
     | ALTER [ COLUMN ] <column_name> SET DEFAULT <default>
     | ALTER [ COLUMN ] <column_name> DROP DEFAULT
-    | ALTER [ COLUMN ] <column_name> RESTART [ WITH <value> ]
+    | ALTER [ COLUMN ] <column_name> <identity_option> ...
     | DROP [ COLUMN ] <column_name> [ CASCADE | RESTRICT ]
     | ADD [ CONSTRAINT <constraint_name> ] <table_constraint>
     | DROP CONSTRAINT <constraint_name> [ CASCADE | RESTRICT ]
 
-  <column_definition> := <column_name> <data_type> [ DEFAULT <default> ]
+  <column_definition> := <column_name> <data_type> [ DEFAULT <default> | <identity> ]
                          [ [ CONSTRAINT <constraint_name> ] <column_constraint> ... ]
+
+  <identity_option> := RESTART [ WITH <value> ]
+                     | SET INCREMENT BY <value>
+                     | SET MINVALUE <value> | SET NO MINVALUE
+                     | SET MAXVALUE <value> | SET NO MAXVALUE
+                     | SET CYCLE | SET NO CYCLE
 
 ADD COLUMN
 ----------
@@ -31,9 +37,8 @@ name, ``DEFAULT`` and constraints.
 
 Every existing row gets the ``DEFAULT`` of the new column, which is ``NULL``
 if the column doesn't have one. A default such as ``CURRENT_TIMESTAMP`` is
-evaluated once, so all of the existing rows get the same value.
-An identity column (see :doc:`create-table`) can't be added yet, it's an error
-``0A000``.
+evaluated once, so all of the existing rows get the same value. Except for an
+identity column, where each existing row gets the next value of its sequence.
 
 The existing rows must satisfy the constraints of the new column, otherwise the
 column isn't added:
@@ -62,11 +67,12 @@ the same way as the ``DEFAULT`` of a column of a :doc:`create-table`, such as
 ``NULL``. It's an error ``42601`` if the column doesn't have a ``DEFAULT``,
 although ``DEFAULT NULL`` can be dropped.
 
-``RESTART`` changes the next value of an identity column (see
-:doc:`create-table`), the same way as :doc:`alter-sequence`. Without a value it
-starts again from the ``START WITH``. The ``DEFAULT`` of an identity column
-can't be changed, and ``RESTART`` can only be used for an identity column (both
-are an error ``42601``).
+The options of an identity column change its sequence, the same way as
+:doc:`alter-sequence`. ``RESTART`` without a value starts again from the
+``START WITH``. ``SET NO MINVALUE`` and ``SET NO MAXVALUE`` use the defaults of
+an identity column (see :doc:`create-table`). The ``DEFAULT`` of an identity
+column can't be changed, and the options can only be used for an identity column
+(both are an error ``42601``).
 
 Only the definition of the table is changed. The existing rows keep their
 values, and the new default is used by the rows that are inserted after it.

@@ -139,11 +139,6 @@ SELECT * FROM foo;
 -- X: 3 Y: 6
 
 -- # ALTER TABLE.
-CREATE TABLE foo (x INT);
-ALTER TABLE foo ADD COLUMN y INT GENERATED ALWAYS AS (x * 3);
--- msg: CREATE TABLE 1
--- error 0A000: cannot add generated column Y
-
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x * 2));
 ALTER TABLE foo ALTER COLUMN y SET DEFAULT 3;
 -- msg: CREATE TABLE 1

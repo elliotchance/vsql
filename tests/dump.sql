@@ -678,6 +678,52 @@ SELECT * FROM t;
 -- ID: 3 X: 20
 -- ID: 1 X: 30
 
+-- # The options of an identity column that were changed by ALTER TABLE are
+-- # dumped, and the next value uses the new INCREMENT BY.
+CREATE TABLE t (id INT GENERATED ALWAYS AS IDENTITY, x INT);
+INSERT INTO t (x) VALUES (10);
+ALTER TABLE t ALTER COLUMN id SET INCREMENT BY 5 SET MAXVALUE 100 SET CYCLE;
+/* out */
+/* in */
+INSERT INTO t (x) VALUES (20);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: ALTER TABLE 1
+-- out: CREATE TABLE "PUBLIC"."T" (
+-- out:   "ID" INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 5 MINVALUE 1 MAXVALUE 100 CYCLE) NOT NULL,
+-- out:   "X" INTEGER
+-- out: );
+-- out: INSERT INTO "PUBLIC"."T" ("ID", "X") OVERRIDING SYSTEM VALUE VALUES (1, 10);
+-- out: ALTER TABLE "PUBLIC"."T" ALTER COLUMN "ID" RESTART WITH 6;
+-- msg: INSERT 1
+-- ID: 1 X: 10
+-- ID: 6 X: 20
+
+-- # An identity column that was added to a table with rows keeps the values of
+-- # the existing rows.
+CREATE TABLE t (x INT);
+INSERT INTO t (x) VALUES (10), (20);
+ALTER TABLE t ADD COLUMN id INT GENERATED ALWAYS AS IDENTITY (START WITH 10);
+/* out */
+/* in */
+INSERT INTO t (x) VALUES (30);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: ALTER TABLE 1
+-- out: CREATE TABLE "PUBLIC"."T" (
+-- out:   "X" INTEGER,
+-- out:   "ID" INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 10 INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647) NOT NULL
+-- out: );
+-- out: INSERT INTO "PUBLIC"."T" ("X", "ID") OVERRIDING SYSTEM VALUE VALUES (10, 10);
+-- out: INSERT INTO "PUBLIC"."T" ("X", "ID") OVERRIDING SYSTEM VALUE VALUES (20, 11);
+-- out: ALTER TABLE "PUBLIC"."T" ALTER COLUMN "ID" RESTART WITH 12;
+-- msg: INSERT 1
+-- X: 10 ID: 10
+-- X: 20 ID: 11
+-- X: 30 ID: 12
+
 -- # An identity column that has reached its limit (without CYCLE) can't be
 -- # restored exactly, because RESTART can't go past MAXVALUE. It's restarted at
 -- # its last value, so the next row gets that value again before the limit.

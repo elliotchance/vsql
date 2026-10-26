@@ -1660,7 +1660,7 @@ As of the latest version (or at least the version of this documentation)
 CLI Routines
 ~~~~~~~~~~~~
 
-C011 requires all of the routines in Clause 6. **vsql supports 11 of the
+C011 requires all of the routines in Clause 6. **vsql supports 20 of the
 63 routines.**
 
 .. list-table:: Clause 6 — SQL/CLI routines
@@ -1669,16 +1669,16 @@ C011 requires all of the routines in Clause 6. **vsql supports 11 of the
    * - Subclause
      - Routine
 
-   * - ❌ 6.1
+   * - ✅ 6.1
      - ``SQLAllocConnect``
 
-   * - ❌ 6.2
+   * - ✅ 6.2
      - ``SQLAllocEnv``
 
    * - ✅ 6.3
      - ``SQLAllocHandle``
 
-   * - ❌ 6.4
+   * - ✅ 6.4
      - ``SQLAllocStmt``
 
    * - ❌ 6.5
@@ -1687,7 +1687,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 11 of the
    * - ❌ 6.6
      - ``SQLBindParameter``
 
-   * - ❌ 6.7
+   * - ✅ 6.7
      - ``SQLCancel``
 
    * - ✅ 6.8
@@ -1720,7 +1720,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 11 of the
    * - ❌ 6.17
      - ``SQLEndTran``
 
-   * - ❌ 6.18
+   * - ✅ 6.18
      - ``SQLError``
 
    * - ✅ 6.19
@@ -1738,16 +1738,16 @@ C011 requires all of the routines in Clause 6. **vsql supports 11 of the
    * - ❌ 6.23
      - ``SQLForeignKeys``
 
-   * - ❌ 6.24
+   * - ✅ 6.24
      - ``SQLFreeConnect``
 
-   * - ❌ 6.25
+   * - ✅ 6.25
      - ``SQLFreeEnv``
 
    * - ✅ 6.26
      - ``SQLFreeHandle``
 
-   * - ❌ 6.27
+   * - ✅ 6.27
      - ``SQLFreeStmt``
 
    * - ❌ 6.28
@@ -1825,7 +1825,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 11 of the
    * - ❌ 6.52
      - ``SQLPutData``
 
-   * - ❌ 6.53
+   * - ✅ 6.53
      - ``SQLRowCount``
 
    * - ❌ 6.54

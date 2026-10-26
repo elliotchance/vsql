@@ -139,6 +139,39 @@ UTEST_F_TEARDOWN(row) {
   free_handles(utest_fixture->env, utest_fixture->dbc, utest_fixture->stmt);
 }
 
+/* 6.1 AllocConnect */
+
+UTEST_F(env, 6_1_alloc_connect) {
+  SQLHDBC dbc;
+
+  EXPECT_EQ(SQLAllocConnect(utest_fixture->env, &dbc), SQL_SUCCESS);
+  EXPECT_NE(dbc, utest_fixture->dbc);
+  EXPECT_EQ(connect_memory(dbc), SQL_SUCCESS);
+  EXPECT_EQ(SQLDisconnect(dbc), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeConnect(dbc), SQL_SUCCESS);
+}
+
+UTEST_F(env, 6_1_alloc_connect_invalid_handle) {
+  SQLHDBC dbc = 123;
+
+  EXPECT_EQ(SQLAllocConnect(utest_fixture->dbc, &dbc), SQL_INVALID_HANDLE);
+  EXPECT_EQ(dbc, 0);
+}
+
+/* 6.2 AllocEnv */
+
+UTEST(libvsql, 6_2_alloc_env) {
+  SQLHENV env;
+
+  EXPECT_EQ(SQLAllocEnv(&env), SQL_SUCCESS);
+  EXPECT_NE(env, SQL_NULL_HANDLE);
+  EXPECT_EQ(SQLFreeEnv(env), SQL_SUCCESS);
+}
+
+UTEST(libvsql, 6_2_alloc_env_null_output_handle) {
+  EXPECT_EQ(SQLAllocEnv(NULL), SQL_ERROR);
+}
+
 /* 6.3 AllocHandle */
 
 UTEST(libvsql, 6_3_alloc_handle_env) {
@@ -210,6 +243,45 @@ UTEST_F(db, 6_3_alloc_handle_desc) {
 
   EXPECT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, utest_fixture->dbc, &h), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HYC00");
+}
+
+/* 6.4 AllocStmt */
+
+UTEST_F(db, 6_4_alloc_stmt) {
+  SQLHSTMT stmt;
+
+  EXPECT_EQ(SQLAllocStmt(utest_fixture->dbc, &stmt), SQL_SUCCESS);
+  EXPECT_NE(stmt, utest_fixture->stmt);
+  EXPECT_EQ(run_sql(stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeStmt(stmt, SQL_DROP), SQL_SUCCESS);
+}
+
+UTEST_F(env, 6_4_alloc_stmt_not_connected) {
+  SQLHSTMT stmt = 123;
+
+  EXPECT_EQ(SQLAllocStmt(utest_fixture->dbc, &stmt), SQL_ERROR);
+  EXPECT_EQ(stmt, 0);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "08003");
+}
+
+/* 6.7 Cancel */
+
+/* With nothing to cancel, Cancel only empties the diagnostics area. */
+UTEST_F(db, 6_7_cancel) {
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "SELECT * FROM bar"), SQL_ERROR);
+  EXPECT_EQ(SQLCancel(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_STREQ(sqlstate(SQL_HANDLE_STMT, utest_fixture->stmt), "");
+}
+
+/* The cursor stays open. */
+UTEST_F(db, 6_7_cancel_open_cursor) {
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLCancel(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+}
+
+UTEST_F(db, 6_7_cancel_invalid_handle) {
+  EXPECT_EQ(SQLCancel(utest_fixture->dbc), SQL_INVALID_HANDLE);
 }
 
 /* 6.8 CloseCursor */
@@ -511,6 +583,116 @@ UTEST_F(env, 6_16_disconnect_reopen_file) {
   remove("libvsql_test.vsql");
 }
 
+/* 6.18 Error */
+
+UTEST_F(db, 6_18_error_statement) {
+  SQLCHAR state[6], msg[100];
+  SQLINTEGER native = 123;
+  SQLSMALLINT len;
+
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "SELECT * FROM bar"), SQL_ERROR);
+  EXPECT_EQ(SQLError(SQL_NULL_HANDLE, SQL_NULL_HANDLE, utest_fixture->stmt,
+                     state, &native, msg, sizeof(msg), &len),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)state, "42P01");
+  EXPECT_EQ(native, 0);
+  EXPECT_EQ(len, (SQLSMALLINT)strlen((char *)msg));
+}
+
+/* Each record is only returned once. */
+UTEST_F(db, 6_18_error_no_more_records) {
+  SQLCHAR state[6];
+
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "SELECT * FROM bar"), SQL_ERROR);
+  EXPECT_EQ(SQLError(SQL_NULL_HANDLE, SQL_NULL_HANDLE, utest_fixture->stmt,
+                     state, NULL, NULL, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLError(SQL_NULL_HANDLE, SQL_NULL_HANDLE, utest_fixture->stmt,
+                     state, NULL, NULL, 0, NULL),
+            SQL_NO_DATA);
+  EXPECT_STREQ((char *)state, "00000");
+}
+
+/* Error doesn't change the diagnostics area, so GetDiagRec can still read the
+ * records. */
+UTEST_F(db, 6_18_error_then_get_diag_rec) {
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "SELECT * FROM bar"), SQL_ERROR);
+  EXPECT_EQ(SQLError(SQL_NULL_HANDLE, SQL_NULL_HANDLE, utest_fixture->stmt,
+                     NULL, NULL, NULL, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42P01");
+}
+
+/* The records of the next routine can be read again. */
+UTEST_F(db, 6_18_error_next_routine) {
+  SQLCHAR state[6];
+
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "SELECT * FROM bar"), SQL_ERROR);
+  EXPECT_EQ(SQLError(SQL_NULL_HANDLE, SQL_NULL_HANDLE, utest_fixture->stmt,
+                     state, NULL, NULL, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, ""), SQL_ERROR);
+  EXPECT_EQ(SQLError(SQL_NULL_HANDLE, SQL_NULL_HANDLE, utest_fixture->stmt,
+                     state, NULL, NULL, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)state, "HY090");
+}
+
+UTEST_F(db, 6_18_error_no_records) {
+  SQLCHAR state[6];
+
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLError(SQL_NULL_HANDLE, SQL_NULL_HANDLE, utest_fixture->stmt,
+                     state, NULL, NULL, 0, NULL),
+            SQL_NO_DATA);
+  EXPECT_STREQ((char *)state, "00000");
+}
+
+/* The connection is used when there's no statement. */
+UTEST_F(db, 6_18_error_connection) {
+  SQLCHAR state[6];
+
+  EXPECT_EQ(connect_memory(utest_fixture->dbc), SQL_ERROR);
+  EXPECT_EQ(SQLError(utest_fixture->env, utest_fixture->dbc, SQL_NULL_HANDLE,
+                     state, NULL, NULL, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)state, "08002");
+}
+
+/* The environment is used when there's no connection. */
+UTEST_F(db, 6_18_error_environment) {
+  SQLCHAR state[6];
+
+  EXPECT_EQ(SQLFreeEnv(utest_fixture->env), SQL_ERROR);
+  EXPECT_EQ(SQLError(utest_fixture->env, SQL_NULL_HANDLE, SQL_NULL_HANDLE,
+                     state, NULL, NULL, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)state, "HY010");
+}
+
+UTEST_F(db, 6_18_error_invalid_handle) {
+  EXPECT_EQ(SQLError(SQL_NULL_HANDLE, SQL_NULL_HANDLE, utest_fixture->dbc, NULL,
+                     NULL, NULL, 0, NULL),
+            SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLError(SQL_NULL_HANDLE, SQL_NULL_HANDLE, SQL_NULL_HANDLE, NULL,
+                     NULL, NULL, 0, NULL),
+            SQL_INVALID_HANDLE);
+}
+
+/* A record that can't be read isn't marked as read. */
+UTEST_F(db, 6_18_error_zero_buffer_length) {
+  SQLCHAR state[6], msg[100];
+
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "SELECT * FROM bar"), SQL_ERROR);
+  EXPECT_EQ(SQLError(SQL_NULL_HANDLE, SQL_NULL_HANDLE, utest_fixture->stmt,
+                     state, NULL, msg, 0, NULL),
+            SQL_ERROR);
+  EXPECT_EQ(SQLError(SQL_NULL_HANDLE, SQL_NULL_HANDLE, utest_fixture->stmt,
+                     state, NULL, msg, sizeof(msg), NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)state, "42P01");
+}
+
 /* 6.19 ExecDirect */
 
 UTEST_F(db, 6_19_exec_direct_error) {
@@ -578,6 +760,39 @@ UTEST_F(db, 6_21_fetch_not_a_query) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
 }
 
+/* 6.24 FreeConnect */
+
+UTEST(libvsql, 6_24_free_connect) {
+  SQLHENV env;
+  SQLHDBC dbc;
+
+  ASSERT_EQ(SQLAllocEnv(&env), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocConnect(env, &dbc), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeConnect(dbc), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeConnect(dbc), SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLFreeEnv(env), SQL_SUCCESS);
+}
+
+UTEST_F(db, 6_24_free_connect_connected) {
+  EXPECT_EQ(SQLFreeConnect(utest_fixture->dbc), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY010");
+}
+
+/* 6.25 FreeEnv */
+
+UTEST(libvsql, 6_25_free_env) {
+  SQLHENV env;
+
+  ASSERT_EQ(SQLAllocEnv(&env), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeEnv(env), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeEnv(env), SQL_INVALID_HANDLE);
+}
+
+UTEST_F(env, 6_25_free_env_with_connections) {
+  EXPECT_EQ(SQLFreeEnv(utest_fixture->env), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_ENV, utest_fixture->env, "HY010");
+}
+
 /* 6.26 FreeHandle */
 
 UTEST_F(db, 6_26_free_handle_unknown_type) {
@@ -617,6 +832,56 @@ UTEST(libvsql, 6_26_free_handle_env_twice) {
   ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env), SQL_SUCCESS);
   EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_ENV, env), SQL_SUCCESS);
   EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_ENV, env), SQL_INVALID_HANDLE);
+}
+
+/* 6.27 FreeStmt */
+
+UTEST_F(db, 6_27_free_stmt_close_cursor) {
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_CLOSE_CURSOR), SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 2"), SQL_SUCCESS);
+}
+
+/* Unlike CloseCursor, there doesn't need to be an open cursor. */
+UTEST_F(db, 6_27_free_stmt_close_no_cursor) {
+  EXPECT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_CLOSE), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_CLOSE), SQL_SUCCESS);
+}
+
+UTEST_F(db, 6_27_free_stmt_free_handle) {
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_FREE_HANDLE), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_CLOSE), SQL_INVALID_HANDLE);
+}
+
+UTEST_F(db, 6_27_free_stmt_unbind) {
+  EXPECT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_UNBIND_COLUMNS), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_UNBIND_PARAMETERS),
+            SQL_SUCCESS);
+}
+
+/* REALLOCATE forgets the executed statement. */
+UTEST_F(db, 6_27_free_stmt_reallocate) {
+  SQLINTEGER rows;
+
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_REALLOCATE), SQL_SUCCESS);
+  EXPECT_EQ(SQLRowCount(utest_fixture->stmt, &rows), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 2"), SQL_SUCCESS);
+}
+
+UTEST_F(db, 6_27_free_stmt_invalid_option) {
+  EXPECT_EQ(SQLFreeStmt(utest_fixture->stmt, 5), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY092");
+}
+
+UTEST_F(db, 6_27_free_stmt_invalid_handle) {
+  EXPECT_EQ(SQLFreeStmt(utest_fixture->dbc, SQL_CLOSE), SQL_INVALID_HANDLE);
 }
 
 /* 6.30 GetData */
@@ -941,6 +1206,60 @@ UTEST_F(db, 6_48_num_result_cols_null_column_count) {
   ASSERT_EQ(run_sql(utest_fixture->stmt, "SELECT * FROM t"), SQL_SUCCESS);
   EXPECT_EQ(SQLNumResultCols(utest_fixture->stmt, NULL), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
+}
+
+/* 6.53 RowCount */
+
+UTEST_F(db, 6_53_row_count) {
+  SQLINTEGER rows = 123;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLRowCount(utest_fixture->stmt, &rows), SQL_SUCCESS);
+  EXPECT_EQ(rows, 0);
+
+  ASSERT_EQ(
+      run_sql(utest_fixture->stmt, "INSERT INTO t (x) VALUES (1), (2), (3)"),
+      SQL_SUCCESS);
+  EXPECT_EQ(SQLRowCount(utest_fixture->stmt, &rows), SQL_SUCCESS);
+  EXPECT_EQ(rows, 3);
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "UPDATE t SET x = 4 WHERE x > 1"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLRowCount(utest_fixture->stmt, &rows), SQL_SUCCESS);
+  EXPECT_EQ(rows, 2);
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "DELETE FROM t"), SQL_SUCCESS);
+  EXPECT_EQ(SQLRowCount(utest_fixture->stmt, &rows), SQL_SUCCESS);
+  EXPECT_EQ(rows, 3);
+}
+
+/* The row count of a query is 0, no matter how many rows it has. */
+UTEST_F(db, 6_53_row_count_query) {
+  SQLINTEGER rows = 123;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2"), SQL_SUCCESS);
+  EXPECT_EQ(SQLRowCount(utest_fixture->stmt, &rows), SQL_SUCCESS);
+  EXPECT_EQ(rows, 0);
+}
+
+UTEST_F(db, 6_53_row_count_no_statement) {
+  SQLINTEGER rows;
+
+  EXPECT_EQ(SQLRowCount(utest_fixture->stmt, &rows), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+}
+
+UTEST_F(db, 6_53_row_count_null_row_count) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLRowCount(utest_fixture->stmt, NULL), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
+}
+
+UTEST_F(db, 6_53_row_count_invalid_handle) {
+  SQLINTEGER rows;
+
+  EXPECT_EQ(SQLRowCount(utest_fixture->dbc, &rows), SQL_INVALID_HANDLE);
 }
 
 UTEST_MAIN()

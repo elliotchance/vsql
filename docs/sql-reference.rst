@@ -19,6 +19,7 @@ SQL Reference
    rollback.rst
    select.rst
    set-catalog.rst
+   set-constraints.rst
    set-schema.rst
    start-transaction.rst
    update.rst

@@ -404,14 +404,15 @@ Deferrable Constraints
 ----------------------
 
 A constraint is checked at the end of each statement that changes a table,
-unless it's deferred. Then it's only checked at the ``COMMIT`` (see
-:doc:`commit`), so that a transaction can break it for a while, such as to
+unless it's ``DEFERRABLE`` and deferred. Then it's only checked at the
+``COMMIT`` (see :doc:`commit`), or when :doc:`set-constraints` makes it
+immediate again, so that a transaction can break it for a while, such as to
 insert a row before the row that it references.
 
 - ``INITIALLY DEFERRED`` constraints are deferred at the start of each
   transaction, and are also ``DEFERRABLE``.
 - ``DEFERRABLE`` (or ``DEFERRABLE INITIALLY IMMEDIATE``) constraints are
-  checked immediately, because ``SET CONSTRAINTS`` is not supported yet.
+  checked immediately, unless they're deferred with :doc:`set-constraints`.
 - ``NOT DEFERRABLE`` (or ``INITIALLY IMMEDIATE``, or nothing) constraints are
   always checked immediately.
 
@@ -442,3 +443,4 @@ See Also
 - :doc:`alter-table`
 - :doc:`drop-table`
 - :doc:`insert`
+- :doc:`set-constraints`

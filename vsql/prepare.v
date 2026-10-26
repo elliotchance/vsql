@@ -18,6 +18,7 @@ type Stmt = AlterSequenceGeneratorStatement
 	| SchemaDefinition
 	| SequenceGeneratorDefinition
 	| SetCatalogStatement
+	| SetConstraintsModeStatement
 	| SetSchemaStatement
 	| StartTransactionStatement
 	| TableDefinition
@@ -175,6 +176,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		SetCatalogStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		SetConstraintsModeStatement {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}

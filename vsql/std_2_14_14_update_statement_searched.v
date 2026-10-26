@@ -50,6 +50,20 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
 
+	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Syntax Rule 5
+	for clause in stmt.set {
+		if identity := table.column(clause.column_name)!.identity {
+			is_default := if clause.source is ContextuallyTypedValueSpecification {
+				clause.source is DefaultSpecification
+			} else {
+				false
+			}
+			if identity.always && !is_default {
+				return sqlstate_428c9(clause.column_name)
+			}
+		}
+	}
+
 	// The PRIMARY KEY is checked once all of the rows have changed, not after
 	// each row. Otherwise, "SET id = id + 1" would fail on the old key of the
 	// next row. So a row that gets a new key is deleted first, and only added
@@ -89,6 +103,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			}
 			c.null_type = table_column.typ
 			c.default_value = table_column.default_value
+			c.identity = identity_of(table, table_column)
 
 			raw_value := clause.source.compile(mut c)!.run(mut conn, row, params)!
 
@@ -165,6 +180,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			table_column := table.column(column_name)!
 			c.null_type = table_column.typ
 			c.default_value = table_column.default_value
+			c.identity = identity_of(table, table_column)
 			raw_value := clause.source.compile(mut c)!.run(mut conn, empty_row, params)!
 			check_store_assignment(raw_value, table_column.typ)!
 			value := cast(mut conn, 'for column ${column_name}', raw_value, table_column.typ)!

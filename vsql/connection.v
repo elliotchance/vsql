@@ -706,6 +706,20 @@ pub fn (mut conn CatalogConnection) sequences(schema string) ![]Sequence {
 	return sequences
 }
 
+// identity_sequence returns the sequence of the identity column of a table, with
+// its current value.
+fn (mut conn CatalogConnection) identity_sequence(table Table) !Sequence {
+	conn.open_read_connection()!
+	defer {
+		conn.release_read_connection()
+	}
+
+	sequence := conn.storage.identity_sequence(table)!
+	conn.storage.take_isolation_error()!
+
+	return sequence
+}
+
 // schema_tables returns tables for the provided schema. If the schema does not
 // exist and empty list will be returned.
 pub fn (mut conn CatalogConnection) schema_tables(schema string) ![]Table {

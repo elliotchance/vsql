@@ -331,6 +331,10 @@ fn (mut f Storage) create_table(definition Table) ! {
 	obj := new_page_object(table_object_key(table.id), f.transaction_id, 0, table.bytes())
 	f.btree.add(obj)!
 
+	if column := table.identity_column() {
+		f.add_identity(table.id, (column.identity or { IdentityColumn{} }).sequence)!
+	}
+
 	f.tables[table.name.storage_id()] = table
 	f.schema_changed()
 }
@@ -506,6 +510,84 @@ fn (mut f Storage) update_sequence(old_sequence Sequence, new_sequence Sequence)
 	}
 }
 
+// add_identity adds the current value of the sequence of the identity column of
+// a table. Like the value of a sequence (see create_sequence), it's a separate
+// object, so that it can be changed outside of any transaction isolation (see
+// identity_next_value), and it's created in this transaction.
+fn (mut f Storage) add_identity(table_id u64, sequence Sequence) ! {
+	f.btree.add(new_page_object(identity_key(table_id), f.transaction_id, 0, sequence.value_bytes()))!
+}
+
+// identity_sequence returns the sequence of the identity column of a table,
+// with its current value.
+fn (mut f Storage) identity_sequence(table Table) !Sequence {
+	f.isolation_start()!
+	defer {
+		f.end_isolation()
+	}
+
+	column := table.identity_column() or {
+		return sqlstate_xx000('table ${table.name} has no identity column')
+	}
+	value_object := f.identity_value_object(table.id)!
+
+	return (column.identity or { IdentityColumn{} }).sequence.with_value(value_object.value)
+}
+
+// identity_next_value returns the next value of the identity column of a table,
+// the same way as NEXT VALUE FOR (see sequence_next_value).
+fn (mut f Storage) identity_next_value(table Table) !i64 {
+	f.isolation_start()!
+	defer {
+		f.end_isolation()
+	}
+
+	next_sequence := f.identity_sequence(table)!.next()!
+	value_object := f.identity_value_object(table.id)!
+	new_value := next_sequence.value_bytes()
+	f.btree.replace_value(value_object, new_value)!
+	f.sequence_values['${value_object.key.bytestr()}:${value_object.tid}'] = PageObject{
+		...value_object
+		value: new_value
+	}
+
+	return next_sequence.current_value
+}
+
+// update_identity changes the current value of the sequence of the identity
+// column of a table (such as from RESTART). It's a new version, so that it's
+// undone by a ROLLBACK.
+fn (mut f Storage) update_identity(table_id u64, sequence Sequence) ! {
+	f.isolation_start()!
+	defer {
+		f.end_isolation()
+	}
+
+	f.btree.update(new_page_object(identity_key(table_id), f.transaction_id, 0, sequence.value_bytes()))!
+}
+
+// delete_identity expires the current value of the sequence of the identity
+// column of a table, when the column or the table is dropped.
+fn (mut f Storage) delete_identity(table_id u64) ! {
+	f.isolation_start()!
+	defer {
+		f.end_isolation()
+	}
+
+	value_object := f.identity_value_object(table_id)!
+	f.btree.expire(value_object.key, value_object.tid, f.transaction_id)!
+}
+
+fn (mut f Storage) identity_value_object(table_id u64) !PageObject {
+	key := identity_key(table_id)
+	objects := f.read_objects(key, key)!
+	if objects.len == 0 {
+		return sqlstate_xx001('no identity value for table ${table_id}')
+	}
+
+	return objects[0]
+}
+
 fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 	f.isolation_start()!
 	defer {
@@ -517,6 +599,9 @@ fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 
 	table_id := f.table(table_name).id
 	f.btree.expire(table_object_key(table_id), tid, f.transaction_id)!
+	if _ := f.table(table_name).identity_column() {
+		f.delete_identity(table_id)!
+	}
 
 	// The rows are expired the same way as a DELETE, so they are removed when
 	// the transaction ends.

@@ -1311,7 +1311,7 @@ Optional Features
    * - ✅ **T177**
      - **Sequence generator support: simple restart option**
 
-   * - ❌ **T178**
+   * - ✅ **T178**
      - **Identity columns: simple restart option**
 
    * - ❌ **T180**

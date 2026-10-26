@@ -12,6 +12,7 @@ type YYSym = AddColumnDefinition
 	| AggregateFunctionCount
 	| AlterColumnAction
 	| AlterColumnDefinition
+	| AlterIdentityColumnSpecification
 	| AlterSequenceGeneratorStatement
 	| AlterTableAction
 	| BetweenPredicate
@@ -61,6 +62,7 @@ type YYSym = AddColumnDefinition
 	| ExplicitRowValueConstructor
 	| GeneralValueSpecification
 	| Identifier
+	| IdentityColumn
 	| IdentifierChain
 	| InPredicate
 	| InsertStatement

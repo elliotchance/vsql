@@ -15,5 +15,8 @@ alter_column_action:
 | drop_column_default_clause {
     $$.v = AlterColumnAction($1.v as DropColumnDefaultClause)
   }
+| alter_identity_column_specification {
+    $$.v = AlterColumnAction($1.v as AlterIdentityColumnSpecification)
+  }
 
 %%

@@ -99,7 +99,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				}
 				column_names[table_element.name.sub_entity_name] = true
 
-				columns << Column{
+				mut column := Column{
 					...table_element
 					name: Identifier{
 						catalog_name:    table_name.catalog_name
@@ -108,6 +108,27 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 						sub_entity_name: table_element.name.sub_entity_name
 					}
 				}
+
+				// A table can have at most one identity column (Syntax Rule 15, and
+				// 11.11, Syntax Rule 3 for ADD COLUMN), which is implicitly NOT NULL
+				// (11.4, Syntax Rule 16).
+				if identity := column.identity {
+					if _ := Table{
+						columns: columns
+					}.identity_column()
+					{
+						return sqlstate_42601('table ${table_name} has more than one identity column')
+					}
+					column = Column{
+						...column
+						not_null: true
+						identity: IdentityColumn{
+							...identity
+							sequence: new_identity_sequence(column, identity.options)!
+						}
+					}
+				}
+				columns << column
 			}
 			CheckConstraintDefinition {
 				check_constraints << CheckConstraintDefinition{

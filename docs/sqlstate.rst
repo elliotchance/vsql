@@ -675,6 +675,21 @@ There is no function or operator with that name for the types of its arguments.
   VALUES 123 || 'bar';
   -- error 42883: operator does not exist: SMALLINT || CHARACTER
 
+``428C9`` generated always
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An identity column that's ``GENERATED ALWAYS`` can only be assigned
+``DEFAULT``, see :doc:`create-table`.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE foo (id INTEGER GENERATED ALWAYS AS IDENTITY, x INTEGER);
+  INSERT INTO foo (id, x) VALUES (5, 1);
+  -- msg: CREATE TABLE 1
+  -- error 428C9: cannot assign a value other than DEFAULT to column ID, which is GENERATED ALWAYS
+
 ``42P01`` table does not exist
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

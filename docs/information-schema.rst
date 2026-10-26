@@ -117,8 +117,22 @@ One row for each column of each table in ``TABLES``.
   * - ``DTD_IDENTIFIER``
     - The ordinal position, as text.
 
-  * - ``IS_SELF_REFERENCING``, ``IS_IDENTITY``
+  * - ``IS_SELF_REFERENCING``
     - Always ``NO``.
+
+  * - ``IS_IDENTITY``
+    - ``YES`` for an identity column, otherwise ``NO``.
+
+  * - ``IDENTITY_GENERATION``
+    - ``ALWAYS`` or ``BY DEFAULT`` for an identity column, otherwise ``NULL``.
+
+  * - ``IDENTITY_START``, ``IDENTITY_INCREMENT``, ``IDENTITY_MAXIMUM``,
+      ``IDENTITY_MINIMUM``
+    - The ``START WITH``, ``INCREMENT BY``, ``MAXVALUE`` and ``MINVALUE`` of the
+      sequence of an identity column, as text, otherwise ``NULL``.
+
+  * - ``IDENTITY_CYCLE``
+    - ``YES`` or ``NO`` for an identity column, otherwise ``NULL``.
 
   * - ``IS_GENERATED``
     - Always ``NEVER``.
@@ -130,12 +144,9 @@ One row for each column of each table in ``TABLES``.
       ``COLLATION_SCHEMA``, ``COLLATION_NAME``, ``DOMAIN_CATALOG``,
       ``DOMAIN_SCHEMA``, ``DOMAIN_NAME``, ``UDT_CATALOG``, ``UDT_SCHEMA``,
       ``UDT_NAME``, ``SCOPE_CATALOG``, ``SCOPE_SCHEMA``, ``SCOPE_NAME``,
-      ``MAXIMUM_CARDINALITY``, ``IDENTITY_GENERATION``, ``IDENTITY_START``,
-      ``IDENTITY_INCREMENT``, ``IDENTITY_MAXIMUM``, ``IDENTITY_MINIMUM``,
-      ``IDENTITY_CYCLE``, ``GENERATION_EXPRESSION``
+      ``MAXIMUM_CARDINALITY``, ``GENERATION_EXPRESSION``
     - Always ``NULL`` (intervals, collations, domains, user-defined types,
-      reference types, arrays, identity columns and generated columns are not
-      supported).
+      reference types, arrays and generated columns are not supported).
 
 ``CHECK_CONSTRAINTS``
 ---------------------

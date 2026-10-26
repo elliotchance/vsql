@@ -76,13 +76,37 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 				foreign_keys << 'ALTER TABLE ${name} ADD CONSTRAINT ${delimit_identifier(key.name)} ${key};'
 			}
 			columns := table.column_names().map(delimit_identifier(it)).join(', ')
+
+			// The values of a GENERATED ALWAYS identity column can only be
+			// inserted with OVERRIDING SYSTEM VALUE.
+			identity_column := table.identity_column()
+			mut overriding := ''
+			if column := identity_column {
+				if (column.identity or { IdentityColumn{} }).always {
+					overriding = ' OVERRIDING SYSTEM VALUE'
+				}
+			}
+
 			for row in conn.query('SELECT * FROM ${name}')! {
 				mut data := []string{}
 				for col in table.column_names() {
 					data << (row.get(col)!).literal()
 				}
 
-				write_line(mut w, 'INSERT INTO ${name} (${columns}) VALUES (${data.join(', ')});')!
+				write_line(mut w, 'INSERT INTO ${name} (${columns})${overriding} VALUES (${data.join(', ')});')!
+			}
+
+			// Inserting the rows doesn't move the sequence of the identity
+			// column, so it's restarted at the value that the next row would
+			// get. A sequence that has reached its limit (without CYCLE) can't
+			// be restored, so it's restarted at its last value instead, which
+			// is the closest it can be.
+			if column := identity_column {
+				sequence := catalog.identity_sequence(table)!
+				next_value := (sequence.next() or { sequence }).current_value
+				if !sequence.unused || next_value != sequence.start_value {
+					write_line(mut w, 'ALTER TABLE ${name} ALTER COLUMN ${delimit_identifier(column.name.sub_entity_name)} RESTART WITH ${next_value};')!
+				}
 			}
 
 			write_line(mut w, '')!

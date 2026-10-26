@@ -562,6 +562,22 @@ fn sqlstate_42846(from Type, to Type) IError {
 	}
 }
 
+// generated always (an identity column that is GENERATED ALWAYS can only be
+// assigned DEFAULT)
+struct SQLState428C9 {
+	SQLState
+pub:
+	column_name string
+}
+
+fn sqlstate_428c9(column_name string) IError {
+	return SQLState428C9{
+		code:        sqlstate_to_int('428C9')
+		msg:         'cannot assign a value other than DEFAULT to column ${column_name}, which is GENERATED ALWAYS'
+		column_name: column_name
+	}
+}
+
 // no such table
 struct SQLState42P01 {
 	SQLState

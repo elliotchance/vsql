@@ -44,6 +44,9 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 	result := conn.query(p)!
 	stmt.executed = true
 
+	// - 13, 14. The ROW_COUNT becomes the row count associated with S.
+	stmt.row_count = row_count_of(result)
+
 	// - 12.a. A <dynamic select statement> opens a cursor (see 5.4, "Implicit
 	// cursor"). A statement that doesn't return rows has a msg instead.
 	if result.msg == '' {

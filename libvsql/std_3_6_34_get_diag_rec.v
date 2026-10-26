@@ -9,15 +9,8 @@ module main
 
 @[export: 'SQLGetDiagRec']
 fn sql_get_diag_rec(handle_type i16, handle SQLInteger, record_number i16, sqlstate &char, native_error &SQLInteger, message_text &char, buffer_length i16, text_length &i16) i16 {
-	h := i64(handle)
-
 	// - 2, 3. The handle must identify an allocated resource of HT.
-	diag := match handle_type {
-		sql_handle_env { (envs[h] or { return sql_invalid_handle }).diag }
-		sql_handle_dbc { (dbcs[h] or { return sql_invalid_handle }).diag }
-		sql_handle_stmt { (stmts[h] or { return sql_invalid_handle }).diag }
-		else { return sql_invalid_handle }
-	}
+	diag := handle_diagnostics(handle_type, i64(handle)) or { return sql_invalid_handle }
 
 	// - 6. If RN is less than 1 (one), then an exception condition is raised:
 	// invalid condition number.

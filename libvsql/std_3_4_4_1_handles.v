@@ -45,6 +45,9 @@ mut:
 	// executed is true once a statement has been executed, even if it didn't
 	// return a cursor.
 	executed bool
+	// row_count is the number of rows affected by the executed statement (see
+	// RowCount).
+	row_count int
 	// cursor is the open cursor, if any.
 	cursor ?vsql.Result
 	// fetched is true after the first Fetch on the cursor and row is the

@@ -2,8 +2,8 @@
  * libvsql.h declares the SQL/CLI (ISO/IEC 9075-3) routines implemented by
  * libvsql, the shared library for using vsql from C (and any language that can
  * call C functions). The types and codes are the ones from Annex A, "Typical
- * header files". Only the routines needed to connect, execute a statement and
- * retrieve a result are implemented so far.
+ * header files". The routines that aren't implemented yet are listed in
+ * https://vsql.readthedocs.io/en/latest/sql-compliance.html#cli-routines
  *
  * This header is C99, and also works with C++11.
  *
@@ -149,9 +149,37 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_ARD_TYPE                     (-99) /* same as SQL_DEFAULT */
 #define SQL_DEFAULT                      99    /* the type of the column */
 
+/* SQLFreeStmt options (and their ODBC names). */
+#define SQL_CLOSE_CURSOR                 0     /* close the cursor */
+#define SQL_FREE_HANDLE                  1     /* free the statement */
+#define SQL_UNBIND_COLUMNS               2     /* unbind every column */
+#define SQL_UNBIND_PARAMETERS            3     /* unbind every parameter */
+#define SQL_REALLOCATE                   4     /* forget the statement */
+#define SQL_CLOSE                        0     /* SQL_CLOSE_CURSOR */
+#define SQL_DROP                         1     /* SQL_FREE_HANDLE */
+#define SQL_UNBIND                       2     /* SQL_UNBIND_COLUMNS */
+#define SQL_RESET_PARAMS                 3     /* SQL_UNBIND_PARAMETERS */
+
 /* Nullability. */
 #define SQL_NO_NULLS                     0     /* the column is never NULL */
 #define SQL_NULLABLE                     1     /* the column may be NULL */
+
+/*
+ * SQLAllocConnect is the same as SQLAllocHandle(SQL_HANDLE_DBC,
+ * EnvironmentHandle, ConnectionHandle).
+ */
+SQLRETURN SQLAllocConnect(
+    SQLHENV  EnvironmentHandle,
+    SQLHDBC *ConnectionHandle
+);
+
+/*
+ * SQLAllocEnv is the same as SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE,
+ * EnvironmentHandle).
+ */
+SQLRETURN SQLAllocEnv(
+    SQLHENV *EnvironmentHandle
+);
 
 /*
  * SQLAllocHandle allocates an environment (SQL_HANDLE_ENV), a connection
@@ -173,6 +201,24 @@ SQLRETURN SQLAllocHandle(
     SQLSMALLINT  HandleType,
     SQLINTEGER   InputHandle,
     SQLINTEGER  *OutputHandle
+);
+
+/*
+ * SQLAllocStmt is the same as SQLAllocHandle(SQL_HANDLE_STMT,
+ * ConnectionHandle, StatementHandle).
+ */
+SQLRETURN SQLAllocStmt(
+    SQLHDBC   ConnectionHandle,
+    SQLHSTMT *StatementHandle
+);
+
+/*
+ * SQLCancel cancels a routine that's running on the statement. libvsql isn't
+ * thread safe, so there's never one running and SQLCancel only clears the
+ * diagnostics of the statement.
+ */
+SQLRETURN SQLCancel(
+    SQLHSTMT StatementHandle
 );
 
 /*
@@ -248,6 +294,32 @@ SQLRETURN SQLDisconnect(
 );
 
 /*
+ * SQLError reads the next diagnostic record that it hasn't already read for the
+ * last routine called with a handle. It uses StatementHandle if it's a
+ * statement, otherwise ConnectionHandle if StatementHandle is SQL_NULL_HANDLE,
+ * otherwise EnvironmentHandle if ConnectionHandle is SQL_NULL_HANDLE. It
+ * returns SQL_NO_DATA (and Sqlstate is "00000") after the last record. The
+ * other arguments are the same as SQLGetDiagRec.
+ *
+ *   SQLCHAR sqlstate[6], msg[256];
+ *
+ *   while (SQLError(SQL_NULL_HANDLE, SQL_NULL_HANDLE, stmt, sqlstate, NULL,
+ *                   msg, sizeof(msg), NULL) == SQL_SUCCESS) {
+ *     printf("%s %s\n", sqlstate, msg);
+ *   }
+ */
+SQLRETURN SQLError(
+    SQLHENV      EnvironmentHandle,
+    SQLHDBC      ConnectionHandle,
+    SQLHSTMT     StatementHandle,
+    SQLCHAR     *Sqlstate,
+    SQLINTEGER  *NativeError,
+    SQLCHAR     *MessageText,
+    SQLSMALLINT  BufferLength,
+    SQLSMALLINT *TextLength
+);
+
+/*
  * SQLExecDirect executes an SQL statement. TextLength is the length in octets,
  * or SQL_NTS for a null terminated string. A query opens a cursor that's read
  * with SQLFetch and must be closed with SQLCloseCursor before executing
@@ -281,6 +353,21 @@ SQLRETURN SQLFetch(
 );
 
 /*
+ * SQLFreeConnect is the same as SQLFreeHandle(SQL_HANDLE_DBC,
+ * ConnectionHandle).
+ */
+SQLRETURN SQLFreeConnect(
+    SQLHDBC ConnectionHandle
+);
+
+/*
+ * SQLFreeEnv is the same as SQLFreeHandle(SQL_HANDLE_ENV, EnvironmentHandle).
+ */
+SQLRETURN SQLFreeEnv(
+    SQLHENV EnvironmentHandle
+);
+
+/*
  * SQLFreeHandle frees a handle from SQLAllocHandle. A connection must be
  * disconnected first, and an environment can only be freed after its
  * connections. Freeing a statement closes its cursor.
@@ -293,6 +380,22 @@ SQLRETURN SQLFetch(
 SQLRETURN SQLFreeHandle(
     SQLSMALLINT HandleType,
     SQLINTEGER  Handle
+);
+
+/*
+ * SQLFreeStmt does one of the following, depending on Option:
+ *
+ *   SQL_CLOSE_CURSOR       closes the cursor, if there is one
+ *   SQL_FREE_HANDLE        the same as SQLFreeHandle(SQL_HANDLE_STMT, ...)
+ *   SQL_UNBIND_COLUMNS     unbinds every column
+ *   SQL_UNBIND_PARAMETERS  unbinds every parameter
+ *   SQL_REALLOCATE         closes the cursor and forgets the statement
+ *
+ *   SQLFreeStmt(stmt, SQL_CLOSE_CURSOR);
+ */
+SQLRETURN SQLFreeStmt(
+    SQLHSTMT    StatementHandle,
+    SQLSMALLINT Option
 );
 
 /*
@@ -375,6 +478,20 @@ SQLRETURN SQLGetDiagRec(
 SQLRETURN SQLNumResultCols(
     SQLHSTMT     StatementHandle,
     SQLSMALLINT *ColumnCount
+);
+
+/*
+ * SQLRowCount sets RowCount to the number of rows inserted, updated or deleted
+ * by the last statement that was executed, or 0 for any other statement.
+ *
+ *   SQLINTEGER rows;
+ *
+ *   SQLExecDirect(stmt, (SQLCHAR *)"DELETE FROM foo", SQL_NTS);
+ *   SQLRowCount(stmt, &rows);
+ */
+SQLRETURN SQLRowCount(
+    SQLHSTMT    StatementHandle,
+    SQLINTEGER *RowCount
 );
 
 #ifdef __cplusplus

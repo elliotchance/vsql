@@ -16,6 +16,8 @@ struct DiagnosticRecord {
 struct Diagnostics {
 mut:
 	records []DiagnosticRecord
+	// processed is the number of status records already returned by Error.
+	processed int
 }
 
 // CLIError is an exception condition raised by a CLI routine itself, rather
@@ -39,6 +41,7 @@ fn cli_error(sqlstate string, msg string) IError {
 
 fn (mut d Diagnostics) clear() {
 	d.records = []
+	d.processed = 0
 }
 
 // warning raises a completion condition, such as "01004 string data, right
@@ -68,4 +71,27 @@ fn (mut d Diagnostics) error(err IError) i16 {
 // warnings.
 fn (d Diagnostics) result() i16 {
 	return if d.records.len > 0 { sql_success_with_info } else { sql_success }
+}
+
+// handle_diagnostics returns the diagnostics area of the resource identified by
+// a handle of the handle type, or none if it's not an allocated resource of
+// that type.
+fn handle_diagnostics(handle_type i16, h i64) ?&Diagnostics {
+	match handle_type {
+		sql_handle_env {
+			mut env := envs[h] or { return none }
+			return &env.diag
+		}
+		sql_handle_dbc {
+			mut dbc := dbcs[h] or { return none }
+			return &dbc.diag
+		}
+		sql_handle_stmt {
+			mut stmt := stmts[h] or { return none }
+			return &stmt.diag
+		}
+		else {
+			return none
+		}
+	}
 }

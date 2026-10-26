@@ -2,6 +2,19 @@
 
 /* 6.31 GetDescField */
 
+/* A column named by a column reference or an AS clause isn't UNNAMED. */
+UTEST_F(db, 6_31_get_desc_field_ird_unnamed) {
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "SELECT x, x + 1, x + 2 AS y FROM (VALUES 1) AS t (x)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ird, 1, SQL_DESC_UNNAMED), SQL_NAMED);
+  EXPECT_STREQ(desc_string(ird, 2, SQL_DESC_NAME), "COL2");
+  EXPECT_EQ(desc_short(ird, 2, SQL_DESC_UNNAMED), SQL_UNNAMED);
+  EXPECT_EQ(desc_short(ird, 3, SQL_DESC_UNNAMED), SQL_NAMED);
+}
+
 UTEST_F(row, 6_31_get_desc_field_ird) {
   SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
 
@@ -17,7 +30,7 @@ UTEST_F(row, 6_31_get_desc_field_ird) {
   EXPECT_EQ(desc_int(ird, COL_VARCHAR, SQL_DESC_LENGTH), 20);
   EXPECT_EQ(desc_int(ird, COL_VARCHAR, SQL_DESC_OCTET_LENGTH), 80);
   EXPECT_STREQ(desc_string(ird, COL_VARCHAR, SQL_DESC_NAME), "COL2");
-  EXPECT_EQ(desc_short(ird, COL_VARCHAR, SQL_DESC_UNNAMED), SQL_NAMED);
+  EXPECT_EQ(desc_short(ird, COL_VARCHAR, SQL_DESC_UNNAMED), SQL_UNNAMED);
   EXPECT_EQ(desc_short(ird, COL_VARCHAR, SQL_DESC_NULLABLE), SQL_NULLABLE);
   EXPECT_EQ(desc_int(ird, COL_VARCHAR, SQL_DESC_LEVEL), 0);
   EXPECT_EQ(desc_short(ird, COL_VARCHAR, SQL_DESC_KEY_MEMBER), 0);

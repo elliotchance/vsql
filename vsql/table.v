@@ -21,6 +21,10 @@ pub:
 	// generated is set when the column is a generated column, whose value is
 	// always the result of its generation expression.
 	generated ?GenerationClause
+	// unnamed is true when the column of a result has an implementation-dependent
+	// name (such as COL1) because the query didn't name it. For example, an
+	// expression without an AS clause, or a column of VALUES.
+	unnamed bool
 }
 
 // is_generated_always is true if a value can't be assigned to the column, other

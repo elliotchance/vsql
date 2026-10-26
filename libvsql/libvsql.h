@@ -488,7 +488,7 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_DESC_INDICATOR_POINTER            1009 /* SQLINTEGER * indicator */
 #define SQL_DESC_DATA_POINTER                 1010 /* the value */
 #define SQL_DESC_NAME                         1011 /* the name of the column */
-#define SQL_DESC_UNNAMED                      1012 /* always SQL_NAMED */
+#define SQL_DESC_UNNAMED                      1012 /* SQL_UNNAMED or SQL_NAMED */
 #define SQL_DESC_OCTET_LENGTH                 1013 /* the length in octets */
 #define SQL_DESC_COLLATION_CATALOG            1015 /* always "" */
 #define SQL_DESC_COLLATION_SCHEMA             1016 /* always "" */

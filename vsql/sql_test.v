@@ -1477,3 +1477,14 @@ fn test_version() {
 	assert version_date() == ''
 	assert release_value('v0.34.0') == 'v0.34.0'
 }
+
+// A result column is unnamed when the query didn't name it (it has a name like
+// COL1).
+fn test_column_unnamed() {
+	mut db := open(':memory:')!
+	result := db.query('SELECT x, x + 1, x + 2 AS y FROM (VALUES 1) AS t (x)')!
+	assert result.columns.map(it.unnamed) == [false, true, false]
+
+	values := db.query('VALUES ROW(1, 2)')!
+	assert values.columns.map(it.unnamed) == [true, true]
+}

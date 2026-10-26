@@ -129,8 +129,8 @@ fn main() {
 }
 ```
 
-See the [V client library](https://vsql.readthedocs.io/en/latest/v-client-library.html)
-and [V ORM](https://vsql.readthedocs.io/en/latest/v-orm.html) docs, and the
+See the [V docs](https://vsql.readthedocs.io/en/latest/language-v.html) (for
+the client library and the ORM), and the
 [examples](https://github.com/elliotchance/vsql/tree/main/examples).
 
 Good to Know

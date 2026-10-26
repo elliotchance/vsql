@@ -20,6 +20,7 @@ Test Suites
 - ``make btree-test``: the B-Tree stress tests.
 - ``make examples-test``: runs each example.
 - ``make cli-test``: the CLI tests.
+- ``make libvsql-test``: the tests for libvsql, see `libvsql`_.
 
 CI runs ``make test``.
 
@@ -150,10 +151,59 @@ the path):
 
    make examples/virtual-tables
 
+libvsql
+^^^^^^^
+
+``libvsql/test.c`` contains the unit tests for libvsql, the SQL/CLI (Part 3)
+shared library for C programs (see :doc:`sql-compliance`). It's run as part of
+``make test``, or on its own with:
+
+.. code-block:: sh
+
+   make libvsql-test
+
+This builds the shared library (``bin/libvsql.so``, ``bin/libvsql.dylib`` on
+macOS or ``bin/libvsql.dll`` on Windows), then runs
+``scripts/check-libvsql-constants.vsh``, which checks that every ``#define
+SQL_...`` in ``libvsql/libvsql.h`` has a ``const sql_...`` with the same value
+in ``libvsql/*.v``, and the other way around. Then it compiles
+``libvsql/test.c`` against the library and runs it.
+
+The tests use `utest.h <https://github.com/sheredom/utest.h>`_
+(``libvsql/utest.h``). Each test checks one case of a CLI routine, and is named
+after the routine's Subclause of ISO/IEC 9075-3 (such as
+``6_30_get_data_null_needs_indicator`` for 6.30, GetData). A fixture gives each
+test its own handles, so the tests don't depend on each other:
+
+- ``env``: an environment and a connection that isn't connected yet.
+- ``db``: an environment, a connection to a new in-memory database and a
+  statement.
+- ``row``: the same as ``db``, with a row of different data types fetched.
+
+Add a test with ``UTEST_F()`` (or ``UTEST()`` without a fixture), using the
+``EXPECT_*()`` and ``ASSERT_*()`` macros of utest.h, and ``EXPECT_STATE()`` for
+the SQLSTATE of the first diagnostic record of a handle:
+
+.. code-block:: c
+
+   UTEST_F(db, 6_21_fetch_no_statement) {
+     EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_ERROR);
+     EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+   }
+
+A failed ``EXPECT_*()`` prints its line and keeps going, so every failure is
+shown. ``ASSERT_*()`` stops the test, for a step that the rest of the test
+depends on.
+
+The tests, ``libvsql/example.c`` and ``libvsql/libvsql.h`` must be C99, so
+they're compiled with ``-std=c99 -pedantic-errors -Wall -Wextra -Werror``.
+``make examples-test`` runs the example in :doc:`language-c`, and also compiles
+``libvsql/example.c`` as C++ (``-std=c++11``).
+
 ORM
 ^^^
 
-``vorm/vorm_test.v`` tests the ORM driver (see :doc:`v-orm`) with V's
+``vorm/vorm_test.v`` tests the ORM driver (see :doc:`language-v`) with V's
 ``sql db { ... }`` syntax. It's run as part of ``make test``, or on its own
 with:
 

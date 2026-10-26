@@ -24,3 +24,6 @@ vsql/*_test
 
 # Created by make sql-test.
 coverage/
+
+# Created by make release.
+vsql-*.zip

@@ -27,3 +27,22 @@ A host parameter name can't be a reserved word (see :doc:`keywords`), so use
 ``:max_price`` rather than ``:max``.
 
 A missing host parameter is an error ``42P02``.
+
+Dynamic Parameters
+------------------
+
+A ``?`` (a dynamic parameter) is a host parameter that's named by its position
+in the statement: the first ``?`` is ``?1``, the second is ``?2``, etc. This is
+what :doc:`language-c` uses for ``SQLPrepare`` and ``SQLBindParameter``:
+
+.. code-block:: v
+
+   mut stmt := db.prepare('INSERT INTO people (first_name, age) VALUES (?, ?)')!
+
+   stmt.query({
+   	'?1': vsql.new_varchar_value('Bob')
+   	'?2': vsql.new_integer_value(42)
+   })!
+
+Like a host parameter, the data type of a dynamic parameter is the data type of
+its value.

@@ -14,6 +14,9 @@ unsigned_value_specification:
 
 general_value_specification:
   host_parameter_specification { $$.v = $1.v as GeneralValueSpecification }
+| dynamic_parameter_specification {
+    $$.v = $1.v as GeneralValueSpecification
+  }
 | CURRENT_CATALOG { $$.v = GeneralValueSpecification(CurrentCatalog{}) }
 | CURRENT_SCHEMA { $$.v = GeneralValueSpecification(CurrentSchema{}) }
 
@@ -25,5 +28,12 @@ simple_value_specification:
 
 host_parameter_specification:
   host_parameter_name { $$.v = $1.v as GeneralValueSpecification }
+
+// A <dynamic parameter specification> is a host parameter named by its
+// position, such as "?1" for the first "?" (see tokenize).
+dynamic_parameter_specification:
+  question_mark {
+    $$.v = GeneralValueSpecification(HostParameterName{$1.v as string})
+  }
 
 %%

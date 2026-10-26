@@ -34,16 +34,29 @@ fn sql_free_stmt(statement_handle SQLInteger, option i16) i16 {
 			return sql_free_handle(sql_handle_stmt, statement_handle)
 		}
 		// - 6.c, 6.d. The DATA_POINTER of each ARD (or APD) item descriptor area
-		// is set to zero. There are no CLI descriptor areas, so there's nothing
-		// to unbind.
-		sql_unbind_columns, sql_unbind_parameters {}
+		// is set to zero.
+		sql_unbind_columns, sql_unbind_parameters {
+			mut desc := descs[if option == sql_unbind_columns { stmt.ard } else { stmt.apd }] or {
+				return sql_invalid_handle
+			}
+			for i in 0 .. desc.count() {
+				desc.records[i][sql_desc_data_pointer] = i64(0)
+			}
+		}
 		// - 6.e. If OPT indicates REALLOCATE, then any prepared statement,
 		// cursor, select source and executed statement associated with S are
-		// destroyed.
+		// destroyed, and the automatically allocated descriptors go back to
+		// their default values.
 		sql_reallocate {
 			stmt.close_cursor()
 			stmt.executed = false
 			stmt.row_count = 0
+			stmt.ard = stmt.auto_ard
+			stmt.apd = stmt.auto_apd
+			for dh in [stmt.auto_ard, stmt.auto_apd, stmt.ird, stmt.ipd] {
+				mut desc := descs[dh] or { continue }
+				desc.reset()
+			}
 		}
 		else {
 			// - 3. If OPT is not one of the codes in Table 18, then an exception

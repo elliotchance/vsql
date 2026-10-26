@@ -38,16 +38,28 @@ fn sql_free_handle(handle_type i16, handle SQLInteger) i16 {
 			dbcs.delete(h)
 		}
 		sql_handle_stmt {
-			// - 3.c.vii. An open cursor is closed with the statement.
+			// - 3.c.vii, 3.c.viii. An open cursor is closed, and the
+			// automatically allocated descriptors are freed, with the statement.
 			if h !in stmts {
 				return sql_invalid_handle
 			}
 
-			stmts.delete(h)
+			free_stmt(h)
+		}
+		sql_handle_desc {
+			mut desc := descs[h] or { return sql_invalid_handle }
+			desc.diag.clear()
+
+			// - 3.d.viii. If AT indicates AUTOMATIC, then an exception condition
+			// is raised: CLI-specific condition — invalid use of
+			// automatically-allocated descriptor handle.
+			if desc.stmt != 0 {
+				return desc.diag.error(cli_error('HY017', 'invalid use of automatically-allocated descriptor handle'))
+			}
+
+			free_desc(h)
 		}
 		else {
-			// There are no CLI descriptor areas, so a DESCRIPTOR HANDLE can't
-			// identify one.
 			return sql_invalid_handle
 		}
 	}

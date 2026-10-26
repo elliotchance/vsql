@@ -50,15 +50,12 @@ fn sql_alloc_handle(handle_type i16, input_handle SQLInteger, output_handle &SQL
 				return set_zero(output_handle, dbc.diag.error(cli_error('08003', 'connection does not exist')))
 			}
 
-			// CLI descriptor areas are not supported yet.
-			if handle_type == sql_handle_desc {
-				return set_zero(output_handle, dbc.diag.error(cli_error('HYC00', 'optional feature not implemented')))
-			}
-
-			h := new_handle()
-			stmts[h] = &Stmt{
-				dbc: ih
-			}
+			// - 3.c.ix, 3.c.x. A statement is allocated with its own ARD, APD,
+			// IRD and IPD.
+			//
+			// - 3.d.vii.3. A descriptor allocated by the application has an
+			// ALLOC_TYPE of USER and the default values for an ARD.
+			h := if handle_type == sql_handle_desc { new_desc(ih, .ard, 0) } else { new_stmt(ih) }
 			unsafe {
 				*output_handle = SQLInteger(h)
 			}

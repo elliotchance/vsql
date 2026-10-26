@@ -23,15 +23,20 @@ fn describe_col(mut stmt Stmt, column_number i16, column_name &char, buffer_leng
 		return cli_error('HY010', 'function sequence error')
 	}
 
-	// - 4. If N is zero, then an exception condition is raised: dynamic SQL
-	// error — prepared statement not a cursor specification.
-	cursor := stmt.cursor or {
+	// - 3, 4. If N (the TOP_LEVEL_COUNT of the IRD) is zero, then an exception
+	// condition is raised: dynamic SQL error — prepared statement not a cursor
+	// specification.
+	ird := descs[stmt.ird] or { return cli_error('HY010', 'function sequence error') }
+	n := ird.header_int(sql_desc_top_level_count)
+	if n == 0 {
 		return cli_error('07005', 'prepared statement not a cursor specification')
 	}
 
 	// - 6. If CN is less than 1 (one) or greater than N, then an exception
 	// condition is raised: dynamic SQL error — invalid descriptor index.
-	column := result_column(cursor, column_number)!
+	if column_number < 1 || column_number > n {
+		return cli_error('07009', 'invalid descriptor index')
+	}
 
 	// Only the NameLength may be a null pointer (see 4.4.3, "Null pointers").
 	if column_name == unsafe { nil } || data_type == unsafe { nil }
@@ -40,19 +45,44 @@ fn describe_col(mut stmt Stmt, column_number i16, column_name &char, buffer_leng
 		return cli_error('HY009', 'invalid use of null pointer')
 	}
 
+	// - 9. Information is retrieved from the IRD.
+	cn := int(column_number)
+	typ := ird.record_int(cn, sql_desc_type)
 	unsafe {
-		*data_type = data_type_code(column.typ)
-		*column_size = SQLInteger(column_size_of(column.typ))
-		*decimal_digits = decimal_digits_of(column.typ)
-		*nullable = if column.not_null { sql_no_nulls } else { sql_nullable }
+		*data_type = i16(concise_type_code(typ, ird.record_int(cn, sql_desc_datetime_interval_code)))
+		*column_size = SQLInteger(describe_column_size(ird, cn))
+		*decimal_digits = i16(if typ in [i64(sql_numeric), sql_decimal, sql_datetime] {
+			ird.record_int(cn, if typ == sql_datetime { sql_desc_precision } else { sql_desc_scale })
+		} else {
+			0
+		})
+		*nullable = i16(ird.record_int(cn, sql_desc_nullable))
 	}
 
 	// - 9.e. The name is retrieved by the General Rules of Subclause 5.9,
 	// "Character string retrieval".
-	retrieve_string(mut stmt.diag, stmt.null_termination(), column_name, column.name.sub_entity_name, buffer_length,
-		name_length, 2)!
+	name := ird.records[cn - 1][sql_desc_name] or { DescValue('') }
+	retrieve_string(mut stmt.diag, stmt.null_termination(), column_name, name as string,
+		buffer_length, name_length, 2)!
 
 	return stmt.diag.result()
+}
+
+// - 9.b. describe_column_size is the maximum length in octets of a character
+// string, the maximum length in decimal digits of a number, or the length in
+// positions of a datetime. For a BOOLEAN, it's the length of FALSE.
+fn describe_column_size(ird &Desc, cn int) i64 {
+	return match ird.record_int(cn, sql_desc_type) {
+		sql_char, sql_varchar { ird.record_int(cn, sql_desc_octet_length) }
+		sql_smallint { 5 }
+		sql_integer { 10 }
+		sql_bigint { 19 }
+		sql_real { 7 }
+		sql_double { 15 }
+		sql_numeric, sql_decimal { ird.record_int(cn, sql_desc_precision) }
+		sql_datetime { ird.record_int(cn, sql_desc_length) }
+		else { 5 }
+	}
 }
 
 fn result_column(cursor vsql.Result, column_number int) !vsql.Column {
@@ -63,39 +93,17 @@ fn result_column(cursor vsql.Result, column_number int) !vsql.Column {
 	return cursor.columns[column_number - 1]
 }
 
-// column_size_of is the maximum length of a character string in octets, the
-// precision of a number in decimal digits, or the length in positions of a
-// datetime.
-fn column_size_of(typ vsql.Type) int {
+// datetime_length is the length in positions of a datetime type, including
+// the fractional seconds.
+fn datetime_length(typ vsql.Type) int {
 	fraction := if typ.size > 0 { typ.size + 1 } else { 0 }
 
 	return match typ.typ {
-		.is_character, .is_varchar, .is_decimal, .is_numeric { typ.size }
-		.is_smallint { 5 }
-		.is_integer { 10 }
-		.is_bigint { 19 }
-		.is_real { 7 }
-		.is_double_precision { 15 }
-		.is_boolean { 5 }
 		.is_date { 10 }
 		.is_time_without_time_zone { 8 + fraction }
 		.is_time_with_time_zone { 14 + fraction }
 		.is_timestamp_without_time_zone { 19 + fraction }
 		.is_timestamp_with_time_zone { 25 + fraction }
-	}
-}
-
-// decimal_digits_of is the scale of an exact number, or the fractional seconds
-// precision of a datetime.
-fn decimal_digits_of(typ vsql.Type) i16 {
-	return match typ.typ {
-		.is_decimal, .is_numeric { typ.scale }
-		.is_time_without_time_zone, .is_time_with_time_zone, .is_timestamp_without_time_zone,
-		.is_timestamp_with_time_zone {
-			i16(typ.size)
-		}
-		else {
-			0
-		}
+		else { 0 }
 	}
 }

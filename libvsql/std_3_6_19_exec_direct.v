@@ -54,6 +54,12 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 	mut conn := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }.conn or {
 		return cli_error('08003', 'connection does not exist')
 	}
+	// - 4.b, 5.4 10. A cursor is always a copy of the result, so it can't be
+	// SENSITIVE: cursor sensitivity exception — request rejected.
+	if stmt.diag.dynamic_function == 'SELECT CURSOR' && stmt.cursor_sensitivity == sql_sensitive {
+		return cli_error('36001', 'cursor sensitivity exception — request rejected')
+	}
+
 	if !conn.in_transaction() {
 		conn.query('START TRANSACTION')!
 	}
@@ -72,10 +78,13 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 	stmt.diag.row_count = stmt.row_count
 
 	// - 12.a. A <dynamic select statement> opens a cursor (see 5.4, "Implicit
-	// cursor"). A statement that doesn't return rows has a msg instead.
+	// cursor"). A statement that doesn't return rows has a msg instead. Either
+	// way, the IRD describes its result columns (see 5.5, "Implicit DESCRIBE
+	// USING clause").
 	if result.msg == '' {
 		stmt.cursor = result
 	}
+	describe(stmt, mut conn, stmt.cursor)
 
 	return sql_success
 }

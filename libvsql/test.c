@@ -13,6 +13,7 @@
  *   row  The same as db, with the row from ROW_SQL fetched.
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -23,6 +24,9 @@
 #pragma GCC diagnostic ignored "-Wpedantic"
 #include "utest.h"
 #pragma GCC diagnostic pop
+
+/* HANDLE_VALUE passes a handle as the Value of SQLSetStmtAttr. */
+#define HANDLE_VALUE(h) ((SQLPOINTER)(intptr_t)(h))
 
 /* EXPECT_STATE checks the SQLSTATE of the first diagnostic record. */
 #define EXPECT_STATE(type, handle, expected)                                   \
@@ -65,6 +69,52 @@ static const char *diag_string(SQLSMALLINT type, SQLINTEGER handle,
   static SQLCHAR value[100];
 
   if (SQLGetDiagField(type, handle, 1, field, value, sizeof(value), NULL) !=
+      SQL_SUCCESS) {
+    return "(error)";
+  }
+
+  return (const char *)value;
+}
+
+/* stmt_desc returns a descriptor of a statement, such as
+ * SQL_ATTR_IMP_ROW_DESC. */
+static SQLHDESC stmt_desc(SQLHSTMT stmt, SQLINTEGER attribute) {
+  SQLHDESC desc = SQL_NULL_HANDLE;
+
+  SQLGetStmtAttr(stmt, attribute, &desc, 0, NULL);
+
+  return desc;
+}
+
+/* desc_int reads an SQLINTEGER field of a descriptor. */
+static SQLINTEGER desc_int(SQLHDESC desc, SQLSMALLINT rn, SQLSMALLINT field) {
+  SQLINTEGER value = -123;
+
+  if (SQLGetDescField(desc, rn, field, &value, 0, NULL) != SQL_SUCCESS) {
+    return -456;
+  }
+
+  return value;
+}
+
+/* desc_short reads an SQLSMALLINT field of a descriptor. */
+static SQLSMALLINT desc_short(SQLHDESC desc, SQLSMALLINT rn,
+                              SQLSMALLINT field) {
+  SQLSMALLINT value = -123;
+
+  if (SQLGetDescField(desc, rn, field, &value, 0, NULL) != SQL_SUCCESS) {
+    return -456;
+  }
+
+  return value;
+}
+
+/* desc_string reads a string field of a descriptor. */
+static const char *desc_string(SQLHDESC desc, SQLSMALLINT rn,
+                               SQLSMALLINT field) {
+  static SQLCHAR value[100];
+
+  if (SQLGetDescField(desc, rn, field, value, sizeof(value), NULL) !=
       SQL_SUCCESS) {
     return "(error)";
   }
@@ -263,12 +313,25 @@ UTEST_F(db, 6_3_alloc_handle_stmt) {
   EXPECT_NE(stmt, utest_fixture->stmt);
 }
 
-/* CLI descriptor areas are not supported yet. */
+/* A descriptor allocated by the application has an ALLOC_TYPE of USER. */
 UTEST_F(db, 6_3_alloc_handle_desc) {
-  SQLINTEGER h;
+  SQLHDESC desc;
+  SQLSMALLINT alloc_type = 0;
+
+  EXPECT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, utest_fixture->dbc, &desc),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetDescField(desc, 0, SQL_DESC_ALLOC_TYPE, &alloc_type, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(alloc_type, SQL_DESC_ALLOC_USER);
+  EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_DESC, desc), SQL_SUCCESS);
+}
+
+UTEST_F(env, 6_3_alloc_handle_desc_not_connected) {
+  SQLINTEGER h = 123;
 
   EXPECT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, utest_fixture->dbc, &h), SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HYC00");
+  EXPECT_EQ(h, 0);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "08003");
 }
 
 /* 6.4 AllocStmt */
@@ -347,6 +410,116 @@ UTEST_F(db, 6_8_close_cursor_invalid_handle) {
   EXPECT_EQ(SQLCloseCursor(utest_fixture->stmt + 1000), SQL_INVALID_HANDLE);
 }
 
+/* 6.9 ColAttribute */
+
+UTEST_F(row, 6_9_col_attribute) {
+  SQLCHAR name[32];
+  SQLSMALLINT len;
+  SQLINTEGER value = -1;
+
+  EXPECT_EQ(SQLColAttribute(utest_fixture->stmt, COL_VARCHAR, SQL_DESC_NAME,
+                            name, sizeof(name), &len, NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)name, "COL2");
+  EXPECT_EQ(len, 4);
+
+  EXPECT_EQ(SQLColAttribute(utest_fixture->stmt, COL_VARCHAR, SQL_DESC_LENGTH,
+                            NULL, 0, NULL, &value),
+            SQL_SUCCESS);
+  EXPECT_EQ(value, 20);
+
+  /* A SMALLINT field is returned as an SQLINTEGER. */
+  value = -1;
+  EXPECT_EQ(SQLColAttribute(utest_fixture->stmt, COL_NUMERIC, SQL_DESC_SCALE,
+                            NULL, 0, NULL, &value),
+            SQL_SUCCESS);
+  EXPECT_EQ(value, 2);
+}
+
+/* The TYPE of a datetime is the concise code, like DescribeCol. */
+UTEST_F(row, 6_9_col_attribute_type) {
+  SQLINTEGER value = -1;
+
+  EXPECT_EQ(SQLColAttribute(utest_fixture->stmt, COL_DATE, SQL_DESC_TYPE, NULL,
+                            0, NULL, &value),
+            SQL_SUCCESS);
+  EXPECT_EQ(value, SQL_TYPE_DATE);
+  EXPECT_EQ(SQLColAttribute(utest_fixture->stmt, COL_DATE,
+                            SQL_DESC_DATETIME_INTERVAL_CODE, NULL, 0, NULL,
+                            &value),
+            SQL_SUCCESS);
+  EXPECT_EQ(value, SQL_CODE_DATE);
+}
+
+/* A header field needs a column number, but it isn't used. */
+UTEST_F(row, 6_9_col_attribute_header) {
+  SQLINTEGER value = -1;
+
+  EXPECT_EQ(SQLColAttribute(utest_fixture->stmt, 1, SQL_DESC_COUNT, NULL, 0,
+                            NULL, &value),
+            SQL_SUCCESS);
+  EXPECT_EQ(value, 6);
+}
+
+UTEST_F(row, 6_9_col_attribute_column_number) {
+  SQLINTEGER value;
+
+  EXPECT_EQ(SQLColAttribute(utest_fixture->stmt, 0, SQL_DESC_TYPE, NULL, 0,
+                            NULL, &value),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07009");
+  EXPECT_EQ(SQLColAttribute(utest_fixture->stmt, 7, SQL_DESC_TYPE, NULL, 0,
+                            NULL, &value),
+            SQL_NO_DATA);
+}
+
+UTEST_F(row, 6_9_col_attribute_invalid_field) {
+  SQLINTEGER value;
+
+  EXPECT_EQ(
+      SQLColAttribute(utest_fixture->stmt, 1, 9999, NULL, 0, NULL, &value),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY091");
+
+  /* The DATA_POINTER can't be retrieved from an IRD. */
+  EXPECT_EQ(SQLColAttribute(utest_fixture->stmt, 1, SQL_DESC_DATA_POINTER, NULL,
+                            0, NULL, &value),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY091");
+}
+
+UTEST_F(row, 6_9_col_attribute_truncated) {
+  SQLCHAR name[3];
+  SQLSMALLINT len;
+
+  EXPECT_EQ(SQLColAttribute(utest_fixture->stmt, COL_VARCHAR, SQL_DESC_NAME,
+                            name, sizeof(name), &len, NULL),
+            SQL_SUCCESS_WITH_INFO);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "01004");
+  EXPECT_STREQ((char *)name, "CO");
+  EXPECT_EQ(len, 4);
+}
+
+UTEST_F(db, 6_9_col_attribute_no_statement) {
+  SQLINTEGER value;
+
+  EXPECT_EQ(SQLColAttribute(utest_fixture->stmt, 1, SQL_DESC_TYPE, NULL, 0,
+                            NULL, &value),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+}
+
+UTEST_F(db, 6_9_col_attribute_not_a_query) {
+  SQLINTEGER value;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLColAttribute(utest_fixture->stmt, 1, SQL_DESC_TYPE, NULL, 0,
+                            NULL, &value),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07005");
+}
+
 /* 6.12 Connect */
 
 UTEST_F(env, 6_12_connect_invalid_handle) {
@@ -404,6 +577,53 @@ UTEST_F(env, 6_12_connect_second_default) {
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DBC, dbc2, "08002");
   EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_DBC, dbc2), SQL_SUCCESS);
+}
+
+/* 6.13 CopyDesc */
+
+UTEST_F(row, 6_13_copy_desc) {
+  SQLHDESC desc;
+
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, utest_fixture->dbc, &desc),
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLCopyDesc(stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC), desc),
+      SQL_SUCCESS);
+  EXPECT_EQ(desc_short(desc, 0, SQL_DESC_COUNT), 6);
+  EXPECT_EQ(desc_short(desc, COL_DOUBLE, SQL_DESC_TYPE), SQL_DOUBLE);
+  EXPECT_STREQ(desc_string(desc, COL_VARCHAR, SQL_DESC_NAME), "COL2");
+  EXPECT_EQ(desc_short(desc, 0, SQL_DESC_ALLOC_TYPE), SQL_DESC_ALLOC_USER);
+  EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_DESC, desc), SQL_SUCCESS);
+}
+
+/* The target replaces all of its records. */
+UTEST_F(db, 6_13_copy_desc_replaces) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLHDESC desc;
+
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, utest_fixture->dbc, &desc),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetDescField(desc, 3, SQL_DESC_TYPE, (SQLPOINTER)SQL_INTEGER, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLCopyDesc(ard, desc), SQL_SUCCESS);
+  EXPECT_EQ(desc_short(desc, 0, SQL_DESC_COUNT), 0);
+  EXPECT_EQ(desc_short(ard, 0, SQL_DESC_ALLOC_TYPE), SQL_DESC_ALLOC_AUTO);
+}
+
+UTEST_F(row, 6_13_copy_desc_to_ird) {
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+
+  EXPECT_EQ(
+      SQLCopyDesc(stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC), ird),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ird, "HY016");
+}
+
+UTEST_F(db, 6_13_copy_desc_invalid_handle) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+
+  EXPECT_EQ(SQLCopyDesc(utest_fixture->stmt, ard), SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLCopyDesc(ard, utest_fixture->stmt), SQL_INVALID_HANDLE);
 }
 
 /* 6.15 DescribeCol */
@@ -465,7 +685,7 @@ UTEST_F(db, 6_15_describe_col_varchar) {
   EXPECT_EQ(describe(utest_fixture->stmt, 2, &col), SQL_SUCCESS);
   EXPECT_STREQ((char *)col.name, "BB");
   EXPECT_EQ(col.type, SQL_VARCHAR);
-  EXPECT_EQ(col.size, 20);
+  EXPECT_EQ(col.size, 80);
   EXPECT_EQ(col.nullable, SQL_NULLABLE);
 }
 
@@ -559,6 +779,16 @@ UTEST_F(db, 6_15_describe_col_null_data_type) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
 }
 
+/* The IRD still describes the columns after the cursor is closed. */
+UTEST_F(db, 6_15_describe_col_closed_cursor) {
+  struct column col;
+
+  ASSERT_EQ(select_describe_table(utest_fixture->stmt), SQL_SUCCESS);
+  ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(describe(utest_fixture->stmt, 1, &col), SQL_SUCCESS);
+  EXPECT_STREQ((char *)col.name, "A");
+}
+
 /* 6.16 Disconnect */
 
 /* An active transaction must be ended first. */
@@ -613,6 +843,15 @@ UTEST_F(env, 6_16_disconnect_reopen_file) {
   EXPECT_EQ(SQLDisconnect(utest_fixture->dbc), SQL_SUCCESS);
 
   remove("libvsql_test.vsql");
+}
+
+UTEST_F(db, 6_16_disconnect_frees_descriptors) {
+  SQLHDESC desc;
+
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, utest_fixture->dbc, &desc),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLDisconnect(utest_fixture->dbc), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_DESC, desc), SQL_INVALID_HANDLE);
 }
 
 /* 6.17 EndTran */
@@ -756,6 +995,25 @@ UTEST_F(db, 6_17_end_tran_invalid_handle) {
   EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->stmt, SQL_COMMIT),
             SQL_INVALID_HANDLE);
   EXPECT_EQ(SQLEndTran(7, utest_fixture->dbc, SQL_COMMIT), SQL_INVALID_HANDLE);
+}
+
+/* A commit closes a cursor that isn't holdable. */
+UTEST_F(db, 6_17_end_tran_commit_nonholdable) {
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_HOLDABLE,
+                           (SQLPOINTER)SQL_NONHOLDABLE, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2"), SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
+}
+
+UTEST_F(db, 6_17_end_tran_descriptor) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DESC, ard, SQL_COMMIT), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY092");
 }
 
 /* 6.18 Error */
@@ -1054,6 +1312,35 @@ UTEST(libvsql, 6_26_free_handle_env_twice) {
   EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_ENV, env), SQL_INVALID_HANDLE);
 }
 
+/* A descriptor that was allocated with a statement is freed with it. */
+UTEST_F(db, 6_26_free_handle_automatic_descriptor) {
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+
+  EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_DESC, ird), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ird, "HY017");
+  EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_STMT, utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_DESC, ird), SQL_INVALID_HANDLE);
+}
+
+/* A statement that used a freed descriptor goes back to its own. */
+UTEST_F(db, 6_26_free_handle_descriptor_in_use) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLHDESC desc;
+
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, utest_fixture->dbc, &desc),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC,
+                           HANDLE_VALUE(desc), 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_APP_PARAM_DESC,
+                           HANDLE_VALUE(desc), 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC), desc);
+  EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_DESC, desc), SQL_SUCCESS);
+  EXPECT_EQ(stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC), ard);
+  EXPECT_NE(stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_PARAM_DESC), desc);
+}
+
 /* 6.27 FreeStmt */
 
 UTEST_F(db, 6_27_free_stmt_close_cursor) {
@@ -1102,6 +1389,39 @@ UTEST_F(db, 6_27_free_stmt_invalid_option) {
 
 UTEST_F(db, 6_27_free_stmt_invalid_handle) {
   EXPECT_EQ(SQLFreeStmt(utest_fixture->dbc, SQL_CLOSE), SQL_INVALID_HANDLE);
+}
+
+UTEST_F(db, 6_27_free_stmt_unbind_columns) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLINTEGER i;
+  SQLPOINTER p = &i;
+
+  ASSERT_EQ(SQLSetDescField(ard, 2, SQL_DESC_TYPE, (SQLPOINTER)SQL_INTEGER, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetDescField(ard, 2, SQL_DESC_DATA_POINTER, &i, 0), SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_UNBIND), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetDescField(ard, 2, SQL_DESC_DATA_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == NULL);
+  EXPECT_EQ(desc_short(ard, 2, SQL_DESC_TYPE), SQL_INTEGER);
+}
+
+/* REALLOCATE puts back the statement's own descriptors, with their default
+ * values. */
+UTEST_F(db, 6_27_free_stmt_reallocate_descriptors) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLHDESC desc;
+
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, utest_fixture->dbc, &desc),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetDescField(ard, 2, SQL_DESC_TYPE, (SQLPOINTER)SQL_INTEGER, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC,
+                           HANDLE_VALUE(desc), 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_REALLOCATE), SQL_SUCCESS);
+  EXPECT_EQ(stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC), ard);
+  EXPECT_EQ(desc_short(ard, 0, SQL_DESC_COUNT), 0);
 }
 
 /* 6.28 GetConnectAttr */
@@ -1333,12 +1653,23 @@ UTEST_F(row, 6_30_get_data_date_as_integer) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07006");
 }
 
+/* A DATE doesn't have a C type. */
 UTEST_F(row, 6_30_get_data_date_as_default) {
   SQLINTEGER i;
 
   EXPECT_EQ(SQLGetData(utest_fixture->stmt, COL_DATE, SQL_DEFAULT, &i, 0, NULL),
             SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07006");
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07002");
+}
+
+/* Neither does a CHARACTER VARYING (only a CHARACTER). */
+UTEST_F(row, 6_30_get_data_varchar_as_default) {
+  char buf[20];
+
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, COL_VARCHAR, SQL_DEFAULT, buf,
+                       sizeof(buf), NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07002");
 }
 
 /* NUMERIC has no C data type. */
@@ -1375,6 +1706,288 @@ UTEST_F(row, 6_30_get_data_after_last_row) {
   EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_NO_DATA);
   EXPECT_EQ(
       SQLGetData(utest_fixture->stmt, COL_BIGINT, SQL_INTEGER, &i, 0, &ind),
+      SQL_NO_DATA);
+}
+
+/* SQL_ARD_TYPE uses the TYPE of the column in the ARD. */
+UTEST_F(row, 6_30_get_data_ard_type) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLDOUBLE d = 0;
+
+  ASSERT_EQ(SQLSetDescField(ard, COL_BIGINT, SQL_DESC_TYPE,
+                            (SQLPOINTER)SQL_DOUBLE, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLGetData(utest_fixture->stmt, COL_BIGINT, SQL_ARD_TYPE, &d, 0, NULL),
+      SQL_SUCCESS);
+  EXPECT_EQ(d, 100000.0);
+}
+
+/* Without a record in the ARD, SQL_ARD_TYPE is SQL_DEFAULT. */
+UTEST_F(row, 6_30_get_data_ard_type_no_record) {
+  SQLDOUBLE d = 0;
+
+  EXPECT_EQ(
+      SQLGetData(utest_fixture->stmt, COL_DOUBLE, SQL_ARD_TYPE, &d, 0, NULL),
+      SQL_SUCCESS);
+  EXPECT_EQ(d, 4.56);
+}
+
+/* A NUMERIC TYPE in the ARD doesn't have a C type. */
+UTEST_F(row, 6_30_get_data_ard_type_numeric) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLDOUBLE d;
+
+  ASSERT_EQ(SQLSetDescField(ard, COL_NUMERIC, SQL_DESC_TYPE,
+                            (SQLPOINTER)SQL_NUMERIC, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLGetData(utest_fixture->stmt, COL_NUMERIC, SQL_ARD_TYPE, &d, 0, NULL),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07002");
+}
+
+/* The TargetType becomes the TYPE of the column in the ARD. */
+UTEST_F(row, 6_30_get_data_sets_ard_type) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLINTEGER i;
+
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, (SQLPOINTER)6, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLGetData(utest_fixture->stmt, COL_BIGINT, SQL_INTEGER, &i, 0, NULL),
+      SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ard, COL_BIGINT, SQL_DESC_TYPE), SQL_INTEGER);
+}
+
+/* A bound column can't be retrieved with GetData. */
+UTEST_F(row, 6_30_get_data_bound_column) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLINTEGER i;
+
+  ASSERT_EQ(SQLSetDescField(ard, COL_BIGINT, SQL_DESC_TYPE,
+                            (SQLPOINTER)SQL_INTEGER, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetDescField(ard, COL_BIGINT, SQL_DESC_DATA_POINTER, &i, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLGetData(utest_fixture->stmt, COL_BIGINT, SQL_INTEGER, &i, 0, NULL),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07009");
+
+  /* The columns before it can still be retrieved. */
+  EXPECT_EQ(
+      SQLGetData(utest_fixture->stmt, COL_DOUBLE, SQL_INTEGER, &i, 0, NULL),
+      SQL_SUCCESS);
+}
+
+/* 6.31 GetDescField */
+
+UTEST_F(row, 6_31_get_desc_field_ird) {
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+
+  EXPECT_EQ(desc_short(ird, 0, SQL_DESC_COUNT), 6);
+  EXPECT_EQ(desc_short(ird, 0, SQL_DESC_TOP_LEVEL_COUNT), 6);
+  EXPECT_EQ(desc_short(ird, 0, SQL_DESC_ALLOC_TYPE), SQL_DESC_ALLOC_AUTO);
+  EXPECT_EQ(desc_short(ird, 0, SQL_DESC_KEY_TYPE), 0);
+  EXPECT_STREQ(desc_string(ird, 0, SQL_DESC_DYNAMIC_FUNCTION), "SELECT CURSOR");
+  EXPECT_EQ(desc_int(ird, 0, SQL_DESC_DYNAMIC_FUNCTION_CODE),
+            SQL_DIAG_SELECT_CURSOR);
+
+  EXPECT_EQ(desc_short(ird, COL_VARCHAR, SQL_DESC_TYPE), SQL_VARCHAR);
+  EXPECT_EQ(desc_int(ird, COL_VARCHAR, SQL_DESC_LENGTH), 20);
+  EXPECT_EQ(desc_int(ird, COL_VARCHAR, SQL_DESC_OCTET_LENGTH), 80);
+  EXPECT_STREQ(desc_string(ird, COL_VARCHAR, SQL_DESC_NAME), "COL2");
+  EXPECT_EQ(desc_short(ird, COL_VARCHAR, SQL_DESC_UNNAMED), SQL_NAMED);
+  EXPECT_EQ(desc_short(ird, COL_VARCHAR, SQL_DESC_NULLABLE), SQL_NULLABLE);
+  EXPECT_EQ(desc_int(ird, COL_VARCHAR, SQL_DESC_LEVEL), 0);
+  EXPECT_EQ(desc_short(ird, COL_VARCHAR, SQL_DESC_KEY_MEMBER), 0);
+  EXPECT_STREQ(desc_string(ird, COL_VARCHAR, SQL_DESC_CHARACTER_SET_CATALOG),
+               ":memory:");
+  EXPECT_STREQ(desc_string(ird, COL_VARCHAR, SQL_DESC_CHARACTER_SET_SCHEMA),
+               "INFORMATION_SCHEMA");
+  EXPECT_STREQ(desc_string(ird, COL_VARCHAR, SQL_DESC_CHARACTER_SET_NAME),
+               "UTF8");
+  EXPECT_STREQ(desc_string(ird, COL_VARCHAR, SQL_DESC_COLLATION_NAME), "");
+
+  EXPECT_EQ(desc_short(ird, COL_NUMERIC, SQL_DESC_TYPE), SQL_NUMERIC);
+  EXPECT_EQ(desc_short(ird, COL_NUMERIC, SQL_DESC_PRECISION), 5);
+  EXPECT_EQ(desc_short(ird, COL_NUMERIC, SQL_DESC_SCALE), 2);
+  EXPECT_EQ(desc_short(ird, COL_NULL, SQL_DESC_PRECISION), 32);
+  EXPECT_EQ(desc_short(ird, COL_DOUBLE, SQL_DESC_PRECISION), 53);
+
+  EXPECT_EQ(desc_short(ird, COL_DATE, SQL_DESC_TYPE), SQL_DATETIME);
+  EXPECT_EQ(desc_short(ird, COL_DATE, SQL_DESC_DATETIME_INTERVAL_CODE),
+            SQL_CODE_DATE);
+  EXPECT_EQ(desc_int(ird, COL_DATE, SQL_DESC_LENGTH), 10);
+  EXPECT_EQ(desc_short(ird, COL_DATE, SQL_DESC_PRECISION), 0);
+}
+
+/* Only the fields in Table 22 can be retrieved from the IRD, and only after a
+ * statement is executed. */
+UTEST_F(db, 6_31_get_desc_field_ird_not_executed) {
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+  SQLSMALLINT count;
+  SQLPOINTER p;
+
+  EXPECT_EQ(SQLGetDescField(ird, 0, SQL_DESC_COUNT, &count, 0, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ird, "HY007");
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetDescField(ird, 1, SQL_DESC_DATA_POINTER, &p, 0, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ird, "HY091");
+  EXPECT_EQ(SQLGetDescField(ird, 0, SQL_DESC_ARRAY_SIZE, &count, 0, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ird, "HY091");
+}
+
+/* A statement that isn't a query has no columns. */
+UTEST_F(db, 6_31_get_desc_field_ird_not_a_query) {
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ird, 0, SQL_DESC_COUNT), 0);
+  EXPECT_STREQ(desc_string(ird, 0, SQL_DESC_DYNAMIC_FUNCTION), "CREATE TABLE");
+}
+
+/* The defaults from Table 23 for an ARD. */
+UTEST_F(db, 6_31_get_desc_field_ard_defaults) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLPOINTER p = &p;
+  SQLINTEGER i;
+
+  EXPECT_EQ(desc_short(ard, 0, SQL_DESC_ALLOC_TYPE), SQL_DESC_ALLOC_AUTO);
+  EXPECT_EQ(desc_int(ard, 0, SQL_DESC_ARRAY_SIZE), 1);
+  EXPECT_EQ(desc_short(ard, 0, SQL_DESC_COUNT), 0);
+  EXPECT_EQ(desc_short(ard, 0, SQL_DESC_TOP_LEVEL_COUNT), 0);
+  EXPECT_EQ(SQLGetDescField(ard, 0, SQL_DESC_ARRAY_STATUS_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == NULL);
+
+  /* A record that doesn't exist yet. */
+  EXPECT_EQ(SQLGetDescField(ard, 1, SQL_DESC_TYPE, &i, 0, NULL), SQL_NO_DATA);
+
+  /* A new record has the defaults. */
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, (SQLPOINTER)1, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ard, 1, SQL_DESC_TYPE), SQL_DEFAULT);
+  EXPECT_EQ(desc_int(ard, 1, SQL_DESC_LEVEL), 0);
+  EXPECT_EQ(SQLGetDescField(ard, 1, SQL_DESC_INDICATOR_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == NULL);
+}
+
+/* A field that was never set is undefined. */
+UTEST_F(db, 6_31_get_desc_field_undefined) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+  SQLINTEGER i;
+
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, (SQLPOINTER)1, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetDescField(ard, 1, SQL_DESC_LENGTH, &i, 0, NULL), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY091");
+
+  ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_NAME, (SQLPOINTER) "p", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(desc_string(ipd, 1, SQL_DESC_NAME), "p");
+  EXPECT_EQ(SQLGetDescField(ipd, 1, SQL_DESC_TYPE, &i, 0, NULL), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ipd, "HY091");
+}
+
+UTEST_F(db, 6_31_get_desc_field_dynamic_function) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  EXPECT_STREQ(desc_string(ipd, 0, SQL_DESC_DYNAMIC_FUNCTION), "CREATE TABLE");
+  EXPECT_STREQ(desc_string(ard, 0, SQL_DESC_DYNAMIC_FUNCTION), "(error)");
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY091");
+}
+
+UTEST_F(row, 6_31_get_desc_field_invalid) {
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+  SQLINTEGER i;
+
+  EXPECT_EQ(SQLGetDescField(ird, 1, 9999, &i, 0, NULL), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ird, "HY091");
+  EXPECT_EQ(SQLGetDescField(ird, 0, SQL_DESC_TYPE, &i, 0, NULL), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ird, "07009");
+  EXPECT_EQ(SQLGetDescField(ird, 7, SQL_DESC_TYPE, &i, 0, NULL), SQL_NO_DATA);
+  EXPECT_EQ(SQLGetDescField(ird, 1, SQL_DESC_TYPE, NULL, 0, NULL), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ird, "HY009");
+  EXPECT_EQ(SQLGetDescField(utest_fixture->stmt, 1, SQL_DESC_TYPE, &i, 0, NULL),
+            SQL_INVALID_HANDLE);
+}
+
+UTEST_F(row, 6_31_get_desc_field_truncated) {
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+  SQLCHAR name[3];
+  SQLINTEGER len;
+
+  EXPECT_EQ(SQLGetDescField(ird, COL_VARCHAR, SQL_DESC_NAME, name, sizeof(name),
+                            &len),
+            SQL_SUCCESS_WITH_INFO);
+  EXPECT_STATE(SQL_HANDLE_DESC, ird, "01004");
+  EXPECT_STREQ((char *)name, "CO");
+  EXPECT_EQ(len, 4);
+}
+
+/* 6.32 GetDescRec */
+
+UTEST_F(row, 6_32_get_desc_rec) {
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+  SQLCHAR name[32];
+  SQLSMALLINT name_length, type, sub_type, precision, scale, nullable;
+  SQLINTEGER length;
+
+  EXPECT_EQ(SQLGetDescRec(ird, COL_VARCHAR, name, sizeof(name), &name_length,
+                          &type, &sub_type, &length, &precision, &scale,
+                          &nullable),
+            SQL_SUCCESS);
+  EXPECT_STREQ((char *)name, "COL2");
+  EXPECT_EQ(name_length, 4);
+  EXPECT_EQ(type, SQL_VARCHAR);
+  EXPECT_EQ(sub_type, 0);
+  EXPECT_EQ(length, 80);
+  EXPECT_EQ(nullable, SQL_NULLABLE);
+
+  EXPECT_EQ(SQLGetDescRec(ird, COL_DATE, NULL, 0, NULL, &type, &sub_type, NULL,
+                          &precision, NULL, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(type, SQL_DATETIME);
+  EXPECT_EQ(sub_type, SQL_CODE_DATE);
+
+  EXPECT_EQ(SQLGetDescRec(ird, COL_NUMERIC, NULL, 0, NULL, NULL, NULL, NULL,
+                          &precision, &scale, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(precision, 5);
+  EXPECT_EQ(scale, 2);
+}
+
+UTEST_F(row, 6_32_get_desc_rec_record_number) {
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+
+  EXPECT_EQ(
+      SQLGetDescRec(ird, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ird, "07009");
+  EXPECT_EQ(
+      SQLGetDescRec(ird, 7, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+      SQL_NO_DATA);
+}
+
+UTEST_F(db, 6_32_get_desc_rec_not_executed) {
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_REALLOCATE), SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLGetDescRec(ird, 1, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
       SQL_NO_DATA);
 }
 
@@ -1822,6 +2435,78 @@ UTEST_F(env, 6_35_get_env_attr_invalid_handle) {
       SQL_INVALID_HANDLE);
 }
 
+/* 6.43 GetStmtAttr */
+
+UTEST_F(db, 6_43_get_stmt_attr_descriptors) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLHDESC apd = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_PARAM_DESC);
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+
+  EXPECT_NE(ard, SQL_NULL_HANDLE);
+  EXPECT_NE(apd, SQL_NULL_HANDLE);
+  EXPECT_NE(ird, SQL_NULL_HANDLE);
+  EXPECT_NE(ipd, SQL_NULL_HANDLE);
+  EXPECT_NE(ard, apd);
+  EXPECT_NE(ird, ipd);
+  EXPECT_NE(ard, ird);
+}
+
+UTEST_F(db, 6_43_get_stmt_attr_defaults) {
+  SQLINTEGER v;
+
+  EXPECT_EQ(SQLGetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE, &v,
+                           0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(v, SQL_NONSCROLLABLE);
+  EXPECT_EQ(SQLGetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SENSITIVITY, &v,
+                           0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(v, SQL_ASENSITIVE);
+  EXPECT_EQ(SQLGetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_HOLDABLE, &v, 0,
+                           NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(v, SQL_HOLDABLE);
+  EXPECT_EQ(
+      SQLGetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID, &v, 0, NULL),
+      SQL_SUCCESS);
+  EXPECT_EQ(v, SQL_FALSE);
+  EXPECT_EQ(SQLGetStmtAttr(utest_fixture->stmt, SQL_ATTR_NEST_DESCRIPTOR, &v, 0,
+                           NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(v, SQL_FALSE);
+}
+
+UTEST_F(db, 6_43_get_stmt_attr_current_of_position) {
+  SQLINTEGER v = 0;
+
+  EXPECT_EQ(SQLGetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURRENT_OF_POSITION,
+                           &v, 0, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURRENT_OF_POSITION,
+                           &v, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(v, 1);
+}
+
+UTEST_F(db, 6_43_get_stmt_attr_invalid) {
+  SQLINTEGER v;
+
+  EXPECT_EQ(SQLGetStmtAttr(utest_fixture->stmt, 123, &v, 0, NULL), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY092");
+  EXPECT_EQ(
+      SQLGetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID, NULL, 0, NULL),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
+  EXPECT_EQ(
+      SQLGetStmtAttr(utest_fixture->dbc, SQL_ATTR_METADATA_ID, &v, 0, NULL),
+      SQL_INVALID_HANDLE);
+}
+
 /* 6.48 NumResultCols */
 
 UTEST_F(db, 6_48_num_result_cols) {
@@ -1856,6 +2541,15 @@ UTEST_F(db, 6_48_num_result_cols_null_column_count) {
   ASSERT_EQ(run_sql(utest_fixture->stmt, "SELECT * FROM t"), SQL_SUCCESS);
   EXPECT_EQ(SQLNumResultCols(utest_fixture->stmt, NULL), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
+}
+
+/* The IRD still describes the columns after the cursor is closed. */
+UTEST_F(row, 6_48_num_result_cols_closed_cursor) {
+  SQLSMALLINT columns = 0;
+
+  ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLNumResultCols(utest_fixture->stmt, &columns), SQL_SUCCESS);
+  EXPECT_EQ(columns, 6);
 }
 
 /* 6.53 RowCount */
@@ -1973,6 +2667,277 @@ UTEST_F(env, 6_54_set_connect_attr_invalid_handle) {
             SQL_INVALID_HANDLE);
 }
 
+/* 6.56 SetDescField */
+
+/* Setting a field of a record after the last one adds records. */
+UTEST_F(db, 6_56_set_desc_field) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+
+  EXPECT_EQ(SQLSetDescField(ard, 2, SQL_DESC_TYPE, (SQLPOINTER)SQL_INTEGER, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ard, 0, SQL_DESC_COUNT), 2);
+  EXPECT_EQ(desc_short(ard, 1, SQL_DESC_TYPE), SQL_DEFAULT);
+  EXPECT_EQ(desc_short(ard, 2, SQL_DESC_TYPE), SQL_INTEGER);
+  EXPECT_EQ(desc_short(ard, 2, SQL_DESC_PRECISION), 32);
+  EXPECT_EQ(desc_short(ard, 2, SQL_DESC_SCALE), 0);
+}
+
+UTEST_F(db, 6_56_set_desc_field_count) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLINTEGER i;
+
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, (SQLPOINTER)3, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ard, 3, SQL_DESC_TYPE), SQL_DEFAULT);
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, (SQLPOINTER)1, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetDescField(ard, 2, SQL_DESC_TYPE, &i, 0, NULL), SQL_NO_DATA);
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, (SQLPOINTER)-1, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "07008");
+}
+
+UTEST_F(db, 6_56_set_desc_field_array_size) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, (SQLPOINTER)5, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_int(ard, 0, SQL_DESC_ARRAY_SIZE), 5);
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, (SQLPOINTER)0, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY024");
+}
+
+/* Only the fields in Table 21 can be set for each type of descriptor. */
+UTEST_F(row, 6_56_set_desc_field_not_settable) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+  SQLSMALLINT statuses[1];
+
+  EXPECT_EQ(SQLSetDescField(ird, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_INTEGER, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ird, "HY091");
+  EXPECT_EQ(SQLSetDescField(ird, 0, SQL_DESC_ARRAY_STATUS_POINTER, statuses, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_PARAMETER_MODE, (SQLPOINTER)1, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY091");
+  EXPECT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_PARAMETER_MODE, (SQLPOINTER)1, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ALLOC_TYPE, (SQLPOINTER)2, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY091");
+  EXPECT_EQ(SQLSetDescField(ard, 1, 9999, (SQLPOINTER)1, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY091");
+}
+
+UTEST_F(db, 6_56_set_desc_field_record_zero) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_TYPE, (SQLPOINTER)SQL_INTEGER, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "07009");
+}
+
+/* There are no ROW types, so the LEVEL is always 0. */
+UTEST_F(db, 6_56_set_desc_field_level) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_LEVEL, (SQLPOINTER)0, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLSetDescField(ard, 2, SQL_DESC_LEVEL, (SQLPOINTER)1, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "0700E");
+}
+
+/* An application descriptor has the types from Table 7, and an
+ * implementation descriptor has the types from Table 6. */
+UTEST_F(db, 6_56_set_desc_field_type) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_VARCHAR, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY004");
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)999, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY004");
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)30, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HYC00");
+
+  /* The descriptor is unchanged by an error. */
+  EXPECT_EQ(desc_short(ard, 0, SQL_DESC_COUNT), 0);
+
+  EXPECT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_VARCHAR, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_int(ipd, 1, SQL_DESC_LENGTH), 10485760);
+  EXPECT_STREQ(desc_string(ipd, 1, SQL_DESC_CHARACTER_SET_NAME), "UTF8");
+  EXPECT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_DEFAULT, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ipd, "HY004");
+}
+
+/* The PRECISION of a datetime depends on its DATETIME_INTERVAL_CODE. */
+UTEST_F(db, 6_56_set_desc_field_datetime_interval_code) {
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+
+  ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_DATETIME, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_PRECISION), 0);
+  ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_DATETIME_INTERVAL_CODE,
+                            (SQLPOINTER)SQL_CODE_TIMESTAMP, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_PRECISION), 6);
+}
+
+/* A DATA_POINTER needs a TYPE that has a C type, and it's unset when the TYPE
+ * changes. */
+UTEST_F(db, 6_56_set_desc_field_data_pointer) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLDOUBLE d;
+  SQLPOINTER p;
+
+  ASSERT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_NUMERIC, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_DATA_POINTER, &d, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY021");
+
+  ASSERT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_DOUBLE, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_DATA_POINTER, &d, 0), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetDescField(ard, 1, SQL_DESC_DATA_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == &d);
+
+  ASSERT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_REAL, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetDescField(ard, 1, SQL_DESC_DATA_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == NULL);
+}
+
+/* The character set fields are identifiers. */
+UTEST_F(db, 6_56_set_desc_field_character_set) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_CHARACTER_SET_NAME,
+                            (SQLPOINTER) "  utf8  ", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(desc_string(ard, 1, SQL_DESC_CHARACTER_SET_NAME), "utf8");
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_CHARACTER_SET_NAME,
+                            (SQLPOINTER) "1abc", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "2C000");
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_CHARACTER_SET_SCHEMA,
+                            (SQLPOINTER) "a b", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "3F000");
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_CHARACTER_SET_CATALOG,
+                            (SQLPOINTER) "\"a b\"", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_CHARACTER_SET_CATALOG,
+                            (SQLPOINTER) "", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY090");
+}
+
+UTEST_F(db, 6_56_set_desc_field_name) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_NAME, (SQLPOINTER) "abcdef", 3),
+            SQL_SUCCESS);
+  EXPECT_STREQ(desc_string(ard, 1, SQL_DESC_NAME), "abc");
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_NAME, (SQLPOINTER) "abc", -5),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY090");
+}
+
+/* A descriptor allocated by the application is the same as an ARD. */
+UTEST_F(db, 6_56_set_desc_field_user) {
+  SQLHDESC desc;
+
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, utest_fixture->dbc, &desc),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_int(desc, 0, SQL_DESC_ARRAY_SIZE), 1);
+  EXPECT_EQ(
+      SQLSetDescField(desc, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_SMALLINT, 0),
+      SQL_SUCCESS);
+  EXPECT_EQ(desc_short(desc, 1, SQL_DESC_PRECISION), 16);
+  EXPECT_EQ(SQLSetDescField(desc, 1, SQL_DESC_PARAMETER_MODE, (SQLPOINTER)1, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, desc, "HY091");
+}
+
+/* 6.57 SetDescRec */
+
+UTEST_F(db, 6_57_set_desc_rec) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLDOUBLE d;
+  SQLINTEGER len, ind;
+  SQLPOINTER p;
+
+  EXPECT_EQ(
+      SQLSetDescRec(ard, 2, SQL_DOUBLE, 0, sizeof(d), 0, 0, &d, &len, &ind),
+      SQL_SUCCESS);
+  EXPECT_EQ(desc_short(ard, 0, SQL_DESC_COUNT), 2);
+  EXPECT_EQ(desc_short(ard, 2, SQL_DESC_TYPE), SQL_DOUBLE);
+  EXPECT_EQ(desc_int(ard, 2, SQL_DESC_OCTET_LENGTH), (SQLINTEGER)sizeof(d));
+  EXPECT_EQ(SQLGetDescField(ard, 2, SQL_DESC_DATA_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == &d);
+  EXPECT_EQ(SQLGetDescField(ard, 2, SQL_DESC_OCTET_LENGTH_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == &len);
+  EXPECT_EQ(SQLGetDescField(ard, 2, SQL_DESC_INDICATOR_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == &ind);
+
+  /* A null StringLength and Indicator don't change them. */
+  EXPECT_EQ(
+      SQLSetDescRec(ard, 2, SQL_DOUBLE, 0, sizeof(d), 0, 0, &d, NULL, NULL),
+      SQL_SUCCESS);
+  EXPECT_EQ(SQLGetDescField(ard, 2, SQL_DESC_INDICATOR_POINTER, &p, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_TRUE(p == &ind);
+}
+
+/* The Length of an IPD is in characters. */
+UTEST_F(db, 6_57_set_desc_rec_ipd) {
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+
+  EXPECT_EQ(SQLSetDescRec(ipd, 1, SQL_VARCHAR, 0, 10, 0, 0, NULL, NULL, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_int(ipd, 1, SQL_DESC_LENGTH), 10);
+}
+
+UTEST_F(db, 6_57_set_desc_rec_inconsistent) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLDOUBLE d;
+
+  EXPECT_EQ(SQLSetDescRec(ard, 1, SQL_NUMERIC, 0, 8, 10, 2, &d, NULL, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY021");
+  EXPECT_EQ(desc_short(ard, 0, SQL_DESC_COUNT), 0);
+}
+
+UTEST_F(row, 6_57_set_desc_rec_ird) {
+  SQLHDESC ird = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC);
+
+  EXPECT_EQ(SQLSetDescRec(ird, 1, SQL_INTEGER, 0, 4, 0, 0, NULL, NULL, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ird, "HY016");
+}
+
+UTEST_F(db, 6_57_set_desc_rec_record_zero) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+
+  EXPECT_EQ(SQLSetDescRec(ard, 0, SQL_INTEGER, 0, 4, 0, 0, NULL, NULL, NULL),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "07009");
+}
+
 /* 6.58 SetEnvAttr */
 
 UTEST(libvsql, 6_58_set_env_attr) {
@@ -2068,6 +3033,170 @@ UTEST(libvsql, 6_58_set_env_attr_no_null_termination) {
   EXPECT_EQ(buf[0], 'x');
 
   free_handles(env, dbc, stmt);
+}
+
+/* 6.59 SetStmtAttr */
+
+/* The ARD and APD can be descriptors allocated by the application. */
+UTEST_F(db, 6_59_set_stmt_attr_descriptors) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLHDESC desc;
+
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, utest_fixture->dbc, &desc),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC,
+                           HANDLE_VALUE(desc), 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC), desc);
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC,
+                           HANDLE_VALUE(ard), 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC), ard);
+}
+
+/* A descriptor allocated on another connection can be used (the standard
+ * doesn't restrict it). When that connection is disconnected, the statement
+ * goes back to its own descriptor. */
+UTEST_F(db, 6_59_set_stmt_attr_descriptor_of_another_connection) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  SQLHDBC dbc2;
+  SQLHDESC desc;
+
+  ASSERT_EQ(SQLAllocConnect(utest_fixture->env, &dbc2), SQL_SUCCESS);
+  ASSERT_EQ(connect_memory(dbc2), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, dbc2, &desc), SQL_SUCCESS);
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC,
+                           HANDLE_VALUE(desc), 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC), desc);
+
+  EXPECT_EQ(SQLDisconnect(dbc2), SQL_SUCCESS);
+  EXPECT_EQ(stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC), ard);
+  EXPECT_EQ(SQLFreeConnect(dbc2), SQL_SUCCESS);
+}
+
+/* Another statement's descriptor can't be used. */
+UTEST_F(db, 6_59_set_stmt_attr_automatic_descriptor) {
+  SQLHSTMT stmt2;
+
+  ASSERT_EQ(SQLAllocStmt(utest_fixture->dbc, &stmt2), SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC,
+                     HANDLE_VALUE(stmt_desc(stmt2, SQL_ATTR_APP_ROW_DESC)), 0),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY017");
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_APP_PARAM_DESC,
+                           HANDLE_VALUE(stmt2), 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY024");
+  EXPECT_EQ(
+      SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_IMP_ROW_DESC,
+                     HANDLE_VALUE(stmt_desc(stmt2, SQL_ATTR_IMP_ROW_DESC)), 0),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY092");
+}
+
+UTEST_F(db, 6_59_set_stmt_attr_cursor_scrollable) {
+  SQLINTEGER v;
+
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
+                           (SQLPOINTER)SQL_SCROLLABLE, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE, &v,
+                           0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(v, SQL_SCROLLABLE);
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
+                           (SQLPOINTER)2, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY024");
+}
+
+/* The cursor attributes can't be changed while a cursor is open. */
+UTEST_F(db, 6_59_set_stmt_attr_open_cursor) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_HOLDABLE,
+                           (SQLPOINTER)SQL_NONHOLDABLE, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY011");
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SENSITIVITY,
+                           (SQLPOINTER)SQL_INSENSITIVE, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY011");
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
+                           (SQLPOINTER)SQL_SCROLLABLE, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY011");
+}
+
+/* A cursor is a copy of the result, so it can't be sensitive. */
+UTEST_F(db, 6_59_set_stmt_attr_cursor_sensitivity) {
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SENSITIVITY,
+                           (SQLPOINTER)SQL_SENSITIVE, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "36001");
+
+  /* A statement that isn't a query doesn't open a cursor. */
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SENSITIVITY,
+                           (SQLPOINTER)SQL_INSENSITIVE, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+}
+
+UTEST_F(db, 6_59_set_stmt_attr_metadata_id) {
+  SQLINTEGER v;
+
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID,
+                           (SQLPOINTER)SQL_TRUE, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLGetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID, &v, 0, NULL),
+      SQL_SUCCESS);
+  EXPECT_EQ(v, SQL_TRUE);
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID,
+                           (SQLPOINTER)5, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY024");
+}
+
+/* NEST DESCRIPTOR can't be changed after the statement is executed. */
+UTEST_F(db, 6_59_set_stmt_attr_nest_descriptor) {
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_NEST_DESCRIPTOR,
+                           (SQLPOINTER)SQL_TRUE, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_NEST_DESCRIPTOR,
+                           (SQLPOINTER)SQL_FALSE, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+}
+
+UTEST_F(db, 6_59_set_stmt_attr_current_of_position) {
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURRENT_OF_POSITION,
+                           (SQLPOINTER)1, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURRENT_OF_POSITION,
+                           (SQLPOINTER)2, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY107");
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURRENT_OF_POSITION,
+                           (SQLPOINTER)1, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY109");
+}
+
+UTEST_F(db, 6_59_set_stmt_attr_invalid_handle) {
+  EXPECT_EQ(SQLSetStmtAttr(utest_fixture->dbc, SQL_ATTR_METADATA_ID,
+                           (SQLPOINTER)SQL_TRUE, 0),
+            SQL_INVALID_HANDLE);
 }
 
 /* 6.61 StartTran */

@@ -20,10 +20,11 @@ fn sql_num_result_cols(statement_handle SQLInteger, column_count &i16) i16 {
 		return stmt.diag.error(cli_error('HY009', 'invalid use of null pointer'))
 	}
 
-	// - 3. ColumnCount is set to N, which is zero for a statement that isn't a
-	// cursor specification.
+	// - 3. ColumnCount is set to N, the TOP_LEVEL_COUNT of the IRD, which is
+	// zero for a statement that isn't a cursor specification.
+	ird := descs[stmt.ird] or { return sql_invalid_handle }
 	unsafe {
-		*column_count = if cursor := stmt.cursor { i16(cursor.columns.len) } else { 0 }
+		*column_count = i16(ird.header_int(sql_desc_top_level_count))
 	}
 
 	return sql_success

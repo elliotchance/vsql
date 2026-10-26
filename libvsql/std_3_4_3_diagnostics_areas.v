@@ -95,9 +95,24 @@ fn (mut d Diagnostics) no_data() i16 {
 	return sql_no_data
 }
 
+// NoData is returned (as an error) by a function that raises a completion
+// condition: no data.
+struct NoData {
+	Error
+}
+
+fn no_data() IError {
+	return NoData{}
+}
+
 // error raises an exception condition. err is either a CLIError or an error
-// from vsql (which has the SQLSTATE as its code).
+// from vsql (which has the SQLSTATE as its code). A NoData isn't an exception
+// condition, see no_data.
 fn (mut d Diagnostics) error(err IError) i16 {
+	if err is NoData {
+		return d.no_data()
+	}
+
 	sqlstate := if err is CLIError {
 		err.sqlstate
 	} else if err.code() == 0 {
@@ -136,6 +151,10 @@ fn handle_diagnostics(handle_type i16, h i64) ?&Diagnostics {
 		sql_handle_stmt {
 			mut stmt := stmts[h] or { return none }
 			return &stmt.diag
+		}
+		sql_handle_desc {
+			mut desc := descs[h] or { return none }
+			return &desc.diag
 		}
 		else {
 			return none

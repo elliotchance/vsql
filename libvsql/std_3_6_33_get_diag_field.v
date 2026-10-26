@@ -201,6 +201,7 @@ fn server_name(handle_type i16, h i64) string {
 	dbc := match handle_type {
 		sql_handle_dbc { dbcs[h] or { return '' } }
 		sql_handle_stmt { dbcs[(stmts[h] or { return '' }).dbc] or { return '' } }
+		sql_handle_desc { dbcs[(descs[h] or { return '' }).dbc] or { return '' } }
 		else { return '' }
 	}
 
@@ -214,6 +215,7 @@ fn transaction_active(handle_type i16, h i64) bool {
 		matches := match handle_type {
 			sql_handle_env { dbc.env == h }
 			sql_handle_dbc { dh == h }
+			sql_handle_desc { dh == (descs[h] or { return false }).dbc }
 			else { dh == (stmts[h] or { return false }).dbc }
 		}
 		if matches {

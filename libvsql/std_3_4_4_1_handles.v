@@ -5,8 +5,8 @@ import vsql
 // ISO/IEC 9075-3:2003(E), 4.4.1, Handles
 //
 // A handle is an integer that identifies an allocated SQL-environment,
-// SQL-connection or SQL-statement. Handles are never reused, so a freed handle
-// stays invalid.
+// SQL-connection, SQL-statement or CLI descriptor area. Handles are never
+// reused, so a freed handle stays invalid.
 
 const sql_handle_env = i16(1)
 const sql_handle_dbc = i16(2)
@@ -67,6 +67,52 @@ mut:
 	fetched_column int
 	fetched_length int
 	fetched_value  string
+	// ard and apd are the current ARD and APD, which are the automatically
+	// allocated auto_ard and auto_apd unless the application set them to a
+	// descriptor that it allocated.
+	ard      i64
+	apd      i64
+	ird      i64
+	ipd      i64
+	auto_ard i64
+	auto_apd i64
+	// The statement attributes, see Table 17, "Codes used for statement
+	// attributes".
+	cursor_scrollable   i64 = sql_nonscrollable
+	cursor_sensitivity  i64 = sql_asensitive
+	cursor_holdable     i64 = sql_holdable
+	metadata_id         i64 = sql_false
+	nest_descriptor     i64 = sql_false
+	current_of_position i64 = 1
+}
+
+// new_stmt allocates an SQL-statement for a connection, with its automatically
+// allocated descriptors (see 6.3, "AllocHandle", General Rule 3.c.x).
+fn new_stmt(dbc i64) i64 {
+	h := new_handle()
+	ard := new_desc(dbc, .ard, h)
+	apd := new_desc(dbc, .apd, h)
+	stmts[h] = &Stmt{
+		dbc:      dbc
+		ard:      ard
+		apd:      apd
+		ird:      new_desc(dbc, .ird, h)
+		ipd:      new_desc(dbc, .ipd, h)
+		auto_ard: ard
+		auto_apd: apd
+	}
+
+	return h
+}
+
+// free_stmt frees an SQL-statement and its automatically allocated
+// descriptors.
+fn free_stmt(h i64) {
+	stmt := stmts[h] or { return }
+	for dh in [stmt.auto_ard, stmt.auto_apd, stmt.ird, stmt.ipd] {
+		descs.delete(dh)
+	}
+	stmts.delete(h)
 }
 
 fn new_handle() i64 {
@@ -88,6 +134,7 @@ fn handle_env(handle_type i16, h i64) i64 {
 		sql_handle_env { h }
 		sql_handle_dbc { (dbcs[h] or { return 0 }).env }
 		sql_handle_stmt { (dbcs[(stmts[h] or { return 0 }).dbc] or { return 0 }).env }
+		sql_handle_desc { (dbcs[(descs[h] or { return 0 }).dbc] or { return 0 }).env }
 		else { 0 }
 	}
 }

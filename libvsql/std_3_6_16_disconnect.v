@@ -25,11 +25,25 @@ fn disconnect(mut dbc Dbc, h i64) !i16 {
 		return cli_error('25001', 'active SQL-transaction')
 	}
 
-	// - 5. FreeHandle is implicitly invoked for every allocated SQL-statement.
+	// - 5, 6. FreeHandle is implicitly invoked for every allocated
+	// SQL-statement and CLI descriptor area.
+	mut statements := []i64{}
 	for sh, stmt in stmts {
 		if stmt.dbc == h {
-			stmts.delete(sh)
+			statements << sh
 		}
+	}
+	for sh in statements {
+		free_stmt(sh)
+	}
+	mut descriptors := []i64{}
+	for dh, desc in descs {
+		if desc.dbc == h {
+			descriptors << dh
+		}
+	}
+	for dh in descriptors {
+		free_desc(dh)
 	}
 
 	// - 8. The SQL-session associated with EC is terminated.

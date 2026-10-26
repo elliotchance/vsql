@@ -461,6 +461,11 @@ pub fn (conn Connection) in_transaction() bool {
 	return false
 }
 
+// current_catalog_name is the CURRENT_CATALOG of the connection.
+pub fn (conn Connection) current_catalog_name() string {
+	return conn.current_catalog
+}
+
 // rollback_after_error rolls back the current transaction (if any) after a
 // statement raised an exception condition in class 40 (transaction rollback),
 // such as a serialization failure. Any other exception only cancels the

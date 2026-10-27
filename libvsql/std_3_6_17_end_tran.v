@@ -8,7 +8,6 @@ import vsql
 //
 // Each SQL-connection has its own SQL-transaction, so ending the transactions
 // of an SQL-environment ends the SQL-transaction of each of its connections.
-// Every cursor is holdable, so only a rollback closes cursors.
 
 // Codes from Table 14, "Codes used for transaction termination".
 const sql_commit = i16(0)
@@ -32,7 +31,7 @@ fn sql_end_tran(handle_type i16, handle SQLInteger, completion_type i16) i16 {
 }
 
 fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16) !i16 {
-	if handle_type == sql_handle_stmt {
+	if handle_type in [sql_handle_stmt, sql_handle_desc] {
 		return cli_error('HY092', 'invalid attribute identifier')
 	}
 
@@ -67,10 +66,9 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 		mut dbc := dbcs[dh] or { continue }
 		mut conn := dbc.conn or { continue }
 
-		// - 11. A rollback closes every open cursor.
-		if !is_commit {
-			close_cursors(dh)
-		}
+		// - 11. A rollback closes every open cursor, and a commit closes every
+		// cursor that isn't holdable.
+		close_cursors(dh, is_commit)
 
 		if !conn.in_transaction() {
 			continue
@@ -132,10 +130,11 @@ fn transaction_handles(handle_type i16, h i64) ?(&Diagnostics, []i64) {
 	return diag, l1
 }
 
-// close_cursors closes the open cursor of every statement of a connection.
-fn close_cursors(dbc i64) {
+// close_cursors closes the open cursor of every statement of a connection, or
+// only the cursors that aren't holdable for a commit.
+fn close_cursors(dbc i64, is_commit bool) {
 	for _, mut stmt in stmts {
-		if stmt.dbc == dbc {
+		if stmt.dbc == dbc && !(is_commit && stmt.cursor_holdable == sql_holdable) {
 			stmt.close_cursor()
 		}
 	}

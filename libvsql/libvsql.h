@@ -80,8 +80,7 @@
  * "numbers" is SQL_SMALLINT, SQL_INTEGER, SQL_BIGINT, SQL_REAL or SQL_DOUBLE
  * (a value out of range is 22003). SQL_DEFAULT retrieves a column as its own
  * type, so it only works for the types that have a C type (SMALLINT, INTEGER,
- * BIGINT, REAL, DOUBLE PRECISION, CHARACTER and CHARACTER VARYING), otherwise
- * it's 07006.
+ * BIGINT, REAL, DOUBLE PRECISION and CHARACTER), otherwise it's 07002.
  */
 
 #ifndef LIBVSQL_H
@@ -123,7 +122,7 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_HANDLE_ENV  1  /* an environment */
 #define SQL_HANDLE_DBC  2  /* a connection */
 #define SQL_HANDLE_STMT 3  /* a statement */
-#define SQL_HANDLE_DESC 4  /* a descriptor (unsupported) */
+#define SQL_HANDLE_DESC 4  /* a descriptor */
 #define SQL_NULL_HANDLE 0L /* no handle */
 
 /* Data type codes. */
@@ -140,6 +139,13 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_BOOLEAN  16 /* BOOLEAN */
 #define SQL_BIGINT   25 /* BIGINT, or SQLBIGINT */
 
+/* SQL_DESC_DATETIME_INTERVAL_CODEs of SQL_DATETIME. */
+#define SQL_CODE_DATE           1 /* DATE */
+#define SQL_CODE_TIME           2 /* TIME */
+#define SQL_CODE_TIMESTAMP      3 /* TIMESTAMP */
+#define SQL_CODE_TIME_ZONE      4 /* TIME WITH TIME ZONE */
+#define SQL_CODE_TIMESTAMP_ZONE 5 /* TIMESTAMP WITH TIME ZONE */
+
 /* Concise codes for datetime data types. */
 #define SQL_TYPE_DATE                    91 /* DATE */
 #define SQL_TYPE_TIME                    92 /* TIME */
@@ -148,7 +154,7 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_TYPE_TIMESTAMP_WITH_TIMEZONE 95 /* TIMESTAMP WITH TIME ZONE */
 
 /* Special TargetType values for SQLGetData. */
-#define SQL_ARD_TYPE (-99) /* same as SQL_DEFAULT */
+#define SQL_ARD_TYPE (-99) /* the type in the ARD */
 #define SQL_DEFAULT  99    /* the type of the column */
 
 /* Header fields for SQLGetDiagField. */
@@ -241,6 +247,86 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_TRANSACTION_REPEATABLE_READ  0x00000004L /* not supported */
 #define SQL_TRANSACTION_SERIALIZABLE     0x00000008L /* not supported */
 
+/* Statement attributes. */
+#define SQL_ATTR_CURSOR_HOLDABLE     (-3)  /* SQL_HOLDABLE (the default) */
+#define SQL_ATTR_CURSOR_SENSITIVITY  (-2)  /* SQL_ASENSITIVE (the default) */
+#define SQL_ATTR_CURSOR_SCROLLABLE   (-1)  /* SQL_NONSCROLLABLE (the default) */
+#define SQL_ATTR_APP_ROW_DESC        10010 /* the current ARD */
+#define SQL_ATTR_APP_PARAM_DESC      10011 /* the current APD */
+#define SQL_ATTR_IMP_ROW_DESC        10012 /* the IRD (read only) */
+#define SQL_ATTR_IMP_PARAM_DESC      10013 /* the IPD (read only) */
+#define SQL_ATTR_METADATA_ID         10014 /* SQL_FALSE (the default) */
+#define SQL_ATTR_CURRENT_OF_POSITION 10027 /* the row of the rowset */
+#define SQL_ATTR_NEST_DESCRIPTOR     10029 /* SQL_FALSE (the default) */
+
+/* Values of the cursor statement attributes. */
+#define SQL_NONSCROLLABLE 0 /* only SQL_FETCH_NEXT */
+#define SQL_SCROLLABLE    1 /* any fetch orientation */
+#define SQL_ASENSITIVE    0 /* may see changes (but doesn't) */
+#define SQL_INSENSITIVE   1 /* doesn't see changes */
+#define SQL_SENSITIVE     2 /* not supported */
+#define SQL_NONHOLDABLE   0 /* closed by a commit */
+#define SQL_HOLDABLE      1 /* stays open after a commit */
+
+/* Descriptor header fields. */
+#define SQL_DESC_ARRAY_SIZE             20   /* the number of rows */
+#define SQL_DESC_ARRAY_STATUS_POINTER   21   /* SQLSMALLINT[] row statuses */
+#define SQL_DESC_ROWS_PROCESSED_POINTER 34   /* SQLINTEGER * rows fetched */
+#define SQL_DESC_COUNT                  1001 /* the number of records */
+#define SQL_DESC_KEY_TYPE               1029 /* always 0 */
+#define SQL_DESC_DYNAMIC_FUNCTION       1031 /* the statement */
+#define SQL_DESC_DYNAMIC_FUNCTION_CODE  1032 /* the code of the statement */
+#define SQL_DESC_TOP_LEVEL_COUNT        1044 /* the number of columns */
+#define SQL_DESC_ALLOC_TYPE             1099 /* SQL_DESC_ALLOC_AUTO or USER */
+
+/* Descriptor record fields. */
+#define SQL_DESC_DATETIME_INTERVAL_PRECISION  26   /* not used */
+#define SQL_DESC_TYPE                         1002 /* the data type */
+#define SQL_DESC_LENGTH                       1003 /* in characters */
+#define SQL_DESC_OCTET_LENGTH_POINTER         1004 /* SQLINTEGER *length */
+#define SQL_DESC_PRECISION                    1005 /* the precision */
+#define SQL_DESC_SCALE                        1006 /* the scale */
+#define SQL_DESC_DATETIME_INTERVAL_CODE       1007 /* such as SQL_CODE_DATE */
+#define SQL_DESC_NULLABLE                     1008 /* SQL_NULLABLE */
+#define SQL_DESC_INDICATOR_POINTER            1009 /* SQLINTEGER * indicator */
+#define SQL_DESC_DATA_POINTER                 1010 /* the value */
+#define SQL_DESC_NAME                         1011 /* the name of the column */
+#define SQL_DESC_UNNAMED                      1012 /* always SQL_NAMED */
+#define SQL_DESC_OCTET_LENGTH                 1013 /* the length in octets */
+#define SQL_DESC_COLLATION_CATALOG            1015 /* always "" */
+#define SQL_DESC_COLLATION_SCHEMA             1016 /* always "" */
+#define SQL_DESC_COLLATION_NAME               1017 /* always "" */
+#define SQL_DESC_CHARACTER_SET_CATALOG        1018 /* the current catalog */
+#define SQL_DESC_CHARACTER_SET_SCHEMA         1019 /* "INFORMATION_SCHEMA" */
+#define SQL_DESC_CHARACTER_SET_NAME           1020 /* "UTF8" */
+#define SQL_DESC_PARAMETER_MODE               1021 /* SQL_PARAM_MODE_IN */
+#define SQL_DESC_PARAMETER_ORDINAL_POSITION   1022 /* not used */
+#define SQL_DESC_PARAMETER_SPECIFIC_CATALOG   1023 /* not used */
+#define SQL_DESC_PARAMETER_SPECIFIC_SCHEMA    1024 /* not used */
+#define SQL_DESC_PARAMETER_SPECIFIC_NAME      1025 /* not used */
+#define SQL_DESC_UDT_CATALOG                  1026 /* not used */
+#define SQL_DESC_UDT_SCHEMA                   1027 /* not used */
+#define SQL_DESC_UDT_NAME                     1028 /* not used */
+#define SQL_DESC_KEY_MEMBER                   1030 /* always 0 */
+#define SQL_DESC_SCOPE_CATALOG                1033 /* not used */
+#define SQL_DESC_SCOPE_SCHEMA                 1034 /* not used */
+#define SQL_DESC_SCOPE_NAME                   1035 /* not used */
+#define SQL_DESC_SPECIFIC_TYPE_CATALOG        1036 /* not used */
+#define SQL_DESC_SPECIFIC_TYPE_SCHEMA         1037 /* not used */
+#define SQL_DESC_SPECIFIC_TYPE_NAME           1038 /* not used */
+#define SQL_DESC_CURRENT_TRANSFORM_GROUP      1039 /* not used */
+#define SQL_DESC_CARDINALITY                  1040 /* not used */
+#define SQL_DESC_DEGREE                       1041 /* not used */
+#define SQL_DESC_LEVEL                        1042 /* always 0 */
+#define SQL_DESC_RETURNED_CARDINALITY_POINTER 1043 /* not used */
+#define SQL_DESC_USER_DEFINED_TYPE_CODE       1045 /* not used */
+
+/* Other descriptor values. */
+#define SQL_DESC_ALLOC_AUTO 1 /* allocated with a statement */
+#define SQL_DESC_ALLOC_USER 2 /* allocated with SQLAllocHandle */
+#define SQL_NAMED           0 /* the column has a name */
+#define SQL_UNNAMED         1 /* the column doesn't have a name */
+
 /* SQLFreeStmt options (and their ODBC names). */
 #define SQL_CLOSE_CURSOR      0 /* close the cursor */
 #define SQL_FREE_HANDLE       1 /* free the statement */
@@ -275,10 +361,11 @@ SQLRETURN SQLAllocEnv(
 
 /*
  * SQLAllocHandle allocates an environment (SQL_HANDLE_ENV), a connection
- * (SQL_HANDLE_DBC) for an environment, or a statement (SQL_HANDLE_STMT) for an
- * established connection. InputHandle is SQL_NULL_HANDLE for an environment,
- * otherwise it's the environment or connection to allocate it for. Each handle
- * must be freed with SQLFreeHandle.
+ * (SQL_HANDLE_DBC) for an environment, or a statement (SQL_HANDLE_STMT) or
+ * descriptor (SQL_HANDLE_DESC, see SQLGetDescField) for an established
+ * connection. InputHandle is SQL_NULL_HANDLE for an environment, otherwise
+ * it's the environment or connection to allocate it for. Each handle must be
+ * freed with SQLFreeHandle.
  *
  *   SQLHENV env;
  *   SQLHDBC dbc;
@@ -327,6 +414,29 @@ SQLRETURN SQLCloseCursor(
 );
 
 /*
+ * SQLColAttribute reads a field of the IRD (see SQLGetDescField) for a column
+ * (starting at 1) of the executed statement. A string field (such as
+ * SQL_DESC_NAME) is returned in CharacterAttribute (see SQLGetData for
+ * SQL_CHAR), and any other field in NumericAttribute. SQL_DESC_TYPE is the
+ * same as the DataType of SQLDescribeCol (such as SQL_TYPE_DATE). It returns
+ * SQL_NO_DATA for a column after the last one.
+ *
+ *   SQLINTEGER nullable;
+ *
+ *   SQLExecDirect(stmt, (SQLCHAR *)"SELECT * FROM foo", SQL_NTS);
+ *   SQLColAttribute(stmt, 1, SQL_DESC_NULLABLE, NULL, 0, NULL, &nullable);
+ */
+SQLRETURN SQLColAttribute(
+    SQLHSTMT     StatementHandle,
+    SQLSMALLINT  ColumnNumber,
+    SQLSMALLINT  FieldIdentifier,
+    SQLCHAR     *CharacterAttribute,
+    SQLSMALLINT  BufferLength,
+    SQLSMALLINT *StringLength,
+    SQLINTEGER  *NumericAttribute
+);
+
+/*
  * SQLConnect opens a database. ServerName is the path to the database file, or
  * ":memory:" for an in-memory database. An empty ServerName (or a null pointer)
  * connects to a new in-memory database. UserName and Authentication are not
@@ -345,13 +455,25 @@ SQLRETURN SQLConnect(
 );
 
 /*
+ * SQLCopyDesc replaces the fields and records of TargetDescHandle with those of
+ * SourceDescHandle (except for SQL_DESC_ALLOC_TYPE). The target can't be an
+ * IRD (HY016, see SQLSetDescRec).
+ */
+SQLRETURN SQLCopyDesc(
+    SQLHDESC SourceDescHandle,
+    SQLHDESC TargetDescHandle
+);
+
+/*
  * SQLDescribeCol describes a column (starting at 1) of the cursor. The name is
  * null terminated and truncated (SQL_SUCCESS_WITH_INFO) if it's longer than
  * BufferLength - 1. NameLength may be a null pointer, otherwise it's set to the
  * length of the whole name. DataType is one of the data type codes (such as
- * SQL_DOUBLE, or SQL_TYPE_DATE for a DATE), ColumnSize is the length or
- * precision and DecimalDigits is the scale. Nullable is SQL_NO_NULLS or
- * SQL_NULLABLE.
+ * SQL_DOUBLE, or SQL_TYPE_DATE for a DATE). ColumnSize is the maximum length in
+ * octets of a string (4 for each character), the number of decimal digits of a
+ * number, or the length of a datetime. DecimalDigits is the scale of a DECIMAL
+ * or NUMERIC, or the fractional seconds of a datetime. Nullable is SQL_NO_NULLS
+ * or SQL_NULLABLE. These are from the IRD, see SQLGetDescField.
  *
  *   SQLCHAR name[128];
  *   SQLSMALLINT type, digits, nullable;
@@ -539,6 +661,11 @@ SQLRETURN SQLGetConnectAttr(
  *   SQL_REAL      SQLREAL
  *   SQL_DOUBLE    SQLDOUBLE
  *   SQL_DEFAULT   the type of the column
+ *   SQL_ARD_TYPE  the SQL_DESC_TYPE of the column in the ARD
+ *
+ * The SQL_DESC_TYPE of the column in the ARD (if it has a record for the
+ * column) is set to TargetType. A column that's bound in the ARD can't be read
+ * with SQLGetData (07009).
  *
  * BufferLength is only used for SQL_CHAR. StrLen_or_Ind is set to SQL_NULL_DATA
  * for a NULL value (so it can only be a null pointer when the value isn't
@@ -566,6 +693,61 @@ SQLRETURN SQLGetData(
     SQLPOINTER   TargetValue,
     SQLINTEGER   BufferLength,
     SQLINTEGER  *StrLen_or_Ind
+);
+
+/*
+ * SQLGetDescField reads a field of a descriptor. A header field (such as
+ * SQL_DESC_COUNT) ignores RecordNumber, and a record field (such as
+ * SQL_DESC_TYPE) reads the record numbered from 1. It returns SQL_NO_DATA if
+ * there isn't a record with that number.
+ *
+ * Value is an SQLSMALLINT, an SQLINTEGER, a pointer or a string (see
+ * SQLGetData for SQL_CHAR), depending on the field. A field that was never set
+ * is HY091, and so is a field that can't be read from that type of descriptor.
+ * An IRD can only be read after a statement is executed.
+ *
+ * Each statement has four descriptors, which are its attributes:
+ *
+ *   SQL_ATTR_APP_ROW_DESC    the ARD, which binds the columns
+ *   SQL_ATTR_APP_PARAM_DESC  the APD, which binds the parameters
+ *   SQL_ATTR_IMP_ROW_DESC    the IRD, which describes the columns
+ *   SQL_ATTR_IMP_PARAM_DESC  the IPD, which describes the parameters
+ *
+ *   SQLHDESC ird;
+ *   SQLSMALLINT type;
+ *
+ *   SQLExecDirect(stmt, (SQLCHAR *)"SELECT * FROM foo", SQL_NTS);
+ *   SQLGetStmtAttr(stmt, SQL_ATTR_IMP_ROW_DESC, &ird, 0, NULL);
+ *   SQLGetDescField(ird, 1, SQL_DESC_TYPE, &type, 0, NULL);
+ */
+SQLRETURN SQLGetDescField(
+    SQLHDESC     DescriptorHandle,
+    SQLSMALLINT  RecordNumber,
+    SQLSMALLINT  FieldIdentifier,
+    SQLPOINTER   Value,
+    SQLINTEGER   BufferLength,
+    SQLINTEGER  *StringLength
+);
+
+/*
+ * SQLGetDescRec reads the SQL_DESC_NAME, SQL_DESC_TYPE,
+ * SQL_DESC_DATETIME_INTERVAL_CODE (SubType), SQL_DESC_OCTET_LENGTH (Length),
+ * SQL_DESC_PRECISION, SQL_DESC_SCALE and SQL_DESC_NULLABLE fields of a record
+ * (starting at 1) of a descriptor. Any of them may be a null pointer. It
+ * returns SQL_NO_DATA if there isn't a record with that number.
+ */
+SQLRETURN SQLGetDescRec(
+    SQLHDESC     DescriptorHandle,
+    SQLSMALLINT  RecordNumber,
+    SQLCHAR     *Name,
+    SQLSMALLINT  BufferLength,
+    SQLSMALLINT *NameLength,
+    SQLSMALLINT *Type,
+    SQLSMALLINT *SubType,
+    SQLINTEGER  *Length,
+    SQLSMALLINT *Precision,
+    SQLSMALLINT *Scale,
+    SQLSMALLINT *Nullable
 );
 
 /*
@@ -671,6 +853,19 @@ SQLRETURN SQLGetEnvAttr(
 );
 
 /*
+ * SQLGetStmtAttr reads an attribute of a statement (an SQLINTEGER), such as
+ * SQL_ATTR_IMP_ROW_DESC (see SQLGetDescField) or SQL_ATTR_CURSOR_SCROLLABLE.
+ * BufferLength and StringLength are not used.
+ */
+SQLRETURN SQLGetStmtAttr(
+    SQLHSTMT    StatementHandle,
+    SQLINTEGER  Attribute,
+    SQLPOINTER  Value,
+    SQLINTEGER  BufferLength,
+    SQLINTEGER *StringLength
+);
+
+/*
  * SQLNumResultCols sets ColumnCount to the number of columns of the cursor, or
  * 0 for a statement that isn't a query.
  *
@@ -710,6 +905,56 @@ SQLRETURN SQLSetConnectAttr(
 );
 
 /*
+ * SQLSetDescField sets a field of a descriptor (see SQLGetDescField). A record
+ * field adds records up to RecordNumber. An SQLSMALLINT or SQLINTEGER is the
+ * Value itself (not a pointer to it), a pointer field is the pointer, and a
+ * string is BufferLength octets (or SQL_NTS). Setting SQL_DESC_TYPE resets the
+ * length, precision and scale for the type, and SQL_DESC_DATA_POINTER (which
+ * must have a C type, otherwise it's HY021). The fields of an IRD can't be set
+ * (HY091).
+ *
+ *   SQLHDESC ard;
+ *   SQLDOUBLE x;
+ *
+ *   SQLGetStmtAttr(stmt, SQL_ATTR_APP_ROW_DESC, &ard, 0, NULL);
+ *   SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_DOUBLE, 0);
+ *   SQLSetDescField(ard, 1, SQL_DESC_DATA_POINTER, &x, 0);
+ */
+SQLRETURN SQLSetDescField(
+    SQLHDESC    DescriptorHandle,
+    SQLSMALLINT RecordNumber,
+    SQLSMALLINT FieldIdentifier,
+    SQLPOINTER  Value,
+    SQLINTEGER  BufferLength
+);
+
+/*
+ * SQLSetDescRec sets the SQL_DESC_TYPE, SQL_DESC_DATETIME_INTERVAL_CODE
+ * (SubType), SQL_DESC_PRECISION, SQL_DESC_SCALE, SQL_DESC_DATA_POINTER (Data),
+ * SQL_DESC_OCTET_LENGTH_POINTER (StringLength) and SQL_DESC_INDICATOR_POINTER
+ * (Indicator) fields of a record (starting at 1). Length is the
+ * SQL_DESC_LENGTH of an IPD, and the SQL_DESC_OCTET_LENGTH of the other
+ * descriptors. StringLength and Indicator are only set if they are not null
+ * pointers.
+ *
+ * An IRD can't be changed. The standard names this condition ("cannot modify
+ * an implementation row descriptor") but doesn't give it a SQLSTATE, so it's
+ * HY016, the same as ODBC.
+ */
+SQLRETURN SQLSetDescRec(
+    SQLHDESC     DescriptorHandle,
+    SQLSMALLINT  RecordNumber,
+    SQLSMALLINT  Type,
+    SQLSMALLINT  SubType,
+    SQLINTEGER   Length,
+    SQLSMALLINT  Precision,
+    SQLSMALLINT  Scale,
+    SQLPOINTER   Data,
+    SQLINTEGER  *StringLength,
+    SQLINTEGER  *Indicator
+);
+
+/*
  * SQLSetEnvAttr sets an attribute of an environment, before it has any
  * connections. The only one is SQL_ATTR_OUTPUT_NTS: SQL_TRUE (the default)
  * null terminates every string that's returned, and SQL_FALSE doesn't. Value
@@ -719,6 +964,32 @@ SQLRETURN SQLSetConnectAttr(
  */
 SQLRETURN SQLSetEnvAttr(
     SQLHENV    EnvironmentHandle,
+    SQLINTEGER Attribute,
+    SQLPOINTER Value,
+    SQLINTEGER StringLength
+);
+
+/*
+ * SQLSetStmtAttr sets an attribute of a statement. Value is the value itself
+ * (not a pointer to it), and StringLength isn't used. The attributes are:
+ *
+ *   SQL_ATTR_APP_ROW_DESC         a descriptor from SQLAllocHandle, or the
+ *   SQL_ATTR_APP_PARAM_DESC       statement's own one
+ *   SQL_ATTR_CURSOR_SCROLLABLE    SQL_NONSCROLLABLE or SQL_SCROLLABLE
+ *   SQL_ATTR_CURSOR_SENSITIVITY   SQL_ASENSITIVE or SQL_INSENSITIVE
+ *   SQL_ATTR_CURSOR_HOLDABLE      SQL_NONHOLDABLE or SQL_HOLDABLE
+ *   SQL_ATTR_METADATA_ID          SQL_FALSE or SQL_TRUE
+ *   SQL_ATTR_NEST_DESCRIPTOR      SQL_FALSE or SQL_TRUE
+ *   SQL_ATTR_CURRENT_OF_POSITION  the row of the rowset
+ *
+ * The cursor attributes can't be changed while a cursor is open. Every cursor
+ * is a copy of the result, so a SQL_SENSITIVE cursor can't be opened (36001).
+ *
+ *   SQLSetStmtAttr(stmt, SQL_ATTR_CURSOR_HOLDABLE,
+ *                  (SQLPOINTER)SQL_NONHOLDABLE, 0);
+ */
+SQLRETURN SQLSetStmtAttr(
+    SQLHSTMT   StatementHandle,
     SQLINTEGER Attribute,
     SQLPOINTER Value,
     SQLINTEGER StringLength

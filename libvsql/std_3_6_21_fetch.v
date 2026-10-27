@@ -29,6 +29,10 @@ fn fetch(mut stmt Stmt) !i16 {
 	stmt.fetched = true
 	stmt.fetched_column = 0
 
+	// The CURRENT OF POSITION is reset to the first row of the rowset (see
+	// 4.4.6, "Statement attributes").
+	stmt.current_of_position = 1
+
 	// - 9. If T is empty, or if R contains the last row of T, then CR is
 	// positioned after the last row and a completion condition is raised: no
 	// data.

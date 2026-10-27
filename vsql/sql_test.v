@@ -1410,3 +1410,8 @@ fn test_table_column_names() ! {
 	assert tables.len == 1
 	assert tables[0].column_names() == ['X', 'Y']
 }
+
+fn test_current_catalog_name() {
+	mut db := open(':memory:')!
+	assert db.current_catalog_name() == ':memory:'
+}

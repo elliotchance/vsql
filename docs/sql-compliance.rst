@@ -1660,7 +1660,7 @@ As of the latest version (or at least the version of this documentation)
 CLI Routines
 ~~~~~~~~~~~~
 
-C011 requires all of the routines in Clause 6. **vsql supports 27 of the
+C011 requires all of the routines in Clause 6. **vsql supports 35 of the
 63 routines.**
 
 .. list-table:: Clause 6 — SQL/CLI routines
@@ -1693,7 +1693,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 27 of the
    * - ✅ 6.8
      - ``SQLCloseCursor``
 
-   * - ❌ 6.9
+   * - ✅ 6.9
      - ``SQLColAttribute``
 
    * - ❌ 6.10
@@ -1705,7 +1705,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 27 of the
    * - ✅ 6.12
      - ``SQLConnect``
 
-   * - ❌ 6.13
+   * - ✅ 6.13
      - ``SQLCopyDesc``
 
    * - ❌ 6.14
@@ -1759,10 +1759,10 @@ C011 requires all of the routines in Clause 6. **vsql supports 27 of the
    * - ✅ 6.30
      - ``SQLGetData``
 
-   * - ❌ 6.31
+   * - ✅ 6.31
      - ``SQLGetDescField``
 
-   * - ❌ 6.32
+   * - ✅ 6.32
      - ``SQLGetDescRec``
 
    * - ✅ 6.33
@@ -1795,7 +1795,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 27 of the
    * - ❌ 6.42
      - ``SQLGetSessionInfo``
 
-   * - ❌ 6.43
+   * - ✅ 6.43
      - ``SQLGetStmtAttr``
 
    * - ❌ 6.44
@@ -1834,16 +1834,16 @@ C011 requires all of the routines in Clause 6. **vsql supports 27 of the
    * - ❌ 6.55
      - ``SQLSetCursorName``
 
-   * - ❌ 6.56
+   * - ✅ 6.56
      - ``SQLSetDescField``
 
-   * - ❌ 6.57
+   * - ✅ 6.57
      - ``SQLSetDescRec``
 
    * - ✅ 6.58
      - ``SQLSetEnvAttr``
 
-   * - ❌ 6.59
+   * - ✅ 6.59
      - ``SQLSetStmtAttr``
 
    * - ❌ 6.60

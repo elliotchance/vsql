@@ -52,20 +52,46 @@ fn get_data(mut stmt Stmt, column_number i16, target_type i16, target_value void
 		return cli_error('HY009', 'invalid use of null pointer')
 	}
 
+	// - 12, 13. The item descriptor area of the ARD for the column can't be
+	// bound (have a DATA_POINTER). Any other column can be retrieved, including
+	// the columns before the highest bound column.
+	mut ard := descs[stmt.ard] or { return cli_error('HY010', 'function sequence error') }
+	if ard.record_int(cn, sql_desc_data_pointer) != 0 {
+		return cli_error('07009', 'invalid descriptor index')
+	}
+
 	// - 18. If T isn't DEFAULT or ARD TYPE, it must be an application data type
 	// with a C data type, otherwise an exception condition is raised:
 	// CLI-specific condition — invalid data type in application descriptor.
-	//
-	// There are no CLI descriptor areas, so the ARD TYPE is always DEFAULT. A
-	// DEFAULT (- 21) is the type of the column, which may not have a C data
-	// type.
-	is_default := target_type == sql_default || target_type == sql_ard_type
-	tt := if is_default { data_type_code(column.typ) } else { target_type }
-	typ := c_type(tt) or {
-		if is_default {
-			return cli_error('07006', 'restricted data type attribute violation')
-		}
+	if target_type != sql_default && target_type != sql_ard_type && c_type(target_type) == none {
 		return cli_error('HY003', 'invalid data type in application descriptor')
+	}
+
+	// - 19. If T does not indicate ARD TYPE, then the TYPE of the item
+	// descriptor area of the ARD is set to T.
+	mut tt := i64(target_type)
+	if cn <= ard.count() {
+		if target_type == sql_ard_type {
+			tt = ard.record_int(cn, sql_desc_type)
+		} else {
+			ard.records[cn - 1][sql_desc_type] = i64(target_type)
+		}
+	} else if target_type == sql_ard_type {
+		tt = sql_default
+	}
+
+	// - 21. If the TYPE is DEFAULT, then the type of the column (from the IRD)
+	// is used instead.
+	if tt == sql_default {
+		ird := descs[stmt.ird] or { return cli_error('HY010', 'function sequence error') }
+		tt = ird.record_int(cn, sql_desc_type)
+	}
+
+	// - 22. If the type doesn't have a C data type, then an exception condition
+	// is raised: dynamic SQL error — using clause does not match target
+	// specifications.
+	typ := c_type(i16(tt)) or {
+		return cli_error('07002', 'using clause does not match target specifications')
 	}
 
 	// - 15.b, 25.a. Continue retrieving a character value in pieces.

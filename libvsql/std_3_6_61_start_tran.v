@@ -31,7 +31,7 @@ fn sql_start_tran(handle_type i16, handle SQLInteger, access_mode SQLInteger, is
 }
 
 fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level i64) !i16 {
-	if handle_type == sql_handle_stmt {
+	if handle_type in [sql_handle_stmt, sql_handle_desc] {
 		return cli_error('HY092', 'invalid attribute identifier')
 	}
 

@@ -1,7 +1,5 @@
 module main
 
-import vsql
-
 // ISO/IEC 9075-3:2003(E), 6.30, GetData
 //
 // Retrieve a column value.
@@ -41,7 +39,22 @@ fn get_data(mut stmt Stmt, column_number i16, target_type i16, target_value void
 
 	// - 2.b. If the fetched rowset associated with S is empty, then a completion
 	// condition is raised: no data.
-	row := stmt.row or { return stmt.diag.no_data() }
+	if stmt.rowset_len == 0 {
+		return no_data()
+	}
+
+	// - 4, 5, 6. The row is the P-th (the CURRENT OF POSITION) row of the
+	// rowset. A rowset with more than one row can only be read from a
+	// scrollable cursor, otherwise an exception condition is raised:
+	// CLI-specific condition — invalid cursor position.
+	mut ard := descs[stmt.ard] or { return cli_error('HY010', 'function sequence error') }
+	array_size := ard.header_int(sql_desc_array_size)
+	p := stmt.current_of_position
+	if p > array_size || p > stmt.rowset_len
+		|| (stmt.cursor_scrollable == sql_nonscrollable && array_size > 1) {
+		return cli_error('HY109', 'invalid cursor position')
+	}
+	row := stmt.rows[stmt.rowset_start + int(p) - 1]
 
 	// - 10. If CN is less than 1 (one) or greater than D, then an exception
 	// condition is raised: dynamic SQL error — invalid descriptor index.
@@ -55,7 +68,6 @@ fn get_data(mut stmt Stmt, column_number i16, target_type i16, target_value void
 	// - 12, 13. The item descriptor area of the ARD for the column can't be
 	// bound (have a DATA_POINTER). Any other column can be retrieved, including
 	// the columns before the highest bound column.
-	mut ard := descs[stmt.ard] or { return cli_error('HY010', 'function sequence error') }
 	if ard.record_int(cn, sql_desc_data_pointer) != 0 {
 		return cli_error('07009', 'invalid descriptor index')
 	}
@@ -132,14 +144,7 @@ fn get_data(mut stmt Stmt, column_number i16, target_type i16, target_value void
 	}
 
 	// - 25.b.vi.2. The value is the result of CAST ( SV AS TDT ).
-	if column.typ.typ in [.is_date, .is_time_without_time_zone, .is_time_with_time_zone,
-		.is_timestamp_without_time_zone, .is_timestamp_with_time_zone, .is_boolean] {
-		return cli_error('07006', 'restricted data type attribute violation')
-	}
-	mut conn := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }.conn or {
-		return cli_error('08003', 'connection does not exist')
-	}
-	tv := conn.store_assignment(value, vsql.Type{ typ: typ })!
+	tv := cast_value(stmt, value, column, typ)!
 
 	// - 30.a. StrLen_or_Ind is set to 0 (zero).
 	if str_len_or_ind != unsafe { nil } {
@@ -148,15 +153,7 @@ fn get_data(mut stmt Stmt, column_number i16, target_type i16, target_value void
 		}
 	}
 
-	unsafe {
-		match typ {
-			.is_smallint { *&i16(target_value) = i16(tv.int_value()) }
-			.is_integer { *&SQLInteger(target_value) = SQLInteger(tv.int_value()) }
-			.is_bigint { *&i64(target_value) = tv.int_value() }
-			.is_real { *&f32(target_value) = f32(tv.f64_value()) }
-			else { *&f64(target_value) = tv.f64_value() }
-		}
-	}
+	assign_number(tv, typ, target_value)
 
 	return sql_success
 }

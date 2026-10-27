@@ -440,7 +440,13 @@ fn describe(stmt &Stmt, mut conn vsql.Connection, result ?vsql.Result) {
 
 	// - 5. The IRD describes the result columns, if any. vsql doesn't know if a
 	// result column is part of a key, so KEY_TYPE and KEY_MEMBER are 0 (zero).
+	// The application's ARRAY_STATUS_POINTER and ROWS_PROCESSED_POINTER are
+	// kept.
+	status_pointer := ird.header_int(sql_desc_array_status_pointer)
+	rows_processed_pointer := ird.header_int(sql_desc_rows_processed_pointer)
 	ird.reset()
+	ird.header[sql_desc_array_status_pointer] = status_pointer
+	ird.header[sql_desc_rows_processed_pointer] = rows_processed_pointer
 	ird.header[sql_desc_dynamic_function] = stmt.diag.dynamic_function
 	ird.header[sql_desc_dynamic_function_code] = i64(stmt.diag.dynamic_function_code)
 	ird.header[sql_desc_key_type] = i64(0)

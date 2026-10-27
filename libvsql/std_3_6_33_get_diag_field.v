@@ -183,7 +183,8 @@ fn diag_status_field(handle_type i16, h i64, record DiagnosticRecord, record_num
 		sql_diag_subclass_origin { origin(record.sqlstate[2..]) }
 		sql_diag_server_name, sql_diag_connection_name { server_name(handle_type, h) }
 		sql_diag_column_number { record.column_number }
-		sql_diag_row_number, sql_diag_parameter_ordinal_position { 0 }
+		sql_diag_row_number { record.row_number }
+		sql_diag_parameter_ordinal_position { 0 }
 		else { '' }
 	}
 }

@@ -67,3 +67,43 @@ fn c_type(code i16) ?vsql.SQLType {
 		else { none }
 	}
 }
+
+// cast_value is CAST ( SV AS TDT ) for a number type. A datetime or BOOLEAN
+// can't be cast to a number: dynamic SQL error — restricted data type
+// attribute violation.
+fn cast_value(stmt &Stmt, value vsql.Value, column vsql.Column, typ vsql.SQLType) !vsql.Value {
+	if column.typ.typ in [.is_date, .is_time_without_time_zone, .is_time_with_time_zone,
+		.is_timestamp_without_time_zone, .is_timestamp_with_time_zone, .is_boolean] {
+		return cli_error('07006', 'restricted data type attribute violation')
+	}
+	mut conn := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }.conn or {
+		return cli_error('08003', 'connection does not exist')
+	}
+
+	return conn.store_assignment(value, vsql.Type{ typ: typ })!
+}
+
+// assign_number sets the host variable (of the C type for typ) at target to a
+// number.
+fn assign_number(value vsql.Value, typ vsql.SQLType, target voidptr) {
+	unsafe {
+		match typ {
+			.is_smallint { *&i16(target) = i16(value.int_value()) }
+			.is_integer { *&SQLInteger(target) = SQLInteger(value.int_value()) }
+			.is_bigint { *&i64(target) = value.int_value() }
+			.is_real { *&f32(target) = f32(value.f64_value()) }
+			else { *&f64(target) = value.f64_value() }
+		}
+	}
+}
+
+// c_type_size is the size in octets of the C type for typ (from c_type), which
+// is the size of each element of an array of them.
+fn c_type_size(typ vsql.SQLType) int {
+	return match typ {
+		.is_smallint { 2 }
+		.is_integer { int(sizeof(SQLInteger)) }
+		.is_real { 4 }
+		else { 8 }
+	}
+}

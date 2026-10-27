@@ -82,7 +82,7 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 	// way, the IRD describes its result columns (see 5.5, "Implicit DESCRIBE
 	// USING clause").
 	if result.msg == '' {
-		stmt.cursor = result
+		stmt.open_cursor(result)
 	}
 	describe(stmt, mut conn, stmt.cursor)
 

@@ -16,13 +16,23 @@ fn version_command(_ cli.Command) ! {
 }
 
 fn print_version() {
+	println(if version := vsql_version() {
+		'vsql ${version}'
+	} else {
+		'no version information available'
+	})
+}
+
+// vsql_version is the version of the release, such as "v0.33.0 2026-10-26".
+// There is no version for a local build.
+fn vsql_version() ?string {
 	// This constant is replaced at build time. See ci.yml.
 	version := 'MISSING_VERSION'
 
 	// Be careful not to use the constant value again as it will be replaced.
 	if version.contains('MISSING') {
-		println('no version information available')
-	} else {
-		println('vsql ${version}')
+		return none
 	}
+
+	return version
 }

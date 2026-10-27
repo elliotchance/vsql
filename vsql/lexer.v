@@ -623,3 +623,31 @@ fn tail_substitution(tokens []Token) (int, int) {
 
 	return 0, 0
 }
+
+// reserved_words are the key words of the grammar that can't be used as a
+// regular identifier, such as SELECT and FROM, sorted by name. Non-reserved
+// key words, such as NAME, can be used as an identifier so they aren't
+// included.
+pub fn reserved_words() []string {
+	// The non-reserved words come from the grammar so that they are always the
+	// same as the parser.
+	grammar := $embed_file('std_2_5_2_token_and_separator.y').to_string()
+	mut non_reserved := map[string]bool{}
+	for line in grammar.all_after('\nnon_reserved_word:\n').all_before('\n\n').split_into_lines() {
+		non_reserved[line.trim_left('| ').trim_space()] = true
+	}
+
+	mut words := []string{}
+	for name in yy_toknames {
+		// Only words are tokens in the lexer (operators and literals are not).
+		// E is a regular identifier, unless it's directly after a number.
+		if name.len > 0 && name[0].is_letter() && name == name.to_upper()
+			&& !name.starts_with('OPERATOR_') && !name.starts_with('LITERAL_') && name != 'E'
+			&& name !in non_reserved {
+			words << name
+		}
+	}
+	words.sort()
+
+	return words
+}

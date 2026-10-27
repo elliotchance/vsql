@@ -17,6 +17,36 @@ Commands
 Run ``vsql help`` to list the commands, or ``vsql <command> -help`` to see the
 options for a command.
 
+app
+^^^
+
+``app`` starts a web server to browse a database file. Open the address in a
+browser to see a SQL editor (run with the button or Ctrl+Enter) that colors the
+reserved words. Every statement is run and the result of the last one is shown
+below it.
+
+The first tab (the home icon) lists the tables, each with a Query button that
+opens a new tab to ``SELECT *`` from it. It's shown when no other tab is active,
+and can't be closed.
+
+Each tab has its own SQL, use ``+`` to add a tab (which starts with a query of
+``INFORMATION_SCHEMA.TABLES``). The tabs are saved in the ``VSQL_APP.TABS`` table
+(created empty the first time) with which tab is active, so they are restored
+when the file is opened again. A tab's title is the start of its SQL when it was last
+run. Switching tabs doesn't run the SQL, it shows the last result (until the
+app is restarted).
+
+.. code-block:: text
+
+   $ vsql app mydb.vsql
+   ready on http://127.0.0.1:3211
+
+Options are:
+
+- ``-host``: Address to listen on (default 127.0.0.1). Use ``0.0.0.0`` or
+  ``::`` to accept connections from other machines.
+- ``-port`` or ``-p``: Port number (default 3211).
+
 bench
 ^^^^^
 

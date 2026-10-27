@@ -33,6 +33,7 @@
  *                   SQL_NTS);
  *     SQLExecDirect(stmt, (SQLCHAR *)"INSERT INTO foo (x) VALUES (1.23)",
  *                   SQL_NTS);
+ *     SQLEndTran(SQL_HANDLE_DBC, dbc, SQL_COMMIT);
  *
  *     SQLExecDirect(stmt, (SQLCHAR *)"SELECT * FROM foo", SQL_NTS);
  *     while (SQLFetch(stmt) == SQL_SUCCESS) {
@@ -40,6 +41,7 @@
  *       printf("%g\n", x);
  *     }
  *     SQLCloseCursor(stmt);
+ *     SQLEndTran(SQL_HANDLE_DBC, dbc, SQL_COMMIT);
  *
  *     SQLFreeHandle(SQL_HANDLE_STMT, stmt);
  *     SQLDisconnect(dbc);
@@ -210,6 +212,35 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_DIAG_UPDATE_WHERE      82 /* UPDATE */
 #define SQL_DIAG_SELECT_CURSOR     85 /* a query */
 
+/* Boolean values. */
+#define SQL_FALSE 0 /* false */
+#define SQL_TRUE  1 /* true */
+
+/* Environment attributes. */
+#define SQL_ATTR_OUTPUT_NTS 10001 /* null terminate strings */
+
+/* Connection attributes. */
+#define SQL_ATTR_AUTO_IPD       10001 /* always SQL_FALSE */
+#define SQL_ATTR_SAVEPOINT_NAME 10027 /* a savepoint for SQLEndTran */
+
+/* SQLEndTran CompletionTypes. */
+#define SQL_COMMIT                  0 /* commit */
+#define SQL_ROLLBACK                1 /* roll back */
+#define SQL_SAVEPOINT_NAME_ROLLBACK 2 /* not supported */
+#define SQL_SAVEPOINT_NAME_RELEASE  4 /* not supported */
+#define SQL_COMMIT_AND_CHAIN        6 /* commit and start another */
+#define SQL_ROLLBACK_AND_CHAIN      7 /* roll back and start another */
+
+/* SQLStartTran AccessModes. */
+#define SQL_TRANSACTION_READ_ONLY  0x00000001L /* not supported */
+#define SQL_TRANSACTION_READ_WRITE 0x00000002L /* read and write */
+
+/* SQLStartTran IsolationLevels. */
+#define SQL_TRANSACTION_READ_UNCOMMITTED 0x00000001L /* READ COMMITTED */
+#define SQL_TRANSACTION_READ_COMMITTED   0x00000002L /* READ COMMITTED */
+#define SQL_TRANSACTION_REPEATABLE_READ  0x00000004L /* not supported */
+#define SQL_TRANSACTION_SERIALIZABLE     0x00000008L /* not supported */
+
 /* SQLFreeStmt options (and their ODBC names). */
 #define SQL_CLOSE_CURSOR      0 /* close the cursor */
 #define SQL_FREE_HANDLE       1 /* free the statement */
@@ -344,14 +375,32 @@ SQLRETURN SQLDescribeCol(
 
 /*
  * SQLDisconnect closes the database and frees the statements of the
- * connection. A transaction must be committed or rolled back first. The
- * connection can then be freed, or connected again.
+ * connection. A transaction must be committed or rolled back with SQLEndTran
+ * first. The connection can then be freed, or connected again.
  *
  *   SQLDisconnect(dbc);
  *   SQLFreeHandle(SQL_HANDLE_DBC, dbc);
  */
 SQLRETURN SQLDisconnect(
     SQLHDBC ConnectionHandle
+);
+
+/*
+ * SQLEndTran commits (SQL_COMMIT) or rolls back (SQL_ROLLBACK) the
+ * transaction of a connection (SQL_HANDLE_DBC), or of every connection of an
+ * environment (SQL_HANDLE_ENV). SQL_COMMIT_AND_CHAIN and
+ * SQL_ROLLBACK_AND_CHAIN also start a new transaction. A rollback closes every
+ * cursor of the connection, but a commit doesn't. There are no savepoints, so
+ * SQL_SAVEPOINT_NAME_ROLLBACK and SQL_SAVEPOINT_NAME_RELEASE are 3B001.
+ *
+ *   SQLExecDirect(stmt, (SQLCHAR *)"INSERT INTO foo (x) VALUES (1.23)",
+ *                 SQL_NTS);
+ *   SQLEndTran(SQL_HANDLE_DBC, dbc, SQL_COMMIT);
+ */
+SQLRETURN SQLEndTran(
+    SQLSMALLINT HandleType,
+    SQLINTEGER  Handle,
+    SQLSMALLINT CompletionType
 );
 
 /*
@@ -385,6 +434,10 @@ SQLRETURN SQLError(
  * or SQL_NTS for a null terminated string. A query opens a cursor that's read
  * with SQLFetch and must be closed with SQLCloseCursor before executing
  * another statement.
+ *
+ * A transaction is started if there isn't one, and it must be ended with
+ * SQLEndTran, so START TRANSACTION, COMMIT and ROLLBACK can't be executed
+ * (42000). A "--" comment isn't allowed either (42000).
  *
  *   SQLExecDirect(stmt, (SQLCHAR *)"CREATE TABLE foo (x DOUBLE PRECISION)",
  *                 SQL_NTS);
@@ -457,6 +510,22 @@ SQLRETURN SQLFreeHandle(
 SQLRETURN SQLFreeStmt(
     SQLHSTMT    StatementHandle,
     SQLSMALLINT Option
+);
+
+/*
+ * SQLGetConnectAttr reads an attribute of a connection:
+ *
+ *   SQL_ATTR_AUTO_IPD        SQLINTEGER, always SQL_FALSE
+ *   SQL_ATTR_SAVEPOINT_NAME  string, see SQLGetData for SQL_CHAR
+ *
+ * BufferLength and StringLength are only used for a string.
+ */
+SQLRETURN SQLGetConnectAttr(
+    SQLHDBC     ConnectionHandle,
+    SQLINTEGER  Attribute,
+    SQLPOINTER  Value,
+    SQLINTEGER  BufferLength,
+    SQLINTEGER *StringLength
 );
 
 /*
@@ -585,6 +654,23 @@ SQLRETURN SQLGetDiagRec(
 );
 
 /*
+ * SQLGetEnvAttr reads an attribute of an environment. The only one is
+ * SQL_ATTR_OUTPUT_NTS (an SQLINTEGER), see SQLSetEnvAttr. BufferLength and
+ * StringLength are not used.
+ *
+ *   SQLINTEGER nts;
+ *
+ *   SQLGetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, &nts, 0, NULL);
+ */
+SQLRETURN SQLGetEnvAttr(
+    SQLHENV     EnvironmentHandle,
+    SQLINTEGER  Attribute,
+    SQLPOINTER  Value,
+    SQLINTEGER  BufferLength,
+    SQLINTEGER *StringLength
+);
+
+/*
  * SQLNumResultCols sets ColumnCount to the number of columns of the cursor, or
  * 0 for a statement that isn't a query.
  *
@@ -610,6 +696,50 @@ SQLRETURN SQLNumResultCols(
 SQLRETURN SQLRowCount(
     SQLHSTMT    StatementHandle,
     SQLINTEGER *RowCount
+);
+
+/*
+ * SQLSetConnectAttr sets the SQL_ATTR_SAVEPOINT_NAME of a connection (a string
+ * of StringLength octets, or SQL_NTS).
+ */
+SQLRETURN SQLSetConnectAttr(
+    SQLHDBC    ConnectionHandle,
+    SQLINTEGER Attribute,
+    SQLPOINTER Value,
+    SQLINTEGER StringLength
+);
+
+/*
+ * SQLSetEnvAttr sets an attribute of an environment, before it has any
+ * connections. The only one is SQL_ATTR_OUTPUT_NTS: SQL_TRUE (the default)
+ * null terminates every string that's returned, and SQL_FALSE doesn't. Value
+ * is the value itself (not a pointer to it), and StringLength isn't used.
+ *
+ *   SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, (SQLPOINTER)SQL_FALSE, 0);
+ */
+SQLRETURN SQLSetEnvAttr(
+    SQLHENV    EnvironmentHandle,
+    SQLINTEGER Attribute,
+    SQLPOINTER Value,
+    SQLINTEGER StringLength
+);
+
+/*
+ * SQLStartTran starts a transaction for a connection (SQL_HANDLE_DBC), or each
+ * connection of an environment (SQL_HANDLE_ENV). A transaction is also started
+ * by SQLExecDirect when there isn't one. vsql transactions are always
+ * SQL_TRANSACTION_READ_WRITE (AccessMode) and SQL_TRANSACTION_READ_COMMITTED,
+ * so SQL_TRANSACTION_READ_ONLY, SQL_TRANSACTION_REPEATABLE_READ and
+ * SQL_TRANSACTION_SERIALIZABLE are HYC00.
+ *
+ *   SQLStartTran(SQL_HANDLE_DBC, dbc, SQL_TRANSACTION_READ_WRITE,
+ *                SQL_TRANSACTION_READ_COMMITTED);
+ */
+SQLRETURN SQLStartTran(
+    SQLSMALLINT HandleType,
+    SQLINTEGER  Handle,
+    SQLINTEGER  AccessMode,
+    SQLINTEGER  IsolationLevel
 );
 
 #ifdef __cplusplus

@@ -1637,9 +1637,9 @@ them. The ``ServerName`` for ``SQLConnect`` is the path to the database file
 (or ``:memory:``), and an empty ``ServerName`` connects to a new in-memory
 database.
 
-The routines follow the 2003 edition of Part 3. Unlike the standard,
-``SQLExecDirect`` can execute ``START TRANSACTION``, ``COMMIT`` and
-``ROLLBACK``, since ``SQLEndTran`` isn't supported yet.
+The routines follow the 2003 edition of Part 3. Each connection has its own
+transaction, which is started when a statement is executed (or with
+``SQLStartTran``) and ended with ``SQLEndTran``.
 
 Mandatory Features
 ~~~~~~~~~~~~~~~~~~
@@ -1660,7 +1660,7 @@ As of the latest version (or at least the version of this documentation)
 CLI Routines
 ~~~~~~~~~~~~
 
-C011 requires all of the routines in Clause 6. **vsql supports 21 of the
+C011 requires all of the routines in Clause 6. **vsql supports 27 of the
 63 routines.**
 
 .. list-table:: Clause 6 — SQL/CLI routines
@@ -1717,7 +1717,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 21 of the
    * - ✅ 6.16
      - ``SQLDisconnect``
 
-   * - ❌ 6.17
+   * - ✅ 6.17
      - ``SQLEndTran``
 
    * - ✅ 6.18
@@ -1750,7 +1750,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 21 of the
    * - ✅ 6.27
      - ``SQLFreeStmt``
 
-   * - ❌ 6.28
+   * - ✅ 6.28
      - ``SQLGetConnectAttr``
 
    * - ❌ 6.29
@@ -1771,7 +1771,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 21 of the
    * - ✅ 6.34
      - ``SQLGetDiagRec``
 
-   * - ❌ 6.35
+   * - ✅ 6.35
      - ``SQLGetEnvAttr``
 
    * - ❌ 6.36
@@ -1828,7 +1828,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 21 of the
    * - ✅ 6.53
      - ``SQLRowCount``
 
-   * - ❌ 6.54
+   * - ✅ 6.54
      - ``SQLSetConnectAttr``
 
    * - ❌ 6.55
@@ -1840,7 +1840,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 21 of the
    * - ❌ 6.57
      - ``SQLSetDescRec``
 
-   * - ❌ 6.58
+   * - ✅ 6.58
      - ``SQLSetEnvAttr``
 
    * - ❌ 6.59
@@ -1849,7 +1849,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 21 of the
    * - ❌ 6.60
      - ``SQLSpecialColumns``
 
-   * - ❌ 6.61
+   * - ✅ 6.61
      - ``SQLStartTran``
 
    * - ❌ 6.62

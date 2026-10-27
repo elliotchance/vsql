@@ -49,7 +49,7 @@ fn describe_col(mut stmt Stmt, column_number i16, column_name &char, buffer_leng
 
 	// - 9.e. The name is retrieved by the General Rules of Subclause 5.9,
 	// "Character string retrieval".
-	retrieve_string(mut stmt.diag, column_name, column.name.sub_entity_name, buffer_length,
+	retrieve_string(mut stmt.diag, stmt.null_termination(), column_name, column.name.sub_entity_name, buffer_length,
 		name_length, 2)!
 
 	return stmt.diag.result()

@@ -4,8 +4,8 @@ module main
 //
 // Execute a statement directly.
 //
-// Unlike the standard, START TRANSACTION, COMMIT and ROLLBACK can be executed
-// since EndTran isn't supported yet.
+// An SQL-transaction is started if one isn't active, and it must be ended with
+// EndTran (see 4.1, "Introduction to SQL/CLI").
 
 @[export: 'SQLExecDirect']
 fn sql_exec_direct(statement_handle SQLInteger, statement_text &char, text_length SQLInteger) i16 {
@@ -36,6 +36,16 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 
 	stmt.diag.dynamic_function, stmt.diag.dynamic_function_code = dynamic_function(p)
 
+	// - 7. If P is a <start transaction statement>, a <commit statement> or a
+	// <rollback statement>, or it contains a <simple comment>, then an
+	// exception condition is raised: syntax error or access rule violation.
+	if stmt.diag.dynamic_function in ['START TRANSACTION', 'COMMIT WORK', 'ROLLBACK WORK'] {
+		return cli_error('42000', 'syntax error or access rule violation: ${stmt.diag.dynamic_function.to_lower()} can only be done with SQLStartTran or SQLEndTran')
+	}
+	if contains_simple_comment(p) {
+		return cli_error('42000', 'syntax error or access rule violation: -- comments are not allowed')
+	}
+
 	// - 10. Any prepared statement, cursor and select source associated with S
 	// are destroyed.
 	stmt.executed = false
@@ -44,12 +54,17 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 	mut conn := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }.conn or {
 		return cli_error('08003', 'connection does not exist')
 	}
-	was_active := conn.in_transaction()
+	if !conn.in_transaction() {
+		conn.query('START TRANSACTION')!
+	}
 	result := conn.query(p) or {
-		stmt.diag.end_transaction(was_active, conn.in_transaction(), false)
+		// An error that is a transaction rollback (such as a serialization
+		// failure) also ends the SQL-transaction.
+		if !conn.in_transaction() {
+			stmt.diag.transactions_rolled_back++
+		}
 		return err
 	}
-	stmt.diag.end_transaction(was_active, conn.in_transaction(), true)
 	stmt.executed = true
 
 	// - 13, 14. The ROW_COUNT becomes the row count associated with S.
@@ -63,4 +78,26 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 	}
 
 	return sql_success
+}
+
+// contains_simple_comment is true if text contains a <simple comment> ("--"
+// until the end of the line) outside of a literal, a delimited identifier or a
+// <bracketed comment> ("/* ... */", which is allowed).
+fn contains_simple_comment(text string) bool {
+	mut i := 0
+	for i < text.len {
+		if text[i] == `'` || text[i] == `"` {
+			// A quote inside a literal (or identifier) is doubled, which is the
+			// same as the literal ending and another one starting.
+			i = (text.index_after(text[i].ascii_str(), i + 1) or { return false }) + 1
+		} else if text[i..].starts_with('--') {
+			return true
+		} else if text[i..].starts_with('/*') {
+			i = skip_bracketed_comment(text, i)
+		} else {
+			i++
+		}
+	}
+
+	return false
 }

@@ -88,6 +88,9 @@ struct TabResult {
 	status string
 	// output is the HTML of the rows or error.
 	output string
+	// error is from a change to a row (see app_edit.v), which is shown above
+	// the output. It's not kept.
+	error string
 }
 
 // create_tabs creates VSQL_APP.TABS, which has the title and SQL of each tab in the
@@ -258,7 +261,7 @@ fn (app &App) respond(is_post bool, form urllib.Values) !string {
 		result := rlock app.results {
 			app.results[tab.id] or { TabResult{} }
 		}
-		return app.page(all_tabs, tab, result)
+		return app.page(all_tabs, tab, result, '')
 	}
 
 	// Query (on the home tab) opens a new tab that runs SELECT * on a table.
@@ -309,6 +312,47 @@ fn (app &App) respond(is_post bool, form urllib.Values) !string {
 		return '/'
 	}
 
+	// A change to a row of an editable result (see app_edit.v). An update or
+	// delete is shown to be confirmed before it's run, an insert is run
+	// straight away. If it fails, the values entered to insert are kept.
+	if kind := form.get('change') {
+		last := rlock app.results {
+			app.results[tab.id] or { TabResult{} }
+		}
+		table := find_edit_table(mut conn, form.get('schema') or { '' }, form.get('table') or {
+			''
+		})!
+		change_sql := build_change(table, form) or {
+			return app.page(all_tabs, tab, TabResult{
+				...last
+				error: err.msg()
+			}, '')
+		}
+		if kind != 'insert' {
+			return app.page(all_tabs, tab, last, change_sql)
+		}
+		app.apply_change(mut conn, tab.id, change_sql, query_text) or {
+			return app.page(all_tabs, tab, TabResult{
+				...last
+				output: keep_insert_values(last.output, form)
+				error:  err.msg()
+			}, '')
+		}
+		return '/'
+	}
+	if change_sql := form.get('confirm') {
+		app.apply_change(mut conn, tab.id, change_sql, query_text) or {
+			last := rlock app.results {
+				app.results[tab.id] or { TabResult{} }
+			}
+			return app.page(all_tabs, tab, TabResult{
+				...last
+				error: err.msg()
+			}, '')
+		}
+		return '/'
+	}
+
 	result := run_query(mut conn, query_text)!
 	lock app.results {
 		app.results[tab.id] = result
@@ -316,7 +360,20 @@ fn (app &App) respond(is_post bool, form urllib.Values) !string {
 	title_tab(mut conn, tab.id, query_text)!
 	activate_tab(mut conn, tab.id)!
 	return app.page(tabs(mut conn)!, Tab{tab.id, tab_title(query_text), query_text, true},
-		result)
+		result, '')
+}
+
+// apply_change runs a change to a row (see run_change), then the SQL of the tab
+// again to show it.
+fn (app &App) apply_change(mut conn vsql.Connection, tab_id int, change_sql string, query_text string) ! {
+	msg := run_change(mut conn, change_sql)!
+	result := run_query(mut conn, query_text)!
+	lock app.results {
+		app.results[tab_id] = TabResult{
+			...result
+			status: '${msg}, ${result.status}'
+		}
+	}
 }
 
 // run_query runs every statement and returns the result of the last one.
@@ -341,34 +398,75 @@ fn run_query(mut conn vsql.Connection, query_text string) !TabResult {
 	} else if result.msg != '' {
 		status = '${result.msg} (${elapsed} ms)'
 	} else if result.columns.len > 0 {
-		output.write_string('<table><thead><tr>')
+		// The rows of SELECT * FROM a table can be changed (see app_edit.v
+		// and app.js). A row can only be updated or deleted if the table has a
+		// PRIMARY KEY.
+		edit := editable_table(mut conn, query_text, result)
+		mut has_key := false
+		if table := edit {
+			has_key = table.primary_key.len > 0
+			output.write_string('<table class="editable" data-schema="${html_escape(table.schema)}" data-table="${html_escape(table.name)}"><thead><tr><th></th>')
+		} else {
+			output.write_string('<table><thead><tr>')
+		}
 		for column in result.columns {
 			output.write_string('<th>${html_escape(column.name.sub_entity_name)}<span class="type">${html_escape(column.typ.str())}</span></th>')
 		}
 		output.write_string('</tr></thead><tbody>')
 		mut count := 0
 		for row in result {
-			output.write_string('<tr>')
-			for column in result.columns {
-				value := row.get_column(column)!
-				if value.is_null {
-					output.write_string('<td class="null">${value}</td>')
+			if table := edit {
+				if has_key {
+					output.write_string('<tr data-key="${html_escape(row_key(table, row)!)}"><td class="row-actions"><button type="button" class="delete" title="Delete">&times;</button></td>')
 				} else {
-					output.write_string('<td>${html_escape(value.str())}</td>')
+					output.write_string('<tr><td class="row-actions"></td>')
 				}
+			} else {
+				output.write_string('<tr>')
+			}
+			for i, column in result.columns {
+				value := row.get_column(column)!
+				mut attrs := if value.is_null { ' class="null"' } else { '' }
+				if table := edit {
+					if has_key && !table.columns[i].generated {
+						attrs += ' data-column="${html_escape(column.name.sub_entity_name)}" title="Double-click to edit"'
+						if column.typ.typ == .is_boolean {
+							attrs += ' data-boolean'
+						}
+					}
+				}
+				output.write_string('<td${attrs}>${html_escape(value.str())}</td>')
 			}
 			output.write_string('</tr>')
 			count++
 		}
-		output.write_string('</tbody></table>')
+		output.write_string('</tbody>')
+		if table := edit {
+			output.write_string('<tfoot><tr class="insert"><td class="row-actions"><button type="button" class="add">Add</button></td>')
+			for column in table.columns {
+				if column.generated {
+					output.write_string('<td class="null">generated</td>')
+				} else if column.typ.typ == .is_boolean {
+					output.write_string('<td><select data-column="${html_escape(column.name)}"><option value="">DEFAULT</option><option>UNKNOWN</option><option>TRUE</option><option>FALSE</option></select></td>')
+				} else {
+					output.write_string('<td><input data-column="${html_escape(column.name)}" placeholder="DEFAULT" spellcheck="false"></td>')
+				}
+			}
+			output.write_string('</tr></tfoot>')
+		}
+		output.write_string('</table>')
 		status = '${count} ${vsql.pluralize(count, 'row')} (${elapsed} ms)'
 	}
 
-	return TabResult{status, output.str()}
+	return TabResult{
+		status: status
+		output: output.str()
+	}
 }
 
-// page renders the tabs, the SQL editor for tab and its last result.
-fn (app &App) page(all_tabs []Tab, tab Tab, result TabResult) !string {
+// page renders the tabs, the SQL editor for tab and its last result. If
+// change_sql isn't empty, it's shown to be confirmed before it's run.
+fn (app &App) page(all_tabs []Tab, tab Tab, result TabResult, change_sql string) !string {
 	mut sb := strings.new_builder(4096)
 	write_tabs(mut sb, all_tabs, tab)
 
@@ -382,12 +480,22 @@ fn (app &App) page(all_tabs []Tab, tab Tab, result TabResult) !string {
 	// The editor is a transparent textarea over a highlighted copy of its text
 	// (see app.js).
 	sb.write_string('<div class="editor"><pre aria-hidden="true"></pre>')
-	sb.write_string('<textarea name="sql" rows="6" spellcheck="false" autofocus placeholder="SELECT * FROM ...">${html_escape(tab.query_text)}</textarea></div>')
+	autofocus := if change_sql == '' { ' autofocus' } else { '' }
+	sb.write_string('<textarea name="sql" rows="6" spellcheck="false"${autofocus} placeholder="SELECT * FROM ...">${html_escape(tab.query_text)}</textarea></div>')
 	sb.write_string('<div class="actions"><span class="status">${html_escape(status)}</span>')
 	sb.write_string('<button type="submit" class="run" title="Run (Ctrl+Enter)">Run <span class="shortcut">&#8963;&#8629;</span></button></div></form>')
+	if change_sql != '' {
+		sb.write_string('<form method="post" action="/" class="confirm"><input type="hidden" name="tab" value="${tab.id}">')
+		sb.write_string('<input type="hidden" name="confirm" value="${html_escape(change_sql)}"><pre class="sql">${html_escape(change_sql)}</pre>')
+		sb.write_string('<button type="submit" autofocus>Run</button><a href="/" class="cancel">Cancel</a></form>')
+	}
+	if result.error != '' {
+		sb.write_string('<p class="error">${html_escape(result.error)}</p>')
+	}
+	sb.write_string(output)
+	// The script is after the result, so it can find the editable table.
 	reserved_words := vsql.reserved_words().map('"${it}"').join(',')
 	sb.write_string('<script>const reservedWords = new Set([${reserved_words}]);${app_js.to_string()}</script>')
-	sb.write_string(output)
 
 	sb.write_string('</main></body></html>')
 	return sb.str()
@@ -520,6 +628,19 @@ details.schema .count { margin-left: 4px; font-weight: normal; color: var(--mute
 table.tables { margin: 6px 0 0 18px; border: 1px solid var(--border); }
 table.tables th, table.tables td { border: 1px solid var(--border); vertical-align: middle; }
 table.tables button { padding: 2px 10px; font-size: 12px; }
+table.editable td[data-column] { cursor: cell; }
+table.editable td input { width: 100%; min-width: 6em; padding: 2px 4px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--accent); border-radius: 3px; }
+table.editable tfoot td { background: var(--side); }
+table.editable td select { padding: 2px 4px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--accent); border-radius: 3px; }
+table.editable tfoot input, table.editable tfoot select { border-color: var(--border); }
+td.row-actions { width: 1px; white-space: nowrap; }
+td.row-actions button, td button.null { padding: 1px 8px; font-size: 12px; }
+td.row-actions button.delete { color: var(--muted); background: transparent; border-color: transparent; }
+td.row-actions button.delete:hover { color: #cf222e; }
+td button.null { margin-left: 4px; color: var(--fg); background: var(--side); border-color: var(--border); }
+.confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px; padding: 8px 12px; border: 1px solid var(--accent); border-radius: 6px; }
+.confirm pre { flex: 1 1 100%; margin: 0; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; }
+.confirm .cancel { color: var(--muted); }
 .tabs button.new { font-size: 16px; line-height: 1; padding: 6px 12px; }
 button .shortcut { margin-left: 4px; font-weight: normal; opacity: 0.75; }
 .version { align-self: center; margin-left: auto; padding-left: 16px; color: var(--muted); font-size: 12px; white-space: nowrap; }

@@ -36,6 +36,27 @@ when the file is opened again. A tab's title is the start of its SQL when it was
 run. Switching tabs doesn't run the SQL, it shows the last result (until the
 app is restarted).
 
+The rows of a ``SELECT * FROM`` a table (optionally with ``WHERE``,
+``ORDER BY``, ``OFFSET`` or ``FETCH``) can be changed:
+
+- Double-click a cell to edit it. Press Enter to update the row, the ``NULL``
+  button to set it to ``NULL``, or Escape to cancel.
+- ``×`` deletes a row.
+- The empty row at the bottom inserts a row. A column that's left empty isn't
+  inserted, so it gets its ``DEFAULT``.
+- A ``BOOLEAN`` is chosen from ``UNKNOWN``, ``TRUE`` or ``FALSE`` (or
+  ``DEFAULT`` to insert).
+
+Rows can only be updated or deleted if the table has a ``PRIMARY KEY``, which
+is used to find the row. Generated columns (and ``GENERATED ALWAYS`` identity
+columns) can't be changed. A value is ``CAST`` to the type of the column.
+
+An ``UPDATE`` or ``DELETE`` is shown to be confirmed before it's run, an
+``INSERT`` is run straight away (if it fails, the values are kept to try
+again). Each change is run in its own transaction, and rolled back if it
+doesn't change exactly one row (such as when the row was deleted since it was
+shown). Then the SQL of the tab is run again.
+
 .. code-block:: text
 
    $ vsql app mydb.vsql

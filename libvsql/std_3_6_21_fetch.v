@@ -33,7 +33,7 @@ fn fetch(mut stmt Stmt) !i16 {
 	// positioned after the last row and a completion condition is raised: no
 	// data.
 	if stmt.row == none {
-		return sql_no_data
+		return stmt.diag.no_data()
 	}
 
 	return sql_success

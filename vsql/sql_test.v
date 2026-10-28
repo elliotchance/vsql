@@ -1470,3 +1470,10 @@ fn test_cast() {
 	}
 	assert false
 }
+
+fn test_version() {
+	// Tests don't run on a release build.
+	assert version() == ''
+	assert version_date() == ''
+	assert release_value('v0.34.0') == 'v0.34.0'
+}

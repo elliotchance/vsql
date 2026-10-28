@@ -30,7 +30,7 @@
 17.2/GR/2                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql
 17.2/GR/3                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql the most is 100
 17.2/GR/4                definition   - -
-17.2/GR/5                n/a          - - access modes (E152-02, #554)
+17.2/GR/5                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql
 17.2/GR/6                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/isolation-serializable.sql READ UNCOMMITTED runs as READ COMMITTED and REPEATABLE READ as SERIALIZABLE
 17.2/GR/7                implemented  vsql/std_2_17_2_set_transaction_statement.v tests/set-transaction.sql
 17.2/CR/1                n/a          - - LOCAL (T251)
@@ -39,9 +39,9 @@
 17.3/SR/1                definition   - -
 17.3/SR/2                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql
 17.3/SR/3                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/isolation-serializable.sql
-17.3/SR/4                n/a          - - access modes (E152-02, #554)
+17.3/SR/4                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/isolation-levels.sql
 17.3/SR/5                container    - -
-17.3/SR/5.a              n/a          - - access modes (E152-02, #554), READ UNCOMMITTED can change the database for now
+17.3/SR/5.a              implemented  vsql/std_2_17_3_transaction_characteristics.v tests/isolation-levels.sql
 17.3/SR/5.b              implemented  vsql/std_2_17_3_transaction_characteristics.v tests/transaction.sql every SQL-transaction is read-write
 17.3/SR/6                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql
 17.3/SR/7                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql it's 100

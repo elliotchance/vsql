@@ -101,13 +101,14 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 
 		// - 12, 14. The current SQL-transaction is terminated. If CT indicates
 		// COMMIT AND CHAIN or ROLLBACK AND CHAIN, then a new SQL-transaction is
-		// initiated, with the same isolation level.
+		// initiated, with the same access mode and isolation level.
 		end_transaction(mut diag, mut conn, is_commit) or {
 			errors << err
 			continue
 		}
 		if is_chain {
-			db_query(mut conn, 'START TRANSACTION ISOLATION LEVEL ${conn.transaction_isolation_level()}') or {
+			access := if conn.transaction_read_only() { 'READ ONLY, ' } else { '' }
+			db_query(mut conn, 'START TRANSACTION ${access}ISOLATION LEVEL ${conn.transaction_isolation_level()}') or {
 				errors << err
 			}
 			dbc.autocommit_transaction = false

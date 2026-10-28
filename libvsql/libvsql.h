@@ -266,7 +266,7 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_ROLLBACK_AND_CHAIN      7 /* roll back and start another */
 
 /* SQLStartTran AccessModes. */
-#define SQL_TRANSACTION_READ_ONLY  0x00000001L /* not supported */
+#define SQL_TRANSACTION_READ_ONLY  0x00000001L /* only read */
 #define SQL_TRANSACTION_READ_WRITE 0x00000002L /* read and write */
 
 /* SQLStartTran IsolationLevels. */
@@ -1717,10 +1717,9 @@ SQLRETURN SQLSpecialColumns(
  * SQLStartTran starts a transaction for a connection (SQL_HANDLE_DBC), or the
  * connection of an environment (SQL_HANDLE_ENV, which is 0A001 if it has more
  * than one). The connection becomes the current connection (see SQLConnect).
- * A transaction is also started by SQLExecDirect when there isn't one. vsql transactions are always
- * SQL_TRANSACTION_READ_WRITE (AccessMode) and SQL_TRANSACTION_READ_COMMITTED,
- * so SQL_TRANSACTION_READ_ONLY, SQL_TRANSACTION_REPEATABLE_READ and
- * SQL_TRANSACTION_SERIALIZABLE are HYC00.
+ * A transaction is also started by SQLExecDirect when there isn't one.
+ * SQL_TRANSACTION_READ_UNCOMMITTED must be SQL_TRANSACTION_READ_ONLY, otherwise
+ * it's 42601.
  *
  *   SQLStartTran(SQL_HANDLE_DBC, dbc, SQL_TRANSACTION_READ_WRITE,
  *                SQL_TRANSACTION_READ_COMMITTED);

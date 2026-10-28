@@ -196,7 +196,7 @@
 13.4/GR/8.b              implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/sql_test.v the statement is checked when the module is compiled
 13.4/GR/9                implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
 13.4/GR/10               impl-defined - - schema and data statements can be in the same transaction
-13.4/GR/11               n/a          - - there are no read-only transactions (#554)
+13.4/GR/11               implemented  vsql/prepare.v tests/set-transaction.sql
 13.4/GR/12               container    - -
 13.4/GR/12.a             implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c
 13.4/GR/12.b             implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c

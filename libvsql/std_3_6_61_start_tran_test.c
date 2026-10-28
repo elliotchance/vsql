@@ -12,15 +12,23 @@ UTEST_F(db, 6_61_start_tran) {
       1);
 }
 
-/* READ UNCOMMITTED is satisfied by READ COMMITTED. */
+/* READ UNCOMMITTED is satisfied by READ COMMITTED, and it's always READ ONLY. */
 UTEST_F(db, 6_61_start_tran_read_uncommitted) {
   EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, utest_fixture->env,
-                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_ONLY,
                          SQL_TRANSACTION_READ_UNCOMMITTED),
             SQL_SUCCESS);
   EXPECT_EQ(
       diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
       1);
+}
+
+UTEST_F(db, 6_61_start_tran_read_uncommitted_read_write) {
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                         SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_UNCOMMITTED),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "42601");
 }
 
 UTEST_F(db, 6_61_start_tran_active) {
@@ -32,12 +40,22 @@ UTEST_F(db, 6_61_start_tran_active) {
   EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "25001");
 }
 
-UTEST_F(db, 6_61_start_tran_not_supported) {
+/* A READ ONLY transaction can't change the database, and chaining keeps it. */
+UTEST_F(db, 6_61_start_tran_read_only) {
   EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
                          SQL_TRANSACTION_READ_ONLY,
                          SQL_TRANSACTION_READ_COMMITTED),
-            SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HYC00");
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "25006");
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT_AND_CHAIN),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "25006");
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_ROLLBACK),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
 }
 
 /* REPEATABLE READ runs as SERIALIZABLE. */

@@ -95,7 +95,7 @@
 # 15.5, Effect of a positioned delete
 15.5                     implemented  vsql/std_2_14_8_delete_statement_positioned.v tests/cursors.sql
 15.5/GR/1                definition   - -
-15.5/GR/2                n/a          - - there are no read-only transactions (#554)
+15.5/GR/2                implemented  vsql/prepare.v tests/set-transaction.sql
 15.5/GR/3                n/a          - - SENSITIVE (T231)
 15.5/GR/3.a              n/a          - - SENSITIVE (T231)
 15.5/GR/3.b              n/a          - - SENSITIVE (T231)
@@ -118,7 +118,7 @@
 # 15.6, Effect of a positioned update
 15.6                     implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
 15.6/GR/1                definition   - -
-15.6/GR/2                n/a          - - there are no read-only transactions (#554)
+15.6/GR/2                implemented  vsql/prepare.v tests/set-transaction.sql
 15.6/GR/3                n/a          - - SENSITIVE (T231)
 15.6/GR/3.a              n/a          - - SENSITIVE (T231)
 15.6/GR/3.b              n/a          - - SENSITIVE (T231)

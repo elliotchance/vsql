@@ -20,6 +20,7 @@ type Stmt = AlterSequenceGeneratorStatement
 	| SetCatalogStatement
 	| SetConstraintsModeStatement
 	| SetSchemaStatement
+	| SetTransactionStatement
 	| StartTransactionStatement
 	| TableDefinition
 	| UpdateStatementSearched
@@ -57,7 +58,11 @@ pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
 	// Storage.end_isolation.
 	p.c.take_isolation_error() or { return p.fail(err) }
 
-	p.c.finish_write(true)!
+	p.c.finish_write(true) or {
+		p.c.unlock_transactions()
+		return err
+	}
+	p.c.unlock_transactions()
 
 	return result
 }
@@ -114,6 +119,7 @@ fn (mut p PreparedStmt) fail(err IError) IError {
 				err.code())
 		}
 	}
+	p.c.unlock_transactions()
 
 	return err
 }
@@ -129,6 +135,10 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 	p.c.begin_row()
 
 	stmt := p.stmt
+	if !p.explain {
+		p.c.begin_transaction(stmt)!
+	}
+
 	match stmt {
 		AlterSequenceGeneratorStatement {
 			if p.explain {
@@ -241,6 +251,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			}
 
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse, p.writes)
+		}
+		SetTransactionStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		StartTransactionStatement {
 			if p.explain {

@@ -76,6 +76,12 @@ mut:
 	// Each is checked against every row of its table once it's immediate (see
 	// check_deferred_constraints).
 	deferred_checks map[string]string
+	// isolation is locked by REPEATABLE READ and SERIALIZABLE transactions, and
+	// when committing changes, see isolation.v.
+	isolation IsolationLock
+	// commit_locked is true when the current statement has checked that it can
+	// commit, see lock_commit.
+	commit_locked bool
 }
 
 // StatementSnapshot is the state of Storage that is kept in memory, from before
@@ -937,6 +943,10 @@ fn (mut f Storage) isolation_end() ! {
 	for page_number, _ in f.transaction_pages {
 		mut page := f.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
+			if obj.tid == f.transaction_id || obj.xid == f.transaction_id {
+				f.lock_commit()!
+			}
+
 			// Only remove the objects expired in this transaction.
 			if obj.xid == f.transaction_id {
 				page.delete(obj.key, obj.tid)

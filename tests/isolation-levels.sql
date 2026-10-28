@@ -1,0 +1,119 @@
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+-- msg: SET TRANSACTION
+-- msg: SET TRANSACTION
+-- msg: SET TRANSACTION
+-- msg: SET TRANSACTION
+
+START TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+COMMIT;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+COMMIT;
+START TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+COMMIT;
+START TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+COMMIT;
+-- msg: START TRANSACTION
+-- msg: COMMIT
+-- msg: START TRANSACTION
+-- msg: COMMIT
+-- msg: START TRANSACTION
+-- msg: COMMIT
+-- msg: START TRANSACTION
+-- msg: COMMIT
+
+EXPLAIN SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+-- error 42601: syntax error: Cannot EXPLAIN SET TRANSACTION
+
+EXPLAIN START TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+-- error 42601: syntax error: Cannot EXPLAIN START TRANSACTION
+
+SET TRANSACTION ISOLATION LEVEL;
+-- error 42601: syntax error: unexpected $end, expecting READ or REPEATABLE or SERIALIZABLE
+
+SET TRANSACTION ISOLATION LEVEL READ;
+-- error 42601: syntax error: unexpected $end, expecting COMMITTED or UNCOMMITTED
+
+SET TRANSACTION ISOLATION SERIALIZABLE;
+-- error 42601: syntax error: unexpected SERIALIZABLE, expecting LEVEL
+
+SET TRANSACTION SERIALIZABLE;
+-- error 42601: syntax error: unexpected SERIALIZABLE, expecting ISOLATION
+
+SET TRANSACTION ISOLATION LEVEL REPEATABLE;
+-- error 42601: syntax error: unexpected $end, expecting READ
+
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE READ ONLY;
+-- error 42601: syntax error: unexpected READ
+
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE,;
+-- error 42601: syntax error: unexpected $end, expecting ISOLATION
+
+START TRANSACTION ISOLATION LEVEL SNAPSHOT;
+-- error 42601: syntax error: unexpected identifier, expecting READ or REPEATABLE or SERIALIZABLE
+
+-- # Each kind of mode can only be given once (17.3, Syntax Rule 2), even if
+-- # it's the same.
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE, ISOLATION LEVEL READ COMMITTED;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE, ISOLATION LEVEL SERIALIZABLE;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED, ISOLATION LEVEL REPEATABLE READ;
+COMMIT;
+-- error 42601: syntax error: isolation level is specified more than once
+-- error 42601: syntax error: isolation level is specified more than once
+-- error 42601: syntax error: isolation level is specified more than once
+-- error 2D000: invalid transaction termination
+
+-- # Every isolation level can change the database.
+CREATE TABLE t (x INT);
+START TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+INSERT INTO t (x) VALUES (1);
+COMMIT;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
+INSERT INTO t (x) VALUES (1);
+COMMIT;
+START TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+INSERT INTO t (x) VALUES (2);
+COMMIT;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+INSERT INTO t (x) VALUES (3);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: COMMIT
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: COMMIT
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: COMMIT
+-- msg: SET TRANSACTION
+-- msg: INSERT 1
+-- X: 1
+-- X: 1
+-- X: 2
+-- X: 3
+
+-- # The modes are checked before whether a transaction is active.
+START TRANSACTION;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE, ISOLATION LEVEL READ COMMITTED;
+START TRANSACTION ISOLATION LEVEL SERIALIZABLE, ISOLATION LEVEL READ COMMITTED;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+START TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+COMMIT;
+-- msg: START TRANSACTION
+-- error 42601: syntax error: isolation level is specified more than once
+-- error 42601: syntax error: isolation level is specified more than once
+-- error 25001: invalid transaction state: active sql transaction
+-- error 25001: invalid transaction state: active sql transaction
+-- msg: COMMIT
+
+-- # The keywords are not reserved, so they can still be used as names.
+CREATE TABLE isolation (level INT, serializable INT, repeatable INT, committed INT, uncommitted INT);
+INSERT INTO isolation (level, serializable, repeatable, committed, uncommitted) VALUES (1, 2, 3, 4, 5);
+SELECT * FROM isolation;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- LEVEL: 1 SERIALIZABLE: 2 REPEATABLE: 3 COMMITTED: 4 UNCOMMITTED: 5

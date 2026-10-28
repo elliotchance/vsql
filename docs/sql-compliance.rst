@@ -19,7 +19,7 @@ Mandatory Features
 ~~~~~~~~~~~~~~~~~~
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 114 of the 164 mandatory features** of the
+**vsql supports 115 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -331,7 +331,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ **E152**
      - **Basic SET TRANSACTION statement**
 
-   * - ❌ E152-01
+   * - ✅ E152-01
      - ``SET TRANSACTION`` statement: ``ISOLATION LEVEL SERIALIZABLE`` clause
 
    * - ❌ E152-02
@@ -685,16 +685,16 @@ Optional Features
    * - ❌ **F054**
      - **TIMESTAMP in DATE type precedence list**
 
-   * - ❌ **F111**
+   * - ✅ **F111**
      - **Isolation levels other than SERIALIZABLE**
 
-   * - ❌ F111-01
+   * - ✅ F111-01
      - READ UNCOMMITTED isolation level
 
-   * - ❌ F111-02
+   * - ✅ F111-02
      - READ COMMITTED isolation level
 
-   * - ❌ F111-03
+   * - ✅ F111-03
      - REPEATABLE READ isolation level
 
    * - ❌ **F121**

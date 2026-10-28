@@ -21,6 +21,7 @@ SQL Reference
    set-catalog.rst
    set-constraints.rst
    set-schema.rst
+   set-transaction.rst
    start-transaction.rst
    update.rst
    values.rst

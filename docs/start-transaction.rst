@@ -17,7 +17,23 @@ Syntax
 
 .. code-block:: text
 
-  START TRANSACTION
+  START TRANSACTION [ ISOLATION LEVEL <level_of_isolation> ]
+
+  <level_of_isolation> ::=
+      READ UNCOMMITTED
+    | READ COMMITTED
+    | REPEATABLE READ
+    | SERIALIZABLE
+
+Characteristics
+---------------
+
+The isolation level decides which changes from other transactions it can see
+(see *Isolation Levels* in :doc:`transactions`).
+
+Without an isolation level, the transaction uses the one from
+:doc:`set-transaction`, or the default (``SERIALIZABLE``). See
+:doc:`set-transaction` for more details.
 
 Implicit Transactions
 ---------------------
@@ -62,3 +78,4 @@ See Also
 
 - :doc:`commit`
 - :doc:`rollback`
+- :doc:`set-transaction`

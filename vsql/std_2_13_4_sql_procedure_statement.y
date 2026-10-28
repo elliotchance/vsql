@@ -25,6 +25,7 @@ sql_transaction_statement:
 | commit_statement { $$.v = $1.v as Stmt }
 | rollback_statement { $$.v = $1.v as Stmt }
 | set_constraints_mode_statement { $$.v = $1.v as Stmt }
+| set_transaction_statement { $$.v = $1.v as Stmt }
 
 sql_session_statement:
   set_schema_statement { $$.v = Stmt($1.v as SetSchemaStatement) }

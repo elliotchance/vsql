@@ -23,7 +23,7 @@ grep -F '<details class="schema" open><summary>FOO <span class="count">1 table</
 grep -F '<summary>PUBLIC <span class="count">2 tables</span></summary>' $HTML_FILE
 grep -F '<tr><td>my &lt;t&gt;</td><td><button type="submit" name="query" value="PUBLIC.&quot;my &lt;t&gt;&quot;">Query</button></td></tr>' $HTML_FILE
 grep -F 'title="New tab">+</button><span class="version">vsql v0.0.0</span></div>' $HTML_FILE
-grep -F '<summary>VSQL_APP <span class="count">1 table</span></summary><table class="tables"><tbody><tr><td>TABS</td>' $HTML_FILE
+grep -F '<summary>VSQL_APP <span class="count">2 tables</span></summary><table class="tables"><tbody><tr><td>HISTORY</td><td><button type="submit" name="query" value="VSQL_APP.HISTORY">Query</button></td></tr><tr><td>TABS</td>' $HTML_FILE
 echo 'SELECT COUNT(*) FROM vsql_app.tabs;' | $VSQL cli $VSQL_FILE | grep -E '^ *0$'
 
 # Query opens a new tab that runs SELECT * on the table. The editor colors
@@ -79,6 +79,19 @@ curl -sf $URL -d tab=1 --data-urlencode "sql=SELECT * FROM nope" > $HTML_FILE
 grep -F 'no such table' $HTML_FILE
 grep -F '<span class="status">Error (' $HTML_FILE
 
+# Each query run in a tab is in its history (the latest first) with the number
+# of rows, the message of a statement or the error, and when it was run.
+grep -F '<button type="button" class="show-history" title="History">History</button>' $HTML_FILE
+grep -F '<li><button type="button"><pre class="sql">SELECT * FROM nope</pre><span class="meta">' $HTML_FILE
+grep -F '&middot; <span class="error">' $HTML_FILE
+grep -F '<pre class="sql">SELECT * FROM &quot;PUBLIC&quot;.&quot;my &lt;t&gt;&quot;</pre><span class="meta">' $HTML_FILE
+grep -F '&middot; 2 rows</span>' $HTML_FILE
+echo 'SELECT tab_id, row_count, message, error IS NULL FROM vsql_app.history ORDER BY id;' | $VSQL cli $VSQL_FILE > $HTML_FILE
+grep -E '^ *1 +\| +2 +\| +NULL +\| +TRUE *$' $HTML_FILE
+grep -E '^ *2 +\| +1 +\| +NULL +\| +TRUE *$' $HTML_FILE
+grep -E '^ *2 +\| +NULL +\| +INSERT 1 +\| +TRUE *$' $HTML_FILE
+grep -E '^ *1 +\| +NULL +\| +NULL +\| +FALSE *$' $HTML_FILE
+
 # The tabs (and which is active) are restored when the file is opened again,
 # but not their results.
 kill $APP_PID
@@ -107,6 +120,9 @@ curl -sf $URL -d tab=2 -d sql= -d close=2 -o /dev/null
 curl -sf $URL > $HTML_FILE
 grep -F '<span class="tab home active">' $HTML_FILE
 if grep -F 'name="close"' $HTML_FILE; then exit 1; fi
+
+# Closing a tab removes its history.
+echo 'SELECT COUNT(*) FROM vsql_app.history;' | $VSQL cli $VSQL_FILE | grep -E '^ *0$'
 
 # The rows of SELECT * FROM a table (which may have a WHERE, ORDER BY, etc) can
 # be changed. Only a table with a PRIMARY KEY can have rows updated or deleted,
@@ -162,5 +178,11 @@ grep -F '<p class="error">DELETE 0: the change must be to 1 row, so it was rolle
 grep -F '<span class="status">DELETE 1, 1 row (' $HTML_FILE
 curl -sf $URL -d tab=3 --data-urlencode "confirm=UPDATE PUBLIC.PK SET NAME = 'x'" -o /dev/null
 echo 'SELECT COUNT(*) FROM pk;' | $VSQL cli $VSQL_FILE | grep -E '^ *1$'
+
+# Only the latest 100 queries of a tab are kept.
+for i in $(seq 1 101); do
+  curl -sf $URL -d tab=3 --data-urlencode "sql=VALUES $i" -o /dev/null
+done
+echo 'SELECT COUNT(*), MIN(query_text) FROM vsql_app.history WHERE tab_id = 3;' | $VSQL cli $VSQL_FILE | grep -E '^ *100 +\| +VALUES 10 *$'
 
 if curl -sf "${URL}nope"; then exit 1; fi

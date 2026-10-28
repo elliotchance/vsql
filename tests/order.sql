@@ -131,12 +131,10 @@ ORDER BY y, x
 OFFSET 10 ROWS
 FETCH FIRST 2 ROWS ONLY;
 
-/* set offset_num 1 */
-/* set row_num 2 */
 SELECT * FROM foo
 ORDER BY y, x
-OFFSET :offset_num ROW
-FETCH FIRST :row_num ROWS ONLY;
+OFFSET 1 ROW
+FETCH FIRST 2 ROWS ONLY;
 -- X: 0.1234e0 Y: hi
 -- X: 1.234e0 Y: hi
 

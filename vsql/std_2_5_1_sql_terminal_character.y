@@ -20,8 +20,6 @@ period: OPERATOR_PERIOD
 
 solidus: OPERATOR_SOLIDUS { $$.v = $1.v as string }
 
-colon: OPERATOR_COLON
-
 less_than_operator: OPERATOR_LESS_THAN
 
 equals_operator: OPERATOR_EQUALS

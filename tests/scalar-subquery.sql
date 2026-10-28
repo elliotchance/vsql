@@ -143,8 +143,9 @@ SELECT NEXT VALUE FOR seq1 AS a, (SELECT COUNT(*) FROM t1) AS b, NEXT VALUE FOR 
 -- A: 3 B: 3 C: 3
 
 -- # A parameter can be used in a subquery.
-/* set foo 2 */
-SELECT * FROM t1 WHERE x = (SELECT x FROM t1 WHERE x = :foo);
+/* params 2 */
+SELECT * FROM t1 WHERE x = (SELECT x FROM t1 WHERE x = ?);
+-- sql: SELECT * FROM t1 WHERE x = (SELECT x FROM t1 WHERE x = 2.0e0)
 -- X: 2 Y: b
 
 EXPLAIN SELECT x, (SELECT MAX(x) FROM t2) FROM t1 WHERE y = (SELECT y FROM t1 WHERE x = 1);

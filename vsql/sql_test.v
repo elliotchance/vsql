@@ -10,7 +10,6 @@ import time
 
 struct SQLTest {
 	setup       []string
-	params      map[string]Value
 	file_name   string
 	line_number int
 	stmts       []string
@@ -49,15 +48,13 @@ fn get_tests() ![]SQLTest {
 		mut stmt := ''
 		mut setup_stmt := ''
 		mut in_setup := false
-		mut params := map[string]Value{}
 		mut show_types := false
 		for line in lines {
 			if line == '' {
-				tests << SQLTest{setup, params, test_file_path, line_number, stmts, expected.join('\n'), show_types}
+				tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types}
 				stmts = []
 				expected = []
 				in_setup = false
-				params = map[string]Value{}
 				show_types = false
 			} else if line.starts_with('/*') {
 				contents := line[2..line.len - 2].trim_space()
@@ -76,16 +73,8 @@ fn get_tests() ![]SQLTest {
 					stmts << contents
 				} else if contents.starts_with('types') {
 					show_types = true
-				} else if contents.starts_with('set ') {
-					parts := contents.split(' ')
-					if parts[2].starts_with("'") {
-						params[parts[1]] = new_character_value(parts[2][1..parts[2].len - 1])
-					} else if parts[2] == 'NULL' {
-						typ := new_type(parts[3], 0, 0)
-						params[parts[1]] = new_null_value(typ.typ)
-					} else {
-						params[parts[1]] = new_double_precision_value(parts[2].f64())
-					}
+				} else if contents == 'params' || contents.starts_with('params ') {
+					stmts << '${contents} '
 				} else {
 					panic('bad directive: "${contents}"')
 				}
@@ -114,11 +103,98 @@ fn get_tests() ![]SQLTest {
 		}
 
 		if stmts.len > 0 {
-			tests << SQLTest{setup, params, test_file_path, line_number, stmts, expected.join('\n'), show_types}
+			tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types}
 		}
 	}
 
 	return tests
+}
+
+// parse_params returns the values of a "params" directive, named "?1", "?2",
+// etc. Each value is a character string (such as 'it''s'), NULL followed by its
+// type (such as NULL INTEGER) or a number, which is a DOUBLE PRECISION.
+fn parse_params(s string) map[string]Value {
+	mut params := map[string]Value{}
+	mut i := 0
+	for i < s.len {
+		if s[i] == ` ` {
+			i++
+			continue
+		}
+
+		name := '?${params.len + 1}'
+		if s[i] == `'` {
+			start := i + 1
+			i = start
+			for i < s.len && !(s[i] == `'` && (i + 1 == s.len || s[i + 1] != `'`)) {
+				i += if s[i] == `'` { 2 } else { 1 }
+			}
+			params[name] = new_character_value(s[start..i].replace("''", "'"))
+			i++
+			continue
+		}
+
+		word, after_word := next_param_word(s, i)
+		i = after_word
+		if word == 'NULL' {
+			typ, after_type := next_param_word(s, i)
+			i = after_type
+			params[name] = new_null_value(new_type(typ, 0, 0).typ)
+		} else {
+			params[name] = new_double_precision_value(word.f64())
+		}
+	}
+
+	return params
+}
+
+// next_param_word returns the next word in s from i, and the position after it.
+fn next_param_word(s string, i int) (string, int) {
+	mut start := i
+	for start < s.len && s[start] == ` ` {
+		start++
+	}
+
+	mut end := start
+	for end < s.len && s[end] != ` ` {
+		end++
+	}
+
+	return s[start..end], end
+}
+
+// substitute_params returns the statement on one line, with each "?" replaced
+// by the literal of its value, or none if no "?" has a value. A "?" that doesn't
+// have a value isn't replaced.
+fn substitute_params(stmt string, params map[string]Value) ?string {
+	mut sb := strings.new_builder(stmt.len)
+	mut n := 0
+	mut replaced := 0
+	mut quote := u8(0)
+	for c in stmt {
+		if quote != 0 {
+			if c == quote {
+				quote = 0
+			}
+		} else if c == `'` || c == `"` {
+			quote = c
+		} else if c == `?` {
+			n++
+			if v := params['?${n}'] {
+				sb.write_string(if v.is_null { 'CAST(NULL AS ${v.typ})' } else { v.literal() })
+				replaced++
+				continue
+			}
+		}
+
+		sb.write_u8(c)
+	}
+
+	if replaced == 0 {
+		return none
+	}
+
+	return sb.str().trim_space().trim_right(';').replace('\n', ' ')
 }
 
 fn replace_unicode(s string) string {
@@ -196,10 +272,11 @@ fn (test SQLTest) modes() []SQLTestMode {
 // through_server is true if the statements of the test are sent to a Server
 // from a PostgreSQL client over TCP (in each mode). One server is shared by all
 // of the tests. The server can't run a test that uses something only the V
-// library has, such as faults, host parameters or the type of each value, so
+// library has, such as faults, dynamic parameters or the type of each value, so
 // those use a Connection directly.
 fn (test SQLTest) through_server() bool {
-	return $env('SERVER') != '0' && !test.show_types && test.params.len == 0
+	return $env('SERVER') != '0' && !test.show_types
+		&& !test.stmts.any(it.starts_with('params '))
 		&& !test.stmts.any(it.starts_with('fault ') || it.starts_with('disconnect ')
 			|| it.starts_with('create_catalog ') || it.starts_with('virtual_table ')
 			|| it == 'out' || it == 'in' || it.starts_with('clock '))
@@ -372,7 +449,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 			println('  ${stmt.trim_space()}')
 		}
 
-		output := db.run(stmt, test.params, false)!
+		output := db.run(stmt, map[string]Value{}, false)!
 		if output.error != '' {
 			return error('setup failed: ${stmt}: ${output.error}')
 		}
@@ -381,6 +458,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 	mut actual := ''
 	mut last_dump := ?string(none)
 	mut restores := 0
+	mut params := map[string]Value{}
 	defer {
 		disarm_faults()
 	}
@@ -408,6 +486,13 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 		// "clock <offset>" sets the time zone of the current connection, such as
 		// "-05:00" (the time is still sql_test_now). "clock real" uses the real
 		// clock and time zone.
+		// "params <value> ..." sets the value of each "?" for the statements
+		// that follow.
+		if stmt.starts_with('params ') {
+			params = parse_params(stmt[7..])
+			continue
+		}
+
 		if stmt.starts_with('clock ') {
 			set_sql_test_clock(mut db.db, stmt[6..])
 			continue
@@ -491,7 +576,14 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 		}
 
 		prefix := if current_connection_name == '' { '' } else { '${current_connection_name}: ' }
-		output := db.run(stmt, test.params, test.show_types)!
+
+		// A statement with a "?" also shows each value it's given, in place of
+		// its "?".
+		if substituted := substitute_params(stmt, params) {
+			actual += '${prefix}sql: ${substituted}\n'
+		}
+
+		output := db.run(stmt, params, test.show_types)!
 		if output.error != '' {
 			actual += '${prefix}${output.error}\n'
 			continue

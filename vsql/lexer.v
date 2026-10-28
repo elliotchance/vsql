@@ -231,9 +231,8 @@ fn tokenize(sql_stmt string) ![]Token {
 		// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target
 		// specification>
 		//
-		// Each <dynamic parameter specification> ("?") is a host parameter
-		// named by its position: "?1", "?2", etc. They can't be confused with
-		// a <host parameter name>, which is an identifier.
+		// Each <dynamic parameter specification> ("?") is named by its
+		// position: "?1", "?2", etc.
 		if cs[i] == `?` {
 			dynamic_parameters++
 			tokens << Token{token_operator_question_mark, YYSymType{

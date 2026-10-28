@@ -49,13 +49,6 @@ column_name:
     $$.v = new_column_identifier(($1.v as IdentifierChain).identifier)!
   }
 
-host_parameter_name:
-  colon identifier {
-    $$.v = GeneralValueSpecification(HostParameterName{
-      ($2.v as IdentifierChain).identifier}
-    )
-  }
-
 correlation_name:
   identifier {
     $$.v = new_column_identifier(($1.v as IdentifierChain).identifier)!

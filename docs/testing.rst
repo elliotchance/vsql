@@ -299,31 +299,41 @@ before each test:
    SELECT 2 FROM t1;
    -- COL1: 2
 
-Host Parameters
-^^^^^^^^^^^^^^^
+Dynamic Parameters
+^^^^^^^^^^^^^^^^^^
 
-Host parameters can be set with the ``/* set name value */`` and only exist for
-the lifetime of a single test:
+The values of the dynamic parameters (each ``?``) are set with
+``/* params value ... */``, in order. They're used by the statements that follow
+it, until the next ``params`` or the end of the test. Each statement that has a
+``?`` with a value also shows the statement with each value in place of its
+``?``, so that the values can be checked:
 
 .. code-block:: sql
 
    /* setup */
-   CREATE TABLE t1 (x FLOAT);
-   
-   INSERT INTO t1 (x) VALUES (:foo);
-   -- error 42P02: parameter does not exist: foo
-   
-   /* set foo 2 */
-   INSERT INTO t1 (x) VALUES (:foo);
+   CREATE TABLE t1 (x FLOAT, y VARCHAR(10));
+
+   INSERT INTO t1 (x) VALUES (?);
+   -- error 42P02: parameter does not exist: ?1
+
+   /* params 2 'a' */
+   INSERT INTO t1 (x, y) VALUES (?, ?);
+   /* params 3 */
+   UPDATE t1 SET x = x + ?;
    SELECT * FROM t1;
+   -- sql: INSERT INTO t1 (x, y) VALUES (2.0e0, 'a')
    -- msg: INSERT 1
-   -- X: 2
+   -- sql: UPDATE t1 SET x = x + 3.0e0
+   -- msg: UPDATE 1
+   -- X: 5e0 Y: a
 
-There are slightly different forms depending on the type of the host parameter:
+Each value is one of:
 
-- ``/* set a 123 */`` for numeric values.
-- ``/* set b 'foo' */`` for string values.
-- ``/* set b NULL BOOLEAN */`` for ``NULL`` values (must specify a type).
+- A number, such as ``123``, which is a ``DOUBLE PRECISION``.
+- A string, such as ``'it''s'``.
+- ``NULL`` followed by its type, such as ``NULL BOOLEAN``.
+
+``/* params */`` on its own removes all of the values.
 
 Comments
 ^^^^^^^^

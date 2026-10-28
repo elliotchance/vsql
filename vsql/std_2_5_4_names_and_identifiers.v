@@ -706,31 +706,3 @@ pub fn (e Identifier) str() string {
 
 	return parts.join('.')
 }
-
-// HostParameterName is :foo. The colon is not included in the name. Parameters
-// are case sensitive.
-struct HostParameterName {
-	name string
-}
-
-fn (e HostParameterName) pstr(params map[string]Value) string {
-	return params[e.name].pstr(params)
-}
-
-fn (e HostParameterName) compile(mut c Compiler) !CompileResult {
-	// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rule 1
-	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rule 1
-	if c.restricted != '' {
-		return sqlstate_42601('parameter :${e.name} cannot be used in ${c.restricted}')
-	}
-
-	p := c.params[e.name] or { return sqlstate_42p02(e.name) }
-
-	return CompileResult{
-		run:          fn [p] (mut conn Connection, data Row, params map[string]Value) !Value {
-			return p
-		}
-		typ:          p.typ
-		contains_agg: false
-	}
-}

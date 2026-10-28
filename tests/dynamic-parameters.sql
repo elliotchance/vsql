@@ -1,43 +1,48 @@
-/* set ?1 2 */
 /* types */
+/* params 2 */
 VALUES ?;
+-- sql: VALUES 2.0e0
 -- COL1: 2e0 (DOUBLE PRECISION)
 
-/* set ?1 'a' */
-/* set ?2 'b' */
+/* params 'a' 'b' */
 VALUES ROW(?, ?);
+-- sql: VALUES ROW('a', 'b')
 -- COL1: a COL2: b
 
-/* set ?1 2 */
+/* params 2 */
 VALUES ?, ?;
+-- sql: VALUES 2.0e0, ?
 -- error 42P02: parameter does not exist: ?2
 
-/* set ?1 'a' */
+/* params 'a' */
 VALUES ROW('?', ?);
+-- sql: VALUES ROW('?', 'a')
 -- COL1: ? COL2: a
 
 /* setup */
 CREATE TABLE t1 (x FLOAT, y VARCHAR(10));
 
-/* set ?1 1.5 */
-/* set ?2 'hi' */
+/* params 1.5 'hi' */
 INSERT INTO t1 (x, y) VALUES (?, ?);
 SELECT * FROM t1;
+-- sql: INSERT INTO t1 (x, y) VALUES (1.5e0, 'hi')
 -- msg: INSERT 1
 -- X: 1.5e0 Y: hi
 
-/* set ?1 'hi' */
+/* params 'hi' */
 SELECT * FROM t1 WHERE y = ?;
--- 
+-- sql: SELECT * FROM t1 WHERE y = 'hi'
 
 -- # Each statement numbers its own parameters, so the "?" in the UPDATE is
 -- # "?1".
-/* set ?1 3 */
-/* set ?2 'a' */
+/* params 3 'a' */
 INSERT INTO t1 (x, y) VALUES (?, ?);
+/* params 3 */
 UPDATE t1 SET x = x + ?;
 SELECT * FROM t1;
+-- sql: INSERT INTO t1 (x, y) VALUES (3.0e0, 'a')
 -- msg: INSERT 1
+-- sql: UPDATE t1 SET x = x + 3.0e0
 -- msg: UPDATE 1
 -- X: 6e0 Y: a
 

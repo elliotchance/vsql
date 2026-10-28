@@ -1030,7 +1030,7 @@ Optional Features
    * - ❌ **F859**
      - **Top-level <fetch first clause> in views**
 
-   * - ✅ **F860**
+   * - ❌ **F860**
      - **dynamic <fetch first row count> in <fetch first clause>**
 
    * - ✅ **F861**
@@ -1045,7 +1045,7 @@ Optional Features
    * - ❌ **F864**
      - **Top-level <result offset clause> in views**
 
-   * - ✅ **F865**
+   * - ❌ **F865**
      - **dynamic <offset row count> in <result offset clause>**
 
    * - ❌ **F866**

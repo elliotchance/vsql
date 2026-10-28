@@ -36,6 +36,12 @@ when the file is opened again. A tab's title is the start of its SQL when it was
 run. Switching tabs doesn't run the SQL, it shows the last result (until the
 app is restarted).
 
+Each query run in a tab is saved in the ``VSQL_APP.HISTORY`` table with the
+number of rows (or the message of a statement like ``INSERT 1``) or the error,
+and when it was run. Only the latest 100 queries of each tab are kept, and
+closing a tab removes them. The History button shows them (the latest first),
+choosing one puts it in the editor without running it.
+
 The rows of a ``SELECT * FROM`` a table (optionally with ``WHERE``,
 ``ORDER BY``, ``OFFSET`` or ``FETCH``) can be changed:
 

@@ -42,6 +42,25 @@ if (confirmDialog) {
 	confirmDialog.showModal();
 }
 
+// The history is a popup of the queries run in the tab, the latest first.
+// Choosing one puts it in the editor without running it.
+const historyDialog = document.querySelector('dialog.history');
+if (historyDialog) {
+	document.querySelector('button.show-history').addEventListener('click', () => historyDialog.showModal());
+	historyDialog.querySelector('.close').addEventListener('click', () => historyDialog.close());
+	historyDialog.querySelectorAll('li button').forEach(button => {
+		const sql = button.querySelector('pre');
+		const text = sql.textContent;
+		sql.innerHTML = toHtml(text);
+		button.addEventListener('click', () => {
+			textarea.value = text;
+			highlight();
+			historyDialog.close();
+			textarea.focus();
+		});
+	});
+}
+
 // A change to a row is posted with the table, and the primary key of the row
 // (data-key) for an update or delete. The server shows the statement to be
 // confirmed before it's run.

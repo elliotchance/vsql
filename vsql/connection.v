@@ -150,10 +150,9 @@ fn open_connection(path string, options ConnectionOptions) !&Connection {
 	return conn
 }
 
-// close releases the session lock of each file catalog. There is no public way
-// to close a connection yet, but the SQL tests open thousands of them and would
-// otherwise run out of file descriptors.
-fn (mut conn Connection) close() {
+// close releases the session lock of each file catalog. The connection must not
+// be used after it's closed.
+pub fn (mut conn Connection) close() {
 	for _, mut catalog in conn.catalogs {
 		if catalog.path != ':memory:' {
 			catalog.storage.session.close()
@@ -432,7 +431,14 @@ pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 	stmt := parse_tokens(tokens)!
 	elapsed_parse := t.elapsed()
 
-	return PreparedStmt{stmt, map[string]Value{}, explain, has_next_value(tokens), &conn, elapsed_parse}
+	return PreparedStmt{
+		stmt:               stmt
+		explain:            explain
+		writes:             has_next_value(tokens)
+		dynamic_parameters: tokens.filter(it.token == token_operator_question_mark).len
+		c:                  &conn
+		elapsed_parse:      elapsed_parse
+	}
 }
 
 fn parse_tokens(tokens []Token) !Stmt {
@@ -452,7 +458,7 @@ pub fn (mut conn Connection) query(sql_stmt string) !Result {
 
 // in_transaction is true while START TRANSACTION is active. Every catalog is in
 // the same SQL-transaction.
-fn (conn Connection) in_transaction() bool {
+pub fn (conn Connection) in_transaction() bool {
 	for _, catalog in conn.catalogs {
 		if catalog.storage.transaction_state == .active {
 			return true
@@ -460,6 +466,11 @@ fn (conn Connection) in_transaction() bool {
 	}
 
 	return false
+}
+
+// current_catalog_name is the CURRENT_CATALOG of the connection.
+pub fn (conn Connection) current_catalog_name() string {
+	return conn.current_catalog
 }
 
 // rollback_after_error rolls back the current transaction (if any) after a
@@ -669,7 +680,9 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 	return sqlstate_42601('must provide a CREATE TABLE statement')
 }
 
-// schemas returns the schemas in this catalog (database).
+// schemas returns the schemas in this catalog (database). This includes the
+// INFORMATION_SCHEMA (and the schema of any other virtual table), which has
+// is_virtual set.
 pub fn (mut conn CatalogConnection) schemas() ![]Schema {
 	conn.open_read_connection()!
 	defer {
@@ -679,6 +692,15 @@ pub fn (mut conn CatalogConnection) schemas() ![]Schema {
 	mut schemas := []Schema{}
 	for _, schema in conn.storage.schemas {
 		schemas << schema
+	}
+	for _, virtual_table in conn.virtual_tables {
+		name := virtual_table.create_table_stmt.table_name.schema_name
+		if !schemas.any(it.name == name) {
+			schemas << Schema{
+				name:       name
+				is_virtual: true
+			}
+		}
 	}
 
 	conn.storage.take_isolation_error()!
@@ -720,7 +742,9 @@ fn (mut conn CatalogConnection) identity_sequence(table Table) !Sequence {
 	return sequence
 }
 
-// schema_tables returns tables for the provided schema. If the schema does not
+// schema_tables returns tables for the provided schema. This includes virtual
+// tables (such as the views of the INFORMATION_SCHEMA, or one registered with
+// register_virtual_table()), which have is_virtual set. If the schema does not
 // exist and empty list will be returned.
 pub fn (mut conn CatalogConnection) schema_tables(schema string) ![]Table {
 	conn.open_read_connection()!
@@ -732,6 +756,11 @@ pub fn (mut conn CatalogConnection) schema_tables(schema string) ![]Table {
 	for _, table in conn.storage.tables {
 		if table.name.schema_name == schema {
 			tables << table
+		}
+	}
+	for _, virtual_table in conn.virtual_tables {
+		if virtual_table.create_table_stmt.table_name.schema_name == schema {
+			tables << virtual_table.table()
 		}
 	}
 

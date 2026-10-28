@@ -570,6 +570,9 @@ struct PreparedStmt
    	// otherwise be read only. At the moment this is only when it contains a
    	// NEXT VALUE FOR.
    	writes bool
+   	// dynamic_parameters is the number of <dynamic parameter specification>s
+   	// ("?") in the statement.
+   	dynamic_parameters int
    mut:
    	c             &Connection
    	elapsed_parse time.Duration
@@ -618,6 +621,9 @@ struct Schema
    pub:
    	// The name of the schema is case-sensitive.
    	name string
+   	// A virtual schema, such as INFORMATION_SCHEMA, only has virtual tables.
+   	// It is not persisted to disk.
+   	is_virtual bool
    }
 
 Represents a schema.

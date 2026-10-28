@@ -36,6 +36,10 @@ mut:
 	// no active transaction. If there is no active transaction, each statement
 	// will be given an implicit transaction.
 	transaction_id u64
+	// isolation_depth is the number of isolation blocks that are open, so that
+	// an isolation block inside another one (such as delete_table calling
+	// delete_identity) is part of the same implicit transaction.
+	isolation_depth int
 	// transaction_pages contains all the page numbers that have been modified
 	// during this transaction. This is important for COMMIT and ROLLBACK to
 	// revisit pages that need to be cleaned up or frozen.
@@ -62,6 +66,16 @@ mut:
 	// isolation_error is the first error from isolation_end in end_isolation,
 	// which the statement must fail with, see take_isolation_error.
 	isolation_error ?IError
+	// constraint_modes are the constraint modes set by SET CONSTRAINTS for the
+	// current (or next) transaction, true for DEFERRED, keyed by the schema
+	// and name of the constraint (see constraint_key). A deferrable constraint
+	// that isn't here has its initial constraint mode.
+	constraint_modes map[string]bool
+	// deferred_checks are the deferred constraints that a statement in the
+	// current transaction didn't check, with the storage ID of their table.
+	// Each is checked against every row of its table once it's immediate (see
+	// check_deferred_constraints).
+	deferred_checks map[string]string
 }
 
 // StatementSnapshot is the state of Storage that is kept in memory, from before
@@ -75,6 +89,7 @@ struct StatementSnapshot {
 	transaction_state TransactionState
 	transaction_id    u64
 	transaction_pages map[int]bool
+	isolation_depth   int
 }
 
 // begin_statement must be called at the start of a statement that changes the
@@ -90,6 +105,7 @@ fn (mut f Storage) begin_statement() {
 		schemas:           f.schemas.clone()
 		transaction_state: f.transaction_state
 		transaction_id:    f.transaction_id
+		isolation_depth:   f.isolation_depth
 		transaction_pages: f.transaction_pages.clone()
 	}
 	f.btree.written_pages = map[int]bool{}
@@ -123,6 +139,7 @@ fn (mut f Storage) discard_statement(path string) ! {
 	f.schemas = f.snapshot.schemas.clone()
 	f.transaction_state = f.snapshot.transaction_state
 	f.transaction_id = f.snapshot.transaction_id
+	f.isolation_depth = f.snapshot.isolation_depth
 	f.transaction_pages = f.snapshot.transaction_pages.clone()
 	f.btree.pager.discard()
 	f.btree.written_pages = map[int]bool{}
@@ -381,7 +398,10 @@ fn (mut f Storage) create_schema(schema_name string) ! {
 		f.end_isolation()
 	}
 
-	schema := Schema{f.transaction_id, schema_name}
+	schema := Schema{
+		tid:  f.transaction_id
+		name: schema_name
+	}
 
 	obj := new_page_object('S${schema_name}'.bytes(), f.transaction_id, 0, schema.bytes())
 	f.btree.add(obj)!
@@ -832,12 +852,20 @@ fn (mut f Storage) isolation_start() ! {
 		}
 	}
 
+	// An isolation block inside another one is part of its implicit
+	// transaction.
+	if f.isolation_depth > 0 {
+		f.isolation_depth++
+		return
+	}
+
 	// A reader holds a shared lock, so it must not write to the header. It
 	// doesn't need its own transaction ID either: no writer can run while the
 	// lock is held, and with an ID of 0 only committed objects (and objects
 	// deleted by transactions that are still active) are visible.
 	if f.read_only {
 		f.transaction_id = 0
+		f.isolation_depth = 1
 		return
 	}
 
@@ -845,6 +873,7 @@ fn (mut f Storage) isolation_start() ! {
 
 	f.transaction_id = f.header.transaction_id
 	f.header.active_transaction_ids.add(f.transaction_id)!
+	f.isolation_depth = 1
 }
 
 // end_isolation is isolation_end for a defer, which can't return an error. The
@@ -872,6 +901,13 @@ fn (mut f Storage) take_isolation_error() ! {
 // state of the active or implicit transaction state is expected to be
 // maintained.
 fn (mut f Storage) isolation_end() ! {
+	// The implicit transaction ends with the outermost isolation block. This
+	// is counted before anything can fail, so that the next statement still
+	// starts its own transaction.
+	if f.transaction_state == .not_active {
+		f.isolation_depth--
+	}
+
 	fault_point('isolation_end')!
 
 	// The B-tree is replaced for each operation, so the pages it changed must
@@ -892,7 +928,7 @@ fn (mut f Storage) isolation_end() ! {
 		}
 	}
 
-	if f.read_only {
+	if f.isolation_depth > 0 || f.read_only {
 		return
 	}
 

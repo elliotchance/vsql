@@ -1,0 +1,183 @@
+module main
+
+import vsql
+
+// ISO/IEC 9075-3:2003(E), 4.3, Diagnostics areas in SQL/CLI
+//
+// Each handle has a diagnostics area that is emptied at the start of each CLI
+// routine (other than GetDiagRec) that's given the handle. The conditions are
+// read with GetDiagRec.
+
+struct DiagnosticRecord {
+	sqlstate string
+	msg      string
+mut:
+	// row_number and column_number are the row of the rowset and the column
+	// that the condition applies to, or 0 (zero) if it doesn't apply to one
+	// (see 4.3.1, "Setting of ROW_NUMBER and COLUMN_NUMBER fields").
+	row_number    int
+	column_number int
+}
+
+// Diagnostics is a diagnostics area. The header fields describe the last
+// routine (other than Error, GetDiagField and GetDiagRec) that was called with
+// the handle, see Table 1, "Fields in SQL/CLI diagnostics areas".
+struct Diagnostics {
+mut:
+	records []DiagnosticRecord
+	// processed is the number of status records already returned by Error.
+	processed int
+	// returncode is the return code of the routine.
+	returncode i16
+	// is_execute is true when the routine is ExecDirect, and row_count is the
+	// number of rows affected by the statement that it executed.
+	is_execute bool
+	row_count  int
+	// dynamic_function and dynamic_function_code identify the statement that
+	// was executed (see Table 31, "SQL-statement codes", in ISO/IEC 9075-2),
+	// or are empty if no statement was executed.
+	dynamic_function      string
+	dynamic_function_code int
+	// transactions_committed and transactions_rolled_back are the number of
+	// SQL-transactions that the routine committed or rolled back.
+	transactions_committed   int
+	transactions_rolled_back int
+}
+
+// CLIError is an exception condition raised by a CLI routine itself, rather
+// than one from executing an SQL statement.
+struct CLIError {
+	Error
+	sqlstate string
+	message  string
+}
+
+fn (err CLIError) msg() string {
+	return err.message
+}
+
+fn cli_error(sqlstate string, msg string) IError {
+	return CLIError{
+		sqlstate: sqlstate
+		message:  msg
+	}
+}
+
+fn (mut d Diagnostics) clear() {
+	d.records = []
+	d.processed = 0
+	d.returncode = sql_success
+	d.is_execute = false
+	d.row_count = 0
+	d.dynamic_function = ''
+	d.dynamic_function_code = 0
+	d.transactions_committed = 0
+	d.transactions_rolled_back = 0
+}
+
+// warning raises a completion condition, such as "01004 string data, right
+// truncation".
+fn (mut d Diagnostics) warning(sqlstate string, msg string) i16 {
+	d.records << DiagnosticRecord{
+		sqlstate: sqlstate
+		msg:      msg
+	}
+	if d.returncode == sql_success {
+		d.returncode = sql_success_with_info
+	}
+
+	return sql_success_with_info
+}
+
+// row_condition records a condition raised for a column of a row of a rowset
+// by Fetch or FetchScroll, without changing the return code.
+fn (mut d Diagnostics) row_condition(err IError, row_number int, column_number int) {
+	sqlstate := if err is CLIError {
+		err.sqlstate
+	} else if err.code() == 0 {
+		'HY000'
+	} else {
+		vsql.sqlstate_from_int(err.code())
+	}
+	d.records << DiagnosticRecord{
+		sqlstate:      sqlstate
+		msg:           err.msg()
+		row_number:    row_number
+		column_number: column_number
+	}
+}
+
+// no_data raises a completion condition: no data. There isn't a status record
+// for it.
+fn (mut d Diagnostics) no_data() i16 {
+	d.returncode = sql_no_data
+
+	return sql_no_data
+}
+
+// NoData is returned (as an error) by a function that raises a completion
+// condition: no data.
+struct NoData {
+	Error
+}
+
+fn no_data() IError {
+	return NoData{}
+}
+
+// error raises an exception condition. err is either a CLIError or an error
+// from vsql (which has the SQLSTATE as its code). A NoData isn't an exception
+// condition, see no_data.
+fn (mut d Diagnostics) error(err IError) i16 {
+	if err is NoData {
+		return d.no_data()
+	}
+
+	sqlstate := if err is CLIError {
+		err.sqlstate
+	} else if err.code() == 0 {
+		'HY000'
+	} else {
+		vsql.sqlstate_from_int(err.code())
+	}
+	d.records << DiagnosticRecord{
+		sqlstate: sqlstate
+		msg:      err.msg()
+	}
+	d.returncode = sql_error
+
+	return sql_error
+}
+
+// result is the return code after a routine succeeds, which may have raised
+// warnings.
+fn (d Diagnostics) result() i16 {
+	return if d.records.len > 0 { sql_success_with_info } else { sql_success }
+}
+
+// handle_diagnostics returns the diagnostics area of the resource identified by
+// a handle of the handle type, or none if it's not an allocated resource of
+// that type.
+fn handle_diagnostics(handle_type i16, h i64) ?&Diagnostics {
+	match handle_type {
+		sql_handle_env {
+			mut env := envs[h] or { return none }
+			return &env.diag
+		}
+		sql_handle_dbc {
+			mut dbc := dbcs[h] or { return none }
+			return &dbc.diag
+		}
+		sql_handle_stmt {
+			mut stmt := stmts[h] or { return none }
+			return &stmt.diag
+		}
+		sql_handle_desc {
+			mut desc := descs[h] or { return none }
+			return &desc.diag
+		}
+		else {
+			return none
+		}
+	}
+}

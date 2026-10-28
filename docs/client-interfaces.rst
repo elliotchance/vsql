@@ -2,9 +2,9 @@ Client Interfaces
 =================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    cli.rst
-   postgresql-clients.rst
-   v-client-library.rst
-   v-orm.rst
+   server.rst
+   language-c.rst
+   language-v.rst

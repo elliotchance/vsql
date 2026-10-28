@@ -18,6 +18,11 @@ fn example() ! {
 
 	mut actual := []string{}
 	for schema in catalog.schemas()! {
+		// Such as the INFORMATION_SCHEMA.
+		if schema.is_virtual {
+			continue
+		}
+
 		mut table_names := []string{}
 		for table in catalog.schema_tables(schema.name)! {
 			table_names << table.name.str()

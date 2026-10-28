@@ -33,8 +33,11 @@ concurrency:
 #
 # The release binary is built after the tests, because set_version.sh changes
 # version.v (the tests expect no version, and the checks expect no changes).
-# The zip contains a folder named after the release, like vsql-v0.34.0-macos,
-# so that versions can be unzipped side by side.
+# The zip is made by "make release" (see the Makefile for what's in it), except
+# on Windows, where it's made with PowerShell (with the same files), since
+# there's no zip command. On Windows, libvsql.dll is in bin/ instead of lib/,
+# next to vsql.exe, since Windows finds a DLL in the program's folder or on the
+# PATH.
 jobs:
   linux:
     name: Linux
@@ -81,9 +84,7 @@ jobs:
           .github/workflows/set_version.sh
           make bin/vsql
           .github/workflows/hello-test.sh bin/vsql
-          dir=vsql-${GITHUB_REF##*/}-linux
-          mkdir $dir && cp bin/vsql $dir/
-          zip -r $dir.zip $dir
+          make release VERSION=${GITHUB_REF##*/}
 
       - name: Release
         uses: softprops/action-gh-release@v3
@@ -122,9 +123,7 @@ jobs:
           .github/workflows/set_version.sh
           make bin/vsql
           .github/workflows/hello-test.sh bin/vsql
-          dir=vsql-${GITHUB_REF##*/}-macos
-          mkdir $dir && cp bin/vsql $dir/
-          zip -r $dir.zip $dir
+          make release VERSION=${GITHUB_REF##*/}
 
       - name: Release
         uses: softprops/action-gh-release@v3
@@ -159,6 +158,12 @@ jobs:
           v -n -nocache -prod -cc gcc cmd/vsql-cli -o bin/vsql.exe
           .github/workflows/hello-test.sh bin/vsql.exe
 
+      # The programs are built in bin/, next to libvsql.dll, since Windows has
+      # no rpath.
+      - name: Run libvsql tests
+        run: |
+          make libvsql-test libvsql-example
+
       # PostgreSQL is installed on the runner, but psql isn't on the PATH. It's
       # used by the server tests.
       - name: Run tests
@@ -170,8 +175,10 @@ jobs:
         shell: pwsh
         run: |
           $dir = "vsql-$("$env:GITHUB_REF".Split('/')[-1])-windows"
-          New-Item -ItemType Directory $dir
-          Copy-Item bin/vsql.exe $dir
+          New-Item -ItemType Directory $dir/bin, $dir/include
+          Copy-Item bin/vsql.exe, bin/libvsql.dll $dir/bin
+          Copy-Item libvsql/libvsql.h $dir/include
+          Copy-Item libvsql/example.c $dir
           Compress-Archive -Path $dir -DestinationPath "$dir.zip"
 
       - name: Release

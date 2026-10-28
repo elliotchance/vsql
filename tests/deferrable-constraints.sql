@@ -1,0 +1,187 @@
+-- # A deferred UNIQUE is only checked at the COMMIT, so a duplicate can be
+-- # fixed before then.
+CREATE TABLE t (id INT, x INT UNIQUE DEFERRABLE INITIALLY DEFERRED);
+INSERT INTO t (id, x) VALUES (1, 1);
+START TRANSACTION;
+INSERT INTO t (id, x) VALUES (2, 1);
+SELECT * FROM t;
+UPDATE t SET x = 2 WHERE id = 2;
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- ID: 1 X: 1
+-- ID: 2 X: 1
+-- msg: UPDATE 1
+-- msg: COMMIT
+-- ID: 1 X: 1
+-- ID: 2 X: 2
+
+-- # The transaction is rolled back when a deferred constraint isn't satisfied
+-- # at the COMMIT.
+CREATE TABLE t (x INT UNIQUE DEFERRABLE INITIALLY DEFERRED);
+INSERT INTO t (x) VALUES (1);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+COMMIT;
+SELECT * FROM t;
+ROLLBACK;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- error 40002: integrity constraint violation: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+-- X: 1
+-- error 2D000: invalid transaction termination
+
+CREATE TABLE t (x INT UNIQUE DEFERRABLE INITIALLY DEFERRED);
+INSERT INTO t (x) VALUES (1);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+DELETE FROM t WHERE x = 1;
+INSERT INTO t (x) VALUES (3);
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: DELETE 2
+-- msg: INSERT 1
+-- msg: COMMIT
+-- X: 3
+
+-- # Outside of a transaction, each statement is checked when it finishes.
+CREATE TABLE t (x INT UNIQUE DEFERRABLE INITIALLY DEFERRED);
+INSERT INTO t (x) VALUES (1);
+INSERT INTO t (x) VALUES (1);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 23505: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
+-- X: 1
+
+-- # A row can reference a row that's only inserted later in the transaction.
+CREATE TABLE p (id INT PRIMARY KEY);
+CREATE TABLE c (pid INT, FOREIGN KEY (pid) REFERENCES p INITIALLY DEFERRED);
+START TRANSACTION;
+INSERT INTO c (pid) VALUES (1);
+INSERT INTO p (id) VALUES (1);
+COMMIT;
+SELECT * FROM c;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: COMMIT
+-- PID: 1
+
+CREATE TABLE p (id INT PRIMARY KEY);
+CREATE TABLE c (pid INT REFERENCES p DEFERRABLE INITIALLY DEFERRED);
+START TRANSACTION;
+INSERT INTO c (pid) VALUES (1);
+COMMIT;
+SELECT * FROM c;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- error 40002: integrity constraint violation: violates foreign key constraint: FOREIGN KEY (PID) REFERENCES ":memory:".PUBLIC.P (ID) on ":memory:".PUBLIC.C
+
+-- # A referenced row can be deleted and inserted again.
+CREATE TABLE p (id INT PRIMARY KEY);
+CREATE TABLE c (pid INT REFERENCES p INITIALLY DEFERRED);
+INSERT INTO p (id) VALUES (1);
+INSERT INTO c (pid) VALUES (1);
+START TRANSACTION;
+DELETE FROM p;
+INSERT INTO p (id) VALUES (1);
+COMMIT;
+START TRANSACTION;
+DELETE FROM p;
+COMMIT;
+SELECT * FROM p;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- msg: START TRANSACTION
+-- msg: DELETE 1
+-- msg: INSERT 1
+-- msg: COMMIT
+-- msg: START TRANSACTION
+-- msg: DELETE 1
+-- error 40002: integrity constraint violation: violates foreign key constraint: FOREIGN KEY (PID) REFERENCES ":memory:".PUBLIC.P (ID) on ":memory:".PUBLIC.C
+-- ID: 1
+
+CREATE TABLE t (x INT, CHECK (x > 0) INITIALLY DEFERRED);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (-1);
+UPDATE t SET x = 1;
+COMMIT;
+START TRANSACTION;
+INSERT INTO t (x) VALUES (-2);
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: UPDATE 1
+-- msg: COMMIT
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- error 40002: integrity constraint violation: violates check constraint: CHECK (X > 0) INITIALLY DEFERRED on ":memory:".PUBLIC.T
+-- X: 1
+
+-- # A constraint that's dropped, or whose table is dropped, isn't checked at
+-- # the COMMIT.
+CREATE TABLE t (x INT CONSTRAINT u UNIQUE INITIALLY DEFERRED);
+CREATE TABLE t2 (x INT CONSTRAINT u2 UNIQUE INITIALLY DEFERRED);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1), (1);
+INSERT INTO t2 (x) VALUES (1), (1);
+ALTER TABLE t DROP CONSTRAINT u;
+DROP TABLE t2;
+COMMIT;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: INSERT 2
+-- msg: INSERT 2
+-- msg: ALTER TABLE 1
+-- msg: DROP TABLE 1
+-- msg: COMMIT
+-- X: 1
+-- X: 1
+
+-- # A deferred constraint that's added is checked at the COMMIT.
+CREATE TABLE t (x INT);
+INSERT INTO t (x) VALUES (1), (1);
+START TRANSACTION;
+ALTER TABLE t ADD CONSTRAINT u UNIQUE (x) INITIALLY DEFERRED;
+ALTER TABLE t ADD COLUMN y INT DEFAULT 0 CHECK (y > 0) INITIALLY DEFERRED;
+DELETE FROM t;
+COMMIT;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: START TRANSACTION
+-- msg: ALTER TABLE 1
+-- msg: ALTER TABLE 1
+-- msg: DELETE 2
+-- msg: COMMIT
+
+CREATE TABLE t (x INT UNIQUE INITIALLY DEFERRED INITIALLY IMMEDIATE);
+CREATE TABLE t (x INT UNIQUE INITIALLY DEFERRED NOT DEFERRABLE);
+-- error 42601: syntax error: invalid constraint characteristics: INITIALLY DEFERRED INITIALLY IMMEDIATE
+-- error 42601: syntax error: invalid constraint characteristics: INITIALLY DEFERRED NOT DEFERRABLE
+
+-- # INITIALLY DEFERRED is also DEFERRABLE.
+CREATE TABLE t (x INT UNIQUE INITIALLY DEFERRED DEFERRABLE, y INT CHECK (y > 0) INITIALLY DEFERRED);
+SELECT CONSTRAINT_NAME, IS_DEFERRABLE, INITIALLY_DEFERRED FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS;
+-- msg: CREATE TABLE 1
+-- CONSTRAINT_NAME: T_UNIQUE_1 IS_DEFERRABLE: YES INITIALLY_DEFERRED: YES
+-- CONSTRAINT_NAME: T_CHECK_1 IS_DEFERRABLE: YES INITIALLY_DEFERRED: YES

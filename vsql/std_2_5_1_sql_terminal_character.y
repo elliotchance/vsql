@@ -28,4 +28,6 @@ equals_operator: OPERATOR_EQUALS
 
 greater_than_operator: OPERATOR_GREATER_THAN
 
+question_mark: OPERATOR_QUESTION_MARK { $$.v = $1.v as string }
+
 %%

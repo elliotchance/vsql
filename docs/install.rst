@@ -15,12 +15,14 @@ Download the zip for macOS (Apple silicon), Linux (x86-64) or Windows from the
 `latest release <https://github.com/elliotchance/vsql/releases/latest>`_ and
 unzip it. To update, download the latest release again.
 
+The ``vsql`` command is in ``bin/``.
+
 The binaries aren't signed, so macOS may refuse to open one that was downloaded
 with a web browser. You can remove the quarantine flag with:
 
 .. code-block:: sh
 
-   xattr -d com.apple.quarantine vsql
+   xattr -dr com.apple.quarantine bin lib
 
 Docker
 ------
@@ -38,7 +40,7 @@ V Package Manager
 -----------------
 
 This is the best method if you intend to build V applications using it as a
-library (see :doc:`v-client-library`):
+library (see :doc:`language-v`):
 
 .. code-block:: sh
 

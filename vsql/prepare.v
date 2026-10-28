@@ -18,6 +18,7 @@ type Stmt = AlterSequenceGeneratorStatement
 	| SchemaDefinition
 	| SequenceGeneratorDefinition
 	| SetCatalogStatement
+	| SetConstraintsModeStatement
 	| SetSchemaStatement
 	| StartTransactionStatement
 	| TableDefinition
@@ -40,6 +41,9 @@ pub struct PreparedStmt {
 	// otherwise be read only. At the moment this is only when it contains a
 	// NEXT VALUE FOR.
 	writes bool
+	// dynamic_parameters is the number of <dynamic parameter specification>s
+	// ("?") in the statement.
+	dynamic_parameters int
 mut:
 	c             &Connection
 	elapsed_parse time.Duration
@@ -56,6 +60,42 @@ pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
 	p.c.finish_write(true)!
 
 	return result
+}
+
+// dynamic_parameter_count is the number of dynamic parameters ("?") in the
+// statement. Their values are the params "?1", "?2", etc.
+pub fn (p PreparedStmt) dynamic_parameter_count() int {
+	return p.dynamic_parameters
+}
+
+// columns returns the columns of the result of a query, without executing it,
+// or none for a statement that doesn't return rows. Like query, params must
+// have a value for each parameter, which gives it a data type.
+pub fn (mut p PreparedStmt) columns(params map[string]Value) ![]Column {
+	stmt := p.stmt
+	if stmt !is QueryExpression {
+		return []Column{}
+	}
+
+	mut all_params := params.clone()
+	for k, v in p.params {
+		if k !in all_params {
+			all_params[k] = v
+		}
+	}
+
+	if p.explain {
+		return stmt.explain(mut p.c, all_params, p.elapsed_parse)!.columns
+	}
+
+	p.c.open_read_connection()!
+	defer {
+		p.c.release_read_connection()
+	}
+
+	mut plan := create_plan(stmt, all_params, mut p.c)!
+
+	return plan.columns()
 }
 
 // fail ends a statement that failed with err.
@@ -175,6 +215,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		SetCatalogStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		SetConstraintsModeStatement {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}

@@ -194,6 +194,7 @@ fn cleanup_yacc_error(s string) string {
 	msg = msg.replace('OPERATOR_PERIOD', '"."')
 	msg = msg.replace('OPERATOR_SOLIDUS', '"/"')
 	msg = msg.replace('OPERATOR_COLON', '":"')
+	msg = msg.replace('OPERATOR_QUESTION_MARK', '"?"')
 	msg = msg.replace('OPERATOR_LESS_THAN', '"<"')
 	msg = msg.replace('OPERATOR_GREATER_THAN', '">"')
 	msg = msg.replace('OPERATOR_NOT_EQUALS', '"<>"')
@@ -218,11 +219,27 @@ fn tokenize(sql_stmt string) ![]Token {
 	mut tokens := []Token{}
 	cs := sql_stmt.trim(';').runes()
 	mut i := 0
+	mut dynamic_parameters := 0
 
 	for i < cs.len {
 		// A comment is a separator, the same as a space.
 		if is_comment(cs, i) {
 			i = skip_comment(cs, i)!
+			continue
+		}
+
+		// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target
+		// specification>
+		//
+		// Each <dynamic parameter specification> ("?") is a host parameter
+		// named by its position: "?1", "?2", etc. They can't be confused with
+		// a <host parameter name>, which is an identifier.
+		if cs[i] == `?` {
+			dynamic_parameters++
+			tokens << Token{token_operator_question_mark, YYSymType{
+				v: '?${dynamic_parameters}'
+			}}
+			i++
 			continue
 		}
 

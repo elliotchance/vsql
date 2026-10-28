@@ -12,13 +12,14 @@ struct CheckConstraintDefinition {
 	column_name string
 	// name is empty when the constraint doesn't have a <constraint name
 	// definition> (see Table.name_constraints).
-	name Identifier
+	name            Identifier
+	characteristics ConstraintCharacteristics
 }
 
 // str is the SQL of the constraint, which is how it's stored in the file as part
 // of the CREATE TABLE (see Table.bytes).
 fn (e CheckConstraintDefinition) str() string {
-	return 'CHECK (${e.search_condition.pstr(map[string]Value{})})'
+	return 'CHECK (${e.search_condition.pstr(map[string]Value{})})${e.characteristics}'
 }
 
 // compile returns the search condition to be evaluated for a row of the table,
@@ -90,7 +91,8 @@ fn new_check_constraints(mut conn Connection, table Table) !CheckConstraints {
 // constraints. The row is how it's written to the table, keyed by the column
 // names (see Row.for_storage). A constraint is only violated when its search
 // condition is FALSE, so UNKNOWN (such as when a column is NULL) satisfies it.
-// The whole statement then fails, so none of its rows are written.
+// The whole statement then fails, so none of its rows are written. A deferred
+// constraint isn't checked (see defer_check).
 //
 // ISO/IEC 9075-2:2016(E), 4.23.2, Checking of constraints
 // ISO/IEC 9075-2:2016(E), 4.23.3.4, Table check constraints
@@ -107,10 +109,16 @@ fn (c CheckConstraints) verify(mut conn Connection, row Row) ! {
 	}
 	full_row := new_row(data)
 
+	mut catalog := conn.catalog_for(c.table.name)
 	for i, constraint in c.constraints {
+		definition := c.table.check_constraints[i]
+		if catalog.storage.defer_check(c.table, definition.name.entity_name, definition.characteristics) {
+			continue
+		}
+
 		result := constraint.run(mut conn, full_row, map[string]Value{})!
 		if !result.is_null && result.bool_value() == .is_false {
-			return sqlstate_23514('${c.table.check_constraints[i]} on ${c.table.name}')
+			return sqlstate_23514('${definition} on ${c.table.name}')
 		}
 	}
 }

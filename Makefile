@@ -255,7 +255,7 @@ libvsql-example: $(LIBVSQL)
 
 libvsql-test: $(LIBVSQL)
 	v run scripts/check-libvsql-constants.vsh
-	$(LIBVSQL_CC) libvsql/test.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-test
+	$(LIBVSQL_CC) libvsql/test.c libvsql/*_test.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-test
 	bin/libvsql-test
 
 examples/%: vsql/y.v

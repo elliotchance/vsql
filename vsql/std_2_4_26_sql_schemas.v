@@ -9,6 +9,9 @@ pub struct Schema {
 pub:
 	// The name of the schema is case-sensitive.
 	name string
+	// A virtual schema, such as INFORMATION_SCHEMA, only has virtual tables.
+	// It is not persisted to disk.
+	is_virtual bool
 }
 
 // bytes is how the schema is stored in the file: its CREATE SCHEMA statement.
@@ -19,7 +22,10 @@ fn (s Schema) bytes() []u8 {
 fn new_schema_from_bytes(data []u8, tid u64) !Schema {
 	stmt := parse_definition(data)!
 	if stmt is SchemaDefinition {
-		return Schema{tid, stmt.schema_name.schema_name}
+		return Schema{
+			tid:  tid
+			name: stmt.schema_name.schema_name
+		}
 	}
 
 	return sqlstate_xx001('not a schema definition: ${data.bytestr()}')

@@ -22,7 +22,8 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 	// row that comes after it in the same table.
 	mut foreign_keys := []string{}
 	mut catalog := conn.catalog()
-	mut schemas := catalog.schemas()!
+	// Virtual schemas and tables aren't in the file.
+	mut schemas := catalog.schemas()!.filter(!it.is_virtual)
 
 	// To make the output more deterministic, entities will be ordered by name
 	// (not how the name is printed, which may be quoted). This is not true for
@@ -63,7 +64,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 			}
 		}
 
-		mut tables := catalog.schema_tables(schema.name)!
+		mut tables := catalog.schema_tables(schema.name)!.filter(!it.is_virtual)
 		tables.sort_with_compare(fn (a &Table, b &Table) int {
 			return a.name.entity_name.compare(b.name.entity_name)
 		})

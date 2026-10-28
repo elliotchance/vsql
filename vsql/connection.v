@@ -680,7 +680,9 @@ pub fn (mut conn Connection) register_virtual_table(create_table string, data Vi
 	return sqlstate_42601('must provide a CREATE TABLE statement')
 }
 
-// schemas returns the schemas in this catalog (database).
+// schemas returns the schemas in this catalog (database). This includes the
+// INFORMATION_SCHEMA (and the schema of any other virtual table), which has
+// is_virtual set.
 pub fn (mut conn CatalogConnection) schemas() ![]Schema {
 	conn.open_read_connection()!
 	defer {
@@ -690,6 +692,15 @@ pub fn (mut conn CatalogConnection) schemas() ![]Schema {
 	mut schemas := []Schema{}
 	for _, schema in conn.storage.schemas {
 		schemas << schema
+	}
+	for _, virtual_table in conn.virtual_tables {
+		name := virtual_table.create_table_stmt.table_name.schema_name
+		if !schemas.any(it.name == name) {
+			schemas << Schema{
+				name:       name
+				is_virtual: true
+			}
+		}
 	}
 
 	conn.storage.take_isolation_error()!
@@ -731,7 +742,9 @@ fn (mut conn CatalogConnection) identity_sequence(table Table) !Sequence {
 	return sequence
 }
 
-// schema_tables returns tables for the provided schema. If the schema does not
+// schema_tables returns tables for the provided schema. This includes virtual
+// tables (such as the views of the INFORMATION_SCHEMA, or one registered with
+// register_virtual_table()), which have is_virtual set. If the schema does not
 // exist and empty list will be returned.
 pub fn (mut conn CatalogConnection) schema_tables(schema string) ![]Table {
 	conn.open_read_connection()!
@@ -743,6 +756,11 @@ pub fn (mut conn CatalogConnection) schema_tables(schema string) ![]Table {
 	for _, table in conn.storage.tables {
 		if table.name.schema_name == schema {
 			tables << table
+		}
+	}
+	for _, virtual_table in conn.virtual_tables {
+		if virtual_table.create_table_stmt.table_name.schema_name == schema {
+			tables << virtual_table.table()
 		}
 	}
 

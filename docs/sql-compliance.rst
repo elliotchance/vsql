@@ -19,7 +19,7 @@ Mandatory Features
 ~~~~~~~~~~~~~~~~~~
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 115 of the 164 mandatory features** of the
+**vsql supports 117 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -328,13 +328,13 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E151-02
      - ``ROLLBACK`` statement
 
-   * - ❌ **E152**
+   * - ✅ **E152**
      - **Basic SET TRANSACTION statement**
 
    * - ✅ E152-01
      - ``SET TRANSACTION`` statement: ``ISOLATION LEVEL SERIALIZABLE`` clause
 
-   * - ❌ E152-02
+   * - ✅ E152-02
      - ``SET TRANSACTION`` statement: ``READ ONLY`` and ``READ WRITE`` clauses
 
    * - ❌ **E153**

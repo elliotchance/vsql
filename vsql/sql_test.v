@@ -1665,6 +1665,21 @@ fn test_isolation_waits() ! {
 	assert total >= 3
 	assert statement.wait()! == 1
 
+	// READ ONLY transactions don't wait for each other.
+	db.query('START TRANSACTION READ ONLY')!
+	reader := spawn fn [path] () !int {
+		mut db := open_database(path, isolation_test_options(0))!
+		defer {
+			db.close()
+		}
+		db.query('START TRANSACTION READ ONLY')!
+		count := db.query('SELECT * FROM t')!.rows.len
+		db.query('COMMIT')!
+		return count
+	}()
+	assert reader.wait()! == 4
+	db.query('COMMIT')!
+
 	// It gives up after the timeout.
 	db.query('START TRANSACTION')!
 	t := time.now()

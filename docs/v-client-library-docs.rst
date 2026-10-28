@@ -425,6 +425,9 @@ struct Connection
    	// next_transaction is set by SET TRANSACTION for the next SQL-transaction,
    	// whether it's started by START TRANSACTION or implicitly by a statement.
    	next_transaction ?TransactionCharacteristics
+   	// read_only is the access mode of the current SQL-transaction, see
+   	// begin_transaction.
+   	read_only bool
    	// isolation_level is the isolation level of the current SQL-transaction.
    	isolation_level IsolationLevel = .serializable
    pub mut:

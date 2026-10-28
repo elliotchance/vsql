@@ -112,6 +112,8 @@ type YYSym = AddColumnDefinition
 	| TablePrimary
 	| TableReference
 	| Term
+	| TransactionAccessMode
+	| TransactionMode
 	| TrimFunction
 	| Type
 	| UniqueConstraintDefinition
@@ -133,7 +135,7 @@ type YYSym = AddColumnDefinition
 	| []SetClause
 	| []SortSpecification
 	| []TableElement
-	| []IsolationLevel
+	| []TransactionMode
 	| []ValueExpression
 	| bool
 	| string

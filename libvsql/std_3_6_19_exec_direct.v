@@ -40,6 +40,11 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 	return execute_statement(mut stmt, mut prepared)
 }
 
+// exec_direct_text implicitly invokes ExecDirect, for a catalog routine.
+fn exec_direct_text(mut stmt Stmt, text string) !i16 {
+	return exec_direct(mut stmt, &char(text.str), SQLInteger(text.len))
+}
+
 // preparable_statement is the text of a statement for ExecDirect or Prepare
 // (see 6.19, "ExecDirect", General Rules 2 to 7).
 fn preparable_statement(mut stmt Stmt, statement_text &char, text_length SQLInteger) !string {

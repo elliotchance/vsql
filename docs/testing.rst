@@ -154,9 +154,12 @@ the path):
 libvsql
 ^^^^^^^
 
-``libvsql/test.c`` contains the unit tests for libvsql, the SQL/CLI (Part 3)
-shared library for C programs (see :doc:`sql-compliance`). It's run as part of
-``make test``, or on its own with:
+The unit tests for libvsql, the SQL/CLI (Part 3) shared library for C programs
+(see :doc:`sql-compliance`), are next to the V file that they test: the tests
+for ``libvsql/std_3_6_30_get_data.v`` are in
+``libvsql/std_3_6_30_get_data_test.c``. ``libvsql/test.h`` has the helpers and
+fixtures that they share (implemented in ``libvsql/test.c``). The tests are
+run as part of ``make test``, or on their own with:
 
 .. code-block:: sh
 
@@ -167,7 +170,8 @@ macOS or ``bin/libvsql.dll`` on Windows), then runs
 ``scripts/check-libvsql-constants.vsh``, which checks that every ``#define
 SQL_...`` in ``libvsql/libvsql.h`` has a ``const sql_...`` with the same value
 in ``libvsql/*.v``, and the other way around. Then it compiles
-``libvsql/test.c`` against the library and runs it.
+``libvsql/test.c`` and the ``libvsql/*_test.c`` files against the library into
+one program, and runs it.
 
 The tests use `utest.h <https://github.com/sheredom/utest.h>`_
 (``libvsql/utest.h``). Each test checks one case of a CLI routine, and is named

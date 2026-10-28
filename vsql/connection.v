@@ -60,6 +60,9 @@ mut:
 	// EXISTS) that's being planned or evaluated, the innermost last. A subquery
 	// can refer to the columns of the queries that contain it, see SubqueryScope.
 	subquery_scopes []SubqueryScope
+	// direct_query_transaction is true when an SQL-transaction was started by
+	// a query in direct (see Connection.direct) that hasn't changed anything.
+	direct_query_transaction bool
 pub mut:
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive

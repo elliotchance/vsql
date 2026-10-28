@@ -1583,6 +1583,85 @@ fn test_split_statements_with_comments() {
 	assert db.query('VALUES 1 -- one')!.rows[0].get_string('COL1')! == '1'
 }
 
+// A semicolon in a bracketed comment (which can be nested) doesn't end a
+// statement either. The text after the last semicolon is returned as it is,
+// unless it's only white space and comments.
+fn test_split_terminated_statements() {
+	cases := {
+		'VALUES 1 /* a; /* b; */ c; */;': ['VALUES 1 /* a; /* b; */ c; */', '']
+		'VALUES 1; /* end */\n':          ['VALUES 1', '']
+		'VALUES 1; VALUES\n':             ['VALUES 1', ' VALUES\n']
+		"VALUES ';":                      ["VALUES ';"]
+		'/* a; */ /* b;':                 ['/* a; */ /* b;']
+	}
+	for script, expected in cases {
+		statements, rest := split_terminated_statements(script)
+		assert [...statements, rest] == expected, script
+	}
+	assert split_statements('VALUES 1; VALUES 2 ') == ['VALUES 1', 'VALUES 2']
+}
+
+// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>
+fn test_direct() {
+	mut db := open(':memory:')!
+
+	// A statement that isn't one statement ending with a semicolon, or that has
+	// a parameter, is a syntax error.
+	for stmt in ['VALUES 1', 'VALUES 1; VALUES 2;', 'VALUES ?;', 'VALUES :x;'] {
+		db.direct(stmt) or {
+			assert sqlstate_from_int(err.code()) == '42601'
+			continue
+		}
+		assert false, stmt
+	}
+	assert !db.in_transaction()
+
+	// SET CATALOG and SET SCHEMA don't start an SQL-transaction.
+	db.direct("SET SCHEMA 'PUBLIC';")!
+	assert !db.in_transaction()
+
+	// Any other statement starts one, which stays active until it's committed.
+	db.direct('CREATE TABLE t (x INT);')!
+	assert db.in_transaction()
+	db.direct('INSERT INTO t (x) VALUES (1);')!
+	db.direct('COMMIT;')!
+	assert !db.in_transaction()
+
+	// An empty result of a query is no data. A query starts an SQL-transaction
+	// too, but it isn't started in storage until something is changed.
+	db.clear_warnings()
+	assert db.direct('SELECT * FROM t WHERE x = 2;')!.rows.len == 0
+	assert !db.in_transaction() && db.direct_query_transaction
+	assert db.warnings.map(sqlstate_from_int(it.code())) == ['02000']
+	db.clear_warnings()
+	assert db.direct('SELECT * FROM t;')!.rows.len == 1
+	assert db.warnings.len == 0
+	assert db.direct('COMMIT;')!.msg == 'COMMIT'
+	assert !db.direct_query_transaction
+	db.direct('VALUES 1;')!
+	db.direct('INSERT INTO t (x) VALUES (2);')!
+	assert db.in_transaction() && !db.direct_query_transaction
+	db.direct('COMMIT;')!
+	db.direct('VALUES 1;')!
+
+	// START TRANSACTION can't be used while the SQL-transaction is active.
+	db.direct('START TRANSACTION;') or {
+		assert sqlstate_from_int(err.code()) == '25001'
+		assert db.direct('ROLLBACK;')!.msg == 'ROLLBACK'
+		db.direct('START TRANSACTION;')!
+		assert db.in_transaction()
+		db.direct('ROLLBACK;')!
+
+		// With autocommit, each statement commits on its own.
+		db.direct('INSERT INTO t (x) VALUES (3);', autocommit: true)!
+		assert !db.in_transaction() && !db.direct_query_transaction
+		assert db.direct('SELECT * FROM t WHERE x = 3;', autocommit: true)!.rows.len == 1
+		assert !db.in_transaction() && !db.direct_query_transaction
+		return
+	}
+	assert false
+}
+
 // A DEFAULT can be up to the maximum length of a VARCHAR, but its text (with
 // the quotes) is then too long for the COLUMN_DEFAULT of the COLUMNS view.
 fn test_information_schema_truncated_column_default() {

@@ -34,6 +34,12 @@ same machine can connect. Use ``-host`` to listen on another address, such as
    change the database. Only do this on a trusted network, or block the port
    with a firewall.
 
+The server is for PostgreSQL clients, so it isn't direct invocation of SQL (see
+:doc:`cli`). Like PostgreSQL, a statement that isn't inside a
+:doc:`start-transaction` runs in a transaction of its own, which is committed
+when the statement finishes. A client that disconnects in the middle of a
+transaction rolls it back.
+
 Many PostgreSQL clients send a ``SELECT`` without a ``FROM`` (such as
 ``SELECT 1``), which isn't valid SQL. ``vsql server`` runs these as if they had
 ``FROM singlerow``, a table with a single row.

@@ -265,6 +265,16 @@ fn split_statements
 
 split_statements splits a SQL script into its statements, which are separated by semicolons. A semicolon inside a string, a delimited identifier or a comment doesn't end the statement. The statements are returned without the semicolon, and empty statements (including ones that are only comments) are left out.
 
+fn split_terminated_statements
+------------------------------
+
+
+.. code-block:: v
+
+   pub fn split_terminated_statements(script string) ([]string, string)
+
+split_terminated_statements is split_statements for statements that must end with a semicolon, such as a <direct SQL statement>. The text after the last semicolon is returned separately (as it is, so that more text can be appended to it), or an empty string if it's only white space and comments.
+
 fn sqlstate_from_int
 --------------------
 
@@ -442,6 +452,9 @@ struct Connection
    	// EXISTS) that's being planned or evaluated, the innermost last. A subquery
    	// can refer to the columns of the queries that contain it, see SubqueryScope.
    	subquery_scopes []SubqueryScope
+   	// direct_query_transaction is true when an SQL-transaction was started by
+   	// a query in direct (see Connection.direct) that hasn't changed anything.
+   	direct_query_transaction bool
    pub mut:
    	// now allows you to override the wall clock that is used. The Time must be
    	// in UTC with a separate offset for the current local timezone (in positive
@@ -494,6 +507,24 @@ struct ConnectionOptions
    }
 
 ConnectionOptions can modify the behavior of a connection when it is opened. You should not create the ConnectionOptions instance manually. Instead, use default_connection_options() as a starting point and modify the attributes.
+
+struct DirectOptions
+--------------------
+
+
+.. code-block:: v
+
+   @[params]
+   pub struct DirectOptions {
+   pub:
+   	// autocommit runs a statement that isn't inside a START TRANSACTION in a
+   	// transaction of its own, which is committed when the statement finishes,
+   	// like query. The standard doesn't have autocommit, which is the same as
+   	// false.
+   	autocommit bool
+   }
+
+DirectOptions are the options for Connection.direct.
 
 struct DumpOptions
 ------------------

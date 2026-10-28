@@ -161,6 +161,9 @@ struct Lexer {
 mut:
 	tokens []Token
 	pos    int
+	// features are the features outside of Core SQL that the parsed statement
+	// uses (see flag).
+	features []string
 }
 
 fn (mut l Lexer) lex(mut lval YYSymType) int {
@@ -216,7 +219,17 @@ struct Token {
 }
 
 fn tokenize(sql_stmt string) ![]Token {
+	tokens, _ := tokenize_with_features(sql_stmt)!
+
+	return tokens
+}
+
+// tokenize_with_features also returns the features outside of Core SQL that
+// the tokens use (see flag), which the parser can't see: F271 for a compound
+// character literal, and F393 for a Unicode character string literal.
+fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 	mut tokens := []Token{}
+	mut features := []string{}
 	cs := sql_stmt.trim(';').runes()
 	mut i := 0
 	mut dynamic_parameters := 0
@@ -284,9 +297,13 @@ fn tokenize(sql_stmt string) ![]Token {
 			if is_unicode {
 				i += 2
 			}
-			mut word, end := read_string_literal(cs, i)!
+			mut word, end, compound := read_string_literal(cs, i)!
 			i = end
+			if compound {
+				features << 'F271'
+			}
 			if is_unicode {
+				features << 'F393'
 				escape, escape_end := read_unicode_escape_specifier(cs, i)!
 				i = escape_end
 				word = unescape_unicode(word, escape)!
@@ -427,7 +444,7 @@ fn tokenize(sql_stmt string) ![]Token {
 		}
 	}
 
-	return tokens
+	return tokens, features
 }
 
 // read_string_literal returns the characters of the string that starts with
@@ -438,10 +455,11 @@ fn tokenize(sql_stmt string) ![]Token {
 //   'a'
 //   'b'
 //
-// A string without a closing quote is a syntax error.
+// A string without a closing quote is a syntax error. The last value is true if
+// the string had more than one part (a compound literal).
 //
 // ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules 1, 2 and 7
-fn read_string_literal(cs []rune, start int) !(string, int) {
+fn read_string_literal(cs []rune, start int) !(string, int, bool) {
 	mut word := ''
 	mut i := start + 1
 	for {
@@ -477,11 +495,11 @@ fn read_string_literal(cs []rune, start int) !(string, int) {
 		}
 	}
 	if has_newline && j < cs.len && cs[j] == `'` {
-		next_word, end := read_string_literal(cs, j)!
-		return word + next_word, end
+		next_word, end, _ := read_string_literal(cs, j)!
+		return word + next_word, end, true
 	}
 
-	return word, i
+	return word, i, false
 }
 
 // is_comment returns true if a comment starts at cs[i]. A simple comment

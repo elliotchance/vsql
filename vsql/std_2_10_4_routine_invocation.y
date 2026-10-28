@@ -2,6 +2,7 @@
 
 routine_invocation:
   routine_name sql_argument_list {
+    flag_if(mut yylex, ($2.v as []ValueExpression).any(is_dynamic_parameter(it)), 'B033')
     $$.v = RoutineInvocation{
       function_name: ($1.v as Identifier).entity_name
       args:          $2.v as []ValueExpression

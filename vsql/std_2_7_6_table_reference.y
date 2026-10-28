@@ -71,7 +71,10 @@ correlation_or_recognition:
   }
 
 derived_table:
-  table_subquery { $$.v = $1.v as TablePrimary }
+  table_subquery {
+    flag(mut yylex, 'F591')
+    $$.v = $1.v as TablePrimary
+  }
 
 table_or_query_name:
   table_name { $$.v = $1.v as Identifier }

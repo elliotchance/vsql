@@ -1,6 +1,9 @@
 %%
 
 start_transaction_statement:
-  START TRANSACTION { $$.v = Stmt(StartTransactionStatement{}) }
+  START TRANSACTION {
+    flag(mut yylex, 'T241')
+    $$.v = Stmt(StartTransactionStatement{})
+  }
 
 %%

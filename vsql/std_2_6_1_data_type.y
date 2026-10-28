@@ -50,7 +50,10 @@ exact_numeric_type:
 | SMALLINT { $$.v = new_type('SMALLINT', 0, 0) }
 | INTEGER { $$.v = new_type('INTEGER', 0, 0) }
 | INT { $$.v = new_type('INTEGER', 0, 0) }
-| BIGINT { $$.v = new_type('BIGINT', 0, 0) }
+| BIGINT {
+    flag(mut yylex, 'T071')
+    $$.v = new_type('BIGINT', 0, 0)
+  }
 
 approximate_numeric_type:
   FLOAT { $$.v = new_type('FLOAT', 0, 0) }
@@ -67,8 +70,14 @@ character_length:
   length { $$.v = $1.v as string }
 
 char_length_units:
-  CHARACTERS { $$.v = $1.v as string }
-| OCTETS { $$.v = $1.v as string }
+  CHARACTERS {
+    flag(mut yylex, 'T061')
+    $$.v = $1.v as string
+  }
+| OCTETS {
+    flag(mut yylex, 'T061')
+    $$.v = $1.v as string
+  }
 
 precision:
   unsigned_integer { $$.v = $1.v as string }
@@ -77,18 +86,23 @@ scale:
   unsigned_integer { $$.v = $1.v as string }
 
 boolean_type:
-  BOOLEAN { $$.v = new_type('BOOLEAN', 0, 0) }
+  BOOLEAN {
+    flag(mut yylex, 'T031')
+    $$.v = new_type('BOOLEAN', 0, 0)
+  }
 
 datetime_type:
   DATE { $$.v = new_type('DATE', 0, 0) }
 | TIME { $$.v = parse_time_prec_tz_type('0', false)! }
 | TIME left_paren time_precision right_paren {
+    flag_if(mut yylex, ($3.v as string).int() != 0, 'F555')
     $$.v = parse_time_prec_tz_type($3.v as string, false)!
   }
 | TIME with_or_without_time_zone {
     $$.v = parse_time_prec_tz_type('0', $2.v as bool)!
   }
 | TIME left_paren time_precision right_paren with_or_without_time_zone {
+    flag_if(mut yylex, ($3.v as string).int() != 0, 'F555')
     $$.v = parse_time_prec_tz_type($3.v as string, $5.v as bool)!
   }
 | TIMESTAMP {
@@ -97,6 +111,7 @@ datetime_type:
     $$.v = parse_timestamp_prec_tz_type('6', false)!
   }
 | TIMESTAMP left_paren timestamp_precision right_paren {
+    flag_if(mut yylex, ($3.v as string).int() !in [0, 6], 'F555')
     $$.v = parse_timestamp_prec_tz_type($3.v as string, false)!
   }
 | TIMESTAMP with_or_without_time_zone {
@@ -104,12 +119,19 @@ datetime_type:
   }
 | TIMESTAMP left_paren timestamp_precision right_paren
   with_or_without_time_zone {
+    flag_if(mut yylex, ($3.v as string).int() !in [0, 6], 'F555')
     $$.v = parse_timestamp_prec_tz_type($3.v as string, $5.v as bool)!
   }
 
 with_or_without_time_zone:
-  WITH TIME ZONE { $$.v = true }
-| WITHOUT TIME ZONE { $$.v = false }
+  WITH TIME ZONE {
+    flag(mut yylex, 'F411')
+    $$.v = true
+  }
+| WITHOUT TIME ZONE {
+    flag(mut yylex, 'F411')
+    $$.v = false
+  }
 
 time_precision:
   time_fractional_seconds_precision { $$.v = $1.v as string }

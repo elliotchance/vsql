@@ -9,4 +9,5 @@ Appendix
    keywords.rst
    operators.rst
    sql-compliance.rst
+   sql-flagging.rst
    sqlstate.rst

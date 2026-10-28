@@ -10,10 +10,12 @@ aggregate_function:
 // ALL is the same as no <set quantifier> (Syntax Rule 3).
 general_set_function:
   set_function_type left_paren value_expression right_paren {
+    flag_if(mut yylex, $1.v as string == 'COUNT', 'F441')
     $$.v = AggregateFunction(RoutineInvocation{
       $1.v as string, [$3.v as ValueExpression], false})
   }
 | set_function_type left_paren set_quantifier value_expression right_paren {
+    flag_set_quantifier(mut yylex, $1.v as string, $3.v as bool, $4.v as ValueExpression)
     $$.v = AggregateFunction(RoutineInvocation{
       $1.v as string, [$4.v as ValueExpression], $3.v as bool})
   }

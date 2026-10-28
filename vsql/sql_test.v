@@ -15,6 +15,7 @@ struct SQLTest {
 	stmts       []string
 	expected    string
 	show_types  bool
+	show_flags  bool
 }
 
 fn get_test_filter() (string, int) {
@@ -49,13 +50,15 @@ fn get_tests() ![]SQLTest {
 		mut setup_stmt := ''
 		mut in_setup := false
 		mut show_types := false
+		mut show_flags := false
 		for line in lines {
 			if line == '' {
-				tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types}
+				tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags}
 				stmts = []
 				expected = []
 				in_setup = false
 				show_types = false
+				show_flags = false
 			} else if line.starts_with('/*') {
 				contents := line[2..line.len - 2].trim_space()
 				if contents == 'setup' {
@@ -73,6 +76,8 @@ fn get_tests() ![]SQLTest {
 					stmts << contents
 				} else if contents.starts_with('types') {
 					show_types = true
+				} else if contents == 'flags' {
+					show_flags = true
 				} else if contents == 'params' || contents.starts_with('params ') {
 					stmts << '${contents} '
 				} else {
@@ -103,7 +108,7 @@ fn get_tests() ![]SQLTest {
 		}
 
 		if stmts.len > 0 {
-			tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types}
+			tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags}
 		}
 	}
 
@@ -275,7 +280,7 @@ fn (test SQLTest) modes() []SQLTestMode {
 // library has, such as faults, dynamic parameters or the type of each value, so
 // those use a Connection directly.
 fn (test SQLTest) through_server() bool {
-	return $env('SERVER') != '0' && !test.show_types
+	return $env('SERVER') != '0' && !test.show_types && !test.show_flags
 		&& !test.stmts.any(it.starts_with('params '))
 		&& !test.stmts.any(it.starts_with('fault ') || it.starts_with('disconnect ')
 			|| it.starts_with('create_catalog ') || it.starts_with('virtual_table ')
@@ -449,7 +454,7 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 			println('  ${stmt.trim_space()}')
 		}
 
-		output := db.run(stmt, map[string]Value{}, false)!
+		output := db.run(stmt, map[string]Value{}, false, false)!
 		if output.error != '' {
 			return error('setup failed: ${stmt}: ${output.error}')
 		}
@@ -583,7 +588,11 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 			actual += '${prefix}sql: ${substituted}\n'
 		}
 
-		output := db.run(stmt, params, test.show_types)!
+		output := db.run(stmt, params, test.show_types, test.show_flags)!
+		if output.flags != '' {
+			actual += '${prefix}${output.flags}\n'
+		}
+
 		if output.error != '' {
 			actual += '${prefix}${output.error}\n'
 			continue
@@ -659,7 +668,9 @@ fn set_sql_test_clock(mut db Connection, clock string) {
 struct SQLTestOutput {
 mut:
 	// error is set (and nothing else) if the statement failed.
-	error    string
+	error string
+	// flags are the features of the statement, for the "flags" directive.
+	flags    string
 	warnings []string
 	msg      string
 	rows     []string
@@ -709,7 +720,7 @@ fn (mut c SQLTestConn) close() {
 	}
 }
 
-fn (mut c SQLTestConn) run(stmt string, params map[string]Value, show_types bool) !SQLTestOutput {
+fn (mut c SQLTestConn) run(stmt string, params map[string]Value, show_types bool, show_flags bool) !SQLTestOutput {
 	if c.client != unsafe { nil } {
 		return c.client.query(stmt)
 	}
@@ -718,6 +729,9 @@ fn (mut c SQLTestConn) run(stmt string, params map[string]Value, show_types bool
 	mut prepared := c.db.prepare(stmt) or {
 		output.error = 'error ${sqlstate_from_int(err.code())}: ${err.msg()}'
 		return output
+	}
+	if show_flags {
+		output.flags = 'flags: ${prepared.features().join(', ')}'.trim_space()
 	}
 	c.db.clear_warnings()
 	result := prepared.query(params) or {
@@ -1574,6 +1588,19 @@ fn test_command_function() {
 		name, code := stmt.command_function()
 		assert '${name} ${code}' == want, sql
 	}
+}
+
+// An SQL argument of a routine invocation that's a dynamic parameter needs
+// B033, as well as B031 for the dynamic parameter itself (see F812, "Basic
+// flagging", in tests/flagging.sql).
+fn test_features_of_routine_invocation() ! {
+	mut db := open(':memory:')!
+	db.register_function('twice(float) float', fn (a []Value) !Value {
+		return new_double_precision_value(a[0].f64_value() * 2)
+	})!
+
+	assert db.prepare('VALUES twice(1)')!.features() == ['F641', 'F661']
+	assert db.prepare('VALUES twice(?)')!.features() == ['B031', 'B033', 'F641', 'F661']
 }
 
 fn test_cast() {

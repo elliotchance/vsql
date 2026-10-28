@@ -593,6 +593,9 @@ struct PreparedStmt
    	// dynamic_parameters is the number of <dynamic parameter specification>s
    	// ("?") in the statement.
    	dynamic_parameters int
+   	// features are the features outside of Core SQL that the statement uses,
+   	// see features.
+   	features []string
    mut:
    	c             &Connection
    	elapsed_parse time.Duration

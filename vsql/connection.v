@@ -416,7 +416,7 @@ fn has_next_value(tokens []Token) bool {
 pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 	t := start_timer()
 
-	mut tokens := tokenize(sql_stmt)!
+	mut tokens, lexical_features := tokenize_with_features(sql_stmt)!
 
 	// EXPLAIN is super helpful, but not part of the SQL standard so we only
 	// treat it as a prefix that is trimmed off before parsing.
@@ -428,7 +428,18 @@ pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 		}
 	}
 
-	stmt := parse_tokens(tokens)!
+	stmt, mut features := parse_statement(tokens)!
+	features << lexical_features
+	// Only a query, searched DELETE or searched UPDATE can be explained, any
+	// other statement is an error when it's executed (so isn't flagged).
+	if explain {
+		match stmt {
+			QueryExpression { features << vsql_explain_query }
+			DeleteStatementSearched { features << vsql_explain_delete }
+			UpdateStatementSearched { features << vsql_explain_update }
+			else {}
+		}
+	}
 	elapsed_parse := t.elapsed()
 
 	return PreparedStmt{
@@ -436,17 +447,29 @@ pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 		explain:            explain
 		writes:             has_next_value(tokens)
 		dynamic_parameters: tokens.filter(it.token == token_operator_question_mark).len
+		features:           features
 		c:                  &conn
 		elapsed_parse:      elapsed_parse
 	}
 }
 
 fn parse_tokens(tokens []Token) !Stmt {
-	mut lexer := Lexer{tokens, 0}
+	stmt, _ := parse_statement(tokens)!
+
+	return stmt
+}
+
+// parse_statement parses a statement, and also returns the features outside of
+// Core SQL that it uses (see flag).
+fn parse_statement(tokens []Token) !(Stmt, []string) {
+	mut lexer := Lexer{
+		tokens: tokens
+	}
 	mut parser := yy_new_parser()
 	parser.parse(mut lexer)!
+	lexer.features << token_features(tokens)
 
-	return (parser as YYParserImpl).lval.v as Stmt
+	return (parser as YYParserImpl).lval.v as Stmt, lexer.features
 }
 
 // query executes a statement. If there is a result set it will be returned.
@@ -637,7 +660,9 @@ pub fn (mut conn Connection) register_function(prototype string, func fn ([]Valu
 pub fn (mut conn Connection) register_virtual_table(create_table string, data VirtualTableProviderFn) ! {
 	// Registering virtual tables does not need use query cache.
 	mut tokens := tokenize(create_table)!
-	mut lexer := Lexer{tokens, 0}
+	mut lexer := Lexer{
+		tokens: tokens
+	}
 	mut parser := yy_new_parser()
 	parser.parse(mut lexer)!
 	stmt := (parser as YYParserImpl).lval.v as Stmt

@@ -32,8 +32,14 @@ from_constructor:
   }
 
 override_clause:
-  OVERRIDING USER VALUE { $$.v = 'USER' }
-| OVERRIDING SYSTEM VALUE { $$.v = 'SYSTEM' }
+  OVERRIDING USER VALUE {
+    flag(mut yylex, 'S043')
+    $$.v = 'USER'
+  }
+| OVERRIDING SYSTEM VALUE {
+    flag(mut yylex, 'S043')
+    $$.v = 'SYSTEM'
+  }
 
 insert_column_list:
   column_name_list { $$.v = $1.v as []Identifier }

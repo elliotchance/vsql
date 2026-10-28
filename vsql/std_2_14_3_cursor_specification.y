@@ -5,6 +5,9 @@
 // Define a result set.
 
 cursor_specification:
-  query_expression { $$.v = Stmt($1.v as QueryExpression) }
+  query_expression {
+    flag_query_expression(mut yylex, $1.v as QueryExpression, .cursor)
+    $$.v = Stmt($1.v as QueryExpression)
+  }
 
 %%

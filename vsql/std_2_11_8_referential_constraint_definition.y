@@ -44,22 +44,28 @@ referenced_column_list:
 
 referential_triggered_action:
   update_rule {
+    flag(mut yylex, 'F701')
     $$.v = ReferentialConstraintDefinition{
       update_rule: $1.v as string
     }
   }
 | update_rule delete_rule {
+    flag(mut yylex, 'F701')
+    flag(mut yylex, 'F191')
     $$.v = ReferentialConstraintDefinition{
       update_rule: $1.v as string
       delete_rule: $2.v as string
     }
   }
 | delete_rule {
+    flag(mut yylex, 'F191')
     $$.v = ReferentialConstraintDefinition{
       delete_rule: $1.v as string
     }
   }
 | delete_rule update_rule {
+    flag(mut yylex, 'F701')
+    flag(mut yylex, 'F191')
     $$.v = ReferentialConstraintDefinition{
       update_rule: $2.v as string
       delete_rule: $1.v as string

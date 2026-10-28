@@ -21,6 +21,7 @@ schema_name:
     $$.v = new_schema_identifier(($1.v as IdentifierChain).identifier)!
   }
 | identifier period identifier {
+    flag(mut yylex, 'F651')
     $$.v = new_schema_identifier(($1.v as IdentifierChain).identifier + '.' +
       ($3.v as IdentifierChain).identifier)!
   }
@@ -37,6 +38,7 @@ local_or_schema_qualified_name:
       ($3.v as IdentifierChain).identifier}
   }
 | identifier period identifier period qualified_identifier {
+    flag(mut yylex, 'F651')
     $$.v = IdentifierChain{($1.v as IdentifierChain).identifier + '.' +
       ($3.v as IdentifierChain).identifier + '.' + ($5.v as IdentifierChain).identifier}
   }
@@ -56,6 +58,7 @@ correlation_name:
 
 constraint_name:
   schema_qualified_name {
+    flag(mut yylex, 'F491')
     $$.v = new_table_identifier(($1.v as IdentifierChain).identifier)!
   }
 

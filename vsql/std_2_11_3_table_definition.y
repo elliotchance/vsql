@@ -2,6 +2,7 @@
 
 table_definition:
   CREATE TABLE table_name table_contents_source {
+    flag_unique_columns(mut yylex, $4.v as []TableElement)
     $$.v = Stmt(TableDefinition{$3.v as Identifier, $4.v as []TableElement})
   }
 

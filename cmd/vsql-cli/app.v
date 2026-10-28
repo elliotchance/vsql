@@ -442,7 +442,7 @@ fn run_query(mut conn vsql.Connection, query_text string) !TabResult {
 		}
 		output.write_string('</tbody>')
 		if table := edit {
-			output.write_string('<tfoot><tr class="insert"><td class="row-actions"><button type="button" class="add">Add</button></td>')
+			output.write_string('<tfoot><tr class="insert"><td class="row-actions"><button type="button" class="add" title="Add">+</button></td>')
 			for column in table.columns {
 				if column.generated {
 					output.write_string('<td class="null">generated</td>')
@@ -485,9 +485,11 @@ fn (app &App) page(all_tabs []Tab, tab Tab, result TabResult, change_sql string)
 	sb.write_string('<div class="actions"><span class="status">${html_escape(status)}</span>')
 	sb.write_string('<button type="submit" class="run" title="Run (Ctrl+Enter)">Run <span class="shortcut">&#8963;&#8629;</span></button></div></form>')
 	if change_sql != '' {
-		sb.write_string('<form method="post" action="/" class="confirm"><input type="hidden" name="tab" value="${tab.id}">')
+		// It's a popup (see app.js), a DELETE is run with a red button.
+		run_class := if change_sql.starts_with('DELETE ') { ' class="delete"' } else { '' }
+		sb.write_string('<dialog class="confirm"><form method="post" action="/"><input type="hidden" name="tab" value="${tab.id}">')
 		sb.write_string('<input type="hidden" name="confirm" value="${html_escape(change_sql)}"><pre class="sql">${html_escape(change_sql)}</pre>')
-		sb.write_string('<button type="submit" autofocus>Run</button><a href="/" class="cancel">Cancel</a></form>')
+		sb.write_string('<button type="submit"${run_class} autofocus>Run</button><a href="/" class="cancel">Cancel</a></form></dialog>')
 	}
 	if result.error != '' {
 		sb.write_string('<p class="error">${html_escape(result.error)}</p>')
@@ -635,10 +637,14 @@ table.editable td select { padding: 2px 4px; font: inherit; color: var(--fg); ba
 table.editable tfoot input, table.editable tfoot select { border-color: var(--border); }
 td.row-actions { width: 1px; white-space: nowrap; }
 td.row-actions button, td button.null { padding: 1px 8px; font-size: 12px; }
-td.row-actions button.delete { color: var(--muted); background: transparent; border-color: transparent; }
-td.row-actions button.delete:hover { color: #cf222e; }
+button.delete { background: #cf222e; border-color: #cf222e; }
+button.delete:hover { background: #a40e26; border-color: #a40e26; }
+button.add { background: #1f883d; border-color: #1f883d; }
+button.add:hover { background: #1a7f37; border-color: #1a7f37; }
 td button.null { margin-left: 4px; color: var(--fg); background: var(--side); border-color: var(--border); }
-.confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px; padding: 8px 12px; border: 1px solid var(--accent); border-radius: 6px; }
+dialog.confirm { width: min(640px, calc(100vw - 32px)); padding: 16px; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; }
+dialog.confirm::backdrop { background: rgba(0, 0, 0, 0.4); }
+.confirm form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .confirm pre { flex: 1 1 100%; margin: 0; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; }
 .confirm .cancel { color: var(--muted); }
 .tabs button.new { font-size: 16px; line-height: 1; padding: 6px 12px; }

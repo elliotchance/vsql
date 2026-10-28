@@ -34,9 +34,13 @@ textarea.addEventListener('keydown', e => {
 });
 highlight();
 
-// The change to be confirmed.
-const confirmSql = document.querySelector('.confirm pre');
-if (confirmSql) confirmSql.innerHTML = toHtml(confirmSql.textContent);
+// The change to be confirmed is a popup. Escape closes it without running it.
+const confirmDialog = document.querySelector('dialog.confirm');
+if (confirmDialog) {
+	const confirmSql = confirmDialog.querySelector('pre');
+	confirmSql.innerHTML = toHtml(confirmSql.textContent);
+	confirmDialog.showModal();
+}
 
 // A change to a row is posted with the table, and the primary key of the row
 // (data-key) for an update or delete. The server shows the statement to be

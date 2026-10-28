@@ -297,6 +297,26 @@ fn start_timer
 
 
 
+fn version
+----------
+
+
+.. code-block:: v
+
+   pub fn version() string
+
+version returns the version of vsql (such as "v0.34.0"), or an empty string if it wasn't built for a release.
+
+fn version_date
+---------------
+
+
+.. code-block:: v
+
+   pub fn version_date() string
+
+version_date returns the date that vsql was released (such as "2026-10-28"), or an empty string if it wasn't built for a release.
+
 type Column
 -----------
 

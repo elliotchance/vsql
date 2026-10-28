@@ -43,6 +43,9 @@ const char *sqlstate(SQLSMALLINT type, SQLINTEGER handle);
 
 SQLRETURN run_sql(SQLHSTMT stmt, const char *sql);
 
+/* connect_default connects to the default server (an empty ServerName). */
+SQLRETURN connect_default(SQLHDBC dbc);
+
 SQLRETURN connect_memory(SQLHDBC dbc);
 
 /* diag_int reads an SQLINTEGER header field. */

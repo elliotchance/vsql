@@ -276,6 +276,155 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_PC_NOT_PSEUDO     1 /* a real column */
 #define SQL_PC_PSEUDO         2 /* not used */
 
+/* SQLGetInfo InfoTypes. */
+#define SQL_MAXIMUM_DRIVER_CONNECTIONS    0     /* SMALLINT, 0 (no limit) */
+#define SQL_MAXIMUM_CONCURRENT_ACTIVITIES 1     /* SMALLINT, 0 (no limit) */
+#define SQL_DATA_SOURCE_NAME              2     /* the ServerName */
+#define SQL_FETCH_DIRECTION               8     /* INTEGER, SQL_FD_FETCH_* */
+#define SQL_SERVER_NAME                   13    /* the ServerName */
+#define SQL_SEARCH_PATTERN_ESCAPE         14    /* "\\" */
+#define SQL_DBMS_NAME                     17    /* "vsql" */
+#define SQL_DBMS_VERSION                  18    /* "01.02.0003 v1.2.3 ..." */
+#define SQL_CURSOR_COMMIT_BEHAVIOR        23    /* SMALLINT, SQL_CB_* */
+#define SQL_DATA_SOURCE_READ_ONLY         25    /* "N" */
+#define SQL_DEFAULT_TRANSACTION_ISOLATION 26    /* INTEGER, SQL_TRANSACTION_* */
+#define SQL_IDENTIFIER_CASE               28    /* SMALLINT, SQL_IC_* */
+#define SQL_MAXIMUM_COLUMN_NAME_LENGTH    30    /* SMALLINT, 128 */
+#define SQL_MAXIMUM_CURSOR_NAME_LENGTH    31    /* SMALLINT, 128 */
+#define SQL_MAXIMUM_SCHEMA_NAME_LENGTH    32    /* SMALLINT, 128 */
+#define SQL_MAXIMUM_CATALOG_NAME_LENGTH   34    /* SMALLINT, 128 */
+#define SQL_MAXIMUM_TABLE_NAME_LENGTH     35    /* SMALLINT, 128 */
+#define SQL_SCROLL_CONCURRENCY            43    /* INTEGER, SQL_SCCO_* */
+#define SQL_TRANSACTION_CAPABLE           46    /* SMALLINT, SQL_TC_* */
+#define SQL_USER_NAME                     47    /* "" (no users) */
+#define SQL_TRANSACTION_ISOLATION_OPTION  72    /* INTEGER, SQL_TRANSACTION_* */
+#define SQL_INTEGRITY                     73    /* "Y" */
+#define SQL_GETDATA_EXTENSIONS            81    /* INTEGER, SQL_GD_* */
+#define SQL_NULL_COLLATION                85    /* SMALLINT, SQL_NC_* */
+#define SQL_ALTER_TABLE                   86    /* INTEGER, SQL_AT_* */
+#define SQL_ORDER_BY_COLUMNS_IN_SELECT    90    /* "N" */
+#define SQL_SPECIAL_CHARACTERS            94    /* "" */
+#define SQL_MAXIMUM_COLUMNS_IN_GROUP_BY   97    /* SMALLINT, 0 (no limit) */
+#define SQL_MAXIMUM_COLUMNS_IN_ORDER_BY   99    /* SMALLINT, 0 (no limit) */
+#define SQL_MAXIMUM_COLUMNS_IN_SELECT     100   /* SMALLINT, 0 (no limit) */
+#define SQL_MAXIMUM_COLUMNS_IN_TABLE      101   /* SMALLINT, 1600 */
+#define SQL_MAXIMUM_TABLES_IN_SELECT      106   /* SMALLINT, 0 (no limit) */
+#define SQL_MAXIMUM_USER_NAME_LENGTH      107   /* SMALLINT, 0 (no limit) */
+#define SQL_OUTER_JOIN_CAPABILITIES       115   /* INTEGER, SQL_OUTER_JOIN_* */
+#define SQL_CURSOR_SENSITIVITY            10001 /* INTEGER, SQL_INSENSITIVE */
+#define SQL_DESCRIBE_PARAMETER            10002 /* "N" */
+#define SQL_CATALOG_NAME                  10003 /* "Y" */
+#define SQL_COLLATING_SEQUENCE            10004 /* "" */
+#define SQL_MAXIMUM_IDENTIFIER_LENGTH     10005 /* SMALLINT, 128 */
+#define SQL_MAXIMUM_STMT_OCTETS           20000 /* SMALLINT, 0 (no limit) */
+#define SQL_MAXIMUM_STMT_OCTETS_DATA      20001 /* SMALLINT, 0 (no limit) */
+#define SQL_MAXIMUM_STMT_OCTETS_SCHEMA    20002 /* SMALLINT, 0 (no limit) */
+
+/* SQLGetInfo values. */
+#define SQL_AT_ADD_COLUMN                 0x00000001L /* ADD COLUMN */
+#define SQL_AT_DROP_COLUMN                0x00000002L /* DROP COLUMN */
+#define SQL_AT_ALTER_COLUMN               0x00000004L /* ALTER COLUMN */
+#define SQL_AT_ADD_CONSTRAINT             0x00000008L /* ADD CONSTRAINT */
+#define SQL_AT_DROP_CONSTRAINT            0x00000010L /* DROP CONSTRAINT */
+#define SQL_CB_DELETE                     0           /* cursors are deleted */
+#define SQL_CB_CLOSE                      1           /* cursors are closed */
+#define SQL_CB_PRESERVE                   2           /* cursors stay open */
+#define SQL_FD_FETCH_NEXT                 0x00000001L /* SQL_FETCH_NEXT */
+#define SQL_FD_FETCH_FIRST                0x00000002L /* SQL_FETCH_FIRST */
+#define SQL_FD_FETCH_LAST                 0x00000004L /* SQL_FETCH_LAST */
+#define SQL_FD_FETCH_PRIOR                0x00000008L /* SQL_FETCH_PRIOR */
+#define SQL_FD_FETCH_ABSOLUTE             0x00000010L /* SQL_FETCH_ABSOLUTE */
+#define SQL_FD_FETCH_RELATIVE             0x00000020L /* SQL_FETCH_RELATIVE */
+#define SQL_GD_ANY_COLUMN                 0x00000001L /* any unbound column */
+#define SQL_GD_ANY_ORDER                  0x00000002L /* columns in any order */
+#define SQL_IC_UPPER                      1           /* upper case */
+#define SQL_IC_LOWER                      2           /* lower case */
+#define SQL_IC_SENSITIVE                  3           /* case sensitive */
+#define SQL_IC_MIXED                      4           /* mixed case */
+#define SQL_NC_HIGH                       1           /* NULLs sort high */
+#define SQL_NC_LOW                        2           /* NULLs sort low */
+#define SQL_OUTER_JOIN_LEFT               0x00000001L /* LEFT JOIN */
+#define SQL_OUTER_JOIN_RIGHT              0x00000002L /* RIGHT JOIN */
+#define SQL_OUTER_JOIN_FULL               0x00000004L /* FULL JOIN */
+#define SQL_OUTER_JOIN_NESTED             0x00000008L /* nested joins */
+#define SQL_OUTER_JOIN_NOT_ORDERED        0x00000010L /* ON columns in any order */
+#define SQL_OUTER_JOIN_INNER              0x00000020L /* inner table in an INNER JOIN */
+#define SQL_OUTER_JOIN_ALL_COMPARISON_OPS 0x00000040L /* any comparison in ON */
+#define SQL_SCCO_READ_ONLY                0x00000001L /* read only */
+#define SQL_SCCO_LOCK                     0x00000002L /* locking */
+#define SQL_SCCO_OPT_ROWVER               0x00000004L /* row versions */
+#define SQL_SCCO_OPT_VALUES               0x00000008L /* values */
+#define SQL_TC_NONE                       0           /* no transactions */
+#define SQL_TC_DML                        1           /* DML only */
+#define SQL_TC_ALL                        2           /* DML and DDL */
+#define SQL_TC_DDL_COMMIT                 3           /* DDL commits */
+#define SQL_TC_DDL_IGNORE                 4           /* DDL is ignored */
+
+/* SQLGetFunctions FunctionIds. */
+#define SQL_API_SQLALLOCCONNECT     1    /* supported */
+#define SQL_API_SQLALLOCENV         2    /* supported */
+#define SQL_API_SQLALLOCHANDLE      1001 /* supported */
+#define SQL_API_SQLALLOCSTMT        3    /* supported */
+#define SQL_API_SQLBINDCOL          4    /* supported */
+#define SQL_API_SQLBINDPARAMETER    72   /* supported */
+#define SQL_API_SQLCANCEL           5    /* supported */
+#define SQL_API_SQLCLOSECURSOR      1003 /* supported */
+#define SQL_API_SQLCOLATTRIBUTE     6    /* supported */
+#define SQL_API_SQLCOLUMNPRIVILEGES 56   /* not supported */
+#define SQL_API_SQLCOLUMNS          40   /* supported */
+#define SQL_API_SQLCONNECT          7    /* supported */
+#define SQL_API_SQLCOPYDESC         1004 /* supported */
+#define SQL_API_SQLDATASOURCES      57   /* supported */
+#define SQL_API_SQLDESCRIBECOL      8    /* supported */
+#define SQL_API_SQLDISCONNECT       9    /* supported */
+#define SQL_API_SQLENDTRAN          1005 /* supported */
+#define SQL_API_SQLERROR            10   /* supported */
+#define SQL_API_SQLEXECDIRECT       11   /* supported */
+#define SQL_API_SQLEXECUTE          12   /* supported */
+#define SQL_API_SQLFETCH            13   /* supported */
+#define SQL_API_SQLFETCHSCROLL      1021 /* supported */
+#define SQL_API_SQLFOREIGNKEYS      60   /* supported */
+#define SQL_API_SQLFREECONNECT      14   /* supported */
+#define SQL_API_SQLFREEENV          15   /* supported */
+#define SQL_API_SQLFREEHANDLE       1006 /* supported */
+#define SQL_API_SQLFREESTMT         16   /* supported */
+#define SQL_API_SQLGETCONNECTATTR   1007 /* supported */
+#define SQL_API_SQLGETCURSORNAME    17   /* supported */
+#define SQL_API_SQLGETDATA          43   /* supported */
+#define SQL_API_SQLGETDESCFIELD     1008 /* supported */
+#define SQL_API_SQLGETDESCREC       1009 /* supported */
+#define SQL_API_SQLGETDIAGFIELD     1010 /* supported */
+#define SQL_API_SQLGETDIAGREC       1011 /* supported */
+#define SQL_API_SQLGETENVATTR       1012 /* supported */
+#define SQL_API_SQLGETFEATUREINFO   1027 /* supported */
+#define SQL_API_SQLGETFUNCTIONS     44   /* supported */
+#define SQL_API_SQLGETINFO          45   /* supported */
+#define SQL_API_SQLGETLENGTH        1022 /* not supported */
+#define SQL_API_SQLGETPARAMDATA     1025 /* not supported */
+#define SQL_API_SQLGETPOSITION      1023 /* not supported */
+#define SQL_API_SQLGETSESSIONINFO   1028 /* not supported */
+#define SQL_API_SQLGETSTMTATTR      1014 /* supported */
+#define SQL_API_SQLGETSUBSTRING     1024 /* not supported */
+#define SQL_API_SQLGETTYPEINFO      47   /* supported */
+#define SQL_API_SQLMORERESULTS      61   /* supported */
+#define SQL_API_SQLNEXTRESULT       73   /* supported */
+#define SQL_API_SQLNUMRESULTCOLS    18   /* supported */
+#define SQL_API_SQLPARAMDATA        48   /* supported */
+#define SQL_API_SQLPREPARE          19   /* supported */
+#define SQL_API_SQLPRIMARYKEYS      65   /* supported */
+#define SQL_API_SQLPUTDATA          49   /* supported */
+#define SQL_API_SQLROWCOUNT         20   /* supported */
+#define SQL_API_SQLSETCONNECTATTR   1016 /* supported */
+#define SQL_API_SQLSETCURSORNAME    21   /* supported */
+#define SQL_API_SQLSETDESCFIELD     1017 /* supported */
+#define SQL_API_SQLSETDESCREC       1018 /* supported */
+#define SQL_API_SQLSETENVATTR       1019 /* supported */
+#define SQL_API_SQLSETSTMTATTR      1020 /* supported */
+#define SQL_API_SQLSPECIALCOLUMNS   52   /* supported */
+#define SQL_API_SQLSTARTTRAN        74   /* supported */
+#define SQL_API_SQLTABLEPRIVILEGES  70   /* not supported */
+#define SQL_API_SQLTABLES           54   /* supported */
+
 /* SQLBindParameter InputOutputModes. */
 #define SQL_PARAM_MODE_IN    1 /* an input parameter */
 #define SQL_PARAM_MODE_INOUT 2 /* the same as an input parameter */
@@ -590,6 +739,28 @@ SQLRETURN SQLConnect(
 SQLRETURN SQLCopyDesc(
     SQLHDESC SourceDescHandle,
     SQLHDESC TargetDescHandle
+);
+
+/*
+ * SQLDataSources returns the ServerNames that SQLConnect accepts without a
+ * file path: "DEFAULT" and ":memory:" (both are new in-memory databases).
+ * Direction is SQL_FETCH_FIRST or SQL_FETCH_NEXT, and SQL_NO_DATA is returned
+ * after the last one.
+ *
+ *   SQLCHAR name[129], description[256];
+ *
+ *   SQLDataSources(env, SQL_FETCH_FIRST, name, sizeof(name), NULL,
+ *                  description, sizeof(description), NULL);
+ */
+SQLRETURN SQLDataSources(
+    SQLHENV      EnvironmentHandle,
+    SQLSMALLINT  Direction,
+    SQLCHAR     *ServerName,
+    SQLSMALLINT  BufferLength1,
+    SQLSMALLINT *NameLength1,
+    SQLCHAR     *Description,
+    SQLSMALLINT  BufferLength2,
+    SQLSMALLINT *NameLength2
 );
 
 /*
@@ -1049,6 +1220,62 @@ SQLRETURN SQLGetEnvAttr(
     SQLPOINTER  Value,
     SQLINTEGER  BufferLength,
     SQLINTEGER *StringLength
+);
+
+/*
+ * SQLGetFeatureInfo sets Supported to 1 if vsql supports a feature ("FEATURE"
+ * with an id such as "E011") or a subfeature ("SUBFEATURE" with "E011" and
+ * "01"), otherwise 0. An unknown feature, or a "PACKAGE", is HY024. See
+ * https://vsql.readthedocs.io/en/latest/sql-compliance.html
+ *
+ *   SQLSMALLINT supported;
+ *
+ *   SQLGetFeatureInfo(dbc, (SQLCHAR *)"FEATURE", SQL_NTS, (SQLCHAR *)"E011",
+ *                     SQL_NTS, NULL, 0, &supported);
+ */
+SQLRETURN SQLGetFeatureInfo(
+    SQLHDBC      ConnectionHandle,
+    SQLCHAR     *FeatureType,
+    SQLSMALLINT  FeatureTypeLength,
+    SQLCHAR     *FeatureId,
+    SQLSMALLINT  FeatureIdLength,
+    SQLCHAR     *SubFeatureId,
+    SQLSMALLINT  SubFeatureIdLength,
+    SQLSMALLINT *Supported
+);
+
+/*
+ * SQLGetFunctions sets Supported to 1 if a routine (one of the SQL_API_*
+ * FunctionIds) is supported, otherwise 0.
+ *
+ *   SQLSMALLINT supported;
+ *
+ *   SQLGetFunctions(dbc, SQL_API_SQLFETCHSCROLL, &supported);
+ */
+SQLRETURN SQLGetFunctions(
+    SQLHDBC      ConnectionHandle,
+    SQLSMALLINT  FunctionId,
+    SQLSMALLINT *Supported
+);
+
+/*
+ * SQLGetInfo reads information about the connection and vsql. InfoType is one
+ * of the SQLGetInfo InfoTypes, and each one is a string (written like
+ * SQLGetData, with BufferLength and StringLength), an SQLSMALLINT or an
+ * SQLINTEGER (see the constants).
+ *
+ *   SQLCHAR version[64];
+ *   SQLSMALLINT max_name;
+ *
+ *   SQLGetInfo(dbc, SQL_DBMS_VERSION, version, sizeof(version), NULL);
+ *   SQLGetInfo(dbc, SQL_MAXIMUM_TABLE_NAME_LENGTH, &max_name, 0, NULL);
+ */
+SQLRETURN SQLGetInfo(
+    SQLHDBC      ConnectionHandle,
+    SQLSMALLINT  InfoType,
+    SQLPOINTER   InfoValue,
+    SQLSMALLINT  BufferLength,
+    SQLSMALLINT *StringLength
 );
 
 /*

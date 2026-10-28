@@ -21,6 +21,11 @@ SQLRETURN run_sql(SQLHSTMT stmt, const char *sql) {
   return SQLExecDirect(stmt, (SQLCHAR *)sql, SQL_NTS);
 }
 
+/* connect_default connects to the default server (an empty ServerName). */
+SQLRETURN connect_default(SQLHDBC dbc) {
+  return SQLConnect(dbc, NULL, 0, NULL, 0, NULL, 0);
+}
+
 SQLRETURN connect_memory(SQLHDBC dbc) {
   return SQLConnect(dbc, (SQLCHAR *)":memory:", SQL_NTS, NULL, 0, NULL, 0);
 }

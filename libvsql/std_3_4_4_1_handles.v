@@ -28,6 +28,8 @@ mut:
 	// null_termination is the NULL TERMINATION attribute (see 4.4.2, "Null
 	// terminated strings").
 	null_termination bool = true
+	// data_source is the next data source for DataSources.
+	data_source int
 }
 
 // An allocated SQL-connection. conn is the established SQL-connection, if any.

@@ -10,6 +10,7 @@
 
 module main
 
+import math
 import rand
 import time
 import vsql
@@ -37,20 +38,14 @@ fn (mut b Benchmark) start() ! {
 	b.conn.query('CREATE TABLE accounts ( aid INT, abalance INT, PRIMARY KEY ( aid ) ) ')!
 
 	mut t := vsql.start_timer()
-	for aid in 1 .. b.account_rows + 1 {
-		b.conn.query('INSERT INTO accounts (aid, abalance) VALUES (${aid}, 0)')!
-	}
+	b.insert_rows('accounts (aid, abalance)', b.account_rows)!
 	b.print_stat('INSERT', b.account_rows, 'rows', t.elapsed())
 
 	b.conn.query('CREATE TABLE tellers ( tid INT, tbalance INT, PRIMARY KEY ( tid ) ) ')!
-	for tid in 1 .. b.teller_rows + 1 {
-		b.conn.query('INSERT INTO tellers (tid, tbalance) VALUES (${tid}, 0)')!
-	}
+	b.insert_rows('tellers (tid, tbalance)', b.teller_rows)!
 
 	b.conn.query('CREATE TABLE branches ( bid INT, bbalance INT, PRIMARY KEY ( bid ) ) ')!
-	for bid in 1 .. b.branch_rows + 1 {
-		b.conn.query('INSERT INTO branches (bid, bbalance) VALUES (${bid}, 0)')!
-	}
+	b.insert_rows('branches (bid, bbalance)', b.branch_rows)!
 
 	// TODO(elliotchance): This should have a PRIMARY KEY when we support
 	//  multiple columns.
@@ -73,6 +68,18 @@ fn (mut b Benchmark) start() ! {
 	}
 
 	b.print_stat('TPC-B (sort of)', txn_count, 'transactions', t.elapsed())
+}
+
+// insert_rows inserts rows with ids from 1 to n and a balance of 0, up to 1000
+// rows per INSERT.
+fn (mut b Benchmark) insert_rows(table string, n int) ! {
+	for first := 1; first <= n; first += 1000 {
+		mut rows := []string{}
+		for id in first .. math.min(first + 1000, n + 1) {
+			rows << '(${id}, 0)'
+		}
+		b.conn.query('INSERT INTO ${table} VALUES ${rows.join(', ')}')!
+	}
 }
 
 fn (mut b Benchmark) print_stat(name string, n int, unit string, elapsed time.Duration) {

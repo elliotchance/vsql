@@ -425,24 +425,29 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	mut catalog := c.conn.catalogs[ident.catalog_name] or {
 		return sqlstate_42601('unknown column: ${ident}')
 	}
-	mut catalog_tables := catalog.storage.tables.values()
-	for _, virtual_table in catalog.virtual_tables {
-		catalog_tables << virtual_table.table()
+	// The table is looked up by name, rather than going through every table,
+	// since getting the Table of a virtual table copies all of its columns.
+	table_id := Identifier{
+		schema_name: ident.schema_name
+		entity_name: ident.entity_name
+	}.storage_id()
+	mut found := ?Table(none)
+	if table := catalog.storage.tables[table_id] {
+		found = table
+	} else if virtual_table := catalog.virtual_tables[table_id] {
+		found = virtual_table.table()
 	}
-	for table in catalog_tables {
-		if table.name.schema_name == ident.schema_name
-			&& table.name.entity_name == ident.entity_name {
-			column := table.column(ident.sub_entity_name) or { Column{} }
-			if column.name.sub_entity_name == ident.sub_entity_name {
-				return CompileResult{
-					run:          fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
-						return data.data[ident.id()] or {
-							return sqlstate_42601('unknown column: ${ident}')
-						}
+	if table := found {
+		column := table.column(ident.sub_entity_name) or { Column{} }
+		if column.name.sub_entity_name == ident.sub_entity_name {
+			return CompileResult{
+				run:          fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return data.data[ident.id()] or {
+						return sqlstate_42601('unknown column: ${ident}')
 					}
-					typ:          column.typ
-					contains_agg: false
 				}
+				typ:          column.typ
+				contains_agg: false
 			}
 		}
 	}

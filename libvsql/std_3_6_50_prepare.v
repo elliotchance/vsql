@@ -34,10 +34,7 @@ fn prepare(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16 {
 	stmt.close_cursor()
 
 	// - 11. P is prepared and the prepared statement is associated with S.
-	mut conn := stmt_connection(stmt)!
-	mut prepared := &vsql.PreparedStmt{
-		...conn.prepare(p)!
-	}
+	mut prepared := prepare_statement(mut stmt, p)!
 	stmt.prepared = prepared
 	stmt.prepared_function = stmt.diag.dynamic_function
 	stmt.prepared_function_code = stmt.diag.dynamic_function_code
@@ -57,6 +54,7 @@ fn prepare(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16 {
 		params['?${i}'] = vsql.new_null_value(typ.typ)
 	}
 	columns := prepared.columns(params) or { []vsql.Column{} }
+	mut conn := stmt_connection(stmt)!
 	describe(stmt, mut conn, columns)
 
 	return sql_success

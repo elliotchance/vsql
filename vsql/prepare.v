@@ -68,6 +68,38 @@ pub fn (p PreparedStmt) dynamic_parameter_count() int {
 	return p.dynamic_parameters
 }
 
+// command_function returns the identifier and code of the statement, from
+// Table 37, "SQL-statement codes" in ISO/IEC 9075-2 (the COMMAND_FUNCTION and
+// DYNAMIC_FUNCTION of a diagnostics area). A query is a <dynamic select
+// statement> ("SELECT CURSOR"). EXPLAIN isn't a standard statement, so its
+// code is negative.
+pub fn (p PreparedStmt) command_function() (string, int) {
+	if p.explain {
+		return 'EXPLAIN', -1
+	}
+
+	return match p.stmt {
+		AlterSequenceGeneratorStatement { 'ALTER SEQUENCE', 134 }
+		AlterTableStatement { 'ALTER TABLE', 4 }
+		CommitStatement { 'COMMIT WORK', 11 }
+		DeleteStatementSearched { 'DELETE WHERE', 19 }
+		DropSchemaStatement { 'DROP SCHEMA', 31 }
+		DropSequenceGeneratorStatement { 'DROP SEQUENCE', 135 }
+		DropTableStatement { 'DROP TABLE', 32 }
+		InsertStatement { 'INSERT', 50 }
+		QueryExpression { 'SELECT CURSOR', 85 }
+		RollbackStatement { 'ROLLBACK WORK', 62 }
+		SchemaDefinition { 'CREATE SCHEMA', 64 }
+		SequenceGeneratorDefinition { 'CREATE SEQUENCE', 133 }
+		SetCatalogStatement { 'SET CATALOG', 66 }
+		SetConstraintsModeStatement { 'SET CONSTRAINT', 68 }
+		SetSchemaStatement { 'SET SCHEMA', 74 }
+		StartTransactionStatement { 'START TRANSACTION', 111 }
+		TableDefinition { 'CREATE TABLE', 77 }
+		UpdateStatementSearched { 'UPDATE WHERE', 82 }
+	}
+}
+
 // columns returns the columns of the result of a query, without executing it,
 // or none for a statement that doesn't return rows. Like query, params must
 // have a value for each parameter, which gives it a data type.

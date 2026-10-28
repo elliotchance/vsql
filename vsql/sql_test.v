@@ -1455,6 +1455,35 @@ fn test_prepared_stmt_dynamic_parameters() {
 	assert explain.columns({})!.map(it.name.sub_entity_name) == ['EXPLAIN']
 }
 
+fn test_command_function() {
+	mut db := open(':memory:')!
+	for sql, want in {
+		'ALTER SEQUENCE s RESTART':       'ALTER SEQUENCE 134'
+		'ALTER TABLE t ADD COLUMN y INT': 'ALTER TABLE 4'
+		'COMMIT':                         'COMMIT WORK 11'
+		'DELETE FROM t':                  'DELETE WHERE 19'
+		'DROP SCHEMA s RESTRICT':         'DROP SCHEMA 31'
+		'DROP SEQUENCE s':                'DROP SEQUENCE 135'
+		'DROP TABLE t':                   'DROP TABLE 32'
+		'INSERT INTO t (x) VALUES (1)':   'INSERT 50'
+		'VALUES 1':                       'SELECT CURSOR 85'
+		'ROLLBACK':                       'ROLLBACK WORK 62'
+		'CREATE SCHEMA s':                'CREATE SCHEMA 64'
+		'CREATE SEQUENCE s':              'CREATE SEQUENCE 133'
+		"SET CATALOG 'c'":                'SET CATALOG 66'
+		'SET CONSTRAINTS ALL DEFERRED':   'SET CONSTRAINT 68'
+		"SET SCHEMA 's'":                 'SET SCHEMA 74'
+		'START TRANSACTION':              'START TRANSACTION 111'
+		'CREATE TABLE t (x INT)':         'CREATE TABLE 77'
+		'UPDATE t SET x = 1':             'UPDATE WHERE 82'
+		'EXPLAIN VALUES 1':               'EXPLAIN -1'
+	} {
+		stmt := db.prepare(sql)!
+		name, code := stmt.command_function()
+		assert '${name} ${code}' == want, sql
+	}
+}
+
 fn test_cast() {
 	mut db := open(':memory:')!
 	assert db.cast(new_varchar_value('12'), new_type('INTEGER', 0, 0))!.int_value() == 12

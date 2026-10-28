@@ -8,7 +8,9 @@ import time
 type Stmt = AlterSequenceGeneratorStatement
 	| AlterTableStatement
 	| CommitStatement
+	| ConnectStatement
 	| DeleteStatementSearched
+	| DisconnectStatement
 	| DropSchemaStatement
 	| DropSequenceGeneratorStatement
 	| DropTableStatement
@@ -18,8 +20,10 @@ type Stmt = AlterSequenceGeneratorStatement
 	| SchemaDefinition
 	| SequenceGeneratorDefinition
 	| SetCatalogStatement
+	| SetConnectionStatement
 	| SetConstraintsModeStatement
 	| SetSchemaStatement
+	| SetTransactionStatement
 	| StartTransactionStatement
 	| TableDefinition
 	| UpdateStatementSearched
@@ -86,7 +90,9 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 		AlterSequenceGeneratorStatement { 'ALTER SEQUENCE', 134 }
 		AlterTableStatement { 'ALTER TABLE', 4 }
 		CommitStatement { 'COMMIT WORK', 11 }
+		ConnectStatement { 'CONNECT', 13 }
 		DeleteStatementSearched { 'DELETE WHERE', 19 }
+		DisconnectStatement { 'DISCONNECT', 22 }
 		DropSchemaStatement { 'DROP SCHEMA', 31 }
 		DropSequenceGeneratorStatement { 'DROP SEQUENCE', 135 }
 		DropTableStatement { 'DROP TABLE', 32 }
@@ -96,8 +102,10 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 		SchemaDefinition { 'CREATE SCHEMA', 64 }
 		SequenceGeneratorDefinition { 'CREATE SEQUENCE', 133 }
 		SetCatalogStatement { 'SET CATALOG', 66 }
+		SetConnectionStatement { 'SET CONNECTION', 67 }
 		SetConstraintsModeStatement { 'SET CONSTRAINT', 68 }
 		SetSchemaStatement { 'SET SCHEMA', 74 }
+		SetTransactionStatement { 'SET TRANSACTION', 75 }
 		StartTransactionStatement { 'START TRANSACTION', 111 }
 		TableDefinition { 'CREATE TABLE', 77 }
 		UpdateStatementSearched { 'UPDATE WHERE', 82 }
@@ -164,8 +172,17 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 
 	p.c.begin_row()
 
+	// - 17.2 GR 7. A statement that isn't in an SQL-transaction is in one of its
+	// own.
+	if !p.c.is_active() && p.is_transaction_initiating() {
+		p.c.initiate_transaction(p.c.next_condition_area_limit)
+	}
+
 	stmt := p.stmt
 	match stmt {
+		ConnectStatement, SetConnectionStatement, DisconnectStatement {
+			return sqlstate_42601('a connection statement can only be used in direct SQL')
+		}
 		AlterSequenceGeneratorStatement {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
@@ -265,6 +282,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		SetSchemaStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		SetTransactionStatement {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}

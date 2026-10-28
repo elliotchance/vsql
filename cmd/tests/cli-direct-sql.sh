@@ -25,3 +25,12 @@ wait
 echo 'SELECT * FROM t WHERE x = 2;' | $VSQL cli $VSQL_FILE > $TXT_FILE
 cat $TXT_FILE
 grep -Ex ' *2' $TXT_FILE
+
+# CONNECT TO opens another file, which is a different SQL-server.
+OTHER_FILE="$(mktemp).vsql" || exit 1
+printf "CONNECT TO '$OTHER_FILE' AS 'other';\nSELECT * FROM t;\nSET CONNECTION DEFAULT;\nDISCONNECT 'other';\nSELECT * FROM t;\n" | $VSQL cli $VSQL_FILE > $TXT_FILE
+cat $TXT_FILE
+grep 'CONNECT' $TXT_FILE
+grep 'Error 42P01' $TXT_FILE
+grep 'DISCONNECT' $TXT_FILE
+grep -Ex ' *2' $TXT_FILE

@@ -685,6 +685,102 @@ fn sqlstate_42p02(parameter_name string) IError {
 	}
 }
 
+// sql-client unable to establish sql-connection
+struct SQLState08001 {
+	SQLState
+}
+
+fn sqlstate_08001(msg string) IError {
+	return SQLState08001{
+		code: sqlstate_to_int('08001')
+		msg:  'sql-client unable to establish sql-connection: ${msg}'
+	}
+}
+
+// connection name in use
+struct SQLState08002 {
+	SQLState
+}
+
+fn sqlstate_08002(msg string) IError {
+	return SQLState08002{
+		code: sqlstate_to_int('08002')
+		msg:  'connection name in use: ${msg}'
+	}
+}
+
+// connection does not exist
+struct SQLState08003 {
+	SQLState
+}
+
+fn sqlstate_08003(msg string) IError {
+	return SQLState08003{
+		code: sqlstate_to_int('08003')
+		msg:  'connection does not exist: ${msg}'
+	}
+}
+
+// feature not supported: multiple server transactions
+struct SQLState0A001 {
+	SQLState
+}
+
+fn sqlstate_0a001() IError {
+	return SQLState0A001{
+		code: sqlstate_to_int('0A001')
+		msg:  'feature not supported: multiple server transactions'
+	}
+}
+
+// invalid authorization specification
+struct SQLState28000 {
+	SQLState
+}
+
+fn sqlstate_28000(msg string) IError {
+	return SQLState28000{
+		code: sqlstate_to_int('28000')
+		msg:  'invalid authorization specification: ${msg}'
+	}
+}
+
+// invalid connection name
+struct SQLState2E000 {
+	SQLState
+}
+
+fn sqlstate_2e000(msg string) IError {
+	return SQLState2E000{
+		code: sqlstate_to_int('2E000')
+		msg:  'invalid connection name: ${msg}'
+	}
+}
+
+// warning: invalid number of conditions
+struct SQLState01012 {
+	SQLState
+}
+
+fn sqlstate_01012() IError {
+	return SQLState01012{
+		code: sqlstate_to_int('01012')
+		msg:  'invalid number of conditions'
+	}
+}
+
+// invalid condition number
+struct SQLState35000 {
+	SQLState
+}
+
+fn sqlstate_35000() IError {
+	return SQLState35000{
+		code: sqlstate_to_int('35000')
+		msg:  'invalid condition number'
+	}
+}
+
 // invalid transaction state: active sql transaction
 struct SQLState25001 {
 	SQLState

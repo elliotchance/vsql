@@ -7,10 +7,12 @@ SQL Reference
    alter-sequence.rst
    alter-table.rst
    commit.rst
+   connect.rst
    create-schema.rst
    create-sequence.rst
    create-table.rst
    delete.rst
+   disconnect.rst
    drop-schema.rst
    drop-sequence.rst
    drop-table.rst
@@ -19,8 +21,10 @@ SQL Reference
    rollback.rst
    select.rst
    set-catalog.rst
+   set-connection.rst
    set-constraints.rst
    set-schema.rst
+   set-transaction.rst
    start-transaction.rst
    update.rst
    values.rst

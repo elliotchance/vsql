@@ -63,6 +63,13 @@ mut:
 	// direct_query_transaction is true when an SQL-transaction was started by
 	// a query in direct (see Connection.direct) that hasn't changed anything.
 	direct_query_transaction bool
+	// condition_area_limit is the most warnings that are kept during the current
+	// SQL-transaction, which is set by DIAGNOSTICS SIZE (see
+	// initiate_transaction).
+	condition_area_limit int = max_conditions
+	// next_condition_area_limit is the DIAGNOSTICS SIZE of a SET TRANSACTION, for
+	// the next SQL-transaction, or 0.
+	next_condition_area_limit int
 pub mut:
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive
@@ -72,7 +79,7 @@ pub mut:
 	// if a value must be truncated during a runtime CAST.
 	//
 	// Warnings are not ever reset, although only 100 of the most recent warnings
-	// are retained. This is to be able to collect all warnings during some
+	// (or the DIAGNOSTICS SIZE of the SQL-transaction) are retained. This is to be able to collect all warnings during some
 	// arbitrary process defined by the application. Instead, you should call
 	// clear_warnings() before starting a block of work.
 	warnings []IError
@@ -941,7 +948,7 @@ fn (mut conn Connection) begin_row() {
 
 fn (mut conn Connection) add_warning(warning IError) {
 	conn.warnings << warning
-	if conn.warnings.len > 100 {
-		conn.warnings = conn.warnings[conn.warnings.len - 100..]
+	if conn.warnings.len > conn.condition_area_limit {
+		conn.warnings = conn.warnings[conn.warnings.len - conn.condition_area_limit..]
 	}
 }

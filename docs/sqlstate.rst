@@ -101,6 +101,12 @@ aren't spaces. The value is truncated. Storing the same value in a column with
   -- warning 01004: string data, right truncation
   -- COL1: he
 
+``01012`` invalid number of conditions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``01012`` is a warning when the ``DIAGNOSTICS SIZE`` of :doc:`set-transaction`
+is more than 100, which is used instead.
+
 ``02000`` no data
 ^^^^^^^^^^^^^^^^^
 
@@ -118,6 +124,25 @@ sends it as a ``NOTICE``.
   -- warning 02000: no data
   -- msg: DELETE 0
 
+``08001`` sql-client unable to establish sql-connection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``08001`` is returned when :doc:`connect` (or the first statement of
+:doc:`cli`) can't open the database file.
+
+``08002`` connection name in use
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``08002`` is returned when :doc:`connect` uses the name of a connection that
+already exists.
+
+``08003`` connection does not exist
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``08003`` is returned by :doc:`set-connection` or :doc:`disconnect` for a
+connection that doesn't exist, or for a statement when there is no current
+connection after :doc:`disconnect`.
+
 ``0A000`` feature not supported
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -128,6 +153,13 @@ too old. See *Compatibility* in :doc:`file-format`.
 It's also returned for an aggregate function of only the columns of an outer
 query in a correlated subquery, such as ``(SELECT MAX(t1.x) FROM t2)``, which
 isn't supported yet.
+
+``0A001`` feature not supported: multiple server transactions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``0A001`` is returned by :doc:`connect` or :doc:`set-connection` when the
+current connection has an active transaction, since a transaction can't be
+across more than one database.
 
 ``0B000`` invalid transaction initiation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -450,6 +482,12 @@ was changed by a newer version of vsql, in a way that this version cannot
 safely change it. The file can still be read. See *Compatibility* in
 :doc:`file-format`.
 
+``28000`` invalid authorization specification
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``28000`` is returned when the ``USER`` of :doc:`connect` isn't an
+identifier.
+
 ``2BP01`` dependent objects still exist
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -473,6 +511,18 @@ in an active transaction.
    -- msg: START TRANSACTION
    -- msg: COMMIT
    -- error 2D000: invalid transaction termination
+
+``2E000`` invalid connection name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``2E000`` is returned when the name of a connection in :doc:`connect` isn't
+an identifier.
+
+``35000`` invalid condition number
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``35000`` is returned when the ``DIAGNOSTICS SIZE`` of :doc:`set-transaction`
+or :doc:`start-transaction` is less than 1.
 
 ``3D000`` invalid catalog name
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

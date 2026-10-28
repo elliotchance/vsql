@@ -81,6 +81,9 @@ The shell is direct invocation of SQL (ISO/IEC 9075-2:2016(E), Clause 22,
 - A transaction that is still active when the shell stops any other way (such
   as with ctrl+c), or a ``START TRANSACTION`` that isn't finished with
   autocommit, is rolled back.
+- The file is the default connection. :doc:`connect` opens other files as
+  other connections, and :doc:`set-connection` and :doc:`disconnect` select
+  and close them. Only one connection can have an active transaction.
 - A query with no rows raises ``02000`` (no data), which is shown as a notice.
 - The null value is shown as ``NULL``.
 

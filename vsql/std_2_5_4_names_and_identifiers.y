@@ -67,4 +67,13 @@ sequence_generator_name:
     $$.v = new_table_identifier(($1.v as IdentifierChain).identifier)!
   }
 
+connection_name:
+  simple_value_specification { $$.v = $1.v as ValueSpecification }
+
+sql_server_name:
+  simple_value_specification { $$.v = $1.v as ValueSpecification }
+
+connection_user_name:
+  simple_value_specification { $$.v = $1.v as ValueSpecification }
+
 %%

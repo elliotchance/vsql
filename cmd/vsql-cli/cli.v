@@ -26,14 +26,15 @@ fn cli_command(cmd cli.Command) ! {
 	print_version()
 	println('')
 
-	mut db := vsql.open(cmd.args[0])!
+	// The file is the default SQL-server, and the other files are attached to
+	// the default SQL-connection as more catalogs. CONNECT TO can connect to
+	// other files.
+	mut agent := vsql.new_agent(cmd.args[0], catalogs: cmd.args[1..])
 	autocommit := cmd.flags.get_bool('autocommit')!
 
-	for arg in cmd.args[1..] {
-		catalog_name := vsql.catalog_name_from_path(arg)
-		options := vsql.default_connection_options()
-		db.add_catalog(catalog_name, arg, options)!
-	}
+	// Connecting before the first statement shows a problem with the file
+	// straight away.
+	agent.connect_default()!
 
 	// Each statement is a <direct SQL statement> (ISO/IEC 9075-2:2016(E), 22.1),
 	// so it ends with a semicolon and can be over many lines.
@@ -61,33 +62,30 @@ fn cli_command(cmd cli.Command) ! {
 		statements, rest := vsql.split_terminated_statements(unfinished + line)
 		unfinished = rest
 		for stmt in statements {
-			run_direct(mut db, stmt + ';', autocommit)
+			run_direct(mut agent, stmt + ';', autocommit)
 		}
 	}
 
 	// A statement without a semicolon at the end of the input is a syntax error.
 	if unfinished != '' {
-		run_direct(mut db, unfinished, autocommit)
+		run_direct(mut agent, unfinished, autocommit)
 	}
 
 	// - 22.1 GR 2.a. Without autocommit, an SQL-transaction that is still active
 	// at the end is committed. If the shell stops any other way (such as with
 	// ctrl+C), or a START TRANSACTION isn't finished with autocommit, it's
 	// rolled back.
-	if !autocommit && db.in_transaction() {
-		db.query('COMMIT') or { print_error('Error', err) }
-	}
+	agent.close(!autocommit) or { print_error('Error', err) }
 }
 
-fn run_direct(mut db vsql.Connection, stmt string, autocommit bool) {
+fn run_direct(mut agent vsql.Agent, stmt string, autocommit bool) {
 	start := time.ticks()
-	db.clear_warnings()
-	result := db.direct(stmt, autocommit: autocommit) or {
+	result := agent.direct(stmt, autocommit: autocommit) or {
 		print_error('Error', err)
 		return
 	}
 
-	for warning in db.warnings {
+	for warning in agent.warnings {
 		// 02000 (no data) is a completion condition, not a warning.
 		if vsql.sqlstate_from_int(warning.code()).starts_with('02') {
 			print_error('Notice', warning)

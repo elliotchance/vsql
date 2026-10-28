@@ -621,6 +621,9 @@ struct Schema
    pub:
    	// The name of the schema is case-sensitive.
    	name string
+   	// A virtual schema, such as INFORMATION_SCHEMA, only has virtual tables.
+   	// It is not persisted to disk.
+   	is_virtual bool
    }
 
 Represents a schema.

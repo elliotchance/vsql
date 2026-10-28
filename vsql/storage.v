@@ -398,7 +398,10 @@ fn (mut f Storage) create_schema(schema_name string) ! {
 		f.end_isolation()
 	}
 
-	schema := Schema{f.transaction_id, schema_name}
+	schema := Schema{
+		tid:  f.transaction_id
+		name: schema_name
+	}
 
 	obj := new_page_object('S${schema_name}'.bytes(), f.transaction_id, 0, schema.bytes())
 	f.btree.add(obj)!

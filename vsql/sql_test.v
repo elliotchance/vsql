@@ -1411,6 +1411,26 @@ fn test_table_column_names() ! {
 	assert tables[0].column_names() == ['X', 'Y']
 }
 
+// The INFORMATION_SCHEMA and other virtual tables are in the catalog, so they
+// can be listed like any other schema and table.
+fn test_catalog_virtual_tables() ! {
+	mut db := open(':memory:')!
+	db.register_virtual_table('CREATE TABLE v (x INTEGER)', fn (mut t VirtualTable) ! {
+		t.done()
+	})!
+	mut catalog := db.catalog()
+
+	schemas := catalog.schemas()!
+	assert schemas.filter(it.name == 'PUBLIC').map(it.is_virtual) == [false]
+	assert schemas.filter(it.name == 'INFORMATION_SCHEMA').map(it.is_virtual) == [true]
+
+	mut public_tables := catalog.schema_tables('PUBLIC')!.map('${it.name.entity_name} ${it.is_virtual}')
+	public_tables.sort()
+	assert public_tables == ['V true']
+	assert catalog.schema_tables('INFORMATION_SCHEMA')!.any(it.name.entity_name == 'TABLES'
+		&& it.is_virtual)
+}
+
 fn test_current_catalog_name() {
 	mut db := open(':memory:')!
 	assert db.current_catalog_name() == ':memory:'

@@ -255,6 +255,27 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_ALL_TABLE_TYPES "%" /* every table type (SQLTables) */
 #define SQL_ALL_TYPES       0   /* every data type (SQLGetTypeInfo) */
 
+/* UPDATE_RULE and DELETE_RULE of SQLForeignKeys. */
+#define SQL_CASCADE     0 /* CASCADE */
+#define SQL_RESTRICT    1 /* RESTRICT */
+#define SQL_SET_NULL    2 /* SET NULL */
+#define SQL_NO_ACTION   3 /* NO ACTION */
+#define SQL_SET_DEFAULT 4 /* SET DEFAULT */
+
+/* DEFERABILITY of SQLForeignKeys. */
+#define SQL_INITIALLY_DEFERRED  5 /* not used */
+#define SQL_INITIALLY_IMMEDIATE 6 /* not used */
+#define SQL_NOT_DEFERRABLE      7 /* every constraint */
+
+/* SQLSpecialColumns IdentifierType, Scope and PSEUDO_COLUMN. */
+#define SQL_BEST_ROWID        1 /* the columns that identify a row */
+#define SQL_SCOPE_CURROW      0 /* valid for the current row */
+#define SQL_SCOPE_TRANSACTION 1 /* valid for the transaction */
+#define SQL_SCOPE_SESSION     2 /* valid for the session */
+#define SQL_PC_UNKNOWN        0 /* not used */
+#define SQL_PC_NOT_PSEUDO     1 /* a real column */
+#define SQL_PC_PSEUDO         2 /* not used */
+
 /* SQLBindParameter InputOutputModes. */
 #define SQL_PARAM_MODE_IN    1 /* an input parameter */
 #define SQL_PARAM_MODE_INOUT 2 /* the same as an input parameter */
@@ -726,6 +747,35 @@ SQLRETURN SQLFetchScroll(
 );
 
 /*
+ * SQLForeignKeys returns a result set that describes the columns of foreign
+ * keys, from the INFORMATION_SCHEMA. With a PKTableName, it's the foreign keys
+ * that reference the PRIMARY KEY of that table. With an FKTableName, it's the
+ * foreign keys of that table (and the PRIMARY KEY or UNIQUE that each one
+ * references). The names are not patterns.
+ *
+ * Its columns are UK_TABLE_CAT, UK_TABLE_SCHEM, UK_TABLE_NAME, UK_COLUMN_NAME,
+ * FK_TABLE_CAT, FK_TABLE_SCHEM, FK_TABLE_NAME, FK_COLUMN_NAME,
+ * ORDINAL_POSITION, UPDATE_RULE and DELETE_RULE (such as SQL_CASCADE),
+ * FK_NAME, UK_NAME, DEFERABILITY (always SQL_NOT_DEFERRABLE) and
+ * UNIQUE_OR_PRIMARY ("UNIQUE " or "PRIMARY").
+ */
+SQLRETURN SQLForeignKeys(
+    SQLHSTMT     StatementHandle,
+    SQLCHAR     *PKCatalogName,
+    SQLSMALLINT  NameLength1,
+    SQLCHAR     *PKSchemaName,
+    SQLSMALLINT  NameLength2,
+    SQLCHAR     *PKTableName,
+    SQLSMALLINT  NameLength3,
+    SQLCHAR     *FKCatalogName,
+    SQLSMALLINT  NameLength4,
+    SQLCHAR     *FKSchemaName,
+    SQLSMALLINT  NameLength5,
+    SQLCHAR     *FKTableName,
+    SQLSMALLINT  NameLength6
+);
+
+/*
  * SQLFreeConnect is the same as SQLFreeHandle(SQL_HANDLE_DBC,
  * ConnectionHandle).
  */
@@ -1067,6 +1117,22 @@ SQLRETURN SQLPrepare(
 );
 
 /*
+ * SQLPrimaryKeys returns a result set that describes the columns of the
+ * PRIMARY KEY of a table (TableName can't be a null pointer). Its columns are
+ * TABLE_CAT, TABLE_SCHEM, TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION and
+ * PK_NAME. The names are not patterns.
+ */
+SQLRETURN SQLPrimaryKeys(
+    SQLHSTMT     StatementHandle,
+    SQLCHAR     *CatalogName,
+    SQLSMALLINT  NameLength1,
+    SQLCHAR     *SchemaName,
+    SQLSMALLINT  NameLength2,
+    SQLCHAR     *TableName,
+    SQLSMALLINT  NameLength3
+);
+
+/*
  * SQLPutData gives the value of the SQL_DATA_AT_EXEC parameter, see
  * SQLParamData. StrLen_or_Ind is the length of a string (or SQL_NTS), or
  * SQL_NULL_DATA. A string can be given in pieces by calling SQLPutData again.
@@ -1191,6 +1257,27 @@ SQLRETURN SQLSetStmtAttr(
     SQLINTEGER Attribute,
     SQLPOINTER Value,
     SQLINTEGER StringLength
+);
+
+/*
+ * SQLSpecialColumns returns a result set that describes the columns that
+ * identify a row of a table (SQL_BEST_ROWID), which are its PRIMARY KEY. Its
+ * columns are SCOPE (always SQL_SCOPE_SESSION), COLUMN_NAME, DATA_TYPE,
+ * TYPE_NAME, COLUMN_SIZE, BUFFER_LENGTH, DECIMAL_DIGITS and PSEUDO_COLUMN
+ * (always SQL_PC_NOT_PSEUDO). Scope is the minimum SCOPE, and Nullable is
+ * SQL_NO_NULLS or SQL_NULLABLE (the columns of a PRIMARY KEY are never NULL).
+ */
+SQLRETURN SQLSpecialColumns(
+    SQLHSTMT     StatementHandle,
+    SQLSMALLINT  IdentifierType,
+    SQLCHAR     *CatalogName,
+    SQLSMALLINT  NameLength1,
+    SQLCHAR     *SchemaName,
+    SQLSMALLINT  NameLength2,
+    SQLCHAR     *TableName,
+    SQLSMALLINT  NameLength3,
+    SQLSMALLINT  Scope,
+    SQLSMALLINT  Nullable
 );
 
 /*

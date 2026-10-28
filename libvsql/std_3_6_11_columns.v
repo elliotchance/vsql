@@ -37,10 +37,10 @@ fn columns(mut stmt Stmt, catalog_name &char, name_length1 i16, schema_name &cha
 		name_predicate(stmt, 'COLUMN_NAME', col, true)
 
 	// - 18, 19. ExecDirect is implicitly invoked.
-	return exec_direct_text(mut stmt, 'SELECT * FROM ${columns_query()} WHERE ${pred}1 = 1 ORDER BY TABLE_CAT, TABLE_SCHEM, TABLE_NAME, ORDINAL_POSITION')
+	return exec_direct_text(mut stmt, 'SELECT * FROM ${columns_query()} AS COLUMNS_QUERY WHERE ${pred}1 = 1 ORDER BY TABLE_CAT, TABLE_SCHEM, TABLE_NAME, ORDINAL_POSITION')
 }
 
-// columns_query is COLUMNS_QUERY (General Rules 5 to 7).
+// columns_query is COLUMNS_QUERY (General Rules 5 to 7), without its alias.
 fn columns_query() string {
 	// - 7.e. DATA_TYPE is the concise code for the data type.
 	data_type := 'CASE DATA_TYPE
@@ -147,5 +147,5 @@ fn columns_query() string {
 		CAST(MAXIMUM_CARDINALITY AS INTEGER) AS MAX_CARDINALITY,
 		CAST(DTD_IDENTIFIER AS VARCHAR(128)) AS DTD_IDENTIFIER,
 		CAST(IS_SELF_REFERENCING AS VARCHAR(128)) AS IS_SELF_REF
-	FROM INFORMATION_SCHEMA.COLUMNS) AS COLUMNS_QUERY'
+	FROM INFORMATION_SCHEMA.COLUMNS)'
 }

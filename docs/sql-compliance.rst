@@ -1660,7 +1660,7 @@ As of the latest version (or at least the version of this documentation)
 CLI Routines
 ~~~~~~~~~~~~
 
-C011 requires all of the routines in Clause 6. **vsql supports 45 of the
+C011 requires all of the routines in Clause 6. **vsql supports 48 of the
 63 routines.**
 
 .. list-table:: Clause 6 — SQL/CLI routines
@@ -1735,7 +1735,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 45 of the
    * - ✅ 6.22
      - ``SQLFetchScroll``
 
-   * - ❌ 6.23
+   * - ✅ 6.23
      - ``SQLForeignKeys``
 
    * - ✅ 6.24
@@ -1819,7 +1819,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 45 of the
    * - ✅ 6.50
      - ``SQLPrepare``
 
-   * - ❌ 6.51
+   * - ✅ 6.51
      - ``SQLPrimaryKeys``
 
    * - ✅ 6.52
@@ -1846,7 +1846,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 45 of the
    * - ✅ 6.59
      - ``SQLSetStmtAttr``
 
-   * - ❌ 6.60
+   * - ✅ 6.60
      - ``SQLSpecialColumns``
 
    * - ✅ 6.61

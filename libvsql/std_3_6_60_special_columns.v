@@ -23,7 +23,7 @@ const sql_pc_pseudo = i16(2)
 fn sql_special_columns(statement_handle SQLInteger, identifier_type i16, catalog_name &char, name_length1 i16, schema_name &char, name_length2 i16, table_name &char, name_length3 i16, scope i16, nullable i16) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
-	stmt.check_deferred() or { return stmt.diag.error(err) }
+	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return special_columns(mut stmt, identifier_type, catalog_name, name_length1, schema_name,
 		name_length2, table_name, name_length3, scope, nullable) or { stmt.diag.error(err) }

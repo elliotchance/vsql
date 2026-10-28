@@ -148,6 +148,11 @@ fn sql_get_functions(connection_handle SQLInteger, function_id i16, supported &i
 		return dbc.diag.error(cli_error('08003', 'connection does not exist'))
 	}
 
+	// - 3. If EC is not the current SQL-connection, then the General Rules of
+	// Subclause 5.3, "Implicit set connection", are applied to EC as the
+	// dormant SQL-connection.
+	implicit_set_connection(i64(connection_handle)) or { return dbc.diag.error(err) }
+
 	// - 5. If FI is not one of the codes in Table 27, then an exception
 	// condition is raised: CLI-specific condition — invalid FunctionId
 	// specified.

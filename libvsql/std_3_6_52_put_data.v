@@ -14,6 +14,9 @@ fn sql_put_data(statement_handle SQLInteger, data voidptr, str_len_or_ind SQLInt
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	stmt.invoke(true) or { return stmt.diag.error(err) }
+
 	return put_data(mut stmt, data, i64(str_len_or_ind)) or { stmt.diag.error(err) }
 }
 

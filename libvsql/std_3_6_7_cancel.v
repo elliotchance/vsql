@@ -12,6 +12,9 @@ module main
 fn sql_cancel(statement_handle SQLInteger) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	stmt.invoke(true) or { return stmt.diag.error(err) }
+
 	// - 2.b, 2.c.i. The diagnostics area associated with S is emptied, and any
 	// deferred parameter number and statement source are removed.
 	stmt.diag.clear()

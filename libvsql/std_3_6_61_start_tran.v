@@ -68,6 +68,16 @@ fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level
 		return cli_error('HYC00', 'optional feature not implemented: isolation level stricter than READ COMMITTED')
 	}
 
+	// vsql doesn't support transactions that affect more than one SQL-server
+	// (see 5.3, "Implicit set connection"), so TXN can only be started in one
+	// SQL-connection, which becomes the current SQL-connection.
+	if l1.len > 1 {
+		return cli_error('0A001', 'multiple server transactions')
+	}
+	for dh in l1 {
+		implicit_set_connection(dh)!
+	}
+
 	// - 10. TXN is started in each SQL-connection contained in L1.
 	for dh in l1 {
 		mut dbc := dbcs[dh] or { continue }

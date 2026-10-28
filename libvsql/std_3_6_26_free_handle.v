@@ -43,16 +43,20 @@ fn sql_free_handle(handle_type i16, handle SQLInteger) i16 {
 			mut stmt := stmts[h] or { return sql_invalid_handle }
 			stmt.diag.clear()
 
-			// - 3.c.vi. If there is a deferred parameter number associated with
-			// S, then an exception condition is raised: CLI-specific condition —
-			// function sequence error.
-			stmt.check_deferred() or { return stmt.diag.error(err) }
+			// - 3.c.v, 3.c.vi. EC becomes the current SQL-connection, and if
+			// there is a deferred parameter number associated with S, then an
+			// exception condition is raised: CLI-specific condition — function
+			// sequence error.
+			stmt.invoke(false) or { return stmt.diag.error(err) }
 
 			free_stmt(h)
 		}
 		sql_handle_desc {
 			mut desc := descs[h] or { return sql_invalid_handle }
 			desc.diag.clear()
+
+			// - 3.d.v. EC becomes the current SQL-connection.
+			desc.invoke() or { return desc.diag.error(err) }
 
 			// - 3.d.vi. See 5.11, "Deferred parameter check".
 			check_desc_deferred(h) or { return desc.diag.error(err) }

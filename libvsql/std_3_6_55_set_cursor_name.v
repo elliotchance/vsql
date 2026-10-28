@@ -15,7 +15,7 @@ import encoding.utf8
 fn sql_set_cursor_name(statement_handle SQLInteger, cursor_name &char, name_length i16) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
-	stmt.check_deferred() or { return stmt.diag.error(err) }
+	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return set_cursor_name(mut stmt, cursor_name, name_length) or { stmt.diag.error(err) }
 }

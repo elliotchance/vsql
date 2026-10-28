@@ -78,7 +78,8 @@ UTEST_F(db, 6_17_end_tran_chain) {
             1);
 }
 
-/* The environment ends the transaction of each of its connections. */
+/* The environment ends the transaction of its connections. Only one can be
+ * active (see 5.3, "Implicit set connection"). */
 UTEST_F(db, 6_17_end_tran_environment) {
   SQLHDBC dbc2;
   SQLHSTMT stmt2;
@@ -88,13 +89,15 @@ UTEST_F(db, 6_17_end_tran_environment) {
   ASSERT_EQ(connect_memory(dbc2), SQL_SUCCESS);
   ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_STMT, dbc2, &stmt2), SQL_SUCCESS);
   ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
-  ASSERT_EQ(run_sql(stmt2, "VALUES 1"), SQL_SUCCESS);
 
   EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env, SQL_COMMIT),
             SQL_SUCCESS);
   EXPECT_EQ(diag_int(SQL_HANDLE_ENV, utest_fixture->env,
                      SQL_DIAG_TRANSACTIONS_COMMITTED),
-            2);
+            1);
+  EXPECT_EQ(run_sql(stmt2, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env, SQL_COMMIT),
+            SQL_SUCCESS);
   EXPECT_EQ(SQLDisconnect(dbc2), SQL_SUCCESS);
   EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_DBC, dbc2), SQL_SUCCESS);
 }

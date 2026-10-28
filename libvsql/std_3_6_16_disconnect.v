@@ -60,5 +60,11 @@ fn disconnect(mut dbc Dbc, h i64) !i16 {
 	dbc.conn = none
 	dbc.is_default = false
 
+	// - 10. If EC and CC were the same SQL-connection, then there is no current
+	// SQL-connection. Otherwise, CC remains the current SQL-connection.
+	if current_connection == h {
+		current_connection = 0
+	}
+
 	return sql_success
 }

@@ -12,7 +12,7 @@ module main
 fn sql_more_results(statement_handle SQLInteger) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
-	stmt.check_deferred() or { return stmt.diag.error(err) }
+	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	// - 2. If there is no executed SQL-statement associated with S, then a
 	// completion condition is raised: no data — no additional dynamic result

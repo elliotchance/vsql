@@ -13,7 +13,7 @@ fn sql_next_result(statement_handle1 SQLInteger, statement_handle2 SQLInteger) i
 	mut stmt1 := stmts[i64(statement_handle1)] or { return sql_invalid_handle }
 	stmt1.diag.clear()
 	stmt2 := stmts[i64(statement_handle2)] or { return sql_invalid_handle }
-	stmt1.check_deferred() or { return stmt1.diag.error(err) }
+	stmt1.invoke(false) or { return stmt1.diag.error(err) }
 
 	// - 2. If there is no executed SQL-statement associated with S1, then a
 	// completion condition is raised: no data — no additional dynamic result

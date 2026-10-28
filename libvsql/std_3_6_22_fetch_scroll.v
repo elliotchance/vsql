@@ -23,8 +23,8 @@ fn sql_fetch_scroll(statement_handle SQLInteger, fetch_orientation i16, fetch_of
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.6.
-	stmt.check_deferred() or { return stmt.diag.error(err) }
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return fetch_scroll(mut stmt, fetch_orientation, i64(fetch_offset)) or {
 		stmt.diag.error(err)

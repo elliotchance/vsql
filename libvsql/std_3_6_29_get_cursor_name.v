@@ -8,7 +8,7 @@ module main
 fn sql_get_cursor_name(statement_handle SQLInteger, cursor_name &char, buffer_length i16, name_length &i16) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
-	stmt.check_deferred() or { return stmt.diag.error(err) }
+	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	if cursor_name == unsafe { nil } {
 		return stmt.diag.error(cli_error('HY009', 'invalid use of null pointer'))

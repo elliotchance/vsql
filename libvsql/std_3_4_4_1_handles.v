@@ -34,6 +34,7 @@ mut:
 
 // An allocated SQL-connection. conn is the established SQL-connection, if any.
 struct Dbc {
+	handle i64
 mut:
 	diag Diagnostics
 	env  i64

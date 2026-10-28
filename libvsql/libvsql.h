@@ -715,9 +715,17 @@ SQLRETURN SQLColumns(
 
 /*
  * SQLConnect opens a database. ServerName is the path to the database file, or
- * ":memory:" for an in-memory database. An empty ServerName (or a null pointer)
- * connects to a new in-memory database. UserName and Authentication are not
- * used. Each length is in octets, or SQL_NTS for a null terminated string.
+ * ":memory:" for an in-memory database. An empty ServerName (or a null pointer,
+ * or "DEFAULT") connects to a new in-memory database. UserName and
+ * Authentication are not used. Each length is in octets, or SQL_NTS for a null
+ * terminated string.
+ *
+ * The new connection becomes the current connection. Using a statement,
+ * descriptor or connection of another connection makes that one current
+ * instead. Each connection is a different database, and a transaction can't
+ * span more than one, so while the current connection has an active
+ * transaction, connecting or switching to another connection is 0A001. End
+ * the transaction with SQLEndTran first.
  *
  *   SQLConnect(dbc, (SQLCHAR *)"test.vsql", SQL_NTS, NULL, 0, NULL, 0);
  */
@@ -1556,9 +1564,10 @@ SQLRETURN SQLSpecialColumns(
 );
 
 /*
- * SQLStartTran starts a transaction for a connection (SQL_HANDLE_DBC), or each
- * connection of an environment (SQL_HANDLE_ENV). A transaction is also started
- * by SQLExecDirect when there isn't one. vsql transactions are always
+ * SQLStartTran starts a transaction for a connection (SQL_HANDLE_DBC), or the
+ * connection of an environment (SQL_HANDLE_ENV, which is 0A001 if it has more
+ * than one). The connection becomes the current connection (see SQLConnect).
+ * A transaction is also started by SQLExecDirect when there isn't one. vsql transactions are always
  * SQL_TRANSACTION_READ_WRITE (AccessMode) and SQL_TRANSACTION_READ_COMMITTED,
  * so SQL_TRANSACTION_READ_ONLY, SQL_TRANSACTION_REPEATABLE_READ and
  * SQL_TRANSACTION_SERIALIZABLE are HYC00.

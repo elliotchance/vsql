@@ -1663,6 +1663,14 @@ CLI Routines
 C011 requires all of the routines in Clause 6. **vsql supports 56 of the
 63 routines.**
 
+Each of the other routines exists in libvsql, so programs can still link to
+them, but it returns ``SQL_ERROR`` because the feature it depends on isn't
+supported: ``SQLGetLength``, ``SQLGetPosition`` and ``SQLGetSubString`` need
+large object locators, ``SQLGetParamData`` needs output parameters, and
+``SQLColumnPrivileges`` and ``SQLTablePrivileges`` need privileges (SQLSTATE
+``HYC00``, optional feature not implemented). ``SQLGetSessionInfo`` selects
+``CURRENT_USER``, ``SESSION_USER``, etc., which vsql doesn't support yet.
+
 .. list-table:: Clause 6 — SQL/CLI routines
    :header-rows: 1
 

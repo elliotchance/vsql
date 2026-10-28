@@ -6,8 +6,9 @@
 UTEST_F(db, 6_56_set_desc_field) {
   SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
 
-  EXPECT_EQ(SQLSetDescField(ard, 2, SQL_DESC_TYPE, (SQLPOINTER)SQL_INTEGER, 0),
-            SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLSetDescField(ard, 2, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_INTEGER), 0),
+      SQL_SUCCESS);
   EXPECT_EQ(desc_short(ard, 0, SQL_DESC_COUNT), 2);
   EXPECT_EQ(desc_short(ard, 1, SQL_DESC_TYPE), SQL_DEFAULT);
   EXPECT_EQ(desc_short(ard, 2, SQL_DESC_TYPE), SQL_INTEGER);
@@ -19,13 +20,13 @@ UTEST_F(db, 6_56_set_desc_field_count) {
   SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
   SQLINTEGER i;
 
-  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, (SQLPOINTER)3, 0),
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, SMALLINT_VALUE(3), 0),
             SQL_SUCCESS);
   EXPECT_EQ(desc_short(ard, 3, SQL_DESC_TYPE), SQL_DEFAULT);
-  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, (SQLPOINTER)1, 0),
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, SMALLINT_VALUE(1), 0),
             SQL_SUCCESS);
   EXPECT_EQ(SQLGetDescField(ard, 2, SQL_DESC_TYPE, &i, 0, NULL), SQL_NO_DATA);
-  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, (SQLPOINTER)-1, 0),
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, SMALLINT_VALUE(-1), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "07008");
 }
@@ -33,10 +34,10 @@ UTEST_F(db, 6_56_set_desc_field_count) {
 UTEST_F(db, 6_56_set_desc_field_array_size) {
   SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
 
-  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, (SQLPOINTER)5, 0),
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, INTEGER_VALUE(5), 0),
             SQL_SUCCESS);
   EXPECT_EQ(desc_int(ard, 0, SQL_DESC_ARRAY_SIZE), 5);
-  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, (SQLPOINTER)0, 0),
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, INTEGER_VALUE(0), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY024");
 }
@@ -48,28 +49,32 @@ UTEST_F(row, 6_56_set_desc_field_not_settable) {
   SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
   SQLSMALLINT statuses[1];
 
-  EXPECT_EQ(SQLSetDescField(ird, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_INTEGER, 0),
-            SQL_ERROR);
+  EXPECT_EQ(
+      SQLSetDescField(ird, 1, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_INTEGER), 0),
+      SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ird, "HY091");
   EXPECT_EQ(SQLSetDescField(ird, 0, SQL_DESC_ARRAY_STATUS_POINTER, statuses, 0),
             SQL_SUCCESS);
-  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_PARAMETER_MODE, (SQLPOINTER)1, 0),
+  EXPECT_EQ(
+      SQLSetDescField(ard, 1, SQL_DESC_PARAMETER_MODE, SMALLINT_VALUE(1), 0),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY091");
+  EXPECT_EQ(
+      SQLSetDescField(ipd, 1, SQL_DESC_PARAMETER_MODE, SMALLINT_VALUE(1), 0),
+      SQL_SUCCESS);
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ALLOC_TYPE, SMALLINT_VALUE(2), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY091");
-  EXPECT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_PARAMETER_MODE, (SQLPOINTER)1, 0),
-            SQL_SUCCESS);
-  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ALLOC_TYPE, (SQLPOINTER)2, 0),
-            SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY091");
-  EXPECT_EQ(SQLSetDescField(ard, 1, 9999, (SQLPOINTER)1, 0), SQL_ERROR);
+  EXPECT_EQ(SQLSetDescField(ard, 1, 9999, SMALLINT_VALUE(1), 0), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY091");
 }
 
 UTEST_F(db, 6_56_set_desc_field_record_zero) {
   SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
 
-  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_TYPE, (SQLPOINTER)SQL_INTEGER, 0),
-            SQL_ERROR);
+  EXPECT_EQ(
+      SQLSetDescField(ard, 0, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_INTEGER), 0),
+      SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "07009");
 }
 
@@ -77,9 +82,9 @@ UTEST_F(db, 6_56_set_desc_field_record_zero) {
 UTEST_F(db, 6_56_set_desc_field_level) {
   SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
 
-  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_LEVEL, (SQLPOINTER)0, 0),
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_LEVEL, INTEGER_VALUE(0), 0),
             SQL_SUCCESS);
-  EXPECT_EQ(SQLSetDescField(ard, 2, SQL_DESC_LEVEL, (SQLPOINTER)1, 0),
+  EXPECT_EQ(SQLSetDescField(ard, 2, SQL_DESC_LEVEL, INTEGER_VALUE(1), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "0700E");
 }
@@ -90,25 +95,28 @@ UTEST_F(db, 6_56_set_desc_field_type) {
   SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
   SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
 
-  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_VARCHAR, 0),
+  EXPECT_EQ(
+      SQLSetDescField(ard, 1, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_VARCHAR), 0),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY004");
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, SMALLINT_VALUE(999), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY004");
-  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)999, 0),
-            SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY004");
-  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)30, 0),
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, SMALLINT_VALUE(30), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "HYC00");
 
   /* The descriptor is unchanged by an error. */
   EXPECT_EQ(desc_short(ard, 0, SQL_DESC_COUNT), 0);
 
-  EXPECT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_VARCHAR, 0),
-            SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLSetDescField(ipd, 1, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_VARCHAR), 0),
+      SQL_SUCCESS);
   EXPECT_EQ(desc_int(ipd, 1, SQL_DESC_LENGTH), 10485760);
   EXPECT_STREQ(desc_string(ipd, 1, SQL_DESC_CHARACTER_SET_NAME), "UTF8");
-  EXPECT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_DEFAULT, 0),
-            SQL_ERROR);
+  EXPECT_EQ(
+      SQLSetDescField(ipd, 1, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_DEFAULT), 0),
+      SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ipd, "HY004");
 }
 
@@ -116,11 +124,12 @@ UTEST_F(db, 6_56_set_desc_field_type) {
 UTEST_F(db, 6_56_set_desc_field_datetime_interval_code) {
   SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
 
-  ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_DATETIME, 0),
-            SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLSetDescField(ipd, 1, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_DATETIME), 0),
+      SQL_SUCCESS);
   EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_PRECISION), 0);
   ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_DATETIME_INTERVAL_CODE,
-                            (SQLPOINTER)SQL_CODE_TIMESTAMP, 0),
+                            SMALLINT_VALUE(SQL_CODE_TIMESTAMP), 0),
             SQL_SUCCESS);
   EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_PRECISION), 6);
 }
@@ -132,19 +141,21 @@ UTEST_F(db, 6_56_set_desc_field_data_pointer) {
   SQLDOUBLE d;
   SQLPOINTER p;
 
-  ASSERT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_NUMERIC, 0),
-            SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLSetDescField(ard, 1, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_NUMERIC), 0),
+      SQL_SUCCESS);
   EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_DATA_POINTER, &d, 0), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY021");
 
-  ASSERT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_DOUBLE, 0),
-            SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLSetDescField(ard, 1, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_DOUBLE), 0),
+      SQL_SUCCESS);
   EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_DATA_POINTER, &d, 0), SQL_SUCCESS);
   EXPECT_EQ(SQLGetDescField(ard, 1, SQL_DESC_DATA_POINTER, &p, 0, NULL),
             SQL_SUCCESS);
   EXPECT_TRUE(p == &d);
 
-  ASSERT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_REAL, 0),
+  ASSERT_EQ(SQLSetDescField(ard, 1, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_REAL), 0),
             SQL_SUCCESS);
   EXPECT_EQ(SQLGetDescField(ard, 1, SQL_DESC_DATA_POINTER, &p, 0, NULL),
             SQL_SUCCESS);
@@ -195,10 +206,24 @@ UTEST_F(db, 6_56_set_desc_field_user) {
             SQL_SUCCESS);
   EXPECT_EQ(desc_int(desc, 0, SQL_DESC_ARRAY_SIZE), 1);
   EXPECT_EQ(
-      SQLSetDescField(desc, 1, SQL_DESC_TYPE, (SQLPOINTER)SQL_SMALLINT, 0),
+      SQLSetDescField(desc, 1, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_SMALLINT), 0),
       SQL_SUCCESS);
   EXPECT_EQ(desc_short(desc, 1, SQL_DESC_PRECISION), 16);
-  EXPECT_EQ(SQLSetDescField(desc, 1, SQL_DESC_PARAMETER_MODE, (SQLPOINTER)1, 0),
-            SQL_ERROR);
+  EXPECT_EQ(
+      SQLSetDescField(desc, 1, SQL_DESC_PARAMETER_MODE, SMALLINT_VALUE(1), 0),
+      SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, desc, "HY091");
+}
+
+/* Value points to an INTEGER or SMALLINT field, so it can't be a null
+ * pointer. A pointer field can be. */
+UTEST_F(db, 6_56_set_desc_field_null_value) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, NULL, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY009");
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, NULL, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY009");
+  EXPECT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_STATUS_POINTER, NULL, 0),
+            SQL_SUCCESS);
 }

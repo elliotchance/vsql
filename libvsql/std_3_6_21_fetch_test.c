@@ -79,7 +79,7 @@ UTEST_F(db, 6_21_fetch_rowset) {
   SQLINTEGER x[3], ind[3], statuses[3], processed = -1;
   char s[3][5];
 
-  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, (SQLPOINTER)3, 0),
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, INTEGER_VALUE(3), 0),
             SQL_SUCCESS);
   ASSERT_EQ(SQLSetDescField(ird, 0, SQL_DESC_ARRAY_STATUS_POINTER, statuses, 0),
             SQL_SUCCESS);
@@ -127,7 +127,7 @@ UTEST_F(db, 6_21_fetch_row_error) {
   SQLSMALLINT x[2];
   SQLINTEGER statuses[2], processed = -1, row = -1;
 
-  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, (SQLPOINTER)2, 0),
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, INTEGER_VALUE(2), 0),
             SQL_SUCCESS);
   ASSERT_EQ(SQLSetDescField(ird, 0, SQL_DESC_ARRAY_STATUS_POINTER, statuses, 0),
             SQL_SUCCESS);
@@ -156,7 +156,7 @@ UTEST_F(db, 6_21_fetch_rowset_get_data) {
   SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
   SQLINTEGER x;
 
-  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, (SQLPOINTER)2, 0),
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, INTEGER_VALUE(2), 0),
             SQL_SUCCESS);
   ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2, 3"), SQL_SUCCESS);
   ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
@@ -166,7 +166,7 @@ UTEST_F(db, 6_21_fetch_rowset_get_data) {
 
   ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
   ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
-                           (SQLPOINTER)SQL_SCROLLABLE, 0),
+                           INTEGER_VALUE(SQL_SCROLLABLE), 0),
             SQL_SUCCESS);
   ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2, 3"), SQL_SUCCESS);
   ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
@@ -176,7 +176,7 @@ UTEST_F(db, 6_21_fetch_rowset_get_data) {
 
   /* The CURRENT OF POSITION selects the row of the rowset. */
   ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURRENT_OF_POSITION,
-                           (SQLPOINTER)2, 0),
+                           INTEGER_VALUE(2), 0),
             SQL_SUCCESS);
   EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_INTEGER, &x, 0, NULL),
             SQL_SUCCESS);
@@ -185,7 +185,7 @@ UTEST_F(db, 6_21_fetch_rowset_get_data) {
   /* The last rowset only has one row. */
   ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
   ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURRENT_OF_POSITION,
-                           (SQLPOINTER)2, 0),
+                           INTEGER_VALUE(2), 0),
             SQL_SUCCESS);
   EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_INTEGER, &x, 0, NULL),
             SQL_ERROR);

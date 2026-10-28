@@ -146,7 +146,7 @@ UTEST_F(db, 6_17_end_tran_invalid_handle) {
 /* A commit closes a cursor that isn't holdable. */
 UTEST_F(db, 6_17_end_tran_commit_nonholdable) {
   ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_HOLDABLE,
-                           (SQLPOINTER)SQL_NONHOLDABLE, 0),
+                           INTEGER_VALUE(SQL_NONHOLDABLE), 0),
             SQL_SUCCESS);
   ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2"), SQL_SUCCESS);
   EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),

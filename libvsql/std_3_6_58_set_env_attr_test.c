@@ -7,12 +7,13 @@ UTEST(libvsql, 6_58_set_env_attr) {
   SQLINTEGER value;
 
   ASSERT_EQ(SQLAllocEnv(&env), SQL_SUCCESS);
-  EXPECT_EQ(SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, (SQLPOINTER)SQL_FALSE, 0),
-            SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, INTEGER_VALUE(SQL_FALSE), 0),
+      SQL_SUCCESS);
   EXPECT_EQ(SQLGetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, &value, 0, NULL),
             SQL_SUCCESS);
   EXPECT_EQ(value, SQL_FALSE);
-  EXPECT_EQ(SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, (SQLPOINTER)SQL_TRUE, 0),
+  EXPECT_EQ(SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, INTEGER_VALUE(SQL_TRUE), 0),
             SQL_SUCCESS);
   EXPECT_EQ(SQLGetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, &value, 0, NULL),
             SQL_SUCCESS);
@@ -23,7 +24,7 @@ UTEST(libvsql, 6_58_set_env_attr) {
 /* The attributes can only be set before allocating a connection. */
 UTEST_F(env, 6_58_set_env_attr_with_connection) {
   EXPECT_EQ(SQLSetEnvAttr(utest_fixture->env, SQL_ATTR_OUTPUT_NTS,
-                          (SQLPOINTER)SQL_FALSE, 0),
+                          INTEGER_VALUE(SQL_FALSE), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_ENV, utest_fixture->env, "HY011");
 }
@@ -32,14 +33,14 @@ UTEST(libvsql, 6_58_set_env_attr_invalid) {
   SQLHENV env;
 
   ASSERT_EQ(SQLAllocEnv(&env), SQL_SUCCESS);
-  EXPECT_EQ(SQLSetEnvAttr(env, 123, (SQLPOINTER)SQL_FALSE, 0), SQL_ERROR);
+  EXPECT_EQ(SQLSetEnvAttr(env, 123, INTEGER_VALUE(SQL_FALSE), 0), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_ENV, env, "HY092");
-  EXPECT_EQ(SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, (SQLPOINTER)2, 0),
+  EXPECT_EQ(SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, INTEGER_VALUE(2), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_ENV, env, "HY024");
-  EXPECT_EQ(
-      SQLSetEnvAttr(env + 1000, SQL_ATTR_OUTPUT_NTS, (SQLPOINTER)SQL_FALSE, 0),
-      SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLSetEnvAttr(env + 1000, SQL_ATTR_OUTPUT_NTS,
+                          INTEGER_VALUE(SQL_FALSE), 0),
+            SQL_INVALID_HANDLE);
   EXPECT_EQ(SQLFreeEnv(env), SQL_SUCCESS);
 }
 
@@ -53,8 +54,9 @@ UTEST(libvsql, 6_58_set_env_attr_no_null_termination) {
   SQLINTEGER ind;
 
   ASSERT_EQ(SQLAllocEnv(&env), SQL_SUCCESS);
-  ASSERT_EQ(SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, (SQLPOINTER)SQL_FALSE, 0),
-            SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, INTEGER_VALUE(SQL_FALSE), 0),
+      SQL_SUCCESS);
   ASSERT_EQ(SQLAllocConnect(env, &dbc), SQL_SUCCESS);
   ASSERT_EQ(connect_memory(dbc), SQL_SUCCESS);
   ASSERT_EQ(SQLAllocStmt(dbc, &stmt), SQL_SUCCESS);
@@ -95,4 +97,13 @@ UTEST(libvsql, 6_58_set_env_attr_no_null_termination) {
   EXPECT_EQ(buf[0], 'x');
 
   free_handles(env, dbc, stmt);
+}
+
+UTEST(libvsql, 6_58_set_env_attr_null_value) {
+  SQLHENV env2;
+
+  ASSERT_EQ(SQLAllocEnv(&env2), SQL_SUCCESS);
+  EXPECT_EQ(SQLSetEnvAttr(env2, SQL_ATTR_OUTPUT_NTS, NULL, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_ENV, env2, "HY009");
+  EXPECT_EQ(SQLFreeEnv(env2), SQL_SUCCESS);
 }

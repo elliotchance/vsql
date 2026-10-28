@@ -120,7 +120,7 @@ UTEST_F(db, 6_19_exec_direct_invalid_ipd) {
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
 
-  ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_LENGTH, (SQLPOINTER)10, 0),
+  ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_LENGTH, INTEGER_VALUE(10), 0),
             SQL_SUCCESS);
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
 }

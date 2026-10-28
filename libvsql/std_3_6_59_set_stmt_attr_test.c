@@ -65,14 +65,14 @@ UTEST_F(db, 6_59_set_stmt_attr_cursor_scrollable) {
   SQLINTEGER v;
 
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
-                           (SQLPOINTER)SQL_SCROLLABLE, 0),
+                           INTEGER_VALUE(SQL_SCROLLABLE), 0),
             SQL_SUCCESS);
   EXPECT_EQ(SQLGetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE, &v,
                            0, NULL),
             SQL_SUCCESS);
   EXPECT_EQ(v, SQL_SCROLLABLE);
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
-                           (SQLPOINTER)2, 0),
+                           INTEGER_VALUE(2), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY024");
 }
@@ -81,15 +81,15 @@ UTEST_F(db, 6_59_set_stmt_attr_cursor_scrollable) {
 UTEST_F(db, 6_59_set_stmt_attr_open_cursor) {
   ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_HOLDABLE,
-                           (SQLPOINTER)SQL_NONHOLDABLE, 0),
+                           INTEGER_VALUE(SQL_NONHOLDABLE), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY011");
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SENSITIVITY,
-                           (SQLPOINTER)SQL_INSENSITIVE, 0),
+                           INTEGER_VALUE(SQL_INSENSITIVE), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY011");
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE,
-                           (SQLPOINTER)SQL_SCROLLABLE, 0),
+                           INTEGER_VALUE(SQL_SCROLLABLE), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY011");
 }
@@ -97,7 +97,7 @@ UTEST_F(db, 6_59_set_stmt_attr_open_cursor) {
 /* A cursor is a copy of the result, so it can't be sensitive. */
 UTEST_F(db, 6_59_set_stmt_attr_cursor_sensitivity) {
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SENSITIVITY,
-                           (SQLPOINTER)SQL_SENSITIVE, 0),
+                           INTEGER_VALUE(SQL_SENSITIVE), 0),
             SQL_SUCCESS);
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "36001");
@@ -107,7 +107,7 @@ UTEST_F(db, 6_59_set_stmt_attr_cursor_sensitivity) {
             SQL_SUCCESS);
 
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SENSITIVITY,
-                           (SQLPOINTER)SQL_INSENSITIVE, 0),
+                           INTEGER_VALUE(SQL_INSENSITIVE), 0),
             SQL_SUCCESS);
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
 }
@@ -116,14 +116,14 @@ UTEST_F(db, 6_59_set_stmt_attr_metadata_id) {
   SQLINTEGER v;
 
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID,
-                           (SQLPOINTER)SQL_TRUE, 0),
+                           INTEGER_VALUE(SQL_TRUE), 0),
             SQL_SUCCESS);
   EXPECT_EQ(
       SQLGetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID, &v, 0, NULL),
       SQL_SUCCESS);
   EXPECT_EQ(v, SQL_TRUE);
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID,
-                           (SQLPOINTER)5, 0),
+                           INTEGER_VALUE(5), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY024");
 }
@@ -131,35 +131,42 @@ UTEST_F(db, 6_59_set_stmt_attr_metadata_id) {
 /* NEST DESCRIPTOR can't be changed after the statement is executed. */
 UTEST_F(db, 6_59_set_stmt_attr_nest_descriptor) {
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_NEST_DESCRIPTOR,
-                           (SQLPOINTER)SQL_TRUE, 0),
+                           INTEGER_VALUE(SQL_TRUE), 0),
             SQL_SUCCESS);
   ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
             SQL_SUCCESS);
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_NEST_DESCRIPTOR,
-                           (SQLPOINTER)SQL_FALSE, 0),
+                           INTEGER_VALUE(SQL_FALSE), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
 }
 
 UTEST_F(db, 6_59_set_stmt_attr_current_of_position) {
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURRENT_OF_POSITION,
-                           (SQLPOINTER)1, 0),
+                           INTEGER_VALUE(1), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
 
   ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURRENT_OF_POSITION,
-                           (SQLPOINTER)2, 0),
+                           INTEGER_VALUE(2), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY107");
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURRENT_OF_POSITION,
-                           (SQLPOINTER)1, 0),
+                           INTEGER_VALUE(1), 0),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY109");
 }
 
 UTEST_F(db, 6_59_set_stmt_attr_invalid_handle) {
   EXPECT_EQ(SQLSetStmtAttr(utest_fixture->dbc, SQL_ATTR_METADATA_ID,
-                           (SQLPOINTER)SQL_TRUE, 0),
+                           INTEGER_VALUE(SQL_TRUE), 0),
             SQL_INVALID_HANDLE);
+}
+
+UTEST_F(db, 6_59_set_stmt_attr_null_value) {
+  EXPECT_EQ(
+      SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_CURSOR_SCROLLABLE, NULL, 0),
+      SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
 }

@@ -55,8 +55,9 @@ UTEST_F(db, 6_27_free_stmt_unbind_columns) {
   SQLINTEGER i;
   SQLPOINTER p = &i;
 
-  ASSERT_EQ(SQLSetDescField(ard, 2, SQL_DESC_TYPE, (SQLPOINTER)SQL_INTEGER, 0),
-            SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLSetDescField(ard, 2, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_INTEGER), 0),
+      SQL_SUCCESS);
   ASSERT_EQ(SQLSetDescField(ard, 2, SQL_DESC_DATA_POINTER, &i, 0), SQL_SUCCESS);
   EXPECT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_UNBIND), SQL_SUCCESS);
   EXPECT_EQ(SQLGetDescField(ard, 2, SQL_DESC_DATA_POINTER, &p, 0, NULL),
@@ -73,8 +74,9 @@ UTEST_F(db, 6_27_free_stmt_reallocate_descriptors) {
 
   ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, utest_fixture->dbc, &desc),
             SQL_SUCCESS);
-  ASSERT_EQ(SQLSetDescField(ard, 2, SQL_DESC_TYPE, (SQLPOINTER)SQL_INTEGER, 0),
-            SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLSetDescField(ard, 2, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_INTEGER), 0),
+      SQL_SUCCESS);
   ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC,
                            HANDLE_VALUE(desc), 0),
             SQL_SUCCESS);

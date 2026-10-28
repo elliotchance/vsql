@@ -237,7 +237,7 @@ UTEST_F(row, 6_30_get_data_ard_type) {
   SQLDOUBLE d = 0;
 
   ASSERT_EQ(SQLSetDescField(ard, COL_BIGINT, SQL_DESC_TYPE,
-                            (SQLPOINTER)SQL_DOUBLE, 0),
+                            SMALLINT_VALUE(SQL_DOUBLE), 0),
             SQL_SUCCESS);
   EXPECT_EQ(
       SQLGetData(utest_fixture->stmt, COL_BIGINT, SQL_ARD_TYPE, &d, 0, NULL),
@@ -261,7 +261,7 @@ UTEST_F(row, 6_30_get_data_ard_type_numeric) {
   SQLDOUBLE d;
 
   ASSERT_EQ(SQLSetDescField(ard, COL_NUMERIC, SQL_DESC_TYPE,
-                            (SQLPOINTER)SQL_NUMERIC, 0),
+                            SMALLINT_VALUE(SQL_NUMERIC), 0),
             SQL_SUCCESS);
   EXPECT_EQ(
       SQLGetData(utest_fixture->stmt, COL_NUMERIC, SQL_ARD_TYPE, &d, 0, NULL),
@@ -274,7 +274,7 @@ UTEST_F(row, 6_30_get_data_sets_ard_type) {
   SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
   SQLINTEGER i;
 
-  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, (SQLPOINTER)6, 0),
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_COUNT, SMALLINT_VALUE(6), 0),
             SQL_SUCCESS);
   EXPECT_EQ(
       SQLGetData(utest_fixture->stmt, COL_BIGINT, SQL_INTEGER, &i, 0, NULL),
@@ -288,7 +288,7 @@ UTEST_F(row, 6_30_get_data_bound_column) {
   SQLINTEGER i;
 
   ASSERT_EQ(SQLSetDescField(ard, COL_BIGINT, SQL_DESC_TYPE,
-                            (SQLPOINTER)SQL_INTEGER, 0),
+                            SMALLINT_VALUE(SQL_INTEGER), 0),
             SQL_SUCCESS);
   ASSERT_EQ(SQLSetDescField(ard, COL_BIGINT, SQL_DESC_DATA_POINTER, &i, 0),
             SQL_SUCCESS);

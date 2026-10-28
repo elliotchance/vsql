@@ -423,6 +423,8 @@ The faults are:
   file.
 - ``isolation_end``: ending the isolation block of an operation on the file,
   which removes the rows that were deleted outside of a transaction.
+- ``isolation_lock``: locking the isolation file, for a ``REPEATABLE READ`` or
+  ``SERIALIZABLE`` transaction or to commit changes.
 - ``accept``: a server accepting a client. A test with a ``fault`` doesn't run
   through the server, so this is only used by the server tests in
   ``vsql/sql_test.v``.

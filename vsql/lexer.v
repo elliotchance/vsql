@@ -67,6 +67,7 @@ type YYSym = AddColumnDefinition
 	| IdentifierChain
 	| InPredicate
 	| InsertStatement
+	| IsolationLevel
 	| JoinType
 	| LocalTime
 	| LocalTimestamp
@@ -132,6 +133,7 @@ type YYSym = AddColumnDefinition
 	| []SetClause
 	| []SortSpecification
 	| []TableElement
+	| []IsolationLevel
 	| []ValueExpression
 	| bool
 	| string

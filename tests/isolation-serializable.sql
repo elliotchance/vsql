@@ -61,9 +61,19 @@ START TRANSACTION;
 INSERT INTO t (x) VALUES (1);
 /* connection 1 */
 COMMIT;
+SET TRANSACTION READ ONLY;
+START TRANSACTION;
+/* connection 2 */
+INSERT INTO t (x) VALUES (1);
+/* connection 1 */
+COMMIT;
 /* connection 2 */
 INSERT INTO t (x) VALUES (1);
 -- 1: msg: CREATE TABLE 1
+-- 1: msg: START TRANSACTION
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 1: msg: COMMIT
+-- 1: msg: SET TRANSACTION
 -- 1: msg: START TRANSACTION
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: msg: COMMIT
@@ -299,8 +309,48 @@ ROLLBACK;
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: msg: ROLLBACK
 
--- # Only one REPEATABLE READ or SERIALIZABLE transaction can be active at a
--- # time.
+-- # Several READ ONLY transactions can be active at the same time.
+/* connection 1 */
+CREATE TABLE t (x INT);
+INSERT INTO t (x) VALUES (1);
+START TRANSACTION ISOLATION LEVEL SERIALIZABLE, READ ONLY;
+SELECT * FROM t;
+/* connection 2 */
+START TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY;
+SELECT * FROM t;
+/* connection 3 */
+SET TRANSACTION READ ONLY;
+START TRANSACTION;
+SELECT * FROM t;
+/* connection 4 */
+INSERT INTO t (x) VALUES (2);
+START TRANSACTION;
+/* connection 1 */
+COMMIT;
+/* connection 2 */
+COMMIT;
+/* connection 3 */
+COMMIT;
+/* connection 4 */
+INSERT INTO t (x) VALUES (2);
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: START TRANSACTION
+-- 1: X: 1
+-- 2: msg: START TRANSACTION
+-- 2: X: 1
+-- 3: msg: SET TRANSACTION
+-- 3: msg: START TRANSACTION
+-- 3: X: 1
+-- 4: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 4: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 1: msg: COMMIT
+-- 2: msg: COMMIT
+-- 3: msg: COMMIT
+-- 4: msg: INSERT 1
+
+-- # But only one READ WRITE transaction can be active at a time, and not at the
+-- # same time as a READ ONLY one.
 /* connection 1 */
 CREATE TABLE t (x INT);
 START TRANSACTION ISOLATION LEVEL SERIALIZABLE;
@@ -308,6 +358,12 @@ INSERT INTO t (x) VALUES (1);
 /* connection 2 */
 START TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 COMMIT;
+START TRANSACTION READ ONLY;
+/* connection 1 */
+COMMIT;
+START TRANSACTION READ ONLY;
+/* connection 2 */
+START TRANSACTION;
 /* connection 1 */
 COMMIT;
 /* connection 2 */
@@ -320,6 +376,10 @@ SELECT * FROM t;
 -- 1: msg: INSERT 1
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 2: error 2D000: invalid transaction termination
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 1: msg: COMMIT
+-- 1: msg: START TRANSACTION
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: msg: COMMIT
 -- 2: msg: START TRANSACTION
 -- 2: msg: INSERT 1

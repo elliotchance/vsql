@@ -110,4 +110,5 @@ file, or ``-file ':memory:'`` to run it in memory.
 ``vsql bench -isolation read_committed``. With one connection, this only
 measures the cost of the isolation level itself. Use ``-connections`` to include the
 transactions that it stops from committing (see :doc:`transactions`).
-``READ UNCOMMITTED`` runs the same way as ``READ COMMITTED``.
+``READ UNCOMMITTED`` can't be used, because it's always ``READ ONLY`` (it runs
+the same way as ``READ COMMITTED`` anyway).

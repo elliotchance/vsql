@@ -8,10 +8,12 @@
 // lock on the isolation file (the database file name followed by
 // ".isolation"):
 //
-// - The transaction holds the lock exclusively until it ends, so only one of
-//   them can be active at a time. A statement that changes the database
+// - A READ WRITE transaction holds the lock exclusively until it ends, so only
+//   one of them can be active at a time. A statement that changes the database
 //   outside of a transaction is a transaction of its own, so it holds the lock
 //   exclusively until it ends too.
+// - A READ ONLY transaction holds a shared lock, so several of them can be
+//   active at the same time.
 // - If the lock is held by another connection, they wait up to lock_timeout
 //   (see ConnectionOptions) for it, before failing with 40001 (serialization
 //   failure). They wait before the database file is locked, so the transaction
@@ -70,21 +72,22 @@ fn (mut l IsolationLock) acquire(state IsolationLockState, timeout time.Duration
 // transaction starts, before any database file is locked. The catalogs are
 // locked in the same order by every connection, so two connections can't wait
 // for each other.
-fn (mut conn Connection) lock_transaction() ! {
+fn (mut conn Connection) lock_transaction(read_only bool) ! {
 	mut catalogs := conn.catalogs.values()
 	catalogs.sort(a.path < b.path)
 	for mut catalog in catalogs {
-		catalog.lock_transaction()!
+		catalog.lock_transaction(read_only)!
 	}
 }
 
-fn (mut catalog CatalogConnection) lock_transaction() ! {
+fn (mut catalog CatalogConnection) lock_transaction(read_only bool) ! {
 	timeout := catalog.options.lock_timeout
-	catalog.storage.isolation.acquire(.exclusive, timeout, if timeout > 0 {
-		'timed out after ${timeout} waiting for another connection to finish its transaction'
-	} else {
-		'another connection has a transaction that must finish first'
-	})!
+	catalog.storage.isolation.acquire(if read_only { .shared } else { .exclusive }, timeout,
+		if timeout > 0 {
+			'timed out after ${timeout} waiting for another connection to finish its transaction'
+		} else {
+			'another connection has a transaction that must finish first'
+		})!
 }
 
 // unlock_transactions must be called at the end of every statement. The lock is

@@ -8,7 +8,7 @@ import time
 
 struct StartTransactionStatement {
 	// modes is empty when there are no <transaction characteristics>.
-	modes []IsolationLevel
+	modes []TransactionMode
 }
 
 fn (stmt StartTransactionStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
@@ -25,11 +25,12 @@ fn (stmt StartTransactionStatement) execute(mut conn Connection, _ map[string]Va
 
 	// Characteristics from SET TRANSACTION are for this SQL-transaction, unless
 	// they are replaced.
+	conn.read_only = characteristics.read_only
 	conn.isolation_level = characteristics.isolation_level
 	conn.next_transaction = none
 
 	if conn.isolation_level.locks_transaction() {
-		conn.lock_transaction()!
+		conn.lock_transaction(conn.read_only)!
 	}
 
 	// The SQL-transaction includes every catalog, since a statement can use any

@@ -48,13 +48,15 @@ Examples
   SELECT * FROM products;
   -- NAME: Coffee Machine PRICE: 150
 
+Transactions are ``READ WRITE`` by default. A ``READ ONLY`` transaction can be
+started with ``START TRANSACTION READ ONLY``, or with :doc:`set-transaction`
+before the next transaction (including the transaction of a single statement).
+
 Isolation Levels
 ----------------
 
-The isolation level of a transaction can be set with ``START TRANSACTION``,
-such as ``START TRANSACTION ISOLATION LEVEL SERIALIZABLE``, or with
-:doc:`set-transaction` before the next transaction (including the transaction
-of a single statement). The SQL standard defines
+The isolation level of a transaction is set the same way, such as
+``START TRANSACTION ISOLATION LEVEL SERIALIZABLE``. The SQL standard defines
 four levels by which of these can happen when transactions run at the same
 time:
 
@@ -103,12 +105,16 @@ asks for. vsql only has two ways of running a transaction:
   statement sees the changes that other transactions committed before it
   started. Changes that haven't been committed are never visible.
 
+``READ UNCOMMITTED`` is always ``READ ONLY`` (it's a syntax error to give it as
+``READ WRITE``). The other levels are ``READ WRITE`` by default.
+
 SERIALIZABLE
 ^^^^^^^^^^^^
 
-Only one ``SERIALIZABLE`` transaction can be active at a time. A statement that
+Only one ``READ WRITE`` transaction can be active at a time. A statement that
 changes the database outside of a transaction is a transaction of its own, so
-it counts as one too.
+it counts as one too. Several ``READ ONLY`` transactions can be active at the
+same time, but not at the same time as a ``READ WRITE`` one.
 
 A transaction that can't start yet waits for the other one to finish. It waits
 for up to the ``lock_timeout`` of the connection (5 seconds by default, see

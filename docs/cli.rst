@@ -41,11 +41,11 @@ Options are:
 - ``-scale``: The number of rows in the ``BRANCHES`` table, with 10 rows in the
   ``TELLERS`` table for each one (default is the number of connections). It
   should be at least the number of connections, see :doc:`benchmark`.
-- ``-isolation``: The isolation level of the transactions: ``READ
-  UNCOMMITTED``, ``READ COMMITTED``, ``REPEATABLE READ`` or ``SERIALIZABLE``,
-  which can also be written in lowercase or with underscores, such as
-  ``read_committed``. Without it, the transactions use the default
-  (``SERIALIZABLE``). See :doc:`transactions`.
+- ``-isolation``: The isolation level of the transactions: ``READ COMMITTED``,
+  ``REPEATABLE READ`` or ``SERIALIZABLE``, which can also be written in
+  lowercase or with underscores, such as ``read_committed``. Without it, the
+  transactions use the default (``SERIALIZABLE``). ``READ UNCOMMITTED`` can't
+  be used, because it's always ``READ ONLY``. See :doc:`transactions`.
 
 cli
 ^^^

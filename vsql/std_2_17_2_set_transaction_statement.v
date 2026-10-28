@@ -7,7 +7,7 @@ import time
 // Set the characteristics of the next SQL-transaction for the SQL-agent.
 
 struct SetTransactionStatement {
-	modes []IsolationLevel
+	modes []TransactionMode
 }
 
 fn (stmt SetTransactionStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {

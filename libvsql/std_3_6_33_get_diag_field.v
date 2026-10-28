@@ -182,6 +182,10 @@ fn diag_status_field(handle_type i16, h i64, record DiagnosticRecord, record_num
 		sql_diag_class_origin { origin(record.sqlstate[..2]) }
 		sql_diag_subclass_origin { origin(record.sqlstate[2..]) }
 		sql_diag_server_name, sql_diag_connection_name { server_name(handle_type, h) }
+		// - 12.i.iv. If the value of SQLSTATE corresponds to invalid cursor
+		// state, then the value of CURSOR_NAME is the name of the cursor that
+		// is in the invalid state.
+		sql_diag_cursor_name { cursor_name_of(handle_type, h, record) }
 		sql_diag_column_number { record.column_number }
 		sql_diag_row_number { record.row_number }
 		sql_diag_parameter_ordinal_position { 0 }
@@ -324,4 +328,13 @@ fn skip_bracketed_comment(text string, start int) int {
 	}
 
 	return text.len
+}
+
+fn cursor_name_of(handle_type i16, h i64, record DiagnosticRecord) string {
+	if handle_type != sql_handle_stmt || record.sqlstate != '24000' {
+		return ''
+	}
+	mut stmt := stmts[h] or { return '' }
+
+	return stmt.get_cursor_name()
 }

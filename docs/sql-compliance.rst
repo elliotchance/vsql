@@ -1660,7 +1660,7 @@ As of the latest version (or at least the version of this documentation)
 CLI Routines
 ~~~~~~~~~~~~
 
-C011 requires all of the routines in Clause 6. **vsql supports 48 of the
+C011 requires all of the routines in Clause 6. **vsql supports 52 of the
 63 routines.**
 
 .. list-table:: Clause 6 — SQL/CLI routines
@@ -1753,7 +1753,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 48 of the
    * - ✅ 6.28
      - ``SQLGetConnectAttr``
 
-   * - ❌ 6.29
+   * - ✅ 6.29
      - ``SQLGetCursorName``
 
    * - ✅ 6.30
@@ -1804,10 +1804,10 @@ C011 requires all of the routines in Clause 6. **vsql supports 48 of the
    * - ✅ 6.45
      - ``SQLGetTypeInfo``
 
-   * - ❌ 6.46
+   * - ✅ 6.46
      - ``SQLMoreResults``
 
-   * - ❌ 6.47
+   * - ✅ 6.47
      - ``SQLNextResult``
 
    * - ✅ 6.48
@@ -1831,7 +1831,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 48 of the
    * - ✅ 6.54
      - ``SQLSetConnectAttr``
 
-   * - ❌ 6.55
+   * - ✅ 6.55
      - ``SQLSetCursorName``
 
    * - ✅ 6.56

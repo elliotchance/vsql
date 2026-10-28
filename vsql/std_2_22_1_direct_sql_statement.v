@@ -66,6 +66,7 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 			// TRANSACTION (or of the SQL-transaction that a query started).
 			characteristics := if conn.direct_query_transaction {
 				TransactionCharacteristics{
+					read_only:            conn.read_only
 					isolation_level:      conn.isolation_level
 					condition_area_limit: conn.condition_area_limit
 				}

@@ -11,7 +11,9 @@ Syntax
   SET TRANSACTION [ <transaction_mode> [ , <transaction_mode> ] ]
 
   <transaction_mode> ::=
-      ISOLATION LEVEL <level_of_isolation>
+      READ ONLY
+    | READ WRITE
+    | ISOLATION LEVEL <level_of_isolation>
     | DIAGNOSTICS SIZE <number>
 
   <level_of_isolation> ::=
@@ -28,8 +30,19 @@ once, the last one wins. Each kind of mode can only be used once (``42601``).
 
 ``SET TRANSACTION`` can't be used in a transaction (``25001``), and doesn't
 start one. ``SET CATALOG``, ``SET SCHEMA`` and ``EXPLAIN`` don't start a
-transaction either, so they don't use it up. ``READ ONLY``, ``READ WRITE`` and
-``LOCAL`` aren't supported yet.
+transaction either, so they don't use it up. ``LOCAL`` isn't supported yet.
+
+Access Mode
+-----------
+
+A ``READ ONLY`` transaction can query the database, but any statement that
+changes it fails with ``25006``. That includes ``INSERT``, ``UPDATE``,
+``DELETE``, and all of the ``CREATE``, ``ALTER`` and ``DROP`` statements.
+``NEXT VALUE FOR`` is allowed, because changes to sequences are not part of a
+transaction anyway (they are not undone by ``ROLLBACK``).
+
+``READ WRITE`` is the default, except for ``READ UNCOMMITTED`` which is always
+``READ ONLY``.
 
 Isolation Level
 ---------------
@@ -65,10 +78,17 @@ Examples
   -- warning 01004: string data, right truncation
   -- COL1: abcabc
 
+  SET TRANSACTION READ ONLY;
+  DELETE FROM products;
+  DELETE FROM products;
+  -- msg: SET TRANSACTION
+  -- error 25006: read-only sql transaction: cannot execute DELETE
+  -- msg: DELETE 1
+
   SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
   DELETE FROM products;
   -- msg: SET TRANSACTION
-  -- msg: DELETE 1
+  -- msg: DELETE 0
 
 See Also
 --------

@@ -78,9 +78,10 @@ Options are:
 - ``-size``: Multiplies the number of rows of each table, such as ``10`` for
   1,000,000 accounts (default 1).
 - ``-duration``: The number of seconds to run transactions for (default 60).
-- ``-isolation``: The isolation level of the transactions:
-  ``read-uncommitted``, ``read-committed``, ``repeatable-read`` or
-  ``serializable`` (default ``serializable``). See :doc:`transactions`.
+- ``-isolation``: The isolation level of the transactions: ``read-committed``,
+  ``repeatable-read`` or ``serializable`` (default ``serializable``).
+  ``read-uncommitted`` can't be used, because it's always ``READ ONLY``. See
+  :doc:`transactions`.
 
 cli
 ^^^

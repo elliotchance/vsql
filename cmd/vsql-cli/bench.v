@@ -38,7 +38,7 @@ fn register_bench_command(mut cmd cli.Command) {
 	bench_cmd.add_flag(cli.Flag{
 		flag:        .string
 		name:        'isolation'
-		description: 'Isolation level of the transactions: read-uncommitted, read-committed, repeatable-read or serializable (default serializable)'
+		description: 'Isolation level of the transactions: read-committed, repeatable-read or serializable (default serializable)'
 	})
 	cmd.add_command(bench_cmd)
 }
@@ -69,8 +69,11 @@ fn bench_command(cmd cli.Command) ! {
 	}
 
 	isolation := cmd.flags.get_string('isolation') or { '' }
-	if isolation !in ['', 'read-uncommitted', 'read-committed', 'repeatable-read', 'serializable'] {
-		return error('unknown isolation level: ${isolation} (expected read-uncommitted, read-committed, repeatable-read or serializable)')
+	if isolation == 'read-uncommitted' {
+		return error('READ UNCOMMITTED transactions are READ ONLY, so they cannot run the benchmark')
+	}
+	if isolation !in ['', 'read-committed', 'repeatable-read', 'serializable'] {
+		return error('unknown isolation level: ${isolation} (expected read-committed, repeatable-read or serializable)')
 	}
 
 	size := cmd.flags.get_int('size') or { 0 }

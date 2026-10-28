@@ -12,7 +12,7 @@ Mandatory Features
 ------------------
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 127 of the 164 mandatory features** of ISO/IEC 9075-2:2016.
+**vsql supports 129 of the 164 mandatory features** of ISO/IEC 9075-2:2016.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
    :header-rows: 1
@@ -320,13 +320,13 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E151-02
      - ``ROLLBACK`` statement
 
-   * - ❌ **E152**
+   * - ✅ **E152**
      - **Basic SET TRANSACTION statement**
 
    * - ✅ E152-01
      - ``SET TRANSACTION`` statement: ``ISOLATION LEVEL SERIALIZABLE`` clause
 
-   * - ❌ E152-02
+   * - ✅ E152-02
      - ``SET TRANSACTION`` statement: ``READ ONLY`` and ``READ WRITE`` clauses
 
    * - ❌ **E153**

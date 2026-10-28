@@ -272,9 +272,19 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 	// TRANSACTION.
 	if !p.explain && !p.c.is_active() && p.is_transaction_initiating() {
 		p.c.initiate_transaction(p.c.next_transaction or { p.c.enduring_characteristics() })
-		if p.changes_database() && p.c.isolation_level.locks_transaction() {
-			p.c.lock_transaction()!
+		if !p.c.read_only && p.changes_database() && p.c.isolation_level.locks_transaction() {
+			p.c.lock_transaction(false)!
 		}
+	}
+
+	// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 11
+	// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, General Rules, 1
+	// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, General Rules, 1
+	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rules, 1
+	// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 2
+	// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 2
+	if !p.explain && p.c.read_only && p.changes_database() {
+		return sqlstate_25006('cannot execute ${p.changes_database_name()}')
 	}
 
 	stmt := p.stmt

@@ -53,11 +53,11 @@ The options are:
 
 - ``-duration``: The number of seconds to run transactions for (default 60).
 
-- ``-isolation``: The isolation level of each transaction:
-  ``read-uncommitted``, ``read-committed``, ``repeatable-read`` or
-  ``serializable`` (the default). Since there's only one connection, this
-  measures the cost of the isolation level itself (see :doc:`transactions`).
-  ``read-uncommitted`` currently runs the same way as ``read-committed``.
+- ``-isolation``: The isolation level of each transaction: ``read-committed``,
+  ``repeatable-read`` or ``serializable`` (the default). Since there's only one
+  connection, this measures the cost of the isolation level itself (see
+  :doc:`transactions`). ``read-uncommitted`` can't be used, because it's always
+  ``READ ONLY`` (it runs the same way as ``read-committed`` anyway).
 
 Suites
 ------

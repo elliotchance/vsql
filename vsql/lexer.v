@@ -91,8 +91,9 @@ type YYSym = AddColumnDefinition
 	| SortSpecification
 	| Subquery
 	| TableDefinition
-	| TransactionMode
 	| Term
+	| TransactionAccessMode
+	| TransactionMode
 	| TrimFunction
 	| Type
 	| UpdatabilityClause

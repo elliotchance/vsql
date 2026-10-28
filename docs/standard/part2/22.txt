@@ -38,10 +38,10 @@
 22.1/GR/5.c.iii.2.A      definition   - -
 22.1/GR/5.c.iii.2.B      implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/api_test.v
 22.1/GR/5.c.iii.2.C      implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/api_test.v
-22.1/GR/5.c.iii.2.C.I    implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/api_test.v access modes are E152-02 (#554)
+22.1/GR/5.c.iii.2.C.I    implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/api_test.v
 22.1/GR/5.c.iii.2.C.II   unclear      vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/std_2_10_8_deferrable_constraints.sql each constraint has its initial constraint mode, so an INITIALLY DEFERRED constraint is deferred; the isolation level is READ COMMITTED (#664)
 22.1/GR/5.c.iii.2.D      implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/api_test.v
-22.1/GR/5.c.iv           n/a          - - access modes (E152-02, #554)
+22.1/GR/5.c.iv           implemented  vsql/prepare.v tests/std_2_17_2_set_transaction.sql
 22.1/GR/5.c.v            implemented  vsql/agent.v vsql/api_test.v
 22.1/GR/5.c.vi           implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/api_test.v
 22.1/GR/6                n/a          - - authorization identifiers (E081)

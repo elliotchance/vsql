@@ -129,6 +129,9 @@ mut:
 	// next_transaction is set by SET TRANSACTION for the next SQL-transaction,
 	// whether it's started by START TRANSACTION or implicitly by a statement.
 	next_transaction ?TransactionCharacteristics
+	// read_only is the access mode of the current SQL-transaction, see
+	// begin_transaction.
+	read_only bool
 	// isolation_level is the isolation level of the current SQL-transaction.
 	isolation_level IsolationLevel = .serializable
 	// default_isolation_level is ConnectionOptions.isolation_level, see
@@ -307,7 +310,7 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 	// A catalog added during a transaction joins it, so it must be locked
 	// first, see isolation.v.
 	if in_transaction && conn.isolation_level.locks_transaction() {
-		catalog.lock_transaction() or {
+		catalog.lock_transaction(conn.read_only) or {
 			catalog.storage.session.close()
 			return err
 		}

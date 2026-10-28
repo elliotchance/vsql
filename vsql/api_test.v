@@ -110,6 +110,18 @@ fn test_direct() {
 		assert db.direct('SELECT * FROM t WHERE x = 3;', autocommit: true)!.rows.len == 1
 		assert !db.in_transaction() && !db.direct_query_transaction
 
+		// The access mode of an SQL-transaction that a query started is kept
+		// when a statement that writes starts it in storage.
+		db.direct('SET TRANSACTION READ ONLY;')!
+		db.direct('VALUES 1;')!
+		assert db.direct_query_transaction
+		db.direct('INSERT INTO t (x) VALUES (4);') or {
+			assert sqlstate_from_int(err.code()) == '25006'
+		}
+		assert db.in_transaction() && !db.direct_query_transaction
+		db.direct('ROLLBACK;')!
+		assert !db.transaction_read_only() || !db.in_transaction()
+
 		// SET TRANSACTION doesn't start an SQL-transaction, and its DIAGNOSTICS
 		// SIZE is for the next one, even if a query starts it.
 		db.direct('SET TRANSACTION DIAGNOSTICS SIZE 1;')!

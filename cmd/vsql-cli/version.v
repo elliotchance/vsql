@@ -1,6 +1,7 @@
 module main
 
 import cli
+import vsql
 
 fn register_version_command(mut cmd cli.Command) {
 	mut version_cmd := cli.Command{
@@ -16,13 +17,10 @@ fn version_command(_ cli.Command) ! {
 }
 
 fn print_version() {
-	// This constant is replaced at build time. See ci.yml.
-	version := 'MISSING_VERSION'
-
-	// Be careful not to use the constant value again as it will be replaced.
-	if version.contains('MISSING') {
+	version := vsql.version()
+	if version == '' {
 		println('no version information available')
 	} else {
-		println('vsql ${version}')
+		println('vsql ${version} ${vsql.version_date()}')
 	}
 }

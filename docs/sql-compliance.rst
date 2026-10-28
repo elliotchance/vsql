@@ -19,7 +19,7 @@ Mandatory Features
 ~~~~~~~~~~~~~~~~~~
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 123 of the 164 mandatory features** of the
+**vsql supports 124 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -346,7 +346,7 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ **E171**
      - **SQLSTATE support**
 
-   * - ❌ **E182**
+   * - ✅ **E182**
      - **Host language binding**
 
    * - ⭕ **F031**
@@ -580,7 +580,7 @@ Optional Features
    * - ❌ **B111** [1]_
      - **Module language Ada**
 
-   * - ❌ **B112** [1]_
+   * - ✅ **B112** [1]_
      - **Module language C**
 
    * - ❌ **B113** [1]_
@@ -1623,7 +1623,9 @@ Optional Features
 
 .. [1] A conforming SQL-implementation is required to support at least one
    embedded language or to support the SQL-client module binding for at least
-   one host language.
+   one host language. vsql supports the SQL-client module binding for C (see
+   :doc:`language-c`), which also gives E182 (Table 40, "Implied feature
+   relationships of SQL/Foundation").
 
 Part 3: Call-Level Interface
 ----------------------------

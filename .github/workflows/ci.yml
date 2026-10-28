@@ -308,7 +308,7 @@ jobs:
       # no rpath.
       - name: Run libvsql tests
         run: |
-          make libvsql-test libvsql-example
+          make libvsql-test libvsql-example module-test module-example VSQL_BIN=bin/vsql.exe
 
       # psql is used by the server tests. PostgreSQL is installed on the x86-64
       # runner (but isn't on the PATH), and not on the ARM64 one. choco succeeds

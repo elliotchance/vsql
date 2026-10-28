@@ -121,3 +121,134 @@ Either way, it outputs:
    1.23
    4.56
 
+
+SQL-Client Modules
+------------------
+
+Instead of calling the routines yourself, you can write the SQL in an
+SQL-client module (ISO/IEC 9075-2, Clause 13, Feature B112 "Module language
+C"). Each ``PROCEDURE`` in the module has one SQL statement, and ``vsql
+module`` compiles the module into a C header and source file. Each procedure
+becomes a C function that executes its statement with libvsql.
+
+Here's ``libvsql/module/example.mod``:
+
+.. literalinclude:: ../libvsql/module/example.mod
+   :language: sql
+
+Compile it with:
+
+.. code-block:: sh
+
+   vsql module example.mod
+
+That creates ``example.h`` and ``example.c`` next to it. The header declares a
+function for each procedure:
+
+.. code-block:: c
+
+   void open_database(char SQLSTATE[6], char file[101]);
+   void create_items(char SQLSTATE[6]);
+   void add_item(char SQLSTATE[6], long *id, char name[21], double *price, short *price_indicator);
+   void change_prices(char SQLSTATE[6], double *factor);
+   void commit_work(char SQLSTATE[6]);
+   void close_database(char SQLSTATE[6]);
+
+A program includes the header and calls the functions, checking the
+``SQLSTATE`` after each one (``"00000"`` is success, see :doc:`sqlstate`).
+Here's ``libvsql/module/example_main.c``:
+
+.. literalinclude:: ../libvsql/module/example_main.c
+   :language: c
+
+Compile the generated source with the program, and link them with libvsql,
+the same as any other program that uses libvsql (C99, or C++ with ``c++ -x
+c++``):
+
+.. code-block:: sh
+
+   cc example.c example_main.c -Iinclude -Llib -lvsql -Wl,-rpath,"$PWD/lib" -o example
+   ./example
+
+From the root of the repository, ``make module-example`` does all of this.
+
+Modules
+^^^^^^^
+
+A module starts with:
+
+.. code-block:: text
+
+   MODULE [ <name> ]
+   LANGUAGE C
+   { SCHEMA <schema name> [ AUTHORIZATION <name> ] | AUTHORIZATION <name> }
+
+The schema is the default schema of the statements in the module. Without
+``SCHEMA``, it's the schema with the same name as the ``AUTHORIZATION``. The
+schema must exist when the first SQL-connection is made (it's set with ``SET
+SCHEMA`` at the start of each SQL-connection). For the default schema, use
+``SCHEMA "PUBLIC"``.
+
+Each procedure is:
+
+.. code-block:: text
+
+   PROCEDURE <name> ( <parameter> [, <parameter> ]... ) ;
+     <statement> ;
+
+The procedure name, and the name of each parameter, is also its name in C, so
+it's a regular identifier (not a delimited one), kept as it's written. One of
+the parameters must be ``SQLSTATE``, which is set to the SQLSTATE of the
+statement. The other parameters are ``:name <data type>``, and the statement
+uses them as ``:name``. Each one has this C type:
+
+============================ =============================
+SQL data type                C data type
+============================ =============================
+``CHARACTER(L)``             ``char name[L + 1]``
+``CHARACTER VARYING(L)``     ``char name[L + 1]``
+``SMALLINT``                 ``short *name``
+``INTEGER``                  ``long *name``
+``BIGINT``                   ``long long *name``
+``REAL``                     ``float *name``
+``DOUBLE PRECISION``         ``double *name``
+``BOOLEAN``                  ``long *name`` (0 is FALSE)
+============================ =============================
+
+The other data types (such as ``NUMERIC`` and ``DATE``) have no C type. A
+string must end with a null character within its length, otherwise the
+``SQLSTATE`` is ``22024`` (unterminated C string).
+
+A parameter can be NULL with an indicator parameter (a ``SMALLINT``,
+``INTEGER`` or ``BIGINT``), which is written after it as ``:name INDICATOR
+:indicator`` (or just ``:name :indicator``). The value is NULL when the
+indicator is negative.
+
+Statements
+^^^^^^^^^^
+
+A statement can be any statement that vsql supports, except a query (``SELECT``
+or ``VALUES``), since ``SELECT ... INTO`` and cursors aren't supported yet. It
+can also be one of the connection statements:
+
+- ``CONNECT TO <server> [ AS <name> ] [ USER <user> ]`` or ``CONNECT TO
+  DEFAULT``. The server is the path to a database file (or ``:memory:``). Each
+  value is a string, or a ``CHARACTER`` or ``CHARACTER VARYING`` parameter.
+  Without ``AS``, the name is the server, so it must also be a valid name
+  (otherwise the ``SQLSTATE`` is ``2E000``).
+- ``SET CONNECTION <name>`` or ``SET CONNECTION DEFAULT``.
+- ``DISCONNECT <name>``, ``DISCONNECT DEFAULT``, ``DISCONNECT CURRENT`` or
+  ``DISCONNECT ALL``.
+
+If the first statement isn't a connection statement, it connects to
+``DEFAULT``, which is a new in-memory database. Each SQL-connection has its own
+transaction, which is started by the first statement (or ``START
+TRANSACTION``) and ended by ``COMMIT`` or ``ROLLBACK``. A connection statement
+can't be used while the current SQL-connection has a transaction (``0A001``,
+or ``25001`` for ``DISCONNECT``).
+
+When the program exits, every SQL-connection is disconnected, and a transaction
+that wasn't committed is rolled back.
+
+The SQL-connections belong to the module, so two modules in the same program
+don't share them.

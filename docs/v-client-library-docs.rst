@@ -23,6 +23,16 @@ fn catalog_name_from_path
 
 
 
+fn compile_module
+-----------------
+
+
+.. code-block:: v
+
+   pub fn compile_module(source string, name string) !CompiledModule
+
+compile_module compiles an SQL-client module (with LANGUAGE C) into C. The C source includes the header as name + ".h", so name is usually the file name of the module without its extension. The C source must be compiled with libvsql.h and linked with libvsql.
+
 fn default_connection_options
 -----------------------------
 
@@ -469,6 +479,20 @@ struct CatalogConnection
    }
 
 A Connection allows querying and other introspection for a database file. Use open() or open_database() to create a Connection.
+
+struct CompiledModule
+---------------------
+
+
+.. code-block:: v
+
+   pub struct CompiledModule {
+   pub:
+   	header string
+   	source string
+   }
+
+CompiledModule is the C header (.h) and source (.c) of an SQL-client module.
 
 struct Connection
 -----------------

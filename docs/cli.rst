@@ -126,6 +126,20 @@ Options are:
 - ``-verbose`` or ``-v``: When enabled, the output of each statement (such as
   ``CREATE TABLE 1``) will be shown.
 
+module
+^^^^^^
+
+``module`` compiles an SQL-client module (with ``LANGUAGE C``) into a C header
+and source file next to it, which call libvsql (see :doc:`language-c`):
+
+.. code-block:: sh
+
+   vsql module example.mod     # creates example.h and example.c
+
+If the module has an error, nothing is created and the error is shown, such as
+``Error 42601: syntax error: procedure add_item: host parameter :id is not
+declared``.
+
 out
 ^^^
 

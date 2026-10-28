@@ -27,3 +27,7 @@ coverage/
 
 # Created by make release.
 vsql-*.zip
+
+# Created by "make module-example" and "make module-test".
+libvsql/module/example.[ch]
+libvsql/module/test.[ch]

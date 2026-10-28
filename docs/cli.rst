@@ -42,8 +42,8 @@ The rows of a ``SELECT * FROM`` a table (optionally with ``WHERE``,
 - Double-click a cell to edit it. Press Enter to update the row, the ``NULL``
   button to set it to ``NULL``, or Escape to cancel.
 - ``×`` deletes a row.
-- The empty row at the bottom inserts a row with ``+`` (or Enter). A column that's left empty isn't
-  inserted, so it gets its ``DEFAULT``.
+- The empty row at the bottom inserts a row with ``+`` (or Enter). A column
+  that's left empty isn't inserted, so it gets its ``DEFAULT``.
 - A ``BOOLEAN`` is chosen from ``UNKNOWN``, ``TRUE`` or ``FALSE`` (or
   ``DEFAULT`` to insert).
 

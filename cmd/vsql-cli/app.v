@@ -398,27 +398,33 @@ fn (app &App) home_page(mut conn vsql.Connection, all_tabs []Tab) !string {
 	mut sb := strings.new_builder(4096)
 	write_tabs(mut sb, all_tabs, home_tab)
 
+	// The tables are under their schema (a schema without tables isn't
+	// shown), both sorted by name.
 	mut catalog := conn.catalog()
-	mut names := []string{}
+	mut schemas := map[string][]vsql.Identifier{}
 	for schema in catalog.schemas()! {
 		for table in catalog.schema_tables(schema.name)! {
 			// The catalog is the file, so it's left out.
-			names << vsql.Identifier{
+			schemas[schema.name] << vsql.Identifier{
 				...table.name
 				catalog_name: ''
-			}.str()
+			}
 		}
 	}
-	names.sort()
+	mut schema_names := schemas.keys()
+	schema_names.sort()
 
-	if names.len == 0 {
+	if schema_names.len == 0 {
 		sb.write_string('<p class="empty">There are no tables.</p>')
-	} else {
-		sb.write_string('<table class="tables"><thead><tr><th>Table</th><th></th></tr></thead><tbody>')
-		for name in names {
-			sb.write_string('<tr><td>${html_escape(name)}</td><td><button type="submit" name="query" value="${html_escape(name)}">Query</button></td></tr>')
+	}
+	for schema_name in schema_names {
+		mut tables := schemas[schema_name].clone()
+		tables.sort(a.entity_name < b.entity_name)
+		sb.write_string('<details class="schema" open><summary>${html_escape(schema_name)} <span class="count">${tables.len} ${vsql.pluralize(tables.len, 'table')}</span></summary><table class="tables"><tbody>')
+		for table in tables {
+			sb.write_string('<tr><td>${html_escape(table.entity_name)}</td><td><button type="submit" name="query" value="${html_escape(table.str())}">Query</button></td></tr>')
 		}
-		sb.write_string('</tbody></table>')
+		sb.write_string('</tbody></table></details>')
 	}
 
 	sb.write_string('</form></main></body></html>')
@@ -508,7 +514,10 @@ button.run { margin-left: auto; padding: 2px 10px; font-size: 12px; }
 .tabs button.close { padding: 6px 8px 6px 0; }
 .tabs button:hover { color: var(--fg); }
 .tabs .home button { display: flex; padding: 7px 12px; }
-table.tables { margin: 12px; border: 1px solid var(--border); }
+details.schema { margin: 12px; }
+details.schema summary { font-weight: 600; cursor: pointer; }
+details.schema .count { margin-left: 4px; font-weight: normal; color: var(--muted); font-size: 12px; }
+table.tables { margin: 6px 0 0 18px; border: 1px solid var(--border); }
 table.tables th, table.tables td { border: 1px solid var(--border); vertical-align: middle; }
 table.tables button { padding: 2px 10px; font-size: 12px; }
 .tabs button.new { font-size: 16px; line-height: 1; padding: 6px 12px; }

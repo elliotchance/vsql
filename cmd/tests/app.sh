@@ -15,14 +15,15 @@ trap 'kill $APP_PID' EXIT
 sleep 2
 
 # The first time there are no tabs (VSQL_APP.TABS is empty), so the home tab is
-# active. It lists the tables (including VSQL_APP.TABS).
+# active. It lists the tables under their schema (including VSQL_APP.TABS).
 curl -sf $URL > $HTML_FILE
 grep -F '<input type="hidden" name="tab" value="0">' $HTML_FILE
 grep -F '<span class="tab home active"><button type="submit" name="goto" value="0" title="Home"><svg' $HTML_FILE
-grep -F '<tr><td>FOO.BAR</td><td><button type="submit" name="query" value="FOO.BAR">Query</button></td></tr>' $HTML_FILE
-grep -F '<tr><td>PUBLIC.&quot;my &lt;t&gt;&quot;</td><td><button type="submit" name="query" value="PUBLIC.&quot;my &lt;t&gt;&quot;">Query</button></td></tr>' $HTML_FILE
+grep -F '<details class="schema" open><summary>FOO <span class="count">1 table</span></summary><table class="tables"><tbody><tr><td>BAR</td><td><button type="submit" name="query" value="FOO.BAR">Query</button></td></tr></tbody></table></details>' $HTML_FILE
+grep -F '<summary>PUBLIC <span class="count">1 table</span></summary>' $HTML_FILE
+grep -F '<tr><td>my &lt;t&gt;</td><td><button type="submit" name="query" value="PUBLIC.&quot;my &lt;t&gt;&quot;">Query</button></td></tr>' $HTML_FILE
 grep -F 'title="New tab">+</button><span class="version">vsql v0.0.0</span></div>' $HTML_FILE
-grep -F '<tr><td>VSQL_APP.TABS</td>' $HTML_FILE
+grep -F '<summary>VSQL_APP <span class="count">1 table</span></summary><table class="tables"><tbody><tr><td>TABS</td>' $HTML_FILE
 echo 'SELECT COUNT(*) FROM vsql_app.tabs;' | $VSQL cli $VSQL_FILE | grep -E '^ *0$'
 
 # Query opens a new tab that runs SELECT * on the table. The editor colors

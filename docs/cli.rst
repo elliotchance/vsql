@@ -25,9 +25,9 @@ browser to see a SQL editor (run with the button or Ctrl+Enter) that colors the
 reserved words. Every statement is run and the result of the last one is shown
 below it.
 
-The first tab (the home icon) lists the tables, each with a Query button that
-opens a new tab to ``SELECT *`` from it. It's shown when no other tab is active,
-and can't be closed.
+The first tab (the home icon) lists the tables under their schema, each with a
+Query button that opens a new tab to ``SELECT *`` from it. It's shown when no
+other tab is active, and can't be closed.
 
 Each tab has its own SQL, use ``+`` to add a tab (which starts with a query of
 ``INFORMATION_SCHEMA.TABLES``). The tabs are saved in the ``VSQL_APP.TABS`` table

@@ -272,6 +272,44 @@ and with the same names as ``TABLE_CONSTRAINTS``.
     - ``CASCADE``, ``SET NULL``, ``SET DEFAULT`` or ``NO ACTION`` (the
       ``ON DELETE``).
 
+``KEY_COLUMN_USAGE``
+--------------------
+
+One row for each column of each ``PRIMARY KEY``, ``UNIQUE`` and ``FOREIGN KEY``
+(see :doc:`create-table`), in the same order and with the same names as
+``TABLE_CONSTRAINTS``.
+
+.. code-block:: sql
+
+  CREATE TABLE categories (id INT PRIMARY KEY);
+  CREATE TABLE products (id INT PRIMARY KEY, category_id INT REFERENCES categories);
+
+  SELECT constraint_name, table_name, column_name, ordinal_position, position_in_unique_constraint
+  FROM information_schema.key_column_usage;
+  -- CONSTRAINT_NAME: CATEGORIES_PRIMARY_KEY TABLE_NAME: CATEGORIES COLUMN_NAME: ID ORDINAL_POSITION: 1 POSITION_IN_UNIQUE_CONSTRAINT: NULL
+  -- CONSTRAINT_NAME: PRODUCTS_PRIMARY_KEY TABLE_NAME: PRODUCTS COLUMN_NAME: ID ORDINAL_POSITION: 1 POSITION_IN_UNIQUE_CONSTRAINT: NULL
+  -- CONSTRAINT_NAME: PRODUCTS_FOREIGN_KEY_1 TABLE_NAME: PRODUCTS COLUMN_NAME: CATEGORY_ID ORDINAL_POSITION: 1 POSITION_IN_UNIQUE_CONSTRAINT: 1
+
+.. list-table::
+  :header-rows: 1
+
+  * - Column
+    - Description
+
+  * - ``CONSTRAINT_CATALOG``, ``CONSTRAINT_SCHEMA``, ``CONSTRAINT_NAME``
+    - The key, which has the catalog and schema of its table.
+
+  * - ``TABLE_CATALOG``, ``TABLE_SCHEMA``, ``TABLE_NAME``, ``COLUMN_NAME``
+    - The column.
+
+  * - ``ORDINAL_POSITION``
+    - The position of the column in the key (from 1).
+
+  * - ``POSITION_IN_UNIQUE_CONSTRAINT``
+    - For a ``FOREIGN KEY``, the position of the referenced column in the
+      ``PRIMARY KEY`` or ``UNIQUE`` that it references (see
+      ``REFERENTIAL_CONSTRAINTS``). Otherwise, ``NULL``.
+
 The types of the columns of these tables are the domains of the
 ``INFORMATION_SCHEMA`` in the standard: a name is a ``CHARACTER VARYING(128)``,
 other text is a ``CHARACTER VARYING(10485760)``, a number is an ``INTEGER`` and

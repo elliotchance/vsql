@@ -191,7 +191,7 @@ CREATE TABLE t (a INT PRIMARY KEY, b INT UNIQUE PRIMARY KEY);
 /* connection 1 */
 CREATE TABLE t (u INT UNIQUE);
 INSERT INTO t (u) VALUES (1);
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 INSERT INTO t (u) VALUES (2);
 DELETE FROM t WHERE u = 1;
 /* connection 2 */
@@ -215,6 +215,35 @@ SELECT * FROM t;
 -- 2: msg: INSERT 1
 -- 2: U: 2
 -- 2: U: 3
+-- 2: U: 1
+
+-- # The same test with the default isolation level (SERIALIZABLE).
+/* connection 1 */
+CREATE TABLE t (u INT UNIQUE);
+INSERT INTO t (u) VALUES (1);
+START TRANSACTION;
+INSERT INTO t (u) VALUES (2);
+DELETE FROM t WHERE u = 1;
+/* connection 2 */
+INSERT INTO t (u) VALUES (2);
+INSERT INTO t (u) VALUES (1);
+INSERT INTO t (u) VALUES (3);
+/* connection 1 */
+COMMIT;
+/* connection 2 */
+INSERT INTO t (u) VALUES (1);
+SELECT * FROM t;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: INSERT 1
+-- 1: msg: DELETE 1
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 1: msg: COMMIT
+-- 2: msg: INSERT 1
+-- 2: U: 2
 -- 2: U: 1
 
 -- # The constraints are part of the table definition in the file, so they must

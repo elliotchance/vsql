@@ -510,6 +510,13 @@ was changed by a newer version of vsql, in a way that this version cannot
 safely change it. The file can still be read. See *Compatibility* in
 :doc:`file-format`.
 
+``25008`` held cursor requires same isolation level
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``25008`` is returned when :doc:`set-transaction` or :doc:`start-transaction`
+sets a different isolation level while a holdable cursor is still open from the
+previous transaction.
+
 ``27000`` triggered data change violation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -605,6 +612,12 @@ same row. If allowed, this would lead to an inconsistency. It's possible that
 this also might be a deadlock in some situations. However, the deadlock is
 always avoided because the current transaction that receives this error will be
 rolled back.
+
+It also occurs when a ``REPEATABLE READ`` or ``SERIALIZABLE`` transaction
+(including a statement on its own) waited too long for another connection's
+transaction to finish, or when a ``READ COMMITTED`` transaction commits changes
+while another connection has a ``REPEATABLE READ`` or ``SERIALIZABLE``
+transaction. See *Isolation Levels* in :doc:`transactions`.
 
 A client that receives this error should retry the transaction. See
 :doc:`transactions`.

@@ -67,6 +67,8 @@ type YYSym = AddColumnDefinition
 	| IdentifierChain
 	| InPredicate
 	| InsertStatement
+	| DiagnosticsSize
+	| IsolationLevel
 	| JoinType
 	| LocalTime
 	| LocalTimestamp

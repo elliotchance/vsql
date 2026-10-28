@@ -884,6 +884,18 @@ fn sqlstate_25006(msg string) IError {
 	}
 }
 
+// held cursor requires same isolation level
+struct SQLState25008 {
+	SQLState
+}
+
+fn sqlstate_25008() IError {
+	return SQLState25008{
+		code: sqlstate_to_int('25008')
+		msg:  'invalid transaction state: held cursor requires same isolation level'
+	}
+}
+
 // triggered data change violation: a referential action changes a column of
 // a row that the same statement already changed to a different value, or
 // deletes a row that it changed.

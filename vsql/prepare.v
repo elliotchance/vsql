@@ -86,7 +86,11 @@ pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
 	// Storage.end_isolation.
 	p.c.take_isolation_error() or { return p.fail(err) }
 
-	p.c.finish_write(true)!
+	p.c.finish_write(true) or {
+		p.c.unlock_transactions()
+		return err
+	}
+	p.c.unlock_transactions()
 
 	return result
 }
@@ -189,6 +193,7 @@ fn (mut p PreparedStmt) fail(err IError) IError {
 				err.code())
 		}
 	}
+	p.c.unlock_transactions()
 
 	return err
 }
@@ -205,9 +210,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 	p.c.set_statement_timestamp()
 
 	// - 17.2 GR 7. A statement that isn't in an SQL-transaction is in one of its
-	// own.
-	if !p.c.is_active() && p.is_transaction_initiating() {
-		p.c.initiate_transaction(p.c.next_condition_area_limit)
+	// own. EXPLAIN doesn't run the statement, so it doesn't use up a SET
+	// TRANSACTION.
+	if !p.explain && !p.c.is_active() && p.is_transaction_initiating() {
+		p.c.initiate_transaction(p.c.next_transaction or { TransactionCharacteristics{} })
+		if p.changes_database() && p.c.isolation_level.locks_transaction() {
+			p.c.lock_transaction()!
+		}
 	}
 
 	stmt := p.stmt
@@ -362,19 +371,19 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
-		SetTransactionStatement {
-			if p.explain {
-				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
-			}
-
-			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
-		}
 		QueryExpression {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}
 
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse, p.writes)
+		}
+		SetTransactionStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		StartTransactionStatement {
 			if p.explain {

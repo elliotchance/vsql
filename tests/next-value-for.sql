@@ -224,13 +224,13 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2) AS t;
 
 /* connection 1 */
 CREATE SEQUENCE seq1;
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2) AS t;
 /* connection 2 */
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2) AS t;
 /* connection 3 */
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2) AS t;
 /* connection 1 */
 COMMIT;
@@ -251,6 +251,37 @@ COMMIT;
 -- 1: msg: COMMIT
 -- 2: msg: COMMIT
 -- 3: msg: COMMIT
+
+-- # The same test with the default isolation level (SERIALIZABLE).
+/* connection 1 */
+CREATE SEQUENCE seq1;
+START TRANSACTION;
+SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2) AS t;
+/* connection 2 */
+START TRANSACTION;
+SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2) AS t;
+/* connection 3 */
+START TRANSACTION;
+SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2) AS t;
+/* connection 1 */
+COMMIT;
+/* connection 2 */
+COMMIT;
+/* connection 3 */
+COMMIT;
+-- 1: msg: CREATE SEQUENCE 1
+-- 1: msg: START TRANSACTION
+-- 1: COL1: 1
+-- 1: COL1: 2
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 2: COL1: 3
+-- 2: COL1: 4
+-- 3: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 3: COL1: 5
+-- 3: COL1: 6
+-- 1: msg: COMMIT
+-- 2: error 2D000: invalid transaction termination
+-- 3: error 2D000: invalid transaction termination
 
 -- # All NEXT VALUE FOR the same sequence return the same value within a row.
 CREATE SEQUENCE seq1;

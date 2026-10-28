@@ -224,7 +224,7 @@ fn tokenize(sql_stmt string) ![]Token {
 	for i < cs.len {
 		// A comment is a separator, the same as a space.
 		if is_comment(cs, i) {
-			i = skip_comment(cs, i)
+			i = skip_comment(cs, i)!
 			continue
 		}
 
@@ -467,7 +467,9 @@ fn read_string_literal(cs []rune, start int) !(string, int) {
 	mut has_newline := false
 	for j < cs.len {
 		if is_comment(cs, j) {
-			j = skip_comment(cs, j)
+			end := skip_comment(cs, j)!
+			has_newline = has_newline || cs[j..end].contains(`\n`)
+			j = end
 		} else if cs[j].str().trim_space() == '' {
 			has_newline = has_newline || cs[j] == `\n`
 			j++
@@ -483,22 +485,48 @@ fn read_string_literal(cs []rune, start int) !(string, int) {
 	return word, i
 }
 
-// is_comment returns true if a simple comment starts at cs[i]. A simple comment
-// starts with two (or more) minus signs and continues to the end of the line.
+// is_comment returns true if a comment starts at cs[i]. A simple comment
+// starts with two (or more) minus signs and continues to the end of the line. A
+// bracketed comment starts with "/*" and ends with the matching "*/".
 //
 // ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>
 fn is_comment(cs []rune, i int) bool {
-	return i + 1 < cs.len && cs[i] == `-` && cs[i + 1] == `-`
+	return i + 1 < cs.len && ((cs[i] == `-` && cs[i + 1] == `-`)
+		|| (cs[i] == `/` && cs[i + 1] == `*`))
 }
 
-// skip_comment returns the position of the new line that ends the comment that
-// starts at cs[i], or the end of the SQL if there isn't one.
-fn skip_comment(cs []rune, start int) int {
+// skip_comment returns the position after the comment that starts at cs[i]. A
+// simple comment ends at the new line (or the end of the SQL), which isn't part
+// of it.
+//
+// A "/*" inside a bracketed comment starts a nested bracketed comment (Syntax
+// Rule 10), so each one needs its own "*/".
+fn skip_comment(cs []rune, start int) !int {
 	mut i := start
-	for i < cs.len && cs[i] != `\n` {
-		i++
+	if cs[i] == `-` {
+		for i < cs.len && cs[i] != `\n` {
+			i++
+		}
+		return i
 	}
-	return i
+
+	mut depth := 0
+	for i + 1 < cs.len {
+		if cs[i] == `/` && cs[i + 1] == `*` {
+			depth++
+			i += 2
+		} else if cs[i] == `*` && cs[i + 1] == `/` {
+			depth--
+			i += 2
+			if depth == 0 {
+				return i
+			}
+		} else {
+			i++
+		}
+	}
+
+	return sqlstate_42601('unterminated comment: ${cs[start..].string()}')
 }
 
 // read_unicode_escape_specifier returns the escape character of a Unicode

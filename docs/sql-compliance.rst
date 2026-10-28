@@ -1411,7 +1411,7 @@ Optional Features
    * - ❌ **T341**
      - **Overloading of SQL-invoked functions and SQL-invoked procedures**
 
-   * - ❌ **T351**
+   * - ✅ **T351**
      - **Bracketed comments**
 
    * - ❌ **T431**

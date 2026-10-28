@@ -1380,6 +1380,20 @@ fn test_split_statements_with_comments() {
 	assert db.query('VALUES 1 -- one')!.rows[0].get_string('COL1')! == '1'
 }
 
+// The reserved words are sorted and leave out the non-reserved words (which
+// can be identifiers), operators, literals and E.
+fn test_reserved_words() {
+	words := reserved_words()
+	assert 'SELECT' in words
+	assert 'FROM' in words
+	assert 'NAME' !in words
+	assert 'E' !in words
+	assert !words.any(it.starts_with('OPERATOR_') || it.starts_with('LITERAL_'))
+	mut sorted := words.clone()
+	sorted.sort()
+	assert words == sorted
+}
+
 // A DEFAULT can be up to the maximum length of a VARCHAR, but its text (with
 // the quotes) is then too long for the COLUMN_DEFAULT of the COLUMNS view.
 fn test_information_schema_truncated_column_default() {

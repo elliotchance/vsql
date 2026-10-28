@@ -71,6 +71,23 @@ mut:
 	fetched_column int
 	fetched_length int
 	fetched_value  string
+	// prepared is the statement prepared by Prepare, if any, and the
+	// DYNAMIC_FUNCTION and DYNAMIC_FUNCTION_CODE that identify it.
+	prepared               ?&vsql.PreparedStmt
+	prepared_function      string
+	prepared_function_code int
+	// While a statement is waiting for the values of its deferred parameters
+	// (see ParamData and PutData), deferred_parameters are the numbers of the
+	// parameters that are still deferred (the first one is the deferred
+	// parameter number), deferred_params are the values of the other
+	// parameters, and deferred_stmt is the statement. deferred_data_pointer is
+	// true once ParamData has returned the DATA_POINTER of the deferred
+	// parameter, and deferred_value is the value given by PutData so far.
+	deferred_parameters   []int
+	deferred_params       map[string]vsql.Value
+	deferred_stmt         ?&vsql.PreparedStmt
+	deferred_data_pointer bool
+	deferred_value        ?vsql.Value
 	// ard and apd are the current ARD and APD, which are the automatically
 	// allocated auto_ard and auto_apd unless the application set them to a
 	// descriptor that it allocated.
@@ -165,4 +182,29 @@ fn null_termination(env i64) bool {
 
 fn (stmt &Stmt) null_termination() bool {
 	return null_termination((dbcs[stmt.dbc] or { return true }).env)
+}
+
+// deferred is the deferred parameter number, or 0 (zero) if there isn't one.
+fn (stmt &Stmt) deferred() int {
+	return if stmt.deferred_parameters.len > 0 { stmt.deferred_parameters[0] } else { 0 }
+}
+
+// cancel_deferred removes the deferred parameter number and the statement that
+// was waiting for it.
+fn (mut stmt Stmt) cancel_deferred() {
+	stmt.deferred_parameters = []
+	stmt.deferred_params = map[string]vsql.Value{}
+	stmt.deferred_stmt = none
+	stmt.deferred_data_pointer = false
+	stmt.deferred_value = none
+}
+
+// check_deferred raises an exception condition if the statement is waiting
+// for the values of its deferred parameters: CLI-specific condition —
+// function sequence error (see 5.2, "<CLI routine> invocation", General Rule
+// 3.b.i.6).
+fn (stmt &Stmt) check_deferred() ! {
+	if stmt.deferred() > 0 {
+		return cli_error('HY010', 'function sequence error')
+	}
 }

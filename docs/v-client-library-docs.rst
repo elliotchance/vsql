@@ -570,6 +570,9 @@ struct PreparedStmt
    	// otherwise be read only. At the moment this is only when it contains a
    	// NEXT VALUE FOR.
    	writes bool
+   	// dynamic_parameters is the number of <dynamic parameter specification>s
+   	// ("?") in the statement.
+   	dynamic_parameters int
    mut:
    	c             &Connection
    	elapsed_parse time.Duration

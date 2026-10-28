@@ -19,6 +19,15 @@ fn disconnect(mut dbc Dbc, h i64) !i16 {
 	// not exist.
 	mut conn := dbc.conn or { return cli_error('08003', 'connection does not exist') }
 
+	// - 4.a. If any statement has a deferred parameter number, then an
+	// exception condition is raised: CLI-specific condition — function sequence
+	// error.
+	for _, stmt in stmts {
+		if stmt.dbc == h {
+			stmt.check_deferred()!
+		}
+	}
+
 	// - 4.b. If EC is active, then an exception condition is raised: invalid
 	// transaction state — active SQL-transaction.
 	if conn.in_transaction() {

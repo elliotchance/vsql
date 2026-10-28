@@ -431,7 +431,14 @@ pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 	stmt := parse_tokens(tokens)!
 	elapsed_parse := t.elapsed()
 
-	return PreparedStmt{stmt, map[string]Value{}, explain, has_next_value(tokens), &conn, elapsed_parse}
+	return PreparedStmt{
+		stmt:               stmt
+		explain:            explain
+		writes:             has_next_value(tokens)
+		dynamic_parameters: tokens.filter(it.token == token_operator_question_mark).len
+		c:                  &conn
+		elapsed_parse:      elapsed_parse
+	}
 }
 
 fn parse_tokens(tokens []Token) !Stmt {

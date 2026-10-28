@@ -12,6 +12,9 @@ fn sql_set_desc_field(descriptor_handle SQLInteger, record_number i16, field_ide
 	mut desc := descs[i64(descriptor_handle)] or { return sql_invalid_handle }
 	desc.diag.clear()
 
+	// See 5.11, "Deferred parameter check".
+	check_desc_deferred(i64(descriptor_handle)) or { return desc.diag.error(err) }
+
 	return set_desc_field(mut desc, record_number, field_identifier, value, i64(buffer_length)) or {
 		desc.diag.error(err)
 	}

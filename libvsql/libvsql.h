@@ -108,12 +108,14 @@ typedef SQLINTEGER SQLHSTMT;
 typedef SQLINTEGER SQLHDESC;
 
 /* Special length/indicator values. */
-#define SQL_NULL_DATA (-1) /* the value is NULL */
-#define SQL_NTS       (-3) /* a null terminated string */
+#define SQL_NULL_DATA    (-1) /* the value is NULL */
+#define SQL_NTS          (-3) /* a null terminated string */
+#define SQL_DATA_AT_EXEC (-2) /* given with SQLPutData */
 
 /* Return codes. */
 #define SQL_SUCCESS           0    /* completed */
 #define SQL_SUCCESS_WITH_INFO 1    /* completed with a warning */
+#define SQL_NEED_DATA         99   /* see SQLParamData */
 #define SQL_NO_DATA           100  /* no more rows or records */
 #define SQL_ERROR             (-1) /* failed, see SQLGetDiagRec */
 #define SQL_INVALID_HANDLE    (-2) /* not an allocated handle */
@@ -246,6 +248,11 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_TRANSACTION_READ_COMMITTED   0x00000002L /* READ COMMITTED */
 #define SQL_TRANSACTION_REPEATABLE_READ  0x00000004L /* not supported */
 #define SQL_TRANSACTION_SERIALIZABLE     0x00000008L /* not supported */
+
+/* SQLBindParameter InputOutputModes. */
+#define SQL_PARAM_MODE_IN    1 /* an input parameter */
+#define SQL_PARAM_MODE_INOUT 2 /* the same as an input parameter */
+#define SQL_PARAM_MODE_OUT   4 /* not supported */
 
 /* SQLFetchScroll FetchOrientations. */
 #define SQL_FETCH_NEXT     1 /* the next rowset */
@@ -417,6 +424,40 @@ SQLRETURN SQLBindCol(
     SQLSMALLINT  ColumnNumber,
     SQLSMALLINT  TargetType,
     SQLPOINTER   TargetValue,
+    SQLINTEGER   BufferLength,
+    SQLINTEGER  *StrLen_or_Ind
+);
+
+/*
+ * SQLBindParameter binds a dynamic parameter ("?", starting at 1) of a
+ * statement. ParameterType (such as SQL_VARCHAR or SQL_TYPE_DATE) is its SQL
+ * data type, with ColumnSize as the length of a string, or the precision of a
+ * number (and DecimalDigits as its scale), or the fractional seconds of a
+ * datetime. When the statement is executed, ParameterValue (of ValueType, see
+ * SQLGetData) is cast to that type.
+ *
+ * StrLen_or_Ind is the length in octets of a string (or SQL_NTS), and it may
+ * be SQL_NULL_DATA for a NULL, or SQL_DATA_AT_EXEC to give the value with
+ * SQLParamData and SQLPutData. BufferLength is the size of ParameterValue.
+ * InputOutputMode must be SQL_PARAM_MODE_IN (or SQL_PARAM_MODE_INOUT, which is
+ * the same).
+ *
+ *   SQLINTEGER x = 123;
+ *
+ *   SQLPrepare(stmt, (SQLCHAR *)"INSERT INTO foo (x) VALUES (?)", SQL_NTS);
+ *   SQLBindParameter(stmt, 1, SQL_PARAM_MODE_IN, SQL_INTEGER, SQL_INTEGER, 0,
+ *                    0, &x, sizeof(x), NULL);
+ *   SQLExecute(stmt);
+ */
+SQLRETURN SQLBindParameter(
+    SQLHSTMT     StatementHandle,
+    SQLSMALLINT  ParameterNumber,
+    SQLSMALLINT  InputOutputMode,
+    SQLSMALLINT  ValueType,
+    SQLSMALLINT  ParameterType,
+    SQLINTEGER   ColumnSize,
+    SQLSMALLINT  DecimalDigits,
+    SQLPOINTER   ParameterValue,
     SQLINTEGER   BufferLength,
     SQLINTEGER  *StrLen_or_Ind
 );
@@ -600,6 +641,15 @@ SQLRETURN SQLExecDirect(
     SQLHSTMT    StatementHandle,
     SQLCHAR    *StatementText,
     SQLINTEGER  TextLength
+);
+
+/*
+ * SQLExecute executes the statement prepared by SQLPrepare (which can be
+ * executed again), the same as SQLExecDirect. It returns SQL_NEED_DATA if a
+ * parameter is SQL_DATA_AT_EXEC, see SQLParamData.
+ */
+SQLRETURN SQLExecute(
+    SQLHSTMT StatementHandle
 );
 
 /*
@@ -928,6 +978,54 @@ SQLRETURN SQLGetStmtAttr(
 SQLRETURN SQLNumResultCols(
     SQLHSTMT     StatementHandle,
     SQLSMALLINT *ColumnCount
+);
+
+/*
+ * SQLParamData gives the value of each SQL_DATA_AT_EXEC parameter, after
+ * SQLExecute (or SQLExecDirect) returns SQL_NEED_DATA. It sets Value to the
+ * ParameterValue of the next parameter and returns SQL_NEED_DATA, and then
+ * the value is given with SQLPutData. After the last one, it executes the
+ * statement.
+ *
+ *   SQLPOINTER p;
+ *   SQLINTEGER at_exec = SQL_DATA_AT_EXEC;
+ *
+ *   SQLBindParameter(stmt, 1, SQL_PARAM_MODE_IN, SQL_CHAR, SQL_VARCHAR, 100,
+ *                    0, NULL, 0, &at_exec);
+ *   if (SQLExecute(stmt) == SQL_NEED_DATA) {
+ *     while (SQLParamData(stmt, &p) == SQL_NEED_DATA) {
+ *       SQLPutData(stmt, (SQLPOINTER) "hello ", SQL_NTS);
+ *       SQLPutData(stmt, (SQLPOINTER) "world", SQL_NTS);
+ *     }
+ *   }
+ */
+SQLRETURN SQLParamData(
+    SQLHSTMT    StatementHandle,
+    SQLPOINTER *Value
+);
+
+/*
+ * SQLPrepare prepares a statement to be executed (maybe many times) with
+ * SQLExecute. It may have dynamic parameters ("?"), see SQLBindParameter. A
+ * syntax error is returned by SQLPrepare, but other errors (such as a table
+ * that doesn't exist) are only returned by SQLExecute. The same statements are
+ * allowed as SQLExecDirect.
+ */
+SQLRETURN SQLPrepare(
+    SQLHSTMT    StatementHandle,
+    SQLCHAR    *StatementText,
+    SQLINTEGER  TextLength
+);
+
+/*
+ * SQLPutData gives the value of the SQL_DATA_AT_EXEC parameter, see
+ * SQLParamData. StrLen_or_Ind is the length of a string (or SQL_NTS), or
+ * SQL_NULL_DATA. A string can be given in pieces by calling SQLPutData again.
+ */
+SQLRETURN SQLPutData(
+    SQLHSTMT   StatementHandle,
+    SQLPOINTER Data,
+    SQLINTEGER StrLen_or_Ind
 );
 
 /*

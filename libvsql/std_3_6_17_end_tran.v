@@ -59,6 +59,15 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 		return cli_error('3B001', 'savepoint exception — invalid specification')
 	}
 
+	// - 9. If any statement of the connections has a deferred parameter number,
+	// then an exception condition is raised: CLI-specific condition — function
+	// sequence error.
+	for _, stmt in stmts {
+		if stmt.dbc in l1 {
+			stmt.check_deferred()!
+		}
+	}
+
 	is_commit := completion_type in [sql_commit, sql_commit_and_chain]
 	is_chain := completion_type in [sql_commit_and_chain, sql_rollback_and_chain]
 	mut errors := []IError{}

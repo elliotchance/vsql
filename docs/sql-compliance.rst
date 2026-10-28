@@ -1660,7 +1660,7 @@ As of the latest version (or at least the version of this documentation)
 CLI Routines
 ~~~~~~~~~~~~
 
-C011 requires all of the routines in Clause 6. **vsql supports 37 of the
+C011 requires all of the routines in Clause 6. **vsql supports 42 of the
 63 routines.**
 
 .. list-table:: Clause 6 — SQL/CLI routines
@@ -1684,7 +1684,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 37 of the
    * - ✅ 6.5
      - ``SQLBindCol``
 
-   * - ❌ 6.6
+   * - ✅ 6.6
      - ``SQLBindParameter``
 
    * - ✅ 6.7
@@ -1726,7 +1726,7 @@ C011 requires all of the routines in Clause 6. **vsql supports 37 of the
    * - ✅ 6.19
      - ``SQLExecDirect``
 
-   * - ❌ 6.20
+   * - ✅ 6.20
      - ``SQLExecute``
 
    * - ✅ 6.21
@@ -1813,16 +1813,16 @@ C011 requires all of the routines in Clause 6. **vsql supports 37 of the
    * - ✅ 6.48
      - ``SQLNumResultCols``
 
-   * - ❌ 6.49
+   * - ✅ 6.49
      - ``SQLParamData``
 
-   * - ❌ 6.50
+   * - ✅ 6.50
      - ``SQLPrepare``
 
    * - ❌ 6.51
      - ``SQLPrimaryKeys``
 
-   * - ❌ 6.52
+   * - ✅ 6.52
      - ``SQLPutData``
 
    * - ✅ 6.53

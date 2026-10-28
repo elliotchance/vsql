@@ -6,6 +6,7 @@ module main
 
 const sql_success = i16(0)
 const sql_success_with_info = i16(1)
+const sql_need_data = i16(99)
 const sql_no_data = i16(100)
 const sql_error = i16(-1)
 const sql_invalid_handle = i16(-2)

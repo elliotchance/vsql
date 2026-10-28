@@ -40,15 +40,22 @@ fn sql_free_handle(handle_type i16, handle SQLInteger) i16 {
 		sql_handle_stmt {
 			// - 3.c.vii, 3.c.viii. An open cursor is closed, and the
 			// automatically allocated descriptors are freed, with the statement.
-			if h !in stmts {
-				return sql_invalid_handle
-			}
+			mut stmt := stmts[h] or { return sql_invalid_handle }
+			stmt.diag.clear()
+
+			// - 3.c.vi. If there is a deferred parameter number associated with
+			// S, then an exception condition is raised: CLI-specific condition —
+			// function sequence error.
+			stmt.check_deferred() or { return stmt.diag.error(err) }
 
 			free_stmt(h)
 		}
 		sql_handle_desc {
 			mut desc := descs[h] or { return sql_invalid_handle }
 			desc.diag.clear()
+
+			// - 3.d.vi. See 5.11, "Deferred parameter check".
+			check_desc_deferred(h) or { return desc.diag.error(err) }
 
 			// - 3.d.viii. If AT indicates AUTOMATIC, then an exception condition
 			// is raised: CLI-specific condition — invalid use of

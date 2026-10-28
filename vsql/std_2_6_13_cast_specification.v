@@ -74,35 +74,57 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 		run:          fn [e, compiled_expr] (mut conn Connection, data Row, params map[string]Value) !Value {
 			value := compiled_expr.run(mut conn, data, params)!
 
-			if !value.is_null && value.typ.uses_string() && e.target.uses_time() {
-				return cast_string_to_datetime(mut conn, value, e.target)!
-			}
-
-			if !value.is_null && value.typ.typ.is_string() && e.target.typ.is_string() {
-				return cast_character_to_character(mut conn, value, e.target)
-			}
-
-			if !value.is_null && value.typ.typ.is_string() && e.target.typ == .is_boolean {
-				return cast_character_to_boolean(value)!
-			}
-
-			if !value.is_null && value.typ.typ == .is_boolean && e.target.typ.is_string() {
-				return cast_boolean_to_character(mut conn, value, e.target)!
-			}
-
-			mut result := cast(mut conn, 'for CAST', value, e.target)!
-
-			// The declared type of a CAST is the target type (Syntax Rule 2), even
-			// if the value is shorter.
-			if e.target.typ.is_string() {
-				result.typ = e.target
-			}
-
-			return result
+			return cast_specification(mut conn, value, e.target)
 		}
 		typ:          e.target
 		contains_agg: compiled_expr.contains_agg
 	}
+}
+
+// cast is CAST ( v AS target ), see the General Rules of 6.13, <cast
+// specification>. Unlike store_assignment, a string can be cast to a number or
+// datetime, and a string that's too long is truncated with a warning.
+pub fn (mut conn Connection) cast(value Value, target Type) !Value {
+	check_data_type(target)!
+
+	return cast_specification(mut conn, value, target)
+}
+
+// cast_specification is CAST ( value AS target ) for a target that has already
+// been checked.
+fn cast_specification(mut conn Connection, value Value, target Type) !Value {
+	if value.is_null {
+		return Value{
+			typ:     target
+			is_null: true
+		}
+	}
+
+	if value.typ.uses_string() && target.uses_time() {
+		return cast_string_to_datetime(mut conn, value, target)!
+	}
+
+	if value.typ.typ.is_string() && target.typ.is_string() {
+		return cast_character_to_character(mut conn, value, target)
+	}
+
+	if value.typ.typ.is_string() && target.typ == .is_boolean {
+		return cast_character_to_boolean(value)!
+	}
+
+	if value.typ.typ == .is_boolean && target.typ.is_string() {
+		return cast_boolean_to_character(mut conn, value, target)!
+	}
+
+	mut result := cast(mut conn, 'for CAST', value, target)!
+
+	// The declared type of a CAST is the target type (Syntax Rule 2), even if
+	// the value is shorter.
+	if target.typ.is_string() {
+		result.typ = target
+	}
+
+	return result
 }
 
 // cast_character_to_character casts a character string to CHAR(n) or

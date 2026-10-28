@@ -11,6 +11,10 @@ fn sql_copy_desc(source_desc_handle SQLInteger, target_desc_handle SQLInteger) i
 	mut target := descs[i64(target_desc_handle)] or { return sql_invalid_handle }
 	target.diag.clear()
 
+	// - 3, 4. See 5.11, "Deferred parameter check".
+	check_desc_deferred(i64(source_desc_handle)) or { return target.diag.error(err) }
+	check_desc_deferred(i64(target_desc_handle)) or { return target.diag.error(err) }
+
 	// - 5. If TD is an implementation row descriptor, then an exception
 	// condition is raised: CLI-specific condition — cannot modify an
 	// implementation row descriptor.

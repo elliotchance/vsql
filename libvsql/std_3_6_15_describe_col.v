@@ -11,6 +11,9 @@ fn sql_describe_col(statement_handle SQLInteger, column_number i16, column_name 
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.6.
+	stmt.check_deferred() or { return stmt.diag.error(err) }
+
 	return describe_col(mut stmt, column_number, column_name, buffer_length, name_length,
 		data_type, column_size, decimal_digits, nullable) or { stmt.diag.error(err) }
 }
@@ -19,7 +22,7 @@ fn describe_col(mut stmt Stmt, column_number i16, column_name &char, buffer_leng
 	// - 2. If there is no prepared or executed statement associated with S, then
 	// an exception condition is raised: CLI-specific condition — function
 	// sequence error.
-	if !stmt.executed {
+	if !stmt.executed && stmt.prepared == none {
 		return cli_error('HY010', 'function sequence error')
 	}
 

@@ -9,6 +9,9 @@ fn sql_set_desc_rec(descriptor_handle SQLInteger, record_number i16, type_ i16, 
 	mut desc := descs[i64(descriptor_handle)] or { return sql_invalid_handle }
 	desc.diag.clear()
 
+	// See 5.11, "Deferred parameter check".
+	check_desc_deferred(i64(descriptor_handle)) or { return desc.diag.error(err) }
+
 	return set_desc_rec(mut desc, record_number, type_, sub_type, i64(length), precision,
 		scale, data, string_length, indicator) or { desc.diag.error(err) }
 }

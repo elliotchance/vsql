@@ -1,5 +1,7 @@
 module main
 
+import vsql
+
 // ISO/IEC 9075-3:2003(E), 6.19, ExecDirect
 //
 // Execute a statement directly.
@@ -11,12 +13,36 @@ module main
 fn sql_exec_direct(statement_handle SQLInteger, statement_text &char, text_length SQLInteger) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
+
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.6.
+	stmt.check_deferred() or { return stmt.diag.error(err) }
 	stmt.diag.is_execute = true
 
 	return exec_direct(mut stmt, statement_text, text_length) or { stmt.diag.error(err) }
 }
 
 fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16 {
+	p := preparable_statement(mut stmt, statement_text, text_length)!
+
+	// - 10. Any prepared statement, cursor and select source associated with S
+	// are destroyed.
+	stmt.prepared = none
+	stmt.executed = false
+	stmt.close_cursor()
+
+	// - 11, 12. P is prepared and executed. A syntax error is raised by
+	// preparing it.
+	mut conn := stmt_connection(stmt)!
+	mut prepared := &vsql.PreparedStmt{
+		...conn.prepare(p)!
+	}
+
+	return execute_statement(mut stmt, mut prepared)
+}
+
+// preparable_statement is the text of a statement for ExecDirect or Prepare
+// (see 6.19, "ExecDirect", General Rules 2 to 7).
+fn preparable_statement(mut stmt Stmt, statement_text &char, text_length SQLInteger) !string {
 	// - 2. If an open cursor is associated with S, then an exception condition
 	// is raised: invalid cursor state.
 	if stmt.cursor != none {
@@ -46,15 +72,33 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 		return cli_error('42000', 'syntax error or access rule violation: -- comments are not allowed')
 	}
 
-	// - 10. Any prepared statement, cursor and select source associated with S
-	// are destroyed.
-	stmt.executed = false
-	stmt.close_cursor()
+	return p
+}
 
-	mut conn := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }.conn or {
-		return cli_error('08003', 'connection does not exist')
+// execute_statement executes a prepared statement (for ExecDirect or
+// Execute) with the values of its dynamic parameters (see 5.6, "Implicit
+// EXECUTE USING and OPEN USING clauses"). If any of them are deferred, the
+// first one becomes the deferred parameter number, and the statement isn't
+// executed until their values are provided by ParamData and PutData.
+fn execute_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt) !i16 {
+	params, deferred := parameter_values(mut stmt, prepared)!
+	if deferred.len > 0 {
+		stmt.deferred_parameters = deferred
+		stmt.deferred_params = params.clone()
+		stmt.deferred_stmt = prepared
+		stmt.deferred_value = none
+		stmt.deferred_data_pointer = false
+		return sql_need_data
 	}
-	// - 4.b, 5.4 10. A cursor is always a copy of the result, so it can't be
+
+	return run_statement(mut stmt, mut prepared, params)
+}
+
+// run_statement executes a statement with all of its parameter values.
+fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[string]vsql.Value) !i16 {
+	mut conn := stmt_connection(stmt)!
+
+	// - 5.4 10. A cursor is always a copy of the result, so it can't be
 	// SENSITIVE: cursor sensitivity exception — request rejected.
 	if stmt.diag.dynamic_function == 'SELECT CURSOR' && stmt.cursor_sensitivity == sql_sensitive {
 		return cli_error('36001', 'cursor sensitivity exception — request rejected')
@@ -63,7 +107,7 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 	if !conn.in_transaction() {
 		conn.query('START TRANSACTION')!
 	}
-	result := conn.query(p) or {
+	result := prepared.query(params) or {
 		// An error that is a transaction rollback (such as a serialization
 		// failure) also ends the SQL-transaction.
 		if !conn.in_transaction() {
@@ -84,9 +128,16 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 	if result.msg == '' {
 		stmt.open_cursor(result)
 	}
-	describe(stmt, mut conn, stmt.cursor)
+	describe(stmt, mut conn, result.columns)
 
 	return sql_success
+}
+
+// stmt_connection is the established SQL-connection of a statement.
+fn stmt_connection(stmt &Stmt) !&vsql.Connection {
+	dbc := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }
+
+	return dbc.conn or { return cli_error('08003', 'connection does not exist') }
 }
 
 // contains_simple_comment is true if text contains a <simple comment> ("--"

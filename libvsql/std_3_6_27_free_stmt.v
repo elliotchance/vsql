@@ -21,6 +21,9 @@ fn sql_free_stmt(statement_handle SQLInteger, option i16) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
+	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.6.
+	stmt.check_deferred() or { return stmt.diag.error(err) }
+
 	match option {
 		// - 6.a. If OPT indicates CLOSE CURSOR and there is an open cursor
 		// associated with S, then the cursor is closed. Unlike CloseCursor, it's
@@ -48,6 +51,7 @@ fn sql_free_stmt(statement_handle SQLInteger, option i16) i16 {
 		// destroyed, and the automatically allocated descriptors go back to
 		// their default values.
 		sql_reallocate {
+			stmt.prepared = none
 			stmt.close_cursor()
 			stmt.executed = false
 			stmt.row_count = 0

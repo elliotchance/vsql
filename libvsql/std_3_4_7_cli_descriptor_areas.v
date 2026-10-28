@@ -429,7 +429,7 @@ fn (desc &Desc) field_index() int {
 // describe sets the IRD and IPD of a statement after it's executed, see 5.5,
 // "Implicit DESCRIBE USING clause". The IPD isn't populated, since POPULATE IPD
 // is False.
-fn describe(stmt &Stmt, mut conn vsql.Connection, result ?vsql.Result) {
+fn describe(stmt &Stmt, mut conn vsql.Connection, columns []vsql.Column) {
 	mut ird := descs[stmt.ird] or { return }
 	mut ipd := descs[stmt.ipd] or { return }
 
@@ -450,7 +450,6 @@ fn describe(stmt &Stmt, mut conn vsql.Connection, result ?vsql.Result) {
 	ird.header[sql_desc_dynamic_function] = stmt.diag.dynamic_function
 	ird.header[sql_desc_dynamic_function_code] = i64(stmt.diag.dynamic_function_code)
 	ird.header[sql_desc_key_type] = i64(0)
-	columns := if r := result { r.columns } else { []vsql.Column{} }
 	ird.header[sql_desc_top_level_count] = i64(columns.len)
 	ird.set_count(columns.len)
 	for i, column in columns {
@@ -588,5 +587,17 @@ fn desc_statements(h i64) []i64 {
 fn (desc &Desc) has_prepared_or_executed() bool {
 	stmt := stmts[desc.stmt] or { return false }
 
-	return stmt.executed
+	return stmt.executed || stmt.prepared != none
+}
+
+// check_desc_deferred raises an exception condition if the descriptor is the
+// current APD, or the IPD, of a statement that has a deferred parameter number:
+// CLI-specific condition — function sequence error (see 5.11, "Deferred
+// parameter check").
+fn check_desc_deferred(h i64) ! {
+	for _, stmt in stmts {
+		if (stmt.apd == h || stmt.ipd == h) && stmt.deferred() > 0 {
+			return cli_error('HY010', 'function sequence error')
+		}
+	}
 }

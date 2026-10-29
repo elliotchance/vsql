@@ -11,9 +11,12 @@ Prebuilt Binaries
 This is the best way to use the ``vsql`` command (see :doc:`cli`) on most
 platforms, without installing anything else.
 
-Download the zip for macOS (Apple silicon), Linux (x86-64) or Windows from the
+Download the zip for your OS and architecture (such as
+``vsql-<version>-macos-arm64.zip`` for Apple silicon, or
+``vsql-<version>-linux-x86-64.zip``) from the
 `latest release <https://github.com/elliotchance/vsql/releases/latest>`_ and
-unzip it. To update, download the latest release again.
+unzip it. There are zips for Linux, macOS and Windows on x86-64 and ARM64. To
+update, download the latest release again.
 
 The ``vsql`` command is in ``bin/``.
 

@@ -27,9 +27,9 @@ concurrency:
   group: ci-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
-# There's one job for each OS. Each one runs the tests that work there and
-# builds the binary for the release. Checks that don't depend on the OS only
-# run on Linux, which has the fastest and least limited runners.
+# There's one job for each OS and architecture. Each one runs the tests that
+# work there and builds the binary for the release. Checks that don't depend on the OS only run on Linux x86-64,
+# which has the fastest and least limited runners.
 #
 # The release binary is built after the tests, because set_version.sh changes
 # version.v (the tests expect no version, and the checks expect no changes).
@@ -40,8 +40,18 @@ concurrency:
 # PATH.
 jobs:
   linux:
-    name: Linux
-    runs-on: ubuntu-latest
+    name: Linux (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86-64
+            name: x86-64
+            runner: ubuntu-latest
+          - arch: arm64
+            name: ARM64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -57,10 +67,12 @@ jobs:
         run: v version
 
       - name: Verify fmt
+        if: matrix.arch == 'x86-64'
         run: make fmt-verify
 
       # vsql/y.v is generated, but committed so that "v install" works.
       - name: Verify grammar
+        if: matrix.arch == 'x86-64'
         run: |
           make grammar
           git diff --exit-code vsql/y.v
@@ -68,6 +80,7 @@ jobs:
       # The venv keeps the system's Python packages out, since Ubuntu's Pygments
       # is too old for Sphinx.
       - name: Verify docs
+        if: matrix.arch == 'x86-64'
         run: |
           python3 -m venv "$RUNNER_TEMP/docs-venv"
           . "$RUNNER_TEMP/docs-venv/bin/activate"
@@ -75,7 +88,11 @@ jobs:
           make clean-docs docs
           git diff --exit-code
 
-      # psql is already installed on the runner. It's used by the server tests.
+      # psql is used by the server tests. It's already installed on the x86-64
+      # runner.
+      - name: Install psql
+        run: command -v psql || (sudo apt-get update && sudo apt-get install -y postgresql-client)
+
       - name: Run tests
         run: make test
 
@@ -91,11 +108,21 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            vsql-*-linux.zip
+            vsql-*-linux-${{ matrix.arch }}.zip
 
   macos:
-    name: macOS
-    runs-on: macos-latest
+    name: macOS (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86-64
+            name: x86-64
+            runner: macos-15-intel
+          - arch: arm64
+            name: ARM64
+            runner: macos-latest
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -130,13 +157,23 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            vsql-*-macos.zip
+            vsql-*-macos-${{ matrix.arch }}.zip
 
   # The test suites don't run on Windows yet, so this builds the binary and runs
   # some statements, a short benchmark and the server with it.
   windows:
-    name: Windows
-    runs-on: windows-latest
+    name: Windows (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86-64
+            name: x86-64
+            runner: windows-latest
+          - arch: arm64
+            name: ARM64
+            runner: windows-11-arm
+    runs-on: ${{ matrix.runner }}
     defaults:
       run:
         shell: bash
@@ -164,8 +201,14 @@ jobs:
         run: |
           make libvsql-test libvsql-example
 
-      # PostgreSQL is installed on the runner, but psql isn't on the PATH. It's
-      # used by the server tests.
+      # psql is used by the server tests. PostgreSQL is installed on the x86-64
+      # runner (but isn't on the PATH), and not on the ARM64 one.
+      - name: Install psql
+        if: env.PGBIN == ''
+        run: |
+          choco install postgresql17 --no-progress -y --params '/Password:postgres'
+          echo "PGBIN=C:\Program Files\PostgreSQL\17\bin" >> $GITHUB_ENV
+
       - name: Run tests
         run: |
           export PATH="$(cygpath -u "$PGBIN"):$PATH"
@@ -174,7 +217,7 @@ jobs:
       - name: Zip binary
         shell: pwsh
         run: |
-          $dir = "vsql-$("$env:GITHUB_REF".Split('/')[-1])-windows"
+          $dir = "vsql-$("$env:GITHUB_REF".Split('/')[-1])-windows-${{ matrix.arch }}"
           New-Item -ItemType Directory $dir/bin, $dir/include
           Copy-Item bin/vsql.exe, bin/libvsql.dll $dir/bin
           Copy-Item libvsql/libvsql.h $dir/include
@@ -186,4 +229,4 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            vsql-*-windows.zip
+            vsql-*-windows-${{ matrix.arch }}.zip

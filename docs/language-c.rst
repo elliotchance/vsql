@@ -151,6 +151,7 @@ function for each procedure:
    void create_items(char SQLSTATE[6]);
    void add_item(char SQLSTATE[6], long *id, char name[21], double *price, short *price_indicator);
    void change_prices(char SQLSTATE[6], double *factor);
+   void get_item(char SQLSTATE[6], long *id, char name[21], double *price, short *price_indicator);
    void commit_work(char SQLSTATE[6]);
    void close_database(char SQLSTATE[6]);
 
@@ -228,8 +229,8 @@ Statements
 ^^^^^^^^^^
 
 A statement can be any statement that vsql supports, except a query (``SELECT``
-or ``VALUES``), since ``SELECT ... INTO`` and cursors aren't supported yet. It
-can also be one of the connection statements:
+or ``VALUES``), since cursors aren't supported yet. Use ``SELECT ... INTO``
+instead to get one row. It can also be one of the connection statements:
 
 - ``CONNECT TO <server> [ AS <name> ] [ USER <user> ]`` or ``CONNECT TO
   DEFAULT``. The server is the path to a database file (or ``:memory:``). Each
@@ -239,6 +240,36 @@ can also be one of the connection statements:
 - ``SET CONNECTION <name>`` or ``SET CONNECTION DEFAULT``.
 - ``DISCONNECT <name>``, ``DISCONNECT DEFAULT``, ``DISCONNECT CURRENT`` or
   ``DISCONNECT ALL``.
+
+``SELECT ... INTO`` (ISO/IEC 9075-2, 14.7, Feature E111 "Single row SELECT
+statement") is a ``SELECT`` with ``INTO`` and a parameter for each column
+before the ``FROM``:
+
+.. code-block:: text
+
+   SELECT [ DISTINCT | ALL ] <select list>
+   INTO <parameter> [, <parameter> ]...
+   FROM ... [ WHERE ... ] [ GROUP BY ... ] [ HAVING ... ]
+
+Each parameter is ``:name``, with an optional indicator parameter (``:name
+INDICATOR :indicator`` or ``:name :indicator``), and is set to the value of its
+column. It can't have ``UNION``, ``EXCEPT``, ``INTERSECT``, ``ORDER BY``,
+``OFFSET`` or ``FETCH``. The ``SQLSTATE`` is:
+
+- ``00000`` when there's one row.
+- ``02000`` (no data) when there are no rows. The parameters aren't changed.
+- ``21000`` (cardinality violation) when there's more than one row.
+- ``22002`` (null value, no indicator parameter) for a NULL value without an
+  indicator parameter. With one, the indicator is set to ``-1`` for a NULL
+  value, otherwise ``0``.
+- ``01004`` (string data, right truncation) when a string doesn't fit in its
+  parameter. The string is cut, and its indicator (if there is one) is set to
+  the length of the whole string.
+- ``07002`` when the number of columns isn't the number of parameters. Without
+  an asterisk (``*``) in the select list, this is an error when the module is
+  compiled.
+
+A ``CHARACTER(L)`` parameter is padded with spaces to its length.
 
 If the first statement isn't a connection statement, it connects to
 ``DEFAULT``, which is a new in-memory database. Each SQL-connection has its own

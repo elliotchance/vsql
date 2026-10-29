@@ -23,10 +23,10 @@ static int failures = 0;
 
 int main(void) {
   char sqlstate[6];
-  char server[51], name[51], user[51], c[6], v[11];
-  short s = 1;
+  char server[51], name[51], user[51], c[6], v[11], c3[4], v3[4];
+  short s = 1, s_ind = 0;
   long i = 2, f = 1, v_null = -1;
-  long long b = 3, unused = 0, rows;
+  long long b = 3, unused = 0, rows, c_ind = 0;
   float r = 4.5f;
   double d = 5.5;
 
@@ -39,6 +39,38 @@ int main(void) {
   EXPECT(check_row(sqlstate, c, &f), "00000");
   rows = 2;
   EXPECT(count_rows(sqlstate, &rows), "22012");
+
+  /* 14.7 <select statement: single row>. */
+  s = 0;
+  b = 0;
+  r = 0;
+  d = 0;
+  f = 0;
+  strcpy(c, "xxxxx");
+  strcpy(v, "xxxxx");
+  EXPECT(select_row(sqlstate, &s, &i, &b, &r, &d, c, v, &s_ind, &f), "00000");
+  if (s != 1 || i != 2 || b != 3 || r != 4.5f || d != 5.5 ||
+      strcmp(c, "ab   ") != 0 || s_ind != -1 || f != 1) {
+    fprintf(stderr, "select_row: %d %ld %lld %f %f '%s' %d %ld\n", s, i, b, r,
+            d, c, s_ind, f);
+    failures++;
+  }
+  i = 3;
+  EXPECT(select_row(sqlstate, &s, &i, &b, &r, &d, c, v, &s_ind, &f), "02000");
+  i = 2;
+  EXPECT(select_s(sqlstate, &s, &i), "21000");
+  EXPECT(select_null(sqlstate, &b), "22002");
+  EXPECT(select_all(sqlstate, &s), "07002");
+
+  /* 9.1: A truncated string has the length in its indicator, and a CHARACTER
+   * is padded with spaces. */
+  EXPECT(select_strings(sqlstate, c3, &c_ind, v3, &i, &b), "01004");
+  if (strcmp(c3, "int") != 0 || c_ind != 4 || i != -1 || b != 2) {
+    fprintf(stderr, "select_strings: '%s' %lld %ld %lld\n", c3, c_ind, i, b);
+    failures++;
+  }
+  i = 2;
+  b = 3;
 
   /* 9.3 GR 5.b.iii: unterminated C string. */
   memset(c, 'x', sizeof(c));

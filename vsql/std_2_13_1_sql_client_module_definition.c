@@ -166,29 +166,29 @@ struct vsql_m_param {
 };
 
 /*
- * vsql_m_execute prepares and executes a statement, with a "?" for each host
- * parameter.
+ * vsql_m_run prepares and executes a statement, with a "?" for each host
+ * parameter. It returns 0 (with the status parameter set) if it fails,
+ * otherwise the statement must be freed.
  */
-static void vsql_m_execute(char *sqlstate, const char *sql, int n,
-                           struct vsql_m_param *params) {
+static int vsql_m_run(char *sqlstate, const char *sql, int n,
+                      struct vsql_m_param *params, SQLHSTMT *stmt) {
   struct vsql_m_connection *c = vsql_m_connection(sqlstate);
-  SQLHSTMT stmt;
   SQLRETURN rc;
   int i;
 
   if (c == NULL) {
-    return;
+    return 0;
   }
 
-  rc = SQLAllocHandle(SQL_HANDLE_STMT, c->dbc, &stmt);
+  rc = SQLAllocHandle(SQL_HANDLE_STMT, c->dbc, stmt);
   if (vsql_m_failed(rc)) {
     vsql_m_diag(sqlstate, rc, SQL_HANDLE_DBC, c->dbc);
-    return;
+    return 0;
   }
 
-  rc = SQLPrepare(stmt, (SQLCHAR *)sql, SQL_NTS);
+  rc = SQLPrepare(*stmt, (SQLCHAR *)sql, SQL_NTS);
   for (i = 0; i < n && !vsql_m_failed(rc); i++) {
-    rc = SQLBindParameter(stmt, (SQLSMALLINT)(i + 1), SQL_PARAM_MODE_IN,
+    rc = SQLBindParameter(*stmt, (SQLSMALLINT)(i + 1), SQL_PARAM_MODE_IN,
                           params[i].value_type, params[i].parameter_type,
                           params[i].length, 0, params[i].value, 0,
                           &params[i].indicator);
@@ -197,11 +197,25 @@ static void vsql_m_execute(char *sqlstate, const char *sql, int n,
   /* 13.4 GR 9: The statement initiates an SQL-transaction. */
   if (!vsql_m_failed(rc)) {
     c->active = 1;
-    rc = SQLExecute(stmt);
+    rc = SQLExecute(*stmt);
   }
 
-  vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, stmt);
-  SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+  vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, *stmt);
+  if (vsql_m_failed(rc)) {
+    SQLFreeHandle(SQL_HANDLE_STMT, *stmt);
+    return 0;
+  }
+
+  return 1;
+}
+
+static void vsql_m_execute(char *sqlstate, const char *sql, int n,
+                           struct vsql_m_param *params) {
+  SQLHSTMT stmt;
+
+  if (vsql_m_run(sqlstate, sql, n, params, &stmt)) {
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+  }
 }
 
 /* section start */

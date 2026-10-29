@@ -65,3 +65,25 @@ PROCEDURE rollback_work (SQLSTATE);
 
 PROCEDURE missing_table (SQLSTATE);
   DELETE FROM missing;
+
+PROCEDURE select_row (SQLSTATE, :s SMALLINT, :i INTEGER, :b BIGINT, :r REAL,
+    :d DOUBLE PRECISION, :c CHARACTER(5), :v VARCHAR(10), :v_ind SMALLINT,
+    :f BOOLEAN);
+  SELECT s, i, b, r, d, c, v, f
+  INTO :s, :i, :b, :r, :d, :c, :v INDICATOR :v_ind, :f
+  FROM t WHERE i = :i;
+
+PROCEDURE select_s (SQLSTATE, :s SMALLINT, :i INTEGER);
+  -- More than one row, unless :i is 2.
+  SELECT s INTO :s FROM t WHERE i = :i OR i IS NULL;
+
+PROCEDURE select_strings (SQLSTATE, :c CHAR(3), :c_ind BIGINT, :v VARCHAR(3),
+    :v_ind INTEGER, :n BIGINT);
+  SELECT /* INTO */ 'into', "V", (SELECT COUNT(*) FROM t WHERE 'INTO' <> '')
+  INTO :c :c_ind, :v :v_ind, :n FROM t WHERE i = 2;
+
+PROCEDURE select_null (SQLSTATE, :i BIGINT);
+  SELECT i INTO :i FROM t WHERE i IS NULL;
+
+PROCEDURE select_all (SQLSTATE, :s SMALLINT);
+  SELECT * INTO :s FROM t WHERE i = 2;

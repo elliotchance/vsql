@@ -664,7 +664,7 @@ error) is raised.
 
 ``start_position`` and ``string_length`` must be integers (or a ``NUMERIC`` or
 ``DECIMAL`` with a scale of 0), so ``SUBSTRING('hello' FROM 2.5)`` is an error.
-A host parameter can be any number that's a whole number.
+A dynamic parameter (``?``) can be any number that's a whole number.
 
 A ``start_position`` before 1 is allowed, but the positions before the first
 character still count towards ``string_length``. So ``SUBSTRING('hello' FROM 0

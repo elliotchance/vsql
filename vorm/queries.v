@@ -10,8 +10,9 @@ import vsql
 pub fn (mut db DB) select(config orm.SelectConfig, data orm.QueryData, where orm.QueryData) ![][]orm.Primitive {
 	query := orm.orm_select_gen_with_dialect(.vsql, config, quote, true, placeholder, 1,
 		where)
-	mut stmt := db.conn.prepare(query)!
-	mut result := stmt.query(db.params(config.table.name, [where, data])!)!
+	sql_stmt, params := dynamic_parameters(query, db.params(config.table.name, [where, data])!)
+	mut stmt := db.conn.prepare(sql_stmt)!
+	mut result := stmt.query(params)!
 
 	mut rows := [][]orm.Primitive{}
 	for row in result {
@@ -48,9 +49,8 @@ pub fn (mut db DB) insert(table orm.Table, data orm.QueryData) ! {
 				continue
 			}
 
-			name := 'p${params.len + 1}'
-			params[name] = db.to_column_value(value, column_types[field])!
-			values << ':${name}'
+			params['?${params.len + 1}'] = db.to_column_value(value, column_types[field])!
+			values << '?'
 		}
 
 		mut stmt := db.conn.prepare('INSERT INTO ${quote}${table.name}${quote} (${columns.join(', ')}) VALUES (${values.join(', ')})')!
@@ -62,16 +62,18 @@ pub fn (mut db DB) insert(table orm.Table, data orm.QueryData) ! {
 pub fn (mut db DB) update(table orm.Table, data orm.QueryData, where orm.QueryData) ! {
 	query, _ := orm.orm_stmt_gen(.vsql, table, quote, .update, true, placeholder, 1, data,
 		where)
-	mut stmt := db.conn.prepare(query)!
-	stmt.query(db.params(table.name, [data, where])!)!
+	sql_stmt, params := dynamic_parameters(query, db.params(table.name, [data, where])!)
+	mut stmt := db.conn.prepare(sql_stmt)!
+	stmt.query(params)!
 }
 
 // delete is used internally by V's ORM for processing `DELETE` queries.
 pub fn (mut db DB) delete(table orm.Table, where orm.QueryData) ! {
 	query, _ := orm.orm_stmt_gen(.vsql, table, quote, .delete, true, placeholder, 1,
 		orm.QueryData{}, where)
-	mut stmt := db.conn.prepare(query)!
-	stmt.query(db.params(table.name, [where])!)!
+	sql_stmt, params := dynamic_parameters(query, db.params(table.name, [where])!)
+	mut stmt := db.conn.prepare(sql_stmt)!
+	stmt.query(params)!
 }
 
 // params turns the values of each QueryData into the placeholders :p1, :p2,
@@ -116,4 +118,45 @@ fn (mut db DB) params(table string, data []orm.QueryData) !map[string]vsql.Value
 	}
 
 	return values
+}
+
+// dynamic_parameters replaces each placeholder (:p1, :p2, etc) in a statement
+// from the ORM with a dynamic parameter ("?"), and returns the values named by
+// their position ("?1", "?2", etc). The row count of an OFFSET or FETCH FIRST
+// can't be a dynamic parameter, so its value is written in the statement
+// instead.
+fn dynamic_parameters(query string, values map[string]vsql.Value) (string, map[string]vsql.Value) {
+	mut sql_stmt := ''
+	mut params := map[string]vsql.Value{}
+	mut in_name := false
+	mut i := 0
+	for i < query.len {
+		// A delimited identifier can contain anything that looks like a
+		// placeholder.
+		if query[i] == `"` {
+			in_name = !in_name
+		}
+
+		if in_name || !query[i..].starts_with(placeholder) {
+			sql_stmt += query[i].ascii_str()
+			i++
+			continue
+		}
+
+		mut end := i + placeholder.len
+		for end < query.len && query[end].is_digit() {
+			end++
+		}
+
+		value := values[query[i + 1..end]]
+		if sql_stmt.ends_with('OFFSET ') || sql_stmt.ends_with('FETCH FIRST ') {
+			sql_stmt += value.str()
+		} else {
+			sql_stmt += '?'
+			params['?${params.len + 1}'] = value
+		}
+		i = end
+	}
+
+	return sql_stmt, params
 }

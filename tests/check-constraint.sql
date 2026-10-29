@@ -221,9 +221,10 @@ CREATE TABLE t (a INT CHECK (ABS(a) > 0));
 -- msg: CREATE TABLE 1
 
 -- # A parameter can't be used.
-/* set x 1 */
-CREATE TABLE t (a INT CHECK (a > :x));
--- error 42601: syntax error: parameter :x cannot be used in a CHECK constraint
+/* params 1 */
+CREATE TABLE t (a INT CHECK (a > ?));
+-- sql: CREATE TABLE t (a INT CHECK (a > 1.0e0))
+-- error 42601: syntax error: parameter ?1 cannot be used in a CHECK constraint
 
 -- # The constraint must be deterministic.
 CREATE SEQUENCE seq;

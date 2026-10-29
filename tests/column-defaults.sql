@@ -122,8 +122,8 @@ CREATE TABLE t (a INT DEFAULT 1 + 2);
 CREATE TABLE t (a INT DEFAULT (1));
 -- error 42601: syntax error: unexpected "("
 
-CREATE TABLE t (a INT DEFAULT :x);
--- error 42601: syntax error: unexpected ":"
+CREATE TABLE t (a INT DEFAULT ?);
+-- error 42601: syntax error: unexpected "?"
 
 CREATE TABLE t (a INT DEFAULT 'foo');
 -- error 42601: syntax error: DEFAULT 'foo' is not valid for column A INTEGER

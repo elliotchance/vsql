@@ -129,7 +129,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 
 // check_substring_argument returns an error if the start position or string
 // length of a SUBSTRING isn't an exact numeric with scale 0 (6.32 Syntax Rule
-// 3). Like OFFSET and FETCH FIRST, a host parameter may be any number that's a
+// 3). A dynamic parameter ("?") may be any number that's a
 // whole number (see substring_position).
 fn check_substring_argument(name string, e NumericValueExpression, typ Type) ! {
 	if typ.typ in [.is_smallint, .is_integer, .is_bigint]
@@ -137,16 +137,16 @@ fn check_substring_argument(name string, e NumericValueExpression, typ Type) ! {
 		return
 	}
 
-	if is_numeric_host_parameter(e) && typ.typ.is_number() {
+	if is_numeric_dynamic_parameter(e) && typ.typ.is_number() {
 		return
 	}
 
 	return sqlstate_42601('SUBSTRING ${name} must be an exact numeric with scale 0, got ${typ}')
 }
 
-// is_numeric_host_parameter is true if the expression is only a host parameter,
-// such as ":pos".
-fn is_numeric_host_parameter(e NumericValueExpression) bool {
+// is_numeric_dynamic_parameter is true if the expression is only a dynamic
+// parameter ("?").
+fn is_numeric_dynamic_parameter(e NumericValueExpression) bool {
 	if e.n != none || e.term.term != none {
 		return false
 	}
@@ -156,7 +156,7 @@ fn is_numeric_host_parameter(e NumericValueExpression) bool {
 		if f is NonparenthesizedValueExpressionPrimary {
 			if f is ValueSpecification {
 				if f is GeneralValueSpecification {
-					return f is HostParameterName
+					return f is DynamicParameterSpecification
 				}
 			}
 		}
@@ -166,7 +166,7 @@ fn is_numeric_host_parameter(e NumericValueExpression) bool {
 }
 
 // substring_position returns the start position or string length of a
-// SUBSTRING. A host parameter must be a whole number.
+// SUBSTRING. A dynamic parameter must be a whole number.
 fn substring_position(name string, v Value) !i64 {
 	if !v.typ.uses_int() && v.as_f64()! != math.trunc(v.as_f64()!) {
 		return sqlstate_42601('SUBSTRING ${name} must be a whole number, got ${v.str()}')

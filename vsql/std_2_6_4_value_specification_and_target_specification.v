@@ -21,7 +21,7 @@ fn (e ValueSpecification) compile(mut c Compiler) !CompileResult {
 	}
 }
 
-type GeneralValueSpecification = CurrentCatalog | CurrentSchema | HostParameterName
+type GeneralValueSpecification = CurrentCatalog | CurrentSchema | DynamicParameterSpecification
 
 // CURRENT_CATALOG
 struct CurrentCatalog {
@@ -31,9 +31,37 @@ struct CurrentCatalog {
 struct CurrentSchema {
 }
 
+// DynamicParameterSpecification is a "?". It's named by its position, such as
+// "?1" for the first "?" in the statement (see tokenize).
+struct DynamicParameterSpecification {
+	name string
+}
+
+fn (e DynamicParameterSpecification) pstr(params map[string]Value) string {
+	return params[e.name].pstr(params)
+}
+
+fn (e DynamicParameterSpecification) compile(mut c Compiler) !CompileResult {
+	// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rule 1
+	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rule 1
+	if c.restricted != '' {
+		return sqlstate_42601('parameter ${e.name} cannot be used in ${c.restricted}')
+	}
+
+	p := c.params[e.name] or { return sqlstate_42p02(e.name) }
+
+	return CompileResult{
+		run:          fn [p] (mut conn Connection, data Row, params map[string]Value) !Value {
+			return p
+		}
+		typ:          p.typ
+		contains_agg: false
+	}
+}
+
 fn (e GeneralValueSpecification) pstr(params map[string]Value) string {
 	return match e {
-		HostParameterName { e.pstr(params) }
+		DynamicParameterSpecification { e.pstr(params) }
 		CurrentCatalog { 'CURRENT_CATALOG' }
 		CurrentSchema { 'CURRENT_SCHEMA' }
 	}
@@ -41,7 +69,7 @@ fn (e GeneralValueSpecification) pstr(params map[string]Value) string {
 
 fn (e GeneralValueSpecification) compile(mut c Compiler) !CompileResult {
 	match e {
-		HostParameterName {
+		DynamicParameterSpecification {
 			return e.compile(mut c)!
 		}
 		CurrentCatalog {

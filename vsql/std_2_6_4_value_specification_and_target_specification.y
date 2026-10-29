@@ -13,27 +13,23 @@ unsigned_value_specification:
   }
 
 general_value_specification:
-  host_parameter_specification { $$.v = $1.v as GeneralValueSpecification }
-| dynamic_parameter_specification {
+  dynamic_parameter_specification {
     $$.v = $1.v as GeneralValueSpecification
   }
 | CURRENT_CATALOG { $$.v = GeneralValueSpecification(CurrentCatalog{}) }
 | CURRENT_SCHEMA { $$.v = GeneralValueSpecification(CurrentSchema{}) }
 
+// A <simple value specification> can also be a <host parameter name>, <SQL
+// parameter reference> or <embedded variable name>, which vsql doesn't support.
+// It can't be a <dynamic parameter specification>.
 simple_value_specification:
   literal { $$.v = ValueSpecification($1.v as Value) }
-| host_parameter_name {
-    $$.v = ValueSpecification($1.v as GeneralValueSpecification)
-  }
 
-host_parameter_specification:
-  host_parameter_name { $$.v = $1.v as GeneralValueSpecification }
-
-// A <dynamic parameter specification> is a host parameter named by its
-// position, such as "?1" for the first "?" (see tokenize).
+// A <dynamic parameter specification> is named by its position, such as "?1"
+// for the first "?" (see tokenize).
 dynamic_parameter_specification:
   question_mark {
-    $$.v = GeneralValueSpecification(HostParameterName{$1.v as string})
+    $$.v = GeneralValueSpecification(DynamicParameterSpecification{$1.v as string})
   }
 
 %%

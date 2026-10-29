@@ -105,9 +105,10 @@ CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (NEXT VALUE FOR seq));
 -- msg: CREATE SEQUENCE 1
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in a generation expression
 
-/* set x 1 */
-CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x + :x));
--- error 42601: syntax error: parameter :x cannot be used in a generation expression
+/* params 1 */
+CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x + ?));
+-- sql: CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x + 1.0e0))
+-- error 42601: syntax error: parameter ?1 cannot be used in a generation expression
 
 CREATE TABLE products (price NUMERIC(10, 2), quantity INTEGER, total NUMERIC(12, 2) GENERATED ALWAYS AS (price * quantity));
 INSERT INTO products (price, quantity) VALUES (1.25, 4);

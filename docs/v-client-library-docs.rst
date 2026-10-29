@@ -598,7 +598,7 @@ struct PreparedStmt
    	elapsed_parse time.Duration
    }
 
-A prepared statement is compiled and validated, but not executed. It can then be executed with a set of host parameters to be substituted into the statement. Each invocation requires all host parameters to be passed in.
+A prepared statement is compiled and validated, but not executed. It can then be executed with a value for each dynamic parameter ("?") in the statement, named by its position: "?1", "?2", etc. Each invocation requires all of them to be passed in.
 
 struct Result
 -------------

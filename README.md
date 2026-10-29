@@ -101,9 +101,9 @@ fn main() {
 	db.query('CREATE TABLE products (name VARCHAR(50), price NUMERIC(10, 2))')!
 	db.query("INSERT INTO products (name, price) VALUES ('Coffee', 4.50), ('Bagel', 2.25)")!
 
-	mut stmt := db.prepare('SELECT name, price FROM products WHERE price < :max_price ORDER BY name')!
+	mut stmt := db.prepare('SELECT name, price FROM products WHERE price < ? ORDER BY name')!
 	for row in stmt.query({
-		'max_price': vsql.new_numeric_value('3.00')
+		'?1': vsql.new_numeric_value('3.00')
 	})! {
 		println('${row.get_string('NAME')!} costs ${row.get_string('PRICE')!}')
 	}

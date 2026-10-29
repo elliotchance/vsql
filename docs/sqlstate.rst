@@ -725,9 +725,9 @@ be assigned ``DEFAULT``, see :doc:`create-table`.
 .. code-block:: sql
 
   CREATE TABLE t1 (x FLOAT);
-  INSERT INTO t1 (x) VALUES (:foo);
+  INSERT INTO t1 (x) VALUES (?);
   -- msg: CREATE TABLE 1
-  -- error 42P02: parameter does not exist: foo
+  -- error 42P02: parameter does not exist: ?1
 
 ``42P04`` catalog already exists
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

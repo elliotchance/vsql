@@ -32,15 +32,15 @@ And executes the following:
 A transaction consists of 7 statements (in order):
 
 1. ``START TRANSACTION``
-2. ``UPDATE accounts SET abalance = abalance + :delta WHERE aid = :aid``
-3. ``SELECT abalance FROM accounts WHERE aid = :aid``
-4. ``UPDATE tellers SET tbalance = tbalance + :delta WHERE tid = :tid``
-5. ``UPDATE branches SET bbalance = bbalance + :delta WHERE bid = :bid``
-6. ``INSERT INTO history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP)``
+2. ``UPDATE accounts SET abalance = abalance + <delta> WHERE aid = <aid>``
+3. ``SELECT abalance FROM accounts WHERE aid = <aid>``
+4. ``UPDATE tellers SET tbalance = tbalance + <delta> WHERE tid = <tid>``
+5. ``UPDATE branches SET bbalance = bbalance + <delta> WHERE bid = <bid>``
+6. ``INSERT INTO history (tid, bid, aid, delta, mtime) VALUES (<tid>, <bid>, <aid>, <delta>, CURRENT_TIMESTAMP)``
 7. ``COMMIT``
 
-Where ``:aid``, ``:tid`` and ``:bid`` are random integers that are within
-their respective ranges and ``:delta`` is a random value between -5000 and 5000.
+Where ``<aid>``, ``<tid>`` and ``<bid>`` are random integers that are within
+their respective ranges and ``<delta>`` is a random value between -5000 and 5000.
 
 After the benchmark is finished it will report something like:
 

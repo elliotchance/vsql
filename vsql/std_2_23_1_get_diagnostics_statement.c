@@ -41,6 +41,8 @@ static const char *vsql_m_item_text(int item, long long n) {
     return "N";
   case VSQL_M_COMMAND_FUNCTION:
     return vsql_m_da.command_function;
+  case VSQL_M_DYNAMIC_FUNCTION:
+    return vsql_m_da.dynamic_function;
   case SQL_DIAG_SQLSTATE:
     return vsql_m_da.conditions[n - 1].sqlstate;
   case SQL_DIAG_MESSAGE_TEXT:
@@ -72,6 +74,8 @@ static long long vsql_m_item_number(int item, long long n) {
     return vsql_m_da.number;
   case VSQL_M_COMMAND_FUNCTION_CODE:
     return vsql_m_da.command_function_code;
+  case VSQL_M_DYNAMIC_FUNCTION_CODE:
+    return vsql_m_da.dynamic_function_code;
   case SQL_DIAG_ROW_COUNT:
     return vsql_m_da.row_count;
   case SQL_DIAG_TRANSACTIONS_COMMITTED:

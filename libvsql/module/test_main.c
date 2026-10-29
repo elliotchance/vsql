@@ -68,6 +68,10 @@ int main(void) {
   double d = 5.5;
   struct statement st;
   struct condition co;
+  char sql[101], function[31];
+  long min, max, count, n, type, length, nullable, indicator, returned, code;
+  short top;
+  long long key;
 
   /* 13.4 GR 7.a: The first statement connects to DEFAULT. */
   EXPECT(create_table(sqlstate), "00000");
@@ -360,6 +364,202 @@ int main(void) {
   EXPECT(rollback_work(sqlstate), "00000");
   EXPECT(other_disconnect(sqlstate), "00000");
   EXPECT(create_table(sqlstate), "08003");
+
+  /* Feature B031, "Basic dynamic SQL". */
+  EXPECT(connect_default(sqlstate), "00000");
+  strcpy(sql, "CREATE TABLE dyn (x INTEGER, y VARCHAR(10))");
+  EXPECT(execute_immediate(sqlstate, sql), "00000");
+  EXPECT(get_st(sqlstate, &st), "01004");
+  CHECK(st.code == 43 && strcmp(st.dynamic, "CR") == 0 &&
+        st.dynamic_code == 77);
+  EXPECT(create_schema(sqlstate), "00000");
+  EXPECT(commit_work(sqlstate), "00000");
+  strcpy(sql, "SELECT x FROM dyn");
+  EXPECT(execute_immediate(sqlstate, sql), "42000");
+  strcpy(sql, "DELETE FROM dyn WHERE x = ?");
+  EXPECT(execute_immediate(sqlstate, sql), "42000");
+
+  /* 20.13 <execute statement>, with host parameters. */
+  strcpy(sql, "INSERT INTO dyn (x, y) VALUES (?, ?)");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  EXPECT(execute_s1(sqlstate), "07004");
+  EXPECT(execute_s1_into(sqlstate, &x, v, &i, &x), "07002");
+  x = 1;
+  i = 0;
+  strcpy(v, "one");
+  EXPECT(execute_s1_using(sqlstate, &x, v, &i), "00000");
+  EXPECT(get_st(sqlstate, &st), "01004");
+  CHECK(st.code == 44 && strcmp(st.function, "EXECUTE") == 0 &&
+        st.dynamic_code == 50 && st.rows == 1);
+  x = 2;
+  i = -1;
+  EXPECT(execute_s1_using(sqlstate, &x, v, &i), "00000");
+
+  /* 20.21 <dynamic single row select statement>. */
+  strcpy(sql, "SELECT x, y FROM dyn WHERE x = ?");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  EXPECT(execute_s1(sqlstate), "07007");
+  min = 1;
+  EXPECT(execute_s1_into(sqlstate, &x, v, &i, &min), "00000");
+  CHECK(x == 1 && strcmp(v, "one") == 0 && i >= 0);
+  min = 2;
+  EXPECT(execute_s1_into(sqlstate, &x, v, &i, &min), "00000");
+  CHECK(x == 2 && i == -1);
+  EXPECT(get_st(sqlstate, &st), "01004");
+  CHECK(strcmp(st.dynamic, "SE") == 0 && st.dynamic_code == 41);
+  min = 3;
+  EXPECT(execute_s1_into(sqlstate, &x, v, &i, &min), "02000");
+  strcpy(sql, "SELECT x, y FROM dyn WHERE x > ?");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  min = 0;
+  EXPECT(execute_s1_into(sqlstate, &x, v, &i, &min), "21000");
+  strcpy(sql, "SELECT x, y FROM dyn WHERE x > ? ORDER BY x");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  EXPECT(execute_s1_into(sqlstate, &x, v, &i, &min), "07003");
+  EXPECT(deallocate_s1(sqlstate), "00000");
+  EXPECT(deallocate_s1(sqlstate), "26000");
+  EXPECT(execute_s1(sqlstate), "26000");
+  strcpy(sql, "COMMIT");
+  EXPECT(prepare_s1(sqlstate, sql), "42000");
+  strcpy(sql, "DELETE FROM missing");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  EXPECT(execute_s1(sqlstate), "42P01");
+
+  /* 20.2 to 20.5, and 20.10 <describe statement>. */
+  max = 0;
+  EXPECT(allocate_d(sqlstate, &max), "07009");
+  max = 1;
+  EXPECT(allocate_d(sqlstate, &max), "00000");
+  EXPECT(allocate_d(sqlstate, &max), "33000");
+  strcpy(sql, "SELECT x, y FROM dyn WHERE x > ?");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  EXPECT(describe_s1(sqlstate), "01005");
+  EXPECT(get_header(sqlstate, &count, &top, &key, function, &code), "00000");
+  CHECK(count == 2 && top == 2);
+  EXPECT(deallocate_d(sqlstate), "00000");
+  EXPECT(deallocate_d(sqlstate), "33000");
+  EXPECT(describe_s1(sqlstate), "33000");
+  max = 2;
+  EXPECT(allocate_d(sqlstate, &max), "00000");
+  EXPECT(describe_s1(sqlstate), "00000");
+  EXPECT(get_header(sqlstate, &count, &top, &key, function, &code), "00000");
+  CHECK(count == 2 && top == 2 && key == 0 &&
+        strcmp(function, "SELECT CURSOR") == 0 && code == 85);
+  n = 1;
+  EXPECT(get_item(sqlstate, &n, &type, &length, name, &nullable, &indicator,
+                  &returned),
+         "00000");
+  CHECK(type == 4 && strcmp(name, "X") == 0 && nullable == 1);
+  n = 2;
+  EXPECT(get_item(sqlstate, &n, &type, &length, name, &nullable, &indicator,
+                  &returned),
+         "00000");
+  CHECK(type == 12 && length == 10 && strcmp(name, "Y") == 0);
+  n = 3;
+  EXPECT(get_item(sqlstate, &n, &type, &length, name, &nullable, &indicator,
+                  &returned),
+         "07009");
+
+  /* 20.15 <dynamic declare cursor>, with an SQL descriptor area. */
+  EXPECT(open_dc_descriptor(sqlstate), "26000");
+  EXPECT(prepare_s2(sqlstate), "00000");
+  EXPECT(open_dc_descriptor(sqlstate), "07001");
+  count = 1;
+  EXPECT(set_count(sqlstate, &count), "00000");
+  n = 2;
+  EXPECT(get_int(sqlstate, &n, &x, &i), "02000");
+  n = 1;
+  x = 1;
+  EXPECT(set_int(sqlstate, &n, &x), "00000");
+  EXPECT(open_dc_descriptor(sqlstate), "00000");
+  EXPECT(deallocate_s2(sqlstate), "24000");
+  EXPECT(prepare_s2(sqlstate), "24000");
+  EXPECT(describe_s1(sqlstate), "00000");
+  EXPECT(fetch_dc_descriptor(sqlstate), "00000");
+  n = 1;
+  EXPECT(get_int(sqlstate, &n, &x, &i), "00000");
+  CHECK(x == 2 && i == 0);
+  EXPECT(get_varchar(sqlstate, &n, v), "22005");
+  n = 2;
+  EXPECT(get_varchar(sqlstate, &n, v), "22002");
+  EXPECT(get_item(sqlstate, &n, &type, &length, name, &nullable, &indicator,
+                  &returned),
+         "00000");
+  CHECK(indicator == -1);
+  EXPECT(fetch_dc_descriptor(sqlstate), "02000");
+  EXPECT(close_dc(sqlstate), "00000");
+  EXPECT(get_st(sqlstate, &st), "00000");
+  CHECK(st.code == 37 && strcmp(st.function, "DYNAMIC CLOSE") == 0);
+
+  /* A dynamic cursor with host parameters, and a positioned UPDATE. */
+  min = 0;
+  EXPECT(open_dc(sqlstate, &min), "00000");
+  EXPECT(fetch_dc(sqlstate, &x, v), "00000");
+  CHECK(x == 1 && strcmp(v, "one") == 0);
+  strcpy(v, "uno");
+  EXPECT(update_dc(sqlstate, v), "00000");
+  EXPECT(get_st(sqlstate, &st), "00000");
+  CHECK(st.code == 42 && st.rows == 1);
+  EXPECT(fetch_dc(sqlstate, &x, v), "22002");
+  EXPECT(delete_dc(sqlstate), "00000");
+  EXPECT(close_dc(sqlstate), "00000");
+  EXPECT(deallocate_s2(sqlstate), "00000");
+  EXPECT(open_dc(sqlstate, &min), "26000");
+
+  /* Setting the components of an item descriptor area. */
+  n = 2;
+  strcpy(v, "two");
+  EXPECT(set_varchar(sqlstate, &n, v), "00000");
+  count = 2;
+  EXPECT(set_count(sqlstate, &count), "00000");
+  strcpy(v, "");
+  EXPECT(get_varchar(sqlstate, &n, v), "00000");
+  CHECK(strcmp(v, "two") == 0);
+  EXPECT(set_null(sqlstate, &n), "00000");
+  EXPECT(get_item(sqlstate, &n, &type, &length, name, &nullable, &indicator,
+                  &returned),
+         "00000");
+  CHECK(type == 12 && length == 10 && indicator == -1);
+  x = 1;
+  EXPECT(set_level(sqlstate, &x), "0700E");
+  x = 0;
+  EXPECT(set_level(sqlstate, &x), "00000");
+  code = 3;
+  EXPECT(set_code(sqlstate, &code), "00000");
+  code = 7;
+  EXPECT(set_code(sqlstate, &code), "0700F");
+  count = 5;
+  EXPECT(set_count(sqlstate, &count), "00000");
+  EXPECT(prepare_s2(sqlstate), "00000");
+  EXPECT(open_dc_descriptor(sqlstate), "07008");
+
+  /* EXECUTE with an SQL descriptor area for the input and the output. */
+  EXPECT(allocate_in(sqlstate), "00000");
+  x = 1;
+  EXPECT(set_in(sqlstate, &x), "00000");
+  EXPECT(set_in_count(sqlstate), "00000");
+  strcpy(sql, "SELECT x, y FROM dyn WHERE x = ?");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  EXPECT(describe_s1(sqlstate), "00000");
+  EXPECT(execute_s1_descriptor(sqlstate), "00000");
+  n = 1;
+  EXPECT(get_int(sqlstate, &n, &x, &i), "00000");
+  CHECK(x == 1);
+  n = 2;
+  EXPECT(get_varchar(sqlstate, &n, v), "00000");
+  CHECK(strcmp(v, "uno") == 0);
+
+  /* The positioned DELETE deleted the row where x is 2. */
+  x = 2;
+  EXPECT(set_in(sqlstate, &x), "00000");
+  EXPECT(execute_s1_descriptor(sqlstate), "02000");
+
+  /* A GLOBAL SQL descriptor area is in every module. */
+  EXPECT(allocate_global(sqlstate), "00000");
+  EXPECT(other_global(sqlstate, &count), "00000");
+  CHECK(count == 0);
+  EXPECT(other_local(sqlstate, &count), "33000");
+  EXPECT(rollback_work(sqlstate), "00000");
 
   /* 13.1 GR 4: The transaction is rolled back at exit. */
   if (failures > 0) {

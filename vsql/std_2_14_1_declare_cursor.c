@@ -1,4 +1,4 @@
-/* section cursor */
+/* section cursors */
 /*
  * The cursors of the module (14.1). Each SQL-connection has a CLI statement for
  * each cursor that has been opened in it, with the cursor name, so that a
@@ -32,6 +32,7 @@ static SQLHSTMT *vsql_m_cursors(struct vsql_m_connection *c) {
   return m->stmts;
 }
 
+/* section cursor */
 /*
  * vsql_m_cursor is the CLI statement of cursor i in the current
  * SQL-connection. It's allocated (with the name and holdability of the cursor)

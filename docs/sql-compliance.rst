@@ -553,7 +553,7 @@ Optional Features
    * - ✅ **B021**
      - **Direct SQL**
 
-   * - ❌ **B031**
+   * - ✅ **B031**
      - **Basic dynamic SQL**
 
    * - ❌ **B032**
@@ -568,7 +568,7 @@ Optional Features
    * - ❌ **B034**
      - **Dynamic specification of cursor attributes**
 
-   * - ❌ **B035**
+   * - ✅ **B035**
      - **Non-extended descriptor names**
 
    * - ❌ **B041**

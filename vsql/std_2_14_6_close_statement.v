@@ -28,6 +28,13 @@ fn (mut t ModuleTokens) close_statement(p ExternallyInvokedProcedure, cursors []
 	cursor := t.module_cursor(p, cursors)!
 	t.end_of_statement(p)!
 
-	return ModuleStatement{['connection', 'cursor', 'close'], [], begin('CLOSE CURSOR',
-		9) + '  vsql_m_close_cursor(SQLSTATE, ${cursor.index});\n'}
+	// - 20.22. A <dynamic close statement> closes a dynamic cursor.
+	command := if cursor.statement == '' {
+		begin('CLOSE CURSOR', 9)
+	} else {
+		begin('DYNAMIC CLOSE', 37)
+	}
+
+	return ModuleStatement{['connection', 'cursor', 'close'], [], command +
+		'  vsql_m_close_cursor(SQLSTATE, ${cursor.index});\n'}
 }

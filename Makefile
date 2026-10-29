@@ -1,5 +1,10 @@
 .PHONY: libvsql libvsql-example libvsql-test module-example module-test release bench bench-on-disk bench-memory fmt fmt-verify test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
+# The built-in rules of make aren't used, otherwise it would try to make the
+# vsql/*.c files with yacc from the vsql/*.y files of the same name, such as
+# vsql/std_2_20_7_prepare_statement.c.
+.SUFFIXES:
+
 # Is not used at the moment. It is useful for testing options like different
 # `-gc` values.
 BUILD_OPTIONS =

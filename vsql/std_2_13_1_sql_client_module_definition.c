@@ -12,6 +12,9 @@ struct vsql_m_connection {
   /* The module whose schema is the default schema, see vsql_m_schema. */
   const void *module;
   struct vsql_m_cursors *cursors;
+  /* The prepared statements and SQL descriptor areas of the SQL-session. */
+  struct vsql_m_prepared *prepared;
+  struct vsql_m_descriptor *descriptors;
   struct vsql_m_connection *next;
 };
 
@@ -23,6 +26,122 @@ struct vsql_m_cursors {
   int n;
   struct vsql_m_cursors *next;
 };
+
+/*
+ * Feature B031, "Basic dynamic SQL": A prepared statement (20.7) is a CLI
+ * statement, and the text that it was prepared from. Its name is unique in the
+ * module. The names are the string literals of the generated source.
+ */
+struct vsql_m_prepared {
+  const void *module;
+  const char *name;
+  char *sql;
+  SQLHSTMT stmt;
+  char dynamic_function[32];
+  SQLINTEGER dynamic_function_code;
+  struct vsql_m_prepared *next;
+};
+
+/*
+ * The exact numeric and character string components of an SQL item descriptor
+ * area (Table 27), other than DATA.
+ */
+enum {
+  VSQL_M_TYPE,
+  VSQL_M_LENGTH,
+  VSQL_M_OCTET_LENGTH,
+  VSQL_M_PRECISION,
+  VSQL_M_SCALE,
+  VSQL_M_DATETIME_INTERVAL_CODE,
+  VSQL_M_DATETIME_INTERVAL_PRECISION,
+  VSQL_M_NULLABLE,
+  VSQL_M_UNNAMED,
+  VSQL_M_LEVEL,
+  VSQL_M_KEY_MEMBER,
+  VSQL_M_INDICATOR,
+  VSQL_M_RETURNED_LENGTH,
+  VSQL_M_RETURNED_OCTET_LENGTH,
+  VSQL_M_CARDINALITY,
+  VSQL_M_DEGREE,
+  VSQL_M_PARAMETER_MODE,
+  VSQL_M_PARAMETER_ORDINAL_POSITION,
+  VSQL_M_RETURNED_CARDINALITY,
+  VSQL_M_USER_DEFINED_TYPE_CODE,
+  VSQL_M_NUMBERS
+};
+
+enum {
+  VSQL_M_NAME,
+  VSQL_M_CHARACTER_SET_CATALOG,
+  VSQL_M_CHARACTER_SET_SCHEMA,
+  VSQL_M_CHARACTER_SET_NAME,
+  VSQL_M_COLLATION_CATALOG,
+  VSQL_M_COLLATION_SCHEMA,
+  VSQL_M_COLLATION_NAME,
+  VSQL_M_PARAMETER_SPECIFIC_CATALOG,
+  VSQL_M_PARAMETER_SPECIFIC_SCHEMA,
+  VSQL_M_PARAMETER_SPECIFIC_NAME,
+  VSQL_M_SCOPE_CATALOG,
+  VSQL_M_SCOPE_SCHEMA,
+  VSQL_M_SCOPE_NAME,
+  VSQL_M_USER_DEFINED_TYPE_CATALOG,
+  VSQL_M_USER_DEFINED_TYPE_SCHEMA,
+  VSQL_M_USER_DEFINED_TYPE_NAME,
+  VSQL_M_STRINGS
+};
+
+/*
+ * An SQL descriptor area (20.1) has max item descriptor areas. A string
+ * component is NULL when it's a zero-length string, and DATA is NULL when it's
+ * undefined. length is the length/indicator of DATA when it's bound to a
+ * dynamic parameter. A descriptor name is unique in the module, or in the
+ * SQL-session when the module is NULL (GLOBAL).
+ */
+struct vsql_m_item {
+  SQLINTEGER number[VSQL_M_NUMBERS];
+  char *string[VSQL_M_STRINGS];
+  void *data;
+  SQLINTEGER length;
+};
+
+struct vsql_m_descriptor {
+  const void *module;
+  const char *name;
+  SQLINTEGER count, max, top_level_count, dynamic_function_code;
+  char dynamic_function[32];
+  struct vsql_m_item *items;
+  struct vsql_m_descriptor *next;
+};
+
+/* vsql_m_reset_item sets every component of the item to 0 (zero), a
+ * zero-length string or undefined. */
+static void vsql_m_reset_item(struct vsql_m_item *item) {
+  int i;
+
+  for (i = 0; i < VSQL_M_STRINGS; i++) {
+    free(item->string[i]);
+    item->string[i] = NULL;
+  }
+  free(item->data);
+  item->data = NULL;
+  memset(item->number, 0, sizeof(item->number));
+}
+
+static void vsql_m_free_descriptor(struct vsql_m_descriptor *d) {
+  int i;
+
+  for (i = 0; i < d->max; i++) {
+    vsql_m_reset_item(&d->items[i]);
+  }
+  free(d->items);
+  free(d);
+}
+
+static void vsql_m_free_prepared(struct vsql_m_prepared *p) {
+  SQLFreeHandle(SQL_HANDLE_STMT, p->stmt);
+  free(p->sql);
+  free(p);
+}
 
 static int vsql_m_failed(SQLRETURN rc) {
   return rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO;
@@ -43,10 +162,16 @@ struct vsql_m_condition {
 /* The <statement information item name>s that aren't in libvsql.h. */
 #define VSQL_M_COMMAND_FUNCTION (-1)
 #define VSQL_M_COMMAND_FUNCTION_CODE (-2)
+#define VSQL_M_DYNAMIC_FUNCTION (-3)
+#define VSQL_M_DYNAMIC_FUNCTION_CODE (-4)
 
 struct vsql_m_da {
   char command_function[32];
   SQLINTEGER command_function_code;
+  /* The statement of an <execute statement> or <execute immediate statement>.
+   */
+  char dynamic_function[32];
+  SQLINTEGER dynamic_function_code;
   SQLINTEGER row_count;
   int transactions_committed;
   int transactions_rolled_back;
@@ -131,6 +256,8 @@ static void vsql_m_begin(const char *command_function, SQLINTEGER code) {
   vsql_m_clear();
   strcpy(vsql_m_da.command_function, command_function);
   vsql_m_da.command_function_code = code;
+  vsql_m_da.dynamic_function[0] = '\0';
+  vsql_m_da.dynamic_function_code = 0;
   vsql_m_da.row_count = 0;
   vsql_m_da.transactions_committed = 0;
   vsql_m_da.transactions_rolled_back = 0;
@@ -173,17 +300,37 @@ static const char *vsql_m_message(const char *sqlstate) {
   static const char *const messages[][2] = {
       {"01000", "warning"},
       {"01004", "warning: string data, right truncation"},
+      {"01005", "warning: insufficient item descriptor areas"},
       {"02000", "no data"},
+      {"07001", "dynamic SQL error: using clause does not match dynamic "
+                "parameter specifications"},
       {"07002", "dynamic SQL error: using clause does not match target "
                 "specifications"},
+      {"07003", "dynamic SQL error: cursor specification cannot be executed"},
+      {"07004", "dynamic SQL error: using clause required for dynamic "
+                "parameters"},
+      {"07005", "dynamic SQL error: prepared statement not a cursor "
+                "specification"},
+      {"07007", "dynamic SQL error: using clause required for result fields"},
+      {"07008", "dynamic SQL error: invalid descriptor count"},
+      {"07009", "dynamic SQL error: invalid descriptor index"},
+      {"0700E", "dynamic SQL error: invalid LEVEL value"},
+      {"0700F", "dynamic SQL error: invalid DATETIME_INTERVAL_CODE"},
       {"08002", "connection exception: connection name in use"},
       {"08003", "connection exception: connection does not exist"},
       {"0A001", "feature not supported: multiple server transactions"},
       {"21000", "cardinality violation"},
+      {"22002", "data exception: null value, no indicator parameter"},
+      {"22003", "data exception: numeric value out of range"},
+      {"22005", "data exception: error in assignment"},
       {"22024", "data exception: unterminated C string"},
+      {"24000", "invalid cursor state"},
       {"25001", "invalid transaction state: active SQL-transaction"},
+      {"26000", "invalid SQL statement name"},
       {"28000", "invalid authorization specification"},
       {"2E000", "invalid connection name"},
+      {"33000", "invalid SQL descriptor name"},
+      {"42000", "syntax error or access rule violation"},
       {"HY000", "CLI-specific condition: general error"},
       {"HY001", "CLI-specific condition: memory allocation error"}};
   size_t i;
@@ -261,6 +408,8 @@ static void vsql_m_diag(char *sqlstate, SQLRETURN rc, SQLSMALLINT type,
 static void vsql_m_close(struct vsql_m_connection *c) {
   struct vsql_m_connection **p = &vsql_m_connections;
   struct vsql_m_cursors *m;
+  struct vsql_m_prepared *prepared;
+  struct vsql_m_descriptor *d;
   int i;
 
   while (*p != c) {
@@ -282,6 +431,16 @@ static void vsql_m_close(struct vsql_m_connection *c) {
     c->cursors = m->next;
     free(m->stmts);
     free(m);
+  }
+  while (c->prepared != NULL) {
+    prepared = c->prepared;
+    c->prepared = prepared->next;
+    vsql_m_free_prepared(prepared);
+  }
+  while (c->descriptors != NULL) {
+    d = c->descriptors;
+    c->descriptors = d->next;
+    vsql_m_free_descriptor(d);
   }
   SQLDisconnect(c->dbc);
   SQLFreeHandle(SQL_HANDLE_DBC, c->dbc);
@@ -416,7 +575,7 @@ static struct vsql_m_connection *vsql_m_connection(char *sqlstate) {
   return vsql_m_current;
 }
 
-/* section exec */
+/* section param */
 struct vsql_m_param {
   SQLSMALLINT value_type;
   SQLSMALLINT parameter_type;
@@ -424,6 +583,24 @@ struct vsql_m_param {
   SQLPOINTER value;
   SQLINTEGER indicator;
 };
+
+/* vsql_m_bind_params binds each host parameter to its "?". */
+static SQLRETURN vsql_m_bind_params(SQLHSTMT stmt, int n,
+                                    struct vsql_m_param *params) {
+  SQLRETURN rc = SQL_SUCCESS;
+  int i;
+
+  for (i = 0; i < n && !vsql_m_failed(rc); i++) {
+    rc = SQLBindParameter(stmt, (SQLSMALLINT)(i + 1), SQL_PARAM_MODE_IN,
+                          params[i].value_type, params[i].parameter_type,
+                          params[i].length, 0, params[i].value, 0,
+                          &params[i].indicator);
+  }
+
+  return rc;
+}
+
+/* section exec */
 
 /*
  * vsql_m_exec prepares and executes a statement on stmt (of the SQL-connection
@@ -434,7 +611,6 @@ static int vsql_m_exec(char *sqlstate, struct vsql_m_connection *c,
                        SQLHSTMT stmt, const char *sql, int n,
                        struct vsql_m_param *params) {
   SQLRETURN rc;
-  int i;
 
   rc = SQLPrepare(stmt, (SQLCHAR *)sql, SQL_NTS);
   if (vsql_m_da.command_function[0] == '\0') {
@@ -444,11 +620,8 @@ static int vsql_m_exec(char *sqlstate, struct vsql_m_connection *c,
     SQLGetDiagField(SQL_HANDLE_STMT, stmt, 0, SQL_DIAG_DYNAMIC_FUNCTION_CODE,
                     &vsql_m_da.command_function_code, 0, NULL);
   }
-  for (i = 0; i < n && !vsql_m_failed(rc); i++) {
-    rc = SQLBindParameter(stmt, (SQLSMALLINT)(i + 1), SQL_PARAM_MODE_IN,
-                          params[i].value_type, params[i].parameter_type,
-                          params[i].length, 0, params[i].value, 0,
-                          &params[i].indicator);
+  if (!vsql_m_failed(rc)) {
+    rc = vsql_m_bind_params(stmt, n, params);
   }
 
   /* 13.4 GR 9: The statement initiates an SQL-transaction. */

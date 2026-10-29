@@ -1,8 +1,7 @@
 /* section core */
 /*
  * The SQL-agent is the program, and each SQL-connection is a CLI connection.
- * The default SQL-connection has no name. Everything here is static, so it
- * belongs to this module.
+ * The default SQL-connection has no name.
  */
 struct vsql_m_connection {
   char name[129];
@@ -10,17 +9,20 @@ struct vsql_m_connection {
   int is_default;
   SQLHDBC dbc;
   int active;
-  /* The CLI statement of each cursor that has been opened (see 14.1). */
-  SQLHSTMT *cursors;
-  int ncursors;
+  /* The module whose schema is the default schema, see vsql_m_schema. */
+  const void *module;
+  struct vsql_m_cursors *cursors;
   struct vsql_m_connection *next;
 };
 
-static int vsql_m_ready;
-static SQLHENV vsql_m_env;
-static struct vsql_m_connection *vsql_m_connections;
-static struct vsql_m_connection *vsql_m_current;
-static int vsql_m_connected;
+/* The CLI statement of each cursor of a module that has been opened in an
+ * SQL-connection (see 14.1). */
+struct vsql_m_cursors {
+  const void *module;
+  SQLHSTMT *stmts;
+  int n;
+  struct vsql_m_cursors *next;
+};
 
 static int vsql_m_failed(SQLRETURN rc) {
   return rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO;
@@ -42,7 +44,7 @@ struct vsql_m_condition {
 #define VSQL_M_COMMAND_FUNCTION (-1)
 #define VSQL_M_COMMAND_FUNCTION_CODE (-2)
 
-static struct {
+struct vsql_m_da {
   char command_function[32];
   SQLINTEGER command_function_code;
   SQLINTEGER row_count;
@@ -52,7 +54,53 @@ static struct {
   struct vsql_m_condition *conditions;
   char connection_name[129];
   char *server_name;
-} vsql_m_da;
+};
+
+/*
+ * Feature F181, "Multiple module support": Every module that's linked into the
+ * program has the same SQL-agent, so they share the SQL-connections (and their
+ * SQL-transactions) and the first diagnostics area. The first module that's
+ * called keeps it, and the others find it with vsql_module_agent. A module that
+ * was compiled with a different version of this struct has its own.
+ */
+#define VSQL_M_AGENT_VERSION 1
+
+struct vsql_m_agent {
+  int version;
+  int ready;
+  SQLHENV env;
+  struct vsql_m_connection *connections;
+  struct vsql_m_connection *current;
+  int connected;
+  struct vsql_m_da da;
+};
+
+static struct vsql_m_agent vsql_m_own, *vsql_m_a;
+
+static struct vsql_m_agent *vsql_m_agent(void) {
+  void **shared;
+
+  if (vsql_m_a == NULL) {
+    vsql_m_own.version = VSQL_M_AGENT_VERSION;
+    shared = vsql_module_agent();
+    if (*shared == NULL) {
+      *shared = &vsql_m_own;
+    }
+    vsql_m_a = (struct vsql_m_agent *)*shared;
+    if (vsql_m_a->version != VSQL_M_AGENT_VERSION) {
+      vsql_m_a = &vsql_m_own;
+    }
+  }
+
+  return vsql_m_a;
+}
+
+#define vsql_m_ready (vsql_m_agent()->ready)
+#define vsql_m_env (vsql_m_agent()->env)
+#define vsql_m_connections (vsql_m_agent()->connections)
+#define vsql_m_current (vsql_m_agent()->current)
+#define vsql_m_connected (vsql_m_agent()->connected)
+#define vsql_m_da (vsql_m_agent()->da)
 
 /* vsql_m_copy replaces the string in *s with a copy of value. */
 static void vsql_m_copy(char **s, const char *value) {
@@ -212,6 +260,7 @@ static void vsql_m_diag(char *sqlstate, SQLRETURN rc, SQLSMALLINT type,
 
 static void vsql_m_close(struct vsql_m_connection *c) {
   struct vsql_m_connection **p = &vsql_m_connections;
+  struct vsql_m_cursors *m;
   int i;
 
   while (*p != c) {
@@ -223,12 +272,17 @@ static void vsql_m_close(struct vsql_m_connection *c) {
   }
 
   SQLEndTran(SQL_HANDLE_DBC, c->dbc, SQL_ROLLBACK);
-  for (i = 0; i < c->ncursors; i++) {
-    if (c->cursors[i] != 0) {
-      SQLFreeHandle(SQL_HANDLE_STMT, c->cursors[i]);
+  while (c->cursors != NULL) {
+    m = c->cursors;
+    for (i = 0; i < m->n; i++) {
+      if (m->stmts[i] != 0) {
+        SQLFreeHandle(SQL_HANDLE_STMT, m->stmts[i]);
+      }
     }
+    c->cursors = m->next;
+    free(m->stmts);
+    free(m);
   }
-  free(c->cursors);
   SQLDisconnect(c->dbc);
   SQLFreeHandle(SQL_HANDLE_DBC, c->dbc);
   free(c->server);
@@ -245,8 +299,44 @@ static void vsql_m_exit(void) {
     vsql_m_close(vsql_m_connections);
   }
   SQLFreeHandle(SQL_HANDLE_ENV, vsql_m_env);
+  vsql_m_ready = 0;
   vsql_m_clear();
   free(vsql_m_da.server_name);
+}
+
+/*
+ * vsql_m_schema makes the schema of this module the default schema of the
+ * SQL-connection c, unless it already is. When modules share an SQL-connection
+ * the default schema is set again for each statement of a different module, so
+ * a SET SCHEMA only lasts until then. It returns 0 (with the status parameter
+ * set) if it fails.
+ */
+static int vsql_m_schema(char *sqlstate, struct vsql_m_connection *c) {
+  SQLHSTMT stmt;
+  SQLRETURN rc;
+
+  if (c->module == &vsql_m_own) {
+    return 1;
+  }
+
+  rc = SQLAllocHandle(SQL_HANDLE_STMT, c->dbc, &stmt);
+  if (vsql_m_failed(rc)) {
+    vsql_m_diag(sqlstate, rc, SQL_HANDLE_DBC, c->dbc);
+    return 0;
+  }
+  rc = SQLExecDirect(stmt, (SQLCHAR *)vsql_m_set_schema, SQL_NTS);
+  if (vsql_m_failed(rc)) {
+    vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, stmt);
+    SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+    return 0;
+  }
+  SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+  if (!c->active) {
+    SQLEndTran(SQL_HANDLE_DBC, c->dbc, SQL_COMMIT);
+  }
+  c->module = &vsql_m_own;
+
+  return 1;
 }
 
 /*
@@ -256,7 +346,6 @@ static void vsql_m_exit(void) {
 static struct vsql_m_connection *vsql_m_open(char *sqlstate, const char *server,
                                              const char *user) {
   struct vsql_m_connection *c;
-  SQLHSTMT stmt;
   SQLRETURN rc;
 
   if (!vsql_m_ready) {
@@ -295,16 +384,10 @@ static struct vsql_m_connection *vsql_m_open(char *sqlstate, const char *server,
     return NULL;
   }
 
-  SQLAllocHandle(SQL_HANDLE_STMT, c->dbc, &stmt);
-  rc = SQLExecDirect(stmt, (SQLCHAR *)vsql_m_set_schema, SQL_NTS);
-  if (vsql_m_failed(rc)) {
-    vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, stmt);
-    SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+  if (!vsql_m_schema(sqlstate, c)) {
     vsql_m_close(c);
     return NULL;
   }
-  SQLFreeHandle(SQL_HANDLE_STMT, stmt);
-  SQLEndTran(SQL_HANDLE_DBC, c->dbc, SQL_COMMIT);
 
   return c;
 }
@@ -317,7 +400,7 @@ static struct vsql_m_connection *vsql_m_open(char *sqlstate, const char *server,
  */
 static struct vsql_m_connection *vsql_m_connection(char *sqlstate) {
   if (vsql_m_current != NULL) {
-    return vsql_m_current;
+    return vsql_m_schema(sqlstate, vsql_m_current) ? vsql_m_current : NULL;
   }
 
   if (vsql_m_connected) {

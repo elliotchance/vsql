@@ -189,7 +189,7 @@ A module starts with:
 The schema is the default schema of the statements in the module. Without
 ``SCHEMA``, it's the schema with the same name as the ``AUTHORIZATION``. The
 schema must exist when the first SQL-connection is made (it's set with ``SET
-SCHEMA`` at the start of each SQL-connection). For the default schema, use
+SCHEMA`` at the start of each SQL-connection, see `Multiple Modules`_). For the default schema, use
 ``SCHEMA "PUBLIC"``.
 
 Each procedure is:
@@ -397,5 +397,29 @@ or ``25001`` for ``DISCONNECT``).
 When the program exits, every SQL-connection is disconnected, and a transaction
 that wasn't committed is rolled back.
 
-The SQL-connections belong to the module, so two modules in the same program
-don't share them.
+Multiple Modules
+^^^^^^^^^^^^^^^^
+
+A program can be linked with more than one module (ISO/IEC 9075-2, 13.1,
+Feature F181 "Multiple module support"). Each one is compiled separately, and
+they share the SQL-connections, their transactions and the diagnostics area:
+
+.. code-block:: sh
+
+   vsql module items.mod
+   vsql module orders.mod
+   cc items.c orders.c main.c -Iinclude -Llib -lvsql -Wl,-rpath,"$PWD/lib" -o main
+
+So a ``CONNECT`` in one module is the current SQL-connection of the others, a
+``COMMIT`` in one module commits the changes of all of them, and ``GET
+DIAGNOSTICS`` gets information about the last statement of any module.
+
+The statements of each module use the schema of that module. A ``SET SCHEMA``
+only lasts until a statement of a different module uses the same
+SQL-connection.
+
+Each module has its own cursors, but two cursors that are open in the same
+SQL-connection can't have the same name, even in different modules. The
+procedures of every module are C functions in the same program, so they must
+have different names. The modules must be compiled by the same version of vsql,
+otherwise they don't share anything.

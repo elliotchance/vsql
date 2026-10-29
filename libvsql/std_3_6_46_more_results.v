@@ -33,6 +33,7 @@ fn sql_more_results(statement_handle SQLInteger) i16 {
 
 	// - 4. If CR is currently open, then CR is placed in the closed state.
 	stmt.close_cursor()
+	autocommit(mut stmt.diag, stmt.dbc, true) or { return stmt.diag.error(err) }
 
 	// - 5.b. There isn't another result set.
 	return no_more_results(mut stmt.diag)

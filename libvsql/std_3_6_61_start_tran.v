@@ -87,6 +87,7 @@ fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level
 		mut dbc := dbcs[dh] or { continue }
 		mut conn := dbc.conn or { continue }
 		db_query(mut conn, 'START TRANSACTION')!
+		dbc.autocommit_transaction = false
 	}
 
 	return sql_success

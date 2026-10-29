@@ -52,6 +52,27 @@ connection) that's used at the same time as the others.
 Connections to the same file share a lock, so they can be used at the same
 time.
 
+Autocommit
+----------
+
+By default, the first statement starts a transaction that lasts until
+``SQLEndTran``, as the standard requires. Setting the ``SQL_ATTR_AUTOCOMMIT``
+connection attribute to ``SQL_AUTOCOMMIT_ON`` commits each statement instead
+(this isn't in the standard, and it's the same as in ODBC):
+
+.. code-block:: c
+
+   SQLSetConnectAttr(dbc, SQL_ATTR_AUTOCOMMIT,
+                     &(SQLINTEGER){SQL_AUTOCOMMIT_ON}, 0);
+
+- A statement that isn't a query is committed when it finishes, and it's
+  rolled back if it fails.
+- A query is committed when its cursor is closed (by ``SQLCloseCursor``,
+  ``SQLFreeStmt``, ``SQLFreeHandle`` or ``SQLMoreResults``), once no other
+  cursor of the connection is open.
+- A transaction started by ``SQLStartTran`` lasts until ``SQLEndTran``.
+- Turning it on commits the active transaction, if there is one.
+
 Example
 -------
 

@@ -34,6 +34,7 @@ fn sql_free_stmt(statement_handle SQLInteger, option i16) i16 {
 		// not an error if there isn't an open cursor.
 		sql_close_cursor {
 			stmt.close_cursor()
+			autocommit(mut stmt.diag, stmt.dbc, true) or { return stmt.diag.error(err) }
 		}
 		// - 6.b. If OPT indicates FREE HANDLE, then FreeHandle is implicitly
 		// invoked with HandleType indicating STATEMENT HANDLE.
@@ -57,6 +58,7 @@ fn sql_free_stmt(statement_handle SQLInteger, option i16) i16 {
 		sql_reallocate {
 			stmt.prepared = none
 			stmt.close_cursor()
+			autocommit(mut stmt.diag, stmt.dbc, true) or { return stmt.diag.error(err) }
 			stmt.executed = false
 			stmt.row_count = 0
 			stmt.ard = stmt.auto_ard

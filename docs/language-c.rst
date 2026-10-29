@@ -30,6 +30,12 @@ Each routine is documented in
 which is C99 and also works with C++. The routines that are supported so far
 are listed in :doc:`sql-compliance`.
 
+The integer types have the same width on every platform: ``SQLSMALLINT`` is
+16 bits (``int16_t``), ``SQLINTEGER`` (and the handle types) is 32 bits
+(``int32_t``) and ``SQLBIGINT`` is 64 bits (``int64_t``). The standard makes
+``SQLINTEGER`` a C ``long``, but that's 64 bits on macOS and Linux and 32 bits
+on Windows. A binding from another language can use these widths directly.
+
 Example
 -------
 

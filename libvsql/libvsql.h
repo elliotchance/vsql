@@ -86,18 +86,26 @@
 #ifndef LIBVSQL_H
 #define LIBVSQL_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/*
+ * The standard makes SQLINTEGER a C long, but a long is 64 bits on macOS and
+ * Linux and 32 bits on Windows. These have the same width on every platform
+ * instead (the same as ODBC), so a binding from another language (such as Go)
+ * doesn't depend on the platform.
+ */
 typedef unsigned char SQLCHAR;
-typedef short SQLSMALLINT;
-typedef long SQLINTEGER;
+typedef int16_t SQLSMALLINT;
+typedef int32_t SQLINTEGER;
 typedef float SQLREAL;
 typedef double SQLDOUBLE;
 typedef void *SQLPOINTER;
 
-typedef long long SQLBIGINT;
+typedef int64_t SQLBIGINT;
 
 typedef SQLSMALLINT SQLRETURN;
 

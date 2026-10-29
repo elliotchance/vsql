@@ -2297,3 +2297,97 @@ PROCEDURE up (SQLSTATE); UPDATE t SET x = 1 WHERE CURRENT OF dc;',
 	}
 	assert module_error(h + "PREPARE 1 FROM 'x';") == 'syntax error: expected statement name near 1'
 }
+
+fn embed_error(source string) string {
+	precompile_c(source, 'x.sqc') or { return err.msg() }
+	return ''
+}
+
+const embed_header = 'EXEC SQL BEGIN DECLARE SECTION;
+char SQLSTATE[6]; long a, b = 2; char c[11];
+EXEC SQL END DECLARE SECTION;
+'
+
+fn test_embed_precompile() ! {
+	p := precompile_c('// EXEC SQL is not in a comment
+/* EXEC SQL */ #include <stdio.h>
+int main(void) {
+  char *s = "EXEC SQL \\" x"; char q = \'"\';
+  EXEC  SQL BEGIN DECLARE SECTION;
+  char SQLSTATE[6]; // the SQLSTATE
+  static const long long a = 1, b; /* two */ short d; float e;
+  double f = 1.5; varchar g[5] = "a,b", h[3] = {\'x\', 0};
+  EXEC SQL END DECLARE SECTION;
+  EXEC SQL WHENEVER SQLEXCEPTION GO TO failed;
+  EXEC SQL WHENEVER SQLWARNING GOTO warned;
+  EXEC SQL WHENEVER NOT FOUND GOTO done;
+  exec sql insert into "t;" (x) values (\'a;\', :a, :g INDICATOR :d, :e, :f -- ;
+    , :h, :a);
+  EXEC SQL DECLARE c CURSOR FOR SELECT x FROM t WHERE x = :b;
+  EXEC SQL WHENEVER SQLEXCEPTION CONTINUE;
+  EXEC SQL OPEN c;
+failed: warned: done: return 0;
+}
+EXECUTE SQL x; MYEXEC SQL; EXEC SQLX; EXEC', 'x.sqc')!
+	assert p.implied_module == 'MODULE LANGUAGE C SCHEMA "PUBLIC"
+PROCEDURE vsql_e1 (SQLSTATE, :a BIGINT, :g CHARACTER VARYING(4), :d SMALLINT, :e REAL, :f DOUBLE PRECISION, :h CHARACTER VARYING(2));
+  insert into "t;" (x) values (\'a;\', :a, :g INDICATOR :d, :e, :f -- ;
+    , :h, :a);
+DECLARE c CURSOR FOR SELECT x FROM t WHERE x = :b;
+PROCEDURE vsql_e2 (SQLSTATE, :b BIGINT);
+  OPEN c;
+'
+	assert p.source.contains('static void vsql_e1(char SQLSTATE[6], long long *a, char g[5], short *d, float *e, double *f, char h[3]) {')
+	assert p.source.contains('#line 1 "x.sqc"\n// EXEC SQL is not in a comment\n')
+	assert p.source.contains('  \n  char SQLSTATE[6]; // the SQLSTATE\n')
+	assert p.source.contains('double f = 1.5; char g[5] = "a,b", h[3] = {\'x\', 0};\n')
+	assert p.source.contains("  { vsql_e1(SQLSTATE, &a, g, &d, &e, &f, h); if (SQLSTATE[0] != '0' || SQLSTATE[1] > '2') goto failed; if (SQLSTATE[0] == '0' && SQLSTATE[1] == '1') goto warned; if (SQLSTATE[0] == '0' && SQLSTATE[1] == '2') goto done; }\n\n")
+	assert p.source.contains("  { vsql_e2(SQLSTATE, &b); if (SQLSTATE[0] == '0' && SQLSTATE[1] == '1') goto warned; if (SQLSTATE[0] == '0' && SQLSTATE[1] == '2') goto done; }\nfailed:")
+	assert !p.source.contains('#include "x.h"')
+}
+
+fn test_embed_errors() ! {
+	// 21.1 <embedded SQL host program>
+	assert embed_error('int x;') == 'syntax error: an embedded SQL program must have an SQL statement'
+	assert embed_error(embed_header + 'EXEC SQL COMMIT') == 'syntax error: line 4: EXEC SQL must end with a semicolon'
+	assert embed_error(embed_header + "EXEC SQL VALUES 'a;") == "syntax error: line 4: unterminated string: 'a;"
+	assert embed_error(embed_header + 'EXEC SQL /* a;') == 'syntax error: line 4: unterminated comment: /* a;'
+	assert embed_error(embed_header + 'EXEC SQL BEGIN DECLARE SECTION;') == 'syntax error: line 4: END DECLARE SECTION is missing'
+	assert embed_error(embed_header + 'EXEC SQL BEGIN DECLARE SECTION; EXEC SQL BEGIN DECLARE SECTION;') == 'syntax error: line 4: unexpected BEGIN DECLARE SECTION'
+	assert embed_error('EXEC SQL END DECLARE SECTION;') == 'syntax error: line 1: unexpected END DECLARE SECTION'
+	assert embed_error('EXEC SQL BEGIN DECLARE SECTION; EXEC SQL COMMIT;') == 'syntax error: line 1: a declare section can only contain host variable definitions'
+	assert embed_error('EXEC SQL COMMIT;') == 'syntax error: line 1: SQLSTATE must be defined in a declare section before the first EXEC SQL'
+	assert embed_error(embed_header + 'EXEC SQL BEGIN WORK;') == 'syntax error: line 4: unexpected BEGIN'
+	assert embed_error(embed_header + 'EXEC SQL DELETE FROM t WHERE x = :z;') == 'syntax error: line 4: host variable :z is not defined'
+	assert embed_error(embed_header + 'EXEC SQL COMMIT;\nEXEC SQL VALUES :a;') == 'syntax error: line 5: a query is not an SQL procedure statement, use SELECT ... INTO'
+	assert embed_error(embed_header + 'EXEC SQL DECLARE SCHEMA s;') == 'syntax error: line 4: DECLARE SCHEMA and DECLARE AUTHORIZATION are not supported'
+	assert embed_error(embed_header + 'EXEC SQL DECLARE c CURSOR FOR SELECT :z FROM t;') == 'syntax error: line 4: host variable :z is not defined'
+	assert embed_error(embed_header + 'EXEC SQL OPEN c;') == 'syntax error: line 4: cursor C must be declared before it is opened'
+	assert embed_error(embed_header + 'EXEC SQL OPEN 1;') == 'syntax error: line 4: expected a cursor name near 1'
+	assert embed_error(embed_header + 'EXEC SQL "a') == 'syntax error: line 4: EXEC SQL must end with a semicolon'
+
+	// 21.2 <embedded exception declaration>
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER SQLERROR CONTINUE;') == 'syntax error: line 4: expected SQLEXCEPTION, SQLWARNING or NOT FOUND near SQLERROR'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER NOT x CONTINUE;') == 'syntax error: line 4: expected SQLEXCEPTION, SQLWARNING or NOT FOUND near NOT'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER NOT FOUND STOP;') == 'syntax error: line 4: expected CONTINUE, GOTO or GO TO near STOP'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER NOT FOUND GOTO 1;') == 'syntax error: line 4: expected a label near 1'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER NOT FOUND CONTINUE x;') == 'syntax error: line 4: unexpected near x'
+
+	// 21.4 <embedded SQL C program>
+	h := 'EXEC SQL BEGIN DECLARE SECTION; char SQLSTATE[6]; '
+	for definition, expected in {
+		'int x;':            'unsupported host variable definition: int x'
+		'const;':            'unsupported host variable definition: const'
+		'long 1x;':          'unsupported host variable definition: long 1x'
+		'long [2];':         'unsupported host variable definition: long [2]'
+		'long a, a;':        'host variable a is defined more than once'
+		'long x[3];':        'host variable x must be a number, not an array'
+		'char x;':           'host variable x must be an array of at least 2 characters'
+		'VARCHAR x[1];':     'host variable x must be an array of at least 2 characters'
+		'char SQLSTATE[5];': 'host variable SQLSTATE is defined more than once'
+	} {
+		assert embed_error(h + definition + ' EXEC SQL END DECLARE SECTION;') == 'syntax error: line 1: ${expected}', definition
+	}
+	assert embed_error('EXEC SQL BEGIN DECLARE SECTION; char SQLSTATE[5]; EXEC SQL END DECLARE SECTION;') == 'syntax error: line 1: SQLSTATE must be char SQLSTATE[6]'
+	assert embed_error('EXEC SQL BEGIN DECLARE SECTION; long SQLSTATE; EXEC SQL END DECLARE SECTION;') == 'syntax error: line 1: SQLSTATE must be char SQLSTATE[6]'
+}

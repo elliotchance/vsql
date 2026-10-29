@@ -532,7 +532,7 @@ Optional Features
    * - ❌ **B011** [1]_
      - **Embedded Ada**
 
-   * - ❌ **B012** [1]_
+   * - ✅ **B012** [1]_
      - **Embedded C**
 
    * - ❌ **B013** [1]_
@@ -1625,7 +1625,7 @@ Optional Features
    embedded language or to support the SQL-client module binding for at least
    one host language. vsql supports the SQL-client module binding for C (see
    :doc:`language-c`), which also gives E182 (Table 40, "Implied feature
-   relationships of SQL/Foundation").
+   relationships of SQL/Foundation"), and embedded SQL in C.
 
 Part 3: Call-Level Interface
 ----------------------------

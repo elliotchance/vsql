@@ -32,3 +32,6 @@ vsql-*.zip
 libvsql/module/example.[ch]
 libvsql/module/test.[ch]
 libvsql/module/test_other.[ch]
+
+# Created by "make embed-example".
+libvsql/embed/example.c

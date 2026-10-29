@@ -119,7 +119,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			raw_value := clause.source.compile(mut c)!.run(mut conn, row, params)!
 
 			if table_column.not_null && raw_value.is_null {
-				return sqlstate_23502('column ${column_name}')
+				return sqlstate_23502(table, column_name)
 			}
 
 			// Unlike most comparisons we have to treat NULL like a known value
@@ -201,7 +201,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			value := cast(mut conn, 'for column ${column_name}', raw_value, table_column.typ)!
 
 			if table_column.not_null && value.is_null {
-				return sqlstate_23502('column ${column_name}')
+				return sqlstate_23502(table, column_name)
 			}
 		}
 	}

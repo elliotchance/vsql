@@ -272,6 +272,16 @@ fn (t Table) elements() []TableElement {
 	return elements
 }
 
+// constraint_identifier is the name of a constraint of the table, which is in
+// the schema of the table.
+fn (t Table) constraint_identifier(name string) Identifier {
+	return Identifier{
+		catalog_name: t.name.catalog_name
+		schema_name:  t.name.schema_name
+		entity_name:  name
+	}
+}
+
 // constraint_names are the names of every constraint of the table: the NOT
 // NULL constraints (in the order of the columns), the PRIMARY KEY, then each
 // UNIQUE, FOREIGN KEY and CHECK. A constraint of a new definition that hasn't

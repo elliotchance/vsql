@@ -357,6 +357,16 @@ fn version_date
 
 version_date returns the date that vsql was released (such as "2026-10-28"), or an empty string if it wasn't built for a release.
 
+fn violated_constraint
+----------------------
+
+
+.. code-block:: v
+
+   pub fn violated_constraint(err IError) ?Identifier
+
+violated_constraint is the constraint that was violated, for an integrity constraint violation (class 23), or a transaction rollback because of one (40002). It's none for any other error.
+
 type Column
 -----------
 

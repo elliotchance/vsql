@@ -49,7 +49,7 @@ fn replace_table_definition(mut conn Connection, mut catalog CatalogConnection, 
 		mut r := row.for_storage()
 		for column in new_table.columns {
 			if column.not_null && r.data[column.name.sub_entity_name].is_null {
-				return sqlstate_23502('column ${column.name.sub_entity_name}')
+				return sqlstate_23502(new_table, column.name.sub_entity_name)
 			}
 		}
 		check_constraints.verify(mut conn, r)!

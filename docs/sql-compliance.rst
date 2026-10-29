@@ -571,7 +571,7 @@ Optional Features
    * - ✅ **B035**
      - **Non-extended descriptor names**
 
-   * - ❌ **B041**
+   * - ✅ **B041**
      - **Extensions to embedded SQL exception declarations**
 
    * - ❌ **B051**

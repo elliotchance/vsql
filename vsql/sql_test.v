@@ -2344,6 +2344,39 @@ PROCEDURE vsql_e2 (SQLSTATE, :b BIGINT);
 	assert p.source.contains("  { vsql_e1(SQLSTATE, &a, g, &d, &e, &f, h); if (SQLSTATE[0] != '0' || SQLSTATE[1] > '2') goto failed; if (SQLSTATE[0] == '0' && SQLSTATE[1] == '1') goto warned; if (SQLSTATE[0] == '0' && SQLSTATE[1] == '2') goto done; }\n\n")
 	assert p.source.contains("  { vsql_e2(SQLSTATE, &b); if (SQLSTATE[0] == '0' && SQLSTATE[1] == '1') goto warned; if (SQLSTATE[0] == '0' && SQLSTATE[1] == '2') goto done; }\nfailed:")
 	assert !p.source.contains('#include "x.h"')
+	assert !p.source.contains('vsql_m_violated')
+}
+
+// 21.2 <embedded exception declaration>: SQLSTATE and CONSTRAINT (Feature B041),
+// and which declarations apply (SR 2).
+fn test_embed_exceptions() ! {
+	p := precompile_c(embed_header + 'EXEC SQL WHENEVER SQLSTATE (22) GOTO data;
+EXEC SQL WHENEVER SQLSTATE (22, 012) GOTO zero;
+EXEC SQL WHENEVER SQLSTATE(2B) GOTO dependent;
+EXEC SQL WHENEVER SQLSTATE (42, P01) GO TO missing;
+EXEC SQL WHENEVER CONSTRAINT c1 GOTO c1;
+EXEC SQL WHENEVER CONSTRAINT s."c2" GOTO c2;
+EXEC SQL WHENEVER CONSTRAINT x.s.c3 GOTO c3;
+EXEC SQL WHENEVER SQLSTATE (01, 004) GOTO truncated;
+EXEC SQL WHENEVER SQLSTATE (02) GOTO none;
+EXEC SQL COMMIT;
+EXEC SQL WHENEVER SQLSTATE (22) CONTINUE;
+EXEC SQL WHENEVER CONSTRAINT c1 CONTINUE;
+EXEC SQL WHENEVER SQLWARNING CONTINUE;
+EXEC SQL WHENEVER NOT FOUND CONTINUE;
+EXEC SQL COMMIT;
+EXEC SQL WHENEVER SQLSTATE (23) GOTO integrity;
+EXEC SQL COMMIT;
+EXEC SQL WHENEVER CONSTRAINT c1 GOTO c1;
+EXEC SQL WHENEVER SQLEXCEPTION CONTINUE;
+EXEC SQL COMMIT;
+',
+		'x.sqc')!
+	assert p.source.contains('static int vsql_m_violated(')
+	assert p.source.contains('{ vsql_e1(SQLSTATE); if (vsql_m_violated(NULL, "PUBLIC", "C1")) goto c1; if (vsql_m_violated(NULL, "S", "c2")) goto c2; if (vsql_m_violated("X", "S", "C3")) goto c3; if (memcmp(SQLSTATE, "01004", 5) == 0) goto truncated; if (memcmp(SQLSTATE, "22012", 5) == 0) goto zero; if (memcmp(SQLSTATE, "42P01", 5) == 0) goto missing; if (memcmp(SQLSTATE, "02", 2) == 0) goto none; if (memcmp(SQLSTATE, "22", 2) == 0) goto data; if (memcmp(SQLSTATE, "2B", 2) == 0) goto dependent; }')
+	assert p.source.contains('{ vsql_e2(SQLSTATE); if (vsql_m_violated(NULL, "S", "c2")) goto c2; if (vsql_m_violated("X", "S", "C3")) goto c3; if (memcmp(SQLSTATE, "42P01", 5) == 0) goto missing; if (memcmp(SQLSTATE, "2B", 2) == 0) goto dependent; }')
+	assert p.source.contains('{ vsql_e3(SQLSTATE); if (memcmp(SQLSTATE, "42P01", 5) == 0) goto missing; if (memcmp(SQLSTATE, "23", 2) == 0) goto integrity; if (memcmp(SQLSTATE, "2B", 2) == 0) goto dependent; }')
+	assert p.source.contains('{ vsql_e4(SQLSTATE); }')
 }
 
 fn test_embed_errors() ! {
@@ -2367,11 +2400,19 @@ fn test_embed_errors() ! {
 	assert embed_error(embed_header + 'EXEC SQL "a') == 'syntax error: line 4: EXEC SQL must end with a semicolon'
 
 	// 21.2 <embedded exception declaration>
-	assert embed_error(embed_header + 'EXEC SQL WHENEVER SQLERROR CONTINUE;') == 'syntax error: line 4: expected SQLEXCEPTION, SQLWARNING or NOT FOUND near SQLERROR'
-	assert embed_error(embed_header + 'EXEC SQL WHENEVER NOT x CONTINUE;') == 'syntax error: line 4: expected SQLEXCEPTION, SQLWARNING or NOT FOUND near NOT'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER SQLERROR CONTINUE;') == 'syntax error: line 4: expected SQLEXCEPTION, SQLWARNING, NOT FOUND, SQLSTATE or CONSTRAINT near SQLERROR'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER NOT x CONTINUE;') == 'syntax error: line 4: expected SQLEXCEPTION, SQLWARNING, NOT FOUND, SQLSTATE or CONSTRAINT near NOT'
 	assert embed_error(embed_header + 'EXEC SQL WHENEVER NOT FOUND STOP;') == 'syntax error: line 4: expected CONTINUE, GOTO or GO TO near STOP'
 	assert embed_error(embed_header + 'EXEC SQL WHENEVER NOT FOUND GOTO 1;') == 'syntax error: line 4: expected a label near 1'
 	assert embed_error(embed_header + 'EXEC SQL WHENEVER NOT FOUND CONTINUE x;') == 'syntax error: line 4: unexpected near x'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER SQLSTATE 22 CONTINUE;') == 'syntax error: line 4: expected ( near 22'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER SQLSTATE () CONTINUE;') == 'syntax error: line 4: expected SQLSTATE class code near )'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER SQLSTATE (2 2) CONTINUE;') == 'syntax error: line 4: SQLSTATE class code must be 2 digits or upper case letters: 2'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER SQLSTATE (hy) CONTINUE;') == 'syntax error: line 4: SQLSTATE class code must be 2 digits or upper case letters: hy'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER SQLSTATE (00) CONTINUE;') == 'syntax error: line 4: SQLSTATE class 00 is successful completion, which is not a condition'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER SQLSTATE (22, 01) CONTINUE;') == 'syntax error: line 4: SQLSTATE subclass code must be 3 digits or upper case letters: 01'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER SQLSTATE (22 CONTINUE;') == 'syntax error: line 4: expected ) near CONTINUE'
+	assert embed_error(embed_header + 'EXEC SQL WHENEVER CONSTRAINT 1 CONTINUE;') == 'syntax error: line 4: expected a constraint name near 1'
 
 	// 21.4 <embedded SQL C program>
 	h := 'EXEC SQL BEGIN DECLARE SECTION; char SQLSTATE[6]; '

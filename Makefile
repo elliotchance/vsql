@@ -71,17 +71,17 @@ $(LIBVSQL): $(SOURCES) $(wildcard libvsql/*.v)
 	v $(V3_OPTIONS) $(BUILD_OPTIONS) $(PROD) -enable-globals -shared $(LIBVSQL_OPTIONS) libvsql -o bin/libvsql
 
 # The release is a zip of a folder named after the release (VERSION, such as
-# v0.34.0) and OS, so that versions can be unzipped side by side:
+# v0.34.0), OS and architecture, so that versions can be unzipped side by side:
 #
-#   vsql-v0.34.0-macos/bin/vsql
-#   vsql-v0.34.0-macos/include/libvsql.h
-#   vsql-v0.34.0-macos/lib/libvsql.dylib (libvsql.so on Linux)
-#   vsql-v0.34.0-macos/example.c
+#   vsql-v0.34.0-macos-arm64/bin/vsql
+#   vsql-v0.34.0-macos-arm64/include/libvsql.h
+#   vsql-v0.34.0-macos-arm64/lib/libvsql.dylib (libvsql.so on Linux)
+#   vsql-v0.34.0-macos-arm64/example.c
 #
 # bin/, include/ and lib/ are the usual layout of an install prefix (such as
 # /usr/local), so the folder can be used as one.
 VERSION ?= dev
-RELEASE = vsql-$(VERSION)-$(if $(filter Darwin,$(shell uname)),macos,linux)
+RELEASE = vsql-$(VERSION)-$(if $(filter Darwin,$(shell uname)),macos,linux)-$(if $(filter arm64 aarch64,$(shell uname -m)),arm64,x86-64)
 
 release: bin/vsql $(LIBVSQL)
 	rm -rf $(RELEASE) $(RELEASE).zip

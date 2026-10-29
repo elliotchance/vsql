@@ -1429,6 +1429,11 @@ fn run_in_child(f fn ()) !(int, string) {
 
 // A panic is for something that can't happen, so these break an invariant
 // directly to check that it's caught, rather than carrying on with bad data.
+//
+// The exit code is 1, except that V's backtrace (after the message) can crash on
+// Linux ARM64, which exits with 255 (https://github.com/vlang/v/issues/31422).
+const panic_exit_codes = $if linux && arm64 { [1, 255] } $else { [1] }
+
 fn test_panics() ! {
 	$if windows {
 		return
@@ -1439,27 +1444,27 @@ fn test_panics() ! {
 		db.current_catalog = 'NOPE'
 		_ := db.catalog()
 	})!
-	assert code == 1
+	assert code in panic_exit_codes
 	assert stderr.contains('unknown catalog: NOPE')
 
 	code, stderr = run_in_child(fn () {
 		mut db := open(':memory:') or { panic(err) }
 		_ := db.catalog_for(Identifier{ catalog_name: 'NOPE' })
 	})!
-	assert code == 1
+	assert code in panic_exit_codes
 	assert stderr.contains('unknown catalog: NOPE')
 
 	code, stderr = run_in_child(fn () {
 		_ := yy_as[Identifier](YYSym(true))
 	})!
-	assert code == 1
+	assert code in panic_exit_codes
 	assert stderr.contains('V panic: expected vsql.Identifier')
 
 	code, stderr = run_in_child(fn () {
 		mut page := new_page(kind_leaf, 64)
 		page.add(new_page_object('k'.bytes(), 1, 0, []u8{len: 100})) or {}
 	})!
-	assert code == 1
+	assert code in panic_exit_codes
 	assert stderr.contains('page cannot fit object of 124 b in page using 16 b')
 }
 

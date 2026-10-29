@@ -8,6 +8,10 @@ import vsql
 
 @[export: 'SQLDescribeCol']
 fn sql_describe_col(statement_handle SQLInteger, column_number i16, column_name &char, buffer_length i16, name_length &i16, data_type &i16, column_size &SQLInteger, decimal_digits &i16, nullable &i16) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 

@@ -6,6 +6,10 @@ module main
 
 @[export: 'SQLAllocHandle']
 fn sql_alloc_handle(handle_type i16, input_handle SQLInteger, output_handle &SQLInteger) i16 {
+	entry := enter(alloc_input_type(handle_type), i64(input_handle))
+	defer {
+		entry.leave()
+	}
 	ih := i64(input_handle)
 
 	match handle_type {

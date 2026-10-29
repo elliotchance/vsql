@@ -202,6 +202,10 @@ const type_info = [
 
 @[export: 'SQLGetTypeInfo']
 fn sql_get_type_info(statement_handle SQLInteger, data_type i16) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 	stmt.invoke(false) or { return stmt.diag.error(err) }

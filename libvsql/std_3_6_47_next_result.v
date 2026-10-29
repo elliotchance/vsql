@@ -10,6 +10,10 @@ module main
 
 @[export: 'SQLNextResult']
 fn sql_next_result(statement_handle1 SQLInteger, statement_handle2 SQLInteger) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle1))
+	defer {
+		entry.leave()
+	}
 	mut stmt1 := stmts[i64(statement_handle1)] or { return sql_invalid_handle }
 	stmt1.diag.clear()
 	stmt2 := stmts[i64(statement_handle2)] or { return sql_invalid_handle }

@@ -16,6 +16,10 @@ const data_sources = [
 
 @[export: 'SQLDataSources']
 fn sql_data_sources(environment_handle SQLInteger, direction i16, server_name &char, buffer_length1 i16, name_length1 &i16, description &char, buffer_length2 i16, name_length2 &i16) i16 {
+	entry := enter(sql_handle_env, i64(environment_handle))
+	defer {
+		entry.leave()
+	}
 	mut env := envs[i64(environment_handle)] or { return sql_invalid_handle }
 	env.diag.clear()
 

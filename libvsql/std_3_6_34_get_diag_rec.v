@@ -9,6 +9,10 @@ module main
 
 @[export: 'SQLGetDiagRec']
 fn sql_get_diag_rec(handle_type i16, handle SQLInteger, record_number i16, sqlstate &char, native_error &SQLInteger, message_text &char, buffer_length i16, text_length &i16) i16 {
+	entry := enter(handle_type, i64(handle))
+	defer {
+		entry.leave()
+	}
 	// - 2, 3. The handle must identify an allocated resource of HT.
 	diag := handle_diagnostics(handle_type, i64(handle)) or { return sql_invalid_handle }
 

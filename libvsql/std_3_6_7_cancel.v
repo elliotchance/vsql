@@ -10,6 +10,10 @@ module main
 
 @[export: 'SQLCancel']
 fn sql_cancel(statement_handle SQLInteger) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 
 	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.

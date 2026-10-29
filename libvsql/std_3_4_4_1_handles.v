@@ -1,5 +1,6 @@
 module main
 
+import sync
 import vsql
 
 // ISO/IEC 9075-3:2003(E), 4.4.1, Handles
@@ -30,6 +31,12 @@ mut:
 	null_termination bool = true
 	// data_source is the next data source for DataSources.
 	data_source int
+	// current_connection is the handle of the current SQL-connection, or 0 if
+	// there isn't one (see 5.3, "Implicit set connection").
+	current_connection i64
+	// mutex is locked while a routine is invoked with a handle of this
+	// SQL-environment (see threads.v).
+	mutex &sync.Mutex = sync.new_mutex()
 }
 
 // An allocated SQL-connection. conn is the established SQL-connection, if any.

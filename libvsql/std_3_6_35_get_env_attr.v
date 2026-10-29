@@ -13,6 +13,10 @@ const sql_true = 1
 
 @[export: 'SQLGetEnvAttr']
 fn sql_get_env_attr(environment_handle SQLInteger, attribute SQLInteger, value voidptr, buffer_length SQLInteger, string_length &SQLInteger) i16 {
+	entry := enter(sql_handle_env, i64(environment_handle))
+	defer {
+		entry.leave()
+	}
 	mut env := envs[i64(environment_handle)] or { return sql_invalid_handle }
 	env.diag.clear()
 

@@ -6,6 +6,10 @@ module main
 
 @[export: 'SQLSetDescRec']
 fn sql_set_desc_rec(descriptor_handle SQLInteger, record_number i16, type_ i16, sub_type i16, length SQLInteger, precision i16, scale i16, data voidptr, string_length &SQLInteger, indicator &SQLInteger) i16 {
+	entry := enter(sql_handle_desc, i64(descriptor_handle))
+	defer {
+		entry.leave()
+	}
 	mut desc := descs[i64(descriptor_handle)] or { return sql_invalid_handle }
 	desc.diag.clear()
 

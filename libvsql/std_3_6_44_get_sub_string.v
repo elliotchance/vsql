@@ -13,6 +13,10 @@ module main
 
 @[export: 'SQLGetSubString']
 fn sql_get_sub_string(statement_handle SQLInteger, locator_type i16, source_locator SQLInteger, from_position SQLInteger, for_length SQLInteger, target_type i16, target_value voidptr, buffer_length SQLInteger, string_length &SQLInteger, indicator_value &SQLInteger) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 

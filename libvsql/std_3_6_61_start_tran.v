@@ -21,6 +21,10 @@ const sql_transaction_serializable = 0x00000008
 
 @[export: 'SQLStartTran']
 fn sql_start_tran(handle_type i16, handle SQLInteger, access_mode SQLInteger, isolation_level SQLInteger) i16 {
+	entry := enter(handle_type, i64(handle))
+	defer {
+		entry.leave()
+	}
 	h := i64(handle)
 	mut diag, l1 := transaction_handles(handle_type, h) or { return sql_invalid_handle }
 	diag.clear()
@@ -82,7 +86,7 @@ fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level
 	for dh in l1 {
 		mut dbc := dbcs[dh] or { continue }
 		mut conn := dbc.conn or { continue }
-		conn.query('START TRANSACTION')!
+		db_query(mut conn, 'START TRANSACTION')!
 	}
 
 	return sql_success

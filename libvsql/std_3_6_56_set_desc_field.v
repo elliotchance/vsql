@@ -9,6 +9,10 @@ module main
 
 @[export: 'SQLSetDescField']
 fn sql_set_desc_field(descriptor_handle SQLInteger, record_number i16, field_identifier i16, value voidptr, buffer_length SQLInteger) i16 {
+	entry := enter(sql_handle_desc, i64(descriptor_handle))
+	defer {
+		entry.leave()
+	}
 	mut desc := descs[i64(descriptor_handle)] or { return sql_invalid_handle }
 	desc.diag.clear()
 

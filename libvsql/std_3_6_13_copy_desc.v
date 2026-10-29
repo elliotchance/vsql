@@ -6,6 +6,10 @@ module main
 
 @[export: 'SQLCopyDesc']
 fn sql_copy_desc(source_desc_handle SQLInteger, target_desc_handle SQLInteger) i16 {
+	entry := enter(sql_handle_desc, i64(target_desc_handle))
+	defer {
+		entry.leave()
+	}
 	// - 1, 2. Both handles must identify an allocated CLI descriptor area.
 	source := descs[i64(source_desc_handle)] or { return sql_invalid_handle }
 	mut target := descs[i64(target_desc_handle)] or { return sql_invalid_handle }

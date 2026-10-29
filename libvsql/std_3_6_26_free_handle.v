@@ -6,6 +6,10 @@ module main
 
 @[export: 'SQLFreeHandle']
 fn sql_free_handle(handle_type i16, handle SQLInteger) i16 {
+	entry := enter(handle_type, i64(handle))
+	defer {
+		entry.leave()
+	}
 	h := i64(handle)
 
 	match handle_type {

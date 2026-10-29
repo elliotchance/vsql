@@ -59,6 +59,10 @@ LIBVSQL_RPATH = -Wl,-rpath,$(CURDIR)/bin
 endif
 LIBVSQL_C ?= cc
 LIBVSQL_CPP ?= c++
+# The tests use POSIX threads, except on Windows.
+ifneq ($(OS),Windows_NT)
+LIBVSQL_PTHREAD = -pthread
+endif
 
 libvsql: $(LIBVSQL)
 
@@ -255,7 +259,7 @@ libvsql-example: $(LIBVSQL)
 
 libvsql-test: $(LIBVSQL)
 	v run scripts/check-libvsql-constants.vsh
-	$(LIBVSQL_CC) libvsql/test.c libvsql/*_test.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-test
+	$(LIBVSQL_CC) libvsql/test.c libvsql/*_test.c $(LIBVSQL_PTHREAD) -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-test
 	bin/libvsql-test
 
 examples/%: vsql/y.v

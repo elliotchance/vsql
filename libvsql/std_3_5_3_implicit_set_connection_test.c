@@ -106,3 +106,27 @@ UTEST_F(db, 5_3_implicit_set_connection_disconnect) {
   EXPECT_EQ(SQLFreeConnect(dbc2), SQL_SUCCESS);
 }
 
+
+/* Each SQL-environment is its own SQL-agent, with its own current connection,
+ * so connections in different environments can each have an active
+ * transaction. */
+UTEST_F(db, 5_3_implicit_set_connection_environments) {
+  SQLHENV env2;
+  SQLHDBC dbc2;
+  SQLHSTMT stmt2;
+
+  ASSERT_EQ(SQLAllocEnv(&env2), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocConnect(env2, &dbc2), SQL_SUCCESS);
+  ASSERT_EQ(connect_memory(dbc2), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocStmt(dbc2, &stmt2), SQL_SUCCESS);
+
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(stmt2, "VALUES 1"), SQL_SUCCESS);
+  EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt,
+                     SQL_DIAG_TRANSACTION_ACTIVE),
+            1);
+  EXPECT_EQ(diag_int(SQL_HANDLE_STMT, stmt2, SQL_DIAG_TRANSACTION_ACTIVE), 1);
+
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, env2, SQL_COMMIT), SQL_SUCCESS);
+  free_handles(env2, dbc2, stmt2);
+}

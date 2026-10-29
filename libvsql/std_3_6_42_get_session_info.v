@@ -29,6 +29,10 @@ const session_info = {
 
 @[export: 'SQLGetSessionInfo']
 fn sql_get_session_info(connection_handle SQLInteger, info_type i16, info_value voidptr, buffer_length i16, string_length &i16) i16 {
+	entry := enter(sql_handle_dbc, i64(connection_handle))
+	defer {
+		entry.leave()
+	}
 	mut dbc := dbcs[i64(connection_handle)] or { return sql_invalid_handle }
 	dbc.diag.clear()
 

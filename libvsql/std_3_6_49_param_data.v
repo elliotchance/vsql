@@ -11,6 +11,10 @@ module main
 
 @[export: 'SQLParamData']
 fn sql_param_data(statement_handle SQLInteger, value &voidptr) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 

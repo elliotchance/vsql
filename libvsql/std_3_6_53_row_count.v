@@ -12,6 +12,10 @@ import vsql
 
 @[export: 'SQLRowCount']
 fn sql_row_count(statement_handle SQLInteger, row_count &SQLInteger) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 

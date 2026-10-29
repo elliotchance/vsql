@@ -12,6 +12,10 @@ module main
 
 @[export: 'SQLSetStmtAttr']
 fn sql_set_stmt_attr(statement_handle SQLInteger, attribute SQLInteger, value voidptr, string_length SQLInteger) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 

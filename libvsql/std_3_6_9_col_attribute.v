@@ -6,6 +6,10 @@ module main
 
 @[export: 'SQLColAttribute']
 fn sql_col_attribute(statement_handle SQLInteger, column_number i16, field_identifier i16, character_attribute &char, buffer_length i16, string_length &i16, numeric_attribute &SQLInteger) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 

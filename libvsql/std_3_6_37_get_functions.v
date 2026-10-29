@@ -138,6 +138,10 @@ const cli_routines = {
 
 @[export: 'SQLGetFunctions']
 fn sql_get_functions(connection_handle SQLInteger, function_id i16, supported &i16) i16 {
+	entry := enter(sql_handle_dbc, i64(connection_handle))
+	defer {
+		entry.leave()
+	}
 	mut dbc := dbcs[i64(connection_handle)] or { return sql_invalid_handle }
 	dbc.diag.clear()
 

@@ -1,7 +1,5 @@
 module main
 
-import vsql
-
 // ISO/IEC 9075-3:2003(E), 6.12, Connect
 //
 // Establish a connection.
@@ -12,6 +10,10 @@ import vsql
 
 @[export: 'SQLConnect']
 fn sql_connect(connection_handle SQLInteger, server_name &char, name_length1 i16, user_name &char, name_length2 i16, authentication &char, name_length3 i16) i16 {
+	entry := enter(sql_handle_dbc, i64(connection_handle))
+	defer {
+		entry.leave()
+	}
 	h := i64(connection_handle)
 	mut dbc := dbcs[h] or { return sql_invalid_handle }
 	dbc.diag.clear()
@@ -25,7 +27,8 @@ fn connect(mut dbc Dbc, h i64, server_name &char, name_length1 i16, user_name &c
 	// the implementation does not support transactions that affect more than
 	// one SQL-server, then an exception condition is raised: feature not
 	// supported — multiple server transactions.
-	if current_connection != 0 && transaction_active(sql_handle_dbc, current_connection) {
+	current := current_connection(dbc.env)
+	if current != 0 && transaction_active(sql_handle_dbc, current) {
 		return cli_error('0A001', 'multiple server transactions')
 	}
 
@@ -67,14 +70,14 @@ fn connect(mut dbc Dbc, h i64, server_name &char, name_length1 i16, user_name &c
 		sn
 	}
 
-	dbc.conn = vsql.open(path) or {
+	dbc.conn = db_open(path) or {
 		return cli_error('08001', 'SQL-client unable to establish SQL-connection: ${err.msg()}')
 	}
 	dbc.is_default = is_default
 
 	// - 14. The current SQL-connection becomes dormant, and the new one becomes
 	// the current SQL-connection.
-	current_connection = h
+	set_current_connection(dbc.env, h)
 
 	return sql_success
 }

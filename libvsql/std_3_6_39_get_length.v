@@ -11,6 +11,10 @@ module main
 
 @[export: 'SQLGetLength']
 fn sql_get_length(statement_handle SQLInteger, locator_type i16, locator SQLInteger, string_length &SQLInteger, indicator_value &SQLInteger) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 

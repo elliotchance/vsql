@@ -6,6 +6,10 @@ module main
 
 @[export: 'SQLAllocEnv']
 fn sql_alloc_env(environment_handle &SQLInteger) i16 {
+	entry := enter(0, 0)
+	defer {
+		entry.leave()
+	}
 	// - 1. AllocHandle is implicitly invoked with HandleType indicating
 	// ENVIRONMENT HANDLE, with zero as the value of InputHandle, and with
 	// EnvironmentHandle as OutputHandle.

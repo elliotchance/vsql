@@ -14,6 +14,10 @@ module main
 
 @[export: 'SQLBindParameter']
 fn sql_bind_parameter(statement_handle SQLInteger, parameter_number i16, input_output_mode i16, value_type i16, parameter_type i16, column_size SQLInteger, decimal_digits i16, parameter_value voidptr, buffer_length SQLInteger, str_len_or_ind &SQLInteger) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 

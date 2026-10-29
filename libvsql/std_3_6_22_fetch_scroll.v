@@ -20,6 +20,10 @@ const sql_fetch_relative = i16(6)
 
 @[export: 'SQLFetchScroll']
 fn sql_fetch_scroll(statement_handle SQLInteger, fetch_orientation i16, fetch_offset SQLInteger) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 

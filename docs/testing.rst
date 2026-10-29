@@ -591,6 +591,23 @@ A test fails if it uses an extension that isn't listed, or lists one that it
 doesn't use. The ``/* setup */`` of a file can't use any extensions, so write
 ``DROP TABLE t RESTRICT`` rather than ``DROP TABLE t``.
 
+Flagging
+^^^^^^^^
+
+Use the ``/* flags */`` directive to include the features outside of Core SQL
+that each statement uses (see :doc:`sql-flagging`):
+
+.. code-block:: sql
+
+   /* flags */
+   SELECT DISTINCT COUNT(DISTINCT x) FROM t;
+   -- flags: F801
+   -- COL1: 1
+
+Every feature that can be flagged, including the vsql extensions, must be in
+the flags of at least one test with ``/* flags */``, otherwise the SQL tests
+fail. A feature that a test only happens to use doesn't count.
+
 Debugging Tests
 ---------------
 

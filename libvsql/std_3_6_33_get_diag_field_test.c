@@ -125,6 +125,30 @@ UTEST_F(db, 6_33_get_diag_field_dynamic_function_unknown) {
             SQL_DIAG_UNKNOWN_STATEMENT);
 }
 
+/* The statement is identified once it's parsed, so a syntax error doesn't have
+ * a DYNAMIC_FUNCTION. */
+UTEST_F(db, 6_33_get_diag_field_dynamic_function_syntax_error) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "INSERT INTO"), SQL_ERROR);
+  EXPECT_STREQ(diag_string(SQL_HANDLE_STMT, utest_fixture->stmt,
+                           SQL_DIAG_DYNAMIC_FUNCTION),
+               "");
+  EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt,
+                     SQL_DIAG_DYNAMIC_FUNCTION_CODE),
+            SQL_DIAG_UNKNOWN_STATEMENT);
+}
+
+/* Every statement has a code, even if it's not in the header. */
+UTEST_F(db, 6_33_get_diag_field_dynamic_function_set_constraints) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "SET CONSTRAINTS ALL DEFERRED"),
+            SQL_SUCCESS);
+  EXPECT_STREQ(diag_string(SQL_HANDLE_STMT, utest_fixture->stmt,
+                           SQL_DIAG_DYNAMIC_FUNCTION),
+               "SET CONSTRAINT");
+  EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt,
+                     SQL_DIAG_DYNAMIC_FUNCTION_CODE),
+            68);
+}
+
 /* A routine that doesn't execute a statement has no DYNAMIC_FUNCTION. */
 UTEST_F(db, 6_33_get_diag_field_dynamic_function_fetch) {
   ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);

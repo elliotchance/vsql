@@ -32,10 +32,7 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 
 	// - 11, 12. P is prepared and executed. A syntax error is raised by
 	// preparing it.
-	mut conn := stmt_connection(stmt)!
-	mut prepared := &vsql.PreparedStmt{
-		...conn.prepare(p)!
-	}
+	mut prepared := prepare_statement(mut stmt, p)!
 
 	return execute_statement(mut stmt, mut prepared)
 }
@@ -65,19 +62,33 @@ fn preparable_statement(mut stmt Stmt, statement_text &char, text_length SQLInte
 		return cli_error('HY090', 'invalid string length or buffer length')
 	}
 
-	stmt.diag.dynamic_function, stmt.diag.dynamic_function_code = dynamic_function(p)
-
-	// - 7. If P is a <start transaction statement>, a <commit statement> or a
-	// <rollback statement>, or it contains a <simple comment>, then an
-	// exception condition is raised: syntax error or access rule violation.
-	if stmt.diag.dynamic_function in ['START TRANSACTION', 'COMMIT WORK', 'ROLLBACK WORK'] {
-		return cli_error('42000', 'syntax error or access rule violation: ${stmt.diag.dynamic_function.to_lower()} can only be done with SQLStartTran or SQLEndTran')
-	}
+	// - 7. If P contains a <simple comment>, then an exception condition is
+	// raised: syntax error or access rule violation. The other statements that
+	// aren't allowed are checked by prepare_statement.
 	if contains_simple_comment(p) {
 		return cli_error('42000', 'syntax error or access rule violation: -- comments are not allowed')
 	}
 
 	return p
+}
+
+// prepare_statement prepares the text of a statement for ExecDirect or Prepare,
+// and sets the DYNAMIC_FUNCTION and DYNAMIC_FUNCTION_CODE that identify it.
+fn prepare_statement(mut stmt Stmt, p string) !&vsql.PreparedStmt {
+	mut conn := stmt_connection(stmt)!
+	prepared := &vsql.PreparedStmt{
+		...conn.prepare(p)!
+	}
+	stmt.diag.dynamic_function, stmt.diag.dynamic_function_code = prepared.command_function()
+
+	// - 7. If P is a <start transaction statement>, a <commit statement> or a
+	// <rollback statement>, then an exception condition is raised: syntax
+	// error or access rule violation.
+	if stmt.diag.dynamic_function in ['START TRANSACTION', 'COMMIT WORK', 'ROLLBACK WORK'] {
+		return cli_error('42000', 'syntax error or access rule violation: ${stmt.diag.dynamic_function.to_lower()} can only be done with SQLStartTran or SQLEndTran')
+	}
+
+	return prepared
 }
 
 // execute_statement executes a prepared statement (for ExecDirect or

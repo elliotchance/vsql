@@ -13,6 +13,12 @@ fn register_cli_command(mut cmd cli.Command) {
 		description:   'Run SQL in a vsql file'
 		execute:       cli_command
 	}
+	cli_cmd.add_flag(cli.Flag{
+		flag:          .bool
+		name:          'autocommit'
+		default_value: ['true']
+		description:   'Commit each statement that is not inside a START TRANSACTION (default true). The SQL standard has no autocommit, which is the same as -autocommit=false'
+	})
 	cmd.add_command(cli_cmd)
 }
 
@@ -21,6 +27,7 @@ fn cli_command(cmd cli.Command) ! {
 	println('')
 
 	mut db := vsql.open(cmd.args[0])!
+	autocommit := cmd.flags.get_bool('autocommit')!
 
 	for arg in cmd.args[1..] {
 		catalog_name := vsql.catalog_name_from_path(arg)
@@ -28,62 +35,78 @@ fn cli_command(cmd cli.Command) ! {
 		db.add_catalog(catalog_name, arg, options)!
 	}
 
+	// Each statement is a <direct SQL statement> (ISO/IEC 9075-2:2016(E), 22.1),
+	// so it ends with a semicolon and can be over many lines.
+	mut unfinished := ''
 	for {
-		print('vsql> ')
+		print(if unfinished == '' { 'vsql> ' } else { '   -> ' })
 		os.flush()
 
-		raw_query := os.get_line()
+		// An empty string means there is no more input. This happens when the
+		// statements are being fed through a pipe like:
+		//
+		//   echo "VALUES CURRENT_CATALOG;" | vsql cli
+		line := os.get_raw_line()
+		if line == '' {
+			println('')
+			break
+		}
 
 		// When running on Docker, ctrl+C doesn't always get passed through. Also,
 		// this provides another text based way to break out of the shell.
-		if raw_query.trim_space() == 'exit' {
+		if unfinished == '' && line.trim_space() == 'exit' {
 			break
 		}
 
-		if raw_query != '' {
-			for i, query in vsql.split_statements(raw_query) {
-				start := time.ticks()
-				db.clear_warnings()
-				result := db.query(query) or {
-					print_error('Error', err)
-					continue
-				}
-
-				for warning in db.warnings {
-					// 02000 (no data) is a completion condition, not a warning.
-					if vsql.sqlstate_from_int(warning.code()).starts_with('02') {
-						print_error('Notice', warning)
-					} else {
-						print_error('Warning', warning)
-					}
-				}
-
-				if result.msg != '' {
-					println('${result.msg} (${time.ticks() - start} ms)')
-					if i > 0 {
-						println('')
-					}
-					continue
-				}
-
-				total_rows := print_table(result)!
-
-				println('${total_rows} ${vsql.pluralize(total_rows, 'row')} (${time.ticks() - start} ms)')
-
-				if i > 0 {
-					println('')
-				}
-			}
-		} else {
-			// This means there is no more input and should only occur when the
-			// commands are being few through a pipe like:
-			//
-			//   echo "VALUES CURRENT_CATALOG;" | vsql cli
-			break
+		statements, rest := vsql.split_terminated_statements(unfinished + line)
+		unfinished = rest
+		for stmt in statements {
+			run_direct(mut db, stmt + ';', autocommit)
 		}
-
-		println('')
 	}
+
+	// A statement without a semicolon at the end of the input is a syntax error.
+	if unfinished != '' {
+		run_direct(mut db, unfinished, autocommit)
+	}
+
+	// - 22.1 GR 2.a. Without autocommit, an SQL-transaction that is still active
+	// at the end is committed. If the shell stops any other way (such as with
+	// ctrl+C), or a START TRANSACTION isn't finished with autocommit, it's
+	// rolled back.
+	if !autocommit && db.in_transaction() {
+		db.query('COMMIT') or { print_error('Error', err) }
+	}
+}
+
+fn run_direct(mut db vsql.Connection, stmt string, autocommit bool) {
+	start := time.ticks()
+	db.clear_warnings()
+	result := db.direct(stmt, autocommit: autocommit) or {
+		print_error('Error', err)
+		return
+	}
+
+	for warning in db.warnings {
+		// 02000 (no data) is a completion condition, not a warning.
+		if vsql.sqlstate_from_int(warning.code()).starts_with('02') {
+			print_error('Notice', warning)
+		} else {
+			print_error('Warning', warning)
+		}
+	}
+
+	if result.msg != '' {
+		println('${result.msg} (${time.ticks() - start} ms)\n')
+		return
+	}
+
+	total_rows := print_table(result) or {
+		print_error('Error', err)
+		return
+	}
+
+	println('${total_rows} ${vsql.pluralize(total_rows, 'row')} (${time.ticks() - start} ms)\n')
 }
 
 fn print_error(prefix string, err IError) {

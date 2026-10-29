@@ -137,24 +137,51 @@ fn write_line(mut w io.Writer, line string) ! {
 // semicolon, and empty statements (including ones that are only comments) are
 // left out.
 pub fn split_statements(script string) []string {
+	mut statements, rest := split_terminated_statements(script)
+	if rest != '' {
+		statements << rest.trim_space()
+	}
+
+	return statements
+}
+
+// split_terminated_statements is split_statements for statements that must end
+// with a semicolon, such as a <direct SQL statement>. The text after the last
+// semicolon is returned separately (as it is, so that more text can be appended
+// to it), or an empty string if it's only white space and comments.
+pub fn split_terminated_statements(script string) ([]string, string) {
 	mut statements := []string{}
 	mut start := 0
 	mut quote := u8(0)
+	mut comment_depth := 0
 	mut is_empty := true
 	mut i := 0
 	for i < script.len {
 		c := script[i]
+		next := if i + 1 < script.len { script[i + 1] } else { u8(0) }
 		if quote != 0 {
 			// A doubled quote ('' or "") is read as two strings next to each
 			// other, which is the same for finding the end of the statement.
 			if c == quote {
 				quote = 0
 			}
-		} else if c == `-` && i + 1 < script.len && script[i + 1] == `-` {
+		} else if comment_depth > 0 {
+			// Bracketed comments can be nested, like in skip_comment.
+			if c == `/` && next == `*` {
+				comment_depth++
+				i++
+			} else if c == `*` && next == `/` {
+				comment_depth--
+				i++
+			}
+		} else if c == `-` && next == `-` {
 			for i < script.len && script[i] != `\n` {
 				i++
 			}
 			continue
+		} else if c == `/` && next == `*` {
+			comment_depth = 1
+			i++
 		} else if c == `;` {
 			if !is_empty {
 				statements << script[start..i].trim_space()
@@ -169,9 +196,11 @@ pub fn split_statements(script string) []string {
 		}
 		i++
 	}
-	if !is_empty {
-		statements << script[start..].trim_space()
+
+	// An unterminated string or comment isn't finished, even if it's empty.
+	if is_empty && quote == 0 && comment_depth == 0 {
+		return statements, ''
 	}
 
-	return statements
+	return statements, script[start..]
 }

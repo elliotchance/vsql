@@ -550,7 +550,7 @@ Optional Features
    * - ❌ **B017** [1]_
      - **Embedded PL/I**
 
-   * - ❌ **B021**
+   * - ✅ **B021**
      - **Direct SQL**
 
    * - ❌ **B031**

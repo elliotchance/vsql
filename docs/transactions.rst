@@ -24,7 +24,10 @@ a new ``FOREIGN KEY`` references, until it's committed or rolled back. Either
 transaction (whichever is second) gets a ``40001``.
 
 A statement that isn't inside a ``START TRANSACTION`` runs in a transaction of
-its own, which is committed when the statement finishes.
+its own, which is committed when the statement finishes. With
+``vsql cli -autocommit=false`` (which follows the SQL standard), a statement
+starts a transaction that stays active until it's committed or rolled back
+instead (see :doc:`cli`).
 
 Examples
 --------

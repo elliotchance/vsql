@@ -61,6 +61,39 @@ right-aligned. Type ``exit`` (or press ctrl+c) to leave:
 
 Use ``:memory:`` as the file name for an in-memory database.
 
+The shell is direct invocation of SQL (ISO/IEC 9075-2:2016(E), Clause 22,
+"Direct invocation of SQL"):
+
+- Each statement ends with a semicolon, so it can be over many lines (``->``
+  is shown until the statement is finished). A statement without a semicolon at
+  the end of the input is a syntax error.
+- A statement can't contain a parameter (``?`` or ``:name``), since there's
+  nothing to provide its value.
+- By default, a statement that isn't inside a :doc:`start-transaction` is
+  committed when it finishes (autocommit). The SQL standard doesn't have
+  autocommit, so use ``-autocommit=false`` to follow it: any statement other
+  than ``SET CATALOG``, ``SET SCHEMA`` and ``SET CONSTRAINTS`` then starts a
+  transaction (if there isn't one), which stays active until a :doc:`commit`
+  or :doc:`rollback`. ``START TRANSACTION`` must be the first statement of a
+  transaction, otherwise it's ``25001``, and other connections don't see the
+  changes until it's committed. At the end of the input (or ``exit``), an active
+  transaction is committed.
+- A transaction that is still active when the shell stops any other way (such
+  as with ctrl+c), or a ``START TRANSACTION`` that isn't finished with
+  autocommit, is rolled back.
+- A query with no rows raises ``02000`` (no data), which is shown as a notice.
+- The null value is shown as ``NULL``.
+
+.. code-block:: text
+
+   $ vsql cli -autocommit=false test.vsql
+   vsql> INSERT INTO foo (a)
+      ->   VALUES (5678);
+   INSERT 1 (1 ms)
+
+   vsql> COMMIT;
+   COMMIT (0 ms)
+
 Any other files after the first one are attached as more catalogs (see
 :doc:`set-catalog`). Each catalog is named after its file, up to the first
 ``.``:

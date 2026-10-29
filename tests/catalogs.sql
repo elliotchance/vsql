@@ -18,6 +18,7 @@ SELECT * FROM PUBLIC.foo;
 -- BAZ: 456
 
 /* create_catalog FOO */
+/* extensions V001-01 */
 SET CATALOG 'FOO';
 CREATE TABLE public.bar (baz INTEGER);
 EXPLAIN SELECT * FROM public.bar;
@@ -27,6 +28,7 @@ EXPLAIN SELECT * FROM public.bar;
 -- EXPLAIN: EXPR (FOO.PUBLIC.BAR.BAZ INTEGER)
 
 /* create_catalog FOO */
+/* extensions V001-01 */
 SET CATALOG 'FOO';
 CREATE TABLE public.bar (baz INTEGER);
 INSERT INTO public.bar (baz) VALUES (123);

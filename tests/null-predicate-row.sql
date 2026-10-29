@@ -76,6 +76,7 @@ SELECT (count(x), max(y)) IS NOT NULL FROM foo;
 -- warning 01003: null value eliminated in set function
 -- COL1: FALSE
 
+/* extensions V001-01 */
 CREATE TABLE foo (x INT);
 EXPLAIN SELECT * FROM foo WHERE (x, x + 1) IS NOT NULL;
 -- msg: CREATE TABLE 1

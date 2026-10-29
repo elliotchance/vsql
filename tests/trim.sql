@@ -1,21 +1,28 @@
+/* extensions V001-01 */
 EXPLAIN VALUES TRIM('aaababccaa');
 -- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(BOTH ' ' FROM 'aaababccaa'))
 
+/* extensions V001-01 */
 EXPLAIN VALUES TRIM(FROM 'aaababccaa');
 -- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(BOTH ' ' FROM 'aaababccaa'))
 
+/* extensions V001-01 */
 EXPLAIN VALUES TRIM(LEADING FROM 'aaababccaa');
 -- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(LEADING ' ' FROM 'aaababccaa'))
 
+/* extensions V001-01 */
 EXPLAIN VALUES TRIM(TRAILING FROM 'aaababccaa');
 -- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(TRAILING ' ' FROM 'aaababccaa'))
 
+/* extensions V001-01 */
 EXPLAIN VALUES TRIM(BOTH FROM 'aaababccaa');
 -- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(BOTH ' ' FROM 'aaababccaa'))
 
+/* extensions V001-01 */
 EXPLAIN VALUES TRIM('a' FROM 'aaababccaa');
 -- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(BOTH 'a' FROM 'aaababccaa'))
 
+/* extensions V001-01 */
 EXPLAIN VALUES TRIM(LEADING 'a' FROM 'aaababccaa');
 -- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(LEADING 'a' FROM 'aaababccaa'))
 

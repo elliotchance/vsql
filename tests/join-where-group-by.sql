@@ -25,6 +25,7 @@ SELECT * FROM t1 JOIN t2 ON t1.id = t2.t1_id WHERE id = 2;
 -- ID: 2 X: 20 T1_ID: 2 Y: 200
 -- ID: 2 X: 20 T1_ID: 2 Y: 300
 
+/* extensions V001-01 */
 EXPLAIN SELECT * FROM t1 JOIN t2 ON t1.id = t2.t1_id WHERE id = 2;
 -- EXPLAIN: $1:
 -- EXPLAIN:   TABLE ":memory:".PUBLIC.T1 (ID INTEGER NOT NULL, X INTEGER)

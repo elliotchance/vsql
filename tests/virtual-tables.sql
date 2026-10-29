@@ -1,6 +1,7 @@
 -- # A "virtual_table" directive registers a virtual table, which has its rows
 -- # provided when it's read (see docs/virtual-tables.rst).
 /* virtual_table CREATE TABLE fruits (id INT, name VARCHAR(10)) AS VALUES ROW(1, 'kiwi'), ROW(2, 'pear') */
+/* extensions V001-01 */
 SELECT * FROM fruits;
 EXPLAIN SELECT * FROM fruits;
 -- ID: 1 NAME: kiwi
@@ -103,7 +104,7 @@ SELECT * FROM nope.t;
 INSERT INTO fruits (id, name) VALUES (2, 'pear');
 UPDATE fruits SET name = 'pear';
 DELETE FROM fruits;
-DROP TABLE fruits;
+DROP TABLE fruits RESTRICT;
 SELECT * FROM fruits;
 -- error 42P01: no such table: ":memory:".PUBLIC.FRUITS
 -- error 42P01: no such table: ":memory:".PUBLIC.FRUITS

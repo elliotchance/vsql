@@ -245,6 +245,7 @@ INSERT INTO t (s, x) VALUES (U&'a\0000', 1);
 -- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.T
 
 -- # A PRIMARY KEY that isn't an integer is not used to find a row (yet).
+/* extensions V001-01 */
 CREATE TABLE t (id VARCHAR(10) PRIMARY KEY, x INT);
 INSERT INTO t (id, x) VALUES ('a', 1), ('b', 2);
 EXPLAIN SELECT * FROM t WHERE id = 'a';

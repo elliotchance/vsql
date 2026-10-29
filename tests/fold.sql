@@ -6,6 +6,7 @@ VALUES UPPER('Hello');
 VALUES LOWER('Hello');
 -- COL1: hello (CHARACTER(5))
 
+/* extensions V001-01 */
 CREATE TABLE t (a VARCHAR(10));
 INSERT INTO t (a) VALUES ('Hello');
 EXPLAIN SELECT UPPER(a), LOWER(a) FROM t;

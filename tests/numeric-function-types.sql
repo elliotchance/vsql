@@ -1,5 +1,6 @@
 -- # ABS has the declared type of its argument. FLOOR and CEIL have a scale of 0
 -- # and one more digit for a fractional part. MOD has the type of the divisor.
+/* extensions V001-01 */
 EXPLAIN VALUES ROW(ABS(1.25), ABS(CAST(-5 AS DECIMAL(4, 1))), FLOOR(1.5), CEIL(CAST(9.5 AS NUMERIC(2, 1))), MOD(CAST(7 AS NUMERIC(10)), CAST(3 AS NUMERIC(2))));
 -- EXPLAIN: VALUES (COL1 NUMERIC(3, 2), COL2 DECIMAL(4, 1), COL3 NUMERIC(2), COL4 NUMERIC(2), COL5 NUMERIC(2)) = ROW(ABS(1.25), ABS(CAST(-5 AS DECIMAL(4, 1))), FLOOR(1.5), CEILING(CAST(9.5 AS NUMERIC(2, 1))), MOD(CAST(7 AS NUMERIC(10)), CAST(3 AS NUMERIC(2))))
 

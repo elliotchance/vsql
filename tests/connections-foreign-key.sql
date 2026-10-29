@@ -70,7 +70,7 @@ CREATE TABLE child (a INT);
 START TRANSACTION;
 ALTER TABLE child ADD COLUMN parent_id INT REFERENCES parent;
 /* connection 2 */
-DROP TABLE parent;
+DROP TABLE parent RESTRICT;
 /* connection 1 */
 COMMIT;
 -- 1: msg: CREATE TABLE 1

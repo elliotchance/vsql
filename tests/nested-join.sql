@@ -15,6 +15,7 @@ SELECT * FROM t1 LEFT JOIN t2 ON a = x LEFT JOIN t3 ON a = y;
 -- A: 2 X: 2 Y: NULL
 -- A: 3 X: NULL Y: 3
 
+/* extensions V001-01 */
 EXPLAIN SELECT * FROM t1 LEFT JOIN t2 ON a = x LEFT JOIN t3 ON a = y;
 -- EXPLAIN: $1:
 -- EXPLAIN:   $1:

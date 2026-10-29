@@ -12,6 +12,7 @@ SELECT * FROM pk1;
 -- ID: 2
 -- ID: 3
 
+/* extensions V001-01 */
 EXPLAIN SELECT * FROM pk1 WHERE id = 2;
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.PK1 (ID INTEGER NOT NULL) BETWEEN 2 AND 2
 -- EXPLAIN: EXPR (":memory:".PUBLIC.PK1.ID INTEGER NOT NULL)
@@ -19,6 +20,7 @@ EXPLAIN SELECT * FROM pk1 WHERE id = 2;
 SELECT * FROM pk1 WHERE id = 2;
 -- ID: 2
 
+/* extensions V001-03 */
 EXPLAIN UPDATE pk1 SET id = 5 WHERE id = 2;
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.PK1 (ID INTEGER NOT NULL) BETWEEN 2 AND 2
 
@@ -228,6 +230,7 @@ SELECT * FROM pk3;
 -- 2: A: 1 B: -2
 -- 2: A: 1 B: 2
 
+/* extensions V001-01 */
 CREATE TABLE pk2 (b INT, a INT, PRIMARY KEY (a, b));
 INSERT INTO pk2 (a, b) VALUES (1, 2);
 INSERT INTO pk2 (a, b) VALUES (2, 1);

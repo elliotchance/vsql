@@ -17,7 +17,7 @@ SELECT * FROM foo;
 CREATE TABLE bar (x INT);
 CREATE TABLE foo (x INT);
 START TRANSACTION;
-DROP TABLE foo;
+DROP TABLE foo RESTRICT;
 /* connection 2 */
 SELECT * FROM bar;
 /* connection 1 */

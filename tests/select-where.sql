@@ -4,6 +4,7 @@ INSERT INTO foo (num) VALUES (13);
 INSERT INTO foo (num) VALUES (27);
 INSERT INTO foo (num) VALUES (35);
 
+/* extensions V001-01 */
 EXPLAIN SELECT * FROM foo WHERE num = 27.0;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.FOO (NUM DOUBLE PRECISION)
 -- EXPLAIN: WHERE NUM = 27.0
@@ -26,6 +27,7 @@ SELECT * FROM foo WHERE num >= 27.0;
 SELECT * FROM foo WHERE num < 27.0;
 -- NUM: 13e0
 
+/* extensions V001-01 */
 EXPLAIN SELECT * FROM foo WHERE num <= 27.0;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.FOO (NUM DOUBLE PRECISION)
 -- EXPLAIN: WHERE NUM <= 27.0
@@ -35,6 +37,7 @@ SELECT * FROM foo WHERE num <= 27.0;
 -- NUM: 13e0
 -- NUM: 27e0
 
+/* extensions V001-01 */
 EXPLAIN SELECT * FROM foo WHERE foo.num = 27.0;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.FOO (NUM DOUBLE PRECISION)
 -- EXPLAIN: WHERE FOO.NUM = 27.0

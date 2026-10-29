@@ -415,7 +415,23 @@ fn has_next_value(tokens []Token) bool {
 // with different provided parameters.
 pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 	t := start_timer()
+	stmt, explain, tokens, features := parse_sql(sql_stmt)!
+	elapsed_parse := t.elapsed()
 
+	return PreparedStmt{
+		stmt:               stmt
+		explain:            explain
+		writes:             has_next_value(tokens)
+		dynamic_parameters: tokens.filter(it.token == token_operator_question_mark).len
+		features:           features
+		c:                  &conn
+		elapsed_parse:      elapsed_parse
+	}
+}
+
+// parse_sql parses a statement. It returns the statement, whether it's
+// EXPLAINed, its tokens (without the EXPLAIN) and the features that it uses.
+fn parse_sql(sql_stmt string) !(Stmt, bool, []Token, []string) {
 	mut tokens, lexical_features := tokenize_with_features(sql_stmt)!
 
 	// EXPLAIN is super helpful, but not part of the SQL standard so we only
@@ -440,17 +456,8 @@ pub fn (mut conn Connection) prepare(sql_stmt string) !PreparedStmt {
 			else {}
 		}
 	}
-	elapsed_parse := t.elapsed()
 
-	return PreparedStmt{
-		stmt:               stmt
-		explain:            explain
-		writes:             has_next_value(tokens)
-		dynamic_parameters: tokens.filter(it.token == token_operator_question_mark).len
-		features:           features
-		c:                  &conn
-		elapsed_parse:      elapsed_parse
-	}
+	return stmt, explain, tokens, features
 }
 
 fn parse_tokens(tokens []Token) !Stmt {

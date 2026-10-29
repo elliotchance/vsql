@@ -34,6 +34,7 @@ SELECT * FROM bar;
 -- error 42P01: no such table: ":memory:".PUBLIC.FOO
 -- error 42P01: no such table: ":memory:".PUBLIC.BAR
 
+/* extensions V001-01 */
 CREATE TABLE foo (x FLOAT);
 EXPLAIN SELECT foo.* FROM foo;
 -- msg: CREATE TABLE 1
@@ -47,6 +48,7 @@ SELECT foo.* FROM foo;
 -- msg: INSERT 1
 -- X: 1.234e0
 
+/* extensions V001-01 */
 CREATE TABLE foo (x FLOAT);
 EXPLAIN SELECT bar.* FROM foo;
 -- msg: CREATE TABLE 1

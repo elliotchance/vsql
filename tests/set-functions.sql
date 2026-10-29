@@ -5,6 +5,7 @@ INSERT INTO nums (s, i, b, n, d, r, f) VALUES (2, -20, 200, 2.5, 2.5, 2.5, 2.5e0
 INSERT INTO nums (s, i, b, n, d, r, f) VALUES (4, 40, 400, -3.12, -3.12, -3.5, -3.5e0);
 INSERT INTO nums (s, i, b, n, d, r, f) VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
+/* extensions V001-01 */
 EXPLAIN SELECT SUM(s), SUM(i), SUM(b), SUM(n), SUM(d), SUM(r), SUM(f) FROM nums;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.NUMS (S SMALLINT, I INTEGER, B BIGINT, N NUMERIC(5, 2), D DECIMAL(5, 2), R REAL, F DOUBLE PRECISION)
 -- EXPLAIN: GROUP BY (SUM(S) BIGINT, SUM(I) BIGINT, SUM(B) BIGINT, SUM(N) NUMERIC, SUM(D) DECIMAL, SUM(R) REAL, SUM(F) DOUBLE PRECISION)
@@ -14,6 +15,7 @@ SELECT SUM(s), SUM(i), SUM(b), SUM(n), SUM(d), SUM(r), SUM(f) FROM nums;
 -- warning 01003: null value eliminated in set function
 -- COL1: 7 COL2: 30 COL3: 700 COL4: 0.63 COL5: 0.63 COL6: 0.5e0 COL7: 0.5e0
 
+/* extensions V001-01 */
 EXPLAIN SELECT AVG(s), AVG(i), AVG(b), AVG(n), AVG(d), AVG(r), AVG(f) FROM nums;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.NUMS (S SMALLINT, I INTEGER, B BIGINT, N NUMERIC(5, 2), D DECIMAL(5, 2), R REAL, F DOUBLE PRECISION)
 -- EXPLAIN: GROUP BY (AVG(S) SMALLINT, AVG(I) INTEGER, AVG(B) BIGINT, AVG(N) NUMERIC(5, 2), AVG(D) DECIMAL(5, 2), AVG(R) REAL, AVG(F) DOUBLE PRECISION)
@@ -23,6 +25,7 @@ SELECT AVG(s), AVG(i), AVG(b), AVG(n), AVG(d), AVG(r), AVG(f) FROM nums;
 -- warning 01003: null value eliminated in set function
 -- COL1: 2 COL2: 10 COL3: 233 COL4: 0.21 COL5: 0.21 COL6: 0.166667e0 COL7: 0.166666666667e0
 
+/* extensions V001-01 */
 EXPLAIN SELECT MIN(s), MIN(i), MIN(b), MIN(n), MIN(d), MIN(r), MIN(f) FROM nums;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.NUMS (S SMALLINT, I INTEGER, B BIGINT, N NUMERIC(5, 2), D DECIMAL(5, 2), R REAL, F DOUBLE PRECISION)
 -- EXPLAIN: GROUP BY (MIN(S) SMALLINT, MIN(I) INTEGER, MIN(B) BIGINT, MIN(N) NUMERIC(5, 2), MIN(D) DECIMAL(5, 2), MIN(R) REAL, MIN(F) DOUBLE PRECISION)
@@ -32,6 +35,7 @@ SELECT MIN(s), MIN(i), MIN(b), MIN(n), MIN(d), MIN(r), MIN(f) FROM nums;
 -- warning 01003: null value eliminated in set function
 -- COL1: 1 COL2: -20 COL3: 100 COL4: -3.12 COL5: -3.12 COL6: -3.5e0 COL7: -3.5e0
 
+/* extensions V001-01 */
 EXPLAIN SELECT MAX(s), MAX(i), MAX(b), MAX(n), MAX(d), MAX(r), MAX(f) FROM nums;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.NUMS (S SMALLINT, I INTEGER, B BIGINT, N NUMERIC(5, 2), D DECIMAL(5, 2), R REAL, F DOUBLE PRECISION)
 -- EXPLAIN: GROUP BY (MAX(S) SMALLINT, MAX(I) INTEGER, MAX(B) BIGINT, MAX(N) NUMERIC(5, 2), MAX(D) DECIMAL(5, 2), MAX(R) REAL, MAX(F) DOUBLE PRECISION)
@@ -92,6 +96,7 @@ SELECT SUM(b) FROM big;
 -- COL1: 9223372036854775806
 
 -- # The sum of exact numbers can have more digits than the argument.
+/* extensions V001-01 */
 CREATE TABLE big (n NUMERIC(3, 1));
 INSERT INTO big (n) VALUES (99.9);
 INSERT INTO big (n) VALUES (99.9);
@@ -133,6 +138,7 @@ SELECT SUM(f) FROM big;
 -- error 22003: numeric value out of range
 
 -- # MIN and MAX work with any type that can be ordered.
+/* extensions V001-01 */
 CREATE TABLE t (c CHARACTER(5), v VARCHAR(10), bo BOOLEAN, d DATE, t TIME, tz TIME WITH TIME ZONE, ts TIMESTAMP, tstz TIMESTAMP WITH TIME ZONE);
 INSERT INTO t (c, v, bo, d, t, tz, ts, tstz) VALUES ('b', 'banana', TRUE, DATE '2022-06-30', TIME '12:34:56', TIME '12:00:00+05:00', TIMESTAMP '2022-06-30 12:34:56', TIMESTAMP '2022-06-30 12:00:00+05:00');
 INSERT INTO t (c, v, bo, d, t, tz, ts, tstz) VALUES ('a', 'cherry', FALSE, DATE '2021-01-01', TIME '01:02:03', TIME '10:00:00+01:00', TIMESTAMP '2021-01-01 01:02:03', TIMESTAMP '2022-06-30 10:00:00+01:00');

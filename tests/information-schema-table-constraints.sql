@@ -44,7 +44,7 @@ SELECT constraint_catalog, constraint_name, table_catalog, constraint_type FROM 
 
 -- # A constraint is removed with its table.
 CREATE TABLE t (a INT PRIMARY KEY);
-DROP TABLE t;
+DROP TABLE t RESTRICT;
 SELECT * FROM information_schema.table_constraints;
 -- msg: CREATE TABLE 1
 -- msg: DROP TABLE 1

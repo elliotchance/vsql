@@ -5,7 +5,7 @@ CREATE TABLE t (a INT NOT NULL, b VARCHAR(10), c BOOLEAN);
 INSERT INTO t (a, b, c) VALUES (1, 'x', TRUE), (2, NULL, FALSE);
 ALTER TABLE t ADD COLUMN d INT DEFAULT 5;
 INSERT INTO t (a, b, c) VALUES (3, 'z', NULL);
-ALTER TABLE t DROP COLUMN b;
+ALTER TABLE t DROP COLUMN b RESTRICT;
 SELECT * FROM t;
 ALTER TABLE t DROP a RESTRICT;
 ALTER TABLE t ADD COLUMN b VARCHAR(10);
@@ -39,8 +39,8 @@ CREATE TABLE t (a INT NOT NULL, b VARCHAR(10) DEFAULT 'z', c BOOLEAN);
 INSERT INTO t (a, b, c) VALUES (1, 'x', TRUE);
 ALTER TABLE t ADD COLUMN d INT;
 INSERT INTO t (a, b, c, d) VALUES (2, 'y', FALSE, 7);
-ALTER TABLE t DROP COLUMN b;
-ALTER TABLE t DROP d;
+ALTER TABLE t DROP COLUMN b RESTRICT;
+ALTER TABLE t DROP d RESTRICT;
 /* out */
 /* in */
 INSERT INTO t (a, c) VALUES (3, NULL);
@@ -95,7 +95,7 @@ SELECT constraint_name, table_name, constraint_type FROM information_schema.tabl
 
 -- # The column must exist, and can't be the only column.
 CREATE TABLE t (a INT);
-ALTER TABLE t DROP COLUMN b;
+ALTER TABLE t DROP COLUMN b RESTRICT;
 ALTER TABLE t DROP COLUMN a CASCADE;
 ALTER TABLE t DROP CONSTRAINT;
 -- msg: CREATE TABLE 1
@@ -108,8 +108,8 @@ ALTER TABLE t DROP CONSTRAINT;
 -- # (into the order they're read) when the PRIMARY KEY is dropped.
 CREATE TABLE t (a INT PRIMARY KEY CHECK (a > 0), b INT NOT NULL UNIQUE CHECK (b < 10), c INT CHECK (c <> 0));
 INSERT INTO t (a, b, c) VALUES (2, 1, 1), (1, 2, 2);
-ALTER TABLE t DROP COLUMN a;
-ALTER TABLE t DROP COLUMN b;
+ALTER TABLE t DROP COLUMN a RESTRICT;
+ALTER TABLE t DROP COLUMN b RESTRICT;
 SELECT constraint_name, constraint_type FROM information_schema.table_constraints;
 INSERT INTO t (c) VALUES (1);
 SELECT * FROM t;
@@ -126,8 +126,8 @@ SELECT * FROM t;
 -- # A constraint that uses the column and other columns needs CASCADE, which
 -- # drops it. The NOT NULL of the other columns of a PRIMARY KEY isn't dropped.
 CREATE TABLE t (a INT, b INT, c INT, PRIMARY KEY (a, b), UNIQUE (b, c), CHECK (a < c));
-ALTER TABLE t DROP COLUMN a;
-ALTER TABLE t DROP COLUMN c;
+ALTER TABLE t DROP COLUMN a RESTRICT;
+ALTER TABLE t DROP COLUMN c RESTRICT;
 ALTER TABLE t DROP COLUMN c CASCADE;
 INSERT INTO t (a, b) VALUES (1, 1), (1, 1);
 SELECT constraint_name, constraint_type FROM information_schema.table_constraints;
@@ -150,12 +150,12 @@ SELECT constraint_name, constraint_type FROM information_schema.table_constraint
 CREATE TABLE parent (id INT PRIMARY KEY, code INT UNIQUE, x INT);
 CREATE TABLE child (parent_id INT REFERENCES parent, code INT REFERENCES parent (code), y INT);
 CREATE TABLE self (a INT UNIQUE REFERENCES self (a), b INT);
-ALTER TABLE parent DROP COLUMN id;
-ALTER TABLE child DROP COLUMN code;
-ALTER TABLE parent DROP COLUMN x;
+ALTER TABLE parent DROP COLUMN id RESTRICT;
+ALTER TABLE child DROP COLUMN code RESTRICT;
+ALTER TABLE parent DROP COLUMN x RESTRICT;
 ALTER TABLE parent DROP COLUMN id CASCADE;
 ALTER TABLE child DROP COLUMN code CASCADE;
-ALTER TABLE self DROP COLUMN a;
+ALTER TABLE self DROP COLUMN a RESTRICT;
 SELECT constraint_name, table_name, constraint_type FROM information_schema.table_constraints;
 INSERT INTO child (parent_id, y) VALUES (123, 1);
 SELECT * FROM child;
@@ -176,7 +176,7 @@ SELECT * FROM child;
 CREATE TABLE t (a INT, b INT);
 INSERT INTO t (a, b) VALUES (1, 2);
 START TRANSACTION;
-ALTER TABLE t DROP COLUMN a;
+ALTER TABLE t DROP COLUMN a RESTRICT;
 SELECT * FROM t;
 ROLLBACK;
 SELECT * FROM t;

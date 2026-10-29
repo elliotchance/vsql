@@ -34,6 +34,7 @@ SELECT bar.*, foo.*, x FROM foo JOIN bar ON TRUE;
 -- Z: 5 X: 3 Y: 4 X: 3
 -- Z: 5 X: 3 Y: 6 X: 3
 
+/* extensions V001-01 */
 EXPLAIN SELECT foo.*, 1 FROM foo;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.FOO (X INTEGER, Y INTEGER)
 -- EXPLAIN: EXPR (":memory:".PUBLIC.FOO.X INTEGER, ":memory:".PUBLIC.FOO.Y INTEGER, COL3 SMALLINT)

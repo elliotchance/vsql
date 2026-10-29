@@ -1,4 +1,5 @@
 -- # A PRIMARY KEY on a column is the same as PRIMARY KEY (column), see #358.
+/* extensions V001-01 */
 CREATE TABLE t (id INT PRIMARY KEY, x INT);
 INSERT INTO t (id, x) VALUES (1, 10);
 INSERT INTO t (id, x) VALUES (1, 20);

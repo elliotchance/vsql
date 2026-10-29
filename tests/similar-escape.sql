@@ -1,6 +1,8 @@
+/* extensions V001-01 */
 EXPLAIN VALUES 'a%' SIMILAR TO 'a!%' ESCAPE '!';
 -- EXPLAIN: VALUES (COL1 BOOLEAN) = ROW('a%' SIMILAR TO 'a!%' ESCAPE '!')
 
+/* extensions V001-01 */
 EXPLAIN VALUES 'a%' NOT SIMILAR TO 'a!%' ESCAPE '!';
 -- EXPLAIN: VALUES (COL1 BOOLEAN) = ROW('a%' NOT SIMILAR TO 'a!%' ESCAPE '!')
 

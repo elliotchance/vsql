@@ -16,10 +16,10 @@ CREATE TABLE information_schema.foo (x INT);
 INSERT INTO information_schema.tables (table_name) VALUES ('x');
 UPDATE information_schema.tables SET table_name = 'x';
 DELETE FROM information_schema.columns;
-DROP TABLE information_schema.tables;
+DROP TABLE information_schema.tables RESTRICT;
 CREATE SEQUENCE information_schema.seq;
 ALTER SEQUENCE information_schema.seq RESTART;
-DROP SEQUENCE information_schema.seq;
+DROP SEQUENCE information_schema.seq RESTRICT;
 -- error 42501: insufficient privilege: INFORMATION_SCHEMA is read-only
 -- error 42501: insufficient privilege: INFORMATION_SCHEMA is read-only
 -- error 42501: insufficient privilege: INFORMATION_SCHEMA is read-only
@@ -114,7 +114,7 @@ SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'PUBLIC';
 -- COL1: 0
 
 CREATE TABLE foo (x INT);
-DROP TABLE foo;
+DROP TABLE foo RESTRICT;
 SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'PUBLIC';
 -- msg: CREATE TABLE 1
 -- msg: DROP TABLE 1

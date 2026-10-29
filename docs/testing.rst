@@ -572,6 +572,25 @@ expected type.
    VALUES ROW(2 + 3 * 5, (2 + 3) * 5);
    -- COL1: 17 (SMALLINT) COL2: 25 (SMALLINT)
 
+vsql Extensions
+^^^^^^^^^^^^^^^
+
+A test can only use standard SQL, so that the tests show how to write SQL that
+works on other databases. Language that only vsql has (see
+:doc:`sql-flagging`) must be listed by its Feature ID in an
+``/* extensions */`` directive, and each Feature ID that's listed must be used
+by at least one statement in the test:
+
+.. code-block:: sql
+
+   /* extensions V001-01 */
+   EXPLAIN VALUES 1;
+   -- EXPLAIN: VALUES (COL1 SMALLINT) = ROW(1)
+
+A test fails if it uses an extension that isn't listed, or lists one that it
+doesn't use. The ``/* setup */`` of a file can't use any extensions, so write
+``DROP TABLE t RESTRICT`` rather than ``DROP TABLE t``.
+
 Debugging Tests
 ---------------
 

@@ -155,6 +155,64 @@ fn (mut conn Connection) open_cursor(name string) !&Cursor {
 	return cursor
 }
 
+// open_cursor executes a query, like query, and opens a cursor with the name
+// on its result. It's the same as a DECLARE CURSOR (that is holdable if hold is
+// true) and OPEN, so a positioned DELETE or UPDATE (WHERE CURRENT OF name) can
+// change the row that the cursor is on (see Connection.position_cursor). The
+// cursor must be removed with Connection.remove_cursor when it's closed. This
+// is the cursor of a dynamic select statement in the SQL/CLI (libvsql).
+//
+// The cursor is closed when the transaction ends (a holdable cursor stays open
+// after a commit), so it must be opened in a transaction. The statement must
+// be a query.
+pub fn (mut p PreparedStmt) open_cursor(name string, hold bool, params map[string]Value) !Result {
+	t := start_timer()
+	query := p.stmt as QueryExpression
+	mut declare_stmt := PreparedStmt{
+		...p
+		stmt: DeclareCursor{
+			name:  name
+			hold:  hold
+			query: query
+		}
+	}
+	declare_stmt.query(params)!
+
+	mut open_stmt := PreparedStmt{
+		...p
+		stmt: OpenStatement{name}
+	}
+	// A cursor that couldn't be opened (or was closed by the end of the
+	// transaction) isn't declared, so the name can be used again.
+	open_stmt.query(params) or {
+		p.c.remove_cursor(name)
+		return err
+	}
+	cursor := p.c.open_cursor(name) or {
+		p.c.remove_cursor(name)
+		return err
+	}
+
+	return new_result(cursor.columns, cursor.rows, p.elapsed_parse, t.elapsed())
+}
+
+// position_cursor positions an open cursor on a row of its result (starting at
+// 0), or on no row if row is outside of the result. The row is then the current
+// row of the cursor for a positioned DELETE or UPDATE. This is for a cursor
+// opened by PreparedStmt.open_cursor that has been fetched by the SQL/CLI.
+pub fn (mut conn Connection) position_cursor(name string, row int) ! {
+	mut cursor := conn.open_cursor(name)!
+	cursor.position = row
+	cursor.on_row = row >= 0 && row < cursor.rows.len
+	cursor.fetched = true
+}
+
+// remove_cursor closes and removes a cursor, if there is one with the name.
+// Another cursor can then be declared (or opened) with the name.
+pub fn (mut conn Connection) remove_cursor(name string) {
+	conn.cursors.delete(name)
+}
+
 // end_transaction closes the cursors when a transaction ends (ISO/IEC
 // 9075-2:2016(E), 17.7, General Rule 10g and 17.8, General Rule 2e). A
 // holdable cursor stays open after a commit.

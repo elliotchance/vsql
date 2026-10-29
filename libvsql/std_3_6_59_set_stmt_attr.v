@@ -75,6 +75,7 @@ fn set_stmt_attr(mut stmt Stmt, attribute SQLInteger, v i64) !i16 {
 			}
 			stmt.current_of_position = v
 			stmt.fetched_column = 0
+			stmt.position_cursor()
 		}
 		sql_attr_nest_descriptor {
 			// - 5.h.i. If there is a prepared statement associated with

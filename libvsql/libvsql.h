@@ -1577,8 +1577,15 @@ SQLRETURN SQLSetConnectAttr(
 /*
  * SQLSetCursorName names the statement's cursor. The name is an identifier
  * (that doesn't start with SQL_CUR or SQLCUR), and two statements of a
- * connection can't have the same name. It isn't used yet, since positioned
- * UPDATE and DELETE are not supported.
+ * connection can't have the same name. Another statement of the connection
+ * can change the current row of the cursor (the CURRENT OF POSITION row of the
+ * rowset) with a positioned DELETE or UPDATE:
+ *
+ *   SQLSetCursorName(stmt, (SQLCHAR *)"c", SQL_NTS);
+ *   SQLExecDirect(stmt, (SQLCHAR *)"SELECT * FROM t", SQL_NTS);
+ *   SQLFetch(stmt);
+ *   SQLExecDirect(stmt2, (SQLCHAR *)"DELETE FROM t WHERE CURRENT OF c",
+ *                 SQL_NTS);
  */
 SQLRETURN SQLSetCursorName(
     SQLHSTMT     StatementHandle,

@@ -52,6 +52,7 @@ fn fetch(mut stmt Stmt, orientation i16, offset i64) !i16 {
 			stmt.rowset_start = start
 			stmt.rowset_len = 0
 		}
+		stmt.position_cursor()
 		return no_data()
 	}
 	stmt.rowset_start = start
@@ -60,6 +61,7 @@ fn fetch(mut stmt Stmt, orientation i16, offset i64) !i16 {
 	// The CURRENT OF POSITION is reset to the first row of the rowset (see
 	// 4.4.6, "Statement attributes").
 	stmt.current_of_position = 1
+	stmt.position_cursor()
 
 	return fetch_using(mut stmt, targets)
 }

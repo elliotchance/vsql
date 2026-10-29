@@ -2,11 +2,13 @@
 
 sequence_generator_definition:
   CREATE SEQUENCE sequence_generator_name {
+    flag(mut yylex, 'T176')
     $$.v = SequenceGeneratorDefinition{
       name: $3.v as Identifier
     }
   }
 | CREATE SEQUENCE sequence_generator_name sequence_generator_options {
+    flag(mut yylex, 'T176')
     $$.v = SequenceGeneratorDefinition{
       name:    $3.v as Identifier
       options: $4.v as []SequenceGeneratorOption

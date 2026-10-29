@@ -26,6 +26,9 @@ returns is executed with ``query()``:
    	}
    }
 
+A prepared statement can also say which features outside of Core SQL it uses,
+see :doc:`sql-flagging`.
+
 A statement can have many dynamic parameters. This is also what
 :doc:`language-c` uses for ``SQLPrepare`` and ``SQLBindParameter``:
 

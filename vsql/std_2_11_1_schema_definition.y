@@ -2,6 +2,7 @@
 
 schema_definition:
   CREATE SCHEMA schema_name_clause {
+    flag(mut yylex, 'F171')
     $$.v = Stmt(SchemaDefinition{$3.v as Identifier})
   }
 

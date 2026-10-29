@@ -21,6 +21,7 @@ column_definition:
     ]
   }
 | column_name data_type_or_domain_name identity_column_specification {
+    flag(mut yylex, 'T174')
     $$.v = [
       TableElement(Column{
         name:     $1.v as Identifier
@@ -30,6 +31,7 @@ column_definition:
     ]
   }
 | column_name data_type_or_domain_name generation_clause {
+    flag(mut yylex, 'T175')
     $$.v = [
       TableElement(Column{
         name:      $1.v as Identifier
@@ -39,6 +41,7 @@ column_definition:
     ]
   }
 | column_name generation_clause {
+    flag(mut yylex, 'T175')
     $$.v = [
       TableElement(Column{
         name:      $1.v as Identifier

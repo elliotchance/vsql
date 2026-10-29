@@ -2,6 +2,7 @@
 
 table_value_constructor:
   VALUES row_value_expression_list {
+    flag(mut yylex, 'F641')
     $$.v = SimpleTable($2.v as []RowValueConstructor)
   }
 
@@ -23,6 +24,7 @@ contextually_typed_row_value_expression_list:
   }
 | contextually_typed_row_value_expression_list comma
   contextually_typed_row_value_expression {
+    flag(mut yylex, 'F641')
     $$.v = append_list($1.v as []ContextuallyTypedRowValueConstructor,
       $3.v as ContextuallyTypedRowValueConstructor)
   }

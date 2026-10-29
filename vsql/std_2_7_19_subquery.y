@@ -10,6 +10,7 @@ table_subquery:
 
 subquery:
   left_paren query_expression right_paren {
+    flag_query_expression(mut yylex, $2.v as QueryExpression, .subquery)
     $$.v = TablePrimary{
       body: $2.v as QueryExpression
     }

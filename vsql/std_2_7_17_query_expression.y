@@ -58,6 +58,7 @@ query_expression_body:
       $3.v as SimpleTable)
   }
 | query_expression_body UNION set_quantifier query_term {
+    flag_if(mut yylex, $3.v as bool, 'T551')
     $$.v = new_set_operation($1.v as SimpleTable, 'UNION', !($3.v as bool),
       $4.v as SimpleTable)
   }
@@ -66,6 +67,7 @@ query_expression_body:
       $3.v as SimpleTable)
   }
 | query_expression_body EXCEPT set_quantifier query_term {
+    flag(mut yylex, if $3.v as bool { 'T551' } else { 'F304' })
     $$.v = new_set_operation($1.v as SimpleTable, 'EXCEPT', !($3.v as bool),
       $4.v as SimpleTable)
   }
@@ -76,21 +78,31 @@ query_term:
 query_primary:
   simple_table { $$.v = $1.v as SimpleTable }
 | left_paren query_expression right_paren {
+    flag_query_expression(mut yylex, $2.v as QueryExpression, .query_primary)
     $$.v = new_parenthesized_query_expression($2.v as QueryExpression)
   }
 
 simple_table:
   query_specification { $$.v = SimpleTable($1.v as QuerySpecification) }
-| table_value_constructor { $$.v = $1.v as SimpleTable }
+| table_value_constructor {
+    flag(mut yylex, 'F661')
+    $$.v = $1.v as SimpleTable
+  }
 
 order_by_clause:
   ORDER BY sort_specification_list { $$.v = $3.v }
 
 result_offset_clause:
-  OFFSET offset_row_count row_or_rows { $$.v = $2.v }
+  OFFSET offset_row_count row_or_rows {
+    flag_row_count(mut yylex, $2.v as ValueSpecification, 'F865')
+    $$.v = $2.v
+  }
 
 fetch_first_clause:
-  FETCH FIRST fetch_first_quantity row_or_rows ONLY { $$.v = $3.v }
+  FETCH FIRST fetch_first_quantity row_or_rows ONLY {
+    flag_row_count(mut yylex, $3.v as ValueSpecification, 'F860')
+    $$.v = $3.v
+  }
 | FETCH FIRST row_or_rows ONLY { $$.v = ValueSpecification(new_integer_value(1)) }
 
 fetch_first_quantity:

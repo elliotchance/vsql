@@ -14,9 +14,21 @@ constraint_name_definition:
 // enforcement> isn't supported, so every constraint is ENFORCED (Syntax Rule
 // 3).
 constraint_characteristic:
-  DEFERRABLE { $$.v = 'DEFERRABLE' }
-| NOT DEFERRABLE { $$.v = 'NOT DEFERRABLE' }
-| INITIALLY DEFERRED { $$.v = 'INITIALLY DEFERRED' }
-| INITIALLY IMMEDIATE { $$.v = 'INITIALLY IMMEDIATE' }
+  DEFERRABLE {
+    flag(mut yylex, 'F721')
+    $$.v = 'DEFERRABLE'
+  }
+| NOT DEFERRABLE {
+    flag(mut yylex, 'F721')
+    $$.v = 'NOT DEFERRABLE'
+  }
+| INITIALLY DEFERRED {
+    flag(mut yylex, 'F721')
+    $$.v = 'INITIALLY DEFERRED'
+  }
+| INITIALLY IMMEDIATE {
+    flag(mut yylex, 'F721')
+    $$.v = 'INITIALLY IMMEDIATE'
+  }
 
 %%

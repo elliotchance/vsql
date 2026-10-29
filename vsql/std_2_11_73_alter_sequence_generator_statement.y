@@ -2,6 +2,7 @@
 
 alter_sequence_generator_statement:
   ALTER SEQUENCE sequence_generator_name alter_sequence_generator_options {
+    flag(mut yylex, 'T176')
     $$.v = AlterSequenceGeneratorStatement{
       name:    $3.v as Identifier
       options: $4.v as []SequenceGeneratorOption
@@ -17,6 +18,8 @@ alter_sequence_generator_options:
 
 alter_sequence_generator_option:
   alter_sequence_generator_restart_option {
+    flag_if(mut yylex, ($1.v as SequenceGeneratorRestartOption).restart_value == none,
+      'T177')
     $$.v = SequenceGeneratorOption($1.v as SequenceGeneratorRestartOption)
   }
 | basic_sequence_generator_option { $$.v = $1.v as SequenceGeneratorOption }

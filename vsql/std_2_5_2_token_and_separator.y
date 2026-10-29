@@ -11,7 +11,10 @@ identifier_body:
   identifier_start { $$.v = $1.v as IdentifierChain }
 
 identifier_start:
-  LITERAL_IDENTIFIER { $$.v = $1.v as IdentifierChain }
+  LITERAL_IDENTIFIER {
+    flag_identifier(mut yylex, ($1.v as IdentifierChain).identifier)
+    $$.v = $1.v as IdentifierChain
+  }
 
 not_equals_operator: OPERATOR_NOT_EQUALS
 

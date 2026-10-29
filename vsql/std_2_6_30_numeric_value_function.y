@@ -3,16 +3,46 @@
 numeric_value_function:
   position_expression { $$.v = $1.v as RoutineInvocation }
 | length_expression { $$.v = $1.v as RoutineInvocation }
-| absolute_value_expression { $$.v = $1.v as RoutineInvocation }
-| modulus_expression { $$.v = $1.v as RoutineInvocation }
-| trigonometric_function { $$.v = $1.v as RoutineInvocation }
-| common_logarithm { $$.v = $1.v as RoutineInvocation }
-| natural_logarithm { $$.v = $1.v as RoutineInvocation }
-| exponential_function { $$.v = $1.v as RoutineInvocation }
-| power_function { $$.v = $1.v as RoutineInvocation }
-| square_root { $$.v = $1.v as RoutineInvocation }
-| floor_function { $$.v = $1.v as RoutineInvocation }
-| ceiling_function { $$.v = $1.v as RoutineInvocation }
+| absolute_value_expression {
+    flag(mut yylex, 'T441')
+    $$.v = $1.v as RoutineInvocation
+  }
+| modulus_expression {
+    flag(mut yylex, 'T441')
+    $$.v = $1.v as RoutineInvocation
+  }
+| trigonometric_function {
+    flag(mut yylex, 'T622')
+    $$.v = $1.v as RoutineInvocation
+  }
+| common_logarithm {
+    flag(mut yylex, 'T624')
+    $$.v = $1.v as RoutineInvocation
+  }
+| natural_logarithm {
+    flag(mut yylex, 'T621')
+    $$.v = $1.v as RoutineInvocation
+  }
+| exponential_function {
+    flag(mut yylex, 'T621')
+    $$.v = $1.v as RoutineInvocation
+  }
+| power_function {
+    flag(mut yylex, 'T621')
+    $$.v = $1.v as RoutineInvocation
+  }
+| square_root {
+    flag(mut yylex, 'T621')
+    $$.v = $1.v as RoutineInvocation
+  }
+| floor_function {
+    flag(mut yylex, 'T621')
+    $$.v = $1.v as RoutineInvocation
+  }
+| ceiling_function {
+    flag(mut yylex, 'T621')
+    $$.v = $1.v as RoutineInvocation
+  }
 
 position_expression:
   character_position_expression { $$.v = $1.v as RoutineInvocation }

@@ -13,6 +13,7 @@ row_value_constructor:
 
 explicit_row_value_constructor:
   ROW left_paren row_value_constructor_element_list right_paren {
+    flag(mut yylex, 'T051')
     $$.v = ExplicitRowValueConstructor{$3.v as []ValueExpression}
   }
 
@@ -27,12 +28,17 @@ row_value_constructor_element:
 
 contextually_typed_row_value_constructor:
   common_value_expression {
+    expr := $1.v as CommonValueExpression
+    flag_if(mut yylex, !is_parenthesized(expr), 'F641')
     $$.v = ContextuallyTypedRowValueConstructor($1.v as CommonValueExpression) 
   }
 | boolean_value_expression {
+    expr := $1.v as BooleanValueExpression
+    flag_if(mut yylex, !is_parenthesized_boolean(expr), 'F641')
     $$.v = ContextuallyTypedRowValueConstructor($1.v as BooleanValueExpression)
   }
 | contextually_typed_value_specification {
+    flag(mut yylex, 'F641')
     $$.v = ContextuallyTypedRowValueConstructor($1.v as ContextuallyTypedValueSpecification)
   }
 | left_paren contextually_typed_value_specification right_paren {

@@ -36,7 +36,13 @@ between_predicate_part_1:
 | NOT BETWEEN { $$.v = false }
 
 is_symmetric:
-  SYMMETRIC { $$.v = true }
-| ASYMMETRIC { $$.v = false }
+  SYMMETRIC {
+    flag(mut yylex, 'T461')
+    $$.v = true
+  }
+| ASYMMETRIC {
+    flag(mut yylex, 'T461')
+    $$.v = false
+  }
 
 %%

@@ -26,6 +26,8 @@ in_predicate_value:
     }
   }
 | left_paren in_value_list right_paren {
+    flag_if(mut yylex, ($2.v as []RowValueConstructorPredicand).any(!is_value_specification(it)),
+      'F561')
     $$.v = InPredicate{
       values: $2.v as []RowValueConstructorPredicand
     }

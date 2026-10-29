@@ -72,10 +72,14 @@ date_literal:
   DATE date_string { $$.v = new_date_value(($2.v as Value).string_value())! }
 
 time_literal:
-  TIME time_string { $$.v = new_time_value(($2.v as Value).string_value())! }
+  TIME time_string {
+    flag_datetime_literal(mut yylex, ($2.v as Value).string_value(), false)
+    $$.v = new_time_value(($2.v as Value).string_value())!
+  }
 
 timestamp_literal:
   TIMESTAMP timestamp_string {
+    flag_datetime_literal(mut yylex, ($2.v as Value).string_value(), true)
     $$.v = new_timestamp_value(($2.v as Value).string_value())!
   }
 
@@ -89,8 +93,17 @@ timestamp_string:
   LITERAL_STRING { $$.v = $1.v as Value }
 
 boolean_literal:
-  TRUE { $$.v = new_boolean_value(true) }
-| FALSE { $$.v = new_boolean_value(false) }
-| UNKNOWN { $$.v = new_unknown_value() }
+  TRUE {
+    flag(mut yylex, 'T031')
+    $$.v = new_boolean_value(true)
+  }
+| FALSE {
+    flag(mut yylex, 'T031')
+    $$.v = new_boolean_value(false)
+  }
+| UNKNOWN {
+    flag(mut yylex, 'T031')
+    $$.v = new_unknown_value()
+  }
 
 %%

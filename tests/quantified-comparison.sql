@@ -137,6 +137,7 @@ VALUES 1 < ALL (SELECT foo FROM t2);
 VALUES 1 = ALL (1, 2);
 -- error 42601: syntax error: unexpected number, expecting SELECT or VALUES or "("
 
+/* extensions V001-01 */
 EXPLAIN SELECT * FROM t1 WHERE x > ALL (SELECT x FROM t2) AND x = ANY (SELECT x FROM t3);
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(10))
 -- EXPLAIN: WHERE X > ALL (SELECT X FROM T2) AND X = SOME (SELECT X FROM T3)

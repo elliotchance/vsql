@@ -85,6 +85,7 @@ VALUES (3 IN (1, 2, 3)) = TRUE;
 VALUES 3 IN (1, 2, 3) AND 4 NOT IN (1, 2, 3);
 -- COL1: TRUE
 
+/* extensions V001-01 */
 EXPLAIN VALUES 3 NOT IN (1, 2);
 -- EXPLAIN: VALUES (COL1 BOOLEAN) = ROW(3 NOT IN (1, 2))
 
@@ -124,6 +125,7 @@ SELECT MAX(x) IN (2, 3) FROM t;
 -- warning 01003: null value eliminated in set function
 -- COL1: TRUE
 
+/* extensions V001-01 */
 EXPLAIN SELECT * FROM t WHERE x IN (1, 3);
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T (X INTEGER)
 -- EXPLAIN: WHERE X IN (1, 3)

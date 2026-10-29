@@ -39,7 +39,7 @@ SELECT constraint_catalog, constraint_name, check_clause FROM information_schema
 
 -- # A constraint is removed with its table.
 CREATE TABLE t (a INT CHECK (a > 0));
-DROP TABLE t;
+DROP TABLE t RESTRICT;
 SELECT * FROM information_schema.check_constraints;
 -- msg: CREATE TABLE 1
 -- msg: DROP TABLE 1

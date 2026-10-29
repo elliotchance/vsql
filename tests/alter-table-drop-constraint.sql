@@ -2,8 +2,8 @@
 -- # other constraints keep their names.
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE t (a INT CHECK (a > 0) CHECK (a < 10), b INT UNIQUE REFERENCES parent, c INT UNIQUE);
-ALTER TABLE t DROP CONSTRAINT t_check_1;
-ALTER TABLE t DROP CONSTRAINT t_unique_1;
+ALTER TABLE t DROP CONSTRAINT t_check_1 RESTRICT;
+ALTER TABLE t DROP CONSTRAINT t_unique_1 RESTRICT;
 ALTER TABLE t DROP CONSTRAINT t_foreign_key_1 RESTRICT;
 INSERT INTO t (a, b, c) VALUES (-1, 1, 1), (-2, 1, 2);
 INSERT INTO t (a) VALUES (10);
@@ -24,8 +24,8 @@ SELECT constraint_name, constraint_type FROM information_schema.table_constraint
 -- # existing rows are still read.
 CREATE TABLE t (a INT PRIMARY KEY, b INT CONSTRAINT b_not_null NOT NULL, c VARCHAR(10));
 INSERT INTO t (a, b, c) VALUES (2, 3, 'x');
-ALTER TABLE t DROP CONSTRAINT b_not_null;
-ALTER TABLE t DROP CONSTRAINT t_not_null_1;
+ALTER TABLE t DROP CONSTRAINT b_not_null RESTRICT;
+ALTER TABLE t DROP CONSTRAINT t_not_null_1 RESTRICT;
 INSERT INTO t (a, b) VALUES (1, NULL);
 SELECT * FROM t;
 SELECT column_name, is_nullable FROM information_schema.columns WHERE table_name = 'T';
@@ -43,7 +43,7 @@ SELECT column_name, is_nullable FROM information_schema.columns WHERE table_name
 -- # The rows of a table without a PRIMARY KEY keep their order.
 CREATE TABLE t (a INT NOT NULL, b INT);
 INSERT INTO t (a, b) VALUES (2, 1), (1, 2);
-ALTER TABLE t DROP CONSTRAINT t_not_null_1;
+ALTER TABLE t DROP CONSTRAINT t_not_null_1 RESTRICT;
 INSERT INTO t (a, b) VALUES (NULL, 3);
 SELECT * FROM t;
 -- msg: CREATE TABLE 1
@@ -58,7 +58,7 @@ SELECT * FROM t;
 -- # it's dropped. The columns stay NOT NULL.
 CREATE TABLE t (a INT PRIMARY KEY, b VARCHAR(10));
 INSERT INTO t (a, b) VALUES (2, 'b'), (1, 'a');
-ALTER TABLE t DROP CONSTRAINT t_primary_key;
+ALTER TABLE t DROP CONSTRAINT t_primary_key RESTRICT;
 INSERT INTO t (a, b) VALUES (1, 'c'), (3, 'd');
 INSERT INTO t (a, b) VALUES (NULL, 'e');
 UPDATE t SET b = 'x' WHERE a = 1;
@@ -82,15 +82,15 @@ SELECT constraint_name, constraint_type FROM information_schema.table_constraint
 -- # including itself).
 CREATE TABLE parent (id INT PRIMARY KEY, code INT UNIQUE, parent_id INT REFERENCES parent, parent_code INT REFERENCES parent (code));
 CREATE TABLE child (parent_id INT REFERENCES parent, parent_code INT REFERENCES parent (code));
-ALTER TABLE parent DROP CONSTRAINT parent_primary_key;
+ALTER TABLE parent DROP CONSTRAINT parent_primary_key RESTRICT;
 ALTER TABLE parent DROP CONSTRAINT parent_primary_key RESTRICT;
 ALTER TABLE parent DROP CONSTRAINT parent_unique_1 RESTRICT;
 ALTER TABLE parent DROP CONSTRAINT parent_primary_key CASCADE;
 SELECT constraint_name, table_name, constraint_type FROM information_schema.table_constraints;
-ALTER TABLE child DROP CONSTRAINT child_foreign_key_2;
-ALTER TABLE parent DROP CONSTRAINT parent_unique_1;
-ALTER TABLE parent DROP CONSTRAINT parent_foreign_key_2;
-ALTER TABLE parent DROP CONSTRAINT parent_unique_1;
+ALTER TABLE child DROP CONSTRAINT child_foreign_key_2 RESTRICT;
+ALTER TABLE parent DROP CONSTRAINT parent_unique_1 RESTRICT;
+ALTER TABLE parent DROP CONSTRAINT parent_foreign_key_2 RESTRICT;
+ALTER TABLE parent DROP CONSTRAINT parent_unique_1 RESTRICT;
 INSERT INTO child (parent_id, parent_code) VALUES (1, 1);
 SELECT constraint_name, table_name, constraint_type FROM information_schema.table_constraints;
 -- msg: CREATE TABLE 1
@@ -116,13 +116,13 @@ CREATE SCHEMA s;
 CREATE TABLE s.t (a INT CONSTRAINT c1 CHECK (a > 0));
 CREATE TABLE s.u (a INT CONSTRAINT c2 CHECK (a > 0));
 CREATE TABLE public.t (a INT CONSTRAINT c3 CHECK (a > 0));
-ALTER TABLE s.t DROP CONSTRAINT missing;
-ALTER TABLE s.t DROP CONSTRAINT c2;
-ALTER TABLE s.t DROP CONSTRAINT public.c1;
-ALTER TABLE s.t DROP CONSTRAINT other.s.c1;
-ALTER TABLE public.t DROP CONSTRAINT c1;
-ALTER TABLE s.t DROP CONSTRAINT s.c1;
-ALTER TABLE information_schema.tables DROP CONSTRAINT c1;
+ALTER TABLE s.t DROP CONSTRAINT missing RESTRICT;
+ALTER TABLE s.t DROP CONSTRAINT c2 RESTRICT;
+ALTER TABLE s.t DROP CONSTRAINT public.c1 RESTRICT;
+ALTER TABLE s.t DROP CONSTRAINT other.s.c1 RESTRICT;
+ALTER TABLE public.t DROP CONSTRAINT c1 RESTRICT;
+ALTER TABLE s.t DROP CONSTRAINT s.c1 RESTRICT;
+ALTER TABLE information_schema.tables DROP CONSTRAINT c1 RESTRICT;
 SELECT constraint_schema, constraint_name FROM information_schema.table_constraints;
 -- msg: CREATE SCHEMA 1
 -- msg: CREATE TABLE 1
@@ -141,10 +141,10 @@ SELECT constraint_schema, constraint_name FROM information_schema.table_constrai
 -- # A constraint that's added after another has been dropped can get the name
 -- # of the dropped constraint, because it's the first name that isn't used.
 CREATE TABLE t (a INT CHECK (a > 0) CHECK (a > 1));
-ALTER TABLE t DROP CONSTRAINT t_check_1;
+ALTER TABLE t DROP CONSTRAINT t_check_1 RESTRICT;
 ALTER TABLE t ADD CHECK (a > 2);
 ALTER TABLE t ADD CHECK (a > 3);
-ALTER TABLE t DROP CONSTRAINT t_check_2;
+ALTER TABLE t DROP CONSTRAINT t_check_2 RESTRICT;
 ALTER TABLE t ADD CONSTRAINT t_check_2 CHECK (a > 4);
 SELECT constraint_name, check_clause FROM information_schema.check_constraints;
 -- msg: CREATE TABLE 1
@@ -180,9 +180,9 @@ INSERT INTO child (parent_id) VALUES (2);
 -- # The names of the other constraints are read back from the file.
 /* connection 1 */
 CREATE TABLE t (a INT NOT NULL CHECK (a > 0), b INT NOT NULL UNIQUE CHECK (b > 0), c INT PRIMARY KEY);
-ALTER TABLE t DROP CONSTRAINT t_not_null_1;
-ALTER TABLE t DROP CONSTRAINT t_check_1;
-ALTER TABLE t DROP CONSTRAINT t_primary_key;
+ALTER TABLE t DROP CONSTRAINT t_not_null_1 RESTRICT;
+ALTER TABLE t DROP CONSTRAINT t_check_1 RESTRICT;
+ALTER TABLE t DROP CONSTRAINT t_primary_key RESTRICT;
 /* connection 2 */
 SELECT constraint_name, constraint_type FROM information_schema.table_constraints;
 INSERT INTO t (a, b, c) VALUES (NULL, 1, 1), (-1, 2, 1);
@@ -207,10 +207,10 @@ CREATE TABLE t (a INT PRIMARY KEY CHECK (a > 0) CHECK (a < 10), b INT NOT NULL U
 INSERT INTO parent (id, code) VALUES (1, 1);
 INSERT INTO t (a, b, c, d) VALUES (1, 1, 1, 1);
 ALTER TABLE parent DROP CONSTRAINT parent_unique_1 CASCADE;
-ALTER TABLE t DROP CONSTRAINT t_primary_key;
-ALTER TABLE t DROP CONSTRAINT t_check_1;
-ALTER TABLE t DROP CONSTRAINT t_unique_1;
-ALTER TABLE t DROP CONSTRAINT t_not_null_2;
+ALTER TABLE t DROP CONSTRAINT t_primary_key RESTRICT;
+ALTER TABLE t DROP CONSTRAINT t_check_1 RESTRICT;
+ALTER TABLE t DROP CONSTRAINT t_unique_1 RESTRICT;
+ALTER TABLE t DROP CONSTRAINT t_not_null_2 RESTRICT;
 /* out */
 /* in */
 SELECT constraint_name, table_name, constraint_type FROM information_schema.table_constraints;

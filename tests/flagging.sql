@@ -92,17 +92,20 @@ ROLLBACK WORK;
 -- flags:
 -- error 2D000: invalid transaction termination
 
+/* extensions V001-01 */
 /* flags */
 EXPLAIN VALUES 1;
 -- flags: F641, F661, V001-01
 -- EXPLAIN: VALUES (COL1 SMALLINT) = ROW(1)
 
+/* extensions V001-02 */
 /* flags */
 EXPLAIN DELETE FROM t WHERE x = 1;
 -- flags: V001-02
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T (X INTEGER NOT NULL, Y CHARACTER VARYING(10), B BOOLEAN, D DATE)
 -- EXPLAIN: WHERE X = 1
 
+/* extensions V001-03 */
 /* flags */
 EXPLAIN UPDATE t SET x = 2;
 -- flags: V001-03
@@ -318,6 +321,7 @@ DROP SCHEMA s CASCADE;
 -- flags: F032, F381
 -- error 3F000: invalid schema name: S
 
+/* extensions V002-01 */
 /* flags */
 DROP TABLE t;
 -- flags: V002-01
@@ -343,6 +347,7 @@ ALTER TABLE t ALTER COLUMN y DROP DEFAULT;
 -- flags: F381
 -- error 42601: syntax error: column Y has no DEFAULT
 
+/* extensions V002-02 */
 /* flags */
 ALTER TABLE t DROP COLUMN y;
 -- flags: F033, V002-02
@@ -358,6 +363,7 @@ ALTER TABLE t ADD CONSTRAINT c CHECK (x > 0);
 -- flags: F381, F491
 -- msg: ALTER TABLE 1
 
+/* extensions V002-03 */
 /* flags */
 ALTER TABLE t DROP CONSTRAINT c;
 -- flags: F381, F491, V002-03
@@ -373,6 +379,7 @@ ALTER SEQUENCE seq RESTART WITH 1;
 -- flags: T176
 -- msg: ALTER SEQUENCE 1
 
+/* extensions V003-01 */
 /* flags */
 DROP SEQUENCE seq;
 -- flags: T176, V003-01
@@ -493,6 +500,7 @@ SELECT x FROM t WHERE y LIKE 'a' || 'b' OR y LIKE UPPER(y) OR (y) LIKE 'a';
 -- flags: F281
 -- X: 1
 
+/* extensions V002-02 */
 /* flags */
 ALTER TABLE t DROP y;
 -- flags: F033, V002-02

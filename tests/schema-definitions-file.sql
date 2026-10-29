@@ -1,4 +1,5 @@
 /* connection 1 */
+/* extensions V001-01 */
 CREATE SCHEMA "Mixed";
 CREATE TABLE "Mixed"."Tab" ("lower" INT, "SELECT" VARCHAR(10), c CHAR, d CHARACTER(3), t TIMESTAMP, z TIME(3) WITH TIME ZONE, f FLOAT, r REAL, n NUMERIC(10, 2), dd DECIMAL(5), b BOOLEAN, x SMALLINT NOT NULL, y BIGINT, dp DOUBLE PRECISION, dt DATE, tz TIMESTAMP(2) WITH TIME ZONE, PRIMARY KEY (y));
 INSERT INTO "Mixed"."Tab" ("lower", "SELECT", c, d, x, y, n, t, tz, b, dd) VALUES (1, 'a', 'b', 'cde', 3, 4, 12.34, TIMESTAMP '2020-01-02 03:04:05', TIMESTAMP '2020-01-02 03:04:05.12+05:00', TRUE, 12345);
@@ -30,7 +31,7 @@ ALTER SEQUENCE "Mixed"."seq" INCREMENT BY 50;
 VALUES NEXT VALUE FOR "Mixed"."seq";
 VALUES NEXT VALUE FOR "Mixed"."seq";
 VALUES NEXT VALUE FOR plain;
-DROP SEQUENCE "Mixed"."seq";
+DROP SEQUENCE "Mixed"."seq" RESTRICT;
 /* connection 2 */
 VALUES NEXT VALUE FOR "Mixed"."seq";
 -- 1: msg: CREATE SCHEMA 1

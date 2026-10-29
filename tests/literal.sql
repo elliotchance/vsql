@@ -77,6 +77,7 @@ VALUES ROW('a''''b', '''x''');
 VALUES CHARACTER_LENGTH('it''s');
 -- COL1: 4
 
+/* extensions V001-01 */
 EXPLAIN VALUES 'it''s';
 -- EXPLAIN: VALUES (COL1 CHARACTER(4)) = ROW('it''s')
 

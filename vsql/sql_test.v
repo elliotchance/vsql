@@ -16,6 +16,9 @@ struct SQLTest {
 	expected    string
 	show_types  bool
 	show_flags  bool
+	// extensions are the vsql extensions (such as "V001-01") that the test
+	// uses, see the "extensions" directive.
+	extensions []string
 }
 
 fn get_test_filter() (string, int) {
@@ -51,14 +54,16 @@ fn get_tests() ![]SQLTest {
 		mut in_setup := false
 		mut show_types := false
 		mut show_flags := false
+		mut extensions := []string{}
 		for line in lines {
 			if line == '' {
-				tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags}
+				tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions}
 				stmts = []
 				expected = []
 				in_setup = false
 				show_types = false
 				show_flags = false
+				extensions = []
 			} else if line.starts_with('/*') {
 				contents := line[2..line.len - 2].trim_space()
 				if contents == 'setup' {
@@ -78,6 +83,8 @@ fn get_tests() ![]SQLTest {
 					show_types = true
 				} else if contents == 'flags' {
 					show_flags = true
+				} else if contents.starts_with('extensions ') {
+					extensions = parse_extensions(contents[11..])
 				} else if contents == 'params' || contents.starts_with('params ') {
 					stmts << '${contents} '
 				} else {
@@ -108,11 +115,39 @@ fn get_tests() ![]SQLTest {
 		}
 
 		if stmts.len > 0 {
-			tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags}
+			tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions}
 		}
 	}
 
 	return tests
+}
+
+// parse_extensions returns the Feature IDs of an "extensions" directive, which
+// must each be a vsql extension (VXXX-YY) and only listed once.
+fn parse_extensions(s string) []string {
+	mut extensions := []string{}
+	for id in s.fields() {
+		if !is_vsql_extension(id) || id in extensions {
+			panic('bad extensions directive: "${s}"')
+		}
+		extensions << id
+	}
+
+	return extensions
+}
+
+// is_vsql_extension is true if a Feature ID is a vsql extension (VXXX-YY).
+fn is_vsql_extension(id string) bool {
+	return id.len == 7 && id[0] == `V` && id[4] == `-`
+		&& id[1..4].bytes().all(it.is_digit()) && id[5..].bytes().all(it.is_digit())
+}
+
+// sql_test_extensions returns the vsql extensions that a statement uses, if it
+// can be parsed.
+fn sql_test_extensions(stmt string) []string {
+	_, _, _, features := parse_sql(stmt) or { return [] }
+
+	return features.filter(is_vsql_extension(it))
 }
 
 // parse_params returns the values of a "params" directive, named "?1", "?2",
@@ -449,9 +484,17 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 	mut connections := map[string]&SQLTestConn{}
 	mut current_connection_name := ''
 
+	// A test can only use the vsql extensions in its "extensions" directive, and
+	// must use each of them. The setup of a file can't use any.
+	mut problems := []string{}
+	mut used := []string{}
 	for stmt in test.setup {
 		if verbose {
 			println('  ${stmt.trim_space()}')
+		}
+
+		for id in sql_test_extensions(stmt) {
+			problems << 'setup uses vsql extension ${id}: ${stmt.trim_space()}'
 		}
 
 		output := db.run(stmt, map[string]Value{}, false, false)!
@@ -582,6 +625,13 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 
 		prefix := if current_connection_name == '' { '' } else { '${current_connection_name}: ' }
 
+		for id in sql_test_extensions(stmt) {
+			if id !in test.extensions {
+				problems << "uses vsql extension ${id}, which isn't in /* extensions */: ${stmt.trim_space()}"
+			}
+			used << id
+		}
+
 		// A statement with a "?" also shows each value it's given, in place of
 		// its "?".
 		if substituted := substitute_params(stmt, params) {
@@ -617,7 +667,20 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 
 	assert expected == actual_trim
 
-	return if expected == actual_trim { SQLTestResult.passed } else { SQLTestResult.failed }
+	for id in test.extensions {
+		if id !in used {
+			problems << '/* extensions */ lists ${id}, but no statement uses it'
+		}
+	}
+	for problem in problems {
+		eprintln('${at}${problem}\n')
+	}
+
+	return if expected == actual_trim && problems.len == 0 {
+		SQLTestResult.passed
+	} else {
+		SQLTestResult.failed
+	}
 }
 
 // register_test_virtual_table registers a virtual table from a "virtual_table"

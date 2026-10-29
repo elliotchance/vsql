@@ -1,3 +1,4 @@
+/* extensions V001-01 */
 EXPLAIN VALUES 'a' LIKE 'a';
 -- EXPLAIN: VALUES (COL1 BOOLEAN) = ROW('a' LIKE 'a')
 

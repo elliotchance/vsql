@@ -5,6 +5,7 @@ VALUES 'foo' || 'bar';
 VALUES 123 || 'bar';
 -- error 42883: operator does not exist: SMALLINT || CHARACTER
 
+/* extensions V001-01 */
 CREATE TABLE t (a VARCHAR(10), b CHAR(4));
 INSERT INTO t (a, b) VALUES ('hello', 'abcd');
 EXPLAIN SELECT a || b, b || b, a || 'xy' FROM t;

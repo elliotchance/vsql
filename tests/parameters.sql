@@ -37,6 +37,7 @@ SELECT * FROM t2;
 -- msg: INSERT 1
 -- X: hello
 
+/* extensions V001-03 */
 EXPLAIN UPDATE t1 SET x = ?;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T1 (X DOUBLE PRECISION)
 

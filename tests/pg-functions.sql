@@ -14,6 +14,7 @@ SELECT * FROM (VALUES current_setting('server_version_num')) AS t1 (ver_num);
 SELECT * FROM pg_database;
 -- DATNAME: vsql
 
+/* extensions V001-01 */
 EXPLAIN SELECT datname FROM pg_database;
 -- EXPLAIN: VIRTUAL TABLE PUBLIC.PG_DATABASE (DATNAME CHARACTER VARYING(255))
 -- EXPLAIN: EXPR (DATNAME CHARACTER VARYING(255))

@@ -1,3 +1,4 @@
+/* extensions V001-03 */
 EXPLAIN UPDATE foo SET x = 123;
 -- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
@@ -157,6 +158,7 @@ SELECT * FROM foo;
 -- BAZ: abc
 
 -- # https://github.com/elliotchance/vsql/issues/200
+/* extensions V001-03 */
 CREATE TABLE PrimaryProduct (id INT NOT NULL, PRIMARY KEY(id));
 INSERT INTO PrimaryProduct (id) VALUES (1);
 EXPLAIN UPDATE PrimaryProduct SET id = 2 WHERE id = 1;

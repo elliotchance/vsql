@@ -56,7 +56,7 @@ SELECT * FROM t;
 /* connection 1 */
 CREATE TABLE t (a INT);
 START TRANSACTION;
-DROP TABLE t;
+DROP TABLE t RESTRICT;
 /* connection 2 */
 INSERT INTO t (a) VALUES (5);
 -- 1: msg: CREATE TABLE 1
@@ -70,7 +70,7 @@ CREATE TABLE t (a INT);
 START TRANSACTION;
 INSERT INTO t (a) VALUES (5);
 /* connection 1 */
-DROP TABLE t;
+DROP TABLE t RESTRICT;
 -- 1: msg: CREATE TABLE 1
 -- 2: msg: START TRANSACTION
 -- 2: msg: INSERT 1

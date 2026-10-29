@@ -8,7 +8,7 @@ UPDATE foo.public.bar SET baz = 456;
 SELECT bar.baz FROM foo.public.bar;
 DELETE FROM foo.public.bar;
 SELECT * FROM foo.public.bar;
-DROP TABLE foo.public.bar;
+DROP TABLE foo.public.bar RESTRICT;
 -- msg: SET CATALOG 1
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
@@ -19,6 +19,7 @@ DROP TABLE foo.public.bar;
 -- msg: DROP TABLE 1
 
 /* create_catalog FOO */
+/* extensions V001-01 */
 SET CATALOG 'FOO';
 CREATE SCHEMA foo.s1;
 CREATE TABLE foo.s1.t1 (x INT);
@@ -42,7 +43,7 @@ UPDATE foo.public.bar SET baz = 5;
 INSERT INTO foo.public.bar (baz) VALUES (7);
 DELETE FROM foo.public.bar WHERE baz = 5;
 SELECT * FROM foo.public.bar;
-DROP TABLE foo.public.bar;
+DROP TABLE foo.public.bar RESTRICT;
 SELECT * FROM foo.public.bar;
 -- msg: SET CATALOG 1
 -- msg: CREATE TABLE 1
@@ -57,6 +58,7 @@ SELECT * FROM foo.public.bar;
 -- error 42P01: no such table: FOO.PUBLIC.BAR
 
 /* create_catalog FOO */
+/* extensions V001-01 */
 SET CATALOG ':memory:';
 CREATE TABLE foo.public.qux (baz INTEGER NOT NULL, PRIMARY KEY (baz));
 INSERT INTO foo.public.qux (baz) VALUES (1), (2);
@@ -83,7 +85,7 @@ CREATE SEQUENCE foo.s2.seq;
 VALUES NEXT VALUE FOR foo.s2.seq;
 ALTER SEQUENCE foo.s2.seq RESTART WITH 10;
 VALUES NEXT VALUE FOR foo.s2.seq;
-DROP SEQUENCE foo.s2.seq;
+DROP SEQUENCE foo.s2.seq RESTRICT;
 DROP SCHEMA foo.s2 RESTRICT;
 SET CATALOG 'FOO';
 SET SCHEMA 'S2';

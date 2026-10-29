@@ -249,6 +249,14 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_TRANSACTION_REPEATABLE_READ  0x00000004L /* not supported */
 #define SQL_TRANSACTION_SERIALIZABLE     0x00000008L /* not supported */
 
+/* SQLGetSessionInfo InfoTypes. */
+#define SQL_CURRENT_USER                    47    /* CURRENT_USER */
+#define SQL_CURRENT_DEFAULT_TRANSFORM_GROUP 20004 /* the default transform group */
+#define SQL_CURRENT_PATH                    20005 /* CURRENT_PATH */
+#define SQL_CURRENT_ROLE                    20006 /* CURRENT_ROLE */
+#define SQL_SESSION_USER                    20007 /* SESSION_USER */
+#define SQL_SYSTEM_USER                     20008 /* SYSTEM_USER */
+
 /* Special values for the catalog routines. */
 #define SQL_ALL_CATALOGS    "%" /* every catalog (SQLTables) */
 #define SQL_ALL_SCHEMAS     "%" /* every schema (SQLTables) */
@@ -681,6 +689,24 @@ SQLRETURN SQLColAttribute(
     SQLSMALLINT  BufferLength,
     SQLSMALLINT *StringLength,
     SQLINTEGER  *NumericAttribute
+);
+
+/*
+ * SQLColumnPrivileges would return a result set that describes the privileges
+ * of columns.
+ * vsql doesn't have privileges, so it always returns SQL_ERROR with SQLSTATE
+ * HYC00 (optional feature not implemented).
+ */
+SQLRETURN SQLColumnPrivileges(
+    SQLHSTMT     StatementHandle,
+    SQLCHAR     *CatalogName,
+    SQLSMALLINT  NameLength1,
+    SQLCHAR     *SchemaName,
+    SQLSMALLINT  NameLength2,
+    SQLCHAR     *TableName,
+    SQLSMALLINT  NameLength3,
+    SQLCHAR     *ColumnName,
+    SQLSMALLINT  NameLength4
 );
 
 /*
@@ -1287,6 +1313,65 @@ SQLRETURN SQLGetInfo(
 );
 
 /*
+ * SQLGetLength would read the length of the value of a large object locator.
+ * vsql doesn't have large objects, so it always returns SQL_ERROR with SQLSTATE
+ * HYC00 (optional feature not implemented).
+ */
+SQLRETURN SQLGetLength(
+    SQLHSTMT     StatementHandle,
+    SQLSMALLINT  LocatorType,
+    SQLINTEGER   Locator,
+    SQLINTEGER  *StringLength,
+    SQLINTEGER  *IndicatorValue
+);
+
+/*
+ * SQLGetParamData would read the value of a dynamic output parameter. vsql
+ * doesn't have procedures (or SQL_PARAM_MODE_OUT), so it always returns
+ * SQL_ERROR with SQLSTATE HYC00 (optional feature not implemented).
+ */
+SQLRETURN SQLGetParamData(
+    SQLHSTMT     StatementHandle,
+    SQLSMALLINT  ParameterNumber,
+    SQLSMALLINT  TargetType,
+    SQLPOINTER   TargetValue,
+    SQLINTEGER   BufferLength,
+    SQLINTEGER  *StrLen_or_Ind
+);
+
+/*
+ * SQLGetPosition would find a string within the value of a large object
+ * locator.
+ * vsql doesn't have large objects, so it always returns SQL_ERROR with SQLSTATE
+ * HYC00 (optional feature not implemented).
+ */
+SQLRETURN SQLGetPosition(
+    SQLHSTMT     StatementHandle,
+    SQLSMALLINT  LocatorType,
+    SQLINTEGER   SourceLocator,
+    SQLINTEGER   SearchLocator,
+    SQLCHAR     *SearchLiteral,
+    SQLINTEGER   SearchLiteralLength,
+    SQLINTEGER   FromPosition,
+    SQLINTEGER  *LocatedAt,
+    SQLINTEGER  *IndicatorValue
+);
+
+/*
+ * SQLGetSessionInfo reads the value of CURRENT_USER (SQL_CURRENT_USER),
+ * SESSION_USER (SQL_SESSION_USER), etc. as a string (see SQLGetData for
+ * SQL_CHAR) by selecting it with SQLExecDirect. vsql doesn't support any of
+ * them yet, so it returns SQL_ERROR with the syntax error.
+ */
+SQLRETURN SQLGetSessionInfo(
+    SQLHDBC      ConnectionHandle,
+    SQLSMALLINT  InfoType,
+    SQLPOINTER   InfoValue,
+    SQLSMALLINT  BufferLength,
+    SQLSMALLINT *StringLength
+);
+
+/*
  * SQLGetStmtAttr reads an attribute of a statement (an SQLINTEGER), such as
  * SQL_ATTR_IMP_ROW_DESC (see SQLGetDescField) or SQL_ATTR_CURSOR_SCROLLABLE.
  * BufferLength and StringLength are not used.
@@ -1297,6 +1382,24 @@ SQLRETURN SQLGetStmtAttr(
     SQLPOINTER  Value,
     SQLINTEGER  BufferLength,
     SQLINTEGER *StringLength
+);
+
+/*
+ * SQLGetSubString would read part of the value of a large object locator.
+ * vsql doesn't have large objects, so it always returns SQL_ERROR with SQLSTATE
+ * HYC00 (optional feature not implemented).
+ */
+SQLRETURN SQLGetSubString(
+    SQLHSTMT     StatementHandle,
+    SQLSMALLINT  LocatorType,
+    SQLINTEGER   SourceLocator,
+    SQLINTEGER   FromPosition,
+    SQLINTEGER   ForLength,
+    SQLSMALLINT  TargetType,
+    SQLPOINTER   TargetValue,
+    SQLINTEGER   BufferLength,
+    SQLINTEGER  *StringLength,
+    SQLINTEGER  *IndicatorValue
 );
 
 /*
@@ -1580,6 +1683,22 @@ SQLRETURN SQLStartTran(
     SQLINTEGER  Handle,
     SQLINTEGER  AccessMode,
     SQLINTEGER  IsolationLevel
+);
+
+/*
+ * SQLTablePrivileges would return a result set that describes the privileges
+ * of tables.
+ * vsql doesn't have privileges, so it always returns SQL_ERROR with SQLSTATE
+ * HYC00 (optional feature not implemented).
+ */
+SQLRETURN SQLTablePrivileges(
+    SQLHSTMT     StatementHandle,
+    SQLCHAR     *CatalogName,
+    SQLSMALLINT  NameLength1,
+    SQLCHAR     *SchemaName,
+    SQLSMALLINT  NameLength2,
+    SQLCHAR     *TableName,
+    SQLSMALLINT  NameLength3
 );
 
 /*

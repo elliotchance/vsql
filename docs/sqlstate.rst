@@ -459,6 +459,21 @@ A row doesn't satisfy a ``CHECK`` constraint of the table.
   -- msg: CREATE TABLE 1
   -- error 23514: violates check constraint: CHECK (PRICE > 0) on ":memory:".PUBLIC.T1
 
+``24000`` invalid cursor state
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``24000`` occurs if a cursor isn't in the right state for the statement, such
+as a ``FETCH`` of a cursor that isn't open, or a ``DELETE ... WHERE CURRENT OF``
+a cursor that isn't positioned on a row (see :doc:`cursors`).
+
+**Examples**
+
+.. code-block:: sql
+
+  DECLARE c CURSOR FOR SELECT * FROM products;
+  FETCH c;
+  -- error 24000: invalid cursor state: cursor C is not open
+
 ``25001`` invalid transaction state: active sql transaction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -517,6 +532,20 @@ in an active transaction.
 
 ``2E000`` is returned when the name of a connection in :doc:`connect` isn't
 an identifier.
+
+``34000`` invalid cursor name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``34000`` occurs if a cursor hasn't been declared with the name, or a positioned
+``DELETE`` or ``UPDATE`` uses a cursor that isn't updatable (see
+:doc:`cursors`).
+
+**Examples**
+
+.. code-block:: sql
+
+  OPEN c;
+  -- error 34000: invalid cursor name: cursor C does not exist
 
 ``35000`` invalid condition number
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -778,6 +807,19 @@ be assigned ``DEFAULT``, see :doc:`create-table`.
   INSERT INTO t1 (x) VALUES (?);
   -- msg: CREATE TABLE 1
   -- error 42P02: parameter does not exist: ?1
+
+``42P03`` duplicate cursor
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A cursor has already been declared with the name (see :doc:`cursors`).
+
+**Examples**
+
+.. code-block:: sql
+
+  DECLARE c CURSOR FOR SELECT * FROM products;
+  DECLARE c CURSOR FOR SELECT * FROM products;
+  -- error 42P03: duplicate cursor: C
 
 ``42P04`` catalog already exists
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

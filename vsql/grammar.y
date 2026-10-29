@@ -681,6 +681,8 @@ module vsql
 start:
   preparable_statement { yyrcvr.lval.v = $1.v as Stmt }
 | sql_connection_statement { yyrcvr.lval.v = $1.v as Stmt }
+| declare_cursor { yyrcvr.lval.v = $1.v as Stmt }
+| sql_data_statement { yyrcvr.lval.v = $1.v as Stmt }
 
 // This is from 6.35. I have no idea why this needs to be placed higher than
 // other rules, but without doing this it will report that "datetime_primary"

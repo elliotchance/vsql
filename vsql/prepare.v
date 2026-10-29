@@ -7,14 +7,19 @@ import time
 // All possible root statments.
 type Stmt = AlterSequenceGeneratorStatement
 	| AlterTableStatement
+	| CloseStatement
 	| CommitStatement
 	| ConnectStatement
+	| DeclareCursor
+	| DeleteStatementPositioned
 	| DeleteStatementSearched
 	| DisconnectStatement
 	| DropSchemaStatement
 	| DropSequenceGeneratorStatement
 	| DropTableStatement
+	| FetchStatement
 	| InsertStatement
+	| OpenStatement
 	| QueryExpression
 	| RollbackStatement
 	| SchemaDefinition
@@ -26,6 +31,7 @@ type Stmt = AlterSequenceGeneratorStatement
 	| SetTransactionStatement
 	| StartTransactionStatement
 	| TableDefinition
+	| UpdateStatementPositioned
 	| UpdateStatementSearched
 
 // A prepared statement is compiled and validated, but not executed. It can then
@@ -59,6 +65,14 @@ mut:
 
 // Execute the prepared statement.
 pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
+	// A statement outside of a transaction is its own transaction, which ends
+	// with the statement.
+	defer {
+		if !p.c.in_transaction() {
+			p.c.end_transaction(true)
+		}
+	}
+
 	result := p.query_internal(params) or { return p.fail(err) }
 
 	// An isolation block that couldn't be ended also fails the statement, see
@@ -79,8 +93,8 @@ pub fn (p PreparedStmt) dynamic_parameter_count() int {
 // command_function returns the identifier and code of the statement, from
 // Table 37, "SQL-statement codes" in ISO/IEC 9075-2 (the COMMAND_FUNCTION and
 // DYNAMIC_FUNCTION of a diagnostics area). A query is a <dynamic select
-// statement> ("SELECT CURSOR"). EXPLAIN isn't a standard statement, so its
-// code is negative.
+// statement> ("SELECT CURSOR"). EXPLAIN and DECLARE CURSOR aren't standard
+// statements, so their codes are negative.
 pub fn (p PreparedStmt) command_function() (string, int) {
 	if p.explain {
 		return 'EXPLAIN', -1
@@ -89,14 +103,19 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 	return match p.stmt {
 		AlterSequenceGeneratorStatement { 'ALTER SEQUENCE', 134 }
 		AlterTableStatement { 'ALTER TABLE', 4 }
+		CloseStatement { 'CLOSE CURSOR', 9 }
 		CommitStatement { 'COMMIT WORK', 11 }
 		ConnectStatement { 'CONNECT', 13 }
+		DeclareCursor { 'DECLARE CURSOR', -2 }
+		DeleteStatementPositioned { 'DELETE CURSOR', 18 }
 		DeleteStatementSearched { 'DELETE WHERE', 19 }
 		DisconnectStatement { 'DISCONNECT', 22 }
 		DropSchemaStatement { 'DROP SCHEMA', 31 }
 		DropSequenceGeneratorStatement { 'DROP SEQUENCE', 135 }
 		DropTableStatement { 'DROP TABLE', 32 }
+		FetchStatement { 'FETCH', 45 }
 		InsertStatement { 'INSERT', 50 }
+		OpenStatement { 'OPEN', 53 }
 		QueryExpression { 'SELECT CURSOR', 85 }
 		RollbackStatement { 'ROLLBACK WORK', 62 }
 		SchemaDefinition { 'CREATE SCHEMA', 64 }
@@ -108,6 +127,7 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 		SetTransactionStatement { 'SET TRANSACTION', 75 }
 		StartTransactionStatement { 'START TRANSACTION', 111 }
 		TableDefinition { 'CREATE TABLE', 77 }
+		UpdateStatementPositioned { 'UPDATE CURSOR', 81 }
 		UpdateStatementSearched { 'UPDATE WHERE', 82 }
 	}
 }
@@ -219,6 +239,48 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		TableDefinition {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		CloseStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		DeclareCursor {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse, p.writes)
+		}
+		DeleteStatementPositioned {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		FetchStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		OpenStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		UpdateStatementPositioned {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}

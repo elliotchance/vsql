@@ -578,7 +578,8 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 				data['${o.table_name}.${names[k] or { k }}'] = v
 			}
 
-			rows << new_row(data)
+			// The id is kept for a cursor, see ExprOperation.execute.
+			rows << Row{row.id, row.tid, data}
 		}
 	} else {
 		mut catalog := o.conn.catalogs[o.table_name.catalog_name] or {

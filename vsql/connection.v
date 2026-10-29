@@ -70,6 +70,9 @@ mut:
 	// next_condition_area_limit is the DIAGNOSTICS SIZE of a SET TRANSACTION, for
 	// the next SQL-transaction, or 0.
 	next_condition_area_limit int
+	// cursors are the standing cursors that have been declared, by name (see
+	// DeclareCursor).
+	cursors map[string]&Cursor
 pub mut:
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive

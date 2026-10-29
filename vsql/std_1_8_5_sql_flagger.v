@@ -31,6 +31,14 @@ module vsql
 //
 // V003: Sequence generators.
 // V003-01: DROP SEQUENCE without a <drop behavior> (it's RESTRICT).
+//
+// V004: Cursors.
+// V004-01: DECLARE CURSOR outside of an SQL-client module.
+// V004-02: OPEN outside of an SQL-client module.
+// V004-03: FETCH without INTO (the row is returned).
+// V004-04: CLOSE outside of an SQL-client module.
+// V004-05: DELETE WHERE CURRENT OF outside of an SQL-client module.
+// V004-06: UPDATE WHERE CURRENT OF outside of an SQL-client module.
 const vsql_explain_query = 'V001-01'
 const vsql_explain_delete = 'V001-02'
 const vsql_explain_update = 'V001-03'
@@ -38,6 +46,12 @@ const vsql_drop_table_behavior = 'V002-01'
 const vsql_drop_column_behavior = 'V002-02'
 const vsql_drop_constraint_behavior = 'V002-03'
 const vsql_drop_sequence_behavior = 'V003-01'
+const vsql_declare_cursor = 'V004-01'
+const vsql_open_cursor = 'V004-02'
+const vsql_fetch_without_into = 'V004-03'
+const vsql_close_cursor = 'V004-04'
+const vsql_delete_positioned = 'V004-05'
+const vsql_update_positioned = 'V004-06'
 
 // flag records that the statement being parsed uses a feature outside of Core
 // SQL, such as "F591". It's called by the grammar actions.
@@ -114,6 +128,12 @@ fn flag_query_expression(mut yylex YYLexer, e QueryExpression, context QueryCont
 			flag_if(mut yylex, has_fetch, 'F856')
 		}
 	}
+}
+
+// flag_updatability_clause flags a FOR UPDATE of a query with an ORDER BY
+// (ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Conformance Rule 1).
+fn flag_updatability_clause(mut yylex YYLexer, e QueryExpression, updatability UpdatabilityClause) {
+	flag_if(mut yylex, updatability.for_update && e.order.len > 0, 'F831')
 }
 
 // flag_row_count flags a <fetch first row count> (F860) or <offset row count>

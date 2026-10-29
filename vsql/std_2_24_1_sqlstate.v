@@ -119,6 +119,33 @@ fn sqlstate_21000() IError {
 	}
 }
 
+// Invalid cursor state: a cursor isn't in the right state for a statement, such
+// as a FETCH of a cursor that isn't open.
+struct SQLState24000 {
+	SQLState
+}
+
+fn sqlstate_24000(msg string) IError {
+	return SQLState24000{
+		code: sqlstate_to_int('24000')
+		msg:  'invalid cursor state: ${msg}'
+	}
+}
+
+// Invalid cursor name: there isn't a cursor with the name, or it can't be used
+// by a statement (such as a positioned DELETE of a cursor that isn't
+// updatable).
+struct SQLState34000 {
+	SQLState
+}
+
+fn sqlstate_34000(msg string) IError {
+	return SQLState34000{
+		code: sqlstate_to_int('34000')
+		msg:  'invalid cursor name: ${msg}'
+	}
+}
+
 // string data right truncation - the character value is too long for the
 // destination.
 struct SQLState22001 {
@@ -432,6 +459,21 @@ fn sqlstate_42601(message string) IError {
 	return SQLState42601{
 		code: sqlstate_to_int('42601')
 		msg:  'syntax error: ${message}'
+	}
+}
+
+// Duplicate cursor: a cursor has already been declared with the name.
+struct SQLState42P03 {
+	SQLState
+pub:
+	cursor_name string
+}
+
+fn sqlstate_42p03(cursor_name string) IError {
+	return SQLState42P03{
+		code:        sqlstate_to_int('42P03')
+		msg:         'duplicate cursor: ${cursor_name}'
+		cursor_name: cursor_name
 	}
 }
 

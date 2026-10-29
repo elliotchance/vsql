@@ -10,4 +10,13 @@ cursor_specification:
     $$.v = Stmt($1.v as QueryExpression)
   }
 
+// An <updatability clause> is only supported in a <declare cursor>, see
+// declare_cursor.
+updatability_clause:
+  FOR READ ONLY { $$.v = UpdatabilityClause{} }
+| FOR UPDATE { $$.v = UpdatabilityClause{for_update: true} }
+| FOR UPDATE OF column_name_list {
+    $$.v = UpdatabilityClause{true, $4.v as []Identifier}
+  }
+
 %%

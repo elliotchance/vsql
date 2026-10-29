@@ -20,6 +20,7 @@ fn (stmt RollbackStatement) execute(mut conn Connection, _ map[string]Value, ela
 	for _, mut catalog in conn.catalogs {
 		catalog.rollback_transaction()!
 	}
+	conn.end_transaction(false)
 
 	return new_result_msg('ROLLBACK', elapsed_parse, t.elapsed())
 }

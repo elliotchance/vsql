@@ -445,7 +445,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ F131-05
      - Single row ``SELECT`` with ``GROUP BY`` and ``HAVING`` clauses and grouped views
 
-   * - ❌ **F181**
+   * - ✅ **F181**
      - **Multiple module support**
 
    * - ✅ **F201**

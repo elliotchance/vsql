@@ -31,3 +31,4 @@ vsql-*.zip
 # Created by "make module-example" and "make module-test".
 libvsql/module/example.[ch]
 libvsql/module/test.[ch]
+libvsql/module/test_other.[ch]

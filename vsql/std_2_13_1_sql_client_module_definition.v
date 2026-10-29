@@ -20,6 +20,7 @@ struct SQLClientModule {
 	// Rule 2). vsql has no authorization identifiers, so AUTHORIZATION only
 	// gives the schema when there isn't a SCHEMA.
 	schema     string
+	cursors    []ModuleCursor
 	procedures []ExternallyInvokedProcedure
 }
 
@@ -28,6 +29,7 @@ struct SQLClientModule {
 // static function isn't used.
 const c_module_runtime = $embed_file('std_2_13_1_sql_client_module_definition.c').to_string() +
 	$embed_file('std_2_14_7_select_statement_single_row.c').to_string() +
+	$embed_file('std_2_14_1_declare_cursor.c').to_string() +
 	$embed_file('std_2_23_1_get_diagnostics_statement.c').to_string()
 
 // compile_module compiles an SQL-client module (with LANGUAGE C) into C. The C
@@ -44,22 +46,50 @@ pub fn compile_module(source string, name string) !CompiledModule {
 }
 
 // parse_sql_client_module reads an <SQL-client module definition>. Each part
-// that ends with a semicolon is either the start of the module and the first
-// "PROCEDURE ... (...)", a <SQL procedure statement>, or the next PROCEDURE.
+// that ends with a semicolon is a <declare cursor>, a "PROCEDURE ... (...)" or
+// the <SQL procedure statement> after it. The first part also starts with the
+// rest of the module. The cursors are read first, so a procedure can use a
+// cursor that's declared after it.
 fn parse_sql_client_module(source string) !SQLClientModule {
 	parts := split_module(source)!
-	if parts.len % 2 == 1 {
-		return sqlstate_42601('a module must end with a procedure that has a statement')
-	}
 
 	mut t := new_module_tokens(parts[0])!
 	schema := t.module_header()!
 
-	mut procedures := []ExternallyInvokedProcedure{}
-	for i := 0; i < parts.len; i += 2 {
+	mut cursors := []ModuleCursor{}
+	mut declarations := []ModuleTokens{}
+	mut statements := []string{}
+	mut i := 0
+	for i < parts.len {
 		if i > 0 {
 			t = new_module_tokens(parts[i])!
 		}
+		if peek := t.peek() {
+			if peek.kind == .word && peek.text.to_upper() == 'DECLARE' {
+				cursor := declare_module_cursor(parts[i].runes()[peek.start..].string(), cursors.len)!
+
+				// - 14.1 SR 1.a. Each cursor has a different name.
+				for c in cursors {
+					if c.name == cursor.name {
+						return sqlstate_42601('cursor ${cursor.name} is declared more than once')
+					}
+				}
+				cursors << cursor
+				i++
+				continue
+			}
+		}
+		if i + 1 >= parts.len {
+			return sqlstate_42601('a module must end with a procedure that has a statement')
+		}
+		declarations << t
+		statements << parts[i + 1]
+		i += 2
+	}
+
+	mut procedures := []ExternallyInvokedProcedure{}
+	for j, declaration in declarations {
+		t = declaration
 		mut procedure := t.procedure_declaration()!
 
 		// - 13.3 SR 1. Each procedure has a different name.
@@ -69,11 +99,11 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 			}
 		}
 
-		procedure.statement = parse_module_statement(parts[i + 1], procedure)!
+		procedure.statement = parse_module_statement(statements[j], procedure, cursors)!
 		procedures << procedure
 	}
 
-	return SQLClientModule{schema, procedures}
+	return SQLClientModule{schema, cursors, procedures}
 }
 
 // module_header reads everything before the first PROCEDURE, and returns the
@@ -106,10 +136,10 @@ fn (mut t ModuleTokens) module_header() !string {
 		return sqlstate_42601('expected SCHEMA or AUTHORIZATION after LANGUAGE C')
 	}
 
-	// The optional parts of the module (such as FOR STATIC ONLY, PATH or a
-	// DECLARE CURSOR) aren't supported yet.
-	if t.next_word() != 'PROCEDURE' {
-		return sqlstate_42601('expected PROCEDURE after the module authorization clause')
+	// The other optional parts of the module (such as FOR STATIC ONLY or PATH)
+	// aren't supported yet.
+	if t.next_word() !in ['PROCEDURE', 'DECLARE'] {
+		return sqlstate_42601('expected PROCEDURE or DECLARE after the module authorization clause')
 	}
 	t.pos--
 
@@ -189,6 +219,9 @@ fn (m SQLClientModule) c_source(name string) string {
 	s += '#include "libvsql.h"\n#include "${name}.h"\n\n'
 	set_schema := "SET SCHEMA '" + m.schema.replace("'", "''") + "'"
 	s += 'static const char vsql_m_set_schema[] = ${c_string(set_schema)};\n\n'
+	if 'cursor' in sections {
+		s += 'static const int vsql_m_cursor_count = ${m.cursors.len};\n\n'
+	}
 	// Git may check out the runtime with CRLF line endings (on Windows).
 	for section in c_module_runtime.replace('\r\n', '\n').split('/* section ')[1..] {
 		section_name := section.all_before(' ')
@@ -222,10 +255,12 @@ fn c_identifier(name string) string {
 
 // ModuleToken is a word (a keyword or a regular identifier, as it was written),
 // a delimited identifier (without the quotes), a number, a character string
-// literal (its value) or another character.
+// literal (its value) or another character. start is the position of its first
+// character.
 struct ModuleToken {
-	kind ModuleTokenKind
-	text string
+	kind  ModuleTokenKind
+	text  string
+	start int
 }
 
 enum ModuleTokenKind {
@@ -255,27 +290,27 @@ fn new_module_tokens(text string) !ModuleTokens {
 			i = skip_comment(cs, i)!
 		} else if cs[i] == `'` {
 			value, end, _ := read_string_literal(cs, i)!
-			tokens << ModuleToken{.literal, value}
+			tokens << ModuleToken{.literal, value, start}
 			i = end
 		} else if cs[i] == `"` {
 			i = skip_delimited_identifier(cs, i)
 			if i - start == 2 {
 				return sqlstate_42601('invalid delimited identifier: ${cs[start..].string()}')
 			}
-			tokens << ModuleToken{.delimited, cs[start + 1..i - 1].string().replace('""', '"')}
+			tokens << ModuleToken{.delimited, cs[start + 1..i - 1].string().replace('""', '"'), start}
 		} else if is_identifier_char(cs[i], false) {
 			for i < cs.len && is_identifier_char(cs[i], true) {
 				i++
 			}
-			tokens << ModuleToken{.word, cs[start..i].string()}
+			tokens << ModuleToken{.word, cs[start..i].string(), start}
 		} else if cs[i] >= `0` && cs[i] <= `9` {
 			for i < cs.len && cs[i] >= `0` && cs[i] <= `9` {
 				i++
 			}
-			tokens << ModuleToken{.number, cs[start..i].string()}
+			tokens << ModuleToken{.number, cs[start..i].string(), start}
 		} else {
 			if cs[i].str().trim_space() != '' {
-				tokens << ModuleToken{.other, cs[i].str()}
+				tokens << ModuleToken{.other, cs[i].str(), start}
 			}
 			i++
 		}

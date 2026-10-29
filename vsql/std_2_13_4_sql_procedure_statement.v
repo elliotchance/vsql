@@ -28,7 +28,7 @@ struct HostParameterReference {
 // and executed with libvsql, with a "?" for each host parameter. START
 // TRANSACTION, COMMIT and ROLLBACK can only be done with SQLStartTran and
 // SQLEndTran.
-fn parse_module_statement(text string, p ExternallyInvokedProcedure) !ModuleStatement {
+fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []ModuleCursor) !ModuleStatement {
 	tokens := tokenize(text) or { return procedure_error(p, err) }
 
 	// A <dynamic parameter specification> can only be in a prepared statement.
@@ -53,6 +53,15 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure) !ModuleStat
 			if t.accept('DIAGNOSTICS') {
 				return t.get_diagnostics_statement(p)
 			}
+		}
+		'OPEN' {
+			return t.open_statement(p, cursors)
+		}
+		'FETCH' {
+			return t.fetch_statement(p, cursors)
+		}
+		'CLOSE' {
+			return t.close_statement(p, cursors)
 		}
 		else {}
 	}
@@ -82,8 +91,22 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure) !ModuleStat
 			ModuleStatement{['connection', 'end'], [], begin('ROLLBACK WORK', 62) +
 				'  vsql_m_end(SQLSTATE, SQL_ROLLBACK);\n'}
 		}
+		DeclareCursor {
+			sqlstate_42601('procedure ${p.name}: a cursor must be declared in the module, not in a procedure')
+		}
+		// - 14.8 SR 1 and 14.13 SR 1. The cursor of a positioned DELETE or
+		// UPDATE must be declared in the module. It's the CLI statement that
+		// has the cursor name.
+		DeleteStatementPositioned {
+			find_module_cursor(cursors, stmt.cursor_name, p)!
+			execute_statement(text_sql, references, p, begin('DELETE CURSOR', 18))!
+		}
+		UpdateStatementPositioned {
+			find_module_cursor(cursors, stmt.cursor_name, p)!
+			execute_statement(text_sql, references, p, begin('UPDATE CURSOR', 81))!
+		}
 		else {
-			execute_statement(text_sql, references, p)!
+			execute_statement(text_sql, references, p, begin('', 0))!
 		}
 	}
 }
@@ -101,11 +124,11 @@ fn procedure_error(p ExternallyInvokedProcedure, err IError) IError {
 }
 
 // execute_statement binds each host parameter to its "?" (in the
-// struct vsql_m_param array) and executes the statement.
-fn execute_statement(text_sql string, references []HostParameterReference, p ExternallyInvokedProcedure) !ModuleStatement {
-	b := bind_parameters(['connection', 'execute'], references, p)!
+// struct vsql_m_param array) and executes the statement, after begin.
+fn execute_statement(text_sql string, references []HostParameterReference, p ExternallyInvokedProcedure, begin string) !ModuleStatement {
+	b := bind_parameters(['connection', 'exec', 'run', 'execute'], references, p)!
 
-	return ModuleStatement{b.sections, b.used, begin('', 0) + b.c +
+	return ModuleStatement{b.sections, b.used, begin + b.c +
 		'  vsql_m_execute(SQLSTATE, ${c_string(text_sql.trim_space())}, ${b.args()});\n'}
 }
 
@@ -191,6 +214,16 @@ fn (p ExternallyInvokedProcedure) reference(name string) !HostParameterDeclarati
 // host parameter name, and an optional indicator parameter) with a "?" that
 // has the declared type of the host parameter, and each comment with a space.
 fn rewrite_host_parameters(text string, p ExternallyInvokedProcedure) !(string, []HostParameterReference) {
+	return replace_host_parameters(text, fn [p] (name string) !string {
+		typ := p.reference(name)!.typ or { HostParameterType{} }
+		return 'CAST(? AS ${typ.sql()})'
+	})
+}
+
+// replace_host_parameters replaces each <host parameter specification> with
+// the SQL that replacement returns for the host parameter name, and each
+// comment with a space.
+fn replace_host_parameters(text string, replacement fn (string) !string) !(string, []HostParameterReference) {
 	cs := text.runes()
 	mut text_sql := ''
 	mut references := []HostParameterReference{}
@@ -226,8 +259,7 @@ fn rewrite_host_parameters(text string, p ExternallyInvokedProcedure) !(string, 
 			}
 
 			references << HostParameterReference{name, indicator}
-			typ := p.reference(name)!.typ or { HostParameterType{} }
-			text_sql += 'CAST(? AS ${typ.sql()})'
+			text_sql += replacement(name)!
 		} else {
 			text_sql += cs[i].str()
 			i++

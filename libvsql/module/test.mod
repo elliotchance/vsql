@@ -112,3 +112,46 @@ PROCEDURE get_condition (SQLSTATE, :n INTEGER, :number BIGINT,
 
 PROCEDURE get_short_message (SQLSTATE, :message CHAR(3));
   GET DIAGNOSTICS CONDITION 1 :message = MESSAGE_TEXT;
+
+DECLARE c1 CURSOR FOR SELECT x, y FROM cur WHERE x >= :min;
+
+DECLARE "held" CURSOR WITH HOLD FOR SELECT x FROM cur;
+
+PROCEDURE create_cur (SQLSTATE);
+  CREATE TABLE cur (x INTEGER, y VARCHAR(10));
+
+PROCEDURE insert_cur (SQLSTATE, :x INTEGER, :y VARCHAR(10));
+  INSERT INTO cur (x, y) VALUES (:x, :y);
+
+PROCEDURE open_c1 (SQLSTATE, :min INTEGER);
+  OPEN c1;
+
+PROCEDURE fetch_c1 (SQLSTATE, :x INTEGER, :y VARCHAR(3), :y_ind INTEGER);
+  FETCH NEXT FROM c1 INTO :x, :y INDICATOR :y_ind;
+
+PROCEDURE close_c1 (SQLSTATE);
+  CLOSE c1;
+
+PROCEDURE update_c1 (SQLSTATE, :y VARCHAR(10));
+  UPDATE cur SET y = :y WHERE CURRENT OF c1;
+
+PROCEDURE delete_c1 (SQLSTATE);
+  DELETE FROM cur WHERE CURRENT OF c1;
+
+PROCEDURE open_held (SQLSTATE);
+  OPEN "held";
+
+PROCEDURE fetch_held (SQLSTATE, :x INTEGER);
+  FETCH "held" INTO :x;
+
+PROCEDURE delete_held (SQLSTATE);
+  DELETE FROM cur WHERE CURRENT OF "held";
+
+-- A procedure can use a cursor that's declared after it.
+PROCEDURE open_all (SQLSTATE);
+  OPEN c_all;
+
+PROCEDURE fetch_all (SQLSTATE, :x INTEGER);
+  FETCH FROM c_all INTO :x;
+
+DECLARE c_all CURSOR FOR SELECT * FROM cur;

@@ -271,3 +271,100 @@ fn current_rows(rows []Row, current_of ?&Cursor) ![]Row {
 
 	return current
 }
+
+// ModuleCursor is a <declare cursor> in an SQL-client module. Each SQL-session
+// has a CLI statement for the cursor, with the cursor name (sql_name is the
+// name as a delimited identifier, for SQLSetCursorName), which is opened by
+// an OPEN with the query. The host parameters of the query are the host
+// parameters of the procedure that opens it (Syntax Rule 1.c). index is the
+// position of the cursor in the module, and degree is the number of columns of
+// the query, or -1 if it isn't known until it's opened.
+struct ModuleCursor {
+	index    int
+	name     string
+	sql_name string
+	hold     bool
+	query    string
+	degree   int
+}
+
+// declare_module_cursor reads the <declare cursor> of a module. It's parsed
+// with a "?" for each host parameter, to find any syntax errors.
+fn declare_module_cursor(text string, index int) !ModuleCursor {
+	tokens := tokenize(text)!
+	if tokens.any(it.token == token_operator_question_mark) {
+		return sqlstate_42601('a module cannot contain a dynamic parameter (?), use a host parameter (:name)')
+	}
+
+	text_sql, _ := replace_host_parameters(text, fn (_ string) !string {
+		return '?'
+	})!
+	// The text starts with DECLARE, so it's a <declare cursor> if it parses.
+	declaration := parse_tokens(tokenize(text_sql)!)! as DeclareCursor
+	if declaration.updatability != none {
+		return sqlstate_42601('cursor ${declaration.name}: FOR READ ONLY and FOR UPDATE are not supported in a module')
+	}
+
+	body := declaration.query.body
+	degree := if body is QuerySpecification { select_list_degree(body.exprs) } else { -1 }
+
+	return ModuleCursor{
+		index:    index
+		name:     declaration.name
+		sql_name: '"' + declaration.name.replace('"', '""') + '"'
+		hold:     declaration.hold
+		query:    cursor_specification(text)!
+		degree:   degree
+	}
+}
+
+// cursor_specification is the text after the first FOR (that isn't in a
+// delimited identifier or a comment) of a <declare cursor>, which is the
+// query. There can't be a literal before it.
+fn cursor_specification(text string) !string {
+	cs := text.runes()
+	mut i := 0
+	for i < cs.len {
+		if is_comment(cs, i) {
+			i = skip_comment(cs, i)!
+		} else if cs[i] == `"` {
+			i = skip_delimited_identifier(cs, i)
+		} else if is_identifier_char(cs[i], false) {
+			start := i
+			for i < cs.len && is_identifier_char(cs[i], true) {
+				i++
+			}
+			if cs[start..i].string().to_upper() == 'FOR' {
+				break
+			}
+		} else {
+			i++
+		}
+	}
+
+	return cs[i..].string()
+}
+
+// find_module_cursor is the cursor that's declared in the module with the
+// name.
+fn find_module_cursor(cursors []ModuleCursor, name string, p ExternallyInvokedProcedure) !ModuleCursor {
+	for cursor in cursors {
+		if cursor.name == name {
+			return cursor
+		}
+	}
+
+	return sqlstate_42601('procedure ${p.name}: cursor ${name} is not declared')
+}
+
+// module_cursor reads the <cursor name> of an OPEN, FETCH or CLOSE in a module.
+fn (mut t ModuleTokens) module_cursor(p ExternallyInvokedProcedure, cursors []ModuleCursor) !ModuleCursor {
+	return find_module_cursor(cursors, t.identifier('cursor name')!, p)
+}
+
+// end_of_statement checks that there's nothing after the statement.
+fn (t ModuleTokens) end_of_statement(p ExternallyInvokedProcedure) ! {
+	if t.pos < t.tokens.len {
+		return sqlstate_42601('procedure ${p.name}: unexpected${t.near()}')
+	}
+}

@@ -38,3 +38,33 @@ fn (stmt FetchStatement) execute(mut conn Connection, _ map[string]Value, elapse
 fn (stmt FetchStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN FETCH')
 }
+
+// fetch_statement compiles a <fetch statement> in a module, after FETCH. The
+// values of the next row are assigned to the targets, like a <select
+// statement: single row>.
+fn (mut t ModuleTokens) fetch_statement(p ExternallyInvokedProcedure, cursors []ModuleCursor) !ModuleStatement {
+	if t.accept('NEXT') {
+		t.expect('FROM')!
+	} else {
+		t.accept('FROM')
+	}
+	cursor := t.module_cursor(p, cursors)!
+	t.expect('INTO')!
+	targets := t.target_list(p)!
+	t.end_of_statement(p)!
+
+	// - SR 9.b. The number of targets must be the degree of the cursor.
+	if cursor.degree >= 0 && cursor.degree != targets.len {
+		are := if targets.len == 1 { 'is' } else { 'are' }
+		return sqlstate_42601('procedure ${p.name}: cursor ${cursor.name} has ${cursor.degree} ${pluralize(cursor.degree, 'column')}, but there ${are} ${targets.len} ${pluralize(targets.len, 'target')}')
+	}
+
+	mut b := BoundParameters{
+		sections: ['connection', 'target', 'cursor', 'fetch']
+	}
+	targets_c, assignments := bind_targets(targets, p, mut b)!
+	call := 'vsql_m_fetch(SQLSTATE, ${cursor.index}, ${targets.len}, vsql_m_t)'
+
+	return ModuleStatement{b.sections, b.used, begin('FETCH', 45) + targets_c +
+		assign_targets(call, assignments)}
+}

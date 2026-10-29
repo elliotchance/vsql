@@ -101,7 +101,18 @@ fn select_statement(query string, targets_text string, p ExternallyInvokedProced
 		return sqlstate_42601('procedure ${p.name}: the select list has ${columns} ${pluralize(columns, 'column')}, but there ${are} ${targets.len} ${pluralize(targets.len, 'target')}')
 	}
 
-	mut b := bind_parameters(['connection', 'execute', 'select'], references, p)!
+	mut b := bind_parameters(['connection', 'exec', 'run', 'target', 'select'], references, p)!
+	targets_c, assignments := bind_targets(targets, p, mut b)!
+	mut c := begin('SELECT', 65) + b.c + targets_c
+	call := 'vsql_m_select(SQLSTATE, ${c_string(text_sql.trim_space())}, ${b.args()}, ${targets.len}, vsql_m_t)'
+	c += assign_targets(call, assignments)
+
+	return ModuleStatement{b.sections, b.used, c}
+}
+
+// bind_targets declares the struct vsql_m_target array (vsql_m_t) for the
+// targets, and returns it with the C that assigns each indicator parameter.
+fn bind_targets(targets []SelectTarget, p ExternallyInvokedProcedure, mut b BoundParameters) !(string, string) {
 	mut elements := []string{}
 	mut assignments := ''
 	for i, target in targets {
@@ -121,15 +132,17 @@ fn select_statement(query string, targets_text string, p ExternallyInvokedProced
 		}
 	}
 
-	mut c := begin('SELECT', 65) + b.c + '  struct vsql_m_target vsql_m_t[${targets.len}] = {\n${elements.join(',\n')}};\n'
-	call := 'vsql_m_select(SQLSTATE, ${c_string(text_sql.trim_space())}, ${b.args()}, ${targets.len}, vsql_m_t)'
+	return '  struct vsql_m_target vsql_m_t[${targets.len}] = {\n${elements.join(',\n')}};\n', assignments
+}
+
+// assign_targets calls the C function that assigns the targets (which returns
+// 1 if they were assigned), and then assigns the indicator parameters.
+fn assign_targets(call string, assignments string) string {
 	if assignments == '' {
-		c += '  ${call};\n'
-	} else {
-		c += '  if (${call}) {\n${assignments}  }\n'
+		return '  ${call};\n'
 	}
 
-	return ModuleStatement{b.sections, b.used, c}
+	return '  if (${call}) {\n${assignments}  }\n'
 }
 
 // select_list_degree is the number of columns of a <select list>, or -1 if it
@@ -153,6 +166,17 @@ fn select_list_degree(exprs SelectList) int {
 // <indicator parameter>.
 fn select_target_list(text string, p ExternallyInvokedProcedure) ![]SelectTarget {
 	mut t := new_module_tokens(text)!
+	targets := t.target_list(p)!
+	if t.pos < t.tokens.len {
+		return sqlstate_42601('procedure ${p.name}: expected FROM${t.near()}')
+	}
+
+	return targets
+}
+
+// target_list reads a list of <target specification>s, each of which is a host
+// parameter with an optional <indicator parameter>.
+fn (mut t ModuleTokens) target_list(p ExternallyInvokedProcedure) ![]SelectTarget {
 	mut targets := []SelectTarget{}
 	for {
 		if !t.accept(':') {
@@ -172,10 +196,6 @@ fn select_target_list(text string, p ExternallyInvokedProcedure) ![]SelectTarget
 		if !t.accept(',') {
 			break
 		}
-	}
-
-	if t.pos < t.tokens.len {
-		return sqlstate_42601('procedure ${p.name}: expected FROM${t.near()}')
 	}
 
 	return targets

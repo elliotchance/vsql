@@ -231,8 +231,8 @@ Statements
 ^^^^^^^^^^
 
 A statement can be any statement that vsql supports, except a query (``SELECT``
-or ``VALUES``), since cursors aren't supported yet. Use ``SELECT ... INTO``
-instead to get one row. It can also be one of the connection statements:
+or ``VALUES``). Use ``SELECT ... INTO`` to get one row, or a cursor (see
+`Cursors`_) to get each row. It can also be one of the connection statements:
 
 - ``CONNECT TO <server> [ AS <name> ] [ USER <user> ]`` or ``CONNECT TO
   DEFAULT``. The server is the path to a database file (or ``:memory:``). Each
@@ -272,6 +272,53 @@ column. It can't have ``UNION``, ``EXCEPT``, ``INTERSECT``, ``ORDER BY``,
   compiled.
 
 A ``CHARACTER(L)`` parameter is padded with spaces to its length.
+
+Cursors
+^^^^^^^
+
+A cursor (ISO/IEC 9075-2, 14.1, Feature E121 "Basic cursor support") is
+declared in the module, before or after the procedures that use it:
+
+.. code-block:: text
+
+   DECLARE <cursor name> CURSOR [ WITH HOLD | WITHOUT HOLD ] FOR <query> ;
+
+The query can use parameters, which must be parameters of each procedure that
+opens the cursor. The procedures use the cursor with these statements (see
+:doc:`cursors`):
+
+.. code-block:: text
+
+   OPEN <cursor name>
+   FETCH [ [ NEXT ] FROM ] <cursor name> INTO <parameter> [, <parameter> ]...
+   CLOSE <cursor name>
+   DELETE FROM <table name> WHERE CURRENT OF <cursor name>
+   UPDATE <table name> SET ... WHERE CURRENT OF <cursor name>
+
+``FETCH`` moves to the next row and sets the parameters to its values, the same
+as ``SELECT ... INTO``. After the last row, the ``SQLSTATE`` is ``02000`` (no
+data). A cursor that isn't open (or that's opened when it's already open) is
+``24000`` (invalid cursor state). Each SQL-connection has its own cursors, and
+a ``COMMIT`` closes every cursor that isn't ``WITH HOLD`` (``ROLLBACK`` closes
+all of them). ``FOR READ ONLY`` and ``FOR UPDATE`` aren't supported in a module
+yet.
+
+.. code-block:: sql
+
+   DECLARE expensive CURSOR FOR
+     SELECT name, price FROM products WHERE price > :min;
+
+   PROCEDURE open_expensive (SQLSTATE, :min DOUBLE PRECISION);
+     OPEN expensive;
+
+   PROCEDURE next_expensive (SQLSTATE, :name VARCHAR(50), :price DOUBLE PRECISION);
+     FETCH expensive INTO :name, :price;
+
+   PROCEDURE discount_expensive (SQLSTATE);
+     UPDATE products SET price = price * 0.9 WHERE CURRENT OF expensive;
+
+   PROCEDURE close_expensive (SQLSTATE);
+     CLOSE expensive;
 
 ``GET DIAGNOSTICS`` (ISO/IEC 9075-2, 23.1, Feature F121 "Basic diagnostics
 management") gets information about the last statement that was executed (that

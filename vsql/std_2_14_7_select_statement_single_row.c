@@ -1,4 +1,4 @@
-/* section select */
+/* section target */
 /*
  * The target of a value in the row of a <select statement: single row>. The
  * type is the SQL data type of the host parameter, and the length of a string
@@ -51,6 +51,28 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
 }
 
 /*
+ * vsql_m_assign_row assigns the values of the row that stmt has been fetched
+ * to (rc is the return code of the fetch) to the targets. truncated is set to 1
+ * if a string was truncated.
+ */
+static SQLRETURN vsql_m_assign_row(SQLHSTMT stmt, SQLRETURN rc, int m,
+                                   struct vsql_m_target *targets,
+                                   int *truncated) {
+  int i;
+
+  for (i = 0; i < m && (rc == SQL_SUCCESS || rc == SQL_SUCCESS_WITH_INFO);
+       i++) {
+    rc = vsql_m_assign(stmt, (SQLSMALLINT)(i + 1), &targets[i]);
+    if (rc == SQL_SUCCESS_WITH_INFO) {
+      *truncated = 1;
+    }
+  }
+
+  return rc;
+}
+
+/* section select */
+/*
  * vsql_m_select executes the query and assigns the values of its only row to
  * the targets. It returns 1 if the values were assigned.
  */
@@ -60,7 +82,7 @@ static int vsql_m_select(char *sqlstate, const char *sql, int n,
   SQLHSTMT stmt;
   SQLSMALLINT columns;
   SQLRETURN rc;
-  int i, truncated = 0;
+  int truncated = 0;
 
   if (!vsql_m_run(sqlstate, sql, n, params, &stmt)) {
     return 0;
@@ -85,13 +107,7 @@ static int vsql_m_select(char *sqlstate, const char *sql, int n,
   }
 
   /* GR 2.c: Otherwise, the values in the row are assigned to the targets. */
-  for (i = 0; i < m && (rc == SQL_SUCCESS || rc == SQL_SUCCESS_WITH_INFO);
-       i++) {
-    rc = vsql_m_assign(stmt, (SQLSMALLINT)(i + 1), &targets[i]);
-    if (rc == SQL_SUCCESS_WITH_INFO) {
-      truncated = 1;
-    }
-  }
+  rc = vsql_m_assign_row(stmt, rc, m, targets, &truncated);
 
   if (vsql_m_failed(rc) || rc == SQL_NO_DATA) {
     vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, stmt);

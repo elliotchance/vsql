@@ -61,7 +61,7 @@ int main(void) {
   char sqlstate[6];
   char server[51], name[51], user[51], c[6], v[11], c3[4], v3[4];
   short s = 1, s_ind = 0;
-  long i = 2, f = 1, v_null = -1;
+  long i = 2, f = 1, v_null = -1, x;
   long long b = 3, unused = 0, rows, c_ind = 0;
   float r = 4.5f;
   double d = 5.5;
@@ -249,6 +249,76 @@ int main(void) {
   /* A new DEFAULT connection is a new database. */
   EXPECT(connect_default(sqlstate), "00000");
   EXPECT(create_table(sqlstate), "00000");
+
+  /* 14.1 <declare cursor>: A cursor that has never been opened isn't open. */
+  EXPECT(create_cur(sqlstate), "00000");
+  x = 1;
+  strcpy(v, "one");
+  EXPECT(insert_cur(sqlstate, &x, v), "00000");
+  x = 2;
+  strcpy(v, "two");
+  EXPECT(insert_cur(sqlstate, &x, v), "00000");
+  x = 3;
+  strcpy(v, "three");
+  EXPECT(insert_cur(sqlstate, &x, v), "00000");
+  EXPECT(fetch_c1(sqlstate, &x, v3, &i), "24000");
+  EXPECT(close_c1(sqlstate), "24000");
+
+  /* 14.4 <open statement> with the host parameter of the procedure. */
+  x = 2;
+  EXPECT(open_c1(sqlstate, &x), "00000");
+  EXPECT(get_st(sqlstate, &st), "00000");
+  CHECK(strcmp(st.function, "OPEN") == 0 && st.code == 53);
+  EXPECT(open_c1(sqlstate, &x), "24000");
+
+  /* 14.5 <fetch statement>, and positioned UPDATE and DELETE. */
+  EXPECT(delete_c1(sqlstate), "24000");
+  EXPECT(fetch_c1(sqlstate, &x, v3, &i), "00000");
+  CHECK(x == 2 && strcmp(v3, "two") == 0 && i == 3);
+  strcpy(v, "TWO");
+  EXPECT(update_c1(sqlstate, v), "00000");
+  EXPECT(get_st(sqlstate, &st), "00000");
+  CHECK(strcmp(st.function, "UPDATE CURSOR") == 0 && st.code == 81);
+  CHECK(st.rows == 1);
+  EXPECT(fetch_c1(sqlstate, &x, v3, &i), "01004");
+  CHECK(x == 3 && strcmp(v3, "thr") == 0 && i == 5);
+  EXPECT(delete_c1(sqlstate), "00000");
+  EXPECT(get_st(sqlstate, &st), "00000");
+  CHECK(strcmp(st.function, "DELETE CURSOR") == 0 && st.code == 18);
+  EXPECT(delete_c1(sqlstate), "24000");
+  EXPECT(fetch_c1(sqlstate, &x, v3, &i), "02000");
+  EXPECT(get_st(sqlstate, &st), "00000");
+  CHECK(strcmp(st.function, "FETCH") == 0 && st.code == 45);
+
+  /* 14.6 <close statement>. The cursor can be opened again. */
+  EXPECT(close_c1(sqlstate), "00000");
+  EXPECT(close_c1(sqlstate), "24000");
+  x = 0;
+  EXPECT(open_c1(sqlstate, &x), "00000");
+  EXPECT(fetch_c1(sqlstate, &x, v3, &i), "00000");
+  CHECK(x == 1);
+
+  /* A commit closes a cursor that isn't holdable. */
+  EXPECT(commit_work(sqlstate), "00000");
+  EXPECT(fetch_c1(sqlstate, &x, v3, &i), "24000");
+
+  /* A holdable cursor stays open, but must be fetched again before its row
+   * can be changed. A rollback closes it. */
+  EXPECT(open_held(sqlstate), "00000");
+  EXPECT(fetch_held(sqlstate, &x), "00000");
+  CHECK(x == 1);
+  EXPECT(commit_work(sqlstate), "00000");
+  EXPECT(delete_held(sqlstate), "24000");
+  EXPECT(fetch_held(sqlstate, &x), "00000");
+  CHECK(x == 2);
+  EXPECT(delete_held(sqlstate), "00000");
+  EXPECT(rollback_work(sqlstate), "00000");
+  EXPECT(fetch_held(sqlstate, &x), "24000");
+
+  /* The number of columns of SELECT * is checked when it's fetched. */
+  EXPECT(open_all(sqlstate), "00000");
+  EXPECT(fetch_all(sqlstate, &x), "07002");
+  EXPECT(rollback_work(sqlstate), "00000");
 
   /* 13.1 GR 4: The transaction is rolled back at exit. */
   if (failures > 0) {

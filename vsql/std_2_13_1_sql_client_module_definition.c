@@ -10,6 +10,9 @@ struct vsql_m_connection {
   int is_default;
   SQLHDBC dbc;
   int active;
+  /* The CLI statement of each cursor that has been opened (see 14.1). */
+  SQLHSTMT *cursors;
+  int ncursors;
   struct vsql_m_connection *next;
 };
 
@@ -209,6 +212,7 @@ static void vsql_m_diag(char *sqlstate, SQLRETURN rc, SQLSMALLINT type,
 
 static void vsql_m_close(struct vsql_m_connection *c) {
   struct vsql_m_connection **p = &vsql_m_connections;
+  int i;
 
   while (*p != c) {
     p = &(*p)->next;
@@ -219,6 +223,12 @@ static void vsql_m_close(struct vsql_m_connection *c) {
   }
 
   SQLEndTran(SQL_HANDLE_DBC, c->dbc, SQL_ROLLBACK);
+  for (i = 0; i < c->ncursors; i++) {
+    if (c->cursors[i] != 0) {
+      SQLFreeHandle(SQL_HANDLE_STMT, c->cursors[i]);
+    }
+  }
+  free(c->cursors);
   SQLDisconnect(c->dbc);
   SQLFreeHandle(SQL_HANDLE_DBC, c->dbc);
   free(c->server);
@@ -323,7 +333,7 @@ static struct vsql_m_connection *vsql_m_connection(char *sqlstate) {
   return vsql_m_current;
 }
 
-/* section execute */
+/* section exec */
 struct vsql_m_param {
   SQLSMALLINT value_type;
   SQLSMALLINT parameter_type;
@@ -333,6 +343,48 @@ struct vsql_m_param {
 };
 
 /*
+ * vsql_m_exec prepares and executes a statement on stmt (of the SQL-connection
+ * c), with a "?" for each host parameter. It returns 0 (with the status
+ * parameter set) if it fails.
+ */
+static int vsql_m_exec(char *sqlstate, struct vsql_m_connection *c,
+                       SQLHSTMT stmt, const char *sql, int n,
+                       struct vsql_m_param *params) {
+  SQLRETURN rc;
+  int i;
+
+  rc = SQLPrepare(stmt, (SQLCHAR *)sql, SQL_NTS);
+  if (vsql_m_da.command_function[0] == '\0') {
+    SQLGetDiagField(SQL_HANDLE_STMT, stmt, 0, SQL_DIAG_DYNAMIC_FUNCTION,
+                    vsql_m_da.command_function,
+                    sizeof(vsql_m_da.command_function), NULL);
+    SQLGetDiagField(SQL_HANDLE_STMT, stmt, 0, SQL_DIAG_DYNAMIC_FUNCTION_CODE,
+                    &vsql_m_da.command_function_code, 0, NULL);
+  }
+  for (i = 0; i < n && !vsql_m_failed(rc); i++) {
+    rc = SQLBindParameter(stmt, (SQLSMALLINT)(i + 1), SQL_PARAM_MODE_IN,
+                          params[i].value_type, params[i].parameter_type,
+                          params[i].length, 0, params[i].value, 0,
+                          &params[i].indicator);
+  }
+
+  /* 13.4 GR 9: The statement initiates an SQL-transaction. */
+  if (!vsql_m_failed(rc)) {
+    c->active = 1;
+    rc = SQLExecute(stmt);
+  }
+  if (!vsql_m_failed(rc)) {
+    SQLGetDiagField(SQL_HANDLE_STMT, stmt, 0, SQL_DIAG_ROW_COUNT,
+                    &vsql_m_da.row_count, 0, NULL);
+  }
+
+  vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, stmt);
+
+  return !vsql_m_failed(rc);
+}
+
+/* section run */
+/*
  * vsql_m_run prepares and executes a statement, with a "?" for each host
  * parameter. It returns 0 (with the status parameter set) if it fails,
  * otherwise the statement must be freed.
@@ -341,7 +393,6 @@ static int vsql_m_run(char *sqlstate, const char *sql, int n,
                       struct vsql_m_param *params, SQLHSTMT *stmt) {
   struct vsql_m_connection *c = vsql_m_connection(sqlstate);
   SQLRETURN rc;
-  int i;
 
   if (c == NULL) {
     return 0;
@@ -353,33 +404,7 @@ static int vsql_m_run(char *sqlstate, const char *sql, int n,
     return 0;
   }
 
-  rc = SQLPrepare(*stmt, (SQLCHAR *)sql, SQL_NTS);
-  if (vsql_m_da.command_function[0] == '\0') {
-    SQLGetDiagField(SQL_HANDLE_STMT, *stmt, 0, SQL_DIAG_DYNAMIC_FUNCTION,
-                    vsql_m_da.command_function,
-                    sizeof(vsql_m_da.command_function), NULL);
-    SQLGetDiagField(SQL_HANDLE_STMT, *stmt, 0, SQL_DIAG_DYNAMIC_FUNCTION_CODE,
-                    &vsql_m_da.command_function_code, 0, NULL);
-  }
-  for (i = 0; i < n && !vsql_m_failed(rc); i++) {
-    rc = SQLBindParameter(*stmt, (SQLSMALLINT)(i + 1), SQL_PARAM_MODE_IN,
-                          params[i].value_type, params[i].parameter_type,
-                          params[i].length, 0, params[i].value, 0,
-                          &params[i].indicator);
-  }
-
-  /* 13.4 GR 9: The statement initiates an SQL-transaction. */
-  if (!vsql_m_failed(rc)) {
-    c->active = 1;
-    rc = SQLExecute(*stmt);
-  }
-  if (!vsql_m_failed(rc)) {
-    SQLGetDiagField(SQL_HANDLE_STMT, *stmt, 0, SQL_DIAG_ROW_COUNT,
-                    &vsql_m_da.row_count, 0, NULL);
-  }
-
-  vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, *stmt);
-  if (vsql_m_failed(rc)) {
+  if (!vsql_m_exec(sqlstate, c, *stmt, sql, n, params)) {
     SQLFreeHandle(SQL_HANDLE_STMT, *stmt);
     return 0;
   }
@@ -387,6 +412,7 @@ static int vsql_m_run(char *sqlstate, const char *sql, int n,
   return 1;
 }
 
+/* section execute */
 static void vsql_m_execute(char *sqlstate, const char *sql, int n,
                            struct vsql_m_param *params) {
   SQLHSTMT stmt;

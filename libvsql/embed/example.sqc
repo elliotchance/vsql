@@ -1,0 +1,79 @@
+/*
+ * example.sqc is an embedded SQL C program. "vsql precompile example.sqc"
+ * turns it into example.c. From the root of the repository, run
+ * "make embed-example".
+ */
+
+#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+  char state[6];
+
+  EXEC SQL BEGIN DECLARE SECTION;
+  char SQLSTATE[6];
+  char file[101] = "example.vsql";
+  VARCHAR name[21];
+  long id;
+  double price;
+  short price_indicator;
+  double factor = 0.9;
+  long rows;
+  char message[201];
+  EXEC SQL END DECLARE SECTION;
+
+  remove("example.vsql");
+
+  EXEC SQL WHENEVER SQLEXCEPTION GOTO failed;
+  EXEC SQL CONNECT TO :file AS 'example';
+  EXEC SQL CREATE TABLE items (id INTEGER, name CHARACTER VARYING(20),
+                               price DOUBLE PRECISION);
+
+  id = 1;
+  strcpy(name, "Bagel");
+  price = 2.5;
+  price_indicator = 0;
+  EXEC SQL INSERT INTO items (id, name, price)
+           VALUES (:id, :name, :price INDICATOR :price_indicator);
+
+  /* A negative indicator inserts a NULL. */
+  id = 2;
+  strcpy(name, "Coffee");
+  price_indicator = -1;
+  EXEC SQL INSERT INTO items (id, name, price)
+           VALUES (:id, :name, :price INDICATOR :price_indicator);
+
+  EXEC SQL UPDATE items SET price = price * :factor;
+  EXEC SQL GET DIAGNOSTICS :rows = ROW_COUNT;
+  printf("Changed %ld prices\n", rows);
+
+  /* A cursor gets each row. 02000 (no data) is after the last one. */
+  EXEC SQL DECLARE all_items CURSOR FOR
+           SELECT name, price FROM items ORDER BY id;
+  EXEC SQL OPEN all_items;
+  EXEC SQL WHENEVER NOT FOUND GOTO done;
+  for (;;) {
+    EXEC SQL FETCH all_items INTO :name, :price INDICATOR :price_indicator;
+    if (price_indicator < 0) {
+      printf("%s has no price\n", name);
+    } else {
+      printf("%s costs %.2f\n", name, price);
+    }
+  }
+
+done:
+  EXEC SQL WHENEVER NOT FOUND CONTINUE;
+  EXEC SQL CLOSE all_items;
+  EXEC SQL COMMIT;
+  EXEC SQL DISCONNECT ALL;
+
+  printf("OK\n");
+  return 0;
+
+failed:
+  memcpy(state, SQLSTATE, sizeof(state));
+  EXEC SQL WHENEVER SQLEXCEPTION CONTINUE;
+  EXEC SQL GET DIAGNOSTICS CONDITION 1 :message = MESSAGE_TEXT;
+  fprintf(stderr, "%s %s\n", state, message);
+  return 1;
+}

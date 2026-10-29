@@ -562,3 +562,79 @@ SQL-connection can't have the same name, even in different modules. The
 procedures of every module are C functions in the same program, so they must
 have different names. The modules must be compiled by the same version of vsql,
 otherwise they don't share anything.
+
+Embedded SQL
+------------
+
+The SQL can also be written in the C program itself (ISO/IEC 9075-2, Clause
+21, Feature B012 "Embedded C"). Each ``EXEC SQL ... ;`` is an SQL statement,
+and ``vsql precompile`` turns the program into C by putting each statement in
+the procedure of a module (see `SQL-Client Modules`_), and calling it. Here's
+``libvsql/embed/example.sqc``:
+
+.. literalinclude:: ../libvsql/embed/example.sqc
+   :language: text
+
+Precompile, compile and run it with:
+
+.. code-block:: sh
+
+   vsql precompile example.sqc
+   cc example.c -Iinclude -Llib -lvsql -Wl,-rpath,"$PWD/lib" -o example
+   ./example
+
+``vsql precompile example.sqc`` creates ``example.c`` next to it, which is the
+program with the module's procedures (as ``static`` functions) before it. The
+C compiler still reports the lines of ``example.sqc``. With ``-module``, it
+also creates ``example.mod``, the module (the "implied" module) that the
+statements are compiled from. From the root of the repository, ``make
+embed-example`` does all of this.
+
+Host variables are C variables that are defined between ``EXEC SQL BEGIN
+DECLARE SECTION;`` and ``EXEC SQL END DECLARE SECTION;``, and a statement uses
+them as ``:name``. They must be defined before the statements that use them,
+and each one must have a different name. Each definition is one of these
+types, and each variable can have an initial value:
+
+============================ =============================
+C data type                  SQL data type
+============================ =============================
+``char name[L + 1]``         ``CHARACTER(L)``
+``VARCHAR name[L + 1]``      ``CHARACTER VARYING(L)``
+``short name``               ``SMALLINT``
+``long name``                ``INTEGER``
+``long long name``           ``BIGINT``
+``float name``               ``REAL``
+``double name``              ``DOUBLE PRECISION``
+============================ =============================
+
+``VARCHAR`` is replaced with ``char``. One of the host variables must be
+``char SQLSTATE[6]``, which is set to the SQLSTATE of each statement.
+
+A statement can be anything that a procedure of a module can be, and a cursor
+is declared with ``EXEC SQL DECLARE <cursor name> CURSOR FOR ...;`` before the
+statements that use it. The host variables of the cursor's query are used when
+it's opened.
+
+``WHENEVER`` (ISO/IEC 9075-2, 21.2) goes to a C label when a later statement
+(later in the text of the program) has a condition:
+
+.. code-block:: text
+
+   EXEC SQL WHENEVER { SQLEXCEPTION | SQLWARNING | NOT FOUND } { CONTINUE | GOTO <label> | GO TO <label> };
+
+``SQLEXCEPTION`` is an exception (any SQLSTATE that doesn't start with ``00``,
+``01`` or ``02``), ``SQLWARNING`` is a warning (``01``) and ``NOT FOUND`` is no
+data (``02``). ``CONTINUE`` stops going to the label.
+
+The precompiler is simple, so:
+
+- ``EXEC SQL`` must be on one line, separated by spaces, and it isn't found in
+  a C comment or string. The statement ends at the first semicolon that isn't
+  in an SQL string, delimited identifier or comment.
+- A declare section can only contain host variable definitions, one type in
+  each (such as ``long a, b = 2;``), and not ``#define`` or other C.
+- ``#include`` is not followed, so the host variables and statements must be in
+  the same file.
+- ``WHENEVER SQLSTATE`` and ``WHENEVER CONSTRAINT`` (Feature B041) aren't
+  supported.

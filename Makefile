@@ -1,4 +1,4 @@
-.PHONY: libvsql libvsql-example libvsql-test module-example module-test release bench bench-on-disk bench-memory fmt fmt-verify test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: libvsql libvsql-example libvsql-test module-example module-test embed-example release bench bench-on-disk bench-memory fmt fmt-verify test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # The built-in rules of make aren't used, otherwise it would try to make the
 # vsql/*.c files with yacc from the vsql/*.y files of the same name, such as
@@ -248,7 +248,7 @@ examples-test:
 	for f in `ls examples/*.v`; do \
 		echo $$f; v $(V3_OPTIONS) run $$f || exit 1; \
 	done
-	$(MAKE) libvsql-example module-example
+	$(MAKE) libvsql-example module-example embed-example
 
 # The C programs that use libvsql must be C99.
 LIBVSQL_CC = $(LIBVSQL_C) -std=c99 -pedantic-errors -Wall -Wextra -Werror -Ilibvsql
@@ -286,6 +286,15 @@ module_program = $(VSQL_BIN) module libvsql/module/$(1).mod \
 	&& bin/module-$(1) \
 	&& $(LIBVSQL_CXX) libvsql/module/$(1).c $(2) libvsql/module/$(1)_main.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/module-$(1)-cpp \
 	&& bin/module-$(1)-cpp
+
+# embed-example precompiles libvsql/embed/example.sqc (see docs/language-c.rst)
+# and runs it. The generated C must also be C99 and C++11.
+embed-example: $(LIBVSQL) $(VSQL_BIN)
+	$(VSQL_BIN) precompile libvsql/embed/example.sqc
+	$(LIBVSQL_CC) libvsql/embed/example.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/embed-example
+	bin/embed-example
+	$(LIBVSQL_CXX) libvsql/embed/example.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/embed-example-cpp
+	bin/embed-example-cpp
 
 libvsql-test: $(LIBVSQL)
 	v run scripts/check-libvsql-constants.vsh

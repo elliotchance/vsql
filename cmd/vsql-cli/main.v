@@ -14,6 +14,7 @@ fn main() {
 	register_cli_command(mut cmd)
 	register_in_command(mut cmd)
 	register_module_command(mut cmd)
+	register_precompile_command(mut cmd)
 	register_out_command(mut cmd)
 	register_server_command(mut cmd)
 	register_version_command(mut cmd)

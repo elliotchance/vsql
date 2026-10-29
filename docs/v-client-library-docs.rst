@@ -275,6 +275,16 @@ fn pluralize
 
 TODO(elliotchance): Make private when CLI is moved into vsql package.
 
+fn precompile_c
+---------------
+
+
+.. code-block:: v
+
+   pub fn precompile_c(source string, file_name string) !PrecompiledProgram
+
+precompile_c precompiles an <embedded SQL C program>. file_name is used for the #line of the C, so that the C compiler reports the lines of the program.
+
 fn split_statements
 -------------------
 
@@ -687,6 +697,20 @@ struct PageObject
    }
 
 TODO(elliotchance): This does not need to be public. It was required for a bug at the time with V not being able to pass this to the shuffle function. At some point in the future remove the pub and see if it works.
+
+struct PrecompiledProgram
+-------------------------
+
+
+.. code-block:: v
+
+   pub struct PrecompiledProgram {
+   pub:
+   	implied_module string
+   	source         string
+   }
+
+PrecompiledProgram is the C of an <embedded SQL C program>, and its implied module.
 
 struct PreparedStmt
 -------------------

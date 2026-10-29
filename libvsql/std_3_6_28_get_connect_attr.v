@@ -26,7 +26,7 @@ fn get_connect_attr(mut dbc Dbc, attribute SQLInteger, value voidptr, buffer_len
 	// - 3. If A is not one of the code values in Table 16, then an exception
 	// condition is raised: CLI-specific condition — invalid attribute
 	// identifier.
-	if attribute !in [sql_attr_auto_ipd, sql_attr_savepoint_name] {
+	if attribute !in [sql_attr_auto_ipd, sql_attr_savepoint_name, sql_attr_autocommit] {
 		return cli_error('HY092', 'invalid attribute identifier')
 	}
 
@@ -43,6 +43,18 @@ fn get_connect_attr(mut dbc Dbc, attribute SQLInteger, value voidptr, buffer_len
 		}
 		unsafe {
 			*&SQLInteger(value) = sql_false
+		}
+		return sql_success
+	}
+
+	// AUTOCOMMIT is implementation-defined, see autocommit.v.
+	if attribute == sql_attr_autocommit {
+		unsafe {
+			*&SQLInteger(value) = if dbc.autocommit {
+				sql_autocommit_on
+			} else {
+				sql_autocommit_off
+			}
 		}
 		return sql_success
 	}

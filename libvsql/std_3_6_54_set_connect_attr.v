@@ -13,6 +13,12 @@ fn sql_set_connect_attr(connection_handle SQLInteger, attribute SQLInteger, valu
 	mut dbc := dbcs[i64(connection_handle)] or { return sql_invalid_handle }
 	dbc.diag.clear()
 
+	// AUTOCOMMIT is implementation-defined, see autocommit.v.
+	if attribute == sql_attr_autocommit {
+		set_autocommit(mut dbc, i64(connection_handle), value) or { return dbc.diag.error(err) }
+		return sql_success
+	}
+
 	// - 3. If A is not one of the code values in Table 16, or it can't be set
 	// (POPULATE IPD), then an exception condition is raised: CLI-specific
 	// condition — invalid attribute identifier.

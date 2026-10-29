@@ -126,6 +126,8 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 
 	if !conn.in_transaction() {
 		db_query(mut conn, 'START TRANSACTION')!
+		mut dbc := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }
+		dbc.autocommit_transaction = dbc.autocommit
 	}
 	result := db_run(mut prepared, params) or {
 		// An error that is a transaction rollback (such as a serialization
@@ -133,6 +135,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 		if !conn.in_transaction() {
 			stmt.diag.transactions_rolled_back++
 		}
+		autocommit(mut stmt.diag, stmt.dbc, false) or {}
 		return err
 	}
 	stmt.executed = true
@@ -150,6 +153,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 		stmt.open_cursor(result)
 	}
 	describe(stmt, mut conn, result.columns)
+	autocommit(mut stmt.diag, stmt.dbc, true)!
 
 	return sql_success
 }

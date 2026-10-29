@@ -249,6 +249,11 @@ typedef SQLINTEGER SQLHDESC;
 /* Connection attributes. */
 #define SQL_ATTR_AUTO_IPD       10001 /* always SQL_FALSE */
 #define SQL_ATTR_SAVEPOINT_NAME 10027 /* a savepoint for SQLEndTran */
+#define SQL_ATTR_AUTOCOMMIT     102   /* see SQLSetConnectAttr */
+
+/* SQL_ATTR_AUTOCOMMIT values. */
+#define SQL_AUTOCOMMIT_OFF 0 /* the default */
+#define SQL_AUTOCOMMIT_ON  1 /* commit each statement */
 
 /* SQLEndTran CompletionTypes. */
 #define SQL_COMMIT                  0 /* commit */
@@ -1050,6 +1055,7 @@ SQLRETURN SQLFreeStmt(
  *
  *   SQL_ATTR_AUTO_IPD        SQLINTEGER, always SQL_FALSE
  *   SQL_ATTR_SAVEPOINT_NAME  string, see SQLGetData for SQL_CHAR
+ *   SQL_ATTR_AUTOCOMMIT      SQLINTEGER, SQL_AUTOCOMMIT_OFF or _ON
  *
  * BufferLength and StringLength are only used for a string.
  */
@@ -1546,8 +1552,20 @@ SQLRETURN SQLRowCount(
 );
 
 /*
- * SQLSetConnectAttr sets the SQL_ATTR_SAVEPOINT_NAME of a connection (a string
- * of StringLength octets, or SQL_NTS).
+ * SQLSetConnectAttr sets an attribute of a connection:
+ *
+ *   SQL_ATTR_SAVEPOINT_NAME  a string of StringLength octets, or SQL_NTS
+ *   SQL_ATTR_AUTOCOMMIT      SQLINTEGER, SQL_AUTOCOMMIT_OFF or _ON
+ *
+ * SQL_ATTR_AUTOCOMMIT isn't in the standard (it's the same as in ODBC). With
+ * the default (SQL_AUTOCOMMIT_OFF), the first statement starts a transaction
+ * that lasts until SQLEndTran. With SQL_AUTOCOMMIT_ON, a transaction that a
+ * statement started is committed when the statement has finished and no cursor
+ * of the connection is open, so a query is committed when its cursor is closed
+ * (by SQLCloseCursor, SQLFreeStmt, SQLFreeHandle or SQLMoreResults), and a
+ * statement that fails is rolled back. A transaction started
+ * by SQLStartTran isn't committed until SQLEndTran. Turning it on commits the
+ * active transaction, if there is one.
  */
 SQLRETURN SQLSetConnectAttr(
     SQLHDBC    ConnectionHandle,

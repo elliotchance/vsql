@@ -32,6 +32,13 @@ fn disconnect(mut dbc Dbc, h i64) !i16 {
 		}
 	}
 
+	// An SQL-transaction that's only active because of an open cursor is
+	// committed when AUTOCOMMIT is on (see autocommit.v).
+	if dbc.autocommit_transaction && conn.in_transaction() {
+		close_cursors(h, false)
+		autocommit(mut dbc.diag, h, true)!
+	}
+
 	// - 4.b. If EC is active, then an exception condition is raised: invalid
 	// transaction state — active SQL-transaction.
 	if conn.in_transaction() {

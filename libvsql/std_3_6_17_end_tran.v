@@ -96,6 +96,7 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 		}
 		if is_chain {
 			db_query(mut conn, 'START TRANSACTION') or { errors << err }
+			dbc.autocommit_transaction = false
 		}
 	}
 

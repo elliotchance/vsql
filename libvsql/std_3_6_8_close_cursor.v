@@ -34,6 +34,7 @@ fn close_cursor(mut stmt Stmt) !i16 {
 	}
 
 	stmt.close_cursor()
+	autocommit(mut stmt.diag, stmt.dbc, true)!
 
 	return sql_success
 }

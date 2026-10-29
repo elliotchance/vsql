@@ -52,6 +52,11 @@ mut:
 	server_name string
 	// savepoint_name is the SAVEPOINT NAME attribute.
 	savepoint_name string
+	// autocommit is the AUTOCOMMIT attribute, and autocommit_transaction is
+	// true if the active SQL-transaction was started by a statement while it
+	// was on (see autocommit.v).
+	autocommit             bool
+	autocommit_transaction bool
 }
 
 // An allocated SQL-statement.

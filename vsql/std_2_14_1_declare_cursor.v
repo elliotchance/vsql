@@ -279,13 +279,17 @@ fn current_rows(rows []Row, current_of ?&Cursor) ![]Row {
 // parameters of the procedure that opens it (Syntax Rule 1.c). index is the
 // position of the cursor in the module, and degree is the number of columns of
 // the query, or -1 if it isn't known until it's opened.
+//
+// A <dynamic declare cursor> (20.15) has the name of a prepared statement
+// instead of a query.
 struct ModuleCursor {
-	index    int
-	name     string
-	sql_name string
-	hold     bool
-	query    string
-	degree   int
+	index     int
+	name      string
+	sql_name  string
+	hold      bool
+	query     string
+	degree    int
+	statement string
 }
 
 // declare_module_cursor reads the <declare cursor> of a module. It's parsed
@@ -296,7 +300,22 @@ fn declare_module_cursor(text string, index int) !ModuleCursor {
 		return sqlstate_42601('a module cannot contain a dynamic parameter (?), use a host parameter (:name)')
 	}
 
-	text_sql, _ := replace_host_parameters(text, fn (_ string) !string {
+	// - 20.15. A <dynamic declare cursor> is FOR a <statement name>, which is
+	// one identifier. Its <cursor properties> are found by parsing it with a
+	// query instead.
+	query := cursor_specification(text)!
+	mut statement := ''
+	mut q := new_module_tokens(query)!
+	if q.tokens.len == 1 {
+		statement = q.identifier('statement name')!
+	}
+	declaration_text := if statement == '' {
+		text
+	} else {
+		text.runes()[..text.runes().len - query.runes().len].string() + ' VALUES 1'
+	}
+
+	text_sql, _ := replace_host_parameters(declaration_text, fn (_ string) !string {
 		return '?'
 	})!
 	// The text starts with DECLARE, so it's a <declare cursor> if it parses.
@@ -306,15 +325,20 @@ fn declare_module_cursor(text string, index int) !ModuleCursor {
 	}
 
 	body := declaration.query.body
-	degree := if body is QuerySpecification { select_list_degree(body.exprs) } else { -1 }
+	degree := if body is QuerySpecification && statement == '' {
+		select_list_degree(body.exprs)
+	} else {
+		-1
+	}
 
 	return ModuleCursor{
-		index:    index
-		name:     declaration.name
-		sql_name: '"' + declaration.name.replace('"', '""') + '"'
-		hold:     declaration.hold
-		query:    cursor_specification(text)!
-		degree:   degree
+		index:     index
+		name:      declaration.name
+		sql_name:  '"' + declaration.name.replace('"', '""') + '"'
+		hold:      declaration.hold
+		query:     if statement == '' { query } else { '' }
+		degree:    degree
+		statement: statement
 	}
 }
 

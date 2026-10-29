@@ -52,6 +52,9 @@ fn (stmt OpenStatement) explain(mut _ Connection, _ map[string]Value, _ time.Dur
 // cursor's CLI statement is allocated the first time that it's opened.
 fn (mut t ModuleTokens) open_statement(p ExternallyInvokedProcedure, cursors []ModuleCursor) !ModuleStatement {
 	cursor := t.module_cursor(p, cursors)!
+	if cursor.statement != '' {
+		return t.dynamic_open_statement(p, cursor)
+	}
 	t.end_of_statement(p)!
 
 	text_sql, references := rewrite_host_parameters(cursor.query, p)!

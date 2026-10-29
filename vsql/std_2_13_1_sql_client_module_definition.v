@@ -24,13 +24,52 @@ struct SQLClientModule {
 	procedures []ExternallyInvokedProcedure
 }
 
+// require adds a section of the C runtime, and the sections that it uses.
+fn require(mut sections []string, section string) {
+	if section in sections {
+		return
+	}
+	sections << section
+	for other in c_runtime_requires[section] or { []string{} } {
+		require(mut sections, other)
+	}
+}
+
 // The C runtime that the generated source file uses, in sections that are only
 // included when a procedure needs them, otherwise the C compiler warns that a
 // static function isn't used.
 const c_module_runtime = $embed_file('std_2_13_1_sql_client_module_definition.c').to_string() +
 	$embed_file('std_2_14_7_select_statement_single_row.c').to_string() +
 	$embed_file('std_2_14_1_declare_cursor.c').to_string() +
-	$embed_file('std_2_23_1_get_diagnostics_statement.c').to_string()
+	$embed_file('std_2_23_1_get_diagnostics_statement.c').to_string() +
+	$embed_file('std_2_20_1_description_of_sql_descriptor_areas.c').to_string() +
+	$embed_file('std_2_20_7_prepare_statement.c').to_string()
+
+// The other sections that a section of the C runtime uses, which are also
+// included.
+const c_runtime_requires = {
+	'exec':                  ['param']
+	'cursor':                ['cursors']
+	'descriptor':            ['connection', 'find_descriptor']
+	'allocate_descriptor':   ['connection', 'find_descriptor']
+	'deallocate_descriptor': ['connection', 'find_descriptor']
+	'get_item':              ['descriptor', 'match']
+	'get_data':              ['diagnostics_put']
+	'set_count':             ['descriptor']
+	'set_item':              ['descriptor']
+	'set_data':              ['match']
+	'prepared':              ['connection', 'cursors']
+	'prepared_statement':    ['prepared']
+	'prepare':               ['prepared']
+	'deallocate_prepare':    ['prepared']
+	'describe':              ['prepared_statement', 'descriptor']
+	'input':                 ['param', 'scan', 'descriptor', 'items']
+	'output':                ['target', 'descriptor', 'items']
+	'execute_prepared':      ['prepared_statement', 'input', 'output']
+	'execute_immediate':     ['connection', 'scan']
+	'open_dynamic':          ['prepared_statement', 'input', 'cursor']
+	'fetch_dynamic':         ['cursor', 'output']
+}
 
 // compile_module compiles an SQL-client module (with LANGUAGE C) into C. The C
 // source includes the header as name + ".h", so name is usually the file name
@@ -87,6 +126,15 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 		i += 2
 	}
 
+	// - 20.15 SR 2. A dynamic cursor is declared for a statement that's
+	// prepared in the module.
+	prepared := prepared_statement_names(statements)
+	for cursor in cursors {
+		if cursor.statement != '' && cursor.statement !in prepared {
+			return sqlstate_42601('cursor ${cursor.name}: statement ${cursor.statement} is not prepared in the module')
+		}
+	}
+
 	mut procedures := []ExternallyInvokedProcedure{}
 	for j, declaration in declarations {
 		t = declaration
@@ -99,7 +147,8 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 			}
 		}
 
-		procedure.statement = parse_module_statement(statements[j], procedure, cursors)!
+		procedure.statement = parse_module_statement(statements[j], procedure, cursors,
+			prepared)!
 		procedures << procedure
 	}
 
@@ -209,9 +258,7 @@ fn (m SQLClientModule) c_source(name string) string {
 	mut sections := ['core']
 	for p in m.procedures {
 		for section in p.statement.sections {
-			if section !in sections {
-				sections << section
-			}
+			require(mut sections, section)
 		}
 	}
 
@@ -219,8 +266,19 @@ fn (m SQLClientModule) c_source(name string) string {
 	s += '#include "libvsql.h"\n#include "${name}.h"\n\n'
 	set_schema := "SET SCHEMA '" + m.schema.replace("'", "''") + "'"
 	s += 'static const char vsql_m_set_schema[] = ${c_string(set_schema)};\n\n'
-	if 'cursor' in sections {
+	if 'cursors' in sections {
 		s += 'static const int vsql_m_cursor_count = ${m.cursors.len};\n\n'
+	}
+
+	// The prepared statement of each dynamic cursor, or NULL for a cursor that
+	// isn't dynamic. The last one is always NULL.
+	if 'prepared' in sections {
+		mut names := []string{}
+		for cursor in m.cursors {
+			names << if cursor.statement == '' { 'NULL' } else { c_string(cursor.statement) }
+		}
+		names << 'NULL'
+		s += 'static const char *const vsql_m_cursor_statements[] = {${names.join(', ')}};\n\n'
 	}
 	// Git may check out the runtime with CRLF line endings (on Windows).
 	for section in c_module_runtime.replace('\r\n', '\n').split('/* section ')[1..] {

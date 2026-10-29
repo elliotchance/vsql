@@ -1348,8 +1348,8 @@ PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
 		'PROCEDURE r (SQLSTATE, :n INT); GET DIAGNOSTICS CONDITION 01 :n = CONDITION_NUMBER;',
 		'm')!
 	assert m4.source.contains('void p(char SQLSTATE[6], long *n, char s[6], short *c) {\n  (void)c;\n  int vsql_m_w = 0;\n')
-	assert m4.source.contains('  *n = (long)vsql_m_item_number(SQL_DIAG_NUMBER, 0);\n  vsql_m_w |= vsql_m_put(s, 6, 1, "");\n  vsql_m_sqlstate(SQLSTATE, vsql_m_w ? "01004" : "00000");\n')
-	assert m4.source.contains('  long long vsql_m_n = *c;\n  if (vsql_m_n < 1 || vsql_m_n > vsql_m_da.number) {\n    vsql_m_sqlstate(SQLSTATE, "35000");\n    return;\n  }\n  *n = (long long)vsql_m_n;\n  vsql_m_w |= vsql_m_put(s, 6, 0, vsql_m_item_text(SQL_DIAG_MESSAGE_TEXT, vsql_m_n));\n  *n = (long long)0;\n')
+	assert m4.source.contains('  *n = (long)vsql_m_item_number(SQL_DIAG_NUMBER, 0);\n  vsql_m_w |= vsql_m_put(s, 6, 1, vsql_m_item_text(VSQL_M_DYNAMIC_FUNCTION, 0));\n  vsql_m_sqlstate(SQLSTATE, vsql_m_w ? "01004" : "00000");\n')
+	assert m4.source.contains('  long long vsql_m_n = (long long)*c;\n  if (vsql_m_n < 1 || vsql_m_n > vsql_m_da.number) {\n    vsql_m_sqlstate(SQLSTATE, "35000");\n    return;\n  }\n  *n = (long long)vsql_m_n;\n  vsql_m_w |= vsql_m_put(s, 6, 0, vsql_m_item_text(SQL_DIAG_MESSAGE_TEXT, vsql_m_n));\n  *n = (long long)0;\n')
 	assert m4.source.contains('  long long vsql_m_n = 1LL;\n')
 	assert m4.source.contains('  *n = (long)vsql_m_n;\n  vsql_m_sqlstate(SQLSTATE, "00000");\n')
 	assert !m4.source.contains('  vsql_m_begin(')
@@ -2166,7 +2166,7 @@ DECLARE d CURSOR FOR SELECT * FROM t;',
 	// aren't in a module that doesn't use them.
 	m2 := compile_module(module_header + 'DECLARE c CURSOR FOR VALUES 1; PROCEDURE p (SQLSTATE); COMMIT;',
 		'm')!
-	assert !m2.source.contains('vsql_m_cursor')
+	assert !m2.source.contains('vsql_m_cursor_count')
 
 	cursor_header := module_header + 'DECLARE c CURSOR FOR SELECT x FROM t; PROCEDURE p (SQLSTATE, :x INTEGER); '
 	assert module_error(cursor_header + 'FETCH c INTO :x, :x;') == 'syntax error: procedure p: cursor C has 1 column, but there are 2 targets'
@@ -2186,4 +2186,114 @@ DECLARE d CURSOR FOR SELECT * FROM t;',
 	assert module_error(module_header + 'DECLARE c CURSOR FOR VALUES 1 FOR READ ONLY; PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: cursor C: FOR READ ONLY and FOR UPDATE are not supported in a module'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); COMMIT; DECLARE c CURSOR FOR VALUES 1; PROCEDURE q (SQLSTATE);') == 'syntax error: a module must end with a procedure that has a statement'
 	assert module_error(module_header + 'DECLARE c CURSOR VALUES 1; PROCEDURE p (SQLSTATE); COMMIT;').starts_with('syntax error')
+}
+
+// Feature B031, "Basic dynamic SQL".
+fn test_module_dynamic_sql() ! {
+	m := compile_module(module_header +
+		'PROCEDURE h (SQLSTATE, :n INTEGER, :s VARCHAR(5)); GET DESCRIPTOR d :n = COUNT, :n = TOP_LEVEL_COUNT, :n = KEY_TYPE, :s = DYNAMIC_FUNCTION, :n = DYNAMIC_FUNCTION_CODE;
+PROCEDURE g (SQLSTATE, :n INTEGER, :s VARCHAR(5), :c CHAR(3)); GET SQL DESCRIPTOR GLOBAL \' g \' VALUE :n :s = DATA, :n = INDICATOR, :c = NAME, :n = TYPE;
+PROCEDURE g2 (SQLSTATE, :n INTEGER); GET DESCRIPTOR LOCAL \'g\' VALUE 2 :n = DATA;
+PROCEDURE a (SQLSTATE, :n SMALLINT); ALLOCATE SQL DESCRIPTOR d WITH MAX :n;
+PROCEDURE a2 (SQLSTATE); ALLOCATE DESCRIPTOR "d";
+PROCEDURE de (SQLSTATE); DEALLOCATE SQL DESCRIPTOR d;
+PROCEDURE sc (SQLSTATE); SET DESCRIPTOR d COUNT = -1;
+PROCEDURE sv (SQLSTATE, :s VARCHAR(5)); SET DESCRIPTOR d VALUE 2 DATA = :s, CHARACTER_SET_NAME = :s, SCOPE_NAME = \'x\', LENGTH = 5, TYPE = 12, LEVEL = 0;
+PROCEDURE sb (SQLSTATE, :b BOOLEAN); SET DESCRIPTOR d VALUE 1 DATA = :b;
+PROCEDURE pr (SQLSTATE, :s VARCHAR(5)); PREPARE s FROM :s;
+PROCEDURE pr2 (SQLSTATE); PREPARE s FROM \'SELECT 1\';
+PROCEDURE dp (SQLSTATE); DEALLOCATE PREPARE s;
+PROCEDURE ds (SQLSTATE); DESCRIBE s USING DESCRIPTOR d WITH NESTING;
+PROCEDURE ds2 (SQLSTATE); DESCRIBE OUTPUT s USING SQL DESCRIPTOR d WITHOUT NESTING;
+PROCEDURE ex (SQLSTATE); EXECUTE s;
+PROCEDURE ex2 (SQLSTATE, :n INTEGER, :s VARCHAR(5), :i INTEGER); EXECUTE s INTO :n, :s INDICATOR :i USING :s :i, :n;
+PROCEDURE ex3 (SQLSTATE); EXECUTE s INTO DESCRIPTOR d USING DESCRIPTOR GLOBAL \'g\';
+PROCEDURE ei (SQLSTATE); EXECUTE IMMEDIATE \'DELETE FROM t\';
+DECLARE c0 CURSOR FOR SELECT 1 FROM t;
+DECLARE dc CURSOR WITH HOLD FOR s;
+PROCEDURE o (SQLSTATE); OPEN dc;
+PROCEDURE o2 (SQLSTATE, :n INTEGER); OPEN dc USING :n;
+PROCEDURE f (SQLSTATE, :n INTEGER); FETCH NEXT FROM dc INTO :n;
+PROCEDURE f2 (SQLSTATE); FETCH dc INTO SQL DESCRIPTOR d;
+PROCEDURE cl (SQLSTATE); CLOSE dc;
+PROCEDURE dl (SQLSTATE); DELETE FROM t WHERE CURRENT OF dc;
+PROCEDURE up (SQLSTATE); UPDATE t SET x = 1 WHERE CURRENT OF dc;',
+		'm')!
+	assert m.source.contains('static const char *const vsql_m_cursor_statements[] = {NULL, "S", NULL};\n')
+	assert m.source.contains('  int vsql_m_w = 0;\n  vsql_m_begin("GET DESCRIPTOR", 47);\n  struct vsql_m_descriptor *vsql_m_d = vsql_m_descriptor(SQLSTATE, "D", &vsql_m_own);\n')
+	assert m.source.contains('  *n = (long)vsql_m_d->count;\n  *n = (long)vsql_m_d->top_level_count;\n  *n = (long)0;\n  vsql_m_w |= vsql_m_put(s, 6, 0, vsql_m_d->dynamic_function);\n  *n = (long)vsql_m_d->dynamic_function_code;\n')
+	assert m.source.contains('  struct vsql_m_item *vsql_m_i = vsql_m_get_item(SQLSTATE, "G", NULL, (long long)*n, SQL_VARCHAR, 5, 1);\n')
+	assert m.source.contains('  vsql_m_w |= vsql_m_get_data(vsql_m_i, s, SQL_VARCHAR, 6);\n  *n = (long)vsql_m_i->number[VSQL_M_INDICATOR];\n  vsql_m_w |= vsql_m_put(c, 4, 1, vsql_m_i->string[VSQL_M_NAME] == NULL ? "" : vsql_m_i->string[VSQL_M_NAME]);\n')
+	assert m.source.contains('vsql_m_get_item(SQLSTATE, "G", &vsql_m_own, 2LL, SQL_INTEGER, 0, 0);\n')
+	assert m.source.contains('  vsql_m_allocate_descriptor(SQLSTATE, "D", &vsql_m_own, (long long)*n);\n')
+	assert m.source.contains('  vsql_m_allocate_descriptor(SQLSTATE, "d", &vsql_m_own, 100LL);\n')
+	assert m.source.contains('  vsql_m_begin("DEALLOCATE DESCRIPTOR", 15);\n  vsql_m_deallocate_descriptor(SQLSTATE, "D", &vsql_m_own);\n')
+	assert m.source.contains('  vsql_m_set_count(SQLSTATE, "D", &vsql_m_own, -1LL);\n')
+
+	// - 20.5 GR 4. The components are set in a fixed order.
+	assert m.source.contains('  if (vsql_m_i != NULL &&\n      vsql_m_set_number(SQLSTATE, vsql_m_i, VSQL_M_LEVEL, 0LL) &&\n      vsql_m_set_number(SQLSTATE, vsql_m_i, VSQL_M_TYPE, 12LL) &&\n      vsql_m_set_string(vsql_m_i, VSQL_M_CHARACTER_SET_NAME, s) &&\n      vsql_m_set_string(vsql_m_i, VSQL_M_SCOPE_NAME, "x") &&\n      vsql_m_set_number(SQLSTATE, vsql_m_i, VSQL_M_LENGTH, 5LL) &&\n      vsql_m_set_data(SQLSTATE, vsql_m_i, SQL_VARCHAR, 5, s)) {\n')
+	assert m.source.contains('      vsql_m_set_data(SQLSTATE, vsql_m_i, SQL_BOOLEAN, 0, b)) {\n')
+	assert m.source.contains('  vsql_m_begin("PREPARE", 56);\n  if (!vsql_m_string(SQLSTATE, s, 6)) {\n    return;\n  }\n  vsql_m_prepare(SQLSTATE, "S", s);\n')
+	assert m.source.contains('  vsql_m_prepare(SQLSTATE, "S", "SELECT 1");\n')
+	assert m.source.contains('  vsql_m_begin("DEALLOCATE PREPARE", 16);\n  vsql_m_deallocate_prepare(SQLSTATE, "S");\n')
+	assert m.source.contains('  vsql_m_begin("DESCRIBE", 20);\n  vsql_m_describe(SQLSTATE, "S", "D", &vsql_m_own);\n')
+	assert m.source.contains('  struct vsql_m_input vsql_m_in = {-1, NULL, NULL, NULL};\n  struct vsql_m_output vsql_m_out = {-1, NULL, NULL, NULL};\n  vsql_m_execute_prepared(SQLSTATE, "S", &vsql_m_in, &vsql_m_out);\n')
+	assert m.source.contains('  struct vsql_m_input vsql_m_in = {2, vsql_m_p, NULL, NULL};\n  struct vsql_m_target vsql_m_t[2] = {\n')
+	assert m.source.contains('  struct vsql_m_output vsql_m_out = {2, vsql_m_t, NULL, NULL};\n  if (vsql_m_execute_prepared(SQLSTATE, "S", &vsql_m_in, &vsql_m_out)) {\n    *i = (long)vsql_m_t[1].indicator;\n  }\n')
+	assert m.source.contains('  struct vsql_m_input vsql_m_in = {0, NULL, "G", NULL};\n  struct vsql_m_output vsql_m_out = {0, NULL, "D", &vsql_m_own};\n')
+	assert m.source.contains('  vsql_m_begin("EXECUTE IMMEDIATE", 43);\n  vsql_m_execute_immediate(SQLSTATE, "DELETE FROM t");\n')
+	assert m.source.contains('  vsql_m_begin("DYNAMIC OPEN", 40);\n  struct vsql_m_input vsql_m_in = {-1, NULL, NULL, NULL};\n  vsql_m_open_dynamic(SQLSTATE, 1, "\\"DC\\"", 1, "S", &vsql_m_in);\n')
+	assert m.source.contains('  struct vsql_m_input vsql_m_in = {1, vsql_m_p, NULL, NULL};\n  vsql_m_open_dynamic(')
+	assert m.source.contains('  vsql_m_begin("DYNAMIC FETCH", 39);\n  struct vsql_m_target vsql_m_t[1] = {\n')
+	assert m.source.contains('  vsql_m_fetch_dynamic(SQLSTATE, 1, &vsql_m_out);\n')
+	assert m.source.contains('  struct vsql_m_output vsql_m_out = {0, NULL, "D", &vsql_m_own};\n  vsql_m_fetch_dynamic(')
+	assert m.source.contains('  vsql_m_begin("DYNAMIC CLOSE", 37);\n')
+	assert m.source.contains('  vsql_m_begin("DYNAMIC DELETE CURSOR", 38);\n')
+	assert m.source.contains('  vsql_m_begin("DYNAMIC UPDATE CURSOR", 42);\n')
+
+	h := module_header +
+		'PROCEDURE p (SQLSTATE, :n INTEGER, :s VARCHAR(5), :r REAL); '
+	prepared := " PROCEDURE q (SQLSTATE); PREPARE s FROM 'x';"
+	for stmt, expected in {
+		"ALLOCATE DESCRIPTOR '1 x';":                   "procedure p: '1 x' is not a valid descriptor name"
+		'ALLOCATE DESCRIPTOR GLOBAL d;':                'procedure p: a descriptor name must be an identifier or a literal near d'
+		'ALLOCATE DESCRIPTOR :s;':                      'procedure p: a descriptor name must be an identifier or a literal near s'
+		'ALLOCATE x;':                                  'procedure p: expected DESCRIPTOR near x'
+		'ALLOCATE DESCRIPTOR d WITH x;':                'expected MAX near x'
+		'ALLOCATE DESCRIPTOR d WITH MAX :r;':           'procedure p: the number of occurrences :r must be SMALLINT, INTEGER or BIGINT'
+		'ALLOCATE DESCRIPTOR d WITH MAX x;':            'procedure p: expected a number of occurrences near x'
+		'ALLOCATE DESCRIPTOR d x;':                     'procedure p: unexpected near x'
+		'GET DESCRIPTOR d :n = X;':                     'procedure p: expected a header item name near X'
+		'GET DESCRIPTOR d VALUE 1 :n = X;':             'procedure p: expected a descriptor item name near X'
+		'GET DESCRIPTOR d VALUE 1 n = TYPE;':           'procedure p: expected a host parameter near n'
+		'GET DESCRIPTOR d VALUE 1 :s = TYPE;':          'procedure p: host parameter :s must be SMALLINT, INTEGER or BIGINT for TYPE'
+		'GET DESCRIPTOR d VALUE 1 :n = NAME;':          'procedure p: host parameter :n must be CHARACTER or CHARACTER VARYING for NAME'
+		'GET DESCRIPTOR d :s = COUNT;':                 'procedure p: host parameter :s must be SMALLINT, INTEGER or BIGINT for COUNT'
+		'SET DESCRIPTOR d x = 1;':                      'expected COUNT near x'
+		'SET DESCRIPTOR d VALUE 1 NAME = :s;':          'procedure p: NAME cannot be set'
+		'SET DESCRIPTOR d VALUE 1 TYPE = 1, TYPE = 2;': 'procedure p: TYPE is set more than once'
+		"SET DESCRIPTOR d VALUE 1 DATA = 'x';":         'procedure p: DATA must be set to a host parameter near x'
+		'SET DESCRIPTOR d VALUE 1 TYPE = -:n;':         'procedure p: expected a value near :'
+		'SET DESCRIPTOR d VALUE 1 TYPE = 1 x;':         'procedure p: unexpected near x'
+		'PREPARE s :s;':                                'expected FROM near :'
+		'PREPARE s FROM :s x;':                         'procedure p: unexpected near x'
+		'DEALLOCATE PREPARE x;':                        'procedure p: statement X is not prepared in the module'
+		'DEALLOCATE x;':                                'procedure p: expected DESCRIPTOR near x'
+		'DESCRIBE INPUT s USING DESCRIPTOR d;':         'procedure p: DESCRIBE INPUT is not supported'
+		'DESCRIBE s d;':                                'expected USING near d'
+		'DESCRIBE s USING DESCRIPTOR d WITH x;':        'expected NESTING near x'
+		'EXECUTE x;':                                   'procedure p: statement X is not prepared in the module'
+		'EXECUTE s USING SQL x;':                       'expected DESCRIPTOR near x'
+		'EXECUTE s INTO :x;':                           'procedure p: host parameter :x is not declared'
+		'EXECUTE s USING :n x;':                        'procedure p: unexpected near x'
+		'EXECUTE IMMEDIATE :s x;':                      'procedure p: unexpected near x'
+		'SET SQL x;':                                   'expected DESCRIPTOR near x'
+		'DELETE FROM "";':                              'procedure p: a delimited identifier cannot be empty'
+		'COMMIT; DECLARE dc CURSOR FOR x;':             'cursor DC: statement X is not prepared in the module'
+		'COMMIT; DECLARE dc CURSOR FOR 1;':             'expected statement name near 1'
+		'FETCH dc :n; DECLARE dc CURSOR FOR s;':        'expected INTO near :'
+	} {
+		assert module_error(h + stmt + prepared) == 'syntax error: ${expected}', stmt
+	}
+	assert module_error(h + "PREPARE 1 FROM 'x';") == 'syntax error: expected statement name near 1'
 }

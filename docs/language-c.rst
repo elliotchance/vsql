@@ -340,8 +340,10 @@ Item                         Value
                              ``UPDATE WHERE``.
 ``COMMAND_FUNCTION_CODE``    The code of the statement, such as ``50`` for
                              ``INSERT``.
-``DYNAMIC_FUNCTION``         Always empty, since a statement in a module isn't
-                             dynamic. ``DYNAMIC_FUNCTION_CODE`` is ``0``.
+``DYNAMIC_FUNCTION``         The statement that ``EXECUTE`` or ``EXECUTE
+                             IMMEDIATE`` executed (see `Dynamic SQL`_), and
+                             ``DYNAMIC_FUNCTION_CODE`` is its code. Otherwise
+                             it's empty, and the code is ``0``.
 ``ROW_COUNT``                The number of rows that were inserted, updated or
                              deleted.
 ``TRANSACTIONS_COMMITTED``   ``1`` if a transaction was committed, otherwise
@@ -396,6 +398,143 @@ or ``25001`` for ``DISCONNECT``).
 
 When the program exits, every SQL-connection is disconnected, and a transaction
 that wasn't committed is rolled back.
+
+Dynamic SQL
+^^^^^^^^^^^
+
+Dynamic SQL (ISO/IEC 9075-2, 20, Feature B031 "Basic dynamic SQL") runs a
+statement that isn't known until the program runs. It's a string, or a
+``CHARACTER`` or ``CHARACTER VARYING`` parameter, and uses ``?`` for each value
+that's given when it's executed:
+
+.. code-block:: text
+
+   EXECUTE IMMEDIATE <statement>
+   PREPARE <statement name> FROM <statement>
+   EXECUTE <statement name> [ INTO <targets> ] [ USING <values> ]
+   DEALLOCATE PREPARE <statement name>
+
+``EXECUTE IMMEDIATE`` executes a statement that doesn't have a ``?`` and isn't
+a query (otherwise the ``SQLSTATE`` is ``42000``). ``PREPARE`` checks a
+statement and keeps it with a name (replacing a statement with the same name),
+so it can be executed many times. The name is in the module, which must have a
+``PREPARE`` for each name that it uses. ``<values>`` is a parameter for each
+``?``, and ``<targets>`` is a parameter for each column of a query. A parameter
+can have an indicator parameter, like ``SELECT ... INTO``. Either one can be
+``SQL DESCRIPTOR <descriptor name>`` instead (see below).
+
+A query can only be executed with ``INTO``, when it's a ``SELECT`` that can be
+used in ``SELECT ... INTO`` (otherwise the ``SQLSTATE`` is ``07007`` or
+``07003``), and has the same results. These are the other errors:
+
+- ``26000`` (invalid SQL statement name): The statement hasn't been prepared
+  in this SQL-connection.
+- ``07001``: The number of ``<values>`` isn't the number of ``?``.
+- ``07004``: There isn't a ``USING``, but there is a ``?``.
+- ``07002``: The number of ``<targets>`` isn't the number of columns.
+- ``24000`` (invalid cursor state): ``PREPARE`` or ``DEALLOCATE PREPARE``
+  while a cursor for the statement is open.
+
+A prepared statement can't be ``START TRANSACTION``, ``COMMIT`` or
+``ROLLBACK`` (they're ``42000``). Use those statements in a procedure instead.
+
+.. code-block:: sql
+
+   PROCEDURE prepare_find (SQLSTATE, :sql VARCHAR(200));
+     PREPARE find FROM :sql;
+
+   PROCEDURE find_one (SQLSTATE, :id INTEGER, :name VARCHAR(50));
+     EXECUTE find INTO :name USING :id;
+
+.. code-block:: c
+
+   strcpy(sql, "SELECT name FROM products WHERE id = ?");
+   prepare_find(sqlstate, sql);
+   id = 3;
+   find_one(sqlstate, &id, name);
+
+A cursor can be declared for a prepared query, instead of a query. It's opened
+with the values for each ``?``, and fetched into the targets (``NEXT`` is the
+only direction):
+
+.. code-block:: text
+
+   DECLARE <cursor name> CURSOR [ WITH HOLD | WITHOUT HOLD ] FOR <statement name> ;
+
+   OPEN <cursor name> [ USING <values> ]
+   FETCH [ [ NEXT ] FROM ] <cursor name> INTO <targets>
+
+``CLOSE``, ``DELETE ... WHERE CURRENT OF`` and ``UPDATE ... WHERE CURRENT OF``
+are the same as any other cursor. The statement is prepared again when the
+cursor is opened, so the cursor isn't changed if the statement is prepared
+again (or deallocated) after that. A statement that isn't a query is ``07005``.
+
+An SQL descriptor area describes the values of a statement, or the columns of
+a query. Its name is an identifier, or a string with ``LOCAL`` (the default)
+or ``GLOBAL``. A ``LOCAL`` name is only in the module, and a ``GLOBAL`` one is
+in every module (see `Multiple Modules`_):
+
+.. code-block:: text
+
+   ALLOCATE [ SQL ] DESCRIPTOR <descriptor name> [ WITH MAX <occurrences> ]
+   DEALLOCATE [ SQL ] DESCRIPTOR <descriptor name>
+   DESCRIBE [ OUTPUT ] <statement name> USING [ SQL ] DESCRIPTOR <descriptor name>
+   GET [ SQL ] DESCRIPTOR <descriptor name> <parameter> = <header item> [, ...]
+   GET [ SQL ] DESCRIPTOR <descriptor name> VALUE <n> <parameter> = <item> [, ...]
+   SET [ SQL ] DESCRIPTOR <descriptor name> COUNT = <value>
+   SET [ SQL ] DESCRIPTOR <descriptor name> VALUE <n> <item> = <value> [, ...]
+
+It has up to ``<occurrences>`` items (``100`` by default, and at most
+``32767``). ``DESCRIBE`` sets ``COUNT`` to the number of columns of a query
+(``0`` for any other statement) and describes each column in an item: its
+``TYPE`` (a code, such as ``4`` for ``INTEGER``), ``LENGTH``, ``PRECISION``,
+``SCALE``, ``NAME``, ``NULLABLE``, etc. ``DYNAMIC_FUNCTION`` and
+``DYNAMIC_FUNCTION_CODE`` are the statement, and ``KEY_TYPE`` is always ``0``.
+If there are more columns than items, the ``SQLSTATE`` is ``01005``, and only
+``COUNT`` is set.
+
+``USING SQL DESCRIPTOR`` gives the value of each ``?`` from the ``DATA`` (or
+``NULL`` if ``INDICATOR`` is negative) of the first ``COUNT`` items. ``INTO SQL
+DESCRIPTOR`` sets the ``DATA``, ``INDICATOR``, ``RETURNED_LENGTH`` and
+``RETURNED_OCTET_LENGTH`` of each item from a column, as its ``TYPE``. So the
+items can be set by ``DESCRIBE``, or with ``SET DESCRIPTOR``. Setting ``TYPE``
+resets the other parts of the item, so the parts are always set in the order
+of the standard, whatever order they're written in.
+
+``DATA`` must be the same type as its parameter (otherwise it's ``22005``):
+``SMALLINT``, ``INTEGER``, ``BIGINT``, ``REAL``, ``DOUBLE PRECISION`` (which is
+also a ``FLOAT``), ``BOOLEAN``, ``CHARACTER(L)`` with a ``LENGTH`` of ``L``, or
+``CHARACTER VARYING(L)`` with a ``LENGTH`` of ``L`` (or less, to get a value).
+A ``NUMERIC``, ``DECIMAL``, ``DATE``, ``TIME`` or ``TIMESTAMP`` has no C type,
+so its ``DATA`` is a ``CHARACTER`` or ``CHARACTER VARYING`` string. A ``NULL``
+value without ``INDICATOR`` is ``22002``. These are the other errors:
+
+- ``33000`` (invalid SQL descriptor name): The SQL descriptor area doesn't
+  exist in this SQL-connection, or already exists.
+- ``07009`` (invalid descriptor index): ``<n>`` is more than
+  ``<occurrences>``. If it's more than ``COUNT``, ``GET DESCRIPTOR`` is
+  ``02000`` (no data).
+- ``07008`` (invalid descriptor count): ``COUNT`` is more than
+  ``<occurrences>``.
+- ``07001`` or ``07002``: ``COUNT`` isn't the number of ``?`` (or columns), or
+  an item isn't a valid type, or an item of ``USING`` doesn't have ``DATA``.
+- ``0700E`` (invalid LEVEL value): ``LEVEL`` isn't ``0``. vsql doesn't have the
+  types (such as ``ROW``) that have more than one level.
+- ``0700F`` (invalid DATETIME_INTERVAL_CODE): A ``DATETIME_INTERVAL_CODE``
+  that isn't ``1`` to ``5``, or for a ``TYPE`` that isn't ``9`` (datetime).
+
+.. code-block:: sql
+
+   PROCEDURE describe_find (SQLSTATE);
+     DESCRIBE find USING SQL DESCRIPTOR columns;
+
+   PROCEDURE column_type (SQLSTATE, :n INTEGER, :type INTEGER, :name VARCHAR(128));
+     GET DESCRIPTOR columns VALUE :n :type = TYPE, :name = NAME;
+
+Like the prepared statements, each SQL-connection has its own SQL descriptor
+areas. Each dynamic SQL statement starts an SQL-transaction, like any other
+statement. ``DESCRIBE INPUT``, and names that are a parameter, aren't supported
+yet.
 
 Multiple Modules
 ^^^^^^^^^^^^^^^^

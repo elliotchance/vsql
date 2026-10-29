@@ -30,3 +30,10 @@ PROCEDURE other_close (SQLSTATE);
 
 PROCEDURE other_disconnect (SQLSTATE);
   DISCONNECT CURRENT;
+
+-- A GLOBAL SQL descriptor area is in every module, and a LOCAL one isn't.
+PROCEDURE other_global (SQLSTATE, :n INTEGER);
+  GET DESCRIPTOR GLOBAL 'g' :n = COUNT;
+
+PROCEDURE other_local (SQLSTATE, :n INTEGER);
+  GET DESCRIPTOR d :n = COUNT;

@@ -91,7 +91,15 @@ fn (t HostParameterType) c_parameter(name string) string {
 // row of a <select statement: single row> is assigned to. The length of a
 // string includes the null character.
 fn (t HostParameterType) c_target(name string, has_indicator int) string {
-	typ := match t.typ {
+	length := if t.is_string() { t.length + 1 } else { 0 }
+
+	return '{${t.c_code()}, ${length}, ${name}, ${has_indicator}, 0}'
+}
+
+// c_code is the C constant of the SQL data type code (Table 28, "Codes used for
+// SQL data types in Dynamic SQL"), such as SQL_INTEGER.
+fn (t HostParameterType) c_code() string {
+	return match t.typ {
 		.is_character { 'SQL_CHAR' }
 		.is_varchar { 'SQL_VARCHAR' }
 		.is_smallint { 'SQL_SMALLINT' }
@@ -101,9 +109,6 @@ fn (t HostParameterType) c_target(name string, has_indicator int) string {
 		.is_boolean { 'SQL_BOOLEAN' }
 		else { 'SQL_DOUBLE' }
 	}
-	length := if t.is_string() { t.length + 1 } else { 0 }
-
-	return '{${typ}, ${length}, ${name}, ${has_indicator}, 0}'
 }
 
 // c_type is the C data type of an exact numeric, such as "long".

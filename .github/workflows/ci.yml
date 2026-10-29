@@ -28,7 +28,8 @@ concurrency:
   cancel-in-progress: true
 
 # There's one job for each OS and architecture. Each one runs the tests that
-# work there and builds the binary for the release. Checks that don't depend on the OS only run on Linux x86-64,
+# work there, builds the binary for the release and generates the C for the
+# amalgamation. Checks that don't depend on the OS only run on Linux x86-64,
 # which has the fastest and least limited runners.
 #
 # The release binary is built after the tests, because set_version.sh changes
@@ -47,9 +48,11 @@ jobs:
         include:
           - arch: x86-64
             name: x86-64
+            v_arch: amd64
             runner: ubuntu-latest
           - arch: arm64
             name: ARM64
+            v_arch: arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
     steps:
@@ -103,6 +106,19 @@ jobs:
           .github/workflows/hello-test.sh bin/vsql
           make release VERSION=${GITHUB_REF##*/}
 
+      # The amalgamation's C has to be generated on each OS and architecture
+      # (see the amalgamation job).
+      - name: Generate amalgamation C
+        run: |
+          scripts/amalgamation.sh generate amalgamation-linux-${{ matrix.v_arch }}
+          scripts/amalgamation.sh check amalgamation-linux-${{ matrix.v_arch }}
+
+      - name: Upload amalgamation C
+        uses: actions/upload-artifact@v7
+        with:
+          name: amalgamation-linux-${{ matrix.v_arch }}
+          path: amalgamation-linux-${{ matrix.v_arch }}
+
       - name: Release
         uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
@@ -118,9 +134,11 @@ jobs:
         include:
           - arch: x86-64
             name: x86-64
+            v_arch: amd64
             runner: macos-15-intel
           - arch: arm64
             name: ARM64
+            v_arch: arm64
             runner: macos-latest
     runs-on: ${{ matrix.runner }}
     steps:
@@ -152,6 +170,19 @@ jobs:
           .github/workflows/hello-test.sh bin/vsql
           make release VERSION=${GITHUB_REF##*/}
 
+      # The amalgamation's C has to be generated on each OS and architecture
+      # (see the amalgamation job).
+      - name: Generate amalgamation C
+        run: |
+          scripts/amalgamation.sh generate amalgamation-macos-${{ matrix.v_arch }}
+          scripts/amalgamation.sh check amalgamation-macos-${{ matrix.v_arch }}
+
+      - name: Upload amalgamation C
+        uses: actions/upload-artifact@v7
+        with:
+          name: amalgamation-macos-${{ matrix.v_arch }}
+          path: amalgamation-macos-${{ matrix.v_arch }}
+
       - name: Release
         uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
@@ -169,9 +200,11 @@ jobs:
         include:
           - arch: x86-64
             name: x86-64
+            v_arch: amd64
             runner: windows-latest
           - arch: arm64
             name: ARM64
+            v_arch: arm64
             runner: windows-11-arm
     runs-on: ${{ matrix.runner }}
     defaults:
@@ -224,9 +257,58 @@ jobs:
           Copy-Item libvsql/example.c $dir
           Compress-Archive -Path $dir -DestinationPath "$dir.zip"
 
+      # The amalgamation's C has to be generated on each OS and architecture
+      # (see the amalgamation job).
+      - name: Generate amalgamation C
+        run: |
+          scripts/amalgamation.sh generate amalgamation-windows-${{ matrix.v_arch }}
+          scripts/amalgamation.sh check amalgamation-windows-${{ matrix.v_arch }}
+
+      - name: Upload amalgamation C
+        uses: actions/upload-artifact@v7
+        with:
+          name: amalgamation-windows-${{ matrix.v_arch }}
+          path: amalgamation-windows-${{ matrix.v_arch }}
+
       - name: Release
         uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             vsql-*-windows-${{ matrix.arch }}.zip
+
+  # The amalgamation is the C for vsql and libvsql, so that they can be built
+  # without V (see scripts/amalgamation.sh). It has the C from each OS and
+  # architecture, which has already been built and tested with it.
+  amalgamation:
+    name: Amalgamation
+    needs: [linux, macos, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download C
+        uses: actions/download-artifact@v8
+        with:
+          pattern: amalgamation-*
+
+      - name: Zip amalgamation
+        run: |
+          scripts/amalgamation.sh package ${GITHUB_REF##*/} amalgamation-*/
+          unzip -l vsql-*-amalgamation.zip
+
+      - name: Build and test
+        run: |
+          unzip -q vsql-*-amalgamation.zip
+          cd vsql-*-amalgamation
+          make
+          ../.github/workflows/hello-test.sh bin/vsql
+          make example
+
+      - name: Release
+        uses: softprops/action-gh-release@v3
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            vsql-*-amalgamation.zip

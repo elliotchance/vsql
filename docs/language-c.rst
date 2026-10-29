@@ -18,6 +18,9 @@ The release (see :doc:`install`) has the library in ``lib/``
 folder. ``bin/``, ``include/`` and ``lib/`` are the usual layout of an install
 prefix, so the folder can be copied into one, such as ``/usr/local``.
 
+To build it from C for another platform, or without V, use the amalgamation
+(see :doc:`install`) and run ``make libvsql``.
+
 To build it from the repository instead, run ``make libvsql``. That creates
 ``bin/libvsql.dylib`` (or ``bin/libvsql.so`` or ``bin/libvsql.dll``), and the
 header is ``libvsql/libvsql.h``.

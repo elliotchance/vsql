@@ -7,6 +7,11 @@ import vsql
 // The codes for SQL data types (Table 6 and Table 40) and application data
 // types (Table 7), and the C type for each (Table 45).
 
+// SQLInteger is SQLINTEGER in libvsql.h, the C type for an SQL INTEGER. Table 45
+// says it's a C long, but that's 64 bits on macOS and Linux and 32 bits on
+// Windows, so libvsql.h makes it 32 bits everywhere.
+type SQLInteger = i32
+
 const sql_char = i16(1)
 const sql_numeric = i16(2)
 const sql_decimal = i16(3)

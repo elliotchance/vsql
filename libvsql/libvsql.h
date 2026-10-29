@@ -198,9 +198,9 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_DIAG_CONNECTION_NAME            10      /* the ServerName */
 #define SQL_DIAG_SERVER_NAME                11      /* the ServerName */
 #define SQL_DIAG_CONDITION_NUMBER           14      /* the record number */
-#define SQL_DIAG_CONSTRAINT_CATALOG         15      /* always "" */
-#define SQL_DIAG_CONSTRAINT_SCHEMA          16      /* always "" */
-#define SQL_DIAG_CONSTRAINT_NAME            17      /* always "" */
+#define SQL_DIAG_CONSTRAINT_CATALOG         15      /* the violated constraint */
+#define SQL_DIAG_CONSTRAINT_SCHEMA          16      /* its schema */
+#define SQL_DIAG_CONSTRAINT_NAME            17      /* its name */
 #define SQL_DIAG_CATALOG_NAME               18      /* always "" */
 #define SQL_DIAG_SCHEMA_NAME                19      /* always "" */
 #define SQL_DIAG_TABLE_NAME                 20      /* always "" */

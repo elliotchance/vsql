@@ -249,6 +249,26 @@ UTEST_F(db, 6_33_get_diag_field_record) {
   EXPECT_EQ(i, 0);
 }
 
+UTEST_F(db, 6_33_get_diag_field_constraint) {
+  EXPECT_EQ(run_sql(utest_fixture->stmt,
+                    "CREATE TABLE baz (x INT CONSTRAINT positive CHECK (x > 0))"),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "INSERT INTO baz (x) VALUES (-1)"),
+            SQL_ERROR);
+  EXPECT_STREQ(
+      diag_string(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_SQLSTATE),
+      "23514");
+  EXPECT_STREQ(diag_string(SQL_HANDLE_STMT, utest_fixture->stmt,
+                           SQL_DIAG_CONSTRAINT_CATALOG),
+               ":memory:");
+  EXPECT_STREQ(diag_string(SQL_HANDLE_STMT, utest_fixture->stmt,
+                           SQL_DIAG_CONSTRAINT_SCHEMA),
+               "PUBLIC");
+  EXPECT_STREQ(diag_string(SQL_HANDLE_STMT, utest_fixture->stmt,
+                           SQL_DIAG_CONSTRAINT_NAME),
+               "POSITIVE");
+}
+
 /* The CLI-specific SQLSTATEs are from the standard. */
 UTEST_F(db, 6_33_get_diag_field_origin) {
   EXPECT_EQ(run_sql(utest_fixture->stmt, ""), SQL_ERROR);

@@ -168,7 +168,7 @@ fn insert_value(mut conn Connection, params map[string]Value, table Table, colum
 	value := cast(mut conn, 'for column ${column_name}', raw_value, column.typ)!
 
 	if value.is_null && column.not_null {
-		return sqlstate_23502('column ${column_name}')
+		return sqlstate_23502(table, column_name)
 	}
 
 	return value

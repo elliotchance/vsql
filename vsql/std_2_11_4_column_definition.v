@@ -301,7 +301,7 @@ fn (g GeneratedColumns) apply(mut conn Connection, mut row Row) ! {
 		raw_value := g.exprs[i].run(mut conn, full_row, map[string]Value{})!
 		value := cast(mut conn, 'for column ${column_name}', raw_value, column.typ)!
 		if value.is_null && column.not_null {
-			return sqlstate_23502('column ${column_name}')
+			return sqlstate_23502(g.table, column_name)
 		}
 		row.data[column_name] = value
 	}

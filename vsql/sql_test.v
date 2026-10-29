@@ -2391,3 +2391,27 @@ fn test_embed_errors() ! {
 	assert embed_error('EXEC SQL BEGIN DECLARE SECTION; char SQLSTATE[5]; EXEC SQL END DECLARE SECTION;') == 'syntax error: line 1: SQLSTATE must be char SQLSTATE[6]'
 	assert embed_error('EXEC SQL BEGIN DECLARE SECTION; long SQLSTATE; EXEC SQL END DECLARE SECTION;') == 'syntax error: line 1: SQLSTATE must be char SQLSTATE[6]'
 }
+
+// constraint_violated is the constraint that a statement violated.
+fn constraint_violated(mut db Connection, stmt string) string {
+	db.query(stmt) or {
+		c := violated_constraint(err) or { return 'none' }
+		return '${c.catalog_name}.${c.schema_name}.${c.entity_name}'
+	}
+	return 'ok'
+}
+
+fn test_violated_constraint() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE TABLE p (id INT PRIMARY KEY, x INT NOT NULL CONSTRAINT x_positive CHECK (x > 0))')!
+	db.query('CREATE TABLE c (id INT CONSTRAINT fk REFERENCES p (id), y INT CONSTRAINT y_positive CHECK (y > 0) DEFERRABLE INITIALLY DEFERRED)')!
+	db.query('INSERT INTO p (id, x) VALUES (1, 1)')!
+	assert constraint_violated(mut db, 'INSERT INTO p (id, x) VALUES (2, NULL)') == ':memory:.PUBLIC.P_NOT_NULL_2'
+	assert constraint_violated(mut db, 'INSERT INTO c (id, y) VALUES (2, 1)') == ':memory:.PUBLIC.FK'
+	assert constraint_violated(mut db, 'INSERT INTO p (id, x) VALUES (1, 1)') == ':memory:.PUBLIC.P_PRIMARY_KEY'
+	assert constraint_violated(mut db, 'INSERT INTO p (id, x) VALUES (2, 0)') == ':memory:.PUBLIC.X_POSITIVE'
+	db.query('START TRANSACTION')!
+	db.query('INSERT INTO c (id, y) VALUES (1, 0)')!
+	assert constraint_violated(mut db, 'COMMIT') == ':memory:.PUBLIC.Y_POSITIVE'
+	assert constraint_violated(mut db, 'SELECT * FROM q') == 'none'
+}

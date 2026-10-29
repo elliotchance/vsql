@@ -11,6 +11,9 @@ import vsql
 struct DiagnosticRecord {
 	sqlstate string
 	msg      string
+	// constraint is the constraint that was violated, for an integrity
+	// constraint violation (see vsql.violated_constraint).
+	constraint vsql.Identifier
 mut:
 	// row_number and column_number are the row of the rowset and the column
 	// that the condition applies to, or 0 (zero) if it doesn't apply to one
@@ -102,6 +105,7 @@ fn (mut d Diagnostics) row_condition(err IError, row_number int, column_number i
 	d.records << DiagnosticRecord{
 		sqlstate:      sqlstate
 		msg:           err.msg()
+		constraint:    vsql.violated_constraint(err) or { vsql.Identifier{} }
 		row_number:    row_number
 		column_number: column_number
 	}
@@ -141,8 +145,9 @@ fn (mut d Diagnostics) error(err IError) i16 {
 		vsql.sqlstate_from_int(err.code())
 	}
 	d.records << DiagnosticRecord{
-		sqlstate: sqlstate
-		msg:      err.msg()
+		sqlstate:   sqlstate
+		msg:        err.msg()
+		constraint: vsql.violated_constraint(err) or { vsql.Identifier{} }
 	}
 	d.returncode = sql_error
 

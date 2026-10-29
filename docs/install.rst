@@ -27,6 +27,32 @@ with a web browser. You can remove the quarantine flag with:
 
    xattr -dr com.apple.quarantine bin lib
 
+Amalgamation
+------------
+
+This is the best way to build vsql (or libvsql, see :doc:`language-c`) for a
+platform that doesn't have a prebuilt binary, or to build it with your own C
+compiler and options, without installing V.
+
+Download ``vsql-<version>-amalgamation.zip`` from the
+`latest release <https://github.com/elliotchance/vsql/releases/latest>`_. It
+has the C that V generates for vsql and libvsql on Linux, macOS and Windows,
+``libvsql.h`` and a ``Makefile``:
+
+.. code-block:: sh
+
+   unzip vsql-<version>-amalgamation.zip
+   cd vsql-<version>-amalgamation
+   make
+
+``make`` builds ``bin/vsql`` and the library (``bin/libvsql.so``,
+``bin/libvsql.dylib`` or ``bin/libvsql.dll``). ``make vsql`` and
+``make libvsql`` build only one of them, and ``make example`` builds and runs
+``example.c`` with the library. ``CC``, ``CFLAGS`` and ``LDFLAGS`` can be set as
+usual. On Windows it needs MinGW (``gcc`` and ``make``).
+
+The amalgamation is tested on Linux, macOS and Windows on x86-64 and ARM64.
+
 Docker
 ------
 

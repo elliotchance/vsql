@@ -411,6 +411,13 @@ SELECT x FROM t WHERE x = ?;
 -- error 42P02: parameter does not exist: ?1
 
 /* flags */
+/* params 'server_version_num' */
+VALUES current_setting(?);
+-- sql: VALUES current_setting('server_version_num')
+-- flags: B031, B033, F641, F661
+-- COL1: 90310
+
+/* flags */
 SELECT x FROM t WHERE x = (1);
 -- flags:
 -- X: 1

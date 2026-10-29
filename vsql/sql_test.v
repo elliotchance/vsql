@@ -346,6 +346,7 @@ fn test_all() ! {
 	// passing ones) so we keep our own count of the SQL tests.
 	mut passed := 0
 	mut failed := []string{}
+	mut flagged := map[string]bool{}
 	defer {
 		os.rmdir_all(sql_test_dir()) or {}
 	}
@@ -359,7 +360,7 @@ fn test_all() ! {
 		mut skipped := false
 		for mode in modes {
 			match run_single_test(test, verbose != '', filter_line, mode, through_server,
-				port)! {
+				port, mut flagged)! {
 				.passed {}
 				.failed { failed_modes << sql_test_mode_str(mode, through_server) }
 				.skipped { skipped = true }
@@ -380,6 +381,34 @@ fn test_all() ! {
 	for location in failed {
 		println('  FAILED ${location}')
 	}
+
+	// Every feature that can be flagged (including the vsql extensions) must be
+	// in the flags of at least one test that has the "flags" directive, so it
+	// can't be missed by a test that only happens to use it.
+	if filter_test == '' {
+		missing := sql_flagger_features()!.filter(it !in flagged)
+		assert missing == [], 'not flagged by any test with /* flags */: ${missing.join(', ')}'
+	}
+}
+
+// sql_flagger_features returns every Feature ID that the SQL Flagger can flag,
+// which are the quoted Feature IDs (such as 'F591' or 'V001-01') in the
+// grammar, the lexer and the flagger.
+fn sql_flagger_features() ![]string {
+	mut files := os.glob('vsql/*.y')!
+	files << ['vsql/lexer.v', 'vsql/std_1_8_5_sql_flagger.v']
+	mut re := regex.regex_opt(r"'[A-Z]\d\d\d(-\d\d)?'")!
+	mut features := []string{}
+	for file in files {
+		for id in re.find_all_str(os.read_file(file)!) {
+			if id[1..id.len - 1] !in features {
+				features << id[1..id.len - 1]
+			}
+		}
+	}
+	features.sort()
+
+	return features
 }
 
 // sql_test_mode_str describes how a test was run, such as "on disk through
@@ -439,7 +468,7 @@ fn start_sql_test_server() !&Server {
 }
 
 @[assert_continues]
-fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode, through_server bool, port int) !SQLTestResult {
+fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode, through_server bool, port int, mut flagged map[string]bool) !SQLTestResult {
 	if filter_line != 0 && test.line_number != filter_line {
 		if verbose {
 			println('SKIP ${test.file_name}:${test.line_number}\n')
@@ -641,6 +670,11 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 		output := db.run(stmt, params, test.show_types, test.show_flags)!
 		if output.flags != '' {
 			actual += '${prefix}${output.flags}\n'
+			for id in output.flags.all_after('flags:').split(',') {
+				if id.trim_space() != '' {
+					flagged[id.trim_space()] = true
+				}
+			}
 		}
 
 		if output.error != '' {

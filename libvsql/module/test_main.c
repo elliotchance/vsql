@@ -21,6 +21,42 @@ static int failures = 0;
     }                                                                          \
   } while (0)
 
+/* The statement information items of GET DIAGNOSTICS. */
+struct statement {
+  long number, committed, rolled_back, active;
+  char more[2], function[31], dynamic[3];
+  short code;
+  long long dynamic_code, rows;
+};
+
+static void get_st(char *sqlstate, struct statement *st) {
+  get_statement(sqlstate, &st->number, st->more, st->function, &st->code,
+                st->dynamic, &st->dynamic_code, &st->rows, &st->committed,
+                &st->rolled_back, &st->active);
+}
+
+/* The condition information items of GET DIAGNOSTICS for condition n. */
+struct condition {
+  long long number;
+  long length, octet_length;
+  char state[6], message[101], class_origin[11], subclass_origin[11],
+      connection[51], server[51], table[11];
+};
+
+static void get_co(char *sqlstate, long n, struct condition *co) {
+  get_condition(sqlstate, &n, &co->number, co->state, co->message, &co->length,
+                &co->octet_length, co->class_origin, co->subclass_origin,
+                co->connection, co->server, co->table);
+}
+
+#define CHECK(condition)                                                       \
+  do {                                                                         \
+    if (!(condition)) {                                                        \
+      fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #condition);          \
+      failures++;                                                              \
+    }                                                                          \
+  } while (0)
+
 int main(void) {
   char sqlstate[6];
   char server[51], name[51], user[51], c[6], v[11], c3[4], v3[4];
@@ -29,6 +65,8 @@ int main(void) {
   long long b = 3, unused = 0, rows, c_ind = 0;
   float r = 4.5f;
   double d = 5.5;
+  struct statement st;
+  struct condition co;
 
   /* 13.4 GR 7.a: The first statement connects to DEFAULT. */
   EXPECT(create_table(sqlstate), "00000");
@@ -76,14 +114,52 @@ int main(void) {
   memset(c, 'x', sizeof(c));
   EXPECT(check_row(sqlstate, c, &f), "22024");
 
+  /* 23.1: A condition raised by the C runtime. */
+  EXPECT(get_co(sqlstate, 1, &co), "00000");
+  CHECK(co.number == 1);
+  CHECK(strcmp(co.state, "22024") == 0);
+  CHECK(strcmp(co.message, "data exception: unterminated C string") == 0);
+  CHECK(co.length == 37 && co.octet_length == 37);
+  CHECK(strcmp(co.class_origin, "ISO 9075") == 0);
+  CHECK(strcmp(co.subclass_origin, "ISO 9075") == 0);
+  CHECK(strcmp(co.connection, "DEFAULT") == 0);
+  CHECK(strcmp(co.server, "DEFAULT") == 0);
+  CHECK(strcmp(co.table, "") == 0);
+
   /* An error from libvsql. */
   EXPECT(missing_table(sqlstate), "42P01");
+
+  /* 23.1: A condition from libvsql. */
+  EXPECT(get_st(sqlstate, &st), "00000");
+  CHECK(st.number == 1);
+  CHECK(strcmp(st.more, "N") == 0);
+  CHECK(strcmp(st.function, "DELETE WHERE") == 0 && st.code == 19);
+  CHECK(strcmp(st.dynamic, "  ") == 0 && st.dynamic_code == 0);
+  CHECK(st.active == 1);
+  EXPECT(get_co(sqlstate, 1, &co), "00000");
+  CHECK(strcmp(co.state, "42P01") == 0);
+  CHECK(co.length > 0 && co.length == (long)strlen(co.message));
+  CHECK(strcmp(co.class_origin, "ISO 9075") == 0);
+  CHECK(strcmp(co.subclass_origin, "vsql") == 0);
+
+  /* GR 3: invalid condition number. GET DIAGNOSTICS doesn't empty the
+   * diagnostics area. */
+  EXPECT(get_co(sqlstate, 0, &co), "35000");
+  EXPECT(get_co(sqlstate, 2, &co), "35000");
+  EXPECT(get_short_message(sqlstate, c3), "01004");
+  CHECK(strlen(c3) == 3);
+  EXPECT(get_st(sqlstate, &st), "00000");
+  CHECK(st.number == 1);
 
   /* 18.1 GR 1: An active transaction blocks a connection statement. */
   EXPECT(connect_literal(sqlstate), "0A001");
   EXPECT(set_connection_default(sqlstate), "0A001");
   EXPECT(disconnect_all(sqlstate), "25001");
   EXPECT(commit_work(sqlstate), "00000");
+  EXPECT(get_st(sqlstate, &st), "00000");
+  CHECK(st.number == 0 && st.committed == 1 && st.rolled_back == 0);
+  CHECK(strcmp(st.function, "COMMIT WORK") == 0 && st.code == 11);
+  CHECK(st.active == 0);
 
   /* The changes were committed. */
   EXPECT(count_rows(sqlstate, &rows), "22012");
@@ -96,7 +172,11 @@ int main(void) {
   strcpy(c, "ab");
   EXPECT(insert_row(sqlstate, &s, &i, &b, &r, &d, c, v, &f, &v_null, &unused),
          "00000");
+  EXPECT(get_st(sqlstate, &st), "00000");
+  CHECK(st.rows == 1 && strcmp(st.function, "INSERT") == 0 && st.code == 50);
   EXPECT(rollback_work(sqlstate), "00000");
+  EXPECT(get_st(sqlstate, &st), "00000");
+  CHECK(st.committed == 0 && st.rolled_back == 1);
   EXPECT(count_rows(sqlstate, &rows), "22012");
   EXPECT(rollback_work(sqlstate), "00000");
 

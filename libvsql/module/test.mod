@@ -87,3 +87,28 @@ PROCEDURE select_null (SQLSTATE, :i BIGINT);
 
 PROCEDURE select_all (SQLSTATE, :s SMALLINT);
   SELECT * INTO :s FROM t WHERE i = 2;
+
+PROCEDURE get_statement (SQLSTATE, :number INTEGER, :more CHARACTER(1),
+    :function VARCHAR(30), :code SMALLINT, :dynamic CHAR(2),
+    :dynamic_code BIGINT, :rows BIGINT, :committed INTEGER,
+    :rolled_back INTEGER, :active INTEGER);
+  GET DIAGNOSTICS :number = NUMBER, :more = MORE,
+    :function = COMMAND_FUNCTION, :code = COMMAND_FUNCTION_CODE,
+    :dynamic = DYNAMIC_FUNCTION, :dynamic_code = DYNAMIC_FUNCTION_CODE,
+    :rows = ROW_COUNT, :committed = TRANSACTIONS_COMMITTED,
+    :rolled_back = TRANSACTIONS_ROLLED_BACK, :active = TRANSACTION_ACTIVE;
+
+PROCEDURE get_condition (SQLSTATE, :n INTEGER, :number BIGINT,
+    :state CHAR(5), :message VARCHAR(100), :length INTEGER,
+    :octet_length INTEGER, :class_origin VARCHAR(10),
+    :subclass_origin VARCHAR(10), :connection VARCHAR(50),
+    :server VARCHAR(50), :table VARCHAR(10));
+  GET DIAGNOSTICS CONDITION :n :number = CONDITION_NUMBER,
+    :state = RETURNED_SQLSTATE, :message = MESSAGE_TEXT,
+    :length = MESSAGE_LENGTH, :octet_length = MESSAGE_OCTET_LENGTH,
+    :class_origin = CLASS_ORIGIN, :subclass_origin = SUBCLASS_ORIGIN,
+    :connection = CONNECTION_NAME, :server = SERVER_NAME,
+    :table = TABLE_NAME;
+
+PROCEDURE get_short_message (SQLSTATE, :message CHAR(3));
+  GET DIAGNOSTICS CONDITION 1 :message = MESSAGE_TEXT;

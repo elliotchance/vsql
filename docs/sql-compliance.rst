@@ -697,10 +697,10 @@ Optional Features
    * - ❌ F111-03
      - REPEATABLE READ isolation level
 
-   * - ❌ **F121**
+   * - ⭕ **F121**
      - **Basic diagnostics management**
 
-   * - ❌ F121-01
+   * - ✅ F121-01
      - GET DIAGNOSTICS statement
 
    * - ✅ F121-02
@@ -1450,7 +1450,7 @@ Optional Features
    * - ❌ **T502**
      - **Period predicates**
 
-   * - ❌ **T511**
+   * - ✅ **T511**
      - **Transaction counts**
 
    * - ❌ **T521**

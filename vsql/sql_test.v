@@ -1328,8 +1328,8 @@ PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
 	assert m.source.contains('INSERT INTO \\"t;\\" (a) VALUES (\'a;\\\\\\"\\n\\t\\r\', CAST(? AS CHARACTER(1)), CAST(? AS CHARACTER VARYING(10)), CAST(? AS SMALLINT)')
 	assert m.source.contains('  if (*ind < 0) {\n    vsql_m_p[1].indicator = SQL_NULL_DATA;\n  } else if (!vsql_m_string(SQLSTATE, v, 11)) {')
 	assert m.source.contains('  if (*ind < 0) {\n    vsql_m_p[2].indicator = SQL_NULL_DATA;\n  }\n')
-	assert m.source.contains('void procedure(char SQLSTATE[6]) {\n  vsql_m_start(SQLSTATE);')
-	assert m.source.contains('void c2(char SQLSTATE[6]) {\n  vsql_m_end(SQLSTATE, SQL_COMMIT);')
+	assert m.source.contains('void procedure(char SQLSTATE[6]) {\n  vsql_m_begin("START TRANSACTION", 111);\n  vsql_m_start(SQLSTATE);')
+	assert m.source.contains('void c2(char SQLSTATE[6]) {\n  vsql_m_begin("COMMIT WORK", 11);\n  vsql_m_end(SQLSTATE, SQL_COMMIT);')
 	assert m.source.contains('vsql_m_end(SQLSTATE, SQL_ROLLBACK);')
 	assert m.source.contains('vsql_m_connect(SQLSTATE, "file", n, u);')
 	assert m.source.contains('vsql_m_connect(SQLSTATE, NULL, NULL, NULL);')
@@ -1341,6 +1341,18 @@ PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
 	assert m.source.contains("vsql_m_disconnect(SQLSTATE, 'C', NULL);")
 	assert m.source.contains("vsql_m_disconnect(SQLSTATE, 'n', n);")
 	assert m.source.contains('vsql_m_execute(SQLSTATE, "SET SCHEMA \'x\'", 0, NULL);')
+
+	// 23.1 <get diagnostics statement> doesn't empty the diagnostics area.
+	m4 := compile_module(module_header + 'PROCEDURE p (SQLSTATE, :n INT, :s CHAR(5), :c SMALLINT); GET DIAGNOSTICS :n = NUMBER, :s = DYNAMIC_FUNCTION; ' +
+		'PROCEDURE q (SQLSTATE, :n BIGINT, :s VARCHAR(5), :c SMALLINT); GET DIAGNOSTICS CONDITION :c :n = CONDITION_NUMBER, :s = MESSAGE_TEXT, :n = PARAMETER_ORDINAL_POSITION; ' +
+		'PROCEDURE r (SQLSTATE, :n INT); GET DIAGNOSTICS CONDITION 01 :n = CONDITION_NUMBER;',
+		'm')!
+	assert m4.source.contains('void p(char SQLSTATE[6], long *n, char s[6], short *c) {\n  (void)c;\n  int vsql_m_w = 0;\n')
+	assert m4.source.contains('  *n = (long)vsql_m_item_number(SQL_DIAG_NUMBER, 0);\n  vsql_m_w |= vsql_m_put(s, 6, 1, "");\n  vsql_m_sqlstate(SQLSTATE, vsql_m_w ? "01004" : "00000");\n')
+	assert m4.source.contains('  long long vsql_m_n = *c;\n  if (vsql_m_n < 1 || vsql_m_n > vsql_m_da.number) {\n    vsql_m_sqlstate(SQLSTATE, "35000");\n    return;\n  }\n  *n = (long long)vsql_m_n;\n  vsql_m_w |= vsql_m_put(s, 6, 0, vsql_m_item_text(SQL_DIAG_MESSAGE_TEXT, vsql_m_n));\n  *n = (long long)0;\n')
+	assert m4.source.contains('  long long vsql_m_n = 1LL;\n')
+	assert m4.source.contains('  *n = (long)vsql_m_n;\n  vsql_m_sqlstate(SQLSTATE, "00000");\n')
+	assert !m4.source.contains('  vsql_m_begin(')
 
 	// Only the sections of the runtime that are used are included.
 	m2 := compile_module(module_header + 'PROCEDURE p (SQLSTATE); DISCONNECT ALL;', 'm')!
@@ -1419,6 +1431,24 @@ fn test_module_errors() ! {
 	assert module_error(select_header + 'SELECT :b INTO :a FROM t;') == ''
 	assert module_error(select_header + 'SELECT x FROM t;') == 'syntax error: procedure p: a query is not an SQL procedure statement, use SELECT ... INTO'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a INT, :i SMALLINT); SELECT ("x") INTO :a INDICATOR :i FROM t;') == ''
+
+	// 23.1 <get diagnostics statement>
+	diag_header := module_header + 'PROCEDURE p (SQLSTATE, :n INT, :s CHAR(5), :r REAL); GET DIAGNOSTICS '
+	assert module_error(diag_header + 'n = NUMBER;') == 'syntax error: procedure p: expected a host parameter near n'
+	assert module_error(diag_header + ':x = NUMBER;') == 'syntax error: procedure p: host parameter :x is not declared'
+	assert module_error(diag_header + ':n NUMBER;') == 'syntax error: expected = near NUMBER'
+	assert module_error(diag_header + ':s = ALL;') == 'syntax error: procedure p: GET DIAGNOSTICS ... = ALL is not supported'
+	assert module_error(diag_header + ':n = MESSAGE_TEXT;') == 'syntax error: procedure p: expected a statement information item name near MESSAGE_TEXT'
+	assert module_error(diag_header + ':n =;') == 'syntax error: procedure p: expected a statement information item name at the end'
+	assert module_error(diag_header + 'CONDITION 1 :n = NUMBER;') == 'syntax error: procedure p: expected a condition information item name near NUMBER'
+	assert module_error(diag_header + ':s = NUMBER;') == 'syntax error: procedure p: host parameter :s must be SMALLINT, INTEGER or BIGINT for NUMBER'
+	assert module_error(diag_header + ':r = MORE;') == 'syntax error: procedure p: host parameter :r must be CHARACTER or CHARACTER VARYING for MORE'
+	assert module_error(diag_header + ':n = NUMBER x;') == 'syntax error: procedure p: unexpected near x'
+	assert module_error(diag_header + 'CONDITION :r :n = CONDITION_NUMBER;') == 'syntax error: procedure p: the condition number :r must be SMALLINT, INTEGER or BIGINT'
+	assert module_error(diag_header + 'CONDITION :x :n = CONDITION_NUMBER;') == 'syntax error: procedure p: host parameter :x is not declared'
+	assert module_error(diag_header + 'CONDITION :n = CONDITION_NUMBER;') == 'syntax error: procedure p: expected a host parameter near ='
+	assert module_error(diag_header + 'CONDITION x :n = CONDITION_NUMBER;') == 'syntax error: procedure p: expected a condition number near x'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); GET x;').starts_with('syntax error: procedure p: ')
 
 	// 18 SQL-connection statements
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); CONNECT DEFAULT;') == 'syntax error: expected TO near DEFAULT'

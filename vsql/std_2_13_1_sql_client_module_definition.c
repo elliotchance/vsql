@@ -6,6 +6,7 @@
  */
 struct vsql_m_connection {
   char name[129];
+  char *server;
   int is_default;
   SQLHDBC dbc;
   int active;
@@ -18,13 +19,159 @@ static struct vsql_m_connection *vsql_m_connections;
 static struct vsql_m_connection *vsql_m_current;
 static int vsql_m_connected;
 
-static void vsql_m_status(char *sqlstate, const char *code) {
+static int vsql_m_failed(SQLRETURN rc) {
+  return rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO;
+}
+
+/*
+ * The first diagnostics area, that a <get diagnostics statement> (23.1) reads.
+ * Every other statement empties it (13.4 GR 6), and then it has the conditions
+ * that the statement raised. A condition is either copied from the diagnostics
+ * area that libvsql keeps for a handle, or raised by this runtime. A string is
+ * NULL if there wasn't enough memory for it.
+ */
+struct vsql_m_condition {
+  char sqlstate[6];
+  char *message;
+};
+
+/* The <statement information item name>s that aren't in libvsql.h. */
+#define VSQL_M_COMMAND_FUNCTION (-1)
+#define VSQL_M_COMMAND_FUNCTION_CODE (-2)
+
+static struct {
+  char command_function[32];
+  SQLINTEGER command_function_code;
+  SQLINTEGER row_count;
+  int transactions_committed;
+  int transactions_rolled_back;
+  int number;
+  struct vsql_m_condition *conditions;
+  char connection_name[129];
+  char *server_name;
+} vsql_m_da;
+
+/* vsql_m_copy replaces the string in *s with a copy of value. */
+static void vsql_m_copy(char **s, const char *value) {
+  free(*s);
+  *s = (char *)malloc(strlen(value) + 1);
+  if (*s != NULL) {
+    strcpy(*s, value);
+  }
+}
+
+static void vsql_m_clear(void) {
+  int i;
+
+  for (i = 0; i < vsql_m_da.number; i++) {
+    free(vsql_m_da.conditions[i].message);
+  }
+  free(vsql_m_da.conditions);
+  vsql_m_da.conditions = NULL;
+  vsql_m_da.number = 0;
+}
+
+/*
+ * vsql_m_begin empties the first diagnostics area before a statement. The
+ * COMMAND_FUNCTION of a statement that libvsql executes is empty, since it's
+ * the DYNAMIC_FUNCTION that libvsql gives it.
+ */
+static void vsql_m_begin(const char *command_function, SQLINTEGER code) {
+  vsql_m_clear();
+  strcpy(vsql_m_da.command_function, command_function);
+  vsql_m_da.command_function_code = code;
+  vsql_m_da.row_count = 0;
+  vsql_m_da.transactions_committed = 0;
+  vsql_m_da.transactions_rolled_back = 0;
+}
+
+/*
+ * vsql_m_raise adds a condition to the first diagnostics area. The
+ * CONNECTION_NAME and SERVER_NAME are of the current SQL-connection (23.1 GR
+ * 4.p.ii). The default SQL-connection is named DEFAULT.
+ */
+static void vsql_m_raise(const char *sqlstate, const char *message) {
+  struct vsql_m_condition *conditions = (struct vsql_m_condition *)realloc(
+      vsql_m_da.conditions,
+      (size_t)(vsql_m_da.number + 1) * sizeof(struct vsql_m_condition));
+
+  if (conditions == NULL) {
+    return;
+  }
+  vsql_m_da.conditions = conditions;
+  memcpy(conditions[vsql_m_da.number].sqlstate, sqlstate, 5);
+  conditions[vsql_m_da.number].sqlstate[5] = '\0';
+  conditions[vsql_m_da.number].message = NULL;
+  vsql_m_copy(&conditions[vsql_m_da.number].message, message);
+  vsql_m_da.number++;
+
+  if (vsql_m_current == NULL) {
+    vsql_m_da.connection_name[0] = '\0';
+    vsql_m_copy(&vsql_m_da.server_name, "");
+  } else {
+    strcpy(vsql_m_da.connection_name,
+           vsql_m_current->is_default ? "DEFAULT" : vsql_m_current->name);
+    vsql_m_copy(&vsql_m_da.server_name,
+                vsql_m_current->server == NULL ? "" : vsql_m_current->server);
+  }
+}
+
+/* vsql_m_message is the message text of a condition that this runtime raises.
+ */
+static const char *vsql_m_message(const char *sqlstate) {
+  static const char *const messages[][2] = {
+      {"01000", "warning"},
+      {"01004", "warning: string data, right truncation"},
+      {"02000", "no data"},
+      {"07002", "dynamic SQL error: using clause does not match target "
+                "specifications"},
+      {"08002", "connection exception: connection name in use"},
+      {"08003", "connection exception: connection does not exist"},
+      {"0A001", "feature not supported: multiple server transactions"},
+      {"21000", "cardinality violation"},
+      {"22024", "data exception: unterminated C string"},
+      {"25001", "invalid transaction state: active SQL-transaction"},
+      {"28000", "invalid authorization specification"},
+      {"2E000", "invalid connection name"},
+      {"HY000", "CLI-specific condition: general error"},
+      {"HY001", "CLI-specific condition: memory allocation error"}};
+  size_t i;
+
+  for (i = 0; i < sizeof(messages) / sizeof(messages[0]); i++) {
+    if (strcmp(messages[i][0], sqlstate) == 0) {
+      return messages[i][1];
+    }
+  }
+
+  return "";
+}
+
+/* vsql_m_sqlstate sets the status parameter, without changing the first
+ * diagnostics area. */
+static void vsql_m_sqlstate(char *sqlstate, const char *code) {
   memcpy(sqlstate, code, 6);
 }
 
-/* vsql_m_diag sets the status parameter from a CLI return code. */
+/* vsql_m_status sets the status parameter for a condition that this runtime
+ * raises, which is the only condition in the first diagnostics area. */
+static void vsql_m_status(char *sqlstate, const char *code) {
+  vsql_m_sqlstate(sqlstate, code);
+  vsql_m_clear();
+  if (strcmp(code, "00000") != 0) {
+    vsql_m_raise(code, vsql_m_message(code));
+  }
+}
+
+/*
+ * vsql_m_diag sets the status parameter from a CLI return code, and copies the
+ * conditions in the diagnostics area of the handle to the first diagnostics
+ * area.
+ */
 static void vsql_m_diag(char *sqlstate, SQLRETURN rc, SQLSMALLINT type,
                         SQLINTEGER handle) {
+  SQLINTEGER number = 0, i, length;
+  char state[6], *message;
+
   if (rc == SQL_SUCCESS) {
     vsql_m_status(sqlstate, "00000");
     return;
@@ -34,15 +181,30 @@ static void vsql_m_diag(char *sqlstate, SQLRETURN rc, SQLSMALLINT type,
     return;
   }
 
-  sqlstate[0] = '\0';
-  SQLGetDiagRec(type, handle, 1, (SQLCHAR *)sqlstate, NULL, NULL, 0, NULL);
-  if (strlen(sqlstate) != 5) {
+  vsql_m_clear();
+  SQLGetDiagField(type, handle, 0, SQL_DIAG_NUMBER, &number, 0, NULL);
+  for (i = 1; i <= number; i++) {
+    length = 0;
+    SQLGetDiagField(type, handle, (SQLSMALLINT)i, SQL_DIAG_MESSAGE_OCTET_LENGTH,
+                    &length, 0, NULL);
+    if (vsql_m_failed(SQLGetDiagRec(type, handle, (SQLSMALLINT)i,
+                                    (SQLCHAR *)state, NULL, NULL, 0, NULL))) {
+      break;
+    }
+    message = (char *)malloc((size_t)length + 1);
+    if (message != NULL) {
+      SQLGetDiagRec(type, handle, (SQLSMALLINT)i, (SQLCHAR *)state, NULL,
+                    (SQLCHAR *)message, (SQLSMALLINT)(length + 1), NULL);
+    }
+    vsql_m_raise(state, message == NULL ? "" : message);
+    free(message);
+  }
+
+  if (vsql_m_da.number > 0) {
+    vsql_m_sqlstate(sqlstate, vsql_m_da.conditions[0].sqlstate);
+  } else {
     vsql_m_status(sqlstate, rc == SQL_SUCCESS_WITH_INFO ? "01000" : "HY000");
   }
-}
-
-static int vsql_m_failed(SQLRETURN rc) {
-  return rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO;
 }
 
 static void vsql_m_close(struct vsql_m_connection *c) {
@@ -59,6 +221,7 @@ static void vsql_m_close(struct vsql_m_connection *c) {
   SQLEndTran(SQL_HANDLE_DBC, c->dbc, SQL_ROLLBACK);
   SQLDisconnect(c->dbc);
   SQLFreeHandle(SQL_HANDLE_DBC, c->dbc);
+  free(c->server);
   free(c);
 }
 
@@ -72,6 +235,8 @@ static void vsql_m_exit(void) {
     vsql_m_close(vsql_m_connections);
   }
   SQLFreeHandle(SQL_HANDLE_ENV, vsql_m_env);
+  vsql_m_clear();
+  free(vsql_m_da.server_name);
 }
 
 /*
@@ -101,11 +266,13 @@ static struct vsql_m_connection *vsql_m_open(char *sqlstate, const char *server,
   }
   c->next = vsql_m_connections;
   vsql_m_connections = c;
+  vsql_m_copy(&c->server, server);
 
   rc = SQLAllocHandle(SQL_HANDLE_DBC, vsql_m_env, &c->dbc);
   if (vsql_m_failed(rc)) {
     vsql_m_diag(sqlstate, rc, SQL_HANDLE_ENV, vsql_m_env);
     vsql_m_connections = c->next;
+    free(c->server);
     free(c);
     return NULL;
   }
@@ -187,6 +354,13 @@ static int vsql_m_run(char *sqlstate, const char *sql, int n,
   }
 
   rc = SQLPrepare(*stmt, (SQLCHAR *)sql, SQL_NTS);
+  if (vsql_m_da.command_function[0] == '\0') {
+    SQLGetDiagField(SQL_HANDLE_STMT, *stmt, 0, SQL_DIAG_DYNAMIC_FUNCTION,
+                    vsql_m_da.command_function,
+                    sizeof(vsql_m_da.command_function), NULL);
+    SQLGetDiagField(SQL_HANDLE_STMT, *stmt, 0, SQL_DIAG_DYNAMIC_FUNCTION_CODE,
+                    &vsql_m_da.command_function_code, 0, NULL);
+  }
   for (i = 0; i < n && !vsql_m_failed(rc); i++) {
     rc = SQLBindParameter(*stmt, (SQLSMALLINT)(i + 1), SQL_PARAM_MODE_IN,
                           params[i].value_type, params[i].parameter_type,
@@ -198,6 +372,10 @@ static int vsql_m_run(char *sqlstate, const char *sql, int n,
   if (!vsql_m_failed(rc)) {
     c->active = 1;
     rc = SQLExecute(*stmt);
+  }
+  if (!vsql_m_failed(rc)) {
+    SQLGetDiagField(SQL_HANDLE_STMT, *stmt, 0, SQL_DIAG_ROW_COUNT,
+                    &vsql_m_da.row_count, 0, NULL);
   }
 
   vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, *stmt);
@@ -238,13 +416,22 @@ static void vsql_m_start(char *sqlstate) {
 /* section end */
 static void vsql_m_end(char *sqlstate, SQLSMALLINT completion) {
   struct vsql_m_connection *c = vsql_m_connection(sqlstate);
+  SQLRETURN rc;
 
   if (c == NULL) {
     return;
   }
 
-  vsql_m_diag(sqlstate, SQLEndTran(SQL_HANDLE_DBC, c->dbc, completion),
-              SQL_HANDLE_DBC, c->dbc);
+  rc = SQLEndTran(SQL_HANDLE_DBC, c->dbc, completion);
+  vsql_m_diag(sqlstate, rc, SQL_HANDLE_DBC, c->dbc);
+
+  /* A commit that fails with transaction rollback rolls back. */
+  if (c->active && completion == SQL_COMMIT && !vsql_m_failed(rc)) {
+    vsql_m_da.transactions_committed = 1;
+  } else if (c->active &&
+             (completion == SQL_ROLLBACK || strncmp(sqlstate, "40", 2) == 0)) {
+    vsql_m_da.transactions_rolled_back = 1;
+  }
   c->active = 0;
 }
 

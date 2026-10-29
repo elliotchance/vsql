@@ -49,6 +49,11 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure) !ModuleStat
 				return t.set_connection_statement(p)
 			}
 		}
+		'GET' {
+			if t.accept('DIAGNOSTICS') {
+				return t.get_diagnostics_statement(p)
+			}
+		}
 		else {}
 	}
 
@@ -66,18 +71,29 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure) !ModuleStat
 			sqlstate_42601('procedure ${p.name}: a query is not an SQL procedure statement, use SELECT ... INTO')
 		}
 		StartTransactionStatement {
-			ModuleStatement{['connection', 'start'], [], '  vsql_m_start(SQLSTATE);\n'}
+			ModuleStatement{['connection', 'start'], [], begin('START TRANSACTION', 111) +
+				'  vsql_m_start(SQLSTATE);\n'}
 		}
 		CommitStatement {
-			ModuleStatement{['connection', 'end'], [], '  vsql_m_end(SQLSTATE, SQL_COMMIT);\n'}
+			ModuleStatement{['connection', 'end'], [], begin('COMMIT WORK', 11) +
+				'  vsql_m_end(SQLSTATE, SQL_COMMIT);\n'}
 		}
 		RollbackStatement {
-			ModuleStatement{['connection', 'end'], [], '  vsql_m_end(SQLSTATE, SQL_ROLLBACK);\n'}
+			ModuleStatement{['connection', 'end'], [], begin('ROLLBACK WORK', 62) +
+				'  vsql_m_end(SQLSTATE, SQL_ROLLBACK);\n'}
 		}
 		else {
 			execute_statement(text_sql, references, p)!
 		}
 	}
+}
+
+// begin empties the first diagnostics area for a statement that isn't a
+// <get diagnostics statement>, and sets the COMMAND_FUNCTION and
+// COMMAND_FUNCTION_CODE from Table 37, "SQL-statement codes". They're empty for
+// a statement that libvsql executes, which gives them.
+fn begin(command_function string, code int) string {
+	return '  vsql_m_begin(${c_string(command_function)}, ${code});\n'
 }
 
 fn procedure_error(p ExternallyInvokedProcedure, err IError) IError {
@@ -89,7 +105,7 @@ fn procedure_error(p ExternallyInvokedProcedure, err IError) IError {
 fn execute_statement(text_sql string, references []HostParameterReference, p ExternallyInvokedProcedure) !ModuleStatement {
 	b := bind_parameters(['connection', 'execute'], references, p)!
 
-	return ModuleStatement{b.sections, b.used, b.c +
+	return ModuleStatement{b.sections, b.used, begin('', 0) + b.c +
 		'  vsql_m_execute(SQLSTATE, ${c_string(text_sql.trim_space())}, ${b.args()});\n'}
 }
 
@@ -270,7 +286,7 @@ fn (mut t ModuleTokens) connect_statement(p ExternallyInvokedProcedure) !ModuleS
 		}
 	}
 
-	return t.connection_statement(a, 'vsql_m_connect(SQLSTATE, ${args.join(', ')})')
+	return t.connection_statement(a, begin('CONNECT', 13), 'vsql_m_connect(SQLSTATE, ${args.join(', ')})')
 }
 
 // set_connection_statement compiles a <set connection statement> (18.2), after
@@ -281,7 +297,7 @@ fn (mut t ModuleTokens) set_connection_statement(p ExternallyInvokedProcedure) !
 	}
 	name := if t.accept('DEFAULT') { 'NULL' } else { t.connection_value(p, mut a)! }
 
-	return t.connection_statement(a, 'vsql_m_set_connection(SQLSTATE, ${name})')
+	return t.connection_statement(a, begin('SET CONNECTION', 67), 'vsql_m_set_connection(SQLSTATE, ${name})')
 }
 
 // disconnect_statement compiles a <disconnect statement> (18.3), after
@@ -301,15 +317,15 @@ fn (mut t ModuleTokens) disconnect_statement(p ExternallyInvokedProcedure) !Modu
 		args = "'n', ${t.connection_value(p, mut a)!}"
 	}
 
-	return t.connection_statement(a, 'vsql_m_disconnect(SQLSTATE, ${args})')
+	return t.connection_statement(a, begin('DISCONNECT', 22), 'vsql_m_disconnect(SQLSTATE, ${args})')
 }
 
-fn (t ModuleTokens) connection_statement(a ConnectionArguments, call string) !ModuleStatement {
+fn (t ModuleTokens) connection_statement(a ConnectionArguments, begin string, call string) !ModuleStatement {
 	if t.pos < t.tokens.len {
 		return sqlstate_42601('unexpected${t.near()}')
 	}
 
-	return ModuleStatement{a.sections, a.parameters, '${a.checks}  ${call};\n'}
+	return ModuleStatement{a.sections, a.parameters, '${begin}${a.checks}  ${call};\n'}
 }
 
 // connection_value is the C value of a connection name, SQL-server name or

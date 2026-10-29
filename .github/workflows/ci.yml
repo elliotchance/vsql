@@ -38,10 +38,34 @@ concurrency:
 # on Windows, where it's made with PowerShell (with the same files), since
 # there's no zip command. On Windows, libvsql.dll is in bin/ instead of lib/,
 # next to vsql.exe, since Windows finds a DLL in the program's folder or on the
-# PATH.
+# PATH. Each job uploads its zip as an artifact, and the release job publishes
+# them all once every job has passed, so a release is never missing a zip.
+#
+# Steps that use the network are retried (see retry.sh), since they sometimes
+# fail for reasons that have nothing to do with vsql.
 jobs:
+  # Users get V master from "v up", so that's what vsql is tested and released
+  # with. The commit is found once, so that every job uses the same V, and V can
+  # be cached for each commit, instead of being built by every job.
+  v:
+    name: V master
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.commit.outputs.commit }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Find V master
+        id: commit
+        run: |
+          commit=$(.github/workflows/retry.sh git ls-remote https://github.com/vlang/v refs/heads/master | cut -f1)
+          test -n "$commit"
+          echo "commit=$commit" >> $GITHUB_OUTPUT
+
   linux:
     name: Linux (${{ matrix.name }})
+    needs: v
     strategy:
       fail-fast: false
       matrix:
@@ -59,12 +83,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # Users get V master from "v up", so that's what vsql is tested and
-      # released with.
+      # setup-v can't be retried with retry.sh, so it's run again if it fails.
+      # clean is off because it deletes V's problem matcher before the runner
+      # has read it, which fails the step (mostly on the slower macOS x86-64
+      # runner).
       - name: Set up V master
+        id: setup-v
+        continue-on-error: true
         uses: vlang/setup-v@v1.7
         with:
-          check-latest: true
+          version: ${{ needs.v.outputs.commit }}
+          clean: false
+
+      - name: Remove failed V
+        if: steps.setup-v.outcome == 'failure'
+        run: rm -rf ~/vlang
+
+      - name: Set up V master (retry)
+        if: steps.setup-v.outcome == 'failure'
+        uses: vlang/setup-v@v1.7
+        with:
+          version: ${{ needs.v.outputs.commit }}
+          clean: false
 
       - name: Show V version
         run: v version
@@ -94,7 +134,7 @@ jobs:
       # psql is used by the server tests. It's already installed on the x86-64
       # runner.
       - name: Install psql
-        run: command -v psql || (sudo apt-get update && sudo apt-get install -y postgresql-client)
+        run: command -v psql || (.github/workflows/retry.sh sudo apt-get update && .github/workflows/retry.sh sudo apt-get install -y postgresql-client)
 
       - name: Run tests
         run: make test
@@ -107,7 +147,7 @@ jobs:
           make release VERSION=${GITHUB_REF##*/}
 
       # The amalgamation's C has to be generated on each OS and architecture
-      # (see the amalgamation job).
+      # (see the release job).
       - name: Generate amalgamation C
         run: |
           scripts/amalgamation.sh generate amalgamation-linux-${{ matrix.v_arch }}
@@ -119,15 +159,15 @@ jobs:
           name: amalgamation-linux-${{ matrix.v_arch }}
           path: amalgamation-linux-${{ matrix.v_arch }}
 
-      - name: Release
-        uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload zip
+        uses: actions/upload-artifact@v7
         with:
-          files: |
-            vsql-*-linux-${{ matrix.arch }}.zip
+          name: release-linux-${{ matrix.arch }}
+          path: vsql-*-linux-${{ matrix.arch }}.zip
 
   macos:
     name: macOS (${{ matrix.name }})
+    needs: v
     strategy:
       fail-fast: false
       matrix:
@@ -145,10 +185,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # setup-v can't be retried with retry.sh, so it's run again if it fails.
+      # clean is off because it deletes V's problem matcher before the runner
+      # has read it, which fails the step (mostly on the slower macOS x86-64
+      # runner).
       - name: Set up V master
+        id: setup-v
+        continue-on-error: true
         uses: vlang/setup-v@v1.7
         with:
-          check-latest: true
+          version: ${{ needs.v.outputs.commit }}
+          clean: false
+
+      - name: Remove failed V
+        if: steps.setup-v.outcome == 'failure'
+        run: rm -rf ~/vlang
+
+      - name: Set up V master (retry)
+        if: steps.setup-v.outcome == 'failure'
+        uses: vlang/setup-v@v1.7
+        with:
+          version: ${{ needs.v.outputs.commit }}
+          clean: false
 
       - name: Show V version
         run: v version
@@ -157,7 +215,7 @@ jobs:
       # server tests.
       - name: Install psql
         run: |
-          brew install libpq
+          .github/workflows/retry.sh brew install libpq
           echo "$(brew --prefix libpq)/bin" >> $GITHUB_PATH
 
       - name: Run tests
@@ -171,7 +229,7 @@ jobs:
           make release VERSION=${GITHUB_REF##*/}
 
       # The amalgamation's C has to be generated on each OS and architecture
-      # (see the amalgamation job).
+      # (see the release job).
       - name: Generate amalgamation C
         run: |
           scripts/amalgamation.sh generate amalgamation-macos-${{ matrix.v_arch }}
@@ -183,17 +241,17 @@ jobs:
           name: amalgamation-macos-${{ matrix.v_arch }}
           path: amalgamation-macos-${{ matrix.v_arch }}
 
-      - name: Release
-        uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload zip
+        uses: actions/upload-artifact@v7
         with:
-          files: |
-            vsql-*-macos-${{ matrix.arch }}.zip
+          name: release-macos-${{ matrix.arch }}
+          path: vsql-*-macos-${{ matrix.arch }}.zip
 
   # The test suites don't run on Windows yet, so this builds the binary and runs
   # some statements, a short benchmark and the server with it.
   windows:
     name: Windows (${{ matrix.name }})
+    needs: v
     strategy:
       fail-fast: false
       matrix:
@@ -214,10 +272,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # setup-v can't be retried with retry.sh, so it's run again if it fails.
+      # clean is off because it deletes V's problem matcher before the runner
+      # has read it, which fails the step (mostly on the slower macOS x86-64
+      # runner).
       - name: Set up V master
+        id: setup-v
+        continue-on-error: true
         uses: vlang/setup-v@v1.7
         with:
-          check-latest: true
+          version: ${{ needs.v.outputs.commit }}
+          clean: false
+
+      - name: Remove failed V
+        if: steps.setup-v.outcome == 'failure'
+        run: rm -rf ~/vlang
+
+      - name: Set up V master (retry)
+        if: steps.setup-v.outcome == 'failure'
+        uses: vlang/setup-v@v1.7
+        with:
+          version: ${{ needs.v.outputs.commit }}
+          clean: false
 
       - name: Show V version
         run: v version
@@ -239,7 +315,7 @@ jobs:
       - name: Install psql
         if: env.PGBIN == ''
         run: |
-          choco install postgresql17 --no-progress -y --params '/Password:postgres'
+          .github/workflows/retry.sh choco install postgresql17 --no-progress -y --params '/Password:postgres'
           echo "PGBIN=C:\Program Files\PostgreSQL\17\bin" >> $GITHUB_ENV
 
       - name: Run tests
@@ -258,7 +334,7 @@ jobs:
           Compress-Archive -Path $dir -DestinationPath "$dir.zip"
 
       # The amalgamation's C has to be generated on each OS and architecture
-      # (see the amalgamation job).
+      # (see the release job).
       - name: Generate amalgamation C
         run: |
           scripts/amalgamation.sh generate amalgamation-windows-${{ matrix.v_arch }}
@@ -270,35 +346,38 @@ jobs:
           name: amalgamation-windows-${{ matrix.v_arch }}
           path: amalgamation-windows-${{ matrix.v_arch }}
 
-      - name: Release
-        uses: softprops/action-gh-release@v3
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload zip
+        uses: actions/upload-artifact@v7
         with:
-          files: |
-            vsql-*-windows-${{ matrix.arch }}.zip
+          name: release-windows-${{ matrix.arch }}
+          path: vsql-*-windows-${{ matrix.arch }}.zip
 
+  # The release job makes and tests the amalgamation, then publishes it with
+  # the other zips on a tag, once every job has passed. Uploading replaces a zip
+  # that's already there, so the job can be run again.
+  #
   # The amalgamation is the C for vsql and libvsql, so that they can be built
   # without V (see scripts/amalgamation.sh). It has the C from each OS and
   # architecture, which has already been built and tested with it.
-  amalgamation:
-    name: Amalgamation
+  release:
+    name: Release
     needs: [linux, macos, windows]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Download C
+      - name: Download C and zips
         uses: actions/download-artifact@v8
-        with:
-          pattern: amalgamation-*
 
       - name: Zip amalgamation
         run: |
           scripts/amalgamation.sh package ${GITHUB_REF##*/} amalgamation-*/
           unzip -l vsql-*-amalgamation.zip
 
-      - name: Build and test
+      - name: Build and test amalgamation
         run: |
           unzip -q vsql-*-amalgamation.zip
           cd vsql-*-amalgamation
@@ -307,8 +386,11 @@ jobs:
           make example
 
       - name: Release
-        uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            vsql-*-amalgamation.zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          ls -l vsql-*-amalgamation.zip release-*/vsql-*.zip
+          .github/workflows/retry.sh sh -c 'gh release view "$TAG" > /dev/null || gh release create "$TAG" --verify-tag --title "$TAG" --notes ""'
+          .github/workflows/retry.sh gh release upload "$TAG" vsql-*-amalgamation.zip release-*/vsql-*.zip --clobber

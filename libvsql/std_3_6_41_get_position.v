@@ -12,6 +12,10 @@ module main
 
 @[export: 'SQLGetPosition']
 fn sql_get_position(statement_handle SQLInteger, locator_type i16, source_locator SQLInteger, search_locator SQLInteger, search_literal &char, search_literal_length SQLInteger, from_position SQLInteger, located_at &SQLInteger, indicator_value &SQLInteger) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 

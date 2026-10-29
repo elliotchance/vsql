@@ -19,6 +19,10 @@ const sql_rollback_and_chain = i16(7)
 
 @[export: 'SQLEndTran']
 fn sql_end_tran(handle_type i16, handle SQLInteger, completion_type i16) i16 {
+	entry := enter(handle_type, i64(handle))
+	defer {
+		entry.leave()
+	}
 	h := i64(handle)
 
 	// - 3. A statement or descriptor can't be used, and the connections are
@@ -91,7 +95,7 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 			continue
 		}
 		if is_chain {
-			conn.query('START TRANSACTION') or { errors << err }
+			db_query(mut conn, 'START TRANSACTION') or { errors << err }
 		}
 	}
 
@@ -108,7 +112,7 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 // end_transaction commits or rolls back the SQL-transaction of an established
 // connection. A commit that fails rolls back the SQL-transaction instead.
 fn end_transaction(mut diag Diagnostics, mut conn vsql.Connection, is_commit bool) ! {
-	conn.query(if is_commit { 'COMMIT' } else { 'ROLLBACK' }) or {
+	db_query(mut conn, if is_commit { 'COMMIT' } else { 'ROLLBACK' }) or {
 		if !conn.in_transaction() {
 			diag.transactions_rolled_back++
 		}

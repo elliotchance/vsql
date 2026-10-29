@@ -6,6 +6,10 @@ module main
 
 @[export: 'SQLDisconnect']
 fn sql_disconnect(connection_handle SQLInteger) i16 {
+	entry := enter(sql_handle_dbc, i64(connection_handle))
+	defer {
+		entry.leave()
+	}
 	h := i64(connection_handle)
 	mut dbc := dbcs[h] or { return sql_invalid_handle }
 	dbc.diag.clear()
@@ -56,14 +60,14 @@ fn disconnect(mut dbc Dbc, h i64) !i16 {
 	}
 
 	// - 8. The SQL-session associated with EC is terminated.
-	conn.close()
+	db_close(mut conn)
 	dbc.conn = none
 	dbc.is_default = false
 
 	// - 10. If EC and CC were the same SQL-connection, then there is no current
 	// SQL-connection. Otherwise, CC remains the current SQL-connection.
-	if current_connection == h {
-		current_connection = 0
+	if current_connection(dbc.env) == h {
+		set_current_connection(dbc.env, 0)
 	}
 
 	return sql_success

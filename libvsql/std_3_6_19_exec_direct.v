@@ -11,6 +11,10 @@ import vsql
 
 @[export: 'SQLExecDirect']
 fn sql_exec_direct(statement_handle SQLInteger, statement_text &char, text_length SQLInteger) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
@@ -77,7 +81,7 @@ fn preparable_statement(mut stmt Stmt, statement_text &char, text_length SQLInte
 fn prepare_statement(mut stmt Stmt, p string) !&vsql.PreparedStmt {
 	mut conn := stmt_connection(stmt)!
 	prepared := &vsql.PreparedStmt{
-		...conn.prepare(p)!
+		...db_prepare(mut conn, p)!
 	}
 	stmt.diag.dynamic_function, stmt.diag.dynamic_function_code = prepared.command_function()
 
@@ -121,9 +125,9 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	}
 
 	if !conn.in_transaction() {
-		conn.query('START TRANSACTION')!
+		db_query(mut conn, 'START TRANSACTION')!
 	}
-	result := prepared.query(params) or {
+	result := db_run(mut prepared, params) or {
 		// An error that is a transaction rollback (such as a serialization
 		// failure) also ends the SQL-transaction.
 		if !conn.in_transaction() {

@@ -9,6 +9,10 @@ module main
 
 @[export: 'SQLError']
 fn sql_error_routine(environment_handle SQLInteger, connection_handle SQLInteger, statement_handle SQLInteger, sqlstate &char, native_error &SQLInteger, message_text &char, buffer_length i16, text_length &i16) i16 {
+	entry := enter(error_handle_type(connection_handle, statement_handle), error_handle(environment_handle, connection_handle, statement_handle))
+	defer {
+		entry.leave()
+	}
 	sh := i64(statement_handle)
 	ch := i64(connection_handle)
 	eh := i64(environment_handle)

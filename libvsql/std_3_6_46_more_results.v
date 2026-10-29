@@ -10,6 +10,10 @@ module main
 
 @[export: 'SQLMoreResults']
 fn sql_more_results(statement_handle SQLInteger) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 	stmt.invoke(false) or { return stmt.diag.error(err) }

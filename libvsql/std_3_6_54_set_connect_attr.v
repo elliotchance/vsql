@@ -6,6 +6,10 @@ module main
 
 @[export: 'SQLSetConnectAttr']
 fn sql_set_connect_attr(connection_handle SQLInteger, attribute SQLInteger, value voidptr, string_length SQLInteger) i16 {
+	entry := enter(sql_handle_dbc, i64(connection_handle))
+	defer {
+		entry.leave()
+	}
 	mut dbc := dbcs[i64(connection_handle)] or { return sql_invalid_handle }
 	dbc.diag.clear()
 

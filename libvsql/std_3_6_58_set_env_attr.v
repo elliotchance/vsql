@@ -8,6 +8,10 @@ module main
 
 @[export: 'SQLSetEnvAttr']
 fn sql_set_env_attr(environment_handle SQLInteger, attribute SQLInteger, value voidptr, string_length SQLInteger) i16 {
+	entry := enter(sql_handle_env, i64(environment_handle))
+	defer {
+		entry.leave()
+	}
 	h := i64(environment_handle)
 	mut env := envs[h] or { return sql_invalid_handle }
 	env.diag.clear()

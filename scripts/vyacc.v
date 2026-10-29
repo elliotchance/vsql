@@ -156,6 +156,11 @@ mut:
 	fcode   strings.Builder = strings.new_builder(0) // saved code
 	foutput ?os.File // Writer: y.output file
 
+	// factions are the functions for the actions. Each action is in its own
+	// function, rather than in the match in parse, so that the stack frame of
+	// parse doesn't have the variables of every action (which was megabytes).
+	factions strings.Builder = strings.new_builder(0)
+
 	fmt_imported bool // output file has recorded an import of "fmt"
 
 	oflag    string // -o [y.v]		- y.v file
@@ -629,9 +634,15 @@ fn (mut y Vyacc) setup() ! {
 			}
 			y.levprd[y.nprod] |= actflag
 			y.fcode.write_string('\n\t${y.nprod} {')
-			y.fcode.write_string('\n\t\t${y.prefix}_dollar = ${y.prefix}_s[${y.prefix}pt-${mem - 1}..${y.prefix}pt+1].clone()')
-			y.cpyact(curprod, mem)!
+			y.fcode.write_string('\n\t\t${y.prefix}_action_${y.nprod}(mut ${y.prefix}lex, mut ${y.prefix}rcvr, ${y.prefix}_s[${y.prefix}pt-${mem - 1}..${y.prefix}pt+1].clone(), mut ${y.prefix}_val)!')
 			y.fcode.write_string('\n\t}')
+			arms := y.fcode
+			y.fcode = y.factions
+			y.fcode.write_string('\n\nfn ${y.prefix}_action_${y.nprod}(mut ${y.prefix}lex YYLexer, mut ${y.prefix}rcvr YYParserImpl, ${y.prefix}_dollar []YYSymType, mut ${y.prefix}_val YYSymType) ! {')
+			y.cpyact(curprod, mem)!
+			y.fcode.write_string('\n}')
+			y.factions = y.fcode
+			y.fcode = arms
 
 			// action within rule...
 			t = y.gettok()
@@ -2918,6 +2929,7 @@ fn (mut y Vyacc) others() ! {
 	y.ftable.write_string('${parts[0]}')!
 	y.ftable.write_string(y.fcode.str())!
 	y.ftable.write_string('${parts[1]}')!
+	y.ftable.write_string(y.factions.str())!
 }
 
 fn (mut y Vyacc) run_machine(tokens []string) (int, int) {

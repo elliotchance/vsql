@@ -6,6 +6,10 @@ module main
 
 @[export: 'SQLExecute']
 fn sql_execute(statement_handle SQLInteger) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 	stmt.diag.is_execute = true

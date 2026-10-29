@@ -36,6 +36,22 @@ The integer types have the same width on every platform: ``SQLSMALLINT`` is
 ``SQLINTEGER`` a C ``long``, but that's 64 bits on macOS and Linux and 32 bits
 on Windows. A binding from another language can use these widths directly.
 
+Threads
+-------
+
+The routines can be called from any thread, including threads that weren't
+created by libvsql (such as the threads of a Go program).
+
+Each environment (``SQL_HANDLE_ENV``) is its own SQL-agent. Its routines run one
+at a time, and it has its own current connection. So a connection in one
+environment can have an active transaction while a connection in another
+environment is used, and a routine that waits for a lock doesn't stop the other
+environments from committing. Use an environment for each thread (or each
+connection) that's used at the same time as the others.
+
+Connections to the same file share a lock, so they can be used at the same
+time.
+
 Example
 -------
 

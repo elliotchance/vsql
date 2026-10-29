@@ -56,6 +56,17 @@
  *
  *   cc example.c -Iinclude -Llib -lvsql -Wl,-rpath,"$PWD/lib" -o example
  *
+ * Threads
+ *
+ * The routines can be called from any thread, including threads that weren't
+ * created by libvsql (such as the threads of a Go program). Each environment
+ * (SQL_HANDLE_ENV) is its own SQL-agent: its routines run one at a time, and it
+ * has its own current connection, so a connection in one environment can have
+ * an active transaction while a connection in another environment is used. Use
+ * an environment for each thread (or each connection) that's used at the same
+ * time as the others. Connections to the same file share a lock, so they can
+ * be used at the same time.
+ *
  * Data types
  *
  * Each vsql data type, the DataType from SQLDescribeCol, and the TargetTypes

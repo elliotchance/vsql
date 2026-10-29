@@ -42,6 +42,10 @@ fn parse_sql_features(rst string) map[string]bool {
 
 @[export: 'SQLGetFeatureInfo']
 fn sql_get_feature_info(connection_handle SQLInteger, feature_type &char, feature_type_length i16, feature_id &char, feature_id_length i16, sub_feature_id &char, sub_feature_id_length i16, supported &i16) i16 {
+	entry := enter(sql_handle_dbc, i64(connection_handle))
+	defer {
+		entry.leave()
+	}
 	mut dbc := dbcs[i64(connection_handle)] or { return sql_invalid_handle }
 	dbc.diag.clear()
 

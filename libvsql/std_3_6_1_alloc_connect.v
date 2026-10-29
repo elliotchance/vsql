@@ -6,6 +6,10 @@ module main
 
 @[export: 'SQLAllocConnect']
 fn sql_alloc_connect(environment_handle SQLInteger, connection_handle &SQLInteger) i16 {
+	entry := enter(sql_handle_env, i64(environment_handle))
+	defer {
+		entry.leave()
+	}
 	// - 2. AllocHandle is implicitly invoked with HandleType indicating
 	// CONNECTION HANDLE, with EH as the value of InputHandle and with
 	// ConnectionHandle as OutputHandle.

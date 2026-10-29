@@ -18,6 +18,10 @@ const sql_reset_params = i16(3)
 
 @[export: 'SQLFreeStmt']
 fn sql_free_stmt(statement_handle SQLInteger, option i16) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 

@@ -6,6 +6,10 @@ module main
 
 @[export: 'SQLGetCursorName']
 fn sql_get_cursor_name(statement_handle SQLInteger, cursor_name &char, buffer_length i16, name_length &i16) i16 {
+	entry := enter(sql_handle_stmt, i64(statement_handle))
+	defer {
+		entry.leave()
+	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 	stmt.invoke(false) or { return stmt.diag.error(err) }

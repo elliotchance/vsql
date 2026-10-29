@@ -6,6 +6,10 @@ module main
 
 @[export: 'SQLAllocStmt']
 fn sql_alloc_stmt(connection_handle SQLInteger, statement_handle &SQLInteger) i16 {
+	entry := enter(sql_handle_dbc, i64(connection_handle))
+	defer {
+		entry.leave()
+	}
 	// - 2. AllocHandle is implicitly invoked with HandleType indicating
 	// STATEMENT HANDLE, with CH as the value of InputHandle, and with
 	// StatementHandle as OutputHandle.

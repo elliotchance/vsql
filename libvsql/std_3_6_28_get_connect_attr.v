@@ -10,6 +10,10 @@ const sql_attr_savepoint_name = 10027
 
 @[export: 'SQLGetConnectAttr']
 fn sql_get_connect_attr(connection_handle SQLInteger, attribute SQLInteger, value voidptr, buffer_length SQLInteger, string_length &SQLInteger) i16 {
+	entry := enter(sql_handle_dbc, i64(connection_handle))
+	defer {
+		entry.leave()
+	}
 	mut dbc := dbcs[i64(connection_handle)] or { return sql_invalid_handle }
 	dbc.diag.clear()
 

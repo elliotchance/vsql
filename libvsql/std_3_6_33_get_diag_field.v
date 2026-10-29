@@ -72,6 +72,10 @@ type DiagInfo = int | string
 
 @[export: 'SQLGetDiagField']
 fn sql_get_diag_field(handle_type i16, handle SQLInteger, record_number i16, diag_identifier i16, diag_info voidptr, buffer_length i16, string_length &i16) i16 {
+	entry := enter(handle_type, i64(handle))
+	defer {
+		entry.leave()
+	}
 	h := i64(handle)
 
 	// - 2, 3. The handle must identify an allocated resource of HT.

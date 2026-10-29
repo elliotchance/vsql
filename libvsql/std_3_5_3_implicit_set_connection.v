@@ -10,13 +10,26 @@ module main
 // SQL-transaction, and switching to another connection while it does is an
 // exception condition.
 
-// current_connection is the handle of the current SQL-connection, or 0 if there
-// isn't one. There's one for the SQL-agent (the application), not one for each
-// SQL-environment.
-__global current_connection = i64(0)
+// Each SQL-environment is its own SQL-agent, with its own current
+// SQL-connection (Env.current_connection), so connections that are allocated in
+// different SQL-environments can each have an active SQL-transaction, and can be
+// used from different threads at the same time.
+
+// current_connection is the handle of the current SQL-connection of an
+// SQL-environment, or 0 if there isn't one.
+fn current_connection(env i64) i64 {
+	return (envs[env] or { return 0 }).current_connection
+}
+
+fn set_current_connection(env i64, dc i64) {
+	mut e := envs[env] or { return }
+	e.current_connection = dc
+}
 
 fn implicit_set_connection(dc i64) ! {
-	if dc == current_connection {
+	env := (dbcs[dc] or { return }).env
+	current := current_connection(env)
+	if dc == current {
 		return
 	}
 
@@ -24,11 +37,11 @@ fn implicit_set_connection(dc i64) ! {
 	// the SQL-implementation does not support transactions that affect more
 	// than one SQL-server, then an exception condition is raised: feature not
 	// supported — multiple server transactions.
-	if current_connection != 0 && transaction_active(sql_handle_dbc, current_connection) {
+	if current != 0 && transaction_active(sql_handle_dbc, current) {
 		return cli_error('0A001', 'multiple server transactions')
 	}
 
 	// - 4, 5. The current SQL-connection becomes dormant, and DC becomes the
 	// current SQL-connection.
-	current_connection = dc
+	set_current_connection(env, dc)
 }

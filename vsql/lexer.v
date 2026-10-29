@@ -109,6 +109,7 @@ type YYSym = AddColumnDefinition
 	| TableElement
 	| TableExpression
 	| TablePrimary
+	| TransactionMode
 	| TableReference
 	| Term
 	| TrimFunction
@@ -132,6 +133,7 @@ type YYSym = AddColumnDefinition
 	| []SetClause
 	| []SortSpecification
 	| []TableElement
+	| []TransactionMode
 	| []ValueExpression
 	| bool
 	| string

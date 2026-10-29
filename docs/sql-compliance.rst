@@ -703,7 +703,7 @@ Optional Features
    * - ❌ F121-01
      - GET DIAGNOSTICS statement
 
-   * - ❌ F121-02
+   * - ✅ F121-02
      - SET TRANSACTION statement: DIAGNOSTICS SIZE clause
 
    * - ❌ **F122**
@@ -958,7 +958,7 @@ Optional Features
    * - ✅ **F763**
      - **CURRENT_SCHEMA**
 
-   * - ❌ **F771**
+   * - ✅ **F771**
      - **Connection management**
 
    * - ❌ **F781**

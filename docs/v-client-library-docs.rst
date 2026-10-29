@@ -33,6 +33,16 @@ fn default_connection_options
 
 default_connection_options returns the sensible defaults used by open() and the correct base to provide your own option overrides. See ConnectionOptions.
 
+fn new_agent
+------------
+
+
+.. code-block:: v
+
+   pub fn new_agent(default_server string, options AgentOptions) Agent
+
+new_agent creates an SQL-agent that doesn't have any SQL-connections yet. default_server is the path of the default SQL-server, which is a database file or ":memory:". The default SQL-connection is established when a statement is run, or with CONNECT TO DEFAULT.
+
 fn new_bigint_value
 -------------------
 
@@ -391,6 +401,49 @@ enum SQLType
 
 SQLType is the fundamental SQL type, without its size or precision.
 
+struct Agent
+------------
+
+
+.. code-block:: v
+
+   pub struct Agent {
+   	default_server string
+   	options        AgentOptions
+   mut:
+   	// default_connection is the default SQL-connection, if it's established.
+   	default_connection &Connection = unsafe { nil }
+   	// connections are the other SQL-connections, by name.
+   	connections map[string]&Connection
+   	// current is the current SQL-connection, if there is one.
+   	current &Connection = unsafe { nil }
+   	// connected is true after a connection statement has been run.
+   	connected bool
+   pub mut:
+   	// warnings are the warnings of the last statement.
+   	warnings []IError
+   }
+
+An Agent is an SQL-agent (ISO/IEC 9075-2:2016(E), 4.42), which runs <direct SQL statement>s on its SQL-connections, and is how "vsql cli" runs statements. Unlike a Connection, it can run the connection statements: CONNECT TO, SET CONNECTION and DISCONNECT.
+
+Each SQL-connection is to a different SQL-server (a database file, or a new in-memory database), and vsql doesn't support transactions that affect more than one SQL-server. So only the current SQL-connection can have an active SQL-transaction.
+
+struct AgentOptions
+-------------------
+
+
+.. code-block:: v
+
+   @[params]
+   pub struct AgentOptions {
+   pub:
+   	// catalogs are the paths of more files that are attached as catalogs to the
+   	// default SQL-connection (see Connection.add_catalog).
+   	catalogs []string
+   }
+
+AgentOptions are the options for new_agent.
+
 struct CatalogConnection
 ------------------------
 
@@ -455,6 +508,13 @@ struct Connection
    	// direct_query_transaction is true when an SQL-transaction was started by
    	// a query in direct (see Connection.direct) that hasn't changed anything.
    	direct_query_transaction bool
+   	// condition_area_limit is the most warnings that are kept during the current
+   	// SQL-transaction, which is set by DIAGNOSTICS SIZE (see
+   	// initiate_transaction).
+   	condition_area_limit int = max_conditions
+   	// next_condition_area_limit is the DIAGNOSTICS SIZE of a SET TRANSACTION, for
+   	// the next SQL-transaction, or 0.
+   	next_condition_area_limit int
    pub mut:
    	// now allows you to override the wall clock that is used. The Time must be
    	// in UTC with a separate offset for the current local timezone (in positive
@@ -464,7 +524,7 @@ struct Connection
    	// if a value must be truncated during a runtime CAST.
    	//
    	// Warnings are not ever reset, although only 100 of the most recent warnings
-   	// are retained. This is to be able to collect all warnings during some
+   	// (or the DIAGNOSTICS SIZE of the SQL-transaction) are retained. This is to be able to collect all warnings during some
    	// arbitrary process defined by the application. Instead, you should call
    	// clear_warnings() before starting a block of work.
    	warnings []IError

@@ -7,22 +7,32 @@ import time
 // Start an SQL-transaction and set its characteristics.
 
 struct StartTransactionStatement {
+	modes []TransactionMode
 }
 
-fn (stmt StartTransactionStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
+fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
+	// - GR 1.
 	if conn.in_transaction() {
 		return sqlstate_25001()
 	}
 
-	// The SQL-transaction includes every catalog, since a statement can use any
-	// of them.
+	// - GR 2, 3, 4, 5. NOTE 710: A SET TRANSACTION before doesn't change the
+	// characteristics.
+	limit := condition_area_limit(mut conn, params, stmt.modes)!
+	conn.start_transaction()!
+	conn.initiate_transaction(limit)
+
+	return new_result_msg('START TRANSACTION', elapsed_parse, t.elapsed())
+}
+
+// start_transaction starts the SQL-transaction in storage. The SQL-transaction
+// includes every catalog, since a statement can use any of them.
+fn (mut conn Connection) start_transaction() ! {
 	for _, mut catalog in conn.catalogs {
 		catalog.start_transaction()!
 	}
-
-	return new_result_msg('START TRANSACTION', elapsed_parse, t.elapsed())
 }
 
 fn (mut catalog CatalogConnection) start_transaction() ! {

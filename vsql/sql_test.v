@@ -1657,9 +1657,111 @@ fn test_direct() {
 		assert !db.in_transaction() && !db.direct_query_transaction
 		assert db.direct('SELECT * FROM t WHERE x = 3;', autocommit: true)!.rows.len == 1
 		assert !db.in_transaction() && !db.direct_query_transaction
+
+		// SET TRANSACTION doesn't start an SQL-transaction, and its DIAGNOSTICS
+		// SIZE is for the next one, even if a query starts it.
+		db.direct('SET TRANSACTION DIAGNOSTICS SIZE 1;')!
+		assert !db.is_active()
+		db.direct('VALUES 1;')!
+		db.direct('INSERT INTO t (x) VALUES (4);')!
+		assert db.condition_area_limit == 1
+		db.direct('SET TRANSACTION;') or { assert sqlstate_from_int(err.code()) == '25001' }
+		db.direct('ROLLBACK;')!
+		db.direct('SET TRANSACTION DIAGNOSTICS SIZE 2;')!
+		db.direct('INSERT INTO t (x) VALUES (4);')!
+		assert db.condition_area_limit == 2
+		db.direct('ROLLBACK;')!
 		return
 	}
 	assert false
+}
+
+// agent_sqlstate is the SQLSTATE of the error of a statement, or '' if it
+// succeeds.
+fn agent_sqlstate(mut a Agent, stmt string) string {
+	a.direct(stmt) or { return sqlstate_from_int(err.code()) }
+	return ''
+}
+
+fn test_agent() {
+	// The default SQL-connection is established by the first statement that
+	// isn't a connection statement. The other files are attached as catalogs.
+	mut a := new_agent(':memory:', catalogs: [':memory:'])
+	assert agent_sqlstate(mut a, 'VALUES 1;') == '08001'
+	a = new_agent(':memory:')
+	assert !a.in_transaction()
+	for stmt in [';', '"";', 'VALUES;'] {
+		assert agent_sqlstate(mut a, stmt) == '42601', stmt
+	}
+	a.direct('CREATE TABLE t (x INT);')!
+	assert a.in_transaction()
+
+	// Only the current SQL-connection can have an active SQL-transaction.
+	for stmt in ["CONNECT TO ':memory:' AS 'c';", 'SET CONNECTION DEFAULT;', 'DISCONNECT CURRENT;'] {
+		assert agent_sqlstate(mut a, stmt) in ['0A001', '25001'], stmt
+	}
+	a.direct('COMMIT;')!
+
+	// A connection name is an identifier, and the SQL-server name is the
+	// connection name when there isn't one.
+	for name, code in {
+		'':        '2E000'
+		'x y':     '2E000'
+		'x;':      '2E000'
+		'1':       '2E000'
+		'(':       '2E000'
+		'"x':      '2E000'
+		'DEFAULT': ''
+		' c ':     ''
+		'"c"':     ''
+		'C':       '08002'
+	} {
+		assert agent_sqlstate(mut a, "CONNECT TO ':memory:' AS '${name}';") == code, name
+	}
+	assert agent_sqlstate(mut a, "CONNECT TO ':memory:';") == '2E000'
+	assert agent_sqlstate(mut a, "CONNECT TO ':memory:' USER 'bob';") == '2E000'
+	assert agent_sqlstate(mut a, "CONNECT TO '/does/not/exist.vsql' AS 'd';") == '08001'
+	assert agent_sqlstate(mut a, "CONNECT TO ':memory:' AS 'u' USER 'a b';") == '28000'
+	assert agent_sqlstate(mut a, "CONNECT TO ':memory:' AS 'u' USER 'bob';") == ''
+	assert agent_sqlstate(mut a, 'CONNECT TO :x;') == '42601'
+	assert agent_sqlstate(mut a, 'CONNECT TO DEFAULT;') == '08002'
+
+	// The connection is a different SQL-server. The SQL-transaction that the
+	// query started is still active.
+	assert agent_sqlstate(mut a, 'SELECT * FROM t;') == '42P01'
+	assert agent_sqlstate(mut a, 'SET CONNECTION DEFAULT;') == '0A001'
+	a.direct('ROLLBACK;')!
+	a.direct('SET CONNECTION DEFAULT;')!
+	assert a.direct('SELECT * FROM t;')!.rows.len == 0
+	assert a.warnings.map(sqlstate_from_int(it.code())) == ['02000']
+	a.direct('ROLLBACK;')!
+	assert agent_sqlstate(mut a, "SET CONNECTION 'nope';") == '08003'
+
+	// A connection statement can't be prepared.
+	mut conn := a.current
+	conn.query('CONNECT TO DEFAULT') or { assert sqlstate_from_int(err.code()) == '42601' }
+
+	// After a connection statement, there's no implicit connection.
+	a.direct('DISCONNECT DEFAULT;')!
+	assert agent_sqlstate(mut a, 'SET CONNECTION DEFAULT;') == '08003'
+	assert agent_sqlstate(mut a, 'DISCONNECT CURRENT;') == '08003'
+	assert agent_sqlstate(mut a, 'VALUES 1;') == '08003'
+	a.direct("SET CONNECTION 'default';")!
+	a.direct('DISCONNECT CURRENT;')!
+	assert agent_sqlstate(mut a, "DISCONNECT 'default';") == '08003'
+	a.direct('CONNECT TO DEFAULT;')!
+	a.direct('DISCONNECT ALL;')!
+	assert a.all_connections().len == 0
+
+	// The end of the SQL-session commits, or rolls back.
+	a.direct('CONNECT TO DEFAULT;')!
+	a.direct('CREATE TABLE t (x INT);')!
+	assert a.in_transaction()
+	a.close(true)!
+	assert !a.in_transaction() && a.all_connections().len == 0
+	a.connect_default()!
+	a.connect_default()!
+	a.close(false)!
 }
 
 // A DEFAULT can be up to the maximum length of a VARCHAR, but its text (with

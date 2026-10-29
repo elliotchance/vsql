@@ -17,7 +17,11 @@ Syntax
 
 .. code-block:: text
 
-  START TRANSACTION
+  START TRANSACTION [ DIAGNOSTICS SIZE <number> ]
+
+``DIAGNOSTICS SIZE`` is the most warnings that are kept for each statement in
+the transaction (see :doc:`set-transaction`). Without it, it's 100, even after
+a ``SET TRANSACTION``.
 
 Implicit Transactions
 ---------------------

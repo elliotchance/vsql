@@ -46,6 +46,9 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 			// fails for a database that can only be read). With READ COMMITTED,
 			// a query sees the same rows without one, so it isn't started until
 			// a statement changes something. See #672.
+			if !conn.direct_query_transaction {
+				conn.initiate_transaction(conn.next_condition_area_limit)
+			}
 			conn.direct_query_transaction = true
 		} else if conn.direct_query_transaction
 			&& (prepared.stmt is CommitStatement || prepared.stmt is RollbackStatement) {
@@ -53,7 +56,16 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 			msg := if prepared.stmt is CommitStatement { 'COMMIT' } else { 'ROLLBACK' }
 			return new_result_msg(msg, prepared.elapsed_parse, 0)
 		} else {
+			// It's started like a START TRANSACTION, which unlocks the file
+			// when it finishes, but it keeps the DIAGNOSTICS SIZE of a SET
+			// TRANSACTION (or of the SQL-transaction that a query started).
+			limit := if conn.direct_query_transaction {
+				conn.condition_area_limit
+			} else {
+				conn.next_condition_area_limit
+			}
 			conn.query('START TRANSACTION')!
+			conn.initiate_transaction(limit)
 			conn.direct_query_transaction = false
 		}
 	}
@@ -74,9 +86,18 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 
 // is_transaction_initiating is true for a statement that starts an
 // SQL-transaction when there isn't one (ISO/IEC 9075-2:2016(E), 4.39.4). START
-// TRANSACTION starts one itself. The SQL-session statements and SET
-// CONSTRAINTS don't start one.
+// TRANSACTION starts one itself. The SQL-session statements, the connection
+// statements, SET CONSTRAINTS and SET TRANSACTION don't start one.
 fn (p PreparedStmt) is_transaction_initiating() bool {
 	return p.stmt !is StartTransactionStatement && p.stmt !is SetCatalogStatement
 		&& p.stmt !is SetSchemaStatement && p.stmt !is SetConstraintsModeStatement
+		&& p.stmt !is SetTransactionStatement && p.stmt !is ConnectStatement
+		&& p.stmt !is SetConnectionStatement && p.stmt !is DisconnectStatement
+}
+
+// is_active is true when the connection is an active SQL-connection
+// (ISO/IEC 9075-2:2016(E), 4.42), which is when it has an SQL-transaction,
+// including one that Connection.direct hasn't started in storage yet.
+fn (conn Connection) is_active() bool {
+	return conn.in_transaction() || conn.direct_query_transaction
 }

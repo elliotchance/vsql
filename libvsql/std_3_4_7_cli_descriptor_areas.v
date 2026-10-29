@@ -470,13 +470,13 @@ fn describe_column(column vsql.Column, catalog string) map[int]DescValue {
 		}
 	}
 
-	// - 5.c. vsql gives every column a name (an expression without an AS has a
-	// name like COL1), so it's never UNNAMED.
+	// - 5.c.iii.1.B. If the column name is implementation-dependent (such as
+	// COL1 for an expression without an AS), then UNNAMED is set to 1 (one).
 	record[sql_desc_level] = i64(0)
 	record[sql_desc_type] = i64(implementation_type_code(typ))
 	record[sql_desc_nullable] = i64(if column.not_null { sql_no_nulls } else { sql_nullable })
 	record[sql_desc_name] = column.name.sub_entity_name
-	record[sql_desc_unnamed] = i64(sql_named)
+	record[sql_desc_unnamed] = i64(if column.unnamed { sql_unnamed } else { sql_named })
 	record[sql_desc_key_member] = i64(0)
 
 	// - 5.c.iv. Other fields depend on the TYPE.

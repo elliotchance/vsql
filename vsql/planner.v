@@ -678,11 +678,17 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 					}
 					DerivedColumn {
 						// Unnamed columns are named by their position in the result.
+						// Only a column reference or an AS clause names the column,
+						// otherwise its name is implementation-dependent (7.16,
+						// <query specification>).
 						mut column_name := 'COL${columns.len + 1}'
+						mut unnamed := true
 						if item.as_clause.sub_entity_name != '' {
 							column_name = item.as_clause.sub_entity_name
+							unnamed = false
 						} else if column := item.column_reference() {
 							column_name = column.sub_entity_name
+							unnamed = false
 						}
 
 						expr := item.expr
@@ -696,8 +702,9 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 						}
 
 						columns << Column{
-							name: col
-							typ:  expr.compile(mut c)!.typ
+							name:    col
+							typ:     expr.compile(mut c)!.typ
+							unnamed: unnamed
 						}
 
 						exprs << DerivedColumn{expr, col}

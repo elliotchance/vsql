@@ -89,9 +89,12 @@ fn new_values_operation(rows []RowValueConstructor, correlation Correlation, mut
 				sub_entity_name: 'COL${i + 1}'
 			}
 		}
+		// The column names are implementation-dependent (Syntax Rule 4), unless
+		// there is a correlation.
 		columns << Column{
-			name: name
-			typ:  typ
+			name:    name
+			typ:     typ
+			unnamed: correlation.columns.len == 0
 		}
 	}
 

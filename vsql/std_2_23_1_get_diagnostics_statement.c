@@ -52,6 +52,15 @@ static const char *vsql_m_item_text(int item, long long n) {
     return vsql_m_origin(vsql_m_da.conditions[n - 1].sqlstate[0]);
   case SQL_DIAG_SUBCLASS_ORIGIN:
     return vsql_m_origin(vsql_m_da.conditions[n - 1].sqlstate[2]);
+  case SQL_DIAG_CONSTRAINT_CATALOG:
+    s = vsql_m_da.conditions[n - 1].constraint_catalog;
+    break;
+  case SQL_DIAG_CONSTRAINT_SCHEMA:
+    s = vsql_m_da.conditions[n - 1].constraint_schema;
+    break;
+  case SQL_DIAG_CONSTRAINT_NAME:
+    s = vsql_m_da.conditions[n - 1].constraint_name;
+    break;
   case SQL_DIAG_CONNECTION_NAME:
     return vsql_m_da.connection_name;
   case SQL_DIAG_SERVER_NAME:

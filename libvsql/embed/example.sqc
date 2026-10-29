@@ -27,7 +27,8 @@ int main(void) {
   EXEC SQL WHENEVER SQLEXCEPTION GOTO failed;
   EXEC SQL CONNECT TO :file AS 'example';
   EXEC SQL CREATE TABLE items (id INTEGER, name CHARACTER VARYING(20),
-                               price DOUBLE PRECISION);
+                               price DOUBLE PRECISION
+                               CONSTRAINT positive_price CHECK (price > 0));
 
   id = 1;
   strcpy(name, "Bagel");
@@ -43,6 +44,21 @@ int main(void) {
   EXEC SQL INSERT INTO items (id, name, price)
            VALUES (:id, :name, :price INDICATOR :price_indicator);
 
+  /* A price that isn't positive violates the constraint. */
+  EXEC SQL WHENEVER CONSTRAINT positive_price GOTO not_positive;
+  id = 3;
+  strcpy(name, "Refund");
+  price = -1;
+  price_indicator = 0;
+  EXEC SQL INSERT INTO items (id, name, price)
+           VALUES (:id, :name, :price INDICATOR :price_indicator);
+  goto update;
+
+not_positive:
+  printf("%s needs a positive price\n", name);
+
+update:
+  EXEC SQL WHENEVER CONSTRAINT positive_price CONTINUE;
   EXEC SQL UPDATE items SET price = price * :factor;
   EXEC SQL GET DIAGNOSTICS :rows = ROW_COUNT;
   printf("Changed %ld prices\n", rows);

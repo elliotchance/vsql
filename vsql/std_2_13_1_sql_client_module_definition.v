@@ -43,7 +43,8 @@ const c_module_runtime = $embed_file('std_2_13_1_sql_client_module_definition.c'
 	$embed_file('std_2_14_1_declare_cursor.c').to_string() +
 	$embed_file('std_2_23_1_get_diagnostics_statement.c').to_string() +
 	$embed_file('std_2_20_1_description_of_sql_descriptor_areas.c').to_string() +
-	$embed_file('std_2_20_7_prepare_statement.c').to_string()
+	$embed_file('std_2_20_7_prepare_statement.c').to_string() +
+	$embed_file('std_2_21_2_embedded_exception_declaration.c').to_string()
 
 // The other sections that a section of the C runtime uses, which are also
 // included.
@@ -80,7 +81,7 @@ pub fn compile_module(source string, name string) !CompiledModule {
 
 	return CompiledModule{
 		header: m.c_header(name)
-		source: m.c_source(name, false)
+		source: m.c_source(name, false, [])
 	}
 }
 
@@ -254,9 +255,11 @@ fn (m SQLClientModule) c_header(name string) string {
 
 // c_source defines a C function for each procedure, after the parts of the C
 // runtime that they use. The functions of an embedded SQL program's implied
-// module (see 21.1) are static, and there's no header.
-fn (m SQLClientModule) c_source(name string, embedded bool) string {
+// module (see 21.1) are static, and there's no header. runtime is the other
+// sections of the C runtime that the embedded SQL program uses.
+fn (m SQLClientModule) c_source(name string, embedded bool, runtime []string) string {
 	mut sections := ['core']
+	sections << runtime
 	for p in m.procedures {
 		for section in p.statement.sections {
 			require(mut sections, section)

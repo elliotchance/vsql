@@ -16,14 +16,14 @@ Test Suites
 
 - ``make sql-test``: the SQL tests, see `SQL Tests`_.
 - ``make vorm-test``: the tests for the ORM driver.
-- ``make unit-test``: the other V tests in ``vsql/``.
+- ``make unit-test``: the other V tests in ``vsql/``, see `Unit`_.
 - ``make btree-test``: the B-Tree stress tests.
 - ``make examples-test``: runs each example.
 - ``make cli-test``: the CLI tests.
 - ``make libvsql-test``: the tests for libvsql, see `libvsql`_.
 - ``make module-test``: the tests for SQL-client modules, see `Modules`_.
 
-CI runs ``make test``.
+CI runs most of these, but not on every OS. See `Continuous Integration`_.
 
 B-Tree
 ^^^^^^
@@ -267,6 +267,25 @@ SQL
 The SQL test suite contains most of the functional tests. This is likely the
 only test suite you will use when adding functionality or fixing bugs in vsql.
 More description below.
+
+Unit
+^^^^
+
+``make unit-test`` runs the V tests in ``vsql/*_test.v``, except for
+``sql_test.v`` (see `SQL Tests`_) and ``btree_test.v`` (see `B-Tree`_), which
+have their own targets. They're in ``module vsql``, so they can use private
+functions and types. For example, ``bytes_test.v`` checks the exact bytes that
+numbers are stored as, and ``connection_test.v`` checks concurrent writes and
+what's read back after a file is reopened.
+
+Use a unit test for something that an SQL test can't reach or can't check.
+Otherwise, an SQL test is usually simpler.
+
+Run a single file with:
+
+.. code-block:: sh
+
+   v test vsql/bytes_test.v
 
 SQL Tests
 ---------
@@ -794,3 +813,34 @@ simply by supplying a different version of V:
 
 You can use any commit or tag for ``OLDV``. All tags can be
 `found here <https://github.com/vlang/v/tags>`_.
+
+Continuous Integration
+----------------------
+
+CI (``.github/workflows/ci.yml``) runs for pull requests, pushes to ``main``,
+tags and once a day, on Linux, macOS and Windows, each on x86-64 and ARM64. It
+uses the latest V (V master). A change to only ``.md`` or ``.rst`` files
+doesn't run it.
+
+- **Linux and macOS** run ``make test``.
+- **Windows** doesn't run ``make test``, because the CLI tests are shell
+  scripts. It runs ``make libvsql-test libvsql-example module-test
+  module-example``, then ``.github/workflows/windows-test.sh``, which runs a
+  few statements, a short benchmark and ``cmd/tests/server-concurrent.sh``.
+- **Every OS** builds the release binary and runs
+  ``.github/workflows/hello-test.sh`` with it, which creates a database file,
+  writes a row and reads it back in a separate process.
+
+Linux x86-64 also checks that nothing is out of date. Each of these fails if
+it changes a committed file:
+
+- ``make fmt-verify``: the V code is formatted. ``make fmt`` formats it.
+- ``make grammar``: ``vsql/y.v`` was generated from the current ``vsql/*.y``
+  files.
+- ``make clean-docs docs``: the docs build without warnings.
+
+Each OS and architecture also generates the C for the amalgamation (see
+:doc:`install`) with ``scripts/amalgamation.sh generate``, and checks it with
+``scripts/amalgamation.sh check``. The Release job then zips it, builds it with
+its own ``Makefile``, and runs ``hello-test.sh`` and ``make example`` with it.
+This happens on every run, and the release is only published for a tag.

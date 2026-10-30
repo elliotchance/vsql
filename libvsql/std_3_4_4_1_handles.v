@@ -92,6 +92,10 @@ mut:
 	// a cursor (which may be closed now).
 	cursor_name string
 	is_query    bool
+	// dynamic_cursor is the name of the cursor of the connection (see
+	// PreparedStmt.open_cursor) while a query's cursor is open, so a positioned
+	// DELETE or UPDATE of another statement can change its current row.
+	dynamic_cursor string
 	// prepared is the statement prepared by Prepare, if any, and the
 	// DYNAMIC_FUNCTION and DYNAMIC_FUNCTION_CODE that identify it.
 	prepared               ?&vsql.PreparedStmt
@@ -164,6 +168,12 @@ fn new_handle() i64 {
 }
 
 fn (mut stmt Stmt) close_cursor() {
+	if stmt.dynamic_cursor != '' {
+		if mut conn := stmt_connection(stmt) {
+			conn.remove_cursor(stmt.dynamic_cursor)
+		}
+		stmt.dynamic_cursor = ''
+	}
 	stmt.cursor = none
 	stmt.rows = []
 	stmt.rowset_start = -1
@@ -183,6 +193,27 @@ fn (mut stmt Stmt) open_cursor(result vsql.Result) {
 	stmt.close_cursor()
 	stmt.cursor = result
 	stmt.rows = rows
+}
+
+// position_cursor positions the cursor of the connection on the row of the
+// rowset at the CURRENT OF POSITION (or on no row if there isn't one), which is
+// the current row of a positioned DELETE or UPDATE (see 4.4.6, "Statement
+// attributes").
+fn (mut stmt Stmt) position_cursor() {
+	if stmt.dynamic_cursor == '' {
+		return
+	}
+
+	mut row := -1
+	if stmt.current_of_position <= stmt.rowset_len {
+		row = stmt.rowset_start + int(stmt.current_of_position) - 1
+	}
+
+	// The cursor of the connection is closed if the transaction was rolled
+	// back, so a positioned DELETE or UPDATE would be an invalid cursor state.
+	if mut conn := stmt_connection(stmt) {
+		conn.position_cursor(stmt.dynamic_cursor, row) or {}
+	}
 }
 
 // handle_env is the SQL-environment of a handle, or zero if the handle isn't

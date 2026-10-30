@@ -8,8 +8,9 @@ import encoding.utf8
 //
 // A cursor name is an <identifier>, so a regular identifier is the same as its
 // upper case (and two statements of a connection can't have the same name).
-// vsql doesn't support positioned UPDATE and DELETE (WHERE CURRENT OF), so the
-// name isn't used yet.
+// The cursor of a query has the name, so another statement of the connection
+// can change its current row with a positioned DELETE or UPDATE (WHERE CURRENT
+// OF).
 
 @[export: 'SQLSetCursorName']
 fn sql_set_cursor_name(statement_handle SQLInteger, cursor_name &char, name_length i16) i16 {

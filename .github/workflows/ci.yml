@@ -311,11 +311,13 @@ jobs:
           make libvsql-test libvsql-example
 
       # psql is used by the server tests. PostgreSQL is installed on the x86-64
-      # runner (but isn't on the PATH), and not on the ARM64 one.
+      # runner (but isn't on the PATH), and not on the ARM64 one. choco succeeds
+      # even when it can't reach its feed and installs nothing, so the install
+      # is retried until psql.exe exists.
       - name: Install psql
         if: env.PGBIN == ''
         run: |
-          .github/workflows/retry.sh choco install postgresql17 --no-progress -y --params '/Password:postgres'
+          .github/workflows/retry.sh sh -c "choco install postgresql17 --no-progress -y --params '/Password:postgres' && test -f 'C:/Program Files/PostgreSQL/17/bin/psql.exe'"
           echo "PGBIN=C:\Program Files\PostgreSQL\17\bin" >> $GITHUB_ENV
 
       - name: Run tests

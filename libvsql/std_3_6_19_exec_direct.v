@@ -85,6 +85,19 @@ fn prepare_statement(mut stmt Stmt, p string) !&vsql.PreparedStmt {
 	}
 	stmt.diag.dynamic_function, stmt.diag.dynamic_function_code = prepared.command_function()
 
+	// A positioned DELETE or UPDATE is a <preparable dynamic delete statement:
+	// positioned> (or update), because the cursor is a dynamic cursor (of
+	// another statement).
+	match stmt.diag.dynamic_function_code {
+		18 {
+			stmt.diag.dynamic_function, stmt.diag.dynamic_function_code = 'PREPARABLE DYNAMIC DELETE CURSOR', 54
+		}
+		81 {
+			stmt.diag.dynamic_function, stmt.diag.dynamic_function_code = 'PREPARABLE DYNAMIC UPDATE CURSOR', 55
+		}
+		else {}
+	}
+
 	// - 7. If P is a <start transaction statement>, a <commit statement> or a
 	// <rollback statement>, then an exception condition is raised: syntax
 	// error or access rule violation.
@@ -129,7 +142,13 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 		mut dbc := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }
 		dbc.autocommit_transaction = dbc.autocommit
 	}
-	result := db_run(mut prepared, params) or {
+	// - 5.4 The cursor of a query is also a cursor of the connection, with the
+	// cursor name of S, so that it can be the cursor of a positioned DELETE or
+	// UPDATE.
+	is_select := stmt.diag.dynamic_function == 'SELECT CURSOR'
+	name := if is_select { normalize_cursor_name(stmt.get_cursor_name()) } else { '' }
+	result := query_statement(mut prepared, name, stmt.cursor_holdable == sql_holdable,
+		params) or {
 		// An error that is a transaction rollback (such as a serialization
 		// failure) also ends the SQL-transaction.
 		if !conn.in_transaction() {
@@ -151,11 +170,27 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	stmt.is_query = result.msg == ''
 	if stmt.is_query {
 		stmt.open_cursor(result)
+		stmt.dynamic_cursor = name
 	}
 	describe(stmt, mut conn, result.columns)
 	autocommit(mut stmt.diag, stmt.dbc, true)!
 
 	return sql_success
+}
+
+// query_statement executes a statement, and opens a cursor of the connection
+// with the name if it's a query (name isn't empty).
+fn query_statement(mut prepared vsql.PreparedStmt, name string, hold bool, params map[string]vsql.Value) !vsql.Result {
+	if name == '' {
+		return db_run(mut prepared, params)
+	}
+
+	released := release()
+	defer {
+		reacquire(released)
+	}
+
+	return prepared.open_cursor(name, hold, params)
 }
 
 // stmt_connection is the established SQL-connection of a statement.

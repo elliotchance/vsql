@@ -1925,3 +1925,45 @@ fn test_column_unnamed() {
 	values := db.query('VALUES ROW(1, 2)')!
 	assert values.columns.map(it.unnamed) == [true, true]
 }
+
+// A cursor opened by PreparedStmt.open_cursor (for the SQL/CLI) is positioned
+// with position_cursor, so a positioned DELETE can change its current row.
+fn test_open_cursor() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE TABLE t (x INTEGER)')!
+	db.query('INSERT INTO t (x) VALUES (1), (2), (0)')!
+	db.query('START TRANSACTION')!
+
+	mut stmt := db.prepare('SELECT x FROM t WHERE x > ?')!
+	result := stmt.open_cursor('C', false, {
+		'?1': new_integer_value(1)
+	})!
+	assert result.rows.map(it.get('X')!.int_value()) == [2]
+
+	db.position_cursor('C', 1)!
+	db.query('DELETE FROM t WHERE CURRENT OF c') or {
+		assert err.code() == sqlstate_to_int('24000')
+	}
+	db.position_cursor('C', 0)!
+	assert db.query('DELETE FROM t WHERE CURRENT OF c')!.msg == 'DELETE 1'
+
+	// The name can't be used again until the cursor is removed.
+	stmt.open_cursor('C', false, {
+		'?1': new_integer_value(1)
+	}) or { assert err.code() == sqlstate_to_int('42P03') }
+	db.remove_cursor('C')
+	db.position_cursor('C', 0) or { assert err.code() == sqlstate_to_int('34000') }
+
+	// A cursor that can't be opened isn't declared.
+	mut divide := db.prepare('SELECT 1 / x FROM t')!
+	divide.open_cursor('C', false, {}) or { assert err.code() == sqlstate_to_int('22012') }
+	mut all := db.prepare('SELECT x FROM t')!
+	assert all.open_cursor('C', false, {})!.rows.len == 2
+
+	// Outside of a transaction, the cursor is closed when the statement ends.
+	db.query('COMMIT')!
+	stmt.open_cursor('D', false, {
+		'?1': new_integer_value(0)
+	}) or { assert err.code() == sqlstate_to_int('24000') }
+	assert all.open_cursor('D', true, {})!.rows.len == 2
+}

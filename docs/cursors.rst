@@ -77,6 +77,26 @@ as it was then, even if it has been changed since. A row that has been deleted
 can't be changed through the cursor (``24000``). A ``WITH HOLD`` cursor must be
 fetched in the current transaction before its row can be changed.
 
+SQL/CLI
+-------
+
+In the SQL/CLI (see :doc:`language-c`), the cursor of a query is named by
+``SQLSetCursorName`` (or ``SQLGetCursorName`` returns the name that it was
+given). Another statement of the connection can change the cursor's current row
+(the ``SQL_ATTR_CURRENT_OF_POSITION`` row of the rowset) with a positioned
+``DELETE`` or ``UPDATE``:
+
+.. code-block:: c
+
+  SQLSetCursorName(stmt, (SQLCHAR *)"c", SQL_NTS);
+  SQLExecDirect(stmt, (SQLCHAR *)"SELECT * FROM products", SQL_NTS);
+  SQLFetch(stmt);
+  SQLExecDirect(stmt2, (SQLCHAR *)"DELETE FROM products WHERE CURRENT OF c",
+                SQL_NTS);
+
+The cursor is holdable unless ``SQL_ATTR_CURSOR_HOLDABLE`` is
+``SQL_NONHOLDABLE``.
+
 Examples
 --------
 

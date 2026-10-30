@@ -391,13 +391,9 @@ fn (t Time) str_fractional_seconds(prec int) string {
 		return ''
 	}
 
-	// Round down first, if needed.
-	mut s := int(t.t.nanosecond / 1000).str()
-	if prec < s.len {
-		s = s[..prec]
-	}
-
-	return '.' + (s + '000000')[..prec]
+	// The microseconds are padded to 6 digits (so 6 microseconds is ".000006"),
+	// then rounded down to prec.
+	return '.' + left_pad(int(t.t.nanosecond / 1000).str(), '0', 6)[..prec]
 }
 
 // str_time_zone returns an empty string when not part of the type (ie. WITHOUT

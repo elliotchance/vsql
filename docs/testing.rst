@@ -21,6 +21,7 @@ Test Suites
 - ``make examples-test``: runs each example.
 - ``make cli-test``: the CLI tests.
 - ``make libvsql-test``: the tests for libvsql, see `libvsql`_.
+- ``make module-test``: the tests for SQL-client modules, see `Modules`_.
 
 CI runs ``make test``.
 
@@ -151,6 +152,9 @@ the path):
 
    make examples/virtual-tables
 
+``make examples-test`` also runs the C examples in :doc:`language-c`, with
+``make libvsql-example`` and ``make module-example``.
+
 libvsql
 ^^^^^^^
 
@@ -203,6 +207,41 @@ The tests, ``libvsql/example.c`` and ``libvsql/libvsql.h`` must be C99, so
 they're compiled with ``-std=c99 -pedantic-errors -Wall -Wextra -Werror``.
 ``make examples-test`` runs the example in :doc:`language-c`, and also compiles
 ``libvsql/example.c`` as C++ (``-std=c++11``).
+
+Modules
+^^^^^^^
+
+``make module-test`` tests the C that ``vsql module`` generates for an
+SQL-client module (see "SQL-Client Modules" in :doc:`language-c`). It's run as
+part of ``make test``, or on its own with:
+
+.. code-block:: sh
+
+   make module-test
+
+This compiles ``libvsql/module/test.mod`` into ``libvsql/module/test.h`` and
+``libvsql/module/test.c`` (which aren't committed), then compiles them with
+``libvsql/module/test_main.c`` against libvsql, and runs the program. Like the
+libvsql tests, it's compiled as C99 and as C++11, with ``-pedantic-errors -Wall
+-Wextra -Werror``, and run both ways.
+
+``test.mod`` has a procedure for each statement that the tests call.
+``test_main.c`` calls them in order, and uses ``EXPECT()`` to check the
+SQLSTATE that each one returns:
+
+.. code-block:: c
+
+   EXPECT(connect_default(sqlstate), "08002");
+
+A failed ``EXPECT()`` prints its line and keeps going, and the program exits
+with 1 if any failed. Since the connections and transactions of a module carry
+over from one call to the next, a new test usually goes where the program is
+already in the state that it needs. The comments give the rule of ISO/IEC
+9075-2 that each part tests.
+
+The V code of the compiler (``vsql/std_2_13_*.v``) is tested by
+``test_module_compile()`` and ``test_module_errors()`` in ``vsql/sql_test.v``,
+so it's covered by ``make sql-test``.
 
 ORM
 ^^^

@@ -1,4 +1,4 @@
-.PHONY: libvsql libvsql-example libvsql-test release bench bench-on-disk bench-memory fmt fmt-verify test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: libvsql libvsql-example libvsql-test module-example module-test release bench bench-on-disk bench-memory fmt fmt-verify test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # Is not used at the moment. It is useful for testing options like different
 # `-gc` values.
@@ -28,7 +28,7 @@ ready: grammar fmt snippets
 # Binaries
 
 # The binaries are rebuilt when any of the source files change.
-SOURCES = vsql/y.v $(wildcard vsql/*.v cmd/vsql-cli/*.v)
+SOURCES = vsql/y.v $(wildcard vsql/*.v vsql/*.c cmd/vsql-cli/*.v)
 
 bin/vsql: $(SOURCES)
 	mkdir -p bin
@@ -145,7 +145,7 @@ fmt-verify:
 # Tests
 
 # test runs every test suite. Each one can also be run on its own.
-test: sql-test vorm-test unit-test btree-test examples-test cli-test libvsql-test
+test: sql-test vorm-test unit-test btree-test examples-test cli-test libvsql-test module-test
 
 # unit-test runs the V tests in vsql/, except for the SQL and B-tree tests that
 # have their own targets.
@@ -243,7 +243,7 @@ examples-test:
 	for f in `ls examples/*.v`; do \
 		echo $$f; v $(V3_OPTIONS) run $$f || exit 1; \
 	done
-	$(MAKE) libvsql-example
+	$(MAKE) libvsql-example module-example
 
 # The C programs that use libvsql must be C99.
 LIBVSQL_CC = $(LIBVSQL_C) -std=c99 -pedantic-errors -Wall -Wextra -Werror -Ilibvsql
@@ -256,6 +256,27 @@ libvsql-example: $(LIBVSQL)
 	bin/libvsql-example
 	$(LIBVSQL_CXX) libvsql/example.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-example-cpp
 	bin/libvsql-example-cpp
+
+# VSQL_BIN is the vsql binary that compiles the modules (bin/vsql.exe on
+# Windows, where it isn't built by this Makefile).
+VSQL_BIN ?= bin/vsql
+
+# module-example compiles libvsql/module/example.mod (see
+# docs/language-c.rst) and runs example_main.c with it. The generated C
+# must also be C99 and C++11.
+module-example: $(LIBVSQL) $(VSQL_BIN)
+	$(call module_program,example)
+
+# module-test is like module-example, for the tests of the generated C in
+# libvsql/module/test_main.c.
+module-test: $(LIBVSQL) $(VSQL_BIN)
+	$(call module_program,test)
+
+module_program = $(VSQL_BIN) module libvsql/module/$(1).mod \
+	&& $(LIBVSQL_CC) libvsql/module/$(1).c libvsql/module/$(1)_main.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/module-$(1) \
+	&& bin/module-$(1) \
+	&& $(LIBVSQL_CXX) libvsql/module/$(1).c libvsql/module/$(1)_main.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/module-$(1)-cpp \
+	&& bin/module-$(1)-cpp
 
 libvsql-test: $(LIBVSQL)
 	v run scripts/check-libvsql-constants.vsh

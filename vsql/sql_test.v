@@ -1286,6 +1286,127 @@ fn test_page_size_limits() ! {
 	assert result.next()?.get_int('L')! == 60000
 }
 
+// module_error is the error from compiling an SQL-client module, or an empty
+// string if it compiles.
+fn module_error(source string) string {
+	compile_module(source, 'm') or { return err.msg() }
+	return ''
+}
+
+const module_header = 'MODULE LANGUAGE C SCHEMA s '
+
+fn test_module_compile() ! {
+	m := compile_module('-- A module.
+MODULE "My Module" LANGUAGE C SCHEMA "it\'s" AUTHORIZATION a
+PROCEDURE add (SQLSTATE, :c CHAR, :v VARCHAR(10), :s SMALLINT, :i INT,
+    :i2 INTEGER, :b BIGINT, :r REAL, :d DOUBLE PRECISION, :f BOOLEAN,
+    :ind SMALLINT, :unused BIGINT);
+  /* ; */ INSERT INTO "t;" (a) VALUES (\'a;\\"\n\t\r\', :c, :v :ind, :s INDICATOR :ind,
+    :i, :i2, :b, :r, :d, :f) -- ;
+;
+PROCEDURE procedure (SQLSTATE); START TRANSACTION;
+procedure c2 (SQLSTATE); COMMIT;
+PROCEDURE r (SQLSTATE); ROLLBACK;
+PROCEDURE conn (SQLSTATE, :n CHAR(3), :u VARCHAR(4));
+  CONNECT TO \'file\' AS :n USER :u;
+PROCEDURE conn_default (SQLSTATE); CONNECT TO DEFAULT;
+PROCEDURE conn_server (SQLSTATE); CONNECT TO \'x\';
+PROCEDURE set_conn (SQLSTATE); SET CONNECTION \'x\';
+PROCEDURE set_default (SQLSTATE); SET CONNECTION DEFAULT;
+PROCEDURE d1 (SQLSTATE); DISCONNECT DEFAULT;
+PROCEDURE d2 (SQLSTATE); DISCONNECT ALL;
+PROCEDURE d3 (SQLSTATE); DISCONNECT CURRENT;
+PROCEDURE d4 (SQLSTATE, :n CHAR(1)); DISCONNECT :n;
+PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
+', 'my-module')!
+	assert m.header.contains('#ifndef MY_MODULE_H')
+	assert m.header.contains('void add(char SQLSTATE[6], char c[2], char v[11], short *s, long *i, long *i2, long long *b, float *r, double *d, long *f, short *ind, long long *unused);')
+	assert m.source.contains('#include "my-module.h"')
+	assert m.source.contains('static const char vsql_m_set_schema[] = "SET SCHEMA \'it\'\'s\'";')
+	assert m.source.contains('  (void)unused;\n')
+	assert m.source.contains('{SQL_CHAR, SQL_BOOLEAN, 0, (SQLPOINTER)(*f ? "TRUE" : "FALSE"), SQL_NTS}')
+	assert m.source.contains('INSERT INTO \\"t;\\" (a) VALUES (\'a;\\\\\\"\\n\\t\\r\', CAST(? AS CHARACTER(1)), CAST(? AS CHARACTER VARYING(10)), CAST(? AS SMALLINT)')
+	assert m.source.contains('  if (*ind < 0) {\n    vsql_m_p[1].indicator = SQL_NULL_DATA;\n  } else if (!vsql_m_string(SQLSTATE, v, 11)) {')
+	assert m.source.contains('  if (*ind < 0) {\n    vsql_m_p[2].indicator = SQL_NULL_DATA;\n  }\n')
+	assert m.source.contains('void procedure(char SQLSTATE[6]) {\n  vsql_m_start(SQLSTATE);')
+	assert m.source.contains('void c2(char SQLSTATE[6]) {\n  vsql_m_end(SQLSTATE, SQL_COMMIT);')
+	assert m.source.contains('vsql_m_end(SQLSTATE, SQL_ROLLBACK);')
+	assert m.source.contains('vsql_m_connect(SQLSTATE, "file", n, u);')
+	assert m.source.contains('vsql_m_connect(SQLSTATE, NULL, NULL, NULL);')
+	assert m.source.contains('vsql_m_connect(SQLSTATE, "x", NULL, NULL);')
+	assert m.source.contains('vsql_m_set_connection(SQLSTATE, "x");')
+	assert m.source.contains('vsql_m_set_connection(SQLSTATE, NULL);')
+	assert m.source.contains("vsql_m_disconnect(SQLSTATE, 'D', NULL);")
+	assert m.source.contains("vsql_m_disconnect(SQLSTATE, 'A', NULL);")
+	assert m.source.contains("vsql_m_disconnect(SQLSTATE, 'C', NULL);")
+	assert m.source.contains("vsql_m_disconnect(SQLSTATE, 'n', n);")
+	assert m.source.contains('vsql_m_execute(SQLSTATE, "SET SCHEMA \'x\'", 0, NULL);')
+
+	// Only the sections of the runtime that are used are included.
+	m2 := compile_module(module_header + 'PROCEDURE p (SQLSTATE); DISCONNECT ALL;', 'm')!
+	assert m2.source.contains('vsql_m_disconnect(')
+	assert !m2.source.contains('vsql_m_execute(')
+	assert !m2.source.contains('vsql_m_switch(')
+
+	// The schema is the authorization identifier when there's no SCHEMA.
+	m3 := compile_module('MODULE m LANGUAGE C AUTHORIZATION bob PROCEDURE p (SQLSTATE); COMMIT;',
+		'm')!
+	assert m3.source.contains('"SET SCHEMA \'BOB\'"')
+}
+
+fn test_module_errors() ! {
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE);') == 'syntax error: a module must end with a procedure that has a statement'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); COMMIT; PROCEDURE P (SQLSTATE); COMMIT;') == 'syntax error: procedure P is defined more than once'
+	assert module_error('MODULE LANGUAGE ADA SCHEMA s PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: only LANGUAGE C is supported, not ADA'
+	assert module_error('MODULE LANGUAGE C PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: expected SCHEMA or AUTHORIZATION after LANGUAGE C'
+	assert module_error(module_header + 'PATH s PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: expected PROCEDURE after the module authorization clause'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); COMMIT') == 'syntax error: a statement in a module must end with a semicolon'
+	assert module_error('MODULE') == 'syntax error: a statement in a module must end with a semicolon'
+	assert module_error('MODULE;;') == 'syntax error: expected LANGUAGE at the end'
+	assert module_error('LANGUAGE C;;') == 'syntax error: expected MODULE near LANGUAGE'
+	assert module_error('MODULE LANGUAGE C SCHEMA 1;;') == 'syntax error: expected schema name near 1'
+	assert module_error('MODULE LANGUAGE C SCHEMA "";;') == 'syntax error: invalid delimited identifier: ""'
+	assert module_error('MODULE LANGUAGE C SCHEMA "s;;') == 'syntax error: unterminated delimited identifier: "s'
+	assert compile_module('MODULE LANGUAGE C SCHEMA "a""b" PROCEDURE p (SQLSTATE); COMMIT;',
+		'm')!.source.contains('SET SCHEMA \'a\\"b\'')
+	assert module_error("MODULE LANGUAGE C SCHEMA 's;;") == "syntax error: unterminated string: 's;;"
+	assert module_error(module_header + 'PROCEDURE "p" (SQLSTATE); COMMIT;') == 'syntax error: expected procedure name near p'
+	assert module_error(module_header + 'PROCEDURE p SQLSTATE; COMMIT;') == 'syntax error: expected ( near SQLSTATE'
+
+	// 13.3 <externally-invoked procedure>
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, SQLSTATE); COMMIT;') == 'syntax error: procedure p: SQLSTATE can only be used once'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a INT, :A INT); COMMIT;') == 'syntax error: procedure p: host parameter :A is declared more than once'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE) x; COMMIT;') == 'syntax error: procedure p: expected ; near x'
+	assert module_error(module_header + 'PROCEDURE p (:a INT); COMMIT;') == 'syntax error: procedure p: SQLSTATE must be one of the parameters'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, a INT); COMMIT;') == 'syntax error: expected : near a'
+
+	// 13.5 Data type correspondences
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a VARCHAR); COMMIT;') == 'syntax error: host parameter :a: CHARACTER VARYING must have a length'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a CHAR(0)); COMMIT;') == 'syntax error: expected a length near 0'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a DOUBLE); COMMIT;') == 'syntax error: expected PRECISION near )'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a DATE); COMMIT;') == 'syntax error: host parameter :a: the data type must be CHARACTER, CHARACTER VARYING, SMALLINT, INTEGER, BIGINT, REAL, DOUBLE PRECISION or BOOLEAN'
+
+	// 13.4 <SQL procedure statement>
+	assert module_error(module_header + "PROCEDURE p (SQLSTATE); VALUES 'a;") == "syntax error: unterminated string: 'a;"
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); VALUES "a;') == 'syntax error: unterminated delimited identifier: "a'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); DELETE FROM t WHERE x = ?;') == 'syntax error: procedure p: a module cannot contain a dynamic parameter (?), use a host parameter (:name)'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); DELETE FROM t WHERE x = "";') == 'syntax error: procedure p: a delimited identifier cannot be empty'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); VALUES 1;') == 'syntax error: procedure p: a query is not an SQL procedure statement'
+	parse_error := module_error(module_header + 'PROCEDURE p (SQLSTATE); DELETE t;')
+	assert parse_error.starts_with('syntax error: procedure p: ')
+	assert parse_error.count('syntax error') == 1
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); DELETE FROM t WHERE x = :x;') == 'syntax error: procedure p: host parameter :x is not declared'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); DELETE FROM t WHERE x = : x;') == 'syntax error: expected a host parameter name after :'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :x INT); DELETE FROM t WHERE x = :x INDICATOR 1;') == 'syntax error: expected an indicator parameter after INDICATOR'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :x INT, :i REAL); DELETE FROM t WHERE x = :x :i;') == 'syntax error: procedure p: indicator parameter :i must be SMALLINT, INTEGER or BIGINT'
+
+	// 18 SQL-connection statements
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); CONNECT DEFAULT;') == 'syntax error: expected TO near DEFAULT'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :n INT); CONNECT TO :n;') == 'syntax error: procedure p: host parameter :n must be CHARACTER or CHARACTER VARYING'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); CONNECT TO 1;') == 'syntax error: procedure p: expected a string or a host parameter near 1'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); DISCONNECT ALL x;') == 'syntax error: unexpected near x'
+}
+
 // A custom function that returns a NUMERIC has the type it's registered with,
 // even if it has the name of a builtin numeric function, and it may return NULL.
 fn test_custom_function_returns_numeric() ! {

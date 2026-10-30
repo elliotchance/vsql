@@ -99,11 +99,15 @@ result_offset_clause:
   }
 
 fetch_first_clause:
-  FETCH FIRST fetch_first_quantity row_or_rows ONLY {
+  FETCH first_or_next fetch_first_quantity row_or_rows ONLY {
     flag_row_count(mut yylex, $3.v as ValueSpecification, 'F860')
     $$.v = $3.v
   }
-| FETCH FIRST row_or_rows ONLY { $$.v = ValueSpecification(new_integer_value(1)) }
+| FETCH first_or_next row_or_rows ONLY { $$.v = ValueSpecification(new_integer_value(1)) }
+
+first_or_next:
+  FIRST
+| NEXT
 
 fetch_first_quantity:
   fetch_first_row_count { $$.v = $1.v as ValueSpecification }

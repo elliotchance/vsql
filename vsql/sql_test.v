@@ -1503,7 +1503,7 @@ fn test_btree_expire_missing_object() ! {
 
 // A row only has the columns that the table had when it was written, so the
 // columns after them are NULL.
-fn test_row_with_fewer_columns() {
+fn test_row_with_fewer_columns() ! {
 	x := Column{
 		name: Identifier{
 			entity_name:     'T'
@@ -1522,12 +1522,40 @@ fn test_row_with_fewer_columns() {
 	row := new_row({
 		'X': new_integer_value(123)
 	})
-	data := row.bytes(Table{ columns: [x] })
+	data := row.bytes(Table{ columns: [x] })!
 	read := new_row_from_bytes(Table{ columns: [x, y] }, data, 1)
 
 	assert read.data[x.name.id()].int_value() == 123
 	assert read.data[y.name.id()].is_null
 	assert read.data[y.name.id()].typ.typ == .is_integer
+}
+
+// A row is limited to a little under 2 GB, which is too much memory for a test,
+// so a smaller limit is used. Only strings are checked.
+fn test_row_too_big() ! {
+	x := Column{
+		name: Identifier{
+			entity_name:     'T'
+			sub_entity_name: 'X'
+		}
+		typ:  new_type('CHARACTER VARYING', 10, 0)
+	}
+	row := new_row({
+		'X': new_varchar_value('abcdef')
+	})
+	table := Table{
+		columns: [x]
+	}
+
+	// The row ID length (2), column count (2), NULL indicator (1), string
+	// length (4) and string (6).
+	assert row.bytes_with_limit(table, 15)!.len == 15
+	row.bytes_with_limit(table, 14) or {
+		assert sqlstate_from_int(err.code()) == '54000'
+		assert err.msg() == 'row is bigger than the maximum of 14 bytes'
+		return
+	}
+	assert false
 }
 
 // verbose prints every message in and out of the server.

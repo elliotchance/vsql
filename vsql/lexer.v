@@ -115,6 +115,7 @@ type YYSym = AddColumnDefinition
 	| TrimFunction
 	| Type
 	| UniqueConstraintDefinition
+	| UpdatabilityClause
 	| UpdateSource
 	| Value
 	| ValueExpression

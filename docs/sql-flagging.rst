@@ -72,3 +72,24 @@ extension of it.
    * - ``V003-01``
      - ``DROP SEQUENCE`` without ``CASCADE`` or ``RESTRICT`` (it's
        ``RESTRICT``).
+
+   * - ``V004``
+     - Cursors (see :doc:`cursors`).
+
+   * - ``V004-01``
+     - ``DECLARE CURSOR`` outside of an SQL-client module.
+
+   * - ``V004-02``
+     - ``OPEN`` outside of an SQL-client module.
+
+   * - ``V004-03``
+     - ``FETCH`` without ``INTO`` (the row is returned).
+
+   * - ``V004-04``
+     - ``CLOSE`` outside of an SQL-client module.
+
+   * - ``V004-05``
+     - ``DELETE ... WHERE CURRENT OF`` outside of an SQL-client module.
+
+   * - ``V004-06``
+     - ``UPDATE ... WHERE CURRENT OF`` outside of an SQL-client module.

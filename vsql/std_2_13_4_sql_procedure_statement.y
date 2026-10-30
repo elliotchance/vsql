@@ -4,6 +4,16 @@
 //
 // Define all of the SQL-statements that are <SQL procedure statement>s.
 
+// Only the <SQL data statement>s that aren't also a <preparable statement> are
+// here. They use a standing cursor, which can only be declared outside of an
+// SQL-client module as a vsql extension (see declare_cursor).
+sql_data_statement:
+  open_statement { $$.v = $1.v as Stmt }
+| fetch_statement { $$.v = $1.v as Stmt }
+| close_statement { $$.v = $1.v as Stmt }
+| delete_statement_positioned { $$.v = $1.v as Stmt }
+| update_statement_positioned { $$.v = $1.v as Stmt }
+
 sql_schema_statement:
   sql_schema_definition_statement { $$.v = $1.v as Stmt }
 | sql_schema_manipulation_statement { $$.v = $1.v as Stmt }

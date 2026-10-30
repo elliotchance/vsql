@@ -19,7 +19,7 @@ Mandatory Features
 ~~~~~~~~~~~~~~~~~~
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 115 of the 164 mandatory features** of the
+**vsql supports 123 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -259,10 +259,10 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ **E111**
      - **Single row SELECT statement**
 
-   * - ⭕ **E121**
+   * - ✅ **E121**
      - **Basic cursor support**
 
-   * - ❌ E121-01
+   * - ✅ E121-01
      - ``DECLARE CURSOR``
 
    * - ✅ E121-02
@@ -271,22 +271,22 @@ As of the latest version (or at least the version of this documentation)
    * - ✅ E121-03
      - Value expressions in ``ORDER BY`` clause
 
-   * - ❌ E121-04
+   * - ✅ E121-04
      - ``OPEN`` statement
 
-   * - ❌ E121-06
+   * - ✅ E121-06
      - Positioned ``UPDATE`` statement
 
-   * - ❌ E121-07
+   * - ✅ E121-07
      - Positioned ``DELETE`` statement
 
-   * - ❌ E121-08
+   * - ✅ E121-08
      - ``CLOSE`` statement
 
-   * - ❌ E121-10
+   * - ✅ E121-10
      - ``FETCH`` statement: implicit ``NEXT``
 
-   * - ❌ E121-17
+   * - ✅ E121-17
      - ``WITH HOLD`` cursors
 
    * - ✅ **E131**
@@ -841,10 +841,10 @@ Optional Features
    * - ❌ **F421**
      - **National character**
 
-   * - ❌ **F431**
+   * - ⭕ **F431**
      - **Read-only scrollable cursors**
 
-   * - ❌ F431-01
+   * - ✅ F431-01
      - FETCH with explicit NEXT
 
    * - ❌ F431-02
@@ -976,13 +976,13 @@ Optional Features
    * - ❌ **F821**
      - **Local table references**
 
-   * - ❌ **F831**
+   * - ⭕ **F831**
      - **Full cursor update**
 
    * - ❌ F831-01
      - Updateable scrollable cursors
 
-   * - ❌ F831-02
+   * - ✅ F831-02
      - Updateable ordered cursors
 
    * - ❌ **F841**

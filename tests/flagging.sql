@@ -522,3 +522,36 @@ CREATE TABLE u (a INT NOT NULL UNIQUE, b INT REFERENCES u (a) ON UPDATE CASCADE 
 SELECT CURRENT_TIME(3) FROM t WHERE y NOT LIKE 'b' ESCAPE '\';
 -- flags: F411, F555
 -- COL1: 14:05:03.120+0500
+
+/* extensions V004-01 V004-02 V004-03 V004-04 V004-05 V004-06 */
+/* flags */
+START TRANSACTION;
+DECLARE c CURSOR WITHOUT HOLD FOR SELECT * FROM t;
+OPEN c;
+FETCH c;
+UPDATE t SET y = 'b' WHERE CURRENT OF c;
+DELETE FROM t WHERE CURRENT OF c;
+FETCH NEXT FROM c;
+CLOSE c;
+-- flags: T241
+-- msg: START TRANSACTION
+-- flags: T551, V004-01
+-- msg: DECLARE CURSOR
+-- flags: V004-02
+-- msg: OPEN
+-- flags: V004-03
+-- X: 1 Y: a B: TRUE D: 2026-10-28
+-- flags: V004-06
+-- msg: UPDATE 1
+-- flags: V004-05
+-- msg: DELETE 1
+-- flags: F431, V004-03
+-- warning 02000: no data
+-- flags: V004-04
+-- msg: CLOSE
+
+/* extensions V004-01 */
+/* flags */
+DECLARE c CURSOR FOR SELECT * FROM t ORDER BY x FOR UPDATE;
+-- flags: F831, V004-01
+-- msg: DECLARE CURSOR

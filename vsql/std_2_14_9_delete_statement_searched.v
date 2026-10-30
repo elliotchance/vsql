@@ -9,6 +9,9 @@ import time
 struct DeleteStatementSearched {
 	table_name Identifier
 	where      ?BooleanValueExpression
+	// current_of is the cursor of a positioned DELETE, which only deletes its
+	// current row (see DeleteStatementPositioned).
+	current_of ?&Cursor
 }
 
 fn (stmt DeleteStatementSearched) explain(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
@@ -33,7 +36,7 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
 	mut plan := create_plan(stmt, params, mut conn)!
-	mut rows := plan.execute([]Row{})!
+	mut rows := current_rows(plan.execute([]Row{})!, stmt.current_of)!
 
 	mut deleted := []Row{}
 	for row in rows {

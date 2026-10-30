@@ -11,6 +11,7 @@ SQL Reference
    create-schema.rst
    create-sequence.rst
    create-table.rst
+   cursors.rst
    delete.rst
    disconnect.rst
    drop-schema.rst

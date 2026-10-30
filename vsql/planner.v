@@ -800,7 +800,10 @@ fn (mut o ExprOperation) execute(rows []Row) ![]Row {
 		for expr in o.exprs {
 			data[expr.as_clause.id()] = expr.expr.compile(mut c)!.run(mut o.conn, row, o.params)!
 		}
-		new_rows << new_row(data)
+
+		// The id of the row is kept so that the current row of a cursor can
+		// be changed by a positioned DELETE or UPDATE.
+		new_rows << Row{row.id, row.tid, data}
 	}
 
 	return new_rows

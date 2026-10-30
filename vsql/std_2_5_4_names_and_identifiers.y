@@ -76,4 +76,10 @@ sql_server_name:
 connection_user_name:
   simple_value_specification { $$.v = $1.v as ValueSpecification }
 
+// was: local_qualified_name
+cursor_name:
+  identifier {
+    $$.v = new_column_identifier(($1.v as IdentifierChain).identifier)!.sub_entity_name
+  }
+
 %%

@@ -10,6 +10,9 @@ struct UpdateStatementSearched {
 	table_name Identifier
 	set        []SetClause
 	where      ?BooleanValueExpression
+	// current_of is the cursor of a positioned UPDATE, which only updates its
+	// current row (see UpdateStatementPositioned).
+	current_of ?&Cursor
 }
 
 // UPDATE under MVCC works by actually executing a DELETE and an INSERT on the
@@ -45,7 +48,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		params: params
 	}
 	mut plan := create_plan(stmt, params, mut conn)!
-	mut rows := plan.execute([]Row{})!
+	mut rows := current_rows(plan.execute([]Row{})!, stmt.current_of)!
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())

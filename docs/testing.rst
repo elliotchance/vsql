@@ -22,7 +22,7 @@ Test Suites
 - ``make cli-test``: the CLI tests.
 - ``make libvsql-test``: the tests for libvsql, see `libvsql`_.
 
-CI runs ``make test``.
+See `Continuous Integration`_ for what CI runs on each platform.
 
 B-Tree
 ^^^^^^
@@ -228,6 +228,27 @@ SQL
 The SQL test suite contains most of the functional tests. This is likely the
 only test suite you will use when adding functionality or fixing bugs in vsql.
 More description below.
+
+Unit
+^^^^
+
+``make unit-test`` runs every ``vsql/*_test.v`` file, except for
+``vsql/sql_test.v`` and ``vsql/btree_test.v``, which are run by
+``make sql-test`` and ``make btree-test``.
+
+Write an SQL test whenever you can. A unit test is for something that SQL can't
+show, such as the exact bytes that are written (``vsql/bytes_test.v``), a
+``Row`` that doesn't match its table (``vsql/row_test.v``), a database that's
+closed and opened again, or several connections at the same time
+(``vsql/connection_test.v``). The unit tests aren't counted by `Coverage`_, so
+code that can only be reached by a unit test also needs a V test at the end of
+``vsql/sql_test.v``.
+
+Run a single file with:
+
+.. code-block:: sh
+
+   v test vsql/row_test.v
 
 SQL Tests
 ---------
@@ -705,8 +726,9 @@ tests:
 When all of the tests are run, ``make sql-test`` fails unless every line is
 covered. This is every line that V measures: V's coverage doesn't measure some
 statements, such as a function call on its own line (including one ending in
-``!``), an ``if`` condition or assigning to a map key. ``make sql-test-uncovered`` prints each line that wasn't covered by the
-last ``make sql-test``:
+``!``), an ``if`` condition or assigning to a map key.
+``make sql-test-uncovered`` prints each line that wasn't covered by the last
+``make sql-test``:
 
 .. code-block:: text
 
@@ -740,6 +762,29 @@ turn it off:
 
 ``make vorm-test`` doesn't require 100% coverage of ``vorm/`` when it's turned
 off.
+
+Continuous Integration
+----------------------
+
+CI (``.github/workflows/ci.yml``) runs on Linux, macOS and Windows, each on
+x86-64 and ARM64, with V master:
+
+- **Linux and macOS** run ``make test``, then build the release binary and run
+  a few statements with it (``.github/workflows/hello-test.sh``).
+- **Linux x86-64** also runs the checks that don't depend on the OS:
+  ``make fmt-verify`` (the code is formatted with ``make fmt``), ``make grammar``
+  (``vsql/y.v`` must not change, see :doc:`contributing`) and
+  ``make clean-docs docs`` (warnings are errors, and
+  ``docs/v-client-library-docs.rst`` must not change).
+- **Windows** doesn't run ``make test`` yet. It runs ``make libvsql-test
+  libvsql-example``, then ``.github/workflows/windows-test.sh``, which runs a
+  few statements, a short benchmark and ``cmd/tests/server-concurrent.sh`` with
+  the binary, since the other CLI tests aren't run on Windows.
+
+Each job also generates the C for the amalgamation (see
+``scripts/amalgamation.sh``). Once every job has passed, the release job zips
+the amalgamation, then builds it with ``make`` and runs ``make example`` from
+the zip, like a user without V would.
 
 Using Different V Versions
 --------------------------

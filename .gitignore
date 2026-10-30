@@ -27,3 +27,6 @@ coverage/
 
 # Created by make release.
 vsql-*.zip
+
+# The Python virtual environment for make docs.
+.venv/

@@ -18,7 +18,8 @@ Then:
   make bin/vsql.exe   # windows
 
 Before sending a pull request, run ``make fmt`` and make sure ``make test``
-passes (see :doc:`testing`).
+passes (see :doc:`testing`). CI fails if ``make fmt`` would change anything,
+which ``make fmt-verify`` checks.
 
 Debugging
 ---------
@@ -42,12 +43,17 @@ You can generate the documentation locally with:
 
    make docs
 
-If you receive an error, you might be missing some dependencies:
+If you receive an error, you might be missing some dependencies. Install them
+in a virtual environment, since some systems have a Pygments that's too old for
+Sphinx:
 
 .. code-block:: sh
 
-   pip3 install sphinx sphinx_rtd_theme
-   cd docs && python3 -m pip install -r requirements.txt
+   python3 -m venv .venv
+   . .venv/bin/activate
+   pip install -r docs/requirements.txt
+
+Warnings are errors, so fix any that ``make docs`` prints.
 
 ``make docs`` will only regenerate the parts that it thinks have changed. To
 rebuild the entire docs you can use:
@@ -55,6 +61,10 @@ rebuild the entire docs you can use:
 .. code-block:: sh
 
    make clean-docs docs
+
+``make docs`` also generates ``docs/v-client-library-docs.rst`` from the doc
+comments of the V client library. CI runs ``make clean-docs docs`` and fails if
+it changed, so commit it with your change.
 
 Parser & SQL Grammar
 --------------------
@@ -68,6 +78,10 @@ After making changes to grammar file(s) you will need to run:
 .. code-block:: sh
 
   make grammar
+
+``vsql/y.v`` is generated, but it's committed so that ``v install`` works. CI
+runs ``make grammar`` and fails if ``vsql/y.v`` changed, so commit it with your
+change.
 
 Testing
 -------

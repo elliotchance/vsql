@@ -135,7 +135,7 @@ VALUES 1 < ALL (SELECT foo FROM t2);
 
 -- # The subquery isn't optional.
 VALUES 1 = ALL (1, 2);
--- error 42601: syntax error: unexpected number, expecting SELECT or VALUES or "("
+-- error 42601: syntax error: unexpected number, expecting SELECT or TABLE or VALUES or "("
 
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t1 WHERE x > ALL (SELECT x FROM t2) AND x = ANY (SELECT x FROM t3);

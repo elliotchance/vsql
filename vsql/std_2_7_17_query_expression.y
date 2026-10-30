@@ -88,6 +88,22 @@ simple_table:
     flag(mut yylex, 'F661')
     $$.v = $1.v as SimpleTable
   }
+| explicit_table {
+    flag(mut yylex, 'F661')
+    $$.v = SimpleTable($1.v as QuerySpecification)
+  }
+
+// "TABLE t" is the same as "SELECT * FROM t" (Syntax Rule 1).
+explicit_table:
+  TABLE table_or_query_name {
+    table_expression := TableExpression{TableReference(TablePrimary{
+      body: $2.v as Identifier
+    }), none, []Identifier{}, none}
+    $$.v = QuerySpecification{
+      exprs:            SelectList(AsteriskExpr(true))
+      table_expression: &table_expression
+    }
+  }
 
 order_by_clause:
   ORDER BY sort_specification_list { $$.v = $3.v }

@@ -1,0 +1,8 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 24, Status codes
+24                       container    - -
+# 24.1, SQLSTATE
+24.1                     implemented  vsql/std_2_24_1_sqlstate.v tests/transaction.sql the codes of Table 38, and some of PostgreSQL's (such as 42P01) for conditions that it doesn't have a subclass for
+# 24.2, Remote Database Access SQLSTATE Subclasses
+24.2                     n/a          - - there's no Remote Database Access

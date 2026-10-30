@@ -7,6 +7,11 @@ import os
 import sync
 import time
 
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.2.3, SQL-implementations
+// ISO/IEC 9075-1:2003(E), 4.2.3.2, SQL-servers
+
 pub const default_schema_name = 'PUBLIC'
 
 // A Connection allows querying and other introspection for a database file. Use
@@ -146,6 +151,12 @@ pub fn catalog_name_from_path(path string) string {
 	return os.base(path).split('.')[0]
 }
 
+// open_connection initiates an SQL-session. Its SQL-session context starts
+// with the catalog of the file (and the PUBLIC schema) as the defaults, the
+// time zone of the system, no warnings, cursors or prepared statements, and
+// no statement that's being executed.
+//
+// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 13, 13.f, 13.g, 13.j, 13.k and 13.m
 fn open_connection(path string, options ConnectionOptions) !&Connection {
 	catalog_name := catalog_name_from_path(path)
 
@@ -518,8 +529,9 @@ pub fn (conn Connection) current_catalog_name() string {
 
 // rollback_after_error rolls back the current transaction (if any) after a
 // statement raised an exception condition in class 40 (transaction rollback),
-// such as a serialization failure. Any other exception only cancels the
-// statement that raised it, see PreparedStmt.query. If the rollback fails, the
+// such as a serialization failure (ISO/IEC 9075-2:2016(E), 4.41.5, Implicit
+// rollbacks). Any other exception only cancels the statement that raised it,
+// see PreparedStmt.query. If the rollback fails, the
 // transaction is still active.
 fn (mut conn Connection) rollback_after_error() ! {
 	if !conn.in_transaction() {
@@ -533,7 +545,7 @@ fn (mut conn Connection) rollback_after_error() ! {
 // register_func adds a function, unless one with the same name and argument
 // types already exists. Only the arguments choose which function is called, so
 // the return type doesn't matter (ISO/IEC 9075-2:2016(E), 11.60, <SQL-invoked
-// routine>, Syntax Rule 20). CHARACTER arguments are CHARACTER VARYING, see
+// routine>, Syntax Rules, 20). CHARACTER arguments are CHARACTER VARYING, see
 // find_function.
 fn (mut conn Connection) register_func(func Func) ! {
 	for f in conn.funcs {

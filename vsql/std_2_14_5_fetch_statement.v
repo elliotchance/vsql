@@ -19,8 +19,11 @@ fn (stmt FetchStatement) execute(mut conn Connection, _ map[string]Value, elapse
 	mut cursor := conn.open_cursor(stmt.name)!
 	cursor.fetched = true
 
-	// ISO/IEC 9075-2:2016(E), 15.3, Determination of the current row of a
-	// cursor, General Rules 4 and 5
+	// Only NEXT is supported, so the cursor moves to the next row, or after the
+	// last row with no data.
+	//
+	// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, General Rules, 3 and 4
+	// ISO/IEC 9075-2:2016(E), 15.3, Determination of the current row of a cursor, General Rules, 5.b, 7.b, 8 and 9
 	if cursor.position < cursor.rows.len {
 		cursor.position++
 	}
@@ -56,7 +59,9 @@ fn (mut t ModuleTokens) fetch_statement(p ExternallyInvokedProcedure, cursors []
 	targets := t.target_list(p, 'INTO')!
 	t.end_of_statement(p)!
 
-	// - SR 9.b. The number of targets must be the degree of the cursor.
+	// The number of targets must be the degree of the cursor.
+	//
+	// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, Syntax Rules, 9.b.i
 	if cursor.degree >= 0 && cursor.degree != targets.len {
 		are := if targets.len == 1 { 'is' } else { 'are' }
 		return sqlstate_42601('procedure ${p.name}: cursor ${cursor.name} has ${cursor.degree} ${pluralize(cursor.degree, 'column')}, but there ${are} ${targets.len} ${pluralize(targets.len, 'target')}')

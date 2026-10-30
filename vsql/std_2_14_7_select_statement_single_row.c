@@ -13,11 +13,20 @@ struct vsql_m_target {
 };
 
 /*
- * vsql_m_assign assigns the value of column i to the target (9.1 Retrieval
- * assignment). The indicator is SQL_NULL_DATA for a null value, or the length
- * of a string that was truncated (warning: string data, right truncation). A
- * null value without an indicator parameter is an exception: data exception —
- * null value, no indicator parameter.
+ * vsql_m_assign assigns the value of column i to the target. The indicator is
+ * SQL_NULL_DATA for a null value, or the length of a string that was truncated
+ * (warning: string data, right truncation). A null value without an indicator
+ * parameter is an exception: data exception — null value, no indicator
+ * parameter. The indicator of a value that isn't truncated is its length,
+ * rather than 0 (zero), and it isn't checked for an overflow (#782).
+ *
+ * The value is converted by SQLGetData, so one that isn't assignable is cast
+ * when it's retrieved, rather than being a syntax error.
+ *
+ * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, Syntax Rules, 3 and 5.b
+ * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 3 and 5
+ * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 7
+ * ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 12.b
  */
 static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
                                struct vsql_m_target *t) {
@@ -26,7 +35,12 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
   SQLRETURN rc;
   char b[6];
 
-  /* A BOOLEAN is retrieved as 'TRUE' or 'FALSE', and is 1 or 0 in C. */
+  /*
+   * A BOOLEAN is retrieved as 'TRUE' or 'FALSE', and is 1 or 0 in C.
+   *
+   * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 7.p
+   * ISO/IEC 9075-2:2016(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.g.ii
+   */
   if (t->type == SQL_BOOLEAN) {
     rc = SQLGetData(stmt, i, SQL_CHAR, b, sizeof(b), indicator);
     if (!vsql_m_failed(rc) && (indicator == NULL || *indicator >= 0)) {
@@ -39,7 +53,13 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
                   t->type == SQL_VARCHAR ? (SQLSMALLINT)SQL_CHAR : t->type,
                   t->value, t->length, indicator);
 
-  /* A CHARACTER(L) is padded with spaces to its length. */
+  /*
+   * A CHARACTER(L) is padded with spaces to its length. A CHARACTER VARYING(L)
+   * should be too (#784). Any other value is passed as it is.
+   *
+   * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 7.c
+   * ISO/IEC 9075-2:2016(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.b and 5.l
+   */
   if (t->type == SQL_CHAR && !vsql_m_failed(rc) &&
       (indicator == NULL || *indicator >= 0)) {
     length = (SQLINTEGER)strlen((char *)t->value);
@@ -52,8 +72,12 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
 
 /*
  * vsql_m_assign_row assigns the values of the row that stmt has been fetched
- * to (rc is the return code of the fetch) to the targets. truncated is set to 1
- * if a string was truncated.
+ * to (rc is the return code of the fetch) to the targets, which are host
+ * parameters (or embedded variables of the implied module). truncated is set
+ * to 1 if a string was truncated.
+ *
+ * ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, Syntax Rules, 9.b.iv and 9.b.v
+ * ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, General Rules, 5.b
  */
 static SQLRETURN vsql_m_assign_row(SQLHSTMT stmt, SQLRETURN rc, int m,
                                    struct vsql_m_target *targets,
@@ -89,9 +113,11 @@ static int vsql_m_select(char *sqlstate, const char *sql, int n,
   }
 
   /*
-   * SR 3.b.i: The number of columns must be the number of targets. It's only
-   * different when the select list has an asterisk: dynamic SQL error — using
-   * clause does not match target specifications.
+   * The number of columns must be the number of targets. It's only different
+   * when the select list has an asterisk: dynamic SQL error — using clause
+   * does not match target specifications.
+   *
+   * ISO/IEC 9075-2:2016(E), 14.7, <select statement: single row>, Syntax Rules, 3.b.i
    */
   rc = SQLNumResultCols(stmt, &columns);
   if (!vsql_m_failed(rc) && columns != m) {
@@ -100,13 +126,20 @@ static int vsql_m_select(char *sqlstate, const char *sql, int n,
     return 0;
   }
 
-  /* GR 2.b: If there's no row, then a completion condition is raised: no
-   * data. */
+  /*
+   * If there's no row, then a completion condition is raised: no data.
+   *
+   * ISO/IEC 9075-2:2016(E), 14.7, <select statement: single row>, General Rules, 2.b and 3
+   */
   if (!vsql_m_failed(rc)) {
     rc = SQLFetch(stmt);
   }
 
-  /* GR 2.c: Otherwise, the values in the row are assigned to the targets. */
+  /*
+   * Otherwise, the values in the row are assigned to the targets.
+   *
+   * ISO/IEC 9075-2:2016(E), 14.7, <select statement: single row>, General Rules, 2.c and 4
+   */
   rc = vsql_m_assign_row(stmt, rc, m, targets, &truncated);
 
   if (vsql_m_failed(rc) || rc == SQL_NO_DATA) {
@@ -115,8 +148,12 @@ static int vsql_m_select(char *sqlstate, const char *sql, int n,
     return 0;
   }
 
-  /* GR 2.a: If there's more than one row, then an exception condition is
-   * raised: cardinality violation. */
+  /*
+   * If there's more than one row, then an exception condition is raised:
+   * cardinality violation. The values of the first row have been assigned.
+   *
+   * ISO/IEC 9075-2:2016(E), 14.7, <select statement: single row>, General Rules, 2.a
+   */
   rc = SQLFetch(stmt);
   if (rc == SQL_NO_DATA) {
     vsql_m_status(sqlstate, truncated ? "01004" : "00000");

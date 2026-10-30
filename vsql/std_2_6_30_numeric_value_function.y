@@ -1,5 +1,14 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>
+//
+// Specify a function yielding a value of type numeric.
+//
+// Each function is flagged with its feature.
+//
+// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Conformance Rules, 7-9
+// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Conformance Rules, 11-17
+
 numeric_value_function:
   position_expression { $$.v = $1.v as RoutineInvocation }
 | length_expression { $$.v = $1.v as RoutineInvocation }

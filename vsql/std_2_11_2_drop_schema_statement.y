@@ -1,5 +1,6 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 11.2, <drop schema statement>, Conformance Rules, 1 and 2
 drop_schema_statement:
   DROP SCHEMA schema_name drop_behavior {
     flag(mut yylex, 'F381')

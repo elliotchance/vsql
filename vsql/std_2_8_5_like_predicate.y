@@ -1,8 +1,14 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 8.5, <like predicate>
+//
+// There's no <octet like predicate> because there are no binary strings
+// (T021).
+
 like_predicate:
   character_like_predicate { $$.v = $1.v as CharacterLikePredicate }
 
+// ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, Conformance Rules, 2
 character_like_predicate:
   row_value_predicand character_like_predicate_part_2 {
     flag_if(mut yylex, !is_column_reference($1.v as RowValueConstructorPredicand), 'F281')
@@ -15,6 +21,7 @@ character_like_predicate:
     }
   }
 
+// ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, Conformance Rules, 3 and 4
 character_like_predicate_part_2:
   LIKE character_pattern {
     flag_if(mut yylex, !is_character_value_specification($2.v as CharacterValueExpression),

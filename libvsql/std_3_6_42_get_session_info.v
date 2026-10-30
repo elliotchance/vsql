@@ -33,6 +33,7 @@ fn sql_get_session_info(connection_handle SQLInteger, info_type i16, info_value 
 	defer {
 		entry.leave()
 	}
+	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 1
 	mut dbc := dbcs[i64(connection_handle)] or { return sql_invalid_handle }
 	dbc.diag.clear()
 
@@ -41,22 +42,24 @@ fn sql_get_session_info(connection_handle SQLInteger, info_type i16, info_value 
 }
 
 fn get_session_info(mut dbc Dbc, h i64, info_type i16, info_value voidptr, buffer_length i16, string_length &i16) !i16 {
-	// - 2. If there is no established SQL-connection associated with C, then an
-	// exception condition is raised: connection exception — connection does
-	// not exist.
+	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 2: the
+	// connection must be established. It doesn't become the current
+	// connection (General Rules, 3), which is #728.
 	if dbc.conn == none {
 		return cli_error('08003', 'connection does not exist')
 	}
 
-	// - 5. If IT is not one of the codes in Table 29, then an exception
-	// condition is raised: CLI-specific condition — invalid information type.
+	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 4-6: the
+	// InfoType must be one of the codes in Table 29.
 	gvs := session_info[int(info_type)] or {
 		return cli_error('HY096', 'invalid information type')
 	}
 
-	// - 7 to 10. V is the value selected by an implicit ExecDirect on a
-	// statement handle allocated for it. Any exception condition that it
-	// raises is returned on the connection handle.
+	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 7-10: V is
+	// the value selected by an implicit ExecDirect on a statement handle
+	// allocated for it (DISTINCT is the same as UNIQUE in the standard's
+	// query). Any exception condition that it raises is returned on the
+	// connection handle.
 	sh := new_stmt(h)
 	defer {
 		free_stmt(sh)
@@ -69,12 +72,12 @@ fn get_session_info(mut dbc Dbc, h i64, info_type i16, info_value voidptr, buffe
 	}
 	value := stmt.rows[0].get_column(cursor.columns[0])!
 
+	// ISO/IEC 9075-3:2003(E), 4.4.3, Null pointers
 	if info_value == unsafe { nil } {
 		return cli_error('HY009', 'invalid use of null pointer')
 	}
 
-	// - 11, 12. The General Rules of Subclause 5.9, "Character string
-	// retrieval", are applied.
+	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 11 and 12
 	retrieve_string(mut dbc.diag, null_termination(dbc.env), info_value, value.str(),
 		buffer_length, string_length, 2)!
 

@@ -3,6 +3,12 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>
 //
 // Specify a boolean value.
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.4.3.3, Boolean type.
+//
+// The concept is also described by:
+//
+// ISO/IEC 9075-2:2016(E), 4.5, Boolean types
 
 type BooleanPrimary = BooleanPredicand | Predicate
 
@@ -64,8 +70,9 @@ fn (e BooleanValueExpression) compile(mut c Compiler) !CompileResult {
 				a := compiled_a.run(mut conn, data, params)!
 				b := compiled_b.run(mut conn, data, params)!
 
-				// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
-				// "Table 14 — Truth table for the OR boolean operator"
+				// The truth table for OR (Table 14).
+				//
+				// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, General Rules, 3
 
 				if a.is_null {
 					if b.bool_value() == .is_true {
@@ -112,8 +119,9 @@ fn (e BooleanTerm) compile(mut c Compiler) !CompileResult {
 				a := compiled_a.run(mut conn, data, params)!
 				b := compiled_b.run(mut conn, data, params)!
 
-				// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
-				// "Table 13 — Truth table for the AND boolean operator"
+				// The truth table for AND (Table 13).
+				//
+				// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, General Rules, 3
 
 				if a.is_null {
 					if b.bool_value() == .is_false {
@@ -187,8 +195,9 @@ fn (e BooleanTest) compile(mut c Compiler) !CompileResult {
 	if v := e.value {
 		return CompileResult{
 			run:          fn [e, v, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
-				// See ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>,
-				// "Table 15 — Truth table for the IS boolean operator"
+				// The truth table for IS (Table 15).
+				//
+				// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, General Rules, 3
 
 				value := compiled.run(mut conn, data, params)!
 				mut result := new_boolean_value(false)

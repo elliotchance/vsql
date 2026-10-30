@@ -1,4 +1,6 @@
-// funcs.v registers all the inbuilt SQL functions.
+// funcs.v registers all the inbuilt SQL functions. They aren't SQL-invoked
+// routines (there's no CREATE FUNCTION), but they have some of their
+// characteristics (ISO/IEC 9075-2:2016(E), 4.33, SQL-invoked routines).
 
 module vsql
 
@@ -18,7 +20,8 @@ struct Func {
 	// is_deterministic is true when the function always returns the same result
 	// for the same arguments, so it can be used in a CHECK constraint. That's
 	// all builtin functions. Custom functions can't be declared DETERMINISTIC,
-	// so they're NOT DETERMINISTIC (the SQL default).
+	// so they're NOT DETERMINISTIC (the SQL default, see ISO/IEC 9075-2:2016(E),
+	// 4.22, Determinism).
 	//
 	// ISO/IEC 9075-2:2016(E), 11.60, <SQL-invoked routine>
 	is_deterministic bool
@@ -34,7 +37,14 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	real := Type{SQLType.is_real, 0, 0, false}
 	decimal := Type{SQLType.is_decimal, 0, 0, false}
 
-	// Scalar functions.
+	// Scalar functions. The trigonometric functions, LN, EXP, POWER and SQRT
+	// return a DOUBLE PRECISION (the approximate numeric type is
+	// implementation-defined), and so do FLOOR and CEIL of an approximate number.
+	// None of them are called with a NULL argument, the result is NULL.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 13.b and 16-18
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 20.b
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 1.b
 	conn.register_func(Func{'ABS', [double_precision], false, func_abs, double_precision, false, true})!
 	conn.register_func(Func{'ABS', [numeric], false, func_abs_numeric, numeric, false, true})!
 	conn.register_func(Func{'ABS', [decimal], false, func_abs_decimal, decimal, false, true})!
@@ -61,8 +71,10 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'LOWER', [varchar], false, func_lower, varchar, false, true})!
 	conn.register_func(Func{'MOD', [double_precision, double_precision], false, func_mod, double_precision, false, true})!
 	conn.register_func(Func{'MOD', [numeric, numeric], false, func_mod_numeric, numeric, false, true})!
-	// The result of MOD has the type of the divisor (6.30 Syntax Rule 12), so
-	// there is one for each combination of integer types.
+	// The result of MOD has the type of the divisor, so there is one for each
+	// combination of integer types.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 12.b
 	for dividend in [smallint, integer, bigint] {
 		for divisor in [smallint, integer, bigint] {
 			conn.register_func(Func{'MOD', [dividend, divisor], false, func_mod_integer, divisor, false, true})!
@@ -79,12 +91,15 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'UPPER', [varchar], false, func_upper, varchar, false, true})!
 
 	// Aggregate functions. COUNT accepts a value of any type because it only
-	// counts the non-NULL values (10.9 General Rule 7). MAX and MIN accept any
-	// type that can be ordered, which is every type, and SUM and AVG accept any
-	// number (10.9 Syntax Rule 7). Every SQLType is registered, so a new type is
-	// supported automatically. CHARACTER uses the CHARACTER VARYING one, see
-	// find_function. The result type depends on the argument (see
-	// set_function_type) and the result is calculated by eval_set_function.
+	// counts the non-NULL values (GR 7.d.i). MAX and MIN accept any type that can
+	// be ordered, which is every type (SR 7.d), and SUM and AVG accept any number
+	// (SR 7.g.i). Every SQLType is registered, so a new type is supported
+	// automatically. CHARACTER uses the CHARACTER VARYING one, see find_function.
+	// The result type depends on the argument (see set_function_type) and the
+	// result is calculated by eval_set_function.
+	//
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 7.d and 7.g.i
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.d.i
 	$for typ in SQLType.values {
 		if typ.value != SQLType.is_character {
 			arg := Type{typ.value, 0, 0, false}

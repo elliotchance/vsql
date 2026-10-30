@@ -1,8 +1,16 @@
 module vsql
 
 // ISO/IEC 9075-2:2016(E), 4.27, Sequence generators
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.6.11, Sequence
+// generators.
 
-// A SEQUENCE definition.
+// A SEQUENCE definition, which is the sequence generator descriptor. The data
+// type is always BIGINT (#399). The current base value is current_value plus
+// increment_by when the sequence is unused, otherwise the next value after
+// current_value.
+//
+// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, General Rules, 2
 pub struct Sequence {
 mut:
 	// The tid is the transaction ID that created this table.
@@ -75,6 +83,11 @@ fn (s Sequence) copy() Sequence {
 	}
 }
 
+// reset is the first value of a new cycle: the minimum value of an ascending
+// sequence, or the maximum value of a descending one. Without a MINVALUE (or
+// MAXVALUE) it's 1, which can be outside the range of the sequence (#785).
+//
+// ISO/IEC 9075-2:2016(E), 9.29, Generation of the next value of a sequence generator, General Rules, 3.b
 fn (s Sequence) reset() i64 {
 	if s.increment_by > 0 && s.has_min_value {
 		return s.min_value
@@ -87,8 +100,10 @@ fn (s Sequence) reset() i64 {
 	return 1
 }
 
-// check is used by CREATE SEQUENCE and ALTER SEQUENCE (9.30 and 9.31 Syntax
-// Rules).
+// check is used by CREATE SEQUENCE and ALTER SEQUENCE.
+//
+// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 5 and 11
+// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 5.a.ii and 11
 fn (s Sequence) check() ! {
 	if s.increment_by == 0 {
 		return sqlstate_42601('INCREMENT BY must not be 0')
@@ -100,6 +115,9 @@ fn (s Sequence) check() ! {
 }
 
 // check_in_range is used for the START WITH and RESTART WITH values.
+//
+// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 12
+// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 12
 fn (s Sequence) check_in_range(name string, value i64) ! {
 	if s.has_min_value && value < s.min_value {
 		return sqlstate_42601('${name} (${value}) must not be less than MINVALUE (${s.min_value})')
@@ -112,7 +130,10 @@ fn (s Sequence) check_in_range(name string, value i64) ! {
 
 // next_value returns the value that "NEXT VALUE FOR" will return next, or none
 // if the sequence has gone past its limit. In that case "NEXT VALUE FOR" will
-// either start again (CYCLE) or raise an error.
+// either start again (CYCLE) or raise an error. Without a MINVALUE or MAXVALUE,
+// the limit is the range of a BIGINT.
+//
+// ISO/IEC 9075-2:2016(E), 9.29, Generation of the next value of a sequence generator, General Rules, 3
 pub fn (s Sequence) next_value() ?i64 {
 	// A new sequence stores START WITH minus INCREMENT BY as the current_value,
 	// which can wrap around (for example, START WITH -9223372036854775808). So
@@ -128,6 +149,11 @@ pub fn (s Sequence) next_value() ?i64 {
 	return next_value
 }
 
+// next is the sequence after NEXT VALUE FOR, which is current_value. Without
+// CYCLE, it's 2200H (sequence generator limit exceeded) when there are no more
+// values.
+//
+// ISO/IEC 9075-2:2016(E), 9.29, Generation of the next value of a sequence generator, General Rules, 1-5
 fn (s Sequence) next() !Sequence {
 	next_value := s.next_value() or {
 		if !s.cycle {

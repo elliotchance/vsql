@@ -3,6 +3,14 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>
 //
 // Specify a uniqueness constraint for a table.
+//
+// The grammar needs at least one column for a UNIQUE, PRIMARY KEY or FOREIGN
+// KEY, which is the assertion of ISO/IEC 9075-11:2008(E), 6.3,
+// KEY_DEGREE_GREATER_THAN_OR_EQUAL_TO_1 assertion.
+//
+// The concept is described by:
+//
+// ISO/IEC 9075-2:2016(E), 4.23.3.2, Unique constraints
 
 // The name is empty when the constraint doesn't have a <constraint name
 // definition> (see Table.name_constraints).
@@ -29,7 +37,11 @@ fn (c UniqueConstraint) str() string {
 
 // check_primary_key returns an error if a row with the same PRIMARY KEY as r
 // already exists in t, or might exist once another transaction finishes. It
-// must be called from inside an isolation block.
+// must be called from inside an isolation block. A PRIMARY KEY column can't be
+// NULL (see Column.not_null).
+//
+// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 5.e.i
+// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, General Rules, 3
 fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 	if t.primary_key.len == 0 {
 		return
@@ -58,11 +70,15 @@ fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 // for the columns of a UNIQUE constraint as another row in t, or might once
 // another transaction finishes. A row with a NULL in any of the columns never
 // conflicts. The rows must have already been written, because the constraints
-// are checked once all of the rows of a statement have been written (ISO/IEC
-// 9075-2:2016(E), 4.23.2), so that UPDATE t SET u = u + 1 works. A deferred
-// constraint isn't checked (see defer_check).
+// are checked once all of the rows of a statement have been written, so that
+// UPDATE t SET u = u + 1 works. A deferred constraint isn't checked (see
+// defer_check).
 //
 // Every row of t is read, there is no index.
+//
+// ISO/IEC 9075-2:2016(E), 4.23.2, Checking of constraints
+// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 5.d.ii
+// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, General Rules, 3
 fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
 	if t.unique_constraints.len == 0 || rows.len == 0 {
 		return

@@ -3,6 +3,17 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 6.1, <data type>
 //
 // Specify a data type.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.4.3.2, Character string types
+// ISO/IEC 9075-1:2003(E), 4.6.2, Descriptors relating to character sets
+// ISO/IEC 9075-1:2003(E), 4.6.2.1, Character sets
+// ISO/IEC 9075-1:2003(E), 4.6.2.2, Collations
+// ISO/IEC 9075-2:2016(E), 4.1, Data types
+// ISO/IEC 9075-2:2016(E), 4.2, Character strings
+// ISO/IEC 9075-2:2016(E), 4.4, Numbers
+// ISO/IEC 9075-2:2016(E), 4.6, Datetimes and intervals
 
 // max_character_length is the maximum <length> of a CHARACTER or CHARACTER
 // VARYING (6.1 Syntax Rule 15).
@@ -87,9 +98,9 @@ fn parse_time_prec_tz_type(prec string, tz bool) !Type {
 	return new_type('TIME WITHOUT TIME ZONE', prec.int(), 0)
 }
 
-// ISO/IEC 9075-2:2016(E), 6.1, 38) The maximum value of <time precision> and
-// the maximum value of <timestamp precision> shall be the same
-// implementation-defined value that is not less than 6.
+// ISO/IEC 9075-2:2016(E), 6.1, <data type>, Syntax Rules, 38: <time precision>
+// and <timestamp precision> share an implementation-defined maximum, which must
+// be at least 6. vsql's maximum is 6.
 fn check_fractional_seconds_precision(name string, prec string) ! {
 	if prec.int() > 6 {
 		return sqlstate_42601('${name}(${prec}): cannot have precision greater than 6')

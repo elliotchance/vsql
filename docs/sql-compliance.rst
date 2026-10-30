@@ -12,6 +12,25 @@ Schemas), which defines the tables that describe a database.
 There are still many features to be implemented before it can be considered
 fully compliant - as shown by the Mandatory Features tables below.
 
+The tables below are by feature. For the most detailed compliance notes, see
+:doc:`standard-index`, which tracks every rule of every Subclause: whether
+it's implemented, where, how it's tested, and the rules that don't apply or
+need a closer look. A summary of it can be printed with:
+
+.. code-block:: sh
+
+  scripts/standard-index.py report      # each part
+  scripts/standard-index.py report 2    # each clause of Part 2
+
+For each part (or clause) it shows how many rules there are, how many of them
+have been reviewed, and how many of the reviewed rules that apply to vsql are
+implemented (a partially implemented rule counts as half). Then it lists the
+rules that need attention: the ones that are missing (with their issue),
+partially implemented, implemented without a test, deviate on purpose, or are
+unclear. The rules that
+haven't been reviewed yet aren't counted as implemented or missing, so the
+percentage implemented only describes what has been reviewed so far.
+
 Part 2: Foundation
 ------------------
 

@@ -1,0 +1,101 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 19, Session management
+19                       container    - -
+# 19.1, <set session characteristics statement>
+19.1                     n/a          - - session characteristics (F761)
+19.1/SR/1                n/a          - - session characteristics (F761)
+19.1/GR/1                n/a          - - session characteristics (F761)
+19.1/GR/2                n/a          - - session characteristics (F761)
+19.1/GR/3                n/a          - - session characteristics (F761)
+19.1/GR/4                n/a          - - session characteristics (F761)
+19.1/CR/1                n/a          - - session characteristics (F761)
+# 19.2, <set session user identifier statement>
+19.2                     n/a          - - authorization identifiers (F321)
+19.2/SR/1                n/a          - - authorization identifiers (F321)
+19.2/GR/1                n/a          - - authorization identifiers (F321)
+19.2/GR/2                n/a          - - authorization identifiers (F321)
+19.2/GR/3                n/a          - - authorization identifiers (F321)
+19.2/GR/4                n/a          - - authorization identifiers (F321)
+19.2/GR/5                n/a          - - authorization identifiers (F321)
+19.2/GR/6                n/a          - - authorization identifiers (F321)
+19.2/GR/7                n/a          - - authorization identifiers (F321)
+19.2/GR/8                n/a          - - authorization identifiers (F321)
+19.2/CR/1                n/a          - - authorization identifiers (F321)
+# 19.3, <set role statement>
+19.3                     n/a          - - roles (T331)
+19.3/SR/1                n/a          - - roles (T331)
+19.3/GR/1                n/a          - - roles (T331)
+19.3/GR/2                n/a          - - roles (T331)
+19.3/GR/3                n/a          - - roles (T331)
+19.3/GR/3.a              n/a          - - roles (T331)
+19.3/GR/3.b              n/a          - - roles (T331)
+19.3/GR/3.c              n/a          - - roles (T331)
+19.3/GR/3.d              n/a          - - roles (T331)
+19.3/GR/4                n/a          - - roles (T331)
+19.3/CR/1                n/a          - - roles (T331)
+# 19.4, <set local time zone statement>
+19.4                     n/a          - - SET TIME ZONE (F411)
+19.4/SR/1                n/a          - - SET TIME ZONE (F411)
+19.4/GR/1                container    - -
+19.4/GR/1.a              n/a          - - SET TIME ZONE (F411)
+19.4/GR/1.b              n/a          - - SET TIME ZONE (F411)
+19.4/GR/1.b.i            n/a          - - SET TIME ZONE (F411)
+19.4/GR/1.b.ii           n/a          - - SET TIME ZONE (F411)
+19.4/CR/1                n/a          - - SET TIME ZONE (F411)
+# 19.5, <set catalog statement>
+19.5                     implemented  vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql
+19.5/SR/1                deviates     vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql a value of any type is used as a string (#231)
+19.5/GR/1                deviates     vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql the value isn't trimmed (#231)
+19.5/GR/2                deviates     vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql the value is the catalog name as it is, rather than an identifier, and must be a catalog (3D000) (#231)
+19.5/GR/3                implemented  vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql
+19.5/CR/1                implemented  vsql/std_2_19_5_set_catalog_statement.y tests/flagging.sql
+19.5/CR/2                implemented  vsql/std_2_19_5_set_catalog_statement.y tests/flagging.sql
+# 19.6, <set schema statement>
+19.6                     implemented  vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql
+19.6/SR/1                deviates     vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql a value of any type is used as a string (#231)
+19.6/GR/1                deviates     vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql the value isn't trimmed (#231)
+19.6/GR/2                deviates     vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql the value is the schema name as it is, rather than an identifier, and must be a schema (3F000) (#231)
+19.6/GR/3                container    - -
+19.6/GR/3.a              deviates     vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql a schema name can't have a catalog name (#231)
+19.6/GR/3.b              implemented  vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql
+19.6/CR/1                implemented  vsql/std_2_19_6_set_schema_statement.y tests/flagging.sql
+# 19.7, <set names statement>
+19.7                     n/a          - - named character sets (F461)
+19.7/SR/1                n/a          - - named character sets (F461)
+19.7/GR/1                n/a          - - named character sets (F461)
+19.7/GR/2                n/a          - - named character sets (F461)
+19.7/GR/3                n/a          - - named character sets (F461)
+19.7/CR/1                n/a          - - named character sets (F461)
+19.7/CR/2                n/a          - - named character sets (F461)
+# 19.8, <set path statement>
+19.8                     n/a          - - SQL-paths (S071)
+19.8/SR/1                n/a          - - SQL-paths (S071)
+19.8/GR/1                n/a          - - SQL-paths (S071)
+19.8/GR/1.a              n/a          - - SQL-paths (S071)
+19.8/GR/1.b              n/a          - - SQL-paths (S071)
+19.8/CR/1                n/a          - - SQL-paths (S071)
+# 19.9, <set transform group statement>
+19.9                     n/a          - - transform functions (S241)
+19.9/SR/1                n/a          - - transform functions (S241)
+19.9/SR/2                n/a          - - transform functions (S241)
+19.9/GR/1                n/a          - - transform functions (S241)
+19.9/GR/1.a              n/a          - - transform functions (S241)
+19.9/GR/1.b              container    - -
+19.9/GR/1.b.i            n/a          - - transform functions (S241)
+19.9/GR/1.b.ii           n/a          - - transform functions (S241)
+19.9/CR/1                n/a          - - transform functions (S241)
+# 19.10, <set session collation statement>
+19.10                    n/a          - - SET SESSION COLLATION (F693)
+19.10/SR/1               n/a          - - SET SESSION COLLATION (F693)
+19.10/GR/1               n/a          - - SET SESSION COLLATION (F693)
+19.10/GR/1.a             n/a          - - SET SESSION COLLATION (F693)
+19.10/GR/1.b             n/a          - - SET SESSION COLLATION (F693)
+19.10/GR/1.b.i           n/a          - - SET SESSION COLLATION (F693)
+19.10/GR/1.b.i.1         n/a          - - SET SESSION COLLATION (F693)
+19.10/GR/1.b.i.2         n/a          - - SET SESSION COLLATION (F693)
+19.10/GR/1.b.ii          n/a          - - SET SESSION COLLATION (F693)
+19.10/GR/2               n/a          - - SET SESSION COLLATION (F693)
+19.10/GR/2.a             n/a          - - SET SESSION COLLATION (F693)
+19.10/GR/2.b             n/a          - - SET SESSION COLLATION (F693)
+19.10/CR/1               n/a          - - SET SESSION COLLATION (F693)

@@ -5,8 +5,13 @@ import vsql
 // ISO/IEC 9075-3:2003(E), 4.3, Diagnostics areas in SQL/CLI
 //
 // Each handle has a diagnostics area that is emptied at the start of each CLI
-// routine (other than GetDiagRec) that's given the handle. The conditions are
-// read with GetDiagRec.
+// routine (other than Error, GetDiagField and GetDiagRec) that's given the
+// handle. The conditions are read with GetDiagRec. The status records are in
+// the order that they're raised, rather than by precedence, which is #741.
+// There's no status record for a completion condition: no data (see no_data).
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.8.4, Diagnostic
+// information.
 
 struct DiagnosticRecord {
 	sqlstate string
@@ -48,7 +53,9 @@ mut:
 }
 
 // CLIError is an exception condition raised by a CLI routine itself, rather
-// than one from executing an SQL statement.
+// than one from executing an SQL statement. Its SQLSTATE is from Table 4 (in
+// ISO/IEC 9075-3:2003(E), 5.12, CLI-specific status codes), or HY000 when the
+// condition doesn't have a subclass.
 struct CLIError {
 	Error
 	sqlstate string

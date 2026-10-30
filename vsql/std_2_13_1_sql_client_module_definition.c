@@ -28,9 +28,11 @@ struct vsql_m_cursors {
 };
 
 /*
- * Feature B031, "Basic dynamic SQL": A prepared statement (20.7) is a CLI
- * statement, and the text that it was prepared from. Its name is unique in the
- * module. The names are the string literals of the generated source.
+ * Feature B031, "Basic dynamic SQL": A prepared statement is a CLI statement,
+ * and the text that it was prepared from. Its name is unique in the module. The
+ * names are the string literals of the generated source.
+ *
+ * ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, General Rules, 10
  */
 struct vsql_m_prepared {
   const void *module;
@@ -91,11 +93,13 @@ enum {
 };
 
 /*
- * An SQL descriptor area (20.1) has max item descriptor areas. A string
- * component is NULL when it's a zero-length string, and DATA is NULL when it's
- * undefined. length is the length/indicator of DATA when it's bound to a
- * dynamic parameter. A descriptor name is unique in the module, or in the
- * SQL-session when the module is NULL (GLOBAL).
+ * An SQL descriptor area has max item descriptor areas. A string component is
+ * NULL when it's a zero-length string, and DATA is NULL when it's undefined.
+ * length is the length/indicator of DATA when it's bound to a dynamic
+ * parameter. A descriptor name is unique in the module, or in the SQL-session
+ * when the module is NULL (GLOBAL).
+ *
+ * ISO/IEC 9075-2:2016(E), 20.1, Description of SQL descriptor areas, Syntax Rules, 1 and 2
  */
 struct vsql_m_item {
   SQLINTEGER number[VSQL_M_NUMBERS];
@@ -149,10 +153,12 @@ static int vsql_m_failed(SQLRETURN rc) {
 
 /*
  * The first diagnostics area, that a <get diagnostics statement> (23.1) reads.
- * Every other statement empties it (13.4 GR 6), and then it has the conditions
- * that the statement raised. A condition is either copied from the diagnostics
- * area that libvsql keeps for a handle, or raised by this runtime. A string is
- * NULL if there wasn't enough memory for it.
+ * Every other statement empties it, and then it has the conditions that the
+ * statement raised. A condition is either copied from the diagnostics area that
+ * libvsql keeps for a handle, or raised by this runtime. A string is NULL if
+ * there wasn't enough memory for it.
+ *
+ * ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 6 and 20
  */
 struct vsql_m_condition {
   char sqlstate[6];
@@ -272,8 +278,10 @@ static void vsql_m_begin(const char *command_function, SQLINTEGER code) {
 
 /*
  * vsql_m_raise adds a condition to the first diagnostics area. The
- * CONNECTION_NAME and SERVER_NAME are of the current SQL-connection (23.1 GR
- * 4.p.ii). The default SQL-connection is named DEFAULT.
+ * CONNECTION_NAME and SERVER_NAME are of the current SQL-connection. The
+ * default SQL-connection is named DEFAULT.
+ *
+ * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.p.ii
  */
 static void vsql_m_raise(const char *sqlstate, const char *message) {
   struct vsql_m_condition *conditions = (struct vsql_m_condition *)realloc(
@@ -483,9 +491,11 @@ static void vsql_m_close(struct vsql_m_connection *c) {
 }
 
 /*
- * 13.1 GR 4: After the last call, a rollback statement is effectively executed
- * and all of the SQL-sessions are terminated. A program that exits without a
- * COMMIT loses its changes.
+ * After the last call, a rollback statement is effectively executed and all of
+ * the SQL-sessions are terminated. A program that exits without a COMMIT loses
+ * its changes.
+ *
+ * ISO/IEC 9075-2:2016(E), 13.1, <SQL-client module definition>, General Rules, 4
  */
 static void vsql_m_exit(void) {
   while (vsql_m_connections != NULL) {
@@ -587,9 +597,11 @@ static struct vsql_m_connection *vsql_m_open(char *sqlstate, const char *server,
 
 /* section connection */
 /*
- * 13.4 GR 7: The SQL-connection for a statement that isn't a connection
- * statement. The default SQL-connection is made when it's needed, unless a
- * connection statement has been executed.
+ * The SQL-connection for a statement that isn't a connection statement. The
+ * default SQL-connection is made when it's needed, unless a connection
+ * statement has been executed.
+ *
+ * ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 7
  */
 static struct vsql_m_connection *vsql_m_connection(char *sqlstate) {
   if (vsql_m_current != NULL) {
@@ -658,7 +670,11 @@ static int vsql_m_exec(char *sqlstate, struct vsql_m_connection *c,
     rc = vsql_m_bind_params(stmt, n, params);
   }
 
-  /* 13.4 GR 9: The statement initiates an SQL-transaction. */
+  /*
+   * The statement initiates an SQL-transaction.
+   *
+   * ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 9
+   */
   if (!vsql_m_failed(rc)) {
     c->active = 1;
     rc = SQLExecute(stmt);
@@ -753,8 +769,12 @@ static void vsql_m_end(char *sqlstate, SQLSMALLINT completion) {
 
 /* section string */
 /*
- * 9.3 GR 5.b.iii: A character string host parameter must end with a null
- * character: data exception — unterminated C string.
+ * A character string host parameter must end with a null character: data
+ * exception — unterminated C string. The value is the characters before it
+ * (and a CHARACTER(L) is padded with spaces when it's cast to its type).
+ *
+ * ISO/IEC 9075-2:2016(E), 9.3, Passing a value from a host language to the SQL-server, General Rules, 5.b
+ * ISO/IEC 9075-2:2016(E), 13.3, <externally-invoked procedure>, General Rules, 7
  */
 static int vsql_m_string(char *sqlstate, const char *s, size_t length) {
   if (memchr(s, '\0', length) == NULL) {
@@ -834,8 +854,11 @@ static struct vsql_m_connection *vsql_m_find_default(void) {
 
 /* section switch */
 /*
- * 18.1 GR 1, 18.2 GR 1: A connection statement can't be used while there's an
- * active SQL-transaction: feature not supported — multiple server transactions.
+ * A connection statement can't be used while there's an active SQL-transaction:
+ * feature not supported — multiple server transactions.
+ *
+ * ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 1
+ * ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>, General Rules, 1
  */
 static int vsql_m_switch(char *sqlstate) {
   vsql_m_connected = 1;
@@ -848,7 +871,12 @@ static int vsql_m_switch(char *sqlstate) {
 }
 
 /* section connect */
-/* 18.1, <connect statement>. server is NULL for CONNECT TO DEFAULT. */
+/*
+ * server is NULL for CONNECT TO DEFAULT. The new SQL-connection is the one
+ * that the procedures of every module use after it.
+ *
+ * ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 12
+ */
 static void vsql_m_connect(char *sqlstate, const char *server,
                            const char *name, const char *user) {
   struct vsql_m_connection *c;
@@ -872,7 +900,11 @@ static void vsql_m_connect(char *sqlstate, const char *server,
     return;
   }
 
-  /* - 2 to 5. The user name must be an identifier. */
+  /*
+   * The user name must be an identifier.
+   *
+   * ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 2 to 5
+   */
   if (user != NULL) {
     vsql_m_name(user_name, user);
     if (user_name[0] == '\0') {
@@ -881,7 +913,11 @@ static void vsql_m_connect(char *sqlstate, const char *server,
     }
   }
 
-  /* - 6, 7. The connection name is the server name if there's no AS. */
+  /*
+   * The connection name is the server name if there's no AS.
+   *
+   * ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 6 and 7
+   */
   vsql_m_name(cn, name == NULL ? server : name);
   if (cn[0] == '\0') {
     vsql_m_status(sqlstate, "2E000");
@@ -901,7 +937,12 @@ static void vsql_m_connect(char *sqlstate, const char *server,
 }
 
 /* section set_connection */
-/* 18.2, <set connection statement>. name is NULL for DEFAULT. */
+/*
+ * name is NULL for DEFAULT. The procedures of every module use the selected
+ * SQL-connection after it.
+ *
+ * ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>, General Rules, 2 and 6
+ */
 static void vsql_m_set_connection(char *sqlstate, const char *name) {
   struct vsql_m_connection *c;
   char cn[129];
@@ -932,8 +973,9 @@ static void vsql_m_set_connection(char *sqlstate, const char *name) {
 
 /* section disconnect */
 /*
- * 18.3, <disconnect statement>. which is 'n' for a name, 'D' for DEFAULT, 'A'
- * for ALL or 'C' for CURRENT.
+ * ISO/IEC 9075-2:2016(E), 18.3, <disconnect statement>
+ *
+ * which is 'n' for a name, 'D' for DEFAULT, 'A' for ALL or 'C' for CURRENT.
  */
 static void vsql_m_disconnect(char *sqlstate, char which, const char *name) {
   struct vsql_m_connection *c = NULL, *next;
@@ -958,8 +1000,12 @@ static void vsql_m_disconnect(char *sqlstate, char which, const char *name) {
     return;
   }
 
-  /* - 4. None of the SQL-connections can be active: invalid transaction state
-   * — active SQL-transaction. */
+  /*
+   * None of the SQL-connections can be active: invalid transaction state —
+   * active SQL-transaction.
+   *
+   * ISO/IEC 9075-2:2016(E), 18.3, <disconnect statement>, General Rules, 6
+   */
   for (next = vsql_m_connections; next != NULL; next = next->next) {
     if ((which == 'A' || next == c) && next->active) {
       vsql_m_status(sqlstate, "25001");

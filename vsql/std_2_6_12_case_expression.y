@@ -1,5 +1,9 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 6.12, <case expression>
+//
+// Specify a conditional value.
+
 case_expression:
   case_abbreviation { $$.v = $1.v as CaseExpression }
 | case_specification { $$.v = $1.v as CaseExpression }
@@ -18,6 +22,10 @@ case_abbreviation:
 case_specification:
   simple_case { $$.v = CaseExpression($1.v as CaseExpressionSimple) }
 | searched_case { $$.v = CaseExpression($1.v as CaseExpressionSearched) }
+
+// Without an ELSE, the ELSE is NULL.
+//
+// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 4
 
 simple_case:
   CASE case_operand simple_when_clause_list END {

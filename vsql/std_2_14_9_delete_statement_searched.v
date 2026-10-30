@@ -38,6 +38,13 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 	mut plan := create_plan(stmt, params, mut conn)!
 	mut rows := current_rows(plan.execute([]Row{})!, stmt.current_of)!
 
+	// The rows where the search condition is true are deleted. A positioned
+	// DELETE only deletes the current row of its cursor.
+	//
+	// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, General Rules, 5, 6.b and 8.a
+	// ISO/IEC 9075-2:2016(E), 15.7, Effect of deleting rows from base tables, General Rules, 7
+	// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 11.a
+	// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 15.b
 	mut deleted := []Row{}
 	for row in rows {
 		// for_storage() here is important because it will strip the qualified
@@ -52,7 +59,7 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 	apply_referential_actions(mut conn, mut catalog.storage, catalog.storage.table(table_name.storage_id()),
 		deleted.map(RowChange{ old: it, is_delete: true }))!
 
-	// ISO/IEC 9075-2:2016(E), 14.9, General Rules, 10
+	// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, General Rules, 10
 	if rows.len == 0 {
 		conn.add_warning(sqlstate_02000())
 	}

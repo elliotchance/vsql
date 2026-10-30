@@ -426,9 +426,11 @@ fn (desc &Desc) field_index() int {
 	}
 }
 
-// describe sets the IRD and IPD of a statement after it's executed, see 5.5,
-// "Implicit DESCRIBE USING clause". The IPD isn't populated, since POPULATE IPD
-// is False.
+// describe sets the IRD and IPD of a statement after it's prepared or executed
+// (ISO/IEC 9075-3:2003(E), 5.5, Implicit DESCRIBE USING clause). The IPD isn't
+// populated, since POPULATE IPD is False (General Rules, 7). There are no
+// nested descriptors, since there are no ROW, ARRAY or MULTISET types, so the
+// item descriptor areas are the columns in order (General Rules, 5.b).
 fn describe(stmt &Stmt, mut conn vsql.Connection, columns []vsql.Column) {
 	mut ird := descs[stmt.ird] or { return }
 	mut ipd := descs[stmt.ipd] or { return }
@@ -439,7 +441,8 @@ fn describe(stmt &Stmt, mut conn vsql.Connection, columns []vsql.Column) {
 	ipd.header[sql_desc_dynamic_function_code] = i64(stmt.diag.dynamic_function_code)
 
 	// - 5. The IRD describes the result columns, if any. vsql doesn't know if a
-	// result column is part of a key, so KEY_TYPE and KEY_MEMBER are 0 (zero).
+	// result column is part of a key, so KEY_TYPE and KEY_MEMBER are 0 (zero),
+	// which is #743.
 	// The application's ARRAY_STATUS_POINTER and ROWS_PROCESSED_POINTER are
 	// kept.
 	status_pointer := ird.header_int(sql_desc_array_status_pointer)
@@ -592,8 +595,10 @@ fn (desc &Desc) has_prepared_or_executed() bool {
 
 // check_desc_deferred raises an exception condition if the descriptor is the
 // current APD, or the IPD, of a statement that has a deferred parameter number:
-// CLI-specific condition — function sequence error (see 5.11, "Deferred
-// parameter check").
+// CLI-specific condition — function sequence error (ISO/IEC 9075-3:2003(E),
+// 5.11, Deferred parameter check). It checks the statements of every
+// connection, rather than only the descriptor's (General Rules, 3), which is
+// #745.
 fn check_desc_deferred(h i64) ! {
 	for _, stmt in stmts {
 		if (stmt.apd == h || stmt.ipd == h) && stmt.deferred() > 0 {

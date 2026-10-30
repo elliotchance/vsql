@@ -1,0 +1,841 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 20, Dynamic SQL
+20                       container    - -
+# 20.1, Description of SQL descriptor areas
+20.1                     implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c only the data types that vsql has, so LEVEL is always 0 (zero)
+20.1/SR/1                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.1/SR/2                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.1/SR/3                n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.1/SR/4                n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.1/SR/4.a              n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.1/SR/4.b              n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.1/SR/5                n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.1/SR/5.a              n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.1/SR/5.b              n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.1/SR/6                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/6.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c the character set isn't checked, since it's always UTF8
+20.1/SR/6.b              n/a          - - LOBs (T041)
+20.1/SR/6.c              n/a          - - binary strings (T021)
+20.1/SR/6.d              n/a          - - LOBs (T041)
+20.1/SR/6.e              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/6.f              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/6.g              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/6.h              n/a          - - DECFLOAT (T076)
+20.1/SR/6.i              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/6.j              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/6.k              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/6.l              n/a          - - intervals (F052)
+20.1/SR/6.m              n/a          - - user-defined types (S023)
+20.1/SR/6.n              n/a          - - reference types (S041)
+20.1/SR/6.o              n/a          - - row types (T051)
+20.1/SR/6.p              n/a          - - arrays (S091)
+20.1/SR/6.q              n/a          - - multisets (S271)
+20.1/SR/6.r              n/a          - - there are no implementation-defined data types
+20.1/SR/7                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/7.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c the character set isn't checked, since it's always UTF8
+20.1/SR/7.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/7.b.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/7.b.ii           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/7.c              n/a          - - LOBs (T041)
+20.1/SR/7.d              n/a          - - binary strings (T021)
+20.1/SR/7.e              n/a          - - binary strings (T021)
+20.1/SR/7.e.i            n/a          - - binary strings (T021)
+20.1/SR/7.e.ii           n/a          - - binary strings (T021)
+20.1/SR/7.f              n/a          - - LOBs (T041)
+20.1/SR/7.g              n/a          - - a host parameter can't be NUMERIC or DECIMAL (Table 20)
+20.1/SR/7.h              n/a          - - a host parameter can't be NUMERIC or DECIMAL (Table 20)
+20.1/SR/7.i              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/7.j              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/7.k              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/7.l              n/a          - - DECFLOAT (T076)
+20.1/SR/7.m              n/a          - - a host parameter can't be FLOAT (Table 20)
+20.1/SR/7.n              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/7.o              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/7.p              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/SR/7.q              n/a          - - user-defined types (S023)
+20.1/SR/7.r              n/a          - - reference types (S041)
+20.1/SR/7.s              n/a          - - row types (T051)
+20.1/SR/7.t              n/a          - - arrays (S091)
+20.1/SR/7.t.i            n/a          - - arrays (S091)
+20.1/SR/7.t.ii           n/a          - - arrays (S091)
+20.1/SR/7.u              n/a          - - arrays (S091)
+20.1/SR/7.u.i            n/a          - - arrays (S091)
+20.1/SR/7.u.ii           n/a          - - arrays (S091)
+20.1/SR/7.v              n/a          - - multisets (S271)
+20.1/SR/7.w              n/a          - - multisets (S271)
+20.1/SR/7.x              impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c a DOUBLE PRECISION matches a FLOAT, and a character string matches a NUMERIC, DECIMAL or datetime
+20.1/SR/7.y              n/a          - - there are no implementation-defined data types
+20.1/SR/8                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.1/GR/1                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c the codes of the SQL/CLI
+20.1/GR/2                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.1/GR/3                n/a          - - intervals (F052)
+20.1/GR/4                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.1/GR/5                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.1/GR/6                n/a          - - SQL-invoked routines (T321)
+20.1/GR/7                n/a          - - user-defined types (S023)
+20.1/GR/8                n/a          - - polymorphic table functions (B200)
+20.1/GR/9                n/a          - - polymorphic table functions (B200)
+# 20.2, <allocate descriptor statement>
+20.2                     implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.2/SR/1                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.2/SR/2                impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v 100
+20.2/GR/1                container    - -
+20.2/GR/1.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.2/GR/1.a.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v a syntax error when the module is compiled, since the name is a literal
+20.2/GR/1.a.ii           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.2/GR/1.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.2/GR/2                impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c - there is no limit
+20.2/GR/3                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c the maximum is 32767
+20.2/GR/4                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.2/GR/4.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.2/GR/4.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c every other component is 0 (zero)
+20.2/CR/1                missing      - - an SQL-client module isn't flagged (#763)
+20.2/CR/2                missing      - - an SQL-client module isn't flagged (#763)
+# 20.3, <deallocate descriptor statement>
+20.3                     implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.3/GR/1                container    - -
+20.3/GR/1.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.3/GR/1.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.3/CR/1                missing      - - an SQL-client module isn't flagged (#763)
+# 20.4, <get descriptor statement>
+20.4                     implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c KEY_TYPE and KEY_MEMBER are always 0 (zero) (#801)
+20.4/SR/1                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.4/SR/2                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.4/SR/3                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.4/GR/1                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.4/GR/2                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.4/GR/3                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.4/GR/4                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.4/GR/5                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.4/GR/5.a              n/a          - - arrays (S091) and multisets (S271)
+20.4/GR/5.b              n/a          - - row types (T051)
+20.4/GR/5.c              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.4/GR/6                impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c - the targets aren't changed
+20.4/GR/7                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.4/GR/7.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.4/GR/7.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.4/GR/7.b.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.4/GR/7.b.ii           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.4/CR/1                missing      - - an SQL-client module isn't flagged (#763)
+20.4/CR/2                missing      - - an SQL-client module isn't flagged (#763)
+20.4/CR/3                n/a          - - polymorphic table functions (B200)
+20.4/CR/4                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v NULL_ORDERING and SORT_DIRECTION are a syntax error
+# 20.5, <set descriptor statement>
+20.5                     implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.5/SR/1                definition   - -
+20.5/SR/2                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.5/SR/3                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.5/SR/3.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.5/SR/3.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.5/SR/3.c              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.5/SR/3.d              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.5/SR/4                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
+20.5/GR/1                definition   - -
+20.5/GR/2                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/3                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/4                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.5/GR/5                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.a.i            n/a          - - arrays (S091) and multisets (S271)
+20.5/GR/5.a.ii           n/a          - - row types (T051)
+20.5/GR/5.a.iii          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.a.iv           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.b.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.b.ii           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c LEVEL can't be more than 0 (zero), since there are no row types (T051), arrays (S091) or multisets (S271)
+20.5/GR/5.b.ii.1         implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c LEVEL can't be more than 0 (zero), since there are no row types (T051), arrays (S091) or multisets (S271)
+20.5/GR/5.b.ii.2         implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c LEVEL can't be more than 0 (zero), since there are no row types (T051), arrays (S091) or multisets (S271)
+20.5/GR/5.b.ii.3         n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.5/GR/5.b.ii.3.A       n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.5/GR/5.b.ii.3.B       n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.5/GR/5.b.iii          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.c              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.c.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.c.ii           impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c they are 0 (zero) or the zero-length string
+20.5/GR/5.c.iii          container    - -
+20.5/GR/5.c.iii.1        implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c UTF8
+20.5/GR/5.c.iii.2        n/a          - - LOBs (T041)
+20.5/GR/5.c.iii.3        n/a          - - binary strings (T021)
+20.5/GR/5.c.iii.4        n/a          - - LOBs (T041)
+20.5/GR/5.c.iii.5        implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.c.iii.6        n/a          - - intervals (F052)
+20.5/GR/5.c.iii.7        impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c 18
+20.5/GR/5.c.iii.8        n/a          - - DECFLOAT (T076)
+20.5/GR/5.c.iii.9        impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c 53
+20.5/GR/5.d              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.d.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.d.i.1          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.d.i.2          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.d.i.3          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.d.ii           n/a          - - intervals (F052)
+20.5/GR/5.d.ii.1         n/a          - - intervals (F052)
+20.5/GR/5.d.ii.2         n/a          - - intervals (F052)
+20.5/GR/5.d.ii.3         n/a          - - intervals (F052)
+20.5/GR/5.d.iii          implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/5.e              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/6                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.5/GR/7                n/a          - - polymorphic table functions (B200)
+20.5/GR/8                impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c - a component that was set before the exception condition keeps its value
+20.5/GR/9                impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c there are no restrictions
+20.5/CR/1                missing      - - an SQL-client module isn't flagged (#763)
+20.5/CR/2                n/a          - - polymorphic table functions (B200)
+# 20.6, <copy descriptor statement>
+20.6                     n/a          - - polymorphic table functions (B200)
+20.6/GR/1                n/a          - - polymorphic table functions (B200)
+20.6/GR/2                n/a          - - polymorphic table functions (B200)
+20.6/GR/3                n/a          - - polymorphic table functions (B200)
+20.6/GR/4                n/a          - - polymorphic table functions (B200)
+20.6/GR/5                n/a          - - polymorphic table functions (B200)
+20.6/GR/6                n/a          - - polymorphic table functions (B200)
+20.6/GR/6.a              n/a          - - polymorphic table functions (B200)
+20.6/GR/6.b              n/a          - - polymorphic table functions (B200)
+20.6/GR/6.c              n/a          - - polymorphic table functions (B200)
+20.6/GR/7                n/a          - - polymorphic table functions (B200)
+20.6/GR/7.a              n/a          - - polymorphic table functions (B200)
+20.6/GR/7.b              n/a          - - polymorphic table functions (B200)
+20.6/GR/7.c              n/a          - - polymorphic table functions (B200)
+20.6/GR/7.d              n/a          - - polymorphic table functions (B200)
+20.6/GR/7.e              n/a          - - polymorphic table functions (B200)
+20.6/GR/7.f              container    - -
+20.6/GR/7.f.i            n/a          - - polymorphic table functions (B200)
+20.6/GR/7.f.ii           n/a          - - polymorphic table functions (B200)
+20.6/GR/7.g              n/a          - - polymorphic table functions (B200)
+20.6/GR/7.h              container    - -
+20.6/GR/7.h.i            n/a          - - polymorphic table functions (B200)
+20.6/GR/7.h.ii           n/a          - - polymorphic table functions (B200)
+20.6/GR/7.h.iii          n/a          - - polymorphic table functions (B200)
+20.6/GR/7.h.iii.1        n/a          - - polymorphic table functions (B200)
+20.6/GR/7.h.iii.2        container    - -
+20.6/GR/7.h.iii.2.A      n/a          - - polymorphic table functions (B200)
+20.6/GR/7.h.iii.2.B      n/a          - - polymorphic table functions (B200)
+20.6/GR/7.h.iii.2.B.I    n/a          - - polymorphic table functions (B200)
+20.6/GR/7.h.iii.2.B.II   n/a          - - polymorphic table functions (B200)
+20.6/GR/7.h.iii.2.B.III  n/a          - - polymorphic table functions (B200)
+20.6/GR/7.h.iii.2.B.III.1 n/a          - - polymorphic table functions (B200)
+20.6/GR/7.h.iii.2.B.III.2 n/a          - - polymorphic table functions (B200)
+20.6/GR/7.h.iii.2.B.III.3 n/a          - - polymorphic table functions (B200)
+20.6/GR/7.h.iii.2.B.IV   n/a          - - polymorphic table functions (B200)
+20.6/CR/1                n/a          - - polymorphic table functions (B200)
+# 20.7, <prepare statement>
+20.7                     partial      vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c the type of a dynamic parameter isn't determined (#649)
+20.7/SR/1                implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c a literal is also allowed, and isn't flagged (#763)
+20.7/SR/2                implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
+20.7/SR/3                n/a          - - there are no implementation-defined preparable statements
+20.7/SR/4                n/a          - - SQL-invoked routines (T321)
+20.7/GR/1                n/a          - - SQL-invoked routines (T321)
+20.7/GR/2                n/a          - - row types (T051)
+20.7/GR/3                n/a          - - transforms (S241)
+20.7/GR/4                missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5                missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a              missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.i            n/a          - - intervals (F052)
+20.7/GR/5.a.ii           n/a          - - arrays (S091)
+20.7/GR/5.a.iii          missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.iv           missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.v            missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.v.1          missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.v.2          missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.vi           missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.vii          n/a          - - SUBSTRING SIMILAR (T581)
+20.7/GR/5.a.vii.1        container    - -
+20.7/GR/5.a.vii.1.A      n/a          - - SUBSTRING SIMILAR (T581)
+20.7/GR/5.a.vii.1.B      n/a          - - SUBSTRING SIMILAR (T581)
+20.7/GR/5.a.vii.1.C      n/a          - - SUBSTRING SIMILAR (T581)
+20.7/GR/5.a.vii.1.D      n/a          - - SUBSTRING SIMILAR (T581)
+20.7/GR/5.a.vii.2        n/a          - - SUBSTRING SIMILAR (T581)
+20.7/GR/5.a.vii.2.A      n/a          - - SUBSTRING SIMILAR (T581)
+20.7/GR/5.a.vii.2.B      n/a          - - SUBSTRING SIMILAR (T581)
+20.7/GR/5.a.viii         n/a          - - OVERLAY (T312)
+20.7/GR/5.a.viii.1       n/a          - - OVERLAY (T312)
+20.7/GR/5.a.viii.1.A     n/a          - - OVERLAY (T312)
+20.7/GR/5.a.viii.1.B     n/a          - - OVERLAY (T312)
+20.7/GR/5.a.viii.2       n/a          - - OVERLAY (T312)
+20.7/GR/5.a.ix           missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.ix.1         missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.ix.2         missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.x            missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.x.1          missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.x.2          missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.x.2.A        n/a          - - intervals (F052)
+20.7/GR/5.a.x.2.B        missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xi           missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xi.1         missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xi.2         missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xi.2.A       n/a          - - intervals (F052)
+20.7/GR/5.a.xi.2.B       n/a          - - intervals (F052)
+20.7/GR/5.a.xi.2.C       missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xii          missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xiii         n/a          - - arrays (S091)
+20.7/GR/5.a.xiii.1       n/a          - - arrays (S091)
+20.7/GR/5.a.xiii.2       n/a          - - arrays (S091)
+20.7/GR/5.a.xiv          n/a          - - multisets (S271)
+20.7/GR/5.a.xiv.1        n/a          - - multisets (S271)
+20.7/GR/5.a.xiv.2        n/a          - - multisets (S271)
+20.7/GR/5.a.xv           missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xv.1         missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xv.1.A       n/a          - - arrays (S091) and multisets (S271)
+20.7/GR/5.a.xv.1.B       missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xv.1.C       n/a          - - domains (F251)
+20.7/GR/5.a.xv.2         container    - -
+20.7/GR/5.a.xv.2.A       missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xv.2.B       missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xvi          missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xvi.1        missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xvi.2        missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xvii         missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xvii.1       missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xvii.2       missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xviii        missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xviii.1      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xviii.1.A    missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xviii.1.B    missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xviii.1.C    missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xviii.1.D    missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xviii.1.E    missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xviii.2      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xviii.3      container    - -
+20.7/GR/5.a.xviii.3.A    missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xviii.3.B    missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xix          missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xix.1        missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xix.1.A      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xix.1.B      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xix.2        container    - -
+20.7/GR/5.a.xix.2.A      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xix.2.B      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xx           n/a          - - MERGE (F312)
+20.7/GR/5.a.xx.1         n/a          - - MERGE (F312)
+20.7/GR/5.a.xx.2         n/a          - - MERGE (F312)
+20.7/GR/5.a.xxi          missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxi.1        missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxi.2        missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxii         missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxii.1       missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxii.2       missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxiii        missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxiii.1      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxiii.2      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxiv         n/a          - - OVERLAPS (F053)
+20.7/GR/5.a.xxiv.1       n/a          - - OVERLAPS (F053)
+20.7/GR/5.a.xxiv.2       n/a          - - OVERLAPS (F053)
+20.7/GR/5.a.xxv          missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxv.1        missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxv.2        missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxv.2.A      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxv.2.B      missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxvi         missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxvi.1       missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxvi.2       missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/5.a.xxvii        n/a          - - multiple column assignment (T641)
+20.7/GR/5.a.xxvii.1      n/a          - - multiple column assignment (T641)
+20.7/GR/5.a.xxvii.2      n/a          - - multiple column assignment (T641)
+20.7/GR/5.a.xxviii       n/a          - - SET TIME ZONE (F411)
+20.7/GR/5.a.xxix         n/a          - - SQL-invoked routines (T321)
+20.7/GR/5.a.xxx          n/a          - - SQL-invoked routines (T321)
+20.7/GR/5.a.xxxi         n/a          - - window functions (T611)
+20.7/GR/5.a.xxxi.1       n/a          - - window functions (T611)
+20.7/GR/5.a.xxxi.2       n/a          - - window functions (T611)
+20.7/GR/5.a.xxxii        n/a          - - window functions (T611)
+20.7/GR/5.a.xxxii.1      n/a          - - window functions (T611)
+20.7/GR/5.a.xxxii.2      n/a          - - window functions (T611)
+20.7/GR/5.a.xxxii.2.A    n/a          - - window functions (T611)
+20.7/GR/5.a.xxxii.2.B    n/a          - - window functions (T611)
+20.7/GR/5.a.xxxii.2.C    n/a          - - window functions (T611)
+20.7/GR/5.a.xxxii.2.D    n/a          - - window functions (T611)
+20.7/GR/5.a.xxxii.2.E    n/a          - - window functions (T611)
+20.7/GR/5.a.xxxiii       n/a          - - row pattern recognition (R010)
+20.7/GR/5.a.xxxiv        n/a          - - nested window functions (T619) and locators (T561)
+20.7/GR/5.a.xxxv         n/a          - - regular expressions (F841)
+20.7/GR/5.a.xxxvi        n/a          - - regular expressions (F841) and row pattern recognition (R010)
+20.7/GR/5.b              missing      - - the type of a dynamic parameter isn't determined (#649)
+20.7/GR/6                implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.7/GR/6.a              n/a          - - extended dynamic cursors (B032)
+20.7/GR/6.b              n/a          - - extended dynamic cursors (B032)
+20.7/GR/6.c              implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.7/GR/7                definition   - -
+20.7/GR/7.a              n/a          - - SQL-invoked routines (T321)
+20.7/GR/7.a.i            n/a          - - SQL-invoked routines (T321)
+20.7/GR/7.a.ii           n/a          - - SQL-invoked routines (T321)
+20.7/GR/7.a.iii          n/a          - - SQL-invoked routines (T321)
+20.7/GR/7.a.iii.1        n/a          - - SQL-invoked routines (T321)
+20.7/GR/7.a.iii.2        n/a          - - SQL-invoked routines (T321)
+20.7/GR/7.b              container    - -
+20.7/GR/7.b.i            n/a          - - a dynamic parameter can't be a target
+20.7/GR/7.b.ii           definition   - -
+20.7/GR/8                n/a          - - extended statement and cursor names (B032)
+20.7/GR/8.a              n/a          - - extended statement and cursor names (B032)
+20.7/GR/8.b              n/a          - - extended statement and cursor names (B032)
+20.7/GR/9                implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.7/GR/10               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.7/GR/10.a             n/a          - - SQL-invoked routines (T321)
+20.7/GR/10.a.i           n/a          - - SQL-invoked routines (T321)
+20.7/GR/10.a.ii          n/a          - - SQL-invoked routines (T321)
+20.7/GR/10.b             n/a          - - triggers (T211)
+20.7/GR/10.c             n/a          - - there are no users or privileges (#732)
+20.7/GR/10.c.i           n/a          - - there are no users or privileges (#732)
+20.7/GR/10.c.ii          n/a          - - there are no users or privileges (#732)
+20.7/GR/11               n/a          - - dynamic specification of cursor attributes (B034)
+20.7/CR/1                missing      - - an SQL-client module isn't flagged (#763)
+20.7/CR/2                implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v an <attributes specification> isn't supported
+# 20.8, <cursor attributes>
+20.8                     n/a          - - dynamic specification of cursor attributes (B034)
+20.8/SR/1                n/a          - - dynamic specification of cursor attributes (B034)
+# 20.9, <deallocate prepared statement>
+20.9                     implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c
+20.9/SR/1                implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
+20.9/SR/1.a              n/a          - - SQL-invoked routines (T321)
+20.9/SR/1.b              implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
+20.9/GR/1                implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.9/GR/2                implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.9/GR/3                implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c there are no extended dynamic cursors (B032)
+20.9/CR/1                missing      - - an SQL-client module isn't flagged (#763)
+# 20.10, <describe statement>
+20.10                    partial      vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c only DESCRIBE OUTPUT, and KEY_TYPE and KEY_MEMBER are always 0 (zero) (#801)
+20.10/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
+20.10/SR/1.a             n/a          - - SQL-invoked routines (T321)
+20.10/SR/1.b             implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
+20.10/SR/2               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
+20.10/SR/3               n/a          - - DESCRIBE CURSOR (T472)
+20.10/SR/4               n/a          - - DESCRIBE INPUT (B032-01)
+20.10/GR/1               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/2               n/a          - - DESCRIBE CURSOR (T472)
+20.10/GR/2.a             n/a          - - DESCRIBE CURSOR (T472)
+20.10/GR/2.b             n/a          - - DESCRIBE CURSOR (T472)
+20.10/GR/3               implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.10/GR/4               definition   - -
+20.10/GR/5               container    - -
+20.10/GR/5.a             n/a          - - DESCRIBE INPUT (B032-01)
+20.10/GR/5.b             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/5.c             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c there are no output dynamic parameters, so it's always 0 (zero)
+20.10/GR/6               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/6.a             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/6.b             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/6.c             impl-defined vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c the dynamic select statement (SELECT CURSOR, 85) is used
+20.10/GR/6.d             missing      vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c KEY_TYPE is always 0 (zero) (#801)
+20.10/GR/6.d.i           missing      - - #801
+20.10/GR/6.d.ii          missing      - - #801
+20.10/GR/6.d.iii         implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
+20.10/GR/6.e             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/6.f             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/6.f.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/6.f.i.1         n/a          - - DESCRIBE INPUT (B032-01)
+20.10/GR/6.f.i.2         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/6.f.i.3         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c there are no output dynamic parameters
+20.10/GR/6.f.ii          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/6.f.iii         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/6.f.iii.1       implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c NS is always 0 (zero)
+20.10/GR/6.f.iii.2       n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.10/GR/7               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.a             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c LEVEL is always 0 (zero)
+20.10/GR/7.b             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.c             container    - -
+20.10/GR/7.c.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.c.i.1         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.c.i.2         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.c.i.3         missing      vsql/std_2_20_7_prepare_statement.c - KEY_MEMBER is always 0 (zero) (#801)
+20.10/GR/7.c.ii          n/a          - - DESCRIBE INPUT (B032-01)
+20.10/GR/7.c.ii.1        n/a          - - DESCRIBE INPUT (B032-01)
+20.10/GR/7.c.ii.2        n/a          - - DESCRIBE INPUT (B032-01)
+20.10/GR/7.c.ii.3        n/a          - - DESCRIBE INPUT (B032-01)
+20.10/GR/7.c.iii         container    - -
+20.10/GR/7.c.iii.1       n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.10/GR/7.c.iii.2       container    - -
+20.10/GR/7.c.iii.2.A     n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.10/GR/7.c.iii.2.A.I   n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.10/GR/7.c.iii.2.A.II  n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.10/GR/7.c.iii.2.B     n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.10/GR/7.c.iii.3       n/a          - - row types (T051), arrays (S091) and multisets (S271)
+20.10/GR/7.d             container    - -
+20.10/GR/7.d.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.d.i.1         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.d.i.2         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.d.i.3         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.d.i.4         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c the zero-length string, since there are no collations (F690)
+20.10/GR/7.d.ii          n/a          - - binary strings (T021)
+20.10/GR/7.d.iii         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.d.iv          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.d.v           n/a          - - DECFLOAT (T076)
+20.10/GR/7.d.vi          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.10/GR/7.d.vii         n/a          - - intervals (F052)
+20.10/GR/7.d.viii        n/a          - - user-defined types (S023)
+20.10/GR/7.d.ix          n/a          - - reference types (S041)
+20.10/GR/7.d.ix.1        n/a          - - reference types (S041)
+20.10/GR/7.d.ix.2        n/a          - - reference types (S041)
+20.10/GR/7.d.ix.3        n/a          - - reference types (S041)
+20.10/GR/7.d.x           n/a          - - row types (T051)
+20.10/GR/7.d.xi          n/a          - - arrays (S091)
+20.10/GR/7.e             n/a          - - SQL-invoked routines (T321)
+20.10/GR/7.e.i           n/a          - - SQL-invoked routines (T321)
+20.10/GR/7.e.ii          n/a          - - SQL-invoked routines (T321)
+20.10/GR/7.e.iii         n/a          - - SQL-invoked routines (T321)
+20.10/GR/7.e.iv          n/a          - - SQL-invoked routines (T321)
+20.10/GR/7.e.v           n/a          - - SQL-invoked routines (T321)
+20.10/GR/7.e.vi          n/a          - - SQL-invoked routines (T321)
+20.10/CR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v DESCRIBE INPUT isn't supported
+20.10/CR/2               missing      - - an SQL-client module isn't flagged (#763)
+20.10/CR/3               n/a          - - DESCRIBE CURSOR (T472)
+20.10/CR/4               n/a          - - polymorphic table functions (B200)
+# 20.11, <input using clause>
+20.11                    partial      vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c the type of a dynamic parameter isn't determined (#649), so a value isn't cast
+20.11/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
+20.11/SR/2               n/a          - - polymorphic table functions (B200)
+20.11/GR/1               implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.11/GR/2               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.11/GR/3               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c the "?" that are not in a literal, a delimited identifier or a comment
+20.11/GR/4               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.11/GR/5               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.11/GR/5.a             implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.11/GR/5.b             implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.11/GR/5.c             implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.11/GR/5.d             implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.11/GR/5.d.i           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.11/GR/5.d.ii          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c DATA must be set
+20.11/GR/6               partial      vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c the type of a dynamic parameter isn't determined (#649)
+20.11/GR/6.a             missing      - - the type of a dynamic parameter isn't determined (#649)
+20.11/GR/6.b             container    - -
+20.11/GR/6.b.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.11/GR/6.b.i.1         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.11/GR/6.b.i.2         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.11/GR/6.b.i.3         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.11/GR/6.b.i.3.A       implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.11/GR/6.b.i.3.B       implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.11/GR/6.b.i.3.B.I     n/a          - - row types (T051)
+20.11/GR/6.b.i.3.B.II    implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.11/GR/6.b.ii          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.11/GR/6.c             container    - -
+20.11/GR/6.c.i           n/a          - - locators (T561)
+20.11/GR/6.c.i.1         n/a          - - locators (T561)
+20.11/GR/6.c.i.2         n/a          - - locators (T561)
+20.11/GR/6.c.ii          missing      - - a value isn't cast, since the type of a dynamic parameter isn't determined (#649)
+20.11/GR/6.c.ii.1        missing      - - a value isn't cast, since the type of a dynamic parameter isn't determined (#649)
+20.11/GR/6.c.ii.2        container    - -
+20.11/GR/6.c.ii.2.A      missing      - - a value isn't cast, since the type of a dynamic parameter isn't determined (#649)
+20.11/GR/6.c.ii.2.B      missing      - - a value isn't cast, since the type of a dynamic parameter isn't determined (#649)
+20.11/GR/6.c.iii         n/a          - - user-defined types (S023)
+20.11/GR/6.c.iii.1       n/a          - - user-defined types (S023)
+20.11/GR/6.c.iii.2       n/a          - - user-defined types (S023)
+20.11/GR/6.c.iii.3       n/a          - - user-defined types (S023)
+20.11/GR/6.c.iii.3.A     n/a          - - user-defined types (S023)
+20.11/GR/6.c.iii.3.A.I   n/a          - - user-defined types (S023)
+20.11/GR/6.c.iii.3.A.I.1 n/a          - - user-defined types (S023)
+20.11/GR/6.c.iii.3.A.I.2 n/a          - - user-defined types (S023)
+20.11/GR/6.c.iii.3.A.II  n/a          - - user-defined types (S023)
+20.11/GR/6.c.iii.3.B     n/a          - - user-defined types (S023)
+20.11/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+# 20.12, <output using clause>
+20.12                    partial      vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c the returned lengths are of the value that is assigned (#800)
+20.12/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
+20.12/GR/1               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/2               container    - -
+20.12/GR/2.a             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/2.b             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c there are no output dynamic parameters, so it's always 0 (zero)
+20.12/GR/3               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/4               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/4.a             implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.12/GR/4.b             implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.12/GR/4.c             implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.12/GR/4.d             implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.12/GR/4.e             implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
+20.12/GR/5               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.a             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.a.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.a.ii          n/a          - - there are no output dynamic parameters
+20.12/GR/5.b             container    - -
+20.12/GR/5.b.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.b.ii          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.c             n/a          - - locators (T561)
+20.12/GR/5.c.i           n/a          - - locators (T561)
+20.12/GR/5.c.ii          n/a          - - locators (T561)
+20.12/GR/5.c.iii         n/a          - - locators (T561)
+20.12/GR/5.c.iv          n/a          - - locators (T561)
+20.12/GR/5.c.v           n/a          - - locators (T561)
+20.12/GR/5.d             container    - -
+20.12/GR/5.d.i           n/a          - - locators (T561)
+20.12/GR/5.d.i.1         n/a          - - locators (T561)
+20.12/GR/5.d.i.2         n/a          - - locators (T561)
+20.12/GR/5.d.ii          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.d.ii.1        impl-defined vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c the conversions of SQLGetData
+20.12/GR/5.d.ii.2        container    - -
+20.12/GR/5.d.ii.2.A      implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.d.ii.2.B      implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.d.iii         n/a          - - user-defined types (S023)
+20.12/GR/5.d.iii.1       n/a          - - user-defined types (S023)
+20.12/GR/5.d.iii.2       n/a          - - user-defined types (S023)
+20.12/GR/5.d.iii.3       n/a          - - user-defined types (S023)
+20.12/GR/5.d.iii.3.A     n/a          - - user-defined types (S023)
+20.12/GR/5.d.iii.3.A.I   n/a          - - user-defined types (S023)
+20.12/GR/5.d.iii.3.A.II  n/a          - - user-defined types (S023)
+20.12/GR/5.d.iii.3.B     n/a          - - user-defined types (S023)
+20.12/GR/5.e             container    - -
+20.12/GR/5.e.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.e.i.1         n/a          - - row types (T051)
+20.12/GR/5.e.i.1.A       n/a          - - row types (T051)
+20.12/GR/5.e.i.1.B       n/a          - - row types (T051)
+20.12/GR/5.e.i.2         implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.e.i.2.A       implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.e.i.2.B       implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.e.i.2.B.I     implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.e.i.2.B.II    container    - -
+20.12/GR/5.e.i.2.B.II.1  n/a          - - locators (T561)
+20.12/GR/5.e.i.2.B.II.2  implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.e.i.2.B.III   partial      vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c #800
+20.12/GR/5.e.i.2.B.III.1 implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/GR/5.e.i.2.B.III.2 missing      vsql/std_2_20_7_prepare_statement.c - the lengths are of TV, not SV (#800)
+20.12/GR/5.e.i.2.B.III.3 n/a          - - arrays (S091) and multisets (S271)
+20.12/GR/5.e.ii          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.12/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+# 20.13, <execute statement>
+20.13                    implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c
+20.13/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
+20.13/SR/1.a             n/a          - - SQL-invoked routines (T321)
+20.13/SR/1.b             implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
+20.13/SR/2               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v there are no PTF descriptor names (B200)
+20.13/GR/1               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.13/GR/2               definition   - -
+20.13/GR/3               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.13/GR/3.a             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.13/GR/3.b             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.13/GR/4               n/a          - - temporary tables (F531)
+20.13/GR/5               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.13/GR/6               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.13/GR/7               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.13/GR/8               n/a          - - there are no users or privileges (#732), so there's no authorization stack
+20.13/GR/9               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.13/GR/10              implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.13/GR/11              n/a          - - there are no users or privileges (#732), so there's no authorization stack
+20.13/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+20.13/CR/2               missing      - - an SQL-client module isn't flagged (#763)
+# 20.14, <execute immediate statement>
+20.14                    implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c
+20.14/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v a literal is also allowed, and isn't flagged (#763)
+20.14/GR/1               definition   - -
+20.14/GR/2               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.14/GR/2.a             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.14/GR/2.b             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.14/GR/3               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c without a prepared statement
+20.14/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+# 20.15, <dynamic declare cursor>
+20.15                    implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
+20.15/SR/1               implemented  vsql/std_2_14_1_declare_cursor.v vsql/sql_test.v
+20.15/SR/2               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
+20.15/GR/1               implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
+20.15/GR/1.a             implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
+20.15/GR/1.b             implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
+20.15/GR/1.c             implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
+20.15/GR/1.d             implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
+20.15/GR/1.e             implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
+20.15/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+# 20.16, <descriptor value constructor>
+20.16                    n/a          - - polymorphic table functions (B200)
+20.16/SR/1               n/a          - - polymorphic table functions (B200)
+20.16/GR/1               n/a          - - polymorphic table functions (B200)
+20.16/GR/2               n/a          - - polymorphic table functions (B200)
+20.16/GR/2.a             n/a          - - polymorphic table functions (B200)
+20.16/GR/2.a.i           n/a          - - polymorphic table functions (B200)
+20.16/GR/2.a.ii          container    - -
+20.16/GR/2.a.ii.1        n/a          - - polymorphic table functions (B200)
+20.16/GR/2.a.ii.2        n/a          - - polymorphic table functions (B200)
+20.16/GR/2.b             n/a          - - polymorphic table functions (B200)
+20.16/GR/2.b.i           n/a          - - polymorphic table functions (B200)
+20.16/GR/2.b.ii          n/a          - - polymorphic table functions (B200)
+20.16/GR/2.b.iii         n/a          - - polymorphic table functions (B200)
+20.16/CR/1               n/a          - - polymorphic table functions (B200)
+# 20.17, <allocate extended dynamic cursor statement>
+20.17                    n/a          - - extended dynamic cursors (B032)
+20.17/GR/1               n/a          - - extended dynamic cursors (B032)
+20.17/GR/1.a             n/a          - - extended dynamic cursors (B032)
+20.17/GR/1.b             n/a          - - extended dynamic cursors (B032)
+20.17/GR/2               n/a          - - extended dynamic cursors (B032)
+20.17/GR/3               n/a          - - extended dynamic cursors (B032)
+20.17/GR/4               n/a          - - extended dynamic cursors (B032)
+20.17/GR/5               n/a          - - extended dynamic cursors (B032)
+20.17/GR/6               n/a          - - extended dynamic cursors (B032)
+20.17/GR/6.a             n/a          - - extended dynamic cursors (B032)
+20.17/GR/6.b             n/a          - - extended dynamic cursors (B032)
+20.17/GR/6.b.i           n/a          - - extended dynamic cursors (B032)
+20.17/GR/6.b.ii          n/a          - - extended dynamic cursors (B032)
+20.17/GR/6.c             n/a          - - extended dynamic cursors (B032)
+20.17/GR/6.d             n/a          - - extended dynamic cursors (B032)
+20.17/GR/6.e             n/a          - - extended dynamic cursors (B032)
+20.17/GR/7               n/a          - - extended dynamic cursors (B032)
+20.17/GR/7.a             n/a          - - extended dynamic cursors (B032)
+20.17/GR/7.b             n/a          - - extended dynamic cursors (B032)
+20.17/GR/7.c             n/a          - - extended dynamic cursors (B032)
+20.17/GR/8               n/a          - - extended dynamic cursors (B032)
+20.17/CR/1               n/a          - - extended dynamic cursors (B032)
+# 20.18, <allocate received cursor statement>
+20.18                    n/a          - - returned result sets (T471)
+20.18/SR/1               n/a          - - returned result sets (T471)
+20.18/SR/2               n/a          - - returned result sets (T471)
+20.18/GR/1               n/a          - - returned result sets (T471)
+20.18/GR/2               n/a          - - returned result sets (T471)
+20.18/GR/3               n/a          - - returned result sets (T471)
+20.18/GR/4               n/a          - - returned result sets (T471)
+20.18/GR/4.a             n/a          - - returned result sets (T471)
+20.18/GR/4.b             n/a          - - returned result sets (T471)
+20.18/GR/4.c             n/a          - - returned result sets (T471)
+20.18/GR/4.d             n/a          - - returned result sets (T471)
+20.18/GR/4.e             n/a          - - returned result sets (T471)
+20.18/GR/4.e.i           n/a          - - returned result sets (T471)
+20.18/GR/4.e.ii          n/a          - - returned result sets (T471)
+20.18/GR/4.e.iii         n/a          - - returned result sets (T471)
+20.18/GR/4.e.iv          n/a          - - returned result sets (T471)
+20.18/GR/5               n/a          - - returned result sets (T471)
+20.18/GR/5.a             n/a          - - returned result sets (T471)
+20.18/GR/5.b             n/a          - - returned result sets (T471)
+20.18/GR/5.c             n/a          - - returned result sets (T471)
+20.18/GR/6               n/a          - - returned result sets (T471)
+20.18/CR/1               n/a          - - returned result sets (T471)
+# 20.19, <dynamic open statement>
+20.19                    implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c
+20.19/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
+20.19/AR/1               n/a          - - there are no users or privileges (#732)
+20.19/GR/1               container    - -
+20.19/GR/1.a             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.19/GR/1.a.i           implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.19/GR/1.a.ii          untested     vsql/std_2_20_7_prepare_statement.c -
+20.19/GR/1.b             n/a          - - extended dynamic cursors (B032)
+20.19/GR/2               definition   - -
+20.19/GR/3               untested     vsql/std_2_20_7_prepare_statement.c -
+20.19/GR/4               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.19/GR/5               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.19/GR/6               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.19/GR/7               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.19/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+# 20.20, <dynamic fetch statement>
+20.20                    implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c only NEXT is supported (F431)
+20.20/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c
+20.20/SR/2               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
+20.20/GR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v the cursor is found when the module is compiled
+20.20/GR/2               definition   - -
+20.20/GR/3               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.20/GR/4               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.20/GR/5               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.20/GR/6               impl-defined vsql/std_2_20_7_prepare_statement.c - the targets that were assigned before the exception condition keep their values
+20.20/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+# 20.21, <dynamic single row select statement>
+20.21                    implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.21/GR/1               definition   - -
+20.21/GR/2               container    - -
+20.21/GR/2.a             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.21/GR/2.b             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+20.21/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+# 20.22, <dynamic close statement>
+20.22                    implemented  vsql/std_2_14_6_close_statement.v libvsql/module/test_main.c
+20.22/SR/1               implemented  vsql/std_2_14_6_close_statement.v vsql/sql_test.v
+20.22/GR/1               implemented  vsql/std_2_14_6_close_statement.v vsql/sql_test.v the cursor is found when the module is compiled
+20.22/GR/2               definition   - -
+20.22/GR/3               implemented  vsql/std_2_14_6_close_statement.v libvsql/module/test_main.c
+20.22/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+# 20.23, <dynamic delete statement: positioned>
+20.23                    implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c the same as a <delete statement: positioned>, so there's no <correlation name> (#793)
+20.23/SR/1               definition   - -
+20.23/SR/2               implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/sql_test.v
+20.23/SR/3               definition   - -
+20.23/AR/1               container    - -
+20.23/AR/1.a             n/a          - - there are no users or privileges (#732)
+20.23/AR/1.b             n/a          - - there are no users or privileges (#732)
+20.23/GR/1               implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/sql_test.v the cursor is found when the module is compiled
+20.23/GR/2               definition   - -
+20.23/GR/3               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like a <delete statement: positioned>
+20.23/GR/4               definition   - -
+20.23/GR/5               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like a <delete statement: positioned>
+20.23/GR/6               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like a <delete statement: positioned>
+20.23/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+# 20.24, <dynamic update statement: positioned>
+20.24                    implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c
+20.24/SR/1               definition   - -
+20.24/SR/2               implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/sql_test.v
+20.24/SR/3               definition   - -
+20.24/SR/4               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like an <update statement: positioned>
+20.24/AR/1               container    - -
+20.24/AR/1.a             n/a          - - there are no users or privileges (#732)
+20.24/AR/1.b             n/a          - - there are no users or privileges (#732)
+20.24/GR/1               implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/sql_test.v the cursor is found when the module is compiled
+20.24/GR/2               definition   - -
+20.24/GR/3               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like an <update statement: positioned>
+20.24/GR/4               definition   - -
+20.24/GR/5               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like an <update statement: positioned>
+20.24/GR/6               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like an <update statement: positioned>
+20.24/GR/7               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like an <update statement: positioned>
+20.24/GR/8               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like an <update statement: positioned>
+20.24/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+# 20.25, <preparable dynamic delete statement: positioned>
+20.25                    n/a          - - extended dynamic SQL (B032)
+20.25/SR/1               n/a          - - extended dynamic SQL (B032)
+20.25/SR/2               n/a          - - extended dynamic SQL (B032)
+20.25/SR/2.a             n/a          - - extended dynamic SQL (B032)
+20.25/SR/2.b             n/a          - - extended dynamic SQL (B032)
+20.25/SR/2.c             container    - -
+20.25/SR/2.c.i           n/a          - - extended dynamic SQL (B032)
+20.25/SR/2.c.i.1         n/a          - - extended dynamic SQL (B032)
+20.25/SR/2.c.i.2         n/a          - - extended dynamic SQL (B032)
+20.25/SR/2.c.ii          n/a          - - extended dynamic SQL (B032)
+20.25/SR/2.d             n/a          - - extended dynamic SQL (B032)
+20.25/SR/2.e             n/a          - - extended dynamic SQL (B032)
+20.25/SR/2.f             n/a          - - extended dynamic SQL (B032)
+20.25/SR/2.g             n/a          - - extended dynamic SQL (B032)
+20.25/SR/2.h             n/a          - - extended dynamic SQL (B032)
+20.25/AR/1               n/a          - - extended dynamic SQL (B032)
+20.25/AR/1.a             n/a          - - extended dynamic SQL (B032)
+20.25/AR/1.b             n/a          - - extended dynamic SQL (B032)
+20.25/GR/1               n/a          - - extended dynamic SQL (B032)
+20.25/CR/1               n/a          - - extended dynamic SQL (B032)
+# 20.26, <preparable dynamic cursor name>
+20.26                    n/a          - - extended dynamic SQL (B032)
+20.26/SR/1               n/a          - - extended dynamic SQL (B032)
+20.26/SR/1.a             n/a          - - extended dynamic SQL (B032)
+20.26/SR/1.a.i           n/a          - - extended dynamic SQL (B032)
+20.26/SR/1.a.ii          n/a          - - extended dynamic SQL (B032)
+20.26/SR/1.b             n/a          - - extended dynamic SQL (B032)
+20.26/SR/1.b.i           n/a          - - extended dynamic SQL (B032)
+20.26/SR/1.b.ii          container    - -
+20.26/SR/1.b.ii.1        n/a          - - extended dynamic SQL (B032)
+20.26/SR/1.b.ii.2        n/a          - - extended dynamic SQL (B032)
+20.26/SR/1.b.ii.3        n/a          - - extended dynamic SQL (B032)
+# 20.27, <preparable dynamic update statement: positioned>
+20.27                    n/a          - - extended dynamic SQL (B032)
+20.27/SR/1               n/a          - - extended dynamic SQL (B032)
+20.27/SR/2               n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.a             n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.b             n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.c             container    - -
+20.27/SR/2.c.i           n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.c.i.1         n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.c.i.2         n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.c.ii          n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.d             n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.e             n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.f             n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.g             n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.h             n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.i             n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.j             n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.k             n/a          - - extended dynamic SQL (B032)
+20.27/SR/2.l             n/a          - - extended dynamic SQL (B032)
+20.27/AR/1               n/a          - - extended dynamic SQL (B032)
+20.27/AR/1.a             n/a          - - extended dynamic SQL (B032)
+20.27/AR/1.b             n/a          - - extended dynamic SQL (B032)
+20.27/GR/1               n/a          - - extended dynamic SQL (B032)
+20.27/CR/1               n/a          - - extended dynamic SQL (B032)
+# 20.28, <pipe row statement>
+20.28                    n/a          - - polymorphic table functions (B200)
+20.28/GR/1               n/a          - - polymorphic table functions (B200)
+20.28/GR/2               n/a          - - polymorphic table functions (B200)
+20.28/GR/3               n/a          - - polymorphic table functions (B200)
+20.28/GR/4               n/a          - - polymorphic table functions (B200)
+20.28/GR/5               n/a          - - polymorphic table functions (B200)
+20.28/GR/6               n/a          - - polymorphic table functions (B200)
+20.28/GR/7               n/a          - - polymorphic table functions (B200)
+20.28/GR/8               n/a          - - polymorphic table functions (B200)
+20.28/GR/9               n/a          - - polymorphic table functions (B200)
+20.28/GR/10              n/a          - - polymorphic table functions (B200)
+20.28/GR/11              n/a          - - polymorphic table functions (B200)
+20.28/GR/11.a            n/a          - - polymorphic table functions (B200)
+20.28/GR/11.b            n/a          - - polymorphic table functions (B200)
+20.28/GR/11.b.i          n/a          - - polymorphic table functions (B200)
+20.28/GR/11.b.ii         n/a          - - polymorphic table functions (B200)
+20.28/GR/11.b.iii        n/a          - - polymorphic table functions (B200)
+20.28/GR/12              n/a          - - polymorphic table functions (B200)
+20.28/CR/1               n/a          - - polymorphic table functions (B200)

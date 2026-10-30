@@ -5,6 +5,12 @@ module main
 // Based on the specified selection criteria, return a result set that contains
 // information about columns of tables stored in the information schemas of the
 // connected data source.
+//
+// There are no interval, LOB or reference types (General Rules, 7.e.i, 7.g.v,
+// 7.g.vi, 7.n.ii and 7.r.ii). TYPE_NAME is the DATA_TYPE of the COLUMNS view,
+// the COLUMN_SIZE of a number is its decimal digits, and REMARKS is the null
+// value (General Rules, 7.f, 7.g.iii and 7.l), which are
+// implementation-defined.
 
 @[export: 'SQLColumns']
 fn sql_columns(statement_handle SQLInteger, catalog_name &char, name_length1 i16, schema_name &char, name_length2 i16, table_name &char, name_length3 i16, column_name &char, name_length4 i16) i16 {

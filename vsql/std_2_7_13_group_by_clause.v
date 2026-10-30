@@ -4,6 +4,10 @@ module vsql
 //
 // Specify a grouped table derived by the application of the <group by clause>
 // to the result of the previously specified clause.
+//
+// The concept is described by:
+//
+// ISO/IEC 9075-2:2016(E), 4.15.14, Grouped tables
 
 struct GroupOperation {
 	// select_exprs contains the original SELECT expressions, both the aggregate
@@ -61,9 +65,12 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, h
 
 // group_column finds the column for a GROUP BY expression in the tables of the
 // FROM clause. A qualified name (such as "b.x") must match the table name.
+//
+// ISO/IEC 9075-2:2016(E), 7.13, <group by clause>, Syntax Rules, 1
 fn group_column(expr Identifier, tables map[string]Table) !Column {
-	// An unqualified column name must only be in one of the tables (6.6 Syntax
-	// Rule 8c).
+	// An unqualified column name must only be in one of the tables.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 8.a.ii
 	if expr.entity_name == '' {
 		mut tables_with_column := map[string]bool{}
 		for _, table in tables {
@@ -163,6 +170,11 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 	// aggregate functions (such as "MIN(x) * AVG(x)"), each result is stored in
 	// the row so that it can be used when the expression is evaluated. The
 	// HAVING may also use aggregate functions that are not in the select list.
+	// The argument source of each aggregate function is the set of rows of the
+	// group (there's no <filter clause>). COUNT(*) is the number of rows, and
+	// any other function is applied to the values of its argument.
+	//
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 1.d, 4.b and 5
 	mut agg_c := Compiler{
 		conn:   o.conn
 		params: o.params
@@ -205,7 +217,7 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 		}
 	}
 
-	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7a
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.a
 	if null_eliminated {
 		o.conn.add_warning(sqlstate_01003())
 	}

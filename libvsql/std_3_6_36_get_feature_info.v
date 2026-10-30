@@ -9,7 +9,10 @@ module main
 // tables in docs/sql-compliance.rst, which is embedded when libvsql is built.
 // A feature that's in more than one table (for different parts of the
 // standard) is only supported if it's supported in all of them. There are no
-// packages.
+// packages. Since there's no ExecDirect (General Rules, 13 to 16), there are no
+// status conditions from it. A subfeature is found with a FeatureType of
+// 'FEATURE' (General Rules, 12), and an argument of only spaces is HY090
+// rather than HY024 (General Rules, 6.a, 10.a and 11.a.iii.1), which are #757.
 
 const compliance_rst = $embed_file('../docs/sql-compliance.rst').to_string()
 

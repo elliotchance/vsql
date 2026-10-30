@@ -1,0 +1,14 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 7, Definition Schema
+7                        container    - -
+# 7.1, SQL_IMPLEMENTATION_INFO base table
+7.1                      missing      - - SQL_IMPLEMENTATION_INFO (#655)
+7.1/DE/1                 missing      - - SQL_IMPLEMENTATION_INFO (#655)
+7.1/DE/2                 missing      - - SQL_IMPLEMENTATION_INFO (#655)
+# 7.2, SQL_SIZING base table
+7.2                      missing      - - SQL_SIZING (#655)
+7.2/DE/1                 missing      - - SQL_SIZING (#655)
+7.2/DE/2                 missing      - - SQL_SIZING (#655)
+# 7.3, SQL_LANGUAGES base table
+7.3                      n/a          - - SQL_LANGUAGES isn't in ISO/IEC 9075-11:2008(E)

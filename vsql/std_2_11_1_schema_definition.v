@@ -21,10 +21,15 @@ fn (stmt SchemaDefinition) execute(mut conn Connection, _ map[string]Value, elap
 	mut catalog := conn.catalog_for(conn.resolve_catalog_identifier(stmt.schema_name)!)
 	schema_name := stmt.schema_name.schema_name
 
+	// The name can't be the same as another schema, including the
+	// INFORMATION_SCHEMA, which isn't stored.
+	//
+	// ISO/IEC 9075-2:2016(E), 11.1, <schema definition>, Syntax Rules, 3
 	if schema_name in catalog.storage.schemas || schema_name == information_schema_name {
 		return sqlstate_42p06(schema_name) // duplicate schema
 	}
 
+	// ISO/IEC 9075-2:2016(E), 11.1, <schema definition>, General Rules, 1.a
 	catalog.storage.create_schema(schema_name)!
 
 	return new_result_msg('CREATE SCHEMA 1', elapsed_parse, t.elapsed())

@@ -1,0 +1,534 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 21, Embedded SQL
+21                       container    - -
+# 21.1, <embedded SQL host program>
+21.1                     implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v only C (B012)
+21.1/SR/1                implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/2                implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/2.a              n/a          - - Embedded MUMPS (B015)
+21.1/SR/2.b              implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/3                container    - -
+21.1/SR/3.a              n/a          - - Embedded COBOL (B013)
+21.1/SR/3.b              n/a          - - Embedded Fortran (B014)
+21.1/SR/3.c              implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/3.d              n/a          - - Embedded MUMPS (B015)
+21.1/SR/4                container    - -
+21.1/SR/4.a              n/a          - - Embedded MUMPS (B015)
+21.1/SR/4.b              implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/5                implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/6                n/a          - - enhanced execution rights (B051)
+21.1/SR/7                n/a          - - SQL-paths (S071)
+21.1/SR/8                n/a          - - transforms (S241)
+21.1/SR/9                n/a          - - collations (F690)
+21.1/SR/10               container    - -
+21.1/SR/10.a             n/a          - - transforms (S241)
+21.1/SR/10.b             n/a          - - transforms (S241)
+21.1/SR/10.c             n/a          - - transforms (S241)
+21.1/SR/11               n/a          - - transforms (S241)
+21.1/SR/12               impl-defined vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v UTF8, since there's no <embedded character set declaration> (F461)
+21.1/SR/13               n/a          - - temporary tables (F531)
+21.1/SR/14               implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/15               implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/16               implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/17               definition   - -
+21.1/SR/17.a             n/a          - - Embedded Ada (B011)
+21.1/SR/17.b             implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/17.c             n/a          - - Embedded COBOL (B013)
+21.1/SR/17.d             n/a          - - Embedded Fortran (B014)
+21.1/SR/17.e             n/a          - - Embedded MUMPS (B015)
+21.1/SR/17.f             n/a          - - Embedded Pascal (B016)
+21.1/SR/17.g             n/a          - - Embedded PL/I (B017)
+21.1/SR/18               implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.1/SR/19               implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/20               implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/21               implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/21.a             implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/21.b             implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v the C compiler checks the implied program
+21.1/SR/22               implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.a             implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.b             implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.c             implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.d             container    - -
+21.1/SR/22.d.i           n/a          - - enhanced execution rights (B051)
+21.1/SR/22.d.ii          impl-defined vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v PUBLIC
+21.1/SR/22.e             container    - -
+21.1/SR/22.e.i           n/a          - - SQL-paths (S071)
+21.1/SR/22.e.ii          impl-defined vsql/std_2_21_1_embedded_sql_host_program.v - there's no <module path specification>
+21.1/SR/22.f             n/a          - - transforms (S241)
+21.1/SR/22.g             n/a          - - collations (F690)
+21.1/SR/22.h             implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.h.i           implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v the procedure names are vsql_e1, vsql_e2, ..., and a host parameter has the name of its host variable
+21.1/SR/22.h.ii          implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.h.ii.1        n/a          - - user-defined types (S023)
+21.1/SR/22.h.ii.1.A      n/a          - - user-defined types (S023)
+21.1/SR/22.h.ii.1.B      n/a          - - user-defined types (S023)
+21.1/SR/22.h.ii.1.C      n/a          - - user-defined types (S023)
+21.1/SR/22.h.ii.1.D      n/a          - - user-defined types (S023)
+21.1/SR/22.h.ii.2        implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.i             implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.j             n/a          - - temporary tables (F531)
+21.1/SR/22.k             implemented  vsql/std_2_21_1_embedded_sql_host_program.v libvsql/embed/example.sqc the exception actions are in the implied program, instead of the implied module
+21.1/SR/22.l             implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.l.i           implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.l.i.1         implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.l.i.2         implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.l.i.3         implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.l.i.3.A       implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.l.i.3.B       implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.l.i.4         implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.l.i.5         implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.l.i.6         n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.6.A       n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.6.B       n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.6.C       n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.6.D       n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.6.E       n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.6.F       n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.6.G       n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.6.H       n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.6.I       n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.6.J       n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.6.K       n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.6.L       n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.7         implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.l.i.7.A       n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.7.A.I     n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.7.A.II    n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.7.A.III   n/a          - - user-defined types (S023)
+21.1/SR/22.l.i.7.B       implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.l.i.8         implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v it's NES, since there are no user-defined types (S023)
+21.1/SR/22.l.i.9         impl-defined vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v each procedure is for one statement
+21.1/SR/22.l.ii          implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.l.ii.1        implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/22.l.ii.2        implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/23               implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/23.a             implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/23.b             implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/23.c             implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/23.d             implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/23.d.i           implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/23.d.ii          implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v
+21.1/SR/23.e             n/a          - - enhanced execution rights (B051)
+21.1/AR/1                n/a          - - user-defined types (S023)
+21.1/GR/1                implemented  vsql/std_2_21_1_embedded_sql_host_program.v libvsql/embed/example.sqc
+21.1/CR/1                implemented  vsql/std_2_21_1_embedded_sql_host_program.v vsql/sql_test.v DECLARE AUTHORIZATION is a syntax error
+21.1/CR/2                n/a          - - named character sets (F461)
+21.1/CR/3                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v a host variable can only be defined once
+21.1/CR/4                n/a          - - SQL-paths (S071)
+21.1/CR/5                n/a          - - transforms (S241)
+# 21.2, <embedded exception declaration>
+21.2                     implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/SR/1                implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/SR/2                implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/SR/2.a              implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/SR/2.b              implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/SR/2.c              implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/SR/2.d              implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/SR/3                implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/SR/4                partial      vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v a code must be 2 (or 3) digits or upper case letters, but it isn't checked against Table 38
+21.2/SR/5                implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/GR/1                implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/GR/1.a              implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/GR/1.b              implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/GR/1.c              implemented  vsql/std_2_21_2_embedded_exception_declaration.c libvsql/embed/example.sqc
+21.2/GR/1.c.i            implemented  vsql/std_2_21_2_embedded_exception_declaration.c libvsql/embed/example.sqc
+21.2/GR/1.c.ii           impl-defined vsql/std_2_21_2_embedded_exception_declaration.c vsql/sql_test.v the first WHENEVER CONSTRAINT that was declared
+21.2/GR/1.c.iii          implemented  vsql/std_2_21_2_embedded_exception_declaration.c libvsql/embed/example.sqc
+21.2/GR/1.d              container    - -
+21.2/GR/1.d.i            implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/GR/1.d.ii           implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/GR/1.d.iii          container    - -
+21.2/GR/1.d.iii.1        implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/GR/1.d.iii.2        implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/GR/1.d.iii.3        container    - -
+21.2/GR/1.d.iii.3.A      implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/GR/1.d.iii.3.B      implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/GR/1.d.iii.3.C      container    - -
+21.2/GR/1.d.iii.3.C.I    implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/GR/1.d.iii.3.C.II   implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/GR/1.d.iii.3.C.III  implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
+21.2/CR/1                missing      - - embedded SQL isn't flagged (#763)
+21.2/CR/2                missing      - - embedded SQL isn't flagged (#763)
+# 21.3, <embedded SQL Ada program>
+21.3                     n/a          - - Embedded Ada (B011)
+21.3/SR/1                n/a          - - Embedded Ada (B011)
+21.3/SR/2                n/a          - - Embedded Ada (B011)
+21.3/SR/3                n/a          - - Embedded Ada (B011)
+21.3/SR/4                n/a          - - Embedded Ada (B011)
+21.3/SR/4.a              n/a          - - Embedded Ada (B011)
+21.3/SR/4.a.i            n/a          - - Embedded Ada (B011)
+21.3/SR/4.a.ii           n/a          - - Embedded Ada (B011)
+21.3/SR/4.a.iii          n/a          - - Embedded Ada (B011)
+21.3/SR/4.a.iv           n/a          - - Embedded Ada (B011)
+21.3/SR/4.a.v            n/a          - - Embedded Ada (B011)
+21.3/SR/4.a.vi           n/a          - - Embedded Ada (B011)
+21.3/SR/4.a.vii          n/a          - - Embedded Ada (B011)
+21.3/SR/4.a.viii         n/a          - - Embedded Ada (B011)
+21.3/SR/4.a.ix           n/a          - - Embedded Ada (B011)
+21.3/SR/4.b              n/a          - - Embedded Ada (B011)
+21.3/SR/4.b.i            n/a          - - Embedded Ada (B011)
+21.3/SR/4.b.ii           n/a          - - Embedded Ada (B011)
+21.3/SR/4.b.iii          n/a          - - Embedded Ada (B011)
+21.3/SR/4.b.iv           n/a          - - Embedded Ada (B011)
+21.3/SR/4.b.v            n/a          - - Embedded Ada (B011)
+21.3/SR/4.b.vi           n/a          - - Embedded Ada (B011)
+21.3/SR/4.c              n/a          - - Embedded Ada (B011)
+21.3/SR/4.c.i            n/a          - - Embedded Ada (B011)
+21.3/SR/4.c.ii           n/a          - - Embedded Ada (B011)
+21.3/SR/4.c.iii          n/a          - - Embedded Ada (B011)
+21.3/SR/4.c.iv           n/a          - - Embedded Ada (B011)
+21.3/SR/4.c.v            n/a          - - Embedded Ada (B011)
+21.3/SR/4.c.vi           n/a          - - Embedded Ada (B011)
+21.3/SR/4.c.vii          n/a          - - Embedded Ada (B011)
+21.3/SR/4.c.viii         n/a          - - Embedded Ada (B011)
+21.3/SR/4.c.ix           n/a          - - Embedded Ada (B011)
+21.3/SR/4.c.x            n/a          - - Embedded Ada (B011)
+21.3/SR/4.c.xi           n/a          - - Embedded Ada (B011)
+21.3/SR/5                n/a          - - Embedded Ada (B011)
+21.3/SR/5.a              n/a          - - Embedded Ada (B011)
+21.3/SR/5.a.i            n/a          - - Embedded Ada (B011)
+21.3/SR/5.a.ii           n/a          - - Embedded Ada (B011)
+21.3/SR/5.a.iii          n/a          - - Embedded Ada (B011)
+21.3/SR/5.b              n/a          - - Embedded Ada (B011)
+21.3/SR/5.c              n/a          - - Embedded Ada (B011)
+21.3/SR/5.d              n/a          - - Embedded Ada (B011)
+21.3/SR/5.e              n/a          - - Embedded Ada (B011)
+21.3/SR/5.f              n/a          - - Embedded Ada (B011)
+21.3/SR/5.g              n/a          - - Embedded Ada (B011)
+21.3/SR/5.h              n/a          - - Embedded Ada (B011)
+21.3/SR/5.i              n/a          - - Embedded Ada (B011)
+21.3/SR/5.j              n/a          - - Embedded Ada (B011)
+21.3/SR/5.k              n/a          - - Embedded Ada (B011)
+21.3/SR/5.l              n/a          - - Embedded Ada (B011)
+21.3/SR/5.m              n/a          - - Embedded Ada (B011)
+21.3/SR/5.n              n/a          - - Embedded Ada (B011)
+21.3/SR/6                n/a          - - Embedded Ada (B011)
+21.3/SR/7                n/a          - - Embedded Ada (B011)
+21.3/GR/1                n/a          - - Embedded Ada (B011)
+21.3/CR/1                n/a          - - Embedded Ada (B011)
+21.3/CR/2                n/a          - - Embedded Ada (B011)
+21.3/CR/3                n/a          - - Embedded Ada (B011)
+21.3/CR/4                n/a          - - Embedded Ada (B011)
+21.3/CR/5                n/a          - - Embedded Ada (B011)
+21.3/CR/6                n/a          - - Embedded Ada (B011)
+21.3/CR/7                n/a          - - Embedded Ada (B011)
+21.3/CR/8                n/a          - - Embedded Ada (B011)
+21.3/CR/9                n/a          - - Embedded Ada (B011)
+21.3/CR/10               n/a          - - Embedded Ada (B011)
+21.3/CR/11               n/a          - - Embedded Ada (B011)
+21.3/CR/12               n/a          - - Embedded Ada (B011)
+21.3/CR/13               n/a          - - Embedded Ada (B011)
+21.3/CR/14               n/a          - - Embedded Ada (B011)
+# 21.4, <embedded SQL C program>
+21.4                     partial      vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v only numeric, char and VARCHAR host variables, and the length of a char array is in octets (#799)
+21.4/SR/1                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v the C compiler checks the C
+21.4/SR/2                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v the C compiler checks where it is
+21.4/SR/3                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/4                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/4.a              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/4.a.i            implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/4.a.ii           implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/4.a.iii          implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/4.a.iv           implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/4.a.v            implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/4.b              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/4.b.i            impl-defined vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v UTF8, since there's no <character set specification>
+21.4/SR/4.b.ii           n/a          - - national character (F421)
+21.4/SR/4.b.iii          implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/4.b.iv           implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/4.b.v            n/a          - - LOBs (T041)
+21.4/SR/4.c              n/a          - - the only <C derived variable> is a <C VARCHAR variable>
+21.4/SR/4.c.i            n/a          - - binary strings (T021)
+21.4/SR/4.c.ii           n/a          - - binary strings (T021)
+21.4/SR/4.c.iii          n/a          - - LOBs (T041)
+21.4/SR/4.c.iv           n/a          - - transforms (S241)
+21.4/SR/4.c.v            n/a          - - there are no locators (T041)
+21.4/SR/4.c.vi           n/a          - - there are no locators (T041)
+21.4/SR/4.c.vii          n/a          - - array locators (S232)
+21.4/SR/4.c.viii         n/a          - - multiset locators (S233)
+21.4/SR/4.c.ix           n/a          - - user-defined type locators (S231)
+21.4/SR/4.c.x            n/a          - - reference types (S041)
+21.4/SR/5                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/5.a              n/a          - - there's no <character set specification>
+21.4/SR/5.a.i            n/a          - - there's no <char length units>
+21.4/SR/5.a.ii           n/a          - - there's no <character set specification>
+21.4/SR/5.a.iii          missing      vsql/std_2_21_4_embedded_sql_c_program.v - k is 4 for UTF8, but the length is in octets (#799)
+21.4/SR/5.b              n/a          - - there's no <char length units>
+21.4/SR/5.c              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/5.d              missing      vsql/std_2_21_4_embedded_sql_c_program.v - the length isn't multiplied by k (#799)
+21.4/SR/5.e              n/a          - - national character (F421)
+21.4/SR/5.f              n/a          - - LOBs (T041)
+21.4/SR/5.g              n/a          - - LOBs (T041)
+21.4/SR/5.h              n/a          - - binary strings (T021)
+21.4/SR/5.i              n/a          - - binary strings (T021)
+21.4/SR/5.j              n/a          - - transforms (S241)
+21.4/SR/5.k              n/a          - - there are no locators (T041)
+21.4/SR/5.l              n/a          - - there are no locators (T041)
+21.4/SR/5.m              n/a          - - array locators (S232)
+21.4/SR/5.n              n/a          - - multiset locators (S233)
+21.4/SR/5.o              n/a          - - user-defined type locators (S231)
+21.4/SR/5.p              n/a          - - reference types (S041)
+21.4/SR/6                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/SR/7                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
+21.4/GR/1                definition   - -
+21.4/CR/1                missing      - - embedded SQL isn't flagged (#763)
+21.4/CR/2                n/a          - - reference types (S041)
+21.4/CR/3                n/a          - - transforms (S241)
+21.4/CR/4                n/a          - - array locators (S232)
+21.4/CR/5                n/a          - - multiset locators (S233)
+21.4/CR/6                n/a          - - structured type locators (S231)
+21.4/CR/7                n/a          - - LOBs (T041)
+21.4/CR/8                n/a          - - LOBs (T041)
+21.4/CR/9                n/a          - - LOBs (T041)
+21.4/CR/10               n/a          - - LOBs (T041)
+21.4/CR/11               missing      - - embedded SQL isn't flagged (#763)
+21.4/CR/12               n/a          - - binary strings (T021)
+21.4/CR/13               n/a          - - binary strings (T021)
+# 21.5, <embedded SQL COBOL program>
+21.5                     n/a          - - Embedded COBOL (B013)
+21.5/SR/1                n/a          - - Embedded COBOL (B013)
+21.5/SR/2                n/a          - - Embedded COBOL (B013)
+21.5/SR/3                n/a          - - Embedded COBOL (B013)
+21.5/SR/4                n/a          - - Embedded COBOL (B013)
+21.5/SR/4.a              n/a          - - Embedded COBOL (B013)
+21.5/SR/4.b              n/a          - - Embedded COBOL (B013)
+21.5/SR/4.b.i            n/a          - - Embedded COBOL (B013)
+21.5/SR/4.b.ii           n/a          - - Embedded COBOL (B013)
+21.5/SR/4.c              n/a          - - Embedded COBOL (B013)
+21.5/SR/4.d              n/a          - - Embedded COBOL (B013)
+21.5/SR/4.d.i            n/a          - - Embedded COBOL (B013)
+21.5/SR/4.d.ii           n/a          - - Embedded COBOL (B013)
+21.5/SR/4.d.iii          n/a          - - Embedded COBOL (B013)
+21.5/SR/4.d.iv           n/a          - - Embedded COBOL (B013)
+21.5/SR/4.d.v            n/a          - - Embedded COBOL (B013)
+21.5/SR/4.d.vi           n/a          - - Embedded COBOL (B013)
+21.5/SR/4.d.vii          n/a          - - Embedded COBOL (B013)
+21.5/SR/4.d.viii         n/a          - - Embedded COBOL (B013)
+21.5/SR/4.d.ix           n/a          - - Embedded COBOL (B013)
+21.5/SR/4.d.x            n/a          - - Embedded COBOL (B013)
+21.5/SR/5                n/a          - - Embedded COBOL (B013)
+21.5/SR/5.a              n/a          - - Embedded COBOL (B013)
+21.5/SR/5.a.i            n/a          - - Embedded COBOL (B013)
+21.5/SR/5.a.ii           n/a          - - Embedded COBOL (B013)
+21.5/SR/5.a.iii          n/a          - - Embedded COBOL (B013)
+21.5/SR/5.b              n/a          - - Embedded COBOL (B013)
+21.5/SR/5.c              n/a          - - Embedded COBOL (B013)
+21.5/SR/5.d              n/a          - - Embedded COBOL (B013)
+21.5/SR/5.e              n/a          - - Embedded COBOL (B013)
+21.5/SR/5.f              n/a          - - Embedded COBOL (B013)
+21.5/SR/5.g              n/a          - - Embedded COBOL (B013)
+21.5/SR/5.h              n/a          - - Embedded COBOL (B013)
+21.5/SR/5.i              n/a          - - Embedded COBOL (B013)
+21.5/SR/5.j              n/a          - - Embedded COBOL (B013)
+21.5/SR/5.k              n/a          - - Embedded COBOL (B013)
+21.5/SR/5.l              n/a          - - Embedded COBOL (B013)
+21.5/SR/5.m              n/a          - - Embedded COBOL (B013)
+21.5/SR/6                n/a          - - Embedded COBOL (B013)
+21.5/GR/1                n/a          - - Embedded COBOL (B013)
+21.5/CR/1                n/a          - - Embedded COBOL (B013)
+21.5/CR/2                n/a          - - Embedded COBOL (B013)
+21.5/CR/3                n/a          - - Embedded COBOL (B013)
+21.5/CR/4                n/a          - - Embedded COBOL (B013)
+21.5/CR/5                n/a          - - Embedded COBOL (B013)
+21.5/CR/6                n/a          - - Embedded COBOL (B013)
+21.5/CR/7                n/a          - - Embedded COBOL (B013)
+21.5/CR/8                n/a          - - Embedded COBOL (B013)
+21.5/CR/9                n/a          - - Embedded COBOL (B013)
+21.5/CR/10               n/a          - - Embedded COBOL (B013)
+21.5/CR/11               n/a          - - Embedded COBOL (B013)
+21.5/CR/12               n/a          - - Embedded COBOL (B013)
+# 21.6, <embedded SQL Fortran program>
+21.6                     n/a          - - Embedded Fortran (B014)
+21.6/SR/1                n/a          - - Embedded Fortran (B014)
+21.6/SR/2                n/a          - - Embedded Fortran (B014)
+21.6/SR/3                n/a          - - Embedded Fortran (B014)
+21.6/SR/4                n/a          - - Embedded Fortran (B014)
+21.6/SR/5                n/a          - - Embedded Fortran (B014)
+21.6/SR/5.a              n/a          - - Embedded Fortran (B014)
+21.6/SR/5.b              n/a          - - Embedded Fortran (B014)
+21.6/SR/5.c              n/a          - - Embedded Fortran (B014)
+21.6/SR/5.d              n/a          - - Embedded Fortran (B014)
+21.6/SR/5.e              n/a          - - Embedded Fortran (B014)
+21.6/SR/5.f              n/a          - - Embedded Fortran (B014)
+21.6/SR/5.g              n/a          - - Embedded Fortran (B014)
+21.6/SR/5.g.i            n/a          - - Embedded Fortran (B014)
+21.6/SR/5.g.ii           n/a          - - Embedded Fortran (B014)
+21.6/SR/5.g.iii          n/a          - - Embedded Fortran (B014)
+21.6/SR/5.g.iv           n/a          - - Embedded Fortran (B014)
+21.6/SR/5.g.v            n/a          - - Embedded Fortran (B014)
+21.6/SR/5.g.vi           n/a          - - Embedded Fortran (B014)
+21.6/SR/5.g.vii          n/a          - - Embedded Fortran (B014)
+21.6/SR/5.g.viii         n/a          - - Embedded Fortran (B014)
+21.6/SR/5.g.ix           n/a          - - Embedded Fortran (B014)
+21.6/SR/5.g.x            n/a          - - Embedded Fortran (B014)
+21.6/SR/5.g.xi           n/a          - - Embedded Fortran (B014)
+21.6/SR/6                n/a          - - Embedded Fortran (B014)
+21.6/SR/6.a              n/a          - - Embedded Fortran (B014)
+21.6/SR/6.a.i            n/a          - - Embedded Fortran (B014)
+21.6/SR/6.a.ii           n/a          - - Embedded Fortran (B014)
+21.6/SR/6.a.iii          n/a          - - Embedded Fortran (B014)
+21.6/SR/6.b              n/a          - - Embedded Fortran (B014)
+21.6/SR/6.c              n/a          - - Embedded Fortran (B014)
+21.6/SR/6.d              n/a          - - Embedded Fortran (B014)
+21.6/SR/6.e              n/a          - - Embedded Fortran (B014)
+21.6/SR/6.f              n/a          - - Embedded Fortran (B014)
+21.6/SR/6.g              n/a          - - Embedded Fortran (B014)
+21.6/SR/6.h              n/a          - - Embedded Fortran (B014)
+21.6/SR/6.i              n/a          - - Embedded Fortran (B014)
+21.6/SR/6.j              n/a          - - Embedded Fortran (B014)
+21.6/SR/6.k              n/a          - - Embedded Fortran (B014)
+21.6/SR/6.l              n/a          - - Embedded Fortran (B014)
+21.6/SR/6.m              n/a          - - Embedded Fortran (B014)
+21.6/SR/6.n              n/a          - - Embedded Fortran (B014)
+21.6/GR/1                n/a          - - Embedded Fortran (B014)
+21.6/CR/1                n/a          - - Embedded Fortran (B014)
+21.6/CR/2                n/a          - - Embedded Fortran (B014)
+21.6/CR/3                n/a          - - Embedded Fortran (B014)
+21.6/CR/4                n/a          - - Embedded Fortran (B014)
+21.6/CR/5                n/a          - - Embedded Fortran (B014)
+21.6/CR/6                n/a          - - Embedded Fortran (B014)
+21.6/CR/7                n/a          - - Embedded Fortran (B014)
+21.6/CR/8                n/a          - - Embedded Fortran (B014)
+21.6/CR/9                n/a          - - Embedded Fortran (B014)
+21.6/CR/10               n/a          - - Embedded Fortran (B014)
+21.6/CR/11               n/a          - - Embedded Fortran (B014)
+21.6/CR/12               n/a          - - Embedded Fortran (B014)
+# 21.7, <embedded SQL MUMPS program>
+21.7                     n/a          - - Embedded MUMPS (B015)
+21.7/SR/1                n/a          - - Embedded MUMPS (B015)
+21.7/SR/2                n/a          - - Embedded MUMPS (B015)
+21.7/SR/3                n/a          - - Embedded MUMPS (B015)
+21.7/SR/4                n/a          - - Embedded MUMPS (B015)
+21.7/SR/4.a              n/a          - - Embedded MUMPS (B015)
+21.7/SR/4.a.i            n/a          - - Embedded MUMPS (B015)
+21.7/SR/4.a.ii           n/a          - - Embedded MUMPS (B015)
+21.7/SR/4.a.iii          n/a          - - Embedded MUMPS (B015)
+21.7/SR/4.b              n/a          - - Embedded MUMPS (B015)
+21.7/SR/4.c              n/a          - - Embedded MUMPS (B015)
+21.7/SR/4.c.i            n/a          - - Embedded MUMPS (B015)
+21.7/SR/4.c.ii           n/a          - - Embedded MUMPS (B015)
+21.7/SR/4.c.iii          n/a          - - Embedded MUMPS (B015)
+21.7/SR/4.c.iv           n/a          - - Embedded MUMPS (B015)
+21.7/SR/4.c.v            n/a          - - Embedded MUMPS (B015)
+21.7/SR/4.c.vi           n/a          - - Embedded MUMPS (B015)
+21.7/SR/4.c.vii          n/a          - - Embedded MUMPS (B015)
+21.7/SR/5                n/a          - - Embedded MUMPS (B015)
+21.7/GR/1                n/a          - - Embedded MUMPS (B015)
+21.7/CR/1                n/a          - - Embedded MUMPS (B015)
+21.7/CR/2                n/a          - - Embedded MUMPS (B015)
+21.7/CR/3                n/a          - - Embedded MUMPS (B015)
+21.7/CR/4                n/a          - - Embedded MUMPS (B015)
+21.7/CR/5                n/a          - - Embedded MUMPS (B015)
+21.7/CR/6                n/a          - - Embedded MUMPS (B015)
+21.7/CR/7                n/a          - - Embedded MUMPS (B015)
+21.7/CR/8                n/a          - - Embedded MUMPS (B015)
+# 21.8, <embedded SQL Pascal program>
+21.8                     n/a          - - Embedded Pascal (B016)
+21.8/SR/1                n/a          - - Embedded Pascal (B016)
+21.8/SR/2                n/a          - - Embedded Pascal (B016)
+21.8/SR/3                n/a          - - Embedded Pascal (B016)
+21.8/SR/4                n/a          - - Embedded Pascal (B016)
+21.8/SR/4.a              n/a          - - Embedded Pascal (B016)
+21.8/SR/4.b              n/a          - - Embedded Pascal (B016)
+21.8/SR/4.c              n/a          - - Embedded Pascal (B016)
+21.8/SR/4.d              n/a          - - Embedded Pascal (B016)
+21.8/SR/4.e              n/a          - - Embedded Pascal (B016)
+21.8/SR/4.f              n/a          - - Embedded Pascal (B016)
+21.8/SR/4.f.i            n/a          - - Embedded Pascal (B016)
+21.8/SR/4.f.ii           n/a          - - Embedded Pascal (B016)
+21.8/SR/4.f.iii          n/a          - - Embedded Pascal (B016)
+21.8/SR/4.f.iv           n/a          - - Embedded Pascal (B016)
+21.8/SR/4.f.v            n/a          - - Embedded Pascal (B016)
+21.8/SR/4.f.vi           n/a          - - Embedded Pascal (B016)
+21.8/SR/4.f.vii          n/a          - - Embedded Pascal (B016)
+21.8/SR/4.f.viii         n/a          - - Embedded Pascal (B016)
+21.8/SR/4.f.ix           n/a          - - Embedded Pascal (B016)
+21.8/SR/4.f.x            n/a          - - Embedded Pascal (B016)
+21.8/SR/5                n/a          - - Embedded Pascal (B016)
+21.8/SR/5.a              n/a          - - Embedded Pascal (B016)
+21.8/SR/5.a.i            n/a          - - Embedded Pascal (B016)
+21.8/SR/5.a.ii           n/a          - - Embedded Pascal (B016)
+21.8/SR/5.a.iii          n/a          - - Embedded Pascal (B016)
+21.8/SR/5.b              n/a          - - Embedded Pascal (B016)
+21.8/SR/5.c              n/a          - - Embedded Pascal (B016)
+21.8/SR/5.d              n/a          - - Embedded Pascal (B016)
+21.8/SR/5.e              n/a          - - Embedded Pascal (B016)
+21.8/SR/5.f              n/a          - - Embedded Pascal (B016)
+21.8/SR/5.g              n/a          - - Embedded Pascal (B016)
+21.8/SR/5.h              n/a          - - Embedded Pascal (B016)
+21.8/SR/5.i              n/a          - - Embedded Pascal (B016)
+21.8/SR/5.j              n/a          - - Embedded Pascal (B016)
+21.8/SR/5.k              n/a          - - Embedded Pascal (B016)
+21.8/SR/5.l              n/a          - - Embedded Pascal (B016)
+21.8/SR/5.m              n/a          - - Embedded Pascal (B016)
+21.8/SR/5.n              n/a          - - Embedded Pascal (B016)
+21.8/GR/1                n/a          - - Embedded Pascal (B016)
+21.8/CR/1                n/a          - - Embedded Pascal (B016)
+21.8/CR/2                n/a          - - Embedded Pascal (B016)
+21.8/CR/3                n/a          - - Embedded Pascal (B016)
+21.8/CR/4                n/a          - - Embedded Pascal (B016)
+21.8/CR/5                n/a          - - Embedded Pascal (B016)
+21.8/CR/6                n/a          - - Embedded Pascal (B016)
+21.8/CR/7                n/a          - - Embedded Pascal (B016)
+21.8/CR/8                n/a          - - Embedded Pascal (B016)
+21.8/CR/9                n/a          - - Embedded Pascal (B016)
+21.8/CR/10               n/a          - - Embedded Pascal (B016)
+21.8/CR/11               n/a          - - Embedded Pascal (B016)
+# 21.9, <embedded SQL PL/I program>
+21.9                     n/a          - - Embedded PL/I (B017)
+21.9/SR/1                n/a          - - Embedded PL/I (B017)
+21.9/SR/2                n/a          - - Embedded PL/I (B017)
+21.9/SR/3                n/a          - - Embedded PL/I (B017)
+21.9/SR/4                n/a          - - Embedded PL/I (B017)
+21.9/SR/4.a              n/a          - - Embedded PL/I (B017)
+21.9/SR/4.a.i            n/a          - - Embedded PL/I (B017)
+21.9/SR/4.a.ii           n/a          - - Embedded PL/I (B017)
+21.9/SR/4.b              n/a          - - Embedded PL/I (B017)
+21.9/SR/4.c              n/a          - - Embedded PL/I (B017)
+21.9/SR/4.d              n/a          - - Embedded PL/I (B017)
+21.9/SR/4.e              n/a          - - Embedded PL/I (B017)
+21.9/SR/4.e.i            n/a          - - Embedded PL/I (B017)
+21.9/SR/4.e.ii           n/a          - - Embedded PL/I (B017)
+21.9/SR/4.e.iii          n/a          - - Embedded PL/I (B017)
+21.9/SR/4.e.iv           n/a          - - Embedded PL/I (B017)
+21.9/SR/4.e.v            n/a          - - Embedded PL/I (B017)
+21.9/SR/4.e.vi           n/a          - - Embedded PL/I (B017)
+21.9/SR/4.e.vii          n/a          - - Embedded PL/I (B017)
+21.9/SR/4.e.viii         n/a          - - Embedded PL/I (B017)
+21.9/SR/4.e.ix           n/a          - - Embedded PL/I (B017)
+21.9/SR/4.e.x            n/a          - - Embedded PL/I (B017)
+21.9/SR/4.e.xi           n/a          - - Embedded PL/I (B017)
+21.9/SR/5                n/a          - - Embedded PL/I (B017)
+21.9/SR/5.a              n/a          - - Embedded PL/I (B017)
+21.9/SR/5.a.i            n/a          - - Embedded PL/I (B017)
+21.9/SR/5.a.ii           n/a          - - Embedded PL/I (B017)
+21.9/SR/5.a.iii          n/a          - - Embedded PL/I (B017)
+21.9/SR/5.b              n/a          - - Embedded PL/I (B017)
+21.9/SR/5.c              n/a          - - Embedded PL/I (B017)
+21.9/SR/5.d              n/a          - - Embedded PL/I (B017)
+21.9/SR/5.e              n/a          - - Embedded PL/I (B017)
+21.9/SR/5.f              n/a          - - Embedded PL/I (B017)
+21.9/SR/5.g              n/a          - - Embedded PL/I (B017)
+21.9/SR/5.h              n/a          - - Embedded PL/I (B017)
+21.9/SR/5.i              n/a          - - Embedded PL/I (B017)
+21.9/SR/5.j              n/a          - - Embedded PL/I (B017)
+21.9/SR/5.k              n/a          - - Embedded PL/I (B017)
+21.9/SR/5.l              n/a          - - Embedded PL/I (B017)
+21.9/SR/5.m              n/a          - - Embedded PL/I (B017)
+21.9/SR/5.n              n/a          - - Embedded PL/I (B017)
+21.9/SR/6                n/a          - - Embedded PL/I (B017)
+21.9/GR/1                n/a          - - Embedded PL/I (B017)
+21.9/CR/1                n/a          - - Embedded PL/I (B017)
+21.9/CR/2                n/a          - - Embedded PL/I (B017)
+21.9/CR/3                n/a          - - Embedded PL/I (B017)
+21.9/CR/4                n/a          - - Embedded PL/I (B017)
+21.9/CR/5                n/a          - - Embedded PL/I (B017)
+21.9/CR/6                n/a          - - Embedded PL/I (B017)
+21.9/CR/7                n/a          - - Embedded PL/I (B017)
+21.9/CR/8                n/a          - - Embedded PL/I (B017)
+21.9/CR/9                n/a          - - Embedded PL/I (B017)
+21.9/CR/10               n/a          - - Embedded PL/I (B017)
+21.9/CR/11               n/a          - - Embedded PL/I (B017)
+21.9/CR/12               n/a          - - Embedded PL/I (B017)
+21.9/CR/13               n/a          - - Embedded PL/I (B017)

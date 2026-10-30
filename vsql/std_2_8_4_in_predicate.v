@@ -63,7 +63,8 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 				values << compiled_value.run(mut conn, data, params)!
 			}
 
-			// ISO/IEC 9075-2:2016(E), 8.4, <in predicate>, Syntax Rules 2, 4 and 5:
+			// ISO/IEC 9075-2:2016(E), 8.4, <in predicate>, Syntax Rules, 2, 4 and
+			// 5:
 			//
 			//   RVC IN (A, B, C) is RVC = ANY (VALUES A, B, C)
 			//   RVC NOT IN IPV is NOT (RVC IN IPV)

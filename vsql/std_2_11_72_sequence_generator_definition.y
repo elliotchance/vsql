@@ -1,5 +1,6 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>, Conformance Rules, 1
 sequence_generator_definition:
   CREATE SEQUENCE sequence_generator_name {
     flag(mut yylex, 'T176')
@@ -16,12 +17,17 @@ sequence_generator_definition:
   }
 
 // sequence_generator_option is already a list of options, so it can't repeat.
+// There's no <sequence generator data type option> (#399), so the data type is
+// always BIGINT.
+//
+// ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>, Syntax Rules, 6
 sequence_generator_options:
   sequence_generator_option { $$.v = $1.v as []SequenceGeneratorOption }
 
 sequence_generator_option:
   common_sequence_generator_options { $$.v = $1.v as []SequenceGeneratorOption }
 
+// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 2
 common_sequence_generator_options:
   common_sequence_generator_option { $$.v = [$1.v as SequenceGeneratorOption] }
 | common_sequence_generator_options common_sequence_generator_option {

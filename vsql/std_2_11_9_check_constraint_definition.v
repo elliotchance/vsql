@@ -3,12 +3,21 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>
 //
 // Specify a condition for the SQL-data.
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.7, Integrity
+// constraints and constraint checking.
+//
+// The concept is also described by:
+//
+// ISO/IEC 9075-2:2016(E), 4.23, Integrity constraints
 
 struct CheckConstraintDefinition {
 	search_condition BooleanValueExpression
-	// column_name is set for a CHECK on a column, which can only use that column
-	// (11.4, Syntax Rule 17d). It's not in the file, so a CHECK that's read from
-	// the file is always a table constraint.
+	// column_name is set for a CHECK on a column, which can only use that
+	// column. It's not in the file, so a CHECK that's read from the file is
+	// always a table constraint.
+	//
+	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rules, 17.d
 	column_name string
 	// name is empty when the constraint doesn't have a <constraint name
 	// definition> (see Table.name_constraints).
@@ -23,9 +32,13 @@ fn (e CheckConstraintDefinition) str() string {
 }
 
 // compile returns the search condition to be evaluated for a row of the table,
-// or an error if it can't be used in a CHECK constraint (Syntax Rules 1, 2 and
-// 5). The table doesn't need to exist yet, so it can be checked by the CREATE
-// TABLE.
+// or an error if it can't be used in a CHECK constraint: it can't contain a
+// parameter, an aggregate function (that isn't in a subquery, but a subquery
+// can't be used either) or anything that's possibly non-deterministic (see
+// Compiler.restricted). The table doesn't need to exist yet, so it can be
+// checked by the CREATE TABLE.
+//
+// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rules, 1, 2 and 5
 fn (e CheckConstraintDefinition) compile(mut conn Connection, table Table) !CompileResult {
 	mut c := Compiler{
 		conn:                   conn
@@ -94,6 +107,8 @@ fn new_check_constraints(mut conn Connection, table Table) !CheckConstraints {
 // The whole statement then fails, so none of its rows are written. A deferred
 // constraint isn't checked (see defer_check).
 //
+// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rules, 9
+// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, General Rules, 3
 // ISO/IEC 9075-2:2016(E), 4.23.2, Checking of constraints
 // ISO/IEC 9075-2:2016(E), 4.23.3.4, Table check constraints
 fn (c CheckConstraints) verify(mut conn Connection, row Row) ! {

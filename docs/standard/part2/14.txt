@@ -1,0 +1,679 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 14, Data manipulation
+14                       container    - -
+# 14.1, <declare cursor>
+14.1                     implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.1/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v vsql/sql_test.v
+14.1/SR/1.a              implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
+14.1/SR/1.b              implemented  vsql/std_2_14_1_declare_cursor.v vsql/sql_test.v
+14.1/SR/1.c              implemented  vsql/std_2_14_1_declare_cursor.v vsql/sql_test.v
+14.1/GR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.1/GR/1.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.1/GR/1.b              implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
+14.1/GR/1.c              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.1/GR/1.d              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.1/GR/1.e              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.1/CR/1                n/a          - - <cursor scrollability> (F431)
+# 14.2, <cursor properties>
+14.2                     partial      vsql/std_2_14_2_cursor_properties.y tests/cursors.sql only <cursor holdability>
+14.2/SR/1                implemented  vsql/std_2_14_2_cursor_properties.y tests/cursors.sql a cursor's result is found when it's opened, so changes aren't visible through it
+14.2/SR/2                implemented  vsql/std_2_14_2_cursor_properties.y tests/cursors.sql
+14.2/SR/3                implemented  vsql/std_2_14_2_cursor_properties.y tests/cursors.sql
+14.2/SR/4                n/a          - - <cursor returnability> (T471)
+14.2/GR/1                container    - -
+14.2/GR/1.a              implemented  vsql/std_2_14_2_cursor_properties.y tests/cursors.sql
+14.2/GR/1.b              implemented  vsql/std_2_14_2_cursor_properties.y tests/cursors.sql
+14.2/GR/1.c              implemented  vsql/std_2_14_2_cursor_properties.y tests/cursors.sql
+14.2/GR/1.d              n/a          - - <cursor returnability> (T471)
+14.2/CR/1                n/a          - - SENSITIVE (T231)
+14.2/CR/2                n/a          - - INSENSITIVE (F791)
+14.2/CR/3                n/a          - - ASENSITIVE (F791, T231)
+14.2/CR/4                n/a          - - <cursor scrollability> (F431)
+14.2/CR/5                n/a          - - <cursor returnability> (T471)
+14.2/CR/6                implemented  vsql/std_2_14_2_cursor_properties.y tests/flagging.sql
+# 14.3, <cursor specification>
+14.3                     implemented  vsql/std_2_14_3_cursor_specification.y tests/cursors.sql
+14.3/SR/1                definition   - -
+14.3/SR/2                definition   - -
+14.3/SR/3                container    - -
+14.3/SR/3.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.3/SR/3.b              n/a          - - polymorphic table functions (B200)
+14.3/SR/3.c              n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable> (B031 doesn't have them)
+14.3/SR/3.c.i            n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.ii           container    - -
+14.3/SR/3.c.ii.1         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.ii.2         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.iii          n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.iv           container    - -
+14.3/SR/3.c.iv.1         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.iv.1.A       n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.iv.1.B       n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.iv.1.C       n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.iv.2         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.iv.3         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.v            n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.vi           container    - -
+14.3/SR/3.c.vi.1         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.vi.2         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.vi.3         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.vii          container    - -
+14.3/SR/3.c.vii.1        n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.vii.2        n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.vii.3        n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.viii         container    - -
+14.3/SR/3.c.viii.1       n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.viii.2       n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.viii.3       n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.ix           container    - -
+14.3/SR/3.c.ix.1         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.ix.2         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.ix.3         n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/3.c.x            n/a          - - a prepared query has no <cursor properties>, and there's no <attributes variable>
+14.3/SR/4                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.3/SR/4.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.3/SR/4.b              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.3/SR/5                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.3/SR/6                container    - -
+14.3/SR/6.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.3/SR/6.b              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.3/SR/6.c              n/a          - - a prepared query has no <updatability clause>
+14.3/SR/7                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.3/SR/8                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.3/SR/9                missing      vsql/std_2_14_1_declare_cursor.v - the columns aren't checked (#792)
+14.3/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
+# 14.4, <open statement>
+14.4                     implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
+14.4/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.4/SR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.4/SR/3                definition   - -
+14.4/AR/1                n/a          - - there are no users or privileges (#732)
+14.4/GR/1                definition   - -
+14.4/GR/2                implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
+# 14.5, <fetch statement>
+14.5                     partial      vsql/std_2_14_5_fetch_statement.v tests/cursors.sql only NEXT; outside of a module there's no <fetch target list> (V004-03)
+14.5/SR/1                implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v every target is a host parameter
+14.5/SR/2                implemented  vsql/std_2_14_5_fetch_statement.y tests/cursors.sql
+14.5/SR/3                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.5/SR/4                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.5/SR/5                definition   - -
+14.5/SR/6                definition   - -
+14.5/SR/7                n/a          - - only NEXT is supported (F431)
+14.5/SR/8                n/a          - - only NEXT is supported (F431)
+14.5/SR/9                container    - -
+14.5/SR/9.a              n/a          - - a host parameter can't be a row type
+14.5/SR/9.a.i            n/a          - - SQL parameters (T321)
+14.5/SR/9.a.ii           n/a          - - a host parameter can't be a row type
+14.5/SR/9.b              container    - -
+14.5/SR/9.b.i            implemented  vsql/std_2_14_5_fetch_statement.v vsql/sql_test.v
+14.5/SR/9.b.ii           definition   - -
+14.5/SR/9.b.iii          n/a          - - SQL parameters (T321) and arrays (S091)
+14.5/SR/9.b.iii.1        n/a          - - arrays (S091)
+14.5/SR/9.b.iii.2        n/a          - - SQL parameters (T321)
+14.5/SR/9.b.iv           implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+14.5/SR/9.b.v            implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/embed/example.sqc
+14.5/GR/1                definition   - -
+14.5/GR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.5/GR/3                implemented  vsql/std_2_14_5_fetch_statement.v tests/cursors.sql
+14.5/GR/4                implemented  vsql/std_2_14_5_fetch_statement.v tests/cursors.sql
+14.5/GR/5                container    - -
+14.5/GR/5.a              n/a          - - a host parameter can't be a row type
+14.5/GR/5.a.i            n/a          - - SQL parameters (T321)
+14.5/GR/5.a.ii           n/a          - - a host parameter can't be a row type
+14.5/GR/5.b              implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+14.5/GR/5.b.i            n/a          - - SQL parameters (T321) and arrays (S091)
+14.5/GR/5.b.i.1          n/a          - - arrays (S091)
+14.5/GR/5.b.i.1.A        n/a          - - arrays (S091)
+14.5/GR/5.b.i.1.B        container    - -
+14.5/GR/5.b.i.1.B.I      n/a          - - arrays (S091)
+14.5/GR/5.b.i.1.B.II     n/a          - - arrays (S091)
+14.5/GR/5.b.i.1.B.III    n/a          - - arrays (S091)
+14.5/GR/5.b.i.1.B.IV     n/a          - - arrays (S091)
+14.5/GR/5.b.i.1.B.V      container    - -
+14.5/GR/5.b.i.1.B.V.1    n/a          - - arrays (S091)
+14.5/GR/5.b.i.1.B.V.1.a  n/a          - - arrays (S091)
+14.5/GR/5.b.i.1.B.V.1.b  n/a          - - arrays (S091)
+14.5/GR/5.b.i.1.B.V.2    n/a          - - arrays (S091)
+14.5/GR/5.b.i.1.B.V.2.a  n/a          - - arrays (S091)
+14.5/GR/5.b.i.1.B.V.2.b  n/a          - - arrays (S091)
+14.5/GR/5.b.i.1.B.V.2.c  n/a          - - arrays (S091)
+14.5/GR/5.b.i.1.B.V.3    n/a          - - arrays (S091)
+14.5/GR/5.b.i.2          n/a          - - SQL parameters (T321)
+14.5/GR/5.b.ii           implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+14.5/GR/5.b.iii          implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/embed/example.sqc
+14.5/GR/6                untestable   - - the values are implementation-dependent
+14.5/CR/1                implemented  vsql/std_2_14_5_fetch_statement.y tests/flagging.sql
+# 14.6, <close statement>
+14.6                     implemented  vsql/std_2_14_6_close_statement.v tests/cursors.sql
+14.6/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.6/SR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.6/SR/3                definition   - -
+14.6/GR/1                definition   - -
+14.6/GR/2                implemented  vsql/std_2_14_6_close_statement.v tests/cursors.sql
+# 14.7, <select statement: single row>
+14.7                     implemented  vsql/std_2_14_7_select_statement_single_row.v libvsql/module/test_main.c
+14.7/SR/1                implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v
+14.7/SR/2                definition   - -
+14.7/SR/3                container    - -
+14.7/SR/3.a              implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v a host parameter can't be a row type
+14.7/SR/3.a.i            n/a          - - SQL parameters (T321)
+14.7/SR/3.a.ii           n/a          - - a host parameter can't be a row type
+14.7/SR/3.b              container    - -
+14.7/SR/3.b.i            implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v
+14.7/SR/3.b.ii           n/a          - - SQL parameters (T321) and arrays (S091)
+14.7/SR/3.b.ii.1         n/a          - - arrays (S091)
+14.7/SR/3.b.ii.2         n/a          - - SQL parameters (T321)
+14.7/SR/3.b.iii          implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+14.7/SR/3.b.iv           implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/embed/example.sqc
+14.7/SR/4                implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v
+14.7/SR/5                untestable   - - nullability isn't visible through a module
+14.7/SR/6                definition   - -
+14.7/GR/1                definition   - -
+14.7/GR/2                container    - -
+14.7/GR/2.a              implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the values of the first row are assigned
+14.7/GR/2.b              implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+14.7/GR/2.c              implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+14.7/GR/3                implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+14.7/GR/4                container    - -
+14.7/GR/4.a              n/a          - - a host parameter can't be a row type
+14.7/GR/4.a.i            n/a          - - SQL parameters (T321)
+14.7/GR/4.a.ii           n/a          - - a host parameter can't be a row type
+14.7/GR/4.b              container    - -
+14.7/GR/4.b.i            definition   - -
+14.7/GR/4.b.ii           n/a          - - SQL parameters (T321) and arrays (S091)
+14.7/GR/4.b.ii.1         n/a          - - arrays (S091)
+14.7/GR/4.b.ii.1.A       n/a          - - arrays (S091)
+14.7/GR/4.b.ii.1.B       container    - -
+14.7/GR/4.b.ii.1.B.I     n/a          - - arrays (S091)
+14.7/GR/4.b.ii.1.B.II    n/a          - - arrays (S091)
+14.7/GR/4.b.ii.1.B.III   n/a          - - arrays (S091)
+14.7/GR/4.b.ii.1.B.IV    n/a          - - arrays (S091)
+14.7/GR/4.b.ii.1.B.V     container    - -
+14.7/GR/4.b.ii.1.B.V.1   n/a          - - arrays (S091)
+14.7/GR/4.b.ii.1.B.V.1.a n/a          - - arrays (S091)
+14.7/GR/4.b.ii.1.B.V.1.b n/a          - - arrays (S091)
+14.7/GR/4.b.ii.1.B.V.2   n/a          - - arrays (S091)
+14.7/GR/4.b.ii.1.B.V.2.a n/a          - - arrays (S091)
+14.7/GR/4.b.ii.1.B.V.2.b n/a          - - arrays (S091)
+14.7/GR/4.b.ii.1.B.V.2.c n/a          - - arrays (S091)
+14.7/GR/4.b.ii.1.B.V.3   n/a          - - arrays (S091)
+14.7/GR/4.b.ii.2         n/a          - - SQL parameters (T321)
+14.7/GR/4.b.iii          implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+14.7/GR/4.b.iv           implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/embed/example.sqc
+14.7/GR/5                untestable   - - the values are implementation-dependent
+# 14.8, <delete statement: positioned>
+14.8                     partial      vsql/std_2_14_8_delete_statement_positioned.v tests/cursors.sql there's no <correlation name> (#793)
+14.8/SR/1                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.8/SR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.8/SR/3                definition   - -
+14.8/SR/4                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.8/SR/5                definition   - -
+14.8/SR/6                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.8/SR/7                n/a          - - triggers (T211)
+14.8/SR/8                n/a          - - ONLY (S111)
+14.8/SR/9                n/a          - - ONLY (S111)
+14.8/SR/10               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.8/SR/11               container    - -
+14.8/SR/11.a             missing      vsql/std_2_14_8_delete_statement_positioned.y - there's no <correlation name> (#793)
+14.8/SR/11.b             implemented  vsql/std_2_14_8_delete_statement_positioned.v tests/cursors.sql
+14.8/AR/1                container    - -
+14.8/AR/1.a              n/a          - - there are no users or privileges (#732)
+14.8/AR/1.b              n/a          - - there are no users or privileges (#732)
+14.8/GR/1                definition   - -
+14.8/GR/2                implemented  vsql/std_2_14_8_delete_statement_positioned.v tests/cursors.sql
+14.8/CR/1                n/a          - - ONLY (S111)
+# 14.9, <delete statement: searched>
+14.9                     partial      vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql there's no <correlation name> (#793)
+14.9/SR/1                definition   - -
+14.9/SR/2                definition   - -
+14.9/SR/3                n/a          - - every table is a base table, and there are no views (F031-02)
+14.9/SR/4                n/a          - - triggers (T211)
+14.9/SR/5                implemented  vsql/std_2_14_9_delete_statement_searched.y tests/delete.sql
+14.9/SR/6                n/a          - - SQL-invoked routines (T321)
+14.9/SR/6.a              n/a          - - system-versioned tables (T180)
+14.9/SR/6.b              definition   - -
+14.9/SR/7                container    - -
+14.9/SR/7.a              n/a          - - FOR PORTION OF (T181)
+14.9/SR/7.a.i            n/a          - - FOR PORTION OF (T181)
+14.9/SR/7.a.ii           n/a          - - FOR PORTION OF (T181)
+14.9/SR/7.a.iii          n/a          - - FOR PORTION OF (T181)
+14.9/SR/7.a.iv           n/a          - - FOR PORTION OF (T181)
+14.9/SR/7.b              definition   - -
+14.9/SR/8                n/a          - - triggers (T211)
+14.9/SR/9                container    - -
+14.9/SR/9.a              missing      vsql/std_2_14_9_delete_statement_searched.y - there's no <correlation name> (#793)
+14.9/SR/9.b              implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+14.9/SR/10               implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+14.9/AR/1                container    - -
+14.9/AR/1.a              n/a          - - there are no users or privileges (#732)
+14.9/AR/1.a.i            n/a          - - there are no users or privileges (#732)
+14.9/AR/1.a.ii           n/a          - - there are no users or privileges (#732)
+14.9/AR/1.b              n/a          - - there are no users or privileges (#732)
+14.9/AR/1.b.i            n/a          - - there are no users or privileges (#732)
+14.9/AR/1.b.ii           n/a          - - there are no users or privileges (#732)
+14.9/GR/1                n/a          - - there are no read-only transactions (#554)
+14.9/GR/2                n/a          - - SENSITIVE (T231)
+14.9/GR/2.a              n/a          - - SENSITIVE (T231)
+14.9/GR/2.b              n/a          - - SENSITIVE (T231)
+14.9/GR/3                n/a          - - INSENSITIVE (F791)
+14.9/GR/4                impl-defined vsql/std_2_14_1_declare_cursor.v tests/cursors.sql nothing is disallowed, since a cursor's result is a copy
+14.9/GR/5                implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+14.9/GR/6                container    - -
+14.9/GR/6.a              n/a          - - ONLY (S111)
+14.9/GR/6.b              implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+14.9/GR/7                definition   - -
+14.9/GR/8                container    - -
+14.9/GR/8.a              implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+14.9/GR/8.a.i            container    - -
+14.9/GR/8.a.i.1          n/a          - - ONLY (S111)
+14.9/GR/8.a.i.2          n/a          - - subtables (S081)
+14.9/GR/8.a.ii           implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+14.9/GR/8.b              n/a          - - views (F031-02)
+14.9/GR/9                missing      vsql/std_2_14_1_declare_cursor.v - no cursor operation conflict warning (#797)
+14.9/GR/10               implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+14.9/CR/1                missing      - - self-referencing operations are allowed, but aren't flagged (#763)
+14.9/CR/1.a              missing      - - self-referencing operations are allowed, but aren't flagged (#763)
+14.9/CR/1.b              n/a          - - external routines (T321)
+14.9/CR/2                n/a          - - FOR PORTION OF (T181)
+# 14.10, <truncate table statement>
+14.10                    n/a          - - TRUNCATE TABLE (F200)
+14.10/SR/1               n/a          - - TRUNCATE TABLE (F200)
+14.10/SR/2               n/a          - - TRUNCATE TABLE (F200)
+14.10/SR/3               n/a          - - TRUNCATE TABLE (F200)
+14.10/SR/4               n/a          - - TRUNCATE TABLE (F200)
+14.10/SR/5               n/a          - - TRUNCATE TABLE (F200)
+14.10/AR/1               n/a          - - TRUNCATE TABLE (F200)
+14.10/AR/2               n/a          - - TRUNCATE TABLE (F200)
+14.10/GR/1               n/a          - - TRUNCATE TABLE (F200)
+14.10/GR/2               n/a          - - TRUNCATE TABLE (F200)
+14.10/GR/2.a             n/a          - - TRUNCATE TABLE (F200)
+14.10/GR/2.b             n/a          - - TRUNCATE TABLE (F200)
+14.10/GR/3               n/a          - - TRUNCATE TABLE (F200)
+14.10/GR/4               n/a          - - TRUNCATE TABLE (F200)
+14.10/GR/5               container    - -
+14.10/GR/5.a             n/a          - - TRUNCATE TABLE (F200)
+14.10/GR/5.b             n/a          - - TRUNCATE TABLE (F200)
+14.10/GR/6               n/a          - - TRUNCATE TABLE (F200)
+14.10/GR/7               n/a          - - TRUNCATE TABLE (F200)
+14.10/GR/8               n/a          - - TRUNCATE TABLE (F200)
+14.10/GR/8.a             n/a          - - TRUNCATE TABLE (F200)
+14.10/GR/8.b             n/a          - - TRUNCATE TABLE (F200)
+14.10/CR/1               n/a          - - TRUNCATE TABLE (F200)
+14.10/CR/2               n/a          - - TRUNCATE TABLE (F200)
+# 14.11, <insert statement>
+14.11                    partial      vsql/std_2_14_11_insert_statement.v tests/insert.sql only a <from constructor> with an <insert column list> (#795)
+14.11/SR/1               definition   - -
+14.11/SR/2               definition   - -
+14.11/SR/3               n/a          - - every table is a base table, and there are no views (F031-02)
+14.11/SR/4               n/a          - - triggers (T211)
+14.11/SR/5               n/a          - - user-defined types (S023)
+14.11/SR/6               n/a          - - DEFAULT VALUES (F222)
+14.11/SR/7               missing      vsql/std_2_14_11_insert_statement.y - the <insert column list> can't be omitted (#795)
+14.11/SR/8               implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/SR/9               n/a          - - every column of a base table is updatable
+14.11/SR/10              implemented  vsql/std_2_14_11_insert_statement.v tests/generated-column.sql
+14.11/SR/11              container    - -
+14.11/SR/11.a            n/a          - - self-referencing columns (S043)
+14.11/SR/11.b            implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+14.11/SR/11.b.i          missing      vsql/std_2_14_11_insert_statement.y - there's no <from subquery> (#795)
+14.11/SR/11.b.ii         n/a          - - <row value special case> needs row types (T051)
+14.11/SR/11.b.iii        implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+14.11/SR/11.c            implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+14.11/SR/11.d            n/a          - - system-versioned tables (T180)
+14.11/SR/11.e            implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+14.11/SR/12              implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/SR/13              implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/SR/14              implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/SR/15              n/a          - - triggers (T211)
+14.11/SR/16              missing      vsql/std_2_14_11_insert_statement.y - there's no <from subquery> (#795)
+14.11/AR/1               container    - -
+14.11/AR/1.a             n/a          - - there are no users or privileges (#732)
+14.11/AR/1.b             n/a          - - there are no users or privileges (#732)
+14.11/GR/1               n/a          - - there are no read-only transactions (#554)
+14.11/GR/2               n/a          - - SENSITIVE (T231)
+14.11/GR/2.a             n/a          - - SENSITIVE (T231)
+14.11/GR/2.b             n/a          - - SENSITIVE (T231)
+14.11/GR/3               n/a          - - INSENSITIVE (F791)
+14.11/GR/4               impl-defined vsql/std_2_14_1_declare_cursor.v tests/cursors.sql nothing is disallowed, since a cursor's result is a copy
+14.11/GR/5               implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/GR/6               definition   - -
+14.11/GR/7               implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/GR/7.a             implemented  vsql/std_2_14_11_insert_statement.v tests/column-defaults.sql
+14.11/GR/7.b             definition   - -
+14.11/GR/7.c             implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/GR/7.d             n/a          - - self-referencing columns (S043)
+14.11/GR/7.d.i           n/a          - - self-referencing columns (S043)
+14.11/GR/7.d.ii          n/a          - - self-referencing columns (S043)
+14.11/GR/7.e             implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+14.11/GR/7.e.i           n/a          - - self-referencing columns (S043)
+14.11/GR/7.e.ii          n/a          - - self-referencing columns (S043)
+14.11/GR/7.e.iii         implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+14.11/GR/7.e.iv          implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+14.11/GR/8               definition   - -
+14.11/GR/8.a             implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/GR/8.a.i           definition   - -
+14.11/GR/8.a.ii          implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+14.11/GR/8.b             n/a          - - views (F031-02)
+14.11/GR/9               n/a          - - there's no <from subquery> (#795), so there's always a row
+14.11/CR/1               n/a          - - there's no <from subquery> (#795)
+14.11/CR/1.a             n/a          - - there's no <from subquery> (#795)
+14.11/CR/1.b             n/a          - - external routines (T321)
+14.11/CR/2               n/a          - - DEFAULT VALUES (F222)
+14.11/CR/3               n/a          - - structured types (S024)
+14.11/CR/4               implemented  vsql/std_2_14_11_insert_statement.y tests/flagging.sql
+# 14.12, <merge statement>
+14.12                    n/a          - - MERGE (F312)
+14.12/SR/1               n/a          - - MERGE (F312)
+14.12/SR/2               n/a          - - MERGE (F312)
+14.12/SR/3               n/a          - - MERGE (F312)
+14.12/SR/4               n/a          - - MERGE (F312)
+14.12/SR/5               n/a          - - MERGE (F312)
+14.12/SR/6               n/a          - - MERGE (F312)
+14.12/SR/7               n/a          - - MERGE (F312)
+14.12/SR/8               container    - -
+14.12/SR/8.a             n/a          - - MERGE (F312)
+14.12/SR/8.b             n/a          - - MERGE (F312)
+14.12/SR/9               n/a          - - MERGE (F312)
+14.12/SR/10              n/a          - - MERGE (F312)
+14.12/SR/11              n/a          - - MERGE (F312)
+14.12/SR/12              n/a          - - MERGE (F312)
+14.12/SR/13              n/a          - - MERGE (F312)
+14.12/SR/14              container    - -
+14.12/SR/14.a            n/a          - - MERGE (F312)
+14.12/SR/14.b            n/a          - - MERGE (F312)
+14.12/SR/14.c            n/a          - - MERGE (F312)
+14.12/SR/14.d            n/a          - - MERGE (F312)
+14.12/SR/14.e            n/a          - - MERGE (F312)
+14.12/SR/15              n/a          - - MERGE (F312)
+14.12/SR/16              n/a          - - MERGE (F312)
+14.12/SR/17              n/a          - - MERGE (F312)
+14.12/SR/18              n/a          - - MERGE (F312)
+14.12/SR/19              n/a          - - MERGE (F312)
+14.12/SR/20              n/a          - - MERGE (F312)
+14.12/SR/20.a            n/a          - - MERGE (F312)
+14.12/SR/20.b            n/a          - - MERGE (F312)
+14.12/SR/20.c            n/a          - - MERGE (F312)
+14.12/SR/20.d            n/a          - - MERGE (F312)
+14.12/SR/20.e            n/a          - - MERGE (F312)
+14.12/SR/21              n/a          - - MERGE (F312)
+14.12/SR/21.a            n/a          - - MERGE (F312)
+14.12/SR/21.b            n/a          - - MERGE (F312)
+14.12/AR/1               container    - -
+14.12/AR/1.a             n/a          - - MERGE (F312)
+14.12/AR/1.a.i           n/a          - - MERGE (F312)
+14.12/AR/1.a.ii          n/a          - - MERGE (F312)
+14.12/AR/1.a.iii         n/a          - - MERGE (F312)
+14.12/AR/1.a.iv          n/a          - - MERGE (F312)
+14.12/AR/1.b             n/a          - - MERGE (F312)
+14.12/AR/1.b.i           n/a          - - MERGE (F312)
+14.12/AR/1.b.ii          n/a          - - MERGE (F312)
+14.12/AR/1.b.iii         n/a          - - MERGE (F312)
+14.12/AR/1.b.iv          n/a          - - MERGE (F312)
+14.12/GR/1               n/a          - - MERGE (F312)
+14.12/GR/2               n/a          - - MERGE (F312)
+14.12/GR/2.a             n/a          - - MERGE (F312)
+14.12/GR/2.b             n/a          - - MERGE (F312)
+14.12/GR/3               n/a          - - MERGE (F312)
+14.12/GR/4               n/a          - - MERGE (F312)
+14.12/GR/5               n/a          - - MERGE (F312)
+14.12/GR/6               n/a          - - MERGE (F312)
+14.12/GR/6.a             n/a          - - MERGE (F312)
+14.12/GR/6.a.i           n/a          - - MERGE (F312)
+14.12/GR/6.a.i.1         n/a          - - MERGE (F312)
+14.12/GR/6.a.i.1.A       n/a          - - MERGE (F312)
+14.12/GR/6.a.i.1.A.I     n/a          - - MERGE (F312)
+14.12/GR/6.a.i.1.A.II    n/a          - - MERGE (F312)
+14.12/GR/6.a.i.1.B       n/a          - - MERGE (F312)
+14.12/GR/6.a.i.1.B.I     n/a          - - MERGE (F312)
+14.12/GR/6.a.i.1.B.II    n/a          - - MERGE (F312)
+14.12/GR/6.a.i.1.B.III   n/a          - - MERGE (F312)
+14.12/GR/6.a.i.1.B.III.1 n/a          - - MERGE (F312)
+14.12/GR/6.a.i.1.B.III.2 n/a          - - MERGE (F312)
+14.12/GR/6.a.i.2         n/a          - - MERGE (F312)
+14.12/GR/6.a.i.3         n/a          - - MERGE (F312)
+14.12/GR/6.a.i.4         n/a          - - MERGE (F312)
+14.12/GR/6.a.i.5         n/a          - - MERGE (F312)
+14.12/GR/6.a.i.5.A       n/a          - - MERGE (F312)
+14.12/GR/6.a.i.5.B       n/a          - - MERGE (F312)
+14.12/GR/6.a.i.5.C       container    - -
+14.12/GR/6.a.i.5.C.I     n/a          - - MERGE (F312)
+14.12/GR/6.a.i.5.C.I.1   container    - -
+14.12/GR/6.a.i.5.C.I.1.a n/a          - - MERGE (F312)
+14.12/GR/6.a.i.5.C.I.1.b n/a          - - MERGE (F312)
+14.12/GR/6.a.i.5.C.I.2   n/a          - - MERGE (F312)
+14.12/GR/6.a.i.5.C.II    n/a          - - MERGE (F312)
+14.12/GR/6.a.i.6         n/a          - - MERGE (F312)
+14.12/GR/6.a.i.7         n/a          - - MERGE (F312)
+14.12/GR/6.a.i.7.A       n/a          - - MERGE (F312)
+14.12/GR/6.a.i.7.B       container    - -
+14.12/GR/6.a.i.7.B.I     n/a          - - MERGE (F312)
+14.12/GR/6.a.i.7.B.I.1   container    - -
+14.12/GR/6.a.i.7.B.I.1.a n/a          - - MERGE (F312)
+14.12/GR/6.a.i.7.B.I.1.b n/a          - - MERGE (F312)
+14.12/GR/6.a.i.7.B.I.2   n/a          - - MERGE (F312)
+14.12/GR/6.a.i.7.B.II    n/a          - - MERGE (F312)
+14.12/GR/6.a.ii          n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.1        n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.2        n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.3        n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.4        n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.5        n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.6        n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.7        n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.7.A      n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.7.B      n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.7.B.I    n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.7.B.II   n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.7.C      n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.7.D      n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.7.D.I    n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.7.D.II   n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.7.D.III  n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.7.D.IV   n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.7.D.V    n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.8        n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.8.A      n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.8.A.I    n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.8.A.II   n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.8.B      n/a          - - MERGE (F312)
+14.12/GR/6.a.ii.9        n/a          - - MERGE (F312)
+14.12/GR/6.b             n/a          - - MERGE (F312)
+14.12/GR/6.c             n/a          - - MERGE (F312)
+14.12/GR/7               n/a          - - MERGE (F312)
+14.12/CR/1               n/a          - - MERGE (F312)
+14.12/CR/1.a             n/a          - - MERGE (F312)
+14.12/CR/1.b             n/a          - - MERGE (F312)
+14.12/CR/2               n/a          - - MERGE (F312)
+14.12/CR/2.a             n/a          - - MERGE (F312)
+14.12/CR/2.b             n/a          - - MERGE (F312)
+14.12/CR/3               n/a          - - MERGE (F312)
+14.12/CR/4               n/a          - - MERGE (F312)
+14.12/CR/5               n/a          - - MERGE (F312)
+14.12/CR/6               n/a          - - MERGE (F312)
+14.12/CR/7               n/a          - - MERGE (F312)
+# 14.13, <update statement: positioned>
+14.13                    partial      vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql there's no <correlation name> (#793)
+14.13/SR/1               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.13/SR/2               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.13/SR/3               definition   - -
+14.13/SR/4               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.13/SR/5               definition   - -
+14.13/SR/6               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.13/SR/7               n/a          - - triggers (T211)
+14.13/SR/8               n/a          - - ONLY (S111)
+14.13/SR/9               n/a          - - ONLY (S111)
+14.13/SR/10              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+14.13/SR/11              container    - -
+14.13/SR/11.a            missing      vsql/std_2_14_13_update_statement_positioned.y - there's no <correlation name> (#793)
+14.13/SR/11.b            implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
+14.13/SR/12              implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
+14.13/SR/13              missing      vsql/std_2_14_13_update_statement_positioned.v - a sort key column can be set (#794)
+14.13/SR/14              implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
+14.13/AR/1               container    - -
+14.13/AR/1.a             n/a          - - there are no users or privileges (#732)
+14.13/AR/1.b             n/a          - - there are no users or privileges (#732)
+14.13/GR/1               definition   - -
+14.13/GR/2               definition   - -
+14.13/GR/3               implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
+14.13/CR/1               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql flagged on the DECLARE CURSOR
+# 14.14, <update statement: searched>
+14.14                    partial      vsql/std_2_14_14_update_statement_searched.v tests/update.sql there's no <correlation name> (#793)
+14.14/SR/1               definition   - -
+14.14/SR/2               definition   - -
+14.14/SR/3               n/a          - - every table is a base table, and there are no views (F031-02)
+14.14/SR/4               n/a          - - triggers (T211)
+14.14/SR/5               implemented  vsql/std_2_14_14_update_statement_searched.y tests/update.sql
+14.14/SR/6               n/a          - - SQL-invoked routines (T321)
+14.14/SR/6.a             n/a          - - system-versioned tables (T180)
+14.14/SR/6.b             definition   - -
+14.14/SR/7               container    - -
+14.14/SR/7.a             n/a          - - FOR PORTION OF (T181)
+14.14/SR/7.a.i           n/a          - - FOR PORTION OF (T181)
+14.14/SR/7.a.ii          n/a          - - FOR PORTION OF (T181)
+14.14/SR/7.a.iii         n/a          - - FOR PORTION OF (T181)
+14.14/SR/7.a.iv          n/a          - - FOR PORTION OF (T181)
+14.14/SR/7.a.v           n/a          - - FOR PORTION OF (T181)
+14.14/SR/7.a.vi          n/a          - - FOR PORTION OF (T181)
+14.14/SR/7.b             definition   - -
+14.14/SR/8               n/a          - - triggers (T211)
+14.14/SR/9               container    - -
+14.14/SR/9.a             missing      vsql/std_2_14_14_update_statement_searched.y - there's no <correlation name> (#793)
+14.14/SR/9.b             implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.14/SR/10              implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.14/AR/1               container    - -
+14.14/AR/1.a             n/a          - - there are no users or privileges (#732)
+14.14/AR/1.a.i           n/a          - - there are no users or privileges (#732)
+14.14/AR/1.a.ii          n/a          - - there are no users or privileges (#732)
+14.14/AR/1.b             n/a          - - there are no users or privileges (#732)
+14.14/AR/1.b.i           n/a          - - there are no users or privileges (#732)
+14.14/AR/1.b.ii          n/a          - - there are no users or privileges (#732)
+14.14/GR/1               n/a          - - there are no read-only transactions (#554)
+14.14/GR/2               n/a          - - SENSITIVE (T231)
+14.14/GR/2.a             n/a          - - SENSITIVE (T231)
+14.14/GR/2.b             n/a          - - SENSITIVE (T231)
+14.14/GR/3               n/a          - - INSENSITIVE (F791)
+14.14/GR/4               impl-defined vsql/std_2_14_1_declare_cursor.v tests/cursors.sql nothing is disallowed, since a cursor's result is a copy
+14.14/GR/5               container    - -
+14.14/GR/5.a             n/a          - - ONLY (S111)
+14.14/GR/5.b             implemented  vsql/std_2_14_14_update_statement_searched.v tests/scalar-subquery.sql
+14.14/GR/6               definition   - -
+14.14/GR/7               definition   - -
+14.14/GR/8               missing      vsql/std_2_14_1_declare_cursor.v - no cursor operation conflict warning (#797)
+14.14/GR/9               n/a          - - triggers (T211)
+14.14/GR/10              implemented  vsql/std_2_14_14_update_statement_searched.v tests/scalar-subquery.sql
+14.14/GR/11              implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.14/GR/12              definition   - -
+14.14/GR/13              implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.14/GR/14              container    - -
+14.14/GR/14.a            implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.14/GR/14.a.i          container    - -
+14.14/GR/14.a.i.1        n/a          - - ONLY (S111)
+14.14/GR/14.a.i.2        n/a          - - subtables (S081)
+14.14/GR/14.a.ii         implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.14/GR/14.b            n/a          - - views (F031-02)
+14.14/GR/15              implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.14/CR/1               missing      - - self-referencing operations are allowed, but aren't flagged (#763)
+14.14/CR/1.a             missing      - - self-referencing operations are allowed, but aren't flagged (#763)
+14.14/CR/1.b             n/a          - - external routines (T321)
+14.14/CR/2               n/a          - - FOR PORTION OF (T181)
+# 14.15, <set clause list>
+14.15                    partial      vsql/std_2_14_15_set_clause_list.v tests/update.sql only <object column> = <update source>
+14.15/SR/1               definition   - -
+14.15/SR/2               n/a          - - every column of a base table is updatable
+14.15/SR/3               n/a          - - system-versioned tables (T180)
+14.15/SR/4               n/a          - - <multiple column assignment> (T641)
+14.15/SR/4.a             n/a          - - <multiple column assignment> (T641)
+14.15/SR/4.b             n/a          - - <multiple column assignment> (T641)
+14.15/SR/4.c             n/a          - - <multiple column assignment> (T641)
+14.15/SR/5               implemented  vsql/std_2_14_14_update_statement_searched.v tests/generated-column.sql
+14.15/SR/6               untested     vsql/std_2_14_15_set_clause_list.v - an aggregate function is an unknown column (42601)
+14.15/SR/7               n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.a             n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b             n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b.i           n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b.ii          n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b.iii         n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b.iv          n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b.v           n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b.vi          n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b.vi.1        n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b.vi.1.A      n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b.vi.1.B      n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b.vi.1.C      n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b.vi.2        container    - -
+14.15/SR/7.b.vi.2.A      n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b.vi.2.B      n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.b.vi.2.C      n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.c             n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.c.i           n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.c.ii          n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.c.ii.1        n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/7.c.ii.2        n/a          - - <mutated set clause> needs structured types (S023)
+14.15/SR/8               implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.15/SR/9               implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.15/SR/10              n/a          - - collection types (S091, S271)
+14.15/SR/11              container    - -
+14.15/SR/11.a            n/a          - - arrays (S091)
+14.15/SR/11.b            implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.15/GR/1               definition   - -
+14.15/GR/2               container    - -
+14.15/GR/2.a             n/a          - - arrays (S091)
+14.15/GR/2.a.i           n/a          - - arrays (S091)
+14.15/GR/2.a.ii          container    - -
+14.15/GR/2.a.ii.1        n/a          - - arrays (S091)
+14.15/GR/2.a.ii.2        n/a          - - arrays (S091)
+14.15/GR/2.a.ii.3        n/a          - - arrays (S091)
+14.15/GR/2.a.ii.4        n/a          - - arrays (S091)
+14.15/GR/2.a.ii.5        container    - -
+14.15/GR/2.a.ii.5.A      n/a          - - arrays (S091)
+14.15/GR/2.a.ii.5.A.I    n/a          - - arrays (S091)
+14.15/GR/2.a.ii.5.A.II   n/a          - - arrays (S091)
+14.15/GR/2.a.ii.5.B      n/a          - - arrays (S091)
+14.15/GR/2.a.ii.5.B.I    n/a          - - arrays (S091)
+14.15/GR/2.a.ii.5.B.II   n/a          - - arrays (S091)
+14.15/GR/2.a.ii.5.B.III  n/a          - - arrays (S091)
+14.15/GR/2.a.ii.5.C      n/a          - - arrays (S091)
+14.15/GR/2.b             implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+14.15/CR/1               missing      - - self-referencing operations are allowed, but aren't flagged (#763)
+14.15/CR/1.a             missing      - - self-referencing operations are allowed, but aren't flagged (#763)
+14.15/CR/1.b             n/a          - - external routines (T321)
+14.15/CR/2               n/a          - - arrays (S091)
+14.15/CR/3               n/a          - - structured types (S024)
+14.15/CR/4               n/a          - - structured types (S024)
+14.15/CR/5               n/a          - - <multiple column assignment> (T641)
+# 14.16, <temporary table declaration>
+14.16                    n/a          - - declared local temporary tables (F531)
+14.16/SR/1               n/a          - - declared local temporary tables (F531)
+14.16/SR/2               n/a          - - declared local temporary tables (F531)
+14.16/SR/3               container    - -
+14.16/SR/3.a             n/a          - - declared local temporary tables (F531)
+14.16/SR/3.b             n/a          - - declared local temporary tables (F531)
+14.16/SR/4               n/a          - - declared local temporary tables (F531)
+14.16/SR/5               n/a          - - declared local temporary tables (F531)
+14.16/SR/6               n/a          - - declared local temporary tables (F531)
+14.16/SR/7               n/a          - - declared local temporary tables (F531)
+14.16/SR/8               n/a          - - declared local temporary tables (F531)
+14.16/GR/1               n/a          - - declared local temporary tables (F531)
+14.16/GR/2               n/a          - - declared local temporary tables (F531)
+14.16/GR/2.a             n/a          - - declared local temporary tables (F531)
+14.16/GR/2.b             n/a          - - declared local temporary tables (F531)
+14.16/GR/3               n/a          - - declared local temporary tables (F531)
+14.16/GR/4               n/a          - - declared local temporary tables (F531)
+14.16/GR/5               n/a          - - declared local temporary tables (F531)
+14.16/GR/6               n/a          - - declared local temporary tables (F531)
+14.16/CR/1               n/a          - - declared local temporary tables (F531)
+# 14.17, <free locator statement>
+14.17                    n/a          - - locators (T561)
+14.17/SR/1               n/a          - - locators (T561)
+14.17/SR/2               n/a          - - locators (T561)
+14.17/GR/1               n/a          - - locators (T561)
+14.17/GR/1.a             n/a          - - locators (T561)
+14.17/GR/1.b             n/a          - - locators (T561)
+14.17/CR/1               n/a          - - locators (T561)
+# 14.18, <hold locator statement>
+14.18                    n/a          - - locators (T561)
+14.18/SR/1               n/a          - - locators (T561)
+14.18/GR/1               n/a          - - locators (T561)
+14.18/GR/1.a             n/a          - - locators (T561)
+14.18/GR/1.b             n/a          - - locators (T561)
+14.18/CR/1               n/a          - - locators (T561)

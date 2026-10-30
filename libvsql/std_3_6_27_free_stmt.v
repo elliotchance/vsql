@@ -25,24 +25,25 @@ fn sql_free_stmt(statement_handle SQLInteger, option i16) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	match option {
-		// - 6.a. If OPT indicates CLOSE CURSOR and there is an open cursor
-		// associated with S, then the cursor is closed. Unlike CloseCursor, it's
-		// not an error if there isn't an open cursor.
+		// ISO/IEC 9075-3:2003(E), 6.27, FreeStmt, General Rules, 6.a: an open
+		// cursor is closed. Unlike CloseCursor, it's not an error if there
+		// isn't an open cursor.
 		sql_close_cursor {
 			stmt.close_cursor()
 			autocommit(mut stmt.diag, stmt.dbc, true) or { return stmt.diag.error(err) }
 		}
-		// - 6.b. If OPT indicates FREE HANDLE, then FreeHandle is implicitly
-		// invoked with HandleType indicating STATEMENT HANDLE.
+		// ISO/IEC 9075-3:2003(E), 6.27, FreeStmt, General Rules, 6.b
 		sql_free_handle {
 			return sql_free_handle(sql_handle_stmt, statement_handle)
 		}
-		// - 6.c, 6.d. The DATA_POINTER of each ARD (or APD) item descriptor area
-		// is set to zero.
+		// ISO/IEC 9075-3:2003(E), 6.27, FreeStmt, General Rules, 4, 5, 6.c and
+		// 6.d: the DATA_POINTER of each ARD (or APD) item descriptor area is set
+		// to zero.
 		sql_unbind_columns, sql_unbind_parameters {
 			mut desc := descs[if option == sql_unbind_columns { stmt.ard } else { stmt.apd }] or {
 				return sql_invalid_handle
@@ -51,8 +52,8 @@ fn sql_free_stmt(statement_handle SQLInteger, option i16) i16 {
 				desc.records[i][sql_desc_data_pointer] = i64(0)
 			}
 		}
-		// - 6.e. If OPT indicates REALLOCATE, then any prepared statement,
-		// cursor, select source and executed statement associated with S are
+		// ISO/IEC 9075-3:2003(E), 6.27, FreeStmt, General Rules, 6.e: the
+		// prepared statement, cursor, select source and executed statement are
 		// destroyed, and the automatically allocated descriptors go back to
 		// their default values.
 		sql_reallocate {
@@ -69,9 +70,8 @@ fn sql_free_stmt(statement_handle SQLInteger, option i16) i16 {
 			}
 		}
 		else {
-			// - 3. If OPT is not one of the codes in Table 18, then an exception
-			// condition is raised: CLI-specific condition — invalid attribute
-			// identifier.
+			// ISO/IEC 9075-3:2003(E), 6.27, FreeStmt, General Rules, 2 and 3: the
+			// option must be one of the codes in Table 18.
 			return stmt.diag.error(cli_error('HY092', 'invalid attribute identifier'))
 		}
 	}

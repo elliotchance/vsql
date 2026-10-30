@@ -3,6 +3,11 @@ module main
 // ISO/IEC 9075-3:2003(E), 6.26, FreeHandle
 //
 // Free a resource.
+//
+// Each handle must identify an allocated resource of its type, and its
+// diagnostics area is emptied (General Rules 2, 3.a.i, 3.a.iii, 3.b.i,
+// 3.b.iii, 3.c.i, 3.c.iii, 3.d.i and 3.d.iii). Freeing a statement also ends
+// its SQL-transaction if AUTOCOMMIT is on (see autocommit.v).
 
 @[export: 'SQLFreeHandle']
 fn sql_free_handle(handle_type i16, handle SQLInteger) i16 {
@@ -26,6 +31,7 @@ fn sql_free_handle(handle_type i16, handle SQLInteger) i16 {
 				}
 			}
 
+			// - 3.a.v. E is deallocated and all its resources are freed.
 			envs.delete(h)
 		}
 		sql_handle_dbc {
@@ -39,10 +45,11 @@ fn sql_free_handle(handle_type i16, handle SQLInteger) i16 {
 				return dbc.diag.error(cli_error('HY010', 'function sequence error'))
 			}
 
+			// - 3.b.v. C is deallocated and all its resources are freed.
 			dbcs.delete(h)
 		}
 		sql_handle_stmt {
-			// - 3.c.vii, 3.c.viii. An open cursor is closed, and the
+			// - 3.c.vii, 3.c.viii, 3.c.ix. An open cursor is closed, and the
 			// automatically allocated descriptors are freed, with the statement.
 			mut stmt := stmts[h] or { return sql_invalid_handle }
 			stmt.diag.clear()
@@ -74,6 +81,7 @@ fn sql_free_handle(handle_type i16, handle SQLInteger) i16 {
 				return desc.diag.error(cli_error('HY017', 'invalid use of automatically-allocated descriptor handle'))
 			}
 
+			// - 3.d.ix, 3.d.x, 3.d.xi. See free_desc.
 			free_desc(h)
 		}
 		else {

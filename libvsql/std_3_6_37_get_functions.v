@@ -142,34 +142,31 @@ fn sql_get_functions(connection_handle SQLInteger, function_id i16, supported &i
 	defer {
 		entry.leave()
 	}
+	// ISO/IEC 9075-3:2003(E), 6.37, GetFunctions, General Rules, 1
 	mut dbc := dbcs[i64(connection_handle)] or { return sql_invalid_handle }
 	dbc.diag.clear()
 
-	// - 2. If there is no established SQL-connection associated with C, then an
-	// exception condition is raised: connection exception — connection does
-	// not exist.
+	// ISO/IEC 9075-3:2003(E), 6.37, GetFunctions, General Rules, 2: the
+	// connection must be established.
 	if dbc.conn == none {
 		return dbc.diag.error(cli_error('08003', 'connection does not exist'))
 	}
 
-	// - 3. If EC is not the current SQL-connection, then the General Rules of
-	// Subclause 5.3, "Implicit set connection", are applied to EC as the
-	// dormant SQL-connection.
+	// ISO/IEC 9075-3:2003(E), 6.37, GetFunctions, General Rules, 3
 	implicit_set_connection(i64(connection_handle)) or { return dbc.diag.error(err) }
 
-	// - 5. If FI is not one of the codes in Table 27, then an exception
-	// condition is raised: CLI-specific condition — invalid FunctionId
-	// specified.
+	// ISO/IEC 9075-3:2003(E), 6.37, GetFunctions, General Rules, 4 and 5: the
+	// FunctionId must be one of the codes in Table 27 (cli_routines).
 	is_supported := cli_routines[int(function_id)] or {
 		return dbc.diag.error(cli_error('HY095', 'invalid FunctionId specified'))
 	}
 
+	// ISO/IEC 9075-3:2003(E), 4.4.3, Null pointers
 	if supported == unsafe { nil } {
 		return dbc.diag.error(cli_error('HY009', 'invalid use of null pointer'))
 	}
 
-	// - 6. Supported is set to 1 (one) if the routine is supported, otherwise
-	// 0 (zero).
+	// ISO/IEC 9075-3:2003(E), 6.37, GetFunctions, General Rules, 6
 	unsafe {
 		*supported = if is_supported { 1 } else { 0 }
 	}

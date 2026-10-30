@@ -25,7 +25,9 @@ fn (stmt DropSequenceGeneratorStatement) execute(mut conn Connection, _ map[stri
 	name := conn.resolve_schema_identifier(stmt.sequence_name)!
 	check_writable_schema(name)!
 	mut catalog := conn.catalog_for(name)
+	// ISO/IEC 9075-2:2016(E), 11.74, <drop sequence generator statement>, Syntax Rules, 2
 	sequence := catalog.storage.sequence(name)!
+	// ISO/IEC 9075-2:2016(E), 11.74, <drop sequence generator statement>, General Rules, 2
 	catalog.storage.delete_sequence(name, sequence.tid)!
 
 	return new_result_msg('DROP SEQUENCE 1', elapsed_parse, t.elapsed())

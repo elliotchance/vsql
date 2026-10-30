@@ -1,5 +1,8 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>
+//
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, Conformance Rules, 1
 similar_predicate:
   row_value_predicand similar_predicate_part_2 {
     flag(mut yylex, 'T141')

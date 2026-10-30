@@ -8,7 +8,15 @@ import time
 //
 // The <SQL-server name> is the path of a database file, or ":memory:". DEFAULT
 // is the default SQL-server of the Agent. The <connection user name> is checked,
-// but not used.
+// but not used, so there isn't an implicit one.
+//
+// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, Syntax Rules, 1
+// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 8.a and 8.b
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-2:2016(E), 4.42, SQL-connections
+// ISO/IEC 9075-2:2016(E), 4.43, SQL-sessions
 
 struct ConnectStatement {
 	// target is none for DEFAULT.
@@ -24,12 +32,14 @@ struct ConnectionTarget {
 fn (stmt ConnectStatement) execute(mut a Agent, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	// - GR 1. Each SQL-connection is to a different SQL-server, and vsql
-	// doesn't support transactions that affect more than one SQL-server.
+	// Each SQL-connection is to a different SQL-server, and vsql doesn't
+	// support transactions that affect more than one SQL-server.
+	//
+	// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 1
 	a.check_multiple_server_transactions()!
 
 	target := stmt.target or {
-		// - GR 7, 8.a.
+		// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 7 and 8.a
 		if a.default_connection != unsafe { nil } {
 			return sqlstate_08002('DEFAULT')
 		}
@@ -39,20 +49,23 @@ fn (stmt ConnectStatement) execute(mut a Agent, elapsed_parse time.Duration) !Re
 		return new_result_msg('CONNECT', elapsed_parse, t.elapsed())
 	}
 
-	// - GR 2, 3, 4, 5. There aren't any other restrictions on the user name.
+	// There aren't any other restrictions on the user name.
+	//
+	// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 2 to 5
 	if user_name := target.connection_user_name {
 		v := connection_string(user_name)!.trim(' ')
 		normalize_identifier(v) or { return sqlstate_28000(v) }
 	}
 
-	// - GR 6, 7.
+	// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 6 and 7
 	cn := connection_name(target.connection_name or { target.server_name })!
 	if cn in a.connections {
 		return sqlstate_08002(cn)
 	}
 
-	// - GR 8.b, 9, 10. NOTE 719: If it fails, the current SQL-connection
-	// doesn't change.
+	// If it fails, the current SQL-connection doesn't change (NOTE 719).
+	//
+	// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 8.b, 9.b and 10
 	conn := open(connection_string(target.server_name)!) or { return sqlstate_08001(err.msg()) }
 	a.connections[cn] = conn
 	a.current = conn
@@ -62,12 +75,16 @@ fn (stmt ConnectStatement) execute(mut a Agent, elapsed_parse time.Duration) !Re
 
 // connection_string is the value of a <simple value specification> in a
 // connection statement, which can only be a literal in direct SQL.
+//
+// The value isn't checked to be a character string of at most 128 octets
+// (ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers, Syntax Rules, 23), so
+// an <SQL-server name> can be a longer path.
 fn connection_string(spec ValueSpecification) !string {
 	if spec is Value {
 		return spec.str()
 	}
 
-	// - 22.1 SR 1.
+	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Syntax Rules, 1
 	return sqlstate_42601('a direct SQL statement cannot contain a parameter')
 }
 

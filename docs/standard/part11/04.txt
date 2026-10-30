@@ -1,0 +1,8 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4, Concepts
+4                        container    - -
+# 4.1, Introduction to the Definition Schema
+4.1                      partial      vsql/std_11_5_information_schema.v tests/information-schema.sql simulated by the views, each catalog only describes itself (implementation-defined), but DEFINITION_SCHEMA can be a schema name (#740)
+# 4.2, Introduction to the Information Schema
+4.2                      implemented  vsql/std_11_5_information_schema.v tests/information-schema.sql read-only, self-describing; no privileges or short name views (#732, #739)

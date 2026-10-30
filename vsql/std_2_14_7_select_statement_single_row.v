@@ -75,16 +75,17 @@ struct SelectTarget {
 }
 
 // select_statement compiles a <select statement: single row>. The query is a
-// <query specification> (Syntax Rule 4) without INTO and the targets.
+// <query specification> without INTO and the targets.
 fn select_statement(query string, targets_text string, p ExternallyInvokedProcedure) !ModuleStatement {
 	targets := select_target_list(targets_text, p)!
 
 	text_sql, references := rewrite_host_parameters(query, p)!
 	stmt := parse_tokens(tokenize(text_sql)!) or { return procedure_error(p, err) }
 
-	// - SR 4. The query must be a <query specification>, which can't have
-	// ORDER BY, OFFSET or FETCH. The statement starts with SELECT, so it's a
-	// query.
+	// The query must be a <query specification>, which can't have ORDER BY,
+	// OFFSET or FETCH. The statement starts with SELECT, so it's a query.
+	//
+	// ISO/IEC 9075-2:2016(E), 14.7, <select statement: single row>, Syntax Rules, 4
 	query_expression := stmt as QueryExpression
 	body := query_expression.body
 	if body !is QuerySpecification || query_expression.order.len > 0
@@ -93,9 +94,11 @@ fn select_statement(query string, targets_text string, p ExternallyInvokedProced
 	}
 	columns := select_list_degree((body as QuerySpecification).exprs)
 
-	// - SR 3.b.i. The number of elements in the <select list> must be the
-	// number of targets. A row type target (SR 3.a) has no C data type. With
-	// an asterisk, it's checked when the query is executed.
+	// The number of elements in the <select list> must be the number of
+	// targets. A row type target has no C data type. With an asterisk, it's
+	// checked when the query is executed.
+	//
+	// ISO/IEC 9075-2:2016(E), 14.7, <select statement: single row>, Syntax Rules, 3.a and 3.b.i
 	if columns >= 0 && columns != targets.len {
 		are := if targets.len == 1 { 'is' } else { 'are' }
 		return sqlstate_42601('procedure ${p.name}: the select list has ${columns} ${pluralize(columns, 'column')}, but there ${are} ${targets.len} ${pluralize(targets.len, 'target')}')
@@ -162,8 +165,9 @@ fn select_list_degree(exprs SelectList) int {
 }
 
 // select_target_list reads the <select target list>. Each <target
-// specification> is a host parameter (Syntax Rule 1), with an optional
-// <indicator parameter>.
+// specification> is a host parameter, with an optional <indicator parameter>.
+//
+// ISO/IEC 9075-2:2016(E), 14.7, <select statement: single row>, Syntax Rules, 1
 fn select_target_list(text string, p ExternallyInvokedProcedure) ![]SelectTarget {
 	mut t := new_module_tokens(text)!
 	targets := t.target_list(p, 'INTO')!
@@ -176,7 +180,12 @@ fn select_target_list(text string, p ExternallyInvokedProcedure) ![]SelectTarget
 
 // target_list reads a list of <target specification>s (after INTO) or <using
 // argument>s (after USING), each of which is a host parameter with an optional
-// <indicator parameter>.
+// <indicator parameter>. A target after INTO is an output host parameter (and
+// also an input host parameter if it's in a <value specification> too). A
+// target can't be a column reference.
+//
+// ISO/IEC 9075-2:2016(E), 9.8, Host parameter mode determination, Syntax Rules, 3.b.iii and 3.b.iv
+// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, Syntax Rules, 1
 fn (mut t ModuleTokens) target_list(p ExternallyInvokedProcedure, after string) ![]SelectTarget {
 	mut targets := []SelectTarget{}
 	for {

@@ -3,6 +3,15 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 10.4, <routine invocation>
 //
 // Invoke an SQL-invoked routine.
+//
+// There are no SQL-invoked routines (T321), so a RoutineInvocation is always a
+// built-in function (such as ABS or SUM) that's parsed with the same syntax,
+// and none of the rules of 10.4 apply.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.10, Routines
+// ISO/IEC 9075-1:2003(E), 4.10.1, General routine information
 
 struct RoutineInvocation {
 	function_name string
@@ -54,7 +63,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	}
 
 	if found_func.is_agg {
-		// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 1
+		// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 1
 		for arg in e.args {
 			if arg.compile(mut c)!.contains_agg {
 				return sqlstate_42601('nested set function: ${e.pstr(c.params)}')
@@ -95,9 +104,11 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		compiled_args << e.args[i].compile(mut c)!
 	}
 
-	// UPPER and LOWER have the declared type of their operand.
+	// UPPER and LOWER have the declared type of their operand, so a CHARACTER
+	// result is padded.
 	//
 	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 9
+	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.g.i
 	is_fold := func_name in ['UPPER', 'LOWER'] && arg_types[0].typ.is_string()
 	return_type := if is_fold {
 		Type{arg_types[0].typ, arg_types[0].size, 0, false}

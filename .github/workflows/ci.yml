@@ -113,6 +113,10 @@ jobs:
         if: matrix.arch == 'x86-64'
         run: make fmt-verify
 
+      - name: Verify standard index
+        if: matrix.arch == 'x86-64'
+        run: make check-standard-index
+
       # vsql/y.v is generated, but committed so that "v install" works.
       - name: Verify grammar
         if: matrix.arch == 'x86-64'

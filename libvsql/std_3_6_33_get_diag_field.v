@@ -5,9 +5,17 @@ module main
 // Get information from a CLI diagnostics area.
 //
 // GetDiagField doesn't generate diagnostic information, so its own exception
-// conditions only return SQL_ERROR. vsql conditions don't identify a
-// constraint, table, column, cursor, routine or trigger, so those fields are
-// always zero-length strings.
+// conditions only return SQL_ERROR. The constraint and cursor fields are set
+// for a condition that identifies one. vsql conditions don't identify a table
+// or column (General Rules, 12.i.ii.2 and 12.i.iii), which is #756. There are
+// no routines, triggers, views, privileges or user-defined exceptions (General
+// Rules, 12.d.i, 12.i.v to 12.i.ix and 12.k.i), so those fields are always
+// zero-length strings, and a cursor operation conflict is never raised
+// (General Rules, 12.i.i). There's no <merge statement> (General Rules,
+// 11.e.ii). The NATIVE_CODE is always 0 (zero), the MESSAGE_TEXT is the
+// message of the error, and the CONNECTION_NAME is the SERVER_NAME (General
+// Rules, 12.c, 12.d.ii and 12.j), which are implementation-defined. There are
+// no implementation-defined diagnostics fields (General Rules, 11.j and 12.n).
 
 // Codes from Table 12, "Codes used for SQL/CLI diagnostic fields".
 const sql_diag_returncode = i16(1)

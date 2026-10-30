@@ -30,6 +30,9 @@ struct UpdateStatementSearched {
 fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
+	// A column can't be set more than once.
+	//
+	// ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, Syntax Rules, 8
 	mut set_columns := map[string]bool{}
 	for clause in stmt.set {
 		if clause.column_name in set_columns {
@@ -53,7 +56,10 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
 
-	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Syntax Rule 5
+	// A generated column, or a GENERATED ALWAYS identity column, can only be
+	// set to DEFAULT.
+	//
+	// ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, Syntax Rules, 5
 	for clause in stmt.set {
 		if table.column(clause.column_name)!.is_generated_always() {
 			is_default := if clause.source is ContextuallyTypedValueSpecification {
@@ -81,9 +87,12 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 
 	// Every new row is found before any of them are written. Otherwise, a
 	// subquery (such as "SET x = (SELECT MAX(x) FROM t)") would see the rows that
-	// have already been updated.
+	// have already been updated. Each new row is a copy of the old row, with the
+	// value of each <set clause>.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rule 10
+	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rules, 5.b, 10, 11 and 13
+	// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 10, 11 and 13
+	// ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, General Rules, 2.b
 	mut changes := [][]Row{}
 	for mut row in rows {
 		conn.begin_row()
@@ -112,6 +121,9 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 				schema_name:  table_column.name.schema_name
 				entity_name:  table.name.entity_name
 			}
+			// DEFAULT for an identity column is the next value of its sequence.
+			//
+			// ISO/IEC 9075-2:2016(E), 15.13, Effect of replacing rows in base tables, General Rules, 6.a
 			c.null_type = table_column.typ
 			c.default_value = table_column.default_value
 			c.identity = identity_of(table, table_column)
@@ -150,6 +162,11 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		}
 	}
 
+	// Each row is replaced by its new row.
+	//
+	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rules, 14.a
+	// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 17.a
+	// ISO/IEC 9075-2:2016(E), 15.13, Effect of replacing rows in base tables, General Rules, 9.b
 	for change in changes {
 		mut before := change[0]
 		mut after := change[1]
@@ -178,7 +195,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// We could do this before the UPDATE to catch the error earlier, but that
 	// comes at the cost of evaulating the row when we might not need to.
 	if rows.len == 0 {
-		// ISO/IEC 9075-2:2016(E), 14.14, General Rules, 15
+		// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rules, 15
 		conn.add_warning(sqlstate_02000())
 
 		conn.dry_run = true
@@ -209,7 +226,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// The count is every row identified by the UPDATE, even if its values didn't
 	// change.
 	//
-	// ISO/IEC 9075-2:2016(E), 23.1, General Rules, f iii
+	// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.f.iii
 	return new_result_msg('UPDATE ${rows.len}', elapsed_parse, t.elapsed())
 }
 

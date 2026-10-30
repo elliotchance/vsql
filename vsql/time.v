@@ -5,6 +5,8 @@ module vsql
 import regex
 import time
 
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.4.3.4, Datetime types.
+
 const second_period = i64(1000000)
 const minute_period = 60 * second_period
 const hour_period = 60 * minute_period
@@ -140,8 +142,10 @@ fn parse_timestamp_components(s string) !time.Time {
 	seconds_and_fraction := time_parts[2].split('.')
 	second := seconds_and_fraction[0].int()
 
-	// Seconds may be 60 or 61 to allow for leap seconds. These cannot be
-	// represented so they will roll over into the next minute.
+	// The valid values of each field are in Table 11, "Valid values for
+	// datetime fields" (ISO/IEC 9075-2:2016(E), 6.1, <data type>, General
+	// Rules, 6). Seconds may be 60 or 61 to allow for leap seconds. These cannot
+	// be represented so they will roll over into the next minute.
 	if hour > 23 || minute > 59 || second > 61 {
 		return error('invalid timestamp')
 	}

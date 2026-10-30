@@ -1,5 +1,6 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 11.73, <alter sequence generator statement>, Conformance Rules, 1
 alter_sequence_generator_statement:
   ALTER SEQUENCE sequence_generator_name alter_sequence_generator_options {
     flag(mut yylex, 'T176')
@@ -9,6 +10,7 @@ alter_sequence_generator_statement:
     }
   }
 
+// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 2
 alter_sequence_generator_options:
   alter_sequence_generator_option { $$.v = [$1.v as SequenceGeneratorOption] }
 | alter_sequence_generator_options alter_sequence_generator_option {
@@ -16,6 +18,7 @@ alter_sequence_generator_options:
       $2.v as SequenceGeneratorOption)
   }
 
+// ISO/IEC 9075-2:2016(E), 11.73, <alter sequence generator statement>, Conformance Rules, 2
 alter_sequence_generator_option:
   alter_sequence_generator_restart_option {
     flag_if(mut yylex, ($1.v as SequenceGeneratorRestartOption).restart_value == none,

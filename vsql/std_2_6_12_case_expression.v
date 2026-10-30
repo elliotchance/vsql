@@ -64,7 +64,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 			// NULLIF(V1, V2) is CASE WHEN V1 = V2 THEN NULL ELSE V1 END, so the
 			// values only need to be comparable, such as an INTEGER and a SMALLINT.
 			//
-			// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 1c
+			// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 1.c
 			if !comparable_types(compiled_a.typ.typ, compiled_b.typ.typ) {
 				return sqlstate_42804('in NULLIF', compiled_a.typ.str(), compiled_b.typ.str())
 			}
@@ -89,7 +89,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 		CaseExpressionCoalesce {
 			compiled_exprs := e.exprs.map(it.compile(mut c)!)
 
-			// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 7: the
+			// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 5: the
 			// result has the combined type of all the arguments (9.5).
 			mut typ := Type{compiled_exprs[0].typ.typ, compiled_exprs[0].typ.size, compiled_exprs[0].typ.scale, false}
 			mut contains_agg := compiled_exprs[0].contains_agg
@@ -199,7 +199,7 @@ fn (e CaseExpression) compile(mut c Compiler) !CompileResult {
 // compile_case_results compiles each THEN and the ELSE (last) of a CASE. They
 // are all converted to the combined type of the results that are not NULL.
 //
-// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 4 and 7
+// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 3 and 5
 fn compile_case_results(mut c Compiler, thens []CaseResult, else_result CaseResult) !([]CompileResult, bool) {
 	mut results := thens.clone()
 	results << else_result
@@ -223,7 +223,7 @@ fn compile_case_results(mut c Compiler, thens []CaseResult, else_result CaseResu
 		}
 	}
 
-	// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 4: at least
+	// ISO/IEC 9075-2:2016(E), 6.12, <case expression>, Syntax Rules, 3: at least
 	// one result must not be NULL so that the CASE has a type.
 	combined_type := typ or { return sqlstate_42601('CASE needs at least one result that is not NULL') }
 
@@ -276,7 +276,7 @@ struct CaseExpressionCoalesce {
 }
 
 // CaseExpressionSimple is "CASE operand WHEN value THEN result ... END". When
-// there is no ELSE the else_result is NULL (6.12, Syntax Rules, 3).
+// there is no ELSE the else_result is NULL (6.12, Syntax Rules, 4).
 struct CaseExpressionSimple {
 	operand     &RowValueConstructorPredicand
 	whens       []CaseExpressionSimpleWhen
@@ -293,7 +293,7 @@ fn new_case_expression_simple(operand RowValueConstructorPredicand, whens []Case
 }
 
 // CaseExpressionSearched is "CASE WHEN condition THEN result ... END". When
-// there is no ELSE the else_result is NULL (6.12, Syntax Rules, 3).
+// there is no ELSE the else_result is NULL (6.12, Syntax Rules, 4).
 struct CaseExpressionSearched {
 	whens       []CaseExpressionSearchedWhen
 	else_result &CaseResult

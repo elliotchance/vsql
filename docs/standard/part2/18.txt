@@ -1,0 +1,64 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 18, Connection management
+18                       container    - -
+# 18.1, <connect statement>
+18.1                     implemented  vsql/std_2_18_1_connect_statement.v vsql/sql_test.v
+18.1/SR/1                impl-defined vsql/std_2_18_1_connect_statement.v - the user name isn't used
+18.1/GR/1                implemented  vsql/agent.v vsql/sql_test.v
+18.1/GR/2                implemented  vsql/std_2_18_1_connect_statement.v vsql/sql_test.v
+18.1/GR/3                implemented  vsql/std_2_18_1_connect_statement.v vsql/sql_test.v
+18.1/GR/4                impl-defined vsql/std_2_18_1_connect_statement.v - there aren't any other restrictions
+18.1/GR/5                implemented  vsql/std_2_18_1_connect_statement.v vsql/sql_test.v
+18.1/GR/6                implemented  vsql/std_2_18_1_connect_statement.v vsql/sql_test.v
+18.1/GR/7                implemented  vsql/std_2_18_1_connect_statement.v vsql/sql_test.v
+18.1/GR/8                container    - -
+18.1/GR/8.a              impl-defined vsql/agent.v vsql/sql_test.v the path that "vsql cli" (or new_agent) was given
+18.1/GR/8.b              impl-defined vsql/std_2_18_1_connect_statement.v vsql/sql_test.v the path of a database file, or ":memory:"
+18.1/GR/9                implemented  vsql/std_2_18_1_connect_statement.v vsql/sql_test.v
+18.1/GR/9.a              implemented  vsql/agent.v vsql/sql_test.v
+18.1/GR/9.b              implemented  vsql/std_2_18_1_connect_statement.v vsql/sql_test.v
+18.1/GR/9.c              untested     vsql/std_2_17_3_transaction_characteristics.v - only the condition area limit (100); access modes and isolation levels are E152 (#554, #664)
+18.1/GR/10               implemented  vsql/std_2_18_1_connect_statement.v vsql/sql_test.v
+18.1/GR/11               n/a          - - the SQL-server can't reject an SQL-connection
+18.1/GR/12               implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
+18.1/GR/13               implemented  vsql/connection.v vsql/sql_test.v
+18.1/GR/13.a             n/a          - - authorization identifiers (E081)
+18.1/GR/13.b             untested     vsql/std_2_17_3_transaction_characteristics.v - only the condition area limit; access modes and isolation levels are E152 (#554, #664)
+18.1/GR/13.c             n/a          - - there's no SQL-session identifier
+18.1/GR/13.d             n/a          - - authorization identifiers (E081)
+18.1/GR/13.e             untested     vsql/std_2_17_3_transaction_characteristics.v - it's 100
+18.1/GR/13.f             implemented  vsql/connection.v vsql/sql_test.v
+18.1/GR/13.g             impl-defined vsql/connection.v tests/set-schema.sql the catalog of the file, the PUBLIC schema and the time zone of the system
+18.1/GR/13.h             n/a          - - triggers (T211)
+18.1/GR/13.i             n/a          - - triggers (T211)
+18.1/GR/13.j             untestable   vsql/connection.v -
+18.1/GR/13.k             untestable   vsql/connection.v -
+18.1/GR/13.l             n/a          - - SQL-invoked routines (T321)
+18.1/GR/13.m             implemented  vsql/connection.v vsql/sql_test.v
+18.1/GR/13.n             unclear      vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/deferrable-constraints.sql each constraint has its initial constraint mode, as after a COMMIT (17.7 GR 10.b.ii), so an INITIALLY DEFERRED constraint is deferred
+18.1/GR/14               n/a          - - savepoints (T271)
+18.1/CR/1                missing      - - a connection statement isn't flagged (#763)
+# 18.2, <set connection statement>
+18.2                     implemented  vsql/std_2_18_2_set_connection_statement.v vsql/sql_test.v
+18.2/GR/1                implemented  vsql/agent.v vsql/sql_test.v
+18.2/GR/2                container    - -
+18.2/GR/2.a              implemented  vsql/std_2_18_2_set_connection_statement.v vsql/sql_test.v
+18.2/GR/2.b              implemented  vsql/std_2_18_2_set_connection_statement.v vsql/sql_test.v
+18.2/GR/3                n/a          - - selecting an SQL-connection can't fail
+18.2/GR/4                implemented  vsql/std_2_18_2_set_connection_statement.v vsql/sql_test.v
+18.2/GR/5                implemented  vsql/std_2_18_2_set_connection_statement.v vsql/sql_test.v
+18.2/GR/6                implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
+18.2/CR/1                missing      - - a connection statement isn't flagged (#763)
+# 18.3, <disconnect statement>
+18.3                     implemented  vsql/std_2_18_3_disconnect_statement.v vsql/sql_test.v
+18.3/GR/1                implemented  vsql/std_2_18_2_set_connection_statement.v vsql/sql_test.v
+18.3/GR/2                implemented  vsql/std_2_18_2_set_connection_statement.v vsql/sql_test.v
+18.3/GR/3                implemented  vsql/std_2_18_3_disconnect_statement.v vsql/sql_test.v
+18.3/GR/4                definition   - -
+18.3/GR/5                implemented  vsql/std_2_18_3_disconnect_statement.v vsql/sql_test.v
+18.3/GR/6                implemented  vsql/std_2_18_3_disconnect_statement.v vsql/sql_test.v
+18.3/GR/7                implemented  vsql/agent.v vsql/sql_test.v
+18.3/GR/8                n/a          - - closing an SQL-connection doesn't report errors
+18.3/GR/9                implemented  vsql/agent.v vsql/sql_test.v
+18.3/CR/1                missing      - - a connection statement isn't flagged (#763)

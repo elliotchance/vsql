@@ -1,5 +1,13 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 7.13, <group by clause>
+//
+// Specify a grouped table derived by the application of the <group by clause>
+// to the result of the previously specified clause.
+//
+// Only grouping column references, there's no ROLLUP, CUBE, GROUPING SETS or
+// empty grouping set (T431), and no GROUP BY DISTINCT (T434).
+
 group_by_clause:
   GROUP BY grouping_element_list { $$.v = $3.v }
 

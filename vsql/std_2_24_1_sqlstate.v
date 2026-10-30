@@ -5,6 +5,9 @@ module vsql
 // The SQL standard is pretty flexible on the individual codes, so I've copied
 // the relevant errors code from the definitions in PostgreSQL:
 // https://www.postgresql.org/docs/9.4/errcodes-appendix.html
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.8.2.4, Status
+// parameters.
 
 // sqlstate_to_int converts the 5 character SQLSTATE code (such as "42P01") into
 // an integer representation. The returned value can be converted back to its

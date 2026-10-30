@@ -26,20 +26,19 @@ fn sql_set_cursor_name(statement_handle SQLInteger, cursor_name &char, name_leng
 }
 
 fn set_cursor_name(mut stmt Stmt, cursor_name &char, name_length i16) !i16 {
-	// - 2. If an open cursor is associated with S, then an exception condition
-	// is raised: invalid cursor state.
+	// ISO/IEC 9075-3:2003(E), 6.55, SetCursorName, General Rules, 1 and 2: the
+	// statement can't have an open cursor.
 	if stmt.cursor != none {
 		return cli_error('24000', 'invalid cursor state')
 	}
 
+	// ISO/IEC 9075-3:2003(E), 4.4.3, Null pointers
 	if cursor_name == unsafe { nil } {
 		return cli_error('HY009', 'invalid use of null pointer')
 	}
 
-	// - 4, 5. If L is zero, then an exception condition is raised: CLI-specific
-	// condition — invalid string length or buffer length. The octets must be
-	// whole characters, otherwise an exception condition is raised: invalid
-	// cursor name.
+	// ISO/IEC 9075-3:2003(E), 6.55, SetCursorName, General Rules, 3-5: the
+	// name can't be empty, and must be whole characters.
 	cv := input_string(cursor_name, i64(name_length))!
 	if cv.len == 0 {
 		return cli_error('HY090', 'invalid string length or buffer length')
@@ -48,17 +47,20 @@ fn set_cursor_name(mut stmt Stmt, cursor_name &char, name_length i16) !i16 {
 		return cli_error('34000', 'invalid cursor name')
 	}
 
-	// - 6, 7. A name longer than 128 characters is truncated with a warning.
+	// ISO/IEC 9075-3:2003(E), 6.55, SetCursorName, General Rules, 6 and 7: a
+	// name longer than an identifier can be (128 characters) is truncated
+	// with a warning.
 	mut cn := cv.trim(' ')
 	if cn.runes().len > 128 {
 		cn = cn.runes()[..128].string()
 		stmt.diag.warning('01004', 'string data, right truncation')
 	}
 
-	// - 8, 9. CN must be an <identifier>, it can't start with SQL_CUR or
-	// SQLCUR (which are the generated names), and it can't be the name of the
-	// cursor of another statement of the connection, otherwise an exception
-	// condition is raised: invalid cursor name.
+	// ISO/IEC 9075-3:2003(E), 6.55, SetCursorName, General Rules, 8 and 9: CN
+	// must be an <identifier>, it can't start with SQL_CUR or SQLCUR (which
+	// are the generated names), and it can't be the name of the cursor of
+	// another statement of the connection. The names are compared as the
+	// identifiers they are, rather than as strings.
 	normalized := normalize_cursor_name(cn)
 	if !is_identifier(cn) || normalized.starts_with('SQL_CUR') || normalized.starts_with('SQLCUR') {
 		return cli_error('34000', 'invalid cursor name')
@@ -70,7 +72,7 @@ fn set_cursor_name(mut stmt Stmt, cursor_name &char, name_length i16) !i16 {
 		}
 	}
 
-	// - 10. CN becomes the cursor name associated with S.
+	// ISO/IEC 9075-3:2003(E), 6.55, SetCursorName, General Rules, 10
 	stmt.cursor_name = cn
 
 	return stmt.diag.result()

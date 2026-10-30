@@ -1,5 +1,9 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 7.1, <row value constructor>
+//
+// Specify a value or list of values to be constructed into a row.
+
 row_value_constructor:
   common_value_expression {
     $$.v = RowValueConstructor($1.v as CommonValueExpression)
@@ -13,6 +17,7 @@ row_value_constructor:
 
 explicit_row_value_constructor:
   ROW left_paren row_value_constructor_element_list right_paren {
+    // ISO/IEC 9075-2:2016(E), 7.1, <row value constructor>, Conformance Rules, 1
     flag(mut yylex, 'T051')
     $$.v = ExplicitRowValueConstructor{$3.v as []ValueExpression}
   }
@@ -25,6 +30,10 @@ row_value_constructor_element_list:
 
 row_value_constructor_element:
   value_expression { $$.v = $1.v as ValueExpression }
+
+// Without F641, a VALUES of an INSERT can only have one row, in parentheses.
+//
+// ISO/IEC 9075-2:2016(E), 7.3, <table value constructor>, Conformance Rules, 1
 
 contextually_typed_row_value_constructor:
   common_value_expression {

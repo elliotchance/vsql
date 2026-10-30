@@ -11,20 +11,22 @@ struct DropColumnDefinition {
 	behavior    string // CASCADE or RESTRICT
 }
 
-// execute drops the column and its values from every row (General Rules 5 to
-// 8). It can't be the only column of the table (Syntax Rule 4).
+// execute drops the column and its values from every row. It can't be the only
+// column of the table.
 //
 // A constraint of the table that only uses the column (its NOT NULL, a CHECK
 // or a single column PRIMARY KEY or UNIQUE) is dropped with it. Any other
-// constraint that uses the column can only be dropped with CASCADE (Syntax
-// Rule 7b), otherwise it's an error. That's a PRIMARY KEY or UNIQUE of more
-// than one column, a CHECK that also uses other columns, or a FOREIGN KEY that
-// has the column as one of its columns or referenced columns (of any table),
-// because it also uses the columns of the other side.
+// constraint that uses the column can only be dropped with CASCADE, otherwise
+// it's an error. That's a PRIMARY KEY or UNIQUE of more than one column, a
+// CHECK that also uses other columns, or a FOREIGN KEY that has the column as
+// one of its columns or referenced columns (of any table), because it also
+// uses the columns of the other side.
 //
 // A generated column whose generation expression uses the column can also only
-// be dropped with CASCADE (Syntax Rule 7f), which drops it first (General Rule
-// 3).
+// be dropped with CASCADE, which drops it first.
+//
+// ISO/IEC 9075-2:2016(E), 11.23, <drop column definition>, Syntax Rules, 4, 7.b and 7.f
+// ISO/IEC 9075-2:2016(E), 11.23, <drop column definition>, General Rules, 3 to 8
 //
 // The rows are written again, because the values of a row are stored in the
 // order of the columns (see Row.bytes). The current value of the sequence of

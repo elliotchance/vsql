@@ -1,0 +1,515 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 8, Predicates
+8                        container    - -
+# 8.1, <predicate>
+8.1                      implemented  vsql/std_2_8_1_predicate.v tests/comparison.sql the other predicates are n/a in their own Subclauses
+8.1/GR/1                 implemented  vsql/std_2_8_1_predicate.v tests/comparison.sql
+# 8.2, <comparison predicate>
+8.2                      partial      vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql rows of degree > 1 are #722
+8.2/SR/1                 missing      - - rows of degree > 1 are #722
+8.2/SR/2                 definition   - -
+8.2/SR/3                 partial      vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql checked when evaluated, rather than when prepared
+8.2/SR/4                 definition   - -
+8.2/SR/5                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql there are only scalar operands, so N is 1 (one); rows are #722
+8.2/SR/5.a               container    - -
+8.2/SR/5.a.i             implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql
+8.2/SR/5.a.ii            implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql
+8.2/SR/5.b               container    - -
+8.2/SR/5.b.i             n/a          - - user-defined types (S023)
+8.2/SR/5.b.ii            n/a          - - reference types (S041)
+8.2/SR/5.b.iii           n/a          - - arrays (S091) and multisets (S271)
+8.2/SR/5.b.iv            missing      - - rows are #722
+8.2/SR/6                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/SR/6.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/SR/6.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/SR/6.c               implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/SR/6.d               implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/GR/1                 definition   - -
+8.2/GR/1.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/null-propagation.sql
+8.2/GR/1.b               container    - -
+8.2/GR/1.b.i             missing      - - rows are #722
+8.2/GR/1.b.i.1           missing      - - rows are #722
+8.2/GR/1.b.i.2           missing      - - rows are #722
+8.2/GR/1.b.i.3           missing      - - rows are #722
+8.2/GR/1.b.i.4           missing      - - rows are #722
+8.2/GR/1.b.i.5           missing      - - rows are #722
+8.2/GR/1.b.ii            n/a          - - arrays (S091)
+8.2/GR/1.b.ii.1          n/a          - - arrays (S091)
+8.2/GR/1.b.ii.2          n/a          - - arrays (S091)
+8.2/GR/1.b.ii.3          n/a          - - arrays (S091)
+8.2/GR/1.b.ii.3.A        n/a          - - arrays (S091)
+8.2/GR/1.b.ii.3.B        n/a          - - arrays (S091)
+8.2/GR/1.b.ii.4          n/a          - - arrays (S091)
+8.2/GR/1.b.iii           n/a          - - multisets (S271)
+8.2/GR/1.b.iii.1         n/a          - - multisets (S271)
+8.2/GR/1.b.iii.2         n/a          - - multisets (S271)
+8.2/GR/1.b.iii.3         n/a          - - multisets (S271)
+8.2/GR/1.b.iii.4         n/a          - - multisets (S271)
+8.2/GR/1.b.iv            n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.1          n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2          n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.A        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.B        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.C        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.D        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.E        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.F        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.G        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.3          n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.3.A        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.3.B        n/a          - - user-defined types (S023)
+8.2/GR/1.b.v             implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/GR/1.b.v.1           implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/GR/1.b.v.2           implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/GR/1.b.v.3           implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/GR/2                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql
+8.2/GR/3                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/3.a               impl-defined vsql/std_2_8_2_comparison_predicate.v - only the default collation, which is PAD SPACE
+8.2/GR/3.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/3.c               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/3.d               untestable   vsql/std_2_8_2_comparison_predicate.v - which of several equal strings is chosen is implementation-dependent
+8.2/GR/4                 n/a          - - binary strings (T021)
+8.2/GR/5                 n/a          - - binary strings (T021)
+8.2/GR/5.a               n/a          - - binary strings (T021)
+8.2/GR/5.b               n/a          - - binary strings (T021)
+8.2/GR/5.c               n/a          - - binary strings (T021)
+8.2/GR/5.d               n/a          - - binary strings (T021)
+8.2/GR/5.e               n/a          - - binary strings (T021)
+8.2/GR/6                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/6.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/6.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/7                 n/a          - - intervals (F052)
+8.2/GR/7.a               n/a          - - intervals (F052)
+8.2/GR/7.b               n/a          - - intervals (F052)
+8.2/GR/8                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/boolean.sql,tests/std_8_2_comparison_predicate.sql
+8.2/GR/9                 n/a          - - reference types (S041)
+# 8.3, <between predicate>
+8.3                      implemented  vsql/std_2_8_3_between_predicate.v tests/between.sql
+8.3/SR/1                 implemented  vsql/std_2_8_3_between_predicate.v tests/between.sql
+8.3/SR/2                 definition   - -
+8.3/SR/3                 implemented  vsql/std_2_8_3_between_predicate.v tests/between.sql
+8.3/SR/4                 implemented  vsql/std_2_8_3_between_predicate.v tests/between.sql
+8.3/SR/5                 implemented  vsql/std_2_8_3_between_predicate.v tests/between.sql
+8.3/SR/6                 implemented  vsql/std_2_8_3_between_predicate.v tests/between.sql
+8.3/SR/7                 implemented  vsql/std_2_8_3_between_predicate.y tests/flagging.sql the Conformance Rules of 8.2 are only about rows and other unsupported types
+8.3/CR/1                 implemented  vsql/std_2_8_3_between_predicate.y tests/flagging.sql
+# 8.4, <in predicate>
+8.4                      implemented  vsql/std_2_8_4_in_predicate.v tests/in.sql,tests/in-subquery.sql
+8.4/SR/1                 implemented  vsql/std_2_8_4_in_predicate.y tests/in-subquery.sql
+8.4/SR/2                 implemented  vsql/std_2_8_4_in_predicate.v tests/in.sql,tests/in-subquery.sql
+8.4/SR/3                 definition   - -
+8.4/SR/4                 implemented  vsql/std_2_8_4_in_predicate.v tests/in.sql,tests/in-subquery.sql
+8.4/SR/5                 implemented  vsql/std_2_8_4_in_predicate.v tests/in.sql,tests/in-subquery.sql
+8.4/CR/1                 implemented  vsql/std_2_8_4_in_predicate.y tests/flagging.sql
+# 8.5, <like predicate>
+8.5                      partial      vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql the operands aren't checked to be character strings (#780); there's no <octet like predicate> (T021)
+8.5/SR/1                 partial      vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql the operands aren't checked to be character strings (#780)
+8.5/SR/2                 n/a          - - binary strings (T021)
+8.5/SR/3                 implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql
+8.5/SR/3.a               definition   - -
+8.5/SR/3.b               implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
+8.5/SR/3.c               implemented  vsql/std_2_8_5_like_predicate.v tests/like-escape.sql
+8.5/SR/3.d               impl-defined vsql/std_2_8_5_like_predicate.v tests/like.sql only the default collation, as NO PAD
+8.5/SR/4                 n/a          - - binary strings (T021)
+8.5/SR/4.a               n/a          - - binary strings (T021)
+8.5/SR/4.b               n/a          - - binary strings (T021)
+8.5/SR/4.c               n/a          - - binary strings (T021)
+8.5/GR/1                 definition   - -
+8.5/GR/2                 n/a          - - binary strings (T021)
+8.5/GR/3                 implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql
+8.5/GR/3.a               container    - -
+8.5/GR/3.a.i             implemented  vsql/std_2_8_5_like_predicate.v tests/like-escape.sql
+8.5/GR/3.a.ii            implemented  vsql/std_2_8_5_like_predicate.v tests/like-escape.sql
+8.5/GR/3.b               container    - -
+8.5/GR/3.b.i             implemented  vsql/std_2_8_5_like_predicate.v tests/like-escape.sql
+8.5/GR/3.b.i.1           implemented  vsql/std_2_8_5_like_predicate.v tests/like-escape.sql
+8.5/GR/3.b.i.2           implemented  vsql/std_2_8_5_like_predicate.v tests/like-escape.sql
+8.5/GR/3.b.ii            implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
+8.5/GR/3.c               implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql
+8.5/GR/3.d               container    - -
+8.5/GR/3.d.i             implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
+8.5/GR/3.d.ii            implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
+8.5/GR/3.d.ii.1          implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
+8.5/GR/3.d.ii.2          implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
+8.5/GR/3.d.ii.3          implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
+8.5/GR/3.d.ii.4          implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
+8.5/GR/3.d.ii.5          implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
+8.5/GR/3.d.iii           implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql
+8.5/GR/4                 n/a          - - binary strings (T021)
+8.5/GR/4.a               container    - -
+8.5/GR/4.a.i             n/a          - - binary strings (T021)
+8.5/GR/4.a.ii            n/a          - - binary strings (T021)
+8.5/GR/4.b               n/a          - - binary strings (T021)
+8.5/GR/4.c               n/a          - - binary strings (T021)
+8.5/GR/4.d               container    - -
+8.5/GR/4.d.i             n/a          - - binary strings (T021)
+8.5/GR/4.d.i.1           n/a          - - binary strings (T021)
+8.5/GR/4.d.i.2           n/a          - - binary strings (T021)
+8.5/GR/4.d.ii            n/a          - - binary strings (T021)
+8.5/GR/4.e               n/a          - - binary strings (T021)
+8.5/GR/4.f               container    - -
+8.5/GR/4.f.i             n/a          - - binary strings (T021)
+8.5/GR/4.f.ii            n/a          - - binary strings (T021)
+8.5/GR/4.f.ii.1          n/a          - - binary strings (T021)
+8.5/GR/4.f.ii.2          n/a          - - binary strings (T021)
+8.5/GR/4.f.ii.3          n/a          - - binary strings (T021)
+8.5/GR/4.f.ii.4          n/a          - - binary strings (T021)
+8.5/GR/4.f.ii.5          n/a          - - binary strings (T021)
+8.5/GR/4.f.iii           n/a          - - binary strings (T021)
+8.5/CR/1                 n/a          - - binary strings (T021)
+8.5/CR/2                 implemented  vsql/std_2_8_5_like_predicate.y tests/flagging.sql
+8.5/CR/3                 implemented  vsql/std_2_8_5_like_predicate.y tests/flagging.sql
+8.5/CR/4                 implemented  vsql/std_2_8_5_like_predicate.y tests/flagging.sql
+8.5/CR/5                 n/a          - - there are no CLOBs (T041)
+8.5/CR/6                 n/a          - - there are no national character types (F421) or CLOBs (T041)
+8.5/CR/7                 n/a          - - there are no national character types (F421)
+# 8.6, <similar predicate>
+8.6                      partial      vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql the operands aren't checked to be character strings (#780) and trailing spaces aren't padded (#781)
+8.6/SR/1                 partial      vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql the operands aren't checked to be character strings (#780)
+8.6/SR/2                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/SR/3                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql an invalid name is a 2201B when evaluated, since the pattern is a value
+8.6/SR/4                 impl-defined vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql only the default collation
+8.6/SR/5                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql
+8.6/SR/6                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql
+8.6/SR/7                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql checked when evaluated (2201B), since the pattern is a value
+8.6/GR/1                 definition   - -
+8.6/GR/2                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql
+8.6/GR/3                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-escape.sql
+8.6/GR/3.a               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-escape.sql
+8.6/GR/3.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-escape.sql
+8.6/GR/3.c               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-escape.sql
+8.6/GR/4                 container    - -
+8.6/GR/4.a               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-escape.sql
+8.6/GR/4.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-escape.sql
+8.6/GR/5                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/5.a               impl-defined vsql/std_2_8_6_similar_predicate.v tests/similar.sql ordered by code point, which is the default collation
+8.6/GR/5.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/6                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/6.a               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/6.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/6.c               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql there's no limit, which matches the same strings
+8.6/GR/7                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.a               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.b               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.c               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.d               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.e               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.f               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.g               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.h               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.i               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.j               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.k               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.l               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.m               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.n               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.o               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.p               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.q               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.r               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.s               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.t               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/7.u               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
+8.6/GR/8                 deviates     vsql/std_2_8_6_similar_predicate.v tests/similar.sql trailing spaces aren't padded (#781)
+8.6/CR/1                 implemented  vsql/std_2_8_6_similar_predicate.y tests/flagging.sql
+8.6/CR/2                 n/a          - - there are no CLOBs (T041)
+# 8.7, <regex like predicate>
+8.7                      n/a          - - LIKE_REGEX (F841)
+8.7/SR/1                 n/a          - - LIKE_REGEX (F841)
+8.7/SR/2                 n/a          - - LIKE_REGEX (F841)
+8.7/SR/3                 n/a          - - LIKE_REGEX (F841)
+8.7/GR/1                 n/a          - - LIKE_REGEX (F841)
+8.7/GR/1.a               n/a          - - LIKE_REGEX (F841)
+8.7/GR/1.b               n/a          - - LIKE_REGEX (F841)
+8.7/GR/1.c               n/a          - - LIKE_REGEX (F841)
+8.7/GR/1.d               n/a          - - LIKE_REGEX (F841)
+8.7/CR/1                 n/a          - - LIKE_REGEX (F841)
+8.7/CR/2                 n/a          - - LIKE_REGEX (F841)
+# 8.8, <null predicate>
+8.8                      implemented  vsql/std_2_8_8_null_predicate.v tests/null.sql,tests/null-predicate-row.sql
+8.8/GR/1                 definition   - -
+8.8/GR/2                 container    - -
+8.8/GR/2.a               implemented  vsql/std_2_8_8_null_predicate.v tests/null.sql,tests/null-predicate-row.sql
+8.8/GR/2.b               container    - -
+8.8/GR/2.b.i             implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
+8.8/GR/2.b.i.1           implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
+8.8/GR/2.b.i.2           implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
+8.8/GR/2.b.ii            implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
+8.8/GR/2.b.ii.1          implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
+8.8/GR/2.b.ii.2          implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
+# 8.9, <quantified comparison predicate>
+8.9                      implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
+8.9/SR/1                 partial      vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql checked when evaluated, rather than when prepared
+8.9/GR/1                 definition   - -
+8.9/GR/2                 implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
+8.9/GR/2.a               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
+8.9/GR/2.b               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
+8.9/GR/2.c               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
+8.9/GR/2.d               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
+8.9/GR/2.e               implemented  vsql/std_2_8_9_quantified_comparison_predicate.v tests/quantified-comparison.sql
+# 8.10, <exists predicate>
+8.10                     implemented  vsql/std_2_8_10_exists_predicate.v tests/exists-predicate.sql
+8.10/GR/1                definition   - -
+8.10/GR/2                implemented  vsql/std_2_8_10_exists_predicate.v tests/exists-predicate.sql
+8.10/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/exists-predicate.sql
+# 8.11, <unique predicate>
+8.11                     n/a          - - the UNIQUE predicate (F291)
+8.11/SR/1                n/a          - - the UNIQUE predicate (F291)
+8.11/SR/2                n/a          - - the UNIQUE predicate (F291)
+8.11/GR/1                n/a          - - the UNIQUE predicate (F291)
+8.11/GR/2                n/a          - - the UNIQUE predicate (F291)
+8.11/CR/1                n/a          - - the UNIQUE predicate (F291)
+# 8.12, <normalized predicate>
+8.12                     n/a          - - IS NORMALIZED (T061)
+8.12/SR/1                n/a          - - IS NORMALIZED (T061)
+8.12/SR/2                container    - -
+8.12/SR/2.a              n/a          - - IS NORMALIZED (T061)
+8.12/SR/2.b              n/a          - - IS NORMALIZED (T061)
+8.12/SR/3                n/a          - - IS NORMALIZED (T061)
+8.12/GR/1                n/a          - - IS NORMALIZED (T061)
+8.12/GR/1.a              n/a          - - IS NORMALIZED (T061)
+8.12/GR/1.b              n/a          - - IS NORMALIZED (T061)
+8.12/GR/1.c              n/a          - - IS NORMALIZED (T061)
+8.12/CR/1                n/a          - - IS NORMALIZED (T061)
+8.12/CR/2                n/a          - - IS NORMALIZED (T061)
+# 8.13, <match predicate>
+8.13                     n/a          - - MATCH predicate (F741)
+8.13/SR/1                n/a          - - MATCH predicate (F741)
+8.13/SR/2                n/a          - - MATCH predicate (F741)
+8.13/SR/3                n/a          - - MATCH predicate (F741)
+8.13/GR/1                n/a          - - MATCH predicate (F741)
+8.13/GR/2                n/a          - - MATCH predicate (F741)
+8.13/GR/2.a              n/a          - - MATCH predicate (F741)
+8.13/GR/2.b              container    - -
+8.13/GR/2.b.i            n/a          - - MATCH predicate (F741)
+8.13/GR/2.b.ii           n/a          - - MATCH predicate (F741)
+8.13/GR/2.b.ii.1         n/a          - - MATCH predicate (F741)
+8.13/GR/2.b.ii.2         n/a          - - MATCH predicate (F741)
+8.13/GR/2.b.ii.3         n/a          - - MATCH predicate (F741)
+8.13/GR/3                n/a          - - MATCH predicate (F741)
+8.13/GR/3.a              n/a          - - MATCH predicate (F741)
+8.13/GR/3.b              n/a          - - MATCH predicate (F741)
+8.13/GR/3.b.i            n/a          - - MATCH predicate (F741)
+8.13/GR/3.b.ii           n/a          - - MATCH predicate (F741)
+8.13/GR/3.b.ii.1         n/a          - - MATCH predicate (F741)
+8.13/GR/3.b.ii.2         n/a          - - MATCH predicate (F741)
+8.13/GR/3.b.ii.3         n/a          - - MATCH predicate (F741)
+8.13/GR/4                n/a          - - MATCH predicate (F741)
+8.13/GR/4.a              n/a          - - MATCH predicate (F741)
+8.13/GR/4.b              n/a          - - MATCH predicate (F741)
+8.13/GR/4.b.i            n/a          - - MATCH predicate (F741)
+8.13/GR/4.b.ii           n/a          - - MATCH predicate (F741)
+8.13/GR/4.b.ii.1         n/a          - - MATCH predicate (F741)
+8.13/GR/4.b.ii.2         n/a          - - MATCH predicate (F741)
+8.13/GR/4.b.ii.3         n/a          - - MATCH predicate (F741)
+8.13/GR/4.b.iii          n/a          - - MATCH predicate (F741)
+8.13/CR/1                n/a          - - MATCH predicate (F741)
+# 8.14, <overlaps predicate>
+8.14                     n/a          - - OVERLAPS predicate (F053)
+8.14/SR/1                n/a          - - OVERLAPS predicate (F053)
+8.14/SR/2                n/a          - - OVERLAPS predicate (F053)
+8.14/SR/3                n/a          - - OVERLAPS predicate (F053)
+8.14/SR/3.a              n/a          - - OVERLAPS predicate (F053)
+8.14/SR/3.b              n/a          - - OVERLAPS predicate (F053)
+8.14/GR/1                n/a          - - OVERLAPS predicate (F053)
+8.14/GR/2                n/a          - - OVERLAPS predicate (F053)
+8.14/GR/3                container    - -
+8.14/GR/3.a              n/a          - - OVERLAPS predicate (F053)
+8.14/GR/3.b              n/a          - - OVERLAPS predicate (F053)
+8.14/GR/4                n/a          - - OVERLAPS predicate (F053)
+8.14/GR/5                container    - -
+8.14/GR/5.a              n/a          - - OVERLAPS predicate (F053)
+8.14/GR/5.b              n/a          - - OVERLAPS predicate (F053)
+8.14/GR/6                n/a          - - OVERLAPS predicate (F053)
+8.14/GR/7                n/a          - - OVERLAPS predicate (F053)
+8.14/CR/1                n/a          - - OVERLAPS predicate (F053)
+# 8.15, <distinct predicate>
+8.15                     n/a          - - the DISTINCT predicate (T151)
+8.15/SR/1                n/a          - - the DISTINCT predicate (T151)
+8.15/SR/2                n/a          - - the DISTINCT predicate (T151)
+8.15/SR/3                n/a          - - the DISTINCT predicate (T151)
+8.15/SR/4                n/a          - - the DISTINCT predicate (T151)
+8.15/SR/5                n/a          - - the DISTINCT predicate (T151)
+8.15/SR/6                n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1                n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.a              n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.b              n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c              container    - -
+8.15/GR/1.c.i            n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.i.1          n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.i.2          n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.ii           n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.ii.1         n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.ii.2         n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.ii.3         n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.iii          n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.iii.1        n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.iii.2        n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.iii.3        n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.iv           n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.iv.1         n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.iv.2         n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.v            n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.v.1          n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.v.2          n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.v.3          n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.vi           n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.vi.1         n/a          - - the DISTINCT predicate (T151)
+8.15/GR/1.c.vi.2         n/a          - - the DISTINCT predicate (T151)
+8.15/GR/2                n/a          - - the DISTINCT predicate (T151)
+8.15/CR/1                n/a          - - the DISTINCT predicate (T151)
+8.15/CR/2                n/a          - - the DISTINCT predicate (T151)
+# 8.16, <member predicate>
+8.16                     n/a          - - multisets (S271)
+8.16/SR/1                n/a          - - multisets (S271)
+8.16/SR/2                container    - -
+8.16/SR/2.a              n/a          - - multisets (S271)
+8.16/SR/2.b              n/a          - - multisets (S271)
+8.16/SR/3                n/a          - - multisets (S271)
+8.16/SR/4                n/a          - - multisets (S271)
+8.16/SR/5                n/a          - - multisets (S271)
+8.16/GR/1                n/a          - - multisets (S271)
+8.16/GR/2                n/a          - - multisets (S271)
+8.16/GR/3                n/a          - - multisets (S271)
+8.16/GR/3.a              n/a          - - multisets (S271)
+8.16/GR/3.b              n/a          - - multisets (S271)
+8.16/GR/3.c              n/a          - - multisets (S271)
+8.16/GR/3.c.i            n/a          - - multisets (S271)
+8.16/GR/3.c.ii           n/a          - - multisets (S271)
+8.16/GR/3.c.iii          n/a          - - multisets (S271)
+8.16/CR/1                n/a          - - multisets (S271)
+# 8.17, <submultiset predicate>
+8.17                     n/a          - - SUBMULTISET (S275)
+8.17/SR/1                n/a          - - SUBMULTISET (S275)
+8.17/SR/2                n/a          - - SUBMULTISET (S275)
+8.17/SR/3                n/a          - - SUBMULTISET (S275)
+8.17/SR/4                n/a          - - SUBMULTISET (S275)
+8.17/SR/5                n/a          - - SUBMULTISET (S275)
+8.17/GR/1                n/a          - - SUBMULTISET (S275)
+8.17/GR/2                n/a          - - SUBMULTISET (S275)
+8.17/GR/3                n/a          - - SUBMULTISET (S275)
+8.17/GR/3.a              n/a          - - SUBMULTISET (S275)
+8.17/GR/3.b              n/a          - - SUBMULTISET (S275)
+8.17/GR/3.c              n/a          - - SUBMULTISET (S275)
+8.17/GR/3.c.i            n/a          - - SUBMULTISET (S275)
+8.17/GR/3.c.ii           n/a          - - SUBMULTISET (S275)
+8.17/GR/3.c.iii          n/a          - - SUBMULTISET (S275)
+8.17/GR/3.c.iv           n/a          - - SUBMULTISET (S275)
+8.17/CR/1                n/a          - - SUBMULTISET (S275)
+# 8.18, <set predicate>
+8.18                     n/a          - - multisets (S271)
+8.18/SR/1                n/a          - - multisets (S271)
+8.18/SR/2                n/a          - - multisets (S271)
+8.18/SR/3                n/a          - - multisets (S271)
+8.18/SR/4                n/a          - - multisets (S271)
+8.18/CR/1                n/a          - - multisets (S271)
+# 8.19, <type predicate>
+8.19                     n/a          - - type predicate (S151)
+8.19/SR/1                n/a          - - type predicate (S151)
+8.19/SR/2                n/a          - - type predicate (S151)
+8.19/SR/3                n/a          - - type predicate (S151)
+8.19/SR/4                n/a          - - type predicate (S151)
+8.19/SR/5                n/a          - - type predicate (S151)
+8.19/SR/6                n/a          - - type predicate (S151)
+8.19/SR/7                n/a          - - type predicate (S151)
+8.19/GR/1                n/a          - - type predicate (S151)
+8.19/GR/2                n/a          - - type predicate (S151)
+8.19/GR/3                n/a          - - type predicate (S151)
+8.19/GR/3.a              n/a          - - type predicate (S151)
+8.19/GR/3.b              n/a          - - type predicate (S151)
+8.19/GR/3.c              n/a          - - type predicate (S151)
+8.19/CR/1                n/a          - - type predicate (S151)
+# 8.20, <period predicate>
+8.20                     n/a          - - period predicates (T502)
+8.20/SR/1                n/a          - - period predicates (T502)
+8.20/SR/1.a              n/a          - - period predicates (T502)
+8.20/SR/1.b              n/a          - - period predicates (T502)
+8.20/SR/2                n/a          - - period predicates (T502)
+8.20/GR/1                n/a          - - period predicates (T502)
+8.20/GR/2                n/a          - - period predicates (T502)
+8.20/GR/2.a              n/a          - - period predicates (T502)
+8.20/GR/2.b              n/a          - - period predicates (T502)
+8.20/GR/3                n/a          - - period predicates (T502)
+8.20/GR/4                container    - -
+8.20/GR/4.a              n/a          - - period predicates (T502)
+8.20/GR/4.a.i            container    - -
+8.20/GR/4.a.i.1          n/a          - - period predicates (T502)
+8.20/GR/4.a.i.2          n/a          - - period predicates (T502)
+8.20/GR/4.a.ii           n/a          - - period predicates (T502)
+8.20/GR/4.a.iii          container    - -
+8.20/GR/4.a.iii.1        n/a          - - period predicates (T502)
+8.20/GR/4.a.iii.2        n/a          - - period predicates (T502)
+8.20/GR/4.a.iii.3        n/a          - - period predicates (T502)
+8.20/GR/4.a.iv           container    - -
+8.20/GR/4.a.iv.1         n/a          - - period predicates (T502)
+8.20/GR/4.a.iv.2         n/a          - - period predicates (T502)
+8.20/GR/4.a.v            n/a          - - period predicates (T502)
+8.20/GR/4.a.v.1          n/a          - - period predicates (T502)
+8.20/GR/4.a.v.2          n/a          - - period predicates (T502)
+8.20/GR/4.a.v.3          n/a          - - period predicates (T502)
+8.20/GR/4.a.v.4          n/a          - - period predicates (T502)
+8.20/GR/4.b              n/a          - - period predicates (T502)
+8.20/GR/4.b.i            container    - -
+8.20/GR/4.b.i.1          n/a          - - period predicates (T502)
+8.20/GR/4.b.i.2          n/a          - - period predicates (T502)
+8.20/GR/4.b.ii           container    - -
+8.20/GR/4.b.ii.1         n/a          - - period predicates (T502)
+8.20/GR/4.b.ii.2         n/a          - - period predicates (T502)
+8.20/GR/4.b.iii          n/a          - - period predicates (T502)
+8.20/GR/4.b.iv           n/a          - - period predicates (T502)
+8.20/GR/4.b.iv.1         n/a          - - period predicates (T502)
+8.20/GR/4.b.iv.2         n/a          - - period predicates (T502)
+8.20/GR/4.b.v            n/a          - - period predicates (T502)
+8.20/GR/4.b.v.1          n/a          - - period predicates (T502)
+8.20/GR/4.b.v.2          n/a          - - period predicates (T502)
+8.20/GR/4.b.vi           n/a          - - period predicates (T502)
+8.20/GR/4.b.vi.1         n/a          - - period predicates (T502)
+8.20/GR/4.b.vi.2         n/a          - - period predicates (T502)
+8.20/GR/4.b.vii          n/a          - - period predicates (T502)
+8.20/GR/4.b.vii.1        n/a          - - period predicates (T502)
+8.20/GR/4.b.vii.2        n/a          - - period predicates (T502)
+8.20/GR/4.b.viii         n/a          - - period predicates (T502)
+8.20/GR/4.b.viii.1       n/a          - - period predicates (T502)
+8.20/GR/4.b.viii.2       n/a          - - period predicates (T502)
+8.20/GR/4.b.ix           n/a          - - period predicates (T502)
+8.20/GR/4.b.ix.1         n/a          - - period predicates (T502)
+8.20/GR/4.b.ix.2         n/a          - - period predicates (T502)
+8.20/CR/1                n/a          - - period predicates (T502)
+# 8.21, <search condition>
+8.21                     implemented  vsql/std_2_8_21_search_condition.v tests/select-where.sql
+8.21/GR/1                implemented  vsql/std_2_8_21_search_condition.v tests/select-where.sql
+# 8.22, <JSON predicate>
+8.22                     n/a          - - IS JSON (T822)
+8.22/SR/1                n/a          - - IS JSON (T822)
+8.22/SR/2                n/a          - - IS JSON (T822)
+8.22/SR/3                n/a          - - IS JSON (T822)
+8.22/SR/4                n/a          - - IS JSON (T822)
+8.22/GR/1                n/a          - - IS JSON (T822)
+8.22/GR/2                container    - -
+8.22/GR/2.a              n/a          - - IS JSON (T822)
+8.22/GR/2.b              n/a          - - IS JSON (T822)
+8.22/GR/2.b.i            n/a          - - IS JSON (T822)
+8.22/GR/2.b.ii           n/a          - - IS JSON (T822)
+8.22/GR/2.b.iii          n/a          - - IS JSON (T822)
+8.22/GR/2.b.iv           n/a          - - IS JSON (T822)
+8.22/GR/2.b.v            n/a          - - IS JSON (T822)
+8.22/CR/1                n/a          - - IS JSON (T822)
+8.22/CR/2                n/a          - - IS JSON (T822)
+# 8.23, <JSON exists predicate>
+8.23                     n/a          - - JSON_EXISTS (T821)
+8.23/SR/1                n/a          - - JSON_EXISTS (T821)
+8.23/GR/1                n/a          - - JSON_EXISTS (T821)
+8.23/GR/2                n/a          - - JSON_EXISTS (T821)
+8.23/GR/3                n/a          - - JSON_EXISTS (T821)
+8.23/GR/4                n/a          - - JSON_EXISTS (T821)
+8.23/GR/4.a              n/a          - - JSON_EXISTS (T821)
+8.23/GR/4.a.i            n/a          - - JSON_EXISTS (T821)
+8.23/GR/4.a.ii           n/a          - - JSON_EXISTS (T821)
+8.23/GR/4.b              n/a          - - JSON_EXISTS (T821)
+8.23/GR/4.b.i            n/a          - - JSON_EXISTS (T821)
+8.23/GR/4.b.ii           n/a          - - JSON_EXISTS (T821)
+8.23/GR/4.b.iii          n/a          - - JSON_EXISTS (T821)
+8.23/GR/4.b.iv           n/a          - - JSON_EXISTS (T821)
+8.23/CR/1                n/a          - - JSON_EXISTS (T821)
+8.23/CR/2                n/a          - - JSON_EXISTS (T821)

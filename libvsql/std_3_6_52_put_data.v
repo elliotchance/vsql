@@ -7,7 +7,8 @@ import vsql
 // Provide a deferred parameter value.
 //
 // A string can be given in pieces, by calling PutData again for the same
-// parameter.
+// parameter. There are no large objects (General Rules 8.c). A string isn't
+// checked to be valid UTF-8 (General Rules 9), see #744.
 
 @[export: 'SQLPutData']
 fn sql_put_data(statement_handle SQLInteger, data voidptr, str_len_or_ind SQLInteger) i16 {
@@ -18,7 +19,8 @@ fn sql_put_data(statement_handle SQLInteger, data voidptr, str_len_or_ind SQLInt
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.i
 	stmt.invoke(true) or { return stmt.diag.error(err) }
 
 	return put_data(mut stmt, data, i64(str_len_or_ind)) or { stmt.diag.error(err) }

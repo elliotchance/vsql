@@ -4,10 +4,16 @@ module vsql
 //
 // WHENEVER is the action after each later <SQL procedure statement> that
 // raises a condition. SQLSTATE and CONSTRAINT are Feature B041.
+//
+// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Conformance Rules, 1
 
 // EmbeddedExceptionDeclarations are the <embedded exception declaration>s that
-// apply to the next <SQL procedure statement> (Syntax Rule 2), and that GOTO a
-// C label (CONTINUE does nothing, General Rule 1a).
+// apply to the next <SQL procedure statement>, and that GOTO a C label
+// (CONTINUE does nothing). The C compiler checks that each label can be used
+// where it's applied.
+//
+// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Syntax Rules, 2 and 5
+// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, General Rules, 1.a
 struct EmbeddedExceptionDeclarations {
 mut:
 	// sqlexception, sqlwarning and not_found are the labels of the <major
@@ -31,7 +37,11 @@ struct EmbeddedConstraint {
 }
 
 // declare reads the rest of a WHENEVER. schema is the default schema of the
-// implied module, for a <constraint name> that isn't qualified.
+// implied module, for a <constraint name> that isn't qualified. Any <SQLSTATE
+// class code> and <SQLSTATE subclass code> can be used, including those of
+// vsql that aren't in Table 38.
+//
+// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Syntax Rules, 4
 fn (mut w EmbeddedExceptionDeclarations) declare(mut t ModuleTokens, schema string) ! {
 	mut condition := ''
 	mut constraint := EmbeddedConstraint{}
@@ -77,8 +87,10 @@ fn (mut w EmbeddedExceptionDeclarations) declare(mut t ModuleTokens, schema stri
 		return sqlstate_42601('unexpected${t.near()}')
 	}
 
-	// SR 2. A declaration no longer applies after another one with the same
+	// A declaration no longer applies after another one with the same
 	// condition, or with a condition that includes it.
+	//
+	// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Syntax Rules, 2.a to 2.d
 	w.constraints = w.constraints.filter(!(condition == 'SQLEXCEPTION' || condition == '23'
 		|| (condition == 'CONSTRAINT' && it.catalog == constraint.catalog
 			&& it.schema == constraint.schema && it.name == constraint.name)))
@@ -119,7 +131,9 @@ fn (mut w EmbeddedExceptionDeclarations) declare(mut t ModuleTokens, schema stri
 
 // sqlstate_code reads an <SQLSTATE class code> or <SQLSTATE subclass code>,
 // which may be more than one token (such as 2B), but there can't be a
-// <separator> in it (SR 3).
+// <separator> in it.
+//
+// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Syntax Rules, 3
 fn (mut t ModuleTokens) sqlstate_code(what string, length int) !string {
 	mut code := ''
 	for {
@@ -142,9 +156,13 @@ fn (mut t ModuleTokens) sqlstate_code(what string, length int) !string {
 }
 
 // c_checks is the C after a statement that goes to the label of the condition
-// that it raised (General Rule 1): a violated constraint, then the SQLSTATE,
-// then its class, then its category. SR 1. The categories are X (any class
-// other than 00, 01 and 02), W (01) and N (02).
+// that it raised: a violated constraint, then the SQLSTATE, then its class,
+// then its category. The categories are X (any class other than 00, 01 and
+// 02), W (01) and N (02). None of them is successful completion (00).
+//
+// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, Syntax Rules, 1
+// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, General Rules, 1 and 1.b
+// ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, General Rules, 1.d.i to 1.d.iii
 fn (w EmbeddedExceptionDeclarations) c_checks() string {
 	mut s := ''
 	for c in w.constraints {

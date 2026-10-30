@@ -1,9 +1,12 @@
 /* section diagnostics_put */
 /*
  * vsql_m_put assigns a string to a CHARACTER or CHARACTER VARYING target that
- * has size bytes, including the null character (9.1 Retrieval assignment). A
- * CHARACTER is padded with spaces. It returns 1 if the string was truncated
- * (warning: string data, right truncation).
+ * has size bytes, including the null character. A CHARACTER is padded with
+ * spaces. It returns 1 if the string was truncated (warning: string data, right
+ * truncation).
+ *
+ * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 7.a-7.e
+ * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 6.b and 6.c
  */
 static int vsql_m_put(char *target, size_t size, int pad, const char *value) {
   size_t length = strlen(value);
@@ -23,6 +26,12 @@ static int vsql_m_put(char *target, size_t size, int pad, const char *value) {
 }
 
 /* section diagnostics_text */
+/*
+ * The class (or subclass) of an SQLSTATE that starts with 0 to 4 or A to H is
+ * defined by the standard, and any other is defined by vsql.
+ *
+ * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.b and 4.c
+ */
 static const char *vsql_m_origin(char c) {
   return strchr("01234ABCDEFGH", c) != NULL ? "ISO 9075" : "vsql";
 }
@@ -30,14 +39,22 @@ static const char *vsql_m_origin(char c) {
 /*
  * vsql_m_item_text is the value of a character string item in the first
  * diagnostics area. n is the condition number, or 0 (zero) for a statement
- * information item.
+ * information item. The MESSAGE_TEXT is the message of the condition, and the
+ * CONNECTION_NAME and SERVER_NAME are of the SQL-connection that raised it.
+ * The constraint is only identified for an integrity constraint violation.
+ *
+ * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.d, 4.f, 4.f.i, 4.m and 4.p
  */
 static const char *vsql_m_item_text(int item, long long n) {
   const char *s = NULL;
 
   switch (item) {
   case SQL_DIAG_MORE:
-    /* All of the conditions are kept. */
+    /* All of the conditions are kept, even though a condition can be dropped
+     * by DIAGNOSTICS SIZE (#798).
+     *
+     * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.b
+     */
     return "N";
   case VSQL_M_COMMAND_FUNCTION:
     return vsql_m_da.command_function;
@@ -72,8 +89,14 @@ static const char *vsql_m_item_text(int item, long long n) {
 }
 
 /* section diagnostics_number */
-/* vsql_m_item_number is the value of an exact numeric item, like
- * vsql_m_item_text. */
+/*
+ * vsql_m_item_number is the value of an exact numeric item, like
+ * vsql_m_item_text. NUMBER is the number of conditions of the last statement
+ * that isn't GET DIAGNOSTICS, and TRANSACTION_ACTIVE is 1 if the current
+ * SQL-connection has an active SQL-transaction.
+ *
+ * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.a, 2.j, 4.n and 4.o
+ */
 static long long vsql_m_item_number(int item, long long n) {
   const char *s;
   long long length = 0;

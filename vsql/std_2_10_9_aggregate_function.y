@@ -7,7 +7,9 @@ aggregate_function:
   }
 | general_set_function { $$.v = $1.v as AggregateFunction }
 
-// ALL is the same as no <set quantifier> (Syntax Rule 3).
+// ALL is the same as no <set quantifier>.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 3
 general_set_function:
   set_function_type left_paren value_expression right_paren {
     flag_if(mut yylex, $1.v as string == 'COUNT', 'F441')

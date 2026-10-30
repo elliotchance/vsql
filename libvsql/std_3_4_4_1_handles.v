@@ -7,7 +7,10 @@ import vsql
 //
 // A handle is an integer that identifies an allocated SQL-environment,
 // SQL-connection, SQL-statement or CLI descriptor area. Handles are never
-// reused, so a freed handle stays invalid.
+// reused, so a freed handle stays invalid (but they wrap after 2^31
+// allocations, which is #746). A handle can be used anywhere in the process,
+// which is implementation-defined. Memory isn't limited (the V GC panics if it
+// runs out), so there's no memory allocation error.
 
 const sql_handle_env = i16(1)
 const sql_handle_dbc = i16(2)
@@ -123,7 +126,9 @@ mut:
 	auto_ard i64
 	auto_apd i64
 	// The statement attributes, see Table 17, "Codes used for statement
-	// attributes".
+	// attributes", and their initial values (ISO/IEC 9075-3:2003(E), 4.4.6,
+	// Statement attributes). CURSOR HOLDABLE is HOLDABLE because the CURSOR
+	// COMMIT BEHAVIOR of GetInfo is PRESERVE.
 	cursor_scrollable   i64 = sql_nonscrollable
 	cursor_sensitivity  i64 = sql_asensitive
 	cursor_holdable     i64 = sql_holdable
@@ -183,7 +188,8 @@ fn (mut stmt Stmt) close_cursor() {
 }
 
 // open_cursor opens a cursor on the result of a query, positioned before the
-// first row.
+// first row. The rows are copied, so the cursor is insensitive (ISO/IEC
+// 9075-3:2003(E), 5.4, Implicit cursor, General Rules, 8.e).
 fn (mut stmt Stmt) open_cursor(result vsql.Result) {
 	mut r := result
 	mut rows := []vsql.Row{}

@@ -448,6 +448,9 @@ struct Agent
 .. code-block:: v
 
    pub struct Agent {
+   	// ISO/IEC 9075-2:2016(E), 4.42, SQL-connections
+   	// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 9.a
+   	// ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>, General Rules, 4
    	default_server string
    	options        AgentOptions
    mut:
@@ -464,7 +467,7 @@ struct Agent
    	warnings []IError
    }
 
-An Agent is an SQL-agent (ISO/IEC 9075-2:2016(E), 4.42), which runs <direct SQL statement>s on its SQL-connections, and is how "vsql cli" runs statements. Unlike a Connection, it can run the connection statements: CONNECT TO, SET CONNECTION and DISCONNECT.
+An Agent is an SQL-agent, which runs <direct SQL statement>s on its SQL-connections, and is how "vsql cli" runs statements. Unlike a Connection, it can run the connection statements: CONNECT TO, SET CONNECTION and DISCONNECT. The SQL-connections that aren't current are dormant, and each keeps its own SQL-session context.
 
 Each SQL-connection is to a different SQL-server (a database file, or a new in-memory database), and vsql doesn't support transactions that affect more than one SQL-server. So only the current SQL-connection can have an active SQL-transaction.
 
@@ -739,6 +742,8 @@ struct PreparedStmt
 .. code-block:: v
 
    pub struct PreparedStmt {
+   	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 11
+   	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.f
    	stmt Stmt
    	// params can be set on the statement and will be merged with the extra
    	// params at execution time. If name collisions occur, the params provided
@@ -746,7 +751,9 @@ struct PreparedStmt
    	params map[string]Value
    	// explain is true if the query was prefixed with EXPLAIN. The EXPLAIN is
    	// removed from the query before parsing since this keyword is not part of
-   	// the SQL standard.
+   	// the SQL standard. It's a <direct implementation-defined statement>.
+   	//
+   	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Syntax Rules, 3
    	explain bool
    	// writes is true if a query modifies the database, even though it would
    	// otherwise be read only. At the moment this is only when it contains a
@@ -764,6 +771,8 @@ struct PreparedStmt
    }
 
 A prepared statement is compiled and validated, but not executed. It can then be executed with a value for each dynamic parameter ("?") in the statement, named by its position: "?1", "?2", etc. Each invocation requires all of them to be passed in.
+
+A prepared statement isn't deallocated when an SQL-transaction ends, so it can still be executed after a COMMIT or ROLLBACK.
 
 struct Result
 -------------
@@ -860,7 +869,9 @@ struct Sequence
    	max_value i64
    }
 
-A SEQUENCE definition.
+A SEQUENCE definition, which is the sequence generator descriptor. The data type is always BIGINT (#399). The current base value is current_value plus increment_by when the sequence is unused, otherwise the next value after current_value.
+
+ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, General Rules, 2
 
 struct Server
 -------------

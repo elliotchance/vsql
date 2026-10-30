@@ -1,5 +1,8 @@
 %%
 
+// A <schema name> is always given, so it always needs F171.
+//
+// ISO/IEC 9075-2:2016(E), 11.1, <schema definition>, Conformance Rules, 3
 schema_definition:
   CREATE SCHEMA schema_name_clause {
     flag(mut yylex, 'F171')

@@ -1,0 +1,127 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 17, Transaction management
+17                       container    - -
+# 17.1, <start transaction statement>
+17.1                     implemented  vsql/std_2_17_1_start_transaction_statement.v tests/transaction.sql
+17.1/GR/1                implemented  vsql/std_2_17_1_start_transaction_statement.v tests/transaction.sql
+17.1/GR/2                container    - -
+17.1/GR/2.a              partial      vsql/std_2_17_1_start_transaction_statement.v tests/set-transaction.sql only the number of conditions; access modes and isolation levels are E152 (#554, #664)
+17.1/GR/2.b              implemented  vsql/std_2_17_1_start_transaction_statement.v tests/set-transaction.sql
+17.1/GR/3                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql
+17.1/GR/4                implemented  vsql/std_2_17_1_start_transaction_statement.v tests/set-transaction.sql
+17.1/GR/5                implemented  vsql/std_2_17_1_start_transaction_statement.v tests/transaction.sql
+17.1/CR/1                implemented  vsql/std_2_17_1_start_transaction_statement.y tests/flagging.sql
+# 17.2, <set transaction statement>
+17.2                     implemented  vsql/std_2_17_2_set_transaction_statement.v tests/set-transaction.sql
+17.2/SR/1                n/a          - - LOCAL (T251)
+17.2/GR/1                container    - -
+17.2/GR/1.a              implemented  vsql/std_2_17_2_set_transaction_statement.v tests/set-transaction.sql
+17.2/GR/1.a.i            implemented  vsql/std_2_17_2_set_transaction_statement.v tests/set-transaction.sql
+17.2/GR/1.a.ii           n/a          - - there's only one isolation level (E152-01, #664)
+17.2/GR/1.b              n/a          - - LOCAL (T251)
+17.2/GR/1.b.i            n/a          - - LOCAL (T251)
+17.2/GR/1.b.ii           n/a          - - LOCAL (T251)
+17.2/GR/1.b.iii          n/a          - - LOCAL (T251)
+17.2/GR/1.b.iv           n/a          - - LOCAL (T251)
+17.2/GR/1.b.v            n/a          - - LOCAL (T251)
+17.2/GR/1.b.vi           n/a          - - LOCAL (T251)
+17.2/GR/1.b.vii          n/a          - - LOCAL (T251)
+17.2/GR/2                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql
+17.2/GR/3                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql the most is 100
+17.2/GR/4                definition   - -
+17.2/GR/5                n/a          - - access modes (E152-02, #554)
+17.2/GR/6                n/a          - - isolation levels (E152-01, #664)
+17.2/GR/7                implemented  vsql/std_2_17_2_set_transaction_statement.v tests/set-transaction.sql
+17.2/CR/1                n/a          - - LOCAL (T251)
+# 17.3, <transaction characteristics>
+17.3                     partial      vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql only <diagnostics size>; access modes and isolation levels are E152 (#554, #664)
+17.3/SR/1                definition   - -
+17.3/SR/2                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql
+17.3/SR/3                deviates     vsql/std_2_17_1_start_transaction_statement.v tests/isolation-read-committed.sql always READ COMMITTED (#664)
+17.3/SR/4                n/a          - - access modes (E152-02) and READ UNCOMMITTED (F111-01)
+17.3/SR/5                container    - -
+17.3/SR/5.a              n/a          - - READ UNCOMMITTED (F111-01)
+17.3/SR/5.b              implemented  vsql/std_2_17_3_transaction_characteristics.v tests/transaction.sql every SQL-transaction is read-write
+17.3/SR/6                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql
+17.3/SR/7                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql it's 100
+17.3/CR/1                n/a          - - isolation levels (E152-01, F111)
+17.3/CR/2                missing      - - DIAGNOSTICS SIZE isn't flagged (#763)
+# 17.4, <set constraints mode statement>
+17.4                     implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/set-constraints.sql
+17.4/SR/1                implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/set-constraints.sql
+17.4/SR/2                implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/set-constraints.sql
+17.4/GR/1                definition   - -
+17.4/GR/2                implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/set-constraints.sql
+17.4/GR/2.a              implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/set-constraints.sql
+17.4/GR/2.b              implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/set-constraints.sql
+17.4/GR/3                implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/set-constraints.sql
+17.4/GR/3.a              implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/set-constraints.sql
+17.4/GR/3.b              implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/set-constraints.sql
+17.4/CR/1                implemented  vsql/std_2_17_4_set_constraints_mode_statement.y tests/flagging.sql
+# 17.5, <savepoint statement>
+17.5                     n/a          - - savepoints (T271)
+17.5/GR/1                n/a          - - savepoints (T271)
+17.5/GR/2                n/a          - - savepoints (T271)
+17.5/GR/3                n/a          - - savepoints (T271)
+17.5/GR/4                n/a          - - savepoints (T271)
+17.5/CR/1                n/a          - - savepoints (T271)
+# 17.6, <release savepoint statement>
+17.6                     n/a          - - savepoints (T271)
+17.6/GR/1                n/a          - - savepoints (T271)
+17.6/GR/2                n/a          - - savepoints (T271)
+17.6/GR/3                n/a          - - savepoints (T271)
+17.6/CR/1                n/a          - - savepoints (T271)
+# 17.7, <commit statement>
+17.7                     implemented  vsql/std_2_17_7_commit_statement.v tests/transaction.sql
+17.7/SR/1                n/a          - - chained transactions (T261)
+17.7/GR/1                n/a          - - there's no external transaction manager or encompassing transaction
+17.7/GR/2                n/a          - - there are no SQL-invoked routines (T321)
+17.7/GR/3                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+17.7/GR/4                n/a          - - there are no temporary tables (F531)
+17.7/GR/5                implemented  vsql/std_2_17_7_commit_statement.v tests/set-constraints.sql
+17.7/GR/6                container    - -
+17.7/GR/6.a              implemented  vsql/std_2_17_7_commit_statement.v tests/set-constraints.sql
+17.7/GR/6.b              untested     vsql/std_2_17_7_commit_statement.v - conflicts are found when a row is written, so an error at a COMMIT (such as an I/O error, 58030) isn't in class 40 and leaves the SQL-transaction active
+17.7/GR/6.c              implemented  vsql/std_2_17_7_commit_statement.v tests/transaction.sql
+17.7/GR/7                n/a          - - savepoints (T271)
+17.7/GR/8                n/a          - - there are no locators (T041)
+17.7/GR/9                implemented  vsql/std_2_17_7_commit_statement.v tests/transaction.sql
+17.7/GR/10               container    - -
+17.7/GR/10.a             n/a          - - chained transactions (T261)
+17.7/GR/10.b             container    - -
+17.7/GR/10.b.i           implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql only the condition area limit; access modes and isolation levels are E152 (#554, #664)
+17.7/GR/10.b.ii          implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/set-constraints.sql
+17.7/GR/11               impl-defined vsql/prepare.v tests/cursors.sql no prepared statement is deallocated
+17.7/CR/1                n/a          - - chained transactions (T261)
+# 17.8, <rollback statement>
+17.8                     implemented  vsql/std_2_17_8_rollback_statement.v tests/transaction.sql
+17.8/SR/1                n/a          - - chained transactions (T261)
+17.8/SR/2                n/a          - - chained transactions (T261)
+17.8/GR/1                n/a          - - there's no external transaction manager or encompassing transaction
+17.8/GR/2                implemented  vsql/std_2_17_8_rollback_statement.v tests/transaction.sql
+17.8/GR/2.a              n/a          - - there are no SQL-invoked routines (T321)
+17.8/GR/2.b              implemented  vsql/std_2_17_8_rollback_statement.v tests/transaction.sql
+17.8/GR/2.c              n/a          - - savepoints (T271)
+17.8/GR/2.d              n/a          - - there are no locators (T041)
+17.8/GR/2.e              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+17.8/GR/2.f              impl-defined vsql/prepare.v tests/cursors.sql no prepared statement is deallocated
+17.8/GR/2.g              implemented  vsql/std_2_17_8_rollback_statement.v tests/transaction.sql
+17.8/GR/2.h              container    - -
+17.8/GR/2.h.i            n/a          - - chained transactions (T261)
+17.8/GR/2.h.ii           container    - -
+17.8/GR/2.h.ii.1         implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql only the condition area limit; access modes and isolation levels are E152 (#554, #664)
+17.8/GR/2.h.ii.2         implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/set-constraints.sql
+17.8/GR/3                n/a          - - savepoints (T271)
+17.8/GR/3.a              n/a          - - savepoints (T271)
+17.8/GR/3.b              n/a          - - savepoints (T271)
+17.8/GR/3.c              n/a          - - savepoints (T271)
+17.8/GR/3.d              n/a          - - savepoints (T271)
+17.8/GR/3.e              n/a          - - savepoints (T271)
+17.8/GR/3.f              n/a          - - savepoints (T271)
+17.8/GR/3.g              n/a          - - savepoints (T271)
+17.8/GR/3.h              n/a          - - savepoints (T271)
+17.8/GR/3.i              n/a          - - savepoints (T271)
+17.8/GR/3.j              n/a          - - savepoints (T271)
+17.8/CR/1                n/a          - - savepoints (T271)
+17.8/CR/2                n/a          - - chained transactions (T261)

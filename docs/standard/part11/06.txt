@@ -1,0 +1,521 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6, Definition Schema
+6                        container    - -
+# 6.1, DEFINITION_SCHEMA Schema
+6.1                      implemented  vsql/std_11_5_information_schema.v tests/information-schema.sql simulated by the INFORMATION_SCHEMA views (4.1)
+# 6.2, EQUAL_KEY_DEGREES assertion
+6.2                      implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
+# 6.3, KEY_DEGREE_GREATER_THAN_OR_EQUAL_TO_1 assertion
+6.3                      untested     vsql/std_2_11_7_unique_constraint_definition.v - by the grammar
+# 6.4, UNIQUE_CONSTRAINT_NAME assertion
+6.4                      implemented  vsql/table.v tests/constraint-names.sql there are no domains or assertions
+# 6.5, ASSERTIONS base table
+6.5                      n/a          - - assertions (F521)
+6.5/DE/1                 n/a          - - assertions (F521)
+6.5/DE/2                 n/a          - - assertions (F521)
+6.5/DE/3                 n/a          - - assertions (F521)
+# 6.6, ATTRIBUTES base table
+6.6                      n/a          - - user-defined types (S023)
+6.6/DE/1                 n/a          - - user-defined types (S023)
+6.6/DE/2                 n/a          - - user-defined types (S023)
+6.6/DE/3                 n/a          - - user-defined types (S023)
+6.6/DE/4                 n/a          - - user-defined types (S023)
+6.6/DE/5                 n/a          - - user-defined types (S023)
+6.6/DE/6                 n/a          - - user-defined types (S023)
+# 6.7, AUTHORIZATIONS base table
+6.7                      missing      - - authorization identifiers and privileges (#732)
+6.7/DE/1                 missing      - - authorization identifiers and privileges (#732)
+# 6.8, CATALOG_NAMES base table
+6.8                      missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.8/DE/1                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 6.9, CHARACTER_ENCODING_FORMS base table
+6.9                      missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.9/DE/1                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.9/DE/2                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.9/DE/3                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 6.10, CHARACTER_REPERTOIRES base table
+6.10                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.10/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.10/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.10/DE/3                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 6.11, CHARACTER_SETS base table
+6.11                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11/DE/3                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11/DE/4                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11/DE/5                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11/DE/5.a              missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11/DE/5.b              missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11/DE/6                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11/DE/6.a              missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11/DE/6.b              missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11/DE/7                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11/DE/7.a              missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.11/DE/7.b              missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 6.12, CHECK_COLUMN_USAGE base table
+6.12                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.12/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.12/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 6.13, CHECK_CONSTRAINT_ROUTINE_USAGE base table
+6.13                     missing      - - SQL-invoked routines (#733)
+6.13/DE/1                missing      - - SQL-invoked routines (#733)
+6.13/DE/2                missing      - - SQL-invoked routines (#733)
+6.13/DE/3                missing      - - SQL-invoked routines (#733)
+# 6.14, CHECK_CONSTRAINTS base table
+6.14                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-check-constraints.sql the table check constraints (and NOT NULL), there are no domain constraints (F251) or assertions (F521)
+6.14/DE/1                implemented  vsql/std_11_5_information_schema.v tests/information-schema-check-constraints.sql
+6.14/DE/2                container    - -
+6.14/DE/2.a              implemented  vsql/std_11_5_information_schema.v tests/information-schema-check-constraints.sql
+6.14/DE/2.b              untested     vsql/std_11_5_information_schema.v - a search condition longer than 10485760 characters
+# 6.15, CHECK_TABLE_USAGE base table
+6.15                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.15/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.15/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 6.16, COLLATIONS base table
+6.16                     n/a          - - collations (F690)
+6.16/DE/1                n/a          - - collations (F690)
+6.16/DE/2                n/a          - - collations (F690)
+6.16/DE/3                n/a          - - collations (F690)
+# 6.17, COLLATION_CHARACTER_SET_APPLICABILITY base table
+6.17                     n/a          - - collations (F690)
+6.17/DE/1                n/a          - - collations (F690)
+6.17/DE/2                n/a          - - collations (F690)
+# 6.18, COLUMN_COLUMN_USAGE base table
+6.18                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.18/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.18/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 6.19, COLUMN_PRIVILEGES base table
+6.19                     missing      - - authorization identifiers and privileges (#732)
+6.19/DE/1                missing      - - authorization identifiers and privileges (#732)
+6.19/DE/2                missing      - - authorization identifiers and privileges (#732)
+6.19/DE/3                missing      - - authorization identifiers and privileges (#732)
+6.19/DE/4                missing      - - authorization identifiers and privileges (#732)
+6.19/DE/5                missing      - - authorization identifiers and privileges (#732)
+# 6.20, COLUMNS base table
+6.20                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+6.20/DE/1                container    - -
+6.20/DE/1.a              implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+6.20/DE/1.b              partial      vsql/std_11_5_information_schema.v tests/information-schema-columns.sql only the views of the INFORMATION_SCHEMA, which describe themselves (#731)
+6.20/DE/2                implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+6.20/DE/3                implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+6.20/DE/4                implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+6.20/DE/5                implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql always NULL, there are no domains (F251)
+6.20/DE/6                implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+6.20/DE/7                container    - -
+6.20/DE/7.a              implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+6.20/DE/7.b              untested     vsql/std_11_5_information_schema.v - a default longer than 10485760 characters
+6.20/DE/7.c              implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+6.20/DE/8                implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+6.20/DE/9                implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql always NO, there are no typed tables (S081)
+6.20/DE/10               implemented  vsql/std_11_5_information_schema.v tests/identity-column.sql
+6.20/DE/11               implemented  vsql/std_11_5_information_schema.v tests/identity-column.sql
+6.20/DE/12               implemented  vsql/std_11_5_information_schema.v tests/identity-column.sql,tests/identity-column-alter.sql
+6.20/DE/13               implemented  vsql/std_11_5_information_schema.v tests/identity-column.sql,tests/identity-column-alter.sql
+6.20/DE/14               implemented  vsql/std_11_5_information_schema.v tests/identity-column.sql,tests/identity-column-alter.sql
+6.20/DE/15               implemented  vsql/std_11_5_information_schema.v tests/identity-column.sql,tests/identity-column-alter.sql
+6.20/DE/16               implemented  vsql/std_11_5_information_schema.v tests/identity-column.sql
+6.20/DE/17               implemented  vsql/std_11_5_information_schema.v tests/generated-column.sql
+6.20/DE/18               implemented  vsql/std_11_5_information_schema.v tests/generated-column.sql
+6.20/DE/19               implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+# 6.21, DATA_TYPE_DESCRIPTOR base table
+6.21                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+6.21/DE/1                implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql only TABLE, the only object type that the COLUMNS view uses
+6.21/DE/2                impl-defined vsql/std_11_5_information_schema.v tests/information-schema-columns.sql the ordinal position of the column
+6.21/DE/3                implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql FLOAT(p) is DOUBLE PRECISION
+6.21/DE/4                container    - -
+6.21/DE/4.a              implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql octets are 4 for each character (UTF-8)
+6.21/DE/4.b              n/a          - - binary strings (T021)
+6.21/DE/4.c              n/a          - - reference types (S041)
+6.21/DE/4.d              implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+6.21/DE/5                implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql UTF8 in the INFORMATION_SCHEMA, with no collation (F690)
+6.21/DE/6                implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql the precision of SMALLINT, INTEGER and BIGINT is in bits
+6.21/DE/7                n/a          - - user-defined and reference types (S023, S041)
+6.21/DE/8                implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql always NULL, there are no interval types
+6.21/DE/9                implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql always NULL, there are no interval types
+6.21/DE/10               container    - -
+6.21/DE/10.a             n/a          - - user-defined types (S023)
+6.21/DE/10.b             n/a          - - reference types (S041)
+6.21/DE/10.c             implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql
+6.21/DE/11               implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql always NULL, there are no reference types (S041)
+6.21/DE/12               impl-defined vsql/std_11_5_information_schema.v tests/information-schema-columns.sql the same as the data type of any other column
+6.21/DE/13               implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql always NULL, there are no arrays (S091)
+6.21/DE/14               n/a          - - row types (T051)
+# 6.22, DIRECT_SUPERTABLES base table
+6.22                     n/a          - - typed tables (S081)
+6.22/DE/1                n/a          - - typed tables (S081)
+6.22/DE/2                n/a          - - typed tables (S081)
+# 6.23, DIRECT_SUPERTYPES base table
+6.23                     n/a          - - type hierarchies (S024)
+6.23/DE/1                n/a          - - type hierarchies (S024)
+6.23/DE/2                n/a          - - type hierarchies (S024)
+# 6.24, DOMAIN_CONSTRAINTS base table
+6.24                     n/a          - - domains (F251)
+6.24/DE/1                n/a          - - domains (F251)
+6.24/DE/2                n/a          - - domains (F251)
+6.24/DE/3                n/a          - - domains (F251)
+6.24/DE/4                n/a          - - domains (F251)
+# 6.25, DOMAINS base table
+6.25                     n/a          - - domains (F251)
+6.25/DE/1                n/a          - - domains (F251)
+6.25/DE/2                n/a          - - domains (F251)
+6.25/DE/3                n/a          - - domains (F251)
+# 6.26, ELEMENT_TYPES base table
+6.26                     n/a          - - arrays and multisets (S091, S271)
+6.26/DE/1                n/a          - - arrays and multisets (S091, S271)
+6.26/DE/2                n/a          - - arrays and multisets (S091, S271)
+6.26/DE/3                n/a          - - arrays and multisets (S091, S271)
+# 6.27, FIELDS base table
+6.27                     n/a          - - row types (T051)
+6.27/DE/1                n/a          - - row types (T051)
+6.27/DE/2                n/a          - - row types (T051)
+6.27/DE/3                n/a          - - row types (T051)
+6.27/DE/4                n/a          - - row types (T051)
+6.27/DE/5                n/a          - - row types (T051)
+# 6.28, KEY_COLUMN_USAGE base table
+6.28                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-key-column-usage.sql
+6.28/DE/1                implemented  vsql/std_11_5_information_schema.v tests/information-schema-key-column-usage.sql
+6.28/DE/2                implemented  vsql/std_11_5_information_schema.v tests/information-schema-key-column-usage.sql
+6.28/DE/3                implemented  vsql/std_11_5_information_schema.v tests/information-schema-key-column-usage.sql
+6.28/DE/4                container    - -
+6.28/DE/4.a              implemented  vsql/std_11_5_information_schema.v tests/information-schema-key-column-usage.sql
+6.28/DE/4.b              implemented  vsql/std_11_5_information_schema.v tests/information-schema-key-column-usage.sql
+# 6.29, METHOD_SPECIFICATION_PARAMETERS base table
+6.29                     n/a          - - user-defined types (S023)
+6.29/DE/1                n/a          - - user-defined types (S023)
+6.29/DE/2                n/a          - - user-defined types (S023)
+6.29/DE/3                n/a          - - user-defined types (S023)
+6.29/DE/4                n/a          - - user-defined types (S023)
+6.29/DE/5                n/a          - - user-defined types (S023)
+6.29/DE/6                n/a          - - user-defined types (S023)
+6.29/DE/7                n/a          - - user-defined types (S023)
+6.29/DE/8                n/a          - - user-defined types (S023)
+6.29/DE/8.a              n/a          - - user-defined types (S023)
+6.29/DE/8.b              n/a          - - user-defined types (S023)
+6.29/DE/9                n/a          - - user-defined types (S023)
+# 6.30, METHOD_SPECIFICATIONS base table
+6.30                     n/a          - - user-defined types (S023)
+6.30/DE/1                n/a          - - user-defined types (S023)
+6.30/DE/2                n/a          - - user-defined types (S023)
+6.30/DE/3                n/a          - - user-defined types (S023)
+6.30/DE/4                n/a          - - user-defined types (S023)
+6.30/DE/5                n/a          - - user-defined types (S023)
+6.30/DE/6                n/a          - - user-defined types (S023)
+6.30/DE/7                n/a          - - user-defined types (S023)
+6.30/DE/8                n/a          - - user-defined types (S023)
+6.30/DE/9                n/a          - - user-defined types (S023)
+6.30/DE/10               n/a          - - user-defined types (S023)
+6.30/DE/10.a             n/a          - - user-defined types (S023)
+6.30/DE/10.b             n/a          - - user-defined types (S023)
+6.30/DE/10.b.i           n/a          - - user-defined types (S023)
+6.30/DE/10.b.ii          n/a          - - user-defined types (S023)
+6.30/DE/10.b.iii         n/a          - - user-defined types (S023)
+6.30/DE/11               n/a          - - user-defined types (S023)
+6.30/DE/12               n/a          - - user-defined types (S023)
+6.30/DE/13               n/a          - - user-defined types (S023)
+6.30/DE/14               n/a          - - user-defined types (S023)
+6.30/DE/15               n/a          - - user-defined types (S023)
+6.30/DE/15.a             n/a          - - user-defined types (S023)
+6.30/DE/15.b             n/a          - - user-defined types (S023)
+6.30/DE/15.b.i           n/a          - - user-defined types (S023)
+6.30/DE/15.b.ii          n/a          - - user-defined types (S023)
+# 6.31, PARAMETERS base table
+6.31                     missing      - - SQL-invoked routines (#733)
+6.31/DE/1                missing      - - SQL-invoked routines (#733)
+6.31/DE/2                missing      - - SQL-invoked routines (#733)
+6.31/DE/3                missing      - - SQL-invoked routines (#733)
+6.31/DE/4                missing      - - SQL-invoked routines (#733)
+6.31/DE/5                missing      - - SQL-invoked routines (#733)
+6.31/DE/6                missing      - - SQL-invoked routines (#733)
+6.31/DE/7                missing      - - SQL-invoked routines (#733)
+6.31/DE/7.a              missing      - - SQL-invoked routines (#733)
+6.31/DE/7.b              missing      - - SQL-invoked routines (#733)
+6.31/DE/8                missing      - - SQL-invoked routines (#733)
+6.31/DE/9                missing      - - SQL-invoked routines (#733)
+# 6.32, REFERENCED_TYPES base table
+6.32                     n/a          - - reference types (S041)
+6.32/DE/1                n/a          - - reference types (S041)
+6.32/DE/2                n/a          - - reference types (S041)
+6.32/DE/3                n/a          - - reference types (S041)
+# 6.33, REFERENTIAL_CONSTRAINTS base table
+6.33                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-referential-constraints.sql
+6.33/DE/1                implemented  vsql/std_11_5_information_schema.v tests/information-schema-referential-constraints.sql
+6.33/DE/2                implemented  vsql/std_11_5_information_schema.v tests/information-schema-referential-constraints.sql
+6.33/DE/3                implemented  vsql/std_11_5_information_schema.v tests/information-schema-referential-constraints.sql always NONE, there are no MATCH types (F741)
+6.33/DE/4                implemented  vsql/std_11_5_information_schema.v tests/information-schema-referential-constraints.sql,tests/foreign-key-update-rules.sql there is no RESTRICT (T191)
+6.33/DE/5                implemented  vsql/std_11_5_information_schema.v tests/information-schema-referential-constraints.sql,tests/foreign-key-delete-rules.sql there is no RESTRICT (T191)
+# 6.34, ROLE_AUTHORIZATION_DESCRIPTORS base table
+6.34                     n/a          - - roles (T331)
+6.34/DE/1                n/a          - - roles (T331)
+6.34/DE/2                n/a          - - roles (T331)
+6.34/DE/3                n/a          - - roles (T331)
+6.34/DE/4                n/a          - - roles (T331)
+# 6.35, ROUTINE_COLUMN_USAGE base table
+6.35                     missing      - - SQL-invoked routines (#733)
+6.35/DE/1                missing      - - SQL-invoked routines (#733)
+6.35/DE/1.a              missing      - - SQL-invoked routines (#733)
+6.35/DE/1.b              missing      - - SQL-invoked routines (#733)
+6.35/DE/1.c              missing      - - SQL-invoked routines (#733)
+6.35/DE/1.d              missing      - - SQL-invoked routines (#733)
+6.35/DE/2                missing      - - SQL-invoked routines (#733)
+6.35/DE/3                missing      - - SQL-invoked routines (#733)
+# 6.36, ROUTINE_PRIVILEGES base table
+6.36                     missing      - - authorization identifiers and privileges (#732)
+6.36/DE/1                missing      - - authorization identifiers and privileges (#732)
+6.36/DE/2                missing      - - authorization identifiers and privileges (#732)
+6.36/DE/3                missing      - - authorization identifiers and privileges (#732)
+6.36/DE/4                missing      - - authorization identifiers and privileges (#732)
+6.36/DE/5                missing      - - authorization identifiers and privileges (#732)
+# 6.37, ROUTINE_ROUTINE_USAGE base table
+6.37                     missing      - - SQL-invoked routines (#733)
+6.37/DE/1                missing      - - SQL-invoked routines (#733)
+6.37/DE/2                missing      - - SQL-invoked routines (#733)
+6.37/DE/3                missing      - - SQL-invoked routines (#733)
+# 6.38, ROUTINE_SEQUENCE_USAGE base table
+6.38                     missing      - - SQL-invoked routines (#733)
+6.38/DE/1                missing      - - SQL-invoked routines (#733)
+6.38/DE/2                missing      - - SQL-invoked routines (#733)
+6.38/DE/3                missing      - - SQL-invoked routines (#733)
+# 6.39, ROUTINE_TABLE_USAGE base table
+6.39                     missing      - - SQL-invoked routines (#733)
+6.39/DE/1                missing      - - SQL-invoked routines (#733)
+6.39/DE/1.a              missing      - - SQL-invoked routines (#733)
+6.39/DE/1.b              missing      - - SQL-invoked routines (#733)
+6.39/DE/1.c              missing      - - SQL-invoked routines (#733)
+6.39/DE/1.d              missing      - - SQL-invoked routines (#733)
+6.39/DE/1.e              missing      - - SQL-invoked routines (#733)
+6.39/DE/1.f              missing      - - SQL-invoked routines (#733)
+6.39/DE/2                missing      - - SQL-invoked routines (#733)
+6.39/DE/3                missing      - - SQL-invoked routines (#733)
+# 6.40, ROUTINES base table
+6.40                     missing      - - SQL-invoked routines (#733)
+6.40/DE/1                missing      - - SQL-invoked routines (#733)
+6.40/DE/2                missing      - - SQL-invoked routines (#733)
+6.40/DE/3                missing      - - SQL-invoked routines (#733)
+6.40/DE/4                missing      - - SQL-invoked routines (#733)
+6.40/DE/4.a              missing      - - SQL-invoked routines (#733)
+6.40/DE/4.b              missing      - - SQL-invoked routines (#733)
+6.40/DE/5                missing      - - SQL-invoked routines (#733)
+6.40/DE/6                missing      - - SQL-invoked routines (#733)
+6.40/DE/7                missing      - - SQL-invoked routines (#733)
+6.40/DE/8                missing      - - SQL-invoked routines (#733)
+6.40/DE/9                missing      - - SQL-invoked routines (#733)
+6.40/DE/10               missing      - - SQL-invoked routines (#733)
+6.40/DE/11               missing      - - SQL-invoked routines (#733)
+6.40/DE/11.a             missing      - - SQL-invoked routines (#733)
+6.40/DE/11.b             missing      - - SQL-invoked routines (#733)
+6.40/DE/12               missing      - - SQL-invoked routines (#733)
+6.40/DE/12.a             missing      - - SQL-invoked routines (#733)
+6.40/DE/12.a.i           missing      - - SQL-invoked routines (#733)
+6.40/DE/12.a.ii          missing      - - SQL-invoked routines (#733)
+6.40/DE/12.a.iii         missing      - - SQL-invoked routines (#733)
+6.40/DE/12.b             missing      - - SQL-invoked routines (#733)
+6.40/DE/13               missing      - - SQL-invoked routines (#733)
+6.40/DE/13.a             missing      - - SQL-invoked routines (#733)
+6.40/DE/13.b             missing      - - SQL-invoked routines (#733)
+6.40/DE/14               missing      - - SQL-invoked routines (#733)
+6.40/DE/14.a             missing      - - SQL-invoked routines (#733)
+6.40/DE/14.b             missing      - - SQL-invoked routines (#733)
+6.40/DE/15               missing      - - SQL-invoked routines (#733)
+6.40/DE/15.a             missing      - - SQL-invoked routines (#733)
+6.40/DE/15.b             missing      - - SQL-invoked routines (#733)
+6.40/DE/16               missing      - - SQL-invoked routines (#733)
+6.40/DE/17               missing      - - SQL-invoked routines (#733)
+6.40/DE/18               missing      - - SQL-invoked routines (#733)
+6.40/DE/19               missing      - - SQL-invoked routines (#733)
+6.40/DE/20               missing      - - SQL-invoked routines (#733)
+6.40/DE/21               missing      - - SQL-invoked routines (#733)
+6.40/DE/22               missing      - - SQL-invoked routines (#733)
+6.40/DE/23               missing      - - SQL-invoked routines (#733)
+6.40/DE/23.a             missing      - - SQL-invoked routines (#733)
+6.40/DE/23.b             missing      - - SQL-invoked routines (#733)
+6.40/DE/23.b.i           missing      - - SQL-invoked routines (#733)
+6.40/DE/23.b.ii          missing      - - SQL-invoked routines (#733)
+6.40/DE/24               missing      - - SQL-invoked routines (#733)
+6.40/DE/25               missing      - - SQL-invoked routines (#733)
+# 6.41, SCHEMATA base table
+6.41                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.41/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.41/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.41/DE/3                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.41/DE/4                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.41/DE/5                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.41/DE/5.a              missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.41/DE/5.b              missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 6.42, SEQUENCES base table
+6.42                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.42/DE/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.42/DE/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.42/DE/3                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+6.42/DE/4                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 6.43, SQL_CONFORMANCE base table
+6.43                     missing      - - SQL_FEATURES (#654)
+6.43/DE/1                missing      - - SQL_FEATURES (#654)
+6.43/DE/2                missing      - - SQL_FEATURES (#654)
+6.43/DE/3                missing      - - SQL_FEATURES (#654)
+6.43/DE/4                missing      - - SQL_FEATURES (#654)
+6.43/DE/5                missing      - - SQL_FEATURES (#654)
+6.43/DE/6                missing      - - SQL_FEATURES (#654)
+6.43/DE/7                missing      - - SQL_FEATURES (#654)
+6.43/DE/8                missing      - - SQL_FEATURES (#654)
+# 6.44, SQL_IMPLEMENTATION_INFO base table
+6.44                     missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+6.44/DE/1                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+6.44/DE/2                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+6.44/DE/3                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+6.44/DE/4                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+# 6.45, SQL_SIZING base table
+6.45                     missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+6.45/DE/1                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+6.45/DE/2                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+6.45/DE/3                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+6.45/DE/4                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+# 6.46, SQL_SIZING_PROFILES base table
+6.46                     n/a          - - enhanced documentation tables (F502)
+6.46/DE/1                n/a          - - enhanced documentation tables (F502)
+6.46/DE/2                n/a          - - enhanced documentation tables (F502)
+6.46/DE/3                n/a          - - enhanced documentation tables (F502)
+6.46/DE/4                n/a          - - enhanced documentation tables (F502)
+6.46/DE/5                n/a          - - enhanced documentation tables (F502)
+# 6.47, TABLE_CONSTRAINTS base table
+6.47                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-table-constraints.sql
+6.47/DE/1                impl-defined vsql/std_11_5_information_schema.v tests/information-schema-table-constraints.sql T_PRIMARY_KEY, T_UNIQUE_1, T_FOREIGN_KEY_1, T_CHECK_1 or T_NOT_NULL_1 (for the column) when not named
+6.47/DE/2                implemented  vsql/std_11_5_information_schema.v tests/information-schema-table-constraints.sql NOT NULL is a CHECK
+6.47/DE/3                implemented  vsql/std_11_5_information_schema.v tests/information-schema-table-constraints.sql
+6.47/DE/4                implemented  vsql/std_11_5_information_schema.v tests/information-schema-table-constraints.sql,tests/constraint-characteristics.sql
+6.47/DE/5                implemented  vsql/std_11_5_information_schema.v tests/information-schema-table-constraints.sql,tests/constraint-characteristics.sql
+# 6.48, TABLE_METHOD_PRIVILEGES base table
+6.48                     n/a          - - type hierarchies (S024)
+6.48/DE/1                n/a          - - type hierarchies (S024)
+6.48/DE/2                n/a          - - type hierarchies (S024)
+6.48/DE/3                n/a          - - type hierarchies (S024)
+6.48/DE/4                n/a          - - type hierarchies (S024)
+6.48/DE/5                n/a          - - type hierarchies (S024)
+# 6.49, TABLE_PRIVILEGES base table
+6.49                     missing      - - authorization identifiers and privileges (#732)
+6.49/DE/1                missing      - - authorization identifiers and privileges (#732)
+6.49/DE/2                missing      - - authorization identifiers and privileges (#732)
+6.49/DE/3                missing      - - authorization identifiers and privileges (#732)
+6.49/DE/4                missing      - - authorization identifiers and privileges (#732)
+6.49/DE/5                missing      - - authorization identifiers and privileges (#732)
+6.49/DE/6                missing      - - authorization identifiers and privileges (#732)
+# 6.50, TABLES base table
+6.50                     partial      vsql/std_11_5_information_schema.v tests/information-schema-tables.sql,tests/information-schema.sql TABLE_TYPE is VIEW for the INFORMATION_SCHEMA, but there is no VIEWS view for TABLES_CHECK_NOT_VIEW (#731)
+6.50/DE/1                implemented  vsql/std_11_5_information_schema.v tests/information-schema-tables.sql
+6.50/DE/2                implemented  vsql/std_11_5_information_schema.v tests/information-schema-tables.sql,tests/information-schema.sql BASE TABLE or VIEW, there are no temporary tables (F531)
+6.50/DE/3                implemented  vsql/std_11_5_information_schema.v tests/information-schema-tables.sql always NULL, there are no typed tables (S081)
+6.50/DE/4                implemented  vsql/std_11_5_information_schema.v tests/information-schema-tables.sql always NULL, there are no temporary tables (F531)
+6.50/DE/5                implemented  vsql/std_11_5_information_schema.v tests/information-schema-tables.sql always NULL, there are no typed tables (S081)
+6.50/DE/6                implemented  vsql/std_11_5_information_schema.v tests/information-schema-tables.sql always NULL, there are no typed tables (S081)
+6.50/DE/7                container    - -
+6.50/DE/7.a              n/a          - - updatable joins, unions and columns (T111)
+6.50/DE/7.b              implemented  vsql/std_11_5_information_schema.v tests/information-schema-tables.sql,tests/information-schema.sql
+6.50/DE/8                implemented  vsql/std_11_5_information_schema.v tests/information-schema-tables.sql always NO, there are no typed tables (S081)
+# 6.51, TRANSFORMS base table
+6.51                     n/a          - - transforms (S241)
+6.51/DE/1                n/a          - - transforms (S241)
+6.51/DE/2                n/a          - - transforms (S241)
+6.51/DE/3                n/a          - - transforms (S241)
+# 6.52, TRANSLATIONS base table
+6.52                     n/a          - - translations (F695)
+6.52/DE/1                n/a          - - translations (F695)
+6.52/DE/2                n/a          - - translations (F695)
+6.52/DE/3                n/a          - - translations (F695)
+6.52/DE/4                n/a          - - translations (F695)
+# 6.53, TRIGGERED_UPDATE_COLUMNS base table
+6.53                     n/a          - - triggers (T211)
+6.53/DE/1                n/a          - - triggers (T211)
+6.53/DE/2                n/a          - - triggers (T211)
+# 6.54, TRIGGER_COLUMN_USAGE base table
+6.54                     n/a          - - triggers (T211)
+6.54/DE/1                n/a          - - triggers (T211)
+6.54/DE/1.a              n/a          - - triggers (T211)
+6.54/DE/1.b              n/a          - - triggers (T211)
+6.54/DE/1.c              n/a          - - triggers (T211)
+6.54/DE/1.d              n/a          - - triggers (T211)
+6.54/DE/1.e              n/a          - - triggers (T211)
+6.54/DE/2                n/a          - - triggers (T211)
+6.54/DE/3                n/a          - - triggers (T211)
+# 6.55, TRIGGER_ROUTINE_USAGE base table
+6.55                     n/a          - - triggers (T211)
+6.55/DE/1                n/a          - - triggers (T211)
+6.55/DE/2                n/a          - - triggers (T211)
+6.55/DE/3                n/a          - - triggers (T211)
+# 6.56, TRIGGER_SEQUENCE_USAGE base table
+6.56                     n/a          - - triggers (T211)
+6.56/DE/1                n/a          - - triggers (T211)
+6.56/DE/2                n/a          - - triggers (T211)
+6.56/DE/3                n/a          - - triggers (T211)
+# 6.57, TRIGGER_TABLE_USAGE base table
+6.57                     n/a          - - triggers (T211)
+6.57/DE/1                n/a          - - triggers (T211)
+6.57/DE/1.a              n/a          - - triggers (T211)
+6.57/DE/1.b              n/a          - - triggers (T211)
+6.57/DE/1.c              n/a          - - triggers (T211)
+6.57/DE/1.d              n/a          - - triggers (T211)
+6.57/DE/1.e              n/a          - - triggers (T211)
+6.57/DE/1.f              n/a          - - triggers (T211)
+6.57/DE/2                n/a          - - triggers (T211)
+6.57/DE/3                n/a          - - triggers (T211)
+# 6.58, TRIGGERS base table
+6.58                     n/a          - - triggers (T211)
+6.58/DE/1                n/a          - - triggers (T211)
+6.58/DE/2                n/a          - - triggers (T211)
+6.58/DE/3                n/a          - - triggers (T211)
+6.58/DE/4                n/a          - - triggers (T211)
+6.58/DE/5                n/a          - - triggers (T211)
+6.58/DE/6                n/a          - - triggers (T211)
+6.58/DE/7                n/a          - - triggers (T211)
+6.58/DE/8                n/a          - - triggers (T211)
+6.58/DE/9                n/a          - - triggers (T211)
+6.58/DE/10               n/a          - - triggers (T211)
+6.58/DE/11               n/a          - - triggers (T211)
+6.58/DE/12               n/a          - - triggers (T211)
+6.58/DE/13               n/a          - - triggers (T211)
+# 6.59, USAGE_PRIVILEGES base table
+6.59                     missing      - - authorization identifiers and privileges (#732)
+6.59/DE/1                missing      - - authorization identifiers and privileges (#732)
+6.59/DE/2                missing      - - authorization identifiers and privileges (#732)
+6.59/DE/3                missing      - - authorization identifiers and privileges (#732)
+6.59/DE/4                missing      - - authorization identifiers and privileges (#732)
+6.59/DE/5                missing      - - authorization identifiers and privileges (#732)
+# 6.60, USER_DEFINED_TYPE_PRIVILEGES base table
+6.60                     n/a          - - user-defined types (S023)
+6.60/DE/1                n/a          - - user-defined types (S023)
+6.60/DE/2                n/a          - - user-defined types (S023)
+6.60/DE/3                n/a          - - user-defined types (S023)
+6.60/DE/4                n/a          - - user-defined types (S023)
+# 6.61, USER_DEFINED_TYPES base table
+6.61                     n/a          - - user-defined types (S023)
+6.61/DE/1                n/a          - - user-defined types (S023)
+6.61/DE/2                n/a          - - user-defined types (S023)
+6.61/DE/3                n/a          - - user-defined types (S023)
+6.61/DE/4                n/a          - - user-defined types (S023)
+6.61/DE/5                n/a          - - user-defined types (S023)
+6.61/DE/6                n/a          - - user-defined types (S023)
+6.61/DE/7                n/a          - - user-defined types (S023)
+6.61/DE/8                n/a          - - user-defined types (S023)
+6.61/DE/9                n/a          - - user-defined types (S023)
+6.61/DE/10               n/a          - - user-defined types (S023)
+# 6.62, VIEW_COLUMN_USAGE base table
+6.62                     missing      - - views (#731)
+6.62/DE/1                missing      - - views (#731)
+6.62/DE/2                missing      - - views (#731)
+# 6.63, VIEW_ROUTINE_USAGE base table
+6.63                     missing      - - views (#731)
+6.63/DE/1                missing      - - views (#731)
+6.63/DE/2                missing      - - views (#731)
+6.63/DE/3                missing      - - views (#731)
+# 6.64, VIEW_TABLE_USAGE base table
+6.64                     missing      - - views (#731)
+6.64/DE/1                missing      - - views (#731)
+6.64/DE/2                missing      - - views (#731)
+# 6.65, VIEWS base table
+6.65                     missing      - - views (#731)
+6.65/DE/1                missing      - - views (#731)
+6.65/DE/2                missing      - - views (#731)
+6.65/DE/2.a              missing      - - views (#731)
+6.65/DE/2.b              missing      - - views (#731)
+6.65/DE/3                missing      - - views (#731)
+6.65/DE/4                missing      - - views (#731)

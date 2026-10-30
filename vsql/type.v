@@ -4,6 +4,12 @@ module vsql
 
 import math
 
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.4, SQL data types
+// ISO/IEC 9075-1:2003(E), 4.4.1, General data type information
+// ISO/IEC 9075-1:2003(E), 4.4.3, Predefined types
+
 // Type is a fully-qualified SQL type, such as the type of a column or a value.
 pub struct Type {
 pub mut:
@@ -135,10 +141,12 @@ fn (t SQLType) supertype() (i16, i16) {
 }
 
 // exact_arithmetic_type is the type of the result of +, - or * with two exact
-// numeric operands (ISO/IEC 9075-2:2016(E), 6.29, Syntax Rule 1c). The scale is
-// max(S1, S2) for + and -, and S1 + S2 for *. The precision is
-// implementation-defined, so it's large enough to hold any result, up to the
-// maximum precision. It's 0 (the maximum) if either precision is unknown.
+// numeric operands. The scale is max(S1, S2) for + and -, and S1 + S2 for *.
+// The precision is implementation-defined, so it's large enough to hold any
+// result, up to the maximum precision. It's 0 (the maximum) if either precision
+// is unknown.
+//
+// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, Syntax Rules, 1.c
 fn exact_arithmetic_type(t1 Type, t2 Type, op string) Type {
 	typ := if t1.typ == .is_decimal || t2.typ == .is_decimal {
 		SQLType.is_decimal

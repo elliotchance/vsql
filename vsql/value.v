@@ -6,6 +6,8 @@ module vsql
 
 import math
 
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.4.2, The null value.
+
 // Possible values for a BOOLEAN.
 pub enum Boolean {
 	// These must not be negative values because they are encoded as u8 on disk.
@@ -137,6 +139,8 @@ pub fn new_bigint_value(x i64) Value {
 // approximate_value is a DOUBLE PRECISION or REAL from the result of a
 // calculation. Infinity isn't an SQL value, so a result that's too large for the
 // type raises 22003 (numeric value out of range).
+//
+// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, General Rules, 6
 fn approximate_value(x f64, typ SQLType) !Value {
 	if typ == .is_real {
 		if math.is_inf(f32(x), 0) {
@@ -409,8 +413,10 @@ fn approximate_numeric_literal(s string) string {
 }
 
 // The string representation of this value. Different types will have different
-// formatting.
+// formatting. The null value is NULL (or UNKNOWN for a BOOLEAN), which is how
+// "vsql cli" shows it.
 pub fn (v Value) str() string {
+	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Syntax Rules, 2
 	if v.is_null {
 		return if v.typ.typ == .is_boolean { 'UNKNOWN' } else { 'NULL' }
 	}
@@ -437,7 +443,9 @@ pub fn (v Value) str() string {
 		}
 		.is_decimal, .is_numeric {
 			// Trailing zeros up to the scale are part of the value, so 12.00 isn't
-			// shown as 12 (6.13 General Rule 11a).
+			// shown as 12.
+			//
+			// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 11.a.i
 			v.numeric_value().str()
 		}
 	}

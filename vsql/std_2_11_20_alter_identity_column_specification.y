@@ -1,5 +1,6 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 11.20, <alter identity column specification>, Conformance Rules, 1 and 2
 alter_identity_column_specification:
   alter_identity_column_options {
     flag(mut yylex, 'T174')

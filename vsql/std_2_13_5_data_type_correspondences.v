@@ -4,6 +4,15 @@ module vsql
 //
 // Specify the data type correspondences for SQL data types and host language
 // types.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.8.2, Parameter passing and data type
+// correspondences
+// ISO/IEC 9075-1:2003(E), 4.8.2.1, General parameter passing and data type
+// correspondence information
+// ISO/IEC 9075-1:2003(E), 4.8.2.2, Data type correspondences
+// ISO/IEC 9075-2:2016(E), 4.1.3, Host language data types
 
 // HostParameterType is the <data type> of a host parameter that has a C data
 // type in Table 20, "Data type correspondences for C". The length is only for
@@ -13,9 +22,11 @@ struct HostParameterType {
 	length int
 }
 
-// parse_host_parameter_type reads a <host parameter data type>. The types that
-// vsql has, but that are 'None' in Table 20 (NUMERIC, DECIMAL, FLOAT, DATE,
-// TIME and TIMESTAMP), can't be used (13.3 Syntax Rule 11.b.ii.1).
+// host_parameter_type reads a <host parameter data type>. The types that vsql
+// has, but that are 'None' in Table 20 (NUMERIC, DECIMAL, FLOAT, DATE,
+// TIME and TIMESTAMP), can't be used. There's no <locator indication>.
+//
+// ISO/IEC 9075-2:2016(E), 13.3, <externally-invoked procedure>, Syntax Rules, 11.b.ii.1
 fn (mut t ModuleTokens) host_parameter_type(name string) !HostParameterType {
 	word := t.next_word()
 	match word {
@@ -58,6 +69,9 @@ fn (mut t ModuleTokens) host_parameter_type(name string) !HostParameterType {
 
 // c_declaration is the C data type of a host parameter, such as "long *x".
 // A string is a char array, and anything else is a pointer.
+//
+// ISO/IEC 9075-2:2016(E), 9.3, Passing a value from a host language to the SQL-server, General Rules, 3 and 4.b
+// ISO/IEC 9075-2:2016(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 2 and 3.b
 fn (t HostParameterType) c_declaration(name string) string {
 	return match t.typ {
 		.is_character, .is_varchar { 'char ${name}[${t.length + 1}]' }
@@ -70,8 +84,11 @@ fn (t HostParameterType) c_declaration(name string) string {
 }
 
 // c_parameter is the struct vsql_m_param (see the C runtime) that binds a host
-// parameter to a dynamic parameter. A BOOLEAN is passed as 'TRUE' or 'FALSE'
-// (9.3 General Rule 5.e.ii), since libvsql can't cast a number to a BOOLEAN.
+// parameter to a dynamic parameter. A BOOLEAN is passed as 'TRUE' or 'FALSE',
+// since libvsql can't cast a number to a BOOLEAN. Any other value is passed
+// as it is.
+//
+// ISO/IEC 9075-2:2016(E), 9.3, Passing a value from a host language to the SQL-server, General Rules, 5.e.ii and 5.j
 fn (t HostParameterType) c_parameter(name string) string {
 	return match t.typ {
 		.is_character { '{SQL_CHAR, SQL_CHAR, ${t.length}, ${name}, SQL_NTS}' }

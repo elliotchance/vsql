@@ -1,4 +1,4 @@
-.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example release bench bench-on-disk bench-memory fmt fmt-verify test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # The built-in rules of make aren't used, otherwise it would try to make the
 # vsql/*.c files with yacc from the vsql/*.y files of the same name, such as
@@ -146,6 +146,11 @@ fmt:
 
 fmt-verify:
 	v fmt -verify app cmd examples libvsql scripts vsql
+
+# check-standard-index checks docs/standard/ and every citation of the SQL
+# standard in the code (see docs/standard-index.rst).
+check-standard-index:
+	v run scripts/check-standard-index.vsh
 
 # Tests
 

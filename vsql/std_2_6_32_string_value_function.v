@@ -6,6 +6,10 @@ import math
 //
 // Specify a function yielding a value of type character string or binary
 // string.
+//
+// The concept is described by:
+//
+// ISO/IEC 9075-2:2016(E), 4.2.3, Operations involving character strings
 
 type CharacterValueFunction = CharacterSubstringFunction
 	| RoutineInvocation // <fold>
@@ -102,8 +106,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 				new_integer_value(0)
 			}
 
-			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General
-			// Rules, 3d
+			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 3.d
 			if value.is_null || from_value.is_null || for_value.is_null {
 				return new_null_value(.is_varchar).with_type(typ)
 			}
@@ -128,9 +131,10 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 }
 
 // check_substring_argument returns an error if the start position or string
-// length of a SUBSTRING isn't an exact numeric with scale 0 (6.32 Syntax Rule
-// 3). A dynamic parameter ("?") may be any number that's a
-// whole number (see substring_position).
+// length of a SUBSTRING isn't an exact numeric with scale 0. A dynamic parameter
+// ("?") may be any number that's a whole number (see substring_position).
+//
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 3
 fn check_substring_argument(name string, e NumericValueExpression, typ Type) ! {
 	if typ.typ in [.is_smallint, .is_integer, .is_bigint]
 		|| (typ.typ in [.is_numeric, .is_decimal] && typ.scale == 0) {
@@ -176,10 +180,12 @@ fn substring_position(name string, v Value) !i64 {
 }
 
 // substring_range returns the zero-based start (inclusive) and end (exclusive)
-// of a SUBSTRING for a string of length characters or octets, following 6.32
-// General Rule 3. from is the one-based start position, which may be before the
-// start or past the end of the string. Positions before the start of the string
-// are skipped, so SUBSTRING('hello' FROM 0 FOR 3) is 'he'.
+// of a SUBSTRING for a string of length characters or octets. from is the
+// one-based start position, which may be before the start or past the end of
+// the string. Positions before the start of the string are skipped, so
+// SUBSTRING('hello' FROM 0 FOR 3) is 'he'.
+//
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 3.c, 3.e and 3.f
 fn substring_range(length int, from i64, has_for bool, @for i64) !(int, int) {
 	mut end := i64(0)
 	if has_for {
@@ -233,7 +239,7 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 13
 	typ := varying_string_type('TRIM', compiled_source.typ)!
 
-	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 13c
+	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 13.c
 	if !compiled_character.typ.typ.is_string() {
 		return sqlstate_42883('function does not exist: TRIM(${compiled_character.typ} FROM ${compiled_source.typ})')
 	}
@@ -243,14 +249,12 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 			source := compiled_source.run(mut conn, data, params)!
 			character := compiled_character.run(mut conn, data, params)!
 
-			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General
-			// Rules, 11c
+			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 11.c
 			if source.is_null || character.is_null {
 				return new_null_value(.is_varchar).with_type(typ)
 			}
 
-			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General
-			// Rules, 11d
+			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 11.d
 			trim_character := character.string_value().runes()
 			if trim_character.len != 1 {
 				return sqlstate_22027()

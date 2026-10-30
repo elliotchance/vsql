@@ -1,5 +1,10 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>
+//
+// Specify a function yielding a value of type character string or binary
+// string.
+
 string_value_function:
   character_value_function { $$.v = $1.v as CharacterValueFunction }
 
@@ -9,6 +14,10 @@ character_value_function:
   }
 | fold { $$.v = CharacterValueFunction($1.v as RoutineInvocation) }
 | trim_function { $$.v = CharacterValueFunction($1.v as TrimFunction) }
+
+// Without USING, it's USING CHARACTERS.
+//
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 6
 
 character_substring_function:
   SUBSTRING left_paren character_value_expression FROM start_position
@@ -46,6 +55,11 @@ fold:
 
 trim_function:
   TRIM left_paren trim_operands right_paren { $$.v = $3.v as TrimFunction }
+
+// Without a trim specification it's BOTH, and without a trim character it's a
+// space. vsql also allows FROM without either (#770).
+//
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 13.a
 
 trim_operands:
   trim_source {

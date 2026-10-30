@@ -11,16 +11,20 @@ struct DropTableConstraintDefinition {
 	behavior string // CASCADE or RESTRICT
 }
 
-// execute drops the constraint. A FOREIGN KEY depends on the PRIMARY KEY or
-// UNIQUE that has its referenced columns (Syntax Rule 3), so with RESTRICT
-// that can't be dropped (Syntax Rule 13a), and CASCADE drops the FOREIGN KEY
-// too (General Rule 1).
+// execute drops the constraint, which must be a constraint of the table. A
+// FOREIGN KEY depends on the PRIMARY KEY or UNIQUE that has its referenced
+// columns, so with RESTRICT that can't be dropped, and CASCADE drops the
+// FOREIGN KEY too.
 //
-// The NOT NULL of a column in the PRIMARY KEY can't be dropped (Syntax Rule
-// 11a). Dropping the PRIMARY KEY doesn't drop the NOT NULL of its columns,
-// because they're separate constraints (see check_constraints_view_rows). The
-// rows are moved, because they're stored by their PRIMARY KEY, and they're
-// written again when a NOT NULL is dropped (see replace_table_definition).
+// The NOT NULL of a column in the PRIMARY KEY can't be dropped, but the NOT
+// NULL of an identity column can (#790). Dropping the PRIMARY KEY doesn't drop
+// the NOT NULL of its columns, because they're separate constraints (see
+// check_constraints_view_rows). The rows are moved, because they're stored by
+// their PRIMARY KEY, and they're written again when a NOT NULL is dropped (see
+// replace_table_definition).
+//
+// ISO/IEC 9075-2:2016(E), 11.26, <drop table constraint definition>, Syntax Rules, 2, 3, 11.a, 11.d and 13.a
+// ISO/IEC 9075-2:2016(E), 11.26, <drop table constraint definition>, General Rules, 1 and 6 to 8
 fn (d DropTableConstraintDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table) ! {
 	kind, i := table.find_constraint(d.name)!
 

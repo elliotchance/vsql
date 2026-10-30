@@ -7,6 +7,12 @@ import strings
 // Specify rules for assignments where the target permits null without the use
 // of indicator parameters or indicator variables, such as storing SQL-data or
 // setting the value of SQL parameters.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.5, Sites and operations on sites
+// ISO/IEC 9075-1:2003(E), 4.5.1, Sites
+// ISO/IEC 9075-1:2003(E), 4.5.2, Assignment
 
 const min_smallint = new_numeric_from_string('-32768')
 
@@ -29,57 +35,32 @@ pub fn (mut conn Connection) store_assignment(v Value, to Type) !Value {
 	return cast(mut conn, 'for store assignment', v, to)
 }
 
-// explicit cast follows the rules outlined in Subclause 9.2,
-// "Store assignment", in ISO/IEC 9075-2.
+// cast converts v to the type t by the rules of a store assignment, which are
+// also used for a CAST of most of the supported types.
+//
+// ISO/IEC 9075-2:2016(E), 9.2, Store assignment, General Rules, 1-3
 fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
-	// - 1. Let T be the TARGET and let V be the VALUE in an application of the
-	// General Rules of this Subclause.
+	// - GR 1. T is t and V is v.
 
-	// - 2. If the declared type of V is not assignable to the declared type of T,
-	// then for the remaining General Rules of this Subclause V is effectively
-	// replaced by the result of evaluating the expression UDCF(V).
-	//
-	// User-defined cast functions are not currently supported.
+	// - GR 2. There are no user-defined cast functions (S211), so V is never
+	// replaced by UDCF(V).
 
-	// - 3. Case:
-	// - 3.a. If V is the null value, then Case:
+	// - GR 3.a. V is the null value.
 	if v.is_null {
-		// - 3.a.i. If V is specified using NULL, then T is set to the null value.
+		// - GR 3.a.i and 3.a.iv. T is set to the null value.
 		if !v.typ.not_null {
 			return v
 		}
 
-		// - 3.a.ii. If V is a host parameter and contains an indicator parameter,
-		// then, Case:
-		//
-		// - 3.a.ii.1. If the value of the indicator parameter is equal to –1
-		// (negative one), then T is set to the null value.
-		//
-		// - 3.a.ii.2. If the value of the indicator parameter is less than –1
-		// (negative one), then an exception condition is raised: data exception —
-		// invalid indicator parameter value.
-		//
-		// - 3.a.iii. If V is a host variable and contains an indicator variable,
-		// then Case:
-		//
-		// - 3.a.iii.1. If the value of the indicator variable is equal to –1
-		// (negative one), then T is set to the null value.
-		//
-		// - 3.a.iii.2. If the value of the indicator variable is less than –1
-		// (negative one), then an exception con- dition is raised: data exception —
-		// invalid indicator parameter value.
-		//
-		// - 3.a.iv. Otherwise, T is set to the null value.
-		//
-		// Declaring host parameters is not supported yet, so fallthough.
+		// - GR 3.a.ii and 3.a.iii. The indicator of a host parameter (or a host
+		// variable) is handled by the module, where any negative value is the null
+		// value, so one that's less than -1 isn't 22010 (#783).
 	}
 
-	// - 3.b. Otherwise, Case:
+	// - GR 3.b. Otherwise, by the type of T:
 	match t.typ {
 		.is_character {
-			// - 3.b.i. If the declared type of T is fixed-length character string
-			// with length in characters L and the length in characters of V is equal
-			// to L, then the value of T is set to V.
+			// - GR 3.b.i. A CHARACTER(L) is set to V when it has L characters.
 			//
 			// It doesn't state that the destination needs to also be a
 			// character-type. This is what allows any string representation (for
@@ -93,35 +74,27 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 				return new_character_value(s)
 			}
 
-			// - 3.b.ii. If the declared type of T is fixed-length character string
-			// with length in characters L and the length in characters M of V is
-			// larger than L, then, Case:
+			// - GR 3.b.ii. V is longer than L:
 			m := chars.len
 			if m > l {
-				// - 3.b.ii.1. If the rightmost M–L characters of V are all <space>s,
-				// then the value of T is set to the first L characters of V.
+				// - GR 3.b.ii.1. It's truncated if the extra characters are all
+				// spaces.
 				if chars[l..].all(it == ` `) {
 					return new_character_value(chars[..l].string())
 				}
 
-				// - 3.b.ii.2. If one or more of the rightmost M–L characters of V are
-				// not <space>s, then an exception condition is raised: data exception —
-				// string data, right truncation.
+				// - GR 3.b.ii.2. Otherwise, it's 22001 (string data, right
+				// truncation).
 				return sqlstate_22001(t)
 			} else {
-				// - 3.b.iii. If the declared type of T is fixed-length character string
-				// with length in characters L and the length in characters M of V is
-				// less than L, then the first M characters of T are set to V and the
-				// last L–M characters of T are set to <space>s.
+				// - GR 3.b.iii. V is shorter than L, so it's padded with spaces.
 				pad := strings.repeat(` `, l - m)
 				return new_character_value(s + pad)
 			}
 		}
 		.is_varchar {
-			// - 3.b.iv. If the declared type of T is variable-length character string
-			// and the length in characters M of V is not greater than the maximum
-			// length in characters of T, then the value of T is set to V and the
-			// length in characters of T is set to M.
+			// - GR 3.b.iv. A CHARACTER VARYING(L) is set to V when it isn't longer
+			// than L.
 			//
 			// See note above about using v.str() instead of string_value().
 			s := cast_character_source(v)
@@ -135,97 +108,28 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 				return new_varchar_value(s)
 			}
 
-			// - 3.b.v. If the declared type of T is variable-length character string
-			// and the length in characters M of V is greater than the maximum length
-			// in characters L of T, then, Case:
+			// - GR 3.b.v. V is longer than L:
 			if chars[l..].all(it == ` `) {
-				// - 3.b.v.1. If the rightmost M–L characters of V are all <space>s,
-				// then the value of T is set to the first L characters of V and the
-				// length in characters of T is set to L.
+				// - GR 3.b.v.1. It's truncated if the extra characters are all spaces.
 				return new_varchar_value(chars[..l].string())
 			}
 
-			// - 3.b.v.2. If one or more of the rightmost M–L characters of V are
-			// not <space>s, then an exception condition is raised: data exception —
-			// string data, right truncation.
+			// - GR 3.b.v.2. Otherwise, it's 22001 (string data, right truncation).
 			return sqlstate_22001(t)
 		}
-		// - 3.b.vi. If the declared type of T is a character large object type and
-		// the length in characters M of V is not greater than the maximum length in
-		// characters of T, then the value of T is set to V and the length in
-		// characters of T is set to M.
-		// - 3.b.vii. If the declared type of T is a character large object type and
-		// the length in characters M of V is greater than the maximum length in
-		// characters L of T, then, Case:
-		// - 3.b.vii.1. If the rightmost M–L characters of V are all <space>s, then
-		// the value of T is set to the first L characters of V and the length in
-		// characters of T is set to L.
-		// - 3.b.vii.2. If one or more of the rightmost M–L characters of V are not
-		// <space>s, then an exception condition is raised: data exception — string
-		// data, right truncation.
-		// - 3.b.viii. If the declared type of T is fixed-length binary string with
-		// length in octets L and the length in octets of V is equal to L, then the
-		// value of T is set to V.
-		// - 3.b.ix. If the declared type of T is fixed-length binary string with
-		// length in octets L and the length in octets M of V is larger than L,
-		// then, Case:
-		// - 3.b.ix.1. If the rightmost M–L octets of V are all equal to X'00', then
-		// the value of T is set to the first L octets of V.
-		// - 3.b.ix.2. If one or more of the rightmost M–L octets of V are not equal
-		// to X'00', then an exception condition is raised: data exception — string
-		// data, right truncation.
-		// - 3.b.x. If the declared type of T is fixed-length binary string with
-		// length in octets L and the length in octets M of V is less than L, then
-		// the first M octets of T are set to V and the last L–M octets of T are set
-		// to X'00's.
-		// - 3.b.xi. If the declared type of T is variable-length binary string and
-		// the length in octets M of V is not greater than the maximum length in
-		// octets of T, then the value of T is set to V and the length in octets of
-		// T is set to M.
-		// - 3.b.xii. If the declared type of T is variable-length binary string and
-		// the length in octets M of V is greater than the maximum length in octets
-		// L of T, then, Case:
-		// - 3.b.xii.1. If the rightmost M–L octets of V are all equal to X'00',
-		// then the value of T is set to the first L octets of V and the length in
-		// octets of T is set to L.
-		// - 3.b.xii.2. If one or more of the rightmost M–L octets of V are not
-		// equal to X'00', then an exception condition is raised: data exception —
-		// string data, right truncation.
-		// - 3.b.xiii. If the declared type of T is binary large object string and
-		// the length in octets M of V is not greater than the maximum length in
-		// octets of T, then the value of T is set to V and the length in octets of
-		// T is set to M.
-		// - 3.b.xiv. If the declared type of T is binary large object string and
-		// the length in octets M of V is greater than the maximum length in octets
-		// L of T, then, Case:
-		// - 3.b.xiv.1. If the rightmost M–L octets of V are all equal to X'00',
-		// then the value of T is set to the first L octets of V and the length in
-		// octets of T is set to L.
-		// - 3.b.xiv.2. If one or more of the rightmost M–L octets of V are not
-		// equal to X'00', then an exception condition is raised: data exception —
-		// string data, right truncation.
-		//
-		// All of these are not supported types, so fallthrough.
-		//
+		// - GR 3.b.vi-3.b.xiv. There are no CLOBs (T041), binary strings (T021) or
+		// BLOBs, so fallthrough.
 		.is_numeric, .is_decimal, .is_smallint, .is_integer, .is_bigint, .is_real,
 		.is_double_precision {
-			// - 3.b.xv. If the declared type of T is numeric, then, Case:
-			// - 3.b.xv.1. If V is a value of the declared type of T, then the value
-			// of T is set to V.
+			// - GR 3.b.xv. A number:
+			// - GR 3.b.xv.1. V is already of the type of T.
 			if v.typ == t {
 				return v
 			}
 
-			// - 3.b.xv.2. If a value of the declared type of T can be obtained from V
-			// by rounding or truncation, then the value of T is set to that value.
-			// If the declared type of T is exact numeric, then it is
-			// implementation-defined whether the approximation is obtained by
-			// rounding or by truncation.
-			//
-			// - 3.b.xv.3. Otherwise, an exception condition is raised: data exception
-			// — numeric value out of range.
-			//
-			// Both cases are handled by cast_numeric.
+			// - GR 3.b.xv.2 and 3.b.xv.3. V is rounded or truncated to the type of
+			// T (an exact numeric is truncated), or it's 22003 (numeric value out of
+			// range). Both cases are handled by cast_numeric.
 			if v.typ.typ.is_string() {
 				return cast_character_to_number(mut conn, v, t)
 			}
@@ -234,10 +138,10 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 		}
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone, .is_date,
 		.is_time_with_time_zone, .is_time_without_time_zone {
-			// - 3.b.xvi. If the declared type DT of T is datetime, then
+			// - GR 3.b.xvi. A datetime:
 			//
-			// - 3.b.xvi.1. If only one of DT and the declared type of V is datetime
-			// with time zone, then V is effectively replaced by: CAST ( V AS DT )
+			// - GR 3.b.xvi.1. When only one of them has a time zone, V is first cast
+			// to the type of T.
 			if t.typ == .is_timestamp_with_time_zone && v.typ.typ == .is_timestamp_without_time_zone {
 				return cast(mut conn, msg, cast_timestamp_without_to_timestamp_with(conn, v, t)!, t)
 			}
@@ -245,46 +149,25 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 				return cast(mut conn, msg, cast_timestamp_with_to_timestamp_without(conn, v, t)!, t)
 			}
 
-			// - 3.b.xvi.2. Case:
-			//
-			// - 3.b.xvi.2.A. If V is a value of the declared type of T, then the
-			// value of T is set to V.
+			// - GR 3.b.xvi.2.A. V is already of the type of T.
 			if v.typ == t {
 				return v
 			}
 
-			// - 3.b.xvi.2.B. If a value of the declared type of T can be obtained
-			// from V by rounding or truncation, then the value of T is set to that
-			// value. It is implementation-defined whether the approximation is
-			// obtained by rounding or truncation.
+			// - GR 3.b.xvi.2.B. Otherwise, V is rounded or truncated to the type of T
+			// (the fractional seconds are truncated).
 			//
 			// I'm going to assume this also leaves open the opportunity to cast
 			// between different types like DATE to TIMESTAMP.
 			return cast_datetime(conn, v, t)
 
-			// - 3.b.xvi.2.C. Otherwise, an exception condition is raised: data
-			// exception — datetime field overflow.
-			//
-			// This is not possible right now since the range is already validated at
-			// the time the timestamp is created.
+			// - GR 3.b.xvi.2.C. A datetime field overflow isn't possible right now
+			// since the range is already validated at the time the timestamp is
+			// created.
 		}
-		// - 3.b.xvii. If the declared type of T is interval, then, Case:
-		//
-		// - 3.b.xvii.1. If V is a value of the declared type of T, then the value
-		// of T is set to V.
-		//
-		// - 3.b.xvii.2. If a value of the declared type of T can be obtained from V
-		// by rounding or truncation, then the value of T is set to that value. It
-		// is implementation-defined whether the approximation is obtained by
-		// rounding or by truncation.
-		//
-		// - 3.b.xvii.3. Otherwise, an exception condition is raised: data exception
-		// — interval field overflow.
-		//
-		// INTERVAL type is not supported yet.
+		// - GR 3.b.xvii. There are no intervals (F052).
 		.is_boolean {
-			// - 3.b.xviii. If the declared type of T is boolean, then the value of T
-			// is set to V.
+			// - GR 3.b.xviii. A BOOLEAN is set to V.
 			//
 			// This seems oddly ambigious to me, they don't specify that the value
 			// it's coming from must also be a BOOLEAN, so for now we must assume this
@@ -295,50 +178,18 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 		}
 	}
 
-	// - 3.b.xix. If the declared type of T is a row type, then:
-	// - 3.b.xix.1. Let n be the degree of T.
-	// - 3.b.xix.2. For i ranging from 1 (one) to n, the General Rules of this
-	// Subclause are applied to the i-th element of T and the i-th element of V
-	// as TARGET and VALUE, respectively.
-	// - 3.b.xx. If the declared type of T is a reference type, then the value
-	// of T is set to V.
-	// - 3.b.xxi. If the declared type of T is an array type or a distinct type
-	// whose source type is an array type, then, Case:
-	// - 3.b.xxi.1. If the maximum cardinality L of T is equal to the
-	// cardinality M of V, then the elements of T are set to the values of the
-	// corresponding elements of V by applying the General Rules of this
-	// Subclause to each pair of elements with the element of T as TARGET and
-	// the element of V as VALUE.
-	// - 3.b.xxi.2. If the maximum cardinality L of T is smaller than the
-	// cardinality M of V, then Case:
-	// - 3.b.xxi.2.A. If the rightmost M–L elements of V are all null, then the
-	// elements of T are set to the values of the first L corresponding elements
-	// of V by applying the General Rules of this Subclause to each pair of
-	// elements with the element of T as TARGET and the element of V as VALUE.
-	// - 3.b.xxi.2.B. If one or more of the rightmost M–L elements of V are not
-	// the null value, then an exception condition is raised: data exception —
-	// array data, right truncation.
-	// - 3.b.xxi.3. If the maximum cardinality L of T is greater than the
-	// cardinality M of V, then the M first elements of T are set to the values
-	// of the corresponding elements of V by applying the General Rules of this
-	// Subclause to each pair of elements with the element of T as TARGET and
-	// the element of V as VALUE. The cardinality of the value of T is set to M.
-	// NOTE 363 — The maximum cardinality L of T is unchanged.
-	// - 3.b.xxii. If the declared type of T is a multiset type or a distinct
-	// type whose source type is a multiset type, then the value of T is set to
-	// V.
-	// - 3.b.xxiii. If the declared type of T is a user-defined type, then the
-	// value of T is set to V.
-	//
-	// All of these are not supported yet.
+	// - GR 3.b.xix-3.b.xxiii. There are no row types (as a site), reference
+	// types (S041), arrays (S091), multisets (S271) or user-defined types
+	// (S023).
 
 	return sqlstate_42846(v.typ, t)
 }
 
 // cast_character_source returns the string representation of v used when the
-// target is a character string. For datetimes, 6.13 GR 11.e and 12.e require
-// the shortest <literal> (such as "DATE '2022-06-30'") rather than just the
-// formatted value.
+// target is a character string. For datetimes, the shortest <literal> (such as
+// "DATE '2022-06-30'") is required rather than just the formatted value.
+//
+// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 11.e and 12.e
 fn cast_character_source(v Value) string {
 	return match v.typ.typ {
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
@@ -385,11 +236,13 @@ fn cast_datetime(conn Connection, v Value, t Type) !Value {
 }
 
 // check_store_assignment returns an error if a value can't be assigned to a
-// column (ISO/IEC 9075-2:2016(E), 9.2, Syntax Rules). Unlike CAST, a character
-// string can't be assigned to a number, or a number to a character string.
+// column. Unlike CAST, a character string can't be assigned to a number, or a
+// number to a character string.
 //
 // A datetime can only be assigned to the same kind of datetime (4.6.2): both
 // DATE, both TIME or both TIMESTAMP (with or without a time zone).
+//
+// ISO/IEC 9075-2:2016(E), 9.2, Store assignment, Syntax Rules, 3
 fn check_store_assignment(v Value, t Type) ! {
 	if v.is_null {
 		return
@@ -417,7 +270,7 @@ fn check_assignable(from Type, t Type) ! {
 }
 
 // cast_character_to_number casts a character string to a number (ISO/IEC
-// 9075-2:2016(E), 6.13, General Rules 8b and 9b). Leading and trailing spaces
+// 9075-2:2016(E), 6.13, General Rules, 8.b and 9.b). Leading and trailing spaces
 // are removed, and what's left must be a <signed numeric literal>.
 fn cast_character_to_number(mut conn Connection, v Value, t Type) !Value {
 	s := v.string_value().trim(' ')
@@ -485,7 +338,9 @@ fn cast_numeric(mut _ Connection, v Value, t Type) !Value {
 	// now it's easier to convert to a lossless number then the final destination
 	// type.
 
-	// A boolean or datetime can't be cast to a number (6.13 Syntax Rule 7).
+	// A boolean or datetime can't be cast to a number.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, Syntax Rules, 7
 	if v.typ.typ == .is_boolean || v.typ.typ.is_datetime() {
 		return sqlstate_42846(v.typ, t)
 	}

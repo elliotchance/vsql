@@ -32,7 +32,7 @@ fn (e Subquery) pstr(params map[string]Value) string {
 // pushed again with the row of the containing query each time the subquery is
 // evaluated.
 //
-// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rule 8
+// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 8
 struct SubqueryScope {
 	tables  map[string]Table
 	context Identifier
@@ -59,13 +59,13 @@ struct SubqueryPlan {
 // plan creates the plan for the subquery. It's evaluated with run_subquery.
 fn (e Subquery) plan(mut c Compiler) !SubqueryPlan {
 	// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Conformance
-	// Rule 1 (Feature F671)
-	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rule 10f
+	// Rules, 1 (Feature F671)
+	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rules, 10.f
 	if c.restricted != '' {
 		return sqlstate_42601('a subquery cannot be used in ${c.restricted}')
 	}
 
-	// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rule 1
+	// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 1
 	if c.in_aggregate {
 		return sqlstate_42601('a subquery cannot be used in an aggregate function')
 	}
@@ -130,7 +130,8 @@ fn subquery_values(mut conn Connection, plan SubqueryPlan, data Row) ![]Value {
 
 // compile is a <scalar subquery>. It's NULL when there are no rows.
 //
-// ISO/IEC 9075-2:2016(E), 7.19, <subquery>, Syntax Rules 2 and 5, General Rule 3
+// ISO/IEC 9075-2:2016(E), 7.19, <subquery>, Syntax Rules, 2 and 5
+// ISO/IEC 9075-2:2016(E), 7.19, <subquery>, General Rules, 3
 fn (e Subquery) compile(mut c Compiler) !CompileResult {
 	plan := e.plan_column(mut c)!
 	typ := plan.plan.columns()[0].typ

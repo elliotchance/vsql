@@ -5,6 +5,10 @@ import time
 // ISO/IEC 9075-2:2016(E), 7.17, <query expression>
 //
 // Specify a table.
+//
+// The concept is described by:
+//
+// ISO/IEC 9075-2:2016(E), 4.15.3, Derived tables
 
 struct QueryExpression {
 	body   SimpleTable
@@ -253,79 +257,17 @@ fn row_cmp(mut conn Connection, params map[string]Value, tables map[string]Table
 		tables: tables
 	}
 
-	// ISO/IEC 9075-2:2016(E), 10.10, <sort specification list>:
+	// Each sort key is compared in turn, and the first one that isn't equal
+	// decides the order of the two rows. The values are compared like a
+	// <comparison predicate> with < (or > for DESC). Two null values are equal,
+	// and a null value is before any other value, so the implementation-defined
+	// <null ordering> is NULLS FIRST for ASC and NULLS LAST for DESC (there's no
+	// <null ordering>). Rows that are equal for every sort key (peers) are in an
+	// implementation-dependent order, which is the order they were read in since
+	// the insertion sort in OrderOperation.execute is stable.
 	//
-	// General Rules
-	//
-	// 1) A <sort specification list> defines an ordering of rows, as follows:
-	//
-	//    a) Let N be the number of <sort specification>s.
-	//
-	//    b) Let Ki, 1 (one) ≤ i ≤ N, be the <sort key> contained in the i-th
-	//       <sort specification>.
-	//
-	//    c) Each <sort specification> specifies the sort direction for the
-	//       corresponding sort key Ki. If DESC is not specified in the i-th
-	//       <sort specification>, then the sort direction for Ki is ascending and
-	//       the applicable <comp op> is the <less than operator>. Otherwise, the
-	//       sort direction for Ki is descending and the applicable <comp op> is
-	//       the <greater than operator>.
-	//
-	//    d) Let P be any row of the collection of rows to be ordered, and let Q
-	//       be any other row of the same collection of rows.
-	//
-	//    e) Let PVi and QVi be the values of Ki in P and Q, respectively. The
-	//       relative position of rows P and Q in the result is determined by
-	//       comparing PVi and QVi as follows:
-	//
-	//       i) The comparison is performed according to the General Rules of
-	//
-	//          Case:
-	//
-	//          1) If the declared type of Ki is a row type, then this Subclause,
-	//             applied recursively.
-	//          2) Otherwise, Subclause 8.2, “<comparison predicate>”, where the
-	//             <comp op> is the applicable <comp op> for Ki.
-	//
-	//       ii) The comparison is performed with the following special treatment
-	//           of null values.
-	//
-	//           Case:
-	//
-	//           1) If PVi and QVi are both the null value, then they are
-	//              considered equal to each other.
-	//           2) If PVi is the null value and QVi is not the null value, then
-	//
-	//              Case:
-	//
-	//              A) If NULLS FIRST is specified or implied, then PVi <comp op>
-	//                 QVi is considered to be True.
-	//              B) If NULLS LAST is specified or implied, then PVi <comp op>
-	//                 QVi is considered to be False.
-	//
-	//           3) If PVi is not the null value and QVi is the null value, then
-	//
-	//              Case:
-	//
-	//              A) If NULLS FIRST is specified or implied, then PVi <comp op>
-	//                 QVi is considered to be False.
-	//              B) If NULLS LAST is specified or implied, then PVi <comp op>
-	//                 QVi is considered to be True.
-	//
-	//    f) PVi is said to precede QVi if the value of the <comparison predicate>
-	//       “PVi <comp op> QVi” is True for the applicable <comp op>.
-	//
-	//    g) If PVi and QVi are not the null value and the result of
-	//       “PVi <comp op> QVi” is Unknown, then the relative ordering of PVi and
-	//       QVi is implementation-dependent.
-	//
-	//    h) The relative position of row P is before row Q if PVn precedes QVn
-	//       for some n, 1 (one) ≤ n ≤ N, and PVi is not distinct from QVi for all
-	//       i < n.
-	//
-	//    i) Two rows that are not distinct with respect to the
-	//       <sort specification>s are said to be peers of each other. The
-	//       relative ordering of peers is implementation-dependent.
+	// ISO/IEC 9075-2:2016(E), 10.10, <sort specification list>, Syntax Rules, 2 and 3
+	// ISO/IEC 9075-2:2016(E), 10.10, <sort specification list>, General Rules, 1
 	for spec in specs {
 		left := spec.expr.compile(mut c)!.run(mut conn, r1, params)!
 		right := spec.expr.compile(mut c)!.run(mut conn, r2, params)!
@@ -455,7 +397,7 @@ fn row_count(clause string, value Value) !i64 {
 // Each column has the combined type of that column in both queries (9.5), and
 // the name of that column in the left query.
 //
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 16b and 19b
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 16.b and 19.b
 struct SetOperationOperation {
 	op      string
 	all     bool
@@ -498,7 +440,7 @@ fn (o &SetOperationOperation) columns() Columns {
 	return o.columns
 }
 
-// execute follows General Rule 3b of 7.17. A row R that appears m times on the
+// execute combines the rows of both sides. A row R that appears m times on the
 // left and n times on the right appears in the result:
 //
 //   UNION ALL:       m + n times
@@ -508,6 +450,8 @@ fn (o &SetOperationOperation) columns() Columns {
 //
 // Rows are duplicates when every value is equal, where NULLs are equal to each
 // other (4.1.5).
+//
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, General Rules, 3.b
 fn (mut o SetOperationOperation) execute(_ []Row) ![]Row {
 	left := o.values(o.left.execute([]Row{})!, o.left.columns())!
 	right := o.values(o.right.execute([]Row{})!, o.right.columns())!

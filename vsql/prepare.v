@@ -38,7 +38,12 @@ type Stmt = AlterSequenceGeneratorStatement
 // be executed with a value for each dynamic parameter ("?") in the statement,
 // named by its position: "?1", "?2", etc. Each invocation requires all of them
 // to be passed in.
+//
+// A prepared statement isn't deallocated when an SQL-transaction ends, so it
+// can still be executed after a COMMIT or ROLLBACK.
 pub struct PreparedStmt {
+	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 11
+	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.f
 	stmt Stmt
 	// params can be set on the statement and will be merged with the extra
 	// params at execution time. If name collisions occur, the params provided
@@ -46,7 +51,9 @@ pub struct PreparedStmt {
 	params map[string]Value
 	// explain is true if the query was prefixed with EXPLAIN. The EXPLAIN is
 	// removed from the query before parsing since this keyword is not part of
-	// the SQL standard.
+	// the SQL standard. It's a <direct implementation-defined statement>.
+	//
+	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Syntax Rules, 3
 	explain bool
 	// writes is true if a query modifies the database, even though it would
 	// otherwise be read only. At the moment this is only when it contains a
@@ -96,6 +103,7 @@ pub fn (p PreparedStmt) dynamic_parameter_count() int {
 // statement> ("SELECT CURSOR"). EXPLAIN and DECLARE CURSOR aren't standard
 // statements, so their codes are negative.
 pub fn (p PreparedStmt) command_function() (string, int) {
+	// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.c to 2.e
 	if p.explain {
 		return 'EXPLAIN', -1
 	}
@@ -164,9 +172,12 @@ pub fn (mut p PreparedStmt) columns(params map[string]Value) ![]Column {
 
 // fail ends a statement that failed with err.
 fn (mut p PreparedStmt) fail(err IError) IError {
-	// A statement that fails must not change anything (ISO/IEC 9075-2:2016(E),
-	// 4.39.5), but the transaction it's in continues, unless the exception
-	// condition is a transaction rollback.
+	// A statement that fails must not change anything, but the transaction it's
+	// in continues, unless the exception condition is a transaction rollback.
+	//
+	// ISO/IEC 9075-2:2016(E), 4.39.5, SQL-statement atomicity and statement execution contexts
+	// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 18.b.i
+	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 8.b
 	p.c.take_isolation_error() or {}
 	p.c.finish_write(false) or {}
 	if sqlstate_from_int(err.code()).starts_with('40') {

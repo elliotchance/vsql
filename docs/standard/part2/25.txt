@@ -1,0 +1,10 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 25, Conformance
+25                       container    - -
+# 25.1, Claims of conformance to SQL/Foundation
+25.1                     untestable   - - a rule for claims; B012 and B112 are claimed in docs/sql-compliance.rst, but no routine language (B121 to B128) is, since there are no SQL-invoked routines (T321)
+# 25.2, Additional conformance requirements for SQL/Foundation
+25.2                     untestable   - - a rule for claims; T061 isn't claimed
+# 25.3, Implied feature relationships of SQL/Foundation
+25.3                     untestable   - - a rule for claims; E182 is claimed because of B112 and B012, and B031 is claimed with B035, in docs/sql-compliance.rst

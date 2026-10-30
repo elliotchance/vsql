@@ -6,7 +6,7 @@ module main
 //
 // vsql transactions are always READ WRITE and READ COMMITTED, so a READ ONLY
 // transaction, or an isolation level that's stricter than READ COMMITTED,
-// can't be started.
+// can't be started (General Rules 8 and 9), which are #554 and #664.
 
 // Codes from Table 36, "Values for TRANSACTION ACCESS MODE with StartTran".
 const sql_transaction_read_only = 0x00000001
@@ -35,6 +35,8 @@ fn sql_start_tran(handle_type i16, handle SQLInteger, access_mode SQLInteger, is
 }
 
 fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level i64) !i16 {
+	// - 3.a.ii, 3.b.ii. A statement or descriptor handle raises an exception
+	// condition: CLI-specific condition — invalid attribute identifier.
 	if handle_type in [sql_handle_stmt, sql_handle_desc] {
 		return cli_error('HY092', 'invalid attribute identifier')
 	}
@@ -74,7 +76,8 @@ fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level
 
 	// vsql doesn't support transactions that affect more than one SQL-server
 	// (see 5.3, "Implicit set connection"), so TXN can only be started in one
-	// SQL-connection, which becomes the current SQL-connection.
+	// SQL-connection, which becomes the current SQL-connection (General Rules,
+	// 10), which is #747.
 	if l1.len > 1 {
 		return cli_error('0A001', 'multiple server transactions')
 	}

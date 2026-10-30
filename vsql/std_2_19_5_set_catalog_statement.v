@@ -8,6 +8,8 @@ import time
 // <preparable statement>s that are prepared in the current SQL-session by an
 // <execute immediate statement> or a <prepare statement> and in
 // <direct SQL statement>s that are invoked directly.
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.2.8.1, Catalogs.
 
 struct SetCatalogStatement {
 	catalog_name ValueSpecification
@@ -24,10 +26,17 @@ fn (stmt SetCatalogStatement) execute(mut conn Connection, params map[string]Val
 	}
 	new_catalog := stmt.catalog_name.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!.str()
 
+	// The value (of any type) is the name of the catalog as it is. It isn't
+	// trimmed, or an identifier (so 'x' isn't the catalog X), and the catalog
+	// must exist (#231).
+	//
+	// ISO/IEC 9075-2:2016(E), 19.5, <set catalog statement>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2016(E), 19.5, <set catalog statement>, General Rules, 1 and 2
 	if new_catalog !in conn.catalogs {
 		return sqlstate_3d000(new_catalog) // catalog does not exist
 	}
 
+	// ISO/IEC 9075-2:2016(E), 19.5, <set catalog statement>, General Rules, 3
 	conn.current_catalog = new_catalog
 
 	return new_result_msg('SET CATALOG 1', elapsed_parse, t.elapsed())

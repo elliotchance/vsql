@@ -37,6 +37,7 @@ between_predicate_part_1:
 
 is_symmetric:
   SYMMETRIC {
+    // ISO/IEC 9075-2:2016(E), 8.3, <between predicate>, Conformance Rules, 1
     flag(mut yylex, 'T461')
     $$.v = true
   }

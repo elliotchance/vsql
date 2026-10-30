@@ -2,6 +2,8 @@
 
 module vsql
 
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.3, Tables.
+
 // A column definition.
 struct Column {
 pub:
@@ -31,8 +33,8 @@ pub:
 // than DEFAULT, because it's a generated column or an identity column that's
 // GENERATED ALWAYS.
 //
-// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules 10 and 11b
-// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Syntax Rule 5
+// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 10 and 11.b
+// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Syntax Rules, 5
 fn (c Column) is_generated_always() bool {
 	if identity := c.identity {
 		return identity.always
@@ -123,7 +125,7 @@ pub fn (t Table) column_names() []string {
 }
 
 // identity_column returns the identity column of the table, if it has one. A
-// table can have at most one (ISO/IEC 9075-2:2016(E), 11.3, Syntax Rule 15).
+// table can have at most one (ISO/IEC 9075-2:2016(E), 11.3, Syntax Rules, 15).
 fn (t Table) identity_column() ?Column {
 	for col in t.columns {
 		if _ := col.identity {
@@ -310,15 +312,18 @@ fn (t Table) constraint_names() []string {
 }
 
 // name_constraints names each constraint of a new definition of the table that
-// wasn't given a name. A constraint name must be unique in the schema (ISO/IEC
-// 9075-2:2016(E), 11.6, Syntax Rule 4), so it's an error if a name is used by
-// more than one constraint of the table, or is one of the other_names (the
-// names of the constraints of the other tables in the schema).
+// wasn't given a name. A constraint name must be unique in the schema, so it's
+// an error if a name is used by more than one constraint of the table, or is
+// one of the other_names (the names of the constraints of the other tables in
+// the schema). That's also the assertion of ISO/IEC 9075-11:2008(E), 6.4,
+// UNIQUE_CONSTRAINT_NAME assertion (there are no domains or assertions).
 //
-// A constraint without a name gets an implementation-dependent name (Syntax
-// Rule 3) like its default name (see constraint_name), with the first number
-// that isn't already used, counting from 1 (or the position of the column for
-// a NOT NULL). So a constraint can get the name of one that has been dropped.
+// A constraint without a name gets an implementation-dependent name like its
+// default name (see constraint_name), with the first number that isn't already
+// used, counting from 1 (or the position of the column for a NOT NULL). So a
+// constraint can get the name of one that has been dropped.
+//
+// ISO/IEC 9075-2:2016(E), 11.6, <table constraint definition>, Syntax Rules, 3 and 4
 fn (mut t Table) name_constraints(other_names []string) ! {
 	mut used := map[string]bool{}
 	for name in other_names {

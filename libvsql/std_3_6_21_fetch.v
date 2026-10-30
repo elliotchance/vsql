@@ -16,7 +16,8 @@ fn sql_fetch(statement_handle SQLInteger) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return fetch(mut stmt, sql_fetch_next, 0) or { stmt.diag.error(err) }
@@ -38,7 +39,9 @@ fn fetch(mut stmt Stmt, orientation i16, offset i64) !i16 {
 		return cli_error('24000', 'invalid cursor state')
 	}
 
-	// The bound targets are checked before the cursor moves.
+	// - 5, 6, 7. The bound targets are checked before the cursor moves, but
+	// they should be checked by 5.8, "Implicit FETCH USING clause", after it
+	// moves (General Rules, 14.a.iv), which is #751.
 	targets := bound_targets(stmt)!
 
 	ard := descs[stmt.ard] or { return cli_error('HY010', 'function sequence error') }
@@ -58,7 +61,9 @@ fn fetch(mut stmt Stmt, orientation i16, offset i64) !i16 {
 	stmt.rowset_start = start
 	stmt.rowset_len = len
 
-	// The CURRENT OF POSITION is reset to the first row of the rowset (see
+	// - 10, 13, 14. The cursor is positioned on the next rowset (see scroll),
+	// and its rows are assigned to the bound targets. The CURRENT OF POSITION
+	// is reset to the first row of the rowset (see
 	// 4.4.6, "Statement attributes").
 	stmt.current_of_position = 1
 	stmt.position_cursor()

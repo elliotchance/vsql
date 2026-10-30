@@ -1,0 +1,109 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 23, Diagnostics management
+23                       container    - -
+# 23.1, <get diagnostics statement>
+23.1                     implemented  vsql/std_2_23_1_get_diagnostics_statement.v libvsql/module/test_main.c
+23.1/SR/1                implemented  vsql/std_2_23_1_get_diagnostics_statement.v vsql/sql_test.v
+23.1/SR/2                n/a          - - ALL (F123)
+23.1/SR/3                implemented  vsql/std_2_23_1_get_diagnostics_statement.v vsql/sql_test.v
+23.1/GR/1                definition   - -
+23.1/GR/2                implemented  vsql/std_2_23_1_get_diagnostics_statement.v libvsql/module/test_main.c
+23.1/GR/2.a              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
+23.1/GR/2.b              deviates     vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c it's always 'N', even when a condition was dropped (#798)
+23.1/GR/2.c              implemented  vsql/prepare.v libvsql/module/test_main.c
+23.1/GR/2.d              implemented  vsql/prepare.v libvsql/module/test_main.c
+23.1/GR/2.e              implemented  vsql/prepare.v libvsql/module/test_main.c
+23.1/GR/2.f              implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
+23.1/GR/2.f.i            implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
+23.1/GR/2.f.ii           n/a          - - MERGE (F312)
+23.1/GR/2.f.ii.1         n/a          - - MERGE (F312)
+23.1/GR/2.f.ii.2         n/a          - - MERGE (F312)
+23.1/GR/2.f.ii.3         n/a          - - MERGE (F312)
+23.1/GR/2.f.iii          implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/embed/example.sqc
+23.1/GR/2.f.iii.1        implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/embed/example.sqc
+23.1/GR/2.f.iii.2        implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/embed/example.sqc
+23.1/GR/2.g              impl-defined vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c the SQL_DIAG_ROW_COUNT of libvsql (such as 1 for a positioned UPDATE)
+23.1/GR/2.h              implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
+23.1/GR/2.i              implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
+23.1/GR/2.j              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
+23.1/GR/3                implemented  vsql/std_2_23_1_get_diagnostics_statement.v libvsql/module/test_main.c
+23.1/GR/4                implemented  vsql/std_2_23_1_get_diagnostics_statement.v libvsql/module/test_main.c
+23.1/GR/4.a              implemented  vsql/std_2_23_1_get_diagnostics_statement.v libvsql/module/test_main.c
+23.1/GR/4.b              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
+23.1/GR/4.c              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
+23.1/GR/4.d              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
+23.1/GR/4.e              missing      - - there's no 01001 warning (#797)
+23.1/GR/4.f              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/embed/example.sqc
+23.1/GR/4.f.i            implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/embed/example.sqc
+23.1/GR/4.f.ii           container    - -
+23.1/GR/4.f.ii.1         missing      - - the table isn't identified (#756)
+23.1/GR/4.f.ii.1.A       n/a          - - there are no temporary tables (F531)
+23.1/GR/4.f.ii.1.B       missing      - - the table isn't identified (#756)
+23.1/GR/4.f.ii.2         n/a          - - assertions (F521)
+23.1/GR/4.f.ii.3         n/a          - - assertions (F521)
+23.1/GR/4.g              n/a          - - triggers (T211)
+23.1/GR/4.g.i            n/a          - - triggers (T211)
+23.1/GR/4.g.ii           n/a          - - triggers (T211)
+23.1/GR/4.h              missing      - - the table and column aren't identified (#756)
+23.1/GR/4.h.i            container    - -
+23.1/GR/4.h.i.1          missing      - - the table isn't identified (#756)
+23.1/GR/4.h.i.1.A        missing      - - the table isn't identified (#756)
+23.1/GR/4.h.i.1.B        n/a          - - there are no temporary tables (F531)
+23.1/GR/4.h.i.2          implemented  vsql/std_2_23_1_get_diagnostics_statement.v libvsql/module/test_main.c
+23.1/GR/4.h.ii           n/a          - - privileges (E081)
+23.1/GR/4.i              missing      - - the cursor isn't identified (#735)
+23.1/GR/4.j              n/a          - - views (F031-02)
+23.1/GR/4.k              n/a          - - privileges (E081)
+23.1/GR/4.k.i            n/a          - - privileges (E081)
+23.1/GR/4.k.ii           n/a          - - privileges (E081)
+23.1/GR/4.k.iii          n/a          - - privileges (E081)
+23.1/GR/4.k.iv           n/a          - - privileges (E081)
+23.1/GR/4.l              n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.l.i            n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.l.ii           n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.l.iii          container    - -
+23.1/GR/4.l.iii.1        n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.l.iii.1.A      n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.l.iii.1.B      n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.l.iii.1.C      n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.l.iii.2        container    - -
+23.1/GR/4.l.iii.2.A      n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.l.iii.2.B      n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.l.iii.2.C      n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.m              impl-defined vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c the message of the condition
+23.1/GR/4.n              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
+23.1/GR/4.o              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
+23.1/GR/4.p              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
+23.1/GR/4.p.i            implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
+23.1/GR/4.p.ii           implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
+23.1/GR/4.q              n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.q.i            n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.q.ii           n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.q.iii          n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.q.iii.1        n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.q.iii.2        n/a          - - SQL-invoked routines (T321)
+23.1/GR/4.q.iii.3        n/a          - - SQL-invoked routines (T321)
+23.1/GR/5                implemented  vsql/std_2_23_1_get_diagnostics_statement.v libvsql/module/test_main.c
+23.1/GR/6                container    - -
+23.1/GR/6.a              n/a          - - ALL (F123)
+23.1/GR/6.a.i            n/a          - - ALL (F123)
+23.1/GR/6.a.ii           n/a          - - ALL (F123)
+23.1/GR/6.a.ii.1         n/a          - - ALL (F123)
+23.1/GR/6.a.ii.2         n/a          - - ALL (F123)
+23.1/GR/6.a.iii          n/a          - - ALL (F123)
+23.1/GR/6.a.iv           n/a          - - ALL (F123)
+23.1/GR/6.b              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
+23.1/GR/6.c              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
+23.1/CR/1                missing      - - an SQL-client module isn't flagged (#763)
+23.1/CR/2                missing      - - an SQL-client module isn't flagged (#763)
+23.1/CR/3                missing      - - an SQL-client module isn't flagged (#763)
+23.1/CR/4                n/a          - - ALL (F123)
+# 23.2, Pushing and popping the diagnostics area stack
+23.2                     n/a          - - there's only the first diagnostics area, since there are no SQL-invoked routines (T321) or triggers (T211)
+23.2/GR/1                n/a          - - there's only the first diagnostics area, since there are no SQL-invoked routines (T321) or triggers (T211)
+23.2/GR/2                container    - -
+23.2/GR/2.a              n/a          - - there's only the first diagnostics area, since there are no SQL-invoked routines (T321) or triggers (T211)
+23.2/GR/2.a.i            n/a          - - there's only the first diagnostics area, since there are no SQL-invoked routines (T321) or triggers (T211)
+23.2/GR/2.a.ii           n/a          - - there's only the first diagnostics area, since there are no SQL-invoked routines (T321) or triggers (T211)
+23.2/GR/2.b              n/a          - - there's only the first diagnostics area, since there are no SQL-invoked routines (T321) or triggers (T211)

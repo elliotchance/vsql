@@ -12,17 +12,21 @@ struct AddColumnDefinition {
 
 // execute adds the column after the last column of the table. The table is
 // defined again with the new column, so it's checked the same way as a CREATE
-// TABLE, such as for a duplicate column name or a second PRIMARY KEY.
+// TABLE, such as for a duplicate column name, a second PRIMARY KEY or a second
+// identity column.
 //
-// Every existing row gets the default of the column (General Rule 3), which is
-// only evaluated once. A row that was written before the column was added is
-// read with NULL for it (see new_row_from_bytes), so the rows only need to be
-// rewritten when the default isn't NULL, or the column is a generated column,
-// which is the result of its generation expression for each row (General Rule
-// 2a). The rows must satisfy the constraints of the new column, so a NOT NULL
-// column without a default can only be added to an empty table, a UNIQUE
-// column with a default to a table with at most one row, and a REFERENCES
-// column with a default to a table whose rows can all reference that default.
+// Every existing row gets the default of the column, which is only evaluated
+// once. A row that was written before the column was added is read with NULL
+// for it (see new_row_from_bytes), so the rows only need to be rewritten when
+// the default isn't NULL, or the column is a generated column, which is the
+// result of its generation expression for each row. The rows must satisfy the
+// constraints of the new column, so a NOT NULL column without a default can
+// only be added to an empty table, a UNIQUE column with a default to a table
+// with at most one row, and a REFERENCES column with a default to a table
+// whose rows can all reference that default.
+//
+// ISO/IEC 9075-2:2016(E), 11.11, <add column definition>, Syntax Rules, 3
+// ISO/IEC 9075-2:2016(E), 11.11, <add column definition>, General Rules, 1, 2 and 4
 fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table, params map[string]Value) ! {
 	mut elements := table.elements()
 	elements << d.column_definition
@@ -43,7 +47,7 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 
 	// NOT NULL is checked here, so that it's only an error when there are rows.
 	// An identity column gets the next value of its sequence for each row
-	// (General Rule 2bi). The sequence is only stored once the column is added,
+	// (GR 2.b.i). The sequence is only stored once the column is added,
 	// so the values come from a copy of it.
 	mut value := insert_value(mut conn, params, table, Column{
 		...column

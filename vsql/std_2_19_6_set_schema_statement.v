@@ -22,7 +22,11 @@ fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Valu
 		conn:   conn
 		params: params
 	}
-	new_schema := stmt.schema_name.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!.str()
+	value := stmt.schema_name.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!.str()
+
+	// The value is a <schema name> (General Rule 2), so 'foo' is the regular
+	// identifier FOO, and '"foo"' is needed for a lower case name.
+	new_schema := normalize_identifier(value) or { return sqlstate_3f000(value) }
 
 	if new_schema !in conn.catalog().storage.schemas && new_schema != information_schema_name {
 		return sqlstate_3f000(new_schema) // schema does not exist

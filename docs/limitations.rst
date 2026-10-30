@@ -31,7 +31,8 @@ File
     - 128 TB
 
   * - The maximum size of a row
-    - 2147483647 bytes (~2 GB)
+    - 2147418089 bytes (~2 GB), including 4 bytes for each ``CHARACTER`` or
+      ``CHARACTER VARYING`` value (otherwise a ``54000`` error)
 
   * - The maximum length of a schema or sequence name in the file
     - Its key must fit in a page, which only matters for a small page size

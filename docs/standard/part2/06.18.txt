@@ -1,0 +1,16 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.18, <static method invocation>
+6.18                     todo         - -
+6.18/SR/1                todo         - -
+6.18/SR/2                todo         - -
+6.18/SR/3                container    - -
+6.18/SR/3.a              todo         - -
+6.18/SR/3.b              todo         - -
+6.18/SR/4                todo         - -
+6.18/SR/5                todo         - -
+6.18/SR/6                todo         - -
+6.18/SR/7                todo         - -
+6.18/GR/1                todo         - -
+6.18/GR/2                todo         - -
+6.18/CR/1                todo         - -

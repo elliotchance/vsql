@@ -1,0 +1,9 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 20.21, <dynamic single row select statement>
+20.21                    todo         - -
+20.21/GR/1               todo         - -
+20.21/GR/2               container    - -
+20.21/GR/2.a             todo         - -
+20.21/GR/2.b             todo         - -
+20.21/CR/1               todo         - -

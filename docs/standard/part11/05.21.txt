@@ -1,0 +1,8 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.21, COLUMNS view
+5.21                     todo         - -
+5.21/CR/1                todo         - -
+5.21/CR/2                todo         - -
+5.21/CR/3                todo         - -
+5.21/CR/4                todo         - -

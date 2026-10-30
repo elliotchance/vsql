@@ -1,0 +1,8 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 3.3, Conventions
+3.3                      todo         - -
+# 3.3.1, Use of terms
+3.3.1                    todo         - -
+# 3.3.1.1, Other terms
+3.3.1.1                  todo         - -

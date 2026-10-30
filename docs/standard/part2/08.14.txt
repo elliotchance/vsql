@@ -1,0 +1,21 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 8.14, <overlaps predicate>
+8.14                     todo         - -
+8.14/SR/1                todo         - -
+8.14/SR/2                todo         - -
+8.14/SR/3                todo         - -
+8.14/SR/3.a              todo         - -
+8.14/SR/3.b              todo         - -
+8.14/GR/1                todo         - -
+8.14/GR/2                todo         - -
+8.14/GR/3                container    - -
+8.14/GR/3.a              todo         - -
+8.14/GR/3.b              todo         - -
+8.14/GR/4                todo         - -
+8.14/GR/5                container    - -
+8.14/GR/5.a              todo         - -
+8.14/GR/5.b              todo         - -
+8.14/GR/6                todo         - -
+8.14/GR/7                todo         - -
+8.14/CR/1                todo         - -

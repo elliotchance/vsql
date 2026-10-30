@@ -1,0 +1,31 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.9, ColAttribute
+6.9                      todo         - -
+6.9/GR/1                 todo         - -
+6.9/GR/2                 todo         - -
+6.9/GR/3                 todo         - -
+6.9/GR/4                 todo         - -
+6.9/GR/5                 todo         - -
+6.9/GR/6                 todo         - -
+6.9/GR/7                 todo         - -
+6.9/GR/8                 todo         - -
+6.9/GR/9                 todo         - -
+6.9/GR/9.a               todo         - -
+6.9/GR/9.b               todo         - -
+6.9/GR/9.c               todo         - -
+6.9/GR/9.d               todo         - -
+6.9/GR/9.e               todo         - -
+6.9/GR/10                todo         - -
+6.9/GR/10.a              todo         - -
+6.9/GR/10.b              todo         - -
+6.9/GR/10.c              todo         - -
+6.9/GR/11                todo         - -
+6.9/GR/12                todo         - -
+6.9/GR/12.a              todo         - -
+6.9/GR/12.b              todo         - -
+6.9/GR/12.b.i            todo         - -
+6.9/GR/12.b.i.1          todo         - -
+6.9/GR/12.b.i.2          todo         - -
+6.9/GR/12.b.i.3          todo         - -
+6.9/GR/12.b.ii           todo         - -

@@ -1,0 +1,35 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 21.2, <embedded exception declaration>
+21.2                     todo         - -
+21.2/SR/1                todo         - -
+21.2/SR/2                todo         - -
+21.2/SR/2.a              todo         - -
+21.2/SR/2.b              todo         - -
+21.2/SR/2.c              todo         - -
+21.2/SR/2.d              todo         - -
+21.2/SR/3                todo         - -
+21.2/SR/4                todo         - -
+21.2/SR/5                todo         - -
+21.2/GR/1                todo         - -
+21.2/GR/1.a              todo         - -
+21.2/GR/1.b              todo         - -
+21.2/GR/1.c              todo         - -
+21.2/GR/1.c.i            todo         - -
+21.2/GR/1.c.ii           todo         - -
+21.2/GR/1.c.iii          todo         - -
+21.2/GR/1.d              container    - -
+21.2/GR/1.d.i            todo         - -
+21.2/GR/1.d.ii           todo         - -
+21.2/GR/1.d.iii          container    - -
+21.2/GR/1.d.iii.1        todo         - -
+21.2/GR/1.d.iii.2        todo         - -
+21.2/GR/1.d.iii.3        container    - -
+21.2/GR/1.d.iii.3.A      todo         - -
+21.2/GR/1.d.iii.3.B      todo         - -
+21.2/GR/1.d.iii.3.C      container    - -
+21.2/GR/1.d.iii.3.C.I    todo         - -
+21.2/GR/1.d.iii.3.C.II   todo         - -
+21.2/GR/1.d.iii.3.C.III  todo         - -
+21.2/CR/1                todo         - -
+21.2/CR/2                todo         - -

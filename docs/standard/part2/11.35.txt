@@ -1,0 +1,8 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.35, <alter domain statement>
+11.35                    todo         - -
+11.35/SR/1               todo         - -
+11.35/AR/1               todo         - -
+11.35/GR/1               todo         - -
+11.35/CR/1               todo         - -

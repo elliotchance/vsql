@@ -1,0 +1,21 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.24, Data type identity
+9.24                     todo         - -
+9.24/SR/1                todo         - -
+9.24/SR/2                todo         - -
+9.24/SR/3                todo         - -
+9.24/SR/4                todo         - -
+9.24/SR/5                todo         - -
+9.24/SR/6                todo         - -
+9.24/SR/7                todo         - -
+9.24/SR/8                todo         - -
+9.24/SR/9                todo         - -
+9.24/SR/10               todo         - -
+9.24/SR/11               todo         - -
+9.24/SR/11.a             todo         - -
+9.24/SR/11.b             todo         - -
+9.24/SR/11.c             todo         - -
+9.24/SR/12               todo         - -
+9.24/SR/12.a             todo         - -
+9.24/SR/12.b             todo         - -

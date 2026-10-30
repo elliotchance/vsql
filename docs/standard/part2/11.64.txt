@@ -1,0 +1,28 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.64, <drop user-defined cast statement>
+11.64                    todo         - -
+11.64/SR/1               todo         - -
+11.64/SR/2               todo         - -
+11.64/SR/3               todo         - -
+11.64/SR/4               todo         - -
+11.64/SR/5               todo         - -
+11.64/SR/5.a             todo         - -
+11.64/SR/5.b             todo         - -
+11.64/SR/5.c             todo         - -
+11.64/SR/5.d             todo         - -
+11.64/SR/6               todo         - -
+11.64/SR/7               todo         - -
+11.64/SR/7.a             todo         - -
+11.64/SR/7.b             todo         - -
+11.64/SR/7.c             todo         - -
+11.64/SR/7.d             todo         - -
+11.64/AR/1               todo         - -
+11.64/GR/1               todo         - -
+11.64/GR/2               todo         - -
+11.64/GR/3               todo         - -
+11.64/GR/4               todo         - -
+11.64/GR/5               todo         - -
+11.64/GR/6               todo         - -
+11.64/GR/7               todo         - -
+11.64/CR/1               todo         - -

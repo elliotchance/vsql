@@ -1,0 +1,15 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.29, Generation of the next value of a sequence generator
+9.29                     todo         - -
+9.29/GR/1                todo         - -
+9.29/GR/2                todo         - -
+9.29/GR/3                todo         - -
+9.29/GR/3.a              todo         - -
+9.29/GR/3.b              todo         - -
+9.29/GR/3.b.i            todo         - -
+9.29/GR/3.b.ii           todo         - -
+9.29/GR/4                container    - -
+9.29/GR/4.a              todo         - -
+9.29/GR/4.b              todo         - -
+9.29/GR/5                todo         - -

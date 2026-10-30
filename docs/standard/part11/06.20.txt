@@ -1,0 +1,28 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.20, COLUMNS base table
+6.20                     todo         - -
+6.20/DE/1                container    - -
+6.20/DE/1.a              todo         - -
+6.20/DE/1.b              todo         - -
+6.20/DE/2                todo         - -
+6.20/DE/3                todo         - -
+6.20/DE/4                todo         - -
+6.20/DE/5                todo         - -
+6.20/DE/6                todo         - -
+6.20/DE/7                todo         - -
+6.20/DE/7.a              todo         - -
+6.20/DE/7.b              todo         - -
+6.20/DE/7.c              todo         - -
+6.20/DE/8                todo         - -
+6.20/DE/9                todo         - -
+6.20/DE/10               todo         - -
+6.20/DE/11               todo         - -
+6.20/DE/12               todo         - -
+6.20/DE/13               todo         - -
+6.20/DE/14               todo         - -
+6.20/DE/15               todo         - -
+6.20/DE/16               todo         - -
+6.20/DE/17               todo         - -
+6.20/DE/18               todo         - -
+6.20/DE/19               todo         - -

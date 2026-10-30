@@ -1,0 +1,22 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.41, <array value function>
+6.41                     todo         - -
+6.41/SR/1                todo         - -
+6.41/SR/2                todo         - -
+6.41/SR/2.a              todo         - -
+6.41/SR/2.b              todo         - -
+6.41/GR/1                todo         - -
+6.41/GR/2                todo         - -
+6.41/GR/2.a              todo         - -
+6.41/GR/2.b              todo         - -
+6.41/GR/2.c              todo         - -
+6.41/GR/2.d              todo         - -
+6.41/GR/2.e              todo         - -
+6.41/GR/2.f              todo         - -
+6.41/GR/2.g              todo         - -
+6.41/GR/2.h              todo         - -
+6.41/GR/2.i              container    - -
+6.41/GR/2.i.i            todo         - -
+6.41/GR/2.i.ii           todo         - -
+6.41/CR/1                todo         - -

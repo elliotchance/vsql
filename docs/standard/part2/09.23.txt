@@ -1,0 +1,18 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.23, XQuery regular expression replacement
+9.23                     todo         - -
+9.23/GR/1                todo         - -
+9.23/GR/2                todo         - -
+9.23/GR/3                todo         - -
+9.23/GR/4                container    - -
+9.23/GR/4.a              todo         - -
+9.23/GR/4.b              todo         - -
+9.23/GR/5                todo         - -
+9.23/GR/6                todo         - -
+9.23/GR/7                todo         - -
+9.23/GR/8                todo         - -
+9.23/GR/9                todo         - -
+9.23/GR/9.a              todo         - -
+9.23/GR/9.b              todo         - -
+9.23/GR/10               todo         - -

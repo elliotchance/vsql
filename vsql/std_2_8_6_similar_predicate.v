@@ -54,7 +54,7 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 			left := compiled_l.run(mut conn, data, params)!
 			right := compiled_right.run(mut conn, data, params)!
 
-			// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 4a
+			// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 4.a
 			if left.is_null || right.is_null {
 				return new_unknown_value()
 			}
@@ -64,7 +64,7 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 				escape_value := compiled_escape.run(mut conn, data, params)!
 
 				// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General
-				// Rules, 4b
+				// Rules, 4.b
 				if escape_value.is_null {
 					return new_unknown_value()
 				}
@@ -160,7 +160,7 @@ fn parse_similar_pattern(pattern string, escape ?rune) !RegularNode {
 	}
 
 	if esc := escape {
-		// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 3c
+		// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 3.c
 		//
 		// With ":" as the escape character, the ":]" of "[:ALPHA:]" would be
 		// an escaped "]", so the class is found by parsing the pattern as if it
@@ -178,7 +178,7 @@ fn parse_similar_pattern(pattern string, escape ?rune) !RegularNode {
 		return sqlstate_2201b()
 	}
 
-	// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 3b
+	// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 3.b
 	if esc := escape {
 		if p.unescaped_escape && esc in regular_special_characters {
 			return sqlstate_2200c()

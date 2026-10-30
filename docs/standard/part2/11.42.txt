@@ -1,0 +1,24 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.42, <drop character set statement>
+11.42                    todo         - -
+11.42/SR/1               todo         - -
+11.42/SR/2               todo         - -
+11.42/SR/3               todo         - -
+11.42/SR/4               todo         - -
+11.42/SR/4.a             todo         - -
+11.42/SR/4.b             todo         - -
+11.42/SR/4.c             todo         - -
+11.42/SR/4.d             todo         - -
+11.42/SR/4.e             todo         - -
+11.42/SR/4.f             todo         - -
+11.42/SR/4.g             todo         - -
+11.42/SR/4.h             todo         - -
+11.42/SR/4.i             todo         - -
+11.42/SR/4.j             todo         - -
+11.42/SR/5               todo         - -
+11.42/AR/1               todo         - -
+11.42/GR/1               todo         - -
+11.42/GR/2               todo         - -
+11.42/GR/3               todo         - -
+11.42/CR/1               todo         - -

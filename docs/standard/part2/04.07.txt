@@ -1,0 +1,26 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.7, User-defined types
+4.7                      todo         - -
+# 4.7.1, Introduction to user-defined types
+4.7.1                    todo         - -
+# 4.7.2, Distinct types
+4.7.2                    todo         - -
+# 4.7.3, Structured types
+4.7.3                    todo         - -
+# 4.7.3.1, Introduction to structured types
+4.7.3.1                  todo         - -
+# 4.7.3.2, Observer functions and mutator functions
+4.7.3.2                  todo         - -
+# 4.7.3.3, Constructors
+4.7.3.3                  todo         - -
+# 4.7.3.4, Subtypes and supertypes
+4.7.3.4                  todo         - -
+# 4.7.4, Methods
+4.7.4                    todo         - -
+# 4.7.5, User-defined type comparison and assignment
+4.7.5                    todo         - -
+# 4.7.6, Transforms for user-defined types
+4.7.6                    todo         - -
+# 4.7.7, User-defined type descriptor
+4.7.7                    todo         - -

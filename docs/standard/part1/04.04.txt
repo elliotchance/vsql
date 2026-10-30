@@ -1,0 +1,34 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.4, SQL data types
+4.4                      todo         - -
+# 4.4.1, General data type information
+4.4.1                    todo         - -
+# 4.4.2, The null value
+4.4.2                    todo         - -
+# 4.4.3, Predefined types
+4.4.3                    todo         - -
+# 4.4.3.1, Numeric types
+4.4.3.1                  todo         - -
+# 4.4.3.2, Character string types
+4.4.3.2                  todo         - -
+# 4.4.3.3, Boolean type
+4.4.3.3                  todo         - -
+# 4.4.3.4, Datetime types
+4.4.3.4                  todo         - -
+# 4.4.3.5, Interval types
+4.4.3.5                  todo         - -
+# 4.4.3.6, XML type
+4.4.3.6                  todo         - -
+# 4.4.4, Constructed atomic types
+4.4.4                    todo         - -
+# 4.4.4.1, Reference types
+4.4.4.1                  todo         - -
+# 4.4.5, Constructed composite types
+4.4.5                    todo         - -
+# 4.4.5.1, Collection types
+4.4.5.1                  todo         - -
+# 4.4.5.2, Row types
+4.4.5.2                  todo         - -
+# 4.4.5.3, Fields
+4.4.5.3                  todo         - -

@@ -1,0 +1,8 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 17.6, <release savepoint statement>
+17.6                     todo         - -
+17.6/GR/1                todo         - -
+17.6/GR/2                todo         - -
+17.6/GR/3                todo         - -
+17.6/CR/1                todo         - -

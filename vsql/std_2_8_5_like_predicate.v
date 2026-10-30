@@ -58,7 +58,7 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 			left := compiled_l.run(mut conn, data, params)!
 			right := compiled_right.run(mut conn, data, params)!
 
-			// ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, General Rules, 3a.i
+			// ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, General Rules, 3.a.i
 			if left.is_null || right.is_null {
 				return new_unknown_value()
 			}
@@ -68,7 +68,7 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 				escape_value := compiled_escape.run(mut conn, data, params)!
 
 				// ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, General Rules,
-				// 3b.i
+				// 3.b.i
 				if escape_value.is_null {
 					return new_unknown_value()
 				}

@@ -1,0 +1,23 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 20.13, <execute statement>
+20.13                    todo         - -
+20.13/SR/1               todo         - -
+20.13/SR/1.a             todo         - -
+20.13/SR/1.b             todo         - -
+20.13/SR/2               todo         - -
+20.13/GR/1               todo         - -
+20.13/GR/2               todo         - -
+20.13/GR/3               todo         - -
+20.13/GR/3.a             todo         - -
+20.13/GR/3.b             todo         - -
+20.13/GR/4               todo         - -
+20.13/GR/5               todo         - -
+20.13/GR/6               todo         - -
+20.13/GR/7               todo         - -
+20.13/GR/8               todo         - -
+20.13/GR/9               todo         - -
+20.13/GR/10              todo         - -
+20.13/GR/11              todo         - -
+20.13/CR/1               todo         - -
+20.13/CR/2               todo         - -

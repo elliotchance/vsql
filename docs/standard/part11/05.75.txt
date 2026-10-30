@@ -1,0 +1,5 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.75, VIEW_TABLE_USAGE view
+5.75                     todo         - -
+5.75/CR/1                todo         - -

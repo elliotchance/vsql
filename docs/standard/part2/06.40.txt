@@ -1,0 +1,16 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.40, <array value expression>
+6.40                     todo         - -
+6.40/SR/1                todo         - -
+6.40/SR/2                todo         - -
+6.40/SR/3                todo         - -
+6.40/SR/3.a              todo         - -
+6.40/SR/3.b              todo         - -
+6.40/SR/3.c              todo         - -
+6.40/GR/1                todo         - -
+6.40/GR/2                todo         - -
+6.40/GR/2.a              todo         - -
+6.40/GR/2.b              todo         - -
+6.40/GR/2.c              todo         - -
+6.40/CR/1                todo         - -

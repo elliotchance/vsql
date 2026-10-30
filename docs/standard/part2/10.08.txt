@@ -1,0 +1,18 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 10.8, <constraint name definition> and <constraint characteristics>
+10.8                     todo         - -
+10.8/SR/1                todo         - -
+10.8/SR/2                container    - -
+10.8/SR/2.a              todo         - -
+10.8/SR/2.a.i            todo         - -
+10.8/SR/2.a.ii           todo         - -
+10.8/SR/2.b              todo         - -
+10.8/SR/3                todo         - -
+10.8/GR/1                todo         - -
+10.8/GR/2                todo         - -
+10.8/GR/3                todo         - -
+10.8/GR/4                todo         - -
+10.8/CR/1                todo         - -
+10.8/CR/2                todo         - -
+10.8/CR/3                todo         - -

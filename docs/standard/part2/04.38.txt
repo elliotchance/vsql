@@ -1,0 +1,8 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.38, Cursors
+4.38                     todo         - -
+# 4.38.1, General description of cursors
+4.38.1                   todo         - -
+# 4.38.2, Operations on and using cursors
+4.38.2                   todo         - -

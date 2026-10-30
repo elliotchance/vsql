@@ -1,0 +1,7 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.68, TRIGGER_TABLE_USAGE view
+5.68                     todo         - -
+5.68/CR/1                todo         - -
+5.68/CR/2                todo         - -
+5.68/CR/3                todo         - -

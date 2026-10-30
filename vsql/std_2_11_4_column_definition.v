@@ -280,9 +280,9 @@ fn new_generated_columns(mut conn Connection, table Table) !GeneratedColumns {
 // column, so the order doesn't matter.
 //
 // ISO/IEC 9075-2:2016(E), 15.10, Effect of inserting tables into base tables,
-// General Rule 5a
+// General Rules, 5.a
 // ISO/IEC 9075-2:2016(E), 15.13, Effect of replacing rows in base tables,
-// General Rule 8
+// General Rules, 8
 fn (g GeneratedColumns) apply(mut conn Connection, mut row Row) ! {
 	if g.columns.len == 0 {
 		return

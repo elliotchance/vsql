@@ -1,0 +1,21 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.55, SetCursorName
+6.55                     todo         - -
+6.55/GR/1                todo         - -
+6.55/GR/2                todo         - -
+6.55/GR/3                todo         - -
+6.55/GR/4                container    - -
+6.55/GR/4.a              todo         - -
+6.55/GR/4.b              todo         - -
+6.55/GR/4.c              todo         - -
+6.55/GR/5                container    - -
+6.55/GR/5.a              todo         - -
+6.55/GR/5.b              todo         - -
+6.55/GR/6                todo         - -
+6.55/GR/7                container    - -
+6.55/GR/7.a              todo         - -
+6.55/GR/7.b              todo         - -
+6.55/GR/8                todo         - -
+6.55/GR/9                todo         - -
+6.55/GR/10               todo         - -

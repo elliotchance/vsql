@@ -1,0 +1,20 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.37, Serializing an SQL/JSON item
+9.37                     todo         - -
+9.37/SR/1                todo         - -
+9.37/SR/2                container    - -
+9.37/SR/2.a              todo         - -
+9.37/SR/2.b              todo         - -
+9.37/GR/1                todo         - -
+9.37/GR/2                container    - -
+9.37/GR/2.a              todo         - -
+9.37/GR/2.a.i            container    - -
+9.37/GR/2.a.i.1          todo         - -
+9.37/GR/2.a.i.2          todo         - -
+9.37/GR/2.a.ii           todo         - -
+9.37/GR/2.a.ii.1         todo         - -
+9.37/GR/2.a.ii.2         todo         - -
+9.37/GR/2.a.iii          todo         - -
+9.37/GR/2.b              todo         - -
+9.37/GR/3                todo         - -

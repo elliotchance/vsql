@@ -91,7 +91,7 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 	for i, column in stmt.columns {
 		table_column := table.column(column.sub_entity_name)!
 
-		// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rule 10. A
+		// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 10. A
 		// generated column is set once the other columns are known (see
 		// GeneratedColumns.apply).
 		if table_column.generated != none {
@@ -101,8 +101,8 @@ fn (stmt InsertStatement) insert_row(mut conn Connection, params map[string]Valu
 			continue
 		}
 
-		// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rule 11b
-		// and General Rule 7e. OVERRIDING USER VALUE ignores the value, so the
+		// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 11.b
+		// and General Rules, 7.e. OVERRIDING USER VALUE ignores the value, so the
 		// column gets the next value (4.15.12).
 		mut value := values[i]
 		if identity := table_column.identity {

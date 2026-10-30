@@ -1,0 +1,14 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.35, Host parameters
+4.35                     todo         - -
+# 4.35.1, Overview of host parameters
+4.35.1                   todo         - -
+# 4.35.2, Status parameters
+4.35.2                   todo         - -
+# 4.35.3, Data parameters
+4.35.3                   todo         - -
+# 4.35.4, Indicator parameters
+4.35.4                   todo         - -
+# 4.35.5, Locators
+4.35.5                   todo         - -

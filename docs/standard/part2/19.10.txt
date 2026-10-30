@@ -1,0 +1,16 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 19.10, <set session collation statement>
+19.10                    todo         - -
+19.10/SR/1               todo         - -
+19.10/GR/1               todo         - -
+19.10/GR/1.a             todo         - -
+19.10/GR/1.b             todo         - -
+19.10/GR/1.b.i           todo         - -
+19.10/GR/1.b.i.1         todo         - -
+19.10/GR/1.b.i.2         todo         - -
+19.10/GR/1.b.ii          todo         - -
+19.10/GR/2               todo         - -
+19.10/GR/2.a             todo         - -
+19.10/GR/2.b             todo         - -
+19.10/CR/1               todo         - -

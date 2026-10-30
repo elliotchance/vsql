@@ -1,0 +1,8 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.44, Triggers
+4.44                     todo         - -
+# 4.44.1, General description of triggers
+4.44.1                   todo         - -
+# 4.44.2, Trigger execution
+4.44.2                   todo         - -

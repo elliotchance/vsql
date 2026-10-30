@@ -1,0 +1,31 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 21.7, <embedded SQL MUMPS program>
+21.7                     todo         - -
+21.7/SR/1                todo         - -
+21.7/SR/2                todo         - -
+21.7/SR/3                todo         - -
+21.7/SR/4                todo         - -
+21.7/SR/4.a              todo         - -
+21.7/SR/4.a.i            todo         - -
+21.7/SR/4.a.ii           todo         - -
+21.7/SR/4.a.iii          todo         - -
+21.7/SR/4.b              todo         - -
+21.7/SR/4.c              todo         - -
+21.7/SR/4.c.i            todo         - -
+21.7/SR/4.c.ii           todo         - -
+21.7/SR/4.c.iii          todo         - -
+21.7/SR/4.c.iv           todo         - -
+21.7/SR/4.c.v            todo         - -
+21.7/SR/4.c.vi           todo         - -
+21.7/SR/4.c.vii          todo         - -
+21.7/SR/5                todo         - -
+21.7/GR/1                todo         - -
+21.7/CR/1                todo         - -
+21.7/CR/2                todo         - -
+21.7/CR/3                todo         - -
+21.7/CR/4                todo         - -
+21.7/CR/5                todo         - -
+21.7/CR/6                todo         - -
+21.7/CR/7                todo         - -
+21.7/CR/8                todo         - -

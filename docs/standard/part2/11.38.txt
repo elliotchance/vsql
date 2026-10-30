@@ -1,0 +1,10 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.38, <add domain constraint definition>
+11.38                    todo         - -
+11.38/SR/1               todo         - -
+11.38/SR/2               todo         - -
+11.38/SR/3               todo         - -
+11.38/GR/1               todo         - -
+11.38/GR/2               todo         - -
+11.38/CR/1               todo         - -

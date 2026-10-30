@@ -1,0 +1,5 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.20, COLUMN_UDT_USAGE view
+5.20                     todo         - -
+5.20/CR/1                todo         - -

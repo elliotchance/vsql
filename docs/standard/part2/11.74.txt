@@ -1,0 +1,14 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.74, <drop sequence generator statement>
+11.74                    todo         - -
+11.74/SR/1               todo         - -
+11.74/SR/2               todo         - -
+11.74/SR/3               todo         - -
+11.74/SR/3.a             todo         - -
+11.74/SR/3.b             todo         - -
+11.74/SR/4               todo         - -
+11.74/AR/1               todo         - -
+11.74/GR/1               todo         - -
+11.74/GR/2               todo         - -
+11.74/CR/1               todo         - -

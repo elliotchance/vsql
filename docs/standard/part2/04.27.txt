@@ -1,0 +1,8 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.27, Sequence generators
+4.27                     todo         - -
+# 4.27.1, General description of sequence generators
+4.27.1                   todo         - -
+# 4.27.2, Operations involving sequence generators
+4.27.2                   todo         - -

@@ -1,0 +1,10 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 13.2, <module name clause>
+13.2                     todo         - -
+13.2/SR/1                todo         - -
+13.2/SR/2                todo         - -
+13.2/SR/3                todo         - -
+13.2/SR/4                todo         - -
+13.2/GR/1                todo         - -
+13.2/CR/1                todo         - -

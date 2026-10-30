@@ -1,0 +1,11 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.8, CloseCursor
+6.8                      todo         - -
+6.8/GR/1                 todo         - -
+6.8/GR/2                 todo         - -
+6.8/GR/3                 container    - -
+6.8/GR/3.a               todo         - -
+6.8/GR/3.b               container    - -
+6.8/GR/3.b.i             todo         - -
+6.8/GR/3.b.ii            todo         - -

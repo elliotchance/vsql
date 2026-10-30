@@ -385,7 +385,7 @@ fn cast_datetime(conn Connection, v Value, t Type) !Value {
 }
 
 // check_store_assignment returns an error if a value can't be assigned to a
-// column (ISO/IEC 9075-2:2016(E), 9.2, Syntax Rules). Unlike CAST, a character
+// column (ISO/IEC 9075-2:2016(E), 9.2, Store assignment). Unlike CAST, a character
 // string can't be assigned to a number, or a number to a character string.
 //
 // A datetime can only be assigned to the same kind of datetime (4.6.2): both
@@ -417,7 +417,7 @@ fn check_assignable(from Type, t Type) ! {
 }
 
 // cast_character_to_number casts a character string to a number (ISO/IEC
-// 9075-2:2016(E), 6.13, General Rules 8b and 9b). Leading and trailing spaces
+// 9075-2:2016(E), 6.13, General Rules, 8.b and 9.b). Leading and trailing spaces
 // are removed, and what's left must be a <signed numeric literal>.
 fn cast_character_to_number(mut conn Connection, v Value, t Type) !Value {
 	s := v.string_value().trim(' ')

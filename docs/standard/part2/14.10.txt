@@ -1,0 +1,27 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 14.10, <truncate table statement>
+14.10                    todo         - -
+14.10/SR/1               todo         - -
+14.10/SR/2               todo         - -
+14.10/SR/3               todo         - -
+14.10/SR/4               todo         - -
+14.10/SR/5               todo         - -
+14.10/AR/1               todo         - -
+14.10/AR/2               todo         - -
+14.10/GR/1               todo         - -
+14.10/GR/2               todo         - -
+14.10/GR/2.a             todo         - -
+14.10/GR/2.b             todo         - -
+14.10/GR/3               todo         - -
+14.10/GR/4               todo         - -
+14.10/GR/5               container    - -
+14.10/GR/5.a             todo         - -
+14.10/GR/5.b             todo         - -
+14.10/GR/6               todo         - -
+14.10/GR/7               todo         - -
+14.10/GR/8               todo         - -
+14.10/GR/8.a             todo         - -
+14.10/GR/8.b             todo         - -
+14.10/CR/1               todo         - -
+14.10/CR/2               todo         - -

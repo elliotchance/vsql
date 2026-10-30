@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.57, SQL_SIZING_PROFILES view
+5.57                     todo         - -
+5.57/CR/1                todo         - -
+5.57/CR/2                todo         - -

@@ -1,0 +1,8 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.14, CHECK_CONSTRAINTS base table
+6.14                     todo         - -
+6.14/DE/1                todo         - -
+6.14/DE/2                container    - -
+6.14/DE/2.a              todo         - -
+6.14/DE/2.b              todo         - -

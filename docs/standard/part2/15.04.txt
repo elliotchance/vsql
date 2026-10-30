@@ -1,0 +1,13 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 15.4, Effect of closing a cursor
+15.4                     todo         - -
+15.4/GR/1                todo         - -
+15.4/GR/2                todo         - -
+15.4/GR/3                todo         - -
+15.4/GR/4                todo         - -
+15.4/GR/5                todo         - -
+15.4/GR/6                container    - -
+15.4/GR/6.a              todo         - -
+15.4/GR/6.b              todo         - -
+15.4/GR/7                todo         - -

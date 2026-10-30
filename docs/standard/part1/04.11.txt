@@ -1,0 +1,8 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.11, SQL-statements
+4.11                     todo         - -
+# 4.11.1, Classes of SQL-statements
+4.11.1                   todo         - -
+# 4.11.2, SQL-statements classified by function
+4.11.2                   todo         - -

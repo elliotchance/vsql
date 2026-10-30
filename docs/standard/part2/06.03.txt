@@ -1,0 +1,9 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.3, <value expression primary>
+6.3                      todo         - -
+6.3/SR/1                 todo         - -
+6.3/SR/2                 todo         - -
+6.3/SR/3                 todo         - -
+6.3/GR/1                 todo         - -
+6.3/GR/2                 todo         - -

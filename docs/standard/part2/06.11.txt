@@ -1,0 +1,32 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.11, <nested window function>
+6.11                     todo         - -
+6.11/SR/1                todo         - -
+6.11/SR/2                todo         - -
+6.11/SR/3                todo         - -
+6.11/SR/4                todo         - -
+6.11/GR/1                todo         - -
+6.11/GR/2                todo         - -
+6.11/GR/3                todo         - -
+6.11/GR/3.a              todo         - -
+6.11/GR/3.b              container    - -
+6.11/GR/3.b.i            todo         - -
+6.11/GR/3.b.ii           todo         - -
+6.11/GR/3.b.iii          todo         - -
+6.11/GR/3.b.iv           todo         - -
+6.11/GR/3.b.v            todo         - -
+6.11/GR/3.b.vi           todo         - -
+6.11/GR/4                todo         - -
+6.11/GR/4.a              todo         - -
+6.11/GR/4.b              todo         - -
+6.11/GR/4.c              todo         - -
+6.11/GR/4.c.i            todo         - -
+6.11/GR/4.c.ii           todo         - -
+6.11/GR/4.d              container    - -
+6.11/GR/4.d.i            todo         - -
+6.11/GR/4.d.ii           todo         - -
+6.11/GR/4.e              container    - -
+6.11/GR/4.e.i            todo         - -
+6.11/GR/4.e.ii           todo         - -
+6.11/CR/1                todo         - -

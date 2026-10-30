@@ -1,0 +1,7 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.53, RowCount
+6.53                     todo         - -
+6.53/GR/1                todo         - -
+6.53/GR/2                todo         - -
+6.53/GR/3                todo         - -

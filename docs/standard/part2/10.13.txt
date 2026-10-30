@@ -1,0 +1,10 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 10.13, <JSON output clause>
+10.13                    todo         - -
+10.13/SR/1               todo         - -
+10.13/SR/2               todo         - -
+10.13/SR/2.a             todo         - -
+10.13/SR/2.b             todo         - -
+10.13/SR/3               todo         - -
+10.13/SR/4               todo         - -

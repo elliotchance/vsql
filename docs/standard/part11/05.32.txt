@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.32, KEY_COLUMN_USAGE view
+5.32                     todo         - -
+5.32/CR/1                todo         - -
+5.32/CR/2                todo         - -

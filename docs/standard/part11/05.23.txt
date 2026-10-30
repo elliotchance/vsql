@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.23, CONSTRAINT_TABLE_USAGE view
+5.23                     todo         - -
+5.23/CR/1                todo         - -
+5.23/CR/2                todo         - -

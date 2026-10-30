@@ -1,0 +1,26 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.16, Disconnect
+6.16                     todo         - -
+6.16/GR/1                container    - -
+6.16/GR/1.a              todo         - -
+6.16/GR/1.b              container    - -
+6.16/GR/1.b.i            todo         - -
+6.16/GR/1.b.ii           todo         - -
+6.16/GR/2                container    - -
+6.16/GR/2.a              todo         - -
+6.16/GR/2.b              todo         - -
+6.16/GR/3                todo         - -
+6.16/GR/4                todo         - -
+6.16/GR/4.a              todo         - -
+6.16/GR/4.b              todo         - -
+6.16/GR/5                todo         - -
+6.16/GR/5.a              todo         - -
+6.16/GR/5.b              todo         - -
+6.16/GR/6                todo         - -
+6.16/GR/6.a              todo         - -
+6.16/GR/6.b              todo         - -
+6.16/GR/7                todo         - -
+6.16/GR/8                todo         - -
+6.16/GR/9                todo         - -
+6.16/GR/10               todo         - -

@@ -1,0 +1,14 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 7.2, <row value expression>
+7.2                      todo         - -
+7.2/SR/1                 todo         - -
+7.2/SR/2                 todo         - -
+7.2/SR/3                 todo         - -
+7.2/SR/4                 todo         - -
+7.2/GR/1                 todo         - -
+7.2/GR/2                 todo         - -
+7.2/GR/3                 todo         - -
+7.2/GR/4                 todo         - -
+7.2/GR/5                 todo         - -
+7.2/CR/1                 todo         - -

@@ -1,4 +1,4 @@
-.PHONY: libvsql libvsql-example libvsql-test module-example module-test embed-example release bench bench-on-disk bench-memory fmt fmt-verify test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: libvsql libvsql-example libvsql-test module-example module-test embed-example release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # Is not used at the moment. It is useful for testing options like different
 # `-gc` values.
@@ -141,6 +141,11 @@ fmt:
 
 fmt-verify:
 	v fmt -verify cmd examples libvsql scripts vsql
+
+# check-standard-index checks docs/standard/ and every citation of the SQL
+# standard in the code (see docs/standard-index.rst).
+check-standard-index:
+	v run scripts/check-standard-index.vsh
 
 # Tests
 

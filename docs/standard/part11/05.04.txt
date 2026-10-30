@@ -1,0 +1,7 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.4, CHARACTER_DATA domain
+5.4                      todo         - -
+5.4/DE/1                 todo         - -
+5.4/DE/2                 todo         - -
+5.4/CR/1                 todo         - -

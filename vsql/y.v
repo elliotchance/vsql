@@ -39326,8 +39326,8 @@ fn yy_action_705(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymTy
 fn yy_action_706(mut yylex YYLexer, mut yyrcvr YYParserImpl, yy_dollar []YYSymType, mut yy_val YYSymType) ! {
 	// line vsql/y.y:2710
 	{
-		// ISO/IEC 9075-2:2016(E), 6.1, 36) If <timestamp precision> is not
-		// specified, then 6 is implicit.
+		// ISO/IEC 9075-2:2016(E), 6.1, <data type>, Syntax Rules, 36: the default
+		// <timestamp precision> is 6.
 		yy_val.v = parse_timestamp_prec_tz_type('6', false)!
 	}
 }

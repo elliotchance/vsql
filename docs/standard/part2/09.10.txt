@@ -1,0 +1,25 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.10, Determination of identical values
+9.10                     todo         - -
+9.10/GR/1                todo         - -
+9.10/GR/2                container    - -
+9.10/GR/2.a              todo         - -
+9.10/GR/2.b              todo         - -
+9.10/GR/2.c              todo         - -
+9.10/GR/2.c.i            todo         - -
+9.10/GR/2.c.i.1          todo         - -
+9.10/GR/2.c.i.2          todo         - -
+9.10/GR/2.c.ii           todo         - -
+9.10/GR/2.c.iii          todo         - -
+9.10/GR/2.d              todo         - -
+9.10/GR/2.d.i            todo         - -
+9.10/GR/2.d.ii           todo         - -
+9.10/GR/2.d.iii          todo         - -
+9.10/GR/2.d.iv           todo         - -
+9.10/GR/2.d.v            todo         - -
+9.10/GR/2.e              todo         - -
+9.10/GR/2.e.i            todo         - -
+9.10/GR/2.e.ii           todo         - -
+9.10/GR/2.e.iii          todo         - -
+9.10/GR/2.f              todo         - -

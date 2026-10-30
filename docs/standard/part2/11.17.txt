@@ -1,0 +1,13 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.17, <add column scope clause>
+11.17                    todo         - -
+11.17/SR/1               todo         - -
+11.17/SR/2               todo         - -
+11.17/SR/3               todo         - -
+11.17/SR/4               todo         - -
+11.17/SR/5               todo         - -
+11.17/GR/1               todo         - -
+11.17/GR/2               todo         - -
+11.17/CR/1               todo         - -
+11.17/CR/2               todo         - -

@@ -1,0 +1,13 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.39, ROUTINE_TABLE_USAGE base table
+6.39                     todo         - -
+6.39/DE/1                todo         - -
+6.39/DE/1.a              todo         - -
+6.39/DE/1.b              todo         - -
+6.39/DE/1.c              todo         - -
+6.39/DE/1.d              todo         - -
+6.39/DE/1.e              todo         - -
+6.39/DE/1.f              todo         - -
+6.39/DE/2                todo         - -
+6.39/DE/3                todo         - -

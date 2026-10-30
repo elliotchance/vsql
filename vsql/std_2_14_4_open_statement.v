@@ -15,7 +15,7 @@ fn (stmt OpenStatement) execute(mut conn Connection, _ map[string]Value, elapsed
 
 	mut cursor := conn.cursor(stmt.name)!
 
-	// ISO/IEC 9075-2:2016(E), 15.1, Effect of opening a cursor, General Rule 2
+	// ISO/IEC 9075-2:2016(E), 15.1, Effect of opening a cursor, General Rules, 2
 	if cursor.is_open {
 		return sqlstate_24000('cursor ${stmt.name} is already open')
 	}

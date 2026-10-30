@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.53, SQL_IMPLEMENTATION_INFO view
+5.53                     todo         - -
+5.53/CR/1                todo         - -
+5.53/CR/2                todo         - -

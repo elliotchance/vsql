@@ -1,0 +1,28 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.2, Character strings
+4.2                      todo         - -
+# 4.2.1, Introduction to character strings
+4.2.1                    todo         - -
+# 4.2.2, Comparison of character strings
+4.2.2                    todo         - -
+# 4.2.3, Operations involving character strings
+4.2.3                    todo         - -
+# 4.2.3.1, Regular expression syntaxes
+4.2.3.1                  todo         - -
+# 4.2.3.2, Operators that operate on character strings and return character strings
+4.2.3.2                  todo         - -
+# 4.2.3.3, Other operators involving character strings
+4.2.3.3                  todo         - -
+# 4.2.3.4, Operations involving large object character strings
+4.2.3.4                  todo         - -
+# 4.2.4, Character repertoires
+4.2.4                    todo         - -
+# 4.2.5, Character encoding forms
+4.2.5                    todo         - -
+# 4.2.6, Collations
+4.2.6                    todo         - -
+# 4.2.7, Character sets
+4.2.7                    todo         - -
+# 4.2.8, Universal character sets
+4.2.8                    todo         - -

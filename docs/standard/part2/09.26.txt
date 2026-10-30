@@ -1,0 +1,7 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.26, Determination of a from-sql function for an overriding method
+9.26                     todo         - -
+9.26/SR/1                todo         - -
+9.26/SR/2                todo         - -
+9.26/SR/3                todo         - -

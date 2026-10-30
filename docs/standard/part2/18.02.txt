@@ -1,0 +1,13 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 18.2, <set connection statement>
+18.2                     todo         - -
+18.2/GR/1                todo         - -
+18.2/GR/2                container    - -
+18.2/GR/2.a              todo         - -
+18.2/GR/2.b              todo         - -
+18.2/GR/3                todo         - -
+18.2/GR/4                todo         - -
+18.2/GR/5                todo         - -
+18.2/GR/6                todo         - -
+18.2/CR/1                todo         - -

@@ -1,0 +1,36 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.24, Functional dependencies
+4.24                     todo         - -
+# 4.24.1, Overview of functional dependency rules and notations
+4.24.1                   todo         - -
+# 4.24.2, General rules and definitions
+4.24.2                   todo         - -
+# 4.24.3, Known functional dependencies in a base table
+4.24.3                   todo         - -
+# 4.24.4, Known functional dependencies in a viewed table
+4.24.4                   todo         - -
+# 4.24.5, Known functional dependencies in a transition table
+4.24.5                   todo         - -
+# 4.24.6, Known functional dependencies in <table value constructor>
+4.24.6                   todo         - -
+# 4.24.7, Known functional dependencies in a <joined table>
+4.24.7                   todo         - -
+# 4.24.8, Known functional dependencies in a <table primary>
+4.24.8                   todo         - -
+# 4.24.9, Known functional dependencies in a <table factor>
+4.24.9                   todo         - -
+# 4.24.10, Known functional dependencies in a <table reference>
+4.24.10                  todo         - -
+# 4.24.11, Known functional dependencies in the result of a <from clause>
+4.24.11                  todo         - -
+# 4.24.12, Known functional dependencies in the result of a <where clause>
+4.24.12                  todo         - -
+# 4.24.13, Known functional dependencies in the result of a <group by clause>
+4.24.13                  todo         - -
+# 4.24.14, Known functional dependencies in the result of a <having clause>
+4.24.14                  todo         - -
+# 4.24.15, Known functional dependencies in a <query specification>
+4.24.15                  todo         - -
+# 4.24.16, Known functional dependencies in a <query expression>
+4.24.16                  todo         - -

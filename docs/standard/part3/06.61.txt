@@ -1,0 +1,35 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.61, StartTran
+6.61                     todo         - -
+6.61/GR/1                todo         - -
+6.61/GR/2                todo         - -
+6.61/GR/3                container    - -
+6.61/GR/3.a              todo         - -
+6.61/GR/3.a.i            todo         - -
+6.61/GR/3.a.ii           todo         - -
+6.61/GR/3.b              todo         - -
+6.61/GR/3.b.i            todo         - -
+6.61/GR/3.b.ii           todo         - -
+6.61/GR/3.c              todo         - -
+6.61/GR/3.c.i            todo         - -
+6.61/GR/3.c.ii           todo         - -
+6.61/GR/3.c.ii.1         todo         - -
+6.61/GR/3.c.ii.2         todo         - -
+6.61/GR/3.c.ii.3         container    - -
+6.61/GR/3.c.ii.3.A       todo         - -
+6.61/GR/3.c.ii.3.B       todo         - -
+6.61/GR/3.c.ii.4         todo         - -
+6.61/GR/3.d              todo         - -
+6.61/GR/3.d.i            todo         - -
+6.61/GR/3.d.ii           container    - -
+6.61/GR/3.d.ii.1         todo         - -
+6.61/GR/3.d.ii.2         todo         - -
+6.61/GR/3.d.ii.3         todo         - -
+6.61/GR/4                todo         - -
+6.61/GR/5                todo         - -
+6.61/GR/6                todo         - -
+6.61/GR/7                todo         - -
+6.61/GR/8                todo         - -
+6.61/GR/9                todo         - -
+6.61/GR/10               todo         - -

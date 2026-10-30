@@ -1,0 +1,14 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 17.4, <set constraints mode statement>
+17.4                     todo         - -
+17.4/SR/1                todo         - -
+17.4/SR/2                todo         - -
+17.4/GR/1                todo         - -
+17.4/GR/2                todo         - -
+17.4/GR/2.a              todo         - -
+17.4/GR/2.b              todo         - -
+17.4/GR/3                todo         - -
+17.4/GR/3.a              todo         - -
+17.4/GR/3.b              todo         - -
+17.4/CR/1                todo         - -

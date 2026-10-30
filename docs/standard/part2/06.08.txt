@@ -1,0 +1,6 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.8, <SQL parameter reference>
+6.8                      todo         - -
+6.8/SR/1                 todo         - -
+6.8/SR/2                 todo         - -

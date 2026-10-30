@@ -1,0 +1,28 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 15.15, Effect of replacing some rows in a viewed table
+15.15                    todo         - -
+15.15/GR/1               todo         - -
+15.15/GR/2               todo         - -
+15.15/GR/3               container    - -
+15.15/GR/3.a             todo         - -
+15.15/GR/3.a.i           todo         - -
+15.15/GR/3.a.ii          todo         - -
+15.15/GR/3.a.ii.1        todo         - -
+15.15/GR/3.a.ii.2        todo         - -
+15.15/GR/3.a.ii.3        todo         - -
+15.15/GR/3.a.ii.4        todo         - -
+15.15/GR/3.a.ii.5        todo         - -
+15.15/GR/3.a.ii.6        todo         - -
+15.15/GR/3.a.iii         todo         - -
+15.15/GR/3.b             todo         - -
+15.15/GR/3.b.i           todo         - -
+15.15/GR/3.b.i.1         container    - -
+15.15/GR/3.b.i.1.A       todo         - -
+15.15/GR/3.b.i.1.B       todo         - -
+15.15/GR/3.b.i.1.B.I     todo         - -
+15.15/GR/3.b.i.1.B.II    todo         - -
+15.15/GR/3.b.i.2         todo         - -
+15.15/GR/3.b.i.3         todo         - -
+15.15/GR/3.b.ii          todo         - -
+15.15/GR/4               todo         - -

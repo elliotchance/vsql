@@ -20,7 +20,7 @@ fn (stmt FetchStatement) execute(mut conn Connection, _ map[string]Value, elapse
 	cursor.fetched = true
 
 	// ISO/IEC 9075-2:2016(E), 15.3, Determination of the current row of a
-	// cursor, General Rules 4 and 5
+	// cursor, General Rules, 4 and 5
 	if cursor.position < cursor.rows.len {
 		cursor.position++
 	}

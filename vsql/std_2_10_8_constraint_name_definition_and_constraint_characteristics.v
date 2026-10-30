@@ -104,7 +104,7 @@ fn constraint_key(t Table, name string) string {
 }
 
 // set_constraint_mode sets the constraint mode of a constraint of t, which
-// must be deferrable (ISO/IEC 9075-2:2016(E), 17.4, Syntax Rule 2).
+// must be deferrable (ISO/IEC 9075-2:2016(E), 17.4, Syntax Rules, 2).
 fn (mut f Storage) set_constraint_mode(t Table, name string, characteristics ConstraintCharacteristics, is_deferred bool) ! {
 	if !characteristics.is_deferrable() {
 		return sqlstate_42601('constraint ${name} is not DEFERRABLE')

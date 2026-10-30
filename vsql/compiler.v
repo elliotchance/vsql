@@ -44,7 +44,7 @@ mut:
 	// A column reference must then be one of these columns of the select list,
 	// unless the whole sort key is also in the select list.
 	//
-	// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28d
+	// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28.d
 	distinct_columns ?[]Column
 	// restricted is set to what's being compiled (such as "a CHECK constraint")
 	// when it must be deterministic (see check_deterministic) and can't contain a
@@ -77,7 +77,7 @@ struct AggregatedColumn {
 // "SELECT (SELECT MAX(t1.x) FROM t2) FROM t1". Any other outer reference must
 // still be a grouping column of its query.
 //
-// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rule 6
+// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 6
 fn (c Compiler) aggregation_scope() !int {
 	mut scope := -1
 	if c.aggregated_columns.len > 0 && c.aggregated_columns.all(it.scope >= 0) {
@@ -103,9 +103,9 @@ fn (c Compiler) aggregation_scope() !int {
 // written but not later, or a generated column could have a different value if
 // the row was written again.
 //
-// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rule 5
-// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rule 10d
-// ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rule 7
+// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rules, 5
+// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rules, 10.d
+// ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rules, 7
 fn (c Compiler) check_deterministic(what string) ! {
 	if c.restricted != '' {
 		return sqlstate_42601('${what} cannot be used in ${c.restricted}')
@@ -117,7 +117,7 @@ fn (c Compiler) check_deterministic(what string) ! {
 // a time zone is in the time zone of the session, so the result depends on the
 // session.
 //
-// ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rule 7g
+// ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rules, 7.g
 fn (c Compiler) check_time_zone_comparison(left Type, right Type) ! {
 	if left.typ.is_datetime() && right.typ.is_datetime()
 		&& left.has_time_zone() != right.has_time_zone() {

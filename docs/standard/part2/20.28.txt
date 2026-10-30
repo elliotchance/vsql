@@ -1,0 +1,22 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 20.28, <pipe row statement>
+20.28                    todo         - -
+20.28/GR/1               todo         - -
+20.28/GR/2               todo         - -
+20.28/GR/3               todo         - -
+20.28/GR/4               todo         - -
+20.28/GR/5               todo         - -
+20.28/GR/6               todo         - -
+20.28/GR/7               todo         - -
+20.28/GR/8               todo         - -
+20.28/GR/9               todo         - -
+20.28/GR/10              todo         - -
+20.28/GR/11              todo         - -
+20.28/GR/11.a            todo         - -
+20.28/GR/11.b            todo         - -
+20.28/GR/11.b.i          todo         - -
+20.28/GR/11.b.ii         todo         - -
+20.28/GR/11.b.iii        todo         - -
+20.28/GR/12              todo         - -
+20.28/CR/1               todo         - -

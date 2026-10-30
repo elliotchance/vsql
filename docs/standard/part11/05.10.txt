@@ -1,0 +1,5 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.10, ASSERTIONS view
+5.10                     todo         - -
+5.10/CR/1                todo         - -

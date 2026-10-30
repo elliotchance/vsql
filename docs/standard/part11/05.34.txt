@@ -1,0 +1,8 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.34, METHOD_SPECIFICATIONS view
+5.34                     todo         - -
+5.34/CR/1                todo         - -
+5.34/CR/2                todo         - -
+5.34/CR/3                todo         - -
+5.34/CR/4                todo         - -

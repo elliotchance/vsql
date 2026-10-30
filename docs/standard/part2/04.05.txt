@@ -1,0 +1,14 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.5, Boolean types
+4.5                      todo         - -
+# 4.5.1, Introduction to Boolean types
+4.5.1                    todo         - -
+# 4.5.2, Comparison and assignment of booleans
+4.5.2                    todo         - -
+# 4.5.3, Operations involving booleans
+4.5.3                    todo         - -
+# 4.5.3.1, Operations on booleans that return booleans
+4.5.3.1                  todo         - -
+# 4.5.3.2, Other operators involving booleans
+4.5.3.2                  todo         - -

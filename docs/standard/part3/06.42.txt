@@ -1,0 +1,24 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.42, GetSessionInfo
+6.42                     todo         - -
+6.42/GR/1                container    - -
+6.42/GR/1.a              todo         - -
+6.42/GR/1.b              container    - -
+6.42/GR/1.b.i            todo         - -
+6.42/GR/1.b.ii           todo         - -
+6.42/GR/2                container    - -
+6.42/GR/2.a              todo         - -
+6.42/GR/2.b              todo         - -
+6.42/GR/3                todo         - -
+6.42/GR/4                todo         - -
+6.42/GR/5                todo         - -
+6.42/GR/6                todo         - -
+6.42/GR/7                todo         - -
+6.42/GR/8                todo         - -
+6.42/GR/9                todo         - -
+6.42/GR/10               todo         - -
+6.42/GR/10.a             todo         - -
+6.42/GR/10.b             todo         - -
+6.42/GR/11               todo         - -
+6.42/GR/12               todo         - -

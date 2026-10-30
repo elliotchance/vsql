@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-11:2016(E), 5, Information Schema
+// ISO/IEC 9075-11:2008(E), 5, Information Schema
 //
 // Every catalog has an INFORMATION_SCHEMA that describes its tables. The views
 // of the Information Schema are defined on the base tables of the Definition
@@ -39,7 +39,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 	cn := information_schema_cardinal_number
 	yn := information_schema_yes_or_no
 
-	// ISO/IEC 9075-11:2016(E), 5.61, TABLES view
+	// ISO/IEC 9075-11:2008(E), 5.61, TABLES view
 	catalog.add_information_schema_table('CREATE TABLE TABLES (
 		TABLE_CATALOG ${id} NOT NULL,
 		TABLE_SCHEMA ${id} NOT NULL,
@@ -61,7 +61,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			t.done()
 		})!
 
-	// ISO/IEC 9075-11:2016(E), 5.21, COLUMNS view
+	// ISO/IEC 9075-11:2008(E), 5.21, COLUMNS view
 	catalog.add_information_schema_table('CREATE TABLE COLUMNS (
 		TABLE_CATALOG ${id} NOT NULL,
 		TABLE_SCHEMA ${id} NOT NULL,
@@ -117,7 +117,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			t.done()
 		})!
 
-	// ISO/IEC 9075-11:2016(E), 5.14, CHECK_CONSTRAINTS view
+	// ISO/IEC 9075-11:2008(E), 5.14, CHECK_CONSTRAINTS view
 	catalog.add_information_schema_table('CREATE TABLE CHECK_CONSTRAINTS (
 		CONSTRAINT_CATALOG ${id} NOT NULL,
 		CONSTRAINT_SCHEMA ${id} NOT NULL,
@@ -133,7 +133,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			t.done()
 		})!
 
-	// ISO/IEC 9075-11:2016(E), 5.58, TABLE_CONSTRAINTS view. ENFORCED is whether
+	// ISO/IEC 9075-11:2008(E), 5.58, TABLE_CONSTRAINTS view. ENFORCED is whether
 	// the table constraint is enforced (ISO/IEC 9075-2:2016(E), 4.23.3.1).
 	catalog.add_information_schema_table('CREATE TABLE TABLE_CONSTRAINTS (
 		CONSTRAINT_CATALOG ${id} NOT NULL,
@@ -156,7 +156,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			t.done()
 		})!
 
-	// ISO/IEC 9075-11:2016(E), 5.32, KEY_COLUMN_USAGE view
+	// ISO/IEC 9075-11:2008(E), 5.32, KEY_COLUMN_USAGE view
 	catalog.add_information_schema_table('CREATE TABLE KEY_COLUMN_USAGE (
 		CONSTRAINT_CATALOG ${id} NOT NULL,
 		CONSTRAINT_SCHEMA ${id} NOT NULL,
@@ -198,7 +198,7 @@ fn register_information_schema(mut catalog CatalogConnection) ! {
 			t.done()
 		})!
 
-	// ISO/IEC 9075-11:2016(E), 5.37, REFERENTIAL_CONSTRAINTS view
+	// ISO/IEC 9075-11:2008(E), 5.37, REFERENTIAL_CONSTRAINTS view
 	catalog.add_information_schema_table('CREATE TABLE REFERENTIAL_CONSTRAINTS (
 		CONSTRAINT_CATALOG ${id} NOT NULL,
 		CONSTRAINT_SCHEMA ${id} NOT NULL,
@@ -268,7 +268,7 @@ fn (catalog &CatalogConnection) information_schema_tables() []Table {
 	return tables
 }
 
-// tables_view_row is a row of the TABLES view (ISO/IEC 9075-11:2016(E), 6.50,
+// tables_view_row is a row of the TABLES view (ISO/IEC 9075-11:2008(E), 6.50,
 // TABLES base table). Every table is a persistent base table, except for the
 // views of the INFORMATION_SCHEMA, which can't be inserted into.
 fn tables_view_row(catalog_name string, table Table) []Value {
@@ -288,7 +288,7 @@ fn tables_view_row(catalog_name string, table Table) []Value {
 	]
 }
 
-// columns_view_row is a row of the COLUMNS view (ISO/IEC 9075-11:2016(E), 6.20,
+// columns_view_row is a row of the COLUMNS view (ISO/IEC 9075-11:2008(E), 6.20,
 // COLUMNS base table) for the column at index i of a table. There are no
 // domains or generated columns.
 fn columns_view_row(catalog_name string, table Table, i int, column Column) []Value {
@@ -358,9 +358,9 @@ fn identity_descriptor(column Column) []Value {
 }
 
 // check_constraints_view_rows are the rows of the CHECK_CONSTRAINTS view
-// (ISO/IEC 9075-11:2016(E), 6.14, CHECK_CONSTRAINTS base table) for a table. A
+// (ISO/IEC 9075-11:2008(E), 6.14, CHECK_CONSTRAINTS base table) for a table. A
 // NOT NULL column is the same as a CHECK (column IS NOT NULL) constraint
-// (ISO/IEC 9075-2:2016(E), 11.4, Syntax Rule 17a), so it's included, in the
+// (ISO/IEC 9075-2:2016(E), 11.4, Syntax Rules, 17.a), so it's included, in the
 // order of the columns, before the CHECK constraints in the order they were
 // defined. The views of the INFORMATION_SCHEMA don't have constraints.
 fn check_constraints_view_rows(catalog_name string, table Table) [][]Value {
@@ -384,7 +384,7 @@ fn check_constraints_view_rows(catalog_name string, table Table) [][]Value {
 }
 
 // table_constraints_view_rows are the rows of the TABLE_CONSTRAINTS view
-// (ISO/IEC 9075-11:2016(E), 6.47, TABLE_CONSTRAINTS base table) for a table:
+// (ISO/IEC 9075-11:2008(E), 6.47, TABLE_CONSTRAINTS base table) for a table:
 // the PRIMARY KEY, then each UNIQUE, then each FOREIGN KEY, then the same check
 // constraints as the CHECK_CONSTRAINTS view, in the same order and with the
 // same names. Constraints can't be NOT ENFORCED yet.
@@ -421,7 +421,7 @@ fn table_constraints_view_rows(catalog_name string, table Table) [][]Value {
 }
 
 // referential_constraints_view_row is the row of the REFERENTIAL_CONSTRAINTS
-// view (ISO/IEC 9075-11:2016(E), 6.33, REFERENTIAL_CONSTRAINTS base table) for
+// view (ISO/IEC 9075-11:2008(E), 6.33, REFERENTIAL_CONSTRAINTS base table) for
 // the ith FOREIGN KEY of a table, which references the referenced table. The
 // unique constraint is the PRIMARY KEY or UNIQUE of the referenced table that
 // has the referenced columns, with its name in the TABLE_CONSTRAINTS view. A
@@ -460,7 +460,7 @@ fn unique_constraint_for(referenced Table, referenced_columns []string) (string,
 }
 
 // key_column_usage_view_rows are the rows of the KEY_COLUMN_USAGE view (ISO/IEC
-// 9075-11:2016(E), 6.28, KEY_COLUMN_USAGE base table) for the columns of a
+// 9075-11:2008(E), 6.28, KEY_COLUMN_USAGE base table) for the columns of a
 // PRIMARY KEY, UNIQUE or FOREIGN KEY. The positions are the
 // POSITION_IN_UNIQUE_CONSTRAINT of each column of a FOREIGN KEY: the position
 // of the referenced column in the unique constraint that it references.
@@ -533,7 +533,7 @@ fn column_default(column Column) Value {
 }
 
 // data_type_descriptor is the values of the COLUMNS view, from DATA_TYPE to
-// COLLATION_NAME, that describe a data type (ISO/IEC 9075-11:2016(E), 6.21,
+// COLLATION_NAME, that describe a data type (ISO/IEC 9075-11:2008(E), 6.21,
 // DATA_TYPE_DESCRIPTOR base table). Character strings are UTF-8, which can use
 // up to 4 bytes for each character, and have no collation.
 fn data_type_descriptor(catalog_name string, t Type) []Value {

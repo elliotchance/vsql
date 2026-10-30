@@ -10,7 +10,7 @@ import math
 fn func_position(args []Value) !Value {
 	// An empty string is found at the start of any string, even an empty one.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 2a
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 2.a
 	if args[0].string_value() == '' {
 		return new_integer_value(1)
 	}
@@ -127,7 +127,7 @@ fn func_tanh(args []Value) !Value {
 // ASIN(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_asin(args []Value) !Value {
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules,
-	// 10b ii
+	// 10.b ii
 	if args[0].f64_value() < -1 || args[0].f64_value() > 1 {
 		return sqlstate_22003()
 	}
@@ -138,7 +138,7 @@ fn func_asin(args []Value) !Value {
 // ACOS(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_acos(args []Value) !Value {
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules,
-	// 10b i
+	// 10.b i
 	if args[0].f64_value() < -1 || args[0].f64_value() > 1 {
 		return sqlstate_22003()
 	}
@@ -196,7 +196,7 @@ fn func_mod_integer(args []Value) !Value {
 fn func_log10(args []Value) !Value {
 	// LOG10(x) is LOG(10, x).
 	//
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 11b
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 11.b
 	if args[0].f64_value() <= 0 {
 		return sqlstate_22003()
 	}
@@ -206,7 +206,7 @@ fn func_log10(args []Value) !Value {
 
 // LN(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_ln(args []Value) !Value {
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 12b
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 12.b
 	if args[0].f64_value() <= 0 {
 		return sqlstate_2201e()
 	}
@@ -216,7 +216,7 @@ fn func_ln(args []Value) !Value {
 
 // EXP(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_exp(args []Value) !Value {
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 13b
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 13.b
 	return approximate_value(math.exp(args[0].f64_value()), .is_double_precision)
 }
 
@@ -238,7 +238,7 @@ fn func_power(args []Value) !Value {
 	exponent := args[1].f64_value()
 
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules,
-	// 14b and 14e: a zero base can't have a negative exponent, and a negative
+	// 14.b and 14.e: a zero base can't have a negative exponent, and a negative
 	// base needs a whole number exponent.
 	if (base == 0 && exponent < 0) || (base < 0 && exponent != math.trunc(exponent)) {
 		return sqlstate_2201f()

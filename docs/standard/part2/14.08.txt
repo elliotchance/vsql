@@ -1,0 +1,23 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 14.8, <delete statement: positioned>
+14.8                     todo         - -
+14.8/SR/1                todo         - -
+14.8/SR/2                todo         - -
+14.8/SR/3                todo         - -
+14.8/SR/4                todo         - -
+14.8/SR/5                todo         - -
+14.8/SR/6                todo         - -
+14.8/SR/7                todo         - -
+14.8/SR/8                todo         - -
+14.8/SR/9                todo         - -
+14.8/SR/10               todo         - -
+14.8/SR/11               container    - -
+14.8/SR/11.a             todo         - -
+14.8/SR/11.b             todo         - -
+14.8/AR/1                container    - -
+14.8/AR/1.a              todo         - -
+14.8/AR/1.b              todo         - -
+14.8/GR/1                todo         - -
+14.8/GR/2                todo         - -
+14.8/CR/1                todo         - -

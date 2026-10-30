@@ -1,0 +1,4 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.2, Notation provided in this International Standard
+6.2                      todo         - -

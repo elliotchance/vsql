@@ -1,0 +1,6 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 3.2, Conventions
+3.2                      todo         - -
+# 3.2.1, Specification of routine definitions
+3.2.1                    todo         - -

@@ -1,0 +1,9 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 20.22, <dynamic close statement>
+20.22                    todo         - -
+20.22/SR/1               todo         - -
+20.22/GR/1               todo         - -
+20.22/GR/2               todo         - -
+20.22/GR/3               todo         - -
+20.22/CR/1               todo         - -

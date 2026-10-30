@@ -1,0 +1,9 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 10.7, <collate clause>
+10.7                     todo         - -
+10.7/SR/1                todo         - -
+10.7/AR/1                container    - -
+10.7/AR/1.a              todo         - -
+10.7/AR/1.b              todo         - -
+10.7/CR/1                todo         - -

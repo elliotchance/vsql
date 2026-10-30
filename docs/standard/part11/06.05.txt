@@ -1,0 +1,7 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.5, ASSERTIONS base table
+6.5                      todo         - -
+6.5/DE/1                 todo         - -
+6.5/DE/2                 todo         - -
+6.5/DE/3                 todo         - -

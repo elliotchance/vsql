@@ -1,0 +1,26 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.32, GetDescRec
+6.32                     todo         - -
+6.32/GR/1                todo         - -
+6.32/GR/2                todo         - -
+6.32/GR/3                todo         - -
+6.32/GR/4                container    - -
+6.32/GR/4.a              todo         - -
+6.32/GR/4.b              todo         - -
+6.32/GR/5                todo         - -
+6.32/GR/6                todo         - -
+6.32/GR/7                todo         - -
+6.32/GR/8                todo         - -
+6.32/GR/8.a              todo         - -
+6.32/GR/8.b              todo         - -
+6.32/GR/8.c              todo         - -
+6.32/GR/8.d              todo         - -
+6.32/GR/8.e              todo         - -
+6.32/GR/8.f              todo         - -
+6.32/GR/8.g              todo         - -
+6.32/GR/8.g.i            todo         - -
+6.32/GR/8.g.ii           container    - -
+6.32/GR/8.g.ii.1         todo         - -
+6.32/GR/8.g.ii.2         todo         - -
+6.32/GR/8.g.ii.3         todo         - -

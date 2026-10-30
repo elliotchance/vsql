@@ -1,0 +1,14 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.16, Data analysis operations (involving tables)
+4.16                     todo         - -
+# 4.16.1, Introduction to data analysis operations
+4.16.1                   todo         - -
+# 4.16.2, Group functions
+4.16.2                   todo         - -
+# 4.16.3, Window functions
+4.16.3                   todo         - -
+# 4.16.4, Aggregate functions
+4.16.4                   todo         - -
+# 4.16.5, Row pattern measures
+4.16.5                   todo         - -

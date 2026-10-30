@@ -1,0 +1,27 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.40, Casting an SQL/JSON sequence to an SQL type
+9.40                     todo         - -
+9.40/GR/1                todo         - -
+9.40/GR/2                todo         - -
+9.40/GR/3                todo         - -
+9.40/GR/4                todo         - -
+9.40/GR/4.a              todo         - -
+9.40/GR/4.b              todo         - -
+9.40/GR/4.b.i            todo         - -
+9.40/GR/4.b.ii           todo         - -
+9.40/GR/4.b.iii          todo         - -
+9.40/GR/4.b.iii.1        todo         - -
+9.40/GR/4.b.iii.2        todo         - -
+9.40/GR/4.c              todo         - -
+9.40/GR/4.c.i            todo         - -
+9.40/GR/4.c.ii           todo         - -
+9.40/GR/4.c.iii          todo         - -
+9.40/GR/5                container    - -
+9.40/GR/5.a              todo         - -
+9.40/GR/5.b              todo         - -
+9.40/GR/5.c              todo         - -
+9.40/GR/5.d              todo         - -
+9.40/GR/5.d.i            todo         - -
+9.40/GR/5.d.ii           todo         - -
+9.40/GR/6                todo         - -

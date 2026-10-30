@@ -1,0 +1,11 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.20, <attribute or method reference>
+6.20                     todo         - -
+6.20/SR/1                todo         - -
+6.20/SR/2                todo         - -
+6.20/SR/3                container    - -
+6.20/SR/3.a              todo         - -
+6.20/SR/3.b              todo         - -
+6.20/SR/4                todo         - -
+6.20/CR/1                todo         - -

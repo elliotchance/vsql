@@ -1,0 +1,14 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 18.3, <disconnect statement>
+18.3                     todo         - -
+18.3/GR/1                todo         - -
+18.3/GR/2                todo         - -
+18.3/GR/3                todo         - -
+18.3/GR/4                todo         - -
+18.3/GR/5                todo         - -
+18.3/GR/6                todo         - -
+18.3/GR/7                todo         - -
+18.3/GR/8                todo         - -
+18.3/GR/9                todo         - -
+18.3/CR/1                todo         - -

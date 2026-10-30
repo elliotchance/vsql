@@ -1,0 +1,5 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.27, DOMAIN_CONSTRAINTS view
+5.27                     todo         - -
+5.27/CR/1                todo         - -

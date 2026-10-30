@@ -293,7 +293,7 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
-	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rule 17d
+	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rules, 17.d
 	if c.check_column != '' && e.custom_id == '' && e.sub_entity_name != c.check_column {
 		return sqlstate_42601('CHECK on column ${c.check_column} cannot use column ${e.sub_entity_name}')
 	}
@@ -301,7 +301,7 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 		c.check_columns[e.sub_entity_name] = true
 	}
 
-	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rule 10c
+	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rules, 10.c
 	if c.generation_column != '' && e.custom_id == '' {
 		table := c.tables[c.context.id()] or { Table{} }
 		column := table.column(e.sub_entity_name) or { Column{} }
@@ -449,7 +449,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 
 	// An unqualified column name must only be in one of the tables.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 8c
+	// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 8.c
 	if e.entity_name == '' {
 		mut tables_with_column := map[string]bool{}
 		for _, table in c.tables {
@@ -559,12 +559,12 @@ fn (e Identifier) is_column_of_table(conn &Connection, table Table) bool {
 // value of the column in the row of that query that the subquery is being
 // evaluated for.
 //
-// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rule 8
+// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 8
 fn (e Identifier) compile_outer(mut c Compiler, i int) !CompileResult {
 	scope := c.conn.subquery_scopes[i]
 
-	// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rule 17
-	// ISO/IEC 9075-2:2016(E), 7.14, <having clause>, Syntax Rule 4
+	// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 17
+	// ISO/IEC 9075-2:2016(E), 7.14, <having clause>, Syntax Rules, 4
 	mut ungrouped := false
 	if grouping_columns := scope.grouping_columns {
 		ungrouped = !e.is_grouping_column(grouping_columns)

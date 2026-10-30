@@ -1,0 +1,29 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.48, <drop assertion statement>
+11.48                    todo         - -
+11.48/SR/1               todo         - -
+11.48/SR/2               todo         - -
+11.48/SR/3               todo         - -
+11.48/SR/4               todo         - -
+11.48/SR/5               todo         - -
+11.48/SR/6               todo         - -
+11.48/SR/7               todo         - -
+11.48/SR/8               todo         - -
+11.48/SR/9               todo         - -
+11.48/SR/10              todo         - -
+11.48/SR/10.a            todo         - -
+11.48/SR/10.b            todo         - -
+11.48/SR/10.c            todo         - -
+11.48/SR/10.d            todo         - -
+11.48/SR/10.e            todo         - -
+11.48/AR/1               todo         - -
+11.48/GR/1               todo         - -
+11.48/GR/2               todo         - -
+11.48/GR/3               todo         - -
+11.48/GR/4               todo         - -
+11.48/GR/5               todo         - -
+11.48/GR/6               todo         - -
+11.48/GR/7               todo         - -
+11.48/GR/8               todo         - -
+11.48/CR/1               todo         - -

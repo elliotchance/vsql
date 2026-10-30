@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.51, SEQUENCES view
+5.51                     todo         - -
+5.51/CR/1                todo         - -
+5.51/CR/2                todo         - -

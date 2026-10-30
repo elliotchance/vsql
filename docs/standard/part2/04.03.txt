@@ -1,0 +1,14 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.3, Binary strings
+4.3                      todo         - -
+# 4.3.1, Introduction to binary strings
+4.3.1                    todo         - -
+# 4.3.2, Binary string comparison
+4.3.2                    todo         - -
+# 4.3.3, Operations involving binary strings
+4.3.3                    todo         - -
+# 4.3.3.1, Operators that operate on binary strings and return binary strings
+4.3.3.1                  todo         - -
+# 4.3.3.2, Other operators involving binary strings
+4.3.3.2                  todo         - -

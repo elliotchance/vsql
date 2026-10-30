@@ -1,0 +1,10 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.5, Sites and operations on sites
+4.5                      todo         - -
+# 4.5.1, Sites
+4.5.1                    todo         - -
+# 4.5.2, Assignment
+4.5.2                    todo         - -
+# 4.5.3, Nullability
+4.5.3                    todo         - -

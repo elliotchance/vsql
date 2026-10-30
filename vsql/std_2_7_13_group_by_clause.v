@@ -205,7 +205,7 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 		}
 	}
 
-	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7a
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.a
 	if null_eliminated {
 		o.conn.add_warning(sqlstate_01003())
 	}

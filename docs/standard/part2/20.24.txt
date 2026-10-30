@@ -1,0 +1,20 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 20.24, <dynamic update statement: positioned>
+20.24                    todo         - -
+20.24/SR/1               todo         - -
+20.24/SR/2               todo         - -
+20.24/SR/3               todo         - -
+20.24/SR/4               todo         - -
+20.24/AR/1               container    - -
+20.24/AR/1.a             todo         - -
+20.24/AR/1.b             todo         - -
+20.24/GR/1               todo         - -
+20.24/GR/2               todo         - -
+20.24/GR/3               todo         - -
+20.24/GR/4               todo         - -
+20.24/GR/5               todo         - -
+20.24/GR/6               todo         - -
+20.24/GR/7               todo         - -
+20.24/GR/8               todo         - -
+20.24/CR/1               todo         - -

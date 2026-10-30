@@ -1,0 +1,22 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.34, <JSON query>
+6.34                     todo         - -
+6.34/SR/1                todo         - -
+6.34/SR/2                todo         - -
+6.34/SR/3                todo         - -
+6.34/SR/4                todo         - -
+6.34/SR/5                todo         - -
+6.34/SR/6                todo         - -
+6.34/SR/7                todo         - -
+6.34/SR/8                todo         - -
+6.34/GR/1                todo         - -
+6.34/GR/2                todo         - -
+6.34/GR/3                todo         - -
+6.34/GR/4                todo         - -
+6.34/GR/5                todo         - -
+6.34/GR/6                todo         - -
+6.34/CR/1                todo         - -
+6.34/CR/2                todo         - -
+6.34/CR/3                todo         - -
+6.34/CR/4                todo         - -

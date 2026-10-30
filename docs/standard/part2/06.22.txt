@@ -1,0 +1,14 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.22, <method reference>
+6.22                     todo         - -
+6.22/SR/1                todo         - -
+6.22/SR/2                todo         - -
+6.22/SR/3                todo         - -
+6.22/SR/4                todo         - -
+6.22/AR/1                todo         - -
+6.22/AR/1.a              todo         - -
+6.22/AR/1.b              todo         - -
+6.22/GR/1                todo         - -
+6.22/GR/2                todo         - -
+6.22/CR/1                todo         - -

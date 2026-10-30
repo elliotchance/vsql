@@ -1,0 +1,11 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 19.4, <set local time zone statement>
+19.4                     todo         - -
+19.4/SR/1                todo         - -
+19.4/GR/1                container    - -
+19.4/GR/1.a              todo         - -
+19.4/GR/1.b              todo         - -
+19.4/GR/1.b.i            todo         - -
+19.4/GR/1.b.ii           todo         - -
+19.4/CR/1                todo         - -

@@ -1,0 +1,11 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 20.9, <deallocate prepared statement>
+20.9                     todo         - -
+20.9/SR/1                todo         - -
+20.9/SR/1.a              todo         - -
+20.9/SR/1.b              todo         - -
+20.9/GR/1                todo         - -
+20.9/GR/2                todo         - -
+20.9/GR/3                todo         - -
+20.9/CR/1                todo         - -

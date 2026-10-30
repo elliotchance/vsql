@@ -455,7 +455,7 @@ fn row_count(clause string, value Value) !i64 {
 // Each column has the combined type of that column in both queries (9.5), and
 // the name of that column in the left query.
 //
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 16b and 19b
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 16.b and 19.b
 struct SetOperationOperation {
 	op      string
 	all     bool

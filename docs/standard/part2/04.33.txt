@@ -1,0 +1,16 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.33, SQL-invoked routines
+4.33                     todo         - -
+# 4.33.1, Overview of SQL-invoked routines
+4.33.1                   todo         - -
+# 4.33.2, Characteristics of SQL-invoked routines
+4.33.2                   todo         - -
+# 4.33.3, Execution of conventional SQL-invoked routines
+4.33.3                   todo         - -
+# 4.33.4, Invocation of polymorphic table functions
+4.33.4                   todo         - -
+# 4.33.5, Routine descriptors
+4.33.5                   todo         - -
+# 4.33.6, Result sets returned by SQL-invoked procedures
+4.33.6                   todo         - -

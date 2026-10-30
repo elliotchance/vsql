@@ -1,0 +1,16 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 3.1, Definitions
+3.1                      todo         - -
+# 3.1.1, Definitions taken from [ISO10646]
+3.1.1                    todo         - -
+# 3.1.2, Definitions taken from [ISO14651]
+3.1.2                    todo         - -
+# 3.1.3, Definitions taken from [Unicode]
+3.1.3                    todo         - -
+# 3.1.4, Definitions taken from [ISO8601]
+3.1.4                    todo         - -
+# 3.1.5, Definitions taken from [ISO9075-1]
+3.1.5                    todo         - -
+# 3.1.6, Definitions provided in Part 2
+3.1.6                    todo         - -

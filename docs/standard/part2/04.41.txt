@@ -1,0 +1,22 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.41, SQL-transactions
+4.41                     todo         - -
+# 4.41.1, General description of SQL-transactions
+4.41.1                   todo         - -
+# 4.41.2, Savepoints
+4.41.2                   todo         - -
+# 4.41.3, Properties of SQL-transactions
+4.41.3                   todo         - -
+# 4.41.4, Isolation levels of SQL-transactions
+4.41.4                   todo         - -
+# 4.41.5, Implicit rollbacks
+4.41.5                   todo         - -
+# 4.41.6, Effects of SQL-statements in an SQL-transaction
+4.41.6                   todo         - -
+# 4.41.7, Encompassing transactions
+4.41.7                   todo         - -
+# 4.41.7.1, Encompassing transaction belonging to an external agent
+4.41.7.1                 todo         - -
+# 4.41.7.2, Encompassing transaction belonging to the SQL-agent
+4.41.7.2                 todo         - -

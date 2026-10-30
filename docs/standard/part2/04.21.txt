@@ -1,0 +1,12 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.21, Scalar expressions in row pattern matching
+4.21                     todo         - -
+# 4.21.1, Running vs. final semantics
+4.21.1                   todo         - -
+# 4.21.2, Row pattern navigation operations
+4.21.2                   todo         - -
+# 4.21.3, Row pattern classifier function
+4.21.3                   todo         - -
+# 4.21.4, Row pattern match number function
+4.21.4                   todo         - -

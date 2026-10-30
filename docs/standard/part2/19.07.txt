@@ -1,0 +1,10 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 19.7, <set names statement>
+19.7                     todo         - -
+19.7/SR/1                todo         - -
+19.7/GR/1                todo         - -
+19.7/GR/2                todo         - -
+19.7/GR/3                todo         - -
+19.7/CR/1                todo         - -
+19.7/CR/2                todo         - -

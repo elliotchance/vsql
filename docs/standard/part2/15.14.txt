@@ -1,0 +1,31 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 15.14, Effect of replacing some rows in a derived table
+15.14                    todo         - -
+15.14/GR/1               todo         - -
+15.14/GR/2               todo         - -
+15.14/GR/3               container    - -
+15.14/GR/3.a             todo         - -
+15.14/GR/3.b             todo         - -
+15.14/GR/3.b.i           todo         - -
+15.14/GR/3.b.i.1         todo         - -
+15.14/GR/3.b.i.2         todo         - -
+15.14/GR/3.b.ii          todo         - -
+15.14/GR/3.b.iii         todo         - -
+15.14/GR/3.c             todo         - -
+15.14/GR/3.c.i           container    - -
+15.14/GR/3.c.i.1         todo         - -
+15.14/GR/3.c.i.2         todo         - -
+15.14/GR/3.c.ii          todo         - -
+15.14/GR/3.c.iii         todo         - -
+15.14/GR/3.c.iii.1       todo         - -
+15.14/GR/3.c.iii.2       todo         - -
+15.14/GR/3.c.iii.3       todo         - -
+15.14/GR/3.c.iii.4       todo         - -
+15.14/GR/3.c.iv          todo         - -
+15.14/GR/3.c.iv.1        todo         - -
+15.14/GR/3.c.iv.1.A      todo         - -
+15.14/GR/3.c.iv.1.B      todo         - -
+15.14/GR/3.c.iv.2        todo         - -
+15.14/GR/3.c.iv.3        todo         - -
+15.14/GR/3.c.v           todo         - -

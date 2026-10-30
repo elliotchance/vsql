@@ -192,7 +192,7 @@ fn (n Numeric) divide(n2 Numeric) !Numeric {
 }
 
 // check_numeric_precision returns n, or an error if its integer part has more
-// digits than its type can hold (ISO/IEC 9075-2:2016(E), 6.29, General Rule
+// digits than its type can hold (ISO/IEC 9075-2:2016(E), 6.29, General Rules,
 // 5). The type of an arithmetic result is limited to the maximum precision, see
 // exact_arithmetic_type.
 fn check_numeric_precision(n Numeric) !Numeric {

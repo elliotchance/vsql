@@ -1,0 +1,11 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 15.2, Effect of receiving a result set
+15.2                     todo         - -
+15.2/GR/1                todo         - -
+15.2/GR/2                todo         - -
+15.2/GR/3                todo         - -
+15.2/GR/4                todo         - -
+15.2/GR/5                todo         - -
+15.2/GR/6                todo         - -
+15.2/GR/7                todo         - -

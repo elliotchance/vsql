@@ -1,0 +1,19 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 8.23, <JSON exists predicate>
+8.23                     todo         - -
+8.23/SR/1                todo         - -
+8.23/GR/1                todo         - -
+8.23/GR/2                todo         - -
+8.23/GR/3                todo         - -
+8.23/GR/4                todo         - -
+8.23/GR/4.a              todo         - -
+8.23/GR/4.a.i            todo         - -
+8.23/GR/4.a.ii           todo         - -
+8.23/GR/4.b              todo         - -
+8.23/GR/4.b.i            todo         - -
+8.23/GR/4.b.ii           todo         - -
+8.23/GR/4.b.iii          todo         - -
+8.23/GR/4.b.iv           todo         - -
+8.23/CR/1                todo         - -
+8.23/CR/2                todo         - -

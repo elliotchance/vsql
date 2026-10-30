@@ -1,0 +1,18 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.40, Basic security model
+4.40                     todo         - -
+# 4.40.1, Authorization identifiers
+4.40.1                   todo         - -
+# 4.40.1.1, SQL-session authorization identifiers
+4.40.1.1                 todo         - -
+# 4.40.1.2, SQL-client module authorization identifiers
+4.40.1.2                 todo         - -
+# 4.40.1.3, SQL-schema authorization identifiers
+4.40.1.3                 todo         - -
+# 4.40.2, Privileges
+4.40.2                   todo         - -
+# 4.40.3, Roles
+4.40.3                   todo         - -
+# 4.40.4, Security model definitions
+4.40.4                   todo         - -

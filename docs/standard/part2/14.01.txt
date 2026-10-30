@@ -1,0 +1,15 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 14.1, <declare cursor>
+14.1                     todo         - -
+14.1/SR/1                todo         - -
+14.1/SR/1.a              todo         - -
+14.1/SR/1.b              todo         - -
+14.1/SR/1.c              todo         - -
+14.1/GR/1                todo         - -
+14.1/GR/1.a              todo         - -
+14.1/GR/1.b              todo         - -
+14.1/GR/1.c              todo         - -
+14.1/GR/1.d              todo         - -
+14.1/GR/1.e              todo         - -
+14.1/CR/1                todo         - -

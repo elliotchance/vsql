@@ -1,0 +1,21 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.7, Cancel
+6.7                      todo         - -
+6.7/GR/1                 todo         - -
+6.7/GR/2                 container    - -
+6.7/GR/2.a               todo         - -
+6.7/GR/2.a.i             todo         - -
+6.7/GR/2.a.ii            todo         - -
+6.7/GR/2.a.iii           todo         - -
+6.7/GR/2.a.iv            todo         - -
+6.7/GR/2.a.v             todo         - -
+6.7/GR/2.a.vi            todo         - -
+6.7/GR/2.a.vii           todo         - -
+6.7/GR/2.b               todo         - -
+6.7/GR/2.b.i             todo         - -
+6.7/GR/2.b.ii            todo         - -
+6.7/GR/2.b.iii           todo         - -
+6.7/GR/2.c               todo         - -
+6.7/GR/2.c.i             todo         - -
+6.7/GR/2.c.ii            todo         - -

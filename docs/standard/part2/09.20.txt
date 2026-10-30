@@ -1,0 +1,31 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.20, Signatures of PTF component procedures
+9.20                     todo         - -
+9.20/SR/1                todo         - -
+9.20/SR/2                container    - -
+9.20/SR/2.a              todo         - -
+9.20/SR/2.a.i            todo         - -
+9.20/SR/2.a.ii           todo         - -
+9.20/SR/2.a.iii          todo         - -
+9.20/SR/2.a.iii.1        todo         - -
+9.20/SR/2.a.iii.2        todo         - -
+9.20/SR/2.a.iv           todo         - -
+9.20/SR/2.a.v            todo         - -
+9.20/SR/2.a.vi           todo         - -
+9.20/SR/2.a.vii          todo         - -
+9.20/SR/2.a.vii.1        todo         - -
+9.20/SR/2.a.vii.1.A      todo         - -
+9.20/SR/2.a.vii.1.B      todo         - -
+9.20/SR/2.a.vii.1.C      todo         - -
+9.20/SR/2.a.vii.1.C.I    todo         - -
+9.20/SR/2.a.vii.1.C.II   todo         - -
+9.20/SR/2.a.vii.1.D      todo         - -
+9.20/SR/2.a.vii.1.E      todo         - -
+9.20/SR/2.a.vii.2        todo         - -
+9.20/SR/2.a.vii.3        todo         - -
+9.20/SR/2.a.viii         todo         - -
+9.20/SR/2.a.ix           todo         - -
+9.20/SR/2.a.x            todo         - -
+9.20/SR/2.b              todo         - -
+9.20/SR/3                todo         - -

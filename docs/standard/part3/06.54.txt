@@ -1,0 +1,27 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.54, SetConnectAttr
+6.54                     todo         - -
+6.54/GR/1                container    - -
+6.54/GR/1.a              todo         - -
+6.54/GR/1.b              container    - -
+6.54/GR/1.b.i            todo         - -
+6.54/GR/1.b.ii           todo         - -
+6.54/GR/2                todo         - -
+6.54/GR/3                todo         - -
+6.54/GR/4                todo         - -
+6.54/GR/4.a              todo         - -
+6.54/GR/4.b              container    - -
+6.54/GR/4.b.i            todo         - -
+6.54/GR/4.b.ii           todo         - -
+6.54/GR/4.b.iii          todo         - -
+6.54/GR/4.c              todo         - -
+6.54/GR/5                todo         - -
+6.54/GR/5.a              todo         - -
+6.54/GR/5.b              container    - -
+6.54/GR/5.b.i            todo         - -
+6.54/GR/5.b.ii           container    - -
+6.54/GR/5.b.ii.1         todo         - -
+6.54/GR/5.b.ii.2         todo         - -
+6.54/GR/5.b.ii.3         todo         - -
+6.54/GR/5.b.iii          todo         - -

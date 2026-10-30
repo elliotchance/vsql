@@ -1,0 +1,20 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.4, Miscellaneous characteristics
+4.4                      todo         - -
+# 4.4.1, Handles
+4.4.1                    todo         - -
+# 4.4.2, Null terminated strings
+4.4.2                    todo         - -
+# 4.4.3, Null pointers
+4.4.3                    todo         - -
+# 4.4.4, Environment attributes
+4.4.4                    todo         - -
+# 4.4.5, Connection attributes
+4.4.5                    todo         - -
+# 4.4.6, Statement attributes
+4.4.6                    todo         - -
+# 4.4.7, CLI descriptor areas
+4.4.7                    todo         - -
+# 4.4.8, Obtaining diagnostics during multi-row fetch
+4.4.8                    todo         - -

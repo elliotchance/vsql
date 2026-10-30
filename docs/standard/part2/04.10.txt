@@ -1,0 +1,28 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.10, Collection types
+4.10                     todo         - -
+# 4.10.1, Introduction to collection types
+4.10.1                   todo         - -
+# 4.10.2, Arrays
+4.10.2                   todo         - -
+# 4.10.3, Multisets
+4.10.3                   todo         - -
+# 4.10.4, Collection comparison and assignment
+4.10.4                   todo         - -
+# 4.10.5, Operations involving arrays
+4.10.5                   todo         - -
+# 4.10.5.1, Operators that operate on array values and return array elements
+4.10.5.1                 todo         - -
+# 4.10.5.2, Operators that operate on array values and return array values
+4.10.5.2                 todo         - -
+# 4.10.5.3, Operators that operate on array values and return numbers
+4.10.5.3                 todo         - -
+# 4.10.6, Operations involving multisets
+4.10.6                   todo         - -
+# 4.10.6.1, Operators that operate on multisets and return multiset elements
+4.10.6.1                 todo         - -
+# 4.10.6.2, Operators that operate on multisets and return multisets
+4.10.6.2                 todo         - -
+# 4.10.6.3, Operators that operate on multiset values and return numbers
+4.10.6.3                 todo         - -

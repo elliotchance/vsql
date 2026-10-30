@@ -377,7 +377,7 @@ struct RowChange {
 // resolve_foreign_keys), so they're all in f.
 //
 // ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General
-// Rules 9a, 10a and 17
+// Rules, 9.a, 10.a and 17
 fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, changes []RowChange) ! {
 	_, time_zone := conn.now()
 
@@ -540,7 +540,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 // another transaction is writing one of them.
 //
 // ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General
-// Rule 6
+// Rules, 6
 fn (mut f Storage) matching_rows(key ForeignKey, referencing Table, types []SQLType, keys map[string]bool, time_zone i16) ![]Row {
 	f.isolation_start()!
 	defer {

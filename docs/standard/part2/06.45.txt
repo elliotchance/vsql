@@ -1,0 +1,24 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.45, <multiset value constructor>
+6.45                     todo         - -
+6.45/SR/1                todo         - -
+6.45/SR/1.a              todo         - -
+6.45/SR/1.b              todo         - -
+6.45/SR/1.c              todo         - -
+6.45/SR/1.d              todo         - -
+6.45/SR/1.e              todo         - -
+6.45/SR/2                todo         - -
+6.45/SR/3                todo         - -
+6.45/SR/4                todo         - -
+6.45/SR/4.a              todo         - -
+6.45/SR/4.b              todo         - -
+6.45/SR/4.c              todo         - -
+6.45/SR/4.d              todo         - -
+6.45/GR/1                todo         - -
+6.45/GR/2                todo         - -
+6.45/GR/3                todo         - -
+6.45/GR/3.a              todo         - -
+6.45/GR/3.b              todo         - -
+6.45/CR/1                todo         - -
+6.45/CR/2                todo         - -

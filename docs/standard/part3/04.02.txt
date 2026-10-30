@@ -1,0 +1,4 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.2, Return codes
+4.2                      todo         - -

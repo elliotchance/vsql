@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.62, VIEW_COLUMN_USAGE base table
+6.62                     todo         - -
+6.62/DE/1                todo         - -
+6.62/DE/2                todo         - -

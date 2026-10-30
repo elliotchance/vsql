@@ -52,7 +52,7 @@ mut:
 	on_row   bool
 	// fetched is true if a FETCH has been executed in the current transaction.
 	// A holdable cursor must be fetched in a transaction before its current row
-	// can be changed (ISO/IEC 9075-2:2016(E), 15.5, General Rule 7).
+	// can be changed (ISO/IEC 9075-2:2016(E), 15.5, General Rules, 7).
 	fetched bool
 }
 
@@ -73,7 +73,7 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 	plan := create_plan(stmt.query, params, mut conn)!
 	simply_updatable := stmt.simply_updatable(plan)
 
-	// ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Syntax Rules 4 to 6
+	// ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Syntax Rules, 4 to 6
 	mut table := ?Identifier(none)
 	mut update_columns := []string{}
 	if updatability := stmt.updatability {
@@ -105,7 +105,7 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 
 // simply_updatable is true if the query is a simply updatable <query
 // specification> (ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax
-// Rule 21), which can be changed through the cursor. It must select from one
+// Rules, 21), which can be changed through the cursor. It must select from one
 // table, without grouping (or an aggregate function) or DISTINCT.
 fn (stmt DeclareCursor) simply_updatable(plan Plan) bool {
 	body := stmt.query.body
@@ -214,7 +214,8 @@ pub fn (mut conn Connection) remove_cursor(name string) {
 }
 
 // end_transaction closes the cursors when a transaction ends (ISO/IEC
-// 9075-2:2016(E), 17.7, General Rule 10g and 17.8, General Rule 2e). A
+// 9075-2:2016(E), 17.7, General Rules, 3 and ISO/IEC 9075-2:2016(E), 17.8,
+// General Rules, 2.e). A
 // holdable cursor stays open after a commit.
 fn (mut conn Connection) end_transaction(commit bool) {
 	for _, mut cursor in conn.cursors {
@@ -235,7 +236,7 @@ fn (mut cursor Cursor) close() {
 
 // current_row is the row of the table that the cursor is positioned on, for a
 // positioned DELETE or UPDATE of table_name (ISO/IEC 9075-2:2016(E), 14.8, Syntax
-// Rules 4 and 6, and 15.5, General Rules 6 and 7).
+// Rules, 4 and 6, and ISO/IEC 9075-2:2016(E), 15.5, General Rules, 6 and 7).
 fn (mut conn Connection) current_row(name string, table_name Identifier) !&Cursor {
 	mut cursor := conn.cursor(name)!
 	table := cursor.table or { return sqlstate_34000('cursor ${name} is not updatable') }

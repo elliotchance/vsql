@@ -1,0 +1,24 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.14, Ordering operations
+9.14                     todo         - -
+9.14/SR/1                todo         - -
+9.14/SR/1.a              todo         - -
+9.14/SR/1.b              todo         - -
+9.14/SR/1.c              todo         - -
+9.14/SR/1.d              todo         - -
+9.14/SR/1.e              todo         - -
+9.14/SR/1.f              todo         - -
+9.14/SR/1.g              todo         - -
+9.14/SR/2                todo         - -
+9.14/SR/2.a              todo         - -
+9.14/SR/2.b              todo         - -
+9.14/SR/2.c              todo         - -
+9.14/SR/2.d              todo         - -
+9.14/SR/2.e              todo         - -
+9.14/SR/2.f              todo         - -
+9.14/SR/2.g              todo         - -
+9.14/SR/2.h              todo         - -
+9.14/SR/3                todo         - -
+9.14/SR/4                todo         - -
+9.14/CR/1                todo         - -

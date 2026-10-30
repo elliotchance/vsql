@@ -1,0 +1,21 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 7.14, <having clause>
+7.14                     todo         - -
+7.14/SR/1                todo         - -
+7.14/SR/2                todo         - -
+7.14/SR/3                todo         - -
+7.14/SR/3.a              todo         - -
+7.14/SR/3.b              todo         - -
+7.14/SR/4                todo         - -
+7.14/SR/4.a              todo         - -
+7.14/SR/4.b              todo         - -
+7.14/SR/5                todo         - -
+7.14/SR/6                todo         - -
+7.14/GR/1                todo         - -
+7.14/CR/1                todo         - -
+7.14/CR/1.a              todo         - -
+7.14/CR/1.b              todo         - -
+7.14/CR/2                todo         - -
+7.14/CR/2.a              todo         - -
+7.14/CR/2.b              todo         - -

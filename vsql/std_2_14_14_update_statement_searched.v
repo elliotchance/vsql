@@ -53,7 +53,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
 
-	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Syntax Rule 5
+	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Syntax Rules, 5
 	for clause in stmt.set {
 		if table.column(clause.column_name)!.is_generated_always() {
 			is_default := if clause.source is ContextuallyTypedValueSpecification {
@@ -83,7 +83,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// subquery (such as "SET x = (SELECT MAX(x) FROM t)") would see the rows that
 	// have already been updated.
 	//
-	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rule 10
+	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rules, 10
 	mut changes := [][]Row{}
 	for mut row in rows {
 		conn.begin_row()

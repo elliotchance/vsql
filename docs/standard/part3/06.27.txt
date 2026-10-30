@@ -1,0 +1,21 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.27, FreeStmt
+6.27                     todo         - -
+6.27/GR/1                todo         - -
+6.27/GR/2                todo         - -
+6.27/GR/3                todo         - -
+6.27/GR/4                todo         - -
+6.27/GR/5                todo         - -
+6.27/GR/6                container    - -
+6.27/GR/6.a              todo         - -
+6.27/GR/6.a.i            todo         - -
+6.27/GR/6.a.ii           todo         - -
+6.27/GR/6.b              todo         - -
+6.27/GR/6.c              todo         - -
+6.27/GR/6.d              todo         - -
+6.27/GR/6.e              todo         - -
+6.27/GR/6.e.i            todo         - -
+6.27/GR/6.e.ii           todo         - -
+6.27/GR/6.e.iii          todo         - -
+6.27/GR/6.e.iv           todo         - -

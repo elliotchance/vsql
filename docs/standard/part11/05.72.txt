@@ -1,0 +1,5 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.72, USER_DEFINED_TYPES view
+5.72                     todo         - -
+5.72/CR/1                todo         - -

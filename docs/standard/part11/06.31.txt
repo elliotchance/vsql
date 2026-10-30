@@ -1,0 +1,15 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.31, PARAMETERS base table
+6.31                     todo         - -
+6.31/DE/1                todo         - -
+6.31/DE/2                todo         - -
+6.31/DE/3                todo         - -
+6.31/DE/4                todo         - -
+6.31/DE/5                todo         - -
+6.31/DE/6                todo         - -
+6.31/DE/7                todo         - -
+6.31/DE/7.a              todo         - -
+6.31/DE/7.b              todo         - -
+6.31/DE/8                todo         - -
+6.31/DE/9                todo         - -

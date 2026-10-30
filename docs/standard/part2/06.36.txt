@@ -1,0 +1,18 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.36, <datetime value function>
+6.36                     todo         - -
+6.36/SR/1                todo         - -
+6.36/SR/2                container    - -
+6.36/SR/2.a              todo         - -
+6.36/SR/2.b              todo         - -
+6.36/SR/3                container    - -
+6.36/SR/3.a              todo         - -
+6.36/SR/3.b              todo         - -
+6.36/GR/1                todo         - -
+6.36/GR/2                todo         - -
+6.36/GR/3                todo         - -
+6.36/CR/1                todo         - -
+6.36/CR/2                todo         - -
+6.36/CR/3                todo         - -
+6.36/CR/4                todo         - -

@@ -83,7 +83,7 @@ fn (e DerivedColumn) column_reference() ?Identifier {
 // equal to each other. The first of the duplicate rows is kept, before the
 // select list is applied, so that the ORDER BY can still be evaluated.
 //
-// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, General Rules, 2b
+// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, General Rules, 2.b
 struct DistinctOperation {
 	params  map[string]Value
 	columns Columns
@@ -182,7 +182,7 @@ fn is_duplicate_row(conn &Connection, a []Value, b []Value) !bool {
 // in the select list (such as "ORDER BY a + b" for "SELECT DISTINCT a + b") is
 // replaced by that column, so it can use any column.
 //
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28d
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28.d
 fn (mut c Compiler) set_distinct_columns(body SimpleTable, sort_key ValueExpression) ! {
 	c.distinct_columns = none
 	if body !is QuerySpecification {

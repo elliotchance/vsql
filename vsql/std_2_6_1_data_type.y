@@ -106,8 +106,8 @@ datetime_type:
     $$.v = parse_time_prec_tz_type($3.v as string, $5.v as bool)!
   }
 | TIMESTAMP {
-    // ISO/IEC 9075-2:2016(E), 6.1, 36) If <timestamp precision> is not
-    // specified, then 6 is implicit.
+    // ISO/IEC 9075-2:2016(E), 6.1, <data type>, Syntax Rules, 36: the default
+    // <timestamp precision> is 6.
     $$.v = parse_timestamp_prec_tz_type('6', false)!
   }
 | TIMESTAMP left_paren timestamp_precision right_paren {

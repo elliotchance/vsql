@@ -1,0 +1,22 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.14, DataSources
+6.14                     todo         - -
+6.14/GR/1                todo         - -
+6.14/GR/2                todo         - -
+6.14/GR/3                todo         - -
+6.14/GR/4                todo         - -
+6.14/GR/5                todo         - -
+6.14/GR/6                todo         - -
+6.14/GR/7                todo         - -
+6.14/GR/8                todo         - -
+6.14/GR/9                todo         - -
+6.14/GR/9.a              todo         - -
+6.14/GR/9.a.i            todo         - -
+6.14/GR/9.a.ii           todo         - -
+6.14/GR/9.a.iii          todo         - -
+6.14/GR/9.b              todo         - -
+6.14/GR/9.b.i            todo         - -
+6.14/GR/9.b.ii           todo         - -
+6.14/GR/9.b.iii          todo         - -
+6.14/GR/9.b.iv           todo         - -

@@ -1,0 +1,15 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.72, <sequence generator definition>
+11.72                    todo         - -
+11.72/SR/1               todo         - -
+11.72/SR/2               todo         - -
+11.72/SR/3               todo         - -
+11.72/SR/4               todo         - -
+11.72/SR/5               todo         - -
+11.72/SR/6               todo         - -
+11.72/SR/7               todo         - -
+11.72/AR/1               todo         - -
+11.72/GR/1               todo         - -
+11.72/GR/2               todo         - -
+11.72/CR/1               todo         - -

@@ -1,0 +1,9 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.48, TABLE_METHOD_PRIVILEGES base table
+6.48                     todo         - -
+6.48/DE/1                todo         - -
+6.48/DE/2                todo         - -
+6.48/DE/3                todo         - -
+6.48/DE/4                todo         - -
+6.48/DE/5                todo         - -

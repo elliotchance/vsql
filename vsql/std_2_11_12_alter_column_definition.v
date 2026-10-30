@@ -20,7 +20,7 @@ struct AlterColumnDefinition {
 fn (d AlterColumnDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table) ! {
 	column := table.column(d.column_name.sub_entity_name)!
 
-	// ISO/IEC 9075-2:2016(E), 11.12, <alter column definition>, Syntax Rules 6
+	// ISO/IEC 9075-2:2016(E), 11.12, <alter column definition>, Syntax Rules, 6
 	// and 7
 	is_identity := column.identity != none
 	if is_identity != (d.action is AlterIdentityColumnSpecification) {
@@ -31,7 +31,7 @@ fn (d AlterColumnDefinition) execute(mut conn Connection, mut catalog CatalogCon
 		})
 	}
 
-	// ISO/IEC 9075-2:2016(E), 11.12, <alter column definition>, Syntax Rule 9
+	// ISO/IEC 9075-2:2016(E), 11.12, <alter column definition>, Syntax Rules, 9
 	if column.generated != none && d.action is SetColumnDefaultClause {
 		return sqlstate_42601('cannot set the default of generated column ${column.name.sub_entity_name}')
 	}

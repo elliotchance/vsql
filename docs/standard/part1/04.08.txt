@@ -1,0 +1,24 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.8, Communication between an SQL-agent and an SQL-server
+4.8                      todo         - -
+# 4.8.1, Host languages
+4.8.1                    todo         - -
+# 4.8.2, Parameter passing and data type correspondences
+4.8.2                    todo         - -
+# 4.8.2.1, General parameter passing and data type correspondence information
+4.8.2.1                  todo         - -
+# 4.8.2.2, Data type correspondences
+4.8.2.2                  todo         - -
+# 4.8.2.3, Locators
+4.8.2.3                  todo         - -
+# 4.8.2.4, Status parameters
+4.8.2.4                  todo         - -
+# 4.8.2.5, Indicator parameters
+4.8.2.5                  todo         - -
+# 4.8.3, Descriptor areas
+4.8.3                    todo         - -
+# 4.8.4, Diagnostic information
+4.8.4                    todo         - -
+# 4.8.5, SQL-transactions
+4.8.5                    todo         - -

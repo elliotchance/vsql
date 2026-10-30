@@ -1,0 +1,20 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 8.17, <submultiset predicate>
+8.17                     todo         - -
+8.17/SR/1                todo         - -
+8.17/SR/2                todo         - -
+8.17/SR/3                todo         - -
+8.17/SR/4                todo         - -
+8.17/SR/5                todo         - -
+8.17/GR/1                todo         - -
+8.17/GR/2                todo         - -
+8.17/GR/3                todo         - -
+8.17/GR/3.a              todo         - -
+8.17/GR/3.b              todo         - -
+8.17/GR/3.c              todo         - -
+8.17/GR/3.c.i            todo         - -
+8.17/GR/3.c.ii           todo         - -
+8.17/GR/3.c.iii          todo         - -
+8.17/GR/3.c.iv           todo         - -
+8.17/CR/1                todo         - -

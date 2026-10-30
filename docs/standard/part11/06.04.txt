@@ -1,0 +1,4 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.4, UNIQUE_CONSTRAINT_NAME assertion
+6.4                      todo         - -

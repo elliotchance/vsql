@@ -40,7 +40,8 @@ fn (e QuantifiedComparisonPredicate) compile(mut c Compiler) !CompileResult {
 // compared (rather than stopping at the first result that decides it) so that
 // an incomparable value is always an error, wherever it is.
 //
-// ISO/IEC 9075-2:2016(E), 8.9, <quantified comparison predicate>, General Rule 2
+// ISO/IEC 9075-2:2016(E), 8.9, <quantified comparison predicate>, General
+// Rules, 2
 fn quantified_comparison(conn &Connection, expr Value, op ComparisonOperator, all bool, values []Value) !Truth {
 	// a) and d): An empty table is TRUE for ALL and FALSE for SOME.
 	mut result := if all { Truth.is_true } else { Truth.is_false }

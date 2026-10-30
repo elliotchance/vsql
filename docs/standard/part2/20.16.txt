@@ -1,0 +1,17 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 20.16, <descriptor value constructor>
+20.16                    todo         - -
+20.16/SR/1               todo         - -
+20.16/GR/1               todo         - -
+20.16/GR/2               todo         - -
+20.16/GR/2.a             todo         - -
+20.16/GR/2.a.i           todo         - -
+20.16/GR/2.a.ii          container    - -
+20.16/GR/2.a.ii.1        todo         - -
+20.16/GR/2.a.ii.2        todo         - -
+20.16/GR/2.b             todo         - -
+20.16/GR/2.b.i           todo         - -
+20.16/GR/2.b.ii          todo         - -
+20.16/GR/2.b.iii         todo         - -
+20.16/CR/1               todo         - -

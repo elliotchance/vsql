@@ -85,8 +85,8 @@ pub fn (mut a Agent) direct(sql_stmt string, options DirectOptions) !Result {
 
 // connect_default makes the default SQL-connection the current SQL-connection,
 // and establishes it if needed. This is what happens before the first statement
-// that isn't a connection statement (ISO/IEC 9075-2:2016(E), 22.1, General Rule
-// 2.c.i), so it only needs to be called to connect sooner. It doesn't do
+// that isn't a connection statement (ISO/IEC 9075-2:2016(E), 22.1, General Rules,
+// 5.c.i), so it only needs to be called to connect sooner. It doesn't do
 // anything if there is already a current SQL-connection.
 pub fn (mut a Agent) connect_default() ! {
 	if a.current != unsafe { nil } {
@@ -121,7 +121,7 @@ pub fn (a Agent) in_transaction() bool {
 }
 
 // close terminates every SQL-connection, which is the end of the SQL-session
-// (ISO/IEC 9075-2:2016(E), 22.1, General Rule 2.a). If commit is true, an
+// (ISO/IEC 9075-2:2016(E), 22.1, General Rules, 2.a). If commit is true, an
 // active SQL-transaction is committed first. Otherwise, it's rolled back.
 pub fn (mut a Agent) close(commit bool) ! {
 	if commit && a.in_transaction() {

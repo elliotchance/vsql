@@ -1,0 +1,4 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 7.3, SQL_LANGUAGES base table
+7.3                      todo         - -

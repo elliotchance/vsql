@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.17, COLLATION_CHARACTER_SET_APPLICABILITY base table
+6.17                     todo         - -
+6.17/DE/1                todo         - -
+6.17/DE/2                todo         - -

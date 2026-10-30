@@ -1,0 +1,18 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.33, Determination of view privileges
+9.33                     todo         - -
+9.33/GR/1                todo         - -
+9.33/GR/2                todo         - -
+9.33/GR/3                todo         - -
+9.33/GR/4                todo         - -
+9.33/GR/5                todo         - -
+9.33/GR/5.a              todo         - -
+9.33/GR/5.a.i            todo         - -
+9.33/GR/5.a.ii           todo         - -
+9.33/GR/5.b              todo         - -
+9.33/GR/5.b.i            todo         - -
+9.33/GR/5.b.ii           todo         - -
+9.33/GR/6                todo         - -
+9.33/GR/7                todo         - -
+9.33/GR/8                todo         - -

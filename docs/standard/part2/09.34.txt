@@ -1,0 +1,35 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.34, Determination of view component privileges
+9.34                     todo         - -
+9.34/GR/1                todo         - -
+9.34/GR/2                todo         - -
+9.34/GR/3                todo         - -
+9.34/GR/3.a              todo         - -
+9.34/GR/3.b              todo         - -
+9.34/GR/4                todo         - -
+9.34/GR/4.a              todo         - -
+9.34/GR/4.b              todo         - -
+9.34/GR/4.b.i            todo         - -
+9.34/GR/4.b.i.1          container    - -
+9.34/GR/4.b.i.1.A        todo         - -
+9.34/GR/4.b.i.1.B        todo         - -
+9.34/GR/4.b.i.1.C        todo         - -
+9.34/GR/4.b.i.1.D        todo         - -
+9.34/GR/4.b.i.2          todo         - -
+9.34/GR/4.b.i.3          todo         - -
+9.34/GR/4.b.i.3.A        todo         - -
+9.34/GR/4.b.i.3.B        todo         - -
+9.34/GR/4.b.ii           container    - -
+9.34/GR/4.b.ii.1         todo         - -
+9.34/GR/4.b.ii.2         todo         - -
+9.34/GR/4.b.ii.2.A       todo         - -
+9.34/GR/4.b.ii.2.B       todo         - -
+9.34/GR/4.c              todo         - -
+9.34/GR/4.c.i            todo         - -
+9.34/GR/4.c.i.1          todo         - -
+9.34/GR/4.c.i.2          todo         - -
+9.34/GR/4.c.ii           todo         - -
+9.34/GR/4.c.ii.1         todo         - -
+9.34/GR/4.c.ii.2         todo         - -
+9.34/GR/5                todo         - -

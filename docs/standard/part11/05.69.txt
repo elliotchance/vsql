@@ -1,0 +1,7 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.69, TRIGGERS view
+5.69                     todo         - -
+5.69/CR/1                todo         - -
+5.69/CR/2                todo         - -
+5.69/CR/3                todo         - -

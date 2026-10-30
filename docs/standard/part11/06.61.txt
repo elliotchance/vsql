@@ -1,0 +1,14 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.61, USER_DEFINED_TYPES base table
+6.61                     todo         - -
+6.61/DE/1                todo         - -
+6.61/DE/2                todo         - -
+6.61/DE/3                todo         - -
+6.61/DE/4                todo         - -
+6.61/DE/5                todo         - -
+6.61/DE/6                todo         - -
+6.61/DE/7                todo         - -
+6.61/DE/8                todo         - -
+6.61/DE/9                todo         - -
+6.61/DE/10               todo         - -

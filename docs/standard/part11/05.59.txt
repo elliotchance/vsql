@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.59, TABLE_METHOD_PRIVILEGES view
+5.59                     todo         - -
+5.59/CR/1                todo         - -
+5.59/CR/2                todo         - -

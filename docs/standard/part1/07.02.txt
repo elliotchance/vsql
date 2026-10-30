@@ -1,0 +1,4 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 7.2, Implementation-dependent elements
+7.2                      todo         - -

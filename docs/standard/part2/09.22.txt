@@ -1,0 +1,33 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.22, XQuery regular expression matching
+9.22                     todo         - -
+9.22/GR/1                todo         - -
+9.22/GR/2                container    - -
+9.22/GR/2.a              todo         - -
+9.22/GR/2.b              todo         - -
+9.22/GR/3                container    - -
+9.22/GR/3.a              todo         - -
+9.22/GR/3.b              todo         - -
+9.22/GR/4                todo         - -
+9.22/GR/5                todo         - -
+9.22/GR/6                todo         - -
+9.22/GR/7                todo         - -
+9.22/GR/8                todo         - -
+9.22/GR/9                todo         - -
+9.22/GR/9.a              todo         - -
+9.22/GR/9.a.i            todo         - -
+9.22/GR/9.a.ii           todo         - -
+9.22/GR/9.a.iii          todo         - -
+9.22/GR/9.b              todo         - -
+9.22/GR/10               todo         - -
+9.22/GR/11               todo         - -
+9.22/GR/11.a             todo         - -
+9.22/GR/11.b             todo         - -
+9.22/GR/11.c             todo         - -
+9.22/GR/11.d             todo         - -
+9.22/GR/11.d.i           todo         - -
+9.22/GR/11.d.ii          todo         - -
+9.22/GR/11.d.ii.1        todo         - -
+9.22/GR/11.d.ii.2        todo         - -
+9.22/GR/11.e             todo         - -

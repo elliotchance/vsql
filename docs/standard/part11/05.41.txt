@@ -1,0 +1,7 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.41, ROLE_TABLE_METHOD_GRANTS view
+5.41                     todo         - -
+5.41/CR/1                todo         - -
+5.41/CR/2                todo         - -
+5.41/CR/3                todo         - -

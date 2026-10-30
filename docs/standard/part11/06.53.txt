@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.53, TRIGGERED_UPDATE_COLUMNS base table
+6.53                     todo         - -
+6.53/DE/1                todo         - -
+6.53/DE/2                todo         - -

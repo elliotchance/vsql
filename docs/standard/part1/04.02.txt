@@ -1,0 +1,38 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.2, SQL-environments and their components
+4.2                      todo         - -
+# 4.2.1, SQL-environments
+4.2.1                    todo         - -
+# 4.2.2, SQL-agents
+4.2.2                    todo         - -
+# 4.2.3, SQL-implementations
+4.2.3                    todo         - -
+# 4.2.3.1, SQL-clients
+4.2.3.1                  todo         - -
+# 4.2.3.2, SQL-servers
+4.2.3.2                  todo         - -
+# 4.2.4, SQL-client modules
+4.2.4                    todo         - -
+# 4.2.5, User identifiers
+4.2.5                    todo         - -
+# 4.2.6, User mapping concepts
+4.2.6                    todo         - -
+# 4.2.7, Routine mapping concepts
+4.2.7                    todo         - -
+# 4.2.8, Catalogs and schemas
+4.2.8                    todo         - -
+# 4.2.8.1, Catalogs
+4.2.8.1                  todo         - -
+# 4.2.8.2, SQL-schemas
+4.2.8.2                  todo         - -
+# 4.2.8.3, The Information Schema
+4.2.8.3                  todo         - -
+# 4.2.8.4, The Definition Schema
+4.2.8.4                  todo         - -
+# 4.2.9, Foreign servers and descriptors
+4.2.9                    todo         - -
+# 4.2.10, Foreign-data wrappers and descriptors
+4.2.10                   todo         - -
+# 4.2.11, SQL-data
+4.2.11                   todo         - -

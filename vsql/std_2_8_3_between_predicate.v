@@ -37,7 +37,8 @@ fn (e BetweenPredicate) compile(mut c Compiler) !CompileResult {
 			left := compiled_left.run(mut conn, data, params)!
 			right := compiled_right.run(mut conn, data, params)!
 
-			// ISO/IEC 9075-2:2016(E), 8.3, <between predicate>, Syntax Rules 4 and 6:
+			// ISO/IEC 9075-2:2016(E), 8.3, <between predicate>, Syntax Rules, 4
+			// and 6:
 			//
 			//   X BETWEEN ASYMMETRIC Y AND Z is X >= Y AND X <= Z
 			//   X BETWEEN SYMMETRIC Y AND Z is

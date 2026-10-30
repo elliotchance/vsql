@@ -1,0 +1,33 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.36, Parsing JSON text
+9.36                     todo         - -
+9.36/GR/1                todo         - -
+9.36/GR/2                todo         - -
+9.36/GR/3                container    - -
+9.36/GR/3.a              todo         - -
+9.36/GR/3.a.i            container    - -
+9.36/GR/3.a.i.1          todo         - -
+9.36/GR/3.a.i.2          todo         - -
+9.36/GR/3.a.i.2.A        todo         - -
+9.36/GR/3.a.i.2.B        todo         - -
+9.36/GR/3.a.ii           todo         - -
+9.36/GR/3.a.iii          container    - -
+9.36/GR/3.a.iii.1        todo         - -
+9.36/GR/3.a.iii.2        todo         - -
+9.36/GR/3.a.iii.3        container    - -
+9.36/GR/3.a.iii.3.A      todo         - -
+9.36/GR/3.a.iii.3.A.I    todo         - -
+9.36/GR/3.a.iii.3.A.II   todo         - -
+9.36/GR/3.a.iii.3.A.III  todo         - -
+9.36/GR/3.a.iii.3.A.IV   todo         - -
+9.36/GR/3.a.iii.3.A.V    todo         - -
+9.36/GR/3.a.iii.3.A.VI   todo         - -
+9.36/GR/3.a.iii.3.A.VII  todo         - -
+9.36/GR/3.a.iii.3.A.VIII todo         - -
+9.36/GR/3.a.iii.3.A.VIII.1 todo         - -
+9.36/GR/3.a.iii.3.A.VIII.2 todo         - -
+9.36/GR/3.a.iii.3.A.VIII.3 todo         - -
+9.36/GR/3.a.iii.3.B      todo         - -
+9.36/GR/3.b              todo         - -
+9.36/GR/4                todo         - -

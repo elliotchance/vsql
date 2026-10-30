@@ -1,0 +1,52 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.6, SQL-schema objects
+4.6                      todo         - -
+# 4.6.1, General SQL-schema object information
+4.6.1                    todo         - -
+# 4.6.2, Descriptors relating to character sets
+4.6.2                    todo         - -
+# 4.6.2.1, Character sets
+4.6.2.1                  todo         - -
+# 4.6.2.2, Collations
+4.6.2.2                  todo         - -
+# 4.6.2.3, Transliterations
+4.6.2.3                  todo         - -
+# 4.6.3, Domains and their components
+4.6.3                    todo         - -
+# 4.6.3.1, Domains
+4.6.3.1                  todo         - -
+# 4.6.3.2, Domain constraints
+4.6.3.2                  todo         - -
+# 4.6.4, User-defined types
+4.6.4                    todo         - -
+# 4.6.4.1, Structured types
+4.6.4.1                  todo         - -
+# 4.6.4.2, Attributes
+4.6.4.2                  todo         - -
+# 4.6.5, Distinct types
+4.6.5                    todo         - -
+# 4.6.6, Base tables and their components
+4.6.6                    todo         - -
+# 4.6.6.1, Base tables
+4.6.6.1                  todo         - -
+# 4.6.6.2, Columns
+4.6.6.2                  todo         - -
+# 4.6.6.3, Table constraints
+4.6.6.3                  todo         - -
+# 4.6.6.4, Triggers
+4.6.6.4                  todo         - -
+# 4.6.7, View definitions
+4.6.7                    todo         - -
+# 4.6.8, Assertions
+4.6.8                    todo         - -
+# 4.6.9, SQL-server modules (defined in ISO/IEC 9075-4, SQL/PSM)
+4.6.9                    todo         - -
+# 4.6.10, Schema routines
+4.6.10                   todo         - -
+# 4.6.11, Sequence generators
+4.6.11                   todo         - -
+# 4.6.12, Privileges
+4.6.12                   todo         - -
+# 4.6.13, Roles
+4.6.13                   todo         - -

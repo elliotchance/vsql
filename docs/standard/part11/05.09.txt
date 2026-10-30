@@ -1,0 +1,5 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.9, APPLICABLE_ROLES view
+5.9                      todo         - -
+5.9/CR/1                 todo         - -

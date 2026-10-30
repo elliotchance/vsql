@@ -1,0 +1,25 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.43, <multiset value expression>
+6.43                     todo         - -
+6.43/SR/1                todo         - -
+6.43/SR/2                todo         - -
+6.43/SR/2.a              todo         - -
+6.43/SR/2.b              todo         - -
+6.43/SR/2.c              todo         - -
+6.43/SR/2.d              todo         - -
+6.43/SR/3                todo         - -
+6.43/SR/3.a              todo         - -
+6.43/SR/3.b              todo         - -
+6.43/SR/3.c              todo         - -
+6.43/SR/3.d              todo         - -
+6.43/SR/4                todo         - -
+6.43/SR/4.a              todo         - -
+6.43/SR/4.b              todo         - -
+6.43/SR/4.c              todo         - -
+6.43/SR/4.d              todo         - -
+6.43/GR/1                todo         - -
+6.43/GR/2                todo         - -
+6.43/GR/3                todo         - -
+6.43/CR/1                todo         - -
+6.43/CR/2                todo         - -

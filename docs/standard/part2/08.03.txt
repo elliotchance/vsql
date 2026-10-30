@@ -1,0 +1,12 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 8.3, <between predicate>
+8.3                      todo         - -
+8.3/SR/1                 todo         - -
+8.3/SR/2                 todo         - -
+8.3/SR/3                 todo         - -
+8.3/SR/4                 todo         - -
+8.3/SR/5                 todo         - -
+8.3/SR/6                 todo         - -
+8.3/SR/7                 todo         - -
+8.3/CR/1                 todo         - -

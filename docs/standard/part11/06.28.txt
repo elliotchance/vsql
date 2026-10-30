@@ -1,0 +1,10 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.28, KEY_COLUMN_USAGE base table
+6.28                     todo         - -
+6.28/DE/1                todo         - -
+6.28/DE/2                todo         - -
+6.28/DE/3                todo         - -
+6.28/DE/4                container    - -
+6.28/DE/4.a              todo         - -
+6.28/DE/4.b              todo         - -

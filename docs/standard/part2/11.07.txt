@@ -1,0 +1,35 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.7, <unique constraint definition>
+11.7                     todo         - -
+11.7/SR/1                todo         - -
+11.7/SR/2                todo         - -
+11.7/SR/3                todo         - -
+11.7/SR/3.a              todo         - -
+11.7/SR/3.b              todo         - -
+11.7/SR/4                container    - -
+11.7/SR/4.a              todo         - -
+11.7/SR/4.b              todo         - -
+11.7/SR/5                todo         - -
+11.7/SR/5.a              todo         - -
+11.7/SR/5.b              todo         - -
+11.7/SR/5.c              todo         - -
+11.7/SR/5.d              container    - -
+11.7/SR/5.d.i            todo         - -
+11.7/SR/5.d.ii           todo         - -
+11.7/SR/5.e              container    - -
+11.7/SR/5.e.i            todo         - -
+11.7/SR/5.e.ii           todo         - -
+11.7/SR/6                todo         - -
+11.7/SR/7                todo         - -
+11.7/SR/8                todo         - -
+11.7/SR/9                todo         - -
+11.7/GR/1                todo         - -
+11.7/GR/2                todo         - -
+11.7/GR/2.a              todo         - -
+11.7/GR/2.b              todo         - -
+11.7/GR/2.c              todo         - -
+11.7/GR/3                todo         - -
+11.7/CR/1                todo         - -
+11.7/CR/2                todo         - -
+11.7/CR/3                todo         - -

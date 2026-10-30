@@ -461,7 +461,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 // A string without a closing quote is a syntax error. The last value is true if
 // the string had more than one part (a compound literal).
 //
-// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules 1, 2 and 7
+// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules, 1, 2 and 7
 fn read_string_literal(cs []rune, start int) !(string, int, bool) {
 	mut word := ''
 	mut i := start + 1

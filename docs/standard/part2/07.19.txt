@@ -1,0 +1,20 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 7.19, <subquery>
+7.19                     todo         - -
+7.19/SR/1                todo         - -
+7.19/SR/2                todo         - -
+7.19/SR/3                todo         - -
+7.19/SR/4                todo         - -
+7.19/SR/5                todo         - -
+7.19/SR/6                todo         - -
+7.19/SR/7                todo         - -
+7.19/GR/1                todo         - -
+7.19/GR/2                todo         - -
+7.19/GR/2.a              todo         - -
+7.19/GR/2.b              todo         - -
+7.19/GR/2.c              todo         - -
+7.19/GR/3                todo         - -
+7.19/GR/3.a              todo         - -
+7.19/GR/3.b              todo         - -
+7.19/GR/3.c              todo         - -

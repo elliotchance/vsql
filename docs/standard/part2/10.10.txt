@@ -1,0 +1,29 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 10.10, <sort specification list>
+10.10                    todo         - -
+10.10/SR/1               todo         - -
+10.10/SR/2               todo         - -
+10.10/SR/3               todo         - -
+10.10/GR/1               todo         - -
+10.10/GR/1.a             todo         - -
+10.10/GR/1.b             todo         - -
+10.10/GR/1.c             todo         - -
+10.10/GR/1.d             todo         - -
+10.10/GR/1.e             todo         - -
+10.10/GR/1.e.i           todo         - -
+10.10/GR/1.e.i.1         todo         - -
+10.10/GR/1.e.i.2         todo         - -
+10.10/GR/1.e.ii          todo         - -
+10.10/GR/1.e.ii.1        todo         - -
+10.10/GR/1.e.ii.2        todo         - -
+10.10/GR/1.e.ii.2.A      todo         - -
+10.10/GR/1.e.ii.2.B      todo         - -
+10.10/GR/1.e.ii.3        todo         - -
+10.10/GR/1.e.ii.3.A      todo         - -
+10.10/GR/1.e.ii.3.B      todo         - -
+10.10/GR/1.f             todo         - -
+10.10/GR/1.g             todo         - -
+10.10/GR/1.h             todo         - -
+10.10/GR/1.i             todo         - -
+10.10/CR/1               todo         - -

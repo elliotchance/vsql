@@ -1,0 +1,26 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.28, GetConnectAttr
+6.28                     todo         - -
+6.28/GR/1                container    - -
+6.28/GR/1.a              todo         - -
+6.28/GR/1.b              container    - -
+6.28/GR/1.b.i            todo         - -
+6.28/GR/1.b.ii           todo         - -
+6.28/GR/2                todo         - -
+6.28/GR/3                todo         - -
+6.28/GR/4                todo         - -
+6.28/GR/4.a              todo         - -
+6.28/GR/4.b              container    - -
+6.28/GR/4.b.i            todo         - -
+6.28/GR/4.b.ii           todo         - -
+6.28/GR/5                todo         - -
+6.28/GR/5.a              todo         - -
+6.28/GR/5.b              todo         - -
+6.28/GR/5.c              todo         - -
+6.28/GR/6                todo         - -
+6.28/GR/6.a              todo         - -
+6.28/GR/6.b              container    - -
+6.28/GR/6.b.i            todo         - -
+6.28/GR/6.b.ii           todo         - -
+6.28/GR/6.b.iii          todo         - -

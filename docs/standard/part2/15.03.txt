@@ -1,0 +1,34 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 15.3, Determination of the current row of a cursor
+15.3                     todo         - -
+15.3/GR/1                todo         - -
+15.3/GR/2                todo         - -
+15.3/GR/3                todo         - -
+15.3/GR/4                todo         - -
+15.3/GR/5                container    - -
+15.3/GR/5.a              todo         - -
+15.3/GR/5.b              todo         - -
+15.3/GR/5.c              todo         - -
+15.3/GR/6                todo         - -
+15.3/GR/7                todo         - -
+15.3/GR/7.a              todo         - -
+15.3/GR/7.b              todo         - -
+15.3/GR/7.b.i            todo         - -
+15.3/GR/7.b.ii           todo         - -
+15.3/GR/7.b.iii          todo         - -
+15.3/GR/7.c              todo         - -
+15.3/GR/7.c.i            todo         - -
+15.3/GR/7.c.ii           todo         - -
+15.3/GR/7.c.iii          todo         - -
+15.3/GR/7.c.iv           todo         - -
+15.3/GR/7.d              todo         - -
+15.3/GR/7.d.i            todo         - -
+15.3/GR/7.d.ii           todo         - -
+15.3/GR/8                todo         - -
+15.3/GR/9                container    - -
+15.3/GR/9.a              todo         - -
+15.3/GR/9.b              todo         - -
+15.3/GR/9.b.i            todo         - -
+15.3/GR/9.b.ii           todo         - -
+15.3/GR/9.b.iii          todo         - -

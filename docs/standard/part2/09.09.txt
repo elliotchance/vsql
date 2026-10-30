@@ -1,0 +1,27 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.9, Type name determination
+9.9                      todo         - -
+9.9/SR/1                 todo         - -
+9.9/SR/2                 todo         - -
+9.9/SR/2.a               todo         - -
+9.9/SR/2.b               todo         - -
+9.9/SR/2.c               todo         - -
+9.9/SR/2.d               todo         - -
+9.9/SR/2.e               todo         - -
+9.9/SR/2.f               todo         - -
+9.9/SR/2.g               todo         - -
+9.9/SR/2.h               todo         - -
+9.9/SR/2.i               todo         - -
+9.9/SR/2.j               todo         - -
+9.9/SR/2.k               todo         - -
+9.9/SR/2.l               todo         - -
+9.9/SR/2.m               todo         - -
+9.9/SR/2.n               todo         - -
+9.9/SR/2.o               todo         - -
+9.9/SR/2.p               todo         - -
+9.9/SR/2.q               todo         - -
+9.9/SR/2.r               todo         - -
+9.9/SR/2.s               todo         - -
+9.9/SR/2.t               todo         - -
+9.9/SR/2.u               todo         - -

@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.43, ROLE_UDT_GRANTS view
+5.43                     todo         - -
+5.43/CR/1                todo         - -
+5.43/CR/2                todo         - -

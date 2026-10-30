@@ -1,0 +1,19 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 10.5, <character set specification>
+10.5                     todo         - -
+10.5/SR/1                todo         - -
+10.5/SR/2                todo         - -
+10.5/SR/3                todo         - -
+10.5/SR/4                todo         - -
+10.5/SR/5                todo         - -
+10.5/SR/6                todo         - -
+10.5/AR/1                todo         - -
+10.5/AR/1.a              todo         - -
+10.5/AR/1.b              todo         - -
+10.5/GR/1                todo         - -
+10.5/GR/2                todo         - -
+10.5/GR/3                todo         - -
+10.5/GR/4                todo         - -
+10.5/GR/5                todo         - -
+10.5/CR/1                todo         - -

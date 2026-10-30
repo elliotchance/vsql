@@ -1,0 +1,25 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.54, <add attribute definition>
+11.54                    todo         - -
+11.54/SR/1               todo         - -
+11.54/SR/2               todo         - -
+11.54/SR/3               todo         - -
+11.54/SR/4               todo         - -
+11.54/SR/5               todo         - -
+11.54/SR/6               todo         - -
+11.54/SR/6.a             todo         - -
+11.54/SR/6.b             todo         - -
+11.54/SR/6.c             todo         - -
+11.54/SR/6.d             todo         - -
+11.54/SR/7               todo         - -
+11.54/SR/7.a             todo         - -
+11.54/SR/7.b             todo         - -
+11.54/SR/7.c             todo         - -
+11.54/GR/1               todo         - -
+11.54/GR/2               todo         - -
+11.54/GR/3               todo         - -
+11.54/GR/4               todo         - -
+11.54/GR/4.a             todo         - -
+11.54/GR/4.b             todo         - -
+11.54/GR/4.c             todo         - -

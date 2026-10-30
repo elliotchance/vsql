@@ -1,0 +1,16 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 10.14, <JSON API common syntax>
+10.14                    todo         - -
+10.14/SR/1               todo         - -
+10.14/SR/2               container    - -
+10.14/SR/2.a             todo         - -
+10.14/SR/2.b             todo         - -
+10.14/SR/3               todo         - -
+10.14/SR/4               todo         - -
+10.14/SR/5               todo         - -
+10.14/GR/1               todo         - -
+10.14/GR/2               todo         - -
+10.14/GR/3               todo         - -
+10.14/GR/4               todo         - -
+10.14/CR/1               todo         - -

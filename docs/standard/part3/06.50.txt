@@ -1,0 +1,32 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.50, Prepare
+6.50                     todo         - -
+6.50/GR/1                todo         - -
+6.50/GR/2                todo         - -
+6.50/GR/3                todo         - -
+6.50/GR/4                container    - -
+6.50/GR/4.a              todo         - -
+6.50/GR/4.b              todo         - -
+6.50/GR/4.c              todo         - -
+6.50/GR/5                container    - -
+6.50/GR/5.a              todo         - -
+6.50/GR/5.b              todo         - -
+6.50/GR/6                todo         - -
+6.50/GR/7                todo         - -
+6.50/GR/7.a              todo         - -
+6.50/GR/7.b              todo         - -
+6.50/GR/7.c              todo         - -
+6.50/GR/8                todo         - -
+6.50/GR/9                todo         - -
+6.50/GR/10               todo         - -
+6.50/GR/10.a             todo         - -
+6.50/GR/10.b             todo         - -
+6.50/GR/10.c             todo         - -
+6.50/GR/10.d             todo         - -
+6.50/GR/11               todo         - -
+6.50/GR/12               todo         - -
+6.50/GR/12.a             todo         - -
+6.50/GR/12.b             todo         - -
+6.50/GR/13               todo         - -
+6.50/GR/14               todo         - -

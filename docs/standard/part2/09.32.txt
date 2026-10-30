@@ -1,0 +1,13 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.32, Generation of the hierarchical <query expression> of a view
+9.32                     todo         - -
+9.32/GR/1                todo         - -
+9.32/GR/2                todo         - -
+9.32/GR/3                container    - -
+9.32/GR/3.a              todo         - -
+9.32/GR/3.b              container    - -
+9.32/GR/3.b.i            todo         - -
+9.32/GR/3.b.ii           todo         - -
+9.32/GR/3.b.iii          todo         - -
+9.32/GR/4                todo         - -

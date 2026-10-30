@@ -1,0 +1,22 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.16, <subtype treatment>
+6.16                     todo         - -
+6.16/SR/1                todo         - -
+6.16/SR/2                container    - -
+6.16/SR/2.a              todo         - -
+6.16/SR/2.a.i            todo         - -
+6.16/SR/2.a.ii           todo         - -
+6.16/SR/2.b              container    - -
+6.16/SR/2.b.i            todo         - -
+6.16/SR/2.b.ii           todo         - -
+6.16/SR/3                todo         - -
+6.16/SR/4                todo         - -
+6.16/GR/1                todo         - -
+6.16/GR/2                container    - -
+6.16/GR/2.a              todo         - -
+6.16/GR/2.b              container    - -
+6.16/GR/2.b.i            todo         - -
+6.16/GR/2.b.ii           todo         - -
+6.16/CR/1                todo         - -
+6.16/CR/2                todo         - -

@@ -1,0 +1,4 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 24.2, Remote Database Access SQLSTATE Subclasses
+24.2                     todo         - -

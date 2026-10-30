@@ -1,0 +1,23 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 20.25, <preparable dynamic delete statement: positioned>
+20.25                    todo         - -
+20.25/SR/1               todo         - -
+20.25/SR/2               todo         - -
+20.25/SR/2.a             todo         - -
+20.25/SR/2.b             todo         - -
+20.25/SR/2.c             container    - -
+20.25/SR/2.c.i           todo         - -
+20.25/SR/2.c.i.1         todo         - -
+20.25/SR/2.c.i.2         todo         - -
+20.25/SR/2.c.ii          todo         - -
+20.25/SR/2.d             todo         - -
+20.25/SR/2.e             todo         - -
+20.25/SR/2.f             todo         - -
+20.25/SR/2.g             todo         - -
+20.25/SR/2.h             todo         - -
+20.25/AR/1               todo         - -
+20.25/AR/1.a             todo         - -
+20.25/AR/1.b             todo         - -
+20.25/GR/1               todo         - -
+20.25/CR/1               todo         - -

@@ -1,0 +1,14 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 19.3, <set role statement>
+19.3                     todo         - -
+19.3/SR/1                todo         - -
+19.3/GR/1                todo         - -
+19.3/GR/2                todo         - -
+19.3/GR/3                todo         - -
+19.3/GR/3.a              todo         - -
+19.3/GR/3.b              todo         - -
+19.3/GR/3.c              todo         - -
+19.3/GR/3.d              todo         - -
+19.3/GR/4                todo         - -
+19.3/CR/1                todo         - -

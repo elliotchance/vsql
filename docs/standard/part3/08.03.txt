@@ -1,0 +1,4 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 8.3, Implied feature relationships of SQL/CLI
+8.3                      todo         - -

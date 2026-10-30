@@ -1,0 +1,27 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 20.27, <preparable dynamic update statement: positioned>
+20.27                    todo         - -
+20.27/SR/1               todo         - -
+20.27/SR/2               todo         - -
+20.27/SR/2.a             todo         - -
+20.27/SR/2.b             todo         - -
+20.27/SR/2.c             container    - -
+20.27/SR/2.c.i           todo         - -
+20.27/SR/2.c.i.1         todo         - -
+20.27/SR/2.c.i.2         todo         - -
+20.27/SR/2.c.ii          todo         - -
+20.27/SR/2.d             todo         - -
+20.27/SR/2.e             todo         - -
+20.27/SR/2.f             todo         - -
+20.27/SR/2.g             todo         - -
+20.27/SR/2.h             todo         - -
+20.27/SR/2.i             todo         - -
+20.27/SR/2.j             todo         - -
+20.27/SR/2.k             todo         - -
+20.27/SR/2.l             todo         - -
+20.27/AR/1               todo         - -
+20.27/AR/1.a             todo         - -
+20.27/AR/1.b             todo         - -
+20.27/GR/1               todo         - -
+20.27/CR/1               todo         - -

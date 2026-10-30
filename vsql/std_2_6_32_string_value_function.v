@@ -103,7 +103,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 			}
 
 			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General
-			// Rules, 3d
+			// Rules, 3.d
 			if value.is_null || from_value.is_null || for_value.is_null {
 				return new_null_value(.is_varchar).with_type(typ)
 			}
@@ -233,7 +233,7 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 13
 	typ := varying_string_type('TRIM', compiled_source.typ)!
 
-	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 13c
+	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 13.c
 	if !compiled_character.typ.typ.is_string() {
 		return sqlstate_42883('function does not exist: TRIM(${compiled_character.typ} FROM ${compiled_source.typ})')
 	}
@@ -244,13 +244,13 @@ fn (e TrimFunction) compile(mut c Compiler) !CompileResult {
 			character := compiled_character.run(mut conn, data, params)!
 
 			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General
-			// Rules, 11c
+			// Rules, 11.c
 			if source.is_null || character.is_null {
 				return new_null_value(.is_varchar).with_type(typ)
 			}
 
 			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General
-			// Rules, 11d
+			// Rules, 11.d
 			trim_character := character.string_value().runes()
 			if trim_character.len != 1 {
 				return sqlstate_22027()

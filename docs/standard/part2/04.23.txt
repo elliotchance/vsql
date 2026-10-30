@@ -1,0 +1,22 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.23, Integrity constraints
+4.23                     todo         - -
+# 4.23.1, Overview of integrity constraints
+4.23.1                   todo         - -
+# 4.23.2, Checking of constraints
+4.23.2                   todo         - -
+# 4.23.3, Table constraints
+4.23.3                   todo         - -
+# 4.23.3.1, Introduction to table constraints
+4.23.3.1                 todo         - -
+# 4.23.3.2, Unique constraints
+4.23.3.2                 todo         - -
+# 4.23.3.3, Referential constraints
+4.23.3.3                 todo         - -
+# 4.23.3.4, Table check constraints
+4.23.3.4                 todo         - -
+# 4.23.4, Domain constraints
+4.23.4                   todo         - -
+# 4.23.5, Assertions
+4.23.5                   todo         - -

@@ -1,0 +1,22 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.44, <drop collation statement>
+11.44                    todo         - -
+11.44/SR/1               todo         - -
+11.44/SR/2               todo         - -
+11.44/SR/3               todo         - -
+11.44/SR/4               todo         - -
+11.44/SR/4.a             todo         - -
+11.44/SR/4.b             todo         - -
+11.44/SR/4.c             todo         - -
+11.44/SR/4.d             todo         - -
+11.44/SR/4.e             todo         - -
+11.44/SR/4.f             todo         - -
+11.44/SR/5               todo         - -
+11.44/SR/6               todo         - -
+11.44/AR/1               todo         - -
+11.44/GR/1               todo         - -
+11.44/GR/2               todo         - -
+11.44/GR/3               todo         - -
+11.44/GR/4               todo         - -
+11.44/CR/1               todo         - -

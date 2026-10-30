@@ -1,0 +1,8 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.27, Determination of a to-sql function
+9.27                     todo         - -
+9.27/SR/1                todo         - -
+9.27/SR/2                todo         - -
+9.27/SR/3                todo         - -
+9.27/SR/4                todo         - -

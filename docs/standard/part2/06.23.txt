@@ -1,0 +1,14 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.23, <reference resolution>
+6.23                     todo         - -
+6.23/SR/1                todo         - -
+6.23/SR/2                todo         - -
+6.23/SR/3                todo         - -
+6.23/SR/4                todo         - -
+6.23/SR/5                todo         - -
+6.23/AR/1                container    - -
+6.23/AR/1.a              todo         - -
+6.23/AR/1.b              todo         - -
+6.23/GR/1                todo         - -
+6.23/CR/1                todo         - -

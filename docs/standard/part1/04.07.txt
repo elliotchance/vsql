@@ -1,0 +1,8 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.7, Integrity constraints and constraint checking
+4.7                      todo         - -
+# 4.7.1, Constraint checking
+4.7.1                    todo         - -
+# 4.7.2, Determinism and constraints
+4.7.2                    todo         - -

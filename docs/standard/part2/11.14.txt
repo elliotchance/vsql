@@ -1,0 +1,8 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.14, <drop column default clause>
+11.14                    todo         - -
+11.14/SR/1               todo         - -
+11.14/SR/2               todo         - -
+11.14/GR/1               todo         - -
+11.14/CR/1               todo         - -

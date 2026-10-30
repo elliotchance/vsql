@@ -1,0 +1,26 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.23, <drop column definition>
+11.23                    todo         - -
+11.23/SR/1               todo         - -
+11.23/SR/2               todo         - -
+11.23/SR/3               todo         - -
+11.23/SR/4               todo         - -
+11.23/SR/5               todo         - -
+11.23/SR/6               todo         - -
+11.23/SR/7               todo         - -
+11.23/SR/7.a             todo         - -
+11.23/SR/7.b             todo         - -
+11.23/SR/7.c             todo         - -
+11.23/SR/7.d             todo         - -
+11.23/SR/7.e             todo         - -
+11.23/SR/7.f             todo         - -
+11.23/GR/1               todo         - -
+11.23/GR/2               todo         - -
+11.23/GR/3               todo         - -
+11.23/GR/4               todo         - -
+11.23/GR/5               todo         - -
+11.23/GR/6               todo         - -
+11.23/GR/7               todo         - -
+11.23/GR/8               todo         - -
+11.23/CR/1               todo         - -

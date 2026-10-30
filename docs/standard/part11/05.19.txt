@@ -1,0 +1,5 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.19, COLUMN_PRIVILEGES view
+5.19                     todo         - -
+5.19/CR/1                todo         - -

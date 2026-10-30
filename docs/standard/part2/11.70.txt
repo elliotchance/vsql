@@ -1,0 +1,19 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.70, <drop transform element list>
+11.70                    todo         - -
+11.70/SR/1               todo         - -
+11.70/SR/2               todo         - -
+11.70/SR/3               todo         - -
+11.70/SR/4               todo         - -
+11.70/SR/5               todo         - -
+11.70/SR/6               todo         - -
+11.70/SR/6.a             todo         - -
+11.70/SR/6.b             todo         - -
+11.70/GR/1               todo         - -
+11.70/GR/1.a             todo         - -
+11.70/GR/1.b             todo         - -
+11.70/GR/2               todo         - -
+11.70/GR/2.a             todo         - -
+11.70/GR/2.b             todo         - -
+11.70/GR/2.c             todo         - -

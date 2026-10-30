@@ -1,0 +1,25 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.21, DATA_TYPE_DESCRIPTOR base table
+6.21                     todo         - -
+6.21/DE/1                todo         - -
+6.21/DE/2                todo         - -
+6.21/DE/3                todo         - -
+6.21/DE/4                todo         - -
+6.21/DE/4.a              todo         - -
+6.21/DE/4.b              todo         - -
+6.21/DE/4.c              todo         - -
+6.21/DE/4.d              todo         - -
+6.21/DE/5                todo         - -
+6.21/DE/6                todo         - -
+6.21/DE/7                todo         - -
+6.21/DE/8                todo         - -
+6.21/DE/9                todo         - -
+6.21/DE/10               container    - -
+6.21/DE/10.a             todo         - -
+6.21/DE/10.b             todo         - -
+6.21/DE/10.c             todo         - -
+6.21/DE/11               todo         - -
+6.21/DE/12               todo         - -
+6.21/DE/13               todo         - -
+6.21/DE/14               todo         - -

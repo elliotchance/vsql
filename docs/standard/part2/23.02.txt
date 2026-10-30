@@ -1,0 +1,10 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 23.2, Pushing and popping the diagnostics area stack
+23.2                     todo         - -
+23.2/GR/1                todo         - -
+23.2/GR/2                container    - -
+23.2/GR/2.a              todo         - -
+23.2/GR/2.a.i            todo         - -
+23.2/GR/2.a.ii           todo         - -
+23.2/GR/2.b              todo         - -

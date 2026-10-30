@@ -1,0 +1,8 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.14, Periods
+4.14                     todo         - -
+# 4.14.1, Introduction to periods
+4.14.1                   todo         - -
+# 4.14.2, Operations involving periods
+4.14.2                   todo         - -

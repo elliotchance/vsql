@@ -365,7 +365,7 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 		return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
 	}
 
-	// ISO/IEC 9075-2:2016(E), 7.6, <table reference>, Syntax Rule 11b
+	// ISO/IEC 9075-2:2016(E), 7.6, <table reference>, Syntax Rules, 11.b
 	mut seen := map[string]bool{}
 	for column in correlation_columns {
 		if column.sub_entity_name in seen {
@@ -416,7 +416,7 @@ fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Valu
 
 		// An aggregate function of an outer query (which is a value here) is allowed.
 		//
-		// ISO/IEC 9075-2:2016(E), 7.12, <where clause>, Syntax Rule 1
+		// ISO/IEC 9075-2:2016(E), 7.12, <where clause>, Syntax Rules, 1
 		if where.compile(mut c)!.contains_agg {
 			return sqlstate_42601('an aggregate function cannot be used in WHERE')
 		}

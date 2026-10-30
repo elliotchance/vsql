@@ -18,7 +18,7 @@ fn (stmt DeleteStatementPositioned) execute(mut conn Connection, params map[stri
 		current_of: cursor
 	}.execute(mut conn, params, elapsed_parse)!
 
-	// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rule
+	// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules,
 	// 13
 	cursor.on_row = false
 

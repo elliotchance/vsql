@@ -1,0 +1,30 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 10.6, <specific routine designator>
+10.6                     todo         - -
+10.6/SR/1                todo         - -
+10.6/SR/2                todo         - -
+10.6/SR/3                todo         - -
+10.6/SR/3.a              todo         - -
+10.6/SR/3.b              container    - -
+10.6/SR/3.b.i            todo         - -
+10.6/SR/3.b.ii           todo         - -
+10.6/SR/3.c              container    - -
+10.6/SR/3.c.i            todo         - -
+10.6/SR/3.c.i.1          todo         - -
+10.6/SR/3.c.i.2          todo         - -
+10.6/SR/3.c.i.3          todo         - -
+10.6/SR/3.c.i.3.A        todo         - -
+10.6/SR/3.c.i.3.B        todo         - -
+10.6/SR/3.c.i.3.C        todo         - -
+10.6/SR/3.c.i.4          todo         - -
+10.6/SR/3.c.ii           todo         - -
+10.6/SR/3.c.ii.1         todo         - -
+10.6/SR/3.c.ii.2         todo         - -
+10.6/SR/3.c.ii.3         todo         - -
+10.6/SR/3.c.ii.3.A       todo         - -
+10.6/SR/3.c.ii.3.B       todo         - -
+10.6/SR/3.c.ii.3.C       todo         - -
+10.6/SR/3.c.ii.4         todo         - -
+10.6/SR/4                todo         - -
+10.6/CR/1                todo         - -

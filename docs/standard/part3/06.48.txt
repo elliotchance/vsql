@@ -1,0 +1,9 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.48, NumResultCols
+6.48                     todo         - -
+6.48/GR/1                todo         - -
+6.48/GR/2                container    - -
+6.48/GR/2.a              todo         - -
+6.48/GR/2.b              todo         - -
+6.48/GR/3                todo         - -

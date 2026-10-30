@@ -1,0 +1,27 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.69, <add transform element list>
+11.69                    todo         - -
+11.69/SR/1               todo         - -
+11.69/SR/2               todo         - -
+11.69/SR/3               todo         - -
+11.69/SR/4               todo         - -
+11.69/SR/5               todo         - -
+11.69/SR/6               todo         - -
+11.69/SR/7               todo         - -
+11.69/SR/8               todo         - -
+11.69/SR/8.a             container    - -
+11.69/SR/8.a.i           todo         - -
+11.69/SR/8.a.ii          todo         - -
+11.69/SR/8.b             todo         - -
+11.69/SR/8.c             todo         - -
+11.69/SR/8.c.i           todo         - -
+11.69/SR/8.c.ii          todo         - -
+11.69/SR/9               todo         - -
+11.69/SR/9.a             todo         - -
+11.69/SR/9.b             todo         - -
+11.69/SR/9.b.i           todo         - -
+11.69/SR/9.b.ii          todo         - -
+11.69/AR/1               todo         - -
+11.69/GR/1               todo         - -
+11.69/GR/2               todo         - -

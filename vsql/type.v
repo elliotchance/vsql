@@ -135,7 +135,7 @@ fn (t SQLType) supertype() (i16, i16) {
 }
 
 // exact_arithmetic_type is the type of the result of +, - or * with two exact
-// numeric operands (ISO/IEC 9075-2:2016(E), 6.29, Syntax Rule 1c). The scale is
+// numeric operands (ISO/IEC 9075-2:2016(E), 6.29, Syntax Rules, 1.c). The scale is
 // max(S1, S2) for + and -, and S1 + S2 for *. The precision is
 // implementation-defined, so it's large enough to hold any result, up to the
 // maximum precision. It's 0 (the maximum) if either precision is unknown.

@@ -1,0 +1,12 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.21, <drop identity property clause>
+11.21                    todo         - -
+11.21/GR/1               todo         - -
+11.21/GR/2               todo         - -
+11.21/GR/2.a             todo         - -
+11.21/GR/2.b             todo         - -
+11.21/GR/2.c             todo         - -
+11.21/GR/2.d             todo         - -
+11.21/GR/3               todo         - -
+11.21/CR/1               todo         - -

@@ -1,6 +1,6 @@
 module vsql
 
-// ISO/IEC 9075-1:2016(E), 8.5, SQL flagger
+// ISO/IEC 9075-1:2003(E), 8.5, SQL flagger
 //
 // An SQL Flagger identifies SQL language that isn't Core SQL, so that it can be
 // moved to another SQL-implementation. vsql provides "Core SQL Flagging" with
@@ -11,10 +11,10 @@ module vsql
 // The features are recorded by the grammar actions (see flag) of the language
 // that each Conformance Rule of ISO/IEC 9075-2 doesn't allow without a
 // feature. An implementation-defined feature (an extension that only vsql has)
-// has a Feature ID whose letter is "V" (see ISO/IEC 9075-1, 6.3.7, "Feature ID
-// and Feature Name"). It's VXXX-YY, where VXXX is a concept (of the standard,
-// such as tables, or one that only vsql has, such as EXPLAIN) and YY is each
-// extension of it.
+// has a Feature ID whose letter is "V" (see ISO/IEC 9075-1:2003(E), 6.3.7,
+// Feature ID and Feature Name). It's VXXX-YY, where VXXX is a concept (of the
+// standard, such as tables, or one that only vsql has, such as EXPLAIN) and YY
+// is each extension of it.
 
 // The implementation-defined features, which are also listed in the SQL
 // Flagging docs.
@@ -131,7 +131,7 @@ fn flag_query_expression(mut yylex YYLexer, e QueryExpression, context QueryCont
 }
 
 // flag_updatability_clause flags a FOR UPDATE of a query with an ORDER BY
-// (ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Conformance Rule 1).
+// (ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Conformance Rules, 1).
 fn flag_updatability_clause(mut yylex YYLexer, e QueryExpression, updatability UpdatabilityClause) {
 	flag_if(mut yylex, updatability.for_update && e.order.len > 0, 'F831')
 }

@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.36, REFERENCED_TYPES view
+5.36                     todo         - -
+5.36/CR/1                todo         - -
+5.36/CR/2                todo         - -

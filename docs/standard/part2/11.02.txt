@@ -1,0 +1,24 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.2, <drop schema statement>
+11.2                     todo         - -
+11.2/SR/1                todo         - -
+11.2/SR/2                todo         - -
+11.2/SR/3                todo         - -
+11.2/SR/4                todo         - -
+11.2/AR/1                todo         - -
+11.2/GR/1                todo         - -
+11.2/GR/2                todo         - -
+11.2/GR/3                todo         - -
+11.2/GR/4                todo         - -
+11.2/GR/5                todo         - -
+11.2/GR/6                todo         - -
+11.2/GR/7                todo         - -
+11.2/GR/8                todo         - -
+11.2/GR/9                todo         - -
+11.2/GR/10               todo         - -
+11.2/GR/11               todo         - -
+11.2/GR/12               todo         - -
+11.2/GR/13               todo         - -
+11.2/CR/1                todo         - -
+11.2/CR/2                todo         - -

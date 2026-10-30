@@ -1,0 +1,7 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.2, INFORMATION_SCHEMA_CATALOG_NAME base table
+5.2                      todo         - -
+5.2/DE/1                 todo         - -
+5.2/CR/1                 todo         - -
+5.2/CR/2                 todo         - -

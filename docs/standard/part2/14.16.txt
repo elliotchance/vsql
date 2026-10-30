@@ -1,0 +1,23 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 14.16, <temporary table declaration>
+14.16                    todo         - -
+14.16/SR/1               todo         - -
+14.16/SR/2               todo         - -
+14.16/SR/3               container    - -
+14.16/SR/3.a             todo         - -
+14.16/SR/3.b             todo         - -
+14.16/SR/4               todo         - -
+14.16/SR/5               todo         - -
+14.16/SR/6               todo         - -
+14.16/SR/7               todo         - -
+14.16/SR/8               todo         - -
+14.16/GR/1               todo         - -
+14.16/GR/2               todo         - -
+14.16/GR/2.a             todo         - -
+14.16/GR/2.b             todo         - -
+14.16/GR/3               todo         - -
+14.16/GR/4               todo         - -
+14.16/GR/5               todo         - -
+14.16/GR/6               todo         - -
+14.16/CR/1               todo         - -

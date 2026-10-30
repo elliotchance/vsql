@@ -1,0 +1,21 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 15.11, Effect of inserting a table into a derived table
+15.11                    todo         - -
+15.11/GR/1               todo         - -
+15.11/GR/2               todo         - -
+15.11/GR/2.a             todo         - -
+15.11/GR/2.b             todo         - -
+15.11/GR/2.b.i           container    - -
+15.11/GR/2.b.i.1         todo         - -
+15.11/GR/2.b.i.2         todo         - -
+15.11/GR/2.b.ii          todo         - -
+15.11/GR/2.b.iii         todo         - -
+15.11/GR/2.b.iii.1       todo         - -
+15.11/GR/2.b.iii.2       todo         - -
+15.11/GR/2.b.iii.3       todo         - -
+15.11/GR/2.b.iv          todo         - -
+15.11/GR/2.b.iv.1        todo         - -
+15.11/GR/2.b.iv.2        todo         - -
+15.11/GR/2.b.iv.3        todo         - -
+15.11/GR/2.b.v           todo         - -

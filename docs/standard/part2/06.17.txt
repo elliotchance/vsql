@@ -1,0 +1,21 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.17, <method invocation>
+6.17                     todo         - -
+6.17/SR/1                todo         - -
+6.17/SR/2                todo         - -
+6.17/SR/3                container    - -
+6.17/SR/3.a              todo         - -
+6.17/SR/3.b              todo         - -
+6.17/SR/4                container    - -
+6.17/SR/4.a              todo         - -
+6.17/SR/4.b              todo         - -
+6.17/SR/5                container    - -
+6.17/SR/5.a              todo         - -
+6.17/SR/5.b              todo         - -
+6.17/SR/5.b.i            todo         - -
+6.17/SR/5.b.ii           todo         - -
+6.17/SR/6                todo         - -
+6.17/GR/1                todo         - -
+6.17/GR/2                todo         - -
+6.17/CR/1                todo         - -

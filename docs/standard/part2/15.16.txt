@@ -1,0 +1,8 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 15.16, Execution of BEFORE triggers
+15.16                    todo         - -
+15.16/GR/1               todo         - -
+15.16/GR/2               todo         - -
+15.16/GR/3               todo         - -
+15.16/GR/4               todo         - -

@@ -1,0 +1,20 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.8, Host parameter mode determination
+9.8                      todo         - -
+9.8/SR/1                 todo         - -
+9.8/SR/2                 todo         - -
+9.8/SR/3                 todo         - -
+9.8/SR/3.a               todo         - -
+9.8/SR/3.b               todo         - -
+9.8/SR/3.b.i             todo         - -
+9.8/SR/3.b.i.1           todo         - -
+9.8/SR/3.b.i.2           todo         - -
+9.8/SR/3.b.i.3           container    - -
+9.8/SR/3.b.i.3.A         todo         - -
+9.8/SR/3.b.i.3.B         todo         - -
+9.8/SR/3.b.i.3.C         todo         - -
+9.8/SR/3.b.ii            todo         - -
+9.8/SR/3.b.iii           todo         - -
+9.8/SR/3.b.iv            todo         - -
+9.8/SR/3.b.v             todo         - -

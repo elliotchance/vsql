@@ -1,0 +1,18 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.11, <add column definition>
+11.11                    todo         - -
+11.11/SR/1               todo         - -
+11.11/SR/2               todo         - -
+11.11/SR/3               todo         - -
+11.11/SR/4               todo         - -
+11.11/GR/1               todo         - -
+11.11/GR/2               todo         - -
+11.11/GR/2.a             todo         - -
+11.11/GR/2.b             todo         - -
+11.11/GR/2.b.i           todo         - -
+11.11/GR/2.b.i.1         todo         - -
+11.11/GR/2.b.i.2         todo         - -
+11.11/GR/2.b.ii          todo         - -
+11.11/GR/3               todo         - -
+11.11/GR/4               todo         - -

@@ -533,7 +533,7 @@ fn (mut conn Connection) rollback_after_error() ! {
 // register_func adds a function, unless one with the same name and argument
 // types already exists. Only the arguments choose which function is called, so
 // the return type doesn't matter (ISO/IEC 9075-2:2016(E), 11.60, <SQL-invoked
-// routine>, Syntax Rule 20). CHARACTER arguments are CHARACTER VARYING, see
+// routine>, Syntax Rules, 20). CHARACTER arguments are CHARACTER VARYING, see
 // find_function.
 fn (mut conn Connection) register_func(func Func) ! {
 	for f in conn.funcs {

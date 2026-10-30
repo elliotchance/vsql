@@ -1,0 +1,5 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.45, ROUTINE_PRIVILEGES view
+5.45                     todo         - -
+5.45/CR/1                todo         - -

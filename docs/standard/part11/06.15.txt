@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.15, CHECK_TABLE_USAGE base table
+6.15                     todo         - -
+6.15/DE/1                todo         - -
+6.15/DE/2                todo         - -

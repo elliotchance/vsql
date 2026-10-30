@@ -54,7 +54,7 @@ fn condition_area_limit(mut conn Connection, params map[string]Value, modes []Tr
 }
 
 // initiate_transaction sets the condition area limit of an SQL-transaction
-// that is being initiated (ISO/IEC 9075-2:2016(E), 17.2, General Rule 7), which
+// that is being initiated (ISO/IEC 9075-2:2016(E), 17.2, General Rules, 7), which
 // is the <number of conditions> limit, or max_conditions if it's 0. The
 // characteristics of a SET TRANSACTION are only for the next SQL-transaction.
 fn (mut conn Connection) initiate_transaction(limit int) {

@@ -1,0 +1,27 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 14.13, <update statement: positioned>
+14.13                    todo         - -
+14.13/SR/1               todo         - -
+14.13/SR/2               todo         - -
+14.13/SR/3               todo         - -
+14.13/SR/4               todo         - -
+14.13/SR/5               todo         - -
+14.13/SR/6               todo         - -
+14.13/SR/7               todo         - -
+14.13/SR/8               todo         - -
+14.13/SR/9               todo         - -
+14.13/SR/10              todo         - -
+14.13/SR/11              container    - -
+14.13/SR/11.a            todo         - -
+14.13/SR/11.b            todo         - -
+14.13/SR/12              todo         - -
+14.13/SR/13              todo         - -
+14.13/SR/14              todo         - -
+14.13/AR/1               container    - -
+14.13/AR/1.a             todo         - -
+14.13/AR/1.b             todo         - -
+14.13/GR/1               todo         - -
+14.13/GR/2               todo         - -
+14.13/GR/3               todo         - -
+14.13/CR/1               todo         - -

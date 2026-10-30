@@ -1,0 +1,12 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.19, <new specification>
+6.19                     todo         - -
+6.19/SR/1                todo         - -
+6.19/SR/2                todo         - -
+6.19/SR/3                container    - -
+6.19/SR/3.a              todo         - -
+6.19/SR/3.a.i            todo         - -
+6.19/SR/3.a.ii           todo         - -
+6.19/SR/3.b              todo         - -
+6.19/CR/1                todo         - -

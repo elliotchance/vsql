@@ -1,0 +1,34 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.44, GetSubString
+6.44                     todo         - -
+6.44/GR/1                todo         - -
+6.44/GR/2                todo         - -
+6.44/GR/3                todo         - -
+6.44/GR/4                todo         - -
+6.44/GR/5                todo         - -
+6.44/GR/6                todo         - -
+6.44/GR/7                todo         - -
+6.44/GR/8                todo         - -
+6.44/GR/9                todo         - -
+6.44/GR/10               todo         - -
+6.44/GR/10.a             todo         - -
+6.44/GR/10.b             todo         - -
+6.44/GR/11               todo         - -
+6.44/GR/12               todo         - -
+6.44/GR/12.a             todo         - -
+6.44/GR/12.b             todo         - -
+6.44/GR/12.c             todo         - -
+6.44/GR/12.d             todo         - -
+6.44/GR/12.e             todo         - -
+6.44/GR/12.e.i           todo         - -
+6.44/GR/12.e.ii          todo         - -
+6.44/GR/12.e.iii         todo         - -
+6.44/GR/12.f             todo         - -
+6.44/GR/12.g             todo         - -
+6.44/GR/12.h             container    - -
+6.44/GR/12.h.i           todo         - -
+6.44/GR/12.h.i.1         todo         - -
+6.44/GR/12.h.i.2         todo         - -
+6.44/GR/12.h.ii          todo         - -
+6.44/GR/12.h.iii         todo         - -

@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.46, ROUTINE_ROUTINE_USAGE view
+5.46                     todo         - -
+5.46/CR/1                todo         - -
+5.46/CR/2                todo         - -

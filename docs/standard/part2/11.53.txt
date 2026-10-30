@@ -1,0 +1,13 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.53, <alter type statement>
+11.53                    todo         - -
+11.53/SR/1               todo         - -
+11.53/SR/2               todo         - -
+11.53/SR/3               todo         - -
+11.53/SR/4               todo         - -
+11.53/SR/5               todo         - -
+11.53/AR/1               todo         - -
+11.53/AR/2               todo         - -
+11.53/GR/1               todo         - -
+11.53/CR/1               todo         - -

@@ -1,0 +1,12 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.6, Datetimes and intervals
+4.6                      todo         - -
+# 4.6.1, Introduction to datetimes and intervals
+4.6.1                    todo         - -
+# 4.6.2, Datetimes
+4.6.2                    todo         - -
+# 4.6.3, Intervals
+4.6.3                    todo         - -
+# 4.6.4, Operations involving datetimes and intervals
+4.6.4                    todo         - -

@@ -1,0 +1,14 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 12.4, <role definition>
+12.4                     todo         - -
+12.4/SR/1                todo         - -
+12.4/AR/1                todo         - -
+12.4/GR/1                todo         - -
+12.4/GR/2                container    - -
+12.4/GR/2.a              todo         - -
+12.4/GR/2.b              todo         - -
+12.4/GR/3                todo         - -
+12.4/GR/4                todo         - -
+12.4/CR/1                todo         - -
+12.4/CR/2                todo         - -

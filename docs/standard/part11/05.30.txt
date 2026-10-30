@@ -1,0 +1,5 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.30, ENABLED_ROLES view
+5.30                     todo         - -
+5.30/CR/1                todo         - -

@@ -1,0 +1,10 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.37, <drop domain default clause>
+11.37                    todo         - -
+11.37/SR/1               todo         - -
+11.37/SR/2               todo         - -
+11.37/GR/1               todo         - -
+11.37/GR/2               todo         - -
+11.37/GR/3               todo         - -
+11.37/CR/1               todo         - -

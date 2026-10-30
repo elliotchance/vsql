@@ -1,0 +1,5 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.26, DIRECT_SUPERTYPES view
+5.26                     todo         - -
+5.26/CR/1                todo         - -

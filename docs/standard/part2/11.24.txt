@@ -1,0 +1,9 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 11.24, <add table constraint definition>
+11.24                    todo         - -
+11.24/SR/1               todo         - -
+11.24/SR/2               todo         - -
+11.24/GR/1               todo         - -
+11.24/GR/2               todo         - -
+11.24/CR/1               todo         - -

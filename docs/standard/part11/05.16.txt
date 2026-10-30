@@ -1,0 +1,6 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.16, COLLATION_CHARACTER_SET_APPLICABILITY view
+5.16                     todo         - -
+5.16/CR/1                todo         - -
+5.16/CR/2                todo         - -

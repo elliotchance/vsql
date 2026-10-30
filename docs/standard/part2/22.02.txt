@@ -1,0 +1,10 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 22.2, <direct select statement: multiple rows>
+22.2                     todo         - -
+22.2/SR/1                todo         - -
+22.2/SR/2                todo         - -
+22.2/GR/1                todo         - -
+22.2/GR/2                container    - -
+22.2/GR/2.a              todo         - -
+22.2/GR/2.b              todo         - -

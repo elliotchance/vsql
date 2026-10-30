@@ -1,0 +1,35 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9.21, Invocation of a PTF component procedure
+9.21                     todo         - -
+9.21/GR/1                todo         - -
+9.21/GR/2                container    - -
+9.21/GR/2.a              todo         - -
+9.21/GR/2.b              todo         - -
+9.21/GR/2.c              todo         - -
+9.21/GR/2.d              todo         - -
+9.21/GR/3                container    - -
+9.21/GR/3.a              todo         - -
+9.21/GR/3.a.i            todo         - -
+9.21/GR/3.a.ii           todo         - -
+9.21/GR/3.a.iii          todo         - -
+9.21/GR/3.a.iv           todo         - -
+9.21/GR/3.a.iv.1         todo         - -
+9.21/GR/3.a.iv.1.A       container    - -
+9.21/GR/3.a.iv.1.A.I     todo         - -
+9.21/GR/3.a.iv.1.A.II    todo         - -
+9.21/GR/3.a.iv.1.B       todo         - -
+9.21/GR/3.a.iv.1.B.I     todo         - -
+9.21/GR/3.a.iv.1.B.II    todo         - -
+9.21/GR/3.a.iv.1.C       todo         - -
+9.21/GR/3.a.iv.1.D       todo         - -
+9.21/GR/3.a.iv.2         todo         - -
+9.21/GR/3.a.iv.2.A       todo         - -
+9.21/GR/3.a.iv.2.B       todo         - -
+9.21/GR/3.a.iv.3         todo         - -
+9.21/GR/3.a.v            container    - -
+9.21/GR/3.a.v.1          todo         - -
+9.21/GR/3.a.v.2          todo         - -
+9.21/GR/3.a.vi           todo         - -
+9.21/GR/3.b              todo         - -
+9.21/GR/4                todo         - -

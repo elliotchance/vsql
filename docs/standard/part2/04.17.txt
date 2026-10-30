@@ -1,0 +1,18 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.17, Row pattern matching
+4.17                     todo         - -
+# 4.17.1, Matching rows with a pattern
+4.17.1                   todo         - -
+# 4.17.2, Row pattern matching illustrated
+4.17.2                   todo         - -
+# 4.17.3, Row pattern partitioning
+4.17.3                   todo         - -
+# 4.17.4, Row ordering
+4.17.4                   todo         - -
+# 4.17.5, Row pattern measure columns
+4.17.5                   todo         - -
+# 4.17.6, Number of rows per match
+4.17.6                   todo         - -
+# 4.17.7, Skipping rows after matching
+4.17.7                   todo         - -

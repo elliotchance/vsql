@@ -1,0 +1,14 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 19.2, <set session user identifier statement>
+19.2                     todo         - -
+19.2/SR/1                todo         - -
+19.2/GR/1                todo         - -
+19.2/GR/2                todo         - -
+19.2/GR/3                todo         - -
+19.2/GR/4                todo         - -
+19.2/GR/5                todo         - -
+19.2/GR/6                todo         - -
+19.2/GR/7                todo         - -
+19.2/GR/8                todo         - -
+19.2/CR/1                todo         - -

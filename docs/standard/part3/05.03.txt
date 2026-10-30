@@ -1,0 +1,10 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5.3, Implicit set connection
+5.3                      todo         - -
+5.3/GR/1                 todo         - -
+5.3/GR/2                 todo         - -
+5.3/GR/3                 todo         - -
+5.3/GR/4                 todo         - -
+5.3/GR/5                 todo         - -
+5.3/GR/6                 todo         - -

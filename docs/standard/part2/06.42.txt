@@ -1,0 +1,17 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.42, <array value constructor>
+6.42                     todo         - -
+6.42/SR/1                todo         - -
+6.42/SR/2                todo         - -
+6.42/SR/3                todo         - -
+6.42/SR/3.a              todo         - -
+6.42/SR/3.b              todo         - -
+6.42/GR/1                todo         - -
+6.42/GR/2                todo         - -
+6.42/GR/3                todo         - -
+6.42/GR/3.a              todo         - -
+6.42/GR/3.b              todo         - -
+6.42/GR/3.c              todo         - -
+6.42/CR/1                todo         - -
+6.42/CR/2                todo         - -

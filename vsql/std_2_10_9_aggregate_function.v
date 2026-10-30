@@ -42,7 +42,7 @@ struct AggregateFunctionCount {}
 // non_null_values removes NULLs before a general set function is applied. If
 // all values are NULL (or there are no values) the result will be NULL.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7a
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.a
 fn non_null_values(values []Value) []Value {
 	return values.filter(!it.is_null)
 }
@@ -51,7 +51,7 @@ fn non_null_values(values []Value) []Value {
 // DISTINCT, such as COUNT(DISTINCT x). Values are duplicates if they're equal
 // with =, so 1.5 and 1.50 (or 'a' and 'a ') are the same value.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7b
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.b
 fn distinct_values(conn &Connection, values []Value) ![]Value {
 	mut result := []Value{}
 	for value in non_null_values(values) {

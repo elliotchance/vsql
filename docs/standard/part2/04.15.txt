@@ -1,0 +1,40 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.15, Tables
+4.15                     todo         - -
+# 4.15.1, Introduction to tables
+4.15.1                   todo         - -
+# 4.15.2, Base tables
+4.15.2                   todo         - -
+# 4.15.2.1, Regular persistent base tables
+4.15.2.1                 todo         - -
+# 4.15.2.2, System-versioned tables
+4.15.2.2                 todo         - -
+# 4.15.2.3, Temporary tables
+4.15.2.3                 todo         - -
+# 4.15.3, Derived tables
+4.15.3                   todo         - -
+# 4.15.4, Transient tables
+4.15.4                   todo         - -
+# 4.15.5, Unique identification of tables
+4.15.5                   todo         - -
+# 4.15.6, Table updatability
+4.15.6                   todo         - -
+# 4.15.7, Table descriptors
+4.15.7                   todo         - -
+# 4.15.8, Syntactic analysis of derived tables and cursors
+4.15.8                   todo         - -
+# 4.15.9, Referenceable tables, subtables, and supertables
+4.15.9                   todo         - -
+# 4.15.10, Operations involving tables
+4.15.10                  todo         - -
+# 4.15.11, Range variables
+4.15.11                  todo         - -
+# 4.15.12, Identity columns
+4.15.12                  todo         - -
+# 4.15.13, Base columns and generated columns
+4.15.13                  todo         - -
+# 4.15.14, Grouped tables
+4.15.14                  todo         - -
+# 4.15.15, Windowed tables
+4.15.15                  todo         - -

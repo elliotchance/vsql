@@ -1,0 +1,31 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6.31, GetDescField
+6.31                     todo         - -
+6.31/GR/1                todo         - -
+6.31/GR/2                todo         - -
+6.31/GR/3                todo         - -
+6.31/GR/4                todo         - -
+6.31/GR/5                todo         - -
+6.31/GR/6                todo         - -
+6.31/GR/7                todo         - -
+6.31/GR/7.a              todo         - -
+6.31/GR/7.b              todo         - -
+6.31/GR/8                todo         - -
+6.31/GR/9                todo         - -
+6.31/GR/10               todo         - -
+6.31/GR/11               todo         - -
+6.31/GR/12               todo         - -
+6.31/GR/13               todo         - -
+6.31/GR/14               todo         - -
+6.31/GR/14.a             todo         - -
+6.31/GR/14.b             todo         - -
+6.31/GR/14.c             todo         - -
+6.31/GR/14.d             todo         - -
+6.31/GR/15               todo         - -
+6.31/GR/15.a             todo         - -
+6.31/GR/15.b             todo         - -
+6.31/GR/16               todo         - -
+6.31/GR/17               todo         - -
+6.31/GR/18               todo         - -
+6.31/GR/19               todo         - -

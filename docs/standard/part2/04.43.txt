@@ -1,0 +1,16 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4.43, SQL-sessions
+4.43                     todo         - -
+# 4.43.1, General description of SQL-sessions
+4.43.1                   todo         - -
+# 4.43.2, SQL-session identification
+4.43.2                   todo         - -
+# 4.43.3, SQL-session properties
+4.43.3                   todo         - -
+# 4.43.4, SQL-session context management
+4.43.4                   todo         - -
+# 4.43.5, Execution contexts
+4.43.5                   todo         - -
+# 4.43.6, Routine execution context
+4.43.6                   todo         - -

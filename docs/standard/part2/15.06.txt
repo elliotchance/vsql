@@ -1,0 +1,30 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 15.6, Effect of a positioned update
+15.6                     todo         - -
+15.6/GR/1                todo         - -
+15.6/GR/2                todo         - -
+15.6/GR/3                todo         - -
+15.6/GR/3.a              todo         - -
+15.6/GR/3.b              todo         - -
+15.6/GR/4                todo         - -
+15.6/GR/5                todo         - -
+15.6/GR/6                todo         - -
+15.6/GR/7                todo         - -
+15.6/GR/8                todo         - -
+15.6/GR/9                todo         - -
+15.6/GR/10               todo         - -
+15.6/GR/11               todo         - -
+15.6/GR/12               todo         - -
+15.6/GR/13               todo         - -
+15.6/GR/14               todo         - -
+15.6/GR/15               todo         - -
+15.6/GR/16               todo         - -
+15.6/GR/17               container    - -
+15.6/GR/17.a             todo         - -
+15.6/GR/17.a.i           todo         - -
+15.6/GR/17.a.i.1         todo         - -
+15.6/GR/17.a.i.2         todo         - -
+15.6/GR/17.a.ii          todo         - -
+15.6/GR/17.b             todo         - -
+15.6/GR/18               todo         - -

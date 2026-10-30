@@ -23,13 +23,18 @@ Syntax
   <table_reference> := { <table_name> | ( <query> ) }
                        [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
 
+  TABLE <table_name>
+  [ ORDER BY <expr> [ ASC | DESC ] , ... ]
+  [ OFFSET <integer> { ROW | ROWS } ]
+  [ FETCH FIRST [ <integer> ] { ROW | ROWS } ONLY ]
+
   <query> { UNION | EXCEPT } [ ALL | DISTINCT ] <query>
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH FIRST [ <integer> ] { ROW | ROWS } ONLY ]
 
-A ``<query>`` is a ``SELECT``, ``VALUES``, ``UNION`` or ``EXCEPT``. It can be in
-parentheses, such as ``(SELECT ... FETCH FIRST 1 ROW ONLY)``.
+A ``<query>`` is a ``SELECT``, ``TABLE``, ``VALUES``, ``UNION`` or ``EXCEPT``.
+It can be in parentheses, such as ``(SELECT ... FETCH FIRST 1 ROW ONLY)``.
 
 ``AS <name>`` gives the table a *correlation name*. The table must then be
 referred to by that name instead (such as ``p.price``). The optional list of
@@ -174,6 +179,18 @@ most one row, even when the table is empty:
 .. code-block:: sql
 
   SELECT COUNT(*) FROM products HAVING COUNT(*) = 0;
+
+TABLE
+-----
+
+``TABLE <table_name>`` is a shorter way to write ``SELECT * FROM
+<table_name>``. It can be used anywhere a query can, such as in a subquery:
+
+.. code-block:: sql
+
+  TABLE products ORDER BY price;
+
+  SELECT COUNT(*) FROM (TABLE products) AS p;
 
 UNION and EXCEPT
 ----------------

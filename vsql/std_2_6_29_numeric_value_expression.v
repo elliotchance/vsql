@@ -178,22 +178,30 @@ fn parse_factor_2(sign string, expr NumericPrimary) !NumericPrimary {
 // arithmetic_type is the declared type of a binary arithmetic expression. Two
 // numbers of the same category have the more general type, except that an
 // exact result with a NUMERIC or DECIMAL operand follows exact_arithmetic_type
-// (division is done as multiplication, see Numeric.divide).
+// (division is done as multiplication, see Numeric.divide). See
+// arithmetic_supertype for an exact and an approximate number.
 fn arithmetic_type(t1 Type, t2 Type, op string) Type {
-	if t1.typ.is_number() && t2.typ.is_number() {
-		t1_category, _ := t1.typ.supertype()
-		t2_category, _ := t2.typ.supertype()
-		if t1_category == 2 && t2_category == 2
-			&& (t1.typ in [.is_numeric, .is_decimal] || t2.typ in [.is_numeric, .is_decimal]) {
-			return exact_arithmetic_type(t1, t2, if op == '/' { '*' } else { op })
-		}
-
-		if t := most_specific_type(t1, t2) {
-			return t
-		}
+	t1_category, _ := t1.typ.supertype()
+	t2_category, _ := t2.typ.supertype()
+	if t1_category == 2 && t2_category == 2
+		&& (t1.typ in [.is_numeric, .is_decimal] || t2.typ in [.is_numeric, .is_decimal]) {
+		return exact_arithmetic_type(t1, t2, if op == '/' { '*' } else { op })
 	}
 
-	return t1
+	// Two numbers always have one. The operator doesn't exist for anything else,
+	// which eval_binary reports.
+	return arithmetic_supertype(t1, t2) or { t1 }
+}
+
+// arithmetic_supertype is the type that both operands are cast to. If either is
+// approximate, the result is approximate (Syntax Rule 1b). Like the rows of a
+// VALUES (9.5 Syntax Rule 3d), that's DOUBLE PRECISION, unless both are REAL.
+fn arithmetic_supertype(t1 Type, t2 Type) !Type {
+	if (t1.typ in approximate_types) != (t2.typ in approximate_types) {
+		return Type{.is_double_precision, 0, 0, false}
+	}
+
+	return most_specific_type(t1, t2)
 }
 
 fn eval_binary(mut conn Connection, x Value, op string, y Value) !Value {
@@ -202,7 +210,7 @@ fn eval_binary(mut conn Connection, x Value, op string, y Value) !Value {
 
 	mut key := '${left.typ.typ} ${op} ${right.typ.typ}'
 	if left.typ.typ.is_number() && right.typ.typ.is_number() {
-		supertype := most_specific_type(left.typ, right.typ) or {
+		supertype := arithmetic_supertype(left.typ, right.typ) or {
 			return sqlstate_42883('operator does not exist: ${key}')
 		}
 		left = cast(mut conn, '', left, implicit_cast_type(left, supertype))!

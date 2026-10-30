@@ -15,8 +15,8 @@ echo 'SELECT * FROM t;' | $VSQL cli $VSQL_FILE
 test "$(cksum < $VSQL_FILE)" = "$BEFORE"
 
 # Except for NEXT VALUE FOR, which needs to take a write lock instead.
-echo 'VALUES NEXT VALUE FOR seq1;' | $VSQL cli $VSQL_FILE > $TXT_FILE
-echo 'VALUES NEXT VALUE FOR seq1;' | $VSQL cli $VSQL_FILE >> $TXT_FILE
+echo 'SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;' | $VSQL cli $VSQL_FILE > $TXT_FILE
+echo 'SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;' | $VSQL cli $VSQL_FILE >> $TXT_FILE
 
 cat $TXT_FILE
 grep -Ex ' *1' $TXT_FILE

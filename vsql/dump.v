@@ -60,7 +60,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 				}
 			} else {
 				write_line(mut w, 'ALTER SEQUENCE ${name} RESTART WITH ${sequence.current_value};')!
-				write_line(mut w, 'VALUES NEXT VALUE FOR ${name};\n')!
+				write_line(mut w, 'SELECT NEXT VALUE FOR ${name} FROM (VALUES 1) AS t;\n')!
 			}
 		}
 

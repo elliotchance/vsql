@@ -199,7 +199,7 @@ CREATE TABLE t (x INT, y INT NOT NULL);
 CREATE SEQUENCE s;
 /* fault wal_write */
 INSERT INTO t (x, y) VALUES (NEXT VALUE FOR s, NULL);
-VALUES NEXT VALUE FOR s;
+SELECT NEXT VALUE FOR s FROM (VALUES 1) AS t;
 -- msg: CREATE TABLE 1
 -- msg: CREATE SEQUENCE 1
 -- error 23502: violates non-null constraint: column Y
@@ -260,7 +260,7 @@ SELECT * FROM t;
 /* fault wal_write */
 /* connection 1 */
 /* connection 2 */
-VALUES NEXT VALUE FOR s;
+SELECT NEXT VALUE FOR s FROM (VALUES 1) AS t;
 CREATE TABLE t (x INT);
 CREATE SCHEMA public;
 CREATE TABLE t (x INT);

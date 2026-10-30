@@ -46,9 +46,15 @@ mut:
 //  may be removed in the future. Run the test suite a few times and if it
 //  passes you're in the clear.
 fn new_values_operation(rows []RowValueConstructor, correlation Correlation, mut conn Connection, params map[string]Value) !&ValuesOperation {
+	// NEXT VALUE FOR can be in the VALUES of an INSERT (a <from constructor>,
+	// see InsertStatement), but not in a VALUES that's a query. Use "SELECT
+	// NEXT VALUE FOR s FROM (VALUES 1) AS t" instead.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 1
 	mut c := Compiler{
-		conn:   conn
-		params: params
+		conn:                   conn
+		params:                 params
+		next_value_not_allowed: 'VALUES'
 	}
 
 	// All rows must have the same number of columns, and each column has the

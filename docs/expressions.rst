@@ -211,7 +211,10 @@ NEXT VALUE FOR
 
   NEXT VALUE FOR X
 
-Returns the next value for a SEQUENCE called ``X``.
+Returns the next value for a SEQUENCE called ``X``. It can be used in the
+select list of a query, or the ``VALUES`` of an :doc:`insert`, but not in a
+``VALUES`` that's a query. To get the next value on its own, select it from a
+table with one row, such as ``(VALUES 1) AS t``.
 
 All ``NEXT VALUE FOR`` expressions for the same sequence return the same value
 within a row. Each new row will get the next value.
@@ -224,12 +227,11 @@ the number of times it's evaluated depends on the query that contains it.
 .. code-block:: sql
 
   CREATE SEQUENCE my_sequence;
-  VALUES NEXT VALUE FOR my_sequence, NEXT VALUE FOR my_sequence;
-  VALUES ROW(NEXT VALUE FOR my_sequence, NEXT VALUE FOR my_sequence);
+  SELECT NEXT VALUE FOR my_sequence FROM (VALUES 1) AS t;
+  SELECT NEXT VALUE FOR my_sequence, NEXT VALUE FOR my_sequence FROM (VALUES 1) AS t;
   -- msg: CREATE SEQUENCE 1
   -- COL1: 1
-  -- COL1: 2
-  -- COL1: 3 COL2: 3
+  -- COL1: 2 COL2: 2
 
 Scalar Subquery
 ---------------

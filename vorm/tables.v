@@ -84,7 +84,7 @@ fn (mut db DB) column_types(table string) !map[string]vsql.Type {
 }
 
 fn (mut db DB) next_serial(table string, field string) !i64 {
-	mut result := db.conn.query('VALUES NEXT VALUE FOR ${serial_name(table, field)}')!
+	mut result := db.conn.query('SELECT NEXT VALUE FOR ${serial_name(table, field)} FROM (VALUES 1) AS t')!
 	for row in result {
 		return row.get('COL1')!.int_value()
 	}

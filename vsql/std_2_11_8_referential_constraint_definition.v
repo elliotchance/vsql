@@ -360,6 +360,83 @@ struct RowChange {
 	is_delete bool
 }
 
+// ChangedSites are the sites (columns of rows) that the referential actions of
+// a statement have updated, and the rows that they've deleted. A referential
+// action can't update a site to a different value than it was already updated
+// to, or update or delete a row that was deleted or updated (a triggered data
+// change violation).
+//
+// The changes made by the statement itself aren't included. The matching rows
+// are found when each action is carried out, rather than before the statement
+// (General Rule 7), so a row that the statement deleted can't be matched, and
+// a site that it updated is only matched by its new value.
+//
+// ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General
+// Rules 12 and 13
+struct ChangedSites {
+mut:
+	// updated is the value that each column was updated to, by the table and
+	// the object key of the row.
+	updated map[string]map[string]Value
+	// deleted are the rows that were deleted from each table.
+	deleted map[string][]Row
+}
+
+fn changed_site_key(table Table, row Row) !string {
+	mut r := row
+
+	return '${table.name.storage_id()}/${r.object_key(table)!.bytestr()}'
+}
+
+// add records the rows that a referential action deleted or replaced, where
+// columns are the columns that it updated.
+fn (mut s ChangedSites) add(conn &Connection, table Table, changes []RowChange, columns []string) ! {
+	// The keys of the rows are from before any of them changed, since a row
+	// can get the PRIMARY KEY of another row (see UpdateStatementSearched).
+	mut updated := map[string]map[string]Value{}
+	mut before_keys := []string{}
+	for change in changes {
+		before := changed_site_key(table, change.old)!
+		before_keys << before
+		mut sites := (s.updated[before] or { map[string]Value{} }).clone()
+		if change.is_delete {
+			if sites.len > 0 {
+				return sqlstate_27000('a row of ${table.name} that was updated is deleted')
+			}
+			s.deleted[table.name.storage_id()] << change.old
+			continue
+		}
+
+		for column in columns {
+			value := change.new.data[column]
+			if previous := sites[column] {
+				if is_distinct(conn, previous, value)! {
+					return sqlstate_27000('column ${column} of a row of ${table.name} is updated to two different values')
+				}
+			}
+			sites[column] = value
+		}
+		updated[changed_site_key(table, change.new)!] = sites
+	}
+
+	for key in before_keys {
+		s.updated.delete(key)
+	}
+	for key, sites in updated {
+		s.updated[key] = sites
+	}
+}
+
+// is_distinct is true if the values are distinct (8.15, <distinct predicate>),
+// where NULL isn't distinct from NULL.
+fn is_distinct(conn &Connection, a Value, b Value) !bool {
+	if a.is_null || b.is_null {
+		return a.is_null != b.is_null
+	}
+
+	return compare(conn, a, b)! != .is_equal
+}
+
 // apply_referential_actions carries out the referential actions of the
 // FOREIGN KEYs that reference t (including t itself) for the rows of t that a
 // DELETE or UPDATE changed, and then checks the constraints of each table that
@@ -375,10 +452,17 @@ struct RowChange {
 // The referencing tables are in the same catalog as t (see
 // resolve_foreign_keys), so they're all in f.
 //
+// This always ends, even with a cycle of CASCADE keys. A change only causes
+// more changes when it gives a referenced key a distinct value, which means
+// updating a site. Each site can only be updated to one value (see
+// ChangedSites), and there's a finite number of sites, so there can only be a
+// finite number of rounds.
+//
 // ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General
-// Rules 9a, 10a and 17
+// Rules 9a, 10a, 12, 13 and 17
 fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, changes []RowChange) ! {
 	_, time_zone := conn.now()
+	mut sites := ChangedSites{}
 
 	// The old rows of each table are the rows that were deleted or replaced,
 	// and the written rows are the latest version of each row that was written
@@ -439,6 +523,17 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 				for value, _ in updated_keys {
 					keys[value] = true
 				}
+				// A row that was deleted can't also be updated by an action
+				// (General Rule 13). It's no longer stored, so it isn't one
+				// of the matching rows.
+				for row in sites.deleted[table_name] {
+					value := key_value(row, key.columns, types, time_zone).bytestr()
+					if value in updated_keys
+						|| (value in deleted_keys && key.delete_rule != 'CASCADE') {
+						return sqlstate_27000('a row of ${referencing.name} that was deleted is updated')
+					}
+				}
+
 				matching := f.matching_rows(key, referencing, types, keys, time_zone)!
 				if matching.len == 0 {
 					continue
@@ -490,6 +585,8 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 						new: after
 					}
 				}
+
+				sites.add(conn, referencing, new_changes, key.columns)!
 
 				// Like an UPDATE, a row that gets a new PRIMARY KEY is deleted
 				// and only written again once all of the rows have been

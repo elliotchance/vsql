@@ -847,6 +847,20 @@ fn sqlstate_25006(msg string) IError {
 	}
 }
 
+// triggered data change violation: a referential action changes a column of
+// a row that the same statement already changed to a different value, or
+// deletes a row that it changed.
+struct SQLState27000 {
+	SQLState
+}
+
+fn sqlstate_27000(msg string) IError {
+	return SQLState27000{
+		code: sqlstate_to_int('27000')
+		msg:  'triggered data change violation: ${msg}'
+	}
+}
+
 // invalid transaction termination
 struct SQLState2D000 {
 	SQLState

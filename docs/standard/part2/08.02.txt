@@ -1,81 +1,81 @@
 # ISO/IEC 9075-2:2016(E)
 # id status code tests note (see docs/standard-index.rst)
 # 8.2, <comparison predicate>
-8.2                      todo         - -
-8.2/SR/1                 todo         - -
-8.2/SR/2                 todo         - -
-8.2/SR/3                 todo         - -
-8.2/SR/4                 todo         - -
+8.2                      partial      vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql rows of degree > 1 are #722
+8.2/SR/1                 missing      - - rows of degree > 1 are #722
+8.2/SR/2                 definition   - -
+8.2/SR/3                 partial      vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql checked when evaluated, rather than when prepared
+8.2/SR/4                 definition   - -
 8.2/SR/5                 todo         - -
 8.2/SR/5.a               container    - -
 8.2/SR/5.a.i             todo         - -
 8.2/SR/5.a.ii            todo         - -
 8.2/SR/5.b               container    - -
-8.2/SR/5.b.i             todo         - -
-8.2/SR/5.b.ii            todo         - -
-8.2/SR/5.b.iii           todo         - -
-8.2/SR/5.b.iv            todo         - -
-8.2/SR/6                 todo         - -
-8.2/SR/6.a               todo         - -
-8.2/SR/6.b               todo         - -
-8.2/SR/6.c               todo         - -
-8.2/SR/6.d               todo         - -
-8.2/GR/1                 todo         - -
-8.2/GR/1.a               todo         - -
-8.2/GR/1.b               todo         - -
-8.2/GR/1.b.i             todo         - -
-8.2/GR/1.b.i.1           todo         - -
-8.2/GR/1.b.i.2           todo         - -
-8.2/GR/1.b.i.3           todo         - -
-8.2/GR/1.b.i.4           todo         - -
-8.2/GR/1.b.i.5           todo         - -
-8.2/GR/1.b.ii            todo         - -
-8.2/GR/1.b.ii.1          todo         - -
-8.2/GR/1.b.ii.2          todo         - -
-8.2/GR/1.b.ii.3          todo         - -
-8.2/GR/1.b.ii.3.A        todo         - -
-8.2/GR/1.b.ii.3.B        todo         - -
-8.2/GR/1.b.ii.4          todo         - -
-8.2/GR/1.b.iii           todo         - -
-8.2/GR/1.b.iii.1         todo         - -
-8.2/GR/1.b.iii.2         todo         - -
-8.2/GR/1.b.iii.3         todo         - -
-8.2/GR/1.b.iii.4         todo         - -
-8.2/GR/1.b.iv            todo         - -
-8.2/GR/1.b.iv.1          todo         - -
-8.2/GR/1.b.iv.2          todo         - -
-8.2/GR/1.b.iv.2.A        todo         - -
-8.2/GR/1.b.iv.2.B        todo         - -
-8.2/GR/1.b.iv.2.C        todo         - -
-8.2/GR/1.b.iv.2.D        todo         - -
-8.2/GR/1.b.iv.2.E        todo         - -
-8.2/GR/1.b.iv.2.F        todo         - -
-8.2/GR/1.b.iv.2.G        todo         - -
-8.2/GR/1.b.iv.3          todo         - -
-8.2/GR/1.b.iv.3.A        todo         - -
-8.2/GR/1.b.iv.3.B        todo         - -
-8.2/GR/1.b.v             todo         - -
-8.2/GR/1.b.v.1           todo         - -
-8.2/GR/1.b.v.2           todo         - -
-8.2/GR/1.b.v.3           todo         - -
-8.2/GR/2                 todo         - -
-8.2/GR/3                 todo         - -
-8.2/GR/3.a               todo         - -
-8.2/GR/3.b               todo         - -
-8.2/GR/3.c               todo         - -
-8.2/GR/3.d               todo         - -
-8.2/GR/4                 todo         - -
-8.2/GR/5                 todo         - -
-8.2/GR/5.a               todo         - -
-8.2/GR/5.b               todo         - -
-8.2/GR/5.c               todo         - -
-8.2/GR/5.d               todo         - -
-8.2/GR/5.e               todo         - -
-8.2/GR/6                 todo         - -
-8.2/GR/6.a               todo         - -
-8.2/GR/6.b               todo         - -
-8.2/GR/7                 todo         - -
-8.2/GR/7.a               todo         - -
-8.2/GR/7.b               todo         - -
-8.2/GR/8                 todo         - -
-8.2/GR/9                 todo         - -
+8.2/SR/5.b.i             n/a          - - user-defined types (S023)
+8.2/SR/5.b.ii            n/a          - - reference types (S041)
+8.2/SR/5.b.iii           n/a          - - arrays (S091) and multisets (S271)
+8.2/SR/5.b.iv            missing      - - rows are #722
+8.2/SR/6                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/SR/6.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/SR/6.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/SR/6.c               implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/SR/6.d               implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/GR/1                 definition   - -
+8.2/GR/1.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/null-propagation.sql
+8.2/GR/1.b               container    - -
+8.2/GR/1.b.i             missing      - - rows are #722
+8.2/GR/1.b.i.1           missing      - - rows are #722
+8.2/GR/1.b.i.2           missing      - - rows are #722
+8.2/GR/1.b.i.3           missing      - - rows are #722
+8.2/GR/1.b.i.4           missing      - - rows are #722
+8.2/GR/1.b.i.5           missing      - - rows are #722
+8.2/GR/1.b.ii            n/a          - - arrays (S091)
+8.2/GR/1.b.ii.1          n/a          - - arrays (S091)
+8.2/GR/1.b.ii.2          n/a          - - arrays (S091)
+8.2/GR/1.b.ii.3          n/a          - - arrays (S091)
+8.2/GR/1.b.ii.3.A        n/a          - - arrays (S091)
+8.2/GR/1.b.ii.3.B        n/a          - - arrays (S091)
+8.2/GR/1.b.ii.4          n/a          - - arrays (S091)
+8.2/GR/1.b.iii           n/a          - - multisets (S271)
+8.2/GR/1.b.iii.1         n/a          - - multisets (S271)
+8.2/GR/1.b.iii.2         n/a          - - multisets (S271)
+8.2/GR/1.b.iii.3         n/a          - - multisets (S271)
+8.2/GR/1.b.iii.4         n/a          - - multisets (S271)
+8.2/GR/1.b.iv            n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.1          n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2          n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.A        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.B        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.C        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.D        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.E        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.F        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.2.G        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.3          n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.3.A        n/a          - - user-defined types (S023)
+8.2/GR/1.b.iv.3.B        n/a          - - user-defined types (S023)
+8.2/GR/1.b.v             implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/GR/1.b.v.1           implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/GR/1.b.v.2           implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/GR/1.b.v.3           implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql,tests/std_8_2_comparison_predicate.sql
+8.2/GR/2                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/comparison.sql
+8.2/GR/3                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/3.a               impl-defined vsql/std_2_8_2_comparison_predicate.v - only the default collation, which is PAD SPACE
+8.2/GR/3.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/3.c               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/3.d               untestable   vsql/std_2_8_2_comparison_predicate.v - which of several equal strings is chosen is implementation-dependent
+8.2/GR/4                 n/a          - - binary strings (T021)
+8.2/GR/5                 n/a          - - binary strings (T021)
+8.2/GR/5.a               n/a          - - binary strings (T021)
+8.2/GR/5.b               n/a          - - binary strings (T021)
+8.2/GR/5.c               n/a          - - binary strings (T021)
+8.2/GR/5.d               n/a          - - binary strings (T021)
+8.2/GR/5.e               n/a          - - binary strings (T021)
+8.2/GR/6                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/6.a               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/6.b               implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+8.2/GR/7                 n/a          - - intervals (F052)
+8.2/GR/7.a               n/a          - - intervals (F052)
+8.2/GR/7.b               n/a          - - intervals (F052)
+8.2/GR/8                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/boolean.sql,tests/std_8_2_comparison_predicate.sql
+8.2/GR/9                 n/a          - - reference types (S041)

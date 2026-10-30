@@ -26,6 +26,7 @@ in_predicate_value:
     }
   }
 | left_paren in_value_list right_paren {
+    // ISO/IEC 9075-2:2016(E), 8.4, <in predicate>, Conformance Rules, 1
     flag_if(mut yylex, ($2.v as []RowValueConstructorPredicand).any(!is_value_specification(it)),
       'F561')
     $$.v = InPredicate{

@@ -51,8 +51,10 @@ fn (e NullPredicate) compile(mut c Compiler) !CompileResult {
 
 	return CompileResult{
 		run:          fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
-			// For a row, IS NULL is true when every value is NULL and IS NOT
-			// NULL is true when none are. So a row with some NULLs is neither.
+			// ISO/IEC 9075-2:2016(E), 8.8, <null predicate>, General Rules, 2:
+			// for a row, IS NULL is true when every value is NULL and IS NOT
+			// NULL is true when none are. So a row with some NULLs is neither
+			// (Table 16, <null predicate> semantics).
 			mut nulls := 0
 			for element in compiled {
 				if element.run(mut conn, data, params)!.is_null {

@@ -6,7 +6,8 @@ module vsql
 // of a <boolean value expression>.
 
 // A WhereOperation executes a condition on each row, only passing through rows
-// that evaluate to TRUE.
+// that evaluate to TRUE (ISO/IEC 9075-2:2016(E), 7.12, <where clause>, General
+// Rules, 2).
 struct WhereOperation {
 	condition BooleanValueExpression
 	params    map[string]Value
@@ -49,6 +50,7 @@ fn eval_as_bool(mut conn Connection, data Row, e BooleanValueExpression, params 
 		params: params
 		tables: tables
 	}
+	// ISO/IEC 9075-2:2016(E), 8.21, <search condition>, General Rules, 1
 	v := e.compile(mut c)!.run(mut conn, data, params)!
 
 	if v.typ.typ == .is_boolean {

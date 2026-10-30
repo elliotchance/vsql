@@ -220,7 +220,8 @@ fn is_column_reference(e RowValueConstructorPredicand) bool {
 }
 
 // flag_exists flags an EXISTS whose query has a <select list> that isn't "*"
-// or a single column (see 8.10, "<exists predicate>", Conformance Rule 1).
+// or a single column (ISO/IEC 9075-2:2016(E), 8.10, <exists predicate>,
+// Conformance Rules, 1).
 fn flag_exists(mut yylex YYLexer, e QueryExpression) {
 	if e.body is QuerySpecification {
 		exprs := e.body.exprs

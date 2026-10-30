@@ -14,7 +14,9 @@ fn (e ExistsPredicate) pstr(params map[string]Value) string {
 }
 
 fn (e ExistsPredicate) compile(mut c Compiler) !CompileResult {
-	// Any number of columns is allowed, which is Feature T501.
+	// Any number of columns is allowed, which is Feature T501, "Enhanced EXISTS
+	// predicate" (ISO/IEC 9075-2:2016(E), 8.10, <exists predicate>, Conformance
+	// Rules, 1).
 	plan := e.subquery.plan(mut c)!
 
 	return CompileResult{

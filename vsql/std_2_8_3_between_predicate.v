@@ -38,7 +38,7 @@ fn (e BetweenPredicate) compile(mut c Compiler) !CompileResult {
 			right := compiled_right.run(mut conn, data, params)!
 
 			// ISO/IEC 9075-2:2016(E), 8.3, <between predicate>, Syntax Rules, 4
-			// and 6:
+			// and 6 (ASYMMETRIC is implicit, Syntax Rules, 1):
 			//
 			//   X BETWEEN ASYMMETRIC Y AND Z is X >= Y AND X <= Z
 			//   X BETWEEN SYMMETRIC Y AND Z is
@@ -53,6 +53,8 @@ fn (e BetweenPredicate) compile(mut c Compiler) !CompileResult {
 					compare(conn, expr, left)!))
 			}
 
+			// ISO/IEC 9075-2:2016(E), 8.3, <between predicate>, Syntax Rules, 3
+			// and 5: X NOT BETWEEN ... is NOT (X BETWEEN ...).
 			if e.not {
 				result = truth_not(result)
 			}
@@ -65,7 +67,8 @@ fn (e BetweenPredicate) compile(mut c Compiler) !CompileResult {
 	}
 }
 
-// Truth is a value of three-valued logic.
+// Truth is a value of three-valued logic. Unknown is the same as the null value
+// of BOOLEAN (ISO/IEC 9075-2:2016(E), 4.5.1, Introduction to Boolean types).
 enum Truth {
 	is_false
 	is_true
@@ -97,6 +100,8 @@ fn between_asymmetric(lower CompareResult, upper CompareResult) Truth {
 	return truth_and(at_least, at_most)
 }
 
+// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, General Rules, 3,
+// Table 13, Truth table for the AND boolean operator
 fn truth_and(a Truth, b Truth) Truth {
 	if a == .is_false || b == .is_false {
 		return .is_false
@@ -109,6 +114,8 @@ fn truth_and(a Truth, b Truth) Truth {
 	return .is_true
 }
 
+// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, General Rules, 3,
+// Table 14, Truth table for the OR boolean operator
 fn truth_or(a Truth, b Truth) Truth {
 	if a == .is_true || b == .is_true {
 		return .is_true
@@ -121,6 +128,7 @@ fn truth_or(a Truth, b Truth) Truth {
 	return .is_false
 }
 
+// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, General Rules, 2
 fn truth_not(a Truth) Truth {
 	return match a {
 		.is_true { .is_false }

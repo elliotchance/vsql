@@ -1,14 +1,14 @@
 # ISO/IEC 9075-2:2016(E)
 # id status code tests note (see docs/standard-index.rst)
 # 8.8, <null predicate>
-8.8                      todo         - -
-8.8/GR/1                 todo         - -
+8.8                      implemented  vsql/std_2_8_8_null_predicate.v tests/null.sql,tests/null-predicate-row.sql
+8.8/GR/1                 definition   - -
 8.8/GR/2                 container    - -
-8.8/GR/2.a               todo         - -
+8.8/GR/2.a               implemented  vsql/std_2_8_8_null_predicate.v tests/null.sql,tests/null-predicate-row.sql
 8.8/GR/2.b               container    - -
-8.8/GR/2.b.i             todo         - -
-8.8/GR/2.b.i.1           todo         - -
-8.8/GR/2.b.i.2           todo         - -
-8.8/GR/2.b.ii            todo         - -
-8.8/GR/2.b.ii.1          todo         - -
-8.8/GR/2.b.ii.2          todo         - -
+8.8/GR/2.b.i             implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
+8.8/GR/2.b.i.1           implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
+8.8/GR/2.b.i.2           implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
+8.8/GR/2.b.ii            implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
+8.8/GR/2.b.ii.1          implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql
+8.8/GR/2.b.ii.2          implemented  vsql/std_2_8_8_null_predicate.v tests/null-predicate-row.sql

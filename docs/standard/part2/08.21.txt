@@ -1,5 +1,5 @@
 # ISO/IEC 9075-2:2016(E)
 # id status code tests note (see docs/standard-index.rst)
 # 8.21, <search condition>
-8.21                     todo         - -
-8.21/GR/1                todo         - -
+8.21                     implemented  vsql/std_2_8_21_search_condition.v tests/select-where.sql
+8.21/GR/1                implemented  vsql/std_2_8_21_search_condition.v tests/select-where.sql

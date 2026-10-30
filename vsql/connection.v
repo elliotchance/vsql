@@ -60,6 +60,9 @@ mut:
 	// EXISTS) that's being planned or evaluated, the innermost last. A subquery
 	// can refer to the columns of the queries that contain it, see SubqueryScope.
 	subquery_scopes []SubqueryScope
+	// next_value_not_allowed is set (to "UNION", etc.) while a query that can't
+	// contain a NEXT VALUE FOR is being planned, see Compiler.
+	next_value_not_allowed string
 	// direct_query_transaction is true when an SQL-transaction was started by
 	// a query in direct (see Connection.direct) that hasn't changed anything.
 	direct_query_transaction bool

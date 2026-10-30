@@ -50,6 +50,18 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 			return plan, map[string]Table{}
 		}
 		SetOperation {
+			// Only a query specification that's the whole query can contain a
+			// NEXT VALUE FOR, not one on either side of a UNION or EXCEPT.
+			//
+			// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 1
+			next_value_not_allowed := conn.next_value_not_allowed
+			if next_value_not_allowed == '' {
+				conn.next_value_not_allowed = body.op
+			}
+			defer {
+				conn.next_value_not_allowed = next_value_not_allowed
+			}
+
 			mut plan := Plan{}
 			plan.subplans['\$1'] = create_query_expression_plan(*body.left, params, mut
 				conn, Correlation{})!

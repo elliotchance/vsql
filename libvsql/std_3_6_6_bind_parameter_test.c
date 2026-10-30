@@ -29,6 +29,7 @@ UTEST_F(db, 6_6_bind_parameter) {
   strcpy(s, "bcd");
   EXPECT_EQ(SQLExecute(utest_fixture->stmt), SQL_SUCCESS);
 
+  ASSERT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_RESET_PARAMS), SQL_SUCCESS);
   ASSERT_EQ(run_sql(utest_fixture->stmt, "SELECT SUM(x), MAX(s) FROM t"),
             SQL_SUCCESS);
   ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);

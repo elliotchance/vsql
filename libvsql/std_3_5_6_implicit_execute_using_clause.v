@@ -31,6 +31,18 @@ fn parameter_values(mut stmt Stmt, prepared vsql.PreparedStmt) !(map[string]vsql
 		return using_clause_error()
 	}
 
+	// - 4.d. If NIDAL is greater than D, it's implementation-defined whether
+	// it's an exception condition. It is when one of the extra parameters is
+	// still bound (its DATA_POINTER isn't zero), since binding more parameters
+	// than there are "?" is almost always a mistake. FreeStmt with UNBIND
+	// PARAMETERS doesn't change COUNT, so the extra item descriptor areas of
+	// a handle that's reused for a statement with fewer "?" are fine.
+	for i in d + 1 .. int_min(ipd.count(), apd.count()) + 1 {
+		if apd.record_int(i, sql_desc_data_pointer) != 0 {
+			return using_clause_error()
+		}
+	}
+
 	mut params := map[string]vsql.Value{}
 	mut deferred := []int{}
 	for i in 1 .. d + 1 {

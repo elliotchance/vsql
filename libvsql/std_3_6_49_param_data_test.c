@@ -84,6 +84,7 @@ UTEST_F(db, 6_49_param_data_sequence) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
 
   /* An error ends the statement. */
+  ASSERT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_RESET_PARAMS), SQL_SUCCESS);
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
 }
 
@@ -99,5 +100,6 @@ UTEST_F(db, 6_49_param_data_cancel) {
   EXPECT_EQ(SQLCancel(utest_fixture->stmt), SQL_SUCCESS);
   EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+  ASSERT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_RESET_PARAMS), SQL_SUCCESS);
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
 }

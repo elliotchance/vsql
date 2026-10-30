@@ -163,11 +163,6 @@ fn create_table_reference_plan(body QuerySpecification, table_reference TableRef
 			// Rows store each value by its table and column name, so the same
 			// table can't be used twice (7.5, Syntax Rule 5c).
 			if table.name.id() in tables {
-				// Subqueries without a correlation name all use the same name.
-				if table.name.custom_id != '' {
-					return sqlstate_42601('each subquery in FROM needs its own correlation name')
-				}
-
 				return sqlstate_42601('table name ${table.name} specified more than once')
 			}
 			tables[table.name.id()] = table
@@ -265,19 +260,17 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			}
 		}
 		QueryExpression {
-			// TODO(elliotchance): Needs to increment.
-			mut table_name := Identifier{
-				custom_id: '\$1'
-			}
-
-			if from_clause.correlation.name.sub_entity_name != '' {
-				table_name = from_clause.correlation.name
+			// A <derived table> (a subquery in FROM) must have a <correlation or
+			// recognition> (7.6 <table primary>). The subquery of a predicate, such
+			// as EXISTS, is planned by Subquery.plan instead.
+			if from_clause.correlation.name.sub_entity_name == '' {
+				return sqlstate_42601('a subquery in FROM must have a correlation name, such as (SELECT ...) AS t')
 			}
 
 			subplan := create_query_expression_plan(from_clause.body, params, mut conn,
 				from_clause.correlation)!
-			table = add_correlation_plan(mut &plan, table_name, subplan, from_clause.correlation,
-				params, conn)!
+			table = add_correlation_plan(mut &plan, from_clause.correlation.name, subplan,
+				from_clause.correlation, params, conn)!
 
 			if filter {
 				add_where_plan(mut &plan, body, params, conn, {

@@ -1,21 +1,21 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.27, FreeStmt
-6.27                     todo         - -
-6.27/GR/1                todo         - -
-6.27/GR/2                todo         - -
-6.27/GR/3                todo         - -
-6.27/GR/4                todo         - -
-6.27/GR/5                todo         - -
+6.27                     implemented  libvsql/std_3_6_27_free_stmt.v libvsql/std_3_6_27_free_stmt_test.c the codes match Table 18
+6.27/GR/1                definition   - -
+6.27/GR/2                definition   - -
+6.27/GR/3                implemented  libvsql/std_3_6_27_free_stmt.v libvsql/std_3_6_27_free_stmt_test.c
+6.27/GR/4                definition   - -
+6.27/GR/5                definition   - -
 6.27/GR/6                container    - -
-6.27/GR/6.a              todo         - -
-6.27/GR/6.a.i            todo         - -
-6.27/GR/6.a.ii           todo         - -
-6.27/GR/6.b              todo         - -
-6.27/GR/6.c              todo         - -
-6.27/GR/6.d              todo         - -
-6.27/GR/6.e              todo         - -
-6.27/GR/6.e.i            todo         - -
-6.27/GR/6.e.ii           todo         - -
-6.27/GR/6.e.iii          todo         - -
-6.27/GR/6.e.iv           todo         - -
+6.27/GR/6.a              implemented  libvsql/std_3_6_27_free_stmt.v libvsql/std_3_6_27_free_stmt_test.c
+6.27/GR/6.a.i            implemented  libvsql/std_3_6_27_free_stmt.v libvsql/std_3_6_27_free_stmt_test.c
+6.27/GR/6.a.ii           implemented  libvsql/std_3_6_27_free_stmt.v libvsql/std_3_6_27_free_stmt_test.c
+6.27/GR/6.b              implemented  libvsql/std_3_6_27_free_stmt.v libvsql/std_3_6_27_free_stmt_test.c
+6.27/GR/6.c              implemented  libvsql/std_3_6_27_free_stmt.v libvsql/std_3_6_27_free_stmt_test.c
+6.27/GR/6.d              implemented  libvsql/std_3_6_27_free_stmt.v libvsql/std_3_6_27_free_stmt_test.c
+6.27/GR/6.e              implemented  libvsql/std_3_6_27_free_stmt.v libvsql/std_3_6_27_free_stmt_test.c
+6.27/GR/6.e.i            implemented  libvsql/std_3_6_27_free_stmt.v libvsql/std_3_6_27_free_stmt_test.c
+6.27/GR/6.e.ii           implemented  libvsql/std_3_6_27_free_stmt.v libvsql/std_3_6_27_free_stmt_test.c
+6.27/GR/6.e.iii          implemented  libvsql/std_3_6_27_free_stmt.v libvsql/std_3_6_27_free_stmt_test.c
+6.27/GR/6.e.iv           implemented  libvsql/std_3_6_27_free_stmt.v libvsql/std_3_6_27_free_stmt_test.c

@@ -1,20 +1,20 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.35, GetEnvAttr
-6.35                     todo         - -
+6.35                     implemented  libvsql/std_3_6_35_get_env_attr.v libvsql/std_3_6_35_get_env_attr_test.c
 6.35/GR/1                container    - -
-6.35/GR/1.a              todo         - -
+6.35/GR/1.a              implemented  libvsql/std_3_6_35_get_env_attr.v libvsql/std_3_6_35_get_env_attr_test.c there's never a skeleton SQL-environment
 6.35/GR/1.b              container    - -
-6.35/GR/1.b.i            todo         - -
-6.35/GR/1.b.ii           todo         - -
-6.35/GR/2                todo         - -
-6.35/GR/3                todo         - -
-6.35/GR/4                todo         - -
-6.35/GR/4.a              todo         - -
-6.35/GR/4.b              todo         - -
-6.35/GR/5                todo         - -
-6.35/GR/5.a              todo         - -
-6.35/GR/5.b              todo         - -
-6.35/GR/5.b.i            todo         - -
-6.35/GR/5.b.ii           todo         - -
-6.35/GR/5.b.iii          todo         - -
+6.35/GR/1.b.i            definition   - -
+6.35/GR/1.b.ii           implemented  libvsql/std_3_6_35_get_env_attr.v libvsql/std_3_6_35_get_env_attr_test.c
+6.35/GR/2                definition   - -
+6.35/GR/3                implemented  libvsql/std_3_6_35_get_env_attr.v libvsql/std_3_6_35_get_env_attr_test.c
+6.35/GR/4                implemented  libvsql/std_3_6_35_get_env_attr.v libvsql/std_3_6_35_get_env_attr_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+6.35/GR/4.a              implemented  libvsql/std_3_6_35_get_env_attr.v libvsql/std_3_6_35_get_env_attr_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+6.35/GR/4.b              implemented  libvsql/std_3_6_35_get_env_attr.v libvsql/std_3_6_35_get_env_attr_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+6.35/GR/5                n/a          - - there are no implementation-defined environment attributes
+6.35/GR/5.a              n/a          - - there are no implementation-defined environment attributes
+6.35/GR/5.b              n/a          - - there are no implementation-defined environment attributes
+6.35/GR/5.b.i            n/a          - - there are no implementation-defined environment attributes
+6.35/GR/5.b.ii           n/a          - - there are no implementation-defined environment attributes
+6.35/GR/5.b.iii          n/a          - - there are no implementation-defined environment attributes

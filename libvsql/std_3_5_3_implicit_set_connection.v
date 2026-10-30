@@ -33,15 +33,16 @@ fn implicit_set_connection(dc i64) ! {
 		return
 	}
 
-	// - 2. If an SQL-transaction is active for the current SQL-connection and
-	// the SQL-implementation does not support transactions that affect more
-	// than one SQL-server, then an exception condition is raised: feature not
-	// supported — multiple server transactions.
+	// ISO/IEC 9075-3:2003(E), 5.3, Implicit set connection, General Rules, 2:
+	// the current SQL-connection can't have an active SQL-transaction, since
+	// vsql doesn't support transactions over more than one SQL-server.
 	if current != 0 && transaction_active(sql_handle_dbc, current) {
 		return cli_error('0A001', 'multiple server transactions')
 	}
 
-	// - 4, 5. The current SQL-connection becomes dormant, and DC becomes the
-	// current SQL-connection.
+	// ISO/IEC 9075-3:2003(E), 5.3, Implicit set connection, General Rules, 4-6:
+	// the current SQL-connection becomes dormant, and DC becomes the current
+	// SQL-connection. Each connection keeps its own SQL-session (and server).
+	// Selecting a connection can't fail (General Rules, 3).
 	set_current_connection(env, dc)
 }

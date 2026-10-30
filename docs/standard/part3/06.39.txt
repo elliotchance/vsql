@@ -1,22 +1,22 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.39, GetLength
-6.39                     todo         - -
-6.39/GR/1                todo         - -
-6.39/GR/2                todo         - -
-6.39/GR/3                todo         - -
-6.39/GR/4                todo         - -
-6.39/GR/5                todo         - -
-6.39/GR/6                todo         - -
-6.39/GR/7                todo         - -
-6.39/GR/8                todo         - -
-6.39/GR/9                container    - -
-6.39/GR/9.a              todo         - -
-6.39/GR/9.a.i            todo         - -
-6.39/GR/9.a.ii           container    - -
-6.39/GR/9.a.ii.1         todo         - -
-6.39/GR/9.a.ii.2         todo         - -
-6.39/GR/9.b              container    - -
-6.39/GR/9.b.i            todo         - -
-6.39/GR/9.b.ii           todo         - -
-6.39/GR/9.b.iii          todo         - -
+6.39                     n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/1                definition   - -
+6.39/GR/2                unclear      - - HYC00 is returned instead (#725)
+6.39/GR/3                unclear      - - HYC00 is returned instead (#725)
+6.39/GR/4                n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/5                unclear      - - HYC00 is returned instead (#725)
+6.39/GR/6                n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/7                n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/8                n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/9                n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/9.a              n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/9.a.i            n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/9.a.ii           n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/9.a.ii.1         n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/9.a.ii.2         n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/9.b              n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/9.b.i            n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/9.b.ii           n/a          - - large object locators (T041) aren't supported: HYC00
+6.39/GR/9.b.iii          n/a          - - large object locators (T041) aren't supported: HYC00

@@ -1,10 +1,10 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.29, GetCursorName
-6.29                     todo         - -
-6.29/GR/1                todo         - -
+6.29                     implemented  libvsql/std_3_6_29_get_cursor_name.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_55_set_cursor_name_test.c
+6.29/GR/1                definition   - -
 6.29/GR/2                container    - -
-6.29/GR/2.a              todo         - -
-6.29/GR/2.b              todo         - -
-6.29/GR/3                todo         - -
-6.29/GR/4                todo         - -
+6.29/GR/2.a              implemented  libvsql/std_3_6_29_get_cursor_name.v libvsql/std_3_6_29_get_cursor_name_test.c SQL_CUR followed by the statement handle
+6.29/GR/2.b              implemented  libvsql/std_3_6_29_get_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
+6.29/GR/3                definition   - -
+6.29/GR/4                implemented  libvsql/std_3_6_29_get_cursor_name.v libvsql/std_3_6_29_get_cursor_name_test.c

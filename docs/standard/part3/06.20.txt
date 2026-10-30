@@ -1,26 +1,26 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.20, Execute
-6.20                     todo         - -
-6.20/GR/1                todo         - -
-6.20/GR/2                todo         - -
-6.20/GR/3                todo         - -
-6.20/GR/4                todo         - -
+6.20                     partial      libvsql/std_3_6_20_execute.v libvsql/std_3_6_20_execute_test.c a failed execution forgets the executed statement (#730)
+6.20/GR/1                definition   - -
+6.20/GR/2                implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_20_execute_test.c
+6.20/GR/3                implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_20_execute_test.c
+6.20/GR/4                implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_20_execute_test.c
 6.20/GR/5                container    - -
-6.20/GR/5.a              todo         - -
+6.20/GR/5.a              implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_20_execute_test.c 5.4 (Implicit cursor) is reviewed on its own
 6.20/GR/5.b              container    - -
-6.20/GR/5.b.i            todo         - -
+6.20/GR/5.b.i            implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_49_param_data_test.c 5.6 is reviewed on its own
 6.20/GR/5.b.ii           container    - -
-6.20/GR/5.b.ii.1         todo         - -
-6.20/GR/5.b.ii.1.A       todo         - -
-6.20/GR/5.b.ii.1.B       todo         - -
-6.20/GR/5.b.ii.1.C       todo         - -
-6.20/GR/5.b.ii.2         todo         - -
-6.20/GR/5.b.ii.2.A       todo         - -
-6.20/GR/5.b.ii.2.B       todo         - -
-6.20/GR/5.b.ii.2.C       todo         - -
-6.20/GR/5.b.ii.3         todo         - -
-6.20/GR/5.b.iii          todo         - -
-6.20/GR/6                todo         - -
-6.20/GR/7                todo         - -
-6.20/GR/8                todo         - -
+6.20/GR/5.b.ii.1         implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_55_set_cursor_name_test.c tested with ExecDirect, which executes it the same way
+6.20/GR/5.b.ii.1.A       definition   - -
+6.20/GR/5.b.ii.1.B       implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_55_set_cursor_name_test.c tested with ExecDirect, which executes it the same way
+6.20/GR/5.b.ii.1.C       impl-defined libvsql/std_3_6_20_execute.v - the fetched row of the cursor's statement isn't changed
+6.20/GR/5.b.ii.2         implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_55_set_cursor_name_test.c tested with ExecDirect, which executes it the same way
+6.20/GR/5.b.ii.2.A       definition   - -
+6.20/GR/5.b.ii.2.B       implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_55_set_cursor_name_test.c tested with ExecDirect, which executes it the same way
+6.20/GR/5.b.ii.2.C       impl-defined libvsql/std_3_6_20_execute.v - the fetched row of the cursor's statement isn't changed
+6.20/GR/5.b.ii.3         implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_20_execute_test.c
+6.20/GR/5.b.iii          n/a          - - there's no <call statement> (T321)
+6.20/GR/6                implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_53_row_count_test.c
+6.20/GR/7                implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_53_row_count_test.c
+6.20/GR/8                partial      libvsql/std_3_6_20_execute.v libvsql/std_3_6_20_execute_test.c the executed statement is forgotten even if P fails (#730)

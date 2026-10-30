@@ -1,21 +1,21 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.55, SetCursorName
-6.55                     todo         - -
-6.55/GR/1                todo         - -
-6.55/GR/2                todo         - -
-6.55/GR/3                todo         - -
+6.55                     implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
+6.55/GR/1                definition   - -
+6.55/GR/2                implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
+6.55/GR/3                definition   - -
 6.55/GR/4                container    - -
-6.55/GR/4.a              todo         - -
-6.55/GR/4.b              todo         - -
-6.55/GR/4.c              todo         - -
+6.55/GR/4.a              implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
+6.55/GR/4.b              implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
+6.55/GR/4.c              implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
 6.55/GR/5                container    - -
-6.55/GR/5.a              todo         - -
-6.55/GR/5.b              todo         - -
-6.55/GR/6                todo         - -
+6.55/GR/5.a              implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
+6.55/GR/5.b              implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
+6.55/GR/6                definition   - - ML is 128 (max_identifier_length)
 6.55/GR/7                container    - -
-6.55/GR/7.a              todo         - -
-6.55/GR/7.b              todo         - -
-6.55/GR/8                todo         - -
-6.55/GR/9                todo         - -
-6.55/GR/10               todo         - -
+6.55/GR/7.a              untested     libvsql/std_3_6_55_set_cursor_name.v - truncating a name over 128 characters isn't tested
+6.55/GR/7.b              implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
+6.55/GR/8                implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c
+6.55/GR/9                unclear      libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c names are compared as identifiers (regular ones in upper case, delimited ones without quotes), rather than as strings with LIKE and identical
+6.55/GR/10               implemented  libvsql/std_3_6_55_set_cursor_name.v libvsql/std_3_6_55_set_cursor_name_test.c

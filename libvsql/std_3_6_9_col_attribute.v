@@ -13,7 +13,8 @@ fn sql_col_attribute(statement_handle SQLInteger, column_number i16, field_ident
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return col_attribute(mut stmt, column_number, field_identifier, character_attribute,

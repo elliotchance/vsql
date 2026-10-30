@@ -1,4 +1,4 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 4.2, Return codes
-4.2                      todo         - -
+4.2                      implemented  libvsql/std_3_4_2_return_codes.v libvsql/std_3_6_21_fetch_test.c,libvsql/std_3_6_49_param_data_test.c,libvsql/std_3_6_29_get_cursor_name_test.c values and which code wins; recording diagnostics is in 4.3

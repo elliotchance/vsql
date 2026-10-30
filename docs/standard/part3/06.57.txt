@@ -1,24 +1,24 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.57, SetDescRec
-6.57                     todo         - -
-6.57/GR/1                todo         - -
-6.57/GR/2                todo         - -
-6.57/GR/3                todo         - -
-6.57/GR/4                todo         - -
-6.57/GR/5                todo         - -
-6.57/GR/6                todo         - -
-6.57/GR/6.a              todo         - -
-6.57/GR/6.b              todo         - -
-6.57/GR/7                todo         - -
-6.57/GR/8                todo         - -
-6.57/GR/8.a              todo         - -
-6.57/GR/8.b              container    - -
-6.57/GR/8.b.i            todo         - -
-6.57/GR/8.b.ii           todo         - -
-6.57/GR/8.c              todo         - -
-6.57/GR/8.d              todo         - -
-6.57/GR/8.e              todo         - -
-6.57/GR/9                todo         - -
-6.57/GR/10               todo         - -
-6.57/GR/11               todo         - -
+6.57                     implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c
+6.57/GR/1                definition   - -
+6.57/GR/2                implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_49_param_data_test.c the shared check is only tested through GetDescField
+6.57/GR/3                implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c
+6.57/GR/4                definition   - -
+6.57/GR/5                implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c
+6.57/GR/6                implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c
+6.57/GR/6.a              untestable   - - running out of memory can't be caused by a test
+6.57/GR/6.b              implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c
+6.57/GR/7                definition   - -
+6.57/GR/8                implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c
+6.57/GR/8.a              implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c
+6.57/GR/8.b              implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c
+6.57/GR/8.b.i            implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c
+6.57/GR/8.b.ii           implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c
+6.57/GR/8.c              implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c
+6.57/GR/8.d              implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c
+6.57/GR/8.e              implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c
+6.57/GR/9                implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c 5.13 is reviewed on its own
+6.57/GR/10               implemented  libvsql/std_3_6_57_set_desc_rec.v libvsql/std_3_6_57_set_desc_rec_test.c the record and COUNT are unchanged
+6.57/GR/11               impl-defined - - there are no restrictions other than those of 5.6

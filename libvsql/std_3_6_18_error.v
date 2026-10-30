@@ -17,10 +17,10 @@ fn sql_error_routine(environment_handle SQLInteger, connection_handle SQLInteger
 	ch := i64(connection_handle)
 	eh := i64(environment_handle)
 
-	// - 1. The StatementHandle is used if it identifies an allocated
-	// SQL-statement, otherwise the ConnectionHandle is used if the
-	// StatementHandle is zero, otherwise the EnvironmentHandle is used if the
-	// ConnectionHandle is zero.
+	// ISO/IEC 9075-3:2003(E), 6.18, Error, General Rules, 1.a-c: the
+	// StatementHandle is used if it identifies an allocated SQL-statement,
+	// otherwise the ConnectionHandle is used if the StatementHandle is zero,
+	// otherwise the EnvironmentHandle is used if the ConnectionHandle is zero.
 	ht, ih := if sh in stmts {
 		sql_handle_stmt, sh
 	} else if sh == 0 && ch in dbcs {
@@ -28,14 +28,15 @@ fn sql_error_routine(environment_handle SQLInteger, connection_handle SQLInteger
 	} else if ch == 0 && eh in envs {
 		sql_handle_env, eh
 	} else {
-		// - 1.d. Otherwise, an exception condition is raised: CLI-specific
-		// condition — invalid handle.
+		// ISO/IEC 9075-3:2003(E), 6.18, Error, General Rules, 1.d
 		return sql_invalid_handle
 	}
 	mut diag := handle_diagnostics(ht, ih) or { return sql_invalid_handle }
 
-	// - 3. If every status record has already been processed by Error, then a
-	// completion condition is raised: no data, and Sqlstate is set to '00000'.
+	// ISO/IEC 9075-3:2003(E), 6.18, Error, General Rules, 2 and 3: the status
+	// records are of the last routine (other than Error, GetDiagField and
+	// GetDiagRec) for the handle. When they've all been returned, it's no data
+	// with an Sqlstate of 00000.
 	if diag.processed >= diag.records.len {
 		if sqlstate != unsafe { nil } {
 			copy_c_string(sqlstate, '00000', 6, null_termination(handle_env(ht, ih)))
@@ -43,12 +44,12 @@ fn sql_error_routine(environment_handle SQLInteger, connection_handle SQLInteger
 		return sql_no_data
 	}
 
-	// - 4. Information is retrieved by implicitly executing GetDiagRec for the
-	// first status record not yet processed by Error.
+	// ISO/IEC 9075-3:2003(E), 6.18, Error, General Rules, 4: the first status
+	// record that hasn't been returned is returned by GetDiagRec.
 	rc := sql_get_diag_rec(ht, SQLInteger(ih), i16(diag.processed + 1), sqlstate, native_error,
 		message_text, buffer_length, text_length)
 
-	// - 5. Add SR to the list of status records already processed by Error.
+	// ISO/IEC 9075-3:2003(E), 6.18, Error, General Rules, 5
 	if rc != sql_error {
 		diag.processed++
 	}

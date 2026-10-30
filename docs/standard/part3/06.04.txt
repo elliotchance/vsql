@@ -1,6 +1,6 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.4, AllocStmt
-6.4                      todo         - -
-6.4/GR/1                 todo         - -
-6.4/GR/2                 todo         - -
+6.4                      implemented  libvsql/std_3_6_4_alloc_stmt.v libvsql/std_3_6_4_alloc_stmt_test.c
+6.4/GR/1                 definition   - -
+6.4/GR/2                 implemented  libvsql/std_3_6_4_alloc_stmt.v libvsql/std_3_6_4_alloc_stmt_test.c

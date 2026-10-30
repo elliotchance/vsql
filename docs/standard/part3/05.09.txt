@@ -1,15 +1,15 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 5.9, Character string retrieval
-5.9                      todo         - -
-5.9/GR/1                 todo         - -
-5.9/GR/2                 todo         - -
-5.9/GR/3                 todo         - -
-5.9/GR/4                 todo         - -
+5.9                      implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+5.9/GR/1                 definition   - -
+5.9/GR/2                 unclear      libvsql/std_3_5_9_character_string_retrieval.v - with null termination False, a length of 0 isn't an error, since 4.4.3 makes it the same as a null pointer
+5.9/GR/3                 definition   - -
+5.9/GR/4                 implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
 5.9/GR/5                 container    - -
-5.9/GR/5.a               todo         - -
-5.9/GR/5.a.i             todo         - -
-5.9/GR/5.a.ii            todo         - -
-5.9/GR/5.b               todo         - -
-5.9/GR/5.b.i             todo         - -
-5.9/GR/5.b.ii            todo         - -
+5.9/GR/5.a               implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+5.9/GR/5.a.i             implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+5.9/GR/5.a.ii            implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+5.9/GR/5.b               implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+5.9/GR/5.b.i             implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+5.9/GR/5.b.ii            implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c

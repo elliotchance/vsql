@@ -18,24 +18,26 @@ fn sql_more_results(statement_handle SQLInteger) i16 {
 	stmt.diag.clear()
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 
-	// - 2. If there is no executed SQL-statement associated with S, then a
-	// completion condition is raised: no data — no additional dynamic result
-	// sets returned.
+	// ISO/IEC 9075-3:2003(E), 6.46, MoreResults, General Rules, 1 and 2: an
+	// unexecuted statement has no more result sets.
 	if !stmt.executed {
 		return no_more_results(mut stmt.diag)
 	}
 
-	// - 3.b. If there is no cursor associated with S, then an exception
-	// condition is raised: CLI-specific condition — function sequence error.
+	// ISO/IEC 9075-3:2003(E), 6.46, MoreResults, General Rules, 3: a statement
+	// without a cursor is a function sequence error (vsql has no
+	// implementation-defined rules for it).
 	if !stmt.is_query {
 		return stmt.diag.error(cli_error('HY010', 'function sequence error'))
 	}
 
-	// - 4. If CR is currently open, then CR is placed in the closed state.
+	// ISO/IEC 9075-3:2003(E), 6.46, MoreResults, General Rules, 4: the cursor
+	// is closed, and the fetched row is discarded.
 	stmt.close_cursor()
 	autocommit(mut stmt.diag, stmt.dbc, true) or { return stmt.diag.error(err) }
 
-	// - 5.b. There isn't another result set.
+	// ISO/IEC 9075-3:2003(E), 6.46, MoreResults, General Rules, 5.b: there
+	// isn't another result set.
 	return no_more_results(mut stmt.diag)
 }
 

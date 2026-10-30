@@ -10,24 +10,26 @@ fn sql_set_connect_attr(connection_handle SQLInteger, attribute SQLInteger, valu
 	defer {
 		entry.leave()
 	}
+	// ISO/IEC 9075-3:2003(E), 6.54, SetConnectAttr, General Rules, 1
 	mut dbc := dbcs[i64(connection_handle)] or { return sql_invalid_handle }
 	dbc.diag.clear()
 
-	// AUTOCOMMIT is implementation-defined, see autocommit.v.
+	// AUTOCOMMIT is an implementation-defined INTEGER attribute, see
+	// autocommit.v (ISO/IEC 9075-3:2003(E), 6.54, SetConnectAttr, General
+	// Rules, 5.a).
 	if attribute == sql_attr_autocommit {
 		set_autocommit(mut dbc, i64(connection_handle), value) or { return dbc.diag.error(err) }
 		return sql_success
 	}
 
-	// - 3. If A is not one of the code values in Table 16, or it can't be set
-	// (POPULATE IPD), then an exception condition is raised: CLI-specific
-	// condition — invalid attribute identifier.
+	// ISO/IEC 9075-3:2003(E), 6.54, SetConnectAttr, General Rules, 2 and 3: the
+	// attribute must be one of the codes in Table 16 that can be set (so not
+	// POPULATE IPD).
 	if attribute != sql_attr_savepoint_name {
 		return dbc.diag.error(cli_error('HY092', 'invalid attribute identifier'))
 	}
 
-	// - 4. The SAVEPOINT NAME attribute of C is set to the first L octets of
-	// Value.
+	// ISO/IEC 9075-3:2003(E), 6.54, SetConnectAttr, General Rules, 4
 	dbc.savepoint_name = input_string(unsafe { &char(value) }, i64(string_length)) or { return dbc.diag.error(err) }
 
 	return sql_success

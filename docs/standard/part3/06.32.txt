@@ -1,26 +1,26 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.32, GetDescRec
-6.32                     todo         - -
-6.32/GR/1                todo         - -
-6.32/GR/2                todo         - -
-6.32/GR/3                todo         - -
+6.32                     implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/1                definition   - -
+6.32/GR/2                implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_49_param_data_test.c the shared check is only tested through GetDescField
+6.32/GR/3                definition   - -
 6.32/GR/4                container    - -
-6.32/GR/4.a              todo         - -
-6.32/GR/4.b              todo         - -
-6.32/GR/5                todo         - -
-6.32/GR/6                todo         - -
-6.32/GR/7                todo         - -
-6.32/GR/8                todo         - -
-6.32/GR/8.a              todo         - -
-6.32/GR/8.b              todo         - -
-6.32/GR/8.c              todo         - -
-6.32/GR/8.d              todo         - -
-6.32/GR/8.e              todo         - -
-6.32/GR/8.f              todo         - -
-6.32/GR/8.g              todo         - -
-6.32/GR/8.g.i            todo         - -
-6.32/GR/8.g.ii           container    - -
-6.32/GR/8.g.ii.1         todo         - -
-6.32/GR/8.g.ii.2         todo         - -
-6.32/GR/8.g.ii.3         todo         - -
+6.32/GR/4.a              implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/4.b              implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/5                implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/6                definition   - -
+6.32/GR/7                definition   - -
+6.32/GR/8                implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/8.a              implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/8.b              implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/8.c              implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/8.d              implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/8.e              implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/8.f              implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/8.g              implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/8.g.i            untested     libvsql/std_3_6_32_get_desc_rec.v - BL of zero with null termination False isn't tested
+6.32/GR/8.g.ii           implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/8.g.ii.1         implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c
+6.32/GR/8.g.ii.2         definition   - -
+6.32/GR/8.g.ii.3         implemented  libvsql/std_3_6_32_get_desc_rec.v libvsql/std_3_6_32_get_desc_rec_test.c

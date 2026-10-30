@@ -20,20 +20,21 @@ fn sql_execute(statement_handle SQLInteger) i16 {
 fn execute(mut stmt Stmt) !i16 {
 	stmt.invoke(false)!
 
-	// - 2. If there is no prepared statement associated with S, then an
-	// exception condition is raised: CLI-specific condition — function sequence
-	// error.
+	// ISO/IEC 9075-3:2003(E), 6.20, Execute, General Rules, 1 and 2: there must
+	// be a prepared statement.
 	mut prepared := stmt.prepared or { return cli_error('HY010', 'function sequence error') }
 	stmt.diag.dynamic_function = stmt.prepared_function
 	stmt.diag.dynamic_function_code = stmt.prepared_function_code
 
-	// - 3. If an open cursor is associated with S, then an exception condition
-	// is raised: invalid cursor state.
+	// ISO/IEC 9075-3:2003(E), 6.20, Execute, General Rules, 3: there can't be
+	// an open cursor.
 	if stmt.cursor != none {
 		return cli_error('24000', 'invalid cursor state')
 	}
 
-	// - 4 to 8. P is executed with the values of its dynamic parameters.
+	// ISO/IEC 9075-3:2003(E), 6.20, Execute, General Rules, 4-8: P is executed
+	// with the values of its dynamic parameters. The executed statement is
+	// forgotten even if P fails, which is #730.
 	stmt.executed = false
 
 	return execute_statement(mut stmt, mut prepared)

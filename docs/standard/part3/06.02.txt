@@ -1,5 +1,5 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.2, AllocEnv
-6.2                      todo         - -
-6.2/GR/1                 todo         - -
+6.2                      implemented  libvsql/std_3_6_2_alloc_env.v libvsql/std_3_6_2_alloc_env_test.c
+6.2/GR/1                 implemented  libvsql/std_3_6_2_alloc_env.v libvsql/std_3_6_2_alloc_env_test.c

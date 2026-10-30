@@ -1,22 +1,22 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.14, DataSources
-6.14                     todo         - -
-6.14/GR/1                todo         - -
-6.14/GR/2                todo         - -
-6.14/GR/3                todo         - -
-6.14/GR/4                todo         - -
-6.14/GR/5                todo         - -
-6.14/GR/6                todo         - -
-6.14/GR/7                todo         - -
-6.14/GR/8                todo         - -
-6.14/GR/9                todo         - -
-6.14/GR/9.a              todo         - -
-6.14/GR/9.a.i            todo         - -
-6.14/GR/9.a.ii           todo         - -
-6.14/GR/9.a.iii          todo         - -
-6.14/GR/9.b              todo         - -
-6.14/GR/9.b.i            todo         - -
-6.14/GR/9.b.ii           todo         - -
-6.14/GR/9.b.iii          todo         - -
-6.14/GR/9.b.iv           todo         - -
+6.14                     implemented  libvsql/std_3_6_14_data_sources.v libvsql/std_3_6_14_data_sources_test.c
+6.14/GR/1                definition   - -
+6.14/GR/2                implemented  libvsql/std_3_6_14_data_sources.v libvsql/std_3_6_14_data_sources_test.c there's never a skeleton SQL-environment
+6.14/GR/3                implemented  libvsql/std_3_6_14_data_sources.v libvsql/std_3_6_14_data_sources_test.c
+6.14/GR/4                definition   - -
+6.14/GR/5                definition   - -
+6.14/GR/6                implemented  libvsql/std_3_6_14_data_sources.v libvsql/std_3_6_14_data_sources_test.c the codes match Table 24
+6.14/GR/7                impl-defined libvsql/std_3_6_14_data_sources.v - the DEFAULT server and :memory:, since a ServerName is otherwise a file path
+6.14/GR/8                impl-defined libvsql/std_3_6_14_data_sources.v - a short description of each
+6.14/GR/9                container    - -
+6.14/GR/9.a              implemented  libvsql/std_3_6_14_data_sources.v libvsql/std_3_6_14_data_sources_test.c
+6.14/GR/9.a.i            n/a          - - there are always data sources
+6.14/GR/9.a.ii           implemented  libvsql/std_3_6_14_data_sources.v libvsql/std_3_6_14_data_sources_test.c
+6.14/GR/9.a.iii          implemented  libvsql/std_3_6_14_data_sources.v libvsql/std_3_6_14_data_sources_test.c
+6.14/GR/9.b              implemented  libvsql/std_3_6_14_data_sources.v libvsql/std_3_6_14_data_sources_test.c
+6.14/GR/9.b.i            definition   - -
+6.14/GR/9.b.ii           implemented  libvsql/std_3_6_14_data_sources.v libvsql/std_3_6_14_data_sources_test.c
+6.14/GR/9.b.iii          implemented  libvsql/std_3_6_14_data_sources.v libvsql/std_3_6_14_data_sources_test.c
+6.14/GR/9.b.iv           implemented  libvsql/std_3_6_14_data_sources.v libvsql/std_3_6_14_data_sources_test.c

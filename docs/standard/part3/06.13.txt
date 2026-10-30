@@ -1,18 +1,18 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.13, CopyDesc
-6.13                     todo         - -
+6.13                     implemented  libvsql/std_3_6_13_copy_desc.v libvsql/std_3_6_13_copy_desc_test.c
 6.13/GR/1                container    - -
-6.13/GR/1.a              todo         - -
-6.13/GR/1.b              todo         - -
+6.13/GR/1.a              implemented  libvsql/std_3_6_13_copy_desc.v libvsql/std_3_6_13_copy_desc_test.c
+6.13/GR/1.b              definition   - -
 6.13/GR/2                container    - -
-6.13/GR/2.a              todo         - -
+6.13/GR/2.a              implemented  libvsql/std_3_6_13_copy_desc.v libvsql/std_3_6_13_copy_desc_test.c
 6.13/GR/2.b              container    - -
-6.13/GR/2.b.i            todo         - -
-6.13/GR/2.b.ii           todo         - -
-6.13/GR/3                todo         - -
-6.13/GR/4                todo         - -
-6.13/GR/5                todo         - -
-6.13/GR/6                todo         - -
-6.13/GR/7                todo         - -
-6.13/GR/8                todo         - -
+6.13/GR/2.b.i            definition   - -
+6.13/GR/2.b.ii           implemented  libvsql/std_3_6_13_copy_desc.v libvsql/std_3_6_13_copy_desc_test.c
+6.13/GR/3                implemented  libvsql/std_3_6_13_copy_desc.v libvsql/std_3_6_49_param_data_test.c the shared check is only tested through GetDescField
+6.13/GR/4                implemented  libvsql/std_3_6_13_copy_desc.v libvsql/std_3_6_49_param_data_test.c the shared check is only tested through GetDescField
+6.13/GR/5                implemented  libvsql/std_3_6_13_copy_desc.v libvsql/std_3_6_13_copy_desc_test.c
+6.13/GR/6                definition   - -
+6.13/GR/7                implemented  libvsql/std_3_6_13_copy_desc.v libvsql/std_3_6_13_copy_desc_test.c
+6.13/GR/8                implemented  libvsql/std_3_6_13_copy_desc.v libvsql/std_3_6_13_copy_desc_test.c

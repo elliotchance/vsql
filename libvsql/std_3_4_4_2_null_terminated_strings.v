@@ -3,7 +3,9 @@ module main
 // ISO/IEC 9075-3:2003(E), 4.4.2, Null terminated strings
 //
 // An input string is given with its length in octets, or NULL TERMINATED to
-// use the length of the C string.
+// use the length of the C string. Output strings are null terminated when the
+// NULL TERMINATION environment attribute is True (see retrieve_string in
+// ISO/IEC 9075-3:2003(E), 5.9, Character string retrieval).
 
 const sql_nts = -3
 

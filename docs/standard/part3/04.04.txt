@@ -5,7 +5,7 @@
 # 4.4.1, Handles
 4.4.1                    todo         - -
 # 4.4.2, Null terminated strings
-4.4.2                    todo         - -
+4.4.2                    implemented  libvsql/std_3_4_4_2_null_terminated_strings.v libvsql/std_3_5_3_implicit_set_connection_test.c,libvsql/std_3_6_58_set_env_attr_test.c
 # 4.4.3, Null pointers
 4.4.3                    todo         - -
 # 4.4.4, Environment attributes

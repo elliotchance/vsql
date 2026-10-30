@@ -1,21 +1,21 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.7, Cancel
-6.7                      todo         - -
-6.7/GR/1                 todo         - -
+6.7                      implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_7_cancel_test.c
+6.7/GR/1                 definition   - -
 6.7/GR/2                 container    - -
-6.7/GR/2.a               todo         - -
-6.7/GR/2.a.i             todo         - -
-6.7/GR/2.a.ii            todo         - -
-6.7/GR/2.a.iii           todo         - -
-6.7/GR/2.a.iv            todo         - -
-6.7/GR/2.a.v             todo         - -
-6.7/GR/2.a.vi            todo         - -
-6.7/GR/2.a.vii           todo         - -
-6.7/GR/2.b               todo         - -
-6.7/GR/2.b.i             todo         - -
-6.7/GR/2.b.ii            todo         - -
-6.7/GR/2.b.iii           todo         - -
-6.7/GR/2.c               todo         - -
-6.7/GR/2.c.i             todo         - -
-6.7/GR/2.c.ii            todo         - -
+6.7/GR/2.a               unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
+6.7/GR/2.a.i             unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
+6.7/GR/2.a.ii            unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
+6.7/GR/2.a.iii           unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
+6.7/GR/2.a.iv            unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
+6.7/GR/2.a.v             unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
+6.7/GR/2.a.vi            unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
+6.7/GR/2.a.vii           unclear      libvsql/std_3_6_7_cancel.v - routines on an SQL-environment are run one at a time, so Cancel waits for a concurrent routine rather than cancelling it
+6.7/GR/2.b               implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_49_param_data_test.c
+6.7/GR/2.b.i             implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_49_param_data_test.c
+6.7/GR/2.b.ii            implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_49_param_data_test.c
+6.7/GR/2.b.iii           implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_49_param_data_test.c
+6.7/GR/2.c               implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_7_cancel_test.c
+6.7/GR/2.c.i             implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_7_cancel_test.c
+6.7/GR/2.c.ii            implemented  libvsql/std_3_6_7_cancel.v libvsql/std_3_6_7_cancel_test.c

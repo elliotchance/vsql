@@ -1,16 +1,16 @@
 # ISO/IEC 9075-3:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.47, NextResult
-6.47                     todo         - -
-6.47/GR/1                todo         - -
-6.47/GR/2                todo         - -
-6.47/GR/3                todo         - -
-6.47/GR/4                todo         - -
+6.47                     implemented  libvsql/std_3_6_47_next_result.v libvsql/std_3_6_47_next_result_test.c a statement only has one result set
+6.47/GR/1                definition   - -
+6.47/GR/2                implemented  libvsql/std_3_6_47_next_result.v libvsql/std_3_6_47_next_result_test.c
+6.47/GR/3                definition   - -
+6.47/GR/4                implemented  libvsql/std_3_6_47_next_result.v libvsql/std_3_6_47_next_result_test.c
 6.47/GR/5                container    - -
-6.47/GR/5.a              todo         - -
-6.47/GR/5.a.i            todo         - -
-6.47/GR/5.a.ii           todo         - -
-6.47/GR/5.a.iii          todo         - -
-6.47/GR/5.a.iv           todo         - -
-6.47/GR/5.a.v            todo         - -
-6.47/GR/5.b              todo         - -
+6.47/GR/5.a              n/a          - - a statement only has one result set (there are no dynamic result sets without SQL-invoked procedures, T321)
+6.47/GR/5.a.i            n/a          - - a statement only has one result set (there are no dynamic result sets without SQL-invoked procedures, T321)
+6.47/GR/5.a.ii           n/a          - - a statement only has one result set (there are no dynamic result sets without SQL-invoked procedures, T321)
+6.47/GR/5.a.iii          n/a          - - a statement only has one result set (there are no dynamic result sets without SQL-invoked procedures, T321)
+6.47/GR/5.a.iv           n/a          - - a statement only has one result set (there are no dynamic result sets without SQL-invoked procedures, T321)
+6.47/GR/5.a.v            n/a          - - a statement only has one result set (there are no dynamic result sets without SQL-invoked procedures, T321)
+6.47/GR/5.b              implemented  libvsql/std_3_6_47_next_result.v libvsql/std_3_6_47_next_result_test.c

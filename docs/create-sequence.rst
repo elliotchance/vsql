@@ -52,8 +52,8 @@ will start at 1 and increment by 1:
 .. code-block:: sql
 
   CREATE SEQUENCE seq1;
-  VALUES NEXT VALUE FOR seq1;
-  VALUES NEXT VALUE FOR seq1;
+  SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
+  SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
   -- msg: CREATE SEQUENCE 1
   -- COL1: 1
   -- COL1: 2
@@ -63,10 +63,10 @@ A sequence will return an error if it tries to go beyond the allowed limits:
 .. code-block:: sql
 
   CREATE SEQUENCE seq1 START WITH 10 INCREMENT BY 5 MAXVALUE 20;
-  VALUES NEXT VALUE FOR seq1;
-  VALUES NEXT VALUE FOR seq1;
-  VALUES NEXT VALUE FOR seq1;
-  VALUES NEXT VALUE FOR seq1;
+  SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
+  SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
+  SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
+  SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
   -- msg: CREATE SEQUENCE 1
   -- COL1: 10
   -- COL1: 15
@@ -78,8 +78,8 @@ However, we can use ``CYCLE`` to allow the sequence to wrap around:
 .. code-block:: sql
 
   CREATE SEQUENCE seq1 MINVALUE 10 INCREMENT BY 5 MAXVALUE 20 CYCLE;
-  VALUES NEXT VALUE FOR seq1, NEXT VALUE FOR seq1, NEXT VALUE FOR seq1;
-  VALUES NEXT VALUE FOR seq1, NEXT VALUE FOR seq1, NEXT VALUE FOR seq1;
+  SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2, 3) AS t;
+  SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2, 3) AS t;
   -- msg: CREATE SEQUENCE 1
   -- COL1: 10
   -- COL1: 15

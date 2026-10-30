@@ -82,9 +82,9 @@ SELECT * FROM qux;
 SET CATALOG ':memory:';
 CREATE SCHEMA foo.s2;
 CREATE SEQUENCE foo.s2.seq;
-VALUES NEXT VALUE FOR foo.s2.seq;
+SELECT NEXT VALUE FOR foo.s2.seq FROM (VALUES 1) AS t;
 ALTER SEQUENCE foo.s2.seq RESTART WITH 10;
-VALUES NEXT VALUE FOR foo.s2.seq;
+SELECT NEXT VALUE FOR foo.s2.seq FROM (VALUES 1) AS t;
 DROP SEQUENCE foo.s2.seq RESTRICT;
 DROP SCHEMA foo.s2 RESTRICT;
 SET CATALOG 'FOO';
@@ -109,7 +109,7 @@ CREATE TABLE nope.public.t1 (x INT);
 CREATE SCHEMA nope.s1;
 -- error 3D000: invalid catalog name: NOPE
 
-VALUES NEXT VALUE FOR nope.public.seq;
+SELECT NEXT VALUE FOR nope.public.seq FROM (VALUES 1) AS t;
 -- error 3D000: invalid catalog name: NOPE
 
 CREATE TABLE "my catalog".public.t1 (x INT);

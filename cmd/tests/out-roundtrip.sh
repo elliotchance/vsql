@@ -25,15 +25,15 @@ CREATE TABLE "Mixed"."Table" ("id" INT NOT NULL, "Value" VARCHAR(10), PRIMARY KE
 INSERT INTO "Mixed"."Table" ("id", "Value") VALUES (1, '"quoted"');
 CREATE SEQUENCE unused START WITH 10;
 CREATE SEQUENCE moved INCREMENT BY 5;
-VALUES NEXT VALUE FOR moved;
+SELECT NEXT VALUE FOR moved FROM (VALUES 1) AS t;
 CREATE SEQUENCE "Mixed"."seq" START WITH -5 INCREMENT BY -1;
-VALUES NEXT VALUE FOR "Mixed"."seq";
+SELECT NEXT VALUE FOR "Mixed"."seq" FROM (VALUES 1) AS t;
 CREATE SEQUENCE past_max START WITH 1 MAXVALUE 2;
-VALUES NEXT VALUE FOR past_max, NEXT VALUE FOR past_max;
+SELECT NEXT VALUE FOR past_max FROM (VALUES 1, 2) AS t;
 CREATE SEQUENCE past_bigint START WITH 9223372036854775807;
-VALUES NEXT VALUE FOR past_bigint;
+SELECT NEXT VALUE FOR past_bigint FROM (VALUES 1) AS t;
 CREATE SEQUENCE cycles START WITH 1 MAXVALUE 2 CYCLE;
-VALUES NEXT VALUE FOR cycles, NEXT VALUE FOR cycles;
+SELECT NEXT VALUE FOR cycles FROM (VALUES 1, 2) AS t;
 EOF
 
 $VSQL out $VSQL_FILE > $SQL_FILE
@@ -48,7 +48,7 @@ diff $SQL_FILE $SQL_FILE2
 # The sequences must also continue from the same place.
 for f in $VSQL_FILE $VSQL_FILE2; do
   for seq in unused moved '"Mixed"."seq"' past_max past_bigint cycles; do
-    echo "VALUES NEXT VALUE FOR $seq;" | $VSQL cli $f 2>&1 | grep -E '^ *-?[0-9]+$|Error'
+    echo "SELECT NEXT VALUE FOR $seq FROM (VALUES 1) AS t;" | $VSQL cli $f 2>&1 | grep -E '^ *-?[0-9]+$|Error'
   done
 done > $TXT_FILE
 cat $TXT_FILE

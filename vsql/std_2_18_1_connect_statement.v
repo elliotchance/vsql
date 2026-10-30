@@ -96,9 +96,10 @@ fn normalize_identifier(s string) !string {
 		return sym.identifier.to_upper()
 	}
 
-	// A key word.
-	if sym is string && sym.len > 0 && sym[0].is_letter() {
-		return sym
+	// A non-reserved word is a regular identifier, but a reserved word isn't
+	// (5.2, Syntax Rule 26).
+	if tokens[0].token >= token_a && tokens[0].token <= token_zone {
+		return sym as string
 	}
 
 	return error('not an identifier')

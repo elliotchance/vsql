@@ -22,3 +22,12 @@ fn (stmt CloseStatement) execute(mut conn Connection, _ map[string]Value, elapse
 fn (stmt CloseStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN CLOSE')
 }
+
+// close_statement compiles a <close statement> in a module, after CLOSE.
+fn (mut t ModuleTokens) close_statement(p ExternallyInvokedProcedure, cursors []ModuleCursor) !ModuleStatement {
+	cursor := t.module_cursor(p, cursors)!
+	t.end_of_statement(p)!
+
+	return ModuleStatement{['connection', 'cursor', 'close'], [], begin('CLOSE CURSOR',
+		9) + '  vsql_m_close_cursor(SQLSTATE, ${cursor.index});\n'}
+}

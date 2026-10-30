@@ -6,10 +6,9 @@ Numbers
 There are two categories of numbers in vsql: **approximate** and **exact**. Each
 category has its own distinct SQL types, literals, functions and pros/cons.
 
-Arithmetic never implicitly casts a number from one category to another,
-because the result category would be ambiguous, so ``1.5 * 2e0`` is an error.
-This means that sometimes you will need to explicitly cast between categories.
-Comparisons (such as ``1.5 < 2e0``) between categories are allowed.
+Arithmetic between the two categories (such as ``1.5 * 2e0``) gives an
+approximate number (see Arithmetic_). Comparisons (such as ``1.5 < 2e0``)
+between categories are also allowed.
 
 Approximate Numbers
 -------------------
@@ -390,11 +389,14 @@ values to a larger type:
    VALUES CAST(30000 AS INTEGER) + 30000;
    -- COL1: 60000
 
-Implicit casting only happens in supertypes of the same category:
+Implicit casting goes to the supertype in the same category:
 
 * Approximate: ``REAL`` -> ``DOUBLE PRECISION``
 
 * Exact: ``SMALLINT`` -> ``INTEGER`` -> ``BIGINT``
+
+An exact and an approximate number are both cast to ``DOUBLE PRECISION`` (see
+Arithmetic_).
 
 Explicit Casting
 ^^^^^^^^^^^^^^^^
@@ -431,18 +433,18 @@ will result in an ``INTEGER``.
 When the type of the operands are different it will implicitly cast to the
 supertype of both. See *Implicit Casting*.
 
-For example ``12 * 10.5e0`` will result in an error because there is no
-supertype for ``SMALLINT * DOUBLE PRECISION`` (since they belong to different
-categories). Depending on what category of result type you're looking for:
+If either operand is approximate, the result is approximate: both operands are
+cast to ``DOUBLE PRECISION`` (or stay ``REAL`` if they're both ``REAL``). This
+is the same type as mixing them in ``VALUES``, ``CASE`` or ``COALESCE``. An exact
+number that's too big for a ``DOUBLE PRECISION`` is a ``22003`` (numeric value
+out of range) error. To get an exact result instead, cast the approximate
+operand:
 
 .. code-block:: sql
 
    VALUES 12 * 10.5e0;
-   -- error 42883: operator does not exist: SMALLINT * DOUBLE PRECISION
-
-   VALUES CAST(12 AS DOUBLE PRECISION) * 10.5e0;
    -- COL1: 126e0
-   
+
    VALUES 12 * CAST(10.5e0 AS INTEGER);
    -- COL1: 120
 

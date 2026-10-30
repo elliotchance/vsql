@@ -85,12 +85,12 @@ DELETE FROM t WHERE x = 2;
 /* flags */
 COMMIT;
 -- flags:
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 /* flags */
 ROLLBACK WORK;
 -- flags:
--- error 2D000: invalid transaction termination
+-- msg: ROLLBACK
 
 /* extensions V001-01 */
 /* flags */
@@ -278,7 +278,7 @@ SET CONSTRAINTS ALL DEFERRED;
 /* flags */
 ROLLBACK;
 -- flags:
--- error 2D000: invalid transaction termination
+-- msg: ROLLBACK
 
 /* flags */
 SET SCHEMA 'PUBLIC';

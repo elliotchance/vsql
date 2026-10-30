@@ -510,23 +510,6 @@ identifier.
 still objects that exist in the schema, or a table or constraint that's
 referenced by a ``FOREIGN KEY``.
 
-``2D000`` invalid transaction termination
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-``2D000`` is caused by a transaction state transition that is not legal when not
-in an active transaction.
-
-**Examples**
-
-.. code-block:: sql
-
-   START TRANSACTION;
-   COMMIT;
-   COMMIT;
-   -- msg: START TRANSACTION
-   -- msg: COMMIT
-   -- error 2D000: invalid transaction termination
-
 ``2E000`` invalid connection name
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -262,7 +262,7 @@ libvsql-example: $(LIBVSQL)
 VSQL_BIN ?= bin/vsql
 
 # module-example compiles libvsql/module/example.mod (see
-# docs/module-language-c.rst) and runs example_main.c with it. The generated C
+# docs/language-c.rst) and runs example_main.c with it. The generated C
 # must also be C99 and C++11.
 module-example: $(LIBVSQL) $(VSQL_BIN)
 	$(call module_program,example)

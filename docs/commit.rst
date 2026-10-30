@@ -7,8 +7,9 @@ All statements within a transaction will not be visible to other transactions
 until all changes are applied with ``COMMIT`` or all changes are discarded with
 ``ROLLBACK``.
 
-Nested transactions are not supported and ``COMMIT`` or ``ROLLBACK`` cannot be
-used when not in a transaction, otherwise an error is returned.
+Nested transactions are not supported. Outside of a transaction, ``COMMIT`` and
+``ROLLBACK`` succeed and do nothing, since every statement is committed when it
+finishes.
 
 Each deferred constraint (see "Deferrable Constraints" in :doc:`create-table`)
 is checked first. If one isn't satisfied, the whole transaction is rolled back

@@ -847,18 +847,6 @@ fn sqlstate_25006(msg string) IError {
 	}
 }
 
-// invalid transaction termination
-struct SQLState2D000 {
-	SQLState
-}
-
-fn sqlstate_2d000() IError {
-	return SQLState2D000{
-		code: sqlstate_to_int('2D000')
-		msg:  'invalid transaction termination'
-	}
-}
-
 // invalid transaction initiation
 struct SQLState0B000 {
 	SQLState

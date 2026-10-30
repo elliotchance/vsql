@@ -18,20 +18,23 @@ COMMIT;
 COMMIT;
 -- msg: START TRANSACTION
 -- msg: COMMIT
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
+-- # Outside of a transaction, COMMIT and ROLLBACK succeed and do nothing. The
+-- # standard only uses 2D000 (invalid transaction termination) for transactions
+-- # managed outside of the database.
 COMMIT;
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 START TRANSACTION;
 COMMIT;
 ROLLBACK;
 -- msg: START TRANSACTION
 -- msg: COMMIT
--- error 2D000: invalid transaction termination
+-- msg: ROLLBACK
 
 ROLLBACK;
--- error 2D000: invalid transaction termination
+-- msg: ROLLBACK
 
 CREATE TABLE t (x INT);
 INSERT INTO t (x) VALUES (1);

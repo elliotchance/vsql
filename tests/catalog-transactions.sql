@@ -39,4 +39,4 @@ SELECT * FROM bar;
 -- msg: INSERT 1
 -- msg: ROLLBACK
 -- msg: SET CATALOG 1
--- error 2D000: invalid transaction termination
+-- msg: ROLLBACK

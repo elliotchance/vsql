@@ -13,8 +13,9 @@ struct RollbackStatement {
 fn (stmt RollbackStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
+	// Like COMMIT, there's nothing to roll back outside of a transaction.
 	if !conn.in_transaction() {
-		return sqlstate_2d000()
+		return new_result_msg('ROLLBACK', elapsed_parse, t.elapsed())
 	}
 
 	for _, mut catalog in conn.catalogs {

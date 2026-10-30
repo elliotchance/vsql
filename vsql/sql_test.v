@@ -1322,7 +1322,7 @@ PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
 	assert m.header.contains('#ifndef MY_MODULE_H')
 	assert m.header.contains('void add(char SQLSTATE[6], char c[2], char v[11], short *s, long *i, long *i2, long long *b, float *r, double *d, long *f, short *ind, long long *unused);')
 	assert m.source.contains('#include "my-module.h"')
-	assert m.source.contains('static const char vsql_m_set_schema[] = "SET SCHEMA \'it\'\'s\'";')
+	assert m.source.contains('static const char vsql_m_set_schema[] = "SET SCHEMA \'\\"it\'\'s\\"\'";')
 	assert m.source.contains('  (void)unused;\n')
 	assert m.source.contains('{SQL_CHAR, SQL_BOOLEAN, 0, (SQLPOINTER)(*f ? "TRUE" : "FALSE"), SQL_NTS}')
 	assert m.source.contains('INSERT INTO \\"t;\\" (a) VALUES (\'a;\\\\\\"\\n\\t\\r\', CAST(? AS CHARACTER(1)), CAST(? AS CHARACTER VARYING(10)), CAST(? AS SMALLINT)')
@@ -1351,7 +1351,7 @@ PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
 	// The schema is the authorization identifier when there's no SCHEMA.
 	m3 := compile_module('MODULE m LANGUAGE C AUTHORIZATION bob PROCEDURE p (SQLSTATE); COMMIT;',
 		'm')!
-	assert m3.source.contains('"SET SCHEMA \'BOB\'"')
+	assert m3.source.contains('"SET SCHEMA \'\\"BOB\\"\'"')
 }
 
 fn test_module_errors() ! {
@@ -1368,7 +1368,7 @@ fn test_module_errors() ! {
 	assert module_error('MODULE LANGUAGE C SCHEMA "";;') == 'syntax error: invalid delimited identifier: ""'
 	assert module_error('MODULE LANGUAGE C SCHEMA "s;;') == 'syntax error: unterminated delimited identifier: "s'
 	assert compile_module('MODULE LANGUAGE C SCHEMA "a""b" PROCEDURE p (SQLSTATE); COMMIT;',
-		'm')!.source.contains('SET SCHEMA \'a\\"b\'')
+		'm')!.source.contains('SET SCHEMA \'\\"a\\"\\"b\\"\'')
 	assert module_error("MODULE LANGUAGE C SCHEMA 's;;") == "syntax error: unterminated string: 's;;"
 	assert module_error(module_header + 'PROCEDURE "p" (SQLSTATE); COMMIT;') == 'syntax error: expected procedure name near p'
 	assert module_error(module_header + 'PROCEDURE p SQLSTATE; COMMIT;') == 'syntax error: expected ( near SQLSTATE'

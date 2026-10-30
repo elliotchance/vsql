@@ -12,8 +12,12 @@ struct CommitStatement {
 fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
+	// Outside of a transaction there's nothing to commit, since every statement
+	// is committed when it finishes. The standard only uses 2D000 (invalid
+	// transaction termination) for transactions that are managed outside of
+	// the database (General Rules 1 and 2), so it succeeds.
 	if !conn.in_transaction() {
-		return sqlstate_2d000()
+		return new_result_msg('COMMIT', elapsed_parse, t.elapsed())
 	}
 
 	conn.open_write_connection()!

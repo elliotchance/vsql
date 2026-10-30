@@ -55,7 +55,7 @@ CREATE TABLE t (x INT);
 COMMIT;
 -- error 58030: lock failed (fault injected by test)
 -- msg: CREATE TABLE 1
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 -- # Opening, locking or reading the file can fail for reads and writes. The
 -- # next statement opens the file again.

@@ -152,6 +152,8 @@ function for each procedure:
    void add_item(char SQLSTATE[6], long *id, char name[21], double *price, short *price_indicator);
    void change_prices(char SQLSTATE[6], double *factor);
    void get_item(char SQLSTATE[6], long *id, char name[21], double *price, short *price_indicator);
+   void rows_changed(char SQLSTATE[6], long *rows);
+   void error_message(char SQLSTATE[6], char message[201]);
    void commit_work(char SQLSTATE[6]);
    void close_database(char SQLSTATE[6]);
 
@@ -270,6 +272,73 @@ column. It can't have ``UNION``, ``EXCEPT``, ``INTERSECT``, ``ORDER BY``,
   compiled.
 
 A ``CHARACTER(L)`` parameter is padded with spaces to its length.
+
+``GET DIAGNOSTICS`` (ISO/IEC 9075-2, 23.1, Feature F121 "Basic diagnostics
+management") gets information about the last statement that was executed (that
+wasn't ``GET DIAGNOSTICS``):
+
+.. code-block:: text
+
+   GET DIAGNOSTICS <parameter> = <item> [, <parameter> = <item> ]...
+   GET DIAGNOSTICS CONDITION <number> <parameter> = <item> [, <parameter> = <item> ]...
+
+The first form gets information about the statement:
+
+============================ ==================================================
+Item                         Value
+============================ ==================================================
+``NUMBER``                   The number of conditions (``0`` for success).
+``MORE``                     Always ``N``, since every condition is kept.
+``COMMAND_FUNCTION``         The statement, such as ``INSERT`` or
+                             ``UPDATE WHERE``.
+``COMMAND_FUNCTION_CODE``    The code of the statement, such as ``50`` for
+                             ``INSERT``.
+``DYNAMIC_FUNCTION``         Always empty, since a statement in a module isn't
+                             dynamic. ``DYNAMIC_FUNCTION_CODE`` is ``0``.
+``ROW_COUNT``                The number of rows that were inserted, updated or
+                             deleted.
+``TRANSACTIONS_COMMITTED``   ``1`` if a transaction was committed, otherwise
+                             ``0``.
+``TRANSACTIONS_ROLLED_BACK`` ``1`` if a transaction was rolled back, otherwise
+                             ``0``.
+``TRANSACTION_ACTIVE``       ``1`` if there's a transaction now, otherwise ``0``.
+============================ ==================================================
+
+The second form gets information about a condition (an error or warning). The
+number is from ``1`` to ``NUMBER``, and is an integer or a ``SMALLINT``,
+``INTEGER`` or ``BIGINT`` parameter. Condition ``1`` is the one in the
+``SQLSTATE`` of the statement. Any other number is ``35000`` (invalid condition
+number).
+
+============================ ==================================================
+Item                         Value
+============================ ==================================================
+``RETURNED_SQLSTATE``        The SQLSTATE of the condition.
+``MESSAGE_TEXT``             The message.
+``MESSAGE_LENGTH``           The length of the message in characters.
+``MESSAGE_OCTET_LENGTH``     The length of the message in bytes.
+``CONDITION_NUMBER``         The number of the condition.
+``CLASS_ORIGIN``             ``ISO 9075`` if the first two characters of the
+                             SQLSTATE are defined by the SQL standard,
+                             otherwise ``vsql``.
+``SUBCLASS_ORIGIN``          Likewise for the last three characters.
+``CONNECTION_NAME``          The name of the SQL-connection (``DEFAULT`` for
+                             the default SQL-connection).
+``SERVER_NAME``              The server of the SQL-connection.
+============================ ==================================================
+
+The other condition items (``CATALOG_NAME``, ``COLUMN_NAME``,
+``CONSTRAINT_CATALOG``, ``CONSTRAINT_NAME``, ``CONSTRAINT_SCHEMA``,
+``CURSOR_NAME``, ``PARAMETER_MODE``, ``PARAMETER_NAME``,
+``PARAMETER_ORDINAL_POSITION``, ``ROUTINE_CATALOG``, ``ROUTINE_NAME``,
+``ROUTINE_SCHEMA``, ``SCHEMA_NAME``, ``SPECIFIC_NAME``, ``TABLE_NAME``,
+``TRIGGER_CATALOG``, ``TRIGGER_NAME`` and ``TRIGGER_SCHEMA``) are always empty
+(or ``0``).
+
+A number must be put in a ``SMALLINT``, ``INTEGER`` or ``BIGINT`` parameter, and
+a string in a ``CHARACTER`` or ``CHARACTER VARYING`` parameter (a string that
+doesn't fit is cut, and the ``SQLSTATE`` is ``01004``). ``GET DIAGNOSTICS ... =
+ALL`` isn't supported.
 
 If the first statement isn't a connection statement, it connects to
 ``DEFAULT``, which is a new in-memory database. Each SQL-connection has its own

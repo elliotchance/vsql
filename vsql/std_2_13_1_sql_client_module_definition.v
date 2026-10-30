@@ -27,7 +27,8 @@ struct SQLClientModule {
 // included when a procedure needs them, otherwise the C compiler warns that a
 // static function isn't used.
 const c_module_runtime = $embed_file('std_2_13_1_sql_client_module_definition.c').to_string() +
-	$embed_file('std_2_14_7_select_statement_single_row.c').to_string()
+	$embed_file('std_2_14_7_select_statement_single_row.c').to_string() +
+	$embed_file('std_2_23_1_get_diagnostics_statement.c').to_string()
 
 // compile_module compiles an SQL-client module (with LANGUAGE C) into C. The C
 // source includes the header as name + ".h", so name is usually the file name

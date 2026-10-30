@@ -121,7 +121,7 @@ fn select_statement(query string, targets_text string, p ExternallyInvokedProced
 		}
 	}
 
-	mut c := b.c + '  struct vsql_m_target vsql_m_t[${targets.len}] = {\n${elements.join(',\n')}};\n'
+	mut c := begin('SELECT', 65) + b.c + '  struct vsql_m_target vsql_m_t[${targets.len}] = {\n${elements.join(',\n')}};\n'
 	call := 'vsql_m_select(SQLSTATE, ${c_string(text_sql.trim_space())}, ${b.args()}, ${targets.len}, vsql_m_t)'
 	if assignments == '' {
 		c += '  ${call};\n'

@@ -9,9 +9,13 @@
 
 #include "example.h"
 
+/* check prints the message of the first condition if the procedure failed. */
 static void check(const char *procedure, const char *sqlstate) {
+  char state[6], message[201] = "";
+
   if (strcmp(sqlstate, "00000") != 0) {
-    fprintf(stderr, "%s: %s\n", procedure, sqlstate);
+    error_message(state, message);
+    fprintf(stderr, "%s: %s %s\n", procedure, sqlstate, message);
     exit(1);
   }
 }
@@ -24,6 +28,7 @@ int main(void) {
   double price;
   short price_indicator;
   double factor = 0.9;
+  long rows;
 
   remove("example.vsql");
   open_database(sqlstate, file);
@@ -47,6 +52,9 @@ int main(void) {
 
   change_prices(sqlstate, &factor);
   check("change_prices", sqlstate);
+  rows_changed(sqlstate, &rows);
+  check("rows_changed", sqlstate);
+  printf("Changed %ld prices\n", rows);
 
   /* A NULL value has a negative indicator. */
   for (id = 1; id <= 2; id++) {

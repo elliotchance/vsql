@@ -22,6 +22,12 @@ PROCEDURE get_item (SQLSTATE, :id INTEGER, :name CHARACTER VARYING(20),
   SELECT name, price INTO :name, :price INDICATOR :price_indicator
   FROM items WHERE id = :id;
 
+PROCEDURE rows_changed (SQLSTATE, :rows INTEGER);
+  GET DIAGNOSTICS :rows = ROW_COUNT;
+
+PROCEDURE error_message (SQLSTATE, :message CHARACTER VARYING(200));
+  GET DIAGNOSTICS CONDITION 1 :message = MESSAGE_TEXT;
+
 PROCEDURE commit_work (SQLSTATE);
   COMMIT;
 

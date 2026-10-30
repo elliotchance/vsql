@@ -214,103 +214,40 @@ precision (``p``) and scale (``s``). The precision can be up to 1000. If the
 scale is omitted it is 0. If the precision is also omitted it is 1000, so
 ``NUMERIC`` can hold an integer of up to 1000 digits. The result of an
 arithmetic operation also can't have more than 1000 digits, otherwise it's a
-``22003`` (numeric value out of range) error. Both store their respective values
-as fractions. For example, ``1.23`` could be represented as ``123/100``.
+``22003`` (numeric value out of range) error.
 
-The main difference between these two types comes down to the allowed
-denominators. In short, a ``DECIMAL`` may have any denominator up to 10^s,
-whereas a ``NUMERIC`` must have a denominator of exactly 10^s:
-
-.. list-table::
-  :header-rows: 1
-
-  * - Type
-    - Denominator
-
-  * - ``DECIMAL(p, s)``
-    - Any denominator up to 10^s
-
-  * - ``NUMERIC(p, s)``
-    - Exactly 10^s
-
-When calculations are performed on a ``NUMERIC``, the result from each operation
-will be normalized to always satisfy this constraint.
-
-This means that a ``NUMERIC`` is always exact at the precision and scale
-specified and casting to a higher scale will not alter the value. In
-contrast, a ``DECIMAL`` promises to have *at least* the scale specified but
-the value may change as to be more exact if the scale is increased. This is
-best understood with some examples:
+A value always has exactly the scale of its type, so any digits beyond it are
+dropped (rounded towards zero) after each operation. In the SQL standard, the
+only difference is that a ``DECIMAL`` may have a larger precision than the one
+that's declared. vsql uses the declared precision for both, so ``DECIMAL`` and
+``NUMERIC`` give the same values, and only the name of the type is different:
 
 .. code-block:: sql
 
-   VALUES CAST(1.23 AS NUMERIC(3,2)) / CAST(5 AS NUMERIC) * CAST(5 AS NUMERIC);
+   VALUES CAST(1.23 AS DECIMAL(3,2)) / 5 * 5;
    -- COL1: 1.20
 
 Because:
 
-1. ``1.23 AS NUMERIC(3,2)`` -> ``123/100``
-2. Normalize denominator -> ``123/100``
-3. Divide by ``5`` -> ``123/500``
-4. Normalize denominator -> ``24/100``
-5. Multiply by ``5`` -> ``120/100``
-6. Normalize denominator -> ``24/100``
+1. ``CAST(1.23 AS DECIMAL(3,2))`` is ``1.23``.
+2. Dividing by ``5`` (a ``SMALLINT``) gives a ``DECIMAL(8, 2)`` (see below), so
+   ``0.246`` becomes ``0.24``.
+3. Multiplying by ``5`` gives ``1.20``.
 
-Whereas,
-
-.. code-block:: sql
-  
-  VALUES CAST(1.23 AS DECIMAL(3,2)) / 5 * 5;
-  -- COL1: 1.23
-
-Because:
-
-1. ``1.23 AS DECIMAL(3,2)`` -> ``123/100``
-2. Divide by ``5`` -> ``123/500``
-3. Multiply by ``5`` -> ``615/500``
-
-This may seem like the only difference is that ``DECIMAL`` does not normalize
-the denominator, but actually they both need to normalize a denominator that
-would be out of bounds. Consider the example:
-
-.. code-block:: sql
-
-   VALUES CAST(1.23 AS DECIMAL(3,2)) / 11;
-   -- COL1: 0.11
-
-1. ``1.23 AS DECIMAL(3,2)`` -> ``123/100``
-2. Divide by ``11`` -> ``123/1100``
-3. Denominator is out of bounds as it cannot be larger than 100. Highest
-   precision equivalent would be -> ``11/100``
-
-This is the same process and result as the equivalent ``NUMERIC`` operation.
-Casting to a higher scale might result in a different value for ``DECIMAL``
-values, for example:
+Casting to a larger scale doesn't bring back the digits that were dropped:
 
 .. code-block:: sql
 
    VALUES CAST(CAST(5 AS DECIMAL(3,2)) / CAST(7 AS DECIMAL(5,4)) AS DECIMAL(5,4));
    -- COL1: 0.7142
 
-Because:
-
-1. ``5 AS DECIMAL(3,2)`` -> ``5/1``
-2. Divide by ``7`` -> ``5/7``
-3. Cast to ``DECIMAL(5,4)`` -> ``5/7``
-4. Formatted result based on a scale of 4 -> ``0.7142``
-
-.. code-block:: sql
-
    VALUES CAST(CAST(5 AS NUMERIC(3,2)) / CAST(7 AS NUMERIC) AS NUMERIC(5,4));
    -- COL1: 0.7100
 
-Because:
-
-1. ``5 AS NUMERIC(3,2)`` -> ``500/100``
-2. Divide by ``7`` -> ``500/700``
-3. Normalize denominator -> ``71/100``
-4. Cast to ``NUMERIC(5,4)`` -> ``7100/10000``
-5. Formatted result based on a scale of 4 -> ``0.7100``
+The first division is a ``DECIMAL(8, 6)``, which is ``0.714285`` before it's
+cast to ``DECIMAL(5, 4)``. The second divides by a ``NUMERIC`` without a
+precision or scale, so the result has no limit on its precision and a scale of
+2 (2 + 0), which is ``0.71`` before the cast.
 
 Operations Between Exact Types
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

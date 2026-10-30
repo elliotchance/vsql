@@ -609,10 +609,12 @@ be read without reading the whole table.
       each significant digit plus 1 as a byte, without leading or trailing
       zeros, and a 0 byte. Every byte after the sign is flipped for a negative
       number. For example, 1.5 and 1.50 are both ``02 8001 02 06 00``, and
-      0.05 is ``02 7fff 06 00``. A ``DECIMAL`` can hold a fraction with more
-      digits than its scale *s* (such as 123/500 in a ``DECIMAL(3, 2)``), so
-      the digits are of the value truncated to 2 × *s* + 3 decimal places,
-      which is enough to keep different values apart.
+      0.05 is ``02 7fff 06 00``. The digits are of the value truncated to
+      2 × *s* + 3 decimal places, where *s* is the scale. A value always has
+      exactly *s* decimal places now, so that doesn't change its digits, but
+      files written by older versions can have a ``DECIMAL`` with more digits
+      than its scale (such as 123/500 in a ``DECIMAL(3, 2)``), and that's
+      enough to keep those values apart.
 
   * - ``CHARACTER``, ``CHARACTER VARYING``
     - The UTF-8 bytes of the string, without trailing spaces (because 'a' is

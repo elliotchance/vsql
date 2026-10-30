@@ -77,25 +77,24 @@ SELECT * FROM t;
 -- D: 10.00
 -- D: 100.00
 
--- # A DECIMAL can hold more digits than its scale (#223). 1.23 / 5 is shown as
--- # 0.24, but it isn't equal to 0.24, so it's a different key.
+-- # A DECIMAL has exactly the scale of its type (#223), so 1.23 / 5 is 0.24, the
+-- # same key as 0.24.
 CREATE TABLE t (d DECIMAL(3, 2) PRIMARY KEY);
 INSERT INTO t (d) VALUES (CAST(1.23 AS DECIMAL(3, 2)) / 5);
-INSERT INTO t (d) VALUES (0.24), (0.25);
-INSERT INTO t (d) VALUES (CAST(1.23 AS DECIMAL(3, 2)) / 5);
+INSERT INTO t (d) VALUES (0.24);
+INSERT INTO t (d) VALUES (0.25);
 INSERT INTO t (d) VALUES (CAST(-1 AS DECIMAL(3, 2)) / 3), (CAST(-1 AS DECIMAL(3, 2)) / 4), (CAST(1 AS DECIMAL(3, 2)) / 3);
 SELECT d, d * 5, d * 3 FROM t;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
--- msg: INSERT 2
 -- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.T
+-- msg: INSERT 1
 -- msg: INSERT 3
--- D: -0.33 COL2: -1.66 COL3: -1.00
+-- D: -0.33 COL2: -1.65 COL3: -0.99
 -- D: -0.25 COL2: -1.25 COL3: -0.75
 -- D: 0.24 COL2: 1.20 COL3: 0.72
--- D: 0.24 COL2: 1.23 COL3: 0.73
 -- D: 0.25 COL2: 1.25 COL3: 0.75
--- D: 0.33 COL2: 1.66 COL3: 1.00
+-- D: 0.33 COL2: 1.65 COL3: 0.99
 
 CREATE TABLE t (n NUMERIC PRIMARY KEY);
 INSERT INTO t (n) VALUES (123456789012345678901234567890), (-5), (7);

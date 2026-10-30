@@ -54,6 +54,9 @@ PROCEDURE count_rows (SQLSTATE, :n BIGINT);
   -- 22012 if there are :n rows.
   INSERT INTO t (s) VALUES (1 / ((SELECT COUNT(*) FROM t) - :n));
 
+PROCEDURE create_schema (SQLSTATE);
+  CREATE SCHEMA other;
+
 PROCEDURE start_transaction (SQLSTATE);
   START TRANSACTION;
 

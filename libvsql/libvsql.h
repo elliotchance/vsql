@@ -1772,6 +1772,14 @@ SQLRETURN SQLTables(
     SQLSMALLINT  NameLength4
 );
 
+/*
+ * vsql_module_agent isn't part of the SQL/CLI. It's used by the C that "vsql
+ * module" generates, so that the SQL-client modules linked into a program share
+ * the same SQL-agent (Feature F181, "Multiple module support"). It's a pointer
+ * that's NULL until the first module sets it.
+ */
+void **vsql_module_agent(void);
+
 #ifdef __cplusplus
 }
 #endif

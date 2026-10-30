@@ -2163,10 +2163,13 @@ DECLARE d CURSOR FOR SELECT * FROM t;',
 	assert m.source.contains('  vsql_m_begin("UPDATE CURSOR", 81);\n')
 
 	// A cursor can be declared at the start of the module, and the cursors
-	// aren't in a module that doesn't use them.
+	// aren't in a module that doesn't use them. The SQL-connections still have
+	// a list of the cursors of each module, since they're shared with other
+	// modules that may have cursors.
 	m2 := compile_module(module_header + 'DECLARE c CURSOR FOR VALUES 1; PROCEDURE p (SQLSTATE); COMMIT;',
 		'm')!
-	assert !m2.source.contains('vsql_m_cursor')
+	assert !m2.source.contains('vsql_m_cursor_count')
+	assert !m2.source.contains('vsql_m_cursor(')
 
 	cursor_header := module_header + 'DECLARE c CURSOR FOR SELECT x FROM t; PROCEDURE p (SQLSTATE, :x INTEGER); '
 	assert module_error(cursor_header + 'FETCH c INTO :x, :x;') == 'syntax error: procedure p: cursor C has 1 column, but there are 2 targets'

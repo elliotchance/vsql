@@ -268,14 +268,18 @@ module-example: $(LIBVSQL) $(VSQL_BIN)
 	$(call module_program,example)
 
 # module-test is like module-example, for the tests of the generated C in
-# libvsql/module/test_main.c.
+# libvsql/module/test_main.c. It's linked with a second module,
+# test_other.mod (Feature F181, "Multiple module support").
 module-test: $(LIBVSQL) $(VSQL_BIN)
-	$(call module_program,test)
+	$(VSQL_BIN) module libvsql/module/test_other.mod
+	$(call module_program,test,libvsql/module/test_other.c)
 
+# module_program compiles libvsql/module/$(1).mod and runs $(1)_main.c with it
+# (and the C files in $(2)).
 module_program = $(VSQL_BIN) module libvsql/module/$(1).mod \
-	&& $(LIBVSQL_CC) libvsql/module/$(1).c libvsql/module/$(1)_main.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/module-$(1) \
+	&& $(LIBVSQL_CC) libvsql/module/$(1).c $(2) libvsql/module/$(1)_main.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/module-$(1) \
 	&& bin/module-$(1) \
-	&& $(LIBVSQL_CXX) libvsql/module/$(1).c libvsql/module/$(1)_main.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/module-$(1)-cpp \
+	&& $(LIBVSQL_CXX) libvsql/module/$(1).c $(2) libvsql/module/$(1)_main.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/module-$(1)-cpp \
 	&& bin/module-$(1)-cpp
 
 libvsql-test: $(LIBVSQL)

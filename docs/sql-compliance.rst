@@ -19,7 +19,7 @@ Mandatory Features
 ~~~~~~~~~~~~~~~~~~
 
 As of the latest version (or at least the version of this documentation)
-**vsql supports 125 of the 164 mandatory features** of the
+**vsql supports 126 of the 164 mandatory features** of the
 `SQL:2016 Standard <https://www.iso.org/standard/63556.html>`_.
 
 .. list-table:: Table 43 — Feature taxonomy and definition for mandatory features
@@ -445,7 +445,7 @@ As of the latest version (or at least the version of this documentation)
    * - ❌ F131-05
      - Single row ``SELECT`` with ``GROUP BY`` and ``HAVING`` clauses and grouped views
 
-   * - ❌ **F181**
+   * - ✅ **F181**
      - **Multiple module support**
 
    * - ✅ **F201**

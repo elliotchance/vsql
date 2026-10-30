@@ -1,6 +1,6 @@
 /*
- * test_main.c tests the C that "vsql module" generates for test.mod. Run it
- * with "make module-test".
+ * test_main.c tests the C that "vsql module" generates for test.mod (and
+ * test_other.mod). Run it with "make module-test".
  */
 
 #include <stdio.h>
@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "test.h"
+#include "test_other.h"
 
 static int failures = 0;
 
@@ -319,6 +320,46 @@ int main(void) {
   EXPECT(open_all(sqlstate), "00000");
   EXPECT(fetch_all(sqlstate, &x), "07002");
   EXPECT(rollback_work(sqlstate), "00000");
+
+  /*
+   * Feature F181, "Multiple module support": test_other.mod has the same
+   * SQL-connections, SQL-transactions and first diagnostics area, but the
+   * schema of the module is the default schema of its statements, and it has
+   * its own cursors.
+   */
+  EXPECT(create_schema(sqlstate), "00000");
+  EXPECT(commit_work(sqlstate), "00000");
+  EXPECT(other_create(sqlstate), "00000");
+  EXPECT(other_count(sqlstate, &rows), "00000");
+  x = 10;
+  strcpy(v, "ten");
+  EXPECT(insert_cur(sqlstate, &x, v), "00000");
+  EXPECT(other_count(sqlstate, &b), "00000");
+  CHECK(b == rows + 1);
+  EXPECT(other_count_own(sqlstate, &b), "00000");
+  CHECK(b == 0);
+  EXPECT(rollback_work(sqlstate), "00000");
+  EXPECT(other_count(sqlstate, &b), "00000");
+  CHECK(b == rows);
+
+  EXPECT(other_missing(sqlstate), "42P01");
+  EXPECT(get_st(sqlstate, &st), "00000");
+  CHECK(st.number == 1 && strcmp(st.function, "DELETE WHERE") == 0);
+
+  x = 0;
+  EXPECT(open_c1(sqlstate, &x), "00000");
+  EXPECT(other_open(sqlstate), "00000");
+  EXPECT(other_fetch(sqlstate, &x), "00000");
+  EXPECT(other_close(sqlstate), "00000");
+  EXPECT(other_close(sqlstate), "24000");
+  EXPECT(fetch_c1(sqlstate, &x, v3, &i), "00000");
+  EXPECT(close_c1(sqlstate), "00000");
+
+  /* A connection statement of one module is for both of them. */
+  EXPECT(other_disconnect(sqlstate), "25001");
+  EXPECT(rollback_work(sqlstate), "00000");
+  EXPECT(other_disconnect(sqlstate), "00000");
+  EXPECT(create_table(sqlstate), "08003");
 
   /* 13.1 GR 4: The transaction is rolled back at exit. */
   if (failures > 0) {

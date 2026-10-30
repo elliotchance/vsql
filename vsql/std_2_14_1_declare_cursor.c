@@ -3,7 +3,36 @@
  * The cursors of the module (14.1). Each SQL-connection has a CLI statement for
  * each cursor that has been opened in it, with the cursor name, so that a
  * positioned DELETE or UPDATE (14.8, 14.13) can change its current row.
- *
+ * vsql_m_cursors is the CLI statements of the cursors of this module in c, or
+ * NULL if there isn't enough memory.
+ */
+static SQLHSTMT *vsql_m_cursors(struct vsql_m_connection *c) {
+  struct vsql_m_cursors *m;
+
+  for (m = c->cursors; m != NULL; m = m->next) {
+    if (m->module == &vsql_m_own) {
+      return m->stmts;
+    }
+  }
+
+  m = (struct vsql_m_cursors *)malloc(sizeof(struct vsql_m_cursors));
+  if (m == NULL) {
+    return NULL;
+  }
+  m->stmts = (SQLHSTMT *)calloc((size_t)vsql_m_cursor_count, sizeof(SQLHSTMT));
+  if (m->stmts == NULL) {
+    free(m);
+    return NULL;
+  }
+  m->module = &vsql_m_own;
+  m->n = vsql_m_cursor_count;
+  m->next = c->cursors;
+  c->cursors = m;
+
+  return m->stmts;
+}
+
+/*
  * vsql_m_cursor is the CLI statement of cursor i in the current
  * SQL-connection. It's allocated (with the name and holdability of the cursor)
  * the first time that the cursor is opened, so for a FETCH or CLOSE (when name
@@ -14,46 +43,43 @@ static SQLHSTMT vsql_m_cursor(char *sqlstate, int i, const char *name,
                               int hold) {
   struct vsql_m_connection *c = vsql_m_connection(sqlstate);
   SQLINTEGER holdable = hold ? SQL_HOLDABLE : SQL_NONHOLDABLE;
+  SQLHSTMT *cursors;
   SQLRETURN rc;
 
   if (c == NULL) {
     return 0;
   }
-  if (c->cursors == NULL) {
-    c->cursors =
-        (SQLHSTMT *)calloc((size_t)vsql_m_cursor_count, sizeof(SQLHSTMT));
-    if (c->cursors == NULL) {
-      vsql_m_status(sqlstate, "HY001");
-      return 0;
-    }
-    c->ncursors = vsql_m_cursor_count;
+  cursors = vsql_m_cursors(c);
+  if (cursors == NULL) {
+    vsql_m_status(sqlstate, "HY001");
+    return 0;
   }
-  if (c->cursors[i] != 0) {
-    return c->cursors[i];
+  if (cursors[i] != 0) {
+    return cursors[i];
   }
   if (name == NULL) {
     vsql_m_status(sqlstate, "24000");
     return 0;
   }
 
-  rc = SQLAllocHandle(SQL_HANDLE_STMT, c->dbc, &c->cursors[i]);
+  rc = SQLAllocHandle(SQL_HANDLE_STMT, c->dbc, &cursors[i]);
   if (vsql_m_failed(rc)) {
     vsql_m_diag(sqlstate, rc, SQL_HANDLE_DBC, c->dbc);
-    c->cursors[i] = 0;
+    cursors[i] = 0;
     return 0;
   }
-  rc = SQLSetCursorName(c->cursors[i], (SQLCHAR *)name, SQL_NTS);
+  rc = SQLSetCursorName(cursors[i], (SQLCHAR *)name, SQL_NTS);
   if (!vsql_m_failed(rc)) {
-    rc = SQLSetStmtAttr(c->cursors[i], SQL_ATTR_CURSOR_HOLDABLE, &holdable, 0);
+    rc = SQLSetStmtAttr(cursors[i], SQL_ATTR_CURSOR_HOLDABLE, &holdable, 0);
   }
   if (vsql_m_failed(rc)) {
-    vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, c->cursors[i]);
-    SQLFreeHandle(SQL_HANDLE_STMT, c->cursors[i]);
-    c->cursors[i] = 0;
+    vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, cursors[i]);
+    SQLFreeHandle(SQL_HANDLE_STMT, cursors[i]);
+    cursors[i] = 0;
     return 0;
   }
 
-  return c->cursors[i];
+  return cursors[i];
 }
 
 /* section open */
@@ -73,7 +99,7 @@ static void vsql_m_open_cursor(char *sqlstate, int i, const char *name,
                                 params) &&
       strcmp(sqlstate, "24000") != 0) {
     SQLFreeHandle(SQL_HANDLE_STMT, stmt);
-    vsql_m_current->cursors[i] = 0;
+    vsql_m_cursors(vsql_m_current)[i] = 0;
   }
 }
 

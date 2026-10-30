@@ -344,6 +344,17 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in VALUES
 -- COL1: 1
 
+-- # Compared with a PRIMARY KEY, it's rejected after the planner has checked
+-- # whether it can look up the key.
+CREATE SEQUENCE seq1;
+CREATE TABLE bar (baz INTEGER PRIMARY KEY);
+SELECT * FROM bar WHERE baz = NEXT VALUE FOR seq1;
+SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in WHERE
+-- COL1: 1
+
 CREATE SEQUENCE seq1;
 CREATE TABLE bar (baz INTEGER);
 INSERT INTO bar (baz) VALUES (1);

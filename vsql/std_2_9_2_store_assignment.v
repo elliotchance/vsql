@@ -7,6 +7,12 @@ import strings
 // Specify rules for assignments where the target permits null without the use
 // of indicator parameters or indicator variables, such as storing SQL-data or
 // setting the value of SQL parameters.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.5, Sites and operations on sites
+// ISO/IEC 9075-1:2003(E), 4.5.1, Sites
+// ISO/IEC 9075-1:2003(E), 4.5.2, Assignment
 
 const min_smallint = new_numeric_from_string('-32768')
 

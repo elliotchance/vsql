@@ -1,10 +1,10 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.4, Object identifier for Database Language SQL
-6.4                      todo         - -
-6.4/SR/1                 todo         - -
-6.4/SR/2                 todo         - -
-6.4/SR/3                 todo         - -
-6.4/SR/4                 todo         - -
-6.4/SR/5                 todo         - -
-6.4/SR/6                 todo         - -
+6.4                      n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)
+6.4/SR/1                 n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)
+6.4/SR/2                 n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)
+6.4/SR/3                 n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)
+6.4/SR/4                 n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)
+6.4/SR/5                 n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)
+6.4/SR/6                 n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)

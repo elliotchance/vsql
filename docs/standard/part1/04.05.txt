@@ -1,10 +1,10 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 4.5, Sites and operations on sites
-4.5                      todo         - -
+4.5                      implemented  vsql/std_2_9_2_store_assignment.v tests/datetime-store-assignment.sql
 # 4.5.1, Sites
-4.5.1                    todo         - -
+4.5.1                    implemented  vsql/std_2_9_2_store_assignment.v tests/datetime-store-assignment.sql
 # 4.5.2, Assignment
-4.5.2                    todo         - -
+4.5.2                    implemented  vsql/std_2_9_2_store_assignment.v tests/datetime-store-assignment.sql
 # 4.5.3, Nullability
-4.5.3                    todo         - -
+4.5.3                    implemented  vsql/std_2_11_4_column_definition.v tests/create-table.sql

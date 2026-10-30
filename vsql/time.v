@@ -5,6 +5,8 @@ module vsql
 import regex
 import time
 
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.4.3.4, Datetime types.
+
 const second_period = i64(1000000)
 const minute_period = 60 * second_period
 const hour_period = 60 * minute_period

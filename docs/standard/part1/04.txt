@@ -1,4 +1,4 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 4, Concepts
-4                        todo         - -
+4                        definition   - - concepts that are specified in the other parts (4.1)

@@ -5,6 +5,8 @@ import time
 // ISO/IEC 9075-2:2016(E), 17.1, <start transaction statement>
 //
 // Start an SQL-transaction and set its characteristics.
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.8.5, SQL-transactions.
 
 struct StartTransactionStatement {
 	modes []TransactionMode

@@ -1,24 +1,24 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 4.8, Communication between an SQL-agent and an SQL-server
-4.8                      todo         - -
+4.8                      implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_19_exec_direct_test.c
 # 4.8.1, Host languages
-4.8.1                    todo         - -
+4.8.1                    implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_19_exec_direct_test.c C, with the SQL/CLI or SQL-client modules
 # 4.8.2, Parameter passing and data type correspondences
-4.8.2                    todo         - -
+4.8.2                    implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/sql_test.v
 # 4.8.2.1, General parameter passing and data type correspondence information
-4.8.2.1                  todo         - -
+4.8.2.1                  implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/sql_test.v
 # 4.8.2.2, Data type correspondences
-4.8.2.2                  todo         - -
+4.8.2.2                  implemented  vsql/std_2_13_5_data_type_correspondences.v vsql/sql_test.v
 # 4.8.2.3, Locators
-4.8.2.3                  todo         - -
+4.8.2.3                  n/a          - - locators (T041)
 # 4.8.2.4, Status parameters
-4.8.2.4                  todo         - -
+4.8.2.4                  implemented  vsql/std_2_24_1_sqlstate.v tests/errors.sql
 # 4.8.2.5, Indicator parameters
-4.8.2.5                  todo         - -
+4.8.2.5                  implemented  vsql/std_2_13_3_externally_invoked_procedure.v vsql/sql_test.v
 # 4.8.3, Descriptor areas
-4.8.3                    todo         - -
+4.8.3                    implemented  libvsql/std_3_6_31_get_desc_field.v libvsql/std_3_6_31_get_desc_field_test.c
 # 4.8.4, Diagnostic information
-4.8.4                    todo         - -
+4.8.4                    implemented  libvsql/std_3_4_3_diagnostics_areas.v libvsql/std_3_6_33_get_diag_field_test.c
 # 4.8.5, SQL-transactions
-4.8.5                    todo         - -
+4.8.5                    implemented  vsql/std_2_17_1_start_transaction_statement.v tests/transaction.sql

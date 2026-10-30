@@ -1,8 +1,8 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 4.7, Integrity constraints and constraint checking
-4.7                      todo         - -
+4.7                      implemented  vsql/std_2_11_9_check_constraint_definition.v tests/deferrable-constraints.sql
 # 4.7.1, Constraint checking
-4.7.1                    todo         - -
+4.7.1                    implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/set-constraints.sql
 # 4.7.2, Determinism and constraints
-4.7.2                    todo         - -
+4.7.2                    implemented  vsql/compiler.v tests/check-constraint.sql

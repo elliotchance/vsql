@@ -3,6 +3,12 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>
 //
 // Define all of the SQL-statements that are <SQL procedure statement>s.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.11, SQL-statements
+// ISO/IEC 9075-1:2003(E), 4.11.1, Classes of SQL-statements
+// ISO/IEC 9075-1:2003(E), 4.11.2, SQL-statements classified by function
 
 // ModuleStatement is the <SQL procedure statement> of a procedure, compiled to
 // the body of its C function.

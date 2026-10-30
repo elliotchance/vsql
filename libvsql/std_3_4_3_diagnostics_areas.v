@@ -7,6 +7,9 @@ import vsql
 // Each handle has a diagnostics area that is emptied at the start of each CLI
 // routine (other than GetDiagRec) that's given the handle. The conditions are
 // read with GetDiagRec.
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.8.4, Diagnostic
+// information.
 
 struct DiagnosticRecord {
 	sqlstate string

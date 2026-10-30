@@ -1,52 +1,52 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 4.6, SQL-schema objects
-4.6                      todo         - -
+4.6                      implemented  vsql/std_2_4_26_sql_schemas.v tests/create-schema.sql
 # 4.6.1, General SQL-schema object information
-4.6.1                    todo         - -
+4.6.1                    implemented  vsql/std_2_4_26_sql_schemas.v tests/create-schema.sql
 # 4.6.2, Descriptors relating to character sets
-4.6.2                    todo         - -
+4.6.2                    partial      vsql/std_2_6_1_data_type.v tests/unicode.sql only the UTF8 character set and its default collation
 # 4.6.2.1, Character sets
-4.6.2.1                  todo         - -
+4.6.2.1                  partial      vsql/std_2_6_1_data_type.v tests/unicode.sql only UTF8
 # 4.6.2.2, Collations
-4.6.2.2                  todo         - -
+4.6.2.2                  partial      vsql/std_2_6_1_data_type.v tests/unicode.sql only the default collation
 # 4.6.2.3, Transliterations
-4.6.2.3                  todo         - -
+4.6.2.3                  n/a          - - transliterations (F695)
 # 4.6.3, Domains and their components
-4.6.3                    todo         - -
+4.6.3                    n/a          - - domains (F251)
 # 4.6.3.1, Domains
-4.6.3.1                  todo         - -
+4.6.3.1                  n/a          - - domains (F251)
 # 4.6.3.2, Domain constraints
-4.6.3.2                  todo         - -
+4.6.3.2                  n/a          - - domains (F251)
 # 4.6.4, User-defined types
-4.6.4                    todo         - -
+4.6.4                    n/a          - - user-defined types (S023)
 # 4.6.4.1, Structured types
-4.6.4.1                  todo         - -
+4.6.4.1                  n/a          - - structured types (S023)
 # 4.6.4.2, Attributes
-4.6.4.2                  todo         - -
+4.6.4.2                  n/a          - - structured types (S023)
 # 4.6.5, Distinct types
-4.6.5                    todo         - -
+4.6.5                    n/a          - - distinct types (S011)
 # 4.6.6, Base tables and their components
-4.6.6                    todo         - -
+4.6.6                    implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
 # 4.6.6.1, Base tables
-4.6.6.1                  todo         - -
+4.6.6.1                  implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
 # 4.6.6.2, Columns
-4.6.6.2                  todo         - -
+4.6.6.2                  implemented  vsql/std_2_11_4_column_definition.v tests/column-defaults.sql
 # 4.6.6.3, Table constraints
-4.6.6.3                  todo         - -
+4.6.6.3                  implemented  vsql/std_2_10_8_constraint_name_definition_and_constraint_characteristics.v tests/check-constraint.sql
 # 4.6.6.4, Triggers
-4.6.6.4                  todo         - -
+4.6.6.4                  n/a          - - triggers (T211)
 # 4.6.7, View definitions
-4.6.7                    todo         - -
+4.6.7                    missing      - - views aren't supported (F031-02, #731)
 # 4.6.8, Assertions
-4.6.8                    todo         - -
+4.6.8                    n/a          - - assertions (F521)
 # 4.6.9, SQL-server modules (defined in ISO/IEC 9075-4, SQL/PSM)
-4.6.9                    todo         - -
+4.6.9                    n/a          - - SQL-server modules are SQL/PSM (Part 4)
 # 4.6.10, Schema routines
-4.6.10                   todo         - -
+4.6.10                   missing      - - SQL-invoked routines aren't supported (T321, #733)
 # 4.6.11, Sequence generators
-4.6.11                   todo         - -
+4.6.11                   implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
 # 4.6.12, Privileges
-4.6.12                   todo         - -
+4.6.12                   missing      - - privileges aren't supported (E081, #732)
 # 4.6.13, Roles
-4.6.13                   todo         - -
+4.6.13                   n/a          - - roles (T331)

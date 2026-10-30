@@ -3,6 +3,8 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>
 //
 // Specify a boolean value.
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.4.3.3, Boolean type.
 
 type BooleanPrimary = BooleanPredicand | Predicate
 

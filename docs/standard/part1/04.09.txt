@@ -1,4 +1,4 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 4.9, Modules
-4.9                      todo         - -
+4.9                      implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v

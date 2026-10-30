@@ -3,6 +3,13 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 6.1, <data type>
 //
 // Specify a data type.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.4.3.2, Character string types
+// ISO/IEC 9075-1:2003(E), 4.6.2, Descriptors relating to character sets
+// ISO/IEC 9075-1:2003(E), 4.6.2.1, Character sets
+// ISO/IEC 9075-1:2003(E), 4.6.2.2, Collations
 
 // max_character_length is the maximum <length> of a CHARACTER or CHARACTER
 // VARYING (6.1 Syntax Rule 15).

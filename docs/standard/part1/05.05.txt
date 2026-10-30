@@ -1,6 +1,6 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 5.5, ISO/IEC 9075-4: Persistent Stored Modules (SQL/PSM)
-5.5                      todo         - -
+5.5                      definition   - - about the standard itself
 # 5.5.1, SQL-statements specified in ISO/IEC 9075-4
-5.5.1                    todo         - -
+5.5.1                    definition   - - about the standard itself

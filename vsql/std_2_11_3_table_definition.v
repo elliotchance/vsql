@@ -6,6 +6,11 @@ import time
 //
 // Define a persistent base table, a created local temporary table, or a global
 // temporary table.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.6.6, Base tables and their components
+// ISO/IEC 9075-1:2003(E), 4.6.6.1, Base tables
 
 type TableElement = CheckConstraintDefinition
 	| Column

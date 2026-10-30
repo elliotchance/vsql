@@ -1,46 +1,46 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.3, Conventions
-6.3                      todo         - -
+6.3                      definition   - - about the standard itself
 # 6.3.1, Specification of syntactic elements
-6.3.1                    todo         - -
+6.3.1                    definition   - - about the standard itself
 # 6.3.2, Specification of the Information and Definition Schemata
-6.3.2                    todo         - -
+6.3.2                    definition   - - about the standard itself
 # 6.3.3, Use of terms
-6.3.3                    todo         - -
+6.3.3                    definition   - - about the standard itself
 # 6.3.3.1, Syntactic containment
-6.3.3.1                  todo         - -
+6.3.3.1                  definition   - - about the standard itself
 # 6.3.3.2, Terms denoting rule requirements
-6.3.3.2                  todo         - -
+6.3.3.2                  definition   - - about the standard itself
 # 6.3.3.3, Rule evaluation order
-6.3.3.3                  todo         - -
+6.3.3.3                  definition   - - about the standard itself
 # 6.3.3.4, Conditional rules
-6.3.3.4                  todo         - -
+6.3.3.4                  definition   - - about the standard itself
 # 6.3.3.5, Syntactic substitution
-6.3.3.5                  todo         - -
+6.3.3.5                  definition   - - about the standard itself
 # 6.3.3.6, Other terms
-6.3.3.6                  todo         - -
+6.3.3.6                  definition   - - about the standard itself
 # 6.3.3.7, Exceptions
-6.3.3.7                  todo         - -
+6.3.3.7                  definition   - - about the standard itself
 # 6.3.3.8, General Rules not terminated on exception conditions
-6.3.3.8                  todo         - -
+6.3.3.8                  definition   - - about the standard itself
 # 6.3.4, Descriptors
-6.3.4                    todo         - -
+6.3.4                    definition   - - about the standard itself
 # 6.3.5, Relationships of parts within ISO/IEC 9075
-6.3.5                    todo         - -
+6.3.5                    definition   - - about the standard itself
 # 6.3.5.1, New and modified Clauses, Subclauses, and Annexes
-6.3.5.1                  todo         - -
+6.3.5.1                  definition   - - about the standard itself
 # 6.3.5.2, Functions
-6.3.5.2                  todo         - -
+6.3.5.2                  definition   - - about the standard itself
 # 6.3.5.3, New and modified Format items
-6.3.5.3                  todo         - -
+6.3.5.3                  definition   - - about the standard itself
 # 6.3.5.4, New and modified paragraphs and rules
-6.3.5.4                  todo         - -
+6.3.5.4                  definition   - - about the standard itself
 # 6.3.5.5, New and modified tables
-6.3.5.5                  todo         - -
+6.3.5.5                  definition   - - about the standard itself
 # 6.3.5.6, Modified annexes
-6.3.5.6                  todo         - -
+6.3.5.6                  definition   - - about the standard itself
 # 6.3.6, Index typography
-6.3.6                    todo         - -
+6.3.6                    definition   - - about the standard itself
 # 6.3.7, Feature ID and Feature Name
-6.3.7                    todo         - -
+6.3.7                    implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql standard features are flagged by ID, and vsql's own have a V

@@ -1,4 +1,4 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 6.1, Notation taken from ISO/IEC 10646
-6.1                      todo         - -
+6.1                      definition   - - about the standard itself

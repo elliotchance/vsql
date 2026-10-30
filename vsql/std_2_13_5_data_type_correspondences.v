@@ -4,6 +4,14 @@ module vsql
 //
 // Specify the data type correspondences for SQL data types and host language
 // types.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.8.2, Parameter passing and data type
+// correspondences
+// ISO/IEC 9075-1:2003(E), 4.8.2.1, General parameter passing and data type
+// correspondence information
+// ISO/IEC 9075-1:2003(E), 4.8.2.2, Data type correspondences
 
 // HostParameterType is the <data type> of a host parameter that has a C data
 // type in Table 20, "Data type correspondences for C". The length is only for

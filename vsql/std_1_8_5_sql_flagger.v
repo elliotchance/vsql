@@ -17,7 +17,8 @@ module vsql
 // is each extension of it.
 
 // The implementation-defined features, which are also listed in the SQL
-// Flagging docs.
+// Flagging docs. They're flagged, which is implementation-defined (ISO/IEC
+// 9075-1:2003(E), 8.4.8, Extensions and options).
 //
 // V001: EXPLAIN.
 // V001-01: EXPLAIN before a query (such as SELECT or VALUES).

@@ -3,6 +3,8 @@ module main
 // ISO/IEC 9075-3:2003(E), 6.31, GetDescField
 //
 // Get a field from a CLI descriptor area.
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.8.3, Descriptor areas.
 
 @[export: 'SQLGetDescField']
 fn sql_get_desc_field(descriptor_handle SQLInteger, record_number i16, field_identifier i16, value voidptr, buffer_length SQLInteger, string_length &SQLInteger) i16 {

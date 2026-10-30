@@ -1,4 +1,4 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 7.3, Deprecated features
-7.3                      todo         - -
+7.3                      definition   - - about the standard itself

@@ -1,8 +1,8 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 4.10, Routines
-4.10                     todo         - -
+4.10                     partial      vsql/std_2_10_4_routine_invocation.v tests/routine-invocation.sql only functions registered from V, not SQL-invoked routines (#733)
 # 4.10.1, General routine information
-4.10.1                   todo         - -
+4.10.1                   partial      vsql/std_2_10_4_routine_invocation.v tests/routine-invocation.sql only functions registered from V, not SQL-invoked routines (#733)
 # 4.10.2, Type preserving functions
-4.10.2                   todo         - -
+4.10.2                   n/a          - - type preserving functions need user-defined types (S023)

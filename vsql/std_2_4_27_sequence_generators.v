@@ -1,6 +1,9 @@
 module vsql
 
 // ISO/IEC 9075-2:2016(E), 4.27, Sequence generators
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.6.11, Sequence
+// generators.
 
 // A SEQUENCE definition.
 pub struct Sequence {

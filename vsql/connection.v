@@ -7,6 +7,11 @@ import os
 import sync
 import time
 
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.2.3, SQL-implementations
+// ISO/IEC 9075-1:2003(E), 4.2.3.2, SQL-servers
+
 pub const default_schema_name = 'PUBLIC'
 
 // A Connection allows querying and other introspection for a database file. Use

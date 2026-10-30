@@ -9,6 +9,9 @@ module vsql
 // vsql doesn't have views, so each view is a virtual table that's built from
 // the table definitions when it's read. The INFORMATION_SCHEMA can't be
 // changed, and isn't stored in the file.
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.2.8.3, The Information
+// Schema.
 
 const information_schema_name = 'INFORMATION_SCHEMA'
 

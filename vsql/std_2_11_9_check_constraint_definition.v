@@ -3,6 +3,9 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>
 //
 // Specify a condition for the SQL-data.
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.7, Integrity
+// constraints and constraint checking.
 
 struct CheckConstraintDefinition {
 	search_condition BooleanValueExpression

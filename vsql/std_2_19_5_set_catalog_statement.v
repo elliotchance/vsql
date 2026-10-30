@@ -8,6 +8,8 @@ import time
 // <preparable statement>s that are prepared in the current SQL-session by an
 // <execute immediate statement> or a <prepare statement> and in
 // <direct SQL statement>s that are invoked directly.
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.2.8.1, Catalogs.
 
 struct SetCatalogStatement {
 	catalog_name ValueSpecification

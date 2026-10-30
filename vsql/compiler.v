@@ -1,5 +1,8 @@
 module vsql
 
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.7.2, Determinism and
+// constraints.
+
 struct Compiler {
 	tables map[string]Table
 	params map[string]Value @[required]

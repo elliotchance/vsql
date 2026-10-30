@@ -6,6 +6,8 @@ module vsql
 
 import math
 
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.4.2, The null value.
+
 // Possible values for a BOOLEAN.
 pub enum Boolean {
 	// These must not be negative values because they are encoded as u8 on disk.

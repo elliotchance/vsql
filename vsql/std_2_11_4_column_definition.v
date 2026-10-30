@@ -3,6 +3,11 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 11.4, <column definition>
 //
 // Define a column of a base table.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.5.3, Nullability
+// ISO/IEC 9075-1:2003(E), 4.6.6.2, Columns
 
 // A <column constraint>. NOT NULL is the only one that isn't added to the table
 // as a table constraint, but it's also a table element so that it can have a

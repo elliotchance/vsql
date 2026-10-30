@@ -5,6 +5,8 @@ module vsql
 
 import math.big
 
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.4.3.1, Numeric types.
+
 // These are used for encoding certain aspects for storage. 1 << 0 was for a
 // NULL, which is never stored as a Numeric (see Value.is_null).
 const numeric_is_zero = u8(1 << 1)

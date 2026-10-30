@@ -1,4 +1,4 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 8.3, Conformance to features
-8.3                      todo         - -
+8.3                      n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)

@@ -3,6 +3,11 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 10.4, <routine invocation>
 //
 // Invoke an SQL-invoked routine.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.10, Routines
+// ISO/IEC 9075-1:2003(E), 4.10.1, General routine information
 
 struct RoutineInvocation {
 	function_name string

@@ -3,6 +3,9 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 13.3, <externally-invoked procedure>
 //
 // Define an externally-invoked procedure.
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.8.2.5, Indicator
+// parameters.
 
 struct ExternallyInvokedProcedure {
 	// The name, and the names of the host parameters, are kept as they were

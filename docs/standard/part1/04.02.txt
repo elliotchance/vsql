@@ -1,38 +1,38 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 4.2, SQL-environments and their components
-4.2                      todo         - -
+4.2                      implemented  vsql/agent.v vsql/sql_test.v
 # 4.2.1, SQL-environments
-4.2.1                    todo         - -
+4.2.1                    implemented  vsql/agent.v vsql/sql_test.v an Agent and the SQL-servers it connects to
 # 4.2.2, SQL-agents
-4.2.2                    todo         - -
+4.2.2                    implemented  vsql/agent.v vsql/sql_test.v
 # 4.2.3, SQL-implementations
-4.2.3                    todo         - -
+4.2.3                    implemented  vsql/connection.v tests/connections.sql
 # 4.2.3.1, SQL-clients
-4.2.3.1                  todo         - -
+4.2.3.1                  implemented  vsql/agent.v vsql/sql_test.v
 # 4.2.3.2, SQL-servers
-4.2.3.2                  todo         - -
+4.2.3.2                  implemented  vsql/connection.v tests/connections.sql an SQL-server is a database file (or a new in-memory database)
 # 4.2.4, SQL-client modules
-4.2.4                    todo         - -
+4.2.4                    implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
 # 4.2.5, User identifiers
-4.2.5                    todo         - -
+4.2.5                    missing      - - authorization identifiers aren't supported (E081, #732)
 # 4.2.6, User mapping concepts
-4.2.6                    todo         - -
+4.2.6                    n/a          - - user mappings are SQL/MED (Part 9)
 # 4.2.7, Routine mapping concepts
-4.2.7                    todo         - -
+4.2.7                    n/a          - - routine mappings are SQL/MED (Part 9)
 # 4.2.8, Catalogs and schemas
-4.2.8                    todo         - -
+4.2.8                    implemented  vsql/std_2_4_26_sql_schemas.v tests/catalogs.sql
 # 4.2.8.1, Catalogs
-4.2.8.1                  todo         - -
+4.2.8.1                  implemented  vsql/std_2_19_5_set_catalog_statement.v tests/catalogs.sql
 # 4.2.8.2, SQL-schemas
-4.2.8.2                  todo         - -
+4.2.8.2                  implemented  vsql/std_2_4_26_sql_schemas.v tests/create-schema.sql
 # 4.2.8.3, The Information Schema
-4.2.8.3                  todo         - -
+4.2.8.3                  partial      vsql/std_11_5_information_schema.v tests/information-schema.sql only some of the views (F021)
 # 4.2.8.4, The Definition Schema
-4.2.8.4                  todo         - -
+4.2.8.4                  definition   - - it's internal, and can't be queried (Part 11 doesn't require it to be)
 # 4.2.9, Foreign servers and descriptors
-4.2.9                    todo         - -
+4.2.9                    n/a          - - foreign servers are SQL/MED (Part 9)
 # 4.2.10, Foreign-data wrappers and descriptors
-4.2.10                   todo         - -
+4.2.10                   n/a          - - foreign-data wrappers are SQL/MED (Part 9)
 # 4.2.11, SQL-data
-4.2.11                   todo         - -
+4.2.11                   implemented  vsql/storage.v tests/insert.sql

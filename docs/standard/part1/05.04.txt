@@ -1,4 +1,4 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 5.4, ISO/IEC 9075-3: Call Level Interface (SQL/CLI)
-5.4                      todo         - -
+5.4                      definition   - - about the standard itself

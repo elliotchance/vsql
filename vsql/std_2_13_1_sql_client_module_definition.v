@@ -7,6 +7,11 @@ module vsql
 // "vsql module" compiles a module with LANGUAGE C (Feature B112, "Module
 // language C") into a C header and source file. Each <externally-invoked
 // procedure> becomes a C function that calls the SQL/CLI routines in libvsql.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.2.4, SQL-client modules
+// ISO/IEC 9075-1:2003(E), 4.9, Modules
 
 // CompiledModule is the C header (.h) and source (.c) of an SQL-client module.
 pub struct CompiledModule {

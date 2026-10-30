@@ -1,4 +1,4 @@
 # ISO/IEC 9075-1:2003(E)
 # id status code tests note (see docs/standard-index.rst)
 # 5.7, ISO/IEC 9075-10: Object Language Bindings (SQL/OLB)
-5.7                      todo         - -
+5.7                      definition   - - about the standard itself

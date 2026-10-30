@@ -108,6 +108,29 @@ UTEST_F(db, 6_19_exec_direct_parameters) {
   EXPECT_EQ(y, 8);
 }
 
+/* A parameter that's bound beyond the number of "?" is an error, unless it's
+ * been unbound. */
+UTEST_F(db, 6_19_exec_direct_too_many_parameters) {
+  SQLINTEGER x = 7, y = 8;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
+                             NULL),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 2, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &y, sizeof(y),
+                             NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES CAST(? AS INTEGER)"),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
+
+  ASSERT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_RESET_PARAMS), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+}
+
 /* The IPD must be valid. */
 UTEST_F(db, 6_19_exec_direct_invalid_ipd) {
   SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);

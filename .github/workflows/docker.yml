@@ -7,7 +7,9 @@ on:
 jobs:
   push_to_registry:
     name: Push Docker image to Docker Hub
-    runs-on: ubuntu-latest
+    # The image is based on ubuntu:24.04 (see Dockerfile), which must have the
+    # glibc that bin/vsql is built with.
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out the repo
         uses: actions/checkout@v7
@@ -21,6 +23,13 @@ jobs:
         run: |
           .github/workflows/set_version.sh
           make bin/vsql
+
+      # The image is only pushed if the binary runs in it.
+      - name: Test Docker image
+        run: |
+          docker build -t vsql-test .
+          docker run --rm vsql-test version
+          echo "VALUES 1;" | docker run --rm -i vsql-test cli :memory: | grep -x "1 row.*"
 
       - name: Docker meta
         id: meta

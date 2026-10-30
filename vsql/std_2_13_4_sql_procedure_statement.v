@@ -28,7 +28,7 @@ struct HostParameterReference {
 // and executed with libvsql, with a "?" for each host parameter. START
 // TRANSACTION, COMMIT and ROLLBACK can only be done with SQLStartTran and
 // SQLEndTran.
-fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []ModuleCursor) !ModuleStatement {
+fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []ModuleCursor, prepared []string) !ModuleStatement {
 	tokens := tokenize(text) or { return procedure_error(p, err) }
 
 	// A <dynamic parameter specification> can only be in a prepared statement.
@@ -48,11 +48,37 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []M
 			if t.accept('CONNECTION') {
 				return t.set_connection_statement(p)
 			}
+			if t.accept_descriptor_keyword()! {
+				t.pos--
+				return t.set_descriptor_statement(p)
+			}
 		}
 		'GET' {
 			if t.accept('DIAGNOSTICS') {
 				return t.get_diagnostics_statement(p)
 			}
+			return t.get_descriptor_statement(p)
+		}
+		'ALLOCATE' {
+			return t.allocate_descriptor_statement(p)
+		}
+		'DEALLOCATE' {
+			if t.accept('PREPARE') {
+				return t.deallocate_prepared_statement(p, prepared)
+			}
+			return t.deallocate_descriptor_statement(p)
+		}
+		'PREPARE' {
+			return t.prepare_statement(p)
+		}
+		'DESCRIBE' {
+			return t.describe_statement(p, prepared)
+		}
+		'EXECUTE' {
+			if t.accept('IMMEDIATE') {
+				return t.execute_immediate_statement(p)
+			}
+			return t.execute_statement(p, prepared)
 		}
 		'OPEN' {
 			return t.open_statement(p, cursors)
@@ -97,13 +123,23 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []M
 		// - 14.8 SR 1 and 14.13 SR 1. The cursor of a positioned DELETE or
 		// UPDATE must be declared in the module. It's the CLI statement that
 		// has the cursor name.
+		// - 20.23, 20.24. A dynamic cursor is the same, other than the
+		// COMMAND_FUNCTION.
 		DeleteStatementPositioned {
-			find_module_cursor(cursors, stmt.cursor_name, p)!
-			execute_statement(text_sql, references, p, begin('DELETE CURSOR', 18))!
+			cursor := find_module_cursor(cursors, stmt.cursor_name, p)!
+			execute_statement(text_sql, references, p, if cursor.statement == '' {
+				begin('DELETE CURSOR', 18)
+			} else {
+				begin('DYNAMIC DELETE CURSOR', 38)
+			})!
 		}
 		UpdateStatementPositioned {
-			find_module_cursor(cursors, stmt.cursor_name, p)!
-			execute_statement(text_sql, references, p, begin('UPDATE CURSOR', 81))!
+			cursor := find_module_cursor(cursors, stmt.cursor_name, p)!
+			execute_statement(text_sql, references, p, if cursor.statement == '' {
+				begin('UPDATE CURSOR', 81)
+			} else {
+				begin('DYNAMIC UPDATE CURSOR', 42)
+			})!
 		}
 		else {
 			execute_statement(text_sql, references, p, begin('', 0))!

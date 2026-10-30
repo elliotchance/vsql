@@ -11,15 +11,14 @@ module vsql
 // The C constant (in libvsql.h, or the C runtime) of each <statement
 // information item name> and <condition information item name>. An empty
 // constant is always 0 (zero) or a zero-length string, since vsql doesn't have
-// the constraints, triggers, routines, etc. that it describes, and a statement
-// in a module isn't executed dynamically.
+// the constraints, triggers, routines, etc. that it describes.
 const statement_information_items = {
 	'NUMBER':                   'SQL_DIAG_NUMBER'
 	'MORE':                     'SQL_DIAG_MORE'
 	'COMMAND_FUNCTION':         'VSQL_M_COMMAND_FUNCTION'
 	'COMMAND_FUNCTION_CODE':    'VSQL_M_COMMAND_FUNCTION_CODE'
-	'DYNAMIC_FUNCTION':         ''
-	'DYNAMIC_FUNCTION_CODE':    ''
+	'DYNAMIC_FUNCTION':         'VSQL_M_DYNAMIC_FUNCTION'
+	'DYNAMIC_FUNCTION_CODE':    'VSQL_M_DYNAMIC_FUNCTION_CODE'
 	'ROW_COUNT':                'SQL_DIAG_ROW_COUNT'
 	'TRANSACTIONS_COMMITTED':   'SQL_DIAG_TRANSACTIONS_COMMITTED'
 	'TRANSACTIONS_ROLLED_BACK': 'SQL_DIAG_TRANSACTIONS_ROLLED_BACK'
@@ -156,23 +155,32 @@ fn (mut t ModuleTokens) get_diagnostics_statement(p ExternallyInvokedProcedure) 
 // condition_number reads a <condition number>, which is an unsigned integer or
 // a host parameter that is exact numeric (Syntax Rule 3).
 fn (mut t ModuleTokens) condition_number(p ExternallyInvokedProcedure, mut used []string) !string {
+	return t.exact_numeric_value(p, mut used, 'condition number', false)
+}
+
+// exact_numeric_value reads a <simple value specification> that is exact
+// numeric with scale 0 (zero), which is an integer (that can be negative if
+// signed is true) or a host parameter that is exact numeric. It returns the C
+// value, as a long long.
+fn (mut t ModuleTokens) exact_numeric_value(p ExternallyInvokedProcedure, mut used []string, what string, signed bool) !string {
+	sign := if signed && t.accept('-') { '-' } else { '' }
 	if tok := t.peek() {
 		if tok.kind == .number {
 			t.pos++
-			return '${tok.text.i64()}LL'
+			return '${sign}${tok.text.i64()}LL'
 		}
 	}
 
-	if t.accept(':') {
+	if sign == '' && t.accept(':') {
 		parameter := p.reference(t.c_name('host parameter name')!)!
 		typ := parameter.typ or { HostParameterType{} }
 		if !typ.is_exact_numeric() {
-			return sqlstate_42601('procedure ${p.name}: the condition number :${parameter.name} must be SMALLINT, INTEGER or BIGINT')
+			return sqlstate_42601('procedure ${p.name}: the ${what} :${parameter.name} must be SMALLINT, INTEGER or BIGINT')
 		}
 		used << parameter.name.to_upper()
 
-		return '*${parameter.name}'
+		return '(long long)*${parameter.name}'
 	}
 
-	return sqlstate_42601('procedure ${p.name}: expected a condition number${t.near()}')
+	return sqlstate_42601('procedure ${p.name}: expected a ${what}${t.near()}')
 }

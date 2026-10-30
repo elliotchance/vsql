@@ -49,8 +49,11 @@ fn (mut t ModuleTokens) fetch_statement(p ExternallyInvokedProcedure, cursors []
 		t.accept('FROM')
 	}
 	cursor := t.module_cursor(p, cursors)!
+	if cursor.statement != '' {
+		return t.dynamic_fetch_statement(p, cursor)
+	}
 	t.expect('INTO')!
-	targets := t.target_list(p)!
+	targets := t.target_list(p, 'INTO')!
 	t.end_of_statement(p)!
 
 	// - SR 9.b. The number of targets must be the degree of the cursor.

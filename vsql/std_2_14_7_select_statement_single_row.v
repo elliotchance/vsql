@@ -166,7 +166,7 @@ fn select_list_degree(exprs SelectList) int {
 // <indicator parameter>.
 fn select_target_list(text string, p ExternallyInvokedProcedure) ![]SelectTarget {
 	mut t := new_module_tokens(text)!
-	targets := t.target_list(p)!
+	targets := t.target_list(p, 'INTO')!
 	if t.pos < t.tokens.len {
 		return sqlstate_42601('procedure ${p.name}: expected FROM${t.near()}')
 	}
@@ -174,13 +174,14 @@ fn select_target_list(text string, p ExternallyInvokedProcedure) ![]SelectTarget
 	return targets
 }
 
-// target_list reads a list of <target specification>s, each of which is a host
-// parameter with an optional <indicator parameter>.
-fn (mut t ModuleTokens) target_list(p ExternallyInvokedProcedure) ![]SelectTarget {
+// target_list reads a list of <target specification>s (after INTO) or <using
+// argument>s (after USING), each of which is a host parameter with an optional
+// <indicator parameter>.
+fn (mut t ModuleTokens) target_list(p ExternallyInvokedProcedure, after string) ![]SelectTarget {
 	mut targets := []SelectTarget{}
 	for {
 		if !t.accept(':') {
-			return sqlstate_42601('procedure ${p.name}: expected a host parameter after INTO${t.near()}')
+			return sqlstate_42601('procedure ${p.name}: expected a host parameter after ${after}${t.near()}')
 		}
 		parameter := p.reference(t.c_name('host parameter name')!)!
 

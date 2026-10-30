@@ -87,6 +87,30 @@ fn (t HostParameterType) c_parameter(name string) string {
 	}
 }
 
+// c_target is the struct vsql_m_target (see the C runtime) that a value of the
+// row of a <select statement: single row> is assigned to. The length of a
+// string includes the null character.
+fn (t HostParameterType) c_target(name string, has_indicator int) string {
+	typ := match t.typ {
+		.is_character { 'SQL_CHAR' }
+		.is_varchar { 'SQL_VARCHAR' }
+		.is_smallint { 'SQL_SMALLINT' }
+		.is_integer { 'SQL_INTEGER' }
+		.is_bigint { 'SQL_BIGINT' }
+		.is_real { 'SQL_REAL' }
+		.is_boolean { 'SQL_BOOLEAN' }
+		else { 'SQL_DOUBLE' }
+	}
+	length := if t.is_string() { t.length + 1 } else { 0 }
+
+	return '{${typ}, ${length}, ${name}, ${has_indicator}, 0}'
+}
+
+// c_type is the C data type of an exact numeric, such as "long".
+fn (t HostParameterType) c_type() string {
+	return t.c_declaration('').all_before(' *')
+}
+
 // sql is the SQL data type, such as CHARACTER VARYING(10).
 fn (t HostParameterType) sql() string {
 	return if t.is_string() { '${t.typ}(${t.length})' } else { t.typ.str() }

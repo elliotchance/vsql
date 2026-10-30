@@ -17,6 +17,11 @@ PROCEDURE add_item (SQLSTATE, :id INTEGER, :name CHARACTER VARYING(20),
 PROCEDURE change_prices (SQLSTATE, :factor DOUBLE PRECISION);
   UPDATE items SET price = price * :factor;
 
+PROCEDURE get_item (SQLSTATE, :id INTEGER, :name CHARACTER VARYING(20),
+                    :price DOUBLE PRECISION, :price_indicator SMALLINT);
+  SELECT name, price INTO :name, :price INDICATOR :price_indicator
+  FROM items WHERE id = :id;
+
 PROCEDURE commit_work (SQLSTATE);
   COMMIT;
 

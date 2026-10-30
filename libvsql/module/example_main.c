@@ -47,6 +47,24 @@ int main(void) {
 
   change_prices(sqlstate, &factor);
   check("change_prices", sqlstate);
+
+  /* A NULL value has a negative indicator. */
+  for (id = 1; id <= 2; id++) {
+    get_item(sqlstate, &id, name, &price, &price_indicator);
+    check("get_item", sqlstate);
+    if (price_indicator < 0) {
+      printf("%s has no price\n", name);
+    } else {
+      printf("%s costs %.2f\n", name, price);
+    }
+  }
+
+  /* There's no item 3 (02000 is no data). */
+  get_item(sqlstate, &id, name, &price, &price_indicator);
+  if (strcmp(sqlstate, "02000") != 0) {
+    check("get_item", sqlstate);
+  }
+
   commit_work(sqlstate);
   check("commit_work", sqlstate);
   close_database(sqlstate);

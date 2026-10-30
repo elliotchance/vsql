@@ -1391,7 +1391,7 @@ fn test_module_errors() ! {
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); VALUES "a;') == 'syntax error: unterminated delimited identifier: "a'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); DELETE FROM t WHERE x = ?;') == 'syntax error: procedure p: a module cannot contain a dynamic parameter (?), use a host parameter (:name)'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); DELETE FROM t WHERE x = "";') == 'syntax error: procedure p: a delimited identifier cannot be empty'
-	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); VALUES 1;') == 'syntax error: procedure p: a query is not an SQL procedure statement'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); VALUES 1;') == 'syntax error: procedure p: a query is not an SQL procedure statement, use SELECT ... INTO'
 	parse_error := module_error(module_header + 'PROCEDURE p (SQLSTATE); DELETE t;')
 	assert parse_error.starts_with('syntax error: procedure p: ')
 	assert parse_error.count('syntax error') == 1
@@ -1399,6 +1399,26 @@ fn test_module_errors() ! {
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); DELETE FROM t WHERE x = : x;') == 'syntax error: expected a host parameter name after :'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :x INT); DELETE FROM t WHERE x = :x INDICATOR 1;') == 'syntax error: expected an indicator parameter after INDICATOR'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :x INT, :i REAL); DELETE FROM t WHERE x = :x :i;') == 'syntax error: procedure p: indicator parameter :i must be SMALLINT, INTEGER or BIGINT'
+
+	// 14.7 <select statement: single row>
+	select_header := module_header + 'PROCEDURE p (SQLSTATE, :a INT, :b REAL); '
+	assert module_error(select_header + 'SELECT x INTO :a, :b FROM t;') == 'syntax error: procedure p: the select list has 1 column, but there are 2 targets'
+	assert module_error(select_header + 'SELECT x, y INTO :a FROM t;') == 'syntax error: procedure p: the select list has 2 columns, but there is 1 target'
+	assert module_error(select_header + 'SELECT x INTO a FROM t;') == 'syntax error: procedure p: expected a host parameter after INTO near a'
+	assert module_error(select_header + 'SELECT x INTO FROM t;') == 'syntax error: procedure p: expected a host parameter after INTO at the end'
+	assert module_error(select_header + 'SELECT x INTO :c FROM t;') == 'syntax error: procedure p: host parameter :c is not declared'
+	assert module_error(select_header + 'SELECT x INTO :a :b FROM t;') == 'syntax error: procedure p: indicator parameter :b must be SMALLINT, INTEGER or BIGINT'
+	assert module_error(select_header + 'SELECT x INTO :a INDICATOR b FROM t;') == 'syntax error: expected : near b'
+	assert module_error(select_header + 'SELECT x INTO :a x FROM t;') == 'syntax error: procedure p: expected FROM near x'
+	assert module_error(select_header + 'SELECT x INTO :a FROM t ORDER BY x;') == 'syntax error: procedure p: SELECT ... INTO cannot have UNION, EXCEPT, INTERSECT, ORDER BY, OFFSET or FETCH'
+	assert module_error(select_header + 'SELECT x INTO :a FROM t UNION SELECT x FROM t;') == 'syntax error: procedure p: SELECT ... INTO cannot have UNION, EXCEPT, INTERSECT, ORDER BY, OFFSET or FETCH'
+	assert module_error(select_header + 'SELECT x INTO :a FROM t FETCH FIRST 1 ROW ONLY;') == 'syntax error: procedure p: SELECT ... INTO cannot have UNION, EXCEPT, INTERSECT, ORDER BY, OFFSET or FETCH'
+	assert module_error(select_header + 'SELECT x INTO :a;').starts_with('syntax error: procedure p: ')
+	assert module_error(select_header + 'SELECT t.* INTO :a FROM t;') == ''
+	assert module_error(select_header + 'SELECT * INTO :a FROM t;') == ''
+	assert module_error(select_header + 'SELECT :b INTO :a FROM t;') == ''
+	assert module_error(select_header + 'SELECT x FROM t;') == 'syntax error: procedure p: a query is not an SQL procedure statement, use SELECT ... INTO'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :a INT, :i SMALLINT); SELECT ("x") INTO :a INDICATOR :i FROM t;') == ''
 
 	// 18 SQL-connection statements
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); CONNECT DEFAULT;') == 'syntax error: expected TO near DEFAULT'

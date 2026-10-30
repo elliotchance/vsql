@@ -52,12 +52,18 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure) !ModuleStat
 		else {}
 	}
 
+	// 14.7 <select statement: single row>.
+	query, targets := split_select_into(text)!
+	if targets != '' {
+		return select_statement(query, targets, p)
+	}
+
 	text_sql, references := rewrite_host_parameters(text, p)!
 	stmt := parse_tokens(tokenize(text_sql)!) or { return procedure_error(p, err) }
 
 	return match stmt {
 		QueryExpression {
-			sqlstate_42601('procedure ${p.name}: a query is not an SQL procedure statement')
+			sqlstate_42601('procedure ${p.name}: a query is not an SQL procedure statement, use SELECT ... INTO')
 		}
 		StartTransactionStatement {
 			ModuleStatement{['connection', 'start'], [], '  vsql_m_start(SQLSTATE);\n'}
@@ -81,8 +87,34 @@ fn procedure_error(p ExternallyInvokedProcedure, err IError) IError {
 // execute_statement binds each host parameter to its "?" (in the
 // struct vsql_m_param array) and executes the statement.
 fn execute_statement(text_sql string, references []HostParameterReference, p ExternallyInvokedProcedure) !ModuleStatement {
-	mut sections := ['connection', 'execute']
-	mut used := []string{}
+	b := bind_parameters(['connection', 'execute'], references, p)!
+
+	return ModuleStatement{b.sections, b.used, b.c +
+		'  vsql_m_execute(SQLSTATE, ${c_string(text_sql.trim_space())}, ${b.args()});\n'}
+}
+
+// BoundParameters is the C that binds each host parameter of a statement to
+// its "?".
+struct BoundParameters {
+mut:
+	sections []string
+	// used are the (upper case) names of the host parameters.
+	used []string
+	// c declares vsql_m_p, which has n elements, and checks the values.
+	c string
+	n int
+}
+
+// args are the C arguments for the vsql_m_param array.
+fn (b BoundParameters) args() string {
+	return if b.n == 0 { '0, NULL' } else { '${b.n}, vsql_m_p' }
+}
+
+fn bind_parameters(sections []string, references []HostParameterReference, p ExternallyInvokedProcedure) !BoundParameters {
+	mut b := BoundParameters{
+		sections: sections
+		n:        references.len
+	}
 	mut params := []string{}
 	mut checks := ''
 	for i, reference in references {
@@ -90,25 +122,21 @@ fn execute_statement(text_sql string, references []HostParameterReference, p Ext
 		parameter := p.reference(reference.name)!
 		typ := parameter.typ or { HostParameterType{} }
 		params << '    ${typ.c_parameter(parameter.name)}'
-		used << parameter.name.to_upper()
+		b.used << parameter.name.to_upper()
 
 		mut check := ''
 		if typ.is_string() {
 			check = 'if (!vsql_m_string(SQLSTATE, ${parameter.name}, ${typ.length + 1})) {\n    return;\n  }\n'
-			if 'string' !in sections {
-				sections << 'string'
+			if 'string' !in b.sections {
+				b.sections << 'string'
 			}
 		}
 
 		// - 6.4 SR 5. An <indicator parameter> is an exact numeric, and a
 		// negative value is NULL.
 		if reference.indicator != '' {
-			indicator := p.reference(reference.indicator)!
-			indicator_type := indicator.typ or { HostParameterType{} }
-			if !indicator_type.is_exact_numeric() {
-				return sqlstate_42601('procedure ${p.name}: indicator parameter :${indicator.name} must be SMALLINT, INTEGER or BIGINT')
-			}
-			used << indicator.name.to_upper()
+			indicator := p.indicator(reference.indicator)!
+			b.used << indicator.name.to_upper()
 			checks += '  if (*${indicator.name} < 0) {\n    vsql_m_p[${i}].indicator = SQL_NULL_DATA;\n  }'
 			checks += if check == '' { '\n' } else { ' else ${check}' }
 		} else if check != '' {
@@ -116,15 +144,23 @@ fn execute_statement(text_sql string, references []HostParameterReference, p Ext
 		}
 	}
 
-	if params.len == 0 {
-		return ModuleStatement{sections, used, '  vsql_m_execute(SQLSTATE, ${c_string(text_sql.trim_space())}, 0, NULL);\n'}
+	if params.len > 0 {
+		b.c = '  struct vsql_m_param vsql_m_p[${params.len}] = {\n${params.join(',\n')}};\n' + checks
 	}
 
-	mut c := '  struct vsql_m_param vsql_m_p[${params.len}] = {\n${params.join(',\n')}};\n'
-	c += checks
-	c += '  vsql_m_execute(SQLSTATE, ${c_string(text_sql.trim_space())}, ${params.len}, vsql_m_p);\n'
+	return b
+}
 
-	return ModuleStatement{sections, used, c}
+// indicator is the host parameter of an <indicator parameter>, which must be
+// an exact numeric (6.4 Syntax Rule 5).
+fn (p ExternallyInvokedProcedure) indicator(name string) !HostParameterDeclaration {
+	indicator := p.reference(name)!
+	indicator_type := indicator.typ or { HostParameterType{} }
+	if !indicator_type.is_exact_numeric() {
+		return sqlstate_42601('procedure ${p.name}: indicator parameter :${indicator.name} must be SMALLINT, INTEGER or BIGINT')
+	}
+
+	return indicator
 }
 
 // reference is the host parameter for a <host parameter name> in the

@@ -47,6 +47,13 @@ exact_numeric_type:
 | DECIMAL left_paren precision comma scale right_paren {
     $$.v = parse_type_with_precision('DECIMAL', $3.v as string, $5.v as string)!
   }
+| DEC { $$.v = new_type('DECIMAL', 0, 0) }
+| DEC left_paren precision right_paren {
+    $$.v = parse_type_with_precision('DECIMAL', $3.v as string, '0')!
+  }
+| DEC left_paren precision comma scale right_paren {
+    $$.v = parse_type_with_precision('DECIMAL', $3.v as string, $5.v as string)!
+  }
 | SMALLINT { $$.v = new_type('SMALLINT', 0, 0) }
 | INTEGER { $$.v = new_type('INTEGER', 0, 0) }
 | INT { $$.v = new_type('INTEGER', 0, 0) }

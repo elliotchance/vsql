@@ -144,3 +144,14 @@ SELECT * FROM t WHERE x > 8;
 -- msg: INSERT 1
 -- msg: UPDATE 1
 -- D: 8.25e0 X: 8.25
+
+-- # DEC is another spelling of DECIMAL.
+/* types */
+CREATE TABLE foo (a DEC, b DEC(5), c DEC(5, 2));
+INSERT INTO foo (a, b, c) VALUES (12.7, 12345, -1.25);
+SELECT * FROM foo;
+VALUES CAST(1.25 AS DEC(4, 3));
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- A: 12 (DECIMAL) B: 12345 (DECIMAL(5)) C: -1.25 (DECIMAL(5, 2))
+-- COL1: 1.250 (DECIMAL(4, 3))

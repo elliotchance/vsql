@@ -198,7 +198,7 @@ range a ``SQLSTATE 22003 numeric value out of range`` is raised.
     - -9223372036854775808 to 9223372036854775807
     - 8 or 9 bytes [2]_
 
-  * - ``DECIMAL(p, s)``
+  * - ``DECIMAL(p, s)`` or ``DEC(p, s)`` [4]_
     - Variable, described below.
     - Variable, based on the number of digits
 
@@ -457,3 +457,6 @@ Notes
 .. [3] ``FLOAT`` and ``FLOAT(p)`` are aliases for ``DOUBLE PRECISION``. If you
    use ``FLOAT`` the type will show as ``DOUBLE PRECISION``. The precision
    ``p`` can be up to 53.
+
+.. [4] ``DEC`` is an alias for ``DECIMAL``. If you use ``DEC`` the type will
+   show as ``DECIMAL``.

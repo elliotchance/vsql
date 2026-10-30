@@ -18,7 +18,7 @@ Syntax
   [ HAVING <condition> ]
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
-  [ FETCH FIRST [ <integer> ] { ROW | ROWS } ONLY ]
+  [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
 
   <table_reference> := { <table_name> | ( <query> ) }
                        [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
@@ -26,7 +26,7 @@ Syntax
   <query> { UNION | EXCEPT } [ ALL | DISTINCT ] <query>
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
-  [ FETCH FIRST [ <integer> ] { ROW | ROWS } ONLY ]
+  [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
 
 A ``<query>`` is a ``SELECT``, ``VALUES``, ``UNION`` or ``EXCEPT``. It can be in
 parentheses, such as ``(SELECT ... FETCH FIRST 1 ROW ONLY)``.

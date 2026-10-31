@@ -17,10 +17,10 @@ struct CHostVariable {
 
 // c_declare_section reads the <C variable definition>s of a declare section,
 // and returns the C to replace it with, where VARCHAR is char. The length of a
-// char array isn't multiplied by 4 (the maximum octets in a UTF-8 character),
-// so it's a length in octets (#799).
+// char array (other than SQLSTATE, which is always char SQLSTATE[6]) is
+// multiplied by k, the maximum octets in a UTF-8 character.
 //
-// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Syntax Rules, 5.c and 5.d
+// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Syntax Rules, 5.a, 5.c and 5.d
 fn c_declare_section(text string, mut variables map[string]CHostVariable) !string {
 	for definition in remove_c_comments(text).split(';') {
 		if definition.trim_space() != '' {
@@ -28,25 +28,71 @@ fn c_declare_section(text string, mut variables map[string]CHostVariable) !strin
 		}
 	}
 
-	// VARCHAR can be in any case.
-	//
-	// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Syntax Rules, 7
+	// The length is the first brackets of a declarator, which isn't in a
+	// <C initial value>. It's checked by c_variable_definition.
 	mut c := ''
 	mut i := 0
+	mut word := ''
+	mut depth := 0
+	mut initial := false
 	cs := text.runes()
 	for i < cs.len {
-		if i + 7 <= cs.len && cs[i..i + 7].string().to_upper() == 'VARCHAR'
-			&& (i == 0 || !is_identifier_char(cs[i - 1], true))
-			&& (i + 7 == cs.len || !is_identifier_char(cs[i + 7], true)) {
-			c += 'char'
-			i += 7
+		mut j := i + 1
+		if is_identifier_char(cs[i], false) {
+			for j < cs.len && is_identifier_char(cs[j], true) {
+				j++
+			}
+			word = cs[i..j].string()
+
+			// VARCHAR can be in any case.
+			//
+			// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Syntax Rules, 7
+			c += if word.to_upper() == 'VARCHAR' { 'char' } else { word }
+		} else if cs[i] == `[` && depth == 0 && !initial && word != 'SQLSTATE' {
+			j = i + cs[i..].index(`]`) + 1
+			c += '[${cs[i + 1..j - 1].string().trim_space().int() * max_utf8_octets}]'
 		} else {
-			c += cs[i].str()
-			i++
+			j = skip_c_token(cs, i)
+			match cs[i] {
+				`(`, `[`, `{` { depth++ }
+				`)`, `]`, `}` { depth-- }
+				`=` { initial = initial || depth == 0 }
+				`,`, `;` { initial = initial && depth > 0 }
+				else {}
+			}
+			c += cs[i..j].string()
 		}
+		i = j
 	}
 
 	return c
+}
+
+// skip_c_token returns the position after the C comment, string literal or
+// character constant that starts at cs[i], or after cs[i] if it doesn't start
+// one.
+fn skip_c_token(cs []rune, i int) int {
+	mut j := i + 1
+	if cs[i] == `/` && j < cs.len && cs[j] == `/` {
+		for j < cs.len && cs[j] != `\n` {
+			j++
+		}
+		return j
+	}
+	if cs[i] == `/` && j < cs.len && cs[j] == `*` {
+		j += 2
+		for j < cs.len && !(cs[j - 1] == `*` && cs[j] == `/`) {
+			j++
+		}
+	} else if cs[i] == `"` || cs[i] == `'` {
+		for j < cs.len && cs[j] != cs[i] {
+			j += if cs[j] == `\\` { 2 } else { 1 }
+		}
+	} else {
+		return j
+	}
+
+	return if j < cs.len { j + 1 } else { cs.len }
 }
 
 // c_variable_definition reads a <C variable definition> (without the

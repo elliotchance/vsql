@@ -1320,13 +1320,13 @@ PROCEDURE d4 (SQLSTATE, :n CHAR(1)); DISCONNECT :n;
 PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
 ', 'my-module')!
 	assert m.header.contains('#ifndef MY_MODULE_H')
-	assert m.header.contains('void add(char SQLSTATE[6], char c[2], char v[11], short *s, long *i, long *i2, long long *b, float *r, double *d, long *f, short *ind, long long *unused);')
+	assert m.header.contains('void add(char SQLSTATE[6], char c[8], char v[44], short *s, long *i, long *i2, long long *b, float *r, double *d, long *f, short *ind, long long *unused);')
 	assert m.source.contains('#include "my-module.h"')
 	assert m.source.contains('static const char vsql_m_set_schema[] = "SET SCHEMA \'it\'\'s\'";')
 	assert m.source.contains('  (void)unused;\n')
 	assert m.source.contains('{SQL_CHAR, SQL_BOOLEAN, 0, (SQLPOINTER)(*f ? "TRUE" : "FALSE"), SQL_NTS}')
 	assert m.source.contains('INSERT INTO \\"t;\\" (a) VALUES (\'a;\\\\\\"\\n\\t\\r\', CAST(? AS CHARACTER(1)), CAST(? AS CHARACTER VARYING(10)), CAST(? AS SMALLINT)')
-	assert m.source.contains('  if (*ind < 0) {\n    vsql_m_p[1].indicator = SQL_NULL_DATA;\n  } else if (!vsql_m_string(SQLSTATE, v, 11)) {')
+	assert m.source.contains('  if (*ind < 0) {\n    vsql_m_p[1].indicator = SQL_NULL_DATA;\n  } else if (!vsql_m_string(SQLSTATE, v, 44)) {')
 	assert m.source.contains('  if (*ind < 0) {\n    vsql_m_p[2].indicator = SQL_NULL_DATA;\n  }\n')
 	assert m.source.contains('void procedure(char SQLSTATE[6]) {\n  vsql_m_begin("START TRANSACTION", 111);\n  vsql_m_start(SQLSTATE);')
 	assert m.source.contains('void c2(char SQLSTATE[6]) {\n  vsql_m_begin("COMMIT WORK", 11);\n  vsql_m_end(SQLSTATE, SQL_COMMIT);')
@@ -1347,9 +1347,9 @@ PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
 		'PROCEDURE q (SQLSTATE, :n BIGINT, :s VARCHAR(5), :c SMALLINT); GET DIAGNOSTICS CONDITION :c :n = CONDITION_NUMBER, :s = MESSAGE_TEXT, :n = PARAMETER_ORDINAL_POSITION; ' +
 		'PROCEDURE r (SQLSTATE, :n INT); GET DIAGNOSTICS CONDITION 01 :n = CONDITION_NUMBER;',
 		'm')!
-	assert m4.source.contains('void p(char SQLSTATE[6], long *n, char s[6], short *c) {\n  (void)c;\n  int vsql_m_w = 0;\n')
-	assert m4.source.contains('  *n = (long)vsql_m_item_number(SQL_DIAG_NUMBER, 0);\n  vsql_m_w |= vsql_m_put(s, 6, 1, vsql_m_item_text(VSQL_M_DYNAMIC_FUNCTION, 0));\n  vsql_m_sqlstate(SQLSTATE, vsql_m_w ? "01004" : "00000");\n')
-	assert m4.source.contains('  long long vsql_m_n = (long long)*c;\n  if (vsql_m_n < 1 || vsql_m_n > vsql_m_da.number) {\n    vsql_m_sqlstate(SQLSTATE, "35000");\n    return;\n  }\n  *n = (long long)vsql_m_n;\n  vsql_m_w |= vsql_m_put(s, 6, 0, vsql_m_item_text(SQL_DIAG_MESSAGE_TEXT, vsql_m_n));\n  *n = (long long)0;\n')
+	assert m4.source.contains('void p(char SQLSTATE[6], long *n, char s[24], short *c) {\n  (void)c;\n  int vsql_m_w = 0;\n')
+	assert m4.source.contains('  *n = (long)vsql_m_item_number(SQL_DIAG_NUMBER, 0);\n  vsql_m_w |= vsql_m_put(s, 5, 1, vsql_m_item_text(VSQL_M_DYNAMIC_FUNCTION, 0));\n  vsql_m_sqlstate(SQLSTATE, vsql_m_w ? "01004" : "00000");\n')
+	assert m4.source.contains('  long long vsql_m_n = (long long)*c;\n  if (vsql_m_n < 1 || vsql_m_n > vsql_m_da.number) {\n    vsql_m_sqlstate(SQLSTATE, "35000");\n    return;\n  }\n  *n = (long long)vsql_m_n;\n  vsql_m_w |= vsql_m_put(s, 5, 0, vsql_m_item_text(SQL_DIAG_MESSAGE_TEXT, vsql_m_n));\n  *n = (long long)0;\n')
 	assert m4.source.contains('  long long vsql_m_n = 1LL;\n')
 	assert m4.source.contains('  *n = (long)vsql_m_n;\n  vsql_m_sqlstate(SQLSTATE, "00000");\n')
 	assert !m4.source.contains('  vsql_m_begin(')
@@ -2237,9 +2237,9 @@ PROCEDURE up (SQLSTATE); UPDATE t SET x = 1 WHERE CURRENT OF dc;',
 		'm')!
 	assert m.source.contains('static const char *const vsql_m_cursor_statements[] = {NULL, "S", NULL};\n')
 	assert m.source.contains('  int vsql_m_w = 0;\n  vsql_m_begin("GET DESCRIPTOR", 47);\n  struct vsql_m_descriptor *vsql_m_d = vsql_m_descriptor(SQLSTATE, "D", &vsql_m_own);\n')
-	assert m.source.contains('  *n = (long)vsql_m_d->count;\n  *n = (long)vsql_m_d->top_level_count;\n  *n = (long)0;\n  vsql_m_w |= vsql_m_put(s, 6, 0, vsql_m_d->dynamic_function);\n  *n = (long)vsql_m_d->dynamic_function_code;\n')
+	assert m.source.contains('  *n = (long)vsql_m_d->count;\n  *n = (long)vsql_m_d->top_level_count;\n  *n = (long)0;\n  vsql_m_w |= vsql_m_put(s, 5, 0, vsql_m_d->dynamic_function);\n  *n = (long)vsql_m_d->dynamic_function_code;\n')
 	assert m.source.contains('  struct vsql_m_item *vsql_m_i = vsql_m_get_item(SQLSTATE, "G", NULL, (long long)*n, SQL_VARCHAR, 5, 1);\n')
-	assert m.source.contains('  vsql_m_w |= vsql_m_get_data(vsql_m_i, s, SQL_VARCHAR, 6);\n  *n = (long)vsql_m_i->number[VSQL_M_INDICATOR];\n  vsql_m_w |= vsql_m_put(c, 4, 1, vsql_m_i->string[VSQL_M_NAME] == NULL ? "" : vsql_m_i->string[VSQL_M_NAME]);\n')
+	assert m.source.contains('  vsql_m_w |= vsql_m_get_data(vsql_m_i, s, SQL_VARCHAR, 5);\n  *n = (long)vsql_m_i->number[VSQL_M_INDICATOR];\n  vsql_m_w |= vsql_m_put(c, 3, 1, vsql_m_i->string[VSQL_M_NAME] == NULL ? "" : vsql_m_i->string[VSQL_M_NAME]);\n')
 	assert m.source.contains('vsql_m_get_item(SQLSTATE, "G", &vsql_m_own, 2LL, SQL_INTEGER, 0, 0);\n')
 	assert m.source.contains('  vsql_m_allocate_descriptor(SQLSTATE, "D", &vsql_m_own, (long long)*n);\n')
 	assert m.source.contains('  vsql_m_allocate_descriptor(SQLSTATE, "d", &vsql_m_own, 100LL);\n')
@@ -2249,7 +2249,7 @@ PROCEDURE up (SQLSTATE); UPDATE t SET x = 1 WHERE CURRENT OF dc;',
 	// - 20.5 GR 4. The components are set in a fixed order.
 	assert m.source.contains('  if (vsql_m_i != NULL &&\n      vsql_m_set_number(SQLSTATE, vsql_m_i, VSQL_M_LEVEL, 0LL) &&\n      vsql_m_set_number(SQLSTATE, vsql_m_i, VSQL_M_TYPE, 12LL) &&\n      vsql_m_set_string(vsql_m_i, VSQL_M_CHARACTER_SET_NAME, s) &&\n      vsql_m_set_string(vsql_m_i, VSQL_M_SCOPE_NAME, "x") &&\n      vsql_m_set_number(SQLSTATE, vsql_m_i, VSQL_M_LENGTH, 5LL) &&\n      vsql_m_set_data(SQLSTATE, vsql_m_i, SQL_VARCHAR, 5, s)) {\n')
 	assert m.source.contains('      vsql_m_set_data(SQLSTATE, vsql_m_i, SQL_BOOLEAN, 0, b)) {\n')
-	assert m.source.contains('  vsql_m_begin("PREPARE", 56);\n  if (!vsql_m_string(SQLSTATE, s, 6)) {\n    return;\n  }\n  vsql_m_prepare(SQLSTATE, "S", s);\n')
+	assert m.source.contains('  vsql_m_begin("PREPARE", 56);\n  if (!vsql_m_string(SQLSTATE, s, 24)) {\n    return;\n  }\n  vsql_m_prepare(SQLSTATE, "S", s);\n')
 	assert m.source.contains('  vsql_m_prepare(SQLSTATE, "S", "SELECT 1");\n')
 	assert m.source.contains('  vsql_m_begin("DEALLOCATE PREPARE", 16);\n  vsql_m_deallocate_prepare(SQLSTATE, "S");\n')
 	assert m.source.contains('  vsql_m_begin("DESCRIBE", 20);\n  vsql_m_describe(SQLSTATE, "S", "D", &vsql_m_own);\n')
@@ -2332,7 +2332,7 @@ int main(void) {
   EXEC  SQL BEGIN DECLARE SECTION;
   char SQLSTATE[6]; // the SQLSTATE
   static const long long a = 1, b; /* two */ short d; float e;
-  double f = 1.5; varchar g[5] = "a,b", h[3] = {\'x\', 0};
+  double f = 1.5; varchar g[ 5 ] = "a,[\\"b", h[3] = {\'x\', 0};
   EXEC SQL END DECLARE SECTION;
   EXEC SQL WHENEVER SQLEXCEPTION GO TO failed;
   EXEC SQL WHENEVER SQLWARNING GOTO warned;
@@ -2353,10 +2353,10 @@ DECLARE c CURSOR FOR SELECT x FROM t WHERE x = :b;
 PROCEDURE vsql_e2 (SQLSTATE, :b BIGINT);
   OPEN c;
 '
-	assert p.source.contains('static void vsql_e1(char SQLSTATE[6], long long *a, char g[5], short *d, float *e, double *f, char h[3]) {')
+	assert p.source.contains('static void vsql_e1(char SQLSTATE[6], long long *a, char g[20], short *d, float *e, double *f, char h[12]) {')
 	assert p.source.contains('#line 1 "x.sqc"\n// EXEC SQL is not in a comment\n')
 	assert p.source.contains('  \n  char SQLSTATE[6]; // the SQLSTATE\n')
-	assert p.source.contains('double f = 1.5; char g[5] = "a,b", h[3] = {\'x\', 0};\n')
+	assert p.source.contains('double f = 1.5; char g[20] = "a,[\\"b", h[12] = {\'x\', 0};\n')
 	assert p.source.contains("  { vsql_e1(SQLSTATE, &a, g, &d, &e, &f, h); if (SQLSTATE[0] != '0' || SQLSTATE[1] > '2') goto failed; if (SQLSTATE[0] == '0' && SQLSTATE[1] == '1') goto warned; if (SQLSTATE[0] == '0' && SQLSTATE[1] == '2') goto done; }\n\n")
 	assert p.source.contains("  { vsql_e2(SQLSTATE, &b); if (SQLSTATE[0] == '0' && SQLSTATE[1] == '1') goto warned; if (SQLSTATE[0] == '0' && SQLSTATE[1] == '2') goto done; }\nfailed:")
 	assert !p.source.contains('#include "x.h"')

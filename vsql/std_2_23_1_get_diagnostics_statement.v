@@ -147,7 +147,7 @@ fn (mut t ModuleTokens) get_diagnostics_statement(p ExternallyInvokedProcedure) 
 				'vsql_m_item_text(${id}, ${n})'
 			}
 			pad := if typ.typ == .is_character { 1 } else { 0 }
-			c += '  vsql_m_w |= vsql_m_put(${target.name}, ${typ.length + 1}, ${pad}, ${value});\n'
+			c += '  vsql_m_w |= vsql_m_put(${target.name}, ${typ.length}, ${pad}, ${value});\n'
 			put = true
 		}
 
@@ -161,7 +161,7 @@ fn (mut t ModuleTokens) get_diagnostics_statement(p ExternallyInvokedProcedure) 
 	}
 
 	if put {
-		sections << 'diagnostics_put'
+		sections << 'put'
 		c = '  int vsql_m_w = 0;\n${c}  vsql_m_sqlstate(SQLSTATE, vsql_m_w ? "01004" : "00000");\n'
 	} else {
 		c += '  vsql_m_sqlstate(SQLSTATE, "00000");\n'

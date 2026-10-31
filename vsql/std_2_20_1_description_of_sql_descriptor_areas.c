@@ -409,14 +409,14 @@ static struct vsql_m_item *vsql_m_get_item(char *sqlstate, const char *name,
 /* section get_data */
 /*
  * vsql_m_get_data assigns DATA to the target, which has the data type type and
- * size bytes (including the null character of a string). It isn't assigned
+ * length (in characters, for a string, see vsql_m_put). It isn't assigned
  * when the value is null, or undefined. It returns 1 if a string was
  * truncated.
  *
  * ISO/IEC 9075-2:2016(E), 20.4, <get descriptor statement>, General Rules, 7.b.ii
  */
 static int vsql_m_get_data(struct vsql_m_item *item, void *target,
-                           SQLSMALLINT type, size_t size) {
+                           SQLSMALLINT type, size_t length) {
   if (item->data == NULL || item->number[VSQL_M_INDICATOR] < 0) {
     return 0;
   }
@@ -442,7 +442,7 @@ static int vsql_m_get_data(struct vsql_m_item *item, void *target,
     return 0;
   }
 
-  return vsql_m_put((char *)target, size, type == SQL_CHAR, (char *)item->data);
+  return vsql_m_put((char *)target, length, type == SQL_CHAR, (char *)item->data);
 }
 
 /* section set_count */

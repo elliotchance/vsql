@@ -1,30 +1,3 @@
-/* section diagnostics_put */
-/*
- * vsql_m_put assigns a string to a CHARACTER or CHARACTER VARYING target that
- * has size bytes, including the null character. A CHARACTER is padded with
- * spaces. It returns 1 if the string was truncated (warning: string data, right
- * truncation).
- *
- * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 7.a-7.e
- * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 6.b and 6.c
- */
-static int vsql_m_put(char *target, size_t size, int pad, const char *value) {
-  size_t length = strlen(value);
-  int truncated = length > size - 1;
-
-  if (truncated) {
-    length = size - 1;
-  }
-  memcpy(target, value, length);
-  if (pad) {
-    memset(target + length, ' ', size - 1 - length);
-    length = size - 1;
-  }
-  target[length] = '\0';
-
-  return truncated;
-}
-
 /* section diagnostics_text */
 /*
  * The class (or subclass) of an SQLSTATE that starts with 0 to 4 or A to H is

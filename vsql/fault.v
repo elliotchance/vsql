@@ -69,6 +69,15 @@ fn arm_fault(name string, nth int) ! {
 	f.armed[name] = nth
 }
 
+// c_arm_fault is arm_fault for the C tests of libvsql (see libvsql/test.h),
+// which can't use a fault directive. It returns 0, or 1 if the fault can't be
+// armed.
+@[export: 'vsql_arm_fault']
+fn c_arm_fault(name &char, nth int) int {
+	arm_fault(unsafe { cstring_to_vstring(name) }, nth) or { return 1 }
+	return 0
+}
+
 // disarm_faults removes any faults that haven't been reached.
 fn disarm_faults() {
 	mut f := unsafe { &FaultPoints(fault_points) }

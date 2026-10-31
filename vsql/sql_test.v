@@ -1867,6 +1867,14 @@ fn test_condition_area_limit_of_new_session() ! {
 	assert db2.condition_area_limit == 100
 }
 
+// c_arm_fault is only called by the C tests of libvsql.
+fn test_c_arm_fault() {
+	assert c_arm_fault(c'wal_write', 2) == 0
+	assert fault_points.armed['wal_write'] == 2
+	assert c_arm_fault(c'nothing', 1) == 1
+	disarm_faults()
+}
+
 // agent_sqlstate is the SQLSTATE of the error of a statement, or '' if it
 // succeeds.
 fn agent_sqlstate(mut a Agent, stmt string) string {

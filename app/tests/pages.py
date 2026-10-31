@@ -61,6 +61,27 @@ class AppPage:
         li.locator('details.menu > summary').click()
         return li.locator('.menu-items')
 
+    def schema_menu(self, catalog, schema):
+        """schema_menu opens the menu of a schema in the sidebar, and returns
+        it."""
+        row = self.page.locator('.schema-row').filter(has=self.schema(catalog, schema))
+        row.locator(':scope > details.folder > summary').hover()
+        row.locator(':scope > details.menu > summary').click()
+        return row.locator(':scope > details.menu .menu-items')
+
+    def catalog_menu(self, catalog):
+        """catalog_menu opens the menu of a catalog in the sidebar, and returns
+        it."""
+        row = self.page.locator('.catalog-row').filter(has=self.folder(f'catalog:{catalog}'))
+        row.locator(':scope > details.section > summary').hover()
+        row.locator(':scope > details.menu > summary').click()
+        return row.locator(':scope > details.menu .menu-items')
+
+    @property
+    def create_schema(self):
+        """create_schema is the popup to create a schema."""
+        return self.page.locator('dialog.create-schema')
+
     @property
     def sidebar_tabs(self):
         """sidebar_tabs are the tabs listed in the sidebar (see titles)."""
@@ -208,3 +229,40 @@ class AppPage:
     def tab_id(self):
         """tab_id is the id of the active tab, to post a change directly."""
         return self.page.locator('input[name="tab"]').first.get_attribute('value')
+
+    # A CREATE_TABLE tab (see test_create_table.py).
+
+    @property
+    def create_sql(self):
+        """create_sql is the CREATE TABLE, which can't be edited."""
+        return self.page.locator('pre.create-sql')
+
+    @property
+    def table_name(self):
+        return self.page.locator('.create-table .table-name input')
+
+    @property
+    def columns(self):
+        """columns are the rows of the columns of the table."""
+        return self.page.locator('table.columns tbody tr')
+
+    def column(self, row, field):
+        """column is the input of a field (name, type, not_null, primary_key
+        or default) of a column."""
+        return self.columns.nth(row).locator(f'[data-field="{field}"]')
+
+    def add_column(self):
+        self.page.get_by_role('button', name='+ Add column').click()
+
+    @property
+    def create_button(self):
+        return self.page.get_by_role('button', name='Create table')
+
+    def cancel_create(self):
+        self.page.locator('.create-table').get_by_role('button', name='Cancel').click()
+
+    @property
+    def discard(self):
+        """discard is the popup to confirm closing a CREATE_TABLE tab."""
+        return self.page.locator('dialog.discard')
+

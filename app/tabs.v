@@ -62,8 +62,11 @@ const no_tab = Tab{
 	tab_type: query_tab
 }
 
-// query_tab is the only tab type so far, a tab with SQL to run.
+// query_tab is a tab with SQL to run.
 const query_tab = 'QUERY'
+
+// create_table_tab is a tab to create a table, see create_table.v.
+const create_table_tab = 'CREATE_TABLE'
 
 // QueryPayload is the PAYLOAD (JSON) of a QUERY tab. Each tab type has its own
 // payload.
@@ -72,30 +75,46 @@ struct QueryPayload {
 }
 
 struct Tab {
-	id         int
-	tab_type   string
-	title      string
+	id       int
+	tab_type string
+	title    string
+	// query_text is only for a QUERY tab.
 	query_text string
 	active     bool
+	// payload is the PAYLOAD as it's stored, for the other tab types.
+	payload string
 }
 
 fn tabs(mut conn vsql.Connection) ![]Tab {
 	mut tabs := []Tab{}
 	for row in conn.query('SELECT id, tab_type, title, payload, active FROM vsql_app.tabs ORDER BY id')! {
-		payload := json2.decode[QueryPayload](row.get_string('PAYLOAD')!)!
-		tabs << Tab{row.get_int('ID')!, row.get_string('TAB_TYPE')!, row.get_string('TITLE')!, payload.query_text, row.get_bool('ACTIVE')! == .is_true}
+		tab_type := row.get_string('TAB_TYPE')!
+		payload := row.get_string('PAYLOAD')!
+		query_text := if tab_type == query_tab {
+			json2.decode[QueryPayload](payload)!.query_text
+		} else {
+			''
+		}
+		tabs << Tab{row.get_int('ID')!, tab_type, row.get_string('TITLE')!, query_text, row.get_bool('ACTIVE')! == .is_true, payload}
 	}
 
 	return tabs
 }
 
-// add_tab adds a tab after the others, makes it active and returns its id.
+// add_tab adds a QUERY tab after the others, makes it active and returns its
+// id.
 fn add_tab(mut conn vsql.Connection, query_text string) !int {
+	return insert_tab(mut conn, query_tab, tab_title(query_text), json2.encode(QueryPayload{query_text}))
+}
+
+// insert_tab adds a tab of any type after the others, makes it active and
+// returns its id.
+fn insert_tab(mut conn vsql.Connection, tab_type string, title string, payload string) !int {
 	mut stmt := conn.prepare('INSERT INTO vsql_app.tabs (tab_type, title, payload, active) VALUES (?, ?, ?, FALSE)')!
 	stmt.query({
-		'?1': vsql.new_varchar_value(query_tab)
-		'?2': vsql.new_varchar_value(tab_title(query_text))
-		'?3': vsql.new_varchar_value(json2.encode(QueryPayload{query_text}))
+		'?1': vsql.new_varchar_value(tab_type)
+		'?2': vsql.new_varchar_value(title)
+		'?3': vsql.new_varchar_value(payload)
 	})!
 	mut id := 0
 	for row in conn.query('SELECT MAX(id) AS id FROM vsql_app.tabs')! {
@@ -128,9 +147,28 @@ fn title_tab(mut conn vsql.Connection, id int, query_text string) ! {
 }
 
 fn save_tab(mut conn vsql.Connection, id int, query_text string) ! {
+	save_payload(mut conn, id, json2.encode(QueryPayload{query_text}))!
+}
+
+fn save_payload(mut conn vsql.Connection, id int, payload string) ! {
 	mut stmt := conn.prepare('UPDATE vsql_app.tabs SET payload = ? WHERE id = ?')!
 	stmt.query({
-		'?1': vsql.new_varchar_value(json2.encode(QueryPayload{query_text}))
+		'?1': vsql.new_varchar_value(payload)
 		'?2': vsql.new_integer_value(id)
 	})!
+}
+
+// close_tab deletes a tab. Closing the active tab activates the first tab, if
+// there is one.
+fn (a &App) close_tab(mut conn vsql.Connection, id int, active_id int) ! {
+	mut stmt := conn.prepare('DELETE FROM vsql_app.tabs WHERE id = ?')!
+	stmt.query({
+		'?1': vsql.new_integer_value(id)
+	})!
+	lock a.results {
+		a.results.delete(id)
+	}
+	if id == active_id {
+		activate_tab(mut conn, (tabs(mut conn)![0] or { no_tab }).id)!
+	}
 }

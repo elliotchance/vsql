@@ -1,5 +1,15 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>
+//
+// Create new rows in a table.
+
+// Only a <from constructor> is supported. A <from subquery> and an implicit
+// <insert column list> aren't supported yet (#795), and a <from default>
+// needs Feature F222, "INSERT statement: DEFAULT VALUES clause".
+//
+// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Conformance Rules, 2 and 4
+
 insert_statement:
   INSERT INTO insertion_target insert_columns_and_source {
     $$.v = Stmt(InsertStatement{

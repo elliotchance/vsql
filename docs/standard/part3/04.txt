@@ -1,0 +1,32 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 4, Concepts
+4                        container    - -
+# 4.1, Introduction to SQL/CLI
+4.1                      definition   - - an overview of the routines, which are each reviewed in clause 6
+# 4.2, Return codes
+4.2                      implemented  libvsql/std_3_4_2_return_codes.v libvsql/std_3_6_21_fetch_test.c
+# 4.3, Diagnostics areas in SQL/CLI
+4.3                      partial      libvsql/std_3_4_3_diagnostics_areas.v libvsql/std_3_6_34_get_diag_rec_test.c status records aren't ordered by precedence (#741); the fields are reviewed with GetDiagField (6.33)
+# 4.3.1, Setting of ROW_NUMBER and COLUMN_NUMBER fields
+4.3.1                    implemented  libvsql/std_3_4_3_diagnostics_areas.v libvsql/std_3_6_21_fetch_test.c
+# 4.4, Miscellaneous characteristics
+4.4                      container    - -
+# 4.4.1, Handles
+4.4.1                    implemented  libvsql/std_3_4_4_1_handles.v libvsql/std_3_6_26_free_handle_test.c a handle is valid anywhere in the process (implementation-defined); there are no memory errors
+# 4.4.2, Null terminated strings
+4.4.2                    implemented  libvsql/std_3_4_4_2_null_terminated_strings.v libvsql/std_3_6_35_get_env_attr_test.c
+# 4.4.3, Null pointers
+4.4.3                    implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c see 5.9/GR/2 for a zero buffer size
+# 4.4.4, Environment attributes
+4.4.4                    implemented  libvsql/std_3_6_58_set_env_attr.v libvsql/std_3_6_58_set_env_attr_test.c
+# 4.4.5, Connection attributes
+4.4.5                    implemented  libvsql/std_3_6_54_set_connect_attr.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always False
+# 4.4.6, Statement attributes
+4.4.6                    implemented  libvsql/std_3_4_4_1_handles.v libvsql/std_3_6_43_get_stmt_attr_test.c CURSOR HOLDABLE is HOLDABLE, since CURSOR COMMIT BEHAVIOR is PRESERVE
+# 4.4.7, CLI descriptor areas
+4.4.7                    implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_31_get_desc_field_test.c
+# 4.4.8, Obtaining diagnostics during multi-row fetch
+4.4.8                    implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
+# 4.5, Client-server operation
+4.5                      n/a          - - vsql is embedded, there's no separate SQL-server

@@ -42,8 +42,8 @@ fn (e DynamicParameterSpecification) pstr(params map[string]Value) string {
 }
 
 fn (e DynamicParameterSpecification) compile(mut c Compiler) !CompileResult {
-	// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rule 1
-	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rule 1
+	// ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rules, 1
 	if c.restricted != '' {
 		return sqlstate_42601('parameter ${e.name} cannot be used in ${c.restricted}')
 	}

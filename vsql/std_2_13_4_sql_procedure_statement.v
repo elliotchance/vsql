@@ -3,6 +3,12 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>
 //
 // Define all of the SQL-statements that are <SQL procedure statement>s.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.11, SQL-statements
+// ISO/IEC 9075-1:2003(E), 4.11.1, Classes of SQL-statements
+// ISO/IEC 9075-1:2003(E), 4.11.2, SQL-statements classified by function
 
 // ModuleStatement is the <SQL procedure statement> of a procedure, compiled to
 // the body of its C function.
@@ -120,11 +126,18 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []M
 		DeclareCursor {
 			sqlstate_42601('procedure ${p.name}: a cursor must be declared in the module, not in a procedure')
 		}
-		// - 14.8 SR 1 and 14.13 SR 1. The cursor of a positioned DELETE or
-		// UPDATE must be declared in the module. It's the CLI statement that
-		// has the cursor name.
-		// - 20.23, 20.24. A dynamic cursor is the same, other than the
-		// COMMAND_FUNCTION.
+		// The cursor of a positioned DELETE or UPDATE must be declared in the
+		// module. It's the CLI statement that has the cursor name. A dynamic
+		// cursor is the same, other than the COMMAND_FUNCTION, so the
+		// statement is checked against the cursor (when it's executed) like
+		// any other positioned DELETE or UPDATE.
+		//
+		// ISO/IEC 9075-2:2016(E), 14.8, <delete statement: positioned>, Syntax Rules, 1
+		// ISO/IEC 9075-2:2016(E), 14.13, <update statement: positioned>, Syntax Rules, 1
+		// ISO/IEC 9075-2:2016(E), 20.23, <dynamic delete statement: positioned>, Syntax Rules, 2
+		// ISO/IEC 9075-2:2016(E), 20.23, <dynamic delete statement: positioned>, General Rules, 1 to 6
+		// ISO/IEC 9075-2:2016(E), 20.24, <dynamic update statement: positioned>, Syntax Rules, 2
+		// ISO/IEC 9075-2:2016(E), 20.24, <dynamic update statement: positioned>, General Rules, 1 to 8
 		DeleteStatementPositioned {
 			cursor := find_module_cursor(cursors, stmt.cursor_name, p)!
 			execute_statement(text_sql, references, p, if cursor.statement == '' {
@@ -151,6 +164,8 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []M
 // <get diagnostics statement>, and sets the COMMAND_FUNCTION and
 // COMMAND_FUNCTION_CODE from Table 37, "SQL-statement codes". They're empty for
 // a statement that libvsql executes, which gives them.
+//
+// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 6
 fn begin(command_function string, code int) string {
 	return '  vsql_m_begin(${c_string(command_function)}, ${code});\n'
 }
@@ -193,7 +208,7 @@ fn bind_parameters(sections []string, references []HostParameterReference, p Ext
 	mut params := []string{}
 	mut checks := ''
 	for i, reference in references {
-		// - 13.3 SR 3. Each host parameter must be declared.
+		// Each host parameter must be declared (see reference).
 		parameter := p.reference(reference.name)!
 		typ := parameter.typ or { HostParameterType{} }
 		params << '    ${typ.c_parameter(parameter.name)}'
@@ -207,8 +222,14 @@ fn bind_parameters(sections []string, references []HostParameterReference, p Ext
 			}
 		}
 
-		// - 6.4 SR 5. An <indicator parameter> is an exact numeric, and a
-		// negative value is NULL.
+		// An <indicator parameter> is an exact numeric, and a negative value is
+		// NULL. The same goes for an <indicator variable> of embedded SQL, which
+		// is an indicator parameter of the implied module. When the value is
+		// stored, an indicator less than -1 should be an error instead (#783).
+		//
+		// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target specification>, Syntax Rules, 1 and 9
+		// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target specification>, General Rules, 4 and 19
+		// ISO/IEC 9075-2:2016(E), 9.2, Store assignment, General Rules, 3.a.ii and 3.a.iii
 		if reference.indicator != '' {
 			indicator := p.indicator(reference.indicator)!
 			b.used << indicator.name.to_upper()
@@ -227,7 +248,9 @@ fn bind_parameters(sections []string, references []HostParameterReference, p Ext
 }
 
 // indicator is the host parameter of an <indicator parameter>, which must be
-// an exact numeric (6.4 Syntax Rule 5).
+// an exact numeric.
+//
+// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target specification>, Syntax Rules, 1
 fn (p ExternallyInvokedProcedure) indicator(name string) !HostParameterDeclaration {
 	indicator := p.reference(name)!
 	indicator_type := indicator.typ or { HostParameterType{} }
@@ -239,7 +262,9 @@ fn (p ExternallyInvokedProcedure) indicator(name string) !HostParameterDeclarati
 }
 
 // reference is the host parameter for a <host parameter name> in the
-// statement, which must be declared (13.3 Syntax Rule 3).
+// statement, which must be declared.
+//
+// ISO/IEC 9075-2:2016(E), 13.3, <externally-invoked procedure>, Syntax Rules, 3
 fn (p ExternallyInvokedProcedure) reference(name string) !HostParameterDeclaration {
 	return p.parameter(name) or {
 		return sqlstate_42601('procedure ${p.name}: host parameter :${name} is not declared')
@@ -249,6 +274,10 @@ fn (p ExternallyInvokedProcedure) reference(name string) !HostParameterDeclarati
 // rewrite_host_parameters replaces each <host parameter specification> (a
 // host parameter name, and an optional indicator parameter) with a "?" that
 // has the declared type of the host parameter, and each comment with a space.
+// Each of them is an input host parameter (and also an output host parameter
+// if it's a target too).
+//
+// ISO/IEC 9075-2:2016(E), 9.8, Host parameter mode determination, Syntax Rules, 3.b.ii and 3.b.iv
 fn rewrite_host_parameters(text string, p ExternallyInvokedProcedure) !(string, []HostParameterReference) {
 	return replace_host_parameters(text, fn [p] (name string) !string {
 		typ := p.reference(name)!.typ or { HostParameterType{} }

@@ -9,6 +9,15 @@ module main
 // rowset of ARRAY_SIZE rows before the current one (or the first rowset).
 // RELATIVE moves from the first row of the current rowset, and ABSOLUTE counts
 // from the start (or the end, if it's negative).
+//
+// With an ARRAY_SIZE of 1, that's the same as General Rules 11 to 15. For a
+// rowset of more than one row, the text of General Rules 13.b.iii and 15.a.i
+// can't be right: NEXT would move to the second row of the rowset (rather
+// than the row after it, as in 6.21, "Fetch", General Rules, 10.b), and LAST
+// (or a PRIOR, ABSOLUTE or RELATIVE that's near the end) would have every row.
+// So these follow ODBC instead. General Rules 15 doesn't cover an ABSOLUTE or
+// RELATIVE that's after the last row, which is no data (General Rules,
+// 15.c.ii).
 
 // Codes from Table 24, "Codes used for fetch orientation".
 const sql_fetch_next = i16(1)
@@ -27,7 +36,8 @@ fn sql_fetch_scroll(statement_handle SQLInteger, fetch_orientation i16, fetch_of
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return fetch_scroll(mut stmt, fetch_orientation, i64(fetch_offset)) or {
@@ -36,6 +46,7 @@ fn sql_fetch_scroll(statement_handle SQLInteger, fetch_orientation i16, fetch_of
 }
 
 fn fetch_scroll(mut stmt Stmt, orientation i16, offset i64) !i16 {
+	// - 2, 3. There must be an executed statement with an open cursor.
 	if !stmt.executed {
 		return cli_error('HY010', 'function sequence error')
 	}
@@ -130,7 +141,7 @@ fn scroll(n int, array_size int, start int, len int, orientation i16, offset i64
 			return scroll_to(n, array_size, rows_before + offset + 1)
 		}
 		else {
-			// - 10. NEXT: the rows after the last row of the rowset.
+			// - 13.b. NEXT: the rows after the last row of the rowset.
 			if n == 0 || start + len >= n {
 				return after, 0, true
 			}

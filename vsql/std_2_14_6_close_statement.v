@@ -28,7 +28,10 @@ fn (mut t ModuleTokens) close_statement(p ExternallyInvokedProcedure, cursors []
 	cursor := t.module_cursor(p, cursors)!
 	t.end_of_statement(p)!
 
-	// - 20.22. A <dynamic close statement> closes a dynamic cursor.
+	// A <dynamic close statement> closes a dynamic cursor.
+	//
+	// ISO/IEC 9075-2:2016(E), 20.22, <dynamic close statement>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2016(E), 20.22, <dynamic close statement>, General Rules, 1 to 3
 	command := if cursor.statement == '' {
 		begin('CLOSE CURSOR', 9)
 	} else {

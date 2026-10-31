@@ -8,6 +8,9 @@ import time
 // that SQL-transaction in the current SQL-session. If no SQL-transaction is
 // currently active, then set the constraint mode for the next SQL-transaction
 // in the current SQL-session for the SQL-agent.
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.7.1, Constraint
+// checking.
 
 // The names are empty for ALL.
 struct SetConstraintsModeStatement {
@@ -15,11 +18,14 @@ struct SetConstraintsModeStatement {
 	is_deferred bool
 }
 
-// execute sets the constraint mode of each constraint (General Rules 2 and 3).
-// A constraint that becomes immediate is checked straight away, for the rows
-// written while it was deferred (ISO/IEC 9075-2:2016(E), 4.23.2). If it's not
-// satisfied, the statement fails and nothing changes, so it's still deferred
-// and checked again later.
+// execute sets the constraint mode of each constraint. A constraint that
+// becomes immediate is checked straight away, for the rows written while it
+// was deferred. If it's not satisfied, the statement fails and nothing
+// changes, so it's still deferred and checked again later. Outside of an
+// SQL-transaction, it's the constraint mode of the next one.
+//
+// ISO/IEC 9075-2:2016(E), 4.23.2, Checking of constraints
+// ISO/IEC 9075-2:2016(E), 17.4, <set constraints mode statement>, General Rules, 2 and 3
 fn (stmt SetConstraintsModeStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
@@ -65,7 +71,9 @@ fn (stmt SetConstraintsModeStatement) explain(mut _ Connection, _ map[string]Val
 
 // find_constraint returns the catalog, table and characteristics of the
 // constraint that has the name, which can be qualified by its schema and
-// catalog (Syntax Rule 1).
+// catalog.
+//
+// ISO/IEC 9075-2:2016(E), 17.4, <set constraints mode statement>, Syntax Rules, 1
 fn (mut conn Connection) find_constraint(name Identifier) !(&CatalogConnection, Table, ConstraintCharacteristics) {
 	resolved := conn.resolve_identifier(name)
 	mut catalog := conn.catalogs[resolved.catalog_name] or {

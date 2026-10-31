@@ -31,6 +31,11 @@ fn (o &JoinOperation) columns() Columns {
 	return columns
 }
 
+// execute joins the rows of both sides. A LEFT (or RIGHT) join also has each
+// row of the left (or right) side that didn't match, with NULLs for the other
+// side.
+//
+// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, General Rules, 3-5
 fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 	left_rows := o.plan.subplans['\$1'].execute([]Row{})!
 	right_rows := o.plan.subplans['\$2'].execute([]Row{})!

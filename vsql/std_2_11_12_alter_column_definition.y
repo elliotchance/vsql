@@ -1,5 +1,6 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 11.12, <alter column definition>, Conformance Rules, 1
 alter_column_definition:
   ALTER column_name alter_column_action {
     flag(mut yylex, 'F381')

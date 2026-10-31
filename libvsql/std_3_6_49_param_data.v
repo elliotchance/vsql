@@ -8,6 +8,15 @@ module main
 // DATA_POINTER of the deferred parameter in Value, and its value is given with
 // PutData. Calling ParamData again moves to the next deferred parameter (and
 // returns SQL_NEED_DATA), or executes the statement after the last one.
+//
+// The deferred parameters are found when the statement is executed (General
+// Rules 3 to 5, see 5.6, "Implicit EXECUTE USING and OPEN USING clauses",
+// General Rules 4.j). There's no maximum length for a character string, and
+// there are no large objects or locators (General Rules 11.a.i.1.B, 11.a.i.2,
+// 11.a.i.3 and 14.a). The data type of a dynamic parameter isn't determined, so
+// there's no second cast (General Rules 14.b.ii and 14.b.iii), which is #649.
+// An exception condition also removes the deferred parameter number, which
+// is #750.
 
 @[export: 'SQLParamData']
 fn sql_param_data(statement_handle SQLInteger, value &voidptr) i16 {
@@ -18,7 +27,8 @@ fn sql_param_data(statement_handle SQLInteger, value &voidptr) i16 {
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.i
 	stmt.invoke(true) or { return stmt.diag.error(err) }
 
 	return param_data(mut stmt, value) or {
@@ -65,7 +75,8 @@ fn param_data(mut stmt Stmt, value &voidptr) !i16 {
 		return sql_need_data
 	}
 
-	// - 17. Otherwise, the statement is executed.
+	// - 17. Otherwise, the statement is executed, the same as ExecDirect (see
+	// run_statement).
 	mut prepared := stmt.deferred_stmt or { return cli_error('HY010', 'function sequence error') }
 	params := stmt.deferred_params.clone()
 	stmt.cancel_deferred()

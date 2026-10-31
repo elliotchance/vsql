@@ -3,12 +3,17 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>
 //
 // Specify a referential constraint.
+//
+// The concept is described by:
+//
+// ISO/IEC 9075-2:2016(E), 4.23.3.3, Referential constraints
 
 // A FOREIGN KEY, or a REFERENCES on a column. The referenced_columns are empty
-// when they aren't given, which means the PRIMARY KEY of the referenced table
-// (Syntax Rule 4b). There is no MATCH, so it's always MATCH
-// SIMPLE (Syntax Rule 1). The update_rule and delete_rule are empty when
-// there's no ON UPDATE or ON DELETE.
+// when they aren't given, which means the PRIMARY KEY of the referenced table.
+// There is no MATCH (F741), so it's always MATCH SIMPLE. The update_rule and
+// delete_rule are empty when there's no ON UPDATE or ON DELETE.
+//
+// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 1 and 4.b
 struct ReferentialConstraintDefinition {
 	name               Identifier
 	columns            []Identifier
@@ -73,8 +78,13 @@ fn (k ForeignKey) violation(t Table) IError {
 
 // resolve_foreign_keys finds the table and columns that each FOREIGN KEY of a
 // new definition of table references, and checks them. The referenced table
-// can be the table itself. It must be in the same catalog, because each
-// catalog is a separate file.
+// can be the table itself, and must be a base table. It must be in the same
+// catalog, because each catalog is a separate file.
+//
+// The unique constraint of the referenced columns can be DEFERRABLE, and a
+// datetime with a time zone can reference one without a time zone (#789).
+//
+// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 5, 6 and 15
 fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 	for i, key in table.foreign_keys {
 		mut name := conn.resolve_identifier(key.referenced_table)
@@ -92,7 +102,7 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 			referenced = conn.catalog_for(name).storage.table(name.storage_id())
 		}
 
-		// Syntax Rule 4b.
+		// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 4.b
 		mut referenced_columns := key.referenced_columns.clone()
 		if referenced_columns.len == 0 {
 			if referenced.primary_key.len == 0 {
@@ -101,12 +111,17 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 			referenced_columns = referenced.primary_key.clone()
 		}
 
-		// Syntax Rule 11.
+		// This is also the assertion of ISO/IEC 9075-11:2008(E), 6.2,
+		// EQUAL_KEY_DEGREES assertion.
+		//
+		// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 11
 		if referenced_columns.len != key.columns.len {
 			return sqlstate_42830('FOREIGN KEY has ${key.columns.len} ${pluralize(key.columns.len, 'column')} but REFERENCES ${name} has ${referenced_columns.len}')
 		}
 
-		// Syntax Rule 14.
+		// A generated column can't be changed by a referential action.
+		//
+		// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 14
 		for column in key.columns {
 			if table.column(column)!.generated == none {
 				continue
@@ -121,8 +136,10 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 			return sqlstate_42601('FOREIGN KEY on generated column ${column} cannot use ${action}')
 		}
 
-		// The referenced columns must be the columns of a unique constraint
-		// (Syntax Rule 4a), in any order.
+		// The referenced columns must be the columns of a unique constraint,
+		// in any order. Every type can be grouped.
+		//
+		// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 4.a and 9
 		for j, column in referenced_columns {
 			typ := referenced.column(column)!.typ
 			referencing_typ := table.column(key.columns[j])!.typ
@@ -170,9 +187,11 @@ fn key_type(typ SQLType) SQLType {
 }
 
 // is_comparable_key_type is true if a referencing column of type a can reference
-// a column of type b. They must be comparable (Syntax Rule 11), so any two
-// numeric types, and datetimes with the same datetime fields (with or without a
-// time zone), can be used (Feature T201).
+// a column of type b. They must be comparable, so any two numeric types, and
+// datetimes with the same datetime fields (with or without a time zone, see
+// #789), can be used (Feature T201).
+//
+// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 11
 fn is_comparable_key_type(a SQLType, b SQLType) bool {
 	return key_type(a) == key_type(b) || (a.is_number() && b.is_number())
 		|| (a.is_datetime() && b.is_datetime() && datetime_fields(a) == datetime_fields(b))
@@ -182,8 +201,9 @@ fn is_comparable_key_type(a SQLType, b SQLType) bool {
 // a and its referenced column of type b are compared as. An exact numeric is
 // compared with an approximate numeric as a DOUBLE PRECISION, and a datetime
 // without a time zone is compared with one with a time zone in UTC, like any
-// other comparison (ISO/IEC 9075-2:2016(E), 8.2 <comparison predicate>, General
-// Rules 2 and 6).
+// other comparison.
+//
+// ISO/IEC 9075-2:2016(E), 8.2, <comparison predicate>, General Rules, 2 and 6
 fn foreign_key_type(a SQLType, b SQLType) SQLType {
 	ka, kb := key_type(a), key_type(b)
 	if ka == kb {
@@ -217,6 +237,8 @@ fn foreign_key_type(a SQLType, b SQLType) SQLType {
 // minutes) when it's compared with one with a time zone.
 //
 // Every row of the referenced table is read, there is no index.
+//
+// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 18
 fn (mut f Storage) check_foreign_keys(t Table, rows []Row, time_zone i16) ! {
 	if t.foreign_keys.len == 0 || rows.len == 0 {
 		return
@@ -282,8 +304,11 @@ fn (mut f Storage) check_foreign_keys(t Table, rows []Row, time_zone i16) ! {
 // or might once another transaction finishes. The old_rows are the rows of t
 // that a statement deleted or updated, and new_rows are the rows that it wrote.
 // The referential actions (see apply_referential_actions) have already been
-// carried out, so it's checked once the whole statement has finished
-// (ISO/IEC 9075-2:2016(E), 15.17 and 4.23.2).
+// carried out, so it's checked once the whole statement has finished.
+//
+// ISO/IEC 9075-2:2016(E), 4.23.2, Checking of constraints
+// ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions
+// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 14 and 16.a
 //
 // The referenced columns are a unique constraint (which has already been
 // checked), so another row of t can't have the same key. time_zone is the same
@@ -376,8 +401,11 @@ struct RowChange {
 // The referencing tables are in the same catalog as t (see
 // resolve_foreign_keys), so they're all in f.
 //
-// ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General
-// Rules 9a, 10a and 17
+// Referential actions that conflict (such as one that deletes a row that
+// another one sets null) aren't a triggered data change violation (#796).
+//
+// ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General Rules, 9.a, 10.a and 17
+// ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General Rules, 12 and 13
 fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, changes []RowChange) ! {
 	_, time_zone := conn.now()
 
@@ -413,7 +441,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 				}
 
 				// A key is deleted when its row is deleted, and updated when a
-				// row has a different key afterwards (General Rule 10).
+				// row has a different key afterwards (15.17 GR 10).
 				types := foreign_key_types(referencing, key.columns, table, key.referenced_columns)!
 				mut deleted_keys := map[string]bool{}
 				mut updated_keys := map[string]Row{}
@@ -539,8 +567,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 // matching rows are changed by the referential action, so it's an error if
 // another transaction is writing one of them.
 //
-// ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General
-// Rule 6
+// ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General Rules, 6
 fn (mut f Storage) matching_rows(key ForeignKey, referencing Table, types []SQLType, keys map[string]bool, time_zone i16) ![]Row {
 	f.isolation_start()!
 	defer {
@@ -591,7 +618,9 @@ fn (f Storage) referencing_tables(t Table) []Identifier {
 
 // drop_foreign_keys_referencing drops the FOREIGN KEYs of the other tables that
 // reference any of the tables (by their storage_id), which are being dropped by
-// a DROP TABLE or DROP SCHEMA with CASCADE (11.31, General Rule 3).
+// a DROP TABLE or DROP SCHEMA with CASCADE.
+//
+// ISO/IEC 9075-2:2016(E), 11.31, <drop table statement>, General Rules, 3
 fn (mut f Storage) drop_foreign_keys_referencing(table_names []string) ! {
 	// The tables are sorted so that they're always changed in the same order.
 	mut names := f.tables.keys()

@@ -2,7 +2,9 @@
  * libvsql.h declares the SQL/CLI (ISO/IEC 9075-3) routines implemented by
  * libvsql, the shared library for using vsql from C (and any language that can
  * call C functions). The types and codes are the ones from Annex A, "Typical
- * header files". The routines that aren't implemented yet are listed in
+ * header files". The codes are also in the tables of ISO/IEC 9075-3:2003(E),
+ * 5.14, Other tables associated with CLI. The routines that aren't implemented
+ * yet are listed in
  * https://vsql.readthedocs.io/en/latest/sql-compliance.html#cli-routines
  *
  * This header is C99, and also works with C++11.

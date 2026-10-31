@@ -1,5 +1,9 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 7.6, <table reference>
+//
+// Reference a table.
+
 table_reference:
   table_factor { $$.v = TableReference($1.v as TablePrimary) }
 | joined_table { $$.v = TableReference($1.v as QualifiedJoin) }
@@ -12,6 +16,10 @@ parenthesized_joined_table:
     $$.v = $2.v as QualifiedJoin
   }
 | left_paren joined_table right_paren { $$.v = $2.v as QualifiedJoin }
+
+// Without a join type, it's INNER.
+//
+// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 5
 
 qualified_join:
   table_reference JOIN table_reference join_specification {
@@ -72,6 +80,7 @@ correlation_or_recognition:
 
 derived_table:
   table_subquery {
+    // ISO/IEC 9075-2:2016(E), 7.6, <table reference>, Conformance Rules, 6
     flag(mut yylex, 'F591')
     $$.v = $1.v as TablePrimary
   }

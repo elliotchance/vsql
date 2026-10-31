@@ -34,9 +34,13 @@ fn (o DefaultOption) compile(mut c Compiler) !CompileResult {
 }
 
 // check_default_clause returns an error if the default of the column doesn't
-// suit the type of the column (Syntax Rules 2 to 4). A datetime value function
-// (such as CURRENT_DATE), CURRENT_CATALOG and CURRENT_SCHEMA aren't evaluated
-// until the default is used, so they're only checked by their type.
+// suit the type of the column. A datetime value function (such as
+// CURRENT_DATE), CURRENT_CATALOG and CURRENT_SCHEMA aren't evaluated until the
+// default is used, so they're only checked by their type. The length of the
+// column for CURRENT_CATALOG and CURRENT_SCHEMA, and whether a datetime value
+// function has a time zone, aren't checked (#788).
+//
+// ISO/IEC 9075-2:2016(E), 11.5, <default clause>, Syntax Rules, 4.b and 4.d
 fn check_default_clause(mut conn Connection, column Column) ! {
 	default_value := column.default_value or { return }
 	mut c := Compiler{
@@ -67,10 +71,14 @@ fn check_default_clause(mut conn Connection, column Column) ! {
 }
 
 // is_valid_default_literal is true if a literal can be the default of a column
-// of type t (Syntax Rule 2). It's stricter than storing the value: a number
-// can't be the default of a character string, an exact numeric can't have an
-// approximate default or lose any significant digits, and a datetime must have
-// the same fields, and a time zone if the column has one.
+// of type t. It's stricter than storing the value: a number can't be the
+// default of a character string, an exact numeric can't have an approximate
+// default or lose any significant digits, and a datetime must have the same
+// fields, and a time zone if the column has one. A datetime that has a time
+// zone when the column doesn't, or more fractional seconds than the column, is
+// allowed (#788).
+//
+// ISO/IEC 9075-2:2016(E), 11.5, <default clause>, Syntax Rules, 4.a
 fn is_valid_default_literal(mut conn Connection, v Value, t Type) bool {
 	return match t.typ {
 		.is_boolean {

@@ -1,0 +1,36 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 8, Conformance
+8                        n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.1, Minimum conformance
+8.1                      n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.2, Conformance to parts
+8.2                      n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.3, Conformance to features
+8.3                      n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.4, Conformance to SQL packages
+8.4                      n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.4.1, Enhanced datetime facilities
+8.4.1                    n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.4.2, Enhanced integrity management
+8.4.2                    n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.4.3, PSM
+8.4.3                    n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.4.4, Basic object support
+8.4.4                    n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.4.5, Enhanced object support
+8.4.5                    n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.4.6, Active database
+8.4.6                    n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.4.7, OLAP
+8.4.7                    n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.4.8, Extensions and options
+8.4.8                    implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql the extensions are flagged with V features
+# 8.5, SQL flagger
+8.5                      implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql Core SQL Flagging and SQL Feature Flagging, Syntax Only (F812)
+# 8.6, Claims of conformance
+8.6                      n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.6.1, Requirements for SQL applications
+8.6.1                    n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)
+# 8.6.2, Requirements for SQL-implementations
+8.6.2                    n/a          - - vsql doesn't claim conformance yet (see the SQL Compliance docs)

@@ -229,7 +229,9 @@ fn tokenize(sql_stmt string) ![]Token {
 
 // tokenize_with_features also returns the features outside of Core SQL that
 // the tokens use (see flag), which the parser can't see: F271 for a compound
-// character literal, and F393 for a Unicode character string literal.
+// character literal, and F393 for a Unicode character string literal (ISO/IEC
+// 9075-2:2016(E), 5.3, <literal>, Conformance Rules, 6 and 11). A bracketed
+// comment isn't flagged with T351, which is #763.
 fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 	mut tokens := []Token{}
 	mut features := []string{}
@@ -411,6 +413,9 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			is_not_first = true
 		}
 
+		// Any other character is skipped, rather than only white space (ISO/IEC
+		// 9075-2:2016(E), 5.2, <token> and <separator>, Syntax Rules, 3), which
+		// is #760.
 		if word == '' {
 			i++
 			continue
@@ -461,7 +466,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 // A string without a closing quote is a syntax error. The last value is true if
 // the string had more than one part (a compound literal).
 //
-// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules 1, 2 and 7
+// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules, 1, 2 and 7
 fn read_string_literal(cs []rune, start int) !(string, int, bool) {
 	mut word := ''
 	mut i := start + 1
@@ -507,9 +512,12 @@ fn read_string_literal(cs []rune, start int) !(string, int, bool) {
 
 // is_comment returns true if a comment starts at cs[i]. A simple comment
 // starts with two (or more) minus signs and continues to the end of the line. A
-// bracketed comment starts with "/*" and ends with the matching "*/".
+// bracketed comment starts with "/*" and ends with the matching "*/". So
+// "1--1" is 1 followed by a comment, a subtraction of a negative number needs a
+// separator ("1 - -1").
 //
 // ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>
+// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, Syntax Rules, 4
 fn is_comment(cs []rune, i int) bool {
 	return i + 1 < cs.len && ((cs[i] == `-` && cs[i + 1] == `-`)
 		|| (cs[i] == `/` && cs[i + 1] == `*`))
@@ -553,7 +561,7 @@ fn skip_comment(cs []rune, start int) !int {
 // string, from the optional UESCAPE '<character>' after the string at cs[i],
 // and the position after it. Otherwise, the escape character is a backslash.
 //
-// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Syntax Rules 16 to 18
+// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Syntax Rules, 16 to 18
 fn read_unicode_escape_specifier(cs []rune, start int) !(rune, int) {
 	mut i := start
 	for i < cs.len && cs[i].str().trim_space() == '' {
@@ -585,7 +593,7 @@ fn read_unicode_escape_specifier(cs []rune, start int) !(rune, int) {
 // (such as \+01F600), or another escape character (for the escape character
 // itself).
 //
-// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Syntax Rules 19 to 23
+// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Syntax Rules, 19 to 23
 fn unescape_unicode(s string, escape rune) !string {
 	cs := s.runes()
 	mut result := []rune{}
@@ -642,6 +650,9 @@ fn is_exponent(cs []rune, i int) bool {
 		&& ((cs[i + 1] >= `0` && cs[i + 1] <= `9`) || cs[i + 1] == `+` || cs[i + 1] == `-`)
 }
 
+// is_identifier_char is true if c can be in a <regular identifier>. It's only
+// ASCII, rather than the Unicode letters and digits (ISO/IEC 9075-2:2016(E),
+// 5.2, <token> and <separator>, Syntax Rules, 1 and 2), which is #761.
 @[inline]
 fn is_identifier_char(c rune, is_not_first bool) bool {
 	yes := (c >= `a` && c <= `z`) || (c >= `A` && c <= `Z`) || c == `_`

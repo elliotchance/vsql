@@ -11,8 +11,16 @@ import vsql
 // the ARD that have a DATA_POINTER. For a rowset of more than one row, each
 // bound target (and its indicator and length) is an array with an element for
 // each row.
+//
+// COUNT can't be negative (see SetDescField), so General Rules 3.a can't
+// happen. There are no locators, so the type of a bound target can change
+// between fetches (General Rules, 3.h.v). A zero-length character string isn't
+// an exception condition, which is implementation-defined (General Rules,
+// 3.h.viii.2.B.II.1.a).
 
-// Codes from Table 25, "Multi-row fetch status codes".
+// Codes from Table 25, "Multi-row fetch status codes", for the status of each
+// row of a rowset (ISO/IEC 9075-3:2003(E), 4.4.8, Obtaining diagnostics during
+// multi-row fetch).
 const sql_row_success = i16(0)
 const sql_row_no_row = i16(3)
 const sql_row_error = i16(5)
@@ -31,9 +39,10 @@ struct BoundTarget {
 }
 
 // bound_targets returns the bound targets of the ARD of a statement, which
-// must be valid (see 5.13, "Description of CLI item descriptor areas"),
-// otherwise an exception condition is raised: dynamic SQL error — using clause
-// does not match target specifications.
+// must be valid (ISO/IEC 9075-3:2003(E), 5.13, Description of CLI item
+// descriptor areas, Syntax Rules, 13), otherwise an exception condition is
+// raised: dynamic SQL error — using clause does not match target
+// specifications.
 fn bound_targets(stmt &Stmt) ![]BoundTarget {
 	ard := descs[stmt.ard] or { return cli_error('HY010', 'function sequence error') }
 	ird := descs[stmt.ird] or { return cli_error('HY010', 'function sequence error') }

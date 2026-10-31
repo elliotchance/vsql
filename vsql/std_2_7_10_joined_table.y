@@ -1,5 +1,11 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 7.10, <joined table>
+//
+// Specify a table derived from a Cartesian product, inner join, or outer join.
+//
+// There's no CROSS, NATURAL or FULL (F401), or USING (#777).
+
 joined_table:
   qualified_join { $$.v = $1.v as QualifiedJoin }
 

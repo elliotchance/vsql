@@ -7,6 +7,12 @@ module main
 // Each name argument is a pattern for LIKE (with the escape character "\"),
 // unless the METADATA ID attribute of the statement is TRUE: then it's an
 // identifier, which is case insensitive unless it's quoted.
+//
+// There are no privileges, so feature C041 isn't supported and every row of
+// the INFORMATION_SCHEMA is described (for example ISO/IEC 9075-3:2003(E),
+// 6.63, Tables, General Rules, 6.b.ii). The length of each argument is read
+// before the null pointers are checked (for example General Rules, 10 and 12),
+// which is #759.
 
 // The search pattern escape (see GetInfo).
 const search_pattern_escape = '\\'

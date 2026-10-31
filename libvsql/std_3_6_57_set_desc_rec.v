@@ -13,10 +13,12 @@ fn sql_set_desc_rec(descriptor_handle SQLInteger, record_number i16, type_ i16, 
 	mut desc := descs[i64(descriptor_handle)] or { return sql_invalid_handle }
 	desc.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.ii.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.ii
 	desc.invoke() or { return desc.diag.error(err) }
 
-	// See 5.11, "Deferred parameter check".
+	// ISO/IEC 9075-3:2003(E), 6.57, SetDescRec, General Rules, 1 and 2 (ISO/IEC
+	// 9075-3:2003(E), 5.11, Deferred parameter check)
 	check_desc_deferred(i64(descriptor_handle)) or { return desc.diag.error(err) }
 
 	return set_desc_rec(mut desc, record_number, type_, sub_type, i64(length), precision,
@@ -24,9 +26,8 @@ fn sql_set_desc_rec(descriptor_handle SQLInteger, record_number i16, type_ i16, 
 }
 
 fn set_desc_rec(mut desc Desc, rn int, type_ i16, sub_type i16, length i64, precision i16, scale i16, data voidptr, string_length &SQLInteger, indicator &SQLInteger) !i16 {
-	// - 3. If D is an implementation row descriptor, then an exception
-	// condition is raised: CLI-specific condition — cannot modify an
-	// implementation row descriptor.
+	// ISO/IEC 9075-3:2003(E), 6.57, SetDescRec, General Rules, 3: it can't be
+	// an implementation row descriptor.
 	if desc.typ == .ird {
 		// The standard doesn't give this condition a SQLSTATE (it's not in Table 4,
 		// "SQLSTATE class and subclass values for SQL/CLI-specific conditions"), so
@@ -34,15 +35,15 @@ fn set_desc_rec(mut desc Desc, rn int, type_ i16, sub_type i16, length i64, prec
 		return cli_error('HY016', 'cannot modify an implementation row descriptor')
 	}
 
-	// - 5. If RN is less than 1 (one), then an exception condition is raised:
-	// dynamic SQL error — invalid descriptor index.
+	// ISO/IEC 9075-3:2003(E), 6.57, SetDescRec, General Rules, 4 and 5: the
+	// record number must be at least 1.
 	if rn < 1 {
 		return cli_error('07009', 'invalid descriptor index')
 	}
 
-	// - 8. The data type, precision, scale and datetime data type are set. The
-	// length is in characters (or positions) for an IPD, otherwise it's in
-	// octets.
+	// ISO/IEC 9075-3:2003(E), 6.57, SetDescRec, General Rules, 7 and 8: the
+	// data type, precision, scale and datetime data type are set. The length
+	// is in characters (or positions) for an IPD, otherwise it's in octets.
 	mut record := if rn <= desc.count() {
 		desc.records[rn - 1].clone()
 	} else {
@@ -61,14 +62,15 @@ fn set_desc_rec(mut desc Desc, rn int, type_ i16, sub_type i16, length i64, prec
 		record[sql_desc_indicator_pointer] = i64(voidptr(indicator))
 	}
 
-	// - 9, 10. If Data is not a null pointer and IDA is not consistent, then an
-	// exception condition is raised: CLI-specific condition — inconsistent
-	// descriptor information (and the descriptor is unchanged).
+	// ISO/IEC 9075-3:2003(E), 6.57, SetDescRec, General Rules, 9 and 10: with
+	// Data, the record must be consistent (ISO/IEC 9075-3:2003(E), 5.13,
+	// Description of CLI item descriptor areas). When it's not, the
+	// descriptor (including its COUNT) is unchanged.
 	if data != unsafe { nil } && !desc.is_consistent(record) {
 		return cli_error('HY021', 'inconsistent descriptor information')
 	}
 
-	// - 6. If RN is greater than N, then the COUNT field of D is set to RN.
+	// ISO/IEC 9075-3:2003(E), 6.57, SetDescRec, General Rules, 6.b
 	if rn > desc.count() {
 		desc.set_count(rn)
 	}

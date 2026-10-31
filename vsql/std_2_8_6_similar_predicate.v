@@ -3,6 +3,10 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>
 //
 // Specify a character string similarity by means of a regular expression.
+//
+// The concept is described by:
+//
+// ISO/IEC 9075-2:2016(E), 4.2.3.1, Regular expression syntaxes
 
 // SimilarPredicate for "SIMILAR TO" and "NOT SIMILAR TO", with an optional
 // "ESCAPE".
@@ -35,6 +39,9 @@ fn (e SimilarPredicate) pstr(params map[string]Value) string {
 	return s
 }
 
+// The operands aren't checked to be character strings (#780).
+//
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, Syntax Rules, 1
 fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 	compiled_l := e.left.compile(mut c)!
 	compiled_right := e.right.compile(mut c)!
@@ -54,7 +61,7 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 			left := compiled_l.run(mut conn, data, params)!
 			right := compiled_right.run(mut conn, data, params)!
 
-			// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 4a
+			// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 4.a
 			if left.is_null || right.is_null {
 				return new_unknown_value()
 			}
@@ -64,7 +71,7 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 				escape_value := compiled_escape.run(mut conn, data, params)!
 
 				// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General
-				// Rules, 4b
+				// Rules, 4.b
 				if escape_value.is_null {
 					return new_unknown_value()
 				}
@@ -75,6 +82,7 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 			pattern := parse_similar_pattern(right.string_value(), escape)!
 			result := pattern.matches(left.string_value())
 
+			// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>,Syntax Rules, 2
 			if e.not {
 				return new_boolean_value(!result)
 			}
@@ -126,7 +134,9 @@ struct RegularRange {
 }
 
 // The characters that have a special meaning in a <regular expression>, unless
-// they are an <escaped character> (8.6 Syntax Rules 5 and 6).
+// they are an <escaped character>.
+//
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, Syntax Rules, 5 and 6
 const regular_special_characters = [`[`, `]`, `(`, `)`, `|`, `^`, `-`, `+`, `*`, `_`, `%`, `?`,
 	`{`]
 
@@ -147,12 +157,14 @@ mut:
 }
 
 // parse_similar_pattern parses the pattern of a SIMILAR TO, or returns a
-// SQLSTATE 2201B error if it's not a valid <regular expression> (8.6 General
-// Rule 2). With an escape character, the escape character followed by a
+// SQLSTATE 2201B error if it's not a valid <regular expression>. With an escape character, the escape character followed by a
 // special character (or itself) is that character, see regular_special_characters.
+//
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 2
 fn parse_similar_pattern(pattern string, escape ?rune) !RegularNode {
-	// The zero-length pattern only matches the zero-length string (8.6
-	// General Rule 7u).
+	// The zero-length pattern only matches the zero-length string.
+	//
+	// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>,General Rules, 7.u
 	if pattern == '' {
 		return RegularNode{
 			kind: .sequence
@@ -160,7 +172,7 @@ fn parse_similar_pattern(pattern string, escape ?rune) !RegularNode {
 	}
 
 	if esc := escape {
-		// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 3c
+		// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 3.c
 		//
 		// With ":" as the escape character, the ":]" of "[:ALPHA:]" would be
 		// an escaped "]", so the class is found by parsing the pattern as if it
@@ -178,7 +190,7 @@ fn parse_similar_pattern(pattern string, escape ?rune) !RegularNode {
 		return sqlstate_2201b()
 	}
 
-	// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 3b
+	// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 3.b
 	if esc := escape {
 		if p.unescaped_escape && esc in regular_special_characters {
 			return sqlstate_2200c()
@@ -289,6 +301,8 @@ fn (mut p RegularParser) parse_term() !RegularNode {
 }
 
 // <regular factor> ::= <regular primary> [ "*" | "+" | "?" | <repeat factor> ]
+//
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 7.b-7.d and 7.g
 fn (mut p RegularParser) parse_factor() !RegularNode {
 	primary := p.parse_primary()!
 
@@ -332,6 +346,11 @@ fn (mut p RegularParser) parse_factor() !RegularNode {
 }
 
 // <repeat factor> ::= "{" <low value> [ "," [ <high value> ] ] "}"
+//
+// Without an upper limit, the high value is the low value. Without a high
+// value, there's no limit (-1), which is the same as the length of the string.
+//
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 6
 fn (mut p RegularParser) parse_repeat_factor() !(int, int) {
 	p.expect(`{`)!
 	low := p.parse_unsigned_integer()!
@@ -343,7 +362,9 @@ fn (mut p RegularParser) parse_repeat_factor() !(int, int) {
 	p.expect(`}`)!
 
 	// The low value must be positive and the high value can't be less than
-	// it (8.6 Syntax Rule 7).
+	// it.
+	//
+	// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>,Syntax Rules, 7
 	if low < 1 || (high != -1 && high < low) {
 		return sqlstate_2201b()
 	}
@@ -414,8 +435,9 @@ fn (mut p RegularParser) parse_primary() !RegularNode {
 }
 
 // <character specifier> is an <escaped character>, or any character other than
-// the escape character and the ones that have a special meaning (8.6 Syntax
-// Rules 5 and 6).
+// the escape character and the ones that have a special meaning.
+//
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, Syntax Rules, 5 and 6
 fn (mut p RegularParser) parse_character_specifier() !rune {
 	if p.pos >= p.pattern.len {
 		return sqlstate_2201b()
@@ -458,7 +480,9 @@ fn (mut p RegularParser) parse_set() !RegularSet {
 fn (mut p RegularParser) parse_enumerations() ![]RegularRange {
 	mut ranges := []RegularRange{}
 	for p.pos < p.pattern.len && !p.next_is(`]`) && !p.next_is(`^`) {
-		// "[:ALPHA:]" and the other named classes (8.6 Syntax Rule 3).
+		// "[:ALPHA:]" and the other named classes.
+		//
+		// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>,Syntax Rules, 3
 		if p.next_is(`[`) {
 			p.pos++
 			p.expect(`:`)!
@@ -502,7 +526,10 @@ fn (mut p RegularParser) parse_enumerations() ![]RegularRange {
 }
 
 // matches reports whether the whole of s is in the regular language of the
-// pattern (8.6 General Rule 8).
+// pattern. The strings must be exactly the same, although the collation pads
+// with spaces (#781).
+//
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 8
 fn (n RegularNode) matches(s string) bool {
 	chars := s.runes()
 	mut start := []bool{len: chars.len + 1}
@@ -515,6 +542,8 @@ fn (n RegularNode) matches(s string) bool {
 // the match starts at any of the positions in starts. Keeping every possible
 // position (instead of trying each choice in turn and backtracking) means the
 // time taken only grows with the length of the string and the pattern.
+//
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 7
 fn (n RegularNode) ends(s []rune, starts []bool) []bool {
 	mut ends := []bool{len: starts.len}
 
@@ -582,6 +611,10 @@ fn (n RegularNode) ends(s []rune, starts []bool) []bool {
 	return ends
 }
 
+// matches_character reports whether ch is in the regular language of a "_", a
+// <character specifier> or a <regular character set>.
+//
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 7.e, 7.i-7.l
 fn (n RegularNode) matches_character(ch rune) bool {
 	return match n.kind {
 		.character {
@@ -603,6 +636,11 @@ fn (n RegularNode) matches_character(ch rune) bool {
 	}
 }
 
+// ranges_contain reports whether ch is in any of the <character enumeration>s.
+// A range is of code points, which is the order of the default collation.
+//
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 5
+// ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 7.m-7.s
 fn ranges_contain(ranges []RegularRange, ch rune) bool {
 	for r in ranges {
 		in_range := match r.class {

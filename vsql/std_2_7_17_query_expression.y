@@ -1,5 +1,12 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>
+//
+// Specify a table.
+//
+// There's no WITH (T121), INTERSECT (F302), CORRESPONDING (F301), explicit
+// table (F661) or FETCH NEXT (#331).
+
 query_expression:
   query_expression_body { $$.v = QueryExpression{body: $1.v as SimpleTable} }
 | query_expression_body order_by_clause { 
@@ -51,6 +58,12 @@ query_expression:
     }
   }
 
+// Without ALL or DISTINCT, it's DISTINCT. DISTINCT is flagged with T551, and
+// EXCEPT ALL with F304.
+//
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 6
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Conformance Rules, 9 and 10
+
 query_expression_body:
   query_term { $$.v = $1.v as SimpleTable }
 | query_expression_body UNION query_term {
@@ -85,6 +98,7 @@ query_primary:
 simple_table:
   query_specification { $$.v = SimpleTable($1.v as QuerySpecification) }
 | table_value_constructor {
+    // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Conformance Rules, 5
     flag(mut yylex, 'F661')
     $$.v = $1.v as SimpleTable
   }
@@ -103,6 +117,9 @@ fetch_first_clause:
     flag_row_count(mut yylex, $3.v as ValueSpecification, 'F860')
     $$.v = $3.v
   }
+// Without a row count, it's 1.
+//
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, General Rules, 7.b.iii
 | FETCH FIRST row_or_rows ONLY { $$.v = ValueSpecification(new_integer_value(1)) }
 
 fetch_first_quantity:

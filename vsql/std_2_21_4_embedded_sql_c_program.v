@@ -4,7 +4,9 @@ module vsql
 //
 // The <host variable definition>s in a declare section of an embedded SQL C
 // program. Only the <C numeric variable>s, <C character variable>s (char) and
-// <C VARCHAR variable>s are supported.
+// <C VARCHAR variable>s are supported, without a CHARACTER SET.
+//
+// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Syntax Rules, 1 to 3
 
 // CHostVariable is a host variable. typ is its <host parameter data type>. A
 // string is a char array, and anything else is passed by its address.
@@ -14,7 +16,11 @@ struct CHostVariable {
 }
 
 // c_declare_section reads the <C variable definition>s of a declare section,
-// and returns the C to replace it with (SR 5.c, VARCHAR is char).
+// and returns the C to replace it with, where VARCHAR is char. The length of a
+// char array isn't multiplied by 4 (the maximum octets in a UTF-8 character),
+// so it's a length in octets (#799).
+//
+// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Syntax Rules, 5.c and 5.d
 fn c_declare_section(text string, mut variables map[string]CHostVariable) !string {
 	for definition in remove_c_comments(text).split(';') {
 		if definition.trim_space() != '' {
@@ -22,7 +28,9 @@ fn c_declare_section(text string, mut variables map[string]CHostVariable) !strin
 		}
 	}
 
-	// - SR 7. VARCHAR can be in any case.
+	// VARCHAR can be in any case.
+	//
+	// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Syntax Rules, 7
 	mut c := ''
 	mut i := 0
 	cs := text.runes()
@@ -42,7 +50,10 @@ fn c_declare_section(text string, mut variables map[string]CHostVariable) !strin
 }
 
 // c_variable_definition reads a <C variable definition> (without the
-// semicolon).
+// semicolon). A <C initial value> is any C after the "=", which the C compiler
+// checks.
+//
+// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Syntax Rules, 6
 fn c_variable_definition(definition string, mut variables map[string]CHostVariable) ! {
 	mut words := definition.fields()
 	for words.len > 0 && words[0] in ['auto', 'extern', 'static', 'const', 'volatile'] {
@@ -58,7 +69,10 @@ fn c_variable_definition(definition string, mut variables map[string]CHostVariab
 		c_type = 'VARCHAR'
 	}
 
-	// - SR 4. The <host parameter data type> of each type.
+	// The <host parameter data type> of each type.
+	//
+	// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Syntax Rules, 4.a.i to 4.a.v
+	// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Syntax Rules, 4.b.i
 	sql_type := match c_type {
 		'long long' { 'BIGINT' }
 		'long' { 'INTEGER' }
@@ -82,12 +96,15 @@ fn c_variable_definition(definition string, mut variables map[string]CHostVariab
 			|| !is_identifier_char(name.runes()[0], false) {
 			return sqlstate_42601('unsupported host variable definition: ${definition.trim_space()}')
 		}
+		// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 16
 		if name in variables {
 			return sqlstate_42601('host variable ${name} is defined more than once')
 		}
 
-		// - SR 4.b.iii, iv. A string has a terminating null character, so the
-		// length is one less than the array.
+		// A string has a terminating null character, so the length is one less
+		// than the array.
+		//
+		// ISO/IEC 9075-2:2016(E), 21.4, <embedded SQL C program>, Syntax Rules, 4.b.iii and 4.b.iv
 		if is_array != name_and_length.contains('[') || (is_array && length.int() < 2) {
 			return sqlstate_42601('host variable ${name} must be ${if is_array {
 				'an array of at least 2 characters'
@@ -95,6 +112,7 @@ fn c_variable_definition(definition string, mut variables map[string]CHostVariab
 				'a number, not an array'
 			}}')
 		}
+		// ISO/IEC 9075-2:2016(E), 13.3, <externally-invoked procedure>, Syntax Rules, 11.a
 		if name == 'SQLSTATE' && !(c_type == 'char' && length.int() == 6) {
 			return sqlstate_42601('SQLSTATE must be char SQLSTATE[6]')
 		}

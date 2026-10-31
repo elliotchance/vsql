@@ -7,6 +7,14 @@ module main
 // BindCol sets the item descriptor area of the ARD for a column, so that Fetch
 // and FetchScroll assign the value of the column to TargetValue (and
 // StrLen_or_Ind). A null TargetValue unbinds the column.
+//
+// There are no nested descriptor areas, so COUNT is the TOP_LEVEL_COUNT (CN)
+// when the ARD is made larger (General Rules, 6.b), and memory isn't limited
+// (General Rules, 6.a). The ARD isn't changed when an exception condition is
+// raised, since TT and BL are checked first (General Rules, 13). A bound
+// target's type must have a C data type (see 5.8, "Implicit FETCH USING
+// clause"), which are the only restrictions between the ARD and IRD (General
+// Rules, 20).
 
 @[export: 'SQLBindCol']
 fn sql_bind_col(statement_handle SQLInteger, column_number i16, target_type i16, target_value voidptr, buffer_length SQLInteger, str_len_or_ind &SQLInteger) i16 {
@@ -17,7 +25,8 @@ fn sql_bind_col(statement_handle SQLInteger, column_number i16, target_type i16,
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return bind_col(mut stmt, column_number, target_type, target_value, i64(buffer_length),

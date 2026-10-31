@@ -1,5 +1,7 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 19.5, <set catalog statement>, Conformance Rules, 1 and 2
+
 set_catalog_statement:
   SET catalog_name_characteristic {
     flag(mut yylex, 'F651')

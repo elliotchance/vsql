@@ -42,7 +42,11 @@ fn (e NullSpecification) compile(mut c Compiler) !CompileResult {
 }
 
 // DefaultSpecification is the DEFAULT keyword, which is the default value of the
-// column it's assigned to (see Compiler.default_value).
+// column it's assigned to (see Compiler.default_value), or the null value if
+// the column doesn't have one. An identity column gets the next value of its
+// sequence instead.
+//
+// ISO/IEC 9075-2:2016(E), 11.5, <default clause>, General Rules, 3.a, 3.b and 3.e
 struct DefaultSpecification {}
 
 fn (e DefaultSpecification) compile(mut c Compiler) !CompileResult {

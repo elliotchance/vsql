@@ -3,6 +3,10 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>
 //
 // Specify a value computed from a collection of rows.
+//
+// The concept is described by:
+//
+// ISO/IEC 9075-2:2016(E), 4.16 (Data analysis operations involving tables)
 
 type AggregateFunction = AggregateFunctionCount | RoutineInvocation
 
@@ -42,7 +46,7 @@ struct AggregateFunctionCount {}
 // non_null_values removes NULLs before a general set function is applied. If
 // all values are NULL (or there are no values) the result will be NULL.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7a
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.a
 fn non_null_values(values []Value) []Value {
 	return values.filter(!it.is_null)
 }
@@ -51,7 +55,7 @@ fn non_null_values(values []Value) []Value {
 // DISTINCT, such as COUNT(DISTINCT x). Values are duplicates if they're equal
 // with =, so 1.5 and 1.50 (or 'a' and 'a ') are the same value.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7b
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.b
 fn distinct_values(conn &Connection, values []Value) ![]Value {
 	mut result := []Value{}
 	for value in non_null_values(values) {
@@ -73,13 +77,14 @@ fn distinct_values(conn &Connection, values []Value) ![]Value {
 // set_function_type is the declared type of the result of a general set
 // function with an argument of type t.
 //
-// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 7
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 4 and 7
 fn set_function_type(name string, t Type) Type {
+	// The implementation-defined type of COUNT (SR 4).
 	if name == 'COUNT' {
 		return new_type('INTEGER', 0, 0)
 	}
 
-	// The sum of exact numbers keeps the scale (7g ii). It has no limit on the
+	// The sum of exact numbers keeps the scale (SR 7.g.ii). It has no limit on the
 	// precision because the sum may need more digits than any of the values. The
 	// sum of integers is a BIGINT so that it's less likely to overflow.
 	if name == 'SUM' {
@@ -90,9 +95,10 @@ fn set_function_type(name string, t Type) Type {
 		}
 	}
 
-	// MAX and MIN have the type of their argument (7f). So does AVG, which is
-	// allowed because an exact numeric only needs at least the same precision
-	// and scale (7g iii). The average is truncated to that scale.
+	// MAX and MIN have the type of their argument (SR 7.f). So does AVG, which
+	// is allowed because an exact numeric only needs at least the same precision
+	// and scale (SR 7.g.iii), and an approximate numeric only needs at least the
+	// same precision (SR 7.g.iv). The average is truncated to that scale.
 	return Type{t.typ, t.size, t.scale, false}
 }
 
@@ -100,6 +106,7 @@ fn set_function_type(name string, t Type) Type {
 // SUM) for the values of one group, where t is the declared type of the
 // argument.
 //
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 3.e
 // ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7
 fn eval_set_function(mut conn Connection, name string, all_values []Value, t Type) !Value {
 	values := non_null_values(all_values)
@@ -117,7 +124,7 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 	}
 
 	if name in ['MAX', 'MIN'] {
-		// The comparison rules are the same as the comparison predicate (7d iv).
+		// The comparison rules are the same as the comparison predicate (GR 7.d.iv).
 		want := if name == 'MAX' { CompareResult.is_greater } else { CompareResult.is_less }
 		mut result := values[0]
 		for value in values[1..] {
@@ -131,7 +138,7 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 
 	// SUM or AVG. An approximate numeric is added as a DOUBLE PRECISION, and an
 	// exact numeric is added exactly before it's cast to the result type, which
-	// raises 22003 when the sum doesn't fit (7d v).
+	// raises 22003 when the sum doesn't fit (GR 3.e and 7.d.v).
 	if typ.typ in approximate_types {
 		mut sum := 0.0
 		for value in values {

@@ -10,10 +10,13 @@ struct AlterIdentityColumnSpecification {
 	options []SequenceGeneratorOption
 }
 
-// execute returns the column with its sequence changed by the options (General
-// Rule 1), and the sequence with its new current value. A MINVALUE or MAXVALUE
-// that's removed (NO MINVALUE or NO MAXVALUE) is the default for the column
-// again (see new_identity_sequence).
+// execute returns the column with its sequence changed by the options, like an
+// ALTER SEQUENCE, and the sequence with its new current value. A MINVALUE or
+// MAXVALUE that's removed (NO MINVALUE or NO MAXVALUE) is the default for the
+// column again (see new_identity_sequence). There's no SET GENERATED (F386).
+//
+// ISO/IEC 9075-2:2016(E), 11.20, <alter identity column specification>, Syntax Rules, 1
+// ISO/IEC 9075-2:2016(E), 11.20, <alter identity column specification>, General Rules, 1
 fn (s AlterIdentityColumnSpecification) execute(mut conn Connection, table Table, column Column) !(Column, Sequence) {
 	check_sequence_options(s.options)!
 	identity := column.identity or { return error('not an identity column') }

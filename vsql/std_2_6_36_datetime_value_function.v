@@ -20,6 +20,13 @@ fn (e DatetimeValueFunction) pstr(_ map[string]Value) string {
 	}
 }
 
+// compile gives each function its type, and LOCALTIME and LOCALTIMESTAMP are
+// CURRENT_TIME and CURRENT_TIMESTAMP without the time zone. The time is read
+// each time it's evaluated rather than once for the statement (#742).
+//
+// ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>, Syntax Rules, 1-3
+// ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>, General Rules, 1-3
+// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 4
 fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 	c.check_deterministic(e.pstr(c.params))!
 

@@ -5,6 +5,11 @@ import vsql
 // ISO/IEC 9075-3:2003(E), 6.15, DescribeCol
 //
 // Get column attributes.
+//
+// There are no interval or reference types (General Rules 9.a.ii, 9.b.iv and
+// 9.c.iii). DecimalDigits is 0 (zero) for a type that doesn't have a scale or
+// fractional seconds precision (General Rules, 9.c.iv), which is
+// implementation-dependent.
 
 @[export: 'SQLDescribeCol']
 fn sql_describe_col(statement_handle SQLInteger, column_number i16, column_name &char, buffer_length i16, name_length &i16, data_type &i16, column_size &SQLInteger, decimal_digits &i16, nullable &i16) i16 {
@@ -15,7 +20,8 @@ fn sql_describe_col(statement_handle SQLInteger, column_number i16, column_name 
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return describe_col(mut stmt, column_number, column_name, buffer_length, name_length,

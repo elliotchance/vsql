@@ -8,8 +8,10 @@ struct SetColumnDefaultClause {
 	default_value DefaultOption
 }
 
-// execute returns the column with the new default (General Rule 2), which is
-// checked the same way as the default of a column of a CREATE TABLE.
+// execute returns the column with the new default, which is checked the same
+// way as the default of a column of a CREATE TABLE.
+//
+// ISO/IEC 9075-2:2016(E), 11.13, <set column default clause>, General Rules, 2
 fn (c SetColumnDefaultClause) execute(mut conn Connection, column Column) !Column {
 	new_column := Column{
 		...column

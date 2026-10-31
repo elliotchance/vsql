@@ -1,5 +1,14 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>
+//
+// Specify a function yielding a value of type datetime.
+//
+// CURRENT_TIME and CURRENT_TIMESTAMP are flagged with F411, and a precision
+// other than 0 (or 6 for a timestamp) with F555.
+//
+// ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>, Conformance Rules, 1-4
+
 datetime_value_function:
   current_date_value_function {
     $$.v = DatetimeValueFunction($1.v as CurrentDate)

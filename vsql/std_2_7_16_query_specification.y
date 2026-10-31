@@ -1,5 +1,9 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 7.16, <query specification>
+//
+// Specify a table derived from the result of a <table expression>.
+
 query_specification:
   SELECT select_list table_expression {
     table_expression := $3.v as TableExpression
@@ -17,8 +21,10 @@ query_specification:
     }
   }
 
-// A bare asterisk can only appear alone (Syntax Rule 7.16), unlike a qualified
-// asterisk which can be mixed with other items.
+// A bare asterisk can only appear alone, unlike a qualified asterisk which can
+// be mixed with other items. Each is replaced by the columns of the table.
+//
+// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 4 and 8
 select_list:
   asterisk { $$.v = SelectList(AsteriskExpr(true)) }
 | select_sublist_list { $$.v = SelectList($1.v as []SelectSublist) }

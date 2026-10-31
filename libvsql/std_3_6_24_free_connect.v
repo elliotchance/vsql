@@ -10,7 +10,7 @@ fn sql_free_connect(connection_handle SQLInteger) i16 {
 	defer {
 		entry.leave()
 	}
-	// - 2. FreeHandle is implicitly invoked with HandleType indicating
-	// CONNECTION HANDLE and with CH as the value of Handle.
+	// ISO/IEC 9075-3:2003(E), 6.24, FreeConnect, General Rules, 1 and 2: the
+	// same as FreeHandle of a CONNECTION HANDLE.
 	return sql_free_handle(sql_handle_dbc, connection_handle)
 }

@@ -1,0 +1,40 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5, The parts of ISO/IEC 9075
+5                        definition   - - about the standard itself
+# 5.1, Overview
+5.1                      definition   - - about the standard itself
+# 5.2, ISO/IEC 9075-1: Framework (SQL/Framework)
+5.2                      definition   - - about the standard itself
+# 5.3, ISO/IEC 9075-2: Foundation (SQL/Foundation)
+5.3                      definition   - - about the standard itself
+# 5.3.1, Data types specified in ISO/IEC 9075-2
+5.3.1                    definition   - - about the standard itself
+# 5.3.2, Tables
+5.3.2                    definition   - - about the standard itself
+# 5.3.3, Bindings methods
+5.3.3                    definition   - - about the standard itself
+# 5.3.3.1, Embedded SQL
+5.3.3.1                  definition   - - about the standard itself
+# 5.3.3.2, Dynamic SQL
+5.3.3.2                  definition   - - about the standard itself
+# 5.3.3.3, Direct invocation of SQL
+5.3.3.3                  definition   - - about the standard itself
+# 5.3.4, SQL-statements specified in ISO/IEC 9075-2
+5.3.4                    definition   - - about the standard itself
+# 5.4, ISO/IEC 9075-3: Call Level Interface (SQL/CLI)
+5.4                      definition   - - about the standard itself
+# 5.5, ISO/IEC 9075-4: Persistent Stored Modules (SQL/PSM)
+5.5                      definition   - - about the standard itself
+# 5.5.1, SQL-statements specified in ISO/IEC 9075-4
+5.5.1                    definition   - - about the standard itself
+# 5.6, ISO/IEC 9075-9: Management of External Data (SQL/MED)
+5.6                      definition   - - about the standard itself
+# 5.7, ISO/IEC 9075-10: Object Language Bindings (SQL/OLB)
+5.7                      definition   - - about the standard itself
+# 5.8, ISO/IEC 9075-11: Information and Definition Schemas (SQL/Schemata)
+5.8                      definition   - - about the standard itself
+# 5.9, ISO/IEC 9075-13: Java Routines and Types Using the Java Programming Language (SQL/JRT)
+5.9                      definition   - - about the standard itself
+# 5.10, ISO/IEC 9075-14: XML-Related Specifications (SQL/XML)
+5.10                     definition   - - about the standard itself

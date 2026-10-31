@@ -12,8 +12,10 @@ struct AddTableConstraintDefinition {
 // table is defined again with the constraint, so it's checked the same way as a
 // CREATE TABLE, such as for a second PRIMARY KEY, a name that's already used,
 // or a FOREIGN KEY that doesn't reference a unique constraint. Every row must
-// satisfy the new constraint. The columns of a new PRIMARY KEY become NOT NULL
-// (General Rule 2).
+// satisfy the new constraint. The columns of a new PRIMARY KEY become NOT NULL.
+//
+// ISO/IEC 9075-2:2016(E), 11.24, <add table constraint definition>, General Rules, 1 and 2
+// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 9
 fn (d AddTableConstraintDefinition) execute(mut conn Connection, mut catalog CatalogConnection, table Table) ! {
 	mut elements := table.elements()
 	elements << d.constraint

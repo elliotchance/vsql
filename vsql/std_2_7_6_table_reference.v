@@ -3,6 +3,10 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 7.6, <table reference>
 //
 // Reference a table.
+//
+// The concept is described by:
+//
+// ISO/IEC 9075-2:2016(E), 4.15.11, Range variables
 
 struct Correlation {
 	name    Identifier

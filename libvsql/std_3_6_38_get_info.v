@@ -7,8 +7,13 @@ import vsql
 // Get information about the implementation.
 //
 // vsql doesn't have the SQL_IMPLEMENTATION_INFO and SQL_SIZING views of the
-// INFORMATION_SCHEMA, so the values are the same as they would have. A
-// maximum of 0 (zero) means that there isn't a limit.
+// INFORMATION_SCHEMA, so the values are the same as they would have, and
+// there's no implicit ExecDirect (General Rules, 4, 9, 10.a, 10.b and 10.c). A
+// maximum of 0 (zero) means that there isn't a limit. There are no
+// implementation-defined information types (General Rules, 10.p and 10.q).
+// Cursors are a copy of the result, so CURSOR SENSITIVITY is INSENSITIVE
+// (General Rules, 10.e). There are no users, so USER NAME is a zero-length
+// string (General Rules, 10.n).
 
 // Codes from Table 28, "Codes and data types for implementation information"
 // (and the deprecated ones from Annex A, "Typical header files").

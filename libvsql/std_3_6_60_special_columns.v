@@ -8,7 +8,10 @@ module main
 //
 // The columns that best identify a row are the PRIMARY KEY (a table without
 // one has none). The values are valid for the SQL-session (unless they're
-// updated), and they aren't pseudo-columns.
+// updated), and they aren't pseudo-columns (General Rules, 10.a.iii and 10.h).
+// The columns of a PRIMARY KEY are never null, so General Rules 22.a never
+// applies. There are no interval or reference types (General Rules, 10.c.i,
+// 10.e.v and 10.e.vi).
 
 // Codes from Table 43, "Column types and scopes used with SpecialColumns".
 const sql_best_rowid = i16(1)

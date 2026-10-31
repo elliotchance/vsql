@@ -10,10 +10,17 @@ module vsql
 // SQL-session), and uses the SQL/CLI to describe a prepared statement (from
 // its IRD), to bind its dynamic parameters and to get the values of its
 // columns.
+//
+// The concept is described by:
+//
+// ISO/IEC 9075-2:2016(E), 4.30.4, Dynamic SQL statements and descriptor areas
 
 // The exact numeric and character string components of an SQL item descriptor
 // area (Table 27), other than DATA. Each one is a C constant, such as
-// VSQL_M_TYPE.
+// VSQL_M_TYPE. NULL_ORDERING and SORT_DIRECTION are only for a PTF descriptor
+// area.
+//
+// ISO/IEC 9075-2:2016(E), 20.1, Description of SQL descriptor areas, Syntax Rules, 1 and 2
 const descriptor_number_items = ['TYPE', 'LENGTH', 'OCTET_LENGTH', 'PRECISION', 'SCALE',
 	'DATETIME_INTERVAL_CODE', 'DATETIME_INTERVAL_PRECISION', 'NULLABLE', 'UNNAMED', 'LEVEL',
 	'KEY_MEMBER', 'INDICATOR', 'RETURNED_LENGTH', 'RETURNED_OCTET_LENGTH', 'CARDINALITY', 'DEGREE',
@@ -25,27 +32,35 @@ const descriptor_string_items = ['NAME', 'CHARACTER_SET_CATALOG', 'CHARACTER_SET
 	'SCOPE_CATALOG', 'SCOPE_SCHEMA', 'SCOPE_NAME', 'USER_DEFINED_TYPE_CATALOG',
 	'USER_DEFINED_TYPE_SCHEMA', 'USER_DEFINED_TYPE_NAME']
 
-// 20.5 SR 3.a, 3.b. The components that a <set descriptor statement> can't set,
-// for a <conventional descriptor name>.
+// The components that a <set descriptor statement> can't set, for a
+// <conventional descriptor name>.
+//
+// ISO/IEC 9075-2:2016(E), 20.5, <set descriptor statement>, Syntax Rules, 3.a and 3.b
 const descriptor_read_only_items = ['RETURNED_LENGTH', 'RETURNED_OCTET_LENGTH', 'RETURNED_CARDINALITY',
 	'OCTET_LENGTH', 'NULLABLE', 'KEY_MEMBER', 'UNNAMED', 'PARAMETER_MODE', 'PARAMETER_ORDINAL_POSITION',
 	'PARAMETER_SPECIFIC_CATALOG', 'PARAMETER_SPECIFIC_SCHEMA', 'PARAMETER_SPECIFIC_NAME',
 	'USER_DEFINED_TYPE_CODE', 'COLLATION_CATALOG', 'COLLATION_SCHEMA', 'COLLATION_NAME', 'NAME']
 
-// 20.5 GR 4. The order that the components are set in.
+// The order that the components are set in.
+//
+// ISO/IEC 9075-2:2016(E), 20.5, <set descriptor statement>, General Rules, 4
 const descriptor_set_order = ['LEVEL', 'NAME', 'TYPE', 'DATETIME_INTERVAL_CODE',
 	'DATETIME_INTERVAL_PRECISION', 'PRECISION', 'SCALE', 'CHARACTER_SET_CATALOG', 'CHARACTER_SET_SCHEMA',
 	'CHARACTER_SET_NAME', 'COLLATION_CATALOG', 'COLLATION_SCHEMA', 'COLLATION_NAME',
 	'USER_DEFINED_TYPE_CATALOG', 'USER_DEFINED_TYPE_SCHEMA', 'USER_DEFINED_TYPE_NAME', 'SCOPE_CATALOG',
 	'SCOPE_SCHEMA', 'SCOPE_NAME', 'LENGTH', 'INDICATOR', 'DEGREE', 'CARDINALITY', 'DATA']
 
-// The default <occurrences> of an <allocate descriptor statement> (20.2 SR 2).
+// The default <occurrences> of an <allocate descriptor statement>.
+//
+// ISO/IEC 9075-2:2016(E), 20.2, <allocate descriptor statement>, Syntax Rules, 2
 const default_descriptor_occurrences = 100
 
 // descriptor_name reads a <descriptor name>, and returns its C arguments: the
 // name, and the module (or NULL for a GLOBAL name). Without Feature B032,
 // "Extended dynamic SQL", it's an identifier (a <non-extended descriptor name>,
 // which is Feature B035), or an <extended descriptor name> that's a literal.
+// The scope of an extended name is LOCAL unless it's GLOBAL (ISO/IEC
+// 9075-2:2016(E), 5.4, Names and identifiers, Syntax Rules, 26 and 27).
 fn (mut t ModuleTokens) descriptor_name(p ExternallyInvokedProcedure) !string {
 	mut module := '&vsql_m_own'
 	mut extended := false
@@ -59,8 +74,10 @@ fn (mut t ModuleTokens) descriptor_name(p ExternallyInvokedProcedure) !string {
 	if tok := t.peek() {
 		if tok.kind == .literal {
 			t.pos++
-			// - 20.2 GR 1.a. The literal (without leading or trailing spaces)
-			// must be an identifier.
+			// The literal (without leading or trailing spaces) must be an
+			// identifier.
+			//
+			// ISO/IEC 9075-2:2016(E), 20.2, <allocate descriptor statement>, General Rules, 1.a
 			mut n := new_module_tokens(tok.text.trim(' '))!
 			name := n.identifier('descriptor name') or { '' }
 			if name == '' || n.pos < n.tokens.len {
@@ -86,8 +103,12 @@ fn (mut t ModuleTokens) descriptor_keyword(p ExternallyInvokedProcedure) ! {
 	}
 }
 
-// allocate_descriptor_statement compiles an <allocate descriptor statement>
-// (20.2), after ALLOCATE.
+// allocate_descriptor_statement compiles an <allocate descriptor statement>,
+// after ALLOCATE. <occurrences> can be a host parameter, which is Feature B032,
+// "Extended dynamic SQL", as an extension.
+//
+// ISO/IEC 9075-2:2016(E), 20.2, <allocate descriptor statement>, Syntax Rules, 1 and 2
+// ISO/IEC 9075-2:2016(E), 20.2, <allocate descriptor statement>, Conformance Rules, 1
 fn (mut t ModuleTokens) allocate_descriptor_statement(p ExternallyInvokedProcedure) !ModuleStatement {
 	t.descriptor_keyword(p)!
 	name := t.descriptor_name(p)!
@@ -103,8 +124,10 @@ fn (mut t ModuleTokens) allocate_descriptor_statement(p ExternallyInvokedProcedu
 		'  vsql_m_allocate_descriptor(SQLSTATE, ${name}, ${occurrences});\n'}
 }
 
-// deallocate_descriptor_statement compiles a <deallocate descriptor statement>
-// (20.3), after DEALLOCATE.
+// deallocate_descriptor_statement compiles a <deallocate descriptor statement>,
+// after DEALLOCATE.
+//
+// ISO/IEC 9075-2:2016(E), 20.3, <deallocate descriptor statement>
 fn (mut t ModuleTokens) deallocate_descriptor_statement(p ExternallyInvokedProcedure) !ModuleStatement {
 	t.descriptor_keyword(p)!
 	name := t.descriptor_name(p)!
@@ -121,10 +144,13 @@ struct DescriptorAssignment {
 	item      string
 }
 
-// get_descriptor_statement compiles a <get descriptor statement> (20.4), after
-// GET. Each value is assigned to its target (9.2 Store assignment), so a
-// number must be assigned to an exact numeric, and a string to a CHARACTER or
-// CHARACTER VARYING (which is truncated with a warning).
+// get_descriptor_statement compiles a <get descriptor statement>, after GET.
+// Each value is assigned to its target, so a number must be assigned to an
+// exact numeric, and a string to a CHARACTER or CHARACTER VARYING (which is
+// truncated with a warning).
+//
+// ISO/IEC 9075-2:2016(E), 20.4, <get descriptor statement>, Syntax Rules, 1 to 3
+// ISO/IEC 9075-2:2016(E), 20.4, <get descriptor statement>, General Rules, 7.a and 7.b
 fn (mut t ModuleTokens) get_descriptor_statement(p ExternallyInvokedProcedure) !ModuleStatement {
 	t.descriptor_keyword(p)!
 	name := t.descriptor_name(p)!
@@ -137,8 +163,10 @@ fn (mut t ModuleTokens) get_descriptor_statement(p ExternallyInvokedProcedure) !
 		assignments := t.descriptor_assignments(p, false)!
 		sections << 'get_item'
 
-		// - SR 3. The target of DATA can be any data type (GR 4 checks that it
+		// The target of DATA can be any data type (the C runtime checks that it
 		// matches), and every other component is a number or a string.
+		//
+		// ISO/IEC 9075-2:2016(E), 20.4, <get descriptor statement>, Syntax Rules, 3
 		mut data := '0, 0'
 		mut indicator := 0
 		mut gets := ''
@@ -178,8 +206,10 @@ fn (mut t ModuleTokens) get_descriptor_statement(p ExternallyInvokedProcedure) !
 				gets += t.get_string(p, a.parameter, 'vsql_m_d->dynamic_function', pad,
 					a.item)!
 			} else {
-				// - 20.10 GR 6.d. vsql doesn't know if a column is part of a
-				// key, so KEY_TYPE is always 0 (zero).
+				// vsql doesn't know if a column is part of a key, so KEY_TYPE
+				// is always 0 (zero) (#801).
+				//
+				// ISO/IEC 9075-2:2016(E), 20.10, <describe statement>, General Rules, 6.d
 				field := match a.item {
 					'COUNT' { 'vsql_m_d->count' }
 					'KEY_TYPE' { '0' }
@@ -242,6 +272,8 @@ fn (mut t ModuleTokens) descriptor_assignments(p ExternallyInvokedProcedure, hea
 // descriptor_item reads a <header item name> or a <descriptor item name>.
 // NULL_ORDERING and SORT_DIRECTION are only for a PTF descriptor area (Feature
 // B209, "PTF extended names").
+//
+// ISO/IEC 9075-2:2016(E), 20.4, <get descriptor statement>, Conformance Rules, 4
 fn (mut t ModuleTokens) descriptor_item(p ExternallyInvokedProcedure, header bool) !string {
 	item := t.next_word()
 	if header {
@@ -260,15 +292,18 @@ fn (mut t ModuleTokens) descriptor_item(p ExternallyInvokedProcedure, header boo
 	return sqlstate_42601('procedure ${p.name}: expected a descriptor item name${t.near()}')
 }
 
-// set_descriptor_statement compiles a <set descriptor statement> (20.5), after
-// SET.
+// set_descriptor_statement compiles a <set descriptor statement>, after SET.
+//
+// ISO/IEC 9075-2:2016(E), 20.5, <set descriptor statement>
 fn (mut t ModuleTokens) set_descriptor_statement(p ExternallyInvokedProcedure) !ModuleStatement {
 	t.descriptor_keyword(p)!
 	name := t.descriptor_name(p)!
 	mut used := []string{}
 	mut c := begin('SET DESCRIPTOR', 70)
 
-	// - SR 2. COUNT is the only header item that can be set.
+	// COUNT is the only header item that can be set.
+	//
+	// ISO/IEC 9075-2:2016(E), 20.5, <set descriptor statement>, Syntax Rules, 2
 	if !t.accept('VALUE') {
 		t.expect('COUNT')!
 		t.expect('=')!
@@ -285,7 +320,7 @@ fn (mut t ModuleTokens) set_descriptor_statement(p ExternallyInvokedProcedure) !
 	mut values := map[string]string{}
 	for {
 		item := t.descriptor_item(p, false)!
-		// - SR 3.a, 3.b, 3.c.
+		// ISO/IEC 9075-2:2016(E), 20.5, <set descriptor statement>, Syntax Rules, 3.a to 3.c
 		if item in descriptor_read_only_items {
 			return sqlstate_42601('procedure ${p.name}: ${item} cannot be set')
 		}
@@ -295,7 +330,9 @@ fn (mut t ModuleTokens) set_descriptor_statement(p ExternallyInvokedProcedure) !
 		t.expect('=')!
 
 		if item == 'DATA' {
-			// - SR 4. DATA can't be set to a literal.
+			// DATA can't be set to a literal.
+			//
+			// ISO/IEC 9075-2:2016(E), 20.5, <set descriptor statement>, Syntax Rules, 4
 			if !t.accept(':') {
 				return sqlstate_42601('procedure ${p.name}: DATA must be set to a host parameter${t.near()}')
 			}
@@ -309,6 +346,7 @@ fn (mut t ModuleTokens) set_descriptor_statement(p ExternallyInvokedProcedure) !
 			sections << 'set_data'
 			values[item] = 'vsql_m_set_data(SQLSTATE, vsql_m_i, ${typ.c_code()}, ${typ.length}, ${parameter.name})'
 		} else if item in descriptor_number_items {
+			// ISO/IEC 9075-2:2016(E), 20.5, <set descriptor statement>, Syntax Rules, 3.d
 			sections << 'set_number'
 			value := t.exact_numeric_value(p, mut used, 'value', true)!
 			values[item] = 'vsql_m_set_number(SQLSTATE, vsql_m_i, VSQL_M_${item}, ${value})'
@@ -326,7 +364,9 @@ fn (mut t ModuleTokens) set_descriptor_statement(p ExternallyInvokedProcedure) !
 	used << a.parameters
 	sections << a.sections
 
-	// - GR 4. The values are set in a fixed order.
+	// The values are set in a fixed order.
+	//
+	// ISO/IEC 9075-2:2016(E), 20.5, <set descriptor statement>, General Rules, 4
 	mut calls := ['vsql_m_i != NULL']
 	for item in descriptor_set_order {
 		if call := values[item] {

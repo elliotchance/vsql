@@ -12,6 +12,13 @@ import vsql
 // it's executed (the data type of a dynamic parameter isn't known until it has
 // a value, so the IPD type is used if it's set, and otherwise it may only be
 // known after the statement is executed).
+//
+// The cursor of a positioned DELETE or UPDATE isn't checked until it's
+// executed (General Rules 6), and a prepared statement that references a
+// destroyed cursor isn't destroyed (General Rules 10), which are #749. The
+// cursor name of a query is generated when it's first needed (General Rules
+// 12.b, see Stmt.get_cursor_name). A prepared statement stays valid in later
+// SQL-transactions (General Rules 14, which is implementation-dependent).
 
 @[export: 'SQLPrepare']
 fn sql_prepare(statement_handle SQLInteger, statement_text &char, text_length SQLInteger) i16 {

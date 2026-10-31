@@ -9,20 +9,24 @@ module main
 // terminated if nts (the NULL TERMINATION of the SQL-environment) is true. A
 // truncated value raises a warning.
 fn retrieve_string(mut diag Diagnostics, nts bool, target &char, value string, target_length i64, returned_length voidptr, returned_length_size int) ! {
-	// - 2. If TL is not greater than zero, then an exception condition is
-	// raised: CLI-specific condition — invalid string length or buffer length.
+	// ISO/IEC 9075-3:2003(E), 5.9, Character string retrieval, General Rules,
+	// 2: the target length must be greater than zero.
 	//
 	// When null termination is False, a zero buffer size is the same as a null
-	// pointer (see 4.4.3, "Null pointers"), so nothing is copied.
+	// pointer (ISO/IEC 9075-3:2003(E), 4.4.3, Null pointers), so nothing is
+	// copied.
 	if target_length < 0 || (target_length == 0 && nts) {
 		return cli_error('HY090', 'invalid string length or buffer length')
 	}
 
-	// - 4. If RL is not a null pointer, then the value of the host variable
-	// addressed by RL is set to L.
+	// ISO/IEC 9075-3:2003(E), 5.9, Character string retrieval, General Rules,
+	// 3 and 4: the returned length (unless it's a null pointer) is the length
+	// of the value in octets.
 	set_length(returned_length, returned_length_size, value.len)
 
-	// - 5. The value is copied, and truncated with a warning if it doesn't fit.
+	// ISO/IEC 9075-3:2003(E), 5.9, Character string retrieval, General Rules,
+	// 5: the value is copied, and truncated with a warning if it doesn't fit
+	// (leaving room for the null terminator when null termination is True).
 	if !copy_c_string(target, value, target_length, nts) {
 		diag.warning('01004', 'string data, right truncation')
 	}

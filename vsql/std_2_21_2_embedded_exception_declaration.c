@@ -1,8 +1,11 @@
 /* section violated */
 /*
  * vsql_m_violated is 1 if a condition in the first diagnostics area is the
- * violation of the constraint (21.2 General Rule 1c). catalog is NULL for any
- * catalog.
+ * violation of the constraint. catalog is NULL for any catalog. When more than
+ * one constraint was violated, the first WHENEVER CONSTRAINT (that applies) is
+ * chosen.
+ *
+ * ISO/IEC 9075-2:2016(E), 21.2, <embedded exception declaration>, General Rules, 1.c.i to 1.c.iii
  */
 static int vsql_m_violated(const char *catalog, const char *schema,
                            const char *name) {

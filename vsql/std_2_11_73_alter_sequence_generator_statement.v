@@ -24,6 +24,7 @@ fn (stmt AlterSequenceGeneratorStatement) execute(mut conn Connection, params ma
 	name := conn.resolve_schema_identifier(stmt.name)!
 	check_writable_schema(name)!
 	mut catalog := conn.catalog_for(name)
+	// ISO/IEC 9075-2:2016(E), 11.73, <alter sequence generator statement>, Syntax Rules, 2
 	old_sequence := catalog.storage.sequence(name)!
 	sequence := alter_sequence(mut conn, params, old_sequence, stmt.options)!
 	catalog.storage.update_sequence(old_sequence, sequence)!
@@ -36,7 +37,11 @@ fn (stmt AlterSequenceGeneratorStatement) explain(mut _ Connection, _ map[string
 }
 
 // alter_sequence returns the sequence (an external sequence or the sequence of
-// an identity column) with the options of an ALTER (9.31).
+// an identity column) with the options of an ALTER. NO MINVALUE and NO MAXVALUE
+// are the range of a BIGINT.
+//
+// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 5-9
+// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, General Rules, 2
 fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Sequence, options []SequenceGeneratorOption) !Sequence {
 	mut sequence := old_sequence.copy()
 	mut c := Compiler{
@@ -95,12 +100,14 @@ fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Seq
 
 	sequence.check()!
 
-	// The current base value is only changed by RESTART (9.31 Syntax Rule 9 and
-	// General Rule 2e). It's the last value returned by NEXT VALUE FOR, so the
+	// The current base value is only changed by RESTART. It's the last value returned by NEXT VALUE FOR, so the
 	// next value uses the new INCREMENT BY. Unless it hasn't been returned yet (a
 	// new or restarted sequence), then it's the next value, so current_value
 	// must be adjusted for the new INCREMENT BY. These wrap around like add_i64,
 	// see Sequence.next.
+	//
+	// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 9
+	// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, General Rules, 2.e
 	if v := restart_value {
 		sequence.check_in_range(restart_name, v)!
 		sequence.current_value = i64(u64(v) - u64(sequence.increment_by))
@@ -117,9 +124,11 @@ fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Seq
 			has_next = !sequence.exhausted
 		}
 
-		// The next value must be within a new MINVALUE or MAXVALUE (9.31 Syntax
-		// Rule 12). It isn't checked against limits that aren't changed, so CYCLE
-		// or NO MAXVALUE can revive a sequence that has gone past its limit.
+		// The next value must be within a new MINVALUE or MAXVALUE. It isn't
+		// checked against limits that aren't changed, so CYCLE or NO MAXVALUE can
+		// revive a sequence that has gone past its limit.
+		//
+		// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 12
 		if has_next && new_min_value && next_value < sequence.min_value {
 			return sqlstate_42601('MINVALUE (${sequence.min_value}) must not be greater than the next value (${next_value})')
 		}

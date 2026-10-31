@@ -3,6 +3,15 @@ module main
 // ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation
 //
 // Specify the rules for invocation of a <CLI routine>.
+//
+// Each routine is a C function, so the C compiler checks the number and types
+// of the arguments (Syntax Rules 2 to 4), and the routine returns its return
+// code (General Rules 4.a). Every routine first looks up its handle, and
+// returns SQL_INVALID_HANDLE (without a status record) if it isn't allocated
+// (General Rules 3.b.i.1 and 3.b.ii.1). The return code and status records
+// for each condition are set by the Diagnostics (General Rules 5 and 6). A
+// failed SQL-statement has no effect, even in an SQL-transaction (General
+// Rules 5.c.i).
 
 // invoke applies General Rule 3.b.i to a routine with a statement handle (other
 // than Error): the SQL-connection of the statement must be established, and it

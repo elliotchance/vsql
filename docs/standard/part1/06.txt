@@ -1,0 +1,60 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 6, Notation and conventions used in other parts of ISO/IEC 9075
+6                        definition   - - about the standard itself
+# 6.1, Notation taken from ISO/IEC 10646
+6.1                      definition   - - about the standard itself
+# 6.2, Notation provided in this International Standard
+6.2                      definition   - - about the standard itself
+# 6.3, Conventions
+6.3                      definition   - - about the standard itself
+# 6.3.1, Specification of syntactic elements
+6.3.1                    definition   - - about the standard itself
+# 6.3.2, Specification of the Information and Definition Schemata
+6.3.2                    definition   - - about the standard itself
+# 6.3.3, Use of terms
+6.3.3                    definition   - - about the standard itself
+# 6.3.3.1, Syntactic containment
+6.3.3.1                  definition   - - about the standard itself
+# 6.3.3.2, Terms denoting rule requirements
+6.3.3.2                  definition   - - about the standard itself
+# 6.3.3.3, Rule evaluation order
+6.3.3.3                  definition   - - about the standard itself
+# 6.3.3.4, Conditional rules
+6.3.3.4                  definition   - - about the standard itself
+# 6.3.3.5, Syntactic substitution
+6.3.3.5                  definition   - - about the standard itself
+# 6.3.3.6, Other terms
+6.3.3.6                  definition   - - about the standard itself
+# 6.3.3.7, Exceptions
+6.3.3.7                  definition   - - about the standard itself
+# 6.3.3.8, General Rules not terminated on exception conditions
+6.3.3.8                  definition   - - about the standard itself
+# 6.3.4, Descriptors
+6.3.4                    definition   - - about the standard itself
+# 6.3.5, Relationships of parts within ISO/IEC 9075
+6.3.5                    definition   - - about the standard itself
+# 6.3.5.1, New and modified Clauses, Subclauses, and Annexes
+6.3.5.1                  definition   - - about the standard itself
+# 6.3.5.2, Functions
+6.3.5.2                  definition   - - about the standard itself
+# 6.3.5.3, New and modified Format items
+6.3.5.3                  definition   - - about the standard itself
+# 6.3.5.4, New and modified paragraphs and rules
+6.3.5.4                  definition   - - about the standard itself
+# 6.3.5.5, New and modified tables
+6.3.5.5                  definition   - - about the standard itself
+# 6.3.5.6, Modified annexes
+6.3.5.6                  definition   - - about the standard itself
+# 6.3.6, Index typography
+6.3.6                    definition   - - about the standard itself
+# 6.3.7, Feature ID and Feature Name
+6.3.7                    implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql standard features are flagged by ID, and vsql's own have a V
+# 6.4, Object identifier for Database Language SQL
+6.4                      n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)
+6.4/SR/1                 n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)
+6.4/SR/2                 n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)
+6.4/SR/3                 n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)
+6.4/SR/4                 n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)
+6.4/SR/5                 n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)
+6.4/SR/6                 n/a          - - vsql doesn't claim conformance, so it doesn't have an object identifier (8.6.2)

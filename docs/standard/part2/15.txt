@@ -1,0 +1,551 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 15, Additional data manipulation rules
+15                       container    - -
+# 15.1, Effect of opening a cursor
+15.1                     implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
+15.1/GR/1                definition   - -
+15.1/GR/2                implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
+15.1/GR/3                definition   - -
+15.1/GR/4                container    - -
+15.1/GR/4.a              implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
+15.1/GR/4.b              implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
+15.1/GR/4.c              n/a          - - extended dynamic cursors (B032)
+15.1/GR/4.d              n/a          - - polymorphic table functions (B200)
+15.1/GR/5                implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
+15.1/GR/5.a              implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
+15.1/GR/5.a.i            implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
+15.1/GR/5.a.ii           implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql the query is executed when the cursor is opened
+15.1/GR/5.b              container    - -
+15.1/GR/5.b.i            implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
+15.1/GR/5.b.ii           definition   - -
+15.1/GR/5.b.ii.1         definition   - -
+15.1/GR/5.b.ii.2         n/a          - - there's no <attributes variable>
+15.1/GR/5.b.ii.2.A       n/a          - - there's no <attributes variable>
+15.1/GR/5.b.ii.2.B       n/a          - - there's no <attributes variable>
+15.1/GR/5.b.ii.2.C       n/a          - - there's no <attributes variable>
+15.1/GR/5.b.ii.2.D       n/a          - - there's no <attributes variable>
+15.1/GR/5.c              n/a          - - <cursor returnability> (T471)
+15.1/GR/5.c.i            n/a          - - <cursor returnability> (T471)
+15.1/GR/5.c.ii           n/a          - - <cursor returnability> (T471)
+15.1/GR/5.d              definition   - -
+15.1/GR/5.e              definition   - -
+15.1/GR/5.f              container    - -
+15.1/GR/5.f.i            n/a          - - INSENSITIVE (F791)
+15.1/GR/5.f.ii           implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql the result is a copy, which is allowed for an ASENSITIVE cursor
+15.1/GR/5.g              implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
+15.1/GR/5.h              implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
+15.1/GR/5.i              implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
+15.1/GR/6                n/a          - - INSENSITIVE (F791)
+15.1/GR/7                n/a          - - SENSITIVE (T231)
+15.1/GR/8                impl-defined vsql/std_2_14_4_open_statement.v tests/cursors.sql changes aren't disallowed
+15.1/GR/9                n/a          - - <cursor returnability> (T471)
+# 15.2, Effect of receiving a result set
+15.2                     n/a          - - returned result sets (T471)
+15.2/GR/1                n/a          - - returned result sets (T471)
+15.2/GR/2                n/a          - - returned result sets (T471)
+15.2/GR/3                n/a          - - returned result sets (T471)
+15.2/GR/4                n/a          - - returned result sets (T471)
+15.2/GR/5                n/a          - - returned result sets (T471)
+15.2/GR/6                n/a          - - returned result sets (T471)
+15.2/GR/7                n/a          - - returned result sets (T471)
+# 15.3, Determination of the current row of a cursor
+15.3                     partial      vsql/std_2_14_5_fetch_statement.v tests/cursors.sql only NEXT (F431)
+15.3/GR/1                definition   - -
+15.3/GR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+15.3/GR/3                definition   - -
+15.3/GR/4                n/a          - - only NEXT is supported (F431)
+15.3/GR/5                container    - -
+15.3/GR/5.a              n/a          - - only NEXT is supported (F431)
+15.3/GR/5.b              implemented  vsql/std_2_14_5_fetch_statement.v tests/cursors.sql
+15.3/GR/5.c              n/a          - - only NEXT is supported (F431)
+15.3/GR/6                definition   - -
+15.3/GR/7                container    - -
+15.3/GR/7.a              n/a          - - only NEXT is supported (F431)
+15.3/GR/7.b              implemented  vsql/std_2_14_5_fetch_statement.v tests/cursors.sql
+15.3/GR/7.b.i            implemented  vsql/std_2_14_5_fetch_statement.v tests/cursors.sql
+15.3/GR/7.b.ii           implemented  vsql/std_2_14_5_fetch_statement.v tests/cursors.sql
+15.3/GR/7.b.iii          implemented  vsql/std_2_14_5_fetch_statement.v tests/cursors.sql
+15.3/GR/7.c              n/a          - - only NEXT is supported (F431)
+15.3/GR/7.c.i            n/a          - - only NEXT is supported (F431)
+15.3/GR/7.c.ii           n/a          - - only NEXT is supported (F431)
+15.3/GR/7.c.iii          n/a          - - only NEXT is supported (F431)
+15.3/GR/7.c.iv           n/a          - - only NEXT is supported (F431)
+15.3/GR/7.d              n/a          - - only NEXT is supported (F431)
+15.3/GR/7.d.i            n/a          - - only NEXT is supported (F431)
+15.3/GR/7.d.ii           n/a          - - only NEXT is supported (F431)
+15.3/GR/8                implemented  vsql/std_2_14_5_fetch_statement.v tests/cursors.sql
+15.3/GR/9                container    - -
+15.3/GR/9.a              implemented  vsql/std_2_14_5_fetch_statement.v tests/cursors.sql
+15.3/GR/9.b              implemented  vsql/std_2_14_5_fetch_statement.v tests/cursors.sql
+15.3/GR/9.b.i            n/a          - - only NEXT is supported (F431)
+15.3/GR/9.b.ii           implemented  vsql/std_2_14_5_fetch_statement.v tests/cursors.sql
+15.3/GR/9.b.iii          n/a          - - only NEXT is supported (F431)
+# 15.4, Effect of closing a cursor
+15.4                     implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+15.4/GR/1                definition   - -
+15.4/GR/2                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+15.4/GR/3                definition   - -
+15.4/GR/4                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+15.4/GR/5                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+15.4/GR/6                container    - -
+15.4/GR/6.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+15.4/GR/6.b              n/a          - - <cursor returnability> (T471)
+15.4/GR/7                n/a          - - received cursors (T471)
+# 15.5, Effect of a positioned delete
+15.5                     implemented  vsql/std_2_14_8_delete_statement_positioned.v tests/cursors.sql
+15.5/GR/1                definition   - -
+15.5/GR/2                n/a          - - there are no read-only transactions (#554)
+15.5/GR/3                n/a          - - SENSITIVE (T231)
+15.5/GR/3.a              n/a          - - SENSITIVE (T231)
+15.5/GR/3.b              n/a          - - SENSITIVE (T231)
+15.5/GR/4                n/a          - - INSENSITIVE (F791)
+15.5/GR/5                impl-defined vsql/std_2_14_1_declare_cursor.v tests/cursors.sql nothing is disallowed, since a cursor's result is a copy
+15.5/GR/6                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+15.5/GR/7                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+15.5/GR/8                definition   - -
+15.5/GR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql the row is found by its internal id, so it's always the row the cursor was positioned on
+15.5/GR/10               impl-defined vsql/std_2_14_8_delete_statement_positioned.v tests/cursors.sql the row stays in the result, but the cursor isn't on a row
+15.5/GR/11               container    - -
+15.5/GR/11.a             implemented  vsql/std_2_14_9_delete_statement_searched.v tests/cursors.sql
+15.5/GR/11.a.i           container    - -
+15.5/GR/11.a.i.1         n/a          - - ONLY (S111)
+15.5/GR/11.a.i.2         n/a          - - subtables (S081)
+15.5/GR/11.a.ii          implemented  vsql/std_2_14_9_delete_statement_searched.v tests/cursors.sql
+15.5/GR/11.b             n/a          - - views (F031-02)
+15.5/GR/12               missing      vsql/std_2_14_1_declare_cursor.v - no cursor operation conflict warning, and a deleted row is 24000 (#797)
+15.5/GR/13               implemented  vsql/std_2_14_8_delete_statement_positioned.v tests/cursors.sql
+# 15.6, Effect of a positioned update
+15.6                     implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
+15.6/GR/1                definition   - -
+15.6/GR/2                n/a          - - there are no read-only transactions (#554)
+15.6/GR/3                n/a          - - SENSITIVE (T231)
+15.6/GR/3.a              n/a          - - SENSITIVE (T231)
+15.6/GR/3.b              n/a          - - SENSITIVE (T231)
+15.6/GR/4                n/a          - - INSENSITIVE (F791)
+15.6/GR/5                impl-defined vsql/std_2_14_1_declare_cursor.v tests/cursors.sql nothing is disallowed, since a cursor's result is a copy
+15.6/GR/6                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+15.6/GR/7                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+15.6/GR/8                definition   - -
+15.6/GR/9                missing      vsql/std_2_14_1_declare_cursor.v - no cursor operation conflict warning, and a deleted row is 24000 (#797)
+15.6/GR/10               implemented  vsql/std_2_14_14_update_statement_searched.v tests/cursors.sql
+15.6/GR/11               implemented  vsql/std_2_14_14_update_statement_searched.v tests/cursors.sql
+15.6/GR/12               implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
+15.6/GR/13               implemented  vsql/std_2_14_14_update_statement_searched.v tests/cursors.sql
+15.6/GR/14               definition   - -
+15.6/GR/15               definition   - -
+15.6/GR/16               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql the cursor's copy of the row isn't changed
+15.6/GR/17               container    - -
+15.6/GR/17.a             implemented  vsql/std_2_14_14_update_statement_searched.v tests/cursors.sql
+15.6/GR/17.a.i           container    - -
+15.6/GR/17.a.i.1         n/a          - - ONLY (S111)
+15.6/GR/17.a.i.2         n/a          - - subtables (S081)
+15.6/GR/17.a.ii          implemented  vsql/std_2_14_14_update_statement_searched.v tests/cursors.sql
+15.6/GR/17.b             n/a          - - views (F031-02)
+15.6/GR/18               untestable   - - the position is implementation-dependent
+# 15.7, Effect of deleting rows from base tables
+15.7                     implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+15.7/GR/1                definition   - -
+15.7/GR/2                n/a          - - subtables (S081)
+15.7/GR/2.a              n/a          - - subtables (S081)
+15.7/GR/2.b              n/a          - - subtables (S081)
+15.7/GR/3                n/a          - - subtables (S081)
+15.7/GR/3.a              n/a          - - subtables (S081)
+15.7/GR/3.b              n/a          - - subtables (S081)
+15.7/GR/4                n/a          - - triggers (T211)
+15.7/GR/5                n/a          - - triggers (T211)
+15.7/GR/5.a              n/a          - - triggers (T211)
+15.7/GR/5.b              n/a          - - triggers (T211)
+15.7/GR/5.b.i            n/a          - - triggers (T211)
+15.7/GR/5.b.ii           n/a          - - triggers (T211)
+15.7/GR/5.b.iii          n/a          - - triggers (T211)
+15.7/GR/5.b.iv           n/a          - - triggers (T211)
+15.7/GR/5.b.v            n/a          - - triggers (T211)
+15.7/GR/5.b.vi           n/a          - - triggers (T211)
+15.7/GR/6                n/a          - - triggers (T211)
+15.7/GR/7                implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
+15.7/GR/8                n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.a              n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.b              n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.b.i            n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.b.ii           n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.c              n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.c.i            n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.c.i.1          n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.c.i.2          n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.c.ii           n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.d              n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.d.i            n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.d.i.1          n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.d.i.2          n/a          - - FOR PORTION OF (T181)
+15.7/GR/8.d.ii           n/a          - - FOR PORTION OF (T181)
+# 15.8, Effect of deleting some rows from a derived table
+15.8                     n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/1                n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/2                n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3                container    - -
+15.8/GR/3.a              n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.b              n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.b.i            n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.b.ii           n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.b.iii          n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.c              n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.c.i            n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.c.i.1          n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.c.i.2          n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.c.ii           n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.c.iii          n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.c.iv           n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.c.iv.1         n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.c.iv.1.A       n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.c.iv.1.B       n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.c.iv.2         n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.c.iv.3         n/a          - - it only applies to a viewed table (F031-02)
+15.8/GR/3.c.v            n/a          - - it only applies to a viewed table (F031-02)
+# 15.9, Effect of deleting some rows from a viewed table
+15.9                     n/a          - - views (F031-02)
+15.9/GR/1                n/a          - - views (F031-02)
+15.9/GR/2                n/a          - - views (F031-02)
+15.9/GR/3                container    - -
+15.9/GR/3.a              n/a          - - views (F031-02)
+15.9/GR/3.a.i            n/a          - - views (F031-02)
+15.9/GR/3.a.ii           n/a          - - views (F031-02)
+15.9/GR/3.a.ii.1         n/a          - - views (F031-02)
+15.9/GR/3.a.ii.2         n/a          - - views (F031-02)
+15.9/GR/3.a.ii.3         n/a          - - views (F031-02)
+15.9/GR/3.a.ii.4         n/a          - - views (F031-02)
+15.9/GR/3.a.ii.5         n/a          - - views (F031-02)
+15.9/GR/3.a.ii.6         n/a          - - views (F031-02)
+15.9/GR/3.a.iii          n/a          - - views (F031-02)
+15.9/GR/3.b              n/a          - - views (F031-02)
+15.9/GR/3.b.i            n/a          - - views (F031-02)
+15.9/GR/3.b.ii           n/a          - - views (F031-02)
+15.9/GR/3.b.iii          n/a          - - views (F031-02)
+# 15.10, Effect of inserting tables into base tables
+15.10                    implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+15.10/GR/1               n/a          - - triggers (T211)
+15.10/GR/2               definition   - -
+15.10/GR/2.a             implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+15.10/GR/2.a.i           implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+15.10/GR/2.a.ii          implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+15.10/GR/2.a.ii.1        n/a          - - distinct types (S023)
+15.10/GR/2.a.ii.2        implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+15.10/GR/2.a.iii         implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
+15.10/GR/2.b             n/a          - - system-versioned tables (T180)
+15.10/GR/2.b.i           n/a          - - system-versioned tables (T180)
+15.10/GR/2.b.ii          n/a          - - system-versioned tables (T180)
+15.10/GR/2.b.iii         n/a          - - system-versioned tables (T180)
+15.10/GR/2.c             n/a          - - system-versioned tables (T180)
+15.10/GR/2.c.i           n/a          - - system-versioned tables (T180)
+15.10/GR/2.c.ii          n/a          - - system-versioned tables (T180)
+15.10/GR/2.c.iii         n/a          - - system-versioned tables (T180)
+15.10/GR/2.d             n/a          - - subtables (S081)
+15.10/GR/2.d.i           n/a          - - subtables (S081)
+15.10/GR/2.d.ii          n/a          - - subtables (S081)
+15.10/GR/2.d.iii         n/a          - - subtables (S081)
+15.10/GR/3               n/a          - - triggers (T211)
+15.10/GR/3.a             n/a          - - triggers (T211)
+15.10/GR/3.b             n/a          - - triggers (T211)
+15.10/GR/3.b.i           n/a          - - triggers (T211)
+15.10/GR/3.b.ii          n/a          - - triggers (T211)
+15.10/GR/3.b.iii         n/a          - - triggers (T211)
+15.10/GR/3.b.iv          n/a          - - triggers (T211)
+15.10/GR/3.b.v           n/a          - - triggers (T211)
+15.10/GR/3.b.vi          n/a          - - triggers (T211)
+15.10/GR/4               n/a          - - triggers (T211)
+15.10/GR/5               implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+15.10/GR/5.a             implemented  vsql/std_2_11_4_column_definition.v tests/generated-column.sql
+15.10/GR/5.b             definition   - -
+15.10/GR/5.c             implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
+# 15.11, Effect of inserting a table into a derived table
+15.11                    n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/1               n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2               n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.a             n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.b             n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.b.i           container    - -
+15.11/GR/2.b.i.1         n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.b.i.2         n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.b.ii          n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.b.iii         n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.b.iii.1       n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.b.iii.2       n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.b.iii.3       n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.b.iv          n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.b.iv.1        n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.b.iv.2        n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.b.iv.3        n/a          - - it only applies to a viewed table (F031-02)
+15.11/GR/2.b.v           n/a          - - it only applies to a viewed table (F031-02)
+# 15.12, Effect of inserting a table into a viewed table
+15.12                    n/a          - - views (F031-02)
+15.12/GR/1               n/a          - - views (F031-02)
+15.12/GR/2               n/a          - - views (F031-02)
+15.12/GR/3               container    - -
+15.12/GR/3.a             n/a          - - views (F031-02)
+15.12/GR/3.a.i           n/a          - - views (F031-02)
+15.12/GR/3.a.ii          n/a          - - views (F031-02)
+15.12/GR/3.a.ii.1        n/a          - - views (F031-02)
+15.12/GR/3.a.ii.2        n/a          - - views (F031-02)
+15.12/GR/3.a.ii.3        n/a          - - views (F031-02)
+15.12/GR/3.a.ii.4        n/a          - - views (F031-02)
+15.12/GR/3.a.ii.5        n/a          - - views (F031-02)
+15.12/GR/3.a.ii.6        n/a          - - views (F031-02)
+15.12/GR/3.a.iii         n/a          - - views (F031-02)
+15.12/GR/3.b             n/a          - - views (F031-02)
+15.12/GR/3.b.i           n/a          - - views (F031-02)
+15.12/GR/3.b.i.1         container    - -
+15.12/GR/3.b.i.1.A       n/a          - - views (F031-02)
+15.12/GR/3.b.i.1.B       n/a          - - views (F031-02)
+15.12/GR/3.b.i.1.B.I     n/a          - - views (F031-02)
+15.12/GR/3.b.i.1.B.II    n/a          - - views (F031-02)
+15.12/GR/3.b.i.2         n/a          - - views (F031-02)
+15.12/GR/3.b.i.3         n/a          - - views (F031-02)
+15.12/GR/3.b.ii          n/a          - - views (F031-02)
+15.12/GR/4               n/a          - - views (F031-02)
+# 15.13, Effect of replacing rows in base tables
+15.13                    implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+15.13/GR/1               definition   - -
+15.13/GR/2               n/a          - - subtables (S081)
+15.13/GR/2.a             n/a          - - subtables (S081)
+15.13/GR/2.b             n/a          - - subtables (S081)
+15.13/GR/3               definition   - -
+15.13/GR/3.a             definition   - -
+15.13/GR/3.b             n/a          - - subtables (S081)
+15.13/GR/4               n/a          - - subtables (S081)
+15.13/GR/4.a             n/a          - - subtables (S081)
+15.13/GR/4.b             n/a          - - subtables (S081)
+15.13/GR/5               n/a          - - triggers (T211)
+15.13/GR/6               definition   - -
+15.13/GR/6.a             implemented  vsql/std_2_14_14_update_statement_searched.v tests/identity-column.sql
+15.13/GR/6.a.i           implemented  vsql/std_2_14_14_update_statement_searched.v tests/identity-column.sql
+15.13/GR/6.a.ii          implemented  vsql/std_2_14_14_update_statement_searched.v tests/identity-column.sql
+15.13/GR/6.a.ii.1        n/a          - - distinct types (S023)
+15.13/GR/6.a.ii.2        implemented  vsql/std_2_14_14_update_statement_searched.v tests/identity-column.sql
+15.13/GR/6.a.iii         implemented  vsql/std_2_14_14_update_statement_searched.v tests/identity-column.sql
+15.13/GR/6.b             n/a          - - triggers (T211)
+15.13/GR/6.b.i           n/a          - - triggers (T211)
+15.13/GR/6.b.ii          n/a          - - triggers (T211)
+15.13/GR/6.b.ii.1        n/a          - - triggers (T211)
+15.13/GR/6.b.ii.2        n/a          - - triggers (T211)
+15.13/GR/6.b.ii.3        n/a          - - triggers (T211)
+15.13/GR/6.b.ii.4        n/a          - - triggers (T211)
+15.13/GR/6.b.ii.5        n/a          - - triggers (T211)
+15.13/GR/6.b.ii.6        n/a          - - triggers (T211)
+15.13/GR/7               n/a          - - triggers (T211)
+15.13/GR/8               implemented  vsql/std_2_11_4_column_definition.v tests/generated-column.sql
+15.13/GR/9               container    - -
+15.13/GR/9.a             n/a          - - system-versioned tables (T180)
+15.13/GR/9.a.i           n/a          - - system-versioned tables (T180)
+15.13/GR/9.a.ii          n/a          - - system-versioned tables (T180)
+15.13/GR/9.a.iii         n/a          - - system-versioned tables (T180)
+15.13/GR/9.a.iii.1       container    - -
+15.13/GR/9.a.iii.1.A     n/a          - - system-versioned tables (T180)
+15.13/GR/9.a.iii.1.B     n/a          - - system-versioned tables (T180)
+15.13/GR/9.a.iii.1.C     container    - -
+15.13/GR/9.a.iii.1.C.I   n/a          - - system-versioned tables (T180)
+15.13/GR/9.a.iii.1.C.II  n/a          - - system-versioned tables (T180)
+15.13/GR/9.a.iii.2       n/a          - - system-versioned tables (T180)
+15.13/GR/9.a.iv          n/a          - - system-versioned tables (T180)
+15.13/GR/9.b             implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql
+15.13/GR/10              n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.a            n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.b            n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.b.i          n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.b.ii         n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.c            n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.c.i          n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.c.i.1        n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.c.i.2        n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.c.ii         n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.d            n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.d.i          n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.d.i.1        n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.d.i.2        n/a          - - FOR PORTION OF (T181)
+15.13/GR/10.d.ii         n/a          - - FOR PORTION OF (T181)
+# 15.14, Effect of replacing some rows in a derived table
+15.14                    n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/1               n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/2               n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3               container    - -
+15.14/GR/3.a             n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.b             n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.b.i           n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.b.i.1         n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.b.i.2         n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.b.ii          n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.b.iii         n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c             n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.i           container    - -
+15.14/GR/3.c.i.1         n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.i.2         n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.ii          n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.iii         n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.iii.1       n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.iii.2       n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.iii.3       n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.iii.4       n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.iv          n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.iv.1        n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.iv.1.A      n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.iv.1.B      n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.iv.2        n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.iv.3        n/a          - - it only applies to a viewed table (F031-02)
+15.14/GR/3.c.v           n/a          - - it only applies to a viewed table (F031-02)
+# 15.15, Effect of replacing some rows in a viewed table
+15.15                    n/a          - - views (F031-02)
+15.15/GR/1               n/a          - - views (F031-02)
+15.15/GR/2               n/a          - - views (F031-02)
+15.15/GR/3               container    - -
+15.15/GR/3.a             n/a          - - views (F031-02)
+15.15/GR/3.a.i           n/a          - - views (F031-02)
+15.15/GR/3.a.ii          n/a          - - views (F031-02)
+15.15/GR/3.a.ii.1        n/a          - - views (F031-02)
+15.15/GR/3.a.ii.2        n/a          - - views (F031-02)
+15.15/GR/3.a.ii.3        n/a          - - views (F031-02)
+15.15/GR/3.a.ii.4        n/a          - - views (F031-02)
+15.15/GR/3.a.ii.5        n/a          - - views (F031-02)
+15.15/GR/3.a.ii.6        n/a          - - views (F031-02)
+15.15/GR/3.a.iii         n/a          - - views (F031-02)
+15.15/GR/3.b             n/a          - - views (F031-02)
+15.15/GR/3.b.i           n/a          - - views (F031-02)
+15.15/GR/3.b.i.1         container    - -
+15.15/GR/3.b.i.1.A       n/a          - - views (F031-02)
+15.15/GR/3.b.i.1.B       n/a          - - views (F031-02)
+15.15/GR/3.b.i.1.B.I     n/a          - - views (F031-02)
+15.15/GR/3.b.i.1.B.II    n/a          - - views (F031-02)
+15.15/GR/3.b.i.2         n/a          - - views (F031-02)
+15.15/GR/3.b.i.3         n/a          - - views (F031-02)
+15.15/GR/3.b.ii          n/a          - - views (F031-02)
+15.15/GR/4               n/a          - - views (F031-02)
+# 15.16, Execution of BEFORE triggers
+15.16                    n/a          - - triggers (T211)
+15.16/GR/1               n/a          - - triggers (T211)
+15.16/GR/2               n/a          - - triggers (T211)
+15.16/GR/3               n/a          - - triggers (T211)
+15.16/GR/4               n/a          - - triggers (T211)
+# 15.17, Execution of referential actions
+15.17                    implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-delete-rules.sql
+15.17/GR/1               definition   - -
+15.17/GR/2               definition   - -
+15.17/GR/3               definition   - - the <match type> is always SIMPLE, since MATCH isn't supported (F741)
+15.17/GR/4               definition   - -
+15.17/GR/5               definition   - -
+15.17/GR/5.a             n/a          - - system-versioned tables (T180)
+15.17/GR/5.b             definition   - -
+15.17/GR/6               container    - -
+15.17/GR/6.a             implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-delete-rules.sql
+15.17/GR/6.b             n/a          - - MATCH PARTIAL (F741)
+15.17/GR/6.b.i           n/a          - - MATCH PARTIAL (F741)
+15.17/GR/6.b.ii          n/a          - - MATCH PARTIAL (F741)
+15.17/GR/7               n/a          - - MATCH PARTIAL (F741), so there are no non-unique matching rows
+15.17/GR/8               n/a          - - triggers (T211)
+15.17/GR/9               implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-delete-rules.sql
+15.17/GR/9.a             implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-delete-rules.sql
+15.17/GR/9.a.i           implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-delete-rules.sql
+15.17/GR/9.a.i.1         implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-delete-rules.sql
+15.17/GR/9.a.i.2         implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-delete-rules.sql
+15.17/GR/9.a.ii          implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-delete-rules.sql
+15.17/GR/9.a.ii.1        implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-delete-rules.sql
+15.17/GR/9.a.ii.2        n/a          - - subtables (S081)
+15.17/GR/9.a.ii.3        implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-delete-rules.sql
+15.17/GR/9.a.iii         implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-delete-rules.sql
+15.17/GR/9.a.iii.1       implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-delete-rules.sql
+15.17/GR/9.a.iii.2       n/a          - - subtables (S081)
+15.17/GR/9.a.iii.3       implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-delete-rules.sql
+15.17/GR/9.a.iv          n/a          - - RESTRICT (T191)
+15.17/GR/9.b             n/a          - - MATCH PARTIAL (F741)
+15.17/GR/9.b.i           n/a          - - MATCH PARTIAL (F741)
+15.17/GR/9.b.i.1         n/a          - - MATCH PARTIAL (F741)
+15.17/GR/9.b.i.2         n/a          - - MATCH PARTIAL (F741)
+15.17/GR/9.b.ii          n/a          - - MATCH PARTIAL (F741)
+15.17/GR/9.b.ii.1        n/a          - - MATCH PARTIAL (F741)
+15.17/GR/9.b.ii.2        n/a          - - MATCH PARTIAL (F741)
+15.17/GR/9.b.ii.3        n/a          - - MATCH PARTIAL (F741)
+15.17/GR/9.b.iii         n/a          - - MATCH PARTIAL (F741)
+15.17/GR/9.b.iii.1       n/a          - - MATCH PARTIAL (F741)
+15.17/GR/9.b.iii.2       n/a          - - MATCH PARTIAL (F741)
+15.17/GR/9.b.iii.3       n/a          - - MATCH PARTIAL (F741)
+15.17/GR/9.b.iv          n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-update-rules.sql
+15.17/GR/10.a            implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-update-rules.sql
+15.17/GR/10.a.i          implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-update-rules.sql
+15.17/GR/10.a.i.1        implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-update-rules.sql
+15.17/GR/10.a.i.2        n/a          - - subtables (S081)
+15.17/GR/10.a.i.3        implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-update-rules.sql
+15.17/GR/10.a.ii         implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-update-rules.sql
+15.17/GR/10.a.ii.1       implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-update-rules.sql
+15.17/GR/10.a.ii.1.A     implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-update-rules.sql
+15.17/GR/10.a.ii.1.B     n/a          - - subtables (S081)
+15.17/GR/10.a.ii.1.C     implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-update-rules.sql
+15.17/GR/10.a.ii.2       n/a          - - MATCH FULL (F741)
+15.17/GR/10.a.ii.2.A     n/a          - - MATCH FULL (F741)
+15.17/GR/10.a.ii.2.B     n/a          - - MATCH FULL (F741)
+15.17/GR/10.a.ii.2.C     n/a          - - MATCH FULL (F741)
+15.17/GR/10.a.iii        implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-update-rules.sql
+15.17/GR/10.a.iii.1      implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-update-rules.sql
+15.17/GR/10.a.iii.2      n/a          - - subtables (S081)
+15.17/GR/10.a.iii.3      implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-update-rules.sql
+15.17/GR/10.a.iv         n/a          - - RESTRICT (T191)
+15.17/GR/10.b            n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10.b.i          n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10.b.i.1        n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10.b.i.2        n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10.b.i.3        n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10.b.ii         n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10.b.ii.1       n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10.b.ii.2       n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10.b.ii.3       n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10.b.iii        n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10.b.iii.1      n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10.b.iii.2      n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10.b.iii.3      n/a          - - MATCH PARTIAL (F741)
+15.17/GR/10.b.iv         n/a          - - MATCH PARTIAL (F741)
+15.17/GR/11              definition   - -
+15.17/GR/12              missing      vsql/std_2_11_8_referential_constraint_definition.v - conflicting referential actions aren't detected (#796)
+15.17/GR/13              missing      vsql/std_2_11_8_referential_constraint_definition.v - conflicting referential actions aren't detected (#796)
+15.17/GR/14              missing      vsql/std_2_14_1_declare_cursor.v - no cursor operation conflict warning (#797)
+15.17/GR/15              n/a          - - data change delta tables (T495)
+15.17/GR/16              n/a          - - subtables (S081)
+15.17/GR/17              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key-update-rules.sql
+# 15.18, Execution of AFTER triggers
+15.18                    n/a          - - triggers (T211)
+15.18/GR/1               n/a          - - triggers (T211)
+15.18/GR/2               n/a          - - triggers (T211)
+15.18/GR/3               n/a          - - triggers (T211)
+15.18/GR/4               n/a          - - triggers (T211)
+# 15.19, Execution of triggers
+15.19                    n/a          - - triggers (T211)
+15.19/GR/1               n/a          - - triggers (T211)
+15.19/GR/2               n/a          - - triggers (T211)
+15.19/GR/3               n/a          - - triggers (T211)
+15.19/GR/3.a             n/a          - - triggers (T211)
+15.19/GR/3.b             n/a          - - triggers (T211)
+15.19/GR/4               n/a          - - triggers (T211)
+15.19/GR/4.a             container    - -
+15.19/GR/4.a.i           n/a          - - triggers (T211)
+15.19/GR/4.a.ii          n/a          - - triggers (T211)
+15.19/GR/4.a.iii         n/a          - - triggers (T211)
+15.19/GR/4.b             container    - -
+15.19/GR/4.b.i           n/a          - - triggers (T211)
+15.19/GR/4.b.i.1         n/a          - - triggers (T211)
+15.19/GR/4.b.i.2         n/a          - - triggers (T211)
+15.19/GR/4.b.i.3         n/a          - - triggers (T211)
+15.19/GR/4.b.ii          n/a          - - triggers (T211)
+15.19/GR/5               n/a          - - triggers (T211)
+15.19/GR/5.a             n/a          - - triggers (T211)
+15.19/GR/5.b             n/a          - - triggers (T211)
+15.19/GR/5.c             n/a          - - triggers (T211)
+15.19/GR/5.d             n/a          - - triggers (T211)
+15.19/GR/5.e             n/a          - - triggers (T211)
+15.19/GR/5.e.i           n/a          - - triggers (T211)
+15.19/GR/5.e.ii          n/a          - - triggers (T211)
+15.19/GR/5.e.iii         n/a          - - triggers (T211)
+15.19/GR/5.e.iv          n/a          - - triggers (T211)
+15.19/GR/5.f             n/a          - - triggers (T211)
+15.19/GR/5.g             n/a          - - triggers (T211)
+15.19/GR/5.h             n/a          - - triggers (T211)
+15.19/GR/5.i             n/a          - - triggers (T211)
+15.19/GR/5.j             n/a          - - triggers (T211)
+15.19/GR/5.k             n/a          - - triggers (T211)
+15.19/GR/5.l             n/a          - - triggers (T211)
+15.19/GR/5.m             n/a          - - triggers (T211)

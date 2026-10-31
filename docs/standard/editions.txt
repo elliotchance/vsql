@@ -1,0 +1,10 @@
+# The edition of each part of the SQL standard that the index (and every
+# citation in the code) is for. The source is the PDF in standard_docs/ (which
+# is not committed) that the index is generated from. See
+# docs/standard-index.rst.
+#
+# part	citation	sha256	source
+1	ISO/IEC 9075-1:2003(E)	bf30143e7044fea3883a222f18a98138e4eb778d682df5385738654555bf9033	sql_2003_standard/5WD-01-Framework-2003-09.pdf
+2	ISO/IEC 9075-2:2016(E)	106b9e3c1620985683569970ea5c0ae6d23da4850f647a67925141aafc7f05af	ISO_IEC_9075-2E_Foundation.pdf
+3	ISO/IEC 9075-3:2003(E)	a43782a395951e73381ffec2e296196611bef5edf22ffdf8e61754efaefd99e4	sql_2003_standard/5WD-03-CLI-2003-09.pdf
+11	ISO/IEC 9075-11:2008(E)	100cc1902118399b6335db17fc926d375755ee24d29099e823f154cbae54b87c	32N1413T text CD 9075-11 SQL_Schemata.pdf

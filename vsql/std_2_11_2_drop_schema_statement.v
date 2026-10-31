@@ -21,13 +21,18 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 
 	mut catalog := conn.catalog_for(conn.resolve_catalog_identifier(stmt.schema_name)!)
 	schema_name := stmt.schema_name.schema_name
+	// ISO/IEC 9075-2:2016(E), 11.2, <drop schema statement>, Syntax Rules, 3
 	check_writable_schema(stmt.schema_name)!
 
+	// ISO/IEC 9075-2:2016(E), 11.2, <drop schema statement>, Syntax Rules, 2
 	if schema_name !in catalog.storage.schemas {
 		return sqlstate_3f000(schema_name) // schema does not exist
 	}
 
-	// Find all dependencies (tables and sequences).
+	// Find all dependencies. A schema can only contain tables and sequences,
+	// which are the only objects that RESTRICT needs to check for.
+	//
+	// ISO/IEC 9075-2:2016(E), 11.2, <drop schema statement>, Syntax Rules, 4
 	mut table_names := []string{}
 	for table_name, table in catalog.storage.tables {
 		if table.name.schema_name == schema_name {
@@ -46,8 +51,11 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 		return sqlstate_2bp01(schema_name)
 	}
 
-	// The FOREIGN KEYs of the tables in other schemas that reference the
-	// tables are dropped.
+	// Each table is dropped like a DROP TABLE CASCADE, so the FOREIGN KEYs of
+	// the tables in other schemas that reference the tables are dropped. Then
+	// each sequence and the schema itself are dropped.
+	//
+	// ISO/IEC 9075-2:2016(E), 11.2, <drop schema statement>, General Rules, 1, 12 and 13
 	catalog.storage.drop_foreign_keys_referencing(table_names)!
 
 	for table_name in table_names {

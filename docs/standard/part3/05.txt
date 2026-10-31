@@ -1,0 +1,574 @@
+# ISO/IEC 9075-3:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5, Call-Level Interface specifications
+5                        container    - -
+# 5.1, <CLI routine>
+5.1                      implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_3_alloc_handle_test.c C only, as by-value CLI functions
+5.1/SR/1                 implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_3_alloc_handle_test.c C
+5.1/SR/2                 definition   - -
+5.1/SR/3                 implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_3_alloc_handle_test.c
+5.1/SR/4                 definition   - -
+5.1/SR/5                 impl-defined libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_3_alloc_handle_test.c CLI functions, which return the return code
+5.1/SR/6                 container    - -
+5.1/SR/6.a               definition   - -
+5.1/SR/6.b               definition   - -
+5.1/SR/6.c               definition   - -
+5.1/SR/6.d               definition   - -
+5.1/SR/6.e               definition   - -
+5.1/SR/7                 implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_3_alloc_handle_test.c
+5.1/SR/8                 implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_3_alloc_handle_test.c by-value, which C requires (Table 2); by-reference is optional
+5.1/SR/9                 implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_3_alloc_handle_test.c SQL
+5.1/SR/10                n/a          - - there are no implementation-defined CLI routines
+5.1/SR/11                n/a          - - C names don't need to be abbreviated
+5.1/SR/11.a              n/a          - - C names don't need to be abbreviated
+5.1/SR/11.b              n/a          - - C names don't need to be abbreviated
+5.1/SR/11.c              n/a          - - C names don't need to be abbreviated
+5.1/SR/12                container    - -
+5.1/SR/12.a              implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_3_alloc_handle_test.c C is case sensitive
+5.1/SR/12.b              n/a          - - C has lower case letters
+5.1/SR/12.c              n/a          - - C is case sensitive
+5.1/SR/13                implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_3_alloc_handle_test.c Table 45
+5.1/SR/14                container    - -
+5.1/SR/14.a              n/a          - - C has a SMALLINT type
+5.1/SR/14.b              n/a          - - C has a CHARACTER type
+5.1/SR/14.c              container    - -
+5.1/SR/14.c.i            deviates     libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_3_alloc_handle_test.c SQLINTEGER is 32 bits everywhere rather than a C long, which is 64 bits on macOS and Linux (#686)
+5.1/SR/14.c.ii           implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_3_alloc_handle_test.c
+5.1/SR/14.c.iii          implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_3_alloc_handle_test.c
+5.1/SR/14.c.iv           container    - -
+5.1/SR/14.c.iv.1         implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_59_set_stmt_attr_test.c
+5.1/SR/14.c.iv.2         n/a          - - C
+5.1/SR/14.d              implemented  libvsql/std_3_5_1_cli_routine.v libvsql/std_3_6_3_alloc_handle_test.c SQLRETURN
+5.1/GR/1                 definition   - - see 5.2
+5.1/CR/1                 n/a          - - only C is supported (C002)
+5.1/CR/2                 n/a          - - C002 is supported
+5.1/CR/3                 n/a          - - only C is supported (C002)
+5.1/CR/4                 n/a          - - only C is supported (C002)
+5.1/CR/5                 n/a          - - only C is supported (C002)
+5.1/CR/6                 n/a          - - only C is supported (C002)
+5.1/CR/7                 n/a          - - only C is supported (C002)
+# 5.2, <CLI routine> invocation
+5.2                      implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/SR/1                 definition   - -
+5.2/SR/2                 implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/SR/3                 implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c checked by the C compiler
+5.2/SR/4                 implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c checked by the C compiler
+5.2/GR/1                 impl-defined libvsql/std_3_5_2_cli_routine_invocation.v - the behavior is undefined, as it is in C
+5.2/GR/2                 definition   - -
+5.2/GR/3                 container    - -
+5.2/GR/3.a               implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/3.b               container    - -
+5.2/GR/3.b.i             implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/3.b.i.1           implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_26_free_handle_test.c every routine looks up the handle first
+5.2/GR/3.b.i.2           implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c Cancel's own rules empty it after the checks
+5.2/GR/3.b.i.3           definition   - -
+5.2/GR/3.b.i.4           unclear      libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c not by the routines that always raise HYC00 (#725)
+5.2/GR/3.b.i.5           unclear      libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_5_3_implicit_set_connection_test.c not by the routines that always raise HYC00 (#725)
+5.2/GR/3.b.i.6           implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_49_param_data_test.c
+5.2/GR/3.b.i.7           implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/3.b.ii            implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_31_get_desc_field_test.c
+5.2/GR/3.b.ii.1          implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_31_get_desc_field_test.c
+5.2/GR/3.b.ii.2          implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_31_get_desc_field_test.c
+5.2/GR/3.b.ii.3          definition   - -
+5.2/GR/3.b.ii.4          implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_31_get_desc_field_test.c
+5.2/GR/3.b.ii.5          implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_5_3_implicit_set_connection_test.c
+5.2/GR/3.b.ii.6          implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_31_get_desc_field_test.c
+5.2/GR/3.b.iii           implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/4                 container    - -
+5.2/GR/4.a               implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/4.a.i             implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/4.a.ii            implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/4.b               n/a          - - only CLI functions (5.1/SR/5)
+5.2/GR/4.b.i             n/a          - - only CLI functions (5.1/SR/5)
+5.2/GR/4.b.ii            n/a          - - only CLI functions (5.1/SR/5)
+5.2/GR/5                 container    - -
+5.2/GR/5.a               implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_49_param_data_test.c
+5.2/GR/5.a.i             implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_49_param_data_test.c
+5.2/GR/5.a.ii            implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_49_param_data_test.c there's no status record for it
+5.2/GR/5.b               implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/5.b.i             implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/5.b.ii            container    - -
+5.2/GR/5.b.ii.1          implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/5.b.ii.2          implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_30_get_data_test.c
+5.2/GR/5.b.ii.3          implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_21_fetch_test.c
+5.2/GR/5.c               implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/5.c.i             untested     libvsql/std_3_5_2_cli_routine_invocation.v - a failed statement has no effect, even in a transaction, but there's no CLI test for it
+5.2/GR/5.c.ii            implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/5.c.iii           container    - -
+5.2/GR/5.c.iii.1         implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_26_free_handle_test.c
+5.2/GR/5.c.iii.2         implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/6                 container    - -
+5.2/GR/6.a               implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_12_connect_test.c
+5.2/GR/6.b               implemented  libvsql/std_3_5_2_cli_routine_invocation.v libvsql/std_3_6_34_get_diag_rec_test.c
+# 5.3, Implicit set connection
+5.3                      implemented  libvsql/std_3_5_3_implicit_set_connection.v libvsql/std_3_5_3_implicit_set_connection_test.c
+5.3/GR/1                 definition   - -
+5.3/GR/2                 implemented  libvsql/std_3_5_3_implicit_set_connection.v libvsql/std_3_5_3_implicit_set_connection_test.c
+5.3/GR/3                 untestable   libvsql/std_3_5_3_implicit_set_connection.v - selecting a dormant connection can't fail
+5.3/GR/4                 implemented  libvsql/std_3_5_3_implicit_set_connection.v libvsql/std_3_5_3_implicit_set_connection_test.c
+5.3/GR/5                 implemented  libvsql/std_3_5_3_implicit_set_connection.v libvsql/std_3_5_3_implicit_set_connection_test.c
+5.3/GR/6                 implemented  libvsql/std_3_5_3_implicit_set_connection.v libvsql/std_3_5_3_implicit_set_connection_test.c
+# 5.4, Implicit cursor
+5.4                      implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
+5.4/GR/1                 definition   - -
+5.4/GR/2                 implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_29_get_cursor_name_test.c
+5.4/GR/3                 implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_6_bind_parameter_test.c
+5.4/GR/4                 implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_22_fetch_scroll_test.c the cursor can always be scrolled, but FetchScroll checks CURSOR SCROLLABLE
+5.4/GR/5                 container    - -
+5.4/GR/5.a               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_59_set_stmt_attr_test.c every cursor is a copy, so it's insensitive
+5.4/GR/5.b               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_59_set_stmt_attr_test.c rejected by General Rules, 10
+5.4/GR/5.c               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c an ASENSITIVE cursor is also a copy
+5.4/GR/6                 implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_17_end_tran_test.c
+5.4/GR/7                 implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
+5.4/GR/8                 implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
+5.4/GR/8.a               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
+5.4/GR/8.a.i             implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_6_bind_parameter_test.c
+5.4/GR/8.a.ii            n/a          - - none of these <value specification>s are supported (see GetSessionInfo)
+5.4/GR/8.a.iii           deviates     libvsql/std_3_6_19_exec_direct.v - each one reads the clock when it's compiled (#742)
+5.4/GR/8.b               definition   - -
+5.4/GR/8.c               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c the IRD (see 5.5)
+5.4/GR/8.d               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c vsql's <declare cursor>
+5.4/GR/8.e               container    - -
+5.4/GR/8.e.i             implemented  libvsql/std_3_4_4_1_handles.v libvsql/std_3_6_19_exec_direct_test.c the rows are copied by open_cursor
+5.4/GR/8.e.ii            implemented  libvsql/std_3_4_4_1_handles.v libvsql/std_3_6_19_exec_direct_test.c the rows are always copied
+5.4/GR/9                 implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c it's always a copy, so no exception
+5.4/GR/10                implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_59_set_stmt_attr_test.c
+5.4/GR/11                impl-defined libvsql/std_3_6_19_exec_direct.v - every cursor is a copy, so significant changes are never visible
+# 5.5, Implicit DESCRIBE USING clause
+5.5                      implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c except KEY_TYPE and KEY_MEMBER (#743)
+5.5/GR/1                 definition   - -
+5.5/GR/2                 definition   - -
+5.5/GR/3                 definition   - -
+5.5/GR/4                 implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_31_get_desc_field_test.c
+5.5/GR/5                 implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c
+5.5/GR/5.a               container    - -
+5.5/GR/5.a.i             implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c
+5.5/GR/5.a.i.1           implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c
+5.5/GR/5.a.i.1.A         n/a          - - there are no types with subordinate descriptors (S091, S271, T051)
+5.5/GR/5.a.i.1.B         implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c
+5.5/GR/5.a.i.2           implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c
+5.5/GR/5.a.i.3           definition   - -
+5.5/GR/5.a.i.4           container    - -
+5.5/GR/5.a.i.4.A         missing      libvsql/std_3_4_4_7_cli_descriptor_areas.v - KEY_TYPE is always 0 (#743)
+5.5/GR/5.a.i.4.B         missing      libvsql/std_3_4_4_7_cli_descriptor_areas.v - KEY_TYPE is always 0 (#743)
+5.5/GR/5.a.i.4.C         implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_31_get_desc_field_test.c
+5.5/GR/5.a.ii            container    - -
+5.5/GR/5.a.ii.1          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_48_num_result_cols_test.c
+5.5/GR/5.a.ii.2          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_48_num_result_cols_test.c
+5.5/GR/5.b               implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c
+5.5/GR/5.b.i             implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c
+5.5/GR/5.b.ii            implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c every NS is 0
+5.5/GR/5.b.iii           n/a          - - there are no subordinate descriptors
+5.5/GR/5.c               implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_9_col_attribute_test.c fields that don't apply are 0 or a zero-length string
+5.5/GR/5.c.i             implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_9_col_attribute_test.c always 0
+5.5/GR/5.c.ii            implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c
+5.5/GR/5.c.iii           container    - -
+5.5/GR/5.c.iii.1         implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_9_col_attribute_test.c
+5.5/GR/5.c.iii.1.A       implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c a column is nullable unless it's NOT NULL
+5.5/GR/5.c.iii.1.B       implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_9_col_attribute_test.c COL1 and so on for an expression without an AS
+5.5/GR/5.c.iii.1.C       container    - -
+5.5/GR/5.c.iii.1.C.I     missing      libvsql/std_3_4_4_7_cli_descriptor_areas.v - KEY_MEMBER is always 0 (#743)
+5.5/GR/5.c.iii.1.C.II    implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_9_col_attribute_test.c
+5.5/GR/5.c.iii.2         n/a          - - every descriptor is at LEVEL 0
+5.5/GR/5.c.iii.2.A       n/a          - - every descriptor is at LEVEL 0
+5.5/GR/5.c.iii.2.B       n/a          - - every descriptor is at LEVEL 0
+5.5/GR/5.c.iii.2.B.I     n/a          - - every descriptor is at LEVEL 0
+5.5/GR/5.c.iii.2.B.I.1   n/a          - - every descriptor is at LEVEL 0
+5.5/GR/5.c.iii.2.B.I.2   n/a          - - every descriptor is at LEVEL 0
+5.5/GR/5.c.iii.2.B.II    n/a          - - every descriptor is at LEVEL 0
+5.5/GR/5.c.iii.2.C       n/a          - - every descriptor is at LEVEL 0
+5.5/GR/5.c.iv            container    - -
+5.5/GR/5.c.iv.1          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c OCTET_LENGTH is 4 octets for each character (UTF-8)
+5.5/GR/5.c.iv.2          n/a          - - there are no binary large objects (T041)
+5.5/GR/5.c.iv.3          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c SMALLINT, INTEGER and BIGINT have a binary precision (16, 32 and 64)
+5.5/GR/5.c.iv.4          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c binary precision (24 and 53)
+5.5/GR/5.c.iv.5          implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_15_describe_col_test.c
+5.5/GR/5.c.iv.6          n/a          - - there are no intervals
+5.5/GR/5.c.iv.7          n/a          - - there are no reference types (S041)
+5.5/GR/5.c.iv.8          n/a          - - there are no user-defined types (S023)
+5.5/GR/5.c.iv.9          n/a          - - there are no row types (T051)
+5.5/GR/5.c.iv.10         n/a          - - there are no arrays (S091)
+5.5/GR/6                 definition   - -
+5.5/GR/7                 implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_28_get_connect_attr_test.c POPULATE IPD is always False
+5.5/GR/8                 n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.a               n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.a.i             n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.a.ii            n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.b               n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.c               n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.c.i             n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.c.ii            n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.c.iii           n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d               n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.i             n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.ii            n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.iii           n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.iv            n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.v             n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.vi            n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.vi.1          n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.vi.2          n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.vi.3          n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.vi.4          n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.vi.5          n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.vi.6          n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.vi.7          n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.vi.8          n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.vi.9          n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/8.d.vi.10         n/a          - - POPULATE IPD is False (General Rules, 7)
+5.5/GR/9                 n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
+5.5/GR/9.a               n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
+5.5/GR/9.b               n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
+5.5/GR/9.c               n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
+5.5/GR/9.d               n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
+5.5/GR/9.e               n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
+5.5/GR/9.f               n/a          - - POPULATE IPD is False (General Rules, 7), and there's no <call statement> (#733)
+# 5.6, Implicit EXECUTE USING and OPEN USING clauses
+5.6                      implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/1                 definition   - -
+5.6/GR/2                 definition   - -
+5.6/GR/3                 definition   - -
+5.6/GR/4                 implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.a               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_56_set_desc_field_test.c COUNT can't be negative
+5.6/GR/4.b               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_56_set_desc_field_test.c COUNT can't be negative
+5.6/GR/4.c               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.d               impl-defined libvsql/std_3_5_6_implicit_execute_using_clause.v - it isn't an error
+5.6/GR/4.e               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c a parameter mode of OUT is also an error, since there are no output parameters
+5.6/GR/4.f               definition   - -
+5.6/GR/4.g               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.g.i             implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.g.ii            implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.h               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.i               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.i.i             implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c a COUNT of the APD less than D is the same error
+5.6/GR/4.i.ii            untestable   libvsql/std_3_5_6_implicit_execute_using_clause.v - a C value is always a valid value of its type
+5.6/GR/4.i.ii.1          untestable   libvsql/std_3_5_6_implicit_execute_using_clause.v - a C value is always a valid value of its type
+5.6/GR/4.i.ii.2          untestable   libvsql/std_3_5_6_implicit_execute_using_clause.v - a C value is always a valid value of its type
+5.6/GR/4.i.ii.2.A        untestable   libvsql/std_3_5_6_implicit_execute_using_clause.v - a C value is always a valid value of its type
+5.6/GR/4.i.ii.2.B        n/a          - - there are no arrays (S091)
+5.6/GR/4.i.ii.2.C        n/a          - - there are no multisets (S271)
+5.6/GR/4.i.ii.3          untestable   libvsql/std_3_5_6_implicit_execute_using_clause.v - a C value is always a valid value of its type
+5.6/GR/4.j               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.j.i             implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c the indicator is checked whether or not it's shared
+5.6/GR/4.j.i.1           implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.j.i.2           implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.j.i.3           implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.j.ii            unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_49_param_data_test.c the rule says SQL NULL DATA, which can't be right since NULL is false; it's DATA AT EXEC, the same as ODBC
+5.6/GR/4.k               n/a          - - there are no ROW, ARRAY or MULTISET types
+5.6/GR/4.k.i             n/a          - - there are no ROW, ARRAY or MULTISET types
+5.6/GR/4.k.ii            n/a          - - there are no ROW, ARRAY or MULTISET types
+5.6/GR/4.k.ii.1          n/a          - - there are no ROW, ARRAY or MULTISET types
+5.6/GR/4.k.ii.2          n/a          - - there are no ROW, ARRAY or MULTISET types
+5.6/GR/4.l               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c OUT is rejected by General Rules, 4.e
+5.6/GR/4.m               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.m.i             implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.m.ii            n/a          - - there are no row types (T051)
+5.6/GR/4.m.iii           container    - -
+5.6/GR/4.m.iii.1         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.m.iii.2         container    - -
+5.6/GR/4.m.iii.2.A       implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.m.iii.2.A.I     implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.m.iii.2.A.II    deviates     libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c the first Q octets, even if they end with part of a character (#744)
+5.6/GR/4.m.iii.2.B       implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.m.iii.3         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.n               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.o               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.p               container    - -
+5.6/GR/4.p.i             n/a          - - there are no locators
+5.6/GR/4.p.ii            implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.p.ii.1          container    - -
+5.6/GR/4.p.ii.1.A        n/a          - - there are no implementation-defined conversions
+5.6/GR/4.p.ii.1.B        container    - -
+5.6/GR/4.p.ii.1.B.I      implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c a number can't be cast to a datetime or BOOLEAN
+5.6/GR/4.p.ii.1.B.II     implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.p.ii.1.B.III    implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
+5.6/GR/4.p.ii.2          unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
+5.6/GR/4.p.ii.3          unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
+5.6/GR/4.p.ii.3.A        unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
+5.6/GR/4.p.ii.3.B        unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
+5.6/GR/4.p.ii.3.B.I      unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
+5.6/GR/4.p.ii.3.B.II     unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
+5.6/GR/4.p.ii.3.B.III    unclear      libvsql/std_3_5_6_implicit_execute_using_clause.v - vsql doesn't determine the type of a dynamic parameter (#649), so the value is TV
+5.6/GR/4.p.iii           n/a          - - there are no user-defined types (S023)
+5.6/GR/4.p.iii.1         n/a          - - there are no user-defined types (S023)
+5.6/GR/4.p.iii.2         n/a          - - there are no user-defined types (S023)
+5.6/GR/4.p.iii.3         n/a          - - there are no user-defined types (S023)
+5.6/GR/4.p.iii.3.A       n/a          - - there are no user-defined types (S023)
+5.6/GR/4.p.iii.3.A.I     n/a          - - there are no user-defined types (S023)
+5.6/GR/4.p.iii.3.A.I.1   n/a          - - there are no user-defined types (S023)
+5.6/GR/4.p.iii.3.A.I.2   n/a          - - there are no user-defined types (S023)
+5.6/GR/4.p.iii.3.A.II    n/a          - - there are no user-defined types (S023)
+5.6/GR/4.p.iii.3.B       n/a          - - there are no user-defined types (S023)
+5.6/GR/4.q               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_49_param_data_test.c
+5.6/GR/4.q.i             implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_49_param_data_test.c
+5.6/GR/4.q.ii            implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_49_param_data_test.c
+5.6/GR/4.q.iii           implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_49_param_data_test.c
+5.6/GR/4.q.iv            implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_49_param_data_test.c SQL_NEED_DATA
+# 5.7, Implicit CALL USING clause
+5.7                      missing      - - there's no <call statement> (#733)
+5.7/GR/1                 missing      - - there's no <call statement> (#733)
+5.7/GR/2                 missing      - - there's no <call statement> (#733)
+5.7/GR/3                 missing      - - there's no <call statement> (#733)
+5.7/GR/3.a               missing      - - there's no <call statement> (#733)
+5.7/GR/3.b               missing      - - there's no <call statement> (#733)
+5.7/GR/3.c               missing      - - there's no <call statement> (#733)
+5.7/GR/3.d               missing      - - there's no <call statement> (#733)
+5.7/GR/3.e               missing      - - there's no <call statement> (#733)
+5.7/GR/3.f               missing      - - there's no <call statement> (#733)
+5.7/GR/3.g               missing      - - there's no <call statement> (#733)
+5.7/GR/3.g.i             missing      - - there's no <call statement> (#733)
+5.7/GR/3.g.i.1           missing      - - there's no <call statement> (#733)
+5.7/GR/3.g.i.2           missing      - - there's no <call statement> (#733)
+5.7/GR/3.g.ii            missing      - - there's no <call statement> (#733)
+5.7/GR/3.h               missing      - - there's no <call statement> (#733)
+5.7/GR/3.i               container    - -
+5.7/GR/3.i.i             missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.i.1           missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.i.2           missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.ii            missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.ii.1          missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.ii.2          container    - -
+5.7/GR/3.i.ii.2.A        missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.ii.2.B        missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.ii.2.C        missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.iii           missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.iii.1         missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.iii.2         missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.iii.3         missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.iii.3.A       missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.iii.3.A.I     missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.iii.3.A.II    missing      - - there's no <call statement> (#733)
+5.7/GR/3.i.iii.3.B       missing      - - there's no <call statement> (#733)
+5.7/GR/3.j               missing      - - there's no <call statement> (#733)
+5.7/GR/3.k               container    - -
+5.7/GR/3.k.i             missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.i.1           missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.i.1.A         missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.i.1.B         missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.i.2           missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.ii            missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.ii.1          missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.ii.1.A        missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.ii.1.B        missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.ii.2          container    - -
+5.7/GR/3.k.ii.2.A        missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.ii.2.B        container    - -
+5.7/GR/3.k.ii.2.B.I      missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.ii.2.B.I.1    missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.ii.2.B.I.2    missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.ii.2.B.II     missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.ii.2.B.III    missing      - - there's no <call statement> (#733)
+5.7/GR/3.k.ii.2.B.IV     missing      - - there's no <call statement> (#733)
+# 5.8, Implicit FETCH USING clause
+5.8                      implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/1                 definition   - -
+5.8/GR/2                 definition   - -
+5.8/GR/3                 implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.a               implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c COUNT can't be negative
+5.8/GR/3.b               implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.c               implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.d               definition   - -
+5.8/GR/3.e               n/a          - - there are no user-defined types (S023)
+5.8/GR/3.f               definition   - -
+5.8/GR/3.g               definition   - -
+5.8/GR/3.h               implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
+5.8/GR/3.h.i             definition   - -
+5.8/GR/3.h.ii            definition   - -
+5.8/GR/3.h.iii           container    - -
+5.8/GR/3.h.iii.1         implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.iii.1.A       implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.iii.1.B       impl-defined libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c 10485760
+5.8/GR/3.h.iii.2         implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.iv            definition   - -
+5.8/GR/3.h.v             impl-defined libvsql/std_3_5_8_implicit_fetch_using_clause.v - there are no locators, so it's never an error
+5.8/GR/3.h.v.1           n/a          - - there are no locators
+5.8/GR/3.h.v.2           n/a          - - there are no locators
+5.8/GR/3.h.v.3           n/a          - - there are no locators
+5.8/GR/3.h.v.4           n/a          - - there are no locators
+5.8/GR/3.h.v.5           n/a          - - there are no locators
+5.8/GR/3.h.vi            container    - -
+5.8/GR/3.h.vi.1          n/a          - - there are no locators
+5.8/GR/3.h.vi.1.A        n/a          - - there are no locators
+5.8/GR/3.h.vi.1.B        n/a          - - there are no locators
+5.8/GR/3.h.vi.2          implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.vi.2.A        n/a          - - there are no implementation-defined conversions
+5.8/GR/3.h.vi.2.B        container    - -
+5.8/GR/3.h.vi.2.B.I      implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.vi.2.B.II     implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.vi.2.B.II.1   implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
+5.8/GR/3.h.vi.2.B.II.2   implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
+5.8/GR/3.h.vi.2.B.III    implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.vi.3          n/a          - - there are no user-defined types (S023)
+5.8/GR/3.h.vi.3.A        n/a          - - there are no user-defined types (S023)
+5.8/GR/3.h.vi.3.B        n/a          - - there are no user-defined types (S023)
+5.8/GR/3.h.vi.3.C        n/a          - - there are no user-defined types (S023)
+5.8/GR/3.h.vi.3.C.I      n/a          - - there are no user-defined types (S023)
+5.8/GR/3.h.vi.3.C.I.1    n/a          - - there are no user-defined types (S023)
+5.8/GR/3.h.vi.3.C.I.2    n/a          - - there are no user-defined types (S023)
+5.8/GR/3.h.vi.3.C.II     n/a          - - there are no user-defined types (S023)
+5.8/GR/3.h.vii           definition   - -
+5.8/GR/3.h.viii          container    - -
+5.8/GR/3.h.viii.1        n/a          - - there are no row types (T051)
+5.8/GR/3.h.viii.1.A      n/a          - - there are no row types (T051)
+5.8/GR/3.h.viii.1.A.I    n/a          - - there are no row types (T051)
+5.8/GR/3.h.viii.1.A.II   n/a          - - there are no row types (T051)
+5.8/GR/3.h.viii.1.B      n/a          - - there are no row types (T051)
+5.8/GR/3.h.viii.2        implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.viii.2.A      implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.viii.2.A.I    implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.viii.2.A.II   implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.viii.2.B      container    - -
+5.8/GR/3.h.viii.2.B.I    implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.viii.2.B.II   container    - -
+5.8/GR/3.h.viii.2.B.II.1 implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.viii.2.B.II.1.a impl-defined libvsql/std_3_5_8_implicit_fetch_using_clause.v - it isn't an error
+5.8/GR/3.h.viii.2.B.II.1.b implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.viii.2.B.II.2 partial      libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c the records aren't ordered by precedence (#741)
+5.8/GR/3.h.viii.2.B.II.2.a implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
+5.8/GR/3.h.viii.2.B.II.2.b implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
+5.8/GR/3.h.viii.2.B.II.3 n/a          - - there are no binary large objects (T041)
+5.8/GR/3.h.viii.2.B.II.3.a n/a          - - there are no binary large objects (T041)
+5.8/GR/3.h.viii.2.B.II.3.b n/a          - - there are no binary large objects (T041)
+5.8/GR/3.h.viii.2.B.II.4 n/a          - - there are no arrays or multisets (S091, S271)
+5.8/GR/3.h.viii.2.B.II.5 implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
+5.8/GR/3.h.viii.3        implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
+5.8/GR/3.h.viii.3.A      implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
+5.8/GR/3.h.viii.3.B      implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
+# 5.9, Character string retrieval
+5.9                      implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+5.9/GR/1                 definition   - -
+5.9/GR/2                 unclear      libvsql/std_3_5_9_character_string_retrieval.v - with null termination False, a length of 0 isn't an error, since 4.4.3 makes it the same as a null pointer
+5.9/GR/3                 definition   - -
+5.9/GR/4                 implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+5.9/GR/5                 container    - -
+5.9/GR/5.a               implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+5.9/GR/5.a.i             implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+5.9/GR/5.a.ii            implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+5.9/GR/5.b               implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+5.9/GR/5.b.i             implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+5.9/GR/5.b.ii            implemented  libvsql/std_3_5_9_character_string_retrieval.v libvsql/std_3_6_29_get_cursor_name_test.c,libvsql/std_3_6_18_error_test.c,libvsql/std_3_6_58_set_env_attr_test.c
+# 5.10, Binary large object string retrieval
+5.10                     n/a          - - there are no binary large objects (T041)
+5.10/GR/1                n/a          - - there are no binary large objects (T041)
+5.10/GR/2                n/a          - - there are no binary large objects (T041)
+5.10/GR/3                n/a          - - there are no binary large objects (T041)
+5.10/GR/4                n/a          - - there are no binary large objects (T041)
+5.10/GR/5                container    - -
+5.10/GR/5.a              n/a          - - there are no binary large objects (T041)
+5.10/GR/5.b              n/a          - - there are no binary large objects (T041)
+# 5.11, Deferred parameter check
+5.11                     implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_49_param_data_test.c
+5.11/GR/1                definition   - -
+5.11/GR/2                definition   - -
+5.11/GR/3                deviates     libvsql/std_3_4_4_7_cli_descriptor_areas.v - every statement, not only those of the descriptor's connection (#745)
+5.11/GR/4                definition   - -
+5.11/GR/5                definition   - -
+5.11/GR/6                implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_49_param_data_test.c
+# 5.12, CLI-specific status codes
+5.12                     implemented  libvsql/std_3_4_3_diagnostics_areas.v libvsql/std_3_6_34_get_diag_rec_test.c only the conditions that can happen are raised; HY016 is used for one that Table 4 doesn't have
+# 5.13, Description of CLI item descriptor areas
+5.13                     container    - -
+5.13/SR/1                definition   - -
+5.13/SR/2                n/a          - - there are no ROW, ARRAY or MULTISET types, so there are no subordinate descriptor areas
+5.13/SR/3                n/a          - - there are no ROW, ARRAY or MULTISET types, so there are no subordinate descriptor areas
+5.13/SR/3.a              n/a          - - there are no ROW, ARRAY or MULTISET types, so there are no subordinate descriptor areas
+5.13/SR/3.b              n/a          - - there are no ROW, ARRAY or MULTISET types, so there are no subordinate descriptor areas
+5.13/SR/4                n/a          - - there are no ROW, ARRAY or MULTISET types, so there are no subordinate descriptor areas
+5.13/SR/4.a              n/a          - - there are no ROW, ARRAY or MULTISET types, so there are no subordinate descriptor areas
+5.13/SR/4.b              n/a          - - there are no ROW, ARRAY or MULTISET types, so there are no subordinate descriptor areas
+5.13/SR/5                container    - -
+5.13/SR/5.a              implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
+5.13/SR/5.b              n/a          - - every LEVEL is 0 (zero), so TOP_LEVEL_COUNT is COUNT
+5.13/SR/5.c              container    - -
+5.13/SR/5.c.i            implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c CHARACTER and CHARACTER VARYING need a LENGTH greater than 0 (zero); there are no CLOBs
+5.13/SR/5.c.ii           n/a          - - there are no BLOBs
+5.13/SR/5.c.iii          implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
+5.13/SR/5.c.iv           implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
+5.13/SR/5.c.v            implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
+5.13/SR/5.c.vi           implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
+5.13/SR/5.c.vii          implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
+5.13/SR/5.c.viii         partial      libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c PRECISION isn't checked (#755)
+5.13/SR/5.c.ix           n/a          - - there are no interval, user-defined, reference, row or array types
+5.13/SR/5.c.x            n/a          - - there are no interval, user-defined, reference, row or array types
+5.13/SR/5.c.xi           n/a          - - there are no interval, user-defined, reference, row or array types
+5.13/SR/5.c.xii          n/a          - - there are no interval, user-defined, reference, row or array types
+5.13/SR/5.c.xiii         n/a          - - there are no interval, user-defined, reference, row or array types
+5.13/SR/5.c.xiv          n/a          - - there are no implementation-defined data types
+5.13/SR/6                definition   - -
+5.13/SR/7                container    - -
+5.13/SR/7.a              implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_56_set_desc_field_test.c
+5.13/SR/7.b              container    - -
+5.13/SR/7.b.i            implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_56_set_desc_field_test.c
+5.13/SR/7.b.ii           n/a          - - there are no ROW, ARRAY or MULTISET types
+5.13/SR/7.b.iii          implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_56_set_desc_field_test.c
+5.13/SR/7.c              container    - -
+5.13/SR/7.c.i            n/a          - - NUMERIC, DECIMAL and FLOAT have no C data type (Table 45), so 7.b.iii is false
+5.13/SR/7.c.ii           n/a          - - NUMERIC, DECIMAL and FLOAT have no C data type (Table 45), so 7.b.iii is false
+5.13/SR/7.c.iii          n/a          - - NUMERIC, DECIMAL and FLOAT have no C data type (Table 45), so 7.b.iii is false
+5.13/SR/7.c.iv           implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_56_set_desc_field_test.c there are no LOBs, locators or REF
+5.13/SR/7.c.v            n/a          - - there are no ROW, ARRAY or MULTISET types
+5.13/SR/7.c.vi           n/a          - - there are no ROW, ARRAY or MULTISET types
+5.13/SR/7.c.vii          n/a          - - there are no implementation-defined data types
+5.13/SR/8                definition   - -
+5.13/SR/9                definition   - -
+5.13/SR/10               container    - -
+5.13/SR/10.a             implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c
+5.13/SR/10.b             implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c
+5.13/SR/10.c             implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c
+5.13/SR/11               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c
+5.13/SR/12               container    - -
+5.13/SR/12.a             implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c
+5.13/SR/12.a.i           n/a          - - there are no ROW, ARRAY or MULTISET types
+5.13/SR/12.a.ii          implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c
+5.13/SR/12.b             n/a          - - every LEVEL is 0 (zero), so TOP_LEVEL_COUNT is COUNT
+5.13/SR/12.c             container    - -
+5.13/SR/12.c.i           container    - -
+5.13/SR/12.c.i.1         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs
+5.13/SR/12.c.i.2         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs
+5.13/SR/12.c.i.3         deviates     libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c a length of 0 (zero) is an empty string (#755)
+5.13/SR/12.c.i.4         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs
+5.13/SR/12.c.i.5         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs
+5.13/SR/12.c.i.6         n/a          - - a parameter with a mode of OUT can't be used (5.6, General Rules, 4.e)
+5.13/SR/12.c.ii          n/a          - - there are no locators or reference types
+5.13/SR/12.c.ii.1        n/a          - - there are no locators or reference types
+5.13/SR/12.c.ii.2        n/a          - - there are no locators or reference types
+5.13/SR/12.c.iii         n/a          - - NUMERIC, DECIMAL and FLOAT have no C data type (Table 45), so 12.a.ii is false
+5.13/SR/12.c.iv          n/a          - - NUMERIC, DECIMAL and FLOAT have no C data type (Table 45), so 12.a.ii is false
+5.13/SR/12.c.v           implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c
+5.13/SR/12.c.vi          n/a          - - NUMERIC, DECIMAL and FLOAT have no C data type (Table 45), so 12.a.ii is false
+5.13/SR/12.c.vii         n/a          - - there are no locators or reference types
+5.13/SR/12.c.vii.1       n/a          - - there are no locators or reference types
+5.13/SR/12.c.vii.2       n/a          - - there are no locators or reference types
+5.13/SR/12.c.viii        n/a          - - there are no ROW, ARRAY or MULTISET types
+5.13/SR/12.c.ix          n/a          - - there are no ROW, ARRAY or MULTISET types
+5.13/SR/12.c.x           n/a          - - there are no implementation-defined data types
+5.13/SR/12.d             container    - -
+5.13/SR/12.d.i           implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c
+5.13/SR/12.d.ii          implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c
+5.13/SR/12.d.iii         container    - -
+5.13/SR/12.d.iii.1       implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c
+5.13/SR/12.d.iii.2       implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c
+5.13/SR/12.d.iii.3       partial      libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c a string isn't validated as UTF-8 (#744)
+5.13/SR/12.d.iii.4       n/a          - - a parameter with a mode of OUT can't be used (5.6, General Rules, 4.e)
+5.13/SR/13               container    - -
+5.13/SR/13.a             implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_5_bind_col_test.c
+5.13/SR/13.a.i           n/a          - - there are no ROW, ARRAY or MULTISET types
+5.13/SR/13.a.ii          implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_5_bind_col_test.c
+5.13/SR/13.b             n/a          - - every LEVEL is 0 (zero), so TOP_LEVEL_COUNT is COUNT
+5.13/SR/13.c             container    - -
+5.13/SR/13.c.i           n/a          - - NUMERIC, DECIMAL and FLOAT have no C data type (Table 45), so 13.a.ii is false
+5.13/SR/13.c.ii          n/a          - - NUMERIC, DECIMAL and FLOAT have no C data type (Table 45), so 13.a.ii is false
+5.13/SR/13.c.iii         n/a          - - NUMERIC, DECIMAL and FLOAT have no C data type (Table 45), so 13.a.ii is false
+5.13/SR/13.c.iv          implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_5_bind_col_test.c there are no LOBs, locators or REF
+5.13/SR/13.c.v           n/a          - - there are no ROW, ARRAY or MULTISET types
+5.13/SR/13.c.vi          n/a          - - there are no ROW, ARRAY or MULTISET types
+5.13/SR/13.c.vii         n/a          - - there are no implementation-defined data types
+5.13/GR/1                definition   - -
+5.13/GR/2                definition   - -
+5.13/GR/3                definition   - -
+5.13/GR/4                n/a          - - there are no interval types
+5.13/GR/5                definition   - -
+# 5.14, Other tables associated with CLI
+5.14                     implemented  libvsql/libvsql.h scripts/check-libvsql-constants.vsh each table is reviewed with the routines that use it
+# 5.15, SQL/CLI data type correspondences
+5.15                     implemented  libvsql/std_3_5_15_sql_cli_data_type_correspondences.v libvsql/std_3_6_15_describe_col_test.c only C (Table 45); SQLINTEGER is 32 bits

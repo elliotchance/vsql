@@ -1,0 +1,12 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 3, Definitions and use of terms
+3                        definition   - - about the standard itself
+# 3.1, Definitions
+3.1                      definition   - - about the standard itself
+# 3.1.1, Definitions provided in this standard
+3.1.1                    definition   - - about the standard itself
+# 3.2, Use of terms
+3.2                      definition   - - about the standard itself
+# 3.3, Informative elements
+3.3                      definition   - - about the standard itself

@@ -8,7 +8,11 @@ import time
 
 // The behavior is RESTRICT when it's not provided (the standard requires it).
 // With RESTRICT, a table that's referenced by a FOREIGN KEY of another table
-// can't be dropped (Syntax Rule 7d). CASCADE drops those FOREIGN KEYs instead.
+// can't be dropped. CASCADE drops those FOREIGN KEYs instead, which is what
+// revoking the REFERENCES privilege on the table would do.
+//
+// ISO/IEC 9075-2:2016(E), 11.31, <drop table statement>, Syntax Rules, 7.d
+// ISO/IEC 9075-2:2016(E), 11.31, <drop table statement>, General Rules, 3
 struct DropTableStatement {
 	table_name Identifier
 	behavior   string // CASCADE or RESTRICT
@@ -22,6 +26,10 @@ fn (stmt DropTableStatement) execute(mut conn Connection, _ map[string]Value, el
 		conn.release_write_connection()
 	}
 
+	// The table must exist, and be a base table (not a table of the
+	// INFORMATION_SCHEMA).
+	//
+	// ISO/IEC 9075-2:2016(E), 11.31, <drop table statement>, Syntax Rules, 2 and 3
 	table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
@@ -30,6 +38,7 @@ fn (stmt DropTableStatement) execute(mut conn Connection, _ map[string]Value, el
 	}
 	catalog.storage.drop_foreign_keys_referencing([table_name.storage_id()])!
 
+	// ISO/IEC 9075-2:2016(E), 11.31, <drop table statement>, General Rules, 6
 	catalog.storage.delete_table(table_name.storage_id(),
 		catalog.storage.table(table_name.storage_id()).tid)!
 

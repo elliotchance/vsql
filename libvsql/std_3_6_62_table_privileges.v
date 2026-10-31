@@ -19,7 +19,8 @@ fn sql_table_privileges(statement_handle SQLInteger, catalog_name &char, name_le
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.6.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.i.6
 	stmt.check_deferred() or { return stmt.diag.error(err) }
 
 	return stmt.diag.error(cli_error('HYC00', 'optional feature not implemented: privileges'))

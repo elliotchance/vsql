@@ -10,12 +10,17 @@ Each version is split into multiple parts.
 is the largest part (in terms of pages) and covers the syntax and behavior for
 the core SQL language. It's also the most relevant part for this project.
 
-vsql works against **SQL:2016** (ISO/IEC 9075-2:2016), and
+vsql works against **SQL:2016** (ISO/IEC 9075-2:2016), as well as
+`Part 3: Call-Level Interface (SQL/CLI) <https://www.iso.org/standard/63557.html>`_
+for :doc:`language-c`, and
 `Part 11: Information and Definition Schemas (SQL/Schemata) <https://www.iso.org/standard/63565.html>`_
-(ISO/IEC 9075-11:2016) for the ``INFORMATION_SCHEMA``. The source files are
-named after the part and section of the standard that they implement (such as
-``std_2_14_14_update_statement_searched.v`` for Part 2, section 14.14), and
-:doc:`sql-compliance` lists which features are supported. Most of the features
+for the ``INFORMATION_SCHEMA``. Not every part is available at the latest
+edition, so the code cites the latest edition that we have of each part (see
+:doc:`standard-index`). The source files are named after the part and section
+of the standard that they implement (such as
+``std_2_14_14_update_statement_searched.v`` for Part 2, section 14.14),
+:doc:`sql-compliance` lists which features are supported, and
+:doc:`standard-index` tracks each rule. Most of the features
 in common use were published by 2003, so older versions (such as 1999) are
 still relevant and helpful because they contain most of the core features.
 

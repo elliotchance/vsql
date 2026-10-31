@@ -11,8 +11,11 @@ constraint_name_definition:
 // Each <constraint characteristic> is added to the constraint before it (see
 // with_constraint_characteristic), so that a NOT DEFERRABLE after a column
 // constraint can't be mistaken for the start of a NOT NULL. <constraint
-// enforcement> isn't supported, so every constraint is ENFORCED (Syntax Rule
-// 3).
+// enforcement> isn't supported (F492), so every constraint is ENFORCED.
+//
+// ISO/IEC 9075-2:2016(E), 10.8, <constraint name definition> and <constraint characteristics>, Syntax Rules, 3
+// ISO/IEC 9075-2:2016(E), 10.8, <constraint name definition> and <constraint characteristics>, General Rules, 4
+// ISO/IEC 9075-2:2016(E), 10.8, <constraint name definition> and <constraint characteristics>, Conformance Rules, 1
 constraint_characteristic:
   DEFERRABLE {
     flag(mut yylex, 'F721')

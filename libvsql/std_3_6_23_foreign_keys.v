@@ -10,7 +10,16 @@ module main
 // primary key of the table. With an FKTableName, it's the foreign keys of the
 // table (that reference a primary or unique key). With both, it's the foreign
 // keys of the FKTableName that reference the primary or unique keys of the
-// PKTableName, and with neither, it's every foreign key.
+// PKTableName, and with neither, it's every foreign key. Both are
+// implementation-defined (General Rules, 7.c), and General Rules 7 doesn't
+// have a case for neither.
+//
+// With a PKTableName, the predicate is on the UK_ columns. General Rules
+// 7.b.xix says the FK_ columns, which can't be right, since they're the
+// columns of the other tables. DEFERABILITY is always NOT DEFERRABLE (General
+// Rules, 7.a.ix.14 and 7.b.xi.14), but a foreign key can be deferrable, which
+// is #758. The arguments are read before the open cursor is checked (General
+// Rules, 2), which is #759.
 
 // Codes from Table 26, "Miscellaneous codes used in CLI".
 const sql_cascade = i16(0)

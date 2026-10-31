@@ -36,8 +36,10 @@ fn cli_command(cmd cli.Command) ! {
 	// straight away.
 	agent.connect_default()!
 
-	// Each statement is a <direct SQL statement> (ISO/IEC 9075-2:2016(E), 22.1),
-	// so it ends with a semicolon and can be over many lines.
+	// Each statement is a <direct SQL statement>, so it ends with a semicolon
+	// and can be over many lines.
+	//
+	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>
 	mut unfinished := ''
 	for {
 		print(if unfinished == '' { 'vsql> ' } else { '   -> ' })
@@ -71,10 +73,11 @@ fn cli_command(cmd cli.Command) ! {
 		run_direct(mut agent, unfinished, autocommit)
 	}
 
-	// - 22.1 GR 2.a. Without autocommit, an SQL-transaction that is still active
-	// at the end is committed. If the shell stops any other way (such as with
-	// ctrl+C), or a START TRANSACTION isn't finished with autocommit, it's
-	// rolled back.
+	// Without autocommit, an SQL-transaction that is still active at the end is
+	// committed. If the shell stops any other way (such as with ctrl+C), or a
+	// START TRANSACTION isn't finished with autocommit, it's rolled back.
+	//
+	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 2.a
 	agent.close(!autocommit) or { print_error('Error', err) }
 }
 

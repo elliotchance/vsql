@@ -15,7 +15,7 @@ fn (stmt OpenStatement) execute(mut conn Connection, _ map[string]Value, elapsed
 
 	mut cursor := conn.cursor(stmt.name)!
 
-	// ISO/IEC 9075-2:2016(E), 15.1, Effect of opening a cursor, General Rule 2
+	// ISO/IEC 9075-2:2016(E), 15.1, Effect of opening a cursor, General Rules, 2
 	if cursor.is_open {
 		return sqlstate_24000('cursor ${stmt.name} is already open')
 	}
@@ -33,6 +33,12 @@ fn (stmt OpenStatement) execute(mut conn Connection, _ map[string]Value, elapsed
 		}
 	}
 
+	// The result is found when the cursor is opened (with the values of the
+	// parameters of the DECLARE CURSOR), and the cursor is then before the
+	// first row. Since the rows are a copy, later changes to the table aren't
+	// visible through the cursor.
+	//
+	// ISO/IEC 9075-2:2016(E), 15.1, Effect of opening a cursor, General Rules, 5.a, 5.g and 5.h
 	mut plan := create_plan(cursor.query, cursor.params, mut conn)!
 	cursor.rows = plan.execute([]Row{})!
 	cursor.columns = plan.columns()

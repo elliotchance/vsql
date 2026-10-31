@@ -11,6 +11,17 @@ module main
 // string (or SQL_NTS), SQL_NULL_DATA for a NULL, or SQL_DATA_AT_EXEC for a
 // value that's given with ParamData and PutData when the statement is
 // executed.
+//
+// ParameterType is checked with the codes for the IPD rather than Table 37
+// (General Rules, 12), which is #753. The COUNT of the IPD and APD is set to
+// PN, but their TOP_LEVEL_COUNT isn't changed (General Rules, 14.b and 15.b),
+// which is #752. Memory isn't limited (General Rules, 14.a and 15.a). There
+// are no interval types (General Rules, 18.b and 28). Everything is checked
+// before anything is set, so an exception condition doesn't change the
+// descriptors (General Rules, 20). The parameter mode is set in the IPD
+// (General Rules, 21 says IDA2, the APD, but 5.6 and 5.13 use the
+// PARAMETER_MODE of the IPD). The restrictions between the APD and IPD (General
+// Rules, 29) are those of 5.6.
 
 @[export: 'SQLBindParameter']
 fn sql_bind_parameter(statement_handle SQLInteger, parameter_number i16, input_output_mode i16, value_type i16, parameter_type i16, column_size SQLInteger, decimal_digits i16, parameter_value voidptr, buffer_length SQLInteger, str_len_or_ind &SQLInteger) i16 {

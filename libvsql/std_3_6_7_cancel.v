@@ -16,14 +16,19 @@ fn sql_cancel(statement_handle SQLInteger) i16 {
 	}
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.i
 	stmt.invoke(true) or { return stmt.diag.error(err) }
 
-	// - 2.b, 2.c.i. The diagnostics area associated with S is emptied, and any
-	// deferred parameter number and statement source are removed.
+	// ISO/IEC 9075-3:2003(E), 6.7, Cancel, General Rules, 2.b and 2.c.i: the
+	// diagnostics area is emptied, and any deferred parameter number and
+	// statement source are removed.
+	//
+	// Routines on an SQL-environment are run one at a time, so there's never
+	// a routine running on S at the same time to cancel (General Rules, 2.a).
 	stmt.diag.clear()
 	stmt.cancel_deferred()
 
-	// - 2.c.ii. A completion condition is raised: successful completion.
+	// ISO/IEC 9075-3:2003(E), 6.7, Cancel, General Rules, 2.c.ii
 	return sql_success
 }

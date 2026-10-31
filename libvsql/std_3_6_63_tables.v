@@ -9,7 +9,8 @@ module main
 // A base table is a 'TABLE' and a view of the INFORMATION_SCHEMA is a 'SYSTEM
 // TABLE'. vsql doesn't have other views, and virtual tables registered with
 // the V API aren't described by INFORMATION_SCHEMA.TABLES, so they aren't
-// returned.
+// returned. There are no temporary tables (General Rules, 7.c.iii), and REMARKS
+// is the null value (General Rules, 7.d), which is implementation-defined.
 
 // tables_query is TABLES_QUERY (General Rules 5 to 7).
 const tables_query = "(SELECT

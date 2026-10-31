@@ -6,7 +6,14 @@ module main
 //
 // A character value can be retrieved in pieces by calling GetData again for the
 // same column. Columns can be retrieved in any order, and once a value has been
-// retrieved completely, retrieving it again starts from the beginning.
+// retrieved completely, retrieving it again starts from the beginning (General
+// Rules 13.b, 15.a and 15.b.ii.1, which are implementation-defined).
+//
+// COUNT can't be negative (General Rules, 8), and there are no ROW, ARRAY or
+// MULTISET types, locators, user-defined types or large objects (General Rules
+// 12, 25.b.iii, 25.b.v, 25.b.vi.1, 25.b.vi.3 and 30.b.ii.2). There's no maximum
+// length for CHARACTER VARYING (General Rules, 24.a.ii), and a zero-length
+// character string isn't an exception condition (General Rules, 30.b.ii.1.A).
 
 @[export: 'SQLGetData']
 fn sql_get_data(statement_handle SQLInteger, column_number i16, target_type i16, target_value voidptr, buffer_length SQLInteger, str_len_or_ind &SQLInteger) i16 {
@@ -17,7 +24,8 @@ fn sql_get_data(statement_handle SQLInteger, column_number i16, target_type i16,
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	rc := get_data(mut stmt, column_number, target_type, target_value, i64(buffer_length),

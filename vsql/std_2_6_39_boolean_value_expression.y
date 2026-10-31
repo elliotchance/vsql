@@ -1,5 +1,9 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>
+//
+// Specify a boolean value.
+
 boolean_value_expression:
   boolean_term { $$.v = BooleanValueExpression{term: $1.v as BooleanTerm} }
 | boolean_value_expression OR boolean_term {
@@ -20,6 +24,11 @@ boolean_factor:
     b := $2.v as BooleanTest
     $$.v = BooleanTest{b.expr, b.not, b.value, !b.inverse}
   }
+
+// "BP IS NOT TV" is "NOT (BP IS TV)". A truth value is flagged with F571.
+//
+// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 2
+// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Conformance Rules, 2
 
 boolean_test:
   boolean_primary { $$.v = new_boolean_test($1.v as BooleanPrimary, false, none, false) }

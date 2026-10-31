@@ -8,6 +8,16 @@ import vsql
 //
 // Each SQL-connection has its own SQL-transaction, so ending the transactions
 // of an SQL-environment ends the SQL-transaction of each of its connections.
+// L1 is every established SQL-connection, and a connection that doesn't have
+// an active SQL-transaction only has its cursors closed (General Rules
+// 3.c.ii.3 and 3.d.ii.3).
+//
+// A COMMIT or ROLLBACK is executed on each connection, so its General Rules
+// apply: deferred constraints are checked, and if any constraint (or anything
+// else) prevents the commit, the SQL-transaction is rolled back (General Rules
+// 12.c and 12.d). There's no encompassing transaction, atomic execution
+// context, temporary table, trigger, savepoint or locator (General Rules 7,
+// 12.a, 12.b, 12.d.ii, 12.e, 12.f, 14.a, 14.c, 14.d and 15.d to 15.i).
 
 // Codes from Table 14, "Codes used for transaction termination".
 const sql_commit = i16(0)
@@ -35,6 +45,8 @@ fn sql_end_tran(handle_type i16, handle SQLInteger, completion_type i16) i16 {
 }
 
 fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16) !i16 {
+	// - 3.a.ii, 3.b.ii. A statement or descriptor handle raises an exception
+	// condition: CLI-specific condition — invalid attribute identifier.
 	if handle_type in [sql_handle_stmt, sql_handle_desc] {
 		return cli_error('HY092', 'invalid attribute identifier')
 	}
@@ -79,8 +91,8 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 		mut dbc := dbcs[dh] or { continue }
 		mut conn := dbc.conn or { continue }
 
-		// - 11. A rollback closes every open cursor, and a commit closes every
-		// cursor that isn't holdable.
+		// - 10, 11. A rollback closes every open cursor, and a commit closes
+		// every cursor that isn't holdable.
 		close_cursors(dh, is_commit)
 
 		if !conn.in_transaction() {

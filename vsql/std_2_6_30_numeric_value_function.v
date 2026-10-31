@@ -10,7 +10,7 @@ import math
 fn func_position(args []Value) !Value {
 	// An empty string is found at the start of any string, even an empty one.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 2a
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 2.a
 	if args[0].string_value() == '' {
 		return new_integer_value(1)
 	}
@@ -23,21 +23,31 @@ fn func_position(args []Value) !Value {
 }
 
 // CHAR_LENGTH(CHARACTER VARYING) INTEGER
+//
+// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 5.b
 fn func_char_length(args []Value) !Value {
 	return new_integer_value(args[0].string_value().runes().len)
 }
 
 // OCTET_LENGTH(CHARACTER VARYING) INTEGER
+//
+// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 6
 fn func_octet_length(args []Value) !Value {
 	return new_integer_value(args[0].string_value().len)
 }
 
 // UPPER(CHARACTER VARYING) CHARACTER VARYING
+//
+// Only a character that becomes exactly one character is changed (#772).
+//
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.d.i
 fn func_upper(args []Value) !Value {
 	return new_varchar_value(args[0].string_value().to_upper())
 }
 
 // LOWER(CHARACTER VARYING) CHARACTER VARYING
+//
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.d.ii
 fn func_lower(args []Value) !Value {
 	return new_varchar_value(args[0].string_value().to_lower())
 }
@@ -70,6 +80,8 @@ fn func_abs_decimal(args []Value) !Value {
 // ABS(SMALLINT) SMALLINT
 // ABS(INTEGER) INTEGER
 // ABS(BIGINT) BIGINT
+//
+// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 8.c
 fn func_abs_integer(args []Value) !Value {
 	x := args[0].int_value()
 	if x >= 0 {
@@ -126,8 +138,7 @@ fn func_tanh(args []Value) !Value {
 
 // ASIN(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_asin(args []Value) !Value {
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules,
-	// 10b ii
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 10.b.ii.1
 	if args[0].f64_value() < -1 || args[0].f64_value() > 1 {
 		return sqlstate_22003()
 	}
@@ -137,8 +148,7 @@ fn func_asin(args []Value) !Value {
 
 // ACOS(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_acos(args []Value) !Value {
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules,
-	// 10b i
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 10.b.i.1
 	if args[0].f64_value() < -1 || args[0].f64_value() > 1 {
 		return sqlstate_22003()
 	}
@@ -175,6 +185,8 @@ fn func_mod_numeric(args []Value) !Value {
 //
 // The result has the sign of the dividend and the type of the divisor, which it
 // always fits in because it's smaller than the divisor.
+//
+// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 9
 fn func_mod_integer(args []Value) !Value {
 	value := args[0].int_value()
 	modulus := args[1].int_value()
@@ -196,7 +208,8 @@ fn func_mod_integer(args []Value) !Value {
 fn func_log10(args []Value) !Value {
 	// LOG10(x) is LOG(10, x).
 	//
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 11b
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 15
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 11.b
 	if args[0].f64_value() <= 0 {
 		return sqlstate_22003()
 	}
@@ -206,7 +219,7 @@ fn func_log10(args []Value) !Value {
 
 // LN(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_ln(args []Value) !Value {
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 12b
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 12.b
 	if args[0].f64_value() <= 0 {
 		return sqlstate_2201e()
 	}
@@ -216,7 +229,7 @@ fn func_ln(args []Value) !Value {
 
 // EXP(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_exp(args []Value) !Value {
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 13b
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 13.b
 	return approximate_value(math.exp(args[0].f64_value()), .is_double_precision)
 }
 
@@ -224,7 +237,8 @@ fn func_exp(args []Value) !Value {
 fn func_sqrt(args []Value) !Value {
 	// SQRT(x) is POWER(x, 0.5), so x can't be negative.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 19
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 19
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 14.e
 	if args[0].f64_value() < 0 {
 		return sqlstate_2201f()
 	}
@@ -237,9 +251,10 @@ fn func_power(args []Value) !Value {
 	base := args[0].f64_value()
 	exponent := args[1].f64_value()
 
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules,
-	// 14b and 14e: a zero base can't have a negative exponent, and a negative
-	// base needs a whole number exponent.
+	// A zero base can't have a negative exponent, and a negative base needs a
+	// whole number exponent.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 14.b and 14.e
 	if (base == 0 && exponent < 0) || (base < 0 && exponent != math.trunc(exponent)) {
 		return sqlstate_2201f()
 	}
@@ -295,18 +310,21 @@ fn numeric_function_type(name string, return_type Type, arg_types []Type) Type {
 			return Type{return_type.typ, p1, s1, false}
 		}
 		'MOD' {
-			// The declared type is that of the divisor, which must have a scale of 0
-			// (6.30 Syntax Rule 12). vsql also allows a scale, so the result has the
-			// larger scale of the two, and it's less than the divisor.
+			// The declared type is that of the divisor, which must have a scale of 0.
+			// vsql also allows a scale, so the result has the larger scale of the two,
+			// and it's less than the divisor (it's not flagged, #770).
+			//
+			// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 12
 			p2, s2 := arg_types[1].exact_precision(), arg_types[1].scale
 			scale := if s1 > s2 { s1 } else { s2 }
 			size := if p2 == 0 { 0 } else { p2 - s2 + scale }
 			return Type{return_type.typ, size, scale, false}
 		}
 		'FLOOR', 'CEIL', 'CEILING' {
-			// The precision is implementation-defined and the scale is 0 (6.30
-			// Syntax Rule 20). A fractional part may need one more digit, such as
-			// CEIL(9.5) = 10.
+			// The precision is implementation-defined and the scale is 0. A fractional
+			// part may need one more digit, such as CEIL(9.5) = 10.
+			//
+			// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 20.a
 			size := if p1 == 0 || s1 == 0 { p1 } else { p1 - s1 + 1 }
 			return Type{return_type.typ, size, 0, false}
 		}

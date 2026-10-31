@@ -1,0 +1,346 @@
+# ISO/IEC 9075-11:2008(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5, Information Schema
+5                        container    - -
+# 5.1, INFORMATION_SCHEMA Schema
+5.1                      implemented  vsql/std_11_5_information_schema.v tests/information-schema.sql always there, no owner since there are no authorization identifiers (#732)
+# 5.2, INFORMATION_SCHEMA_CATALOG_NAME base table
+5.2                      missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.2/DE/1                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.2/CR/1                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.2/CR/2                 missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 5.3, CARDINAL_NUMBER domain
+5.3                      implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql as its data type, there are no domains (F251)
+5.3/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql INTEGER, which vsql only sets to non-negative values
+5.3/CR/1                 n/a          - - a domain can't be referenced, there are no domains (F251)
+# 5.4, CHARACTER_DATA domain
+5.4                      implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql as its data type, there are no domains (F251)
+5.4/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql UTF8, not SQL_TEXT
+5.4/DE/2                 impl-defined vsql/std_11_5_information_schema.v tests/information-schema-columns.sql max_character_length (10485760)
+5.4/CR/1                 n/a          - - a domain can't be referenced, there are no domains (F251)
+# 5.5, SQL_IDENTIFIER domain
+5.5                      implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql as its data type, there are no domains (F251)
+5.5/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql UTF8, not SQL_IDENTIFIER
+5.5/DE/2                 impl-defined vsql/std_11_5_information_schema.v tests/information-schema-columns.sql max_identifier_length (128)
+5.5/CR/1                 n/a          - - a domain can't be referenced, there are no domains (F251)
+# 5.6, TIME_STAMP domain
+5.6                      n/a          - - no view that vsql has uses it (T011)
+5.6/DE/1                 n/a          - - no view that vsql has uses it (T011)
+5.6/CR/1                 n/a          - - a domain can't be referenced, there are no domains (F251)
+# 5.7, YES_OR_NO domain
+5.7                      implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql as its data type, there are no domains (F251)
+5.7/DE/1                 implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql only vsql sets them, to YES or NO
+5.7/CR/1                 n/a          - - a domain can't be referenced, there are no domains (F251)
+# 5.8, ADMINISTRABLE_ROLE_AUTHORIZATIONS view
+5.8                      n/a          - - roles (T331)
+5.8/CR/1                 n/a          - - roles (T331)
+5.8/CR/2                 n/a          - - roles (T331)
+# 5.9, APPLICABLE_ROLES view
+5.9                      n/a          - - roles (T331)
+5.9/CR/1                 n/a          - - roles (T331)
+# 5.10, ASSERTIONS view
+5.10                     n/a          - - assertions (F521)
+5.10/CR/1                n/a          - - assertions (F521)
+# 5.11, ATTRIBUTES view
+5.11                     n/a          - - user-defined types (S023)
+5.11/CR/1                n/a          - - user-defined types (S023)
+5.11/CR/2                n/a          - - user-defined types (S023)
+# 5.12, CHARACTER_SETS view
+5.12                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.12/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 5.13, CHECK_CONSTRAINT_ROUTINE_USAGE view
+5.13                     missing      - - SQL-invoked routines (#733)
+5.13/CR/1                missing      - - SQL-invoked routines (#733)
+5.13/CR/2                missing      - - SQL-invoked routines (#733)
+# 5.14, CHECK_CONSTRAINTS view
+5.14                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-check-constraints.sql every schema, since there are no schema owners (#732)
+# 5.15, COLLATIONS view
+5.15                     n/a          - - collations (F690)
+5.15/CR/1                n/a          - - collations (F690)
+5.15/CR/2                n/a          - - collations (F690)
+# 5.16, COLLATION_CHARACTER_SET_APPLICABILITY view
+5.16                     n/a          - - collations (F690)
+5.16/CR/1                n/a          - - collations (F690)
+5.16/CR/2                n/a          - - collations (F690)
+# 5.17, COLUMN_COLUMN_USAGE view
+5.17                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.17/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.17/CR/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.17/CR/3                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 5.18, COLUMN_DOMAIN_USAGE view
+5.18                     n/a          - - domains (F251)
+5.18/CR/1                n/a          - - domains (F251)
+5.18/CR/2                n/a          - - domains (F251)
+5.18/CR/3                n/a          - - domains (F251)
+# 5.19, COLUMN_PRIVILEGES view
+5.19                     n/a          - - privilege tables (F231)
+5.19/CR/1                n/a          - - privilege tables (F231)
+# 5.20, COLUMN_UDT_USAGE view
+5.20                     n/a          - - user-defined types (S023)
+5.20/CR/1                n/a          - - user-defined types (S023)
+# 5.21, COLUMNS view
+5.21                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-columns.sql every column, since there are no privileges (#732)
+5.21/CR/1                untested     vsql/std_1_8_5_sql_flagger.v - flagged with F391 since INFORMATION_SCHEMA has 18 characters (#738); only by accident (#737)
+5.21/CR/2                missing      - - not flagged with T175 (#737)
+5.21/CR/3                missing      - - not flagged with T175 (#737)
+5.21/CR/4                missing      - - not flagged with T111 (#737)
+# 5.22, CONSTRAINT_COLUMN_USAGE view
+5.22                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.22/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.22/CR/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 5.23, CONSTRAINT_TABLE_USAGE view
+5.23                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.23/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.23/CR/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 5.24, DATA_TYPE_PRIVILEGES view
+5.24                     n/a          - - privilege tables (F231)
+5.24/CR/1                n/a          - - privilege tables (F231)
+# 5.25, DIRECT_SUPERTABLES view
+5.25                     n/a          - - typed tables (S081)
+5.25/CR/1                n/a          - - typed tables (S081)
+# 5.26, DIRECT_SUPERTYPES view
+5.26                     n/a          - - type hierarchies (S024)
+5.26/CR/1                n/a          - - type hierarchies (S024)
+# 5.27, DOMAIN_CONSTRAINTS view
+5.27                     n/a          - - domains (F251)
+5.27/CR/1                n/a          - - domains (F251)
+# 5.28, DOMAINS view
+5.28                     n/a          - - domains (F251)
+5.28/CR/1                n/a          - - domains (F251)
+5.28/CR/2                n/a          - - domains (F251)
+# 5.29, ELEMENT_TYPES view
+5.29                     n/a          - - arrays and multisets (S091, S271)
+5.29/CR/1                n/a          - - arrays and multisets (S091, S271)
+5.29/CR/2                n/a          - - arrays and multisets (S091, S271)
+# 5.30, ENABLED_ROLES view
+5.30                     n/a          - - roles (T331)
+5.30/CR/1                n/a          - - roles (T331)
+# 5.31, FIELDS view
+5.31                     n/a          - - row types (T051)
+5.31/CR/1                n/a          - - row types (T051)
+5.31/CR/2                n/a          - - row types (T051)
+# 5.32, KEY_COLUMN_USAGE view
+5.32                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-key-column-usage.sql every constraint, since there are no privileges (#732)
+5.32/CR/1                missing      - - not flagged with F341 (#737)
+5.32/CR/2                untested     vsql/std_1_8_5_sql_flagger.v - flagged with F391 since INFORMATION_SCHEMA has 18 characters (#738); only by accident (#737)
+# 5.33, METHOD_SPECIFICATION_PARAMETERS view
+5.33                     n/a          - - user-defined types (S023)
+5.33/CR/1                n/a          - - user-defined types (S023)
+5.33/CR/2                n/a          - - user-defined types (S023)
+# 5.34, METHOD_SPECIFICATIONS view
+5.34                     n/a          - - user-defined types (S023)
+5.34/CR/1                n/a          - - user-defined types (S023)
+5.34/CR/2                n/a          - - user-defined types (S023)
+5.34/CR/3                n/a          - - user-defined types (S023)
+5.34/CR/4                n/a          - - user-defined types (S023)
+# 5.35, PARAMETERS view
+5.35                     missing      - - SQL-invoked routines (#733)
+5.35/CR/1                missing      - - SQL-invoked routines (#733)
+# 5.36, REFERENCED_TYPES view
+5.36                     n/a          - - reference types (S041)
+5.36/CR/1                n/a          - - reference types (S041)
+5.36/CR/2                n/a          - - reference types (S041)
+# 5.37, REFERENTIAL_CONSTRAINTS view
+5.37                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-referential-constraints.sql every constraint, since there are no privileges (#732)
+5.37/CR/1                untested     vsql/std_1_8_5_sql_flagger.v - flagged with F391 since INFORMATION_SCHEMA has 18 characters (#738); only by accident (#737)
+# 5.38, ROLE_COLUMN_GRANTS view
+5.38                     n/a          - - roles (T331)
+5.38/CR/1                n/a          - - roles (T331)
+# 5.39, ROLE_ROUTINE_GRANTS view
+5.39                     n/a          - - roles (T331)
+5.39/CR/1                n/a          - - roles (T331)
+5.39/CR/2                n/a          - - roles (T331)
+5.39/CR/3                n/a          - - roles (T331)
+# 5.40, ROLE_TABLE_GRANTS view
+5.40                     n/a          - - roles (T331)
+5.40/CR/1                n/a          - - roles (T331)
+5.40/CR/2                n/a          - - roles (T331)
+# 5.41, ROLE_TABLE_METHOD_GRANTS view
+5.41                     n/a          - - type hierarchies (S024)
+5.41/CR/1                n/a          - - type hierarchies (S024)
+5.41/CR/2                n/a          - - type hierarchies (S024)
+5.41/CR/3                n/a          - - type hierarchies (S024)
+# 5.42, ROLE_USAGE_GRANTS view
+5.42                     n/a          - - roles (T331)
+5.42/CR/1                n/a          - - roles (T331)
+5.42/CR/2                n/a          - - roles (T331)
+# 5.43, ROLE_UDT_GRANTS view
+5.43                     n/a          - - roles (T331)
+5.43/CR/1                n/a          - - roles (T331)
+5.43/CR/2                n/a          - - roles (T331)
+# 5.44, ROUTINE_COLUMN_USAGE view
+5.44                     missing      - - SQL-invoked routines (#733)
+5.44/CR/1                missing      - - SQL-invoked routines (#733)
+5.44/CR/2                missing      - - SQL-invoked routines (#733)
+# 5.45, ROUTINE_PRIVILEGES view
+5.45                     n/a          - - privilege tables (F231)
+5.45/CR/1                n/a          - - privilege tables (F231)
+# 5.46, ROUTINE_ROUTINE_USAGE view
+5.46                     missing      - - SQL-invoked routines (#733)
+5.46/CR/1                missing      - - SQL-invoked routines (#733)
+5.46/CR/2                missing      - - SQL-invoked routines (#733)
+# 5.47, ROUTINE_SEQUENCE_USAGE view
+5.47                     missing      - - SQL-invoked routines (#733)
+5.47/CR/1                missing      - - SQL-invoked routines (#733)
+5.47/CR/2                missing      - - SQL-invoked routines (#733)
+5.47/CR/3                missing      - - SQL-invoked routines (#733)
+# 5.48, ROUTINE_TABLE_USAGE view
+5.48                     missing      - - SQL-invoked routines (#733)
+5.48/CR/1                missing      - - SQL-invoked routines (#733)
+5.48/CR/2                missing      - - SQL-invoked routines (#733)
+# 5.49, ROUTINES view
+5.49                     missing      - - SQL-invoked routines (#733)
+5.49/CR/1                missing      - - SQL-invoked routines (#733)
+5.49/CR/2                missing      - - SQL-invoked routines (#733)
+5.49/CR/3                missing      - - SQL-invoked routines (#733)
+5.49/CR/4                missing      - - SQL-invoked routines (#733)
+# 5.50, SCHEMATA view
+5.50                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.50/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 5.51, SEQUENCES view
+5.51                     missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.51/CR/1                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+5.51/CR/2                missing      - - not in the INFORMATION_SCHEMA yet (#736)
+# 5.52, SQL_FEATURES view
+5.52                     missing      - - SQL_FEATURES (#654)
+# 5.53, SQL_IMPLEMENTATION_INFO view
+5.53                     missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+5.53/CR/1                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+5.53/CR/2                missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+# 5.54, SQL_PACKAGES view
+5.54                     n/a          - - enhanced documentation tables (F502)
+5.54/CR/1                n/a          - - enhanced documentation tables (F502)
+# 5.55, SQL_PARTS view
+5.55                     n/a          - - enhanced documentation tables (F502)
+5.55/CR/1                n/a          - - enhanced documentation tables (F502)
+# 5.56, SQL_SIZING view
+5.56                     missing      - - SQL_IMPLEMENTATION_INFO and SQL_SIZING (#655)
+# 5.57, SQL_SIZING_PROFILES view
+5.57                     n/a          - - enhanced documentation tables (F502)
+5.57/CR/1                n/a          - - enhanced documentation tables (F502)
+5.57/CR/2                n/a          - - enhanced documentation tables (F502)
+# 5.58, TABLE_CONSTRAINTS view
+5.58                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-table-constraints.sql every table, since there are no privileges (#732), and with ENFORCED from a later edition
+# 5.59, TABLE_METHOD_PRIVILEGES view
+5.59                     n/a          - - type hierarchies (S024)
+5.59/CR/1                n/a          - - type hierarchies (S024)
+5.59/CR/2                n/a          - - type hierarchies (S024)
+# 5.60, TABLE_PRIVILEGES view
+5.60                     n/a          - - privilege tables (F231)
+5.60/CR/1                n/a          - - privilege tables (F231)
+# 5.61, TABLES view
+5.61                     implemented  vsql/std_11_5_information_schema.v tests/information-schema-tables.sql,tests/information-schema.sql every table, since there are no privileges (#732)
+5.61/CR/1                untested     vsql/std_1_8_5_sql_flagger.v - flagged with F391 since INFORMATION_SCHEMA has 18 characters (#738); only by accident (#737)
+# 5.62, TRANSFORMS view
+5.62                     n/a          - - transforms (S241)
+5.62/CR/1                n/a          - - transforms (S241)
+# 5.63, TRANSLATIONS view
+5.63                     n/a          - - translations (F695)
+5.63/CR/1                n/a          - - translations (F695)
+5.63/CR/2                n/a          - - translations (F695)
+5.63/CR/3                n/a          - - translations (F695)
+# 5.64, TRIGGERED_UPDATE_COLUMNS view
+5.64                     n/a          - - triggers (T211)
+5.64/CR/1                n/a          - - triggers (T211)
+5.64/CR/2                n/a          - - triggers (T211)
+# 5.65, TRIGGER_COLUMN_USAGE view
+5.65                     n/a          - - triggers (T211)
+5.65/CR/1                n/a          - - triggers (T211)
+5.65/CR/2                n/a          - - triggers (T211)
+5.65/CR/3                n/a          - - triggers (T211)
+# 5.66, TRIGGER_ROUTINE_USAGE view
+5.66                     n/a          - - triggers (T211)
+5.66/CR/1                n/a          - - triggers (T211)
+5.66/CR/2                n/a          - - triggers (T211)
+5.66/CR/3                n/a          - - triggers (T211)
+# 5.67, TRIGGER_SEQUENCE_USAGE view
+5.67                     n/a          - - triggers (T211)
+5.67/CR/1                n/a          - - triggers (T211)
+5.67/CR/2                n/a          - - triggers (T211)
+5.67/CR/3                n/a          - - triggers (T211)
+5.67/CR/4                n/a          - - triggers (T211)
+# 5.68, TRIGGER_TABLE_USAGE view
+5.68                     n/a          - - triggers (T211)
+5.68/CR/1                n/a          - - triggers (T211)
+5.68/CR/2                n/a          - - triggers (T211)
+5.68/CR/3                n/a          - - triggers (T211)
+# 5.69, TRIGGERS view
+5.69                     n/a          - - triggers (T211)
+5.69/CR/1                n/a          - - triggers (T211)
+5.69/CR/2                n/a          - - triggers (T211)
+5.69/CR/3                n/a          - - triggers (T211)
+# 5.70, UDT_PRIVILEGES view
+5.70                     n/a          - - privilege tables (F231)
+5.70/CR/1                n/a          - - privilege tables (F231)
+# 5.71, USAGE_PRIVILEGES view
+5.71                     n/a          - - privilege tables (F231)
+5.71/CR/1                n/a          - - privilege tables (F231)
+# 5.72, USER_DEFINED_TYPES view
+5.72                     n/a          - - user-defined types (S023)
+5.72/CR/1                n/a          - - user-defined types (S023)
+# 5.73, VIEW_COLUMN_USAGE view
+5.73                     missing      - - views (#731)
+5.73/CR/1                missing      - - views (#731)
+# 5.74, VIEW_ROUTINE_USAGE view
+5.74                     missing      - - views (#731)
+5.74/CR/1                missing      - - views (#731)
+# 5.75, VIEW_TABLE_USAGE view
+5.75                     missing      - - views (#731)
+5.75/CR/1                missing      - - views (#731)
+# 5.76, VIEWS view
+5.76                     missing      - - views (#731)
+# 5.77, Short name views
+5.77                     missing      - - short name views (#739)
+5.77/CR/1                n/a          - - ROLE_ROUT_GRANTS: roles (T331)
+5.77/CR/2                n/a          - - DOMAINS_S: domains (F251)
+5.77/CR/3                n/a          - - COL_DOMAIN_USAGE (COL_DOMAINS_USAGE in the rule): domains (F251)
+5.77/CR/4                n/a          - - TRIG_TABLE_USAGE: triggers (T211)
+5.77/CR/5                n/a          - - TRIG_UPDATE_COLS: triggers (T211)
+5.77/CR/6                n/a          - - COL_DOMAIN_USAGE: domains (F251)
+5.77/CR/7                missing      - - CONSTR_COL_USAGE (CONST_COL_USAGE in the rule): short name views (#739), after CONSTRAINT_COLUMN_USAGE (#736)
+5.77/CR/8                missing      - - CONSTR_TABLE_USAGE (CONST_TABLE_USAGE in the rule): short name views (#739), after CONSTRAINT_TABLE_USAGE (#736)
+5.77/CR/9                missing      - - KEY_COLUMN_USAGE_S: short name views (#739), flagging (#737)
+5.77/CR/10               missing      - - ROUTINE_COL_USAGE: short name views (#739), after ROUTINE_COLUMN_USAGE (#733)
+5.77/CR/11               missing      - - ROUT_TABLE_USAGE: short name views (#739), after ROUTINE_TABLE_USAGE (#733)
+5.77/CR/12               missing      - - ROUT_ROUT_USAGE_S: short name views (#739), after ROUTINE_ROUTINE_USAGE (#733)
+5.77/CR/13               missing      - - CONSTR_ROUT_USE_S: short name views (#739), after CHECK_CONSTRAINT_ROUTINE_USAGE (#733)
+5.77/CR/14               n/a          - - TRIG_ROUT_USAGE_S: triggers (T211)
+5.77/CR/15               missing      - - ROUT_SEQ_USAGE_S: short name views (#739), after ROUTINE_SEQUENCE_USAGE (#733)
+5.77/CR/16               n/a          - - TRIG_COLUMN_USAGE: triggers (T211)
+5.77/CR/17               n/a          - - TRIG_SEQ_USAGE_S: triggers (T211)
+5.77/CR/18               missing      - - COL_COL_USAGE: short name views (#739), after COLUMN_COLUMN_USAGE (#736)
+5.77/CR/19               missing      - - SQL_IMPL_INFO: short name views (#739), after SQL_IMPLEMENTATION_INFO (#655)
+5.77/CR/20               n/a          - - SQL_SIZING_PROFS: enhanced documentation tables (F502)
+5.77/CR/21               n/a          - - COLLATIONS_S: collations (F690)
+5.77/CR/22               n/a          - - TRANSLATIONS_S: translations (F695)
+5.77/CR/23               n/a          - - TRANSLATIONS_S: translations (F695)
+5.77/CR/24               n/a          - - ATTRIBUTES_S: user-defined types (S023)
+5.77/CR/25               n/a          - - METHOD_SPECS: user-defined types (S023)
+5.77/CR/26               n/a          - - METHOD_SPEC_PARAMS: user-defined types (S023)
+5.77/CR/27               n/a          - - TABLE_METHOD_PRIVS: type hierarchies (S024)
+5.77/CR/28               n/a          - - ROL_TAB_METH_GRNTS: type hierarchies (S024)
+5.77/CR/29               n/a          - - REFERENCED_TYPES_S: reference types (S041)
+5.77/CR/30               n/a          - - ELEMENT_TYPES_S: arrays and multisets (S091, S271)
+5.77/CR/31               n/a          - - METHOD_SPECS (METHOD_SPEC in the rule): user-defined types (S023)
+5.77/CR/32               n/a          - - METHOD_SPECS (METHOD_SPEC in the rule): user-defined types (S023)
+5.77/CR/33               missing      - - ROUTINES_S: short name views (#739), after ROUTINES (#733)
+5.77/CR/34               missing      - - ROUTINES_S: short name views (#739), after ROUTINES (#733)
+5.77/CR/35               n/a          - - TRIGGERS_S: triggers (T211)
+5.77/CR/36               n/a          - - FIELDS_S: row types (T051)
+5.77/CR/37               missing      - - COLUMNS_S: short name views (#739), flagging (#737)
+5.77/CR/38               missing      - - COL_COL_USAGE: short name views (#739), after COLUMN_COLUMN_USAGE (#736)
+5.77/CR/39               missing      - - the rule says COLUMNS, which is the same as 5.21/CR/2, so it's likely COLUMNS_S: not flagged with T175 (#737), short name views (#739)
+5.77/CR/40               missing      - - COLUMNS_S: short name views (#739), flagging (#737)
+5.77/CR/41               missing      - - ROUT_SEQ_USAGE_S: short name views (#739), after ROUTINE_SEQUENCE_USAGE (#733)
+5.77/CR/42               missing      - - SEQUENCES_S: short name views (#739), after SEQUENCES (#736)
+5.77/CR/43               n/a          - - TRIG_SEQ_USAGE_S (TRIGGER_SEQ_USAGE_S in the rule): triggers (T211)
+5.77/CR/44               n/a          - - TRIG_UPDATE_COLS: triggers (T211)
+5.77/CR/45               n/a          - - TRIG_TABLE_USAGE: triggers (T211)
+5.77/CR/46               n/a          - - TRIG_ROUT_USAGE_S: triggers (T211)
+5.77/CR/47               n/a          - - TRIG_SEQ_USAGE_S: triggers (T211)
+5.77/CR/48               n/a          - - TRIGGERS_S: triggers (T211)
+5.77/CR/49               n/a          - - TRIG_COLUMN_USAGE: triggers (T211)
+5.77/CR/50               missing      - - ROUTINES_S: short name views (#739), after ROUTINES (#733)
+5.77/CR/51               n/a          - - ADMIN_ROLE_AUTHS: roles (T331)
+5.77/CR/52               n/a          - - ROLE_ROUT_GRANTS: roles (T331)
+5.77/CR/53               n/a          - - ROL_TAB_METH_GRNTS (ROLE_TAB_METH_GRNTS in the rule): type hierarchies (S024)

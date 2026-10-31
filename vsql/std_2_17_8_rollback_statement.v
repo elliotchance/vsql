@@ -6,6 +6,9 @@ import time
 //
 // Terminate the current SQL-transaction with rollback, or rollback all actions
 // affecting SQL-data and/or schemas since the establishment of a savepoint.
+//
+// AND CHAIN (T261) and TO SAVEPOINT (T271) aren't supported. Like COMMIT, a
+// ROLLBACK when there isn't an active SQL-transaction is 2D000 (#231).
 
 struct RollbackStatement {
 }
@@ -17,6 +20,7 @@ fn (stmt RollbackStatement) execute(mut conn Connection, _ map[string]Value, ela
 		return sqlstate_2d000()
 	}
 
+	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.b and 2.g
 	for _, mut catalog in conn.catalogs {
 		catalog.rollback_transaction()!
 	}

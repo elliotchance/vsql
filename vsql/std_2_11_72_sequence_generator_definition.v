@@ -57,8 +57,7 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, _ map[string]
 	check_writable_schema(sequence_name)!
 	mut catalog := conn.catalog_for(sequence_name)
 
-	// ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>, Syntax
-	// Rules, 3
+	// ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>, Syntax Rules, 3
 	if _ := catalog.storage.sequence(sequence_name) {
 		return sqlstate_42p07('sequence', sequence_name.str()) // duplicate sequence
 	}
@@ -72,9 +71,12 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, _ map[string]
 }
 
 // check_sequence_options checks that each option is only given once and that
-// the values are integers (9.30 and 9.31 Syntax Rules). This is only done for
-// CREATE SEQUENCE and ALTER SEQUENCE, not when a sequence is read from the
-// file.
+// the values are integers. This is only done for CREATE SEQUENCE and ALTER
+// SEQUENCE, not when a sequence is read from the file. A value outside the
+// range of a BIGINT isn't an error (#786).
+//
+// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 3 and 10
+// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 4 and 10
 fn check_sequence_options(options []SequenceGeneratorOption) ! {
 	mut seen := map[string]bool{}
 	for option in options {
@@ -116,7 +118,13 @@ fn check_sequence_options(options []SequenceGeneratorOption) ! {
 }
 
 // sequence returns the sequence that the definition describes. It's also used
-// when reading a sequence definition from the file.
+// when reading a sequence definition from the file. The INCREMENT BY is 1 by
+// default, and there's no CYCLE. Without a MINVALUE or MAXVALUE, the limit is
+// the range of a BIGINT. Without a START WITH, it's the MINVALUE of an
+// ascending sequence (or the MAXVALUE of a descending one), otherwise 1 (#785).
+//
+// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 4 and 6-9
+// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 13
 fn (stmt SequenceGeneratorDefinition) sequence(sequence_name Identifier) Sequence {
 	mut increment_by := i64(1)
 	mut has_start_value := false

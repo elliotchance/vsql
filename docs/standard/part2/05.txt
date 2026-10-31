@@ -1,0 +1,264 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 5, Lexical elements
+5                        container    - -
+# 5.1, <SQL terminal character>
+5.1                      implemented  vsql/std_2_5_1_sql_terminal_character.y tests/syntax_tokens.sql
+5.1/SR/1                 implemented  vsql/std_2_5_1_sql_terminal_character.y tests/whitespace.sql
+5.1/GR/1                 implemented  vsql/std_2_5_1_sql_terminal_character.y tests/identifier-e.sql
+# 5.2, <token> and <separator>
+5.2                      partial      vsql/lexer.v tests/syntax_tokens.sql regular identifiers can only be ASCII (#761), and other characters are ignored (#760)
+5.2/SR/1                 partial      vsql/lexer.v tests/identifier-e.sql only the ASCII letters and underscore (#761)
+5.2/SR/2                 partial      vsql/lexer.v tests/identifier-e.sql only the ASCII digits and underscore (#761)
+5.2/SR/3                 deviates     vsql/lexer.v tests/whitespace.sql any character that isn't part of a token is ignored, not only white space (#760)
+5.2/SR/4                 impl-defined vsql/lexer.v tests/comments.sql a line feed (U+000A)
+5.2/SR/5                 implemented  vsql/lexer.v tests/syntax_tokens.sql
+5.2/SR/6                 implemented  vsql/lexer.v tests/create-table.sql
+5.2/SR/7                 implemented  vsql/lexer.v tests/syntax_tokens.sql
+5.2/SR/8                 implemented  vsql/lexer.v tests/comments.sql
+5.2/SR/9                 n/a          - - large objects (T041)
+5.2/SR/10                implemented  vsql/lexer.v tests/bracketed-comments.sql
+5.2/SR/11                implemented  vsql/lexer.v tests/comments.sql
+5.2/SR/12                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/long-identifiers.sql
+5.2/SR/13                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/long-identifiers.sql
+5.2/SR/14                n/a          - - Unicode delimited identifiers (F392)
+5.2/SR/15                n/a          - - Unicode delimited identifiers (F392)
+5.2/SR/16                implemented  vsql/lexer.v tests/unicode-escapes.sql
+5.2/SR/17                implemented  vsql/lexer.v tests/unicode-escapes.sql
+5.2/SR/18                implemented  vsql/lexer.v tests/unicode-escapes.sql
+5.2/SR/19                implemented  vsql/lexer.v tests/unicode-escapes.sql
+5.2/SR/20                n/a          - - Unicode delimited identifiers (F392)
+5.2/SR/21                implemented  vsql/lexer.v tests/unicode-escapes.sql
+5.2/SR/22                implemented  vsql/lexer.v tests/unicode-escapes.sql
+5.2/SR/23                implemented  vsql/lexer.v tests/unicode-escapes.sql
+5.2/SR/24                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql only ASCII letters (#761)
+5.2/SR/24.a              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql only ASCII letters (#761)
+5.2/SR/24.b              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql only ASCII letters (#761)
+5.2/SR/25                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/information-schema-tables.sql
+5.2/SR/26                implemented  vsql/lexer.v tests/reserved-words.sql
+5.2/SR/27                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql
+5.2/SR/28                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/create-table.sql
+5.2/SR/29                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/create-table.sql
+5.2/SR/30                n/a          - - Unicode delimited identifiers (F392)
+5.2/SR/31                n/a          - - Unicode delimited identifiers (F392)
+5.2/SR/32                n/a          - - Unicode delimited identifiers (F392)
+5.2/SR/33                implemented  vsql/lexer.v tests/syntax_tokens.sql
+5.2/CR/1                 partial      vsql/std_1_8_5_sql_flagger.v tests/flagging.sql an 18 character regular identifier is also flagged (#738)
+5.2/CR/2                 implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
+5.2/CR/3                 missing      - - bracketed comments aren't flagged (#763)
+5.2/CR/4                 n/a          - - Unicode delimited identifiers (F392)
+5.2/CR/5                 n/a          - - large objects (T041)
+5.2/CR/6                 n/a          - - large objects (T041)
+# 5.3, <literal>
+5.3                      partial      vsql/std_2_5_3_literal.v tests/literal.sql character string literals aren't normalized (#762); no national (F421), binary (T021) or interval (F052) literals
+5.3/SR/1                 implemented  vsql/lexer.v tests/literal.sql
+5.3/SR/2                 implemented  vsql/lexer.v tests/unicode-escapes.sql
+5.3/SR/3                 implemented  vsql/lexer.v tests/unicode-escapes.sql
+5.3/SR/4                 n/a          - - binary strings (T021)
+5.3/SR/5                 n/a          - - binary strings (T021)
+5.3/SR/6                 n/a          - - binary strings (T021)
+5.3/SR/7                 implemented  vsql/lexer.v tests/literal.sql
+5.3/SR/8                 n/a          - - national character (F421)
+5.3/SR/9                 n/a          - - national character (F421)
+5.3/SR/10                n/a          - - named character sets (F461)
+5.3/SR/11                implemented  vsql/lexer.v tests/unicode-escapes.sql
+5.3/SR/12                implemented  vsql/lexer.v tests/unicode-escapes.sql the character set is always UTF8
+5.3/SR/13                implemented  vsql/lexer.v tests/unicode-escapes.sql
+5.3/SR/14                implemented  vsql/lexer.v tests/unicode.sql
+5.3/SR/15                definition   - -
+5.3/SR/15.a              definition   - -
+5.3/SR/15.b              n/a          - - national character (F421) and named character sets (F461)
+5.3/SR/16                container    - -
+5.3/SR/16.a              implemented  vsql/lexer.v tests/unicode.sql the character set is always UTF8
+5.3/SR/16.b              n/a          - - named character sets (F461)
+5.3/SR/17                implemented  vsql/lexer.v tests/character.sql
+5.3/SR/18                container    - -
+5.3/SR/18.a              n/a          - - named character sets (F461)
+5.3/SR/18.b              implemented  vsql/lexer.v tests/unicode.sql the character set is always UTF8
+5.3/SR/19                implemented  vsql/lexer.v tests/unicode.sql
+5.3/SR/20                n/a          - - binary strings (T021)
+5.3/SR/21                implemented  vsql/std_2_5_3_literal.v tests/literal.sql
+5.3/SR/22                impl-defined vsql/std_2_5_3_literal.v tests/literal.sql the smallest of SMALLINT, INTEGER and BIGINT that holds an integer, otherwise NUMERIC (with at most 1000 digits)
+5.3/SR/23                impl-defined vsql/std_2_5_3_literal.v tests/approximate-literal-exact.sql DOUBLE PRECISION
+5.3/SR/24                implemented  vsql/lexer.v tests/approximate-literal-exact.sql
+5.3/SR/25                implemented  vsql/std_2_5_3_literal.v tests/date.sql
+5.3/SR/26                implemented  vsql/std_2_5_3_literal.v tests/time.sql
+5.3/SR/27                implemented  vsql/std_2_5_3_literal.v tests/timestamp.sql
+5.3/SR/28                implemented  vsql/time.v tests/date-time-value-function.sql the time zone displacement from Connection.now
+5.3/SR/29                definition   - -
+5.3/SR/30                n/a          - - intervals (F052)
+5.3/SR/31                implemented  vsql/time.v tests/date.sql
+5.3/SR/32                implemented  vsql/time.v tests/timestamp.sql
+5.3/SR/33                n/a          - - intervals (F052)
+5.3/SR/34                n/a          - - intervals (F052)
+5.3/SR/35                implemented  vsql/time.v tests/time.sql
+5.3/GR/1                 implemented  vsql/lexer.v tests/unicode.sql the source and the literal are both UTF8
+5.3/GR/2                 missing      - - #762
+5.3/GR/3                 implemented  vsql/std_2_5_3_literal.v tests/literal.sql
+5.3/GR/4                 implemented  vsql/std_2_5_3_literal.v tests/literal.sql
+5.3/GR/5                 implemented  vsql/std_2_5_3_literal.v tests/approximate-errors.sql
+5.3/GR/6                 implemented  vsql/std_2_5_3_literal.v tests/literal.sql
+5.3/GR/7                 implemented  vsql/time.v tests/timestamp.sql
+5.3/GR/7.a               implemented  vsql/time.v tests/timestamp.sql
+5.3/GR/7.b               n/a          - - intervals (F052)
+5.3/GR/7.b.i             n/a          - - intervals (F052)
+5.3/GR/7.b.ii            n/a          - - intervals (F052)
+5.3/GR/7.b.iii           n/a          - - intervals (F052)
+5.3/GR/8                 implemented  vsql/time.v tests/timestamp.sql
+5.3/GR/9                 implemented  vsql/time.v tests/time.sql
+5.3/GR/10                implemented  vsql/time.v tests/timestamp.sql
+5.3/GR/10.a              implemented  vsql/time.v tests/timestamp.sql
+5.3/GR/10.b              implemented  vsql/time.v tests/timestamp.sql
+5.3/GR/11                implemented  vsql/std_2_5_3_literal.v tests/boolean.sql
+5.3/CR/1                 implemented  vsql/std_2_5_3_literal.v tests/flagging.sql
+5.3/CR/2                 implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
+5.3/CR/3                 implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
+5.3/CR/4                 n/a          - - national character (F421)
+5.3/CR/5                 n/a          - - intervals (F052)
+5.3/CR/6                 implemented  vsql/lexer.v tests/flagging.sql
+5.3/CR/7                 implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
+5.3/CR/8                 n/a          - - binary strings (T021)
+5.3/CR/9                 n/a          - - binary strings (T021)
+5.3/CR/10                n/a          - - binary strings (T021)
+5.3/CR/11                implemented  vsql/lexer.v tests/flagging.sql
+# 5.4, Names and identifiers
+5.4                      implemented  vsql/std_2_5_4_names_and_identifiers.v tests/catalog-qualified-names.sql
+5.4/SR/1                 n/a          - - named character sets (F461)
+5.4/SR/2                 n/a          - - named character sets (F461)
+5.4/SR/3                 n/a          - - named character sets (F461)
+5.4/SR/4                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/set-schema.sql
+5.4/SR/4.a               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/set-schema.sql the default schema of the SQL-session
+5.4/SR/4.b               missing      - - a schema definition can't contain a schema element (#764)
+5.4/SR/4.c               implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod
+5.4/SR/5                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/catalog-qualified-names.sql
+5.4/SR/5.a               n/a          - - declared local temporary tables (F531)
+5.4/SR/5.b               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/catalog-qualified-names.sql no views (F031-02)
+5.4/SR/6                 n/a          - - local cursor references (T601)
+5.4/SR/7                 implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod a cursor can also be declared outside of an SQL-client module (V004-01)
+5.4/SR/8                 n/a          - - user-defined types (S023)
+5.4/SR/8.a               n/a          - - user-defined types (S023)
+5.4/SR/8.a.i             n/a          - - user-defined types (S023)
+5.4/SR/8.a.ii            n/a          - - user-defined types (S023)
+5.4/SR/8.a.ii.1          container    - -
+5.4/SR/8.a.ii.1.A        n/a          - - user-defined types (S023)
+5.4/SR/8.a.ii.1.B        n/a          - - user-defined types (S023)
+5.4/SR/8.a.ii.1.C        n/a          - - user-defined types (S023)
+5.4/SR/8.a.ii.2          n/a          - - user-defined types (S023)
+5.4/SR/8.a.ii.3          n/a          - - user-defined types (S023)
+5.4/SR/8.a.ii.4          n/a          - - user-defined types (S023)
+5.4/SR/8.a.ii.5          n/a          - - user-defined types (S023)
+5.4/SR/8.b               n/a          - - user-defined types (S023)
+5.4/SR/8.b.i             n/a          - - user-defined types (S023)
+5.4/SR/8.b.ii            n/a          - - user-defined types (S023)
+5.4/SR/8.b.iii           n/a          - - user-defined types (S023)
+5.4/SR/9                 n/a          - - user-defined types (S023)
+5.4/SR/10                missing      - - #740
+5.4/SR/11                n/a          - - transcodings (F695)
+5.4/SR/12                n/a          - - named character sets (F461)
+5.4/SR/12.a              n/a          - - named character sets (F461)
+5.4/SR/12.a.i            n/a          - - named character sets (F461)
+5.4/SR/12.a.ii           n/a          - - named character sets (F461)
+5.4/SR/12.b              n/a          - - named character sets (F461)
+5.4/SR/12.b.i            n/a          - - named character sets (F461)
+5.4/SR/12.b.ii           n/a          - - named character sets (F461)
+5.4/SR/12.b.iii          n/a          - - named character sets (F461)
+5.4/SR/13                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/constraint-names.sql
+5.4/SR/13.a              n/a          - - collations (F690) and transliterations (F695)
+5.4/SR/13.a.i            n/a          - - collations (F690)
+5.4/SR/13.a.ii           n/a          - - transliterations (F695)
+5.4/SR/13.b              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/constraint-names.sql
+5.4/SR/13.c              n/a          - - domains (F251)
+5.4/SR/13.d              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/set-schema.sql
+5.4/SR/13.d.i            implemented  vsql/std_2_5_4_names_and_identifiers.v tests/set-schema.sql
+5.4/SR/13.d.ii           missing      - - a schema definition can't contain a schema element (#764)
+5.4/SR/13.d.iii          implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod
+5.4/SR/14                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/set-catalog.sql
+5.4/SR/14.a              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/set-catalog.sql the default catalog of the SQL-session
+5.4/SR/14.b              impl-defined vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod the current catalog
+5.4/SR/14.c              missing      - - a schema definition can't contain a schema element (#764)
+5.4/SR/14.d              container    - -
+5.4/SR/14.d.i            implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod the module's catalog is the current catalog
+5.4/SR/14.d.ii           impl-defined vsql/std_2_5_4_names_and_identifiers.v tests/set-catalog.sql the current catalog
+5.4/SR/14.e              implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod
+5.4/SR/15                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/catalog-qualified-names.sql
+5.4/SR/16                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/catalog-qualified-names.sql
+5.4/SR/17                n/a          - - named character sets (F461)
+5.4/SR/18                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/catalog-qualified-names.sql
+5.4/SR/19                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/correlation-name.sql
+5.4/SR/20                n/a          - - authorization identifiers (E081)
+5.4/SR/21                n/a          - - authorization identifiers (E081)
+5.4/SR/22                impl-defined vsql/std_2_5_4_names_and_identifiers.v tests/catalogs.sql any identifier
+5.4/SR/23                partial      vsql/std_2_18_1_connect_statement.v tests/connections.sql the type and length aren't checked, so an SQL-server name (a path) can be longer than 128 octets
+5.4/SR/24                n/a          - - extended statement and cursor names (B032) and polymorphic table functions (B200)
+5.4/SR/25                n/a          - - extended statement and cursor names (B032)
+5.4/SR/26                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test.mod the name must be an identifier, which can't be more than 128 characters
+5.4/SR/27                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test.mod
+5.4/SR/28                n/a          - - SQL-invoked routines (T321)
+5.4/GR/1                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/select-from.sql
+5.4/GR/2                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/correlation-name.sql
+5.4/GR/3                 n/a          - - WITH (T121)
+5.4/GR/4                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql
+5.4/GR/5                 n/a          - - domains (F251)
+5.4/GR/6                 n/a          - - authorization identifiers (E081)
+5.4/GR/7                 implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod
+5.4/GR/8                 n/a          - - SQL-invoked routines (T321)
+5.4/GR/9                 n/a          - - user-defined types (S023)
+5.4/GR/10                n/a          - - SQL-invoked routines (T321)
+5.4/GR/11                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/cursors.sql no received cursors (T471)
+5.4/GR/12                implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod
+5.4/GR/13                n/a          - - SQL-invoked routines (T321)
+5.4/GR/14                n/a          - - external routines (S201)
+5.4/GR/15                n/a          - - triggers (T211)
+5.4/GR/16                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/constraint-names.sql no domain constraints (F251) or assertions (F521)
+5.4/GR/17                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/catalogs.sql
+5.4/GR/18                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/create-schema.sql
+5.4/GR/19                n/a          - - collations (F690)
+5.4/GR/20                n/a          - - named character sets (F461)
+5.4/GR/21                n/a          - - transliterations (F695)
+5.4/GR/22                n/a          - - transcodings (F695)
+5.4/GR/23                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/connections.sql
+5.4/GR/24                n/a          - - user-defined types (S023)
+5.4/GR/25                n/a          - - user-defined types (S023)
+5.4/GR/26                n/a          - - savepoints (T271)
+5.4/GR/27                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/create-sequence.sql
+5.4/GR/28                n/a          - - row types (T051)
+5.4/GR/29                n/a          - - roles (T331)
+5.4/GR/30                n/a          - - authorization identifiers (E081)
+5.4/GR/31                n/a          - - extended statement names (B032)
+5.4/GR/32                implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod
+5.4/GR/33                n/a          - - extended cursor names (B032)
+5.4/GR/34                n/a          - - polymorphic table functions (B200)
+5.4/GR/35                implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod
+5.4/GR/36                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test.mod
+5.4/GR/37                n/a          - - extended dynamic cursors (B032)
+5.4/GR/38                n/a          - - polymorphic table functions (B200)
+5.4/GR/39                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test.mod
+5.4/GR/40                n/a          - - polymorphic table functions (B200)
+5.4/GR/41                n/a          - - window functions (T611)
+5.4/GR/42                n/a          - - row pattern recognition (R010)
+5.4/GR/43                n/a          - - row pattern recognition (R010)
+5.4/CR/1                 n/a          - - row pattern recognition (R010)
+5.4/CR/2                 n/a          - - savepoints (T271)
+5.4/CR/3                 n/a          - - roles (T331)
+5.4/CR/4                 n/a          - - WITH (T121)
+5.4/CR/5                 n/a          - - user-defined types (S023)
+5.4/CR/6                 n/a          - - row types (T051)
+5.4/CR/7                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/flagging.sql
+5.4/CR/8                 missing      - - connection names aren't flagged (#763)
+5.4/CR/9                 n/a          - - collations (F690)
+5.4/CR/10                n/a          - - transliterations (F695)
+5.4/CR/11                n/a          - - transcodings (F695)
+5.4/CR/12                n/a          - - local table references (F821)
+5.4/CR/13                n/a          - - domains (F251)
+5.4/CR/14                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/flagging.sql
+5.4/CR/15                n/a          - - named character sets (F461)
+5.4/CR/16                n/a          - - local cursor references (T601)
+5.4/CR/17                n/a          - - extended statement and cursor names (B032)
+5.4/CR/18                missing      - - an SQL-client module isn't flagged (#763)
+5.4/CR/19                missing      - - an SQL-client module isn't flagged (#763)
+5.4/CR/20                missing      - - an SQL-client module isn't flagged (#763)
+5.4/CR/21                n/a          - - window functions (T611)
+5.4/CR/22                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/flagging.sql
+5.4/CR/23                n/a          - - extended dynamic SQL (B032)
+5.4/CR/24                missing      - - an SQL-client module isn't flagged (#763)
+5.4/CR/25                n/a          - - polymorphic table functions (B200)

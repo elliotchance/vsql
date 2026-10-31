@@ -42,6 +42,7 @@ referenced_table_and_columns:
 referenced_column_list:
   column_name_list { $$.v = $1.v as []Identifier }
 
+// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Conformance Rules, 3 and 4
 referential_triggered_action:
   update_rule {
     flag(mut yylex, 'F701')
@@ -78,6 +79,7 @@ update_rule:
 delete_rule:
   ON DELETE referential_action { $$.v = $3.v as string }
 
+// RESTRICT isn't supported (T191).
 referential_action:
   CASCADE { $$.v = 'CASCADE' }
 | SET NULL { $$.v = 'SET NULL' }

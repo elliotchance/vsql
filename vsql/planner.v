@@ -139,7 +139,10 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table,
 		params, mut conn, allow_virtual, mut tables)!
 
-	// Like WHERE, the condition is compiled to catch errors without any rows.
+	// Like WHERE, the condition is compiled to catch errors without any rows. An
+	// aggregate function fails as an unknown column (#616).
+	//
+	// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 6
 	mut c := Compiler{
 		conn:                   conn
 		params:                 params
@@ -161,7 +164,10 @@ fn create_table_reference_plan(body QuerySpecification, table_reference TableRef
 				params, mut conn, allow_virtual, false)!
 
 			// Rows store each value by its table and column name, so the same
-			// table can't be used twice (7.5, Syntax Rule 5c).
+			// table can't be used twice. A correlation name isn't compared with the
+			// unqualified name of a table (#776).
+			//
+			// ISO/IEC 9075-2:2016(E), 7.5, <from clause>, Syntax Rules, 5.c
 			if table.name.id() in tables {
 				// Subqueries without a correlation name all use the same name.
 				if table.name.custom_id != '' {
@@ -360,12 +366,15 @@ fn primary_key_value(body QuerySpecification, base_table Table, table Table, par
 fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, correlation Correlation, params map[string]Value, conn &Connection) !Table {
 	plan.subplans[table_name.id()] = subplan
 
+	// A derived column list must have a name for each column, and each name only
+	// once.
+	//
+	// ISO/IEC 9075-2:2016(E), 7.6, <table reference>, Syntax Rules, 11.b.ii.1
 	correlation_columns := correlation.columns
 	if correlation_columns.len > 0 && correlation_columns.len != subplan.columns().len {
 		return sqlstate_42601('ROW provides the wrong number of columns for the correlation')
 	}
 
-	// ISO/IEC 9075-2:2016(E), 7.6, <table reference>, Syntax Rule 11b
 	mut seen := map[string]bool{}
 	for column in correlation_columns {
 		if column.sub_entity_name in seen {
@@ -416,7 +425,8 @@ fn add_where_plan(mut plan Plan, body QuerySpecification, params map[string]Valu
 
 		// An aggregate function of an outer query (which is a value here) is allowed.
 		//
-		// ISO/IEC 9075-2:2016(E), 7.12, <where clause>, Syntax Rule 1
+		// ISO/IEC 9075-2:2016(E), 7.12, <where clause>, Syntax Rules, 1
+		// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 7
 		if where.compile(mut c)!.contains_agg {
 			return sqlstate_42601('an aggregate function cannot be used in WHERE')
 		}
@@ -451,7 +461,10 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?Bo
 	}
 
 	// Every column in the select list must be grouped, or only used in an
-	// aggregate function.
+	// aggregate function. There are no functional dependencies (T301), so it must
+	// be a grouping column.
+	//
+	// ISO/IEC 9075-2:2016(E), 7.14, <having clause>, Conformance Rules, 1 and 2
 	mut grouping_columns := []Column{}
 	for col in group_clause {
 		grouping_columns << group_column(col, tables)!
@@ -461,7 +474,9 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?Bo
 		e.expr.compile(mut c)!
 	}
 
-	// The HAVING has the same rule (7.14, Syntax Rules, 2) and must be a boolean.
+	// The HAVING has the same rule and must be a boolean.
+	//
+	// ISO/IEC 9075-2:2016(E), 7.14, <having clause>, Syntax Rules, 3
 	if having := having_clause {
 		c.next_value_not_allowed = 'HAVING'
 		compiled_having := having.compile(mut c)!
@@ -491,6 +506,9 @@ fn add_group_by_plan(mut plan Plan, group_clause []Identifier, having_clause ?Bo
 	plan.operations << new_group_operation(select_exprs, group_clause, having_clause,
 		params, mut conn, tables)!
 
+	// The HAVING filters the groups, each of which is now a row.
+	//
+	// ISO/IEC 9075-2:2016(E), 7.14, <having clause>, General Rules, 1
 	if having := having_clause {
 		plan.operations << new_where_operation(having, params, conn, plan.columns(),
 			tables)
@@ -534,7 +552,11 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 		correlation)!
 
 	// Only a query specification has its own tables. Otherwise, the ORDER BY can
-	// only use the columns of the result (7.17, Syntax Rule 28d).
+	// only use the columns of the result. A sort key doesn't have to contain a
+	// column reference, and it can contain a subquery or an aggregate function
+	// (#770). An ungrouped column isn't rejected in a grouped query (#779).
+	//
+	// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28
 	if stmt.body !is QuerySpecification {
 		tables = {
 			'': Table{
@@ -679,8 +701,10 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 					DerivedColumn {
 						// Unnamed columns are named by their position in the result.
 						// Only a column reference or an AS clause names the column,
-						// otherwise its name is implementation-dependent (7.16,
-						// <query specification>).
+						// otherwise its name is implementation-dependent.
+						//
+						// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 19
+						// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Conformance Rules, 6
 						mut column_name := 'COL${columns.len + 1}'
 						mut unnamed := true
 						if item.as_clause.sub_entity_name != '' {
@@ -715,8 +739,10 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 	}
 
 	// A result can have more than one column with the same name, such as a.id
-	// and b.id (7.16). Each one after the first is kept in the row under a
-	// different key, see Row.get_column.
+	// and b.id. Each one after the first is kept in the row under a different
+	// key, see Row.get_column.
+	//
+	// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 19
 	mut seen := map[string]int{}
 	for i, expr in exprs {
 		name := expr.as_clause.id()

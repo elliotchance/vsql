@@ -430,9 +430,12 @@ fn write_key_numeric(mut buf Bytes, value Numeric) {
 
 // write_key_string writes a CHARACTER or CHARACTER VARYING in a PRIMARY KEY.
 // Strings are compared as if the shorter one is padded with spaces (the PAD
-// SPACE characteristic of the default collation, 10.5 Syntax Rule 2), so the
-// keys must sort that way too. For example, 'a' is equal to 'a ' and greater
-// than 'a' followed by a tab, but less than 'a b'.
+// SPACE characteristic of the default collation), so the keys must sort that
+// way too. For example, 'a' is equal to 'a ' and greater than 'a' followed by a
+// tab, but less than 'a b'.
+//
+// ISO/IEC 9075-2:2016(E), 8.2, <comparison predicate>, General Rules, 3.b
+// ISO/IEC 9075-2:2016(E), 9.12, Grouping operations, Syntax Rules, 4
 //
 // Trailing spaces are removed. Each other space is written as a space and then
 // a byte for whether the next character that isn't a space sorts after a space

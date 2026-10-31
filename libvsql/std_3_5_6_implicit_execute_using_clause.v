@@ -7,6 +7,18 @@ import vsql
 // The values of the dynamic parameters ("?") of a statement come from the APD,
 // which is the C value of each parameter, and the IPD, which is its SQL data
 // type. The C value is cast to the SQL data type.
+//
+// COUNT can't be negative (see SetDescField), so General Rules 4.a and 4.b
+// can't happen. Having more item descriptor areas in the IPD than there are
+// dynamic parameters isn't an error, which is implementation-defined (General
+// Rules, 4.d).
+//
+// The APD must be valid (ISO/IEC 9075-3:2003(E), 5.13, Description of CLI
+// item descriptor areas, Syntax Rules, 8 to 12). NULL is true if the indicator
+// is SQL NULL DATA (whether or not it's shared with the length), and DEFERRED
+// is true if the length is DATA AT EXEC. A character string with a length of 0
+// (zero) is an empty string, rather than not valid (Syntax Rules, 12.c.i.3),
+// which is #755.
 
 // Codes from Table 10, "Codes associated with <parameter mode> in SQL/CLI".
 const sql_param_mode_in = i16(1)
@@ -47,7 +59,9 @@ fn parameter_values(mut stmt Stmt, prepared vsql.PreparedStmt) !(map[string]vsql
 		// it must have a C type.
 		typ := application_type(apd, ipd, i) or { return using_clause_error() }
 
-		// - 4.j. NULL and DEFERRED.
+		// - 4.j. NULL and DEFERRED. General Rule 4.j.ii says a length of SQL
+		// NULL DATA is DEFERRED, which can't be right (since NULL is false), so
+		// it's DATA AT EXEC, the same as ODBC.
 		indicator := voidptr(apd.record_int(i, sql_desc_indicator_pointer))
 		length := voidptr(apd.record_int(i, sql_desc_octet_length_pointer))
 		if indicator != unsafe { nil } && unsafe { *&SQLInteger(indicator) } == sql_null_data {
@@ -71,7 +85,11 @@ fn parameter_values(mut stmt Stmt, prepared vsql.PreparedStmt) !(map[string]vsql
 			unsafe { *&SQLInteger(length) }
 		})!
 
-		// - 4.p. The value of the parameter is CAST ( SV AS TDT ).
+		// - 4.p. The value of the parameter is CAST ( SV AS TDT ). vsql doesn't
+		// determine the type of a dynamic parameter (there's no POPULATE IPD),
+		// so there's no second cast to that type (General Rules, 4.p.ii.2 and
+		// 4.p.ii.3). A string with a length in octets can end with part of a
+		// character (General Rules, 4.m.iii.2.A.II), which is #744.
 		params['?${i}'] = cast_parameter(stmt, sv, tdt)!
 	}
 

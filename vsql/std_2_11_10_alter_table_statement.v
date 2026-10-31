@@ -27,10 +27,15 @@ fn (stmt AlterTableStatement) execute(mut conn Connection, params map[string]Val
 		conn.release_write_connection()
 	}
 
+	// The table must exist, and be a base table (not a table of the
+	// INFORMATION_SCHEMA).
+	//
+	// ISO/IEC 9075-2:2016(E), 11.10, <alter table statement>, Syntax Rules, 2 and 4
 	table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
 
+	// ISO/IEC 9075-2:2016(E), 11.10, <alter table statement>, General Rules, 1 and 2
 	match stmt.action {
 		AddColumnDefinition { stmt.action.execute(mut conn, mut catalog, table, params)! }
 		AddTableConstraintDefinition { stmt.action.execute(mut conn, mut catalog, table)! }

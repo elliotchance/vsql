@@ -8,6 +8,22 @@ import vsql
 //
 // An SQL-transaction is started if one isn't active, and it must be ended with
 // EndTran (see 4.1, "Introduction to SQL/CLI").
+//
+// The cursor of a positioned DELETE or UPDATE is found by its name when the
+// statement is executed, which is an invalid cursor name if there isn't one
+// (General Rules 6, 12.b.iii.1 and 12.b.iii.2). The rows of that cursor were
+// copied when it was opened, so its fetched row isn't changed (General Rules
+// 12.b.iii.1.C and 12.b.iii.2.C, which are implementation-defined). A prepared
+// statement that references a destroyed cursor isn't destroyed (General Rules
+// 10.c), which is #749.
+//
+// Statements that aren't a <preparable statement> (such as DECLARE CURSOR) are
+// accepted (General Rules 7.a), which is #748. The data type of a dynamic
+// parameter isn't determined (General Rules 7.c and 8), which is #649. There
+// are no user-defined types, so there's no transform group (General Rules 9),
+// and no <call statement> (General Rules 12.b.iv), which is #733. A failed
+// statement still forgets the executed statement (General Rules 15), which is
+// #730.
 
 @[export: 'SQLExecDirect']
 fn sql_exec_direct(statement_handle SQLInteger, statement_text &char, text_length SQLInteger) i16 {
@@ -18,7 +34,8 @@ fn sql_exec_direct(statement_handle SQLInteger, statement_text &char, text_lengt
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 	stmt.diag.is_execute = true
 
@@ -112,7 +129,9 @@ fn prepare_statement(mut stmt Stmt, p string) !&vsql.PreparedStmt {
 // Execute) with the values of its dynamic parameters (see 5.6, "Implicit
 // EXECUTE USING and OPEN USING clauses"). If any of them are deferred, the
 // first one becomes the deferred parameter number, and the statement isn't
-// executed until their values are provided by ParamData and PutData.
+// executed until their values are provided by ParamData and PutData (ISO/IEC
+// 9075-3:2003(E), 5.6, Implicit EXECUTE USING and OPEN USING clauses, General
+// Rules, 4.q).
 fn execute_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt) !i16 {
 	params, deferred := parameter_values(mut stmt, prepared)!
 	if deferred.len > 0 {
@@ -131,8 +150,10 @@ fn execute_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt) !i16 {
 fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[string]vsql.Value) !i16 {
 	mut conn := stmt_connection(stmt)!
 
-	// - 5.4 10. A cursor is always a copy of the result, so it can't be
-	// SENSITIVE: cursor sensitivity exception — request rejected.
+	// ISO/IEC 9075-3:2003(E), 5.4, Implicit cursor, General Rules, 10: a
+	// cursor is always a copy of the result (General Rules, 8.e.i), so it can't
+	// be SENSITIVE: cursor sensitivity exception — request rejected. It's
+	// always INSENSITIVE, which can be guaranteed (General Rules, 9).
 	if stmt.diag.dynamic_function == 'SELECT CURSOR' && stmt.cursor_sensitivity == sql_sensitive {
 		return cli_error('36001', 'cursor sensitivity exception — request rejected')
 	}
@@ -142,9 +163,15 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 		mut dbc := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }
 		dbc.autocommit_transaction = dbc.autocommit
 	}
-	// - 5.4 The cursor of a query is also a cursor of the connection, with the
-	// cursor name of S, so that it can be the cursor of a positioned DELETE or
-	// UPDATE.
+	// ISO/IEC 9075-3:2003(E), 5.4, Implicit cursor, General Rules, 2 and 7:
+	// the cursor of a query is also a cursor of the connection, with the
+	// cursor name of S (which is generated if it doesn't have one), so that it
+	// can be the cursor of a positioned DELETE or UPDATE. It's WITH HOLD if
+	// CURSOR HOLDABLE is HOLDABLE (General Rules, 6). It can always be
+	// scrolled, but FetchScroll checks CURSOR SCROLLABLE (General Rules, 4).
+	// The dynamic parameters are replaced by their values (General Rules, 3
+	// and 8.a.i), but the datetime value functions aren't evaluated at the
+	// same instant (General Rules, 8.a.iii), which is #742.
 	is_select := stmt.diag.dynamic_function == 'SELECT CURSOR'
 	name := if is_select { normalize_cursor_name(stmt.get_cursor_name()) } else { '' }
 	result := query_statement(mut prepared, name, stmt.cursor_holdable == sql_holdable,

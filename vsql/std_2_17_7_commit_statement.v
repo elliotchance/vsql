@@ -5,6 +5,12 @@ import time
 // ISO/IEC 9075-2:2016(E), 17.7, <commit statement>
 //
 // Terminate the current SQL-transaction with commit.
+//
+// AND CHAIN (T261) isn't supported. A COMMIT when there isn't an active
+// SQL-transaction is 2D000 (invalid transaction termination, #231). That's only
+// with query (or autocommit), where a statement outside of a START
+// TRANSACTION is in an SQL-transaction that ends with it (see
+// Connection.direct).
 
 struct CommitStatement {
 }
@@ -22,14 +28,16 @@ fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elaps
 	}
 
 	// Every deferred constraint is checked first, as if by SET CONSTRAINTS ALL
-	// IMMEDIATE, so that nothing is committed if one isn't satisfied (General
-	// Rules 5 and 6a). The transaction is then rolled back, see
-	// PreparedStmt.fail.
+	// IMMEDIATE, so that nothing is committed if one isn't satisfied. The
+	// transaction is then rolled back, see PreparedStmt.fail.
+	//
+	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 5 and 6.a
 	for _, mut catalog in conn.catalogs {
 		catalog.storage.set_all_constraint_modes(false)
 	}
 	conn.check_deferred_constraints() or { return commit_error(err) }
 
+	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 6.c and 9
 	for _, mut catalog in conn.catalogs {
 		catalog.commit_transaction()!
 	}
@@ -38,8 +46,11 @@ fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elaps
 }
 
 // commit_error is the error for a deferred constraint that isn't satisfied at
-// the COMMIT (General Rule 6a), or another error (such as a serialization
-// failure) as it is.
+// the COMMIT, or another error as it is. Conflicts are found when a row is
+// written, so another error (such as an I/O error) isn't in class 40, and the
+// SQL-transaction is still active.
+//
+// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 6.a and 6.b
 fn commit_error(err IError) IError {
 	is_violation := sqlstate_from_int(err.code()).starts_with('23')
 	return if is_violation {

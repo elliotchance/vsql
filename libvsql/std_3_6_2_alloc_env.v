@@ -10,8 +10,7 @@ fn sql_alloc_env(environment_handle &SQLInteger) i16 {
 	defer {
 		entry.leave()
 	}
-	// - 1. AllocHandle is implicitly invoked with HandleType indicating
-	// ENVIRONMENT HANDLE, with zero as the value of InputHandle, and with
-	// EnvironmentHandle as OutputHandle.
+	// ISO/IEC 9075-3:2003(E), 6.2, AllocEnv, General Rules, 1: the same as
+	// AllocHandle of an ENVIRONMENT HANDLE, with no input handle.
 	return sql_alloc_handle(sql_handle_env, 0, environment_handle)
 }

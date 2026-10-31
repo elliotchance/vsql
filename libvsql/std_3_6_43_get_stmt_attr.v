@@ -3,6 +3,11 @@ module main
 // ISO/IEC 9075-3:2003(E), 6.43, GetStmtAttr
 //
 // Get the value of an SQL-statement attribute.
+//
+// Scrollable cursors, cursor sensitivity and cursor holdability are supported
+// (General Rules, 4.e.i, 4.f.i and 4.h.i), and the attribute always has one of
+// the values (General Rules, 4.h.i.3). There are no implementation-defined
+// statement attributes (General Rules, 5).
 
 // Codes from Table 17, "Codes used for statement attributes".
 const sql_attr_cursor_holdable = -3
@@ -34,7 +39,8 @@ fn sql_get_stmt_attr(statement_handle SQLInteger, attribute SQLInteger, value vo
 	mut stmt := stmts[i64(statement_handle)] or { return sql_invalid_handle }
 	stmt.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.i.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.i
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 
 	return get_stmt_attr(stmt, attribute, value) or { stmt.diag.error(err) }

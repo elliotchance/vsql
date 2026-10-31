@@ -1,0 +1,12 @@
+# ISO/IEC 9075-1:2003(E)
+# id status code tests note (see docs/standard-index.rst)
+# 7, Annexes to the parts of ISO/IEC 9075
+7                        definition   - - about the standard itself
+# 7.1, Implementation-defined elements
+7.1                      definition   - - about the standard itself
+# 7.2, Implementation-dependent elements
+7.2                      definition   - - about the standard itself
+# 7.3, Deprecated features
+7.3                      definition   - - about the standard itself
+# 7.4, Incompatibilities with previous versions
+7.4                      definition   - - about the standard itself

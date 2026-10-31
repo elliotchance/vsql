@@ -1,0 +1,1915 @@
+# ISO/IEC 9075-2:2016(E)
+# id status code tests note (see docs/standard-index.rst)
+# 9, Additional common rules
+9                        container    - -
+# 9.1, Retrieval assignment
+9.1                      partial      vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the indicator of a value that isn't truncated isn't 0 (zero), and it can overflow (#782)
+9.1/SR/1                 definition   - -
+9.1/SR/2                 definition   - -
+9.1/SR/3                 partial      vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a value that isn't assignable is cast when it's retrieved (by SQLGetData), rather than being a syntax error
+9.1/SR/4                 n/a          - - binary strings (T021)
+9.1/SR/4.a               n/a          - - binary strings (T021)
+9.1/SR/4.b               n/a          - - binary strings (T021)
+9.1/SR/5                 partial      vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a value that isn't assignable is cast when it's retrieved (by SQLGetData), rather than being a syntax error
+9.1/SR/5.a               n/a          - - there are no CLOBs or locators (T041)
+9.1/SR/5.b               partial      vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a value that isn't assignable is cast when it's retrieved (by SQLGetData), rather than being a syntax error
+9.1/SR/6                 n/a          - - reference types (S041)
+9.1/SR/7                 n/a          - - there are no row type host parameters (13.5)
+9.1/SR/7.a               n/a          - - there are no row type host parameters (13.5)
+9.1/SR/7.b               n/a          - - there are no row type host parameters (13.5)
+9.1/SR/7.c               n/a          - - there are no row type host parameters (13.5)
+9.1/SR/8                 n/a          - - arrays (S091) and multisets (S271)
+9.1/SR/8.a               n/a          - - arrays (S091) and multisets (S271)
+9.1/SR/8.b               n/a          - - arrays (S091) and multisets (S271)
+9.1/SR/8.c               n/a          - - arrays (S091) and multisets (S271)
+9.1/GR/1                 definition   - -
+9.1/GR/2                 n/a          - - user-defined cast functions (S211)
+9.1/GR/3                 implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/3.a               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/3.b               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/4                 implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c host variables are the host parameters of the implied module (21.1)
+9.1/GR/4.a               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c host variables are the host parameters of the implied module (21.1)
+9.1/GR/4.b               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c host variables are the host parameters of the implied module (21.1)
+9.1/GR/5                 deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the indicator of a value that isn't truncated isn't 0 (zero), and it can overflow (#782)
+9.1/GR/5.a               deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a length that's too big for the indicator isn't 22022 (#782)
+9.1/GR/5.b               deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the indicator is the length of the value (#782)
+9.1/GR/6                 deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the indicator of a value that isn't truncated isn't 0 (zero), and it can overflow (#782)
+9.1/GR/6.a               deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a length that's too big for the indicator isn't 22022 (#782)
+9.1/GR/6.b               deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the indicator is the length of the value (#782)
+9.1/GR/7                 implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/7.a               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/7.b               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/7.c               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/7.d               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/7.e               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/7.f               n/a          - - there are no CLOBs (T041)
+9.1/GR/7.g               n/a          - - there are no CLOBs (T041)
+9.1/GR/7.h               n/a          - - binary strings (T021)
+9.1/GR/7.i               n/a          - - binary strings (T021)
+9.1/GR/7.j               n/a          - - binary strings (T021)
+9.1/GR/7.k               n/a          - - binary strings (T021)
+9.1/GR/7.l               n/a          - - binary strings (T021)
+9.1/GR/7.m               n/a          - - there are no BLOBs (T041)
+9.1/GR/7.n               n/a          - - there are no BLOBs (T041)
+9.1/GR/7.o               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/7.o.i             implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/7.o.ii            impl-defined vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the value is cast by SQLGetData, which truncates an exact numeric (6.13)
+9.1/GR/7.o.iii           untested     vsql/std_2_14_7_select_statement_single_row.c - 22003 from the cast by SQLGetData
+9.1/GR/7.p               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/7.q               n/a          - - there are no datetime host parameters (13.5)
+9.1/GR/7.q.i             n/a          - - there are no datetime host parameters (13.5)
+9.1/GR/7.q.ii            container    - -
+9.1/GR/7.q.ii.1          n/a          - - there are no datetime host parameters (13.5)
+9.1/GR/7.q.ii.2          n/a          - - there are no datetime host parameters (13.5)
+9.1/GR/7.q.ii.3          n/a          - - there are no datetime host parameters (13.5)
+9.1/GR/7.r               n/a          - - intervals (F052)
+9.1/GR/7.r.i             n/a          - - intervals (F052)
+9.1/GR/7.r.ii            n/a          - - intervals (F052)
+9.1/GR/7.r.iii           n/a          - - intervals (F052)
+9.1/GR/7.s               n/a          - - there are no row type host parameters (13.5)
+9.1/GR/7.s.i             n/a          - - there are no row type host parameters (13.5)
+9.1/GR/7.s.ii            n/a          - - there are no row type host parameters (13.5)
+9.1/GR/7.t               n/a          - - reference types (S041)
+9.1/GR/7.u               n/a          - - arrays (S091)
+9.1/GR/7.u.i             n/a          - - arrays (S091)
+9.1/GR/7.u.ii            n/a          - - arrays (S091)
+9.1/GR/7.u.iii           n/a          - - arrays (S091)
+9.1/GR/7.v               n/a          - - multisets (S271)
+9.1/GR/7.w               n/a          - - user-defined types (S023)
+# 9.2, Store assignment
+9.2                      implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql,tests/character.sql,tests/datetime-store-assignment.sql an indicator less than -1 is the null value (#783)
+9.2/SR/1                 definition   - -
+9.2/SR/2                 definition   - -
+9.2/SR/3                 implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql,tests/datetime-store-assignment.sql
+9.2/SR/4                 n/a          - - reference types (S041)
+9.2/SR/5                 n/a          - - there are no row type sites
+9.2/SR/5.a               n/a          - - there are no row type sites
+9.2/SR/5.b               n/a          - - there are no row type sites
+9.2/SR/5.c               n/a          - - there are no row type sites
+9.2/SR/6                 n/a          - - arrays (S091) and multisets (S271)
+9.2/SR/6.a               n/a          - - arrays (S091) and multisets (S271)
+9.2/SR/6.b               n/a          - - arrays (S091) and multisets (S271)
+9.2/SR/6.c               n/a          - - arrays (S091) and multisets (S271)
+9.2/GR/1                 definition   - -
+9.2/GR/2                 n/a          - - user-defined cast functions (S211)
+9.2/GR/3                 container    - -
+9.2/GR/3.a               implemented  vsql/std_2_9_2_store_assignment.v tests/null.sql
+9.2/GR/3.a.i             implemented  vsql/std_2_9_2_store_assignment.v tests/null.sql
+9.2/GR/3.a.ii            deviates     vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod any negative indicator is the null value (#783)
+9.2/GR/3.a.ii.1          implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
+9.2/GR/3.a.ii.2          deviates     vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod an indicator less than -1 is the null value (#783)
+9.2/GR/3.a.iii           deviates     vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod any negative indicator is the null value (#783)
+9.2/GR/3.a.iii.1         implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod host variables are the host parameters of the implied module (21.1)
+9.2/GR/3.a.iii.2         deviates     vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod an indicator less than -1 is the null value (#783)
+9.2/GR/3.a.iv            implemented  vsql/std_2_9_2_store_assignment.v tests/null.sql
+9.2/GR/3.b               implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql
+9.2/GR/3.b.i             implemented  vsql/std_2_9_2_store_assignment.v tests/character.sql
+9.2/GR/3.b.ii            implemented  vsql/std_2_9_2_store_assignment.v tests/character.sql
+9.2/GR/3.b.ii.1          implemented  vsql/std_2_9_2_store_assignment.v tests/character.sql
+9.2/GR/3.b.ii.2          implemented  vsql/std_2_9_2_store_assignment.v tests/character.sql
+9.2/GR/3.b.iii           implemented  vsql/std_2_9_2_store_assignment.v tests/character.sql
+9.2/GR/3.b.iv            implemented  vsql/std_2_9_2_store_assignment.v tests/character-varying.sql
+9.2/GR/3.b.v             implemented  vsql/std_2_9_2_store_assignment.v tests/character-varying.sql
+9.2/GR/3.b.v.1           implemented  vsql/std_2_9_2_store_assignment.v tests/character-varying.sql
+9.2/GR/3.b.v.2           implemented  vsql/std_2_9_2_store_assignment.v tests/character-varying.sql
+9.2/GR/3.b.vi            n/a          - - there are no CLOBs (T041)
+9.2/GR/3.b.vii           n/a          - - there are no CLOBs (T041)
+9.2/GR/3.b.vii.1         n/a          - - there are no CLOBs (T041)
+9.2/GR/3.b.vii.2         n/a          - - there are no CLOBs (T041)
+9.2/GR/3.b.viii          n/a          - - binary strings (T021)
+9.2/GR/3.b.ix            n/a          - - binary strings (T021)
+9.2/GR/3.b.ix.1          n/a          - - binary strings (T021)
+9.2/GR/3.b.ix.2          n/a          - - binary strings (T021)
+9.2/GR/3.b.x             n/a          - - binary strings (T021)
+9.2/GR/3.b.xi            n/a          - - binary strings (T021)
+9.2/GR/3.b.xii           n/a          - - binary strings (T021)
+9.2/GR/3.b.xii.1         n/a          - - binary strings (T021)
+9.2/GR/3.b.xii.2         n/a          - - binary strings (T021)
+9.2/GR/3.b.xiii          n/a          - - there are no BLOBs (T041)
+9.2/GR/3.b.xiv           n/a          - - there are no BLOBs (T041)
+9.2/GR/3.b.xiv.1         n/a          - - there are no BLOBs (T041)
+9.2/GR/3.b.xiv.2         n/a          - - there are no BLOBs (T041)
+9.2/GR/3.b.xv            implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql,tests/integer.sql
+9.2/GR/3.b.xv.1          implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql,tests/integer.sql
+9.2/GR/3.b.xv.2          impl-defined vsql/std_2_9_2_store_assignment.v tests/insert.sql an exact numeric is truncated
+9.2/GR/3.b.xv.3          implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql,tests/integer.sql
+9.2/GR/3.b.xvi           implemented  vsql/std_2_9_2_store_assignment.v tests/datetime-store-assignment.sql
+9.2/GR/3.b.xvi.1         implemented  vsql/std_2_9_2_store_assignment.v tests/datetime-store-assignment.sql
+9.2/GR/3.b.xvi.2         implemented  vsql/std_2_9_2_store_assignment.v tests/datetime-store-assignment.sql
+9.2/GR/3.b.xvi.2.A       implemented  vsql/std_2_9_2_store_assignment.v tests/datetime-store-assignment.sql
+9.2/GR/3.b.xvi.2.B       impl-defined vsql/std_2_9_2_store_assignment.v tests/datetime-store-assignment.sql the fractional seconds are truncated
+9.2/GR/3.b.xvi.2.C       n/a          - - every datetime is within the range of every datetime type
+9.2/GR/3.b.xvii          n/a          - - intervals (F052)
+9.2/GR/3.b.xvii.1        n/a          - - intervals (F052)
+9.2/GR/3.b.xvii.2        n/a          - - intervals (F052)
+9.2/GR/3.b.xvii.3        n/a          - - intervals (F052)
+9.2/GR/3.b.xviii         implemented  vsql/std_2_9_2_store_assignment.v tests/boolean.sql
+9.2/GR/3.b.xix           n/a          - - there are no row type sites
+9.2/GR/3.b.xix.1         n/a          - - there are no row type sites
+9.2/GR/3.b.xix.2         n/a          - - there are no row type sites
+9.2/GR/3.b.xx            n/a          - - reference types (S041)
+9.2/GR/3.b.xxi           n/a          - - arrays (S091)
+9.2/GR/3.b.xxi.1         n/a          - - arrays (S091)
+9.2/GR/3.b.xxi.2         n/a          - - arrays (S091)
+9.2/GR/3.b.xxi.2.A       n/a          - - arrays (S091)
+9.2/GR/3.b.xxi.2.B       n/a          - - arrays (S091)
+9.2/GR/3.b.xxi.3         n/a          - - arrays (S091)
+9.2/GR/3.b.xxii          n/a          - - multisets (S271)
+9.2/GR/3.b.xxiii         n/a          - - user-defined types (S023)
+# 9.3, Passing a value from a host language to the SQL-server
+9.3                      implemented  vsql/std_2_13_5_data_type_correspondences.v libvsql/module/test_main.c only for C
+9.3/GR/1                 definition   - -
+9.3/GR/2                 definition   - -
+9.3/GR/3                 implemented  vsql/std_2_13_5_data_type_correspondences.v libvsql/module/test_main.c only for C (Table 20)
+9.3/GR/4                 implemented  vsql/std_2_13_5_data_type_correspondences.v libvsql/module/test_main.c
+9.3/GR/4.a               n/a          - - there are no locators (T041)
+9.3/GR/4.a.i             n/a          - - there are no locators (T041)
+9.3/GR/4.a.ii            n/a          - - there are no locators (T041)
+9.3/GR/4.a.iii           n/a          - - there are no locators (T041)
+9.3/GR/4.a.iv            n/a          - - there are no locators (T041)
+9.3/GR/4.a.v             n/a          - - there are no locators (T041)
+9.3/GR/4.a.vi            n/a          - - there are no locators (T041)
+9.3/GR/4.a.vii           n/a          - - there are no locators (T041)
+9.3/GR/4.b               implemented  vsql/std_2_13_5_data_type_correspondences.v libvsql/module/test_main.c
+9.3/GR/5                 container    - -
+9.3/GR/5.a               n/a          - - there are no locators (T041)
+9.3/GR/5.a.i             n/a          - - there are no locators (T041)
+9.3/GR/5.a.ii            n/a          - - there are no locators (T041)
+9.3/GR/5.b               implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
+9.3/GR/5.b.i             implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
+9.3/GR/5.b.ii            implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
+9.3/GR/5.b.iii           implemented  vsql/std_2_13_1_sql_client_module_definition.c libvsql/module/test_main.c
+9.3/GR/5.c               n/a          - - Ada (B111), COBOL (B113), Fortran (B114), MUMPS (B115), Pascal (B116) and PL/I (B117)
+9.3/GR/5.c.i             n/a          - - Ada (B111), COBOL (B113), Fortran (B114) and Pascal (B116)
+9.3/GR/5.c.ii            n/a          - - MUMPS (B115)
+9.3/GR/5.c.iii           n/a          - - PL/I (B117)
+9.3/GR/5.d               n/a          - - MUMPS (B115)
+9.3/GR/5.e               implemented  vsql/std_2_13_5_data_type_correspondences.v libvsql/module/test_main.c only for C
+9.3/GR/5.e.i             n/a          - - Ada (B111)
+9.3/GR/5.e.i.1           n/a          - - Ada (B111)
+9.3/GR/5.e.i.2           n/a          - - Ada (B111)
+9.3/GR/5.e.ii            implemented  vsql/std_2_13_5_data_type_correspondences.v libvsql/module/test_main.c
+9.3/GR/5.e.ii.1          implemented  vsql/std_2_13_5_data_type_correspondences.v libvsql/module/test_main.c
+9.3/GR/5.e.ii.2          implemented  vsql/std_2_13_5_data_type_correspondences.v libvsql/module/test_main.c
+9.3/GR/5.e.iii           n/a          - - COBOL (B113)
+9.3/GR/5.e.iii.1         n/a          - - COBOL (B113)
+9.3/GR/5.e.iii.2         n/a          - - COBOL (B113)
+9.3/GR/5.e.iv            n/a          - - Fortran (B114)
+9.3/GR/5.e.iv.1          n/a          - - Fortran (B114)
+9.3/GR/5.e.iv.2          n/a          - - Fortran (B114)
+9.3/GR/5.e.v             n/a          - - Pascal (B116)
+9.3/GR/5.e.vi            n/a          - - PL/I (B117)
+9.3/GR/5.e.vi.1          n/a          - - PL/I (B117)
+9.3/GR/5.e.vi.2          n/a          - - PL/I (B117)
+9.3/GR/5.f               n/a          - - there are no LOBs (T041)
+9.3/GR/5.f.i             n/a          - - there are no LOBs (T041)
+9.3/GR/5.f.i.1           n/a          - - there are no LOBs (T041)
+9.3/GR/5.f.i.2           n/a          - - there are no LOBs (T041)
+9.3/GR/5.f.ii            n/a          - - there are no LOBs (T041)
+9.3/GR/5.g               n/a          - - binary strings (T021)
+9.3/GR/5.g.i             n/a          - - binary strings (T021)
+9.3/GR/5.g.ii            n/a          - - binary strings (T021)
+9.3/GR/5.h               n/a          - - binary strings (T021)
+9.3/GR/5.h.i             n/a          - - binary strings (T021)
+9.3/GR/5.h.ii            n/a          - - binary strings (T021)
+9.3/GR/5.i               n/a          - - binary strings (T021)
+9.3/GR/5.i.i             n/a          - - binary strings (T021)
+9.3/GR/5.i.ii            n/a          - - binary strings (T021)
+9.3/GR/5.j               implemented  vsql/std_2_13_5_data_type_correspondences.v libvsql/module/test_main.c
+# 9.4, Passing a value from the SQL-server to a host language
+9.4                      partial      vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a CHARACTER VARYING isn't padded with spaces (#784)
+9.4/GR/1                 definition   - -
+9.4/GR/2                 implemented  vsql/std_2_13_5_data_type_correspondences.v libvsql/module/test_main.c only for C (Table 20)
+9.4/GR/3                 implemented  vsql/std_2_13_5_data_type_correspondences.v libvsql/module/test_main.c
+9.4/GR/3.a               n/a          - - there are no locators (T041)
+9.4/GR/3.a.i             n/a          - - there are no locators (T041)
+9.4/GR/3.a.ii            n/a          - - there are no locators (T041)
+9.4/GR/3.a.iii           n/a          - - there are no locators (T041)
+9.4/GR/3.a.iv            n/a          - - there are no locators (T041)
+9.4/GR/3.a.v             n/a          - - there are no locators (T041)
+9.4/GR/3.a.vi            n/a          - - there are no locators (T041)
+9.4/GR/3.a.vii           n/a          - - there are no locators (T041)
+9.4/GR/3.b               implemented  vsql/std_2_13_5_data_type_correspondences.v libvsql/module/test_main.c
+9.4/GR/4                 definition   - -
+9.4/GR/5                 container    - -
+9.4/GR/5.a               n/a          - - there are no locators (T041)
+9.4/GR/5.b               deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a CHARACTER VARYING isn't padded with spaces (#784)
+9.4/GR/5.c               n/a          - - Ada (B111), COBOL (B113), Fortran (B114) and Pascal (B116)
+9.4/GR/5.d               n/a          - - MUMPS (B115)
+9.4/GR/5.e               n/a          - - PL/I (B117)
+9.4/GR/5.e.i             n/a          - - PL/I (B117)
+9.4/GR/5.e.ii            n/a          - - PL/I (B117)
+9.4/GR/5.f               n/a          - - MUMPS (B115)
+9.4/GR/5.g               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c only for C
+9.4/GR/5.g.i             n/a          - - Ada (B111)
+9.4/GR/5.g.i.1           n/a          - - Ada (B111)
+9.4/GR/5.g.i.2           n/a          - - Ada (B111)
+9.4/GR/5.g.ii            implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.4/GR/5.g.ii.1          implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.4/GR/5.g.ii.2          implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.4/GR/5.g.iii           n/a          - - COBOL (B113)
+9.4/GR/5.g.iii.1         n/a          - - COBOL (B113)
+9.4/GR/5.g.iii.2         n/a          - - COBOL (B113)
+9.4/GR/5.g.iv            n/a          - - Fortran (B114)
+9.4/GR/5.g.iv.1          n/a          - - Fortran (B114)
+9.4/GR/5.g.iv.2          n/a          - - Fortran (B114)
+9.4/GR/5.g.v             n/a          - - Pascal (B116)
+9.4/GR/5.g.vi            n/a          - - PL/I (B117)
+9.4/GR/5.g.vi.1          n/a          - - PL/I (B117)
+9.4/GR/5.g.vi.2          n/a          - - PL/I (B117)
+9.4/GR/5.h               n/a          - - there are no LOBs (T041)
+9.4/GR/5.h.i             n/a          - - there are no LOBs (T041)
+9.4/GR/5.h.i.1           n/a          - - there are no LOBs (T041)
+9.4/GR/5.h.i.2           n/a          - - there are no LOBs (T041)
+9.4/GR/5.h.ii            n/a          - - there are no LOBs (T041)
+9.4/GR/5.i               n/a          - - binary strings (T021)
+9.4/GR/5.j               n/a          - - binary strings (T021)
+9.4/GR/5.k               n/a          - - binary strings (T021)
+9.4/GR/5.l               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+# 9.5, Result of data type combinations
+9.5                      implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
+9.5/SR/1                 definition   - -
+9.5/SR/2                 n/a          - - a dynamic parameter has the type of its value, so no type is undefined
+9.5/SR/3                 container    - -
+9.5/SR/3.a               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
+9.5/SR/3.a.i             implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql there are no character sets other than UTF8
+9.5/SR/3.a.ii            n/a          - - there are no collations other than the default (F690)
+9.5/SR/3.a.ii.1          n/a          - - there are no collations other than the default (F690)
+9.5/SR/3.a.ii.2          n/a          - - there are no collations other than the default (F690)
+9.5/SR/3.a.ii.2.A        n/a          - - there are no collations other than the default (F690)
+9.5/SR/3.a.ii.2.B        n/a          - - there are no collations other than the default (F690)
+9.5/SR/3.a.ii.3          n/a          - - there are no collations other than the default (F690)
+9.5/SR/3.a.iii           container    - -
+9.5/SR/3.a.iii.1         n/a          - - there are no CLOBs (T041)
+9.5/SR/3.a.iii.2         implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
+9.5/SR/3.a.iii.3         implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
+9.5/SR/3.b               n/a          - - binary strings (T021)
+9.5/SR/3.b.i             n/a          - - binary strings (T021)
+9.5/SR/3.b.ii            n/a          - - binary strings (T021)
+9.5/SR/3.b.iii           n/a          - - binary strings (T021)
+9.5/SR/3.c               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
+9.5/SR/3.c.i             implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
+9.5/SR/3.c.ii            implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
+9.5/SR/3.c.ii.1          n/a          - - decimal floating-point (T076)
+9.5/SR/3.c.ii.2          impl-defined vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql REAL if they are all REAL, otherwise DOUBLE PRECISION
+9.5/SR/3.c.ii.3          impl-defined vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql enough for the largest integer part and scale, up to the maximum precision; integers are the largest integer type
+9.5/SR/3.d               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/values-combined-type.sql,tests/coalesce.sql
+9.5/SR/3.e               n/a          - - intervals (F052)
+9.5/SR/3.f               implemented  vsql/std_2_9_5_result_of_data_type_combinations.v tests/case-expression.sql
+9.5/SR/3.g               n/a          - - row types (T051)
+9.5/SR/3.g.i             n/a          - - row types (T051)
+9.5/SR/3.g.ii            n/a          - - row types (T051)
+9.5/SR/3.h               n/a          - - arrays (S091)
+9.5/SR/3.i               n/a          - - multisets (S271)
+9.5/SR/3.j               n/a          - - reference types (S041)
+9.5/SR/3.j.i             n/a          - - reference types (S041)
+9.5/SR/3.j.ii            n/a          - - reference types (S041)
+9.5/SR/3.k               n/a          - - user-defined types (S023)
+# 9.6, Subject routine determination
+9.6                      n/a          - - SQL-invoked routines (T321)
+9.6/SR/1                 n/a          - - SQL-invoked routines (T321)
+9.6/SR/2                 n/a          - - SQL-invoked routines (T321)
+9.6/SR/3                 n/a          - - SQL-invoked routines (T321)
+9.6/SR/4                 n/a          - - SQL-invoked routines (T321)
+9.6/SR/5                 n/a          - - SQL-invoked routines (T321)
+9.6/SR/6                 n/a          - - SQL-invoked routines (T321)
+9.6/SR/6.a               n/a          - - SQL-invoked routines (T321)
+9.6/SR/6.b               n/a          - - SQL-invoked routines (T321)
+9.6/SR/7                 n/a          - - SQL-invoked routines (T321)
+# 9.7, Type precedence list determination
+9.7                      n/a          - - SQL-invoked routines (T321)
+9.7/SR/1                 n/a          - - SQL-invoked routines (T321)
+9.7/SR/2                 n/a          - - SQL-invoked routines (T321)
+9.7/SR/3                 n/a          - - SQL-invoked routines (T321)
+9.7/SR/4                 n/a          - - SQL-invoked routines (T321)
+9.7/SR/4.a               n/a          - - SQL-invoked routines (T321)
+9.7/SR/4.b               n/a          - - SQL-invoked routines (T321)
+9.7/SR/4.c               n/a          - - SQL-invoked routines (T321)
+9.7/SR/4.d               n/a          - - SQL-invoked routines (T321)
+9.7/SR/4.e               n/a          - - SQL-invoked routines (T321)
+9.7/SR/5                 n/a          - - SQL-invoked routines (T321)
+9.7/SR/6                 n/a          - - SQL-invoked routines (T321)
+9.7/SR/7                 n/a          - - SQL-invoked routines (T321)
+9.7/SR/8                 n/a          - - SQL-invoked routines (T321)
+9.7/SR/9                 n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.a               n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.a.i             n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.a.ii            n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.a.iii           n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.a.iv            n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.b               n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.b.i             n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.b.ii            n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.b.iii           n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.b.iv            n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.b.v             n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.b.vi            n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.b.vii           n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.b.viii          n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.c               n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.c.i             n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.c.ii            n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.c.iii           n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.c.iv            n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.c.iv.1          n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.c.iv.2          container    - -
+9.7/SR/9.c.iv.2.A        n/a          - - SQL-invoked routines (T321)
+9.7/SR/9.c.iv.2.B        n/a          - - SQL-invoked routines (T321)
+9.7/SR/10                n/a          - - SQL-invoked routines (T321)
+9.7/SR/11                n/a          - - SQL-invoked routines (T321)
+9.7/SR/12                n/a          - - SQL-invoked routines (T321)
+9.7/SR/13                n/a          - - SQL-invoked routines (T321)
+9.7/SR/14                n/a          - - SQL-invoked routines (T321)
+9.7/SR/15                n/a          - - SQL-invoked routines (T321)
+9.7/SR/16                n/a          - - SQL-invoked routines (T321)
+9.7/SR/17                n/a          - - SQL-invoked routines (T321)
+9.7/SR/18                n/a          - - SQL-invoked routines (T321)
+9.7/SR/19                n/a          - - SQL-invoked routines (T321)
+9.7/SR/20                n/a          - - SQL-invoked routines (T321)
+9.7/CR/1                 n/a          - - SQL-invoked routines (T321)
+# 9.8, Host parameter mode determination
+9.8                      implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
+9.8/SR/1                 definition   - -
+9.8/SR/2                 definition   - -
+9.8/SR/3                 implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
+9.8/SR/3.a               implemented  vsql/std_2_13_3_externally_invoked_procedure.v libvsql/module/test.mod
+9.8/SR/3.b               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
+9.8/SR/3.b.i             n/a          - - there is no <call statement> (T321)
+9.8/SR/3.b.i.1           n/a          - - there is no <call statement> (T321)
+9.8/SR/3.b.i.2           n/a          - - there is no <call statement> (T321)
+9.8/SR/3.b.i.3           container    - -
+9.8/SR/3.b.i.3.A         n/a          - - there is no <call statement> (T321)
+9.8/SR/3.b.i.3.B         n/a          - - there is no <call statement> (T321)
+9.8/SR/3.b.i.3.C         n/a          - - there is no <call statement> (T321)
+9.8/SR/3.b.ii            implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
+9.8/SR/3.b.iii           implemented  vsql/std_2_14_7_select_statement_single_row.v libvsql/module/test.mod
+9.8/SR/3.b.iv            implemented  vsql/std_2_14_7_select_statement_single_row.v libvsql/module/test.mod
+9.8/SR/3.b.v             implemented  vsql/std_2_13_3_externally_invoked_procedure.v libvsql/module/test.mod
+# 9.9, Type name determination
+9.9                      n/a          - - user-defined types (S023)
+9.9/SR/1                 n/a          - - user-defined types (S023)
+9.9/SR/2                 n/a          - - user-defined types (S023)
+9.9/SR/2.a               n/a          - - user-defined types (S023)
+9.9/SR/2.b               n/a          - - user-defined types (S023)
+9.9/SR/2.c               n/a          - - user-defined types (S023)
+9.9/SR/2.d               n/a          - - user-defined types (S023)
+9.9/SR/2.e               n/a          - - user-defined types (S023)
+9.9/SR/2.f               n/a          - - user-defined types (S023)
+9.9/SR/2.g               n/a          - - user-defined types (S023)
+9.9/SR/2.h               n/a          - - user-defined types (S023)
+9.9/SR/2.i               n/a          - - user-defined types (S023)
+9.9/SR/2.j               n/a          - - user-defined types (S023)
+9.9/SR/2.k               n/a          - - user-defined types (S023)
+9.9/SR/2.l               n/a          - - user-defined types (S023)
+9.9/SR/2.m               n/a          - - user-defined types (S023)
+9.9/SR/2.n               n/a          - - user-defined types (S023)
+9.9/SR/2.o               n/a          - - user-defined types (S023)
+9.9/SR/2.p               n/a          - - user-defined types (S023)
+9.9/SR/2.q               n/a          - - user-defined types (S023)
+9.9/SR/2.r               n/a          - - user-defined types (S023)
+9.9/SR/2.s               n/a          - - user-defined types (S023)
+9.9/SR/2.t               n/a          - - user-defined types (S023)
+9.9/SR/2.u               n/a          - - user-defined types (S023)
+# 9.10, Determination of identical values
+9.10                     n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/1                n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2                container    - -
+9.10/GR/2.a              n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.b              n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.c              n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.c.i            n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.c.i.1          n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.c.i.2          n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.c.ii           n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.c.iii          n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.d              n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.d.i            n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.d.ii           n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.d.iii          n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.d.iv           n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.d.v            n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.e              n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.e.i            n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.e.ii           n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.e.iii          n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+9.10/GR/2.f              n/a          - - nothing compares values for being identical; an outer join (7.10) keeps track of the rows that were matched instead
+# 9.11, Equality operations
+9.11                     implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+9.11/SR/1                definition   - -
+9.11/SR/1.a              definition   - -
+9.11/SR/1.b              definition   - -
+9.11/SR/1.c              definition   - -
+9.11/SR/1.d              definition   - -
+9.11/SR/1.e              definition   - -
+9.11/SR/1.f              definition   - -
+9.11/SR/1.g              definition   - -
+9.11/SR/1.h              definition   - -
+9.11/SR/1.i              definition   - -
+9.11/SR/2                definition   - -
+9.11/SR/2.a              definition   - -
+9.11/SR/2.b              definition   - -
+9.11/SR/2.c              definition   - -
+9.11/SR/2.d              definition   - -
+9.11/SR/2.e              definition   - -
+9.11/SR/2.f              definition   - -
+9.11/SR/2.g              definition   - -
+9.11/SR/2.h              definition   - -
+9.11/SR/2.i              definition   - -
+9.11/SR/2.j              definition   - -
+9.11/SR/2.k              definition   - -
+9.11/SR/2.l              definition   - -
+9.11/SR/2.m              definition   - -
+9.11/SR/3                n/a          - - user-defined types (S023)
+9.11/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql only the default collation
+9.11/SR/5                n/a          - - multisets (S271)
+9.11/CR/1                n/a          - - structured types (S024)
+9.11/CR/2                n/a          - - there are no LOBs (T042)
+9.11/CR/3                n/a          - - multisets (S275)
+# 9.12, Grouping operations
+9.12                     implemented  vsql/std_2_8_2_comparison_predicate.v tests/select-distinct.sql
+9.12/SR/1                definition   - -
+9.12/SR/1.a              definition   - -
+9.12/SR/1.b              definition   - -
+9.12/SR/1.c              definition   - -
+9.12/SR/1.d              definition   - -
+9.12/SR/1.e              definition   - -
+9.12/SR/1.f              definition   - -
+9.12/SR/1.g              definition   - -
+9.12/SR/1.h              definition   - -
+9.12/SR/1.i              definition   - -
+9.12/SR/1.j              definition   - -
+9.12/SR/1.k              definition   - -
+9.12/SR/1.l              definition   - -
+9.12/SR/2                definition   - -
+9.12/SR/2.a              definition   - -
+9.12/SR/2.b              definition   - -
+9.12/SR/2.c              definition   - -
+9.12/SR/2.d              definition   - -
+9.12/SR/2.e              definition   - -
+9.12/SR/2.f              definition   - -
+9.12/SR/2.g              definition   - -
+9.12/SR/2.h              definition   - -
+9.12/SR/2.i              definition   - -
+9.12/SR/2.j              definition   - -
+9.12/SR/2.k              definition   - -
+9.12/SR/2.l              definition   - -
+9.12/SR/3                n/a          - - there are no LOBs, arrays, multisets or user-defined types
+9.12/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/select-distinct.sql only the default collation
+9.12/CR/1                n/a          - - structured types (S024)
+# 9.13, Multiset element grouping operations
+9.13                     n/a          - - multisets (S271)
+9.13/SR/1                n/a          - - multisets (S271)
+9.13/SR/1.a              n/a          - - multisets (S271)
+9.13/SR/1.b              n/a          - - multisets (S271)
+9.13/SR/1.c              n/a          - - multisets (S271)
+9.13/SR/1.d              n/a          - - multisets (S271)
+9.13/SR/1.e              n/a          - - multisets (S271)
+9.13/SR/1.f              n/a          - - multisets (S271)
+9.13/SR/1.g              n/a          - - multisets (S271)
+9.13/SR/1.h              n/a          - - multisets (S271)
+9.13/SR/2                n/a          - - multisets (S271)
+9.13/SR/2.a              n/a          - - multisets (S271)
+9.13/SR/2.b              n/a          - - multisets (S271)
+9.13/SR/2.c              n/a          - - multisets (S271)
+9.13/SR/2.d              n/a          - - multisets (S271)
+9.13/SR/2.e              n/a          - - multisets (S271)
+9.13/SR/2.f              n/a          - - multisets (S271)
+9.13/SR/2.g              n/a          - - multisets (S271)
+9.13/SR/2.h              n/a          - - multisets (S271)
+9.13/SR/2.i              n/a          - - multisets (S271)
+9.13/SR/3                n/a          - - multisets (S271)
+9.13/SR/4                n/a          - - multisets (S271)
+9.13/CR/1                n/a          - - multisets (S271)
+# 9.14, Ordering operations
+9.14                     implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql
+9.14/SR/1                definition   - -
+9.14/SR/1.a              definition   - -
+9.14/SR/1.b              definition   - -
+9.14/SR/1.c              definition   - -
+9.14/SR/1.d              definition   - -
+9.14/SR/1.e              definition   - -
+9.14/SR/1.f              definition   - -
+9.14/SR/1.g              definition   - -
+9.14/SR/2                definition   - -
+9.14/SR/2.a              definition   - -
+9.14/SR/2.b              definition   - -
+9.14/SR/2.c              definition   - -
+9.14/SR/2.d              definition   - -
+9.14/SR/2.e              definition   - -
+9.14/SR/2.f              definition   - -
+9.14/SR/2.g              definition   - -
+9.14/SR/2.h              definition   - -
+9.14/SR/3                n/a          - - there are no LOBs, arrays, multisets, reference types or user-defined types
+9.14/SR/4                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql only the default collation
+9.14/CR/1                n/a          - - structured types (S024)
+# 9.15, Collation determination
+9.15                     impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql only the default collation, which is PAD SPACE
+9.15/SR/1                definition   - -
+9.15/SR/2                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql every character string has the default collation
+9.15/SR/3                impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql the character set is always UTF8
+9.15/SR/4                container    - -
+9.15/SR/4.a              impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql only the default collation
+9.15/SR/4.b              n/a          - - there is no COLLATE (F690)
+9.15/SR/4.c              n/a          - - SQL-session collations (F693)
+9.15/SR/4.d              n/a          - - SQL-client module collations (F693)
+9.15/SR/4.e              impl-defined vsql/std_2_8_2_comparison_predicate.v tests/std_8_2_comparison_predicate.sql only the default collation
+# 9.16, Execution of array-returning functions
+9.16                     n/a          - - external routines (S201)
+9.16/GR/1                n/a          - - external routines (S201)
+9.16/GR/2                n/a          - - external routines (S201)
+9.16/GR/3                n/a          - - external routines (S201)
+9.16/GR/4                n/a          - - external routines (S201)
+9.16/GR/5                n/a          - - external routines (S201)
+9.16/GR/6                n/a          - - external routines (S201)
+9.16/GR/7                n/a          - - external routines (S201)
+9.16/GR/7.a              n/a          - - external routines (S201)
+9.16/GR/7.b              n/a          - - external routines (S201)
+9.16/GR/8                n/a          - - external routines (S201)
+9.16/GR/9                n/a          - - external routines (S201)
+9.16/GR/9.a              n/a          - - external routines (S201)
+9.16/GR/9.b              n/a          - - external routines (S201)
+9.16/GR/9.c              n/a          - - external routines (S201)
+9.16/GR/10               n/a          - - external routines (S201)
+9.16/GR/10.a             n/a          - - external routines (S201)
+9.16/GR/10.b             n/a          - - external routines (S201)
+9.16/GR/10.b.i           n/a          - - external routines (S201)
+9.16/GR/10.b.ii          n/a          - - external routines (S201)
+9.16/GR/10.c             n/a          - - external routines (S201)
+9.16/GR/11               n/a          - - external routines (S201)
+9.16/GR/11.a             n/a          - - external routines (S201)
+9.16/GR/11.a.i           n/a          - - external routines (S201)
+9.16/GR/11.a.ii          n/a          - - external routines (S201)
+9.16/GR/11.a.iii         n/a          - - external routines (S201)
+9.16/GR/11.b             n/a          - - external routines (S201)
+9.16/GR/11.c             n/a          - - external routines (S201)
+9.16/GR/11.d             n/a          - - external routines (S201)
+9.16/GR/11.d.i           n/a          - - external routines (S201)
+9.16/GR/11.d.i.1         n/a          - - external routines (S201)
+9.16/GR/11.d.i.2         n/a          - - external routines (S201)
+9.16/GR/11.d.i.3         container    - -
+9.16/GR/11.d.i.3.A       n/a          - - external routines (S201)
+9.16/GR/11.d.i.3.B       n/a          - - external routines (S201)
+9.16/GR/11.d.i.3.B.I     n/a          - - external routines (S201)
+9.16/GR/11.d.i.3.B.II    container    - -
+9.16/GR/11.d.i.3.B.II.1  n/a          - - external routines (S201)
+9.16/GR/11.d.i.3.B.II.2  n/a          - - external routines (S201)
+9.16/GR/11.d.ii          n/a          - - external routines (S201)
+9.16/GR/11.d.ii.1        n/a          - - external routines (S201)
+9.16/GR/11.d.ii.2        n/a          - - external routines (S201)
+9.16/GR/11.d.iii         n/a          - - external routines (S201)
+9.16/GR/12               n/a          - - external routines (S201)
+9.16/GR/12.a             n/a          - - external routines (S201)
+9.16/GR/12.b             n/a          - - external routines (S201)
+9.16/GR/12.c             n/a          - - external routines (S201)
+9.16/GR/12.d             n/a          - - external routines (S201)
+# 9.17, Execution of multiset-returning functions
+9.17                     n/a          - - multisets (S271)
+9.17/GR/1                n/a          - - multisets (S271)
+9.17/GR/2                n/a          - - multisets (S271)
+9.17/GR/3                n/a          - - multisets (S271)
+9.17/GR/4                n/a          - - multisets (S271)
+9.17/GR/5                n/a          - - multisets (S271)
+9.17/GR/6                n/a          - - multisets (S271)
+9.17/GR/7                n/a          - - multisets (S271)
+# 9.18, Compilation of an invocation of a polymorphic table function
+9.18                     n/a          - - polymorphic table functions (B200)
+9.18/GR/1                n/a          - - polymorphic table functions (B200)
+9.18/GR/2                n/a          - - polymorphic table functions (B200)
+9.18/GR/2.a              n/a          - - polymorphic table functions (B200)
+9.18/GR/2.a.i            n/a          - - polymorphic table functions (B200)
+9.18/GR/2.a.ii           n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b              n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.i            n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.ii           n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.ii.1         n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.ii.2         n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.ii.3         n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.ii.4         n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii          n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.1        n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.1.A      n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.1.B      n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.1.C      n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.1.D      n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.1.E      n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2        n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2.A      n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2.B      n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2.C      n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2.D      n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2.D.I    n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2.D.II   n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2.D.III  n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2.D.III.1 n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2.D.III.2 n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2.D.IV   n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2.D.IV.1 n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2.D.IV.2 n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iii.2.E      n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iv           n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iv.1         n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iv.2         n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.iv.3         n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.v            n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.v.1          n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.v.2          n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.v.3          n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.v.3.A        n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.v.3.B        n/a          - - polymorphic table functions (B200)
+9.18/GR/2.b.vi           n/a          - - polymorphic table functions (B200)
+9.18/GR/2.c              n/a          - - polymorphic table functions (B200)
+9.18/GR/2.d              n/a          - - polymorphic table functions (B200)
+9.18/GR/2.d.i            n/a          - - polymorphic table functions (B200)
+9.18/GR/2.d.i.1          n/a          - - polymorphic table functions (B200)
+9.18/GR/2.d.i.2          n/a          - - polymorphic table functions (B200)
+9.18/GR/2.d.i.2.A        n/a          - - polymorphic table functions (B200)
+9.18/GR/2.d.i.2.B        n/a          - - polymorphic table functions (B200)
+9.18/GR/2.d.i.2.C        n/a          - - polymorphic table functions (B200)
+9.18/GR/2.d.i.3          n/a          - - polymorphic table functions (B200)
+9.18/GR/2.d.i.4          n/a          - - polymorphic table functions (B200)
+9.18/GR/2.d.ii           n/a          - - polymorphic table functions (B200)
+9.18/GR/2.d.ii.1         n/a          - - polymorphic table functions (B200)
+9.18/GR/2.d.ii.2         n/a          - - polymorphic table functions (B200)
+9.18/GR/2.d.ii.3         n/a          - - polymorphic table functions (B200)
+9.18/GR/2.e              n/a          - - polymorphic table functions (B200)
+9.18/GR/2.e.i            n/a          - - polymorphic table functions (B200)
+9.18/GR/2.e.ii           n/a          - - polymorphic table functions (B200)
+9.18/GR/2.e.iii          n/a          - - polymorphic table functions (B200)
+9.18/GR/2.f              n/a          - - polymorphic table functions (B200)
+9.18/GR/3                n/a          - - polymorphic table functions (B200)
+9.18/GR/4                container    - -
+9.18/GR/4.a              n/a          - - polymorphic table functions (B200)
+9.18/GR/4.b              n/a          - - polymorphic table functions (B200)
+9.18/GR/5                n/a          - - polymorphic table functions (B200)
+# 9.19, Execution of an invocation of a polymorphic table function
+9.19                     n/a          - - polymorphic table functions (B200)
+9.19/GR/1                n/a          - - polymorphic table functions (B200)
+9.19/GR/2                n/a          - - polymorphic table functions (B200)
+9.19/GR/3                n/a          - - polymorphic table functions (B200)
+9.19/GR/4                n/a          - - polymorphic table functions (B200)
+9.19/GR/4.a              n/a          - - polymorphic table functions (B200)
+9.19/GR/4.b              n/a          - - polymorphic table functions (B200)
+9.19/GR/5                n/a          - - polymorphic table functions (B200)
+9.19/GR/5.a              container    - -
+9.19/GR/5.a.i            n/a          - - polymorphic table functions (B200)
+9.19/GR/5.a.ii           n/a          - - polymorphic table functions (B200)
+9.19/GR/5.b              container    - -
+9.19/GR/5.b.i            n/a          - - polymorphic table functions (B200)
+9.19/GR/5.b.ii           n/a          - - polymorphic table functions (B200)
+9.19/GR/5.c              n/a          - - polymorphic table functions (B200)
+9.19/GR/5.c.i            n/a          - - polymorphic table functions (B200)
+9.19/GR/5.c.ii           n/a          - - polymorphic table functions (B200)
+9.19/GR/5.c.iii          n/a          - - polymorphic table functions (B200)
+9.19/GR/6                n/a          - - polymorphic table functions (B200)
+9.19/GR/7                n/a          - - polymorphic table functions (B200)
+9.19/GR/7.a              n/a          - - polymorphic table functions (B200)
+9.19/GR/7.a.i            n/a          - - polymorphic table functions (B200)
+9.19/GR/7.a.ii           n/a          - - polymorphic table functions (B200)
+9.19/GR/7.b              n/a          - - polymorphic table functions (B200)
+9.19/GR/7.c              n/a          - - polymorphic table functions (B200)
+9.19/GR/7.d              n/a          - - polymorphic table functions (B200)
+9.19/GR/8                n/a          - - polymorphic table functions (B200)
+9.19/GR/9                n/a          - - polymorphic table functions (B200)
+9.19/GR/10               n/a          - - polymorphic table functions (B200)
+9.19/GR/11               n/a          - - polymorphic table functions (B200)
+9.19/GR/11.a             n/a          - - polymorphic table functions (B200)
+9.19/GR/11.b             n/a          - - polymorphic table functions (B200)
+9.19/GR/11.c             container    - -
+9.19/GR/11.c.i           n/a          - - polymorphic table functions (B200)
+9.19/GR/11.c.ii          n/a          - - polymorphic table functions (B200)
+9.19/GR/11.d             n/a          - - polymorphic table functions (B200)
+9.19/GR/12               n/a          - - polymorphic table functions (B200)
+9.19/GR/12.a             n/a          - - polymorphic table functions (B200)
+9.19/GR/12.b             n/a          - - polymorphic table functions (B200)
+9.19/GR/12.b.i           n/a          - - polymorphic table functions (B200)
+9.19/GR/12.b.ii          n/a          - - polymorphic table functions (B200)
+9.19/GR/12.b.iii         n/a          - - polymorphic table functions (B200)
+9.19/GR/13               n/a          - - polymorphic table functions (B200)
+9.19/GR/13.a             n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b             n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.i           n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.ii          n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.iii         n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.iv          n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.v           n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.vi          container    - -
+9.19/GR/13.b.vi.1        n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.vi.1.A      n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.vi.1.B      n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.vi.2        container    - -
+9.19/GR/13.b.vi.2.A      n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.vi.2.B      n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.vi.2.C      n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.vii         n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.vii.1       n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.vii.2       n/a          - - polymorphic table functions (B200)
+9.19/GR/13.b.viii        n/a          - - polymorphic table functions (B200)
+9.19/GR/14               n/a          - - polymorphic table functions (B200)
+9.19/GR/14.a             n/a          - - polymorphic table functions (B200)
+9.19/GR/14.b             n/a          - - polymorphic table functions (B200)
+9.19/GR/14.c             container    - -
+9.19/GR/14.c.i           n/a          - - polymorphic table functions (B200)
+9.19/GR/14.c.ii          n/a          - - polymorphic table functions (B200)
+9.19/GR/15               n/a          - - polymorphic table functions (B200)
+9.19/GR/15.a             n/a          - - polymorphic table functions (B200)
+9.19/GR/15.a.i           n/a          - - polymorphic table functions (B200)
+9.19/GR/15.a.ii          n/a          - - polymorphic table functions (B200)
+9.19/GR/15.b             n/a          - - polymorphic table functions (B200)
+9.19/GR/16               container    - -
+9.19/GR/16.a             n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b             container    - -
+9.19/GR/16.b.i           container    - -
+9.19/GR/16.b.i.1         n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.i.2         n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.i.3         n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.ii          n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.iii         n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.iii.1       n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.iii.2       n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.iii.2.A     n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.iii.2.B     container    - -
+9.19/GR/16.b.iii.2.B.I   n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.iii.2.B.II  n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.iii.2.C     n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.iii.2.D     n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.iii.3       n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.iii.3.A     n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.iii.3.B     n/a          - - polymorphic table functions (B200)
+9.19/GR/16.b.iii.3.C     n/a          - - polymorphic table functions (B200)
+9.19/GR/17               n/a          - - polymorphic table functions (B200)
+9.19/GR/18               container    - -
+9.19/GR/18.a             n/a          - - polymorphic table functions (B200)
+9.19/GR/18.a.i           n/a          - - polymorphic table functions (B200)
+9.19/GR/18.a.i.1         n/a          - - polymorphic table functions (B200)
+9.19/GR/18.a.i.2         n/a          - - polymorphic table functions (B200)
+9.19/GR/18.a.i.2.A       n/a          - - polymorphic table functions (B200)
+9.19/GR/18.a.i.2.B       n/a          - - polymorphic table functions (B200)
+9.19/GR/18.a.ii          n/a          - - polymorphic table functions (B200)
+9.19/GR/18.a.iii         n/a          - - polymorphic table functions (B200)
+9.19/GR/18.b             n/a          - - polymorphic table functions (B200)
+9.19/GR/19               n/a          - - polymorphic table functions (B200)
+9.19/GR/20               n/a          - - polymorphic table functions (B200)
+9.19/GR/20.a             n/a          - - polymorphic table functions (B200)
+9.19/GR/20.b             n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c             n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.i           n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.i.1         n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.i.1.A       n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.i.1.B       n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.i.1.C       n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.i.1.D       n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.i.1.E       n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.i.2         n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.i.2.A       n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.i.2.B       n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.i.2.C       n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.ii          n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.iii         n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.iii.1       n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.iii.2       n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.iii.3       n/a          - - polymorphic table functions (B200)
+9.19/GR/20.c.iii.4       n/a          - - polymorphic table functions (B200)
+9.19/GR/20.d             n/a          - - polymorphic table functions (B200)
+9.19/GR/20.d.i           n/a          - - polymorphic table functions (B200)
+9.19/GR/20.d.ii          n/a          - - polymorphic table functions (B200)
+9.19/GR/20.d.iii         n/a          - - polymorphic table functions (B200)
+9.19/GR/20.e             n/a          - - polymorphic table functions (B200)
+9.19/GR/20.e.i           n/a          - - polymorphic table functions (B200)
+9.19/GR/20.e.ii          n/a          - - polymorphic table functions (B200)
+9.19/GR/20.f             n/a          - - polymorphic table functions (B200)
+9.19/GR/20.g             n/a          - - polymorphic table functions (B200)
+9.19/GR/20.h             n/a          - - polymorphic table functions (B200)
+9.19/GR/20.i             n/a          - - polymorphic table functions (B200)
+9.19/GR/20.j             n/a          - - polymorphic table functions (B200)
+9.19/GR/20.j.i           n/a          - - polymorphic table functions (B200)
+9.19/GR/20.j.ii          n/a          - - polymorphic table functions (B200)
+9.19/GR/20.j.iii         n/a          - - polymorphic table functions (B200)
+9.19/GR/20.k             n/a          - - polymorphic table functions (B200)
+9.19/GR/20.l             n/a          - - polymorphic table functions (B200)
+9.19/GR/21               n/a          - - polymorphic table functions (B200)
+# 9.20, Signatures of PTF component procedures
+9.20                     n/a          - - polymorphic table functions (B200)
+9.20/SR/1                n/a          - - polymorphic table functions (B200)
+9.20/SR/2                container    - -
+9.20/SR/2.a              n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.i            n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.ii           n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.iii          n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.iii.1        n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.iii.2        n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.iv           n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.v            n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.vi           n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.vii          n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.vii.1        n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.vii.1.A      n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.vii.1.B      n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.vii.1.C      n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.vii.1.C.I    n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.vii.1.C.II   n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.vii.1.D      n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.vii.1.E      n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.vii.2        n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.vii.3        n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.viii         n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.ix           n/a          - - polymorphic table functions (B200)
+9.20/SR/2.a.x            n/a          - - polymorphic table functions (B200)
+9.20/SR/2.b              n/a          - - polymorphic table functions (B200)
+9.20/SR/3                n/a          - - polymorphic table functions (B200)
+# 9.21, Invocation of a PTF component procedure
+9.21                     n/a          - - polymorphic table functions (B200)
+9.21/GR/1                n/a          - - polymorphic table functions (B200)
+9.21/GR/2                container    - -
+9.21/GR/2.a              n/a          - - polymorphic table functions (B200)
+9.21/GR/2.b              n/a          - - polymorphic table functions (B200)
+9.21/GR/2.c              n/a          - - polymorphic table functions (B200)
+9.21/GR/2.d              n/a          - - polymorphic table functions (B200)
+9.21/GR/3                container    - -
+9.21/GR/3.a              n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.i            n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.ii           n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iii          n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iv           n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iv.1         n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iv.1.A       container    - -
+9.21/GR/3.a.iv.1.A.I     n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iv.1.A.II    n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iv.1.B       n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iv.1.B.I     n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iv.1.B.II    n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iv.1.C       n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iv.1.D       n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iv.2         n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iv.2.A       n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iv.2.B       n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.iv.3         n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.v            container    - -
+9.21/GR/3.a.v.1          n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.v.2          n/a          - - polymorphic table functions (B200)
+9.21/GR/3.a.vi           n/a          - - polymorphic table functions (B200)
+9.21/GR/3.b              n/a          - - polymorphic table functions (B200)
+9.21/GR/4                n/a          - - polymorphic table functions (B200)
+# 9.22, XQuery regular expression matching
+9.22                     n/a          - - XQuery regular expressions (F841)
+9.22/GR/1                n/a          - - XQuery regular expressions (F841)
+9.22/GR/2                container    - -
+9.22/GR/2.a              n/a          - - XQuery regular expressions (F841)
+9.22/GR/2.b              n/a          - - XQuery regular expressions (F841)
+9.22/GR/3                container    - -
+9.22/GR/3.a              n/a          - - XQuery regular expressions (F841)
+9.22/GR/3.b              n/a          - - XQuery regular expressions (F841)
+9.22/GR/4                n/a          - - XQuery regular expressions (F841)
+9.22/GR/5                n/a          - - XQuery regular expressions (F841)
+9.22/GR/6                n/a          - - XQuery regular expressions (F841)
+9.22/GR/7                n/a          - - XQuery regular expressions (F841)
+9.22/GR/8                n/a          - - XQuery regular expressions (F841)
+9.22/GR/9                n/a          - - XQuery regular expressions (F841)
+9.22/GR/9.a              n/a          - - XQuery regular expressions (F841)
+9.22/GR/9.a.i            n/a          - - XQuery regular expressions (F841)
+9.22/GR/9.a.ii           n/a          - - XQuery regular expressions (F841)
+9.22/GR/9.a.iii          n/a          - - XQuery regular expressions (F841)
+9.22/GR/9.b              n/a          - - XQuery regular expressions (F841)
+9.22/GR/10               n/a          - - XQuery regular expressions (F841)
+9.22/GR/11               n/a          - - XQuery regular expressions (F841)
+9.22/GR/11.a             n/a          - - XQuery regular expressions (F841)
+9.22/GR/11.b             n/a          - - XQuery regular expressions (F841)
+9.22/GR/11.c             n/a          - - XQuery regular expressions (F841)
+9.22/GR/11.d             n/a          - - XQuery regular expressions (F841)
+9.22/GR/11.d.i           n/a          - - XQuery regular expressions (F841)
+9.22/GR/11.d.ii          n/a          - - XQuery regular expressions (F841)
+9.22/GR/11.d.ii.1        n/a          - - XQuery regular expressions (F841)
+9.22/GR/11.d.ii.2        n/a          - - XQuery regular expressions (F841)
+9.22/GR/11.e             n/a          - - XQuery regular expressions (F841)
+# 9.23, XQuery regular expression replacement
+9.23                     n/a          - - XQuery regular expressions (F841)
+9.23/GR/1                n/a          - - XQuery regular expressions (F841)
+9.23/GR/2                n/a          - - XQuery regular expressions (F841)
+9.23/GR/3                n/a          - - XQuery regular expressions (F841)
+9.23/GR/4                container    - -
+9.23/GR/4.a              n/a          - - XQuery regular expressions (F841)
+9.23/GR/4.b              n/a          - - XQuery regular expressions (F841)
+9.23/GR/5                n/a          - - XQuery regular expressions (F841)
+9.23/GR/6                n/a          - - XQuery regular expressions (F841)
+9.23/GR/7                n/a          - - XQuery regular expressions (F841)
+9.23/GR/8                n/a          - - XQuery regular expressions (F841)
+9.23/GR/9                n/a          - - XQuery regular expressions (F841)
+9.23/GR/9.a              n/a          - - XQuery regular expressions (F841)
+9.23/GR/9.b              n/a          - - XQuery regular expressions (F841)
+9.23/GR/10               n/a          - - XQuery regular expressions (F841)
+# 9.24, Data type identity
+9.24                     n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/1                n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/2                n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/3                n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/4                n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/5                n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/6                n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/7                n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/8                n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/9                n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/10               n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/11               n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/11.a             n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/11.b             n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/11.c             n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/12               n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/12.a             n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+9.24/SR/12.b             n/a          - - only used for application-time periods (T181), views (F031-02), SQL-invoked routines (T321) and user-defined types (S023)
+# 9.25, Determination of a from-sql function
+9.25                     n/a          - - transforms (S241)
+9.25/SR/1                n/a          - - transforms (S241)
+9.25/SR/2                n/a          - - transforms (S241)
+9.25/SR/3                n/a          - - transforms (S241)
+9.25/SR/4                n/a          - - transforms (S241)
+# 9.26, Determination of a from-sql function for an overriding method
+9.26                     n/a          - - transforms (S241)
+9.26/SR/1                n/a          - - transforms (S241)
+9.26/SR/2                n/a          - - transforms (S241)
+9.26/SR/3                n/a          - - transforms (S241)
+# 9.27, Determination of a to-sql function
+9.27                     n/a          - - transforms (S241)
+9.27/SR/1                n/a          - - transforms (S241)
+9.27/SR/2                n/a          - - transforms (S241)
+9.27/SR/3                n/a          - - transforms (S241)
+9.27/SR/4                n/a          - - transforms (S241)
+# 9.28, Determination of a to-sql function for an overriding method
+9.28                     n/a          - - transforms (S241)
+9.28/SR/1                n/a          - - transforms (S241)
+9.28/SR/2                n/a          - - transforms (S241)
+9.28/SR/3                n/a          - - transforms (S241)
+# 9.29, Generation of the next value of a sequence generator
+9.29                     partial      vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql a new cycle without a MINVALUE (or MAXVALUE) starts at 1 (#785)
+9.29/GR/1                definition   - -
+9.29/GR/2                definition   - -
+9.29/GR/3                implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
+9.29/GR/3.a              implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
+9.29/GR/3.b              partial      vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql a new cycle without a MINVALUE (or MAXVALUE) starts at 1 (#785)
+9.29/GR/3.b.i            partial      vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql without a MINVALUE, it's 1 (#785)
+9.29/GR/3.b.ii           partial      vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql without a MAXVALUE, it's 1 (#785)
+9.29/GR/4                container    - -
+9.29/GR/4.a              implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
+9.29/GR/4.b              implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
+9.29/GR/5                implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
+# 9.30, Creation of a sequence generator
+9.30                     partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql a value outside the range of a BIGINT is the BIGINT maximum (#786)
+9.30/SR/1                definition   - -
+9.30/SR/2                implemented  vsql/std_2_11_72_sequence_generator_definition.y tests/create-sequence.sql
+9.30/SR/3                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30/SR/4                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30/SR/5                implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
+9.30/SR/6                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30/SR/7                container    - -
+9.30/SR/7.a              impl-defined vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql the BIGINT maximum (an identity column uses the range of its type, see 11.4)
+9.30/SR/7.a.i            impl-defined vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql the BIGINT maximum (an identity column uses the range of its type, see 11.4)
+9.30/SR/7.a.ii           implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30/SR/7.b              impl-defined vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql the BIGINT maximum (an identity column uses the range of its type, see 11.4)
+9.30/SR/8                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30/SR/8.a              implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30/SR/8.a.i            impl-defined vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql the BIGINT minimum (an identity column uses the range of its type, see 11.4)
+9.30/SR/8.a.ii           implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30/SR/8.b              impl-defined vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql the BIGINT minimum (an identity column uses the range of its type, see 11.4)
+9.30/SR/9                container    - -
+9.30/SR/9.a              implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30/SR/9.b              partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql without a MINVALUE (or MAXVALUE), it's 1 (#785)
+9.30/SR/9.b.i            partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql without a MINVALUE, it's 1 (#785)
+9.30/SR/9.b.ii           partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql without a MAXVALUE, it's 1 (#785)
+9.30/SR/10               partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql a value must be an integer, but one outside the range of a BIGINT is the BIGINT maximum (#786)
+9.30/SR/11               implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
+9.30/SR/12               implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
+9.30/SR/13               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30/GR/1                definition   - -
+9.30/GR/2                implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
+9.30/GR/2.a              n/a          - - there are no internal sequence generators, other than for identity columns, which are named after the column
+9.30/GR/2.b              impl-defined vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql always BIGINT (#399)
+9.30/GR/2.c              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
+9.30/GR/2.d              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
+9.30/GR/2.e              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
+9.30/GR/2.f              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
+9.30/GR/2.g              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
+9.30/GR/2.h              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
+# 9.31, Altering a sequence generator
+9.31                     partial      vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql a value outside the range of a BIGINT is the BIGINT maximum (#786)
+9.31/SR/1                definition   - -
+9.31/SR/2                implemented  vsql/std_2_11_73_alter_sequence_generator_statement.y tests/alter-sequence.sql
+9.31/SR/3                impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql always BIGINT (#399)
+9.31/SR/4                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/alter-sequence.sql
+9.31/SR/5                container    - -
+9.31/SR/5.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/5.a.i            implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/5.a.ii           implemented  vsql/std_2_4_27_sequence_generators.v tests/alter-sequence.sql
+9.31/SR/5.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/6                container    - -
+9.31/SR/6.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/6.a.i            impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql the BIGINT maximum (an identity column uses the range of its type, see 11.4)
+9.31/SR/6.a.ii           implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/6.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/7                container    - -
+9.31/SR/7.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/7.a.i            impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql the BIGINT minimum (an identity column uses the range of its type, see 11.4)
+9.31/SR/7.a.ii           implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/7.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/8                implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/9                container    - -
+9.31/SR/9.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-restart.sql
+9.31/SR/9.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-restart.sql
+9.31/SR/9.c              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-restart.sql
+9.31/SR/10               partial      vsql/std_2_11_72_sequence_generator_definition.v tests/alter-sequence.sql a value must be an integer, but one outside the range of a BIGINT is the BIGINT maximum (#786)
+9.31/SR/11               implemented  vsql/std_2_4_27_sequence_generators.v tests/alter-sequence.sql
+9.31/SR/12               partial      vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-range.sql the next value is only checked against a new MINVALUE or MAXVALUE, so CYCLE or NO MAXVALUE can revive a sequence that has gone past its limit
+9.31/GR/1                definition   - -
+9.31/GR/2                implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/GR/2.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/GR/2.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/GR/2.c              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/GR/2.d              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/GR/2.e              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+# 9.32, Generation of the hierarchical <query expression> of a view
+9.32                     n/a          - - views (F031-02)
+9.32/GR/1                n/a          - - views (F031-02)
+9.32/GR/2                n/a          - - views (F031-02)
+9.32/GR/3                container    - -
+9.32/GR/3.a              n/a          - - views (F031-02)
+9.32/GR/3.b              container    - -
+9.32/GR/3.b.i            n/a          - - views (F031-02)
+9.32/GR/3.b.ii           n/a          - - views (F031-02)
+9.32/GR/3.b.iii          n/a          - - views (F031-02)
+9.32/GR/4                n/a          - - views (F031-02)
+# 9.33, Determination of view privileges
+9.33                     n/a          - - views (F031-02)
+9.33/GR/1                n/a          - - views (F031-02)
+9.33/GR/2                n/a          - - views (F031-02)
+9.33/GR/3                n/a          - - views (F031-02)
+9.33/GR/4                n/a          - - views (F031-02)
+9.33/GR/5                n/a          - - views (F031-02)
+9.33/GR/5.a              n/a          - - views (F031-02)
+9.33/GR/5.a.i            n/a          - - views (F031-02)
+9.33/GR/5.a.ii           n/a          - - views (F031-02)
+9.33/GR/5.b              n/a          - - views (F031-02)
+9.33/GR/5.b.i            n/a          - - views (F031-02)
+9.33/GR/5.b.ii           n/a          - - views (F031-02)
+9.33/GR/6                n/a          - - views (F031-02)
+9.33/GR/7                n/a          - - views (F031-02)
+9.33/GR/8                n/a          - - views (F031-02)
+# 9.34, Determination of view component privileges
+9.34                     n/a          - - views (F031-02)
+9.34/GR/1                n/a          - - views (F031-02)
+9.34/GR/2                n/a          - - views (F031-02)
+9.34/GR/3                n/a          - - views (F031-02)
+9.34/GR/3.a              n/a          - - views (F031-02)
+9.34/GR/3.b              n/a          - - views (F031-02)
+9.34/GR/4                n/a          - - views (F031-02)
+9.34/GR/4.a              n/a          - - views (F031-02)
+9.34/GR/4.b              n/a          - - views (F031-02)
+9.34/GR/4.b.i            n/a          - - views (F031-02)
+9.34/GR/4.b.i.1          container    - -
+9.34/GR/4.b.i.1.A        n/a          - - views (F031-02)
+9.34/GR/4.b.i.1.B        n/a          - - views (F031-02)
+9.34/GR/4.b.i.1.C        n/a          - - views (F031-02)
+9.34/GR/4.b.i.1.D        n/a          - - views (F031-02)
+9.34/GR/4.b.i.2          n/a          - - views (F031-02)
+9.34/GR/4.b.i.3          n/a          - - views (F031-02)
+9.34/GR/4.b.i.3.A        n/a          - - views (F031-02)
+9.34/GR/4.b.i.3.B        n/a          - - views (F031-02)
+9.34/GR/4.b.ii           container    - -
+9.34/GR/4.b.ii.1         n/a          - - views (F031-02)
+9.34/GR/4.b.ii.2         n/a          - - views (F031-02)
+9.34/GR/4.b.ii.2.A       n/a          - - views (F031-02)
+9.34/GR/4.b.ii.2.B       n/a          - - views (F031-02)
+9.34/GR/4.c              n/a          - - views (F031-02)
+9.34/GR/4.c.i            n/a          - - views (F031-02)
+9.34/GR/4.c.i.1          n/a          - - views (F031-02)
+9.34/GR/4.c.i.2          n/a          - - views (F031-02)
+9.34/GR/4.c.ii           n/a          - - views (F031-02)
+9.34/GR/4.c.ii.1         n/a          - - views (F031-02)
+9.34/GR/4.c.ii.2         n/a          - - views (F031-02)
+9.34/GR/5                n/a          - - views (F031-02)
+# 9.35, Row pattern recognition in a sequence of rows
+9.35                     n/a          - - row pattern recognition (R010)
+9.35/GR/1                n/a          - - row pattern recognition (R010)
+9.35/GR/2                n/a          - - row pattern recognition (R010)
+9.35/GR/3                n/a          - - row pattern recognition (R010)
+9.35/GR/4                n/a          - - row pattern recognition (R010)
+9.35/GR/5                n/a          - - row pattern recognition (R010)
+9.35/GR/6                n/a          - - row pattern recognition (R010)
+9.35/GR/6.a              n/a          - - row pattern recognition (R010)
+9.35/GR/6.a.i            n/a          - - row pattern recognition (R010)
+9.35/GR/6.a.ii           n/a          - - row pattern recognition (R010)
+9.35/GR/6.a.iii          n/a          - - row pattern recognition (R010)
+9.35/GR/6.a.iv           n/a          - - row pattern recognition (R010)
+9.35/GR/6.a.v            n/a          - - row pattern recognition (R010)
+9.35/GR/6.a.vi           n/a          - - row pattern recognition (R010)
+9.35/GR/6.b              n/a          - - row pattern recognition (R010)
+9.35/GR/6.b.i            n/a          - - row pattern recognition (R010)
+9.35/GR/6.b.ii           n/a          - - row pattern recognition (R010)
+9.35/GR/6.b.iii          n/a          - - row pattern recognition (R010)
+9.35/GR/6.b.iii.1        n/a          - - row pattern recognition (R010)
+9.35/GR/6.b.iii.2        n/a          - - row pattern recognition (R010)
+9.35/GR/6.c              n/a          - - row pattern recognition (R010)
+9.35/GR/6.c.i            n/a          - - row pattern recognition (R010)
+9.35/GR/6.c.ii           n/a          - - row pattern recognition (R010)
+9.35/GR/6.c.iii          n/a          - - row pattern recognition (R010)
+9.35/GR/6.c.iii.1        n/a          - - row pattern recognition (R010)
+9.35/GR/6.c.iii.2        n/a          - - row pattern recognition (R010)
+9.35/GR/6.d              n/a          - - row pattern recognition (R010)
+9.35/GR/6.e              n/a          - - row pattern recognition (R010)
+9.35/GR/6.e.i            n/a          - - row pattern recognition (R010)
+9.35/GR/6.e.ii           n/a          - - row pattern recognition (R010)
+9.35/GR/6.e.iii          n/a          - - row pattern recognition (R010)
+9.35/GR/6.e.iv           n/a          - - row pattern recognition (R010)
+9.35/GR/7                n/a          - - row pattern recognition (R010)
+9.35/GR/8                n/a          - - row pattern recognition (R010)
+9.35/GR/9                n/a          - - row pattern recognition (R010)
+9.35/GR/9.a              n/a          - - row pattern recognition (R010)
+9.35/GR/9.b              n/a          - - row pattern recognition (R010)
+9.35/GR/9.c              n/a          - - row pattern recognition (R010)
+9.35/GR/10               n/a          - - row pattern recognition (R010)
+9.35/GR/11               n/a          - - row pattern recognition (R010)
+9.35/GR/12               n/a          - - row pattern recognition (R010)
+# 9.36, Parsing JSON text
+9.36                     n/a          - - JSON (T811)
+9.36/GR/1                n/a          - - JSON (T811)
+9.36/GR/2                n/a          - - JSON (T811)
+9.36/GR/3                container    - -
+9.36/GR/3.a              n/a          - - JSON (T811)
+9.36/GR/3.a.i            container    - -
+9.36/GR/3.a.i.1          n/a          - - JSON (T811)
+9.36/GR/3.a.i.2          n/a          - - JSON (T811)
+9.36/GR/3.a.i.2.A        n/a          - - JSON (T811)
+9.36/GR/3.a.i.2.B        n/a          - - JSON (T811)
+9.36/GR/3.a.ii           n/a          - - JSON (T811)
+9.36/GR/3.a.iii          container    - -
+9.36/GR/3.a.iii.1        n/a          - - JSON (T811)
+9.36/GR/3.a.iii.2        n/a          - - JSON (T811)
+9.36/GR/3.a.iii.3        container    - -
+9.36/GR/3.a.iii.3.A      n/a          - - JSON (T811)
+9.36/GR/3.a.iii.3.A.I    n/a          - - JSON (T811)
+9.36/GR/3.a.iii.3.A.II   n/a          - - JSON (T811)
+9.36/GR/3.a.iii.3.A.III  n/a          - - JSON (T811)
+9.36/GR/3.a.iii.3.A.IV   n/a          - - JSON (T811)
+9.36/GR/3.a.iii.3.A.V    n/a          - - JSON (T811)
+9.36/GR/3.a.iii.3.A.VI   n/a          - - JSON (T811)
+9.36/GR/3.a.iii.3.A.VII  n/a          - - JSON (T811)
+9.36/GR/3.a.iii.3.A.VIII n/a          - - JSON (T811)
+9.36/GR/3.a.iii.3.A.VIII.1 n/a          - - JSON (T811)
+9.36/GR/3.a.iii.3.A.VIII.2 n/a          - - JSON (T811)
+9.36/GR/3.a.iii.3.A.VIII.3 n/a          - - JSON (T811)
+9.36/GR/3.a.iii.3.B      n/a          - - JSON (T811)
+9.36/GR/3.b              n/a          - - JSON (T811)
+9.36/GR/4                n/a          - - JSON (T811)
+# 9.37, Serializing an SQL/JSON item
+9.37                     n/a          - - JSON (T811)
+9.37/SR/1                n/a          - - JSON (T811)
+9.37/SR/2                container    - -
+9.37/SR/2.a              n/a          - - JSON (T811)
+9.37/SR/2.b              n/a          - - JSON (T811)
+9.37/GR/1                n/a          - - JSON (T811)
+9.37/GR/2                container    - -
+9.37/GR/2.a              n/a          - - JSON (T811)
+9.37/GR/2.a.i            container    - -
+9.37/GR/2.a.i.1          n/a          - - JSON (T811)
+9.37/GR/2.a.i.2          n/a          - - JSON (T811)
+9.37/GR/2.a.ii           n/a          - - JSON (T811)
+9.37/GR/2.a.ii.1         n/a          - - JSON (T811)
+9.37/GR/2.a.ii.2         n/a          - - JSON (T811)
+9.37/GR/2.a.iii          n/a          - - JSON (T811)
+9.37/GR/2.b              n/a          - - JSON (T811)
+9.37/GR/3                n/a          - - JSON (T811)
+# 9.38, SQL/JSON path language: lexical elements
+9.38                     n/a          - - SQL/JSON query functions (T821)
+9.38/SR/1                n/a          - - SQL/JSON query functions (T821)
+9.38/SR/2                n/a          - - SQL/JSON query functions (T821)
+9.38/SR/2.a              n/a          - - SQL/JSON query functions (T821)
+9.38/SR/2.b              n/a          - - SQL/JSON query functions (T821)
+9.38/SR/2.c              n/a          - - SQL/JSON query functions (T821)
+9.38/SR/2.d              n/a          - - SQL/JSON query functions (T821)
+9.38/SR/2.e              n/a          - - SQL/JSON query functions (T821)
+9.38/SR/2.f              n/a          - - SQL/JSON query functions (T821)
+9.38/SR/2.g              n/a          - - SQL/JSON query functions (T821)
+9.38/SR/3                n/a          - - SQL/JSON query functions (T821)
+9.38/SR/4                n/a          - - SQL/JSON query functions (T821)
+9.38/SR/4.a              n/a          - - SQL/JSON query functions (T821)
+9.38/SR/4.b              n/a          - - SQL/JSON query functions (T821)
+9.38/SR/4.c              n/a          - - SQL/JSON query functions (T821)
+9.38/GR/1                n/a          - - SQL/JSON query functions (T821)
+9.38/GR/1.a              n/a          - - SQL/JSON query functions (T821)
+9.38/GR/1.b              n/a          - - SQL/JSON query functions (T821)
+9.38/GR/1.c              n/a          - - SQL/JSON query functions (T821)
+9.38/GR/1.d              n/a          - - SQL/JSON query functions (T821)
+9.38/GR/1.e              n/a          - - SQL/JSON query functions (T821)
+# 9.39, SQL/JSON path language: syntax and semantics
+9.39                     n/a          - - SQL/JSON query functions (T821)
+9.39/SR/1                n/a          - - SQL/JSON query functions (T821)
+9.39/SR/2                n/a          - - SQL/JSON query functions (T821)
+9.39/SR/3                n/a          - - SQL/JSON query functions (T821)
+9.39/SR/4                n/a          - - SQL/JSON query functions (T821)
+9.39/SR/5                n/a          - - SQL/JSON query functions (T821)
+9.39/SR/6                n/a          - - SQL/JSON query functions (T821)
+9.39/SR/7                n/a          - - SQL/JSON query functions (T821)
+9.39/SR/8                n/a          - - SQL/JSON query functions (T821)
+9.39/SR/9                n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10               n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.a             n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.b             n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.b.i           n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.b.ii          n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.c             n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.d             n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.e             n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.f             n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.f.i           n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.f.ii          n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.f.iii         n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.f.iv          n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.f.v           n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.g             n/a          - - SQL/JSON query functions (T821)
+9.39/SR/10.h             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/1                n/a          - - SQL/JSON query functions (T821)
+9.39/GR/2                n/a          - - SQL/JSON query functions (T821)
+9.39/GR/3                n/a          - - SQL/JSON query functions (T821)
+9.39/GR/4                n/a          - - SQL/JSON query functions (T821)
+9.39/GR/4.a              n/a          - - SQL/JSON query functions (T821)
+9.39/GR/4.b              n/a          - - SQL/JSON query functions (T821)
+9.39/GR/5                n/a          - - SQL/JSON query functions (T821)
+9.39/GR/5.a              n/a          - - SQL/JSON query functions (T821)
+9.39/GR/5.b              n/a          - - SQL/JSON query functions (T821)
+9.39/GR/5.b.i            n/a          - - SQL/JSON query functions (T821)
+9.39/GR/5.b.ii           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/5.b.ii.1         n/a          - - SQL/JSON query functions (T821)
+9.39/GR/5.b.ii.2         n/a          - - SQL/JSON query functions (T821)
+9.39/GR/6                n/a          - - SQL/JSON query functions (T821)
+9.39/GR/7                n/a          - - SQL/JSON query functions (T821)
+9.39/GR/7.a              n/a          - - SQL/JSON query functions (T821)
+9.39/GR/7.b              n/a          - - SQL/JSON query functions (T821)
+9.39/GR/7.b.i            n/a          - - SQL/JSON query functions (T821)
+9.39/GR/7.b.ii           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/7.c              n/a          - - SQL/JSON query functions (T821)
+9.39/GR/8                n/a          - - SQL/JSON query functions (T821)
+9.39/GR/8.a              n/a          - - SQL/JSON query functions (T821)
+9.39/GR/8.b              n/a          - - SQL/JSON query functions (T821)
+9.39/GR/8.b.i            n/a          - - SQL/JSON query functions (T821)
+9.39/GR/8.b.ii           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/8.c              n/a          - - SQL/JSON query functions (T821)
+9.39/GR/9                n/a          - - SQL/JSON query functions (T821)
+9.39/GR/10               n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11               n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.a             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.a.i           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.a.ii          container    - -
+9.39/GR/11.a.ii.1        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.a.ii.2        container    - -
+9.39/GR/11.a.ii.2.A      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.a.ii.2.B      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.b             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.b.i           container    - -
+9.39/GR/11.b.i.1         n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.b.i.1.A       n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.b.i.1.B       n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.b.i.2         container    - -
+9.39/GR/11.b.i.2.A       n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.b.i.2.B       n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.b.ii          container    - -
+9.39/GR/11.b.ii.1        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.b.ii.2        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.b.ii.3        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.c             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.d             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.e             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.f             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.i           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii          n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.A      container    - -
+9.39/GR/11.g.ii.1.A.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.A.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.B      container    - -
+9.39/GR/11.g.ii.1.B.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.B.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.C      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.D      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.D.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.D.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.D.II.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.D.II.2 container    - -
+9.39/GR/11.g.ii.1.D.II.2.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.D.II.2.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.E      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.E.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.1.E.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.A      container    - -
+9.39/GR/11.g.ii.2.A.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.A.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.B      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.C      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.C.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.C.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.C.II.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.C.II.2 container    - -
+9.39/GR/11.g.ii.2.C.II.2.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.C.II.2.a.i n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.C.II.2.a.ii n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.C.II.2.a.iii n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.C.II.2.a.iv n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.C.II.2.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.D      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.D.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.2.D.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.A      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.B      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.C      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.D      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.D.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.D.II   container    - -
+9.39/GR/11.g.ii.3.D.II.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.D.II.2 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.E      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.E.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.E.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.E.III  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.F      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.F.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.F.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.F.II.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.F.II.2 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.F.II.2.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.F.II.2.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.F.III  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.F.III.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.F.III.2 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.F.III.3 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.G      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.G.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.3.G.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.4        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.4.A      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.4.B      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.4.C      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.4.C.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.4.C.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.4.C.III  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.4.D      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.4.D.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.4.D.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.5        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.5.A      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.5.B      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.5.C      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.5.C.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.5.C.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.5.C.III  container    - -
+9.39/GR/11.g.ii.5.C.III.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.5.C.III.2 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.5.D      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.A      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.B      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C      container    - -
+9.39/GR/11.g.ii.6.C.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.I.1  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.I.1.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.I.1.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.I.1.c n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.I.1.d n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.I.1.e n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.I.1.f n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.I.1.g n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.I.1.h n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.I.1.i n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.I.1.j n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.I.1.k n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.I.2  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.II.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.II.2 container    - -
+9.39/GR/11.g.ii.6.C.II.2.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.II.2.a.i n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.II.2.a.ii n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.II.2.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.III  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.III.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.III.1.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.III.1.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.III.2 container    - -
+9.39/GR/11.g.ii.6.C.III.2.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.III.2.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.IV   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.IV.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.IV.1.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.IV.1.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.IV.2 container    - -
+9.39/GR/11.g.ii.6.C.IV.2.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.IV.2.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.V    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.V.1  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.V.1.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.V.1.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.V.2  container    - -
+9.39/GR/11.g.ii.6.C.V.2.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.V.2.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VI   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VI.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VI.1.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VI.1.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VI.2 container    - -
+9.39/GR/11.g.ii.6.C.VI.2.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VI.2.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VII  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VII.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VII.1.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VII.1.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VII.1.c container    - -
+9.39/GR/11.g.ii.6.C.VII.1.c.i n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VII.1.c.ii n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VII.1.c.iii n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VII.1.c.iv n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VII.1.c.v n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VII.1.c.vi n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VII.2 container    - -
+9.39/GR/11.g.ii.6.C.VII.2.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VII.2.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.1.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.1.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.1.c container    - -
+9.39/GR/11.g.ii.6.C.VIII.1.c.i n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.1.c.ii n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.1.c.iii n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.1.c.iv n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.1.c.v n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.1.c.vi n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.1.c.vi.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.1.c.vi.2 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.1.c.vi.3 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.1.c.vii n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.2 container    - -
+9.39/GR/11.g.ii.6.C.VIII.2.a n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.g.ii.6.C.VIII.2.b n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.h             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.h.i           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.h.ii          n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.h.iii         n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.h.iii.1       n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.h.iii.2       n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.h.iii.2.A     n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.h.iii.2.A.I   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.h.iii.2.A.II  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.h.iii.2.B     n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.i             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.i.i           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.i.ii          n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.i.iii         container    - -
+9.39/GR/11.i.iii.1       n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.i.iii.2       n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.i.iii.2.A     n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.i.iii.2.B     n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.i.iii.2.C     n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.i.iv          container    - -
+9.39/GR/11.i.iv.1        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.i.iv.2        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.j             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.j.i           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.j.ii          container    - -
+9.39/GR/11.j.ii.1        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.j.ii.2        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.j.ii.2.A      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.j.ii.2.B      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.j.iii         n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.j.iii.1       n/a          - - SQL/JSON query functions (T821)
+9.39/GR/11.j.iii.2       n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12               n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.a             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.a.i           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.a.ii          container    - -
+9.39/GR/12.a.ii.1        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.a.ii.2        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.a.ii.3        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.b             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.i           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.ii          n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii         container    - -
+9.39/GR/12.c.iii.1       n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2       n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.A     n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.B     n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.C     n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D     n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.I   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.II  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.III n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.III.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.III.2 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.IV  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.IV.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.IV.2 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.IV.3 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.V   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.VI  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.VII n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.VII.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.VII.2 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.VIII n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.VIII.1 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.D.VIII.2 n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.E     container    - -
+9.39/GR/12.c.iii.2.E.I   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.E.II  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.E.III n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.E.IV  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.c.iii.2.E.V   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.i           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii          container    - -
+9.39/GR/12.d.ii.1        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii.2        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii.2.A      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii.2.B      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii.2.C      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii.2.D      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii.2.E      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii.2.E.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii.2.E.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii.2.F      container    - -
+9.39/GR/12.d.ii.2.F.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii.2.F.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii.2.F.III  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii.2.F.IV   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.d.ii.2.F.V    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e.i           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e.ii          container    - -
+9.39/GR/12.e.ii.1        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e.ii.2        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e.ii.3        container    - -
+9.39/GR/12.e.ii.3.A      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e.ii.3.B      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e.ii.3.C      n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e.ii.3.C.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e.ii.3.C.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e.ii.3.D      container    - -
+9.39/GR/12.e.ii.3.D.I    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e.ii.3.D.II   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e.ii.3.D.III  n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e.ii.3.D.IV   n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.e.ii.3.D.V    n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.f             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.f.i           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.f.ii          container    - -
+9.39/GR/12.f.ii.1        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.f.ii.2        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.g             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.g.i           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.g.ii          n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.g.ii.1        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.g.ii.2        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.g.ii.3        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.h             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.h.i           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.h.ii          n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.h.ii.1        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.h.ii.2        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.h.ii.3        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.i             n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.i.i           n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.i.ii          n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.i.ii.1        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.i.ii.2        n/a          - - SQL/JSON query functions (T821)
+9.39/GR/12.i.ii.3        n/a          - - SQL/JSON query functions (T821)
+9.39/CR/1                n/a          - - SQL/JSON query functions (T821)
+9.39/CR/2                n/a          - - SQL/JSON query functions (T821)
+9.39/CR/3                n/a          - - SQL/JSON query functions (T821)
+9.39/CR/4                n/a          - - SQL/JSON query functions (T821)
+9.39/CR/5                n/a          - - SQL/JSON query functions (T821)
+9.39/CR/6                n/a          - - SQL/JSON query functions (T821)
+9.39/CR/7                n/a          - - SQL/JSON query functions (T821)
+# 9.40, Casting an SQL/JSON sequence to an SQL type
+9.40                     n/a          - - SQL/JSON query functions (T821)
+9.40/GR/1                n/a          - - SQL/JSON query functions (T821)
+9.40/GR/2                n/a          - - SQL/JSON query functions (T821)
+9.40/GR/3                n/a          - - SQL/JSON query functions (T821)
+9.40/GR/4                n/a          - - SQL/JSON query functions (T821)
+9.40/GR/4.a              n/a          - - SQL/JSON query functions (T821)
+9.40/GR/4.b              n/a          - - SQL/JSON query functions (T821)
+9.40/GR/4.b.i            n/a          - - SQL/JSON query functions (T821)
+9.40/GR/4.b.ii           n/a          - - SQL/JSON query functions (T821)
+9.40/GR/4.b.iii          n/a          - - SQL/JSON query functions (T821)
+9.40/GR/4.b.iii.1        n/a          - - SQL/JSON query functions (T821)
+9.40/GR/4.b.iii.2        n/a          - - SQL/JSON query functions (T821)
+9.40/GR/4.c              n/a          - - SQL/JSON query functions (T821)
+9.40/GR/4.c.i            n/a          - - SQL/JSON query functions (T821)
+9.40/GR/4.c.ii           n/a          - - SQL/JSON query functions (T821)
+9.40/GR/4.c.iii          n/a          - - SQL/JSON query functions (T821)
+9.40/GR/5                container    - -
+9.40/GR/5.a              n/a          - - SQL/JSON query functions (T821)
+9.40/GR/5.b              n/a          - - SQL/JSON query functions (T821)
+9.40/GR/5.c              n/a          - - SQL/JSON query functions (T821)
+9.40/GR/5.d              n/a          - - SQL/JSON query functions (T821)
+9.40/GR/5.d.i            n/a          - - SQL/JSON query functions (T821)
+9.40/GR/5.d.ii           n/a          - - SQL/JSON query functions (T821)
+9.40/GR/6                n/a          - - SQL/JSON query functions (T821)
+# 9.41, Serializing an SQL/JSON sequence to an SQL string type
+9.41                     n/a          - - SQL/JSON query functions (T821)
+9.41/GR/1                n/a          - - SQL/JSON query functions (T821)
+9.41/GR/2                n/a          - - SQL/JSON query functions (T821)
+9.41/GR/3                n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4                n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.a              container    - -
+9.41/GR/4.a.i            n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.a.ii           n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.a.iii          n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.a.iv           n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.a.iv.1         n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.a.iv.2         n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.b              container    - -
+9.41/GR/4.b.i            n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.b.ii           n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.c              container    - -
+9.41/GR/4.c.i            n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.c.i.1          n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.c.i.2          n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.c.i.3          n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.c.ii           n/a          - - SQL/JSON query functions (T821)
+9.41/GR/4.c.iii          n/a          - - SQL/JSON query functions (T821)
+9.41/GR/5                n/a          - - SQL/JSON query functions (T821)
+9.41/GR/5.a              n/a          - - SQL/JSON query functions (T821)
+9.41/GR/5.b              n/a          - - SQL/JSON query functions (T821)
+9.41/GR/5.b.i            n/a          - - SQL/JSON query functions (T821)
+9.41/GR/5.b.ii           n/a          - - SQL/JSON query functions (T821)
+9.41/GR/5.c              n/a          - - SQL/JSON query functions (T821)
+9.41/GR/6                container    - -
+9.41/GR/6.a              n/a          - - SQL/JSON query functions (T821)
+9.41/GR/6.a.i            n/a          - - SQL/JSON query functions (T821)
+9.41/GR/6.a.ii           n/a          - - SQL/JSON query functions (T821)
+9.41/GR/6.a.iii          n/a          - - SQL/JSON query functions (T821)
+9.41/GR/6.a.iii.1        container    - -
+9.41/GR/6.a.iii.1.A      n/a          - - SQL/JSON query functions (T821)
+9.41/GR/6.a.iii.1.B      n/a          - - SQL/JSON query functions (T821)
+9.41/GR/6.a.iii.2        n/a          - - SQL/JSON query functions (T821)
+9.41/GR/6.b              n/a          - - SQL/JSON query functions (T821)
+9.41/GR/7                n/a          - - SQL/JSON query functions (T821)
+# 9.42, Converting a datetime to a formatted character string
+9.42                     n/a          - - datetime templates (T839)
+9.42/SR/1                n/a          - - datetime templates (T839)
+9.42/SR/2                n/a          - - datetime templates (T839)
+9.42/SR/3                n/a          - - datetime templates (T839)
+9.42/GR/1                n/a          - - datetime templates (T839)
+9.42/GR/2                n/a          - - datetime templates (T839)
+9.42/GR/3                n/a          - - datetime templates (T839)
+9.42/GR/4                n/a          - - datetime templates (T839)
+9.42/GR/5                n/a          - - datetime templates (T839)
+9.42/GR/5.a              n/a          - - datetime templates (T839)
+9.42/GR/5.b              n/a          - - datetime templates (T839)
+9.42/GR/5.b.i            n/a          - - datetime templates (T839)
+9.42/GR/5.b.ii           n/a          - - datetime templates (T839)
+9.42/GR/5.b.iii          n/a          - - datetime templates (T839)
+9.42/GR/5.c              n/a          - - datetime templates (T839)
+9.42/GR/5.d              n/a          - - datetime templates (T839)
+9.42/GR/5.e              n/a          - - datetime templates (T839)
+9.42/GR/5.f              n/a          - - datetime templates (T839)
+9.42/GR/5.f.i            n/a          - - datetime templates (T839)
+9.42/GR/5.f.ii           container    - -
+9.42/GR/5.f.ii.1         n/a          - - datetime templates (T839)
+9.42/GR/5.f.ii.2         n/a          - - datetime templates (T839)
+9.42/GR/5.f.ii.3         n/a          - - datetime templates (T839)
+9.42/GR/5.f.iii          n/a          - - datetime templates (T839)
+9.42/GR/5.g              n/a          - - datetime templates (T839)
+9.42/GR/5.h              n/a          - - datetime templates (T839)
+9.42/GR/5.i              n/a          - - datetime templates (T839)
+9.42/GR/5.j              n/a          - - datetime templates (T839)
+9.42/GR/5.j.i            n/a          - - datetime templates (T839)
+9.42/GR/5.j.ii           n/a          - - datetime templates (T839)
+9.42/GR/5.j.iii          n/a          - - datetime templates (T839)
+9.42/GR/5.k              n/a          - - datetime templates (T839)
+9.42/GR/5.k.i            n/a          - - datetime templates (T839)
+9.42/GR/5.k.ii           n/a          - - datetime templates (T839)
+9.42/GR/5.l              n/a          - - datetime templates (T839)
+9.42/GR/5.l.i            n/a          - - datetime templates (T839)
+9.42/GR/5.l.ii           n/a          - - datetime templates (T839)
+9.42/GR/5.m              n/a          - - datetime templates (T839)
+9.42/GR/5.n              n/a          - - datetime templates (T839)
+9.42/GR/6                n/a          - - datetime templates (T839)
+9.42/GR/7                n/a          - - datetime templates (T839)
+# 9.43, Converting a formatted character string to a datetime
+9.43                     n/a          - - datetime templates (T839)
+9.43/SR/1                n/a          - - datetime templates (T839)
+9.43/SR/2                n/a          - - datetime templates (T839)
+9.43/SR/3                n/a          - - datetime templates (T839)
+9.43/SR/4                n/a          - - datetime templates (T839)
+9.43/SR/4.a              n/a          - - datetime templates (T839)
+9.43/SR/4.b              container    - -
+9.43/SR/4.b.i            n/a          - - datetime templates (T839)
+9.43/SR/4.b.ii           n/a          - - datetime templates (T839)
+9.43/SR/4.c              container    - -
+9.43/SR/4.c.i            n/a          - - datetime templates (T839)
+9.43/SR/4.c.ii           n/a          - - datetime templates (T839)
+9.43/SR/4.d              container    - -
+9.43/SR/4.d.i            n/a          - - datetime templates (T839)
+9.43/SR/4.d.i.1          n/a          - - datetime templates (T839)
+9.43/SR/4.d.i.2          n/a          - - datetime templates (T839)
+9.43/SR/4.d.i.3          n/a          - - datetime templates (T839)
+9.43/SR/4.d.i.4          n/a          - - datetime templates (T839)
+9.43/SR/4.d.i.5          n/a          - - datetime templates (T839)
+9.43/SR/4.d.i.6          n/a          - - datetime templates (T839)
+9.43/SR/4.d.i.7          n/a          - - datetime templates (T839)
+9.43/SR/4.d.i.8          n/a          - - datetime templates (T839)
+9.43/SR/4.d.ii           n/a          - - datetime templates (T839)
+9.43/SR/4.d.iii          n/a          - - datetime templates (T839)
+9.43/SR/4.d.iv           n/a          - - datetime templates (T839)
+9.43/SR/5                n/a          - - datetime templates (T839)
+9.43/SR/6                n/a          - - datetime templates (T839)
+9.43/SR/6.a              n/a          - - datetime templates (T839)
+9.43/SR/6.b              n/a          - - datetime templates (T839)
+9.43/SR/6.c              n/a          - - datetime templates (T839)
+9.43/GR/1                n/a          - - datetime templates (T839)
+9.43/GR/2                n/a          - - datetime templates (T839)
+9.43/GR/3                n/a          - - datetime templates (T839)
+9.43/GR/4                n/a          - - datetime templates (T839)
+9.43/GR/5                n/a          - - datetime templates (T839)
+9.43/GR/6                n/a          - - datetime templates (T839)
+9.43/GR/6.a              n/a          - - datetime templates (T839)
+9.43/GR/6.a.i            n/a          - - datetime templates (T839)
+9.43/GR/6.a.ii           n/a          - - datetime templates (T839)
+9.43/GR/6.a.iii          n/a          - - datetime templates (T839)
+9.43/GR/6.a.iv           n/a          - - datetime templates (T839)
+9.43/GR/6.a.v            n/a          - - datetime templates (T839)
+9.43/GR/6.a.vi           n/a          - - datetime templates (T839)
+9.43/GR/6.b              n/a          - - datetime templates (T839)
+9.43/GR/6.b.i            n/a          - - datetime templates (T839)
+9.43/GR/6.b.ii           n/a          - - datetime templates (T839)
+9.43/GR/6.b.iii          n/a          - - datetime templates (T839)
+9.43/GR/6.b.iv           n/a          - - datetime templates (T839)
+9.43/GR/6.b.v            n/a          - - datetime templates (T839)
+9.43/GR/6.b.vi           n/a          - - datetime templates (T839)
+9.43/GR/6.b.vii          n/a          - - datetime templates (T839)
+9.43/GR/6.c              n/a          - - datetime templates (T839)
+9.43/GR/7                container    - -
+9.43/GR/7.a              n/a          - - datetime templates (T839)
+9.43/GR/7.a.i            n/a          - - datetime templates (T839)
+9.43/GR/7.a.ii           n/a          - - datetime templates (T839)
+9.43/GR/7.a.iii          n/a          - - datetime templates (T839)
+9.43/GR/7.a.iv           n/a          - - datetime templates (T839)
+9.43/GR/7.b              container    - -
+9.43/GR/7.b.i            container    - -
+9.43/GR/7.b.i.1          n/a          - - datetime templates (T839)
+9.43/GR/7.b.i.1.A        n/a          - - datetime templates (T839)
+9.43/GR/7.b.i.1.B        n/a          - - datetime templates (T839)
+9.43/GR/7.b.i.1.C        n/a          - - datetime templates (T839)
+9.43/GR/7.b.i.2          n/a          - - datetime templates (T839)
+9.43/GR/7.b.ii           container    - -
+9.43/GR/7.b.ii.1         n/a          - - datetime templates (T839)
+9.43/GR/7.b.ii.1.A       n/a          - - datetime templates (T839)
+9.43/GR/7.b.ii.1.B       n/a          - - datetime templates (T839)
+9.43/GR/7.b.ii.1.C       n/a          - - datetime templates (T839)
+9.43/GR/7.b.ii.2         n/a          - - datetime templates (T839)
+9.43/GR/8                container    - -
+9.43/GR/8.a              n/a          - - datetime templates (T839)
+9.43/GR/8.a.i            n/a          - - datetime templates (T839)
+9.43/GR/8.a.ii           n/a          - - datetime templates (T839)
+9.43/GR/8.a.iii          n/a          - - datetime templates (T839)
+9.43/GR/8.a.iv           n/a          - - datetime templates (T839)
+9.43/GR/8.b              n/a          - - datetime templates (T839)
+9.43/GR/8.b.i            container    - -
+9.43/GR/8.b.i.1          n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.1.A        n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.1.B        n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.1.C        n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.2          n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.2.A        n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.2.B        n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.2.C        n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.2.D        container    - -
+9.43/GR/8.b.i.2.D.I      n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.2.D.II     n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.2.E        n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.2.F        n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.2.G        container    - -
+9.43/GR/8.b.i.2.G.I      n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.2.G.II     n/a          - - datetime templates (T839)
+9.43/GR/8.b.i.3          n/a          - - datetime templates (T839)
+9.43/GR/8.b.ii           container    - -
+9.43/GR/8.b.ii.1         n/a          - - datetime templates (T839)
+9.43/GR/8.b.ii.1.A       n/a          - - datetime templates (T839)
+9.43/GR/8.b.ii.1.B       n/a          - - datetime templates (T839)
+9.43/GR/8.b.ii.1.C       n/a          - - datetime templates (T839)
+9.43/GR/8.b.ii.2         n/a          - - datetime templates (T839)
+9.43/GR/8.b.iii          container    - -
+9.43/GR/8.b.iii.1        n/a          - - datetime templates (T839)
+9.43/GR/8.b.iii.1.A      n/a          - - datetime templates (T839)
+9.43/GR/8.b.iii.1.B      n/a          - - datetime templates (T839)
+9.43/GR/8.b.iii.1.C      n/a          - - datetime templates (T839)
+9.43/GR/8.b.iii.2        n/a          - - datetime templates (T839)
+9.43/GR/9                container    - -
+9.43/GR/9.a              n/a          - - datetime templates (T839)
+9.43/GR/9.a.i            n/a          - - datetime templates (T839)
+9.43/GR/9.a.ii           n/a          - - datetime templates (T839)
+9.43/GR/9.a.iii          n/a          - - datetime templates (T839)
+9.43/GR/9.b              n/a          - - datetime templates (T839)
+9.43/GR/10               container    - -
+9.43/GR/10.a             n/a          - - datetime templates (T839)
+9.43/GR/10.a.i           n/a          - - datetime templates (T839)
+9.43/GR/10.a.ii          n/a          - - datetime templates (T839)
+9.43/GR/10.a.iii         n/a          - - datetime templates (T839)
+9.43/GR/10.a.iv          n/a          - - datetime templates (T839)
+9.43/GR/10.a.v           n/a          - - datetime templates (T839)
+9.43/GR/10.b             n/a          - - datetime templates (T839)
+9.43/GR/11               container    - -
+9.43/GR/11.a             n/a          - - datetime templates (T839)
+9.43/GR/11.a.i           n/a          - - datetime templates (T839)
+9.43/GR/11.a.ii          n/a          - - datetime templates (T839)
+9.43/GR/11.a.iii         n/a          - - datetime templates (T839)
+9.43/GR/11.a.iv          container    - -
+9.43/GR/11.a.iv.1        n/a          - - datetime templates (T839)
+9.43/GR/11.a.iv.2        n/a          - - datetime templates (T839)
+9.43/GR/11.b             n/a          - - datetime templates (T839)
+9.43/GR/12               container    - -
+9.43/GR/12.a             n/a          - - datetime templates (T839)
+9.43/GR/12.b             n/a          - - datetime templates (T839)
+9.43/GR/12.c             n/a          - - datetime templates (T839)
+9.43/GR/12.d             n/a          - - datetime templates (T839)
+9.43/GR/12.e             n/a          - - datetime templates (T839)
+9.43/GR/13               n/a          - - datetime templates (T839)
+# 9.44, Datetime templates
+9.44                     n/a          - - datetime templates (T839)
+9.44/SR/1                n/a          - - datetime templates (T839)
+9.44/SR/2                n/a          - - datetime templates (T839)
+9.44/SR/3                n/a          - - datetime templates (T839)
+9.44/SR/4                n/a          - - datetime templates (T839)
+9.44/SR/5                n/a          - - datetime templates (T839)
+9.44/SR/6                n/a          - - datetime templates (T839)
+9.44/SR/7                n/a          - - datetime templates (T839)
+9.44/SR/8                n/a          - - datetime templates (T839)
+9.44/SR/9                n/a          - - datetime templates (T839)
+9.44/SR/10               n/a          - - datetime templates (T839)
+9.44/SR/11               n/a          - - datetime templates (T839)
+9.44/SR/12               container    - -
+9.44/SR/12.a             n/a          - - datetime templates (T839)
+9.44/SR/12.b             n/a          - - datetime templates (T839)
+9.44/SR/12.c             n/a          - - datetime templates (T839)
+9.44/SR/12.d             n/a          - - datetime templates (T839)
+9.44/SR/13               n/a          - - datetime templates (T839)
+9.44/SR/13.a             n/a          - - datetime templates (T839)
+9.44/SR/13.b             n/a          - - datetime templates (T839)
+9.44/SR/13.c             n/a          - - datetime templates (T839)
+9.44/SR/14               n/a          - - datetime templates (T839)
+9.44/SR/14.a             n/a          - - datetime templates (T839)
+9.44/SR/14.b             n/a          - - datetime templates (T839)
+9.44/SR/14.c             n/a          - - datetime templates (T839)
+9.44/SR/15               n/a          - - datetime templates (T839)
+9.44/SR/16               n/a          - - datetime templates (T839)
+9.44/SR/16.a             n/a          - - datetime templates (T839)
+9.44/SR/16.b             n/a          - - datetime templates (T839)
+9.44/SR/16.c             n/a          - - datetime templates (T839)
+9.44/SR/17               n/a          - - datetime templates (T839)
+9.44/SR/18               n/a          - - datetime templates (T839)
+9.44/SR/18.a             n/a          - - datetime templates (T839)
+9.44/SR/18.b             n/a          - - datetime templates (T839)
+9.44/SR/18.c             n/a          - - datetime templates (T839)
+9.44/SR/19               n/a          - - datetime templates (T839)
+9.44/SR/20               n/a          - - datetime templates (T839)
+9.44/SR/20.a             n/a          - - datetime templates (T839)
+9.44/SR/20.b             n/a          - - datetime templates (T839)
+9.44/CR/1                n/a          - - datetime templates (T839)
+9.44/CR/2                n/a          - - datetime templates (T839)

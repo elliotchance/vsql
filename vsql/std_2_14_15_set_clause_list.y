@@ -1,5 +1,9 @@
 %%
 
+// ISO/IEC 9075-2:2016(E), 14.15, <set clause list>
+//
+// Specify a list of updates.
+
 set_clause_list:
   set_clause { $$.v = [$1.v as SetClause] }
 | set_clause_list comma set_clause {

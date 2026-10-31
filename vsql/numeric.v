@@ -5,6 +5,8 @@ module vsql
 
 import math.big
 
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.4.3.1, Numeric types.
+
 // These are used for encoding certain aspects for storage. 1 << 0 was for a
 // NULL, which is never stored as a Numeric (see Value.is_null).
 const numeric_is_zero = u8(1 << 1)
@@ -36,11 +38,9 @@ fn new_numeric_from_f64(x f64) Numeric {
 
 // NOTE: numeric value is expected to be well formed.
 fn new_numeric_from_string(x string) Numeric {
-	// ISO/IEC 9075-2:2016(E), 5.3 <literal>:
-	// 22) The declared type of an <exact numeric literal> ENL is an
-	// implementation-defined exact numeric type whose scale is the number of
-	// <digit>s to the right of the <period>. There shall be an exact numeric type
-	// capable of representing the value of ENL exactly.
+	// The scale of an exact numeric literal is the number of digits after the
+	// period, and its type must hold the value exactly (ISO/IEC 9075-2:2016(E),
+	// 5.3, <literal>, Syntax Rules, 22).
 
 	if x.contains('e') || x.contains('E') {
 		return new_numeric_from_f64(x.f64())
@@ -192,9 +192,10 @@ fn (n Numeric) divide(n2 Numeric) !Numeric {
 }
 
 // check_numeric_precision returns n, or an error if its integer part has more
-// digits than its type can hold (ISO/IEC 9075-2:2016(E), 6.29, General Rule
-// 5). The type of an arithmetic result is limited to the maximum precision, see
-// exact_arithmetic_type.
+// digits than its type can hold. The type of an arithmetic result is limited to
+// the maximum precision, see exact_arithmetic_type.
+//
+// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, General Rules, 5
 fn check_numeric_precision(n Numeric) !Numeric {
 	integer := n.integer().str().trim_left('-')
 	digits := if integer == '0' { 0 } else { integer.len }

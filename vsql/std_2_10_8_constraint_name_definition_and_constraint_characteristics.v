@@ -4,6 +4,9 @@ module vsql
 // characteristics>
 //
 // Specify the name of a constraint and its characteristics.
+//
+// The concept is described by ISO/IEC 9075-1:2003(E), 4.6.6.3, Table
+// constraints.
 
 // ConstraintCharacteristics are the <constraint characteristic>s of a
 // constraint (DEFERRABLE, NOT DEFERRABLE, INITIALLY DEFERRED or INITIALLY
@@ -15,7 +18,9 @@ struct ConstraintCharacteristics {
 
 // add returns the characteristics with another one, or an error if it's the
 // second DEFERRABLE (or NOT DEFERRABLE) or the second INITIALLY, or it's
-// INITIALLY DEFERRED and NOT DEFERRABLE (Syntax Rule 2a).
+// INITIALLY DEFERRED and NOT DEFERRABLE.
+//
+// ISO/IEC 9075-2:2016(E), 10.8, <constraint name definition> and <constraint characteristics>, Syntax Rules, 2.a.i
 fn (c ConstraintCharacteristics) add(clause string) !ConstraintCharacteristics {
 	mut clauses := c.clauses.clone()
 	clauses << clause
@@ -28,15 +33,24 @@ fn (c ConstraintCharacteristics) add(clause string) !ConstraintCharacteristics {
 	return ConstraintCharacteristics{clauses}
 }
 
-// is_deferrable is true unless the constraint is NOT DEFERRABLE, which is
-// implicit when it's not INITIALLY DEFERRED and neither DEFERRABLE nor NOT
-// DEFERRABLE is given (Syntax Rule 2b, General Rule 2).
+// is_deferrable is true unless the constraint is NOT DEFERRABLE. DEFERRABLE is
+// implicit for INITIALLY DEFERRED, otherwise NOT DEFERRABLE is implicit when
+// neither DEFERRABLE nor NOT DEFERRABLE is given, which includes a constraint
+// without any <constraint characteristics>.
+//
+// ISO/IEC 9075-2:2016(E), 10.8, <constraint name definition> and <constraint characteristics>, Syntax Rules, 2.a.ii and 2.b
+// ISO/IEC 9075-2:2016(E), 11.6, <table constraint definition>, Syntax Rules, 1
+// ISO/IEC 9075-2:2016(E), 10.8, <constraint name definition> and <constraint characteristics>, General Rules, 2
 fn (c ConstraintCharacteristics) is_deferrable() bool {
 	return 'DEFERRABLE' in c.clauses || 'INITIALLY DEFERRED' in c.clauses
 }
 
 // is_initially_deferred is true when the constraint mode of the constraint is
-// deferred at the start of each transaction (General Rule 3).
+// deferred at the start of each transaction. Otherwise, it's immediate, which
+// is the same as an implicit INITIALLY IMMEDIATE.
+//
+// ISO/IEC 9075-2:2016(E), 10.8, <constraint name definition> and <constraint characteristics>, Syntax Rules, 1
+// ISO/IEC 9075-2:2016(E), 10.8, <constraint name definition> and <constraint characteristics>, General Rules, 3
 fn (c ConstraintCharacteristics) is_initially_deferred() bool {
 	return 'INITIALLY DEFERRED' in c.clauses
 }
@@ -104,7 +118,9 @@ fn constraint_key(t Table, name string) string {
 }
 
 // set_constraint_mode sets the constraint mode of a constraint of t, which
-// must be deferrable (ISO/IEC 9075-2:2016(E), 17.4, Syntax Rule 2).
+// must be deferrable.
+//
+// ISO/IEC 9075-2:2016(E), 17.4, <set constraints mode statement>, Syntax Rules, 2
 fn (mut f Storage) set_constraint_mode(t Table, name string, characteristics ConstraintCharacteristics, is_deferred bool) ! {
 	if !characteristics.is_deferrable() {
 		return sqlstate_42601('constraint ${name} is not DEFERRABLE')
@@ -115,6 +131,8 @@ fn (mut f Storage) set_constraint_mode(t Table, name string, characteristics Con
 
 // set_all_constraint_modes sets the constraint mode of every deferrable
 // constraint, for ALL.
+//
+// ISO/IEC 9075-2:2016(E), 17.4, <set constraints mode statement>, General Rules, 2.a and 3.a
 fn (mut f Storage) set_all_constraint_modes(is_deferred bool) {
 	for _, t in f.tables {
 		for constraint in t.unique_constraints {
@@ -132,7 +150,13 @@ fn (mut f Storage) set_all_constraint_modes(is_deferred bool) {
 
 // end_constraint_modes forgets the constraint modes and deferred checks at the
 // end of a transaction, so that the next one starts with the initial
-// constraint modes.
+// constraint modes. A new SQL-session also starts with them, rather than with
+// every constraint immediate.
+//
+// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 10.b.ii
+// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.h.ii.2
+// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 13.n
+// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 5.c.iii.2.C.II
 fn (mut f Storage) end_constraint_modes() {
 	f.constraint_modes = map[string]bool{}
 	f.deferred_checks = map[string]string{}

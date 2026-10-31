@@ -6,7 +6,12 @@ module main
 // the implementation.
 //
 // There's a row for each data type that vsql supports (FLOAT is a DOUBLE
-// PRECISION, but it has its own row because it has its own code).
+// PRECISION, but it has its own row because it has its own code). Each data
+// type has one row, for its standard name (General Rules, 7 and 8.a). There
+// are no interval or implementation-defined data types (General Rules, 8.c.v,
+// 8.q.ii and 8.s.i), no data type is unsigned or has unique values (General
+// Rules, 8.j.i and 8.l.i), and there's no LOCAL_TYPE_NAME (General Rules,
+// 8.m).
 
 // Codes from Table 26, "Miscellaneous codes used in CLI".
 const sql_all_types = i16(0)

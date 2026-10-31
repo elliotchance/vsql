@@ -1,5 +1,11 @@
 // operators.v contains functions that satify different unary and binary
 // operators in expressions.
+//
+// A divisor of zero raises 22012 (division by zero). An exact result that
+// doesn't fit in its type raises 22003 (numeric value out of range), and a
+// division is truncated.
+//
+// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, General Rules, 3, 4 and 5
 
 module vsql
 

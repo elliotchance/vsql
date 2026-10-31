@@ -5,8 +5,13 @@ module main
 // Establish a connection.
 //
 // The ServerName is the path of the database file, or ":memory:". The DEFAULT
-// server (when ServerName is empty or "DEFAULT") is a new in-memory database.
-// UserName and Authentication are not used.
+// server (when ServerName is empty or "DEFAULT") is a new in-memory database
+// (General Rules 13.a and 13.b).
+//
+// UserName and Authentication are not used, since vsql doesn't have users
+// (#732): UN isn't checked to be a <user identifier>, and isn't the SQL-session
+// user identifier (General Rules 12.b.ii.2, 12.b.ii.3 and 18). So an SQL-server
+// never rejects the SQL-connection (General Rule 16).
 
 @[export: 'SQLConnect']
 fn sql_connect(connection_handle SQLInteger, server_name &char, name_length1 i16, user_name &char, name_length2 i16, authentication &char, name_length3 i16) i16 {
@@ -15,6 +20,9 @@ fn sql_connect(connection_handle SQLInteger, server_name &char, name_length1 i16
 		entry.leave()
 	}
 	h := i64(connection_handle)
+
+	// - 1. ConnectionHandle must identify an allocated SQL-connection, and its
+	// diagnostics area is emptied.
 	mut dbc := dbcs[h] or { return sql_invalid_handle }
 	dbc.diag.clear()
 
@@ -45,7 +53,7 @@ fn connect(mut dbc Dbc, h i64, server_name &char, name_length1 i16, user_name &c
 	if sn.len > 128 {
 		return cli_error('HY090', 'invalid string length or buffer length')
 	}
-	// - 5.a. If L1 is zero, then let 'DEFAULT' be the value of SN.
+	// - 6.a. If L1 is zero, then let 'DEFAULT' be the value of SN.
 	dbc.server_name = if sn == '' { 'DEFAULT' } else { sn }
 	is_default := dbc.server_name == 'DEFAULT'
 
@@ -70,6 +78,9 @@ fn connect(mut dbc Dbc, h i64, server_name &char, name_length1 i16, user_name &c
 		sn
 	}
 
+	// - 15, 17. If the SQL-client cannot establish the SQL-connection, then an
+	// exception condition is raised: connection exception — SQL-client unable
+	// to establish SQL-connection.
 	dbc.conn = db_open(path) or {
 		return cli_error('08001', 'SQL-client unable to establish SQL-connection: ${err.msg()}')
 	}

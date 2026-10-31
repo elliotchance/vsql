@@ -6,6 +6,12 @@ import time
 //
 // Define a persistent base table, a created local temporary table, or a global
 // temporary table.
+//
+// The concepts are described by:
+//
+// ISO/IEC 9075-1:2003(E), 4.6.6, Base tables and their components
+// ISO/IEC 9075-1:2003(E), 4.6.6.1, Base tables
+// ISO/IEC 9075-2:2016(E), 4.15, Tables
 
 type TableElement = CheckConstraintDefinition
 	| Column
@@ -46,7 +52,10 @@ fn (s TableDefinition) check_limits(table_name Identifier) ! {
 	}
 }
 
-// TODO(elliotchance): A table is allowed to have zero columns.
+// TODO(elliotchance): A table with only table constraints has no columns, but
+//  it needs at least one column (#787).
+//
+// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 9.a
 
 fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
@@ -61,6 +70,7 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 	mut catalog := conn.catalog_for(table_name)
 	if table_name.storage_id() in catalog.storage.tables
 		|| table_name.storage_id() in catalog.virtual_tables {
+		// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 7
 		return sqlstate_42p07('table', table_name.str()) // duplicate table
 	}
 
@@ -110,9 +120,12 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					}
 				}
 
-				// A table can have at most one identity column (Syntax Rule 15, and
-				// 11.11, Syntax Rule 3 for ADD COLUMN), which is implicitly NOT NULL
-				// (11.4, Syntax Rule 16).
+				// A table can have at most one identity column (also for ADD
+				// COLUMN), which is implicitly NOT NULL.
+				//
+				// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 15
+				// ISO/IEC 9075-2:2016(E), 11.11, <add column definition>, Syntax Rules, 3
+				// ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rules, 16
 				if identity := column.identity {
 					if _ := Table{
 						columns: columns
@@ -151,6 +164,7 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					table_name)!
 			}
 			UniqueConstraintDefinition {
+				// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 8
 				if table_element.is_primary_key && primary_key.len > 0 {
 					return sqlstate_42601('only one PRIMARY KEY can be defined')
 				}
@@ -162,8 +176,11 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 						return sqlstate_42601('column ${column.sub_entity_name} appears more than once in ${constraint}')
 					}
 
-					// A column of any type can be in a PRIMARY KEY or UNIQUE,
-					// because they can all be grouped (11.7 Syntax Rule 1).
+					// Each column must be a column of the table, and only once. A
+					// column of any type can be in a PRIMARY KEY or UNIQUE,
+					// because they can all be grouped.
+					//
+					// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 1 and 5.a
 					if !stmt.has_column(column.sub_entity_name) {
 						return sqlstate_42601('unknown column ${column} in ${constraint}')
 					}
@@ -180,7 +197,10 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 				}
 			}
 			ReferentialConstraintDefinition {
-				// 11.8 Syntax Rule 8.
+				// Each referencing column must be a column of the table, and only
+				// once.
+				//
+				// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 8
 				mut referencing_columns := []string{}
 				for column in table_element.columns {
 					if column.sub_entity_name in referencing_columns {
@@ -192,8 +212,11 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 					referencing_columns << column.sub_entity_name
 				}
 
-				// 11.8 Syntax Rule 4a. The rest of the referenced table and
-				// columns are checked by resolve_foreign_keys.
+				// A referenced column can't be given more than once. The rest of
+				// the referenced table and columns are checked by
+				// resolve_foreign_keys.
+				//
+				// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 4.a
 				mut referenced_columns := []string{}
 				for column in table_element.referenced_columns {
 					if column.sub_entity_name in referenced_columns {
@@ -214,8 +237,9 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 						}
 					}
 					referenced_columns: referenced_columns
-					// NO ACTION is the same as no ON UPDATE or ON DELETE
-					// (Syntax Rules 12 and 13).
+					// NO ACTION is the same as no ON UPDATE or ON DELETE.
+					//
+					// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 12 and 13
 					update_rule:        if table_element.update_rule == 'NO ACTION' {
 						''
 					} else {
@@ -232,8 +256,9 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 		}
 	}
 
-	// Each unique constraint must have a different set of columns (11.7 Syntax
-	// Rule 5c), in any order.
+	// Each unique constraint must have a different set of columns, in any order.
+	//
+	// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 5.c
 	mut column_sets := map[string]bool{}
 	mut all_unique_columns := [primary_key]
 	all_unique_columns << unique_constraints.map(it.columns)
@@ -250,7 +275,9 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 		column_sets[set] = true
 	}
 
-	// Columns in the PRIMARY KEY are implicitly NOT NULL (11.7).
+	// Columns in the PRIMARY KEY are implicitly NOT NULL.
+	//
+	// ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 7
 	for i, column in columns {
 		if column.name.sub_entity_name in primary_key {
 			columns[i] = Column{
@@ -274,8 +301,10 @@ fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
 }
 
 // table_constraint_name is the name of a constraint of a table, or empty if it
-// wasn't given one. The name can only be qualified by the schema of the table
-// (11.6, Syntax Rule 2), which is also the schema of an unqualified name.
+// wasn't given one. The name can only be qualified by the schema of the table,
+// which is also the schema of an unqualified name.
+//
+// ISO/IEC 9075-2:2016(E), 11.6, <table constraint definition>, Syntax Rules, 2
 fn table_constraint_name(name Identifier, table_name Identifier) !string {
 	if (name.catalog_name != '' && name.catalog_name != table_name.catalog_name)
 		|| (name.schema_name != '' && name.schema_name != table_name.schema_name) {

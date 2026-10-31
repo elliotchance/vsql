@@ -6,6 +6,20 @@ module main
 //
 // Value points to an INTEGER or SMALLINT field (see 5.1, "<CLI routine>"). A
 // pointer field is set to Value itself.
+//
+// A descriptor allocated by the application is always an ARD (General Rules,
+// 5.a), even when it's the current APD, since Table 21 has the same fields
+// for both. Everything is checked before anything is set, so an exception
+// condition doesn't change the descriptor (General Rules, 12). Memory isn't
+// limited (General Rules, 13.a.i). There are no ROW, ARRAY or MULTISET types,
+// so every LEVEL is 0 (zero) (General Rules, 14). Setting the TYPE removes the
+// length, precision, scale, character set and collation (General Rules, 19.a),
+// but setting the DATETIME_INTERVAL_CODE only sets the PRECISION (General
+// Rules, 20.a), and both are implementation-dependent. There are no interval
+// types (General Rules, 19.b.ii, 19.b.iv and 21), or implementation-defined
+// data types (General Rules, 19.b.ix). The restrictions between the
+// implementation and application descriptors (General Rules, 22) are those of
+// 5.6 and 5.8.
 
 @[export: 'SQLSetDescField']
 fn sql_set_desc_field(descriptor_handle SQLInteger, record_number i16, field_identifier i16, value voidptr, buffer_length SQLInteger) i16 {
@@ -16,7 +30,8 @@ fn sql_set_desc_field(descriptor_handle SQLInteger, record_number i16, field_ide
 	mut desc := descs[i64(descriptor_handle)] or { return sql_invalid_handle }
 	desc.diag.clear()
 
-	// See 5.2, "<CLI routine> invocation", General Rule 3.b.ii.
+	// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules,
+	// 3.b.ii
 	desc.invoke() or { return desc.diag.error(err) }
 
 	// See 5.11, "Deferred parameter check".
@@ -277,9 +292,13 @@ fn (mut desc Desc) set_type_defaults(rn int, code i64) {
 }
 
 // is_consistent is true if an item descriptor area of an ARD or APD has a data
-// type that can be used in C (see 5.13, "Description of CLI item descriptor
-// areas", Syntax Rule 7). An item descriptor area of an IPD must be valid (see
-// Syntax Rule 5).
+// type that can be used in C (ISO/IEC 9075-3:2003(E), 5.13, Description of CLI
+// item descriptor areas, Syntax Rules, 7). NUMERIC, DECIMAL and FLOAT don't
+// have a C data type (Table 45), so they're never consistent (7.b.iii). An
+// item descriptor area of an IPD must be valid (Syntax Rules, 5), but the
+// PRECISION of a datetime isn't checked (5.c.viii), which is #755. There are
+// no nested descriptor areas, since every LEVEL is 0 (zero) (Syntax Rules, 2
+// to 4, 5.b, 5.c.xii and 5.c.xiii).
 fn (desc &Desc) is_consistent(record map[int]DescValue) bool {
 	typ := record[sql_desc_type] or { return false }
 	code := if typ is i64 { typ } else { return false }

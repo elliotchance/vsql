@@ -3,6 +3,10 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>
 //
 // Specify a numeric value.
+//
+// The concept is described by:
+//
+// ISO/IEC 9075-2:2016(E), 4.4.3, Operations involving numbers
 
 struct NumericValueExpression {
 	n    ?&NumericValueExpression
@@ -179,6 +183,8 @@ fn parse_factor_2(sign string, expr NumericPrimary) !NumericPrimary {
 // numbers of the same category have the more general type, except that an
 // exact result with a NUMERIC or DECIMAL operand follows exact_arithmetic_type
 // (division is done as multiplication, see Numeric.divide).
+//
+// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, Syntax Rules, 1
 fn arithmetic_type(t1 Type, t2 Type, op string) Type {
 	if t1.typ.is_number() && t2.typ.is_number() {
 		t1_category, _ := t1.typ.supertype()

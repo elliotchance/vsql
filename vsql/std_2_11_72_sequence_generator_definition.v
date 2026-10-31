@@ -120,15 +120,16 @@ fn check_sequence_options(options []SequenceGeneratorOption) ! {
 // sequence returns the sequence that the definition describes. It's also used
 // when reading a sequence definition from the file. The INCREMENT BY is 1 by
 // default, and there's no CYCLE. Without a MINVALUE or MAXVALUE, the limit is
-// the range of a BIGINT. Without a START WITH, it's the MINVALUE of an
-// ascending sequence (or the MAXVALUE of a descending one), otherwise 1 (#785).
+// implicit (see Sequence.min and Sequence.max). Without a START WITH, it's the
+// minimum value of an ascending sequence (or the maximum value of a descending
+// one), which is 1 (or -1) by default.
 //
 // ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 4 and 6-9
 // ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 13
 fn (stmt SequenceGeneratorDefinition) sequence(sequence_name Identifier) Sequence {
 	mut increment_by := i64(1)
 	mut has_start_value := false
-	mut start_value := i64(1)
+	mut start_value := i64(0)
 	mut has_min_value := false
 	mut min_value := i64(0)
 	mut has_max_value := false
@@ -164,19 +165,8 @@ fn (stmt SequenceGeneratorDefinition) sequence(sequence_name Identifier) Sequenc
 		}
 	}
 
-	is_ascending := increment_by >= 0
-	if !has_start_value {
-		if is_ascending && has_min_value {
-			start_value = min_value
-		} else if !is_ascending && has_max_value {
-			start_value = max_value
-		}
-	}
-
-	return Sequence{
+	mut sequence := Sequence{
 		name:          sequence_name
-		start_value:   start_value
-		current_value: start_value - increment_by
 		unused:        true
 		increment_by:  increment_by
 		cycle:         cycle
@@ -185,6 +175,13 @@ fn (stmt SequenceGeneratorDefinition) sequence(sequence_name Identifier) Sequenc
 		has_max_value: has_max_value
 		max_value:     max_value
 	}
+	if !has_start_value {
+		start_value = sequence.reset()
+	}
+	sequence.start_value = start_value
+	sequence.current_value = i64(u64(start_value) - u64(increment_by))
+
+	return sequence
 }
 
 fn (stmt SequenceGeneratorDefinition) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {

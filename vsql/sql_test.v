@@ -2472,3 +2472,41 @@ fn test_violated_constraint() ! {
 	assert constraint_violated(mut db, 'COMMIT') == ':memory:.PUBLIC.Y_POSITIVE'
 	assert constraint_violated(mut db, 'SELECT * FROM q') == 'none'
 }
+
+// old_sequence is a sequence as it's stored by a version of vsql that had the
+// range of a BIGINT as its implicit MINVALUE and MAXVALUE.
+fn old_sequence(definition string, current_value i64, unused bool) !Sequence {
+	mut value := new_empty_bytes()
+	value.write_i64(current_value)
+	if unused {
+		value.write_bool(false)
+		value.write_bool(true)
+	}
+
+	return new_sequence_from_bytes('CREATE SEQUENCE "PUBLIC"."S"\n  ${definition}'.bytes(),
+		value.bytes(), 0)
+}
+
+fn test_old_sequence_implicit_limits() ! {
+	// Within the new implicit limits, they're used.
+	mut s := old_sequence('START WITH 5\n  INCREMENT BY 1', 4, true)!
+	assert !s.has_min_value && !s.has_max_value
+	assert s.min() == 1
+
+	// An unused sequence with a START WITH below 1 keeps going down to the
+	// smallest BIGINT.
+	s = old_sequence('START WITH -5\n  INCREMENT BY 1', -6, true)!
+	assert s.min() == min_i64 && s.max() == max_i64
+	assert s.next()!.current_value == -5
+
+	// A descending sequence that started at the old default of 1.
+	s = old_sequence('START WITH 1\n  INCREMENT BY -1', 0, false)!
+	assert s.min() == min_i64 && s.max() == max_i64
+	assert s.next()!.current_value == -1
+
+	// The current value of a sequence that has been used is outside the new
+	// implicit limits, even though the START WITH isn't.
+	s = old_sequence('START WITH -5\n  INCREMENT BY -1', 3, false)!
+	assert s.max() == max_i64
+	assert s.next()!.current_value == 2
+}

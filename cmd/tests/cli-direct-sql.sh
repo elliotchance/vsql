@@ -13,6 +13,13 @@ grep 'CREATE TABLE 1' $TXT_FILE
 grep 'INSERT 1' $TXT_FILE
 grep 'Error 42601: syntax error: a direct SQL statement is one statement that ends with a semicolon' $TXT_FILE
 
+# A statement that is only white space and comments does nothing, including
+# one at the end of the input without a semicolon.
+printf "/* x */ ;\n-- y\n;\n ;\nVALUES 3;\n/* z */" | $VSQL cli $VSQL_FILE > $TXT_FILE
+cat $TXT_FILE
+grep -Ex ' *3' $TXT_FILE
+if grep -E 'Error|panic' $TXT_FILE; then exit 1; fi
+
 # There's no autocommit: the SQL-transaction stays active until a COMMIT or the
 # end of the input, so another process can't see the row before then.
 (printf "INSERT INTO t (x) VALUES (2);\n"; sleep 3) | $VSQL cli -autocommit=false $VSQL_FILE &

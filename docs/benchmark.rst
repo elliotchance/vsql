@@ -62,8 +62,8 @@ Notes
 1. A timestamp generated in V is stored as a ``VARCHAR``, rather than using
 ``CURRENT_TIMESTAMP``.
 
-2. ``INSERT`` only inserts one row per statement (rather than inserting many
-rows with a single statement).
+2. The rows are loaded with ``INSERT`` statements that insert up to 1000 rows
+each (rather than with ``COPY``).
 
 3. The ``bench`` command will create a file called ``bench.vsql`` for the test.
 If the file already exists it's deleted first. Use ``-file`` to choose another

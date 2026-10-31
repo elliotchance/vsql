@@ -106,7 +106,10 @@ fn (o PageObject) bytes() []u8 {
 }
 
 fn parse_page_object(data []u8) (int, PageObject) {
-	mut buf := new_bytes(data)
+	// The key and value are copied by read_u8s, so data doesn't need to be.
+	mut buf := Bytes{
+		data: data
+	}
 	total_len := buf.read_i32()
 	tid := buf.read_u64()
 	xid := buf.read_u64()
@@ -316,9 +319,7 @@ fn (p Page) objects() []PageObject {
 	mut n := 0
 
 	for n < p.used - page_header_size {
-		// Be careful to clone the size as the underlying data might get moved
-		// around.
-		m, object := parse_page_object(p.data[n..].clone())
+		m, object := parse_page_object(p.data[n..])
 		objects << object
 		n += m
 	}

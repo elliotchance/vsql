@@ -147,13 +147,13 @@ function for each procedure:
 
 .. code-block:: c
 
-   void open_database(char SQLSTATE[6], char file[101]);
+   void open_database(char SQLSTATE[6], char file[404]);
    void create_items(char SQLSTATE[6]);
-   void add_item(char SQLSTATE[6], long *id, char name[21], double *price, short *price_indicator);
+   void add_item(char SQLSTATE[6], long *id, char name[84], double *price, short *price_indicator);
    void change_prices(char SQLSTATE[6], double *factor);
-   void get_item(char SQLSTATE[6], long *id, char name[21], double *price, short *price_indicator);
+   void get_item(char SQLSTATE[6], long *id, char name[84], double *price, short *price_indicator);
    void rows_changed(char SQLSTATE[6], long *rows);
-   void error_message(char SQLSTATE[6], char message[201]);
+   void error_message(char SQLSTATE[6], char message[804]);
    void commit_work(char SQLSTATE[6]);
    void close_database(char SQLSTATE[6]);
 
@@ -208,8 +208,8 @@ uses them as ``:name``. Each one has this C type:
 ============================ =============================
 SQL data type                C data type
 ============================ =============================
-``CHARACTER(L)``             ``char name[L + 1]``
-``CHARACTER VARYING(L)``     ``char name[L + 1]``
+``CHARACTER(L)``             ``char name[(L + 1) * 4]``
+``CHARACTER VARYING(L)``     ``char name[(L + 1) * 4]``
 ``SMALLINT``                 ``short *name``
 ``INTEGER``                  ``long *name``
 ``BIGINT``                   ``long long *name``
@@ -218,8 +218,11 @@ SQL data type                C data type
 ``BOOLEAN``                  ``long *name`` (0 is FALSE)
 ============================ =============================
 
-The other data types (such as ``NUMERIC`` and ``DATE``) have no C type. A
-string must end with a null character within its length, otherwise the
+The other data types (such as ``NUMERIC`` and ``DATE``) have no C type. The
+length of a string is in characters, and each character is up to 4 bytes (in
+UTF-8), so a ``CHARACTER(L)`` or ``CHARACTER VARYING(L)`` can hold any value of
+L characters, followed by the null character. A value of more than L characters
+is cut to its first L characters. A string must end with a null character within its length, otherwise the
 ``SQLSTATE`` is ``22024`` (unterminated C string).
 
 A parameter can be NULL with an indicator parameter (a ``SMALLINT``,
@@ -266,7 +269,7 @@ column. It can't have ``UNION``, ``EXCEPT``, ``INTERSECT``, ``ORDER BY``,
   value, otherwise ``0``.
 - ``01004`` (string data, right truncation) when a string doesn't fit in its
   parameter. The string is cut, and its indicator (if there is one) is set to
-  the length of the whole string.
+  the length in bytes of the whole string.
 - ``07002`` when the number of columns isn't the number of parameters. Without
   an asterisk (``*``) in the select list, this is an error when the module is
   compiled.
@@ -611,8 +614,9 @@ C data type                  SQL data type
 ``double name``              ``DOUBLE PRECISION``
 ============================ =============================
 
-``VARCHAR`` is replaced with ``char``. One of the host variables must be
-``char SQLSTATE[6]``, which is set to the SQLSTATE of each statement.
+``VARCHAR`` is replaced with ``char``, and the length of each array is
+multiplied by 4 (so that it can hold L characters of up to 4 bytes each, see
+`Modules`_). One of the host variables must be ``char SQLSTATE[6]``, which is set to the SQLSTATE of each statement.
 
 A statement can be anything that a procedure of a module can be, and a cursor
 is declared with ``EXEC SQL DECLARE <cursor name> CURSOR FOR ...;`` before the

@@ -59,12 +59,13 @@ const c_module_runtime = $embed_file('std_2_13_1_sql_client_module_definition.c'
 // included.
 const c_runtime_requires = {
 	'exec':                  ['param']
+	'target':                ['put']
 	'cursor':                ['cursors']
 	'descriptor':            ['connection', 'find_descriptor']
 	'allocate_descriptor':   ['connection', 'find_descriptor']
 	'deallocate_descriptor': ['connection', 'find_descriptor']
 	'get_item':              ['descriptor', 'match']
-	'get_data':              ['diagnostics_put']
+	'get_data':              ['put']
 	'set_count':             ['descriptor']
 	'set_item':              ['descriptor']
 	'set_data':              ['match']

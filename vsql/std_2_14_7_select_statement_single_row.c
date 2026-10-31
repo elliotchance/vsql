@@ -1,8 +1,49 @@
+/* section put */
+/*
+ * vsql_m_put assigns a string to a CHARACTER(length) or CHARACTER
+ * VARYING(length) target, which has (length + 1) * 4 bytes since a UTF-8
+ * character is up to 4 bytes. A value of more than length characters is cut
+ * to its first length characters (never part of a character), and a CHARACTER
+ * is padded with spaces to length characters (rather than length * 4 bytes,
+ * which is only meant for a character set where every character has the same
+ * size). It returns 1 if the string was truncated (warning: string data, right
+ * truncation). The value can be the target.
+ *
+ * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 7.a-7.e
+ * ISO/IEC 9075-2:2016(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.b
+ * ISO/IEC 9075-2:2016(E), 13.5, Data type correspondences, Table 20
+ * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 6.b and 6.c
+ */
+static int vsql_m_put(char *target, size_t length, int pad, const char *value) {
+  size_t octets = 0, characters = 0;
+  int truncated;
+
+  for (; value[octets] != '\0'; octets++) {
+    if (((unsigned char)value[octets] & 0xC0) != 0x80) {
+      if (characters == length) {
+        break;
+      }
+      characters++;
+    }
+  }
+  truncated = value[octets] != '\0';
+  memmove(target, value, octets);
+  if (pad) {
+    for (; characters < length; characters++) {
+      target[octets++] = ' ';
+    }
+  }
+  target[octets] = '\0';
+
+  return truncated;
+}
+
 /* section target */
 /*
  * The target of a value in the row of a <select statement: single row>. The
- * type is the SQL data type of the host parameter, and the length of a string
- * includes the null character. The indicator is set when has_indicator is 1.
+ * type is the SQL data type of the host parameter, and length is the length in
+ * characters of a string (see vsql_m_put). The indicator is set when
+ * has_indicator is 1.
  */
 struct vsql_m_target {
   SQLSMALLINT type;
@@ -14,11 +55,12 @@ struct vsql_m_target {
 
 /*
  * vsql_m_assign assigns the value of column i to the target. The indicator is
- * SQL_NULL_DATA for a null value, or the length of a string that was truncated
- * (warning: string data, right truncation). A null value without an indicator
- * parameter is an exception: data exception — null value, no indicator
- * parameter. The indicator of a value that isn't truncated is its length,
- * rather than 0 (zero), and it isn't checked for an overflow (#782).
+ * SQL_NULL_DATA for a null value, or the length in octets (rather than
+ * characters, #810) of a string that was truncated (warning: string data,
+ * right truncation). A null value without an indicator parameter is an exception:
+ * data exception — null value, no indicator parameter. The indicator of a
+ * value that isn't truncated is its length, rather than 0 (zero), and it isn't
+ * checked for an overflow (#782).
  *
  * The value is converted by SQLGetData, so one that isn't assignable is cast
  * when it's retrieved, rather than being a syntax error.
@@ -31,7 +73,6 @@ struct vsql_m_target {
 static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
                                struct vsql_m_target *t) {
   SQLINTEGER *indicator = t->has_indicator ? &t->indicator : NULL;
-  SQLINTEGER length;
   SQLRETURN rc;
   char b[6];
 
@@ -49,22 +90,24 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
     return rc;
   }
 
-  rc = SQLGetData(stmt, i,
-                  t->type == SQL_VARCHAR ? (SQLSMALLINT)SQL_CHAR : t->type,
-                  t->value, t->length, indicator);
+  if (t->type != SQL_CHAR && t->type != SQL_VARCHAR) {
+    return SQLGetData(stmt, i, t->type, t->value, 0, indicator);
+  }
 
   /*
-   * A CHARACTER(L) is padded with spaces to its length. A CHARACTER VARYING(L)
-   * should be too (#784). Any other value is passed as it is.
+   * A string is retrieved into all of the target, which holds any value of
+   * length characters, and is then cut to length characters. A CHARACTER(L)
+   * is padded with spaces to its length. A CHARACTER VARYING(L) should be too
+   * (#784).
    *
-   * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 7.c
+   * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 7.c and 7.e
    * ISO/IEC 9075-2:2016(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.b and 5.l
    */
-  if (t->type == SQL_CHAR && !vsql_m_failed(rc) &&
-      (indicator == NULL || *indicator >= 0)) {
-    length = (SQLINTEGER)strlen((char *)t->value);
-    memset((char *)t->value + length, ' ', (size_t)(t->length - 1 - length));
-    ((char *)t->value)[t->length - 1] = '\0';
+  rc = SQLGetData(stmt, i, SQL_CHAR, t->value, (t->length + 1) * 4, indicator);
+  if (!vsql_m_failed(rc) && (indicator == NULL || *indicator >= 0) &&
+      vsql_m_put((char *)t->value, (size_t)t->length, t->type == SQL_CHAR,
+                 (char *)t->value)) {
+    rc = SQL_SUCCESS_WITH_INFO;
   }
 
   return rc;

@@ -14,9 +14,15 @@ module vsql
 // ISO/IEC 9075-1:2003(E), 4.8.2.2, Data type correspondences
 // ISO/IEC 9075-2:2016(E), 4.1.3, Host language data types
 
+// max_utf8_octets is k, the maximum number of octets of a character in the
+// character set of a host parameter (UTF8), which is implementation-defined.
+//
+// ISO/IEC 9075-2:2016(E), 13.5, Data type correspondences, Table 20
+const max_utf8_octets = 4
+
 // HostParameterType is the <data type> of a host parameter that has a C data
-// type in Table 20, "Data type correspondences for C". The length is only for
-// CHARACTER and CHARACTER VARYING.
+// type in Table 20, "Data type correspondences for C". The length (in
+// characters) is only for CHARACTER and CHARACTER VARYING.
 struct HostParameterType {
 	typ    SQLType
 	length int
@@ -74,7 +80,7 @@ fn (mut t ModuleTokens) host_parameter_type(name string) !HostParameterType {
 // ISO/IEC 9075-2:2016(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 2 and 3.b
 fn (t HostParameterType) c_declaration(name string) string {
 	return match t.typ {
-		.is_character, .is_varchar { 'char ${name}[${t.length + 1}]' }
+		.is_character, .is_varchar { 'char ${name}[${t.size()}]' }
 		.is_smallint { 'short *${name}' }
 		.is_integer, .is_boolean { 'long *${name}' }
 		.is_bigint { 'long long *${name}' }
@@ -105,10 +111,9 @@ fn (t HostParameterType) c_parameter(name string) string {
 }
 
 // c_target is the struct vsql_m_target (see the C runtime) that a value of the
-// row of a <select statement: single row> is assigned to. The length of a
-// string includes the null character.
+// row of a <select statement: single row> is assigned to.
 fn (t HostParameterType) c_target(name string, has_indicator int) string {
-	length := if t.is_string() { t.length + 1 } else { 0 }
+	length := if t.is_string() { t.length } else { 0 }
 
 	return '{${t.c_code()}, ${length}, ${name}, ${has_indicator}, 0}'
 }
@@ -136,6 +141,15 @@ fn (t HostParameterType) c_type() string {
 // sql is the SQL data type, such as CHARACTER VARYING(10).
 fn (t HostParameterType) sql() string {
 	return if t.is_string() { '${t.typ}(${t.length})' } else { t.typ.str() }
+}
+
+// size is the size in bytes of the char array of a CHARACTER(L) or CHARACTER
+// VARYING(L), which is (L+1)*k. The value is up to L*k bytes, then the null character.
+//
+// ISO/IEC 9075-2:2016(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.b
+// ISO/IEC 9075-2:2016(E), 13.5, Data type correspondences, Table 20
+fn (t HostParameterType) size() int {
+	return (t.length + 1) * max_utf8_octets
 }
 
 fn (t HostParameterType) is_string() bool {

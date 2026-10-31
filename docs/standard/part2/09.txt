@@ -233,7 +233,7 @@
 9.4/GR/4                 definition   - -
 9.4/GR/5                 container    - -
 9.4/GR/5.a               n/a          - - there are no locators (T041)
-9.4/GR/5.b               deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a CHARACTER VARYING isn't padded with spaces (#784)
+9.4/GR/5.b               deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a CHARACTER VARYING isn't padded with spaces (#784), and a CHARACTER is padded to L characters (not L*k octets, which only works when every character has k octets)
 9.4/GR/5.c               n/a          - - Ada (B111), COBOL (B113), Fortran (B114) and Pascal (B116)
 9.4/GR/5.d               n/a          - - MUMPS (B115)
 9.4/GR/5.e               n/a          - - PL/I (B117)

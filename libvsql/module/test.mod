@@ -85,6 +85,13 @@ PROCEDURE select_strings (SQLSTATE, :c CHAR(3), :c_ind BIGINT, :v VARCHAR(3),
   SELECT /* INTO */ 'into', "V", (SELECT COUNT(*) FROM t WHERE 'INTO' <> '')
   INTO :c :c_ind, :v :v_ind, :n FROM t WHERE i = 2;
 
+-- A string has a length in characters, not octets.
+PROCEDURE select_utf8 (SQLSTATE, :c CHAR(3), :v VARCHAR(3), :p CHAR(5));
+  SELECT 'ééé', 'é€😀', 'é' INTO :c, :v, :p FROM t WHERE i = 2;
+
+PROCEDURE select_utf8_long (SQLSTATE, :c CHAR(1), :v VARCHAR(3));
+  SELECT 'é€', '😀😀😀😀' INTO :c, :v FROM t WHERE i = 2;
+
 PROCEDURE select_null (SQLSTATE, :i BIGINT);
   SELECT i INTO :i FROM t WHERE i IS NULL;
 

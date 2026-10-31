@@ -461,8 +461,16 @@ fn (t Time) str_time_zone(allow_time_zone bool, sql_formatting bool) string {
 	return s
 }
 
+// time_zone_value is the current time zone of the session, such as "+05:00".
 fn time_zone_value(conn &Connection) string {
-	_, mut offset := conn.now()
+	_, offset := conn.now()
+
+	return time_zone_str(offset)
+}
+
+// time_zone_str formats a time zone (in minutes), such as "+05:00".
+fn time_zone_str(time_zone i16) string {
+	mut offset := time_zone
 	mut s := ''
 
 	if offset < 0 {
@@ -477,14 +485,29 @@ fn time_zone_value(conn &Connection) string {
 	return s
 }
 
-// local_now is the current time in the session's time zone (the UTC time from
-// conn.now() shifted by its offset), as used by CURRENT_DATE, CURRENT_TIME, etc.
+// set_statement_timestamp reads the clock for a statement that's starting. The
+// statement timestamp is "not set" when each statement starts, and then it's
+// set once (here, rather than when it's first needed) so that every <datetime
+// value function> in the statement returns the same time. There are no
+// triggers or SQL-invoked routines that could share the timestamp of the
+// statement that invoked them. The rows of a cursor in the SQL/CLI are all
+// evaluated by its OPEN statement, so they're at the same instant too.
+//
+// ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>, General Rules, 1
+// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 4
+// ISO/IEC 9075-3:2003(E), 5.4, Implicit cursor, General Rules, 8.a.iii
+// ISO/IEC 9075-3:2003(E), 6.49, ParamData, General Rules, 17.b.i.6.C
+fn (mut conn Connection) set_statement_timestamp() {
+	conn.statement_timestamp, conn.statement_time_zone = conn.now()
+}
+
+// local_now is the statement timestamp in the session's time zone (the UTC
+// time from conn.now() shifted by its offset), as used by CURRENT_DATE,
+// CURRENT_TIME, etc.
 //
 // ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>, General Rules, 2
 fn local_now(conn &Connection) time.Time {
-	now, offset := conn.now()
-
-	return now.add_seconds(int(offset) * 60)
+	return conn.statement_timestamp.add_seconds(int(conn.statement_time_zone) * 60)
 }
 
 fn default_now() (time.Time, i16) {

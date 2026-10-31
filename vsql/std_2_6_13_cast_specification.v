@@ -90,6 +90,9 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 // datetime, and a string that's too long is truncated with a warning.
 pub fn (mut conn Connection) cast(value Value, target Type) !Value {
 	check_data_type(target)!
+	// This isn't part of a statement, so it has its own statement timestamp
+	// (for the date of a TIME that's cast to a TIMESTAMP).
+	conn.set_statement_timestamp()
 
 	return cast_specification(mut conn, value, target)
 }

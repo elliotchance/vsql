@@ -562,7 +562,8 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 
 		// "clock <offset>" sets the time zone of the current connection, such as
 		// "-05:00" (the time is still sql_test_now). "clock real" uses the real
-		// clock and time zone.
+		// clock and time zone. "clock tick" starts at sql_test_now, but is a
+		// second later each time it's read.
 		// "params <value> ..." sets the value of each "?" for the statements
 		// that follow.
 		if stmt.starts_with('params ') {
@@ -744,10 +745,30 @@ fn register_test_virtual_table(mut db Connection, directive string) ! {
 	})!
 }
 
+// SQLTestTickingClock is the clock for "clock tick", which is a second later
+// each time it's read.
+struct SQLTestTickingClock {
+mut:
+	ticks int
+}
+
+fn (mut c SQLTestTickingClock) now() (time.Time, i16) {
+	now, offset := sql_test_now()
+	c.ticks++
+
+	return now.add_seconds(c.ticks - 1), offset
+}
+
 // set_sql_test_clock sets the clock of db for a "clock" directive.
 fn set_sql_test_clock(mut db Connection, clock string) {
 	if clock == 'real' {
 		db.now = default_now
+		return
+	}
+
+	if clock == 'tick' {
+		mut ticking := &SQLTestTickingClock{}
+		db.now = ticking.now
 		return
 	}
 
@@ -2077,6 +2098,21 @@ fn test_features_of_routine_invocation() ! {
 	assert db.prepare('VALUES twice(?)')!.features() == ['B031', 'B033', 'F641', 'F661']
 }
 
+// A prepared statement has a new statement timestamp each time it's executed.
+//
+// ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 4
+fn test_prepared_statement_timestamp() ! {
+	mut db := open(':memory:')!
+	mut ticking := &SQLTestTickingClock{}
+	db.now = ticking.now
+	mut stmt := db.prepare('VALUES ROW(LOCALTIME, LOCALTIME)')!
+	for want in ['14:05:03', '14:05:04'] {
+		row := stmt.query(map[string]Value{})!.rows[0]
+		assert row.get_string('COL1')! == want
+		assert row.get_string('COL2')! == want
+	}
+}
+
 fn test_cast() {
 	mut db := open(':memory:')!
 	assert db.cast(new_varchar_value('12'), new_type('INTEGER', 0, 0))!.int_value() == 12
@@ -2085,6 +2121,18 @@ fn test_cast() {
 	assert db.cast(new_varchar_value('abc'), new_type('CHARACTER VARYING', 2, 0))!.str() == 'ab'
 	assert db.cast(new_varchar_value('true'), new_type('BOOLEAN', 0, 0))!.bool_value() == .is_true
 	assert db.cast(new_boolean_value(true), new_type('CHARACTER VARYING', 10, 0))!.str() == 'TRUE'
+
+	// A TIME that's cast to a TIMESTAMP is on the current date, which is read
+	// each time (it isn't the date of the last statement).
+	db.now = sql_test_now
+	db.query('VALUES 1')!
+	db.now = fn () (time.Time, i16) {
+		now, offset := sql_test_now()
+		return now.add_days(1), offset
+	}
+	t := new_time_value('10:00:00')!
+	assert db.cast(t, new_type('TIMESTAMP WITHOUT TIME ZONE', 0, 0))!.str() == '2022-07-05T10:00:00'
+	assert db.store_assignment(t, new_type('TIMESTAMP WITHOUT TIME ZONE', 0, 0))!.str() == '2022-07-05T10:00:00'
 	db.cast(new_varchar_value('a'), new_type('CHARACTER VARYING', max_character_length + 1,
 		0)) or {
 		assert err.code() != 0

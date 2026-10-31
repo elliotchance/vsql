@@ -124,7 +124,7 @@
 5.4/GR/8.a               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
 5.4/GR/8.a.i             implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_6_bind_parameter_test.c
 5.4/GR/8.a.ii            n/a          - - none of these <value specification>s are supported (see GetSessionInfo)
-5.4/GR/8.a.iii           deviates     libvsql/std_3_6_19_exec_direct.v - each one reads the clock when it's compiled (#742)
+5.4/GR/8.a.iii           implemented  vsql/time.v tests/date-time-value-function.sql the rows are evaluated by one OPEN statement
 5.4/GR/8.b               definition   - -
 5.4/GR/8.c               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c the IRD (see 5.5)
 5.4/GR/8.d               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c vsql's <declare cursor>

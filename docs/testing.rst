@@ -558,6 +558,18 @@ real time and time zone (so the output can't include them):
    VALUES CURRENT_TIME;
    -- COL1: 04:05:03-0500
 
+``/* clock tick */`` starts at the same time, but it's a second later each time
+the clock is read. Every statement reads it when it starts (for its statement
+timestamp), so the next statement has a later time:
+
+.. code-block:: sql
+
+   /* clock tick */
+   VALUES CURRENT_TIME = CURRENT_TIME;
+   VALUES CURRENT_TIME;
+   -- COL1: TRUE
+   -- COL1: 14:05:04+0500
+
 A test with ``clock`` doesn't run through the server.
 
 Virtual Tables

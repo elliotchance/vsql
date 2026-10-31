@@ -118,7 +118,7 @@ fn (c CheckConstraints) verify(mut conn Connection, row Row) ! {
 
 		result := constraint.run(mut conn, full_row, map[string]Value{})!
 		if !result.is_null && result.bool_value() == .is_false {
-			return sqlstate_23514('${definition} on ${c.table.name}')
+			return sqlstate_23514('${definition} on ${c.table.name}', c.table.constraint_identifier(definition.name.entity_name))
 		}
 	}
 }

@@ -42,7 +42,11 @@ fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elaps
 // failure) as it is.
 fn commit_error(err IError) IError {
 	is_violation := sqlstate_from_int(err.code()).starts_with('23')
-	return if is_violation { sqlstate_40002(err.msg()) } else { err }
+	return if is_violation {
+		sqlstate_40002(err.msg(), violated_constraint(err) or { Identifier{} })
+	} else {
+		err
+	}
 }
 
 // commit_transaction must be called with the write connection open.

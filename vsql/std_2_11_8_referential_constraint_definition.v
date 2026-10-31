@@ -67,7 +67,8 @@ fn (k ForeignKey) delete_action() string {
 // violation is the error for a row of t (the referencing table) that doesn't
 // reference a row of the referenced table.
 fn (k ForeignKey) violation(t Table) IError {
-	return sqlstate_23503('FOREIGN KEY (${k.columns.map(requote_identifier(it)).join(', ')}) REFERENCES ${k.referenced_table} (${k.referenced_columns.map(requote_identifier(it)).join(', ')}) on ${t.name}')
+	return sqlstate_23503('FOREIGN KEY (${k.columns.map(requote_identifier(it)).join(', ')}) REFERENCES ${k.referenced_table} (${k.referenced_columns.map(requote_identifier(it)).join(', ')}) on ${t.name}',
+		t.constraint_identifier(k.name))
 }
 
 // resolve_foreign_keys finds the table and columns that each FOREIGN KEY of a
@@ -471,7 +472,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 								v := cast(mut conn, 'for column ${column_name}', updated_keys[value].data[key.referenced_columns[i]],
 									column.typ)!
 								if column.not_null && v.is_null {
-									return sqlstate_23502('column ${column_name}')
+									return sqlstate_23502(referencing, column_name)
 								}
 								v
 							}

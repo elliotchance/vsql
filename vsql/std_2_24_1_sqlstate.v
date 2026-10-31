@@ -58,6 +58,20 @@ struct SQLState {
 	code int
 }
 
+// violated_constraint is the constraint that was violated, for an integrity
+// constraint violation (class 23), or a transaction rollback because of one
+// (40002). It's none for any other error.
+pub fn violated_constraint(err IError) ?Identifier {
+	return match err {
+		SQLState23502 { err.constraint }
+		SQLState23503 { err.constraint }
+		SQLState23505 { err.constraint }
+		SQLState23514 { err.constraint }
+		SQLState40002 { err.constraint }
+		else { none }
+	}
+}
+
 // Provides the human-readable message.
 fn (err SQLState) msg() string {
 	return err.msg
@@ -360,48 +374,56 @@ fn sqlstate_22027() IError {
 // violates non-null constraint
 struct SQLState23502 {
 	SQLState
+	constraint Identifier
 }
 
-fn sqlstate_23502(msg string) IError {
+fn sqlstate_23502(t Table, column_name string) IError {
 	return SQLState23502{
-		code: sqlstate_to_int('23502')
-		msg:  'violates non-null constraint: ${msg}'
+		code:       sqlstate_to_int('23502')
+		msg:        'violates non-null constraint: column ${column_name}'
+		constraint: t.constraint_identifier(t.not_null_names[column_name])
 	}
 }
 
 // violates foreign key constraint
 struct SQLState23503 {
 	SQLState
+	constraint Identifier
 }
 
-fn sqlstate_23503(msg string) IError {
+fn sqlstate_23503(msg string, constraint Identifier) IError {
 	return SQLState23503{
-		code: sqlstate_to_int('23503')
-		msg:  'violates foreign key constraint: ${msg}'
+		code:       sqlstate_to_int('23503')
+		msg:        'violates foreign key constraint: ${msg}'
+		constraint: constraint
 	}
 }
 
 // violates unique constraint
 struct SQLState23505 {
 	SQLState
+	constraint Identifier
 }
 
-fn sqlstate_23505(msg string) IError {
+fn sqlstate_23505(msg string, constraint Identifier) IError {
 	return SQLState23505{
-		code: sqlstate_to_int('23505')
-		msg:  'violates unique constraint: ${msg}'
+		code:       sqlstate_to_int('23505')
+		msg:        'violates unique constraint: ${msg}'
+		constraint: constraint
 	}
 }
 
 // violates check constraint
 struct SQLState23514 {
 	SQLState
+	constraint Identifier
 }
 
-fn sqlstate_23514(msg string) IError {
+fn sqlstate_23514(msg string, constraint Identifier) IError {
 	return SQLState23514{
-		code: sqlstate_to_int('23514')
-		msg:  'violates check constraint: ${msg}'
+		code:       sqlstate_to_int('23514')
+		msg:        'violates check constraint: ${msg}'
+		constraint: constraint
 	}
 }
 
@@ -886,12 +908,14 @@ fn sqlstate_40001(message string) IError {
 // transaction rollback: integrity constraint violation
 struct SQLState40002 {
 	SQLState
+	constraint Identifier
 }
 
-fn sqlstate_40002(message string) IError {
+fn sqlstate_40002(message string, constraint Identifier) IError {
 	return SQLState40002{
-		code: sqlstate_to_int('40002')
-		msg:  'integrity constraint violation: ${message}'
+		code:       sqlstate_to_int('40002')
+		msg:        'integrity constraint violation: ${message}'
+		constraint: constraint
 	}
 }
 

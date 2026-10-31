@@ -72,7 +72,7 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 			after.data[column.name.sub_entity_name] = value
 			generated_columns.apply(mut conn, mut after)!
 			if column.not_null && after.data[column.name.sub_entity_name].is_null {
-				return sqlstate_23502('column ${column.name.sub_entity_name}')
+				return sqlstate_23502(new_table, column.name.sub_entity_name)
 			}
 			check_constraints.verify(mut conn, after)!
 			if before.object_key(table)! != after.object_key(new_table)! {

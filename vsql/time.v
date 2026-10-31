@@ -395,13 +395,13 @@ fn (t Time) str_fractional_seconds(prec int) string {
 		return ''
 	}
 
-	// Round down first, if needed.
-	mut s := int(t.t.nanosecond / 1000).str()
-	if prec < s.len {
-		s = s[..prec]
-	}
+	// The microseconds are padded so that leading zeros are kept (6
+	// microseconds is ".000006"), then rounded down to the precision.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 16.b
+	s := left_pad(int(t.t.nanosecond / 1000).str(), '0', 6)
 
-	return '.' + (s + '000000')[..prec]
+	return '.' + s[..prec]
 }
 
 // str_time_zone returns an empty string when not part of the type (ie. WITHOUT

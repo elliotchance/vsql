@@ -174,7 +174,22 @@ fn new_empty_value(typ Type) Value {
 	return value
 }
 
-fn (r Row) bytes(t Table) []u8 {
+// max_row_size is the most bytes that a row can be written in. The page object
+// that holds it (see PageObject.length) must have a length that fits in an
+// int, including its key, which fits in a page.
+const max_row_size = max_i32 - page_object_prefix_length - max_page_size
+
+// bytes is how the row is written in a page object. A row that's bigger than
+// max_row_size is 54000 (program limit exceeded).
+fn (r Row) bytes(t Table) ![]u8 {
+	return r.bytes_with_limit(t, max_row_size)
+}
+
+// bytes_with_limit is bytes, but with a smaller limit for tests. Only a
+// CHARACTER or CHARACTER VARYING value can be big enough to reach the limit, so
+// the size is checked before each one is written, rather than after the buffer
+// has already grown too big.
+fn (r Row) bytes_with_limit(t Table, limit i64) ![]u8 {
 	mut buf := new_empty_bytes()
 
 	buf.write_u16(u16(r.id.len))
@@ -226,7 +241,11 @@ fn (r Row) bytes(t Table) []u8 {
 					buf.write_i16(i16(v.int_value()))
 				}
 				.is_varchar, .is_character {
-					buf.write_string4(v.string_value())
+					s := v.string_value()
+					if i64(buf.data.len) + 4 + s.len > limit {
+						return sqlstate_54000('row is bigger than the maximum of ${limit} bytes')
+					}
+					buf.write_string4(s)
 				}
 				.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
 				.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {

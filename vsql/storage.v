@@ -697,7 +697,7 @@ fn (mut f Storage) write_row(mut r Row, t Table) ! {
 	f.check_concurrent_definition(t)!
 	f.assign_row_id(mut r, t)
 	f.check_primary_key(mut r, t)!
-	obj := new_page_object(r.object_key(t)!, f.transaction_id, 0, r.bytes(t))
+	obj := new_page_object(r.object_key(t)!, f.transaction_id, 0, r.bytes(t)!)
 	f.btree.add(obj)!
 }
 
@@ -729,7 +729,7 @@ fn (mut f Storage) update_row(mut new Row, t Table) ! {
 	f.check_concurrent_definition(t)!
 	f.check_concurrent_references(t)!
 	f.assign_row_id(mut new, t)
-	f.btree.update(new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t)))!
+	f.btree.update(new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t)!))!
 }
 
 // check_concurrent_definition returns a SQLSTATE 40001 if another active

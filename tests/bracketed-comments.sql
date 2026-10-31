@@ -47,3 +47,13 @@ VALUES 1 /* a /* nested */ comment that doesn't end;
 
 VALUES 4/ *2;
 -- error 42601: syntax error: unexpected "*"
+
+ /* a statement that is only a comment */;
+-- error 42601: syntax error: unexpected $end
+
+ /* a comment */ /* and /* another */ one */
+;
+-- error 42601: syntax error: unexpected $end
+
+EXPLAIN /* nothing to explain */;
+-- error 42601: syntax error: unexpected $end

@@ -459,9 +459,10 @@ fn parse_sql(sql_stmt string) !(Stmt, bool, []Token, []string) {
 	mut tokens, lexical_features := tokenize_with_features(sql_stmt)!
 
 	// EXPLAIN is super helpful, but not part of the SQL standard so we only
-	// treat it as a prefix that is trimmed off before parsing.
+	// treat it as a prefix that is trimmed off before parsing. A statement that
+	// is only white space and comments has no tokens, which is a syntax error.
 	mut explain := false
-	if tokens[0].sym.v is IdentifierChain {
+	if tokens.len > 0 && tokens[0].sym.v is IdentifierChain {
 		if tokens[0].sym.v.identifier.to_upper() == 'EXPLAIN' {
 			explain = true
 			tokens = tokens[1..].clone()

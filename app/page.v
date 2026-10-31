@@ -25,6 +25,8 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 
 	if tab.id == no_tab.id {
 		sb.write_string('</form><p class="empty">Choose a table, or use + to add a tab.</p>')
+	} else if tab.tab_type == create_table_tab {
+		write_create_table(mut sb, tab, result)
 	} else {
 		// The editor is a transparent textarea over a highlighted copy of its
 		// text (see app.js).
@@ -46,10 +48,10 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		sb.write_string('<input type="hidden" name="${confirm.name}" value="${html_escape(confirm.value)}"><pre class="sql">${html_escape(confirm.sql)}</pre>')
 		sb.write_string('<button type="submit"${run_class} autofocus>Run</button><a href="/" class="cancel">Cancel</a></form></dialog>')
 	}
-	if result.error != '' {
+	if result.error != '' && tab.tab_type == query_tab {
 		sb.write_string('<p class="error">${html_escape(result.error)}</p>')
 	}
-	if tab.id != no_tab.id {
+	if tab.id != no_tab.id && tab.tab_type == query_tab {
 		sb.write_string(if result.output == '' && result.status == '' {
 			'<p class="empty">Run to see the result.</p>'
 		} else {
@@ -57,11 +59,19 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		})
 	}
 
+	// Create schema (in the menu of a catalog) is a popup, see app_schema.js.
+	sb.write_string('<dialog class="confirm create-schema"><form method="post" action="/"><input type="hidden" name="tab" value="${tab.id}"><input type="hidden" name="create_schema" value="">')
+	sb.write_string('<label class="schema-name">Schema name <input spellcheck="false" placeholder="NAME"></label><pre class="sql"></pre>')
+	sb.write_string('<button type="submit" class="create">Create schema</button><button type="button" class="keep">Cancel</button></form></dialog>')
+
 	// The scripts are after the result, so they can find the editable table.
 	reserved_words := vsql.reserved_words().map('"${it}"').join(',')
-	sb.write_string('<script>const reservedWords = new Set([${reserved_words}]);${app_highlight_js.to_string()}')
-	if tab.id != no_tab.id {
+	sb.write_string('<script>const reservedWords = new Set([${reserved_words}]);${app_highlight_js.to_string()}${app_schema_js.to_string()}')
+	if tab.id != no_tab.id && tab.tab_type == query_tab {
 		sb.write_string(app_js.to_string() + app_edit_js.to_string())
+	}
+	if tab.tab_type == create_table_tab {
+		sb.write_string(app_create_table_js.to_string())
 	}
 	if confirm.sql != '' {
 		sb.write_string(app_confirm_js.to_string())
@@ -72,12 +82,16 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 	return sb.str()
 }
 
-// write_sidebar is the version, a heading for each catalog with its tables
-// under their schema (a schema without tables isn't shown), both sorted by
-// name, then a heading for the tabs (tab is the active one). Choosing a tab goes to it,
-// and choosing a table queries it in a new tab. Each table (other than
-// INFORMATION_SCHEMA and VSQL_APP) has a menu to drop it. The sidebar can be resized, and
-// a heading or schema collapsed (see app_sidebar.js).
+// write_sidebar is the version, a heading for each catalog with its schemas and
+// their tables, both sorted by name, then a heading for the tabs (tab is the
+// active one). Choosing a tab goes to it, and choosing a table queries it in a
+// new tab. The sidebar can be resized, and a heading or schema collapsed (see
+// app_sidebar.js).
+//
+// Each catalog has a menu to create a schema (see app_schema.js). Each schema
+// and table (other than in INFORMATION_SCHEMA, which can't be changed, and
+// VSQL_APP, which the app needs) has a menu to drop it, and a schema to add a
+// table to it (see create_table.v).
 fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_tabs []Tab, tab Tab) ! {
 	// A local build has no version.
 	version := if vsql.version() == '' { 'v0.0.0' } else { vsql.version() }
@@ -87,6 +101,7 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 		mut catalog := conn.catalog()
 		mut schemas := map[string][]vsql.Identifier{}
 		for schema in catalog.schemas()! {
+			schemas[schema.name] = []
 			for table in catalog.schema_tables(schema.name)! {
 				// With one file, the catalog is left out of the query.
 				schemas[schema.name] << vsql.Identifier{
@@ -98,27 +113,50 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 		mut schema_names := schemas.keys()
 		schema_names.sort()
 
-		sb.write_string('<details class="section" data-folder="catalog:${html_escape(catalog_name)}" open><summary><span class="icon" aria-hidden="true">&#128452;&#65039;</span>${html_escape(catalog_name)}</summary>')
-		if schema_names.len == 0 {
-			sb.write_string('<p class="empty">There are no tables.</p>')
+		// A schema is created in this catalog (prefix), with more than one.
+		prefix := if a.catalog_names.len == 1 {
+			''
+		} else {
+			vsql.Identifier{
+				catalog_name: catalog_name
+			}.str() + '.'
 		}
+		sb.write_string('<div class="folder-row catalog-row"><details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
+		sb.write_string('<button type="button" class="create-schema" data-prefix="${html_escape(prefix)}">Create schema</button></div></details>')
+		sb.write_string('<details class="section" data-folder="catalog:${html_escape(catalog_name)}" open><summary><span class="icon" aria-hidden="true">&#128452;&#65039;</span>${html_escape(catalog_name)}</summary>')
 		for schema_name in schema_names {
 			mut tables := schemas[schema_name].clone()
 			tables.sort(a.entity_name < b.entity_name)
+			// The menu of a schema (see app_sidebar.js) is next to it, so it's
+			// shown when the schema is collapsed.
+			schema_sql := vsql.Identifier{
+				catalog_name: if a.catalog_names.len == 1 { '' } else { catalog_name }
+				schema_name:  schema_name
+			}.str()
+			sb.write_string('<div class="folder-row schema-row">')
+			if schema_name !in ['INFORMATION_SCHEMA', 'VSQL_APP'] {
+				// A schema with tables is dropped with them.
+				drop_behavior := if tables.len == 0 { 'RESTRICT' } else { 'CASCADE' }
+				sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
+				sb.write_string('<button type="submit" form="app" name="add_table" value="${html_escape(schema_sql)}">Add table</button>')
+				sb.write_string('<button type="submit" form="app" name="drop" value="SCHEMA ${html_escape(schema_sql)} ${drop_behavior}" class="danger">Drop schema</button></div></details>')
+			}
 			sb.write_string('<details class="folder" data-folder="schema:${html_escape(catalog_name)}.${html_escape(schema_name)}" open><summary><span class="icon" aria-hidden="true">&#128193;</span>${html_escape(schema_name)} <span class="count">${tables.len}</span></summary><ul>')
+			if tables.len == 0 {
+				sb.write_string('<li class="empty">There are no tables.</li>')
+			}
 			for table in tables {
 				sb.write_string('<li><button type="submit" form="app" name="query" value="${html_escape(table.str())}" title="SELECT * FROM ${html_escape(table.str())}"><span class="icon" aria-hidden="true">&#128196;</span>${html_escape(table.entity_name)}</button>')
-				// The menu of a table (see app_sidebar.js). INFORMATION_SCHEMA
-				// can't be dropped, and the app needs VSQL_APP.
+				// The menu of a table (see app_sidebar.js).
 				if schema_name !in ['INFORMATION_SCHEMA', 'VSQL_APP'] {
 					sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#8943;</summary><div class="menu-items">')
-					sb.write_string('<button type="submit" form="app" name="drop" value="${html_escape(table.str())}" class="danger">Drop table</button></div></details>')
+					sb.write_string('<button type="submit" form="app" name="drop" value="TABLE ${html_escape(table.str())}" class="danger">Drop table</button></div></details>')
 				}
 				sb.write_string('</li>')
 			}
-			sb.write_string('</ul></details>')
+			sb.write_string('</ul></details></div>')
 		}
-		sb.write_string('</details>')
+		sb.write_string('</details></div>')
 	}
 	set_catalog(mut conn, a.catalog_names[0])!
 
@@ -150,6 +188,8 @@ const app_css = $embed_file('app.css')
 const app_highlight_js = $embed_file('app_highlight.js')
 const app_js = $embed_file('app.js')
 const app_confirm_js = $embed_file('app_confirm.js')
+const app_schema_js = $embed_file('app_schema.js')
+const app_create_table_js = $embed_file('app_create_table.js')
 const app_edit_js = $embed_file('app_edit.js')
 const app_sidebar_js = $embed_file('app_sidebar.js')
 

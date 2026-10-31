@@ -70,7 +70,8 @@ def test_drop_table(ui, db_file):
     ui.table_menu('BAR', schema='FOO').get_by_role('button', name='Drop table').click()
     ui.run_change()
     expect(ui.confirm).to_have_count(0)
-    expect(ui.schema('db', 'FOO')).to_have_count(0)
+    expect(ui.sidebar_table('BAR', schema='FOO')).to_have_count(0)
+    expect(ui.schema('db', 'FOO').locator('li')).to_have_text(['There are no tables.'])
     assert 'BAR' not in cli(db_file, 'SELECT table_name FROM INFORMATION_SCHEMA.TABLES;')
 
     # It works from a tab too, which is shown again with its SQL.
@@ -80,7 +81,7 @@ def test_drop_table(ui, db_file):
     expect(ui.confirm_sql).to_have_text('DROP TABLE PUBLIC."my <t>"')
     expect(ui.editor).to_have_value('SELECT 1')
     ui.run_change()
-    expect(ui.schema('db', 'PUBLIC')).to_have_count(0)
+    expect(ui.sidebar_table('my <t>')).to_have_count(0)
 
 
 def test_table_menu(ui):

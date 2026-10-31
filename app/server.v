@@ -167,33 +167,34 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	tab_id := (form.get('tab') or { '' }).int()
 	tab := all_tabs.filter(it.id == tab_id)[0] or { no_tab }
 	query_text := form.get('sql') or { tab.query_text }
-	if tab.id != no_tab.id {
+	payload := form.get('payload') or { tab.payload }
+	if tab.tab_type == query_tab && tab.id != no_tab.id {
 		save_tab(mut conn, tab.id, query_text)!
+	}
+	if tab.tab_type != query_tab && payload != tab.payload {
+		save_payload(mut conn, tab.id, payload)!
 	}
 
 	// A table in the sidebar opens a new tab that runs SELECT * on it.
 	if table := form.get('query') {
-		table_sql := 'SELECT * FROM ${table}'
-		id := add_tab(mut conn, table_sql)!
-		result := a.run_query(mut conn, table_sql)!
-		lock a.results {
-			a.results[id] = result
-		}
+		a.query_table(mut conn, table)!
 		return '/'
 	}
-	// A table in the sidebar is dropped once it's confirmed. Then the tab is
-	// shown again, its result isn't run again.
-	if table := form.get('drop') {
+	// A table or schema in the sidebar is dropped (such as "TABLE FOO.BAR" or
+	// "SCHEMA FOO CASCADE") once it's confirmed. Then the tab is shown again,
+	// its result isn't run again.
+	if object := form.get('drop') {
 		last := rlock a.results {
 			a.results[tab.id] or { TabResult{} }
 		}
 		return a.page(mut conn, all_tabs, Tab{
 			...tab
 			query_text: query_text
-		}, last, Confirm{'DROP TABLE ${table}', 'drop_confirmed', table})
+			payload:    payload
+		}, last, Confirm{'DROP ${object}', 'drop_confirmed', object})
 	}
-	if table := form.get('drop_confirmed') {
-		conn.query('DROP TABLE ${table}') or {
+	if object := form.get('drop_confirmed') {
+		conn.query('DROP ${object}') or {
 			last := rlock a.results {
 				a.results[tab.id] or { TabResult{} }
 			}
@@ -202,6 +203,28 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 				error: err.msg()
 			}, Confirm{})
 		}
+		return '/'
+	}
+	// Create schema in the menu of a catalog posts the CREATE SCHEMA.
+	if create_schema := form.get('create_schema') {
+		conn.query(create_schema) or {
+			last := rlock a.results {
+				a.results[tab.id] or { TabResult{} }
+			}
+			return a.page(mut conn, all_tabs, Tab{
+				...tab
+				query_text: query_text
+				payload:    payload
+			}, TabResult{
+				...last
+				error: err.msg()
+			}, Confirm{})
+		}
+		return '/'
+	}
+	// A schema in the sidebar opens a new tab to create a table in it.
+	if schema := form.get('add_table') {
+		insert_tab(mut conn, create_table_tab, 'New table', new_table_payload(schema))!
 		return '/'
 	}
 	if other_tab := form.get('goto') {
@@ -213,21 +236,30 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		return '/'
 	}
 	if close := form.get('close') {
-		mut stmt := conn.prepare('DELETE FROM vsql_app.tabs WHERE id = ?')!
-		stmt.query({
-			'?1': vsql.new_integer_value(close.int())
-		})!
-		lock a.results {
-			a.results.delete(close.int())
-		}
-
-		// Closing the active tab activates the first tab, if there is one.
-		if close.int() == tab.id {
-			activate_tab(mut conn, (tabs(mut conn)![0] or { no_tab }).id)!
-		}
+		a.close_tab(mut conn, close.int(), tab.id)!
 		return '/'
 	}
 	if tab.id == no_tab.id {
+		return '/'
+	}
+
+	// A CREATE_TABLE tab is closed once the table is created, and the table
+	// (which is empty) is queried in a new tab. If it fails,
+	// the error is shown on the tab. Anything else (such as saving the
+	// payload) shows it again.
+	if tab.tab_type == create_table_tab {
+		if _ := form.get('create_table') {
+			conn.query(form.get('create_sql') or { '' }) or {
+				return a.page(mut conn, all_tabs, Tab{
+					...tab
+					payload: payload
+				}, TabResult{
+					error: err.msg()
+				}, Confirm{})
+			}
+			a.close_tab(mut conn, tab.id, tab.id)!
+			a.query_table(mut conn, form.get('created_table') or { '' })!
+		}
 		return '/'
 	}
 
@@ -278,8 +310,18 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	}
 	title_tab(mut conn, tab.id, query_text)!
 	activate_tab(mut conn, tab.id)!
-	return a.page(mut conn, tabs(mut conn)!, Tab{tab.id, tab.tab_type, tab_title(query_text), query_text, true},
+	return a.page(mut conn, tabs(mut conn)!, Tab{tab.id, tab.tab_type, tab_title(query_text), query_text, true, ''},
 		result, Confirm{})
+}
+
+// query_table opens a new tab that runs SELECT * on a table.
+fn (a &App) query_table(mut conn vsql.Connection, table string) ! {
+	table_sql := 'SELECT * FROM ${table}'
+	id := add_tab(mut conn, table_sql)!
+	result := a.run_query(mut conn, table_sql)!
+	lock a.results {
+		a.results[id] = result
+	}
 }
 
 // apply_change runs a change to a row (see run_change), then the SQL of the tab

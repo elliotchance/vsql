@@ -4,8 +4,9 @@ import strings
 import vsql
 
 // page renders the sidebar, the tabs, the SQL editor for tab and its last
-// result.
-fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabResult) !string {
+// result. If change_sql isn't empty, it's shown to be confirmed before it's run
+// (see edit.v).
+fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabResult, change_sql string) !string {
 	mut sb := strings.new_builder(4096)
 	sb.write_string('<!doctype html><html><head><meta charset="utf-8">')
 	sb.write_string('<meta name="viewport" content="width=device-width, initial-scale=1">')
@@ -26,12 +27,26 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		// The editor is a transparent textarea over a highlighted copy of its
 		// text (see app.js).
 		sb.write_string('<div class="editor"><pre aria-hidden="true"></pre>')
-		sb.write_string('<textarea name="sql" rows="6" spellcheck="false" autofocus placeholder="SELECT * FROM ...">${html_escape(tab.query_text)}</textarea></div>')
+		autofocus := if change_sql == '' { ' autofocus' } else { '' }
+		sb.write_string('<textarea name="sql" rows="6" spellcheck="false"${autofocus} placeholder="SELECT * FROM ...">${html_escape(tab.query_text)}</textarea></div>')
 		sb.write_string('<div class="actions"><span class="status">${html_escape(result.status)}</span>')
 		sb.write_string('<button type="submit" class="run" title="Run (Ctrl+Enter)">Run <span class="shortcut">&#8963;&#8629;</span></button></div></form>')
-		reserved_words := vsql.reserved_words().map('"${it}"').join(',')
-		sb.write_string('<script>const reservedWords = new Set([${reserved_words}]);${app_js.to_string()}</script>')
+		if change_sql != '' {
+			// It's a popup (see app_edit.js), a DELETE is run with a red
+			// button.
+			run_class := if change_sql.starts_with('DELETE ') { ' class="delete"' } else { '' }
+			sb.write_string('<dialog class="confirm"><form method="post" action="/"><input type="hidden" name="tab" value="${tab.id}">')
+			sb.write_string('<input type="hidden" name="confirm" value="${html_escape(change_sql)}"><pre class="sql">${html_escape(change_sql)}</pre>')
+			sb.write_string('<button type="submit"${run_class} autofocus>Run</button><a href="/" class="cancel">Cancel</a></form></dialog>')
+		}
+		if result.error != '' {
+			sb.write_string('<p class="error">${html_escape(result.error)}</p>')
+		}
 		sb.write_string(output)
+		// The scripts are after the result, so they can find the editable
+		// table.
+		reserved_words := vsql.reserved_words().map('"${it}"').join(',')
+		sb.write_string('<script>const reservedWords = new Set([${reserved_words}]);${app_js.to_string()}${app_edit_js.to_string()}</script>')
 	}
 
 	sb.write_string('</main></body></html>')
@@ -48,7 +63,7 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 	version := if vsql.version() == '' { 'v0.0.0' } else { vsql.version() }
 	sb.write_string('<nav class="sidebar"><div class="brand">vsql <span class="version">${html_escape(version)}</span></div>')
 	for catalog_name in a.catalog_names {
-		conn.query("SET CATALOG '${catalog_name.replace("'", "''")}'")!
+		set_catalog(mut conn, catalog_name)!
 		mut catalog := conn.catalog()
 		mut schemas := map[string][]vsql.Identifier{}
 		for schema in catalog.schemas()! {
@@ -78,7 +93,7 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 		}
 		sb.write_string('</details>')
 	}
-	conn.query("SET CATALOG '${a.catalog_names[0].replace("'", "''")}'")!
+	set_catalog(mut conn, a.catalog_names[0])!
 
 	sb.write_string('<details class="section" data-folder="tabs" open><summary><span class="icon" aria-hidden="true">&#128450;&#65039;</span>Tabs <span class="count">${all_tabs.len}</span></summary><ul>')
 	for t in all_tabs {
@@ -106,6 +121,7 @@ fn write_tabs(mut sb strings.Builder, all_tabs []Tab, tab Tab) {
 
 const app_css = $embed_file('app.css')
 const app_js = $embed_file('app.js')
+const app_edit_js = $embed_file('app_edit.js')
 const app_sidebar_js = $embed_file('app_sidebar.js')
 
 const show_tables_sql = 'SELECT * FROM INFORMATION_SCHEMA.TABLES'
@@ -118,6 +134,11 @@ fn tab_title(query_text string) string {
 	}
 
 	return if line.runes().len > 30 { line.runes()[..30].string() + '...' } else { line }
+}
+
+// set_catalog makes a catalog current, such as to read its tables.
+fn set_catalog(mut conn vsql.Connection, name string) ! {
+	conn.query("SET CATALOG '${name.replace("'", "''")}'")!
 }
 
 fn html_escape(s string) string {

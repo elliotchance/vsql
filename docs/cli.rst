@@ -42,6 +42,29 @@ Options are:
   ``::`` to accept connections from other machines.
 - ``-port`` or ``-p``: Port number (default 3211).
 
+The rows of a ``SELECT * FROM`` a table (optionally with ``WHERE``,
+``ORDER BY``, ``OFFSET`` or ``FETCH``) can be changed:
+
+- Double-click a row to edit every column of it. The ``×`` at the start of the
+  row becomes ``✓`` (or Enter) to update the row and ``×`` (or Escape) to
+  cancel. Only the columns that are changed are updated. The ``NULL`` button
+  sets a column to ``NULL``.
+- ``×`` deletes a row.
+- The empty row at the bottom inserts a row with ``+`` (or Enter). A column
+  that's left empty isn't inserted, so it gets its ``DEFAULT``.
+- A ``BOOLEAN`` is chosen from ``UNKNOWN``, ``TRUE`` or ``FALSE`` (or
+  ``DEFAULT`` to insert).
+
+Rows can only be updated or deleted if the table has a ``PRIMARY KEY``, which
+is used to find the row. Generated columns (and ``GENERATED ALWAYS`` identity
+columns) can't be changed. A value is ``CAST`` to the type of the column.
+
+An ``UPDATE`` or ``DELETE`` is shown in a popup to be confirmed before it's
+run, an ``INSERT`` is run straight away (if it fails, the values are kept to
+try again). Each change is run in its own transaction, and rolled back if it
+doesn't change exactly one row (such as when the row was deleted since it was
+shown). Then the SQL of the tab is run again.
+
 bench
 ^^^^^
 

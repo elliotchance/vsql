@@ -161,7 +161,7 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		result := rlock a.results {
 			a.results[tab.id] or { TabResult{} }
 		}
-		return a.page(mut conn, all_tabs, tab, result)
+		return a.page(mut conn, all_tabs, tab, result, '')
 	}
 
 	tab_id := (form.get('tab') or { '' }).int()
@@ -175,7 +175,7 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	if table := form.get('query') {
 		table_sql := 'SELECT * FROM ${table}'
 		id := add_tab(mut conn, table_sql)!
-		result := run_query(mut conn, table_sql)!
+		result := a.run_query(mut conn, table_sql)!
 		lock a.results {
 			a.results[id] = result
 		}
@@ -208,12 +208,66 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		return '/'
 	}
 
-	result := run_query(mut conn, query_text)!
+	// A change to a row of an editable result (see edit.v). An update or
+	// delete is shown to be confirmed before it's run, an insert is run
+	// straight away. If it fails, the values entered to insert are kept.
+	if kind := form.get('change') {
+		last := rlock a.results {
+			a.results[tab.id] or { TabResult{} }
+		}
+		table := a.find_edit_table(mut conn, form.get('catalog') or { '' }, form.get('schema') or {
+			''
+		}, form.get('table') or { '' })!
+		change_sql := build_change(table, form) or {
+			return a.page(mut conn, all_tabs, tab, TabResult{
+				...last
+				error: err.msg()
+			}, '')
+		}
+		if kind != 'insert' {
+			return a.page(mut conn, all_tabs, tab, last, change_sql)
+		}
+		a.apply_change(mut conn, tab.id, change_sql, query_text) or {
+			return a.page(mut conn, all_tabs, tab, TabResult{
+				...last
+				output: keep_insert_values(last.output, form)
+				error:  err.msg()
+			}, '')
+		}
+		return '/'
+	}
+	if change_sql := form.get('confirm') {
+		a.apply_change(mut conn, tab.id, change_sql, query_text) or {
+			last := rlock a.results {
+				a.results[tab.id] or { TabResult{} }
+			}
+			return a.page(mut conn, all_tabs, tab, TabResult{
+				...last
+				error: err.msg()
+			}, '')
+		}
+		return '/'
+	}
+
+	result := a.run_query(mut conn, query_text)!
 	lock a.results {
 		a.results[tab.id] = result
 	}
 	title_tab(mut conn, tab.id, query_text)!
 	activate_tab(mut conn, tab.id)!
 	return a.page(mut conn, tabs(mut conn)!, Tab{tab.id, tab.tab_type, tab_title(query_text), query_text, true},
-		result)
+		result, '')
+}
+
+// apply_change runs a change to a row (see run_change), then the SQL of the tab
+// again to show it.
+fn (a &App) apply_change(mut conn vsql.Connection, tab_id int, change_sql string, query_text string) ! {
+	msg := run_change(mut conn, change_sql)!
+	result := a.run_query(mut conn, query_text)!
+	lock a.results {
+		a.results[tab_id] = TabResult{
+			...result
+			status: '${msg}, ${result.status}'
+		}
+	}
 }

@@ -144,3 +144,58 @@ class AppPage:
     def empty(self):
         """empty is the message when there are no tabs or no result yet."""
         return self.page.locator('main .empty')
+
+    # Changing the rows of an editable result (see test_edit.py).
+
+    @property
+    def editable(self):
+        """editable is the result when its rows can be changed."""
+        return self.page.locator('main table.editable')
+
+    def cell(self, row, column):
+        """cell is the cell of a column (by name) that can be edited, in the
+        row (from 0) of the result."""
+        return self.rows.nth(row).locator(f'td[data-column="{column}"]')
+
+    def edit(self, row, column, value):
+        """edit double-clicks a cell (so every column of the row can be
+        edited), enters the value and presses Enter."""
+        self.cell(row, column).dblclick()
+        self.cell(row, column).locator('input').fill(value)
+        self.cell(row, column).locator('input').press('Enter')
+
+    def confirm_row(self, row):
+        """confirm_row is the button that updates a row that's being edited."""
+        return self.rows.nth(row).get_by_role('button', name='✓')
+
+    def cancel_row(self, row):
+        return self.rows.nth(row).locator('td.row-actions').get_by_role('button', name='×')
+
+    def delete_row(self, row):
+        self.rows.nth(row).get_by_role('button', name='×').click()
+
+    def insert_value(self, column):
+        """insert_value is the input (or select) of a column in the empty row
+        to insert."""
+        return self.page.locator(f'main tfoot [data-column="{column}"]')
+
+    def insert(self):
+        self.page.locator('main tfoot').get_by_role('button', name='+').click()
+
+    @property
+    def confirm(self):
+        """confirm is the popup with the change to be confirmed."""
+        return self.page.locator('dialog.confirm')
+
+    @property
+    def confirm_sql(self):
+        return self.confirm.locator('pre')
+
+    def run_change(self):
+        """run_change confirms the change in the popup."""
+        self.confirm.get_by_role('button', name='Run').click()
+
+    @property
+    def tab_id(self):
+        """tab_id is the id of the active tab, to post a change directly."""
+        return self.page.locator('input[name="tab"]').first.get_attribute('value')

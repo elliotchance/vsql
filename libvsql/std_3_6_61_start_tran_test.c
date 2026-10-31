@@ -120,3 +120,26 @@ UTEST_F(db, 6_61_start_tran_multiple_connections) {
   EXPECT_EQ(SQLDisconnect(dbc2), SQL_SUCCESS);
   EXPECT_EQ(SQLFreeConnect(dbc2), SQL_SUCCESS);
 }
+
+/* A handle that isn't allocated is invalid, for each type of handle, and a
+ * statement or descriptor can't start an SQL-transaction. */
+UTEST_F(db, 6_61_start_tran_handle_types) {
+  SQLHDESC apd = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_PARAM_DESC);
+
+  EXPECT_EQ(SQLStartTran(7, utest_fixture->dbc, SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_STMT, 999999, SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DESC, 999999, SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_ENV, 999999, SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLStartTran(SQL_HANDLE_DESC, apd, SQL_TRANSACTION_READ_WRITE,
+                         SQL_TRANSACTION_READ_COMMITTED),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, apd, "HY092");
+}

@@ -105,6 +105,17 @@ int main(void) {
   EXPECT(select_null(sqlstate, &b), "22002");
   EXPECT(select_all(sqlstate, &s), "07002");
 
+  /* 9.1 GR 7.o.iii: The value must fit in the host parameter. */
+  EXPECT(select_too_big(sqlstate, &s), "22003");
+
+  /* 6.14 SR 1.a.iv: NEXT VALUE FOR can be in a <select statement: single
+   * row>. */
+  EXPECT(create_sequence(sqlstate), "00000");
+  EXPECT(select_next(sqlstate, &b), "00000");
+  CHECK(b == 1);
+  EXPECT(select_next(sqlstate, &b), "00000");
+  CHECK(b == 2);
+
   /* 9.1: A truncated string has the length in its indicator, and a CHARACTER
    * is padded with spaces. */
   EXPECT(select_strings(sqlstate, c3, &c_ind, v3, &i, &b), "01004");
@@ -553,6 +564,15 @@ int main(void) {
   x = 2;
   EXPECT(set_in(sqlstate, &x), "00000");
   EXPECT(execute_s1_descriptor(sqlstate), "02000");
+
+  /* 20.19 GR 1.a.ii: A dynamic cursor can only be opened for a prepared
+   * <cursor specification>. GR 3: Its dynamic parameters need a USING. */
+  strcpy(sql, "DELETE FROM dyn WHERE x = 0");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  EXPECT(open_dc1(sqlstate), "07005");
+  strcpy(sql, "SELECT x FROM dyn WHERE x > ?");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  EXPECT(open_dc1(sqlstate), "07004");
 
   /* A GLOBAL SQL descriptor area is in every module. */
   EXPECT(allocate_global(sqlstate), "00000");

@@ -54,3 +54,26 @@ UTEST_F(db, 6_52_put_data_not_deferred) {
   EXPECT_EQ(SQLPutData(utest_fixture->stmt, &x, 0), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
 }
+
+/* A string can't be appended to a NULL, and its length can't be negative
+ * (other than SQL_NTS). */
+UTEST_F(db, 6_52_put_data_after_null) {
+  SQLINTEGER at_exec = SQL_DATA_AT_EXEC;
+  char s[10];
+  SQLPOINTER p;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_VARCHAR, 10, 0, s, sizeof(s),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "a", -5), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY090");
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, NULL, SQL_NULL_DATA), SQL_SUCCESS);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "a", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY020");
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
+}

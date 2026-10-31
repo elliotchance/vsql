@@ -164,3 +164,13 @@ UTEST_F(db, 6_17_end_tran_descriptor) {
   EXPECT_EQ(SQLEndTran(SQL_HANDLE_DESC, ard, SQL_COMMIT), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY092");
 }
+
+/* A handle that isn't allocated is invalid, for each type of handle. */
+UTEST(libvsql, 6_17_end_tran_unallocated_handle) {
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_STMT, 999999, SQL_COMMIT),
+            SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DESC, 999999, SQL_COMMIT),
+            SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, 999999, SQL_COMMIT),
+            SQL_INVALID_HANDLE);
+}

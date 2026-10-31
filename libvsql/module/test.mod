@@ -91,6 +91,15 @@ PROCEDURE select_null (SQLSTATE, :i BIGINT);
 PROCEDURE select_all (SQLSTATE, :s SMALLINT);
   SELECT * INTO :s FROM t WHERE i = 2;
 
+PROCEDURE select_too_big (SQLSTATE, :s SMALLINT);
+  SELECT 100000 INTO :s FROM t WHERE i = 2;
+
+PROCEDURE create_sequence (SQLSTATE);
+  CREATE SEQUENCE seq;
+
+PROCEDURE select_next (SQLSTATE, :b BIGINT);
+  SELECT NEXT VALUE FOR seq INTO :b FROM t WHERE i = 2;
+
 PROCEDURE get_statement (SQLSTATE, :number INTEGER, :more CHARACTER(1),
     :function VARCHAR(30), :code SMALLINT, :dynamic CHAR(2),
     :dynamic_code BIGINT, :rows BIGINT, :committed INTEGER,
@@ -269,3 +278,8 @@ PROCEDURE delete_dc (SQLSTATE);
 
 PROCEDURE close_dc (SQLSTATE);
   CLOSE dc;
+
+DECLARE dc1 CURSOR FOR s1;
+
+PROCEDURE open_dc1 (SQLSTATE);
+  OPEN dc1;

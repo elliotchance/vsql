@@ -1852,6 +1852,21 @@ fn test_direct() {
 	assert false
 }
 
+// Each SQL-session starts with a condition area limit of 100, which a SET
+// TRANSACTION in another SQL-session doesn't change.
+fn test_condition_area_limit_of_new_session() ! {
+	mut db := open(':memory:')!
+	assert db.condition_area_limit == 100
+	db.direct('SET TRANSACTION DIAGNOSTICS SIZE 1;')!
+	db.direct('VALUES 1;')!
+	assert db.condition_area_limit == 1
+
+	mut db2 := open(':memory:')!
+	assert db2.condition_area_limit == 100
+	db2.direct('VALUES 1;')!
+	assert db2.condition_area_limit == 100
+}
+
 // agent_sqlstate is the SQLSTATE of the error of a statement, or '' if it
 // succeeds.
 fn agent_sqlstate(mut a Agent, stmt string) string {

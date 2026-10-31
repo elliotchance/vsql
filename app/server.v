@@ -161,7 +161,7 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		result := rlock a.results {
 			a.results[tab.id] or { TabResult{} }
 		}
-		return a.page(mut conn, all_tabs, tab, result, '')
+		return a.page(mut conn, all_tabs, tab, result, Confirm{})
 	}
 
 	tab_id := (form.get('tab') or { '' }).int()
@@ -178,6 +178,29 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		result := a.run_query(mut conn, table_sql)!
 		lock a.results {
 			a.results[id] = result
+		}
+		return '/'
+	}
+	// A table in the sidebar is dropped once it's confirmed. Then the tab is
+	// shown again, its result isn't run again.
+	if table := form.get('drop') {
+		last := rlock a.results {
+			a.results[tab.id] or { TabResult{} }
+		}
+		return a.page(mut conn, all_tabs, Tab{
+			...tab
+			query_text: query_text
+		}, last, Confirm{'DROP TABLE ${table}', 'drop_confirmed', table})
+	}
+	if table := form.get('drop_confirmed') {
+		conn.query('DROP TABLE ${table}') or {
+			last := rlock a.results {
+				a.results[tab.id] or { TabResult{} }
+			}
+			return a.page(mut conn, all_tabs, tab, TabResult{
+				...last
+				error: err.msg()
+			}, Confirm{})
 		}
 		return '/'
 	}
@@ -222,17 +245,17 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 			return a.page(mut conn, all_tabs, tab, TabResult{
 				...last
 				error: err.msg()
-			}, '')
+			}, Confirm{})
 		}
 		if kind != 'insert' {
-			return a.page(mut conn, all_tabs, tab, last, change_sql)
+			return a.page(mut conn, all_tabs, tab, last, Confirm{change_sql, 'confirm', change_sql})
 		}
 		a.apply_change(mut conn, tab.id, change_sql, query_text) or {
 			return a.page(mut conn, all_tabs, tab, TabResult{
 				...last
 				output: keep_insert_values(last.output, form)
 				error:  err.msg()
-			}, '')
+			}, Confirm{})
 		}
 		return '/'
 	}
@@ -244,7 +267,7 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 			return a.page(mut conn, all_tabs, tab, TabResult{
 				...last
 				error: err.msg()
-			}, '')
+			}, Confirm{})
 		}
 		return '/'
 	}
@@ -256,7 +279,7 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	title_tab(mut conn, tab.id, query_text)!
 	activate_tab(mut conn, tab.id)!
 	return a.page(mut conn, tabs(mut conn)!, Tab{tab.id, tab.tab_type, tab_title(query_text), query_text, true},
-		result, '')
+		result, Confirm{})
 }
 
 // apply_change runs a change to a row (see run_change), then the SQL of the tab

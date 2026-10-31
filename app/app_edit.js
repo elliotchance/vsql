@@ -1,14 +1,6 @@
 // app_edit.js is embedded in the page of "vsql app" after app.js and the
 // result. It changes the rows of an editable result (see edit.v).
 
-// The change to be confirmed is a popup. Escape closes it without running it.
-const confirmDialog = document.querySelector('dialog.confirm');
-if (confirmDialog) {
-	const confirmSql = confirmDialog.querySelector('pre');
-	confirmSql.innerHTML = toHtml(confirmSql.textContent);
-	confirmDialog.showModal();
-}
-
 // A change to a row is posted with the table, and the primary key of the row
 // (data-key) for an update or delete. The server shows the statement to be
 // confirmed before it's run.

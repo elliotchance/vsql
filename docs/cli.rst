@@ -42,6 +42,10 @@ Options are:
   ``::`` to accept connections from other machines.
 - ``-port`` or ``-p``: Port number (default 3211).
 
+The ``⋯`` menu of a table in the sidebar (other than ``INFORMATION_SCHEMA`` and
+``VSQL_APP``) can drop it. The ``DROP TABLE`` is
+shown in a popup to be confirmed before it's run.
+
 The rows of a ``SELECT * FROM`` a table (optionally with ``WHERE``,
 ``ORDER BY``, ``OFFSET`` or ``FETCH``) can be changed:
 

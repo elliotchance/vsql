@@ -28,10 +28,24 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		sb.write_string('<div class="editor"><pre aria-hidden="true"></pre>')
 		sb.write_string('<textarea name="sql" rows="6" spellcheck="false" autofocus placeholder="SELECT * FROM ...">${html_escape(tab.query_text)}</textarea></div>')
 		sb.write_string('<div class="actions"><span class="status">${html_escape(result.status)}</span>')
+		if result.has_rows {
+			edit_attrs := if result.editable {
+				''
+			} else {
+				' disabled title="Only the rows of SELECT * FROM a table with a PRIMARY KEY can be edited"'
+			}
+			sb.write_string('<span class="edit-hint" hidden>Empty = <code>DEFAULT</code>, <code>\\N</code> = <code>NULL</code>, <code>&quot;&quot;</code> = empty string</span>')
+			sb.write_string('<button type="button" class="cancel-edit" hidden>Cancel edit</button><button type="button" class="edit"${edit_attrs}>Edit...</button>')
+		}
 		sb.write_string('<button type="submit" class="run" title="Run (Ctrl+Enter)">Run <span class="shortcut">&#8963;&#8629;</span></button></div></form>')
-		reserved_words := vsql.reserved_words().map('"${it}"').join(',')
-		sb.write_string('<script>const reservedWords = new Set([${reserved_words}]);${app_js.to_string()}</script>')
+		if result.error != '' {
+			sb.write_string('<p class="error">${html_escape(result.error)}</p>')
+		}
 		sb.write_string(output)
+		// The scripts are after the result, so they can find the editable
+		// table.
+		reserved_words := vsql.reserved_words().map('"${it}"').join(',')
+		sb.write_string('<script>const reservedWords = new Set([${reserved_words}]);${app_js.to_string()}${app_edit_js.to_string()}</script>')
 	}
 
 	sb.write_string('</main></body></html>')
@@ -48,7 +62,7 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 	version := if vsql.version() == '' { 'v0.0.0' } else { vsql.version() }
 	sb.write_string('<nav class="sidebar"><div class="brand">vsql <span class="version">${html_escape(version)}</span></div>')
 	for catalog_name in a.catalog_names {
-		conn.query("SET CATALOG '${catalog_name.replace("'", "''")}'")!
+		set_catalog(mut conn, catalog_name)!
 		mut catalog := conn.catalog()
 		mut schemas := map[string][]vsql.Identifier{}
 		for schema in catalog.schemas()! {
@@ -78,7 +92,7 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 		}
 		sb.write_string('</details>')
 	}
-	conn.query("SET CATALOG '${a.catalog_names[0].replace("'", "''")}'")!
+	set_catalog(mut conn, a.catalog_names[0])!
 
 	sb.write_string('<details class="section" data-folder="tabs" open><summary><span class="icon" aria-hidden="true">&#128450;&#65039;</span>Tabs <span class="count">${all_tabs.len}</span></summary><ul>')
 	for t in all_tabs {
@@ -106,6 +120,7 @@ fn write_tabs(mut sb strings.Builder, all_tabs []Tab, tab Tab) {
 
 const app_css = $embed_file('app.css')
 const app_js = $embed_file('app.js')
+const app_edit_js = $embed_file('app_edit.js')
 const app_sidebar_js = $embed_file('app_sidebar.js')
 
 const show_tables_sql = 'SELECT * FROM INFORMATION_SCHEMA.TABLES'
@@ -118,6 +133,11 @@ fn tab_title(query_text string) string {
 	}
 
 	return if line.runes().len > 30 { line.runes()[..30].string() + '...' } else { line }
+}
+
+// set_catalog makes a catalog current, such as to read its tables.
+fn set_catalog(mut conn vsql.Connection, name string) ! {
+	conn.query("SET CATALOG '${name.replace("'", "''")}'")!
 }
 
 fn html_escape(s string) string {

@@ -175,7 +175,7 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	if table := form.get('query') {
 		table_sql := 'SELECT * FROM ${table}'
 		id := add_tab(mut conn, table_sql)!
-		result := run_query(mut conn, table_sql)!
+		result := a.run_query(mut conn, table_sql)!
 		lock a.results {
 			a.results[id] = result
 		}
@@ -208,7 +208,35 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		return '/'
 	}
 
-	result := run_query(mut conn, query_text)!
+	// The changes to the rows of an editable result (see edit.v), which all
+	// run in one transaction. If they fail, the page has the error and
+	// app_edit.js keeps the changes to try again.
+	if changes := form.get('changes') {
+		last := rlock a.results {
+			a.results[tab.id] or { TabResult{} }
+		}
+		table := a.find_edit_table(mut conn, form.get('catalog') or { '' }, form.get('schema') or {
+			''
+		}, form.get('table') or { '' })!
+		mut queries := []string{}
+		for i in 0 .. changes.int() {
+			queries << build_change(table, change_form(form, i)) or {
+				return a.page(mut conn, all_tabs, tab, TabResult{
+					...last
+					error: err.msg()
+				})
+			}
+		}
+		a.apply_changes(mut conn, tab.id, queries, query_text) or {
+			return a.page(mut conn, all_tabs, tab, TabResult{
+				...last
+				error: err.msg()
+			})
+		}
+		return '/'
+	}
+
+	result := a.run_query(mut conn, query_text)!
 	lock a.results {
 		a.results[tab.id] = result
 	}
@@ -216,4 +244,17 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	activate_tab(mut conn, tab.id)!
 	return a.page(mut conn, tabs(mut conn)!, Tab{tab.id, tab.tab_type, tab_title(query_text), query_text, true},
 		result)
+}
+
+// apply_changes runs the changes to the rows (see run_changes), then the SQL
+// of the tab again for its result.
+fn (a &App) apply_changes(mut conn vsql.Connection, tab_id int, queries []string, query_text string) ! {
+	run_changes(mut conn, queries)!
+	result := a.run_query(mut conn, query_text)!
+	lock a.results {
+		a.results[tab_id] = TabResult{
+			...result
+			status: 'Saved ${queries.len} ${vsql.pluralize(queries.len, 'change')}, ${result.status}'
+		}
+	}
 }

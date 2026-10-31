@@ -43,9 +43,28 @@ Start the PostgreSQL-compatible server, and publish its port:
 
 .. code-block:: sh
 
-   docker run --mount type=bind,source="$(pwd)",target=/db -p 3210:3210 -it elliotchance/vsql:latest server /db/mydb.vsql
+   docker run --mount type=bind,source="$(pwd)",target=/db -p 3210:3210 -it elliotchance/vsql:latest server -host 0.0.0.0 /db/mydb.vsql
 
-See :doc:`server`.
+``-host 0.0.0.0`` is needed because the server only listens on ``127.0.0.1``
+by default, and connections from outside the container (including from
+``-p``) don't arrive on that address. See :doc:`server`.
+
+Or, with `Docker Compose <https://docs.docker.com/compose/>`_, put this in
+``compose.yaml``:
+
+.. code-block:: yaml
+
+   services:
+     vsql:
+       image: elliotchance/vsql:latest
+       command: ["server", "-host", "0.0.0.0", "/db/mydb.vsql"]
+       volumes:
+         - ./data:/db
+       ports:
+         - "3210:3210"
+
+Then start it with ``docker compose up -d``. The database file is
+``data/mydb.vsql``.
 
 Apple Silicon Macs
 ------------------

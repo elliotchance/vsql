@@ -31,6 +31,9 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 		return sqlstate_42601('NEXT VALUE FOR cannot be used in ${c.next_value_not_allowed}')
 	}
 	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 1
+	if c.conn.next_value_not_allowed != '' {
+		return sqlstate_42601('NEXT VALUE FOR cannot be used in ${c.conn.next_value_not_allowed}')
+	}
 	if c.conn.subquery_scopes.len > 0 {
 		return sqlstate_42601('NEXT VALUE FOR cannot be used in a subquery')
 	}

@@ -390,12 +390,15 @@ fn write_key_numeric(mut buf Bytes, value Numeric) {
 		return
 	}
 
-	// A DECIMAL can hold more digits than its scale (#223), such as 123/500 in a
-	// DECIMAL(3, 2), which is shown as 0.24 but isn't equal to 0.24. The
-	// denominator is always less than 10^(scale + 1) (see normalize_denominator),
-	// so two values that aren't equal differ by more than 10^-(2 * scale + 2).
-	// The digits are truncated to one more place than that, which keeps those
-	// values apart, and keeps equal values (such as 1/2 and 5/10) the same.
+	// A DECIMAL used to be able to hold more digits than its scale (#223), such
+	// as 123/500 in a DECIMAL(3, 2), which is shown as 0.24 but isn't equal to
+	// 0.24. Files written before then can still have those keys. Their
+	// denominator was always less than 10^(scale + 1), so two values that aren't
+	// equal differ by more than 10^-(2 * scale + 2). The digits are truncated to
+	// one more place than that, which keeps those values apart, and keeps equal
+	// values (such as 1/2 and 5/10) the same. A value with exactly the digits of
+	// its scale (all values now, see normalize_denominator) is written the same
+	// as it would be with "places" equal to the scale.
 	places := 2 * int(value.typ.scale) + 3
 	magnitude := value.numerator.abs() * big.integer_from_int(10).pow(u32(places)) / value.denominator
 	mut s := magnitude.str()

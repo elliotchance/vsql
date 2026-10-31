@@ -228,17 +228,14 @@ fn (n Numeric) scale_numerator(denominator big.Integer) Numeric {
 // This is an important step for NUMERIC and DECIMAL after every operation to
 // make sure the denominator is scaled correctly, which may cause the value to
 // lose precision if it goes beyond the specified precision.
+//
+// A NUMERIC or DECIMAL always has exactly the scale of its type: its value is a
+// multiple of 10^-scale (ISO/IEC 9075-2:2016(E), 4.4.2 and 6.1 Syntax Rules 26
+// and 27). DECIMAL differs from NUMERIC only in that its precision may be
+// larger, which vsql doesn't use, so they're the same apart from the name.
 fn (n Numeric) normalize_denominator(typ Type) Numeric {
 	denominator := big.integer_from_int(10).pow(u32(typ.scale))
-	max_denominator := big.integer_from_int(10).pow(u32(typ.scale + 1)) - big.one_int
-
-	// DECIMAL only need to scale when the denominator goes beyond the bounds.
-	if typ.typ == .is_decimal && n.denominator > max_denominator {
-		return n.scale_numerator(denominator)
-	}
-
-	// NUMERIC always needs to have a fixed denominator.
-	if typ.typ == .is_numeric && n.denominator != denominator {
+	if typ.typ in [.is_numeric, .is_decimal] && n.denominator != denominator {
 		return n.scale_numerator(denominator)
 	}
 

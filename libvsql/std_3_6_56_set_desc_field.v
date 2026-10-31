@@ -1,5 +1,7 @@
 module main
 
+import encoding.utf8
+
 // ISO/IEC 9075-3:2003(E), 6.56, SetDescField
 //
 // Set a field in a CLI descriptor area.
@@ -204,8 +206,12 @@ fn desc_string_value(mut diag Diagnostics, fi int, value voidptr, buffer_length 
 }
 
 // is_identifier is true for a <regular identifier> or a <delimited
-// identifier>.
+// identifier>, which must be valid UTF-8 (so it can't end with part of a
+// character).
 fn is_identifier(s string) bool {
+	if !utf8.validate_str(s) {
+		return false
+	}
 	if s.len > 1 && s[0] == `"` && s[s.len - 1] == `"` {
 		return s[1..s.len - 1].replace('""', '').count('"') == 0
 	}

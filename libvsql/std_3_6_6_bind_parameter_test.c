@@ -167,3 +167,53 @@ UTEST_F(db, 6_6_bind_parameter_restricted) {
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07006");
 }
+
+/* A string with a length in octets is the characters wholly contained in
+ * them, so "é" (2 octets) with a length of 1 is a zero-length string. A string
+ * that isn't valid UTF-8 can't be used. */
+UTEST_F(db, 6_6_bind_parameter_partial_character) {
+  char s[10] = "a\xc3\xa9";
+  SQLINTEGER len = 2;
+  char out[10];
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_VARCHAR, 5, 0, s, sizeof(s), &len),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, out, sizeof(out), NULL),
+      SQL_SUCCESS);
+  EXPECT_STREQ(out, "a");
+  ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+
+  strcpy(s, "\xc3\xa9");
+  len = 1;
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CHAR_LENGTH(?)"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, out, sizeof(out), NULL),
+      SQL_SUCCESS);
+  EXPECT_STREQ(out, "0");
+  ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+
+  len = 2;
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, out, sizeof(out), NULL),
+      SQL_SUCCESS);
+  EXPECT_STREQ(out, "\xc3\xa9");
+  ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+
+  strcpy(s, "a\xffz");
+  len = 3;
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
+
+  /* A null terminated string can't end with part of a character. */
+  strcpy(s, "a\xc3");
+  len = SQL_NTS;
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
+}

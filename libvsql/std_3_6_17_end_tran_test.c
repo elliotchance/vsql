@@ -164,3 +164,46 @@ UTEST_F(db, 6_17_end_tran_descriptor) {
   EXPECT_EQ(SQLEndTran(SQL_HANDLE_DESC, ard, SQL_COMMIT), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "HY092");
 }
+
+/* A handle that isn't allocated is invalid, for each type of handle. */
+UTEST(libvsql, 6_17_end_tran_unallocated_handle) {
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_STMT, 999999, SQL_COMMIT),
+            SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DESC, 999999, SQL_COMMIT),
+            SQL_INVALID_HANDLE);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, 999999, SQL_COMMIT),
+            SQL_INVALID_HANDLE);
+}
+
+/* A COMMIT that fails with an I/O error (rather than a constraint that isn't
+ * satisfied) isn't rolled back, so it can be committed again. This deviates
+ * from General Rules 12.d.iii, see the standard index. */
+UTEST_F(env, 6_17_end_tran_commit_fails) {
+  SQLHSTMT stmt;
+
+  remove("libvsql_end_tran.vsql");
+  ASSERT_EQ(SQLConnect(utest_fixture->dbc, (SQLCHAR *)"libvsql_end_tran.vsql",
+                       SQL_NTS, NULL, 0, NULL, 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_STMT, utest_fixture->dbc, &stmt),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt, "CREATE TABLE t (x INT)"), SQL_SUCCESS);
+  ASSERT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt, "INSERT INTO t (x) VALUES (1)"), SQL_SUCCESS);
+
+  ASSERT_EQ(vsql_arm_fault("wal_write", 1), 0);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "58030");
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
+  EXPECT_EQ(count_rows(stmt), 1);
+
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_ROLLBACK),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLDisconnect(utest_fixture->dbc), SQL_SUCCESS);
+  remove("libvsql_end_tran.vsql");
+  remove("libvsql_end_tran.vsql.wal");
+  remove("libvsql_end_tran.vsql.session");
+}

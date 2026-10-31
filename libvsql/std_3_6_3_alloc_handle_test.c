@@ -85,3 +85,12 @@ UTEST_F(env, 6_3_alloc_handle_desc_not_connected) {
   EXPECT_EQ(h, 0);
   EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "08003");
 }
+
+/* A descriptor needs an allocated connection, otherwise the output handle is
+ * zero. */
+UTEST(libvsql, 6_3_alloc_handle_desc_unallocated_connection) {
+  SQLHDESC desc = 1;
+
+  EXPECT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, 999999, &desc), SQL_INVALID_HANDLE);
+  EXPECT_EQ(desc, 0);
+}

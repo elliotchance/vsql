@@ -53,3 +53,39 @@ UTEST_F(db, 6_32_get_desc_rec_not_executed) {
       SQLGetDescRec(ird, 1, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
       SQL_NO_DATA);
 }
+
+/* Without null termination, a BufferLength of zero doesn't retrieve the
+ * NAME, not even its length. */
+UTEST(libvsql, 6_32_get_desc_rec_no_null_termination) {
+  SQLHENV env;
+  SQLHDBC dbc;
+  SQLHSTMT stmt;
+  SQLHDESC ird;
+  SQLCHAR name[8];
+  SQLSMALLINT name_length = -1;
+
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env), SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLSetEnvAttr(env, SQL_ATTR_OUTPUT_NTS, INTEGER_VALUE(SQL_FALSE), 0),
+      SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_DBC, env, &dbc), SQL_SUCCESS);
+  ASSERT_EQ(connect_memory(dbc), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt, "VALUES 1"), SQL_SUCCESS);
+  ird = stmt_desc(stmt, SQL_ATTR_IMP_ROW_DESC);
+
+  memset(name, 'x', sizeof(name));
+  EXPECT_EQ(SQLGetDescRec(ird, 1, name, 0, &name_length, NULL, NULL, NULL,
+                          NULL, NULL, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(name[0], 'x');
+  EXPECT_EQ(name_length, -1);
+
+  EXPECT_EQ(SQLGetDescRec(ird, 1, name, sizeof(name), &name_length, NULL, NULL,
+                          NULL, NULL, NULL, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(memcmp(name, "COL1xxxx", 8), 0);
+  EXPECT_EQ(name_length, 4);
+
+  free_handles(env, dbc, stmt);
+}

@@ -45,6 +45,11 @@ const char *sqlstate(SQLSMALLINT type, SQLINTEGER handle);
 
 SQLRETURN run_sql(SQLHSTMT stmt, const char *sql);
 
+/* vsql_arm_fault makes a fault (see "Faults" in docs/testing.rst) fail the
+ * nth time it's reached. It returns 0, or 1 if the fault can't be armed. It's
+ * only for testing, so it isn't in libvsql.h. */
+int vsql_arm_fault(const char *name, int nth);
+
 /* connect_default connects to the default server (an empty ServerName). */
 SQLRETURN connect_default(SQLHDBC dbc);
 

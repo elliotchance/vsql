@@ -101,3 +101,34 @@ UTEST_F(db, 6_49_param_data_cancel) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
 }
+
+/* A deferred parameter is cast to the type of its implementation parameter
+ * descriptor. */
+UTEST_F(db, 6_49_param_data_cast) {
+  SQLINTEGER at_exec = SQL_DATA_AT_EXEC, x = 1;
+  char s[10];
+  SQLPOINTER p;
+
+  /* An INTEGER can't be cast to a DATE. */
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_TYPE_DATE, 0, 0, &x, sizeof(x),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, &x, 0), SQL_SUCCESS);
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07006");
+
+  /* The cast of a string to an INTEGER can fail. */
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_INTEGER, 0, 0, s, sizeof(s),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "abc", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22018");
+}

@@ -58,3 +58,12 @@ UTEST_F(env, 6_12_connect_second_default) {
   EXPECT_STATE(SQL_HANDLE_DBC, dbc2, "08002");
   EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_DBC, dbc2), SQL_SUCCESS);
 }
+
+/* A file that can't be opened can't be connected to. */
+UTEST_F(env, 6_12_connect_unable) {
+  EXPECT_EQ(SQLConnect(utest_fixture->dbc,
+                       (SQLCHAR *)"/nonexistent-vsql-dir/x.vsql", SQL_NTS, NULL,
+                       0, NULL, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "08001");
+}

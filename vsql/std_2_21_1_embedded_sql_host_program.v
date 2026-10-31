@@ -28,6 +28,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 	mut variables := map[string]CHostVariable{}
 	mut cursors := map[string][]string{}
 	mut whenever := EmbeddedExceptionDeclarations{}
+	mut runtime := []string{}
 	mut in_declare := false
 	mut procedure_lines := []int{}
 	mut start := 0
@@ -116,7 +117,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 		mut names := embedded_variable_names(text) or { return embedded_error(line, err) }
 		match first {
 			'WHENEVER' {
-				whenever.declare(mut t) or { return embedded_error(line, err) }
+				whenever.declare(mut t, 'PUBLIC') or { return embedded_error(line, err) }
 				program += new_lines
 				continue
 			}
@@ -171,6 +172,9 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 		// - SR 23.d. The statement is replaced by a call of its procedure, and
 		// the exception actions (see 21.2).
 		program += '{ ${procedure}(${args.join(', ')});${whenever.c_checks()} }${new_lines}'
+		if whenever.constraints.len > 0 {
+			runtime = ['violated']
+		}
 	}
 
 	if in_declare {
@@ -192,7 +196,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 
 	return PrecompiledProgram{
 		implied_module: implied
-		source:         m.c_source('', true) + '#line 1 ${c_string(file_name)}\n' + program
+		source:         m.c_source('', true, runtime) + '#line 1 ${c_string(file_name)}\n' + program
 	}
 }
 

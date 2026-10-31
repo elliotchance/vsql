@@ -374,10 +374,13 @@ Item                         Value
 ``CONNECTION_NAME``          The name of the SQL-connection (``DEFAULT`` for
                              the default SQL-connection).
 ``SERVER_NAME``              The server of the SQL-connection.
+``CONSTRAINT_NAME``          The constraint that was violated (for an SQLSTATE
+                             that starts with ``23``, or ``40002``).
+``CONSTRAINT_SCHEMA``        Its schema.
+``CONSTRAINT_CATALOG``       Its catalog.
 ============================ ==================================================
 
 The other condition items (``CATALOG_NAME``, ``COLUMN_NAME``,
-``CONSTRAINT_CATALOG``, ``CONSTRAINT_NAME``, ``CONSTRAINT_SCHEMA``,
 ``CURSOR_NAME``, ``PARAMETER_MODE``, ``PARAMETER_NAME``,
 ``PARAMETER_ORDINAL_POSITION``, ``ROUTINE_CATALOG``, ``ROUTINE_NAME``,
 ``ROUTINE_SCHEMA``, ``SCHEMA_NAME``, ``SPECIFIC_NAME``, ``TABLE_NAME``,
@@ -621,11 +624,28 @@ it's opened.
 
 .. code-block:: text
 
-   EXEC SQL WHENEVER { SQLEXCEPTION | SQLWARNING | NOT FOUND } { CONTINUE | GOTO <label> | GO TO <label> };
+   EXEC SQL WHENEVER <condition> { CONTINUE | GOTO <label> | GO TO <label> };
+
+   <condition> ::=
+       SQLEXCEPTION
+     | SQLWARNING
+     | NOT FOUND
+     | SQLSTATE ( <class> [ , <subclass> ] )
+     | CONSTRAINT [ [ <catalog> . ] <schema> . ] <constraint_name>
 
 ``SQLEXCEPTION`` is an exception (any SQLSTATE that doesn't start with ``00``,
 ``01`` or ``02``), ``SQLWARNING`` is a warning (``01``) and ``NOT FOUND`` is no
-data (``02``). ``CONTINUE`` stops going to the label.
+data (``02``). ``SQLSTATE (22)`` is any SQLSTATE in the class ``22``, and
+``SQLSTATE (22, 012)`` is only ``22012``. ``CONSTRAINT`` is a violation of the
+constraint, which is in the ``PUBLIC`` schema when a schema isn't given.
+``CONTINUE`` stops going to the label.
+
+When more than one applies, the label is the first of a violated constraint,
+the SQLSTATE, its class, then ``SQLEXCEPTION``, ``SQLWARNING`` or ``NOT
+FOUND``. A ``WHENEVER`` replaces the earlier ones that it includes: for example,
+``WHENEVER SQLEXCEPTION CONTINUE`` also stops any ``SQLSTATE`` or
+``CONSTRAINT`` for an exception, and ``WHENEVER SQLSTATE (23) CONTINUE`` stops
+any ``CONSTRAINT``.
 
 The precompiler is simple, so:
 
@@ -636,5 +656,3 @@ The precompiler is simple, so:
   each (such as ``long a, b = 2;``), and not ``#define`` or other C.
 - ``#include`` is not followed, so the host variables and statements must be in
   the same file.
-- ``WHENEVER SQLSTATE`` and ``WHENEVER CONSTRAINT`` (Feature B041) aren't
-  supported.

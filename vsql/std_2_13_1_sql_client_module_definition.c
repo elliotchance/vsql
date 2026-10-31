@@ -157,6 +157,10 @@ static int vsql_m_failed(SQLRETURN rc) {
 struct vsql_m_condition {
   char sqlstate[6];
   char *message;
+  /* The constraint that was violated, or NULL. */
+  char *constraint_catalog;
+  char *constraint_schema;
+  char *constraint_name;
 };
 
 /* The <statement information item name>s that aren't in libvsql.h. */
@@ -241,6 +245,9 @@ static void vsql_m_clear(void) {
 
   for (i = 0; i < vsql_m_da.number; i++) {
     free(vsql_m_da.conditions[i].message);
+    free(vsql_m_da.conditions[i].constraint_catalog);
+    free(vsql_m_da.conditions[i].constraint_schema);
+    free(vsql_m_da.conditions[i].constraint_name);
   }
   free(vsql_m_da.conditions);
   vsql_m_da.conditions = NULL;
@@ -280,6 +287,9 @@ static void vsql_m_raise(const char *sqlstate, const char *message) {
   memcpy(conditions[vsql_m_da.number].sqlstate, sqlstate, 5);
   conditions[vsql_m_da.number].sqlstate[5] = '\0';
   conditions[vsql_m_da.number].message = NULL;
+  conditions[vsql_m_da.number].constraint_catalog = NULL;
+  conditions[vsql_m_da.number].constraint_schema = NULL;
+  conditions[vsql_m_da.number].constraint_name = NULL;
   vsql_m_copy(&conditions[vsql_m_da.number].message, message);
   vsql_m_da.number++;
 
@@ -361,6 +371,20 @@ static void vsql_m_status(char *sqlstate, const char *code) {
 }
 
 /*
+ * vsql_m_diag_text copies a character string field of a status record of the
+ * diagnostics area of a handle.
+ */
+static void vsql_m_diag_text(char **s, SQLSMALLINT type, SQLINTEGER handle,
+                             SQLSMALLINT i, SQLSMALLINT field) {
+  char value[513];
+
+  value[0] = '\0';
+  SQLGetDiagField(type, handle, i, field, value, (SQLSMALLINT)sizeof(value),
+                  NULL);
+  vsql_m_copy(s, value);
+}
+
+/*
  * vsql_m_diag sets the status parameter from a CLI return code, and copies the
  * conditions in the diagnostics area of the handle to the first diagnostics
  * area.
@@ -369,6 +393,7 @@ static void vsql_m_diag(char *sqlstate, SQLRETURN rc, SQLSMALLINT type,
                         SQLINTEGER handle) {
   SQLINTEGER number = 0, i, length;
   char state[6], *message;
+  struct vsql_m_condition *c;
 
   if (rc == SQL_SUCCESS) {
     vsql_m_status(sqlstate, "00000");
@@ -396,6 +421,15 @@ static void vsql_m_diag(char *sqlstate, SQLRETURN rc, SQLSMALLINT type,
     }
     vsql_m_raise(state, message == NULL ? "" : message);
     free(message);
+    if (vsql_m_da.number == i) {
+      c = &vsql_m_da.conditions[i - 1];
+      vsql_m_diag_text(&c->constraint_catalog, type, handle, (SQLSMALLINT)i,
+                       SQL_DIAG_CONSTRAINT_CATALOG);
+      vsql_m_diag_text(&c->constraint_schema, type, handle, (SQLSMALLINT)i,
+                       SQL_DIAG_CONSTRAINT_SCHEMA);
+      vsql_m_diag_text(&c->constraint_name, type, handle, (SQLSMALLINT)i,
+                       SQL_DIAG_CONSTRAINT_NAME);
+    }
   }
 
   if (vsql_m_da.number > 0) {

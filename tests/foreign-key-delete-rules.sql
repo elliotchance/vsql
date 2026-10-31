@@ -194,3 +194,30 @@ SELECT * FROM child;
 -- 2: error 40001: serialization failure: avoiding concurrent write on individual row
 -- 1: msg: COMMIT
 -- 2: msg: DELETE 1
+
+-- # A row can't be both deleted and updated by the actions of one statement,
+-- # in either order, which is a triggered data change violation. Nothing is
+-- # changed.
+CREATE TABLE p (id INT PRIMARY KEY);
+CREATE TABLE c (a INT REFERENCES p ON DELETE CASCADE, b INT REFERENCES p ON DELETE SET NULL);
+CREATE TABLE d (b INT REFERENCES p ON DELETE SET NULL, a INT REFERENCES p ON DELETE CASCADE);
+INSERT INTO p (id) VALUES (1), (2);
+INSERT INTO c (a, b) VALUES (1, 1), (2, NULL);
+DELETE FROM p WHERE id = 1;
+SELECT * FROM c;
+DELETE FROM c;
+INSERT INTO d (b, a) VALUES (1, 1);
+DELETE FROM p WHERE id = 1;
+SELECT * FROM d;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: INSERT 2
+-- error 27000: triggered data change violation: a row of PUBLIC.C that was deleted is updated
+-- A: 1 B: 1
+-- A: 2 B: NULL
+-- msg: DELETE 2
+-- msg: INSERT 1
+-- error 27000: triggered data change violation: a row of PUBLIC.D that was updated is deleted
+-- B: 1 A: 1

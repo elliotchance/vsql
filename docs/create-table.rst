@@ -299,6 +299,11 @@ The same is true for a row that's changed by ``ON UPDATE CASCADE``. These
 changes are part of the :doc:`delete` or :doc:`update`, so if any of them fail,
 no rows are deleted or changed.
 
+The actions of one statement can't change a column of a row to two different
+values, or both change and delete a row (for example, when a row has two
+foreign keys with different actions that both apply). That's an error
+``27000``. So, even a cycle of ``ON UPDATE CASCADE`` keys always ends.
+
 A table that's referenced can only be dropped with ``CASCADE``, which also
 drops the ``FOREIGN KEY`` constraints that reference it (see :doc:`drop-table`).
 

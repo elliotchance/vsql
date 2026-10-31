@@ -178,3 +178,46 @@ SELECT * FROM child;
 -- 1: msg: COMMIT
 -- 2: msg: UPDATE 1
 -- 2: PARENT_ID: 2
+
+-- # A site (a column of a row) can't be updated to two different values by the
+-- # actions of one statement, which is a triggered data change violation. Here,
+-- # X is updated to 10 by the first key, and then the second key matches it.
+-- # Nothing is changed.
+CREATE TABLE p (id INT UNIQUE, k INT UNIQUE);
+CREATE TABLE c (x INT REFERENCES p (id) ON UPDATE CASCADE, FOREIGN KEY (x) REFERENCES p (k) ON UPDATE CASCADE);
+INSERT INTO p (id, k) VALUES (1, 10), (2, 1);
+INSERT INTO c (x) VALUES (1);
+UPDATE p SET id = 10, k = 30 WHERE id = 1;
+SELECT * FROM c;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: INSERT 1
+-- error 27000: triggered data change violation: column X of a row of PUBLIC.C is updated to two different values
+-- X: 1
+
+-- # NULL is a different value too.
+CREATE TABLE p (id INT UNIQUE, k INT UNIQUE);
+CREATE TABLE c (x INT REFERENCES p (id) ON UPDATE CASCADE, FOREIGN KEY (x) REFERENCES p (k) ON UPDATE SET NULL);
+INSERT INTO p (id, k) VALUES (1, 10), (2, 1);
+INSERT INTO c (x) VALUES (1);
+UPDATE p SET id = 10, k = 30 WHERE id = 1;
+SELECT * FROM c;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: INSERT 1
+-- error 27000: triggered data change violation: column X of a row of PUBLIC.C is updated to two different values
+-- X: 1
+
+-- # A cycle of ON UPDATE CASCADE keys ends, since each site can only be updated
+-- # once.
+CREATE TABLE t (a INT UNIQUE, b INT UNIQUE, FOREIGN KEY (b) REFERENCES t (a) ON UPDATE CASCADE, FOREIGN KEY (a) REFERENCES t (b) ON UPDATE CASCADE);
+INSERT INTO t (a, b) VALUES (1, 2), (2, 1);
+UPDATE t SET a = 3 WHERE a = 1;
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: UPDATE 1
+-- A: 3 B: 2
+-- A: 2 B: 3

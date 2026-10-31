@@ -1901,7 +1901,7 @@
 6.48/GR/2.b              implemented  libvsql/std_3_6_48_num_result_cols.v libvsql/std_3_6_48_num_result_cols_test.c
 6.48/GR/3                implemented  libvsql/std_3_6_48_num_result_cols.v libvsql/std_3_6_48_num_result_cols_test.c
 # 6.49, ParamData
-6.49                     partial      libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c an exception condition removes the deferred parameter number (#750); see also #730, #742
+6.49                     partial      libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c an exception condition removes the deferred parameter number (#750); see also #730
 6.49/GR/1                definition   - -
 6.49/GR/2                container    - -
 6.49/GR/2.a              implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
@@ -1978,7 +1978,7 @@
 6.49/GR/17.b.i.6         implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 6.49/GR/17.b.i.6.A       implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 6.49/GR/17.b.i.6.B       n/a          - - there are no users (#732)
-6.49/GR/17.b.i.6.C       deviates     libvsql/std_3_6_49_param_data.v - each one reads the clock when it's compiled (#742)
+6.49/GR/17.b.i.6.C       implemented  vsql/time.v tests/date-time-value-function.sql the rows are evaluated by one OPEN statement
 6.49/GR/17.b.i.6.D       n/a          - - there's no CURRENT_PATH
 6.49/GR/17.b.i.7         definition   - -
 6.49/GR/17.b.i.8         definition   - -

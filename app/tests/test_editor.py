@@ -59,3 +59,17 @@ def test_error(ui):
     ui.run('SELECT * FROM nope')
     expect(ui.error).to_contain_text('no such table')
     expect(ui.status).to_have_text(re.compile(r'^Error \('))
+
+
+def test_explain(ui):
+    # Explain runs the SQL with EXPLAIN in front of it, the SQL of the tab
+    # isn't changed.
+    ui.new_tab()
+    ui.editor.fill('SELECT * FROM foo.bar WHERE y')
+    ui.page.get_by_role('button', name='Explain').click()
+    expect(ui.editor).to_have_value('SELECT * FROM foo.bar WHERE y')
+    expect(ui.active_tab).to_have_text(re.compile(r'^SELECT \* FROM foo\.bar WHERE y'))
+    expect(ui.headers).to_have_text(['EXPLAINCHARACTER VARYING'])
+    expect(ui.cells.first).to_have_text('TABLE "db".FOO.BAR (Y BOOLEAN)')
+    expect(ui.status).to_have_text(re.compile(r'^3 rows \('))
+

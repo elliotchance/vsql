@@ -39,6 +39,8 @@ td.null { font-style: italic; }
 button { padding: 5px 16px; font: inherit; font-weight: 600; color: #fff; background: var(--accent); border: 1px solid var(--accent); border-radius: 6px; cursor: pointer; text-decoration: none; }
 .status { color: var(--muted); }
 button.run { margin-left: auto; padding: 2px 10px; font-size: 12px; }
+button.explain { color: var(--fg); background: var(--side); border-color: var(--border); }
+button.explain + button.run { margin-left: 0; }
 .tabs { display: flex; align-items: flex-end; gap: 2px; padding: 4px 12px 0 0; border-bottom: 1px solid var(--border); overflow-x: auto; }
 .tab { display: flex; align-items: center; flex-shrink: 0; border: 1px solid transparent; border-bottom: 0; border-radius: 6px 6px 0 0; }
 .tab.active { margin-bottom: -1px; background: var(--side); border-color: var(--border); }

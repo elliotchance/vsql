@@ -37,6 +37,7 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		autofocus := if confirm.sql == '' { ' autofocus' } else { '' }
 		sb.write_string('<textarea name="sql" rows="6" spellcheck="false"${autofocus} placeholder="SELECT * FROM ...">${html_escape(tab.query_text)}</textarea></div>')
 		sb.write_string('<div class="actions"><span class="status">${html_escape(result.status)}</span>')
+		sb.write_string('<button type="submit" name="explain" value="1" class="run explain" title="Run with EXPLAIN">Explain</button>')
 		sb.write_string('<button type="submit" class="run" title="Run (Ctrl+Enter)">Run <span class="shortcut">&#8963;&#8629;</span></button></div></form>')
 	}
 	if confirm.sql != '' {

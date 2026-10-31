@@ -286,6 +286,17 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				table_name = from_clause.correlation.name
 			}
 
+			// A derived table can't contain a NEXT VALUE FOR either.
+			//
+			// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 1
+			next_value_not_allowed := conn.next_value_not_allowed
+			if next_value_not_allowed == '' {
+				conn.next_value_not_allowed = 'a derived table'
+			}
+			defer {
+				conn.next_value_not_allowed = next_value_not_allowed
+			}
+
 			subplan := create_query_expression_plan(from_clause.body, params, mut conn,
 				from_clause.correlation)!
 			table = add_correlation_plan(mut &plan, table_name, subplan, from_clause.correlation,

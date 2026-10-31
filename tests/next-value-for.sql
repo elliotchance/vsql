@@ -342,12 +342,16 @@ CREATE TABLE bar (baz INTEGER);
 INSERT INTO bar (baz) VALUES (1);
 SELECT * FROM bar WHERE baz < NEXT VALUE FOR seq1;
 SELECT * FROM (SELECT NEXT VALUE FOR seq1 AS x FROM bar) AS t WHERE x > 0;
-VALUES NEXT VALUE FOR seq1 > 1;
+SELECT * FROM (VALUES NEXT VALUE FOR seq1) AS t;
+SELECT * FROM (SELECT * FROM (SELECT NEXT VALUE FOR seq1 FROM bar) AS t1) AS t2;
+VALUES NEXT VALUE FOR seq1 > 0;
 -- msg: CREATE SEQUENCE 1
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in WHERE
--- X: 1
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in a derived table
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in a derived table
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in a derived table
 -- COL1: TRUE
 
 CREATE TABLE bar (baz INTEGER);

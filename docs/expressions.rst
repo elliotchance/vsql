@@ -216,9 +216,9 @@ Returns the next value for a SEQUENCE called ``X``.
 All ``NEXT VALUE FOR`` expressions for the same sequence return the same value
 within a row. Each new row will get the next value.
 
-``NEXT VALUE FOR`` can't be used in a subquery (such as in ``EXISTS``), or on
-either side of a ``UNION`` or ``EXCEPT``, since the number of times it's
-evaluated depends on the query that contains it.
+``NEXT VALUE FOR`` can't be used in a subquery (such as in ``EXISTS`` or a
+derived table), or on either side of a ``UNION`` or ``EXCEPT``, since the number
+of times it's evaluated depends on the query that contains it.
 
 *Examples*
 

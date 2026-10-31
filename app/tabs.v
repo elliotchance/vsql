@@ -79,6 +79,9 @@ const history_tab = 'HISTORY'
 // create_table_tab is a tab to create a table, see create_table.v.
 const create_table_tab = 'CREATE_TABLE'
 
+// alter_table_tab is a tab to alter a table, see alter_table.v.
+const alter_table_tab = 'ALTER_TABLE'
+
 // QueryPayload is the PAYLOAD (JSON) of a QUERY tab. Each tab type has its own
 // payload.
 struct QueryPayload {

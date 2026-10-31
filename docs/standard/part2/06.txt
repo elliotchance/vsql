@@ -665,7 +665,7 @@
 6.13/GR/8.a.ii           implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
 6.13/GR/8.b              implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql
 6.13/GR/8.b.i            implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql
-6.13/GR/8.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql
+6.13/GR/8.b.ii           implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql,tests/numeric-decimal-cast.sql
 6.13/GR/8.c              n/a          - - intervals (F052)
 6.13/GR/8.c.i            n/a          - - intervals (F052)
 6.13/GR/8.c.ii           n/a          - - intervals (F052)

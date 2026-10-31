@@ -50,6 +50,28 @@ VALUES CAST(1.5e22 AS NUMERIC(30, 2)), CAST(123456789012345678901234.0e0 AS NUME
 -- COL1: 15000000000000000000000.00
 -- COL1: 123456789012345690000000.00
 
+-- # A string is cast as the literal it contains, so an approximate one is a
+-- # DOUBLE PRECISION first. One that's too large for a DOUBLE PRECISION is out
+-- # of range, even if the NUMERIC or DECIMAL could hold it, and one that's too
+-- # small is zero.
+VALUES CAST('1e308' AS NUMERIC(309)) = CAST(1e308 AS NUMERIC(309));
+-- COL1: TRUE
+
+VALUES CAST('123456789012345678901234.0e0' AS NUMERIC(30, 2));
+-- COL1: 123456789012345690000000.00
+
+VALUES CAST('1e309' AS NUMERIC(400));
+-- error 22003: numeric value out of range
+
+VALUES CAST('-1e400' AS DECIMAL(500));
+-- error 22003: numeric value out of range
+
+VALUES CAST('1e-400' AS NUMERIC(10, 2));
+-- COL1: 0.00
+
+VALUES CAST('-1e-400' AS DECIMAL(10, 2));
+-- COL1: 0.00
+
 -- # Operators keep the precision and scale of both sides.
 /* types */
 VALUES CAST(1.25 AS DECIMAL(3,2)) + CAST(1.5 AS NUMERIC(2,1));

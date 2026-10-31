@@ -24,3 +24,10 @@ VALUES 'a' -- the new line is in the comment
 VALUES 'a' --'b'
 ;
 -- COL1: a
+
+ -- a statement that is only a comment
+;
+-- error 42601: syntax error: unexpected $end
+
+  ;
+-- error 42601: syntax error: unexpected $end

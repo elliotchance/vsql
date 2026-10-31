@@ -93,8 +93,8 @@
 23.1/GR/6.a.ii.2         n/a          - - ALL (F123)
 23.1/GR/6.a.iii          n/a          - - ALL (F123)
 23.1/GR/6.a.iv           n/a          - - ALL (F123)
-23.1/GR/6.b              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
-23.1/GR/6.c              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
+23.1/GR/6.b              implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+23.1/GR/6.c              implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 23.1/CR/1                missing      - - an SQL-client module isn't flagged (#763)
 23.1/CR/2                missing      - - an SQL-client module isn't flagged (#763)
 23.1/CR/3                missing      - - an SQL-client module isn't flagged (#763)

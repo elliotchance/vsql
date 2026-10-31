@@ -62,6 +62,15 @@ and queries the new table in a new tab. Cancel closes the tab, once it's confirm
 entered in double quotes, such as ``"foo"``, to keep its case. The tab is kept (with
 everything that's entered) like any other tab.
 
+The ``⋯`` menu of a table can also alter it, in a new tab like adding a table.
+The ``ALTER TABLE`` statements at the top are what's changed. A new column can
+be anything (``ADD COLUMN``), but only some changes can be made to a column
+that's already there: its ``NOT NULL`` removed, its ``DEFAULT`` changed (or
+dropped, when it's empty), whether it's in the ``PRIMARY KEY``, or it can be
+removed (``DROP COLUMN``). Alter table runs the statements in a transaction (so
+if one fails, none of them are run), closes the tab and queries the table in a
+new tab.
+
 The rows of a ``SELECT * FROM`` a table (optionally with ``WHERE``,
 ``ORDER BY``, ``OFFSET`` or ``FETCH``) can be changed:
 

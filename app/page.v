@@ -1,5 +1,6 @@
 module app
 
+import json2
 import strings
 import vsql
 
@@ -27,6 +28,8 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		sb.write_string('</form><p class="empty">Choose a table, or use + to add a tab.</p>')
 	} else if tab.tab_type == create_table_tab {
 		write_create_table(mut sb, tab, result)
+	} else if tab.tab_type == alter_table_tab {
+		write_alter_table(mut sb, tab, result)
 	} else {
 		// The editor is a transparent textarea over a highlighted copy of its
 		// text (see app.js).
@@ -71,7 +74,10 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		sb.write_string(app_js.to_string() + app_edit_js.to_string())
 	}
 	if tab.tab_type == create_table_tab {
-		sb.write_string(app_create_table_js.to_string())
+		sb.write_string(app_columns_js.to_string() + app_create_table_js.to_string())
+	}
+	if tab.tab_type == alter_table_tab {
+		sb.write_string(app_columns_js.to_string() + app_alter_table_js.to_string())
 	}
 	if confirm.sql != '' {
 		sb.write_string(app_confirm_js.to_string())
@@ -150,6 +156,11 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 				// The menu of a table (see app_sidebar.js).
 				if schema_name !in ['INFORMATION_SCHEMA', 'VSQL_APP'] {
 					sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#8943;</summary><div class="menu-items">')
+					sb.write_string('<button type="submit" form="app" name="alter" value="${html_escape(json2.encode([
+						catalog_name,
+						schema_name,
+						table.entity_name,
+					]))}">Alter table</button>')
 					sb.write_string('<button type="submit" form="app" name="drop" value="TABLE ${html_escape(table.str())}" class="danger">Drop table</button></div></details>')
 				}
 				sb.write_string('</li>')
@@ -189,7 +200,9 @@ const app_highlight_js = $embed_file('app_highlight.js')
 const app_js = $embed_file('app.js')
 const app_confirm_js = $embed_file('app_confirm.js')
 const app_schema_js = $embed_file('app_schema.js')
+const app_columns_js = $embed_file('app_columns.js')
 const app_create_table_js = $embed_file('app_create_table.js')
+const app_alter_table_js = $embed_file('app_alter_table.js')
 const app_edit_js = $embed_file('app_edit.js')
 const app_sidebar_js = $embed_file('app_sidebar.js')
 

@@ -759,7 +759,7 @@
 6.13/GR/12.e             implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql
 6.13/GR/12.e.i           container    - -
 6.13/GR/12.e.i.1         n/a          - - cast templates (T839)
-6.13/GR/12.e.i.2         implemented  vsql/std_2_9_2_store_assignment.v tests/cast.sql there are no intervals (F052)
+6.13/GR/12.e.i.2         implemented  vsql/std_2_9_2_store_assignment.v,vsql/time.v tests/cast.sql,tests/datetime-precision.sql there are no intervals (F052)
 6.13/GR/12.e.ii          container    - -
 6.13/GR/12.e.ii.1        untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
 6.13/GR/12.e.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
@@ -793,7 +793,7 @@
 6.13/GR/16.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
 6.13/GR/16.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
 6.13/GR/16.a.ii.3        implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
-6.13/GR/16.b             impl-defined vsql/std_2_6_13_cast_specification.v tests/time.sql the fractional seconds are truncated
+6.13/GR/16.b             impl-defined vsql/std_2_6_13_cast_specification.v,vsql/time.v tests/time.sql,tests/datetime-precision.sql the fractional seconds are truncated
 6.13/GR/16.c             implemented  vsql/std_2_6_13_cast_specification.v tests/time.sql
 6.13/GR/16.d             implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql
 6.13/GR/16.e             implemented  vsql/std_2_6_13_cast_specification.v tests/timestamp.sql

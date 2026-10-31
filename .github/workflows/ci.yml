@@ -284,6 +284,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # The runner's MinGW (and the V that setup-v builds) is x86-64, which runs
+      # emulated on ARM64, so its programs and C would be x86-64 too.
+      # llvm-mingw's native ARM64 toolchain is used instead, which has gcc and
+      # make (clang and lld, as MinGW).
+      - name: Install llvm-mingw
+        if: matrix.arch == 'arm64'
+        run: |
+          .github/workflows/retry.sh curl -fsSL -o "$RUNNER_TEMP/llvm-mingw.zip" https://github.com/mstorsjo/llvm-mingw/releases/download/20261020/llvm-mingw-20261020-ucrt-aarch64.zip
+          unzip -q "$RUNNER_TEMP/llvm-mingw.zip" -d "$RUNNER_TEMP"
+          cygpath -w "$RUNNER_TEMP/llvm-mingw-20261020-ucrt-aarch64/bin" >> $GITHUB_PATH
+
       # setup-v can't be retried with retry.sh, so it's run again if it fails.
       # clean is off because it deletes V's problem matcher before the runner
       # has read it, which fails the step (mostly on the slower macOS x86-64
@@ -306,6 +317,13 @@ jobs:
         with:
           version: ${{ needs.v.outputs.commit }}
           clean: false
+
+      - name: Build V for ARM64
+        if: matrix.arch == 'arm64'
+        shell: cmd
+        run: |
+          for /f "delims=" %%i in ('where v') do cd /d %%~dpi
+          call makev.bat -clang
 
       - name: Show V version
         run: v version

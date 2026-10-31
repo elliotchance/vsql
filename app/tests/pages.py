@@ -166,6 +166,20 @@ class AppPage:
     def cells(self):
         return self.page.locator('main td')
 
+    def export_menu(self):
+        """export_menu opens the Export menu of the result, and returns it."""
+        self.page.locator('.actions details.export > summary').click()
+        return self.page.locator('.actions details.export .menu-items')
+
+    def download(self, button):
+        """download clicks a button (such as in export_menu) that downloads a
+        file, and returns its name and text."""
+        with self.page.expect_download() as info:
+            button.click()
+        download = info.value
+        with open(download.path(), newline='') as f:
+            return download.suggested_filename, f.read()
+
     @property
     def error(self):
         return self.page.locator('main .error')

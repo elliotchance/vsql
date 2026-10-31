@@ -658,6 +658,12 @@ struct DumpOptions
    	// create_public_schema includes CREATE SCHEMA "PUBLIC". It's not included
    	// by default because every catalog already has it.
    	create_public_schema bool
+   	// schema only includes the schema with this name (such as FOO), with its
+   	// sequences and tables.
+   	schema string
+   	// table only includes the table with this name in schema (which must also
+   	// be set), without CREATE SCHEMA or the sequences.
+   	table string
    }
 
 

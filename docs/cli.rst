@@ -45,6 +45,18 @@ Options are:
 Explain (next to Run) runs the SQL with ``EXPLAIN`` in front of it, to show
 how the query is run, without changing the SQL of the tab.
 
+When the result has rows, Export (next to Explain) downloads them as CSV (with
+a header of the column names, and ``NULL`` is empty) or JSON (an array with an
+object for each row, an integer is a number, ``TRUE`` and ``FALSE`` are
+``true`` and ``false``, ``NULL`` and ``UNKNOWN`` are ``null`` and anything else
+is a string as it's shown). The SQL of the tab is run again to export it, in a
+transaction that's rolled back, so anything else that it changes (such as an
+``INSERT`` before the ``SELECT``) isn't changed again, other than a sequence.
+
+The ``⋯`` menu of a table can export it as CSV, JSON or SQL (the
+``CREATE TABLE`` and an ``INSERT`` for each row, like ``vsql out``). The ``☰``
+menu of a schema can export it as SQL, with its sequences and tables.
+
 The ``⋯`` menu of a table in the sidebar (other than ``INFORMATION_SCHEMA`` and
 ``VSQL_APP``) can drop it. The ``DROP TABLE`` is
 shown in a popup to be confirmed before it's run.

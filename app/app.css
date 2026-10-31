@@ -41,6 +41,10 @@ button { padding: 5px 16px; font: inherit; font-weight: 600; color: #fff; backgr
 button.run { margin-left: auto; padding: 2px 10px; font-size: 12px; }
 button.explain { color: var(--fg); background: var(--side); border-color: var(--border); }
 button.explain + button.run { margin-left: 0; }
+.actions details.export { position: relative; top: auto; right: auto; margin-left: auto; }
+.actions details.export > summary { visibility: visible; padding: 2px 10px; font-size: 12px; color: var(--fg); background: var(--side); border: 1px solid var(--border); }
+.actions details.export .menu-items { min-width: 80px; }
+.actions details.export + button.explain { margin-left: 0; }
 .tabs { display: flex; align-items: flex-end; gap: 2px; padding: 4px 12px 0 0; border-bottom: 1px solid var(--border); overflow-x: auto; }
 .tab { display: flex; align-items: center; flex-shrink: 0; border: 1px solid transparent; border-bottom: 0; border-radius: 6px 6px 0 0; }
 .tab.active { margin-bottom: -1px; background: var(--side); border-color: var(--border); }
@@ -65,10 +69,10 @@ details.menu > summary::-webkit-details-marker { display: none; }
 .folder-row > details.menu { z-index: 1; }
 details.menu > summary:hover, details.menu[open] > summary { color: var(--fg); background: var(--border); }
 .menu-items { position: absolute; right: 0; z-index: 2; min-width: 140px; margin-top: 2px; padding: 4px 0; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
-.sidebar .menu-items button { display: block; width: 100%; padding: 4px 12px; font-weight: normal; text-align: left; white-space: nowrap; color: var(--fg); background: transparent; border: 0; border-radius: 0; }
-.sidebar .menu-items button:hover { background: var(--border); }
-.sidebar .menu-items button.danger { color: #cf222e; }
-.sidebar .menu-items button.danger:hover { color: #fff; background: #cf222e; }
+.menu-items button { display: block; width: 100%; padding: 4px 12px; font-weight: normal; text-align: left; white-space: nowrap; color: var(--fg); background: transparent; border: 0; border-radius: 0; }
+.menu-items button:hover { background: var(--border); }
+.menu-items button.danger { color: #cf222e; }
+.menu-items button.danger:hover { color: #fff; background: #cf222e; }
 .sidebar li.active button { font-weight: 600; }
 details.section { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border); }
 details.section > summary { font-size: 12px; color: var(--muted); }

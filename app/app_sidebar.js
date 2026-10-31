@@ -44,11 +44,17 @@
 		try { localStorage.removeItem('vsql.sidebar.width'); } catch (e) {}
 	});
 
-	// Only one menu of a table is open, and it's closed by a click outside it
-	// or Escape.
-	const menus = sidebar.querySelectorAll('details.menu');
-	const closeMenus = except => menus.forEach(menu => { if (menu !== except) menu.open = false; });
-	menus.forEach(menu => menu.addEventListener('toggle', () => { if (menu.open) closeMenus(menu); }));
-	document.addEventListener('click', e => closeMenus(e.target.closest('details.menu')));
+	// Only one menu (in the sidebar, or Export) is open, and it's closed by a
+	// click outside it, choosing an item (an export stays on the page) or
+	// Escape. The menus after the sidebar aren't there yet.
+	const closeMenus = except => document.querySelectorAll('details.menu').forEach(menu => {
+		if (menu !== except) menu.open = false;
+	});
+	document.addEventListener('toggle', e => {
+		if (e.target.matches('details.menu') && e.target.open) closeMenus(e.target);
+	}, true);
+	document.addEventListener('click', e => {
+		closeMenus(e.target.closest('.menu-items button') ? null : e.target.closest('details.menu'));
+	});
 	document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenus(null); });
 }

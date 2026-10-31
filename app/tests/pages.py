@@ -52,6 +52,15 @@ class AppPage:
         """sidebar_table is the button that queries a table in the sidebar."""
         return self.schema(catalog, schema).get_by_role('button', name=name, exact=True)
 
+    def table_menu(self, name, catalog='db', schema='PUBLIC'):
+        """table_menu opens the menu of a table in the sidebar, and returns
+        it."""
+        li = self.schema(catalog, schema).locator('li').filter(
+            has=self.sidebar_table(name, catalog, schema))
+        li.hover()
+        li.locator('details.menu > summary').click()
+        return li.locator('.menu-items')
+
     @property
     def sidebar_tabs(self):
         """sidebar_tabs are the tabs listed in the sidebar (see titles)."""

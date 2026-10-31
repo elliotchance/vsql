@@ -52,6 +52,17 @@ button.run { margin-left: auto; padding: 2px 10px; font-size: 12px; }
 .sidebar ul { margin: 0; padding: 0; list-style: none; }
 .sidebar li button { display: block; width: 100%; padding: 2px 12px 2px 28px; overflow: hidden; font-weight: normal; text-align: left; text-overflow: ellipsis; white-space: nowrap; color: var(--fg); background: transparent; border: 0; border-radius: 0; }
 .sidebar li button:hover, .sidebar li.active button { background: var(--border); }
+.sidebar li { position: relative; }
+.sidebar li:has(details.menu) > button { padding-right: 28px; }
+details.menu { position: absolute; top: 0; right: 4px; }
+details.menu > summary { padding: 0 6px; font-weight: normal; color: var(--muted); list-style: none; border-radius: 4px; visibility: hidden; }
+details.menu > summary::-webkit-details-marker { display: none; }
+.sidebar li:hover details.menu > summary, details.menu[open] > summary, details.menu > summary:focus-visible { visibility: visible; }
+details.menu > summary:hover, details.menu[open] > summary { color: var(--fg); background: var(--border); }
+.menu-items { position: absolute; right: 0; z-index: 2; min-width: 140px; margin-top: 2px; padding: 4px 0; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+.sidebar .menu-items button { padding: 4px 12px; }
+.sidebar .menu-items button.danger { color: #cf222e; }
+.sidebar .menu-items button.danger:hover { color: #fff; background: #cf222e; }
 .sidebar li.active button { font-weight: 600; }
 details.section { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border); }
 details.section > summary { font-size: 12px; color: var(--muted); }

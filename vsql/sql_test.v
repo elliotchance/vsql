@@ -1887,7 +1887,9 @@ fn test_agent() {
 		'1':       '2E000'
 		'(':       '2E000'
 		'"x':      '2E000'
-		'DEFAULT': ''
+		'DEFAULT': '2E000'
+		'SELECT':  '2E000'
+		'name':    ''
 		' c ':     ''
 		'"c"':     ''
 		'C':       '08002'
@@ -1898,6 +1900,7 @@ fn test_agent() {
 	assert agent_sqlstate(mut a, "CONNECT TO ':memory:' USER 'bob';") == '2E000'
 	assert agent_sqlstate(mut a, "CONNECT TO '/does/not/exist.vsql' AS 'd';") == '08001'
 	assert agent_sqlstate(mut a, "CONNECT TO ':memory:' AS 'u' USER 'a b';") == '28000'
+	assert agent_sqlstate(mut a, "CONNECT TO ':memory:' AS 'u' USER 'SELECT';") == '28000'
 	assert agent_sqlstate(mut a, "CONNECT TO ':memory:' AS 'u' USER 'bob';") == ''
 	assert agent_sqlstate(mut a, 'CONNECT TO :x;') == '42601'
 	assert agent_sqlstate(mut a, 'CONNECT TO DEFAULT;') == '08002'
@@ -1922,9 +1925,9 @@ fn test_agent() {
 	assert agent_sqlstate(mut a, 'SET CONNECTION DEFAULT;') == '08003'
 	assert agent_sqlstate(mut a, 'DISCONNECT CURRENT;') == '08003'
 	assert agent_sqlstate(mut a, 'VALUES 1;') == '08003'
-	a.direct("SET CONNECTION 'default';")!
+	a.direct("SET CONNECTION 'Name';")!
 	a.direct('DISCONNECT CURRENT;')!
-	assert agent_sqlstate(mut a, "DISCONNECT 'default';") == '08003'
+	assert agent_sqlstate(mut a, "DISCONNECT 'name';") == '08003'
 	a.direct('CONNECT TO DEFAULT;')!
 	a.direct('DISCONNECT ALL;')!
 	assert a.all_connections().len == 0

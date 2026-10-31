@@ -2,6 +2,7 @@
 module app
 
 import io
+import json2
 import net
 import net.urllib
 import sync
@@ -222,6 +223,17 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		}
 		return '/'
 	}
+	// A table in the sidebar (its catalog, schema and name as JSON) opens a
+	// new tab to alter it.
+	if table := form.get('alter') {
+		names := json2.decode[[]string](table)!
+		if names.len != 3 {
+			return error('bad table: ${table}')
+		}
+		insert_tab(mut conn, alter_table_tab, 'Alter ${names[2]}', a.alter_table_payload(mut conn,
+			names[0], names[1], names[2])!)!
+		return '/'
+	}
 	// A schema in the sidebar opens a new tab to create a table in it.
 	if schema := form.get('add_table') {
 		insert_tab(mut conn, create_table_tab, 'New table', new_table_payload(schema))!
@@ -243,6 +255,24 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		return '/'
 	}
 
+	// An ALTER_TABLE tab is closed once its statements are run (in a
+	// transaction), and the table is queried in a new tab. If it fails,
+	// nothing is changed and the error is shown on the tab.
+	if tab.tab_type == alter_table_tab {
+		if _ := form.get('alter_table') {
+			run_in_transaction(mut conn, form.get('alter_sql') or { '' }) or {
+				return a.page(mut conn, all_tabs, Tab{
+					...tab
+					payload: payload
+				}, TabResult{
+					error: err.msg()
+				}, Confirm{})
+			}
+			a.close_tab(mut conn, tab.id, tab.id)!
+			a.query_table(mut conn, json2.decode[AlterTablePayload](payload)!.table)!
+		}
+		return '/'
+	}
 	// A CREATE_TABLE tab is closed once the table is created, and the table
 	// (which is empty) is queried in a new tab. If it fails,
 	// the error is shown on the tab. Anything else (such as saving the
@@ -312,6 +342,18 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	activate_tab(mut conn, tab.id)!
 	return a.page(mut conn, tabs(mut conn)!, Tab{tab.id, tab.tab_type, tab_title(query_text), query_text, true, ''},
 		result, Confirm{})
+}
+
+// run_in_transaction runs every statement, or none of them if one fails.
+fn run_in_transaction(mut conn vsql.Connection, statements string) ! {
+	conn.query('START TRANSACTION')!
+	for stmt in vsql.split_statements(statements) {
+		conn.query(stmt) or {
+			conn.query('ROLLBACK') or {}
+			return err
+		}
+	}
+	conn.query('COMMIT')!
 }
 
 // query_table opens a new tab that runs SELECT * on a table.

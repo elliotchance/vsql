@@ -62,3 +62,25 @@ button .shortcut { margin-left: 4px; font-weight: normal; opacity: 0.75; }
 .brand .version { margin-left: 4px; font-weight: normal; color: var(--muted); font-size: 12px; }
 .sidebar .icon { margin-right: 6px; font-size: 13px; }
 
+table.editable td[data-column] { cursor: cell; }
+table.editable td input { width: 100%; min-width: 6em; padding: 2px 4px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--accent); border-radius: 3px; }
+table.editable tfoot td { background: var(--side); }
+table.editable td select { padding: 2px 4px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--accent); border-radius: 3px; }
+table.editable tfoot input, table.editable tfoot select { border-color: var(--border); }
+td.row-actions { width: 1px; white-space: nowrap; }
+td.row-actions button, td button.null { padding: 1px 8px; font-size: 12px; }
+td.row-actions button + button { margin-left: 4px; }
+table.editable tr.editing td { background: var(--side); }
+table.editable tr.editing td input { width: auto; }
+td button.confirm-row { background: #1f883d; border-color: #1f883d; }
+td button.cancel-row { color: var(--fg); background: var(--side); border-color: var(--border); }
+button.delete { background: #cf222e; border-color: #cf222e; }
+button.delete:hover { background: #a40e26; border-color: #a40e26; }
+button.add { background: #1f883d; border-color: #1f883d; }
+button.add:hover { background: #1a7f37; border-color: #1a7f37; }
+td button.null { margin-left: 4px; color: var(--fg); background: var(--side); border-color: var(--border); }
+dialog.confirm { width: min(640px, calc(100vw - 32px)); padding: 16px; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+dialog.confirm::backdrop { background: rgba(0, 0, 0, 0.4); }
+.confirm form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.confirm pre { flex: 1 1 100%; margin: 0; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; }
+.confirm .cancel { color: var(--muted); }

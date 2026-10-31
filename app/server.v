@@ -334,7 +334,10 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		return '/'
 	}
 
-	result := a.run_query(mut conn, query_text)!
+	// Explain runs the SQL with EXPLAIN in front of it. The SQL of the tab
+	// isn't changed.
+	run_sql := if _ := form.get('explain') { 'EXPLAIN ${query_text}' } else { query_text }
+	result := a.run_query(mut conn, run_sql)!
 	lock a.results {
 		a.results[tab.id] = result
 	}

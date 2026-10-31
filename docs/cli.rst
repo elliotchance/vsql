@@ -42,6 +42,9 @@ Options are:
   ``::`` to accept connections from other machines.
 - ``-port`` or ``-p``: Port number (default 3211).
 
+Explain (next to Run) runs the SQL with ``EXPLAIN`` in front of it, to show
+how the query is run, without changing the SQL of the tab.
+
 The ``⋯`` menu of a table in the sidebar (other than ``INFORMATION_SCHEMA`` and
 ``VSQL_APP``) can drop it. The ``DROP TABLE`` is
 shown in a popup to be confirmed before it's run.

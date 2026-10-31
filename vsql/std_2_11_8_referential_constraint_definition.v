@@ -92,14 +92,11 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 			return sqlstate_0a000('FOREIGN KEY cannot reference a table in another catalog: ${name}')
 		}
 
-		// This isn't an if expression, because -prod (V 0.5.2 c4e254f) compiles
-		// it so that referenced has the wrong primary_key.
-		mut referenced := Table{}
-		if name.storage_id() == table.name.storage_id() {
-			referenced = table
+		referenced := if name.storage_id() == table.name.storage_id() {
+			table
 		} else {
 			name = conn.resolve_table_identifier(name, false)!
-			referenced = conn.catalog_for(name).storage.table(name.storage_id())
+			conn.catalog_for(name).storage.table(name.storage_id())
 		}
 
 		// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 4.b

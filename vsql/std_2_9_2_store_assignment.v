@@ -272,12 +272,20 @@ fn check_assignable(from Type, t Type) ! {
 // cast_character_to_number casts a character string to a number (ISO/IEC
 // 9075-2:2016(E), 6.13, General Rules, 8.b and 9.b). Leading and trailing spaces
 // are removed, and what's left must be a <signed numeric literal>.
+//
+// The cast is then the same as casting that literal. So an approximate literal
+// is a DOUBLE PRECISION first, even if the target is exact, and one that's too
+// large for a DOUBLE PRECISION (such as '1e309') raises 22003 (numeric value
+// out of range) rather than becoming infinity, whatever the target. One that's
+// too small becomes zero.
+//
+// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules, 23 and General Rules, 5
 fn cast_character_to_number(mut conn Connection, v Value, t Type) !Value {
 	s := v.string_value().trim(' ')
 
 	return match numeric_literal_kind(s) {
 		.exact { cast(mut conn, '', new_numeric_value(s.trim_left('+')), t)! }
-		.approximate { cast(mut conn, '', new_double_precision_value(s.f64()), t)! }
+		.approximate { cast(mut conn, '', approximate_numeric_literal_value(s)!, t)! }
 		.invalid { sqlstate_22018() }
 	}
 }

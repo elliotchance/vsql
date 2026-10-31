@@ -119,6 +119,21 @@ fn (a &App) handle(mut conn net.TcpConn) {
 	}
 
 	form := urllib.parse_query(body.bytestr()) or { urllib.new_values() }
+	// Export is a download, so the page isn't changed (see export.v).
+	if value := form.get('export') {
+		download := a.download(method == 'POST', (form.get('tab') or { '' }).int(), value) or {
+			write_response(mut conn, '400 Bad Request', 'text/plain; charset=utf-8', err.msg())
+			return
+		}
+		// The filename is quoted, so it can't have a quote.
+		filename := download.filename.runes().map(if it < ` ` || it in [`"`, `\\`, `/`] {
+			`_`
+		} else {
+			it
+		}).string()
+		conn.write_string('HTTP/1.0 200 OK\r\nContent-Type: ${download.content_type}\r\nContent-Disposition: attachment; filename="${filename}"\r\nContent-Length: ${download.body.len}\r\nConnection: close\r\n\r\n${download.body}') or {}
+		return
+	}
 	response := a.respond(method == 'POST', form) or {
 		write_response(mut conn, '500 Internal Server Error', 'text/plain', err.msg())
 		return
@@ -144,6 +159,19 @@ fn (a &App) open() !&vsql.Connection {
 	}
 
 	return conn
+}
+
+// download is an export (see export.v), which must be posted.
+fn (a &App) download(is_post bool, tab_id int, value string) !Download {
+	if !is_post {
+		return error('an export must be posted')
+	}
+	mut conn := a.open()!
+	defer {
+		conn.close()
+	}
+
+	return a.export(mut conn, tab_id, value)!
 }
 
 // respond returns the page, or the URL (starting with /) to redirect to.

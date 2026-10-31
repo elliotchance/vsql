@@ -11,6 +11,12 @@ pub:
 	// create_public_schema includes CREATE SCHEMA "PUBLIC". It's not included
 	// by default because every catalog already has it.
 	create_public_schema bool
+	// schema only includes the schema with this name (such as FOO), with its
+	// sequences and tables.
+	schema string
+	// table only includes the table with this name in schema (which must also
+	// be set), without CREATE SCHEMA or the sequences.
+	table string
 }
 
 // dump writes the schemas, sequences, tables and rows of the current catalog
@@ -23,7 +29,11 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 	mut foreign_keys := []string{}
 	mut catalog := conn.catalog()
 	// Virtual schemas and tables aren't in the file.
-	mut schemas := catalog.schemas()!.filter(!it.is_virtual)
+	mut schemas := catalog.schemas()!.filter(!it.is_virtual
+		&& (options.schema == '' || it.name == options.schema))
+	if options.schema != '' && schemas.len == 0 {
+		return error('no such schema: ${options.schema}')
+	}
 
 	// To make the output more deterministic, entities will be ordered by name
 	// (not how the name is printed, which may be quoted). This is not true for
@@ -36,11 +46,15 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 		// We avoid "CREATE SCHEMA PUBLIC;" because it would break the import.
 		// Although, create_public_schema can be used to enable it when dealing
 		// with other databases.
-		if schema.name != 'PUBLIC' || options.create_public_schema {
+		if options.table == '' && (schema.name != 'PUBLIC' || options.create_public_schema) {
 			write_line(mut w, '${schema}\n')!
 		}
 
-		mut sequences := catalog.sequences(schema.name)!
+		mut sequences := if options.table == '' {
+			catalog.sequences(schema.name)!
+		} else {
+			[]Sequence{}
+		}
 		sequences.sort_with_compare(fn (a &Sequence, b &Sequence) int {
 			return a.name.entity_name.compare(b.name.entity_name)
 		})
@@ -64,7 +78,11 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 			}
 		}
 
-		mut tables := catalog.schema_tables(schema.name)!.filter(!it.is_virtual)
+		mut tables := catalog.schema_tables(schema.name)!.filter(!it.is_virtual
+			&& (options.table == '' || it.name.entity_name == options.table))
+		if options.table != '' && tables.len == 0 {
+			return error('no such table: ${schema.name}.${options.table}')
+		}
 		tables.sort_with_compare(fn (a &Table, b &Table) int {
 			return a.name.entity_name.compare(b.name.entity_name)
 		})

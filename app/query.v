@@ -13,6 +13,9 @@ struct TabResult {
 	// error is from a change to a row (see edit.v), which is shown above the
 	// output. It's not kept.
 	error string
+	// query is the SQL that was run, if it returned rows, so they can be
+	// exported (see export.v).
+	query string
 }
 
 // run_query runs every statement and returns the result of the last one.
@@ -100,5 +103,6 @@ fn (a &App) run_query(mut conn vsql.Connection, query_text string) !TabResult {
 	return TabResult{
 		status: status
 		output: output.str()
+		query:  if !failed && result.msg == '' && result.columns.len > 0 { query_text } else { '' }
 	}
 }

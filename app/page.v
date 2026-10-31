@@ -37,6 +37,12 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		autofocus := if confirm.sql == '' { ' autofocus' } else { '' }
 		sb.write_string('<textarea name="sql" rows="6" spellcheck="false"${autofocus} placeholder="SELECT * FROM ...">${html_escape(tab.query_text)}</textarea></div>')
 		sb.write_string('<div class="actions"><span class="status">${html_escape(result.status)}</span>')
+		// Rows can be exported (see export.v), which downloads them.
+		if result.query != '' {
+			sb.write_string('<details class="menu export"><summary>Export</summary><div class="menu-items">')
+			sb.write_string('<button type="submit" name="export" value="${html_escape('["csv"]')}">CSV</button>')
+			sb.write_string('<button type="submit" name="export" value="${html_escape('["json"]')}">JSON</button></div></details>')
+		}
 		sb.write_string('<button type="submit" name="explain" value="1" class="run explain" title="Run with EXPLAIN">Explain</button>')
 		sb.write_string('<button type="submit" class="run" title="Run (Ctrl+Enter)">Run <span class="shortcut">&#8963;&#8629;</span></button></div></form>')
 	}
@@ -97,8 +103,8 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 //
 // Each catalog has a menu to create a schema (see app_schema.js). Each schema
 // and table (other than in INFORMATION_SCHEMA, which can't be changed, and
-// VSQL_APP, which the app needs) has a menu to drop it, and a schema to add a
-// table to it (see create_table.v).
+// VSQL_APP, which the app needs) has a menu to export (see export.v) or drop
+// it, and a schema to add a table to it (see create_table.v).
 fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_tabs []Tab, tab Tab) ! {
 	// A local build has no version.
 	version := if vsql.version() == '' { 'v0.0.0' } else { vsql.version() }
@@ -146,6 +152,11 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 				drop_behavior := if tables.len == 0 { 'RESTRICT' } else { 'CASCADE' }
 				sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
 				sb.write_string('<button type="submit" form="app" name="add_table" value="${html_escape(schema_sql)}">Add table</button>')
+				sb.write_string('<button type="submit" form="app" name="export" value="${html_escape(json2.encode([
+					'sql',
+					catalog_name,
+					schema_name,
+				]))}">Export as SQL</button>')
 				sb.write_string('<button type="submit" form="app" name="drop" value="SCHEMA ${html_escape(schema_sql)} ${drop_behavior}" class="danger">Drop schema</button></div></details>')
 			}
 			sb.write_string('<details class="folder" data-folder="schema:${html_escape(catalog_name)}.${html_escape(schema_name)}" open><summary><span class="icon" aria-hidden="true">&#128193;</span>${html_escape(schema_name)} <span class="count">${tables.len}</span></summary><ul>')
@@ -162,6 +173,14 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 						schema_name,
 						table.entity_name,
 					]))}">Alter table</button>')
+					for format in ['csv', 'json', 'sql'] {
+						sb.write_string('<button type="submit" form="app" name="export" value="${html_escape(json2.encode([
+							format,
+							catalog_name,
+							schema_name,
+							table.entity_name,
+						]))}">Export as ${format.to_upper()}</button>')
+					}
 					sb.write_string('<button type="submit" form="app" name="drop" value="TABLE ${html_escape(table.str())}" class="danger">Drop table</button></div></details>')
 				}
 				sb.write_string('</li>')

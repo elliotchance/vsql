@@ -110,6 +110,8 @@ const typedef = private + 11
 const typename = private + 12
 const @union = private + 13
 const error = private + 14
+const expect = private + 15
+const expect_rr = private + 16
 
 const endfile = 0
 const empty = 1
@@ -237,7 +239,13 @@ mut:
 	zzclose  int
 	zzrrconf int
 	zzsrconf int
-	zzstate  int
+
+	// The number of conflicts that %expect and %expect-rr declare. If either is
+	// declared, a different number of conflicts is an error.
+	expect_conflicts bool
+	expect_srconf    int
+	expect_rrconf    int
+	zzstate          int
 
 	// optimizer arrays
 	yypgo  [][]int
@@ -286,6 +294,8 @@ mut:
 		Resrv{'union', @union},
 		Resrv{'struct', @union},
 		Resrv{'error', error},
+		Resrv{'expect', expect},
+		Resrv{'expect-rr', expect_rr},
 	]
 
 	// utility routines
@@ -373,6 +383,7 @@ fn main() {
 
 	y.hideprod()!
 	y.summary()
+	y.check_conflicts()
 
 	y.callopt()!
 
@@ -424,6 +435,17 @@ fn (mut y Vyacc) setup() ! {
 					y.errorf('bad %start construction')
 				}
 				y.start = y.chfind(1, y.tokname)
+			}
+			expect, expect_rr {
+				if y.gettok() != number {
+					y.errorf('bad %expect construction')
+				}
+				y.expect_conflicts = true
+				if t == expect {
+					y.expect_srconf = y.numbval
+				} else {
+					y.expect_rrconf = y.numbval
+				}
 			}
 			error {
 				lno := y.lineno
@@ -961,6 +983,16 @@ fn (mut y Vyacc) gettok() int {
 			}
 
 			y.getword(c)
+			if y.tokname == 'expect' {
+				c = y.getrune(mut y.finput)
+				if c == `-` {
+					y.getword(y.getrune(mut y.finput))
+					y.tokname = 'expect-' + y.tokname
+				} else {
+					y.ungetrune(y.finput, c)
+				}
+			}
+
 			// find a reserved word
 			for i2, _ in y.resrv {
 				if y.tokname == y.resrv[i2].name {
@@ -3050,6 +3082,19 @@ fn (mut y Vyacc) summary() {
 			print('${y.zzrrconf} reduce/reduce')
 		}
 		print('\n')
+	}
+}
+
+// check_conflicts exits with an error if the number of conflicts isn't the
+// number declared with %expect (shift/reduce) and %expect-rr (reduce/reduce).
+fn (mut y Vyacc) check_conflicts() {
+	if !y.expect_conflicts {
+		return
+	}
+
+	if y.zzsrconf != y.expect_srconf || y.zzrrconf != y.expect_rrconf {
+		eprintln('expected ${y.expect_srconf} shift/reduce and ${y.expect_rrconf} reduce/reduce conflicts, but there are ${y.zzsrconf} shift/reduce and ${y.zzrrconf} reduce/reduce (see %expect)')
+		exit_(1)
 	}
 }
 

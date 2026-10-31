@@ -7,9 +7,15 @@
 // There's no WITH (T121), INTERSECT (F302), CORRESPONDING (F301), explicit
 // table (F661) or FETCH NEXT (#331).
 
+// A query_expression is either a parenthesized_query_expression or a
+// nonparenthesized_query_expression, so that a query_expression in parentheses
+// is always parsed the same way (see nonparenthesized_query_expression).
 query_expression:
-  query_expression_body { $$.v = QueryExpression{body: $1.v as SimpleTable} }
-| query_expression_body order_by_clause { 
+  nonparenthesized_query_expression { $$.v = $1.v as QueryExpression }
+| parenthesized_query_expression { $$.v = $1.v as QueryExpression }
+
+query_expression_with_clauses:
+  query_expression_body order_by_clause { 
     $$.v = QueryExpression{
       body:  $1.v as SimpleTable
       order: $2.v as []SortSpecification
@@ -58,15 +64,24 @@ query_expression:
     }
   }
 
+// nonparenthesized_query_expression is a query_expression that isn't only a
+// query_expression in parentheses (a parenthesized_query_expression).
+nonparenthesized_query_expression:
+  simple_table { $$.v = QueryExpression{body: $1.v as SimpleTable} }
+| query_set_operation { $$.v = QueryExpression{body: $1.v as SimpleTable} }
+| query_expression_with_clauses { $$.v = $1.v as QueryExpression }
+
+query_expression_body:
+  query_term { $$.v = $1.v as SimpleTable }
+| query_set_operation { $$.v = $1.v as SimpleTable }
+
 // Without ALL or DISTINCT, it's DISTINCT. DISTINCT is flagged with T551, and
 // EXCEPT ALL with F304.
 //
 // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 6
 // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Conformance Rules, 9 and 10
-
-query_expression_body:
-  query_term { $$.v = $1.v as SimpleTable }
-| query_expression_body UNION query_term {
+query_set_operation:
+  query_expression_body UNION query_term {
     $$.v = new_set_operation($1.v as SimpleTable, 'UNION', false,
       $3.v as SimpleTable)
   }
@@ -90,9 +105,23 @@ query_term:
 
 query_primary:
   simple_table { $$.v = $1.v as SimpleTable }
-| left_paren query_expression right_paren {
+| parenthesized_query_expression {
+    flag_query_expression(mut yylex, $1.v as QueryExpression, .query_primary)
+    $$.v = new_parenthesized_query_expression($1.v as QueryExpression)
+  }
+
+// parenthesized_query_expression is a left_paren query_expression right_paren
+// of a query_primary or a subquery, so that the parser doesn't need to know
+// which one it is until after the right_paren. The inner one of nested
+// parentheses is always a query_primary, so that ORDER BY, OFFSET and FETCH in
+// it are flagged the same way.
+parenthesized_query_expression:
+  left_paren nonparenthesized_query_expression right_paren { $$.v = $2.v }
+| left_paren parenthesized_query_expression right_paren {
     flag_query_expression(mut yylex, $2.v as QueryExpression, .query_primary)
-    $$.v = new_parenthesized_query_expression($2.v as QueryExpression)
+    $$.v = QueryExpression{
+      body: new_parenthesized_query_expression($2.v as QueryExpression)
+    }
   }
 
 simple_table:

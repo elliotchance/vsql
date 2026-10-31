@@ -140,6 +140,20 @@ If the module has an error, nothing is created and the error is shown, such as
 ``Error 42601: syntax error: procedure add_item: host parameter :id is not
 declared``.
 
+precompile
+^^^^^^^^^^
+
+``precompile`` turns an embedded SQL C program (with ``EXEC SQL`` statements)
+into a C file next to it, which calls libvsql (see :doc:`language-c`):
+
+.. code-block:: sh
+
+   vsql precompile example.sqc           # creates example.c
+   vsql precompile -module example.sqc   # also creates example.mod
+
+If the program has an error, nothing is created and the error is shown, such as
+``Error 42601: syntax error: line 12: host variable :id is not defined``.
+
 out
 ^^^
 

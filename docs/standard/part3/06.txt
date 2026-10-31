@@ -2126,7 +2126,7 @@
 6.52/GR/8.c.i.2          n/a          - - there are no large objects
 6.52/GR/8.c.ii           n/a          - - there are no large objects
 6.52/GR/8.d              implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
-6.52/GR/9                deviates     libvsql/std_3_6_52_put_data.v - a string isn't checked to be valid UTF-8 (#744)
+6.52/GR/9                implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c the string so far is checked, so a piece can end with part of a character
 6.52/GR/10               implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
 6.52/GR/10.a             implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c
 6.52/GR/10.b             implemented  libvsql/std_3_6_52_put_data.v libvsql/std_3_6_52_put_data_test.c

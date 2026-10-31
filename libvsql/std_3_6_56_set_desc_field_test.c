@@ -178,6 +178,10 @@ UTEST_F(db, 6_56_set_desc_field_character_set) {
                             (SQLPOINTER) "a b", SQL_NTS),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DESC, ard, "3F000");
+  EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_CHARACTER_SET_NAME,
+                            (SQLPOINTER) "\xc3\xa9", 1),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ard, "2C000");
   EXPECT_EQ(SQLSetDescField(ard, 1, SQL_DESC_CHARACTER_SET_CATALOG,
                             (SQLPOINTER) "\"a b\"", SQL_NTS),
             SQL_SUCCESS);

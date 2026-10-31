@@ -1,5 +1,7 @@
 module main
 
+import vsql
+
 // ISO/IEC 9075-3:2003(E), 6.49, ParamData
 //
 // Process a deferred parameter value.
@@ -63,8 +65,17 @@ fn param_data(mut stmt Stmt, value &voidptr) !i16 {
 		return sql_need_data
 	}
 
-	// - 11 to 14. The value is CAST ( SV AS TDT ).
-	stmt.deferred_params['?${dpn}'] = cast_parameter(stmt, sv, ipd_type(ipd, dpn))!
+	// - 11.a.i.1.A. A character string is the characters wholly contained in
+	// its octets, so it doesn't end with part of a character (PutData checked
+	// that the rest is valid UTF-8).
+	v := if sv.typ.typ == .is_varchar && !sv.is_null {
+		vsql.new_varchar_value(whole_characters(sv.string_value()))
+	} else {
+		sv
+	}
+
+	// - 11 to 14. The value is CAST ( V AS TDT ).
+	stmt.deferred_params['?${dpn}'] = cast_parameter(stmt, v, ipd_type(ipd, dpn))!
 
 	// - 16. If there's another deferred parameter, it becomes the deferred
 	// parameter number, and its DATA_POINTER is returned in Value.

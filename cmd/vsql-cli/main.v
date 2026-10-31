@@ -10,6 +10,7 @@ fn main() {
 		execute:     unknown_command
 	}
 
+	register_app_command(mut cmd)
 	register_bench_command(mut cmd)
 	register_cli_command(mut cmd)
 	register_in_command(mut cmd)

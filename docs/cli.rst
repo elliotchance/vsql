@@ -17,6 +17,31 @@ Commands
 Run ``vsql help`` to list the commands, or ``vsql <command> -help`` to see the
 options for a command.
 
+app
+^^^
+
+``app`` starts a web server to browse and query database files in a browser.
+Open the address it prints in a browser.
+
+With no file, ``app.vsql`` in the current directory is used (it's created if it
+doesn't exist). More than one file can be given, the other files are attached
+as catalogs. An in-memory database (``:memory:``) can't be used, since each
+request opens the files again.
+
+.. code-block:: text
+
+   $ vsql app mydb.vsql
+   ready on http://127.0.0.1:3211
+
+   $ vsql app    # uses app.vsql
+   ready on http://127.0.0.1:3211
+
+Options are:
+
+- ``-host``: Address to listen on (default 127.0.0.1). Use ``0.0.0.0`` or
+  ``::`` to accept connections from other machines.
+- ``-port`` or ``-p``: Port number (default 3211).
+
 bench
 ^^^^^
 

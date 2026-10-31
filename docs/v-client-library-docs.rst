@@ -846,8 +846,9 @@ struct Sequence
    	// name contains the other parts such as the schema.
    	name Identifier
    	// start_value is the START WITH value. If START WITH isn't given, it's the
-   	// MINVALUE (or MAXVALUE for a descending sequence), otherwise 1. It's used
-   	// by "ALTER SEQUENCE ... RESTART".
+   	// minimum value (or the maximum value for a descending sequence), which is 1
+   	// (or -1) without a MINVALUE (or MAXVALUE). It's used by "ALTER SEQUENCE ...
+   	// RESTART".
    	start_value i64
    	// current_value is the current value before it is incremented by
    	// "NEXT VALUE FOR".
@@ -857,12 +858,14 @@ struct Sequence
    	// cycle allows the sequence to repeat once MAXVALUE is reached. By default it
    	// is not enabled.
    	cycle bool
-   	// has_min_value is true when a MINVALUE is set.
+   	// has_min_value is true when a MINVALUE is set. Otherwise, the minimum
+   	// value is implicit, see min.
    	has_min_value bool
    	// min_value is the smallest inclusive value allowed for the sequence. The
    	// MINVALUE is optional.
    	min_value i64
-   	// has_max_value is true when a MAXVALUE is set.
+   	// has_max_value is true when a MAXVALUE is set. Otherwise, the maximum
+   	// value is implicit, see max.
    	has_max_value bool
    	// max_value is the largest inclusive value allowed for the sequence. The
    	// MAXVALUE is optional.

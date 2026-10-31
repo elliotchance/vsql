@@ -978,14 +978,14 @@
 9.28/SR/2                n/a          - - transforms (S241)
 9.28/SR/3                n/a          - - transforms (S241)
 # 9.29, Generation of the next value of a sequence generator
-9.29                     partial      vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql a new cycle without a MINVALUE (or MAXVALUE) starts at 1 (#785)
+9.29                     implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
 9.29/GR/1                definition   - -
 9.29/GR/2                definition   - -
 9.29/GR/3                implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
 9.29/GR/3.a              implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
-9.29/GR/3.b              partial      vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql a new cycle without a MINVALUE (or MAXVALUE) starts at 1 (#785)
-9.29/GR/3.b.i            partial      vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql without a MINVALUE, it's 1 (#785)
-9.29/GR/3.b.ii           partial      vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql without a MAXVALUE, it's 1 (#785)
+9.29/GR/3.b              implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
+9.29/GR/3.b.i            implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
+9.29/GR/3.b.ii           implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
 9.29/GR/4                container    - -
 9.29/GR/4.a              implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
 9.29/GR/4.b              implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
@@ -999,20 +999,20 @@
 9.30/SR/5                implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
 9.30/SR/6                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
 9.30/SR/7                container    - -
-9.30/SR/7.a              impl-defined vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql the BIGINT maximum (an identity column uses the range of its type, see 11.4)
-9.30/SR/7.a.i            impl-defined vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql the BIGINT maximum (an identity column uses the range of its type, see 11.4)
+9.30/SR/7.a              impl-defined vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql,tests/sequence-limits.sql the largest of the data type for an ascending sequence (BIGINT, or the type of an identity column), or -1 for a descending one
+9.30/SR/7.a.i            impl-defined vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql,tests/sequence-limits.sql the largest of the data type for an ascending sequence (BIGINT, or the type of an identity column), or -1 for a descending one
 9.30/SR/7.a.ii           implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/7.b              impl-defined vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql the BIGINT maximum (an identity column uses the range of its type, see 11.4)
+9.30/SR/7.b              impl-defined vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql,tests/sequence-limits.sql the largest of the data type for an ascending sequence (BIGINT, or the type of an identity column), or -1 for a descending one
 9.30/SR/8                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
 9.30/SR/8.a              implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/8.a.i            impl-defined vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql the BIGINT minimum (an identity column uses the range of its type, see 11.4)
+9.30/SR/8.a.i            impl-defined vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql,tests/sequence-limits.sql 1 for an ascending sequence, or the smallest of the data type for a descending one (BIGINT, or the type of an identity column)
 9.30/SR/8.a.ii           implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/8.b              impl-defined vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql the BIGINT minimum (an identity column uses the range of its type, see 11.4)
+9.30/SR/8.b              impl-defined vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql,tests/sequence-limits.sql 1 for an ascending sequence, or the smallest of the data type for a descending one (BIGINT, or the type of an identity column)
 9.30/SR/9                container    - -
 9.30/SR/9.a              implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/9.b              partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql without a MINVALUE (or MAXVALUE), it's 1 (#785)
-9.30/SR/9.b.i            partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql without a MINVALUE, it's 1 (#785)
-9.30/SR/9.b.ii           partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql without a MAXVALUE, it's 1 (#785)
+9.30/SR/9.b              implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30/SR/9.b.i            implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
+9.30/SR/9.b.ii           implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
 9.30/SR/10               partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql a value must be an integer, but one outside the range of a BIGINT is the BIGINT maximum (#786)
 9.30/SR/11               implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
 9.30/SR/12               implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
@@ -1040,14 +1040,14 @@
 9.31/SR/5.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
 9.31/SR/6                container    - -
 9.31/SR/6.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/SR/6.a.i            impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql the BIGINT maximum (an identity column uses the range of its type, see 11.4)
+9.31/SR/6.a.i            impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/sequence-limits.sql the largest of the data type for an ascending sequence (BIGINT, or the type of an identity column), or -1 for a descending one, for the new INCREMENT BY
 9.31/SR/6.a.ii           implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/SR/6.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/6.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-increment.sql
 9.31/SR/7                container    - -
 9.31/SR/7.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/SR/7.a.i            impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql the BIGINT minimum (an identity column uses the range of its type, see 11.4)
+9.31/SR/7.a.i            impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/sequence-limits.sql 1 for an ascending sequence, or the smallest of the data type for a descending one (BIGINT, or the type of an identity column), for the new INCREMENT BY
 9.31/SR/7.a.ii           implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
-9.31/SR/7.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
+9.31/SR/7.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-increment.sql
 9.31/SR/8                implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
 9.31/SR/9                container    - -
 9.31/SR/9.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-restart.sql

@@ -285,6 +285,16 @@ fn precompile_c
 
 precompile_c precompiles an <embedded SQL C program>. file_name is used for the #line of the C, so that the C compiler reports the lines of the program.
 
+fn reserved_words
+-----------------
+
+
+.. code-block:: v
+
+   pub fn reserved_words() []string
+
+reserved_words are the key words of the grammar that can't be used as a regular identifier, such as SELECT and FROM, sorted by name. Non-reserved key words, such as NAME, can be used as an identifier so they aren't included.
+
 fn split_statements
 -------------------
 

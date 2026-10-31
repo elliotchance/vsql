@@ -139,6 +139,18 @@ jobs:
       - name: Run tests
         run: make test
 
+      # The tests for "vsql app" drive it in a headless Chromium (see
+      # docs/testing.rst). The page is the same everywhere, so they only run
+      # here. --with-deps installs the libraries Chromium needs.
+      - name: Run app tests
+        if: matrix.arch == 'x86-64'
+        run: |
+          python3 -m venv "$RUNNER_TEMP/app-venv"
+          . "$RUNNER_TEMP/app-venv/bin/activate"
+          .github/workflows/retry.sh pip install -r app/tests/requirements.txt
+          .github/workflows/retry.sh playwright install --with-deps chromium
+          make app-test
+
       - name: Build binary
         run: |
           .github/workflows/set_version.sh

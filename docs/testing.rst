@@ -23,7 +23,51 @@ Test Suites
 - ``make libvsql-test``: the tests for libvsql, see `libvsql`_.
 - ``make module-test``: the tests for SQL-client modules, see `Modules`_.
 
-CI runs ``make test``.
+CI runs ``make test``. ``make app-test`` (the tests for ``vsql app``, see
+`App`_) isn't part of ``make test``, since the app isn't needed for the
+database itself (and its tests need Python and a browser). CI runs it on Linux
+x86-64.
+
+App
+^^^
+
+The tests for ``vsql app`` (see :doc:`cli`, the app is the ``app/`` module)
+use the page in a headless Chromium like a user would, with
+`Playwright <https://playwright.dev/python/>`_ and pytest. They are in
+``app/tests/``, with a file for each feature (such as ``test_tabs.py``), so a
+new feature gets its own file:
+
+- ``conftest.py`` has the fixtures to create a file (with ``vsql in``) and
+  start ``vsql app`` on it. Each test starts its own app on a free port. The
+  ``ui`` fixture is the page of an app started on ``db.vsql``, which has a few
+  tables.
+- ``pages.py`` has ``AppPage``, which finds things on the page (such as
+  ``ui.editor`` or ``ui.tab(title)``) and uses them (such as
+  ``ui.run(sql)``). Tests should use it rather than their own selectors, so a
+  change to the HTML is mostly made in ``pages.py``.
+
+They need the packages in ``app/tests/requirements.txt`` and Chromium for
+Playwright, which are best installed in a virtual environment:
+
+.. code-block:: sh
+
+   python3 -m venv .venv
+   . .venv/bin/activate
+   pip install -r app/tests/requirements.txt
+   playwright install chromium
+
+Then, with the virtual environment active, to run all of the app tests:
+
+.. code-block:: sh
+
+   make app-test
+
+pytest options can be passed with ``PYTEST``, such as to run one test and see
+the browser:
+
+.. code-block:: sh
+
+   make app-test PYTEST="-k test_run --headed"
 
 B-Tree
 ^^^^^^

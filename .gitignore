@@ -35,3 +35,8 @@ libvsql/module/test_other.[ch]
 
 # Created by "make embed-example".
 libvsql/embed/example.c
+
+# Used by "make app-test" (see docs/testing.rst).
+.venv/
+__pycache__/
+.pytest_cache/

@@ -1,4 +1,4 @@
-.PHONY: libvsql libvsql-example libvsql-test module-example module-test embed-example release bench bench-on-disk bench-memory fmt fmt-verify test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example release bench bench-on-disk bench-memory fmt fmt-verify test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # The built-in rules of make aren't used, otherwise it would try to make the
 # vsql/*.c files with yacc from the vsql/*.y files of the same name, such as
@@ -33,7 +33,7 @@ ready: grammar fmt snippets
 # Binaries
 
 # The binaries are rebuilt when any of the source files change.
-SOURCES = vsql/y.v $(wildcard vsql/*.v vsql/*.c cmd/vsql-cli/*.v)
+SOURCES = vsql/y.v $(wildcard vsql/*.v vsql/*.c cmd/vsql-cli/*.v app/*.v app/*.css app/*.js)
 
 bin/vsql: $(SOURCES)
 	mkdir -p bin
@@ -142,10 +142,10 @@ grammar: clean-grammar vsql/y.v
 # Formatting
 
 fmt:
-	v fmt -w cmd examples libvsql scripts vsql
+	v fmt -w app cmd examples libvsql scripts vsql
 
 fmt-verify:
-	v fmt -verify cmd examples libvsql scripts vsql
+	v fmt -verify app cmd examples libvsql scripts vsql
 
 # Tests
 
@@ -241,6 +241,13 @@ cli-test: bin/vsql
 
 cmd/tests/%: bin/vsql
 	VSQL=bin/vsql ./cmd/tests/$*.sh
+
+# App Tests
+
+# The tests for "vsql app" in a headless browser, see docs/testing.rst. They
+# aren't part of "make test", since they need Python and Playwright.
+app-test: bin/vsql
+	VSQL=bin/vsql python3 -m pytest app/tests $(PYTEST)
 
 # Examples
 

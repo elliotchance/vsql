@@ -38,8 +38,14 @@ value that ``NEXT VALUE FOR`` returned. For example, after changing the
 sequence that hasn't returned a value yet (or has been restarted) will still
 return its ``START WITH`` (or ``RESTART``) value first.
 
-A new ``MINVALUE <number>`` or ``MAXVALUE <number>`` must not exclude the next
-value (or the ``RESTART`` value). Limits that aren't changed aren't checked, so
+``NO MINVALUE`` and ``NO MAXVALUE`` are the default limits described in
+:doc:`create-sequence`, for the direction of the new ``INCREMENT BY``. Limits
+that aren't given stay the same, even when ``INCREMENT BY`` changes the
+direction of the sequence. For example, a sequence created without any options
+that's changed to ``INCREMENT BY -1`` still has a minimum value of 1.
+
+A new ``MINVALUE``, ``MAXVALUE``, ``NO MINVALUE`` or ``NO MAXVALUE`` must not
+exclude the next value (or the ``RESTART`` value). Limits that aren't changed aren't checked, so
 a sequence that has gone past its ``MAXVALUE`` can be continued with ``CYCLE``,
 ``NO MAXVALUE`` or a higher ``MAXVALUE``.
 

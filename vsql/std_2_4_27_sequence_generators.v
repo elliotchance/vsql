@@ -29,8 +29,9 @@ pub mut:
 	// name contains the other parts such as the schema.
 	name Identifier
 	// start_value is the START WITH value. If START WITH isn't given, it's the
-	// MINVALUE (or MAXVALUE for a descending sequence), otherwise 1. It's used
-	// by "ALTER SEQUENCE ... RESTART".
+	// minimum value (or the maximum value for a descending sequence), which is 1
+	// (or -1) without a MINVALUE (or MAXVALUE). It's used by "ALTER SEQUENCE ...
+	// RESTART".
 	start_value i64
 	// current_value is the current value before it is incremented by
 	// "NEXT VALUE FOR".
@@ -40,12 +41,14 @@ pub mut:
 	// cycle allows the sequence to repeat once MAXVALUE is reached. By default it
 	// is not enabled.
 	cycle bool
-	// has_min_value is true when a MINVALUE is set.
+	// has_min_value is true when a MINVALUE is set. Otherwise, the minimum
+	// value is implicit, see min.
 	has_min_value bool
 	// min_value is the smallest inclusive value allowed for the sequence. The
 	// MINVALUE is optional.
 	min_value i64
-	// has_max_value is true when a MAXVALUE is set.
+	// has_max_value is true when a MAXVALUE is set. Otherwise, the maximum
+	// value is implicit, see max.
 	has_max_value bool
 	// max_value is the largest inclusive value allowed for the sequence. The
 	// MAXVALUE is optional.
@@ -83,21 +86,53 @@ fn (s Sequence) copy() Sequence {
 	}
 }
 
-// reset is the first value of a new cycle: the minimum value of an ascending
-// sequence, or the maximum value of a descending one. Without a MINVALUE (or
-// MAXVALUE) it's 1, which can be outside the range of the sequence (#785).
+// min is the minimum value of the sequence. Without a MINVALUE, it's
+// implementation-defined. Like PostgreSQL (and identity columns, see
+// identity_range), it's 1 for an ascending sequence, and the smallest BIGINT for
+// a descending one.
 //
-// ISO/IEC 9075-2:2016(E), 9.29, Generation of the next value of a sequence generator, General Rules, 3.b
-fn (s Sequence) reset() i64 {
-	if s.increment_by > 0 && s.has_min_value {
+// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 8
+// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 7.a.i
+fn (s Sequence) min() i64 {
+	if s.has_min_value {
 		return s.min_value
 	}
 
-	if s.increment_by < 0 && s.has_max_value {
+	if s.increment_by > 0 {
+		return 1
+	}
+
+	return min_i64
+}
+
+// max is the maximum value of the sequence. Without a MAXVALUE, it's
+// implementation-defined: the largest BIGINT for an ascending sequence, and -1
+// for a descending one (see min).
+//
+// ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 7
+// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 6.a.i
+fn (s Sequence) max() i64 {
+	if s.has_max_value {
 		return s.max_value
 	}
 
-	return 1
+	if s.increment_by > 0 {
+		return max_i64
+	}
+
+	return -1
+}
+
+// reset is the first value of a new cycle: the minimum value of an ascending
+// sequence, or the maximum value of a descending one.
+//
+// ISO/IEC 9075-2:2016(E), 9.29, Generation of the next value of a sequence generator, General Rules, 3.b
+fn (s Sequence) reset() i64 {
+	if s.increment_by > 0 {
+		return s.min()
+	}
+
+	return s.max()
 }
 
 // check is used by CREATE SEQUENCE and ALTER SEQUENCE.
@@ -109,8 +144,8 @@ fn (s Sequence) check() ! {
 		return sqlstate_42601('INCREMENT BY must not be 0')
 	}
 
-	if s.has_min_value && s.has_max_value && s.min_value >= s.max_value {
-		return sqlstate_42601('MAXVALUE (${s.max_value}) must be greater than MINVALUE (${s.min_value})')
+	if s.min() >= s.max() {
+		return sqlstate_42601('MAXVALUE (${s.max()}) must be greater than MINVALUE (${s.min()})')
 	}
 }
 
@@ -119,19 +154,18 @@ fn (s Sequence) check() ! {
 // ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 12
 // ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 12
 fn (s Sequence) check_in_range(name string, value i64) ! {
-	if s.has_min_value && value < s.min_value {
-		return sqlstate_42601('${name} (${value}) must not be less than MINVALUE (${s.min_value})')
+	if value < s.min() {
+		return sqlstate_42601('${name} (${value}) must not be less than MINVALUE (${s.min()})')
 	}
 
-	if s.has_max_value && value > s.max_value {
-		return sqlstate_42601('${name} (${value}) must not be greater than MAXVALUE (${s.max_value})')
+	if value > s.max() {
+		return sqlstate_42601('${name} (${value}) must not be greater than MAXVALUE (${s.max()})')
 	}
 }
 
 // next_value returns the value that "NEXT VALUE FOR" will return next, or none
 // if the sequence has gone past its limit. In that case "NEXT VALUE FOR" will
-// either start again (CYCLE) or raise an error. Without a MINVALUE or MAXVALUE,
-// the limit is the range of a BIGINT.
+// either start again (CYCLE) or raise an error.
 //
 // ISO/IEC 9075-2:2016(E), 9.29, Generation of the next value of a sequence generator, General Rules, 3
 pub fn (s Sequence) next_value() ?i64 {
@@ -141,8 +175,7 @@ pub fn (s Sequence) next_value() ?i64 {
 	// limit of the sequence if the previous value was the last one (exhausted).
 	// Otherwise, the wrapped value is the START WITH.
 	next_value, overflow := add_i64(s.current_value, s.increment_by)
-	if (overflow && s.exhausted) || (s.has_max_value && next_value > s.max_value)
-		|| (s.has_min_value && next_value < s.min_value) {
+	if (overflow && s.exhausted) || next_value > s.max() || next_value < s.min() {
 		return none
 	}
 
@@ -237,7 +270,7 @@ fn new_sequence_from_bytes(definition_data []u8, value_data []u8, tid u64) !Sequ
 		})
 		sequence.tid = tid
 
-		return sequence.with_value(value_data)
+		return sequence.with_value(value_data).with_old_implicit_limits()
 	}
 
 	return sqlstate_xx001('not a sequence definition: ${definition_data.bytestr()}')
@@ -258,6 +291,31 @@ fn (s Sequence) with_value(value_data []u8) Sequence {
 	}
 	if b.has_more() {
 		sequence.unused = b.read_bool()
+	}
+
+	return sequence
+}
+
+// with_old_implicit_limits keeps a sequence from a file created by an older
+// version of vsql working. The implicit MINVALUE and MAXVALUE used to be the
+// range of a BIGINT, and they aren't stored in the definition. So when the START
+// WITH or the current value is outside of the implicit limit (see min and max),
+// the sequence keeps the BIGINT limit instead.
+fn (s Sequence) with_old_implicit_limits() Sequence {
+	mut sequence := s.copy()
+	mut values := [s.start_value]
+	if !s.unused {
+		values << s.current_value
+	}
+	for value in values {
+		if !sequence.has_min_value && value < s.min() {
+			sequence.has_min_value = true
+			sequence.min_value = min_i64
+		}
+		if !sequence.has_max_value && value > s.max() {
+			sequence.has_max_value = true
+			sequence.max_value = max_i64
+		}
 	}
 
 	return sequence

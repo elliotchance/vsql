@@ -36,6 +36,15 @@ A sequence starts at the ``MINVALUE`` (or ``MAXVALUE`` for a sequence with a
 negative ``INCREMENT BY``) unless ``START WITH`` is provided, and it doesn't
 cycle unless ``CYCLE`` is provided.
 
+Without a ``MINVALUE`` (or with ``NO MINVALUE``), the minimum value is 1 for a
+sequence with a positive ``INCREMENT BY``, and the smallest ``BIGINT``
+(-9223372036854775808) for a negative one. Without a ``MAXVALUE``, the maximum
+value is the largest ``BIGINT`` (9223372036854775807) for a positive
+``INCREMENT BY``, and -1 for a negative one. So by default a sequence starts at
+1 (or -1), and a ``START WITH`` outside of these limits needs a ``MINVALUE`` or
+``MAXVALUE``. A ``CYCLE`` starts again at the minimum value (or the maximum
+value for a negative ``INCREMENT BY``).
+
 The values of a sequence are ``BIGINT``.
 
 ``NEXT VALUE FOR`` can't be used in a ``WHERE``, a ``HAVING``, a join

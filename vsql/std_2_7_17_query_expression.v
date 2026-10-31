@@ -421,8 +421,15 @@ fn new_set_operation_operation(op SetOperation, left Plan, right Plan, mut conn 
 			return sqlstate_42804('in column ${i + 1} of ${op.op}', column.typ.str(),
 				right_columns[i].typ.str())
 		}
+		// A column of "SELECT *" is named by the column it refers to, such as
+		// T.A, but the result only has the column name (and the key of a
+		// duplicate name, see new_expr_operation), which is what each row of the
+		// result is read with (#716).
 		columns << Column{
-			name: column.name
+			name: Identifier{
+				custom_id:       column.name.custom_id
+				sub_entity_name: column.name.sub_entity_name
+			}
 			typ:  typ
 		}
 	}

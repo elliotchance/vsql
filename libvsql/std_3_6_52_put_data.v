@@ -7,8 +7,7 @@ import vsql
 // Provide a deferred parameter value.
 //
 // A string can be given in pieces, by calling PutData again for the same
-// parameter. There are no large objects (General Rules 8.c). A string isn't
-// checked to be valid UTF-8 (General Rules 9), see #744.
+// parameter. There are no large objects (General Rules 8.c).
 
 @[export: 'SQLPutData']
 fn sql_put_data(statement_handle SQLInteger, data voidptr, str_len_or_ind SQLInteger) i16 {
@@ -63,6 +62,7 @@ fn put_data(mut stmt Stmt, data voidptr, iv i64) !i16 {
 	// (or be followed by) a null value: CLI-specific condition — attempt to
 	// concatenate a null value.
 	pv := stmt.deferred_value or {
+		check_piece(typ, v)!
 		stmt.deferred_value = v
 		return sql_success
 	}
@@ -70,7 +70,21 @@ fn put_data(mut stmt Stmt, data voidptr, iv i64) !i16 {
 		stmt.cancel_deferred()
 		return cli_error('HY020', 'attempt to concatenate a null value')
 	}
-	stmt.deferred_value = vsql.new_varchar_value(pv.str() + v.str())
+	nv := vsql.new_varchar_value(pv.str() + v.str())
+	check_piece(typ, nv)!
+	stmt.deferred_value = nv
 
 	return sql_success
+}
+
+// check_piece raises an exception condition if a string isn't valid UTF-8:
+// dynamic SQL error — using clause does not match dynamic parameter
+// specifications (General Rules, 9). The pieces are concatenated octets
+// (General Rules, 11.b.ii.2), so the string so far can end with part of a
+// character, which the next piece completes. ParamData leaves out an
+// incomplete character at the end (6.49, General Rules, 11.a.i.1.A).
+fn check_piece(typ vsql.SQLType, v vsql.Value) ! {
+	if typ == .is_varchar && !v.is_null {
+		character_value(v, true) or { return using_clause_error() }
+	}
 }

@@ -78,6 +78,12 @@ mut:
 	// cursors are the standing cursors that have been declared, by name (see
 	// DeclareCursor).
 	cursors map[string]&Cursor
+	// statement_timestamp is the time (in UTC) and statement_time_zone is the
+	// time zone (in minutes) of the statement that's executing. Every <datetime
+	// value function> in the statement returns this time, see
+	// set_statement_timestamp.
+	statement_timestamp time.Time
+	statement_time_zone i16
 pub mut:
 	// now allows you to override the wall clock that is used. The Time must be
 	// in UTC with a separate offset for the current local timezone (in positive

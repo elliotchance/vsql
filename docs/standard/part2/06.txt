@@ -1838,8 +1838,8 @@
 6.36/SR/3                container    - -
 6.36/SR/3.a              implemented  vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql
 6.36/SR/3.b              implemented  vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql
-6.36/GR/1                partial      vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql the time is read each time it's evaluated, not once for the statement (#742)
-6.36/GR/2                partial      vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql the time is read each time it's evaluated, not once for the statement (#742)
+6.36/GR/1                implemented  vsql/time.v tests/date-time-value-function.sql read once when each statement starts
+6.36/GR/2                implemented  vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql
 6.36/GR/3                implemented  vsql/std_2_6_36_datetime_value_function.v tests/date-time-value-function.sql
 6.36/CR/1                implemented  vsql/std_2_6_36_datetime_value_function.y tests/flagging.sql
 6.36/CR/2                implemented  vsql/std_2_6_36_datetime_value_function.y tests/flagging.sql

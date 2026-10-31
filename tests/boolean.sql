@@ -163,3 +163,11 @@ VALUES NOT UNKNOWN;
 
 VALUES ROW(TRUE > FALSE, FALSE < TRUE, TRUE = TRUE, FALSE = FALSE, TRUE < FALSE);
 -- COL1: TRUE COL2: TRUE COL3: TRUE COL4: TRUE COL5: FALSE
+
+-- # A boolean in parentheses is parsed as the operand of a numeric or string
+-- # operator, but the operator doesn't accept a boolean.
+VALUES (1 = 1) || 'a';
+-- error 42883: operator does not exist: BOOLEAN || CHARACTER
+
+VALUES (TRUE AND FALSE) + 1;
+-- error 42883: operator does not exist: BOOLEAN + SMALLINT

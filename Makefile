@@ -129,8 +129,10 @@ vsql/y.y: $(filter-out vsql/y.y,$(wildcard vsql/*.y))
 
 # v fmt has to run twice because the first pass leaves some of the long arrays
 # in a state that it would format differently again.
+# vyacc fails if the grammar has conflicts (see %expect in vsql/grammar.y), and
+# y.v is removed so that it's generated again next time.
 vsql/y.v: vsql/y.y
-	v run scripts/vyacc.v -o vsql/y.v vsql/y.y
+	v run scripts/vyacc.v -o vsql/y.v vsql/y.y || (rm -f vsql/y.v; exit 1)
 	v fmt -w vsql/y.v
 	v fmt -w vsql/y.v
 

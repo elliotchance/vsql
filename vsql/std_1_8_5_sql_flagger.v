@@ -198,9 +198,9 @@ fn common_primary_of(e CommonValueExpression) ?ValueExpressionPrimary {
 			}
 		}
 		// A <numeric value expression> is always an operation (or a numeric
-		// function), since a <value expression primary> on its own is parsed
-		// as a <datetime primary> wherever either is allowed (see
-		// datetime_primary in grammar.y).
+		// function), since a <value expression primary> on its own is only a
+		// common_value_expression when it's in parentheses, and then it's a
+		// <datetime primary> (see common_value_expression).
 		NumericValueExpression {}
 	}
 

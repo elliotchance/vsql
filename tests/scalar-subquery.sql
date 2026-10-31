@@ -153,3 +153,22 @@ EXPLAIN SELECT x, (SELECT MAX(x) FROM t2) FROM t1 WHERE y = (SELECT y FROM t1 WH
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(10))
 -- EXPLAIN: WHERE Y = (SELECT Y FROM T1 WHERE X = 1)
 -- EXPLAIN: EXPR (X INTEGER, COL2 INTEGER)
+
+-- # Parentheses around a subquery don't change it, and the parser has to find
+-- # out whether each one is part of the subquery or the expression.
+VALUES ((SELECT MAX(x) FROM t1));
+-- COL1: 3
+
+VALUES (((SELECT MAX(x) FROM t1)) + 1), ((SELECT MAX(x) FROM t1) + 2), (SELECT MAX(x) FROM t1) + 3;
+-- COL1: 4
+-- COL1: 5
+-- COL1: 6
+
+VALUES (((SELECT MIN(x) FROM t1)) UNION SELECT MIN(x) FROM t1);
+-- COL1: 1
+
+VALUES (((SELECT MIN(x) FROM t1)) UNION SELECT MAX(x) FROM t1);
+-- error 21000: cardinality violation: more than one row returned by a subquery used as an expression
+
+SELECT (x + 2), ((x + 2)) * 2, (y || 'b'), (x = 1), (x), ((x)) FROM t1 WHERE x = 1;
+-- COL1: 3 COL2: 6 COL3: ab COL4: TRUE COL5: 1 COL6: 1

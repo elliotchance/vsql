@@ -672,6 +672,19 @@ module vsql
 // pseudo keywords
 %token IS_TRUE IS_FALSE IS_UNKNOWN IS_NOT_TRUE IS_NOT_FALSE IS_NOT_UNKNOWN;
 
+// A right_paren after a parenthesized_query_expression is always part of the
+// parenthesized_query_expression, rather than the end of a subquery (see
+// subquery). SUBQUERY is only used for this precedence, it's not a token.
+%nonassoc SUBQUERY;
+%nonassoc OPERATOR_RIGHT_PAREN;
+
+// The grammar must not have any conflicts. A conflict is when the parser could
+// do two different things at the same point, and yacc picks one of them, so a
+// new conflict fails the build. See "Grammar Conflicts" in
+// docs/contributing.rst.
+%expect 0;
+%expect-rr 0;
+
 %start start;
 
 %%
@@ -683,16 +696,5 @@ start:
 | sql_connection_statement { yyrcvr.lval.v = $1.v as Stmt }
 | declare_cursor { yyrcvr.lval.v = $1.v as Stmt }
 | sql_data_statement { yyrcvr.lval.v = $1.v as Stmt }
-
-// This is from 6.35. I have no idea why this needs to be placed higher than
-// other rules, but without doing this it will report that "datetime_primary"
-// cannot be reduced.
-datetime_primary:
-  value_expression_primary {
-    $$.v = DatetimePrimary($1.v as ValueExpressionPrimary)
-  }
-| datetime_value_function {
-    $$.v = DatetimePrimary($1.v as DatetimeValueFunction)
-  }
 
 %%

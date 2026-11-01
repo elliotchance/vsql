@@ -5,9 +5,8 @@ const textarea = document.querySelector('.editor textarea');
 const pre = document.querySelector('.editor pre');
 const escape = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const tokens = /(--[^\n]*)|('(?:[^']|'')*'?)|("(?:[^"]|"")*"?)|(\b\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)|([A-Za-z_][A-Za-z0-9_]*)/g;
-function highlight() {
+function toHtml(text) {
 	let html = '', last = 0, m;
-	const text = textarea.value;
 	tokens.lastIndex = 0;
 	while ((m = tokens.exec(text)) !== null) {
 		html += escape(text.slice(last, m.index));
@@ -19,8 +18,11 @@ function highlight() {
 		else html += t;
 		last = tokens.lastIndex;
 	}
+	return html + escape(text.slice(last));
+}
+function highlight() {
 	// A trailing newline needs a line after it to keep the same height.
-	pre.innerHTML = html + escape(text.slice(last)) + '\n';
+	pre.innerHTML = toHtml(textarea.value) + '\n';
 	pre.scrollTop = textarea.scrollTop;
 }
 textarea.addEventListener('input', highlight);

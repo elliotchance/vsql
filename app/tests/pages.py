@@ -144,3 +144,57 @@ class AppPage:
     def empty(self):
         """empty is the message when there are no tabs or no result yet."""
         return self.page.locator('main .empty')
+
+    # Changing the rows of an editable result (see test_edit.py).
+
+    @property
+    def editable(self):
+        """editable is the result when its rows can be changed."""
+        return self.page.locator('main table.editable')
+
+    def cell(self, row, column):
+        """cell is the cell of a column (by name) that can be edited, in the
+        row (from 0) of the result."""
+        return self.rows.nth(row).locator(f'td[data-column="{column}"]')
+
+    @property
+    def edit_button(self):
+        """edit_button is Edit..., which becomes Cancel edit and then Save X
+        changes."""
+        return self.page.locator('button.edit')
+
+    @property
+    def cancel_edit(self):
+        """cancel_edit throws away the changes, when there are any."""
+        return self.page.locator('button.cancel-edit')
+
+    @property
+    def edit_hint(self):
+        """edit_hint says what the special values are while editing."""
+        return self.page.locator('.edit-hint')
+
+    def control(self, row, column):
+        """control is the input (or select) of a cell that's being edited."""
+        return self.cell(row, column).locator('.cell-control')
+
+    def edit(self, row, column, value):
+        """edit clicks a cell, enters the value and presses Enter."""
+        self.cell(row, column).click()
+        self.control(row, column).fill(value)
+        self.control(row, column).press('Enter')
+
+    def row_button(self, row):
+        """row_button is the button at the start of a row: delete, undo or
+        remove."""
+        return self.rows.nth(row).locator('td.row-actions button')
+
+    def delete_row(self, row):
+        self.row_button(row).click()
+
+    def add_row(self):
+        self.page.locator('main tfoot').get_by_role('button', name='+').click()
+
+    @property
+    def tab_id(self):
+        """tab_id is the id of the active tab, to post a change directly."""
+        return self.page.locator('input[name="tab"]').first.get_attribute('value')

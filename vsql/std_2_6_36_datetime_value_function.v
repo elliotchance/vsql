@@ -21,8 +21,10 @@ fn (e DatetimeValueFunction) pstr(_ map[string]Value) string {
 }
 
 // compile gives each function its type, and LOCALTIME and LOCALTIMESTAMP are
-// CURRENT_TIME and CURRENT_TIMESTAMP without the time zone. The time is read
-// each time it's evaluated rather than once for the statement (#742).
+// CURRENT_TIME and CURRENT_TIMESTAMP without the time zone. They all return the
+// statement timestamp (see set_statement_timestamp), which isn't known until
+// the statement is executed, so a prepared statement has a new time each time
+// it's executed.
 //
 // ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>, Syntax Rules, 1-3
 // ISO/IEC 9075-2:2016(E), 6.36, <datetime value function>, General Rules, 1-3
@@ -32,11 +34,9 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 
 	match e {
 		CurrentDate {
-			now := local_now(c.conn)
-
 			return CompileResult{
-				run:          fn [now] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return new_date_value(now.strftime('%Y-%m-%d'))!
+				run:          fn (mut conn Connection, data Row, params map[string]Value) !Value {
+					return new_date_value(local_now(conn).strftime('%Y-%m-%d'))!
 				}
 				typ:          new_type('DATE', 0, 0)
 				contains_agg: false
@@ -64,15 +64,13 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 				return sqlstate_42601('${DatetimeValueFunction(e).pstr(c.params)}: cannot have precision greater than 6')
 			}
 
-			now := local_now(c.conn)
-
 			// TODO(elliotchance): Remove this. This is a work around for a bug.
 			//  https://github.com/vlang/v/issues/19748
 			e2 := e
 
 			return CompileResult{
-				run:          fn [e2, now] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return new_timestamp_value(now.strftime('%Y-%m-%d ') +
+				run:          fn [e2] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return new_timestamp_value(local_now(conn).strftime('%Y-%m-%d ') +
 						time_value(conn, e2.prec, true))!
 				}
 				typ:          new_type('TIMESTAMP WITH TIME ZONE', e2.prec, 0)
@@ -101,15 +99,13 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 				return sqlstate_42601('${DatetimeValueFunction(e).pstr(c.params)}: cannot have precision greater than 6')
 			}
 
-			now := local_now(c.conn)
-
 			// TODO(elliotchance): Remove this. This is a work around for a bug.
 			//  https://github.com/vlang/v/issues/19748
 			e2 := e
 
 			return CompileResult{
-				run:          fn [e2, now] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return new_timestamp_value(now.strftime('%Y-%m-%d ') +
+				run:          fn [e2] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return new_timestamp_value(local_now(conn).strftime('%Y-%m-%d ') +
 						time_value(conn, e2.prec, false))!
 				}
 				typ:          new_type('TIMESTAMP WITHOUT TIME ZONE', e2.prec, 0)
@@ -148,7 +144,7 @@ fn time_value(conn &Connection, prec int, include_offset bool) string {
 	}
 
 	if include_offset {
-		s += time_zone_value(conn)
+		s += time_zone_str(conn.statement_time_zone)
 	}
 
 	return s

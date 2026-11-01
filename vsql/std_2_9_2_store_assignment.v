@@ -32,6 +32,10 @@ type CastFunc = fn (conn &Connection, v Value, to Type) !Value
 // a column of that type, such as a string to a NUMERIC. An error is returned if
 // the value can't be stored in that type.
 pub fn (mut conn Connection) store_assignment(v Value, to Type) !Value {
+	// This isn't part of a statement, so it has its own statement timestamp
+	// (for the date of a TIME that's converted to a TIMESTAMP).
+	conn.set_statement_timestamp()
+
 	return cast(mut conn, 'for store assignment', v, to)
 }
 

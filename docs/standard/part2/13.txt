@@ -182,7 +182,7 @@
 13.4/GR/1.b              definition   - -
 13.4/GR/2                definition   - -
 13.4/GR/3                definition   - -
-13.4/GR/4                deviates     vsql/std_2_6_36_datetime_value_function.v - each datetime value function is evaluated on its own rather than once for the statement (#742)
+13.4/GR/4                implemented  vsql/time.v vsql/sql_test.v,tests/date-time-value-function.sql there are no triggers or SQL-invoked routines
 13.4/GR/5                definition   - -
 13.4/GR/5.a              definition   - -
 13.4/GR/5.b              definition   - -

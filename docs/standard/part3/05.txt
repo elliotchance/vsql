@@ -268,7 +268,7 @@
 5.6/GR/4.m.iii.2         container    - -
 5.6/GR/4.m.iii.2.A       implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
 5.6/GR/4.m.iii.2.A.I     implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
-5.6/GR/4.m.iii.2.A.II    deviates     libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c the first Q octets, even if they end with part of a character (#744)
+5.6/GR/4.m.iii.2.A.II    implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
 5.6/GR/4.m.iii.2.B       implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
 5.6/GR/4.m.iii.3         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
 5.6/GR/4.n               implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
@@ -548,7 +548,7 @@
 5.13/SR/12.d.iii         container    - -
 5.13/SR/12.d.iii.1       implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c
 5.13/SR/12.d.iii.2       implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c
-5.13/SR/12.d.iii.3       partial      libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c a string isn't validated as UTF-8 (#744)
+5.13/SR/12.d.iii.3       implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_6_bind_parameter_test.c
 5.13/SR/12.d.iii.4       n/a          - - a parameter with a mode of OUT can't be used (5.6, General Rules, 4.e)
 5.13/SR/13               container    - -
 5.13/SR/13.a             implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_5_bind_col_test.c

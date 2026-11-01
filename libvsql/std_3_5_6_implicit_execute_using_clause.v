@@ -1,5 +1,6 @@
 module main
 
+import encoding.utf8
 import vsql
 
 // ISO/IEC 9075-3:2003(E), 5.6, Implicit EXECUTE USING and OPEN USING clauses
@@ -79,17 +80,25 @@ fn parameter_values(mut stmt Stmt, prepared vsql.PreparedStmt) !(map[string]vsql
 		if data == unsafe { nil } {
 			return using_clause_error()
 		}
-		sv := read_c_value(typ, data, if length == unsafe { nil } {
+		q := if length == unsafe { nil } {
 			sql_nts
 		} else {
 			unsafe { *&SQLInteger(length) }
-		})!
+		}
+		mut sv := read_c_value(typ, data, q)!
+
+		// - 4.m.iii.2.A. A character string with a length of Q octets is the
+		// characters wholly contained in them (II), so it doesn't end with part
+		// of a character. The characters must be valid UTF-8 (5.13, Syntax
+		// Rules, 12.d.iii.3).
+		if typ == .is_varchar {
+			sv = character_value(sv, q != sql_nts) or { return using_clause_error() }
+		}
 
 		// - 4.p. The value of the parameter is CAST ( SV AS TDT ). vsql doesn't
 		// determine the type of a dynamic parameter (there's no POPULATE IPD),
 		// so there's no second cast to that type (General Rules, 4.p.ii.2 and
-		// 4.p.ii.3). A string with a length in octets can end with part of a
-		// character (General Rules, 4.m.iii.2.A.II), which is #744.
+		// 4.p.ii.3).
 		params['?${i}'] = cast_parameter(stmt, sv, tdt)!
 	}
 
@@ -212,6 +221,36 @@ fn read_c_value(typ vsql.SQLType, data voidptr, length i64) !vsql.Value {
 			}
 		}
 	}
+}
+
+// character_value is a character string value without the part of a character
+// that it ends with, if is_partial is true (the value was a number of octets).
+// The rest must be valid UTF-8.
+fn character_value(v vsql.Value, is_partial bool) !vsql.Value {
+	s := if is_partial { whole_characters(v.string_value()) } else { v.string_value() }
+	if !utf8.validate_str(s) {
+		return error('not valid UTF-8')
+	}
+
+	return vsql.new_varchar_value(s)
+}
+
+// whole_characters is the first octets of s that aren't part of an incomplete
+// UTF-8 character at the end of s.
+fn whole_characters(s string) string {
+	// A character is at most 4 octets, so only one of the last 3 octets can
+	// start an incomplete character. The first octet of a character of 2 to 4
+	// octets is 0b110xxxxx to 0b11110xxx, and each other octet is 0b10xxxxxx.
+	for i := s.len - 1; i >= 0 && i >= s.len - 3; i-- {
+		if s[i] & 0xc0 != 0x80 {
+			if s[i] >= 0xc0 && s[i] < 0xf8 && i + utf8_char_len(s[i]) > s.len {
+				return s[..i]
+			}
+			break
+		}
+	}
+
+	return s
 }
 
 // cast_parameter is CAST ( SV AS TDT ). A number can't be cast to a datetime

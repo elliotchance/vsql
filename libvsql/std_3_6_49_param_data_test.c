@@ -101,3 +101,25 @@ UTEST_F(db, 6_49_param_data_cancel) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY010");
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
 }
+
+/* The value of a string given with PutData doesn't end with part of a
+ * character. */
+UTEST_F(db, 6_49_param_data_partial_character) {
+  SQLINTEGER at_exec = SQL_DATA_AT_EXEC;
+  char s[10];
+  SQLPOINTER p;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_VARCHAR, 10, 0, s, sizeof(s),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  ASSERT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_NEED_DATA);
+  EXPECT_EQ(SQLPutData(utest_fixture->stmt, (SQLPOINTER) "a\xe2\x82", 3),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, s, sizeof(s), NULL),
+            SQL_SUCCESS);
+  EXPECT_STREQ(s, "a");
+}

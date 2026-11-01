@@ -8,8 +8,8 @@ vsql is tested in a variety of ways, but most functional tests are SQL files
 ``make`` target that runs it.
 
 ``make test`` runs all of them except ``app-test``, since the app isn't needed
-for the database itself (and its tests need Python and a browser). CI runs
-``make test``, and ``app-test`` on Linux x86-64.
+for the database itself (and its tests need Python and a browser). See
+`Continuous Integration`_ for what CI runs on each platform.
 
 app-test
 --------
@@ -970,6 +970,19 @@ API. They're run as part of ``make test``, or on their own with:
 
    make unit-test
 
+Write an SQL test whenever you can. A unit test is for something that SQL can't
+show, such as the exact bytes that are written (``vsql/bytes_test.v``), a
+``Row`` that doesn't match its table (``vsql/row_test.v``), a database that's
+closed and opened again, or several connections at the same time
+(``vsql/connection_test.v``).
+
+Run a single file with (``-d vsqltest`` adds the helpers that the tests share,
+see Coverage in `sql-test`_):
+
+.. code-block:: sh
+
+   v -d vsqltest test vsql/row_test.v
+
 Like ``make sql-test``, it prints how many lines of ``vsql/`` the unit tests
 cover. Every line must be covered by the SQL tests or the unit tests, see
 Coverage in `sql-test`_.
@@ -991,3 +1004,30 @@ covered.
 
 The tests must cover every line of ``vorm/``, so ``make vorm-test`` fails if
 they don't (unless ``$COVERAGE`` is ``0``).
+
+Continuous Integration
+----------------------
+
+CI (``.github/workflows/ci.yml``) runs on every pull request and tag, on
+Linux, macOS and Windows, each on x86-64 and ARM64, with V master:
+
+- **Linux and macOS** build the release binary and run a few statements with it
+  (``.github/workflows/hello-test.sh``), then run ``make test``.
+- **Linux x86-64** also runs the checks that don't depend on the OS:
+  ``make fmt-verify`` (the code is formatted with ``make fmt``),
+  ``make check-standard-index``, ``make grammar`` (``vsql/y.v`` must not change,
+  see :doc:`contributing`), ``make clean-docs docs`` (warnings are errors, and
+  ``docs/v-client-library-docs.rst`` must not change) and ``make app-test``.
+- **Windows** doesn't run ``make test`` yet. It runs ``make libvsql-test
+  libvsql-example module-test module-example embed-example embed-test``, then
+  ``.github/workflows/windows-test.sh``, which runs a few statements, a short
+  benchmark and ``cmd/tests/server-concurrent.sh`` with the binary, since the
+  other CLI tests aren't run on Windows. If V master doesn't build on Windows,
+  it uses the newest earlier commit that does
+  (``.github/workflows/earlier-v.sh``). On ARM64, it builds V and everything
+  else with llvm-mingw's native toolchain.
+
+Each job also generates the C for the amalgamation (see
+``scripts/amalgamation.sh``). Once every job has passed, the release job zips
+the amalgamation, then builds it with ``make`` and runs ``make example`` from
+the zip, like a user without V would.

@@ -38,7 +38,8 @@ fn (stmt AlterSequenceGeneratorStatement) explain(mut _ Connection, _ map[string
 
 // alter_sequence returns the sequence (an external sequence or the sequence of
 // an identity column) with the options of an ALTER. NO MINVALUE and NO MAXVALUE
-// are the range of a BIGINT.
+// are the implicit limits for the (new) direction of the sequence, see
+// Sequence.min and Sequence.max.
 //
 // ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 5-9
 // ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, General Rules, 2
@@ -77,24 +78,39 @@ fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Seq
 					sequence.min_value =
 						(v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 					sequence.has_min_value = true
-					new_min_value = true
 				} else {
 					sequence.has_min_value = false
 				}
+				new_min_value = true
 			}
 			SequenceGeneratorMaxvalueOption {
 				if v := option.max_value {
 					sequence.max_value =
 						(v.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!).as_int()
 					sequence.has_max_value = true
-					new_max_value = true
 				} else {
 					sequence.has_max_value = false
 				}
+				new_max_value = true
 			}
 			SequenceGeneratorCycleOption {
 				sequence.cycle = option.cycle
 			}
+		}
+	}
+
+	// A limit that isn't changed stays the same, even when it was implicit and
+	// INCREMENT BY changes the direction of the sequence.
+	//
+	// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 6.b and 7.b
+	if (old_sequence.increment_by > 0) != (sequence.increment_by > 0) {
+		if !new_min_value && !old_sequence.has_min_value {
+			sequence.has_min_value = true
+			sequence.min_value = old_sequence.min()
+		}
+		if !new_max_value && !old_sequence.has_max_value {
+			sequence.has_max_value = true
+			sequence.max_value = old_sequence.max()
 		}
 	}
 
@@ -129,11 +145,11 @@ fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Seq
 		// revive a sequence that has gone past its limit.
 		//
 		// ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 12
-		if has_next && new_min_value && next_value < sequence.min_value {
-			return sqlstate_42601('MINVALUE (${sequence.min_value}) must not be greater than the next value (${next_value})')
+		if has_next && new_min_value && next_value < sequence.min() {
+			return sqlstate_42601('MINVALUE (${sequence.min()}) must not be greater than the next value (${next_value})')
 		}
-		if has_next && new_max_value && next_value > sequence.max_value {
-			return sqlstate_42601('MAXVALUE (${sequence.max_value}) must not be less than the next value (${next_value})')
+		if has_next && new_max_value && next_value > sequence.max() {
+			return sqlstate_42601('MAXVALUE (${sequence.max()}) must not be less than the next value (${next_value})')
 		}
 	}
 

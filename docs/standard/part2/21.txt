@@ -221,7 +221,7 @@
 21.3/CR/13               n/a          - - Embedded Ada (B011)
 21.3/CR/14               n/a          - - Embedded Ada (B011)
 # 21.4, <embedded SQL C program>
-21.4                     partial      vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v only numeric, char and VARCHAR host variables, and the length of a char array is in octets (#799)
+21.4                     partial      vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v only numeric, char and VARCHAR host variables
 21.4/SR/1                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v the C compiler checks the C
 21.4/SR/2                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v the C compiler checks where it is
 21.4/SR/3                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
@@ -250,13 +250,13 @@
 21.4/SR/4.c.ix           n/a          - - user-defined type locators (S231)
 21.4/SR/4.c.x            n/a          - - reference types (S041)
 21.4/SR/5                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
-21.4/SR/5.a              n/a          - - there's no <character set specification>
+21.4/SR/5.a              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v there's no <character set specification> to remove
 21.4/SR/5.a.i            n/a          - - there's no <char length units>
 21.4/SR/5.a.ii           n/a          - - there's no <character set specification>
-21.4/SR/5.a.iii          missing      vsql/std_2_21_4_embedded_sql_c_program.v - k is 4 for UTF8, but the length is in octets (#799)
+21.4/SR/5.a.iii          implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v k is 4 for UTF8
 21.4/SR/5.b              n/a          - - there's no <char length units>
 21.4/SR/5.c              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
-21.4/SR/5.d              missing      vsql/std_2_21_4_embedded_sql_c_program.v - the length isn't multiplied by k (#799)
+21.4/SR/5.d              implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v other than SQLSTATE, which is always char SQLSTATE[6]
 21.4/SR/5.e              n/a          - - national character (F421)
 21.4/SR/5.f              n/a          - - LOBs (T041)
 21.4/SR/5.g              n/a          - - LOBs (T041)

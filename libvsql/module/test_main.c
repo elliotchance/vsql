@@ -10,6 +10,12 @@
 #include "test.h"
 #include "test_other.h"
 
+/*
+ * CHARS is the size of the char array of a CHARACTER(L) or CHARACTER
+ * VARYING(L) host parameter, since a UTF-8 character is up to 4 bytes.
+ */
+#define CHARS(L) (((L) + 1) * 4)
+
 static int failures = 0;
 
 #define EXPECT(call, expected)                                                 \
@@ -25,7 +31,7 @@ static int failures = 0;
 /* The statement information items of GET DIAGNOSTICS. */
 struct statement {
   long number, committed, rolled_back, active;
-  char more[2], function[31], dynamic[3];
+  char more[CHARS(1)], function[CHARS(30)], dynamic[CHARS(2)];
   short code;
   long long dynamic_code, rows;
 };
@@ -40,8 +46,9 @@ static void get_st(char *sqlstate, struct statement *st) {
 struct condition {
   long long number;
   long length, octet_length;
-  char state[6], message[101], class_origin[11], subclass_origin[11],
-      connection[51], server[51], table[11];
+  char state[CHARS(5)], message[CHARS(100)], class_origin[CHARS(10)],
+      subclass_origin[CHARS(10)], connection[CHARS(50)], server[CHARS(50)],
+      table[CHARS(10)];
 };
 
 static void get_co(char *sqlstate, long n, struct condition *co) {
@@ -60,7 +67,8 @@ static void get_co(char *sqlstate, long n, struct condition *co) {
 
 int main(void) {
   char sqlstate[6];
-  char server[51], name[51], user[51], c[6], v[11], c3[4], v3[4];
+  char server[CHARS(50)], name[CHARS(50)], user[CHARS(50)], c[CHARS(5)],
+      v[CHARS(10)], c3[CHARS(3)], v3[CHARS(3)];
   short s = 1, s_ind = 0;
   long i = 2, f = 1, v_null = -1, x;
   long long b = 3, unused = 0, rows, c_ind = 0;
@@ -68,7 +76,7 @@ int main(void) {
   double d = 5.5;
   struct statement st;
   struct condition co;
-  char sql[101], function[31];
+  char sql[CHARS(100)], function[CHARS(30)];
   long min, max, count, n, type, length, nullable, indicator, returned, code;
   short top;
   long long key;
@@ -114,6 +122,15 @@ int main(void) {
   }
   i = 2;
   b = 3;
+
+  /* 9.4 GR 5.b and Table 20: A CHARACTER(L) or CHARACTER VARYING(L) holds L
+   * characters, which are up to 4 bytes each, and a value that's too long is
+   * cut to L whole characters. */
+  EXPECT(select_utf8(sqlstate, c3, v3, c), "00000");
+  CHECK(strcmp(c3, "ééé") == 0 && strcmp(v3, "é€😀") == 0 &&
+        strcmp(c, "é    ") == 0);
+  EXPECT(select_utf8_long(sqlstate, c3, v3), "01004");
+  CHECK(strcmp(c3, "é") == 0 && strcmp(v3, "😀😀😀") == 0);
 
   /* 9.3 GR 5.b.iii: unterminated C string. */
   memset(c, 'x', sizeof(c));

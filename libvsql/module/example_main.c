@@ -11,7 +11,9 @@
 
 /* check prints the message of the first condition if the procedure failed. */
 static void check(const char *procedure, const char *sqlstate) {
-  char state[6], message[201] = "";
+  /* A CHARACTER VARYING(L) is a char array of (L + 1) * 4 bytes, since a
+   * UTF-8 character is up to 4 bytes. */
+  char state[6], message[804] = "";
 
   if (strcmp(sqlstate, "00000") != 0) {
     error_message(state, message);
@@ -22,8 +24,8 @@ static void check(const char *procedure, const char *sqlstate) {
 
 int main(void) {
   char sqlstate[6];
-  char file[101] = "example.vsql";
-  char name[21];
+  char file[404] = "example.vsql";
+  char name[84];
   long id;
   double price;
   short price_indicator;

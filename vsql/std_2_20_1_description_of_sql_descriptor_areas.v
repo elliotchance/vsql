@@ -175,9 +175,8 @@ fn (mut t ModuleTokens) get_descriptor_statement(p ExternallyInvokedProcedure) !
 			used << a.parameter.name.to_upper()
 			if a.item == 'DATA' {
 				sections << 'get_data'
-				size := if typ.is_string() { typ.length + 1 } else { 0 }
 				data = '${typ.c_code()}, ${typ.length}'
-				gets += '  vsql_m_w |= vsql_m_get_data(vsql_m_i, ${a.parameter.name}, ${typ.c_code()}, ${size});\n'
+				gets += '  vsql_m_w |= vsql_m_get_data(vsql_m_i, ${a.parameter.name}, ${typ.c_code()}, ${typ.length});\n'
 			} else if a.item in descriptor_number_items {
 				if a.item == 'INDICATOR' {
 					indicator = 1
@@ -185,7 +184,7 @@ fn (mut t ModuleTokens) get_descriptor_statement(p ExternallyInvokedProcedure) !
 				gets += t.get_number(p, a.parameter, 'vsql_m_i->number[VSQL_M_${a.item}]', a.item)!
 			} else {
 				pad := if typ.typ == .is_character { 1 } else { 0 }
-				sections << 'diagnostics_put'
+				sections << 'put'
 				gets += t.get_string(p, a.parameter, 'vsql_m_i->string[VSQL_M_${a.item}] == NULL ? "" : vsql_m_i->string[VSQL_M_${a.item}]',
 					pad, a.item)!
 			}
@@ -202,7 +201,7 @@ fn (mut t ModuleTokens) get_descriptor_statement(p ExternallyInvokedProcedure) !
 			typ := a.parameter.typ or { HostParameterType{} }
 			pad := if typ.typ == .is_character { 1 } else { 0 }
 			if a.item == 'DYNAMIC_FUNCTION' {
-				sections << 'diagnostics_put'
+				sections << 'put'
 				gets += t.get_string(p, a.parameter, 'vsql_m_d->dynamic_function', pad,
 					a.item)!
 			} else {
@@ -245,7 +244,7 @@ fn (t ModuleTokens) get_string(p ExternallyInvokedProcedure, parameter HostParam
 		return sqlstate_42601('procedure ${p.name}: host parameter :${parameter.name} must be CHARACTER or CHARACTER VARYING for ${item}')
 	}
 
-	return '  vsql_m_w |= vsql_m_put(${parameter.name}, ${typ.length + 1}, ${pad}, ${value});\n'
+	return '  vsql_m_w |= vsql_m_put(${parameter.name}, ${typ.length}, ${pad}, ${value});\n'
 }
 
 // descriptor_assignments reads the <get header information>s or <get item
@@ -340,7 +339,7 @@ fn (mut t ModuleTokens) set_descriptor_statement(p ExternallyInvokedProcedure) !
 			typ := parameter.typ or { HostParameterType{} }
 			used << parameter.name.to_upper()
 			if typ.is_string() {
-				a.checks += '  if (!vsql_m_string(SQLSTATE, ${parameter.name}, ${typ.length + 1})) {\n    return;\n  }\n'
+				a.checks += '  if (!vsql_m_string(SQLSTATE, ${parameter.name}, ${typ.size()})) {\n    return;\n  }\n'
 				sections << 'string'
 			}
 			sections << 'set_data'

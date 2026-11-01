@@ -216,7 +216,7 @@ fn bind_parameters(sections []string, references []HostParameterReference, p Ext
 
 		mut check := ''
 		if typ.is_string() {
-			check = 'if (!vsql_m_string(SQLSTATE, ${parameter.name}, ${typ.length + 1})) {\n    return;\n  }\n'
+			check = 'if (!vsql_m_string(SQLSTATE, ${parameter.name}, ${typ.size()})) {\n    return;\n  }\n'
 			if 'string' !in b.sections {
 				b.sections << 'string'
 			}
@@ -443,7 +443,7 @@ fn (mut t ModuleTokens) connection_value(p ExternallyInvokedProcedure, mut a Con
 			return sqlstate_42601('procedure ${p.name}: host parameter :${parameter.name} must be CHARACTER or CHARACTER VARYING')
 		}
 		a.parameters << parameter.name.to_upper()
-		a.checks += '  if (!vsql_m_string(SQLSTATE, ${parameter.name}, ${typ.length + 1})) {\n    return;\n  }\n'
+		a.checks += '  if (!vsql_m_string(SQLSTATE, ${parameter.name}, ${typ.size()})) {\n    return;\n  }\n'
 		a.sections << 'string'
 
 		return parameter.name

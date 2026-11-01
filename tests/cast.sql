@@ -153,6 +153,24 @@ VALUES CAST('1e2' AS INT);
 VALUES CAST('1e2' AS DOUBLE PRECISION);
 -- COL1: 100e0
 
+VALUES CAST('1e309' AS DOUBLE PRECISION);
+-- error 22003: numeric value out of range
+
+VALUES CAST('-1.5E400' AS INT);
+-- error 22003: numeric value out of range
+
+VALUES CAST('1e309' AS BIGINT);
+-- error 22003: numeric value out of range
+
+VALUES CAST('1e39' AS REAL);
+-- error 22003: numeric value out of range
+
+VALUES CAST('1e-400' AS DOUBLE PRECISION);
+-- COL1: 0e0
+
+VALUES CAST('1e-400' AS SMALLINT);
+-- COL1: 0
+
 VALUES CAST(' 1.5 ' AS DOUBLE PRECISION);
 -- COL1: 1.5e0
 

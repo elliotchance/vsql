@@ -21,8 +21,10 @@ libvsql.
 ``<server>``, ``<name>`` and ``<user>`` are string literals. The name is an
 identifier (so ``'foo'`` and ``'FOO'`` are the same connection), and it's the
 server when there's no ``AS``. So, a path like ``'other.vsql'`` needs an
-``AS``, otherwise it's ``2E000`` (invalid connection name). Another connection
-with the same name is ``08002``, and a file that can't be opened is ``08001``.
+``AS``, otherwise it's ``2E000`` (invalid connection name). A reserved word,
+such as ``'SELECT'``, isn't an identifier unless it's quoted (``'"SELECT"'``).
+Another connection with the same name is ``08002``, and a file that can't be
+opened is ``08001``.
 The user must be an identifier (otherwise it's ``28000``), but it's not used.
 
 ``DEFAULT`` is the file that ``vsql cli`` was started with. The default

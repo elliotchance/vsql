@@ -16,12 +16,26 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 
 	if tab.id == no_tab.id {
 		sb.write_string('</form><p class="empty">Choose a table, or use + to add a tab.</p>')
+	} else if tab.tab_type == history_tab {
+		// Choosing a query opens it in a new tab, it's not run.
+		sb.write_string('</form>')
+		entries := all_history(mut conn, tab.catalog)!
+		if entries.len == 0 {
+			sb.write_string('<p class="empty">No queries have been run.</p>')
+		}
+		if entries.len > 0 {
+			write_history_search(mut sb)
+		}
+		write_history_list(mut sb, entries, true)
+		sb.write_string('<script>${reserved_words_js()}${app_highlight_js.to_string()}${app_history_js.to_string()}</script>')
 	} else {
 		output := if result.output == '' && result.status == '' {
 			'<p class="empty">Run to see the result.</p>'
 		} else {
 			result.output
 		}
+
+		entries := history(mut conn, tab.catalog, tab.id)!
 
 		// The editor is a transparent textarea over a highlighted copy of its
 		// text (see app.js).
@@ -38,27 +52,75 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 			sb.write_string('<span class="edit-hint" hidden>Empty = <code>DEFAULT</code>, <code>\\N</code> = <code>NULL</code>, <code>&quot;&quot;</code> = empty string</span>')
 			sb.write_string('<button type="button" class="cancel-edit" hidden>Cancel edit</button><button type="button" class="edit"${edit_attrs}>Edit...</button>')
 		}
+		if entries.len > 0 {
+			sb.write_string('<button type="button" class="show-history" title="Query History">Query History</button>')
+		}
 		sb.write_string('<button type="submit" class="run" title="Run (Ctrl+Enter)">Run <span class="shortcut">&#8963;&#8629;</span></button></div></form>')
+		// Choosing a query from the history puts it in the editor, it's not run
+		// (see app_history.js).
+		if entries.len > 0 {
+			sb.write_string('<dialog class="history"><div class="history-header"><strong>Query History</strong><button type="button" class="close" title="Close">&times;</button></div>')
+			write_history_search(mut sb)
+			write_history_list(mut sb, entries, false)
+			sb.write_string('</dialog>')
+		}
 		if result.error != '' {
 			sb.write_string('<p class="error">${html_escape(result.error)}</p>')
 		}
 		sb.write_string(output)
 		// The scripts are after the result, so they can find the editable
 		// table.
-		reserved_words := vsql.reserved_words().map('"${it}"').join(',')
-		sb.write_string('<script>const reservedWords = new Set([${reserved_words}]);${app_js.to_string()}${app_edit_js.to_string()}</script>')
+		sb.write_string('<script>${reserved_words_js()}${app_highlight_js.to_string()}${app_js.to_string()}${app_edit_js.to_string()}${app_history_js.to_string()}</script>')
 	}
 
 	sb.write_string('</main></body></html>')
 	return sb.str()
 }
 
-// write_sidebar is the version, a heading for each catalog with its tables
-// under their schema (a schema without tables isn't shown), both sorted by
-// name, each with its tabs (tab is the active one). Choosing a tab goes to it,
-// and choosing a table queries it in a new tab. Each tab has a menu to close it.
-// The sidebar can be resized, and a heading or schema collapsed (see
-// app_sidebar.js).
+fn reserved_words_js() string {
+	reserved_words := vsql.reserved_words().map('"${it}"').join(',')
+
+	return 'const reservedWords = new Set([${reserved_words}]);'
+}
+
+// write_history_search writes the search of the history list after it, which
+// filters it as it's typed (see app_history.js).
+fn write_history_search(mut sb strings.Builder) {
+	sb.write_string('<input type="search" class="history-search" placeholder="Search..." aria-label="Search the history" autocomplete="off" autofocus>')
+	sb.write_string('<p class="history-no-match" hidden>No queries match.</p>')
+}
+
+// write_history_list writes each query with its outcome. It's chosen in the
+// popup of a tab (see app_history.js), or opened in a new tab if open is true.
+fn write_history_list(mut sb strings.Builder, entries []History, open bool) {
+	if entries.len == 0 {
+		return
+	}
+	sb.write_string('<ol class="history-list">')
+	for h in entries {
+		outcome := if h.error != '' {
+			'<span class="failed">${html_escape(h.error)}</span>'
+		} else if h.row_count >= 0 {
+			'${h.row_count} ${vsql.pluralize(h.row_count, 'row')}'
+		} else {
+			html_escape(h.message)
+		}
+		attrs := if open {
+			'type="submit" form="app" name="open" value="${html_escape(h.query_text)}" title="Open in a new tab"'
+		} else {
+			'type="button"'
+		}
+		sb.write_string('<li><button ${attrs}><pre class="sql">${html_escape(h.query_text)}</pre><span class="meta">${html_escape(h.ran_at)} &middot; ${outcome}</span></button></li>')
+	}
+	sb.write_string('</ol>')
+}
+
+// write_sidebar is the version, a heading for each catalog (with a button for
+// its Query History) with its tables under their schema (a schema without tables
+// isn't shown), both sorted by name, each with its tabs (tab is the active one).
+// Choosing a tab goes to it, and choosing a table queries it in a new tab. Each
+// tab has a menu to close it. The sidebar can be resized, and a heading or schema
+// collapsed (see app_sidebar.js).
 fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_tabs []Tab, tab Tab) ! {
 	// A local build has no version.
 	version := if vsql.version() == '' { 'v0.0.0' } else { vsql.version() }
@@ -80,13 +142,21 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 		mut schema_names := schemas.keys()
 		schema_names.sort()
 
-		sb.write_string('<details class="section" data-folder="catalog:${html_escape(catalog_name)}" open><summary><span class="icon" aria-hidden="true">&#128452;&#65039;</span>${a.file_dot(catalog_name)}${html_escape(catalog_name)}</summary>')
+		sb.write_string('<details class="section" data-folder="catalog:${html_escape(catalog_name)}" open><summary><span class="icon" aria-hidden="true">&#128452;&#65039;</span>${a.file_dot(catalog_name)}${html_escape(catalog_name)}')
+		history_active := if tab.tab_type == history_tab && tab.catalog == catalog_name {
+			' active'
+		} else {
+			''
+		}
+		// The icon is from app.css, so it isn't part of the text of the heading.
+		sb.write_string('<button type="submit" form="app" name="history" value="${html_escape(catalog_name)}" class="history-nav${history_active}" title="Query History" aria-label="Query History of ${html_escape(catalog_name)}"></button></summary>')
 		catalog_tabs := all_tabs.filter(it.catalog == catalog_name)
 		sb.write_string('<details class="folder" data-folder="tabs:${html_escape(catalog_name)}" open><summary><span class="icon" aria-hidden="true">&#128450;&#65039;</span>Tabs <span class="count">${catalog_tabs.len}</span>')
 		sb.write_string('<button type="submit" form="app" name="new" value="${html_escape(catalog_name)}" class="new-tab" title="New tab" aria-label="New tab in ${html_escape(catalog_name)}">+</button></summary><ul>')
 		for t in catalog_tabs {
 			active := if t.ref() == tab.ref() { ' class="active"' } else { '' }
-			sb.write_string('<li${active}><button type="submit" form="app" name="goto" value="${html_escape(t.ref())}"><span class="icon" aria-hidden="true">&#128221;</span>${html_escape(t.title)}</button>')
+			icon := if t.tab_type == history_tab { '&#128337;' } else { '&#128221;' }
+			sb.write_string('<li${active}><button type="submit" form="app" name="goto" value="${html_escape(t.ref())}"><span class="icon" aria-hidden="true">${icon}</span>${html_escape(t.title)}</button>')
 			// The menu of a tab (see app_sidebar.js).
 			sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
 			sb.write_string('<button type="submit" form="app" name="close" value="${html_escape(t.ref())}">Close</button></div></details></li>')
@@ -141,6 +211,8 @@ const app_css = $embed_file('app.css')
 const app_js = $embed_file('app.js')
 const app_edit_js = $embed_file('app_edit.js')
 const app_sidebar_js = $embed_file('app_sidebar.js')
+const app_highlight_js = $embed_file('app_highlight.js')
+const app_history_js = $embed_file('app_history.js')
 
 const show_tables_sql = 'SELECT * FROM INFORMATION_SCHEMA.TABLES'
 

@@ -169,7 +169,7 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	tab_ref := form.get('tab') or { '' }
 	tab := all_tabs.filter(it.ref() == tab_ref)[0] or { no_tab }
 	query_text := form.get('sql') or { tab.query_text }
-	if tab.id != no_tab.id {
+	if tab.tab_type == query_tab && tab.id != no_tab.id {
 		save_tab(mut conn, tab, query_text)!
 	}
 	// With no tab, a new tab is in the first file.
@@ -181,7 +181,8 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		if table := form.get('query:${table_catalog}') {
 			table_sql := 'SELECT * FROM ${table}'
 			new_tab := a.add_query_tab(mut conn, table_catalog, table_sql)!
-			result := a.run_query(mut conn, table_sql, table_catalog)!
+			result, h := a.run_query(mut conn, table_sql, table_catalog)!
+			add_history(mut conn, table_catalog, new_tab.id, h)!
 			lock a.results {
 				a.results[new_tab.ref()] = result
 			}
@@ -214,7 +215,21 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		}
 		return '/'
 	}
-	if tab.id == no_tab.id {
+	// The history tab shows the history of a file, a query from it opens in a new
+	// tab of that file without running it.
+	if history_catalog := form.get('history') {
+		a.show_history_tab(mut conn, all_tabs, if history_catalog in a.catalog_names {
+			history_catalog
+		} else {
+			a.catalog_names[0]
+		})!
+		return '/'
+	}
+	if open_sql := form.get('open') {
+		a.add_query_tab(mut conn, catalog, open_sql)!
+		return '/'
+	}
+	if tab.id == no_tab.id || tab.tab_type != query_tab {
 		return '/'
 	}
 
@@ -246,7 +261,8 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		return '/'
 	}
 
-	result := a.run_query(mut conn, query_text, catalog)!
+	result, h := a.run_query(mut conn, query_text, catalog)!
+	add_history(mut conn, catalog, tab.id, h)!
 	lock a.results {
 		a.results[tab.ref()] = result
 	}
@@ -260,7 +276,7 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 // of the tab again for its result.
 fn (a &App) apply_changes(mut conn vsql.Connection, tab Tab, queries []string, query_text string) ! {
 	run_changes(mut conn, queries)!
-	result := a.run_query(mut conn, query_text, tab.catalog)!
+	result, _ := a.run_query(mut conn, query_text, tab.catalog)!
 	lock a.results {
 		a.results[tab.ref()] = TabResult{
 			...result

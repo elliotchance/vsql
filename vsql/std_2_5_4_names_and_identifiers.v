@@ -63,11 +63,13 @@ fn new_identifier1(s string) !Identifier {
 
 	match parts.len {
 		1 {
+			check_schema_name(parts[0])!
 			return Identifier{
 				schema_name: parts[0]
 			}
 		}
 		2 {
+			check_schema_name(parts[1])!
 			return Identifier{
 				catalog_name: parts[0]
 				schema_name:  parts[1]
@@ -89,12 +91,14 @@ fn new_identifier2(s string) !Identifier {
 			}
 		}
 		2 {
+			check_schema_name(parts[0])!
 			return Identifier{
 				schema_name: parts[0]
 				entity_name: parts[1]
 			}
 		}
 		3 {
+			check_schema_name(parts[1])!
 			return Identifier{
 				catalog_name: parts[0]
 				schema_name:  parts[1]
@@ -146,6 +150,7 @@ fn new_identifier3(s string) !Identifier {
 			}
 		}
 		3 {
+			check_schema_name(parts[0])!
 			return Identifier{
 				schema_name:     parts[0]
 				entity_name:     parts[1]
@@ -153,6 +158,7 @@ fn new_identifier3(s string) !Identifier {
 			}
 		}
 		4 {
+			check_schema_name(parts[1])!
 			return Identifier{
 				catalog_name:    parts[0]
 				schema_name:     parts[1]
@@ -166,6 +172,17 @@ fn new_identifier3(s string) !Identifier {
 			// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 5
 			return sqlstate_42601('invalid column reference: ${parts.map(requote_identifier(it)).join('.')}')
 		}
+	}
+}
+
+// check_schema_name returns an error for a schema name that can't be used. The
+// Definition Schema has this name (ISO/IEC 9075-11:2008(E), 4.1), so nothing
+// else can.
+//
+// ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers, Syntax Rules, 10
+fn check_schema_name(name string) ! {
+	if name == 'DEFINITION_SCHEMA' {
+		return sqlstate_42601('DEFINITION_SCHEMA cannot be used as a schema name')
 	}
 }
 

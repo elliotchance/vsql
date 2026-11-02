@@ -89,7 +89,8 @@ UTEST_F(db, 6_5_bind_col_default) {
 
   ASSERT_EQ(
       run_sql(utest_fixture->stmt,
-              "VALUES ROW(CAST(1.5 AS DOUBLE PRECISION), DATE '2026-10-26')"),
+              "VALUES ROW(CAST(1.5 AS DOUBLE PRECISION), DATE '2026-10-26'), "
+              "ROW(CAST(2.5 AS DOUBLE PRECISION), DATE '2026-10-27')"),
       SQL_SUCCESS);
   ASSERT_EQ(
       SQLBindCol(utest_fixture->stmt, 1, SQL_DEFAULT, &d, sizeof(d), NULL),

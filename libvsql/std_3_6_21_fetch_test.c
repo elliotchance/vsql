@@ -191,3 +191,40 @@ UTEST_F(db, 6_21_fetch_rowset_get_data) {
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY109");
 }
+
+/* The cursor moves to the next rowset before the bound targets are checked, so
+   it stays there if one of them isn't valid. */
+UTEST_F(db, 6_21_fetch_invalid_target_moves_cursor) {
+  SQLINTEGER value = 0;
+  SQLINTEGER length = 0;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1, 2, 3"), SQL_SUCCESS);
+
+  /* Column 2 doesn't exist. */
+  ASSERT_EQ(SQLBindCol(utest_fixture->stmt, 2, SQL_INTEGER, &value,
+                       sizeof(value), &length),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07009");
+
+  ASSERT_EQ(SQLFreeStmt(utest_fixture->stmt, SQL_UNBIND), SQL_SUCCESS);
+  ASSERT_EQ(SQLBindCol(utest_fixture->stmt, 1, SQL_INTEGER, &value,
+                       sizeof(value), &length),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(value, 2);
+}
+
+/* There's no rowset after the last row, so there's nothing to assign and the
+   bound targets aren't checked. */
+UTEST_F(db, 6_21_fetch_invalid_target_no_data) {
+  SQLINTEGER value = 0;
+  SQLINTEGER length = 0;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+  ASSERT_EQ(SQLBindCol(utest_fixture->stmt, 2, SQL_INTEGER, &value,
+                       sizeof(value), &length),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_ERROR);
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_NO_DATA);
+}

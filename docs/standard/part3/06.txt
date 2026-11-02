@@ -754,7 +754,7 @@
 6.21/GR/14.a.iii         implemented  libvsql/std_3_6_21_fetch.v libvsql/std_3_6_21_fetch_test.c
 6.21/GR/14.a.iv          implemented  libvsql/std_3_6_21_fetch.v libvsql/std_3_6_21_fetch_test.c
 6.21/GR/14.a.iv.1        implemented  libvsql/std_3_6_21_fetch.v libvsql/std_3_6_21_fetch_test.c
-6.21/GR/14.a.iv.2        deviates     libvsql/std_3_6_21_fetch.v - an invalid bound target is an exception condition before the cursor moves (#751)
+6.21/GR/14.a.iv.2        implemented  libvsql/std_3_6_21_fetch.v libvsql/std_3_6_21_fetch_test.c
 6.21/GR/14.b             impl-defined libvsql/std_3_6_21_fetch.v libvsql/std_3_6_21_fetch_test.c the bound targets have the values that were assigned before the row error
 # 6.22, FetchScroll
 6.22                     implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
@@ -818,7 +818,7 @@
 6.22/GR/19.a.iii         implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
 6.22/GR/19.a.iv          implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
 6.22/GR/19.a.iv.1        implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_22_fetch_scroll_test.c
-6.22/GR/19.a.iv.2        deviates     libvsql/std_3_6_22_fetch_scroll.v - an invalid bound target is an exception condition before the cursor moves (#751)
+6.22/GR/19.a.iv.2        implemented  libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_21_fetch_test.c
 6.22/GR/19.b             impl-defined libvsql/std_3_6_22_fetch_scroll.v libvsql/std_3_6_21_fetch_test.c the bound targets have the values that were assigned before the row error
 # 6.23, ForeignKeys
 6.23                     container    - -

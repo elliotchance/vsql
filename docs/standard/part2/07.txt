@@ -78,12 +78,12 @@
 7.5/SR/5.a.iv            n/a          - - periods (T180)
 7.5/SR/5.a.v             implemented  vsql/planner.v tests/correlation-name.sql
 7.5/SR/5.b               implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.c               partial      vsql/planner.v tests/correlation-name.sql a correlation name isn't compared with the unqualified name of a table (#776)
-7.5/SR/5.c.i             partial      vsql/planner.v tests/correlation-name.sql a table name isn't compared with a correlation name (#776)
+7.5/SR/5.c               implemented  vsql/planner.v tests/correlation-name.sql
+7.5/SR/5.c.i             implemented  vsql/planner.v tests/correlation-name.sql
 7.5/SR/5.c.i.1           implemented  vsql/planner.v tests/correlation-name.sql
-7.5/SR/5.c.i.2           missing      - - #776
-7.5/SR/5.c.ii            partial      vsql/planner.v tests/correlation-name.sql a correlation name isn't compared with the unqualified name of a table (#776)
-7.5/SR/5.c.ii.1          missing      - - #776
+7.5/SR/5.c.i.2           implemented  vsql/planner.v tests/correlation-name.sql
+7.5/SR/5.c.ii            implemented  vsql/planner.v tests/correlation-name.sql
+7.5/SR/5.c.ii.1          implemented  vsql/planner.v tests/correlation-name.sql
 7.5/SR/5.c.ii.2          implemented  vsql/planner.v tests/correlation-name.sql
 7.5/SR/5.d               implemented  vsql/planner.v tests/correlation-name.sql
 7.5/SR/5.e               implemented  vsql/planner.v tests/correlation-name.sql

@@ -78,3 +78,24 @@ CREATE TABLE t2 (x INT);
 SELECT * FROM t2 AS y WHERE y.z = 1;
 -- msg: CREATE TABLE 1
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y.Z
+
+-- # A correlation name can't be the unqualified name of another table.
+CREATE TABLE t2 (x INT);
+CREATE TABLE t3 (y INT);
+SELECT * FROM t2 AS t3 JOIN t3 ON TRUE;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: table name T3 specified more than once
+
+CREATE TABLE t2 (x INT);
+CREATE TABLE t3 (y INT);
+SELECT * FROM t3 JOIN t2 AS t3 ON TRUE;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: table name T3 specified more than once
+
+CREATE TABLE t2 (x INT);
+CREATE TABLE t3 (y INT);
+SELECT * FROM t2 AS a JOIN t3 ON TRUE;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1

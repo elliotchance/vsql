@@ -411,3 +411,13 @@ def test_catalogs(page, db_file, edit_file, start_app):
     ui.edit_button.click()
     expect(ui.status).to_have_text(re.compile(r'^Saved 1 change, 1 row \('))
     assert count(edit_file, "SELECT COUNT(*) FROM pk WHERE name = 'b';") == 1
+
+    # A table chosen from the sidebar doesn't have its catalog in the query.
+    ui.sidebar_table('PK', catalog='edit').click()
+    expect(ui.editor).to_have_value('SELECT * FROM PUBLIC.PK')
+    expect(ui.editable).to_have_attribute('data-catalog', 'edit')
+    ui.edit_button.click()
+    ui.edit(0, 'NAME', 'c')
+    ui.edit_button.click()
+    expect(ui.status).to_have_text(re.compile(r'^Saved 1 change, 1 row \('))
+    assert count(edit_file, "SELECT COUNT(*) FROM pk WHERE name = 'c';") == 1

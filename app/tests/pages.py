@@ -37,7 +37,7 @@ class AppPage:
 
     @property
     def sections(self):
-        """sections are the headings of the sidebar, each catalog then Tabs."""
+        """sections are the headings of the sidebar, each catalog."""
         return self.page.locator('details.section > summary')
 
     def folder(self, name):
@@ -55,10 +55,16 @@ class AppPage:
     @property
     def sidebar_tabs(self):
         """sidebar_tabs are the tabs listed in the sidebar (see titles)."""
-        return self.folder('tabs').locator('li')
+        return self.page.locator('details[data-folder^="tabs:"] li > button')
+
+    @property
+    def sidebar_tab_rows(self):
+        """sidebar_tab_rows are the items of the tabs in the sidebar, the
+        active one has the class active."""
+        return self.page.locator('details[data-folder^="tabs:"] li')
 
     def sidebar_tab(self, title):
-        return self.folder('tabs').get_by_role('button', name=title, exact=True)
+        return self.page.locator('details[data-folder^="tabs:"]').get_by_role('button', name=title, exact=True)
 
     @property
     def resizer(self):
@@ -76,6 +82,21 @@ class AppPage:
     @property
     def sidebar_width(self):
         return self.sidebar.bounding_box()['width']
+
+    def tab_menu(self, title):
+        """tab_menu opens the menu of a tab in the sidebar, and returns it."""
+        li = self.page.locator('details[data-folder^="tabs:"] li').filter(has=self.page.get_by_role('button', name=title, exact=True))
+        li.hover()
+        li.locator('details.menu > summary').click()
+        return li.locator('.menu-items')
+
+    def catalog_tabs(self, catalog):
+        """catalog_tabs are the tabs of a file in the sidebar."""
+        return self.folder(f'tabs:{catalog}').locator('li > button')
+
+    def new_catalog_tab(self, catalog):
+        """new_catalog_tab adds a tab to a file from the sidebar."""
+        self.page.get_by_role('button', name=f'New tab in {catalog}', exact=True).click()
 
     # The tab bar.
 
@@ -118,6 +139,11 @@ class AppPage:
         """run replaces the SQL of the active tab and runs it."""
         self.editor.fill(sql)
         self.page.get_by_role('button', name=re.compile('^Run')).click()
+
+    @property
+    def tab_catalog(self):
+        """tab_catalog is the name of the file that the active tab runs in."""
+        return self.page.locator('.actions .catalog')
 
     @property
     def status(self):
@@ -196,5 +222,6 @@ class AppPage:
 
     @property
     def tab_id(self):
-        """tab_id is the id of the active tab, to post a change directly."""
+        """tab_id is the reference of the active tab (its catalog and id), to post
+        a change directly."""
         return self.page.locator('input[name="tab"]').first.get_attribute('value')

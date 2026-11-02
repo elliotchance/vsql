@@ -19,8 +19,14 @@ struct TabResult {
 	editable bool
 }
 
-// run_query runs every statement and returns the result of the last one.
-fn (a &App) run_query(mut conn vsql.Connection, query_text string) !TabResult {
+// run_query runs every statement in a file and returns the result of the last
+// one.
+fn (a &App) run_query(mut conn vsql.Connection, query_text string, catalog string) !TabResult {
+	set_catalog(mut conn, catalog)!
+	defer {
+		set_catalog(mut conn, a.catalog_names[0]) or {}
+	}
+
 	mut status := ''
 	mut output := strings.new_builder(4096)
 	// Every statement is run, the result of the last one is shown. The time

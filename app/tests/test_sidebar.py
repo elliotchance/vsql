@@ -9,10 +9,10 @@ from pages import AppPage
 
 
 def test_sidebar(ui):
-    # The sidebar has the version, the catalog with its tables under their
-    # schema (including VSQL_APP.TABS) and the tabs.
+    # The sidebar has the version, and the catalog with its tabs and its tables
+    # under their schema (including VSQL_APP.TABS).
     expect(ui.brand).to_have_text('vsql v0.0.0')
-    expect(ui.sections).to_have_text([re.compile('db$'), re.compile('Tabs 0$')])
+    expect(ui.sections).to_have_text([re.compile('db$')])
     for schema, table in [('FOO', 'FOO.BAR'), ('PUBLIC', 'PUBLIC."my <t>"'), ('VSQL_APP', 'VSQL_APP.TABS')]:
         expect(ui.schema('db', schema).locator('summary .count')).to_have_text('1')
         expect(ui.schema('db', schema).locator('button')).to_have_attribute('value', table)
@@ -25,7 +25,7 @@ def test_sidebar_is_remembered(ui):
     # remembers.
     ui.schema('db', 'FOO').locator('summary').click()
     expect(ui.schema('db', 'FOO')).not_to_have_attribute('open', '')
-    ui.folder('tabs').locator('> summary').click()
+    ui.folder('tabs:db').locator('> summary').click()
 
     default_width = ui.sidebar_width
     ui.resize_sidebar(400)
@@ -34,7 +34,7 @@ def test_sidebar_is_remembered(ui):
 
     ui.reload()
     expect(ui.schema('db', 'FOO')).not_to_have_attribute('open', '')
-    expect(ui.folder('tabs')).not_to_have_attribute('open', '')
+    expect(ui.folder('tabs:db')).not_to_have_attribute('open', '')
     expect(ui.schema('db', 'PUBLIC')).to_have_attribute('open', '')
     assert ui.sidebar_width == width
 
@@ -44,13 +44,14 @@ def test_sidebar_is_remembered(ui):
 
 
 def test_catalogs(page, db_file, make_file, start_app):
-    # Other files are attached as catalogs, each with its own heading. With
-    # more than one catalog, a table is queried with its catalog.
+    # Other files are attached as catalogs, each with its own heading. A table
+    # is queried without its catalog, since its tab runs in that catalog.
     other_file = make_file('other.vsql', 'CREATE TABLE t (x INT);')
     ui = AppPage(page, start_app(db_file, other_file))
-    expect(ui.sections).to_have_text([re.compile('db$'), re.compile('other$'), re.compile('Tabs 0$')])
-    expect(ui.sidebar_table('T', catalog='other')).to_have_attribute('value', '"other".PUBLIC.T')
-    expect(ui.sidebar_table('BAR', schema='FOO')).to_have_attribute('value', '"db".FOO.BAR')
+    expect(ui.sections).to_have_text([re.compile('db$'), re.compile('other$')])
+    expect(ui.sidebar_table('T', catalog='other')).to_have_attribute('value', 'PUBLIC.T')
+    expect(ui.sidebar_table('BAR', schema='FOO')).to_have_attribute('value', 'FOO.BAR')
     ui.sidebar_table('T', catalog='other').click()
-    expect(ui.editor).to_have_value('SELECT * FROM "other".PUBLIC.T')
+    expect(ui.editor).to_have_value('SELECT * FROM PUBLIC.T')
+    expect(ui.tab_catalog).to_have_text('other')
     expect(ui.status).to_have_text(re.compile(r'^0 rows \('))

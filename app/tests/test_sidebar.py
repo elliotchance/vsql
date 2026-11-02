@@ -10,12 +10,15 @@ from pages import AppPage
 
 def test_sidebar(ui):
     # The sidebar has the version, and the catalog with its tabs and its tables
-    # under their schema (including VSQL_APP.TABS).
+    # under their schema (including VSQL_APP).
     expect(ui.brand).to_have_text('vsql v0.0.0')
     expect(ui.sections).to_have_text([re.compile('db$')])
-    for schema, table in [('FOO', 'FOO.BAR'), ('PUBLIC', 'PUBLIC."my <t>"'), ('VSQL_APP', 'VSQL_APP.TABS')]:
+    for schema, table in [('FOO', 'FOO.BAR'), ('PUBLIC', 'PUBLIC."my <t>"')]:
         expect(ui.schema('db', schema).locator('summary .count')).to_have_text('1')
         expect(ui.schema('db', schema).locator('button')).to_have_attribute('value', table)
+    expect(ui.schema('db', 'VSQL_APP').locator('summary .count')).to_have_text('2')
+    expect(ui.schema('db', 'VSQL_APP').locator('button').nth(0)).to_have_attribute('value', 'VSQL_APP.HISTORY')
+    expect(ui.schema('db', 'VSQL_APP').locator('button').nth(1)).to_have_attribute('value', 'VSQL_APP.TABS')
     expect(ui.sidebar_table('my <t>')).to_have_attribute('title', 'SELECT * FROM PUBLIC."my <t>"')
 
 

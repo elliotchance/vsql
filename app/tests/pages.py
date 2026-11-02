@@ -83,21 +83,6 @@ class AppPage:
     def sidebar_width(self):
         return self.sidebar.bounding_box()['width']
 
-    def tab_menu(self, title):
-        """tab_menu opens the menu of a tab in the sidebar, and returns it."""
-        li = self.page.locator('details[data-folder^="tabs:"] li').filter(has=self.page.get_by_role('button', name=title, exact=True))
-        li.hover()
-        li.locator('details.menu > summary').click()
-        return li.locator('.menu-items')
-
-    def catalog_tabs(self, catalog):
-        """catalog_tabs are the tabs of a file in the sidebar."""
-        return self.folder(f'tabs:{catalog}').locator('li > button')
-
-    def new_catalog_tab(self, catalog):
-        """new_catalog_tab adds a tab to a file from the sidebar."""
-        self.page.get_by_role('button', name=f'New tab in {catalog}', exact=True).click()
-
     # The tab bar.
 
     @property
@@ -170,6 +155,53 @@ class AppPage:
     def empty(self):
         """empty is the message when there are no tabs or no result yet."""
         return self.page.locator('main .empty')
+
+    def tab_menu(self, title):
+        """tab_menu opens the menu of a tab in the sidebar, and returns it."""
+        li = self.page.locator('details[data-folder^="tabs:"] li').filter(has=self.page.get_by_role('button', name=title, exact=True))
+        li.hover()
+        li.locator('details.menu > summary').click()
+        return li.locator('.menu-items')
+
+    # The history (see test_history.py).
+
+    @property
+    def history_nav(self):
+        """history_nav is the button in the sidebar for the history of the only
+        file."""
+        return self.page.locator('button.history-nav')
+
+    def catalog_history_nav(self, catalog):
+        """catalog_history_nav is the button in the sidebar for the history of a
+        file."""
+        return self.page.get_by_role('button', name=f'Query History of {catalog}', exact=True)
+
+    @property
+    def history_search(self):
+        return self.page.locator('input.history-search')
+
+    def catalog_tabs(self, catalog):
+        """catalog_tabs are the tabs of a file in the sidebar."""
+        return self.folder(f'tabs:{catalog}').locator('li > button')
+
+    def new_catalog_tab(self, catalog):
+        """new_catalog_tab adds a tab to a file from the sidebar."""
+        self.page.get_by_role('button', name=f'New tab in {catalog}', exact=True).click()
+
+    @property
+    def history_button(self):
+        return self.page.locator('button.show-history')
+
+    @property
+    def history(self):
+        """history is the popup of the queries run in the tab."""
+        return self.page.locator('dialog.history')
+
+    @property
+    def history_entries(self):
+        """history_entries are the queries shown in the popup, the latest
+        first."""
+        return self.history.locator('li:not([hidden]) button')
 
     # Changing the rows of an editable result (see test_edit.py).
 

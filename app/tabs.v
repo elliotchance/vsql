@@ -12,7 +12,8 @@ struct AppColumn {
 
 // app_columns are the columns of each table in VSQL_APP, which is in every file.
 // TABS has the type, title and payload of each tab of that file (and which tab
-// is active) so they are restored the next time the file is opened.
+// is active) so they are restored the next time the file is opened. HISTORY has
+// the SQL run in the tabs of that file (see history.v).
 //
 // A file keeps the tables and columns it had when it was last opened, so each
 // table is created with just its ID, then each column that's missing is added
@@ -23,6 +24,12 @@ const app_columns = [
 	AppColumn{'TABS', 'TITLE', "VARCHAR(50) DEFAULT 'New tab' NOT NULL"},
 	AppColumn{'TABS', 'PAYLOAD', "VARCHAR(1000000) DEFAULT '{}' NOT NULL"},
 	AppColumn{'TABS', 'ACTIVE', 'BOOLEAN DEFAULT FALSE NOT NULL'},
+	AppColumn{'HISTORY', 'TAB_ID', 'INTEGER DEFAULT 0 NOT NULL'},
+	AppColumn{'HISTORY', 'QUERY_TEXT', "VARCHAR(1000000) DEFAULT '' NOT NULL"},
+	AppColumn{'HISTORY', 'ROW_COUNT', 'INTEGER'},
+	AppColumn{'HISTORY', 'MESSAGE', 'VARCHAR(1000)'},
+	AppColumn{'HISTORY', 'ERROR', 'VARCHAR(1000000)'},
+	AppColumn{'HISTORY', 'RAN_AT', 'TIMESTAMP(0) WITHOUT TIME ZONE'},
 ]
 
 // create_app_tables creates the schema, tables and columns in VSQL_APP of a file
@@ -62,8 +69,12 @@ const no_tab = Tab{
 	tab_type: query_tab
 }
 
-// query_tab is the only tab type so far, a tab with SQL to run.
+// query_tab is a tab with SQL to run.
 const query_tab = 'QUERY'
+
+// history_tab shows the queries of a file (see history.v). There's only one for
+// each file. It has no payload.
+const history_tab = 'HISTORY'
 
 // QueryPayload is the PAYLOAD (JSON) of a QUERY tab. Each tab type has its own
 // payload.
@@ -72,7 +83,7 @@ struct QueryPayload {
 }
 
 // Tab is a row of VSQL_APP.TABS in the file catalog, which is the file that its
-// SQL runs in.
+// SQL runs in and its history is saved in.
 struct Tab {
 	id         int
 	tab_type   string
@@ -131,6 +142,18 @@ fn (a &App) add_query_tab(mut conn vsql.Connection, catalog string, query_text s
 	return a.add_tab(mut conn, catalog, query_tab, query_text, json2.encode(QueryPayload{query_text}))
 }
 
+// show_history_tab makes the history tab of a file active, adding it if needed.
+fn (a &App) show_history_tab(mut conn vsql.Connection, all_tabs []Tab, catalog string) ! {
+	for t in all_tabs {
+		if t.tab_type == history_tab && t.catalog == catalog {
+			return a.activate_tab(mut conn, t)
+		}
+	}
+
+	title := if a.catalog_names.len == 1 { 'Query History' } else { 'Query History (${catalog})' }
+	a.add_tab(mut conn, catalog, history_tab, title, '{}')!
+}
+
 // activate_tab makes a tab active (there's one across all of the files), or no
 // tab if it's no_tab.
 fn (a &App) activate_tab(mut conn vsql.Connection, tab Tab) ! {
@@ -163,10 +186,11 @@ fn save_tab(mut conn vsql.Connection, tab Tab, query_text string) ! {
 	})!
 }
 
-// remove_tab removes a tab.
+// remove_tab removes a tab and its history.
 fn remove_tab(mut conn vsql.Connection, tab Tab) ! {
 	mut stmt := conn.prepare('DELETE FROM ${app_table(tab.catalog, 'tabs')} WHERE id = ?')!
 	stmt.query({
 		'?1': vsql.new_integer_value(tab.id)
 	})!
+	remove_history(mut conn, tab.catalog, tab.id)!
 }

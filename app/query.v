@@ -20,8 +20,8 @@ struct TabResult {
 }
 
 // run_query runs every statement in a file and returns the result of the last
-// one.
-fn (a &App) run_query(mut conn vsql.Connection, query_text string, catalog string) !TabResult {
+// one, and what to record in the history.
+fn (a &App) run_query(mut conn vsql.Connection, query_text string, catalog string) !(TabResult, History) {
 	set_catalog(mut conn, catalog)!
 	defer {
 		set_catalog(mut conn, a.catalog_names[0]) or {}
@@ -33,18 +33,19 @@ fn (a &App) run_query(mut conn vsql.Connection, query_text string, catalog strin
 	// is for all of the statements, like the CLI.
 	start := time.ticks()
 	mut result := vsql.Result{}
-	mut failed := false
+	mut failure := ''
+	mut count := -1
 	mut is_editable := false
 	mut has_rows := false
 	for stmt in vsql.split_statements(query_text) {
 		result = conn.query(stmt) or {
 			output.write_string('<p class="error">${html_escape(err.msg())}</p>')
-			failed = true
+			failure = err.msg()
 			break
 		}
 	}
 	elapsed := time.ticks() - start
-	if failed {
+	if failure != '' {
 		status = 'Error (${elapsed} ms)'
 	} else if result.msg != '' {
 		status = '${result.msg} (${elapsed} ms)'
@@ -75,7 +76,7 @@ fn (a &App) run_query(mut conn vsql.Connection, query_text string, catalog strin
 			output.write_string('<th${th_attrs}>${html_escape(column.name.sub_entity_name)}<span class="type">${html_escape(column.typ.str())}</span></th>')
 		}
 		output.write_string('</tr></thead><tbody>')
-		mut count := 0
+		count = 0
 		for row in result {
 			if table := edit {
 				output.write_string('<tr data-key="${html_escape(row_key(table, row)!)}"><td class="row-actions"><button type="button" class="delete" title="Delete">&times;</button></td>')
@@ -112,5 +113,10 @@ fn (a &App) run_query(mut conn vsql.Connection, query_text string, catalog strin
 		output:   output.str()
 		has_rows: has_rows
 		editable: is_editable
+	}, History{
+		query_text: query_text
+		row_count:  count
+		message:    if failure == '' { result.msg } else { '' }
+		error:      failure
 	}
 }

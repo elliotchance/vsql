@@ -373,6 +373,18 @@ def test_transaction(edit_ui, edit_file):
     assert count(edit_file, 'SELECT COUNT(*) FROM pk;') == 2
 
 
+def test_save_error_is_not_from_the_history(edit_ui):
+    # The error of a save is shown, not an error in the history of the tab.
+    ui = edit_ui
+    ui.run('SELECT * FROM nope')
+    ui.run(select_pk)
+    ui.edit_button.click()
+    ui.add_row()
+    ui.control(1, 'ID').press('Enter')
+    ui.edit_button.click()
+    expect(ui.error).to_contain_text('violates non-null constraint')
+
+
 def test_delete_then_insert(edit_ui, edit_file):
     # The deletes run first, so a row can be replaced with the same key.
     ui = edit_ui

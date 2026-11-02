@@ -200,3 +200,16 @@ UTEST_F(db, 6_55_set_cursor_name_positioned_holdable) {
   ASSERT_EQ(run_sql(utest_fixture->stmt, "SELECT x FROM t"), SQL_SUCCESS);
   EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 1), "1");
 }
+
+/* A name longer than 128 characters is truncated, with a warning. */
+UTEST_F(db, 6_55_set_cursor_name_truncated) {
+  SQLCHAR name[200], got[200];
+
+  memset(name, 'c', sizeof(name));
+  EXPECT_EQ(SQLSetCursorName(utest_fixture->stmt, name, 130),
+            SQL_SUCCESS_WITH_INFO);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "01004");
+  EXPECT_EQ(SQLGetCursorName(utest_fixture->stmt, got, sizeof(got), NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(strlen((char *)got), 128);
+}

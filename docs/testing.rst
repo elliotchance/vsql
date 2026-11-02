@@ -494,6 +494,9 @@ that the code that handles the error can be tested:
 A number after the name makes it fail the nth time it's reached instead, such
 as ``/* fault lock_shared 2 */``.
 
+The C tests of libvsql can't use a directive, so they call
+``vsql_arm_fault("wal_write", 1)`` (declared in ``libvsql/test.h``) instead.
+
 The faults are:
 
 - ``open``: opening the database file.

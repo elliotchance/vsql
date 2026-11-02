@@ -868,7 +868,7 @@
 6.23/GR/7.a.ix.11.F      implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.a.ix.12        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.a.ix.13        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
-6.23/GR/7.a.ix.14        partial      libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c always NOT DEFERRABLE, but a foreign key can be deferrable (#758)
+6.23/GR/7.a.ix.14        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.a.ix.15        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.a.x            definition   - -
 6.23/GR/7.a.xi           definition   - -
@@ -953,7 +953,7 @@
 6.23/GR/7.b.xi.11.F      implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.b.xi.12        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.b.xi.13        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
-6.23/GR/7.b.xi.14        partial      libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c always NOT DEFERRABLE, but a foreign key can be deferrable (#758)
+6.23/GR/7.b.xi.14        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.b.xi.15        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.b.xii          definition   - -
 6.23/GR/7.b.xiii         definition   - -

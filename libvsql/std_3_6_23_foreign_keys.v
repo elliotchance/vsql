@@ -16,9 +16,7 @@ module main
 //
 // With a PKTableName, the predicate is on the UK_ columns. General Rules
 // 7.b.xix says the FK_ columns, which can't be right, since they're the
-// columns of the other tables. DEFERABILITY is always NOT DEFERRABLE (General
-// Rules, 7.a.ix.14 and 7.b.xi.14), but a foreign key can be deferrable, which
-// is #758.
+// columns of the other tables.
 
 // Codes from Table 26, "Miscellaneous codes used in CLI".
 const sql_cascade = i16(0)
@@ -117,7 +115,11 @@ fn foreign_keys_query() string {
 		${rule('R.DELETE_RULE')} AS DELETE_RULE,
 		CAST(R.CONSTRAINT_NAME AS VARCHAR(128)) AS FK_NAME,
 		CAST(R.UNIQUE_CONSTRAINT_NAME AS VARCHAR(128)) AS UK_NAME,
-		CAST(${sql_not_deferrable} AS SMALLINT) AS DEFERABILITY,
+		CAST(CASE
+			WHEN FC.IS_DEFERRABLE = \'NO\' THEN ${sql_not_deferrable}
+			WHEN FC.INITIALLY_DEFERRED = \'YES\' THEN ${sql_initially_deferred}
+			ELSE ${sql_initially_immediate}
+		END AS SMALLINT) AS DEFERABILITY,
 		CAST(CASE T.CONSTRAINT_TYPE WHEN \'PRIMARY KEY\' THEN \'PRIMARY\' ELSE \'UNIQUE\' END AS CHARACTER(7)) AS UNIQUE_OR_PRIMARY
 	FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS AS R
 	JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS F
@@ -132,5 +134,9 @@ fn foreign_keys_query() string {
 	JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS T
 		ON T.CONSTRAINT_CATALOG = R.UNIQUE_CONSTRAINT_CATALOG
 		AND T.CONSTRAINT_SCHEMA = R.UNIQUE_CONSTRAINT_SCHEMA
-		AND T.CONSTRAINT_NAME = R.UNIQUE_CONSTRAINT_NAME) AS FOREIGN_KEYS_QUERY'
+		AND T.CONSTRAINT_NAME = R.UNIQUE_CONSTRAINT_NAME
+	JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS FC
+		ON FC.CONSTRAINT_CATALOG = R.CONSTRAINT_CATALOG
+		AND FC.CONSTRAINT_SCHEMA = R.CONSTRAINT_SCHEMA
+		AND FC.CONSTRAINT_NAME = R.CONSTRAINT_NAME) AS FOREIGN_KEYS_QUERY'
 }

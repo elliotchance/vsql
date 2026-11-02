@@ -235,14 +235,18 @@ EXPLAIN VALUES 1 EXCEPT ALL VALUES 2 UNION ALL VALUES 3;
 -- EXPLAIN:   VALUES (COL1 SMALLINT) = ROW(3)
 -- EXPLAIN: UNION ALL (COL1 SMALLINT)
 
--- # Each row from either side is only evaluated once.
-SELECT NEXT VALUE FOR seq1 FROM t2 UNION ALL SELECT NEXT VALUE FOR seq1 FROM t2;
+-- # NEXT VALUE FOR can't be used on either side, even a nested one. No value is
+-- # used.
+SELECT NEXT VALUE FOR seq1 FROM t2 UNION ALL SELECT x FROM t2;
+SELECT x FROM t2 EXCEPT SELECT NEXT VALUE FOR seq1 FROM t2;
+SELECT x FROM t2 UNION (SELECT x FROM t2 EXCEPT SELECT NEXT VALUE FOR seq1 FROM t2);
+SELECT NEXT VALUE FOR seq1 FROM t2;
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in UNION
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in EXCEPT
+-- error 42601: syntax error: NEXT VALUE FOR cannot be used in UNION
 -- COL1: 1
 -- COL1: 2
 -- COL1: 3
--- COL1: 4
--- COL1: 5
--- COL1: 6
 
 -- # An error from either side.
 SELECT x FROM t1 UNION SELECT 1 / 0 FROM t2;

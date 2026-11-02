@@ -1899,7 +1899,7 @@
 6.38/CR/1                n/a          - - intervals (F052)
 # 6.39, <boolean value expression>
 6.39                     implemented  vsql/std_2_6_39_boolean_value_expression.v tests/logical.sql
-6.39/SR/1                partial      vsql/std_2_6_39_boolean_value_expression.v tests/logical.sql the operands of AND, OR, NOT and IS aren't checked (#775)
+6.39/SR/1                implemented  vsql/std_2_6_39_boolean_value_expression.v tests/logical.sql
 6.39/SR/2                implemented  vsql/std_2_6_39_boolean_value_expression.y tests/boolean.sql
 6.39/SR/3                definition   - -
 6.39/SR/3.a              missing      - - a CHECK (c IS NOT NULL) column isn't known not nullable (#773)

@@ -60,10 +60,22 @@ fn (e BooleanValueExpression) pstr(params map[string]Value) string {
 	return e.term.pstr(params)
 }
 
+// check_boolean_operand returns an error if an operand of a boolean operator
+// isn't a boolean.
+//
+// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 1
+fn check_boolean_operand(op string, operand CompileResult) ! {
+	if operand.typ.typ != .is_boolean {
+		return sqlstate_42804('in ${op}', 'BOOLEAN', operand.typ.str())
+	}
+}
+
 fn (e BooleanValueExpression) compile(mut c Compiler) !CompileResult {
 	if expr := e.expr {
 		compiled_a := expr.compile(mut c)!
 		compiled_b := e.term.compile(mut c)!
+		check_boolean_operand('OR', compiled_a)!
+		check_boolean_operand('OR', compiled_b)!
 
 		return CompileResult{
 			run:          fn [compiled_a, compiled_b] (mut conn Connection, data Row, params map[string]Value) !Value {
@@ -113,6 +125,8 @@ fn (e BooleanTerm) compile(mut c Compiler) !CompileResult {
 	if term := e.term {
 		compiled_a := term.compile(mut c)!
 		compiled_b := e.factor.compile(mut c)!
+		check_boolean_operand('AND', compiled_a)!
+		check_boolean_operand('AND', compiled_b)!
 
 		return CompileResult{
 			run:          fn [compiled_a, compiled_b] (mut conn Connection, data Row, params map[string]Value) !Value {
@@ -193,6 +207,7 @@ fn (e BooleanTest) compile(mut c Compiler) !CompileResult {
 	compiled := e.expr.compile(mut c)!
 
 	if v := e.value {
+		check_boolean_operand('IS', compiled)!
 		return CompileResult{
 			run:          fn [e, v, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
 				// The truth table for IS (Table 15).
@@ -225,6 +240,7 @@ fn (e BooleanTest) compile(mut c Compiler) !CompileResult {
 	}
 
 	if e.inverse {
+		check_boolean_operand('NOT', compiled)!
 		return CompileResult{
 			run:          fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {
 				return e.unary_not(compiled.run(mut conn, data, params)!)!

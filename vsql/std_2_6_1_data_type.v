@@ -106,3 +106,14 @@ fn check_fractional_seconds_precision(name string, prec string) ! {
 		return sqlstate_42601('${name}(${prec}): cannot have precision greater than 6')
 	}
 }
+
+// check_noncharacters raises 22029 if s contains a Unicode noncharacter (U+FDD0
+// to U+FDEF, and the last two code points of each plane). The only character
+// set is UTF8, which is a UCS repertoire, so a character string can't have one.
+//
+// ISO/IEC 9075-2:2016(E), 6.1, <data type>, General Rules, 2
+fn check_noncharacters(s string) ! {
+	if s.runes().any((it >= 0xFDD0 && it <= 0xFDEF) || (u32(it) & 0xFFFE) == 0xFFFE) {
+		return sqlstate_22029()
+	}
+}

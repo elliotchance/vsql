@@ -50,6 +50,11 @@ fn (e DynamicParameterSpecification) compile(mut c Compiler) !CompileResult {
 
 	p := c.params[e.name] or { return sqlstate_42p02(e.name) }
 
+	// ISO/IEC 9075-2:2016(E), 6.1, <data type>, General Rules, 2
+	if !p.is_null && p.typ.typ in [.is_character, .is_varchar] {
+		check_noncharacters(p.string_value())!
+	}
+
 	return CompileResult{
 		run:          fn [p] (mut conn Connection, data Row, params map[string]Value) !Value {
 			return p

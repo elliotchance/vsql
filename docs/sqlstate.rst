@@ -399,6 +399,19 @@ The trim character must be exactly one character.
   VALUES TRIM('ab' FROM 'abcab');
   -- error 22027: trim error
 
+``22029`` noncharacter in UCS string
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A character string can't contain a Unicode noncharacter (U+FDD0 to U+FDEF, and
+the last two code points of each plane).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES U&'\FFFF';
+  -- error 22029: noncharacter in UCS string
+
 ``23502`` violates not-null constraint
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

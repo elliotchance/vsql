@@ -313,6 +313,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 				i = escape_end
 				word = unescape_unicode(word, escape)!
 			}
+			check_noncharacters(word)!
 			tokens << Token{token_literal_string, YYSymType{
 				v: new_character_value(word)
 			}}

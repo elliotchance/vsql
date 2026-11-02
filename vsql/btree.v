@@ -81,30 +81,10 @@ fn (mut p Btree) search_page(key []u8) !([]int, []int) {
 			break
 		}
 
-		// Continue to traverse through the next page. Since we need to find the
-		// greatest key that is less than the searching key it's easiest to do
-		// this backwards.
-		objects := page.objects()
-		depth_iterator << objects.len - 1
-		mut found := false
-		for depth_iterator[depth_iterator.len - 1] >= 0 {
-			if compare_bytes(key, objects[depth_iterator[depth_iterator.len - 1]].key) >= 0 {
-				mut buf := new_bytes(objects[depth_iterator[depth_iterator.len - 1]].value)
-				current_page = buf.read_i32()
-				found = true
-				break
-			}
-			depth_iterator[depth_iterator.len - 1]--
-		}
-
-		// Not found means that the key must exist before the first page. We
-		// return the first page but always choosing the 0th page until we hit a
-		// leaf.
-		if !found {
-			depth_iterator[depth_iterator.len - 1] = 0
-			mut buf := new_bytes(objects[0].value)
-			current_page = buf.read_i32()
-		}
+		// Continue to traverse through the next page.
+		index, pointer := page.find_pointer(key)
+		depth_iterator << index
+		current_page = pointer
 	}
 
 	return path, depth_iterator

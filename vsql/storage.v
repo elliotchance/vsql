@@ -793,6 +793,12 @@ fn (mut f Storage) check_concurrent_referenced_tables(definition Table, old_keys
 // of t would otherwise not check the rows that reference it. It must be called
 // from inside an isolation block.
 fn (mut f Storage) check_concurrent_references(t Table) ! {
+	// Only another active transaction can have written a concurrent object, so
+	// there's no need to read them.
+	if !f.header.active_transaction_ids.has_other(f.transaction_id) {
+		return
+	}
+
 	mut iter := f.btree.new_range_iterator('T'.bytes(), 'U'.bytes())
 	for {
 		object := iter.next() or { break }
@@ -821,6 +827,12 @@ fn (mut f Storage) check_concurrent_objects(start []u8, end []u8) ! {
 // has_concurrent_objects is true if another active transaction has created or
 // expired an object from start to end (inclusive).
 fn (mut f Storage) has_concurrent_objects(start []u8, end []u8) !bool {
+	// Only another active transaction can have written a concurrent object, so
+	// there's no need to read them.
+	if !f.header.active_transaction_ids.has_other(f.transaction_id) {
+		return false
+	}
+
 	mut iter := f.btree.new_range_iterator(start, end)
 	for {
 		object := iter.next() or { break }

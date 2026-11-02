@@ -48,6 +48,17 @@ fn (mut t TransactionIDs) remove(transaction_id u64) {
 	}
 }
 
+// has_other returns true if a transaction other than transaction_id is active.
+fn (t TransactionIDs) has_other(transaction_id u64) bool {
+	for i in 0 .. 256 {
+		if t.tids[i] != 0 && t.tids[i] != transaction_id {
+			return true
+		}
+	}
+
+	return false
+}
+
 fn (mut t TransactionIDs) exists(transaction_id u64) bool {
 	for i in 0 .. t.end {
 		if t.tids[i] == transaction_id {

@@ -174,3 +174,28 @@ SELECT a, b AS a FROM t ORDER BY 1.5 + 1.5 + 1.5 + 1.5;
 -- A: 1 A: 2
 -- A: 1 A: 2
 -- A: 1 A: 2
+
+-- # A sort key of a grouped query can only use grouping columns, otherwise the
+-- # order depends on which row of the group is used.
+CREATE TABLE g (x INTEGER, y INTEGER);
+INSERT INTO g (x, y) VALUES (1, 2), (2, 1), (1, 0);
+SELECT x FROM g GROUP BY x ORDER BY y;
+SELECT x FROM g GROUP BY x ORDER BY g.y;
+SELECT x FROM g GROUP BY x HAVING x > 0 ORDER BY y + 1;
+SELECT COUNT(*) FROM g ORDER BY y;
+SELECT COUNT(*) FROM g HAVING COUNT(*) > 0 ORDER BY x;
+SELECT 1 FROM g HAVING COUNT(*) > 0 ORDER BY x;
+SELECT x FROM g GROUP BY x ORDER BY x DESC;
+SELECT x FROM g GROUP BY x ORDER BY g.x + 1 DESC;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 3
+-- error 42803: column Y must be in the GROUP BY clause or used in an aggregate function
+-- error 42803: column G.Y must be in the GROUP BY clause or used in an aggregate function
+-- error 42803: column Y must be in the GROUP BY clause or used in an aggregate function
+-- error 42803: column Y must be in the GROUP BY clause or used in an aggregate function
+-- error 42803: column X must be in the GROUP BY clause or used in an aggregate function
+-- error 42803: column X must be in the GROUP BY clause or used in an aggregate function
+-- X: 2
+-- X: 1
+-- X: 2
+-- X: 1

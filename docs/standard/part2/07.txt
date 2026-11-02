@@ -1444,8 +1444,8 @@
 7.17/SR/28.d.i.9         container    - -
 7.17/SR/28.d.i.9.A       implemented  vsql/planner.v tests/order.sql
 7.17/SR/28.d.i.9.B       container    - -
-7.17/SR/28.d.i.9.B.I     missing      - - #779
-7.17/SR/28.d.i.9.B.II    partial      vsql/std_2_7_16_query_specification.v tests/select-distinct.sql DISTINCT is checked, but not an aggregate function (#779)
+7.17/SR/28.d.i.9.B.I     implemented  vsql/planner.v tests/order.sql
+7.17/SR/28.d.i.9.B.II    implemented  vsql/planner.v tests/order.sql
 7.17/SR/28.d.i.9.B.III   implemented  vsql/planner.v tests/order.sql
 7.17/SR/28.d.i.10        implemented  vsql/planner.v tests/order.sql
 7.17/SR/28.d.i.11        implemented  vsql/planner.v tests/order.sql

@@ -103,6 +103,41 @@ fn (c Compiler) aggregation_scope() !int {
 	return scope
 }
 
+// set_grouping_columns is called before compiling an ORDER BY. If the query
+// specification is a grouped table, a column of a sort key must be one of its
+// grouping columns. It's still grouped without a GROUP BY when it has a HAVING or
+// an aggregate function, and it doesn't have any grouping columns then.
+fn (mut c Compiler) set_grouping_columns(body SimpleTable) ! {
+	if body !is QuerySpecification {
+		return
+	}
+
+	query := body as QuerySpecification
+	mut select_list := Compiler{
+		conn:   c.conn
+		params: c.params
+		tables: c.tables
+	}
+	mut is_grouped := query.table_expression.group_clause.len > 0
+		|| query.table_expression.having_clause != none
+	if query.exprs is []SelectSublist {
+		for item in query.exprs {
+			if item is DerivedColumn && item.expr.compile(mut select_list)!.contains_agg {
+				is_grouped = true
+			}
+		}
+	}
+	if !is_grouped {
+		return
+	}
+
+	mut columns := []Column{}
+	for column in query.table_expression.group_clause {
+		columns << group_column(column, c.tables)!
+	}
+	c.grouping_columns = columns
+}
+
 // check_deterministic returns an error if the expression (described by what)
 // is possibly non-deterministic and it's in a CHECK constraint or a generation
 // expression. Otherwise, the constraint could be satisfied when a row is

@@ -23,12 +23,18 @@ fn register_bench_command(mut cmd cli.Command) {
 	bench_cmd.add_flag(cli.Flag{
 		flag:        .int
 		name:        'size'
-		description: 'Multiplies the number of rows (and other actions) of the benchmark, such as 10 for 1,000,000 accounts (default 1). For big, the MiB of values to insert, at least 10 (default 100)'
+		description: 'Multiplies the number of rows (and other actions) of the benchmark:\ntpc-b: such as 10 for 1,000,000 accounts (default 1)\nspeedtest1: most tables have 500 rows for each size (default 10)\nbig: the MiB of values to insert, at least 10 (default 100)'
 	})
 	bench_cmd.add_flag(cli.Flag{
 		flag:        .string
 		name:        'suite'
-		description: 'The suite to run:\ntpc-b-setup: create the tables and insert the rows\ntpc-b-oltp: run transactions on a -file from tpc-b-setup\ntpc-b-check: check the rows of a -file from tpc-b-setup\ntpc-b: all three (the default)\nbig: insert values of 1 to 10 MiB until they add up to -size MiB, and read them back'
+		description: 'The suite to run:\n' +
+			'big: insert values of 1 to 10 MiB until they add up to -size MiB, and read them back\n' +
+			'speedtest1: the tests of speedtest1 from SQLite\n' +
+			'tpc-b: tpc-b-setup, tpc-b-oltp and tpc-b-check, in that order (the default)\n' +
+			'tpc-b-check: check the rows of a -file from tpc-b-setup\n' +
+			'tpc-b-oltp: run transactions on a -file from tpc-b-setup\n' +
+			'tpc-b-setup: create the tables and insert the rows'
 	})
 	bench_cmd.add_flag(cli.Flag{
 		flag:        .int
@@ -59,20 +65,14 @@ fn bench_command(cmd cli.Command) ! {
 	}
 
 	suite := cmd.flags.get_string('suite') or { '' }
-	if suite !in ['', 'tpc-b', 'tpc-b-setup', 'tpc-b-oltp', 'tpc-b-check', 'big'] {
-		return error('unknown suite: ${suite} (expected tpc-b, tpc-b-setup, tpc-b-oltp, tpc-b-check or big)')
+	if suite !in ['', 'tpc-b', 'tpc-b-setup', 'tpc-b-oltp', 'tpc-b-check', 'big', 'speedtest1'] {
+		return error('unknown suite: ${suite} (expected tpc-b, tpc-b-setup, tpc-b-oltp, tpc-b-check, big or speedtest1)')
 	}
 	big := suite == 'big'
 	all := suite in ['', 'tpc-b']
 	setup := all || suite == 'tpc-b-setup'
 	oltp := all || suite == 'tpc-b-oltp'
 	check := all || suite == 'tpc-b-check'
-
-	// tpc-b-oltp and tpc-b-check need the rows that tpc-b-setup inserted, which
-	// a new in-memory database wouldn't have.
-	if !setup && !big && file == ':memory:' {
-		return error('-suite ${suite} needs a -file that -suite tpc-b-setup created')
-	}
 
 	isolation := cmd.flags.get_string('isolation') or { '' }
 	if isolation == 'read-uncommitted' {
@@ -86,6 +86,20 @@ fn bench_command(cmd cli.Command) ! {
 	if size < 0 {
 		return error('-size must be at least 1')
 	}
+
+	if suite == 'speedtest1' {
+		if (cmd.flags.get_int('duration') or { 0 }) != 0 {
+			return error('-duration can not be used with -suite speedtest1, which runs each test once')
+		}
+		return speedtest1(file, if size > 0 { size } else { 10 }, isolation)
+	}
+
+	// tpc-b-oltp and tpc-b-check need the rows that tpc-b-setup inserted, which
+	// a new in-memory database wouldn't have.
+	if !setup && !big && file == ':memory:' {
+		return error('-suite ${suite} needs a -file that -suite tpc-b-setup created')
+	}
+
 	// The largest value of the big suite is 10 MiB, so at least 10 MiB means at
 	// least one whole value is always inserted.
 	if big && size > 0 && size < 10 {
@@ -141,4 +155,30 @@ fn bench_command(cmd cli.Command) ! {
 		benchmark.big(big_mib)!
 	}
 	benchmark.print_peak_memory()
+}
+
+// speedtest1 runs -suite speedtest1, with the same "name=value" heading as the
+// other suites. Its results are one line for each test, like SQLite's.
+fn speedtest1(file string, size int, isolation string) ! {
+	mut conn := vsql.open(file)!
+
+	println('# vsql bench')
+	print_value('build_version', vsql.build_version())
+	print_value('build_commit', vsql.build_commit())
+	print_value('build_date', vsql.build_date())
+	print_value('build_v_version', vsql.build_v_version())
+	print_value('build_v_commit', vsql.build_v_commit())
+	print_value('build_c_compiler', vsql.build_c_compiler())
+	print_value('suite', 'speedtest1')
+	print_value('file', file)
+	print_value('size', size.str())
+	print_value('isolation', if isolation == '' { 'serializable' } else { isolation })
+
+	println('# speedtest1')
+	mut speedtest := Speedtest1{
+		conn:            conn
+		size:            size
+		isolation_level: isolation.to_upper().replace('-', ' ')
+	}
+	speedtest.start()!
 }

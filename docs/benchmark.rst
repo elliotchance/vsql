@@ -30,6 +30,7 @@ Usage
    vsql bench -file bench.vsql -suite tpc-b-check   # only check the rows and totals
    vsql bench -suite big                            # 100 MiB of large values
    vsql bench -suite big -size 1000                 # 1,000 MiB of large values
+   vsql bench -suite speedtest1 -size 1             # SQLite's speedtest1, a quick test
 
 The options are:
 
@@ -42,11 +43,13 @@ The options are:
 
 - ``-suite``: What to run (see *Suites*):
 
-  - ``tpc-b``: All three of the suites below, in order (the default).
-  - ``tpc-b-setup``: Create the tables and insert the rows.
-  - ``tpc-b-oltp``: Run the transactions.
-  - ``tpc-b-check``: Check the rows and totals.
   - ``big``: Insert large values, and read them back.
+  - ``speedtest1``: The tests of speedtest1 from SQLite (see *speedtest1*).
+  - ``tpc-b``: ``tpc-b-setup``, ``tpc-b-oltp`` and ``tpc-b-check``, in that
+    order (the default).
+  - ``tpc-b-check``: Check the rows and totals.
+  - ``tpc-b-oltp``: Run the transactions.
+  - ``tpc-b-setup``: Create the tables and insert the rows.
 
 - ``-size``: Multiplies the number of rows of each table (see *Process*), like
   the scale factor of pgbench. The default is 1, and ``-size 10`` creates
@@ -297,3 +300,45 @@ at the same time are run from separate processes, each with its own
 3. As the pgbench documentation says, don't trust a benchmark that only runs for
 a few seconds. Run it for at least a minute (the default), and run it more than
 once to see how much the results change.
+
+speedtest1
+----------
+
+``vsql bench -suite speedtest1`` runs the same numbered tests as
+`speedtest1 from SQLite <https://sqlite.org/src/file/test/speedtest1.c>`_, with
+the same random data. It runs each test once and prints how long it took, then
+the total. ``-size`` changes how many rows are used, such as
+``vsql bench -suite speedtest1 -size 1`` for a quicker test (the default is
+10). It runs in memory unless ``-file`` is used, and ``-isolation`` sets the
+isolation level of each transaction. ``-duration`` can't be used, since each
+test runs once.
+
+The tables are created in the default schema, so a ``-file`` must not already
+have tables called ``Z1``, ``Z2``, ``T3``, ``T4``, ``T5`` or ``T6``.
+
+Some tests are skipped, and shown as skipped with the reason, because vsql
+doesn't have what they need yet:
+
+- 200: ``VACUUM``
+- 980: ``PRAGMA integrity_check``
+- 990: ``ANALYZE``
+
+The rest of the tests are the same as far as possible, with two differences:
+
+- ``REPLACE`` is an ``UPDATE`` followed by an ``INSERT`` if there was no row.
+- The four-way joins of test 310 use ``JOIN ... ON``, rather than listing the
+  tables after ``FROM`` and joining them in the ``WHERE``, which vsql would run
+  as a cross join of all four tables.
+
+Each test runs in one transaction (or none) where SQLite's does, and a table
+with a key has a ``PRIMARY KEY``. So, to compare it with SQLite on disk, run
+SQLite's speedtest1 with ``--primarykey`` (otherwise the keys are ``UNIQUE``)
+and ``--journal wal`` (vsql also commits through a log):
+
+.. code-block:: text
+
+   vsql bench -suite speedtest1 -file speedtest1.vsql
+   speedtest1 --size 10 --primarykey --journal wal speedtest1.db
+
+To compare two versions of vsql, compare each test that ran in both, with the
+same ``-size``. Don't compare the total if the skipped tests aren't the same.

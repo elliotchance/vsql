@@ -60,6 +60,7 @@ bench
    vsql bench -file bench.vsql -suite tpc-b-setup   # only insert the rows
    vsql bench -file bench.vsql -suite tpc-b-oltp    # only run the transactions
    vsql bench -file bench.vsql -suite tpc-b-check   # only check the rows and totals
+   vsql bench -suite speedtest1 -size 1             # SQLite's speedtest1, a quick test
 
 Options are:
 
@@ -69,15 +70,19 @@ Options are:
   database, since the tables are created in their own ``TPC_B`` schema.
 - ``-suite``: What to run (see :doc:`benchmark`):
 
-  - ``tpc-b``: All three of the suites below, in order (the default).
-  - ``tpc-b-setup``: Create the tables and insert the rows.
-  - ``tpc-b-oltp``: Run the transactions on a ``-file`` that ``tpc-b-setup``
-    created.
+  - ``speedtest1``: The tests of speedtest1 from SQLite.
+  - ``tpc-b``: ``tpc-b-setup``, ``tpc-b-oltp`` and ``tpc-b-check``, in that
+    order (the default).
   - ``tpc-b-check``: Check the rows and totals of a ``-file`` that
     ``tpc-b-setup`` created.
+  - ``tpc-b-oltp``: Run the transactions on a ``-file`` that ``tpc-b-setup``
+    created.
+  - ``tpc-b-setup``: Create the tables and insert the rows.
 - ``-size``: Multiplies the number of rows of each table, such as ``10`` for
-  1,000,000 accounts (default 1).
+  1,000,000 accounts (default 1). For ``speedtest1``, most of the tables have
+  500 rows for each size (default 10).
 - ``-duration``: The number of seconds to run transactions for (default 60).
+  It can't be used with ``speedtest1``, which runs each test once.
 - ``-isolation``: The isolation level of the transactions: ``read-committed``,
   ``repeatable-read`` or ``serializable`` (default ``serializable``).
   ``read-uncommitted`` can't be used, because it's always ``READ ONLY``. See

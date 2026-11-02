@@ -60,7 +60,14 @@ fn wal_commit(mut file os.File, path string, header Header, pager &FilePager) ! 
 
 	log_path := wal_path(path)
 	is_new := !os.exists(log_path)
-	mut log := os.create(log_path) or { return sqlstate_58030('unable to create ${log_path}: ${err}') }
+	// A log is reused because replacing it takes longer. Frames left over from
+	// the previous log are never valid, because this log has a new salt.
+	mut log := if is_new {
+		os.create(log_path) or { return sqlstate_58030('unable to create ${log_path}: ${err}') }
+	} else {
+		// The "b" is needed on Windows, otherwise the file is opened in text mode.
+		os.open_file(log_path, 'rb+') or { return sqlstate_58030('unable to open ${log_path}: ${err}') }
+	}
 	defer {
 		log.close()
 	}

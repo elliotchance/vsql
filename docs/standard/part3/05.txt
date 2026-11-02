@@ -460,7 +460,7 @@
 5.11                     implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_49_param_data_test.c
 5.11/GR/1                definition   - -
 5.11/GR/2                definition   - -
-5.11/GR/3                deviates     libvsql/std_3_4_4_7_cli_descriptor_areas.v - every statement, not only those of the descriptor's connection (#745)
+5.11/GR/3                implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_49_param_data_test.c
 5.11/GR/4                definition   - -
 5.11/GR/5                definition   - -
 5.11/GR/6                implemented  libvsql/std_3_4_4_7_cli_descriptor_areas.v libvsql/std_3_6_49_param_data_test.c

@@ -596,12 +596,12 @@ fn (desc &Desc) has_prepared_or_executed() bool {
 // check_desc_deferred raises an exception condition if the descriptor is the
 // current APD, or the IPD, of a statement that has a deferred parameter number:
 // CLI-specific condition — function sequence error (ISO/IEC 9075-3:2003(E),
-// 5.11, Deferred parameter check). It checks the statements of every
-// connection, rather than only the descriptor's (General Rules, 3), which is
-// #745.
+// 5.11, Deferred parameter check). Only the statements of the descriptor's
+// connection are checked (General Rules, 3).
 fn check_desc_deferred(h i64) ! {
+	dbc := descs[h] or { return }.dbc
 	for _, stmt in stmts {
-		if (stmt.apd == h || stmt.ipd == h) && stmt.deferred() > 0 {
+		if stmt.dbc == dbc && (stmt.apd == h || stmt.ipd == h) && stmt.deferred() > 0 {
 			return cli_error('HY010', 'function sequence error')
 		}
 	}

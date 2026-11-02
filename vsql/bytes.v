@@ -98,7 +98,10 @@ fn (mut b Bytes) write_u16(data u16) {
 }
 
 fn (mut b Bytes) read_u16() u16 {
-	return binary.big_endian_u16(b.read_u8s(2))
+	data := binary.big_endian_u16_at(b.data, b.at)
+	b.at += 2
+
+	return data
 }
 
 fn (mut b Bytes) write_i32(data int) {
@@ -106,7 +109,10 @@ fn (mut b Bytes) write_i32(data int) {
 }
 
 fn (mut b Bytes) read_i32() int {
-	return int(i32(binary.big_endian_u32(b.read_u8s(4))))
+	data := int(i32(binary.big_endian_u32_at(b.data, b.at)))
+	b.at += 4
+
+	return data
 }
 
 fn (mut b Bytes) write_i64(data i64) {
@@ -122,7 +128,10 @@ fn (mut b Bytes) write_u64(data u64) {
 }
 
 fn (mut b Bytes) read_u64() u64 {
-	return binary.big_endian_u64(b.read_u8s(8))
+	data := binary.big_endian_u64_at(b.data, b.at)
+	b.at += 8
+
+	return data
 }
 
 fn (mut b Bytes) write_f32(data f32) {
@@ -130,7 +139,10 @@ fn (mut b Bytes) write_f32(data f32) {
 }
 
 fn (mut b Bytes) read_f32() f32 {
-	return math.f32_from_bits(binary.big_endian_u32(b.read_u8s(4)))
+	data := math.f32_from_bits(binary.big_endian_u32_at(b.data, b.at))
+	b.at += 4
+
+	return data
 }
 
 fn (mut b Bytes) write_f64(data f64) {

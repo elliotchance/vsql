@@ -106,22 +106,23 @@ DELETE FROM parent;
 -- error 23503: violates foreign key constraint: FOREIGN KEY (I) REFERENCES ":memory:".PUBLIC.PARENT (R) on ":memory:".PUBLIC.CHILD
 -- error 23503: violates foreign key constraint: FOREIGN KEY (N) REFERENCES ":memory:".PUBLIC.PARENT (I) on ":memory:".PUBLIC.CHILD
 
--- # A datetime without a time zone is comparable with one with a time zone
--- # (T201), and is in the session time zone (+05:00).
+-- # A datetime can't reference one with a different time zone field.
 CREATE TABLE parent (t TIME WITH TIME ZONE PRIMARY KEY, ts TIMESTAMP UNIQUE);
-CREATE TABLE child (t TIME REFERENCES parent, ts TIMESTAMP WITH TIME ZONE REFERENCES parent (ts));
-INSERT INTO parent (t, ts) VALUES (TIME '07:00:00+00:00', TIMESTAMP '2020-01-01 12:00:00');
-INSERT INTO child (t, ts) VALUES (TIME '12:00:00', TIMESTAMP '2020-01-01 07:00:00+00:00');
-INSERT INTO child (t) VALUES (TIME '07:00:00');
-INSERT INTO child (ts) VALUES (TIMESTAMP '2020-01-01 12:00:00+00:00');
-DELETE FROM parent;
+CREATE TABLE child (t TIME REFERENCES parent);
+CREATE TABLE child (ts TIMESTAMP WITH TIME ZONE REFERENCES parent (ts));
 -- msg: CREATE TABLE 1
+-- error 42804: data type mismatch in FOREIGN KEY: expected TIME(0) WITH TIME ZONE but got TIME(0) WITHOUT TIME ZONE
+-- error 42804: data type mismatch in FOREIGN KEY: expected TIMESTAMP(6) WITHOUT TIME ZONE but got TIMESTAMP(6) WITH TIME ZONE
+
+-- # A UNIQUE that's DEFERRABLE can't be referenced.
+CREATE TABLE p (x INT UNIQUE DEFERRABLE, y INT UNIQUE INITIALLY DEFERRED, z INT UNIQUE NOT DEFERRABLE);
+CREATE TABLE c (x INT REFERENCES p (x));
+CREATE TABLE c (y INT REFERENCES p (y));
+CREATE TABLE c (z INT REFERENCES p (z));
 -- msg: CREATE TABLE 1
--- msg: INSERT 1
--- msg: INSERT 1
--- error 23503: violates foreign key constraint: FOREIGN KEY (T) REFERENCES ":memory:".PUBLIC.PARENT (T) on ":memory:".PUBLIC.CHILD
--- error 23503: violates foreign key constraint: FOREIGN KEY (TS) REFERENCES ":memory:".PUBLIC.PARENT (TS) on ":memory:".PUBLIC.CHILD
--- error 23503: violates foreign key constraint: FOREIGN KEY (T) REFERENCES ":memory:".PUBLIC.PARENT (T) on ":memory:".PUBLIC.CHILD
+-- error 42830: invalid foreign key: FOREIGN KEY cannot reference a DEFERRABLE constraint: P_UNIQUE_1
+-- error 42830: invalid foreign key: FOREIGN KEY cannot reference a DEFERRABLE constraint: P_UNIQUE_2
+-- msg: CREATE TABLE 1
 
 -- # A BIGINT that references an INTEGER is compared as a BIGINT.
 CREATE TABLE parent (i INT PRIMARY KEY);

@@ -418,7 +418,7 @@
 11.8/SR/4                container    - -
 11.8/SR/4.a              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
 11.8/SR/4.b              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
-11.8/SR/5                deviates     vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql the referenced unique constraint can be DEFERRABLE (#789)
+11.8/SR/5                implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
 11.8/SR/6                implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
 11.8/SR/6.a              implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
 11.8/SR/6.b              n/a          - - temporary tables (F531)
@@ -428,7 +428,7 @@
 11.8/SR/8                implemented  vsql/std_2_11_3_table_definition.v tests/foreign-key.sql
 11.8/SR/9                implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
 11.8/SR/10               n/a          - - system-versioned tables (T180)
-11.8/SR/11               deviates     vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql a datetime with a time zone can reference one without (#789)
+11.8/SR/11               implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql
 11.8/SR/12               implemented  vsql/std_2_11_3_table_definition.v tests/foreign-key.sql
 11.8/SR/13               implemented  vsql/std_2_11_3_table_definition.v tests/foreign-key.sql
 11.8/SR/14               implemented  vsql/std_2_11_8_referential_constraint_definition.v tests/foreign-key.sql

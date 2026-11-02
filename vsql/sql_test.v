@@ -2566,6 +2566,15 @@ fn old_sequence(definition string, current_value i64, unused bool) !Sequence {
 		value.bytes(), 0)
 }
 
+// A foreign key of a datetime without a time zone that references one with a time
+// zone can't be created any more, but a file can already have one. Its value is
+// compared in the session time zone.
+fn test_old_foreign_key_time_zone() {
+	value := new_time_value('12:00:00')!
+	assert key_type_value(value, .is_time_with_time_zone, 300).time_value().time_zone == 300
+	assert key_type_value(value, .is_time_without_time_zone, 300).time_value().time_zone == 0
+}
+
 fn test_old_sequence_implicit_limits() ! {
 	// Within the new implicit limits, they're used.
 	mut s := old_sequence('START WITH 5\n  INCREMENT BY 1', 4, true)!

@@ -48,7 +48,9 @@ pub fn serve(paths []string, host string, port int) ! {
 	}
 	println('ready on http://${listener.addr()!}')
 
-	create_app_tables(paths[0], options[0])!
+	for i, path in paths {
+		create_app_tables(path, options[i])!
+	}
 
 	a := &App{
 		db_files:      paths
@@ -62,8 +64,8 @@ pub fn serve(paths []string, host string, port int) ! {
 }
 
 struct App {
-	// db_files are the files opened, the first one has VSQL_APP.TABS and is the
-	// current catalog. catalog_names and options are for each file.
+	// db_files are the files opened, each has its own VSQL_APP and the first one
+	// is the current catalog. catalog_names and options are for each file.
 	db_files      []string
 	catalog_names []string
 	options       []vsql.ConnectionOptions
@@ -71,7 +73,7 @@ mut:
 	// results is the last result of each tab (by id), so it's shown again
 	// without running the tab when switching back to it. They are not kept
 	// when the app is restarted.
-	results shared map[int]TabResult
+	results shared map[string]TabResult
 }
 
 // handle answers a single HTTP request and closes the connection. A GET shows
@@ -152,55 +154,63 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		conn.close()
 	}
 
-	all_tabs := tabs(mut conn)!
+	all_tabs := a.tabs(mut conn)!
 
 	// Showing a tab doesn't run it (that's only done with Run), it shows the
 	// last result.
 	if !is_post {
 		tab := all_tabs.filter(it.active)[0] or { no_tab }
 		result := rlock a.results {
-			a.results[tab.id] or { TabResult{} }
+			a.results[tab.ref()] or { TabResult{} }
 		}
 		return a.page(mut conn, all_tabs, tab, result)
 	}
 
-	tab_id := (form.get('tab') or { '' }).int()
-	tab := all_tabs.filter(it.id == tab_id)[0] or { no_tab }
+	tab_ref := form.get('tab') or { '' }
+	tab := all_tabs.filter(it.ref() == tab_ref)[0] or { no_tab }
 	query_text := form.get('sql') or { tab.query_text }
 	if tab.id != no_tab.id {
-		save_tab(mut conn, tab.id, query_text)!
+		save_tab(mut conn, tab, query_text)!
 	}
+	// With no tab, a new tab is in the first file.
+	catalog := if tab.id == no_tab.id { a.catalog_names[0] } else { tab.catalog }
 
-	// A table in the sidebar opens a new tab that runs SELECT * on it.
-	if table := form.get('query') {
-		table_sql := 'SELECT * FROM ${table}'
-		id := add_tab(mut conn, table_sql)!
-		result := a.run_query(mut conn, table_sql)!
-		lock a.results {
-			a.results[id] = result
+	// A table in the sidebar opens a new tab of its file that runs SELECT * on
+	// it. The tab runs in that file, so the query doesn't need the catalog.
+	for table_catalog in a.catalog_names {
+		if table := form.get('query:${table_catalog}') {
+			table_sql := 'SELECT * FROM ${table}'
+			new_tab := a.add_query_tab(mut conn, table_catalog, table_sql)!
+			result := a.run_query(mut conn, table_sql, table_catalog)!
+			lock a.results {
+				a.results[new_tab.ref()] = result
+			}
+			return '/'
 		}
-		return '/'
 	}
 	if other_tab := form.get('goto') {
-		activate_tab(mut conn, other_tab.int())!
+		a.activate_tab(mut conn, all_tabs.filter(it.ref() == other_tab)[0] or { no_tab })!
 		return '/'
 	}
-	if _ := form.get('new') {
-		add_tab(mut conn, show_tables_sql)!
+	// The sidebar adds a tab to its file, the tab bar to the file of the tab.
+	if new_catalog := form.get('new') {
+		a.add_query_tab(mut conn, if new_catalog in a.catalog_names { new_catalog } else { catalog },
+			show_tables_sql)!
 		return '/'
 	}
 	if close := form.get('close') {
-		mut stmt := conn.prepare('DELETE FROM vsql_app.tabs WHERE id = ?')!
-		stmt.query({
-			'?1': vsql.new_integer_value(close.int())
-		})!
+		for t in all_tabs {
+			if t.ref() == close {
+				remove_tab(mut conn, t)!
+			}
+		}
 		lock a.results {
-			a.results.delete(close.int())
+			a.results.delete(close)
 		}
 
 		// Closing the active tab activates the first tab, if there is one.
-		if close.int() == tab.id {
-			activate_tab(mut conn, (tabs(mut conn)![0] or { no_tab }).id)!
+		if close == tab.ref() {
+			a.activate_tab(mut conn, a.tabs(mut conn)![0] or { no_tab })!
 		}
 		return '/'
 	}
@@ -213,7 +223,7 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	// app_edit.js keeps the changes to try again.
 	if changes := form.get('changes') {
 		last := rlock a.results {
-			a.results[tab.id] or { TabResult{} }
+			a.results[tab.ref()] or { TabResult{} }
 		}
 		table := a.find_edit_table(mut conn, form.get('catalog') or { '' }, form.get('schema') or {
 			''
@@ -227,7 +237,7 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 				})
 			}
 		}
-		a.apply_changes(mut conn, tab.id, queries, query_text) or {
+		a.apply_changes(mut conn, tab, queries, query_text) or {
 			return a.page(mut conn, all_tabs, tab, TabResult{
 				...last
 				error: err.msg()
@@ -236,23 +246,23 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		return '/'
 	}
 
-	result := a.run_query(mut conn, query_text)!
+	result := a.run_query(mut conn, query_text, catalog)!
 	lock a.results {
-		a.results[tab.id] = result
+		a.results[tab.ref()] = result
 	}
-	title_tab(mut conn, tab.id, query_text)!
-	activate_tab(mut conn, tab.id)!
-	return a.page(mut conn, tabs(mut conn)!, Tab{tab.id, tab.tab_type, tab_title(query_text), query_text, true},
+	title_tab(mut conn, tab, query_text)!
+	a.activate_tab(mut conn, tab)!
+	return a.page(mut conn, a.tabs(mut conn)!, Tab{tab.id, tab.tab_type, tab_title(query_text), query_text, true, catalog},
 		result)
 }
 
 // apply_changes runs the changes to the rows (see run_changes), then the SQL
 // of the tab again for its result.
-fn (a &App) apply_changes(mut conn vsql.Connection, tab_id int, queries []string, query_text string) ! {
+fn (a &App) apply_changes(mut conn vsql.Connection, tab Tab, queries []string, query_text string) ! {
 	run_changes(mut conn, queries)!
-	result := a.run_query(mut conn, query_text)!
+	result := a.run_query(mut conn, query_text, tab.catalog)!
 	lock a.results {
-		a.results[tab_id] = TabResult{
+		a.results[tab.ref()] = TabResult{
 			...result
 			status: 'Saved ${queries.len} ${vsql.pluralize(queries.len, 'change')}, ${result.status}'
 		}

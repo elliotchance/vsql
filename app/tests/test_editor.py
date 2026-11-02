@@ -21,7 +21,7 @@ def test_choose_table(ui):
 
     # The sidebar is on every page, it lists the tab.
     expect(ui.sidebar_tabs).to_have_text(titles('SELECT * FROM PUBLIC."my <t>"'))
-    expect(ui.sidebar_tabs).to_have_class(['active'])
+    expect(ui.sidebar_tab_rows).to_have_class(['active'])
 
 
 def test_highlight(ui):
@@ -43,6 +43,10 @@ def test_run(ui, db_file):
     expect(ui.status).to_have_text(re.compile(r'^1 row \('))
     expect(ui.headers).to_have_text(['YBOOLEAN', 'ZSMALLINT'])
     expect(ui.cells).to_have_text(['TRUE', '3'])
+
+    # The title is the SQL on one line, before it's cut short.
+    ui.run('SELECT\n    y\n\nFROM foo.bar')
+    expect(ui.active_tab).to_have_text(re.compile(r'^SELECT y FROM foo\.bar'))
 
     # Ctrl+Enter (or Cmd+Enter) runs it too.
     ui.editor.fill('INSERT INTO foo.bar (y) VALUES (FALSE)')

@@ -22,6 +22,14 @@
 			[...folders].filter(d => !d.open).map(d => d.dataset.folder)));
 	}
 
+	// Only one menu of a tab is open, and it's closed by a click outside it or
+	// Escape.
+	const menus = sidebar.querySelectorAll('details.menu');
+	const closeMenus = except => menus.forEach(menu => { if (menu !== except) menu.open = false; });
+	menus.forEach(menu => menu.addEventListener('toggle', () => { if (menu.open) closeMenus(menu); }));
+	document.addEventListener('click', e => closeMenus(e.target.closest('details.menu')));
+	document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenus(null); });
+
 	// The width is limited by the min-width and max-width of the sidebar.
 	resizer.addEventListener('pointerdown', e => {
 		e.preventDefault();

@@ -49,7 +49,7 @@ def test_switch_tabs(ui, db_file):
     expect(ui.editor).to_have_value('SELECT * FROM PUBLIC."my <t>"')
     expect(ui.cells.nth(1)).to_have_text('a&b')
     expect(ui.sidebar_tabs).to_have_text(titles('SELECT * FROM PUBLIC."my <t>"', 'INSERT INTO foo.bar (y) VALUES...'))
-    expect(ui.sidebar_tabs).to_have_class(['active', ''])
+    expect(ui.sidebar_tab_rows).to_have_class(['active', ''])
 
     ui.sidebar_tab('INSERT INTO foo.bar (y) VALUES...').click()
     expect(ui.editor).to_have_value('SELECT * FROM foo.bar')
@@ -78,3 +78,17 @@ def test_close_tabs(ui, db_file):
     expect(ui.empty).to_have_text('Choose a table, or use + to add a tab.')
     expect(ui.tab_bar).to_have_count(0)
     assert count(db_file, 'SELECT COUNT(*) FROM vsql_app.tabs;') == 0
+
+
+def test_close_from_sidebar(ui, db_file):
+    # The menu of a tab in the sidebar closes it.
+    ui.new_tab()
+    ui.run('VALUES 1')
+    ui.new_tab()
+    ui.run('VALUES 2')
+    expect(ui.tab_bar).to_have_count(2)
+    menu = ui.tab_menu('VALUES 1')
+    menu.get_by_role('button', name='Close').click()
+    expect(ui.tab_bar).to_have_count(1)
+    expect(ui.active_tab).to_have_text(re.compile('^VALUES 2'))
+    assert count(db_file, 'SELECT COUNT(*) FROM vsql_app.tabs;') == 1

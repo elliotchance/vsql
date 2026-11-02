@@ -32,7 +32,7 @@ def test_restore_tabs(ui, db_file, start_app):
 def test_default_file(page, tmp_path, start_app):
     # Without a file, app.vsql in the current directory is created (or opened).
     ui = AppPage(page, start_app(cwd=tmp_path))
-    expect(ui.sections).to_have_text([re.compile('app$'), re.compile('Tabs 0$')])
+    expect(ui.sections).to_have_text([re.compile('app$')])
     ui.new_tab()
     ui.app.stop()
     assert count(tmp_path / 'app.vsql', 'SELECT COUNT(*) FROM vsql_app.tabs;') == 1

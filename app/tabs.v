@@ -10,9 +10,9 @@ struct AppColumn {
 	definition string
 }
 
-// app_columns are the columns of each table in VSQL_APP. TABS has the type,
-// title and payload of each tab in the editor (and which tab is active) so
-// they are restored the next time the file is opened.
+// app_columns are the columns of each table in VSQL_APP, which is in every file.
+// TABS has the type, title and payload of each tab of that file (and which tab
+// is active) so they are restored the next time the file is opened.
 //
 // A file keeps the tables and columns it had when it was last opened, so each
 // table is created with just its ID, then each column that's missing is added
@@ -25,8 +25,8 @@ const app_columns = [
 	AppColumn{'TABS', 'ACTIVE', 'BOOLEAN DEFAULT FALSE NOT NULL'},
 ]
 
-// create_app_tables creates the schema, tables and columns in VSQL_APP that
-// are missing (see app_columns). A new table starts empty.
+// create_app_tables creates the schema, tables and columns in VSQL_APP of a file
+// that are missing (see app_columns). A new table starts empty.
 fn create_app_tables(db_file string, options vsql.ConnectionOptions) ! {
 	mut conn := vsql.open_database(db_file, options)!
 	defer {
@@ -71,66 +71,102 @@ struct QueryPayload {
 	query_text string
 }
 
+// Tab is a row of VSQL_APP.TABS in the file catalog, which is the file that its
+// SQL runs in.
 struct Tab {
 	id         int
 	tab_type   string
 	title      string
 	query_text string
 	active     bool
+	catalog    string
 }
 
-fn tabs(mut conn vsql.Connection) ![]Tab {
+// ref identifies a tab in a form, since the ids are for each file.
+fn (t Tab) ref() string {
+	return '${t.catalog}:${t.id}'
+}
+
+// app_table is a table in VSQL_APP of a file.
+fn app_table(catalog string, name string) string {
+	return '"${catalog.replace('"', '""')}".vsql_app.${name}'
+}
+
+// tabs is the tabs of every file, in the order of the files.
+fn (a &App) tabs(mut conn vsql.Connection) ![]Tab {
 	mut tabs := []Tab{}
-	for row in conn.query('SELECT id, tab_type, title, payload, active FROM vsql_app.tabs ORDER BY id')! {
-		payload := json2.decode[QueryPayload](row.get_string('PAYLOAD')!)!
-		tabs << Tab{row.get_int('ID')!, row.get_string('TAB_TYPE')!, row.get_string('TITLE')!, payload.query_text, row.get_bool('ACTIVE')! == .is_true}
+	for catalog in a.catalog_names {
+		for row in conn.query('SELECT id, tab_type, title, payload, active FROM ${app_table(catalog, 'tabs')} ORDER BY id')! {
+			payload := json2.decode[QueryPayload](row.get_string('PAYLOAD')!)!
+			tabs << Tab{row.get_int('ID')!, row.get_string('TAB_TYPE')!, row.get_string('TITLE')!, payload.query_text, row.get_bool('ACTIVE')! == .is_true, catalog}
+		}
 	}
 
 	return tabs
 }
 
-// add_tab adds a tab after the others, makes it active and returns its id.
-fn add_tab(mut conn vsql.Connection, query_text string) !int {
-	mut stmt := conn.prepare('INSERT INTO vsql_app.tabs (tab_type, title, payload, active) VALUES (?, ?, ?, FALSE)')!
+// add_tab adds a tab to a file after its others, makes it active and returns it.
+fn (a &App) add_tab(mut conn vsql.Connection, catalog string, tab_type string, title string, payload string) !Tab {
+	mut stmt := conn.prepare('INSERT INTO ${app_table(catalog, 'tabs')} (tab_type, title, payload, active) VALUES (?, ?, ?, FALSE)')!
 	stmt.query({
-		'?1': vsql.new_varchar_value(query_tab)
-		'?2': vsql.new_varchar_value(tab_title(query_text))
-		'?3': vsql.new_varchar_value(json2.encode(QueryPayload{query_text}))
+		'?1': vsql.new_varchar_value(tab_type)
+		'?2': vsql.new_varchar_value(tab_title(title))
+		'?3': vsql.new_varchar_value(payload)
 	})!
-	mut id := 0
-	for row in conn.query('SELECT MAX(id) AS id FROM vsql_app.tabs')! {
-		id = row.get_int('ID')!
+	mut tab := Tab{
+		catalog: catalog
 	}
-	activate_tab(mut conn, id)!
+	for row in conn.query('SELECT MAX(id) AS id FROM ${app_table(catalog, 'tabs')}')! {
+		tab = Tab{
+			...tab
+			id: row.get_int('ID')!
+		}
+	}
+	a.activate_tab(mut conn, tab)!
 
-	return id
+	return tab
 }
 
-// activate_tab makes a tab active, or no tab if id is 0.
-fn activate_tab(mut conn vsql.Connection, id int) ! {
-	conn.query('UPDATE vsql_app.tabs SET active = FALSE WHERE active')!
-	if id == no_tab.id {
+fn (a &App) add_query_tab(mut conn vsql.Connection, catalog string, query_text string) !Tab {
+	return a.add_tab(mut conn, catalog, query_tab, query_text, json2.encode(QueryPayload{query_text}))
+}
+
+// activate_tab makes a tab active (there's one across all of the files), or no
+// tab if it's no_tab.
+fn (a &App) activate_tab(mut conn vsql.Connection, tab Tab) ! {
+	for catalog in a.catalog_names {
+		conn.query('UPDATE ${app_table(catalog, 'tabs')} SET active = FALSE WHERE active')!
+	}
+	if tab.id == no_tab.id {
 		return
 	}
-	mut stmt := conn.prepare('UPDATE vsql_app.tabs SET active = TRUE WHERE id = ?')!
+	mut stmt := conn.prepare('UPDATE ${app_table(tab.catalog, 'tabs')} SET active = TRUE WHERE id = ?')!
 	stmt.query({
-		'?1': vsql.new_integer_value(id)
+		'?1': vsql.new_integer_value(tab.id)
 	})!
 }
 
 // title_tab sets the title of a tab when it's run.
-fn title_tab(mut conn vsql.Connection, id int, query_text string) ! {
-	mut stmt := conn.prepare('UPDATE vsql_app.tabs SET title = ? WHERE id = ?')!
+fn title_tab(mut conn vsql.Connection, tab Tab, query_text string) ! {
+	mut stmt := conn.prepare('UPDATE ${app_table(tab.catalog, 'tabs')} SET title = ? WHERE id = ?')!
 	stmt.query({
 		'?1': vsql.new_varchar_value(tab_title(query_text))
-		'?2': vsql.new_integer_value(id)
+		'?2': vsql.new_integer_value(tab.id)
 	})!
 }
 
-fn save_tab(mut conn vsql.Connection, id int, query_text string) ! {
-	mut stmt := conn.prepare('UPDATE vsql_app.tabs SET payload = ? WHERE id = ?')!
+fn save_tab(mut conn vsql.Connection, tab Tab, query_text string) ! {
+	mut stmt := conn.prepare('UPDATE ${app_table(tab.catalog, 'tabs')} SET payload = ? WHERE id = ?')!
 	stmt.query({
 		'?1': vsql.new_varchar_value(json2.encode(QueryPayload{query_text}))
-		'?2': vsql.new_integer_value(id)
+		'?2': vsql.new_integer_value(tab.id)
+	})!
+}
+
+// remove_tab removes a tab.
+fn remove_tab(mut conn vsql.Connection, tab Tab) ! {
+	mut stmt := conn.prepare('DELETE FROM ${app_table(tab.catalog, 'tabs')} WHERE id = ?')!
+	stmt.query({
+		'?1': vsql.new_integer_value(tab.id)
 	})!
 }

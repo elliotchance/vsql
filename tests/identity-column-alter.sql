@@ -104,3 +104,13 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- X: 1 ID: 1
 -- X: 2 ID: 2
+
+-- # The NOT NULL of an identity column can't be dropped (#790).
+CREATE TABLE foo (id INT GENERATED ALWAYS AS IDENTITY, x INT);
+ALTER TABLE foo DROP CONSTRAINT foo_not_null_1 RESTRICT;
+INSERT INTO foo (x) VALUES (1);
+SELECT * FROM foo;
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: column ID is an identity column, so its NOT NULL cannot be dropped
+-- msg: INSERT 1
+-- ID: 1 X: 1

@@ -773,7 +773,7 @@
 11.26/SR/11.a            implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql
 11.26/SR/11.b            n/a          - - system-versioned tables (T180)
 11.26/SR/11.c            n/a          - - system-versioned tables (T180)
-11.26/SR/11.d            deviates     vsql/std_2_11_26_drop_table_constraint_definition.v - the NOT NULL of an identity column can be dropped (#790)
+11.26/SR/11.d            implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/identity-column-alter.sql
 11.26/SR/12              n/a          - - typed tables (S051)
 11.26/SR/13              implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql
 11.26/SR/13.a            implemented  vsql/std_2_11_26_drop_table_constraint_definition.v tests/alter-table-drop-constraint.sql

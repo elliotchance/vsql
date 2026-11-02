@@ -115,6 +115,13 @@ fn pg_command_tag(result Result) string {
 	return result.msg
 }
 
+// write_empty_query_response replies to a query that has no statement, in place
+// of a CommandComplete.
+fn (mut c PGConn) write_empty_query_response() ! {
+	c.write_byte(`I`)!
+	c.write_int32(4)! // self
+}
+
 fn (mut c PGConn) write_command_complete(tag string) ! {
 	c.write_byte(`C`)!
 

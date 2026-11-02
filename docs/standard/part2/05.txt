@@ -152,7 +152,7 @@
 5.4/SR/8.b.ii            n/a          - - user-defined types (S023)
 5.4/SR/8.b.iii           n/a          - - user-defined types (S023)
 5.4/SR/9                 n/a          - - user-defined types (S023)
-5.4/SR/10                missing      - - #740
+5.4/SR/10                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/definition-schema.sql
 5.4/SR/11                n/a          - - transcodings (F695)
 5.4/SR/12                n/a          - - named character sets (F461)
 5.4/SR/12.a              n/a          - - named character sets (F461)

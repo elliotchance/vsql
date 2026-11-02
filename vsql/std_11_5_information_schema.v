@@ -15,7 +15,7 @@ module vsql
 //
 // Each INFORMATION_SCHEMA only describes the schemas of its own catalog, which
 // is implementation-defined. The DEFINITION_SCHEMA (6.1) only exists as these
-// views, but its name can still be used for a schema, which is #740:
+// views, and its name can't be used for a schema:
 //
 //   ISO/IEC 9075-11:2008(E), 4.1, Introduction to the Definition Schema
 //   ISO/IEC 9075-11:2008(E), 6.1, DEFINITION_SCHEMA Schema

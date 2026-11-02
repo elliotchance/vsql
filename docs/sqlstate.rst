@@ -9,7 +9,7 @@ Handling Errors
 The error returned from ``query()`` will always be one of the ``SQLState``
 struct types. Each type describes the error situation, but may also contain
 specific fields appropriate for that error. See
-`std_2_24_1_sqlstate.v <https://github.com/elliotchance/vsql/blob/main/vsql/std_2_24_1_sqlstate.v>`_
+`std_2_24_1_sqlstate.v <https://github.com/vlang/vsql/blob/main/vsql/std_2_24_1_sqlstate.v>`_
 for struct definitions.
 
 This includes errors that aren't caused by the SQL itself, such as reading a
@@ -60,7 +60,7 @@ Or handling errors by class (first two letters):
    }
 
 See also
-`examples/error-handling.v <https://github.com/elliotchance/vsql/blob/main/examples/error-handling.v>`_.
+`examples/error-handling.v <https://github.com/vlang/vsql/blob/main/examples/error-handling.v>`_.
 
 SQLSTATE
 --------
@@ -895,7 +895,7 @@ no effect.
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 Something that should never happen, which is a bug in vsql. Please
-`report it <https://github.com/elliotchance/vsql/issues>`_.
+`report it <https://github.com/vlang/vsql/issues>`_.
 
 ``XX001`` data corrupted
 ^^^^^^^^^^^^^^^^^^^^^^^^

@@ -40,4 +40,4 @@ and a table can't be created with the name of a virtual table. Both are an error
 ``42P07``.
 
 See also
-`examples/virtual-tables.v <https://github.com/elliotchance/vsql/blob/main/examples/virtual-tables.v>`_.
+`examples/virtual-tables.v <https://github.com/vlang/vsql/blob/main/examples/virtual-tables.v>`_.

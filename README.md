@@ -1,7 +1,7 @@
 ✌️ vsql
 ======
 
-[![Release](https://img.shields.io/github/v/release/elliotchance/vsql)](https://github.com/elliotchance/vsql/releases)
+[![Release](https://img.shields.io/github/v/release/vlang/vsql)](https://github.com/vlang/vsql/releases)
 [![Docs](https://readthedocs.org/projects/vsql/badge/?version=latest)](https://vsql.readthedocs.io/)
 
 **vsql is a small SQL database that follows the SQL standard.** It keeps a whole
@@ -51,7 +51,7 @@ Try It
 ### 1. Download
 
 Download `vsql` for macOS, Linux or Windows from the
-[latest release](https://github.com/elliotchance/vsql/releases/latest) and
+[latest release](https://github.com/vlang/vsql/releases/latest) and
 unzip it. Nothing else needs to be installed.
 
 Or, with Docker:
@@ -89,11 +89,11 @@ Use It From V
 -------------
 
 ```sh
-v install elliotchance.vsql
+v install vlang.vsql
 ```
 
 ```v
-import elliotchance.vsql.vsql
+import vlang.vsql.vsql
 
 fn main() {
 	mut db := vsql.open('shop.vsql')!
@@ -113,7 +113,7 @@ fn main() {
 There's also a driver for V's ORM:
 
 ```v
-import elliotchance.vsql.vorm
+import vlang.vsql.vorm
 
 struct Product {
 	id    int @[primary; sql: serial]
@@ -131,7 +131,7 @@ fn main() {
 
 See the [V docs](https://vsql.readthedocs.io/en/latest/language-v.html) (for
 the client library and the ORM), and the
-[examples](https://github.com/elliotchance/vsql/tree/main/examples).
+[examples](https://github.com/vlang/vsql/tree/main/examples).
 
 Good to Know
 ------------

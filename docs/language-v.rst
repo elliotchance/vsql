@@ -13,14 +13,14 @@ Install or update to the latest with:
 
 .. code-block:: sh
 
-   v install elliotchance.vsql
+   v install vlang.vsql
 
 Example
 -------
 
 .. code-block:: v
 
-   import elliotchance.vsql.vsql
+   import vlang.vsql.vsql
 
    fn example() ! {
    	mut db := vsql.open(':memory:')!
@@ -49,7 +49,7 @@ Outputs:
 
 Errors are returned as ``SQLState`` values, see :doc:`sqlstate`. More examples
 are in the
-`examples directory <https://github.com/elliotchance/vsql/tree/main/examples>`_.
+`examples directory <https://github.com/vlang/vsql/tree/main/examples>`_.
 
 ORM
 ---
@@ -61,7 +61,7 @@ Example
 
 .. code-block:: v
 
-   import elliotchance.vsql.vorm
+   import vlang.vsql.vorm
 
    struct Product {
      id    int @[primary; sql: serial]

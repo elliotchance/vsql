@@ -157,7 +157,7 @@ SELECT * FROM foo;
 -- error 22001: string data right truncation for CHARACTER VARYING(4)
 -- BAZ: abc
 
--- # https://github.com/elliotchance/vsql/issues/200
+-- # https://github.com/vlang/vsql/issues/200
 /* extensions V001-03 */
 CREATE TABLE PrimaryProduct (id INT NOT NULL, PRIMARY KEY(id));
 INSERT INTO PrimaryProduct (id) VALUES (1);

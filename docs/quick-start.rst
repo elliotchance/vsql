@@ -7,7 +7,7 @@ Run Some SQL
 ------------
 
 Download ``vsql`` for macOS, Linux or Windows from the
-`latest release <https://github.com/elliotchance/vsql/releases/latest>`_ and
+`latest release <https://github.com/vlang/vsql/releases/latest>`_ and
 unzip it (or see :doc:`install` for other ways to get it). Then open a
 database, which creates the file if it doesn't exist:
 
@@ -74,13 +74,13 @@ Install the module:
 
 .. code-block:: sh
 
-   v install elliotchance.vsql
+   v install vlang.vsql
 
 Then open a database and run SQL:
 
 .. code-block:: text
 
-   import elliotchance.vsql.vsql
+   import vlang.vsql.vsql
 
    fn main() {
    	mut db := vsql.open('shop.vsql')!

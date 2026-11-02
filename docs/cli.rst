@@ -7,7 +7,7 @@ Installing
 ----------
 
 Download a binary from the
-`Releases <https://github.com/elliotchance/vsql/releases>`_ page (under Assets).
+`Releases <https://github.com/vlang/vsql/releases>`_ page (under Assets).
 These binaries do not require V to be installed. See :doc:`install` for other
 options.
 

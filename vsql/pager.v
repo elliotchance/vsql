@@ -3,7 +3,7 @@
 //
 // A new pager is created for each operation on the file. See btree.v.
 //
-// See https://github.com/elliotchance/vsql/issues/45.
+// See https://github.com/vlang/vsql/issues/45.
 
 module vsql
 

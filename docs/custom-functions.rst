@@ -46,4 +46,4 @@ A function must return a value to match the return type. See the full list of
 ``Value`` constructors in :doc:`language-v`.
 
 See also
-`examples/custom-functions.v <https://github.com/elliotchance/vsql/blob/main/examples/custom-functions.v>`_.
+`examples/custom-functions.v <https://github.com/vlang/vsql/blob/main/examples/custom-functions.v>`_.

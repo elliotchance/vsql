@@ -2,7 +2,7 @@ Contributing
 ============
 
 This page is aimed at developers of vsql. Bug reports and ideas are welcome as
-`GitHub issues <https://github.com/elliotchance/vsql/issues>`_.
+`GitHub issues <https://github.com/vlang/vsql/issues>`_.
 
 .. contents::
 

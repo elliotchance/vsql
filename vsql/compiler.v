@@ -59,7 +59,11 @@ mut:
 	// also can't be in the <table contents source> of a <table definition>.
 	//
 	// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 4
-	restricted        string
+	restricted string
+	// retrospective is set while compiling the search condition of a CHECK, until
+	// it gets to something that isn't a <boolean value expression> that can be
+	// retrospectively deterministic (see compile_retrospective).
+	retrospective     bool
 	check_column      string
 	generation_column string
 	check_columns     map[string]bool
@@ -109,9 +113,8 @@ fn (c Compiler) aggregation_scope() !int {
 // written but not later, or a generated column could have a different value if
 // the row was written again.
 //
-// A CHECK constraint must be retrospectively deterministic, but only one that
-// isn't possibly non-deterministic is allowed, so a comparison with
-// CURRENT_DATE is rejected too (#774).
+// A CHECK constraint only has to be retrospectively deterministic, so a
+// comparison with CURRENT_DATE can be allowed (see compile_retrospective).
 //
 // ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rules, 5
 // ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rules, 10.d
@@ -121,6 +124,30 @@ fn (c Compiler) check_deterministic(what string) ! {
 	if c.restricted != '' {
 		return sqlstate_42601('${what} cannot be used in ${c.restricted}')
 	}
+}
+
+// compile_retrospective compiles the comparand Y of a retrospectively
+// deterministic comparison, such as "X < Y". Once it's true it stays true, since
+// time only moves forward. There are no intervals (F052), so it can't be Y + Z
+// or Y - Z. If it isn't exactly one of the functions, it's compiled the same as
+// any other comparand.
+//
+// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.c.ii
+fn (mut c Compiler) compile_retrospective(e RowValueConstructorPredicand) !CompileResult {
+	y := e.pstr(c.params)
+	if y != 'CURRENT_DATE' && !(y.len == 'CURRENT_TIMESTAMP(0)'.len
+		&& y.starts_with('CURRENT_TIMESTAMP(')) && !(y.len == 'LOCALTIMESTAMP(0)'.len
+		&& y.starts_with('LOCALTIMESTAMP(')) {
+		return e.compile(mut c)!
+	}
+
+	restricted := c.restricted
+	c.restricted = ''
+	defer {
+		c.restricted = restricted
+	}
+
+	return e.compile(mut c)!
 }
 
 // check_time_zone_comparison returns an error if a datetime with a time zone is

@@ -24,10 +24,20 @@ fn (e BetweenPredicate) pstr(params map[string]Value) string {
 	} + '${e.left.pstr(params)} AND ${e.right.pstr(params)}'
 }
 
-fn (e BetweenPredicate) compile(mut c Compiler) !CompileResult {
+// compile_between compiles the predicate. "X BETWEEN Z AND Y" is transformed into
+// "X >= Z AND X <= Y", so if it's retrospective (see Compiler.retrospective) Y can
+// be the current date or timestamp. It can't with NOT, and SYMMETRIC also has
+// "X >= Y".
+//
+// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.c.iv
+fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !CompileResult {
 	compiled_expr := e.expr.compile(mut c)!
 	compiled_left := e.left.compile(mut c)!
-	compiled_right := e.right.compile(mut c)!
+	compiled_right := if retrospective && !e.not && !e.symmetric {
+		c.compile_retrospective(e.right)!
+	} else {
+		e.right.compile(mut c)!
+	}
 	c.check_time_zone_comparison(compiled_expr.typ, compiled_left.typ)!
 	c.check_time_zone_comparison(compiled_expr.typ, compiled_right.typ)!
 

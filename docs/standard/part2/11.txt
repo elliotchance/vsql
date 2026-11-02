@@ -491,7 +491,7 @@
 11.9/SR/3.c              n/a          - - temporary tables (F531)
 11.9/SR/3.d              n/a          - - temporary tables (F531)
 11.9/SR/4                n/a          - - temporary tables (F531)
-11.9/SR/5                deviates     vsql/compiler.v tests/check-constraint.sql anything possibly non-deterministic is rejected, even if it's retrospectively deterministic (#774)
+11.9/SR/5                implemented  vsql/compiler.v tests/check-constraint.sql
 11.9/SR/6                n/a          - - SQL-invoked routines (T321)
 11.9/SR/7                n/a          - - SQL-invoked routines (T321)
 11.9/SR/8                definition   - -

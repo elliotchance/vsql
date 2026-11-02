@@ -1920,20 +1920,20 @@
 6.39/SR/4.b.v.2          n/a          - - enhanced nullability determination (T101)
 6.39/SR/4.b.vi           n/a          - - enhanced nullability determination (T101)
 6.39/SR/4.c              impl-defined - - there are no other rules
-6.39/SR/5                partial      vsql/compiler.v tests/check-constraint.sql anything possibly non-deterministic is rejected, even a comparison with CURRENT_DATE (#774)
+6.39/SR/5                implemented  vsql/compiler.v tests/check-constraint.sql
 6.39/SR/5.a              implemented  vsql/compiler.v tests/check-constraint.sql
 6.39/SR/5.b              implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.c              partial      vsql/compiler.v tests/check-constraint.sql only 5.c.i (#774)
+6.39/SR/5.c              implemented  vsql/compiler.v tests/check-constraint.sql
 6.39/SR/5.c.i            implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.c.ii           missing      - - #774
-6.39/SR/5.c.iii          missing      - - #774
-6.39/SR/5.c.iv           missing      - - #774
+6.39/SR/5.c.ii           implemented  vsql/compiler.v tests/check-constraint.sql
+6.39/SR/5.c.iii          n/a          - - a CHECK can't contain a subquery (F671)
+6.39/SR/5.c.iv           implemented  vsql/compiler.v tests/check-constraint.sql
 6.39/SR/5.d              implemented  vsql/compiler.v tests/check-constraint.sql
 6.39/SR/5.e              implemented  vsql/compiler.v tests/check-constraint.sql
 6.39/SR/5.e.i            implemented  vsql/compiler.v tests/check-constraint.sql
 6.39/SR/5.e.ii           implemented  vsql/compiler.v tests/check-constraint.sql
 6.39/SR/5.e.ii.1         implemented  vsql/compiler.v tests/check-constraint.sql
-6.39/SR/5.e.ii.2         partial      vsql/compiler.v tests/check-constraint.sql only when BP isn't possibly non-deterministic (#774)
+6.39/SR/5.e.ii.2         implemented  vsql/compiler.v tests/check-constraint.sql
 6.39/SR/5.f              implemented  vsql/compiler.v tests/check-constraint.sql
 6.39/GR/1                implemented  vsql/std_2_6_39_boolean_value_expression.v tests/logical.sql
 6.39/GR/2                implemented  vsql/std_2_6_39_boolean_value_expression.v tests/logical.sql

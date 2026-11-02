@@ -14,7 +14,7 @@ Syntax
   VALUES <expression>, ...
   VALUES ROW(<expression>, ...), ...
   [ OFFSET <integer> { ROW | ROWS } ]
-  [ FETCH FIRST [ <integer> ] { ROW | ROWS } ONLY ]
+  [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
 
 ``VALUES 1, 2`` is two rows of one column. Use ``ROW`` for more than one column
 in a row, such as ``VALUES ROW(1, 2)``.

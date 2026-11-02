@@ -10,9 +10,7 @@ module main
 // A feature that's in more than one table (for different parts of the
 // standard) is only supported if it's supported in all of them. There are no
 // packages. Since there's no ExecDirect (General Rules, 13 to 16), there are no
-// status conditions from it. A subfeature is found with a FeatureType of
-// 'FEATURE' (General Rules, 12), and an argument of only spaces is HY090
-// rather than HY024 (General Rules, 6.a, 10.a and 11.a.iii.1), which are #757.
+// status conditions from it.
 
 const compliance_rst = $embed_file('../docs/sql-compliance.rst').to_string()
 
@@ -85,7 +83,8 @@ fn get_feature_info(mut dbc Dbc, feature_type &char, feature_type_length i16, fe
 
 	// - 12. If there is no such feature, then an exception condition is
 	// raised: CLI-specific condition — invalid attribute value.
-	if ft == 'PACKAGE' || id !in supported_features {
+	// supported_features also has the subfeatures, which aren't a FEATURE.
+	if ft == 'PACKAGE' || (ft == 'FEATURE' && id.contains('-')) || id !in supported_features {
 		return cli_error('HY024', 'invalid attribute value')
 	}
 	is_supported := supported_features[id] or { false }
@@ -103,8 +102,10 @@ fn get_feature_info(mut dbc Dbc, feature_type &char, feature_type_length i16, fe
 	return sql_success
 }
 
-// feature_info_arg is a trimmed string argument, which can't be a zero-length
-// string: CLI-specific condition — invalid string length or buffer length.
+// feature_info_arg is a trimmed string argument. It can't be a zero-length string
+// before it's trimmed: CLI-specific condition — invalid string length or buffer
+// length. An argument of only spaces is trimmed to a zero-length string, which
+// isn't a feature (General Rules, 7 or 12).
 fn feature_info_arg(s &char, length i16) !string {
 	if s == unsafe { nil } {
 		return cli_error('HY009', 'invalid use of null pointer')
@@ -112,10 +113,10 @@ fn feature_info_arg(s &char, length i16) !string {
 	if length < 0 && length != sql_nts {
 		return cli_error('HY090', 'invalid string length or buffer length')
 	}
-	v := input_string(s, i64(length))!.trim(' ')
+	v := input_string(s, i64(length))!
 	if v == '' {
 		return cli_error('HY090', 'invalid string length or buffer length')
 	}
 
-	return v
+	return v.trim(' ')
 }

@@ -1427,7 +1427,7 @@
 6.36/GR/5.b              implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/5.c              implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/6                container    - -
-6.36/GR/6.a              deviates     libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c an argument of only spaces is HY090 rather than HY024 (#757)
+6.36/GR/6.a              implemented     libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/6.b              implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/7                implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/8                definition   - -
@@ -1436,7 +1436,7 @@
 6.36/GR/9.b              implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/9.c              implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/10               container    - -
-6.36/GR/10.a             deviates     libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c an argument of only spaces is HY090 rather than HY024 (#757)
+6.36/GR/10.a             implemented     libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/10.b             implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/11               container    - -
 6.36/GR/11.a             container    - -
@@ -1446,10 +1446,10 @@
 6.36/GR/11.a.ii.2        implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/11.a.ii.3        implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/11.a.iii         container    - -
-6.36/GR/11.a.iii.1       deviates     libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c an argument of only spaces is HY090 rather than HY024 (#757)
+6.36/GR/11.a.iii.1       implemented     libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/11.a.iii.2       implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
 6.36/GR/11.b             implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c
-6.36/GR/12               deviates     libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c a subfeature is found with a FeatureType of 'FEATURE' (#757); there are no packages
+6.36/GR/12               implemented  libvsql/std_3_6_36_get_feature_info.v libvsql/std_3_6_36_get_feature_info_test.c there are no packages
 6.36/GR/13               definition   - -
 6.36/GR/14               n/a          - - there's no SQL_FEATURES view, so docs/sql-compliance.rst is used
 6.36/GR/15               n/a          - - there's no SQL_FEATURES view, so docs/sql-compliance.rst is used

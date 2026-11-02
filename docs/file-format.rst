@@ -847,24 +847,48 @@ database contains either all or none of the changes made by the statement.
 While a statement is running, the pages it changes are only kept in memory.
 When it finishes (still holding the exclusive lock on the database file):
 
-1. The changed pages and the new `Header`_ are written to the log, which is
-   synced to the disk (with ``fsync``). This is the point where the statement is
-   committed.
+1. The changed pages and the new `Header`_ are added to the end of the log,
+   which is synced to the disk (with ``fsync``). This is the point where the
+   statement is committed.
 
-2. The pages and header are copied into the database file, the file is
-   truncated to the number of pages, and it is synced to the disk. If this
-   fails, the statement still succeeds (it has been committed), and the log is
-   copied again before the file is next read.
+2. The pages and header are copied into the database file and the file is
+   truncated to the number of pages. The database file is **not** synced,
+   because the log has everything that hasn't reached the disk. If this fails,
+   the statement still succeeds (it has been committed), and the log is copied
+   again before the file is next read.
 
-3. The *State* in the log header is changed to *Checkpointed*. This doesn't
-   need to be synced, because copying the log into the database file again
-   doesn't change it.
+3. The *State* in the log header is changed to *Checkpointed*, and the *Tail* is
+   moved to the end of the statement. This doesn't need to be synced, see below.
 
-Before a connection reads or changes the database file, it checks the *State*.
-If the log hasn't been checkpointed, and ends with a valid *Commit* frame, the
-pages and header in it are copied into the database file (step 2) first. A log
-without a valid *Commit* frame is ignored, because the statement didn't change
-the database file.
+A new log is started (with a new *Salt*) when the statement wouldn't fit in the
+4 MiB limit, unless the log is empty. The database file is synced first, because
+the statements in the log are about to be lost. Then the new log header is
+synced before any frames are written, otherwise frames from the new log could
+replace some of the old ones while the old header is still on the disk, which
+would look like a log containing only the oldest statements. A statement larger
+than 4 MiB gets a log of its own.
+
+The whole log is copied into the database file, the file is synced and the log
+is emptied (with a *Tail* of 0) in these two cases:
+
+- Before a connection reads or changes the database file, if the *State* isn't
+  *Checkpointed*. This is when a process stopped during a statement. The file
+  has been kept up to date otherwise, even if it hasn't reached the disk.
+
+- When the first connection to the database file is opened, if the *Tail* is past
+  the log header. This is because the power may have failed since the last
+  connection, in which case any part of the changes that weren't synced may be
+  missing from the database file, even if the log header says *Checkpointed*.
+
+Reading the log stops at the first frame that isn't valid, so a statement without
+a valid *Commit* frame is ignored, because it didn't change the database file.
+Copying statements that are already in the database file doesn't change it,
+because the log has every change since the file was last synced.
+
+The log belongs to its database file while it has statements. When moving or
+copying a database file, also move or copy the log. A database file that's
+replaced with an older copy (such as a backup) must have the log deleted,
+otherwise the log will be copied over it.
 
 This is about the order that a statement is made permanent. Transactions (which
 may contain many statements) are still made atomic with MVCC (see :doc:`mvcc`),
@@ -889,13 +913,13 @@ The log starts with a 32 byte header:
   * - 8
     - *Version*
     - u16 (2 bytes)
-    - The version of the log format, currently 1.
+    - The version of the log format, currently 2.
 
   * - 10
     - *State*
     - u8 (1 byte)
-    - 0 (*Committed*) when the log is written, and 1 (*Checkpointed*) once it
-      has been copied into the database file.
+    - 0 (*Committed*) when a statement is being written, and 1 (*Checkpointed*)
+      once it has been copied into the database file.
 
   * - 11
     - *Reserved*
@@ -915,14 +939,22 @@ The log starts with a 32 byte header:
       valid.
 
   * - 20
-    - *Reserved*
-    - 8 bytes
-    - Always 0.
+    - *Tail*
+    - u32 (4 bytes)
+    - The position to write the next statement. 0 means the log is empty, and the
+      next statement starts a new one. It's only used to add to the log. The log
+      is always read from the start when it's recovered.
+
+  * - 24
+    - *Tail Checksum*
+    - u32 (4 bytes)
+    - The checksum of the frame before *Tail*, or the *Salt* if there isn't one.
 
   * - 28
     - *Checksum*
     - u32 (4 bytes)
-    - The CRC-32 of the first 28 bytes, with the *State* as 0.
+    - The CRC-32 of the first 28 bytes, with the *State*, *Tail* and *Tail
+      Checksum* as 0.
 
 Followed by frames, each with a 16 byte header and then its data:
 

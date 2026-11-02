@@ -17,8 +17,12 @@ echo 'SELECT * FROM foo;' | $VSQL cli $TXT_FILE | grep 'not a vsql database'
 test "$(cat $TXT_FILE)" = "hello"
 
 # set_header_bytes overwrites the header at the offset with the bytes, which
-# are written in octal because printf in some shells doesn't support \x.
+# are written in octal because printf in some shells doesn't support \x. The
+# file is opened first, which copies the log into it and empties the log,
+# otherwise the next connection would copy the header in the log over these
+# bytes.
 set_header_bytes() {
+  echo 'SELECT * FROM foo;' | $VSQL cli $VSQL_FILE > /dev/null
   printf "$2" | dd of=$VSQL_FILE bs=1 seek=$1 conv=notrunc 2>/dev/null
 }
 

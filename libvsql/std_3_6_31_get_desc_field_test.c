@@ -168,3 +168,20 @@ UTEST_F(row, 6_31_get_desc_field_truncated) {
   EXPECT_STREQ((char *)name, "CO");
   EXPECT_EQ(len, 4);
 }
+
+/* FieldIdentifier is checked before the deferred parameter check. */
+UTEST_F(db, 6_31_get_desc_field_identifier_before_deferred) {
+  SQLINTEGER at_exec = SQL_DATA_AT_EXEC, x;
+  SQLSMALLINT n;
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  EXPECT_EQ(SQLGetDescField(ipd, 1, 9999, &n, 0, NULL), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ipd, "HY091");
+  EXPECT_EQ(SQLGetDescField(ipd, 1, SQL_DESC_TYPE, &n, 0, NULL), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ipd, "HY010");
+}

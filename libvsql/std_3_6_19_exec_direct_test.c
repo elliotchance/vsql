@@ -147,3 +147,17 @@ UTEST_F(db, 6_19_exec_direct_invalid_ipd) {
             SQL_SUCCESS);
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
 }
+
+/* A failed statement doesn't replace the executed statement. */
+UTEST_F(db, 6_19_exec_direct_failed_keeps_executed) {
+  SQLINTEGER rows = 123;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT PRIMARY KEY)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "INSERT INTO t (x) VALUES (1)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "INSERT INTO t (x) VALUES (1)"),
+            SQL_ERROR);
+  EXPECT_EQ(SQLRowCount(utest_fixture->stmt, &rows), SQL_SUCCESS);
+  EXPECT_EQ(rows, 0);
+}

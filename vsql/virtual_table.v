@@ -70,8 +70,6 @@ pub fn (v VirtualTable) table() Table {
 }
 
 // A VirtualTableOperation reads all rows from a virtual table.
-//
-// TODO(elliotchance): This needs to support OFFSET and FETCH.
 struct VirtualTableOperation {
 	table_name string
 	table      VirtualTable

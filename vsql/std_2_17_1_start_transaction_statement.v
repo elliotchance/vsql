@@ -63,8 +63,6 @@ fn (mut catalog CatalogConnection) start_transaction() ! {
 	// cleanup.
 	assert catalog.storage.transaction_pages.len == 0
 
-	// TODO(elliotchance): Is this really needed? We should find a way to make
-	//  sure implicit transactions erase this at the end of their used as well.
 	catalog.storage.transaction_pages = map[int]bool{}
 }
 

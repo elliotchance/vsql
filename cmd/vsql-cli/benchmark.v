@@ -52,8 +52,6 @@ fn (mut b Benchmark) start() ! {
 		b.conn.query('INSERT INTO branches (bid, bbalance) VALUES (${bid}, 0)')!
 	}
 
-	// TODO(elliotchance): This should have a PRIMARY KEY when we support
-	//  multiple columns.
 	b.conn.query('CREATE TABLE history ( tid INT, bid INT, aid INT, delta INT, mtime VARCHAR(30) ) ')!
 
 	t = vsql.start_timer()
@@ -92,8 +90,6 @@ fn (mut b Benchmark) run_transaction() ! {
 	b.conn.query('UPDATE tellers SET tbalance = tbalance + ${delta} WHERE tid = ${tid}')!
 	b.conn.query('UPDATE branches SET bbalance = bbalance + ${delta} WHERE bid = ${bid}')!
 
-	// TODO(elliotchance): Should use CURRENT_TIMESTAMP once supported.
-	//
 	// time.now() is not called inside the string because the V3 compiler
 	// generates invalid C for that.
 	now := time.now()

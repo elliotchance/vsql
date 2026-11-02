@@ -166,9 +166,6 @@ fn datetime_fields(t SQLType) string {
 fn compare_datetimes(conn &Connection, xv Value, yv Value) CompareResult {
 	// compare_strings is only invoked when both sides are known to use
 	// time_value.
-	//
-	// TODO(elliotchance): <primary datetime field> needs to be taken into account
-	//  when it is supported.
 	mut x := unsafe { xv.v.time_value }.i64()
 	mut y := unsafe { yv.v.time_value }.i64()
 

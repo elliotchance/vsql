@@ -137,10 +137,6 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			// Unlike most comparisons we have to treat NULL like a known value
 			// for this particular case because we want NULL to be set in cases
 			// where the value wasn't NULL.
-			//
-			// TODO(elliotchance): This has the side effect that NULL being
-			//  replaced with NULL is true, which is unnecessary, even if the
-			//  logic is a bit murky.
 			check_store_assignment(raw_value, table_column.typ)!
 			column_id := '${table_name.id()}.${column_name}'
 			cmp := compare(conn, row.data[column_id], raw_value)!

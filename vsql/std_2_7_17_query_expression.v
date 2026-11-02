@@ -165,13 +165,6 @@ fn (o &OrderOperation) columns() Columns {
 }
 
 fn (mut o OrderOperation) execute(rows []Row) ![]Row {
-	// TODO(elliotchance): I know this is a horribly inefficient way to handle
-	//  sorting. I did it this way because at the time V didn't allow closures
-	//  on M1 macs (which would be required to pass in a sort function).
-	//  Definitely improve this in the future, especially since sorting of the
-	//  top N rows can usually be done much more efficiently than sorting the
-	//  whole set.
-
 	// This sorting implementation uses a linked list which is very simple but
 	// very expensive at O(n^2).
 

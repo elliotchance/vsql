@@ -15,9 +15,6 @@ const kind_not_leaf = 1 // page contains only links to other pages.
 // combination of all fixed width meta for the page object.
 const page_object_prefix_length = 23
 
-// TODO(elliotchance): This does not need to be public. It was required for a
-//  bug at the time with V not being able to pass this to the shuffle function.
-//  At some point in the future remove the pub and see if it works.
 pub struct PageObject {
 	// The key is not required to be unique in the page. It becomes unique when
 	// combined with tid. However, no more than two version of the same key can
@@ -32,9 +29,6 @@ pub struct PageObject {
 	is_blob_ref bool
 mut:
 	// The tid is the transaction that created the object.
-	//
-	// TODO(elliotchance): It makes more sense to construct a new PageObject
-	//  when changing the tid and xid.
 	tid u64
 	// The xid is the transaciton that deleted the object, or zero if it has
 	// never been deleted.
@@ -153,8 +147,6 @@ fn (p Page) page_size() int {
 	return p.data.len + page_header_size
 }
 
-// TODO(elliotchance): This really isn't the most efficient way to do this. Make
-//  me faster. Especially since the calls down will recount versions again, etc.
 fn (mut p Page) update(old PageObject, tid u64) ! {
 	mut objects := p.objects()
 	old_versions := p.versions(old.key, objects)
@@ -194,9 +186,6 @@ fn (p Page) versions(key []u8, objects []PageObject) []u64 {
 	mut versions := []u64{}
 	for object in objects {
 		if compare_bytes(object.key, key) == 0 {
-			// TODO(elliotchance): As long as the database has not become
-			//  corrupt, we can stop here at 2. However, I'm going to leave the
-			//  full scan in place until the underlying storage is more mature.
 			versions << object.tid
 		}
 	}

@@ -46,8 +46,6 @@ fn (mut iter PageIterator) next() ?PageObject {
 		iter.objects =
 			(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).objects()
 		for object in iter.objects {
-			// TODO(elliotchance): It would be more efficient to do a binary
-			//  search here since the page is already sorted.
 			if compare_bytes(object.key, iter.min) < 0 {
 				iter.depth_iterator[iter.depth_iterator.len - 1]++
 			}

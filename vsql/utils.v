@@ -3,7 +3,6 @@
 
 module vsql
 
-// TODO(elliotchance): Make private when CLI is moved into vsql package.
 pub fn pluralize(n int, word string) string {
 	if n == 1 {
 		return word

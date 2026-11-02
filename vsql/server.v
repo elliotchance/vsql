@@ -208,9 +208,6 @@ fn (s &Server) handle_conn(mut db Connection, mut conn PGConn) ! {
 
 				// A missing "FROM" clause is valid in PostgreSQL, but it's not
 				// valid in the SQL standard so it's not supported by vsql.
-				//
-				// TODO(elliotchance): Once supported, a VALUES() clause will be
-				//  better.
 				query_upper := query.to_upper()
 				if s.options.select_without_from && query_upper.contains('SELECT')
 					&& !query_upper.contains('FROM') {

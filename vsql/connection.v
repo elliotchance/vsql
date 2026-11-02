@@ -604,8 +604,7 @@ fn (conn Connection) find_function(func_name string, arg_types []Type) !Func {
 		for i, t in arg_types {
 			mut real_arg_type := t
 
-			// TODO(elliotchance); For now, we just consider all CHARACTER types as
-			//  CHARACTER VARYING.
+			// All CHARACTER types are considered to be CHARACTER VARYING.
 			if t.typ == .is_character {
 				real_arg_type = Type{SQLType.is_varchar, t.scale, 0, false}
 			}

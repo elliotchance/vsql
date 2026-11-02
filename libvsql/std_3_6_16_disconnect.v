@@ -23,15 +23,6 @@ fn disconnect(mut dbc Dbc, h i64) !i16 {
 	// connection must be established.
 	mut conn := dbc.conn or { return cli_error('08003', 'connection does not exist') }
 
-	// ISO/IEC 9075-3:2003(E), 6.16, Disconnect, General Rules, 3 and 4.a: no
-	// statement can have a deferred parameter number. This is checked even
-	// when there isn't an active SQL-transaction, which is #729.
-	for _, stmt in stmts {
-		if stmt.dbc == h {
-			stmt.check_deferred()!
-		}
-	}
-
 	// An SQL-transaction that's only active because of an open cursor is
 	// committed when AUTOCOMMIT is on (see autocommit.v).
 	if dbc.autocommit_transaction && conn.in_transaction() {
@@ -39,9 +30,17 @@ fn disconnect(mut dbc Dbc, h i64) !i16 {
 		autocommit(mut dbc.diag, h, true)!
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.16, Disconnect, General Rules, 4.b: there
-	// can't be an active SQL-transaction.
+	// ISO/IEC 9075-3:2003(E), 6.16, Disconnect, General Rules, 3 and 4: there
+	// can't be an active SQL-transaction, which is a different error (4.a) if a
+	// statement also has a deferred parameter number. Without one, a deferred
+	// parameter doesn't stop the statement from being freed.
 	if conn.in_transaction() {
+		for _, stmt in stmts {
+			if stmt.dbc == h {
+				stmt.check_deferred()!
+			}
+		}
+
 		return cli_error('25001', 'active SQL-transaction')
 	}
 

@@ -120,6 +120,11 @@ details.menu > summary:hover, details.menu[open] > summary { color: var(--fg); b
 .menu-items { position: absolute; right: 0; z-index: 2; min-width: 100px; margin-top: 2px; padding: 4px 0; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
 .sidebar .menu-items button, .sidebar li.active .menu-items button { padding: 4px 12px; font-weight: normal; background: transparent; }
 .sidebar .menu-items button:hover, .sidebar li.active .menu-items button:hover { background: var(--border); }
+.params { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 12px; border-top: 1px solid var(--border); }
+.params[hidden] { display: none; }
+.params label { display: flex; align-items: center; gap: 4px; font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); }
+.params input { width: 12em; padding: 2px 4px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 3px; }
+.params select { padding: 2px 4px; font: 12px inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 3px; }
 details.section > summary:has(button.history-nav) { position: relative; padding-right: 28px; overflow: hidden; text-overflow: ellipsis; }
 button.history-nav { position: absolute; top: 1px; right: 4px; padding: 0 5px; font-size: 12px; font-weight: normal; line-height: 1.4; color: var(--muted); background: transparent; border: 0; border-radius: 4px; }
 button.history-nav::before { content: "\1F551"; }

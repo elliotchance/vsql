@@ -169,8 +169,10 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	tab_ref := form.get('tab') or { '' }
 	tab := all_tabs.filter(it.ref() == tab_ref)[0] or { no_tab }
 	query_text := form.get('sql') or { tab.query_text }
+	// The value and type of each "?" are posted with the SQL.
+	params := if _ := form.get('sql') { posted_params(form) } else { tab.params }
 	if tab.tab_type == query_tab && tab.id != no_tab.id {
-		save_tab(mut conn, tab, query_text)!
+		save_tab(mut conn, tab, query_text, params)!
 	}
 	// With no tab, a new tab is in the first file.
 	catalog := if tab.id == no_tab.id { a.catalog_names[0] } else { tab.catalog }
@@ -181,7 +183,7 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		if table := form.get('query:${table_catalog}') {
 			table_sql := 'SELECT * FROM ${table}'
 			new_tab := a.add_query_tab(mut conn, table_catalog, table_sql)!
-			result, h := a.run_query(mut conn, table_sql, table_catalog)!
+			result, h := a.run_query(mut conn, table_sql, Params{}, table_catalog)!
 			add_history(mut conn, table_catalog, new_tab.id, h)!
 			lock a.results {
 				a.results[new_tab.ref()] = result
@@ -252,7 +254,7 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 				})
 			}
 		}
-		a.apply_changes(mut conn, tab, queries, query_text) or {
+		a.apply_changes(mut conn, tab, queries, query_text, params) or {
 			return a.page(mut conn, all_tabs, tab, TabResult{
 				...last
 				error: err.msg()
@@ -261,22 +263,22 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		return '/'
 	}
 
-	result, h := a.run_query(mut conn, query_text, catalog)!
+	result, h := a.run_query(mut conn, query_text, params, catalog)!
 	add_history(mut conn, catalog, tab.id, h)!
 	lock a.results {
 		a.results[tab.ref()] = result
 	}
 	title_tab(mut conn, tab, query_text)!
 	a.activate_tab(mut conn, tab)!
-	return a.page(mut conn, a.tabs(mut conn)!, Tab{tab.id, tab.tab_type, tab_title(query_text), query_text, true, catalog},
+	return a.page(mut conn, a.tabs(mut conn)!, Tab{tab.id, tab.tab_type, tab_title(query_text), query_text, true, params, catalog},
 		result)
 }
 
 // apply_changes runs the changes to the rows (see run_changes), then the SQL
 // of the tab again for its result.
-fn (a &App) apply_changes(mut conn vsql.Connection, tab Tab, queries []string, query_text string) ! {
+fn (a &App) apply_changes(mut conn vsql.Connection, tab Tab, queries []string, query_text string, params Params) ! {
 	run_changes(mut conn, queries)!
-	result, _ := a.run_query(mut conn, query_text, tab.catalog)!
+	result, _ := a.run_query(mut conn, query_text, params, tab.catalog)!
 	lock a.results {
 		a.results[tab.ref()] = TabResult{
 			...result

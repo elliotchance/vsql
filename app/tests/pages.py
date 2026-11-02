@@ -163,6 +163,20 @@ class AppPage:
         li.locator('details.menu > summary').click()
         return li.locator('.menu-items')
 
+    # The values of each "?" (see test_params.py).
+
+    def param(self, number):
+        """param is the input for a "?", from 1."""
+        return self.page.locator(f'.params input[name="param:{number}"]')
+
+    def param_type(self, number):
+        """param_type is the select of the type of a "?", from 1."""
+        return self.page.locator(f'.params select[name="param_type:{number}"]')
+
+    @property
+    def params(self):
+        return self.page.locator('.params input')
+
     # The history (see test_history.py).
 
     @property

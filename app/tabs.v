@@ -80,6 +80,10 @@ const history_tab = 'HISTORY'
 // payload.
 struct QueryPayload {
 	query_text string
+	// params and param_types are the value and type of each "?" in query_text
+	// (see Params).
+	params      []string @[omitempty]
+	param_types []string @[omitempty]
 }
 
 // Tab is a row of VSQL_APP.TABS in the file catalog, which is the file that its
@@ -90,6 +94,7 @@ struct Tab {
 	title      string
 	query_text string
 	active     bool
+	params     Params
 	catalog    string
 }
 
@@ -109,7 +114,7 @@ fn (a &App) tabs(mut conn vsql.Connection) ![]Tab {
 	for catalog in a.catalog_names {
 		for row in conn.query('SELECT id, tab_type, title, payload, active FROM ${app_table(catalog, 'tabs')} ORDER BY id')! {
 			payload := json2.decode[QueryPayload](row.get_string('PAYLOAD')!)!
-			tabs << Tab{row.get_int('ID')!, row.get_string('TAB_TYPE')!, row.get_string('TITLE')!, payload.query_text, row.get_bool('ACTIVE')! == .is_true, catalog}
+			tabs << Tab{row.get_int('ID')!, row.get_string('TAB_TYPE')!, row.get_string('TITLE')!, payload.query_text, row.get_bool('ACTIVE')! == .is_true, Params{payload.params, payload.param_types}, catalog}
 		}
 	}
 
@@ -139,7 +144,7 @@ fn (a &App) add_tab(mut conn vsql.Connection, catalog string, tab_type string, t
 }
 
 fn (a &App) add_query_tab(mut conn vsql.Connection, catalog string, query_text string) !Tab {
-	return a.add_tab(mut conn, catalog, query_tab, query_text, json2.encode(QueryPayload{query_text}))
+	return a.add_tab(mut conn, catalog, query_tab, query_text, json2.encode(QueryPayload{ query_text: query_text }))
 }
 
 // show_history_tab makes the history tab of a file active, adding it if needed.
@@ -178,10 +183,10 @@ fn title_tab(mut conn vsql.Connection, tab Tab, query_text string) ! {
 	})!
 }
 
-fn save_tab(mut conn vsql.Connection, tab Tab, query_text string) ! {
+fn save_tab(mut conn vsql.Connection, tab Tab, query_text string, params Params) ! {
 	mut stmt := conn.prepare('UPDATE ${app_table(tab.catalog, 'tabs')} SET payload = ? WHERE id = ?')!
 	stmt.query({
-		'?1': vsql.new_varchar_value(json2.encode(QueryPayload{query_text}))
+		'?1': vsql.new_varchar_value(json2.encode(QueryPayload{query_text, params.values, params.types}))
 		'?2': vsql.new_integer_value(tab.id)
 	})!
 }

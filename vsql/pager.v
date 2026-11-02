@@ -7,6 +7,7 @@
 
 module vsql
 
+import encoding.binary
 import os
 
 interface Pager {
@@ -183,13 +184,9 @@ fn (page Page) clone() Page {
 }
 
 fn new_page_from_bytes(buf []u8) Page {
-	mut b := new_bytes(buf)
-	kind := b.read_u8()
-	b.read_u8() // flags
-
 	return Page{
-		kind: kind
-		used: b.read_u16()
+		kind: buf[0]
+		used: binary.big_endian_u16_at(buf, 2)
 		data: buf[page_header_size..].clone()
 	}
 }

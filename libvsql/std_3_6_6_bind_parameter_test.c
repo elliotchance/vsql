@@ -218,3 +218,43 @@ UTEST_F(db, 6_6_bind_parameter_partial_character) {
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
 }
+
+/* TOP_LEVEL_COUNT is the same as COUNT, since nothing is nested. */
+UTEST_F(db, 6_6_bind_parameter_top_level_count) {
+  SQLINTEGER x;
+  SQLHDESC apd = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_PARAM_DESC);
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+
+  EXPECT_EQ(desc_short(apd, 0, SQL_DESC_TOP_LEVEL_COUNT), 0);
+  EXPECT_EQ(desc_short(ipd, 0, SQL_DESC_TOP_LEVEL_COUNT), 0);
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 2, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, 4, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(apd, 0, SQL_DESC_TOP_LEVEL_COUNT), 2);
+  EXPECT_EQ(desc_short(ipd, 0, SQL_DESC_TOP_LEVEL_COUNT), 2);
+
+  ASSERT_EQ(SQLSetDescField(apd, 0, SQL_DESC_COUNT, SMALLINT_VALUE(1), 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(desc_short(apd, 0, SQL_DESC_TOP_LEVEL_COUNT), 1);
+}
+
+/* ParameterType is checked against the concise codes in Table 37. */
+UTEST_F(db, 6_6_bind_parameter_concise_types) {
+  SQLINTEGER x;
+  SQLSMALLINT invalid[] = {9, 10, 18, 31, 41, 51, 56};
+  SQLSMALLINT unsupported[] = {17, 19, 20, 30, 40, 50, 55, 101, 113};
+  size_t i;
+
+  for (i = 0; i < sizeof(invalid) / sizeof(invalid[0]); i++) {
+    EXPECT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                               SQL_INTEGER, invalid[i], 0, 0, &x, 4, NULL),
+              SQL_ERROR);
+    EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY004");
+  }
+  for (i = 0; i < sizeof(unsupported) / sizeof(unsupported[0]); i++) {
+    EXPECT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                               SQL_INTEGER, unsupported[i], 0, 0, &x, 4, NULL),
+              SQL_ERROR);
+    EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HYC00");
+  }
+}

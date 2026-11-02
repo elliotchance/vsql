@@ -351,10 +351,10 @@ fn (mut desc Desc) reset() {
 		}))
 		sql_desc_array_status_pointer: i64(0)
 		sql_desc_count:                i64(0)
+		sql_desc_top_level_count:      i64(0)
 	}
 	if desc.is_application() {
 		desc.header[sql_desc_array_size] = i64(1)
-		desc.header[sql_desc_top_level_count] = i64(0)
 	} else {
 		desc.header[sql_desc_rows_processed_pointer] = i64(0)
 	}
@@ -370,7 +370,8 @@ fn (desc &Desc) count() int {
 }
 
 // set_count changes the number of item descriptor areas. New item descriptor
-// areas have the default values.
+// areas have the default values. There are no nested descriptor areas, so
+// TOP_LEVEL_COUNT is always the same as COUNT.
 fn (mut desc Desc) set_count(n int) {
 	if n < desc.records.len {
 		desc.records = desc.records[..n]
@@ -379,6 +380,7 @@ fn (mut desc Desc) set_count(n int) {
 		desc.records << desc.default_record()
 	}
 	desc.header[sql_desc_count] = i64(n)
+	desc.header[sql_desc_top_level_count] = i64(n)
 }
 
 // default_record is a new item descriptor area. Only the application
@@ -453,7 +455,6 @@ fn describe(stmt &Stmt, mut conn vsql.Connection, columns []vsql.Column) {
 	ird.header[sql_desc_dynamic_function] = stmt.diag.dynamic_function
 	ird.header[sql_desc_dynamic_function_code] = i64(stmt.diag.dynamic_function_code)
 	ird.header[sql_desc_key_type] = i64(0)
-	ird.header[sql_desc_top_level_count] = i64(columns.len)
 	ird.set_count(columns.len)
 	for i, column in columns {
 		ird.records[i] = describe_column(column, conn.current_catalog_name())

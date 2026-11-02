@@ -12,10 +12,9 @@ module main
 // value that's given with ParamData and PutData when the statement is
 // executed.
 //
-// ParameterType is checked with the codes for the IPD rather than Table 37
-// (General Rules, 12), which is #753. The COUNT of the IPD and APD is set to
-// PN, but their TOP_LEVEL_COUNT isn't changed (General Rules, 14.b and 15.b),
-// which is #752. Memory isn't limited (General Rules, 14.a and 15.a). There
+// There are no nested descriptor areas, so the TOP_LEVEL_COUNT of the IPD and
+// APD is the same as their COUNT (General Rules, 14.b and 15.b). Memory isn't
+// limited (General Rules, 14.a and 15.a). There
 // are no interval types (General Rules, 18.b and 28). Everything is checked
 // before anything is set, so an exception condition doesn't change the
 // descriptors (General Rules, 20). The parameter mode is set in the IPD
@@ -75,7 +74,7 @@ fn bind_parameter(mut stmt Stmt, parameter_number i16, iom i16, value_type i16, 
 		ipd_record[sql_desc_length] = column_size
 		ipd_record[sql_desc_precision] = i64(if dic == sql_code_date { 0 } else { decimal_digits })
 	} else {
-		check_desc_type(ipd, parameter_type)!
+		check_concise_type(parameter_type)!
 
 		// - 18.c. The length of a string is CS, and the precision and scale of a
 		// number are CS and DD.
@@ -119,4 +118,18 @@ fn bind_parameter(mut stmt Stmt, parameter_number i16, iom i16, value_type i16, 
 	apd.records[pn - 1] = record
 
 	return sql_success
+}
+
+// check_concise_type raises an exception condition if a data type that isn't a
+// datetime is an unsupported code from Table 37, "Codes used for concise data
+// types", (CLI-specific condition — optional feature not implemented) or it
+// isn't in Table 37 (CLI-specific condition — invalid data type).
+fn check_concise_type(code i16) ! {
+	if code in unsupported_concise_types {
+		return cli_error('HYC00', 'optional feature not implemented')
+	}
+	if code !in [sql_char, sql_numeric, sql_decimal, sql_integer, sql_smallint, sql_float, sql_real,
+		sql_double, sql_varchar, sql_boolean, sql_bigint] {
+		return cli_error('HY004', 'invalid data type')
+	}
 }

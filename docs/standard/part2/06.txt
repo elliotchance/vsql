@@ -1353,8 +1353,8 @@
 6.31/SR/3.a              implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
 6.31/SR/3.b              implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
 6.31/SR/3.b.i            n/a          - - LOBs (T041)
-6.31/SR/3.b.ii           partial      vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql the length isn't limited to the maximum length (#771)
-6.31/SR/3.b.iii          partial      vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql a length greater than the maximum length isn't rejected (#771)
+6.31/SR/3.b.ii           implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
+6.31/SR/3.b.iii          implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
 6.31/SR/4                implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
 6.31/SR/4.a              n/a          - - COLLATE (F690)
 6.31/SR/4.b              implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
@@ -1380,10 +1380,10 @@
 6.31/GR/2.b.ii.3.A.I     n/a          - - LOBs (T041)
 6.31/GR/2.b.ii.3.A.II    n/a          - - LOBs (T041)
 6.31/GR/2.b.ii.3.A.III   n/a          - - LOBs (T041)
-6.31/GR/2.b.ii.3.B       partial      vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql a result longer than the maximum length isn't an error (#771)
+6.31/GR/2.b.ii.3.B       implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
 6.31/GR/2.b.ii.3.B.I     implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/GR/2.b.ii.3.B.II    missing      - - #771
-6.31/GR/2.b.ii.3.B.III   missing      - - #771
+6.31/GR/2.b.ii.3.B.II    implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
+6.31/GR/2.b.ii.3.B.III   implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
 6.31/GR/2.b.ii.3.C       implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
 6.31/GR/3                n/a          - - binary strings (T021)
 6.31/GR/3.a              n/a          - - binary strings (T021)

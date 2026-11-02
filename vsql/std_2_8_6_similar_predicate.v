@@ -669,6 +669,6 @@ fn ranges_contain(ranges []RegularRange, ch rune) bool {
 // is_white_space is the definition of "white space" in 3.1.6.
 fn is_white_space(ch rune) bool {
 	return (ch >= 0x09 && ch <= 0x0D) || ch == 0x20 || ch == 0x85 || ch == 0xA0
-		|| ch == 0x1680 || (ch >= 0x2000 && ch <= 0x200A) || ch == 0x2028 || ch == 0x2029
+		|| ch == 0x1680 || ch == 0x180E || (ch >= 0x2000 && ch <= 0x200A) || ch == 0x2028 || ch == 0x2029
 		|| ch == 0x202F || ch == 0x205F || ch == 0x3000
 }

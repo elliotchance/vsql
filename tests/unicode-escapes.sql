@@ -32,7 +32,7 @@ VALUES 'a' 'b';
 -- error 42601: syntax error: unexpected string
 
 VALUES U & 'x';
--- error 42601: syntax error: unexpected string
+-- error 42601: syntax error: invalid character: &
 
 -- # Invalid escapes.
 VALUES U&'\004';

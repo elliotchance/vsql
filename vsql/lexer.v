@@ -413,10 +413,13 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			is_not_first = true
 		}
 
-		// Any other character is skipped, rather than only white space (ISO/IEC
-		// 9075-2:2016(E), 5.2, <token> and <separator>, Syntax Rules, 3), which
-		// is #760.
+		// A character that doesn't start a token must be a separator.
+		//
+		// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Syntax Rules, 3
 		if word == '' {
+			if !is_white_space(cs[i]) {
+				return sqlstate_42601('invalid character: ${cs[i]}')
+			}
 			i++
 			continue
 		}

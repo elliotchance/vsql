@@ -7,10 +7,10 @@
 5.1/SR/1                 implemented  vsql/std_2_5_1_sql_terminal_character.y tests/whitespace.sql
 5.1/GR/1                 implemented  vsql/std_2_5_1_sql_terminal_character.y tests/identifier-e.sql
 # 5.2, <token> and <separator>
-5.2                      partial      vsql/lexer.v tests/syntax_tokens.sql regular identifiers can only be ASCII (#761), and other characters are ignored (#760)
+5.2                      partial      vsql/lexer.v tests/syntax_tokens.sql regular identifiers can only be ASCII (#761)
 5.2/SR/1                 partial      vsql/lexer.v tests/identifier-e.sql only the ASCII letters and underscore (#761)
 5.2/SR/2                 partial      vsql/lexer.v tests/identifier-e.sql only the ASCII digits and underscore (#761)
-5.2/SR/3                 deviates     vsql/lexer.v tests/whitespace.sql any character that isn't part of a token is ignored, not only white space (#760)
+5.2/SR/3                 implemented  vsql/lexer.v tests/whitespace.sql
 5.2/SR/4                 impl-defined vsql/lexer.v tests/comments.sql a line feed (U+000A)
 5.2/SR/5                 implemented  vsql/lexer.v tests/syntax_tokens.sql
 5.2/SR/6                 implemented  vsql/lexer.v tests/create-table.sql

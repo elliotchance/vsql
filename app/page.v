@@ -4,9 +4,19 @@ import json2
 import strings
 import vsql
 
+// Confirm is a change that's shown (as sql) in a popup with the file it runs in,
+// to be confirmed before it's run, such as dropping a table. Confirming posts
+// name with value.
+struct Confirm {
+	sql     string
+	name    string
+	value   string
+	catalog string
+}
+
 // page renders the sidebar, the tabs, the SQL editor for tab and its last
-// result.
-fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabResult) !string {
+// result. If confirm has sql, it's shown to be confirmed.
+fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabResult, confirm Confirm) !string {
 	mut sb := strings.new_builder(4096)
 	sb.write_string('<!doctype html><html><head><meta charset="utf-8">')
 	sb.write_string('<meta name="viewport" content="width=device-width, initial-scale=1">')
@@ -28,20 +38,16 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 			write_history_search(mut sb)
 		}
 		write_history_list(mut sb, entries, true)
-		sb.write_string('<script>${reserved_words_js()}${app_highlight_js.to_string()}${app_history_js.to_string()}</script>')
+	} else if tab.tab_type == create_table_tab {
+		write_create_table(mut sb, tab, result)
 	} else {
-		output := if result.output == '' && result.status == '' {
-			'<p class="empty">Run to see the result.</p>'
-		} else {
-			result.output
-		}
-
 		entries := history(mut conn, tab.catalog, tab.id)!
 
 		// The editor is a transparent textarea over a highlighted copy of its
 		// text (see app.js).
 		sb.write_string('<div class="editor"><pre aria-hidden="true"></pre>')
-		sb.write_string('<textarea name="sql" rows="6" spellcheck="false" autofocus placeholder="SELECT * FROM ...">${html_escape(tab.query_text)}</textarea></div>')
+		autofocus := if confirm.sql == '' { ' autofocus' } else { '' }
+		sb.write_string('<textarea name="sql" rows="6" spellcheck="false"${autofocus} placeholder="SELECT * FROM ...">${html_escape(tab.query_text)}</textarea></div>')
 		// The inputs for each "?" are added as the SQL changes (see app.js).
 		sb.write_string('<div class="params" hidden data-values="${html_escape(json2.encode(tab.params.values))}" data-types="${html_escape(json2.encode(tab.params.types))}"></div>')
 		// The file that the SQL runs in.
@@ -67,14 +73,43 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 			write_history_list(mut sb, entries, false)
 			sb.write_string('</dialog>')
 		}
-		if result.error != '' {
-			sb.write_string('<p class="error">${html_escape(result.error)}</p>')
-		}
-		sb.write_string(output)
-		// The scripts are after the result, so they can find the editable
-		// table.
-		sb.write_string('<script>${reserved_words_js()}${app_highlight_js.to_string()}${app_js.to_string()}${app_edit_js.to_string()}${app_history_js.to_string()}</script>')
 	}
+	if confirm.sql != '' {
+		// It's a popup (see app_confirm.js), a DROP is run with a red button.
+		run_class := if confirm.sql.starts_with('DROP ') { ' class="delete"' } else { '' }
+		sb.write_string('<dialog class="confirm confirm-sql"><form method="post" action="/"><input type="hidden" name="tab" value="${html_escape(tab.ref())}">')
+		sb.write_string('<input type="hidden" name="${html_escape(confirm.name)}" value="${html_escape(confirm.value)}"><p class="confirm-file">${html_escape(confirm.catalog)}</p><pre class="sql">${html_escape(confirm.sql)}</pre>')
+		sb.write_string('<button type="submit"${run_class} autofocus>Run</button><a href="/" class="cancel">Cancel</a></form></dialog>')
+	}
+	// A CREATE_TABLE tab has its own error.
+	if result.error != '' && tab.tab_type != create_table_tab {
+		sb.write_string('<p class="error">${html_escape(result.error)}</p>')
+	}
+	if tab.id != no_tab.id && tab.tab_type == query_tab {
+		sb.write_string(if result.output == '' && result.status == '' {
+			'<p class="empty">Run to see the result.</p>'
+		} else {
+			result.output
+		})
+	}
+
+	// Create schema (in the menu of a catalog) is a popup, see app_schema.js.
+	sb.write_string('<dialog class="confirm create-schema"><form method="post" action="/"><input type="hidden" name="tab" value="${html_escape(tab.ref())}"><input type="hidden" name="create_schema" value=""><input type="hidden" name="create_schema_catalog" value="">')
+	sb.write_string('<p class="confirm-file"></p><label class="schema-name">Schema name <input spellcheck="false" placeholder="NAME"></label><pre class="sql"></pre>')
+	sb.write_string('<button type="submit" class="create">Create schema</button><button type="button" class="keep">Cancel</button></form></dialog>')
+
+	// The scripts are after the result, so they can find the editable table.
+	sb.write_string('<script>${reserved_words_js()}${app_highlight_js.to_string()}${app_schema_js.to_string()}')
+	if tab.id != no_tab.id && tab.tab_type == query_tab {
+		sb.write_string(app_js.to_string() + app_edit_js.to_string())
+	}
+	if tab.tab_type == create_table_tab {
+		sb.write_string(app_create_table_js.to_string())
+	}
+	if confirm.sql != '' {
+		sb.write_string(app_confirm_js.to_string())
+	}
+	sb.write_string('${app_history_js.to_string()}</script>')
 
 	sb.write_string('</main></body></html>')
 	return sb.str()
@@ -119,11 +154,16 @@ fn write_history_list(mut sb strings.Builder, entries []History, open bool) {
 }
 
 // write_sidebar is the version, a heading for each catalog (with a button for
-// its Query History) with its tables under their schema (a schema without tables
-// isn't shown), both sorted by name, each with its tabs (tab is the active one).
-// Choosing a tab goes to it, and choosing a table queries it in a new tab. Each
-// tab has a menu to close it. The sidebar can be resized, and a heading or schema
-// collapsed (see app_sidebar.js).
+// its Query History) with its schemas and their tables, both sorted by name, each
+// with its tabs (tab is the active one). Choosing a tab goes to it, and choosing a
+// table queries it in a new tab. Each tab has a menu to close it. The sidebar can
+// be resized, and a heading or schema collapsed (see app_sidebar.js).
+//
+// Each catalog has a menu to create a schema (see app_schema.js). Each schema and
+// table (other than in INFORMATION_SCHEMA, which can't be changed, and VSQL_APP,
+// which the app needs) has a menu to drop it, and a schema to add a table to it
+// (see create_table.v). They run in the file of the catalog, so it's not in the
+// SQL.
 fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_tabs []Tab, tab Tab) ! {
 	// A local build has no version.
 	version := if vsql.version() == '' { 'v0.0.0' } else { vsql.version() }
@@ -133,6 +173,7 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 		mut catalog := conn.catalog()
 		mut schemas := map[string][]vsql.Identifier{}
 		for schema in catalog.schemas()! {
+			schemas[schema.name] = []
 			for table in catalog.schema_tables(schema.name)! {
 				// The tab of the table runs in this catalog, so it's left out of
 				// the query.
@@ -145,6 +186,8 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 		mut schema_names := schemas.keys()
 		schema_names.sort()
 
+		sb.write_string('<div class="folder-row catalog-row"><details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
+		sb.write_string('<button type="button" class="create-schema" data-catalog="${html_escape(catalog_name)}">Create schema</button></div></details>')
 		sb.write_string('<details class="section" data-folder="catalog:${html_escape(catalog_name)}" open><summary><span class="icon" aria-hidden="true">&#128452;&#65039;</span>${a.file_dot(catalog_name)}${html_escape(catalog_name)}')
 		history_active := if tab.tab_type == history_tab && tab.catalog == catalog_name {
 			' active'
@@ -165,19 +208,38 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 			sb.write_string('<button type="submit" form="app" name="close" value="${html_escape(t.ref())}">Close</button></div></details></li>')
 		}
 		sb.write_string('</ul></details>')
-		if schema_names.len == 0 {
-			sb.write_string('<p class="empty">There are no tables.</p>')
-		}
 		for schema_name in schema_names {
 			mut tables := schemas[schema_name].clone()
 			tables.sort(a.entity_name < b.entity_name)
-			sb.write_string('<details class="folder" data-folder="schema:${html_escape(catalog_name)}.${html_escape(schema_name)}" open><summary><span class="icon" aria-hidden="true">&#128193;</span>${html_escape(schema_name)} <span class="count">${tables.len}</span></summary><ul>')
-			for table in tables {
-				sb.write_string('<li><button type="submit" form="app" name="query:${html_escape(catalog_name)}" value="${html_escape(table.str())}" title="SELECT * FROM ${html_escape(table.str())}"><span class="icon" aria-hidden="true">&#128196;</span>${html_escape(table.entity_name)}</button></li>')
+			// The menu of a schema (see app_sidebar.js) is next to it, so it's shown
+			// when the schema is collapsed.
+			schema_sql := vsql.Identifier{
+				schema_name: schema_name
+			}.str()
+			sb.write_string('<div class="folder-row schema-row">')
+			if schema_name !in ['INFORMATION_SCHEMA', 'VSQL_APP'] {
+				// A schema with tables is dropped with them.
+				drop_behavior := if tables.len == 0 { 'RESTRICT' } else { 'CASCADE' }
+				sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
+				sb.write_string('<button type="submit" form="app" name="add_table:${html_escape(catalog_name)}" value="${html_escape(schema_sql)}">Add table</button>')
+				sb.write_string('<button type="submit" form="app" name="drop:${html_escape(catalog_name)}" value="SCHEMA ${html_escape(schema_sql)} ${drop_behavior}" class="danger">Drop schema</button></div></details>')
 			}
-			sb.write_string('</ul></details>')
+			sb.write_string('<details class="folder" data-folder="schema:${html_escape(catalog_name)}.${html_escape(schema_name)}" open><summary><span class="icon" aria-hidden="true">&#128193;</span>${html_escape(schema_name)} <span class="count">${tables.len}</span></summary><ul>')
+			if tables.len == 0 {
+				sb.write_string('<li class="empty">There are no tables.</li>')
+			}
+			for table in tables {
+				sb.write_string('<li><button type="submit" form="app" name="query:${html_escape(catalog_name)}" value="${html_escape(table.str())}" title="SELECT * FROM ${html_escape(table.str())}"><span class="icon" aria-hidden="true">&#128196;</span>${html_escape(table.entity_name)}</button>')
+				// The menu of a table (see app_sidebar.js).
+				if schema_name !in ['INFORMATION_SCHEMA', 'VSQL_APP'] {
+					sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#8943;</summary><div class="menu-items">')
+					sb.write_string('<button type="submit" form="app" name="drop:${html_escape(catalog_name)}" value="TABLE ${html_escape(table.str())}" class="danger">Drop table</button></div></details>')
+				}
+				sb.write_string('</li>')
+			}
+			sb.write_string('</ul></details></div>')
 		}
-		sb.write_string('</details>')
+		sb.write_string('</details></div>')
 	}
 	set_catalog(mut conn, a.catalog_names[0])!
 
@@ -214,6 +276,9 @@ const app_css = $embed_file('app.css')
 const app_js = $embed_file('app.js')
 const app_edit_js = $embed_file('app_edit.js')
 const app_sidebar_js = $embed_file('app_sidebar.js')
+const app_confirm_js = $embed_file('app_confirm.js')
+const app_schema_js = $embed_file('app_schema.js')
+const app_create_table_js = $embed_file('app_create_table.js')
 const app_highlight_js = $embed_file('app_highlight.js')
 const app_history_js = $embed_file('app_history.js')
 

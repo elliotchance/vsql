@@ -76,6 +76,9 @@ const query_tab = 'QUERY'
 // each file. It has no payload.
 const history_tab = 'HISTORY'
 
+// create_table_tab is a tab to create a table, see create_table.v.
+const create_table_tab = 'CREATE_TABLE'
+
 // QueryPayload is the PAYLOAD (JSON) of a QUERY tab. Each tab type has its own
 // payload.
 struct QueryPayload {
@@ -95,7 +98,9 @@ struct Tab {
 	query_text string
 	active     bool
 	params     Params
-	catalog    string
+	// payload is the PAYLOAD as it's stored, for the other tab types.
+	payload string
+	catalog string
 }
 
 // ref identifies a tab in a form, since the ids are for each file.
@@ -113,8 +118,14 @@ fn (a &App) tabs(mut conn vsql.Connection) ![]Tab {
 	mut tabs := []Tab{}
 	for catalog in a.catalog_names {
 		for row in conn.query('SELECT id, tab_type, title, payload, active FROM ${app_table(catalog, 'tabs')} ORDER BY id')! {
-			payload := json2.decode[QueryPayload](row.get_string('PAYLOAD')!)!
-			tabs << Tab{row.get_int('ID')!, row.get_string('TAB_TYPE')!, row.get_string('TITLE')!, payload.query_text, row.get_bool('ACTIVE')! == .is_true, Params{payload.params, payload.param_types}, catalog}
+			tab_type := row.get_string('TAB_TYPE')!
+			payload := row.get_string('PAYLOAD')!
+			query := if tab_type == query_tab {
+				json2.decode[QueryPayload](payload)!
+			} else {
+				QueryPayload{}
+			}
+			tabs << Tab{row.get_int('ID')!, tab_type, row.get_string('TITLE')!, query.query_text, row.get_bool('ACTIVE')! == .is_true, Params{query.params, query.param_types}, payload, catalog}
 		}
 	}
 
@@ -184,9 +195,13 @@ fn title_tab(mut conn vsql.Connection, tab Tab, query_text string) ! {
 }
 
 fn save_tab(mut conn vsql.Connection, tab Tab, query_text string, params Params) ! {
+	save_payload(mut conn, tab, json2.encode(QueryPayload{query_text, params.values, params.types}))!
+}
+
+fn save_payload(mut conn vsql.Connection, tab Tab, payload string) ! {
 	mut stmt := conn.prepare('UPDATE ${app_table(tab.catalog, 'tabs')} SET payload = ? WHERE id = ?')!
 	stmt.query({
-		'?1': vsql.new_varchar_value(json2.encode(QueryPayload{query_text, params.values, params.types}))
+		'?1': vsql.new_varchar_value(payload)
 		'?2': vsql.new_integer_value(tab.id)
 	})!
 }
@@ -198,4 +213,16 @@ fn remove_tab(mut conn vsql.Connection, tab Tab) ! {
 		'?1': vsql.new_integer_value(tab.id)
 	})!
 	remove_history(mut conn, tab.catalog, tab.id)!
+}
+
+// close_tab removes a tab and its last result. Closing the active tab activates
+// the first tab, if there is one.
+fn (a &App) close_tab(mut conn vsql.Connection, tab Tab, active Tab) ! {
+	remove_tab(mut conn, tab)!
+	lock a.results {
+		a.results.delete(tab.ref())
+	}
+	if tab.ref() == active.ref() {
+		a.activate_tab(mut conn, a.tabs(mut conn)![0] or { no_tab })!
+	}
 }

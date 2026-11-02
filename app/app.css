@@ -117,7 +117,6 @@ details.menu > summary { padding: 0 6px; font-weight: normal; color: var(--muted
 details.menu > summary::-webkit-details-marker { display: none; }
 .sidebar li:hover details.menu > summary, details.menu[open] > summary, details.menu > summary:focus-visible { visibility: visible; }
 details.menu > summary:hover, details.menu[open] > summary { color: var(--fg); background: var(--border); }
-.menu-items { position: absolute; right: 0; z-index: 2; min-width: 100px; margin-top: 2px; padding: 4px 0; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
 .sidebar .menu-items button, .sidebar li.active .menu-items button { padding: 4px 12px; font-weight: normal; background: transparent; }
 .sidebar .menu-items button:hover, .sidebar li.active .menu-items button:hover { background: var(--border); }
 .params { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 12px; border-top: 1px solid var(--border); }
@@ -125,12 +124,42 @@ details.menu > summary:hover, details.menu[open] > summary { color: var(--fg); b
 .params label { display: flex; align-items: center; gap: 4px; font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); }
 .params input { width: 12em; padding: 2px 4px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 3px; }
 .params select { padding: 2px 4px; font: 12px inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 3px; }
-details.section > summary:has(button.history-nav) { position: relative; padding-right: 28px; overflow: hidden; text-overflow: ellipsis; }
-button.history-nav { position: absolute; top: 1px; right: 4px; padding: 0 5px; font-size: 12px; font-weight: normal; line-height: 1.4; color: var(--muted); background: transparent; border: 0; border-radius: 4px; }
+details.section > summary:has(button.history-nav) { position: relative; padding-right: 52px; overflow: hidden; text-overflow: ellipsis; }
+button.history-nav { position: absolute; top: 1px; right: 28px; padding: 0 5px; font-size: 12px; font-weight: normal; line-height: 1.4; color: var(--muted); background: transparent; border: 0; border-radius: 4px; }
 button.history-nav::before { content: "\1F551"; }
 button.history-nav:hover, button.history-nav.active { background: var(--border); }
 .history-search { display: block; flex-shrink: 0; width: calc(100% - 24px); margin: 12px; padding: 4px 8px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box; }
 .history-no-match { margin: 12px; color: var(--muted); }
+dialog.confirm { width: min(640px, calc(100vw - 32px)); padding: 16px; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+dialog.confirm::backdrop { background: rgba(0, 0, 0, 0.4); }
+.confirm form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.confirm pre { flex: 1 1 100%; margin: 0; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; }
+.confirm .cancel { color: var(--muted); }
+.confirm-file { flex: 1 1 100%; margin: 0; font-size: 12px; color: var(--muted); }
+.folder-row { position: relative; }
+.folder-row:has(> details.folder > summary:hover) > details.menu > summary, .folder-row:has(> details.section > summary:hover) > details.menu > summary, .folder-row > details.menu:hover > summary { visibility: visible; }
+.folder-row > details.menu { z-index: 1; }
+.menu-items { position: absolute; right: 0; z-index: 2; min-width: 140px; margin-top: 2px; padding: 4px 0; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+.sidebar .menu-items button { display: block; width: 100%; padding: 4px 12px; font-weight: normal; text-align: left; white-space: nowrap; color: var(--fg); background: transparent; border: 0; border-radius: 0; }
+.sidebar .menu-items button.danger { color: #cf222e; }
+.sidebar .menu-items button.danger:hover { color: #fff; background: #cf222e; }
+.create-table { padding: 12px; }
+pre.create-sql { margin: 0 0 12px; padding: 8px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; background: var(--side); border: 1px solid var(--border); border-radius: 6px; }
+.create-table input:not([type=checkbox]) { padding: 3px 6px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 4px; }
+.create-table .table-schema, .create-table .table-name { font-weight: 600; }
+.create-table .table-schema { margin-right: 16px; }
+.create-table .table-schema input, .create-table .table-name input { margin-left: 6px; font-weight: normal; }
+table.columns { margin: 12px 0; border-top: 1px solid var(--border); }
+table.columns th, table.columns td { vertical-align: middle; border: 1px solid var(--border); }
+table.columns td:has(input[type=checkbox]) { text-align: center; }
+.create-actions { display: flex; gap: 8px; margin-top: 12px; }
+button.add-column, button.cancel-create, button.keep, button.remove { color: var(--fg); background: var(--side); border-color: var(--border); }
+button.remove { padding: 1px 8px; font-size: 12px; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+dialog.discard p { margin: 0; }
+.confirm label { flex: 1 1 100%; font-weight: 600; }
+.confirm label input { margin-left: 6px; padding: 3px 6px; font: inherit; font-weight: normal; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 4px; }
+.sidebar li.empty { margin: 0; padding: 2px 12px 2px 28px; }
 details.folder > summary:has(button.new-tab) { position: relative; }
 button.new-tab { position: absolute; top: 2px; right: 4px; padding: 0 6px; font-size: 12px; font-weight: normal; line-height: 1.4; color: var(--muted); background: transparent; border: 0; border-radius: 4px; }
 button.new-tab:hover { color: var(--fg); background: var(--border); }

@@ -72,7 +72,7 @@ ALTER TABLE t ALTER COLUMN b SET DEFAULT CURRENT_SCHEMA;
 -- error 42601: syntax error: DEFAULT 'abc' is not valid for column B CHARACTER VARYING(2)
 -- error 42601: syntax error: DEFAULT CURRENT_TIME(0) is not valid for column C DATE
 -- error 42601: syntax error: DEFAULT 100000 is not valid for column D SMALLINT
--- msg: ALTER TABLE 1
+-- error 42601: syntax error: DEFAULT CURRENT_SCHEMA is not valid for column B CHARACTER VARYING(2)
 
 -- # A datetime default is evaluated when it's used.
 CREATE TABLE t (a INT, b DATE);

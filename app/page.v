@@ -1,5 +1,6 @@
 module app
 
+import json2
 import strings
 import vsql
 
@@ -41,6 +42,8 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		// text (see app.js).
 		sb.write_string('<div class="editor"><pre aria-hidden="true"></pre>')
 		sb.write_string('<textarea name="sql" rows="6" spellcheck="false" autofocus placeholder="SELECT * FROM ...">${html_escape(tab.query_text)}</textarea></div>')
+		// The inputs for each "?" are added as the SQL changes (see app.js).
+		sb.write_string('<div class="params" hidden data-values="${html_escape(json2.encode(tab.params.values))}" data-types="${html_escape(json2.encode(tab.params.types))}"></div>')
 		// The file that the SQL runs in.
 		sb.write_string('<div class="actions"><span class="catalog">${a.file_dot(tab.catalog)}${html_escape(tab.catalog)}</span><span class="status">${html_escape(result.status)}</span>')
 		if result.has_rows {

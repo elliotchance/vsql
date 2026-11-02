@@ -52,11 +52,6 @@ fn (s TableDefinition) check_limits(table_name Identifier) ! {
 	}
 }
 
-// A table with only table constraints has no columns, but it needs at least one
-// column (#787).
-//
-// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 9.a
-
 fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
@@ -94,6 +89,14 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 // doesn't have a <constraint name definition> has an empty name, see
 // Table.name_constraints.
 fn (stmt TableDefinition) table(table_name Identifier, tid u64) !Table {
+	// The table elements need at least one column, table constraints aren't
+	// enough.
+	//
+	// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 9.a
+	if !stmt.table_elements.any(it is Column) {
+		return sqlstate_42601('a table must have at least one column')
+	}
+
 	mut columns := []Column{}
 	mut primary_key := []string{}
 	mut primary_key_name := ''

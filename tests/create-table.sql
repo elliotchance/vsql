@@ -206,3 +206,9 @@ CREATE TABLE foo (x INT, X VARCHAR(5));
 
 CREATE TABLE foo (x INT, "x" VARCHAR(5));
 -- msg: CREATE TABLE 1
+
+CREATE TABLE foo (CONSTRAINT c CHECK (1 = 1));
+-- error 42601: syntax error: a table must have at least one column
+
+CREATE TABLE foo (x INT, CONSTRAINT c CHECK (1 = 1));
+-- msg: CREATE TABLE 1

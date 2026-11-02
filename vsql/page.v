@@ -355,6 +355,39 @@ fn (p Page) objects() []PageObject {
 	return objects
 }
 
+// page_object_value_at returns where the value starts of the object at offset,
+// using the layout in PageObject.bytes.
+fn page_object_value_at(data []u8, offset int) int {
+	key_at := offset + page_object_prefix_length - 1
+	key_len := int(binary.big_endian_u16_at(data, key_at - 2))
+
+	return key_at + key_len + 1
+}
+
+// find_pointer returns the index and page number of the last pointer in a
+// non-leaf page with a key that's not greater than key. If there isn't one, the
+// key must exist before the first page, so it's the first pointer. The objects
+// are read in place because this is called for each page of every search.
+fn (p Page) find_pointer(key []u8) (int, int) {
+	end := int(p.used) - page_header_size
+	mut offset := 0
+	mut index := 0
+	mut pointer_at := page_object_value_at(p.data, 0)
+	for i := 0; offset < end; i++ {
+		value_at := page_object_value_at(p.data, offset)
+		key_at := offset + page_object_prefix_length - 1
+		if compare_bytes(key, p.data[key_at..value_at - 1]) < 0 {
+			break
+		}
+
+		index = i
+		pointer_at = value_at
+		offset += int(binary.big_endian_u32_at(p.data, offset))
+	}
+
+	return index, int(i32(binary.big_endian_u32_at(p.data, pointer_at)))
+}
+
 // head returns the first object in the page, but it must only be used for
 // read only (so we can avoid the extra memory copies).
 fn (p Page) head() PageObject {

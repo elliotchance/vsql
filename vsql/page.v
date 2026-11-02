@@ -268,20 +268,23 @@ fn (mut p Page) add(obj PageObject) ! {
 // be taken. The removed object will be returned, or an object with an empty key
 // if the object did not exist.
 fn (mut p Page) delete(key []u8, tid u64) bool {
+	mut end := int(p.used) - page_header_size
 	mut offset := 0
 	mut did_delete := false
-	for object in p.objects() {
-		if compare_bytes(key, object.key) == 0 && object.tid == tid {
-			p.used -= u16(object.length())
-			did_delete = true
+	for offset < end {
+		len := p.object_len(offset)
+		if p.object_tid(offset) != tid || compare_bytes(key, p.object_key(offset)) != 0 {
+			offset += len
 			continue
 		}
 
-		s := object.bytes()
-		for i in 0 .. s.len {
-			p.data[offset] = s[i]
-			offset++
+		// The objects after it are moved over the top of it.
+		if offset + len < end {
+			unsafe { vmemmove(&p.data[offset], &p.data[offset + len], end - offset - len) }
 		}
+		end -= len
+		p.used -= u16(len)
+		did_delete = true
 	}
 
 	return did_delete

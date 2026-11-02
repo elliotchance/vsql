@@ -6,9 +6,10 @@ import vsql
 // ISO/IEC 9075-3:2003(E), 4.4.1, Handles
 //
 // A handle is an integer that identifies an allocated SQL-environment,
-// SQL-connection, SQL-statement or CLI descriptor area. Handles are never
-// reused, so a freed handle stays invalid (but they wrap after 2^31
-// allocations, which is #746). A handle can be used anywhere in the process,
+// SQL-connection, SQL-statement or CLI descriptor area. A handle must be unique
+// among the allocated resources, and must fit in an SQLINTEGER. So a freed
+// handle isn't reused until the handles have wrapped around, and a handle that's
+// still allocated is skipped. A handle can be used anywhere in the process,
 // which is implementation-defined. Memory isn't limited (the V GC panics if it
 // runs out), so there's no memory allocation error.
 
@@ -168,8 +169,14 @@ fn free_stmt(h i64) {
 }
 
 fn new_handle() i64 {
-	last_handle++
-	return last_handle
+	for {
+		last_handle = if last_handle == max_i32 { 1 } else { last_handle + 1 }
+		if last_handle !in envs && last_handle !in dbcs && last_handle !in stmts
+			&& last_handle !in descs {
+			return last_handle
+		}
+	}
+	return 0
 }
 
 fn (mut stmt Stmt) close_cursor() {

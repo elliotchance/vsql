@@ -10,9 +10,7 @@ module main
 //
 // There are no privileges, so feature C041 isn't supported and every row of
 // the INFORMATION_SCHEMA is described (for example ISO/IEC 9075-3:2003(E),
-// 6.63, Tables, General Rules, 6.b.ii). The length of each argument is read
-// before the null pointers are checked (for example General Rules, 10 and 12),
-// which is #759.
+// 6.63, Tables, General Rules, 6.b.ii).
 
 // The search pattern escape (see GetInfo).
 const search_pattern_escape = '\\'
@@ -22,20 +20,16 @@ const sql_all_catalogs = '%'
 const sql_all_schemas = '%'
 const sql_all_table_types = '%'
 
-// CatalogArg is a name argument of a catalog routine. is_null is true if it was
-// a null pointer.
+// CatalogArg is a name argument of a catalog routine.
 struct CatalogArg {
-	value   string
-	is_null bool
+	value string
 }
 
 // catalog_arg reads a name argument of NameLength octets (or SQL_NTS). A null
 // pointer is a zero-length string.
 fn catalog_arg(name &char, name_length i16) !CatalogArg {
 	if name == unsafe { nil } {
-		return CatalogArg{
-			is_null: true
-		}
+		return CatalogArg{}
 	}
 	if name_length < 0 && name_length != sql_nts {
 		return cli_error('HY090', 'invalid string length or buffer length')
@@ -49,9 +43,19 @@ fn catalog_arg(name &char, name_length i16) !CatalogArg {
 // check_metadata_id_args raises an exception condition if the METADATA ID
 // attribute is TRUE and an argument is a null pointer: CLI-specific condition
 // — invalid use of null pointer. vsql supports catalog names, so the catalog
-// can't be a null pointer either.
-fn check_metadata_id_args(stmt &Stmt, args []CatalogArg) ! {
-	if stmt.metadata_id == sql_true && args.any(it.is_null) {
+// can't be a null pointer either. The null pointers are checked before the
+// length of any argument is read.
+fn check_metadata_id_args(stmt &Stmt, names []&char) ! {
+	if stmt.metadata_id == sql_true && names.any(isnil(it)) {
+		return cli_error('HY009', 'invalid use of null pointer')
+	}
+}
+
+// check_table_name_arg raises an exception condition if the name of a table
+// that must be given is a null pointer: CLI-specific condition — invalid use of
+// null pointer.
+fn check_table_name_arg(name &char) ! {
+	if isnil(name) {
 		return cli_error('HY009', 'invalid use of null pointer')
 	}
 }

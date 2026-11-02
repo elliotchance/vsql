@@ -362,7 +362,7 @@
 6.11/GR/7.aj             implemented  libvsql/std_3_6_11_columns.v libvsql/std_3_6_11_columns_test.c
 6.11/GR/8                definition   - -
 6.11/GR/9                definition   - -
-6.11/GR/10               deviates     libvsql/std_3_6_11_columns.v libvsql/std_3_6_11_columns_test.c the lengths are read before the null pointers are checked (#759)
+6.11/GR/10               implemented  libvsql/std_3_6_11_columns.v libvsql/std_3_6_11_columns_test.c
 6.11/GR/10.a             implemented  libvsql/std_3_6_11_columns.v libvsql/std_3_6_11_columns_test.c
 6.11/GR/10.b             implemented  libvsql/std_3_6_11_columns.v libvsql/std_3_6_11_columns_test.c
 6.11/GR/11               implemented  libvsql/std_3_6_11_columns.v libvsql/std_3_6_11_columns_test.c
@@ -823,7 +823,7 @@
 # 6.23, ForeignKeys
 6.23                     container    - -
 6.23/GR/1                definition   - -
-6.23/GR/2                deviates     libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the arguments are read before the open cursor is checked (#759)
+6.23/GR/2                implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/3                definition   - -
 6.23/GR/4                definition   - -
 6.23/GR/5                definition   - -
@@ -872,7 +872,7 @@
 6.23/GR/7.a.ix.15        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.a.x            definition   - -
 6.23/GR/7.a.xi           definition   - -
-6.23/GR/7.a.xii          deviates     libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the lengths are read before the null pointers are checked (#759)
+6.23/GR/7.a.xii          implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.a.xii.1        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.a.xii.2        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.a.xiii         implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
@@ -957,7 +957,7 @@
 6.23/GR/7.b.xi.15        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.b.xii          definition   - -
 6.23/GR/7.b.xiii         definition   - -
-6.23/GR/7.b.xiv          deviates     libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c the lengths are read before the null pointers are checked (#759)
+6.23/GR/7.b.xiv          implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.b.xiv.1        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.b.xiv.2        implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
 6.23/GR/7.b.xv           implemented  libvsql/std_3_6_23_foreign_keys.v libvsql/std_3_6_23_foreign_keys_test.c
@@ -2060,10 +2060,10 @@
 6.51/GR/10.f             implemented  libvsql/std_3_6_51_primary_keys.v libvsql/std_3_6_51_primary_keys_test.c
 6.51/GR/11               definition   - -
 6.51/GR/12               definition   - -
-6.51/GR/13               deviates     libvsql/std_3_6_51_primary_keys.v libvsql/std_3_6_51_primary_keys_test.c the lengths are read before the null pointers are checked (#759)
+6.51/GR/13               implemented  libvsql/std_3_6_51_primary_keys.v libvsql/std_3_6_51_primary_keys_test.c
 6.51/GR/13.a             implemented  libvsql/std_3_6_51_primary_keys.v libvsql/std_3_6_51_primary_keys_test.c
 6.51/GR/13.b             implemented  libvsql/std_3_6_51_primary_keys.v libvsql/std_3_6_51_primary_keys_test.c
-6.51/GR/14               deviates     libvsql/std_3_6_51_primary_keys.v libvsql/std_3_6_51_primary_keys_test.c the lengths are read before the null pointers are checked (#759)
+6.51/GR/14               implemented  libvsql/std_3_6_51_primary_keys.v libvsql/std_3_6_51_primary_keys_test.c
 6.51/GR/15               implemented  libvsql/std_3_6_51_primary_keys.v libvsql/std_3_6_51_primary_keys_test.c
 6.51/GR/16               container    - -
 6.51/GR/16.a             implemented  libvsql/std_3_6_51_primary_keys.v libvsql/std_3_6_51_primary_keys_test.c
@@ -2436,10 +2436,10 @@
 6.60/GR/10.h             implemented  libvsql/std_3_6_60_special_columns.v libvsql/std_3_6_60_special_columns_test.c always NOT PSEUDO
 6.60/GR/11               definition   - -
 6.60/GR/12               definition   - -
-6.60/GR/13               deviates     libvsql/std_3_6_60_special_columns.v libvsql/std_3_6_60_special_columns_test.c the lengths are read before the null pointers are checked (#759)
+6.60/GR/13               implemented  libvsql/std_3_6_60_special_columns.v libvsql/std_3_6_60_special_columns_test.c
 6.60/GR/13.a             implemented  libvsql/std_3_6_60_special_columns.v libvsql/std_3_6_60_special_columns_test.c
 6.60/GR/13.b             implemented  libvsql/std_3_6_60_special_columns.v libvsql/std_3_6_60_special_columns_test.c
-6.60/GR/14               deviates     libvsql/std_3_6_60_special_columns.v libvsql/std_3_6_60_special_columns_test.c the lengths are read before the null pointers are checked (#759)
+6.60/GR/14               implemented  libvsql/std_3_6_60_special_columns.v libvsql/std_3_6_60_special_columns_test.c
 6.60/GR/15               implemented  libvsql/std_3_6_60_special_columns.v libvsql/std_3_6_60_special_columns_test.c
 6.60/GR/16               container    - -
 6.60/GR/16.a             implemented  libvsql/std_3_6_60_special_columns.v libvsql/std_3_6_60_special_columns_test.c
@@ -2608,7 +2608,7 @@
 6.63/GR/7.i              implemented  libvsql/std_3_6_63_tables.v libvsql/std_3_6_63_tables_test.c
 6.63/GR/8                definition   - -
 6.63/GR/9                definition   - -
-6.63/GR/10               deviates     libvsql/std_3_6_63_tables.v libvsql/std_3_6_63_tables_test.c the lengths are read before the null pointers are checked (#759)
+6.63/GR/10               implemented  libvsql/std_3_6_63_tables.v libvsql/std_3_6_63_tables_test.c
 6.63/GR/10.a             implemented  libvsql/std_3_6_63_tables.v libvsql/std_3_6_63_tables_test.c
 6.63/GR/10.b             implemented  libvsql/std_3_6_63_tables.v libvsql/std_3_6_63_tables_test.c
 6.63/GR/11               implemented  libvsql/std_3_6_63_tables.v libvsql/std_3_6_63_tables_test.c

@@ -18,8 +18,7 @@ module main
 // 7.b.xix says the FK_ columns, which can't be right, since they're the
 // columns of the other tables. DEFERABILITY is always NOT DEFERRABLE (General
 // Rules, 7.a.ix.14 and 7.b.xi.14), but a foreign key can be deferrable, which
-// is #758. The arguments are read before the open cursor is checked (General
-// Rules, 2), which is #759.
+// is #758.
 
 // Codes from Table 26, "Miscellaneous codes used in CLI".
 const sql_cascade = i16(0)
@@ -41,33 +40,35 @@ fn sql_foreign_keys(statement_handle SQLInteger, pk_catalog_name &char, name_len
 	stmt.diag.clear()
 	stmt.invoke(false) or { return stmt.diag.error(err) }
 
-	return foreign_keys(mut stmt, [
-		catalog_arg(pk_catalog_name, name_length1) or { return stmt.diag.error(err) },
-		catalog_arg(pk_schema_name, name_length2) or { return stmt.diag.error(err) },
-		catalog_arg(pk_table_name, name_length3) or { return stmt.diag.error(err) },
-		catalog_arg(fk_catalog_name, name_length4) or { return stmt.diag.error(err) },
-		catalog_arg(fk_schema_name, name_length5) or { return stmt.diag.error(err) },
-		catalog_arg(fk_table_name, name_length6) or { return stmt.diag.error(err) },
-	]) or { stmt.diag.error(err) }
+	return foreign_keys(mut stmt, [pk_catalog_name, pk_schema_name, pk_table_name, fk_catalog_name,
+		fk_schema_name, fk_table_name], [name_length1, name_length2, name_length3, name_length4,
+		name_length5, name_length6]) or { stmt.diag.error(err) }
 }
 
-fn foreign_keys(mut stmt Stmt, args []CatalogArg) !i16 {
+fn foreign_keys(mut stmt Stmt, names []&char, lengths []i16) !i16 {
 	// - 2. If an open cursor is associated with S, then an exception condition
 	// is raised: invalid cursor state.
 	if stmt.cursor != none {
 		return cli_error('24000', 'invalid cursor state')
 	}
 
-	pk_given := args[2].value != ''
-	fk_given := args[5].value != ''
+	// - 6. PKN and FKN.
+	pk_given := catalog_arg(names[2], lengths[2])!.value != ''
+	fk_given := catalog_arg(names[5], lengths[5])!.value != ''
 
-	// - 7.a.xii. With METADATA ID, the names of the given table can't be null
-	// pointers.
+	// - 7.a.xii, 7.b.xiv. With METADATA ID, the names of the given table can't be
+	// null pointers.
 	if pk_given {
-		check_metadata_id_args(stmt, args[..3])!
+		check_metadata_id_args(stmt, names[..3])!
 	}
 	if fk_given {
-		check_metadata_id_args(stmt, args[3..])!
+		check_metadata_id_args(stmt, names[3..])!
+	}
+
+	// - 7.a.xiii to 7.a.xvi, 7.b.xv to 7.b.xviii. The other arguments.
+	mut args := []CatalogArg{}
+	for i, name in names {
+		args << catalog_arg(name, lengths[i])!
 	}
 
 	// - 7.b. Only the primary key of the PKTableName.

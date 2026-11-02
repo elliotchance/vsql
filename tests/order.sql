@@ -156,3 +156,21 @@ EXPLAIN SELECT * FROM bar ORDER BY x;
 CREATE TABLE bar (x FLOAT, y VARCHAR(32));
 SELECT * FROM bar ORDER BY x;
 -- msg: CREATE TABLE 1
+
+-- # A sort key can't be the name of more than one column of the result (#804).
+CREATE TABLE t (a INT, b INT);
+INSERT INTO t (a, b) VALUES (1, 2);
+SELECT a, b AS a FROM t ORDER BY a;
+SELECT t.a, t.b AS a FROM t UNION SELECT a, b FROM t ORDER BY a;
+SELECT a, b AS a FROM t ORDER BY t.a;
+SELECT a, b AS a FROM t ORDER BY b;
+SELECT a, b AS a FROM t ORDER BY 'A';
+SELECT a, b AS a FROM t ORDER BY 1.5 + 1.5 + 1.5 + 1.5;
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 42702: ambiguous column: A
+-- error 42702: ambiguous column: A
+-- A: 1 A: 2
+-- A: 1 A: 2
+-- A: 1 A: 2
+-- A: 1 A: 2

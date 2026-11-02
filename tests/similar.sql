@@ -223,3 +223,15 @@ VALUES 'a' SIMILAR TO '(a*){3}';
 
 VALUES 'a b' SIMILAR TO 'a[[:WHITESPACE:]]b';
 -- COL1: TRUE
+
+-- # The operands must be character strings (#780).
+VALUES 1 SIMILAR TO '1';
+VALUES '1' SIMILAR TO 1;
+VALUES TRUE SIMILAR TO 'T%';
+VALUES '1' SIMILAR TO '1' ESCAPE 1;
+VALUES CAST(NULL AS INT) SIMILAR TO '1';
+-- error 42883: operator does not exist: SMALLINT SIMILAR TO CHARACTER
+-- error 42883: operator does not exist: CHARACTER SIMILAR TO SMALLINT
+-- error 42883: operator does not exist: BOOLEAN SIMILAR TO CHARACTER
+-- error 42883: operator does not exist: CHARACTER SIMILAR TO SMALLINT
+-- error 42883: operator does not exist: INTEGER SIMILAR TO CHARACTER

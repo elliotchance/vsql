@@ -139,3 +139,15 @@ VALUES 'aaaaaab11111xy' LIKE 'a{6}_[0-9]{5}(x|y){2}';
 
 VALUES '$0.87' LIKE '$[0-9]+(.[0-9][0-9])?';
 -- COL1: FALSE
+
+-- # The operands must be character strings (#780).
+VALUES 1 LIKE 'a';
+VALUES 'a' LIKE 1;
+VALUES TRUE LIKE 'T%';
+VALUES 'a' LIKE 'a' ESCAPE 1;
+VALUES CAST(NULL AS INT) LIKE 'a';
+-- error 42883: operator does not exist: SMALLINT LIKE CHARACTER
+-- error 42883: operator does not exist: CHARACTER LIKE SMALLINT
+-- error 42883: operator does not exist: BOOLEAN LIKE CHARACTER
+-- error 42883: operator does not exist: CHARACTER LIKE SMALLINT
+-- error 42883: operator does not exist: INTEGER LIKE CHARACTER

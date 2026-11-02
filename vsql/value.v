@@ -138,12 +138,15 @@ pub fn new_bigint_value(x i64) Value {
 
 // approximate_value is a DOUBLE PRECISION or REAL from the result of a
 // calculation. Infinity isn't an SQL value, so a result that's too large for the
-// type raises 22003 (numeric value out of range).
+// type raises 22003 (numeric value out of range). A REAL that's too small
+// becomes zero when it's converted from x, which also raises 22003. The caller
+// needs to check for a DOUBLE PRECISION that's too small, since x is already
+// zero (see approximate_nonzero_value).
 //
 // ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, General Rules, 6
 fn approximate_value(x f64, typ SQLType) !Value {
 	if typ == .is_real {
-		if math.is_inf(f32(x), 0) {
+		if math.is_inf(f32(x), 0) || (x != 0 && f32(x) == 0) {
 			return sqlstate_22003()
 		}
 
@@ -155,6 +158,19 @@ fn approximate_value(x f64, typ SQLType) !Value {
 	}
 
 	return new_double_precision_value(x)
+}
+
+// approximate_nonzero_value is approximate_value for a calculation where the
+// exact result isn't zero, so x is only zero if the result is too small for the
+// type. A denormal is still in the range.
+//
+// ISO/IEC 9075-2:2016(E), 6.29, <numeric value expression>, General Rules, 6
+fn approximate_nonzero_value(x f64, typ SQLType) !Value {
+	if x == 0 {
+		return sqlstate_22003()
+	}
+
+	return approximate_value(x, typ)
 }
 
 // new_real_value creates a ``REAL`` value.

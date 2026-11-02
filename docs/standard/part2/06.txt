@@ -1139,7 +1139,7 @@
 6.29/GR/5                implemented  vsql/operators.v tests/arithmetic.sql,tests/integer.sql
 6.29/GR/5.a              implemented  vsql/operators.v tests/arithmetic.sql,tests/integer.sql
 6.29/GR/5.b              impl-defined vsql/operators.v tests/numeric.sql a division is truncated
-6.29/GR/6                partial      vsql/value.v tests/approximate-errors.sql a result that's too small becomes zero (#768)
+6.29/GR/6                implemented  vsql/value.v tests/approximate-errors.sql
 6.29/GR/7                n/a          - - DECFLOAT (T076)
 # 6.30, <numeric value function>
 6.30                     implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql

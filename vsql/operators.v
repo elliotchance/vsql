@@ -157,6 +157,10 @@ fn binary_bigint_minus_bigint(_ &Connection, a Value, b Value) !Value {
 }
 
 fn binary_double_precision_multiply_double_precision(_ &Connection, a Value, b Value) !Value {
+	if a.f64_value() != 0 && b.f64_value() != 0 {
+		return approximate_nonzero_value(a.f64_value() * b.f64_value(), .is_double_precision)
+	}
+
 	return approximate_value(a.f64_value() * b.f64_value(), .is_double_precision)
 }
 
@@ -178,6 +182,10 @@ fn binary_bigint_multiply_bigint(_ &Connection, a Value, b Value) !Value {
 fn binary_double_precision_divide_double_precision(_ &Connection, a Value, b Value) !Value {
 	if b.f64_value() == 0 {
 		return sqlstate_22012() // division by zero
+	}
+
+	if a.f64_value() != 0 {
+		return approximate_nonzero_value(a.f64_value() / b.f64_value(), .is_double_precision)
 	}
 
 	return approximate_value(a.f64_value() / b.f64_value(), .is_double_precision)

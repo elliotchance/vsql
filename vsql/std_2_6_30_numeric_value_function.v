@@ -230,7 +230,7 @@ fn func_ln(args []Value) !Value {
 // EXP(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_exp(args []Value) !Value {
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 13.b
-	return approximate_value(math.exp(args[0].f64_value()), .is_double_precision)
+	return approximate_nonzero_value(math.exp(args[0].f64_value()), .is_double_precision)
 }
 
 // SQRT(DOUBLE PRECISION) DOUBLE PRECISION
@@ -257,6 +257,10 @@ fn func_power(args []Value) !Value {
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 14.b and 14.e
 	if (base == 0 && exponent < 0) || (base < 0 && exponent != math.trunc(exponent)) {
 		return sqlstate_2201f()
+	}
+
+	if base != 0 {
+		return approximate_nonzero_value(math.pow(base, exponent), .is_double_precision)
 	}
 
 	return approximate_value(math.pow(base, exponent), .is_double_precision)

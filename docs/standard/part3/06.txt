@@ -101,14 +101,14 @@
 6.6/GR/10.a              implemented  libvsql/std_3_6_6_bind_parameter.v libvsql/std_3_6_6_bind_parameter_test.c
 6.6/GR/10.b              implemented  libvsql/std_3_6_6_bind_parameter.v libvsql/std_3_6_6_bind_parameter_test.c
 6.6/GR/11                definition   - -
-6.6/GR/12                deviates     libvsql/std_3_6_6_bind_parameter.v libvsql/std_3_6_6_bind_parameter_test.c checked with the IPD codes rather than Table 37 (#753)
+6.6/GR/12                implemented  libvsql/std_3_6_6_bind_parameter.v libvsql/std_3_6_6_bind_parameter_test.c
 6.6/GR/13                definition   - -
 6.6/GR/14                container    - -
 6.6/GR/14.a              n/a          - - memory isn't limited (4.4.1)
-6.6/GR/14.b              partial      libvsql/std_3_6_6_bind_parameter.v libvsql/std_3_6_6_bind_parameter_test.c COUNT is set to PN, but TOP_LEVEL_COUNT isn't changed (#752)
+6.6/GR/14.b              implemented  libvsql/std_3_6_6_bind_parameter.v libvsql/std_3_6_6_bind_parameter_test.c
 6.6/GR/15                container    - -
 6.6/GR/15.a              n/a          - - memory isn't limited (4.4.1)
-6.6/GR/15.b              partial      libvsql/std_3_6_6_bind_parameter.v libvsql/std_3_6_6_bind_parameter_test.c COUNT is set to PN, but TOP_LEVEL_COUNT isn't changed (#752)
+6.6/GR/15.b              implemented  libvsql/std_3_6_6_bind_parameter.v libvsql/std_3_6_6_bind_parameter_test.c
 6.6/GR/16                definition   - -
 6.6/GR/17                definition   - -
 6.6/GR/18                container    - -

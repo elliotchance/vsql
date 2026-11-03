@@ -52,7 +52,7 @@
 23.1/GR/4.h.i.1.B        n/a          - - there are no temporary tables (F531)
 23.1/GR/4.h.i.2          implemented  vsql/std_2_23_1_get_diagnostics_statement.v libvsql/module/test_main.c
 23.1/GR/4.h.ii           n/a          - - privileges (E081)
-23.1/GR/4.i              missing      - - the cursor isn't identified (#735)
+23.1/GR/4.i              implemented  vsql/std_2_23_1_get_diagnostics_statement.v libvsql/module/test_main.c
 23.1/GR/4.j              n/a          - - views (F031-02)
 23.1/GR/4.k              n/a          - - privileges (E081)
 23.1/GR/4.k.i            n/a          - - privileges (E081)

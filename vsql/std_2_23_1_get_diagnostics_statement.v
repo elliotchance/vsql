@@ -17,8 +17,7 @@ module vsql
 // The C constant (in libvsql.h, or the C runtime) of each <statement
 // information item name> and <condition information item name>. An empty
 // constant is always 0 (zero) or a zero-length string, since vsql conditions
-// don't identify the table, column, cursor (#735), routine or trigger that it
-// describes.
+// don't identify the table, column, routine or trigger that it describes.
 const statement_information_items = {
 	'NUMBER':                   'SQL_DIAG_NUMBER'
 	'MORE':                     'SQL_DIAG_MORE'
@@ -41,7 +40,7 @@ const condition_information_items = {
 	'CONSTRAINT_CATALOG':         'SQL_DIAG_CONSTRAINT_CATALOG'
 	'CONSTRAINT_NAME':            'SQL_DIAG_CONSTRAINT_NAME'
 	'CONSTRAINT_SCHEMA':          'SQL_DIAG_CONSTRAINT_SCHEMA'
-	'CURSOR_NAME':                ''
+	'CURSOR_NAME':                'SQL_DIAG_CURSOR_NAME'
 	'MESSAGE_LENGTH':             'SQL_DIAG_MESSAGE_LENGTH'
 	'MESSAGE_OCTET_LENGTH':       'SQL_DIAG_MESSAGE_OCTET_LENGTH'
 	'MESSAGE_TEXT':               'SQL_DIAG_MESSAGE_TEXT'

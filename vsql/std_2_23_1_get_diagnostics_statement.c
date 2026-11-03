@@ -14,9 +14,10 @@ static const char *vsql_m_origin(char c) {
  * diagnostics area. n is the condition number, or 0 (zero) for a statement
  * information item. The MESSAGE_TEXT is the message of the condition, and the
  * CONNECTION_NAME and SERVER_NAME are of the SQL-connection that raised it.
- * The constraint is only identified for an integrity constraint violation.
+ * The constraint is only identified for an integrity constraint violation, and
+ * the cursor for an invalid cursor state.
  *
- * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.d, 4.f, 4.f.i, 4.m and 4.p
+ * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.d, 4.f, 4.f.i, 4.i, 4.m and 4.p
  */
 static const char *vsql_m_item_text(int item, long long n) {
   const char *s = NULL;
@@ -50,6 +51,11 @@ static const char *vsql_m_item_text(int item, long long n) {
     break;
   case SQL_DIAG_CONSTRAINT_NAME:
     s = vsql_m_da.conditions[n - 1].constraint_name;
+    break;
+  case SQL_DIAG_CURSOR_NAME:
+    if (strcmp(vsql_m_da.conditions[n - 1].sqlstate, "24000") == 0) {
+      s = vsql_m_da.cursor_name;
+    }
     break;
   case SQL_DIAG_CONNECTION_NAME:
     return vsql_m_da.connection_name;

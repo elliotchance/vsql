@@ -42,6 +42,7 @@ static int vsql_m_deallocate(char *sqlstate, struct vsql_m_connection *c,
         vsql_m_failed(SQLSetStmtAttr(cursors[i], SQL_ATTR_CURSOR_HOLDABLE,
                                      &holdable, 0))) {
       vsql_m_status(sqlstate, "24000");
+      vsql_m_da.cursor_name = vsql_m_cursor_names[i];
       return 0;
     }
   }

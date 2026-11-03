@@ -309,15 +309,19 @@ fn (m SQLClientModule) c_source(name string, embedded bool, runtime []string) st
 		s += 'static const int vsql_m_cursor_count = ${m.cursors.len};\n\n'
 	}
 
-	// The prepared statement of each dynamic cursor, or NULL for a cursor that
-	// isn't dynamic. The last one is always NULL.
+	// The name and the prepared statement of each cursor (NULL for a cursor that
+	// isn't dynamic). The last ones are always NULL.
 	if 'prepared' in sections {
 		mut names := []string{}
+		mut statements := []string{}
 		for cursor in m.cursors {
-			names << if cursor.statement == '' { 'NULL' } else { c_string(cursor.statement) }
+			names << c_string(cursor.name)
+			statements << if cursor.statement == '' { 'NULL' } else { c_string(cursor.statement) }
 		}
 		names << 'NULL'
-		s += 'static const char *const vsql_m_cursor_statements[] = {${names.join(', ')}};\n\n'
+		statements << 'NULL'
+		s += 'static const char *const vsql_m_cursor_names[] = {${names.join(', ')}};\n\n'
+		s += 'static const char *const vsql_m_cursor_statements[] = {${statements.join(', ')}};\n\n'
 	}
 	// Git may check out the runtime with CRLF line endings (on Windows).
 	for section in c_module_runtime.replace('\r\n', '\n').split('/* section ')[1..] {

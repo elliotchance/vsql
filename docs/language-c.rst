@@ -381,10 +381,11 @@ Item                         Value
                              that starts with ``23``, or ``40002``).
 ``CONSTRAINT_SCHEMA``        Its schema.
 ``CONSTRAINT_CATALOG``       Its catalog.
+``CURSOR_NAME``              The cursor (for an SQLSTATE of ``24000``).
 ============================ ==================================================
 
 The other condition items (``CATALOG_NAME``, ``COLUMN_NAME``,
-``CURSOR_NAME``, ``PARAMETER_MODE``, ``PARAMETER_NAME``,
+``PARAMETER_MODE``, ``PARAMETER_NAME``,
 ``PARAMETER_ORDINAL_POSITION``, ``ROUTINE_CATALOG``, ``ROUTINE_NAME``,
 ``ROUTINE_SCHEMA``, ``SCHEMA_NAME``, ``SPECIFIC_NAME``, ``TABLE_NAME``,
 ``TRIGGER_CATALOG``, ``TRIGGER_NAME`` and ``TRIGGER_SCHEMA``) are always empty

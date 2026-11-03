@@ -67,6 +67,6 @@ fn (mut t ModuleTokens) open_statement(p ExternallyInvokedProcedure, cursors []M
 	b := bind_parameters(['connection', 'exec', 'cursor', 'open'], references, p)!
 	hold := if cursor.hold { 1 } else { 0 }
 
-	return ModuleStatement{b.sections, b.used, begin('OPEN', 53) + b.c +
+	return ModuleStatement{b.sections, b.used, cursor.begin('OPEN', 53) + b.c +
 		'  vsql_m_open_cursor(SQLSTATE, ${cursor.index}, ${c_string(cursor.sql_name)}, ${hold}, ${c_string(text_sql.trim_space())}, ${b.args()});\n'}
 }

@@ -189,6 +189,8 @@ struct vsql_m_da {
   struct vsql_m_condition *conditions;
   char connection_name[129];
   char *server_name;
+  /* The cursor of the last statement that isn't GET DIAGNOSTICS, or NULL. */
+  const char *cursor_name;
 };
 
 /*
@@ -198,7 +200,7 @@ struct vsql_m_da {
  * called keeps it, and the others find it with vsql_module_agent. A module that
  * was compiled with a different version of this struct has its own.
  */
-#define VSQL_M_AGENT_VERSION 1
+#define VSQL_M_AGENT_VERSION 2
 
 struct vsql_m_agent {
   int version;
@@ -274,6 +276,7 @@ static void vsql_m_begin(const char *command_function, SQLINTEGER code) {
   vsql_m_da.row_count = 0;
   vsql_m_da.transactions_committed = 0;
   vsql_m_da.transactions_rolled_back = 0;
+  vsql_m_da.cursor_name = NULL;
 }
 
 /*

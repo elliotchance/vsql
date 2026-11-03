@@ -343,6 +343,14 @@ struct ModuleCursor {
 	statement string
 }
 
+// begin is begin for a statement of the cursor, which is also the cursor of any
+// invalid cursor state that the statement raises.
+//
+// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 4.i
+fn (cursor ModuleCursor) begin(command_function string, code int) string {
+	return begin(command_function, code) + '  vsql_m_da.cursor_name = ${c_string(cursor.name)};\n'
+}
+
 // declare_module_cursor reads the <declare cursor> of a module. It's parsed
 // with a "?" for each host parameter, to find any syntax errors.
 fn declare_module_cursor(text string, index int) !ModuleCursor {

@@ -27,6 +27,7 @@ fn (d AddTableConstraintDefinition) execute(mut conn Connection, mut catalog Cat
 	}
 	new_table.name_constraints(catalog.storage.schema_constraint_names(table.name))!
 	resolve_foreign_keys(mut conn, mut new_table)!
+	check_new_check_constraints(mut conn, new_table, table.check_constraints.len)!
 
 	replace_table_definition(mut conn, mut catalog, table, new_table)!
 }

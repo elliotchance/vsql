@@ -217,10 +217,11 @@ fn (g GenerationClause) str() string {
 // expression: it can't contain a parameter, a generated column (only a base
 // column), anything that's possibly non-deterministic or a subquery (see
 // Compiler.restricted). The table doesn't need to exist yet, so it can be
-// checked by the CREATE TABLE.
+// checked by the CREATE TABLE. stored is false for a new column, whose names are
+// resolved with the current schema and catalog (see Compiler.stored_definition).
 //
 // ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rules, 1 and 10.c to 10.f
-fn (g GenerationClause) compile(mut conn Connection, table Table, column Column) !CompileResult {
+fn (g GenerationClause) compile(mut conn Connection, table Table, column Column, stored bool) !CompileResult {
 	mut c := Compiler{
 		conn:                   conn
 		params:                 map[string]Value{}
@@ -231,6 +232,7 @@ fn (g GenerationClause) compile(mut conn Connection, table Table, column Column)
 		next_value_not_allowed: 'a generation expression'
 		restricted:             'a generation expression'
 		generation_column:      column.name.sub_entity_name
+		stored_definition:      stored
 	}
 	compiled := g.expr.compile(mut c)!
 
@@ -253,6 +255,7 @@ fn (g GenerationClause) columns(mut conn Connection, table Table, column Column)
 		context:           table.name
 		restricted:        'a generation expression'
 		generation_column: column.name.sub_entity_name
+		stored_definition: true
 	}
 	g.expr.compile(mut c)!
 
@@ -262,13 +265,13 @@ fn (g GenerationClause) columns(mut conn Connection, table Table, column Column)
 // resolve_generated_columns checks the generation expression of each generated
 // column of a new table. A generated column without a data type gets the
 // declared type of its expression, otherwise the expression must be assignable
-// to the data type.
+// to the data type. The columns before the index first_new are already stored.
 //
 // ISO/IEC 9075-2:2016(E), 11.4, <column definition>, Syntax Rules, 13.a and 13.c
-fn resolve_generated_columns(mut conn Connection, mut table Table) ! {
+fn resolve_generated_columns(mut conn Connection, mut table Table, first_new int) ! {
 	for i, column in table.columns {
 		generated := column.generated or { continue }
-		typ := generated.compile(mut conn, table, column)!.typ
+		typ := generated.compile(mut conn, table, column, i < first_new)!.typ
 		if generated.infer_type {
 			table.columns[i] = Column{
 				...column
@@ -294,7 +297,7 @@ fn new_generated_columns(mut conn Connection, table Table) !GeneratedColumns {
 	for column in table.columns {
 		if generated := column.generated {
 			columns << column
-			exprs << generated.compile(mut conn, table, column)!
+			exprs << generated.compile(mut conn, table, column, true)!
 		}
 	}
 

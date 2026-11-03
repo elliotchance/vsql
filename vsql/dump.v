@@ -70,7 +70,18 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 		})
 
 		for _, table in tables {
+			// A column in a CHECK or generation expression can be qualified with
+			// just the table name, which is only found in the table's schema if
+			// that's the current schema when the table is created.
+			is_schema_needed := table.name.schema_name != default_schema_name
+				&& (table.check_constraints.len > 0 || table.columns.any(it.generated != none))
+			if is_schema_needed {
+				write_line(mut w, 'SET SCHEMA ${new_varchar_value(table.name.schema_name).literal()};')!
+			}
 			write_line(mut w, '${Table{ ...table, foreign_keys: []ForeignKey{} }}\n')!
+			if is_schema_needed {
+				write_line(mut w, "SET SCHEMA '${default_schema_name}';\n")!
+			}
 
 			name := table.name.storage_sql()
 			for key in table.foreign_keys {

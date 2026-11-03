@@ -328,6 +328,7 @@ SELECT * FROM s."my;table";
 -- msg: CREATE TABLE 1
 -- msg: INSERT 1
 -- out: CREATE SCHEMA "S";
+-- out: SET SCHEMA 'S';
 -- out: CREATE TABLE "S"."my;table" (
 -- out:   "a""b" INTEGER NOT NULL,
 -- out:   "C" CHARACTER VARYING(10) DEFAULT 'x',
@@ -338,8 +339,10 @@ SELECT * FROM s."my;table";
 -- out:   CHECK (NOT (D = 1e0 OR D BETWEEN 2e+10 AND 3e+10)),
 -- out:   CHECK (POSITION('z' IN C) = 0 AND S."my;table".D IS NOT NULL)
 -- out: );
+-- out: SET SCHEMA 'PUBLIC';
 -- out: INSERT INTO "S"."my;table" ("a""b", "C", "D") VALUES (1, 'a', 2.0e0);
 -- out: CREATE SCHEMA "S";
+-- out: SET SCHEMA 'S';
 -- out: CREATE TABLE "S"."my;table" (
 -- out:   "a""b" INTEGER NOT NULL,
 -- out:   "C" CHARACTER VARYING(10) DEFAULT 'x',
@@ -350,6 +353,7 @@ SELECT * FROM s."my;table";
 -- out:   CHECK (NOT (D = 1e0 OR D BETWEEN 2e+10 AND 3e+10)),
 -- out:   CHECK (POSITION('z' IN C) = 0 AND S."my;table".D IS NOT NULL)
 -- out: );
+-- out: SET SCHEMA 'PUBLIC';
 -- out: INSERT INTO "S"."my;table" ("a""b", "C", "D") VALUES (1, 'a', 2.0e0);
 -- msg: INSERT 1
 -- error 23514: violates check constraint: CHECK (C <> ';' AND C NOT LIKE '%--%') on ":memory:".S."my;table"

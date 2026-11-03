@@ -22,6 +22,7 @@ Test Suites
 - ``make cli-test``: the CLI tests.
 - ``make libvsql-test``: the tests for libvsql, see `libvsql`_.
 - ``make module-test``: the tests for SQL-client modules, see `Modules`_.
+- ``make embed-test``: the tests for embedded SQL, see `Modules`_.
 
 CI runs ``make test``. ``make app-test`` (the tests for ``vsql app``, see
 `App`_) isn't part of ``make test``, since the app isn't needed for the
@@ -268,6 +269,9 @@ This compiles ``libvsql/module/test.mod`` into ``libvsql/module/test.h`` and
 ``libvsql/module/test_main.c`` against libvsql, and runs the program. Like the
 libvsql tests, it's compiled as C99 and as C++11, with ``-pedantic-errors -Wall
 -Wextra -Werror``, and run both ways.
+
+``make embed-test`` does the same for embedded SQL, with the C that ``vsql
+precompile`` generates from ``libvsql/embed/test.sqc``.
 
 ``test.mod`` has a procedure for each statement that the tests call.
 ``test_main.c`` calls them in order, and uses ``EXPECT()`` to check the

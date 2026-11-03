@@ -91,8 +91,8 @@ fn (t HostParameterType) c_declaration(name string) string {
 
 // c_parameter is the struct vsql_m_param (see the C runtime) that binds a host
 // parameter to a dynamic parameter. A BOOLEAN is passed as 'TRUE' or 'FALSE',
-// since libvsql can't cast a number to a BOOLEAN. Any other value is passed
-// as it is.
+// since libvsql can't cast a number to a BOOLEAN. An INTEGER is passed as a
+// VSQL_M_LONG. Any other value is passed as it is.
 //
 // ISO/IEC 9075-2:2016(E), 9.3, Passing a value from a host language to the SQL-server, General Rules, 5.e.ii and 5.j
 fn (t HostParameterType) c_parameter(name string) string {
@@ -100,7 +100,7 @@ fn (t HostParameterType) c_parameter(name string) string {
 		.is_character { '{SQL_CHAR, SQL_CHAR, ${t.length}, ${name}, SQL_NTS}' }
 		.is_varchar { '{SQL_CHAR, SQL_VARCHAR, ${t.length}, ${name}, SQL_NTS}' }
 		.is_smallint { '{SQL_SMALLINT, SQL_SMALLINT, 0, ${name}, 0}' }
-		.is_integer { '{SQL_INTEGER, SQL_INTEGER, 0, ${name}, 0}' }
+		.is_integer { '{VSQL_M_LONG, SQL_INTEGER, 0, ${name}, 0}' }
 		.is_bigint { '{SQL_BIGINT, SQL_BIGINT, 0, ${name}, 0}' }
 		.is_real { '{SQL_REAL, SQL_REAL, 0, ${name}, 0}' }
 		.is_boolean {

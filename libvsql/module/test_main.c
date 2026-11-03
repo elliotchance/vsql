@@ -3,6 +3,7 @@
  * test_other.mod). Run it with "make module-test".
  */
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -469,6 +470,61 @@ int main(void) {
   EXPECT(rollback_work(sqlstate), "00000");
 
   /*
+   * An INTEGER host parameter is a long, which can be wider than an SQLINTEGER.
+   * All of it is set, whatever it held before and whatever the sign is.
+   */
+  EXPECT(create_widths(sqlstate), "00000");
+  x = 1;
+  b = 10;
+  EXPECT(insert_width(sqlstate, &x, &b), "00000");
+  x = -5;
+  b = 20;
+  EXPECT(insert_width(sqlstate, &x, &b), "00000");
+  x = -1;
+  b = 10;
+  EXPECT(select_width(sqlstate, &x, &b), "00000");
+  CHECK(x == 1);
+  x = 0;
+  b = 20;
+  EXPECT(select_width(sqlstate, &x, &b), "00000");
+  CHECK(x == -5);
+  x = -1;
+  b = 10;
+  EXPECT(open_width(sqlstate, &b), "00000");
+  EXPECT(fetch_width(sqlstate, &x), "00000");
+  CHECK(x == 1);
+  EXPECT(close_width(sqlstate), "00000");
+  x = 0;
+  b = 20;
+  EXPECT(open_width(sqlstate, &b), "00000");
+  EXPECT(fetch_width(sqlstate, &x), "00000");
+  CHECK(x == -5);
+  EXPECT(close_width(sqlstate), "00000");
+
+  /* A null value leaves the target alone. */
+  b = 30;
+  EXPECT(insert_width_null(sqlstate, &b), "00000");
+  x = 7;
+  indicator = 0;
+  EXPECT(select_width_ind(sqlstate, &x, &indicator, &b), "00000");
+  CHECK(x == 7);
+  CHECK(indicator == -1);
+  EXPECT(select_width(sqlstate, &x, &b), "22002");
+  CHECK(x == 7);
+
+  /* A value out of range of INTEGER doesn't fit, even if it fits the long. */
+  b = 8589934592LL;
+  EXPECT(insert_width_null(sqlstate, &b), "00000");
+  EXPECT(select_width_big(sqlstate, &x, &b), "22003");
+  CHECK(x == 7);
+#if LONG_MAX > 2147483647L
+  x = 1L << 40;
+  b = 40;
+  EXPECT(insert_width(sqlstate, &x, &b), "22003");
+#endif
+  EXPECT(rollback_work(sqlstate), "00000");
+
+  /*
    * Feature F181, "Multiple module support": test_other.mod has the same
    * SQL-connections, SQL-transactions and first diagnostics area, but the
    * schema of the module is the default schema of its statements, and it has
@@ -717,6 +773,10 @@ int main(void) {
   x = 2;
   EXPECT(set_in(sqlstate, &x), "00000");
   EXPECT(execute_s1_descriptor(sqlstate), "02000");
+#if LONG_MAX > 2147483647L
+  x = 1L << 40;
+  EXPECT(set_in(sqlstate, &x), "22003");
+#endif
 
   /* 20.19 GR 1.a.ii: A dynamic cursor can only be opened for a prepared
    * <cursor specification>. GR 3: Its dynamic parameters need a USING. */

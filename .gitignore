@@ -33,8 +33,9 @@ libvsql/module/example.[ch]
 libvsql/module/test.[ch]
 libvsql/module/test_other.[ch]
 
-# Created by "make embed-example".
+# Created by "make embed-example" and "make embed-test".
 libvsql/embed/example.c
+libvsql/embed/test.c
 
 # Used by "make app-test" (see docs/testing.rst).
 .venv/

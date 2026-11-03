@@ -17,11 +17,10 @@ import vsql
 // statement that references a destroyed cursor isn't destroyed (General Rules
 // 10.c), which is #749.
 //
-// Statements that aren't a <preparable statement> (such as DECLARE CURSOR) are
-// accepted (General Rules 7.a), which is #748. The data type of a dynamic
-// parameter isn't determined (General Rules 7.c and 8), which is #649. There
-// are no user-defined types, so there's no transform group (General Rules 9),
-// and no <call statement> (General Rules 12.b.iv), which is #733.
+// The data type of a dynamic parameter isn't determined (General Rules 7.c and
+// 8), which is #649. There are no user-defined types, so there's no transform
+// group (General Rules 9), and no <call statement> (General Rules 12.b.iv),
+// which is #733.
 
 @[export: 'SQLExecDirect']
 fn sql_exec_direct(statement_handle SQLInteger, statement_text &char, text_length SQLInteger) i16 {
@@ -117,6 +116,15 @@ fn prepare_statement(mut stmt Stmt, p string) !&vsql.PreparedStmt {
 	// error or access rule violation.
 	if stmt.diag.dynamic_function in ['START TRANSACTION', 'COMMIT WORK', 'ROLLBACK WORK'] {
 		return cli_error('42000', 'syntax error or access rule violation: ${stmt.diag.dynamic_function.to_lower()} can only be done with SQLStartTran or SQLEndTran')
+	}
+
+	// - 7.a. If P doesn't conform to a <preparable statement>, then an
+	// exception condition is raised: syntax error or access rule violation
+	// (see ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, Format). A cursor
+	// is opened by executing a query, and a connection is made by SQLConnect.
+	if stmt.diag.dynamic_function in ['DECLARE CURSOR', 'OPEN', 'FETCH', 'CLOSE CURSOR', 'CONNECT',
+		'SET CONNECTION', 'DISCONNECT'] {
+		return cli_error('42000', 'syntax error or access rule violation: ${stmt.diag.dynamic_function.to_lower()} is not a preparable statement')
 	}
 
 	return prepared

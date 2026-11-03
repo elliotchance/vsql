@@ -67,6 +67,29 @@ UTEST_F(db, 6_19_exec_direct_transaction_statements) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42000");
 }
 
+/* The cursor statements are done with the CLI routines (such as SQLFetch) and
+ * the connection statements with SQLConnect and SQLDisconnect, so they aren't
+ * preparable. */
+UTEST_F(db, 6_19_exec_direct_not_preparable) {
+  const char *statements[] = {
+      "DECLARE c CURSOR FOR VALUES 1",
+      "OPEN c",
+      "FETCH NEXT FROM c",
+      "CLOSE c",
+      "CONNECT TO DEFAULT",
+      "SET CONNECTION DEFAULT",
+      "DISCONNECT CURRENT",
+  };
+
+  for (size_t i = 0; i < sizeof(statements) / sizeof(statements[0]); i++) {
+    EXPECT_EQ(run_sql(utest_fixture->stmt, statements[i]), SQL_ERROR);
+    EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42000");
+  }
+
+  /* DISCONNECT wasn't executed. */
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
+}
+
 UTEST_F(db, 6_19_exec_direct_simple_comment) {
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES 1 -- one"), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42000");

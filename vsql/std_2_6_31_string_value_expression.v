@@ -58,7 +58,7 @@ fn (e Concatenation) pstr(params map[string]Value) string {
 fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 	compiled_left := e.left.compile(mut c)!
 	compiled_right := e.right.compile(mut c)!
-	typ := concatenation_type(compiled_left.typ, compiled_right.typ)
+	typ := concatenation_type(compiled_left.typ, compiled_right.typ)!
 
 	return CompileResult{
 		run:          fn [compiled_left, compiled_right, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
@@ -72,7 +72,8 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 					return new_null_value(.is_varchar).with_type(typ)
 				}
 
-				return new_varchar_value(left.string_value() + right.string_value()).with_type(typ)
+				return new_varchar_value(limit_concatenation(left.string_value() +
+					right.string_value())!).with_type(typ)
 			}
 
 			return sqlstate_42883('operator does not exist: ${left.typ.typ} || ${right.typ.typ}')
@@ -87,7 +88,7 @@ fn (e Concatenation) compile(mut c Compiler) !CompileResult {
 // both operands are.
 //
 // ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, Syntax Rules, 3
-fn concatenation_type(left Type, right Type) Type {
+fn concatenation_type(left Type, right Type) !Type {
 	if !left.typ.is_string() || !right.typ.is_string() {
 		return new_type('CHARACTER VARYING', 0, 0)
 	}
@@ -95,8 +96,42 @@ fn concatenation_type(left Type, right Type) Type {
 	// A size of 0 means the length is unknown, so the result is too.
 	size := if left.size > 0 && right.size > 0 { left.size + right.size } else { 0 }
 	if left.typ == .is_character && right.typ == .is_character && size > 0 {
+		// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, Syntax Rules, 3.b.iii
+		if size > max_character_length {
+			return sqlstate_42601('CHARACTER(${size}) is longer than the maximum length of ${max_character_length}')
+		}
+
 		return new_type('CHARACTER', size, 0)
 	}
 
-	return new_type('CHARACTER VARYING', size, 0)
+	// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, Syntax Rules, 3.b.ii
+	return new_type('CHARACTER VARYING', if size > max_character_length {
+		max_character_length
+	} else {
+		size
+	}, 0)
+}
+
+// limit_concatenation returns the result of a concatenation that's no longer
+// than the maximum length. A CHARACTER result can't be longer, since its type
+// would've been rejected. Only spaces can be removed from the end of the result,
+// otherwise it's an error.
+//
+// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, General Rules, 2.b.ii.3.B
+fn limit_concatenation(s string) !string {
+	// The number of characters can't be more than the number of bytes.
+	if s.len <= max_character_length {
+		return s
+	}
+
+	runes := s.runes()
+	if runes.len <= max_character_length {
+		return s
+	}
+
+	if runes[max_character_length..].any(it != ` `) {
+		return sqlstate_22001(new_type('CHARACTER VARYING', max_character_length, 0))
+	}
+
+	return runes[..max_character_length].string()
 }

@@ -134,6 +134,34 @@ UTEST_F(db, 6_56_set_desc_field_datetime_interval_code) {
   EXPECT_EQ(desc_short(ipd, 1, SQL_DESC_PRECISION), 6);
 }
 
+/* A DATA_POINTER in an IPD needs a datetime to have a valid PRECISION. */
+UTEST_F(db, 6_56_set_desc_field_datetime_precision) {
+  SQLHDESC ipd = stmt_desc(utest_fixture->stmt, SQL_ATTR_IMP_PARAM_DESC);
+  SQLDOUBLE d;
+
+  ASSERT_EQ(
+      SQLSetDescField(ipd, 1, SQL_DESC_TYPE, SMALLINT_VALUE(SQL_DATETIME), 0),
+      SQL_SUCCESS);
+  ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_DATETIME_INTERVAL_CODE,
+                            SMALLINT_VALUE(SQL_CODE_TIMESTAMP), 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_DATA_POINTER, &d, 0), SQL_SUCCESS);
+
+  ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_PRECISION, SMALLINT_VALUE(-1), 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_DATA_POINTER, &d, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ipd, "HY021");
+
+  ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_PRECISION, SMALLINT_VALUE(100), 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_DATA_POINTER, &d, 0), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ipd, "HY021");
+
+  ASSERT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_PRECISION, SMALLINT_VALUE(0), 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLSetDescField(ipd, 1, SQL_DESC_DATA_POINTER, &d, 0), SQL_SUCCESS);
+}
+
 /* A DATA_POINTER needs a TYPE that has a C type, and it's unset when the TYPE
  * changes. */
 UTEST_F(db, 6_56_set_desc_field_data_pointer) {

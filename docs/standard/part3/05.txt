@@ -487,7 +487,7 @@
 5.13/SR/5.c.v            implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
 5.13/SR/5.c.vi           implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
 5.13/SR/5.c.vii          implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c
-5.13/SR/5.c.viii         partial      libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c PRECISION isn't checked (#755)
+5.13/SR/5.c.viii         implemented  libvsql/std_3_6_56_set_desc_field.v libvsql/std_3_6_57_set_desc_rec_test.c the PRECISION of a DATE is 0 (zero), otherwise it's 0 (zero) to 6
 5.13/SR/5.c.ix           n/a          - - there are no interval, user-defined, reference, row or array types
 5.13/SR/5.c.x            n/a          - - there are no interval, user-defined, reference, row or array types
 5.13/SR/5.c.xi           n/a          - - there are no interval, user-defined, reference, row or array types
@@ -525,7 +525,7 @@
 5.13/SR/12.c.i           container    - -
 5.13/SR/12.c.i.1         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs
 5.13/SR/12.c.i.2         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs
-5.13/SR/12.c.i.3         deviates     libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c a length of 0 (zero) is an empty string (#755)
+5.13/SR/12.c.i.3         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs; a length that's less than a whole character is still valid (a zero-length string)
 5.13/SR/12.c.i.4         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs
 5.13/SR/12.c.i.5         implemented  libvsql/std_3_5_6_implicit_execute_using_clause.v libvsql/std_3_6_19_exec_direct_test.c there are no LOBs
 5.13/SR/12.c.i.6         n/a          - - a parameter with a mode of OUT can't be used (5.6, General Rules, 4.e)

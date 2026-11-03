@@ -17,9 +17,9 @@ import vsql
 // The APD must be valid (ISO/IEC 9075-3:2003(E), 5.13, Description of CLI
 // item descriptor areas, Syntax Rules, 8 to 12). NULL is true if the indicator
 // is SQL NULL DATA (whether or not it's shared with the length), and DEFERRED
-// is true if the length is DATA AT EXEC. A character string with a length of 0
-// (zero) is an empty string, rather than not valid (Syntax Rules, 12.c.i.3),
-// which is #755.
+// is true if the length is DATA AT EXEC. The length of a character string must
+// be greater than 0 (zero) or NULL TERMINATED (Syntax Rules, 12.c.i.3 and
+// 12.c.i.4), so an empty string has to be null terminated.
 
 // Codes from Table 10, "Codes associated with <parameter mode> in SQL/CLI".
 const sql_param_mode_in = i16(1)
@@ -96,6 +96,9 @@ fn parameter_values(mut stmt Stmt, prepared vsql.PreparedStmt) !(map[string]vsql
 			sql_nts
 		} else {
 			unsafe { *&SQLInteger(length) }
+		}
+		if typ == .is_varchar && q <= 0 && q != sql_nts {
+			return using_clause_error()
 		}
 		mut sv := read_c_value(typ, data, q)!
 

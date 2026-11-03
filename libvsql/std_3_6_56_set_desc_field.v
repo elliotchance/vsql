@@ -301,10 +301,11 @@ fn (mut desc Desc) set_type_defaults(rn int, code i64) {
 // type that can be used in C (ISO/IEC 9075-3:2003(E), 5.13, Description of CLI
 // item descriptor areas, Syntax Rules, 7). NUMERIC, DECIMAL and FLOAT don't
 // have a C data type (Table 45), so they're never consistent (7.b.iii). An
-// item descriptor area of an IPD must be valid (Syntax Rules, 5), but the
-// PRECISION of a datetime isn't checked (5.c.viii), which is #755. There are
-// no nested descriptor areas, since every LEVEL is 0 (zero) (Syntax Rules, 2
-// to 4, 5.b, 5.c.xii and 5.c.xiii).
+// item descriptor area of an IPD must be valid (Syntax Rules, 5). A DATE has no
+// <time precision> or <timestamp precision>, so its PRECISION is always 0
+// (zero) (5.c.viii and General Rules, 20). There are no nested descriptor
+// areas, since every LEVEL is 0 (zero) (Syntax Rules, 2 to 4, 5.b, 5.c.xii and
+// 5.c.xiii).
 fn (desc &Desc) is_consistent(record map[int]DescValue) bool {
 	typ := record[sql_desc_type] or { return false }
 	code := if typ is i64 { typ } else { return false }
@@ -332,8 +333,14 @@ fn (desc &Desc) is_consistent(record map[int]DescValue) bool {
 			p >= 1 && p <= 53
 		}
 		sql_datetime {
-			int_field(sql_desc_datetime_interval_code) in [i64(sql_code_date), sql_code_time,
-				sql_code_timestamp, sql_code_time_zone, sql_code_timestamp_zone]
+			p := int_field(sql_desc_precision)
+			dic := int_field(sql_desc_datetime_interval_code)
+			if dic == sql_code_date {
+				p == 0
+			} else {
+				dic in [i64(sql_code_time), sql_code_timestamp, sql_code_time_zone,
+					sql_code_timestamp_zone] && p >= 0 && p <= 6
+			}
 		}
 		sql_smallint, sql_integer, sql_bigint, sql_real, sql_double, sql_boolean {
 			true

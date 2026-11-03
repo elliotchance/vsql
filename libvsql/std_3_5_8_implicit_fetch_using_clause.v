@@ -142,7 +142,7 @@ fn fetch_using(mut stmt Stmt, targets []BoundTarget) !i16 {
 		return sql_error
 	}
 	if rows_processed < stmt.rowset_len {
-		stmt.diag.records.prepend(DiagnosticRecord{
+		stmt.diag.add(DiagnosticRecord{
 			sqlstate: '01000'
 			msg:      'warning'
 		})

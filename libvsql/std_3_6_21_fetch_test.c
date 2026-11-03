@@ -151,6 +151,55 @@ UTEST_F(db, 6_21_fetch_row_error) {
   EXPECT_EQ(row, 2);
 }
 
+/* The status records are ordered by ROW_NUMBER, and the first of a row is an
+ * exception rather than a warning, even when the warning is for an earlier
+ * column. */
+UTEST_F(db, 6_21_fetch_status_record_order) {
+  SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);
+  char s[2][4];
+  SQLSMALLINT x[2];
+  SQLINTEGER len[2];
+  SQLCHAR state[6];
+  struct {
+    const char *sqlstate;
+    SQLINTEGER row;
+    SQLINTEGER column;
+  } expected[] = {
+      {"01000", 0, 0}, {"01004", 1, 1}, {"22003", 2, 2}, {"01004", 2, 1}};
+
+  ASSERT_EQ(SQLSetDescField(ard, 0, SQL_DESC_ARRAY_SIZE, INTEGER_VALUE(2), 0),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "VALUES ROW('hello', 1), ROW('world', 100000)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLBindCol(utest_fixture->stmt, 1, SQL_CHAR, s, sizeof(s[0]), len),
+            SQL_SUCCESS);
+  ASSERT_EQ(
+      SQLBindCol(utest_fixture->stmt, 2, SQL_SMALLINT, x, sizeof(x[0]), NULL),
+      SQL_SUCCESS);
+
+  EXPECT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS_WITH_INFO);
+  for (SQLSMALLINT i = 0; i < 4; i++) {
+    SQLINTEGER row = -1, column = -1;
+
+    ASSERT_EQ(SQLGetDiagRec(SQL_HANDLE_STMT, utest_fixture->stmt, i + 1, state,
+                            NULL, NULL, 0, NULL),
+              SQL_SUCCESS);
+    EXPECT_STREQ((char *)state, expected[i].sqlstate);
+    ASSERT_EQ(SQLGetDiagField(SQL_HANDLE_STMT, utest_fixture->stmt, i + 1,
+                              SQL_DIAG_ROW_NUMBER, &row, 0, NULL),
+              SQL_SUCCESS);
+    EXPECT_EQ(row, expected[i].row);
+    ASSERT_EQ(SQLGetDiagField(SQL_HANDLE_STMT, utest_fixture->stmt, i + 1,
+                              SQL_DIAG_COLUMN_NUMBER, &column, 0, NULL),
+              SQL_SUCCESS);
+    EXPECT_EQ(column, expected[i].column);
+  }
+  EXPECT_EQ(SQLGetDiagRec(SQL_HANDLE_STMT, utest_fixture->stmt, 5, state, NULL,
+                          NULL, 0, NULL),
+            SQL_NO_DATA);
+}
+
 /* A rowset of more than one row needs a scrollable cursor for GetData. */
 UTEST_F(db, 6_21_fetch_rowset_get_data) {
   SQLHDESC ard = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_ROW_DESC);

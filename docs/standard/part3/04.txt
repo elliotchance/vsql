@@ -7,7 +7,7 @@
 # 4.2, Return codes
 4.2                      implemented  libvsql/std_3_4_2_return_codes.v libvsql/std_3_6_21_fetch_test.c
 # 4.3, Diagnostics areas in SQL/CLI
-4.3                      partial      libvsql/std_3_4_3_diagnostics_areas.v libvsql/std_3_6_34_get_diag_rec_test.c status records aren't ordered by precedence (#741); the fields are reviewed with GetDiagField (6.33)
+4.3                      implemented  libvsql/std_3_4_3_diagnostics_areas.v libvsql/std_3_6_21_fetch_test.c the fields are reviewed with GetDiagField (6.33)
 # 4.3.1, Setting of ROW_NUMBER and COLUMN_NUMBER fields
 4.3.1                    implemented  libvsql/std_3_4_3_diagnostics_areas.v libvsql/std_3_6_21_fetch_test.c
 # 4.4, Miscellaneous characteristics

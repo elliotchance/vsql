@@ -64,3 +64,18 @@ UTEST_F(db, 6_16_disconnect_frees_descriptors) {
   EXPECT_EQ(SQLDisconnect(utest_fixture->dbc), SQL_SUCCESS);
   EXPECT_EQ(SQLFreeHandle(SQL_HANDLE_DESC, desc), SQL_INVALID_HANDLE);
 }
+
+/* A statement that's waiting for a deferred parameter is a function sequence
+ * error, rather than an active SQL-transaction. */
+UTEST_F(db, 6_16_disconnect_deferred_parameter) {
+  SQLINTEGER at_exec = SQL_DATA_AT_EXEC, x = 1;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
+                             &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_NEED_DATA);
+  EXPECT_EQ(SQLDisconnect(utest_fixture->dbc), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY010");
+  EXPECT_EQ(SQLCancel(utest_fixture->stmt), SQL_SUCCESS);
+}

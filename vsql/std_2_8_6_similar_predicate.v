@@ -39,7 +39,7 @@ fn (e SimilarPredicate) pstr(params map[string]Value) string {
 	return s
 }
 
-// The operands aren't checked to be character strings (#780).
+// The value, the pattern and the escape character must be character strings.
 //
 // ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, Syntax Rules, 1
 fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
@@ -55,6 +55,10 @@ fn (e SimilarPredicate) compile(mut c Compiler) !CompileResult {
 		}
 	}
 	has_escape := e.escape != none
+	check_string_operands('SIMILAR TO', compiled_l, compiled_right)!
+	if has_escape {
+		check_string_operands('SIMILAR TO', compiled_l, compiled_escape)!
+	}
 
 	return CompileResult{
 		run:          fn [e, compiled_l, compiled_right, compiled_escape, has_escape] (mut conn Connection, data Row, params map[string]Value) !Value {

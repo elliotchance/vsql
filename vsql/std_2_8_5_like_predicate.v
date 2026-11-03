@@ -25,6 +25,14 @@ fn ref_character_value_expression(e CharacterValueExpression) &CharacterValueExp
 	return &e
 }
 
+// check_string_operands returns an error if either operand of LIKE or SIMILAR
+// TO isn't a character string.
+fn check_string_operands(op string, left CompileResult, right CompileResult) ! {
+	if !left.typ.typ.is_string() || !right.typ.typ.is_string() {
+		return sqlstate_42883('operator does not exist: ${left.typ.typ} ${op} ${right.typ.typ}')
+	}
+}
+
 fn (e CharacterLikePredicate) pstr(params map[string]Value) string {
 	mut s := e.left.pstr(params)
 	if e.not {
@@ -39,7 +47,7 @@ fn (e CharacterLikePredicate) pstr(params map[string]Value) string {
 	return s
 }
 
-// The operands aren't checked to be character strings (#780).
+// The value, the pattern and the escape character must be character strings.
 //
 // ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, Syntax Rules, 1
 fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
@@ -55,6 +63,10 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 		}
 	}
 	has_escape := e.escape != none
+	check_string_operands('LIKE', compiled_l, compiled_right)!
+	if has_escape {
+		check_string_operands('LIKE', compiled_l, compiled_escape)!
+	}
 
 	return CompileResult{
 		run:          fn [e, compiled_l, compiled_right, compiled_escape, has_escape] (mut conn Connection, data Row, params map[string]Value) !Value {

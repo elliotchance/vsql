@@ -103,8 +103,8 @@
 8.4/SR/5                 implemented  vsql/std_2_8_4_in_predicate.v tests/in.sql,tests/in-subquery.sql
 8.4/CR/1                 implemented  vsql/std_2_8_4_in_predicate.y tests/flagging.sql
 # 8.5, <like predicate>
-8.5                      partial      vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql the operands aren't checked to be character strings (#780); there's no <octet like predicate> (T021)
-8.5/SR/1                 partial      vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql the operands aren't checked to be character strings (#780)
+8.5                      partial      vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql there's no <octet like predicate> (T021)
+8.5/SR/1                 implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql
 8.5/SR/2                 n/a          - - binary strings (T021)
 8.5/SR/3                 implemented  vsql/std_2_8_5_like_predicate.v tests/like.sql,tests/like-escape.sql
 8.5/SR/3.a               definition   - -
@@ -165,8 +165,8 @@
 8.5/CR/6                 n/a          - - there are no national character types (F421) or CLOBs (T041)
 8.5/CR/7                 n/a          - - there are no national character types (F421)
 # 8.6, <similar predicate>
-8.6                      partial      vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql the operands aren't checked to be character strings (#780) and trailing spaces aren't padded (#781)
-8.6/SR/1                 partial      vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql the operands aren't checked to be character strings (#780)
+8.6                      partial      vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql trailing spaces aren't padded (#781)
+8.6/SR/1                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql
 8.6/SR/2                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
 8.6/SR/3                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql an invalid name is a 2201B when evaluated, since the pattern is a value
 8.6/SR/4                 impl-defined vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql only the default collation

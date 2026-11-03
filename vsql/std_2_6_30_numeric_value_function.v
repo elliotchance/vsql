@@ -38,18 +38,80 @@ fn func_octet_length(args []Value) !Value {
 
 // UPPER(CHARACTER VARYING) CHARACTER VARYING
 //
-// Only a character that becomes exactly one character is changed (#772).
-//
 // ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.d.i
 fn func_upper(args []Value) !Value {
-	return new_varchar_value(args[0].string_value().to_upper())
+	s := args[0].string_value()
+	if s.is_pure_ascii() {
+		return new_varchar_value(s.to_upper_ascii())
+	}
+
+	return new_varchar_value(replace_case_mappings(s, upper_case_mappings))
 }
 
 // LOWER(CHARACTER VARYING) CHARACTER VARYING
 //
 // ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.d.ii
 fn func_lower(args []Value) !Value {
-	return new_varchar_value(args[0].string_value().to_lower())
+	s := args[0].string_value()
+	if s.is_pure_ascii() {
+		return new_varchar_value(s.to_lower_ascii())
+	}
+
+	return new_varchar_value(replace_case_mappings(s, lower_case_mappings))
+}
+
+// CaseMapping replaces a character with one to three characters. The unused
+// characters are zero.
+struct CaseMapping {
+	from rune
+	to1  rune
+	to2  rune
+	to3  rune
+}
+
+// replace_case_mappings replaces each character that has a mapping, which may
+// make the string longer.
+fn replace_case_mappings(s string, mappings []CaseMapping) string {
+	mut result := []rune{cap: s.len}
+	for c in s.runes() {
+		i := find_case_mapping(c, mappings)
+		if i < 0 {
+			result << c
+			continue
+		}
+
+		m := mappings[i]
+		result << m.to1
+		if m.to2 != 0 {
+			result << m.to2
+		}
+		if m.to3 != 0 {
+			result << m.to3
+		}
+	}
+
+	return result.string()
+}
+
+// find_case_mapping returns the index of the mapping for c, or -1 if it doesn't
+// have one. The mappings are ordered by from.
+fn find_case_mapping(c rune, mappings []CaseMapping) int {
+	mut low := 0
+	mut high := mappings.len - 1
+	for low <= high {
+		middle := (low + high) / 2
+		from := mappings[middle].from
+		if from == c {
+			return middle
+		}
+		if from < c {
+			low = middle + 1
+		} else {
+			high = middle - 1
+		}
+	}
+
+	return -1
 }
 
 // ABS(DOUBLE PRECISION) DOUBLE PRECISION

@@ -2,6 +2,7 @@
 module app
 
 import io
+import json2
 import net
 import net.urllib
 import sync
@@ -214,6 +215,17 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 			}
 			return '/'
 		}
+		// A table in the sidebar (its schema and name as JSON) opens a new tab of
+		// its file to alter it.
+		if table := form.get('alter:${file}') {
+			names := json2.decode[[]string](table)!
+			if names.len != 2 {
+				return error('bad table: ${table}')
+			}
+			a.add_tab(mut conn, file, alter_table_tab, 'Alter ${names[1]}', a.alter_table_payload(mut conn,
+				file, names[0], names[1])!)!
+			return '/'
+		}
 		// A schema in the sidebar opens a new tab of its file to create a table in
 		// it.
 		if schema := form.get('add_table:${file}') {
@@ -273,6 +285,25 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	}
 	if open_sql := form.get('open') {
 		a.add_query_tab(mut conn, catalog, open_sql)!
+		return '/'
+	}
+
+	// An ALTER_TABLE tab is closed once its statements are run (in a
+	// transaction), and the table is queried in a new tab of the file. If it
+	// fails, nothing is changed and the error is shown on the tab.
+	if tab.tab_type == alter_table_tab {
+		if _ := form.get('alter_table') {
+			a.run_in_transaction(mut conn, tab.catalog, form.get('alter_sql') or { '' }) or {
+				return a.page(mut conn, all_tabs, Tab{
+					...tab
+					payload: payload
+				}, TabResult{
+					error: err.msg()
+				}, Confirm{})
+			}
+			a.close_tab(mut conn, tab, tab)!
+			a.query_table(mut conn, tab.catalog, json2.decode[AlterTablePayload](payload)!.table)!
+		}
 		return '/'
 	}
 	// A CREATE_TABLE tab is closed once the table is created, and the table
@@ -335,6 +366,23 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	a.activate_tab(mut conn, tab)!
 	return a.page(mut conn, a.tabs(mut conn)!, Tab{tab.id, tab.tab_type, tab_title(query_text), query_text, true, params, '', catalog},
 		result, Confirm{})
+}
+
+// run_in_transaction runs every statement with a file as the current catalog,
+// or none of them if one fails.
+fn (a &App) run_in_transaction(mut conn vsql.Connection, catalog string, statements string) ! {
+	set_catalog(mut conn, catalog)!
+	defer {
+		set_catalog(mut conn, a.catalog_names[0]) or {}
+	}
+	conn.query('START TRANSACTION')!
+	for stmt in vsql.split_statements(statements) {
+		conn.query(stmt) or {
+			conn.query('ROLLBACK') or {}
+			return err
+		}
+	}
+	conn.query('COMMIT')!
 }
 
 // query_table opens a new tab of a file that runs SELECT * on a table.

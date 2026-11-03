@@ -129,3 +129,9 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- msg: CREATE SEQUENCE 1
 -- msg: ALTER SEQUENCE 1
 -- COL1: 5
+
+-- # The restart value must be in the range of a BIGINT (#786).
+CREATE SEQUENCE a;
+ALTER SEQUENCE a RESTART WITH 1e20;
+-- msg: CREATE SEQUENCE 1
+-- error 42601: syntax error: RESTART is out of range for BIGINT: 1e+20

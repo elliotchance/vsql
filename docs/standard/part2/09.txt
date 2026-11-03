@@ -991,7 +991,7 @@
 9.29/GR/4.b              implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
 9.29/GR/5                implemented  vsql/std_2_4_27_sequence_generators.v tests/sequence-limits.sql
 # 9.30, Creation of a sequence generator
-9.30                     partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql a value outside the range of a BIGINT is the BIGINT maximum (#786)
+9.30                     implemented      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
 9.30/SR/1                definition   - -
 9.30/SR/2                implemented  vsql/std_2_11_72_sequence_generator_definition.y tests/create-sequence.sql
 9.30/SR/3                implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
@@ -1013,7 +1013,7 @@
 9.30/SR/9.b              implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
 9.30/SR/9.b.i            implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
 9.30/SR/9.b.ii           implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-9.30/SR/10               partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql a value must be an integer, but one outside the range of a BIGINT is the BIGINT maximum (#786)
+9.30/SR/10               implemented      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
 9.30/SR/11               implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
 9.30/SR/12               implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
 9.30/SR/13               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
@@ -1028,7 +1028,7 @@
 9.30/GR/2.g              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
 9.30/GR/2.h              implemented  vsql/std_2_4_27_sequence_generators.v tests/create-sequence.sql
 # 9.31, Altering a sequence generator
-9.31                     partial      vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql a value outside the range of a BIGINT is the BIGINT maximum (#786)
+9.31                     implemented      vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql
 9.31/SR/1                definition   - -
 9.31/SR/2                implemented  vsql/std_2_11_73_alter_sequence_generator_statement.y tests/alter-sequence.sql
 9.31/SR/3                impl-defined vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence.sql always BIGINT (#399)
@@ -1053,7 +1053,7 @@
 9.31/SR/9.a              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-restart.sql
 9.31/SR/9.b              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-restart.sql
 9.31/SR/9.c              implemented  vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-restart.sql
-9.31/SR/10               partial      vsql/std_2_11_72_sequence_generator_definition.v tests/alter-sequence.sql a value must be an integer, but one outside the range of a BIGINT is the BIGINT maximum (#786)
+9.31/SR/10               implemented      vsql/std_2_11_72_sequence_generator_definition.v tests/alter-sequence.sql
 9.31/SR/11               implemented  vsql/std_2_4_27_sequence_generators.v tests/alter-sequence.sql
 9.31/SR/12               partial      vsql/std_2_11_73_alter_sequence_generator_statement.v tests/alter-sequence-range.sql the next value is only checked against a new MINVALUE or MAXVALUE, so CYCLE or NO MAXVALUE can revive a sequence that has gone past its limit
 9.31/GR/1                definition   - -

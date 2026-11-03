@@ -71,9 +71,8 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, _ map[string]
 }
 
 // check_sequence_options checks that each option is only given once and that
-// the values are integers. This is only done for CREATE SEQUENCE and ALTER
-// SEQUENCE, not when a sequence is read from the file. A value outside the
-// range of a BIGINT isn't an error (#786).
+// the values are integers in the range of a BIGINT. This is only done for
+// CREATE SEQUENCE and ALTER SEQUENCE, not when a sequence is read from the file.
 //
 // ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 3 and 10
 // ISO/IEC 9075-2:2016(E), 9.31, Altering a sequence generator, Syntax Rules, 4 and 10
@@ -111,6 +110,10 @@ fn check_sequence_options(options []SequenceGeneratorOption) ! {
 				f := v.as_f64()!
 				if f != math.floor(f) {
 					return sqlstate_42601('${name} must be an integer: ${v.str()}')
+				}
+				// -2^63 is the lowest BIGINT, but 2^63 is one past the highest.
+				if f < -9223372036854775808.0 || f >= 9223372036854775808.0 {
+					return sqlstate_42601('${name} is out of range for BIGINT: ${v.str()}')
 				}
 			}
 		}

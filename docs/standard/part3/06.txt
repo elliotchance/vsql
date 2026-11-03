@@ -1201,7 +1201,7 @@
 6.31/GR/3                implemented  libvsql/std_3_6_31_get_desc_field.v libvsql/std_3_6_31_get_desc_field_test.c
 6.31/GR/4                definition   - -
 6.31/GR/5                definition   - -
-6.31/GR/6                deviates     libvsql/std_3_6_31_get_desc_field.v libvsql/std_3_6_31_get_desc_field_test.c this is before General Rules 3 (#754)
+6.31/GR/6                implemented  libvsql/std_3_6_31_get_desc_field.v libvsql/std_3_6_31_get_desc_field_test.c
 6.31/GR/7                container    - -
 6.31/GR/7.a              implemented  libvsql/std_3_6_31_get_desc_field.v libvsql/std_3_6_31_get_desc_field_test.c
 6.31/GR/7.b              implemented  libvsql/std_3_6_31_get_desc_field.v libvsql/std_3_6_31_get_desc_field_test.c

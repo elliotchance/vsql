@@ -22,8 +22,14 @@ fn sql_get_desc_field(descriptor_handle SQLInteger, record_number i16, field_ide
 	// 3.b.ii
 	desc.invoke() or { return desc.diag.error(err) }
 
-	// - 6. See 5.11, "Deferred parameter check". This is before General Rules
-	// 3, which is #754.
+	// - 3. If FI is not one of the code values in Table 20, then an exception
+	// condition is raised: CLI-specific condition — invalid descriptor field
+	// identifier.
+	if int(field_identifier) !in desc_fields {
+		return desc.diag.error(cli_error('HY091', 'invalid descriptor field identifier'))
+	}
+
+	// - 6. See 5.11, "Deferred parameter check".
 	check_desc_deferred(i64(descriptor_handle)) or { return desc.diag.error(err) }
 
 	v := desc_field_value(desc, record_number, field_identifier) or {

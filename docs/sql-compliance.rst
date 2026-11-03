@@ -980,7 +980,7 @@ Optional Features
    * - ✅ **F771**
      - **Connection management**
 
-   * - ❌ **F781**
+   * - ⭕ **F781**
      - **Self-referencing operations**
 
    * - ❌ **F791**

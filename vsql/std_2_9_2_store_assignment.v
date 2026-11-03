@@ -293,6 +293,11 @@ fn check_assignable(from Type, t Type) ! {
 		return sqlstate_42846(from, t)
 	}
 
+	if (t.typ == .is_boolean && from.typ != .is_boolean)
+		|| (from.typ == .is_boolean && t.typ.is_number()) {
+		return sqlstate_42846(from, t)
+	}
+
 	if from.typ.is_datetime() || t.typ.is_datetime() {
 		time_kinds := [SQLType.is_time_with_time_zone, .is_time_without_time_zone]
 		timestamp_kinds := [SQLType.is_timestamp_with_time_zone, .is_timestamp_without_time_zone]

@@ -15,52 +15,54 @@ query_expression:
 | parenthesized_query_expression { $$.v = $1.v as QueryExpression }
 
 query_expression_with_clauses:
-  query_expression_body order_by_clause { 
+  query_expression_body query_expression_clauses {
     $$.v = QueryExpression{
-      body:  $1.v as SimpleTable
-      order: $2.v as []SortSpecification
+      ...$2.v as QueryExpression
+      body: $1.v as SimpleTable
     }
   }
-| query_expression_body result_offset_clause {
+
+// query_expression_clauses is a QueryExpression that only has the clauses after
+// the <query expression body>.
+query_expression_clauses:
+  order_by_clause {
     $$.v = QueryExpression{
-      body:   $1.v as SimpleTable
+      order: $1.v as []SortSpecification
+    }
+  }
+| result_offset_clause {
+    $$.v = QueryExpression{
+      offset: $1.v as ValueSpecification
+    }
+  }
+| order_by_clause result_offset_clause {
+    $$.v = QueryExpression{
       offset: $2.v as ValueSpecification
+      order:  $1.v as []SortSpecification
     }
   }
-| query_expression_body order_by_clause result_offset_clause {
+| fetch_first_clause {
     $$.v = QueryExpression{
-      body:   $1.v as SimpleTable
-      offset: $3.v as ValueSpecification
-      order:  $2.v as []SortSpecification
+      fetch: $1.v as ValueSpecification
     }
   }
-| query_expression_body fetch_first_clause {
+| order_by_clause fetch_first_clause {
     $$.v = QueryExpression{
-      body:  $1.v as SimpleTable
       fetch: $2.v as ValueSpecification
+      order: $1.v as []SortSpecification
     }
   }
-| query_expression_body order_by_clause fetch_first_clause {
+| order_by_clause result_offset_clause fetch_first_clause {
     $$.v = QueryExpression{
-      body:  $1.v as SimpleTable
-      fetch: $3.v as ValueSpecification
-      order: $2.v as []SortSpecification
-    }
-  }
-| query_expression_body order_by_clause result_offset_clause
-  fetch_first_clause {
-    $$.v = QueryExpression{
-      body:   $1.v as SimpleTable
-      offset: $3.v as ValueSpecification
-      fetch:  $4.v as ValueSpecification
-      order:  $2.v as []SortSpecification
-    }
-  }
-| query_expression_body result_offset_clause fetch_first_clause {
-    $$.v = QueryExpression{
-      body:   $1.v as SimpleTable
       offset: $2.v as ValueSpecification
       fetch:  $3.v as ValueSpecification
+      order:  $1.v as []SortSpecification
+    }
+  }
+| result_offset_clause fetch_first_clause {
+    $$.v = QueryExpression{
+      offset: $1.v as ValueSpecification
+      fetch:  $2.v as ValueSpecification
     }
   }
 
@@ -81,23 +83,22 @@ query_expression_body:
 // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 6
 // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Conformance Rules, 9 and 10
 query_set_operation:
-  query_expression_body UNION query_term {
-    $$.v = new_set_operation($1.v as SimpleTable, 'UNION', false,
+  query_expression_body query_set_operator query_term {
+    operator := $2.v as QuerySetOperator
+    $$.v = new_set_operation($1.v as SimpleTable, operator.op, operator.all,
       $3.v as SimpleTable)
   }
-| query_expression_body UNION set_quantifier query_term {
-    flag_if(mut yylex, $3.v as bool, 'T551')
-    $$.v = new_set_operation($1.v as SimpleTable, 'UNION', !($3.v as bool),
-      $4.v as SimpleTable)
+
+query_set_operator:
+  UNION { $$.v = QuerySetOperator{'UNION', false} }
+| UNION set_quantifier {
+    flag_if(mut yylex, $2.v as bool, 'T551')
+    $$.v = QuerySetOperator{'UNION', !($2.v as bool)}
   }
-| query_expression_body EXCEPT query_term {
-    $$.v = new_set_operation($1.v as SimpleTable, 'EXCEPT', false,
-      $3.v as SimpleTable)
-  }
-| query_expression_body EXCEPT set_quantifier query_term {
-    flag(mut yylex, if $3.v as bool { 'T551' } else { 'F304' })
-    $$.v = new_set_operation($1.v as SimpleTable, 'EXCEPT', !($3.v as bool),
-      $4.v as SimpleTable)
+| EXCEPT { $$.v = QuerySetOperator{'EXCEPT', false} }
+| EXCEPT set_quantifier {
+    flag(mut yylex, if $2.v as bool { 'T551' } else { 'F304' })
+    $$.v = QuerySetOperator{'EXCEPT', !($2.v as bool)}
   }
 
 query_term:

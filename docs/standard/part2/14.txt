@@ -301,21 +301,21 @@
 14.10/CR/1               n/a          - - TRUNCATE TABLE (F200)
 14.10/CR/2               n/a          - - TRUNCATE TABLE (F200)
 # 14.11, <insert statement>
-14.11                    partial      vsql/std_2_14_11_insert_statement.v tests/insert.sql only a <from constructor> with an <insert column list> (#795)
+14.11                    implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
 14.11/SR/1               definition   - -
 14.11/SR/2               definition   - -
 14.11/SR/3               n/a          - - every table is a base table, and there are no views (F031-02)
 14.11/SR/4               n/a          - - triggers (T211)
 14.11/SR/5               n/a          - - user-defined types (S023)
 14.11/SR/6               n/a          - - DEFAULT VALUES (F222)
-14.11/SR/7               missing      vsql/std_2_14_11_insert_statement.y - the <insert column list> can't be omitted (#795)
+14.11/SR/7               implemented  vsql/std_2_14_11_insert_statement.v tests/insert-from-query.sql
 14.11/SR/8               implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
 14.11/SR/9               n/a          - - every column of a base table is updatable
 14.11/SR/10              implemented  vsql/std_2_14_11_insert_statement.v tests/generated-column.sql
 14.11/SR/11              container    - -
 14.11/SR/11.a            n/a          - - self-referencing columns (S043)
 14.11/SR/11.b            implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
-14.11/SR/11.b.i          missing      vsql/std_2_14_11_insert_statement.y - there's no <from subquery> (#795)
+14.11/SR/11.b.i          implemented  vsql/std_2_14_11_insert_statement.v tests/insert-from-query.sql
 14.11/SR/11.b.ii         n/a          - - <row value special case> needs row types (T051)
 14.11/SR/11.b.iii        implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
 14.11/SR/11.c            implemented  vsql/std_2_14_11_insert_statement.v tests/identity-column.sql
@@ -325,7 +325,7 @@
 14.11/SR/13              implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
 14.11/SR/14              implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
 14.11/SR/15              n/a          - - triggers (T211)
-14.11/SR/16              missing      vsql/std_2_14_11_insert_statement.y - there's no <from subquery> (#795)
+14.11/SR/16              implemented  vsql/std_2_14_11_insert_statement.y tests/insert-from-query.sql
 14.11/AR/1               container    - -
 14.11/AR/1.a             n/a          - - there are no users or privileges (#732)
 14.11/AR/1.b             n/a          - - there are no users or privileges (#732)
@@ -354,9 +354,9 @@
 14.11/GR/8.a.i           definition   - -
 14.11/GR/8.a.ii          implemented  vsql/std_2_14_11_insert_statement.v tests/insert.sql
 14.11/GR/8.b             n/a          - - views (F031-02)
-14.11/GR/9               n/a          - - there's no <from subquery> (#795), so there's always a row
-14.11/CR/1               n/a          - - there's no <from subquery> (#795)
-14.11/CR/1.a             n/a          - - there's no <from subquery> (#795)
+14.11/GR/9               implemented  vsql/std_2_14_11_insert_statement.v tests/insert-from-query.sql
+14.11/CR/1               container    - -
+14.11/CR/1.a             missing      - - F781 isn't flagged, it needs name resolution (#880)
 14.11/CR/1.b             n/a          - - external routines (T321)
 14.11/CR/2               n/a          - - DEFAULT VALUES (F222)
 14.11/CR/3               n/a          - - structured types (S024)

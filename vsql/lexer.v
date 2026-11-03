@@ -82,6 +82,7 @@ type YYSym = AddColumnDefinition
 	| QuantifiedComparisonPredicate
 	| QualifiedJoin
 	| QueryExpression
+	| QuerySetOperator
 	| QuerySpecification
 	| ReferentialConstraintDefinition
 	| RoutineInvocation

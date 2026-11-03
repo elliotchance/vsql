@@ -77,7 +77,7 @@
 9.1/GR/7.v               n/a          - - multisets (S271)
 9.1/GR/7.w               n/a          - - user-defined types (S023)
 # 9.2, Store assignment
-9.2                      implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql,tests/character.sql,tests/datetime-store-assignment.sql an indicator less than -1 is the null value (#783)
+9.2                      implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql,tests/character.sql,tests/datetime-store-assignment.sql
 9.2/SR/1                 definition   - -
 9.2/SR/2                 definition   - -
 9.2/SR/3                 implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql,tests/datetime-store-assignment.sql
@@ -95,12 +95,12 @@
 9.2/GR/3                 container    - -
 9.2/GR/3.a               implemented  vsql/std_2_9_2_store_assignment.v tests/null.sql
 9.2/GR/3.a.i             implemented  vsql/std_2_9_2_store_assignment.v tests/null.sql
-9.2/GR/3.a.ii            deviates     vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod any negative indicator is the null value (#783)
+9.2/GR/3.a.ii            implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
 9.2/GR/3.a.ii.1          implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
-9.2/GR/3.a.ii.2          deviates     vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod an indicator less than -1 is the null value (#783)
-9.2/GR/3.a.iii           deviates     vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod any negative indicator is the null value (#783)
+9.2/GR/3.a.ii.2          implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod
+9.2/GR/3.a.iii           implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod host variables are the host parameters of the implied module (21.1)
 9.2/GR/3.a.iii.1         implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod host variables are the host parameters of the implied module (21.1)
-9.2/GR/3.a.iii.2         deviates     vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod an indicator less than -1 is the null value (#783)
+9.2/GR/3.a.iii.2         implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test.mod host variables are the host parameters of the implied module (21.1)
 9.2/GR/3.a.iv            implemented  vsql/std_2_9_2_store_assignment.v tests/null.sql
 9.2/GR/3.b               implemented  vsql/std_2_9_2_store_assignment.v tests/insert.sql
 9.2/GR/3.b.i             implemented  vsql/std_2_9_2_store_assignment.v tests/character.sql

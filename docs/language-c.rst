@@ -228,7 +228,9 @@ is cut to its first L characters. A string must end with a null character within
 A parameter can be NULL with an indicator parameter (a ``SMALLINT``,
 ``INTEGER`` or ``BIGINT``), which is written after it as ``:name INDICATOR
 :indicator`` (or just ``:name :indicator``). The value is NULL when the
-indicator is negative.
+indicator is negative. If the parameter is the whole value of a column in an
+``INSERT`` or ``UPDATE``, then the indicator must be ``-1`` for NULL, and anything
+less raises ``22010`` (invalid indicator parameter value).
 
 Statements
 ^^^^^^^^^^

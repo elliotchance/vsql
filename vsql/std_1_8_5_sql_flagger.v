@@ -294,15 +294,26 @@ fn value_primary_of(e ValueExpression) ?NonparenthesizedValueExpressionPrimary {
 // is_dynamic_parameter is true if an expression is a <dynamic parameter
 // specification> ("?").
 fn is_dynamic_parameter(e ValueExpression) bool {
-	primary := value_primary_of(e) or { return false }
+	dynamic_parameter_of(e) or { return false }
+
+	return true
+}
+
+// dynamic_parameter_of returns the <dynamic parameter specification> that is an
+// entire expression, or none if it's anything else.
+fn dynamic_parameter_of(e ValueExpression) ?DynamicParameterSpecification {
+	primary := value_primary_of(e)?
 	if primary is ValueSpecification {
 		spec := ValueSpecification(primary)
 		if spec is GeneralValueSpecification {
-			return GeneralValueSpecification(spec) is DynamicParameterSpecification
+			general := GeneralValueSpecification(spec)
+			if general is DynamicParameterSpecification {
+				return general
+			}
 		}
 	}
 
-	return false
+	return none
 }
 
 // is_boolean_operation is true if a <boolean value expression> is an operation

@@ -57,8 +57,8 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 		}
 
 		// - GR 3.a.ii and 3.a.iii. The indicator of a host parameter (or a host
-		// variable) is handled by the module, where any negative value is the null
-		// value, so one that's less than -1 isn't 22010 (#783).
+		// variable) is checked by the module, before the statement is executed
+		// (see bind_parameters).
 	}
 
 	// - GR 3.b. Otherwise, by the type of T:

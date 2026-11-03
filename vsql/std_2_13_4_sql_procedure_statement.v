@@ -22,10 +22,13 @@ struct ModuleStatement {
 }
 
 // HostParameterReference is a <host parameter specification> in a statement.
-// The indicator is empty when there's no <indicator parameter>.
+// The indicator is empty when there's no <indicator parameter>. stored is true
+// when the host parameter is the whole value of a store assignment.
 struct HostParameterReference {
 	name      string
 	indicator string
+mut:
+	stored bool
 }
 
 // parse_module_statement compiles the statement of a procedure. A connection
@@ -104,8 +107,9 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []M
 		return select_statement(query, targets, p)
 	}
 
-	text_sql, references := rewrite_host_parameters(text, p)!
+	text_sql, mut references := rewrite_host_parameters(text, p)!
 	stmt := parse_tokens(tokenize(text_sql)!) or { return procedure_error(p, err) }
+	mark_stored_parameters(stmt, mut references)
 
 	return match stmt {
 		QueryExpression {
@@ -225,7 +229,7 @@ fn bind_parameters(sections []string, references []HostParameterReference, p Ext
 		// An <indicator parameter> is an exact numeric, and a negative value is
 		// NULL. The same goes for an <indicator variable> of embedded SQL, which
 		// is an indicator parameter of the implied module. When the value is
-		// stored, an indicator less than -1 should be an error instead (#783).
+		// stored, only -1 is NULL and anything less than -1 is an error.
 		//
 		// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target specification>, Syntax Rules, 1 and 9
 		// ISO/IEC 9075-2:2016(E), 6.4, <value specification> and <target specification>, General Rules, 4 and 19
@@ -233,6 +237,9 @@ fn bind_parameters(sections []string, references []HostParameterReference, p Ext
 		if reference.indicator != '' {
 			indicator := p.indicator(reference.indicator)!
 			b.used << indicator.name.to_upper()
+			if reference.stored {
+				checks += '  if (*${indicator.name} < -1) {\n    vsql_m_status(SQLSTATE, "22010");\n    return;\n  }\n'
+			}
 			checks += '  if (*${indicator.name} < 0) {\n    vsql_m_p[${i}].indicator = SQL_NULL_DATA;\n  }'
 			checks += if check == '' { '\n' } else { ' else ${check}' }
 		} else if check != '' {
@@ -245,6 +252,90 @@ fn bind_parameters(sections []string, references []HostParameterReference, p Ext
 	}
 
 	return b
+}
+
+// mark_stored_parameters finds the host parameters that are the whole value of
+// a column in an INSERT or UPDATE. That's the only place where V of a store
+// assignment is a host parameter, so anything else (such as a comparison, an
+// expression or a CAST) has the value of the <host parameter specification>. A
+// value in parentheses is still that value, and the parentheses of a row with
+// one value can't be told apart from it anyway.
+fn mark_stored_parameters(stmt Stmt, mut references []HostParameterReference) {
+	mut sources := []ValueExpression{}
+	match stmt {
+		InsertStatement {
+			for row in stmt.values {
+				match row {
+					[]ContextuallyTypedRowValueConstructorElement {
+						for element in row {
+							if element is ValueExpression {
+								sources << ValueExpression(element)
+							}
+						}
+					}
+					CommonValueExpression {
+						sources << ValueExpression(row)
+					}
+					BooleanValueExpression {
+						sources << ValueExpression(row)
+					}
+					ContextuallyTypedValueSpecification {}
+				}
+			}
+		}
+		UpdateStatementSearched {
+			sources << update_sources(stmt.set)
+		}
+		UpdateStatementPositioned {
+			sources << update_sources(stmt.set)
+		}
+		else {}
+	}
+
+	for source in sources {
+		if name := host_parameter_of(source) {
+			references[name[1..].int() - 1].stored = true
+		}
+	}
+}
+
+fn update_sources(set []SetClause) []ValueExpression {
+	mut sources := []ValueExpression{}
+	for clause in set {
+		if clause.source is ValueExpression {
+			sources << ValueExpression(clause.source)
+		}
+	}
+
+	return sources
+}
+
+// host_parameter_of returns the name of the "?" (such as "?1") of an expression
+// that is only a host parameter, which rewrite_host_parameters wrote as
+// CAST(? AS type). A CAST in the statement has this CAST as its operand instead.
+fn host_parameter_of(e ValueExpression) ?string {
+	if e is CommonValueExpression {
+		if primary := common_primary_of(e) {
+			if primary is ParenthesizedValueExpression {
+				return host_parameter_of(*primary.e)
+			}
+		}
+	}
+	if e is BooleanValueExpression && is_parenthesized_boolean(e) {
+		predicand := (*e.term.factor.expr) as BooleanPredicand
+
+		return host_parameter_of(ValueExpression(predicand as BooleanValueExpression))
+	}
+
+	primary := value_primary_of(e)?
+	if primary is CastSpecification {
+		operand := *primary.expr
+		if operand is ValueExpression {
+			return dynamic_parameter_of(ValueExpression(operand))?.name
+		}
+	}
+
+	return none
 }
 
 // indicator is the host parameter of an <indicator parameter>, which must be
@@ -323,7 +414,10 @@ fn replace_host_parameters(text string, replacement fn (string) !string) !(strin
 				indicator, i = read_host_parameter_name(cs, j)!
 			}
 
-			references << HostParameterReference{name, indicator}
+			references << HostParameterReference{
+				name:      name
+				indicator: indicator
+			}
 			text_sql += replacement(name)!
 		} else {
 			text_sql += cs[i].str()

@@ -36,9 +36,11 @@ fn (o DefaultOption) compile(mut c Compiler) !CompileResult {
 // check_default_clause returns an error if the default of the column doesn't
 // suit the type of the column. A datetime value function (such as
 // CURRENT_DATE), CURRENT_CATALOG and CURRENT_SCHEMA aren't evaluated until the
-// default is used, so they're only checked by their type. The length of the
-// column for CURRENT_CATALOG and CURRENT_SCHEMA, and whether a datetime value
-// function has a time zone, aren't checked (#788).
+// default is used, so they're only checked by their type. CURRENT_CATALOG and
+// CURRENT_SCHEMA need a character string of at least 128 characters, or one
+// without a length, which is the maximum. The fractional seconds precision of a
+// datetime value function doesn't have to be the same, since the value is
+// assigned to the column.
 //
 // ISO/IEC 9075-2:2016(E), 11.5, <default clause>, Syntax Rules, 4.b and 4.d
 fn check_default_clause(mut conn Connection, column Column) ! {
@@ -52,10 +54,10 @@ fn check_default_clause(mut conn Connection, column Column) ! {
 
 	is_valid := match default_value {
 		CurrentCatalog, CurrentSchema {
-			column.typ.typ.is_string()
+			column.typ.typ.is_string() && (column.typ.size == 0 || column.typ.size >= 128)
 		}
 		DatetimeValueFunction {
-			column.typ.typ.is_datetime() && datetime_fields(typ.typ) == datetime_fields(column.typ.typ)
+			typ.typ == column.typ.typ
 		}
 		NullSpecification {
 			true
@@ -74,9 +76,8 @@ fn check_default_clause(mut conn Connection, column Column) ! {
 // of type t. It's stricter than storing the value: a number can't be the
 // default of a character string, an exact numeric can't have an approximate
 // default or lose any significant digits, and a datetime must have the same
-// fields, and a time zone if the column has one. A datetime that has a time
-// zone when the column doesn't, or more fractional seconds than the column, is
-// allowed (#788).
+// fields and time zone fields, and can't have more fractional seconds than the
+// column.
 //
 // ISO/IEC 9075-2:2016(E), 11.5, <default clause>, Syntax Rules, 4.a
 fn is_valid_default_literal(mut conn Connection, v Value, t Type) bool {
@@ -96,8 +97,7 @@ fn is_valid_default_literal(mut conn Connection, v Value, t Type) bool {
 		}
 		.is_date, .is_time_with_time_zone, .is_time_without_time_zone,
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
-			v.typ.typ.is_datetime() && datetime_fields(v.typ.typ) == datetime_fields(t.typ)
-				&& (v.typ.has_time_zone() || !t.has_time_zone())
+			v.typ.typ == t.typ && v.typ.size <= t.size
 		}
 	}
 }

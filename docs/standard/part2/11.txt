@@ -327,12 +327,12 @@
 11.5/SR/4.a.ii           n/a          - - binary strings (T021)
 11.5/SR/4.a.iii          implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
 11.5/SR/4.a.iv           implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/SR/4.a.v            deviates     vsql/std_2_11_5_default_clause.v tests/column-defaults.sql a time zone or more fractional seconds than the column is allowed (#788)
+11.5/SR/4.a.v            implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
 11.5/SR/4.a.vi           n/a          - - intervals (F052)
 11.5/SR/4.a.vii          implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
-11.5/SR/4.b              deviates     vsql/std_2_11_5_default_clause.v tests/column-defaults.sql the length of the column isn't checked (#788)
+11.5/SR/4.b              implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
 11.5/SR/4.c              n/a          - - SQL paths (S071)
-11.5/SR/4.d              deviates     vsql/std_2_11_5_default_clause.v tests/column-defaults.sql a datetime value function with or without a time zone is allowed for either (#788)
+11.5/SR/4.d              implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
 11.5/SR/4.e              n/a          - - collection types (S091, S271)
 11.5/GR/1                implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql
 11.5/GR/2                implemented  vsql/std_2_11_5_default_clause.v tests/column-defaults.sql

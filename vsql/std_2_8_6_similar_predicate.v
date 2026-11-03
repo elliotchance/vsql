@@ -529,13 +529,16 @@ fn (mut p RegularParser) parse_enumerations() ![]RegularRange {
 	return ranges
 }
 
-// matches reports whether the whole of s is in the regular language of the
-// pattern. The strings must be exactly the same, although the collation pads
-// with spaces (#781).
+// matches reports whether any string in the regular language of the pattern is
+// equal to s. The collation has PAD SPACE, so trailing spaces in either string
+// don't matter: s can be equal to a string of the language that has fewer or
+// more of them. That's why the trailing spaces are removed from s first, and
+// why ends() lets the end of s stand for any number of spaces. This isn't the
+// same as a LIKE, which has NO PAD.
 //
 // ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 8
 fn (n RegularNode) matches(s string) bool {
-	chars := s.runes()
+	chars := s.trim_right(' ').runes()
 	mut start := []bool{len: chars.len + 1}
 	start[0] = true
 
@@ -547,6 +550,11 @@ fn (n RegularNode) matches(s string) bool {
 // position (instead of trying each choice in turn and backtracking) means the
 // time taken only grows with the length of the string and the pattern.
 //
+// The last position stands for the end of s followed by any number of spaces,
+// so a character that matches a space can stay there. It's one position because
+// whatever can follow one of those spaces can follow any of them, so "a {1000}"
+// doesn't need 1000 spaces to be tried.
+//
 // ISO/IEC 9075-2:2016(E), 8.6, <similar predicate>, General Rules, 7
 fn (n RegularNode) ends(s []rune, starts []bool) []bool {
 	mut ends := []bool{len: starts.len}
@@ -557,6 +565,9 @@ fn (n RegularNode) ends(s []rune, starts []bool) []bool {
 				if starts[i] && n.matches_character(s[i]) {
 					ends[i + 1] = true
 				}
+			}
+			if starts[s.len] && n.matches_character(` `) {
+				ends[s.len] = true
 			}
 		}
 		.percent {

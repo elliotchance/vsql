@@ -33,9 +33,8 @@ fn execute(mut stmt Stmt) !i16 {
 	}
 
 	// ISO/IEC 9075-3:2003(E), 6.20, Execute, General Rules, 4-8: P is executed
-	// with the values of its dynamic parameters. The executed statement is
-	// forgotten even if P fails, which is #730.
-	stmt.executed = false
-
+	// with the values of its dynamic parameters. P only becomes the executed
+	// statement if it's successful, otherwise any statement that was already
+	// executed still is.
 	return execute_statement(mut stmt, mut prepared)
 }

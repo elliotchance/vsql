@@ -647,7 +647,7 @@
 6.18/GR/4                implemented  libvsql/std_3_6_18_error.v libvsql/std_3_6_18_error_test.c
 6.18/GR/5                implemented  libvsql/std_3_6_18_error.v libvsql/std_3_6_18_error_test.c
 # 6.19, ExecDirect
-6.19                     partial      libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c non-preparable statements are accepted (#748); see also #649, #730, #749
+6.19                     partial      libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c non-preparable statements are accepted (#748); see also #649, #749
 6.19/GR/1                definition   - -
 6.19/GR/2                implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
 6.19/GR/3                definition   - -
@@ -692,9 +692,9 @@
 6.19/GR/12.b.iv          missing      libvsql/std_3_6_19_exec_direct.v - there's no <call statement> (#733)
 6.19/GR/13               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_53_row_count_test.c
 6.19/GR/14               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_53_row_count_test.c
-6.19/GR/15               partial      libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c a failed statement forgets the executed statement (#730)
+6.19/GR/15               implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
 # 6.20, Execute
-6.20                     partial      libvsql/std_3_6_20_execute.v libvsql/std_3_6_20_execute_test.c a failed execution forgets the executed statement (#730)
+6.20                     implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_20_execute_test.c
 6.20/GR/1                definition   - -
 6.20/GR/2                implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_20_execute_test.c
 6.20/GR/3                implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_20_execute_test.c
@@ -716,7 +716,7 @@
 6.20/GR/5.b.iii          n/a          - - there's no <call statement> (T321)
 6.20/GR/6                implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_53_row_count_test.c
 6.20/GR/7                implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_53_row_count_test.c
-6.20/GR/8                partial      libvsql/std_3_6_20_execute.v libvsql/std_3_6_20_execute_test.c the executed statement is forgotten even if P fails (#730)
+6.20/GR/8                implemented  libvsql/std_3_6_20_execute.v libvsql/std_3_6_20_execute_test.c
 # 6.21, Fetch
 6.21                     implemented  libvsql/std_3_6_21_fetch.v libvsql/std_3_6_21_fetch_test.c
 6.21/GR/1                definition   - -
@@ -2005,7 +2005,7 @@
 6.49/GR/17.b.ii.4        missing      libvsql/std_3_6_49_param_data.v - there's no <call statement> (#733)
 6.49/GR/17.c             implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_53_row_count_test.c same as ExecDirect
 6.49/GR/17.d             implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_53_row_count_test.c same as ExecDirect
-6.49/GR/17.e             partial      libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c a failed Execute or ExecDirect has already forgotten the executed statement (#730)
+6.49/GR/17.e             implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 # 6.50, Prepare
 6.50                     partial      libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c non-preparable statements are accepted (#748), the cursor of a positioned statement (#749); see also #649
 6.50/GR/1                definition   - -

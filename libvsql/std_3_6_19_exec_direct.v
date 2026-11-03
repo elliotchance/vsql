@@ -21,9 +21,7 @@ import vsql
 // accepted (General Rules 7.a), which is #748. The data type of a dynamic
 // parameter isn't determined (General Rules 7.c and 8), which is #649. There
 // are no user-defined types, so there's no transform group (General Rules 9),
-// and no <call statement> (General Rules 12.b.iv), which is #733. A failed
-// statement still forgets the executed statement (General Rules 15), which is
-// #730.
+// and no <call statement> (General Rules 12.b.iv), which is #733.
 
 @[export: 'SQLExecDirect']
 fn sql_exec_direct(statement_handle SQLInteger, statement_text &char, text_length SQLInteger) i16 {
@@ -48,7 +46,6 @@ fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16
 	// - 10. Any prepared statement, cursor and select source associated with S
 	// are destroyed.
 	stmt.prepared = none
-	stmt.executed = false
 	stmt.close_cursor()
 
 	// - 11, 12. P is prepared and executed. A syntax error is raised by
@@ -182,6 +179,10 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 			stmt.diag.transactions_rolled_back++
 		}
 		autocommit(mut stmt.diag, stmt.dbc, false) or {}
+		// ISO/IEC 9075-3:2003(E), 6.19, ExecDirect, General Rules, 13 to 15 (and
+		// 6.20, Execute, General Rules, 6 to 8): a statement that fails has no
+		// rows, and doesn't become the executed statement.
+		stmt.row_count = 0
 		return err
 	}
 	stmt.executed = true

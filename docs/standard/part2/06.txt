@@ -349,15 +349,15 @@
 6.8/SR/2                 n/a          - - SQL-invoked routines (T321)
 # 6.9, <set function specification>
 6.9                      implemented  vsql/std_2_6_9_set_function_specification.y tests/set-functions.sql
-6.9/SR/1                 implemented  vsql/std_2_10_4_routine_invocation.v,vsql/std_2_7_19_subquery.v tests/having.sql a subquery in the argument isn't tested
+6.9/SR/1                 implemented  vsql/std_2_10_4_routine_invocation.v,vsql/std_2_7_19_subquery.v tests/having.sql,tests/aggregate-placement.sql
 6.9/SR/2                 n/a          - - binary set functions (T621)
 6.9/SR/3                 definition   - -
 6.9/SR/4                 definition   - -
 6.9/SR/5                 n/a          - - FILTER (T612)
 6.9/SR/6                 implemented  vsql/compiler.v tests/correlated-subquery.sql
-6.9/SR/6.a               implemented  vsql/compiler.v tests/set-functions.sql
+6.9/SR/6.a               partial      vsql/compiler.v tests/set-functions.sql an aggregate function in a VALUES subquery without a column reference is rejected (#914)
 6.9/SR/6.b               implemented  vsql/compiler.v tests/correlated-subquery.sql
-6.9/SR/7                 partial      vsql/planner.v tests/correlated-subquery.sql only WHERE has a clear error, other places fail with "unknown column" (#616)
+6.9/SR/7                 implemented  vsql/planner.v tests/correlated-subquery.sql,tests/aggregate-placement.sql
 6.9/SR/8                 implemented  vsql/compiler.v tests/correlated-subquery.sql
 6.9/SR/9                 implemented  vsql/std_2_6_9_set_function_specification.y tests/set-functions.sql
 6.9/SR/10                n/a          - - GROUPING (T431)

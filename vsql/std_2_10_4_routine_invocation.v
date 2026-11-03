@@ -79,6 +79,14 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		// (see Subquery.plan), and is a value of its row.
 		scope := c.aggregation_scope()!
 		if scope >= 0 {
+			// This isn't seen as an aggregate function by an enclosing one, because
+			// it's a value of this query.
+			//
+			// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 1
+			if in_aggregate {
+				return sqlstate_42601('nested set function: ${e.pstr(c.params)}')
+			}
+
 			c.conn.subquery_scopes[scope].aggregates << AggregateFunction(e)
 
 			return CompileResult{
@@ -153,7 +161,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 			return result
 		}
 		typ:          return_type
-		contains_agg: found_func.is_agg
+		contains_agg: compiled_args.any(it.contains_agg)
 	}
 }
 

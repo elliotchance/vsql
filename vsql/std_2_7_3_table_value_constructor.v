@@ -61,6 +61,14 @@ fn new_values_operation(rows []RowValueConstructor, correlation Correlation, mut
 	mut types := []Type{}
 	for i, row in rows {
 		compiled := row.compile_elements(mut c)!
+
+		// An aggregate function of an outer query (which is a value here) is allowed.
+		//
+		// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 7
+		if compiled.any(it.contains_agg) {
+			return sqlstate_42601('an aggregate function cannot be used in VALUES')
+		}
+
 		if i == 0 {
 			types = compiled.map(Type{it.typ.typ, it.typ.size, it.typ.scale, false})
 			continue

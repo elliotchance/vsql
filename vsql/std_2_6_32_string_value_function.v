@@ -126,7 +126,8 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 			return new_varchar_value(str.substr(start, end)).with_type(typ)
 		}
 		typ:          typ
-		contains_agg: compiled_value.contains_agg
+		contains_agg: compiled_value.contains_agg || compiled_from.contains_agg
+			|| compiled_for.contains_agg
 	}
 }
 

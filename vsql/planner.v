@@ -182,16 +182,19 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	}
 
 	// Like WHERE, the condition is compiled to catch errors without any rows. An
-	// aggregate function fails as an unknown column (#616).
+	// aggregate function of an outer query (which is a value here) is allowed.
 	//
 	// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 6
+	// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 7
 	mut c := Compiler{
 		conn:                   conn
 		params:                 params
 		tables:                 join_tables
 		next_value_not_allowed: 'a join condition'
 	}
-	specification.compile(mut c)!
+	if specification.compile(mut c)!.contains_agg {
+		return sqlstate_42601('an aggregate function cannot be used in a join condition')
+	}
 
 	// The tables on the side that isn't preserved can be all NULLs, whatever
 	// their columns are declared as.
@@ -730,10 +733,25 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 		c.set_result_columns(stmt.body, result_columns)!
 		for spec in stmt.order {
 			c.set_distinct_columns(stmt.body, spec.expr)!
-			spec.expr.compile(mut c)!
+
+			// An aggregate function can only be calculated for the groups of its query.
+			//
+			// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 7
+			if spec.expr.compile(mut c)!.contains_agg
+				&& !(stmt.body is QuerySpecification && plan.operations.any(it is GroupOperation)) {
+				return sqlstate_42601('an aggregate function cannot be used in ORDER BY unless the query is grouped')
+			}
+
 			order << SortSpecification{
 				expr:   spec.expr
 				is_asc: spec.is_asc
+			}
+		}
+
+		for mut operation in plan.operations {
+			if mut operation is GroupOperation {
+				operation.sort_keys = order
+				operation.result_columns = c.result_columns.clone()
 			}
 		}
 

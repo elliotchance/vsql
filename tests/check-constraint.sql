@@ -229,18 +229,12 @@ CREATE TABLE t (a INT CHECK (a > ?));
 -- # The constraint must be deterministic.
 CREATE SEQUENCE seq;
 CREATE TABLE t (a INT CHECK (a > NEXT VALUE FOR seq));
-CREATE TABLE t (a DATE CHECK (a < CURRENT_DATE));
-CREATE TABLE t (a TIMESTAMP WITH TIME ZONE CHECK (a < CURRENT_TIMESTAMP));
-CREATE TABLE t (a TIMESTAMP CHECK (a < LOCALTIMESTAMP));
 CREATE TABLE t (a TIME CHECK (a < LOCALTIME));
 CREATE TABLE t (a TIME WITH TIME ZONE CHECK (a < CURRENT_TIME));
 CREATE TABLE t (a VARCHAR(10) CHECK (a = CURRENT_SCHEMA));
 CREATE TABLE t (a VARCHAR(10) CHECK (a = CURRENT_CATALOG));
 -- msg: CREATE SEQUENCE 1
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in a CHECK constraint
--- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
--- error 42601: syntax error: CURRENT_TIMESTAMP(6) cannot be used in a CHECK constraint
--- error 42601: syntax error: LOCALTIMESTAMP(6) cannot be used in a CHECK constraint
 -- error 42601: syntax error: LOCALTIME(0) cannot be used in a CHECK constraint
 -- error 42601: syntax error: CURRENT_TIME(0) cannot be used in a CHECK constraint
 -- error 42601: syntax error: CURRENT_SCHEMA cannot be used in a CHECK constraint
@@ -367,3 +361,66 @@ SELECT * FROM s."my;table";
 -- error 23514: violates check constraint: CHECK (POSITION('z' IN C) = 0 AND S."my;table".D IS NOT NULL) on ":memory:".S."my;table"
 -- a"b: 1 C: a D: 2e0
 -- a"b: 2 C: x D: 2e0
+
+-- # A comparison with the current date or timestamp is retrospectively
+-- # deterministic: once it's true, it stays true.
+CREATE TABLE a (x DATE CHECK (x < CURRENT_DATE), y DATE CHECK (CURRENT_DATE >= y));
+CREATE TABLE b (x TIMESTAMP WITH TIME ZONE CHECK (x <= CURRENT_TIMESTAMP), y TIMESTAMP CHECK (LOCALTIMESTAMP(0) > y));
+CREATE TABLE c (x DATE, y DATE, z DATE, CHECK (x BETWEEN DATE '2000-01-01' AND CURRENT_DATE AND (y <= CURRENT_DATE OR z < CURRENT_DATE) AND (z <= CURRENT_DATE) IS TRUE));
+CREATE TABLE d (x DATE CHECK ((x <= CURRENT_DATE) IS NOT FALSE), y DATE CHECK (NOT (y <= CURRENT_DATE) IS FALSE), z DATE CHECK ((z <= CURRENT_DATE) IS UNKNOWN));
+INSERT INTO a (x, y) VALUES (DATE '2020-01-01', DATE '2020-01-01');
+INSERT INTO a (x) VALUES (DATE '2100-01-01');
+INSERT INTO a (y) VALUES (DATE '2100-01-01');
+INSERT INTO c (x, y, z) VALUES (DATE '2020-01-01', DATE '2020-01-01', DATE '2020-01-01');
+INSERT INTO c (x, y, z) VALUES (DATE '1990-01-01', DATE '2020-01-01', DATE '2020-01-01');
+INSERT INTO c (x, y, z) VALUES (DATE '2100-01-01', DATE '2020-01-01', DATE '2020-01-01');
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 1
+-- error 23514: violates check constraint: CHECK (X < CURRENT_DATE) on ":memory:".PUBLIC.A
+-- error 23514: violates check constraint: CHECK (CURRENT_DATE >= Y) on ":memory:".PUBLIC.A
+-- msg: INSERT 1
+-- error 23514: violates check constraint: CHECK (X BETWEEN DATE '2000-01-01' AND CURRENT_DATE AND (Y <= CURRENT_DATE OR Z < CURRENT_DATE) AND (Z <= CURRENT_DATE) IS TRUE) on ":memory:".PUBLIC.C
+-- error 23514: violates check constraint: CHECK (X BETWEEN DATE '2000-01-01' AND CURRENT_DATE AND (Y <= CURRENT_DATE OR Z < CURRENT_DATE) AND (Z <= CURRENT_DATE) IS TRUE) on ":memory:".PUBLIC.C
+
+-- # Anything else that's possibly non-deterministic is still rejected.
+CREATE TABLE t (a DATE CHECK (a = CURRENT_DATE));
+CREATE TABLE t (a DATE CHECK (a > CURRENT_DATE));
+CREATE TABLE t (a DATE CHECK (CURRENT_DATE < a));
+CREATE TABLE t (a DATE CHECK (NOT (a < CURRENT_DATE)));
+CREATE TABLE t (a DATE CHECK ((a < CURRENT_DATE) IS FALSE));
+CREATE TABLE t (a DATE CHECK ((a < CURRENT_DATE) IS NOT TRUE));
+CREATE TABLE t (a DATE CHECK (NOT (a < CURRENT_DATE) IS TRUE));
+CREATE TABLE t (a DATE CHECK (NOT (a < CURRENT_DATE) IS NOT FALSE));
+CREATE TABLE t (a DATE CHECK (NOT ((a < CURRENT_DATE) OR a IS NULL)));
+CREATE TABLE t (a DATE CHECK (a NOT BETWEEN DATE '2000-01-01' AND CURRENT_DATE));
+CREATE TABLE t (a DATE CHECK (a BETWEEN SYMMETRIC DATE '2000-01-01' AND CURRENT_DATE));
+CREATE TABLE t (a DATE CHECK (a BETWEEN CURRENT_DATE AND DATE '2000-01-01'));
+CREATE TABLE t (a DATE CHECK (CURRENT_DATE <= CURRENT_DATE));
+CREATE TABLE t (a DATE CHECK (a < COALESCE(CURRENT_DATE, a)));
+CREATE TABLE t (a INT CHECK (CASE WHEN CURRENT_DATE > DATE '2000-01-01' THEN TRUE ELSE FALSE END));
+CREATE TABLE t (a INT CHECK ((CASE WHEN CURRENT_DATE > DATE '2000-01-01' THEN 1 ELSE 0 END) = a));
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+-- error 42601: syntax error: CURRENT_DATE cannot be used in a CHECK constraint
+
+-- # Both comparands must have a time zone, or neither.
+CREATE TABLE t (a TIMESTAMP CHECK (a < CURRENT_TIMESTAMP));
+CREATE TABLE t (a TIMESTAMP WITH TIME ZONE CHECK (a < LOCALTIMESTAMP));
+-- error 42601: syntax error: comparing TIMESTAMP(6) WITHOUT TIME ZONE with TIMESTAMP(6) WITH TIME ZONE cannot be used in a CHECK constraint
+-- error 42601: syntax error: comparing TIMESTAMP(6) WITH TIME ZONE with TIMESTAMP(6) WITHOUT TIME ZONE cannot be used in a CHECK constraint

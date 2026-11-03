@@ -23,9 +23,24 @@ fn (e Predicate) pstr(params map[string]Value) string {
 }
 
 fn (e Predicate) compile(mut c Compiler) !CompileResult {
+	// Only a comparison or BETWEEN of this predicate can be retrospectively
+	// deterministic, not one in a CASE that's one of its comparands. A quantified
+	// comparison can't be, since a CHECK can't contain a subquery (Feature F671).
+	retrospective := c.retrospective
+	c.retrospective = false
+	defer {
+		c.retrospective = retrospective
+	}
+
 	match e {
-		ComparisonPredicate, BetweenPredicate, InPredicate, CharacterLikePredicate,
-		SimilarPredicate, NullPredicate, QuantifiedComparisonPredicate, ExistsPredicate {
+		ComparisonPredicate {
+			return e.compile_comparison(mut c, retrospective)!
+		}
+		BetweenPredicate {
+			return e.compile_between(mut c, retrospective)!
+		}
+		InPredicate, CharacterLikePredicate, SimilarPredicate, NullPredicate,
+		QuantifiedComparisonPredicate, ExistsPredicate {
 			return e.compile(mut c)!
 		}
 	}

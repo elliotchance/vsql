@@ -60,9 +60,22 @@ fn (e ComparisonPredicate) pstr(params map[string]Value) string {
 	return '${e.left.pstr(params)} ${e.op} ${e.right.pstr(params)}'
 }
 
-fn (e ComparisonPredicate) compile(mut c Compiler) !CompileResult {
-	compiled_left := e.left.compile(mut c)!
-	compiled_right := e.right.compile(mut c)!
+// compile_comparison compiles the comparison. If it's retrospective (see
+// Compiler.retrospective) then the greater comparand can be the current date or
+// timestamp.
+//
+// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.c.ii
+fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool) !CompileResult {
+	compiled_left := if retrospective && e.op in [.greater_than, .greater_than_or_equal] {
+		c.compile_retrospective(e.left)!
+	} else {
+		e.left.compile(mut c)!
+	}
+	compiled_right := if retrospective && e.op in [.less_than, .less_than_or_equal] {
+		c.compile_retrospective(e.right)!
+	} else {
+		e.right.compile(mut c)!
+	}
 	c.check_time_zone_comparison(compiled_left.typ, compiled_right.typ)!
 
 	return CompileResult{

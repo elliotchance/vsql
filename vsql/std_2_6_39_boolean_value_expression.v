@@ -41,7 +41,18 @@ fn (e BooleanPredicand) pstr(params map[string]Value) string {
 
 fn (e BooleanPredicand) compile(mut c Compiler) !CompileResult {
 	match e {
-		BooleanValueExpression, NonparenthesizedValueExpressionPrimary {
+		BooleanValueExpression {
+			return e.compile(mut c)!
+		}
+		NonparenthesizedValueExpressionPrimary {
+			// A predicate in it (such as in a CASE) can't be retrospectively
+			// deterministic.
+			retrospective := c.retrospective
+			c.retrospective = false
+			defer {
+				c.retrospective = retrospective
+			}
+
 			return e.compile(mut c)!
 		}
 	}
@@ -203,8 +214,27 @@ fn (e BooleanTest) unary_not(v Value) !Value {
 	return v
 }
 
+// is_negative is true for a negative <boolean factor>: NOT BP, BP IS FALSE, BP IS
+// NOT TRUE, NOT BP IS NOT FALSE and NOT BP IS TRUE.
+//
+// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.e.i
+fn (e BooleanTest) is_negative() bool {
+	if v := e.value {
+		return !v.is_null && ((v.bool_value() == .is_false) != e.not) != e.inverse
+	}
+
+	return e.inverse
+}
+
 fn (e BooleanTest) compile(mut c Compiler) !CompileResult {
+	// A negative boolean factor can't contain anything that's possibly
+	// non-deterministic.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.e.ii
+	retrospective := c.retrospective
+	c.retrospective = retrospective && !e.is_negative()
 	compiled := e.expr.compile(mut c)!
+	c.retrospective = retrospective
 
 	if v := e.value {
 		check_boolean_operand('IS', compiled)!

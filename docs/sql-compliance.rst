@@ -932,7 +932,7 @@ Optional Features
    * - ❌ **F671**
      - **Subqueries in CHECK constraints**
 
-   * - ❌ **F672**
+   * - ✅ **F672**
      - **Retrospective check constraints**
 
    * - ❌ **F673**

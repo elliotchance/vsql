@@ -647,7 +647,7 @@
 6.18/GR/4                implemented  libvsql/std_3_6_18_error.v libvsql/std_3_6_18_error_test.c
 6.18/GR/5                implemented  libvsql/std_3_6_18_error.v libvsql/std_3_6_18_error_test.c
 # 6.19, ExecDirect
-6.19                     partial      libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c non-preparable statements are accepted (#748); see also #649, #749
+6.19                     partial      libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c see #649, #749
 6.19/GR/1                definition   - -
 6.19/GR/2                implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
 6.19/GR/3                definition   - -
@@ -659,8 +659,8 @@
 6.19/GR/5.a              implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
 6.19/GR/5.b              definition   - -
 6.19/GR/6                implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_55_set_cursor_name_test.c when P is executed
-6.19/GR/7                partial      libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c 7.a (#748), 7.c (#649)
-6.19/GR/7.a              deviates     libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c only START TRANSACTION, COMMIT and ROLLBACK are rejected (#748)
+6.19/GR/7                partial      libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c 7.c (#649)
+6.19/GR/7.a              implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
 6.19/GR/7.b              implemented  libvsql/std_3_6_19_exec_direct.v libvsql/std_3_6_19_exec_direct_test.c
 6.19/GR/7.c              missing      libvsql/std_3_6_19_exec_direct.v - the type of a dynamic parameter isn't determined (#649)
 6.19/GR/8                missing      libvsql/std_3_6_19_exec_direct.v - the type of a dynamic parameter isn't determined (#649)
@@ -2007,7 +2007,7 @@
 6.49/GR/17.d             implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_53_row_count_test.c same as ExecDirect
 6.49/GR/17.e             implemented  libvsql/std_3_6_49_param_data.v libvsql/std_3_6_49_param_data_test.c
 # 6.50, Prepare
-6.50                     partial      libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c non-preparable statements are accepted (#748), the cursor of a positioned statement (#749); see also #649
+6.50                     partial      libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c the cursor of a positioned statement (#749); see also #649
 6.50/GR/1                definition   - -
 6.50/GR/2                implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c
 6.50/GR/3                definition   - -
@@ -2019,8 +2019,8 @@
 6.50/GR/5.a              implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_19_exec_direct_test.c
 6.50/GR/5.b              definition   - -
 6.50/GR/6                deviates     libvsql/std_3_6_50_prepare.v - the cursor isn't checked until it's executed (#749)
-6.50/GR/7                partial      libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c 7.a (#748), 7.c (#649)
-6.50/GR/7.a              deviates     libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c only START TRANSACTION, COMMIT and ROLLBACK are rejected (#748)
+6.50/GR/7                partial      libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c 7.c (#649)
+6.50/GR/7.a              implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_50_prepare_test.c
 6.50/GR/7.b              implemented  libvsql/std_3_6_50_prepare.v libvsql/std_3_6_19_exec_direct_test.c
 6.50/GR/7.c              missing      libvsql/std_3_6_50_prepare.v - the type of a dynamic parameter isn't determined (#649)
 6.50/GR/8                missing      libvsql/std_3_6_50_prepare.v - the type of a dynamic parameter isn't determined (#649)

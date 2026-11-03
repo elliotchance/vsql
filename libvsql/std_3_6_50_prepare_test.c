@@ -46,6 +46,26 @@ UTEST_F(db, 6_50_prepare_syntax_error) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY090");
 }
 
+/* These fail when they're prepared, rather than when they're executed. */
+UTEST_F(db, 6_50_prepare_not_preparable) {
+  const char *statements[] = {
+      "DECLARE c CURSOR FOR VALUES 1",
+      "OPEN c",
+      "FETCH NEXT FROM c",
+      "CLOSE c",
+      "CONNECT TO DEFAULT",
+      "SET CONNECTION DEFAULT",
+      "DISCONNECT CURRENT",
+  };
+
+  for (size_t i = 0; i < sizeof(statements) / sizeof(statements[0]); i++) {
+    EXPECT_EQ(
+        SQLPrepare(utest_fixture->stmt, (SQLCHAR *)statements[i], SQL_NTS),
+        SQL_ERROR);
+    EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "42000");
+  }
+}
+
 UTEST_F(db, 6_50_prepare_open_cursor) {
   ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES 1"), SQL_SUCCESS);
   EXPECT_EQ(SQLPrepare(utest_fixture->stmt, (SQLCHAR *)"VALUES 2", SQL_NTS),

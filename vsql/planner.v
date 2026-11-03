@@ -597,7 +597,8 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 	// Only a query specification has its own tables. Otherwise, the ORDER BY can
 	// only use the columns of the result. A sort key doesn't have to contain a
 	// column reference, and it can contain a subquery or an aggregate function
-	// (#770). An ungrouped column isn't rejected in a grouped query (#779).
+	// (#770). A column that isn't in the select list would be an extended sort key
+	// column, which a grouped query can't have, so it must be a grouping column.
 	//
 	// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28
 	if stmt.body !is QuerySpecification {
@@ -623,6 +624,7 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 		} else {
 			plan.columns()
 		}
+		c.set_grouping_columns(stmt.body)!
 		mut order := []SortSpecification{}
 		for spec in stmt.order {
 			check_sort_key_not_ambiguous(spec, params, result_columns)!

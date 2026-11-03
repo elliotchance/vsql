@@ -85,6 +85,9 @@ const alter_table_tab = 'ALTER_TABLE'
 // export_tab is a tab to export from a file, see export.v.
 const export_tab = 'EXPORT'
 
+// import_tab is a tab to import a file, see import.v.
+const import_tab = 'IMPORT'
+
 // QueryPayload is the PAYLOAD (JSON) of a QUERY tab. Each tab type has its own
 // payload.
 struct QueryPayload {
@@ -225,6 +228,7 @@ fn remove_tab(mut conn vsql.Connection, tab Tab) ! {
 // the first tab, if there is one.
 fn (a &App) close_tab(mut conn vsql.Connection, tab Tab, active Tab) ! {
 	remove_tab(mut conn, tab)!
+	a.cancel_import(tab.ref(), true)
 	lock a.results {
 		a.results.delete(tab.ref())
 	}

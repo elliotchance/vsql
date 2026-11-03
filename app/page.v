@@ -44,6 +44,8 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		write_alter_table(mut sb, tab, result)
 	} else if tab.tab_type == export_tab {
 		a.write_export(mut sb, mut conn, tab, result)!
+	} else if tab.tab_type == import_tab {
+		a.write_import(mut sb, mut conn, tab)!
 	} else {
 		entries := history(mut conn, tab.catalog, tab.id)!
 
@@ -90,6 +92,12 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 	if result.error != '' && tab.tab_type !in [create_table_tab, alter_table_tab, export_tab] {
 		sb.write_string('<p class="error">${html_escape(result.error)}</p>')
 	}
+	if result.notice != '' {
+		sb.write_string('<p class="notice">${html_escape(result.notice)}</p>')
+	}
+	if tab.tab_type == import_tab {
+		sb.write_string(result.output)
+	}
 	if tab.id != no_tab.id && tab.tab_type == query_tab {
 		sb.write_string(if result.output == '' && result.status == '' {
 			'<p class="empty">Run to see the result.</p>'
@@ -110,6 +118,13 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 	}
 	if tab.tab_type == export_tab {
 		sb.write_string(app_export_js.to_string())
+	}
+	if tab.tab_type == import_tab {
+		sb.write_string(if a.is_importing(tab.ref()) {
+			app_import_progress_js.to_string()
+		} else {
+			app_import_js.to_string()
+		})
 	}
 	if tab.tab_type == create_table_tab {
 		sb.write_string(app_columns_js.to_string() + app_create_table_js.to_string())
@@ -170,10 +185,10 @@ fn write_history_list(mut sb strings.Builder, entries []History, open bool) {
 // table queries it in a new tab. Each tab has a menu to close it. The sidebar can
 // be resized, and a heading or schema collapsed (see app_sidebar.js).
 //
-// Each catalog has a menu to create a schema (see app_schema.js) or export the
-// file (see export.v). Each schema and
+// Each catalog has a menu to create a schema (see app_schema.js), or import
+// (see import.v) or export (see export.v) the file. Each schema and
 // table (other than in INFORMATION_SCHEMA, which can't be changed, and VSQL_APP,
-// which the app needs) has a menu to export or drop it, and a schema to add a table to it
+// which the app needs) has a menu to import, export or drop it, and a schema to add a table to it
 // (see create_table.v). They run in the file of the catalog, so it's not in the
 // SQL.
 fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_tabs []Tab, tab Tab) ! {
@@ -200,6 +215,7 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 
 		sb.write_string('<div class="folder-row catalog-row"><details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
 		sb.write_string('<button type="button" class="create-schema" data-catalog="${html_escape(catalog_name)}">Create schema</button>')
+		sb.write_string('<button type="submit" form="app" name="import:${html_escape(catalog_name)}" value="[]">Import&hellip;</button>')
 		sb.write_string('<button type="submit" form="app" name="export:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
 			'file',
 		]))}">Export&hellip;</button></div></details>')
@@ -217,7 +233,7 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 		for t in catalog_tabs {
 			active := if t.ref() == tab.ref() { ' class="active"' } else { '' }
 			icon := if t.tab_type == history_tab { '&#128337;' } else { '&#128221;' }
-			sb.write_string('<li${active}><button type="submit" form="app" name="goto" value="${html_escape(t.ref())}"><span class="icon" aria-hidden="true">${icon}</span>${html_escape(t.title)}</button>')
+			sb.write_string('<li${active}><button type="submit" form="app" name="goto" value="${html_escape(t.ref())}"><span class="icon" aria-hidden="true">${icon}</span>${html_escape(t.title)}${a.import_mark(t)}</button>')
 			// The menu of a tab (see app_sidebar.js).
 			sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
 			sb.write_string('<button type="submit" form="app" name="close" value="${html_escape(t.ref())}">Close</button></div></details></li>')
@@ -237,6 +253,9 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 				drop_behavior := if tables.len == 0 { 'RESTRICT' } else { 'CASCADE' }
 				sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
 				sb.write_string('<button type="submit" form="app" name="add_table:${html_escape(catalog_name)}" value="${html_escape(schema_sql)}">Add table</button>')
+				sb.write_string('<button type="submit" form="app" name="import:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
+					schema_name,
+				]))}">Import&hellip;</button>')
 				sb.write_string('<button type="submit" form="app" name="export:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
 					'schema',
 					schema_name,
@@ -256,6 +275,10 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 						schema_name,
 						table.entity_name,
 					]))}">Alter table</button>')
+					sb.write_string('<button type="submit" form="app" name="import:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
+						schema_name,
+						table.entity_name,
+					]))}">Import&hellip;</button>')
 					sb.write_string('<button type="submit" form="app" name="export:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
 						'table',
 						schema_name,
@@ -284,7 +307,7 @@ fn (a &App) write_tabs(mut sb strings.Builder, all_tabs []Tab, tab Tab) {
 		active := if t.ref() == tab.ref() { ' active' } else { '' }
 		// With more than one file, it says which file the tab is in.
 		file := if a.catalog_names.len > 1 { ' title="${html_escape(t.catalog)}"' } else { '' }
-		sb.write_string('<span class="tab${active}"><button type="submit" name="goto" value="${html_escape(t.ref())}"${file}>${a.file_dot(t.catalog)}${html_escape(t.title)}</button>')
+		sb.write_string('<span class="tab${active}"><button type="submit" name="goto" value="${html_escape(t.ref())}"${file}>${a.file_dot(t.catalog)}${html_escape(t.title)}${a.import_mark(t)}</button>')
 		sb.write_string('<button type="submit" name="close" value="${html_escape(t.ref())}" class="close" title="Close">&times;</button></span>')
 	}
 	sb.write_string('<button type="submit" name="new" value="" class="new" title="New tab">+</button></div>')
@@ -306,6 +329,11 @@ const app_edit_js = $embed_file('app_edit.js')
 const app_sidebar_js = $embed_file('app_sidebar.js')
 const app_confirm_js = $embed_file('app_confirm.js')
 const app_schema_js = $embed_file('app_schema.js')
+const app_import_js = $embed_file('app_import.js')
+const app_import_progress_js = $embed_file('app_import_progress.js')
+
+// import_formats are the files that can be imported.
+const import_formats = '.sql,.csv,.tsv,.json'
 const app_columns_js = $embed_file('app_columns.js')
 const app_create_table_js = $embed_file('app_create_table.js')
 const app_highlight_js = $embed_file('app_highlight.js')
@@ -332,4 +360,9 @@ fn set_catalog(mut conn vsql.Connection, name string) ! {
 
 fn html_escape(s string) string {
 	return s.replace_each(['&', '&amp;', '<', '&lt;', '>', '&gt;', '"', '&quot;', "'", '&#39;'])
+}
+
+// import_mark is next to the title of a tab that's importing a file.
+fn (a &App) import_mark(t Tab) string {
+	return if a.is_importing(t.ref()) { ' &hellip;' } else { '' }
 }

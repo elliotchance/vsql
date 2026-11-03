@@ -359,3 +359,13 @@ EXPLAIN UPDATE t SET x = 1 WHERE CURRENT OF c;
 -- error 42601: syntax error: Cannot EXPLAIN CLOSE
 -- error 42601: syntax error: Cannot EXPLAIN DELETE WHERE CURRENT OF
 -- error 42601: syntax error: Cannot EXPLAIN UPDATE WHERE CURRENT OF
+
+/* extensions V004-01 */
+START TRANSACTION;
+DECLARE c CURSOR FOR SELECT x FROM t FOR UPDATE OF nope;
+DECLARE c CURSOR FOR SELECT x FROM t FOR UPDATE OF x, nope;
+DECLARE c CURSOR FOR SELECT x FROM t FOR UPDATE OF y;
+-- msg: START TRANSACTION
+-- error 42703: no such column: NOPE
+-- error 42703: no such column: NOPE
+-- msg: DECLARE CURSOR

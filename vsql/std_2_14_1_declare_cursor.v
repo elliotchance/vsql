@@ -85,7 +85,7 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 
 	// A cursor is updatable if it's FOR UPDATE, or if it has no <updatability
 	// clause> and no ORDER BY, and the query is simply updatable. The columns of
-	// FOR UPDATE OF aren't checked (#792).
+	// FOR UPDATE OF must be in the table.
 	//
 	// ISO/IEC 9075-2:2016(E), 14.3, <cursor specification>, Syntax Rules, 4 to 9
 	mut table := ?Identifier(none)
@@ -95,10 +95,14 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 			if !simply_updatable {
 				return sqlstate_42601('cursor ${stmt.name} is not updatable')
 			}
-			table = stmt.table_name(mut conn)!
-		}
-		for column in updatability.columns {
-			update_columns << column.sub_entity_name
+			table_name := stmt.table_name(mut conn)!
+			// create_plan has already found the table.
+			target := unsafe { conn.catalog_for(table_name).storage.tables[table_name.storage_id()] }
+			for column in updatability.columns {
+				target.column(column.sub_entity_name)!
+				update_columns << column.sub_entity_name
+			}
+			table = table_name
 		}
 	} else if simply_updatable && stmt.query.order.len == 0 {
 		table = stmt.table_name(mut conn)!

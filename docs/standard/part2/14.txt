@@ -80,7 +80,7 @@
 14.3/SR/6.c              n/a          - - a prepared query has no <updatability clause>
 14.3/SR/7                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
 14.3/SR/8                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-14.3/SR/9                missing      vsql/std_2_14_1_declare_cursor.v - the columns aren't checked (#792)
+14.3/SR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
 14.3/CR/1                implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
 # 14.4, <open statement>
 14.4                     implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql

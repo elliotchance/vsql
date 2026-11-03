@@ -223,7 +223,6 @@ fn most_specific_type(t1 Type, t2 Type) !Type {
 		return Type{t2.typ, 0, 0, false}
 	}
 
-	// TODO(elliotchance): Is this the correct SQLSTATE?
 	return sqlstate_42601('no supertype of both ${t1} and ${t2}')
 }
 
@@ -325,8 +324,6 @@ pub fn (t Type) str() string {
 			'SMALLINT'
 		}
 		.is_varchar {
-			// TODO(elliotchance): Is this a bug to allow no size for CHARACTER
-			//  VARYING? Need to check standard.
 			if t.size > 0 {
 				'CHARACTER VARYING(${t.size})'
 			} else {

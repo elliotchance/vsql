@@ -308,7 +308,5 @@ fn (n Numeric) reciprocal() Numeric {
 }
 
 fn (n Numeric) trunc() Numeric {
-	// TODO(elliotchance): I'm sure this is not the most efficient way to do this.
-	// Please improve.
 	return new_numeric_from_string(n.str().split('.')[0])
 }

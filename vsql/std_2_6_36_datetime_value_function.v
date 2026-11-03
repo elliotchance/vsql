@@ -47,15 +47,11 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 				return sqlstate_42601('${DatetimeValueFunction(e).pstr(c.params)}: cannot have precision greater than 6')
 			}
 
-			// TODO(elliotchance): Remove this. This is a work around for a bug.
-			//  https://github.com/vlang/v/issues/19748
-			e2 := e
-
 			return CompileResult{
-				run:          fn [e2] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return new_time_value(time_value(conn, e2.prec, true))!
+				run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return new_time_value(time_value(conn, e.prec, true))!
 				}
-				typ:          new_type('TIME WITH TIME ZONE', e2.prec, 0)
+				typ:          new_type('TIME WITH TIME ZONE', e.prec, 0)
 				contains_agg: false
 			}
 		}
@@ -64,16 +60,12 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 				return sqlstate_42601('${DatetimeValueFunction(e).pstr(c.params)}: cannot have precision greater than 6')
 			}
 
-			// TODO(elliotchance): Remove this. This is a work around for a bug.
-			//  https://github.com/vlang/v/issues/19748
-			e2 := e
-
 			return CompileResult{
-				run:          fn [e2] (mut conn Connection, data Row, params map[string]Value) !Value {
+				run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
 					return new_timestamp_value(local_now(conn).strftime('%Y-%m-%d ') +
-						time_value(conn, e2.prec, true))!
+						time_value(conn, e.prec, true))!
 				}
-				typ:          new_type('TIMESTAMP WITH TIME ZONE', e2.prec, 0)
+				typ:          new_type('TIMESTAMP WITH TIME ZONE', e.prec, 0)
 				contains_agg: false
 			}
 		}
@@ -82,15 +74,11 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 				return sqlstate_42601('${DatetimeValueFunction(e).pstr(c.params)}: cannot have precision greater than 6')
 			}
 
-			// TODO(elliotchance): Remove this. This is a work around for a bug.
-			//  https://github.com/vlang/v/issues/19748
-			e2 := e
-
 			return CompileResult{
-				run:          fn [e2] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return new_time_value(time_value(conn, e2.prec, false))!
+				run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return new_time_value(time_value(conn, e.prec, false))!
 				}
-				typ:          new_type('TIME WITHOUT TIME ZONE', e2.prec, 0)
+				typ:          new_type('TIME WITHOUT TIME ZONE', e.prec, 0)
 				contains_agg: false
 			}
 		}
@@ -99,16 +87,12 @@ fn (e DatetimeValueFunction) compile(mut c Compiler) !CompileResult {
 				return sqlstate_42601('${DatetimeValueFunction(e).pstr(c.params)}: cannot have precision greater than 6')
 			}
 
-			// TODO(elliotchance): Remove this. This is a work around for a bug.
-			//  https://github.com/vlang/v/issues/19748
-			e2 := e
-
 			return CompileResult{
-				run:          fn [e2] (mut conn Connection, data Row, params map[string]Value) !Value {
+				run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
 					return new_timestamp_value(local_now(conn).strftime('%Y-%m-%d ') +
-						time_value(conn, e2.prec, false))!
+						time_value(conn, e.prec, false))!
 				}
-				typ:          new_type('TIMESTAMP WITHOUT TIME ZONE', e2.prec, 0)
+				typ:          new_type('TIMESTAMP WITHOUT TIME ZONE', e.prec, 0)
 				contains_agg: false
 			}
 		}

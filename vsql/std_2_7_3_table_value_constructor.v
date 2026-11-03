@@ -40,11 +40,7 @@ mut:
 	conn &Connection
 }
 
-// TODO(elliotchance): It's important we return a pointer, otherwise there's
-//  some weird memory issues where the rows can just disappear sometimes. I
-//  suspect this is just immaturity with the garbage collector and the pointer
-//  may be removed in the future. Run the test suite a few times and if it
-//  passes you're in the clear.
+// It's important we return a pointer, otherwise the rows can disappear.
 fn new_values_operation(rows []RowValueConstructor, correlation Correlation, mut conn Connection, params map[string]Value) !&ValuesOperation {
 	// NEXT VALUE FOR can be in the VALUES of an INSERT (a <from constructor>,
 	// see InsertStatement), but not in a VALUES that's a query. Use "SELECT

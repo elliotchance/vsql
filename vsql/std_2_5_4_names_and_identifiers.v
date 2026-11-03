@@ -509,8 +509,6 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	// 4. A bare table field. A qualified name that didn't match a table above
 	// isn't one (its qualifier mustn't be ignored). Neither is a column of
 	// another table when only the context is in scope.
-	//
-	// TODO(elliotchance): Check for ambiguous field name.
 	for _, table in catalog.storage.tables {
 		if e.entity_name == '' && c.context.entity_name == ''
 			&& table.name.schema_name == ident.schema_name {

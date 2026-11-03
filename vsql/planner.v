@@ -283,7 +283,6 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			}
 		}
 		QueryExpression {
-			// TODO(elliotchance): Needs to increment.
 			mut table_name := Identifier{
 				custom_id: '\$1'
 			}

@@ -273,7 +273,7 @@ fn pluralize
 
    pub fn pluralize(n int, word string) string
 
-TODO(elliotchance): Make private when CLI is moved into vsql package.
+
 
 fn precompile_c
 ---------------
@@ -719,16 +719,13 @@ struct PageObject
    	is_blob_ref bool
    mut:
    	// The tid is the transaction that created the object.
-   	//
-   	// TODO(elliotchance): It makes more sense to construct a new PageObject
-   	//  when changing the tid and xid.
    	tid u64
    	// The xid is the transaciton that deleted the object, or zero if it has
    	// never been deleted.
    	xid u64
    }
 
-TODO(elliotchance): This does not need to be public. It was required for a bug at the time with V not being able to pass this to the shuffle function. At some point in the future remove the pub and see if it works.
+
 
 struct PrecompiledProgram
 -------------------------
@@ -1033,7 +1030,6 @@ struct Value
 
    pub struct Value {
    pub mut:
-   	// TODO(elliotchance): Make these non-mutable.
    	// The type of this Value.
    	typ Type
    	// Used by all types (including those that have NULL built in like BOOLEAN).

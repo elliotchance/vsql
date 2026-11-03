@@ -59,9 +59,6 @@ mut:
 	//
 	//   0 indicates not set - specifically for expiries.
 	//   1 indicates the frozen transaction.
-	//
-	// TODO(elliotchance): Is there a way to avoid incrementing this for read
-	//  only transactions?
 	transaction_id u64
 	// The row_id is the last row ID that was issued for a row in a table without
 	// a PRIMARY KEY. Row IDs are never reused, even if the transaction that

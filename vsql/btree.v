@@ -280,8 +280,6 @@ fn (mut p Btree) add(object PageObject) !int {
 
 	// The key may not be inserted into the existing page (if there was a
 	// split). So be careful to refetch the actual page.
-	//
-	// TODO(elliotchance): This can be improved to avoid the extra search().
 	path, _ = p.search_page(obj.key)!
 	p.fix_parent_pages(path)!
 
@@ -408,10 +406,6 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 	// Update the page head, if the object was inserted at the start of the
 	// left page. It doesn't matter if it was inserted at the start of another
 	// page because those are always added to the parent non-leaf page.
-	//
-	// TODO(elliotchance): I'm not certain that this will work if the head
-	//  object changes to something very large. This code should panic on
-	//  add(). We need a test suite for very long keys.
 	//
 	// The parent's key for the left page may be older than the head of the
 	// page, because removing objects from a page (see isolation_end) does not

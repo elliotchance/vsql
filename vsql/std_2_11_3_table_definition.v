@@ -52,8 +52,8 @@ fn (s TableDefinition) check_limits(table_name Identifier) ! {
 	}
 }
 
-// TODO(elliotchance): A table with only table constraints has no columns, but
-//  it needs at least one column (#787).
+// A table with only table constraints has no columns, but it needs at least one
+// column (#787).
 //
 // ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 9.a
 

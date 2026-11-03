@@ -28,7 +28,6 @@ pub fn (b Boolean) str() string {
 // A single value. It contains it's type information in ``typ``.
 pub struct Value {
 pub mut:
-	// TODO(elliotchance): Make these non-mutable.
 	// The type of this Value.
 	typ Type
 	// Used by all types (including those that have NULL built in like BOOLEAN).

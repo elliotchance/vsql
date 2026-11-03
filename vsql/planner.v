@@ -176,8 +176,8 @@ fn create_table_reference_plan(body QuerySpecification, table_reference TableRef
 				params, mut conn, allow_virtual, false)!
 
 			// Rows store each value by its table and column name, so the same
-			// table can't be used twice. A correlation name isn't compared with the
-			// unqualified name of a table (#776).
+			// table can't be used twice. A correlation name also can't be the
+			// unqualified name of another table.
 			//
 			// ISO/IEC 9075-2:2016(E), 7.5, <from clause>, Syntax Rules, 5.c
 			if table.name.id() in tables {
@@ -187,6 +187,11 @@ fn create_table_reference_plan(body QuerySpecification, table_reference TableRef
 				}
 
 				return sqlstate_42601('table name ${table.name} specified more than once')
+			}
+			for _, other in tables {
+				if is_same_range_variable(table.name, other.name) {
+					return sqlstate_42601('table name ${unqualified_range_variable(table.name)} specified more than once')
+				}
 			}
 			tables[table.name.id()] = table
 
@@ -381,6 +386,22 @@ fn primary_key_value(body QuerySpecification, base_table Table, table Table, par
 	}
 
 	return none
+}
+
+// is_same_range_variable returns true if one name is a table and the other is a
+// correlation name that's the same as the unqualified name of the table. Two
+// tables, or two correlation names, have their full names compared instead.
+//
+// ISO/IEC 9075-2:2016(E), 7.5, <from clause>, Syntax Rules, 5.c.i.2 and 5.c.ii.1
+fn is_same_range_variable(a Identifier, b Identifier) bool {
+	return (a.entity_name != '') != (b.entity_name != '')
+		&& unqualified_range_variable(a) == unqualified_range_variable(b)
+}
+
+// unqualified_range_variable is the name of a table without its catalog and
+// schema, or a correlation name.
+fn unqualified_range_variable(name Identifier) string {
+	return if name.entity_name != '' { name.entity_name } else { name.sub_entity_name }
 }
 
 // add_correlation_plan reads the rows of subplan as the table table_name. A

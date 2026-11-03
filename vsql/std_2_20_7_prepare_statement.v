@@ -206,7 +206,7 @@ fn (mut t ModuleTokens) dynamic_open_statement(p ExternallyInvokedProcedure, cur
 	t.end_of_statement(p)!
 	hold := if cursor.hold { 1 } else { 0 }
 
-	return ModuleStatement{b.sections, b.used, begin('DYNAMIC OPEN', 40) + input +
+	return ModuleStatement{b.sections, b.used, cursor.begin('DYNAMIC OPEN', 40) + input +
 		'  vsql_m_open_dynamic(SQLSTATE, ${cursor.index}, ${c_string(cursor.sql_name)}, ${hold}, ${c_string(cursor.statement)}, &vsql_m_in);\n'}
 }
 
@@ -226,6 +226,6 @@ fn (mut t ModuleTokens) dynamic_fetch_statement(p ExternallyInvokedProcedure, cu
 	t.end_of_statement(p)!
 	call := 'vsql_m_fetch_dynamic(SQLSTATE, ${cursor.index}, &vsql_m_out)'
 
-	return ModuleStatement{b.sections, b.used, begin('DYNAMIC FETCH', 39) + output +
+	return ModuleStatement{b.sections, b.used, cursor.begin('DYNAMIC FETCH', 39) + output +
 		assign_targets(call, assignments)}
 }

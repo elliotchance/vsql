@@ -33,9 +33,9 @@ fn (mut t ModuleTokens) close_statement(p ExternallyInvokedProcedure, cursors []
 	// ISO/IEC 9075-2:2016(E), 20.22, <dynamic close statement>, Syntax Rules, 1
 	// ISO/IEC 9075-2:2016(E), 20.22, <dynamic close statement>, General Rules, 1 to 3
 	command := if cursor.statement == '' {
-		begin('CLOSE CURSOR', 9)
+		cursor.begin('CLOSE CURSOR', 9)
 	} else {
-		begin('DYNAMIC CLOSE', 37)
+		cursor.begin('DYNAMIC CLOSE', 37)
 	}
 
 	return ModuleStatement{['connection', 'cursor', 'close'], [], command +

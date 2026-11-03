@@ -141,17 +141,17 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []M
 		DeleteStatementPositioned {
 			cursor := find_module_cursor(cursors, stmt.cursor_name, p)!
 			execute_statement(text_sql, references, p, if cursor.statement == '' {
-				begin('DELETE CURSOR', 18)
+				cursor.begin('DELETE CURSOR', 18)
 			} else {
-				begin('DYNAMIC DELETE CURSOR', 38)
+				cursor.begin('DYNAMIC DELETE CURSOR', 38)
 			})!
 		}
 		UpdateStatementPositioned {
 			cursor := find_module_cursor(cursors, stmt.cursor_name, p)!
 			execute_statement(text_sql, references, p, if cursor.statement == '' {
-				begin('UPDATE CURSOR', 81)
+				cursor.begin('UPDATE CURSOR', 81)
 			} else {
-				begin('DYNAMIC UPDATE CURSOR', 42)
+				cursor.begin('DYNAMIC UPDATE CURSOR', 42)
 			})!
 		}
 		else {

@@ -57,6 +57,13 @@ static void get_co(char *sqlstate, long n, struct condition *co) {
                 co->connection, co->server, co->table);
 }
 
+#define CHECK_CURSOR(expected)                                                 \
+  do {                                                                         \
+    char cursor[CHARS(10)];                                                    \
+    EXPECT(get_cursor_name(sqlstate, cursor), "00000");                        \
+    CHECK(strcmp(cursor, expected) == 0);                                      \
+  } while (0)
+
 #define CHECK(condition)                                                       \
   do {                                                                         \
     if (!(condition)) {                                                        \
@@ -294,8 +301,12 @@ int main(void) {
   x = 3;
   strcpy(v, "three");
   EXPECT(insert_cur(sqlstate, &x, v), "00000");
+  /* The CURSOR_NAME of an invalid cursor state is the canonical name of the
+   * cursor. */
   EXPECT(fetch_c1(sqlstate, &x, v3, &i), "24000");
+  CHECK_CURSOR("C1");
   EXPECT(close_c1(sqlstate), "24000");
+  CHECK_CURSOR("C1");
 
   /* 14.4 <open statement> with the host parameter of the procedure. */
   x = 2;
@@ -303,9 +314,14 @@ int main(void) {
   EXPECT(get_st(sqlstate, &st), "00000");
   CHECK(strcmp(st.function, "OPEN") == 0 && st.code == 53);
   EXPECT(open_c1(sqlstate, &x), "24000");
+  CHECK_CURSOR("C1");
 
   /* 14.5 <fetch statement>, and positioned UPDATE and DELETE. */
   EXPECT(delete_c1(sqlstate), "24000");
+  CHECK_CURSOR("C1");
+  strcpy(v, "TWO");
+  EXPECT(update_c1(sqlstate, v), "24000");
+  CHECK_CURSOR("C1");
   EXPECT(fetch_c1(sqlstate, &x, v3, &i), "00000");
   CHECK(x == 2 && strcmp(v3, "two") == 0 && i == 3);
   strcpy(v, "TWO");
@@ -319,7 +335,9 @@ int main(void) {
   EXPECT(get_st(sqlstate, &st), "00000");
   CHECK(strcmp(st.function, "DELETE CURSOR") == 0 && st.code == 18);
   EXPECT(delete_c1(sqlstate), "24000");
+  CHECK_CURSOR("C1");
   EXPECT(fetch_c1(sqlstate, &x, v3, &i), "02000");
+  CHECK_CURSOR("");
   EXPECT(get_st(sqlstate, &st), "00000");
   CHECK(strcmp(st.function, "FETCH") == 0 && st.code == 45);
 
@@ -334,6 +352,7 @@ int main(void) {
   /* A commit closes a cursor that isn't holdable. */
   EXPECT(commit_work(sqlstate), "00000");
   EXPECT(fetch_c1(sqlstate, &x, v3, &i), "24000");
+  CHECK_CURSOR("C1");
 
   /* A holdable cursor stays open, but must be fetched again before its row
    * can be changed. A rollback closes it. */
@@ -342,11 +361,13 @@ int main(void) {
   CHECK(x == 1);
   EXPECT(commit_work(sqlstate), "00000");
   EXPECT(delete_held(sqlstate), "24000");
+  CHECK_CURSOR("held");
   EXPECT(fetch_held(sqlstate, &x), "00000");
   CHECK(x == 2);
   EXPECT(delete_held(sqlstate), "00000");
   EXPECT(rollback_work(sqlstate), "00000");
   EXPECT(fetch_held(sqlstate, &x), "24000");
+  CHECK_CURSOR("held");
 
   /* The number of columns of SELECT * is checked when it's fetched. */
   EXPECT(open_all(sqlstate), "00000");
@@ -384,6 +405,7 @@ int main(void) {
   EXPECT(other_fetch(sqlstate, &x), "00000");
   EXPECT(other_close(sqlstate), "00000");
   EXPECT(other_close(sqlstate), "24000");
+  CHECK_CURSOR("C2");
   EXPECT(fetch_c1(sqlstate, &x, v3, &i), "00000");
   EXPECT(close_c1(sqlstate), "00000");
 
@@ -501,7 +523,9 @@ int main(void) {
   EXPECT(set_int(sqlstate, &n, &x), "00000");
   EXPECT(open_dc_descriptor(sqlstate), "00000");
   EXPECT(deallocate_s2(sqlstate), "24000");
+  CHECK_CURSOR("DC");
   EXPECT(prepare_s2(sqlstate), "24000");
+  CHECK_CURSOR("DC");
   EXPECT(describe_s1(sqlstate), "00000");
   EXPECT(fetch_dc_descriptor(sqlstate), "00000");
   n = 1;
@@ -518,10 +542,19 @@ int main(void) {
   EXPECT(close_dc(sqlstate), "00000");
   EXPECT(get_st(sqlstate, &st), "00000");
   CHECK(st.code == 37 && strcmp(st.function, "DYNAMIC CLOSE") == 0);
+  EXPECT(close_dc(sqlstate), "24000");
+  CHECK_CURSOR("DC");
+  EXPECT(fetch_dc(sqlstate, &x, v), "24000");
+  CHECK_CURSOR("DC");
 
   /* A dynamic cursor with host parameters, and a positioned UPDATE. */
   min = 0;
   EXPECT(open_dc(sqlstate, &min), "00000");
+  strcpy(v, "uno");
+  EXPECT(update_dc(sqlstate, v), "24000");
+  CHECK_CURSOR("DC");
+  EXPECT(delete_dc(sqlstate), "24000");
+  CHECK_CURSOR("DC");
   EXPECT(fetch_dc(sqlstate, &x, v), "00000");
   CHECK(x == 1 && strcmp(v, "one") == 0);
   strcpy(v, "uno");
@@ -529,6 +562,7 @@ int main(void) {
   EXPECT(get_st(sqlstate, &st), "00000");
   CHECK(st.code == 42 && st.rows == 1);
   EXPECT(fetch_dc(sqlstate, &x, v), "22002");
+  CHECK_CURSOR("");
   EXPECT(delete_dc(sqlstate), "00000");
   EXPECT(close_dc(sqlstate), "00000");
   EXPECT(deallocate_s2(sqlstate), "00000");

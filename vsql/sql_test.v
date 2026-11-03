@@ -2321,13 +2321,13 @@ PROCEDURE upd (SQLSTATE, :y VARCHAR(5)); UPDATE t SET y = :y WHERE CURRENT OF "c
 DECLARE d CURSOR FOR SELECT * FROM t;',
 		'm')!
 	assert m.source.contains('static const int vsql_m_cursor_count = 2;')
-	assert m.source.contains('  vsql_m_begin("OPEN", 53);\n  struct vsql_m_param vsql_m_p[1] = {\n')
+	assert m.source.contains('  vsql_m_begin("OPEN", 53);\n  vsql_m_da.cursor_name = "c";\n  struct vsql_m_param vsql_m_p[1] = {\n')
 	assert m.source.contains('  vsql_m_open_cursor(SQLSTATE, 0, "\\"c\\"", 1, "SELECT x, y FROM t WHERE x > CAST(? AS INTEGER)", 1, vsql_m_p);\n')
-	assert m.source.contains('  vsql_m_begin("FETCH", 45);\n  struct vsql_m_target vsql_m_t[2] = {\n')
+	assert m.source.contains('  vsql_m_begin("FETCH", 45);\n  vsql_m_da.cursor_name = "c";\n  struct vsql_m_target vsql_m_t[2] = {\n')
 	assert m.source.contains('  if (vsql_m_fetch(SQLSTATE, 0, 2, vsql_m_t)) {\n    *i = (short)vsql_m_t[1].indicator;\n  }\n')
 	assert m.source.contains('  vsql_m_fetch(SQLSTATE, 1, 1, vsql_m_t);\n')
-	assert m.source.contains('  vsql_m_begin("CLOSE CURSOR", 9);\n  vsql_m_close_cursor(SQLSTATE, 0);\n')
-	assert m.source.contains('  vsql_m_begin("DELETE CURSOR", 18);\n  vsql_m_execute(SQLSTATE, "DELETE FROM t WHERE CURRENT OF \\"c\\"", 0, NULL);\n')
+	assert m.source.contains('  vsql_m_begin("CLOSE CURSOR", 9);\n  vsql_m_da.cursor_name = "c";\n  vsql_m_close_cursor(SQLSTATE, 0);\n')
+	assert m.source.contains('  vsql_m_begin("DELETE CURSOR", 18);\n  vsql_m_da.cursor_name = "c";\n  vsql_m_execute(SQLSTATE, "DELETE FROM t WHERE CURRENT OF \\"c\\"", 0, NULL);\n')
 	assert m.source.contains('  vsql_m_begin("UPDATE CURSOR", 81);\n')
 
 	// A cursor can be declared at the start of the module, and the cursors
@@ -2412,9 +2412,9 @@ PROCEDURE up (SQLSTATE); UPDATE t SET x = 1 WHERE CURRENT OF dc;',
 	assert m.source.contains('  struct vsql_m_output vsql_m_out = {2, vsql_m_t, NULL, NULL};\n  if (vsql_m_execute_prepared(SQLSTATE, "S", &vsql_m_in, &vsql_m_out)) {\n    *i = (long)vsql_m_t[1].indicator;\n  }\n')
 	assert m.source.contains('  struct vsql_m_input vsql_m_in = {0, NULL, "G", NULL};\n  struct vsql_m_output vsql_m_out = {0, NULL, "D", &vsql_m_own};\n')
 	assert m.source.contains('  vsql_m_begin("EXECUTE IMMEDIATE", 43);\n  vsql_m_execute_immediate(SQLSTATE, "DELETE FROM t");\n')
-	assert m.source.contains('  vsql_m_begin("DYNAMIC OPEN", 40);\n  struct vsql_m_input vsql_m_in = {-1, NULL, NULL, NULL};\n  vsql_m_open_dynamic(SQLSTATE, 1, "\\"DC\\"", 1, "S", &vsql_m_in);\n')
+	assert m.source.contains('  vsql_m_begin("DYNAMIC OPEN", 40);\n  vsql_m_da.cursor_name = "DC";\n  struct vsql_m_input vsql_m_in = {-1, NULL, NULL, NULL};\n  vsql_m_open_dynamic(SQLSTATE, 1, "\\"DC\\"", 1, "S", &vsql_m_in);\n')
 	assert m.source.contains('  struct vsql_m_input vsql_m_in = {1, vsql_m_p, NULL, NULL};\n  vsql_m_open_dynamic(')
-	assert m.source.contains('  vsql_m_begin("DYNAMIC FETCH", 39);\n  struct vsql_m_target vsql_m_t[1] = {\n')
+	assert m.source.contains('  vsql_m_begin("DYNAMIC FETCH", 39);\n  vsql_m_da.cursor_name = "DC";\n  struct vsql_m_target vsql_m_t[1] = {\n')
 	assert m.source.contains('  vsql_m_fetch_dynamic(SQLSTATE, 1, &vsql_m_out);\n')
 	assert m.source.contains('  struct vsql_m_output vsql_m_out = {0, NULL, "D", &vsql_m_own};\n  vsql_m_fetch_dynamic(')
 	assert m.source.contains('  vsql_m_begin("DYNAMIC CLOSE", 37);\n')

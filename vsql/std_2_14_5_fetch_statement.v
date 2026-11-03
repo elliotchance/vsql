@@ -73,6 +73,6 @@ fn (mut t ModuleTokens) fetch_statement(p ExternallyInvokedProcedure, cursors []
 	targets_c, assignments := bind_targets(targets, p, mut b)!
 	call := 'vsql_m_fetch(SQLSTATE, ${cursor.index}, ${targets.len}, vsql_m_t)'
 
-	return ModuleStatement{b.sections, b.used, begin('FETCH', 45) + targets_c +
+	return ModuleStatement{b.sections, b.used, cursor.begin('FETCH', 45) + targets_c +
 		assign_targets(call, assignments)}
 }

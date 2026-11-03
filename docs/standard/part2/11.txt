@@ -75,7 +75,7 @@
 11.3/SR/7                implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
 11.3/SR/8                definition   - -
 11.3/SR/9                container    - -
-11.3/SR/9.a              deviates     vsql/std_2_11_3_table_definition.v tests/create-table.sql a table with only table constraints has no columns (#787)
+11.3/SR/9.a              implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
 11.3/SR/9.b              n/a          - - <like clause> (T171)
 11.3/SR/9.b.i            n/a          - - <like clause> (T171)
 11.3/SR/9.b.ii           n/a          - - <like clause> (T171)

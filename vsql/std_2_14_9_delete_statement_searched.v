@@ -8,7 +8,9 @@ import time
 
 struct DeleteStatementSearched {
 	table_name Identifier
-	where      ?BooleanValueExpression
+	// correlation_name is empty if there isn't one.
+	correlation_name Identifier
+	where            ?BooleanValueExpression
 	// current_of is the cursor of a positioned DELETE, which only deletes its
 	// current row (see DeleteStatementPositioned).
 	current_of ?&Cursor

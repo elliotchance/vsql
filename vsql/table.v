@@ -593,7 +593,7 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 		for row in subplan.execute([]Row{})! {
 			mut data := map[string]Value{}
 			for k, v in row.data {
-				data['${o.table_name}.${names[k] or { k }}'] = v
+				data['${o.table_name.id()}.${names[k] or { k }}'] = v
 			}
 
 			// The id is kept for a cursor, see ExprOperation.execute.

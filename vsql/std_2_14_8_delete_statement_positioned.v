@@ -7,15 +7,18 @@ import time
 // Delete a row of a table.
 
 struct DeleteStatementPositioned {
-	table_name  Identifier
-	cursor_name string
+	table_name Identifier
+	// correlation_name is empty if there isn't one.
+	correlation_name Identifier
+	cursor_name      string
 }
 
 fn (stmt DeleteStatementPositioned) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	mut cursor := conn.current_row(stmt.cursor_name, stmt.table_name)!
 	result := DeleteStatementSearched{
-		table_name: stmt.table_name
-		current_of: cursor
+		table_name:       stmt.table_name
+		correlation_name: stmt.correlation_name
+		current_of:       cursor
 	}.execute(mut conn, params, elapsed_parse)!
 
 	// The cursor is then before the next row, or after the last row.

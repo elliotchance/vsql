@@ -7,9 +7,11 @@ import time
 // Update a row of a table.
 
 struct UpdateStatementPositioned {
-	table_name  Identifier
-	set         []SetClause
-	cursor_name string
+	table_name Identifier
+	// correlation_name is empty if there isn't one.
+	correlation_name Identifier
+	set              []SetClause
+	cursor_name      string
 }
 
 fn (stmt UpdateStatementPositioned) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
@@ -32,9 +34,10 @@ fn (stmt UpdateStatementPositioned) execute(mut conn Connection, params map[stri
 	//
 	// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 12
 	return UpdateStatementSearched{
-		table_name: stmt.table_name
-		set:        stmt.set
-		current_of: cursor
+		table_name:       stmt.table_name
+		correlation_name: stmt.correlation_name
+		set:              stmt.set
+		current_of:       cursor
 	}.execute(mut conn, params, elapsed_parse)
 }
 

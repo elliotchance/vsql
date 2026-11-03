@@ -2257,6 +2257,8 @@ fn test_command_function() {
 		'FETCH c':                               'FETCH 45'
 		'OPEN c':                                'OPEN 53'
 		'UPDATE t SET x = 1 WHERE CURRENT OF c': 'UPDATE CURSOR 81'
+		'DELETE FROM t u WHERE CURRENT OF c':    'DELETE CURSOR 18'
+		'UPDATE t u SET x=1 WHERE CURRENT OF c': 'UPDATE CURSOR 81'
 	} {
 		stmt := db.prepare(sql)!
 		name, code := stmt.command_function()
@@ -2438,7 +2440,9 @@ PROCEDURE f2 (SQLSTATE, :x INTEGER); FETCH FROM d INTO :x;
 PROCEDURE f3 (SQLSTATE, :x INTEGER, :y INTEGER); FETCH "c" INTO :x, :y;
 PROCEDURE cl (SQLSTATE); CLOSE "c";
 PROCEDURE del (SQLSTATE); DELETE FROM t WHERE CURRENT OF "c";
-PROCEDURE upd (SQLSTATE, :y VARCHAR(5)); UPDATE t SET y = :y WHERE CURRENT OF "c";',
+PROCEDURE upd (SQLSTATE, :y VARCHAR(5)); UPDATE t SET y = :y WHERE CURRENT OF "c";
+PROCEDURE del2 (SQLSTATE); DELETE FROM t AS u WHERE CURRENT OF "c";
+PROCEDURE upd2 (SQLSTATE); UPDATE t AS u SET y = u.y WHERE CURRENT OF "c";',
 		'm')!
 	assert m.source.contains('static const int vsql_m_cursor_count = 2;')
 	assert m.source.contains('  vsql_m_begin("OPEN", 53);\n  vsql_m_da.cursor_name = "c";\n  struct vsql_m_param vsql_m_p[1] = {\n')
@@ -2449,6 +2453,8 @@ PROCEDURE upd (SQLSTATE, :y VARCHAR(5)); UPDATE t SET y = :y WHERE CURRENT OF "c
 	assert m.source.contains('  vsql_m_begin("CLOSE CURSOR", 9);\n  vsql_m_da.cursor_name = "c";\n  vsql_m_close_cursor(SQLSTATE, 0);\n')
 	assert m.source.contains('  vsql_m_begin("DELETE CURSOR", 18);\n  vsql_m_da.cursor_name = "c";\n  vsql_m_execute(SQLSTATE, "DELETE FROM t WHERE CURRENT OF \\"c\\"", 0, NULL);\n')
 	assert m.source.contains('  vsql_m_begin("UPDATE CURSOR", 81);\n')
+	assert m.source.contains('  vsql_m_begin("DELETE CURSOR", 18);\n  vsql_m_da.cursor_name = "c";\n  vsql_m_execute(SQLSTATE, "DELETE FROM t AS u WHERE CURRENT OF \\"c\\"", 0, NULL);\n')
+	assert m.source.contains('  vsql_m_begin("UPDATE CURSOR", 81);\n  vsql_m_da.cursor_name = "c";\n  vsql_m_execute(SQLSTATE, "UPDATE t AS u SET y = u.y WHERE CURRENT OF \\"c\\"", 0, NULL);\n')
 
 	// The cursors aren't in a module that doesn't have any. The SQL-connections
 	// still have a list of the cursors of each module, since they're shared with

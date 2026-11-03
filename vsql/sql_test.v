@@ -57,7 +57,11 @@ fn get_tests() ![]SQLTest {
 		mut extensions := []string{}
 		for line in lines {
 			if line == '' {
-				tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions}
+				// A block with only a setup or comments isn't a test. A block
+				// with only an expected output is kept, so that it fails.
+				if stmts.len > 0 || expected.len > 0 {
+					tests << SQLTest{setup, test_file_path, line_number, stmts, expected.join('\n'), show_types, show_flags, extensions}
+				}
 				stmts = []
 				expected = []
 				in_setup = false
@@ -309,6 +313,13 @@ fn (test SQLTest) modes() []SQLTestMode {
 	return modes
 }
 
+// statement_count is how many SQL statements the test runs in each mode,
+// including its setup. Each SQL statement starts with a new line, unlike the
+// directives that are also in stmts.
+fn (test SQLTest) statement_count() int {
+	return test.setup.len + test.stmts.filter(it.starts_with('\n')).len
+}
+
 // through_server is true if the statements of the test are sent to a Server
 // from a PostgreSQL client over TCP (in each mode). One server is shared by all
 // of the tests. The server can't run a test that uses something only the V
@@ -346,6 +357,7 @@ fn test_all() ! {
 	// passing ones) so we keep our own count of the SQL tests.
 	mut passed := 0
 	mut failed := []string{}
+	mut statements := 0
 	mut flagged := map[string]bool{}
 	defer {
 		os.rmdir_all(sql_test_dir()) or {}
@@ -370,6 +382,7 @@ fn test_all() ! {
 		if skipped {
 			continue
 		}
+		statements += test.statement_count()
 		if failed_modes.len > 0 {
 			failed << '${test.file_name}:${test.line_number} (${failed_modes.join(', ')})'
 		} else {
@@ -377,7 +390,7 @@ fn test_all() ! {
 		}
 	}
 
-	println('SQL tests: ${passed} passed, ${failed.len} failed, ${passed + failed.len} total')
+	println('SQL tests: ${passed} passed, ${failed.len} failed, ${passed + failed.len} total, ${statements} statements')
 	for location in failed {
 		println('  FAILED ${location}')
 	}

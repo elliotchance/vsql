@@ -718,7 +718,7 @@ location of each failed test:
 
 .. code-block:: text
 
-   SQL tests: 1549 passed, 1 failed, 1550 total
+   SQL tests: 1549 passed, 1 failed, 1550 total, 3120 statements
      FAILED tests/arithmetic.sql:3 (in memory through server, on disk through server)
 
 The "Summary for running V tests" line printed by V does not include failed

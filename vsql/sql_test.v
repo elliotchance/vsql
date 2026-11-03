@@ -331,6 +331,7 @@ fn (test SQLTest) through_server() bool {
 		&& !test.stmts.any(it.starts_with('fault ') || it.starts_with('disconnect ')
 			|| it.starts_with('create_catalog ') || it.starts_with('virtual_table ')
 			|| it == 'out' || it == 'in' || it.starts_with('clock '))
+		&& !test.stmts.any(is_empty_query(it))
 }
 
 fn test_all() ! {
@@ -994,6 +995,8 @@ fn (mut c PGTestClient) query(stmt string) !SQLTestOutput {
 					}
 				}
 			}
+			// EmptyQueryResponse: there's no result, see test_server_empty_query.
+			`I` {}
 			// The server sends XX000 (internal_error) for an error that isn't a
 			// SQLSTATE, which the library reports as 00000.
 			`E`, `N` {
@@ -1169,6 +1172,33 @@ fn test_server_host() ! {
 	} else {
 		assert err.msg().starts_with('cannot listen on 192.0.2.1:0: ')
 	}
+}
+
+// A query without a statement has an empty response from the server, even if
+// the option could change it into a statement. It's an error for the library,
+// see tests/bracketed-comments.sql. A query that can't be tokenized isn't empty.
+fn test_server_empty_query() ! {
+	mut server := start_sql_test_server_with(ServerOptions{
+		select_without_from: true
+		connect:             fn (database string) !&Connection {
+			return open(':memory:')
+		}
+	})!
+	defer {
+		server.stop() or {}
+	}
+	mut client := new_pg_test_client(server.port()!, 'db')!
+
+	for query in ['', ' ', ';', ' ; ; ', '/* x */;', '/* SELECT */', '-- x'] {
+		output := client.query(query)!
+		assert output.error == '', query
+		assert output.msg == '', query
+		assert output.rows.len == 0, query
+	}
+
+	assert client.query('/* x')!.error != ''
+	assert client.query('EXPLAIN /* x */;')!.error == 'error 42601: syntax error: unexpected \$end'
+	assert client.query('VALUES 1;')!.rows == ['COL1: 1']
 }
 
 fn test_server_client_errors() ! {

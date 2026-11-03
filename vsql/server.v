@@ -184,6 +184,15 @@ fn (s &Server) log(message string) {
 	}
 }
 
+// is_empty_query is true if a query only has white space, comments and
+// semicolons. A query that can't be tokenized isn't empty, so that its error is
+// returned.
+fn is_empty_query(query string) bool {
+	tokens := tokenize(query) or { return false }
+
+	return tokens.all(it.token == token_operator_semicolon)
+}
+
 fn (s &Server) handle_conn(mut db Connection, mut conn PGConn) ! {
 	// We need to register some dummy functions commonly used in the connection
 	// phase.
@@ -205,6 +214,15 @@ fn (s &Server) handle_conn(mut db Connection, mut conn PGConn) ! {
 		match msg_type {
 			`Q` { // Query
 				mut query := conn.read_query()!
+
+				// Only the reply of the server is different. The standard has no
+				// empty statement, so it's still an error for Connection.query.
+				if is_empty_query(query) {
+					s.log('query: ${query}')
+					conn.write_empty_query_response()!
+					conn.write_ready_for_query()!
+					continue
+				}
 
 				// A missing "FROM" clause is valid in PostgreSQL, but it's not
 				// valid in the SQL standard so it's not supported by vsql.

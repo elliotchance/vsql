@@ -79,14 +79,16 @@ VALUES CAST(CAST(1.24 AS DECIMAL(6, 2)) / CAST(1.5 AS DECIMAL(6, 3)) AS DECIMAL(
 VALUES CAST(1.23 AS DECIMAL(3,2)) / 5;
 -- COL1: 0.24 (DECIMAL(8, 2))
 
+-- # A DECIMAL has exactly the scale of its type (#223), so 1.23 / 5 is 0.24,
+-- # not 0.246, before it's cast.
 /* types */
 VALUES CAST(CAST(1.23 AS DECIMAL(3,2)) / 5 AS DECIMAL(4, 3));
--- COL1: 0.246 (DECIMAL(4, 3))
+-- COL1: 0.240 (DECIMAL(4, 3))
 
 -- # This is an important case because it's described in detail in the docs for
 -- # DECIMAL vs DECIMAL.
 VALUES CAST(1.23 AS DECIMAL(3,2)) / 5 * 5;
--- COL1: 1.23
+-- COL1: 1.20
 
 -- # This is an important case because it's described in detail in the docs for
 -- # DECIMAL vs DECIMAL.
@@ -110,7 +112,11 @@ VALUES CAST(1 AS DECIMAL(2,1)) / CAST(3 AS DECIMAL(2,1));
 -- COL1: 0.33
 
 VALUES CAST(CAST(1 AS DECIMAL(2,1)) / CAST(3 AS DECIMAL(2,1)) AS DECIMAL(10, 8));
--- COL1: 0.33333333
+-- COL1: 0.33000000
+
+-- # DECIMAL and NUMERIC give the same values.
+VALUES CAST(CAST(1 AS NUMERIC(2,1)) / CAST(3 AS NUMERIC(2,1)) AS NUMERIC(10, 8));
+-- COL1: 0.33000000
 
 VALUES CAST(8.25 AS DECIMAL(5,2)) > 1;
 -- COL1: TRUE

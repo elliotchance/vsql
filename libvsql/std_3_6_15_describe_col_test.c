@@ -51,6 +51,47 @@ UTEST_F(db, 6_15_describe_col_varchar) {
   EXPECT_EQ(col.nullable, SQL_NULLABLE);
 }
 
+UTEST_F(db, 6_15_describe_col_nullable_named_column) {
+  struct column col;
+
+  ASSERT_EQ(select_describe_table(utest_fixture->stmt), SQL_SUCCESS);
+  ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "SELECT a, bb, a + 1 FROM t"),
+            SQL_SUCCESS);
+  EXPECT_EQ(describe(utest_fixture->stmt, 1, &col), SQL_SUCCESS);
+  EXPECT_EQ(col.nullable, SQL_NO_NULLS);
+  EXPECT_EQ(describe(utest_fixture->stmt, 2, &col), SQL_SUCCESS);
+  EXPECT_EQ(col.nullable, SQL_NULLABLE);
+  EXPECT_EQ(describe(utest_fixture->stmt, 3, &col), SQL_SUCCESS);
+  EXPECT_EQ(col.nullable, SQL_NULLABLE);
+}
+
+UTEST_F(db, 6_15_describe_col_nullable_outer_join) {
+  struct column col;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t1 (a INT NOT NULL)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t2 (b INT NOT NULL)"),
+            SQL_SUCCESS);
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "SELECT * FROM t1 LEFT JOIN t2 ON a = b"),
+            SQL_SUCCESS);
+  EXPECT_EQ(describe(utest_fixture->stmt, 1, &col), SQL_SUCCESS);
+  EXPECT_EQ(col.nullable, SQL_NO_NULLS);
+  EXPECT_EQ(describe(utest_fixture->stmt, 2, &col), SQL_SUCCESS);
+  EXPECT_EQ(col.nullable, SQL_NULLABLE);
+  ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "SELECT a, b FROM t1 RIGHT JOIN t2 ON a = b"),
+            SQL_SUCCESS);
+  EXPECT_EQ(describe(utest_fixture->stmt, 1, &col), SQL_SUCCESS);
+  EXPECT_EQ(col.nullable, SQL_NULLABLE);
+  EXPECT_EQ(describe(utest_fixture->stmt, 2, &col), SQL_SUCCESS);
+  EXPECT_EQ(col.nullable, SQL_NO_NULLS);
+}
+
 UTEST_F(db, 6_15_describe_col_numeric) {
   struct column col;
 

@@ -200,10 +200,41 @@ fn cast_character_source(v Value) string {
 		.is_timestamp_with_time_zone, .is_timestamp_without_time_zone {
 			v.time_value().str_literal()
 		}
+		.is_double_precision {
+			approximate_character_string(v.f64_value().str())
+		}
+		.is_real {
+			approximate_character_string(f32(v.f64_value()).str())
+		}
 		else {
 			v.str()
 		}
 	}
+}
+
+// approximate_character_string converts the shortest representation of an
+// approximate number (such as "-123.0" or "1.234567e+06") to the form of a cast
+// to a character string: one non-zero digit, a period, an unsigned integer and
+// an exponent (such as "-1.23E2" or "1.234567E6"). The period is always required,
+// so one is "1.0E0". Zero is "0E0", which has no sign even if it's negative.
+//
+// ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 11.b and 12.b
+fn approximate_character_string(shortest string) string {
+	parts := shortest.trim_left('-').split('e')
+	all_digits := parts[0].replace('.', '')
+	significant := all_digits.trim_left('0')
+	if significant == '' {
+		return '0E0'
+	}
+
+	sign := if shortest.starts_with('-') { '-' } else { '' }
+	fraction := significant[1..].trim_right('0')
+	mut exponent := parts[0].all_before('.').len - 1 - (all_digits.len - significant.len)
+	if parts.len == 2 {
+		exponent += parts[1].int()
+	}
+
+	return '${sign}${significant[..1]}.${if fraction == '' { '0' } else { fraction }}E${exponent}'
 }
 
 fn cast_datetime(conn Connection, v Value, t Type) !Value {

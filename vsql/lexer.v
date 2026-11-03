@@ -314,8 +314,10 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 				word = unescape_unicode(word, escape)!
 			}
 			check_noncharacters(word)!
+			// The character repertoire is always UCS, so the value is normalized
+			// (5.3 General Rule 2), after a compound literal is put together.
 			tokens << Token{token_literal_string, YYSymType{
-				v: new_character_value(word)
+				v: new_character_value(normalize_nfc(word))
 			}}
 			unsafe {
 				goto next

@@ -50,7 +50,7 @@
 5.2/CR/5                 n/a          - - large objects (T041)
 5.2/CR/6                 n/a          - - large objects (T041)
 # 5.3, <literal>
-5.3                      partial      vsql/std_2_5_3_literal.v tests/literal.sql character string literals aren't normalized (#762); no national (F421), binary (T021) or interval (F052) literals
+5.3                      partial      vsql/std_2_5_3_literal.v tests/literal.sql no national (F421), binary (T021) or interval (F052) literals
 5.3/SR/1                 implemented  vsql/lexer.v tests/literal.sql
 5.3/SR/2                 implemented  vsql/lexer.v tests/unicode-escapes.sql
 5.3/SR/3                 implemented  vsql/lexer.v tests/unicode-escapes.sql
@@ -93,7 +93,7 @@
 5.3/SR/34                n/a          - - intervals (F052)
 5.3/SR/35                implemented  vsql/time.v tests/time.sql
 5.3/GR/1                 implemented  vsql/lexer.v tests/unicode.sql the source and the literal are both UTF8
-5.3/GR/2                 missing      - - #762
+5.3/GR/2                 implemented  vsql/lexer.v tests/literal-normalization.sql
 5.3/GR/3                 implemented  vsql/std_2_5_3_literal.v tests/literal.sql
 5.3/GR/4                 implemented  vsql/std_2_5_3_literal.v tests/literal.sql
 5.3/GR/5                 implemented  vsql/std_2_5_3_literal.v tests/approximate-errors.sql

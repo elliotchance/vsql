@@ -154,11 +154,27 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 
 	mut plan := Plan{}
 	before_left := tables.keys()
+	first_table := tables.len
 	plan.subplans['\$1'] = create_table_reference_plan(body, join.left_table,
 		params, mut conn, allow_virtual, mut tables)!
 	before_right := tables.keys()
 	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table,
 		params, mut conn, allow_virtual, mut tables)!
+	left_columns := plan.subplans['\$1'].columns()
+	right_columns := plan.subplans['\$2'].columns()
+
+	range_variable := '\$USING${tables.len}'
+	mut common_columns := []CommonColumn{}
+	specification := match join.specification {
+		BooleanValueExpression {
+			join.specification
+		}
+		[]Identifier {
+			common_columns = new_common_columns(join.specification, join.join_type, left_columns,
+				right_columns, range_variable)!
+			join_equalities(common_columns)
+		}
+	}
 
 	mut join_tables := tables.clone()
 	for name in outside_join {
@@ -175,7 +191,7 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 		tables:                 join_tables
 		next_value_not_allowed: 'a join condition'
 	}
-	join.specification.compile(mut c)!
+	specification.compile(mut c)!
 
 	// The tables on the side that isn't preserved can be all NULLs, whatever
 	// their columns are declared as.
@@ -193,10 +209,51 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 		}
 	}
 
-	plan.operations << new_join_operation(plan.subplans['\$1'].columns(), join.join_type,
-		plan.subplans['\$2'].columns(), join.specification, params, conn, plan, join_tables)
+	plan.operations << new_join_operation(left_columns, join.join_type, right_columns,
+		specification, common_columns, params, conn, plan, join_tables)
+
+	if common_columns.len > 0 {
+		tables = add_common_columns_range_variable(tables, first_table, range_variable,
+			common_columns)
+	}
 
 	return plan
+}
+
+// add_common_columns_range_variable moves the common columns out of the range
+// variables of both sides of a named columns join and into a new range variable
+// with an implementation-dependent name. So only an unqualified name can
+// reference a common column, and "t.*" doesn't include it. The new range variable
+// goes before the tables of the join (from first_table) because its columns are
+// first in "SELECT *".
+//
+// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 10.a.ii, 10.f.iv and 11.a.i
+fn add_common_columns_range_variable(tables map[string]Table, first_table int, range_variable string, common_columns []CommonColumn) map[string]Table {
+	mut hidden := map[string]bool{}
+	for common in common_columns {
+		hidden[common.left.name.id()] = true
+		hidden[common.right.name.id()] = true
+	}
+
+	mut new_tables := map[string]Table{}
+	mut i := 0
+	for name, table in tables {
+		if i == first_table {
+			new_tables[range_variable] = Table{
+				name:    Identifier{
+					custom_id: range_variable
+				}
+				columns: common_columns.map(it.column)
+			}
+		}
+		new_tables[name] = Table{
+			...table
+			columns: table.columns.filter(it.name.id() !in hidden)
+		}
+		i++
+	}
+
+	return new_tables
 }
 
 fn create_table_reference_plan(body QuerySpecification, table_reference TableReference, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]Table) !Plan {
@@ -847,6 +904,15 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 				}
 			}
 		}
+	}
+
+	// "t.*" has no columns if t only has common columns of a <joined table>, but a
+	// table has to have at least one column.
+	//
+	// ISO/IEC 9075-2:2016(E), 4.15, Tables
+	// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 8.g.i
+	if columns.len == 0 {
+		return sqlstate_42601('the select list has no columns')
 	}
 
 	// A result can have more than one column with the same name, such as a.id

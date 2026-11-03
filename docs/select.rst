@@ -20,7 +20,8 @@ Syntax
   [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
 
   <from_item> := <table_reference>
-                 [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference> ON <condition> ] ...
+                 [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference>
+                   { ON <condition> | USING ( <column_name> , ... ) } ] ...
 
   <table_reference> := { <table_name> | ( <query> ) }
                        [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
@@ -113,6 +114,26 @@ before it as its *left* table, unless parentheses are used to change the order:
 
   SELECT * FROM t1
   LEFT JOIN (t2 JOIN t3 ON t2.b = t3.c) ON t1.a = t2.b;
+
+``USING`` joins on the equality of each named column, which must be the name of
+exactly one column on each side, and those columns must be comparable. Each
+named column is only in the result once:
+
+.. code-block:: sql
+
+  CREATE TABLE t (x INTEGER, a INTEGER);
+  CREATE TABLE u (x INTEGER, b INTEGER);
+
+  SELECT * FROM t LEFT JOIN u USING (x);
+  -- X, A, B
+
+The named columns are first (in the order of the left side), then the other
+columns of the left side, then the other columns of the right side. Each named
+column has the value of the left side if that isn't ``NULL``, otherwise the
+right side, so it's only ``NULL`` when both are.
+
+Refer to a named column without a table (``x``). ``t.x`` and ``u.x`` no longer
+exist, and ``t.*`` doesn't include ``x``.
 
 The same table name cannot be used more than once in a ``FROM`` clause. Use
 correlation names to join a table to itself:

@@ -497,6 +497,13 @@ was changed by a newer version of vsql, in a way that this version cannot
 safely change it. The file can still be read. See *Compatibility* in
 :doc:`file-format`.
 
+``27000`` triggered data change violation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``27000`` is returned when the referential actions (such as ``ON DELETE SET
+NULL``) of a statement would change a column of a row to two different values,
+or both change and delete a row. See :doc:`create-table`.
+
 ``28000`` invalid authorization specification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

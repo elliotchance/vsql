@@ -1605,7 +1605,16 @@ fn test_custom_function_bad_prototype() ! {
 // new_numeric_value and new_decimal_value (for an application) also accept an
 // exponent.
 fn test_new_numeric_and_decimal_value() {
-	assert new_numeric_value('1.5e3').str() == '1500.0'
+	assert new_numeric_value('1.5e3').str() == '1500'
+	assert new_numeric_value('1.5E+3').str() == '1500'
+	assert new_numeric_value('-15e-1').str() == '-1.5'
+	assert new_numeric_value('1.5e-3').str() == '0.0015'
+	assert new_numeric_value('0.5e1').str() == '5'
+	assert new_numeric_value('1.2345e2').str() == '123.45'
+	assert new_numeric_value('1e309').str() == '1' + '0'.repeat(309)
+	assert new_numeric_value('1.00000000000000000001e0').str() == '1.00000000000000000001'
+	assert new_decimal_value('1.5e-1').typ.str() == 'DECIMAL(3, 2)'
+	assert new_numeric_value('1e1001').str() == '0'
 	assert new_decimal_value('1.25').str() == '1.25'
 	assert new_decimal_value('1.25').typ.str() == 'DECIMAL(3, 2)'
 }

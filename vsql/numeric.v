@@ -37,16 +37,45 @@ fn new_numeric_from_f64(x f64) Numeric {
 }
 
 // NOTE: numeric value is expected to be well formed.
+// shift_exponent is the same number as x without its exponent, by moving the
+// decimal point so that no digits are lost. A value can't have more digits than
+// max_numeric_precision, so an exponent past that isn't valid and is 0, the same
+// as any other string that isn't a number.
+fn shift_exponent(x string) string {
+	at := x.index_any('eE')
+	exponent := x[at + 1..].int()
+	if exponent > max_numeric_precision || exponent < -max_numeric_precision {
+		return '0'
+	}
+
+	sign := if x[0] == `-` { '-' } else { '' }
+	mantissa := x[sign.len..at].split('.')
+	mut digits := mantissa[0]
+	if mantissa.len == 2 {
+		digits += mantissa[1]
+	}
+	mut point := mantissa[0].len + exponent
+	for digits.len > 1 && digits[0] == `0` && point > 1 {
+		digits = digits[1..]
+		point--
+	}
+
+	if point <= 0 {
+		return '${sign}0.${'0'.repeat(-point)}${digits}'
+	}
+	if point >= digits.len {
+		return '${sign}${digits}${'0'.repeat(point - digits.len)}'
+	}
+
+	return '${sign}${digits[..point]}.${digits[point..]}'
+}
+
 fn new_numeric_from_string(x string) Numeric {
 	// The scale of an exact numeric literal is the number of digits after the
 	// period, and its type must hold the value exactly (ISO/IEC 9075-2:2016(E),
 	// 5.3, <literal>, Syntax Rules, 22).
 
-	if x.contains('e') || x.contains('E') {
-		return new_numeric_from_f64(x.f64())
-	}
-
-	mut n := x
+	mut n := if x.contains('e') || x.contains('E') { shift_exponent(x) } else { x }
 
 	is_negative := n[0] == `-`
 	if is_negative {

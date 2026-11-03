@@ -4,6 +4,7 @@
 module vsql
 
 import io
+import strings
 
 @[params]
 pub struct DumpOptions {
@@ -11,19 +12,205 @@ pub:
 	// create_public_schema includes CREATE SCHEMA "PUBLIC". It's not included
 	// by default because every catalog already has it.
 	create_public_schema bool
+	// include only includes the objects (sequences, tables and foreign keys)
+	// that match one of these "schema.name" patterns. Each part can have the
+	// wildcards of string.match_glob, and case is ignored. Without any it's the
+	// same as "*.*".
+	include []string
+	// exclude leaves out the objects that match one of these "schema.name"
+	// patterns, even if they were in include. A foreign key isn't left out because
+	// the table it references is, so the output might not load.
+	exclude []string
+	// transaction puts START TRANSACTION and COMMIT around the output, so that
+	// loading it either works or doesn't change anything.
+	transaction bool
+	// compat changes the output so that it can be loaded by another database
+	// instead of vsql. See DumpCompat.
+	compat DumpCompat
+	// data_only leaves out the definitions, so the output is only the rows and
+	// the positions of the sequences. It can't be used with schema_only.
+	data_only bool
+	// schema_only leaves out the rows and the positions of the sequences, so the
+	// output is only the definitions. It can't be used with data_only.
+	schema_only bool
+	// no_schema leaves the schema out of every name, and doesn't write CREATE SCHEMA,
+	// so the output goes into the current schema of whatever loads it. Tables with
+	// the same name in different schemas will have the same name in the output.
+	// It can't be used with create_public_schema.
+	no_schema bool
+}
+
+// output_name is the name of an object as it's written.
+fn (o DumpOptions) output_name(name Identifier) Identifier {
+	return if o.no_schema {
+		Identifier{
+			...name
+			schema_name: ''
+		}
+	} else {
+		name
+	}
+}
+
+// output_foreign_key is a FOREIGN KEY as it's written.
+fn (o DumpOptions) output_foreign_key(key ForeignKey) ForeignKey {
+	return ForeignKey{
+		...key
+		referenced_table: o.output_name(key.referenced_table)
+	}
+}
+
+// output_definition is the definition of a table as it's written. A column in a CHECK
+// or generated column can be qualified with the schema. A string isn't changed.
+fn (o DumpOptions) output_definition(definition string, name Identifier) string {
+	if !o.no_schema {
+		return definition
+	}
+
+	mut prefixes := map[string]string{}
+	for schema in [name.schema_name, delimit_identifier(name.schema_name)] {
+		for table in [name.entity_name, delimit_identifier(name.entity_name)] {
+			prefixes['${schema}.${table}.'] = '${table}.'
+		}
+	}
+
+	mut sb := strings.new_builder(definition.len)
+	mut in_string := false
+	mut i := 0
+	outer: for i < definition.len {
+		c := definition[i]
+		if c == `'` {
+			in_string = !in_string
+		}
+		is_start := i == 0 || !(definition[i - 1].is_letter() || definition[i - 1].is_digit()
+			|| definition[i - 1] in [`_`, `.`, `"`])
+		if !in_string && is_start {
+			for prefix, replacement in prefixes {
+				if definition[i..].starts_with(prefix) {
+					sb.write_string(replacement)
+					i += prefix.len
+					continue outer
+				}
+			}
+		}
+		sb.write_u8(c)
+		i++
+	}
+
+	return sb.str()
+}
+
+// DumpPattern is a "schema.name" pattern for an object, or an empty schema if
+// the name is "*". Each part can have the wildcards of string.match_glob, and
+// case is ignored.
+struct DumpPattern {
+	schema string
+	name   string
+}
+
+fn new_dump_pattern(pattern string) !DumpPattern {
+	parts := pattern.to_upper().split('.')
+	if parts.len != 2 || parts[0] == '' || parts[1] == '' {
+		return error('${pattern}: must be in the form schema.name')
+	}
+
+	return DumpPattern{parts[0], parts[1]}
+}
+
+fn new_dump_patterns(patterns []string) ![]DumpPattern {
+	mut result := []DumpPattern{}
+	for pattern in patterns {
+		result << new_dump_pattern(pattern)!
+	}
+
+	return result
+}
+
+fn (p DumpPattern) schema_matches(schema string) bool {
+	return schema.to_upper().match_glob(p.schema)
+}
+
+fn (p DumpPattern) matches(schema string, name string) bool {
+	return p.schema_matches(schema) && name.to_upper().match_glob(p.name)
+}
+
+// DumpFilter is the patterns of DumpOptions.
+struct DumpFilter {
+	include []DumpPattern
+	exclude []DumpPattern
+}
+
+// selected is whether an object is in the output.
+fn (f DumpFilter) selected(schema string, name string) bool {
+	return f.include.any(it.matches(schema, name)) && !f.exclude.any(it.matches(schema, name))
+}
+
+// empty_schema_selected is whether a schema without any objects is in the
+// output. It has no name to match, so only its schema counts, and an exclude
+// has to be for all of the schema.
+fn (f DumpFilter) empty_schema_selected(schema string) bool {
+	return f.include.any(it.schema_matches(schema))
+		&& !f.exclude.any(it.name == '*' && it.schema_matches(schema))
+}
+
+// DumpSchema is the objects of a schema, ordered by name.
+struct DumpSchema {
+	schema    Schema
+	sequences []Sequence
+	tables    []Table
+}
+
+// matches is whether a pattern selects anything in the schema.
+fn (s DumpSchema) matches(pattern DumpPattern) bool {
+	names := s.names()
+
+	return names.any(pattern.matches(s.schema.name, it))
+		|| (names.len == 0 && pattern.schema_matches(s.schema.name))
+}
+
+// names is the name of each object.
+fn (s DumpSchema) names() []string {
+	mut names := s.sequences.map(it.name.entity_name)
+	for table in s.tables {
+		names << table.name.entity_name
+		names << table.foreign_keys.map(it.name)
+	}
+
+	return names
 }
 
 // dump writes the schemas, sequences, tables and rows of the current catalog
 // as SQL. The output can be loaded into a new database by running each
-// statement from split_statements.
+// statement from split_statements. A pattern of include that doesn't match
+// anything is an error, and INFORMATION_SCHEMA can't be included.
 pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 	// The FOREIGN KEYs are added once all of the tables and rows have been
 	// loaded, because a table can reference a table that comes after it, or a
 	// row that comes after it in the same table.
 	mut foreign_keys := []string{}
+	if options.data_only && options.schema_only {
+		return error('data_only and schema_only cannot be used together')
+	}
+	if options.no_schema && options.create_public_schema {
+		return error('no_schema and create_public_schema cannot be used together')
+	}
 	mut catalog := conn.catalog()
 	// Virtual schemas and tables aren't in the file.
 	mut schemas := catalog.schemas()!.filter(!it.is_virtual)
+
+	for pattern in options.include {
+		if pattern.to_upper().all_before('.') == 'INFORMATION_SCHEMA' {
+			return error('${pattern}: INFORMATION_SCHEMA cannot be included')
+		}
+	}
+	selection := DumpFilter{
+		include: new_dump_patterns(if options.include.len == 0 {
+			['*.*']
+		} else {
+			options.include
+		})!
+		exclude: new_dump_patterns(options.exclude)!
+	}
 
 	// To make the output more deterministic, entities will be ordered by name
 	// (not how the name is printed, which may be quoted). This is not true for
@@ -32,27 +219,63 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 		return a.name.compare(b.name)
 	})
 
-	for _, schema in schemas {
-		// We avoid "CREATE SCHEMA PUBLIC;" because it would break the import.
-		// Although, create_public_schema can be used to enable it when dealing
-		// with other databases.
-		if schema.name != 'PUBLIC' || options.create_public_schema {
-			write_line(mut w, '${schema}\n')!
-		}
-
+	// The objects are read first so that a bad pattern doesn't leave half of the
+	// output behind.
+	mut objects := []DumpSchema{}
+	for schema in schemas {
 		mut sequences := catalog.sequences(schema.name)!
 		sequences.sort_with_compare(fn (a &Sequence, b &Sequence) int {
 			return a.name.entity_name.compare(b.name.entity_name)
 		})
 
-		for _, sequence in sequences {
-			write_line(mut w, '${sequence}\n')!
+		mut tables := catalog.schema_tables(schema.name)!.filter(!it.is_virtual)
+		tables.sort_with_compare(fn (a &Table, b &Table) int {
+			return a.name.entity_name.compare(b.name.entity_name)
+		})
+		objects << DumpSchema{schema, sequences, tables}
+	}
+
+	for pattern in options.include {
+		parsed := new_dump_pattern(pattern)!
+		if !objects.any(it.matches(parsed)) {
+			return error('${pattern}: does not match anything')
+		}
+	}
+
+	if options.compat != .vsql {
+		return conn.dump_compat(mut w, objects, selection, options)
+	}
+
+	if options.transaction {
+		write_line(mut w, 'START TRANSACTION;\n')!
+	}
+
+	for object in objects {
+		schema := object.schema
+		names := object.names()
+		// We avoid "CREATE SCHEMA PUBLIC;" because it would break the import.
+		// Although, create_public_schema can be used to enable it when dealing
+		// with other databases.
+		if !options.data_only && !options.no_schema
+			&& (schema.name != 'PUBLIC' || options.create_public_schema)
+			&& (names.any(selection.selected(schema.name, it))
+				|| (names.len == 0 && selection.empty_schema_selected(schema.name))) {
+			write_line(mut w, '${schema}\n')!
+		}
+
+		for sequence in object.sequences.filter(selection.selected(schema.name, it.name.entity_name)) {
+			if !options.data_only {
+				write_line(mut w, '${Sequence{ ...sequence, name: options.output_name(sequence.name) }}\n')!
+			}
+			if options.schema_only {
+				continue
+			}
 
 			// START WITH is kept for RESTART, so the current position (if it has
 			// moved) needs to be restored separately. A sequence that has been used
 			// returns its last value again, so that it's still used (which matters
 			// for ALTER SEQUENCE, see Sequence.unused).
-			name := sequence.name.storage_sql()
+			name := options.output_name(sequence.name).storage_sql()
 			if sequence.unused {
 				next_value := sequence.next_value() or { sequence.start_value }
 				if next_value != sequence.start_value {
@@ -64,29 +287,41 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 			}
 		}
 
-		mut tables := catalog.schema_tables(schema.name)!.filter(!it.is_virtual)
-		tables.sort_with_compare(fn (a &Table, b &Table) int {
-			return a.name.entity_name.compare(b.name.entity_name)
-		})
-
-		for _, table in tables {
-			// A column in a CHECK or generation expression can be qualified with
-			// just the table name, which is only found in the table's schema if
-			// that's the current schema when the table is created.
-			is_schema_needed := table.name.schema_name != default_schema_name
-				&& (table.check_constraints.len > 0 || table.columns.any(it.generated != none))
-			if is_schema_needed {
-				write_line(mut w, 'SET SCHEMA ${new_varchar_value(table.name.schema_name).literal()};')!
-			}
-			write_line(mut w, '${Table{ ...table, foreign_keys: []ForeignKey{} }}\n')!
-			if is_schema_needed {
-				write_line(mut w, "SET SCHEMA '${default_schema_name}';\n")!
-			}
-
-			name := table.name.storage_sql()
+		// A foreign key is selected separately from its table.
+		for table in object.tables {
+			name := options.output_name(table.name).storage_sql()
 			for key in table.foreign_keys {
-				foreign_keys << 'ALTER TABLE ${name} ADD CONSTRAINT ${delimit_identifier(key.name)} ${key};'
+				if !options.data_only && selection.selected(schema.name, key.name) {
+					foreign_keys << 'ALTER TABLE ${name} ADD CONSTRAINT ${delimit_identifier(key.name)} ${options.output_foreign_key(key)};'
+				}
 			}
+		}
+
+		for table in object.tables.filter(selection.selected(schema.name, it.name.entity_name)) {
+			if !options.data_only {
+				// A column in a CHECK or generation expression can be qualified with
+				// just the table name, which is only found in the table's schema if
+				// that's the current schema when the table is created.
+				is_schema_needed := !options.no_schema
+					&& table.name.schema_name != default_schema_name
+					&& (table.check_constraints.len > 0 || table.columns.any(it.generated != none))
+				if is_schema_needed {
+					write_line(mut w, 'SET SCHEMA ${new_varchar_value(table.name.schema_name).literal()};')!
+				}
+				write_line(mut w, options.output_definition(Table{
+					...table
+					name:         options.output_name(table.name)
+					foreign_keys: []ForeignKey{}
+				}.str(), table.name) + '\n')!
+				if is_schema_needed {
+					write_line(mut w, "SET SCHEMA '${default_schema_name}';\n")!
+				}
+			}
+			if options.schema_only {
+				continue
+			}
+
+			name := options.output_name(table.name).storage_sql()
 			// A generated column can't be inserted, it's set again from the
 			// other columns.
 			mut column_names := []string{}
@@ -107,7 +342,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 				}
 			}
 
-			for row in conn.query('SELECT * FROM ${name}')! {
+			for row in conn.query('SELECT * FROM ${table.name.storage_sql()}')! {
 				mut data := []string{}
 				for col in column_names {
 					data << (row.get(col)!).literal()
@@ -135,6 +370,13 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 
 	for foreign_key in foreign_keys {
 		write_line(mut w, foreign_key)!
+	}
+
+	if options.transaction {
+		if foreign_keys.len > 0 {
+			write_line(mut w, '')!
+		}
+		write_line(mut w, 'COMMIT;')!
 	}
 }
 

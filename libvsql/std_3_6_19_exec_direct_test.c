@@ -171,6 +171,75 @@ UTEST_F(db, 6_19_exec_direct_invalid_ipd) {
   EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
 }
 
+/* The PRECISION of a datetime in the IPD must be valid. */
+UTEST_F(db, 6_19_exec_direct_invalid_ipd_datetime_precision) {
+  char s[] = "12:34:56";
+  SQLSMALLINT invalid[] = {-1, 7, 100};
+  size_t i;
+
+  for (i = 0; i < sizeof(invalid) / sizeof(invalid[0]); i++) {
+    ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                               SQL_CHAR, SQL_TYPE_TIME, 8, invalid[i], s,
+                               sizeof(s), NULL),
+              SQL_SUCCESS);
+    EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+    EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
+  }
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_TYPE_TIME, 8, 6, s, sizeof(s), NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+}
+
+/* The length of a character parameter must be greater than 0 (zero) or NULL
+ * TERMINATED, so an empty string has to be null terminated. */
+UTEST_F(db, 6_19_exec_direct_character_length) {
+  SQLHDESC apd = stmt_desc(utest_fixture->stmt, SQL_ATTR_APP_PARAM_DESC);
+  char s[] = "";
+  char out[10];
+  SQLINTEGER x = 7;
+  SQLINTEGER len = 0;
+  SQLINTEGER ind = SQL_NULL_DATA;
+
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_CHAR, SQL_VARCHAR, 5, 0, s, sizeof(s), &len),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
+
+  /* A negative length that doesn't have a meaning isn't valid either. */
+  len = -100;
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "07001");
+
+  /* The length doesn't matter when the value is NULL. */
+  len = 0;
+  ASSERT_EQ(SQLSetDescField(apd, 1, SQL_DESC_INDICATOR_POINTER, &ind, 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+  ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+  ASSERT_EQ(SQLSetDescField(apd, 1, SQL_DESC_INDICATOR_POINTER, NULL, 0),
+            SQL_SUCCESS);
+
+  len = SQL_NTS;
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "VALUES CHAR_LENGTH(?)"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(
+      SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, out, sizeof(out), NULL),
+      SQL_SUCCESS);
+  EXPECT_STREQ(out, "0");
+  ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+
+  /* The rule is only for character types. */
+  len = 0;
+  ASSERT_EQ(SQLBindParameter(utest_fixture->stmt, 1, SQL_PARAM_MODE_IN,
+                             SQL_INTEGER, SQL_INTEGER, 0, 0, &x, sizeof(x),
+                             &len),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "VALUES ?"), SQL_SUCCESS);
+}
+
 /* A failed statement doesn't replace the executed statement. */
 UTEST_F(db, 6_19_exec_direct_failed_keeps_executed) {
   SQLINTEGER rows = 123;

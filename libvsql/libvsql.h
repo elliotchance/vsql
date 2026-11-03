@@ -643,11 +643,12 @@ SQLRETURN SQLBindCol(
  * statement. ParameterType (such as SQL_VARCHAR or SQL_TYPE_DATE) is its SQL
  * data type, with ColumnSize as the length of a string, or the precision of a
  * number (and DecimalDigits as its scale), or the fractional seconds of a
- * datetime. When the statement is executed, ParameterValue (of ValueType, see
- * SQLGetData) is cast to that type.
+ * datetime (0 to 6). When the statement is executed, ParameterValue (of
+ * ValueType, see SQLGetData) is cast to that type.
  *
- * StrLen_or_Ind is the length in octets of a string (or SQL_NTS), and it may
- * be SQL_NULL_DATA for a NULL, or SQL_DATA_AT_EXEC to give the value with
+ * StrLen_or_Ind is the length in octets of a string, which must be greater
+ * than zero (or SQL_NTS, which also allows an empty string), and it may be
+ * SQL_NULL_DATA for a NULL, or SQL_DATA_AT_EXEC to give the value with
  * SQLParamData and SQLPutData. BufferLength is the size of ParameterValue.
  * InputOutputMode must be SQL_PARAM_MODE_IN (or SQL_PARAM_MODE_INOUT, which is
  * the same).

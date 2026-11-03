@@ -88,7 +88,7 @@
 6.1/AR/1.a               n/a          - - user-defined types (S023)
 6.1/AR/1.b               n/a          - - user-defined types (S023)
 6.1/GR/1                 impl-defined vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql the only character set is UTF8, which contains every character
-6.1/GR/2                 missing      - - #765
+6.1/GR/2                 implemented  vsql/std_2_6_1_data_type.v tests/unicode-escapes.sql
 6.1/GR/3                 n/a          - - char length units (T061)
 6.1/GR/4                 implemented  vsql/std_2_6_1_data_type.v tests/information-schema-columns.sql
 6.1/GR/4.a               implemented  vsql/std_2_6_1_data_type.v tests/date.sql

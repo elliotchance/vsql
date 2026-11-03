@@ -73,3 +73,39 @@ VALUES U&'x' UESCAPE;
 
 VALUES U&'x' UESCAPEX;
 -- error 42601: syntax error: unexpected identifier
+
+-- # A noncharacter can't be in a character string.
+VALUES U&'\FFFF';
+-- error 22029: noncharacter in UCS string
+
+VALUES U&'\FFFE';
+-- error 22029: noncharacter in UCS string
+
+VALUES U&'\FDD0';
+-- error 22029: noncharacter in UCS string
+
+VALUES U&'\FDEF';
+-- error 22029: noncharacter in UCS string
+
+VALUES CHAR_LENGTH(U&'\+10FFFF');
+-- error 22029: noncharacter in UCS string
+
+VALUES CHAR_LENGTH(U&'\+01FFFE');
+-- error 22029: noncharacter in UCS string
+
+VALUES '<U+FFFF>';
+-- error 22029: noncharacter in UCS string
+
+/* params '￿' */
+VALUES CAST(? AS VARCHAR(10));
+-- sql: VALUES CAST('￿' AS VARCHAR(10))
+-- error 22029: noncharacter in UCS string
+
+-- # The characters around them are allowed.
+VALUES CHAR_LENGTH(U&'\FDCF\FDF0\FFFD\+01FFFD');
+-- COL1: 4
+
+/* params 'ok' */
+VALUES CAST(? AS VARCHAR(10));
+-- sql: VALUES CAST('ok' AS VARCHAR(10))
+-- COL1: ok

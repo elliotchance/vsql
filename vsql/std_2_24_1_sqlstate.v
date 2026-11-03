@@ -374,6 +374,18 @@ fn sqlstate_22027() IError {
 	}
 }
 
+// Noncharacter in UCS string.
+struct SQLState22029 {
+	SQLState
+}
+
+fn sqlstate_22029() IError {
+	return SQLState22029{
+		code: sqlstate_to_int('22029')
+		msg:  'noncharacter in UCS string'
+	}
+}
+
 // violates non-null constraint
 struct SQLState23502 {
 	SQLState

@@ -55,7 +55,25 @@ UTEST_F(db, 6_36_get_feature_info_invalid) {
   EXPECT_EQ(SQLGetFeatureInfo(utest_fixture->dbc, (SQLCHAR *)"FEATURE", SQL_NTS,
                               (SQLCHAR *)"  ", SQL_NTS, NULL, 0, &supported),
             SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY024");
+  EXPECT_EQ(SQLGetFeatureInfo(utest_fixture->dbc, (SQLCHAR *)"  ", SQL_NTS,
+                              (SQLCHAR *)"E011", SQL_NTS, NULL, 0, &supported),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY024");
+  EXPECT_EQ(SQLGetFeatureInfo(utest_fixture->dbc, (SQLCHAR *)"SUBFEATURE",
+                              SQL_NTS, (SQLCHAR *)"E011", SQL_NTS,
+                              (SQLCHAR *)"  ", SQL_NTS, &supported),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY024");
+  EXPECT_EQ(SQLGetFeatureInfo(utest_fixture->dbc, (SQLCHAR *)"FEATURE", SQL_NTS,
+                              (SQLCHAR *)"", SQL_NTS, NULL, 0, &supported),
+            SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY090");
+  EXPECT_EQ(SQLGetFeatureInfo(utest_fixture->dbc, (SQLCHAR *)"FEATURE", SQL_NTS,
+                              (SQLCHAR *)"E011-01", SQL_NTS, NULL, 0,
+                              &supported),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY024");
   EXPECT_EQ(SQLGetFeatureInfo(utest_fixture->dbc, (SQLCHAR *)"FEATURE", -5,
                               (SQLCHAR *)"E011", SQL_NTS, NULL, 0, &supported),
             SQL_ERROR);

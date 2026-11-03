@@ -597,8 +597,14 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 			tables:                 tables
 			next_value_not_allowed: 'ORDER BY'
 		}
+		result_columns := if stmt.body is QuerySpecification {
+			new_expr_operation(mut conn, params, stmt.body.exprs, tables)!.columns()
+		} else {
+			plan.columns()
+		}
 		mut order := []SortSpecification{}
 		for spec in stmt.order {
+			check_sort_key_not_ambiguous(spec, params, result_columns)!
 			c.set_distinct_columns(stmt.body, spec.expr)!
 			spec.expr.compile(mut c)!
 			order << SortSpecification{
@@ -620,6 +626,18 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 	}
 
 	return plan
+}
+
+// check_sort_key_not_ambiguous returns an error if a sort key is the name of more
+// than one column of the result.
+//
+// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 8.c
+fn check_sort_key_not_ambiguous(spec SortSpecification, params map[string]Value, columns Columns) ! {
+	name := new_column_identifier(spec.expr.pstr(params)) or { return }
+	if name.entity_name == ''
+		&& columns.filter(it.name.sub_entity_name == name.sub_entity_name).len > 1 {
+		return sqlstate_42702(name.sub_entity_name)
+	}
 }
 
 // The Plan itself is a PlanOperation. This allows more complex operations to be

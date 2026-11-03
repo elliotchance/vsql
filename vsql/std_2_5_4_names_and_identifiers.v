@@ -401,11 +401,15 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	// table is in scope, so a column qualified with another table isn't a column
 	// of it.
 	if c.context.entity_name != '' && e.entity_name != '' {
-		qualifier := c.conn.resolve_identifier(Identifier{
-			catalog_name: e.catalog_name
-			schema_name:  e.schema_name
-			entity_name:  e.entity_name
-		})
+		qualifier := if c.stored_definition {
+			c.context
+		} else {
+			c.conn.resolve_identifier(Identifier{
+				catalog_name: e.catalog_name
+				schema_name:  e.schema_name
+				entity_name:  e.entity_name
+			})
+		}
 		if qualifier.catalog_name != c.context.catalog_name
 			|| qualifier.schema_name != c.context.schema_name
 			|| qualifier.entity_name != c.context.entity_name {

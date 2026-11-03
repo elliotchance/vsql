@@ -63,6 +63,13 @@ mut:
 	check_column      string
 	generation_column string
 	check_columns     map[string]bool
+	// stored_definition is set when compiling a CHECK or generation expression of
+	// a table that's already defined. Its names were checked when it was defined,
+	// so a qualifier that doesn't have a schema or catalog must still be the table,
+	// whatever the current schema and catalog are now.
+	//
+	// ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers, Syntax Rules, 4
+	stored_definition bool
 }
 
 // An AggregatedColumn is a column reference in the argument of an aggregate

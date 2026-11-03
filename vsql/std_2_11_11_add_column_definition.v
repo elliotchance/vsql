@@ -38,10 +38,11 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 		id: table.id
 	}
 	new_table.name_constraints(catalog.storage.schema_constraint_names(table.name))!
-	resolve_generated_columns(mut conn, mut new_table)!
+	resolve_generated_columns(mut conn, mut new_table, table.columns.len)!
 	resolve_foreign_keys(mut conn, mut new_table)!
 	column := new_table.columns.last()
 	check_default_clause(mut conn, column)!
+	check_new_check_constraints(mut conn, new_table, table.check_constraints.len)!
 	check_constraints := new_check_constraints(mut conn, new_table)!
 	generated_columns := new_generated_columns(mut conn, new_table)!
 

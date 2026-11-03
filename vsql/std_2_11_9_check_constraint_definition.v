@@ -36,10 +36,12 @@ fn (e CheckConstraintDefinition) str() string {
 // parameter, an aggregate function (that isn't in a subquery, but a subquery
 // can't be used either) or anything that's possibly non-deterministic (see
 // Compiler.restricted). The table doesn't need to exist yet, so it can be
-// checked by the CREATE TABLE.
+// checked by the CREATE TABLE. stored is false for a new constraint, whose names
+// are resolved with the current schema and catalog (see
+// Compiler.stored_definition).
 //
 // ISO/IEC 9075-2:2016(E), 11.9, <check constraint definition>, Syntax Rules, 1, 2 and 5
-fn (e CheckConstraintDefinition) compile(mut conn Connection, table Table) !CompileResult {
+fn (e CheckConstraintDefinition) compile(mut conn Connection, table Table, stored bool) !CompileResult {
 	mut c := Compiler{
 		conn:                   conn
 		params:                 map[string]Value{}
@@ -50,6 +52,7 @@ fn (e CheckConstraintDefinition) compile(mut conn Connection, table Table) !Comp
 		next_value_not_allowed: 'a CHECK constraint'
 		restricted:             'a CHECK constraint'
 		check_column:           e.column_name
+		stored_definition:      stored
 	}
 	return e.compile_with(mut c)
 }
@@ -57,13 +60,14 @@ fn (e CheckConstraintDefinition) compile(mut conn Connection, table Table) !Comp
 // columns are the names of the columns of the table that the constraint uses.
 fn (e CheckConstraintDefinition) columns(mut conn Connection, table Table) ![]string {
 	mut c := Compiler{
-		conn:       conn
-		params:     map[string]Value{}
-		tables:     {
+		conn:              conn
+		params:            map[string]Value{}
+		tables:            {
 			table.name.id(): table
 		}
-		context:    table.name
-		restricted: 'a CHECK constraint'
+		context:           table.name
+		restricted:        'a CHECK constraint'
+		stored_definition: true
 	}
 	e.compile_with(mut c)!
 
@@ -94,10 +98,18 @@ struct CheckConstraints {
 fn new_check_constraints(mut conn Connection, table Table) !CheckConstraints {
 	mut constraints := []CompileResult{}
 	for constraint in table.check_constraints {
-		constraints << constraint.compile(mut conn, table)!
+		constraints << constraint.compile(mut conn, table, true)!
 	}
 
 	return CheckConstraints{table, constraints}
+}
+
+// check_new_check_constraints checks the new CHECK constraints of a definition,
+// which are the ones from the index first. The others are already stored.
+fn check_new_check_constraints(mut conn Connection, table Table, first int) ! {
+	for constraint in table.check_constraints[first..] {
+		constraint.compile(mut conn, table, false)!
+	}
 }
 
 // verify returns an error if a new row doesn't satisfy one of the CHECK

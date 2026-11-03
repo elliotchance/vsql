@@ -248,6 +248,24 @@ The ``ORDER BY`` contains one or more expressions. Each specifying an ``ASC`` or
 ``DESC`` for ascending or descending respectively. If no qualifier is specified
 then ``ASC`` is used.
 
+A name in an expression of the ``ORDER BY`` is a column of the result if there
+is one with that name, otherwise it's a column of a table. So the alias of a
+``SELECT`` expression can be used, including as part of a larger expression, and
+it hides a column of a table with the same name. Use a qualified name for the
+column of the table:
+
+.. code-block:: sql
+
+  -- Ordered by the negative price (highest first).
+  SELECT -price AS price FROM products ORDER BY price;
+
+  -- Ordered by the original price (lowest first).
+  SELECT -price AS price FROM products ORDER BY products.price;
+
+If the result has more than one column with that name, it's a ``42702``
+(ambiguous column) error. An alias can't be used by a subquery or the argument of
+an aggregate function in the ``ORDER BY``.
+
 The SQL standard doesn't define if ``NULL`` should always be ordered first or
 last. In vsql, ``NULL`` is always considered to be less than any other non
 ``NULL`` value.

@@ -141,12 +141,44 @@ struct OrderOperation {
 	params  map[string]Value
 	columns Columns
 	tables  map[string]Table
+	// result_columns is what a name in a sort key can be, see set_result_columns.
+	result_columns map[string][]ValueExpression
 mut:
 	conn &Connection
 }
 
-fn new_order_operation(order []SortSpecification, params map[string]Value, conn &Connection, columns Columns, tables map[string]Table) &OrderOperation {
-	return &OrderOperation{order, params, columns, tables, conn}
+fn new_order_operation(order []SortSpecification, params map[string]Value, conn &Connection, columns Columns, tables map[string]Table, result_columns map[string][]ValueExpression) &OrderOperation {
+	return &OrderOperation{order, params, columns, tables, result_columns, conn}
+}
+
+// set_result_columns sets the columns of the result that a name in an ORDER BY
+// can refer to, with the expression of each one. A sort key is evaluated before
+// the select list, on the row that it's calculated from, so the name is evaluated
+// as that expression. More than one column can have the same name, then the name
+// is ambiguous if it's used. The name of an unnamed column is
+// implementation-dependent, so it doesn't hide a column of a table.
+//
+// Without a query specification, the sort keys are only compiled against the
+// columns of the result, so the expression is just the name.
+//
+// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 8.a.i and 8.c
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28
+fn (mut c Compiler) set_result_columns(body SimpleTable, columns Columns) ! {
+	mut exprs := columns.map(column_derived_column(Column{
+		name: Identifier{
+			sub_entity_name: it.name.sub_entity_name
+		}
+	}))
+	if body is QuerySpecification {
+		exprs = new_expr_operation(mut c.conn, c.params, body.exprs, c.tables)!.exprs
+	}
+
+	c.result_columns = map[string][]ValueExpression{}
+	for i, column in columns {
+		if !column.unnamed {
+			c.result_columns[column.name.sub_entity_name] << exprs[i].expr
+		}
+	}
 }
 
 fn (o &OrderOperation) str() string {
@@ -181,7 +213,8 @@ fn (mut o OrderOperation) execute(rows []Row) ![]Row {
 		// If the item is less than the head we unshift it. This cannot be
 		// easily done in the next step without us needing to keep the previous
 		// pointer as well.
-		head_cmp := row_cmp(mut o.conn, o.params, o.tables, row, head.row, o.order)!
+		head_cmp := row_cmp(mut o.conn, o.params, o.tables, o.result_columns, row, head.row,
+			o.order)!
 		if head_cmp < 0 {
 			head = &RowLink{
 				row:  row
@@ -194,8 +227,8 @@ fn (mut o OrderOperation) execute(rows []Row) ![]Row {
 		mut cursor := head
 		mut inserted := false
 		for unsafe { cursor.next != 0 } {
-			cmp := row_cmp(mut o.conn, o.params, o.tables, row, cursor.next.row,
-				o.order)!
+			cmp := row_cmp(mut o.conn, o.params, o.tables, o.result_columns, row,
+				cursor.next.row, o.order)!
 			if cmp < 0 {
 				cursor.next = &RowLink{
 					row:  row
@@ -243,11 +276,12 @@ fn (l &RowLink) rows() []Row {
 	return rows
 }
 
-fn row_cmp(mut conn Connection, params map[string]Value, tables map[string]Table, r1 Row, r2 Row, specs []SortSpecification) !int {
+fn row_cmp(mut conn Connection, params map[string]Value, tables map[string]Table, result_columns map[string][]ValueExpression, r1 Row, r2 Row, specs []SortSpecification) !int {
 	mut c := Compiler{
-		conn:   conn
-		params: params
-		tables: tables
+		conn:           conn
+		params:         params
+		tables:         tables
+		result_columns: result_columns
 	}
 
 	// Each sort key is compared in turn, and the first one that isn't equal

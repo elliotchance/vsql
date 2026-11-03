@@ -265,7 +265,7 @@
 6.6/SR/7                 n/a          - - row types (T051) and structured types (S023)
 6.6/SR/8                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql
 6.6/SR/8.a               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql
-6.6/SR/8.a.i             missing      - - ORDER BY can't use a select list alias (#332)
+6.6/SR/8.a.i             implemented  vsql/std_2_5_4_names_and_identifiers.v tests/order-alias.sql
 6.6/SR/8.a.ii            implemented  vsql/std_2_5_4_names_and_identifiers.v tests/ambiguous-column.sql
 6.6/SR/8.a.ii.1          implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql
 6.6/SR/8.a.ii.1.A        implemented  vsql/std_2_5_4_names_and_identifiers.v tests/column-qualifier.sql

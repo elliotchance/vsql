@@ -334,8 +334,9 @@ fn tables_view_row(catalog_name string, table Table) []Value {
 // the ones of the INFORMATION_SCHEMA, so the columns are always described by
 // the descriptor of their own table (Description, 1). There are no domains
 // (F251) or typed tables (S081), so the domain is NULL and IS_SELF_REFERENCING
-// is NO (Description, 5 and 9). A column is known not nullable if it's NOT NULL
-// or part of the PRIMARY KEY (Description, 8). The identity columns are
+// is NO (Description, 5 and 9). A column is known not nullable if it's NOT NULL,
+// part of the PRIMARY KEY or has a CHECK that's exactly "c IS NOT NULL"
+// (Description, 8, see is_known_not_nullable). The identity columns are
 // described by Description, 10-16, generated columns by Description, 17 and 18,
 // and IS_UPDATABLE is NO for the views of the INFORMATION_SCHEMA (Description,
 // 19).
@@ -343,6 +344,25 @@ fn tables_view_row(catalog_name string, table Table) []Value {
 // Every column is accessible, because there are no privileges (#732), so the
 // view has every column of the catalog (ISO/IEC 9075-11:2008(E), 5.21, COLUMNS
 // view).
+// is_known_not_nullable is true if a column can't be NULL. That's when it's NOT
+// NULL, part of the PRIMARY KEY, or an enforced constraint that isn't deferrable
+// has a readily-known-not-null condition for the column, which is the same thing
+// as NOT NULL.
+//
+// ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 3.a
+fn is_known_not_nullable(table Table, column Column) bool {
+	column_name := column.name.sub_entity_name
+	if column.not_null || column_name in table.primary_key {
+		return true
+	}
+
+	// The search condition can use the name of the column in any of its forms.
+	mut conditions := ['${requote_identifier(column_name)} IS NOT NULL']
+	conditions << '${requote_identifier(table.name.entity_name)}.${conditions[0]}'
+	return table.check_constraints.any(!it.characteristics.is_deferrable()
+		&& it.search_condition.pstr(map[string]Value{}) in conditions)
+}
+
 fn columns_view_row(catalog_name string, table Table, i int, column Column) []Value {
 	column_name := column.name.sub_entity_name
 	mut row := [
@@ -352,7 +372,7 @@ fn columns_view_row(catalog_name string, table Table, i int, column Column) []Va
 		new_varchar_value(column_name), // COLUMN_NAME
 		new_integer_value(i + 1), // ORDINAL_POSITION
 		column_default(column), // COLUMN_DEFAULT
-		yes_or_no(!column.not_null && column_name !in table.primary_key), // IS_NULLABLE
+		yes_or_no(!is_known_not_nullable(table, column)), // IS_NULLABLE
 	]
 	row << data_type_descriptor(catalog_name, column.typ)
 	row << [

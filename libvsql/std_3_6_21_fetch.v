@@ -39,11 +39,6 @@ fn fetch(mut stmt Stmt, orientation i16, offset i64) !i16 {
 		return cli_error('24000', 'invalid cursor state')
 	}
 
-	// - 5, 6, 7. The bound targets are checked before the cursor moves, but
-	// they should be checked by 5.8, "Implicit FETCH USING clause", after it
-	// moves (General Rules, 14.a.iv), which is #751.
-	targets := bound_targets(stmt)!
-
 	ard := descs[stmt.ard] or { return cli_error('HY010', 'function sequence error') }
 	start, len, is_no_data := scroll(stmt.rows.len, int(ard.header_int(sql_desc_array_size)),
 		stmt.rowset_start, stmt.rowset_len, orientation, offset)
@@ -67,6 +62,10 @@ fn fetch(mut stmt Stmt, orientation i16, offset i64) !i16 {
 	// 4.4.6, "Statement attributes").
 	stmt.current_of_position = 1
 	stmt.position_cursor()
+
+	// - 14.a.iv. The bound targets are checked by 5.8, "Implicit FETCH USING
+	// clause". The cursor stays on the new rowset if one of them isn't valid.
+	targets := bound_targets(stmt)!
 
 	return fetch_using(mut stmt, targets)
 }

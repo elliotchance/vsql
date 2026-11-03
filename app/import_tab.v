@@ -21,6 +21,9 @@ struct ImportPayload {
 	// compat and ignore_unsupported are for a SQL file.
 	compat             string
 	ignore_unsupported bool
+	// demo is what's chosen on a tab of demo data (see demo.v), and it's empty for a
+	// tab that imports a file.
+	demo string
 	// running_file is the file while it's being imported, so that the tab can say
 	// if the import didn't finish because the app was stopped.
 	running_file string
@@ -553,6 +556,15 @@ fn (a &App) start_import(form urllib.Values, text string) ! {
 	tab := a.import_tab_of(mut conn, form)!
 	file := form.get('import_file') or { '' }
 	command := import_command(form, a.db_path(tab.catalog))!
+	a.run_in_background(mut conn, tab, command, ImportPayload{
+		...import_form(form)
+		running_file: file
+	}, text)!
+}
+
+// run_in_background starts a command on a tab, with what's saved while it's running.
+fn (a &App) run_in_background(mut conn vsql.Connection, tab Tab, command ImportCommand, payload ImportPayload, text string) ! {
+	file := command.file
 	mut started := false
 	lock a.imports {
 		if tab.ref() !in a.imports {
@@ -568,10 +580,7 @@ fn (a &App) start_import(form urllib.Values, text string) ! {
 	lock a.results {
 		a.results.delete(tab.ref())
 	}
-	save_payload(mut conn, tab, json2.encode(ImportPayload{
-		...import_form(form)
-		running_file: file
-	}))!
+	save_payload(mut conn, tab, json2.encode(payload))!
 	title_tab(mut conn, tab, 'Import ${file}')!
 	spawn a.run_import(tab, command, file, text)
 }
@@ -684,6 +693,10 @@ fn (a &App) write_import(mut sb strings.Builder, mut conn vsql.Connection, tab T
 		return
 	}
 	payload := json2.decode[ImportPayload](tab.payload)!
+	if payload.demo != '' {
+		write_demo(mut sb, payload)
+		return
+	}
 	schemas := a.import_schemas(mut conn, tab.catalog)!
 	sb.write_string('<div class="import" data-table="${html_escape(payload.table)}" data-schemas="${html_escape(json2.encode(schemas))}">')
 	if payload.running_file != '' {

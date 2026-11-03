@@ -122,6 +122,8 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 	if tab.tab_type == import_tab {
 		sb.write_string(if a.is_importing(tab.ref()) {
 			app_import_progress_js.to_string()
+		} else if json2.decode[ImportPayload](tab.payload)!.demo != '' {
+			app_demo_js.to_string()
 		} else {
 			app_import_js.to_string()
 		})
@@ -216,6 +218,7 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 		sb.write_string('<div class="folder-row catalog-row"><details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
 		sb.write_string('<button type="button" class="create-schema" data-catalog="${html_escape(catalog_name)}">Create schema</button>')
 		sb.write_string('<button type="submit" form="app" name="import:${html_escape(catalog_name)}" value="[]">Import&hellip;</button>')
+		sb.write_string('<button type="submit" form="app" name="demo:${html_escape(catalog_name)}" value="1">Load demo data&hellip;</button>')
 		sb.write_string('<button type="submit" form="app" name="export:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
 			'file',
 		]))}">Export&hellip;</button></div></details>')
@@ -331,6 +334,7 @@ const app_confirm_js = $embed_file('app_confirm.js')
 const app_schema_js = $embed_file('app_schema.js')
 const app_import_js = $embed_file('app_import.js')
 const app_import_progress_js = $embed_file('app_import_progress.js')
+const app_demo_js = $embed_file('app_demo.js')
 
 // import_formats are the files that can be imported.
 const import_formats = '.sql,.csv,.tsv,.json'

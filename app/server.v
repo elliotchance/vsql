@@ -153,6 +153,16 @@ fn (a &App) handle(mut conn net.TcpConn) {
 		conn.write_string('HTTP/1.0 303 See Other\r\nLocation: /\r\nContent-Length: 0\r\nConnection: close\r\n\r\n') or {}
 		return
 	}
+	// Load on a tab of demo data, with the file that the browser downloaded. It runs
+	// in the background like any other file.
+	if demo_text := form.get('demo_text') {
+		a.start_demo(form, demo_text) or {
+			write_response(mut conn, '500 Internal Server Error', 'text/plain', err.msg())
+			return
+		}
+		conn.write_string('HTTP/1.0 303 See Other\r\nLocation: /\r\nContent-Length: 0\r\nConnection: close\r\n\r\n') or {}
+		return
+	}
 	// The file of an IMPORT tab is only posted by its Import button. It runs in the
 	// background.
 	if import_text := form.get('import_text') {
@@ -241,6 +251,8 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		json2.encode(export_form(form, json2.decode[ExportPayload](tab.payload)!.source))
 	} else if tab.tab_type == import_tab && (form.get('import_schema') or { '\0' }) != '\0' {
 		json2.encode(import_form(form))
+	} else if tab.tab_type == import_tab && (form.get('demo_schema') or { '\0' }) != '\0' {
+		json2.encode(demo_form(form))
 	} else {
 		form.get('payload') or { tab.payload }
 	}
@@ -263,6 +275,11 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		// Export in the menu of a file, schema or table opens a new tab to export it.
 		if value := form.get('export:${file}') {
 			a.open_export(mut conn, file, value)!
+			return '/'
+		}
+		// Load demo data in the menu of a file opens a new tab to choose it.
+		if _ := form.get('demo:${file}') {
+			a.open_demo(mut conn, file)!
 			return '/'
 		}
 		// Import in the menu of a file, schema or table opens a new tab to import

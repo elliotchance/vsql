@@ -45,6 +45,26 @@ struct ExplicitRowValueConstructor {
 	exprs []ValueExpression
 }
 
+// new_explicit_row_value_constructor is for a row in parentheses, which is
+// parsed with contextually typed elements. NULL and DEFAULT aren't a
+// <row value constructor element>, so they're rejected here.
+fn new_explicit_row_value_constructor(elements []ContextuallyTypedRowValueConstructorElement) !ExplicitRowValueConstructor {
+	mut exprs := []ValueExpression{}
+	for element in elements {
+		match element {
+			ValueExpression { exprs << element }
+			ContextuallyTypedValueSpecification {
+				return match element {
+					DefaultSpecification { sqlstate_42601('unexpected DEFAULT') }
+					NullSpecification { sqlstate_42601('unexpected NULL') }
+				}
+			}
+		}
+	}
+
+	return ExplicitRowValueConstructor{exprs}
+}
+
 fn (e ExplicitRowValueConstructor) pstr(params map[string]Value) string {
 	mut values := []string{}
 	for expr in e.exprs {

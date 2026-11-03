@@ -12,12 +12,19 @@ Syntax
 .. code-block:: text
 
   VALUES <expression>, ...
+  VALUES ( <expression> , <expression>, ... ), ...
   VALUES ROW(<expression>, ...), ...
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
 
-``VALUES 1, 2`` is two rows of one column. Use ``ROW`` for more than one column
-in a row, such as ``VALUES ROW(1, 2)``.
+``VALUES 1, 2`` is two rows of one column. Use parentheses or ``ROW`` for more
+than one column in a row: ``VALUES (1, 2)`` and ``VALUES ROW(1, 2)`` are the
+same, and the rows of a ``VALUES`` can use either. ``(1)`` is only an expression
+in parentheses, so ``VALUES (1)`` is one column.
+
+Unlike in :doc:`insert`, ``NULL`` and ``DEFAULT`` can't be a value in a row
+because there's no column to get a type from, which is an error ``42601``. Use
+``CAST(NULL AS INT)`` instead.
 
 VALUES
 ------
@@ -60,6 +67,10 @@ Examples
 
   VALUES ROW('cool', 12.3);
   -- COL1: cool COL2: 12.3
+
+  VALUES (1, 'a'), (2, 'b');
+  -- COL1: 1 COL2: a
+  -- COL1: 2 COL2: b
 
   SELECT * FROM (VALUES ROW(1, 'foo', TRUE));
   -- COL1: 1 COL2: foo COL3: TRUE

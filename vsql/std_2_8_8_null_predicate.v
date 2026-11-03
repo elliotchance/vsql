@@ -14,20 +14,7 @@ struct NullPredicate {
 }
 
 fn new_null_predicate_row(elements []ContextuallyTypedRowValueConstructorElement, not bool) !NullPredicate {
-	mut exprs := []ValueExpression{}
-	for element in elements {
-		match element {
-			ValueExpression { exprs << element }
-			ContextuallyTypedValueSpecification {
-				return match element {
-					DefaultSpecification { sqlstate_42601('unexpected DEFAULT') }
-					NullSpecification { sqlstate_42601('unexpected NULL') }
-				}
-			}
-		}
-	}
-
-	return NullPredicate{ExplicitRowValueConstructor{exprs}, not}
+	return NullPredicate{new_explicit_row_value_constructor(elements)!, not}
 }
 
 fn (e NullPredicate) pstr(params map[string]Value) string {

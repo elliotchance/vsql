@@ -8,7 +8,7 @@
 7.1/SR/2                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
 7.1/SR/3                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
 7.1/SR/3.a               n/a          - - row subqueries (F641)
-7.1/SR/3.b               implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
+7.1/SR/3.b               implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql,tests/values-without-row.sql
 7.1/SR/4                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
 7.1/SR/5                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/insert.sql
 7.1/SR/5.a               implemented  vsql/std_2_7_1_row_value_constructor.v tests/insert.sql
@@ -18,7 +18,7 @@
 7.1/GR/2                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/check-constraint.sql
 7.1/GR/3                 implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
 7.1/GR/3.a               implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
-7.1/GR/3.b               implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql
+7.1/GR/3.b               implemented  vsql/std_2_7_1_row_value_constructor.v tests/values.sql,tests/values-without-row.sql
 7.1/GR/3.c               implemented  vsql/std_2_7_1_row_value_constructor.v tests/insert.sql
 7.1/CR/1                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/flagging.sql
 7.1/CR/2                 n/a          - - row types (T051); ROW can't be used in the VALUES of an INSERT

@@ -15,8 +15,16 @@ row_value_constructor:
     $$.v = RowValueConstructor($1.v as ExplicitRowValueConstructor)
   }
 
+// A row in parentheses can also start a null_predicate, so it has the same
+// contextually typed elements (see null_predicate).
 explicit_row_value_constructor:
-  ROW left_paren row_value_constructor_element_list right_paren {
+  left_paren contextually_typed_row_value_constructor_element comma
+  contextually_typed_row_value_constructor_element_list right_paren {
+    $$.v = new_explicit_row_value_constructor(push_list(
+      $2.v as ContextuallyTypedRowValueConstructorElement,
+      $4.v as []ContextuallyTypedRowValueConstructorElement))!
+  }
+| ROW left_paren row_value_constructor_element_list right_paren {
     // ISO/IEC 9075-2:2016(E), 7.1, <row value constructor>, Conformance Rules, 1
     flag(mut yylex, 'T051')
     $$.v = ExplicitRowValueConstructor{$3.v as []ValueExpression}

@@ -3,7 +3,7 @@
 # 9, Additional common rules
 9                        container    - -
 # 9.1, Retrieval assignment
-9.1                      partial      vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the indicator of a value that isn't truncated isn't 0 (zero), and it can overflow (#782)
+9.1                      partial      vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a value that isn't assignable is cast when it's retrieved (by SQLGetData), rather than being a syntax error
 9.1/SR/1                 definition   - -
 9.1/SR/2                 definition   - -
 9.1/SR/3                 partial      vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a value that isn't assignable is cast when it's retrieved (by SQLGetData), rather than being a syntax error
@@ -30,12 +30,12 @@
 9.1/GR/4                 implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c host variables are the host parameters of the implied module (21.1)
 9.1/GR/4.a               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c host variables are the host parameters of the implied module (21.1)
 9.1/GR/4.b               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c host variables are the host parameters of the implied module (21.1)
-9.1/GR/5                 deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the indicator of a value that isn't truncated isn't 0 (zero), and it can overflow (#782)
-9.1/GR/5.a               deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a length that's too big for the indicator isn't 22022 (#782)
-9.1/GR/5.b               deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the indicator is the length of the value (#782)
-9.1/GR/6                 deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the indicator of a value that isn't truncated isn't 0 (zero), and it can overflow (#782)
-9.1/GR/6.a               deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c a length that's too big for the indicator isn't 22022 (#782)
-9.1/GR/6.b               deviates     vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c the indicator is the length of the value (#782)
+9.1/GR/5                 implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/5.a               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/5.b               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
+9.1/GR/6                 implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c host variables are the host parameters of the implied module (21.1)
+9.1/GR/6.a               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c host variables are the host parameters of the implied module (21.1)
+9.1/GR/6.b               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c host variables are the host parameters of the implied module (21.1)
 9.1/GR/7                 implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 9.1/GR/7.a               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c
 9.1/GR/7.b               implemented  vsql/std_2_14_7_select_statement_single_row.c libvsql/module/test_main.c

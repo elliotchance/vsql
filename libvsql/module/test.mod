@@ -92,6 +92,22 @@ PROCEDURE select_utf8 (SQLSTATE, :c CHAR(3), :v VARCHAR(3), :p CHAR(5));
 PROCEDURE select_utf8_long (SQLSTATE, :c CHAR(1), :v VARCHAR(3));
   SELECT 'é€', '😀😀😀😀' INTO :c, :v FROM t WHERE i = 2;
 
+-- 9.1 GR 5: The indicator of a value that isn't truncated is 0 (zero), and of
+-- one that is truncated it's the length in characters.
+PROCEDURE select_zero_indicators (SQLSTATE, :v VARCHAR(3), :v_ind BIGINT,
+    :c CHAR(5), :c_ind SMALLINT, :f BOOLEAN, :f_ind INTEGER, :n BIGINT,
+    :n_ind SMALLINT);
+  SELECT 'é€😀', 'ab', TRUE, 123 INTO :v :v_ind, :c :c_ind, :f :f_ind, :n :n_ind
+  FROM t WHERE i = 2;
+
+PROCEDURE select_long_small (SQLSTATE, :big VARCHAR(40000), :v VARCHAR(3),
+    :v_ind SMALLINT);
+  SELECT CAST(:big AS VARCHAR(40000)) INTO :v :v_ind FROM t WHERE i = 2;
+
+PROCEDURE select_long_integer (SQLSTATE, :big VARCHAR(40000), :c CHAR(3),
+    :c_ind INTEGER);
+  SELECT CAST(:big AS VARCHAR(40000)) INTO :c :c_ind FROM t WHERE i = 2;
+
 PROCEDURE select_null (SQLSTATE, :i BIGINT);
   SELECT i INTO :i FROM t WHERE i IS NULL;
 
@@ -137,6 +153,8 @@ PROCEDURE get_cursor_name (SQLSTATE, :name VARCHAR(10));
 
 DECLARE c1 CURSOR FOR SELECT x, y FROM cur WHERE x >= :min;
 
+DECLARE c_long CURSOR FOR SELECT CAST(:big AS VARCHAR(40000)) FROM cur WHERE x = 1;
+
 DECLARE "held" CURSOR WITH HOLD FOR SELECT x FROM cur;
 
 PROCEDURE create_cur (SQLSTATE);
@@ -150,6 +168,15 @@ PROCEDURE open_c1 (SQLSTATE, :min INTEGER);
 
 PROCEDURE fetch_c1 (SQLSTATE, :x INTEGER, :y VARCHAR(3), :y_ind INTEGER);
   FETCH NEXT FROM c1 INTO :x, :y INDICATOR :y_ind;
+
+PROCEDURE open_long (SQLSTATE, :big VARCHAR(40000));
+  OPEN c_long;
+
+PROCEDURE fetch_long (SQLSTATE, :v VARCHAR(3), :v_ind SMALLINT);
+  FETCH NEXT FROM c_long INTO :v :v_ind;
+
+PROCEDURE close_long (SQLSTATE);
+  CLOSE c_long;
 
 PROCEDURE close_c1 (SQLSTATE);
   CLOSE c1;
@@ -191,6 +218,10 @@ PROCEDURE execute_s1 (SQLSTATE);
 PROCEDURE execute_s1_using (SQLSTATE, :x INTEGER, :y VARCHAR(10),
     :y_ind INTEGER);
   EXECUTE s1 USING :x, :y INDICATOR :y_ind;
+
+PROCEDURE execute_s1_long (SQLSTATE, :v VARCHAR(3), :v_ind SMALLINT,
+    :big VARCHAR(40000));
+  EXECUTE s1 INTO :v :v_ind USING :big;
 
 PROCEDURE execute_s1_into (SQLSTATE, :x INTEGER, :y VARCHAR(10),
     :y_ind INTEGER, :min INTEGER);

@@ -72,6 +72,17 @@ static void get_co(char *sqlstate, long n, struct condition *co) {
     }                                                                          \
   } while (0)
 
+/* repeat_string sets s to n copies of part. */
+static void repeat_string(char *s, const char *part, int n) {
+  size_t length = strlen(part);
+  int i;
+
+  for (i = 0; i < n; i++) {
+    memcpy(s + (size_t)i * length, part, length);
+  }
+  s[(size_t)n * length] = '\0';
+}
+
 int main(void) {
   char sqlstate[6];
   char server[CHARS(50)], name[CHARS(50)], user[CHARS(50)], c[CHARS(5)],
@@ -87,6 +98,7 @@ int main(void) {
   long min, max, count, n, type, length, nullable, indicator, returned, code;
   short top;
   long long key;
+  static char long_string[CHARS(40000)];
 
   /* 13.4 GR 7.a: The first statement connects to DEFAULT. */
   EXPECT(create_table(sqlstate), "00000");
@@ -149,6 +161,42 @@ int main(void) {
         strcmp(c, "é    ") == 0);
   EXPECT(select_utf8_long(sqlstate, c3, v3), "01004");
   CHECK(strcmp(c3, "é") == 0 && strcmp(v3, "😀😀😀") == 0);
+
+  /* 9.1 GR 5.b: The indicator of a value that isn't truncated is 0 (zero). */
+  c_ind = -5;
+  s_ind = -5;
+  i = -5;
+  top = -5;
+  EXPECT(select_zero_indicators(sqlstate, v3, &c_ind, c, &s_ind, &f, &i, &b,
+                                &top),
+         "00000");
+  CHECK(strcmp(v3, "é€😀") == 0 && c_ind == 0 && s_ind == 0 && f == 1 &&
+        i == 0 && b == 123 && top == 0);
+
+  /* 9.1 GR 5.a: The indicator of a truncated string is its length in
+   * characters (of all of it, which is more than the target can hold), and
+   * it's an exception if that's too big for the indicator. */
+  strcpy(long_string, "éééé");
+  EXPECT(select_long_small(sqlstate, long_string, v3, &s_ind), "01004");
+  CHECK(strcmp(v3, "ééé") == 0 && s_ind == 4);
+  repeat_string(long_string, "😀", 5000);
+  EXPECT(select_long_small(sqlstate, long_string, v3, &s_ind), "01004");
+  CHECK(strcmp(v3, "😀😀😀") == 0 && s_ind == 5000);
+  repeat_string(long_string, "x", 32767);
+  EXPECT(select_long_small(sqlstate, long_string, v3, &s_ind), "01004");
+  CHECK(s_ind == 32767);
+  repeat_string(long_string, "x", 32768);
+  s_ind = -5;
+  EXPECT(select_long_small(sqlstate, long_string, v3, &s_ind), "22022");
+  CHECK(s_ind == -5);
+  EXPECT(get_co(sqlstate, 1, &co), "00000");
+  CHECK(strcmp(co.message, "data exception: indicator overflow") == 0);
+  EXPECT(select_long_integer(sqlstate, long_string, c3, &i), "01004");
+  CHECK(strcmp(c3, "xxx") == 0 && i == 32768);
+  i = 2;
+  b = 3;
+  s_ind = 0;
+  f = 1;
 
   /* 9.3 GR 5.b.iii: unterminated C string. */
   memset(c, 'x', sizeof(c));
@@ -323,7 +371,7 @@ int main(void) {
   EXPECT(update_c1(sqlstate, v), "24000");
   CHECK_CURSOR("C1");
   EXPECT(fetch_c1(sqlstate, &x, v3, &i), "00000");
-  CHECK(x == 2 && strcmp(v3, "two") == 0 && i == 3);
+  CHECK(x == 2 && strcmp(v3, "two") == 0 && i == 0);
   strcpy(v, "TWO");
   EXPECT(update_c1(sqlstate, v), "00000");
   EXPECT(get_st(sqlstate, &st), "00000");
@@ -348,6 +396,13 @@ int main(void) {
   EXPECT(open_c1(sqlstate, &x), "00000");
   EXPECT(fetch_c1(sqlstate, &x, v3, &i), "00000");
   CHECK(x == 1);
+
+  /* 9.1 GR 5.a: The indicator overflow of a <fetch statement>. */
+  repeat_string(long_string, "x", 32768);
+  EXPECT(open_long(sqlstate, long_string), "00000");
+  EXPECT(fetch_long(sqlstate, v3, &s_ind), "22022");
+  EXPECT(close_long(sqlstate), "00000");
+  s_ind = 0;
 
   /* A commit closes a cursor that isn't holdable. */
   EXPECT(commit_work(sqlstate), "00000");
@@ -451,7 +506,7 @@ int main(void) {
   EXPECT(execute_s1(sqlstate), "07007");
   min = 1;
   EXPECT(execute_s1_into(sqlstate, &x, v, &i, &min), "00000");
-  CHECK(x == 1 && strcmp(v, "one") == 0 && i >= 0);
+  CHECK(x == 1 && strcmp(v, "one") == 0 && i == 0);
   min = 2;
   EXPECT(execute_s1_into(sqlstate, &x, v, &i, &min), "00000");
   CHECK(x == 2 && i == -1);
@@ -459,6 +514,14 @@ int main(void) {
   CHECK(strcmp(st.dynamic, "SE") == 0 && st.dynamic_code == 41);
   min = 3;
   EXPECT(execute_s1_into(sqlstate, &x, v, &i, &min), "02000");
+
+  /* 9.1 GR 5.a: The indicator overflow of an <execute statement>. */
+  strcpy(sql, "SELECT CAST(? AS VARCHAR(40000)) FROM dyn WHERE x = 1");
+  EXPECT(prepare_s1(sqlstate, sql), "00000");
+  repeat_string(long_string, "x", 32768);
+  EXPECT(execute_s1_long(sqlstate, v3, &s_ind, long_string), "22022");
+  s_ind = 0;
+
   strcpy(sql, "SELECT x, y FROM dyn WHERE x > ?");
   EXPECT(prepare_s1(sqlstate, sql), "00000");
   min = 0;

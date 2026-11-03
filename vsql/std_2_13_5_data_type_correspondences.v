@@ -111,11 +111,21 @@ fn (t HostParameterType) c_parameter(name string) string {
 }
 
 // c_target is the struct vsql_m_target (see the C runtime) that a value of the
-// row of a <select statement: single row> is assigned to.
-fn (t HostParameterType) c_target(name string, has_indicator int) string {
+// row of a <select statement: single row> is assigned to. max_indicator is 0
+// (zero) if it has no indicator parameter.
+fn (t HostParameterType) c_target(name string, max_indicator int) string {
 	length := if t.is_string() { t.length } else { 0 }
 
-	return '{${t.c_code()}, ${length}, ${name}, ${has_indicator}, 0}'
+	return '{${t.c_code()}, ${length}, ${name}, ${max_indicator}, 0}'
+}
+
+// max_indicator is the largest length of a string that an indicator parameter
+// of this type can contain. The C runtime counts it in a SQLINTEGER, which fits
+// in an INTEGER or BIGINT.
+//
+// ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 5.a and 6.a
+fn (t HostParameterType) max_indicator() int {
+	return if t.typ == .is_smallint { 32767 } else { 2147483647 }
 }
 
 // c_code is the C constant of the SQL data type code (Table 28, "Codes used for

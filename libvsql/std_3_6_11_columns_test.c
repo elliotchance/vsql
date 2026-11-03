@@ -90,3 +90,14 @@ UTEST_F(db, 6_11_columns_invalid) {
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
 }
+
+/* The null pointers are checked before any length is read. */
+UTEST_F(db, 6_11_columns_null_pointer_before_length) {
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID,
+                           INTEGER_VALUE(SQL_TRUE), 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLColumns(utest_fixture->stmt, NULL, 0, (SQLCHAR *)"A", -5,
+                       (SQLCHAR *)"T", SQL_NTS, (SQLCHAR *)"C", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
+}

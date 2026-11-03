@@ -42,14 +42,14 @@ fn primary_keys(mut stmt Stmt, catalog_name &char, name_length1 i16, schema_name
 		return cli_error('24000', 'invalid cursor state')
 	}
 
-	// - 11 to 18. The arguments. The table must be given (it's not a pattern).
+	// - 13, 14. The null pointers. The table must be given (it's not a pattern).
+	check_metadata_id_args(stmt, [catalog_name, schema_name])!
+	check_table_name_arg(table_name)!
+
+	// - 11, 12, 15 to 18. The arguments.
 	cat := catalog_arg(catalog_name, name_length1)!
 	sch := catalog_arg(schema_name, name_length2)!
 	tbl := catalog_arg(table_name, name_length3)!
-	check_metadata_id_args(stmt, [cat, sch])!
-	if tbl.is_null {
-		return cli_error('HY009', 'invalid use of null pointer')
-	}
 
 	// - 19 to 22. ExecDirect is implicitly invoked.
 	pred := name_predicate(stmt, 'TABLE_CAT', cat, false) +

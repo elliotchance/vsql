@@ -43,3 +43,19 @@ UTEST_F(db, 6_51_primary_keys_null_table) {
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
 }
+
+/* The null pointers are checked before any length is read. */
+UTEST_F(db, 6_51_primary_keys_null_pointer_before_length) {
+  EXPECT_EQ(SQLPrimaryKeys(utest_fixture->stmt, NULL, 0, (SQLCHAR *)"A", -5,
+                           NULL, 0),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
+
+  ASSERT_EQ(SQLSetStmtAttr(utest_fixture->stmt, SQL_ATTR_METADATA_ID,
+                           INTEGER_VALUE(SQL_TRUE), 0),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLPrimaryKeys(utest_fixture->stmt, NULL, 0, (SQLCHAR *)"A", -5,
+                           (SQLCHAR *)"T", SQL_NTS),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "HY009");
+}

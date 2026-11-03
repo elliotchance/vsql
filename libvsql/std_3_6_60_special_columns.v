@@ -55,14 +55,14 @@ fn special_columns(mut stmt Stmt, identifier_type i16, catalog_name &char, name_
 		return cli_error('HY099', 'nullable type out of range')
 	}
 
-	// - 11 to 18. The arguments. The table must be given (it's not a pattern).
+	// - 13, 14. The null pointers. The table must be given (it's not a pattern).
+	check_metadata_id_args(stmt, [catalog_name, schema_name])!
+	check_table_name_arg(table_name)!
+
+	// - 11, 12, 15 to 18. The arguments.
 	cat := catalog_arg(catalog_name, name_length1)!
 	sch := catalog_arg(schema_name, name_length2)!
 	tbl := catalog_arg(table_name, name_length3)!
-	check_metadata_id_args(stmt, [cat, sch])!
-	if tbl.is_null {
-		return cli_error('HY009', 'invalid use of null pointer')
-	}
 
 	// - 19 to 23. ExecDirect is implicitly invoked. The columns of a PRIMARY
 	// KEY are never null, so Nullable doesn't change the result. SCOPE is a

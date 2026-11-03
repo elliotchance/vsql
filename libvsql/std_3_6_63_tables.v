@@ -51,12 +51,14 @@ fn tables(mut stmt Stmt, catalog_name &char, name_length1 i16, schema_name &char
 		return cli_error('24000', 'invalid cursor state')
 	}
 
-	// - 10 to 15. The arguments.
+	// - 10. The null pointers.
+	check_metadata_id_args(stmt, [catalog_name, schema_name, table_name])!
+
+	// - 11 to 15. The arguments.
 	cat := catalog_arg(catalog_name, name_length1)!
 	sch := catalog_arg(schema_name, name_length2)!
 	tbl := catalog_arg(table_name, name_length3)!
 	typ := catalog_arg(table_type, name_length4)!
-	check_metadata_id_args(stmt, [cat, sch, tbl])!
 
 	null := 'CAST(NULL AS VARCHAR(128))'
 	null254 := 'CAST(NULL AS VARCHAR(254))'

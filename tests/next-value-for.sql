@@ -313,6 +313,7 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- # NEXT VALUE FOR can't be in a search condition, ORDER BY, aggregate function,
 -- # grouped query or a VALUES that's a query (only the VALUES of an INSERT),
 -- # even when there are no rows. No value is used.
+/* extensions V202-01 */
 CREATE SEQUENCE seq1;
 CREATE TABLE bar (baz INTEGER);
 SELECT * FROM bar WHERE baz < NEXT VALUE FOR seq1;

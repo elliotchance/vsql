@@ -8,7 +8,7 @@ import time
 // set and retrieve values from that row.
 
 // The row is returned as the result, instead of being assigned to a <fetch
-// target list> (V004-03).
+// target list> (V110-01).
 struct FetchStatement {
 	name string
 }

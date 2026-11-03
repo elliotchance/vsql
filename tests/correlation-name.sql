@@ -9,6 +9,18 @@ SELECT x.name FROM t1 AS x;
 -- NAME: left
 -- NAME: right
 
+-- # A derived table without a correlation name is a vsql extension.
+/* flags */
+SELECT * FROM (VALUES 1) AS x;
+-- flags: F591, F641, F661
+-- COL1: 1
+
+/* extensions V201-02 */
+/* flags */
+SELECT * FROM (VALUES 1);
+-- flags: F591, F641, F661, V201-02
+-- COL1: 1
+
 -- # AS is optional.
 SELECT x.name FROM t1 x WHERE x.id = 2;
 -- NAME: left

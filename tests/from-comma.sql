@@ -114,6 +114,7 @@ SELECT * FROM t1 AS p, t2 JOIN t3 AS p ON TRUE;
 SELECT * FROM (SELECT a FROM t1) AS d, t2 AS d;
 -- error 42601: syntax error: table name D specified more than once
 
+/* extensions V201-02 */
 SELECT * FROM (SELECT a FROM t1), (SELECT b FROM t2);
 -- error 42601: syntax error: each subquery in FROM needs its own correlation name
 
@@ -190,6 +191,7 @@ SELECT c, v FROM t3, (VALUES ROW(7), ROW(8)) AS d (v);
 SELECT d.a, e.b FROM (SELECT a, x FROM t1) AS d, (SELECT b, x FROM t2) AS e WHERE d.x = e.x;
 -- A: 1 B: 3
 
+/* extensions V201-02 */
 SELECT * FROM (SELECT c FROM t3), t3 AS q;
 -- C: 5 C: 5
 
@@ -244,11 +246,11 @@ EXPLAIN SELECT a FROM t1, t3;
 -- EXPLAIN: EXPR (A INTEGER)
 
 -- # A cursor over more than one table can only read.
-/* extensions V004-01 */
+/* extensions V108-01 */
 DECLARE c CURSOR FOR SELECT a, b FROM t1, t2 FOR UPDATE;
 -- error 42601: syntax error: cursor C is not updatable
 
-/* extensions V004-01 V004-02 V004-03 V004-05 */
+/* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT a, b FROM t1, t2;
 OPEN c;

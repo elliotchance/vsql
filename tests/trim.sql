@@ -2,7 +2,7 @@
 EXPLAIN VALUES TRIM('aaababccaa');
 -- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(BOTH ' ' FROM 'aaababccaa'))
 
-/* extensions V001-01 */
+/* extensions V001-01 V404-01 */
 EXPLAIN VALUES TRIM(FROM 'aaababccaa');
 -- EXPLAIN: VALUES (COL1 CHARACTER VARYING(10)) = ROW(TRIM(BOTH ' ' FROM 'aaababccaa'))
 
@@ -30,6 +30,18 @@ EXPLAIN VALUES TRIM(LEADING 'a' FROM 'aaababccaa');
 VALUES TRIM('aaababccaa');
 -- COL1: aaababccaa (CHARACTER VARYING(10))
 
+/* extensions V404-01 */
+/* flags */
+VALUES TRIM(FROM 'aaababccaa');
+-- flags: F641, F661, V404-01
+-- COL1: aaababccaa
+
+/* flags */
+VALUES TRIM(LEADING FROM 'aaababccaa');
+-- flags: F641, F661
+-- COL1: aaababccaa
+
+/* extensions V404-01 */
 /* types */
 VALUES TRIM(FROM 'aaababccaa');
 -- COL1: aaababccaa (CHARACTER VARYING(10))

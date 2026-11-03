@@ -12,9 +12,11 @@ module vsql
 // that each Conformance Rule of ISO/IEC 9075-2 doesn't allow without a
 // feature. An implementation-defined feature (an extension that only vsql has)
 // has a Feature ID whose letter is "V" (see ISO/IEC 9075-1:2003(E), 6.3.7,
-// Feature ID and Feature Name). It's VXXX-YY, where VXXX is a concept (of the
-// standard, such as tables, or one that only vsql has, such as EXPLAIN) and YY
-// is each extension of it.
+// Feature ID and Feature Name). It's VXXX-YY, where VXXX is what's extended and
+// YY is each extension of it. The first digit of VXXX is the kind of thing that's
+// extended: 0 for a statement that isn't in the standard, 1 for a statement of the
+// standard (with its aliases), 2 for a query, 3 for an operator or predicate, and
+// 4 for a function, by its category in the Functions docs.
 
 // The implementation-defined features, which are also listed in the SQL
 // Flagging docs. They're flagged, which is implementation-defined (ISO/IEC
@@ -25,38 +27,70 @@ module vsql
 // V001-02: EXPLAIN before a searched DELETE.
 // V001-03: EXPLAIN before a searched UPDATE.
 //
-// V002: Tables.
-// V002-01: DROP TABLE without a <drop behavior> (it's RESTRICT).
-// V002-02: DROP COLUMN without a <drop behavior> (it's RESTRICT).
-// V002-03: DROP CONSTRAINT without a <drop behavior> (it's RESTRICT).
+// V104: DROP TABLE.
+// V104-01: DROP TABLE without a <drop behavior> (it's RESTRICT).
 //
-// V003: Sequence generators.
-// V003-01: DROP SEQUENCE without a <drop behavior> (it's RESTRICT).
+// V105: ALTER TABLE.
+// V105-01: DROP COLUMN without a <drop behavior> (it's RESTRICT).
+// V105-02: DROP CONSTRAINT without a <drop behavior> (it's RESTRICT).
 //
-// V004: Cursors.
-// V004-01: DECLARE CURSOR outside of an SQL-client module.
-// V004-02: OPEN outside of an SQL-client module.
-// V004-03: FETCH without INTO (the row is returned).
-// V004-04: CLOSE outside of an SQL-client module.
-// V004-05: DELETE WHERE CURRENT OF outside of an SQL-client module.
-// V004-06: UPDATE WHERE CURRENT OF outside of an SQL-client module.
+// V107: DROP SEQUENCE.
+// V107-01: DROP SEQUENCE without a <drop behavior> (it's RESTRICT).
 //
-// V009: Comparison operators.
-// V009-01: != as an alias for <>.
+// V108: DECLARE CURSOR.
+// V108-01: DECLARE CURSOR outside of an SQL-client module.
+//
+// V109: OPEN.
+// V109-01: OPEN outside of an SQL-client module.
+//
+// V110: FETCH.
+// V110-01: FETCH without INTO (the row is returned).
+//
+// V111: CLOSE.
+// V111-01: CLOSE outside of an SQL-client module.
+//
+// V112: DELETE.
+// V112-01: DELETE WHERE CURRENT OF outside of an SQL-client module.
+//
+// V113: UPDATE.
+// V113-01: UPDATE WHERE CURRENT OF outside of an SQL-client module.
+//
+// V201: FROM.
+// V201-02: A derived table without a correlation name.
+//
+// V202: ORDER BY.
+// V202-01: A sort key without a column reference.
+// V202-02: A sort key that contains a subquery.
+// V202-03: A sort key that contains an aggregate function.
+//
+// V301: Comparison operators.
+// V301-01: != as an alias for <>.
+//
+// V403: Mathematical functions.
+// V403-01: MOD with an argument that has a scale or is approximate.
+//
+// V404: String functions.
+// V404-01: TRIM with only FROM.
 const vsql_explain_query = 'V001-01'
 const vsql_explain_delete = 'V001-02'
 const vsql_explain_update = 'V001-03'
-const vsql_drop_table_behavior = 'V002-01'
-const vsql_drop_column_behavior = 'V002-02'
-const vsql_drop_constraint_behavior = 'V002-03'
-const vsql_drop_sequence_behavior = 'V003-01'
-const vsql_declare_cursor = 'V004-01'
-const vsql_open_cursor = 'V004-02'
-const vsql_fetch_without_into = 'V004-03'
-const vsql_close_cursor = 'V004-04'
-const vsql_delete_positioned = 'V004-05'
-const vsql_update_positioned = 'V004-06'
-const vsql_bang_equals = 'V009-01'
+const vsql_drop_table_behavior = 'V104-01'
+const vsql_drop_column_behavior = 'V105-01'
+const vsql_drop_constraint_behavior = 'V105-02'
+const vsql_drop_sequence_behavior = 'V107-01'
+const vsql_declare_cursor = 'V108-01'
+const vsql_open_cursor = 'V109-01'
+const vsql_fetch_without_into = 'V110-01'
+const vsql_close_cursor = 'V111-01'
+const vsql_delete_positioned = 'V112-01'
+const vsql_update_positioned = 'V113-01'
+const vsql_derived_table_without_name = 'V201-02'
+const vsql_sort_key_without_column = 'V202-01'
+const vsql_sort_key_subquery = 'V202-02'
+const vsql_sort_key_aggregate = 'V202-03'
+const vsql_bang_equals = 'V301-01'
+const vsql_mod_not_integer = 'V403-01'
+const vsql_trim_only_from = 'V404-01'
 
 // flag records that the statement being parsed uses a feature outside of Core
 // SQL, such as "F591". It's called by the grammar actions.
@@ -162,6 +196,94 @@ fn flag_query_expression(mut yylex YYLexer, e QueryExpression, context QueryCont
 // ISO/IEC 9075-2:2016(E), 14.13, <update statement: positioned>, Conformance Rules, 1
 fn flag_updatability_clause(mut yylex YYLexer, e QueryExpression, updatability UpdatabilityClause) {
 	flag_if(mut yylex, updatability.for_update && e.order.len > 0, 'F831')
+}
+
+// SortKeyPart is what a <sort key> must, or can't, contain.
+//
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28.b
+enum SortKeyPart {
+	column_reference
+	query_expression
+	set_function
+}
+
+// parsed_sort_key_part records a part that has been parsed, wherever it is,
+// since the actions for it don't know if they're in a sort key.
+fn parsed_sort_key_part(mut yylex YYLexer, part SortKeyPart) {
+	if mut yylex is Lexer {
+		yylex.sort_key_parts << part
+	}
+}
+
+// start_sort_key is called before a <sort key> is parsed. It can contain a
+// subquery that has its own sort keys, so they're a stack.
+fn start_sort_key(mut yylex YYLexer) {
+	if mut yylex is Lexer {
+		yylex.sort_key_starts << yylex.sort_key_parts.len
+	}
+}
+
+// flag_sort_key flags a <sort key> that has just been parsed from the parts
+// since it started.
+fn flag_sort_key(mut yylex YYLexer) {
+	if mut yylex is Lexer {
+		parts := yylex.sort_key_parts[yylex.sort_key_starts.pop()..]
+		flag_if(mut yylex, SortKeyPart.column_reference !in parts, vsql_sort_key_without_column)
+		flag_if(mut yylex, SortKeyPart.query_expression in parts, vsql_sort_key_subquery)
+		flag_if(mut yylex, SortKeyPart.set_function in parts, vsql_sort_key_aggregate)
+	}
+}
+
+// flag_mod_argument flags an argument of MOD that contains a literal with a
+// scale or an approximate literal. It's only flagged from the syntax, so an
+// argument of a type like that for any other reason (such as a column) isn't.
+//
+// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 12
+fn flag_mod_argument(mut yylex YYLexer, e NumericValueExpression) {
+	flag_if(mut yylex, numeric_has_non_integer_literal(e), vsql_mod_not_integer)
+}
+
+fn numeric_has_non_integer_literal(e NumericValueExpression) bool {
+	if n := e.n {
+		if numeric_has_non_integer_literal(n) {
+			return true
+		}
+	}
+
+	return term_has_non_integer_literal(e.term)
+}
+
+fn term_has_non_integer_literal(e Term) bool {
+	if term := e.term {
+		if term_has_non_integer_literal(term) {
+			return true
+		}
+	}
+
+	return primary_has_non_integer_literal(e.factor)
+}
+
+fn primary_has_non_integer_literal(e NumericPrimary) bool {
+	if e is SignedValueExpressionPrimary {
+		return primary_has_non_integer_literal(*e.e)
+	}
+	if e is ValueExpressionPrimary && e is ParenthesizedValueExpression {
+		inner := *e.e
+		if inner is CommonValueExpression && inner is NumericValueExpression {
+			return numeric_has_non_integer_literal(inner)
+		}
+		primary := value_primary_of(inner) or { return false }
+
+		return primary is ValueSpecification && primary is Value
+			&& is_non_integer_literal(primary)
+	}
+	value := e.value() or { return false }
+
+	return is_non_integer_literal(value)
+}
+
+fn is_non_integer_literal(v Value) bool {
+	return v.typ.typ in [.is_real, .is_double_precision] || v.typ.scale > 0
 }
 
 // flag_row_count flags a <fetch first row count> (F860) or <offset row count>

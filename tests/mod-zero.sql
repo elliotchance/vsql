@@ -1,15 +1,20 @@
+/* extensions V403-01 */
 VALUES MOD(5.0, 0.0);
 -- error 22012: division by zero
 
+/* extensions V403-01 */
 VALUES MOD(5.0, 0);
 -- error 22012: division by zero
 
+/* extensions V403-01 */
 VALUES MOD(5e0, 0e0);
 -- error 22012: division by zero
 
+/* extensions V403-01 */
 VALUES MOD(0.0, 5.0);
 -- COL1: 0.0
 
+/* extensions V403-01 */
 VALUES MOD(0e0, 5e0);
 -- COL1: 0e0
 

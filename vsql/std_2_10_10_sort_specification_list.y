@@ -13,7 +13,13 @@ sort_specification:
   }
 
 sort_key:
-  value_expression { $$.v = $1.v as ValueExpression }
+  sort_key_start value_expression {
+    flag_sort_key(mut yylex)
+    $$.v = $2.v as ValueExpression
+  }
+
+sort_key_start:
+  { start_sort_key(mut yylex) }
 
 ordering_specification:
   ASC { $$.v = true }

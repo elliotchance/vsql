@@ -16,6 +16,7 @@ table_subquery:
 // of the parenthesized_query_expression, see %prec SUBQUERY in grammar.y.
 subquery:
   parenthesized_query_expression %prec SUBQUERY {
+    parsed_sort_key_part(mut yylex, .query_expression)
     flag_query_expression(mut yylex, $1.v as QueryExpression, .subquery)
     $$.v = TablePrimary{
       body: $1.v as QueryExpression

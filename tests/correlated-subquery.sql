@@ -90,6 +90,7 @@ SELECT x, CASE WHEN EXISTS (SELECT * FROM t2 WHERE t2.x = t1.x) THEN 'yes' ELSE 
 -- X: 3 E: yes
 -- X: NULL E: no
 
+/* extensions V202-02 V202-03 */
 SELECT x FROM t1 ORDER BY (SELECT COUNT(*) FROM t2 WHERE t2.x = t1.x) DESC, x;
 -- X: 3
 -- X: 2

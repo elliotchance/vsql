@@ -326,10 +326,10 @@ DROP SCHEMA s CASCADE;
 -- flags: F032, F381
 -- error 3F000: invalid schema name: S
 
-/* extensions V002-01 */
+/* extensions V104-01 */
 /* flags */
 DROP TABLE t;
--- flags: V002-01
+-- flags: V104-01
 -- msg: DROP TABLE 1
 
 /* flags */
@@ -352,10 +352,10 @@ ALTER TABLE t ALTER COLUMN y DROP DEFAULT;
 -- flags: F381
 -- error 42601: syntax error: column Y has no DEFAULT
 
-/* extensions V002-02 */
+/* extensions V105-01 */
 /* flags */
 ALTER TABLE t DROP COLUMN y;
--- flags: F033, V002-02
+-- flags: F033, V105-01
 -- msg: ALTER TABLE 1
 
 /* flags */
@@ -368,10 +368,10 @@ ALTER TABLE t ADD CONSTRAINT c CHECK (x > 0);
 -- flags: F381, F491
 -- msg: ALTER TABLE 1
 
-/* extensions V002-03 */
+/* extensions V105-02 */
 /* flags */
 ALTER TABLE t DROP CONSTRAINT c;
--- flags: F381, F491, V002-03
+-- flags: F381, F491, V105-02
 -- error 42704: no such constraint: C on ":memory:".PUBLIC.T
 
 /* flags */
@@ -384,10 +384,10 @@ ALTER SEQUENCE seq RESTART WITH 1;
 -- flags: T176
 -- msg: ALTER SEQUENCE 1
 
-/* extensions V003-01 */
+/* extensions V107-01 */
 /* flags */
 DROP SEQUENCE seq;
--- flags: T176, V003-01
+-- flags: T176, V107-01
 -- msg: DROP SEQUENCE 1
 
 /* flags */
@@ -512,10 +512,10 @@ SELECT x FROM t WHERE y LIKE 'a' || 'b' OR y LIKE UPPER(y) OR (y) LIKE 'a';
 -- flags: F281
 -- X: 1
 
-/* extensions V002-02 */
+/* extensions V105-01 */
 /* flags */
 ALTER TABLE t DROP y;
--- flags: F033, V002-02
+-- flags: F033, V105-01
 -- msg: ALTER TABLE 1
 
 /* flags */
@@ -528,7 +528,7 @@ SELECT CURRENT_TIME(3) FROM t WHERE y NOT LIKE 'b' ESCAPE '\';
 -- flags: F411, F555
 -- COL1: 14:05:03.120+0500
 
-/* extensions V004-01 V004-02 V004-03 V004-04 V004-05 V004-06 */
+/* extensions V108-01 V109-01 V110-01 V111-01 V112-01 V113-01 */
 /* flags */
 START TRANSACTION;
 DECLARE c CURSOR WITHOUT HOLD FOR SELECT * FROM t;
@@ -540,23 +540,23 @@ FETCH NEXT FROM c;
 CLOSE c;
 -- flags: T241
 -- msg: START TRANSACTION
--- flags: T551, V004-01
+-- flags: T551, V108-01
 -- msg: DECLARE CURSOR
--- flags: V004-02
+-- flags: V109-01
 -- msg: OPEN
--- flags: V004-03
+-- flags: V110-01
 -- X: 1 Y: a B: TRUE D: 2026-10-28
--- flags: V004-06
+-- flags: V113-01
 -- msg: UPDATE 1
--- flags: V004-05
+-- flags: V112-01
 -- msg: DELETE 1
--- flags: F431, V004-03
+-- flags: F431, V110-01
 -- warning 02000: no data
--- flags: V004-04
+-- flags: V111-01
 -- msg: CLOSE
 
-/* extensions V004-01 */
+/* extensions V108-01 */
 /* flags */
 DECLARE c CURSOR FOR SELECT * FROM t ORDER BY x FOR UPDATE;
--- flags: F831, V004-01
+-- flags: F831, V108-01
 -- msg: DECLARE CURSOR

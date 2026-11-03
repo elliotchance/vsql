@@ -30,9 +30,15 @@ vsql Extensions
 
 The language that only vsql has is flagged with a Feature ID whose letter is
 ``V``, which the standard reserves for implementation-defined features. Each
-Feature ID is ``VXXX-YY``: ``VXXX`` is a concept (of the standard, such as
-tables, or one that only vsql has, such as ``EXPLAIN``) and ``YY`` is each
-extension of it.
+Feature ID is ``VXXX-YY``: ``VXXX`` is what's extended and ``YY`` is each extension
+of it. The first digit of ``VXXX`` is the kind of thing that's extended:
+
+- ``V0XX``: A statement that isn't in the standard, such as ``EXPLAIN``.
+- ``V1XX``: A statement of the standard, other than a query, such as
+  ``DROP TABLE``. An alias of a statement is an extension of that statement.
+- ``V2XX``: A query, by its clause, such as ``ORDER BY``.
+- ``V3XX``: An operator or predicate.
+- ``V4XX``: A function, by its category in :doc:`functions`.
 
 .. list-table::
    :header-rows: 1
@@ -53,49 +59,101 @@ extension of it.
    * - ``V001-03``
      - ``EXPLAIN`` before a searched ``UPDATE`` (see :doc:`explain`).
 
-   * - ``V002``
-     - Tables.
+   * - ``V104``
+     - ``DROP TABLE``.
 
-   * - ``V002-01``
+   * - ``V104-01``
      - ``DROP TABLE`` without ``CASCADE`` or ``RESTRICT`` (it's ``RESTRICT``).
 
-   * - ``V002-02``
+   * - ``V105``
+     - ``ALTER TABLE``.
+
+   * - ``V105-01``
      - ``DROP COLUMN`` without ``CASCADE`` or ``RESTRICT`` (it's ``RESTRICT``).
 
-   * - ``V002-03``
+   * - ``V105-02``
      - ``DROP CONSTRAINT`` without ``CASCADE`` or ``RESTRICT`` (it's
        ``RESTRICT``).
 
-   * - ``V003``
-     - Sequence generators.
+   * - ``V107``
+     - ``DROP SEQUENCE``.
 
-   * - ``V003-01``
+   * - ``V107-01``
      - ``DROP SEQUENCE`` without ``CASCADE`` or ``RESTRICT`` (it's
        ``RESTRICT``).
 
-   * - ``V004``
-     - Cursors (see :doc:`cursors`).
+   * - ``V108``
+     - ``DECLARE CURSOR`` (see :doc:`cursors`).
 
-   * - ``V004-01``
+   * - ``V108-01``
      - ``DECLARE CURSOR`` outside of an SQL-client module.
 
-   * - ``V004-02``
+   * - ``V109``
+     - ``OPEN`` (see :doc:`cursors`).
+
+   * - ``V109-01``
      - ``OPEN`` outside of an SQL-client module.
 
-   * - ``V004-03``
+   * - ``V110``
+     - ``FETCH`` (see :doc:`cursors`).
+
+   * - ``V110-01``
      - ``FETCH`` without ``INTO`` (the row is returned).
 
-   * - ``V004-04``
+   * - ``V111``
+     - ``CLOSE`` (see :doc:`cursors`).
+
+   * - ``V111-01``
      - ``CLOSE`` outside of an SQL-client module.
 
-   * - ``V004-05``
+   * - ``V112``
+     - ``DELETE`` (see :doc:`cursors`).
+
+   * - ``V112-01``
      - ``DELETE ... WHERE CURRENT OF`` outside of an SQL-client module.
 
-   * - ``V004-06``
+   * - ``V113``
+     - ``UPDATE`` (see :doc:`cursors`).
+
+   * - ``V113-01``
      - ``UPDATE ... WHERE CURRENT OF`` outside of an SQL-client module.
 
-   * - ``V009``
+   * - ``V201``
+     - ``FROM``.
+
+   * - ``V201-02``
+     - A derived table without a correlation name, such as
+       ``SELECT * FROM (VALUES 1)``.
+
+   * - ``V202``
+     - ``ORDER BY``.
+
+   * - ``V202-01``
+     - A sort key that doesn't contain a column reference, such as
+       ``ORDER BY 1``.
+
+   * - ``V202-02``
+     - A sort key that contains a subquery.
+
+   * - ``V202-03``
+     - A sort key that contains an aggregate function.
+
+   * - ``V301``
      - Comparison operators (see :doc:`operators`).
 
-   * - ``V009-01``
+   * - ``V301-01``
      - ``!=`` as an alias for ``<>``.
+
+   * - ``V403``
+     - Mathematical functions (see :doc:`functions`).
+
+   * - ``V403-01``
+     - ``MOD`` with an argument that contains a literal that has a scale or is
+       approximate, such as ``MOD(5.5, 2)``. It's only flagged from the syntax,
+       so a column of such a type isn't flagged.
+
+   * - ``V404``
+     - String functions (see :doc:`functions`).
+
+   * - ``V404-01``
+     - ``TRIM`` with only ``FROM``, such as ``TRIM(FROM x)``.

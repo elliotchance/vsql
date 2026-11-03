@@ -96,7 +96,7 @@ SELECT * FROM public.t;
 
 -- # Changing a table from another schema doesn't check its stored definitions
 -- # again with that schema, only the new one.
-/* extensions V002-02 */
+/* extensions V105-01 */
 CREATE TABLE t (a INT CHECK (t.a > 0), b INT GENERATED ALWAYS AS (t.a + 1), c INT);
 CREATE SCHEMA x;
 SET SCHEMA 'X';

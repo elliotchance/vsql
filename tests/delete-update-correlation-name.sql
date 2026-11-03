@@ -309,7 +309,7 @@ EXPLAIN UPDATE t u SET x = 1 WHERE u.id = 1;
 -- EXPLAIN: TABLE U (ID INTEGER NOT NULL, X INTEGER)
 
 -- # A positioned DELETE.
-/* extensions V004-01 V004-02 V004-03 V004-04 V004-05 */
+/* extensions V108-01 V109-01 V110-01 V111-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
@@ -332,7 +332,7 @@ COMMIT;
 -- msg: COMMIT
 
 -- # A positioned UPDATE.
-/* extensions V004-01 V004-02 V004-03 V004-04 V004-06 */
+/* extensions V108-01 V109-01 V110-01 V111-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
@@ -357,7 +357,7 @@ COMMIT;
 -- msg: COMMIT
 
 -- # A positioned statement hides the name of the table in a set clause.
-/* extensions V004-01 V004-02 V004-03 V004-06 */
+/* extensions V108-01 V109-01 V110-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
@@ -370,7 +370,7 @@ UPDATE t AS u SET x = t.x + 1 WHERE CURRENT OF c;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
 
 -- # The cursor is matched by the table name, not the correlation name.
-/* extensions V004-01 V004-02 V004-03 V004-05 */
+/* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
@@ -382,7 +382,7 @@ DELETE FROM s AS t WHERE CURRENT OF c;
 -- ID: 1 X: 10
 -- error 42601: syntax error: table S is not the table of cursor C
 
-/* extensions V004-01 V004-02 V004-03 V004-06 */
+/* extensions V108-01 V109-01 V110-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
@@ -395,7 +395,7 @@ UPDATE s AS t SET y = 1 WHERE CURRENT OF c;
 -- error 42601: syntax error: table S is not the table of cursor C
 
 -- # The column of a positioned UPDATE must still be updatable by the cursor.
-/* extensions V004-01 V004-02 V004-03 V004-06 */
+/* extensions V108-01 V109-01 V110-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t FOR UPDATE OF x;
 OPEN c;

@@ -3,7 +3,7 @@ CREATE TABLE PUBLIC.t1 (x INT, y VARCHAR(16));
 INSERT INTO t1 (x, y) VALUES (123, 'hello');
 INSERT INTO t1 (x, y) VALUES (456, 'world');
 
-/* extensions V001-01 */
+/* extensions V001-01 V201-02 */
 EXPLAIN SELECT * FROM (SELECT * FROM t1);
 -- EXPLAIN: $1:
 -- EXPLAIN:   TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(16))
@@ -11,7 +11,7 @@ EXPLAIN SELECT * FROM (SELECT * FROM t1);
 -- EXPLAIN: TABLE $1 (X INTEGER, Y CHARACTER VARYING(16))
 -- EXPLAIN: EXPR ($1.X INTEGER, $1.Y CHARACTER VARYING(16))
 
-/* extensions V001-01 */
+/* extensions V001-01 V201-02 */
 EXPLAIN SELECT * FROM (SELECT x FROM t1);
 -- EXPLAIN: $1:
 -- EXPLAIN:   TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(16))
@@ -19,7 +19,7 @@ EXPLAIN SELECT * FROM (SELECT x FROM t1);
 -- EXPLAIN: TABLE $1 (X INTEGER)
 -- EXPLAIN: EXPR ($1.X INTEGER)
 
-/* extensions V001-01 */
+/* extensions V001-01 V201-02 */
 EXPLAIN SELECT x FROM (SELECT x FROM t1);
 -- EXPLAIN: $1:
 -- EXPLAIN:   TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(16))
@@ -27,15 +27,17 @@ EXPLAIN SELECT x FROM (SELECT x FROM t1);
 -- EXPLAIN: TABLE $1 (X INTEGER)
 -- EXPLAIN: EXPR (X INTEGER)
 
+/* extensions V201-02 */
 SELECT x FROM (SELECT x FROM t1);
 -- X: 123
 -- X: 456
 
+/* extensions V201-02 */
 SELECT * FROM (SELECT x FROM t1);
 -- X: 123
 -- X: 456
 
-/* extensions V001-01 */
+/* extensions V001-01 V201-02 */
 EXPLAIN SELECT x, y FROM (SELECT x, y FROM t1);
 -- EXPLAIN: $1:
 -- EXPLAIN:   TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(16))
@@ -43,11 +45,12 @@ EXPLAIN SELECT x, y FROM (SELECT x, y FROM t1);
 -- EXPLAIN: TABLE $1 (X INTEGER, Y CHARACTER VARYING(16))
 -- EXPLAIN: EXPR (X INTEGER, Y CHARACTER VARYING(16))
 
+/* extensions V201-02 */
 SELECT x, y FROM (SELECT x, y FROM t1);
 -- X: 123 Y: hello
 -- X: 456 Y: world
 
-/* extensions V001-01 */
+/* extensions V001-01 V201-02 */
 EXPLAIN SELECT y FROM (SELECT x, y FROM t1);
 -- EXPLAIN: $1:
 -- EXPLAIN:   TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(16))
@@ -55,10 +58,12 @@ EXPLAIN SELECT y FROM (SELECT x, y FROM t1);
 -- EXPLAIN: TABLE $1 (X INTEGER, Y CHARACTER VARYING(16))
 -- EXPLAIN: EXPR (Y CHARACTER VARYING(16))
 
+/* extensions V201-02 */
 SELECT y FROM (SELECT x, y FROM t1);
 -- Y: hello
 -- Y: world
 
+/* extensions V201-02 */
 SELECT x FROM (SELECT x FROM t1) ORDER BY x DESC;
 -- X: 456
 -- X: 123
@@ -67,7 +72,7 @@ SELECT t.y, COUNT(*) FROM (SELECT y FROM t1) AS t GROUP BY t.y;
 -- Y: hello COL2: 1
 -- Y: world COL2: 1
 
-/* extensions V001-01 */
+/* extensions V001-01 V201-02 */
 EXPLAIN SELECT * FROM (SELECT x + char_length(y) FROM t1);
 -- EXPLAIN: $1:
 -- EXPLAIN:   TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(16))
@@ -75,11 +80,12 @@ EXPLAIN SELECT * FROM (SELECT x + char_length(y) FROM t1);
 -- EXPLAIN: TABLE $1 (COL1 INTEGER)
 -- EXPLAIN: EXPR ($1.COL1 INTEGER)
 
+/* extensions V201-02 */
 SELECT * FROM (SELECT x + char_length(y) FROM t1);
 -- COL1: 128
 -- COL1: 461
 
-/* extensions V001-01 */
+/* extensions V001-01 V201-02 */
 EXPLAIN SELECT * FROM (SELECT x + char_length(y) AS foo FROM t1);
 -- EXPLAIN: $1:
 -- EXPLAIN:   TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(16))
@@ -87,11 +93,12 @@ EXPLAIN SELECT * FROM (SELECT x + char_length(y) AS foo FROM t1);
 -- EXPLAIN: TABLE $1 (FOO INTEGER)
 -- EXPLAIN: EXPR ($1.FOO INTEGER)
 
+/* extensions V201-02 */
 SELECT * FROM (SELECT x + char_length(y) AS foo FROM t1);
 -- FOO: 128
 -- FOO: 461
 
-/* extensions V001-01 */
+/* extensions V001-01 V201-02 */
 EXPLAIN SELECT foo AS bar FROM (SELECT x + char_length(y) AS foo FROM t1);
 -- EXPLAIN: $1:
 -- EXPLAIN:   TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(16))
@@ -99,6 +106,7 @@ EXPLAIN SELECT foo AS bar FROM (SELECT x + char_length(y) AS foo FROM t1);
 -- EXPLAIN: TABLE $1 (FOO INTEGER)
 -- EXPLAIN: EXPR (BAR INTEGER)
 
+/* extensions V201-02 */
 SELECT foo AS bar FROM (SELECT x + char_length(y) AS foo FROM t1);
 -- BAR: 128
 -- BAR: 461

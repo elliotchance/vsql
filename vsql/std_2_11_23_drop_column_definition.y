@@ -4,7 +4,7 @@
 //
 // Destroy a column of a base table.
 
-// The <drop behavior> is optional (V002-02, see vsql_drop_column_behavior).
+// The <drop behavior> is optional (V105-01, see vsql_drop_column_behavior).
 //
 // ISO/IEC 9075-2:2016(E), 11.23, <drop column definition>, Conformance Rules, 1
 drop_column_definition:

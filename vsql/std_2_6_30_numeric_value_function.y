@@ -104,6 +104,8 @@ absolute_value_expression:
 modulus_expression:
   MOD left_paren numeric_value_expression_dividend comma
   numeric_value_expression_divisor right_paren { 
+    flag_mod_argument(mut yylex, $3.v as NumericValueExpression)
+    flag_mod_argument(mut yylex, $5.v as NumericValueExpression)
     $$.v = RoutineInvocation{function_name: 'MOD', args: [
       ValueExpression(CommonValueExpression($3.v as NumericValueExpression))
       ValueExpression(CommonValueExpression($5.v as NumericValueExpression))

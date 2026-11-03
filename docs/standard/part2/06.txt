@@ -1177,7 +1177,7 @@
 6.30/SR/9                n/a          - - arrays (S091) and multisets (S271)
 6.30/SR/10               n/a          - - ARRAY_MAX_CARDINALITY (S403)
 6.30/SR/11               implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
-6.30/SR/12               partial      vsql/std_2_6_30_numeric_value_function.v tests/mod-zero.sql,tests/math.sql a scale and approximate numbers are also allowed, but aren't flagged (#770)
+6.30/SR/12               implemented  vsql/std_2_6_30_numeric_value_function.v tests/mod-zero.sql,tests/math.sql a scale and approximate numbers are also allowed (V403-01, only flagged for a literal)
 6.30/SR/12.a             n/a          - - DECFLOAT (T076)
 6.30/SR/12.b             implemented  vsql/funcs.v tests/numeric-function-types.sql
 6.30/SR/13               implemented  vsql/funcs.v tests/math.sql
@@ -1465,7 +1465,7 @@
 6.32/SR/13               implemented  vsql/std_2_6_32_string_value_function.v tests/trim.sql
 6.32/SR/13.a             container    - -
 6.32/SR/13.a.i           implemented  vsql/std_2_6_32_string_value_function.y tests/trim.sql
-6.32/SR/13.a.i.1         partial      vsql/std_2_6_32_string_value_function.y tests/trim.sql TRIM(FROM x) is also allowed, but isn't flagged (#770)
+6.32/SR/13.a.i.1         implemented  vsql/std_2_6_32_string_value_function.y tests/trim.sql TRIM(FROM x) is also allowed (V404-01)
 6.32/SR/13.a.i.2         implemented  vsql/std_2_6_32_string_value_function.y tests/trim.sql
 6.32/SR/13.a.i.3         implemented  vsql/std_2_6_32_string_value_function.y tests/trim.sql
 6.32/SR/13.a.ii          implemented  vsql/std_2_6_32_string_value_function.y tests/trim.sql

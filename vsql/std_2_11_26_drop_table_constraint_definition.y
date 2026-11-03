@@ -4,7 +4,7 @@
 //
 // Destroy a constraint on a table.
 
-// The <drop behavior> is optional (V002-03, see vsql_drop_constraint_behavior).
+// The <drop behavior> is optional (V105-02, see vsql_drop_constraint_behavior).
 //
 // ISO/IEC 9075-2:2016(E), 11.26, <drop table constraint definition>, Conformance Rules, 1
 drop_table_constraint_definition:

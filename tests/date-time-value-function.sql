@@ -193,7 +193,7 @@ SELECT * FROM t;
 
 -- # The query of a cursor is evaluated when it's opened.
 /* clock tick */
-/* extensions V004-01 V004-02 V004-03 V004-04 */
+/* extensions V108-01 V109-01 V110-01 V111-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x, LOCALTIME FROM (VALUES ROW(1), ROW(2)) AS t (x);
 OPEN c;

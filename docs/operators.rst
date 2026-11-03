@@ -14,7 +14,7 @@ comparisons, ``LIKE`` and ``SIMILAR TO``). The exceptions are ``IS NULL``,
 ``IS NOT NULL`` and the logical operators (``AND``, ``OR``, etc).
 
 ``!=`` is the same as ``<>`` everywhere that a comparison operator is allowed.
-It's a vsql extension and not standard SQL, so it's flagged with ``V009-01`` (see
+It's a vsql extension and not standard SQL, so it's flagged with ``V301-01`` (see
 :doc:`sql-flagging`). A ``CHECK`` constraint or generated column that's written
 with ``!=`` is stored, shown in ``INFORMATION_SCHEMA`` and dumped with ``<>``.
 

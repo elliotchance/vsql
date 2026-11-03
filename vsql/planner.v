@@ -641,7 +641,7 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 	// Only a query specification has its own tables. Otherwise, the ORDER BY can
 	// only use the columns of the result. A sort key doesn't have to contain a
 	// column reference, and it can contain a subquery or an aggregate function
-	// (#770). A column that isn't in the select list would be an extended sort key
+	// (V202-01, V202-02 and V202-03). A column that isn't in the select list would be an extended sort key
 	// column, which a grouped query can't have, so it must be a grouping column.
 	//
 	// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28

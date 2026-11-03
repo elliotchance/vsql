@@ -91,7 +91,7 @@
 14.4/GR/1                definition   - -
 14.4/GR/2                implemented  vsql/std_2_14_4_open_statement.v tests/cursors.sql
 # 14.5, <fetch statement>
-14.5                     partial      vsql/std_2_14_5_fetch_statement.v tests/cursors.sql only NEXT; outside of a module there's no <fetch target list> (V004-03)
+14.5                     partial      vsql/std_2_14_5_fetch_statement.v tests/cursors.sql only NEXT; outside of a module there's no <fetch target list> (V110-01)
 14.5/SR/1                implemented  vsql/std_2_14_7_select_statement_single_row.v vsql/sql_test.v every target is a host parameter
 14.5/SR/2                implemented  vsql/std_2_14_5_fetch_statement.y tests/cursors.sql
 14.5/SR/3                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql

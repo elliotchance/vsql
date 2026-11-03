@@ -213,6 +213,7 @@ SELECT a, COUNT(*) AS n FROM g GROUP BY a HAVING COUNT(*) > 1 ORDER BY n;
 -- A: 3 N: 3
 
 -- # The argument of an aggregate function isn't a column of the result.
+/* extensions V202-03 */
 SELECT a AS b, SUM(b) AS s FROM g GROUP BY a ORDER BY SUM(b);
 -- B: 2 S: 1
 -- B: 3 S: 9
@@ -220,6 +221,7 @@ SELECT a AS b, SUM(b) AS s FROM g GROUP BY a ORDER BY SUM(b);
 
 -- # A subquery in a sort key can't use an alias (it isn't standard SQL anyway),
 -- # so the name is the column of the table.
+/* extensions V202-02 V202-03 */
 SELECT y AS a FROM t ORDER BY (SELECT MAX(w) FROM u WHERE u.x = a);
 SELECT -y AS w FROM t ORDER BY (SELECT w FROM u WHERE u.x = t.x);
 SELECT z AS y FROM t ORDER BY (SELECT y FROM (VALUES 1) AS v);
@@ -271,6 +273,7 @@ SELECT x FROM t WHERE x = (SELECT -w AS x FROM u ORDER BY x FETCH FIRST 1 ROW ON
 
 -- # A sort key can't contain a NEXT VALUE FOR, but it can be the name of a column
 -- # of the result that does. Each row uses one value, whatever the sort compares.
+/* extensions V202-01 */
 SELECT x FROM t ORDER BY NEXT VALUE FOR seq;
 SELECT NEXT VALUE FOR seq AS n FROM t ORDER BY x FETCH FIRST 1 ROW ONLY;
 SELECT NEXT VALUE FOR seq AS n FROM t ORDER BY n DESC;
@@ -306,7 +309,7 @@ EXPLAIN SELECT y + 1 AS a FROM t ORDER BY a;
 -- EXPLAIN: EXPR (A INTEGER)
 
 -- # The same rule applies to a cursor. Its rows are found when it's opened.
-/* extensions V004-01 V004-02 V004-03 */
+/* extensions V108-01 V109-01 V110-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT y + 1 AS a FROM t ORDER BY a;
 OPEN c;
@@ -320,7 +323,7 @@ FETCH NEXT FROM c;
 -- A: 21
 -- A: 31
 
-/* extensions V004-01 V004-02 V004-03 */
+/* extensions V108-01 V109-01 V110-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT -x AS x FROM t ORDER BY x;
 OPEN c;
@@ -330,7 +333,7 @@ FETCH NEXT FROM c;
 -- msg: OPEN
 -- X: -3
 
-/* extensions V004-01 */
+/* extensions V108-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x AS a, y AS a FROM t ORDER BY a;
 -- msg: START TRANSACTION

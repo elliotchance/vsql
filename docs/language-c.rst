@@ -269,7 +269,9 @@ column. It can't have ``UNION``, ``EXCEPT``, ``INTERSECT``, ``ORDER BY``,
   value, otherwise ``0``.
 - ``01004`` (string data, right truncation) when a string doesn't fit in its
   parameter. The string is cut, and its indicator (if there is one) is set to
-  the length in bytes of the whole string.
+  the length in characters of the whole string.
+- ``22022`` (indicator overflow) when that length is too big for the indicator
+  parameter.
 - ``07002`` when the number of columns isn't the number of parameters. Without
   an asterisk (``*``) in the select list, this is an error when the module is
   compiled.

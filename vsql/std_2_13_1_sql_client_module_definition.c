@@ -147,6 +147,10 @@ static void vsql_m_free_prepared(struct vsql_m_prepared *p) {
   free(p);
 }
 
+/* The return code of an assignment that raises data exception — indicator
+ * overflow, which isn't a return code of the CLI. See vsql_m_diag. */
+#define VSQL_M_INDICATOR_OVERFLOW ((SQLRETURN)-100)
+
 static int vsql_m_failed(SQLRETURN rc) {
   return rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO;
 }
@@ -341,6 +345,7 @@ static const char *vsql_m_message(const char *sqlstate) {
       {"22002", "data exception: null value, no indicator parameter"},
       {"22003", "data exception: numeric value out of range"},
       {"22005", "data exception: error in assignment"},
+      {"22022", "data exception: indicator overflow"},
       {"22024", "data exception: unterminated C string"},
       {"24000", "invalid cursor state"},
       {"25001", "invalid transaction state: active SQL-transaction"},
@@ -409,6 +414,10 @@ static void vsql_m_diag(char *sqlstate, SQLRETURN rc, SQLSMALLINT type,
   }
   if (rc == SQL_NO_DATA) {
     vsql_m_status(sqlstate, "02000");
+    return;
+  }
+  if (rc == VSQL_M_INDICATOR_OVERFLOW) {
+    vsql_m_status(sqlstate, "22022");
     return;
   }
 

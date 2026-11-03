@@ -120,8 +120,7 @@ fn bind_targets(targets []SelectTarget, p ExternallyInvokedProcedure, mut b Boun
 	mut assignments := ''
 	for i, target in targets {
 		typ := target.parameter.typ or { HostParameterType{} }
-		has_indicator := if target.indicator == '' { 0 } else { 1 }
-		elements << '    ${typ.c_target(target.parameter.name, has_indicator)}'
+		mut max_indicator := 0
 		if target.parameter.name.to_upper() !in b.used {
 			b.used << target.parameter.name.to_upper()
 		}
@@ -131,8 +130,10 @@ fn bind_targets(targets []SelectTarget, p ExternallyInvokedProcedure, mut b Boun
 				b.used << indicator.name.to_upper()
 			}
 			indicator_type := indicator.typ or { HostParameterType{} }
+			max_indicator = indicator_type.max_indicator()
 			assignments += '    *${indicator.name} = (${indicator_type.c_type()})vsql_m_t[${i}].indicator;\n'
 		}
+		elements << '    ${typ.c_target(target.parameter.name, max_indicator)}'
 	}
 
 	return '  struct vsql_m_target vsql_m_t[${targets.len}] = {\n${elements.join(',\n')}};\n', assignments

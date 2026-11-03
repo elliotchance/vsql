@@ -42,39 +42,53 @@ static int vsql_m_put(char *target, size_t length, int pad, const char *value) {
 /*
  * The target of a value in the row of a <select statement: single row>. The
  * type is the SQL data type of the host parameter, and length is the length in
- * characters of a string (see vsql_m_put). The indicator is set when
- * has_indicator is 1.
+ * characters of a string (see vsql_m_put). max_indicator is the largest value
+ * that the indicator parameter can contain, or 0 (zero) if there isn't one.
  */
 struct vsql_m_target {
   SQLSMALLINT type;
   SQLINTEGER length;
   SQLPOINTER value;
-  int has_indicator;
+  SQLINTEGER max_indicator;
   SQLINTEGER indicator;
 };
 
+/* vsql_m_characters is the number of characters that start in a piece of a
+ * UTF-8 string, which can end in the middle of a character. */
+static SQLINTEGER vsql_m_characters(const char *s) {
+  SQLINTEGER characters = 0;
+
+  for (; *s != '\0'; s++) {
+    if (((unsigned char)*s & 0xC0) != 0x80) {
+      characters++;
+    }
+  }
+
+  return characters;
+}
+
 /*
  * vsql_m_assign assigns the value of column i to the target. The indicator is
- * SQL_NULL_DATA for a null value, or the length in octets (rather than
- * characters, #810) of a string that was truncated (warning: string data,
- * right truncation). A null value without an indicator parameter is an exception:
- * data exception — null value, no indicator parameter. The indicator of a
- * value that isn't truncated is its length, rather than 0 (zero), and it isn't
- * checked for an overflow (#782).
+ * SQL_NULL_DATA for a null value, the length in characters of a string that was
+ * truncated (warning: string data, right truncation), and otherwise 0 (zero). A
+ * null value without an indicator parameter is an exception: data exception —
+ * null value, no indicator parameter. A length that's too big for the indicator
+ * parameter is an exception: data exception — indicator overflow.
  *
  * The value is converted by SQLGetData, so one that isn't assignable is cast
  * when it's retrieved, rather than being a syntax error.
  *
  * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, Syntax Rules, 3 and 5.b
- * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 3 and 5
+ * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 3 to 6
  * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 7
  * ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 12.b
  */
 static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
                                struct vsql_m_target *t) {
-  SQLINTEGER *indicator = t->has_indicator ? &t->indicator : NULL;
+  SQLINTEGER *indicator = t->max_indicator > 0 ? &t->indicator : NULL;
+  SQLINTEGER characters;
   SQLRETURN rc;
-  char b[6];
+  char b[256];
 
   /*
    * A BOOLEAN is retrieved as 'TRUE' or 'FALSE', and is 1 or 0 in C.
@@ -86,6 +100,7 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
     rc = SQLGetData(stmt, i, SQL_CHAR, b, sizeof(b), indicator);
     if (!vsql_m_failed(rc) && (indicator == NULL || *indicator >= 0)) {
       *(long *)t->value = strcmp(b, "TRUE") == 0;
+      t->indicator = 0;
     }
     return rc;
   }
@@ -104,13 +119,38 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
    * ISO/IEC 9075-2:2016(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.b and 5.l
    */
   rc = SQLGetData(stmt, i, SQL_CHAR, t->value, (t->length + 1) * 4, indicator);
-  if (!vsql_m_failed(rc) && (indicator == NULL || *indicator >= 0) &&
-      vsql_m_put((char *)t->value, (size_t)t->length, t->type == SQL_CHAR,
-                 (char *)t->value)) {
-    rc = SQL_SUCCESS_WITH_INFO;
+  if (vsql_m_failed(rc) || (indicator != NULL && *indicator < 0)) {
+    return rc;
+  }
+  characters = vsql_m_characters((char *)t->value);
+  if (!vsql_m_put((char *)t->value, (size_t)t->length, t->type == SQL_CHAR,
+                  (char *)t->value)) {
+    t->indicator = 0;
+    return rc;
+  }
+  if (indicator == NULL) {
+    return SQL_SUCCESS_WITH_INFO;
   }
 
-  return rc;
+  /*
+   * The target only holds the start of a long value, so the characters of the
+   * rest of it are counted in pieces.
+   *
+   * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 5.a and 6.a
+   */
+  while (rc == SQL_SUCCESS_WITH_INFO) {
+    rc = SQLGetData(stmt, i, SQL_CHAR, b, sizeof(b), NULL);
+    if (vsql_m_failed(rc)) {
+      return rc;
+    }
+    characters += vsql_m_characters(b);
+  }
+  if (characters > t->max_indicator) {
+    return VSQL_M_INDICATOR_OVERFLOW;
+  }
+  t->indicator = characters;
+
+  return SQL_SUCCESS_WITH_INFO;
 }
 
 /*

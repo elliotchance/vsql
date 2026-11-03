@@ -140,6 +140,17 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 	}
 }
 
+// positioned_cursor returns the name of the cursor that a positioned DELETE or
+// UPDATE references (as the name of the cursor, not as it was written), or an
+// empty string for any other statement.
+pub fn (p PreparedStmt) positioned_cursor() string {
+	return match p.stmt {
+		DeleteStatementPositioned { p.stmt.cursor_name }
+		UpdateStatementPositioned { p.stmt.cursor_name }
+		else { '' }
+	}
+}
+
 // columns returns the columns of the result of a query, without executing it,
 // or none for a statement that doesn't return rows. Like query, params must
 // have a value for each parameter, which gives it a data type.

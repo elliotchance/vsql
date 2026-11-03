@@ -1589,6 +1589,11 @@ SQLRETURN SQLSetConnectAttr(
  *   SQLFetch(stmt);
  *   SQLExecDirect(stmt2, (SQLCHAR *)"DELETE FROM t WHERE CURRENT OF c",
  *                 SQL_NTS);
+ *
+ * The cursor must have been opened by then. A statement prepared with
+ * SQLPrepare can be executed again while the cursor is reopened by the same
+ * statement, but it's destroyed with the cursor (by preparing or executing
+ * another statement on stmt, or freeing stmt).
  */
 SQLRETURN SQLSetCursorName(
     SQLHSTMT     StatementHandle,

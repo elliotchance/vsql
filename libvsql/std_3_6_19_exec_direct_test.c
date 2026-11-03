@@ -253,3 +253,50 @@ UTEST_F(db, 6_19_exec_direct_failed_keeps_executed) {
   EXPECT_EQ(SQLRowCount(utest_fixture->stmt, &rows), SQL_SUCCESS);
   EXPECT_EQ(rows, 0);
 }
+
+/* The cursor of a positioned statement must be of another statement, and an
+ * invalid cursor name doesn't destroy the prepared statement. */
+UTEST_F(db, 6_19_exec_direct_positioned_invalid_cursor) {
+  SQLHSTMT stmt2;
+
+  ASSERT_EQ(SQLAllocStmt(utest_fixture->dbc, &stmt2), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt2, "CREATE TABLE t (x INTEGER)"), SQL_SUCCESS);
+  ASSERT_EQ(SQLSetCursorName(utest_fixture->stmt, (SQLCHAR *)"c1", SQL_NTS),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "SELECT x FROM t"), SQL_SUCCESS);
+  ASSERT_EQ(SQLCloseCursor(utest_fixture->stmt), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "DELETE FROM t WHERE CURRENT OF c1"),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "34000");
+
+  ASSERT_EQ(SQLPrepare(stmt2, (SQLCHAR *)"VALUES 1", SQL_NTS), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(stmt2, "DELETE FROM t WHERE CURRENT OF c2"), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "34000");
+  EXPECT_EQ(SQLExecute(stmt2), SQL_SUCCESS);
+}
+
+/* Executing another statement destroys the cursor, and the prepared statements
+ * that reference it. They don't use a later cursor with the name. */
+UTEST_F(db, 6_19_exec_direct_positioned_destroyed) {
+  SQLHSTMT stmt2;
+  SQLHSTMT stmt = utest_fixture->stmt;
+
+  ASSERT_EQ(SQLAllocStmt(utest_fixture->dbc, &stmt2), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt2, "CREATE TABLE t (x INTEGER)"), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt2, "INSERT INTO t (x) VALUES (1), (2)"), SQL_SUCCESS);
+  ASSERT_EQ(SQLSetCursorName(stmt, (SQLCHAR *)"c1", SQL_NTS), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt, "SELECT x FROM t"), SQL_SUCCESS);
+  ASSERT_EQ(SQLPrepare(stmt2, (SQLCHAR *)"DELETE FROM t WHERE CURRENT OF c1",
+                       SQL_NTS),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLCloseCursor(stmt), SQL_SUCCESS);
+
+  ASSERT_EQ(run_sql(stmt, "SELECT x FROM t"), SQL_SUCCESS);
+  ASSERT_EQ(SQLFetch(stmt), SQL_SUCCESS);
+  EXPECT_EQ(SQLExecute(stmt2), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_STMT, stmt2, "HY010");
+
+  ASSERT_EQ(SQLCloseCursor(stmt), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt, "SELECT x FROM t"), SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(stmt, 1), "1,2");
+}

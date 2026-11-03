@@ -13,10 +13,7 @@ import vsql
 // a value, so the IPD type is used if it's set, and otherwise it may only be
 // known after the statement is executed).
 //
-// The cursor of a positioned DELETE or UPDATE isn't checked until it's
-// executed (General Rules 6), and a prepared statement that references a
-// destroyed cursor isn't destroyed (General Rules 10), which are #749. The
-// cursor name of a query is generated when it's first needed (General Rules
+// The cursor name of a query is generated when it's first needed (General Rules
 // 12.b, see Stmt.get_cursor_name). A prepared statement stays valid in later
 // SQL-transactions (General Rules 14, which is implementation-dependent).
 
@@ -35,17 +32,18 @@ fn sql_prepare(statement_handle SQLInteger, statement_text &char, text_length SQ
 fn prepare(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16 {
 	stmt.invoke(false)!
 
-	// - 2 to 7. The same as ExecDirect.
+	// - 2 to 7. The same as ExecDirect. An error here leaves any prepared
+	// statement and cursor of S as they were.
 	p := preparable_statement(mut stmt, statement_text, text_length)!
+	mut prepared := prepare_statement(mut stmt, p)!
 
 	// - 10. Any prepared statement, cursor, select source and executed
 	// statement associated with S are destroyed.
 	stmt.prepared = none
 	stmt.executed = false
-	stmt.close_cursor()
+	stmt.destroy_cursor()
 
 	// - 11. P is prepared and the prepared statement is associated with S.
-	mut prepared := prepare_statement(mut stmt, p)!
 	stmt.prepared = prepared
 	stmt.prepared_function = stmt.diag.dynamic_function
 	stmt.prepared_function_code = stmt.diag.dynamic_function_code

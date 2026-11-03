@@ -72,7 +72,12 @@ fn set_cursor_name(mut stmt Stmt, cursor_name &char, name_length i16) !i16 {
 		}
 	}
 
-	// ISO/IEC 9075-3:2003(E), 6.55, SetCursorName, General Rules, 10
+	// ISO/IEC 9075-3:2003(E), 6.55, SetCursorName, General Rules, 10: a cursor
+	// always has the name of its statement, so a closed cursor with another
+	// name doesn't exist any more.
+	if normalized != normalize_cursor_name(stmt.cursor_name) {
+		stmt.destroy_cursor()
+	}
 	stmt.cursor_name = cn
 
 	return stmt.diag.result()

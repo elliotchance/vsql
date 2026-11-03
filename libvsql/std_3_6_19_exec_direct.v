@@ -9,13 +9,9 @@ import vsql
 // An SQL-transaction is started if one isn't active, and it must be ended with
 // EndTran (see 4.1, "Introduction to SQL/CLI").
 //
-// The cursor of a positioned DELETE or UPDATE is found by its name when the
-// statement is executed, which is an invalid cursor name if there isn't one
-// (General Rules 6, 12.b.iii.1 and 12.b.iii.2). The rows of that cursor were
-// copied when it was opened, so its fetched row isn't changed (General Rules
-// 12.b.iii.1.C and 12.b.iii.2.C, which are implementation-defined). A prepared
-// statement that references a destroyed cursor isn't destroyed (General Rules
-// 10.c), which is #749.
+// The rows of the cursor of a positioned DELETE or UPDATE were copied when it was
+// opened, so its fetched row isn't changed (General Rules 12.b.iii.1.C and
+// 12.b.iii.2.C, which are implementation-defined).
 //
 // The data type of a dynamic parameter isn't determined (General Rules 7.c and
 // 8), which is #649. There are no user-defined types, so there's no transform
@@ -42,15 +38,16 @@ fn sql_exec_direct(statement_handle SQLInteger, statement_text &char, text_lengt
 fn exec_direct(mut stmt Stmt, statement_text &char, text_length SQLInteger) !i16 {
 	p := preparable_statement(mut stmt, statement_text, text_length)!
 
+	// - 6, 7, 11. P is prepared, which raises a syntax error or an invalid
+	// cursor name.
+	mut prepared := prepare_statement(mut stmt, p)!
+
 	// - 10. Any prepared statement, cursor and select source associated with S
 	// are destroyed.
 	stmt.prepared = none
-	stmt.close_cursor()
+	stmt.destroy_cursor()
 
-	// - 11, 12. P is prepared and executed. A syntax error is raised by
-	// preparing it.
-	mut prepared := prepare_statement(mut stmt, p)!
-
+	// - 12. P is executed.
 	return execute_statement(mut stmt, mut prepared)
 }
 
@@ -60,7 +57,7 @@ fn exec_direct_text(mut stmt Stmt, text string) !i16 {
 }
 
 // preparable_statement is the text of a statement for ExecDirect or Prepare
-// (see 6.19, "ExecDirect", General Rules 2 to 7).
+// (see 6.19, "ExecDirect", General Rules 2 to 5 and 7).
 fn preparable_statement(mut stmt Stmt, statement_text &char, text_length SQLInteger) !string {
 	// - 2. If an open cursor is associated with S, then an exception condition
 	// is raised: invalid cursor state.
@@ -100,13 +97,15 @@ fn prepare_statement(mut stmt Stmt, p string) !&vsql.PreparedStmt {
 
 	// A positioned DELETE or UPDATE is a <preparable dynamic delete statement:
 	// positioned> (or update), because the cursor is a dynamic cursor (of
-	// another statement).
+	// another statement), which must exist.
 	match stmt.diag.dynamic_function_code {
 		18 {
 			stmt.diag.dynamic_function, stmt.diag.dynamic_function_code = 'PREPARABLE DYNAMIC DELETE CURSOR', 54
+			stmt.check_positioned_cursor(prepared.positioned_cursor())!
 		}
 		81 {
 			stmt.diag.dynamic_function, stmt.diag.dynamic_function_code = 'PREPARABLE DYNAMIC UPDATE CURSOR', 55
+			stmt.check_positioned_cursor(prepared.positioned_cursor())!
 		}
 		else {}
 	}
@@ -207,6 +206,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	if stmt.is_query {
 		stmt.open_cursor(result)
 		stmt.dynamic_cursor = name
+		stmt.has_cursor = is_select
 	}
 	describe(stmt, mut conn, result.columns)
 	autocommit(mut stmt.diag, stmt.dbc, true)!

@@ -59,7 +59,7 @@ fn sql_free_handle(handle_type i16, handle SQLInteger) i16 {
 			// exception condition is raised: CLI-specific condition — function
 			// sequence error.
 			stmt.invoke(false) or { return stmt.diag.error(err) }
-			stmt.close_cursor()
+			stmt.destroy_cursor()
 			autocommit(mut stmt.diag, stmt.dbc, true) or { return stmt.diag.error(err) }
 
 			free_stmt(h)

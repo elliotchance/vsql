@@ -423,7 +423,7 @@
 5.8/GR/3.h.viii.2.B.II.1 implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
 5.8/GR/3.h.viii.2.B.II.1.a impl-defined libvsql/std_3_5_8_implicit_fetch_using_clause.v - it isn't an error
 5.8/GR/3.h.viii.2.B.II.1.b implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
-5.8/GR/3.h.viii.2.B.II.2 partial      libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c the records aren't ordered by precedence (#741)
+5.8/GR/3.h.viii.2.B.II.2 implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_21_fetch_test.c
 5.8/GR/3.h.viii.2.B.II.2.a implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
 5.8/GR/3.h.viii.2.B.II.2.b implemented  libvsql/std_3_5_8_implicit_fetch_using_clause.v libvsql/std_3_6_22_fetch_scroll_test.c
 5.8/GR/3.h.viii.2.B.II.3 n/a          - - there are no binary large objects (T041)

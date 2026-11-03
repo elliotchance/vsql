@@ -44,10 +44,10 @@ fn sql_more_results(statement_handle SQLInteger) i16 {
 // no_more_results raises a completion condition: no data — no additional
 // dynamic result sets returned.
 fn no_more_results(mut diag Diagnostics) i16 {
-	diag.records << DiagnosticRecord{
+	diag.add(DiagnosticRecord{
 		sqlstate: '02001'
 		msg:      'no additional dynamic result sets returned'
-	}
+	})
 
 	return diag.no_data()
 }

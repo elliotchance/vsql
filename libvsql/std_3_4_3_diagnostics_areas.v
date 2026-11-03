@@ -6,9 +6,10 @@ import vsql
 //
 // Each handle has a diagnostics area that is emptied at the start of each CLI
 // routine (other than Error, GetDiagField and GetDiagRec) that's given the
-// handle. The conditions are read with GetDiagRec. The status records are in
-// the order that they're raised, rather than by precedence, which is #741.
-// There's no status record for a completion condition: no data (see no_data).
+// handle. The conditions are read with GetDiagRec. The status records are kept
+// ordered by ROW_NUMBER, then by precedence, then in the order that they're
+// raised (see DiagnosticRecord.position). There's no status record for a
+// completion condition: no data (see no_data).
 //
 // The concept is described by ISO/IEC 9075-1:2003(E), 4.8.4, Diagnostic
 // information.
@@ -25,6 +26,22 @@ mut:
 	// (see 4.3.1, "Setting of ROW_NUMBER and COLUMN_NUMBER fields").
 	row_number    int
 	column_number int
+}
+
+// position is where the status record sorts in a diagnostics area: by
+// ROW_NUMBER, and within a ROW_NUMBER, transaction rollback has precedence over
+// other exceptions, then no data, then warnings. The standard only needs this of
+// the first status record of a ROW_NUMBER, the others are
+// implementation-dependent.
+fn (r DiagnosticRecord) position() i64 {
+	precedence := match r.sqlstate[..2] {
+		'40' { 0 }
+		'02' { 2 }
+		'01' { 3 }
+		else { 1 }
+	}
+
+	return i64(r.row_number) * 4 + precedence
 }
 
 // Diagnostics is a diagnostics area. The header fields describe the last
@@ -85,13 +102,23 @@ fn (mut d Diagnostics) clear() {
 	d.transactions_rolled_back = 0
 }
 
+// add inserts a status record after the records that sort before or with it, so
+// that conditions of the same position stay in the order they were raised.
+fn (mut d Diagnostics) add(record DiagnosticRecord) {
+	mut i := d.records.len
+	for i > 0 && d.records[i - 1].position() > record.position() {
+		i--
+	}
+	d.records.insert(i, record)
+}
+
 // warning raises a completion condition, such as "01004 string data, right
 // truncation".
 fn (mut d Diagnostics) warning(sqlstate string, msg string) i16 {
-	d.records << DiagnosticRecord{
+	d.add(DiagnosticRecord{
 		sqlstate: sqlstate
 		msg:      msg
-	}
+	})
 	if d.returncode == sql_success {
 		d.returncode = sql_success_with_info
 	}
@@ -109,13 +136,13 @@ fn (mut d Diagnostics) row_condition(err IError, row_number int, column_number i
 	} else {
 		vsql.sqlstate_from_int(err.code())
 	}
-	d.records << DiagnosticRecord{
+	d.add(DiagnosticRecord{
 		sqlstate:      sqlstate
 		msg:           err.msg()
 		constraint:    vsql.violated_constraint(err) or { vsql.Identifier{} }
 		row_number:    row_number
 		column_number: column_number
-	}
+	})
 }
 
 // no_data raises a completion condition: no data. There isn't a status record
@@ -151,11 +178,11 @@ fn (mut d Diagnostics) error(err IError) i16 {
 	} else {
 		vsql.sqlstate_from_int(err.code())
 	}
-	d.records << DiagnosticRecord{
+	d.add(DiagnosticRecord{
 		sqlstate:   sqlstate
 		msg:        err.msg()
 		constraint: vsql.violated_constraint(err) or { vsql.Identifier{} }
-	}
+	})
 	d.returncode = sql_error
 
 	return sql_error

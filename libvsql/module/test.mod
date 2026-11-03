@@ -166,14 +166,13 @@ PROCEDURE fetch_held (SQLSTATE, :x INTEGER);
 PROCEDURE delete_held (SQLSTATE);
   DELETE FROM cur WHERE CURRENT OF "held";
 
--- A procedure can use a cursor that's declared after it.
+DECLARE c_all CURSOR FOR SELECT * FROM cur;
+
 PROCEDURE open_all (SQLSTATE);
   OPEN c_all;
 
 PROCEDURE fetch_all (SQLSTATE, :x INTEGER);
   FETCH FROM c_all INTO :x;
-
-DECLARE c_all CURSOR FOR SELECT * FROM cur;
 
 -- Feature B031, "Basic dynamic SQL".
 PROCEDURE execute_immediate (SQLSTATE, :sql VARCHAR(100));

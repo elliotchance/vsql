@@ -98,9 +98,11 @@ pub fn compile_module(source string, name string) !CompiledModule {
 // parse_sql_client_module reads an <SQL-client module definition>. Each part
 // that ends with a semicolon is a <declare cursor>, a "PROCEDURE ... (...)" or
 // the <SQL procedure statement> after it. The first part also starts with the
-// rest of the module. The cursors are read first, so a procedure can use a
-// cursor that's declared after it, and a cursor doesn't have to be opened
-// exactly once (#791).
+// rest of the module. The cursors are read before the procedures, since a
+// dynamic cursor can be for a statement that's prepared after it, but a
+// procedure can only use the cursors declared before it. There must be exactly
+// one OPEN of each <declare cursor>. A <dynamic declare cursor> doesn't have
+// that rule, so it can have any number of them.
 //
 // ISO/IEC 9075-2:2016(E), 13.1, <SQL-client module definition>, Syntax Rules, 11, 12 and 14
 fn parse_sql_client_module(source string) !SQLClientModule {
@@ -112,6 +114,7 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 	mut cursors := []ModuleCursor{}
 	mut declarations := []ModuleTokens{}
 	mut statements := []string{}
+	mut declared_counts := []int{}
 	mut i := 0
 	for i < parts.len {
 		if i > 0 {
@@ -140,6 +143,7 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 		}
 		declarations << t
 		statements << parts[i + 1]
+		declared_counts << cursors.len
 		i += 2
 	}
 
@@ -155,6 +159,7 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 	}
 
 	mut procedures := []ExternallyInvokedProcedure{}
+	mut opened := []string{}
 	for j, declaration in declarations {
 		t = declaration
 		mut procedure := t.procedure_declaration()!
@@ -168,9 +173,22 @@ fn parse_sql_client_module(source string) !SQLClientModule {
 			}
 		}
 
-		procedure.statement = parse_module_statement(statements[j], procedure, cursors,
+		declared := cursors[..declared_counts[j]]
+		procedure.statement = parse_module_statement(statements[j], procedure, declared,
 			prepared)!
 		procedures << procedure
+
+		mut statement := new_module_tokens(statements[j])!
+		if statement.next_word() == 'OPEN' {
+			opened << statement.module_cursor(procedure, declared)!.name
+		}
+	}
+
+	for cursor in cursors {
+		opens := opened.count(it == cursor.name)
+		if cursor.statement == '' && opens != 1 {
+			return sqlstate_42601('cursor ${cursor.name} must be opened by exactly one procedure, not ${opens}')
+		}
 	}
 
 	return SQLClientModule{schema, cursors, procedures}

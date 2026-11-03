@@ -422,8 +422,10 @@ fn cursor_specification(text string) !string {
 	return cs[i..].string()
 }
 
-// find_module_cursor is the cursor that's declared in the module with the
-// name.
+// find_module_cursor is the cursor with the name, in the cursors that are
+// declared before the procedure.
+//
+// ISO/IEC 9075-2:2016(E), 13.1, <SQL-client module definition>, Syntax Rules, 11 and 12
 fn find_module_cursor(cursors []ModuleCursor, name string, p ExternallyInvokedProcedure) !ModuleCursor {
 	for cursor in cursors {
 		if cursor.name == name {
@@ -431,7 +433,7 @@ fn find_module_cursor(cursors []ModuleCursor, name string, p ExternallyInvokedPr
 		}
 	}
 
-	return sqlstate_42601('procedure ${p.name}: cursor ${name} is not declared')
+	return sqlstate_42601('procedure ${p.name}: cursor ${name} must be declared before it is used')
 }
 
 // module_cursor reads the <cursor name> of an OPEN, FETCH or CLOSE in a module.

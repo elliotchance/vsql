@@ -49,7 +49,11 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 	// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.e.ii
 	mut implied := 'MODULE LANGUAGE C SCHEMA "PUBLIC"\n'
 	mut variables := map[string]CHostVariable{}
-	mut cursors := map[string][]string{}
+	// The cursors declared so far, each with the C call of the procedure that
+	// opens it, which is empty for a dynamic cursor.
+	mut cursors := map[string]string{}
+	// The procedures that open a cursor, which aren't called yet.
+	mut uncalled := []string{}
 	mut whenever := EmbeddedExceptionDeclarations{}
 	mut runtime := []string{}
 	mut in_declare := false
@@ -146,7 +150,8 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 			return embedded_error(line, sqlstate_42601('SQLSTATE must be defined in a declare section before the first EXEC SQL'))
 		}
 
-		mut names := embedded_variable_names(text) or { return embedded_error(line, err) }
+		names := embedded_variable_names(text) or { return embedded_error(line, err) }
+		mut call := ''
 		match first {
 			// The exception actions are in the implied program, instead of the
 			// implied module.
@@ -163,22 +168,27 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 				if t.accept('SCHEMA') || t.accept('AUTHORIZATION') {
 					return embedded_error(line, sqlstate_42601('DECLARE SCHEMA and DECLARE AUTHORIZATION are not supported'))
 				}
-				for name in names {
-					variables[name] or {
-						return embedded_error(line, sqlstate_42601('host variable :${name} is not defined'))
-					}
-				}
 
 				// The cursor (or dynamic cursor) is copied to the module, and
-				// it's deleted from the program. It's opened with the host
-				// variables in it.
+				// it's deleted from the program. There's one procedure that opens
+				// a <declare cursor>, with the host variables in it, whether the
+				// program has no OPEN of the cursor or several.
 				//
 				// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.h
 				// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.i
 				// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 23.c
 				cursor := declare_module_cursor(text, 0) or { return embedded_error(line, err) }
-				cursors[cursor.name] = names
 				implied += text.trim_space() + ';\n'
+				cursors[cursor.name] = ''
+				if cursor.statement == '' {
+					procedure, open_call := embedded_procedure(mut procedure_lines, line,
+						'OPEN ${cursor.sql_name}', names, variables) or {
+						return embedded_error(line, err)
+					}
+					implied += procedure
+					cursors[cursor.name] = open_call
+					uncalled << open_call.all_before('(')
+				}
 				program += new_lines
 				continue
 			}
@@ -188,43 +198,35 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 				// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 14 and 15
 				// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.l.ii
 				name := t.identifier('a cursor name') or { return embedded_error(line, err) }
-				cursor_names := cursors[name] or {
+				call = cursors[name] or {
 					return embedded_error(line, sqlstate_42601('cursor ${name} must be declared before it is opened'))
 				}
-				for n in cursor_names.reverse() {
-					if n !in names {
-						names.prepend(n)
+				if call != '' {
+					// The arguments are the host variables of the cursor, so
+					// the statement can't have any.
+					if t.peek() != none {
+						return embedded_error(line, sqlstate_42601('unexpected${t.near()}'))
 					}
+					uncalled = uncalled.filter(it != call.all_before('('))
 				}
 			}
 			else {}
 		}
 
-		// A procedure for the <SQL procedure statement>, with each host variable
-		// in it, which must be defined before the statement. Each procedure is
-		// for one statement.
-		//
-		// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 16
-		// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.l.i.1 to 22.l.i.5
-		// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.l.i.9
-		procedure := 'vsql_e${procedure_lines.len + 1}'
-		procedure_lines << line
-		mut parameters := ['SQLSTATE']
-		mut args := ['SQLSTATE']
-		for name in names {
-			variable := variables[name] or {
-				return embedded_error(line, sqlstate_42601('host variable :${name} is not defined'))
-			}
-			parameters << ':${name} ${variable.typ}'
-			args << if variable.is_array { name } else { '&${name}' }
+		// Each procedure is for one statement, other than the OPEN of a
+		// <declare cursor>.
+		if call == '' {
+			procedure, statement_call := embedded_procedure(mut procedure_lines, line, text,
+				names, variables) or { return embedded_error(line, err) }
+			implied += procedure
+			call = statement_call
 		}
-		implied += 'PROCEDURE ${procedure} (${parameters.join(', ')});\n  ${text.trim_space()};\n'
 
 		// The statement is replaced by a call of its procedure, and the
 		// exception actions.
 		//
 		// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 23.d
-		program += '{ ${procedure}(${args.join(', ')});${whenever.c_checks()} }${new_lines}'
+		program += '{ ${call};${whenever.c_checks()} }${new_lines}'
 		if whenever.constraints.len > 0 {
 			runtime = ['violated']
 		}
@@ -234,7 +236,7 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 		return embedded_error(cs.count(it == `\n`) + 1, sqlstate_42601('END DECLARE SECTION is missing'))
 	}
 	// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 1
-	if procedure_lines.len == 0 {
+	if procedure_lines.len == uncalled.len {
 		return sqlstate_42601('an embedded SQL program must have an SQL statement')
 	}
 	program += cs[start..].string()
@@ -248,10 +250,41 @@ pub fn precompile_c(source string, file_name string) !PrecompiledProgram {
 		return error_with_code(message, err.code())
 	}
 
+	// A static function that isn't called would be a warning of the C compiler,
+	// so it's only in the implied module.
+	called := SQLClientModule{
+		...m
+		procedures: m.procedures.filter(it.name !in uncalled)
+	}
+
 	return PrecompiledProgram{
 		implied_module: implied
-		source:         m.c_source('', true, runtime) + '#line 1 ${c_string(file_name)}\n' + program
+		source:         called.c_source('', true, runtime) + '#line 1 ${c_string(file_name)}\n' +
+			program
 	}
+}
+
+// embedded_procedure returns a procedure of the implied module for an <SQL
+// procedure statement>, with each host variable, which must be defined before
+// it, and the C call of the procedure.
+//
+// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 16
+// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.l.i.1 to 22.l.i.5
+// ISO/IEC 9075-2:2016(E), 21.1, <embedded SQL host program>, Syntax Rules, 22.l.i.9
+fn embedded_procedure(mut procedure_lines []int, line int, text string, names []string, variables map[string]CHostVariable) !(string, string) {
+	procedure := 'vsql_e${procedure_lines.len + 1}'
+	procedure_lines << line
+	mut parameters := ['SQLSTATE']
+	mut args := ['SQLSTATE']
+	for name in names {
+		variable := variables[name] or {
+			return sqlstate_42601('host variable :${name} is not defined')
+		}
+		parameters << ':${name} ${variable.typ}'
+		args << if variable.is_array { name } else { '&${name}' }
+	}
+
+	return 'PROCEDURE ${procedure} (${parameters.join(', ')});\n  ${text.trim_space()};\n', '${procedure}(${args.join(', ')})'
 }
 
 // exec_sql_end returns the position after the "EXEC SQL" (the <SQL prefix>)

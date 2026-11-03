@@ -2282,13 +2282,14 @@ fn test_open_cursor() ! {
 fn test_module_cursors() ! {
 	m := compile_module(module_header + 'DECLARE "c" /* FOR */ CURSOR WITH HOLD FOR SELECT x, y FROM t WHERE x > :min;
 PROCEDURE o (SQLSTATE, :min INTEGER); OPEN "c";
+DECLARE d CURSOR FOR SELECT * FROM t;
+PROCEDURE o2 (SQLSTATE); OPEN d;
 PROCEDURE f (SQLSTATE, :x INTEGER, :y VARCHAR(5), :i SMALLINT); FETCH NEXT FROM "c" INTO :x, :y INDICATOR :i;
 PROCEDURE f2 (SQLSTATE, :x INTEGER); FETCH FROM d INTO :x;
 PROCEDURE f3 (SQLSTATE, :x INTEGER, :y INTEGER); FETCH "c" INTO :x, :y;
 PROCEDURE cl (SQLSTATE); CLOSE "c";
 PROCEDURE del (SQLSTATE); DELETE FROM t WHERE CURRENT OF "c";
-PROCEDURE upd (SQLSTATE, :y VARCHAR(5)); UPDATE t SET y = :y WHERE CURRENT OF "c";
-DECLARE d CURSOR FOR SELECT * FROM t;',
+PROCEDURE upd (SQLSTATE, :y VARCHAR(5)); UPDATE t SET y = :y WHERE CURRENT OF "c";',
 		'm')!
 	assert m.source.contains('static const int vsql_m_cursor_count = 2;')
 	assert m.source.contains('  vsql_m_begin("OPEN", 53);\n  struct vsql_m_param vsql_m_p[1] = {\n')
@@ -2300,12 +2301,10 @@ DECLARE d CURSOR FOR SELECT * FROM t;',
 	assert m.source.contains('  vsql_m_begin("DELETE CURSOR", 18);\n  vsql_m_execute(SQLSTATE, "DELETE FROM t WHERE CURRENT OF \\"c\\"", 0, NULL);\n')
 	assert m.source.contains('  vsql_m_begin("UPDATE CURSOR", 81);\n')
 
-	// A cursor can be declared at the start of the module, and the cursors
-	// aren't in a module that doesn't use them. The SQL-connections still have
-	// a list of the cursors of each module, since they're shared with other
-	// modules that may have cursors.
-	m2 := compile_module(module_header + 'DECLARE c CURSOR FOR VALUES 1; PROCEDURE p (SQLSTATE); COMMIT;',
-		'm')!
+	// The cursors aren't in a module that doesn't have any. The SQL-connections
+	// still have a list of the cursors of each module, since they're shared with
+	// other modules that may have cursors.
+	m2 := compile_module(module_header + 'PROCEDURE p (SQLSTATE); COMMIT;', 'm')!
 	assert !m2.source.contains('vsql_m_cursor_count')
 
 	cursor_header := module_header + 'DECLARE c CURSOR FOR SELECT x FROM t; PROCEDURE p (SQLSTATE, :x INTEGER); '
@@ -2314,11 +2313,11 @@ DECLARE d CURSOR FOR SELECT * FROM t;',
 	assert module_error(cursor_header + 'FETCH NEXT c INTO :x;') == 'syntax error: expected FROM near c'
 	assert module_error(cursor_header + 'FETCH c :x;') == 'syntax error: expected INTO near :'
 	assert module_error(cursor_header + 'FETCH c INTO :x x;') == 'syntax error: procedure p: unexpected near x'
-	assert module_error(cursor_header + 'OPEN d;') == 'syntax error: procedure p: cursor D is not declared'
+	assert module_error(cursor_header + 'OPEN d;') == 'syntax error: procedure p: cursor D must be declared before it is used'
 	assert module_error(cursor_header + 'CLOSE c c;') == 'syntax error: procedure p: unexpected near c'
 	assert module_error(cursor_header + 'OPEN c c;') == 'syntax error: procedure p: unexpected near c'
-	assert module_error(cursor_header + 'DELETE FROM t WHERE CURRENT OF d;') == 'syntax error: procedure p: cursor D is not declared'
-	assert module_error(cursor_header + 'UPDATE t SET x = 1 WHERE CURRENT OF d;') == 'syntax error: procedure p: cursor D is not declared'
+	assert module_error(cursor_header + 'DELETE FROM t WHERE CURRENT OF d;') == 'syntax error: procedure p: cursor D must be declared before it is used'
+	assert module_error(cursor_header + 'UPDATE t SET x = 1 WHERE CURRENT OF d;') == 'syntax error: procedure p: cursor D must be declared before it is used'
 	assert module_error(cursor_header + 'DECLARE d CURSOR FOR VALUES 1;') == 'syntax error: procedure p: a cursor must be declared in the module, not in a procedure'
 	assert module_error(module_header + 'DECLARE c CURSOR FOR SELECT x FROM t WHERE x = :y; PROCEDURE p (SQLSTATE); OPEN c;') == 'syntax error: procedure p: host parameter :y is not declared'
 	assert module_error(cursor_header + 'COMMIT; DECLARE C CURSOR FOR VALUES 2;') == 'syntax error: cursor C is declared more than once'
@@ -2326,6 +2325,25 @@ DECLARE d CURSOR FOR SELECT * FROM t;',
 	assert module_error(module_header + 'DECLARE c CURSOR FOR VALUES 1 FOR READ ONLY; PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: cursor C: FOR READ ONLY and FOR UPDATE are not supported in a module'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); COMMIT; DECLARE c CURSOR FOR VALUES 1; PROCEDURE q (SQLSTATE);') == 'syntax error: a module must end with a procedure that has a statement'
 	assert module_error(module_header + 'DECLARE c CURSOR VALUES 1; PROCEDURE p (SQLSTATE); COMMIT;').starts_with('syntax error')
+
+	// A cursor is declared before each procedure that references it, even in
+	// the procedure that follows the declaration of another cursor.
+	declared_after := ' DECLARE c CURSOR FOR SELECT x FROM t; PROCEDURE q (SQLSTATE); OPEN c;'
+	for stmt in ['OPEN c', 'FETCH c INTO :x', 'CLOSE c', 'DELETE FROM t WHERE CURRENT OF c',
+		'UPDATE t SET x = 1 WHERE CURRENT OF c'] {
+		assert module_error(module_header + 'PROCEDURE p (SQLSTATE, :x INTEGER); ${stmt};' +
+			declared_after) == 'syntax error: procedure p: cursor C must be declared before it is used', stmt
+	}
+
+	// There's exactly one OPEN of each cursor, with any name that identifies it.
+	assert module_error(module_header + 'DECLARE c CURSOR FOR SELECT x FROM t; PROCEDURE p (SQLSTATE); CLOSE c;') == 'syntax error: cursor C must be opened by exactly one procedure, not 0'
+	assert module_error(module_header + 'DECLARE c CURSOR FOR SELECT x FROM t; PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: cursor C must be opened by exactly one procedure, not 0'
+	assert module_error(module_header + 'DECLARE c CURSOR FOR SELECT x FROM t; PROCEDURE p (SQLSTATE); OPEN c; PROCEDURE q (SQLSTATE); OPEN "C";') == 'syntax error: cursor C must be opened by exactly one procedure, not 2'
+	assert module_error(module_header + 'DECLARE c CURSOR FOR SELECT x FROM t; DECLARE d CURSOR FOR SELECT x FROM t; PROCEDURE p (SQLSTATE); OPEN c;') == 'syntax error: cursor D must be opened by exactly one procedure, not 0'
+
+	// "c" isn't C, so each has its own OPEN.
+	compile_module(module_header + 'DECLARE c CURSOR FOR VALUES 1; DECLARE "c" CURSOR FOR VALUES 2; PROCEDURE p (SQLSTATE); OPEN C; PROCEDURE q (SQLSTATE); OPEN "c";',
+		'm')!
 }
 
 // Feature B031, "Basic dynamic SQL".
@@ -2350,6 +2368,7 @@ PROCEDURE ex2 (SQLSTATE, :n INTEGER, :s VARCHAR(5), :i INTEGER); EXECUTE s INTO 
 PROCEDURE ex3 (SQLSTATE); EXECUTE s INTO DESCRIPTOR d USING DESCRIPTOR GLOBAL \'g\';
 PROCEDURE ei (SQLSTATE); EXECUTE IMMEDIATE \'DELETE FROM t\';
 DECLARE c0 CURSOR FOR SELECT 1 FROM t;
+PROCEDURE o0 (SQLSTATE); OPEN c0;
 DECLARE dc CURSOR WITH HOLD FOR s;
 PROCEDURE o (SQLSTATE); OPEN dc;
 PROCEDURE o2 (SQLSTATE, :n INTEGER); OPEN dc USING :n;
@@ -2431,11 +2450,19 @@ PROCEDURE up (SQLSTATE); UPDATE t SET x = 1 WHERE CURRENT OF dc;',
 		'DELETE FROM "";':                              'procedure p: a delimited identifier cannot be empty'
 		'COMMIT; DECLARE dc CURSOR FOR x;':             'cursor DC: statement X is not prepared in the module'
 		'COMMIT; DECLARE dc CURSOR FOR 1;':             'expected statement name near 1'
-		'FETCH dc :n; DECLARE dc CURSOR FOR s;':        'expected INTO near :'
+		'OPEN dc; DECLARE dc CURSOR FOR s;':            'procedure p: cursor DC must be declared before it is used'
+		'FETCH dc INTO :n; DECLARE dc CURSOR FOR s;':   'procedure p: cursor DC must be declared before it is used'
 	} {
 		assert module_error(h + stmt + prepared) == 'syntax error: ${expected}', stmt
 	}
 	assert module_error(h + "PREPARE 1 FROM 'x';") == 'syntax error: expected statement name near 1'
+	assert module_error(h + 'COMMIT; DECLARE dc CURSOR FOR s; PROCEDURE f (SQLSTATE, :n INTEGER); FETCH dc :n;' +
+		prepared) == 'syntax error: expected INTO near :'
+
+	// A dynamic cursor doesn't have to be opened, and can be opened more than
+	// once. Its statement can be prepared after it.
+	compile_module(module_header + "DECLARE dc CURSOR FOR s; PROCEDURE p (SQLSTATE); PREPARE s FROM 'x';",
+		'm')!
 }
 
 fn embed_error(source string) string {
@@ -2475,7 +2502,7 @@ PROCEDURE vsql_e1 (SQLSTATE, :a BIGINT, :g CHARACTER VARYING(4), :d SMALLINT, :e
     , :h, :a);
 DECLARE c CURSOR FOR SELECT x FROM t WHERE x = :b;
 PROCEDURE vsql_e2 (SQLSTATE, :b BIGINT);
-  OPEN c;
+  OPEN "C";
 '
 	assert p.source.contains('static void vsql_e1(char SQLSTATE[6], long long *a, char g[20], short *d, float *e, double *f, char h[12]) {')
 	assert p.source.contains('#line 1 "x.sqc"\n// EXEC SQL is not in a comment\n')
@@ -2485,6 +2512,69 @@ PROCEDURE vsql_e2 (SQLSTATE, :b BIGINT);
 	assert p.source.contains("  { vsql_e2(SQLSTATE, &b); if (SQLSTATE[0] == '0' && SQLSTATE[1] == '1') goto warned; if (SQLSTATE[0] == '0' && SQLSTATE[1] == '2') goto done; }\nfailed:")
 	assert !p.source.contains('#include "x.h"')
 	assert !p.source.contains('vsql_m_violated')
+}
+
+// 21.1 <embedded SQL host program>, SR 22.h and 22.l.ii: the implied module has
+// one procedure that opens a <declare cursor>, which is called by each OPEN. It
+// isn't defined in the C if it's not called, since it would be a warning. A
+// dynamic cursor has a procedure for each OPEN.
+fn test_embed_cursor_opens() ! {
+	// Opened twice, with the exception actions of each OPEN.
+	p := precompile_c(embed_header + 'EXEC SQL DECLARE c CURSOR FOR SELECT x FROM t WHERE x = :a AND y = :b;
+EXEC SQL OPEN c;
+EXEC SQL COMMIT;
+EXEC SQL WHENEVER SQLEXCEPTION GOTO failed;
+EXEC SQL OPEN C;
+failed: return 0;
+',
+		'x.sqc')!
+	assert p.implied_module == 'MODULE LANGUAGE C SCHEMA "PUBLIC"
+DECLARE c CURSOR FOR SELECT x FROM t WHERE x = :a AND y = :b;
+PROCEDURE vsql_e1 (SQLSTATE, :a INTEGER, :b INTEGER);
+  OPEN "C";
+PROCEDURE vsql_e2 (SQLSTATE);
+  COMMIT;
+'
+	assert p.source.contains('{ vsql_e1(SQLSTATE, &a, &b); }\n{ vsql_e2(SQLSTATE); }\n')
+	assert p.source.contains("{ vsql_e1(SQLSTATE, &a, &b); if (SQLSTATE[0] != '0' || SQLSTATE[1] > '2') goto failed; }")
+
+	// Not opened: the procedure is in the implied module, but not the C.
+	p2 := precompile_c(embed_header + 'EXEC SQL DECLARE c CURSOR FOR SELECT x FROM t WHERE x = :a;
+EXEC SQL DECLARE d CURSOR FOR SELECT x FROM t;
+EXEC SQL OPEN d;
+EXEC SQL FETCH c INTO :b;
+',
+		'x.sqc')!
+	assert p2.implied_module.contains('PROCEDURE vsql_e1 (SQLSTATE, :a INTEGER);\n  OPEN "C";\n')
+	assert !p2.source.contains('vsql_e1')
+	assert p2.source.contains('static const int vsql_m_cursor_count = 2;')
+	assert p2.source.contains('{ vsql_e2(SQLSTATE); }\n{ vsql_e3(SQLSTATE, &b); }\n')
+
+	// A dynamic cursor.
+	p3 := precompile_c(embed_header + "EXEC SQL PREPARE s FROM 'SELECT 1 WHERE 1 = ?';
+EXEC SQL DECLARE dc CURSOR FOR s;
+EXEC SQL OPEN dc USING :a;
+EXEC SQL OPEN dc USING :b;
+", 'x.sqc')!
+	assert p3.implied_module.contains('PROCEDURE vsql_e2 (SQLSTATE, :a INTEGER);\n  OPEN dc USING :a;\n')
+	assert p3.implied_module.contains('PROCEDURE vsql_e3 (SQLSTATE, :b INTEGER);\n  OPEN dc USING :b;\n')
+
+	// A cursor is declared before any statement that references it.
+	assert embed_error(embed_header + 'EXEC SQL FETCH c INTO :a;
+EXEC SQL DECLARE c CURSOR FOR SELECT x FROM t;
+EXEC SQL OPEN c;') == 'syntax error: line 4: cursor C must be declared before it is used'
+	assert embed_error(embed_header + "EXEC SQL CLOSE dc;
+EXEC SQL DECLARE dc CURSOR FOR s;
+EXEC SQL PREPARE s FROM 'x';") == 'syntax error: line 4: cursor DC must be declared before it is used'
+
+	// The host variables of the OPEN of a <declare cursor> are the ones in the
+	// cursor, and USING is for a dynamic cursor.
+	assert embed_error(embed_header + 'EXEC SQL DECLARE c CURSOR FOR VALUES 1;
+EXEC SQL OPEN c USING :a;') == 'syntax error: line 5: unexpected near USING'
+	assert embed_error(embed_header + 'EXEC SQL DECLARE c CURSOR FOR VALUES 1; EXEC SQL OPEN c c;') == 'syntax error: line 4: unexpected near c'
+
+	// A cursor that's not opened isn't an SQL statement for the C.
+	assert embed_error(embed_header + 'EXEC SQL DECLARE c CURSOR FOR VALUES 1;') == 'syntax error: an embedded SQL program must have an SQL statement'
 }
 
 // 21.2 <embedded exception declaration>: SQLSTATE and CONSTRAINT (Feature B041),

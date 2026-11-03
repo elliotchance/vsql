@@ -120,3 +120,16 @@ VALUES<U+0009><U+0009><U+0009>123;
 
 VALUES<U+0061>123;
 -- error 42601: syntax error: unexpected identifier
+
+-- # A character that isn't part of a token or white space isn't ignored.
+VALUES 1 @;
+-- error 42601: syntax error: invalid character: @
+
+VALUES 1 ~;
+-- error 42601: syntax error: invalid character: ~
+
+CREATE TABLE café (x INT);
+-- error 42601: syntax error: invalid character: é
+
+VALUES<U+200B>123;
+-- error 42601: syntax error: invalid character: ​

@@ -270,8 +270,9 @@ fn (mut p Btree) add(object PageObject) !int {
 	// still appear in the left (same page).
 	mut page := p.pager.fetch_page(left_page_number)!
 
-	// Does it fit into the desired page?
-	if page.used + obj.length() < p.page_size {
+	// Does it fit into the desired page? A page is only split when it doesn't,
+	// because a split must divide the objects into at least two pages.
+	if page.used + obj.length() <= p.page_size {
 		page.add(obj)!
 		p.store_page(left_page_number, page)!
 	} else {
@@ -484,14 +485,6 @@ fn (p Btree) split_objects(objects []PageObject) [][]PageObject {
 		consumed += object_size
 	}
 	groups << group
-
-	// It's possible that when we split a page that all of the objects fit into
-	// one page. This isn't a bug, it happens when we're splitting non-leaf
-	// pages to make room for the new page pointer object. There must always be
-	// at least two pages, so the last object goes into its own page.
-	if groups.len == 1 && objects.len > 1 {
-		groups = [objects[..objects.len - 1], [objects.last()]]
-	}
 
 	return groups
 }

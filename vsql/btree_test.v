@@ -315,7 +315,7 @@ fn test_big_btree_test() ! {
 	run_btree_test(mut file_pager, 100000, 48, page_size, false, false)!
 
 	mut total_found_objects := validate(mut file_pager)!
-	assert total_found_objects == 0
+	assert total_found_objects == 100000
 
 	db_file.close()
 
@@ -323,7 +323,7 @@ fn test_big_btree_test() ! {
 	run_btree_test(mut memory_pager, 100000, 48, page_size, false, false)!
 
 	total_found_objects = validate(mut memory_pager)!
-	assert total_found_objects == 0
+	assert total_found_objects == 100000
 }
 
 // Keys of different lengths mean that a new head key for a page can be longer
@@ -367,4 +367,29 @@ fn (p Page) keys() [][]u8 {
 	}
 
 	return keys
+}
+
+// Two versions of the same key must stay on the same page, even when the new
+// version exactly fills the page (#825).
+fn test_btree_versions_exactly_fill_page() ! {
+	page_size := 256
+	mut btree := new_btree(new_memory_pager(), page_size)
+	key := 'z'.bytes()
+	mut remaining := page_size - page_header_size
+	for name in ['a', 'b', 'c'] {
+		object := new_page_object(name.bytes(), 1, 0, []u8{len: 30})
+		btree.add(object)!
+		remaining -= object.length()
+	}
+	old_version := new_page_object(key, 1, 0, []u8{len: 20})
+	btree.add(old_version)!
+	remaining -= old_version.length()
+
+	new_version := new_page_object(key, 2, 0, []u8{len: remaining - page_object_prefix_length - key.len})
+	assert new_version.length() == remaining
+	btree.add(new_version)!
+
+	assert btree.get(key, 1)!.tid == 1
+	assert btree.get(key, 2)!.tid == 2
+	assert btree.expire(key, 1, 2)! >= 0
 }

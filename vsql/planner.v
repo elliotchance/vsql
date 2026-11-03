@@ -144,12 +144,24 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 // create_join_plan joins two table references. Either side may itself be a
 // join, such as "t1 LEFT JOIN t2 ON ... LEFT JOIN t3 ON ...". Each table used is
 // added to tables.
+//
+// The join condition can only see the tables of this join. Others in FROM aren't
+// in scope, such as t1 in "FROM t1, t2 JOIN t3 ON ...".
+//
+// ISO/IEC 9075-2:2016(E), 7.5, <from clause>, Syntax Rules, 2
 fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[string]Value, mut conn Connection, allow_virtual bool, mut tables map[string]Table) !Plan {
+	outside_join := tables.keys()
+
 	mut plan := Plan{}
 	plan.subplans['\$1'] = create_table_reference_plan(body, join.left_table,
 		params, mut conn, allow_virtual, mut tables)!
 	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table,
 		params, mut conn, allow_virtual, mut tables)!
+
+	mut join_tables := tables.clone()
+	for name in outside_join {
+		join_tables.delete(name)
+	}
 
 	// Like WHERE, the condition is compiled to catch errors without any rows. An
 	// aggregate function fails as an unknown column (#616).
@@ -158,13 +170,13 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	mut c := Compiler{
 		conn:                   conn
 		params:                 params
-		tables:                 tables
+		tables:                 join_tables
 		next_value_not_allowed: 'a join condition'
 	}
 	join.specification.compile(mut c)!
 
 	plan.operations << new_join_operation(plan.subplans['\$1'].columns(), join.join_type,
-		plan.subplans['\$2'].columns(), join.specification, params, conn, plan, tables.clone())
+		plan.subplans['\$2'].columns(), join.specification, params, conn, plan, join_tables)
 
 	return plan
 }

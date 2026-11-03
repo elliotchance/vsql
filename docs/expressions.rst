@@ -293,7 +293,10 @@ a superset of the pattern for ``LIKE`` expressions that makes patterns closer to
 regular expressions.
 
 Matching is always against the entire string (not a partial match) and is
-case-sensitive. You can use the following characters in ``Y``:
+case-sensitive. Unlike ``LIKE``, trailing spaces don't matter (the same as
+``=``), so ``'a ' SIMILAR TO 'a'`` is true. That also applies to the spaces a
+pattern can match, so ``'a' SIMILAR TO 'a_'`` is true because ``_`` can match a
+space. You can use the following characters in ``Y``:
 
 .. list-table::
    :header-rows: 1

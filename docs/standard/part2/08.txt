@@ -165,7 +165,7 @@
 8.5/CR/6                 n/a          - - there are no national character types (F421) or CLOBs (T041)
 8.5/CR/7                 n/a          - - there are no national character types (F421)
 # 8.6, <similar predicate>
-8.6                      partial      vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql trailing spaces aren't padded (#781)
+8.6                      implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql,tests/similar-pad-space.sql
 8.6/SR/1                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql,tests/similar-escape.sql
 8.6/SR/2                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
 8.6/SR/3                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql an invalid name is a 2201B when evaluated, since the pattern is a value
@@ -211,7 +211,7 @@
 8.6/GR/7.s               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
 8.6/GR/7.t               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
 8.6/GR/7.u               implemented  vsql/std_2_8_6_similar_predicate.v tests/similar.sql
-8.6/GR/8                 deviates     vsql/std_2_8_6_similar_predicate.v tests/similar.sql trailing spaces aren't padded (#781)
+8.6/GR/8                 implemented  vsql/std_2_8_6_similar_predicate.v tests/similar-pad-space.sql
 8.6/CR/1                 implemented  vsql/std_2_8_6_similar_predicate.y tests/flagging.sql
 8.6/CR/2                 n/a          - - there are no CLOBs (T041)
 # 8.7, <regex like predicate>

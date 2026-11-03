@@ -82,6 +82,9 @@ const create_table_tab = 'CREATE_TABLE'
 // alter_table_tab is a tab to alter a table, see alter_table.v.
 const alter_table_tab = 'ALTER_TABLE'
 
+// export_tab is a tab to export from a file, see export.v.
+const export_tab = 'EXPORT'
+
 // QueryPayload is the PAYLOAD (JSON) of a QUERY tab. Each tab type has its own
 // payload.
 struct QueryPayload {

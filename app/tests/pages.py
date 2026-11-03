@@ -52,6 +52,36 @@ class AppPage:
         """sidebar_table is the button that queries a table in the sidebar."""
         return self.schema(catalog, schema).get_by_role('button', name=name, exact=True)
 
+    def table_menu(self, name, catalog='db', schema='PUBLIC'):
+        """table_menu opens the menu of a table in the sidebar, and returns
+        it."""
+        li = self.schema(catalog, schema).locator('li').filter(
+            has=self.page.get_by_role('button', name=name, exact=True))
+        li.hover()
+        li.locator('details.menu > summary').click()
+        return li.locator('.menu-items')
+
+    def schema_menu(self, catalog, schema):
+        """schema_menu opens the menu of a schema in the sidebar, and returns
+        it."""
+        row = self.page.locator('.schema-row').filter(has=self.schema(catalog, schema))
+        row.locator(':scope > details.folder > summary').hover()
+        row.locator(':scope > details.menu > summary').click()
+        return row.locator(':scope > details.menu .menu-items')
+
+    def catalog_menu(self, catalog):
+        """catalog_menu opens the menu of a catalog in the sidebar, and returns
+        it."""
+        row = self.page.locator('.catalog-row').filter(has=self.folder(f'catalog:{catalog}'))
+        row.locator(':scope > details.section > summary').hover()
+        row.locator(':scope > details.menu > summary').click()
+        return row.locator(':scope > details.menu .menu-items')
+
+    @property
+    def create_schema(self):
+        """create_schema is the popup to create a schema."""
+        return self.page.locator('dialog.create-schema')
+
     @property
     def sidebar_tabs(self):
         """sidebar_tabs are the tabs listed in the sidebar (see titles)."""
@@ -99,11 +129,11 @@ class AppPage:
         return self.page.locator('.tabs').get_by_role('button', name=title, exact=True)
 
     def new_tab(self):
-        self.page.get_by_role('button', name='+').click()
+        self.new_tab_button.click()
 
     @property
     def new_tab_button(self):
-        return self.page.get_by_role('button', name='+')
+        return self.page.locator('.tabs button.new')
 
     def close_tab(self, tab):
         """close_tab closes a tab in tab_bar (a locator, such as active_tab)."""
@@ -267,7 +297,61 @@ class AppPage:
         self.page.locator('main tfoot').get_by_role('button', name='+').click()
 
     @property
+    def confirm(self):
+        """confirm is the popup with the change to be confirmed."""
+        return self.page.locator('dialog.confirm-sql')
+
+    @property
+    def confirm_sql(self):
+        return self.confirm.locator('pre')
+
+    def run_change(self):
+        """run_change confirms the change in the popup."""
+        self.confirm.get_by_role('button', name='Run').click()
+
+    @property
     def tab_id(self):
         """tab_id is the reference of the active tab (its catalog and id), to post
         a change directly."""
         return self.page.locator('input[name="tab"]').first.get_attribute('value')
+
+    # A CREATE_TABLE tab (see test_create_table.py).
+
+    @property
+    def create_sql(self):
+        """create_sql is the CREATE TABLE, which can't be edited."""
+        return self.page.locator('pre.create-sql')
+
+    @property
+    def table_schema(self):
+        return self.page.locator('.create-table .table-schema input')
+
+    @property
+    def table_name(self):
+        return self.page.locator('.create-table .table-name input')
+
+    @property
+    def columns(self):
+        """columns are the rows of the columns of the table."""
+        return self.page.locator('table.columns tbody tr')
+
+    def column(self, row, field):
+        """column is the input of a field (name, type, not_null, primary_key
+        or default) of a column."""
+        return self.columns.nth(row).locator(f'[data-field="{field}"]')
+
+    def add_column(self):
+        self.page.get_by_role('button', name='+ Add column').click()
+
+    @property
+    def create_button(self):
+        return self.page.get_by_role('button', name='Create table')
+
+    def cancel_create(self):
+        self.page.locator('.create-table').get_by_role('button', name='Cancel').click()
+
+    @property
+    def discard(self):
+        """discard is the popup to confirm closing a CREATE_TABLE tab."""
+        return self.page.locator('dialog.discard')
+

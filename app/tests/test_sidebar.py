@@ -1,10 +1,11 @@
 # The sidebar: the version, each catalog with its tables under their schema,
-# and the tabs. It can be collapsed and resized.
+# and the tabs. It can be collapsed and resized, and a table dropped.
 
 import re
 
 from playwright.sync_api import expect
 
+from conftest import cli
 from pages import AppPage
 
 
@@ -15,7 +16,7 @@ def test_sidebar(ui):
     expect(ui.sections).to_have_text([re.compile('db$')])
     for schema, table in [('FOO', 'FOO.BAR'), ('PUBLIC', 'PUBLIC."my <t>"')]:
         expect(ui.schema('db', schema).locator('summary .count')).to_have_text('1')
-        expect(ui.schema('db', schema).locator('button')).to_have_attribute('value', table)
+        expect(ui.schema('db', schema).locator('li > button')).to_have_attribute('value', table)
     expect(ui.schema('db', 'VSQL_APP').locator('summary .count')).to_have_text('2')
     expect(ui.schema('db', 'VSQL_APP').locator('button').nth(0)).to_have_attribute('value', 'VSQL_APP.HISTORY')
     expect(ui.schema('db', 'VSQL_APP').locator('button').nth(1)).to_have_attribute('value', 'VSQL_APP.TABS')
@@ -26,7 +27,7 @@ def test_sidebar_is_remembered(ui):
     # A heading or schema can be collapsed, and the sidebar resized (a
     # double-click goes back to the default width), which the browser
     # remembers.
-    ui.schema('db', 'FOO').locator('summary').click()
+    ui.schema('db', 'FOO').locator('> summary').click()
     expect(ui.schema('db', 'FOO')).not_to_have_attribute('open', '')
     ui.folder('tabs:db').locator('> summary').click()
 
@@ -58,3 +59,60 @@ def test_catalogs(page, db_file, make_file, start_app):
     expect(ui.editor).to_have_value('SELECT * FROM PUBLIC.T')
     expect(ui.tab_catalog).to_have_text('other')
     expect(ui.status).to_have_text(re.compile(r'^0 rows \('))
+
+
+def test_drop_table(ui, db_file):
+    # The menu of a table drops it, once it's confirmed. Cancel (or Escape)
+    # doesn't drop it.
+    ui.table_menu('BAR', schema='FOO').get_by_role('button', name='Drop table').click()
+    expect(ui.confirm_sql).to_have_text('DROP TABLE FOO.BAR')
+    expect(ui.confirm.get_by_role('button', name='Run')).to_have_class('delete')
+    ui.confirm.get_by_role('link', name='Cancel').click()
+    expect(ui.confirm).to_have_count(0)
+    expect(ui.sidebar_table('BAR', schema='FOO')).to_have_count(1)
+
+    ui.table_menu('BAR', schema='FOO').get_by_role('button', name='Drop table').click()
+    ui.run_change()
+    expect(ui.confirm).to_have_count(0)
+    expect(ui.sidebar_table('BAR', schema='FOO')).to_have_count(0)
+    expect(ui.schema('db', 'FOO').locator('li')).to_have_text(['There are no tables.'])
+    assert 'BAR' not in cli(db_file, 'SELECT table_name FROM INFORMATION_SCHEMA.TABLES;')
+
+    # It works from a tab too, which is shown again with its SQL.
+    ui.new_tab()
+    ui.editor.fill('SELECT 1')
+    ui.table_menu('my <t>').get_by_role('button', name='Drop table').click()
+    expect(ui.confirm_sql).to_have_text('DROP TABLE PUBLIC."my <t>"')
+    expect(ui.editor).to_have_value('SELECT 1')
+    ui.run_change()
+    expect(ui.sidebar_table('my <t>')).to_have_count(0)
+
+
+def test_table_menu(ui):
+    # INFORMATION_SCHEMA and VSQL_APP don't have a menu.
+    for schema in ['INFORMATION_SCHEMA', 'VSQL_APP']:
+        expect(ui.schema('db', schema).locator('li')).not_to_have_count(0)
+        expect(ui.schema('db', schema).locator('details.menu')).to_have_count(0)
+    expect(ui.schema('db', 'FOO').locator('details.menu')).to_have_count(1)
+
+    # Only one menu is open, and a click outside it closes it.
+    ui.table_menu('BAR', schema='FOO')
+    ui.table_menu('my <t>')
+    expect(ui.page.locator('details.menu[open]')).to_have_count(1)
+    ui.brand.click()
+    expect(ui.page.locator('details.menu[open]')).to_have_count(0)
+
+
+def test_drop_in_file(page, db_file, make_file, start_app):
+    # A table is dropped in the file it's listed under, which the popup shows. The
+    # SQL doesn't have the catalog, and a table with the same name in the other
+    # file is kept.
+    other_file = make_file('other.vsql', 'CREATE TABLE t (x INT);')
+    cli(db_file, 'CREATE TABLE t (x INT);')
+    ui = AppPage(page, start_app(db_file, other_file))
+    ui.table_menu('T', catalog='other').get_by_role('button', name='Drop table').click()
+    expect(ui.confirm_sql).to_have_text('DROP TABLE PUBLIC.T')
+    expect(ui.confirm.locator('.confirm-file')).to_have_text('other')
+    ui.run_change()
+    expect(ui.sidebar_table('T', catalog='other')).to_have_count(0)
+    expect(ui.sidebar_table('T', catalog='db')).to_have_count(1)

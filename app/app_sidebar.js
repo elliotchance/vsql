@@ -22,8 +22,7 @@
 			[...folders].filter(d => !d.open).map(d => d.dataset.folder)));
 	}
 
-	// Only one menu of a tab is open, and it's closed by a click outside it or
-	// Escape.
+	// Only one menu is open, and it's closed by a click outside it or Escape.
 	const menus = sidebar.querySelectorAll('details.menu');
 	const closeMenus = except => menus.forEach(menu => { if (menu !== except) menu.open = false; });
 	menus.forEach(menu => menu.addEventListener('toggle', () => { if (menu.open) closeMenus(menu); }));

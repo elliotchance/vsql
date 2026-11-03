@@ -106,3 +106,18 @@ UTEST_F(db, 6_23_foreign_keys_open_cursor_before_length) {
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
 }
+
+/* DEFERABILITY is from the foreign key, not the constraint that it references. */
+UTEST_F(db, 6_23_foreign_keys_deferability) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE parent (id INT PRIMARY KEY)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "CREATE TABLE child (a INT REFERENCES parent DEFERRABLE "
+                    "INITIALLY DEFERRED, b INT REFERENCES parent DEFERRABLE, c "
+                    "INT REFERENCES parent)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLForeignKeys(utest_fixture->stmt, NULL, 0, NULL, 0, NULL, 0, NULL,
+                           0, NULL, 0, (SQLCHAR *)"CHILD", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_STREQ(fetch_strings(utest_fixture->stmt, 14), "5,6,7");
+}

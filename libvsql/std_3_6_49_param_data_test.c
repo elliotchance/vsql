@@ -156,3 +156,34 @@ UTEST_F(db, 6_49_param_data_cast) {
   EXPECT_EQ(SQLParamData(utest_fixture->stmt, &p), SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "22018");
 }
+
+/* A descriptor of one connection can be the APD of a statement of another
+ * connection, which doesn't stop the descriptor from being used. */
+UTEST_F(db, 5_11_deferred_parameter_check_other_connection) {
+  SQLINTEGER at_exec = SQL_DATA_AT_EXEC, x;
+  SQLSMALLINT n;
+  SQLHDBC dbc2;
+  SQLHSTMT stmt2;
+  SQLHDESC desc, ipd2;
+
+  ASSERT_EQ(SQLAllocConnect(utest_fixture->env, &dbc2), SQL_SUCCESS);
+  ASSERT_EQ(connect_memory(dbc2), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocStmt(dbc2, &stmt2), SQL_SUCCESS);
+  ASSERT_EQ(SQLAllocHandle(SQL_HANDLE_DESC, utest_fixture->dbc, &desc),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetStmtAttr(stmt2, SQL_ATTR_APP_PARAM_DESC, HANDLE_VALUE(desc), 0),
+            SQL_SUCCESS);
+  ipd2 = stmt_desc(stmt2, SQL_ATTR_IMP_PARAM_DESC);
+  ASSERT_EQ(SQLBindParameter(stmt2, 1, SQL_PARAM_MODE_IN, SQL_INTEGER,
+                             SQL_INTEGER, 0, 0, &x, sizeof(x), &at_exec),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(stmt2, "VALUES ?"), SQL_NEED_DATA);
+
+  EXPECT_EQ(SQLGetDescField(desc, 0, SQL_DESC_COUNT, &n, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(n, 1);
+
+  /* The other statement's IPD is still a descriptor of its connection. */
+  EXPECT_EQ(SQLGetDescField(ipd2, 0, SQL_DESC_COUNT, &n, 0, NULL), SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DESC, ipd2, "HY010");
+}

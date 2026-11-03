@@ -11,14 +11,16 @@ Syntax
 .. code-block:: text
 
   SELECT [ ALL | DISTINCT ] { * | { <expression> [ AS <name> ] | <table_name>.* } , ... }
-  FROM <table_reference>
-  [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference> ON <condition> ] ...
+  FROM <from_item> , ...
   [ WHERE <condition> ]
   [ GROUP BY <column_name> , ... ]
   [ HAVING <condition> ]
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
+
+  <from_item> := <table_reference>
+                 [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference> ON <condition> ] ...
 
   <table_reference> := { <table_name> | ( <query> ) }
                        [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
@@ -34,6 +36,19 @@ parentheses, such as ``(SELECT ... FETCH FIRST 1 ROW ONLY)``.
 ``AS <name>`` gives the table a *correlation name*. The table must then be
 referred to by that name instead (such as ``p.price``). The optional list of
 column names renames each of the table's columns, in order.
+
+More than one item in ``FROM``, separated by commas, produces every combination
+of their rows. ``WHERE`` can be used as the join condition:
+
+.. code-block:: sql
+
+  SELECT products.name, categories.name
+  FROM products, categories
+  WHERE products.category_id = categories.id;
+
+The columns of ``*`` are in the order of the items. A ``JOIN`` belongs to the
+item it's written in, so its ``ON`` can't refer to the other items (``t1`` in
+``FROM t1, t2 JOIN t3 ON ...``), and neither can a subquery in ``FROM``.
 
 A ``SELECT`` must have a ``FROM``. To calculate expressions without a table,
 use :doc:`values` (such as ``VALUES 1 + 2``).

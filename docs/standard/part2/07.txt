@@ -54,22 +54,22 @@
 7.4/SR/2                 definition   - -
 7.4/GR/1                 implemented  vsql/std_2_7_4_table_expression.v tests/select-where.sql
 # 7.5, <from clause>
-7.5                      partial      vsql/std_2_7_5_from_clause.y tests/select-where.sql only one table reference, there are no comma joins (#268)
+7.5                      implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
 7.5/SR/1                 definition   - -
-7.5/SR/2                 n/a          - - there are no comma joins (#268), and no LATERAL (T491)
+7.5/SR/2                 implemented  vsql/planner.v tests/from-comma.sql
 7.5/SR/3                 n/a          - - data change delta tables (T495)
 7.5/SR/4                 container    - -
 7.5/SR/4.a               implemented  vsql/std_2_7_5_from_clause.y tests/select-where.sql
 7.5/SR/4.a.i             implemented  vsql/std_2_7_5_from_clause.y tests/select-where.sql
 7.5/SR/4.a.ii            implemented  vsql/std_2_7_5_from_clause.y tests/select-where.sql
 7.5/SR/4.b               container    - -
-7.5/SR/4.b.i             missing      - - comma joins (#268)
-7.5/SR/4.b.ii            missing      - - comma joins (#268)
-7.5/SR/4.b.ii.1          missing      - - comma joins (#268)
-7.5/SR/4.b.ii.2          missing      - - comma joins (#268)
-7.5/SR/4.b.ii.3          missing      - - comma joins (#268)
+7.5/SR/4.b.i             implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
+7.5/SR/4.b.ii            implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
+7.5/SR/4.b.ii.1          implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
+7.5/SR/4.b.ii.2          implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
+7.5/SR/4.b.ii.3          implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
 7.5/SR/4.b.ii.3.A        n/a          - - domains (F251)
-7.5/SR/4.b.ii.3.B        missing      - - comma joins (#268)
+7.5/SR/4.b.ii.3.B        implemented  vsql/std_2_7_5_from_clause.y tests/from-comma.sql
 7.5/SR/5                 implemented  vsql/planner.v tests/correlation-name.sql
 7.5/SR/5.a               implemented  vsql/planner.v tests/correlation-name.sql
 7.5/SR/5.a.i             implemented  vsql/planner.v tests/correlation-name.sql
@@ -91,9 +91,9 @@
 7.5/SR/5.g               implemented  vsql/planner.v tests/correlation-name.sql
 7.5/GR/1                 implemented  vsql/std_2_7_5_from_clause.y tests/select-where.sql
 7.5/GR/1.a               implemented  vsql/std_2_7_5_from_clause.y tests/select-where.sql
-7.5/GR/1.b               missing      - - comma joins (#268)
-7.5/GR/1.b.i             missing      - - comma joins (#268)
-7.5/GR/1.b.ii            missing      - - comma joins (#268)
+7.5/GR/1.b               implemented  vsql/std_2_7_6_table_reference.v tests/from-comma.sql
+7.5/GR/1.b.i             implemented  vsql/std_2_7_6_table_reference.v tests/from-comma.sql
+7.5/GR/1.b.ii            implemented  vsql/std_2_7_6_table_reference.v tests/from-comma.sql
 7.5/GR/2                 implemented  vsql/std_2_7_5_from_clause.y tests/select-where.sql
 # 7.6, <table reference>
 7.6                      implemented  vsql/std_2_7_6_table_reference.v tests/correlation-name.sql

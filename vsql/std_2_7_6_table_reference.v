@@ -74,3 +74,16 @@ struct QualifiedJoin {
 fn new_qualified_join(left_table TableReference, join_type JoinType, right_table TableReference, specification BooleanValueExpression) QualifiedJoin {
 	return QualifiedJoin{&left_table, join_type, &right_table, specification}
 }
+
+// new_cross_join is a comma in FROM: the same as an inner join with a condition
+// that's always true.
+//
+// ISO/IEC 9075-2:2016(E), 7.5, <from clause>, General Rules, 1.b
+fn new_cross_join(left_table TableReference, right_table TableReference) QualifiedJoin {
+	return new_qualified_join(left_table, .inner, right_table, BooleanValueExpression{
+		term: BooleanTerm{
+			factor: new_boolean_test(BooleanPrimary(BooleanPredicand(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_boolean_value(true))))),
+				false, none, false)
+		}
+	})
+}

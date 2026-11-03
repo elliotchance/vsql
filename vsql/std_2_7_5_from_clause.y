@@ -9,5 +9,9 @@ from_clause:
 
 table_reference_list:
   table_reference { $$.v = $1.v as TableReference }
+| table_reference_list comma table_reference {
+    $$.v = TableReference(new_cross_join($1.v as TableReference,
+      $3.v as TableReference))
+  }
 
 %%

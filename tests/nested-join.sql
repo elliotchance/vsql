@@ -66,7 +66,7 @@ SELECT COUNT(*) FROM t1 JOIN t2 ON TRUE JOIN t3 ON TRUE;
 -- COL1: 12
 
 SELECT * FROM t1 JOIN t2 JOIN t3 ON a = y ON a = x;
--- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.A
+-- error 42601: syntax error: unknown column: ":memory:".PUBLIC.A
 
 SELECT * FROM t1 JOIN t1 ON TRUE;
 -- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once

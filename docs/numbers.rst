@@ -360,6 +360,21 @@ value must be valid for the result or an error is returned:
    VALUES CAST(123456789 AS DOUBLE PRECISION);
    -- COL1: 1.23456789e+08
 
+Casting an approximate number to a string gives the shortest form that has a
+single non-zero digit before the period and an exponent. This isn't the same as
+how the number is shown:
+
+.. code-block:: sql
+
+   VALUES CAST(-123e0 AS VARCHAR(10));
+   -- COL1: -1.23E2
+
+   VALUES CAST(1e0 AS VARCHAR(10));
+   -- COL1: 1.0E0
+
+   VALUES CAST(0e0 AS VARCHAR(10));
+   -- COL1: 0E0
+
 Arithmetic
 ----------
 

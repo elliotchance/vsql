@@ -694,18 +694,18 @@
 6.13/GR/11.a.iii.2       implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
 6.13/GR/11.a.iii.3       implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
 6.13/GR/11.a.iii.4       implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/11.b             deviates     - - #766
-6.13/GR/11.b.i           deviates     - - #766
-6.13/GR/11.b.i.1         deviates     - - 0e0 rather than 0E0 (#766)
-6.13/GR/11.b.i.2         deviates     - - #766
+6.13/GR/11.b             implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/11.b.i           implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/11.b.i.1         implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/11.b.i.2         implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
 6.13/GR/11.b.ii          container    - -
-6.13/GR/11.b.ii.1        untested     vsql/std_2_6_13_cast_specification.v -
-6.13/GR/11.b.ii.2        untested     vsql/std_2_6_13_cast_specification.v -
+6.13/GR/11.b.ii.1        implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/11.b.ii.2        implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
 6.13/GR/11.b.iii         container    - -
-6.13/GR/11.b.iii.1       untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
-6.13/GR/11.b.iii.2       untested     vsql/std_2_6_13_cast_specification.v -
-6.13/GR/11.b.iii.3       untested     vsql/std_2_6_13_cast_specification.v -
-6.13/GR/11.b.iii.4       untested     vsql/std_2_6_13_cast_specification.v -
+6.13/GR/11.b.iii.1       untestable   vsql/std_2_9_2_store_assignment.v - a character string is always UTF8, which contains every <SQL language character>
+6.13/GR/11.b.iii.2       implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/11.b.iii.3       implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/11.b.iii.4       implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
 6.13/GR/11.c             n/a          - - DECFLOAT (T076)
 6.13/GR/11.c.i           n/a          - - DECFLOAT (T076)
 6.13/GR/11.c.ii          n/a          - - DECFLOAT (T076)
@@ -738,17 +738,17 @@
 6.13/GR/12.a.iii.1       untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
 6.13/GR/12.a.iii.2       implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
 6.13/GR/12.a.iii.3       implemented  vsql/std_2_6_13_cast_specification.v tests/cast.sql
-6.13/GR/12.b             deviates     - - #766
-6.13/GR/12.b.i           deviates     - - #766
-6.13/GR/12.b.i.1         deviates     - - 0e0 rather than 0E0 (#766)
-6.13/GR/12.b.i.2         deviates     - - #766
+6.13/GR/12.b             implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/12.b.i           implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/12.b.i.1         implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/12.b.i.2         implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
 6.13/GR/12.b.ii          container    - -
-6.13/GR/12.b.ii.1        untested     vsql/std_2_6_13_cast_specification.v -
-6.13/GR/12.b.ii.2        untested     vsql/std_2_6_13_cast_specification.v -
-6.13/GR/12.b.iii         untested     vsql/std_2_6_13_cast_specification.v -
-6.13/GR/12.b.iii.1       untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
-6.13/GR/12.b.iii.2       untested     vsql/std_2_6_13_cast_specification.v -
-6.13/GR/12.b.iii.3       untested     vsql/std_2_6_13_cast_specification.v -
+6.13/GR/12.b.ii.1        implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/12.b.ii.2        implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/12.b.iii         implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/12.b.iii.1       untestable   vsql/std_2_9_2_store_assignment.v - a character string is always UTF8, which contains every <SQL language character>
+6.13/GR/12.b.iii.2       implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
+6.13/GR/12.b.iii.3       implemented  vsql/std_2_9_2_store_assignment.v tests/cast-numeric-to-character.sql
 6.13/GR/12.c             n/a          - - DECFLOAT (T076)
 6.13/GR/12.c.i           n/a          - - DECFLOAT (T076)
 6.13/GR/12.c.ii          n/a          - - DECFLOAT (T076)

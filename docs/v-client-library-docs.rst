@@ -425,6 +425,21 @@ enum Boolean
 
 Possible values for a BOOLEAN.
 
+enum DumpCompat
+---------------
+
+
+.. code-block:: v
+
+   pub enum DumpCompat {
+   	vsql
+   	sqlite3
+   	mysql
+   	postgresql
+   }
+
+DumpCompat is the database that a dump is written for.
+
 enum SQLType
 ------------
 
@@ -688,6 +703,27 @@ struct DumpOptions
    	// create_public_schema includes CREATE SCHEMA "PUBLIC". It's not included
    	// by default because every catalog already has it.
    	create_public_schema bool
+   	// include only includes the objects (sequences, tables and foreign keys)
+   	// that match one of these "schema.name" patterns. Each part can have the
+   	// wildcards of string.match_glob, and case is ignored. Without any it's the
+   	// same as "*.*".
+   	include []string
+   	// exclude leaves out the objects that match one of these "schema.name"
+   	// patterns, even if they were in include. A foreign key isn't left out because
+   	// the table it references is, so the output might not load.
+   	exclude []string
+   	// transaction puts START TRANSACTION and COMMIT around the output, so that
+   	// loading it either works or doesn't change anything.
+   	transaction bool
+   	// compat changes the output so that it can be loaded by another database
+   	// instead of vsql. See DumpCompat.
+   	compat DumpCompat
+   	// data_only leaves out the definitions, so the output is only the rows and
+   	// the positions of the sequences. It can't be used with schema_only.
+   	data_only bool
+   	// schema_only leaves out the rows and the positions of the sequences, so the
+   	// output is only the definitions. It can't be used with data_only.
+   	schema_only bool
    }
 
 

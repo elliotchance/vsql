@@ -134,19 +134,128 @@ Any other files after the first one are attached as more catalogs (see
 in
 ^^
 
-``in`` is used to load a SQL file into a database:
+``in`` is used to load a SQL, CSV, TSV or JSON file into a database:
 
 .. code-block:: text
 
    $ vsql in mydatabase.vsql < myfile.sql
-   0 errors, 8 statements, 98.042ms
+
+Only problems are printed. ``-verbose`` also prints a line for each statement
+that's run:
+
+.. code-block:: text
+
+   $ vsql in -file myfile.sql -single-transaction -verbose mydatabase.vsql
+   0 0/1589 START TRANSACTION
+   2 45/1589 CREATE TABLE 1
+   9 212/1589 WARNING 01003 null value eliminated in set function
+   9 212/1589 SELECT 3
+   14 260/1589 ERROR 23505 violates unique constraint: PRIMARY KEY on "mydatabase".PUBLIC.T
+   0 260/1589 ROLLBACK
+
+Every line has the line of the file that it's for (0 if it isn't in the file), the
+bytes read of the file including that statement, and the size of the file (``?``
+for stdin). Then it's the result of the statement, where a statement that returns
+rows has the number of rows, or ``ERROR``, ``WARNING`` or ``NOTICE`` with a SQLSTATE
+and the message. The SQLSTATE is ``HY000`` for a problem that doesn't have its own,
+such as a row that can't be read. So ``awk '$3 == "ERROR"'`` is only the errors.
+
+Everything goes to stdout. A ``NOTICE`` needs ``-verbose``. A ``ROLLBACK`` is always
+printed. The exit code is non-zero if anything failed.
+
+The file is read as it's imported, so a problem is only found when it gets there.
 
 You can generate a valid SQL file from an existing database with ``vsql out``.
 
 Options are:
 
+- ``-file``: Read from this file instead of stdin.
+
+- ``-format``: ``sql``, ``csv``, ``tsv`` or ``json``. The default is the
+  extension of ``-file``, otherwise ``sql``.
+
+- ``-schema``: The current schema for a SQL file, or the schema of ``-table``.
+  The default is ``PUBLIC``.
+
+- ``-table``: The table to import a CSV, TSV or JSON file into. A name is in
+  upper case unless it's in double quotes.
+
+- ``-create-table``: Create ``-table`` with these definitions of its columns, such
+  as ``"ID INTEGER, NAME VARCHAR(100)"``.
+
+- ``-map``: ``field=column`` puts a field of the file into a column, and can be
+  used more than once. Fields that aren't mapped aren't imported. The default is
+  that each field goes to the column with its name.
+
+- ``-single-transaction``: Run a SQL file in one transaction. If it stops at an
+  error, it's rolled back so nothing is changed. It's an error if the file has its
+  own ``START TRANSACTION``, ``COMMIT`` or ``ROLLBACK``.
+
+- ``-compat``: The dialect of a SQL file. It's ``vsql`` by default, or ``sqlite3``
+  (see below).
+
+- ``-ignore-unsupported``: Show a warning for ``CREATE VIEW``, ``CREATE TRIGGER``
+  and ``CREATE INDEX`` if they can't be run, instead of an error. The import can
+  then finish without them, so anything that relies on them (such as a ``UNIQUE``
+  index) isn't there.
+
+- ``-verbose``: Print each statement as above.
+
 - ``-continue-on-error``: Show errors, but continue to process the input. A
   non-zero exit code will be returned if any of the statements failed.
+
+A CSV, TSV or JSON file is always in one transaction, with ``INSERT``\ s of up to
+200 rows. If one fails, its rows are run one at a time to find those that are
+wrong. A row that can't be read (such as a quote that's never closed) always stops
+the import and rolls it back, even with ``-continue-on-error``.
+
+For example:
+
+.. code-block:: text
+
+   $ vsql in -file people.csv -schema STAFF -table PEOPLE -create-table "ID INTEGER, NAME VARCHAR(100)" -verbose mydatabase.vsql
+   0 0/9120 START TRANSACTION
+   0 0/9120 CREATE TABLE 1
+   2 4100/9120 INSERT 200
+   202 8200/9120 INSERT 200
+   402 9120/9120 INSERT 45
+   0 9120/9120 COMMIT
+
+   $ vsql in -file people.csv -table PEOPLE -map surname=LAST_NAME -map id=ID mydatabase.vsql
+
+Loading a SQLite file
+~~~~~~~~~~~~~~~~~~~~~
+
+``-compat sqlite3`` loads SQL that's written for SQLite, such as the output of
+its ``.dump`` command:
+
+.. code-block:: text
+
+   $ vsql in -file Chinook_Sqlite.sql -compat sqlite3 -ignore-unsupported -single-transaction mydatabase.vsql
+
+This is what's different:
+
+- A name is in upper case, whether it's written as ``[Album]``, ``"Album"``, in
+  backticks or as ``Album``, because names aren't case sensitive in SQLite. So all
+  of these are the table ``ALBUM``.
+
+- ``NVARCHAR`` is ``VARCHAR``, ``NCHAR`` is ``CHARACTER``, and ``DATETIME`` is
+  ``TIMESTAMP(0) WITHOUT TIME ZONE``. Strings are converted for a ``DATETIME``
+  column in the ``VALUES`` of an ``INSERT``.
+
+- ``DROP TABLE IF EXISTS`` is fine if the table doesn't exist. It still fails if
+  another table has a ``FOREIGN KEY`` to it, so a file that drops its tables first
+  can only be loaded once into the same database.
+
+- A ``FOREIGN KEY`` of a table is added after everything else, so it can refer to
+  a table that's created later, and it's checked once all of the rows are there.
+  Its line is the line of the table.
+
+- ``PRAGMA`` is ignored. ``BEGIN`` and ``END`` are ``START TRANSACTION`` and
+  ``COMMIT``.
+
+Anything else that isn't supported by vsql, such as ``AUTOINCREMENT`` or a column
+without a type, is an error.
 
 - ``-verbose`` or ``-v``: When enabled, the output of each statement (such as
   ``CREATE TABLE 1``) will be shown.

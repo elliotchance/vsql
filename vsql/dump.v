@@ -161,11 +161,37 @@ pub fn split_statements(script string) []string {
 // semicolon is returned separately (as it is, so that more text can be appended
 // to it), or an empty string if it's only white space and comments.
 pub fn split_terminated_statements(script string) ([]string, string) {
-	mut statements := []string{}
+	ranges, rest := statement_ranges(script)
+
+	return ranges.map(script[it.start..it.end].trim_space()), if rest.first < 0 {
+		''
+	} else {
+		script[rest.start..]
+	}
+}
+
+// StatementRange is where a statement is in a script.
+pub struct StatementRange {
+pub:
+	// start is the position after the semicolon before it, and end is the position
+	// of its semicolon.
+	start int
+	end   int
+	// first is the position of the first thing that isn't white space or a comment.
+	first int
+}
+
+// statement_ranges finds the statements of a script that end with a semicolon,
+// leaving out empty ones (including ones that are only comments). The range of the
+// text after the last semicolon is returned separately. Its first is less than
+// zero if there's nothing but white space and comments, which might be because more
+// of the script is still to come.
+pub fn statement_ranges(script string) ([]StatementRange, StatementRange) {
+	mut ranges := []StatementRange{}
 	mut start := 0
+	mut first := -1
 	mut quote := u8(0)
 	mut comment_depth := 0
-	mut is_empty := true
 	mut i := 0
 	for i < script.len {
 		c := script[i]
@@ -194,24 +220,26 @@ pub fn split_terminated_statements(script string) ([]string, string) {
 			comment_depth = 1
 			i++
 		} else if c == `;` {
-			if !is_empty {
-				statements << script[start..i].trim_space()
+			if first >= 0 {
+				ranges << StatementRange{start, i, first}
 			}
 			start = i + 1
-			is_empty = true
-		} else if c == `'` || c == `"` {
-			quote = c
-			is_empty = false
+			first = -1
 		} else if !c.is_space() {
-			is_empty = false
+			if c == `'` || c == `"` {
+				quote = c
+			}
+			if first < 0 {
+				first = i
+			}
 		}
 		i++
 	}
 
 	// An unterminated string or comment isn't finished, even if it's empty.
-	if is_empty && quote == 0 && comment_depth == 0 {
-		return statements, ''
+	if first < 0 && comment_depth > 0 {
+		first = start
 	}
 
-	return statements, script[start..]
+	return ranges, StatementRange{start, script.len, first}
 }

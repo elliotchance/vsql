@@ -61,8 +61,20 @@ static void get_co(char *sqlstate, long n, struct condition *co) {
   do {                                                                         \
     char cursor[CHARS(10)];                                                    \
     EXPECT(get_cursor_name(sqlstate, cursor), "00000");                        \
-    CHECK(strcmp(cursor, expected) == 0);                                      \
+    CHECK(padded(cursor, expected, 10));                                       \
   } while (0)
+
+/*
+ * padded is whether a CHARACTER(L) or CHARACTER VARYING(L) value in a host
+ * parameter is the text, padded on the right with spaces to L characters. The
+ * text must be ASCII (9.4 GR 5.b).
+ */
+static int padded(const char *value, const char *text, int length) {
+  char expected[CHARS(100)];
+
+  snprintf(expected, sizeof(expected), "%-*s", length, text);
+  return strcmp(value, expected) == 0;
+}
 
 #define CHECK(condition)                                                       \
   do {                                                                         \
@@ -125,6 +137,7 @@ int main(void) {
             d, c, s_ind, f);
     failures++;
   }
+  CHECK(strcmp(v, "xxxxx") == 0); /* A null value isn't assigned. */
   i = 3;
   EXPECT(select_row(sqlstate, &s, &i, &b, &r, &d, c, v, &s_ind, &f), "02000");
   i = 2;
@@ -154,11 +167,14 @@ int main(void) {
   b = 3;
 
   /* 9.4 GR 5.b and Table 20: A CHARACTER(L) or CHARACTER VARYING(L) holds L
-   * characters, which are up to 4 bytes each, and a value that's too long is
-   * cut to L whole characters. */
+   * characters, which are up to 4 bytes each, a value that's too long is cut to
+   * L whole characters, and a shorter one is padded with spaces to L
+   * characters. */
   EXPECT(select_utf8(sqlstate, c3, v3, c), "00000");
   CHECK(strcmp(c3, "ééé") == 0 && strcmp(v3, "é€😀") == 0 &&
         strcmp(c, "é    ") == 0);
+  EXPECT(select_utf8_padded(sqlstate, v3, c), "00000");
+  CHECK(strcmp(v3, "é  ") == 0 && strcmp(c, "  ") == 0);
   EXPECT(select_utf8_long(sqlstate, c3, v3), "01004");
   CHECK(strcmp(c3, "é") == 0 && strcmp(v3, "😀😀😀") == 0);
 
@@ -190,7 +206,7 @@ int main(void) {
   EXPECT(select_long_small(sqlstate, long_string, v3, &s_ind), "22022");
   CHECK(s_ind == -5);
   EXPECT(get_co(sqlstate, 1, &co), "00000");
-  CHECK(strcmp(co.message, "data exception: indicator overflow") == 0);
+  CHECK(padded(co.message, "data exception: indicator overflow", 100));
   EXPECT(select_long_integer(sqlstate, long_string, c3, &i), "01004");
   CHECK(strcmp(c3, "xxx") == 0 && i == 32768);
   i = 2;
@@ -206,13 +222,13 @@ int main(void) {
   EXPECT(get_co(sqlstate, 1, &co), "00000");
   CHECK(co.number == 1);
   CHECK(strcmp(co.state, "22024") == 0);
-  CHECK(strcmp(co.message, "data exception: unterminated C string") == 0);
+  CHECK(padded(co.message, "data exception: unterminated C string", 100));
   CHECK(co.length == 37 && co.octet_length == 37);
-  CHECK(strcmp(co.class_origin, "ISO 9075") == 0);
-  CHECK(strcmp(co.subclass_origin, "ISO 9075") == 0);
-  CHECK(strcmp(co.connection, "DEFAULT") == 0);
-  CHECK(strcmp(co.server, "DEFAULT") == 0);
-  CHECK(strcmp(co.table, "") == 0);
+  CHECK(padded(co.class_origin, "ISO 9075", 10));
+  CHECK(padded(co.subclass_origin, "ISO 9075", 10));
+  CHECK(padded(co.connection, "DEFAULT", 50));
+  CHECK(padded(co.server, "DEFAULT", 50));
+  CHECK(padded(co.table, "", 10));
 
   /* An error from libvsql. */
   EXPECT(missing_table(sqlstate), "42P01");
@@ -221,14 +237,15 @@ int main(void) {
   EXPECT(get_st(sqlstate, &st), "00000");
   CHECK(st.number == 1);
   CHECK(strcmp(st.more, "N") == 0);
-  CHECK(strcmp(st.function, "DELETE WHERE") == 0 && st.code == 19);
+  CHECK(padded(st.function, "DELETE WHERE", 30) && st.code == 19);
   CHECK(strcmp(st.dynamic, "  ") == 0 && st.dynamic_code == 0);
   CHECK(st.active == 1);
   EXPECT(get_co(sqlstate, 1, &co), "00000");
   CHECK(strcmp(co.state, "42P01") == 0);
-  CHECK(co.length > 0 && co.length == (long)strlen(co.message));
-  CHECK(strcmp(co.class_origin, "ISO 9075") == 0);
-  CHECK(strcmp(co.subclass_origin, "vsql") == 0);
+  CHECK(co.length > 0 && co.length < 100 && strlen(co.message) == 100 &&
+        co.message[co.length - 1] != ' ' && co.message[co.length] == ' ');
+  CHECK(padded(co.class_origin, "ISO 9075", 10));
+  CHECK(padded(co.subclass_origin, "vsql", 10));
 
   /* GR 3: invalid condition number. GET DIAGNOSTICS doesn't empty the
    * diagnostics area. */
@@ -246,7 +263,7 @@ int main(void) {
   EXPECT(commit_work(sqlstate), "00000");
   EXPECT(get_st(sqlstate, &st), "00000");
   CHECK(st.number == 0 && st.committed == 1 && st.rolled_back == 0);
-  CHECK(strcmp(st.function, "COMMIT WORK") == 0 && st.code == 11);
+  CHECK(padded(st.function, "COMMIT WORK", 30) && st.code == 11);
   CHECK(st.active == 0);
 
   /* The changes were committed. */
@@ -261,7 +278,7 @@ int main(void) {
   EXPECT(insert_row(sqlstate, &s, &i, &b, &r, &d, c, v, &f, &v_null, &unused),
          "00000");
   EXPECT(get_st(sqlstate, &st), "00000");
-  CHECK(st.rows == 1 && strcmp(st.function, "INSERT") == 0 && st.code == 50);
+  CHECK(st.rows == 1 && padded(st.function, "INSERT", 30) && st.code == 50);
   EXPECT(rollback_work(sqlstate), "00000");
   EXPECT(get_st(sqlstate, &st), "00000");
   CHECK(st.committed == 0 && st.rolled_back == 1);
@@ -360,7 +377,7 @@ int main(void) {
   x = 2;
   EXPECT(open_c1(sqlstate, &x), "00000");
   EXPECT(get_st(sqlstate, &st), "00000");
-  CHECK(strcmp(st.function, "OPEN") == 0 && st.code == 53);
+  CHECK(padded(st.function, "OPEN", 30) && st.code == 53);
   EXPECT(open_c1(sqlstate, &x), "24000");
   CHECK_CURSOR("C1");
 
@@ -375,19 +392,19 @@ int main(void) {
   strcpy(v, "TWO");
   EXPECT(update_c1(sqlstate, v), "00000");
   EXPECT(get_st(sqlstate, &st), "00000");
-  CHECK(strcmp(st.function, "UPDATE CURSOR") == 0 && st.code == 81);
+  CHECK(padded(st.function, "UPDATE CURSOR", 30) && st.code == 81);
   CHECK(st.rows == 1);
   EXPECT(fetch_c1(sqlstate, &x, v3, &i), "01004");
   CHECK(x == 3 && strcmp(v3, "thr") == 0 && i == 5);
   EXPECT(delete_c1(sqlstate), "00000");
   EXPECT(get_st(sqlstate, &st), "00000");
-  CHECK(strcmp(st.function, "DELETE CURSOR") == 0 && st.code == 18);
+  CHECK(padded(st.function, "DELETE CURSOR", 30) && st.code == 18);
   EXPECT(delete_c1(sqlstate), "24000");
   CHECK_CURSOR("C1");
   EXPECT(fetch_c1(sqlstate, &x, v3, &i), "02000");
   CHECK_CURSOR("");
   EXPECT(get_st(sqlstate, &st), "00000");
-  CHECK(strcmp(st.function, "FETCH") == 0 && st.code == 45);
+  CHECK(padded(st.function, "FETCH", 30) && st.code == 45);
 
   /* 14.6 <close statement>. The cursor can be opened again. */
   EXPECT(close_c1(sqlstate), "00000");
@@ -452,7 +469,7 @@ int main(void) {
 
   EXPECT(other_missing(sqlstate), "42P01");
   EXPECT(get_st(sqlstate, &st), "00000");
-  CHECK(st.number == 1 && strcmp(st.function, "DELETE WHERE") == 0);
+  CHECK(st.number == 1 && padded(st.function, "DELETE WHERE", 30));
 
   x = 0;
   EXPECT(open_c1(sqlstate, &x), "00000");
@@ -494,7 +511,7 @@ int main(void) {
   strcpy(v, "one");
   EXPECT(execute_s1_using(sqlstate, &x, v, &i), "00000");
   EXPECT(get_st(sqlstate, &st), "01004");
-  CHECK(st.code == 44 && strcmp(st.function, "EXECUTE") == 0 &&
+  CHECK(st.code == 44 && padded(st.function, "EXECUTE", 30) &&
         st.dynamic_code == 50 && st.rows == 1);
   x = 2;
   i = -1;
@@ -506,7 +523,7 @@ int main(void) {
   EXPECT(execute_s1(sqlstate), "07007");
   min = 1;
   EXPECT(execute_s1_into(sqlstate, &x, v, &i, &min), "00000");
-  CHECK(x == 1 && strcmp(v, "one") == 0 && i == 0);
+  CHECK(x == 1 && padded(v, "one", 10) && i == 0);
   min = 2;
   EXPECT(execute_s1_into(sqlstate, &x, v, &i, &min), "00000");
   CHECK(x == 2 && i == -1);
@@ -557,17 +574,17 @@ int main(void) {
   EXPECT(describe_s1(sqlstate), "00000");
   EXPECT(get_header(sqlstate, &count, &top, &key, function, &code), "00000");
   CHECK(count == 2 && top == 2 && key == 0 &&
-        strcmp(function, "SELECT CURSOR") == 0 && code == 85);
+        padded(function, "SELECT CURSOR", 30) && code == 85);
   n = 1;
   EXPECT(get_item(sqlstate, &n, &type, &length, name, &nullable, &indicator,
                   &returned),
          "00000");
-  CHECK(type == 4 && strcmp(name, "X") == 0 && nullable == 1);
+  CHECK(type == 4 && padded(name, "X", 20) && nullable == 1);
   n = 2;
   EXPECT(get_item(sqlstate, &n, &type, &length, name, &nullable, &indicator,
                   &returned),
          "00000");
-  CHECK(type == 12 && length == 10 && strcmp(name, "Y") == 0);
+  CHECK(type == 12 && length == 10 && padded(name, "Y", 20));
   n = 3;
   EXPECT(get_item(sqlstate, &n, &type, &length, name, &nullable, &indicator,
                   &returned),
@@ -604,7 +621,7 @@ int main(void) {
   EXPECT(fetch_dc_descriptor(sqlstate), "02000");
   EXPECT(close_dc(sqlstate), "00000");
   EXPECT(get_st(sqlstate, &st), "00000");
-  CHECK(st.code == 37 && strcmp(st.function, "DYNAMIC CLOSE") == 0);
+  CHECK(st.code == 37 && padded(st.function, "DYNAMIC CLOSE", 30));
   EXPECT(close_dc(sqlstate), "24000");
   CHECK_CURSOR("DC");
   EXPECT(fetch_dc(sqlstate, &x, v), "24000");
@@ -619,7 +636,7 @@ int main(void) {
   EXPECT(delete_dc(sqlstate), "24000");
   CHECK_CURSOR("DC");
   EXPECT(fetch_dc(sqlstate, &x, v), "00000");
-  CHECK(x == 1 && strcmp(v, "one") == 0);
+  CHECK(x == 1 && padded(v, "one", 10));
   strcpy(v, "uno");
   EXPECT(update_dc(sqlstate, v), "00000");
   EXPECT(get_st(sqlstate, &st), "00000");
@@ -639,7 +656,7 @@ int main(void) {
   EXPECT(set_count(sqlstate, &count), "00000");
   strcpy(v, "");
   EXPECT(get_varchar(sqlstate, &n, v), "00000");
-  CHECK(strcmp(v, "two") == 0);
+  CHECK(padded(v, "two", 10));
   EXPECT(set_null(sqlstate, &n), "00000");
   EXPECT(get_item(sqlstate, &n, &type, &length, name, &nullable, &indicator,
                   &returned),
@@ -672,7 +689,7 @@ int main(void) {
   CHECK(x == 1);
   n = 2;
   EXPECT(get_varchar(sqlstate, &n, v), "00000");
-  CHECK(strcmp(v, "uno") == 0);
+  CHECK(padded(v, "uno", 10));
 
   /* The positioned DELETE deleted the row where x is 2. */
   x = 2;

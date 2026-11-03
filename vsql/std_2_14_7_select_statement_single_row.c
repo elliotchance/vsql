@@ -3,8 +3,8 @@
  * vsql_m_put assigns a string to a CHARACTER(length) or CHARACTER
  * VARYING(length) target, which has (length + 1) * 4 bytes since a UTF-8
  * character is up to 4 bytes. A value of more than length characters is cut
- * to its first length characters (never part of a character), and a CHARACTER
- * is padded with spaces to length characters (rather than length * 4 bytes,
+ * to its first length characters (never part of a character), and a shorter
+ * one is padded with spaces to length characters (rather than length * 4 bytes,
  * which is only meant for a character set where every character has the same
  * size). It returns 1 if the string was truncated (warning: string data, right
  * truncation). The value can be the target.
@@ -14,7 +14,7 @@
  * ISO/IEC 9075-2:2016(E), 13.5, Data type correspondences, Table 20
  * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 6.b and 6.c
  */
-static int vsql_m_put(char *target, size_t length, int pad, const char *value) {
+static int vsql_m_put(char *target, size_t length, const char *value) {
   size_t octets = 0, characters = 0;
   int truncated;
 
@@ -28,10 +28,8 @@ static int vsql_m_put(char *target, size_t length, int pad, const char *value) {
   }
   truncated = value[octets] != '\0';
   memmove(target, value, octets);
-  if (pad) {
-    for (; characters < length; characters++) {
-      target[octets++] = ' ';
-    }
+  for (; characters < length; characters++) {
+    target[octets++] = ' ';
   }
   target[octets] = '\0';
 
@@ -112,8 +110,7 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
   /*
    * A string is retrieved into all of the target, which holds any value of
    * length characters, and is then cut to length characters. A CHARACTER(L)
-   * is padded with spaces to its length. A CHARACTER VARYING(L) should be too
-   * (#784).
+   * or CHARACTER VARYING(L) is padded with spaces to its length.
    *
    * ISO/IEC 9075-2:2016(E), 9.1, Retrieval assignment, General Rules, 7.c and 7.e
    * ISO/IEC 9075-2:2016(E), 9.4, Passing a value from the SQL-server to a host language, General Rules, 5.b and 5.l
@@ -123,8 +120,7 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
     return rc;
   }
   characters = vsql_m_characters((char *)t->value);
-  if (!vsql_m_put((char *)t->value, (size_t)t->length, t->type == SQL_CHAR,
-                  (char *)t->value)) {
+  if (!vsql_m_put((char *)t->value, (size_t)t->length, (char *)t->value)) {
     t->indicator = 0;
     return rc;
   }

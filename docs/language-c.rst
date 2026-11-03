@@ -276,7 +276,10 @@ column. It can't have ``UNION``, ``EXCEPT``, ``INTERSECT``, ``ORDER BY``,
   an asterisk (``*``) in the select list, this is an error when the module is
   compiled.
 
-A ``CHARACTER(L)`` parameter is padded with spaces to its length.
+A ``CHARACTER(L)`` or ``CHARACTER VARYING(L)`` parameter is padded with spaces
+to L characters, so ``'abc'`` in a ``VARCHAR(5)`` parameter is the C string
+``"abc  "``. This is for any string that's passed back to C, such as with
+``FETCH``, ``GET DESCRIPTOR`` or ``GET DIAGNOSTICS``.
 
 Cursors
 ^^^^^^^

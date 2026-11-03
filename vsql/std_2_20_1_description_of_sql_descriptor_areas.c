@@ -442,7 +442,7 @@ static int vsql_m_get_data(struct vsql_m_item *item, void *target,
     return 0;
   }
 
-  return vsql_m_put((char *)target, length, type == SQL_CHAR, (char *)item->data);
+  return vsql_m_put((char *)target, length, (char *)item->data);
 }
 
 /* section set_count */

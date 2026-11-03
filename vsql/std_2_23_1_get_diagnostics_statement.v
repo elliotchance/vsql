@@ -145,8 +145,7 @@ fn (mut t ModuleTokens) get_diagnostics_statement(p ExternallyInvokedProcedure) 
 				}
 				'vsql_m_item_text(${id}, ${n})'
 			}
-			pad := if typ.typ == .is_character { 1 } else { 0 }
-			c += '  vsql_m_w |= vsql_m_put(${target.name}, ${typ.length}, ${pad}, ${value});\n'
+			c += '  vsql_m_w |= vsql_m_put(${target.name}, ${typ.length}, ${value});\n'
 			put = true
 		}
 

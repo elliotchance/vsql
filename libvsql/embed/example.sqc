@@ -7,6 +7,19 @@
 #include <stdio.h>
 #include <string.h>
 
+/*
+ * trim removes the spaces at the end of a VARCHAR value, which is padded with
+ * spaces to its length when it's assigned to a host variable.
+ */
+static void trim(char *value) {
+  size_t length = strlen(value);
+
+  while (length > 0 && value[length - 1] == ' ') {
+    length--;
+  }
+  value[length] = '\0';
+}
+
 int main(void) {
   char state[6];
 
@@ -70,6 +83,7 @@ update:
   EXEC SQL WHENEVER NOT FOUND GOTO done;
   for (;;) {
     EXEC SQL FETCH all_items INTO :name, :price INDICATOR :price_indicator;
+    trim(name);
     if (price_indicator < 0) {
       printf("%s has no price\n", name);
     } else {

@@ -4,8 +4,9 @@ module main
 //
 // Allocate a resource and assign a handle to it.
 //
-// There's no limit on the number of handles, other than they wrap after 2^31
-// allocations (General Rules 3.a.i, 3.b.iv, 3.c.v and 3.d.v), which is #746.
+// There's no limit on the number of handles, since they're reused (see 4.4.1,
+// "Handles"), and memory would run out before all of them are allocated
+// (General Rules 3.a.i, 3.b.iv, 3.c.v and 3.d.v).
 // Memory isn't limited (see 4.4.1, "Handles"), and the resources can always be
 // allocated, so General Rules 3.a.ii.1, 3.a.ii.2, 3.b.v.1, 3.b.v.2, 3.c.vii,
 // 3.c.viii, 3.d.vii.1 and 3.d.vii.2 can't happen, and there's never a skeleton

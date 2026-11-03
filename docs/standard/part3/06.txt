@@ -15,7 +15,7 @@
 6.3/GR/2                 implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_3_alloc_handle_test.c
 6.3/GR/3                 container    - -
 6.3/GR/3.a               implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_3_alloc_handle_test.c
-6.3/GR/3.a.i             deviates     libvsql/std_3_6_3_alloc_handle.v - there's no limit, but handles wrap after 2^31 allocations (#746)
+6.3/GR/3.a.i             n/a          - - handles are reused, so memory runs out before the maximum
 6.3/GR/3.a.ii            container    - -
 6.3/GR/3.a.ii.1          n/a          - - memory isn't limited (4.4.1)
 6.3/GR/3.a.ii.2          n/a          - - the resources can always be allocated
@@ -24,7 +24,7 @@
 6.3/GR/3.b.i             implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_3_alloc_handle_test.c
 6.3/GR/3.b.ii            definition   - -
 6.3/GR/3.b.iii           implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_3_alloc_handle_test.c
-6.3/GR/3.b.iv            deviates     libvsql/std_3_6_3_alloc_handle.v - there's no limit, but handles wrap after 2^31 allocations (#746)
+6.3/GR/3.b.iv            n/a          - - handles are reused, so memory runs out before the maximum
 6.3/GR/3.b.v             container    - -
 6.3/GR/3.b.v.1           n/a          - - memory isn't limited (4.4.1)
 6.3/GR/3.b.v.2           n/a          - - the resources can always be allocated
@@ -34,7 +34,7 @@
 6.3/GR/3.c.ii            definition   - -
 6.3/GR/3.c.iii           implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_3_alloc_handle_test.c
 6.3/GR/3.c.iv            implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_3_alloc_handle_test.c
-6.3/GR/3.c.v             deviates     libvsql/std_3_6_3_alloc_handle.v - there's no limit, but handles wrap after 2^31 allocations (#746)
+6.3/GR/3.c.v             n/a          - - handles are reused, so memory runs out before the maximum
 6.3/GR/3.c.vi            implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_5_3_implicit_set_connection_test.c
 6.3/GR/3.c.vii           n/a          - - memory isn't limited (4.4.1)
 6.3/GR/3.c.viii          n/a          - - the resources can always be allocated
@@ -50,7 +50,7 @@
 6.3/GR/3.d.ii            definition   - -
 6.3/GR/3.d.iii           implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_3_alloc_handle_test.c
 6.3/GR/3.d.iv            implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_6_3_alloc_handle_test.c
-6.3/GR/3.d.v             deviates     libvsql/std_3_6_3_alloc_handle.v - there's no limit, but handles wrap after 2^31 allocations (#746)
+6.3/GR/3.d.v             n/a          - - handles are reused, so memory runs out before the maximum
 6.3/GR/3.d.vi            implemented  libvsql/std_3_6_3_alloc_handle.v libvsql/std_3_5_3_implicit_set_connection_test.c
 6.3/GR/3.d.vii           container    - -
 6.3/GR/3.d.vii.1         n/a          - - memory isn't limited (4.4.1)

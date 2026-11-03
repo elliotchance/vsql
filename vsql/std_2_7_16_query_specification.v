@@ -62,10 +62,17 @@ fn (e QuerySpecification) pstr(params map[string]Value) string {
 }
 
 // column_reference returns the column if the select list item is only a column
-// reference, such as "a" or "t.a".
+// reference, such as "a" or "t.a", so not "a OR b", "a AND b", "NOT a" or
+// "a IS TRUE".
 fn (e DerivedColumn) column_reference() ?Identifier {
 	if e.expr is BooleanValueExpression {
-		f := e.expr.term.factor.expr
+		factor := e.expr.term.factor
+		if e.expr.expr != none || e.expr.term.term != none || factor.value != none
+			|| factor.inverse {
+			return none
+		}
+
+		f := factor.expr
 		if f is BooleanPredicand {
 			if f is NonparenthesizedValueExpressionPrimary {
 				if f is Identifier {

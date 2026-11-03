@@ -562,6 +562,10 @@ struct Connection
    	// EXISTS) that's being planned or evaluated, the innermost last. A subquery
    	// can refer to the columns of the queries that contain it, see SubqueryScope.
    	subquery_scopes []SubqueryScope
+   	// subquery_tables has the id of each table that's read by a subquery that's
+   	// planned while collect_subquery_tables is set (see tables_of_subqueries).
+   	collect_subquery_tables bool
+   	subquery_tables         []string
    	// next_value_not_allowed is set (to "UNION", etc.) while a query that can't
    	// contain a NEXT VALUE FOR is being planned, see Compiler.
    	next_value_not_allowed string

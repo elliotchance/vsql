@@ -346,6 +346,119 @@ DECLARE c7 CURSOR FOR SELECT * FROM information_schema.tables FOR UPDATE;
 -- error 42601: syntax error: cursor C6 is not updatable
 -- error 42601: syntax error: cursor C7 is not updatable
 
+/* extensions V004-01 */
+CREATE TABLE b (p BOOLEAN, q BOOLEAN);
+DECLARE c1 CURSOR FOR SELECT x + 1 AS z FROM t FOR UPDATE;
+DECLARE c2 CURSOR FOR SELECT x, 1 AS z FROM t FOR UPDATE;
+DECLARE c3 CURSOR FOR SELECT (x) AS z FROM t FOR UPDATE;
+DECLARE c4 CURSOR FOR SELECT p OR q AS z FROM b FOR UPDATE;
+DECLARE c5 CURSOR FOR SELECT p AND q AS z FROM b FOR UPDATE;
+DECLARE c6 CURSOR FOR SELECT NOT p AS z FROM b FOR UPDATE;
+DECLARE c7 CURSOR FOR SELECT p IS TRUE AS z FROM b FOR UPDATE;
+-- msg: CREATE TABLE 1
+-- error 42601: syntax error: cursor C1 is not updatable
+-- error 42601: syntax error: cursor C2 is not updatable
+-- error 42601: syntax error: cursor C3 is not updatable
+-- error 42601: syntax error: cursor C4 is not updatable
+-- error 42601: syntax error: cursor C5 is not updatable
+-- error 42601: syntax error: cursor C6 is not updatable
+-- error 42601: syntax error: cursor C7 is not updatable
+
+/* extensions V004-01 */
+DECLARE c1 CURSOR FOR SELECT x, x FROM t FOR UPDATE;
+DECLARE c2 CURSOR FOR SELECT x, t.x FROM t FOR UPDATE;
+DECLARE c3 CURSOR FOR SELECT x AS a, x AS b FROM t FOR UPDATE;
+DECLARE c4 CURSOR FOR SELECT t.*, x FROM t FOR UPDATE;
+DECLARE c5 CURSOR FOR SELECT t.*, t.* FROM t FOR UPDATE;
+-- error 42601: syntax error: cursor C1 is not updatable
+-- error 42601: syntax error: cursor C2 is not updatable
+-- error 42601: syntax error: cursor C3 is not updatable
+-- error 42601: syntax error: cursor C4 is not updatable
+-- error 42601: syntax error: cursor C5 is not updatable
+
+/* extensions V004-01 */
+DECLARE c1 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM t) FOR UPDATE;
+DECLARE c2 CURSOR FOR SELECT x FROM t WHERE EXISTS (SELECT * FROM t AS a WHERE a.x = t.x) FOR UPDATE;
+DECLARE c3 CURSOR FOR SELECT x FROM t AS a WHERE x IN (SELECT x FROM public.t) FOR UPDATE;
+DECLARE c4 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT u.x FROM u JOIN t AS a ON u.x = a.x) FOR UPDATE;
+DECLARE c5 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM (SELECT x FROM t) AS d) FOR UPDATE;
+DECLARE c6 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM u WHERE x IN (SELECT x FROM t)) FOR UPDATE;
+DECLARE c7 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM u UNION SELECT x FROM t) FOR UPDATE;
+-- error 42601: syntax error: cursor C1 is not updatable
+-- error 42601: syntax error: cursor C2 is not updatable
+-- error 42601: syntax error: cursor C3 is not updatable
+-- error 42601: syntax error: cursor C4 is not updatable
+-- error 42601: syntax error: cursor C5 is not updatable
+-- error 42601: syntax error: cursor C6 is not updatable
+-- error 42601: syntax error: cursor C7 is not updatable
+
+/* extensions V004-01 V004-02 V004-03 V004-05 V004-06 */
+CREATE SCHEMA s;
+CREATE TABLE s.t (x INTEGER);
+START TRANSACTION;
+DECLARE c1 CURSOR FOR SELECT t.* FROM t FOR UPDATE;
+DECLARE c2 CURSOR FOR SELECT y AS a, x AS b FROM t FOR UPDATE;
+DECLARE c3 CURSOR FOR SELECT x, y FROM t WHERE x NOT IN (SELECT x FROM u) FOR UPDATE;
+DECLARE c4 CURSOR FOR SELECT x FROM t WHERE x NOT IN (SELECT x FROM s.t);
+DECLARE c5 CURSOR FOR SELECT x FROM t WHERE x = 2;
+OPEN c4;
+FETCH c4;
+UPDATE t SET y = 3 WHERE CURRENT OF c4;
+OPEN c5;
+FETCH c5;
+DELETE FROM t WHERE CURRENT OF c5;
+SELECT * FROM t;
+-- msg: CREATE SCHEMA 1
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: DECLARE CURSOR
+-- msg: DECLARE CURSOR
+-- msg: DECLARE CURSOR
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- X: 1
+-- msg: UPDATE 1
+-- msg: OPEN
+-- X: 2
+-- msg: DELETE 1
+-- X: 1 Y: 3
+
+/* extensions V004-01 V004-02 V004-03 V004-05 */
+START TRANSACTION;
+DECLARE c CURSOR FOR SELECT * FROM t ORDER BY (SELECT MAX(x) FROM t) FOR UPDATE;
+OPEN c;
+FETCH c;
+DELETE FROM t WHERE CURRENT OF c;
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- X: 1 Y: 10
+-- msg: DELETE 1
+
+/* extensions V004-01 V004-02 V004-03 V004-05 V004-06 */
+START TRANSACTION;
+DECLARE c1 CURSOR FOR SELECT x + 1 AS z FROM t;
+OPEN c1;
+FETCH c1;
+UPDATE t SET x = 5 WHERE CURRENT OF c1;
+DECLARE c2 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM t);
+OPEN c2;
+FETCH c2;
+DELETE FROM t WHERE CURRENT OF c2;
+SELECT * FROM t;
+-- msg: START TRANSACTION
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- Z: 2
+-- error 34000: invalid cursor name: cursor C1 is not updatable
+-- msg: DECLARE CURSOR
+-- msg: OPEN
+-- X: 1
+-- error 34000: invalid cursor name: cursor C2 is not updatable
+-- X: 1 Y: 10
+-- X: 2 Y: 20
+
 /* extensions V004-01 V004-02 V004-03 V004-04 V004-05 V004-06 */
 EXPLAIN DECLARE c CURSOR FOR SELECT * FROM t;
 EXPLAIN OPEN c;

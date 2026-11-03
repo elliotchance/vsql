@@ -81,9 +81,6 @@ fn (k ForeignKey) violation(t Table) IError {
 // can be the table itself, and must be a base table. It must be in the same
 // catalog, because each catalog is a separate file.
 //
-// The unique constraint of the referenced columns can be DEFERRABLE, and a
-// datetime with a time zone can reference one without a time zone (#789).
-//
 // ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 5, 6 and 15
 fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 	for i, key in table.foreign_keys {
@@ -140,7 +137,7 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 		for j, column in referenced_columns {
 			typ := referenced.column(column)!.typ
 			referencing_typ := table.column(key.columns[j])!.typ
-			if !is_comparable_key_type(typ.typ, referencing_typ.typ) {
+			if !is_comparable_key_type(typ, referencing_typ) {
 				return sqlstate_42804('in FOREIGN KEY', typ.str(), referencing_typ.str())
 			}
 		}
@@ -148,12 +145,19 @@ fn resolve_foreign_keys(mut conn Connection, mut table Table) ! {
 		mut sorted := referenced_columns.clone()
 		sorted.sort()
 		mut found := false
-		mut all_unique_columns := [referenced.primary_key]
-		all_unique_columns << referenced.unique_constraints.map(it.columns)
-		for unique_columns in all_unique_columns {
-			mut sorted_unique := unique_columns.clone()
+		mut primary_key := referenced.primary_key.clone()
+		primary_key.sort()
+		if primary_key.len > 0 && primary_key == sorted {
+			found = true
+		}
+		for constraint in referenced.unique_constraints {
+			mut sorted_unique := constraint.columns.clone()
 			sorted_unique.sort()
-			if sorted_unique.len > 0 && sorted_unique == sorted {
+			if sorted_unique == sorted {
+				// ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 5
+				if constraint.characteristics.is_deferrable() {
+					return sqlstate_42830('FOREIGN KEY cannot reference a DEFERRABLE constraint: ${constraint.name}')
+				}
 				found = true
 			}
 		}
@@ -185,13 +189,12 @@ fn key_type(typ SQLType) SQLType {
 
 // is_comparable_key_type is true if a referencing column of type a can reference
 // a column of type b. They must be comparable, so any two numeric types, and
-// datetimes with the same datetime fields (with or without a time zone, see
-// #789), can be used (Feature T201).
+// datetimes with the same datetime fields, can be used (Feature T201). Both or
+// neither of the datetimes must have a time zone.
 //
 // ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 11
-fn is_comparable_key_type(a SQLType, b SQLType) bool {
-	return key_type(a) == key_type(b) || (a.is_number() && b.is_number())
-		|| (a.is_datetime() && b.is_datetime() && datetime_fields(a) == datetime_fields(b))
+fn is_comparable_key_type(a Type, b Type) bool {
+	return key_type(a.typ) == key_type(b.typ) || (a.typ.is_number() && b.typ.is_number())
 }
 
 // foreign_key_type is the type that the values of a referencing column of type

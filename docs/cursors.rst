@@ -70,7 +70,8 @@ The cursor must be updatable. A cursor is updatable if it selects from one table
 (without a join, ``GROUP BY``, aggregate function, ``DISTINCT``, ``OFFSET`` or
 ``FETCH FIRST``), unless it's ``FOR READ ONLY``. A cursor with an ``ORDER BY``
 is only updatable with ``FOR UPDATE``. ``FOR UPDATE OF`` limits the columns that
-a positioned ``UPDATE`` can change.
+a positioned ``UPDATE`` can change. A positioned ``UPDATE`` also can't change a
+column that's used by a sort key of the ``ORDER BY`` (``42601``).
 
 The rows of a cursor are found when it's opened, so a ``FETCH`` returns the row
 as it was then, even if it has been changed since. A row that has been deleted

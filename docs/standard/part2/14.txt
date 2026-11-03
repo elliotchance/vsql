@@ -507,7 +507,7 @@
 14.13/SR/11.a            missing      vsql/std_2_14_13_update_statement_positioned.y - there's no <correlation name> (#793)
 14.13/SR/11.b            implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
 14.13/SR/12              implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
-14.13/SR/13              missing      vsql/std_2_14_13_update_statement_positioned.v - a sort key column can be set (#794)
+14.13/SR/13              implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors-sort-keys.sql
 14.13/SR/14              implemented  vsql/std_2_14_13_update_statement_positioned.v tests/cursors.sql
 14.13/AR/1               container    - -
 14.13/AR/1.a             n/a          - - there are no users or privileges (#732)

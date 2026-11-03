@@ -233,7 +233,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 					body: from_clause.body
 				}, params, mut conn, allow_virtual, false)!
 				table = add_correlation_plan(mut &plan, from_clause.correlation.name,
-					subplan, from_clause.correlation, params, conn)!
+					subplan, from_clause.correlation, params, mut conn)!
 
 				// The primary key can only be found once the columns have their
 				// new names, then the table is read again with the lookup.
@@ -246,7 +246,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 									new_primary_key_operation(base_table, value, value, params,
 										conn),
 								]
-							}, from_clause.correlation, params, conn)!
+							}, from_clause.correlation, params, mut conn)!
 
 						return plan, table
 					}
@@ -322,7 +322,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			subplan := create_query_expression_plan(from_clause.body, params, mut conn,
 				from_clause.correlation)!
 			table = add_correlation_plan(mut &plan, table_name, subplan, from_clause.correlation,
-				params, conn)!
+				params, mut conn)!
 
 			if filter {
 				add_where_plan(mut &plan, body, params, conn, {
@@ -418,7 +418,7 @@ fn unqualified_range_variable(name Identifier) string {
 
 // add_correlation_plan reads the rows of subplan as the table table_name. A
 // derived column list in the correlation renames the columns.
-fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, correlation Correlation, params map[string]Value, conn &Connection) !Table {
+fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, correlation Correlation, params map[string]Value, mut conn Connection) !Table {
 	plan.subplans[table_name.id()] = subplan
 
 	// A derived column list must have a name for each column, and each name only
@@ -451,6 +451,9 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 			}
 			typ:      col.typ
 			not_null: col.not_null
+		}
+		if conn.collect_columns {
+			conn.correlated_columns[columns[i].name.id()] << col.name.id()
 		}
 	}
 

@@ -128,7 +128,7 @@
 5.4/SR/3                 n/a          - - named character sets (F461)
 5.4/SR/4                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/set-schema.sql
 5.4/SR/4.a               implemented  vsql/std_2_5_4_names_and_identifiers.v tests/set-schema.sql the default schema of the SQL-session
-5.4/SR/4.b               missing      - - a schema definition can't contain a schema element (#764)
+5.4/SR/4.b               partial      vsql/std_2_11_1_schema_definition.v tests/create-schema.sql the table name that qualifies a column in a CHECK or generation expression is resolved again by each statement that writes (#886)
 5.4/SR/4.c               implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod
 5.4/SR/5                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/catalog-qualified-names.sql
 5.4/SR/5.a               n/a          - - declared local temporary tables (F531)
@@ -170,12 +170,12 @@
 5.4/SR/13.c              n/a          - - domains (F251)
 5.4/SR/13.d              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/set-schema.sql
 5.4/SR/13.d.i            implemented  vsql/std_2_5_4_names_and_identifiers.v tests/set-schema.sql
-5.4/SR/13.d.ii           missing      - - a schema definition can't contain a schema element (#764)
+5.4/SR/13.d.ii           implemented  vsql/std_2_11_1_schema_definition.v tests/create-schema.sql
 5.4/SR/13.d.iii          implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod
 5.4/SR/14                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/set-catalog.sql
 5.4/SR/14.a              implemented  vsql/std_2_5_4_names_and_identifiers.v tests/set-catalog.sql the default catalog of the SQL-session
 5.4/SR/14.b              impl-defined vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod the current catalog
-5.4/SR/14.c              missing      - - a schema definition can't contain a schema element (#764)
+5.4/SR/14.c              implemented  vsql/std_2_11_1_schema_definition.v tests/create-schema.sql
 5.4/SR/14.d              container    - -
 5.4/SR/14.d.i            implemented  vsql/std_2_5_4_names_and_identifiers.v libvsql/module/test.mod the module's catalog is the current catalog
 5.4/SR/14.d.ii           impl-defined vsql/std_2_5_4_names_and_identifiers.v tests/set-catalog.sql the current catalog

@@ -3,7 +3,7 @@
 # 11, Schema definition and manipulation
 11                       container    - -
 # 11.1, <schema definition>
-11.1                     partial      vsql/std_2_11_1_schema_definition.v tests/create-schema.sql there are no <schema element>s (#764), AUTHORIZATION (#289) or <schema character set or path>
+11.1                     partial      vsql/std_2_11_1_schema_definition.v tests/create-schema.sql the only <schema element>s are tables and sequences, with no forward references (#887), and there's no AUTHORIZATION (#289) or <schema character set or path>
 11.1/SR/1                missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/SR/2                missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/SR/2.a              missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
@@ -20,7 +20,7 @@
 11.1/GR/1.b              missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/GR/1.c              n/a          - - named character sets (F461)
 11.1/GR/1.d              n/a          - - SQL paths (S071)
-11.1/GR/1.e              missing      - - a schema definition can't contain a schema element (#764)
+11.1/GR/1.e              implemented  vsql/std_2_11_1_schema_definition.v tests/create-schema.sql
 11.1/GR/2                missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/GR/3                n/a          - - named character sets (F461)
 11.1/CR/1                n/a          - - SQL paths (S071)
@@ -71,7 +71,7 @@
 11.3/SR/3.a              n/a          - - periods (T180, T181)
 11.3/SR/4                implemented  vsql/compiler.v tests/check-constraint.sql a parameter can only be in a DEFAULT, CHECK or generation expression, which reject it
 11.3/SR/5                definition   - -
-11.3/SR/6                missing      - - a schema definition can't contain a schema element (#764)
+11.3/SR/6                implemented  vsql/std_2_11_1_schema_definition.v tests/create-schema.sql
 11.3/SR/7                implemented  vsql/std_2_11_3_table_definition.v tests/create-table.sql
 11.3/SR/8                definition   - -
 11.3/SR/9                container    - -
@@ -2933,7 +2933,7 @@
 # 11.72, <sequence generator definition>
 11.72                    partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql AS <data type> isn't supported (#399)
 11.72/SR/1               definition   - -
-11.72/SR/2               missing      - - a schema definition can't contain a schema element (#764)
+11.72/SR/2               implemented  vsql/std_2_11_1_schema_definition.v tests/create-schema.sql
 11.72/SR/3               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
 11.72/SR/4               definition   - -
 11.72/SR/5               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql

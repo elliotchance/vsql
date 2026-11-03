@@ -148,8 +148,8 @@
 21.2/GR/1.d.iii.3.C.I    implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
 21.2/GR/1.d.iii.3.C.II   implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
 21.2/GR/1.d.iii.3.C.III  implemented  vsql/std_2_21_2_embedded_exception_declaration.v vsql/sql_test.v
-21.2/CR/1                missing      - - embedded SQL isn't flagged (#763)
-21.2/CR/2                missing      - - embedded SQL isn't flagged (#763)
+21.2/CR/1                missing      - - embedded SQL isn't flagged (#879)
+21.2/CR/2                missing      - - embedded SQL isn't flagged (#879)
 # 21.3, <embedded SQL Ada program>
 21.3                     n/a          - - Embedded Ada (B011)
 21.3/SR/1                n/a          - - Embedded Ada (B011)
@@ -272,7 +272,7 @@
 21.4/SR/6                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
 21.4/SR/7                implemented  vsql/std_2_21_4_embedded_sql_c_program.v vsql/sql_test.v
 21.4/GR/1                definition   - -
-21.4/CR/1                missing      - - embedded SQL isn't flagged (#763)
+21.4/CR/1                missing      - - embedded SQL isn't flagged (#879)
 21.4/CR/2                n/a          - - reference types (S041)
 21.4/CR/3                n/a          - - transforms (S241)
 21.4/CR/4                n/a          - - array locators (S232)
@@ -282,7 +282,7 @@
 21.4/CR/8                n/a          - - LOBs (T041)
 21.4/CR/9                n/a          - - LOBs (T041)
 21.4/CR/10               n/a          - - LOBs (T041)
-21.4/CR/11               missing      - - embedded SQL isn't flagged (#763)
+21.4/CR/11               missing      - - embedded SQL isn't flagged (#879)
 21.4/CR/12               n/a          - - binary strings (T021)
 21.4/CR/13               n/a          - - binary strings (T021)
 # 21.5, <embedded SQL COBOL program>

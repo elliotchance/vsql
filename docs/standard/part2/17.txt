@@ -46,7 +46,7 @@
 17.3/SR/6                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql
 17.3/SR/7                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/set-transaction.sql it's 100
 17.3/CR/1                n/a          - - isolation levels (E152-01, F111)
-17.3/CR/2                missing      - - DIAGNOSTICS SIZE isn't flagged (#763)
+17.3/CR/2                implemented  vsql/std_2_17_3_transaction_characteristics.y tests/set-transaction.sql
 # 17.4, <set constraints mode statement>
 17.4                     implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/set-constraints.sql
 17.4/SR/1                implemented  vsql/std_2_17_4_set_constraints_mode_statement.v tests/set-constraints.sql

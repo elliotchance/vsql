@@ -37,10 +37,25 @@ sql_transaction_statement:
 | set_transaction_statement { $$.v = $1.v as Stmt }
 | set_constraints_mode_statement { $$.v = $1.v as Stmt }
 
+// A <connection name> is only in a connection statement, so that's flagged too.
+//
+// ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers, Conformance Rules, 8
+// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 18.3, <disconnect statement>, Conformance Rules, 1
 sql_connection_statement:
-  connect_statement { $$.v = $1.v as Stmt }
-| set_connection_statement { $$.v = $1.v as Stmt }
-| disconnect_statement { $$.v = $1.v as Stmt }
+  connect_statement {
+    flag(mut yylex, 'F771')
+    $$.v = $1.v as Stmt
+  }
+| set_connection_statement {
+    flag(mut yylex, 'F771')
+    $$.v = $1.v as Stmt
+  }
+| disconnect_statement {
+    flag(mut yylex, 'F771')
+    $$.v = $1.v as Stmt
+  }
 
 sql_session_statement:
   set_schema_statement { $$.v = Stmt($1.v as SetSchemaStatement) }

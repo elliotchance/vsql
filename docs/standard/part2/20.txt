@@ -90,14 +90,14 @@
 20.2/GR/4                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.2/GR/4.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.2/GR/4.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c every other component is 0 (zero)
-20.2/CR/1                missing      - - an SQL-client module isn't flagged (#763)
-20.2/CR/2                missing      - - an SQL-client module isn't flagged (#763)
+20.2/CR/1                missing      - - an SQL-client module isn't flagged (#879)
+20.2/CR/2                missing      - - an SQL-client module isn't flagged (#879)
 # 20.3, <deallocate descriptor statement>
 20.3                     implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
 20.3/GR/1                container    - -
 20.3/GR/1.a              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
 20.3/GR/1.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.3/CR/1                missing      - - an SQL-client module isn't flagged (#763)
+20.3/CR/1                missing      - - an SQL-client module isn't flagged (#879)
 # 20.4, <get descriptor statement>
 20.4                     implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c KEY_TYPE and KEY_MEMBER are always 0 (zero) (#801)
 20.4/SR/1                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v
@@ -117,8 +117,8 @@
 20.4/GR/7.b              implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
 20.4/GR/7.b.i            implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v libvsql/module/test_main.c
 20.4/GR/7.b.ii           implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c
-20.4/CR/1                missing      - - an SQL-client module isn't flagged (#763)
-20.4/CR/2                missing      - - an SQL-client module isn't flagged (#763)
+20.4/CR/1                missing      - - an SQL-client module isn't flagged (#879)
+20.4/CR/2                missing      - - an SQL-client module isn't flagged (#879)
 20.4/CR/3                n/a          - - polymorphic table functions (B200)
 20.4/CR/4                implemented  vsql/std_2_20_1_description_of_sql_descriptor_areas.v vsql/sql_test.v NULL_ORDERING and SORT_DIRECTION are a syntax error
 # 20.5, <set descriptor statement>
@@ -178,7 +178,7 @@
 20.5/GR/7                n/a          - - polymorphic table functions (B200)
 20.5/GR/8                impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c - a component that was set before the exception condition keeps its value
 20.5/GR/9                impl-defined vsql/std_2_20_1_description_of_sql_descriptor_areas.c libvsql/module/test_main.c there are no restrictions
-20.5/CR/1                missing      - - an SQL-client module isn't flagged (#763)
+20.5/CR/1                missing      - - an SQL-client module isn't flagged (#879)
 20.5/CR/2                n/a          - - polymorphic table functions (B200)
 # 20.6, <copy descriptor statement>
 20.6                     n/a          - - polymorphic table functions (B200)
@@ -219,7 +219,7 @@
 20.6/CR/1                n/a          - - polymorphic table functions (B200)
 # 20.7, <prepare statement>
 20.7                     partial      vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c the type of a dynamic parameter isn't determined (#649)
-20.7/SR/1                implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c a literal is also allowed, and isn't flagged (#763)
+20.7/SR/1                implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c a literal is also allowed, and isn't flagged (#879)
 20.7/SR/2                implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
 20.7/SR/3                n/a          - - there are no implementation-defined preparable statements
 20.7/SR/4                n/a          - - SQL-invoked routines (T321)
@@ -376,7 +376,7 @@
 20.7/GR/10.c.i           n/a          - - there are no users or privileges (#732)
 20.7/GR/10.c.ii          n/a          - - there are no users or privileges (#732)
 20.7/GR/11               n/a          - - dynamic specification of cursor attributes (B034)
-20.7/CR/1                missing      - - an SQL-client module isn't flagged (#763)
+20.7/CR/1                missing      - - an SQL-client module isn't flagged (#879)
 20.7/CR/2                implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v an <attributes specification> isn't supported
 # 20.8, <cursor attributes>
 20.8                     n/a          - - dynamic specification of cursor attributes (B034)
@@ -389,7 +389,7 @@
 20.9/GR/1                implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.9/GR/2                implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.9/GR/3                implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c there are no extended dynamic cursors (B032)
-20.9/CR/1                missing      - - an SQL-client module isn't flagged (#763)
+20.9/CR/1                missing      - - an SQL-client module isn't flagged (#879)
 # 20.10, <describe statement>
 20.10                    partial      vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c only DESCRIBE OUTPUT, and KEY_TYPE and KEY_MEMBER are always 0 (zero) (#801)
 20.10/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
@@ -473,7 +473,7 @@
 20.10/GR/7.e.v           n/a          - - SQL-invoked routines (T321)
 20.10/GR/7.e.vi          n/a          - - SQL-invoked routines (T321)
 20.10/CR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v DESCRIBE INPUT isn't supported
-20.10/CR/2               missing      - - an SQL-client module isn't flagged (#763)
+20.10/CR/2               missing      - - an SQL-client module isn't flagged (#879)
 20.10/CR/3               n/a          - - DESCRIBE CURSOR (T472)
 20.10/CR/4               n/a          - - polymorphic table functions (B200)
 # 20.11, <input using clause>
@@ -522,7 +522,7 @@
 20.11/GR/6.c.iii.3.A.I.2 n/a          - - user-defined types (S023)
 20.11/GR/6.c.iii.3.A.II  n/a          - - user-defined types (S023)
 20.11/GR/6.c.iii.3.B     n/a          - - user-defined types (S023)
-20.11/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+20.11/CR/1               missing      - - an SQL-client module isn't flagged (#879)
 # 20.12, <output using clause>
 20.12                    partial      vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c the returned lengths are of the value that is assigned (#800)
 20.12/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
@@ -584,7 +584,7 @@
 20.12/GR/5.e.i.2.B.III.2 missing      vsql/std_2_20_7_prepare_statement.c - the lengths are of TV, not SV (#800)
 20.12/GR/5.e.i.2.B.III.3 n/a          - - arrays (S091) and multisets (S271)
 20.12/GR/5.e.ii          implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
-20.12/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+20.12/CR/1               missing      - - an SQL-client module isn't flagged (#879)
 # 20.13, <execute statement>
 20.13                    implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c
 20.13/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v
@@ -604,17 +604,17 @@
 20.13/GR/9               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.13/GR/10              implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.13/GR/11              n/a          - - there are no users or privileges (#732), so there's no authorization stack
-20.13/CR/1               missing      - - an SQL-client module isn't flagged (#763)
-20.13/CR/2               missing      - - an SQL-client module isn't flagged (#763)
+20.13/CR/1               missing      - - an SQL-client module isn't flagged (#879)
+20.13/CR/2               missing      - - an SQL-client module isn't flagged (#879)
 # 20.14, <execute immediate statement>
 20.14                    implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c
-20.14/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v a literal is also allowed, and isn't flagged (#763)
+20.14/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v vsql/sql_test.v a literal is also allowed, and isn't flagged (#879)
 20.14/GR/1               definition   - -
 20.14/GR/2               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.14/GR/2.a             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.14/GR/2.b             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.14/GR/3               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c without a prepared statement
-20.14/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+20.14/CR/1               missing      - - an SQL-client module isn't flagged (#879)
 # 20.15, <dynamic declare cursor>
 20.15                    implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
 20.15/SR/1               implemented  vsql/std_2_14_1_declare_cursor.v vsql/sql_test.v
@@ -625,7 +625,7 @@
 20.15/GR/1.c             implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
 20.15/GR/1.d             implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
 20.15/GR/1.e             implemented  vsql/std_2_14_1_declare_cursor.v libvsql/module/test_main.c
-20.15/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+20.15/CR/1               missing      - - an SQL-client module isn't flagged (#879)
 # 20.16, <descriptor value constructor>
 20.16                    n/a          - - polymorphic table functions (B200)
 20.16/SR/1               n/a          - - polymorphic table functions (B200)
@@ -702,7 +702,7 @@
 20.19/GR/5               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.19/GR/6               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.19/GR/7               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
-20.19/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+20.19/CR/1               missing      - - an SQL-client module isn't flagged (#879)
 # 20.20, <dynamic fetch statement>
 20.20                    implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c only NEXT is supported (F431)
 20.20/SR/1               implemented  vsql/std_2_20_7_prepare_statement.v libvsql/module/test_main.c
@@ -713,21 +713,21 @@
 20.20/GR/4               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.20/GR/5               implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.20/GR/6               impl-defined vsql/std_2_20_7_prepare_statement.c - the targets that were assigned before the exception condition keep their values
-20.20/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+20.20/CR/1               missing      - - an SQL-client module isn't flagged (#879)
 # 20.21, <dynamic single row select statement>
 20.21                    implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.21/GR/1               definition   - -
 20.21/GR/2               container    - -
 20.21/GR/2.a             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
 20.21/GR/2.b             implemented  vsql/std_2_20_7_prepare_statement.c libvsql/module/test_main.c
-20.21/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+20.21/CR/1               missing      - - an SQL-client module isn't flagged (#879)
 # 20.22, <dynamic close statement>
 20.22                    implemented  vsql/std_2_14_6_close_statement.v libvsql/module/test_main.c
 20.22/SR/1               implemented  vsql/std_2_14_6_close_statement.v vsql/sql_test.v
 20.22/GR/1               implemented  vsql/std_2_14_6_close_statement.v vsql/sql_test.v the cursor is found when the module is compiled
 20.22/GR/2               definition   - -
 20.22/GR/3               implemented  vsql/std_2_14_6_close_statement.v libvsql/module/test_main.c
-20.22/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+20.22/CR/1               missing      - - an SQL-client module isn't flagged (#879)
 # 20.23, <dynamic delete statement: positioned>
 20.23                    implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c the same as a <delete statement: positioned>, so there's no <correlation name> (#793)
 20.23/SR/1               definition   - -
@@ -742,7 +742,7 @@
 20.23/GR/4               definition   - -
 20.23/GR/5               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like a <delete statement: positioned>
 20.23/GR/6               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like a <delete statement: positioned>
-20.23/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+20.23/CR/1               missing      - - an SQL-client module isn't flagged (#879)
 # 20.24, <dynamic update statement: positioned>
 20.24                    implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c
 20.24/SR/1               definition   - -
@@ -760,7 +760,7 @@
 20.24/GR/6               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like an <update statement: positioned>
 20.24/GR/7               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like an <update statement: positioned>
 20.24/GR/8               implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c like an <update statement: positioned>
-20.24/CR/1               missing      - - an SQL-client module isn't flagged (#763)
+20.24/CR/1               missing      - - an SQL-client module isn't flagged (#879)
 # 20.25, <preparable dynamic delete statement: positioned>
 20.25                    n/a          - - extended dynamic SQL (B032)
 20.25/SR/1               n/a          - - extended dynamic SQL (B032)

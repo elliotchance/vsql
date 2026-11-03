@@ -1425,7 +1425,7 @@
 7.17/SR/27               n/a          - - SQL-invoked routines (T321)
 7.17/SR/28               implemented  vsql/planner.v tests/order.sql
 7.17/SR/28.a             definition   - -
-7.17/SR/28.b             partial      vsql/planner.v tests/order.sql a sort key without a column reference, or with a subquery or an aggregate function, is also allowed, but isn't flagged (#770)
+7.17/SR/28.b             implemented  vsql/planner.v tests/order.sql a sort key without a column reference, or with a subquery or an aggregate function, is also allowed (V006-02, V006-03, V006-04)
 7.17/SR/28.c             definition   - -
 7.17/SR/28.d             container    - -
 7.17/SR/28.d.i           implemented  vsql/planner.v tests/order.sql

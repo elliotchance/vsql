@@ -6,6 +6,7 @@
 
 column_reference:
   basic_identifier_chain {
+    parsed_sort_key_part(mut yylex, .column_reference)
     $$.v = new_column_identifier(($1.v as IdentifierChain).identifier)!
   }
 

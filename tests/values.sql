@@ -1,27 +1,30 @@
+/* extensions V006-01 */
 SELECT * FROM (VALUES 1);
 -- COL1: 1
 
-/* extensions V001-01 */
+/* extensions V001-01 V006-01 */
 EXPLAIN SELECT * FROM (VALUES 1);
 -- EXPLAIN: $1:
 -- EXPLAIN:   VALUES (COL1 SMALLINT) = ROW(1)
 -- EXPLAIN: TABLE $1 (COL1 SMALLINT)
 -- EXPLAIN: EXPR ($1.COL1 SMALLINT)
 
-/* extensions V001-01 */
+/* extensions V001-01 V006-01 */
 EXPLAIN SELECT * FROM (VALUES 1.23);
 -- EXPLAIN: $1:
 -- EXPLAIN:   VALUES (COL1 NUMERIC(3, 2)) = ROW(1.23)
 -- EXPLAIN: TABLE $1 (COL1 NUMERIC(3, 2))
 -- EXPLAIN: EXPR ($1.COL1 NUMERIC(3, 2))
 
+/* extensions V006-01 */
 SELECT * FROM (VALUES 1.23);
 -- COL1: 1.23
 
+/* extensions V006-01 */
 SELECT * FROM (VALUES 1, 'foo', TRUE);
 -- error 42804: data type mismatch in row 2, column 1 of VALUES: expected SMALLINT but got CHARACTER(3)
 
-/* extensions V001-01 */
+/* extensions V001-01 V006-01 */
 EXPLAIN SELECT * FROM (VALUES ROW(1, 'foo', TRUE));
 -- EXPLAIN: $1:
 -- EXPLAIN:   VALUES (COL1 SMALLINT, COL2 CHARACTER(3), COL3 BOOLEAN) = ROW(1, 'foo', TRUE)
@@ -77,22 +80,24 @@ EXPLAIN VALUES 'hello', 1.22;
 EXPLAIN VALUES ROW('hello', 1.22);
 -- EXPLAIN: VALUES (COL1 CHARACTER(5), COL2 NUMERIC(3, 2)) = ROW('hello', 1.22)
 
+/* extensions V006-01 */
 SELECT * FROM (VALUES ROW(123), ROW(456));
 -- COL1: 123
 -- COL1: 456
 
-/* extensions V001-01 */
+/* extensions V001-01 V006-01 */
 EXPLAIN SELECT * FROM (VALUES ROW(123), ROW(456));
 -- EXPLAIN: $1:
 -- EXPLAIN:   VALUES (COL1 SMALLINT) = ROW(123), ROW(456)
 -- EXPLAIN: TABLE $1 (COL1 SMALLINT)
 -- EXPLAIN: EXPR ($1.COL1 SMALLINT)
 
+/* extensions V006-01 */
 SELECT * FROM (VALUES ROW(123, 'hi'), ROW(456, 'there'));
 -- COL1: 123 COL2: hi
 -- COL1: 456 COL2: there
 
-/* extensions V001-01 */
+/* extensions V001-01 V006-01 */
 EXPLAIN SELECT * FROM (VALUES ROW(123, 'hi'), ROW(456, 'there'));
 -- EXPLAIN: $1:
 -- EXPLAIN:   VALUES (COL1 SMALLINT, COL2 CHARACTER(5)) = ROW(123, 'hi'), ROW(456, 'there')

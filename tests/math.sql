@@ -15,18 +15,22 @@ VALUES ABS();
 VALUES ABS(1, 2);
 -- error 42601: syntax error: unexpected ",", expecting ")" or "+" or "-"
 
+/* extensions V005-01 */
 /* types */
 VALUES MOD(232.0, 3.0);
 -- COL1: 1.0 (NUMERIC(2, 1))
 
+/* extensions V005-01 */
 /* types */
 VALUES MOD(10.7, 0.8);
 -- COL1: 0.3 (NUMERIC(2, 1))
 
+/* extensions V005-01 */
 /* types */
 VALUES MOD(232.000, 3.0);
 -- COL1: 1.000 (NUMERIC(4, 3))
 
+/* extensions V005-01 */
 /* types */
 VALUES MOD(232., 3.0000);
 -- COL1: 1.0000 (NUMERIC(5, 4))
@@ -79,10 +83,12 @@ VALUES ACOS(0.2e0);
 VALUES ATAN(0.2e0);
 -- COL1: 0.19739555985e0 (DOUBLE PRECISION)
 
+/* extensions V005-01 */
 /* types */
 VALUES MOD(232e0, 3e0);
 -- COL1: 1e0 (DOUBLE PRECISION)
 
+/* extensions V005-01 */
 /* types */
 VALUES MOD(10.7e0, 0.8e0);
 -- COL1: 0.3e0 (DOUBLE PRECISION)
@@ -155,6 +161,65 @@ VALUES ROW(FLOOR(3), CEIL(-3), CEILING(CAST(7 AS BIGINT)));
 /* types */
 VALUES ROW(FLOOR(CAST(1.5 AS REAL)), CEIL(CAST(1.5 AS REAL)));
 -- COL1: 1e0 (DOUBLE PRECISION) COL2: 2e0 (DOUBLE PRECISION)
+
+-- # An argument of MOD that isn't an integer is a vsql extension.
+/* extensions V005-01 */
+/* flags */
+VALUES MOD(5.5, 2);
+-- flags: F641, F661, T441, V005-01
+-- COL1: 1.5
+
+/* extensions V005-01 */
+/* flags */
+VALUES MOD(5, 2e0);
+-- flags: F641, F661, T441, V005-01
+-- COL1: 1e0
+
+/* extensions V005-01 */
+/* flags */
+VALUES MOD(-(1.5), 2);
+-- flags: F641, F661, T441, V005-01
+-- COL1: -1.5
+
+/* extensions V005-01 */
+/* flags */
+VALUES MOD((5.5), 2);
+-- flags: F641, F661, T441, V005-01
+-- COL1: 1.5
+
+/* extensions V005-01 */
+/* flags */
+VALUES MOD((1 + 5.5), 2);
+-- flags: F641, F661, T441, V005-01
+-- COL1: 0.5
+
+/* extensions V005-01 */
+/* flags */
+VALUES MOD(1 + 5.5, 2);
+-- flags: F641, F661, T441, V005-01
+-- COL1: 0.5
+
+/* extensions V005-01 */
+/* flags */
+VALUES MOD(5.5 + 1, 2);
+-- flags: F641, F661, T441, V005-01
+-- COL1: 0.5
+
+/* extensions V005-01 */
+/* flags */
+VALUES MOD(2 * 1.5 * 3, 2);
+-- flags: F641, F661, T441, V005-01
+-- COL1: 1.0
+
+/* flags */
+VALUES MOD(-(5), (1 + 2) * 3);
+-- flags: F641, F661, T441
+-- COL1: -5
+
+/* flags */
+VALUES MOD((CHAR_LENGTH('a')), ('a' = 'a'));
+-- flags: F641, F661, T441
+-- error 42883: function does not exist: MOD(INTEGER, BOOLEAN)
 
 /* types */
 VALUES ROW(MOD(10, 3), MOD(-7, 3), MOD(7, -3), MOD(10, 200000), MOD(200000, 7), MOD(CAST(10 AS BIGINT), 4));

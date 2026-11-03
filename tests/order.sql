@@ -157,7 +157,79 @@ CREATE TABLE bar (x FLOAT, y VARCHAR(32));
 SELECT * FROM bar ORDER BY x;
 -- msg: CREATE TABLE 1
 
+-- # A sort key needs a column reference, and can't have a subquery or an
+-- # aggregate function, unless it's a vsql extension.
+/* flags */
+SELECT y FROM foo ORDER BY y, UPPER(y) DESC;
+-- flags:
+-- Y: bar
+-- Y: hi
+-- Y: hi
+-- Y: there
+
+/* extensions V006-02 */
+/* flags */
+SELECT y FROM foo ORDER BY y, 1;
+-- flags: V006-02
+-- Y: bar
+-- Y: hi
+-- Y: hi
+-- Y: there
+
+/* extensions V006-02 */
+/* flags */
+VALUES 3, 1 ORDER BY 1;
+-- flags: F641, F661, V006-02
+-- COL1: 3
+-- COL1: 1
+
+/* extensions V006-02 */
+/* flags */
+SELECT y FROM foo ORDER BY ?;
+-- flags: B031, V006-02
+-- error 42P02: parameter does not exist: ?1
+
+/* extensions V006-03 */
+/* flags */
+SELECT y FROM foo ORDER BY (SELECT y FROM foo ORDER BY y FETCH FIRST 1 ROW ONLY);
+-- flags: F850, F851, F857, F858, V006-03
+-- Y: hi
+-- Y: there
+-- Y: hi
+-- Y: bar
+
+/* extensions V006-02 V006-03 */
+/* flags */
+SELECT y FROM foo ORDER BY (SELECT 1 FROM foo FETCH FIRST 1 ROW ONLY), y;
+-- flags: F857, F858, V006-02, V006-03
+-- Y: bar
+-- Y: hi
+-- Y: hi
+-- Y: there
+
+/* extensions V006-03 */
+/* flags */
+SELECT y FROM foo ORDER BY y IN (SELECT y FROM foo);
+-- flags: T031, V006-03
+-- Y: hi
+-- Y: there
+-- Y: hi
+-- Y: bar
+
+/* extensions V006-02 V006-04 */
+/* flags */
+SELECT COUNT(*) FROM foo ORDER BY COUNT(*);
+-- flags: V006-02, V006-04
+-- COL1: 4
+
+/* extensions V006-04 */
+/* flags */
+SELECT COUNT(y) FROM foo ORDER BY COUNT(y) + 1;
+-- flags: F441, V006-04
+-- COL1: 4
+
 -- # A sort key can't be the name of more than one column of the result (#804).
+/* extensions V006-02 */
 CREATE TABLE t (a INT, b INT);
 INSERT INTO t (a, b) VALUES (1, 2);
 SELECT a, b AS a FROM t ORDER BY a;

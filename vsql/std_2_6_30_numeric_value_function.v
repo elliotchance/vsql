@@ -378,7 +378,7 @@ fn numeric_function_type(name string, return_type Type, arg_types []Type) Type {
 		'MOD' {
 			// The declared type is that of the divisor, which must have a scale of 0.
 			// vsql also allows a scale, so the result has the larger scale of the two,
-			// and it's less than the divisor (it's not flagged, #770).
+			// and it's less than the divisor (V005-01, see flag_mod_argument).
 			//
 			// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 12
 			p2, s2 := arg_types[1].exact_precision(), arg_types[1].scale

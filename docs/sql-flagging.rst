@@ -94,6 +94,34 @@ extension of it.
    * - ``V004-06``
      - ``UPDATE ... WHERE CURRENT OF`` outside of an SQL-client module.
 
+   * - ``V005``
+     - Value functions.
+
+   * - ``V005-01``
+     - ``MOD`` with an argument that contains a literal that has a scale or is
+       approximate, such as ``MOD(5.5, 2)``. It's only flagged from the syntax,
+       so a column of such a type isn't flagged.
+
+   * - ``V005-02``
+     - ``TRIM`` with only ``FROM``, such as ``TRIM(FROM x)``.
+
+   * - ``V006``
+     - Queries.
+
+   * - ``V006-01``
+     - A derived table without a correlation name, such as
+       ``SELECT * FROM (VALUES 1)``.
+
+   * - ``V006-02``
+     - A sort key that doesn't contain a column reference, such as
+       ``ORDER BY 1``.
+
+   * - ``V006-03``
+     - A sort key that contains a subquery.
+
+   * - ``V006-04``
+     - A sort key that contains an aggregate function.
+
    * - ``V009``
      - Comparison operators (see :doc:`operators`).
 

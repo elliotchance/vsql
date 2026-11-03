@@ -46,7 +46,11 @@ table_primary:
       correlation: $2.v as Correlation
     }
   }
-| derived_table { $$.v = $1.v as TablePrimary }
+| derived_table {
+    // ISO/IEC 9075-2:2016(E), 7.6, <table reference>, Format
+    flag(mut yylex, vsql_derived_table_without_name)
+    $$.v = $1.v as TablePrimary
+  }
 | derived_table correlation_or_recognition {
     $$.v = TablePrimary{
       body:        ($1.v as TablePrimary).body

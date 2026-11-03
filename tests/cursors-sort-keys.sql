@@ -58,7 +58,7 @@ UPDATE t SET z = 5 WHERE CURRENT OF c;
 -- error 42601: syntax error: column Y is used by a sort key of cursor C
 -- msg: UPDATE 1
 
-/* extensions V004-01 V004-02 V004-03 V004-06 */
+/* extensions V004-01 V004-02 V004-03 V004-06 V006-02 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x, y FROM t ORDER BY 1 FOR UPDATE;
 OPEN c;
@@ -134,7 +134,7 @@ UPDATE t SET x = 5 WHERE CURRENT OF c;
 -- error 42601: syntax error: column Y is used by a sort key of cursor C
 -- msg: UPDATE 1
 
-/* extensions V004-01 V004-02 V004-03 V004-06 */
+/* extensions V004-01 V004-02 V004-03 V004-06 V006-03 V006-04 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x FROM t ORDER BY (SELECT MAX(u.y) FROM u WHERE u.x = t.y) FOR UPDATE;
 OPEN c;
@@ -148,7 +148,7 @@ UPDATE t SET x = 5 WHERE CURRENT OF c;
 -- error 42601: syntax error: column Y is used by a sort key of cursor C
 -- msg: UPDATE 1
 
-/* extensions V004-01 V004-02 V004-03 V004-06 */
+/* extensions V004-01 V004-02 V004-03 V004-06 V006-03 V006-04 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x FROM t ORDER BY (SELECT MAX(y) FROM u) FOR UPDATE;
 OPEN c;
@@ -160,7 +160,7 @@ UPDATE t SET y = 5 WHERE CURRENT OF c;
 -- X: 1
 -- msg: UPDATE 1
 
-/* extensions V004-01 V004-02 V004-03 V004-06 */
+/* extensions V004-01 V004-02 V004-03 V004-06 V006-03 V006-04 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x FROM t ORDER BY (SELECT MAX(z) FROM t) FOR UPDATE;
 OPEN c;
@@ -174,7 +174,7 @@ UPDATE t SET x = 5 WHERE CURRENT OF c;
 -- error 42601: syntax error: column Z is used by a sort key of cursor C
 -- msg: UPDATE 1
 
-/* extensions V004-01 V004-02 V004-03 V004-06 */
+/* extensions V004-01 V004-02 V004-03 V004-06 V006-03 V006-04 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x FROM t ORDER BY (SELECT MAX(b.q) FROM t AS b (p, q, r)) FOR UPDATE;
 OPEN c;
@@ -188,7 +188,7 @@ UPDATE t SET x = 5 WHERE CURRENT OF c;
 -- error 42601: syntax error: column Y is used by a sort key of cursor C
 -- msg: UPDATE 1
 
-/* extensions V004-01 V004-02 V004-03 V004-06 */
+/* extensions V004-01 V004-02 V004-03 V004-06 V006-03 V006-04 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x FROM t ORDER BY (SELECT MAX(a.z) FROM (SELECT * FROM t AS a) AS a) FOR UPDATE;
 OPEN c;

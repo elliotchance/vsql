@@ -57,7 +57,7 @@ trim_function:
   TRIM left_paren trim_operands right_paren { $$.v = $3.v as TrimFunction }
 
 // Without a trim specification it's BOTH, and without a trim character it's a
-// space. vsql also allows FROM without either (#770).
+// space. vsql also allows FROM without either (V005-02).
 //
 // ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 13.a
 
@@ -67,6 +67,7 @@ trim_operands:
     $$.v = new_trim_function('BOTH', space, $1.v as CharacterValueExpression)
   }
 | FROM trim_source {
+    flag(mut yylex, vsql_trim_only_from)
     space := CharacterValueExpression(CharacterPrimary(ValueExpressionPrimary(NonparenthesizedValueExpressionPrimary(ValueSpecification(new_varchar_value(' '))))))
     $$.v = new_trim_function('BOTH', space, $2.v as CharacterValueExpression)
   }

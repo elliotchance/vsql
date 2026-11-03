@@ -41,6 +41,16 @@ module vsql
 // V004-05: DELETE WHERE CURRENT OF outside of an SQL-client module.
 // V004-06: UPDATE WHERE CURRENT OF outside of an SQL-client module.
 //
+// V005: Value functions.
+// V005-01: MOD with an argument that has a scale or is approximate.
+// V005-02: TRIM with only FROM.
+//
+// V006: Queries.
+// V006-01: A derived table without a correlation name.
+// V006-02: A sort key without a column reference.
+// V006-03: A sort key that contains a subquery.
+// V006-04: A sort key that contains an aggregate function.
+//
 // V009: Comparison operators.
 // V009-01: != as an alias for <>.
 const vsql_explain_query = 'V001-01'
@@ -56,6 +66,12 @@ const vsql_fetch_without_into = 'V004-03'
 const vsql_close_cursor = 'V004-04'
 const vsql_delete_positioned = 'V004-05'
 const vsql_update_positioned = 'V004-06'
+const vsql_mod_not_integer = 'V005-01'
+const vsql_trim_only_from = 'V005-02'
+const vsql_derived_table_without_name = 'V006-01'
+const vsql_sort_key_without_column = 'V006-02'
+const vsql_sort_key_subquery = 'V006-03'
+const vsql_sort_key_aggregate = 'V006-04'
 const vsql_bang_equals = 'V009-01'
 
 // flag records that the statement being parsed uses a feature outside of Core
@@ -154,6 +170,94 @@ fn flag_query_expression(mut yylex YYLexer, e QueryExpression, context QueryCont
 // ISO/IEC 9075-2:2016(E), 14.13, <update statement: positioned>, Conformance Rules, 1
 fn flag_updatability_clause(mut yylex YYLexer, e QueryExpression, updatability UpdatabilityClause) {
 	flag_if(mut yylex, updatability.for_update && e.order.len > 0, 'F831')
+}
+
+// SortKeyPart is what a <sort key> must, or can't, contain.
+//
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28.b
+enum SortKeyPart {
+	column_reference
+	query_expression
+	set_function
+}
+
+// parsed_sort_key_part records a part that has been parsed, wherever it is,
+// since the actions for it don't know if they're in a sort key.
+fn parsed_sort_key_part(mut yylex YYLexer, part SortKeyPart) {
+	if mut yylex is Lexer {
+		yylex.sort_key_parts << part
+	}
+}
+
+// start_sort_key is called before a <sort key> is parsed. It can contain a
+// subquery that has its own sort keys, so they're a stack.
+fn start_sort_key(mut yylex YYLexer) {
+	if mut yylex is Lexer {
+		yylex.sort_key_starts << yylex.sort_key_parts.len
+	}
+}
+
+// flag_sort_key flags a <sort key> that has just been parsed from the parts
+// since it started.
+fn flag_sort_key(mut yylex YYLexer) {
+	if mut yylex is Lexer {
+		parts := yylex.sort_key_parts[yylex.sort_key_starts.pop()..]
+		flag_if(mut yylex, SortKeyPart.column_reference !in parts, vsql_sort_key_without_column)
+		flag_if(mut yylex, SortKeyPart.query_expression in parts, vsql_sort_key_subquery)
+		flag_if(mut yylex, SortKeyPart.set_function in parts, vsql_sort_key_aggregate)
+	}
+}
+
+// flag_mod_argument flags an argument of MOD that contains a literal with a
+// scale or an approximate literal. It's only flagged from the syntax, so an
+// argument of a type like that for any other reason (such as a column) isn't.
+//
+// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 12
+fn flag_mod_argument(mut yylex YYLexer, e NumericValueExpression) {
+	flag_if(mut yylex, numeric_has_non_integer_literal(e), vsql_mod_not_integer)
+}
+
+fn numeric_has_non_integer_literal(e NumericValueExpression) bool {
+	if n := e.n {
+		if numeric_has_non_integer_literal(n) {
+			return true
+		}
+	}
+
+	return term_has_non_integer_literal(e.term)
+}
+
+fn term_has_non_integer_literal(e Term) bool {
+	if term := e.term {
+		if term_has_non_integer_literal(term) {
+			return true
+		}
+	}
+
+	return primary_has_non_integer_literal(e.factor)
+}
+
+fn primary_has_non_integer_literal(e NumericPrimary) bool {
+	if e is SignedValueExpressionPrimary {
+		return primary_has_non_integer_literal(*e.e)
+	}
+	if e is ValueExpressionPrimary && e is ParenthesizedValueExpression {
+		inner := *e.e
+		if inner is CommonValueExpression && inner is NumericValueExpression {
+			return numeric_has_non_integer_literal(inner)
+		}
+		primary := value_primary_of(inner) or { return false }
+
+		return primary is ValueSpecification && primary is Value
+			&& is_non_integer_literal(primary)
+	}
+	value := e.value() or { return false }
+
+	return is_non_integer_literal(value)
+}
+
+fn is_non_integer_literal(v Value) bool {
+	return v.typ.typ in [.is_real, .is_double_precision] || v.typ.scale > 0
 }
 
 // flag_row_count flags a <fetch first row count> (F860) or <offset row count>

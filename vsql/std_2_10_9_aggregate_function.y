@@ -3,9 +3,13 @@
 // was: COUNT left_paren asterisk right_paren
 aggregate_function:
   COUNT OPERATOR_LEFT_PAREN_ASTERISK right_paren {
+    parsed_sort_key_part(mut yylex, .set_function)
     $$.v = AggregateFunction(AggregateFunctionCount{})
   }
-| general_set_function { $$.v = $1.v as AggregateFunction }
+| general_set_function {
+    parsed_sort_key_part(mut yylex, .set_function)
+    $$.v = $1.v as AggregateFunction
+  }
 
 // ALL is the same as no <set quantifier>.
 //

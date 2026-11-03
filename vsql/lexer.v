@@ -87,6 +87,7 @@ type YYSym = AddColumnDefinition
 	| RoutineInvocation
 	| RowValueConstructor
 	| RowValueConstructorPredicand
+	| SchemaElement
 	| SelectList
 	| SelectSublist
 	| SequenceGeneratorDefinition
@@ -106,6 +107,7 @@ type YYSym = AddColumnDefinition
 	| Subquery
 	| Stmt
 	| Table
+	| TableDefinition
 	| TableElement
 	| TableExpression
 	| TablePrimary
@@ -129,6 +131,7 @@ type YYSym = AddColumnDefinition
 	| []Identifier
 	| []RowValueConstructor
 	| []RowValueConstructorPredicand
+	| []SchemaElement
 	| []SelectSublist
 	| []SequenceGeneratorOption
 	| []SetClause

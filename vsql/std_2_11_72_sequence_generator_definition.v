@@ -51,6 +51,13 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, _ map[string]
 		conn.release_write_connection()
 	}
 
+	stmt.create(mut conn)!
+
+	return new_result_msg('CREATE SEQUENCE 1', elapsed_parse, t.elapsed())
+}
+
+// create creates the sequence. The caller must have the write connection open.
+fn (stmt SequenceGeneratorDefinition) create(mut conn Connection) ! {
 	check_sequence_options(stmt.options)!
 
 	sequence_name := conn.resolve_schema_identifier(stmt.name)!
@@ -66,8 +73,6 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, _ map[string]
 	sequence.check()!
 	sequence.check_in_range('START WITH', sequence.start_value)!
 	catalog.storage.create_sequence(sequence)!
-
-	return new_result_msg('CREATE SEQUENCE 1', elapsed_parse, t.elapsed())
 }
 
 // check_sequence_options checks that each option is only given once and that

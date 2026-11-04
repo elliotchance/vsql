@@ -183,10 +183,9 @@ fn (mut t ModuleTokens) get_descriptor_statement(p ExternallyInvokedProcedure) !
 				}
 				gets += t.get_number(p, a.parameter, 'vsql_m_i->number[VSQL_M_${a.item}]', a.item)!
 			} else {
-				pad := if typ.typ == .is_character { 1 } else { 0 }
 				sections << 'put'
 				gets += t.get_string(p, a.parameter, 'vsql_m_i->string[VSQL_M_${a.item}] == NULL ? "" : vsql_m_i->string[VSQL_M_${a.item}]',
-					pad, a.item)!
+					a.item)!
 			}
 		}
 
@@ -198,12 +197,9 @@ fn (mut t ModuleTokens) get_descriptor_statement(p ExternallyInvokedProcedure) !
 		mut gets := ''
 		for a in assignments {
 			used << a.parameter.name.to_upper()
-			typ := a.parameter.typ or { HostParameterType{} }
-			pad := if typ.typ == .is_character { 1 } else { 0 }
 			if a.item == 'DYNAMIC_FUNCTION' {
 				sections << 'put'
-				gets += t.get_string(p, a.parameter, 'vsql_m_d->dynamic_function', pad,
-					a.item)!
+				gets += t.get_string(p, a.parameter, 'vsql_m_d->dynamic_function', a.item)!
 			} else {
 				// vsql doesn't know if a column is part of a key, so KEY_TYPE
 				// is always 0 (zero) (#801).
@@ -238,13 +234,13 @@ fn (t ModuleTokens) get_number(p ExternallyInvokedProcedure, parameter HostParam
 
 // get_string assigns a string to a target, which must be CHARACTER or CHARACTER
 // VARYING.
-fn (t ModuleTokens) get_string(p ExternallyInvokedProcedure, parameter HostParameterDeclaration, value string, pad int, item string) !string {
+fn (t ModuleTokens) get_string(p ExternallyInvokedProcedure, parameter HostParameterDeclaration, value string, item string) !string {
 	typ := parameter.typ or { HostParameterType{} }
 	if !typ.is_string() {
 		return sqlstate_42601('procedure ${p.name}: host parameter :${parameter.name} must be CHARACTER or CHARACTER VARYING for ${item}')
 	}
 
-	return '  vsql_m_w |= vsql_m_put(${parameter.name}, ${typ.length}, ${pad}, ${value});\n'
+	return '  vsql_m_w |= vsql_m_put(${parameter.name}, ${typ.length}, ${value});\n'
 }
 
 // descriptor_assignments reads the <get header information>s or <get item

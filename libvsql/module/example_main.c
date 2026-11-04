@@ -9,6 +9,19 @@
 
 #include "example.h"
 
+/*
+ * trim removes the spaces at the end of a CHARACTER VARYING(L) value, which is
+ * padded with spaces to L characters when it's assigned to a host parameter.
+ */
+static void trim(char *value) {
+  size_t length = strlen(value);
+
+  while (length > 0 && value[length - 1] == ' ') {
+    length--;
+  }
+  value[length] = '\0';
+}
+
 /* check prints the message of the first condition if the procedure failed. */
 static void check(const char *procedure, const char *sqlstate) {
   /* A CHARACTER VARYING(L) is a char array of (L + 1) * 4 bytes, since a
@@ -17,6 +30,7 @@ static void check(const char *procedure, const char *sqlstate) {
 
   if (strcmp(sqlstate, "00000") != 0) {
     error_message(state, message);
+    trim(message);
     fprintf(stderr, "%s: %s %s\n", procedure, sqlstate, message);
     exit(1);
   }
@@ -62,6 +76,7 @@ int main(void) {
   for (id = 1; id <= 2; id++) {
     get_item(sqlstate, &id, name, &price, &price_indicator);
     check("get_item", sqlstate);
+    trim(name);
     if (price_indicator < 0) {
       printf("%s has no price\n", name);
     } else {

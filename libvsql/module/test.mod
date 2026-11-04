@@ -105,6 +105,10 @@ PROCEDURE select_strings (SQLSTATE, :c CHAR(3), :c_ind BIGINT, :v VARCHAR(3),
 PROCEDURE select_utf8 (SQLSTATE, :c CHAR(3), :v VARCHAR(3), :p CHAR(5));
   SELECT 'ééé', 'é€😀', 'é' INTO :c, :v, :p FROM t WHERE i = 2;
 
+-- A CHARACTER VARYING is padded to a length in characters, not octets.
+PROCEDURE select_utf8_padded (SQLSTATE, :v VARCHAR(3), :e VARCHAR(2));
+  SELECT 'é', '' INTO :v, :e FROM t WHERE i = 2;
+
 PROCEDURE select_utf8_long (SQLSTATE, :c CHAR(1), :v VARCHAR(3));
   SELECT 'é€', '😀😀😀😀' INTO :c, :v FROM t WHERE i = 2;
 

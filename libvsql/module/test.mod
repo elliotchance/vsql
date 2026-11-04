@@ -66,6 +66,12 @@ PROCEDURE commit_work (SQLSTATE);
 PROCEDURE rollback_work (SQLSTATE);
   ROLLBACK;
 
+PROCEDURE commit_chain (SQLSTATE);
+  COMMIT AND CHAIN;
+
+PROCEDURE rollback_chain (SQLSTATE);
+  ROLLBACK WORK AND CHAIN;
+
 PROCEDURE missing_table (SQLSTATE);
   DELETE FROM missing;
 

@@ -117,11 +117,19 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []M
 		}
 		CommitStatement {
 			ModuleStatement{['connection', 'end'], [], begin('COMMIT WORK', 11) +
-				'  vsql_m_end(SQLSTATE, SQL_COMMIT);\n'}
+				'  vsql_m_end(SQLSTATE, ${if stmt.chain {
+					'SQL_COMMIT_AND_CHAIN'
+				} else {
+					'SQL_COMMIT'
+				}});\n'}
 		}
 		RollbackStatement {
 			ModuleStatement{['connection', 'end'], [], begin('ROLLBACK WORK', 62) +
-				'  vsql_m_end(SQLSTATE, SQL_ROLLBACK);\n'}
+				'  vsql_m_end(SQLSTATE, ${if stmt.chain {
+					'SQL_ROLLBACK_AND_CHAIN'
+				} else {
+					'SQL_ROLLBACK'
+				}});\n'}
 		}
 		DeclareCursor {
 			sqlstate_42601('procedure ${p.name}: a cursor must be declared in the module, not in a procedure')

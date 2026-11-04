@@ -6,12 +6,16 @@ import time
 //
 // Terminate the current SQL-transaction with commit.
 //
-// AND CHAIN (T261) isn't supported. A COMMIT when there isn't an active
-// SQL-transaction does nothing. That's only with query (or autocommit), where a
-// statement outside of a START TRANSACTION is in an SQL-transaction that ends
-// with it (see Connection.direct).
+// A COMMIT when there isn't an active SQL-transaction does nothing, even with
+// AND CHAIN. That's only with query (or autocommit), where a statement outside of
+// a START TRANSACTION is in an SQL-transaction that ends with it (see
+// Connection.direct).
 
 struct CommitStatement {
+	// chain is AND CHAIN. Without it, or with AND NO CHAIN, it's false.
+	//
+	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, Syntax Rules, 1
+	chain bool
 }
 
 fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
@@ -25,6 +29,21 @@ fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elaps
 		return new_result_msg('COMMIT', elapsed_parse, t.elapsed())
 	}
 
+	characteristics := conn.current_characteristics()
+	constraint_modes := conn.commit_transaction()!
+
+	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 10.a
+	if stmt.chain {
+		conn.end_transaction(true)
+		conn.chain_transaction(characteristics, constraint_modes)!
+	}
+
+	return new_result_msg('COMMIT', elapsed_parse, t.elapsed())
+}
+
+// commit_transaction commits the SQL-transaction in every catalog. It returns the
+// constraint modes that it ended with, which every constraint is immediate.
+fn (mut conn Connection) commit_transaction() !map[string]map[string]bool {
 	conn.open_write_connection()!
 	defer {
 		conn.release_write_connection()
@@ -39,13 +58,14 @@ fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elaps
 		catalog.storage.set_all_constraint_modes(false)
 	}
 	conn.check_deferred_constraints() or { return commit_error(err) }
+	constraint_modes := conn.constraint_modes()
 
 	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 6.c and 9
 	for _, mut catalog in conn.catalogs {
 		catalog.commit_transaction()!
 	}
 
-	return new_result_msg('COMMIT', elapsed_parse, t.elapsed())
+	return constraint_modes
 }
 
 // commit_error is the error for a deferred constraint that isn't satisfied at

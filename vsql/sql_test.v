@@ -1386,7 +1386,11 @@ PROCEDURE d2 (SQLSTATE); DISCONNECT ALL;
 PROCEDURE d3 (SQLSTATE); DISCONNECT CURRENT;
 PROCEDURE d4 (SQLSTATE, :n CHAR(1)); DISCONNECT :n;
 PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
+PROCEDURE commit_chain (SQLSTATE); COMMIT AND CHAIN;
+PROCEDURE rollback_chain (SQLSTATE); ROLLBACK AND CHAIN;
 ', 'my-module')!
+	assert m.source.contains('vsql_m_end(SQLSTATE, SQL_COMMIT_AND_CHAIN);')
+	assert m.source.contains('vsql_m_end(SQLSTATE, SQL_ROLLBACK_AND_CHAIN);')
 	assert m.header.contains('#ifndef MY_MODULE_H')
 	assert m.header.contains('void add(char SQLSTATE[6], char c[8], char v[44], short *s, long *i, long *i2, long long *b, float *r, double *d, long *f, short *ind, long long *unused);')
 	assert m.source.contains('#include "my-module.h"')
@@ -1938,6 +1942,18 @@ fn test_direct() {
 		assert !db.in_transaction() && !db.direct_query_transaction
 		assert db.direct('SELECT * FROM t WHERE x = 3;', autocommit: true)!.rows.len == 1
 		assert !db.in_transaction() && !db.direct_query_transaction
+
+		// AND CHAIN doesn't start an SQL-transaction if there isn't one. The next
+		// one has the same characteristics, even if a query started the last one.
+		db.direct('COMMIT AND CHAIN;')!
+		assert !db.is_active()
+		db.direct('ROLLBACK AND CHAIN;')!
+		assert !db.is_active()
+		db.direct('VALUES 1;')!
+		db.direct('COMMIT AND CHAIN;')!
+		assert db.direct_query_transaction && !db.in_transaction()
+		db.direct('ROLLBACK;')!
+		assert !db.is_active()
 
 		// The access mode of an SQL-transaction that a query started is kept
 		// when a statement that writes starts it in storage.

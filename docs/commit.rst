@@ -15,6 +15,12 @@ Each deferred constraint (see "Deferrable Constraints" in :doc:`create-table`)
 is checked first. If one isn't satisfied, the whole transaction is rolled back
 and the error is ``40002``.
 
+``AND CHAIN`` starts a new transaction straight away, with the same access mode,
+isolation level and ``DIAGNOSTICS SIZE``. Every constraint is immediate in it,
+because of the check above, until :doc:`set-constraints` is used. A
+``COMMIT`` that fails doesn't start one, and nor does ``COMMIT AND CHAIN`` outside
+of a transaction. ``AND NO CHAIN`` is the same as leaving it out.
+
 .. contents::
 
 Syntax
@@ -22,7 +28,7 @@ Syntax
 
 .. code-block:: text
 
-  COMMIT [ WORK ]
+  COMMIT [ WORK ] [ AND [ NO ] CHAIN ]
 
 Examples
 --------

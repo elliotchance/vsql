@@ -770,13 +770,21 @@ static void vsql_m_end(char *sqlstate, SQLSMALLINT completion) {
   vsql_m_diag(sqlstate, rc, SQL_HANDLE_DBC, c->dbc);
 
   /* A commit that fails with transaction rollback rolls back. */
-  if (c->active && completion == SQL_COMMIT && !vsql_m_failed(rc)) {
+  if (c->active &&
+      (completion == SQL_COMMIT || completion == SQL_COMMIT_AND_CHAIN) &&
+      !vsql_m_failed(rc)) {
     vsql_m_da.transactions_committed = 1;
   } else if (c->active &&
-             (completion == SQL_ROLLBACK || strncmp(sqlstate, "40", 2) == 0)) {
+             (completion == SQL_ROLLBACK ||
+              completion == SQL_ROLLBACK_AND_CHAIN ||
+              strncmp(sqlstate, "40", 2) == 0)) {
     vsql_m_da.transactions_rolled_back = 1;
   }
-  c->active = 0;
+
+  /* AND CHAIN starts another transaction. */
+  c->active = (completion == SQL_COMMIT_AND_CHAIN ||
+               completion == SQL_ROLLBACK_AND_CHAIN) &&
+              !vsql_m_failed(rc);
 }
 
 /* section string */

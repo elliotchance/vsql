@@ -71,19 +71,17 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 			conn.direct_query_transaction = true
 		} else if conn.direct_query_transaction
 			&& (prepared.stmt is CommitStatement || prepared.stmt is RollbackStatement) {
-			conn.direct_query_transaction = false
+			// With AND CHAIN, the next SQL-transaction has the same characteristics
+			// and hasn't changed anything either.
+			conn.direct_query_transaction = prepared.is_chain()
 			msg := if prepared.stmt is CommitStatement { 'COMMIT' } else { 'ROLLBACK' }
 			return new_result_msg(msg, prepared.elapsed_parse, 0)
-		} else {
+		} else if prepared.stmt !is CommitStatement && prepared.stmt !is RollbackStatement {
 			// It's started like a START TRANSACTION, which unlocks the file
 			// when it finishes, but it keeps the characteristics of a SET
 			// TRANSACTION (or of the SQL-transaction that a query started).
 			characteristics := if conn.direct_query_transaction {
-				TransactionCharacteristics{
-					read_only:            conn.read_only
-					isolation_level:      conn.isolation_level
-					condition_area_limit: conn.condition_area_limit
-				}
+				conn.current_characteristics()
 			} else {
 				conn.next_transaction or { TransactionCharacteristics{} }
 			}
@@ -122,6 +120,15 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 //
 // ISO/IEC 9075-2:2016(E), 4.39.4, SQL-statements and transaction states
 // ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 1.a and 1.b
+// is_chain is true for a COMMIT or ROLLBACK with AND CHAIN.
+fn (p PreparedStmt) is_chain() bool {
+	stmt := p.stmt
+	return match stmt {
+		CommitStatement, RollbackStatement { stmt.chain }
+		else { false }
+	}
+}
+
 fn (p PreparedStmt) is_transaction_initiating() bool {
 	return p.stmt !is StartTransactionStatement && p.stmt !is SetCatalogStatement
 		&& p.stmt !is SetSchemaStatement && p.stmt !is SetConstraintsModeStatement

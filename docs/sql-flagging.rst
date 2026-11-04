@@ -93,3 +93,9 @@ extension of it.
 
    * - ``V004-06``
      - ``UPDATE ... WHERE CURRENT OF`` outside of an SQL-client module.
+
+   * - ``V009``
+     - Comparison operators (see :doc:`operators`).
+
+   * - ``V009-01``
+     - ``!=`` as an alias for ``<>``.

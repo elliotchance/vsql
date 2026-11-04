@@ -66,8 +66,8 @@ ALL, SOME and ANY
   X <op> { SOME | ANY } ( <query> )
 
 Compares ``X`` with each row of the subquery (which must have one column), where
-``<op>`` is ``=``, ``<>``, ``<``, ``>``, ``<=`` or ``>=``. ``SOME`` and ``ANY``
-are the same.
+``<op>`` is ``=``, ``<>``, ``!=``, ``<``, ``>``, ``<=`` or ``>=``. ``SOME`` and
+``ANY`` are the same. ``!=`` is a vsql extension, see :doc:`operators`.
 
 ``ALL`` is ``TRUE`` if the comparison is ``TRUE`` for every row (or there are no
 rows), and ``FALSE`` if it's ``FALSE`` for any row. ``SOME`` is ``TRUE`` if the

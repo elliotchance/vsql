@@ -16,7 +16,9 @@ identifier_start:
     $$.v = $1.v as IdentifierChain
   }
 
-not_equals_operator: OPERATOR_NOT_EQUALS
+not_equals_operator:
+  OPERATOR_NOT_EQUALS
+| OPERATOR_BANG_EQUALS { flag(mut yylex, vsql_bang_equals) }
 
 greater_than_or_equals_operator: OPERATOR_GREATER_EQUALS
 

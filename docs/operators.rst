@@ -13,6 +13,11 @@ If any operand is ``NULL`` the result is also ``NULL`` (or ``UNKNOWN`` for
 comparisons, ``LIKE`` and ``SIMILAR TO``). The exceptions are ``IS NULL``,
 ``IS NOT NULL`` and the logical operators (``AND``, ``OR``, etc).
 
+``!=`` is the same as ``<>`` everywhere that a comparison operator is allowed.
+It's a vsql extension and not standard SQL, so it's flagged with ``V009-01`` (see
+:doc:`sql-flagging`). A ``CHECK`` constraint or generated column that's written
+with ``!=`` is stored, shown in ``INFORMATION_SCHEMA`` and dumped with ``<>``.
+
 Binary Operations
 -----------------
 
@@ -50,6 +55,10 @@ Binary Operations
    * - ``any <> any``
      - 4
      - Not equal
+
+   * - ``any != any``
+     - 4
+     - Not equal (a vsql extension, the same as ``<>``)
 
    * - ``number > number``
      - 4

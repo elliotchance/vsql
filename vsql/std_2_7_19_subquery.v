@@ -40,6 +40,9 @@ struct SubqueryScope {
 	// HAVING) of a grouped query, so an outer reference must be one of these
 	// columns.
 	grouping_columns ?[]Column
+	// aggregation_query is set when the subquery is in a VALUES, which isn't a
+	// query specification, see values_aggregation_query.
+	aggregation_query ?int
 mut:
 	row Row
 	// aggregates collects the aggregate functions in the subquery that are of
@@ -79,9 +82,15 @@ fn (e Subquery) plan(mut c Compiler) !SubqueryPlan {
 	}
 
 	scope := SubqueryScope{
-		tables:           c.tables
-		context:          c.context
-		grouping_columns: c.grouping_columns
+		tables:            c.tables
+		context:           c.context
+		grouping_columns:  c.grouping_columns
+		aggregation_query: c.aggregation_query
+	}
+	in_derived_table := c.conn.in_derived_table
+	c.conn.in_derived_table = false
+	defer {
+		c.conn.in_derived_table = in_derived_table
 	}
 	c.conn.subquery_scopes << scope
 	plan := create_query_expression_plan(*e.query, c.params, mut c.conn, Correlation{}) or {

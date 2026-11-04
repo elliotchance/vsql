@@ -40,6 +40,23 @@ mut:
 	conn &Connection
 }
 
+// values_aggregation_query is the subquery scope of the query that an aggregate
+// function without any column references is an aggregate of, when it's in a
+// VALUES being planned or evaluated. A VALUES isn't a query specification, so
+// it's the innermost query specification that contains it, such as the SELECT of
+// "SELECT (VALUES COUNT(*)) FROM t". It's -1 if there isn't one. A derived table
+// is in the FROM of its query specification, which can't have an aggregate
+// function, so a VALUES there doesn't have one either.
+//
+// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 6.a and 7
+fn values_aggregation_query(conn &Connection) int {
+	if conn.in_derived_table || conn.subquery_scopes.len == 0 {
+		return -1
+	}
+
+	return conn.subquery_scopes.last().aggregation_query or { conn.subquery_scopes.len - 1 }
+}
+
 // It's important we return a pointer, otherwise the rows can disappear.
 fn new_values_operation(rows []RowValueConstructor, correlation Correlation, mut conn Connection, params map[string]Value) !&ValuesOperation {
 	// NEXT VALUE FOR can be in the VALUES of an INSERT (a <from constructor>,
@@ -51,6 +68,7 @@ fn new_values_operation(rows []RowValueConstructor, correlation Correlation, mut
 		conn:                   conn
 		params:                 params
 		next_value_not_allowed: 'VALUES'
+		aggregation_query:      values_aggregation_query(conn)
 	}
 
 	// All rows must have the same number of columns, and each column has the

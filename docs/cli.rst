@@ -54,12 +54,18 @@ bench
    vsql bench -accounts 1000 -duration 5      # a quick test
    vsql bench -isolation serializable         # with SERIALIZABLE transactions
    vsql bench -connections 10                 # 10 connections at the same time
+   vsql bench -suite speedtest1 -size 1       # SQLite's speedtest1, a quick test
 
 Options are:
 
+- ``-suite``: The benchmark to run: ``tpcb`` (default) or ``speedtest1``.
+- ``-size``: Only for ``speedtest1``: most of the tables have 500 rows for each
+  size (default 10).
 - ``-file`` or ``-f``: The database file, which is deleted and created for the
   test (default ``bench.vsql``). Use ``:memory:`` for an in-memory database.
 - ``-accounts``: The number of rows in the ``ACCOUNTS`` table (default 100000).
+  It can't be used with ``speedtest1``, and neither can ``-duration``,
+  ``-connections`` or ``-scale``.
 - ``-duration``: The number of seconds to run transactions for (default 60).
 - ``-connections``: The number of connections running transactions at the same
   time, each in its own thread (default 1). It can only be used with a file.

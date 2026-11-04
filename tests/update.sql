@@ -270,3 +270,13 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- msg: UPDATE 1
 -- name: b Count: 2
+
+-- # An UPDATE of no rows uses the column of its own table, even if another table
+-- # has a column with the same name.
+CREATE TABLE other (x INT, b INT);
+CREATE TABLE foo (x INT, b INT, d INT);
+UPDATE foo SET d = b * 2;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- warning 02000: no data
+-- msg: UPDATE 0

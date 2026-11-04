@@ -13,6 +13,16 @@ fn register_bench_command(mut cmd cli.Command) {
 	}
 	bench_cmd.add_flag(cli.Flag{
 		flag:        .string
+		name:        'suite'
+		description: 'Benchmark to run: tpcb or speedtest1 (default tpcb)'
+	})
+	bench_cmd.add_flag(cli.Flag{
+		flag:        .int
+		name:        'size'
+		description: 'Only for speedtest1: most of the tables have 500 rows for each size (default 10)'
+	})
+	bench_cmd.add_flag(cli.Flag{
+		flag:        .string
 		name:        'file'
 		abbrev:      'f'
 		description: 'File path that will be deleted and created for the test. You can use :memory: as well (default bench.vsql)'
@@ -48,6 +58,20 @@ fn register_bench_command(mut cmd cli.Command) {
 fn bench_command(cmd cli.Command) ! {
 	print_version()
 
+	suite := cmd.flags.get_string('suite') or { '' }
+	if suite !in ['', 'tpcb', 'speedtest1'] {
+		return error('unknown suite: ${suite}')
+	}
+	if suite == 'speedtest1' {
+		for flag in ['accounts', 'duration', 'connections', 'scale'] {
+			if (cmd.flags.get_int(flag) or { 0 }) != 0 {
+				return error('-${flag} cannot be used with -suite speedtest1')
+			}
+		}
+	} else if (cmd.flags.get_int('size') or { 0 }) != 0 {
+		return error('-size can only be used with -suite speedtest1')
+	}
+
 	mut file := cmd.flags.get_string('file') or { '' }
 	if file == '' {
 		file = 'bench.vsql'
@@ -72,6 +96,16 @@ fn bench_command(cmd cli.Command) ! {
 	// ConnectionOptions.
 	options := vsql.default_connection_options()
 	mut conn := vsql.open_database(file, options)!
+
+	if suite == 'speedtest1' {
+		size := cmd.flags.get_int('size') or { 0 }
+		mut speedtest := Speedtest1{
+			conn:            conn
+			size:            if size > 0 { size } else { 10 }
+			isolation_level: isolation
+		}
+		return speedtest.start()
+	}
 
 	mut benchmark := new_benchmark(conn)
 	benchmark.file = file

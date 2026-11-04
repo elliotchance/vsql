@@ -111,3 +111,29 @@ file, or ``-file ':memory:'`` to run it in memory.
 measures the cost of the isolation level itself. Use ``-connections`` to include the
 transactions that it stops from committing (see :doc:`transactions`).
 ``READ UNCOMMITTED`` runs the same way as ``READ COMMITTED``.
+
+speedtest1
+----------
+
+``vsql bench -suite speedtest1`` runs the same numbered tests as
+`speedtest1 from SQLite <https://sqlite.org/src/file/test/speedtest1.c>`_, with
+the same random data. It runs each test once and prints how long it took, then
+the total. ``-size`` changes how many rows are used, such as
+``vsql bench -suite speedtest1 -size 1 -file ':memory:'`` for a quicker test
+(the default is 10).
+
+Some tests are skipped, and shown as skipped with the reason, because vsql
+doesn't have what they need yet:
+
+- 150: ``CREATE INDEX``
+- 200: ``VACUUM``
+- 310: The four-way joins are too slow without an index on ``z1.c = z2.c``
+- 980: ``PRAGMA integrity_check``
+- 990: ``ANALYZE``
+
+The rest of the tests are the same as far as possible, with two differences:
+``INSERT ... SELECT`` is a query followed by an ``INSERT`` for each row, and
+``REPLACE`` is an ``UPDATE`` followed by an ``INSERT`` if there was no row.
+
+To compare two versions of vsql, compare each test that ran in both, with the
+same ``-size``. Don't compare the total if the skipped tests aren't the same.

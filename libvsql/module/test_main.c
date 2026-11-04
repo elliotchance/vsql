@@ -437,6 +437,21 @@ int main(void) {
   EXPECT(fetch_c1(sqlstate, &x, v3, &i), "00000");
   CHECK(x == 1);
 
+  /* 15.6 GR 9 and 14.14 GR 8: A cursor operation conflict, in both directions.
+   * The CURSOR_NAME is the cursor that caused it, even for a statement that
+   * doesn't have a cursor. */
+  EXPECT(create_conflict(sqlstate), "00000");
+  EXPECT(insert_conflict(sqlstate), "00000");
+  EXPECT(open_conflict(sqlstate), "00000");
+  EXPECT(fetch_conflict(sqlstate, &x), "00000");
+  EXPECT(update_conflict_cursor(sqlstate), "00000");
+  EXPECT(update_conflict(sqlstate), "01001");
+  CHECK_CURSOR("C_CONFLICT");
+  EXPECT(update_conflict_cursor(sqlstate), "01001");
+  CHECK_CURSOR("C_CONFLICT");
+  EXPECT(close_conflict(sqlstate), "00000");
+  EXPECT(update_conflict(sqlstate), "00000");
+
   /* 9.1 GR 5.a: The indicator overflow of a <fetch statement>. */
   repeat_string(long_string, "x", 32768);
   EXPECT(open_long(sqlstate, long_string), "00000");

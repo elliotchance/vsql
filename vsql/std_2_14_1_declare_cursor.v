@@ -66,6 +66,26 @@ mut:
 	// A holdable cursor must be fetched in a transaction before its current row
 	// can be changed (ISO/IEC 9075-2:2016(E), 15.5, General Rules, 7).
 	fetched bool
+	// row_states has what has happened to each of rows since the cursor was
+	// opened (see Connection.note_row_changes).
+	row_states []CursorRowState
+}
+
+// CursorRowState is what has happened to a row of an open cursor. The row
+// itself (in Cursor.rows) has the id and tid of the current version of the row
+// in the table.
+struct CursorRowState {
+mut:
+	// changed is true if the row was changed by a statement other than a
+	// positioned DELETE or UPDATE of this cursor.
+	changed bool
+	// positioned is true if the row was changed by a positioned DELETE or UPDATE
+	// of this cursor.
+	positioned bool
+	// deleted is true if the row is gone. Another row can get the same id, by
+	// having the same PRIMARY KEY, but it isn't this row. changed is false if
+	// the row was deleted through this cursor.
+	deleted bool
 }
 
 fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration, writes bool) !Result {
@@ -430,6 +450,7 @@ fn (mut conn Connection) end_transaction(commit bool) {
 fn (mut cursor Cursor) close() {
 	cursor.is_open = false
 	cursor.rows = []Row{}
+	cursor.row_states = []CursorRowState{}
 	cursor.on_row = false
 }
 
@@ -461,29 +482,124 @@ fn (mut conn Connection) current_row(name string, table_name Identifier) !&Curso
 		return sqlstate_24000('cursor ${name} has not been fetched in this transaction')
 	}
 
+	// The SQL/CLI can scroll back to a row that was deleted through the cursor.
+	// Another statement deleting the row isn't an exception, it's a warning (see
+	// note_row_changes).
+	state := cursor.row_states[cursor.position]
+	if state.deleted && !state.changed {
+		return sqlstate_24000('the current row of cursor ${name} has been deleted')
+	}
+
 	return cursor
 }
 
 // current_rows returns the row in rows that the cursor (if any) is positioned
 // on. A positioned DELETE or UPDATE is a searched one that only changes that
-// row. If another statement has deleted the row it's an error, and if another
-// statement has updated it there's no warning, rather than a warning: cursor
-// operation conflict (#797).
+// row, which is none if the row has been deleted.
 //
-// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 9 and 12
-// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 9 and 16
+// A row is identified by its id rather than its values (which is
+// implementation-dependent), so a row that another statement has updated is
+// still found, and is changed.
+//
+// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 9
+// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 16
+fn current_rows(rows []Row, current_of ?&Cursor) []Row {
+	cursor := current_of or { return rows }
+	if cursor.row_states[cursor.position].deleted {
+		return []Row{}
+	}
+	id := cursor.rows[cursor.position].id
+
+	return rows.filter(it.id == id)
+}
+
+// note_row_changes is called once a statement can no longer fail, with the rows
+// of table that it identified (rows) and the rows that it deleted or replaced
+// (changes, since an UPDATE doesn't write a row that has the same values).
+// current_of is the cursor of a positioned DELETE or UPDATE, or none for a
+// searched DELETE or UPDATE and for the rows of a referential action.
+//
+// A warning (cursor operation conflict) is raised when a positioned statement
+// changes a row that was changed, while the cursor is open, by another
+// statement. That's found by what this function records, and by the tid of the
+// row for a transaction of another connection. It's also raised when any other
+// statement changes a row that was changed by a positioned statement of some
+// open cursor. The cursors of another connection aren't known, so this can't
+// be raised for them. A row that was deleted through the cursor can't be changed
+// by a later statement, so it never causes a warning in that direction. A
+// referential action isn't one of the statements that 15.5 and 15.6 name, but
+// it's a change by another statement all the same.
+//
 // ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, General Rules, 9
 // ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rules, 8
+// ISO/IEC 9075-2:2016(E), 15.5, Effect of a positioned delete, General Rules, 12
+// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 9
 // ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General Rules, 14
-fn current_rows(rows []Row, current_of ?&Cursor) ![]Row {
-	cursor := current_of or { return rows }
-	id := cursor.rows[cursor.position].id
-	current := rows.filter(it.id == id)
-	if current.len == 0 {
-		return sqlstate_24000('the current row of cursor ${cursor.name} has been deleted')
+fn (mut conn Connection) note_row_changes(table Table, rows []Row, changes []RowChange, current_of ?&Cursor) ! {
+	mut own_cursor := ''
+	if cursor := current_of {
+		own_cursor = cursor.name
+		if rows.len == 0 || cursor.row_states[cursor.position].changed
+			|| rows[0].tid != cursor.rows[cursor.position].tid {
+			conn.add_warning(sqlstate_01001(cursor.name))
+		}
 	}
 
-	return current
+	if rows.len == 0 {
+		return
+	}
+
+	mut identified := map[string]bool{}
+	for row in rows {
+		identified[row.id.bytestr()] = true
+	}
+	mut changed := map[string]RowChange{}
+	for change in changes {
+		changed[change.old.id.bytestr()] = change
+	}
+	tid := conn.catalog_for(table.name).storage.transaction_id
+
+	for _, mut cursor in conn.cursors {
+		cursor_table := cursor.table or { continue }
+		if !cursor.is_open || cursor_table.id() != table.name.id() {
+			continue
+		}
+
+		is_own := cursor.name == own_cursor
+		mut is_conflict := false
+		for i, row in cursor.rows {
+			id := row.id.bytestr()
+			if cursor.row_states[i].deleted || id !in identified {
+				continue
+			}
+
+			if is_own {
+				cursor.row_states[i].positioned = true
+			} else {
+				is_conflict = is_conflict || cursor.row_states[i].positioned
+				cursor.row_states[i].changed = true
+			}
+
+			// The rows of the cursor follow the row, so that a change to a
+			// PRIMARY KEY doesn't lose it, even if two rows swap their keys.
+			change := changed[id] or { continue }
+			if change.is_delete {
+				cursor.row_states[i].deleted = true
+				if is_own {
+					cursor.row_states[i].changed = false
+				}
+			} else {
+				mut new_row := change.new
+				new_row.object_key(table)!
+				cursor.rows[i].id = new_row.id
+				cursor.rows[i].tid = tid
+			}
+		}
+
+		if is_conflict && own_cursor == '' {
+			conn.add_warning(sqlstate_01001(cursor.name))
+		}
+	}
 }
 
 // ModuleCursor is a <declare cursor> in an SQL-client module. Each SQL-session

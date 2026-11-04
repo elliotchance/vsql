@@ -216,7 +216,8 @@ DELETE FROM t WHERE CURRENT OF c;
 -- msg: OPEN
 -- X: 1 Y: 10
 -- msg: DELETE 2
--- error 24000: invalid cursor state: the current row of cursor C has been deleted
+-- warning 01001: cursor operation conflict: C
+-- msg: DELETE 0
 
 /* extensions V108-01 V109-01 V110-01 V112-01 */
 DECLARE c CURSOR WITH HOLD FOR SELECT * FROM t;
@@ -290,7 +291,8 @@ UPDATE t SET y = 3 WHERE CURRENT OF c;
 -- msg: OPEN
 -- X: 1 Y: 10
 -- msg: DELETE 1
--- error 24000: invalid cursor state: the current row of cursor C has been deleted
+-- warning 01001: cursor operation conflict: C
+-- msg: UPDATE 0
 
 /* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;

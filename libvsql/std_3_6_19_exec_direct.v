@@ -153,6 +153,7 @@ fn execute_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt) !i16 {
 // run_statement executes a statement with all of its parameter values.
 fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[string]vsql.Value) !i16 {
 	mut conn := stmt_connection(stmt)!
+	conn.clear_warnings()
 
 	// ISO/IEC 9075-3:2003(E), 5.4, Implicit cursor, General Rules, 10: a
 	// cursor is always a copy of the result (General Rules, 8.e.i), so it can't

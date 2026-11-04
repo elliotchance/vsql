@@ -507,6 +507,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 	mut table_names := f.tables.keys()
 	table_names.sort()
 
+	mut action_changes := map[string][]RowChange{}
 	mut pending_tables := [t.name.storage_id()]
 	mut pending_changes := [changes]
 	for pending_tables.len > 0 {
@@ -640,6 +641,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 					written[table_name][row.object_key(referencing)!.bytestr()] = row
 				}
 
+				action_changes[table_name] << new_changes
 				pending_tables << table_name
 				pending_changes << new_changes
 			}
@@ -652,6 +654,12 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 		f.check_unique_constraints(table, rows)!
 		f.check_foreign_keys(table, rows, time_zone)!
 		f.check_referencing_rows(table, old[table_name], rows, time_zone)!
+	}
+
+	for table_name in table_names {
+		table_changes := action_changes[table_name]
+		conn.note_row_changes(f.table(table_name), table_changes.map(it.old), table_changes,
+			none)!
 	}
 }
 

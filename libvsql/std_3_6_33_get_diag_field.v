@@ -10,9 +10,8 @@ module main
 // or column (General Rules, 12.i.ii.2 and 12.i.iii), which is #756. There are
 // no routines, triggers, views, privileges or user-defined exceptions (General
 // Rules, 12.d.i, 12.i.v to 12.i.ix and 12.k.i), so those fields are always
-// zero-length strings, and a cursor operation conflict is never raised
-// (General Rules, 12.i.i). There's no <merge statement> (General Rules,
-// 11.e.ii). The NATIVE_CODE is always 0 (zero), the MESSAGE_TEXT is the
+// zero-length strings. There's no <merge statement> (General Rules, 11.e.ii).
+// The NATIVE_CODE is always 0 (zero), the MESSAGE_TEXT is the
 // message of the error, and the CONNECTION_NAME is the SERVER_NAME (General
 // Rules, 12.c, 12.d.ii and 12.j), which are implementation-defined. There are
 // no implementation-defined diagnostics fields (General Rules, 11.j and 12.n).
@@ -200,6 +199,10 @@ fn diag_status_field(handle_type i16, h i64, record DiagnosticRecord, record_num
 		sql_diag_constraint_catalog { record.constraint.catalog_name }
 		sql_diag_constraint_schema { record.constraint.schema_name }
 		sql_diag_constraint_name { record.constraint.entity_name }
+		// - 12.i.i. If the value of SQLSTATE corresponds to warning — cursor
+		// operation conflict, then the value of CURSOR_NAME is the name of the
+		// cursor that caused the condition to be raised.
+		//
 		// - 12.i.iv. If the value of SQLSTATE corresponds to invalid cursor
 		// state, then the value of CURSOR_NAME is the name of the cursor that
 		// is in the invalid state.
@@ -278,6 +281,10 @@ fn skip_bracketed_comment(text string, start int) int {
 }
 
 fn cursor_name_of(handle_type i16, h i64, record DiagnosticRecord) string {
+	if record.sqlstate == '01001' {
+		return record.cursor_name
+	}
+
 	if handle_type != sql_handle_stmt || record.sqlstate != '24000' {
 		return ''
 	}

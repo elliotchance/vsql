@@ -50,8 +50,12 @@ static const char *vsql_m_item_text(int item, long long n) {
     s = vsql_m_da.conditions[n - 1].constraint_name;
     break;
   case SQL_DIAG_CURSOR_NAME:
+    /* ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules,
+     * 4.e */
     if (strcmp(vsql_m_da.conditions[n - 1].sqlstate, "24000") == 0) {
       s = vsql_m_da.cursor_name;
+    } else if (strcmp(vsql_m_da.conditions[n - 1].sqlstate, "01001") == 0) {
+      s = vsql_m_da.conditions[n - 1].cursor_name;
     }
     break;
   case SQL_DIAG_CONNECTION_NAME:

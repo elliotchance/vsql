@@ -14,6 +14,9 @@ Each deferred constraint (see "Deferrable Constraints" in :doc:`create-table`)
 is checked first. If one isn't satisfied, the whole transaction is rolled back
 and the error is ``40002``.
 
+If anything else prevents the commit, such as an I/O error, the whole transaction
+is also rolled back and the error is ``40V01``.
+
 .. contents::
 
 Syntax

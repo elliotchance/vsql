@@ -27,7 +27,7 @@ fn autocommit(mut diag Diagnostics, dh i64, is_commit bool) ! {
 	}
 
 	dbc.autocommit_transaction = false
-	end_transaction(mut diag, mut conn, is_commit)!
+	end_transaction(mut diag, mut conn, dh, is_commit)!
 }
 
 // set_autocommit sets the AUTOCOMMIT attribute. Turning it on commits the
@@ -43,7 +43,7 @@ fn set_autocommit(mut dbc Dbc, h i64, value voidptr) ! {
 		if mut conn := dbc.conn {
 			if conn.in_transaction() {
 				close_cursors(h, true)
-				end_transaction(mut dbc.diag, mut conn, true)!
+				end_transaction(mut dbc.diag, mut conn, h, true)!
 			}
 		}
 	}

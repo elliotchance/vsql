@@ -82,7 +82,7 @@
 17.7/GR/5                implemented  vsql/std_2_17_7_commit_statement.v tests/set-constraints.sql
 17.7/GR/6                container    - -
 17.7/GR/6.a              implemented  vsql/std_2_17_7_commit_statement.v tests/set-constraints.sql
-17.7/GR/6.b              untested     vsql/std_2_17_7_commit_statement.v - conflicts are found when a row is written, so an error at a COMMIT (such as an I/O error, 58030) isn't in class 40 and leaves the SQL-transaction active
+17.7/GR/6.b              impl-defined vsql/std_2_17_7_commit_statement.v tests/faults-commit.sql the subclass is 40V01
 17.7/GR/6.c              implemented  vsql/std_2_17_7_commit_statement.v tests/transaction.sql
 17.7/GR/7                n/a          - - savepoints (T271)
 17.7/GR/8                n/a          - - there are no locators (T041)

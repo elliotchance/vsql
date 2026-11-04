@@ -122,6 +122,12 @@ extension of it.
    * - ``V006-04``
      - A sort key that contains an aggregate function.
 
+   * - ``V008``
+     - Queries (see :doc:`select`).
+
+   * - ``V008-01``
+     - ``SELECT`` without a ``FROM`` clause.
+
    * - ``V009``
      - Comparison operators (see :doc:`operators`).
 

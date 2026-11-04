@@ -1562,7 +1562,8 @@ fn test_module_errors() ! {
 	assert module_error(select_header + 'SELECT x INTO :a FROM t ORDER BY x;') == 'syntax error: procedure p: SELECT ... INTO cannot have UNION, EXCEPT, INTERSECT, ORDER BY, OFFSET or FETCH'
 	assert module_error(select_header + 'SELECT x INTO :a FROM t UNION SELECT x FROM t;') == 'syntax error: procedure p: SELECT ... INTO cannot have UNION, EXCEPT, INTERSECT, ORDER BY, OFFSET or FETCH'
 	assert module_error(select_header + 'SELECT x INTO :a FROM t FETCH FIRST 1 ROW ONLY;') == 'syntax error: procedure p: SELECT ... INTO cannot have UNION, EXCEPT, INTERSECT, ORDER BY, OFFSET or FETCH'
-	assert module_error(select_header + 'SELECT x INTO :a;').starts_with('syntax error: procedure p: ')
+	assert module_error(select_header + 'SELECT x + INTO :a;').starts_with('syntax error: procedure p: ')
+	assert module_error(select_header + 'SELECT 1 INTO :a;') == ''
 	assert module_error(select_header + 'SELECT t.* INTO :a FROM t;') == ''
 	assert module_error(select_header + 'SELECT * INTO :a FROM t;') == ''
 	assert module_error(select_header + 'SELECT :b INTO :a FROM t;') == ''

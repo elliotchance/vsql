@@ -29,6 +29,23 @@ struct QuerySpecification {
 	// distinct is true for "SELECT DISTINCT". "SELECT ALL" is the same as no
 	// <set quantifier>.
 	distinct bool
+	// without_from is true for a query that has no <from clause>, which is a vsql
+	// extension (V008-01). Its table_expression isn't used, and it reads a single
+	// row that doesn't have any columns (see SingleRowOperation).
+	without_from bool
+}
+
+fn new_query_specification_without_from(exprs []SelectSublist, distinct bool) QuerySpecification {
+	return QuerySpecification{
+		exprs:            SelectList(exprs)
+		table_expression: &TableExpression{
+			from_clause: TablePrimary{
+				body: Identifier{}
+			}
+		}
+		distinct:         distinct
+		without_from:     true
+	}
 }
 
 fn (e QuerySpecification) pstr(params map[string]Value) string {
@@ -58,7 +75,30 @@ fn (e QuerySpecification) pstr(params map[string]Value) string {
 		}
 	}
 
+	if e.without_from {
+		return s
+	}
+
 	return '${s} ${e.table_expression.pstr(params)}'
+}
+
+// A SingleRowOperation is the table of a query without a <from clause>. It has
+// one row and no columns, so the select list is evaluated once and can't refer
+// to a column of this query.
+struct SingleRowOperation {}
+
+fn (o &SingleRowOperation) str() string {
+	return 'SINGLE ROW'
+}
+
+fn (o &SingleRowOperation) columns() Columns {
+	return []Column{}
+}
+
+fn (mut o SingleRowOperation) execute(_ []Row) ![]Row {
+	return [Row{
+		data: map[string]Value{}
+	}]
 }
 
 // column_reference returns the column if the select list item is only a column

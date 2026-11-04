@@ -11,10 +11,10 @@ Syntax
 .. code-block:: text
 
   SELECT [ ALL | DISTINCT ] { * | { <expression> [ AS <name> ] | <table_name>.* } , ... }
-  FROM <from_item> , ...
-  [ WHERE <condition> ]
-  [ GROUP BY <column_name> , ... ]
-  [ HAVING <condition> ]
+  [ FROM <from_item> , ...
+    [ WHERE <condition> ]
+    [ GROUP BY <column_name> , ... ]
+    [ HAVING <condition> ] ]
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
@@ -55,8 +55,22 @@ The columns of ``*`` are in the order of the items. A ``JOIN`` belongs to the
 item it's written in, so its ``ON`` can't refer to the other items (``t1`` in
 ``FROM t1, t2 JOIN t3 ON ...``), and neither can a subquery in ``FROM``.
 
-A ``SELECT`` must have a ``FROM``. To calculate expressions without a table,
-use :doc:`values` (such as ``VALUES 1 + 2``).
+A ``SELECT`` without a ``FROM`` produces exactly one row, so it can calculate
+expressions without a table:
+
+.. code-block:: sql
+
+  SELECT 1 + 2 AS x, 'a';
+  -- X: 3 COL2: a
+
+This is a vsql extension and not standard SQL, where a ``SELECT`` must have a
+``FROM``. It's flagged as ``V008-01`` (see :doc:`sql-flagging`). The standard
+form is ``VALUES`` (see :doc:`values`), such as ``VALUES 1 + 2``.
+
+It can be used anywhere that a query can, and aggregate functions see the one
+row, so ``SELECT COUNT(*)`` is 1. There are no columns, so ``*`` and a column
+reference are errors, unless it's a subquery that refers to a column of the query
+that contains it. ``WHERE``, ``GROUP BY`` and ``HAVING`` need a ``FROM``.
 
 A subquery can also be used in an expression, such as ``EXISTS``, ``IN``,
 ``ALL`` and ``SOME``, or as a value. See :doc:`expressions`.

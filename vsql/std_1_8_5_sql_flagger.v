@@ -51,6 +51,9 @@ module vsql
 // V006-03: A sort key that contains a subquery.
 // V006-04: A sort key that contains an aggregate function.
 //
+// V008: Queries.
+// V008-01: SELECT without a FROM clause.
+//
 // V009: Comparison operators.
 // V009-01: != as an alias for <>.
 const vsql_explain_query = 'V001-01'
@@ -72,6 +75,7 @@ const vsql_derived_table_without_name = 'V006-01'
 const vsql_sort_key_without_column = 'V006-02'
 const vsql_sort_key_subquery = 'V006-03'
 const vsql_sort_key_aggregate = 'V006-04'
+const vsql_select_without_from = 'V008-01'
 const vsql_bang_equals = 'V009-01'
 
 // flag records that the statement being parsed uses a feature outside of Core

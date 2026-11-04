@@ -44,11 +44,16 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 		return sqlstate_42601('NEXT VALUE FOR cannot be used in a grouped query')
 	}
 
+	c.uses_next_value = true
+
 	return CompileResult{
 		run:          fn [name, mut catalog] (mut conn Connection, data Row, params map[string]Value) !Value {
 			// Multiple NEXT VALUE FOR the same sequence in the same row must return
 			// the same value.
 			key := name.id()
+			if value := data.data[sequence_value_key(key)] {
+				return value
+			}
 			if next := conn.row_sequence_values[key] {
 				return new_bigint_value(next)
 			}
@@ -66,4 +71,61 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 		typ:          new_type('BIGINT', 0, 0)
 		contains_agg: false
 	}
+}
+
+// sequence_value_key is where SequenceValuesOperation keeps the value of a
+// sequence generator in a row.
+fn sequence_value_key(sequence string) string {
+	return '\x00${sequence}'
+}
+
+// A SequenceValuesOperation takes the next values of the sequence generators
+// for each row, so that a sort key and the select list see the same value, and
+// the sort doesn't change how many values are used. A sort key can only use a
+// NEXT VALUE FOR through the name of a column of the result.
+//
+// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 2
+// ISO/IEC 9075-2:2016(E), 4.27.2, Operations involving sequence generators
+struct SequenceValuesOperation {
+	params  map[string]Value
+	exprs   []ValueExpression
+	columns Columns
+	tables  map[string]Table
+mut:
+	conn &Connection
+}
+
+fn (o &SequenceValuesOperation) str() string {
+	return 'SEQUENCE VALUES (${o.exprs.map(it.pstr(o.params)).join(', ')})'
+}
+
+fn (o &SequenceValuesOperation) columns() Columns {
+	return o.columns
+}
+
+fn (mut o SequenceValuesOperation) execute(rows []Row) ![]Row {
+	mut c := Compiler{
+		conn:   o.conn
+		params: o.params
+		tables: o.tables
+	}
+	mut new_rows := []Row{}
+
+	for row in rows {
+		o.conn.begin_row()
+		for expr in o.exprs {
+			expr.compile(mut c)!.run(mut o.conn, row, o.params)!
+		}
+
+		mut data := row.data.clone()
+		for sequence, value in o.conn.row_sequence_values {
+			data[sequence_value_key(sequence)] = new_bigint_value(value)
+		}
+		new_rows << Row{
+			...row
+			data: data
+		}
+	}
+
+	return new_rows
 }

@@ -49,6 +49,13 @@ mut:
 	//
 	// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 28.d
 	distinct_columns ?[]Column
+	// result_columns is set when compiling an ORDER BY, see set_result_columns.
+	result_columns map[string][]ValueExpression
+	// uses_next_value is set when a NEXT VALUE FOR is compiled.
+	uses_next_value bool
+	// next_value_sort_keys are the select list items that a sort key refers to by
+	// name, and that use a NEXT VALUE FOR, see SequenceValuesOperation.
+	next_value_sort_keys []ValueExpression
 	// restricted is set to what's being compiled (such as "a CHECK constraint")
 	// when it must be deterministic (see check_deterministic) and can't contain a
 	// subquery or a parameter. A CHECK on a column can only use that column,

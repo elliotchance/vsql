@@ -289,6 +289,34 @@ fn is_regular_identifier(s string) bool {
 }
 
 fn (e Identifier) compile(mut c Compiler) !CompileResult {
+	// A name in an ORDER BY is the column of the result with that name, if there
+	// is one, even if it's also the name of a column of a table. That column is
+	// already allowed by the select list, so the rules for a column that's in a
+	// sort key (DISTINCT and grouping) don't apply. It isn't in the scope of the
+	// argument of an aggregate function, or of a subquery (a subquery has its own
+	// Compiler).
+	//
+	// ISO/IEC 9075-2:2016(E), 6.6, <identifier chain>, Syntax Rules, 8.a.i and 8.c
+	if e.entity_name == '' && e.custom_id == '' && !c.in_aggregate {
+		if exprs := c.result_columns[e.sub_entity_name] {
+			if exprs.len > 1 {
+				return sqlstate_42702(e.sub_entity_name)
+			}
+
+			mut select_list := Compiler{
+				conn:   c.conn
+				params: c.params
+				tables: c.tables
+			}
+			result := exprs[0].compile(mut select_list)!
+			if select_list.uses_next_value {
+				c.next_value_sort_keys << exprs[0]
+			}
+
+			return result
+		}
+	}
+
 	// The column must exist before it can be checked against the grouping
 	// columns, otherwise an unknown column would be reported as not grouped.
 	aggregated_columns := c.aggregated_columns.len

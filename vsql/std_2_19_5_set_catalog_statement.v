@@ -24,16 +24,14 @@ fn (stmt SetCatalogStatement) execute(mut conn Connection, params map[string]Val
 		conn:   conn
 		params: params
 	}
-	new_catalog := stmt.catalog_name.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!.str()
 
-	// The value (of any type) is the name of the catalog as it is. It isn't
-	// trimmed, or an identifier (so 'x' isn't the catalog X), and the catalog
-	// must exist (#231).
-	//
 	// ISO/IEC 9075-2:2016(E), 19.5, <set catalog statement>, Syntax Rules, 1
-	// ISO/IEC 9075-2:2016(E), 19.5, <set catalog statement>, General Rules, 1 and 2
-	if new_catalog !in conn.catalogs {
-		return sqlstate_3d000(new_catalog) // catalog does not exist
+	// ISO/IEC 9075-2:2016(E), 19.5, <set catalog statement>, General Rules, 1
+	value := session_name_value(mut conn, mut c, stmt.catalog_name, 'SET CATALOG')!
+
+	// ISO/IEC 9075-2:2016(E), 19.5, <set catalog statement>, General Rules, 2
+	new_catalog := conn.catalog_named(value) or {
+		return sqlstate_3d000(value) // catalog does not exist
 	}
 
 	// ISO/IEC 9075-2:2016(E), 19.5, <set catalog statement>, General Rules, 3
@@ -44,4 +42,36 @@ fn (stmt SetCatalogStatement) execute(mut conn Connection, params map[string]Val
 
 fn (stmt SetCatalogStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN SET CATALOG')
+}
+
+// session_name_value is the value of a statement that sets a name for the
+// SQL-session, which must be a character string, without the spaces around it.
+// NULL is the empty string, which isn't a name.
+fn session_name_value(mut conn Connection, mut c Compiler, value ValueSpecification, statement string) !string {
+	v := value.compile(mut c)!.run(mut conn, Row{}, map[string]Value{})!
+	if !v.typ.uses_string() {
+		return sqlstate_42804('for ${statement}', 'character string', v.typ.str())
+	}
+	if v.is_null {
+		return ''
+	}
+
+	return v.string_value().trim(' ')
+}
+
+// catalog_named is the catalog that a <catalog name> refers to. The name of a
+// catalog comes from a file path, so it often isn't an identifier, such as
+// ":memory:" or a lower case name. So a value that's exactly the name of a catalog
+// is that catalog, otherwise it's an identifier.
+fn (conn Connection) catalog_named(value string) ?string {
+	if value in conn.catalogs {
+		return value
+	}
+
+	name := normalize_identifier(value) or { return none }
+	if name in conn.catalogs {
+		return name
+	}
+
+	return none
 }

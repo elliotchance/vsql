@@ -813,6 +813,18 @@ fn sqlstate_0a001() IError {
 }
 
 // invalid authorization specification
+struct SQLState2C000 {
+	SQLState
+}
+
+fn sqlstate_2c000(name string) IError {
+	return SQLState2C000{
+		code: sqlstate_to_int('2C000')
+		msg:  'invalid character set name: ${name}'
+	}
+}
+
+// invalid authorization specification
 struct SQLState28000 {
 	SQLState
 }

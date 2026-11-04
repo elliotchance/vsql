@@ -45,29 +45,29 @@
 19.4/CR/1                n/a          - - SET TIME ZONE (F411)
 # 19.5, <set catalog statement>
 19.5                     implemented  vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql
-19.5/SR/1                deviates     vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql a value of any type is used as a string (#231)
-19.5/GR/1                deviates     vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql the value isn't trimmed (#231)
-19.5/GR/2                deviates     vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql the value is the catalog name as it is, rather than an identifier, and must be a catalog (3D000) (#231)
+19.5/SR/1                implemented  vsql/std_2_19_5_set_catalog_statement.v tests/set-names-schema.sql
+19.5/GR/1                implemented  vsql/std_2_19_5_set_catalog_statement.v tests/set-names-schema.sql
+19.5/GR/2                implemented     vsql/std_2_19_5_set_catalog_statement.v tests/set-names-schema.sql a value that is exactly the name of a catalog also works, because a name comes from a file path
 19.5/GR/3                implemented  vsql/std_2_19_5_set_catalog_statement.v tests/set-catalog.sql
 19.5/CR/1                implemented  vsql/std_2_19_5_set_catalog_statement.y tests/flagging.sql
 19.5/CR/2                implemented  vsql/std_2_19_5_set_catalog_statement.y tests/flagging.sql
 # 19.6, <set schema statement>
 19.6                     implemented  vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql
-19.6/SR/1                deviates     vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql a value of any type is used as a string (#231)
-19.6/GR/1                deviates     vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql the value isn't trimmed (#231)
-19.6/GR/2                implemented     vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql a schema that does not exist is 3F000
+19.6/SR/1                implemented  vsql/std_2_19_6_set_schema_statement.v tests/set-names-schema.sql
+19.6/GR/1                implemented  vsql/std_2_19_6_set_schema_statement.v tests/set-names-schema.sql
+19.6/GR/2                implemented  vsql/std_2_19_6_set_schema_statement.v tests/set-names-schema.sql a schema that does not exist is 3F000
 19.6/GR/3                container    - -
-19.6/GR/3.a              deviates     vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql a schema name can't have a catalog name (#231)
+19.6/GR/3.a              implemented  vsql/std_2_19_6_set_schema_statement.v tests/set-names-schema.sql a catalog that does not exist is 3D000
 19.6/GR/3.b              implemented  vsql/std_2_19_6_set_schema_statement.v tests/set-schema.sql
 19.6/CR/1                implemented  vsql/std_2_19_6_set_schema_statement.y tests/flagging.sql
 # 19.7, <set names statement>
-19.7                     n/a          - - named character sets (F461)
-19.7/SR/1                n/a          - - named character sets (F461)
-19.7/GR/1                n/a          - - named character sets (F461)
-19.7/GR/2                n/a          - - named character sets (F461)
-19.7/GR/3                n/a          - - named character sets (F461)
-19.7/CR/1                n/a          - - named character sets (F461)
-19.7/CR/2                n/a          - - named character sets (F461)
+19.7                     implemented  vsql/std_2_19_7_set_names_statement.v tests/set-names-schema.sql
+19.7/SR/1                implemented  vsql/std_2_19_7_set_names_statement.v tests/set-names-schema.sql
+19.7/GR/1                implemented  vsql/std_2_19_7_set_names_statement.v tests/set-names-schema.sql
+19.7/GR/2                implemented  vsql/std_2_19_7_set_names_statement.v tests/set-names-schema.sql UTF8 is the only name
+19.7/GR/3                n/a          - - there is only one character set (F461)
+19.7/CR/1                implemented  vsql/std_2_19_7_set_names_statement.y tests/set-names-schema.sql
+19.7/CR/2                implemented  vsql/std_2_19_7_set_names_statement.y tests/set-names-schema.sql
 # 19.8, <set path statement>
 19.8                     n/a          - - SQL-paths (S071)
 19.8/SR/1                n/a          - - SQL-paths (S071)

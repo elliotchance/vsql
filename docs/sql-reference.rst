@@ -24,6 +24,7 @@ SQL Reference
    set-catalog.rst
    set-connection.rst
    set-constraints.rst
+   set-names.rst
    set-schema.rst
    set-session-characteristics.rst
    set-transaction.rst

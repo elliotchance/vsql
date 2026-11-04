@@ -153,7 +153,7 @@ SELECT * FROM x.t;
 -- # schema of the table while it's being created.
 CREATE SCHEMA "it's";
 CREATE TABLE "it's".t (a INT, CHECK (a > 0));
-SET SCHEMA 'it''s';
+SET SCHEMA '"it''s"';
 CREATE TABLE u (a INT CHECK (u.a > 0), b INT GENERATED ALWAYS AS (u.a + 1));
 INSERT INTO u (a) VALUES (1);
 SET SCHEMA 'PUBLIC';
@@ -174,13 +174,13 @@ INSERT INTO "it's".u (a) VALUES (0);
 -- out:   CHECK (U.A > 0)
 -- out: );
 -- out: CREATE SCHEMA "it's";
--- out: SET SCHEMA 'it''s';
+-- out: SET SCHEMA '"it''s"';
 -- out: CREATE TABLE "it's"."T" (
 -- out:   "A" INTEGER,
 -- out:   CHECK (A > 0)
 -- out: );
 -- out: SET SCHEMA 'PUBLIC';
--- out: SET SCHEMA 'it''s';
+-- out: SET SCHEMA '"it''s"';
 -- out: CREATE TABLE "it's"."U" (
 -- out:   "A" INTEGER,
 -- out:   "B" INTEGER GENERATED ALWAYS AS (U.A + 1),

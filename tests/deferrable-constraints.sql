@@ -34,7 +34,7 @@ ROLLBACK;
 -- msg: INSERT 1
 -- error 40002: integrity constraint violation: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
 -- X: 1
--- error 2D000: invalid transaction termination
+-- msg: ROLLBACK
 
 CREATE TABLE t (x INT UNIQUE DEFERRABLE INITIALLY DEFERRED);
 INSERT INTO t (x) VALUES (1);

@@ -55,7 +55,7 @@ CREATE TABLE t (x INT);
 COMMIT;
 -- error 58030: lock failed (fault injected by test)
 -- msg: CREATE TABLE 1
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 -- # Opening, locking or reading the file can fail for reads and writes. The
 -- # next statement opens the file again.
@@ -212,7 +212,7 @@ SELECT * FROM foo;
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
--- 2: error 2D000: invalid transaction termination
+-- 2: msg: COMMIT
 -- 2: BAR: 123
 
 -- # The values given by a sequence are kept when a statement fails. If that

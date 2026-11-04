@@ -78,8 +78,8 @@ SELECT * FROM (SELECT a FROM t1) AS s JOIN (SELECT x FROM t2) AS s ON TRUE;
 -- error 42601: syntax error: table name S specified more than once
 
 SELECT * FROM (SELECT a FROM t1) JOIN (SELECT x FROM t2) ON TRUE;
--- error 42601: syntax error: each subquery in FROM needs its own correlation name
+-- error 42601: syntax error: a subquery in FROM must have a correlation name, such as (SELECT ...) AS t
 
-SELECT * FROM (SELECT a FROM t1) JOIN (SELECT x FROM t2) AS s ON a = x;
+SELECT * FROM (SELECT a FROM t1) AS r JOIN (SELECT x FROM t2) AS s ON a = x;
 -- A: 1 X: 1
 -- A: 2 X: 2

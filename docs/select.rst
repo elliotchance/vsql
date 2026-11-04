@@ -22,8 +22,8 @@ Syntax
   <from_item> := <table_reference>
                  [ [ INNER | { LEFT | RIGHT } [ OUTER ] ] JOIN <table_reference> ON <condition> ] ...
 
-  <table_reference> := { <table_name> | ( <query> ) }
-                       [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
+  <table_reference> := <table_name> [ [ AS ] <name> [ ( <column_name> , ... ) ] ]
+                     | ( <query> ) [ AS ] <name> [ ( <column_name> , ... ) ]
 
   <query> { UNION | EXCEPT } [ ALL | DISTINCT ] <query>
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
@@ -35,7 +35,9 @@ parentheses, such as ``(SELECT ... FETCH FIRST 1 ROW ONLY)``.
 
 ``AS <name>`` gives the table a *correlation name*. The table must then be
 referred to by that name instead (such as ``p.price``). The optional list of
-column names renames each of the table's columns, in order.
+column names renames each of the table's columns, in order. A query in ``FROM``
+(a *derived table*) must have a correlation name, such as
+``SELECT * FROM (VALUES 1, 2) AS t``.
 
 More than one item in ``FROM``, separated by commas, produces every combination
 of their rows. ``WHERE`` can be used as the join condition:

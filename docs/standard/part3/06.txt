@@ -1312,7 +1312,7 @@
 6.33/GR/12.i.iii         missing      - - the table isn't identified (#756)
 6.33/GR/12.i.iii.1       missing      - - the table isn't identified (#756)
 6.33/GR/12.i.iii.2       missing      - - the column isn't identified (#756)
-6.33/GR/12.i.iv          implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c
+6.33/GR/12.i.iv          implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_positioned_cursor_test.c
 6.33/GR/12.i.v           n/a          - - there are no views
 6.33/GR/12.i.vi          n/a          - - there are no privileges (#732)
 6.33/GR/12.i.vi.1        n/a          - - there are no privileges (#732)

@@ -75,6 +75,12 @@ pub fn violated_constraint(err IError) ?Identifier {
 	}
 }
 
+// invalid_cursor is the name of the cursor that is in the invalid state, for an
+// invalid cursor state (24000). It's none for any other error.
+pub fn invalid_cursor(err IError) ?string {
+	return if err is SQLState24000 { err.cursor_name } else { none }
+}
+
 // Provides the human-readable message.
 fn (err SQLState) msg() string {
 	return err.msg
@@ -165,15 +171,17 @@ fn sqlstate_21000() IError {
 }
 
 // Invalid cursor state: a cursor isn't in the right state for a statement, such
-// as a FETCH of a cursor that isn't open.
+// as a FETCH of a cursor that isn't open. cursor_name is that cursor.
 struct SQLState24000 {
 	SQLState
+	cursor_name string
 }
 
-fn sqlstate_24000(msg string) IError {
+fn sqlstate_24000(cursor_name string, msg string) IError {
 	return SQLState24000{
-		code: sqlstate_to_int('24000')
-		msg:  'invalid cursor state: ${msg}'
+		code:        sqlstate_to_int('24000')
+		msg:         'invalid cursor state: ${msg}'
+		cursor_name: cursor_name
 	}
 }
 

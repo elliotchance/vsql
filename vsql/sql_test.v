@@ -3225,6 +3225,19 @@ fn test_violated_constraint() ! {
 	assert constraint_violated(mut db, 'SELECT * FROM q') == 'none'
 }
 
+fn test_invalid_cursor() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE TABLE t (x INT)')!
+	db.query('DECLARE c1 CURSOR FOR SELECT x FROM t')!
+
+	mut name := ''
+	db.query('FETCH NEXT FROM c1') or { name = invalid_cursor(err) or { 'none' } }
+	assert name == 'C1'
+
+	db.query('SELECT * FROM q') or { name = invalid_cursor(err) or { 'none' } }
+	assert name == 'none'
+}
+
 // old_sequence is a sequence as it's stored by a version of vsql that had the
 // range of a BIGINT as its implicit MINVALUE and MAXVALUE.
 fn old_sequence(definition string, current_value i64, unused bool) !Sequence {

@@ -63,6 +63,16 @@ fn extension_keywords
 
 extension_keywords are the key words of vsql extensions that can still be used as a regular identifier, so they aren't in reserved_words, sorted by name. They are for display, such as highlighting SQL, and mustn't decide if a name needs quotes.
 
+fn invalid_cursor
+-----------------
+
+
+.. code-block:: v
+
+   pub fn invalid_cursor(err IError) ?string
+
+invalid_cursor is the name of the cursor that is in the invalid state, for an invalid cursor state (24000). It's none for any other error.
+
 fn new_agent
 ------------
 

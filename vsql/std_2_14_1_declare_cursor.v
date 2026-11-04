@@ -366,7 +366,7 @@ fn (mut conn Connection) cursor(name string) !&Cursor {
 fn (mut conn Connection) open_cursor(name string) !&Cursor {
 	cursor := conn.cursor(name)!
 	if !cursor.is_open {
-		return sqlstate_24000('cursor ${name} is not open')
+		return sqlstate_24000(name, 'cursor ${name} is not open')
 	}
 
 	return cursor
@@ -471,15 +471,15 @@ fn (mut conn Connection) current_row(name string, table_name Identifier) !&Curso
 	}
 
 	if !cursor.is_open {
-		return sqlstate_24000('cursor ${name} is not open')
+		return sqlstate_24000(name, 'cursor ${name} is not open')
 	}
 
 	if !cursor.on_row {
-		return sqlstate_24000('cursor ${name} is not positioned on a row')
+		return sqlstate_24000(name, 'cursor ${name} is not positioned on a row')
 	}
 
 	if cursor.hold && !cursor.fetched {
-		return sqlstate_24000('cursor ${name} has not been fetched in this transaction')
+		return sqlstate_24000(name, 'cursor ${name} has not been fetched in this transaction')
 	}
 
 	// The SQL/CLI can scroll back to a row that was deleted through the cursor.
@@ -487,7 +487,7 @@ fn (mut conn Connection) current_row(name string, table_name Identifier) !&Curso
 	// note_row_changes).
 	state := cursor.row_states[cursor.position]
 	if state.deleted && !state.changed {
-		return sqlstate_24000('the current row of cursor ${name} has been deleted')
+		return sqlstate_24000(name, 'the current row of cursor ${name} has been deleted')
 	}
 
 	return cursor

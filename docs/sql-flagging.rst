@@ -172,3 +172,21 @@ extension of it.
 
    * - ``V012-03``
      - ``LIMIT <offset>, <count>`` (see :doc:`select`).
+
+   * - ``V013``
+     - Other names for the transaction statements.
+
+   * - ``V013-01``
+     - ``BEGIN`` instead of ``START TRANSACTION`` (see :doc:`start-transaction`).
+
+   * - ``V013-02``
+     - ``COMMIT TRANSACTION`` instead of ``COMMIT`` (see :doc:`commit`).
+
+   * - ``V013-03``
+     - ``END`` instead of ``COMMIT`` (see :doc:`commit`).
+
+   * - ``V013-04``
+     - ``ROLLBACK TRANSACTION`` instead of ``ROLLBACK`` (see :doc:`rollback`).
+
+   * - ``V013-05``
+     - ``ABORT`` instead of ``ROLLBACK`` (see :doc:`rollback`).

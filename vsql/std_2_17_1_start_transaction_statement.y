@@ -11,5 +11,21 @@ start_transaction_statement:
     flag(mut yylex, 'T241')
     $$.v = Stmt(StartTransactionStatement{$3.v as []TransactionMode})
   }
+| begin_transaction {
+    flag(mut yylex, vsql_begin)
+    flag(mut yylex, 'T241')
+    $$.v = Stmt(StartTransactionStatement{})
+  }
+| begin_transaction transaction_characteristics {
+    flag(mut yylex, vsql_begin)
+    flag(mut yylex, 'T241')
+    $$.v = Stmt(StartTransactionStatement{$2.v as []TransactionMode})
+  }
+
+// BEGIN isn't part of the standard (see the V013 feature in the SQL Flagger).
+begin_transaction:
+  BEGIN
+| BEGIN TRANSACTION
+| BEGIN WORK
 
 %%

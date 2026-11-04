@@ -26,6 +26,7 @@ less_than_or_equals_operator: OPERATOR_LESS_EQUALS
 
 non_reserved_word:
   A
+| ABORT
 | ABSOLUTE
 | ACTION
 | ADA

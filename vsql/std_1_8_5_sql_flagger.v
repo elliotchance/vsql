@@ -71,6 +71,12 @@ module vsql
 // V012-01: LIMIT instead of FETCH FIRST.
 // V012-02: OFFSET without ROW or ROWS.
 // V012-03: LIMIT offset, count.
+//
+// V013-01: BEGIN instead of START TRANSACTION.
+// V013-02: COMMIT TRANSACTION instead of COMMIT.
+// V013-03: END instead of COMMIT.
+// V013-04: ROLLBACK TRANSACTION instead of ROLLBACK.
+// V013-05: ABORT instead of ROLLBACK.
 const vsql_explain_query = 'V001-01'
 const vsql_explain_delete = 'V001-02'
 const vsql_explain_update = 'V001-03'
@@ -102,6 +108,11 @@ const vsql_drop_sequence_if_exists = 'V011-06'
 const vsql_limit = 'V012-01'
 const vsql_offset_without_rows = 'V012-02'
 const vsql_limit_offset_count = 'V012-03'
+const vsql_begin = 'V013-01'
+const vsql_commit_transaction = 'V013-02'
+const vsql_end = 'V013-03'
+const vsql_rollback_transaction = 'V013-04'
+const vsql_abort = 'V013-05'
 
 // flag records that the statement being parsed uses a feature outside of Core
 // SQL, such as "F591". It's called by the grammar actions.

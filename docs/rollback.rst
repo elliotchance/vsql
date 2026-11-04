@@ -19,6 +19,15 @@ Syntax
 
   ROLLBACK [ WORK ]
 
+These can be used instead. They are vsql extensions, not standard SQL, and they
+are flagged by ``V013-04`` and ``V013-05`` (see :doc:`sql-flagging`):
+
+.. code-block:: text
+
+  ROLLBACK TRANSACTION
+
+  ABORT [ TRANSACTION | WORK ]
+
 Examples
 --------
 

@@ -3,7 +3,7 @@
 # 13, SQL-client modules
 13                       container    - -
 # 13.1, <SQL-client module definition>
-13.1                     partial      vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v only LANGUAGE C (B112), and there's no <module path specification>, <module transform group specification>, <module collations>, <temporary table declaration> or FOR STATIC; cursor order and OPEN count aren't checked (#791)
+13.1                     partial      vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v only LANGUAGE C (B112), and there's no <module path specification>, <module transform group specification>, <module collations>, <temporary table declaration> or FOR STATIC
 13.1/SR/1                implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
 13.1/SR/2                implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
 13.1/SR/3                n/a          - - there are no catalogs (F651)
@@ -19,10 +19,10 @@
 13.1/SR/10               n/a          - - <module collation specification> (F693)
 13.1/SR/10.a             n/a          - - <module collation specification> (F693)
 13.1/SR/10.b             n/a          - - <module collation specification> (F693)
-13.1/SR/11               missing      vsql/std_2_13_1_sql_client_module_definition.v - a procedure can use a cursor declared after it (#791)
-13.1/SR/12               missing      vsql/std_2_13_1_sql_client_module_definition.v - a procedure can use a dynamic cursor declared after it (#791)
+13.1/SR/11               implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
+13.1/SR/12               implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
 13.1/SR/13               n/a          - - FOR STATIC (B051)
-13.1/SR/14               missing      vsql/std_2_13_1_sql_client_module_definition.v - a cursor can be opened by no procedure, or by several (#791)
+13.1/SR/14               implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
 13.1/SR/15               n/a          - - there are no locators (T041, S231)
 13.1/SR/15.a             n/a          - - there are no BLOB locators (T041)
 13.1/SR/15.b             n/a          - - there are no CLOB locators (T041)

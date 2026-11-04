@@ -282,14 +282,14 @@ Cursors
 ^^^^^^^
 
 A cursor (ISO/IEC 9075-2, 14.1, Feature E121 "Basic cursor support") is
-declared in the module, before or after the procedures that use it:
+declared in the module, before the procedures that use it:
 
 .. code-block:: text
 
    DECLARE <cursor name> CURSOR [ WITH HOLD | WITHOUT HOLD ] FOR <query> ;
 
-The query can use parameters, which must be parameters of each procedure that
-opens the cursor. The procedures use the cursor with these statements (see
+Exactly one procedure must open the cursor, and the query can use its
+parameters. The procedures use the cursor with these statements (see
 :doc:`cursors`):
 
 .. code-block:: text
@@ -477,6 +477,7 @@ only direction):
 are the same as any other cursor. The statement is prepared again when the
 cursor is opened, so the cursor isn't changed if the statement is prepared
 again (or deallocated) after that. A statement that isn't a query is ``07005``.
+Any number of procedures can open a cursor like this, including none.
 
 An SQL descriptor area describes the values of a statement, or the columns of
 a query. Its name is an identifier, or a string with ``LOCAL`` (the default)
@@ -623,8 +624,9 @@ multiplied by 4 (so that it can hold L characters of up to 4 bytes each, see
 
 A statement can be anything that a procedure of a module can be, and a cursor
 is declared with ``EXEC SQL DECLARE <cursor name> CURSOR FOR ...;`` before the
-statements that use it. The host variables of the cursor's query are used when
-it's opened.
+statements that use it. The host variables of the cursor's query are used each
+time it's opened, and a program can have any number of ``OPEN`` statements for
+a cursor.
 
 ``WHENEVER`` (ISO/IEC 9075-2, 21.2) goes to a C label when a later statement
 (later in the text of the program) has a condition:

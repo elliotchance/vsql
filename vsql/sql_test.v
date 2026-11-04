@@ -2796,6 +2796,13 @@ fn test_old_sequence_implicit_limits() ! {
 	assert s.next()!.current_value == 2
 }
 
+fn test_enduring_isolation_level() ! {
+	mut db := open(':memory:')!
+	assert db.enduring_isolation_level() == 'SERIALIZABLE'
+	db.query('SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED')!
+	assert db.enduring_isolation_level() == 'READ COMMITTED'
+}
+
 fn test_transaction_isolation_level() ! {
 	mut db := open(':memory:')!
 	for level in ['READ UNCOMMITTED', 'READ COMMITTED', 'REPEATABLE READ', 'SERIALIZABLE'] {

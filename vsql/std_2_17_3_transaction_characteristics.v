@@ -65,6 +65,23 @@ pub fn (conn Connection) transaction_read_only() bool {
 	return conn.read_only
 }
 
+// enduring_characteristics are the enduring transaction characteristics of the
+// SQL-session, for an SQL-transaction without its own. READ WRITE can be set
+// separately from READ UNCOMMITTED, which is still always READ ONLY.
+fn (conn Connection) enduring_characteristics() TransactionCharacteristics {
+	return TransactionCharacteristics{
+		...conn.enduring_transaction
+		read_only: conn.enduring_transaction.read_only
+			|| conn.enduring_transaction.isolation_level == .read_uncommitted
+	}
+}
+
+// enduring_isolation_level returns the isolation level of an SQL-transaction that
+// doesn't set its own, such as "SERIALIZABLE".
+pub fn (conn Connection) enduring_isolation_level() string {
+	return conn.enduring_transaction.isolation_level.str()
+}
+
 // current_characteristics are the characteristics of the current SQL-transaction.
 fn (conn Connection) current_characteristics() TransactionCharacteristics {
 	return TransactionCharacteristics{
@@ -113,6 +130,11 @@ fn check_transaction_modes(modes []TransactionMode) ! {
 // new_transaction_characteristics returns the characteristics of modes, which
 // have been checked by check_transaction_modes.
 fn new_transaction_characteristics(mut conn Connection, params map[string]Value, modes []TransactionMode) !TransactionCharacteristics {
+	// ISO/IEC 9075-2:2016(E), 17.1, <start transaction statement>, General Rules, 2.a
+	if modes.len == 0 {
+		return conn.enduring_characteristics()
+	}
+
 	mut read_only := false
 	mut isolation_level := IsolationLevel.serializable
 	mut limit := 0
@@ -189,8 +211,8 @@ fn condition_area_limit(mut conn Connection, params map[string]Value, size Diagn
 // limit of an SQL-transaction that is being initiated. The limit is
 // max_conditions if it's 0. The characteristics of a SET TRANSACTION are only for
 // the next SQL-transaction. A new SQL-session, and the SQL-transaction after a
-// COMMIT or ROLLBACK, have the enduring transaction characteristics, which are
-// READ WRITE, SERIALIZABLE and max_conditions.
+// COMMIT or ROLLBACK, have the enduring transaction characteristics, which start
+// as READ WRITE, SERIALIZABLE and max_conditions.
 //
 // ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 7
 // ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 10.b.i

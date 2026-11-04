@@ -1,0 +1,176 @@
+-- # The enduring characteristics are used by every transaction without its own.
+CREATE TABLE t (x INT);
+SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;
+INSERT INTO t (x) VALUES (1);
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+COMMIT;
+INSERT INTO t (x) VALUES (1);
+SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE;
+INSERT INTO t (x) VALUES (1);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: SET SESSION CHARACTERISTICS
+-- error 25006: read-only sql transaction: cannot execute INSERT
+-- msg: START TRANSACTION
+-- error 25006: read-only sql transaction: cannot execute INSERT
+-- msg: COMMIT
+-- error 25006: read-only sql transaction: cannot execute INSERT
+-- msg: SET SESSION CHARACTERISTICS
+-- msg: INSERT 1
+-- X: 1
+
+-- # SET TRANSACTION and START TRANSACTION with characteristics are for one
+-- # transaction, then it's back to the enduring ones.
+CREATE TABLE t (x INT);
+SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;
+SET TRANSACTION READ WRITE;
+INSERT INTO t (x) VALUES (1);
+INSERT INTO t (x) VALUES (2);
+START TRANSACTION READ WRITE;
+INSERT INTO t (x) VALUES (3);
+ROLLBACK;
+INSERT INTO t (x) VALUES (4);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: SET SESSION CHARACTERISTICS
+-- msg: SET TRANSACTION
+-- msg: INSERT 1
+-- error 25006: read-only sql transaction: cannot execute INSERT
+-- msg: START TRANSACTION
+-- msg: INSERT 1
+-- msg: ROLLBACK
+-- error 25006: read-only sql transaction: cannot execute INSERT
+-- X: 1
+
+-- # It can be used in a transaction, which it doesn't change.
+CREATE TABLE t (x INT);
+START TRANSACTION;
+SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;
+INSERT INTO t (x) VALUES (1);
+COMMIT;
+INSERT INTO t (x) VALUES (2);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: START TRANSACTION
+-- msg: SET SESSION CHARACTERISTICS
+-- msg: INSERT 1
+-- msg: COMMIT
+-- error 25006: read-only sql transaction: cannot execute INSERT
+-- X: 1
+
+-- # It doesn't use up a SET TRANSACTION, and a chained transaction isn't changed.
+CREATE TABLE t (x INT);
+SET TRANSACTION READ ONLY;
+SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE;
+INSERT INTO t (x) VALUES (1);
+START TRANSACTION;
+SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;
+COMMIT AND CHAIN;
+INSERT INTO t (x) VALUES (2);
+COMMIT;
+INSERT INTO t (x) VALUES (3);
+-- msg: CREATE TABLE 1
+-- msg: SET TRANSACTION
+-- msg: SET SESSION CHARACTERISTICS
+-- error 25006: read-only sql transaction: cannot execute INSERT
+-- msg: START TRANSACTION
+-- msg: SET SESSION CHARACTERISTICS
+-- msg: COMMIT
+-- msg: INSERT 1
+-- msg: COMMIT
+-- error 25006: read-only sql transaction: cannot execute INSERT
+
+-- # A mode that isn't given stays as it was (19.1, General Rules, 2 to 4).
+CREATE TABLE t (x INT);
+SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;
+SET SESSION CHARACTERISTICS AS TRANSACTION DIAGNOSTICS SIZE 1;
+VALUES CAST('abcde' AS CHARACTER(3)) || CAST('abcde' AS CHARACTER(3));
+VALUES CAST('abcde' AS CHARACTER(3)) || CAST('abcde' AS CHARACTER(3));
+INSERT INTO t (x) VALUES (1);
+-- msg: CREATE TABLE 1
+-- msg: SET SESSION CHARACTERISTICS
+-- msg: SET SESSION CHARACTERISTICS
+-- warning 01004: string data, right truncation
+-- COL1: abcabc
+-- warning 01004: string data, right truncation
+-- COL1: abcabc
+-- error 25006: read-only sql transaction: cannot execute INSERT
+
+-- # A SERIALIZABLE default can be changed.
+/* connection 1 */
+CREATE TABLE t (x INT);
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED, READ WRITE;
+START TRANSACTION;
+INSERT INTO t (x) VALUES (1);
+/* connection 2 */
+INSERT INTO t (x) VALUES (2);
+/* connection 1 */
+SELECT * FROM t;
+COMMIT;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: SET SESSION CHARACTERISTICS
+-- 1: msg: START TRANSACTION
+-- 1: msg: INSERT 1
+-- 2: msg: INSERT 1
+-- 1: X: 1
+-- 1: X: 2
+-- 1: msg: COMMIT
+
+-- # It's only for the SQL-session.
+/* connection 1 */
+CREATE TABLE t (x INT);
+SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;
+/* connection 2 */
+INSERT INTO t (x) VALUES (1);
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: SET SESSION CHARACTERISTICS
+-- 2: msg: INSERT 1
+
+-- # READ UNCOMMITTED is always READ ONLY, but that doesn't last after it.
+CREATE TABLE t (x INT);
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+INSERT INTO t (x) VALUES (1);
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED;
+INSERT INTO t (x) VALUES (2);
+SELECT * FROM t;
+-- msg: CREATE TABLE 1
+-- msg: SET SESSION CHARACTERISTICS
+-- error 25006: read-only sql transaction: cannot execute INSERT
+-- msg: SET SESSION CHARACTERISTICS
+-- msg: INSERT 1
+-- X: 2
+
+-- # The list can repeat TRANSACTION, but each mode can only be used once (19.1,
+-- # Syntax Rule 1).
+SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY, ISOLATION LEVEL READ COMMITTED, DIAGNOSTICS SIZE 5;
+SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE, TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY, READ WRITE;
+SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY, TRANSACTION READ WRITE;
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED, ISOLATION LEVEL SERIALIZABLE;
+SET SESSION CHARACTERISTICS AS TRANSACTION DIAGNOSTICS SIZE 1, DIAGNOSTICS SIZE 2;
+SET SESSION CHARACTERISTICS AS TRANSACTION DIAGNOSTICS SIZE 0;
+SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED, READ WRITE;
+EXPLAIN SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;
+SET SESSION CHARACTERISTICS AS TRANSACTION;
+SET SESSION CHARACTERISTICS;
+-- msg: SET SESSION CHARACTERISTICS
+-- msg: SET SESSION CHARACTERISTICS
+-- error 42601: syntax error: transaction access mode is specified more than once
+-- error 42601: syntax error: transaction access mode is specified more than once
+-- error 42601: syntax error: isolation level is specified more than once
+-- error 42601: syntax error: DIAGNOSTICS SIZE can only be used once
+-- error 35000: invalid condition number
+-- error 42601: syntax error: READ WRITE cannot be used with READ UNCOMMITTED
+-- error 42601: syntax error: Cannot EXPLAIN SET SESSION CHARACTERISTICS
+-- error 42601: syntax error: unexpected $end, expecting DIAGNOSTICS or ISOLATION or READ
+-- error 42601: syntax error: unexpected $end, expecting AS
+
+-- # The key words aren't reserved.
+CREATE TABLE characteristics (characteristics INT);
+-- msg: CREATE TABLE 1
+
+/* flags */
+SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;
+-- flags: F761
+-- msg: SET SESSION CHARACTERISTICS

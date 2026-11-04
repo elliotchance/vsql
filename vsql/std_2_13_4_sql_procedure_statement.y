@@ -44,6 +44,7 @@ sql_connection_statement:
 
 sql_session_statement:
   set_schema_statement { $$.v = Stmt($1.v as SetSchemaStatement) }
+| set_session_characteristics_statement { $$.v = $1.v as Stmt }
 | set_catalog_statement { $$.v = $1.v as Stmt }
 
 %%

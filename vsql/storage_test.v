@@ -730,3 +730,48 @@ fn test_index_entry_order() {
 		assert sorted == if desc { keys.reverse() } else { keys }
 	}
 }
+
+// The changes kept after a ROLLBACK TO SAVEPOINT are in the file after it's closed
+// and opened again.
+fn test_savepoint_persists() ! {
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-savepoint-${os.getpid()}')
+	os.rmdir_all(dir) or {}
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+	path := os.join_path(dir, 'test.vsql')
+
+	mut db := open(path)!
+	db.query('CREATE TABLE t (x INT)')!
+	db.query('INSERT INTO t (x) VALUES (1)')!
+	db.query('START TRANSACTION')!
+	db.query('INSERT INTO t (x) VALUES (2)')!
+	db.query('SAVEPOINT s')!
+	db.query('INSERT INTO t (x) VALUES (3)')!
+	db.query('UPDATE t SET x = 10 WHERE x = 1')!
+	db.query('ROLLBACK TO SAVEPOINT s')!
+	db.query('COMMIT')!
+	db.close()
+
+	mut db2 := open(path)!
+	assert db2.query('SELECT x FROM t')!.rows.map(it.get_int('X') or { 0 }) == [1, 2]
+	db2.close()
+}
+
+// A catalog that joins a transaction has nothing to undo from before it joined.
+fn test_savepoint_add_catalog() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE TABLE t (x INT)')!
+	db.query('START TRANSACTION')!
+	db.query('SAVEPOINT s')!
+	db.add_catalog('OTHER', ':memory:', default_connection_options())!
+	db.query('CREATE TABLE other.public.t2 (x INT)')!
+	db.query('ROLLBACK TO SAVEPOINT s')!
+	db.query('SELECT * FROM other.public.t2') or {
+		assert sqlstate_from_int(err.code()) == '42P01'
+		db.query('ROLLBACK')!
+		return
+	}
+	assert false
+}

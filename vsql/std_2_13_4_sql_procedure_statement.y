@@ -37,6 +37,8 @@ sql_transaction_statement:
 | commit_statement { $$.v = $1.v }
 | rollback_statement { $$.v = $1.v }
 | set_transaction_statement { $$.v = $1.v }
+| savepoint_statement { $$.v = $1.v }
+| release_savepoint_statement { $$.v = $1.v }
 | set_constraints_mode_statement { $$.v = $1.v }
 
 // A <connection name> is only in a connection statement, so that's flagged too.

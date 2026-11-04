@@ -120,6 +120,10 @@ fn (mut t ModuleTokens) module_statement(text string, p ExternallyInvokedProcedu
 	stmt := parse_tokens(tokenize(text_sql)!) or { return procedure_error(p, err) }
 	mark_stored_parameters(stmt, mut references)
 
+	if stmt is RollbackStatement && stmt.savepoint != '' {
+		return sqlstate_42601('procedure ${p.name}: ROLLBACK TO SAVEPOINT is not supported in a module')
+	}
+
 	return match stmt {
 		QueryExpression {
 			sqlstate_42601('procedure ${p.name}: a query is not an SQL procedure statement, use SELECT ... INTO')

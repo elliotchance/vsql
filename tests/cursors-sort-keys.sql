@@ -94,7 +94,7 @@ UPDATE t SET y = 5 WHERE CURRENT OF c;
 
 /* extensions V004-01 V004-02 V004-03 V004-06 */
 START TRANSACTION;
-DECLARE c CURSOR FOR SELECT y + 1 AS x FROM t ORDER BY t.x FOR UPDATE;
+DECLARE c CURSOR FOR SELECT y AS x FROM t ORDER BY t.x FOR UPDATE;
 OPEN c;
 FETCH c;
 UPDATE t SET y = 5 WHERE CURRENT OF c;
@@ -102,7 +102,7 @@ UPDATE t SET x = 5 WHERE CURRENT OF c;
 -- msg: START TRANSACTION
 -- msg: DECLARE CURSOR
 -- msg: OPEN
--- X: 11
+-- X: 10
 -- msg: UPDATE 1
 -- error 42601: syntax error: column X is used by a sort key of cursor C
 

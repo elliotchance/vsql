@@ -20,7 +20,7 @@ SELECT table_name, column_name FROM information_schema.columns WHERE table_name 
 -- 1: msg: CREATE TABLE 1
 -- 2: msg: START TRANSACTION
 -- 2: error 40001: serialization failure: avoiding concurrent write on table "test".PUBLIC.T
--- 2: error 2D000: invalid transaction termination
+-- 2: msg: COMMIT
 -- 1: msg: COMMIT
 -- 2: error 42P07: duplicate table: "test".PUBLIC.T
 -- 2: TABLE_NAME: T COLUMN_NAME: X

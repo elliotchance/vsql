@@ -365,7 +365,9 @@ fn (m SQLClientModule) c_source(name string, embedded bool, runtime []string) st
 		s += '#include "${name}.h"\n'
 	}
 	s += '\n'
-	set_schema := "SET SCHEMA '" + m.schema.replace("'", "''") + "'"
+	// The value of SET SCHEMA is an identifier, so the name is delimited to keep
+	// its case.
+	set_schema := 'SET SCHEMA \'"' + m.schema.replace('"', '""').replace("'", "''") + '"\''
 	s += 'static const char vsql_m_set_schema[] = ${c_string(set_schema)};\n\n'
 	if 'cursors' in sections {
 		s += 'static const int vsql_m_cursor_count = ${m.cursors.len};\n\n'

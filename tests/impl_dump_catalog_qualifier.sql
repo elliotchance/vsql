@@ -21,7 +21,7 @@ INSERT INTO t (a) VALUES (0);
 -- # In another schema, where every name in the chain is delimited and contains
 -- # a dot or a doubled quote.
 CREATE SCHEMA "s.x";
-SET SCHEMA 's.x';
+SET SCHEMA '"s.x"';
 CREATE TABLE "t.y" ("a""b" INT CHECK (":memory:"."s.x"."t.y"."a""b" > 0));
 SET SCHEMA 'PUBLIC';
 /* out */
@@ -33,7 +33,7 @@ INSERT INTO "s.x"."t.y" ("a""b") VALUES (0);
 -- msg: CREATE TABLE 1
 -- msg: SET SCHEMA 1
 -- out: CREATE SCHEMA "s.x";
--- out: SET SCHEMA 's.x';
+-- out: SET SCHEMA '"s.x"';
 -- out: CREATE TABLE "s.x"."t.y" (
 -- out:   "a""b" INTEGER,
 -- out:   CHECK ("s.x"."t.y"."a""b" > 0)

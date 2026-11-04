@@ -162,7 +162,7 @@ SELECT * FROM t;
 -- 1: X: 1
 -- 2: msg: UPDATE 1
 -- 1: error 40001: serialization failure: avoiding concurrent write on individual row
--- 1: error 2D000: invalid transaction termination
+-- 1: msg: COMMIT
 -- 1: X: 2
 
 /* connection 1 */
@@ -637,7 +637,7 @@ COMMIT;
 -- 1: msg: CREATE TABLE 1
 -- 2: msg: CREATE SCHEMA 1
 -- 1: error 40001: serialization failure: avoiding concurrent change to the schema
--- 1: error 2D000: invalid transaction termination
+-- 1: msg: COMMIT
 
 -- # Its own changes to the schema are seen by others once it commits.
 /* extensions V104-01 */

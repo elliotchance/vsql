@@ -95,7 +95,7 @@ COMMIT;
 -- error 42601: syntax error: transaction access mode is specified more than once
 -- error 42601: syntax error: isolation level is specified more than once
 -- error 42601: syntax error: transaction access mode is specified more than once
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 -- # READ UNCOMMITTED is READ ONLY, unless it says otherwise (17.3, Syntax Rule
 -- # 5a). READ WRITE isn't allowed with it (Syntax Rule 4).

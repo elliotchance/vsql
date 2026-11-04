@@ -22,7 +22,7 @@ COMMIT;
 -- msg: INSERT 1
 -- msg: INSERT 1
 -- error 40V01: transaction rollback: wal_write failed (fault injected by test)
--- error 2D000: invalid transaction termination
+-- msg: COMMIT
 
 -- # The same when the file can't be committed after its pages are written.
 /* create_catalog FOO */

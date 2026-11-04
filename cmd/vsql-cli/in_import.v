@@ -1077,7 +1077,7 @@ fn import_sql(mut conn vsql.Connection, mut input ImportInput, total i64, option
 		}
 	}
 	if options.schema != ''
-		&& !s.run.generated(mut conn, "SET SCHEMA '${import_name(options.schema).replace("'", "''")}'", 0) {
+		&& !s.run.generated(mut conn, 'SET SCHEMA \'"${import_name(options.schema).replace('"', '""').replace("'", "''")}"\'', 0) {
 		return false
 	}
 	if options.single_transaction && !s.run.generated(mut conn, 'START TRANSACTION', 0) {
@@ -1142,11 +1142,15 @@ fn import_sql(mut conn vsql.Connection, mut input ImportInput, total i64, option
 		} else {
 			s.run.generated(mut conn, 'COMMIT', base)
 		}
-	} else if _ := conn.query('ROLLBACK') {
-		if !s.stopped {
-			s.run.print_condition('WARNING', vsql.sqlstate_to_int('01000'), 0, base, 'the file left a transaction open')
+	} else if conn.in_transaction() {
+		// ROLLBACK succeeds outside of a transaction too, so it can't tell us if
+		// the file left one open.
+		if _ := conn.query('ROLLBACK') {
+			if !s.stopped {
+				s.run.print_condition('WARNING', vsql.sqlstate_to_int('01000'), 0, base, 'the file left a transaction open')
+			}
+			s.run.print_line(0, base, 'ROLLBACK')
 		}
-		s.run.print_line(0, base, 'ROLLBACK')
 	}
 
 	return !s.run.failed

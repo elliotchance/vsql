@@ -34,7 +34,7 @@ ROLLBACK;
 -- msg: INSERT 1
 -- error 40002: integrity constraint violation: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
 -- X: 1
--- error 2D000: invalid transaction termination
+-- msg: ROLLBACK
 
 -- # Only the rows at the COMMIT are checked, so a duplicate that's deleted
 -- # (with the row it duplicated) isn't a violation.

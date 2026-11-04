@@ -1569,15 +1569,15 @@
 6.32/GR/7.b              implemented  vsql/std_2_6_32_string_value_function.v tests/cast-null.sql
 6.32/GR/7.c              definition   - -
 6.32/GR/7.d              container    - -
-6.32/GR/7.d.i            partial      vsql/std_2_6_30_numeric_value_function.v tests/fold.sql a character that becomes several characters (such as ß to SS) isn't changed (#772)
-6.32/GR/7.d.ii           implemented  vsql/std_2_6_30_numeric_value_function.v tests/fold.sql
+6.32/GR/7.d.i            implemented  vsql/std_2_6_30_numeric_value_function.v,vsql/case_mappings.v tests/fold.sql,tests/fold-case-mappings.sql
+6.32/GR/7.d.ii           implemented  vsql/std_2_6_30_numeric_value_function.v,vsql/case_mappings.v tests/fold.sql,tests/fold-case-mappings.sql
 6.32/GR/7.e              missing      - - the result isn't normalized, like literals (#762)
 6.32/GR/7.e.i            missing      - - the result isn't normalized, like literals (#762)
 6.32/GR/7.e.ii           implemented  vsql/std_2_6_32_string_value_function.v tests/fold.sql
 6.32/GR/7.f              definition   - -
 6.32/GR/7.g              container    - -
-6.32/GR/7.g.i            implemented  vsql/std_2_10_4_routine_invocation.v tests/fold.sql
-6.32/GR/7.g.ii           untestable   - - a character is never changed to several characters (#772), so the result is never longer
+6.32/GR/7.g.i            implemented  vsql/std_2_10_4_routine_invocation.v tests/fold.sql,tests/fold-case-mappings.sql
+6.32/GR/7.g.ii           implemented  vsql/std_2_10_4_routine_invocation.v tests/fold-case-mappings.sql
 6.32/GR/8                n/a          - - transliteration (F695)
 6.32/GR/8.a              n/a          - - transliteration (F695)
 6.32/GR/8.b              n/a          - - transliteration (F695)

@@ -596,6 +596,11 @@ LOWER
 Returns the input string converted to lower-case. The result has the same type
 as the input, such as ``CHARACTER(5)`` for ``LOWER('Hello')``.
 
+The full Unicode case mappings are used, so a character may become several
+characters. A result that's longer than the maximum length of the type is
+truncated, with a warning (``01004``) if any of the removed characters aren't
+spaces. See ``UPPER`` for an example.
+
 .. code-block:: sql
 
   VALUES LOWER('Hello');
@@ -732,10 +737,22 @@ UPPER
 Returns the input string converted to upper-case. The result has the same type
 as the input, such as ``CHARACTER(5)`` for ``UPPER('Hello')``.
 
+The full Unicode case mappings are used, so a character may become several
+characters, such as ``ß`` to ``SS``. A result that's longer than the maximum
+length of the type is truncated, with a warning (``01004``) if any of the removed
+characters aren't spaces.
+
 .. code-block:: sql
 
   VALUES UPPER('Hello');
   -- COL1: HELLO
+
+  VALUES UPPER(CAST('straße' AS VARCHAR(10)));
+  -- COL1: STRASSE
+
+  VALUES UPPER('straße');
+  -- warning 01004: string data, right truncation
+  -- COL1: STRASS
 
 Other Functions
 ---------------

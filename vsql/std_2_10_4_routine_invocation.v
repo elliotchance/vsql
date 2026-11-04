@@ -104,11 +104,9 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		compiled_args << e.args[i].compile(mut c)!
 	}
 
-	// UPPER and LOWER have the declared type of their operand, so a CHARACTER
-	// result is padded.
+	// UPPER and LOWER have the declared type of their operand (see fold_result).
 	//
 	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 9
-	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.g.i
 	is_fold := func_name in ['UPPER', 'LOWER'] && arg_types[0].typ.is_string()
 	return_type := if is_fold {
 		Type{arg_types[0].typ, arg_types[0].size, 0, false}
@@ -146,7 +144,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 
 			result := found_func.func(args)!
 			if is_fold {
-				return result.with_type(return_type)
+				return fold_result(mut conn, result, return_type)
 			}
 			if is_exact {
 				return with_numeric_type(result, return_type)
@@ -157,4 +155,19 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		typ:          return_type
 		contains_agg: found_func.is_agg
 	}
+}
+
+// fold_result gives the result of UPPER or LOWER the declared type of its
+// operand. A CHARACTER result is padded, and a result that's longer than the
+// maximum length is truncated, with a warning if any of the removed characters
+// aren't spaces. A type that doesn't have a length never truncates.
+//
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.g.i
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 7.g.ii
+fn fold_result(mut conn Connection, result Value, typ Type) Value {
+	if typ.size == 0 {
+		return result.with_type(typ)
+	}
+
+	return cast_character_to_character(mut conn, result, typ)
 }

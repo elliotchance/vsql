@@ -1430,6 +1430,79 @@ PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
 	assert m3.source.contains('"SET SCHEMA \'BOB\'"')
 }
 
+// 9.2 Store assignment, GR 3.a.ii: on a store only -1 is the null value, and an
+// indicator less than -1 is 22010. Everywhere else, any negative indicator is
+// the null value (6.4, GR 4).
+fn test_module_store_indicator() ! {
+	stored := fn (ind string) string {
+		return '  if (*${ind} < -1) {\n    vsql_m_status(SQLSTATE, "22010");\n    return;\n  }\n'
+	}
+	m := compile_module(module_header + 'DECLARE c CURSOR FOR SELECT x FROM t WHERE x = :o :c;
+PROCEDURE ins (SQLSTATE, :a INT, :b INT, :e INT, :f INT, :g INT, :h INT, :i SMALLINT, :j SMALLINT, :k SMALLINT, :l SMALLINT, :m SMALLINT, :n SMALLINT);
+  INSERT INTO t (a, b, c, d, e) VALUES (:a :i, :b INDICATOR :j, DEFAULT, NULL, (:e :k)), (1, :f, CAST(:g :l AS INT), :h :m + 1, (:h :n));
+PROCEDURE ins1 (SQLSTATE, :a INT, :i SMALLINT); INSERT INTO t (a) VALUES (:a :i);
+PROCEDURE ins2 (SQLSTATE, :a BOOLEAN, :i SMALLINT); INSERT INTO t (a) VALUES :a :i;
+PROCEDURE ins3 (SQLSTATE); INSERT INTO t (a) VALUES (NULL);
+PROCEDURE ins4 (SQLSTATE, :a INT, :i SMALLINT); INSERT INTO t (a) VALUES :a :i + 1;
+PROCEDURE ins5 (SQLSTATE, :a INT, :i SMALLINT); INSERT INTO t (a) VALUES (1 = :a :i);
+PROCEDURE upd (SQLSTATE, :a INT, :b INT, :c INT, :d INT, :e INT, :i SMALLINT, :j SMALLINT, :k SMALLINT, :l SMALLINT, :m SMALLINT);
+  UPDATE t SET a = :a :i, b = DEFAULT, c = (:b :j), d = :c :k * 2 WHERE e = :d :l AND f = (SELECT MAX(x) FROM u WHERE y = :e :m);
+PROCEDURE pos (SQLSTATE, :a INT, :i SMALLINT); UPDATE t SET a = :a :i WHERE CURRENT OF c;
+PROCEDURE del (SQLSTATE, :a INT, :i SMALLINT); DELETE FROM t WHERE a = :a :i;
+PROCEDURE sel (SQLSTATE, :a INT, :b INT, :i SMALLINT); SELECT x INTO :b FROM t WHERE a = :a :i;
+PROCEDURE opn (SQLSTATE, :o INT, :c SMALLINT); OPEN c;
+PROCEDURE ex (SQLSTATE, :a INT, :i SMALLINT, :s VARCHAR(10)); PREPARE s FROM :s;
+PROCEDURE ex2 (SQLSTATE, :a INT, :i SMALLINT); EXECUTE s USING :a :i;
+', 'm')!
+	body := fn [m] (name string) string {
+		return m.source.all_after('void ${name}(').all_before('\n}\n')
+	}
+
+	// A host parameter that is a whole value, including in parentheses.
+	for ind in ['i', 'j', 'k', 'n'] {
+		assert body('ins').contains(stored(ind))
+	}
+	assert body('ins1').contains(stored('i'))
+	assert body('ins2').contains(stored('i'))
+	assert body('upd').contains(stored('i'))
+	assert body('upd').contains(stored('j'))
+	assert body('pos').contains(stored('i'))
+
+	// The check comes before the value becomes the null value.
+	assert body('ins1').contains('${stored('i')}  if (*i < 0) {\n    vsql_m_p[0].indicator = SQL_NULL_DATA;\n  }\n')
+
+	// A host parameter that is only part of a value, or isn't stored at all.
+	for ind in ['l', 'm'] {
+		assert !body('ins').contains(stored(ind))
+		assert body('ins').contains('if (*${ind} < 0) {')
+	}
+	for ind in ['k', 'l', 'm'] {
+		assert !body('upd').contains(stored(ind))
+		assert body('upd').contains('if (*${ind} < 0) {')
+	}
+	for name in ['ins4', 'ins5', 'del', 'sel', 'ex2'] {
+		assert !body(name).contains('22010')
+		assert body(name).contains('if (*i < 0) {')
+	}
+	assert !body('opn').contains('22010')
+	assert body('opn').contains('if (*c < 0) {')
+	assert !body('ins3').contains('22010')
+
+	// An indicator variable of embedded SQL is the same, because it's an
+	// indicator parameter of the implied module.
+	p := precompile_c('EXEC SQL BEGIN DECLARE SECTION;
+char SQLSTATE[6]; long x; short i;
+EXEC SQL END DECLARE SECTION;
+int main(void) {
+  EXEC SQL INSERT INTO t (a) VALUES (:x :i);
+  EXEC SQL DELETE FROM t WHERE a = :x INDICATOR :i;
+  return 0;
+}
+', 'x.sqc')!
+	assert p.source.all_after('void vsql_e1(').all_before('\n}\n').contains(stored('i'))
+	assert !p.source.all_after('void vsql_e2(').all_before('\n}\n').contains('22010')
+}
+
 fn test_module_errors() ! {
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE);') == 'syntax error: a module must end with a procedure that has a statement'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); COMMIT; PROCEDURE P (SQLSTATE); COMMIT;') == 'syntax error: procedure P is defined more than once'

@@ -44,6 +44,22 @@ PROCEDURE insert_row (SQLSTATE, :s SMALLINT, :i INT, :b BIGINT, :r REAL,
   INSERT INTO t (s, i, b, r, d, c, v, f)
   VALUES (:s, :i, :b, :r, :d, :c, :v :v_null, :f);
 
+-- 9.2: On a store only -1 is the null value. 6.4: Anything else has the null
+-- value for any negative indicator.
+PROCEDURE insert_indicator (SQLSTATE, :s SMALLINT, :s_ind SMALLINT);
+  INSERT INTO t (s, i) VALUES (:s :s_ind, 100);
+
+PROCEDURE update_indicator (SQLSTATE, :s SMALLINT, :s_ind SMALLINT);
+  UPDATE t SET s = :s INDICATOR :s_ind WHERE i = 100;
+
+PROCEDURE count_indicator (SQLSTATE, :s SMALLINT, :s_ind SMALLINT,
+    :rows BIGINT);
+  SELECT COUNT(*) INTO :rows FROM t
+  WHERE i = 100 AND s IS NULL AND CAST(:s :s_ind AS SMALLINT) IS NULL;
+
+PROCEDURE delete_indicator (SQLSTATE, :s SMALLINT, :s_ind SMALLINT);
+  DELETE FROM t WHERE i = 100 AND CAST(:s :s_ind AS SMALLINT) IS NULL;
+
 PROCEDURE check_row (SQLSTATE, :c CHARACTER(5), :f BOOLEAN);
   -- 22012 (division by zero) unless a row matches.
   INSERT INTO t (s) VALUES (1 / (SELECT COUNT(*) FROM t

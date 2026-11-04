@@ -348,6 +348,7 @@ static const char *vsql_m_message(const char *sqlstate) {
       {"22002", "data exception: null value, no indicator parameter"},
       {"22003", "data exception: numeric value out of range"},
       {"22005", "data exception: error in assignment"},
+      {"22010", "data exception: invalid indicator parameter value"},
       {"22022", "data exception: indicator overflow"},
       {"22024", "data exception: unterminated C string"},
       {"24000", "invalid cursor state"},

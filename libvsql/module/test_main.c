@@ -110,6 +110,28 @@ int main(void) {
   rows = 2;
   EXPECT(count_rows(sqlstate, &rows), "22012");
 
+  /* 9.2 GR 3.a.ii: On a store only -1 is the null value, and the statement
+   * has no effect when it's less than -1. 6.4 GR 4: Any negative indicator is
+   * the null value in a comparison. */
+  s_ind = -2;
+  EXPECT(insert_indicator(sqlstate, &s, &s_ind), "22010");
+  EXPECT(count_indicator(sqlstate, &s, &s_ind, &rows), "00000");
+  CHECK(rows == 0);
+  s_ind = -1;
+  EXPECT(insert_indicator(sqlstate, &s, &s_ind), "00000");
+  s_ind = -2;
+  EXPECT(update_indicator(sqlstate, &s, &s_ind), "22010");
+  EXPECT(count_indicator(sqlstate, &s, &s_ind, &rows), "00000");
+  CHECK(rows == 1);
+  s_ind = -1;
+  EXPECT(update_indicator(sqlstate, &s, &s_ind), "00000");
+  s_ind = -2;
+  EXPECT(delete_indicator(sqlstate, &s, &s_ind), "00000");
+  EXPECT(count_indicator(sqlstate, &s, &s_ind, &rows), "00000");
+  CHECK(rows == 0);
+  s_ind = 0;
+  rows = 2;
+
   /* 14.7 <select statement: single row>. */
   s = 0;
   b = 0;

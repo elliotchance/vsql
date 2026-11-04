@@ -151,7 +151,10 @@ fn (mut t ModuleTokens) input_using_clause(p ExternallyInvokedProcedure, mut b B
 
 	mut references := []HostParameterReference{}
 	for target in t.target_list(p, 'USING')! {
-		references << HostParameterReference{target.parameter.name, target.indicator}
+		references << HostParameterReference{
+			name:      target.parameter.name
+			indicator: target.indicator
+		}
 	}
 	bound := bind_parameters([], references, p)!
 	b.sections << bound.sections

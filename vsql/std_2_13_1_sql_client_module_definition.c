@@ -856,6 +856,28 @@ static void vsql_m_end(char *sqlstate, SQLSMALLINT completion) {
               !vsql_m_failed(rc);
 }
 
+/* section rollback_to */
+/*
+ * A <rollback statement> with a <savepoint clause> doesn't end the transaction.
+ *
+ * ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 3
+ */
+static void vsql_m_rollback_to(char *sqlstate, const char *name) {
+  struct vsql_m_connection *c = vsql_m_connection(sqlstate);
+  SQLRETURN rc;
+
+  if (c == NULL) {
+    return;
+  }
+
+  rc = SQLSetConnectAttr(c->dbc, SQL_ATTR_SAVEPOINT_NAME, (SQLPOINTER)name,
+                         SQL_NTS);
+  if (!vsql_m_failed(rc)) {
+    rc = SQLEndTran(SQL_HANDLE_DBC, c->dbc, SQL_SAVEPOINT_NAME_ROLLBACK);
+  }
+  vsql_m_diag(sqlstate, rc, SQL_HANDLE_DBC, c->dbc);
+}
+
 /* section string */
 /*
  * A character string host parameter must end with a null character: data

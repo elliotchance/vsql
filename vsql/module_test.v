@@ -37,9 +37,11 @@ PROCEDURE d4 (SQLSTATE, :n CHAR(1)); DISCONNECT :n;
 PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
 PROCEDURE commit_chain (SQLSTATE); COMMIT AND CHAIN;
 PROCEDURE rollback_chain (SQLSTATE); ROLLBACK AND CHAIN;
+PROCEDURE rollback_to (SQLSTATE); ROLLBACK TO SAVEPOINT s;
 ', 'my-module')!
 	assert m.source.contains('vsql_m_end(SQLSTATE, SQL_COMMIT_AND_CHAIN);')
 	assert m.source.contains('vsql_m_end(SQLSTATE, SQL_ROLLBACK_AND_CHAIN);')
+	assert m.source.contains('vsql_m_rollback_to(SQLSTATE, "\\"S\\"");')
 	assert m.header.contains('#ifndef MY_MODULE_H')
 	assert m.header.contains('void add(char SQLSTATE[6], char c[8], char v[44], short *s, long *i, long *i2, long long *b, float *r, double *d, long *f, short *ind, long long *unused);')
 	assert m.source.contains('#include "my-module.h"')
@@ -178,7 +180,7 @@ fn test_module_errors() ! {
 	assert module_error('MODULE LANGUAGE ADA SCHEMA s PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: only LANGUAGE C is supported, not ADA'
 	assert module_error('MODULE LANGUAGE C PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: expected SCHEMA or AUTHORIZATION after LANGUAGE C'
 	assert module_error(module_header + 'PATH s PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: expected PROCEDURE or DECLARE after the module authorization clause'
-	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); ROLLBACK TO SAVEPOINT s;') == 'syntax error: procedure p: ROLLBACK TO SAVEPOINT is not supported in a module'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); ROLLBACK AND CHAIN TO SAVEPOINT s;') == 'syntax error: procedure p: AND CHAIN cannot be used with TO SAVEPOINT'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); COMMIT') == 'syntax error: a statement in a module must end with a semicolon'
 	assert module_error('MODULE') == 'syntax error: a statement in a module must end with a semicolon'
 	assert module_error('MODULE;;') == 'syntax error: expected LANGUAGE at the end'

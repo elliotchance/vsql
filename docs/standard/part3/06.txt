@@ -608,33 +608,33 @@
 6.17/GR/12.d.ii          n/a          - - there are no triggers
 6.17/GR/12.d.iii         impl-defined libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c the subclass is 40V01
 6.17/GR/12.d.iv          implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
-6.17/GR/12.e             n/a          - - there are no savepoints
+6.17/GR/12.e             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c by executing COMMIT
 6.17/GR/12.f             n/a          - - there are no locators
 6.17/GR/12.g             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c the access mode and isolation level are kept
 6.17/GR/13               implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/13.a             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/13.b             definition   - -
-6.17/GR/13.c             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c there are no savepoints
-6.17/GR/13.d             n/a          - - there are no savepoints
+6.17/GR/13.c             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
+6.17/GR/13.d             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c by executing RELEASE SAVEPOINT
 6.17/GR/14               implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/14.a             n/a          - - there's no atomic execution context from CLI
 6.17/GR/14.b             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
-6.17/GR/14.c             n/a          - - there are no savepoints
+6.17/GR/14.c             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c by executing ROLLBACK
 6.17/GR/14.d             n/a          - - there are no locators
 6.17/GR/14.e             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c the access mode and isolation level are kept
 6.17/GR/15               implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/15.a             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/15.b             definition   - -
-6.17/GR/15.c             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c there are no savepoints
-6.17/GR/15.d             n/a          - - there are no savepoints
-6.17/GR/15.e             n/a          - - there are no savepoints
-6.17/GR/15.f             n/a          - - there are no savepoints
-6.17/GR/15.g             n/a          - - there are no savepoints
-6.17/GR/15.h             n/a          - - there are no savepoints
-6.17/GR/15.h.i           n/a          - - there are no savepoints
-6.17/GR/15.h.ii          n/a          - - there are no savepoints
-6.17/GR/15.h.iii         n/a          - - there are no savepoints
-6.17/GR/15.i             n/a          - - there are no savepoints
+6.17/GR/15.c             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
+6.17/GR/15.d             n/a          - - there's no atomic execution context from CLI
+6.17/GR/15.e             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c by executing ROLLBACK TO SAVEPOINT
+6.17/GR/15.f             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c by executing ROLLBACK TO SAVEPOINT
+6.17/GR/15.g             n/a          - - there are no locators
+6.17/GR/15.h             implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c a cursor that is not holdable is closed
+6.17/GR/15.h.i           impl-defined libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c a holdable cursor stays open
+6.17/GR/15.h.ii          impl-defined libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c a holdable cursor stays open
+6.17/GR/15.h.iii         impl-defined libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c a holdable cursor stays open
+6.17/GR/15.i             impl-defined libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c no prepared statement is deallocated
 # 6.18, Error
 6.18                     implemented  libvsql/std_3_6_18_error.v libvsql/std_3_6_18_error_test.c
 6.18/GR/1                container    - -

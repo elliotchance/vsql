@@ -265,8 +265,8 @@ typedef SQLINTEGER SQLHDESC;
 /* SQLEndTran CompletionTypes. */
 #define SQL_COMMIT                  0 /* commit */
 #define SQL_ROLLBACK                1 /* roll back */
-#define SQL_SAVEPOINT_NAME_ROLLBACK 2 /* not supported */
-#define SQL_SAVEPOINT_NAME_RELEASE  4 /* not supported */
+#define SQL_SAVEPOINT_NAME_ROLLBACK 2 /* roll back to a savepoint */
+#define SQL_SAVEPOINT_NAME_RELEASE  4 /* destroy a savepoint */
 #define SQL_COMMIT_AND_CHAIN        6 /* commit and start another */
 #define SQL_ROLLBACK_AND_CHAIN      7 /* roll back and start another */
 
@@ -879,8 +879,12 @@ SQLRETURN SQLDisconnect(
  * transaction of a connection (SQL_HANDLE_DBC), or of every connection of an
  * environment (SQL_HANDLE_ENV). SQL_COMMIT_AND_CHAIN and
  * SQL_ROLLBACK_AND_CHAIN also start a new transaction. A rollback closes every
- * cursor of the connection, but a commit doesn't. There are no savepoints, so
- * SQL_SAVEPOINT_NAME_ROLLBACK and SQL_SAVEPOINT_NAME_RELEASE are 3B001.
+ * cursor of the connection, but a commit doesn't.
+ *
+ * SQL_SAVEPOINT_NAME_ROLLBACK and SQL_SAVEPOINT_NAME_RELEASE use the savepoint in
+ * SQL_ATTR_SAVEPOINT_NAME, of a connection (SQL_HANDLE_DBC) only. It's 3B001 if it
+ * doesn't exist. A savepoint is made by SQLExecDirect with SAVEPOINT. A rollback
+ * closes every cursor of the connection that isn't holdable.
  *
  *   SQLExecDirect(stmt, (SQLCHAR *)"INSERT INTO foo (x) VALUES (1.23)",
  *                 SQL_NTS);

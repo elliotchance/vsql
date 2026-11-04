@@ -1,28 +1,20 @@
 name: CI
 
-# Pull requests are tested by the pull_request event, so pushes only build
-# main and the release tags (paths-ignore doesn't apply to tags). It also runs
-# every day, so that a change to V master that breaks vsql is found before
-# users find it.
+# Pull requests are tested by the pull_request event, and anything worth
+# releasing gets a tag, so main isn't built when it's pushed to. It can still be
+# run by hand with workflow_dispatch.
 on:
-  schedule:
-    - cron: "0 6 * * *"
   workflow_dispatch:
   push:
-    branches:
-      - main
     tags:
       - "v*"
-    paths-ignore:
-      - "**.md"
-      - "**.rst"
   pull_request:
     paths-ignore:
       - "**.md"
       - "**.rst"
 
 # A new push to a pull request cancels its previous run. Other runs are never
-# cancelled, since a release tag has the same commit as the push to main.
+# cancelled.
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
@@ -43,6 +35,9 @@ concurrency:
 #
 # Steps that use the network are retried (see retry.sh), since they sometimes
 # fail for reasons that have nothing to do with vsql.
+#
+# A pull request only runs Linux x86-64, since the macOS runners get backed up.
+# Everything else is tested by a tag.
 jobs:
   # Users get V master from "v up", so that's what vsql is tested and released
   # with. The commit is found once, so that every job uses the same V, and V can
@@ -69,15 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - arch: x86-64
-            name: x86-64
-            v_arch: amd64
-            runner: ubuntu-latest
-          - arch: arm64
-            name: ARM64
-            v_arch: arm64
-            runner: ubuntu-24.04-arm
+        include: ${{ fromJSON(github.event_name == 'pull_request' && '[{"arch":"x86-64","name":"x86-64","v_arch":"amd64","runner":"ubuntu-latest"}]' || '[{"arch":"x86-64","name":"x86-64","v_arch":"amd64","runner":"ubuntu-latest"},{"arch":"arm64","name":"ARM64","v_arch":"arm64","runner":"ubuntu-24.04-arm"}]') }}
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout
@@ -183,6 +170,7 @@ jobs:
 
   macos:
     name: macOS (${{ matrix.name }})
+    if: github.event_name != 'pull_request'
     needs: v
     strategy:
       fail-fast: false
@@ -267,6 +255,7 @@ jobs:
   # some statements, a short benchmark and the server with it.
   windows:
     name: Windows (${{ matrix.name }})
+    if: github.event_name != 'pull_request'
     needs: v
     strategy:
       fail-fast: false
@@ -369,6 +358,25 @@ jobs:
         with:
           name: release-windows-${{ matrix.arch }}
           path: vsql-*-windows-${{ matrix.arch }}.zip
+
+  # The checks that a pull request needs to be merged are in the "latest-main"
+  # ruleset. A job that's skipped because of its "if" can't report the name of a
+  # matrix job, so these report the ones that a pull request doesn't run.
+  not-run-on-pull-requests:
+    name: ${{ matrix.check }}
+    if: github.event_name == 'pull_request'
+    strategy:
+      matrix:
+        check:
+          - Linux (ARM64)
+          - macOS (x86-64)
+          - macOS (ARM64)
+          - Windows (x86-64)
+          - Windows (ARM64)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Not run on pull requests
+        run: echo "${{ matrix.check }} runs on a tag, not on a pull request."
 
   # The release job makes and tests the amalgamation, then publishes it with
   # the other zips on a tag, once every job has passed. Uploading replaces a zip

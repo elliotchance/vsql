@@ -95,6 +95,12 @@ given). Another statement of the connection can change the cursor's current row
   SQLExecDirect(stmt2, (SQLCHAR *)"DELETE FROM products WHERE CURRENT OF c",
                 SQL_NTS);
 
+The cursor must have been opened before the positioned statement is prepared
+or executed. A prepared positioned statement stays prepared if the cursor is
+closed and opened again, but it's destroyed with the cursor (by preparing or
+executing another statement on ``stmt``, or freeing it), after which
+``SQLExecute`` is a function sequence error.
+
 The cursor is holdable unless ``SQL_ATTR_CURSOR_HOLDABLE`` is
 ``SQL_NONHOLDABLE``.
 

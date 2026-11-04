@@ -58,7 +58,7 @@ fn sql_free_stmt(statement_handle SQLInteger, option i16) i16 {
 		// their default values.
 		sql_reallocate {
 			stmt.prepared = none
-			stmt.close_cursor()
+			stmt.destroy_cursor()
 			autocommit(mut stmt.diag, stmt.dbc, true) or { return stmt.diag.error(err) }
 			stmt.executed = false
 			stmt.row_count = 0

@@ -2264,6 +2264,18 @@ fn test_command_function() {
 	}
 }
 
+fn test_positioned_cursor() {
+	mut db := open(':memory:')!
+	for sql, want in {
+		'DELETE FROM t':                             ''
+		'DELETE FROM t WHERE CURRENT OF c':          'C'
+		'UPDATE t SET x = 1 WHERE CURRENT OF "c 1"': 'c 1'
+	} {
+		stmt := db.prepare(sql)!
+		assert stmt.positioned_cursor() == want, sql
+	}
+}
+
 // An SQL argument of a routine invocation that's a dynamic parameter needs
 // B033, as well as B031 for the dynamic parameter itself (see F812, "Basic
 // flagging", in tests/flagging.sql).

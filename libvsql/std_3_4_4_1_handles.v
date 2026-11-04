@@ -93,9 +93,12 @@ mut:
 	fetched_value  string
 	// cursor_name is the name of the cursor, or empty if it doesn't have one
 	// yet (see cursor_name). is_query is true if the executed statement opened
-	// a cursor (which may be closed now).
+	// a cursor (which may be closed now). has_cursor is true from when the
+	// cursor is first opened until it's destroyed, it's still a cursor of the
+	// statement while it's closed (see destroy_cursor).
 	cursor_name string
 	is_query    bool
+	has_cursor  bool
 	// dynamic_cursor is the name of the cursor of the connection (see
 	// PreparedStmt.open_cursor) while a query's cursor is open, so a positioned
 	// DELETE or UPDATE of another statement can change its current row.
@@ -192,6 +195,48 @@ fn (mut stmt Stmt) close_cursor() {
 	stmt.rowset_len = 0
 	stmt.fetched = false
 	stmt.fetched_column = 0
+}
+
+// destroy_cursor closes the cursor of a statement (if it's open), which then
+// doesn't exist, and destroys any prepared statements that reference it. They
+// would otherwise use whichever cursor has the name later.
+//
+// ISO/IEC 9075-3:2003(E), 6.19, ExecDirect, General Rules, 10
+// ISO/IEC 9075-3:2003(E), 6.50, Prepare, General Rules, 10
+fn (mut stmt Stmt) destroy_cursor() {
+	stmt.close_cursor()
+	if !stmt.has_cursor {
+		return
+	}
+	stmt.has_cursor = false
+
+	name := normalize_cursor_name(stmt.cursor_name)
+	for _, mut other in stmts {
+		if other.dbc == stmt.dbc {
+			if prepared := other.prepared {
+				if prepared.positioned_cursor() == name {
+					other.prepared = none
+				}
+			}
+		}
+	}
+}
+
+// check_positioned_cursor raises an exception condition if name isn't the name
+// of a cursor of another statement of the connection: invalid cursor name. A
+// closed cursor still has a name.
+//
+// ISO/IEC 9075-3:2003(E), 6.19, ExecDirect, General Rules, 6
+// ISO/IEC 9075-3:2003(E), 6.50, Prepare, General Rules, 6
+fn (stmt &Stmt) check_positioned_cursor(name string) ! {
+	for h, other in stmts {
+		if h != stmt.handle && other.dbc == stmt.dbc && other.has_cursor
+			&& normalize_cursor_name(other.cursor_name) == name {
+			return
+		}
+	}
+
+	return cli_error('34000', 'invalid cursor name')
 }
 
 // open_cursor opens a cursor on the result of a query, positioned before the

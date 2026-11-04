@@ -136,6 +136,9 @@ mut:
 	// next_transaction is set by SET TRANSACTION for the next SQL-transaction,
 	// whether it's started by START TRANSACTION or implicitly by a statement.
 	next_transaction ?TransactionCharacteristics
+	// enduring_transaction is set by SET SESSION CHARACTERISTICS. See
+	// enduring_characteristics.
+	enduring_transaction TransactionCharacteristics
 	// read_only is the access mode of the current SQL-transaction, see
 	// begin_transaction.
 	read_only bool
@@ -253,6 +256,9 @@ fn open_connection(path string, catalog_name string, options ConnectionOptions) 
 		now:                     default_now
 		isolation_level:         options.isolation_level
 		default_isolation_level: options.isolation_level
+		enduring_transaction:    TransactionCharacteristics{
+			isolation_level: options.isolation_level
+		}
 	}
 
 	conn.lifetime = closure.new_lifetime()

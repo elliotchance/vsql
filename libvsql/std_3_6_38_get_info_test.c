@@ -196,3 +196,16 @@ UTEST_F(db, 6_38_get_info_views) {
       diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
       0);
 }
+
+/* SET SESSION CHARACTERISTICS changes the default isolation level. */
+UTEST_F(db, 6_38_get_info_session_isolation) {
+  SQLINTEGER level = 0;
+  ASSERT_EQ(run_sql(utest_fixture->stmt,
+                    "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION "
+                    "LEVEL READ COMMITTED"),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLGetInfo(utest_fixture->dbc, SQL_DEFAULT_TRANSACTION_ISOLATION,
+                       &level, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(level, SQL_TRANSACTION_READ_COMMITTED);
+}

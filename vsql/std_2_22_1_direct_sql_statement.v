@@ -49,10 +49,11 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 		if !prepared.writes && prepared.stmt is QueryExpression {
 			// Starting the transaction in each catalog needs a write lock (and
 			// fails for a database that can only be read), so it isn't started
-			// until a statement changes something (#672). Until then, a query
-			// sees what's committed, whatever the isolation level is.
+			// until a statement changes something (#672). Until then, it's
+			// isolated by check_direct_query rather than a lock.
 			if !conn.direct_query_transaction {
 				conn.initiate_transaction(conn.next_transaction or { conn.enduring_characteristics() })
+				conn.direct_query_headers = map[string]Header{}
 			}
 			conn.direct_query_transaction = true
 		} else if conn.direct_query_transaction
@@ -79,6 +80,12 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 				c:    &conn
 			}
 			start.query(map[string]Value{})!
+			if conn.direct_query_transaction {
+				conn.check_direct_query() or {
+					conn.query('ROLLBACK')!
+					return err
+				}
+			}
 			conn.direct_query_transaction = false
 		}
 	}
@@ -88,6 +95,10 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 	}
 
 	result := prepared.query(map[string]Value{})!
+
+	if conn.direct_query_transaction && prepared.stmt is QueryExpression {
+		conn.check_direct_query()!
+	}
 
 	// The rows of a query are the rows of the Result.
 	//

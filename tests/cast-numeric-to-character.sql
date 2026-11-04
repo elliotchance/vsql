@@ -95,7 +95,7 @@ VALUES CAST(CAST(-1234567.0e0 AS REAL) AS CHARACTER(11));
 VALUES CAST(CAST(0e0 AS REAL) AS VARCHAR(10));
 -- COL1: 0E0
 
-VALUES CAST(CAST(-1e-60 AS REAL) AS VARCHAR(10));
+VALUES CAST(CAST(-0e0 AS REAL) AS VARCHAR(10));
 -- COL1: 0E0
 
 -- # The length of the result decides if it fits, exactly at the limit.

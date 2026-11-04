@@ -323,6 +323,8 @@ libvsql-test: $(LIBVSQL)
 	v run scripts/check-libvsql-constants.vsh
 	$(LIBVSQL_CC) libvsql/test.c libvsql/*_test.c $(LIBVSQL_PTHREAD) -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-test
 	bin/libvsql-test
+	$(LIBVSQL_CC) libvsql/first_call.c $(LIBVSQL_PTHREAD) -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/libvsql-first-call
+	i=0; while [ $$i -lt 20 ]; do bin/libvsql-first-call || exit 1; i=$$((i+1)); done
 
 examples/%: vsql/y.v
 	v $(V3_OPTIONS) run examples/$*.v

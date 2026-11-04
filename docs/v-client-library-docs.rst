@@ -638,6 +638,12 @@ struct Connection
    	// planned while collect_subquery_tables is set (see tables_of_subqueries).
    	collect_subquery_tables bool
    	subquery_tables         []string
+   	// flagging is true while PreparedStmt.features resolves the names of a
+   	// statement, see Connection.resolved_features.
+   	flagging bool
+   	// flagged_features and flagged_tables are what's been found while flagging.
+   	flagged_features []string
+   	flagged_tables   []string
    	// next_value_not_allowed is set (to "UNION", etc.) while a query that can't
    	// contain a NEXT VALUE FOR is being planned, see Compiler.
    	next_value_not_allowed string

@@ -30,6 +30,10 @@ pub:
 	// name (such as COL1) because the query didn't name it. For example, an
 	// expression without an AS clause, or a column of VALUES.
 	unnamed bool
+	// from_aggregate is true when the column of a result is derived from an
+	// expression that contains an aggregate function of that query, such as
+	// "COUNT(*) AS c". It's only used by the SQL Flagger.
+	from_aggregate bool
 }
 
 // is_generated_always is true if a value can't be assigned to the column, other

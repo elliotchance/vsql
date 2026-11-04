@@ -101,7 +101,10 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 				table_plan, table := create_select_plan_without_join(body, from_clause,
 					params, mut conn, allow_virtual, true)!
 				plan = table_plan
-				tables[table.name.id()] = table
+				tables[table.name.id()] = Table{
+					...table
+					columns: table.result_columns()
+				}
 			}
 		}
 		QualifiedJoin {
@@ -295,7 +298,10 @@ fn create_table_reference_plan(body QuerySpecification, table_reference TableRef
 					return sqlstate_42601('table name ${unqualified_range_variable(table.name)} specified more than once')
 				}
 			}
-			tables[table.name.id()] = table
+			tables[table.name.id()] = Table{
+				...table
+				columns: table.result_columns()
+			}
 
 			return plan
 		}

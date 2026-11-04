@@ -66,7 +66,7 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 			// until a statement changes something (#672). Until then, a query
 			// sees what's committed, whatever the isolation level is.
 			if !conn.direct_query_transaction {
-				conn.initiate_transaction(conn.next_transaction or { TransactionCharacteristics{} })
+				conn.initiate_transaction(conn.next_transaction or { conn.enduring_characteristics() })
 			}
 			conn.direct_query_transaction = true
 		} else if conn.direct_query_transaction
@@ -83,7 +83,7 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 			characteristics := if conn.direct_query_transaction {
 				conn.current_characteristics()
 			} else {
-				conn.next_transaction or { TransactionCharacteristics{} }
+				conn.next_transaction or { conn.enduring_characteristics() }
 			}
 			mut start := PreparedStmt{
 				stmt: Stmt(StartTransactionStatement{
@@ -132,7 +132,8 @@ fn (p PreparedStmt) is_chain() bool {
 fn (p PreparedStmt) is_transaction_initiating() bool {
 	return p.stmt !is StartTransactionStatement && p.stmt !is SetCatalogStatement
 		&& p.stmt !is SetSchemaStatement && p.stmt !is SetConstraintsModeStatement
-		&& p.stmt !is SetTransactionStatement && p.stmt !is ConnectStatement
+		&& p.stmt !is SetTransactionStatement && p.stmt !is SetSessionCharacteristicsStatement
+		&& p.stmt !is ConnectStatement
 		&& p.stmt !is SetConnectionStatement && p.stmt !is DisconnectStatement
 }
 

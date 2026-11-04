@@ -87,6 +87,9 @@ mut:
 	// next_transaction is set by SET TRANSACTION for the next SQL-transaction,
 	// whether it's started by START TRANSACTION or implicitly by a statement.
 	next_transaction ?TransactionCharacteristics
+	// enduring_transaction is set by SET SESSION CHARACTERISTICS. See
+	// enduring_characteristics.
+	enduring_transaction TransactionCharacteristics
 	// read_only is the access mode of the current SQL-transaction, see
 	// begin_transaction.
 	read_only bool

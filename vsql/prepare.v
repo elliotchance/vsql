@@ -28,6 +28,7 @@ type Stmt = AlterSequenceGeneratorStatement
 	| SetConnectionStatement
 	| SetConstraintsModeStatement
 	| SetSchemaStatement
+	| SetSessionCharacteristicsStatement
 	| SetTransactionStatement
 	| StartTransactionStatement
 	| TableDefinition
@@ -136,6 +137,7 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 		SetConnectionStatement { 'SET CONNECTION', 67 }
 		SetConstraintsModeStatement { 'SET CONSTRAINT', 68 }
 		SetSchemaStatement { 'SET SCHEMA', 74 }
+		SetSessionCharacteristicsStatement { 'SET SESSION CHARACTERISTICS', 109 }
 		SetTransactionStatement { 'SET TRANSACTION', 75 }
 		StartTransactionStatement { 'START TRANSACTION', 111 }
 		TableDefinition { 'CREATE TABLE', 77 }
@@ -213,7 +215,7 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 	// own. EXPLAIN doesn't run the statement, so it doesn't use up a SET
 	// TRANSACTION.
 	if !p.explain && !p.c.is_active() && p.is_transaction_initiating() {
-		p.c.initiate_transaction(p.c.next_transaction or { TransactionCharacteristics{} })
+		p.c.initiate_transaction(p.c.next_transaction or { p.c.enduring_characteristics() })
 		if !p.c.read_only && p.changes_database() && p.c.isolation_level.locks_transaction() {
 			p.c.lock_transaction(false)!
 		}
@@ -387,6 +389,13 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			}
 
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse, p.writes)
+		}
+		SetSessionCharacteristicsStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		SetTransactionStatement {
 			if p.explain {

@@ -47,6 +47,9 @@ The isolation level decides which changes from other transactions it can see
 the transaction (see :doc:`set-transaction`). Without it, it's 100, even after
 a ``SET TRANSACTION``.
 
+Without any of them, the transaction has the characteristics of the connection
+(see :doc:`set-session-characteristics`).
+
 Implicit Transactions
 ---------------------
 

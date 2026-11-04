@@ -217,7 +217,7 @@ fn info_value_of(dbc &Dbc, info_type i16) ?InfoValue {
 		// - 10.c. Regular identifiers are stored in upper case, and a
 		// transaction can include DDL.
 		sql_default_transaction_isolation {
-			InfoValue(int(sql_transaction_serializable))
+			InfoValue(default_isolation_level(dbc))
 		}
 		sql_identifier_case {
 			InfoValue(i16(sql_ic_upper))
@@ -275,4 +275,16 @@ fn dbms_version(version string, date string) string {
 	patch := (parts[2] or { '0' }).int()
 
 	return '${major:02}.${minor:02}.${patch:04} ${version} ${date}'
+}
+
+// default_isolation_level is the isolation level of a transaction that doesn't
+// set its own, which SET SESSION CHARACTERISTICS can change.
+fn default_isolation_level(dbc Dbc) int {
+	conn := dbc.conn or { return sql_transaction_serializable }
+	return match conn.enduring_isolation_level() {
+		'READ UNCOMMITTED' { sql_transaction_read_uncommitted }
+		'READ COMMITTED' { sql_transaction_read_committed }
+		'REPEATABLE READ' { sql_transaction_repeatable_read }
+		else { sql_transaction_serializable }
+	}
 }

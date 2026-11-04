@@ -446,10 +446,10 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		mut found := false
 		for tok_pos, tok_name in yy_toknames {
 			// E is only a token directly after a number (see above), otherwise it's
-			// a regular identifier.
+			// a regular identifier. LIMIT is the same (see is_limit_clause).
 			// The name of an operator or a literal isn't a word.
-			if tok_name == upper_word && upper_word != 'E' && !upper_word.starts_with('OPERATOR_')
-				&& !upper_word.starts_with('LITERAL_') {
+			if tok_name == upper_word && upper_word != 'E' && upper_word != 'LIMIT'
+				&& !upper_word.starts_with('OPERATOR_') && !upper_word.starts_with('LITERAL_') {
 				tok_number := tok_pos + 57343
 				tokens << Token{tok_number, YYSymType{
 					v: upper_word
@@ -480,6 +480,14 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 	for position, token in tokens {
 		if token.token == token_ilike && is_ilike_operator(tokens, position) {
 			tokens[position] = Token{token_operator_ilike, token.sym}
+		}
+	}
+
+	for pos in 0 .. tokens.len {
+		if is_limit_clause(tokens, pos) {
+			tokens[pos] = Token{token_limit, YYSymType{
+				v: 'LIMIT'
+			}}
 		}
 	}
 
@@ -568,6 +576,80 @@ fn starts_value(token Token, reserved []string) bool {
 
 	return name !in reserved || name in ['CASE', 'CAST', 'COALESCE', 'CURRENT_CATALOG', 'CURRENT_SCHEMA',
 		'LOWER', 'MAX', 'MIN', 'NULLIF', 'SUBSTRING', 'TRIM', 'UPPER']
+}
+
+// is_limit_clause returns true if tokens[i] is the regular identifier LIMIT and
+// it starts a limit_clause rather than being a name, such as a column or an
+// alias (with or without AS). The parser can't tell them apart because it only
+// sees the next token, and "FROM t limit" can be followed by anything that
+// follows a table. An identifier is never followed by something that starts a
+// row count, so that decides it.
+//
+// The exception is a sign, because "limit - 1" can be an expression. However,
+// that needs an operand to be expected, and a limit_clause can't be there since
+// the query isn't finished. So it's a limit_clause unless the token before it
+// is one that an expression can directly follow in the grammar, or a period for
+// "t.limit - 1".
+fn is_limit_clause(tokens []Token, i int) bool {
+	sym := tokens[i].sym.v
+	if tokens[i].token != token_literal_identifier || sym !is IdentifierChain
+		|| (sym as IdentifierChain).identifier.to_upper() != 'LIMIT' || i + 1 >= tokens.len {
+		return false
+	}
+
+	next := tokens[i + 1].token
+	after := if i + 2 < tokens.len { tokens[i + 2].token } else { 0 }
+	if next in [token_operator_plus, token_operator_minus] {
+		return i > 0 && (after == token_literal_number || after == token_operator_period)
+			&& tokens[i - 1].token !in [
+				token_all,
+				token_and,
+				token_asymmetric,
+				token_between,
+				token_by,
+				token_case,
+				token_distinct,
+				token_else,
+				token_for,
+				token_from,
+				token_having,
+				token_not,
+				token_on,
+				token_operator_asterisk,
+				token_operator_bang_equals,
+				token_operator_comma,
+				token_operator_equals,
+				token_operator_greater_equals,
+				token_operator_greater_than,
+				token_operator_left_paren,
+				token_operator_less_equals,
+				token_operator_less_than,
+				token_operator_minus,
+				token_operator_not_equals,
+				token_operator_period,
+				token_operator_plus,
+				token_operator_solidus,
+				token_or,
+				token_select,
+				token_symmetric,
+				token_then,
+				token_values,
+				token_when,
+				token_where,
+			]
+	}
+
+	// DATE, TIME and TIMESTAMP are also data types: "limit DATE" is a column.
+	if next in [token_date, token_time, token_timestamp] {
+		return after == token_literal_string
+	}
+
+	// A number can start with a period, but "limit.x" is a qualified name.
+	if next == token_operator_period {
+		return after == token_literal_number
+	}
+
+	return next in [token_literal_number, token_literal_string, token_true, token_false, token_unknown]
 }
 
 // read_string_literal returns the characters of the string that starts with
@@ -838,10 +920,11 @@ pub fn reserved_words() []string {
 	mut words := []string{}
 	for name in yy_toknames {
 		// Only words are tokens in the lexer (operators and literals are not).
-		// E is a regular identifier, unless it's directly after a number.
+		// E is a regular identifier, unless it's directly after a number, and
+		// LIMIT unless it's directly before a row count.
 		if name.len > 0 && name[0].is_letter() && name == name.to_upper()
 			&& !name.starts_with('OPERATOR_') && !name.starts_with('LITERAL_') && name != 'E'
-			&& name !in non_reserved {
+			&& name != 'LIMIT' && name !in non_reserved {
 			words << name
 		}
 	}

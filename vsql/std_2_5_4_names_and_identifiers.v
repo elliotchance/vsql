@@ -279,7 +279,7 @@ fn is_regular_identifier(s string) bool {
 
 	upper := s.to_upper()
 	for tok_pos, tok_name in yy_toknames {
-		if tok_name == upper && upper != 'E' {
+		if tok_name == upper && upper != 'E' && upper != 'LIMIT' {
 			tok_number := tok_pos + 57343
 			return tok_number >= token_a && tok_number <= token_zone
 		}

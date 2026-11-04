@@ -89,6 +89,11 @@ module vsql
 // V202-02: A sort key that contains a subquery.
 // V202-03: A sort key that contains an aggregate function.
 //
+// V203: LIMIT.
+// V203-01: LIMIT instead of FETCH FIRST.
+// V203-02: OFFSET without ROW or ROWS.
+// V203-03: LIMIT offset, count.
+//
 // V301: Comparison operators.
 // V301-01: != as an alias for <>.
 //
@@ -132,6 +137,9 @@ const vsql_derived_table_without_name = 'V201-02'
 const vsql_sort_key_without_column = 'V202-01'
 const vsql_sort_key_subquery = 'V202-02'
 const vsql_sort_key_aggregate = 'V202-03'
+const vsql_limit = 'V203-01'
+const vsql_offset_without_rows = 'V203-02'
+const vsql_limit_offset_count = 'V203-03'
 const vsql_bang_equals = 'V301-01'
 const vsql_ilike = 'V302-01'
 const vsql_now = 'V402-01'

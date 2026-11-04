@@ -2150,6 +2150,7 @@ fn test_reserved_words() {
 	assert 'NAME' !in words
 	assert 'E' !in words
 	assert 'ABORT' !in words
+	assert 'LIMIT' !in words
 	assert !words.any(it.starts_with('OPERATOR_') || it.starts_with('LITERAL_'))
 	mut sorted := words.clone()
 	sorted.sort()

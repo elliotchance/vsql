@@ -41,3 +41,4 @@ libvsql/embed/example.c
 __pycache__/
 .pytest_cache/
 *.isolation
+*.isolation.queue

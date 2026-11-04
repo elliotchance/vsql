@@ -1361,7 +1361,7 @@ Optional Features
    * - ✅ **T251**
      - **SET TRANSACTION statement: LOCAL option**
 
-   * - ❌ **T261**
+   * - ✅ **T261**
      - **Chained transactions**
 
    * - ❌ **T271**

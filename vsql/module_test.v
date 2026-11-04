@@ -35,7 +35,11 @@ PROCEDURE d2 (SQLSTATE); DISCONNECT ALL;
 PROCEDURE d3 (SQLSTATE); DISCONNECT CURRENT;
 PROCEDURE d4 (SQLSTATE, :n CHAR(1)); DISCONNECT :n;
 PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
+PROCEDURE commit_chain (SQLSTATE); COMMIT AND CHAIN;
+PROCEDURE rollback_chain (SQLSTATE); ROLLBACK AND CHAIN;
 ', 'my-module')!
+	assert m.source.contains('vsql_m_end(SQLSTATE, SQL_COMMIT_AND_CHAIN);')
+	assert m.source.contains('vsql_m_end(SQLSTATE, SQL_ROLLBACK_AND_CHAIN);')
 	assert m.header.contains('#ifndef MY_MODULE_H')
 	assert m.header.contains('void add(char SQLSTATE[6], char c[8], char v[44], short *s, long *i, long *i2, long long *b, float *r, double *d, long *f, short *ind, long long *unused);')
 	assert m.source.contains('#include "my-module.h"')

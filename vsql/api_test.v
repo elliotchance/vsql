@@ -110,6 +110,18 @@ fn test_direct() {
 		assert db.direct('SELECT * FROM t WHERE x = 3;', autocommit: true)!.rows.len == 1
 		assert !db.in_transaction() && !db.direct_query_transaction
 
+		// AND CHAIN doesn't start an SQL-transaction if there isn't one. The next
+		// one has the same characteristics, even if a query started the last one.
+		db.direct('COMMIT AND CHAIN;')!
+		assert !db.is_active()
+		db.direct('ROLLBACK AND CHAIN;')!
+		assert !db.is_active()
+		db.direct('VALUES 1;')!
+		db.direct('COMMIT AND CHAIN;')!
+		assert db.direct_query_transaction && !db.in_transaction()
+		db.direct('ROLLBACK;')!
+		assert !db.is_active()
+
 		// The access mode of an SQL-transaction that a query started is kept
 		// when a statement that writes starts it in storage.
 		db.direct('SET TRANSACTION READ ONLY;')!

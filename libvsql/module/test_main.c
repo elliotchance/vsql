@@ -318,6 +318,14 @@ int main(void) {
   EXPECT(count_rows(sqlstate, &rows), "22012");
   EXPECT(rollback_work(sqlstate), "00000");
 
+  /* 17.7 and 17.8: AND CHAIN starts another transaction. */
+  EXPECT(start_transaction(sqlstate), "00000");
+  EXPECT(commit_chain(sqlstate), "00000");
+  EXPECT(start_transaction(sqlstate), "25001");
+  EXPECT(rollback_chain(sqlstate), "00000");
+  EXPECT(start_transaction(sqlstate), "25001");
+  EXPECT(rollback_work(sqlstate), "00000");
+
   /* 18.1: CONNECT TO. */
   EXPECT(connect_default(sqlstate), "08002");
   strcpy(server, ":memory:");

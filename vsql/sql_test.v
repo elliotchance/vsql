@@ -1388,7 +1388,9 @@ PROCEDURE d4 (SQLSTATE, :n CHAR(1)); DISCONNECT :n;
 PROCEDURE set_schema (SQLSTATE); SET SCHEMA \'x\';
 PROCEDURE commit_chain (SQLSTATE); COMMIT AND CHAIN;
 PROCEDURE rollback_chain (SQLSTATE); ROLLBACK AND CHAIN;
+PROCEDURE rollback_to (SQLSTATE); ROLLBACK TO SAVEPOINT s;
 ', 'my-module')!
+	assert m.source.contains('vsql_m_rollback_to(SQLSTATE, "\\"S\\"");')
 	assert m.source.contains('vsql_m_end(SQLSTATE, SQL_COMMIT_AND_CHAIN);')
 	assert m.source.contains('vsql_m_end(SQLSTATE, SQL_ROLLBACK_AND_CHAIN);')
 	assert m.header.contains('#ifndef MY_MODULE_H')
@@ -1439,7 +1441,7 @@ PROCEDURE rollback_chain (SQLSTATE); ROLLBACK AND CHAIN;
 }
 
 fn test_module_errors() ! {
-	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); ROLLBACK TO SAVEPOINT s;') == 'syntax error: procedure p: ROLLBACK TO SAVEPOINT is not supported in a module'
+	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); ROLLBACK AND CHAIN TO SAVEPOINT s;') == 'syntax error: procedure p: AND CHAIN cannot be used with TO SAVEPOINT'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE);') == 'syntax error: a module must end with a procedure that has a statement'
 	assert module_error(module_header + 'PROCEDURE p (SQLSTATE); COMMIT; PROCEDURE P (SQLSTATE); COMMIT;') == 'syntax error: procedure P is defined more than once'
 	assert module_error('MODULE LANGUAGE ADA SCHEMA s PROCEDURE p (SQLSTATE); COMMIT;') == 'syntax error: only LANGUAGE C is supported, not ADA'

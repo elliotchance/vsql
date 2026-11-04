@@ -93,18 +93,22 @@ pub fn (mut db DB) orm_rollback() ! {
 	db.conn.query('ROLLBACK')!
 }
 
-// orm_savepoint is not supported because vsql does not have savepoints.
+// orm_savepoint establishes a savepoint for the ORM.
 pub fn (mut db DB) orm_savepoint(name string) ! {
-	return error('vsql does not support savepoints')
+	db.conn.query('SAVEPOINT ${savepoint_name(name)}')!
 }
 
-// orm_rollback_to is not supported because vsql does not have savepoints.
+// orm_rollback_to rolls back to a savepoint for the ORM.
 pub fn (mut db DB) orm_rollback_to(name string) ! {
-	return error('vsql does not support savepoints')
+	db.conn.query('ROLLBACK TO SAVEPOINT ${savepoint_name(name)}')!
 }
 
-// orm_release_savepoint is not supported because vsql does not have
-// savepoints.
+// orm_release_savepoint destroys a savepoint for the ORM.
 pub fn (mut db DB) orm_release_savepoint(name string) ! {
-	return error('vsql does not support savepoints')
+	db.conn.query('RELEASE SAVEPOINT ${savepoint_name(name)}')!
+}
+
+// savepoint_name delimits a name, so that it's the same name to all of these.
+fn savepoint_name(name string) string {
+	return '"${name.replace('"', '""')}"'
 }

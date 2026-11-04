@@ -16,8 +16,9 @@ import vsql
 // apply: deferred constraints are checked, and if any constraint (or anything
 // else) prevents the commit, the SQL-transaction is rolled back (General Rules
 // 12.c and 12.d). There's no encompassing transaction, atomic execution
-// context, temporary table, trigger, savepoint or locator (General Rules 7,
-// 12.a, 12.b, 12.d.ii, 12.e, 12.f, 14.a, 14.c, 14.d and 15.d to 15.i).
+// context, temporary table, trigger or locator (General Rules 7, 12.a, 12.b,
+// 12.d.ii, 12.f, 14.a, 14.d, 15.d and 15.g). COMMIT and ROLLBACK destroy every
+// savepoint (General Rules 12.e and 14.c).
 
 // Codes from Table 14, "Codes used for transaction termination".
 const sql_commit = i16(0)
@@ -66,13 +67,12 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 
 	// - 13, 15. SAVEPOINT NAME RELEASE and SAVEPOINT NAME ROLLBACK can only be
 	// used with a connection, and the SAVEPOINT NAME must be a savepoint of the
-	// current SQL-transaction. vsql doesn't support savepoints, so there never
-	// is one.
+	// current SQL-transaction.
 	if completion_type in [sql_savepoint_name_rollback, sql_savepoint_name_release] {
 		if handle_type != sql_handle_dbc {
 			return sql_invalid_handle
 		}
-		return cli_error('3B001', 'savepoint exception — invalid specification')
+		return end_savepoint(l1[0], completion_type == sql_savepoint_name_rollback)
 	}
 
 	// - 9. If any statement of the connections has a deferred parameter number,
@@ -124,6 +124,51 @@ fn end_tran(mut diag Diagnostics, handle_type i16, l1 []i64, completion_type i16
 
 // end_transaction commits or rolls back the SQL-transaction of an established
 // connection. A commit that fails rolls back the SQL-transaction instead.
+// end_savepoint releases, or rolls back to, the savepoint in the SAVEPOINT NAME
+// attribute, which is an identifier. A rollback closes every cursor that isn't
+// holdable. The others stay open, which is implementation-defined.
+//
+// - 15.h. The status of cursors from before the savepoint is
+// implementation-defined.
+// - 15.i. No prepared statement is deallocated.
+fn end_savepoint(dh i64, is_rollback bool) !i16 {
+	mut dbc := dbcs[dh] or { return sql_invalid_handle }
+	mut conn := dbc.conn or { return sql_invalid_handle }
+	name := savepoint_identifier(dbc.savepoint_name) or {
+		return cli_error('3B001', 'savepoint exception — invalid specification')
+	}
+	if is_rollback {
+		db_query(mut conn, 'ROLLBACK TO SAVEPOINT ${name}')!
+		close_cursors(dh, true)
+	} else {
+		db_query(mut conn, 'RELEASE SAVEPOINT ${name}')!
+	}
+
+	return sql_success
+}
+
+// savepoint_identifier is a savepoint name as a delimited identifier, so it can't
+// be a reserved word or anything other than a name. An error is returned if it
+// isn't an identifier.
+fn savepoint_identifier(name string) !string {
+	if name.len > 2 && name.starts_with('"') && name.ends_with('"') {
+		inner := name[1..name.len - 1]
+		if inner.replace('""', '').contains('"') {
+			return error('not an identifier')
+		}
+
+		return name
+	}
+
+	is_regular := name.len > 0 && (name[0].is_letter() || name[0] == `_`)
+		&& name.bytes().all(it.is_letter() || it.is_digit() || it == `_`)
+	if !is_regular {
+		return error('not an identifier')
+	}
+
+	return '"${name.to_upper()}"'
+}
+
 fn end_transaction(mut diag Diagnostics, mut conn vsql.Connection, is_commit bool, is_chain bool) ! {
 	statement := if is_commit { 'COMMIT' } else { 'ROLLBACK' }
 	db_query(mut conn, if is_chain { '${statement} AND CHAIN' } else { statement }) or {

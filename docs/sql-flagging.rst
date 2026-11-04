@@ -147,6 +147,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V301-01``
      - ``!=`` as an alias for ``<>``.
 
+   * - ``V302``
+     - ``ILIKE`` (see :doc:`expressions`).
+
+   * - ``V302-01``
+     - ``ILIKE`` and ``NOT ILIKE`` (a case-insensitive ``LIKE``).
+
    * - ``V403``
      - Mathematical functions (see :doc:`functions`).
 

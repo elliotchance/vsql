@@ -204,6 +204,51 @@ invalid escape sequence error.
   '100%' LIKE '%!%' ESCAPE '!'  -- TRUE
   '100' LIKE '%!%' ESCAPE '!'   -- FALSE
 
+ILIKE
+-----
+
+.. code-block:: text
+
+  X [ NOT ] ILIKE Y [ ESCAPE Z ]
+
+``ILIKE`` is a vsql extension and not standard SQL. It's flagged with the Feature
+ID ``V302-01`` (see :doc:`sql-flagging`).
+
+It's the same as `LIKE`_ (including ``%``, ``_``, ``ESCAPE`` and ``NULL``), except
+that it ignores case. Characters are the same if ``UPPER`` or ``LOWER`` makes them
+the same (see :doc:`functions`), so the full Unicode case mappings are used, and
+a character that ``UPPER`` and ``LOWER`` don't change (such as ``ⓐ``) only matches
+itself.
+
+With a full case mapping, one character can match several, such as ``ß`` and
+``SS``. However, the wildcards still work on the characters of ``X``, so ``ß`` is
+one character for ``_`` and a wildcard can't match part of it.
+
+The escape character is found in ``Y`` before ignoring case, so if ``Z`` is ``x``
+then ``X`` in ``Y`` isn't an escape character.
+
+``ilike`` isn't a reserved word, so it can still be used as a name, including as
+an alias without ``AS``. It's the operator if it's between two values. One
+exception is a column named ``ADD``, ``CONNECTION``, ``CONSTRAINTS``, ``SCHEMA`` or
+``SEQUENCE`` on the left of ``ILIKE``, which needs to be in quotes (``"SEQUENCE"``).
+Also, a pattern that starts with a reserved word has to be one that can return a
+character string, such as ``UPPER`` or ``CAST``, or it's in parentheses.
+
+*Examples*
+
+.. code-block:: sql
+
+  'a' ILIKE 'A'                  -- TRUE
+  'a' NOT ILIKE 'A'              -- FALSE
+  'ABC' ILIKE 'a_c'              -- TRUE
+  'ACDEB' ILIKE 'a%b'            -- TRUE
+  'ÉCOLE' ILIKE 'école'          -- TRUE
+  'straße' ILIKE 'STRASSE'       -- TRUE
+  'ß' ILIKE '_'                  -- TRUE
+  'SS' ILIKE '_'                 -- FALSE
+  'ß' ILIKE 'S%'                 -- FALSE
+  '100%' ILIKE '%!%' ESCAPE '!'  -- TRUE
+
 NEXT VALUE FOR
 --------------
 

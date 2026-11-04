@@ -197,6 +197,7 @@ fn (mut l Lexer) error(s string) IError {
 fn cleanup_yacc_error(s string) string {
 	mut msg := s
 
+	msg = msg.replace('OPERATOR_ILIKE', 'ILIKE')
 	msg = msg.replace('OPERATOR_COMMA', '","')
 	msg = msg.replace('OPERATOR_RIGHT_PAREN', '")"')
 	msg = msg.replace('OPERATOR_DOUBLE_PIPE', '"||"')
@@ -446,7 +447,9 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		for tok_pos, tok_name in yy_toknames {
 			// E is only a token directly after a number (see above), otherwise it's
 			// a regular identifier.
-			if tok_name == upper_word && upper_word != 'E' {
+			// The name of an operator or a literal isn't a word.
+			if tok_name == upper_word && upper_word != 'E' && !upper_word.starts_with('OPERATOR_')
+				&& !upper_word.starts_with('LITERAL_') {
 				tok_number := tok_pos + 57343
 				tokens << Token{tok_number, YYSymType{
 					v: upper_word
@@ -472,7 +475,64 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		}
 	}
 
+	for position, token in tokens {
+		if token.token == token_ilike && is_ilike_operator(tokens, position) {
+			tokens[position] = Token{token_operator_ilike, token.sym}
+		}
+	}
+
 	return tokens, features
+}
+
+// is_ilike_operator reports whether the word ILIKE at tokens[i] is the operator
+// rather than a name. ILIKE isn't a word of the standard, so existing SQL can use
+// it as a name, including as an alias without AS. The parser can't choose between
+// those from one token: "x ILIKE FROM" has an alias and "x ILIKE y" doesn't. So
+// it's the operator only if it's after the end of a value (or that and NOT), and
+// before the start of one.
+//
+// The other case that looks like that is an alias with a column list, in "FROM t
+// ILIKE (a, b)", which is allowed by correlation_or_recognition.
+fn is_ilike_operator(tokens []Token, i int) bool {
+	if i == 0 || i + 1 == tokens.len {
+		return false
+	}
+
+	reserved := reserved_words()
+	before := if tokens[i - 1].token == token_not && i > 1 { i - 2 } else { i - 1 }
+
+	return ends_value(tokens[before], reserved) && starts_value(tokens[i + 1], reserved)
+}
+
+// ends_value reports whether a value can end with the token. All names and
+// literals do, but not most of the reserved words, which can be before a name.
+// Neither do the only non-reserved words that are before a name in the grammar,
+// so a column that's called one of those needs quotes to be the left of ILIKE.
+fn ends_value(token Token, reserved []string) bool {
+	name := yy_toknames[token.token - 57343]
+	if name.starts_with('OPERATOR_') {
+		return name in ['OPERATOR_RIGHT_PAREN', 'OPERATOR_QUESTION_MARK']
+	}
+
+	if name in ['ADD', 'CONNECTION', 'CONSTRAINTS', 'SCHEMA', 'SEQUENCE'] {
+		return false
+	}
+
+	return name !in reserved
+		|| name in ['CURRENT_CATALOG', 'CURRENT_SCHEMA', 'END', 'FALSE', 'TRUE', 'UNKNOWN']
+}
+
+// starts_value reports whether the pattern of ILIKE can start with the token. All
+// names and literals do, but only the reserved words that can be a character
+// string. A pattern of any other type is an error anyway.
+fn starts_value(token Token, reserved []string) bool {
+	name := yy_toknames[token.token - 57343]
+	if name.starts_with('OPERATOR_') {
+		return name in ['OPERATOR_LEFT_PAREN', 'OPERATOR_QUESTION_MARK']
+	}
+
+	return name !in reserved || name in ['CASE', 'CAST', 'COALESCE', 'CURRENT_CATALOG', 'CURRENT_SCHEMA',
+		'LOWER', 'MAX', 'MIN', 'NULLIF', 'SUBSTRING', 'TRIM', 'UPPER']
 }
 
 // read_string_literal returns the characters of the string that starts with

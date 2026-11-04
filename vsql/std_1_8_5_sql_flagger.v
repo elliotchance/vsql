@@ -40,6 +40,9 @@ module vsql
 // V004-04: CLOSE outside of an SQL-client module.
 // V004-05: DELETE WHERE CURRENT OF outside of an SQL-client module.
 // V004-06: UPDATE WHERE CURRENT OF outside of an SQL-client module.
+//
+// V009: Comparison operators.
+// V009-01: != as an alias for <>.
 const vsql_explain_query = 'V001-01'
 const vsql_explain_delete = 'V001-02'
 const vsql_explain_update = 'V001-03'
@@ -53,6 +56,7 @@ const vsql_fetch_without_into = 'V004-03'
 const vsql_close_cursor = 'V004-04'
 const vsql_delete_positioned = 'V004-05'
 const vsql_update_positioned = 'V004-06'
+const vsql_bang_equals = 'V009-01'
 
 // flag records that the statement being parsed uses a feature outside of Core
 // SQL, such as "F591". It's called by the grammar actions.

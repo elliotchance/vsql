@@ -204,6 +204,7 @@ fn cleanup_yacc_error(s string) string {
 	msg = msg.replace('OPERATOR_LESS_THAN', '"<"')
 	msg = msg.replace('OPERATOR_GREATER_THAN', '">"')
 	msg = msg.replace('OPERATOR_NOT_EQUALS', '"<>"')
+	msg = msg.replace('OPERATOR_BANG_EQUALS', '"!="')
 	msg = msg.replace('OPERATOR_GREATER_EQUALS', '">="')
 	msg = msg.replace('OPERATOR_LESS_EQUALS', '"<="')
 	msg = msg.replace('OPERATOR_PERIOD_ASTERISK', '"." "*"')
@@ -362,6 +363,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		// Operators
 		multi := {
 			'<>': token_operator_not_equals
+			'!=': token_operator_bang_equals
 			'>=': token_operator_greater_equals
 			'<=': token_operator_less_equals
 			'||': token_operator_double_pipe

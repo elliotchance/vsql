@@ -119,8 +119,8 @@ UTEST_F(db, 6_17_end_tran_invalid_completion_type) {
   EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HY012");
 }
 
-/* There are no savepoints. */
-UTEST_F(db, 6_17_end_tran_savepoint) {
+/* A savepoint that doesn't exist. */
+UTEST_F(db, 6_17_end_tran_savepoint_missing) {
   EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc,
                        SQL_SAVEPOINT_NAME_ROLLBACK),
             SQL_ERROR);
@@ -132,6 +132,68 @@ UTEST_F(db, 6_17_end_tran_savepoint) {
   EXPECT_EQ(SQLEndTran(SQL_HANDLE_ENV, utest_fixture->env,
                        SQL_SAVEPOINT_NAME_ROLLBACK),
             SQL_INVALID_HANDLE);
+
+  /* It isn't an identifier, or it's not a savepoint. */
+  const char *names[] = {"a b", "a;b", "\"a\"b\"", "select", "1a"};
+  for (int i = 0; i < 5; i++) {
+    EXPECT_EQ(SQLSetConnectAttr(utest_fixture->dbc, SQL_ATTR_SAVEPOINT_NAME,
+                                (SQLPOINTER)names[i], SQL_NTS),
+              SQL_SUCCESS);
+    EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                         SQL_SAVEPOINT_NAME_ROLLBACK),
+              SQL_ERROR);
+    EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "3B001");
+  }
+}
+
+/* 13, 15: rolling back to a savepoint, then releasing it. */
+UTEST_F(db, 6_17_end_tran_savepoint) {
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "INSERT INTO t (x) VALUES (1)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "SAVEPOINT s1"), SQL_SUCCESS);
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "INSERT INTO t (x) VALUES (2)"),
+            SQL_SUCCESS);
+  ASSERT_EQ(SQLSetConnectAttr(utest_fixture->dbc, SQL_ATTR_SAVEPOINT_NAME,
+                              (SQLPOINTER) "s1", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                       SQL_SAVEPOINT_NAME_ROLLBACK),
+            SQL_SUCCESS);
+
+  /* It's still the same transaction, and the savepoint can be used again. */
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      1);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                       SQL_SAVEPOINT_NAME_ROLLBACK),
+            SQL_SUCCESS);
+
+  /* A delimited name is the name as it's stored. */
+  ASSERT_EQ(SQLSetConnectAttr(utest_fixture->dbc, SQL_ATTR_SAVEPOINT_NAME,
+                              (SQLPOINTER) "\"S1\"", SQL_NTS),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                       SQL_SAVEPOINT_NAME_RELEASE),
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc,
+                       SQL_SAVEPOINT_NAME_RELEASE),
+            SQL_ERROR);
+  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "3B001");
+  ASSERT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
+
+  /* Only the first row was kept. */
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "DELETE FROM t WHERE x = 2"),
+            SQL_SUCCESS);
+  SQLINTEGER rows = -1;
+  EXPECT_EQ(SQLGetDiagField(SQL_HANDLE_STMT, utest_fixture->stmt, 0,
+                            SQL_DIAG_ROW_COUNT, &rows, 0, NULL),
+            SQL_SUCCESS);
+  EXPECT_EQ(rows, 0);
 }
 
 UTEST_F(db, 6_17_end_tran_statement) {

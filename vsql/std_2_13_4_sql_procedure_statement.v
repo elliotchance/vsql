@@ -108,7 +108,12 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []M
 	stmt := parse_tokens(tokenize(text_sql)!) or { return procedure_error(p, err) }
 
 	if stmt is RollbackStatement && stmt.savepoint != '' {
-		return sqlstate_42601('procedure ${p.name}: ROLLBACK TO SAVEPOINT is not supported in a module')
+		if stmt.chain {
+			return sqlstate_42601('procedure ${p.name}: AND CHAIN cannot be used with TO SAVEPOINT')
+		}
+
+		return ModuleStatement{['connection', 'end'], [], begin('ROLLBACK WORK', 62) +
+			'  vsql_m_rollback_to(SQLSTATE, ${c_string(delimit_identifier(stmt.savepoint))});\n'}
 	}
 
 	return match stmt {

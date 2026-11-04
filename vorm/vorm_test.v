@@ -327,8 +327,24 @@ fn test_transaction() {
 	}!
 	assert count == 3
 
-	db.orm_savepoint('a') or {
-		assert err.msg() == 'vsql does not support savepoints'
+	// A nested transaction uses savepoints.
+	db.orm_begin()!
+	sql db {
+		delete from Product where id == 1
+	}!
+	db.orm_savepoint('a')!
+	sql db {
+		delete from Product where id == 2
+	}!
+	db.orm_rollback_to('a')!
+	count_after := sql db {
+		select count from Product
+	}!
+	assert count_after == 2
+	db.orm_release_savepoint('a')!
+	db.orm_release_savepoint('a') or {
+		assert err.msg().contains('savepoint exception')
+		db.orm_rollback()!
 		return
 	}
 	assert false

@@ -7,10 +7,14 @@ import time
 // Terminate the current SQL-transaction with rollback, or rollback all actions
 // affecting SQL-data and/or schemas since the establishment of a savepoint.
 //
-// AND CHAIN (T261) and TO SAVEPOINT (T271) aren't supported. Like COMMIT, a
-// ROLLBACK when there isn't an active SQL-transaction does nothing.
+// TO SAVEPOINT (T271) isn't supported. Like COMMIT, a ROLLBACK when there isn't an
+// active SQL-transaction does nothing, even with AND CHAIN.
 
 struct RollbackStatement {
+	// chain is AND CHAIN. Without it, or with AND NO CHAIN, it's false.
+	//
+	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, Syntax Rules, 2
+	chain bool
 }
 
 fn (stmt RollbackStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
@@ -21,11 +25,19 @@ fn (stmt RollbackStatement) execute(mut conn Connection, _ map[string]Value, ela
 		return new_result_msg('ROLLBACK', elapsed_parse, t.elapsed())
 	}
 
+	characteristics := conn.current_characteristics()
+	constraint_modes := conn.constraint_modes()
+
 	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.b and 2.g
 	for _, mut catalog in conn.catalogs {
 		catalog.rollback_transaction()!
 	}
 	conn.end_transaction(false)
+
+	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.h.i
+	if stmt.chain {
+		conn.chain_transaction(characteristics, constraint_modes)!
+	}
 
 	return new_result_msg('ROLLBACK', elapsed_parse, t.elapsed())
 }

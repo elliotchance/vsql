@@ -46,6 +46,41 @@ fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[stri
 	return new_result_msg('START TRANSACTION', elapsed_parse, t.elapsed())
 }
 
+// chain_transaction initiates the SQL-transaction of an AND CHAIN, after the last
+// one has ended. It has the same access mode, isolation level and condition area
+// limit, and the constraint modes aren't reset to their initial modes.
+//
+// A REPEATABLE READ or SERIALIZABLE transaction keeps the isolation lock, so that
+// it can't fail after the last one has ended, and nothing else can commit between
+// them. A lower level must give up the lock that committing took, or it would
+// hold it until the next one ends.
+//
+// The end of the last one is finished first, as it is at the end of a statement.
+// That also unlocks the file, and if the next one can't start then the last one
+// has still ended.
+fn (mut conn Connection) chain_transaction(characteristics TransactionCharacteristics, constraint_modes map[string]map[string]bool) ! {
+	conn.take_isolation_error()!
+	conn.finish_write(true)!
+	if !characteristics.isolation_level.locks_transaction() {
+		conn.unlock_transactions()
+	}
+	conn.start_transaction()!
+	conn.initiate_transaction(characteristics)
+	for name, mut catalog in conn.catalogs {
+		catalog.storage.constraint_modes = constraint_modes[name].clone()
+	}
+}
+
+// constraint_modes are the constraint modes of every catalog, by its name.
+fn (conn Connection) constraint_modes() map[string]map[string]bool {
+	mut modes := map[string]map[string]bool{}
+	for name, catalog in conn.catalogs {
+		modes[name] = catalog.storage.constraint_modes.clone()
+	}
+
+	return modes
+}
+
 // start_transaction starts the SQL-transaction in storage. The SQL-transaction
 // includes every catalog, since a statement can use any of them.
 fn (mut conn Connection) start_transaction() ! {

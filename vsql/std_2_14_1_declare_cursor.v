@@ -250,6 +250,10 @@ pub fn (mut conn Connection) remove_cursor(name string) {
 // ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 3
 // ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.e
 fn (mut conn Connection) end_transaction(commit bool) {
+	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 7
+	// ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.c
+	conn.savepoints = []Savepoint{}
+
 	for _, mut cursor in conn.cursors {
 		if !commit || !cursor.hold {
 			cursor.close()

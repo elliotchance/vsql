@@ -122,6 +122,7 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 	// We can erase these now.
 	catalog.storage.transaction_pages = map[int]bool{}
 	catalog.storage.end_constraint_modes()
+	catalog.storage.end_savepoints()
 
 	// Other connections may have loaded the schema while this transaction was
 	// active, so they could not see the tables and schemas it created or

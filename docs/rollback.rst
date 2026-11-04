@@ -16,6 +16,9 @@ isolation level, ``DIAGNOSTICS SIZE`` and constraint modes. ``ROLLBACK AND CHAIN
 outside of a transaction doesn't start one. ``AND NO CHAIN`` is the same as
 leaving it out.
 
+``TO SAVEPOINT`` only rolls back part of the transaction, see :doc:`savepoint`. It
+can't be used with ``AND CHAIN`` (``42601``).
+
 .. contents::
 
 Syntax
@@ -24,6 +27,8 @@ Syntax
 .. code-block:: text
 
   ROLLBACK [ WORK ] [ AND [ NO ] CHAIN ]
+
+  ROLLBACK [ WORK ] [ AND NO CHAIN ] TO SAVEPOINT <name>
 
 Examples
 --------

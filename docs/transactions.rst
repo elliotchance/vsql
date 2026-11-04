@@ -55,6 +55,8 @@ Transactions are ``READ WRITE`` by default. A ``READ ONLY`` transaction can be
 started with ``START TRANSACTION READ ONLY``, or with :doc:`set-transaction`
 before a statement that isn't in a transaction.
 
+Part of a transaction can be rolled back with a :doc:`savepoint`.
+
 Isolation Levels
 ----------------
 

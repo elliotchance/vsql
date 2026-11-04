@@ -31,12 +31,38 @@ mut:
 	// than the page numbers returned) to find all the pages a transaction
 	// changed.
 	written_pages map[int]bool
+	// undo is shared with Storage, see UndoLog.
+	undo &UndoLog = unsafe { nil }
+}
+
+// UndoLog has every change to an object in the B-tree since the first savepoint
+// of the transaction, in order, so that they can be undone (see Btree.undo_to).
+// It's at the level of objects, so a blob is just the objects that it's made of.
+// A change to the value of a sequence (Btree.replace_value) isn't included,
+// because they aren't part of the transaction.
+struct UndoLog {
+mut:
+	// recording is true while a savepoint exists.
+	recording bool
+	entries   []UndoEntry
+}
+
+enum UndoKind {
+	added   // obj was added, which is undone by deleting it.
+	deleted // obj was deleted, which is undone by adding it.
+	expired // obj had its xid changed, which is undone by setting it to obj.xid.
+}
+
+struct UndoEntry {
+	kind UndoKind
+	obj  PageObject
 }
 
 fn new_btree(pager Pager, page_size int) &Btree {
 	return &Btree{
 		pager:     pager
 		page_size: page_size
+		undo:      &UndoLog{}
 	}
 }
 
@@ -125,8 +151,14 @@ fn (mut p Btree) update(obj PageObject) !int {
 	// because the blob objects of both versions would have the same keys and
 	// tid.
 	own_version := page.get(obj.key, obj.tid)
+	other_version := page.get(obj.key, page.versions(obj.key, page.objects())[0] or { 0 })
 	page.update(obj, obj.tid)!
 	p.store_page(page_number, page)!
+	if own_version.key.len > 0 {
+		p.record_undo(.deleted, own_version)
+	} else if other_version.key.len > 0 {
+		p.record_undo(.expired, other_version)
+	}
 	if own_version.is_blob_ref {
 		p.remove_blob(own_version)!
 	}
@@ -190,8 +222,10 @@ fn (mut p Btree) remove_blob(ref PageObject) ! {
 		path, _ := p.search_page(key)!
 		page_number := path[path.len - 1]
 		mut page := p.pager.fetch_page(page_number)!
+		object := page.get(key, ref.tid)
 		if page.delete(key, ref.tid) {
 			p.store_page(page_number, page)!
+			p.record_undo(.deleted, object)
 		}
 	}
 }
@@ -246,6 +280,8 @@ fn (mut p Btree) add(object PageObject) !int {
 
 		return p.add(obj)
 	}
+
+	p.record_undo(.added, obj)
 
 	// First page is a special condition.
 	if p.pager.total_pages() == 0 {
@@ -523,8 +559,10 @@ fn (mut p Btree) expire(key []u8, tid u64, xid u64) !int {
 
 	mut page := p.pager.fetch_page(page_number)!
 
+	old := page.get(key, tid)
 	if page.expire(key, tid, xid)! {
 		p.store_page(page_number, page)!
+		p.record_undo(.expired, old)
 		return page_number
 	}
 
@@ -543,4 +581,38 @@ fn (mut p Btree) replace_value(obj PageObject, value []u8) ! {
 
 	page.add(PageObject{obj.key, value, false, obj.tid, obj.xid})!
 	p.store_page(page_number, page)!
+}
+
+fn (mut p Btree) record_undo(kind UndoKind, obj PageObject) {
+	if p.undo.recording {
+		p.undo.entries << UndoEntry{kind, obj}
+	}
+}
+
+// undo_to undoes every change in the undo log after position, newest first, and
+// removes them from the log. Each object is found by its key, because a page
+// split can move objects after they are changed. Like COMMIT and ROLLBACK, it
+// doesn't remove pages that become empty.
+fn (mut p Btree) undo_to(position int) ! {
+	p.undo.recording = false
+	for i := p.undo.entries.len - 1; i >= position; i-- {
+		entry := p.undo.entries[i]
+		match entry.kind {
+			.added {
+				path, _ := p.search_page(entry.obj.key)!
+				page_number := path[path.len - 1]
+				mut page := p.pager.fetch_page(page_number)!
+				page.delete(entry.obj.key, entry.obj.tid)
+				p.store_page(page_number, page)!
+			}
+			.deleted {
+				p.add(entry.obj)!
+			}
+			.expired {
+				p.expire(entry.obj.key, entry.obj.tid, entry.obj.xid)!
+			}
+		}
+	}
+	p.undo.entries.trim(position)
+	p.undo.recording = true
 }

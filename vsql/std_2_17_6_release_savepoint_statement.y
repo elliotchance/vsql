@@ -1,0 +1,11 @@
+%%
+
+// ISO/IEC 9075-2:2016(E), 17.6, <release savepoint statement>, Conformance Rules, 1
+
+release_savepoint_statement:
+  RELEASE SAVEPOINT savepoint_name {
+    flag(mut yylex, 'T271')
+    $$.v = Stmt(ReleaseSavepointStatement{$3.v as string})
+  }
+
+%%

@@ -118,7 +118,9 @@ A transaction that can't start yet waits for the other one to finish. It waits
 for up to the ``lock_timeout`` of the connection (5 seconds by default, see
 :doc:`v-client-library-docs`), and then fails with a ``40001`` serialization
 failure. It waits before it reads anything, so it sees all of the changes that
-the other transaction committed.
+the other transaction committed. Connections that are waiting take turns, in no
+particular order, and a connection that has just finished a transaction has to
+wait with them.
 
 That means a program that uses two connections to the same file in one thread
 can't start a transaction on one while the other has one, since the other

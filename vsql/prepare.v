@@ -28,6 +28,8 @@ type Stmt = AlterSequenceGeneratorStatement
 	| SetConnectionStatement
 	| SetConstraintsModeStatement
 	| SetSchemaStatement
+	| SavepointStatement
+	| ReleaseSavepointStatement
 	| SetNamesStatement
 	| SetSessionCharacteristicsStatement
 	| SetTransactionStatement
@@ -138,6 +140,8 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 		SetConnectionStatement { 'SET CONNECTION', 67 }
 		SetConstraintsModeStatement { 'SET CONSTRAINT', 68 }
 		SetSchemaStatement { 'SET SCHEMA', 74 }
+		SavepointStatement { 'SAVEPOINT', 63 }
+		ReleaseSavepointStatement { 'RELEASE SAVEPOINT', 57 }
 		SetNamesStatement { 'SET NAMES', 72 }
 		SetSessionCharacteristicsStatement { 'SET SESSION CHARACTERISTICS', 109 }
 		SetTransactionStatement { 'SET TRANSACTION', 75 }
@@ -391,6 +395,20 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			}
 
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse, p.writes)
+		}
+		SavepointStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		ReleaseSavepointStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		SetNamesStatement {
 			if p.explain {

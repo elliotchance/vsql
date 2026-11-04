@@ -415,7 +415,7 @@
 # 4.41.1, General description of SQL-transactions
 4.41.1                   implemented  vsql/std_2_17_1_start_transaction_statement.v tests/transaction.sql
 # 4.41.2, Savepoints
-4.41.2                   n/a          - - savepoints (T271)
+4.41.2                   implemented  vsql/std_2_17_5_savepoint_statement.v tests/savepoints.sql
 # 4.41.3, Properties of SQL-transactions
 4.41.3                   partial      vsql/std_2_17_1_start_transaction_statement.v tests/set-transaction.sql access modes are #554
 # 4.41.4, Isolation levels of SQL-transactions

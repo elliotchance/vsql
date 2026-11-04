@@ -52,6 +52,8 @@ mut:
 	// statement (outside of an explicit transaction) uses a transaction ID of 0
 	// because it must not modify the header, see isolation_start.
 	read_only bool
+	// undo is shared with btree (which is replaced for each operation), see UndoLog.
+	undo &UndoLog = unsafe { nil }
 	// file_pager is the pager of btree when the database is a file. It holds
 	// the pages changed by the current statement until commit.
 	file_pager &FilePager = unsafe { nil }
@@ -98,6 +100,13 @@ struct StatementSnapshot {
 	transaction_id    u64
 	transaction_pages map[int]bool
 	isolation_depth   int
+	// A statement that fails hasn't changed anything, so what it added to the
+	// undo log is removed. A statement that changes older entries also puts a copy
+	// of them in undo_entries, see keep_undo_log.
+	undo_length    int
+	undo_recording bool
+	undo_kept      bool
+	undo_entries   []UndoEntry
 }
 
 // begin_statement must be called at the start of a statement that changes the
@@ -115,9 +124,28 @@ fn (mut f Storage) begin_statement() {
 		transaction_id:    f.transaction_id
 		isolation_depth:   f.isolation_depth
 		transaction_pages: f.transaction_pages.clone()
+		undo_length:       f.undo.entries.len
+		undo_recording:    f.undo.recording
 	}
 	f.btree.written_pages = map[int]bool{}
 	f.sequence_values = map[string]PageObject{}
+}
+
+// keep_undo_log must be called before the current statement removes anything from
+// the undo log, so that it's put back if the statement fails.
+fn (mut f Storage) keep_undo_log() {
+	f.snapshot = StatementSnapshot{
+		...f.snapshot
+		undo_kept:    true
+		undo_entries: f.undo.entries.clone()
+	}
+}
+
+// end_savepoints forgets the undo log at the end of a transaction.
+fn (mut f Storage) end_savepoints() {
+	f.keep_undo_log()
+	f.undo.recording = false
+	f.undo.entries = []UndoEntry{}
 }
 
 // commit_statement keeps the changes made by the current statement. For a file,
@@ -149,6 +177,12 @@ fn (mut f Storage) discard_statement(path string) ! {
 	f.transaction_id = f.snapshot.transaction_id
 	f.isolation_depth = f.snapshot.isolation_depth
 	f.transaction_pages = f.snapshot.transaction_pages.clone()
+	f.undo.recording = f.snapshot.undo_recording
+	if f.snapshot.undo_kept {
+		f.undo.entries = f.snapshot.undo_entries
+	} else {
+		f.undo.entries.trim(f.snapshot.undo_length)
+	}
 	f.btree.pager.discard()
 	f.btree.written_pages = map[int]bool{}
 	f.sequence_values = map[string]PageObject{}
@@ -165,6 +199,7 @@ fn (mut f Storage) discard_statement(path string) ! {
 fn new_storage(btree Btree) Storage {
 	return Storage{
 		btree: btree
+		undo:  btree.undo
 	}
 }
 
@@ -185,6 +220,7 @@ fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
 
 	f.file_pager = new_file_pager(mut f.file, header.page_size, header.root_page)!
 	f.btree = new_btree(f.file_pager, header.page_size)
+	f.btree.undo = f.undo
 
 	if exclusive && f.other_transaction_ids(header).len > 0 {
 		if f.session.try_exclusive()! {

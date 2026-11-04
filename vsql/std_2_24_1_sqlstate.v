@@ -457,6 +457,18 @@ fn sqlstate_2bp01(object_name string) IError {
 	}
 }
 
+// savepoint exception: invalid specification
+struct SQLState3B001 {
+	SQLState
+}
+
+fn sqlstate_3b001(name string) IError {
+	return SQLState3B001{
+		code: sqlstate_to_int('3B001')
+		msg:  'savepoint exception: invalid specification: ${name}'
+	}
+}
+
 // catalog name is invalid
 struct SQLState3D000 {
 	SQLState

@@ -219,7 +219,7 @@
 5.4/GR/23                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/connections.sql
 5.4/GR/24                n/a          - - user-defined types (S023)
 5.4/GR/25                n/a          - - user-defined types (S023)
-5.4/GR/26                n/a          - - savepoints (T271)
+5.4/GR/26                implemented  vsql/std_2_17_5_savepoint_statement.v tests/savepoints.sql its scope is the SQL-transaction
 5.4/GR/27                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/create-sequence.sql
 5.4/GR/28                n/a          - - row types (T051)
 5.4/GR/29                n/a          - - roles (T331)
@@ -238,7 +238,7 @@
 5.4/GR/42                n/a          - - row pattern recognition (R010)
 5.4/GR/43                n/a          - - row pattern recognition (R010)
 5.4/CR/1                 n/a          - - row pattern recognition (R010)
-5.4/CR/2                 n/a          - - savepoints (T271)
+5.4/CR/2                 implemented  vsql/std_2_17_5_savepoint_statement.y tests/savepoints.sql
 5.4/CR/3                 n/a          - - roles (T331)
 5.4/CR/4                 n/a          - - WITH (T121)
 5.4/CR/5                 n/a          - - user-defined types (S023)

@@ -583,6 +583,12 @@ an identifier.
 ``35000`` is returned when the ``DIAGNOSTICS SIZE`` of :doc:`set-transaction`
 or :doc:`start-transaction` is less than 1.
 
+``3B001`` savepoint exception: invalid specification
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``3B001`` is returned when :doc:`savepoint` uses the name of a savepoint that
+doesn't exist in the current transaction.
+
 ``3D000`` invalid catalog name
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

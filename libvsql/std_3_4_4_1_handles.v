@@ -323,9 +323,13 @@ fn (stmt &Stmt) check_deferred() ! {
 // get_cursor_name is the name of the cursor of a statement. A statement that
 // doesn't have one gets a unique name that starts with "SQL_CUR".
 fn (mut stmt Stmt) get_cursor_name() string {
-	if stmt.cursor_name == '' {
-		stmt.cursor_name = 'SQL_CUR${stmt.handle}'
-	}
+	stmt.cursor_name = stmt.name_of_cursor()
 
 	return stmt.cursor_name
+}
+
+// name_of_cursor is the name that get_cursor_name returns, without giving a
+// statement that doesn't have a name its generated one.
+fn (stmt &Stmt) name_of_cursor() string {
+	return if stmt.cursor_name == '' { 'SQL_CUR${stmt.handle}' } else { stmt.cursor_name }
 }

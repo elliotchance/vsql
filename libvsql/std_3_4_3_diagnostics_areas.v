@@ -22,6 +22,10 @@ struct DiagnosticRecord {
 	constraint vsql.Identifier
 	// cursor_name is the cursor that caused a warning: cursor operation conflict.
 	cursor_name string
+	// cursor is the name of the cursor (as the engine keeps it) that is in the
+	// invalid state, for an invalid cursor state raised by the engine (see
+	// vsql.invalid_cursor).
+	cursor string
 mut:
 	// row_number and column_number are the row of the rowset and the column
 	// that the condition applies to, or 0 (zero) if it doesn't apply to one
@@ -222,6 +226,7 @@ fn (mut d Diagnostics) error(err IError) i16 {
 		sqlstate:   sqlstate
 		msg:        err.msg()
 		constraint: vsql.violated_constraint(err) or { vsql.Identifier{} }
+		cursor:     vsql.invalid_cursor(err) or { '' }
 	})
 	d.returncode = sql_error
 

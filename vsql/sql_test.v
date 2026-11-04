@@ -2282,6 +2282,18 @@ fn test_positioned_cursor() {
 // An SQL argument of a routine invocation that's a dynamic parameter needs
 // B033, as well as B031 for the dynamic parameter itself (see F812, "Basic
 // flagging", in tests/flagging.sql).
+// NOW() is always CURRENT_TIMESTAMP. A function with that name is called by
+// quoting it.
+fn test_registered_now_function() ! {
+	mut db := open(':memory:')!
+	db.register_function('now() float', fn (a []Value) !Value {
+		return new_double_precision_value(1.5)
+	})!
+
+	assert db.query('VALUES "NOW"()')!.rows[0].get_f64('COL1')! == 1.5
+	assert db.query('VALUES NOW()')!.columns[0].typ.str() == 'TIMESTAMP(6) WITH TIME ZONE'
+}
+
 fn test_features_of_routine_invocation() ! {
 	mut db := open(':memory:')!
 	db.register_function('twice(float) float', fn (a []Value) !Value {

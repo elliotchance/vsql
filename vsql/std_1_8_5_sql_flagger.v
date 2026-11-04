@@ -77,6 +77,10 @@ module vsql
 // V013-03: END instead of COMMIT.
 // V013-04: ROLLBACK TRANSACTION instead of ROLLBACK.
 // V013-05: ABORT instead of ROLLBACK.
+//
+// Functions that aren't in the standard are grouped by their type:
+//
+// V014-01: NOW() instead of CURRENT_TIMESTAMP.
 const vsql_explain_query = 'V001-01'
 const vsql_explain_delete = 'V001-02'
 const vsql_explain_update = 'V001-03'
@@ -113,6 +117,7 @@ const vsql_commit_transaction = 'V013-02'
 const vsql_end = 'V013-03'
 const vsql_rollback_transaction = 'V013-04'
 const vsql_abort = 'V013-05'
+const vsql_now = 'V014-01'
 
 // flag records that the statement being parsed uses a feature outside of Core
 // SQL, such as "F591". It's called by the grammar actions.

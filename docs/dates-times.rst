@@ -205,6 +205,18 @@ the subsecond accuracy and result type.
 ``LOCALTIMESTAMP`` differs from ``CURRENT_TIMESTAMP`` which returns the same
 date and time component, but includes the time zone.
 
+NOW()
+^^^^^
+
+The same as ``CURRENT_TIMESTAMP``, including that it can be a ``DEFAULT`` (see
+:doc:`create-table`). This is a vsql extension, not standard SQL, and it's
+flagged by ``V014-01`` (see :doc:`sql-flagging`). ``CURRENT_TIMESTAMP`` should be
+used if the SQL needs to be portable.
+
+``NOW`` isn't a reserved word, so it can still be the name of a table or a
+column. A custom function (see :doc:`custom-functions`) with the name ``NOW`` has
+to be called with quotes: ``"NOW"()``.
+
 Casting
 -------
 

@@ -190,3 +190,9 @@ extension of it.
 
    * - ``V013-05``
      - ``ABORT`` instead of ``ROLLBACK`` (see :doc:`rollback`).
+
+   * - ``V014``
+     - Time functions that aren't in the standard.
+
+   * - ``V014-01``
+     - ``NOW()`` instead of ``CURRENT_TIMESTAMP`` (see :doc:`dates-times`).

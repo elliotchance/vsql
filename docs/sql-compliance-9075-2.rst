@@ -1364,7 +1364,7 @@ Optional Features
    * - ✅ **T261**
      - **Chained transactions**
 
-   * - ❌ **T271**
+   * - ✅ **T271**
      - **Savepoints**
 
    * - ❌ **T272**

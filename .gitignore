@@ -32,6 +32,7 @@ vsql-*.zip
 libvsql/module/example.[ch]
 libvsql/module/test.[ch]
 libvsql/module/test_other.[ch]
+libvsql/module/test_returned_length.[ch]
 
 # Created by "make embed-example" and "make embed-test".
 libvsql/embed/example.c

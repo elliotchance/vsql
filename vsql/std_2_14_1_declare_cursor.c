@@ -19,7 +19,10 @@ static SQLHSTMT *vsql_m_cursors(struct vsql_m_connection *c) {
   if (m == NULL) {
     return NULL;
   }
-  m->stmts = (SQLHSTMT *)calloc((size_t)vsql_m_cursor_count, sizeof(SQLHSTMT));
+  /* One more than needed, because a module may have no cursors and calloc(0)
+   * may return NULL. */
+  m->stmts =
+      (SQLHSTMT *)calloc((size_t)vsql_m_cursor_count + 1, sizeof(SQLHSTMT));
   if (m->stmts == NULL) {
     free(m);
     return NULL;

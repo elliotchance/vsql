@@ -673,6 +673,12 @@ module vsql
 %token LITERAL_IDENTIFIER LITERAL_STRING LITERAL_NUMBER;
 %token E;
 
+// LIMIT is only a token directly before a row count, otherwise it's a regular
+// identifier (see is_limit_clause in lexer.v). It can't be a non_reserved_word
+// because the parser couldn't know if it's a correlation name from the next
+// token alone.
+%token LIMIT;
+
 // pseudo keywords
 %token IS_TRUE IS_FALSE IS_UNKNOWN IS_NOT_TRUE IS_NOT_FALSE IS_NOT_UNKNOWN;
 

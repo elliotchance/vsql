@@ -67,6 +67,10 @@ module vsql
 // V011-04: DROP TABLE IF EXISTS.
 // V011-05: DROP SCHEMA IF EXISTS.
 // V011-06: DROP SEQUENCE IF EXISTS.
+//
+// V012-01: LIMIT instead of FETCH FIRST.
+// V012-02: OFFSET without ROW or ROWS.
+// V012-03: LIMIT offset, count.
 const vsql_explain_query = 'V001-01'
 const vsql_explain_delete = 'V001-02'
 const vsql_explain_update = 'V001-03'
@@ -95,6 +99,9 @@ const vsql_create_sequence_if_not_exists = 'V011-03'
 const vsql_drop_table_if_exists = 'V011-04'
 const vsql_drop_schema_if_exists = 'V011-05'
 const vsql_drop_sequence_if_exists = 'V011-06'
+const vsql_limit = 'V012-01'
+const vsql_offset_without_rows = 'V012-02'
+const vsql_limit_offset_count = 'V012-03'
 
 // flag records that the statement being parsed uses a feature outside of Core
 // SQL, such as "F591". It's called by the grammar actions.

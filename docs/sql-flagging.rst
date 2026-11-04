@@ -160,3 +160,15 @@ extension of it.
 
    * - ``V011-06``
      - ``DROP SEQUENCE IF EXISTS`` (see :doc:`drop-sequence`).
+
+   * - ``V012``
+     - Limiting the rows of a query.
+
+   * - ``V012-01``
+     - ``LIMIT`` instead of ``FETCH FIRST`` (see :doc:`select`).
+
+   * - ``V012-02``
+     - ``OFFSET`` without ``ROW`` or ``ROWS`` (see :doc:`select`).
+
+   * - ``V012-03``
+     - ``LIMIT <offset>, <count>`` (see :doc:`select`).

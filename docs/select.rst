@@ -35,6 +35,15 @@ Syntax
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
 
+``LIMIT`` can be used instead of ``FETCH`` in either of these (see `LIMIT`_):
+
+.. code-block:: text
+
+  [ ORDER BY <expr> [ ASC | DESC ] , ... ]
+  { LIMIT <integer> [ OFFSET <integer> [ ROW | ROWS ] ]
+  | OFFSET <integer> [ ROW | ROWS ] LIMIT <integer>
+  | LIMIT <offset>, <count> }
+
 A ``<query>`` is a ``SELECT``, ``TABLE``, ``VALUES``, ``UNION`` or ``EXCEPT``.
 It can be in parentheses, such as ``(SELECT ... FETCH FIRST 1 ROW ONLY)``.
 
@@ -332,6 +341,48 @@ defaults to ``1``, so only the first row is returned.
 
 Using ``ROW`` or ``ROWS`` has no functional difference and either can be used
 with any value. Both words are provided solely for grammatical benefit.
+
+LIMIT
+-----
+
+``LIMIT <integer>`` is the same as ``FETCH FIRST <integer> ROWS ONLY``. This is a
+vsql extension, not standard SQL, and it's flagged by ``V012-01`` (see
+:doc:`sql-flagging`). ``FETCH FIRST`` should be used if the SQL needs to be
+portable. It's accepted anywhere that ``FETCH FIRST`` is and has the same rules
+for the row count, including the same 2201W error, and it produces the same plan.
+
+An ``OFFSET`` can be before or after the ``LIMIT``:
+
+.. code-block:: sql
+
+  SELECT * FROM products ORDER BY price LIMIT 10;
+
+  SELECT * FROM products ORDER BY price LIMIT 10 OFFSET 20;
+
+  SELECT * FROM products ORDER BY price OFFSET 20 LIMIT 10;
+
+The ``ROW`` or ``ROWS`` of any ``OFFSET`` can be left out, with or without a
+``LIMIT`` or ``FETCH``. This is flagged by ``V012-02``:
+
+.. code-block:: sql
+
+  SELECT * FROM products ORDER BY price OFFSET 20;
+
+``LIMIT <offset>, <count>`` is the same as ``LIMIT <count> OFFSET <offset>``, the
+offset is first. This is flagged by ``V012-03``, and it can't be used with
+another ``OFFSET``:
+
+.. code-block:: sql
+
+  SELECT * FROM products ORDER BY price LIMIT 20, 10;
+
+A query can't have both ``LIMIT`` and ``FETCH``. There's no ``LIMIT ALL``.
+
+``LIMIT`` isn't a reserved word, so it can still be the name of a table or a
+column, or an alias with or without ``AS``. It only starts the clause when it's
+followed by a row count: in ``SELECT * FROM t LIMIT 5`` it's the clause and in
+``SELECT * FROM t limit`` it's an alias. ``SELECT limit - 1 FROM t`` subtracts
+from a column named ``LIMIT``, but ``SELECT * FROM t LIMIT -1`` is the clause.
 
 EXPLAIN
 -------

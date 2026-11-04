@@ -37,7 +37,7 @@ A few things that might surprise you if you're used to another database, since
 vsql follows the SQL standard:
 
 - Names that aren't quoted are upper case, so ``products`` is ``PRODUCTS``.
-- There's no ``LIMIT``. Use ``FETCH FIRST 10 ROWS ONLY``.
+- The standard form of ``LIMIT 10`` is ``FETCH FIRST 10 ROWS ONLY``. Both work.
 - A ``SELECT`` needs a ``FROM``. Use ``VALUES`` to try an expression, such as
   ``VALUES 1 + 2``.
 

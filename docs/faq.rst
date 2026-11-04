@@ -29,11 +29,11 @@ A delimited identifier can contain any character. A double-quote is written
 twice, so ``"say ""hi"""`` is the name ``say "hi"``. It can't be empty
 (``""``).
 
-Why is there no "LIMIT" syntax?
--------------------------------
+Can I use "LIMIT"?
+------------------
 
-Several open source databases provide a ``LIMIT`` style syntax. However, this is
-not part of the SQL standard. The standard way to perform these are:
+Yes, ``LIMIT`` is supported as a vsql extension (see :doc:`select`). However,
+this is not part of the SQL standard. The standard way to perform these are:
 
 1. ``OFFSET 5 ROWS`` skips the first 5 rows.
 2. ``FETCH FIRST 3 ROWS ONLY`` will return a maximum of 3 rows (equivalent to

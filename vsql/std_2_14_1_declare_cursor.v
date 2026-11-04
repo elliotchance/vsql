@@ -83,7 +83,7 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 	}
 
 	plan := create_plan(stmt.query, params, mut conn)!
-	simply_updatable := stmt.simply_updatable(plan)
+	simply_updatable := stmt.simply_updatable(plan, params, mut conn)!
 
 	// A cursor is updatable if it's FOR UPDATE, or if it has no <updatability
 	// clause> and no ORDER BY, and the query is simply updatable. The columns of
@@ -131,18 +131,20 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 
 // simply_updatable is true if the query is a simply updatable <query
 // specification>, which can be changed through the cursor. It must select from
-// one table, without grouping (or an aggregate function) or DISTINCT. The
-// select list and WHERE aren't checked (#778).
+// one table, without grouping (or an aggregate function) or DISTINCT. Each item
+// of the select list must be a different column of the table, and a subquery in
+// the WHERE can't read the table.
 //
-// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 24, 26 and 27
+// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 24 to 27
 // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 7 and 9
-fn (stmt DeclareCursor) simply_updatable(plan Plan) bool {
+fn (stmt DeclareCursor) simply_updatable(plan Plan, params map[string]Value, mut conn Connection) !bool {
 	body := stmt.query.body
 	if body !is QuerySpecification || stmt.query.offset != none || stmt.query.fetch != none {
 		return false
 	}
 
-	from_clause := (body as QuerySpecification).table_expression.from_clause
+	query := body as QuerySpecification
+	from_clause := query.table_expression.from_clause
 	if from_clause !is TablePrimary || (from_clause as TablePrimary).body !is Identifier {
 		return false
 	}
@@ -154,7 +156,68 @@ fn (stmt DeclareCursor) simply_updatable(plan Plan) bool {
 		}
 	}
 
+	if !query.has_only_distinct_columns() {
+		return false
+	}
+
+	if query.table_expression.where_clause != none {
+		return stmt.table_name(mut conn)!.id() !in conn.tables_of_subqueries(query, params)!
+	}
+
 	return true
+}
+
+// has_only_distinct_columns is true if each item of the select list is a column
+// reference, and no column is referenced more than once. A qualified asterisk
+// is every column of the only table, so it can't be used with another item.
+//
+// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 24.b, 25.a and 27.c
+fn (e QuerySpecification) has_only_distinct_columns() bool {
+	match e.exprs {
+		AsteriskExpr {
+			return true
+		}
+		[]SelectSublist {
+			mut columns := []string{}
+			for item in e.exprs {
+				match item {
+					DerivedColumn {
+						column := item.column_reference() or { return false }
+						if column.sub_entity_name in columns {
+							return false
+						}
+						columns << column.sub_entity_name
+					}
+					QualifiedAsteriskExpr {
+						if e.exprs.len > 1 {
+							return false
+						}
+					}
+				}
+			}
+
+			return true
+		}
+	}
+}
+
+// tables_of_subqueries returns the id of each table that a subquery of a simply
+// updatable query reads, however deeply it's nested (such as in a join or in a
+// derived table of the subquery). The query is planned again because that's the
+// only way to reach them, and without the ORDER BY because only the WHERE counts,
+// which is the only other place in the query that a subquery could be.
+//
+// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 27.d
+fn (mut conn Connection) tables_of_subqueries(query QuerySpecification, params map[string]Value) ![]string {
+	conn.collect_subquery_tables = true
+	defer {
+		conn.collect_subquery_tables = false
+		conn.subquery_tables = []
+	}
+
+	create_plan(QueryExpression{ body: query }, params, mut conn)!
+
+	return conn.subquery_tables.clone()
 }
 
 // table_name is the table of a simply updatable query.

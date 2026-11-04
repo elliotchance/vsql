@@ -283,6 +283,10 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				return sqlstate_3d000(table_name.catalog_name)
 			}
 
+			if conn.collect_subquery_tables && conn.subquery_scopes.len > 0 {
+				conn.subquery_tables << table_name.id()
+			}
+
 			if allow_virtual && table_name_id in catalog.virtual_tables {
 				plan.operations << VirtualTableOperation{table_name_id, catalog.virtual_tables[table_name_id], conn}
 				table = catalog.virtual_tables[table_name_id].table()

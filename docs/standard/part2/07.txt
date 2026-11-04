@@ -1225,21 +1225,21 @@
 7.16/SR/23.a             n/a          - - updatable joins (T111)
 7.16/SR/23.b             n/a          - - updatable joins (T111)
 7.16/SR/23.c             n/a          - - updatable joins (T111)
-7.16/SR/24               partial      vsql/std_2_14_1_declare_cursor.v tests/cursors.sql a column referenced more than once isn't checked (#778)
+7.16/SR/24               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
 7.16/SR/24.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/24.b             missing      - - #778
+7.16/SR/24.b             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
 7.16/SR/24.c             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
 7.16/SR/24.d             n/a          - - system-versioned tables (T180)
 7.16/SR/24.e             n/a          - - data change delta tables (T495)
-7.16/SR/25               partial      vsql/std_2_14_1_declare_cursor.v tests/cursors.sql a column that isn't a column reference isn't checked (#778)
-7.16/SR/25.a             missing      - - #778
+7.16/SR/25               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+7.16/SR/25.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
 7.16/SR/25.b             n/a          - - updatable joins (T111)
 7.16/SR/26               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/27               partial      vsql/std_2_14_1_declare_cursor.v tests/cursors.sql the select list and WHERE aren't checked (#778)
+7.16/SR/27               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
 7.16/SR/27.a             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
 7.16/SR/27.b             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.16/SR/27.c             missing      - - #778
-7.16/SR/27.d             missing      - - #778
+7.16/SR/27.c             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
+7.16/SR/27.d             implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
 7.16/SR/28               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql only simply updatable, there are no updatable joins (T111)
 7.16/SR/29               definition   - -
 7.16/SR/29.a             definition   - -

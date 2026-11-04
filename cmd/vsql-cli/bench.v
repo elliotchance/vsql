@@ -56,7 +56,10 @@ fn bench_command(cmd cli.Command) ! {
 	// The isolation level can also be written in lowercase, or with
 	// underscores, such as read_committed.
 	isolation := (cmd.flags.get_string('isolation') or { '' }).to_upper().replace('_', ' ')
-	if isolation !in ['', 'READ UNCOMMITTED', 'READ COMMITTED', 'REPEATABLE READ', 'SERIALIZABLE'] {
+	if isolation == 'READ UNCOMMITTED' {
+		return error('READ UNCOMMITTED transactions are READ ONLY, so they cannot run the benchmark')
+	}
+	if isolation !in ['', 'READ COMMITTED', 'REPEATABLE READ', 'SERIALIZABLE'] {
 		return error('unknown isolation level: ${isolation}')
 	}
 

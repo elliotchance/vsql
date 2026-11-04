@@ -9,6 +9,13 @@ transaction_characteristics:
 transaction_mode:
   isolation_level { $$.v = TransactionMode($1.v as IsolationLevel) }
 | diagnostics_size { $$.v = TransactionMode($1.v as DiagnosticsSize) }
+| transaction_access_mode {
+    $$.v = TransactionMode($1.v as TransactionAccessMode)
+  }
+
+transaction_access_mode:
+  READ ONLY { $$.v = TransactionAccessMode.read_only }
+| READ WRITE { $$.v = TransactionAccessMode.read_write }
 
 isolation_level:
   ISOLATION LEVEL level_of_isolation { $$.v = $3.v as IsolationLevel }

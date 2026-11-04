@@ -111,9 +111,10 @@ type YYSym = AddColumnDefinition
 	| TableElement
 	| TableExpression
 	| TablePrimary
-	| TransactionMode
 	| TableReference
 	| Term
+	| TransactionAccessMode
+	| TransactionMode
 	| TrimFunction
 	| Type
 	| UniqueConstraintDefinition

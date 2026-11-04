@@ -4,8 +4,7 @@ module vsql
 //
 // Specify transaction characteristics.
 //
-// <transaction access mode> isn't supported yet (#554). The <diagnostics size> is
-// the most conditions that are kept in Connection.warnings during the
+// The <diagnostics size> is the most conditions that are kept in Connection.warnings during the
 // SQL-transaction.
 
 // max_conditions is the most conditions that can be kept in Connection.warnings,
@@ -14,10 +13,15 @@ module vsql
 // ISO/IEC 9075-2:2016(E), 17.3, <transaction characteristics>, Syntax Rules, 7
 const max_conditions = 100
 
-type TransactionMode = DiagnosticsSize | IsolationLevel
+type TransactionMode = DiagnosticsSize | IsolationLevel | TransactionAccessMode
 
 struct DiagnosticsSize {
 	number_of_conditions ValueSpecification
+}
+
+enum TransactionAccessMode {
+	read_only
+	read_write
 }
 
 // IsolationLevel is the <level of isolation>. An SQL-implementation may use a
@@ -55,7 +59,18 @@ pub fn (conn Connection) transaction_isolation_level() string {
 	return conn.isolation_level.str()
 }
 
+// transaction_read_only returns true if the current SQL-transaction (or the
+// previous one, if there isn't a current one) is READ ONLY.
+pub fn (conn Connection) transaction_read_only() bool {
+	return conn.read_only
+}
+
 struct TransactionCharacteristics {
+	// read_only is the <transaction access mode>. READ WRITE is the default,
+	// except for READ UNCOMMITTED.
+	//
+	// ISO/IEC 9075-2:2016(E), 17.3, <transaction characteristics>, Syntax Rules, 4
+	read_only bool
 	// isolation_level is SERIALIZABLE when there isn't an <isolation level>.
 	//
 	// ISO/IEC 9075-2:2016(E), 4.41.4, Isolation levels of SQL-transactions
@@ -66,26 +81,42 @@ struct TransactionCharacteristics {
 	condition_area_limit int
 }
 
-// check_transaction_modes checks that there's at most one of each kind of mode.
+// check_transaction_modes checks that there's at most one of each kind of mode,
+// and that READ UNCOMMITTED isn't READ WRITE.
 //
-// ISO/IEC 9075-2:2016(E), 17.3, <transaction characteristics>, Syntax Rules, 2
+// ISO/IEC 9075-2:2016(E), 17.3, <transaction characteristics>, Syntax Rules, 2 and 5
 fn check_transaction_modes(modes []TransactionMode) ! {
+	if modes.filter(it is TransactionAccessMode).len > 1 {
+		return sqlstate_42601('transaction access mode is specified more than once')
+	}
 	if modes.filter(it is IsolationLevel).len > 1 {
 		return sqlstate_42601('isolation level is specified more than once')
 	}
 	if modes.filter(it is DiagnosticsSize).len > 1 {
 		return sqlstate_42601('DIAGNOSTICS SIZE can only be used once')
 	}
+	if modes.any(it is IsolationLevel && it == .read_uncommitted)
+		&& modes.any(it is TransactionAccessMode && it == .read_write) {
+		return sqlstate_42601('READ WRITE cannot be used with READ UNCOMMITTED')
+	}
 }
 
 // new_transaction_characteristics returns the characteristics of modes, which
 // have been checked by check_transaction_modes.
 fn new_transaction_characteristics(mut conn Connection, params map[string]Value, modes []TransactionMode) !TransactionCharacteristics {
+	mut read_only := false
 	mut isolation_level := IsolationLevel.serializable
 	mut limit := 0
 	for mode in modes {
 		match mode {
+			TransactionAccessMode {
+				read_only = mode == .read_only
+			}
 			IsolationLevel {
+				// ISO/IEC 9075-2:2016(E), 17.3, <transaction characteristics>, Syntax Rules, 4
+				if mode == .read_uncommitted {
+					read_only = true
+				}
 				isolation_level = mode
 				conn.check_held_cursors(mode)!
 			}
@@ -96,6 +127,7 @@ fn new_transaction_characteristics(mut conn Connection, params map[string]Value,
 	}
 
 	return TransactionCharacteristics{
+		read_only:            read_only
 		isolation_level:      isolation_level
 		condition_area_limit: limit
 	}
@@ -144,18 +176,19 @@ fn condition_area_limit(mut conn Connection, params map[string]Value, size Diagn
 	return int(n)
 }
 
-// initiate_transaction sets the isolation level and condition area limit of an
-// SQL-transaction that is being initiated. The limit is max_conditions if it's
-// 0. The characteristics of a SET TRANSACTION are only for the next
-// SQL-transaction. A new SQL-session, and the SQL-transaction after a COMMIT or
-// ROLLBACK, have the enduring transaction characteristics, which are
-// SERIALIZABLE and max_conditions.
+// initiate_transaction sets the access mode, isolation level and condition area
+// limit of an SQL-transaction that is being initiated. The limit is
+// max_conditions if it's 0. The characteristics of a SET TRANSACTION are only for
+// the next SQL-transaction. A new SQL-session, and the SQL-transaction after a
+// COMMIT or ROLLBACK, have the enduring transaction characteristics, which are
+// READ WRITE, SERIALIZABLE and max_conditions.
 //
 // ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 7
 // ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 10.b.i
 // ISO/IEC 9075-2:2016(E), 17.8, <rollback statement>, General Rules, 2.h.ii.1
 // ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, General Rules, 9.c, 13.b and 13.e
 fn (mut conn Connection) initiate_transaction(characteristics TransactionCharacteristics) {
+	conn.read_only = characteristics.read_only
 	conn.isolation_level = characteristics.isolation_level
 	conn.condition_area_limit = if characteristics.condition_area_limit > 0 {
 		characteristics.condition_area_limit
@@ -167,17 +200,28 @@ fn (mut conn Connection) initiate_transaction(characteristics TransactionCharact
 
 // changes_database is true for a statement that always changes the database. On
 // its own, it's a transaction that must wait for other REPEATABLE READ and
-// SERIALIZABLE transactions, see isolation.v.
+// SERIALIZABLE transactions, see isolation.v. It can't be used in a READ ONLY
+// transaction.
 fn (p PreparedStmt) changes_database() bool {
+	return p.changes_database_name() != ''
+}
+
+// changes_database_name is the name of a statement that always changes the
+// database, otherwise it's empty. NEXT VALUE FOR doesn't count, because changes
+// to a sequence generator aren't part of the SQL-transaction.
+fn (p PreparedStmt) changes_database_name() string {
 	return match p.stmt {
-		AlterSequenceGeneratorStatement, AlterTableStatement, DeleteStatementPositioned,
-		DeleteStatementSearched, DropSchemaStatement, DropSequenceGeneratorStatement,
-		DropTableStatement, InsertStatement, SchemaDefinition, SequenceGeneratorDefinition,
-		TableDefinition, UpdateStatementPositioned, UpdateStatementSearched {
-			true
-		}
-		else {
-			false
-		}
+		AlterSequenceGeneratorStatement { 'ALTER SEQUENCE' }
+		AlterTableStatement { 'ALTER TABLE' }
+		DeleteStatementPositioned, DeleteStatementSearched { 'DELETE' }
+		DropSchemaStatement { 'DROP SCHEMA' }
+		DropSequenceGeneratorStatement { 'DROP SEQUENCE' }
+		DropTableStatement { 'DROP TABLE' }
+		InsertStatement { 'INSERT' }
+		SchemaDefinition { 'CREATE SCHEMA' }
+		SequenceGeneratorDefinition { 'CREATE SEQUENCE' }
+		TableDefinition { 'CREATE TABLE' }
+		UpdateStatementPositioned, UpdateStatementSearched { 'UPDATE' }
+		else { '' }
 	}
 }

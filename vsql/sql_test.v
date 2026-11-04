@@ -1939,6 +1939,18 @@ fn test_direct() {
 		assert db.direct('SELECT * FROM t WHERE x = 3;', autocommit: true)!.rows.len == 1
 		assert !db.in_transaction() && !db.direct_query_transaction
 
+		// The access mode of an SQL-transaction that a query started is kept
+		// when a statement that writes starts it in storage.
+		db.direct('SET TRANSACTION READ ONLY;')!
+		db.direct('VALUES 1;')!
+		assert db.direct_query_transaction
+		db.direct('INSERT INTO t (x) VALUES (4);') or {
+			assert sqlstate_from_int(err.code()) == '25006'
+		}
+		assert db.in_transaction() && !db.direct_query_transaction
+		db.direct('ROLLBACK;')!
+		assert !db.transaction_read_only() || !db.in_transaction()
+
 		// SET TRANSACTION doesn't start an SQL-transaction, and its DIAGNOSTICS
 		// SIZE is for the next one, even if a query starts it.
 		db.direct('SET TRANSACTION DIAGNOSTICS SIZE 1;')!
@@ -3007,6 +3019,21 @@ fn test_isolation_waits() ! {
 	assert seen in [2, 3]
 	assert total >= 3
 	assert statement.wait()! == 1
+
+	// READ ONLY transactions don't wait for each other.
+	db.query('START TRANSACTION READ ONLY')!
+	reader := spawn fn [path] () !int {
+		mut db := open_database(path, isolation_test_options(0))!
+		defer {
+			db.close()
+		}
+		db.query('START TRANSACTION READ ONLY')!
+		count := db.query('SELECT * FROM t')!.rows.len
+		db.query('COMMIT')!
+		return count
+	}()
+	assert reader.wait()! == 4
+	db.query('COMMIT')!
 
 	// It gives up after the timeout.
 	db.query('START TRANSACTION')!

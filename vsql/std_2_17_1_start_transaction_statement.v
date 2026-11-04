@@ -38,7 +38,7 @@ fn (stmt StartTransactionStatement) execute(mut conn Connection, params map[stri
 		new_transaction_characteristics(mut conn, params, stmt.modes)!
 	}
 	if characteristics.isolation_level.locks_transaction() {
-		conn.lock_transaction()!
+		conn.lock_transaction(characteristics.read_only)!
 	}
 	conn.start_transaction()!
 	conn.initiate_transaction(characteristics)

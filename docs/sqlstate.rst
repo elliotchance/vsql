@@ -545,6 +545,11 @@ or both change and delete a row. See :doc:`create-table`.
 ``28000`` is returned when the ``USER`` of :doc:`connect` isn't an
 identifier.
 
+``2C000`` invalid character set name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``2C000`` is returned by :doc:`set-names` for anything other than ``UTF8``.
+
 ``2BP01`` dependent objects still exist
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

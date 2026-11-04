@@ -25,6 +25,22 @@ catalog would be ``mydb``. The catalog of an in-memory database is
 ``CURRENT_CATALOG`` can be used in expressions to get the currently selected
 catalog.
 
+The value is a character string (otherwise it's ``42804``), and spaces around it
+are ignored.
+
+The SQL standard treats the value as an identifier, so ``'mydb'`` would always
+mean ``MYDB``. However, a catalog name comes from a file path, so it often isn't
+an identifier, such as ``:memory:`` or a lower case name. So vsql looks for a
+catalog with exactly that name first, and only then treats the value as an
+identifier:
+
+- ``'mydb'`` selects ``mydb`` if it exists, otherwise ``MYDB``.
+- ``'MYDB'`` and ``'"MYDB"'`` select ``MYDB``.
+- ``'"mydb"'`` selects ``mydb``.
+
+This is only different to the standard when ``mydb`` and ``MYDB`` are both
+attached, where the standard would have ``'mydb'`` select ``MYDB``.
+
 The catalog must exist for ``SET CATALOG`` to succeed, otherwise it's an error
 ``3D000``.
 

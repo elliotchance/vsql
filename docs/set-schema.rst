@@ -17,8 +17,12 @@ The value is a character string that contains the name of the schema as an
 identifier, so ``SET SCHEMA 'foo'`` selects the schema ``FOO`` (the same as a
 table named ``foo`` is ``FOO``). Put double quotes inside the string for a name
 that isn't upper case, such as ``SET SCHEMA '"foo"'`` for a schema created with
-``CREATE SCHEMA "foo"``. A value that isn't an identifier is a ``3F000``
-(invalid schema name) error.
+``CREATE SCHEMA "foo"``. Spaces around it are ignored. A value that isn't an
+identifier is a ``3F000`` (invalid schema name) error, and a value that isn't a
+character string is ``42804``.
+
+The name can also have a catalog, which sets the catalog as well, such as
+``SET SCHEMA '"my db".foo'``. It's ``3D000`` if the catalog doesn't exist.
 
 The default schema is ``PUBLIC`` and is created automatically when the database
 file is initialized.

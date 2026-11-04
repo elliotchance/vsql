@@ -36,6 +36,12 @@ if echo 'SELECT * FROM foo;' | $VSQL cli $VSQL_FILE | grep -Ex ' *2'; then
   exit 1
 fi
 
+# So can an SQL-transaction that only has queries, which doesn't create the
+# isolation file.
+rm -f $VSQL_FILE.isolation
+test "$(printf 'SELECT * FROM foo;\nSELECT * FROM foo;\n' | $VSQL cli -autocommit=false $VSQL_FILE | grep -cEx ' *1')" = "2"
+test ! -e $VSQL_FILE.isolation
+
 # A file with a newer read version can't be opened at all.
 set_header_bytes 8 '\377\377'
 echo 'SELECT * FROM foo;' | $VSQL cli $VSQL_FILE | grep 'database needs file format 65535 to be read'

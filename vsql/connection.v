@@ -71,6 +71,9 @@ mut:
 	// direct_query_transaction is true when an SQL-transaction was started by
 	// a query in direct (see Connection.direct) that hasn't changed anything.
 	direct_query_transaction bool
+	// direct_query_headers has the header of each catalog (by name) that was
+	// read by the first query of that SQL-transaction, see check_direct_query.
+	direct_query_headers map[string]Header
 	// condition_area_limit is the most warnings that are kept during the current
 	// SQL-transaction, which is set by DIAGNOSTICS SIZE (see
 	// initiate_transaction).

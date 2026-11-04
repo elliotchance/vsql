@@ -242,7 +242,8 @@ DELETE FROM t WHERE CURRENT OF c;
 -- msg: OPEN
 -- X: 1 Y: 10
 -- msg: DELETE 2
--- error 24000: invalid cursor state: the current row of cursor C has been deleted
+-- warning 01001: cursor operation conflict: C
+-- msg: DELETE 0
 
 -- # After COMMIT, a WITH HOLD cursor has to be fetched again before a
 -- # positioned DELETE (15.5, General Rules, 7).
@@ -324,7 +325,8 @@ UPDATE t SET y = 3 WHERE CURRENT OF c;
 -- msg: OPEN
 -- X: 1 Y: 10
 -- msg: DELETE 1
--- error 24000: invalid cursor state: the current row of cursor C has been deleted
+-- warning 01001: cursor operation conflict: C
+-- msg: UPDATE 0
 
 -- # With ORDER BY or FOR READ ONLY a cursor is read-only (14.3, Syntax Rules,
 -- # 4.a), so a positioned DELETE or UPDATE is an invalid cursor name, as it is

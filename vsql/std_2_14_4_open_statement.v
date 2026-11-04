@@ -41,6 +41,7 @@ fn (stmt OpenStatement) execute(mut conn Connection, _ map[string]Value, elapsed
 	// ISO/IEC 9075-2:2016(E), 15.1, Effect of opening a cursor, General Rules, 5.a, 5.g and 5.h
 	mut plan := create_plan(cursor.query, cursor.params, mut conn)!
 	cursor.rows = plan.execute([]Row{})!
+	cursor.row_states = []CursorRowState{len: cursor.rows.len}
 	cursor.columns = plan.columns()
 	cursor.is_open = true
 	cursor.position = -1

@@ -153,8 +153,10 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	outside_join := tables.keys()
 
 	mut plan := Plan{}
+	before_left := tables.keys()
 	plan.subplans['\$1'] = create_table_reference_plan(body, join.left_table,
 		params, mut conn, allow_virtual, mut tables)!
+	before_right := tables.keys()
 	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table,
 		params, mut conn, allow_virtual, mut tables)!
 
@@ -174,6 +176,22 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 		next_value_not_allowed: 'a join condition'
 	}
 	join.specification.compile(mut c)!
+
+	// The tables on the side that isn't preserved can be all NULLs, whatever
+	// their columns are declared as.
+	null_extended := match join.join_type {
+		.inner { []string{} }
+		.left { tables.keys().filter(it !in before_right) }
+		.right { before_right.filter(it !in before_left) }
+	}
+	for name, table in tables.clone() {
+		if name in null_extended {
+			tables[name] = Table{
+				...table
+				columns: possibly_nullable_columns(table.columns)
+			}
+		}
+	}
 
 	plan.operations << new_join_operation(plan.subplans['\$1'].columns(), join.join_type,
 		plan.subplans['\$2'].columns(), join.specification, params, conn, plan, join_tables)
@@ -801,9 +819,14 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 						}
 
 						columns << Column{
-							name:    col
-							typ:     expr.compile(mut c)!.typ
-							unnamed: unnamed
+							name:     col
+							typ:      expr.compile(mut c)!.typ
+							not_null: if column := item.column_reference() {
+								column_not_null(column, conn, tables)
+							} else {
+								false
+							}
+							unnamed:  unnamed
 						}
 
 						exprs << DerivedColumn{expr, col}
@@ -841,6 +864,23 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 	}
 
 	return ExprOperation{conn, params, exprs, columns, tables}
+}
+
+// column_not_null is true if a column reference in the select list is to a
+// column of tables that can't be NULL. Any other expression can be NULL because
+// T101 isn't supported, as can a column of an outer query.
+//
+// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 20 and 21
+fn column_not_null(reference Identifier, conn &Connection, tables map[string]Table) bool {
+	for _, table in tables {
+		if column := table.column(reference.sub_entity_name) {
+			if reference.is_column_of_table(conn, table) {
+				return column.not_null
+			}
+		}
+	}
+
+	return false
 }
 
 // qualified_asterisk_table returns the table that "t.*" refers to.

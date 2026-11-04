@@ -563,13 +563,13 @@
 7.10/SR/12.c             definition   - -
 7.10/SR/12.d             n/a          - - partitioned join tables (F403)
 7.10/SR/13               implemented  vsql/std_2_7_10_joined_table.v tests/inner-join.sql
-7.10/SR/14               definition   - -
-7.10/SR/14.a             definition   - -
-7.10/SR/14.b             definition   - -
-7.10/SR/14.c             definition   - -
-7.10/SR/14.d             definition   - -
-7.10/SR/15               definition   - -
-7.10/SR/15.a             definition   - -
+7.10/SR/14               implemented  vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql
+7.10/SR/14.a             implemented  vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql
+7.10/SR/14.b             n/a          - - NATURAL (F401)
+7.10/SR/14.c             n/a          - - partitioned join tables (F403)
+7.10/SR/14.d             implemented  vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql
+7.10/SR/15               implemented  vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql
+7.10/SR/15.a             implemented  vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql
 7.10/SR/15.b             n/a          - - enhanced nullability determination (T101)
 7.10/SR/15.b.i           n/a          - - enhanced nullability determination (T101)
 7.10/SR/15.b.i.1         n/a          - - enhanced nullability determination (T101)
@@ -581,7 +581,7 @@
 7.10/SR/15.b.iii.1       n/a          - - enhanced nullability determination (T101)
 7.10/SR/15.b.iii.2       n/a          - - enhanced nullability determination (T101)
 7.10/SR/15.b.iv          n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.c             impl-defined - - there are no other rules
+7.10/SR/15.c             impl-defined vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql a NOT NULL column of the side that an outer join preserves stays NOT NULL
 7.10/AR/1                n/a          - - privileges (E081, #732)
 7.10/AR/1.a              n/a          - - privileges (E081, #732)
 7.10/AR/1.a.i            n/a          - - privileges (E081, #732)
@@ -1195,9 +1195,9 @@
 7.16/SR/19.b             implemented  vsql/planner.v tests/select-where.sql
 7.16/SR/19.c             n/a          - - SQL parameters (T321)
 7.16/SR/19.d             impl-defined vsql/planner.v tests/values.sql COL1, COL2, etc, by the position of the column
-7.16/SR/20               definition   - -
-7.16/SR/21               definition   - -
-7.16/SR/21.a             definition   - -
+7.16/SR/20               implemented  vsql/planner.v tests/result-column-nullability.sql
+7.16/SR/21               implemented  vsql/planner.v tests/result-column-nullability.sql
+7.16/SR/21.a             implemented  vsql/planner.v tests/result-column-nullability.sql
 7.16/SR/21.b             n/a          - - enhanced nullability determination (T101)
 7.16/SR/21.b.i           n/a          - - enhanced nullability determination (T101)
 7.16/SR/21.b.ii          n/a          - - enhanced nullability determination (T101)

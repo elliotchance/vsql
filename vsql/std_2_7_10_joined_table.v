@@ -24,11 +24,38 @@ fn (o &JoinOperation) str() string {
 	return '${o.join_type} JOIN ON ${o.specification.pstr(map[string]Value{})} (${o.columns()})'
 }
 
+// columns are the columns of both sides. A column of the side that's not
+// preserved by an outer join can be NULL. A NOT NULL column of the preserved side
+// still can't be, which is an implementation-defined rule (without T101, an
+// outer join is otherwise only ever possibly nullable).
+//
+// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 14 and 15
 fn (o &JoinOperation) columns() Columns {
-	mut columns := o.left_columns.clone()
-	columns << o.right_columns
+	mut columns := if o.join_type == .right {
+		possibly_nullable_columns(o.left_columns)
+	} else {
+		o.left_columns.clone()
+	}
+	columns << if o.join_type == .left {
+		possibly_nullable_columns(o.right_columns)
+	} else {
+		o.right_columns
+	}
 
 	return columns
+}
+
+// possibly_nullable_columns are the same columns, without their NOT NULL.
+fn possibly_nullable_columns(columns Columns) Columns {
+	mut nullable := []Column{}
+	for column in columns {
+		nullable << Column{
+			...column
+			not_null: false
+		}
+	}
+
+	return nullable
 }
 
 // execute joins the rows of both sides. A LEFT (or RIGHT) join also has each

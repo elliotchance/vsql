@@ -12,7 +12,10 @@ pub:
 	name Identifier
 	// typ of the column contains more specifics like size and precision.
 	typ Type
-	// not_null will be true if ``NOT NULL`` was specified on the column.
+	// not_null will be true if ``NOT NULL`` was specified on the column. For a
+	// column of a Result it's true when the value of the column can't be NULL,
+	// which is only known for a column reference that's NOT NULL, and isn't on
+	// the side of an outer join that's filled with NULLs.
 	not_null bool
 	// default_value is the ``DEFAULT`` of the column, if there is one. A column
 	// without a default has a default of ``NULL``.

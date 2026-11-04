@@ -46,9 +46,11 @@ struct Cursor {
 	writes bool
 	// table is the table that a positioned DELETE or UPDATE changes, or none if
 	// the cursor isn't updatable. If update_columns isn't empty, only those
-	// columns can be changed by a positioned UPDATE.
+	// columns can be changed by a positioned UPDATE. sort_columns can't be changed
+	// by a positioned UPDATE (see DeclareCursor.sort_columns).
 	table          ?Identifier
 	update_columns []string
+	sort_columns   []string
 mut:
 	// While the cursor is open, rows are all of the rows of the result (they
 	// are found when it's opened) and position is the current row, which is -1
@@ -108,6 +110,11 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 		table = stmt.table_name(mut conn)!
 	}
 
+	mut sort_columns := []string{}
+	if cursor_table := table {
+		sort_columns = stmt.sort_columns(cursor_table, params, mut conn)!
+	}
+
 	conn.cursors[stmt.name] = &Cursor{
 		name:           stmt.name
 		hold:           stmt.hold
@@ -116,6 +123,7 @@ fn (stmt DeclareCursor) execute(mut conn Connection, params map[string]Value, el
 		writes:         writes
 		table:          table
 		update_columns: update_columns
+		sort_columns:   sort_columns
 	}
 
 	return new_result_msg('DECLARE CURSOR', elapsed_parse, t.elapsed())
@@ -155,6 +163,101 @@ fn (stmt DeclareCursor) table_name(mut conn Connection) !Identifier {
 	from_clause := body.table_expression.from_clause as TablePrimary
 
 	return conn.resolve_table_identifier(from_clause.body as Identifier, false)
+}
+
+// sort_columns returns the columns of the table of an updatable cursor that are
+// generally underlying columns of a sort key. That's every column identified by
+// a column reference in the sort key, even inside of a subquery, but not a column
+// of another table that has the same name. A correlation name can rename the
+// columns. A sort key without a column reference has no underlying columns, so
+// "ORDER BY 1" doesn't use any (it isn't the first column of the result).
+//
+// A sort key that's only a name is the column of the result with that name
+// (#332), so the columns of that <derived column> are included. A column of the
+// table with the same name is also included, because that's what the rows are
+// actually ordered by until then.
+//
+// ISO/IEC 9075-2:2016(E), 6.28, <value expression>, Syntax Rules, 6
+// ISO/IEC 9075-2:2016(E), 7.16, <query specification>, Syntax Rules, 10
+// ISO/IEC 9075-2:2016(E), 14.13, <update statement: positioned>, Syntax Rules, 13
+fn (stmt DeclareCursor) sort_columns(table_name Identifier, params map[string]Value, mut conn Connection) ![]string {
+	if stmt.query.order.len == 0 {
+		return []
+	}
+
+	conn.collect_columns = true
+	defer {
+		conn.collect_columns = false
+		conn.collected_columns = map[string]bool{}
+		conn.correlated_columns = map[string][]string{}
+	}
+
+	// The tables are planned again because they aren't kept in the plan. This also
+	// finds where the columns of a correlation name come from. Nothing that's
+	// compiled by this (such as the WHERE) is a sort key.
+	_, tables := create_basic_plan(stmt.query.body, params, mut conn, true, Correlation{})!
+	conn.collected_columns = map[string]bool{}
+
+	mut c := Compiler{
+		conn:   conn
+		params: params
+		tables: tables
+	}
+	for spec in stmt.query.order {
+		spec.expr.compile(mut c)!
+		stmt.compile_result_column(spec, mut c)!
+	}
+
+	// create_plan has already found the table.
+	table := unsafe { conn.catalog_for(table_name).storage.tables[table_name.storage_id()] }
+
+	return table.columns.filter(it.name.id() in conn.collected_columns).map(it.name.sub_entity_name)
+}
+
+// compile_result_column compiles the <derived column> that a sort key is the
+// name of, if any.
+fn (stmt DeclareCursor) compile_result_column(spec SortSpecification, mut c Compiler) ! {
+	name := DerivedColumn{
+		expr: spec.expr
+	}.column_reference() or { return }
+
+	exprs := (stmt.query.body as QuerySpecification).exprs
+	if name.entity_name == '' && exprs is []SelectSublist {
+		for item in exprs {
+			if item is DerivedColumn && item.as_clause.sub_entity_name == name.sub_entity_name {
+				item.expr.compile(mut c)!
+			}
+		}
+	}
+}
+
+// collect_column adds the column that a column reference identifies to the
+// collected columns. It's in the innermost query that has a column with the
+// name, see Identifier.compile_column.
+fn (mut conn Connection) collect_column(e Identifier, tables map[string]Table) {
+	mut scopes := conn.subquery_scopes.map(it.tables)
+	scopes << tables
+	for i := scopes.len - 1; i >= 0; i-- {
+		for _, table in scopes[i] {
+			if e.is_column_of_table(conn, table) {
+				column := table.column(e.sub_entity_name) or { continue }
+				conn.collect_column_id(column.name.id())
+				return
+			}
+		}
+	}
+}
+
+// collect_column_id adds a column, and the columns that it comes from if it's a
+// column of a correlation name. A subquery can use the same correlation name, so
+// there can be more than one, and they can refer to each other.
+fn (mut conn Connection) collect_column_id(id string) {
+	if id !in conn.collected_columns {
+		conn.collected_columns[id] = true
+		for source in conn.correlated_columns[id] {
+			conn.collect_column_id(source)
+		}
+	}
 }
 
 fn (stmt DeclareCursor) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {

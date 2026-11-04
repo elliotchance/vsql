@@ -565,6 +565,13 @@ struct Connection
    	// next_value_not_allowed is set (to "UNION", etc.) while a query that can't
    	// contain a NEXT VALUE FOR is being planned, see Compiler.
    	next_value_not_allowed string
+   	// collect_columns is set while the sort keys of a cursor are being compiled
+   	// (see DeclareCursor.sort_columns). collected_columns then has the id of each
+   	// column that a column reference identifies, and correlated_columns has the
+   	// ids of the columns that each column of a correlation name comes from.
+   	collect_columns    bool
+   	collected_columns  map[string]bool
+   	correlated_columns map[string][]string
    	// direct_query_transaction is true when an SQL-transaction was started by
    	// a query in direct (see Connection.direct) that hasn't changed anything.
    	direct_query_transaction bool

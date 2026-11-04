@@ -363,6 +363,10 @@ fn (e Identifier) compile(mut c Compiler) !CompileResult {
 		}
 	}
 
+	if c.conn.collect_columns && e.custom_id == '' {
+		c.conn.collect_column(e, c.tables)
+	}
+
 	return compiled
 }
 

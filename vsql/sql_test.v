@@ -2265,6 +2265,40 @@ fn test_column_unnamed() {
 	assert values.columns.map(it.unnamed) == [true, true]
 }
 
+// A prepared positioned UPDATE is checked like any other. A cursor opened by
+// PreparedStmt.open_cursor (a dynamic cursor, for the SQL/CLI and a module) has
+// no <updatability clause>, so it isn't updatable if it's ordered, and a sort
+// key column can't be assigned through it.
+fn test_positioned_update_of_sort_key() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE TABLE t (x INTEGER, y INTEGER)')!
+	db.query('INSERT INTO t (x, y) VALUES (1, 2)')!
+	db.query('START TRANSACTION')!
+
+	db.query('DECLARE c CURSOR FOR SELECT x, y FROM t ORDER BY x FOR UPDATE')!
+	db.query('OPEN c')!
+	db.query('FETCH NEXT FROM c')!
+	mut update_x := db.prepare('UPDATE t SET x = 5 WHERE CURRENT OF c')!
+	mut failed := false
+	update_x.query({}) or {
+		failed = true
+		assert err.code() == sqlstate_to_int('42601')
+	}
+	assert failed
+	mut update_y := db.prepare('UPDATE t SET y = 5 WHERE CURRENT OF c')!
+	assert update_y.query({})!.msg == 'UPDATE 1'
+
+	mut stmt := db.prepare('SELECT x, y FROM t ORDER BY x')!
+	stmt.open_cursor('D', false, {})!
+	db.position_cursor('D', 0)!
+	failed = false
+	db.query('UPDATE t SET x = 5 WHERE CURRENT OF d') or {
+		failed = true
+		assert err.code() == sqlstate_to_int('34000')
+	}
+	assert failed
+}
+
 // A cursor opened by PreparedStmt.open_cursor (for the SQL/CLI) is positioned
 // with position_cursor, so a positioned DELETE can change its current row.
 fn test_open_cursor() ! {

@@ -39,7 +39,7 @@
 13.1/CR/3                n/a          - - <module collation specification> (F693)
 13.1/CR/4                n/a          - - FOR STATIC (B051)
 13.1/CR/5                n/a          - - Ada (B111)
-13.1/CR/6                n/a          - - LANGUAGE C is supported (B112)
+13.1/CR/6                implemented  vsql/std_2_13_1_sql_client_module_definition.v vsql/sql_test.v
 13.1/CR/7                n/a          - - COBOL (B113)
 13.1/CR/8                n/a          - - Fortran (B114)
 13.1/CR/9                n/a          - - MUMPS (B115)

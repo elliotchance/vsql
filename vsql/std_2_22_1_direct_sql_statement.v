@@ -35,24 +35,10 @@ pub:
 // ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 1, 5.c.ii, 5.c.vi, 7, 8.a and 9
 // ISO/IEC 9075-2:2016(E), 22.2, <direct select statement: multiple rows>, Syntax Rules, 2
 pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Result {
-	// The <semicolon> is part of the <direct SQL statement>.
-	//
-	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 5.a
-	statements, rest := split_terminated_statements(sql_stmt)
-	if statements.len != 1 || rest != '' {
-		return sqlstate_42601('a direct SQL statement is one statement that ends with a semicolon')
-	}
-
-	tokens := tokenize(statements[0])!
-	mut prepared := conn.prepare(statements[0])!
-
-	// There is nothing to provide the value of a "?" or a host parameter.
-	//
-	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Syntax Rules, 1
-	// ISO/IEC 9075-2:2016(E), 22.2, <direct select statement: multiple rows>, Syntax Rules, 1
-	if prepared.dynamic_parameters > 0 || tokens.any(it.token == token_operator_colon) {
-		return sqlstate_42601('a direct SQL statement cannot contain a parameter')
-	}
+	text := direct_statement_text(sql_stmt)!
+	tokens := tokenize(text)!
+	mut prepared := conn.prepare(text)!
+	check_direct_parameters(tokens)!
 
 	// The SQL-transaction has the DIAGNOSTICS SIZE of a SET TRANSACTION. Each
 	// constraint has its initial constraint mode, rather than immediate.
@@ -103,6 +89,43 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 	}
 
 	return result
+}
+
+// direct_features returns the Feature IDs outside of Core SQL that a <direct
+// SQL statement> of Connection.direct or Agent.direct uses (see the SQL Flagging
+// docs), sorted and without duplicates. The statement is only parsed, not
+// executed.
+//
+// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Conformance Rules, 1
+pub fn direct_features(sql_stmt string) ![]string {
+	_, _, tokens, features := parse_sql(direct_statement_text(sql_stmt)!)!
+	check_direct_parameters(tokens)!
+
+	return unique_features(features, 'B021')
+}
+
+// direct_statement_text returns the statement of a <direct SQL statement>. The
+// <semicolon> is part of the <direct SQL statement>.
+//
+// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 5.a
+fn direct_statement_text(sql_stmt string) !string {
+	statements, rest := split_terminated_statements(sql_stmt)
+	if statements.len != 1 || rest != '' {
+		return sqlstate_42601('a direct SQL statement is one statement that ends with a semicolon')
+	}
+
+	return statements[0]
+}
+
+// check_direct_parameters is an error for a "?" or a host parameter, since
+// there is nothing to provide the value.
+//
+// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Syntax Rules, 1
+// ISO/IEC 9075-2:2016(E), 22.2, <direct select statement: multiple rows>, Syntax Rules, 1
+fn check_direct_parameters(tokens []Token) ! {
+	if tokens.any(it.token in [token_operator_question_mark, token_operator_colon]) {
+		return sqlstate_42601('a direct SQL statement cannot contain a parameter')
+	}
 }
 
 // is_transaction_initiating is true for a statement that starts an

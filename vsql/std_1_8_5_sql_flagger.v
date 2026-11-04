@@ -1,5 +1,7 @@
 module vsql
 
+import arrays
+
 // ISO/IEC 9075-1:2003(E), 8.5, SQL flagger
 //
 // An SQL Flagger identifies SQL language that isn't Core SQL, so that it can be
@@ -87,6 +89,12 @@ module vsql
 // V116-01: ROLLBACK TRANSACTION instead of ROLLBACK.
 // V116-02: ABORT instead of ROLLBACK.
 //
+// V117: PREPARE.
+// V117-01: PREPARE from a literal, rather than a host parameter.
+//
+// V118: EXECUTE IMMEDIATE.
+// V118-01: EXECUTE IMMEDIATE of a literal, rather than a host parameter.
+//
 // V201: FROM.
 // V201-01: SELECT without a FROM clause.
 // V201-02: A derived table without a correlation name.
@@ -142,6 +150,8 @@ const vsql_commit_transaction = 'V115-01'
 const vsql_end = 'V115-02'
 const vsql_rollback_transaction = 'V116-01'
 const vsql_abort = 'V116-02'
+const vsql_prepare_literal = 'V117-01'
+const vsql_execute_immediate_literal = 'V118-01'
 const vsql_select_without_from = 'V201-01'
 const vsql_derived_table_without_name = 'V201-02'
 const vsql_sort_key_without_column = 'V202-01'
@@ -666,15 +676,232 @@ fn distinct_count(tokens []Token, start int) int {
 	return count
 }
 
-// features returns the Feature IDs outside of Core SQL that the statement uses
-// (see the SQL Compliance docs), sorted and without duplicates. A statement
-// that only uses Core SQL returns an empty array.
+// parse_module_sql parses a statement of an SQL-client module whose host
+// parameters have been replaced by a "?", and returns the features that it
+// uses. A module can't contain a "?" of its own, so that's not a <dynamic
+// parameter specification> (B031), and a cursor is meant to be in a module.
+fn parse_module_sql(text_sql string) !(Stmt, []string) {
+	stmt, _, _, features := parse_sql(text_sql)!
+
+	return stmt, features.filter(it !in ['B031', vsql_declare_cursor, vsql_delete_positioned,
+		vsql_update_positioned])
+}
+
+// module_statement_features returns the features of the <SQL procedure
+// statement> of a procedure, which has been compiled so it's known to be valid.
+// A connection statement or an <SQL dynamic statement> isn't parsed by the
+// grammar, so the rules for them are here. The name of a statement, dynamic
+// cursor or descriptor is only in one of the statements that need B031. So is a
+// <dynamic single row select statement>, which can only be in a PREPARE.
 //
-// IDs that start with "V" are features that only vsql has, such as "V001-01"
-// for EXPLAIN.
-pub fn (p PreparedStmt) features() []string {
+// ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers, Conformance Rules, 8 and 18 to 20
+// ISO/IEC 9075-2:2016(E), 14.5, <fetch statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 18.1, <connect statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 18.2, <set connection statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 18.3, <disconnect statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 20.2, <allocate descriptor statement>, Conformance Rules, 1 and 2
+// ISO/IEC 9075-2:2016(E), 20.3, <deallocate descriptor statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 20.4, <get descriptor statement>, Conformance Rules, 1 and 2
+// ISO/IEC 9075-2:2016(E), 20.5, <set descriptor statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 20.7, <prepare statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 20.9, <deallocate prepared statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 20.10, <describe statement>, Conformance Rules, 2
+// ISO/IEC 9075-2:2016(E), 20.11, <input using clause>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 20.12, <output using clause>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 20.13, <execute statement>, Conformance Rules, 1 and 2
+// ISO/IEC 9075-2:2016(E), 20.14, <execute immediate statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 20.19, <dynamic open statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 20.20, <dynamic fetch statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 20.21, <dynamic single row select statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 20.22, <dynamic close statement>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 20.23, <dynamic delete statement: positioned>, Conformance Rules, 1
+// ISO/IEC 9075-2:2016(E), 20.24, <dynamic update statement: positioned>, Conformance Rules, 1
+fn module_statement_features(text string, p ExternallyInvokedProcedure, cursors []ModuleCursor) ![]string {
+	mut t := new_module_tokens(text)!
+	mut features := t.dynamic_features()
+	match t.next_word() {
+		'CONNECT', 'DISCONNECT' {
+			return ['F771']
+		}
+		'SET' {
+			if t.accept('CONNECTION') {
+				return ['F771']
+			}
+			if t.accept_descriptor_keyword()! {
+				return features
+			}
+		}
+		'GET' {
+			if t.accept('DIAGNOSTICS') {
+				return t.diagnostics_features(p)
+			}
+			for i, tok in t.tokens[1..] {
+				if tok.text == '=' && t.tokens[i + 2].text.to_upper() == 'KEY_MEMBER' {
+					features << 'T301'
+				}
+			}
+			return features
+		}
+		'ALLOCATE' {
+			if t.tokens.any(it.is_colon()) {
+				features << 'B032'
+			}
+			return features
+		}
+		'DEALLOCATE' {
+			if t.accept('PREPARE') {
+				features << 'B032'
+			}
+			return features
+		}
+		'DESCRIBE' {
+			return features
+		}
+		'PREPARE' {
+			if t.tokens.any(it.kind == .literal) {
+				features << vsql_prepare_literal
+			}
+			return features
+		}
+		'EXECUTE' {
+			if t.accept('IMMEDIATE') {
+				if t.tokens.any(it.kind == .literal) {
+					features << vsql_execute_immediate_literal
+				}
+				return features
+			}
+			t.identifier('statement name')!
+			if t.accept('INTO') {
+				features << 'B032'
+			}
+			return features
+		}
+		'OPEN', 'CLOSE' {
+			cursor := t.module_cursor(p, cursors)!
+			return if cursor.statement == '' { []string{} } else { features }
+		}
+		'FETCH' {
+			mut fetch := if t.accept('NEXT') { ['F431'] } else { []string{} }
+			t.accept('FROM')
+			if t.module_cursor(p, cursors)!.statement != '' {
+				fetch << features
+			}
+			return fetch
+		}
+		else {}
+	}
+
+	query, targets := split_select_into(text)!
+	text_sql, _ := rewrite_host_parameters(if targets == '' { text } else { query }, p)!
+	stmt, mut statement_features := parse_module_sql(text_sql)!
+	if stmt is DeleteStatementPositioned {
+		statement_features << dynamic_cursor_features(stmt.cursor_name, p, cursors)!
+	}
+	if stmt is UpdateStatementPositioned {
+		statement_features << dynamic_cursor_features(stmt.cursor_name, p, cursors)!
+	}
+
+	return statement_features
+}
+
+// dynamic_cursor_features returns B031 for a positioned DELETE or UPDATE of a
+// dynamic cursor.
+fn dynamic_cursor_features(name string, p ExternallyInvokedProcedure, cursors []ModuleCursor) ![]string {
+	return if find_module_cursor(cursors, name, p)!.statement == '' {
+		[]string{}
+	} else {
+		['B031']
+	}
+}
+
+// is_colon is true for the ":" of a host parameter, not a literal of ":".
+fn (t ModuleToken) is_colon() bool {
+	return t.kind == .other && t.text == ':'
+}
+
+// dynamic_features returns the features of an <SQL dynamic statement>: B031,
+// and B035 for a <non-extended descriptor name>, which is an identifier without
+// GLOBAL or LOCAL (these are the keywords that can be before DESCRIPTOR in a
+// statement, where it isn't a name itself).
+//
+// ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers, Conformance Rules, 24
+fn (t ModuleTokens) dynamic_features() []string {
+	mut features := ['B031']
+	for i in 1 .. t.tokens.len - 1 {
+		if t.tokens[i].text.to_upper() == 'DESCRIPTOR'
+			&& t.tokens[i - 1].text.to_upper() in ['ALLOCATE', 'DEALLOCATE', 'GET', 'SET', 'SQL',
+				'USING', 'INTO'] {
+			name := t.tokens[i + 1]
+			if name.kind == .delimited
+				|| (name.kind == .word && name.text.to_upper() !in ['GLOBAL', 'LOCAL']) {
+				features << 'B035'
+			}
+		}
+	}
+
+	return features
+}
+
+// diagnostics_features returns the features of a <get diagnostics statement>.
+// A target of a character string item must be a CHARACTER VARYING to have the
+// same declared type. A number is an exact numeric with a scale of 0, and the
+// standard doesn't say which, so that's every target that's allowed for one.
+//
+// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, Conformance Rules, 1 to 3
+fn (t ModuleTokens) diagnostics_features(p ExternallyInvokedProcedure) ![]string {
+	mut features := ['F121']
+	for i, tok in t.tokens {
+		if tok.is_colon() && t.tokens[i + 2].text == '=' {
+			item := t.tokens[i + 3].text.to_upper()
+			if item in ['TRANSACTIONS_COMMITTED', 'TRANSACTIONS_ROLLED_BACK', 'TRANSACTION_ACTIVE'] {
+				features << 'T511'
+			}
+			typ := p.reference(t.tokens[i + 1].text)!.typ or { HostParameterType{} }
+			if item !in exact_numeric_diagnostics_items && typ.typ == .is_character {
+				features << 'F122'
+			}
+		}
+	}
+
+	return features
+}
+
+// indicator_types returns the data type of each <indicator parameter> in a
+// statement of the procedure, which is a host parameter straight after another
+// one (with an optional INDICATOR between them).
+fn indicator_types(text string, p ExternallyInvokedProcedure) ![]string {
+	t := new_module_tokens(text)!
+	mut types := []string{}
+	for i, tok in t.tokens {
+		if tok.is_colon() && ((i >= 2 && t.tokens[i - 2].is_colon())
+			|| (i >= 3 && t.tokens[i - 3].is_colon() && t.tokens[i - 1].text.to_upper() == 'INDICATOR')) {
+			typ := p.reference(t.tokens[i + 1].text)!.typ or { HostParameterType{} }
+			types << typ.sql()
+		}
+	}
+
+	return types
+}
+
+// parameter_features returns the features of the data type of each host
+// parameter of a procedure, even if the statement doesn't use it.
+fn (p ExternallyInvokedProcedure) parameter_features() ![]string {
 	mut features := []string{}
-	for feature in p.features {
+	for parameter in p.parameters {
+		if typ := parameter.typ {
+			_, type_features := parse_module_sql('SELECT CAST(NULL AS ${typ.sql()}) FROM t')!
+			features << type_features
+		}
+	}
+
+	return features
+}
+
+// unique_features returns the features (and the other ones) sorted and without
+// duplicates.
+fn unique_features(all []string, others ...string) []string {
+	mut features := []string{}
+	for feature in arrays.append(all, others) {
 		if feature !in features {
 			features << feature
 		}
@@ -682,4 +909,14 @@ pub fn (p PreparedStmt) features() []string {
 	features.sort()
 
 	return features
+}
+
+// features returns the Feature IDs outside of Core SQL that the statement uses
+// (see the SQL Compliance docs), sorted and without duplicates. A statement
+// that only uses Core SQL returns an empty array.
+//
+// IDs that start with "V" are features that only vsql has, such as "V001-01"
+// for EXPLAIN.
+pub fn (p PreparedStmt) features() []string {
+	return unique_features(p.features)
 }

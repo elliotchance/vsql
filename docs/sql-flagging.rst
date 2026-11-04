@@ -118,6 +118,30 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V113-01``
      - ``UPDATE ... WHERE CURRENT OF`` outside of an SQL-client module.
 
+   * - ``V114``
+     - ``START TRANSACTION`` (see :doc:`start-transaction`).
+
+   * - ``V114-01``
+     - ``BEGIN`` instead of ``START TRANSACTION``.
+
+   * - ``V115``
+     - ``COMMIT`` (see :doc:`commit`).
+
+   * - ``V115-01``
+     - ``COMMIT TRANSACTION`` instead of ``COMMIT``.
+
+   * - ``V115-02``
+     - ``END`` instead of ``COMMIT``.
+
+   * - ``V116``
+     - ``ROLLBACK`` (see :doc:`rollback`).
+
+   * - ``V116-01``
+     - ``ROLLBACK TRANSACTION`` instead of ``ROLLBACK``.
+
+   * - ``V116-02``
+     - ``ABORT`` instead of ``ROLLBACK``.
+
    * - ``V201``
      - ``FROM``.
 

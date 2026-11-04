@@ -2149,6 +2149,7 @@ fn test_reserved_words() {
 	assert 'FROM' in words
 	assert 'NAME' !in words
 	assert 'E' !in words
+	assert 'ABORT' !in words
 	assert !words.any(it.starts_with('OPERATOR_') || it.starts_with('LITERAL_'))
 	mut sorted := words.clone()
 	sorted.sort()
@@ -3053,7 +3054,7 @@ fn test_embed_errors() ! {
 	assert embed_error('EXEC SQL END DECLARE SECTION;') == 'syntax error: line 1: unexpected END DECLARE SECTION'
 	assert embed_error('EXEC SQL BEGIN DECLARE SECTION; EXEC SQL COMMIT;') == 'syntax error: line 1: a declare section can only contain host variable definitions'
 	assert embed_error('EXEC SQL COMMIT;') == 'syntax error: line 1: SQLSTATE must be defined in a declare section before the first EXEC SQL'
-	assert embed_error(embed_header + 'EXEC SQL BEGIN WORK;') == 'syntax error: line 4: unexpected BEGIN'
+	assert embed_error(embed_header + 'EXEC SQL BEGIN ROW;') == 'syntax error: line 4: unexpected ROW'
 	assert embed_error(embed_header + 'EXEC SQL DELETE FROM t WHERE x = :z;') == 'syntax error: line 4: host variable :z is not defined'
 	assert embed_error(embed_header + 'EXEC SQL COMMIT;\nEXEC SQL VALUES :a;') == 'syntax error: line 5: a query is not an SQL procedure statement, use SELECT ... INTO'
 	assert embed_error(embed_header + 'EXEC SQL DECLARE SCHEMA s;') == 'syntax error: line 4: DECLARE SCHEMA and DECLARE AUTHORIZATION are not supported'

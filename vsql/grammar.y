@@ -7,6 +7,7 @@ module vsql
 
 // non-reserved words
 %token A
+%token ABORT
 %token ABSOLUTE
 %token ACTION
 %token ADA

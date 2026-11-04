@@ -23,6 +23,16 @@ Syntax
 the transaction (see :doc:`set-transaction`). Without it, it's 100, even after
 a ``SET TRANSACTION``.
 
+``BEGIN`` can be used instead of ``START TRANSACTION``:
+
+.. code-block:: text
+
+  BEGIN [ TRANSACTION | WORK ] [ DIAGNOSTICS SIZE <number> ]
+
+This is a vsql extension, not standard SQL, and it's flagged by ``V114-01`` (see
+:doc:`sql-flagging`). ``START TRANSACTION`` should be used if the SQL needs to be
+portable.
+
 Implicit Transactions
 ---------------------
 

@@ -3024,6 +3024,27 @@ fn test_features_of_routine_invocation() ! {
 	assert db.prepare('VALUES twice(?)')!.features() == ['B031', 'B033', 'F641', 'F661']
 }
 
+// A rule that needs the catalog isn't flagged if the catalog can't be read, but
+// it's not an error (see tests/std_1_8_5_flagging_name_resolution.sql).
+fn test_features_without_catalog() ! {
+	dir := os.join_path(os.temp_dir(), 'vsql-features-${os.getpid()}')
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+
+	mut db := open(os.join_path(dir, 'test.vsql'))!
+	db.query('CREATE TABLE t (x INT NOT NULL)')!
+	stmt := db.prepare('DELETE FROM t WHERE x IN (SELECT x FROM t)')!
+	assert stmt.features() == ['F781']
+
+	arm_fault('open', 1)!
+	defer {
+		disarm_faults()
+	}
+	assert stmt.features() == []
+}
+
 // A prepared statement has a new statement timestamp each time it's executed.
 //
 // ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 4

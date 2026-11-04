@@ -433,6 +433,7 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				}
 			} else if table_name_id in catalog.storage.tables {
 				table = catalog.storage.table(table_name_id)
+				conn.flag_subquery_table(table_name)
 
 				mut operation := PlanOperation(TableOperation{table_name, false, table, params, conn, plan.subplans})
 				if filter {
@@ -534,7 +535,7 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 	mut columns := []Column{}
 	for i, col in subplan.columns() {
 		columns << Column{
-			name:     Identifier{
+			name:           Identifier{
 				entity_name:     table_name.id()
 				sub_entity_name: if correlation_columns.len > 0 {
 					correlation_columns[i].sub_entity_name
@@ -542,8 +543,9 @@ fn add_correlation_plan(mut plan Plan, table_name Identifier, subplan Plan, corr
 					col.name.sub_entity_name
 				}
 			}
-			typ:      col.typ
-			not_null: col.not_null
+			typ:            col.typ
+			not_null:       col.not_null
+			from_aggregate: col.from_aggregate
 		}
 		if conn.collect_columns {
 			conn.correlated_columns[columns[i].name.id()] << col.name.id()
@@ -1022,15 +1024,17 @@ fn new_expr_operation(mut conn Connection, params map[string]Value, select_list 
 							tables: tables
 						}
 
+						compiled := expr.compile(mut c)!
 						columns << Column{
-							name:     col
-							typ:      expr.compile(mut c)!.typ
-							not_null: if column := item.column_reference() {
+							name:           col
+							typ:            compiled.typ
+							not_null:       if column := item.column_reference() {
 								column_not_null(column, conn, tables)
 							} else {
 								false
 							}
-							unnamed:  unnamed
+							unnamed:        unnamed
+							from_aggregate: compiled.contains_agg
 						}
 
 						exprs << DerivedColumn{expr, col}

@@ -57,6 +57,9 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	for arg in e.args {
 		arg_types << arg.compile(mut c)!.typ
 	}
+	if is_agg {
+		c.flag_set_function(e)
+	}
 
 	func_name := e.function_name
 

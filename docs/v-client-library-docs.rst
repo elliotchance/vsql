@@ -901,7 +901,11 @@ struct Server
    mut:
    	connect  ConnectFn        = unsafe { nil }
    	listener &net.TcpListener = unsafe { nil }
+   	// mutex is for stopping and serving, so that stop and serve agree on which
+   	// of them closes the listener.
+   	mutex    &sync.Mutex = sync.new_mutex()
    	stopping bool
+   	serving  bool
    }
 
 Server accepts connections from PostgreSQL clients, see new_server.

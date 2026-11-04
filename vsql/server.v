@@ -41,7 +41,11 @@ pub struct Server {
 mut:
 	connect  ConnectFn        = unsafe { nil }
 	listener &net.TcpListener = unsafe { nil }
+	// mutex is for stopping and serving, so that stop and serve agree on which
+	// of them closes the listener.
+	mutex    &sync.Mutex = sync.new_mutex()
 	stopping bool
+	serving  bool
 }
 
 // new_server creates a server that can be started with start(), or with
@@ -115,17 +119,31 @@ pub fn (mut s Server) serve() ! {
 		return error('server is not listening')
 	}
 
-	for {
+	s.mutex.lock()
+	if s.stopping {
+		s.mutex.unlock()
+		return
+	}
+	s.serving = true
+	s.mutex.unlock()
+
+	for !s.stopping {
 		mut conn := s.accept() or {
-			if s.stopping {
-				return
-			}
 			s.log('${err}')
 			continue
+		}
+		if s.stopping {
+			conn.close() or {}
+			break
 		}
 
 		spawn s.handle_client(mut conn)
 	}
+
+	// The listener is closed here, not in stop, because its file descriptor could
+	// be reused by a new listener while this is about to wait for a client. It
+	// would then accept the clients of the new listener.
+	s.listener.close()!
 }
 
 // accept waits for the next client. A test can make it fail with the "accept"
@@ -143,9 +161,25 @@ fn (mut s Server) accept() !&net.TcpConn {
 // stop stops accepting new clients. Clients that are already connected are not
 // disconnected.
 pub fn (mut s Server) stop() ! {
+	if s.listener == unsafe { nil } {
+		return
+	}
+	address := s.address()!
+
+	s.mutex.lock()
 	s.stopping = true
-	if s.listener != unsafe { nil } {
+	serving := s.serving
+	s.mutex.unlock()
+
+	if !serving {
 		s.listener.close()!
+		return
+	}
+
+	// Connecting wakes up serve, which closes the listener. It can't connect if
+	// serve has already seen that it's stopping and closed it.
+	if mut wake := net.dial_tcp(address.replace('0.0.0.0:', '127.0.0.1:').replace('[::]:', '[::1]:')) {
+		wake.close()!
 	}
 }
 

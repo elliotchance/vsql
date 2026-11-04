@@ -2870,3 +2870,57 @@ fn test_old_sequence_implicit_limits() ! {
 	assert s.max() == max_i64
 	assert s.next()!.current_value == 2
 }
+
+// A client of a new server must not be accepted by a server that was stopped,
+// which is about to wait for a client when it's stopped. The file descriptor of
+// the old listener is reused by the new one.
+fn test_server_stop_then_listen() ! {
+	for _ in 0 .. 200 {
+		mut old := start_sql_test_server_with(ServerOptions{
+			connect: fn (database string) !&Connection {
+				return error('connected to the old server')
+			}
+		})!
+		mut early := net.dial_tcp('127.0.0.1:${old.port()!}')!
+		early.close()!
+		old.stop()!
+
+		mut new := start_sql_test_server_with(ServerOptions{
+			connect: fn (database string) !&Connection {
+				return open(':memory:')
+			}
+		})!
+		mut client := new_pg_test_client(new.port()!, 'db')!
+		assert client.query('VALUES 1')!.rows == ['COL1: 1']
+		client.close()
+		new.stop()!
+	}
+
+	// A server is stopped before it listens, or before it gets to serve.
+	mut unserved := new_server(ServerOptions{
+		connect: fn (database string) !&Connection {
+			return open(':memory:')
+		}
+	})
+	unserved.stop()!
+	unserved = new_server(ServerOptions{
+		connect: fn (database string) !&Connection {
+			return open(':memory:')
+		}
+	})
+	unserved.listen()!
+	unserved.stop()!
+	unserved.serve()!
+
+	// A server on every interface is woken up on its loopback address.
+	for host in ['0.0.0.0', '::'] {
+		mut every := start_sql_test_server_with(ServerOptions{
+			host:    host
+			connect: fn (database string) !&Connection {
+				return open(':memory:')
+			}
+		})!
+		time.sleep(10 * time.millisecond)
+		every.stop()!
+	}
+}

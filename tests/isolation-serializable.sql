@@ -198,7 +198,7 @@ COMMIT;
 -- 2: msg: INSERT 1
 -- 2: X: 1
 -- 2: error 40001: serialization failure: cannot commit while another connection has a REPEATABLE READ or SERIALIZABLE transaction
--- 2: error 2D000: invalid transaction termination
+-- 2: msg: COMMIT
 -- 2: msg: SET TRANSACTION
 -- 2: error 40001: serialization failure: cannot commit while another connection has a REPEATABLE READ or SERIALIZABLE transaction
 -- 1: msg: COMMIT
@@ -373,7 +373,7 @@ SELECT * FROM t;
 -- 1: msg: START TRANSACTION
 -- 1: msg: INSERT 1
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
--- 2: error 2D000: invalid transaction termination
+-- 2: msg: COMMIT
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: msg: COMMIT
 -- 1: msg: START TRANSACTION
@@ -859,7 +859,7 @@ SELECT * FROM foo;
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: msg: DELETE 1
--- 2: error 2D000: invalid transaction termination
+-- 2: msg: COMMIT
 
 -- # The same test as isolation-read-committed.sql with the default isolation level (SERIALIZABLE).
 /* connection 1 */

@@ -61,12 +61,12 @@ Examples
   VALUES ROW('cool', 12.3);
   -- COL1: cool COL2: 12.3
 
-  SELECT * FROM (VALUES ROW(1, 'foo', TRUE));
+  SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t;
   -- COL1: 1 COL2: foo COL3: TRUE
 
   SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t1 (abc, col2, "f");
   -- ABC: 1 COL2: foo f: TRUE
 
-  SELECT * FROM (VALUES ROW(123, 'hi'), ROW(456, 'there'));
+  SELECT * FROM (VALUES ROW(123, 'hi'), ROW(456, 'there')) AS t;
   -- COL1: 123 COL2: hi
   -- COL1: 456 COL2: there

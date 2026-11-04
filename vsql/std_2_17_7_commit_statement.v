@@ -7,10 +7,9 @@ import time
 // Terminate the current SQL-transaction with commit.
 //
 // AND CHAIN (T261) isn't supported. A COMMIT when there isn't an active
-// SQL-transaction is 2D000 (invalid transaction termination, #231). That's only
-// with query (or autocommit), where a statement outside of a START
-// TRANSACTION is in an SQL-transaction that ends with it (see
-// Connection.direct).
+// SQL-transaction does nothing. That's only with query (or autocommit), where a
+// statement outside of a START TRANSACTION is in an SQL-transaction that ends
+// with it (see Connection.direct).
 
 struct CommitStatement {
 }
@@ -18,8 +17,12 @@ struct CommitStatement {
 fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
+	// Outside of a transaction there's nothing to commit, since every statement
+	// is committed when it finishes. The standard only uses 2D000 (invalid
+	// transaction termination) for transactions that are managed outside of
+	// the database (General Rules 1 and 2), so it succeeds.
 	if !conn.in_transaction() {
-		return sqlstate_2d000()
+		return new_result_msg('COMMIT', elapsed_parse, t.elapsed())
 	}
 
 	conn.open_write_connection()!

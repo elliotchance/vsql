@@ -173,22 +173,23 @@ fn assign_target(mut diag Diagnostics, stmt &Stmt, nts bool, target BoundTarget,
 		return
 	}
 
+	// - 3.h.vi.2. The value is the result of CAST ( SV AS TDT ).
+	tv := cast_value(stmt, value, target.column, target.typ)!
+
 	// - 3.h.viii.2.B. Otherwise, the indicator is set to 0 (zero) and the value
 	// is assigned.
+	set_integer(target.indicator, i, 0)
 	if target.typ == .is_varchar {
-		set_integer(target.indicator, i, 0)
 		length := if target.length_indicator == unsafe { nil } {
 			unsafe { nil }
 		} else {
 			unsafe { voidptr(&u8(target.length_indicator) + i * int(sizeof(SQLInteger))) }
 		}
-		retrieve_string(mut diag, nts, data, value.str(), target.octet_length, length,
+		retrieve_string(mut diag, nts, data, tv.string_value(), target.octet_length, length,
 			4)!
 		return
 	}
 
-	tv := cast_value(stmt, value, target.column, target.typ)!
-	set_integer(target.indicator, i, 0)
 	assign_number(tv, target.typ, data)
 }
 

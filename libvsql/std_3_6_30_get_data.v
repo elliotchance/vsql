@@ -150,16 +150,16 @@ fn get_data(mut stmt Stmt, column_number i16, target_type i16, target_value void
 		return sql_success
 	}
 
+	// - 25.b.vi.2. The value is the result of CAST ( SV AS TDT ).
+	tv := cast_value(stmt, value, column, typ)!
+
 	// - 30.b.ii. A character value is retrieved by the General Rules of 5.9,
 	// "Character string retrieval".
 	if typ == .is_varchar {
-		stmt.fetched_value = value.str()
+		stmt.fetched_value = tv.string_value()
 		stmt.fetched_length = 0
 		return retrieve_piece(mut stmt, cn, target_value, buffer_length, str_len_or_ind)
 	}
-
-	// - 25.b.vi.2. The value is the result of CAST ( SV AS TDT ).
-	tv := cast_value(stmt, value, column, typ)!
 
 	// - 30.a. StrLen_or_Ind is set to 0 (zero).
 	if str_len_or_ind != unsafe { nil } {

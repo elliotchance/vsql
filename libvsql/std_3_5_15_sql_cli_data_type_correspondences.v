@@ -73,12 +73,17 @@ fn c_type(code i16) ?vsql.SQLType {
 	}
 }
 
-// cast_value is CAST ( SV AS TDT ) for a number type. A datetime or BOOLEAN
-// can't be cast to a number: dynamic SQL error — restricted data type
-// attribute violation.
+// cast_value is CAST ( SV AS TDT ). For SQL_CHAR the TDT is a CHARACTER VARYING
+// of the maximum length, and there's no maximum length so it's never truncated
+// here. A datetime or BOOLEAN can't be cast to a number: dynamic SQL error —
+// restricted data type attribute violation.
+//
+// ISO/IEC 9075-3:2003(E), 5.8, General Rules, 3.h.iii.1
+// ISO/IEC 9075-3:2003(E), 6.30, General Rules, 24.a
 fn cast_value(stmt &Stmt, value vsql.Value, column vsql.Column, typ vsql.SQLType) !vsql.Value {
-	if column.typ.typ in [.is_date, .is_time_without_time_zone, .is_time_with_time_zone,
-		.is_timestamp_without_time_zone, .is_timestamp_with_time_zone, .is_boolean] {
+	if typ != .is_varchar && column.typ.typ in [.is_date, .is_time_without_time_zone,
+		.is_time_with_time_zone, .is_timestamp_without_time_zone, .is_timestamp_with_time_zone,
+		.is_boolean] {
 		return cli_error('07006', 'restricted data type attribute violation')
 	}
 	mut conn := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }.conn or {

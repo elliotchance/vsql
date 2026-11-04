@@ -123,6 +123,14 @@ That means a program that uses two connections to the same file in one thread
 can't start a transaction on one while the other has one, since the other
 can't finish while it's waiting. It will fail with ``40001`` after the timeout.
 
+A query through ``Connection.direct`` (or ``vsql cli -autocommit=false``) that
+starts a transaction doesn't wait or stop other connections, because the database
+may only be readable. If another transaction has ended since the first query of
+that transaction, the next statement fails with a ``40001`` serialization failure
+and the transaction is rolled back, even if the other transaction was rolled back
+too. That lasts until a statement changes something, which waits like any other
+transaction and then holds up the others.
+
 Other connections can always read (outside of a transaction, or in a
 ``READ COMMITTED`` one). ``NEXT VALUE FOR`` is not part of a transaction, so
 it doesn't wait either.

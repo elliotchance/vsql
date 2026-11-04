@@ -2798,6 +2798,115 @@ fn test_direct_isolation_level() ! {
 	db.direct('COMMIT;')!
 }
 
+// A query that starts an SQL-transaction in direct doesn't lock anything, so
+// another connection can commit. The next statement then fails, rather than
+// seeing it.
+fn test_direct_query_isolation() ! {
+	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-direct-query-${os.getpid()}')
+	os.rmdir_all(dir) or {}
+	os.mkdir_all(dir)!
+	defer {
+		os.rmdir_all(dir) or {}
+	}
+	path := os.join_path(dir, 'test.vsql')
+	options := isolation_test_options(0)
+	conflict := '40001 serialization failure: another connection has committed since this transaction started reading'
+
+	mut a := open_database(path, options)!
+	defer {
+		a.close()
+	}
+	mut b := open_database(path, options)!
+	defer {
+		b.close()
+	}
+	b.query('CREATE TABLE t (x INT)')!
+	b.query('INSERT INTO t (x) VALUES (1)')!
+
+	// A commit that started after the first query. The transaction is over, so
+	// the next query sees it, and it can be committed.
+	assert a.direct('SELECT * FROM t;')!.rows.len == 1
+	assert a.direct('SELECT * FROM t;')!.rows.len == 1
+	b.query('INSERT INTO t (x) VALUES (2)')!
+	assert direct_error(mut a, 'SELECT * FROM t;') == conflict
+	assert !a.is_active()
+	assert a.direct('SELECT * FROM t;')!.rows.len == 2
+	assert a.direct('COMMIT;')!.msg == 'COMMIT'
+
+	// A transaction that's still active doesn't matter until it commits, whether
+	// it started after the first query or before it.
+	a.direct('SELECT * FROM t;')!
+	b.query('START TRANSACTION')!
+	b.query('INSERT INTO t (x) VALUES (3)')!
+	assert a.direct('SELECT * FROM t;')!.rows.len == 2
+	b.query('COMMIT')!
+	assert direct_error(mut a, 'SELECT * FROM t;') == conflict
+	b.query('START TRANSACTION')!
+	b.query('INSERT INTO t (x) VALUES (4)')!
+	assert a.direct('SELECT * FROM t;')!.rows.len == 3
+	assert a.direct('SELECT * FROM t;')!.rows.len == 3
+	b.query('COMMIT')!
+	assert direct_error(mut a, 'SELECT * FROM t;') == conflict
+
+	// A rollback looks the same in the file.
+	a.direct('SELECT * FROM t;')!
+	b.query('START TRANSACTION')!
+	b.query('ROLLBACK')!
+	assert direct_error(mut a, 'SELECT * FROM t;') == conflict
+
+	// The same goes for the statement that starts the transaction in storage,
+	// which is rolled back, and the lock is released.
+	a.direct('SELECT * FROM t;')!
+	b.query('INSERT INTO t (x) VALUES (5)')!
+	assert direct_error(mut a, 'INSERT INTO t (x) VALUES (6);') == conflict
+	assert !a.is_active()
+	assert b.query('SELECT * FROM t')!.rows.len == 5
+	b.query('INSERT INTO t (x) VALUES (6)')!
+
+	// With nothing in the way, it becomes a normal transaction, which also
+	// holds the lock.
+	a.direct('SELECT * FROM t;')!
+	a.direct('INSERT INTO t (x) VALUES (7);')!
+	assert a.in_transaction()
+	assert query_error(mut b, 'INSERT INTO t (x) VALUES (8)') == '40001 serialization failure: another connection has a transaction that must finish first'
+	assert a.direct('SELECT * FROM t;')!.rows.len == 7
+	a.direct('COMMIT;')!
+
+	// Queries don't conflict with each other, and don't create the isolation
+	// file, which may not be possible.
+	mut c := open_database(path, options)!
+	defer {
+		c.close()
+	}
+	os.rm(isolation_path(path))!
+	a.direct('SELECT * FROM t;')!
+	c.direct('SELECT * FROM t;')!
+	a.direct('SELECT * FROM t;')!
+	c.direct('SELECT * FROM t;')!
+	assert !os.exists(isolation_path(path))
+	a.direct('COMMIT;')!
+	c.direct('COMMIT;')!
+
+	// READ COMMITTED is meant to see it.
+	a.direct('SET TRANSACTION ISOLATION LEVEL READ COMMITTED;')!
+	a.direct('SELECT * FROM t;')!
+	b.query('INSERT INTO t (x) VALUES (9)')!
+	assert a.direct('SELECT * FROM t;')!.rows.len == 8
+	a.direct('COMMIT;')!
+
+	// REPEATABLE READ runs as SERIALIZABLE.
+	a.direct('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;')!
+	a.direct('SELECT * FROM t;')!
+	b.query('INSERT INTO t (x) VALUES (10)')!
+	assert direct_error(mut a, 'SELECT * FROM t;') == conflict
+}
+
+fn direct_error(mut conn Connection, sql_stmt string) string {
+	conn.direct(sql_stmt) or { return '${sqlstate_from_int(err.code())} ${err.msg()}' }
+
+	return ''
+}
+
 fn test_isolation_lock() ! {
 	dir := os.join_path(os.temp_dir(), 'vsql-sql-test-isolation-lock-${os.getpid()}')
 	os.rmdir_all(dir) or {}

@@ -133,3 +133,24 @@ extension of it.
 
    * - ``V009-01``
      - ``!=`` as an alias for ``<>``.
+
+   * - ``V011``
+     - ``IF [NOT] EXISTS``.
+
+   * - ``V011-01``
+     - ``CREATE TABLE IF NOT EXISTS`` (see :doc:`create-table`).
+
+   * - ``V011-02``
+     - ``CREATE SCHEMA IF NOT EXISTS`` (see :doc:`create-schema`).
+
+   * - ``V011-03``
+     - ``CREATE SEQUENCE IF NOT EXISTS`` (see :doc:`create-sequence`).
+
+   * - ``V011-04``
+     - ``DROP TABLE IF EXISTS`` (see :doc:`drop-table`).
+
+   * - ``V011-05``
+     - ``DROP SCHEMA IF EXISTS`` (see :doc:`drop-schema`).
+
+   * - ``V011-06``
+     - ``DROP SEQUENCE IF EXISTS`` (see :doc:`drop-sequence`).

@@ -115,6 +115,7 @@ module vsql
 %token HAS_PASS_THROUGH_COLUMNS
 %token HAS_PASS_THRU_COLS
 %token HIERARCHY
+%token IF
 %token IGNORE
 %token IMMEDIATE
 %token IMMEDIATELY

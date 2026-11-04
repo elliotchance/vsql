@@ -9,6 +9,7 @@ import time
 struct DropSchemaStatement {
 	schema_name Identifier
 	behavior    string // CASCADE or RESTRICT
+	if_exists   bool   // V011-05, a schema that doesn't exist isn't an error
 }
 
 fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
@@ -26,6 +27,10 @@ fn (stmt DropSchemaStatement) execute(mut conn Connection, _ map[string]Value, e
 
 	// ISO/IEC 9075-2:2016(E), 11.2, <drop schema statement>, Syntax Rules, 2
 	if schema_name !in catalog.storage.schemas {
+		if stmt.if_exists {
+			return new_result_msg('DROP SCHEMA 0', elapsed_parse, t.elapsed())
+		}
+
 		return sqlstate_3f000(schema_name) // schema does not exist
 	}
 

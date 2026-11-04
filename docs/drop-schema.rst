@@ -8,7 +8,7 @@ Syntax
 
 .. code-block:: text
 
-  DROP SCHEMA <schema_name> { CASCADE | RESTRICT }
+  DROP SCHEMA [ IF EXISTS ] <schema_name> { CASCADE | RESTRICT }
 
 Drop (delete) a schema.
 
@@ -20,6 +20,14 @@ within it. A ``FOREIGN KEY`` of a table in another schema that
 references one of its tables is also dropped (see :doc:`drop-table`).
 
 One of ``CASCADE`` or ``RESTRICT`` must be provided.
+
+With ``IF EXISTS``, a schema that doesn't exist isn't an error. Nothing changes,
+and the result is ``DROP SCHEMA 0``. A catalog that doesn't exist is still an
+error. If the schema exists, it's the same as ``DROP SCHEMA``, including
+``CASCADE``, ``RESTRICT`` and their errors, so one of them is still required.
+
+``IF EXISTS`` is a vsql extension, not standard SQL. It's flagged as ``V011-05``
+(see :doc:`sql-flagging`).
 
 Examples
 --------

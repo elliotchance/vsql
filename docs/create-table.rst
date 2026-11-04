@@ -8,7 +8,7 @@ Syntax
 
 .. code-block:: text
 
-  CREATE TABLE <table_name> ( <element> , ... )
+  CREATE TABLE [ IF NOT EXISTS ] <table_name> ( <element> , ... )
 
   <element> := <column_name> <data_type> [ DEFAULT <default> | <identity> | <generated> ]
                [ [ CONSTRAINT <constraint_name> ] <column_constraint>
@@ -65,6 +65,27 @@ Syntax
 3. A table can have up to 1600 columns.
 
 Columns allow ``NULL`` unless they are ``NOT NULL``.
+
+IF NOT EXISTS
+-------------
+
+With ``IF NOT EXISTS``, a table with the same name in the same schema isn't an
+error. Nothing changes, and the result is ``CREATE TABLE 0``. The existing table
+keeps its definition and rows: the new definition isn't compared with it, or
+checked (other than its syntax). If the table doesn't exist, it's the same as
+``CREATE TABLE``, so the result is ``CREATE TABLE 1``. A schema that doesn't
+exist is still an error.
+
+``IF NOT EXISTS`` is a vsql extension, not standard SQL. It's flagged as
+``V011-01`` (see :doc:`sql-flagging`). It isn't kept, so it's not in the output
+of ``vsql out`` (see :doc:`cli`) or the ``INFORMATION_SCHEMA``.
+
+.. code-block:: sql
+
+  CREATE TABLE IF NOT EXISTS products (title VARCHAR(100));
+  CREATE TABLE IF NOT EXISTS products (price FLOAT);
+  -- msg: CREATE TABLE 1
+  -- msg: CREATE TABLE 0
 
 Defaults
 --------

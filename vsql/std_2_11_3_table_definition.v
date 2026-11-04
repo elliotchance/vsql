@@ -25,6 +25,7 @@ const max_columns = 1600
 struct TableDefinition {
 	table_name     Identifier
 	table_elements []TableElement
+	if_not_exists  bool // V011-01, a table that already exists isn't an error
 }
 
 fn (s TableDefinition) columns() Columns {
@@ -60,18 +61,25 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 		conn.release_write_connection()
 	}
 
-	stmt.create(mut conn)!
+	msg := if stmt.create(mut conn)! { 'CREATE TABLE 1' } else { 'CREATE TABLE 0' }
 
-	return new_result_msg('CREATE TABLE 1', elapsed_parse, t.elapsed())
+	return new_result_msg(msg, elapsed_parse, t.elapsed())
 }
 
-// create creates the table. The caller must have the write connection open.
-fn (stmt TableDefinition) create(mut conn Connection) ! {
+// create creates the table and returns true, or false if it already exists with
+// IF NOT EXISTS. The caller must have the write connection open.
+fn (stmt TableDefinition) create(mut conn Connection) !bool {
 	mut table_name := conn.resolve_schema_identifier(stmt.table_name)!
 	check_writable_schema(table_name)!
 	mut catalog := conn.catalog_for(table_name)
 	if table_name.storage_id() in catalog.storage.tables
 		|| table_name.storage_id() in catalog.virtual_tables {
+		// The existing table isn't changed or compared with this definition,
+		// which isn't checked either.
+		if stmt.if_not_exists {
+			return false
+		}
+
 		// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 7
 		return sqlstate_42p07('table', table_name.str()) // duplicate table
 	}
@@ -87,6 +95,8 @@ fn (stmt TableDefinition) create(mut conn Connection) ! {
 	check_new_check_constraints(mut conn, table, 0)!
 
 	catalog.storage.create_table(table)!
+
+	return true
 }
 
 // table checks the definition and returns the table that it describes. It's

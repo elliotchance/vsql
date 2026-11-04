@@ -5,7 +5,20 @@ drop_schema_statement:
   DROP SCHEMA schema_name drop_behavior {
     flag(mut yylex, 'F381')
     flag_if(mut yylex, $4.v as string == 'CASCADE', 'F032')
-    $$.v = Stmt(DropSchemaStatement{$3.v as Identifier, $4.v as string})
+    $$.v = Stmt(DropSchemaStatement{
+      schema_name: $3.v as Identifier
+      behavior:    $4.v as string
+    })
+  }
+| DROP SCHEMA if_exists schema_name drop_behavior {
+    flag(mut yylex, 'F381')
+    flag_if(mut yylex, $5.v as string == 'CASCADE', 'F032')
+    flag(mut yylex, vsql_drop_schema_if_exists)
+    $$.v = Stmt(DropSchemaStatement{
+      schema_name: $4.v as Identifier
+      behavior:    $5.v as string
+      if_exists:   true
+    })
   }
 
 drop_behavior:

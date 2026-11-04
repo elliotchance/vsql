@@ -8,7 +8,7 @@ Syntax
 
 .. code-block:: text
 
-  DROP TABLE <table_name> [ CASCADE | RESTRICT ]
+  DROP TABLE [ IF EXISTS ] <table_name> [ CASCADE | RESTRICT ]
 
 Deletes a table, including all of its rows.
 
@@ -21,6 +21,15 @@ other tables or their rows.
 
 The SQL standard requires one of ``CASCADE`` or ``RESTRICT``, but vsql also
 allows neither, which is the same as ``RESTRICT``.
+
+With ``IF EXISTS``, a table that doesn't exist isn't an error. Nothing changes,
+and the result is ``DROP TABLE 0``. That includes a table in a schema that doesn't
+exist, but a catalog that doesn't exist is still an error. If the table exists,
+it's the same as ``DROP TABLE``, including ``CASCADE``, ``RESTRICT`` and their
+errors.
+
+``IF EXISTS`` is a vsql extension, not standard SQL. It's flagged as ``V011-04``
+(see :doc:`sql-flagging`).
 
 Examples
 --------

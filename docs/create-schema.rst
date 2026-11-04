@@ -8,7 +8,7 @@ Syntax
 
 .. code-block:: text
 
-  CREATE SCHEMA <schema_name> [ <schema_element> ... ]
+  CREATE SCHEMA [ IF NOT EXISTS ] <schema_name> [ <schema_element> ... ]
 
   <schema_element> ::=
       <create_table>
@@ -28,6 +28,18 @@ followed by a period (see examples).
 
 Every catalog already has an ``INFORMATION_SCHEMA`` schema (see
 :doc:`information-schema`), so it can't be created.
+
+IF NOT EXISTS
+-------------
+
+With ``IF NOT EXISTS``, a schema that already exists (including
+``INFORMATION_SCHEMA``) isn't an error. Nothing changes (including the
+``CREATE TABLE`` and ``CREATE SEQUENCE`` in the statement, which aren't created),
+and the result is ``CREATE SCHEMA 0``. If the schema doesn't exist, it's the same as
+``CREATE SCHEMA``, so the result is ``CREATE SCHEMA 1``.
+
+``IF NOT EXISTS`` is a vsql extension, not standard SQL. It's flagged as
+``V011-02`` (see :doc:`sql-flagging`).
 
 Examples
 --------

@@ -56,6 +56,14 @@ module vsql
 //
 // V009: Comparison operators.
 // V009-01: != as an alias for <>.
+//
+// V011: IF [NOT] EXISTS.
+// V011-01: CREATE TABLE IF NOT EXISTS.
+// V011-02: CREATE SCHEMA IF NOT EXISTS.
+// V011-03: CREATE SEQUENCE IF NOT EXISTS.
+// V011-04: DROP TABLE IF EXISTS.
+// V011-05: DROP SCHEMA IF EXISTS.
+// V011-06: DROP SEQUENCE IF EXISTS.
 const vsql_explain_query = 'V001-01'
 const vsql_explain_delete = 'V001-02'
 const vsql_explain_update = 'V001-03'
@@ -77,6 +85,12 @@ const vsql_sort_key_subquery = 'V006-03'
 const vsql_sort_key_aggregate = 'V006-04'
 const vsql_select_without_from = 'V008-01'
 const vsql_bang_equals = 'V009-01'
+const vsql_create_table_if_not_exists = 'V011-01'
+const vsql_create_schema_if_not_exists = 'V011-02'
+const vsql_create_sequence_if_not_exists = 'V011-03'
+const vsql_drop_table_if_exists = 'V011-04'
+const vsql_drop_schema_if_exists = 'V011-05'
+const vsql_drop_sequence_if_exists = 'V011-06'
 
 // flag records that the statement being parsed uses a feature outside of Core
 // SQL, such as "F591". It's called by the grammar actions.

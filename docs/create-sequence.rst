@@ -8,13 +8,26 @@ Syntax
 
 .. code-block:: text
 
-  CREATE SEQUENCE <sequence_name> [ <option> ... ]
+  CREATE SEQUENCE [ IF NOT EXISTS ] <sequence_name> [ <option> ... ]
 
 A sequence is used as an atomic counter. It is useful for generating unique and
 sequential numbers.
 
 A sequence can have a minimum and maximum value, and can be allowed to cycle
 (wrap around) between them.
+
+IF NOT EXISTS
+-------------
+
+With ``IF NOT EXISTS``, a sequence with the same name in the same schema isn't an
+error. Nothing changes, and the result is ``CREATE SEQUENCE 0``. The existing
+sequence keeps its options and its current value: the new options aren't compared
+with it, or checked (other than their syntax). If the sequence doesn't exist,
+it's the same as ``CREATE SEQUENCE``, so the result is ``CREATE SEQUENCE 1``. A
+schema that doesn't exist is still an error.
+
+``IF NOT EXISTS`` is a vsql extension, not standard SQL. It's flagged as
+``V011-03`` (see :doc:`sql-flagging`).
 
 Options
 -------

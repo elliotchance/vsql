@@ -39,7 +39,6 @@ SET TRANSACTION DIAGNOSTICS SIZE 1, DIAGNOSTICS SIZE 2;
 SET TRANSACTION DIAGNOSTICS SIZE 101;
 SET TRANSACTION DIAGNOSTICS SIZE 1.0;
 EXPLAIN SET TRANSACTION;
-SET LOCAL TRANSACTION DIAGNOSTICS SIZE 1;
 -- error 35000: invalid condition number
 -- error 35000: invalid condition number
 -- error 35000: invalid condition number
@@ -50,7 +49,6 @@ SET LOCAL TRANSACTION DIAGNOSTICS SIZE 1;
 -- msg: SET TRANSACTION
 -- error 42804: data type mismatch for DIAGNOSTICS SIZE: expected exact numeric with scale 0 but got NUMERIC(2, 1)
 -- error 42601: syntax error: Cannot EXPLAIN SET TRANSACTION
--- error 42601: syntax error: unexpected LOCAL
 
 START TRANSACTION;
 SET TRANSACTION DIAGNOSTICS SIZE 1;

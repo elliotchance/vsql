@@ -614,13 +614,6 @@ struct Connection
    	// direct_query_transaction is true when an SQL-transaction was started by
    	// a query in direct (see Connection.direct) that hasn't changed anything.
    	direct_query_transaction bool
-   	// condition_area_limit is the most warnings that are kept during the current
-   	// SQL-transaction, which is set by DIAGNOSTICS SIZE (see
-   	// initiate_transaction).
-   	condition_area_limit int = max_conditions
-   	// next_condition_area_limit is the DIAGNOSTICS SIZE of a SET TRANSACTION, for
-   	// the next SQL-transaction, or 0.
-   	next_condition_area_limit int
    	// cursors are the standing cursors that have been declared, by name (see
    	// DeclareCursor).
    	cursors map[string]&Cursor
@@ -631,6 +624,13 @@ struct Connection
    	statement_timestamp time.Time
    	statement_time_zone i16
    pub mut:
+   	// condition_area_limit is the most warnings that are kept during the current
+   	// SQL-transaction, which is set by DIAGNOSTICS SIZE (see
+   	// initiate_transaction).
+   	condition_area_limit int = max_conditions
+   	// next_condition_area_limit is the DIAGNOSTICS SIZE of a SET TRANSACTION, for
+   	// the next SQL-transaction, or 0.
+   	next_condition_area_limit int
    	// now allows you to override the wall clock that is used. The Time must be
    	// in UTC with a separate offset for the current local timezone (in positive
    	// or negative minutes).
@@ -643,6 +643,11 @@ struct Connection
    	// arbitrary process defined by the application. Instead, you should call
    	// clear_warnings() before starting a block of work.
    	warnings []IError
+   	// more_conditions is true if a warning has been dropped from warnings since
+   	// the last clear_warnings(), because there were more than the limit.
+   	//
+   	// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.b
+   	more_conditions bool
    }
 
 A Connection allows querying and other introspection for a database file. Use open() or open_database() to create a Connection.

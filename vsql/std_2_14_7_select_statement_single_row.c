@@ -251,7 +251,7 @@ static int vsql_m_select(char *sqlstate, const char *sql, int n,
    */
   rc = SQLFetch(stmt);
   if (rc == SQL_NO_DATA) {
-    vsql_m_status(sqlstate, truncated ? "01004" : "00000");
+    vsql_m_assigned(sqlstate, truncated);
   } else if (vsql_m_failed(rc)) {
     vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, stmt);
   } else {

@@ -384,22 +384,43 @@ struct vsql_m_output {
  * vsql_m_get_column sets DATA, INDICATOR, RETURNED_LENGTH and
  * RETURNED_OCTET_LENGTH of the item descriptor area to the value of column i,
  * cast to the data type of the item. A CHARACTER is padded with spaces to its
- * length. The returned lengths are of the value that's assigned (not the value
- * of a CHARACTER VARYING column) (#800).
+ * length. The returned lengths are of the value that's assigned if the item is
+ * a CHARACTER VARYING, otherwise of the value of the column if it's a CHARACTER
+ * VARYING (even when it doesn't fit, or the item isn't a string), otherwise
+ * they're unchanged. A string isn't cut to LENGTH characters yet (#928).
  *
  * ISO/IEC 9075-2:2016(E), 20.12, <output using clause>, General Rules, 5.d.ii and 5.e.i
  */
 static SQLRETURN vsql_m_get_column(SQLHSTMT stmt, SQLSMALLINT i,
                                    struct vsql_m_item *item) {
-  SQLINTEGER *number = item->number, length = 0, characters = 0;
+  SQLINTEGER *number = item->number, length = 0, column_type = 0;
+  SQLINTEGER characters = 0, octets = 0;
   size_t size;
   SQLSMALLINT c = vsql_m_c_type(item, &size);
-  char *data = (char *)malloc(size), *s;
+  char *data = (char *)malloc(size), piece[256], *s;
   SQLRETURN rc;
 
   if (data == NULL) {
     return SQL_ERROR;
   }
+
+  /*
+   * The value of the column is read first because a value that's truncated
+   * below would continue from where it was cut, rather than from its start. An
+   * error here is also an error for the same value below.
+   */
+  if (number[VSQL_M_TYPE] != SQL_VARCHAR) {
+    SQLColAttribute(stmt, i, SQL_DESC_TYPE, NULL, 0, NULL, &column_type);
+  }
+  if (column_type == SQL_VARCHAR) {
+    do {
+      piece[0] = '\0';
+      rc = SQLGetData(stmt, i, SQL_CHAR, piece, sizeof(piece), NULL);
+      characters += vsql_m_characters(piece);
+      octets += (SQLINTEGER)strlen(piece);
+    } while (rc == SQL_SUCCESS_WITH_INFO);
+  }
+
   rc = SQLGetData(stmt, i, c, data, (SQLINTEGER)size, &length);
   if (vsql_m_failed(rc)) {
     free(data);
@@ -408,21 +429,27 @@ static SQLRETURN vsql_m_get_column(SQLHSTMT stmt, SQLSMALLINT i,
   free(item->data);
   item->data = data;
   number[VSQL_M_INDICATOR] = length == SQL_NULL_DATA ? -1 : 0;
+  if (length == SQL_NULL_DATA) {
+    return rc;
+  }
 
-  if (c == SQL_CHAR && length != SQL_NULL_DATA) {
-    for (s = data; *s != '\0'; s++) {
-      if ((*s & 0xC0) != 0x80) {
-        characters++;
-      }
+  if (number[VSQL_M_TYPE] == SQL_CHAR) {
+    SQLINTEGER padded = vsql_m_characters(data);
+
+    s = data + strlen(data);
+    for (; padded < number[VSQL_M_LENGTH]; padded++) {
+      *s++ = ' ';
     }
-    if (number[VSQL_M_TYPE] == SQL_CHAR) {
-      for (; characters < number[VSQL_M_LENGTH]; characters++) {
-        *s++ = ' ';
-      }
-      *s = '\0';
-    }
+    *s = '\0';
+  }
+  if (number[VSQL_M_TYPE] == SQL_VARCHAR) {
+    characters = vsql_m_characters(data);
+    octets = (SQLINTEGER)strlen(data);
+    column_type = SQL_VARCHAR;
+  }
+  if (column_type == SQL_VARCHAR) {
     number[VSQL_M_RETURNED_LENGTH] = characters;
-    number[VSQL_M_RETURNED_OCTET_LENGTH] = (SQLINTEGER)strlen(data);
+    number[VSQL_M_RETURNED_OCTET_LENGTH] = octets;
   }
 
   return rc;

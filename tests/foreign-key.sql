@@ -393,7 +393,7 @@ CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (parent_id INT REFERENCES parent);
 INSERT INTO parent (id) VALUES (1), (2), (4);
 INSERT INTO child (parent_id) VALUES (2);
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 INSERT INTO parent (id) VALUES (3);
 DELETE FROM parent WHERE id = 1;
 INSERT INTO child (parent_id) VALUES (2);
@@ -422,6 +422,49 @@ SELECT * FROM child;
 -- 2: error 40001: serialization failure: avoiding concurrent write on individual row
 -- 2: error 23503: violates foreign key constraint: FOREIGN KEY (PARENT_ID) REFERENCES "test".PUBLIC.PARENT (ID) on "test".PUBLIC.CHILD
 -- 2: error 40001: serialization failure: avoiding concurrent write on individual row
+-- 1: msg: COMMIT
+-- 2: msg: INSERT 1
+-- 2: error 23503: violates foreign key constraint: FOREIGN KEY (PARENT_ID) REFERENCES "test".PUBLIC.PARENT (ID) on "test".PUBLIC.CHILD
+-- 2: PARENT_ID: 2
+-- 2: PARENT_ID: 2
+-- 2: PARENT_ID: 4
+-- 2: PARENT_ID: 3
+
+-- # The same test with the default isolation level (SERIALIZABLE).
+/* connection 1 */
+CREATE TABLE parent (id INT PRIMARY KEY);
+CREATE TABLE child (parent_id INT REFERENCES parent);
+INSERT INTO parent (id) VALUES (1), (2), (4);
+INSERT INTO child (parent_id) VALUES (2);
+START TRANSACTION;
+INSERT INTO parent (id) VALUES (3);
+DELETE FROM parent WHERE id = 1;
+INSERT INTO child (parent_id) VALUES (2);
+INSERT INTO child (parent_id) VALUES (4);
+/* connection 2 */
+INSERT INTO child (parent_id) VALUES (3);
+INSERT INTO child (parent_id) VALUES (1);
+DELETE FROM parent WHERE id = 2;
+DELETE FROM parent WHERE id = 4;
+/* connection 1 */
+COMMIT;
+/* connection 2 */
+INSERT INTO child (parent_id) VALUES (3);
+INSERT INTO child (parent_id) VALUES (1);
+SELECT * FROM child;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 3
+-- 1: msg: INSERT 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: INSERT 1
+-- 1: msg: DELETE 1
+-- 1: msg: INSERT 1
+-- 1: msg: INSERT 1
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: msg: COMMIT
 -- 2: msg: INSERT 1
 -- 2: error 23503: violates foreign key constraint: FOREIGN KEY (PARENT_ID) REFERENCES "test".PUBLIC.PARENT (ID) on "test".PUBLIC.CHILD

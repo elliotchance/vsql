@@ -572,9 +572,6 @@ struct Connection
    	// SQL-transaction, which is set by DIAGNOSTICS SIZE (see
    	// initiate_transaction).
    	condition_area_limit int = max_conditions
-   	// next_condition_area_limit is the DIAGNOSTICS SIZE of a SET TRANSACTION, for
-   	// the next SQL-transaction, or 0.
-   	next_condition_area_limit int
    	// cursors are the standing cursors that have been declared, by name (see
    	// DeclareCursor).
    	cursors map[string]&Cursor
@@ -584,6 +581,11 @@ struct Connection
    	// set_statement_timestamp.
    	statement_timestamp time.Time
    	statement_time_zone i16
+   	// next_transaction is set by SET TRANSACTION for the next SQL-transaction,
+   	// whether it's started by START TRANSACTION or implicitly by a statement.
+   	next_transaction ?TransactionCharacteristics
+   	// isolation_level is the isolation level of the current SQL-transaction.
+   	isolation_level IsolationLevel = .serializable
    pub mut:
    	// now allows you to override the wall clock that is used. The Time must be
    	// in UTC with a separate offset for the current local timezone (in positive
@@ -633,6 +635,11 @@ struct ConnectionOptions
    	// Since locking all database isn't ideal. You could provide a consistent
    	// RwMutex that belongs to each file - such as from a map.
    	mutex &sync.RwMutex = unsafe { nil }
+   	// lock_timeout is how long a REPEATABLE READ or SERIALIZABLE transaction
+   	// (including a statement that changes the database outside of a
+   	// transaction) waits for another connection's transaction to finish, before
+   	// it fails with a 40001 serialization failure. The default is 5 seconds.
+   	lock_timeout time.Duration
    }
 
 ConnectionOptions can modify the behavior of a connection when it is opened. You should not create the ConnectionOptions instance manually. Instead, use default_connection_options() as a starting point and modify the attributes.

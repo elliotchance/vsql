@@ -38,16 +38,20 @@ UTEST_F(db, 6_61_start_tran_not_supported) {
                          SQL_TRANSACTION_READ_COMMITTED),
             SQL_ERROR);
   EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HYC00");
+}
+
+/* REPEATABLE READ runs as SERIALIZABLE. */
+UTEST_F(db, 6_61_start_tran_serializable) {
   EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
                          SQL_TRANSACTION_READ_WRITE,
                          SQL_TRANSACTION_SERIALIZABLE),
-            SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HYC00");
+            SQL_SUCCESS);
+  EXPECT_EQ(SQLEndTran(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_COMMIT),
+            SQL_SUCCESS);
   EXPECT_EQ(SQLStartTran(SQL_HANDLE_DBC, utest_fixture->dbc,
                          SQL_TRANSACTION_READ_WRITE,
                          SQL_TRANSACTION_REPEATABLE_READ),
-            SQL_ERROR);
-  EXPECT_STATE(SQL_HANDLE_DBC, utest_fixture->dbc, "HYC00");
+            SQL_SUCCESS);
 }
 
 UTEST_F(db, 6_61_start_tran_invalid) {

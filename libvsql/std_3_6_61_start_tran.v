@@ -4,9 +4,8 @@ module main
 //
 // Explicitly start an SQL-transaction and set its characteristics.
 //
-// vsql transactions are always READ WRITE and READ COMMITTED, so a READ ONLY
-// transaction, or an isolation level that's stricter than READ COMMITTED,
-// can't be started (General Rules 8 and 9), which are #554 and #664.
+// vsql transactions are always READ WRITE, so a READ ONLY transaction can't be
+// started (General Rule 8), which is #554.
 
 // Codes from Table 36, "Values for TRANSACTION ACCESS MODE with StartTran".
 const sql_transaction_read_only = 0x00000001
@@ -70,8 +69,11 @@ fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level
 	if access_mode == sql_transaction_read_only {
 		return cli_error('HYC00', 'optional feature not implemented: READ ONLY transactions')
 	}
-	if isolation_level in [i64(sql_transaction_repeatable_read), sql_transaction_serializable] {
-		return cli_error('HYC00', 'optional feature not implemented: isolation level stricter than READ COMMITTED')
+	level := match isolation_level {
+		i64(sql_transaction_read_uncommitted) { 'READ UNCOMMITTED' }
+		i64(sql_transaction_read_committed) { 'READ COMMITTED' }
+		i64(sql_transaction_repeatable_read) { 'REPEATABLE READ' }
+		else { 'SERIALIZABLE' }
 	}
 
 	// vsql doesn't support transactions that affect more than one SQL-server
@@ -89,7 +91,7 @@ fn start_tran(handle_type i16, h i64, l1 []i64, access_mode i64, isolation_level
 	for dh in l1 {
 		mut dbc := dbcs[dh] or { continue }
 		mut conn := dbc.conn or { continue }
-		db_query(mut conn, 'START TRANSACTION')!
+		db_query(mut conn, 'START TRANSACTION ISOLATION LEVEL ${level}')!
 		dbc.autocommit_transaction = false
 	}
 

@@ -54,7 +54,7 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 		return sqlstate_42601('a direct SQL statement cannot contain a parameter')
 	}
 
-	// The SQL-transaction has the DIAGNOSTICS SIZE of a SET TRANSACTION. Each
+	// The SQL-transaction has the characteristics of a SET TRANSACTION. Each
 	// constraint has its initial constraint mode, rather than immediate.
 	//
 	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 5.c.iii.1.A, 5.c.iii.1.B and 5.c.iii.2
@@ -62,11 +62,11 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 	if !options.autocommit && !conn.in_transaction() && prepared.is_transaction_initiating() {
 		if !prepared.writes && prepared.stmt is QueryExpression {
 			// Starting the transaction in each catalog needs a write lock (and
-			// fails for a database that can only be read). With READ COMMITTED,
-			// a query sees the same rows without one, so it isn't started until
-			// a statement changes something. See #672.
+			// fails for a database that can only be read), so it isn't started
+			// until a statement changes something (#672). Until then, a query
+			// sees what's committed, whatever the isolation level is.
 			if !conn.direct_query_transaction {
-				conn.initiate_transaction(conn.next_condition_area_limit)
+				conn.initiate_transaction(conn.next_transaction or { TransactionCharacteristics{} })
 			}
 			conn.direct_query_transaction = true
 		} else if conn.direct_query_transaction
@@ -76,15 +76,23 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 			return new_result_msg(msg, prepared.elapsed_parse, 0)
 		} else {
 			// It's started like a START TRANSACTION, which unlocks the file
-			// when it finishes, but it keeps the DIAGNOSTICS SIZE of a SET
+			// when it finishes, but it keeps the characteristics of a SET
 			// TRANSACTION (or of the SQL-transaction that a query started).
-			limit := if conn.direct_query_transaction {
-				conn.condition_area_limit
+			characteristics := if conn.direct_query_transaction {
+				TransactionCharacteristics{
+					isolation_level:      conn.isolation_level
+					condition_area_limit: conn.condition_area_limit
+				}
 			} else {
-				conn.next_condition_area_limit
+				conn.next_transaction or { TransactionCharacteristics{} }
 			}
-			conn.query('START TRANSACTION')!
-			conn.initiate_transaction(limit)
+			mut start := PreparedStmt{
+				stmt: Stmt(StartTransactionStatement{
+					implicit: characteristics
+				})
+				c:    &conn
+			}
+			start.query(map[string]Value{})!
 			conn.direct_query_transaction = false
 		}
 	}

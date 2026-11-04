@@ -160,7 +160,7 @@ SELECT constraint_name, update_rule, delete_rule FROM information_schema.referen
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (parent_id INT REFERENCES parent ON UPDATE CASCADE);
 INSERT INTO parent (id) VALUES (1);
-START TRANSACTION;
+START TRANSACTION ISOLATION LEVEL READ COMMITTED;
 INSERT INTO child (parent_id) VALUES (1);
 /* connection 2 */
 UPDATE parent SET id = 2;
@@ -175,6 +175,30 @@ SELECT * FROM child;
 -- 1: msg: START TRANSACTION
 -- 1: msg: INSERT 1
 -- 2: error 40001: serialization failure: avoiding concurrent write on individual row
+-- 1: msg: COMMIT
+-- 2: msg: UPDATE 1
+-- 2: PARENT_ID: 2
+
+-- # The same test with the default isolation level (SERIALIZABLE).
+/* connection 1 */
+CREATE TABLE parent (id INT PRIMARY KEY);
+CREATE TABLE child (parent_id INT REFERENCES parent ON UPDATE CASCADE);
+INSERT INTO parent (id) VALUES (1);
+START TRANSACTION;
+INSERT INTO child (parent_id) VALUES (1);
+/* connection 2 */
+UPDATE parent SET id = 2;
+/* connection 1 */
+COMMIT;
+/* connection 2 */
+UPDATE parent SET id = 2;
+SELECT * FROM child;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: START TRANSACTION
+-- 1: msg: INSERT 1
+-- 2: error 40001: serialization failure: another connection has a transaction that must finish first
 -- 1: msg: COMMIT
 -- 2: msg: UPDATE 1
 -- 2: PARENT_ID: 2

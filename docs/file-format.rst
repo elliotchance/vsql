@@ -18,6 +18,12 @@ A third file, with the same name followed by ``.wal``, is the `Write-Ahead
 Log`_. It must not be deleted, because it may contain the only copy of a
 statement that was committed when the process stopped.
 
+A fourth file, with the same name followed by ``.isolation``, is created the
+first time a ``REPEATABLE READ`` or ``SERIALIZABLE`` transaction (the default)
+is started (see :doc:`transactions`). Like the ``.session`` file,
+it's always empty, is only used for locking, and can be deleted whenever there
+are no open connections to the database.
+
 The file must include a *Header*, followed by zero or more pages. That is, when
 the database file is initially created it will only have a *Header* and zero
 pages.

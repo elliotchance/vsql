@@ -8,21 +8,51 @@ Syntax
 
 .. code-block:: text
 
-  SET TRANSACTION [ DIAGNOSTICS SIZE <number> ]
+  SET TRANSACTION [ <transaction_mode> [ , <transaction_mode> ] ]
+
+  <transaction_mode> ::=
+      ISOLATION LEVEL <level_of_isolation>
+    | DIAGNOSTICS SIZE <number>
+
+  <level_of_isolation> ::=
+      READ UNCOMMITTED
+    | READ COMMITTED
+    | REPEATABLE READ
+    | SERIALIZABLE
 
 ``SET TRANSACTION`` sets the characteristics of the next transaction, which is
-the next :doc:`start-transaction` (without its own characteristics, that's
-the default), or the next statement that isn't in a transaction. After that
-transaction, the default is used again.
+the next :doc:`start-transaction` (without its own characteristics, that's the
+default), or the next statement that isn't in a transaction. After that
+transaction, the default is used again. If ``SET TRANSACTION`` is used more than
+once, the last one wins. Each kind of mode can only be used once (``42601``).
+
+``SET TRANSACTION`` can't be used in a transaction (``25001``), and doesn't
+start one. ``SET CATALOG``, ``SET SCHEMA`` and ``EXPLAIN`` don't start a
+transaction either, so they don't use it up. ``READ ONLY``, ``READ WRITE`` and
+``LOCAL`` aren't supported yet.
+
+Isolation Level
+---------------
+
+``SERIALIZABLE`` is the default. ``REPEATABLE READ`` runs the same way as
+``SERIALIZABLE``, which stops other connections from committing until the
+transaction ends, and ``READ UNCOMMITTED`` runs the same way as
+``READ COMMITTED``. See *Isolation Levels* in :doc:`transactions`.
+
+For a statement that runs on its own, ``READ COMMITTED`` means it doesn't wait
+for other connections' ``SERIALIZABLE`` transactions to finish (but it fails if
+it needs to commit changes while one is active).
+
+If a holdable cursor is still open from the previous transaction, the isolation
+level can't be changed (``25008``).
+
+Diagnostics Size
+----------------
 
 ``DIAGNOSTICS SIZE`` is the most warnings that are kept for a statement, which
 is between 1 and 100 (and 100 when it's not given). Less than 1 is ``35000``,
 a number that isn't an integer is ``42804``, and more than 100 is the warning
 ``01012`` (and 100 is used).
-
-``SET TRANSACTION`` can't be used in a transaction (``25001``), and doesn't
-start one. ``ISOLATION LEVEL``, ``READ ONLY``, ``READ WRITE`` and ``LOCAL``
-aren't supported yet.
 
 Examples
 --------
@@ -35,7 +65,13 @@ Examples
   -- warning 01004: string data, right truncation
   -- COL1: abcabc
 
+  SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+  DELETE FROM products;
+  -- msg: SET TRANSACTION
+  -- msg: DELETE 1
+
 See Also
 --------
 
 - :doc:`start-transaction`
+- :doc:`transactions`

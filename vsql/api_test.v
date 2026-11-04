@@ -367,6 +367,26 @@ fn test_current_catalog_name() {
 	assert db.current_catalog_name() == ':memory:'
 }
 
+// NULL can only be the value of these with a dynamic parameter.
+fn test_set_session_names_null() ! {
+	mut db := open(':memory:')!
+	params := {
+		'?1': new_null_value(.is_varchar)
+	}
+	for sql_text, sqlstate in {
+		'SET NAMES ?':   '2C000'
+		'SET SCHEMA ?':  '3F000'
+		'SET CATALOG ?': '3D000'
+	} {
+		mut stmt := db.prepare(sql_text)!
+		stmt.query(params) or {
+			assert sqlstate_from_int(err.code()) == sqlstate
+			continue
+		}
+		assert false, sql_text
+	}
+}
+
 fn test_prepared_stmt_dynamic_parameters() {
 	mut db := open(':memory:')!
 	mut stmt := db.prepare("VALUES ROW(?, '?', ?)")!

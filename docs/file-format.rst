@@ -22,7 +22,9 @@ A fourth file, with the same name followed by ``.isolation``, is created the
 first time a ``REPEATABLE READ`` or ``SERIALIZABLE`` transaction (the default)
 is started (see :doc:`transactions`). Like the ``.session`` file,
 it's always empty, is only used for locking, and can be deleted whenever there
-are no open connections to the database.
+are no open connections to the database. The same goes for a fifth file, with
+that name followed by ``.queue``, which is created the first time a connection
+waits for a transaction to start.
 
 The file must include a *Header*, followed by zero or more pages. That is, when
 the database file is initially created it will only have a *Header* and zero

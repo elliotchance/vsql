@@ -16,6 +16,14 @@
 //   (see ConnectionOptions) for it, before failing with 40001 (serialization
 //   failure). They wait before the database file is locked, so the transaction
 //   that holds the lock can still run its statements.
+// - To wait, a connection polls, and the operating system doesn't keep a queue
+//   of those. A connection that releases the lock and needs it again takes it
+//   back long before anything polling can notice, so it would keep the lock
+//   until its work is finished, and everything else would run out of time. So
+//   they first take turns on a second lock (the isolation file followed by
+//   ".queue"), which is only held until the first lock is obtained, by the one
+//   connection that's next. Which one is next is left to chance, rather than the
+//   order they arrived, but it can't be the one that's holding the lock.
 //
 // That makes the transaction serializable: nothing is committed while it's
 // active, so it runs as if it came after every transaction that committed
@@ -48,6 +56,12 @@ fn isolation_path(path string) string {
 	return '${path}.isolation'
 }
 
+// isolation_queue_path is the file that is locked by the connection that's next
+// to get the lock on the isolation file at path.
+fn isolation_queue_path(path string) string {
+	return '${path}.queue'
+}
+
 // acquire gets the lock, waiting up to timeout if another connection holds a
 // lock that conflicts. Otherwise, it fails with a serialization failure with
 // message. A lock that is already held by this connection is kept as it is. A
@@ -57,7 +71,27 @@ fn (mut l IsolationLock) acquire(state IsolationLockState, timeout time.Duration
 		return
 	}
 
+	// Without a timeout it's only one attempt, so it doesn't wait for a turn.
+	if timeout <= 0 {
+		if !l.try_lock(state)! {
+			return sqlstate_40001(message)
+		}
+		return
+	}
+
 	deadline := time.now().add(timeout)
+	mut queue := IsolationLock{
+		path: isolation_queue_path(l.path)
+	}
+	queue.wait(.exclusive, deadline, message)!
+	defer {
+		queue.release()
+	}
+	l.wait(state, deadline, message)!
+}
+
+// wait polls for the lock until the deadline.
+fn (mut l IsolationLock) wait(state IsolationLockState, deadline time.Time, message string) ! {
 	for !l.try_lock(state)! {
 		if time.now() >= deadline {
 			return sqlstate_40001(message)

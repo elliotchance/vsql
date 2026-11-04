@@ -1372,8 +1372,8 @@
 6.31/GR/2.b.i            implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
 6.31/GR/2.b.ii           container    - -
 6.31/GR/2.b.ii.1         implemented  vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql
-6.31/GR/2.b.ii.2         missing      - - the result isn't normalized, like literals (#762)
-6.31/GR/2.b.ii.2.A       missing      - - the result isn't normalized, like literals (#762)
+6.31/GR/2.b.ii.2         missing      - - the result isn't normalized (#902)
+6.31/GR/2.b.ii.2.A       missing      - - the result isn't normalized (#902)
 6.31/GR/2.b.ii.2.B       impl-defined vsql/std_2_6_31_string_value_expression.v tests/concatenation.sql S1 followed by S2
 6.31/GR/2.b.ii.3         container    - -
 6.31/GR/2.b.ii.3.A       n/a          - - LOBs (T041)
@@ -1571,8 +1571,8 @@
 6.32/GR/7.d              container    - -
 6.32/GR/7.d.i            implemented  vsql/std_2_6_30_numeric_value_function.v,vsql/case_mappings.v tests/fold.sql,tests/fold-case-mappings.sql
 6.32/GR/7.d.ii           implemented  vsql/std_2_6_30_numeric_value_function.v,vsql/case_mappings.v tests/fold.sql,tests/fold-case-mappings.sql
-6.32/GR/7.e              missing      - - the result isn't normalized, like literals (#762)
-6.32/GR/7.e.i            missing      - - the result isn't normalized, like literals (#762)
+6.32/GR/7.e              missing      - - the result isn't normalized (#902)
+6.32/GR/7.e.i            missing      - - the result isn't normalized (#902)
 6.32/GR/7.e.ii           implemented  vsql/std_2_6_32_string_value_function.v tests/fold.sql
 6.32/GR/7.f              definition   - -
 6.32/GR/7.g              container    - -

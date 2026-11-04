@@ -308,11 +308,11 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 				if is_schema_needed {
 					write_line(mut w, 'SET SCHEMA ${new_varchar_value(table.name.schema_name).literal()};')!
 				}
-				write_line(mut w, options.output_definition(Table{
+				write_line(mut w, options.output_definition(without_catalog_qualifiers(Table{
 					...table
 					name:         options.output_name(table.name)
 					foreign_keys: []ForeignKey{}
-				}.str(), table.name) + '\n')!
+				}.str()), table.name) + '\n')!
 				if is_schema_needed {
 					write_line(mut w, "SET SCHEMA '${default_schema_name}';\n")!
 				}

@@ -303,13 +303,6 @@ fn (mut f Storage) open_file(path string) ! {
 	f.file_identity = open_file_identity(f.file)
 }
 
-// file_replaced returns true if the open file is no longer the file at path.
-fn (f Storage) file_replaced(path string) bool {
-	identity := path_file_identity(path) or { return true }
-
-	return identity != f.file_identity
-}
-
 // open must be called after open_file and the file being locked. exclusive
 // must only be true if the file is locked exclusively.
 fn (mut f Storage) open(catalog_name string, exclusive bool) ! {

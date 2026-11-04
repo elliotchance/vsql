@@ -28,3 +28,11 @@ fn path_file_identity(path string) ?FileIdentity {
 
 	return FileIdentity{st.dev, st.inode}
 }
+
+// file_replaced returns true if the open file is no longer the file at path.
+// It's only needed here, since Windows doesn't let an open file be replaced.
+fn (f Storage) file_replaced(path string) bool {
+	identity := path_file_identity(path) or { return true }
+
+	return identity != f.file_identity
+}

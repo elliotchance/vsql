@@ -14,26 +14,26 @@
 17.1/CR/1                implemented  vsql/std_2_17_1_start_transaction_statement.y tests/std_1_8_5_flagging.sql
 # 17.2, <set transaction statement>
 17.2                     implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_transaction.sql
-17.2/SR/1                n/a          - - LOCAL (T251)
+17.2/SR/1                implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_local_transaction.sql
 17.2/GR/1                container    - -
 17.2/GR/1.a              implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_transaction.sql
 17.2/GR/1.a.i            implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_transaction.sql
 17.2/GR/1.a.ii           implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_3_isolation_levels.sql only when the statement has a <level of isolation>
-17.2/GR/1.b              n/a          - - LOCAL (T251)
-17.2/GR/1.b.i            n/a          - - LOCAL (T251)
-17.2/GR/1.b.ii           n/a          - - LOCAL (T251)
-17.2/GR/1.b.iii          n/a          - - LOCAL (T251)
-17.2/GR/1.b.iv           n/a          - - LOCAL (T251)
-17.2/GR/1.b.v            n/a          - - LOCAL (T251)
-17.2/GR/1.b.vi           n/a          - - LOCAL (T251)
-17.2/GR/1.b.vii          n/a          - - LOCAL (T251)
+17.2/GR/1.b              container    - -
+17.2/GR/1.b.i            implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_local_transaction.sql
+17.2/GR/1.b.ii           n/a          - - 1.b.i always raises 0A001 first
+17.2/GR/1.b.iii          n/a          - - 1.b.i always raises 0A001 first
+17.2/GR/1.b.iv           n/a          - - 1.b.i always raises 0A001 first
+17.2/GR/1.b.v            n/a          - - 1.b.i always raises 0A001 first
+17.2/GR/1.b.vi           n/a          - - 1.b.i always raises 0A001 first
+17.2/GR/1.b.vii          n/a          - - 1.b.i always raises 0A001 first
 17.2/GR/2                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
 17.2/GR/3                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql the most is 100
 17.2/GR/4                definition   - -
 17.2/GR/5                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
 17.2/GR/6                implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_3_isolation_serializable.sql,tests/std_2_17_3_isolation_repeatable_read.sql READ UNCOMMITTED runs as READ COMMITTED; REPEATABLE READ uses snapshot isolation
 17.2/GR/7                implemented  vsql/std_2_17_2_set_transaction_statement.v tests/std_2_17_2_set_transaction.sql
-17.2/CR/1                n/a          - - LOCAL (T251)
+17.2/CR/1                implemented  vsql/std_2_17_2_set_transaction_statement.y tests/std_2_17_2_set_local_transaction.sql
 # 17.3, <transaction characteristics>
 17.3                     implemented  vsql/std_2_17_3_transaction_characteristics.v tests/std_2_17_2_set_transaction.sql
 17.3/SR/1                definition   - -

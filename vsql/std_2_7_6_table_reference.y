@@ -81,6 +81,14 @@ correlation_or_recognition:
       columns: $3.v as []Identifier
     }
   }
+// The lexer can't tell that this ILIKE is a name, since it's between a value and
+// a left parenthesis (see is_ilike_operator). It can't be an operator here.
+| OPERATOR_ILIKE parenthesized_derived_column_list {
+    $$.v = Correlation{
+      name:    new_column_identifier('ILIKE')!
+      columns: $2.v as []Identifier
+    }
+  }
 
 derived_table:
   table_subquery {

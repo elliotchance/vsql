@@ -5,20 +5,23 @@ module vsql
 // Specify a pattern-match comparison.
 
 // CharacterLikePredicate for "LIKE" and "NOT LIKE", with an optional
-// "ESCAPE".
+// "ESCAPE". It's also "ILIKE" and "NOT ILIKE" if insensitive is true, which is
+// an extension of the standard (V010-01).
 struct CharacterLikePredicate {
-	left   RowValueConstructorPredicand
-	right  CharacterValueExpression
-	escape ?&CharacterValueExpression
-	not    bool
+	left        RowValueConstructorPredicand
+	right       CharacterValueExpression
+	escape      ?&CharacterValueExpression
+	not         bool
+	insensitive bool
 }
 
 // CharacterLikePredicatePart2 is the "LIKE <pattern>" (or "NOT LIKE") while
 // it's being parsed, before it has the value on the left.
 struct CharacterLikePredicatePart2 {
-	right  CharacterValueExpression
-	escape ?&CharacterValueExpression
-	not    bool
+	right       CharacterValueExpression
+	escape      ?&CharacterValueExpression
+	not         bool
+	insensitive bool
 }
 
 fn ref_character_value_expression(e CharacterValueExpression) &CharacterValueExpression {
@@ -33,12 +36,17 @@ fn check_string_operands(op string, left CompileResult, right CompileResult) ! {
 	}
 }
 
+// operator is the name of the predicate, for its text and its errors.
+fn (e CharacterLikePredicate) operator() string {
+	return if e.insensitive { 'ILIKE' } else { 'LIKE' }
+}
+
 fn (e CharacterLikePredicate) pstr(params map[string]Value) string {
 	mut s := e.left.pstr(params)
 	if e.not {
 		s += ' NOT'
 	}
-	s += ' LIKE ${e.right.pstr(params)}'
+	s += ' ${e.operator()} ${e.right.pstr(params)}'
 
 	if escape := e.escape {
 		s += ' ESCAPE ${escape.pstr(params)}'
@@ -63,9 +71,9 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 		}
 	}
 	has_escape := e.escape != none
-	check_string_operands('LIKE', compiled_l, compiled_right)!
+	check_string_operands(e.operator(), compiled_l, compiled_right)!
 	if has_escape {
-		check_string_operands('LIKE', compiled_l, compiled_escape)!
+		check_string_operands(e.operator(), compiled_l, compiled_escape)!
 	}
 
 	return CompileResult{
@@ -91,8 +99,14 @@ fn (e CharacterLikePredicate) compile(mut c Compiler) !CompileResult {
 				escape = escape_character(escape_value)!
 			}
 
-			result := like_matches(left.string_value(), like_pattern(right.string_value(),
-				escape)!)
+			// The escape character is found in the pattern before it's folded, so
+			// it only ever escapes what it's written as.
+			pattern := like_pattern(right.string_value(), escape)!
+			result := if e.insensitive {
+				like_matches(ilike_value(left.string_value()), ilike_pattern(pattern))
+			} else {
+				like_matches(like_value(left.string_value()), pattern)
+			}
 
 			// ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, Syntax Rules, 3.b
 			// and 3.c
@@ -160,15 +174,78 @@ fn like_pattern(pattern string, escape ?rune) ![]LikeChar {
 	return chars
 }
 
-// like_matches reports whether s matches pat, where "%" matches any number of
-// characters (including none) and "_" matches exactly one character. All other
-// characters must match exactly, so trailing spaces aren't ignored (the
+// LikeValueChar is one character of the value being matched. A case folded
+// character can become more than one (ß is "ss"), and each one after the first
+// has continues set.
+struct LikeValueChar {
+	ch        rune
+	continues bool
+}
+
+// like_value is the characters of s to match with LIKE.
+fn like_value(s string) []LikeValueChar {
+	return s.runes().map(LikeValueChar{it, false})
+}
+
+// ilike_value is the characters of s to match with ILIKE.
+fn ilike_value(s string) []LikeValueChar {
+	mut chars := []LikeValueChar{cap: s.len}
+	for c in s.runes() {
+		for i, folded in case_fold(c) {
+			chars << LikeValueChar{folded, i > 0}
+		}
+	}
+
+	return chars
+}
+
+// ilike_pattern folds the characters of a LIKE pattern. It must be after
+// like_pattern, because a wildcard or an escape character isn't a letter to be
+// folded.
+fn ilike_pattern(pattern []LikeChar) []LikeChar {
+	mut chars := []LikeChar{cap: pattern.len}
+	for c in pattern {
+		if c.wildcard {
+			chars << c
+			continue
+		}
+
+		for folded in case_fold(c.ch) {
+			chars << LikeChar{folded, false}
+		}
+	}
+
+	return chars
+}
+
+// case_fold returns the characters that c is compared as by ILIKE, using the
+// same mappings as UPPER and LOWER. Characters are the same if UPPER or LOWER
+// makes them the same, so it's LOWER(UPPER(LOWER(c))): the first LOWER is for ẞ,
+// which UPPER doesn't change, but LOWER makes it ß, which UPPER makes SS.
+fn case_fold(c rune) []rune {
+	if c < 0x80 {
+		return [if c >= `A` && c <= `Z` { c + 32 } else { c }]
+	}
+
+	lower := replace_case_mappings(c.str(), lower_case_mappings)
+	upper := replace_case_mappings(lower, upper_case_mappings)
+
+	return replace_case_mappings(upper, lower_case_mappings).runes()
+}
+
+// like_matches reports whether chars matches pat, where "%" matches any number
+// of characters (including none) and "_" matches exactly one character. All
+// other characters must match exactly, so trailing spaces aren't ignored (the
 // collation has NO PAD).
+//
+// A wildcard can't start inside of a character that was folded into several. So
+// with ILIKE, 'ß' matches 'SS' and '_' but not 'S%' or 'S_'. This is the same as
+// the substrings of the standard, each of which is a number of whole characters
+// of the value.
 //
 // ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, Syntax Rules, 3.d
 // ISO/IEC 9075-2:2016(E), 8.5, <like predicate>, General Rules, 3.c and 3.d
-fn like_matches(s string, pat []LikeChar) bool {
-	chars := s.runes()
+fn like_matches(chars []LikeValueChar, pat []LikeChar) bool {
 	mut i := 0 // position in chars
 	mut j := 0 // position in pat
 
@@ -180,16 +257,19 @@ fn like_matches(s string, pat []LikeChar) bool {
 	mut percent_i := 0
 
 	for i < chars.len {
-		if j < pat.len && pat[j].wildcard && pat[j].ch == `%` {
-			percent = j
-			percent_i = i
+		if j < pat.len && pat[j].wildcard && !chars[i].continues {
+			if pat[j].ch == `%` {
+				percent = j
+				percent_i = i
+			} else {
+				i = next_like_char(chars, i)
+			}
 			j++
-		} else if j < pat.len && ((pat[j].wildcard && pat[j].ch == `_`)
-			|| pat[j].ch == chars[i]) {
+		} else if j < pat.len && !pat[j].wildcard && pat[j].ch == chars[i].ch {
 			i++
 			j++
 		} else if percent >= 0 {
-			percent_i++
+			percent_i = next_like_char(chars, percent_i)
 			i = percent_i
 			j = percent + 1
 		} else {
@@ -203,4 +283,14 @@ fn like_matches(s string, pat []LikeChar) bool {
 	}
 
 	return j == pat.len
+}
+
+// next_like_char returns the position after the whole character at i.
+fn next_like_char(chars []LikeValueChar, i int) int {
+	mut next := i + 1
+	for next < chars.len && chars[next].continues {
+		next++
+	}
+
+	return next
 }

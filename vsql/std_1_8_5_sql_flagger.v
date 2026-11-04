@@ -57,6 +57,9 @@ module vsql
 // V009: Comparison operators.
 // V009-01: != as an alias for <>.
 //
+// V010: Predicates.
+// V010-01: ILIKE and NOT ILIKE (a case-insensitive LIKE).
+//
 // V011: IF [NOT] EXISTS.
 // V011-01: CREATE TABLE IF NOT EXISTS.
 // V011-02: CREATE SCHEMA IF NOT EXISTS.
@@ -85,6 +88,7 @@ const vsql_sort_key_subquery = 'V006-03'
 const vsql_sort_key_aggregate = 'V006-04'
 const vsql_select_without_from = 'V008-01'
 const vsql_bang_equals = 'V009-01'
+const vsql_ilike = 'V010-01'
 const vsql_create_table_if_not_exists = 'V011-01'
 const vsql_create_schema_if_not_exists = 'V011-02'
 const vsql_create_sequence_if_not_exists = 'V011-03'

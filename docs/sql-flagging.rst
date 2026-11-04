@@ -134,6 +134,12 @@ extension of it.
    * - ``V009-01``
      - ``!=`` as an alias for ``<>``.
 
+   * - ``V010``
+     - Predicates.
+
+   * - ``V010-01``
+     - ``ILIKE`` and ``NOT ILIKE`` (a case-insensitive ``LIKE``).
+
    * - ``V011``
      - ``IF [NOT] EXISTS``.
 

@@ -15,6 +15,23 @@ sequence_generator_definition:
       options: $4.v as []SequenceGeneratorOption
     }
   }
+| CREATE SEQUENCE if_not_exists sequence_generator_name {
+    flag(mut yylex, 'T176')
+    flag(mut yylex, vsql_create_sequence_if_not_exists)
+    $$.v = SequenceGeneratorDefinition{
+      name:          $4.v as Identifier
+      if_not_exists: true
+    }
+  }
+| CREATE SEQUENCE if_not_exists sequence_generator_name sequence_generator_options {
+    flag(mut yylex, 'T176')
+    flag(mut yylex, vsql_create_sequence_if_not_exists)
+    $$.v = SequenceGeneratorDefinition{
+      name:          $4.v as Identifier
+      options:       $5.v as []SequenceGeneratorOption
+      if_not_exists: true
+    }
+  }
 
 // sequence_generator_option is already a list of options, so it can't repeat.
 // There's no <sequence generator data type option> (#399), so the data type is

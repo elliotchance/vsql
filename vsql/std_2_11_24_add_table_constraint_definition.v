@@ -20,7 +20,10 @@ fn (d AddTableConstraintDefinition) execute(mut conn Connection, mut catalog Cat
 	mut elements := table.elements()
 	elements << d.constraint
 
-	definition := TableDefinition{table.name, elements}
+	definition := TableDefinition{
+		table_name:     table.name
+		table_elements: elements
+	}
 	mut new_table := Table{
 		...definition.table(table.name, table.tid)!
 		id: table.id

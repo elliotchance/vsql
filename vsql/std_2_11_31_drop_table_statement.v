@@ -16,6 +16,7 @@ import time
 struct DropTableStatement {
 	table_name Identifier
 	behavior   string // CASCADE or RESTRICT
+	if_exists  bool   // V104-02, a table that doesn't exist isn't an error
 }
 
 fn (stmt DropTableStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
@@ -30,7 +31,16 @@ fn (stmt DropTableStatement) execute(mut conn Connection, _ map[string]Value, el
 	// INFORMATION_SCHEMA).
 	//
 	// ISO/IEC 9075-2:2016(E), 11.31, <drop table statement>, Syntax Rules, 2 and 3
-	table_name := conn.resolve_table_identifier(stmt.table_name, false)!
+	table_name := conn.resolve_table_identifier(stmt.table_name, false) or {
+		// A table can't exist in a schema that doesn't exist. Any other error,
+		// such as the table being read-only or in a catalog that doesn't exist,
+		// is the same as without IF EXISTS.
+		if stmt.if_exists && (err is SQLState42P01 || err is SQLState3F000) {
+			return new_result_msg('DROP TABLE 0', elapsed_parse, t.elapsed())
+		}
+
+		return err
+	}
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
 	if stmt.behavior == 'RESTRICT' && catalog.storage.referencing_tables(table).len > 0 {

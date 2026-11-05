@@ -7,8 +7,9 @@ import time
 // Define a schema.
 
 struct SchemaDefinition {
-	schema_name Identifier
-	elements    []SchemaElement
+	schema_name   Identifier
+	elements      []SchemaElement
+	if_not_exists bool // V101-01, a schema that already exists isn't an error
 }
 
 type SchemaElement = SequenceGeneratorDefinition | TableDefinition
@@ -30,6 +31,10 @@ fn (stmt SchemaDefinition) execute(mut conn Connection, _ map[string]Value, elap
 	//
 	// ISO/IEC 9075-2:2016(E), 11.1, <schema definition>, Syntax Rules, 3
 	if schema_name in catalog.storage.schemas || schema_name == information_schema_name {
+		if stmt.if_not_exists {
+			return new_result_msg('CREATE SCHEMA 0', elapsed_parse, t.elapsed())
+		}
+
 		return sqlstate_42p06(schema_name) // duplicate schema
 	}
 
@@ -64,12 +69,12 @@ fn (stmt SchemaDefinition) create_elements(mut conn Connection, schema Identifie
 			SequenceGeneratorDefinition {
 				// ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>, Syntax Rules, 2
 				check_schema_element_name(conn, element.name)!
-				element.create(mut conn)!
+				_ := element.create(mut conn)!
 			}
 			TableDefinition {
 				// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 6
 				check_schema_element_name(conn, element.table_name)!
-				element.create(mut conn)!
+				_ := element.create(mut conn)!
 			}
 		}
 	}

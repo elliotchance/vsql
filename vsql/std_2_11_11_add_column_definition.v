@@ -40,7 +40,7 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 		...definition.table(table.name, table.tid)!
 		id: table.id
 	}
-	new_table.name_constraints(catalog.storage.schema_constraint_names(table.name))!
+	new_table.name_constraints(catalog.storage.schema_constraint_names(table.name), catalog.storage.schema_index_names(table.name))!
 	resolve_generated_columns(mut conn, mut new_table, table.columns.len)!
 	resolve_foreign_keys(mut conn, mut new_table)!
 	column := new_table.columns.last()
@@ -103,6 +103,5 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	}
 	updated << moved
 	catalog.storage.check_unique_constraints(new_table, updated)!
-	_, time_zone := conn.now()
-	catalog.storage.check_foreign_keys(new_table, updated, time_zone)!
+	catalog.storage.check_foreign_keys(mut conn, new_table, updated)!
 }

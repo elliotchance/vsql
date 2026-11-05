@@ -120,8 +120,15 @@ fn (i Index) entry_key(t Table, row Row) ![]u8 {
 // start with the same bytes, because each value has a known length (see
 // key_value_length).
 fn (i Index) entry_values(t Table, row Row) ![]u8 {
+	return i.entry_prefix(t, row, i.columns.len)
+}
+
+// entry_prefix is the start of the key of the entry of a row in the index, with
+// only the values of its first n columns (see entry_values). Every entry for a
+// row with those values starts with it. Only those columns need to be in row.
+fn (i Index) entry_prefix(t Table, row Row, n int) ![]u8 {
 	mut key := index_entry_prefix(i.id)
-	for column in i.columns {
+	for column in i.columns[..n] {
 		value := row.data[column.name]
 		mut part := new_empty_bytes()
 		if value.is_null {
@@ -263,10 +270,11 @@ fn (mut f Storage) load_indexes() ! {
 
 // create_index adds the index (to table t), with an entry for each row that's
 // visible. The caller must make sure that there are no rows of the table that
-// aren't visible, see has_concurrent_changes. A UNIQUE index can't be created
-// when two rows have the same values (that aren't NULL), and then nothing is
-// changed.
-fn (mut f Storage) create_index(definition Index, t Table) ! {
+// aren't visible, see has_concurrent_changes. When check_unique, a UNIQUE index
+// can't be created when two rows have the same values (that aren't NULL), and
+// then nothing is changed. The index of a UNIQUE constraint isn't checked here,
+// because the constraint is checked instead (and it might be deferred).
+fn (mut f Storage) create_index(definition Index, t Table, check_unique bool) ! {
 	f.isolation_start()!
 	defer {
 		f.end_isolation()
@@ -276,7 +284,7 @@ fn (mut f Storage) create_index(definition Index, t Table) ! {
 	mut seen := map[string]bool{}
 	for object in f.read_objects(row_key_prefix(t.id), row_key_prefix(t.id + 1))! {
 		row := new_row_from_bytes(t, object.value, object.tid).for_storage()
-		if definition.unique && !definition.has_null(row) {
+		if check_unique && definition.unique && !definition.has_null(row) {
 			values := definition.entry_values(t, row)!.bytestr()
 			if values in seen {
 				return definition.unique_violation(t)
@@ -384,12 +392,32 @@ fn (i Index) unique_violation(t Table) IError {
 // for the columns of a UNIQUE index of t as another row in t, or might once
 // another transaction finishes. A row with a NULL in any of the columns never
 // conflicts. Like check_unique_constraints, the rows must have already been
-// written (and have their id), so that UPDATE t SET u = u + 1 works. Only the
-// entries of the index that have the same values are read.
+// written, so that UPDATE t SET u = u + 1 works. The index of a UNIQUE
+// constraint is checked by check_unique_constraints instead.
 fn (mut f Storage) check_unique_indexes(t Table, rows []Row) ! {
-	indexes := f.table_indexes(t.id).filter(it.unique)
+	indexes := f.table_indexes(t.id).filter(it.unique && !t.is_constraint_index(it))
 	if indexes.len == 0 || rows.len == 0 {
 		return
+	}
+
+	for index in indexes {
+		for row in rows {
+			if f.has_duplicate_entry(index, t, row)! {
+				return index.unique_violation(t)
+			}
+		}
+	}
+}
+
+// has_duplicate_entry is true when another row of t (including another new
+// row) has an entry in the index with the same values as row, which has already
+// been written. It's an error if another transaction is creating or deleting
+// one, since it might or might not exist once that transaction finishes. A row
+// with a NULL in any of the columns never has a duplicate. Only the entries
+// with the same values are read.
+fn (mut f Storage) has_duplicate_entry(index Index, t Table, row Row) !bool {
+	if index.has_null(row) {
+		return false
 	}
 
 	f.isolation_start()!
@@ -397,34 +425,157 @@ fn (mut f Storage) check_unique_indexes(t Table, rows []Row) ! {
 		f.end_isolation()
 	}
 
-	for index in indexes {
-		for row in rows {
-			if index.has_null(row) {
-				continue
-			}
+	mut r := row
+	r.object_key(t)!
+	values := index.entry_values(t, r)!
+	mut iter := f.btree.new_range_iterator(values, next_key(values))
+	for {
+		object := iter.next() or { break }
 
-			values := index.entry_values(t, row)!
-			mut iter := f.btree.new_range_iterator(values, next_key(values))
-			for {
-				object := iter.next() or { break }
+		// The entry of the row itself isn't a duplicate.
+		if object.key[values.len..] == r.id {
+			continue
+		}
 
-				// The entry of the row itself isn't a conflict, but the entry of
-				// any other row (including another new row) is.
-				if object.key[values.len..] == row.id {
-					continue
-				}
+		if f.is_concurrent_write(object) {
+			return sqlstate_40001('avoiding concurrent write on individual row')
+		}
 
-				if f.is_concurrent_write(object) {
-					return sqlstate_40001('avoiding concurrent write on individual row')
-				}
+		if object.xid == 0 {
+			return true
+		}
+	}
+	if err := iter.err {
+		return err
+	}
 
-				if object.xid == 0 {
-					return index.unique_violation(t)
-				}
-			}
-			if err := iter.err {
-				return err
-			}
+	return false
+}
+
+// is_constraint_index is true when the index belongs to a UNIQUE constraint of
+// t, which has the same name. It's created and dropped with the constraint, see
+// build_constraint_indexes.
+fn (t Table) is_constraint_index(index Index) bool {
+	return t.unique_constraints.any(it.name == index.name.entity_name)
+}
+
+// constraint_index is the index of the UNIQUE constraint of t, see
+// build_constraint_indexes. A table in a file from before indexes doesn't have
+// one until it's needed, so it's created then.
+fn (mut f Storage) constraint_index(t Table, constraint UniqueConstraint) !Index {
+	name := t.constraint_identifier(constraint.name)
+	return f.indexes[name.storage_id()] or {
+		f.create_constraint_index(t, name, constraint.columns, true)!
+	}
+}
+
+// foreign_key_index is the index that a FOREIGN KEY of t uses to find the rows
+// that reference a row, see build_constraint_indexes. Like constraint_index,
+// it's created when it's needed if there isn't one.
+fn (mut f Storage) foreign_key_index(t Table, key ForeignKey) !Index {
+	return f.find_foreign_key_index(t, key, '') or {
+		f.create_constraint_index(t, t.constraint_identifier(key.name), key.columns, false)!
+	}
+}
+
+// find_foreign_key_index is the first index of t (by name), other than the one
+// named except, whose first columns are the columns of a FOREIGN KEY of t (in
+// any order), so it has the entries of every row that references a row in the
+// order of that row's key.
+fn (f Storage) find_foreign_key_index(t Table, key ForeignKey, except string) ?Index {
+	mut columns := key.columns.clone()
+	columns.sort()
+	for index in f.table_indexes(t.id) {
+		if index.columns.len < columns.len || index.name.entity_name == except {
+			continue
+		}
+
+		mut leading := index.columns[..columns.len].map(it.name)
+		leading.sort()
+		if leading == columns {
+			return index
+		}
+	}
+
+	return none
+}
+
+// build_constraint_indexes creates an index for each UNIQUE constraint and
+// FOREIGN KEY of a new definition of t (whose old definition is old) that
+// doesn't have one. These indexes let the constraints be checked without
+// reading every row of a table.
+//
+// A UNIQUE constraint has its own UNIQUE index with the same name as the
+// constraint, which is dropped with it. A FOREIGN KEY uses any index whose first
+// columns are its columns (see find_foreign_key_index), otherwise it gets a new
+// one with the same name as the constraint, which is kept as an ordinary index
+// if the constraint is dropped.
+//
+// A new constraint can't have the same name as an index in the schema of the
+// table, because its index would need the name.
+fn (mut f Storage) build_constraint_indexes(old Table, t Table) ! {
+	for constraint in old.unique_constraints {
+		if t.unique_constraints.any(it.name == constraint.name) {
+			continue
+		}
+
+		name := t.constraint_identifier(constraint.name)
+		if index := f.indexes[name.storage_id()] {
+			f.delete_index(index)!
+		}
+	}
+
+	for constraint in t.unique_constraints {
+		if !old.unique_constraints.any(it.name == constraint.name) {
+			f.create_constraint_index(t, t.constraint_identifier(constraint.name), constraint.columns,
+				true)!
+		}
+	}
+
+	for key in t.foreign_keys {
+		f.foreign_key_index(t, key)!
+	}
+}
+
+// create_constraint_index creates the index of a constraint of t (see
+// build_constraint_indexes) and returns it. It's an error if another transaction
+// has written or deleted a row of t, because the index wouldn't have its entry.
+fn (mut f Storage) create_constraint_index(t Table, name Identifier, columns []string, unique bool) !Index {
+	if name.storage_id() in f.indexes {
+		return sqlstate_42p07('index', name.str()) // duplicate index
+	}
+
+	f.isolation_start()!
+	defer {
+		f.end_isolation()
+	}
+
+	f.check_concurrent_rows(t)!
+	f.create_index(Index{
+		name:       name
+		table_name: t.name
+		columns:    columns.map(IndexColumn{ name: it })
+		unique:     unique
+	}, t, false)!
+
+	return f.indexes[name.storage_id()]
+}
+
+// check_drop_index returns an error if a constraint of t needs the index, so it
+// can't be dropped: the index of a UNIQUE constraint, or the only index that a
+// FOREIGN KEY can use (see build_constraint_indexes).
+fn (f Storage) check_drop_index(t Table, index Index) ! {
+	if t.is_constraint_index(index) {
+		return sqlstate_2bp01('constraint ${requote_identifier(index.name.entity_name)} on ${t.name}')
+	}
+
+	for key in t.foreign_keys {
+		used := f.find_foreign_key_index(t, key, '') or { continue }
+		if used.name.entity_name != index.name.entity_name {
+			continue
+		}
+		f.find_foreign_key_index(t, key, index.name.entity_name) or {
+			return sqlstate_2bp01('constraint ${requote_identifier(key.name)} on ${t.name}')
 		}
 	}
 }
@@ -557,7 +708,7 @@ fn (stmt CreateIndexStatement) create(mut conn Connection) !(bool, time.Duration
 		table_name: table_name
 		columns:    stmt.columns
 		unique:     stmt.unique
-	}, table)!
+	}, table, true)!
 
 	return true, 0
 }
@@ -584,6 +735,8 @@ fn (stmt DropIndexStatement) execute(mut conn Connection, _ map[string]Value, el
 	index := catalog.storage.indexes[name.storage_id()] or {
 		return sqlstate_42704('index', name.str())
 	}
+	catalog.storage.check_drop_index(catalog.storage.table(index.table_name.storage_id()),
+		index)!
 	catalog.storage.delete_index(index)!
 
 	return new_result_msg('DROP INDEX 1', elapsed_parse, t.elapsed())

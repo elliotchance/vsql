@@ -217,8 +217,9 @@ once in each ``UNIQUE``.
 
 The constraints are checked once all of the rows of an :doc:`insert` or
 :doc:`update` have been changed, so ``UPDATE t SET code = code + 1`` works. If
-any row conflicts, none of the rows are changed. Every row of the table is read
-to check the constraints, because there are no indexes yet.
+any row conflicts, none of the rows are changed. Each ``UNIQUE`` constraint has
+its own index with the same name, so only the rows with the same values are read
+to check it (see :doc:`create-index`).
 
 Foreign Keys
 ------------
@@ -329,9 +330,11 @@ foreign keys with different actions that both apply). That's an error
 A table that's referenced can only be dropped with ``CASCADE``, which also
 drops the ``FOREIGN KEY`` constraints that reference it (see :doc:`drop-table`).
 
-Every row of the referenced table is read to check the new rows of a
-statement, and every row of each table that references a table is read when
-its rows are deleted or updated, because there are no indexes yet.
+A new row finds the row that it references by its ``PRIMARY KEY`` or the index
+of its ``UNIQUE`` constraint. A ``FOREIGN KEY`` also uses an index on its
+columns (or gets one with its name) to find the rows that reference a row that's
+deleted or updated, see :doc:`create-index`. So neither reads every row of a
+table.
 
 Check Constraints
 -----------------

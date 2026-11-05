@@ -189,7 +189,7 @@ SELECT * FROM t;
 -- msg: INSERT 1
 -- X: 1 Y: 2022-07-04T14:05:04
 -- X: 2 Y: 2022-07-04T14:05:04
--- X: 3 Y: 2022-07-04T14:05:06
+-- X: 3 Y: 2022-07-04T14:05:05
 
 -- # The query of a cursor is evaluated when it's opened.
 /* clock tick */

@@ -166,7 +166,8 @@ the feature is no longer used.
     - The first version.
 
   * - 2
-    - Indexes (see `Index Object`_). The first ``CREATE INDEX`` raises the
+    - Indexes (see `Index Object`_). The first ``CREATE INDEX`` (or the first
+      index of a ``UNIQUE`` or ``FOREIGN KEY`` constraint) raises the
       *Write Version* to 2. The *Read Version* stays at 1, because version 1
       ignores the new objects.
 
@@ -809,6 +810,11 @@ entries must never miss a row that another transaction can't see yet:
 ``CREATE INDEX`` waits for the other transactions with changes to the table to
 finish, and while an index is created or dropped (and not committed) other
 transactions can't change the rows of the table (they get a ``40001`` error).
+
+A ``UNIQUE`` constraint has its own index, and a ``FOREIGN KEY`` uses one (see
+:doc:`create-index`). These are stored like any other index. A table from
+version 1 gets them the first time they're needed, when another transaction
+can't have changes to the table (otherwise it's a ``40001`` error).
 
 Index Entry Object
 ------------------

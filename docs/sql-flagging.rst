@@ -195,6 +195,18 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V202-03``
      - A sort key that contains an aggregate function.
 
+   * - ``V203``
+     - ``LIMIT`` (see :doc:`select`).
+
+   * - ``V203-01``
+     - ``LIMIT`` instead of ``FETCH FIRST``.
+
+   * - ``V203-02``
+     - ``OFFSET`` without ``ROW`` or ``ROWS``.
+
+   * - ``V203-03``
+     - ``LIMIT <offset>, <count>``.
+
    * - ``V301``
      - Comparison operators (see :doc:`operators`).
 

@@ -5,7 +5,8 @@
 // Specify a table.
 //
 // There's no WITH (T121), INTERSECT (F302), CORRESPONDING (F301), explicit
-// table (F661) or FETCH NEXT (#331).
+// table (F661) or FETCH NEXT (#331). LIMIT isn't in the standard, see
+// limit_clause.
 
 // A query_expression is either a parenthesized_query_expression or a
 // nonparenthesized_query_expression, so that a query_expression in parentheses
@@ -63,6 +64,111 @@ query_expression_clauses:
     $$.v = QueryExpression{
       offset: $1.v as ValueSpecification
       fetch:  $2.v as ValueSpecification
+    }
+  }
+| limit_clause {
+    $$.v = QueryExpression{
+      fetch: $1.v as ValueSpecification
+    }
+  }
+| order_by_clause limit_clause {
+    $$.v = QueryExpression{
+      fetch: $2.v as ValueSpecification
+      order: $1.v as []SortSpecification
+    }
+  }
+| limit_clause limit_offset_clause {
+    $$.v = QueryExpression{
+      offset: $2.v as ValueSpecification
+      fetch:  $1.v as ValueSpecification
+    }
+  }
+| order_by_clause limit_clause limit_offset_clause {
+    $$.v = QueryExpression{
+      offset: $3.v as ValueSpecification
+      fetch:  $2.v as ValueSpecification
+      order:  $1.v as []SortSpecification
+    }
+  }
+| result_offset_clause limit_clause {
+    $$.v = QueryExpression{
+      offset: $1.v as ValueSpecification
+      fetch:  $2.v as ValueSpecification
+    }
+  }
+| order_by_clause result_offset_clause limit_clause {
+    $$.v = QueryExpression{
+      offset: $2.v as ValueSpecification
+      fetch:  $3.v as ValueSpecification
+      order:  $1.v as []SortSpecification
+    }
+  }
+| OFFSET offset_row_count limit_clause {
+    flag(mut yylex, vsql_offset_without_rows)
+    flag_row_count(mut yylex, $2.v as ValueSpecification, 'F865')
+    $$.v = QueryExpression{
+      offset: $2.v as ValueSpecification
+      fetch:  $3.v as ValueSpecification
+    }
+  }
+| order_by_clause OFFSET offset_row_count limit_clause {
+    flag(mut yylex, vsql_offset_without_rows)
+    flag_row_count(mut yylex, $3.v as ValueSpecification, 'F865')
+    $$.v = QueryExpression{
+      offset: $3.v as ValueSpecification
+      fetch:  $4.v as ValueSpecification
+      order:  $1.v as []SortSpecification
+    }
+  }
+| OFFSET offset_row_count {
+    flag(mut yylex, vsql_offset_without_rows)
+    flag_row_count(mut yylex, $2.v as ValueSpecification, 'F865')
+    $$.v = QueryExpression{
+      offset: $2.v as ValueSpecification
+    }
+  }
+| order_by_clause OFFSET offset_row_count {
+    flag(mut yylex, vsql_offset_without_rows)
+    flag_row_count(mut yylex, $3.v as ValueSpecification, 'F865')
+    $$.v = QueryExpression{
+      offset: $3.v as ValueSpecification
+      order:  $1.v as []SortSpecification
+    }
+  }
+| OFFSET offset_row_count fetch_first_clause {
+    flag(mut yylex, vsql_offset_without_rows)
+    flag_row_count(mut yylex, $2.v as ValueSpecification, 'F865')
+    $$.v = QueryExpression{
+      offset: $2.v as ValueSpecification
+      fetch:  $3.v as ValueSpecification
+    }
+  }
+| order_by_clause OFFSET offset_row_count fetch_first_clause {
+    flag(mut yylex, vsql_offset_without_rows)
+    flag_row_count(mut yylex, $3.v as ValueSpecification, 'F865')
+    $$.v = QueryExpression{
+      offset: $3.v as ValueSpecification
+      fetch:  $4.v as ValueSpecification
+      order:  $1.v as []SortSpecification
+    }
+  }
+| LIMIT fetch_first_row_count comma fetch_first_row_count {
+    flag(mut yylex, vsql_limit_offset_count)
+    flag_row_count(mut yylex, $2.v as ValueSpecification, 'F865')
+    flag_row_count(mut yylex, $4.v as ValueSpecification, 'F860')
+    $$.v = QueryExpression{
+      offset: $2.v as ValueSpecification
+      fetch:  $4.v as ValueSpecification
+    }
+  }
+| order_by_clause LIMIT fetch_first_row_count comma fetch_first_row_count {
+    flag(mut yylex, vsql_limit_offset_count)
+    flag_row_count(mut yylex, $3.v as ValueSpecification, 'F865')
+    flag_row_count(mut yylex, $5.v as ValueSpecification, 'F860')
+    $$.v = QueryExpression{
+      offset: $3.v as ValueSpecification
+      fetch:  $5.v as ValueSpecification
+      order:  $1.v as []SortSpecification
     }
   }
 
@@ -167,6 +273,25 @@ fetch_first_clause:
 //
 // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, General Rules, 7.b.iii
 | FETCH first_or_next row_or_rows ONLY { $$.v = ValueSpecification(new_integer_value(1)) }
+
+// LIMIT is a vsql extension that's the same as a fetch_first_clause (V203-01).
+// "LIMIT offset, count" is in query_expression_with_clauses (V203-03), since it
+// also sets the offset.
+limit_clause:
+  LIMIT fetch_first_row_count {
+    flag(mut yylex, vsql_limit)
+    flag_row_count(mut yylex, $2.v as ValueSpecification, 'F860')
+    $$.v = $2.v
+  }
+
+// An OFFSET without ROW or ROWS is also a vsql extension (V203-02).
+limit_offset_clause:
+  result_offset_clause { $$.v = $1.v }
+| OFFSET offset_row_count {
+    flag(mut yylex, vsql_offset_without_rows)
+    flag_row_count(mut yylex, $2.v as ValueSpecification, 'F865')
+    $$.v = $2.v
+  }
 
 first_or_next:
   FIRST

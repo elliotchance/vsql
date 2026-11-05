@@ -56,6 +56,7 @@ module vsql
 // V113-01: UPDATE WHERE CURRENT OF outside of an SQL-client module.
 //
 // V201: FROM.
+// V201-01: SELECT without a FROM clause.
 // V201-02: A derived table without a correlation name.
 //
 // V202: ORDER BY.
@@ -84,6 +85,7 @@ const vsql_fetch_without_into = 'V110-01'
 const vsql_close_cursor = 'V111-01'
 const vsql_delete_positioned = 'V112-01'
 const vsql_update_positioned = 'V113-01'
+const vsql_select_without_from = 'V201-01'
 const vsql_derived_table_without_name = 'V201-02'
 const vsql_sort_key_without_column = 'V202-01'
 const vsql_sort_key_subquery = 'V202-02'

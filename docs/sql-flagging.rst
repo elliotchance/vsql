@@ -121,6 +121,9 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V201``
      - ``FROM``.
 
+   * - ``V201-01``
+     - ``SELECT`` without a ``FROM`` clause (see :doc:`select`).
+
    * - ``V201-02``
      - A derived table without a correlation name, such as
        ``SELECT * FROM (VALUES 1)``.

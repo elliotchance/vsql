@@ -20,6 +20,16 @@ query_specification:
       distinct:         $2.v as bool
     }
   }
+// This isn't in the standard, since a <table expression> must have a <from
+// clause>. A bare asterisk needs a table, so it's only in the rules above.
+| SELECT select_sublist_list {
+    flag(mut yylex, vsql_select_without_from)
+    $$.v = new_query_specification_without_from($2.v as []SelectSublist, false)
+  }
+| SELECT set_quantifier select_sublist_list {
+    flag(mut yylex, vsql_select_without_from)
+    $$.v = new_query_specification_without_from($3.v as []SelectSublist, $2.v as bool)
+  }
 
 // A bare asterisk can only appear alone, unlike a qualified asterisk which can
 // be mixed with other items. Each is replaced by the columns of the table.

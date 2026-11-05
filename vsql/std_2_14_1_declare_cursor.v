@@ -151,7 +151,7 @@ fn (stmt DeclareCursor) simply_updatable(plan Plan, params map[string]Value, mut
 
 	for operation in plan.operations {
 		if operation is GroupOperation || operation is DistinctOperation
-			|| operation is VirtualTableOperation {
+			|| operation is VirtualTableOperation || operation is SingleRowOperation {
 			return false
 		}
 	}

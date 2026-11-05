@@ -6,6 +6,8 @@ name: Release
 on:
   workflow_dispatch:
   push:
+    branches:
+      - ci-release-test
     tags:
       - "v*"
 

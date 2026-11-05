@@ -124,6 +124,74 @@ fn (i Index) entry_key(t Table, row Row) ![]u8 {
 	return key
 }
 
+// entry_row_id is the row ID at the end of the key of an entry (see entry_key),
+// after the value of each column.
+fn (i Index) entry_row_id(t Table, key []u8) ![]u8 {
+	mut pos := index_entry_prefix(i.id).len
+	for column in i.columns {
+		flip := if column.desc { u8(255) } else { u8(0) }
+		is_null := key[pos] ^ flip == 0
+		pos++
+		if !is_null {
+			pos += key_value_length(key[pos..], t.column(column.name)!.typ.typ, flip)
+		}
+	}
+
+	return key[pos..]
+}
+
+// key_value_length is the number of bytes at the start of key that a value of
+// type typ was written in by write_key_value. Each byte of key is xor'ed with
+// flip first, see Index.entry_key.
+fn key_value_length(key []u8, typ SQLType, flip u8) int {
+	return match typ {
+		.is_boolean {
+			1
+		}
+		.is_smallint {
+			2
+		}
+		.is_integer, .is_real {
+			4
+		}
+		.is_bigint, .is_double_precision, .is_date, .is_time_with_time_zone,
+		.is_time_without_time_zone, .is_timestamp_with_time_zone,
+		.is_timestamp_without_time_zone {
+			8
+		}
+		.is_numeric, .is_decimal {
+			// The sign, then (for a non-zero) the exponent and each digit until
+			// a 0, which is flipped for a negative number. See write_key_numeric.
+			sign := key[0] ^ flip
+			if sign == 1 {
+				1
+			} else {
+				end := if sign == 0 { u8(255) } else { u8(0) }
+				mut n := 3
+				for key[n] ^ flip != end {
+					n++
+				}
+				n + 1
+			}
+		}
+		.is_character, .is_varchar {
+			// Each space is followed by a byte that's only 1 at the end, see
+			// write_key_string.
+			mut n := 0
+			for {
+				n++
+				if key[n - 1] ^ flip == ` ` {
+					n++
+					if key[n - 1] ^ flip == 1 {
+						break
+					}
+				}
+			}
+			n
+		}
+	}
+}
+
 fn new_index_from_bytes(key []u8, data []u8, tid u64, table Table) !Index {
 	stmt := parse_definition(data)!
 	if stmt is CreateIndexStatement {

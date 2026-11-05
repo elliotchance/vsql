@@ -150,3 +150,72 @@ CREATE INDEX t_a ON t (a);
 -- 1: msg: DROP INDEX 1
 -- 2: msg: DELETE 1
 -- 2: msg: CREATE INDEX 1
+
+-- # An index only finds the versions of the rows that are visible. Another
+-- # transaction's uncommitted changes (and its uncommitted index) aren't.
+/* extensions V002-01 */
+/* connection 1 */
+CREATE TABLE t (id INT PRIMARY KEY, a INT);
+INSERT INTO t (id, a) VALUES (1, 10), (2, 20), (3, 30);
+CREATE INDEX t_a ON t (a);
+/* connection 2 */
+START TRANSACTION;
+UPDATE t SET a = 25 WHERE a = 10;
+DELETE FROM t WHERE a = 30;
+INSERT INTO t (id, a) VALUES (4, 5);
+SELECT * FROM t WHERE a < 100;
+/* connection 1 */
+SELECT * FROM t WHERE a < 100;
+SELECT * FROM t WHERE a = 25;
+/* connection 2 */
+COMMIT;
+/* connection 1 */
+SELECT * FROM t WHERE a < 100;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 3
+-- 1: msg: CREATE INDEX 1
+-- 2: msg: START TRANSACTION
+-- 2: msg: UPDATE 1
+-- 2: msg: DELETE 1
+-- 2: msg: INSERT 1
+-- 2: ID: 4 A: 5
+-- 2: ID: 2 A: 20
+-- 2: ID: 1 A: 25
+-- 1: ID: 1 A: 10
+-- 1: ID: 2 A: 20
+-- 1: ID: 3 A: 30
+-- 2: msg: COMMIT
+-- 1: ID: 4 A: 5
+-- 1: ID: 2 A: 20
+-- 1: ID: 1 A: 25
+
+/* extensions V001-01 V002-01 */
+/* connection 1 */
+CREATE TABLE t (id INT PRIMARY KEY, a INT);
+INSERT INTO t (id, a) VALUES (1, 10);
+/* connection 2 */
+START TRANSACTION;
+CREATE INDEX t_a ON t (a);
+EXPLAIN SELECT id FROM t WHERE a = 10;
+/* connection 1 */
+EXPLAIN SELECT id FROM t WHERE a = 10;
+SELECT * FROM t WHERE a = 10;
+/* connection 2 */
+COMMIT;
+/* connection 1 */
+EXPLAIN SELECT id FROM t WHERE a = 10;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 2: msg: START TRANSACTION
+-- 2: msg: CREATE INDEX 1
+-- 2: EXPLAIN: INDEX "test".PUBLIC.T_A ON "test".PUBLIC.T (ID INTEGER NOT NULL, A INTEGER) RANGE A = 10
+-- 2: EXPLAIN: WHERE A = 10
+-- 2: EXPLAIN: EXPR (ID INTEGER NOT NULL)
+-- 1: EXPLAIN: TABLE "test".PUBLIC.T (ID INTEGER NOT NULL, A INTEGER)
+-- 1: EXPLAIN: WHERE A = 10
+-- 1: EXPLAIN: EXPR (ID INTEGER NOT NULL)
+-- 1: ID: 1 A: 10
+-- 2: msg: COMMIT
+-- 1: EXPLAIN: INDEX "test".PUBLIC.T_A ON "test".PUBLIC.T (ID INTEGER NOT NULL, A INTEGER) RANGE A = 10
+-- 1: EXPLAIN: WHERE A = 10
+-- 1: EXPLAIN: EXPR (ID INTEGER NOT NULL)

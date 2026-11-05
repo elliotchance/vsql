@@ -14,7 +14,11 @@ Create an index on one or more columns of a table. An index keeps a copy of the
 values of the columns in order, with a reference to each row, and it's kept up
 to date as rows are inserted, updated and deleted.
 
-Queries don't use indexes yet, so creating one doesn't make them faster.
+A ``SELECT``, ``UPDATE`` or ``DELETE`` uses an index to read only the rows that
+its ``WHERE`` clause can be true for, when the ``WHERE`` clause compares the
+first columns of the index with a value (such as ``=``, ``<``, ``>=`` or
+``BETWEEN``), joined by ``AND``. See :doc:`explain` for how the index (or the
+``PRIMARY KEY``) is chosen.
 
 The index is always in the schema of the table, so its name can't be qualified.
 The name must be unique among the indexes of the schema, but it can be the same

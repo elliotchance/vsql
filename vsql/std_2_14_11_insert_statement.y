@@ -4,11 +4,10 @@
 //
 // Create new rows in a table.
 
-// Only a <from constructor> is supported. A <from subquery> and an implicit
-// <insert column list> aren't supported yet (#795), and a <from default>
-// needs Feature F222, "INSERT statement: DEFAULT VALUES clause".
+// A <from default> isn't supported, it needs Feature F222, "INSERT statement:
+// DEFAULT VALUES clause".
 //
-// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Conformance Rules, 2 and 4
+// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Conformance Rules, 2
 
 insert_statement:
   INSERT INTO insertion_target insert_columns_and_source {
@@ -22,10 +21,104 @@ insertion_target:
   table_name { $$.v = $1.v as Identifier }
 
 insert_columns_and_source:
-  from_constructor { $$.v = $1.v as InsertStatement }
+  from_subquery { $$.v = $1.v as InsertStatement }
+| from_constructor { $$.v = $1.v as InsertStatement }
+
+from_subquery:
+  insert_query {
+    $$.v = InsertStatement{
+      query: $1.v as QueryExpression
+    }
+  }
+| override_clause insert_query {
+    $$.v = InsertStatement{
+      overriding: $1.v as string
+      query:      $2.v as QueryExpression
+    }
+  }
+| left_paren insert_column_list right_paren insert_query {
+    $$.v = InsertStatement{
+      columns: $2.v as []Identifier
+      query:   $4.v as QueryExpression
+    }
+  }
+| left_paren insert_column_list right_paren override_clause insert_query {
+    $$.v = InsertStatement{
+      columns:    $2.v as []Identifier
+      overriding: $4.v as string
+      query:      $5.v as QueryExpression
+    }
+  }
+
+// insert_query is the <query expression> of a <from subquery>. It can't only be
+// a <table value constructor>, because that's a <from constructor>. Since
+// nothing before the first row can tell a <from constructor> from a query that
+// starts with VALUES, the rows are parsed the same way for both. So this is the
+// same as query_expression, except that the first <query primary> is
+// insert_query_primary.
+//
+// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Syntax Rules, 16
+insert_query:
+  insert_query_expression {
+    flag_query_expression(mut yylex, $1.v as QueryExpression, .from_subquery)
+    $$.v = $1.v as QueryExpression
+  }
+
+insert_query_expression:
+  query_specification {
+    $$.v = QueryExpression{
+      body: SimpleTable($1.v as QuerySpecification)
+    }
+  }
+| parenthesized_query_expression { $$.v = $1.v as QueryExpression }
+| insert_query_set_operation {
+    $$.v = QueryExpression{
+      body: $1.v as SimpleTable
+    }
+  }
+| insert_query_body query_expression_clauses {
+    $$.v = QueryExpression{
+      ...$2.v as QueryExpression
+      body: $1.v as SimpleTable
+    }
+  }
+
+insert_query_body:
+  insert_query_primary { $$.v = $1.v as SimpleTable }
+| insert_query_set_operation { $$.v = $1.v as SimpleTable }
+
+insert_query_set_operation:
+  insert_query_body query_set_operator query_term {
+    operator := $2.v as QuerySetOperator
+    $$.v = new_set_operation($1.v as SimpleTable, operator.op, operator.all,
+      $3.v as SimpleTable)
+  }
+
+insert_query_primary:
+  query_specification { $$.v = SimpleTable($1.v as QuerySpecification) }
+| parenthesized_query_expression {
+    flag_query_expression(mut yylex, $1.v as QueryExpression, .query_primary)
+    $$.v = new_parenthesized_query_expression($1.v as QueryExpression)
+  }
+| contextually_typed_table_value_constructor {
+    // ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Conformance Rules, 5
+    flag(mut yylex, 'F661')
+    $$.v = SimpleTable(row_value_constructors($1.v as []ContextuallyTypedRowValueConstructor)!)
+  }
 
 from_constructor:
-  left_paren insert_column_list right_paren
+  contextually_typed_table_value_constructor {
+    $$.v = InsertStatement{
+      values: $1.v as []ContextuallyTypedRowValueConstructor
+    }
+  }
+| override_clause contextually_typed_table_value_constructor {
+    $$.v = InsertStatement{
+      overriding: $1.v as string
+      values:     $2.v as []ContextuallyTypedRowValueConstructor
+    }
+  }
+| left_paren insert_column_list right_paren
   contextually_typed_table_value_constructor {
     $$.v = InsertStatement{
       columns: $2.v as []Identifier

@@ -39,6 +39,12 @@ fn (e QueryExpression) pstr(params map[string]Value) string {
 	return s
 }
 
+// QuerySetOperator is the UNION or EXCEPT of a SetOperation.
+struct QuerySetOperator {
+	op  string
+	all bool
+}
+
 // SetOperation is "<left> UNION <right>" or "<left> EXCEPT <right>". Each side
 // is a reference because it can contain another SetOperation, and V stores a
 // sum type's value inline.

@@ -120,6 +120,9 @@ enum QueryContext {
 	subquery
 	// A parenthesized <query expression> that's a <query primary>.
 	query_primary
+	// The <query expression> of a <from subquery>, which isn't a <cursor
+	// specification> and isn't contained in another <query expression>.
+	from_subquery
 }
 
 fn flag_query_expression(mut yylex YYLexer, e QueryExpression, context QueryContext) {
@@ -142,6 +145,11 @@ fn flag_query_expression(mut yylex YYLexer, e QueryExpression, context QueryCont
 			flag_if(mut yylex, e.order.len > 0, 'F855')
 			flag_if(mut yylex, has_offset, 'F863')
 			flag_if(mut yylex, has_fetch, 'F856')
+		}
+		.from_subquery {
+			flag_if(mut yylex, e.order.len > 0, 'F850')
+			flag_if(mut yylex, has_offset, 'F861')
+			flag_if(mut yylex, has_fetch, 'F857')
 		}
 	}
 }

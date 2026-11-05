@@ -212,6 +212,29 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 		return sqlstate_42601('an aggregate function cannot be used in a join condition')
 	}
 
+	left_names := before_right.filter(it !in before_left)
+	right_names := tables.keys().filter(it !in before_right)
+	lookup := if join.join_type == .right {
+		join_lookup(join.left_table, left_names, right_names, specification, tables,
+			params, mut conn, allow_virtual)
+	} else {
+		join_lookup(join.right_table, right_names, left_names, specification, tables,
+			params, mut conn, allow_virtual)
+	}
+	if l := lookup {
+		// EXPLAIN shows the lookup instead of reading the whole table.
+		inner := if join.join_type == .right { '\$1' } else { '\$2' }
+		mut inner_plan := plan.subplans[inner]
+		if l.table.name.id() == l.base_table.name.id() {
+			inner_plan.operations[0] = l.operation
+		} else {
+			inner_plan.subplans[l.table.name.id()] = Plan{
+				operations: [l.operation]
+			}
+		}
+		plan.subplans[inner] = inner_plan
+	}
+
 	// The tables on the side that isn't preserved can be all NULLs, whatever
 	// their columns are declared as.
 	null_extended := match join.join_type {
@@ -229,7 +252,7 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	}
 
 	plan.operations << new_join_operation(left_columns, join.join_type, right_columns,
-		specification, common_columns, params, conn, plan, join_tables)
+		specification, common_columns, params, conn, plan, join_tables, lookup)
 
 	if common_columns.len > 0 {
 		tables = add_common_columns_range_variable(tables, first_table, range_variable,
@@ -237,6 +260,46 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	}
 
 	return plan
+}
+
+// join_lookup finds the rows of the inner side of a join (inner_reference) for
+// each row of the outer side, when it's a table that has an index (or PRIMARY
+// KEY) that the join condition can use, such as an index on y for
+// "t1 JOIN t2 ON t2.y = t1.x" (see best_key_operation). The values that the
+// columns of the index are compared with can only use the columns of the outer
+// side (the tables named in outer_names), the inner side is named in
+// inner_names. It's none when there isn't one, such as when the inner side is a
+// derived table or another join.
+fn join_lookup(inner_reference TableReference, inner_names []string, outer_names []string, specification BooleanValueExpression, tables map[string]Table, params map[string]Value, mut conn Connection, allow_virtual bool) ?JoinLookup {
+	inner := match inner_reference {
+		TablePrimary { inner_reference }
+		QualifiedJoin { return none }
+	}
+	name := match inner.body {
+		Identifier { inner.body }
+		QueryExpression { return none }
+	}
+
+	inner_name := conn.resolve_table_identifier(name, allow_virtual) or { return none }
+	table_name_id := inner_name.storage_id()
+	mut catalog := conn.catalogs[inner_name.catalog_name] or { return none }
+	if (allow_virtual && table_name_id in catalog.virtual_tables)
+		|| table_name_id !in catalog.storage.tables {
+		return none
+	}
+
+	mut value_tables := map[string]Table{}
+	for table_name, outer_table in tables {
+		if table_name in outer_names {
+			value_tables[table_name] = outer_table
+		}
+	}
+	base_table := catalog.storage.table(table_name_id)
+	table := tables[inner_names[0]] or { return none }
+	operation := best_key_operation(and_factors(specification), base_table, table,
+		value_tables, params, mut conn)?
+
+	return JoinLookup{base_table, table, operation}
 }
 
 // add_common_columns_range_variable moves the common columns out of the range
@@ -371,14 +434,13 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			} else if table_name_id in catalog.storage.tables {
 				table = catalog.storage.table(table_name_id)
 
-				operation := if filter {
-					key_operation(body, table, table, params, mut conn)
-				} else {
-					none
+				mut operation := PlanOperation(TableOperation{table_name, false, table, params, conn, plan.subplans})
+				if filter {
+					if key := key_operation(body, table, table, params, mut conn) {
+						operation = key
+					}
 				}
-				plan.operations << operation or {
-					TableOperation{table_name, false, table, params, conn, plan.subplans}
-				}
+				plan.operations << operation
 
 				if filter {
 					add_where_plan(mut &plan, body, params, conn, {

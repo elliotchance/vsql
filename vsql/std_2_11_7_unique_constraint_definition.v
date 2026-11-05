@@ -74,74 +74,30 @@ fn (mut f Storage) check_primary_key(mut r Row, t Table) ! {
 // UPDATE t SET u = u + 1 works. A deferred constraint isn't checked (see
 // defer_check).
 //
-// Every row of t is read, there is no index.
+// Only the entries of the index of the constraint (see constraint_index) that
+// have the same values are read.
 //
 // ISO/IEC 9075-2:2016(E), 4.23.2, Checking of constraints
 // ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, Syntax Rules, 5.d.ii
 // ISO/IEC 9075-2:2016(E), 11.7, <unique constraint definition>, General Rules, 3
 fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
-	if t.unique_constraints.len == 0 || rows.len == 0 {
+	if rows.len == 0 {
 		return
 	}
 
-	f.isolation_start()!
-	defer {
-		f.end_isolation()
-	}
-
-	// For each constraint, the object key of the row that has each unique key.
-	mut new_keys := []map[string][]u8{len: t.unique_constraints.len}
-	for i, constraint in t.unique_constraints {
+	for constraint in t.unique_constraints {
 		if f.defer_check(t, constraint.name, constraint.characteristics) {
 			continue
 		}
 
+		index := f.constraint_index(t, constraint)!
 		for row in rows {
-			mut r := row
-			key := unique_key(row, t, constraint.columns)!
-			if key.len > 0 {
-				new_keys[i][key.bytestr()] = r.object_key(t)!
-			}
-		}
-	}
-
-	mut iter := f.btree.new_range_iterator(row_key_prefix(t.id), row_key_prefix(t.id + 1))
-	for {
-		object := iter.next() or { break }
-		row := new_row_from_bytes(t, object.value, object.tid).for_storage()
-		for i, constraint in t.unique_constraints {
-			key := unique_key(row, t, constraint.columns)!
-			if key.len == 0 {
-				continue
-			}
-
-			// A row only conflicts with a different row, and two new rows
-			// with the same key are different rows.
-			object_key := new_keys[i][key.bytestr()] or { continue }
-			if object.key == object_key {
-				continue
-			}
-
-			if f.is_concurrent_write(object) {
-				return sqlstate_40001('avoiding concurrent write on individual row')
-			}
-
-			if object.xid == 0 {
+			if f.has_duplicate_entry(index, t, row)! {
 				return sqlstate_23505('UNIQUE (${constraint.columns.map(requote_identifier(it)).join(', ')}) on ${t.name}',
 					t.constraint_identifier(constraint.name))
 			}
 		}
 	}
-	if err := iter.err {
-		return err
-	}
-}
-
-// unique_key is the values of the columns in a row, encoded so that values that
-// are equal have the same key (like the PRIMARY KEY, see Row.object_key). It's
-// empty if any of the values are NULL.
-fn unique_key(row Row, t Table, columns []string) ![]u8 {
-	return key_value(row, columns, key_types(t, columns)!, 0)
 }
 
 // key_value is the values of the columns in a row, encoded as the types (which

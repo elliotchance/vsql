@@ -86,7 +86,7 @@ fn (stmt TableDefinition) create(mut conn Connection) !bool {
 
 	stmt.check_limits(table_name)!
 	mut table := stmt.table(table_name, 0)!
-	table.name_constraints(catalog.storage.schema_constraint_names(table_name))!
+	table.name_constraints(catalog.storage.schema_constraint_names(table_name), catalog.storage.schema_index_names(table_name))!
 	resolve_generated_columns(mut conn, mut table, 0)!
 	resolve_foreign_keys(mut conn, mut table)!
 	for column in table.columns {

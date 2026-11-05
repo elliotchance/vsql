@@ -323,11 +323,12 @@ fn (t Table) constraint_names() []string {
 //
 // A constraint without a name gets an implementation-dependent name like its
 // default name (see constraint_name), with the first number that isn't already
-// used, counting from 1 (or the position of the column for a NOT NULL). So a
-// constraint can get the name of one that has been dropped.
+// used by a constraint or one of the index_names (the names of the indexes in
+// the schema), counting from 1 (or the position of the column for a NOT NULL).
+// So a constraint can get the name of one that has been dropped.
 //
 // ISO/IEC 9075-2:2016(E), 11.6, <table constraint definition>, Syntax Rules, 3 and 4
-fn (mut t Table) name_constraints(other_names []string) ! {
+fn (mut t Table) name_constraints(other_names []string, index_names []string) ! {
 	mut used := map[string]bool{}
 	for name in other_names {
 		used[name] = true
@@ -339,6 +340,12 @@ fn (mut t Table) name_constraints(other_names []string) ! {
 		if name in used {
 			return sqlstate_42710('constraint', name)
 		}
+		used[name] = true
+	}
+
+	// A UNIQUE constraint or FOREIGN KEY can get an index with its name (see
+	// build_constraint_indexes), so a new name isn't the name of an index.
+	for name in index_names {
 		used[name] = true
 	}
 

@@ -42,10 +42,13 @@ module vsql
 //                      which removes the rows that were deleted outside of a
 //                      transaction, see Storage.isolation_end.
 //   accept:            a server accepting a client, see Server.accept.
+//   constraint_index:  a new table doesn't get the indexes of its constraints,
+//                      like a table from before indexes (see
+//                      build_constraint_indexes). This isn't an error.
 const fault_names = ['open', 'lock', 'lock_shared', 'read_header', 'read_page', 'write_version',
 	'wal_write', 'wal_torn_frame', 'wal_corrupt_frame', 'wal_bad_magic', 'wal_bad_header',
 	'wal_unknown_frame', 'checkpoint', 'recover', 'session_shared', 'isolation_start', 'isolation_end',
-	'accept']
+	'accept', 'constraint_index']
 
 struct FaultPoints {
 mut:

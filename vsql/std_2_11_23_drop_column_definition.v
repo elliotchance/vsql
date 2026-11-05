@@ -126,14 +126,16 @@ fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConn
 		return sqlstate_2bp01('constraint ${requote_identifier(dependent[0][1])} on ${dependent[0][0]}')
 	}
 
+	// The index of a UNIQUE constraint is dropped with the constraint.
 	mut indexes := []Index{}
 	for index in catalog.storage.table_indexes(table.id) {
 		if index.columns.any(it.name == name) {
 			indexes << index
 		}
 	}
-	if indexes.len > 0 && d.behavior == 'RESTRICT' {
-		return sqlstate_2bp01('index ${indexes[0].name}')
+	user_indexes := indexes.filter(!table.is_constraint_index(it))
+	if user_indexes.len > 0 && d.behavior == 'RESTRICT' {
+		return sqlstate_2bp01('index ${user_indexes[0].name}')
 	}
 	for index in indexes {
 		catalog.storage.delete_index(index)!

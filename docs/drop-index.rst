@@ -17,6 +17,10 @@ An index is also dropped with its table (including by ``DROP SCHEMA ...
 CASCADE``). A column that's in an index can only be dropped with ``ALTER TABLE
 ... DROP COLUMN ... CASCADE``, which drops the index.
 
+The index of a ``UNIQUE`` constraint can't be dropped, it's dropped with the
+constraint. Neither can the only index that a ``FOREIGN KEY`` can use (see
+:doc:`create-index`). Both are a ``2BP01`` error.
+
 ``DROP INDEX`` is a vsql extension, not standard SQL. It's flagged as
 ``V003-01`` (see :doc:`sql-flagging`).
 

@@ -41,6 +41,34 @@ index, unless any of them are ``NULL`` (like a ``UNIQUE`` constraint). The
 changed, so ``UPDATE t SET u = u + 1`` works. ``CREATE UNIQUE INDEX`` fails in
 the same way if two rows are already the same.
 
+Constraints
+^^^^^^^^^^^
+
+A ``UNIQUE`` constraint (see :doc:`create-table` and :doc:`alter-table`) always
+has its own ``UNIQUE`` index, with the same name as the constraint, on the
+columns of the constraint. It's created and dropped with the constraint, and it
+can't be dropped with ``DROP INDEX``. The constraint is checked with the index,
+rather than by reading every row of the table.
+
+A ``FOREIGN KEY`` uses an index whose first columns are its columns (in any
+order) to find the rows that reference a row, such as when the row is deleted.
+If the table doesn't have one, it gets one with the same name as the
+``FOREIGN KEY``. That index can't be dropped while it's the only one that the
+``FOREIGN KEY`` can use, but it's kept as an ordinary index when the
+``FOREIGN KEY`` is dropped. The referenced row is found by its ``PRIMARY KEY``,
+or the index of its ``UNIQUE`` constraint.
+
+So a new constraint can't have the same name as an index in the schema (that's
+a ``42P07`` error), and a constraint without a name gets a name that isn't the
+name of an index. A table from an older version of vsql gets the indexes of its
+constraints the first time they're needed, which raises the *Write Version* of
+the file (see below).
+
+These indexes are used to find rows like any other index.
+
+Limits
+^^^^^^
+
 The values of the columns of each row must fit in half a page (see
 :doc:`limitations`), otherwise the statement that creates the index, or that
 inserts or updates the row, fails with a ``54000`` error.

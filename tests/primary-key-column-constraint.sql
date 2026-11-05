@@ -10,7 +10,8 @@ SELECT * FROM t;
 -- msg: INSERT 1
 -- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.T
 -- error 23502: violates non-null constraint: column ID
--- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.T (ID INTEGER NOT NULL, X INTEGER) BETWEEN 1 AND 1
+-- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.T (ID INTEGER NOT NULL, X INTEGER) RANGE ID = 1
+-- EXPLAIN: WHERE ID = 1
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.ID INTEGER NOT NULL, ":memory:".PUBLIC.T.X INTEGER)
 -- ID: 1 X: 10
 

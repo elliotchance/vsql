@@ -173,8 +173,9 @@ table can only have one ``PRIMARY KEY``.
 The ``PRIMARY KEY`` prevents the same value from being inserted (an error
 ``23505``). Values that are equal are the same, such as ``1.5`` and ``1.50``,
 ``'a'`` and ``'a '``, or two times with a time zone that are the same in UTC.
-For a ``PRIMARY KEY`` of one integer column, a ``WHERE`` that compares it with
-``=`` is also fast.
+The rows are kept in the order of the ``PRIMARY KEY``, so a ``WHERE`` that
+compares its columns with a value (such as ``id = 3`` or ``id BETWEEN 10 AND 20``)
+only reads the rows in that range (see :doc:`explain`).
 
 A ``PRIMARY KEY`` does not allow ``NULL``, so all columns used in the
 ``PRIMARY KEY`` are ``NOT NULL``, even if they are not declared that way.

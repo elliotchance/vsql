@@ -68,11 +68,17 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V002-02``
      - ``CREATE UNIQUE INDEX`` (see :doc:`create-index`).
 
+   * - ``V002-03``
+     - ``CREATE INDEX IF NOT EXISTS`` (see :doc:`create-index`).
+
    * - ``V003``
      - ``DROP INDEX``.
 
    * - ``V003-01``
      - ``DROP INDEX`` (see :doc:`drop-index`).
+
+   * - ``V003-02``
+     - ``DROP INDEX IF EXISTS`` (see :doc:`drop-index`).
 
    * - ``V101``
      - ``CREATE SCHEMA``.

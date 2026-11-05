@@ -1,4 +1,4 @@
-.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
+.PHONY: app-test libvsql libvsql-example libvsql-test module-example module-test embed-example embed-test release bench bench-on-disk bench-memory fmt fmt-verify check-standard-index test unit-test btree-test cli-test examples-test clean-grammar grammar sql-test sql-test-uncovered vorm-test vorm-test-uncovered docs clean-docs oldv
 
 # The built-in rules of make aren't used, otherwise it would try to make the
 # vsql/*.c files with yacc from the vsql/*.y files of the same name, such as
@@ -157,7 +157,7 @@ check-standard-index:
 # Tests
 
 # test runs every test suite. Each one can also be run on its own.
-test: sql-test vorm-test unit-test btree-test examples-test cli-test libvsql-test module-test
+test: sql-test vorm-test unit-test btree-test examples-test cli-test libvsql-test module-test embed-test
 
 # unit-test runs the V tests in vsql/, except for the SQL and B-tree tests that
 # have their own targets.
@@ -309,6 +309,15 @@ embed-example: $(LIBVSQL) $(VSQL_BIN)
 	bin/embed-example
 	$(LIBVSQL_CXX) libvsql/embed/example.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/embed-example-cpp
 	bin/embed-example-cpp
+
+# embed-test is like embed-example, for the tests of the C generated from
+# libvsql/embed/test.sqc.
+embed-test: $(LIBVSQL) $(VSQL_BIN)
+	$(VSQL_BIN) precompile libvsql/embed/test.sqc
+	$(LIBVSQL_CC) libvsql/embed/test.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/embed-test
+	bin/embed-test
+	$(LIBVSQL_CXX) libvsql/embed/test.c -Lbin -lvsql $(LIBVSQL_RPATH) -o bin/embed-test-cpp
+	bin/embed-test-cpp
 
 libvsql-test: $(LIBVSQL)
 	v run scripts/check-libvsql-constants.vsh

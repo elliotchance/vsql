@@ -218,6 +218,9 @@ SQL data type                C data type
 ``BOOLEAN``                  ``long *name`` (0 is FALSE)
 ============================ =============================
 
+A ``long`` can be wider than an ``INTEGER``, which is always 32 bits. A value
+that's out of range of ``INTEGER`` has the ``SQLSTATE`` ``22003``.
+
 The other data types (such as ``NUMERIC`` and ``DATE``) have no C type. The
 length of a string is in characters, and each character is up to 4 bytes (in
 UTF-8), so a ``CHARACTER(L)`` or ``CHARACTER VARYING(L)`` can hold any value of

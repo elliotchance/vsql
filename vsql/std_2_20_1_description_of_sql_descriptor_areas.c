@@ -584,6 +584,7 @@ static int vsql_m_set_data(char *sqlstate, struct vsql_m_item *item,
                            SQLSMALLINT type, SQLINTEGER length,
                            const void *value) {
   size_t size = 0;
+  SQLINTEGER integer;
 
   if (!vsql_m_matches(item, type, length, 0)) {
     vsql_m_status(sqlstate, "22005");
@@ -601,7 +602,14 @@ static int vsql_m_set_data(char *sqlstate, struct vsql_m_item *item,
     size = sizeof(short);
     break;
   case SQL_INTEGER:
-    size = sizeof(long);
+    /* DATA is an SQLINTEGER (see vsql_m_c_type), and a long can be wider. */
+    if (*(const long *)value != (SQLINTEGER)*(const long *)value) {
+      vsql_m_status(sqlstate, "22003");
+      return 0;
+    }
+    integer = (SQLINTEGER)*(const long *)value;
+    value = &integer;
+    size = sizeof(integer);
     break;
   case SQL_BIGINT:
     size = sizeof(long long);

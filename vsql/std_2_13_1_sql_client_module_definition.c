@@ -635,6 +635,16 @@ static struct vsql_m_connection *vsql_m_connection(char *sqlstate) {
 }
 
 /* section param */
+/*
+ * VSQL_M_LONG is the C data type of an INTEGER host parameter, which is a long
+ * that's as wide as an SQLINTEGER or an SQLBIGINT. So all of it is read, and a
+ * value that's out of range of INTEGER is an exception when it's cast.
+ *
+ * ISO/IEC 9075-2:2016(E), 13.5, Data type correspondences, Table 20
+ */
+#define VSQL_M_LONG                                                            \
+  ((SQLSMALLINT)(sizeof(long) == sizeof(SQLBIGINT) ? SQL_BIGINT : SQL_INTEGER))
+
 struct vsql_m_param {
   SQLSMALLINT value_type;
   SQLSMALLINT parameter_type;

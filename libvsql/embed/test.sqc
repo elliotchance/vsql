@@ -1,0 +1,101 @@
+/*
+ * test.sqc tests the C that "vsql precompile" generates. Run it with
+ * "make embed-test".
+ */
+
+#include <stdio.h>
+#include <string.h>
+
+static int failures = 0;
+
+#define CHECK(condition)                                                       \
+  do {                                                                         \
+    if (!(condition)) {                                                        \
+      fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, #condition);          \
+      failures++;                                                              \
+    }                                                                          \
+  } while (0)
+
+int main(void) {
+  EXEC SQL BEGIN DECLARE SECTION;
+  char SQLSTATE[6];
+  long x;
+  long x_indicator;
+  long long b;
+  EXEC SQL END DECLARE SECTION;
+
+  EXEC SQL CONNECT TO ':memory:' AS 'test';
+  EXEC SQL CREATE TABLE widths (x INTEGER, b BIGINT);
+  CHECK(strcmp(SQLSTATE, "00000") == 0);
+
+  /*
+   * A long host variable is an INTEGER, and long can be wider than an
+   * SQLINTEGER. All of it is set, whatever it held before and whatever the sign
+   * is.
+   */
+  x = 1;
+  b = 10;
+  EXEC SQL INSERT INTO widths (x, b) VALUES (:x, :b);
+  CHECK(strcmp(SQLSTATE, "00000") == 0);
+  x = -5;
+  b = 20;
+  EXEC SQL INSERT INTO widths (x, b) VALUES (:x, :b);
+  CHECK(strcmp(SQLSTATE, "00000") == 0);
+
+  x = -1;
+  EXEC SQL SELECT x INTO :x FROM widths WHERE b = 10;
+  CHECK(strcmp(SQLSTATE, "00000") == 0);
+  CHECK(x == 1);
+  x = 0;
+  EXEC SQL SELECT x INTO :x FROM widths WHERE b = 20;
+  CHECK(strcmp(SQLSTATE, "00000") == 0);
+  CHECK(x == -5);
+
+  EXEC SQL DECLARE c CURSOR FOR SELECT x FROM widths WHERE b = :b;
+  x = -1;
+  b = 10;
+  EXEC SQL OPEN c;
+  EXEC SQL FETCH c INTO :x;
+  CHECK(strcmp(SQLSTATE, "00000") == 0);
+  CHECK(x == 1);
+  EXEC SQL CLOSE c;
+  x = 0;
+  b = 20;
+  EXEC SQL OPEN c;
+  EXEC SQL FETCH c INTO :x;
+  CHECK(strcmp(SQLSTATE, "00000") == 0);
+  CHECK(x == -5);
+  EXEC SQL CLOSE c;
+
+  /* A null value leaves the variable alone. */
+  EXEC SQL INSERT INTO widths (b) VALUES (30);
+  x = 7;
+  x_indicator = 0;
+  EXEC SQL SELECT x INTO :x INDICATOR :x_indicator FROM widths WHERE b = 30;
+  CHECK(strcmp(SQLSTATE, "00000") == 0);
+  CHECK(x == 7);
+  CHECK(x_indicator == -1);
+
+  /* A value out of range of INTEGER doesn't fit, even if it fits the long. */
+  EXEC SQL INSERT INTO widths (b) VALUES (8589934592);
+  EXEC SQL SELECT b INTO :x FROM widths WHERE b = 8589934592;
+  CHECK(strcmp(SQLSTATE, "22003") == 0);
+  CHECK(x == 7);
+  /* This can't be an #if, because the function of the statement would be
+   * unused where a long is 32 bits, such as on Windows. */
+  if (sizeof(long) > 4) {
+    x = (long)(1LL << 40);
+    b = 40;
+    EXEC SQL INSERT INTO widths (x, b) VALUES (:x, :b);
+    CHECK(strcmp(SQLSTATE, "22003") == 0);
+  }
+
+  EXEC SQL ROLLBACK;
+  EXEC SQL DISCONNECT ALL;
+
+  if (failures > 0) {
+    return 1;
+  }
+  printf("OK\n");
+  return 0;
+}

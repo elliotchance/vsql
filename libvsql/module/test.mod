@@ -224,6 +224,36 @@ PROCEDURE open_all (SQLSTATE);
 PROCEDURE fetch_all (SQLSTATE, :x INTEGER);
   FETCH FROM c_all INTO :x;
 
+-- An INTEGER host parameter is a long, which can be wider than an INTEGER.
+DECLARE c_width CURSOR FOR SELECT x FROM widths WHERE b = :b;
+
+PROCEDURE create_widths (SQLSTATE);
+  CREATE TABLE widths (x INTEGER, b BIGINT);
+
+PROCEDURE insert_width (SQLSTATE, :x INTEGER, :b BIGINT);
+  INSERT INTO widths (x, b) VALUES (:x, :b);
+
+PROCEDURE insert_width_null (SQLSTATE, :b BIGINT);
+  INSERT INTO widths (b) VALUES (:b);
+
+PROCEDURE select_width (SQLSTATE, :x INTEGER, :b BIGINT);
+  SELECT x INTO :x FROM widths WHERE b = :b;
+
+PROCEDURE select_width_ind (SQLSTATE, :x INTEGER, :ind INTEGER, :b BIGINT);
+  SELECT x INTO :x INDICATOR :ind FROM widths WHERE b = :b;
+
+PROCEDURE select_width_big (SQLSTATE, :x INTEGER, :b BIGINT);
+  SELECT b INTO :x FROM widths WHERE b = :b;
+
+PROCEDURE open_width (SQLSTATE, :b BIGINT);
+  OPEN c_width;
+
+PROCEDURE fetch_width (SQLSTATE, :x INTEGER);
+  FETCH c_width INTO :x;
+
+PROCEDURE close_width (SQLSTATE);
+  CLOSE c_width;
+
 -- Feature B031, "Basic dynamic SQL".
 PROCEDURE execute_immediate (SQLSTATE, :sql VARCHAR(100));
   EXECUTE IMMEDIATE :sql;

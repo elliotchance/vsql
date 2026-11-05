@@ -85,8 +85,24 @@ static SQLRETURN vsql_m_assign(SQLHSTMT stmt, SQLSMALLINT i,
                                struct vsql_m_target *t) {
   SQLINTEGER *indicator = t->max_indicator > 0 ? &t->indicator : NULL;
   SQLINTEGER characters;
+  SQLINTEGER integer;
   SQLRETURN rc;
   char b[256];
+
+  /*
+   * An INTEGER is retrieved as an SQLINTEGER (so a value that's out of range of
+   * INTEGER is still an exception) and copied to the long, which can be wider.
+   *
+   * ISO/IEC 9075-2:2016(E), 13.5, Data type correspondences, Table 20
+   */
+  if (t->type == SQL_INTEGER) {
+    rc = SQLGetData(stmt, i, SQL_INTEGER, &integer, 0, indicator);
+    if (!vsql_m_failed(rc) && (indicator == NULL || *indicator >= 0)) {
+      *(long *)t->value = integer;
+      t->indicator = 0;
+    }
+    return rc;
+  }
 
   /*
    * A BOOLEAN is retrieved as 'TRUE' or 'FALSE', and is 1 or 0 in C.

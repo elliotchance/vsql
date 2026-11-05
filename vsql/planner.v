@@ -87,10 +87,22 @@ fn create_select_plan(body QuerySpecification, params map[string]Value, mut conn
 
 	match from_clause {
 		TablePrimary {
-			table_plan, table := create_select_plan_without_join(body, from_clause,
-				params, mut conn, allow_virtual, true)!
-			plan = table_plan
-			tables[table.name.id()] = table
+			if body.without_from {
+				// The table is in scope, even though it has no columns, so that a
+				// column reference is an unknown column.
+				table := Table{
+					name: Identifier{
+						custom_id: '\$1'
+					}
+				}
+				plan.operations << &SingleRowOperation{}
+				tables[table.name.id()] = table
+			} else {
+				table_plan, table := create_select_plan_without_join(body, from_clause,
+					params, mut conn, allow_virtual, true)!
+				plan = table_plan
+				tables[table.name.id()] = table
+			}
 		}
 		QualifiedJoin {
 			plan = create_join_plan(body, from_clause, params, mut conn, allow_virtual, mut

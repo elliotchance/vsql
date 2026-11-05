@@ -243,7 +243,7 @@ INSERT INTO t (s, x) VALUES (U&'a\0000', 1);
 -- COL1: 1
 -- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.T
 
--- # A PRIMARY KEY that isn't an integer is not used to find a row (yet).
+-- # A PRIMARY KEY that isn't an integer is used to find a row too.
 /* extensions V001-01 */
 CREATE TABLE t (id VARCHAR(10) PRIMARY KEY, x INT);
 INSERT INTO t (id, x) VALUES ('a', 1), ('b', 2);
@@ -256,7 +256,7 @@ SELECT * FROM t;
 SELECT * FROM t WHERE id = 1;
 -- msg: CREATE TABLE 1
 -- msg: INSERT 2
--- EXPLAIN: TABLE ":memory:".PUBLIC.T (ID CHARACTER VARYING(10) NOT NULL, X INTEGER)
+-- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.T (ID CHARACTER VARYING(10) NOT NULL, X INTEGER) RANGE ID = 'a'
 -- EXPLAIN: WHERE ID = 'a'
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.ID CHARACTER VARYING(10) NOT NULL, ":memory:".PUBLIC.T.X INTEGER)
 -- ID: a X: 1

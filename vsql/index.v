@@ -648,10 +648,11 @@ fn (mut f Storage) check_indexes() ! {
 // indexes of the schema, but it can be the same as the name of another kind of
 // object, such as a table.
 struct CreateIndexStatement {
-	unique     bool
-	index_name Identifier
-	table_name Identifier
-	columns    []IndexColumn
+	unique        bool
+	index_name    Identifier
+	table_name    Identifier
+	columns       []IndexColumn
+	if_not_exists bool // V002-03, an index that already exists isn't an error
 }
 
 fn (stmt CreateIndexStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
@@ -660,9 +661,11 @@ fn (stmt CreateIndexStatement) execute(mut conn Connection, _ map[string]Value, 
 	// The index can't be created while another transaction has changes to the
 	// table that it can't see, so it waits for them to finish (with the file
 	// unlocked in between, so that they can).
+	mut created := false
 	for {
-		done, timeout := stmt.create(mut conn)!
+		done, ok, timeout := stmt.create(mut conn)!
 		if done {
+			created = ok
 			break
 		}
 
@@ -673,14 +676,16 @@ fn (stmt CreateIndexStatement) execute(mut conn Connection, _ map[string]Value, 
 		time.sleep(10 * time.millisecond)
 	}
 
-	return new_result_msg('CREATE INDEX 1', elapsed_parse, t.elapsed())
+	return new_result_msg('CREATE INDEX ${int(created)}', elapsed_parse, t.elapsed())
 }
 
-// create creates the index and returns true. Or, it returns false (and how long
-// to wait) when another transaction has changes to the table, see
+// create creates the index and returns true, true. With IF NOT EXISTS, an index
+// with the same name (in the schema of the table) returns true, false, without
+// checking the rest of the statement. Or, it returns false (and how long to
+// wait) when another transaction has changes to the table, see
 // Storage.has_concurrent_changes. Then, the statement hasn't changed anything,
 // but the file is still locked until finish_write.
-fn (stmt CreateIndexStatement) create(mut conn Connection) !(bool, time.Duration) {
+fn (stmt CreateIndexStatement) create(mut conn Connection) !(bool, bool, time.Duration) {
 	conn.open_write_connection()!
 	defer {
 		conn.release_write_connection()
@@ -696,6 +701,10 @@ fn (stmt CreateIndexStatement) create(mut conn Connection) !(bool, time.Duration
 		entity_name:  stmt.index_name.entity_name
 	}
 	if name.storage_id() in catalog.storage.indexes {
+		if stmt.if_not_exists {
+			return true, false, 0
+		}
+
 		return sqlstate_42p07('index', name.str()) // duplicate index
 	}
 
@@ -709,7 +718,7 @@ fn (stmt CreateIndexStatement) create(mut conn Connection) !(bool, time.Duration
 	}
 
 	if catalog.storage.has_concurrent_changes(table)! {
-		return false, catalog.options.create_index_timeout
+		return false, false, catalog.options.create_index_timeout
 	}
 
 	catalog.storage.create_index(Index{
@@ -719,16 +728,17 @@ fn (stmt CreateIndexStatement) create(mut conn Connection) !(bool, time.Duration
 		unique:     stmt.unique
 	}, table, true)!
 
-	return true, 0
+	return true, true, 0
 }
 
 fn (stmt CreateIndexStatement) explain(mut _ Connection, _ map[string]Value, _ time.Duration) !Result {
 	return sqlstate_42601('Cannot EXPLAIN CREATE INDEX')
 }
 
-// DROP INDEX [schema.]name
+// DROP INDEX [IF EXISTS] [schema.]name
 struct DropIndexStatement {
 	index_name Identifier
+	if_exists  bool // V003-02, an index that doesn't exist isn't an error
 }
 
 fn (stmt DropIndexStatement) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
@@ -739,9 +749,20 @@ fn (stmt DropIndexStatement) execute(mut conn Connection, _ map[string]Value, el
 		conn.release_write_connection()
 	}
 
-	name := conn.resolve_schema_identifier(stmt.index_name)!
+	// An index can't exist in a schema that doesn't exist.
+	name := conn.resolve_schema_identifier(stmt.index_name) or {
+		if stmt.if_exists && err is SQLState3F000 {
+			return new_result_msg('DROP INDEX 0', elapsed_parse, t.elapsed())
+		}
+
+		return err
+	}
 	mut catalog := conn.catalog_for(name)
 	index := catalog.storage.indexes[name.storage_id()] or {
+		if stmt.if_exists {
+			return new_result_msg('DROP INDEX 0', elapsed_parse, t.elapsed())
+		}
+
 		return sqlstate_42704('index', name.str())
 	}
 	catalog.storage.check_drop_index(catalog.storage.table(index.table_name.storage_id()),

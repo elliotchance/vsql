@@ -8,7 +8,7 @@ Syntax
 
 .. code-block:: text
 
-  DROP INDEX <index_name>
+  DROP INDEX [ IF EXISTS ] <index_name>
 
 Delete an index. The name can be qualified by the schema (and catalog) of the
 index, which is the schema of its table.
@@ -21,8 +21,12 @@ The index of a ``UNIQUE`` constraint can't be dropped, it's dropped with the
 constraint. Neither can the only index that a ``FOREIGN KEY`` can use (see
 :doc:`create-index`). Both are a ``2BP01`` error.
 
+With ``IF EXISTS``, an index that doesn't exist isn't an error. Nothing
+changes, and the result is ``DROP INDEX 0``. That includes an index in a schema
+that doesn't exist, but a catalog that doesn't exist is still an error.
+
 ``DROP INDEX`` is a vsql extension, not standard SQL. It's flagged as
-``V003-01`` (see :doc:`sql-flagging`).
+``V003-01``, and ``IF EXISTS`` as ``V003-02`` (see :doc:`sql-flagging`).
 
 Examples
 --------
@@ -32,9 +36,11 @@ Examples
    CREATE TABLE products (id INT PRIMARY KEY, name VARCHAR(50));
    CREATE INDEX products_name ON products (name);
    DROP INDEX products_name;
+   DROP INDEX IF EXISTS products_name;
    -- msg: CREATE TABLE 1
    -- msg: CREATE INDEX 1
    -- msg: DROP INDEX 1
+   -- msg: DROP INDEX 0
 
 See Also
 --------

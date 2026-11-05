@@ -231,6 +231,16 @@ VALUES 1, 2;
 -- COL1: 2
 
 /* flags */
+VALUES (1, 2);
+-- flags: F641, F661
+-- COL1: 1 COL2: 2
+
+/* flags */
+VALUES ROW(1, 2);
+-- flags: F641, F661, T051
+-- COL1: 1 COL2: 2
+
+/* flags */
 SELECT x FROM t WHERE ROW(x, y) IS NOT NULL AND (x, y) IS NOT NULL;
 -- flags: F641, T051
 -- X: 1

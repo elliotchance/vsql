@@ -45,7 +45,7 @@
 5.2/SR/33                implemented  vsql/lexer.v tests/syntax_tokens.sql
 5.2/CR/1                 partial      vsql/std_1_8_5_sql_flagger.v tests/flagging.sql an 18 character regular identifier is also flagged (#738)
 5.2/CR/2                 implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
-5.2/CR/3                 missing      - - bracketed comments aren't flagged (#763)
+5.2/CR/3                 implemented  vsql/lexer.v tests/bracketed-comments.sql
 5.2/CR/4                 n/a          - - Unicode delimited identifiers (F392)
 5.2/CR/5                 n/a          - - large objects (T041)
 5.2/CR/6                 n/a          - - large objects (T041)
@@ -244,7 +244,7 @@
 5.4/CR/5                 n/a          - - user-defined types (S023)
 5.4/CR/6                 n/a          - - row types (T051)
 5.4/CR/7                 implemented  vsql/std_2_5_4_names_and_identifiers.v tests/flagging.sql
-5.4/CR/8                 missing      - - connection names aren't flagged (#763)
+5.4/CR/8                 implemented  vsql/std_2_13_4_sql_procedure_statement.y tests/connections.sql
 5.4/CR/9                 n/a          - - collations (F690)
 5.4/CR/10                n/a          - - transliterations (F695)
 5.4/CR/11                n/a          - - transcodings (F695)
@@ -254,11 +254,11 @@
 5.4/CR/15                n/a          - - named character sets (F461)
 5.4/CR/16                n/a          - - local cursor references (T601)
 5.4/CR/17                n/a          - - extended statement and cursor names (B032)
-5.4/CR/18                missing      - - an SQL-client module isn't flagged (#763)
-5.4/CR/19                missing      - - an SQL-client module isn't flagged (#763)
-5.4/CR/20                missing      - - an SQL-client module isn't flagged (#763)
+5.4/CR/18                missing      - - an SQL-client module isn't flagged (#879)
+5.4/CR/19                missing      - - an SQL-client module isn't flagged (#879)
+5.4/CR/20                missing      - - an SQL-client module isn't flagged (#879)
 5.4/CR/21                n/a          - - window functions (T611)
 5.4/CR/22                implemented  vsql/std_2_5_4_names_and_identifiers.v tests/flagging.sql
 5.4/CR/23                n/a          - - extended dynamic SQL (B032)
-5.4/CR/24                missing      - - an SQL-client module isn't flagged (#763)
+5.4/CR/24                missing      - - an SQL-client module isn't flagged (#879)
 5.4/CR/25                n/a          - - polymorphic table functions (B200)

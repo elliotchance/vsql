@@ -1,3 +1,38 @@
+-- # T351 Bracketed comments: a simple comment and the contents of a string
+-- # aren't bracketed comments.
+/* flags */
+VALUES /* a comment */ 1;
+-- flags: F641, F661, T351
+-- COL1: 1
+
+/* flags */
+VALUES 1 /* a /* nested */ comment */;
+-- flags: F641, F661, T351
+-- COL1: 1
+
+/* flags */
+VALUES -- a simple comment /* is not a bracketed comment
+1;
+-- flags: F641, F661
+-- COL1: 1
+
+/* flags */
+VALUES '/* not a comment */';
+-- flags: F641, F661
+-- COL1: /* not a comment */
+
+/* flags */
+VALUES 'a' /* between the parts of a literal */
+'b';
+-- flags: F271, F641, F661, T351
+-- COL1: ab
+
+/* flags */
+VALUES 'a' -- a simple comment
+'b';
+-- flags: F271, F641, F661
+-- COL1: ab
+
 VALUES 1 /* a comment */ + 2;
 -- COL1: 3
 

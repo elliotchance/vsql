@@ -79,7 +79,7 @@ SELECT y FROM t WHERE y != SOME (SELECT y FROM t);
 -- # != in a string or a comment isn't the operator.
 /* flags */
 SELECT '!=' AS a, y /* != */ FROM t WHERE x = y;
--- flags:
+-- flags: T351
 -- A: != Y: 1
 
 -- # ! isn't a token by itself.

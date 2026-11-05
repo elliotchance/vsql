@@ -230,9 +230,11 @@ fn tokenize(sql_stmt string) ![]Token {
 
 // tokenize_with_features also returns the features outside of Core SQL that
 // the tokens use (see flag), which the parser can't see: F271 for a compound
-// character literal, and F393 for a Unicode character string literal (ISO/IEC
-// 9075-2:2016(E), 5.3, <literal>, Conformance Rules, 6 and 11). A bracketed
-// comment isn't flagged with T351, which is #763.
+// character literal, F393 for a Unicode character string literal and T351 for a
+// bracketed comment.
+//
+// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Conformance Rules, 3
+// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Conformance Rules, 6 and 11
 fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 	mut tokens := []Token{}
 	mut features := []string{}
@@ -243,6 +245,9 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 	for i < cs.len {
 		// A comment is a separator, the same as a space.
 		if is_comment(cs, i) {
+			if cs[i] == `/` {
+				features << 'T351'
+			}
 			i = skip_comment(cs, i)!
 			continue
 		}
@@ -303,11 +308,9 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			if is_unicode {
 				i += 2
 			}
-			mut word, end, compound := read_string_literal(cs, i)!
+			mut word, end, literal_features := read_string_literal(cs, i)!
 			i = end
-			if compound {
-				features << 'F271'
-			}
+			features << literal_features
 			if is_unicode {
 				features << 'F393'
 				escape, escape_end := read_unicode_escape_specifier(cs, i)!
@@ -471,11 +474,12 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 //   'a'
 //   'b'
 //
-// A string without a closing quote is a syntax error. The last value is true if
-// the string had more than one part (a compound literal).
+// A string without a closing quote is a syntax error. The last value is the
+// features of a string with more than one part (a compound literal), including
+// the separators between the parts. See tokenize_with_features.
 //
 // ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules, 1, 2 and 7
-fn read_string_literal(cs []rune, start int) !(string, int, bool) {
+fn read_string_literal(cs []rune, start int) !(string, int, []string) {
 	mut word := ''
 	mut i := start + 1
 	for {
@@ -498,10 +502,14 @@ fn read_string_literal(cs []rune, start int) !(string, int, bool) {
 
 	mut j := i
 	mut has_newline := false
+	mut separator_features := []string{}
 	for j < cs.len {
 		if is_comment(cs, j) {
 			end := skip_comment(cs, j)!
 			has_newline = has_newline || cs[j..end].contains(`\n`)
+			if cs[j] == `/` {
+				separator_features << 'T351'
+			}
 			j = end
 		} else if cs[j].str().trim_space() == '' {
 			has_newline = has_newline || cs[j] == `\n`
@@ -511,11 +519,13 @@ fn read_string_literal(cs []rune, start int) !(string, int, bool) {
 		}
 	}
 	if has_newline && j < cs.len && cs[j] == `'` {
-		next_word, end, _ := read_string_literal(cs, j)!
-		return word + next_word, end, true
+		next_word, end, next_features := read_string_literal(cs, j)!
+		separator_features << 'F271'
+		separator_features << next_features
+		return word + next_word, end, separator_features
 	}
 
-	return word, i, false
+	return word, i, []string{}
 }
 
 // is_comment returns true if a comment starts at cs[i]. A simple comment

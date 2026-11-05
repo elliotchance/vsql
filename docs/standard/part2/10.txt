@@ -858,11 +858,11 @@
 10.9/CR/2                n/a          - - EVERY, ANY and SOME aren't supported (T031)
 10.9/CR/3                implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
 10.9/CR/4                implemented  vsql/std_2_10_9_aggregate_function.y tests/flagging.sql
-10.9/CR/5                missing      - - a column reference that isn't of T (an outer reference) isn't flagged (#763)
+10.9/CR/5                missing      - - a column reference that isn't of T (an outer reference) isn't flagged (#880)
 10.9/CR/6                n/a          - - binary set functions (T621)
-10.9/CR/7                missing      - - an outer reference isn't flagged (#763)
+10.9/CR/7                missing      - - an outer reference isn't flagged (#880)
 10.9/CR/8                n/a          - - binary set functions (T621)
-10.9/CR/9                missing      - - a column derived from an aggregate function isn't flagged (#763)
+10.9/CR/9                missing      - - a column derived from an aggregate function isn't flagged (#880)
 10.9/CR/10               n/a          - - STDDEV_POP, STDDEV_SAMP, VAR_POP and VAR_SAMP (T621)
 10.9/CR/11               n/a          - - binary set functions (T621)
 10.9/CR/12               n/a          - - T612
@@ -871,7 +871,7 @@
 10.9/CR/15               n/a          - - FUSION and INTERSECTION (S275)
 10.9/CR/16               n/a          - - ordered set functions (T612)
 10.9/CR/17               n/a          - - ordered set functions (T612)
-10.9/CR/18               missing      - - mixed outer references aren't flagged (#763)
+10.9/CR/18               missing      - - mixed outer references aren't flagged (#880)
 10.9/CR/19               n/a          - - binary set functions (T621)
 10.9/CR/20               n/a          - - ordered set functions (T612)
 10.9/CR/21               n/a          - - ARRAY_AGG (S098)

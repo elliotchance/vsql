@@ -50,7 +50,7 @@
 22.1/GR/8.a              implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
 22.1/GR/8.b              implemented  vsql/prepare.v tests/transaction.sql
 22.1/GR/9                implemented  vsql/agent.v vsql/sql_test.v
-22.1/CR/1                missing      - - a direct SQL statement isn't flagged (#763)
+22.1/CR/1                missing      - - a direct SQL statement isn't flagged (#879)
 # 22.2, <direct select statement: multiple rows>
 22.2                     implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v
 22.2/SR/1                implemented  vsql/std_2_22_1_direct_sql_statement.v vsql/sql_test.v

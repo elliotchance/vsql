@@ -236,7 +236,7 @@
 6.4/CR/4                 n/a          - - roles (T332)
 6.4/CR/5                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/flagging.sql
 6.4/CR/6                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/flagging.sql
-6.4/CR/7                 missing      - - SQL-client modules aren't flagged (#763)
+6.4/CR/7                 missing      - - SQL-client modules aren't flagged (#879)
 6.4/CR/8                 implemented  vsql/std_2_6_4_value_specification_and_target_specification.v tests/flagging.sql
 6.4/CR/9                 n/a          - - array element assignment (S097)
 6.4/CR/10                n/a          - - transform functions (S241)

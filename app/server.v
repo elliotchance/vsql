@@ -75,6 +75,8 @@ mut:
 	// without running the tab when switching back to it. They are not kept
 	// when the app is restarted.
 	results shared map[string]TabResult
+	// imports are the files being imported, by tab (see import_tab.v).
+	imports shared map[string]ImportJob
 }
 
 // handle answers a single HTTP request and closes the connection. A GET shows
@@ -128,6 +130,37 @@ fn (a &App) handle(mut conn net.TcpConn) {
 			return
 		}
 		write_response(mut conn, '200 OK', 'application/json', preview)
+		return
+	}
+	// The command of an IMPORT tab as its options change, see import.v.
+	if _ := form.get('import_command') {
+		preview := a.import_preview(form) or {
+			write_response(mut conn, '400 Bad Request', 'text/plain; charset=utf-8', err.msg())
+			return
+		}
+		write_response(mut conn, '200 OK', 'application/json', preview)
+		return
+	}
+	// How an IMPORT tab is going, see import_tab.v.
+	if _ := form.get('import_status') {
+		write_response(mut conn, '200 OK', 'application/json', a.import_status(form.get('tab') or {
+			''
+		}))
+		return
+	}
+	if _ := form.get('import_cancel') {
+		a.cancel_import(form.get('tab') or { '' }, false)
+		conn.write_string('HTTP/1.0 303 See Other\r\nLocation: /\r\nContent-Length: 0\r\nConnection: close\r\n\r\n') or {}
+		return
+	}
+	// The file of an IMPORT tab is only posted by its Import button. It runs in the
+	// background.
+	if import_text := form.get('import_text') {
+		a.start_import(form, import_text) or {
+			write_response(mut conn, '500 Internal Server Error', 'text/plain', err.msg())
+			return
+		}
+		conn.write_string('HTTP/1.0 303 See Other\r\nLocation: /\r\nContent-Length: 0\r\nConnection: close\r\n\r\n') or {}
 		return
 	}
 	// Export is a download so the page isn't changed, unless it fails and then the
@@ -206,6 +239,8 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	params := if _ := form.get('sql') { posted_params(form) } else { tab.params }
 	payload := if tab.tab_type == export_tab && (form.get('export_file') or { '\0' }) != '\0' {
 		json2.encode(export_form(form, json2.decode[ExportPayload](tab.payload)!.source))
+	} else if tab.tab_type == import_tab && (form.get('import_schema') or { '\0' }) != '\0' {
+		json2.encode(import_form(form))
 	} else {
 		form.get('payload') or { tab.payload }
 	}
@@ -228,6 +263,12 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		// Export in the menu of a file, schema or table opens a new tab to export it.
 		if value := form.get('export:${file}') {
 			a.open_export(mut conn, file, value)!
+			return '/'
+		}
+		// Import in the menu of a file, schema or table opens a new tab to import
+		// into it.
+		if value := form.get('import:${file}') {
+			a.open_import(mut conn, file, value)!
 			return '/'
 		}
 		// A table in the sidebar opens a new tab of its file that runs SELECT * on
@@ -433,7 +474,7 @@ fn (a &App) run_in_transaction(mut conn vsql.Connection, catalog string, stateme
 }
 
 // query_table opens a new tab of a file that runs SELECT * on a table.
-fn (a &App) query_table(mut conn vsql.Connection, catalog string, table string) ! {
+fn (a &App) query_table(mut conn vsql.Connection, catalog string, table string) !Tab {
 	table_sql := 'SELECT * FROM ${table}'
 	new_tab := a.add_query_tab(mut conn, catalog, table_sql)!
 	result, h := a.run_query(mut conn, table_sql, Params{}, catalog)!
@@ -441,6 +482,8 @@ fn (a &App) query_table(mut conn vsql.Connection, catalog string, table string) 
 	lock a.results {
 		a.results[new_tab.ref()] = result
 	}
+
+	return new_tab
 }
 
 // run_in_file runs SQL with a file as the current catalog.

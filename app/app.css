@@ -22,7 +22,8 @@ td.null, .empty { color: var(--muted); }
 th .type { display: block; font-size: 11px; font-weight: normal; color: var(--muted); }
 td.null { font-style: italic; }
 .error { color: #cf222e; white-space: pre-wrap; }
-.empty, .error { margin: 12px; }
+.notice { color: #1a7f37; }
+.empty, .error, .notice { margin: 12px; }
 .editor { position: relative; }
 .editor pre, .editor textarea { display: block; width: 100%; margin: 0; padding: 8px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: normal; tab-size: 4; white-space: pre-wrap; overflow-wrap: break-word; border: 0; border-radius: 0; }
 .editor pre { position: absolute; inset: 0; overflow: hidden; color: var(--fg); background: var(--side); pointer-events: none; }
@@ -135,6 +136,7 @@ dialog.confirm::backdrop { background: rgba(0, 0, 0, 0.4); }
 .confirm form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .confirm pre { flex: 1 1 100%; margin: 0; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; }
 .confirm .cancel { color: var(--muted); }
+.confirm label[hidden] { display: none; }
 .confirm-file { flex: 1 1 100%; margin: 0; font-size: 12px; color: var(--muted); }
 .folder-row { position: relative; }
 .folder-row:has(> details.folder > summary:hover) > details.menu > summary, .folder-row:has(> details.section > summary:hover) > details.menu > summary, .folder-row > details.menu:hover > summary { visibility: visible; }
@@ -180,3 +182,26 @@ button.new-tab:hover { color: var(--fg); background: var(--border); }
 .export-schema ul { margin: 0; padding-left: 22px; list-style: none; }
 .export .kind { color: var(--muted); font-size: 12px; }
 .export-param { display: block; margin-top: 6px; }
+.import { padding: 12px; }
+.import [hidden] { display: none; }
+.import .field { font-weight: 600; margin-right: 8px; }
+.import-choose, .import-options label { display: block; margin-bottom: 12px; }
+.import-message { margin: 0 0 12px; color: #cf222e; }
+.import-hint { margin: -8px 0 12px; color: var(--muted); }
+.import input:not([type=file]), .import select { padding: 3px 6px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color-scheme: light dark; }
+.import-stats, .import-map { margin-bottom: 12px; border: 1px solid var(--border); }
+.import-stats td:last-child { text-align: right; }
+.import-map input, .import-map select { width: 100%; }
+.import-report { padding: 0 12px 12px; }
+.import-messages { margin: 0 0 12px; padding-left: 0; list-style: none; }
+.import-messages li { margin-bottom: 8px; }
+.import-messages pre { margin: 4px 0 0; padding: 6px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--fg); white-space: pre-wrap; background: var(--side); border-radius: 4px; }
+.import-messages .kind { font-weight: 600; }
+.import-error { color: #cf222e; }
+.import-warning { color: #b08800; }
+.import-notice { color: var(--muted); }
+.import-operations { margin-bottom: 12px; border: 1px solid var(--border); }
+.import-operations td:last-child { text-align: right; }
+.import-status { margin: 0 0 8px; font-weight: 600; }
+.import-bar-row { margin: 0 0 12px; }
+.import-bar { width: 360px; max-width: 70%; vertical-align: middle; }

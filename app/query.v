@@ -18,6 +18,9 @@ struct TabResult {
 	// button. It's disabled unless editable is true (see edit.v).
 	has_rows bool
 	editable bool
+	// notice is what happened (such as a file that was imported), shown above
+	// the output until the tab is run again.
+	notice string
 }
 
 // run_query runs every statement in a file and returns the result of the last

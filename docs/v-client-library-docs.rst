@@ -679,6 +679,11 @@ struct ConnectionOptions
    	// Since locking all database isn't ideal. You could provide a consistent
    	// RwMutex that belongs to each file - such as from a map.
    	mutex &sync.RwMutex = unsafe { nil }
+   	// create_index_timeout is how long CREATE INDEX waits for other
+   	// transactions that have changed the table to finish (the index can't
+   	// include rows that it can't see yet), before it fails with a 55P03 lock
+   	// not available. The default is 60 seconds.
+   	create_index_timeout time.Duration
    }
 
 ConnectionOptions can modify the behavior of a connection when it is opened. You should not create the ConnectionOptions instance manually. Instead, use default_connection_options() as a starting point and modify the attributes.
@@ -770,6 +775,50 @@ struct Identifier
 Identifier is used to describe a object within a schema (such as a table name) or a property of an object (like a column name of a table). You should not instantiate this directly, instead use the appropriate new_*_identifier() function.
 
 If you need the fully qualified (canonical) form of an identified you can use Connection.resolve_schema_identifier().
+
+struct Index
+------------
+
+
+.. code-block:: v
+
+   pub struct Index {
+   mut:
+   	// tid is the transaction ID that created this index.
+   	tid u64
+   	// id is unique for each index in the file and never reused. Its entries are
+   	// keyed by it, see index_entry_prefix.
+   	id u64
+   	// table_id is the id of the table, which the index is keyed by, see
+   	// index_object_key.
+   	table_id u64
+   pub:
+   	// name includes the catalog and schema, which are always the same as the
+   	// table.
+   	name Identifier
+   	// table_name is the table that the index is on.
+   	table_name Identifier
+   	// columns are the columns of the table in the index, in order.
+   	columns []IndexColumn
+   }
+
+An Index is a copy of the values of some columns of a table, kept in order of those values, with the row ID of each row. It's stored as an Index Object (the definition) and an Index Entry Object for each row, see "File Format" in the docs.
+
+struct IndexColumn
+------------------
+
+
+.. code-block:: v
+
+   pub struct IndexColumn {
+   pub:
+   	// name is the name of the column in the table.
+   	name string
+   	// desc is true when the values are in descending order (DESC).
+   	desc bool
+   }
+
+An IndexColumn is a column of an Index.
 
 struct PageObject
 -----------------

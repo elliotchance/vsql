@@ -125,14 +125,20 @@ remaining space is reserved (see `Compatibility`_).
     - The last table ID that was issued. Table IDs are never reused.
 
   * - 2096
+    - *Index ID*
+    - u64 (8 bytes)
+    - The last index ID that was issued. Index IDs are never reused. Added in
+      version 2 (it was reserved, so it's zero in an older file).
+
+  * - 2104
     - *Reserved*
-    - 2000 bytes
+    - 1992 bytes
     - Zero in this version of the file format. See `Compatibility`_.
 
 Compatibility
 -------------
 
-The version of the file format that vsql reads and writes is 1. Every version
+The version of the file format that vsql reads and writes is 2. Every version
 of vsql can open a file created by an older version, and most features don't
 need to change the file format at all. The *Read Version* and *Write Version*
 in the `Header`_ work the same way as the read and write versions of SQLite:
@@ -145,9 +151,24 @@ in the `Header`_ work the same way as the read and write versions of SQLite:
   feature that this version of vsql doesn't know how to keep correct, such as
   an index that wouldn't be updated when a row is inserted.
 
-A new file has both set to the current version. A feature that needs a newer
-version only raises them the first time it's used, so a file that never uses
-the feature can still be read and changed by older versions of vsql.
+A new file has both set to 1. A feature that needs a newer version only raises
+them the first time it's used, so a file that never uses the feature can still
+be read and changed by older versions of vsql. Neither is ever lowered, even if
+the feature is no longer used.
+
+.. list-table::
+  :header-rows: 1
+
+  * - Version
+    - Changes
+
+  * - 1
+    - The first version.
+
+  * - 2
+    - Indexes (see `Index Object`_). The first ``CREATE INDEX`` raises the
+      *Write Version* to 2. The *Read Version* stays at 1, because version 1
+      ignores the new objects.
 
 These rules keep changes compatible:
 
@@ -390,6 +411,9 @@ are ignored, so that new types of objects can be added (see
   * - ``I``
     - `Identity Value Object`_
 
+  * - ``N``
+    - `Index Object`_
+
   * - ``Q``
     - `Sequence Object`_
 
@@ -404,6 +428,9 @@ are ignored, so that new types of objects can be added (see
 
   * - ``V``
     - `Sequence Value Object`_
+
+  * - ``X``
+    - `Index Entry Object`_
 
 Every object has this layout. Everything except the *Key* and *Value* is
 metadata, which is 23 bytes in total:
@@ -759,6 +786,56 @@ that only has default names can still be read by older versions of vsql:
 ``ALTER TABLE ... ADD CONSTRAINT`` and ``DROP CONSTRAINT`` replace the
 definition. The rows are only rewritten when the ``PRIMARY KEY`` is added or
 dropped, because it changes the row ID of every row.
+
+Index Object
+------------
+
+An Index Object (has the ``N`` prefix, followed by the table ID and then the
+index ID, each as a u64) contains the definition of an index (see
+:doc:`create-index`), as a ``CREATE INDEX`` statement:
+
+.. code-block:: sql
+
+  CREATE INDEX "FOO_BAR" ON "PUBLIC"."FOO" ("BAR", "BAZ" DESC)
+
+The index is always in the schema of the table. The table is found by the table
+ID in the key, rather than the name in the statement. The index ID is issued
+from the *Index ID* in the `Header`_.
+
+The indexes of a table are expired with the table. Every transaction that
+changes a row keeps the entries of every index of the table up to date, so the
+entries must never miss a row that another transaction can't see yet:
+``CREATE INDEX`` waits for the other transactions with changes to the table to
+finish, and while an index is created or dropped (and not committed) other
+transactions can't change the rows of the table (they get a ``40001`` error).
+
+Index Entry Object
+------------------
+
+Each row of the table has an Index Entry Object (has the ``X`` prefix) in each
+index of the table. The key is the index ID as a u64, followed by the value of
+each column of the index, in order, and then the row ID (the same as the end of
+the key of the `Row Object`_). The value is empty.
+
+Each value is a byte that's ``00`` for ``NULL`` (so that it sorts before any
+other value), or ``01`` followed by the value encoded like a `Primary Key`_.
+Every byte of a ``DESC`` column (including the first) is flipped, so that it
+sorts the other way. Like a ``PRIMARY KEY``, the encoding of each value is
+self-delimiting, so the entries are in order of the values of the columns, then
+the row ID. Two rows with the same values have different entries.
+
+The entries follow the versions of the row, so that each transaction finds the
+version of the row that it can see:
+
+- A row that's inserted adds an entry, and a row that's deleted expires its
+  entries.
+
+- A row that's updated expires its old entry and adds a new one only in the
+  indexes that have a column whose value changed. Otherwise, the entry is the
+  same for both versions of the row.
+
+- A row that's moved (because its ``PRIMARY KEY`` changed) is deleted and
+  inserted, so its entries have the new row ID.
 
 Write-Ahead Log
 ---------------

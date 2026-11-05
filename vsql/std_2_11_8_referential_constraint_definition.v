@@ -631,7 +631,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 						f.delete_row(table_name, mut before)!
 						moved << after
 					} else {
-						f.update_row(mut after, referencing)!
+						f.update_row(before, mut after, referencing)!
 						written[table_name][after.object_key(referencing)!.bytestr()] = after
 					}
 				}

@@ -192,7 +192,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			catalog.storage.delete_row(table_name.storage_id(), mut before)!
 			moved << after
 		} else {
-			catalog.storage.update_row(mut after, table)!
+			catalog.storage.update_row(before, mut after, table)!
 		}
 	}
 

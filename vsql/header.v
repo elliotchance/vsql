@@ -16,17 +16,17 @@ const header_magic = 'vsql\r\n\x1a\n'.bytes()
 // file_format_version is the newest version of the file format that this
 // version of vsql can read and write. See "Compatibility" in the "File Format"
 // docs for how it relates to the read and write versions in the header.
-const file_format_version = u16(1)
+// Version 2 added indexes (see index_file_format_version).
+const file_format_version = u16(2)
 
 // oldest_file_format_version is the oldest version of the file format that
-// can still be opened. Until v1.0.0 this is the same as file_format_version, so
-// any change to the format means that files need to be recreated.
+// can still be opened. A new file starts with this version, see new_header.
 const oldest_file_format_version = u16(1)
 
 // header_reserved_offset is where the reserved space of the header starts.
 // Fields that are added to the header in the future must go in this space, and
 // it must be zero until then.
-const header_reserved_offset = 2096
+const header_reserved_offset = 2104
 
 // The Header contains important metadata about the database and always occupies
 // the first header_size bytes of the database. It's encoded by write_header and
@@ -70,6 +70,10 @@ mut:
 	// The table_id is the last table ID that was issued. Table IDs are never
 	// reused, so rows are keyed by the table ID rather than its name.
 	table_id u64
+	// The index_id is the last index ID that was issued. Like table IDs, index
+	// IDs are never reused. It was added in version 2 of the file format, in
+	// space that was reserved (and so is zero in an older file).
+	index_id u64
 	// reserved is the rest of the header. It's written back exactly as it was
 	// read, so that a version of vsql that doesn't know about a field added by
 	// a newer version doesn't erase it.
@@ -78,9 +82,11 @@ mut:
 
 fn new_header(page_size int) Header {
 	return Header{
-		// Set all default here - even if they are zero - to be explicit.
-		read_version:   file_format_version
-		write_version:  file_format_version
+		// Set all default here - even if they are zero - to be explicit. A new
+		// file can be read and changed by any version of vsql, until it uses a
+		// feature that needs a newer version (such as an index).
+		read_version:   oldest_file_format_version
+		write_version:  oldest_file_format_version
 		schema_version: 0
 		page_size:      page_size
 		root_page:      0
@@ -120,6 +126,7 @@ fn (h Header) bytes() []u8 {
 		b.write_u64(tid)
 	}
 	b.write_u64(h.table_id)
+	b.write_u64(h.index_id)
 
 	b.write_u8s(h.reserved)
 
@@ -156,6 +163,7 @@ fn new_header_from_bytes(data []u8) !Header {
 		header.active_transaction_ids.tids[i] = b.read_u64()
 	}
 	header.table_id = b.read_u64()
+	header.index_id = b.read_u64()
 	header.reserved = b.read_u8s(header_size - header_reserved_offset)
 
 	if header.page_size <= page_header_size || header.page_size > max_page_size {

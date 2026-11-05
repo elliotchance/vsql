@@ -437,10 +437,13 @@ fn sql_test_dir() string {
 }
 
 // sql_test_options are the connection options for every test. Small pages make
-// even small tests split pages and store large values across several pages.
+// even small tests split pages and store large values across several pages. A
+// test runs its connections one statement at a time, so CREATE INDEX can't wait
+// for another connection.
 fn sql_test_options() ConnectionOptions {
 	mut options := default_connection_options()
 	options.page_size = 256
+	options.create_index_timeout = 0
 
 	return options
 }
@@ -721,6 +724,33 @@ fn run_single_test(test SQLTest, verbose bool, filter_line int, mode SQLTestMode
 			problems << '/* extensions */ lists ${id}, but no statement uses it'
 		}
 	}
+
+	// Every index must still have an entry for each row of its table, with the
+	// values of the row. The files are opened again, because the test may have
+	// used them through the server. A database that can't be opened anymore
+	// (such as after a fault) is left to the test.
+	disarm_faults()
+	mut checked := []&Connection{}
+	if mode == .on_disk {
+		for path in [main_path, file_name] {
+			if os.exists(path) {
+				checked << open_database(path, options) or { continue }
+			}
+		}
+	} else if db.db != unsafe { nil } {
+		checked << db.db
+	}
+	for mut conn in checked {
+		conn.check_indexes() or {
+			if err is SQLStateXX001 {
+				problems << err.msg()
+			}
+		}
+		if mode == .on_disk {
+			conn.close()
+		}
+	}
+
 	for problem in problems {
 		eprintln('${at}${problem}\n')
 	}
@@ -2534,6 +2564,8 @@ fn test_command_function() {
 		'ROLLBACK':                              'ROLLBACK WORK 62'
 		'CREATE SCHEMA s':                       'CREATE SCHEMA 64'
 		'CREATE SEQUENCE s':                     'CREATE SEQUENCE 133'
+		'CREATE INDEX i ON t (x)':               'CREATE INDEX -3'
+		'DROP INDEX i':                          'DROP INDEX -4'
 		"SET CATALOG 'c'":                       'SET CATALOG 66'
 		'SET CONSTRAINTS ALL DEFERRED':          'SET CONSTRAINT 68'
 		"SET SCHEMA 's'":                        'SET SCHEMA 74'
@@ -3242,5 +3274,104 @@ fn test_server_stop_then_listen() ! {
 		})!
 		time.sleep(10 * time.millisecond)
 		every.stop()!
+	}
+}
+
+// CREATE INDEX waits up to create_index_timeout for another connection's
+// transaction with changes to the table, then gives up. A new file can be
+// changed by any version until it has an index, which raises its Write Version.
+fn test_create_index_waits() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-sql-test-index-${os.getpid()}.vsql')
+	defer {
+		os.rm(path) or {}
+		os.rm(session_path(path)) or {}
+		os.rm(path + '.wal') or {}
+	}
+
+	mut options := default_connection_options()
+	options.create_index_timeout = 30 * time.millisecond
+	mut db1 := open_database(path, options)!
+	defer {
+		db1.close()
+	}
+	mut db2 := open_database(path, options)!
+	defer {
+		db2.close()
+	}
+	db1.query('CREATE TABLE t (a INT, b VARCHAR(10))')!
+	mut file := os.open(path)!
+	mut header := read_header(mut file)!
+	file.close()
+	assert header.read_version == 1 && header.write_version == 1 && header.index_id == 0
+
+	db2.query('START TRANSACTION')!
+	db2.query('INSERT INTO t (a) VALUES (1)')!
+	t := start_timer()
+	if _ := db1.query('CREATE INDEX t_a ON t (a)') {
+		assert false, 'created an index while another transaction has changes'
+	} else {
+		assert '${sqlstate_from_int(err.code())} ${err.msg()}' == '55P03 cannot create index T_A while another transaction has changes to T'
+	}
+	assert t.elapsed() >= 30 * time.millisecond
+	db2.query('COMMIT')!
+
+	db1.query('CREATE INDEX t_b ON t (b DESC, a)')!
+	db1.query('CREATE INDEX t_a ON t (a)')!
+	file = os.open(path)!
+	header = read_header(mut file)!
+	file.close()
+	assert header.read_version == 1 && header.write_version == 2 && header.index_id == 2
+
+	db1.query('CREATE TABLE s (x INT)')!
+	db1.query('CREATE INDEX s_x ON s (x)')!
+	assert db1.catalog().indexes('PUBLIC')!.map(it.str()) == [
+		'CREATE INDEX "S_X" ON "PUBLIC"."S" ("X");',
+		'CREATE INDEX "T_A" ON "PUBLIC"."T" ("A");',
+		'CREATE INDEX "T_B" ON "PUBLIC"."T" ("B" DESC, "A");',
+	]
+
+	// The write version stays when the last index is dropped.
+	db1.query('DROP TABLE s RESTRICT')!
+	db1.query('DROP INDEX t_a')!
+	assert db1.catalog().indexes('NOSUCH')!.len == 0
+	db1.query('DROP INDEX t_b')!
+	file = os.open(path)!
+	header = read_header(mut file)!
+	file.close()
+	assert header.write_version == 2
+}
+
+// The entries of an index are in the order of the values: NULL first, then
+// ascending, or descending for DESC (with NULL last), and then by row ID.
+fn test_index_entry_order() {
+	table := Table{
+		columns: [Column{
+			name: Identifier{
+				sub_entity_name: 'A'
+			}
+			typ:  Type{.is_integer, 0, 0, false}
+		}]
+	}
+	values := [Value{
+		typ:     Type{.is_integer, 0, 0, false}
+		is_null: true
+	}, new_integer_value(-5), new_integer_value(0), new_integer_value(7)]
+	for desc in [false, true] {
+		index := Index{
+			id:      1
+			columns: [IndexColumn{'A', desc}]
+		}
+		mut keys := []string{}
+		for i, value in values {
+			keys << index.entry_key(table, Row{
+				id:   [u8(9 - i)]
+				data: {
+					'A': value
+				}
+			}) or { panic(err) }.hex()
+		}
+		mut sorted := keys.clone()
+		sorted.sort()
+		assert sorted == if desc { keys.reverse() } else { keys }
 	}
 }

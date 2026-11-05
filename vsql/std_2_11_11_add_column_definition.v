@@ -87,7 +87,7 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 				catalog.storage.delete_row(table.name.storage_id(), mut before)!
 				moved << after
 			} else {
-				catalog.storage.update_row(mut after, new_table)!
+				catalog.storage.update_row(before, mut after, new_table)!
 				updated << after
 			}
 		}

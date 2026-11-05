@@ -8,12 +8,14 @@ SQL Reference
    alter-table.rst
    commit.rst
    connect.rst
+   create-index.rst
    create-schema.rst
    create-sequence.rst
    create-table.rst
    cursors.rst
    delete.rst
    disconnect.rst
+   drop-index.rst
    drop-schema.rst
    drop-sequence.rst
    drop-table.rst

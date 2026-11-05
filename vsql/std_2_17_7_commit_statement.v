@@ -68,7 +68,7 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 		mut page := catalog.storage.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
 			if (obj.tid == catalog.storage.transaction_id
-				|| obj.xid == catalog.storage.transaction_id) && obj.key[0] in [`T`, `S`] {
+				|| obj.xid == catalog.storage.transaction_id) && obj.key[0] in [`T`, `S`, `N`] {
 				schema_changed = true
 			}
 
@@ -98,8 +98,8 @@ fn (mut catalog CatalogConnection) commit_transaction() ! {
 	catalog.storage.end_constraint_modes()
 
 	// Other connections may have loaded the schema while this transaction was
-	// active, so they could not see the tables and schemas it created or
-	// dropped. They must reload it now that the changes are committed.
+	// active, so they could not see the tables, schemas and indexes it created
+	// or dropped. They must reload it now that the changes are committed.
 	if schema_changed {
 		catalog.storage.schema_changed()
 	}

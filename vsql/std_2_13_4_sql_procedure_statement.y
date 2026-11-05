@@ -22,6 +22,7 @@ sql_schema_definition_statement:
   schema_definition { $$.v = $1.v as Stmt }
 | table_definition { $$.v = Stmt($1.v as TableDefinition) }
 | sequence_generator_definition { $$.v = Stmt($1.v as SequenceGeneratorDefinition) }
+| create_index_statement { $$.v = $1.v as Stmt }
 
 sql_schema_manipulation_statement:
   drop_schema_statement { $$.v = $1.v as Stmt }
@@ -29,6 +30,7 @@ sql_schema_manipulation_statement:
 | drop_table_statement { $$.v = $1.v as Stmt }
 | alter_sequence_generator_statement { $$.v = Stmt($1.v as AlterSequenceGeneratorStatement) }
 | drop_sequence_generator_statement { $$.v = $1.v as Stmt }
+| drop_index_statement { $$.v = $1.v as Stmt }
 
 sql_transaction_statement:
   start_transaction_statement { $$.v = $1.v as Stmt }

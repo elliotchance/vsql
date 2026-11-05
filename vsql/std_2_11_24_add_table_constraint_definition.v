@@ -75,7 +75,7 @@ fn replace_table_definition(mut conn Connection, mut catalog CatalogConnection, 
 
 	if is_rewritten {
 		for mut row in rows {
-			catalog.storage.update_row(mut row, new_table)!
+			catalog.storage.update_row(row, mut row, new_table)!
 		}
 	}
 	for mut row in moved {

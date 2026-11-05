@@ -27,6 +27,12 @@ module vsql
 // V001-02: EXPLAIN before a searched DELETE.
 // V001-03: EXPLAIN before a searched UPDATE.
 //
+// V002: CREATE INDEX.
+// V002-01: CREATE INDEX.
+//
+// V003: DROP INDEX.
+// V003-01: DROP INDEX.
+//
 // V101: CREATE SCHEMA.
 // V101-01: CREATE SCHEMA IF NOT EXISTS.
 //
@@ -111,6 +117,8 @@ module vsql
 const vsql_explain_query = 'V001-01'
 const vsql_explain_delete = 'V001-02'
 const vsql_explain_update = 'V001-03'
+const vsql_create_index = 'V002-01'
+const vsql_drop_index = 'V003-01'
 const vsql_create_schema_if_not_exists = 'V101-01'
 const vsql_drop_schema_if_exists = 'V102-01'
 const vsql_create_table_if_not_exists = 'V103-01'

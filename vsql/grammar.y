@@ -124,6 +124,7 @@ module vsql
 %token IMPLEMENTATION
 %token INCLUDING
 %token INCREMENT
+%token INDEX
 %token INITIALLY
 %token INPUT
 %token INSTANCE

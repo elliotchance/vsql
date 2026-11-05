@@ -527,8 +527,8 @@ identifier.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``2BP01`` occurs if trying to drop a schema with ``RESTRICT`` and there are
-still objects that exist in the schema, or a table or constraint that's
-referenced by a ``FOREIGN KEY``.
+still objects that exist in the schema, a table or constraint that's
+referenced by a ``FOREIGN KEY``, or a column that's in an index.
 
 ``2D000`` invalid transaction termination
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -899,10 +899,19 @@ A table has more than 1600 columns:
   -- error 54000: table PUBLIC.T has 1601 columns, but the maximum is 1600
 
 The name of a schema or sequence is part of the key of an object in the file,
-so it must fit in a page. This can only happen with a small page size.
+so it must fit in a page. This can only happen with a small page size. So are
+the values of the columns of an index (see :doc:`create-index`), which must fit
+in half a page.
 
 ``ConnectionOptions.page_size`` must be more than 16 and at most 65535 bytes
 when a database is created.
+
+``55P03`` lock not available
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``CREATE INDEX`` waited for ``create_index_timeout`` (60 seconds by default)
+for other transactions with changes to the table to finish (see
+:doc:`create-index`). Nothing was changed, so it can be tried again.
 
 ``58030`` io error
 ^^^^^^^^^^^^^^^^^^

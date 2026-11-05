@@ -180,6 +180,11 @@ LOCALTIMESTAMP
 
 See :doc:`dates-times`.
 
+NOW
+^^^
+
+See :doc:`dates-times`.
+
 Mathematical Functions
 ----------------------
 

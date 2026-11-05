@@ -153,6 +153,12 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V302-01``
      - ``ILIKE`` and ``NOT ILIKE`` (a case-insensitive ``LIKE``).
 
+   * - ``V402``
+     - Date and time functions (see :doc:`dates-times`).
+
+   * - ``V402-01``
+     - ``NOW()`` instead of ``CURRENT_TIMESTAMP``.
+
    * - ``V403``
      - Mathematical functions (see :doc:`functions`).
 

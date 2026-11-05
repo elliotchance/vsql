@@ -475,6 +475,8 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		}
 	}
 
+	tokens = replace_now_function(tokens, mut features)
+
 	for position, token in tokens {
 		if token.token == token_ilike && is_ilike_operator(tokens, position) {
 			tokens[position] = Token{token_operator_ilike, token.sym}
@@ -482,6 +484,39 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 	}
 
 	return tokens, features
+}
+
+// replace_now_function makes NOW() the token CURRENT_TIMESTAMP (V402-01), so that
+// it's the same everywhere, including where only a datetime value function is
+// allowed, such as a DEFAULT. NOW isn't a word of the standard, so it stays a
+// regular identifier. A quoted name is a function that has been registered with
+// that name.
+fn replace_now_function(tokens []Token, mut features []string) []Token {
+	mut result := []Token{cap: tokens.len}
+	mut i := 0
+	for i < tokens.len {
+		if is_now_function(tokens, i) {
+			features << vsql_now
+			result << Token{token_current_timestamp, YYSymType{
+				v: 'CURRENT_TIMESTAMP'
+			}}
+			i += 3
+			continue
+		}
+		result << tokens[i]
+		i++
+	}
+
+	return result
+}
+
+fn is_now_function(tokens []Token, i int) bool {
+	sym := tokens[i].sym.v
+	return tokens[i].token == token_literal_identifier && sym is IdentifierChain
+		&& (sym as IdentifierChain).identifier.to_upper() == 'NOW' && i + 2 < tokens.len
+		&& tokens[i + 1].token == token_operator_left_paren
+		&& tokens[i + 2].token == token_operator_right_paren
+		&& (i == 0 || tokens[i - 1].token != token_operator_period)
 }
 
 // is_ilike_operator reports whether the word ILIKE at tokens[i] is the operator

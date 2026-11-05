@@ -23,6 +23,15 @@ Syntax
 
   COMMIT [ WORK ]
 
+These can be used instead. They are vsql extensions, not standard SQL, and they
+are flagged by ``V115-01`` and ``V115-02`` (see :doc:`sql-flagging`):
+
+.. code-block:: text
+
+  COMMIT TRANSACTION
+
+  END [ TRANSACTION | WORK ]
+
 Examples
 --------
 

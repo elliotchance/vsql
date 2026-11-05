@@ -347,6 +347,16 @@ fn start_timer
 
 
 
+fn statement_ranges
+-------------------
+
+
+.. code-block:: v
+
+   pub fn statement_ranges(script string) ([]StatementRange, StatementRange)
+
+statement_ranges finds the statements of a script that end with a semicolon, leaving out empty ones (including ones that are only comments). The range of the text after the last semicolon is returned separately. Its first is less than zero if there's nothing but white space and comments, which might be because more of the script is still to come.
+
 fn version
 ----------
 
@@ -986,6 +996,24 @@ struct ServerOptions
    }
 
 
+
+struct StatementRange
+---------------------
+
+
+.. code-block:: v
+
+   pub struct StatementRange {
+   pub:
+   	// start is the position after the semicolon before it, and end is the position
+   	// of its semicolon.
+   	start int
+   	end   int
+   	// first is the position of the first thing that isn't white space or a comment.
+   	first int
+   }
+
+StatementRange is where a statement is in a script.
 
 struct Table
 ------------

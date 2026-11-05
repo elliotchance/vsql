@@ -16,7 +16,12 @@ struct SetSchemaStatement {
 fn (stmt SetSchemaStatement) execute(mut conn Connection, params map[string]Value, elapsed_parse time.Duration) !Result {
 	t := start_timer()
 
-	// This does not need to hold a write connection with the file.
+	// This does not need to hold a write connection with the file, but the schemas
+	// aren't known until the file has been read.
+	conn.open_read_connection()!
+	defer {
+		conn.release_read_connection()
+	}
 
 	mut c := Compiler{
 		conn:   conn

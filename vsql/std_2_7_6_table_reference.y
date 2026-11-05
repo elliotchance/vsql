@@ -24,11 +24,11 @@ parenthesized_joined_table:
 qualified_join:
   table_reference JOIN table_reference join_specification {
     $$.v = new_qualified_join($1.v as TableReference, JoinType.inner,
-      $3.v as TableReference, $4.v as BooleanValueExpression)
+      $3.v as TableReference, $4.v as JoinSpecification)
   }
 | table_reference join_type JOIN table_reference join_specification {
     $$.v = new_qualified_join($1.v as TableReference, $2.v as JoinType,
-      $4.v as TableReference, $5.v as BooleanValueExpression)
+      $4.v as TableReference, $5.v as JoinSpecification)
   }
 
 table_factor:

@@ -500,7 +500,7 @@
 7.9/SR/23.b              n/a          - - row pattern recognition (R010)
 7.9/CR/1                 n/a          - - row pattern recognition (R010)
 # 7.10, <joined table>
-7.10                     partial      vsql/std_2_7_10_joined_table.v tests/inner-join.sql no USING (#777), and no CROSS, NATURAL or FULL (F401)
+7.10                     partial      vsql/std_2_7_10_joined_table.v tests/inner-join.sql no CROSS, NATURAL or FULL (F401)
 7.10/SR/1                definition   - -
 7.10/SR/2                n/a          - - data change delta tables (T495)
 7.10/SR/3                definition   - -
@@ -514,41 +514,41 @@
 7.10/SR/9.b              n/a          - - partitioned join tables (F403)
 7.10/SR/9.c              n/a          - - partitioned join tables (F403)
 7.10/SR/9.d              n/a          - - partitioned join tables (F403)
-7.10/SR/10               missing      - - USING (#777)
+7.10/SR/10               implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
 7.10/SR/10.a             container    - -
 7.10/SR/10.a.i           n/a          - - join correlation names (F404)
-7.10/SR/10.a.ii          missing      - - USING (#777)
+7.10/SR/10.a.ii          implemented  vsql/planner.v tests/join-using.sql
 7.10/SR/10.b             n/a          - - NATURAL (F401)
-7.10/SR/10.c             missing      - - USING (#777)
+7.10/SR/10.c             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
 7.10/SR/10.d             n/a          - - partitioned join tables (F403)
-7.10/SR/10.e             missing      - - USING (#777)
-7.10/SR/10.f             missing      - - USING (#777)
-7.10/SR/10.f.i           missing      - - USING (#777)
-7.10/SR/10.f.ii          missing      - - USING (#777)
-7.10/SR/10.f.iii         missing      - - USING (#777)
-7.10/SR/10.f.iv          missing      - - USING (#777)
-7.10/SR/10.g             missing      - - USING (#777)
-7.10/SR/10.g.i           missing      - - USING (#777)
-7.10/SR/10.g.ii          missing      - - USING (#777)
-7.10/SR/10.g.iii         missing      - - USING (#777)
-7.10/SR/10.h             missing      - - USING (#777)
-7.10/SR/10.h.i           missing      - - USING (#777)
-7.10/SR/10.h.ii          missing      - - USING (#777)
-7.10/SR/10.h.iii         missing      - - USING (#777)
-7.10/SR/10.i             missing      - - USING (#777)
-7.10/SR/10.i.i           missing      - - USING (#777)
-7.10/SR/10.i.ii          missing      - - USING (#777)
-7.10/SR/10.i.iii         missing      - - USING (#777)
-7.10/SR/10.i.iv          missing      - - USING (#777)
-7.10/SR/10.i.v           missing      - - USING (#777)
-7.10/SR/10.j             missing      - - USING (#777)
+7.10/SR/10.e             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.f             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.f.i           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.f.ii          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.f.iii         implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.f.iv          implemented  vsql/planner.v tests/join-using.sql
+7.10/SR/10.g             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.g.i           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.g.ii          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.g.iii         implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.h             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.h.i           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.h.ii          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.h.iii         implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.i             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.i.i           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.i.ii          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.i.iii         implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.i.iv          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.i.v           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/SR/10.j             implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
 7.10/SR/11               implemented  vsql/std_2_7_10_joined_table.v tests/nested-join.sql
 7.10/SR/11.a             container    - -
-7.10/SR/11.a.i           missing      - - USING (#777)
-7.10/SR/11.a.i.1         missing      - - USING (#777)
-7.10/SR/11.a.i.2         missing      - - USING (#777)
-7.10/SR/11.a.i.3         missing      - - USING (#777)
-7.10/SR/11.a.i.4         missing      - - USING (#777)
+7.10/SR/11.a.i           implemented  vsql/planner.v tests/join-using.sql
+7.10/SR/11.a.i.1         implemented  vsql/planner.v tests/join-using.sql
+7.10/SR/11.a.i.2         implemented  vsql/planner.v tests/join-using.sql
+7.10/SR/11.a.i.3         implemented  vsql/planner.v tests/join-using.sql
+7.10/SR/11.a.i.4         implemented  vsql/planner.v tests/join-using.sql
 7.10/SR/11.a.ii          implemented  vsql/std_2_7_10_joined_table.v tests/nested-join.sql
 7.10/SR/11.a.ii.1        implemented  vsql/std_2_7_10_joined_table.v tests/nested-join.sql
 7.10/SR/11.a.ii.2        implemented  vsql/std_2_7_10_joined_table.v tests/nested-join.sql
@@ -581,7 +581,7 @@
 7.10/SR/15.b.iii.1       n/a          - - enhanced nullability determination (T101)
 7.10/SR/15.b.iii.2       n/a          - - enhanced nullability determination (T101)
 7.10/SR/15.b.iv          n/a          - - enhanced nullability determination (T101)
-7.10/SR/15.c             impl-defined vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql a NOT NULL column of the side that an outer join preserves stays NOT NULL
+7.10/SR/15.c             impl-defined vsql/std_2_7_10_joined_table.v tests/result-column-nullability.sql a NOT NULL column of the side that an outer join preserves stays NOT NULL, and a common column of a USING is the same as 15.b.iii
 7.10/AR/1                n/a          - - privileges (E081, #732)
 7.10/AR/1.a              n/a          - - privileges (E081, #732)
 7.10/AR/1.a.i            n/a          - - privileges (E081, #732)
@@ -594,9 +594,9 @@
 7.10/GR/1                container    - -
 7.10/GR/1.a              n/a          - - CROSS JOIN (F401)
 7.10/GR/1.b              implemented  vsql/std_2_7_10_joined_table.v tests/inner-join.sql
-7.10/GR/1.c              missing      - - USING (#777)
-7.10/GR/1.c.i            missing      - - USING (#777)
-7.10/GR/1.c.ii           missing      - - USING (#777)
+7.10/GR/1.c              implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/1.c.i            implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/1.c.ii           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
 7.10/GR/2                implemented  vsql/std_2_7_10_joined_table.v tests/inner-join.sql
 7.10/GR/3                implemented  vsql/std_2_7_10_joined_table.v tests/left-join.sql
 7.10/GR/3.a              implemented  vsql/std_2_7_10_joined_table.v tests/left-join.sql
@@ -633,19 +633,19 @@
 7.10/GR/5.b              implemented  vsql/std_2_7_10_joined_table.v tests/left-join.sql
 7.10/GR/5.c              implemented  vsql/std_2_7_10_joined_table.v tests/right-join.sql
 7.10/GR/5.d              n/a          - - FULL (F401)
-7.10/GR/6                partial      vsql/std_2_7_10_joined_table.v tests/inner-join.sql USING (#777)
-7.10/GR/6.a              missing      - - USING (#777)
-7.10/GR/6.a.i            missing      - - USING (#777)
-7.10/GR/6.a.ii           missing      - - USING (#777)
-7.10/GR/6.a.iii          missing      - - USING (#777)
-7.10/GR/6.a.iv           missing      - - USING (#777)
-7.10/GR/6.a.v            missing      - - USING (#777)
-7.10/GR/6.a.v.1          missing      - - USING (#777)
-7.10/GR/6.a.v.2          missing      - - USING (#777)
-7.10/GR/6.a.v.3          missing      - - USING (#777)
-7.10/GR/6.a.v.4          missing      - - USING (#777)
-7.10/GR/6.a.v.5          missing      - - USING (#777)
-7.10/GR/6.a.vi           missing      - - USING (#777)
+7.10/GR/6                implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/6.a              implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/6.a.i            implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/6.a.ii           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/6.a.iii          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/6.a.iv           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/6.a.v            implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/6.a.v.1          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/6.a.v.2          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/6.a.v.3          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/6.a.v.4          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/6.a.v.5          implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
+7.10/GR/6.a.vi           implemented  vsql/std_2_7_10_joined_table.v tests/join-using.sql
 7.10/GR/6.b              implemented  vsql/std_2_7_10_joined_table.v tests/inner-join.sql
 7.10/CR/1                n/a          - - CROSS JOIN (F401)
 7.10/CR/2                n/a          - - NATURAL (F401)

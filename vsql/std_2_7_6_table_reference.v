@@ -23,7 +23,7 @@ type TableReference = QualifiedJoin | TablePrimary
 fn (e TableReference) pstr(params map[string]Value) string {
 	match e {
 		QualifiedJoin {
-			return '${e.left_table.pstr(params)} ${e.join_type} JOIN ${e.right_table.pstr(params)} ON ${e.specification.pstr(params)}'
+			return '${e.left_table.pstr(params)} ${e.join_type} JOIN ${e.right_table.pstr(params)} ${e.specification.pstr(params)}'
 		}
 		TablePrimary {
 			mut s := match e.body {
@@ -68,10 +68,24 @@ struct QualifiedJoin {
 	left_table    &TableReference
 	join_type     JoinType
 	right_table   &TableReference
-	specification BooleanValueExpression // ON condition
+	specification JoinSpecification
 }
 
-fn new_qualified_join(left_table TableReference, join_type JoinType, right_table TableReference, specification BooleanValueExpression) QualifiedJoin {
+// A JoinSpecification is an ON condition, or the columns of a USING.
+type JoinSpecification = BooleanValueExpression | []Identifier
+
+fn (e JoinSpecification) pstr(params map[string]Value) string {
+	return match e {
+		BooleanValueExpression {
+			'ON ${e.pstr(params)}'
+		}
+		[]Identifier {
+			'USING (${e.map(it.str()).join(', ')})'
+		}
+	}
+}
+
+fn new_qualified_join(left_table TableReference, join_type JoinType, right_table TableReference, specification JoinSpecification) QualifiedJoin {
 	return QualifiedJoin{&left_table, join_type, &right_table, specification}
 }
 

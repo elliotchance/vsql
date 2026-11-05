@@ -20,7 +20,7 @@ sql_schema_statement:
 
 sql_schema_definition_statement:
   schema_definition { $$.v = $1.v as Stmt }
-| table_definition { $$.v = $1.v as Stmt }
+| table_definition { $$.v = Stmt($1.v as TableDefinition) }
 | sequence_generator_definition { $$.v = Stmt($1.v as SequenceGeneratorDefinition) }
 
 sql_schema_manipulation_statement:

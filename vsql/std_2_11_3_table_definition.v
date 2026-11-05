@@ -60,6 +60,13 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 		conn.release_write_connection()
 	}
 
+	stmt.create(mut conn)!
+
+	return new_result_msg('CREATE TABLE 1', elapsed_parse, t.elapsed())
+}
+
+// create creates the table. The caller must have the write connection open.
+fn (stmt TableDefinition) create(mut conn Connection) ! {
 	mut table_name := conn.resolve_schema_identifier(stmt.table_name)!
 	check_writable_schema(table_name)!
 	mut catalog := conn.catalog_for(table_name)
@@ -80,8 +87,6 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 	check_new_check_constraints(mut conn, table, 0)!
 
 	catalog.storage.create_table(table)!
-
-	return new_result_msg('CREATE TABLE 1', elapsed_parse, t.elapsed())
 }
 
 // table checks the definition and returns the table that it describes. It's

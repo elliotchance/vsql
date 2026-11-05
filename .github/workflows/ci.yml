@@ -1,75 +1,59 @@
 name: CI
 
-# Pull requests are tested by the pull_request event, and anything worth
-# releasing gets a tag, so main isn't built when it's pushed to. It can still be
-# run by hand with workflow_dispatch.
+# This is the only workflow that runs on a pull request, and it has one job, so
+# that's the only check a pull request has. The macOS runners get backed up, so
+# everything else is tested by a tag (see release.yml).
+#
+# A tag also runs this job for each Linux architecture, by calling this
+# workflow. There are no inputs on a pull request, which makes it x86-64.
 on:
-  workflow_dispatch:
-  push:
-    tags:
-      - "v*"
   pull_request:
     paths-ignore:
       - "**.md"
       - "**.rst"
+  workflow_call:
+    inputs:
+      arch:
+        type: string
+        required: true
+      v_commit:
+        type: string
+        required: true
 
 # A new push to a pull request cancels its previous run. Other runs are never
-# cancelled.
+# cancelled, so each call from a tag needs its own group.
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  group: ci-${{ github.event.pull_request.number || github.run_id }}-${{ inputs.arch }}
   cancel-in-progress: true
 
-# There's one job for each OS and architecture. Each one runs the tests that
-# work there, builds the binary for the release and generates the C for the
-# amalgamation. Checks that don't depend on the OS only run on Linux x86-64,
-# which has the fastest and least limited runners.
+# Checks that don't depend on the OS only run on x86-64, which has the fastest
+# and least limited runners.
 #
-# The release package is built once, at the start of each job, then everything
-# after that tests those binaries. It's uploaded at the end, so only what has
-# passed can be published. set_version.sh only changes version.v for a tag.
-# The zip is made by "make release" (see the Makefile for what's in it), except
-# on Windows, where it's made with PowerShell (with the same files), since
-# there's no zip command. On Windows, libvsql.dll is in bin/ instead of lib/,
-# next to vsql.exe, since Windows finds a DLL in the program's folder or on the
-# PATH. Each job uploads its zip as an artifact, and the release job publishes
-# them all once every job has passed, so a release is never missing a zip.
+# The release package is built once, at the start of the job, then everything
+# after that tests those binaries. set_version.sh only changes version.v for a
+# tag. The zip is made by "make release" (see the Makefile for what's in it).
 #
 # Steps that use the network are retried (see retry.sh), since they sometimes
 # fail for reasons that have nothing to do with vsql.
-#
-# A pull request only runs Linux x86-64, since the macOS runners get backed up.
-# Everything else is tested by a tag.
 jobs:
-  # Users get V master from "v up", so that's what vsql is tested and released
-  # with. The commit is found once, so that every job uses the same V, and V can
-  # be cached for each commit, instead of being built by every job.
-  v:
-    name: V master
-    runs-on: ubuntu-latest
-    outputs:
-      commit: ${{ steps.commit.outputs.commit }}
+  linux:
+    name: Linux (${{ inputs.arch == 'arm64' && 'ARM64' || 'x86-64' }})
+    runs-on: ${{ inputs.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    env:
+      ARCH: ${{ inputs.arch == 'arm64' && 'arm64' || 'x86-64' }}
+      V_ARCH: ${{ inputs.arch == 'arm64' && 'arm64' || 'amd64' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # A tag has already found V master, for all of its jobs (see release.yml).
       - name: Find V master
         id: commit
+        if: inputs.v_commit == ''
         run: |
           commit=$(.github/workflows/retry.sh git ls-remote https://github.com/vlang/v refs/heads/master | cut -f1)
           test -n "$commit"
           echo "commit=$commit" >> $GITHUB_OUTPUT
-
-  linux:
-    name: Linux (${{ matrix.name }})
-    needs: v
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJSON(github.event_name == 'pull_request' && '[{"arch":"x86-64","name":"x86-64","v_arch":"amd64","runner":"ubuntu-latest"}]' || '[{"arch":"x86-64","name":"x86-64","v_arch":"amd64","runner":"ubuntu-latest"},{"arch":"arm64","name":"ARM64","v_arch":"arm64","runner":"ubuntu-24.04-arm"}]') }}
-    runs-on: ${{ matrix.runner }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
 
       # setup-v can't be retried with retry.sh, so it's run again if it fails.
       # clean is off because it deletes V's problem matcher before the runner
@@ -80,7 +64,7 @@ jobs:
         continue-on-error: true
         uses: vlang/setup-v@v1.7
         with:
-          version: ${{ needs.v.outputs.commit }}
+          version: ${{ inputs.v_commit || steps.commit.outputs.commit }}
           clean: false
 
       - name: Remove failed V
@@ -91,23 +75,23 @@ jobs:
         if: steps.setup-v.outcome == 'failure'
         uses: vlang/setup-v@v1.7
         with:
-          version: ${{ needs.v.outputs.commit }}
+          version: ${{ inputs.v_commit || steps.commit.outputs.commit }}
           clean: false
 
       - name: Show V version
         run: v version
 
       - name: Verify fmt
-        if: matrix.arch == 'x86-64'
+        if: env.ARCH == 'x86-64'
         run: make fmt-verify
 
       - name: Verify standard index
-        if: matrix.arch == 'x86-64'
+        if: env.ARCH == 'x86-64'
         run: make check-standard-index
 
       # vsql/y.v is generated, but committed so that "v install" works.
       - name: Verify grammar
-        if: matrix.arch == 'x86-64'
+        if: env.ARCH == 'x86-64'
         run: |
           make grammar
           git diff --exit-code vsql/y.v
@@ -115,7 +99,7 @@ jobs:
       # The venv keeps the system's Python packages out, since Ubuntu's Pygments
       # is too old for Sphinx.
       - name: Verify docs
-        if: matrix.arch == 'x86-64'
+        if: env.ARCH == 'x86-64'
         run: |
           python3 -m venv "$RUNNER_TEMP/docs-venv"
           . "$RUNNER_TEMP/docs-venv/bin/activate"
@@ -138,8 +122,8 @@ jobs:
           make BUILD_OPTIONS=-showcc libvsql | tee "$RUNNER_TEMP/showcc/libvsql.showcc"
           .github/workflows/hello-test.sh bin/vsql
           make release VERSION=${GITHUB_REF##*/}
-          scripts/amalgamation.sh generate amalgamation-linux-${{ matrix.v_arch }} "$RUNNER_TEMP/showcc"
-          scripts/amalgamation.sh check amalgamation-linux-${{ matrix.v_arch }}
+          scripts/amalgamation.sh generate amalgamation-linux-${{ env.V_ARCH }} "$RUNNER_TEMP/showcc"
+          scripts/amalgamation.sh check amalgamation-linux-${{ env.V_ARCH }}
           git checkout vsql/version.v
           touch bin/*
 
@@ -155,7 +139,7 @@ jobs:
       # docs/testing.rst). The page is the same everywhere, so they only run
       # here. --with-deps installs the libraries Chromium needs.
       - name: Run app tests
-        if: matrix.arch == 'x86-64'
+        if: env.ARCH == 'x86-64'
         run: |
           python3 -m venv "$RUNNER_TEMP/app-venv"
           . "$RUNNER_TEMP/app-venv/bin/activate"
@@ -166,277 +150,11 @@ jobs:
       - name: Upload amalgamation C
         uses: actions/upload-artifact@v7
         with:
-          name: amalgamation-linux-${{ matrix.v_arch }}
-          path: amalgamation-linux-${{ matrix.v_arch }}
+          name: amalgamation-linux-${{ env.V_ARCH }}
+          path: amalgamation-linux-${{ env.V_ARCH }}
 
       - name: Upload zip
         uses: actions/upload-artifact@v7
         with:
-          name: release-linux-${{ matrix.arch }}
-          path: vsql-*-linux-${{ matrix.arch }}.zip
-
-  macos:
-    name: macOS (${{ matrix.name }})
-    if: github.event_name != 'pull_request'
-    needs: v
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: x86-64
-            name: x86-64
-            v_arch: amd64
-            runner: macos-15-intel
-          - arch: arm64
-            name: ARM64
-            v_arch: arm64
-            runner: macos-latest
-    runs-on: ${{ matrix.runner }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      # setup-v can't be retried with retry.sh, so it's run again if it fails.
-      # clean is off because it deletes V's problem matcher before the runner
-      # has read it, which fails the step (mostly on the slower macOS x86-64
-      # runner).
-      - name: Set up V master
-        id: setup-v
-        continue-on-error: true
-        uses: vlang/setup-v@v1.7
-        with:
-          version: ${{ needs.v.outputs.commit }}
-          clean: false
-
-      - name: Remove failed V
-        if: steps.setup-v.outcome == 'failure'
-        run: rm -rf ~/vlang
-
-      - name: Set up V master (retry)
-        if: steps.setup-v.outcome == 'failure'
-        uses: vlang/setup-v@v1.7
-        with:
-          version: ${{ needs.v.outputs.commit }}
-          clean: false
-
-      - name: Show V version
-        run: v version
-
-      # This is what's released, and everything after this uses these binaries.
-      # make only builds them again if a source file changes, so the source goes
-      # back to having no version for the V tests, and the binaries are made newer
-      # than it. The output of the build has the C compiler commands that the
-      # amalgamation needs, which has to be generated on each OS and architecture
-      # (see the release job).
-      - name: Build release package
-        shell: bash
-        run: |
-          .github/workflows/set_version.sh
-          mkdir -p "$RUNNER_TEMP/showcc"
-          make BUILD_OPTIONS=-showcc bin/vsql | tee "$RUNNER_TEMP/showcc/vsql.showcc"
-          make BUILD_OPTIONS=-showcc libvsql | tee "$RUNNER_TEMP/showcc/libvsql.showcc"
-          .github/workflows/hello-test.sh bin/vsql
-          make release VERSION=${GITHUB_REF##*/}
-          scripts/amalgamation.sh generate amalgamation-macos-${{ matrix.v_arch }} "$RUNNER_TEMP/showcc"
-          scripts/amalgamation.sh check amalgamation-macos-${{ matrix.v_arch }}
-          git checkout vsql/version.v
-          touch bin/*
-
-      # libpq is keg-only, so psql must be added to the PATH. It's used by the
-      # server tests.
-      - name: Install psql
-        run: |
-          .github/workflows/retry.sh brew install libpq
-          echo "$(brew --prefix libpq)/bin" >> $GITHUB_PATH
-
-      - name: Run tests
-        run: make test
-
-      - name: Upload amalgamation C
-        uses: actions/upload-artifact@v7
-        with:
-          name: amalgamation-macos-${{ matrix.v_arch }}
-          path: amalgamation-macos-${{ matrix.v_arch }}
-
-      - name: Upload zip
-        uses: actions/upload-artifact@v7
-        with:
-          name: release-macos-${{ matrix.arch }}
-          path: vsql-*-macos-${{ matrix.arch }}.zip
-
-  # The test suites don't run on Windows yet, so this builds the binary and runs
-  # some statements, a short benchmark and the server with it.
-  windows:
-    name: Windows (${{ matrix.name }})
-    if: github.event_name != 'pull_request'
-    needs: v
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: x86-64
-            name: x86-64
-            v_arch: amd64
-            runner: windows-latest
-          - arch: arm64
-            name: ARM64
-            v_arch: arm64
-            runner: windows-11-arm
-    runs-on: ${{ matrix.runner }}
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      # setup-v can't be retried with retry.sh, so it's run again if it fails.
-      # clean is off because it deletes V's problem matcher before the runner
-      # has read it, which fails the step (mostly on the slower macOS x86-64
-      # runner).
-      - name: Set up V master
-        id: setup-v
-        continue-on-error: true
-        uses: vlang/setup-v@v1.7
-        with:
-          version: ${{ needs.v.outputs.commit }}
-          clean: false
-
-      - name: Remove failed V
-        if: steps.setup-v.outcome == 'failure'
-        run: rm -rf ~/vlang
-
-      - name: Set up V master (retry)
-        if: steps.setup-v.outcome == 'failure'
-        uses: vlang/setup-v@v1.7
-        with:
-          version: ${{ needs.v.outputs.commit }}
-          clean: false
-
-      - name: Show V version
-        run: v version
-
-      # This is what's released, and everything after this uses these binaries.
-      # y.v is made first, otherwise the first make would make it newer than
-      # vsql.exe, and build it again. The output of the build has the C compiler
-      # commands that the amalgamation needs.
-      - name: Build release package
-        run: |
-          .github/workflows/set_version.sh
-          make vsql/y.v
-          mkdir -p "$RUNNER_TEMP/showcc"
-          v -n -nocache -prod -cc gcc -showcc cmd/vsql-cli -o bin/vsql.exe | tee "$RUNNER_TEMP/showcc/vsql.showcc"
-          make BUILD_OPTIONS=-showcc libvsql | tee "$RUNNER_TEMP/showcc/libvsql.showcc"
-          .github/workflows/hello-test.sh bin/vsql.exe
-
-      - name: Zip binary
-        shell: pwsh
-        run: |
-          $dir = "vsql-$("$env:GITHUB_REF".Split('/')[-1])-windows-${{ matrix.arch }}"
-          New-Item -ItemType Directory $dir/bin, $dir/include
-          Copy-Item bin/vsql.exe, bin/libvsql.dll $dir/bin
-          Copy-Item libvsql/libvsql.h $dir/include
-          Copy-Item libvsql/example.c $dir
-          Compress-Archive -Path $dir -DestinationPath "$dir.zip"
-
-      # The amalgamation's C has to be generated on each OS and architecture
-      # (see the release job).
-      - name: Generate amalgamation C
-        run: |
-          scripts/amalgamation.sh generate amalgamation-windows-${{ matrix.v_arch }} "$RUNNER_TEMP/showcc"
-          scripts/amalgamation.sh check amalgamation-windows-${{ matrix.v_arch }}
-
-      # The programs are built in bin/, next to libvsql.dll, since Windows has
-      # no rpath.
-      - name: Run libvsql tests
-        run: |
-          make libvsql-test libvsql-example module-test module-example embed-example embed-test VSQL_BIN=bin/vsql.exe
-
-      # psql is used by the server tests. PostgreSQL is installed on the x86-64
-      # runner (but isn't on the PATH), and not on the ARM64 one. choco succeeds
-      # even when it can't reach its feed and installs nothing, so the install
-      # is retried until psql.exe exists.
-      - name: Install psql
-        if: env.PGBIN == ''
-        run: |
-          .github/workflows/retry.sh sh -c "choco install postgresql17 --no-progress -y --params '/Password:postgres' && test -f 'C:/Program Files/PostgreSQL/17/bin/psql.exe'"
-          echo "PGBIN=C:\Program Files\PostgreSQL\17\bin" >> $GITHUB_ENV
-
-      - name: Run tests
-        run: |
-          export PATH="$(cygpath -u "$PGBIN"):$PATH"
-          .github/workflows/windows-test.sh bin/vsql.exe
-
-      - name: Upload amalgamation C
-        uses: actions/upload-artifact@v7
-        with:
-          name: amalgamation-windows-${{ matrix.v_arch }}
-          path: amalgamation-windows-${{ matrix.v_arch }}
-
-      - name: Upload zip
-        uses: actions/upload-artifact@v7
-        with:
-          name: release-windows-${{ matrix.arch }}
-          path: vsql-*-windows-${{ matrix.arch }}.zip
-
-  # The checks that a pull request needs to be merged are in the "latest-main"
-  # ruleset. A job that's skipped because of its "if" can't report the name of a
-  # matrix job, so these report the ones that a pull request doesn't run.
-  not-run-on-pull-requests:
-    name: ${{ matrix.check }}
-    if: github.event_name == 'pull_request'
-    strategy:
-      matrix:
-        check:
-          - Linux (ARM64)
-          - macOS (x86-64)
-          - macOS (ARM64)
-          - Windows (x86-64)
-          - Windows (ARM64)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Not run on pull requests
-        run: echo "${{ matrix.check }} runs on a tag, not on a pull request."
-
-  # The release job makes and tests the amalgamation, then publishes it with
-  # the other zips on a tag, once every job has passed. Uploading replaces a zip
-  # that's already there, so the job can be run again.
-  #
-  # The amalgamation is the C for vsql and libvsql, so that they can be built
-  # without V (see scripts/amalgamation.sh). It has the C from each OS and
-  # architecture, which has already been built and tested with it.
-  release:
-    name: Release
-    needs: [linux, macos, windows]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Download C and zips
-        uses: actions/download-artifact@v8
-
-      - name: Zip amalgamation
-        run: |
-          scripts/amalgamation.sh package ${GITHUB_REF##*/} amalgamation-*/
-          unzip -l vsql-*-amalgamation.zip
-
-      - name: Build and test amalgamation
-        run: |
-          unzip -q vsql-*-amalgamation.zip
-          cd vsql-*-amalgamation
-          make
-          ../.github/workflows/hello-test.sh bin/vsql
-          make example
-
-      - name: Release
-        if: startsWith(github.ref, 'refs/tags/')
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
-        run: |
-          ls -l vsql-*-amalgamation.zip release-*/vsql-*.zip
-          .github/workflows/retry.sh sh -c 'gh release view "$TAG" > /dev/null || gh release create "$TAG" --verify-tag --title "$TAG" --notes ""'
-          .github/workflows/retry.sh gh release upload "$TAG" vsql-*-amalgamation.zip release-*/vsql-*.zip --clobber
+          name: release-linux-${{ env.ARCH }}
+          path: vsql-*-linux-${{ env.ARCH }}.zip

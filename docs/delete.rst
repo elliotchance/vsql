@@ -8,11 +8,15 @@ Syntax
 
 .. code-block:: text
 
-  DELETE FROM <table_name>
+  DELETE FROM <table_name> [ [ AS ] <correlation_name> ]
   [ WHERE <condition> ]
 
 Deletes the rows of a table that match the ``WHERE`` condition. If ``WHERE`` is
 not provided, all rows will be deleted.
+
+``AS <correlation_name>`` gives the table a *correlation name*. The table must
+then be referred to by that name instead (such as ``p.price``), which is useful
+when a subquery reads the same table.
 
 The result (such as ``DELETE 3``) contains the number of rows deleted. If no
 rows are deleted, the result is ``DELETE 0`` with the completion condition

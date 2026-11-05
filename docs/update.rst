@@ -8,11 +8,15 @@ Syntax
 
 .. code-block:: text
 
-  UPDATE <table_name>
+  UPDATE <table_name> [ [ AS ] <correlation_name> ]
   SET <column_name> = <value> , ...
   [ WHERE <condition> ]
 
 If ``WHERE`` is not provided, all records will be updated.
+
+``AS <correlation_name>`` gives the table a *correlation name*. The table must
+then be referred to by that name instead (such as ``p.price``), which is useful
+when a subquery reads the same table.
 
 A value can be ``DEFAULT``, which is the default value of the column (see
 :doc:`create-table`).

@@ -601,7 +601,10 @@ fn create_delete_plan(stmt DeleteStatementSearched, params map[string]Value, mut
 		exprs:            AsteriskExpr(true)
 		table_expression: &TableExpression{
 			from_clause:  TablePrimary{
-				body: stmt.table_name
+				body:        stmt.table_name
+				correlation: Correlation{
+					name: stmt.correlation_name
+				}
 			}
 			where_clause: stmt.where
 		}
@@ -617,7 +620,10 @@ fn create_update_plan(stmt UpdateStatementSearched, params map[string]Value, mut
 		exprs:            AsteriskExpr(true)
 		table_expression: &TableExpression{
 			from_clause:  TablePrimary{
-				body: stmt.table_name
+				body:        stmt.table_name
+				correlation: Correlation{
+					name: stmt.correlation_name
+				}
 			}
 			where_clause: stmt.where
 		}

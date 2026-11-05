@@ -729,7 +729,7 @@
 20.22/GR/3               implemented  vsql/std_2_14_6_close_statement.v libvsql/module/test_main.c
 20.22/CR/1               missing      - - an SQL-client module isn't flagged (#879)
 # 20.23, <dynamic delete statement: positioned>
-20.23                    implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c the same as a <delete statement: positioned>, so there's no <correlation name> (#793)
+20.23                    implemented  vsql/std_2_13_4_sql_procedure_statement.v libvsql/module/test_main.c the same as a <delete statement: positioned>
 20.23/SR/1               definition   - -
 20.23/SR/2               implemented  vsql/std_2_13_4_sql_procedure_statement.v vsql/sql_test.v
 20.23/SR/3               definition   - -

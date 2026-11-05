@@ -305,8 +305,8 @@ parameters. The procedures use the cursor with these statements (see
    OPEN <cursor name>
    FETCH [ [ NEXT ] FROM ] <cursor name> INTO <parameter> [, <parameter> ]...
    CLOSE <cursor name>
-   DELETE FROM <table name> WHERE CURRENT OF <cursor name>
-   UPDATE <table name> SET ... WHERE CURRENT OF <cursor name>
+   DELETE FROM <table name> [ [ AS ] <correlation name> ] WHERE CURRENT OF <cursor name>
+   UPDATE <table name> [ [ AS ] <correlation name> ] SET ... WHERE CURRENT OF <cursor name>
 
 ``FETCH`` moves to the next row and sets the parameters to its values, the same
 as ``SELECT ... INTO``. After the last row, the ``SQLSTATE`` is ``02000`` (no

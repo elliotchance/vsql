@@ -8,8 +8,10 @@ import time
 
 struct UpdateStatementSearched {
 	table_name Identifier
-	set        []SetClause
-	where      ?BooleanValueExpression
+	// correlation_name is empty if there isn't one.
+	correlation_name Identifier
+	set              []SetClause
+	where            ?BooleanValueExpression
 	// current_of is the cursor of a positioned UPDATE, which only updates its
 	// current row (see UpdateStatementPositioned).
 	current_of ?&Cursor
@@ -46,15 +48,33 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		conn.release_write_connection()
 	}
 
-	mut c := Compiler{
-		conn:   conn
-		params: params
-	}
 	mut plan := create_plan(stmt, params, mut conn)!
 	mut rows := current_rows(plan.execute([]Row{})!, stmt.current_of)!
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
+
+	// A correlation name is the only name of the table in the set clauses, as it
+	// is in the search condition. The rows that were read have columns with that
+	// name (see create_update_plan).
+	//
+	// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Syntax Rules, 9.a and 10
+	// ISO/IEC 9075-2:2016(E), 14.13, <update statement: positioned>, Syntax Rules, 11.a
+	has_correlation := stmt.correlation_name.sub_entity_name != ''
+	row_columns := if has_correlation { plan.columns() } else { table.columns }
+	row_table_id := if has_correlation { stmt.correlation_name.id() } else { table_name.id() }
+	mut tables := map[string]Table{}
+	if has_correlation {
+		tables[row_table_id] = Table{
+			name:    stmt.correlation_name
+			columns: row_columns
+		}
+	}
+	mut c := Compiler{
+		conn:   conn
+		params: params
+		tables: tables
+	}
 
 	// A generated column, or a GENERATED ALWAYS identity column, can only be
 	// set to DEFAULT.
@@ -116,10 +136,12 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 				continue
 			}
 
-			c.context = Identifier{
-				catalog_name: table_column.name.catalog_name
-				schema_name:  table_column.name.schema_name
-				entity_name:  table.name.entity_name
+			if !has_correlation {
+				c.context = Identifier{
+					catalog_name: table_column.name.catalog_name
+					schema_name:  table_column.name.schema_name
+					entity_name:  table.name.entity_name
+				}
 			}
 			// DEFAULT for an identity column is the next value of its sequence.
 			//
@@ -138,7 +160,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			// for this particular case because we want NULL to be set in cases
 			// where the value wasn't NULL.
 			check_store_assignment(raw_value, table_column.typ)!
-			column_id := '${table_name.id()}.${column_name}'
+			column_id := '${row_table_id}.${column_name}'
 			cmp := compare(conn, row.data[column_id], raw_value)!
 			if cmp != .is_equal {
 				did_modify = true
@@ -199,7 +221,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			conn.dry_run = false
 		}
 
-		empty_row := new_empty_row(table.columns, table_name.id())
+		empty_row := new_empty_row(row_columns, row_table_id)
 		for clause in stmt.set {
 			column_name := clause.column_name
 			table_column := table.column(column_name)!

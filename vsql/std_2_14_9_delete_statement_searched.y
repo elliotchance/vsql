@@ -4,20 +4,22 @@
 //
 // Delete rows of a table.
 
-// There's no <correlation name> (#793). ONLY needs Feature S111, "ONLY in query
+// ONLY needs Feature S111, "ONLY in query
 // expressions", and FOR PORTION OF needs Feature T181, "Application-time period
 // tables". Without WHERE, every row is deleted.
 //
 // ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, Syntax Rules, 5
 
 delete_statement_searched:
-  DELETE FROM target_table {
-    $$.v = Stmt(DeleteStatementSearched{$3.v as Identifier, none, none})
+  DELETE FROM target_table target_correlation_name {
+    $$.v = Stmt(DeleteStatementSearched{$3.v as Identifier, $4.v as Identifier,
+      none, none})
   }
-| DELETE FROM target_table WHERE search_condition {
+| DELETE FROM target_table target_correlation_name WHERE search_condition {
     $$.v = Stmt(DeleteStatementSearched{
       $3.v as Identifier
-      $5.v as BooleanValueExpression
+      $4.v as Identifier
+      $6.v as BooleanValueExpression
       none
     })
   }

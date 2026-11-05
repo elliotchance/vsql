@@ -5,10 +5,10 @@
 // Update a row of a table.
 
 update_statement_positioned:
-  UPDATE target_table SET set_clause_list WHERE CURRENT OF cursor_name {
+  UPDATE target_table target_correlation_name SET set_clause_list WHERE CURRENT OF cursor_name {
     flag(mut yylex, vsql_update_positioned)
     $$.v = Stmt(UpdateStatementPositioned{$2.v as Identifier,
-      $4.v as []SetClause, $8.v as string})
+      $3.v as Identifier, $5.v as []SetClause, $9.v as string})
   }
 
 %%

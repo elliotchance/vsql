@@ -13,13 +13,42 @@ struct JoinOperation {
 	common_columns []CommonColumn
 	params         map[string]Value
 	tables         map[string]Table
+	// names are the names of the columns of the rows that lookup reads, when
+	// the table has a correlation name (see JoinLookup).
+	names map[string]string
 mut:
 	conn &Connection
 	plan Plan
+	// lookup reads the rows of the inner side that can match a row of the
+	// outer side, when the inner side is a table with an index (or PRIMARY KEY)
+	// that the join condition can use.
+	lookup ?&KeyOperation
 }
 
-fn new_join_operation(left_columns Columns, join_type JoinType, right_columns Columns, specification BooleanValueExpression, common_columns []CommonColumn, params map[string]Value, conn &Connection, plan Plan, tables map[string]Table) &JoinOperation {
-	return &JoinOperation{left_columns, join_type, right_columns, specification, common_columns, params, tables, conn, plan}
+fn new_join_operation(left_columns Columns, join_type JoinType, right_columns Columns, specification BooleanValueExpression, common_columns []CommonColumn, params map[string]Value, conn &Connection, plan Plan, tables map[string]Table, lookup ?JoinLookup) &JoinOperation {
+	mut names := map[string]string{}
+	mut operation := ?&KeyOperation(none)
+	if l := lookup {
+		if l.table.name.id() != l.base_table.name.id() {
+			for i, column in l.base_table.columns {
+				names[column.name.id()] = l.table.columns[i].name.id()
+			}
+		}
+		operation = l.operation
+	}
+
+	return &JoinOperation{left_columns, join_type, right_columns, specification, common_columns, params, tables, names, conn, plan, operation}
+}
+
+// A JoinLookup is how the rows of the inner side of a join (the right side, or
+// the left side of a RIGHT join) are found for each row of the outer side, with
+// the PRIMARY KEY or an index of a table (base_table). The table is how the
+// query names it, which is different with a correlation name, such as
+// "t AS x (a, b)".
+struct JoinLookup {
+	base_table Table
+	table      Table
+	operation  &KeyOperation
 }
 
 fn (o &JoinOperation) str() string {
@@ -84,14 +113,49 @@ fn possibly_nullable_columns(columns Columns) Columns {
 // side.
 //
 // ISO/IEC 9075-2:2016(E), 7.10, <joined table>, General Rules, 3-5
+//
+// The rows are in the order of the outer side (the left side, or the right side
+// of a RIGHT join), then the inner side. Each row of the outer side is compared
+// with every row of the inner side, or only the rows that lookup finds (if
+// any). The whole join condition is still applied to them.
 fn (mut o JoinOperation) execute(_ []Row) ![]Row {
-	left_rows := o.plan.subplans['\$1'].execute([]Row{})!
-	right_rows := o.plan.subplans['\$2'].execute([]Row{})!
+	outer, inner := if o.join_type == .right { '\$2', '\$1' } else { '\$1', '\$2' }
+	inner_columns := if o.join_type == .right { o.left_columns } else { o.right_columns }
+	outer_rows := o.plan.subplans[outer].execute([]Row{})!
+	mut all_inner_rows := []Row{}
+	if o.lookup == none {
+		all_inner_rows = o.plan.subplans[inner].execute([]Row{})!
+	}
 
-	mut rows := match o.join_type {
-		.inner { o.execute_inner(left_rows, right_rows)! }
-		.left { o.execute_left(left_rows, right_rows)! }
-		.right { o.execute_right(left_rows, right_rows)! }
+	mut rows := []Row{}
+	for outer_row in outer_rows {
+		inner_rows := o.inner_rows(outer_row, all_inner_rows)!
+		mut matched := false
+		for inner_row in inner_rows {
+			mut row := new_row(map[string]Value{})
+			for k, v in outer_row.data {
+				row.data[k] = v
+			}
+			for k, v in inner_row.data {
+				row.data[k] = v
+			}
+
+			if eval_as_bool(mut o.conn, row, o.specification, o.params, o.tables)! {
+				rows << row
+				matched = true
+			}
+		}
+
+		if !matched && o.join_type != .inner {
+			mut row := new_row(map[string]Value{})
+			for k, v in outer_row.data {
+				row.data[k] = v
+			}
+			for k in inner_columns {
+				row.data[k.name.id()] = new_null_value(k.typ.typ)
+			}
+			rows << row
+		}
 	}
 
 	// ISO/IEC 9075-2:2016(E), 7.10, <joined table>, General Rules, 6.a
@@ -110,109 +174,24 @@ fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 	return rows
 }
 
-fn (mut o JoinOperation) execute_inner(left_rows []Row, right_rows []Row) ![]Row {
-	mut new_rows := []Row{}
-
-	for left_row in left_rows {
-		for right_row in right_rows {
-			mut row := new_row(map[string]Value{})
-
-			for k, v in left_row.data {
-				row.data[k] = v
-			}
-			for k, v in right_row.data {
-				row.data[k] = v
-			}
-
-			if eval_as_bool(mut o.conn, row, o.specification, o.params, o.tables)! {
-				new_rows << row
-			}
-		}
+// inner_rows are the rows of the inner side that might match outer_row, which
+// is all of them without a lookup.
+fn (mut o JoinOperation) inner_rows(outer_row Row, all_inner_rows []Row) ![]Row {
+	mut lookup := o.lookup or { return all_inner_rows }
+	mut rows := lookup.read(outer_row)!
+	if o.names.len == 0 {
+		return rows
 	}
 
-	return new_rows
-}
-
-fn (mut o JoinOperation) execute_left(left_rows []Row, right_rows []Row) ![]Row {
-	mut new_rows := []Row{}
-
-	for left_row in left_rows {
-		mut matched := false
-
-		for right_row in right_rows {
-			mut row := new_row(map[string]Value{})
-
-			for k, v in left_row.data {
-				row.data[k] = v
-			}
-
-			for k, v in right_row.data {
-				row.data[k] = v
-			}
-
-			if eval_as_bool(mut o.conn, row, o.specification, o.params, o.tables)! {
-				new_rows << row
-				matched = true
-			}
+	for mut row in rows {
+		mut data := map[string]Value{}
+		for k, v in row.data {
+			data[o.names[k]] = v
 		}
-
-		if !matched {
-			mut row := new_row(map[string]Value{})
-
-			for k, v in left_row.data {
-				row.data[k] = v
-			}
-
-			for k in o.right_columns {
-				row.data[k.name.id()] = new_null_value(k.typ.typ)
-			}
-
-			new_rows << row
-		}
+		row.data = data
 	}
 
-	return new_rows
-}
-
-fn (mut o JoinOperation) execute_right(left_rows []Row, right_rows []Row) ![]Row {
-	mut new_rows := []Row{}
-
-	for right_row in right_rows {
-		mut matched := false
-
-		for left_row in left_rows {
-			mut row := new_row(map[string]Value{})
-
-			for k, v in left_row.data {
-				row.data[k] = v
-			}
-
-			for k, v in right_row.data {
-				row.data[k] = v
-			}
-
-			if eval_as_bool(mut o.conn, row, o.specification, o.params, o.tables)! {
-				new_rows << row
-				matched = true
-			}
-		}
-
-		if !matched {
-			mut row := new_row(map[string]Value{})
-
-			for k in o.left_columns {
-				row.data[k.name.id()] = new_null_value(k.typ.typ)
-			}
-
-			for k, v in right_row.data {
-				row.data[k] = v
-			}
-
-			new_rows << row
-		}
-	}
-
-	return new_rows
+	return rows
 }
 
 // A CommonColumn is a column of the result of a named columns join, the

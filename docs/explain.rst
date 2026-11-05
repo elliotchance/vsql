@@ -77,6 +77,29 @@ most leading columns compared with ``=`` (and then a range of the next column)
 is used. The ``PRIMARY KEY`` is used when they're the same, then the index
 that's first by name.
 
+A join reads every row of one side (the left side, or the right side of a
+``RIGHT JOIN``) and, for each of them, the rows of the other side that can match
+it. When the other side is a table, its ``PRIMARY KEY`` or an index is used in
+the same way, with the join condition instead of the ``WHERE`` clause. The
+values that the columns of the key are compared with can also use the columns
+of the first side. The whole join condition is still applied to each pair of
+rows:
+
+.. code-block:: sql
+
+   CREATE TABLE orders (order_id INT PRIMARY KEY, product_id INT, quantity INT);
+   EXPLAIN SELECT name, quantity FROM orders
+   JOIN products ON products.product_id = orders.product_id;
+   -- EXPLAIN: $1:
+   -- EXPLAIN:   TABLE ":memory:".PUBLIC.ORDERS (ORDER_ID INTEGER NOT NULL, PRODUCT_ID INTEGER, QUANTITY INTEGER)
+   -- EXPLAIN: $2:
+   -- EXPLAIN:   PRIMARY KEY ":memory:".PUBLIC.PRODUCTS (PRODUCT_ID INTEGER NOT NULL, NAME CHARACTER VARYING(50), PRICE NUMERIC(10, 2)) RANGE PRODUCTS.PRODUCT_ID = ORDERS.PRODUCT_ID
+   -- EXPLAIN: INNER JOIN ON PRODUCTS.PRODUCT_ID = ORDERS.PRODUCT_ID (":memory:".PUBLIC.ORDERS.ORDER_ID INTEGER NOT NULL, ":memory:".PUBLIC.ORDERS.PRODUCT_ID INTEGER, ":memory:".PUBLIC.ORDERS.QUANTITY INTEGER, ":memory:".PUBLIC.PRODUCTS.PRODUCT_ID INTEGER NOT NULL, ":memory:".PUBLIC.PRODUCTS.NAME CHARACTER VARYING(50), ":memory:".PUBLIC.PRODUCTS.PRICE NUMERIC(10, 2))
+   -- EXPLAIN: EXPR (NAME CHARACTER VARYING(50), QUANTITY INTEGER)
+
+A row of the first side with a ``NULL`` in one of those values can't match any
+row, so none are read for it.
+
 See Also
 --------
 

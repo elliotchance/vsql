@@ -31,7 +31,10 @@ fn (d AddColumnDefinition) execute(mut conn Connection, mut catalog CatalogConne
 	mut elements := table.elements()
 	elements << d.column_definition
 
-	definition := TableDefinition{table.name, elements}
+	definition := TableDefinition{
+		table_name:     table.name
+		table_elements: elements
+	}
 	definition.check_limits(table.name)!
 	mut new_table := Table{
 		...definition.table(table.name, table.tid)!

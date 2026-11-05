@@ -27,15 +27,29 @@ module vsql
 // V001-02: EXPLAIN before a searched DELETE.
 // V001-03: EXPLAIN before a searched UPDATE.
 //
+// V101: CREATE SCHEMA.
+// V101-01: CREATE SCHEMA IF NOT EXISTS.
+//
+// V102: DROP SCHEMA.
+// V102-01: DROP SCHEMA IF EXISTS.
+//
+// V103: CREATE TABLE.
+// V103-01: CREATE TABLE IF NOT EXISTS.
+//
 // V104: DROP TABLE.
 // V104-01: DROP TABLE without a <drop behavior> (it's RESTRICT).
+// V104-02: DROP TABLE IF EXISTS.
 //
 // V105: ALTER TABLE.
 // V105-01: DROP COLUMN without a <drop behavior> (it's RESTRICT).
 // V105-02: DROP CONSTRAINT without a <drop behavior> (it's RESTRICT).
 //
+// V106: CREATE SEQUENCE.
+// V106-01: CREATE SEQUENCE IF NOT EXISTS.
+//
 // V107: DROP SEQUENCE.
 // V107-01: DROP SEQUENCE without a <drop behavior> (it's RESTRICT).
+// V107-02: DROP SEQUENCE IF EXISTS.
 //
 // V108: DECLARE CURSOR.
 // V108-01: DECLARE CURSOR outside of an SQL-client module.
@@ -89,10 +103,16 @@ module vsql
 const vsql_explain_query = 'V001-01'
 const vsql_explain_delete = 'V001-02'
 const vsql_explain_update = 'V001-03'
+const vsql_create_schema_if_not_exists = 'V101-01'
+const vsql_drop_schema_if_exists = 'V102-01'
+const vsql_create_table_if_not_exists = 'V103-01'
 const vsql_drop_table_behavior = 'V104-01'
+const vsql_drop_table_if_exists = 'V104-02'
 const vsql_drop_column_behavior = 'V105-01'
 const vsql_drop_constraint_behavior = 'V105-02'
+const vsql_create_sequence_if_not_exists = 'V106-01'
 const vsql_drop_sequence_behavior = 'V107-01'
+const vsql_drop_sequence_if_exists = 'V107-02'
 const vsql_declare_cursor = 'V108-01'
 const vsql_open_cursor = 'V109-01'
 const vsql_fetch_without_into = 'V110-01'

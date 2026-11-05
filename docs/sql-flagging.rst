@@ -59,11 +59,32 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V001-03``
      - ``EXPLAIN`` before a searched ``UPDATE`` (see :doc:`explain`).
 
+   * - ``V101``
+     - ``CREATE SCHEMA``.
+
+   * - ``V101-01``
+     - ``CREATE SCHEMA IF NOT EXISTS`` (see :doc:`create-schema`).
+
+   * - ``V102``
+     - ``DROP SCHEMA``.
+
+   * - ``V102-01``
+     - ``DROP SCHEMA IF EXISTS`` (see :doc:`drop-schema`).
+
+   * - ``V103``
+     - ``CREATE TABLE``.
+
+   * - ``V103-01``
+     - ``CREATE TABLE IF NOT EXISTS`` (see :doc:`create-table`).
+
    * - ``V104``
      - ``DROP TABLE``.
 
    * - ``V104-01``
      - ``DROP TABLE`` without ``CASCADE`` or ``RESTRICT`` (it's ``RESTRICT``).
+
+   * - ``V104-02``
+     - ``DROP TABLE IF EXISTS`` (see :doc:`drop-table`).
 
    * - ``V105``
      - ``ALTER TABLE``.
@@ -75,12 +96,21 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
      - ``DROP CONSTRAINT`` without ``CASCADE`` or ``RESTRICT`` (it's
        ``RESTRICT``).
 
+   * - ``V106``
+     - ``CREATE SEQUENCE``.
+
+   * - ``V106-01``
+     - ``CREATE SEQUENCE IF NOT EXISTS`` (see :doc:`create-sequence`).
+
    * - ``V107``
      - ``DROP SEQUENCE``.
 
    * - ``V107-01``
      - ``DROP SEQUENCE`` without ``CASCADE`` or ``RESTRICT`` (it's
        ``RESTRICT``).
+
+   * - ``V107-02``
+     - ``DROP SEQUENCE IF EXISTS`` (see :doc:`drop-sequence`).
 
    * - ``V108``
      - ``DECLARE CURSOR`` (see :doc:`cursors`).

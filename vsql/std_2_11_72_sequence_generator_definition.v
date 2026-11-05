@@ -39,8 +39,9 @@ struct SequenceGeneratorCycleOption {
 }
 
 struct SequenceGeneratorDefinition {
-	name    Identifier
-	options []SequenceGeneratorOption
+	name          Identifier
+	options       []SequenceGeneratorOption
+	if_not_exists bool // V106-01, a sequence that already exists isn't an error
 }
 
 fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, _ map[string]Value, elapsed_parse time.Duration) !Result {
@@ -51,28 +52,36 @@ fn (stmt SequenceGeneratorDefinition) execute(mut conn Connection, _ map[string]
 		conn.release_write_connection()
 	}
 
-	stmt.create(mut conn)!
+	msg := if stmt.create(mut conn)! { 'CREATE SEQUENCE 1' } else { 'CREATE SEQUENCE 0' }
 
-	return new_result_msg('CREATE SEQUENCE 1', elapsed_parse, t.elapsed())
+	return new_result_msg(msg, elapsed_parse, t.elapsed())
 }
 
-// create creates the sequence. The caller must have the write connection open.
-fn (stmt SequenceGeneratorDefinition) create(mut conn Connection) ! {
-	check_sequence_options(stmt.options)!
-
+// create creates the sequence and returns true, or false if it already exists
+// with IF NOT EXISTS. The caller must have the write connection open.
+fn (stmt SequenceGeneratorDefinition) create(mut conn Connection) !bool {
 	sequence_name := conn.resolve_schema_identifier(stmt.name)!
 	check_writable_schema(sequence_name)!
 	mut catalog := conn.catalog_for(sequence_name)
 
 	// ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>, Syntax Rules, 3
 	if _ := catalog.storage.sequence(sequence_name) {
+		// The existing sequence isn't changed (including its current value) or
+		// compared with these options, which aren't checked either.
+		if stmt.if_not_exists {
+			return false
+		}
+
 		return sqlstate_42p07('sequence', sequence_name.str()) // duplicate sequence
 	}
 
+	check_sequence_options(stmt.options)!
 	sequence := stmt.sequence(sequence_name)
 	sequence.check()!
 	sequence.check_in_range('START WITH', sequence.start_value)!
 	catalog.storage.create_sequence(sequence)!
+
+	return true
 }
 
 // check_sequence_options checks that each option is only given once and that

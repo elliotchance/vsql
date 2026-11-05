@@ -163,3 +163,20 @@ dialog.discard p { margin: 0; }
 details.folder > summary:has(button.new-tab) { position: relative; }
 button.new-tab { position: absolute; top: 2px; right: 4px; padding: 0 6px; font-size: 12px; font-weight: normal; line-height: 1.4; color: var(--muted); background: transparent; border: 0; border-radius: 4px; }
 button.new-tab:hover { color: var(--fg); background: var(--border); }
+.export { padding: 12px; }
+.export .field { font-weight: 600; margin-right: 8px; }
+.export [hidden] { display: none; }
+.export-command { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
+.export-command pre { flex: 1; margin: 0; padding: 8px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; word-break: break-all; background: var(--side); border: 1px solid var(--border); border-radius: 6px; }
+.export-formats, .export-file, .export-sql, .export-query, .export-delimited { display: block; margin-bottom: 12px; }
+.export-formats label { margin-right: 12px; }
+.export-sql > label, .export-delimited label { display: block; margin-top: 6px; }
+.export input:not([type=checkbox]):not([type=radio]) { padding: 3px 6px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 4px; }
+.export-file input { width: 360px; max-width: 100%; }
+.export select { padding: 3px 6px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color-scheme: light dark; }
+.export textarea { display: block; width: 100%; margin-top: 4px; padding: 6px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box; }
+.export-objects { margin-bottom: 8px; padding: 8px; max-height: 320px; overflow: auto; border: 1px solid var(--border); border-radius: 6px; }
+.export-schema > label { font-weight: 600; }
+.export-schema ul { margin: 0; padding-left: 22px; list-style: none; }
+.export .kind { color: var(--muted); font-size: 12px; }
+.export-param { display: block; margin-top: 6px; }

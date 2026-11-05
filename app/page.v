@@ -42,6 +42,8 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		write_create_table(mut sb, tab, result)
 	} else if tab.tab_type == alter_table_tab {
 		write_alter_table(mut sb, tab, result)
+	} else if tab.tab_type == export_tab {
+		a.write_export(mut sb, mut conn, tab, result)!
 	} else {
 		entries := history(mut conn, tab.catalog, tab.id)!
 
@@ -66,6 +68,7 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		if entries.len > 0 {
 			sb.write_string('<button type="button" class="show-history" title="Query History">Query History</button>')
 		}
+		sb.write_string('<button type="submit" name="export_query_tab" value="1" class="run export-query-tab" title="Export the result of this query">Export&hellip;</button>')
 		sb.write_string('<button type="submit" class="run" title="Run (Ctrl+Enter)">Run <span class="shortcut">&#8963;&#8629;</span></button></div></form>')
 		// Choosing a query from the history puts it in the editor, it's not run
 		// (see app_history.js).
@@ -84,7 +87,7 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 		sb.write_string('<button type="submit"${run_class} autofocus>Run</button><a href="/" class="cancel">Cancel</a></form></dialog>')
 	}
 	// A CREATE_TABLE or ALTER_TABLE tab has its own error.
-	if result.error != '' && tab.tab_type !in [create_table_tab, alter_table_tab] {
+	if result.error != '' && tab.tab_type !in [create_table_tab, alter_table_tab, export_tab] {
 		sb.write_string('<p class="error">${html_escape(result.error)}</p>')
 	}
 	if tab.id != no_tab.id && tab.tab_type == query_tab {
@@ -104,6 +107,9 @@ fn (a &App) page(mut conn vsql.Connection, all_tabs []Tab, tab Tab, result TabRe
 	sb.write_string('<script>${reserved_words_js()}${app_highlight_js.to_string()}${app_schema_js.to_string()}')
 	if tab.id != no_tab.id && tab.tab_type == query_tab {
 		sb.write_string(app_js.to_string() + app_edit_js.to_string())
+	}
+	if tab.tab_type == export_tab {
+		sb.write_string(app_export_js.to_string())
 	}
 	if tab.tab_type == create_table_tab {
 		sb.write_string(app_columns_js.to_string() + app_create_table_js.to_string())
@@ -164,9 +170,10 @@ fn write_history_list(mut sb strings.Builder, entries []History, open bool) {
 // table queries it in a new tab. Each tab has a menu to close it. The sidebar can
 // be resized, and a heading or schema collapsed (see app_sidebar.js).
 //
-// Each catalog has a menu to create a schema (see app_schema.js). Each schema and
+// Each catalog has a menu to create a schema (see app_schema.js) or export the
+// file (see export.v). Each schema and
 // table (other than in INFORMATION_SCHEMA, which can't be changed, and VSQL_APP,
-// which the app needs) has a menu to drop it, and a schema to add a table to it
+// which the app needs) has a menu to export or drop it, and a schema to add a table to it
 // (see create_table.v). They run in the file of the catalog, so it's not in the
 // SQL.
 fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_tabs []Tab, tab Tab) ! {
@@ -192,7 +199,10 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 		schema_names.sort()
 
 		sb.write_string('<div class="folder-row catalog-row"><details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
-		sb.write_string('<button type="button" class="create-schema" data-catalog="${html_escape(catalog_name)}">Create schema</button></div></details>')
+		sb.write_string('<button type="button" class="create-schema" data-catalog="${html_escape(catalog_name)}">Create schema</button>')
+		sb.write_string('<button type="submit" form="app" name="export:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
+			'file',
+		]))}">Export&hellip;</button></div></details>')
 		sb.write_string('<details class="section" data-folder="catalog:${html_escape(catalog_name)}" open><summary><span class="icon" aria-hidden="true">&#128452;&#65039;</span>${a.file_dot(catalog_name)}${html_escape(catalog_name)}')
 		history_active := if tab.tab_type == history_tab && tab.catalog == catalog_name {
 			' active'
@@ -227,6 +237,10 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 				drop_behavior := if tables.len == 0 { 'RESTRICT' } else { 'CASCADE' }
 				sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#9776;</summary><div class="menu-items">')
 				sb.write_string('<button type="submit" form="app" name="add_table:${html_escape(catalog_name)}" value="${html_escape(schema_sql)}">Add table</button>')
+				sb.write_string('<button type="submit" form="app" name="export:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
+					'schema',
+					schema_name,
+				]))}">Export&hellip;</button>')
 				sb.write_string('<button type="submit" form="app" name="drop:${html_escape(catalog_name)}" value="SCHEMA ${html_escape(schema_sql)} ${drop_behavior}" class="danger">Drop schema</button></div></details>')
 			}
 			sb.write_string('<details class="folder" data-folder="schema:${html_escape(catalog_name)}.${html_escape(schema_name)}" open><summary><span class="icon" aria-hidden="true">&#128193;</span>${html_escape(schema_name)} <span class="count">${tables.len}</span></summary><ul>')
@@ -242,6 +256,11 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 						schema_name,
 						table.entity_name,
 					]))}">Alter table</button>')
+					sb.write_string('<button type="submit" form="app" name="export:${html_escape(catalog_name)}" value="${html_escape(json2.encode([
+						'table',
+						schema_name,
+						table.entity_name,
+					]))}">Export&hellip;</button>')
 					sb.write_string('<button type="submit" form="app" name="drop:${html_escape(catalog_name)}" value="TABLE ${html_escape(table.str())}" class="danger">Drop table</button></div></details>')
 				}
 				sb.write_string('</li>')
@@ -292,6 +311,7 @@ const app_create_table_js = $embed_file('app_create_table.js')
 const app_highlight_js = $embed_file('app_highlight.js')
 const app_history_js = $embed_file('app_history.js')
 const app_alter_table_js = $embed_file('app_alter_table.js')
+const app_export_js = $embed_file('app_export.js')
 
 const show_tables_sql = 'SELECT * FROM INFORMATION_SCHEMA.TABLES'
 

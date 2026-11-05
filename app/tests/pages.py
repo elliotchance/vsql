@@ -4,6 +4,8 @@
 
 import re
 
+from playwright.sync_api import expect
+
 
 def titles(*titles):
     """titles matches the text of tabs in the sidebar, after their icon."""
@@ -172,6 +174,43 @@ class AppPage:
     @property
     def rows(self):
         return self.page.locator('main tbody tr')
+
+    def download(self, button):
+        """download clicks a button that downloads a file, and returns its name
+        and text."""
+        with self.page.expect_download() as info:
+            button.click()
+        download = info.value
+        with open(download.path(), newline='') as f:
+            return download.suggested_filename, f.read()
+
+    @property
+    def export_command(self):
+        """export_command is the command shown on an EXPORT tab."""
+        return self.page.locator('.export-command pre')
+
+    def export_option(self, name):
+        """export_option is a labelled option on an EXPORT tab."""
+        return self.page.locator('.export').get_by_label(name)
+
+    def export_set(self, name, value):
+        """export_set fills in an option on an EXPORT tab, and waits for the
+        command to be asked for again."""
+        self.update_export(lambda: self.export_option(name).fill(value))
+
+    def export_check(self, name, checked=True):
+        """export_check sets a checkbox or radio button on an EXPORT tab."""
+        self.update_export(lambda: self.export_option(name).set_checked(checked))
+
+    def update_export(self, change):
+        """update_export makes a change, and waits for the new command."""
+        with self.page.expect_response(lambda r: r.request.method == 'POST' and 'export_command' in (r.request.post_data or '')) as info:
+            change()
+        info.value.finished()
+        expect(self.page.locator('.export')).to_have_attribute('data-updated', re.compile('.'))
+        self.page.wait_for_function(
+            'text => document.querySelector(".export-command pre").textContent === text',
+            arg=info.value.json()['command'])
 
     @property
     def cells(self):

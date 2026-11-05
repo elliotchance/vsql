@@ -121,6 +121,38 @@ fn (a &App) handle(mut conn net.TcpConn) {
 	}
 
 	form := urllib.parse_query(body.bytestr()) or { urllib.new_values() }
+	// The command of an EXPORT tab as its options change, see export.v.
+	if _ := form.get('export_command') {
+		preview := a.export_preview(form) or {
+			write_response(mut conn, '400 Bad Request', 'text/plain; charset=utf-8', err.msg())
+			return
+		}
+		write_response(mut conn, '200 OK', 'application/json', preview)
+		return
+	}
+	// Export is a download so the page isn't changed, unless it fails and then the
+	// error is shown on the tab.
+	if _ := form.get('export_run') {
+		a.respond(true, form) or {}
+		ref := form.get('tab') or { '' }
+		if download := a.export_download(form) {
+			lock a.results {
+				a.results[ref] = TabResult{}
+			}
+			// The filename is quoted, so it can't have a quote.
+			filename := download.filename.runes().map(if it < ` ` || it == `"` { `_` } else { it }).string()
+			conn.write_string('HTTP/1.0 200 OK\r\nContent-Type: ${download.content_type}\r\nContent-Disposition: attachment; filename="${filename}"\r\nContent-Length: ${download.body.len}\r\nConnection: close\r\n\r\n${download.body}') or {}
+			return
+		} else {
+			lock a.results {
+				a.results[ref] = TabResult{
+					error: err.msg()
+				}
+			}
+			conn.write_string('HTTP/1.0 303 See Other\r\nLocation: /\r\nContent-Length: 0\r\nConnection: close\r\n\r\n') or {}
+			return
+		}
+	}
 	response := a.respond(method == 'POST', form) or {
 		write_response(mut conn, '500 Internal Server Error', 'text/plain', err.msg())
 		return
@@ -172,7 +204,11 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	query_text := form.get('sql') or { tab.query_text }
 	// The value and type of each "?" are posted with the SQL.
 	params := if _ := form.get('sql') { posted_params(form) } else { tab.params }
-	payload := form.get('payload') or { tab.payload }
+	payload := if tab.tab_type == export_tab && (form.get('export_file') or { '\0' }) != '\0' {
+		json2.encode(export_form(form, json2.decode[ExportPayload](tab.payload)!.source))
+	} else {
+		form.get('payload') or { tab.payload }
+	}
 	if tab.tab_type == query_tab && tab.id != no_tab.id {
 		save_tab(mut conn, tab, query_text, params)!
 	}
@@ -182,7 +218,18 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	// With no tab, a new tab is in the first file.
 	catalog := if tab.id == no_tab.id { a.catalog_names[0] } else { tab.catalog }
 
+	// Export on a query tab opens a new tab to export it.
+	if tab.tab_type == query_tab && tab.id != no_tab.id && (form.get('export_query_tab') or { '' }) != '' {
+		a.open_query_export(mut conn, tab, query_text, params)!
+		return '/'
+	}
+
 	for file in a.catalog_names {
+		// Export in the menu of a file, schema or table opens a new tab to export it.
+		if value := form.get('export:${file}') {
+			a.open_export(mut conn, file, value)!
+			return '/'
+		}
 		// A table in the sidebar opens a new tab of its file that runs SELECT * on
 		// it. The tab runs in that file, so the query doesn't need the catalog.
 		if table := form.get('query:${file}') {

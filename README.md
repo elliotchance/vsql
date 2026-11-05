@@ -6,8 +6,8 @@
 
 **vsql is a small SQL database that follows the SQL standard.** It keeps a whole
 database in a single file (or in memory), and you can use it from a terminal,
-from any PostgreSQL client, or embedded in your own [V](https://vlang.io)
-program. It's written in pure V with no dependencies.
+from a browser, from any PostgreSQL client, or embedded in your own
+[V](https://vlang.io) program. It's written in pure V with no dependencies.
 
 ```text
 $ vsql cli shop.vsql
@@ -84,6 +84,53 @@ psql -h 127.0.0.1 -p 3210
 
 The server ignores the user name, password and database name. See the
 [list of tested clients](https://vsql.readthedocs.io/en/latest/postgresql-clients.html).
+
+vsql app
+--------
+
+`vsql app` lets you browse and query a database in your browser:
+
+```sh
+vsql app shop.vsql
+```
+
+Then open http://127.0.0.1:3211. You can open several files at once, and each
+query tab remembers its own file and schema. The colors follow the light or dark
+setting of your system. See the
+[CLI docs](https://vsql.readthedocs.io/en/latest/cli.html#app) for its options.
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="docs/img/screenshot-query-results.png"><img src="docs/img/screenshot-query-results.png" alt="Run queries and see the results with their types."></a><br>
+      Run queries and see the results with their types.
+    </td>
+    <td width="50%" valign="top">
+      <a href="docs/img/screenshot-edit-rows.png"><img src="docs/img/screenshot-edit-rows.png" alt="Change, add and delete rows, then save them together."></a><br>
+      Change, add and delete rows, then save them together.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="docs/img/screenshot-create-table.png"><img src="docs/img/screenshot-create-table.png" alt="Create and alter tables, and see the SQL as you go."></a><br>
+      Create and alter tables, and see the SQL as you go.
+    </td>
+    <td width="50%" valign="top">
+      <a href="docs/img/screenshot-tab-history.png"><img src="docs/img/screenshot-tab-history.png" alt="Search the history of every query that was run."></a><br>
+      Search the history of every query that was run.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="docs/img/screenshot-export-table.png"><img src="docs/img/screenshot-export-table.png" alt="Export as SQL, CSV, TSV or JSON."></a><br>
+      Export as SQL, CSV, TSV or JSON.
+    </td>
+    <td width="50%" valign="top">
+      <a href="docs/img/screenshot-import-csv.png"><img src="docs/img/screenshot-import-csv.png" alt="Import SQL, CSV, TSV or JSON files."></a><br>
+      Import SQL, CSV, TSV or JSON files.
+    </td>
+  </tr>
+</table>
 
 Use It From V
 -------------

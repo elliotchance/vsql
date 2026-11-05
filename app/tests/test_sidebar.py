@@ -96,10 +96,10 @@ def test_table_menu(ui):
     expect(ui.schema('db', 'FOO').locator('details.menu')).to_have_count(1)
 
     # Only one menu is open, and a click outside it closes it.
-    ui.table_menu('BAR', schema='FOO')
     ui.table_menu('my <t>')
+    ui.table_menu('BAR', schema='FOO')
     expect(ui.page.locator('details.menu[open]')).to_have_count(1)
-    ui.brand.click()
+    ui.brand.locator('.version').click()
     expect(ui.page.locator('details.menu[open]')).to_have_count(0)
 
 
@@ -116,3 +116,34 @@ def test_drop_in_file(page, db_file, make_file, start_app):
     ui.run_change()
     expect(ui.sidebar_table('T', catalog='other')).to_have_count(0)
     expect(ui.sidebar_table('T', catalog='db')).to_have_count(1)
+
+
+def test_brand_links_to_repo(ui):
+    link = ui.brand.get_by_role('link', name='vsql')
+    expect(link).to_have_attribute('href', 'https://github.com/elliotchance/vsql')
+    expect(link).to_have_attribute('target', '_blank')
+
+
+def test_system_schemas_start_collapsed(ui):
+    for schema in ['INFORMATION_SCHEMA', 'VSQL_APP']:
+        expect(ui.folder(f'schema:db.{schema}')).not_to_have_attribute('open', '')
+    expect(ui.folder('schema:db.PUBLIC')).to_have_attribute('open', '')
+
+    # Once it's opened it stays open, and collapses again the same way.
+    ui.folder('schema:db.VSQL_APP').locator('summary').click()
+    expect(ui.folder('schema:db.VSQL_APP')).to_have_attribute('open', '')
+    ui.page.wait_for_function("localStorage['vsql.sidebar.expanded']?.includes('VSQL_APP')")
+    ui.reload()
+    expect(ui.folder('schema:db.VSQL_APP')).to_have_attribute('open', '')
+    expect(ui.folder('schema:db.INFORMATION_SCHEMA')).not_to_have_attribute('open', '')
+    ui.folder('schema:db.VSQL_APP').locator('summary').click()
+    ui.page.wait_for_function("!localStorage['vsql.sidebar.expanded'].includes('VSQL_APP')")
+    ui.reload()
+    expect(ui.folder('schema:db.VSQL_APP')).not_to_have_attribute('open', '')
+
+
+def test_tabs_use_the_dot_of_their_file(ui):
+    ui.new_catalog_tab('db')
+    tab = ui.catalog_tabs('db').first
+    expect(tab.locator('.dot')).to_have_count(1)
+    expect(tab.locator('.icon')).to_have_count(0)

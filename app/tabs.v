@@ -96,6 +96,8 @@ struct QueryPayload {
 	// (see Params).
 	params      []string @[omitempty]
 	param_types []string @[omitempty]
+	// schema is what's chosen on the tab, see query_tab_schema.
+	schema string @[omitempty]
 }
 
 // Tab is a row of VSQL_APP.TABS in the file catalog, which is the file that its
@@ -110,6 +112,8 @@ struct Tab {
 	// payload is the PAYLOAD as it's stored, for the other tab types.
 	payload string
 	catalog string
+	// schema is what's chosen on a QUERY tab, see query_tab_schema.
+	schema string
 }
 
 // ref identifies a tab in a form, since the ids are for each file.
@@ -134,7 +138,7 @@ fn (a &App) tabs(mut conn vsql.Connection) ![]Tab {
 			} else {
 				QueryPayload{}
 			}
-			tabs << Tab{row.get_int('ID')!, tab_type, row.get_string('TITLE')!, query.query_text, row.get_bool('ACTIVE')! == .is_true, Params{query.params, query.param_types}, payload, catalog}
+			tabs << Tab{row.get_int('ID')!, tab_type, row.get_string('TITLE')!, query.query_text, row.get_bool('ACTIVE')! == .is_true, Params{query.params, query.param_types}, payload, catalog, query.schema}
 		}
 	}
 
@@ -203,8 +207,9 @@ fn title_tab(mut conn vsql.Connection, tab Tab, query_text string) ! {
 	})!
 }
 
-fn save_tab(mut conn vsql.Connection, tab Tab, query_text string, params Params) ! {
-	save_payload(mut conn, tab, json2.encode(QueryPayload{query_text, params.values, params.types}))!
+fn save_tab(mut conn vsql.Connection, tab Tab, query_text string, params Params, schema string) ! {
+	saved_schema := if schema == default_query_schema { '' } else { schema }
+	save_payload(mut conn, tab, json2.encode(QueryPayload{query_text, params.values, params.types, saved_schema}))!
 }
 
 fn save_payload(mut conn vsql.Connection, tab Tab, payload string) ! {

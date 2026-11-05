@@ -95,7 +95,7 @@ def test_create(ui, db_file):
     expect(ui.active_tab).to_have_text(re.compile(r'^SELECT \* FROM FOO\.PEOPLE'))
     expect(ui.editor).to_have_value('SELECT * FROM FOO.PEOPLE')
     expect(ui.status).to_have_text(re.compile(r'^0 rows \('))
-    expect(ui.headers).to_have_text(['', 'IDINTEGER', 'NAMECHARACTER VARYING(255)'])
+    expect(ui.headers).to_have_text(['', 'IDINTEGER NOT NULL', 'NAMECHARACTER VARYING(255) NOT NULL'])
     expect(ui.sidebar_table('PEOPLE', schema='FOO')).to_have_count(1)
     cli(db_file, 'INSERT INTO foo.people (name) VALUES (\'a\');')
     assert re.search(r'^ *1 *\| a *$', cli(db_file, 'SELECT * FROM foo.people;'), re.MULTILINE)

@@ -15,11 +15,17 @@
 
 	const width = load('vsql.sidebar.width', null);
 	if (width) sidebar.style.width = width + 'px';
+	// A folder that starts collapsed (data-default-closed) stays open once it's
+	// been opened.
 	const collapsed = load('vsql.sidebar.collapsed', []);
+	const expanded = load('vsql.sidebar.expanded', []);
 	for (const details of folders) {
 		if (collapsed.includes(details.dataset.folder)) details.open = false;
-		details.addEventListener('toggle', () => save('vsql.sidebar.collapsed',
-			[...folders].filter(d => !d.open).map(d => d.dataset.folder)));
+		else if (expanded.includes(details.dataset.folder)) details.open = true;
+		details.addEventListener('toggle', () => {
+			save('vsql.sidebar.collapsed', [...folders].filter(d => !d.open).map(d => d.dataset.folder));
+			save('vsql.sidebar.expanded', [...folders].filter(d => d.open && d.hasAttribute('data-default-closed')).map(d => d.dataset.folder));
+		});
 	}
 
 	// Only one menu is open, and it's closed by a click outside it or Escape.

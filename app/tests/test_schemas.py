@@ -77,3 +77,11 @@ def test_drop_schema(ui, db_file):
     ui.run_change()
     expect(ui.schema('db', 'FOO')).to_have_count(0)
     assert 'BAR' not in cli(db_file, 'SELECT table_name FROM INFORMATION_SCHEMA.TABLES;')
+
+
+def test_catalog_menu_always_visible(ui):
+    # The menu of a catalog can be seen without moving the mouse over it, unlike
+    # the menus of a schema or table.
+    ui.page.mouse.move(0, 0)
+    expect(ui.page.locator('.catalog-row > details.menu > summary').first).to_be_visible()
+    expect(ui.page.locator('.schema-row > details.menu > summary').first).to_be_hidden()

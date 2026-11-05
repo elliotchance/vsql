@@ -2154,6 +2154,16 @@ fn test_reserved_words() {
 	assert words == sorted
 }
 
+// An extension keyword can be an identifier, so it can't be reserved as well.
+fn test_extension_keywords() {
+	words := extension_keywords()
+	assert 'LIMIT' in words
+	assert !words.any(it in reserved_words())
+	mut sorted := words.clone()
+	sorted.sort()
+	assert words == sorted
+}
+
 // A DEFAULT can be up to the maximum length of a VARCHAR, but its text (with
 // the quotes) is then too long for the COLUMN_DEFAULT of the COLUMNS view.
 fn test_information_schema_truncated_column_default() {

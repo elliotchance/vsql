@@ -586,7 +586,7 @@
 14.15/SR/4.b             n/a          - - <multiple column assignment> (T641)
 14.15/SR/4.c             n/a          - - <multiple column assignment> (T641)
 14.15/SR/5               implemented  vsql/std_2_14_14_update_statement_searched.v tests/generated-column.sql
-14.15/SR/6               untested     vsql/std_2_14_15_set_clause_list.v - an aggregate function is an unknown column (42601)
+14.15/SR/6               implemented  vsql/std_2_14_15_set_clause_list.v tests/aggregate-placement.sql
 14.15/SR/7               n/a          - - <mutated set clause> needs structured types (S023)
 14.15/SR/7.a             n/a          - - <mutated set clause> needs structured types (S023)
 14.15/SR/7.b             n/a          - - <mutated set clause> needs structured types (S023)

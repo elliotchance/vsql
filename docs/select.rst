@@ -304,6 +304,15 @@ If the result has more than one column with that name, it's a ``42702``
 (ambiguous column) error. An alias can't be used by a subquery or the argument of
 an aggregate function in the ``ORDER BY``.
 
+An expression can only contain an aggregate function if the query is grouped (it
+has a ``GROUP BY``, a ``HAVING`` or an aggregate function in the ``SELECT``
+expressions). The aggregate function doesn't need to be in the ``SELECT``
+expressions, for example:
+
+.. code-block:: sql
+
+  SELECT city FROM products GROUP BY city ORDER BY MAX(price);
+
 The SQL standard doesn't define if ``NULL`` should always be ordered first or
 last. In vsql, ``NULL`` is always considered to be less than any other non
 ``NULL`` value.

@@ -12,10 +12,10 @@ SELECT x FROM t WHERE x = :x;
 
 -- # An aggregate function can't be used in a SET clause.
 UPDATE t SET x = COUNT(*);
--- error 42601: syntax error: unknown column: COUNT(*)
+-- error 42601: syntax error: an aggregate function cannot be used in SET
 
 UPDATE t SET x = SUM(x) + 1;
--- error 42601: syntax error: unknown column: SUM(X)
+-- error 42601: syntax error: an aggregate function cannot be used in SET
 
 -- # A unique constraint needs at least one column.
 CREATE TABLE u (x INT, UNIQUE ());

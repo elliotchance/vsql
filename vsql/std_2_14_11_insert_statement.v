@@ -297,7 +297,16 @@ fn insert_value(mut conn Connection, params map[string]Value, table Table, colum
 		default_value: column.default_value
 		identity:      identity_of(table, column)
 	}
-	raw_value := element.compile(mut c)!.run(mut conn, Row{}, params)!
+
+	// There's no query for an aggregate function to be calculated by.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 7
+	compiled := element.compile(mut c)!
+	if compiled.contains_agg {
+		return sqlstate_42601('an aggregate function cannot be used in VALUES')
+	}
+
+	raw_value := compiled.run(mut conn, Row{}, params)!
 
 	check_store_assignment(raw_value, column.typ)!
 	value := cast(mut conn, 'for column ${column_name}', raw_value, column.typ)!

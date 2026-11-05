@@ -12,14 +12,22 @@ struct SetClause {
 }
 
 // compile compiles the value of a <set clause>. An aggregate function can't be
-// used, since there's no group for it to be calculated over, so it's a syntax
-// error (as an unknown column).
+// used, since an UPDATE isn't a query that could have a group for it to be
+// calculated over. That includes an aggregate function in a subquery of only
+// the columns of the table being updated.
 //
 // ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, Syntax Rules, 6
+// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 7
 fn (e UpdateSource) compile(mut c Compiler) !CompileResult {
-	match e {
+	compiled := match e {
 		ValueExpression, ContextuallyTypedValueSpecification {
-			return e.compile(mut c)!
+			e.compile(mut c)!
 		}
 	}
+
+	if compiled.contains_agg {
+		return sqlstate_42601('an aggregate function cannot be used in SET')
+	}
+
+	return compiled
 }

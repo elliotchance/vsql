@@ -32,6 +32,11 @@ struct GroupOperation {
 	tables  map[string]Table
 mut:
 	conn &Connection
+	// sort_keys is the ORDER BY of the query, which may also use aggregate
+	// functions that aren't in the select list.
+	sort_keys []SortSpecification
+	// result_columns are the names of the select list, which a sort key can use.
+	result_columns map[string][]ValueExpression
 }
 
 fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, having ?BooleanValueExpression, params map[string]Value, mut conn Connection, tables map[string]Table) !&GroupOperation {
@@ -60,7 +65,7 @@ fn new_group_operation(select_exprs []DerivedColumn, group_exprs []Identifier, h
 		}
 	}
 
-	return &GroupOperation{select_exprs, group_exprs, having, params, columns, tables, conn}
+	return &GroupOperation{select_exprs, group_exprs, having, params, columns, tables, conn, [], map[string][]ValueExpression{}}
 }
 
 // group_column finds the column for a GROUP BY expression in the tables of the
@@ -169,7 +174,8 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 	// Perform the aggregations functions. An expression may contain several
 	// aggregate functions (such as "MIN(x) * AVG(x)"), each result is stored in
 	// the row so that it can be used when the expression is evaluated. The
-	// HAVING may also use aggregate functions that are not in the select list.
+	// HAVING and ORDER BY may also use aggregate functions that are not in the
+	// select list.
 	// The argument source of each aggregate function is the set of rows of the
 	// group (there's no <filter clause>). COUNT(*) is the number of rows, and
 	// any other function is applied to the values of its argument.
@@ -185,6 +191,10 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 	}
 	if having := o.having {
 		having.compile(mut agg_c)!
+	}
+	agg_c.result_columns = o.result_columns.clone()
+	for spec in o.sort_keys {
+		spec.expr.compile(mut agg_c)!
 	}
 
 	mut null_eliminated := false

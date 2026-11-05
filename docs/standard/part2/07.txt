@@ -506,7 +506,7 @@
 7.10/SR/3                definition   - -
 7.10/SR/4                n/a          - - LATERAL (T491)
 7.10/SR/5                implemented  vsql/std_2_7_6_table_reference.y tests/inner-join.sql
-7.10/SR/6                partial      vsql/planner.v tests/inner-join.sql an aggregate function is rejected, but as an unknown column (#616)
+7.10/SR/6                implemented  vsql/planner.v tests/aggregate-placement.sql
 7.10/SR/7                n/a          - - window functions (T611)
 7.10/SR/8                implemented  vsql/std_2_7_10_joined_table.v tests/inner-join.sql
 7.10/SR/9                n/a          - - partitioned join tables (F403)

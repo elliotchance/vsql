@@ -43,6 +43,16 @@ fn default_connection_options
 
 default_connection_options returns the sensible defaults used by open() and the correct base to provide your own option overrides. See ConnectionOptions.
 
+fn extension_keywords
+---------------------
+
+
+.. code-block:: v
+
+   pub fn extension_keywords() []string
+
+extension_keywords are the key words of vsql extensions that can still be used as a regular identifier, so they aren't in reserved_words, sorted by name. They are for display, such as highlighting SQL, and mustn't decide if a name needs quotes.
+
 fn new_agent
 ------------
 

@@ -814,3 +814,11 @@ pub fn reserved_words() []string {
 
 	return words
 }
+
+// extension_keywords are the key words of vsql extensions that can still be used
+// as a regular identifier, so they aren't in reserved_words, sorted by name. They
+// are for display, such as highlighting SQL, and mustn't decide if a name needs
+// quotes.
+pub fn extension_keywords() []string {
+	return ['IF', 'ILIKE', 'LIMIT']
+}

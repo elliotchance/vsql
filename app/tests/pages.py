@@ -168,7 +168,8 @@ class AppPage:
 
     @property
     def headers(self):
-        """headers are the columns of the result, each is its name then type."""
+        """headers are the columns of the result, each is its name then type
+        (with NOT NULL if it's known)."""
         return self.page.locator('main th')
 
     @property
@@ -250,14 +251,14 @@ class AppPage:
 
     @property
     def history_nav(self):
-        """history_nav is the button in the sidebar for the history of the only
-        file."""
-        return self.page.locator('button.history-nav')
+        """history_nav opens the menu of the only file, and returns its button
+        for the history."""
+        return self.catalog_menu('db').locator('button.history-nav')
 
     def catalog_history_nav(self, catalog):
-        """catalog_history_nav is the button in the sidebar for the history of a
-        file."""
-        return self.page.get_by_role('button', name=f'Query History of {catalog}', exact=True)
+        """catalog_history_nav opens the menu of a file, and returns its button
+        for the history."""
+        return self.catalog_menu(catalog).get_by_role('button', name=f'Query History of {catalog}', exact=True)
 
     @property
     def history_search(self):

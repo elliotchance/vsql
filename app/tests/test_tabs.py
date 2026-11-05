@@ -5,7 +5,7 @@ import re
 
 from playwright.sync_api import expect
 
-from conftest import count
+from conftest import cli, count
 from pages import titles
 
 show_tables_sql = 'SELECT * FROM INFORMATION_SCHEMA.TABLES'
@@ -92,3 +92,76 @@ def test_close_from_sidebar(ui, db_file):
     expect(ui.tab_bar).to_have_count(1)
     expect(ui.active_tab).to_have_text(re.compile('^VALUES 2'))
     assert count(db_file, 'SELECT COUNT(*) FROM vsql_app.tabs;') == 1
+
+
+def schema_select(ui):
+    return ui.page.locator('select[name="query_schema"]')
+
+
+def test_query_schema(ui, db_file):
+    # A tab has the schemas of its file next to the file, and runs in PUBLIC unless
+    # another one is chosen.
+    ui.new_tab()
+    expect(ui.page.locator('.actions .catalog + select')).to_have_value('PUBLIC')
+    expect(schema_select(ui).locator('option')).to_contain_text(['FOO', 'PUBLIC'])
+
+    # The SQL doesn't need the schema, and it's only in the tab.
+    schema_select(ui).select_option('FOO')
+    ui.run('SELECT CURRENT_SCHEMA FROM (VALUES 1) AS t')
+    expect(ui.page.locator('main table.result td').first).to_have_text('FOO')
+    expect(ui.editor).to_have_value('SELECT CURRENT_SCHEMA FROM (VALUES 1) AS t')
+    expect(schema_select(ui)).to_have_value('FOO')
+    ui.run('SELECT * FROM bar')
+    expect(ui.error).to_have_count(0)
+    assert count(db_file, "SELECT COUNT(*) FROM vsql_app.history WHERE query_text LIKE '%SET SCHEMA%';") == 0
+
+    # Explain runs in it too.
+    ui.page.get_by_role('button', name='Explain').click()
+    expect(ui.page.locator('main pre.explain')).to_contain_text('FOO')
+
+    # It's kept with the tab.
+    ui.new_tab()
+    expect(schema_select(ui)).to_have_value('PUBLIC')
+    ui.run('SELECT * FROM bar')
+    expect(ui.error).to_be_visible()
+    ui.tab('SELECT * FROM bar').first.click()
+    expect(schema_select(ui)).to_have_value('FOO')
+    ui.reload()
+    expect(schema_select(ui)).to_have_value('FOO')
+
+
+def test_query_schema_is_gone(ui, db_file):
+    # A schema that's dropped, or that was never valid, is just PUBLIC.
+    cli(db_file, 'CREATE SCHEMA gone;')
+    ui.reload()
+    ui.new_tab()
+    schema_select(ui).select_option('GONE')
+    ui.run('SELECT CURRENT_SCHEMA FROM (VALUES 1) AS t')
+    expect(ui.page.locator('main table.result td').first).to_have_text('GONE')
+
+    cli(db_file, 'DROP SCHEMA gone CASCADE;')
+    ui.reload()
+    expect(schema_select(ui)).to_have_value('PUBLIC')
+    ui.page.get_by_role('button', name=re.compile('^Run')).click()
+    expect(ui.page.locator('main table.result td').first).to_have_text('PUBLIC')
+
+    cli(db_file, """UPDATE vsql_app.tabs SET payload = '{"query_text":"SELECT CURRENT_SCHEMA FROM (VALUES 1) AS t","schema":"nope"}' WHERE active = TRUE;""")
+    ui.reload()
+    expect(schema_select(ui)).to_have_value('PUBLIC')
+    ui.page.get_by_role('button', name=re.compile('^Run')).click()
+    expect(ui.page.locator('main table.result td').first).to_have_text('PUBLIC')
+
+
+def test_query_schema_edit(ui, db_file):
+    # After the rows are changed the SQL runs again, in the same schema.
+    cli(db_file, "CREATE TABLE foo.items (id INT NOT NULL PRIMARY KEY, name VARCHAR(20));\nINSERT INTO foo.items (id, name) VALUES (1, 'a');")
+    ui.reload()
+    ui.new_tab()
+    schema_select(ui).select_option('FOO')
+    ui.run('SELECT * FROM items')
+    ui.edit_button.click()
+    ui.edit(0, 'NAME', 'b')
+    ui.edit_button.click()
+    expect(ui.page.locator('.status')).to_contain_text('Saved 1 change')
+    expect(ui.cell(0, 'NAME')).to_have_text('b')
+    expect(schema_select(ui)).to_have_value('FOO')

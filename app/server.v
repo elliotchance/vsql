@@ -256,8 +256,9 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 	} else {
 		form.get('payload') or { tab.payload }
 	}
+	query_schema := form.get('query_schema') or { tab.schema }
 	if tab.tab_type == query_tab && tab.id != no_tab.id {
-		save_tab(mut conn, tab, query_text, params)!
+		save_tab(mut conn, tab, query_text, params, query_schema)!
 	}
 	if tab.tab_type != query_tab && payload != tab.payload {
 		save_payload(mut conn, tab, payload)!
@@ -389,7 +390,11 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		return '/'
 	}
 	if open_sql := form.get('open') {
-		a.add_query_tab(mut conn, catalog, open_sql)!
+		// It's opened in the schema of the tab that it's from, if it has one.
+		a.add_tab(mut conn, catalog, query_tab, open_sql, json2.encode(QueryPayload{
+			query_text: open_sql
+			schema:     query_schema
+		}))!
 		return '/'
 	}
 
@@ -453,7 +458,7 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 				}, Confirm{})
 			}
 		}
-		a.apply_changes(mut conn, tab, queries, query_text, params) or {
+		a.apply_changes(mut conn, tab, queries, query_text, params, query_schema) or {
 			return a.page(mut conn, all_tabs, tab, TabResult{
 				...last
 				error: err.msg()
@@ -462,14 +467,21 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		return '/'
 	}
 
-	result, h := a.run_query(mut conn, query_text, params, catalog)!
+	// Explain runs the SQL with EXPLAIN in front of it. The SQL of the tab
+	// isn't changed.
+	mut explain := false
+	if _ := form.get('explain') {
+		explain = true
+	}
+	run_sql := if explain { 'EXPLAIN ${query_text}' } else { query_text }
+	result, h := a.run_query(mut conn, run_sql, params, catalog, query_schema, explain)!
 	add_history(mut conn, catalog, tab.id, h)!
 	lock a.results {
 		a.results[tab.ref()] = result
 	}
 	title_tab(mut conn, tab, query_text)!
 	a.activate_tab(mut conn, tab)!
-	return a.page(mut conn, a.tabs(mut conn)!, Tab{tab.id, tab.tab_type, tab_title(query_text), query_text, true, params, '', catalog},
+	return a.page(mut conn, a.tabs(mut conn)!, Tab{tab.id, tab.tab_type, tab_title(query_text), query_text, true, params, '', catalog, query_schema},
 		result, Confirm{})
 }
 
@@ -494,7 +506,7 @@ fn (a &App) run_in_transaction(mut conn vsql.Connection, catalog string, stateme
 fn (a &App) query_table(mut conn vsql.Connection, catalog string, table string) !Tab {
 	table_sql := 'SELECT * FROM ${table}'
 	new_tab := a.add_query_tab(mut conn, catalog, table_sql)!
-	result, h := a.run_query(mut conn, table_sql, Params{}, catalog)!
+	result, h := a.run_query(mut conn, table_sql, Params{}, catalog, default_query_schema, false)!
 	add_history(mut conn, catalog, new_tab.id, h)!
 	lock a.results {
 		a.results[new_tab.ref()] = result
@@ -514,9 +526,9 @@ fn (a &App) run_in_file(mut conn vsql.Connection, catalog string, query_text str
 
 // apply_changes runs the changes to the rows (see run_changes), then the SQL
 // of the tab again for its result.
-fn (a &App) apply_changes(mut conn vsql.Connection, tab Tab, queries []string, query_text string, params Params) ! {
+fn (a &App) apply_changes(mut conn vsql.Connection, tab Tab, queries []string, query_text string, params Params, schema string) ! {
 	run_changes(mut conn, queries)!
-	result, _ := a.run_query(mut conn, query_text, params, tab.catalog)!
+	result, _ := a.run_query(mut conn, query_text, params, tab.catalog, schema, false)!
 	lock a.results {
 		a.results[tab.ref()] = TabResult{
 			...result

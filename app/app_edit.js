@@ -28,8 +28,7 @@ if (editable) {
 			const text = isInserted(td) ? ''
 				: td.hasAttribute('data-boolean') ? td.textContent
 				: td.classList.contains('null') ? nullText
-				: td.textContent === '' ? emptyText
-				: td.textContent;
+				: td.dataset.full ?? (td.textContent === '' ? emptyText : td.textContent);
 			cells.set(td, { original: text, text });
 		}
 		return cells.get(td);
@@ -39,7 +38,10 @@ if (editable) {
 	const isMissing = td => cell(td).text === '' && columns[td.cellIndex - 1].hasAttribute('data-required');
 	function showCell(td) {
 		const text = cell(td).text;
-		td.textContent = isMissing(td) ? 'required' : text === '' ? 'DEFAULT' : text;
+		showCellText(td, isMissing(td) ? 'required' : text === '' ? 'DEFAULT' : text);
+		if (td.hasAttribute('data-boolean')) {
+			for (const value of ['TRUE', 'FALSE', 'UNKNOWN']) td.classList.toggle('boolean-' + value.toLowerCase(), text === value);
+		}
 		td.classList.toggle('missing', isMissing(td));
 		td.classList.toggle('null', text === '' || text === nullText || text === emptyText || (td.hasAttribute('data-boolean') && text === 'UNKNOWN'));
 	}
@@ -145,12 +147,13 @@ if (editable) {
 		actions.innerHTML = '<button type="button" class="delete" title="Remove">&times;</button>';
 		for (const th of columns) {
 			const td = tr.insertCell();
+			td.classList.toggle('number', th.classList.contains('number'));
 			if (th.hasAttribute('data-column')) {
 				td.dataset.column = th.dataset.column;
 				if (th.hasAttribute('data-boolean')) td.setAttribute('data-boolean', '');
 				showCell(td);
 			} else {
-				td.className = 'null';
+				td.classList.add('null');
 				td.textContent = 'generated';
 			}
 		}
@@ -218,6 +221,7 @@ if (editable) {
 		cells.clear();
 		clearError();
 		editing = false;
+		editCell = null;
 		editable.classList.remove('editing');
 		refresh();
 	}
@@ -226,6 +230,14 @@ if (editable) {
 		if (!editing) {
 			savedRows = tbody.innerHTML;
 			editing = true;
+			editCell = {
+				text: td => cell(td).text,
+				change(td, text) {
+					cell(td).text = text;
+					showCell(td);
+					refresh();
+				},
+			};
 			editable.classList.add('editing');
 			tbody.querySelectorAll('td[data-column]').forEach(showCell);
 			refresh();
@@ -238,7 +250,7 @@ if (editable) {
 	});
 	cancelButton.addEventListener('click', cancel);
 	editable.addEventListener('click', e => {
-		if (!editing) return;
+		if (!editing || e.target.closest('button.expand')) return;
 		if (e.target.matches('button.add')) return addRow();
 		if (e.target.matches('td.row-actions button')) {
 			const tr = e.target.closest('tr');

@@ -23,12 +23,76 @@ struct TabResult {
 	notice string
 }
 
-// run_query runs every statement in a file and returns the result of the last
-// one, and what to record in the history.
-fn (a &App) run_query(mut conn vsql.Connection, query_text string, params Params, catalog string) !(TabResult, History) {
+// max_result_rows is the most rows of a result that are shown, a page with more
+// would be slow. The query has to change to see the others.
+const max_result_rows = 10000
+
+// max_cell_length is the most characters of a string shown in a cell, see
+// app_result.js.
+const max_cell_length = 50
+
+// explain_terms are the terms that start a line of a plan and have more than
+// one word. The others are the first word, such as EXPR or WHERE.
+const explain_terms = ['VIRTUAL TABLE', 'PRIMARY KEY', 'GROUP BY', 'ORDER BY', 'FETCH FIRST',
+	'INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN']
+
+// explain_line is the HTML of a line of a plan, with the first term highlighted.
+fn explain_line(line string) string {
+	text := line.trim_left(' ')
+	indent := line[..line.len - text.len]
+	mut term := text.all_before(' ')
+	for known in explain_terms {
+		if text.starts_with('${known} ') {
+			term = known
+		}
+	}
+
+	return '${indent}<span class="kw">${html_escape(term)}</span>${html_escape(text[term.len..])}'
+}
+
+// default_query_schema is the schema of a QUERY tab, unless another one is chosen.
+const default_query_schema = 'PUBLIC'
+
+// query_schemas is the schemas that can be chosen on a QUERY tab of a file, by name.
+fn (a &App) query_schemas(mut conn vsql.Connection, catalog string) ![]string {
 	set_catalog(mut conn, catalog)!
 	defer {
 		set_catalog(mut conn, a.catalog_names[0]) or {}
+	}
+	mut cat := conn.catalog()
+	mut names := cat.schemas()!.map(it.name)
+	names.sort()
+
+	return names
+}
+
+// query_tab_schema is the schema that a QUERY tab runs in, which is the default if
+// the one that's saved no longer exists.
+fn query_tab_schema(schemas []string, schema string) string {
+	return if schema in schemas { schema } else { default_query_schema }
+}
+
+// set_schema makes a schema current, in the current catalog.
+fn set_schema(mut conn vsql.Connection, name string) ! {
+	conn.query("SET SCHEMA '${name.replace("'", "''")}'")!
+}
+
+// run_query runs every statement in a file and returns the result of the last
+// one, and what to record in the history. If explain is true, a plan is shown
+// as lines of text instead of a table.
+fn (a &App) run_query(mut conn vsql.Connection, query_text string, params Params, catalog string, schema string, explain bool) !(TabResult, History) {
+	schemas := a.query_schemas(mut conn, catalog)!
+	set_catalog(mut conn, catalog)!
+	defer {
+		set_catalog(mut conn, a.catalog_names[0]) or {}
+	}
+	// This isn't part of the SQL of the tab, or its history.
+	query_schema := query_tab_schema(schemas, schema)
+	if query_schema in schemas {
+		set_schema(mut conn, query_schema)!
+	}
+	defer {
+		set_schema(mut conn, default_query_schema) or {}
 	}
 
 	mut status := ''
@@ -54,6 +118,17 @@ fn (a &App) run_query(mut conn vsql.Connection, query_text string, params Params
 		status = 'Error (${elapsed} ms)'
 	} else if result.msg != '' {
 		status = '${result.msg} (${elapsed} ms)'
+	} else if explain && result.columns.len == 1
+		&& result.columns[0].name.sub_entity_name == 'EXPLAIN' {
+		// Only the first statement has EXPLAIN in front of it, so the last one
+		// might not be a plan.
+		mut lines := []string{}
+		for row in result {
+			lines << row.get_column(result.columns[0])!.str()
+		}
+		output.write_string('<pre class="explain">${lines.map(explain_line(it)).join('\n')}</pre>')
+		count = lines.len
+		status = '${count} ${vsql.pluralize(count, 'row')} (${elapsed} ms)'
 	} else if result.columns.len > 0 {
 		// The rows of SELECT * FROM a table with a PRIMARY KEY can be changed
 		// (see edit.v and app_edit.js) after choosing Edit, until then the row
@@ -61,15 +136,18 @@ fn (a &App) run_query(mut conn vsql.Connection, query_text string, params Params
 		edit := a.editable_table(mut conn, query_text, result)
 		if table := edit {
 			is_editable = true
-			output.write_string('<table class="editable" data-catalog="${html_escape(table.catalog)}" data-schema="${html_escape(table.schema)}" data-table="${html_escape(table.name)}"><thead><tr><th class="row-actions"></th>')
+			output.write_string('<table class="result editable" data-catalog="${html_escape(table.catalog)}" data-schema="${html_escape(table.schema)}" data-table="${html_escape(table.name)}"><thead><tr><th class="row-actions"></th>')
 		} else {
-			output.write_string('<table><thead><tr>')
+			output.write_string('<table class="result"><thead><tr>')
 		}
+		// A column of a table is NOT NULL, but vsql also says that for a column on
+		// the outer side of a join, which can be NULL, so it's left out for a join.
+		// It's not known for a column that's named in the SELECT (see #897).
 		for i, column in result.columns {
-			mut th_attrs := ''
+			mut th_attrs := if is_number_type(column.typ) { ' class="number"' } else { '' }
 			if table := edit {
 				if !table.columns[i].generated {
-					th_attrs = ' data-column="${html_escape(column.name.sub_entity_name)}"'
+					th_attrs += ' data-column="${html_escape(column.name.sub_entity_name)}"'
 					if column.typ.typ == .is_boolean {
 						th_attrs += ' data-boolean'
 					}
@@ -78,11 +156,21 @@ fn (a &App) run_query(mut conn vsql.Connection, query_text string, params Params
 					}
 				}
 			}
-			output.write_string('<th${th_attrs}>${html_escape(column.name.sub_entity_name)}<span class="type">${html_escape(column.typ.str())}</span></th>')
+			not_null := if column.not_null && !query_text.to_upper().contains('JOIN') {
+				' NOT NULL'
+			} else {
+				''
+			}
+			output.write_string('<th${th_attrs} title="Click to sort"><span class="name">${html_escape(column.name.sub_entity_name)}</span><span class="type">${html_escape(column.typ.str())}${not_null}</span></th>')
 		}
 		output.write_string('</tr></thead><tbody>')
 		count = 0
 		for row in result {
+			// The others are only counted.
+			count++
+			if count > max_result_rows {
+				continue
+			}
 			if table := edit {
 				output.write_string('<tr data-key="${html_escape(row_key(table, row)!)}"><td class="row-actions"><button type="button" class="delete" title="Delete">&times;</button></td>')
 			} else {
@@ -90,7 +178,18 @@ fn (a &App) run_query(mut conn vsql.Connection, query_text string, params Params
 			}
 			for i, column in result.columns {
 				value := row.get_column(column)!
-				mut attrs := if value.is_null { ' class="null"' } else { '' }
+				text := value.str()
+				mut classes := []string{}
+				if value.is_null {
+					classes << 'null'
+				}
+				if is_number_type(column.typ) {
+					classes << 'number'
+				}
+				if column.typ.typ == .is_boolean {
+					classes << 'boolean-${text.to_lower()}'
+				}
+				mut attrs := if classes.len > 0 { ' class="${classes.join(' ')}"' } else { '' }
 				if table := edit {
 					if !table.columns[i].generated {
 						attrs += ' data-column="${html_escape(column.name.sub_entity_name)}"'
@@ -99,17 +198,27 @@ fn (a &App) run_query(mut conn vsql.Connection, query_text string, params Params
 						}
 					}
 				}
-				output.write_string('<td${attrs}>${html_escape(value.str())}</td>')
+				// A long string is shortened by app_result.js, which can show all of
+				// it.
+				if !value.is_null && column.typ.typ in [.is_varchar, .is_character]
+					&& text.runes().len > max_cell_length {
+					attrs += ' data-full="${html_escape(text)}"'
+				}
+				output.write_string('<td${attrs}>${html_escape(text)}</td>')
 			}
 			output.write_string('</tr>')
-			count++
 		}
 		output.write_string('</tbody>')
 		if table := edit {
 			output.write_string('<tfoot><tr><td class="row-actions"><button type="button" class="add" title="Add a row">+</button></td><td colspan="${table.columns.len}"></td></tr></tfoot>')
 		}
 		output.write_string('</table>')
-		status = '${count} ${vsql.pluralize(count, 'row')} (${elapsed} ms)'
+		if count > max_result_rows {
+			output.write_string('<p class="more-rows">There are more rows than the ${max_result_rows} shown. Change the query to see the others, such as with WHERE or OFFSET.</p>')
+			status = '${max_result_rows}+ rows (${elapsed} ms)'
+		} else {
+			status = '${count} ${vsql.pluralize(count, 'row')} (${elapsed} ms)'
+		}
 		has_rows = true
 	}
 
@@ -124,6 +233,12 @@ fn (a &App) run_query(mut conn vsql.Connection, query_text string, params Params
 		message:    if failure == '' { result.msg } else { '' }
 		error:      failure
 	}
+}
+
+// is_number_type is true for a type that's shown as a number.
+fn is_number_type(typ vsql.Type) bool {
+	return typ.typ in [.is_smallint, .is_integer, .is_bigint, .is_real, .is_double_precision,
+		.is_decimal, .is_numeric]
 }
 
 // Params are the value and type of each "?" of a tab. The "?"s are numbered

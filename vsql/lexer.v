@@ -171,6 +171,10 @@ mut:
 	// features are the features outside of Core SQL that the parsed statement
 	// uses (see flag).
 	features []string
+	// sort_key_parts and sort_key_starts find what each <sort key> contains (see
+	// flag_sort_key).
+	sort_key_parts  []SortKeyPart
+	sort_key_starts []int
 }
 
 fn (mut l Lexer) lex(mut lval YYSymType) int {

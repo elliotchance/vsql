@@ -133,6 +133,7 @@ SELECT DISTINCT COUNT(*) FROM t GROUP BY a;
 -- COL1: 3
 -- COL1: 2
 
+/* extensions V202-01 V202-03 */
 SELECT DISTINCT COUNT(*) FROM t GROUP BY a ORDER BY COUNT(*);
 -- COL1: 2
 -- COL1: 3
@@ -207,6 +208,7 @@ SELECT DISTINCT d FROM t JOIN u ON t.a = u.a ORDER BY a;
 -- error 42702: ambiguous column: A
 
 -- # Only a SELECT DISTINCT limits the ORDER BY.
+/* extensions V202-01 */
 VALUES 3, 1, 2 ORDER BY 1;
 -- COL1: 3
 -- COL1: 1

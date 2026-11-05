@@ -11,7 +11,7 @@ import time
 // ISO/IEC 9075-2:2016(E), 4.38, Cursors
 
 // A <declare cursor> can only be contained in an SQL-client module, so declaring
-// a cursor by executing it is a vsql extension (V004-01). The cursor belongs to
+// a cursor by executing it is a vsql extension (V108-01). The cursor belongs to
 // the connection (the SQL-session) until the connection is closed.
 struct DeclareCursor {
 	name         string

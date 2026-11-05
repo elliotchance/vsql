@@ -4,7 +4,7 @@ INSERT INTO t (x, y) VALUES (1, 10);
 INSERT INTO t (x, y) VALUES (2, 20);
 CREATE TABLE u (x INTEGER);
 
-/* extensions V004-01 V004-02 V004-03 V004-04 */
+/* extensions V108-01 V109-01 V110-01 V111-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x, y * 2 AS z FROM t;
 OPEN c;
@@ -24,7 +24,7 @@ COMMIT;
 -- msg: CLOSE
 -- msg: COMMIT
 
-/* extensions V004-01 V004-02 V004-03 V004-04 */
+/* extensions V108-01 V109-01 V110-01 V111-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
@@ -42,7 +42,7 @@ COMMIT;
 -- X: 1 Y: 10
 -- msg: COMMIT
 
-/* extensions V004-01 V004-02 V004-03 */
+/* extensions V108-01 V109-01 V110-01 */
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
 FETCH c;
@@ -50,7 +50,7 @@ FETCH c;
 -- msg: OPEN
 -- error 24000: invalid cursor state: cursor C is not open
 
-/* extensions V004-01 V004-02 V004-03 */
+/* extensions V108-01 V109-01 V110-01 */
 DECLARE c CURSOR FOR SELECT * FROM t;
 START TRANSACTION;
 OPEN c;
@@ -62,7 +62,7 @@ FETCH c;
 -- msg: COMMIT
 -- error 24000: invalid cursor state: cursor C is not open
 
-/* extensions V004-01 V004-02 V004-03 */
+/* extensions V108-01 V109-01 V110-01 */
 DECLARE c CURSOR WITH HOLD FOR SELECT * FROM t;
 OPEN c;
 FETCH c;
@@ -78,7 +78,7 @@ FETCH c;
 -- msg: COMMIT
 -- warning 02000: no data
 
-/* extensions V004-01 V004-02 V004-03 */
+/* extensions V108-01 V109-01 V110-01 */
 DECLARE c CURSOR WITH HOLD FOR SELECT * FROM t;
 START TRANSACTION;
 OPEN c;
@@ -90,7 +90,7 @@ FETCH c;
 -- msg: ROLLBACK
 -- error 24000: invalid cursor state: cursor C is not open
 
-/* extensions V004-01 */
+/* extensions V108-01 */
 DECLARE c CURSOR FOR SELECT * FROM t;
 DECLARE c CURSOR FOR SELECT * FROM u;
 DECLARE "c" CURSOR FOR SELECT * FROM u;
@@ -98,25 +98,25 @@ DECLARE "c" CURSOR FOR SELECT * FROM u;
 -- error 42P03: duplicate cursor: C
 -- msg: DECLARE CURSOR
 
-/* extensions V004-01 */
+/* extensions V108-01 */
 DECLARE c CURSOR FOR SELECT * FROM missing;
 -- error 42P01: no such table: ":memory:".PUBLIC.MISSING
 
-/* extensions V004-02 */
+/* extensions V109-01 */
 OPEN c;
 -- error 34000: invalid cursor name: cursor C does not exist
 
-/* extensions V004-03 */
+/* extensions V110-01 */
 FETCH c;
 -- error 34000: invalid cursor name: cursor C does not exist
 
-/* extensions V004-01 V004-04 */
+/* extensions V108-01 V111-01 */
 DECLARE c CURSOR FOR SELECT * FROM t;
 CLOSE c;
 -- msg: DECLARE CURSOR
 -- error 24000: invalid cursor state: cursor C is not open
 
-/* extensions V004-01 V004-02 */
+/* extensions V108-01 V109-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
@@ -126,7 +126,7 @@ OPEN c;
 -- msg: OPEN
 -- error 24000: invalid cursor state: cursor C is already open
 
-/* extensions V004-01 V004-02 V004-03 V004-04 */
+/* extensions V108-01 V109-01 V110-01 V111-01 */
 CREATE SEQUENCE seq;
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT NEXT VALUE FOR seq FROM (VALUES 1) AS t;
@@ -144,7 +144,7 @@ FETCH c;
 -- msg: OPEN
 -- COL1: 2
 
-/* extensions V004-01 V004-02 V004-03 V004-05 */
+/* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
@@ -162,7 +162,7 @@ SELECT * FROM t;
 -- X: 2 Y: 20
 -- X: 2 Y: 20
 
-/* extensions V004-01 V004-02 V004-03 V004-05 */
+/* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x FROM t AS a WHERE x = 2;
 OPEN c;
@@ -176,7 +176,7 @@ SELECT * FROM t;
 -- msg: DELETE 1
 -- X: 1 Y: 10
 
-/* extensions V004-01 V004-02 V004-05 */
+/* extensions V108-01 V109-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 DELETE FROM t WHERE CURRENT OF c;
@@ -188,11 +188,11 @@ DELETE FROM t WHERE CURRENT OF c;
 -- msg: OPEN
 -- error 24000: invalid cursor state: cursor C is not positioned on a row
 
-/* extensions V004-05 */
+/* extensions V112-01 */
 DELETE FROM t WHERE CURRENT OF c;
 -- error 34000: invalid cursor name: cursor C does not exist
 
-/* extensions V004-01 V004-02 V004-03 V004-05 */
+/* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
@@ -204,7 +204,7 @@ DELETE FROM u WHERE CURRENT OF c;
 -- X: 1 Y: 10
 -- error 42601: syntax error: table U is not the table of cursor C
 
-/* extensions V004-01 V004-02 V004-03 V004-05 */
+/* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
@@ -218,7 +218,7 @@ DELETE FROM t WHERE CURRENT OF c;
 -- msg: DELETE 2
 -- error 24000: invalid cursor state: the current row of cursor C has been deleted
 
-/* extensions V004-01 V004-02 V004-03 V004-05 */
+/* extensions V108-01 V109-01 V110-01 V112-01 */
 DECLARE c CURSOR WITH HOLD FOR SELECT * FROM t;
 START TRANSACTION;
 OPEN c;
@@ -242,7 +242,7 @@ SELECT * FROM t;
 -- msg: COMMIT
 -- X: 1 Y: 10
 
-/* extensions V004-01 V004-02 V004-03 V004-06 */
+/* extensions V108-01 V109-01 V110-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
@@ -261,7 +261,7 @@ SELECT * FROM t;
 -- X: 1 Y: 12
 -- X: 2 Y: 20
 
-/* extensions V004-01 V004-02 V004-03 V004-06 */
+/* extensions V108-01 V109-01 V110-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t FOR UPDATE OF y;
 OPEN c;
@@ -278,7 +278,7 @@ SELECT * FROM t;
 -- X: 1 Y: 3
 -- X: 2 Y: 20
 
-/* extensions V004-01 V004-02 V004-03 V004-06 */
+/* extensions V108-01 V109-01 V110-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
@@ -292,7 +292,7 @@ UPDATE t SET y = 3 WHERE CURRENT OF c;
 -- msg: DELETE 1
 -- error 24000: invalid cursor state: the current row of cursor C has been deleted
 
-/* extensions V004-01 V004-02 V004-03 V004-05 */
+/* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t ORDER BY x DESC;
 OPEN c;
@@ -304,7 +304,7 @@ DELETE FROM t WHERE CURRENT OF c;
 -- X: 2 Y: 20
 -- error 34000: invalid cursor name: cursor C is not updatable
 
-/* extensions V004-01 V004-02 V004-03 V004-06 */
+/* extensions V108-01 V109-01 V110-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t FOR READ ONLY;
 OPEN c;
@@ -316,7 +316,7 @@ UPDATE t SET y = 3 WHERE CURRENT OF c;
 -- X: 1 Y: 10
 -- error 34000: invalid cursor name: cursor C is not updatable
 
-/* extensions V004-01 V004-02 V004-03 V004-05 */
+/* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t ORDER BY x DESC FOR UPDATE;
 OPEN c;
@@ -330,7 +330,7 @@ SELECT * FROM t;
 -- msg: DELETE 1
 -- X: 1 Y: 10
 
-/* extensions V004-01 */
+/* extensions V108-01 */
 DECLARE c1 CURSOR FOR VALUES 1 FOR UPDATE;
 DECLARE c2 CURSOR FOR SELECT * FROM t FETCH FIRST 1 ROW ONLY FOR UPDATE;
 DECLARE c3 CURSOR FOR SELECT * FROM t JOIN u ON t.x = u.x FOR UPDATE;
@@ -346,7 +346,7 @@ DECLARE c7 CURSOR FOR SELECT * FROM information_schema.tables FOR UPDATE;
 -- error 42601: syntax error: cursor C6 is not updatable
 -- error 42601: syntax error: cursor C7 is not updatable
 
-/* extensions V004-01 */
+/* extensions V108-01 */
 CREATE TABLE b (p BOOLEAN, q BOOLEAN);
 DECLARE c1 CURSOR FOR SELECT x + 1 AS z FROM t FOR UPDATE;
 DECLARE c2 CURSOR FOR SELECT x, 1 AS z FROM t FOR UPDATE;
@@ -364,7 +364,7 @@ DECLARE c7 CURSOR FOR SELECT p IS TRUE AS z FROM b FOR UPDATE;
 -- error 42601: syntax error: cursor C6 is not updatable
 -- error 42601: syntax error: cursor C7 is not updatable
 
-/* extensions V004-01 */
+/* extensions V108-01 */
 DECLARE c1 CURSOR FOR SELECT x, x FROM t FOR UPDATE;
 DECLARE c2 CURSOR FOR SELECT x, t.x FROM t FOR UPDATE;
 DECLARE c3 CURSOR FOR SELECT x AS a, x AS b FROM t FOR UPDATE;
@@ -376,7 +376,7 @@ DECLARE c5 CURSOR FOR SELECT t.*, t.* FROM t FOR UPDATE;
 -- error 42601: syntax error: cursor C4 is not updatable
 -- error 42601: syntax error: cursor C5 is not updatable
 
-/* extensions V004-01 */
+/* extensions V108-01 */
 DECLARE c1 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM t) FOR UPDATE;
 DECLARE c2 CURSOR FOR SELECT x FROM t WHERE EXISTS (SELECT * FROM t AS a WHERE a.x = t.x) FOR UPDATE;
 DECLARE c3 CURSOR FOR SELECT x FROM t AS a WHERE x IN (SELECT x FROM public.t) FOR UPDATE;
@@ -392,7 +392,7 @@ DECLARE c7 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM u UNION SELECT x
 -- error 42601: syntax error: cursor C6 is not updatable
 -- error 42601: syntax error: cursor C7 is not updatable
 
-/* extensions V004-01 V004-02 V004-03 V004-05 V004-06 */
+/* extensions V108-01 V109-01 V110-01 V112-01 V113-01 */
 CREATE SCHEMA s;
 CREATE TABLE s.t (x INTEGER);
 START TRANSACTION;
@@ -424,7 +424,7 @@ SELECT * FROM t;
 -- msg: DELETE 1
 -- X: 1 Y: 3
 
-/* extensions V004-01 V004-02 V004-03 V004-05 */
+/* extensions V108-01 V109-01 V110-01 V112-01 V202-02 V202-03 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t ORDER BY (SELECT MAX(x) FROM t) FOR UPDATE;
 OPEN c;
@@ -436,7 +436,7 @@ DELETE FROM t WHERE CURRENT OF c;
 -- X: 1 Y: 10
 -- msg: DELETE 1
 
-/* extensions V004-01 V004-02 V004-03 V004-05 V004-06 */
+/* extensions V108-01 V109-01 V110-01 V112-01 V113-01 */
 START TRANSACTION;
 DECLARE c1 CURSOR FOR SELECT x + 1 AS z FROM t;
 OPEN c1;
@@ -459,7 +459,7 @@ SELECT * FROM t;
 -- X: 1 Y: 10
 -- X: 2 Y: 20
 
-/* extensions V004-01 V004-02 V004-03 V004-04 V004-05 V004-06 */
+/* extensions V108-01 V109-01 V110-01 V111-01 V112-01 V113-01 */
 EXPLAIN DECLARE c CURSOR FOR SELECT * FROM t;
 EXPLAIN OPEN c;
 EXPLAIN FETCH c;
@@ -473,7 +473,7 @@ EXPLAIN UPDATE t SET x = 1 WHERE CURRENT OF c;
 -- error 42601: syntax error: Cannot EXPLAIN DELETE WHERE CURRENT OF
 -- error 42601: syntax error: Cannot EXPLAIN UPDATE WHERE CURRENT OF
 
-/* extensions V004-01 */
+/* extensions V108-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x FROM t FOR UPDATE OF nope;
 DECLARE c CURSOR FOR SELECT x FROM t FOR UPDATE OF x, nope;

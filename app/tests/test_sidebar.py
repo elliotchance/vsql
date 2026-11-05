@@ -12,7 +12,7 @@ from pages import AppPage
 def test_sidebar(ui):
     # The sidebar has the version, and the catalog with its tabs and its tables
     # under their schema (including VSQL_APP).
-    expect(ui.brand).to_have_text('vsql v0.0.0')
+    expect(ui.brand).to_have_text(re.compile(r'^vsql v\d+\.\d+\.\d+$'))
     expect(ui.sections).to_have_text([re.compile('db$')])
     for schema, table in [('FOO', 'FOO.BAR'), ('PUBLIC', 'PUBLIC."my <t>"')]:
         expect(ui.schema('db', schema).locator('summary .count')).to_have_text('1')

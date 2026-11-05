@@ -80,6 +80,7 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 	for mut row in rows {
 		catalog.storage.write_row(mut row, table)!
 	}
+	catalog.storage.check_unique_indexes(table, rows)!
 	catalog.storage.check_unique_constraints(table, rows)!
 	_, time_zone := conn.now()
 	catalog.storage.check_foreign_keys(table, rows, time_zone)!

@@ -13,6 +13,17 @@ create_index_statement:
       columns:    $7.v as []IndexColumn
     })
   }
+| CREATE UNIQUE INDEX identifier ON table_name left_paren index_column_list
+  right_paren {
+    flag(mut yylex, vsql_create_index)
+    flag(mut yylex, vsql_create_unique_index)
+    $$.v = Stmt(CreateIndexStatement{
+      unique:     true
+      index_name: new_table_identifier(($4.v as IdentifierChain).identifier)!
+      table_name: $6.v as Identifier
+      columns:    $8.v as []IndexColumn
+    })
+  }
 
 index_column_list:
   index_column { $$.v = [$1.v as IndexColumn] }

@@ -8,7 +8,7 @@ Syntax
 
 .. code-block:: text
 
-  CREATE INDEX <index_name> ON <table_name> ( <column> [ ASC | DESC ] , ... )
+  CREATE [ UNIQUE ] INDEX <index_name> ON <table_name> ( <column> [ ASC | DESC ] , ... )
 
 Create an index on one or more columns of a table. An index keeps a copy of the
 values of the columns in order, with a reference to each row, and it's kept up
@@ -34,12 +34,19 @@ options), and then fails with a ``55P03`` error. Until a transaction that
 creates or drops an index commits, other transactions can't change the table
 (they get a ``40001`` serialization failure).
 
+With ``UNIQUE``, no two rows can have the same values for the columns of the
+index, unless any of them are ``NULL`` (like a ``UNIQUE`` constraint). The
+``INSERT`` or ``UPDATE`` that would make two rows the same fails with a
+``23505`` error. That's checked once all of the rows of the statement have been
+changed, so ``UPDATE t SET u = u + 1`` works. ``CREATE UNIQUE INDEX`` fails in
+the same way if two rows are already the same.
+
 The values of the columns of each row must fit in half a page (see
 :doc:`limitations`), otherwise the statement that creates the index, or that
 inserts or updates the row, fails with a ``54000`` error.
 
 ``CREATE INDEX`` is a vsql extension, not standard SQL. It's flagged as
-``V002-01`` (see :doc:`sql-flagging`).
+``V002-01``, and ``UNIQUE`` as ``V002-02`` (see :doc:`sql-flagging`).
 
 The first index in a database file raises the *Write Version* of the file (see
 :doc:`file-format`), so older versions of vsql (that wouldn't update the index)
@@ -53,9 +60,13 @@ Examples
    CREATE TABLE products (id INT PRIMARY KEY, name VARCHAR(50), price NUMERIC(10, 2));
    CREATE INDEX products_name ON products (name);
    CREATE INDEX products_price ON products (price DESC, name);
+   CREATE UNIQUE INDEX products_name_unique ON products (name);
+   INSERT INTO products (id, name, price) VALUES (1, 'Pen', 1.5), (2, 'Pen', 2);
    -- msg: CREATE TABLE 1
    -- msg: CREATE INDEX 1
    -- msg: CREATE INDEX 1
+   -- msg: CREATE INDEX 1
+   -- error 23505: violates unique constraint: UNIQUE INDEX PRODUCTS_NAME_UNIQUE on ":memory:".PUBLIC.PRODUCTS
 
 See Also
 --------

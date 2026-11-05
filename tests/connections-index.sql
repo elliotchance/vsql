@@ -219,3 +219,40 @@ EXPLAIN SELECT id FROM t WHERE a = 10;
 -- 1: EXPLAIN: INDEX "test".PUBLIC.T_A ON "test".PUBLIC.T (ID INTEGER NOT NULL, A INTEGER) RANGE A = 10
 -- 1: EXPLAIN: WHERE A = 10
 -- 1: EXPLAIN: EXPR (ID INTEGER NOT NULL)
+
+-- # A row with the same values as another transaction's new (or deleted) row in
+-- # a UNIQUE index might be a duplicate once that transaction finishes.
+/* extensions V002-01 V002-02 */
+/* connection 1 */
+CREATE TABLE t (a INT);
+INSERT INTO t (a) VALUES (1);
+CREATE UNIQUE INDEX t_a ON t (a);
+/* connection 2 */
+START TRANSACTION;
+INSERT INTO t (a) VALUES (2);
+DELETE FROM t WHERE a = 1;
+/* connection 1 */
+INSERT INTO t (a) VALUES (2);
+INSERT INTO t (a) VALUES (1);
+INSERT INTO t (a) VALUES (3);
+/* connection 2 */
+ROLLBACK;
+/* connection 1 */
+INSERT INTO t (a) VALUES (2);
+INSERT INTO t (a) VALUES (1);
+SELECT * FROM t;
+-- 1: msg: CREATE TABLE 1
+-- 1: msg: INSERT 1
+-- 1: msg: CREATE INDEX 1
+-- 2: msg: START TRANSACTION
+-- 2: msg: INSERT 1
+-- 2: msg: DELETE 1
+-- 1: error 40001: serialization failure: avoiding concurrent write on individual row
+-- 1: error 40001: serialization failure: avoiding concurrent write on individual row
+-- 1: msg: INSERT 1
+-- 2: msg: ROLLBACK
+-- 1: msg: INSERT 1
+-- 1: error 23505: violates unique constraint: UNIQUE INDEX T_A on "test".PUBLIC.T
+-- 1: A: 1
+-- 1: A: 3
+-- 1: A: 2

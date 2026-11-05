@@ -34,6 +34,9 @@ pub:
 	table_name Identifier
 	// columns are the columns of the table in the index, in order.
 	columns []IndexColumn
+	// unique is true for a UNIQUE index, where no two rows can have the same
+	// values (unless any of them are NULL).
+	unique bool
 }
 
 // An IndexColumn is a column of an Index.
@@ -56,13 +59,14 @@ pub fn (c IndexColumn) str() string {
 // bytes is how the index is stored in the file: its CREATE INDEX statement,
 // like:
 //
-//   CREATE INDEX "FOO_BAR" ON "PUBLIC"."FOO" ("BAR", "BAZ" DESC)
+//   CREATE UNIQUE INDEX "FOO_BAR" ON "PUBLIC"."FOO" ("BAR", "BAZ" DESC)
 //
 // The name isn't qualified, because an index is always in the schema of its
 // table. The table is found by the table ID in the key (see index_object_key),
 // not the name.
 fn (i Index) bytes() []u8 {
-	return 'CREATE INDEX ${delimit_identifier(i.name.entity_name)} ON ${i.table_name.storage_sql()} (${i.columns.map(it.str()).join(', ')})'.bytes()
+	unique := if i.unique { 'UNIQUE ' } else { '' }
+	return 'CREATE ${unique}INDEX ${delimit_identifier(i.name.entity_name)} ON ${i.table_name.storage_sql()} (${i.columns.map(it.str()).join(', ')})'.bytes()
 }
 
 // str returns the CREATE INDEX statement, including the ';'. It's the same as
@@ -100,11 +104,22 @@ fn index_entry_prefix(index_id u64) []u8 {
 }
 
 // entry_key is the key of the entry of a row (whose id is set) in the index: the
-// value of each column, then the row ID. Each value is a byte that's 0 for NULL
-// (which sorts before any other value, like ORDER BY) or 1, then the value
-// encoded like a PRIMARY KEY (see write_key_value). Every byte of a DESC column
-// is flipped, so that it sorts the other way.
+// value of each column (see entry_values), then the row ID.
 fn (i Index) entry_key(t Table, row Row) ![]u8 {
+	mut key := i.entry_values(t, row)!
+	key << row.id
+
+	return key
+}
+
+// entry_values is the start of the key of the entry of a row in the index,
+// without the row ID. Each value is a byte that's 0 for NULL (which sorts before
+// any other value, like ORDER BY) or 1, then the value encoded like a PRIMARY
+// KEY (see write_key_value). Every byte of a DESC column is flipped, so that it
+// sorts the other way. The rows that have the same values have entries that
+// start with the same bytes, because each value has a known length (see
+// key_value_length).
+fn (i Index) entry_values(t Table, row Row) ![]u8 {
 	mut key := index_entry_prefix(i.id)
 	for column in i.columns {
 		value := row.data[column.name]
@@ -119,7 +134,6 @@ fn (i Index) entry_key(t Table, row Row) ![]u8 {
 			key << if column.desc { ~b } else { b }
 		}
 	}
-	key << row.id
 
 	return key
 }
@@ -209,6 +223,7 @@ fn new_index_from_bytes(key []u8, data []u8, tid u64, table Table) !Index {
 			}
 			table_name: table.name
 			columns:    stmt.columns
+			unique:     stmt.unique
 		}
 	}
 
@@ -248,11 +263,27 @@ fn (mut f Storage) load_indexes() ! {
 
 // create_index adds the index (to table t), with an entry for each row that's
 // visible. The caller must make sure that there are no rows of the table that
-// aren't visible, see has_concurrent_changes.
+// aren't visible, see has_concurrent_changes. A UNIQUE index can't be created
+// when two rows have the same values (that aren't NULL), and then nothing is
+// changed.
 fn (mut f Storage) create_index(definition Index, t Table) ! {
 	f.isolation_start()!
 	defer {
 		f.end_isolation()
+	}
+
+	mut rows := []Row{}
+	mut seen := map[string]bool{}
+	for object in f.read_objects(row_key_prefix(t.id), row_key_prefix(t.id + 1))! {
+		row := new_row_from_bytes(t, object.value, object.tid).for_storage()
+		if definition.unique && !definition.has_null(row) {
+			values := definition.entry_values(t, row)!.bytestr()
+			if values in seen {
+				return definition.unique_violation(t)
+			}
+			seen[values] = true
+		}
+		rows << row
 	}
 
 	// The Write Version is never lowered, even when the last index is dropped.
@@ -270,8 +301,7 @@ fn (mut f Storage) create_index(definition Index, t Table) ! {
 	f.btree.add(new_page_object(index_object_key(t.id, index.id), f.transaction_id, 0,
 		index.bytes()))!
 
-	for object in f.read_objects(row_key_prefix(t.id), row_key_prefix(t.id + 1))! {
-		row := new_row_from_bytes(t, object.value, object.tid).for_storage()
+	for row in rows {
 		f.btree.add(new_page_object(index.entry_key(t, row)!, f.transaction_id, 0, []u8{}))!
 	}
 
@@ -338,6 +368,67 @@ fn (mut f Storage) update_index_entries(t Table, old Row, new Row) ! {
 	}
 }
 
+// has_null is true when any of the columns of the index are NULL in row. A
+// UNIQUE index allows any number of rows like that.
+fn (i Index) has_null(row Row) bool {
+	return i.columns.any(row.data[it.name].is_null)
+}
+
+// unique_violation is the error for a row that has the same values as another
+// row of t in a UNIQUE index.
+fn (i Index) unique_violation(t Table) IError {
+	return sqlstate_23505('UNIQUE INDEX ${i.name.entity_name} on ${t.name}', i.name)
+}
+
+// check_unique_indexes returns an error if a row in rows has the same values
+// for the columns of a UNIQUE index of t as another row in t, or might once
+// another transaction finishes. A row with a NULL in any of the columns never
+// conflicts. Like check_unique_constraints, the rows must have already been
+// written (and have their id), so that UPDATE t SET u = u + 1 works. Only the
+// entries of the index that have the same values are read.
+fn (mut f Storage) check_unique_indexes(t Table, rows []Row) ! {
+	indexes := f.table_indexes(t.id).filter(it.unique)
+	if indexes.len == 0 || rows.len == 0 {
+		return
+	}
+
+	f.isolation_start()!
+	defer {
+		f.end_isolation()
+	}
+
+	for index in indexes {
+		for row in rows {
+			if index.has_null(row) {
+				continue
+			}
+
+			values := index.entry_values(t, row)!
+			mut iter := f.btree.new_range_iterator(values, next_key(values))
+			for {
+				object := iter.next() or { break }
+
+				// The entry of the row itself isn't a conflict, but the entry of
+				// any other row (including another new row) is.
+				if object.key[values.len..] == row.id {
+					continue
+				}
+
+				if f.is_concurrent_write(object) {
+					return sqlstate_40001('avoiding concurrent write on individual row')
+				}
+
+				if object.xid == 0 {
+					return index.unique_violation(t)
+				}
+			}
+			if err := iter.err {
+				return err
+			}
+		}
+	}
+}
+
 // has_concurrent_changes is true when another active transaction has changed
 // the definition (or an index) of t, or written or deleted a row of t. An index
 // can't be created then, because the index would be missing the rows that it
@@ -391,12 +482,13 @@ fn (mut f Storage) check_indexes() ! {
 	}
 }
 
-// CREATE INDEX name ON table (column [ASC | DESC], ...)
+// CREATE [UNIQUE] INDEX name ON table (column [ASC | DESC], ...)
 //
 // The index is in the schema of the table. Its name must be unique among the
 // indexes of the schema, but it can be the same as the name of another kind of
 // object, such as a table.
 struct CreateIndexStatement {
+	unique     bool
 	index_name Identifier
 	table_name Identifier
 	columns    []IndexColumn
@@ -464,6 +556,7 @@ fn (stmt CreateIndexStatement) create(mut conn Connection) !(bool, time.Duration
 		name:       name
 		table_name: table_name
 		columns:    stmt.columns
+		unique:     stmt.unique
 	}, table)!
 
 	return true, 0

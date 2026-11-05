@@ -3,9 +3,12 @@
 # amalgamation.sh makes the amalgamation, the C for vsql and libvsql, so that
 # they can be built without V (see amalgamation/Makefile). It has three steps:
 #
-#   scripts/amalgamation.sh generate DIR
+#   scripts/amalgamation.sh generate DIR [SHOWCC_DIR]
 #
-# Generates the C for the current OS and architecture into DIR. It must run on
+# Generates the C for the current OS and architecture into DIR. SHOWCC_DIR has
+# the output of "make BUILD_OPTIONS=-showcc bin/vsql" and "... libvsql" as
+# vsql.showcc and libvsql.showcc, so that they don't have to be built again to
+# find the C compiler command. It must run on
 # each of them, since V's cross platform C (-os cross) has no garbage collector
 # (https://github.com/vlang/v/issues/31421), and the C that V generates for one
 # architecture (such as inline assembly and closures) doesn't work on another.
@@ -28,6 +31,7 @@ set -euo pipefail
 
 generate() {
   out="$1"
+  showcc_dir="${2:-}"
   case "$(uname -s)" in
     Linux) os=linux ;;
     Darwin) os=macos ;;
@@ -70,8 +74,12 @@ generate() {
     v $v_options $v_program_options $v_program -o "$out/${program}_${os}_$arch.c"
     bundle_absolute_includes "$out/${program}_${os}_$arch.c"
 
-    v $v_options $v_program_options -showcc $v_program -o "$tmp/$program" > "$tmp/$program.showcc" 2>&1 ||
-      { cat "$tmp/$program.showcc"; exit 1; }
+    if [ -n "$showcc_dir" ] && grep -qE '^ *> ' "$showcc_dir/$program.showcc"; then
+      cp "$showcc_dir/$program.showcc" "$tmp/$program.showcc"
+    else
+      v $v_options $v_program_options -showcc $v_program -o "$tmp/$program" > "$tmp/$program.showcc" 2>&1 ||
+        { cat "$tmp/$program.showcc"; exit 1; }
+    fi
     cc_command="$(grep -E '^ *> ' "$tmp/$program.showcc" | tail -1)"
     echo "$program: $cc_command"
 
@@ -92,7 +100,7 @@ generate() {
         -l)
           library=1
           ;;
-        -Wl,-exported_symbol* | -Wl,-install_name* | -Wl,-rpath* | -Wl,--version-script* | -Wl,-B*) ;;
+        -Wl,-exported_symbol* | -Wl,-install_name* | -Wl,-rpath* | -Wl,--version-script* | -Wl,-B* | -Wl,--export-all-symbols) ;;
         -D* | -l* | -Wl,* | -municode | -pthread)
           case " $flags " in
             *" $arg "*) ;;

@@ -95,6 +95,9 @@ module vsql
 // V302: ILIKE.
 // V302-01: ILIKE and NOT ILIKE (a case-insensitive LIKE).
 //
+// V402: Date and time functions.
+// V402-01: NOW() instead of CURRENT_TIMESTAMP.
+//
 // V403: Mathematical functions.
 // V403-01: MOD with an argument that has a scale or is approximate.
 //
@@ -131,6 +134,7 @@ const vsql_sort_key_subquery = 'V202-02'
 const vsql_sort_key_aggregate = 'V202-03'
 const vsql_bang_equals = 'V301-01'
 const vsql_ilike = 'V302-01'
+const vsql_now = 'V402-01'
 const vsql_mod_not_integer = 'V403-01'
 const vsql_trim_only_from = 'V404-01'
 

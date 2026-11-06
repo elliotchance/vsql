@@ -241,11 +241,12 @@ fn (mut o PrimaryKeyOperation) execute(_ []Row) ![]Row {
 	mut transaction_ids := catalog.storage.header.active_transaction_ids
 
 	mut rows := []Row{}
+	ids := o.table.column_ids()
 	mut iter := catalog.storage.btree.new_range_iterator(min, max)
 	for {
 		object := iter.next() or { break }
 		if object_is_visible(object.tid, object.xid, tid, mut transaction_ids) {
-			rows << new_row_from_bytes(o.table, object.value, object.tid)
+			rows << new_row_from_bytes_with_ids(o.table, ids, object.value, object.tid)
 		}
 	}
 	if err := iter.err {

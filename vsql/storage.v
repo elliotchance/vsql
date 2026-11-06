@@ -844,8 +844,19 @@ fn (mut f Storage) read_rows(table_name Identifier) ![]Row {
 	mut rows := []Row{}
 
 	table := f.table(table_name.storage_id())
-	for object in f.read_objects(row_key_prefix(table.id), row_key_prefix(table.id + 1))! {
-		rows << new_row_from_bytes(table, object.value, object.tid)
+	ids := table.column_ids()
+	mut iter := f.btree.new_range_iterator(row_key_prefix(table.id), row_key_prefix(table.id +
+		1))
+	for {
+		object := iter.next() or { break }
+		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
+			f.header.active_transaction_ids)
+		{
+			rows << new_row_from_bytes_with_ids(table, ids, object.value, object.tid)
+		}
+	}
+	if err := iter.err {
+		return err
 	}
 
 	return rows

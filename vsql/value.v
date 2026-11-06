@@ -44,6 +44,7 @@ fn (e Value) compile(mut _ Compiler) !CompileResult {
 		}
 		typ:          e.typ
 		contains_agg: false
+		constant:     true
 	}
 }
 

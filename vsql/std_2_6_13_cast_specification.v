@@ -82,7 +82,9 @@ fn (e CastSpecification) compile(mut c Compiler) !CompileResult {
 		}
 		typ:          e.target
 		contains_agg: compiled_expr.contains_agg
-	}
+		// A string target isn't constant, see fold.
+		constant:     compiled_expr.constant && !e.target.typ.is_string()
+	}.fold()
 }
 
 // cast is CAST ( v AS target ), see the General Rules of 6.13, <cast

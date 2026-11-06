@@ -162,7 +162,10 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		}
 		typ:          return_type
 		contains_agg: compiled_args.any(it.contains_agg)
-	}
+		// UPPER and LOWER can add a warning, see fold.
+		constant:     found_func.is_deterministic && !is_fold
+			&& compiled_args.all(it.constant)
+	}.fold()
 }
 
 // fold_result gives the result of UPPER or LOWER the declared type of its

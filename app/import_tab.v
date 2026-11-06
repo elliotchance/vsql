@@ -480,6 +480,16 @@ fn (a &App) import_job(tab_ref string) ImportJob {
 	}
 }
 
+// running_imports are the tabs that are importing, in order.
+fn (a &App) running_imports() []string {
+	mut refs := rlock a.imports {
+		a.imports.keys()
+	}
+	refs.sort()
+
+	return refs
+}
+
 fn (a &App) is_importing(tab_ref string) bool {
 	return rlock a.imports {
 		tab_ref in a.imports

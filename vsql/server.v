@@ -150,6 +150,11 @@ pub fn (mut s Server) serve() ! {
 // fault, which disconnects the client, see fault.v.
 fn (mut s Server) accept() !&net.TcpConn {
 	mut conn := s.listener.accept()!
+
+	// A client can wait for as long as it likes between statements, like it can
+	// with PostgreSQL. Otherwise V disconnects it after 30 seconds.
+	conn.set_read_timeout(net.infinite_timeout)
+
 	fault_point('accept') or {
 		conn.close() or {}
 		return err

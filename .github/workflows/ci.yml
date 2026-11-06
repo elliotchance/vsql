@@ -1,17 +1,28 @@
-name: Release
+name: CI
 
-# Anything worth releasing gets a tag, which tests every OS and architecture and
-# then publishes the release. It can also be run by hand with workflow_dispatch,
+# Every pull request and every tag tests every OS and architecture. A tag then
+# publishes the release. It can also be run by hand with workflow_dispatch,
 # which tests everything without publishing.
 on:
   workflow_dispatch:
   push:
     tags:
       - "v*"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "**.rst"
+
+# A new push to a pull request cancels its previous run. Other runs are never
+# cancelled.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
 
 # There's one job for each OS and architecture. Each one runs the tests that
 # work there, builds the binary for the release and generates the C for the
-# amalgamation. Linux is in pr.yml, since it's also what a pull request runs.
+# amalgamation. Checks that don't depend on the OS only run on Linux x86-64,
+# which has the fastest and least limited runners.
 #
 # The release package is built once, at the start of each job, then everything
 # after that tests those binaries. It's uploaded at the end, so only what has
@@ -45,16 +56,131 @@ jobs:
           test -n "$commit"
           echo "commit=$commit" >> $GITHUB_OUTPUT
 
+  # The name of the Linux x86-64 job is the check that the main ruleset
+  # requires, so it mustn't change.
   linux:
+    name: Linux (${{ matrix.name }})
     needs: v
     strategy:
       fail-fast: false
       matrix:
-        arch: [x86-64, arm64]
-    uses: ./.github/workflows/pr.yml
-    with:
-      arch: ${{ matrix.arch }}
-      v_commit: ${{ needs.v.outputs.commit }}
+        include:
+          - arch: x86-64
+            name: x86-64
+            v_arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            name: ARM64
+            v_arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # setup-v can't be retried with retry.sh, so it's run again if it fails.
+      # clean is off because it deletes V's problem matcher before the runner
+      # has read it, which fails the step (mostly on the slower macOS x86-64
+      # runner).
+      - name: Set up V master
+        id: setup-v
+        continue-on-error: true
+        uses: vlang/setup-v@v1.7
+        with:
+          version: ${{ needs.v.outputs.commit }}
+          clean: false
+
+      - name: Remove failed V
+        if: steps.setup-v.outcome == 'failure'
+        run: rm -rf ~/vlang
+
+      - name: Set up V master (retry)
+        if: steps.setup-v.outcome == 'failure'
+        uses: vlang/setup-v@v1.7
+        with:
+          version: ${{ needs.v.outputs.commit }}
+          clean: false
+
+      - name: Show V version
+        run: v version
+
+      - name: Verify fmt
+        if: matrix.arch == 'x86-64'
+        run: make fmt-verify
+
+      - name: Verify standard index
+        if: matrix.arch == 'x86-64'
+        run: make check-standard-index
+
+      # vsql/y.v is generated, but committed so that "v install" works.
+      - name: Verify grammar
+        if: matrix.arch == 'x86-64'
+        run: |
+          make grammar
+          git diff --exit-code vsql/y.v
+
+      # The venv keeps the system's Python packages out, since Ubuntu's Pygments
+      # is too old for Sphinx.
+      - name: Verify docs
+        if: matrix.arch == 'x86-64'
+        run: |
+          python3 -m venv "$RUNNER_TEMP/docs-venv"
+          . "$RUNNER_TEMP/docs-venv/bin/activate"
+          pip install -r docs/requirements.txt
+          make clean-docs docs
+          git diff --exit-code
+
+      # This is what's released, and everything after this uses these binaries.
+      # make only builds them again if a source file changes, so the source goes
+      # back to having no version for the V tests, and the binaries are made newer
+      # than it. The output of the build has the C compiler commands that the
+      # amalgamation needs, which has to be generated on each OS and architecture
+      # (see the release job).
+      - name: Build release package
+        shell: bash
+        run: |
+          .github/workflows/set_version.sh
+          mkdir -p "$RUNNER_TEMP/showcc"
+          make BUILD_OPTIONS=-showcc bin/vsql | tee "$RUNNER_TEMP/showcc/vsql.showcc"
+          make BUILD_OPTIONS=-showcc libvsql | tee "$RUNNER_TEMP/showcc/libvsql.showcc"
+          .github/workflows/hello-test.sh bin/vsql
+          make release VERSION=${GITHUB_REF##*/}
+          scripts/amalgamation.sh generate amalgamation-linux-${{ matrix.v_arch }} "$RUNNER_TEMP/showcc"
+          scripts/amalgamation.sh check amalgamation-linux-${{ matrix.v_arch }}
+          git checkout vsql/version.v
+          touch bin/*
+
+      # psql is used by the server tests. It's already installed on the x86-64
+      # runner.
+      - name: Install psql
+        run: command -v psql || (.github/workflows/retry.sh sudo apt-get update && .github/workflows/retry.sh sudo apt-get install -y postgresql-client)
+
+      - name: Run tests
+        run: make test
+
+      # The tests for "vsql app" drive it in a headless Chromium (see
+      # docs/testing.rst). The page is the same everywhere, so they only run
+      # here. --with-deps installs the libraries Chromium needs.
+      - name: Run app tests
+        if: matrix.arch == 'x86-64'
+        run: |
+          python3 -m venv "$RUNNER_TEMP/app-venv"
+          . "$RUNNER_TEMP/app-venv/bin/activate"
+          .github/workflows/retry.sh pip install -r app/tests/requirements.txt
+          .github/workflows/retry.sh playwright install --with-deps chromium
+          make app-test
+
+      - name: Upload amalgamation C
+        uses: actions/upload-artifact@v7
+        with:
+          name: amalgamation-linux-${{ matrix.v_arch }}
+          path: amalgamation-linux-${{ matrix.v_arch }}
+
+      - name: Upload zip
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-linux-${{ matrix.arch }}
+          path: vsql-*-linux-${{ matrix.arch }}.zip
 
   macos:
     name: macOS (${{ matrix.name }})
@@ -186,11 +312,20 @@ jobs:
         run: rm -rf ~/vlang
 
       - name: Set up V master (retry)
+        id: setup-v-retry
         if: steps.setup-v.outcome == 'failure'
+        continue-on-error: true
         uses: vlang/setup-v@v1.7
         with:
           version: ${{ needs.v.outputs.commit }}
           clean: false
+
+      # V master sometimes doesn't build on Windows when it does everywhere else.
+      # That isn't a problem with vsql, so rather than fail, this job uses the
+      # newest earlier commit that builds, with a warning.
+      - name: Build an earlier V
+        if: steps.setup-v-retry.outcome == 'failure'
+        run: .github/workflows/earlier-v.sh ${{ needs.v.outputs.commit }}
 
       - name: Show V version
         run: v version

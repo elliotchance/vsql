@@ -445,7 +445,8 @@ or a row that's referenced was deleted or its referenced columns were changed.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A row with the same ``PRIMARY KEY``, or the same values for the columns of a
-``UNIQUE`` constraint, already exists.
+``UNIQUE`` constraint or a ``UNIQUE`` index (see :doc:`create-index`), already
+exists.
 
 **Examples**
 

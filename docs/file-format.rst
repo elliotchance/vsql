@@ -792,7 +792,8 @@ Index Object
 
 An Index Object (has the ``N`` prefix, followed by the table ID and then the
 index ID, each as a u64) contains the definition of an index (see
-:doc:`create-index`), as a ``CREATE INDEX`` statement:
+:doc:`create-index`), as a ``CREATE INDEX`` (or ``CREATE UNIQUE INDEX``)
+statement:
 
 .. code-block:: sql
 

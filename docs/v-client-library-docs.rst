@@ -807,6 +807,9 @@ struct Index
    	table_name Identifier
    	// columns are the columns of the table in the index, in order.
    	columns []IndexColumn
+   	// unique is true for a UNIQUE index, where no two rows can have the same
+   	// values (unless any of them are NULL).
+   	unique bool
    }
 
 An Index is a copy of the values of some columns of a table, kept in order of those values, with the row ID of each row. It's stored as an Index Object (the definition) and an Index Entry Object for each row, see "File Format" in the docs.

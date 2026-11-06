@@ -649,6 +649,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 	for table_name in table_names {
 		table := f.table(table_name)
 		rows := written[table_name].values()
+		f.check_unique_indexes(table, rows)!
 		f.check_unique_constraints(table, rows)!
 		f.check_foreign_keys(table, rows, time_zone)!
 		f.check_referencing_rows(table, old[table_name], rows, time_zone)!

@@ -22,7 +22,7 @@
 7.1/GR/3.c               implemented  vsql/std_2_7_1_row_value_constructor.v tests/insert.sql
 7.1/CR/1                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/flagging.sql
 7.1/CR/2                 n/a          - - row types (T051); ROW can't be used in the VALUES of an INSERT
-7.1/CR/3                 n/a          - - row and table constructors (F641); an explicit row value constructor can only be in a VALUES
+7.1/CR/3                 implemented  vsql/std_2_7_1_row_value_constructor.y tests/flagging.sql,tests/row-comparison.sql
 7.1/CR/4                 n/a          - - row subqueries (F641)
 7.1/CR/5                 untested     vsql/std_1_8_5_sql_flagger.v - only flagged when it contains a boolean operator
 7.1/CR/6                 n/a          - - row and table constructors (F641); a contextually typed row value constructor can only be in a VALUES

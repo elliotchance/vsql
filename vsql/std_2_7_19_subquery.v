@@ -100,6 +100,21 @@ fn (e Subquery) plan_column(mut c Compiler) !SubqueryPlan {
 	return plan
 }
 
+// plan_row is plan for a subquery whose rows are compared with a row of the
+// given degree, such as for "(x, y) IN (SELECT ...)".
+fn (e Subquery) plan_row(mut c Compiler, degree int) !SubqueryPlan {
+	if degree == 1 {
+		return e.plan_column(mut c)!
+	}
+
+	plan := e.plan(mut c)!
+	if plan.plan.columns().len != degree {
+		return sqlstate_42601('subquery must return ${degree} columns')
+	}
+
+	return plan
+}
+
 // run_subquery returns the rows of a subquery, where data is the row of the
 // query that contains it.
 fn run_subquery(mut conn Connection, plan SubqueryPlan, data Row) ![]Row {
@@ -126,6 +141,22 @@ fn subquery_values(mut conn Connection, plan SubqueryPlan, data Row) ![]Value {
 	}
 
 	return values
+}
+
+// subquery_rows runs the plan of a subquery and returns the values of every
+// row.
+fn subquery_rows(mut conn Connection, plan SubqueryPlan, data Row) ![][]Value {
+	columns := plan.plan.columns()
+	mut rows := [][]Value{}
+	for row in run_subquery(mut conn, plan, data)! {
+		mut values := []Value{cap: columns.len}
+		for column in columns {
+			values << row.get_column(column)!
+		}
+		rows << values
+	}
+
+	return rows
 }
 
 // compile is a <scalar subquery>. It's NULL when there are no rows.

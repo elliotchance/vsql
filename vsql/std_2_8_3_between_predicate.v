@@ -27,25 +27,26 @@ fn (e BetweenPredicate) pstr(params map[string]Value) string {
 // compile_between compiles the predicate. "X BETWEEN Z AND Y" is transformed into
 // "X >= Z AND X <= Y", so if it's retrospective (see Compiler.retrospective) Y can
 // be the current date or timestamp. It can't with NOT, and SYMMETRIC also has
-// "X >= Y".
+// "X >= Y". X, Y and Z can also be rows of the same degree.
 //
 // ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.c.iv
 fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !CompileResult {
-	compiled_expr := e.expr.compile(mut c)!
-	compiled_left := e.left.compile(mut c)!
-	compiled_right := if retrospective && !e.not && !e.symmetric {
-		c.compile_retrospective(e.right)!
+	compiled_expr := e.expr.compile_fields(mut c)!
+	compiled_left := e.left.compile_fields(mut c)!
+	compiled_right := if retrospective && !e.not && !e.symmetric
+		&& e.right !is ExplicitRowValueConstructor {
+		[c.compile_retrospective(e.right)!]
 	} else {
-		e.right.compile(mut c)!
+		e.right.compile_fields(mut c)!
 	}
-	c.check_time_zone_comparison(compiled_expr.typ, compiled_left.typ)!
-	c.check_time_zone_comparison(compiled_expr.typ, compiled_right.typ)!
+	c.check_row_comparison(compiled_expr.map(it.typ), compiled_left.map(it.typ))!
+	c.check_row_comparison(compiled_expr.map(it.typ), compiled_right.map(it.typ))!
 
 	return CompileResult{
 		run:          fn [e, compiled_expr, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {
-			expr := compiled_expr.run(mut conn, data, params)!
-			left := compiled_left.run(mut conn, data, params)!
-			right := compiled_right.run(mut conn, data, params)!
+			expr := run_fields(mut conn, compiled_expr, data, params)!
+			left := run_fields(mut conn, compiled_left, data, params)!
+			right := run_fields(mut conn, compiled_right, data, params)!
 
 			// ISO/IEC 9075-2:2016(E), 8.3, <between predicate>, Syntax Rules, 4
 			// and 6 (ASYMMETRIC is implicit, Syntax Rules, 1):
@@ -56,11 +57,11 @@ fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !Com
 			//
 			// With three-valued logic a NULL bound doesn't always make the result
 			// UNKNOWN. For example, 5 BETWEEN NULL AND 2 is FALSE.
-			mut result := between_asymmetric(compare(conn, expr, left)!, compare(conn,
+			mut result := between_asymmetric(compare_rows(conn, expr, left)!, compare_rows(conn,
 				expr, right)!)
 			if e.symmetric {
-				result = truth_or(result, between_asymmetric(compare(conn, expr, right)!,
-					compare(conn, expr, left)!))
+				result = truth_or(result, between_asymmetric(compare_rows(conn, expr,
+					right)!, compare_rows(conn, expr, left)!))
 			}
 
 			// ISO/IEC 9075-2:2016(E), 8.3, <between predicate>, Syntax Rules, 3
@@ -72,8 +73,8 @@ fn (e BetweenPredicate) compile_between(mut c Compiler, retrospective bool) !Com
 			return result.value()
 		}
 		typ:          new_type('BOOLEAN', 0, 0)
-		contains_agg: compiled_expr.contains_agg || compiled_left.contains_agg
-			|| compiled_right.contains_agg
+		contains_agg: compiled_expr.any(it.contains_agg) || compiled_left.any(it.contains_agg)
+			|| compiled_right.any(it.contains_agg)
 	}
 }
 
@@ -95,17 +96,9 @@ fn (t Truth) value() Value {
 
 // between_asymmetric is "X >= Y AND X <= Z", given the comparisons of X with Y
 // (lower) and X with Z (upper).
-fn between_asymmetric(lower CompareResult, upper CompareResult) Truth {
-	at_least := match lower {
-		.is_unknown { Truth.is_unknown }
-		.is_less { Truth.is_false }
-		else { Truth.is_true }
-	}
-	at_most := match upper {
-		.is_unknown { Truth.is_unknown }
-		.is_greater { Truth.is_false }
-		else { Truth.is_true }
-	}
+fn between_asymmetric(lower []CompareResult, upper []CompareResult) Truth {
+	at_least := ComparisonOperator.greater_than_or_equal.row_truth(lower)
+	at_most := ComparisonOperator.less_than_or_equal.row_truth(upper)
 
 	return truth_and(at_least, at_most)
 }

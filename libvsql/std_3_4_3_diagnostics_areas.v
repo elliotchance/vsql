@@ -137,12 +137,19 @@ fn (mut d Diagnostics) warning(sqlstate string, msg string) i16 {
 
 // statement_warnings raises the warnings of the statement that the connection
 // just executed. If the statement failed, then the exception condition also
-// needs a condition area. A completion condition: no data doesn't have a status
-// record (see no_data).
+// needs a condition area. A completion condition: no data (such as a DELETE,
+// INSERT or UPDATE of no rows) doesn't have a status record, but it's the
+// return code of a statement that succeeded (see no_data), even if there were
+// warnings too.
 //
 // ISO/IEC 9075-2:2016(E), 4.36, Diagnostics area
+// ISO/IEC 9075-3:2003(E), 4.1, Introduction to SQL/CLI
+// ISO/IEC 9075-3:2003(E), 5.2, <CLI routine> invocation, General Rules, 5.b.ii
 fn (mut d Diagnostics) statement_warnings(conn &vsql.Connection, failed bool) {
 	d.more = conn.more_conditions
+	if !failed && conn.warnings.any(vsql.sqlstate_from_int(it.code()).starts_with('02')) {
+		d.no_data()
+	}
 	mut warnings := conn.warnings.filter(!vsql.sqlstate_from_int(it.code()).starts_with('02'))
 	limit := if failed { conn.condition_area_limit - 1 } else { conn.condition_area_limit }
 	if warnings.len > limit {
@@ -227,8 +234,13 @@ fn (mut d Diagnostics) error(err IError) i16 {
 }
 
 // result is the return code after a routine succeeds, which may have raised
-// warnings.
+// warnings or no data (which comes later in the list of return codes, so it's
+// returned instead of a warning).
 fn (d Diagnostics) result() i16 {
+	if d.returncode == sql_no_data {
+		return sql_no_data
+	}
+
 	return if d.records.len > 0 { sql_success_with_info } else { sql_success }
 }
 

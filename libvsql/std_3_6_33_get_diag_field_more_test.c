@@ -95,6 +95,6 @@ UTEST_F(db, 6_33_get_diag_field_more_limit_reduced) {
 UTEST_F(db, 6_33_get_diag_field_more_no_data) {
   EXPECT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE foo (x INTEGER)"),
             SQL_SUCCESS);
-  EXPECT_EQ(run_sql(utest_fixture->stmt, "DELETE FROM foo"), SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "DELETE FROM foo"), SQL_NO_DATA);
   EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_NUMBER), 0);
 }

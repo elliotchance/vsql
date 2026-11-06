@@ -2121,12 +2121,53 @@ const flagging_modules = {
 	'PROCEDURE p (SQLSTATE, :x INT, :i SMALLINT); DELETE FROM t WHERE x = :x :i; PROCEDURE q (SQLSTATE, :x INT, :i SMALLINT); SELECT x INTO :x INDICATOR :i FROM t;':                                                                                                                   []string{}
 	'PROCEDURE p (SQLSTATE, :x INT, :i SMALLINT); DELETE FROM t WHERE x = :x :i; PROCEDURE q (SQLSTATE, :x INT, :i INT); SELECT x INTO :x INDICATOR :i FROM t;':                                                                                                                        ['F611']
 	"PROCEDURE p (SQLSTATE, :x INT, :i SMALLINT); DELETE FROM t WHERE x = :x :i; DECLARE c CURSOR FOR SELECT x FROM t WHERE x = :x :i AND y = ':' AND z = ':'; PROCEDURE o (SQLSTATE, :x INT, :i INT); OPEN c;":                                                                        ['F611']
+	// A name that's only read by the module (not the grammar) is flagged with
+	// F391 too, but not a descriptor name in a literal or an item name.
+	'PROCEDURE procedure_name_17 (SQLSTATE, :parameter_name_17 INT); DELETE FROM t WHERE x = :parameter_name_17;':                                                                                                                                                                      []string{}
+	'PROCEDURE procedure_name_18c (SQLSTATE); COMMIT;':                                                                                                                                                                                                                                 ['F391']
+	'PROCEDURE p (SQLSTATE, :parameter_name_18c INT); DELETE FROM t WHERE x = :parameter_name_18c;':                                                                                                                                                                                    ['F391']
+	'PROCEDURE p (SQLSTATE, :s VARCHAR(99)); PREPARE statement_name_17 FROM :s;':                                                                                                                                                                                                       ['B031']
+	'PROCEDURE p (SQLSTATE, :s VARCHAR(99)); PREPARE statement_name_18c FROM :s;':                                                                                                                                                                                                      [
+		'B031',
+		'F391',
+	]
+	'PROCEDURE p (SQLSTATE, :s VARCHAR(99)); PREPARE "statement name 18c" FROM :s;':                                                                                                                                                                                                    ['B031']
+	'PROCEDURE p (SQLSTATE, :s VARCHAR(99)); PREPARE "statement ""name"" 19" FROM :s;':                                                                                                                                                                                                 [
+		'B031',
+		'F391',
+	]
+	'PROCEDURE p (SQLSTATE); ALLOCATE DESCRIPTOR descriptor_name_18;':                                                                                                                                                                                                                  [
+		'B031',
+		'B035',
+		'F391',
+	]
+	"PROCEDURE p (SQLSTATE); ALLOCATE DESCRIPTOR 'descriptor_name_18';":                                                                                                                                                                                                                ['B031']
+	'DECLARE cursor_name_18char CURSOR FOR SELECT x FROM t; PROCEDURE o (SQLSTATE); OPEN cursor_name_18char; PROCEDURE c (SQLSTATE); CLOSE cursor_name_18char;':                                                                                                                        ['F391']
 }
 
 fn test_flagging_module() ! {
 	for body, features in flagging_modules {
 		m := compile_module(module_header + body, 'm')!
 		assert m.features == unique_features(features, 'B112'), body
+	}
+
+	// The names of the module header.
+	for header, features in {
+		'MODULE module_name_17cha LANGUAGE C SCHEMA schema_name_17cha AUTHORIZATION a ': ['B112']
+		'MODULE module_name_18char LANGUAGE C SCHEMA s ':                                [
+			'B112',
+			'F391',
+		]
+		'MODULE LANGUAGE C SCHEMA schema_name_18char ':                                  [
+			'B112',
+			'F391',
+		]
+		'MODULE LANGUAGE C AUTHORIZATION authorization_18ch ':                           [
+			'B112',
+			'F391',
+		]
+	} {
+		assert compile_module(header + 'PROCEDURE p (SQLSTATE); COMMIT;', 'm')!.features == features, header
 	}
 }
 
@@ -2147,6 +2188,20 @@ char SQLSTATE[6]; long long a;
 EXEC SQL END DECLARE SECTION;
 EXEC SQL COMMIT;',
 		'x.sqc')!.features == ['B012', 'T071']
+
+	// A host variable is a <host identifier>, which isn't flagged with F391,
+	// but a <statement name> is.
+	assert precompile_c('EXEC SQL BEGIN DECLARE SECTION;
+char SQLSTATE[6]; long host_variable_name_18c;
+EXEC SQL END DECLARE SECTION;
+EXEC SQL DELETE FROM t WHERE x = :host_variable_name_18c;',
+		'x.sqc')!.features == ['B012']
+	assert precompiled("EXEC SQL PREPARE statement_name_18c FROM 'VALUES 1';")! == [
+		'B012',
+		'B031',
+		'F391',
+		vsql_prepare_literal,
+	]
 
 	// The <SQL condition> of an <embedded exception declaration>.
 	assert precompiled('EXEC SQL WHENEVER SQLEXCEPTION CONTINUE; EXEC SQL COMMIT;')! == ['B012']

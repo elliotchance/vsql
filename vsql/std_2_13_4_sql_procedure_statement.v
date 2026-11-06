@@ -36,8 +36,9 @@ mut:
 // that a syntax error is found when the module is compiled) and then prepared
 // and executed with libvsql, with a "?" for each host parameter. START
 // TRANSACTION, COMMIT and ROLLBACK can only be done with SQLStartTran and
-// SQLEndTran.
-fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []ModuleCursor, prepared []string) !ModuleStatement {
+// SQLEndTran. It also returns the names that were read by the ModuleTokens,
+// rather than the grammar, for name_features.
+fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []ModuleCursor, prepared []string) !(ModuleStatement, []string) {
 	tokens := tokenize(text) or { return procedure_error(p, err) }
 
 	// A <dynamic parameter specification> can only be in a prepared statement.
@@ -46,6 +47,14 @@ fn parse_module_statement(text string, p ExternallyInvokedProcedure, cursors []M
 	}
 
 	mut t := new_module_tokens(text)!
+	statement := t.module_statement(text, p, cursors, prepared)!
+
+	return statement, t.names
+}
+
+// module_statement compiles the statement of a procedure, see
+// parse_module_statement.
+fn (mut t ModuleTokens) module_statement(text string, p ExternallyInvokedProcedure, cursors []ModuleCursor, prepared []string) !ModuleStatement {
 	match t.next_word() {
 		'CONNECT' {
 			return t.connect_statement(p)

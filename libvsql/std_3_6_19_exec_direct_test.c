@@ -45,6 +45,43 @@ UTEST_F(db, 6_19_exec_direct_open_cursor) {
   EXPECT_STATE(SQL_HANDLE_STMT, utest_fixture->stmt, "24000");
 }
 
+/* A DELETE, INSERT or UPDATE of no rows raises a completion condition: no
+ * data, which doesn't have a status record. It's still executed (with a row
+ * count of 0) and doesn't end the SQL-transaction. 5.2 GR 5.b.ii; ISO/IEC
+ * 9075-2:2016(E) 14.9 GR 10, 14.11 GR 9 and 14.14 GR 15. */
+UTEST_F(db, 6_19_exec_direct_no_data) {
+  const char *statements[] = {
+      "DELETE FROM t",
+      "DELETE FROM t WHERE x > 1",
+      "UPDATE t SET x = 2",
+      "INSERT INTO t SELECT * FROM t",
+  };
+  SQLINTEGER rows;
+  size_t i;
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "CREATE TABLE t (x INT)"),
+            SQL_SUCCESS);
+  for (i = 0; i < sizeof(statements) / sizeof(statements[0]); i++) {
+    rows = 123;
+    EXPECT_EQ(run_sql(utest_fixture->stmt, statements[i]), SQL_NO_DATA);
+    EXPECT_EQ(diag_int(SQL_HANDLE_STMT, utest_fixture->stmt, SQL_DIAG_NUMBER),
+              0);
+    EXPECT_EQ(SQLRowCount(utest_fixture->stmt, &rows), SQL_SUCCESS);
+    EXPECT_EQ(rows, 0);
+  }
+
+  ASSERT_EQ(run_sql(utest_fixture->stmt, "INSERT INTO t (x) VALUES (1)"),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "DELETE FROM t WHERE x > 1"),
+            SQL_NO_DATA);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "UPDATE t SET x = 2 WHERE x = 1"),
+            SQL_SUCCESS);
+  EXPECT_EQ(run_sql(utest_fixture->stmt, "DELETE FROM t"), SQL_SUCCESS);
+  EXPECT_EQ(
+      diag_int(SQL_HANDLE_DBC, utest_fixture->dbc, SQL_DIAG_TRANSACTION_ACTIVE),
+      1);
+}
+
 /* A transaction is started when there isn't one, and it stays active after an
  * error. */
 UTEST_F(db, 6_19_exec_direct_starts_transaction) {

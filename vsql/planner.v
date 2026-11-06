@@ -1039,24 +1039,36 @@ fn (mut o ExprOperation) execute(rows []Row) ![]Row {
 	// Each expression is compiled on the first row, then kept for the rows
 	// after it.
 	mut compiled := []CompileResult{cap: o.exprs.len}
-	mut ids := []string{cap: o.exprs.len}
+
+	// Every row has the same keys. An expression with the same id as one before
+	// it replaces its value (slots is the position of each expression).
+	mut keys := []string{cap: o.exprs.len}
+	mut slots := []int{cap: o.exprs.len}
+	for expr in o.exprs {
+		id := expr.as_clause.id()
+		mut slot := keys.index(id)
+		if slot < 0 {
+			slot = keys.len
+			keys << id
+		}
+		slots << slot
+	}
 
 	for row in rows {
 		o.conn.begin_row()
 		if compiled.len == 0 {
 			for expr in o.exprs {
 				compiled << expr.expr.compile(mut c)!
-				ids << expr.as_clause.id()
 			}
 		}
-		mut data := map[string]Value{}
+		mut values := []Value{len: keys.len}
 		for i, result in compiled {
-			data[ids[i]] = result.run(mut o.conn, row, o.params)!
+			values[slots[i]] = result.run(mut o.conn, row, o.params)!
 		}
 
 		// The id of the row is kept so that the current row of a cursor can
 		// be changed by a positioned DELETE or UPDATE.
-		new_rows << Row{row.id, row.tid, data}
+		new_rows << Row{row.id, row.tid, RowData{keys, values}}
 	}
 
 	return new_rows

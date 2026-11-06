@@ -15,13 +15,119 @@ mut:
 	id []u8
 	// tid is the transaction ID that created this row.
 	tid  u64
-	data map[string]Value
+	data RowData
+}
+
+// RowData is the value of each column of a Row, by the id of the column. Rows
+// with the same columns (such as the rows of a scan) share keys, so they're
+// only copied when a row gets a new key (see set). This is much smaller and
+// faster to make than a map for each row.
+struct RowData {
+mut:
+	keys   []string
+	values []Value
 }
 
 fn new_row(data map[string]Value) Row {
 	return Row{
-		data: data
+		data: new_row_data_from_map(data)
 	}
+}
+
+fn new_row_data_from_map(data map[string]Value) RowData {
+	mut d := RowData{
+		keys:   []string{cap: data.len}
+		values: []Value{cap: data.len}
+	}
+	for k, v in data {
+		d.keys << k
+		d.values << v
+	}
+
+	return d
+}
+
+// index is the position of key, or -1 if the row doesn't have it.
+fn (d RowData) index(key string) int {
+	for i, k in d.keys {
+		if k == key {
+			return i
+		}
+	}
+
+	return -1
+}
+
+fn (d RowData) get(key string) ?Value {
+	i := d.index(key)
+	if i < 0 {
+		return none
+	}
+
+	return d.values[i]
+}
+
+// value is the value of key, or the zero Value if the row doesn't have it.
+fn (d RowData) value(key string) Value {
+	return d.get(key) or { Value{} }
+}
+
+// set replaces the value of key, or adds it after the others. Adding a key
+// copies the keys and values, since they may be shared with other rows.
+fn (mut d RowData) set(key string, value Value) {
+	i := d.index(key)
+	if i >= 0 {
+		d.values[i] = value
+		return
+	}
+
+	mut keys := []string{cap: d.keys.len + 1}
+	keys << d.keys
+	keys << key
+	mut values := []Value{cap: d.values.len + 1}
+	values << d.values
+	values << value
+	d.keys = keys
+	d.values = values
+}
+
+// clone copies the values, so they can be changed without changing d. The keys
+// are shared, because set copies them before changing them.
+fn (d RowData) clone() RowData {
+	return RowData{
+		keys:   d.keys
+		values: d.values.clone()
+	}
+}
+
+// merged is the keys and values of d, then those of other. A value of other
+// replaces the value of d with the same key.
+fn (d RowData) merged(other RowData) RowData {
+	if d.keys.len == 0 {
+		return other.clone()
+	}
+
+	mut r := RowData{
+		keys:   []string{cap: d.keys.len + other.keys.len}
+		values: []Value{cap: d.keys.len + other.keys.len}
+	}
+	r.keys << d.keys
+	r.values << d.values
+	for i, k in other.keys {
+		j := r.index(k)
+		if j >= 0 {
+			r.values[j] = other.values[i]
+		} else {
+			r.keys << k
+			r.values << other.values[i]
+		}
+	}
+
+	return r
+}
+
+fn (d RowData) len() int {
+	return d.keys.len
 }
 
 // get_null will return true if the column name is NULL. An error will be
@@ -94,9 +200,9 @@ pub fn (r Row) get_column(column Column) !Value {
 }
 
 pub fn (r Row) get(name string) !Value {
-	return r.data[name] or {
+	return r.data.get(name) or {
 		// Be helpful and look for silly mistakes.
-		for n, _ in r.data {
+		for n in r.data.keys {
 			if n.to_upper() == name.to_upper() {
 				return error('no such column ${name}, did you mean ${n}?')
 			}
@@ -107,10 +213,10 @@ pub fn (r Row) get(name string) !Value {
 }
 
 fn (r Row) for_storage() Row {
-	mut new_data := map[string]Value{}
-	for k, v in r.data {
+	mut new_data := RowData{}
+	for i, k in r.data.keys {
 		parts := k.split('.')
-		new_data[parts[parts.len - 1]] = v
+		new_data.set(parts[parts.len - 1], r.data.values[i])
 	}
 
 	return Row{r.id, r.tid, new_data}
@@ -124,11 +230,8 @@ fn new_empty_row(columns Columns, table_name string) Row {
 	for col in columns {
 		v := new_empty_value(col.typ)
 
-		if table_name == '' {
-			r.data[col.name.sub_entity_name] = v
-		} else {
-			r.data[col.name.id()] = v
-		}
+		key := if table_name == '' { col.name.sub_entity_name } else { col.name.id() }
+		r.data.set(key, v)
 	}
 
 	return r
@@ -200,7 +303,7 @@ fn (r Row) bytes_with_limit(t Table, limit i64) ![]u8 {
 	buf.write_u16(u16(t.columns.len))
 
 	for col in t.columns {
-		v := r.data[col.name.sub_entity_name] or { Value{} }
+		v := r.data.value(col.name.sub_entity_name)
 
 		// If the column is allows for NULL we need to prepend a NULL indicator.
 		// However, there are certain types that we do not need to add a
@@ -277,7 +380,7 @@ fn (t Table) column_ids() []string {
 // of the table (see column_ids), so that they aren't made again for each row.
 fn new_row_from_bytes_with_ids(t Table, ids []string, data []u8, tid u64) Row {
 	mut buf := new_bytes(data)
-	mut row := map[string]Value{}
+	mut values := []Value{cap: t.columns.len}
 
 	row_id := buf.read_u8s(buf.read_u16())
 	column_count := int(buf.read_u16())
@@ -286,7 +389,7 @@ fn new_row_from_bytes_with_ids(t Table, ids []string, data []u8, tid u64) Row {
 		// Columns that didn't exist when the row was written are NULL. Any
 		// values after the last column are ignored.
 		if i >= column_count {
-			row[ids[i]] = Value{
+			values << Value{
 				typ:     col.typ
 				is_null: true
 			}
@@ -379,10 +482,10 @@ fn new_row_from_bytes_with_ids(t Table, ids []string, data []u8, tid u64) Row {
 			}
 		}
 
-		row[ids[i]] = v
+		values << v
 	}
 
-	return Row{row_id, tid, row}
+	return Row{row_id, tid, RowData{ids, values}}
 }
 
 // write_key_integer writes an integer in a PRIMARY KEY as size bytes, so that
@@ -538,7 +641,7 @@ fn (mut r Row) object_key(t Table) ![]u8 {
 		mut pk := new_empty_bytes()
 
 		for col_name in t.primary_key {
-			write_key_value(mut pk, r.data[col_name] or { Value{} }, t.column(col_name)!.typ.typ)
+			write_key_value(mut pk, r.data.value(col_name), t.column(col_name)!.typ.typ)
 		}
 
 		r.id = pk.bytes()

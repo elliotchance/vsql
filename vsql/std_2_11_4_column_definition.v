@@ -320,7 +320,7 @@ fn (g GeneratedColumns) apply(mut conn Connection, mut row Row) ! {
 	// the table.
 	mut data := map[string]Value{}
 	for column in g.table.columns {
-		data[column.name.id()] = row.data[column.name.sub_entity_name] or { Value{} }
+		data[column.name.id()] = row.data.value(column.name.sub_entity_name)
 	}
 	full_row := new_row(data)
 
@@ -331,6 +331,6 @@ fn (g GeneratedColumns) apply(mut conn Connection, mut row Row) ! {
 		if value.is_null && column.not_null {
 			return sqlstate_23502(g.table, column_name)
 		}
-		row.data[column_name] = value
+		row.data.set(column_name, value)
 	}
 }

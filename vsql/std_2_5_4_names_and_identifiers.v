@@ -394,7 +394,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	if e.custom_id != '' {
 		return CompileResult{
 			run:          fn [e, id] (mut conn Connection, data Row, params map[string]Value) !Value {
-				return data.data[id] or { return sqlstate_42601('unknown column: ${e}') }
+				return data.data.get(id) or { return sqlstate_42601('unknown column: ${e}') }
 			}
 			typ:          e.custom_typ
 			contains_agg: false
@@ -424,7 +424,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		if column.name.sub_entity_name == e.sub_entity_name {
 			return CompileResult{
 				run:          fn [e, id] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return data.data[id] or { return sqlstate_42601('unknown column: ${e}') }
+					return data.data.get(id) or { return sqlstate_42601('unknown column: ${e}') }
 				}
 				typ:          column.typ
 				contains_agg: false
@@ -458,7 +458,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 				column_id := column.name.id()
 				return CompileResult{
 					run:          fn [column, column_id] (mut conn Connection, data Row, params map[string]Value) !Value {
-						return data.data[column_id] or {
+						return data.data.get(column_id) or {
 							return sqlstate_42601('unknown column: ${column.name}')
 						}
 					}
@@ -502,7 +502,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 				ident_id := ident.id()
 				return CompileResult{
 					run:          fn [ident, ident_id] (mut conn Connection, data Row, params map[string]Value) !Value {
-						return data.data[ident_id] or {
+						return data.data.get(ident_id) or {
 							return sqlstate_42601('unknown column: ${ident}')
 						}
 					}
@@ -538,7 +538,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 			ident_id := ident.id()
 			return CompileResult{
 				run:          fn [ident, ident_id] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return data.data[ident_id] or {
+					return data.data.get(ident_id) or {
 						return sqlstate_42601('unknown column: ${ident}')
 					}
 				}
@@ -561,7 +561,7 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 				ident_id := ident.id()
 				return CompileResult{
 					run:          fn [ident, ident_id] (mut conn Connection, data Row, params map[string]Value) !Value {
-						return data.data[ident_id] or {
+						return data.data.get(ident_id) or {
 							return sqlstate_42601('unknown column: ${ident}')
 						}
 					}

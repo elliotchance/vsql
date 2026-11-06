@@ -125,7 +125,9 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		// ID. This allows the underlying storage to indentify it as a different
 		// version of the same semantic row. We also need to maintain the
 		// original tid for the storage to know which version is frozen.
-		mut row2 := new_row(row.data.clone())
+		mut row2 := Row{
+			data: row.data.clone()
+		}
 		row2.id = row.id
 		row2.tid = row.tid
 
@@ -168,11 +170,11 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			// where the value wasn't NULL.
 			check_store_assignment(raw_value, table_column.typ)!
 			column_id := '${row_table_id}.${column_name}'
-			cmp := compare(conn, row.data[column_id] or { Value{} }, raw_value)!
+			cmp := compare(conn, row.data.value(column_id), raw_value)!
 			if cmp != .is_equal {
 				did_modify = true
-				row2.data[column_id] = cast(mut conn, 'for column ${column_name}', raw_value,
-					table_column.typ)!
+				row2.data.set(column_id, cast(mut conn, 'for column ${column_name}', raw_value,
+					table_column.typ)!)
 			}
 		}
 

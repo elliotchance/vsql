@@ -43,8 +43,7 @@ fn (mut iter PageIterator) next() ?PageObject {
 
 		// Load all the objects for this leaf. Making sure to skip over any keys
 		// that are out of bounds.
-		iter.objects =
-			(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).objects()
+		(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).objects_in_place(mut iter.objects)
 		for object in iter.objects {
 			if compare_bytes(object.key, iter.min) < 0 {
 				iter.depth_iterator[iter.depth_iterator.len - 1]++
@@ -82,8 +81,9 @@ fn (mut iter PageIterator) next() ?PageObject {
 			iter.depth_iterator << 0
 		}
 
-		iter.objects =
-			(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).objects()
+		// The page is only used by the iterator, so its objects don't need to be
+		// copied.
+		(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).objects_in_place(mut iter.objects)
 	}
 
 	o := iter.objects[iter.depth_iterator[iter.depth_iterator.len - 1]]

@@ -3,6 +3,8 @@
 
 module vsql
 
+import encoding.binary
+
 // It would be nice to put this an an enum, but actually keeping it as a u8 (and
 // not the required int is kind of fiddly). Also, there's almost no case where
 // we need to deal with all cases because they are context specific. So let's
@@ -298,6 +300,30 @@ fn (mut p Page) expire(key []u8, tid u64, xid u64) !bool {
 	}
 
 	return modified
+}
+
+// objects_in_place sets objects to the objects of the page, reusing its
+// memory. Unlike objects, the key and value of each object are part of the page
+// rather than copies, so the page must not be changed while they are used. See
+// PageObject.bytes for the layout.
+fn (p Page) objects_in_place(mut objects []PageObject) {
+	objects.clear()
+	end := int(p.used) - page_header_size
+	mut offset := 0
+	for offset < end {
+		total_len := int(binary.big_endian_u32_at(p.data, offset))
+		key_len := int(binary.big_endian_u16_at(p.data, offset + 20))
+		key_at := offset + page_object_prefix_length - 1
+		value_at := key_at + key_len + 1
+		objects << PageObject{
+			key:         p.data[key_at..value_at - 1]
+			value:       p.data[value_at..offset + total_len]
+			is_blob_ref: p.data[value_at - 1] != 0
+			tid:         binary.big_endian_u64_at(p.data, offset + 4)
+			xid:         binary.big_endian_u64_at(p.data, offset + 12)
+		}
+		offset += total_len
+	}
 }
 
 fn (p Page) objects() []PageObject {

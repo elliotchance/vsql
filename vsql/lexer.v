@@ -280,11 +280,11 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 
 		// Numbers
 		if cs[i] >= `0` && cs[i] <= `9` {
-			mut word := ''
+			start := i
 			for i < cs.len && cs[i] >= `0` && cs[i] <= `9` {
-				word += '${cs[i]}'
 				i++
 			}
+			word := cs[start..i].string()
 			tokens << Token{token_literal_number, YYSymType{
 				v: word
 			}}
@@ -378,17 +378,11 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		}
 
 		// Operators
-		multi := {
-			'<>': token_operator_not_equals
-			'!=': token_operator_bang_equals
-			'>=': token_operator_greater_equals
-			'<=': token_operator_less_equals
-			'||': token_operator_double_pipe
-		}
-		for op, tk in multi {
-			if i < cs.len - 1 && cs[i] == op[0] && cs[i + 1] == op[1] {
-				tokens << Token{tk, YYSymType{
-					v: op
+		if i < cs.len - 1 {
+			multi_token := multi_operator_token(cs[i], cs[i + 1])
+			if multi_token != 0 {
+				tokens << Token{multi_token, YYSymType{
+					v: cs[i..i + 2].string()
 				}}
 				i += 2
 				unsafe {
@@ -397,41 +391,24 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			}
 		}
 
-		single := {
-			`(`: token_operator_left_paren
-			`)`: token_operator_right_paren
-			`*`: token_operator_asterisk
-			`+`: token_operator_plus
-			`,`: token_operator_comma
-			`-`: token_operator_minus
-			`/`: token_operator_solidus
-			`;`: token_operator_semicolon
-			`<`: token_operator_less_than
-			`=`: token_operator_equals
-			`>`: token_operator_greater_than
-			`.`: token_operator_period
-			`:`: token_operator_colon
-		}
-		for op, tk in single {
-			if cs[i] == op {
-				tokens << Token{tk, YYSymType{
-					v: op.str()
-				}}
-				i++
-				unsafe {
-					goto next
-				}
+		if single_token := single_operator_tokens[cs[i]] {
+			tokens << Token{single_token, YYSymType{
+				v: cs[i].str()
+			}}
+			i++
+			unsafe {
+				goto next
 			}
 		}
 
 		// Keyword or regular identifier
-		mut word := ''
+		word_start := i
 		mut is_not_first := false
 		for i < cs.len && is_identifier_char(cs[i], is_not_first) {
-			word += '${cs[i]}'
 			i++
 			is_not_first = true
 		}
+		word := cs[word_start..i].string()
 
 		// A character that doesn't start a token must be a separator.
 		//
@@ -445,23 +422,14 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		}
 
 		upper_word := word.to_upper()
-		mut found := false
-		for tok_pos, tok_name in yy_toknames {
-			// E is only a token directly after a number (see above), otherwise it's
-			// a regular identifier. LIMIT is the same (see is_limit_clause).
-			// The name of an operator or a literal isn't a word.
-			if tok_name == upper_word && upper_word != 'E' && upper_word != 'LIMIT'
-				&& !upper_word.starts_with('OPERATOR_') && !upper_word.starts_with('LITERAL_') {
-				tok_number := tok_pos + 57343
-				tokens << Token{tok_number, YYSymType{
-					v: upper_word
-				}}
-				found = true
-				break
-			}
-		}
-
-		if !found {
+		// E is only a token directly after a number (see above), otherwise it's a
+		// regular identifier. LIMIT is the same (see is_limit_clause).
+		tok_number := keyword_tokens[upper_word] or { 0 }
+		if tok_number != 0 && upper_word != 'E' && upper_word != 'LIMIT' {
+			tokens << Token{tok_number, YYSymType{
+				v: upper_word
+			}}
+		} else {
 			tokens << Token{token_literal_identifier, YYSymType{
 				v: IdentifierChain{
 					identifier: word
@@ -941,4 +909,57 @@ pub fn reserved_words() []string {
 // quotes.
 pub fn extension_keywords() []string {
 	return ['IF', 'ILIKE', 'INDEX', 'LIMIT']
+}
+
+// multi_operator_token returns the token of an operator with two characters, or
+// 0 if a and b aren't one.
+fn multi_operator_token(a rune, b rune) int {
+	if a == `<` && b == `>` {
+		return token_operator_not_equals
+	}
+	if a == `!` && b == `=` {
+		return token_operator_bang_equals
+	}
+	if a == `>` && b == `=` {
+		return token_operator_greater_equals
+	}
+	if a == `<` && b == `=` {
+		return token_operator_less_equals
+	}
+	if a == `|` && b == `|` {
+		return token_operator_double_pipe
+	}
+
+	return 0
+}
+
+const single_operator_tokens = {
+	`(`: token_operator_left_paren
+	`)`: token_operator_right_paren
+	`*`: token_operator_asterisk
+	`+`: token_operator_plus
+	`,`: token_operator_comma
+	`-`: token_operator_minus
+	`/`: token_operator_solidus
+	`;`: token_operator_semicolon
+	`<`: token_operator_less_than
+	`=`: token_operator_equals
+	`>`: token_operator_greater_than
+	`.`: token_operator_period
+	`:`: token_operator_colon
+}
+
+// keyword_tokens is the token of each name that the grammar has.
+const keyword_tokens = new_keyword_tokens()
+
+fn new_keyword_tokens() map[string]int {
+	mut tokens := map[string]int{}
+	for tok_pos, tok_name in yy_toknames {
+		// The name of an operator or a literal isn't a word.
+		if !tok_name.starts_with('OPERATOR_') && !tok_name.starts_with('LITERAL_') {
+			tokens[tok_name] = tok_pos + 57343
+		}
+	}
+
+	return tokens
 }

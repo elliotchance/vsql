@@ -46,31 +46,46 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 
 	c.uses_next_value = true
 
+	// The value has the data type of the sequence.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 3
+	typ := catalog.storage.sequence(name)!.typ
+
 	return CompileResult{
-		run:          fn [name, mut catalog] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:          fn [name, mut catalog, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
 			// Multiple NEXT VALUE FOR the same sequence in the same row must return
 			// the same value.
 			key := name.id()
 			if value := data.data.get(sequence_value_key(key)) {
-				return value
+				return sequence_value(mut conn, value.as_int(), typ)
 			}
 			if next := conn.row_sequence_values[key] {
-				return new_bigint_value(next)
+				return sequence_value(mut conn, next, typ)
 			}
 
 			if conn.dry_run {
 				sequence := catalog.storage.sequence(name)!
-				return new_bigint_value(sequence.current_value)
+				return sequence_value(mut conn, sequence.current_value, typ)
 			}
 
 			next := catalog.storage.sequence_next_value(name)!
 			conn.row_sequence_values[key] = next
 
-			return new_bigint_value(next)
+			return sequence_value(mut conn, next, typ)
 		}
-		typ:          new_type('BIGINT', 0, 0)
+		typ:          typ
 		contains_agg: false
 	}
+}
+
+// sequence_value is a value of a sequence with the data type typ, which is
+// always within the range of the type (see Sequence.min and Sequence.max).
+fn sequence_value(mut conn Connection, value i64, typ Type) !Value {
+	if typ.typ == .is_bigint {
+		return new_bigint_value(value)
+	}
+
+	return cast(mut conn, 'for NEXT VALUE FOR', new_bigint_value(value), typ)
 }
 
 // sequence_value_key is where SequenceValuesOperation keeps the value of a

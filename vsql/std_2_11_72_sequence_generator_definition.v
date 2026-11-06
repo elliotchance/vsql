@@ -8,11 +8,18 @@ import time
 // Define an external sequence generator.
 
 type SequenceGeneratorOption = SequenceGeneratorCycleOption
+	| SequenceGeneratorDataTypeOption
 	| SequenceGeneratorIncrementByOption
 	| SequenceGeneratorMaxvalueOption
 	| SequenceGeneratorMinvalueOption
 	| SequenceGeneratorRestartOption
 	| SequenceGeneratorStartWithOption
+
+// SequenceGeneratorDataTypeOption is "AS <data type>", which can only be used
+// by CREATE SEQUENCE.
+struct SequenceGeneratorDataTypeOption {
+	typ Type
+}
 
 struct SequenceGeneratorStartWithOption {
 	start_value Value
@@ -77,7 +84,8 @@ fn (stmt SequenceGeneratorDefinition) create(mut conn Connection) !bool {
 
 	check_sequence_options(stmt.options)!
 	sequence := stmt.sequence(sequence_name)
-	sequence.check()!
+	check_sequence_data_type(sequence.typ)!
+	sequence.check_data_type()!
 	sequence.check_in_range('START WITH', sequence.start_value)!
 	catalog.storage.create_sequence(sequence)!
 
@@ -112,6 +120,9 @@ fn check_sequence_options(options []SequenceGeneratorOption) ! {
 			SequenceGeneratorCycleOption {
 				'CYCLE', ?Value(none)
 			}
+			SequenceGeneratorDataTypeOption {
+				'AS', ?Value(none)
+			}
 		}
 
 		if name in seen {
@@ -134,16 +145,29 @@ fn check_sequence_options(options []SequenceGeneratorOption) ! {
 	}
 }
 
+// check_sequence_data_type returns an error if t can't be the data type of a
+// sequence, which must be an exact numeric type with a scale of 0 (zero).
+//
+// ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>, Syntax Rules, 6
+fn check_sequence_data_type(t Type) ! {
+	if t.typ !in [.is_smallint, .is_integer, .is_bigint, .is_decimal, .is_numeric] || t.scale != 0 {
+		return sqlstate_42601('sequence data type must be an exact numeric with a scale of 0, not ${t}')
+	}
+}
+
 // sequence returns the sequence that the definition describes. It's also used
-// when reading a sequence definition from the file. The INCREMENT BY is 1 by
-// default, and there's no CYCLE. Without a MINVALUE or MAXVALUE, the limit is
+// when reading a sequence definition from the file. The data type is BIGINT by
+// default (so a definition without one is the same as before AS was supported).
+// The INCREMENT BY is 1 by default, and there's no CYCLE. Without a MINVALUE or MAXVALUE, the limit is
 // implicit (see Sequence.min and Sequence.max). Without a START WITH, it's the
 // minimum value of an ascending sequence (or the maximum value of a descending
 // one), which is 1 (or -1) by default.
 //
 // ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 4 and 6-9
 // ISO/IEC 9075-2:2016(E), 9.30, Creation of a sequence generator, Syntax Rules, 13
+// ISO/IEC 9075-2:2016(E), 11.72, <sequence generator definition>, Syntax Rules, 6
 fn (stmt SequenceGeneratorDefinition) sequence(sequence_name Identifier) Sequence {
+	mut typ := new_type('BIGINT', 0, 0)
 	mut increment_by := i64(1)
 	mut has_start_value := false
 	mut start_value := i64(0)
@@ -179,10 +203,14 @@ fn (stmt SequenceGeneratorDefinition) sequence(sequence_name Identifier) Sequenc
 			SequenceGeneratorCycleOption {
 				cycle = option.cycle
 			}
+			SequenceGeneratorDataTypeOption {
+				typ = option.typ
+			}
 		}
 	}
 
 	mut sequence := Sequence{
+		typ:           typ
 		name:          sequence_name
 		unused:        true
 		increment_by:  increment_by

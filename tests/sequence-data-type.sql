@@ -1,0 +1,121 @@
+-- # A sequence has the data type from AS, which is the type of NEXT VALUE FOR.
+/* types */
+CREATE SEQUENCE s1 AS SMALLINT;
+CREATE SEQUENCE s2 AS INTEGER START WITH 5;
+CREATE SEQUENCE s3 START WITH 5 AS BIGINT INCREMENT BY 2;
+CREATE SEQUENCE s4 AS NUMERIC(5);
+CREATE SEQUENCE s5 AS DECIMAL(3, 0);
+CREATE SEQUENCE s6 AS NUMERIC;
+SELECT NEXT VALUE FOR s1, NEXT VALUE FOR s2, NEXT VALUE FOR s3, NEXT VALUE FOR s4, NEXT VALUE FOR s5, NEXT VALUE FOR s6 FROM (VALUES 1) AS t;
+SELECT NEXT VALUE FOR s1, NEXT VALUE FOR s1 + 1 FROM (VALUES 1) AS t;
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE SEQUENCE 1
+-- COL1: 1 (SMALLINT) COL2: 5 (INTEGER) COL3: 5 (BIGINT) COL4: 1 (NUMERIC(5)) COL5: 1 (DECIMAL(3)) COL6: 1 (NUMERIC)
+-- COL1: 2 (SMALLINT) COL2: 3 (SMALLINT)
+
+-- # The data type must be an exact numeric with a scale of 0.
+CREATE SEQUENCE s AS REAL;
+CREATE SEQUENCE s AS NUMERIC(5, 2);
+CREATE SEQUENCE s AS VARCHAR(10);
+CREATE SEQUENCE s AS SMALLINT AS INTEGER;
+-- error 42601: syntax error: sequence data type must be an exact numeric with a scale of 0, not REAL
+-- error 42601: syntax error: sequence data type must be an exact numeric with a scale of 0, not NUMERIC(5, 2)
+-- error 42601: syntax error: sequence data type must be an exact numeric with a scale of 0, not CHARACTER VARYING(10)
+-- error 42601: syntax error: AS is specified more than once
+
+-- # Without a MAXVALUE, the limit is the largest value of the type.
+CREATE SEQUENCE s AS SMALLINT START WITH 32767;
+SELECT NEXT VALUE FOR s FROM (VALUES 1) AS x;
+SELECT NEXT VALUE FOR s FROM (VALUES 1) AS x;
+-- msg: CREATE SEQUENCE 1
+-- COL1: 32767
+-- error 2200H: sequence generator limit exceeded: PUBLIC.S
+
+-- # Without a MINVALUE, a descending sequence goes down to the smallest value
+-- # of the type, then cycles back to the -1.
+CREATE SEQUENCE s AS DECIMAL(2) INCREMENT BY -50 START WITH -49 CYCLE;
+SELECT NEXT VALUE FOR s FROM (VALUES 1) AS x;
+SELECT NEXT VALUE FOR s FROM (VALUES 1) AS x;
+SELECT NEXT VALUE FOR s FROM (VALUES 1) AS x;
+-- msg: CREATE SEQUENCE 1
+-- COL1: -49
+-- COL1: -99
+-- COL1: -1
+
+CREATE SEQUENCE s AS INTEGER INCREMENT BY -1;
+CREATE SEQUENCE t AS INTEGER MAXVALUE 1 MINVALUE -2147483648 INCREMENT BY -1;
+SELECT NEXT VALUE FOR s FROM (VALUES 1) AS x;
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE SEQUENCE 1
+-- COL1: -1
+
+-- # Every option must be a value of the type.
+CREATE SEQUENCE s AS SMALLINT START WITH 32768;
+CREATE SEQUENCE s AS SMALLINT INCREMENT BY 32768;
+CREATE SEQUENCE s AS SMALLINT MINVALUE -32769;
+CREATE SEQUENCE s AS SMALLINT MAXVALUE 32768;
+CREATE SEQUENCE s AS NUMERIC(3) MINVALUE -1000 MAXVALUE 0;
+CREATE SEQUENCE s AS INTEGER START WITH -1 INCREMENT BY -1 MINVALUE -2147483649;
+-- error 42601: syntax error: START WITH (32768) must not be greater than MAXVALUE (32767)
+-- error 42601: syntax error: INCREMENT BY (32768) is out of range for SMALLINT
+-- error 42601: syntax error: MINVALUE (-32769) is out of range for SMALLINT
+-- error 42601: syntax error: MAXVALUE (32768) is out of range for SMALLINT
+-- error 42601: syntax error: MINVALUE (-1000) is out of range for NUMERIC(3)
+-- error 42601: syntax error: MINVALUE (-2147483649) is out of range for INTEGER
+
+-- # ALTER SEQUENCE keeps the data type, so its options must be values of the
+-- # type, and NO MAXVALUE is the largest value of the type.
+CREATE SEQUENCE s AS SMALLINT MAXVALUE 10;
+ALTER SEQUENCE s MAXVALUE 32768;
+ALTER SEQUENCE s INCREMENT BY 40000;
+ALTER SEQUENCE s RESTART WITH 40000;
+ALTER SEQUENCE s NO MAXVALUE RESTART WITH 32767;
+SELECT NEXT VALUE FOR s FROM (VALUES 1) AS x;
+SELECT NEXT VALUE FOR s FROM (VALUES 1) AS x;
+ALTER SEQUENCE s AS INTEGER;
+-- msg: CREATE SEQUENCE 1
+-- error 42601: syntax error: MAXVALUE (32768) is out of range for SMALLINT
+-- error 42601: syntax error: INCREMENT BY (40000) is out of range for SMALLINT
+-- error 42601: syntax error: RESTART WITH (40000) must not be greater than MAXVALUE (10)
+-- msg: ALTER SEQUENCE 1
+-- COL1: 32767
+-- error 2200H: sequence generator limit exceeded: PUBLIC.S
+-- error 42601: syntax error: unexpected AS
+
+-- # The data type is stored with the sequence.
+/* connection 1 */
+CREATE SEQUENCE s AS SMALLINT START WITH 32766;
+CREATE SEQUENCE t AS NUMERIC(4) INCREMENT BY -1;
+CREATE SEQUENCE u START WITH 32766;
+/* connection 2 */
+/* types */
+SELECT NEXT VALUE FOR s, NEXT VALUE FOR t, NEXT VALUE FOR u FROM (VALUES 1) AS x;
+SELECT NEXT VALUE FOR s, NEXT VALUE FOR t, NEXT VALUE FOR u FROM (VALUES 1) AS x;
+SELECT NEXT VALUE FOR s FROM (VALUES 1) AS x;
+-- 1: msg: CREATE SEQUENCE 1
+-- 1: msg: CREATE SEQUENCE 1
+-- 1: msg: CREATE SEQUENCE 1
+-- 2: COL1: 32766 (SMALLINT) COL2: -1 (NUMERIC(4)) COL3: 32766 (BIGINT)
+-- 2: COL1: 32767 (SMALLINT) COL2: -2 (NUMERIC(4)) COL3: 32767 (BIGINT)
+-- 2: error 2200H: sequence generator limit exceeded: PUBLIC.S
+
+-- # vsql out writes the data type, unless it's BIGINT.
+CREATE SEQUENCE s AS NUMERIC(4) INCREMENT BY -1;
+CREATE SEQUENCE t;
+SELECT NEXT VALUE FOR s FROM (VALUES 1) AS x;
+/* out */
+/* in */
+/* types */
+SELECT NEXT VALUE FOR s FROM (VALUES 1) AS x;
+-- msg: CREATE SEQUENCE 1
+-- msg: CREATE SEQUENCE 1
+-- COL1: -1 (NUMERIC(4))
+-- out: CREATE SEQUENCE "PUBLIC"."S" AS NUMERIC(4) START WITH -1 INCREMENT BY -1;
+-- out: ALTER SEQUENCE "PUBLIC"."S" RESTART WITH -1;
+-- out: SELECT NEXT VALUE FOR "PUBLIC"."S" FROM (VALUES 1) AS t;
+-- out: CREATE SEQUENCE "PUBLIC"."T" START WITH 1;
+-- COL1: -2 (NUMERIC(4))

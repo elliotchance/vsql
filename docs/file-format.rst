@@ -703,11 +703,14 @@ SEQUENCE`` statement:
 .. code-block:: sql
 
   CREATE SEQUENCE "PUBLIC"."SEQ1"
+    AS SMALLINT
     START WITH 10
     INCREMENT BY 5
     MINVALUE 10
 
-The ``START WITH`` is the value that ``ALTER SEQUENCE ... RESTART`` goes back
+The ``AS`` is only written when the data type isn't ``BIGINT``, which is the
+data type of a sequence without one (including one from an older version of
+vsql). The ``START WITH`` is the value that ``ALTER SEQUENCE ... RESTART`` goes back
 to. Older versions of vsql didn't write it. Without it, the start value is the
 ``MINVALUE`` (or ``MAXVALUE`` for a descending sequence), otherwise 1.
 

@@ -257,6 +257,11 @@ struct CompileResult {
 	// type is the type of that value, which isn't always the type it's used as
 	// (see check_comparison).
 	null_parameter bool
+	// constant is set when the expression always has the same value for a
+	// statement, because it's only made of literals, parameters (which are known
+	// when it's compiled) and operations on them that only depend on their
+	// operands, such as "1 + 2", "CAST(:x AS INT)" or "ABS(-3)". See fold.
+	constant bool
 }
 
 fn (c CompileResult) with_agg(contains_agg bool) CompileResult {
@@ -264,6 +269,47 @@ fn (c CompileResult) with_agg(contains_agg bool) CompileResult {
 		run:            c.run
 		typ:            c.typ
 		contains_agg:   contains_agg
+		constant:       c.constant
+		null_parameter: c.null_parameter
+	}
+}
+
+// FoldedValue is the value of a constant expression, once it has been
+// evaluated (see fold).
+@[heap]
+struct FoldedValue {
+mut:
+	value ?Value
+}
+
+// fold returns c with a run that only evaluates the expression the first time,
+// if it's constant, and returns the same value after that. It's still evaluated
+// for the first row rather than when it's compiled, so an error (such as "1 /
+// 0") is only raised if there's a row, the same as when it isn't constant. The
+// value keeps its type, so "1.5 + 1.5" is still a NUMERIC.
+//
+// An expression that can add a warning (such as a CAST that truncates a string)
+// mustn't be constant, otherwise the warning would only be added once.
+fn (c CompileResult) fold() CompileResult {
+	if !c.constant {
+		return c
+	}
+
+	run := c.run
+	mut folded := &FoldedValue{}
+	return CompileResult{
+		run:            fn [run, mut folded] (mut conn Connection, data Row, params map[string]Value) !Value {
+			if value := folded.value {
+				return value
+			}
+
+			value := run(mut conn, data, params)!
+			folded.value = value
+			return value
+		}
+		typ:            c.typ
+		contains_agg:   c.contains_agg
+		constant:       true
 		null_parameter: c.null_parameter
 	}
 }

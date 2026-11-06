@@ -62,6 +62,7 @@ fn (e DynamicParameterSpecification) compile(mut c Compiler) !CompileResult {
 		typ:            p.typ
 		contains_agg:   false
 		null_parameter: p.is_null
+		constant:       true
 	}
 }
 

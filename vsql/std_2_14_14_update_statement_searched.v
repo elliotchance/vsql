@@ -161,7 +161,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			// where the value wasn't NULL.
 			check_store_assignment(raw_value, table_column.typ)!
 			column_id := '${row_table_id}.${column_name}'
-			cmp := compare(conn, row.data[column_id], raw_value)!
+			cmp := compare(conn, row.data[column_id] or { Value{} }, raw_value)!
 			if cmp != .is_equal {
 				did_modify = true
 				row2.data[column_id] = cast(mut conn, 'for column ${column_name}', raw_value,

@@ -200,7 +200,7 @@ fn (r Row) bytes_with_limit(t Table, limit i64) ![]u8 {
 	buf.write_u16(u16(t.columns.len))
 
 	for col in t.columns {
-		v := r.data[col.name.sub_entity_name]
+		v := r.data[col.name.sub_entity_name] or { Value{} }
 
 		// If the column is allows for NULL we need to prepend a NULL indicator.
 		// However, there are certain types that we do not need to add a
@@ -223,7 +223,8 @@ fn (r Row) bytes_with_limit(t Table, limit i64) ![]u8 {
 		if !v.is_null || col.typ.typ == .is_boolean {
 			match col.typ.typ {
 				.is_boolean {
-					buf.write_u8(u8(v.bool_value()))
+					// 0 is NULL, whatever else the value holds.
+					buf.write_u8(if v.is_null { 0 } else { u8(v.bool_value()) })
 				}
 				.is_bigint {
 					buf.write_i64(v.int_value())
@@ -378,31 +379,31 @@ fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, ti
 				}
 				.is_date {
 					typ := Type{.is_date, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
+					v.v.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(8)))
 				}
 				.is_time_with_time_zone {
 					typ := Type{.is_time_with_time_zone, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(10))
+					v.v.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(10)))
 				}
 				.is_time_without_time_zone {
 					typ :=
 						Type{.is_time_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
+					v.v.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(8)))
 				}
 				.is_timestamp_with_time_zone {
 					typ :=
 						Type{.is_timestamp_with_time_zone, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(10))
+					v.v.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(10)))
 				}
 				.is_timestamp_without_time_zone {
 					typ :=
 						Type{.is_timestamp_without_time_zone, col.typ.size, col.typ.scale, col.not_null}
-					v.v.time_value = new_time_from_bytes(typ, buf.read_u8s(8))
+					v.v.time_value = box_time(new_time_from_bytes(typ, buf.read_u8s(8)))
 				}
 				.is_numeric, .is_decimal {
 					typ := Type{col.typ.typ, col.typ.size, col.typ.scale, col.not_null}
 					len := buf.read_i16()
-					v.v.numeric_value = new_numeric_from_bytes(typ, buf.read_u8s(len))
+					v.v.numeric_value = box_numeric(new_numeric_from_bytes(typ, buf.read_u8s(len)))
 				}
 			}
 		}
@@ -566,7 +567,7 @@ fn (mut r Row) object_key(t Table) ![]u8 {
 		mut pk := new_empty_bytes()
 
 		for col_name in t.primary_key {
-			write_key_value(mut pk, r.data[col_name], t.column(col_name)!.typ.typ)
+			write_key_value(mut pk, r.data[col_name] or { Value{} }, t.column(col_name)!.typ.typ)
 		}
 
 		r.id = pk.bytes()

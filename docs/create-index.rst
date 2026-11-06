@@ -19,8 +19,10 @@ its ``WHERE`` clause can be true for, when the ``WHERE`` clause compares the
 first columns of the index with a value (such as ``=``, ``<``, ``>=`` or
 ``BETWEEN``), joined by ``AND``. A join uses an index of a table in the same
 way to find the rows that match each row of the other side, with the join
-condition (such as ``ON t2.x = t1.y``). See :doc:`explain` for how the index (or
-the ``PRIMARY KEY``) is chosen.
+condition (such as ``ON t2.x = t1.y``). A query with an ``ORDER BY`` on the
+columns of an index can read the rows in the order of the index, instead of
+sorting them. See :doc:`explain` for how the index (or the ``PRIMARY KEY``) is
+chosen.
 
 The index is always in the schema of the table, so its name can't be qualified.
 The name must be unique among the indexes of the schema, but it can be the same

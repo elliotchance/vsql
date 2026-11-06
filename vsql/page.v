@@ -17,6 +17,12 @@ const kind_not_leaf = 1 // page contains only links to other pages.
 // combination of all fixed width meta for the page object.
 const page_object_prefix_length = 23
 
+// page_object_tid_at and page_object_xid_at are where the tid and xid are in an
+// object, see PageObject.bytes.
+const page_object_tid_at = 4
+
+const page_object_xid_at = 12
+
 pub struct PageObject {
 	// The key is not required to be unique in the page. It becomes unique when
 	// combined with tid. However, no more than two version of the same key can
@@ -153,8 +159,7 @@ fn (p Page) page_size() int {
 }
 
 fn (mut p Page) update(old PageObject, tid u64) ! {
-	mut objects := p.objects()
-	old_versions := p.versions(old.key, objects)
+	old_versions := p.versions(old.key)
 	match old_versions.len {
 		1 {
 			// A record created by this transaction is replaced. Otherwise, there
@@ -184,15 +189,33 @@ fn (mut p Page) update(old PageObject, tid u64) ! {
 	}
 }
 
+// object_len returns the length of the object at offset.
+fn (p Page) object_len(offset int) int {
+	return int(binary.big_endian_u32_at(p.data, offset))
+}
+
+// object_tid returns the tid of the object at offset.
+fn (p Page) object_tid(offset int) u64 {
+	return binary.big_endian_u64_at(p.data, offset + page_object_tid_at)
+}
+
+// object_key returns the key of the object at offset, without copying it. It
+// must not be kept after the page is changed.
+fn (p Page) object_key(offset int) []u8 {
+	return p.data[offset + page_object_prefix_length - 1..page_object_value_at(p.data, offset) - 1]
+}
+
 // versions returns all versions of a record. The result will have 0, 1 or 2
-// elements. versions accepts the objects to prevent callers from needing to
-// call objects again themselves.
-fn (p Page) versions(key []u8, objects []PageObject) []u64 {
+// elements.
+fn (p Page) versions(key []u8) []u64 {
 	mut versions := []u64{}
-	for object in objects {
-		if compare_bytes(object.key, key) == 0 {
-			versions << object.tid
+	end := int(p.used) - page_header_size
+	mut offset := 0
+	for offset < end {
+		if compare_bytes(p.object_key(offset), key) == 0 {
+			versions << p.object_tid(offset)
 		}
+		offset += p.object_len(offset)
 	}
 
 	return versions
@@ -217,7 +240,7 @@ fn (mut p Page) add(obj PageObject) ! {
 	// We return a SQLSTATE 40001 to let the client know it should retry the
 	// entire transaction again.
 	mut objects := p.objects()
-	if p.versions(obj.key, objects).len >= 2 {
+	if p.versions(obj.key).len >= 2 {
 		return sqlstate_40001('avoiding concurrent write on individual row')
 	}
 
@@ -265,10 +288,15 @@ fn (mut p Page) delete(key []u8, tid u64) bool {
 }
 
 fn (p Page) get(key []u8, tid u64) PageObject {
-	for object in p.objects() {
-		if compare_bytes(key, object.key) == 0 && object.tid == tid {
+	end := int(p.used) - page_header_size
+	mut offset := 0
+	for offset < end {
+		if p.object_tid(offset) == tid && compare_bytes(key, p.object_key(offset)) == 0 {
+			_, object := parse_page_object(p.data[offset..])
+
 			return object
 		}
+		offset += p.object_len(offset)
 	}
 
 	return PageObject{}
@@ -284,22 +312,19 @@ fn (p Page) get(key []u8, tid u64) PageObject {
 // add(). An xid of 0 always succeeds, which is how a rollback or recovery makes
 // the object visible again.
 fn (mut p Page) expire(key []u8, tid u64, xid u64) !bool {
+	end := int(p.used) - page_header_size
 	mut offset := 0
 	mut modified := false
-	for mut object in p.objects() {
-		if compare_bytes(key, object.key) == 0 && object.tid == tid {
-			if xid != 0 && object.xid != 0 && object.xid != xid {
+	for offset < end {
+		if p.object_tid(offset) == tid && compare_bytes(key, p.object_key(offset)) == 0 {
+			object_xid := binary.big_endian_u64_at(p.data, offset + page_object_xid_at)
+			if xid != 0 && object_xid != 0 && object_xid != xid {
 				return sqlstate_40001('avoiding concurrent write on individual row')
 			}
-			object.xid = xid
+			binary.big_endian_put_u64_at(mut p.data, xid, offset + page_object_xid_at)
 			modified = true
 		}
-
-		s := object.bytes()
-		for i in 0 .. s.len {
-			p.data[offset] = s[i]
-			offset++
-		}
+		offset += p.object_len(offset)
 	}
 
 	return modified

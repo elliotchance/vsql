@@ -28,7 +28,8 @@ catalog when ``features()`` is called (the "Catalog Lookup" extent of checking),
 such as the same table in the subquery of a ``DELETE`` (F781), or a ``FOREIGN
 KEY`` whose columns have different data types than the columns it references
 (T201). These names are only resolved in a query, a cursor, a ``DELETE``, an
-``UPDATE``, a ``CREATE TABLE`` or an ``ALTER TABLE``. Nothing is flagged for a
+``INSERT`` from a query, an ``UPDATE``, a ``CREATE TABLE`` or an ``ALTER
+TABLE``. Nothing is flagged for a
 name that can't be resolved yet, such as for a table that doesn't exist, or
 anything after a dynamic parameter (which doesn't have a value yet).
 

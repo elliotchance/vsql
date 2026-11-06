@@ -199,12 +199,32 @@ fn flag_if(mut yylex YYLexer, cond bool, feature string) {
 // ISO/IEC 9075-11:2008(E), 5.37, REFERENTIAL_CONSTRAINTS view, Conformance Rules, 1
 // ISO/IEC 9075-11:2008(E), 5.61, TABLES view, Conformance Rules, 1
 fn flag_identifier(mut yylex YYLexer, identifier string) {
+	flag_if(mut yylex, is_long_identifier(identifier), 'F391')
+}
+
+// is_long_identifier is true if an identifier (with the quotes of a <delimited
+// identifier>) needs F391, see flag_identifier.
+fn is_long_identifier(identifier string) bool {
 	if identifier.starts_with('"') {
 		body := identifier[1..identifier.len - 1].replace('""', '"')
-		flag_if(mut yylex, body.runes().len > 18, 'F391')
-	} else {
-		flag_if(mut yylex, identifier.runes().len >= 18, 'F391')
+		return body.runes().len > 18
 	}
+
+	return identifier.runes().len >= 18
+}
+
+// name_features returns F391 if any of the names (each as it's written, with the
+// quotes of a <delimited identifier>) is too long for Core SQL. It's for the
+// names in a module that are only read by ModuleTokens, rather than the
+// grammar: the <SQL-client module name>, <schema name> and <module
+// authorization identifier>, a <procedure name>, a <host parameter name>, and in
+// a statement, a <statement name>, a <descriptor name> or a <cursor name>. An
+// <identifier> that's in a <character string literal> (such as a descriptor
+// name) isn't flagged, since it's not a token of the SQL language.
+//
+// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Conformance Rules, 1 and 2
+fn name_features(names []string) []string {
+	return if names.any(is_long_identifier(it)) { ['F391'] } else { []string{} }
 }
 
 // flag_datetime_literal flags the value of a <time literal> (or a <timestamp

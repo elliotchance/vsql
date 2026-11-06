@@ -18,25 +18,37 @@ struct KeyCondition {
 }
 
 // key_operation reads only the rows of a table that the WHERE clause can be
-// true for, using the PRIMARY KEY or an index, whichever has the most leading
-// columns compared with = (and then a range on the next column). The PRIMARY
-// KEY is used when they're the same, then the index that's first by name. It's
-// none when neither can be used, because there is no condition on the first
-// column of any of them.
+// true for (see best_key_operation).
 //
 // base_table is the stored table and table is how the query names it, which is
 // different with a correlation name, such as "t AS x (a, b)".
-fn key_operation(body QuerySpecification, base_table Table, table Table, params map[string]Value, mut conn Connection) ?PlanOperation {
-	factors := where_factors(body)
+fn key_operation(body QuerySpecification, base_table Table, table Table, params map[string]Value, mut conn Connection) ?&KeyOperation {
+	where := body.table_expression.where_clause or { return none }
+
+	return best_key_operation(and_factors(where), base_table, table, map[string]Table{},
+		params, mut conn)
+}
+
+// best_key_operation reads only the rows of a table that the conditions in
+// factors can be true for, using the PRIMARY KEY or an index, whichever has the
+// most leading columns compared with = (and then a range on the next column).
+// The PRIMARY KEY is used when they're the same, then the index that's first by
+// name. It's none when neither can be used, because there is no condition on the
+// first column of any of them.
+//
+// A value that a column is compared with can only use the columns of
+// value_tables, which are the other tables of a join (see JoinOperation). They
+// come from the row that's passed to KeyOperation.read.
+fn best_key_operation(factors []BooleanTest, base_table Table, table Table, value_tables map[string]Table, params map[string]Value, mut conn Connection) ?&KeyOperation {
 	if factors.len == 0 {
 		return none
 	}
 
-	mut best := ?PlanOperation(none)
+	mut best := ?&KeyOperation(none)
 	mut best_score := 0
 	if base_table.primary_key.len > 0 {
 		conditions := key_conditions_of(factors, base_table, table, base_table.primary_key,
-			params, mut conn)
+			value_tables, params, mut conn)
 		best_score = key_score(conditions)
 		if best_score > 0 {
 			best = new_primary_key_operation(base_table, conditions, params, conn)
@@ -46,7 +58,7 @@ fn key_operation(body QuerySpecification, base_table Table, table Table, params 
 	catalog := conn.catalog_for(base_table.name)
 	for index in catalog.storage.table_indexes(base_table.id) {
 		conditions := key_conditions_of(factors, base_table, table, index.columns.map(it.name),
-			params, mut conn)
+			value_tables, params, mut conn)
 		score := key_score(conditions)
 		if score > best_score {
 			best = new_index_operation(base_table, index, conditions, params, conn)
@@ -57,18 +69,16 @@ fn key_operation(body QuerySpecification, base_table Table, table Table, params 
 	return best
 }
 
-// where_factors are the parts of the WHERE clause when it's one or more
-// conditions joined by AND. Otherwise, there are none, since any row can be true
-// for an OR.
-fn where_factors(body QuerySpecification) []BooleanTest {
-	where := body.table_expression.where_clause or { return [] }
-	if _ := where.expr {
+// and_factors are the parts of a condition when it's one or more conditions
+// joined by AND. Otherwise, there are none, since any row can be true for an OR.
+fn and_factors(condition BooleanValueExpression) []BooleanTest {
+	if _ := condition.expr {
 		return []
 	}
 
 	// The last part of an AND is first.
 	mut factors := []BooleanTest{}
-	mut term := where.term
+	mut term := condition.term
 	for {
 		factors.prepend(term.factor)
 		next := term.term or { break }
@@ -80,11 +90,11 @@ fn where_factors(body QuerySpecification) []BooleanTest {
 
 // key_conditions_of are the conditions (in factors) for the key_columns of
 // base_table.
-fn key_conditions_of(factors []BooleanTest, base_table Table, table Table, key_columns []string, params map[string]Value, mut conn Connection) []KeyCondition {
+fn key_conditions_of(factors []BooleanTest, base_table Table, table Table, key_columns []string, value_tables map[string]Table, params map[string]Value, mut conn Connection) []KeyCondition {
 	mut conditions := []KeyCondition{}
 	for factor in factors {
-		conditions << key_conditions(factor, base_table, table, key_columns, params, mut
-			conn)
+		conditions << key_conditions(factor, base_table, table, key_columns, value_tables,
+			params, mut conn)
 	}
 
 	return conditions
@@ -109,7 +119,7 @@ fn key_score(conditions []KeyCondition) int {
 
 // key_conditions are the conditions of one part of an AND. BETWEEN is the same
 // as two conditions.
-fn key_conditions(test BooleanTest, base_table Table, table Table, key_columns []string, params map[string]Value, mut conn Connection) []KeyCondition {
+fn key_conditions(test BooleanTest, base_table Table, table Table, key_columns []string, value_tables map[string]Table, params map[string]Value, mut conn Connection) []KeyCondition {
 	if _ := test.value {
 		return []
 	}
@@ -128,11 +138,11 @@ fn key_conditions(test BooleanTest, base_table Table, table Table, key_columns [
 		ComparisonPredicate {
 			if predicate.op != .not_equal {
 				if condition := key_condition(predicate.left, predicate.op, predicate.right,
-					base_table, table, key_columns, params, mut conn)
+					base_table, table, key_columns, value_tables, params, mut conn)
 				{
 					conditions << condition
 				} else if condition := key_condition(predicate.right, predicate.op.reverse(),
-					predicate.left, base_table, table, key_columns, params, mut conn)
+					predicate.left, base_table, table, key_columns, value_tables, params, mut conn)
 				{
 					conditions << condition
 				}
@@ -141,12 +151,12 @@ fn key_conditions(test BooleanTest, base_table Table, table Table, key_columns [
 		BetweenPredicate {
 			if !predicate.not && !predicate.symmetric {
 				if condition := key_condition(predicate.expr, .greater_than_or_equal,
-					predicate.left, base_table, table, key_columns, params, mut conn)
+					predicate.left, base_table, table, key_columns, value_tables, params, mut conn)
 				{
 					conditions << condition
 				}
 				if condition := key_condition(predicate.expr, .less_than_or_equal, predicate.right,
-					base_table, table, key_columns, params, mut conn)
+					base_table, table, key_columns, value_tables, params, mut conn)
 				{
 					conditions << condition
 				}
@@ -159,11 +169,12 @@ fn key_conditions(test BooleanTest, base_table Table, table Table, key_columns [
 }
 
 // key_condition is "column op value", if column is one of key_columns (a column
-// of the PRIMARY KEY or an index) and value doesn't depend on the row. The value can be any expression that
-// doesn't refer to a column (including an outer reference), such as a literal,
-// a parameter or "1 + 2". The types must be comparable, otherwise the WHERE
-// clause has to raise the error, even if no rows would be read.
-fn key_condition(column_side RowValueConstructorPredicand, op ComparisonOperator, value_side RowValueConstructorPredicand, base_table Table, table Table, key_columns []string, params map[string]Value, mut conn Connection) ?KeyCondition {
+// of the PRIMARY KEY or an index) and value doesn't depend on the row. The value
+// can be any expression that doesn't refer to a column (including an outer
+// reference), such as a literal, a parameter or "1 + 2", except a column of
+// value_tables. The types must be comparable, otherwise the WHERE clause (or
+// join condition) has to raise the error, even if no rows would be read.
+fn key_condition(column_side RowValueConstructorPredicand, op ComparisonOperator, value_side RowValueConstructorPredicand, base_table Table, table Table, key_columns []string, value_tables map[string]Table, params map[string]Value, mut conn Connection) ?KeyCondition {
 	column := new_column_identifier(column_side.pstr(params)) or { return none }
 	if column.custom_id != '' || !column.is_column_of_table(conn, table) {
 		return none
@@ -200,8 +211,12 @@ fn key_condition(column_side RowValueConstructorPredicand, op ComparisonOperator
 	mut c := Compiler{
 		conn:                   conn
 		params:                 params
-		tables:                 {
-			'': Table{}
+		tables:                 if value_tables.len > 0 {
+			value_tables
+		} else {
+			{
+				'': Table{}
+			}
 		}
 		next_value_not_allowed: 'WHERE'
 	}
@@ -235,42 +250,99 @@ fn (op ComparisonOperator) reverse() ComparisonOperator {
 	}
 }
 
-// A PrimaryKeyOperation reads the rows of a table that are in the range of the
-// PRIMARY KEY that the conditions allow.
-struct PrimaryKeyOperation {
-	table      Table
+// A KeyOperation reads the rows of a table that are in the range of its
+// PRIMARY KEY, or an index, that the conditions allow.
+struct KeyOperation {
+	table Table
+	// index is none for the PRIMARY KEY.
+	index      ?Index
 	conditions []KeyCondition
 	params     map[string]Value
 mut:
 	conn &Connection
 }
 
-fn new_primary_key_operation(table Table, conditions []KeyCondition, params map[string]Value, conn &Connection) &PrimaryKeyOperation {
-	return &PrimaryKeyOperation{table, conditions, params, conn}
+fn new_primary_key_operation(table Table, conditions []KeyCondition, params map[string]Value, conn &Connection) &KeyOperation {
+	return &KeyOperation{table, none, conditions, params, conn}
 }
 
-fn (o &PrimaryKeyOperation) str() string {
-	return 'PRIMARY KEY ${o.table.name} (${key_operation_columns(o.table, true)}) RANGE ${o.conditions.map(it.text).join(' AND ')}'
+fn new_index_operation(table Table, index Index, conditions []KeyCondition, params map[string]Value, conn &Connection) &KeyOperation {
+	return &KeyOperation{table, index, conditions, params, conn}
 }
 
-fn (o &PrimaryKeyOperation) columns() Columns {
+fn (o &KeyOperation) str() string {
+	key := if index := o.index { 'INDEX ${index.name} ON' } else { 'PRIMARY KEY' }
+
+	return '${key} ${o.table.name} (${key_operation_columns(o.table, true)}) RANGE ${o.conditions.map(it.text).join(' AND ')}'
+}
+
+fn (o &KeyOperation) columns() Columns {
 	return key_operation_columns(o.table, false)
 }
 
-fn (mut o PrimaryKeyOperation) execute(_ []Row) ![]Row {
+fn (mut o KeyOperation) execute(_ []Row) ![]Row {
+	return o.read(Row{})
+}
+
+// read is the same as execute, except that the values of the conditions can use
+// the columns of row (see best_key_operation).
+//
+// With an index, the rows are in the order of the index. An entry is visible
+// when the version of the row that it was written for is, so the row has a
+// visible version. Entries that aren't visible are skipped, because the version
+// of the row that is visible has a different entry (or none).
+fn (mut o KeyOperation) read(row Row) ![]Row {
 	mut key_columns := []KeyColumn{}
-	for name in o.table.primary_key {
-		key_columns << KeyColumn{
-			typ: o.table.column(name)!.typ
+	mut prefix := row_key_prefix(o.table.id)
+	if index := o.index {
+		prefix = index_entry_prefix(index.id)
+		for column in index.columns {
+			key_columns << KeyColumn{
+				typ:      o.table.column(column.name)!.typ
+				nullable: true
+				desc:     column.desc
+			}
+		}
+	} else {
+		for name in o.table.primary_key {
+			key_columns << KeyColumn{
+				typ: o.table.column(name)!.typ
+			}
 		}
 	}
-	min, max := key_range(mut o.conn, o.params, row_key_prefix(o.table.id), key_columns,
-		o.conditions)
+	min, max := key_range(mut o.conn, o.params, row, prefix, key_columns, o.conditions) or {
+		return []
+	}
 
 	mut catalog := o.conn.catalog_for(o.table.name)
 	tid := catalog.storage.transaction_id
 	mut transaction_ids := catalog.storage.header.active_transaction_ids
 
+	index := o.index or {
+		return o.read_rows(mut catalog, min, max, tid, mut transaction_ids)
+	}
+
+	mut rows := []Row{}
+	mut entries := catalog.storage.btree.new_range_iterator(min, max)
+	for {
+		entry := entries.next() or { break }
+		if !object_is_visible(entry.tid, entry.xid, tid, mut transaction_ids) {
+			continue
+		}
+
+		mut key := row_key_prefix(o.table.id)
+		key << index.entry_row_id(o.table, entry.key)!
+		rows << o.read_rows(mut catalog, key, key, tid, mut transaction_ids)!
+	}
+	if err := entries.err {
+		return err
+	}
+
+	return rows
+}
+
+// read_rows are the visible rows from min to max (inclusive).
+fn (o &KeyOperation) read_rows(mut catalog CatalogConnection, min []u8, max []u8, tid u64, mut transaction_ids TransactionIDs) ![]Row {
 	mut rows := []Row{}
 	ids := o.table.column_ids()
 	mut iter := catalog.storage.btree.new_range_iterator(min, max)
@@ -287,79 +359,7 @@ fn (mut o PrimaryKeyOperation) execute(_ []Row) ![]Row {
 	return rows
 }
 
-// An IndexOperation reads the entries of an index that are in the range that
-// the conditions allow, and then the row of each entry.
-struct IndexOperation {
-	table      Table
-	index      Index
-	conditions []KeyCondition
-	params     map[string]Value
-mut:
-	conn &Connection
-}
-
-fn new_index_operation(table Table, index Index, conditions []KeyCondition, params map[string]Value, conn &Connection) &IndexOperation {
-	return &IndexOperation{table, index, conditions, params, conn}
-}
-
-fn (o &IndexOperation) str() string {
-	return 'INDEX ${o.index.name} ON ${o.table.name} (${key_operation_columns(o.table, true)}) RANGE ${o.conditions.map(it.text).join(' AND ')}'
-}
-
-fn (o &IndexOperation) columns() Columns {
-	return key_operation_columns(o.table, false)
-}
-
-// execute reads the rows in the order of the index. An entry is visible when
-// the version of the row that it was written for is, so the row has a visible
-// version. Entries that aren't visible are skipped, because the version of the
-// row that is visible has a different entry (or none).
-fn (mut o IndexOperation) execute(_ []Row) ![]Row {
-	mut key_columns := []KeyColumn{}
-	for column in o.index.columns {
-		key_columns << KeyColumn{
-			typ:      o.table.column(column.name)!.typ
-			nullable: true
-			desc:     column.desc
-		}
-	}
-	min, max := key_range(mut o.conn, o.params, index_entry_prefix(o.index.id), key_columns,
-		o.conditions)
-
-	mut catalog := o.conn.catalog_for(o.table.name)
-	tid := catalog.storage.transaction_id
-	mut transaction_ids := catalog.storage.header.active_transaction_ids
-
-	mut rows := []Row{}
-	mut entries := catalog.storage.btree.new_range_iterator(min, max)
-	for {
-		entry := entries.next() or { break }
-		if !object_is_visible(entry.tid, entry.xid, tid, mut transaction_ids) {
-			continue
-		}
-
-		mut key := row_key_prefix(o.table.id)
-		key << o.index.entry_row_id(o.table, entry.key)!
-		mut iter := catalog.storage.btree.new_range_iterator(key, key)
-		for {
-			object := iter.next() or { break }
-			if object_is_visible(object.tid, object.xid, tid, mut transaction_ids) {
-				rows << new_row_from_bytes(o.table, object.value, object.tid)
-			}
-		}
-		if err := iter.err {
-			return err
-		}
-	}
-	if err := entries.err {
-		return err
-	}
-
-	return rows
-}
-
-// key_operation_columns are the columns of a table read by a PrimaryKeyOperation
-// or IndexOperation. EXPLAIN only shows (pretty) the names, without the table,
+// key_operation_columns are the columns of a table read by a KeyOperation. EXPLAIN only shows (pretty) the names, without the table,
 // because the full names would make the output extra verbose.
 fn key_operation_columns(table Table, pretty bool) Columns {
 	mut columns := []Column{}
@@ -411,8 +411,14 @@ fn (c KeyColumn) part(value []u8) []u8 {
 // bound of "<"), since the WHERE clause is still applied. A column with a lower
 // or upper bound never includes NULL, because a comparison with NULL is never
 // true.
-fn key_range(mut conn Connection, params map[string]Value, prefix []u8, columns []KeyColumn, conditions []KeyCondition) ([]u8, []u8) {
+//
+// The values of the conditions can use the columns of row. It's none when one
+// of them is NULL, since no row can be true for that condition, so none need to
+// be read.
+fn key_range(mut conn Connection, params map[string]Value, row Row, prefix []u8, columns []KeyColumn, conditions []KeyCondition) ?([]u8, []u8) {
 	mut key := prefix.clone()
+	mut min := []u8{}
+	mut max := []u8{}
 	for i, column in columns {
 		mut equal := []u8{}
 		mut lower := []u8{}
@@ -422,22 +428,30 @@ fn key_range(mut conn Connection, params map[string]Value, prefix []u8, columns 
 				continue
 			}
 
-			value := condition_key_value(mut conn, params, condition, column.typ) or { continue }
+			value := condition.value.run(mut conn, row, params) or { continue }
+			if value.is_null {
+				return none
+			}
+			encoded := key_value_bytes(mut conn, value, column.typ) or { continue }
 			match condition.op {
 				.equal {
-					equal = value.clone()
+					equal = encoded.clone()
 				}
 				.greater_than, .greater_than_or_equal {
-					if lower.len == 0 || compare_bytes(value, lower) > 0 {
-						lower = value.clone()
+					if lower.len == 0 || compare_bytes(encoded, lower) > 0 {
+						lower = encoded.clone()
 					}
 				}
 				else {
-					if upper.len == 0 || compare_bytes(value, upper) < 0 {
-						upper = value.clone()
+					if upper.len == 0 || compare_bytes(encoded, upper) < 0 {
+						upper = encoded.clone()
 					}
 				}
 			}
+		}
+
+		if min.len > 0 {
+			continue
 		}
 
 		if equal.len > 0 {
@@ -446,32 +460,32 @@ fn key_range(mut conn Connection, params map[string]Value, prefix []u8, columns 
 		}
 
 		if lower.len == 0 && upper.len == 0 {
-			break
+			min = key.clone()
+			max = next_key(key)
+			continue
 		}
 
 		// A DESC column has the largest values first.
-		mut min := key.clone()
+		min = key.clone()
 		min << column.part(if column.desc { upper } else { lower })
-		mut max := key.clone()
+		max = key.clone()
 		max << column.part(if column.desc { lower } else { upper })
+		max = next_key(max)
+	}
 
-		return min, next_key(max)
+	if min.len > 0 {
+		return min, max
 	}
 
 	return key, next_key(key)
 }
 
-// condition_key_value is the value of the condition encoded like the column in the key
-// (see write_key_value), if it can be used. A condition is ignored (as if it
-// wasn't there) if the value can't be calculated or is NULL, or if the column
-// can't hold the value exactly, such as 1.5 for an INTEGER, or a number that's
-// too big. The WHERE clause still decides which rows are returned.
-fn condition_key_value(mut conn Connection, params map[string]Value, condition KeyCondition, typ Type) ?[]u8 {
-	value := condition.value.run(mut conn, Row{}, params) or { return none }
-	if value.is_null {
-		return none
-	}
-
+// key_value_bytes is the value encoded like the column in the key (see
+// write_key_value), if it can be used. A condition is ignored (as if it wasn't
+// there) if the column can't hold the value exactly, such as 1.5 for an
+// INTEGER, or a number that's too big. The WHERE clause still decides which rows
+// are returned.
+fn key_value_bytes(mut conn Connection, value Value, typ Type) ?[]u8 {
 	stored := exact_cast(mut conn, value, typ) or { return none }
 	mut buf := new_empty_bytes()
 	write_key_value(mut buf, stored, typ.typ)

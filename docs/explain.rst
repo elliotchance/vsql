@@ -77,6 +77,26 @@ most leading columns compared with ``=`` (and then a range of the next column)
 is used. The ``PRIMARY KEY`` is used when they're the same, then the index
 that's first by name.
 
+There's no ``ORDER BY`` in the plan when the rows are already read in that
+order, so they don't need to be sorted. A ``TABLE`` is read in the order of the
+``PRIMARY KEY``, and an ``INDEX`` in the order of the index. This works when the
+query reads one table (without a correlation name, ``GROUP BY`` or aggregate
+function) and each sort key is a column of the table, in the same order and
+direction as the leading columns of the key. A column that the ``WHERE`` clause
+compares with ``=`` (that's used for the range) can be left out. When the
+``WHERE`` clause doesn't use a key, an index in the order of the sort keys is
+read instead of the table:
+
+.. code-block:: sql
+
+   CREATE INDEX products_price_name ON products (price DESC, name);
+   EXPLAIN SELECT name FROM products
+   ORDER BY price DESC, name
+   FETCH FIRST 2 ROWS ONLY;
+   -- EXPLAIN: INDEX ":memory:".PUBLIC.PRODUCTS_PRICE_NAME ON ":memory:".PUBLIC.PRODUCTS (PRODUCT_ID INTEGER NOT NULL, NAME CHARACTER VARYING(50), PRICE NUMERIC(10, 2))
+   -- EXPLAIN: FETCH FIRST 2 ROWS ONLY
+   -- EXPLAIN: EXPR (NAME CHARACTER VARYING(50))
+
 A join reads every row of one side (the left side, or the right side of a
 ``RIGHT JOIN``) and, for each of them, the rows of the other side that can match
 it. When the other side is a table, its ``PRIMARY KEY`` or an index is used in

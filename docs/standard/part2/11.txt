@@ -3,7 +3,7 @@
 # 11, Schema definition and manipulation
 11                       container    - -
 # 11.1, <schema definition>
-11.1                     partial      vsql/std_2_11_1_schema_definition.v tests/create-schema.sql the only <schema element>s are tables and sequences, with no forward references (#887), and there's no AUTHORIZATION (#289) or <schema character set or path>
+11.1                     partial      vsql/std_2_11_1_schema_definition.v tests/create-schema.sql the only <schema element>s are tables and sequences, and there's no AUTHORIZATION (#289) or <schema character set or path>
 11.1/SR/1                missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/SR/2                missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)
 11.1/SR/2.a              missing      - - AUTHORIZATION isn't supported, a schema has no owner (#289)

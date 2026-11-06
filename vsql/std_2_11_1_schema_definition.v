@@ -47,13 +47,19 @@ fn (stmt SchemaDefinition) execute(mut conn Connection, _ map[string]Value, elap
 	return new_result_msg('CREATE SCHEMA 1', elapsed_parse, t.elapsed())
 }
 
-// create_elements creates each schema element, in the order they're written, so
-// a FOREIGN KEY can only reference a table before it (#887). The new schema (and
-// its catalog) is the implicit qualifier of every name in an element, which is
-// the same as it being the default for the SQL-session until they're all
-// created.
+// create_elements creates each schema element, in the order they're written.
+// The new schema (and its catalog) is the implicit qualifier of every name in an
+// element, which is the same as it being the default for the SQL-session until
+// they're all created.
+//
+// The elements aren't in an order, the schema just includes the descriptor that
+// each of them creates. So the tables are created without their foreign keys,
+// which are added once every element has been created, so that a FOREIGN KEY
+// can reference a table that's after it, and two tables can reference each
+// other.
 //
 // ISO/IEC 9075-2:2016(E), 5.4, Names and identifiers, Syntax Rules, 4.b, 13.d.ii and 14.c
+// ISO/IEC 9075-2:2016(E), 11.1, <schema definition>, General Rules, 1.e
 fn (stmt SchemaDefinition) create_elements(mut conn Connection, schema Identifier) ! {
 	current_catalog := conn.current_catalog
 	current_schema := conn.current_schema
@@ -64,6 +70,10 @@ fn (stmt SchemaDefinition) create_elements(mut conn Connection, schema Identifie
 		conn.current_schema = current_schema
 	}
 
+	// The names of the foreign keys that haven't been added yet are reserved,
+	// so that another table can't use them.
+	mut reserved_names := []string{}
+	mut tables := []Table{}
 	for element in stmt.elements {
 		match element {
 			SequenceGeneratorDefinition {
@@ -74,9 +84,23 @@ fn (stmt SchemaDefinition) create_elements(mut conn Connection, schema Identifie
 			TableDefinition {
 				// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 6
 				check_schema_element_name(conn, element.table_name)!
-				_ := element.create(mut conn)!
+				created, table := element.create_table(mut conn, true, reserved_names)!
+				if created && table.foreign_keys.len > 0 {
+					reserved_names << table.foreign_keys.map(it.name)
+					tables << table
+				}
 			}
 		}
+	}
+
+	for table in tables {
+		mut catalog := conn.catalog_for(table.name)
+		mut new_table := Table{
+			...catalog.storage.table(table.name.storage_id())
+			foreign_keys: table.foreign_keys
+		}
+		resolve_foreign_keys(mut conn, mut new_table)!
+		catalog.storage.update_table(new_table)!
 	}
 }
 

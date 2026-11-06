@@ -1862,6 +1862,91 @@ fn test_crash_point() ! {
 	assert stderr == 'first crash point passed\n'
 }
 
+// The database file isn't synced for each statement, so when the power fails it
+// may have lost statements that are in the log. This puts the file back to how it
+// was on the disk to simulate that.
+fn test_wal_recovers_statements_lost_from_the_file() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-wal-${os.getpid()}.vsql')
+	defer {
+		for file in [path, wal_path(path), session_path(path)] {
+			os.rm(file) or {}
+		}
+	}
+
+	mut db := open(path)!
+	db.query('CREATE TABLE t (x INT)')!
+	db.close()
+
+	// Opening the file empties the log, so now the file has everything.
+	db = open(path)!
+	assert !wal_has_statements(path)
+	on_disk := os.read_bytes(path)!
+
+	db.query('INSERT INTO t (x) VALUES (1)')!
+	db.query('INSERT INTO t (x) VALUES (2)')!
+	assert wal_has_statements(path)
+	assert !wal_needs_recovery(path)
+
+	// Nothing is copied while there's another connection.
+	mut other := open(path)!
+	assert wal_has_statements(path)
+	other.close()
+	db.close()
+
+	os.write_file_array(path, on_disk)!
+	db = open(path)!
+	assert !wal_has_statements(path)
+	assert db.query('SELECT * FROM t')!.rows.len == 2
+
+	// The log can be used again.
+	db.query('INSERT INTO t (x) VALUES (3)')!
+	db.close()
+	db = open(path)!
+	assert db.query('SELECT * FROM t')!.rows.len == 3
+	db.close()
+
+	// A log isn't kept for a file that has been deleted.
+	db = open(path)!
+	db.query('INSERT INTO t (x) VALUES (4)')!
+	db.close()
+	os.rm(path)!
+	db = open(path)!
+	db.query('CREATE TABLE t (x INT)')!
+	assert db.query('SELECT * FROM t')!.rows.len == 0
+	db.close()
+}
+
+// When copying the log fails, or the session lock can't be changed back to
+// shared afterwards, the connection fails but the file can still be opened.
+fn test_wal_recover_log_fails() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-wal-fails-${os.getpid()}.vsql')
+	defer {
+		for file in [path, wal_path(path), session_path(path)] {
+			os.rm(file) or {}
+		}
+	}
+
+	mut db := open(path)!
+	db.query('CREATE TABLE t (x INT)')!
+	db.close()
+
+	for fault in ['recover', 'session_shared'] {
+		arm_fault(fault, 1)!
+		if _ := open(path) {
+			assert false, fault
+		}
+		disarm_faults()
+
+		db = open(path)!
+		db.query('INSERT INTO t (x) VALUES (1)')!
+		db.close()
+	}
+
+	db = open(path)!
+	assert db.query('SELECT * FROM t')!.rows.len == 2
+	db.close()
+}
+
 // expire returns -1 when there's no object with the key and tid.
 fn test_btree_expire_missing_object() ! {
 	mut btree := new_btree(new_memory_pager(), 256)

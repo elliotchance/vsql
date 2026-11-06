@@ -88,6 +88,32 @@ def test_drop_table(ui, db_file):
     expect(ui.sidebar_table('my <t>')).to_have_count(0)
 
 
+def test_indexes(page, db_file, start_app):
+    # The indexes of a table are under it, with their columns. The menu of an
+    # index drops it, once it's confirmed.
+    cli(db_file, 'CREATE TABLE t (x INT, y INT); CREATE INDEX t_y ON t (y DESC, x); CREATE INDEX t_x ON t (x); CREATE INDEX "my <i>" ON foo.bar (y);')
+    ui = AppPage(page, start_app(db_file))
+    expect(ui.sidebar_indexes('T')).to_have_text([re.compile(r'T_X \(X\)$'), re.compile(r'T_Y \(Y DESC, X\)$')])
+    expect(ui.sidebar_indexes('T').nth(1)).to_have_attribute(
+        'title', 'CREATE INDEX "T_Y" ON "PUBLIC"."T" ("Y" DESC, "X");')
+    expect(ui.sidebar_indexes('my <t>')).to_have_count(0)
+    expect(ui.sidebar_indexes('BAR', schema='FOO')).to_have_text([re.compile(r'my <i> \(Y\)$')])
+
+    ui.index_menu('T_Y').get_by_role('button', name='Drop index').click()
+    expect(ui.confirm_sql).to_have_text('DROP INDEX PUBLIC.T_Y')
+    ui.confirm.get_by_role('link', name='Cancel').click()
+    expect(ui.sidebar_indexes('T')).to_have_count(2)
+
+    ui.index_menu('my <i>', schema='FOO').get_by_role('button', name='Drop index').click()
+    expect(ui.confirm_sql).to_have_text('DROP INDEX FOO."my <i>"')
+    ui.run_change()
+    expect(ui.sidebar_indexes('BAR', schema='FOO')).to_have_count(0)
+    assert 'my <i>' not in cli(db_file, 'EXPLAIN SELECT * FROM foo.bar WHERE y;')
+
+    # The table menu is still only the table's.
+    expect(ui.table_menu('T').get_by_role('button')).to_have_count(4)
+
+
 def test_table_menu(ui):
     # INFORMATION_SCHEMA and VSQL_APP don't have a menu.
     for schema in ['INFORMATION_SCHEMA', 'VSQL_APP']:

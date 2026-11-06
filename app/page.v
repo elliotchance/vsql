@@ -208,7 +208,7 @@ fn write_history_list(mut sb strings.Builder, entries []History, open bool) {
 // table (other than in INFORMATION_SCHEMA, which can't be changed, and VSQL_APP,
 // which the app needs) has a menu to import, export or drop it, and a schema to add a table to it
 // (see create_table.v). They run in the file of the catalog, so it's not in the
-// SQL.
+// SQL. The indexes of a table are under it (see write_indexes).
 fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_tabs []Tab, tab Tab) ! {
 	// A local build has no version.
 	version := if vsql.version() == '' { 'v0.0.0' } else { vsql.version() }
@@ -217,8 +217,13 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 		set_catalog(mut conn, catalog_name)!
 		mut catalog := conn.catalog()
 		mut schemas := map[string][]vsql.Identifier{}
+		// The indexes of each table, by its schema and name.
+		mut indexes := map[string][]vsql.Index{}
 		for schema in catalog.schemas()! {
 			schemas[schema.name] = []
+			for index in catalog.indexes(schema.name)! {
+				indexes['${schema.name}.${index.table_name.entity_name}'] << index
+			}
 			for table in catalog.schema_tables(schema.name)! {
 				// The tab of the table runs in this catalog, so it's left out of
 				// the query.
@@ -301,6 +306,8 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 					]))}">Export&hellip;</button>')
 					sb.write_string('<button type="submit" form="app" name="drop:${html_escape(catalog_name)}" value="TABLE ${html_escape(table.str())}" class="danger">Drop table</button></div></details>')
 				}
+				a.write_indexes(mut sb, catalog_name, indexes['${schema_name}.${table.entity_name}'],
+					is_system)
 				sb.write_string('</li>')
 			}
 			sb.write_string('</ul></details></div>')
@@ -312,6 +319,31 @@ fn (a &App) write_sidebar(mut sb strings.Builder, mut conn vsql.Connection, all_
 	// The width and collapsed headings and schemas are set before the page is
 	// shown.
 	sb.write_string('</nav><div class="resizer" title="Drag to resize"></div><script>${app_sidebar_js.to_string()}</script>')
+}
+
+// write_indexes lists the indexes of a table under it, with their columns. Each
+// one has a menu to drop it (see app_sidebar.js), unless it's in a system schema.
+fn (a &App) write_indexes(mut sb strings.Builder, catalog_name string, indexes []vsql.Index, is_system bool) {
+	if indexes.len == 0 {
+		return
+	}
+
+	sb.write_string('<ul class="indexes">')
+	for index in indexes {
+		// The index is dropped in the file of the catalog, so it's left out.
+		name := vsql.Identifier{
+			schema_name: index.name.schema_name
+			entity_name: index.name.entity_name
+		}.str()
+		columns := index.columns.map(if it.desc { '${it.name} DESC' } else { it.name }).join(', ')
+		sb.write_string('<li class="index"><span class="index-name" title="${html_escape(index.str())}"><span class="icon" aria-hidden="true">&#128199;</span><span class="name">${html_escape(index.name.entity_name)}</span> <span class="columns">(${html_escape(columns)})</span></span>')
+		if !is_system {
+			sb.write_string('<details class="menu"><summary title="More" aria-label="More">&#8943;</summary><div class="menu-items">')
+			sb.write_string('<button type="submit" form="app" name="drop:${html_escape(catalog_name)}" value="INDEX ${html_escape(name)}" class="danger">Drop index</button></div></details>')
+		}
+		sb.write_string('</li>')
+	}
+	sb.write_string('</ul>')
 }
 
 // write_tabs starts the form, with the tabs of all of the files (tab is the active

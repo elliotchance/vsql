@@ -59,6 +59,22 @@ class AppPage:
         it."""
         li = self.schema(catalog, schema).locator('li').filter(
             has=self.page.get_by_role('button', name=name, exact=True))
+        # The indexes of the table are under it, in the same li.
+        li.locator(':scope > button').hover()
+        li.locator(':scope > details.menu > summary').click()
+        return li.locator(':scope > details.menu > .menu-items')
+
+    def sidebar_indexes(self, table, catalog='db', schema='PUBLIC'):
+        """sidebar_indexes are the names (and columns) of the indexes under a
+        table in the sidebar."""
+        return self.schema(catalog, schema).locator('li').filter(
+            has=self.page.get_by_role('button', name=table, exact=True)).locator('li.index .index-name')
+
+    def index_menu(self, name, catalog='db', schema='PUBLIC'):
+        """index_menu opens the menu of an index in the sidebar, and returns
+        it."""
+        li = self.schema(catalog, schema).locator('li.index').filter(
+            has=self.page.locator('.index-name .name').get_by_text(name, exact=True))
         li.hover()
         li.locator('details.menu > summary').click()
         return li.locator('.menu-items')

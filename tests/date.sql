@@ -166,6 +166,34 @@ VALUES CAST('2022-06-30 12:34:56' AS DATE);
 VALUES CAST('hello' AS DATE);
 -- error 22007: invalid datetime format
 
+-- # A date literal is also accepted, but the keyword must be DATE.
+VALUES CAST('DATE ''2022-06-30''' AS DATE);
+-- COL1: 2022-06-30
+
+VALUES CAST(' date''2022-06-30''  ' AS DATE);
+-- COL1: 2022-06-30
+
+VALUES CAST(U&'DATE\000A\0009\3000''2022-06-30''' AS DATE);
+-- COL1: 2022-06-30
+
+VALUES CAST('DATE /* comment */ ''2022-06-30''' AS DATE);
+-- error 22007: invalid datetime format
+
+VALUES CAST(CAST(DATE '2022-06-30' AS VARCHAR(30)) AS DATE);
+-- COL1: 2022-06-30
+
+VALUES CAST('TIMESTAMP ''2022-06-30''' AS DATE);
+-- error 22007: invalid datetime format
+
+VALUES CAST('DATE ''2022-06-30' AS DATE);
+-- error 22007: invalid datetime format
+
+VALUES CAST('DATE ''2022-''''06-30''' AS DATE);
+-- error 22007: invalid datetime format
+
+VALUES CAST('DATE' AS DATE);
+-- error 22007: invalid datetime format
+
 CREATE TABLE foo (f1 VARCHAR(20));
 INSERT INTO foo (f1) VALUES ('2022-06-30');
 INSERT INTO foo (f1) VALUES (NULL);

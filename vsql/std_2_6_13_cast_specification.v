@@ -192,9 +192,9 @@ fn cast_boolean_to_character(mut conn Connection, v Value, to Type) !Value {
 
 // cast_string_to_datetime converts a character string to a DATE, TIME or
 // TIMESTAMP. Leading and trailing spaces are ignored, then the string must be a
-// valid unquoted datetime string (such as "2022-06-30") for the target type. A
-// time zone is added or removed in the same way as casting between the datetime
-// types.
+// valid unquoted datetime string (such as "2022-06-30") or a datetime literal
+// (such as "DATE '2022-06-30'") for the target type. A time zone is added or
+// removed in the same way as casting between the datetime types.
 //
 // ISO/IEC 9075-2:2016(E), 6.13, <cast specification>, General Rules, 14.a, 16.a,
 // 17.a, 18.a and 19.a
@@ -202,15 +202,46 @@ fn cast_string_to_datetime(mut conn Connection, v Value, to Type) !Value {
 	s := v.string_value().trim(' ')
 	value := match to.typ {
 		.is_date {
-			new_date_value(s) or { return sqlstate_22007() }
+			new_date_value(unquote_datetime_literal(s, 'DATE')) or { return sqlstate_22007() }
 		}
 		.is_time_with_time_zone, .is_time_without_time_zone {
-			new_time_value(s) or { return sqlstate_22007() }
+			new_time_value(unquote_datetime_literal(s, 'TIME')) or { return sqlstate_22007() }
 		}
 		else {
-			new_timestamp_value(s) or { return sqlstate_22007() }
+			new_timestamp_value(unquote_datetime_literal(s, 'TIMESTAMP')) or {
+				return sqlstate_22007()
+			}
 		}
 	}
 
 	return cast(mut conn, 'for CAST', value, to)!
+}
+
+// unquote_datetime_literal returns the datetime string of a datetime literal
+// (such as "2022-06-30" from "DATE '2022-06-30'") if s is a literal that starts
+// with keyword. Otherwise s is returned unchanged, to be checked as an unquoted
+// datetime string. The keyword must be the one for the target type, so a DATE
+// literal can't be cast to a TIMESTAMP.
+//
+// ISO/IEC 9075-2:2016(E), 5.3, <literal>, Format
+fn unquote_datetime_literal(s string, keyword string) string {
+	if s.len < keyword.len || s[..keyword.len].to_upper() != keyword {
+		return s
+	}
+
+	// Any white space can separate the keyword and the string, but a comment
+	// can't, since it's a string rather than SQL.
+	rest := s[keyword.len..].runes()
+	mut start := 0
+	for start < rest.len && is_white_space(rest[start]) {
+		start++
+	}
+	quoted := rest[start..].string()
+	if quoted.len < 2 || quoted[0] != `'` || quoted[quoted.len - 1] != `'` {
+		return s
+	}
+
+	// A datetime string never contains a quote, so leaving one in (from a
+	// doubled quote) makes it invalid.
+	return quoted[1..quoted.len - 1]
 }

@@ -332,6 +332,16 @@ VALUES CAST('25:00:00' AS TIME);
 VALUES CAST('2022-06-30 12:34:56' AS TIME);
 -- error 22007: invalid datetime format
 
+-- # A time literal is also accepted, but the keyword must be TIME.
+VALUES CAST('TIME ''12:34:56+03:00''' AS TIME WITH TIME ZONE);
+-- COL1: 12:34:56+0300
+
+VALUES CAST(CAST(TIME '12:34:56' AS VARCHAR(30)) AS TIME);
+-- COL1: 12:34:56
+
+VALUES CAST('TIMESTAMP ''2022-06-30 12:34:56''' AS TIME);
+-- error 22007: invalid datetime format
+
 VALUES TIME '10:00:00+01:00' = TIME '09:00:00+00:00';
 -- COL1: TRUE
 

@@ -902,7 +902,7 @@
 10.10/GR/1.f             implemented  vsql/std_2_7_17_query_expression.v tests/order.sql
 10.10/GR/1.g             n/a          - - user-defined types (S023)
 10.10/GR/1.h             implemented  vsql/std_2_7_17_query_expression.v tests/order.sql
-10.10/GR/1.i             implemented  vsql/std_2_7_17_query_expression.v tests/order.sql peers keep the order they were read in, since the insertion sort is stable
+10.10/GR/1.i             implemented  vsql/std_2_7_17_query_expression.v tests/order.sql peers keep the order they were read in, since the merge sort is stable
 10.10/CR/1               n/a          - - <null ordering> (T611)
 # 10.11, <JSON aggregate function>
 10.11                    n/a          - - JSON aggregate functions (T811)

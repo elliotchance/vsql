@@ -139,7 +139,7 @@ fn (r RowValueConstructor) eval_row(mut conn Connection, data Row, params map[st
 	}
 
 	return Row{
-		data: row
+		data: new_row_data_from_map(row)
 	}
 }
 

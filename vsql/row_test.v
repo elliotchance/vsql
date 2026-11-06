@@ -26,9 +26,9 @@ fn test_row_with_fewer_columns_than_table() ! {
 
 	row := Row{
 		id:   [u8(1)]
-		data: {
+		data: new_row_data_from_map({
 			'A': new_integer_value(123)
-		}
+		})
 	}
 	read := new_row_from_bytes(new_table, row.bytes(old_table)!, 0)
 
@@ -43,13 +43,13 @@ fn test_row_with_more_columns_than_table() ! {
 
 	row := Row{
 		id:   [u8(1)]
-		data: {
+		data: new_row_data_from_map({
 			'A': new_integer_value(123)
 			'B': new_integer_value(456)
-		}
+		})
 	}
 	read := new_row_from_bytes(new_table, row.bytes(old_table)!, 0)
 
 	assert read.get_int('A')! == 123
-	assert read.data.len == 1
+	assert read.data.len() == 1
 }

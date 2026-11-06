@@ -51,7 +51,7 @@ fn (e NextValueExpression) compile(mut c Compiler) !CompileResult {
 			// Multiple NEXT VALUE FOR the same sequence in the same row must return
 			// the same value.
 			key := name.id()
-			if value := data.data[sequence_value_key(key)] {
+			if value := data.data.get(sequence_value_key(key)) {
 				return value
 			}
 			if next := conn.row_sequence_values[key] {
@@ -127,7 +127,7 @@ fn (mut o SequenceValuesOperation) execute(rows []Row) ![]Row {
 
 		mut data := row.data.clone()
 		for sequence, value in o.conn.row_sequence_values {
-			data[sequence_value_key(sequence)] = new_bigint_value(value)
+			data.set(sequence_value_key(sequence), new_bigint_value(value))
 		}
 		new_rows << Row{
 			...row

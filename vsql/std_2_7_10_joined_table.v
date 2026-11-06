@@ -136,12 +136,8 @@ fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 		mut matched := false
 		for inner_row in inner_rows {
 			mut row := new_row(map[string]Value{})
-			for k, v in outer_row.data {
-				row.data[k] = v
-			}
-			for k, v in inner_row.data {
-				row.data[k] = v
-			}
+			row.data = row.data.merged(outer_row.data)
+			row.data = row.data.merged(inner_row.data)
 
 			if eval_as_bool(mut o.conn, row, o.specification, o.params, o.tables, mut condition)! {
 				rows << row
@@ -151,11 +147,9 @@ fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 
 		if !matched && o.join_type != .inner {
 			mut row := new_row(map[string]Value{})
-			for k, v in outer_row.data {
-				row.data[k] = v
-			}
+			row.data = row.data.merged(outer_row.data)
 			for k in inner_columns {
-				row.data[k.name.id()] = new_null_value(k.typ.typ)
+				row.data.set(k.name.id(), new_null_value(k.typ.typ))
 			}
 			rows << row
 		}
@@ -170,7 +164,7 @@ fn (mut o JoinOperation) execute(_ []Row) ![]Row {
 	for common in o.common_columns {
 		compiled := common.value().compile(mut c)!
 		for mut row in rows {
-			row.data[common.column.name.id()] = compiled.run(mut o.conn, row, o.params)!
+			row.data.set(common.column.name.id(), compiled.run(mut o.conn, row, o.params)!)
 		}
 	}
 
@@ -187,11 +181,10 @@ fn (mut o JoinOperation) inner_rows(outer_row Row, all_inner_rows []Row) ![]Row 
 	}
 
 	for mut row in rows {
-		mut data := map[string]Value{}
-		for k, v in row.data {
-			data[o.names[k]] = v
+		row.data = RowData{
+			keys:   row.data.keys.map(o.names[it] or { it })
+			values: row.data.values
 		}
-		row.data = data
 	}
 
 	return rows

@@ -2062,6 +2062,23 @@ fn test_btree_expire_missing_object() ! {
 	assert btree.expire('a'.bytes(), 1, 2)! >= 0
 }
 
+// Merging the values of two rows (such as for a join) keeps the order of the
+// keys, and a value of the second row replaces one with the same key.
+fn test_row_data_merged() {
+	a := new_row_data_from_map({
+		'X': new_integer_value(1)
+		'Y': new_integer_value(2)
+	})
+	b := new_row_data_from_map({
+		'Y': new_integer_value(3)
+		'Z': new_integer_value(4)
+	})
+	merged := a.merged(b)
+	assert merged.keys == ['X', 'Y', 'Z']
+	assert merged.values.map(it.int_value()) == [i64(1), 3, 4]
+	assert a.value('Y').int_value() == 2
+}
+
 // A row only has the columns that the table had when it was written, so the
 // columns after them are NULL.
 fn test_row_with_fewer_columns() ! {
@@ -2086,9 +2103,9 @@ fn test_row_with_fewer_columns() ! {
 	data := row.bytes(Table{ columns: [x] })!
 	read := new_row_from_bytes(Table{ columns: [x, y] }, data, 1)
 
-	assert read.data[x.name.id()].int_value() == 123
-	assert read.data[y.name.id()].is_null
-	assert read.data[y.name.id()].typ.typ == .is_integer
+	assert read.data.value(x.name.id()).int_value() == 123
+	assert read.data.value(y.name.id()).is_null
+	assert read.data.value(y.name.id()).typ.typ == .is_integer
 }
 
 // A row is limited to a little under 2 GB, which is too much memory for a test,
@@ -3881,9 +3898,9 @@ fn test_index_entry_order() {
 		for i, value in values {
 			keys << index.entry_key(table, Row{
 				id:   [u8(9 - i)]
-				data: {
+				data: new_row_data_from_map({
 					'A': value
-				}
+				})
 			}) or { panic(err) }.hex()
 		}
 		mut sorted := keys.clone()

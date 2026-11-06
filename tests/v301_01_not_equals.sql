@@ -44,12 +44,13 @@ SELECT y, x != 2 AS a, x <> 2 AS b FROM t WHERE y = 2;
 -- Y: 2 A: TRUE B: TRUE
 -- Y: 2 A: UNKNOWN B: UNKNOWN
 
--- # A row value can't be compared with either of them yet (#722).
+-- # Rows can be compared with either of them.
 SELECT x, y FROM t WHERE (x, y) <> (1, 2);
--- error 42601: syntax error: unexpected "<>", expecting IS
+-- X: 1 Y: 1
 
+/* extensions V301-01 */
 SELECT x, y FROM t WHERE (x, y) != (1, 2);
--- error 42601: syntax error: unexpected "!=", expecting IS
+-- X: 1 Y: 1
 
 -- # A boolean predicand.
 /* extensions V301-01 */

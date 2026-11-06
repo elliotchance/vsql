@@ -220,7 +220,7 @@ fn test_large_rows() ! {
 	defer {
 		f.close()
 	}
-	mut pager := new_file_pager(mut f, default_connection_options().page_size, 0)!
+	mut pager := new_file_pager(mut f, default_connection_options().page_size, 0, 0)!
 	for i in 0 .. pager.total_pages() {
 		page := pager.fetch_page(i)!
 		if page.kind == kind_leaf {

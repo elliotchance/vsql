@@ -439,11 +439,13 @@ fn sql_test_dir() string {
 // sql_test_options are the connection options for every test. Small pages make
 // even small tests split pages and store large values across several pages. A
 // test runs its connections one statement at a time, so CREATE INDEX can't wait
-// for another connection.
+// for another connection. A small page cache means pages are often removed from
+// it and read again.
 fn sql_test_options() ConnectionOptions {
 	mut options := default_connection_options()
 	options.page_size = 256
 	options.create_index_timeout = 0
+	options.cache_size = 4
 
 	return options
 }
@@ -1378,6 +1380,27 @@ fn test_page_size_limits() ! {
 	}
 	mut result := db.query('SELECT CHAR_LENGTH(x) AS l FROM t')!
 	assert result.next()?.get_int('L')! == 60000
+}
+
+// A cache_size of 0 reads every page from the file.
+fn test_page_cache_off() ! {
+	path := os.join_path(os.temp_dir(), 'vsql-sql-test-cache-off-${os.getpid()}.vsql')
+	defer {
+		os.rm(path) or {}
+		os.rm(session_path(path)) or {}
+	}
+	mut options := sql_test_options()
+	options.cache_size = 0
+	mut db := open_database(path, options)!
+	defer {
+		db.close()
+	}
+	db.query('CREATE TABLE t (x INT)')!
+	for i in 0 .. 50 {
+		db.query('INSERT INTO t (x) VALUES (${i})')!
+	}
+	mut result := db.query('SELECT COUNT(*) AS c FROM t')!
+	assert result.next()?.get_int('C')! == 50
 }
 
 // module_error is the error from compiling an SQL-client module, or an empty

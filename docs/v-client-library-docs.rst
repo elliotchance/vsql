@@ -684,6 +684,13 @@ struct ConnectionOptions
    	// include rows that it can't see yet), before it fails with a 55P03 lock
    	// not available. The default is 60 seconds.
    	create_index_timeout time.Duration
+   	// cache_size is the number of pages of a file that are kept in memory while
+   	// a statement runs, so that a page that's used again (such as by a scan or
+   	// a search of the B-tree) doesn't need to be read from the file again. The
+   	// default is 2000 (8 MiB with the default page_size). 0 doesn't keep any.
+   	// Pages are only kept for one statement, since another connection may
+   	// change the file between statements.
+   	cache_size int
    }
 
 ConnectionOptions can modify the behavior of a connection when it is opened. You should not create the ConnectionOptions instance manually. Instead, use default_connection_options() as a starting point and modify the attributes.

@@ -179,8 +179,8 @@ fn datetime_fields(t SQLType) string {
 fn compare_datetimes(conn &Connection, xv Value, yv Value) CompareResult {
 	// compare_strings is only invoked when both sides are known to use
 	// time_value.
-	mut x := unsafe { xv.v.time_value }.i64()
-	mut y := unsafe { yv.v.time_value }.i64()
+	mut x := xv.time_value().i64()
+	mut y := yv.time_value().i64()
 
 	// Datetimes with time zones are compared after adjusting to UTC (General
 	// Rule 6). If only one of them has a time zone, the other one is in the

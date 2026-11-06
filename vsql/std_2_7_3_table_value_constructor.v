@@ -141,7 +141,7 @@ fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
 			for i in 1 .. row.data.len + 1 {
 				column := columns[i - 1]
 				data[column.name.sub_entity_name] = convert_to_combined_type(mut o.conn,
-					'in VALUES', row.data['COL${i}'], column.typ)!
+					'in VALUES', row.data['COL${i}'] or { Value{} }, column.typ)!
 			}
 
 			row = Row{

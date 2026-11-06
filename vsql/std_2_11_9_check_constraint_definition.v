@@ -133,7 +133,7 @@ fn (c CheckConstraints) verify(mut conn Connection, row Row) ! {
 	// from the table.
 	mut data := map[string]Value{}
 	for column in c.table.columns {
-		data[column.name.id()] = row.data[column.name.sub_entity_name]
+		data[column.name.id()] = row.data[column.name.sub_entity_name] or { Value{} }
 	}
 	full_row := new_row(data)
 

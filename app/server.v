@@ -351,27 +351,30 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 			return '/'
 		}
 	}
-	// Create schema in the menu of a catalog posts the CREATE SCHEMA.
-	if create_schema := form.get('create_schema') {
-		schema_catalog := form.get('create_schema_catalog') or { '' }
-		if schema_catalog !in a.catalog_names {
-			return error('no such catalog: ${schema_catalog}')
-		}
-		a.run_in_file(mut conn, schema_catalog, create_schema) or {
-			last := rlock a.results {
-				a.results[tab.ref()] or { TabResult{} }
+	// Create schema in the menu of a catalog, and Create index in the menu of a
+	// table, post the CREATE SCHEMA or CREATE INDEX, and the file to run it in.
+	for object in ['schema', 'index'] {
+		if create_sql := form.get('create_${object}') {
+			create_catalog := form.get('create_${object}_catalog') or { '' }
+			if create_catalog !in a.catalog_names {
+				return error('no such catalog: ${create_catalog}')
 			}
-			return a.page(mut conn, all_tabs, Tab{
-				...tab
-				query_text: query_text
-				params:     params
-				payload:    payload
-			}, TabResult{
-				...last
-				error: err.msg()
-			}, Confirm{})
+			a.run_in_file(mut conn, create_catalog, create_sql) or {
+				last := rlock a.results {
+					a.results[tab.ref()] or { TabResult{} }
+				}
+				return a.page(mut conn, all_tabs, Tab{
+					...tab
+					query_text: query_text
+					params:     params
+					payload:    payload
+				}, TabResult{
+					...last
+					error: err.msg()
+				}, Confirm{})
+			}
+			return '/'
 		}
-		return '/'
 	}
 	if other_tab := form.get('goto') {
 		a.activate_tab(mut conn, all_tabs.filter(it.ref() == other_tab)[0] or { no_tab })!

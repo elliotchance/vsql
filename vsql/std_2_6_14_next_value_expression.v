@@ -109,12 +109,20 @@ fn (mut o SequenceValuesOperation) execute(rows []Row) ![]Row {
 		params: o.params
 		tables: o.tables
 	}
-	mut new_rows := []Row{}
+	mut new_rows := []Row{cap: rows.len}
+	// Each expression is compiled on the first row, then kept for the rows
+	// after it.
+	mut compiled := []CompileResult{cap: o.exprs.len}
 
 	for row in rows {
 		o.conn.begin_row()
-		for expr in o.exprs {
-			expr.compile(mut c)!.run(mut o.conn, row, o.params)!
+		if compiled.len == 0 {
+			for expr in o.exprs {
+				compiled << expr.compile(mut c)!
+			}
+		}
+		for result in compiled {
+			result.run(mut o.conn, row, o.params)!
 		}
 
 		mut data := row.data.clone()

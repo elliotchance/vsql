@@ -114,6 +114,9 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// ISO/IEC 9075-2:2016(E), 15.6, Effect of a positioned update, General Rules, 10, 11 and 13
 	// ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, General Rules, 2.b
 	mut changes := [][]Row{}
+	// The value of each <set clause> is compiled for the first row, then kept
+	// (by its position) for the rows after it.
+	mut compiled_set := map[int]CompileResult{}
 	for mut row in rows {
 		conn.begin_row()
 		mut did_modify := false
@@ -126,7 +129,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 		row2.id = row.id
 		row2.tid = row.tid
 
-		for clause in stmt.set {
+		for i, clause in stmt.set {
 			column_name := clause.column_name
 			table_column := table.column(column_name)!
 
@@ -150,7 +153,11 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			c.default_value = table_column.default_value
 			c.identity = identity_of(table, table_column)
 
-			raw_value := clause.source.compile(mut c)!.run(mut conn, row, params)!
+			if i !in compiled_set {
+				compiled_set[i] = clause.source.compile(mut c)!
+			}
+			raw_value := compiled_set[i] or { return error('not compiled') }.run(mut conn, row,
+				params)!
 
 			if table_column.not_null && raw_value.is_null {
 				return sqlstate_23502(table, column_name)

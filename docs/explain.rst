@@ -59,9 +59,28 @@ The ``WHERE`` clause is still applied to each row that's read:
    -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.PRODUCTS (PRODUCT_ID INTEGER NOT NULL, NAME CHARACTER VARYING(50), PRICE NUMERIC(10, 2)) RANGE PRODUCT_ID >= 100 AND PRODUCT_ID < 200
    -- EXPLAIN: WHERE PRODUCT_ID >= 100 AND PRODUCT_ID < 200 AND PRICE > 10
 
+An ``INDEX`` (see :doc:`create-index`) is used in the same way, for its columns.
+It reads the range of the index, then the row of each entry, in the order of the
+index:
+
+.. code-block:: sql
+
+   CREATE INDEX products_price ON products (price);
+   EXPLAIN SELECT name FROM products
+   WHERE price BETWEEN 10 AND 20;
+   -- EXPLAIN: INDEX ":memory:".PUBLIC.PRODUCTS_PRICE ON ":memory:".PUBLIC.PRODUCTS (PRODUCT_ID INTEGER NOT NULL, NAME CHARACTER VARYING(50), PRICE NUMERIC(10, 2)) RANGE PRICE >= 10 AND PRICE <= 20
+   -- EXPLAIN: WHERE PRICE BETWEEN 10 AND 20
+   -- EXPLAIN: EXPR (NAME CHARACTER VARYING(50))
+
+When the ``PRIMARY KEY`` or more than one index could be used, the one with the
+most leading columns compared with ``=`` (and then a range of the next column)
+is used. The ``PRIMARY KEY`` is used when they're the same, then the index
+that's first by name.
+
 See Also
 --------
 
+- :doc:`create-index`
 - :doc:`delete`
 - :doc:`select`
 - :doc:`update`

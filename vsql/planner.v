@@ -327,16 +327,11 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				// The primary key can only be found once the columns have their
 				// new names, then the table is read again with the lookup.
 				if filter {
-					conditions := primary_key_conditions(body, base_table, table, params, mut
-						conn)
-					if conditions.len > 0 {
+					if operation := key_operation(body, base_table, table, params, mut conn) {
 						plan = Plan{}
 						table = add_correlation_plan(mut &plan, from_clause.correlation.name,
 							Plan{
-								operations: [
-									new_primary_key_operation(base_table, conditions, params,
-										conn),
-								]
+								operations: [operation]
 							}, from_clause.correlation, params, mut conn)!
 					}
 
@@ -369,16 +364,13 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			} else if table_name_id in catalog.storage.tables {
 				table = catalog.storage.table(table_name_id)
 
-				conditions := if filter {
-					primary_key_conditions(body, table, table, params, mut conn)
+				operation := if filter {
+					key_operation(body, table, table, params, mut conn)
 				} else {
-					[]KeyCondition{}
+					none
 				}
-				if conditions.len > 0 {
-					plan.operations << new_primary_key_operation(table, conditions, params,
-						conn)
-				} else {
-					plan.operations << TableOperation{table_name, false, table, params, conn, plan.subplans}
+				plan.operations << operation or {
+					TableOperation{table_name, false, table, params, conn, plan.subplans}
 				}
 
 				if filter {

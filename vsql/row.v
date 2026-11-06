@@ -264,6 +264,17 @@ fn (r Row) bytes_with_limit(t Table, limit i64) ![]u8 {
 }
 
 fn new_row_from_bytes(t Table, data []u8, tid u64) Row {
+	return new_row_from_bytes_with_ids(t, t.column_ids(), data, tid)
+}
+
+// column_ids is the id of each column of the table, in order.
+fn (t Table) column_ids() []string {
+	return t.columns.map(it.name.id())
+}
+
+// new_row_from_bytes_with_ids is new_row_from_bytes with the ids of the columns
+// of the table (see column_ids), so that they aren't made again for each row.
+fn new_row_from_bytes_with_ids(t Table, ids []string, data []u8, tid u64) Row {
 	mut buf := new_bytes(data)
 	mut row := map[string]Value{}
 
@@ -274,7 +285,7 @@ fn new_row_from_bytes(t Table, data []u8, tid u64) Row {
 		// Columns that didn't exist when the row was written are NULL. Any
 		// values after the last column are ignored.
 		if i >= column_count {
-			row[col.name.id()] = Value{
+			row[ids[i]] = Value{
 				typ:     col.typ
 				is_null: true
 			}
@@ -367,7 +378,7 @@ fn new_row_from_bytes(t Table, data []u8, tid u64) Row {
 			}
 		}
 
-		row[col.name.id()] = v
+		row[ids[i]] = v
 	}
 
 	return Row{row_id, tid, row}

@@ -297,9 +297,9 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_SET_DEFAULT 4 /* SET DEFAULT */
 
 /* DEFERABILITY of SQLForeignKeys. */
-#define SQL_INITIALLY_DEFERRED  5 /* not used */
-#define SQL_INITIALLY_IMMEDIATE 6 /* not used */
-#define SQL_NOT_DEFERRABLE      7 /* every constraint */
+#define SQL_INITIALLY_DEFERRED  5 /* DEFERRABLE INITIALLY DEFERRED */
+#define SQL_INITIALLY_IMMEDIATE 6 /* DEFERRABLE INITIALLY IMMEDIATE */
+#define SQL_NOT_DEFERRABLE      7 /* NOT DEFERRABLE */
 
 /* SQLSpecialColumns IdentifierType, Scope and PSEUDO_COLUMN. */
 #define SQL_BEST_ROWID        1 /* the columns that identify a row */

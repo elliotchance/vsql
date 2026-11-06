@@ -90,8 +90,8 @@ CREATE SCHEMA foo CREATE SEQUENCE seq CREATE SEQUENCE seq;
 
 -- # The names used inside a table are also in the new schema (5.4, Syntax
 -- # Rules, 4.b), so a table can reference itself or a table created before it,
--- # but a table of another schema must be qualified. vsql doesn't yet support a
--- # reference to a table that's created after it (#887).
+-- # but a table of another schema must be qualified. A table created after it
+-- # can be referenced too (below).
 CREATE SCHEMA foo
   CREATE TABLE parent (id INT PRIMARY KEY)
   CREATE TABLE child (id INT REFERENCES parent, self INT REFERENCES child (other), other INT UNIQUE);
@@ -121,10 +121,41 @@ INSERT INTO foo.child (id) VALUES (1);
 -- msg: INSERT 1
 -- msg: INSERT 1
 
+-- # A FOREIGN KEY can reference a table that's after it, and two tables can
+-- # reference each other.
+CREATE SCHEMA foo
+  CREATE TABLE a (x INT PRIMARY KEY, y INT REFERENCES b)
+  CREATE TABLE b (x INT PRIMARY KEY, y INT REFERENCES a);
+SET SCHEMA 'FOO';
+INSERT INTO a (x) VALUES (1);
+INSERT INTO b (x, y) VALUES (2, 1);
+INSERT INTO b (x, y) VALUES (3, 4);
+UPDATE a SET y = 2;
+SELECT constraint_name, unique_constraint_name FROM information_schema.referential_constraints;
+-- msg: CREATE SCHEMA 1
+-- msg: SET SCHEMA 1
+-- msg: INSERT 1
+-- msg: INSERT 1
+-- error 23503: violates foreign key constraint: FOREIGN KEY (Y) REFERENCES ":memory:".FOO.A (X) on ":memory:".FOO.B
+-- msg: UPDATE 1
+-- CONSTRAINT_NAME: A_FOREIGN_KEY_1 UNIQUE_CONSTRAINT_NAME: B_PRIMARY_KEY
+-- CONSTRAINT_NAME: B_FOREIGN_KEY_1 UNIQUE_CONSTRAINT_NAME: A_PRIMARY_KEY
+
+-- # A table that isn't created by any element is still an error, and then the
+-- # schema isn't created either.
 CREATE SCHEMA foo
   CREATE TABLE a (x INT REFERENCES b)
-  CREATE TABLE b (x INT PRIMARY KEY);
+  CREATE TABLE c (x INT PRIMARY KEY);
+CREATE SCHEMA foo;
 -- error 42P01: no such table: ":memory:".FOO.B
+-- msg: CREATE SCHEMA 1
+
+-- # The name of a foreign key that's added later still can't be used by
+-- # another table.
+CREATE SCHEMA foo
+  CREATE TABLE a (x INT CONSTRAINT k REFERENCES b)
+  CREATE TABLE b (x INT CONSTRAINT k PRIMARY KEY);
+-- error 42710: duplicate constraint: K
 
 -- # A column of a CHECK can be qualified by its table, which is in the new
 -- # schema.

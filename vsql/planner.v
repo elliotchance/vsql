@@ -1147,13 +1147,23 @@ fn (mut o ExprOperation) execute(rows []Row) ![]Row {
 		params: o.params
 		tables: o.tables
 	}
-	mut new_rows := []Row{}
+	mut new_rows := []Row{cap: rows.len}
+	// Each expression is compiled on the first row, then kept for the rows
+	// after it.
+	mut compiled := []CompileResult{cap: o.exprs.len}
+	mut ids := []string{cap: o.exprs.len}
 
 	for row in rows {
 		o.conn.begin_row()
+		if compiled.len == 0 {
+			for expr in o.exprs {
+				compiled << expr.expr.compile(mut c)!
+				ids << expr.as_clause.id()
+			}
+		}
 		mut data := map[string]Value{}
-		for expr in o.exprs {
-			data[expr.as_clause.id()] = expr.expr.compile(mut c)!.run(mut o.conn, row, o.params)!
+		for i, result in compiled {
+			data[ids[i]] = result.run(mut o.conn, row, o.params)!
 		}
 
 		// The id of the row is kept so that the current row of a cursor can

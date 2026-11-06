@@ -386,12 +386,15 @@ fn (e Identifier) is_grouping_column(grouping_columns []Column) bool {
 fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 	// There are lots of ways to reoslve an identifer...
 	//
+	// The id is only made once, rather than for each row.
+	id := e.id()
+
 	// 1. custom_id is used as a hack to wrap aggregate functions. This should be
 	// removed in the future.
 	if e.custom_id != '' {
 		return CompileResult{
-			run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
-				return data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }
+			run:          fn [e, id] (mut conn Connection, data Row, params map[string]Value) !Value {
+				return data.data[id] or { return sqlstate_42601('unknown column: ${e}') }
 			}
 			typ:          e.custom_typ
 			contains_agg: false
@@ -420,8 +423,8 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		column := table.column(e.sub_entity_name) or { Column{} }
 		if column.name.sub_entity_name == e.sub_entity_name {
 			return CompileResult{
-				run:          fn [e] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return data.data[e.id()] or { return sqlstate_42601('unknown column: ${e}') }
+				run:          fn [e, id] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return data.data[id] or { return sqlstate_42601('unknown column: ${e}') }
 				}
 				typ:          column.typ
 				contains_agg: false
@@ -452,9 +455,10 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		// is checked (see CheckConstraintDefinition.compile).
 		if table := c.tables[qualifier.id()] {
 			if column := table.column(e.sub_entity_name) {
+				column_id := column.name.id()
 				return CompileResult{
-					run:          fn [column] (mut conn Connection, data Row, params map[string]Value) !Value {
-						return data.data[column.name.id()] or {
+					run:          fn [column, column_id] (mut conn Connection, data Row, params map[string]Value) !Value {
+						return data.data[column_id] or {
 							return sqlstate_42601('unknown column: ${column.name}')
 						}
 					}
@@ -495,9 +499,10 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 			&& table.name.entity_name == ident.entity_name {
 			column := table.column(ident.sub_entity_name) or { Column{} }
 			if column.name.sub_entity_name == ident.sub_entity_name {
+				ident_id := ident.id()
 				return CompileResult{
-					run:          fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
-						return data.data[ident.id()] or {
+					run:          fn [ident, ident_id] (mut conn Connection, data Row, params map[string]Value) !Value {
+						return data.data[ident_id] or {
 							return sqlstate_42601('unknown column: ${ident}')
 						}
 					}
@@ -530,9 +535,10 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 		if e.entity_name == '' && column.name.sub_entity_name == e.sub_entity_name {
 			ident = column.name
 
+			ident_id := ident.id()
 			return CompileResult{
-				run:          fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return data.data[ident.id()] or {
+				run:          fn [ident, ident_id] (mut conn Connection, data Row, params map[string]Value) !Value {
+					return data.data[ident_id] or {
 						return sqlstate_42601('unknown column: ${ident}')
 					}
 				}
@@ -552,9 +558,10 @@ fn (e Identifier) compile_column(mut c Compiler) !CompileResult {
 			if column.name.sub_entity_name == ident.sub_entity_name {
 				ident = column.name
 
+				ident_id := ident.id()
 				return CompileResult{
-					run:          fn [ident] (mut conn Connection, data Row, params map[string]Value) !Value {
-						return data.data[ident.id()] or {
+					run:          fn [ident, ident_id] (mut conn Connection, data Row, params map[string]Value) !Value {
+						return data.data[ident_id] or {
 							return sqlstate_42601('unknown column: ${ident}')
 						}
 					}

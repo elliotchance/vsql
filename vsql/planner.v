@@ -728,10 +728,61 @@ mut:
 	subplans map[string]Plan
 }
 
+// scan_batch_size is how many rows of a table are read at a time when the
+// operations after it work on each row by itself, see Plan.execute.
+const scan_batch_size = 1024
+
 fn (mut o Plan) execute(_ []Row) ![]Row {
 	mut rows := []Row{}
-	for mut operation in o.operations {
-		rows = operation.execute(rows)!
+	mut next := 0
+
+	// When the rows of a table are filtered (WHERE) and the select list is
+	// calculated, which only look at one row at a time, the rows are read and
+	// processed some at a time. Otherwise, every row of the table, and of each
+	// of those operations, would be in memory at once. Nothing they do can
+	// change the table while it's being read (NEXT VALUE FOR, which does
+	// write, is a separate SequenceValuesOperation).
+	if o.operations.len > 1 {
+		mut first := o.operations[0]
+		if mut first is TableOperation {
+			mut end := 1
+			for end < o.operations.len
+				&& (o.operations[end] is WhereOperation || o.operations[end] is ExprOperation) {
+				end++
+			}
+			if end > 1 && !first.table_is_subplan {
+				rows = o.execute_scan(mut first, end)!
+				next = end
+			}
+		}
+	}
+
+	for i in next .. o.operations.len {
+		rows = o.operations[i].execute(rows)!
+	}
+
+	return rows
+}
+
+// execute_scan reads the rows of table some at a time, passing each batch
+// through the operations before end.
+fn (mut o Plan) execute_scan(mut table TableOperation, end int) ![]Row {
+	mut catalog := table.conn.catalog_for(table.table_name)
+	mut scanner := catalog.storage.scan_rows(table.table_name)!
+	defer {
+		scanner.finish()
+	}
+
+	mut rows := []Row{}
+	for {
+		mut batch := scanner.next_rows(scan_batch_size)!
+		if batch.len == 0 {
+			break
+		}
+		for i in 1 .. end {
+			batch = o.operations[i].execute(batch)!
+		}
+		rows << batch
 	}
 
 	return rows

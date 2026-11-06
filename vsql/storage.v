@@ -836,30 +836,58 @@ fn (mut f Storage) has_concurrent_objects(start []u8, end []u8) !bool {
 }
 
 fn (mut f Storage) read_rows(table_name Identifier) ![]Row {
-	f.isolation_start()!
+	mut scanner := f.scan_rows(table_name)!
 	defer {
-		f.end_isolation()
+		scanner.finish()
 	}
 
-	mut rows := []Row{}
+	return scanner.next_rows(max_int)
+}
 
+// RowScanner reads the visible rows of a table, some at a time (see
+// Plan.execute), so that they don't all need to be in memory at once. It's in
+// an isolation block until finish is called.
+struct RowScanner {
+	table Table
+	ids   []string
+mut:
+	storage &Storage
+	iter    PageIterator
+}
+
+fn (mut f Storage) scan_rows(table_name Identifier) !RowScanner {
+	f.isolation_start()!
 	table := f.table(table_name.storage_id())
-	ids := table.column_ids()
-	mut iter := f.btree.new_range_iterator(row_key_prefix(table.id), row_key_prefix(table.id +
-		1))
-	for {
-		object := iter.next() or { break }
-		if object_is_visible(object.tid, object.xid, f.transaction_id, mut
-			f.header.active_transaction_ids)
+
+	return RowScanner{
+		table:   table
+		ids:     table.column_ids()
+		storage: unsafe { &f }
+		iter:    f.btree.new_range_iterator(row_key_prefix(table.id), row_key_prefix(table.id + 1))
+	}
+}
+
+// next_rows returns up to limit more rows, or none after the last row.
+fn (mut s RowScanner) next_rows(limit int) ![]Row {
+	mut rows := []Row{}
+	for rows.len < limit {
+		object := s.iter.next() or { break }
+		if object_is_visible(object.tid, object.xid, s.storage.transaction_id, mut
+			s.storage.header.active_transaction_ids)
 		{
-			rows << new_row_from_bytes_with_ids(table, ids, object.value, object.tid)
+			rows << new_row_from_bytes_with_ids(s.table, s.ids, object.value, object.tid)
 		}
 	}
-	if err := iter.err {
+	if err := s.iter.err {
 		return err
 	}
 
 	return rows
+}
+
+// finish ends the isolation block of scan_rows.
+fn (mut s RowScanner) finish() {
+	s.storage.end_isolation()
 }
 
 fn (mut f Storage) read_objects(start []u8, end []u8) ![]PageObject {

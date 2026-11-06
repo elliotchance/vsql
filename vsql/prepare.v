@@ -218,6 +218,7 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 
 	p.c.begin_row()
 	p.c.set_statement_timestamp()
+	p.c.subquery_results = map[voidptr]SubqueryResult{}
 
 	// - 17.2 GR 7. A statement that isn't in an SQL-transaction is in one of its
 	// own.

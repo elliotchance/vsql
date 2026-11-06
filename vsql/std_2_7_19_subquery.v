@@ -45,6 +45,28 @@ mut:
 	// aggregates collects the aggregate functions in the subquery that are of
 	// the containing query, see Compiler.aggregation_scope.
 	aggregates []AggregateFunction
+	// varies is set while the subquery is planned or evaluated if its result can
+	// be different each time it's evaluated in a statement, because it refers to
+	// a query that contains it (see vary_subqueries) or it has a non-deterministic
+	// function. Otherwise, it's only evaluated once for each statement (see
+	// run_subquery).
+	varies bool
+}
+
+// SubqueryResult is the rows of a subquery that has been evaluated in the
+// statement, or varies is set if it must be evaluated each time.
+struct SubqueryResult {
+	rows   []Row
+	varies bool
+}
+
+// vary_subqueries marks the subqueries from scope i (and the subqueries in them)
+// as having a result that can be different each time they're evaluated, such as
+// when they have a reference to the row of the query that contains subquery i.
+fn (mut conn Connection) vary_subqueries(i int) {
+	for j := i; j < conn.subquery_scopes.len; j++ {
+		conn.subquery_scopes[j].varies = true
+	}
 }
 
 // SubqueryPlan is the plan of a subquery, and the scope it's evaluated in.
@@ -54,6 +76,10 @@ struct SubqueryPlan {
 	plan         Plan
 	scope        SubqueryScope
 	contains_agg bool
+	// query identifies the subquery's results in Connection.subquery_results, or
+	// it's nil when the subquery must be evaluated each time (see
+	// SubqueryScope.varies).
+	query voidptr
 }
 
 // plan creates the plan for the subquery. It's evaluated with run_subquery.
@@ -75,6 +101,9 @@ fn (e Subquery) plan(mut c Compiler) !SubqueryPlan {
 		context:          c.context
 		grouping_columns: c.grouping_columns
 	}
+	// An aggregate function of a query that contains this subquery is a value of
+	// that query's row (or group), see Compiler.aggregation_scope.
+	outer_aggregates := c.conn.subquery_scopes.map(it.aggregates.len)
 	c.conn.subquery_scopes << scope
 	plan := create_query_expression_plan(*e.query, c.params, mut c.conn, Correlation{}) or {
 		c.conn.subquery_scopes.pop()
@@ -83,10 +112,20 @@ fn (e Subquery) plan(mut c Compiler) !SubqueryPlan {
 
 	// The aggregate functions of this query are calculated with its other
 	// aggregate functions (see GroupOperation).
-	aggregates := c.conn.subquery_scopes.pop().aggregates
+	planned := c.conn.subquery_scopes.pop()
+	aggregates := planned.aggregates
 	c.aggregates << aggregates
 
-	return SubqueryPlan{plan, scope, aggregates.len > 0}
+	mut varies := planned.varies || aggregates.len > 0
+	for i, count in outer_aggregates {
+		if c.conn.subquery_scopes[i].aggregates.len > count {
+			varies = true
+		}
+	}
+
+	query := if varies { unsafe { nil } } else { voidptr(e.query) }
+
+	return SubqueryPlan{plan, scope, aggregates.len > 0, query}
 }
 
 // plan_column is plan for a subquery that must have one column, such as for
@@ -102,7 +141,20 @@ fn (e Subquery) plan_column(mut c Compiler) !SubqueryPlan {
 
 // run_subquery returns the rows of a subquery, where data is the row of the
 // query that contains it.
+//
+// A subquery that doesn't refer to the queries that contain it (and doesn't
+// have a non-deterministic function) has the same result every time, so it's
+// only executed the first time it's evaluated in each statement.
 fn run_subquery(mut conn Connection, plan SubqueryPlan, data Row) ![]Row {
+	cache := plan.query != unsafe { nil }
+	if cache {
+		if result := conn.subquery_results[plan.query] {
+			if !result.varies {
+				return result.rows
+			}
+		}
+	}
+
 	conn.subquery_scopes << SubqueryScope{
 		...plan.scope
 		row: data
@@ -112,8 +164,21 @@ fn run_subquery(mut conn Connection, plan SubqueryPlan, data Row) ![]Row {
 	}
 
 	mut p := plan.plan
+	rows := p.execute([]Row{})!
 
-	return p.execute([]Row{})!
+	// The expressions of a subquery are compiled when it's planned, so that's
+	// when it's found to vary. In case an expression is only compiled when it's
+	// evaluated, the scope is checked again, and once it has varied it's evaluated
+	// each time for the rest of the statement, even if the expression isn't
+	// compiled again. If nothing marked it, the result didn't depend on anything
+	// that can change, so it's the same every time.
+	if cache {
+		previous := conn.subquery_results[plan.query] or { SubqueryResult{} }
+		conn.subquery_results[plan.query] = SubqueryResult{rows, previous.varies
+			|| conn.subquery_scopes.last().varies}
+	}
+
+	return rows
 }
 
 // subquery_values runs the plan of a subquery and returns the values of the

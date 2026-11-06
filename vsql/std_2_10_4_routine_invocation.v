@@ -60,6 +60,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 	found_func := c.conn.find_function(func_name, arg_types)!
 	if !found_func.is_deterministic && !found_func.is_agg {
 		c.check_deterministic('non-deterministic function ${func_name}')!
+		c.conn.vary_subqueries(0)
 	}
 
 	if found_func.is_agg {

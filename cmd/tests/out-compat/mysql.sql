@@ -17,6 +17,7 @@ CREATE TABLE "foo"."child" (
 INSERT INTO "foo"."child" ("id", "pid", "Mixed Case", "order") VALUES (1, 1, 'x', 3);
 INSERT INTO "foo"."child" ("id", "pid", "Mixed Case", "order") VALUES (2, NULL, NULL, 4);
 ALTER TABLE "foo"."child" AUTO_INCREMENT = 3;
+CREATE INDEX "fk1" ON "foo"."child" ("pid");
 
 CREATE TABLE "foo"."parent" (
   "id" INTEGER NOT NULL,
@@ -27,6 +28,7 @@ CREATE TABLE "foo"."parent" (
   CONSTRAINT "parent_unique_1" UNIQUE ("note")
 );
 INSERT INTO "foo"."parent" ("id", "name", "note") VALUES (1, 'a\\b''c', NULL);
+CREATE INDEX "parent_name" ON "foo"."parent" ("name" DESC, "id");
 
 CREATE SCHEMA "nothing";
 
@@ -65,6 +67,7 @@ CREATE TABLE "types" (
   "d" DOUBLE PRECISION,
   "c" CHARACTER(5),
   "c2" VARCHAR(300),
+  "c2_more" VARCHAR(600),
   "vc" VARCHAR(10),
   "lv" LONGTEXT,
   "de" DECIMAL(10, 2),
@@ -83,9 +86,12 @@ CREATE TABLE "types" (
   CONSTRAINT "upper_vc" CHECK (UPPER("vc") = "vc" OR "vc" IS NULL),
   CONSTRAINT "types_check_3" CHECK ("vc" <> 'a\\b' AND "d" < 1.5e+10)
 );
-INSERT INTO "types" ("i", "b", "si", "bi", "r", "d", "c", "c2", "vc", "lv", "de", "n", "dt", "t", "tz", "ts", "tstz", "g2", "cat", "sch") VALUES (1, TRUE, 7, 9000000000, 1.5e0, 2.25e0, 'ab   ', 'cd                                                                                                                                                                                                                                                                                                          ', 'XY', 'long', 12.50, 3, '2022-06-30', '12:34:56', '12:34:56.123+05:00', '2022-06-30 12:34:56.123', '2022-06-30 12:34:56.123456+05:00', 3, 'db', 'PUBLIC');
-INSERT INTO "types" ("i", "b", "si", "bi", "r", "d", "c", "c2", "vc", "lv", "de", "n", "dt", "t", "tz", "ts", "tstz", "g2", "cat", "sch") VALUES (2, FALSE, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2000-01-01', '00:00:00', NULL, '2000-01-01 00:00:00.000', NULL, NULL, 'db', 'PUBLIC');
+INSERT INTO "types" ("i", "b", "si", "bi", "r", "d", "c", "c2", "c2_more", "vc", "lv", "de", "n", "dt", "t", "tz", "ts", "tstz", "g2", "cat", "sch") VALUES (1, TRUE, 7, 9000000000, 1.5e0, 2.25e0, 'ab   ', 'cd                                                                                                                                                                                                                                                                                                          ', NULL, 'XY', 'long', 12.50, 3, '2022-06-30', '12:34:56', '12:34:56.123+05:00', '2022-06-30 12:34:56.123', '2022-06-30 12:34:56.123456+05:00', 3, 'db', 'PUBLIC');
+INSERT INTO "types" ("i", "b", "si", "bi", "r", "d", "c", "c2", "c2_more", "vc", "lv", "de", "n", "dt", "t", "tz", "ts", "tstz", "g2", "cat", "sch") VALUES (2, FALSE, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2000-01-01', '00:00:00', NULL, '2000-01-01 00:00:00.000', NULL, NULL, 'db', 'PUBLIC');
 ALTER TABLE "types" AUTO_INCREMENT = 3;
+-- The index "types_c2" is left out, its key can be over 3072 bytes.
+-- The index "types_lv" is left out, a LONGTEXT column ("lv") cannot be indexed.
+CREATE UNIQUE INDEX "types_vc" ON "types" ("vc");
 
 CREATE TABLE "unique_identity" (
   "id" INTEGER AUTO_INCREMENT NOT NULL,

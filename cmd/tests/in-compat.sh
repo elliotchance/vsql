@@ -38,6 +38,7 @@ CREATE TABLE "Artist"
 );
 CREATE INDEX [IFK_AlbumArtistId] ON [Album] ([ArtistId]);
 CREATE UNIQUE INDEX [IFK_Name] ON [Artist] ([Name]);
+CREATE INDEX [IFK_Partial] ON [Artist] ([Name]) WHERE [Name] IS NOT NULL;
 CREATE VIEW [V] AS SELECT [Name] FROM [Artist];
 CREATE TRIGGER [T] AFTER INSERT ON [Artist] BEGIN
     UPDATE [Artist] SET [Name] = 'x';
@@ -56,10 +57,10 @@ COMMIT;
 SQL
 
 # Without -ignore-unsupported they are errors (other than CREATE INDEX and
-# CREATE UNIQUE INDEX, which are supported). What's in the body of the trigger
-# isn't run by itself.
+# CREATE UNIQUE INDEX, which are supported, but not a partial index). What's in
+# the body of the trigger isn't run by itself.
 $VSQL in -file sqlite.sql -compat sqlite3 -continue-on-error $VSQL_FILE > out.txt && exit 1
-test "$(grep -c ' ERROR ' out.txt)" = 2
+test "$(grep -c ' ERROR ' out.txt)" = 3
 query 'SELECT name FROM artist;' | grep -x 'Björk'
 rm -f $VSQL_FILE $VSQL_FILE.wal
 
@@ -69,12 +70,22 @@ grep -E '^3 [0-9]+/[0-9]+ DROP TABLE 0$' out.txt
 grep ' START TRANSACTION$' out.txt
 grep ' COMMIT$' out.txt
 if grep -q ' ERROR ' out.txt; then exit 1; fi
-grep '^22 .* WARNING 01000 CREATE INDEX is not supported, so it was ignored' out.txt
+grep '^23 .* WARNING 01000 CREATE INDEX failed, so it was ignored: syntax error' out.txt
 grep 'CREATE VIEW is not supported' out.txt
 grep 'CREATE TRIGGER is not supported' out.txt
 
-# A FOREIGN KEY is added at the end, with the line of its table.
+# The indexes are created at the end (before the FOREIGN KEYs), with their
+# lines, so that each one is built once. A FOREIGN KEY is added at the end, with
+# the line of its table, and it uses the index on its column.
+grep -E '^21 [0-9]+/[0-9]+ CREATE INDEX 1$' out.txt
+grep -E '^22 [0-9]+/[0-9]+ CREATE INDEX 1$' out.txt
 grep -E '^4 [0-9]+/[0-9]+ ALTER TABLE 1$' out.txt
+test "$(grep -n 'CREATE INDEX 1$' out.txt | head -1 | cut -d: -f1)" -gt "$(grep -n ' COMMIT$' out.txt | cut -d: -f1)"
+test "$(grep -n 'ALTER TABLE 1$' out.txt | cut -d: -f1)" -gt "$(grep -n 'CREATE INDEX 1$' out.txt | tail -1 | cut -d: -f1)"
+$VSQL out $VSQL_FILE > dump.sql
+grep -x 'CREATE INDEX "IFK_ALBUMARTISTID" ON "PUBLIC"."ALBUM" ("ARTISTID");' dump.sql
+grep -x 'CREATE UNIQUE INDEX "IFK_NAME" ON "PUBLIC"."ARTIST" ("NAME");' dump.sql
+if grep -q 'ALBUM_FOREIGN_KEY_1" ON' dump.sql; then exit 1; fi
 
 # Names aren't case sensitive.
 query 'SELECT name FROM artist;' | grep -x 'Björk'
@@ -89,8 +100,9 @@ query "SELECT albumid FROM album WHERE released = TIMESTAMP '2002-08-16 01:02:03
 query "SELECT albumid FROM album WHERE released = TIMESTAMP '2002-08-17 00:00:00';" | grep -E '^ *5$'
 query "SELECT albumid FROM album WHERE released = TIMESTAMP '2002-08-18 00:00:00';" | grep -E '^ *6$'
 
-# The FOREIGN KEY is there.
+# The FOREIGN KEY is there, and so is the UNIQUE index.
 query "INSERT INTO album (albumid, title, artistid) VALUES (9, 'x', 9);" | grep 23503
+query "INSERT INTO artist (artistid, name) VALUES (2, 'Björk');" | grep 23505
 
 # DROP TABLE IF EXISTS drops it, if nothing refers to it.
 printf 'DROP TABLE IF EXISTS [Album];\nDROP TABLE IF EXISTS [Nope];\n' > drop.sql

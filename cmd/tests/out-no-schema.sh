@@ -22,6 +22,7 @@ CREATE TABLE u (
     t_id INT,
     CONSTRAINT fk FOREIGN KEY (t_id) REFERENCES s.t (id)
 );
+CREATE INDEX t_x ON t (x);
 INSERT INTO s.t (id, x, y) VALUES (1, 2, 3);
 INSERT INTO s.u (t_id) VALUES (1);
 SET SCHEMA 'PUBLIC';
@@ -42,6 +43,7 @@ grep -F 'GENERATED ALWAYS AS (T.X + 1)' $SQL_FILE
 grep -F 'CHECK (T.Y > 0)' $SQL_FILE
 grep -F 'INSERT INTO "T" (' $SQL_FILE
 grep -F 'REFERENCES "T" ("ID")' $SQL_FILE
+grep -Fx 'CREATE INDEX "T_X" ON "T" ("X");' $SQL_FILE
 # A string isn't changed.
 grep -F "DEFAULT 'S.T.X'" $SQL_FILE
 
@@ -54,6 +56,7 @@ for compat in sqlite3 mysql postgresql; do
     check_no_schema $compat
     grep -F 'CREATE TABLE "t" (' $SQL_FILE
     grep -F 'REFERENCES "t" ("id")' $SQL_FILE
+    grep -Fx 'CREATE INDEX "t_x" ON "t" ("x");' $SQL_FILE
 done
 $VSQL out -no-schema -compat postgresql $VSQL_FILE | grep -F 'CREATE SEQUENCE "q"'
 

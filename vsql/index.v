@@ -459,6 +459,15 @@ fn (t Table) is_constraint_index(index Index) bool {
 	return t.unique_constraints.any(it.name == index.name.entity_name)
 }
 
+// is_foreign_key_index is true when the index is the one that a FOREIGN KEY of
+// t made for itself (see foreign_key_index), which has the name of the
+// constraint and only its columns, in ascending order.
+fn (t Table) is_foreign_key_index(index Index) bool {
+	columns := index.columns.map(if it.desc { '' } else { it.name })
+	return !index.unique && t.foreign_keys.any(it.name == index.name.entity_name
+		&& it.columns == columns)
+}
+
 // constraint_index is the index of the UNIQUE constraint of t, see
 // build_constraint_indexes. A table in a file from before indexes doesn't have
 // one until it's needed, so it's created then.

@@ -80,6 +80,7 @@ SELECT constraint_name, table_name, constraint_type FROM information_schema.tabl
 -- out:   "D" INTEGER,
 -- out:   UNIQUE ("B")
 -- out: );
+-- out: CREATE INDEX "CHILD_FOREIGN_KEY_2" ON "PUBLIC"."CHILD" ("D");
 -- out: CREATE TABLE "PUBLIC"."PARENT" (
 -- out:   "ID" INTEGER NOT NULL,
 -- out:   "CODE" INTEGER,

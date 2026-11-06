@@ -18,6 +18,8 @@ mut:
 	// foreign_keys are run at the end, since they can refer to a table that's
 	// created later and the rows can be in any order.
 	foreign_keys []ImportStatement
+	// indexes are run at the end, before foreign_keys, see ImportSql.translated.
+	indexes []ImportStatement
 	// line is the line of the statement being translated.
 	line int
 }

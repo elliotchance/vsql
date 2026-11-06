@@ -130,6 +130,7 @@ CREATE TABLE [Album] ([AlbumId] INTEGER NOT NULL, [ArtistId] INTEGER, [On] DATET
 CREATE TABLE [Artist] ([ArtistId] INTEGER NOT NULL, [Name] NVARCHAR(120),
     CONSTRAINT [PK_Artist] PRIMARY KEY ([ArtistId]));
 CREATE INDEX [I] ON [Album] ([ArtistId]);
+CREATE INDEX [P] ON [Album] ([On]) WHERE [On] IS NOT NULL;
 INSERT INTO [Artist] ([ArtistId], [Name]) VALUES (1, 'a'), (2, 'b');
 INSERT INTO [Album] VALUES (1, 1, '2020-01-02 00:00:00');
 """
@@ -140,7 +141,7 @@ def test_import_sqlite(ui, db_file):
     open_import(ui.catalog_menu('db'))
     choose_file(ui, 'sqlite.sql', SQLITE)
     stats = ui.page.locator('.import-stats')
-    expect(stats.locator('tr').filter(has_text='CREATE INDEX')).to_have_text('CREATE INDEX~1')
+    expect(stats.locator('tr').filter(has_text='CREATE INDEX')).to_have_text('CREATE INDEX~2')
     ui.page.locator('[name="import_compat"]').select_option('sqlite3')
     ui.page.locator('[name="import_ignore_unsupported"]').check()
     expect(command(ui)).to_contain_text('-compat sqlite3 -ignore-unsupported')
@@ -149,7 +150,9 @@ def test_import_sqlite(ui, db_file):
     operations = ui.page.locator('.import-operations')
     expect(operations.locator('tr').filter(has_text='CREATE TABLE')).to_have_text('CREATE TABLE2')
     expect(operations.locator('tr').filter(has_text='INSERT')).to_have_text('INSERT3')
-    expect(ui.page.locator('.import-warning')).to_contain_text('WARNING 01000 CREATE INDEX is not supported')
+    expect(operations.locator('tr').filter(has_text='CREATE INDEX')).to_have_text('CREATE INDEX1')
+    # A partial index isn't supported.
+    expect(ui.page.locator('.import-warning')).to_contain_text('WARNING 01000 CREATE INDEX failed')
     assert count(db_file, 'SELECT COUNT(*) FROM artist;') == 2
 
 

@@ -61,10 +61,27 @@ mut:
 	// DATE
 	// TIME(n) WITH TIME ZONE and TIME(n) WITHOUT TIME ZONE
 	// TIMESTAMP(n) WITH TIME ZONE and TIMESTAMP(n) WITHOUT TIME ZONE
-	time_value Time
+	//
+	// Time and Numeric are much larger than the other values, so they are kept
+	// behind a pointer (see box_time and box_numeric) to keep every Value small.
+	time_value voidptr
 	// DECIMAL(n,m)
 	// NUMERIC(n,m)
-	numeric_value Numeric
+	numeric_value voidptr
+}
+
+// box_time is t on the heap, for InternalValue.time_value.
+fn box_time(t Time) voidptr {
+	return voidptr(&Time{
+		...t
+	})
+}
+
+// box_numeric is n on the heap, for InternalValue.numeric_value.
+fn box_numeric(n Numeric) voidptr {
+	return voidptr(&Numeric{
+		...n
+	})
 }
 
 // new_null_value creates a NULL value of a specific type. In SQL, all NULL
@@ -228,7 +245,7 @@ pub fn new_numeric_value(x string) Value {
 	return Value{
 		typ: n.typ
 		v:   InternalValue{
-			numeric_value: n.normalize_denominator(n.typ)
+			numeric_value: box_numeric(n.normalize_denominator(n.typ))
 		}
 	}
 }
@@ -249,7 +266,7 @@ pub fn new_decimal_value(x string) Value {
 	return Value{
 		typ: typ
 		v:   InternalValue{
-			numeric_value: n.normalize_denominator(typ)
+			numeric_value: box_numeric(n.normalize_denominator(typ))
 		}
 	}
 }
@@ -258,7 +275,7 @@ fn new_numeric_value_from_numeric(n Numeric) Value {
 	return Value{
 		typ: n.typ
 		v:   InternalValue{
-			numeric_value: n.normalize_denominator(n.typ)
+			numeric_value: box_numeric(n.normalize_denominator(n.typ))
 		}
 	}
 }
@@ -269,7 +286,7 @@ fn new_decimal_value_from_numeric(n Numeric) Value {
 	return Value{
 		typ: typ
 		v:   InternalValue{
-			numeric_value: n.normalize_denominator(n.typ)
+			numeric_value: box_numeric(n.normalize_denominator(n.typ))
 		}
 	}
 }
@@ -281,7 +298,7 @@ pub fn new_timestamp_value(ts string) !Value {
 	return Value{
 		typ: t.typ
 		v:   InternalValue{
-			time_value: t
+			time_value: box_time(t)
 		}
 	}
 }
@@ -293,7 +310,7 @@ pub fn new_time_value(ts string) !Value {
 	return Value{
 		typ: t.typ
 		v:   InternalValue{
-			time_value: t
+			time_value: box_time(t)
 		}
 	}
 }
@@ -305,7 +322,7 @@ pub fn new_date_value(ts string) !Value {
 	return Value{
 		typ: t.typ
 		v:   InternalValue{
-			time_value: t
+			time_value: box_time(t)
 		}
 	}
 }
@@ -491,13 +508,13 @@ pub fn (v Value) string_value() string {
 }
 
 pub fn (v Value) time_value() Time {
-	unsafe {
-		return v.v.time_value
-	}
+	// A NULL has the zero Time.
+	p := unsafe { v.v.time_value }
+	return if isnil(p) { Time{} } else { unsafe { *(&Time(p)) } }
 }
 
 pub fn (v Value) numeric_value() Numeric {
-	unsafe {
-		return v.v.numeric_value
-	}
+	// A NULL has the zero Numeric.
+	p := unsafe { v.v.numeric_value }
+	return if isnil(p) { Numeric{} } else { unsafe { *(&Numeric(p)) } }
 }

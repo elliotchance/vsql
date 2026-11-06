@@ -68,8 +68,8 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 			plan.subplans['\$2'] = create_query_expression_plan(*body.right, params, mut
 				conn, Correlation{})!
 
-			plan.operations << new_set_operation_operation(body, plan.subplans['\$1'],
-				plan.subplans['\$2'], mut conn)!
+			plan.operations << new_set_operation_operation(body, plan.subplans['\$1'] or { Plan{} },
+				plan.subplans['\$2'] or { Plan{} }, mut conn)!
 
 			return plan, map[string]Table{}
 		}
@@ -172,8 +172,8 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	before_right := tables.keys()
 	plan.subplans['\$2'] = create_table_reference_plan(body, join.right_table,
 		params, mut conn, allow_virtual, mut tables)!
-	left_columns := plan.subplans['\$1'].columns()
-	right_columns := plan.subplans['\$2'].columns()
+	left_columns := (plan.subplans['\$1'] or { Plan{} }).columns()
+	right_columns := (plan.subplans['\$2'] or { Plan{} }).columns()
 
 	range_variable := '\$USING${tables.len}'
 	mut common_columns := []CommonColumn{}
@@ -220,7 +220,7 @@ fn create_join_plan(body QuerySpecification, join QualifiedJoin, params map[stri
 	if l := lookup {
 		// EXPLAIN shows the lookup instead of reading the whole table.
 		inner := if join.join_type == .right { '\$1' } else { '\$2' }
-		mut inner_plan := plan.subplans[inner]
+		mut inner_plan := plan.subplans[inner] or { Plan{} }
 		if l.table.name.id() == l.base_table.name.id() {
 			inner_plan.operations[0] = l.operation
 		} else {
@@ -417,8 +417,10 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 			}
 
 			if allow_virtual && table_name_id in catalog.virtual_tables {
-				plan.operations << VirtualTableOperation{table_name_id, catalog.virtual_tables[table_name_id], conn}
-				table = catalog.virtual_tables[table_name_id].table()
+				// The table is known to be there.
+				virtual_table := unsafe { catalog.virtual_tables[table_name_id] }
+				plan.operations << VirtualTableOperation{table_name_id, virtual_table, conn}
+				table = virtual_table.table()
 				if filter {
 					add_where_plan(mut &plan, body, params, conn, {
 						table.name.id(): table

@@ -129,7 +129,7 @@ fn (i Index) entry_values(t Table, row Row) ![]u8 {
 fn (i Index) entry_prefix(t Table, row Row, n int) ![]u8 {
 	mut key := index_entry_prefix(i.id)
 	for column in i.columns[..n] {
-		value := row.data[column.name]
+		value := row.data[column.name] or { Value{} }
 		mut part := new_empty_bytes()
 		if value.is_null {
 			part.write_u8(0)
@@ -379,7 +379,7 @@ fn (mut f Storage) update_index_entries(t Table, old Row, new Row) ! {
 // has_null is true when any of the columns of the index are NULL in row. A
 // UNIQUE index allows any number of rows like that.
 fn (i Index) has_null(row Row) bool {
-	return i.columns.any(row.data[it.name].is_null)
+	return i.columns.any((row.data[it.name] or { Value{} }).is_null)
 }
 
 // unique_violation is the error for a row that has the same values as another

@@ -38,7 +38,7 @@ struct DynamicParameterSpecification {
 }
 
 fn (e DynamicParameterSpecification) pstr(params map[string]Value) string {
-	return params[e.name].pstr(params)
+	return (params[e.name] or { Value{} }).pstr(params)
 }
 
 fn (e DynamicParameterSpecification) compile(mut c Compiler) !CompileResult {

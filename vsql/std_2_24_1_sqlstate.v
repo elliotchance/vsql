@@ -1000,6 +1000,19 @@ fn sqlstate_42602(msg string) IError {
 	}
 }
 
+// lock not available: CREATE INDEX waited too long for other transactions to
+// finish.
+struct SQLState55P03 {
+	SQLState
+}
+
+fn sqlstate_55p03(msg string) IError {
+	return SQLState55P03{
+		code: sqlstate_to_int('55P03')
+		msg:  msg
+	}
+}
+
 // program limit exceeded, such as a key that doesn't fit in a page.
 struct SQLState54000 {
 	SQLState

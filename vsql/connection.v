@@ -805,6 +805,28 @@ pub fn (mut conn CatalogConnection) sequences(schema string) ![]Sequence {
 	return sequences
 }
 
+// indexes returns the indexes (see CREATE INDEX) of the tables in the provided
+// schema, sorted by table name and then index name. If the schema does not exist
+// an empty list will be returned.
+pub fn (mut conn CatalogConnection) indexes(schema string) ![]Index {
+	conn.open_read_connection()!
+	defer {
+		conn.release_read_connection()
+	}
+
+	mut indexes := []Index{}
+	for _, index in conn.storage.indexes {
+		if index.name.schema_name == schema {
+			indexes << index
+		}
+	}
+	indexes.sort(a.sort_key() < b.sort_key())
+
+	conn.storage.take_isolation_error()!
+
+	return indexes
+}
+
 // identity_sequence returns the sequence of the identity column of a table, with
 // its current value.
 fn (mut conn CatalogConnection) identity_sequence(table Table) !Sequence {
@@ -945,14 +967,20 @@ pub mut:
 	// Since locking all database isn't ideal. You could provide a consistent
 	// RwMutex that belongs to each file - such as from a map.
 	mutex &sync.RwMutex = unsafe { nil }
+	// create_index_timeout is how long CREATE INDEX waits for other
+	// transactions that have changed the table to finish (the index can't
+	// include rows that it can't see yet), before it fails with a 55P03 lock
+	// not available. The default is 60 seconds.
+	create_index_timeout time.Duration
 }
 
 // default_connection_options returns the sensible defaults used by open() and
 // the correct base to provide your own option overrides. See ConnectionOptions.
 pub fn default_connection_options() ConnectionOptions {
 	return ConnectionOptions{
-		page_size: 4096
-		mutex:     sync.new_rwmutex()
+		page_size:            4096
+		mutex:                sync.new_rwmutex()
+		create_index_timeout: 60 * time.second
 	}
 }
 

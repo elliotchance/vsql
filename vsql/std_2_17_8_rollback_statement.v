@@ -40,7 +40,7 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 		mut page := catalog.storage.btree.pager.fetch_page(page_number)!
 		for obj in page.objects() {
 			if (obj.tid == catalog.storage.transaction_id
-				|| obj.xid == catalog.storage.transaction_id) && obj.key[0] in [`T`, `S`] {
+				|| obj.xid == catalog.storage.transaction_id) && obj.key[0] in [`T`, `S`, `N`] {
 				schema_changed = true
 			}
 
@@ -66,8 +66,8 @@ fn (mut catalog CatalogConnection) rollback_transaction() ! {
 	catalog.storage.transaction_pages = map[int]bool{}
 	catalog.storage.end_constraint_modes()
 
-	// Tables and schemas that were created or dropped in this transaction must
-	// be reloaded, here and in other connections.
+	// Tables, schemas and indexes that were created or dropped in this
+	// transaction must be reloaded, here and in other connections.
 	if schema_changed {
 		catalog.storage.schema_changed()
 		catalog.storage.load_schema(catalog.catalog_name)!

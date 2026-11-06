@@ -65,6 +65,7 @@ type YYSym = AddColumnDefinition
 	| Identifier
 	| IdentityColumn
 	| IdentifierChain
+	| IndexColumn
 	| InPredicate
 	| InsertStatement
 	| JoinSpecification
@@ -131,6 +132,7 @@ type YYSym = AddColumnDefinition
 	| []ContextuallyTypedRowValueConstructorElement
 	| []DerivedColumn
 	| []Identifier
+	| []IndexColumn
 	| []RowValueConstructor
 	| []RowValueConstructorPredicand
 	| []SchemaElement
@@ -938,5 +940,5 @@ pub fn reserved_words() []string {
 // are for display, such as highlighting SQL, and mustn't decide if a name needs
 // quotes.
 pub fn extension_keywords() []string {
-	return ['IF', 'ILIKE', 'LIMIT']
+	return ['IF', 'ILIKE', 'INDEX', 'LIMIT']
 }

@@ -106,6 +106,9 @@ only be dropped with ``CASCADE``, which drops it too. Otherwise, it's an error
   uses the columns of the other table. A ``FOREIGN KEY`` that only references
   the same column of the same table is dropped with the column.
 
+An index (see :doc:`create-index`) that has the column can also only be dropped
+with ``CASCADE``, which drops the index.
+
 Every row of the table is written again, because the values of a row are
 stored in the order of its columns. The rows are also moved when the
 ``PRIMARY KEY`` is dropped.

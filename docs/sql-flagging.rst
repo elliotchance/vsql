@@ -59,6 +59,18 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
    * - ``V001-03``
      - ``EXPLAIN`` before a searched ``UPDATE`` (see :doc:`explain`).
 
+   * - ``V002``
+     - ``CREATE INDEX``.
+
+   * - ``V002-01``
+     - ``CREATE INDEX`` (see :doc:`create-index`).
+
+   * - ``V003``
+     - ``DROP INDEX``.
+
+   * - ``V003-01``
+     - ``DROP INDEX`` (see :doc:`drop-index`).
+
    * - ``V101``
      - ``CREATE SCHEMA``.
 

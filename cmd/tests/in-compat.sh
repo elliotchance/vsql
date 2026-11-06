@@ -55,10 +55,10 @@ INSERT INTO [Artist] ([ArtistId], [Name]) VALUES (1, 'Björk');
 COMMIT;
 SQL
 
-# Without -ignore-unsupported they are errors. What's in the body of the trigger
-# isn't run by itself.
+# Without -ignore-unsupported they are errors (other than CREATE INDEX, which is
+# supported). What's in the body of the trigger isn't run by itself.
 $VSQL in -file sqlite.sql -compat sqlite3 -continue-on-error $VSQL_FILE > out.txt && exit 1
-test "$(grep -c ' ERROR ' out.txt)" = 4
+test "$(grep -c ' ERROR ' out.txt)" = 3
 query 'SELECT name FROM artist;' | grep -x 'Björk'
 rm -f $VSQL_FILE $VSQL_FILE.wal
 

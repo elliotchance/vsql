@@ -48,6 +48,10 @@ mut:
 	transaction_pages map[int]bool
 	// Like the tables we keep the schemas in memory.
 	schemas map[string]Schema
+	// The indexes are also kept in memory, because every write to a table must
+	// change its indexes. They're keyed by the storage_id of their name (which
+	// is in the schema of their table).
+	indexes map[string]Index
 	// read_only is true when the file is only locked for reading. A read only
 	// statement (outside of an explicit transaction) uses a transaction ID of 0
 	// because it must not modify the header, see isolation_start.
@@ -88,6 +92,7 @@ struct StatementSnapshot {
 	header            Header
 	tables            map[string]Table
 	schemas           map[string]Schema
+	indexes           map[string]Index
 	transaction_state TransactionState
 	transaction_id    u64
 	transaction_pages map[int]bool
@@ -105,6 +110,7 @@ fn (mut f Storage) begin_statement() {
 		}
 		tables:            f.tables.clone()
 		schemas:           f.schemas.clone()
+		indexes:           f.indexes.clone()
 		transaction_state: f.transaction_state
 		transaction_id:    f.transaction_id
 		isolation_depth:   f.isolation_depth
@@ -139,6 +145,7 @@ fn (mut f Storage) discard_statement(path string) ! {
 	f.header = f.snapshot.header
 	f.tables = f.snapshot.tables.clone()
 	f.schemas = f.snapshot.schemas.clone()
+	f.indexes = f.snapshot.indexes.clone()
 	f.transaction_state = f.snapshot.transaction_state
 	f.transaction_id = f.snapshot.transaction_id
 	f.isolation_depth = f.snapshot.isolation_depth
@@ -202,7 +209,7 @@ fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
 	f.load_schema(catalog_name)!
 }
 
-// load_schema reads the tables and schemas that are visible to the current
+// load_schema reads the tables, schemas and indexes that are visible to the current
 // transaction from the file.
 fn (mut f Storage) load_schema(catalog_name string) ! {
 	// The schema must be read in an isolation block, which may or may not
@@ -241,6 +248,8 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 	if err := iter.err {
 		return err
 	}
+
+	f.load_indexes()!
 }
 
 // parse_definition parses the definition of a schema object (such as a table),
@@ -631,6 +640,9 @@ fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 	f.check_concurrent_references(f.table(table_name))!
 
 	table_id := f.table(table_name).id
+	for index in f.table_indexes(table_id) {
+		f.delete_index(index)!
+	}
 	f.btree.expire(table_object_key(table_id), tid, f.transaction_id)!
 	if _ := f.table(table_name).identity_column() {
 		f.delete_identity(table_id)!
@@ -678,6 +690,7 @@ fn (mut f Storage) delete_row(table_name string, mut row Row) ! {
 	f.check_concurrent_definition(f.table(table_name))!
 	f.check_concurrent_references(f.table(table_name))!
 	page_number := f.btree.expire(row.object_key(f.table(table_name))!, row.tid, f.transaction_id)!
+	f.delete_index_entries(f.table(table_name), row)!
 
 	// A negative page_number means the object didn't exist so there's nothing to
 	// save. This should not be possible because the delete_row will only be
@@ -699,6 +712,7 @@ fn (mut f Storage) write_row(mut r Row, t Table) ! {
 	f.check_primary_key(mut r, t)!
 	obj := new_page_object(r.object_key(t)!, f.transaction_id, 0, r.bytes(t)!)
 	f.btree.add(obj)!
+	f.add_index_entries(t, r)!
 }
 
 // assign_row_id gives a new row in a table without a PRIMARY KEY the next row
@@ -717,10 +731,10 @@ fn (mut f Storage) assign_row_id(mut r Row, t Table) {
 	r.id = buf.bytes()
 }
 
-// update_row replaces a row with a new version that has the same key. A row
-// that gets a new PRIMARY KEY is deleted and written again instead (see
-// UpdateStatementSearched).
-fn (mut f Storage) update_row(mut new Row, t Table) ! {
+// update_row replaces a row (the old version) with a new version that has the
+// same key. A row that gets a new PRIMARY KEY is deleted and written again
+// instead (see UpdateStatementSearched).
+fn (mut f Storage) update_row(old Row, mut new Row, t Table) ! {
 	f.isolation_start()!
 	defer {
 		f.end_isolation()
@@ -730,15 +744,18 @@ fn (mut f Storage) update_row(mut new Row, t Table) ! {
 	f.check_concurrent_references(t)!
 	f.assign_row_id(mut new, t)
 	f.btree.update(new_page_object(new.object_key(t)!, f.transaction_id, 0, new.bytes(t)!))!
+	f.update_index_entries(t, old, new)!
 }
 
 // check_concurrent_definition returns a SQLSTATE 40001 if another active
-// transaction has changed or dropped the definition of t. Otherwise, a row
-// written with the old definition would not have the columns (or pass the
-// constraints) of the new one, or would be written into a dropped table. It must
+// transaction has changed or dropped the definition of t, or created or dropped
+// an index of t. Otherwise, a row written with the old definition would not
+// have the columns (or pass the constraints) of the new one, would be written
+// into a dropped table, or wouldn't be in an index that's being created. It must
 // be called from inside an isolation block.
 fn (mut f Storage) check_concurrent_definition(t Table) ! {
 	f.check_concurrent_objects(table_object_key(t.id), table_object_key(t.id))!
+	f.check_concurrent_objects(index_object_key(t.id, 0), index_object_key(t.id + 1, 0))!
 }
 
 // check_concurrent_rows returns a SQLSTATE 40001 if another active transaction
@@ -792,16 +809,26 @@ fn (mut f Storage) check_concurrent_references(t Table) ! {
 }
 
 fn (mut f Storage) check_concurrent_objects(start []u8, end []u8) ! {
+	if f.has_concurrent_objects(start, end)! {
+		return sqlstate_40001('avoiding concurrent write on table definition')
+	}
+}
+
+// has_concurrent_objects is true if another active transaction has created or
+// expired an object from start to end (inclusive).
+fn (mut f Storage) has_concurrent_objects(start []u8, end []u8) !bool {
 	mut iter := f.btree.new_range_iterator(start, end)
 	for {
 		object := iter.next() or { break }
 		if f.is_concurrent_write(object) {
-			return sqlstate_40001('avoiding concurrent write on table definition')
+			return true
 		}
 	}
 	if err := iter.err {
 		return err
 	}
+
+	return false
 }
 
 fn (mut f Storage) read_rows(table_name Identifier) ![]Row {

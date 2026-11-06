@@ -23,7 +23,8 @@ struct DropColumnDefinition {
 // uses the columns of the other side.
 //
 // A generated column whose generation expression uses the column can also only
-// be dropped with CASCADE, which drops it first.
+// be dropped with CASCADE, which drops it first. So can a column that's in an
+// index, and CASCADE drops the index.
 //
 // ISO/IEC 9075-2:2016(E), 11.23, <drop column definition>, Syntax Rules, 4, 7.b and 7.f
 // ISO/IEC 9075-2:2016(E), 11.23, <drop column definition>, General Rules, 3 to 8
@@ -123,6 +124,19 @@ fn (d DropColumnDefinition) execute(mut conn Connection, mut catalog CatalogConn
 
 	if dependent.len > 0 && d.behavior == 'RESTRICT' {
 		return sqlstate_2bp01('constraint ${requote_identifier(dependent[0][1])} on ${dependent[0][0]}')
+	}
+
+	mut indexes := []Index{}
+	for index in catalog.storage.table_indexes(table.id) {
+		if index.columns.any(it.name == name) {
+			indexes << index
+		}
+	}
+	if indexes.len > 0 && d.behavior == 'RESTRICT' {
+		return sqlstate_2bp01('index ${indexes[0].name}')
+	}
+	for index in indexes {
+		catalog.storage.delete_index(index)!
 	}
 
 	columns := table.columns.filter(it.name.sub_entity_name != name)

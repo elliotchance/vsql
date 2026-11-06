@@ -38,6 +38,11 @@ File
     - Its key must fit in a page, which only matters for a small page size
       (otherwise a ``54000`` error)
 
+  * - The maximum size of the values of the columns of an index (see
+      :doc:`create-index`), for each row
+    - About half a page (2000 bytes for the default page size), the same as a
+      ``PRIMARY KEY`` (otherwise a ``54000`` error)
+
 Database
 --------
 

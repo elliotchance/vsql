@@ -10,10 +10,12 @@ type Stmt = AlterSequenceGeneratorStatement
 	| CloseStatement
 	| CommitStatement
 	| ConnectStatement
+	| CreateIndexStatement
 	| DeclareCursor
 	| DeleteStatementPositioned
 	| DeleteStatementSearched
 	| DisconnectStatement
+	| DropIndexStatement
 	| DropSchemaStatement
 	| DropSequenceGeneratorStatement
 	| DropTableStatement
@@ -100,8 +102,8 @@ pub fn (p PreparedStmt) dynamic_parameter_count() int {
 // command_function returns the identifier and code of the statement, from
 // Table 37, "SQL-statement codes" in ISO/IEC 9075-2 (the COMMAND_FUNCTION and
 // DYNAMIC_FUNCTION of a diagnostics area). A query is a <dynamic select
-// statement> ("SELECT CURSOR"). EXPLAIN and DECLARE CURSOR aren't standard
-// statements, so their codes are negative.
+// statement> ("SELECT CURSOR"). EXPLAIN, DECLARE CURSOR, CREATE INDEX and DROP
+// INDEX aren't standard statements, so their codes are negative.
 pub fn (p PreparedStmt) command_function() (string, int) {
 	// ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.c to 2.e
 	if p.explain {
@@ -114,10 +116,12 @@ pub fn (p PreparedStmt) command_function() (string, int) {
 		CloseStatement { 'CLOSE CURSOR', 9 }
 		CommitStatement { 'COMMIT WORK', 11 }
 		ConnectStatement { 'CONNECT', 13 }
+		CreateIndexStatement { 'CREATE INDEX', -3 }
 		DeclareCursor { 'DECLARE CURSOR', -2 }
 		DeleteStatementPositioned { 'DELETE CURSOR', 18 }
 		DeleteStatementSearched { 'DELETE WHERE', 19 }
 		DisconnectStatement { 'DISCONNECT', 22 }
+		DropIndexStatement { 'DROP INDEX', -4 }
 		DropSchemaStatement { 'DROP SCHEMA', 31 }
 		DropSequenceGeneratorStatement { 'DROP SEQUENCE', 135 }
 		DropTableStatement { 'DROP TABLE', 32 }
@@ -241,6 +245,20 @@ fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {
 			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
 		}
 		CommitStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		CreateIndexStatement {
+			if p.explain {
+				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
+			}
+
+			return stmt.execute(mut p.c, all_params, p.elapsed_parse)
+		}
+		DropIndexStatement {
 			if p.explain {
 				return stmt.explain(mut p.c, all_params, p.elapsed_parse)
 			}

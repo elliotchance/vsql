@@ -69,6 +69,17 @@ fn (stmt TableDefinition) execute(mut conn Connection, _ map[string]Value, elaps
 // create creates the table and returns true, or false if it already exists with
 // IF NOT EXISTS. The caller must have the write connection open.
 fn (stmt TableDefinition) create(mut conn Connection) !bool {
+	created, _ := stmt.create_table(mut conn, false, [])!
+
+	return created
+}
+
+// create_table creates the table (see create) and also returns the table. When
+// defer_foreign_keys is true, the table is stored without its foreign keys. They
+// are still named (and the names can't be any of reserved_names), and they're
+// in the returned table, so that they can be added once the tables that they
+// reference exist (see SchemaDefinition.create_elements).
+fn (stmt TableDefinition) create_table(mut conn Connection, defer_foreign_keys bool, reserved_names []string) !(bool, Table) {
 	mut table_name := conn.resolve_schema_identifier(stmt.table_name)!
 	check_writable_schema(table_name)!
 	mut catalog := conn.catalog_for(table_name)
@@ -77,7 +88,7 @@ fn (stmt TableDefinition) create(mut conn Connection) !bool {
 		// The existing table isn't changed or compared with this definition,
 		// which isn't checked either.
 		if stmt.if_not_exists {
-			return false
+			return false, Table{}
 		}
 
 		// ISO/IEC 9075-2:2016(E), 11.3, <table definition>, Syntax Rules, 7
@@ -86,17 +97,24 @@ fn (stmt TableDefinition) create(mut conn Connection) !bool {
 
 	stmt.check_limits(table_name)!
 	mut table := stmt.table(table_name, 0)!
-	table.name_constraints(catalog.storage.schema_constraint_names(table_name), catalog.storage.schema_index_names(table_name))!
+	mut other_names := catalog.storage.schema_constraint_names(table_name)
+	other_names << reserved_names
+	table.name_constraints(other_names, catalog.storage.schema_index_names(table_name))!
 	resolve_generated_columns(mut conn, mut table, 0)!
-	resolve_foreign_keys(mut conn, mut table)!
+	if !defer_foreign_keys {
+		resolve_foreign_keys(mut conn, mut table)!
+	}
 	for column in table.columns {
 		check_default_clause(mut conn, column)!
 	}
 	check_new_check_constraints(mut conn, table, 0)!
 
-	catalog.storage.create_table(table)!
+	catalog.storage.create_table(Table{
+		...table
+		foreign_keys: if defer_foreign_keys { []ForeignKey{} } else { table.foreign_keys }
+	})!
 
-	return true
+	return true, table
 }
 
 // table checks the definition and returns the table that it describes. It's

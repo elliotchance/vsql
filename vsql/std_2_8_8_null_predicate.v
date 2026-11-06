@@ -4,37 +4,23 @@ module vsql
 //
 // Specify a test for a null value.
 
-// NullPredicand is a single value or a row (F481).
-type NullPredicand = ExplicitRowValueConstructor | RowValueConstructorPredicand
-
-// NullPredicate for "IS NULL" and "IS NOT NULL".
+// NullPredicate for "IS NULL" and "IS NOT NULL". The expression can be a row
+// (F481).
 struct NullPredicate {
-	expr NullPredicand
+	expr RowValueConstructorPredicand
 	not  bool
 }
 
-fn new_null_predicate_row(elements []ContextuallyTypedRowValueConstructorElement, not bool) !NullPredicate {
-	return NullPredicate{new_explicit_row_value_constructor(elements)!, not}
-}
-
 fn (e NullPredicate) pstr(params map[string]Value) string {
-	expr := match e.expr {
-		ExplicitRowValueConstructor { 'ROW(${e.expr.pstr(params)})' }
-		RowValueConstructorPredicand { e.expr.pstr(params) }
-	}
-
 	if e.not {
-		return '${expr} IS NOT NULL'
+		return '${e.expr.pstr(params)} IS NOT NULL'
 	}
 
-	return '${expr} IS NULL'
+	return '${e.expr.pstr(params)} IS NULL'
 }
 
 fn (e NullPredicate) compile(mut c Compiler) !CompileResult {
-	compiled := match e.expr {
-		ExplicitRowValueConstructor { e.expr.exprs.map(it.compile(mut c)!) }
-		RowValueConstructorPredicand { [e.expr.compile(mut c)!] }
-	}
+	compiled := e.expr.compile_fields(mut c)!
 
 	return CompileResult{
 		run:          fn [e, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {

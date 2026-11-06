@@ -20,21 +20,41 @@ fn (e ContextuallyTypedRowValueConstructorElement) compile(mut c Compiler) !Comp
 	}
 }
 
-type RowValueConstructorPredicand = BooleanPredicand | CommonValueExpression
+type RowValueConstructorPredicand = BooleanPredicand
+	| CommonValueExpression
+	| ExplicitRowValueConstructor
 
 fn (e RowValueConstructorPredicand) pstr(params map[string]Value) string {
 	return match e {
 		CommonValueExpression, BooleanPredicand {
 			e.pstr(params)
 		}
+		ExplicitRowValueConstructor {
+			'ROW(${e.pstr(params)})'
+		}
 	}
 }
 
+// compile is for a predicand that must be a single value. Only the predicates
+// that are defined in terms of a comparison (and IS NULL) can have a row (see
+// compile_fields).
 fn (e RowValueConstructorPredicand) compile(mut c Compiler) !CompileResult {
 	match e {
 		CommonValueExpression, BooleanPredicand {
 			return e.compile(mut c)!
 		}
+		ExplicitRowValueConstructor {
+			return sqlstate_42601('a row value cannot be used here')
+		}
+	}
+}
+
+// compile_fields compiles each field of the predicand, so a row has one for
+// each of its values and anything else is a single field.
+fn (e RowValueConstructorPredicand) compile_fields(mut c Compiler) ![]CompileResult {
+	return match e {
+		ExplicitRowValueConstructor { e.exprs.map(it.compile(mut c)!) }
+		CommonValueExpression, BooleanPredicand { [e.compile(mut c)!] }
 	}
 }
 

@@ -56,8 +56,103 @@ fn (op ComparisonOperator) truth(cmp CompareResult) Truth {
 	return if result { Truth.is_true } else { Truth.is_false }
 }
 
+// row_truth is the result of "X <op> Y" for two rows (of the same degree),
+// given the comparison of each pair of corresponding fields. A value that isn't
+// a row is the same as a row with one field.
+//
+// ISO/IEC 9075-2:2016(E), 8.2, <comparison predicate>, General Rules, 1.b.i
+fn (op ComparisonOperator) row_truth(cmps []CompareResult) Truth {
+	// 1) X = Y is True if every Xi = Yi is True, and 3) False if any of them is
+	// False.
+	mut equal := Truth.is_true
+	for cmp in cmps {
+		if cmp == .is_less || cmp == .is_greater {
+			equal = .is_false
+			break
+		}
+		if cmp == .is_unknown {
+			equal = .is_unknown
+		}
+	}
+
+	// 2) X < Y is True if the fields before the first one that isn't equal are
+	// equal, and that one is less. So it's the first field whose comparison
+	// isn't True for Xi = Yi that decides it.
+	mut first := CompareResult.is_equal
+	for cmp in cmps {
+		if cmp != .is_equal {
+			first = cmp
+			break
+		}
+	}
+
+	// 4) X < Y is False if X = Y is True or Y < X is True, and 5) otherwise
+	// it's Unknown. Y < X is the same, the other way around.
+	less := if first == .is_less {
+		Truth.is_true
+	} else if equal == .is_true || first == .is_greater {
+		Truth.is_false
+	} else {
+		Truth.is_unknown
+	}
+	greater := if first == .is_greater {
+		Truth.is_true
+	} else if equal == .is_true || first == .is_less {
+		Truth.is_false
+	} else {
+		Truth.is_unknown
+	}
+
+	// The other operators are defined in terms of = and < by Syntax Rules, 6.
+	return match op {
+		.equal { equal }
+		.not_equal { truth_not(equal) }
+		.less_than { less }
+		.greater_than { greater }
+		.less_than_or_equal { truth_or(less, equal) }
+		.greater_than_or_equal { truth_or(greater, equal) }
+	}
+}
+
 fn (e ComparisonPredicate) pstr(params map[string]Value) string {
 	return '${e.left.pstr(params)} ${e.op} ${e.right.pstr(params)}'
+}
+
+// check_row_comparison checks that the fields of two predicands (see
+// compile_fields), given their types, can be compared. They must have the same
+// number of fields.
+//
+// ISO/IEC 9075-2:2016(E), 8.2, <comparison predicate>, Syntax Rules, 1
+fn (c Compiler) check_row_comparison(left []Type, right []Type) ! {
+	if left.len != right.len {
+		return sqlstate_42601('cannot compare a row of degree ${left.len} with a row of degree ${right.len}')
+	}
+
+	for i, typ in left {
+		c.check_time_zone_comparison(typ, right[i])!
+	}
+}
+
+// run_fields evaluates each field of a predicand (see compile_fields).
+fn run_fields(mut conn Connection, fields []CompileResult, data Row, params map[string]Value) ![]Value {
+	mut values := []Value{cap: fields.len}
+	for field in fields {
+		values << field.run(mut conn, data, params)!
+	}
+
+	return values
+}
+
+// compare_rows compares each pair of corresponding fields of two rows of the
+// same degree (see row_truth). Every pair is compared, so that fields that
+// can't be compared are always an error.
+fn compare_rows(conn &Connection, x []Value, y []Value) ![]CompareResult {
+	mut cmps := []CompareResult{cap: x.len}
+	for i, value in x {
+		cmps << compare(conn, value, y[i])!
+	}
+
+	return cmps
 }
 
 // compile_comparison compiles the comparison. If it's retrospective (see
@@ -66,6 +161,10 @@ fn (e ComparisonPredicate) pstr(params map[string]Value) string {
 //
 // ISO/IEC 9075-2:2016(E), 6.39, <boolean value expression>, Syntax Rules, 5.c.ii
 fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool) !CompileResult {
+	if e.left is ExplicitRowValueConstructor || e.right is ExplicitRowValueConstructor {
+		return e.compile_row_comparison(mut c)!
+	}
+
 	compiled_left := if retrospective && e.op in [.greater_than, .greater_than_or_equal] {
 		c.compile_retrospective(e.left)!
 	} else {
@@ -87,6 +186,24 @@ fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool
 		}
 		typ:          new_type('BOOLEAN', 0, 0)
 		contains_agg: compiled_left.contains_agg || compiled_right.contains_agg
+	}
+}
+
+// compile_row_comparison compiles a comparison where either side is a row.
+fn (e ComparisonPredicate) compile_row_comparison(mut c Compiler) !CompileResult {
+	left := e.left.compile_fields(mut c)!
+	right := e.right.compile_fields(mut c)!
+	c.check_row_comparison(left.map(it.typ), right.map(it.typ))!
+
+	return CompileResult{
+		run:          fn [e, left, right] (mut conn Connection, data Row, params map[string]Value) !Value {
+			x := run_fields(mut conn, left, data, params)!
+			y := run_fields(mut conn, right, data, params)!
+
+			return e.op.row_truth(compare_rows(conn, x, y)!).value()
+		}
+		typ:          new_type('BOOLEAN', 0, 0)
+		contains_agg: left.any(it.contains_agg) || right.any(it.contains_agg)
 	}
 }
 
@@ -117,7 +234,8 @@ fn compare(conn &Connection, xv Value, yv Value) !CompareResult {
 
 	// ISO/IEC 9075-2:2016(E), 8.2, <comparison predicate>, General Rules,
 	// 1.b.i-1b.iv describe row, array, multiset and user-defined type
-	// comparisons. None of those types are supported, so every comparison falls
+	// comparisons. A row is compared one field at a time (see row_truth), and
+	// the other types are not supported, so every comparison of two values falls
 	// under 1b.v: X = Y and X < Y are True when XV is respectively equal to, or
 	// less than, YV, and False otherwise. The rest of the General Rules define
 	// equal and less than for each type.

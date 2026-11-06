@@ -19,6 +19,9 @@ that they will be swapped if ``Y > Z``.
 If neither ``ASYMMETRIC`` nor ``SYMMETRIC`` is provided then ``ASYMMETRIC`` is
 assumed.
 
+``X``, ``Y`` and ``Z`` can also be rows with the same number of values (see
+`Comparing Rows`_).
+
 *Examples*
 
 .. code-block:: sql
@@ -37,7 +40,10 @@ IN
   X [ NOT ] IN ( <query> )
 
 An ``IN`` expression returns ``TRUE`` if ``X`` is equal to any of the values in
-the list, or any of the rows of the subquery (which must have one column). Or,
+the list, or any of the rows of the subquery (which must have one column). ``X``
+can also be a row (see `Comparing Rows`_), then each value in the list must be a
+row with the same number of values, and the subquery must have that many
+columns. Or,
 put another way ``X = Y1 OR X = Y2 ...``, which is the same as
 ``X = ANY (...)``. ``X NOT IN (...)`` is the same as ``NOT (X IN (...))``.
 
@@ -65,8 +71,8 @@ ALL, SOME and ANY
   X <op> ALL ( <query> )
   X <op> { SOME | ANY } ( <query> )
 
-Compares ``X`` with each row of the subquery (which must have one column), where
-``<op>`` is ``=``, ``<>``, ``!=``, ``<``, ``>``, ``<=`` or ``>=``. ``SOME`` and
+Compares ``X`` with each row of the subquery (which must have one column, or
+one for each value when ``X`` is a row, see `Comparing Rows`_), where ``<op>`` is ``=``, ``<>``, ``!=``, ``<``, ``>``, ``<=`` or ``>=``. ``SOME`` and
 ``ANY`` are the same. ``!=`` is a vsql extension, see :doc:`operators`.
 
 ``ALL`` is ``TRUE`` if the comparison is ``TRUE`` for every row (or there are no
@@ -84,6 +90,42 @@ comparison is ``TRUE`` for any row, and ``FALSE`` if it's ``FALSE`` for every ro
   2 > SOME (VALUES 1, 2, 3)                    -- TRUE
   1 = ANY (VALUES 2, CAST(NULL AS INT))        -- UNKNOWN
   1 = ALL (SELECT x FROM t WHERE x > 100)      -- TRUE (no rows)
+
+Comparing Rows
+--------------
+
+.. code-block:: text
+
+  ( X1 , X2 [ , X3 ... ] ) <op> ( Y1 , Y2 [ , Y3 ... ] )
+  ROW ( X1 [ , X2 ... ] ) <op> ROW ( Y1 [ , Y2 ... ] )
+
+Two rows with the same number of values can be compared with any of the
+comparison operators (``=``, ``<>``, ``!=``, ``<``, ``>``, ``<=`` and ``>=``),
+as well as with ``BETWEEN``, ``IN``, ``ALL``, ``SOME`` and ``ANY``. The values
+are compared in order, like the words in a dictionary:
+
+- ``X = Y`` is ``TRUE`` if every value is equal, and ``FALSE`` if any of them
+  are not equal.
+- ``X < Y`` is ``TRUE`` if the first value that isn't equal is less, and
+  ``FALSE`` if it's greater (or every value is equal).
+
+A ``NULL`` value only makes the result ``UNKNOWN`` when the other values don't
+decide it. So ``(1, NULL) < (2, 0)`` is ``TRUE``, but ``(1, NULL) < (1, 5)`` is
+``UNKNOWN``. A comparison can be ``UNKNOWN`` even when it's known that the rows
+aren't equal: ``(1, NULL, 3) = (1, 5, 4)`` is ``FALSE``, but
+``(1, NULL, 3) < (1, 5, 4)`` is ``UNKNOWN``.
+
+*Examples*
+
+.. code-block:: sql
+
+  (1, 2) = (1, 2)                                     -- TRUE
+  (1, 2) < (1, 3)                                     -- TRUE
+  ROW(2, 0) > ROW(1, 5)                               -- TRUE
+  (1, 2) BETWEEN (1, 1) AND (1, 3)                    -- TRUE
+  (1, 2) IN ((3, 4), (1, 2))                          -- TRUE
+  (x, y) IN (SELECT a, b FROM t)
+  (1, CAST(NULL AS INT)) = (1, 2)                     -- UNKNOWN
 
 CASE
 ----

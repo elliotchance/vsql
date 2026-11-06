@@ -10,9 +10,14 @@ module vsql
 import encoding.binary
 import os
 
+// A page that has been stored is never changed in place, it's replaced by
+// store_page. So read_page can return the pager's own copy of a page, which is
+// only for reading. fetch_page returns a copy that can be changed and stored
+// again.
 interface Pager {
 mut:
 	fetch_page(page_number int) !Page
+	read_page(page_number int) !Page
 	store_page(page_number int, page Page) !
 	append_page(page Page) !int
 	total_pages() int
@@ -44,11 +49,15 @@ fn new_memory_pager() &MemoryPager {
 // Pages are copied in and out of the pager because the B-tree changes the
 // data of a page in place before storing it.
 fn (mut p MemoryPager) fetch_page(page_number int) !Page {
+	return (p.read_page(page_number)!).clone()
+}
+
+fn (mut p MemoryPager) read_page(page_number int) !Page {
 	if page := p.dirty[page_number] {
-		return page.clone()
+		return page
 	}
 
-	return p.pages[page_number].clone()
+	return p.pages[page_number]
 }
 
 fn (mut p MemoryPager) store_page(page_number int, page Page) ! {
@@ -134,13 +143,16 @@ fn new_file_pager(mut file os.File, page_size int, root_page int, cache_size int
 }
 
 fn (mut p FilePager) fetch_page(page_number int) !Page {
+	return (p.read_page(page_number)!).clone()
+}
+
+fn (mut p FilePager) read_page(page_number int) !Page {
 	if data := p.dirty[page_number] {
-		return new_page_from_bytes(data)
+		return page_view(data)
 	}
 
-	// new_page_from_bytes copies the data, so a cached page can't be changed.
 	if data := p.cache[page_number] {
-		return new_page_from_bytes(data)
+		return page_view(data)
 	}
 
 	fault_point('read_page')!
@@ -155,7 +167,7 @@ fn (mut p FilePager) fetch_page(page_number int) !Page {
 	p.file.read(mut buf) or { return sqlstate_58030('unable to read from file: ${err}') }
 	p.cache_page(page_number, buf)
 
-	return new_page_from_bytes(buf)
+	return page_view(buf)
 }
 
 // cache_page keeps data (that was just read from the file) in the cache,
@@ -183,16 +195,18 @@ fn (page Page) clone() Page {
 	}
 }
 
-fn new_page_from_bytes(buf []u8) Page {
+// page_view is the page in buf (see Page.bytes), which shares its memory, so
+// buf must not be changed while the page is used.
+fn page_view(buf []u8) Page {
 	return Page{
 		kind: buf[0]
 		used: binary.big_endian_u16_at(buf, 2)
-		data: buf[page_header_size..].clone()
+		data: buf[page_header_size..]
 	}
 }
 
 fn (page Page) bytes() []u8 {
-	mut b := new_empty_bytes()
+	mut b := new_bytes_with_capacity(page_header_size + page.data.len)
 	b.write_u8(page.kind)
 	b.write_u8(0) // flags
 	b.write_u16(page.used)

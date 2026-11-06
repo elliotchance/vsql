@@ -72,7 +72,7 @@ fn (mut p Btree) search_page(key []u8) !([]int, []int) {
 	mut current_page := p.pager.root_page()
 	for {
 		path << current_page
-		page := p.pager.fetch_page(current_page)!
+		page := p.pager.read_page(current_page)!
 
 		// Leaf node is the end of the line. The key may or may not exist, but
 		// this is the page that would contain it. In the case of adding the
@@ -119,11 +119,12 @@ fn (mut p Btree) update(obj PageObject) !int {
 	return page_number
 }
 
-// get returns the object with the key that was created by tid.
+// get returns the object with the key that was created by tid. Its key and value
+// are part of the page, which is never changed in place (see Pager.read_page).
 fn (mut p Btree) get(key []u8, tid u64) !PageObject {
 	path, _ := p.search_page(key)!
-	page := p.pager.fetch_page(path[path.len - 1])!
-	obj := page.get(key, tid)
+	page := p.pager.read_page(path[path.len - 1])!
+	obj := page.get_in_place(key, tid)
 	if obj.key.len == 0 {
 		return sqlstate_xx001('object does not exist: ${key.bytestr()}')
 	}
@@ -136,18 +137,29 @@ fn (mut p Btree) get(key []u8, tid u64) !PageObject {
 // so the returned object has its tid and xid.
 fn (mut p Btree) read_blob(ref PageObject) !PageObject {
 	blob_peices, has_fragment := ref.blob_info()
-	mut data := []u8{}
+	mut parts := [][]u8{cap: blob_peices + 1}
 	for part in 0 .. blob_peices {
-		data << (p.get(blob_object_key(ref.key, part), ref.tid)!).value
+		parts << (p.get(blob_object_key(ref.key, part), ref.tid)!).value
 	}
 
 	if has_fragment {
-		data << (p.get(fragment_object_key(ref.key), ref.tid)!).value
+		parts << (p.get(fragment_object_key(ref.key), ref.tid)!).value
 	}
 
-	_, obj := parse_page_object(data)
+	// The parts are only copied once, into data that's the right size.
+	mut size := 0
+	for part in parts {
+		size += part.len
+	}
+	mut data := []u8{cap: size}
+	for part in parts {
+		data << part
+	}
 
-	return PageObject{obj.key, obj.value, false, ref.tid, ref.xid}
+	// data is the object as it would be in a page (see bytes_range), which has the
+	// same key as ref. Its value is the rest of data, which doesn't need to be
+	// copied.
+	return PageObject{ref.key, data[page_object_prefix_length + ref.key.len..], false, ref.tid, ref.xid}
 }
 
 // remove_blob removes the blob and fragment objects of a blob reference. The
@@ -185,12 +197,12 @@ fn (mut p Btree) add(object PageObject) !int {
 	// same key (see the caveats at the top of the file) must fit on one page,
 	// and that includes the blob objects.
 	maximum_size := p.max_allowed_in_page() / 2
-	obj_bytes := obj.bytes()
-	if obj_bytes.len > maximum_size {
+	obj_len := obj.length()
+	if obj_len > maximum_size {
 		// One important consideration is that the actual bytes of the page
 		// object contains the key and the value. Since we're going to be
 		// splitting it up into smaller peices each with their own key we cannot
-		// simply divide the obj.bytes() into a fixed size.
+		// simply divide the object into a fixed size.
 		//
 		// Formula derived from PageObject.length() and using 5 bytes for the
 		// blob value size.
@@ -203,10 +215,14 @@ fn (mut p Btree) add(object PageObject) !int {
 		if blob_size < 1 {
 			return sqlstate_54000('the key of an object (${obj.key.len} bytes) is too long for a page of ${p.page_size} bytes')
 		}
+		// The bytes of the object are split up as they're needed, so that a long
+		// value isn't copied first (see bytes_range).
+		prefix := obj.prefix_bytes()
 		mut part_number := 0
-		mut remaining := obj_bytes.len
+		mut remaining := obj_len
 		for remaining >= blob_size {
-			blob_object := new_blob_object(obj.key, obj.tid, obj.xid, part_number, obj_bytes[obj_bytes.len - remaining..obj_bytes.len - remaining + blob_size])
+			blob_object := new_blob_object(obj.key, obj.tid, obj.xid, part_number, obj.bytes_range(prefix,
+				obj_len - remaining, obj_len - remaining + blob_size))
 			part_number++
 			remaining -= blob_size
 			p.add(blob_object)!
@@ -215,8 +231,8 @@ fn (mut p Btree) add(object PageObject) !int {
 		// With the remaining amount (if any) create a blob fragement page.
 		has_fragment := remaining > 0
 		if has_fragment {
-			fragment_object := new_fragment_object(obj.key, obj.tid, obj.xid,
-				obj_bytes[obj_bytes.len - remaining..])
+			fragment_object := new_fragment_object(obj.key, obj.tid, obj.xid, obj.bytes_range(prefix,
+				obj_len - remaining, obj_len))
 			p.add(fragment_object)!
 		}
 
@@ -257,11 +273,12 @@ fn (mut p Btree) add(object PageObject) !int {
 		p.store_page(left_page_number, page)!
 	} else {
 		p.split_page(path, page, obj, kind_leaf)!
+
+		// The key may not be inserted into the existing page. So be careful to
+		// find the actual page.
+		path, _ = p.search_page(obj.key)!
 	}
 
-	// The key may not be inserted into the existing page (if there was a
-	// split). So be careful to refetch the actual page.
-	path, _ = p.search_page(obj.key)!
 	p.fix_parent_pages(path)!
 
 	return left_page_number
@@ -273,13 +290,14 @@ fn (mut p Btree) fix_parent_pages(path []int) ! {
 		return
 	}
 
-	mut leaf_page := p.pager.fetch_page(path[path.len - 1])!
-	min_key := leaf_page.head().key
+	// A page that's been stored is never changed in place (see Pager), so the
+	// key doesn't need to be copied. Only the key is read, because the value of
+	// the first object in a leaf page may be a whole blob object.
+	min_key := (p.pager.read_page(path[path.len - 1])!).object_key(0)
 	for path_index in 0 .. path.len - 1 {
-		mut t := p.pager.fetch_page(path[path_index])!
-
-		t_head := t.head()
+		t_head := (p.pager.read_page(path[path_index])!).head()
 		if compare_bytes(min_key, t_head.key) < 0 {
+			mut t := p.pager.fetch_page(path[path_index])!
 			new_object := new_page_object(min_key.clone(), 0, 0, t_head.value.clone())
 			if p.replace_pointer(path[..path_index + 1], mut t, t_head.key, new_object)! {
 				// The page was split, so the rest of the path has changed.
@@ -320,8 +338,10 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 	// objects into each page. This doesn't work because the new object might be
 	// larger than the remaining space on the left or right page. Instead we
 	// need to insert sort the object and divide the pages by size, see
-	// split_objects.
-	mut objects := page.objects()
+	// split_objects. The objects are only copied into the new pages, because
+	// page isn't changed.
+	mut objects := []PageObject{}
+	page.objects_in_place(mut objects)
 	mut inserted_at := -1
 	for pos, object in objects {
 		if compare_bytes(obj.key, object.key) <= 0 {
@@ -345,6 +365,15 @@ fn (mut p Btree) split_page(path []int, page Page, obj PageObject, kind u8) ! {
 	left_page_number := path[path.len - 1]
 	mut page_numbers := []int{}
 	for i, group in groups {
+		// When the object is added after the objects that all stay in the page
+		// (such as the next blob object), the page doesn't change. That's only
+		// for a leaf page, which is split as it was stored (see add), unlike a
+		// page that replace_pointer has already changed.
+		if i == 0 && kind == kind_leaf && inserted_at == -1 && group.len == objects.len - 1 {
+			page_numbers << left_page_number
+			continue
+		}
+
 		mut split := new_page(kind, p.page_size)
 		for object in group {
 			split.add(object)!

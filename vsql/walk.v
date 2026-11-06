@@ -30,7 +30,7 @@ mut:
 fn (mut iter PageIterator) parent(depth int) ![]PageObject {
 	for iter.parents.len <= depth {
 		mut objects := []PageObject{}
-		(iter.btree.pager.fetch_page(iter.path[iter.parents.len])!).objects_in_place(mut objects)
+		(iter.btree.pager.read_page(iter.path[iter.parents.len])!).objects_in_place(mut objects)
 		iter.parents << objects
 	}
 
@@ -59,7 +59,7 @@ fn (mut iter PageIterator) next() ?PageObject {
 
 		// Load all the objects for this leaf. Making sure to skip over any keys
 		// that are out of bounds.
-		(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).objects_in_place(mut iter.objects)
+		(iter.btree.pager.read_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).objects_in_place(mut iter.objects)
 		for object in iter.objects {
 			if compare_bytes(object.key, iter.min) < 0 {
 				iter.depth_iterator[iter.depth_iterator.len - 1]++
@@ -96,7 +96,7 @@ fn (mut iter PageIterator) next() ?PageObject {
 		for {
 			depth := iter.path.len - 1
 			if depth >= iter.parents.len {
-				page := iter.btree.pager.fetch_page(iter.path[depth]) or { return iter.fail(err) }
+				page := iter.btree.pager.read_page(iter.path[depth]) or { return iter.fail(err) }
 				if page.kind != kind_not_leaf {
 					// The page is only used by the iterator, so its objects don't
 					// need to be copied.

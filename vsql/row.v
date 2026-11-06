@@ -179,6 +179,23 @@ fn new_empty_value(typ Type) Value {
 // int, including its key, which fits in a page.
 const max_row_size = max_i32 - page_object_prefix_length - max_page_size
 
+// size_hint is about how many bytes the row will be written in (see bytes), so
+// that a long value is only copied once. It's not exact because the size of a
+// NUMERIC or DECIMAL depends on its digits.
+fn (r Row) size_hint(t Table) i64 {
+	mut size := i64(4 + r.id.len)
+	for col in t.columns {
+		v := r.data[col.name.sub_entity_name]
+		size += 1 + if !v.is_null && col.typ.typ in [.is_varchar, .is_character] {
+			4 + v.string_value().len
+		} else {
+			16
+		}
+	}
+
+	return size
+}
+
 // bytes is how the row is written in a page object. A row that's bigger than
 // max_row_size is 54000 (program limit exceeded).
 fn (r Row) bytes(t Table) ![]u8 {
@@ -190,7 +207,7 @@ fn (r Row) bytes(t Table) ![]u8 {
 // the size is checked before each one is written, rather than after the buffer
 // has already grown too big.
 fn (r Row) bytes_with_limit(t Table, limit i64) ![]u8 {
-	mut buf := new_empty_bytes()
+	mut buf := new_bytes_with_capacity(int(math.min(r.size_hint(t), limit)))
 
 	buf.write_u16(u16(r.id.len))
 	buf.write_u8s(r.id)
@@ -275,7 +292,11 @@ fn (t Table) column_ids() []string {
 // new_row_from_bytes_with_ids is new_row_from_bytes with the ids of the columns
 // of the table (see column_ids), so that they aren't made again for each row.
 fn new_row_from_bytes_with_ids(t Table, ids []string, data []u8, tid u64) Row {
-	mut buf := new_bytes(data)
+	// The values are copied out of data, so it doesn't need to be copied first
+	// (see new_bytes).
+	mut buf := Bytes{
+		data: data
+	}
 	mut row := map[string]Value{}
 
 	row_id := buf.read_u8s(buf.read_u16())

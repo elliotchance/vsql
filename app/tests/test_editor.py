@@ -4,8 +4,8 @@ import re
 
 from playwright.sync_api import expect
 
-from conftest import count
-from pages import titles
+from conftest import cli, count
+from pages import AppPage, titles
 
 
 def test_choose_table(ui):
@@ -91,4 +91,22 @@ def test_explain(ui):
     # The first term of each line is highlighted.
     expect(plan.locator('.kw')).to_have_text(['TABLE', 'WHERE', 'EXPR'])
     expect(ui.status).to_have_text(re.compile(r'^3 rows \('))
+
+
+def test_explain_keywords(page, db_file, start_app):
+    # The range of a PRIMARY KEY (or an INDEX) and the condition of a join are
+    # highlighted too, but not the same words in a name, a string or the
+    # columns.
+    cli(db_file, 'CREATE TABLE "a ON b" (" RANGE " INT PRIMARY KEY, x VARCHAR(10)); CREATE TABLE c (y VARCHAR(10));')
+    ui = AppPage(page, start_app(db_file))
+    ui.new_tab()
+    ui.editor.fill("""SELECT * FROM "a ON b" WHERE " RANGE " = 3 AND x <> ' RANGE '""")
+    ui.page.get_by_role('button', name='Explain').click()
+    plan = ui.page.locator('pre.explain')
+    expect(plan.locator('.kw')).to_have_text(['PRIMARY KEY', 'RANGE', 'WHERE', 'EXPR'])
+    expect(plan).to_contain_text('PRIMARY KEY "db".PUBLIC."a ON b" (" RANGE " INTEGER NOT NULL, X CHARACTER VARYING(10)) RANGE " RANGE " = 3')
+
+    ui.editor.fill("""SELECT * FROM "a ON b" JOIN c ON c.y = ' ON '""")
+    ui.page.get_by_role('button', name='Explain').click()
+    expect(plan.locator('.kw')).to_have_text(['$1:', 'TABLE', '$2:', 'TABLE', 'INNER JOIN', 'ON', 'EXPR'])
 

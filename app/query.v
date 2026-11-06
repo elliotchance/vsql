@@ -36,7 +36,19 @@ const max_cell_length = 50
 const explain_terms = ['VIRTUAL TABLE', 'PRIMARY KEY', 'GROUP BY', 'ORDER BY', 'FETCH FIRST',
 	'INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN']
 
-// explain_line is the HTML of a line of a plan, with the first term highlighted.
+// explain_keywords are the keywords in a line of a plan, after its first term,
+// that are highlighted: the table of an INDEX, the range of a PRIMARY KEY or
+// INDEX, and the condition of a join.
+const explain_keywords = {
+	'INDEX':       [' ON ', ' RANGE ']
+	'PRIMARY KEY': [' RANGE ']
+	'INNER JOIN':  [' ON ']
+	'LEFT JOIN':   [' ON ']
+	'RIGHT JOIN':  [' ON ']
+}
+
+// explain_line is the HTML of a line of a plan, with the first term (and the
+// explain_keywords of that term) highlighted.
 fn explain_line(line string) string {
 	text := line.trim_left(' ')
 	indent := line[..line.len - text.len]
@@ -47,7 +59,45 @@ fn explain_line(line string) string {
 		}
 	}
 
-	return '${indent}<span class="kw">${html_escape(term)}</span>${html_escape(text[term.len..])}'
+	mut html := '${indent}<span class="kw">${html_escape(term)}</span>'
+	mut rest := text[term.len..]
+	for keyword in explain_keywords[term] or { []string{} } {
+		i := top_level_index(rest, keyword)
+		if i < 0 {
+			continue
+		}
+		html += '${html_escape(rest[..i])} <span class="kw">${keyword.trim_space()}</span> '
+		rest = rest[i + keyword.len..]
+	}
+
+	return html + html_escape(rest)
+}
+
+// top_level_index is the position of the first s in text that isn't in a
+// quoted name or string, or in parentheses (such as the columns of a table),
+// or -1 if there isn't one.
+fn top_level_index(text string, s string) int {
+	mut depth := 0
+	mut quote := u8(0)
+	for i, c in text {
+		if quote != 0 {
+			// A quote in a name or string is doubled, which is the same as the
+			// name or string ending and another one starting.
+			if c == quote {
+				quote = 0
+			}
+		} else if c == `"` || c == `'` {
+			quote = c
+		} else if c == `(` {
+			depth++
+		} else if c == `)` {
+			depth--
+		} else if depth == 0 && text[i..].starts_with(s) {
+			return i
+		}
+	}
+
+	return -1
 }
 
 // default_query_schema is the schema of a QUERY tab, unless another one is chosen.

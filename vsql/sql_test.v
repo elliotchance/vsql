@@ -2743,6 +2743,32 @@ fn test_positioned_update_of_sort_key() ! {
 	assert failed
 }
 
+// conflicting_cursor is the cursor of a warning: cursor operation conflict. A row
+// that was deleted through the cursor can be positioned on again (by the
+// SQL/CLI), but it can't be changed.
+fn test_cursor_operation_conflict() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE TABLE t (x INTEGER)')!
+	db.query('INSERT INTO t (x) VALUES (1), (2)')!
+	db.query('START TRANSACTION')!
+
+	mut stmt := db.prepare('SELECT x FROM t')!
+	stmt.open_cursor('C', false, {})!
+	db.position_cursor('C', 0)!
+	db.query('DELETE FROM t WHERE CURRENT OF c')!
+	db.position_cursor('C', 0)!
+	db.query('DELETE FROM t WHERE CURRENT OF c') or {
+		assert err.code() == sqlstate_to_int('24000')
+		assert conflicting_cursor(err) == none
+	}
+
+	db.position_cursor('C', 1)!
+	db.query('DELETE FROM t WHERE x = 2')!
+	db.clear_warnings()
+	db.query('DELETE FROM t WHERE CURRENT OF c')!
+	assert conflicting_cursor(db.warnings[0])? == 'C'
+}
+
 // A cursor opened by PreparedStmt.open_cursor (for the SQL/CLI) is positioned
 // with position_cursor, so a positioned DELETE can change its current row.
 fn test_open_cursor() ! {
@@ -3197,6 +3223,19 @@ fn test_violated_constraint() ! {
 	db.query('INSERT INTO c (id, y) VALUES (1, 0)')!
 	assert constraint_violated(mut db, 'COMMIT') == ':memory:.PUBLIC.Y_POSITIVE'
 	assert constraint_violated(mut db, 'SELECT * FROM q') == 'none'
+}
+
+fn test_invalid_cursor() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE TABLE t (x INT)')!
+	db.query('DECLARE c1 CURSOR FOR SELECT x FROM t')!
+
+	mut name := ''
+	db.query('FETCH NEXT FROM c1') or { name = invalid_cursor(err) or { 'none' } }
+	assert name == 'C1'
+
+	db.query('SELECT * FROM q') or { name = invalid_cursor(err) or { 'none' } }
+	assert name == 'none'
 }
 
 // old_sequence is a sequence as it's stored by a version of vsql that had the

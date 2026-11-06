@@ -17,7 +17,7 @@ fn (stmt OpenStatement) execute(mut conn Connection, _ map[string]Value, elapsed
 
 	// ISO/IEC 9075-2:2016(E), 15.1, Effect of opening a cursor, General Rules, 2
 	if cursor.is_open {
-		return sqlstate_24000('cursor ${stmt.name} is already open')
+		return sqlstate_24000(stmt.name, 'cursor ${stmt.name} is already open')
 	}
 
 	if cursor.writes {
@@ -41,6 +41,7 @@ fn (stmt OpenStatement) execute(mut conn Connection, _ map[string]Value, elapsed
 	// ISO/IEC 9075-2:2016(E), 15.1, Effect of opening a cursor, General Rules, 5.a, 5.g and 5.h
 	mut plan := create_plan(cursor.query, cursor.params, mut conn)!
 	cursor.rows = plan.execute([]Row{})!
+	cursor.row_states = []CursorRowState{len: cursor.rows.len}
 	cursor.columns = plan.columns()
 	cursor.is_open = true
 	cursor.position = -1

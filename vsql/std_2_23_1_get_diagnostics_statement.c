@@ -24,12 +24,9 @@ static const char *vsql_m_item_text(int item, long long n) {
 
   switch (item) {
   case SQL_DIAG_MORE:
-    /* All of the conditions are kept, even though a condition can be dropped
-     * by DIAGNOSTICS SIZE (#798).
-     *
-     * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.b
+    /* ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.b
      */
-    return "N";
+    return vsql_m_da.more ? "Y" : "N";
   case VSQL_M_COMMAND_FUNCTION:
     return vsql_m_da.command_function;
   case VSQL_M_DYNAMIC_FUNCTION:
@@ -53,8 +50,12 @@ static const char *vsql_m_item_text(int item, long long n) {
     s = vsql_m_da.conditions[n - 1].constraint_name;
     break;
   case SQL_DIAG_CURSOR_NAME:
+    /* ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules,
+     * 4.e */
     if (strcmp(vsql_m_da.conditions[n - 1].sqlstate, "24000") == 0) {
       s = vsql_m_da.cursor_name;
+    } else if (strcmp(vsql_m_da.conditions[n - 1].sqlstate, "01001") == 0) {
+      s = vsql_m_da.conditions[n - 1].cursor_name;
     }
     break;
   case SQL_DIAG_CONNECTION_NAME:

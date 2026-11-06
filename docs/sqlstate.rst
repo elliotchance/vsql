@@ -65,6 +65,35 @@ See also
 SQLSTATE
 --------
 
+``01001`` cursor operation conflict
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``01001`` is a warning (the statement still succeeds) when a positioned
+``DELETE`` or ``UPDATE`` changes a row that another statement has changed since
+the cursor was opened, or the other way around. See :doc:`cursors`.
+
+**Examples**
+
+.. code-block:: sql
+
+  CREATE TABLE foo (x INT, y INT);
+  INSERT INTO foo (x, y) VALUES (1, 10);
+  START TRANSACTION;
+  DECLARE c CURSOR FOR SELECT * FROM foo;
+  OPEN c;
+  FETCH c;
+  UPDATE foo SET y = 5 WHERE x = 1;
+  UPDATE foo SET y = 3 WHERE CURRENT OF c;
+  -- msg: CREATE TABLE 1
+  -- msg: INSERT 1
+  -- msg: START TRANSACTION
+  -- msg: DECLARE CURSOR
+  -- msg: OPEN
+  -- X: 1 Y: 10
+  -- msg: UPDATE 1
+  -- warning 01001: cursor operation conflict: C
+  -- msg: UPDATE 1
+
 ``01003`` null value eliminated in set function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -348,7 +348,8 @@ The first form gets information about the statement:
 Item                         Value
 ============================ ==================================================
 ``NUMBER``                   The number of conditions (``0`` for success).
-``MORE``                     Always ``N``, since every condition is kept.
+``MORE``                     ``Y`` if the statement raised more conditions than
+                             the ``DIAGNOSTICS SIZE``, otherwise ``N``.
 ``COMMAND_FUNCTION``         The statement, such as ``INSERT`` or
                              ``UPDATE WHERE``.
 ``COMMAND_FUNCTION_CODE``    The code of the statement, such as ``50`` for
@@ -391,7 +392,7 @@ Item                         Value
                              that starts with ``23``, or ``40002``).
 ``CONSTRAINT_SCHEMA``        Its schema.
 ``CONSTRAINT_CATALOG``       Its catalog.
-``CURSOR_NAME``              The cursor (for an SQLSTATE of ``24000``).
+``CURSOR_NAME``              The cursor (for an SQLSTATE of ``01001`` or ``24000``).
 ============================ ==================================================
 
 The other condition items (``CATALOG_NAME``, ``COLUMN_NAME``,

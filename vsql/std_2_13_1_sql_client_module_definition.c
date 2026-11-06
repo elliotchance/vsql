@@ -171,6 +171,8 @@ struct vsql_m_condition {
   char *constraint_catalog;
   char *constraint_schema;
   char *constraint_name;
+  /* The cursor that caused a cursor operation conflict, or NULL. */
+  char *cursor_name;
 };
 
 /* The <statement information item name>s that aren't in libvsql.h. */
@@ -190,6 +192,8 @@ struct vsql_m_da {
   int transactions_committed;
   int transactions_rolled_back;
   int number;
+  /* More conditions were raised than are in conditions. */
+  SQLINTEGER more;
   struct vsql_m_condition *conditions;
   char connection_name[129];
   char *server_name;
@@ -204,7 +208,7 @@ struct vsql_m_da {
  * called keeps it, and the others find it with vsql_module_agent. A module that
  * was compiled with a different version of this struct has its own.
  */
-#define VSQL_M_AGENT_VERSION 2
+#define VSQL_M_AGENT_VERSION 3
 
 struct vsql_m_agent {
   int version;
@@ -260,10 +264,12 @@ static void vsql_m_clear(void) {
     free(vsql_m_da.conditions[i].constraint_catalog);
     free(vsql_m_da.conditions[i].constraint_schema);
     free(vsql_m_da.conditions[i].constraint_name);
+    free(vsql_m_da.conditions[i].cursor_name);
   }
   free(vsql_m_da.conditions);
   vsql_m_da.conditions = NULL;
   vsql_m_da.number = 0;
+  vsql_m_da.more = 0;
 }
 
 /*
@@ -305,6 +311,7 @@ static void vsql_m_raise(const char *sqlstate, const char *message) {
   conditions[vsql_m_da.number].constraint_catalog = NULL;
   conditions[vsql_m_da.number].constraint_schema = NULL;
   conditions[vsql_m_da.number].constraint_name = NULL;
+  conditions[vsql_m_da.number].cursor_name = NULL;
   vsql_m_copy(&conditions[vsql_m_da.number].message, message);
   vsql_m_da.number++;
 
@@ -388,6 +395,22 @@ static void vsql_m_status(char *sqlstate, const char *code) {
 }
 
 /*
+ * vsql_m_assigned sets the status parameter after the values of a row are
+ * assigned. The first diagnostics area keeps the conditions of executing the
+ * statement, and a truncated value is one more.
+ */
+static void vsql_m_assigned(char *sqlstate, int truncated) {
+  if (truncated) {
+    vsql_m_raise("01004", vsql_m_message("01004"));
+  }
+  if (vsql_m_da.number > 0) {
+    vsql_m_sqlstate(sqlstate, vsql_m_da.conditions[0].sqlstate);
+  } else {
+    vsql_m_sqlstate(sqlstate, truncated ? "01004" : "00000");
+  }
+}
+
+/*
  * vsql_m_diag_text copies a character string field of a status record of the
  * diagnostics area of a handle.
  */
@@ -427,6 +450,7 @@ static void vsql_m_diag(char *sqlstate, SQLRETURN rc, SQLSMALLINT type,
 
   vsql_m_clear();
   SQLGetDiagField(type, handle, 0, SQL_DIAG_NUMBER, &number, 0, NULL);
+  SQLGetDiagField(type, handle, 0, SQL_DIAG_MORE, &vsql_m_da.more, 0, NULL);
   for (i = 1; i <= number; i++) {
     length = 0;
     SQLGetDiagField(type, handle, (SQLSMALLINT)i, SQL_DIAG_MESSAGE_OCTET_LENGTH,
@@ -450,6 +474,8 @@ static void vsql_m_diag(char *sqlstate, SQLRETURN rc, SQLSMALLINT type,
                        SQL_DIAG_CONSTRAINT_SCHEMA);
       vsql_m_diag_text(&c->constraint_name, type, handle, (SQLSMALLINT)i,
                        SQL_DIAG_CONSTRAINT_NAME);
+      vsql_m_diag_text(&c->cursor_name, type, handle, (SQLSMALLINT)i,
+                       SQL_DIAG_CURSOR_NAME);
     }
   }
 
@@ -694,12 +720,15 @@ static int vsql_m_exec(char *sqlstate, struct vsql_m_connection *c,
   }
 
   /*
-   * The statement initiates an SQL-transaction.
+   * The statement initiates an SQL-transaction, other than a <set transaction
+   * statement> (75).
    *
    * ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 9
    */
   if (!vsql_m_failed(rc)) {
-    c->active = 1;
+    if (vsql_m_da.command_function_code != 75) {
+      c->active = 1;
+    }
     rc = SQLExecute(stmt);
   }
   if (!vsql_m_failed(rc)) {

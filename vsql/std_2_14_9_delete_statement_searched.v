@@ -38,7 +38,7 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
 	mut plan := create_plan(stmt, params, mut conn)!
-	mut rows := current_rows(plan.execute([]Row{})!, stmt.current_of)!
+	mut rows := current_rows(plan.execute([]Row{})!, stmt.current_of)
 
 	// The rows where the search condition is true are deleted. A positioned
 	// DELETE only deletes the current row of its cursor.
@@ -58,11 +58,15 @@ fn (stmt DeleteStatementSearched) execute(mut conn Connection, params map[string
 
 	// A FOREIGN KEY is checked once all of the rows have been deleted, so a
 	// DELETE can include rows that reference each other.
-	apply_referential_actions(mut conn, mut catalog.storage, catalog.storage.table(table_name.storage_id()),
-		deleted.map(RowChange{ old: it, is_delete: true }))!
+	table := catalog.storage.table(table_name.storage_id())
+	changes := deleted.map(RowChange{ old: it, is_delete: true })
+	apply_referential_actions(mut conn, mut catalog.storage, table, changes)!
+	conn.note_row_changes(table, rows, changes, stmt.current_of)!
 
+	// A positioned DELETE of a row that has already been deleted isn't no data.
+	//
 	// ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, General Rules, 10
-	if rows.len == 0 {
+	if rows.len == 0 && stmt.current_of == none {
 		conn.add_warning(sqlstate_02000())
 	}
 

@@ -10,7 +10,7 @@
 23.1/GR/1                definition   - -
 23.1/GR/2                implemented  vsql/std_2_23_1_get_diagnostics_statement.v libvsql/module/test_main.c
 23.1/GR/2.a              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
-23.1/GR/2.b              deviates     vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c it's always 'N', even when a condition was dropped (#798)
+23.1/GR/2.b              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_more_main.c
 23.1/GR/2.c              implemented  vsql/prepare.v libvsql/module/test_main.c
 23.1/GR/2.d              implemented  vsql/prepare.v libvsql/module/test_main.c
 23.1/GR/2.e              implemented  vsql/prepare.v libvsql/module/test_main.c
@@ -33,7 +33,7 @@
 23.1/GR/4.b              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
 23.1/GR/4.c              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
 23.1/GR/4.d              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
-23.1/GR/4.e              missing      - - there's no 01001 warning (#797)
+23.1/GR/4.e              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/module/test_main.c
 23.1/GR/4.f              implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/embed/example.sqc
 23.1/GR/4.f.i            implemented  vsql/std_2_23_1_get_diagnostics_statement.c libvsql/embed/example.sqc
 23.1/GR/4.f.ii           container    - -

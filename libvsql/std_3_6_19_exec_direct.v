@@ -153,6 +153,7 @@ fn execute_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt) !i16 {
 // run_statement executes a statement with all of its parameter values.
 fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[string]vsql.Value) !i16 {
 	mut conn := stmt_connection(stmt)!
+	conn.clear_warnings()
 
 	// ISO/IEC 9075-3:2003(E), 5.4, Implicit cursor, General Rules, 10: a
 	// cursor is always a copy of the result (General Rules, 8.e.i), so it can't
@@ -162,8 +163,17 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 		return cli_error('36001', 'cursor sensitivity exception — request rejected')
 	}
 
-	if !conn.in_transaction() {
-		db_query(mut conn, 'START TRANSACTION')!
+	// A <set transaction statement> doesn't initiate an SQL-transaction, it sets
+	// the characteristics of the next one, which is started here.
+	//
+	// ISO/IEC 9075-2:2016(E), 17.2, <set transaction statement>, General Rules, 1.a.i and 7
+	if !conn.in_transaction() && stmt.diag.dynamic_function != 'SET TRANSACTION' {
+		limit := conn.next_condition_area_limit
+		db_query(mut conn, if limit > 0 {
+			'START TRANSACTION DIAGNOSTICS SIZE ${limit}'
+		} else {
+			'START TRANSACTION'
+		})!
 		mut dbc := dbcs[stmt.dbc] or { return cli_error('08003', 'connection does not exist') }
 		dbc.autocommit_transaction = dbc.autocommit
 	}
@@ -178,8 +188,10 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	// same instant (General Rules, 8.a.iii), which is #742.
 	is_select := stmt.diag.dynamic_function == 'SELECT CURSOR'
 	name := if is_select { normalize_cursor_name(stmt.get_cursor_name()) } else { '' }
+	conn.clear_warnings()
 	result := query_statement(mut prepared, name, stmt.cursor_holdable == sql_holdable,
 		params) or {
+		stmt.diag.statement_warnings(conn, true)
 		// An error that is a transaction rollback (such as a serialization
 		// failure) also ends the SQL-transaction.
 		if !conn.in_transaction() {
@@ -192,6 +204,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 		stmt.row_count = 0
 		return err
 	}
+	stmt.diag.statement_warnings(conn, false)
 	stmt.executed = true
 
 	// - 13, 14. The ROW_COUNT becomes the row count associated with S.
@@ -211,7 +224,7 @@ fn run_statement(mut stmt Stmt, mut prepared &vsql.PreparedStmt, params map[stri
 	describe(stmt, mut conn, result.columns)
 	autocommit(mut stmt.diag, stmt.dbc, true)!
 
-	return sql_success
+	return stmt.diag.result()
 }
 
 // query_statement executes a statement, and opens a cursor of the connection

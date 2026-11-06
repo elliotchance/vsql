@@ -392,7 +392,7 @@ Item                         Value
                              that starts with ``23``, or ``40002``).
 ``CONSTRAINT_SCHEMA``        Its schema.
 ``CONSTRAINT_CATALOG``       Its catalog.
-``CURSOR_NAME``              The cursor (for an SQLSTATE of ``24000``).
+``CURSOR_NAME``              The cursor (for an SQLSTATE of ``01001`` or ``24000``).
 ============================ ==================================================
 
 The other condition items (``CATALOG_NAME``, ``COLUMN_NAME``,

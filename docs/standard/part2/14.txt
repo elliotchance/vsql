@@ -269,7 +269,7 @@
 14.9/GR/8.a.i.2          n/a          - - subtables (S081)
 14.9/GR/8.a.ii           implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
 14.9/GR/8.b              n/a          - - views (F031-02)
-14.9/GR/9                missing      vsql/std_2_14_1_declare_cursor.v - no cursor operation conflict warning (#797)
+14.9/GR/9                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursor-operation-conflict.sql
 14.9/GR/10               implemented  vsql/std_2_14_9_delete_statement_searched.v tests/delete.sql
 14.9/CR/1                missing      - - self-referencing operations are allowed, but aren't flagged (#880)
 14.9/CR/1.a              missing      - - self-referencing operations are allowed, but aren't flagged (#880)
@@ -558,7 +558,7 @@
 14.14/GR/5.b             implemented  vsql/std_2_14_14_update_statement_searched.v tests/scalar-subquery.sql
 14.14/GR/6               definition   - -
 14.14/GR/7               definition   - -
-14.14/GR/8               missing      vsql/std_2_14_1_declare_cursor.v - no cursor operation conflict warning (#797)
+14.14/GR/8               implemented  vsql/std_2_14_1_declare_cursor.v tests/cursor-operation-conflict.sql
 14.14/GR/9               n/a          - - triggers (T211)
 14.14/GR/10              implemented  vsql/std_2_14_14_update_statement_searched.v tests/scalar-subquery.sql
 14.14/GR/11              implemented  vsql/std_2_14_14_update_statement_searched.v tests/update.sql

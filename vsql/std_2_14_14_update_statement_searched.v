@@ -49,7 +49,7 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	}
 
 	mut plan := create_plan(stmt, params, mut conn)!
-	mut rows := current_rows(plan.execute([]Row{})!, stmt.current_of)!
+	mut rows := current_rows(plan.execute([]Row{})!, stmt.current_of)
 	mut table_name := conn.resolve_table_identifier(stmt.table_name, false)!
 	mut catalog := conn.catalog_for(table_name)
 	table := catalog.storage.table(table_name.storage_id())
@@ -199,10 +199,11 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	for mut row in moved {
 		catalog.storage.write_row(mut row, table)!
 	}
-	apply_referential_actions(mut conn, mut catalog.storage, table, changes.map(RowChange{
+	row_changes := changes.map(RowChange{
 		old: it[0]
 		new: it[1]
-	}))!
+	})
+	apply_referential_actions(mut conn, mut catalog.storage, table, row_changes)!
 
 	// There is a case where no records were updated. The potential problem is
 	// that the field assignments might be wrong, but we never knew they were
@@ -213,8 +214,12 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 	// We could do this before the UPDATE to catch the error earlier, but that
 	// comes at the cost of evaulating the row when we might not need to.
 	if rows.len == 0 {
+		// A positioned UPDATE of a row that has been deleted isn't no data.
+		//
 		// ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, General Rules, 15
-		conn.add_warning(sqlstate_02000())
+		if stmt.current_of == none {
+			conn.add_warning(sqlstate_02000())
+		}
 
 		conn.dry_run = true
 		defer {
@@ -240,6 +245,8 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 			}
 		}
 	}
+
+	conn.note_row_changes(table, rows, row_changes, stmt.current_of)!
 
 	// The count is every row identified by the UPDATE, even if its values didn't
 	// change.

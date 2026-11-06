@@ -74,9 +74,16 @@ a positioned ``UPDATE`` can change. A positioned ``UPDATE`` also can't change a
 column that's used by a sort key of the ``ORDER BY`` (``42601``).
 
 The rows of a cursor are found when it's opened, so a ``FETCH`` returns the row
-as it was then, even if it has been changed since. A row that has been deleted
-can't be changed through the cursor (``24000``). A ``WITH HOLD`` cursor must be
-fetched in the current transaction before its row can be changed.
+as it was then, even if it has been changed since. A ``WITH HOLD`` cursor must
+be fetched in the current transaction before its row can be changed.
+
+A positioned ``DELETE`` or ``UPDATE`` raises the warning ``01001`` (see
+:doc:`sqlstate`) if the current row has been changed by another statement since
+the cursor was opened. A row that has been updated is still changed. A row that
+has been deleted can't be, so the statement changes no rows. The warning is also
+raised by a searched ``DELETE`` or ``UPDATE`` (or a referential action) that
+changes a row that a positioned ``UPDATE`` of a cursor that's still open has
+already changed. That's only for the cursors of the same connection.
 
 SQL/CLI
 -------

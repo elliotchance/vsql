@@ -33,6 +33,16 @@ fn compile_module
 
 compile_module compiles an SQL-client module (with LANGUAGE C) into C. The C source includes the header as name + ".h", so name is usually the file name of the module without its extension. The C source must be compiled with libvsql.h and linked with libvsql.
 
+fn conflicting_cursor
+---------------------
+
+
+.. code-block:: v
+
+   pub fn conflicting_cursor(err IError) ?string
+
+conflicting_cursor returns the name of the cursor that caused a warning: cursor operation conflict (01001), or none for any other condition.
+
 fn default_connection_options
 -----------------------------
 

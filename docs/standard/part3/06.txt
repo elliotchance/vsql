@@ -1302,7 +1302,7 @@
 6.33/GR/12.g             implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c a class that starts with 0 to 4 or A to H is 'ISO 9075', otherwise 'vsql'
 6.33/GR/12.h             implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c a subclass that starts with 0 to 4 or A to H is 'ISO 9075', otherwise 'vsql'
 6.33/GR/12.i             container    - -
-6.33/GR/12.i.i           n/a          - - a cursor operation conflict is never raised
+6.33/GR/12.i.i           implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/cursor_operation_conflict_test.c
 6.33/GR/12.i.ii          container    - -
 6.33/GR/12.i.ii.1        implemented  libvsql/std_3_6_33_get_diag_field.v libvsql/std_3_6_33_get_diag_field_test.c
 6.33/GR/12.i.ii.2        container    - -

@@ -207,6 +207,29 @@ PROCEDURE update_c1 (SQLSTATE, :y VARCHAR(10));
 PROCEDURE delete_c1 (SQLSTATE);
   DELETE FROM cur WHERE CURRENT OF c1;
 
+DECLARE c_conflict CURSOR FOR SELECT x FROM conflict;
+
+PROCEDURE create_conflict (SQLSTATE);
+  CREATE TABLE conflict (x INTEGER);
+
+PROCEDURE insert_conflict (SQLSTATE);
+  INSERT INTO conflict (x) VALUES (1);
+
+PROCEDURE open_conflict (SQLSTATE);
+  OPEN c_conflict;
+
+PROCEDURE fetch_conflict (SQLSTATE, :x INTEGER);
+  FETCH c_conflict INTO :x;
+
+PROCEDURE close_conflict (SQLSTATE);
+  CLOSE c_conflict;
+
+PROCEDURE update_conflict (SQLSTATE);
+  UPDATE conflict SET x = x + 1;
+
+PROCEDURE update_conflict_cursor (SQLSTATE);
+  UPDATE conflict SET x = x + 1 WHERE CURRENT OF c_conflict;
+
 PROCEDURE open_held (SQLSTATE);
   OPEN "held";
 

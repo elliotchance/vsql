@@ -356,7 +356,7 @@
 14.11/GR/8.b             n/a          - - views (F031-02)
 14.11/GR/9               implemented  vsql/std_2_14_11_insert_statement.v tests/insert-from-query.sql
 14.11/CR/1               container    - -
-14.11/CR/1.a             missing      - - F781 isn't flagged, it needs name resolution (#880)
+14.11/CR/1.a             partial      vsql/std_1_8_5_sql_flagger.v tests/flagging-name-resolution.sql not after a dynamic parameter
 14.11/CR/1.b             n/a          - - external routines (T321)
 14.11/CR/2               n/a          - - DEFAULT VALUES (F222)
 14.11/CR/3               n/a          - - structured types (S024)

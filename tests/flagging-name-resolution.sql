@@ -347,6 +347,67 @@ DELETE FROM t WHERE x IN (SELECT x FROM t WHERE y = ?);
 -- flags: B031, F781
 -- error 42P02: parameter does not exist: ?1
 
+-- # ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Conformance Rules, 1.a
+
+/* flags */
+INSERT INTO t SELECT x + 10, y FROM t;
+-- flags: F781
+-- msg: INSERT 1
+
+/* flags */
+INSERT INTO t (x) SELECT x + 1 FROM u WHERE x IN (SELECT x FROM t);
+-- flags: F781
+-- msg: INSERT 1
+
+/* flags */
+INSERT INTO public.t (x) SELECT x + 1 FROM t;
+-- flags: F781
+-- msg: INSERT 1
+
+/* flags */
+INSERT INTO t (x) SELECT d.x + 1 FROM (SELECT x FROM public.t) AS d;
+-- flags: F591, F781
+-- msg: INSERT 1
+
+/* flags */
+INSERT INTO t (x) SELECT u.x + 1 FROM u JOIN t ON u.x = t.x;
+-- flags: F781
+-- msg: INSERT 1
+
+-- # A different table, including one of the same name in another schema, or with
+-- # a correlation name that's the same as the name of the table.
+
+/* flags */
+INSERT INTO t (x) SELECT x FROM s.t;
+-- flags:
+-- warning 02000: no data
+-- msg: INSERT 0
+
+/* flags */
+INSERT INTO s.t (x) SELECT x FROM t;
+-- flags:
+-- msg: INSERT 1
+
+/* flags */
+INSERT INTO t (x) SELECT t.x + 1 FROM u AS t;
+-- flags:
+-- msg: INSERT 1
+
+-- # A subquery in the VALUES isn't in a <from subquery>.
+
+/* flags */
+INSERT INTO t (x) VALUES ((SELECT MAX(x) + 1 FROM t));
+-- flags: F641
+-- msg: INSERT 1
+
+-- # A dynamic parameter doesn't have a value when it's flagged, so only what comes
+-- # before it is flagged.
+
+/* flags */
+INSERT INTO t (x) SELECT x FROM t WHERE y = ?;
+-- flags: B031, F781
+-- error 42P02: parameter does not exist: ?1
+
 -- # A statement that isn't changed by the rules.
 
 /* flags */

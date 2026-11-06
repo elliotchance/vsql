@@ -73,8 +73,11 @@ mut:
 	// statement, see Connection.resolved_features.
 	flagging bool
 	// flagged_features and flagged_tables are what's been found while flagging.
-	flagged_features []string
-	flagged_tables   []string
+	// flagged_tables has the tables read by a subquery, or by any part of the
+	// query when flag_query_tables is set (for an INSERT).
+	flagged_features  []string
+	flagged_tables    []string
+	flag_query_tables bool
 	// next_value_not_allowed is set (to "UNION", etc.) while a query that can't
 	// contain a NEXT VALUE FOR is being planned, see Compiler.
 	next_value_not_allowed string

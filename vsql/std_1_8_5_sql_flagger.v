@@ -961,6 +961,16 @@ fn (mut conn Connection) resolved_features(stmt Stmt, params map[string]Value) [
 			create_plan(stmt, params, mut conn) or {}
 			conn.flag_self_reference(stmt.table_name)
 		}
+		InsertStatement {
+			// Only a <from subquery> can't read the table, not a subquery in
+			// the VALUES of a <from constructor>.
+			if query := stmt.query {
+				conn.flag_query_tables = true
+				create_plan(query, params, mut conn) or {}
+				conn.flag_query_tables = false
+				conn.flag_self_reference(stmt.table_name)
+			}
+		}
 		QueryExpression {
 			create_plan(stmt, params, mut conn) or {}
 		}
@@ -980,18 +990,22 @@ fn (mut conn Connection) resolved_features(stmt Stmt, params map[string]Value) [
 	return conn.flagged_features
 }
 
-// flag_subquery_table records a base table that's read by a subquery.
+// flag_subquery_table records a base table that's read by a subquery (or by
+// the query of an INSERT).
 fn (mut conn Connection) flag_subquery_table(table_name Identifier) {
-	if conn.flagging && conn.subquery_scopes.len > 0 {
+	if conn.flagging && (conn.subquery_scopes.len > 0 || conn.flag_query_tables) {
 		conn.flagged_tables << table_name.id()
 	}
 }
 
 // flag_self_reference flags a DELETE or UPDATE with a subquery that reads the
-// table being changed. There are no views, so the leaf generally underlying
-// tables are the base tables that are read.
+// table being changed, or an INSERT with a query that reads it anywhere. There
+// are no views, so the leaf generally underlying tables are the base tables
+// that are read. A table name that's only the qualifier of a column reference
+// isn't read.
 //
 // ISO/IEC 9075-2:2016(E), 14.9, <delete statement: searched>, Conformance Rules, 1.a
+// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, Conformance Rules, 1.a
 // ISO/IEC 9075-2:2016(E), 14.14, <update statement: searched>, Conformance Rules, 1.a
 // ISO/IEC 9075-2:2016(E), 14.15, <set clause list>, Conformance Rules, 1.a
 fn (mut conn Connection) flag_self_reference(table_name Identifier) {

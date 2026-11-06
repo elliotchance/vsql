@@ -870,7 +870,7 @@
 6.14/SR/1.d              n/a          - - MERGE (F312)
 6.14/SR/1.e              implemented  vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql
 6.14/SR/2                implemented  vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql
-6.14/SR/3                partial      vsql/std_2_6_14_next_value_expression.v tests/next-value-for.sql a sequence is always a BIGINT (#399)
+6.14/SR/3                implemented  vsql/std_2_6_14_next_value_expression.v tests/sequence-data-type.sql
 6.14/AR/1                container    - -
 6.14/AR/1.a              n/a          - - privileges (E081, #732)
 6.14/AR/1.b              n/a          - - privileges (E081, #732)

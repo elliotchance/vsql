@@ -2931,13 +2931,13 @@
 11.71/GR/1.b.iii         n/a          - - transforms (S241)
 11.71/CR/1               n/a          - - transforms (S241)
 # 11.72, <sequence generator definition>
-11.72                    partial      vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql AS <data type> isn't supported (#399)
+11.72                    implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
 11.72/SR/1               definition   - -
 11.72/SR/2               implemented  vsql/std_2_11_1_schema_definition.v tests/create-schema.sql
 11.72/SR/3               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
 11.72/SR/4               definition   - -
 11.72/SR/5               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
-11.72/SR/6               partial      vsql/std_2_11_72_sequence_generator_definition.y tests/create-sequence.sql AS <data type> isn't supported (#399), so it's always BIGINT
+11.72/SR/6               impl-defined vsql/std_2_11_72_sequence_generator_definition.v tests/sequence-data-type.sql BIGINT when there's no AS <data type>
 11.72/SR/7               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql
 11.72/AR/1               n/a          - - privileges (E081, #732)
 11.72/GR/1               implemented  vsql/std_2_11_72_sequence_generator_definition.v tests/create-sequence.sql

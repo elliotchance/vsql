@@ -56,7 +56,7 @@ fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Seq
 
 	for option in options {
 		match option {
-			SequenceGeneratorStartWithOption {
+			SequenceGeneratorStartWithOption, SequenceGeneratorDataTypeOption {
 				// Not possible.
 			}
 			SequenceGeneratorRestartOption {
@@ -114,7 +114,7 @@ fn alter_sequence(mut conn Connection, params map[string]Value, old_sequence Seq
 		}
 	}
 
-	sequence.check()!
+	sequence.check_data_type()!
 
 	// The current base value is only changed by RESTART. It's the last value returned by NEXT VALUE FOR, so the
 	// next value uses the new INCREMENT BY. Unless it hasn't been returned yet (a

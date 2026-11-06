@@ -70,19 +70,21 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			// character-type. This is what allows any string representation (for
 			// example numbers) to be converted to a string, provided they still fit
 			// all the same requirements.
+			// The characters are only counted, rather than decoded with runes()
+			// (which needs 4 bytes for each byte of s), unless it's too long.
 			s := cast_character_source(v)
-			chars := s.runes()
+			m := s.len_utf8()
 
 			l := t.size
-			if l == chars.len {
+			if l == m {
 				return new_character_value(s)
 			}
 
 			// - GR 3.b.ii. V is longer than L:
-			m := chars.len
 			if m > l {
 				// - GR 3.b.ii.1. It's truncated if the extra characters are all
 				// spaces.
+				chars := s.runes()
 				if chars[l..].all(it == ` `) {
 					return new_character_value(chars[..l].string())
 				}
@@ -102,17 +104,18 @@ fn cast(mut conn Connection, msg string, v Value, t Type) !Value {
 			//
 			// See note above about using v.str() instead of string_value().
 			s := cast_character_source(v)
-			chars := s.runes()
 
 			// A CHARACTER VARYING without a length (such as the declared type of an
-			// expression) has no maximum length.
+			// expression) has no maximum length. Like CHARACTER, the characters
+			// are only decoded when it's too long.
 			l := t.size
-			m := chars.len
+			m := s.len_utf8()
 			if l == 0 || m <= l {
 				return new_varchar_value(s)
 			}
 
 			// - GR 3.b.v. V is longer than L:
+			chars := s.runes()
 			if chars[l..].all(it == ` `) {
 				// - GR 3.b.v.1. It's truncated if the extra characters are all spaces.
 				return new_varchar_value(chars[..l].string())

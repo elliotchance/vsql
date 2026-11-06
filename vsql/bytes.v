@@ -28,6 +28,15 @@ fn new_empty_bytes() Bytes {
 	return Bytes{}
 }
 
+// new_bytes_with_capacity creates a new zero-length buffer for writing, which
+// has room for capacity bytes before it needs to grow. A long value would
+// otherwise be copied each time the buffer doubles in size.
+fn new_bytes_with_capacity(capacity int) Bytes {
+	return Bytes{
+		data: []u8{cap: capacity}
+	}
+}
+
 // new_bytes creates a read and write buffer from some existing data. The data
 // is cloned so it's safe to modify.
 fn new_bytes(data []u8) Bytes {
@@ -72,9 +81,8 @@ fn (mut b Bytes) read_bool() bool {
 // write_u8s writes raw bytes as they are. It should only be used for raw
 // binary data, not the binary representations of numbers.
 fn (mut b Bytes) write_u8s(data []u8) {
-	for d in data {
-		b.write_u8(d)
-	}
+	b.data << data
+	b.at += data.len
 }
 
 // read_u8s is the opposite of write_u8s.
@@ -156,10 +164,15 @@ fn (mut b Bytes) read_f64() f64 {
 // write_string4 is safe to use for long strings (up to 2GB).
 fn (mut b Bytes) write_string4(s string) {
 	b.write_i32(s.len)
-	b.write_u8s(s.bytes())
+	unsafe { b.data.push_many(s.str, s.len) }
+	b.at += s.len
 }
 
 // read_string4 is the opposite of write_string4.
 fn (mut b Bytes) read_string4() string {
-	return b.read_u8s(b.read_i32()).bytestr()
+	len := b.read_i32()
+	b.at += len
+
+	// bytestr copies the bytes, so they don't need to be copied by read_u8s.
+	return b.data[b.at - len..b.at].bytestr()
 }

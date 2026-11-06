@@ -113,7 +113,11 @@ fn check_fractional_seconds_precision(name string, prec string) ! {
 //
 // ISO/IEC 9075-2:2016(E), 6.1, <data type>, General Rules, 2
 fn check_noncharacters(s string) ! {
-	if s.runes().any((it >= 0xFDD0 && it <= 0xFDEF) || (u32(it) & 0xFFFE) == 0xFFFE) {
-		return sqlstate_22029()
+	// runes_iterator doesn't need 4 bytes for each byte of a long string, like
+	// runes() does.
+	for r in s.runes_iterator() {
+		if (r >= 0xFDD0 && r <= 0xFDEF) || (u32(r) & 0xFFFE) == 0xFFFE {
+			return sqlstate_22029()
+		}
 	}
 }

@@ -4,6 +4,7 @@
 module vsql
 
 import encoding.binary
+import math
 
 // It would be nice to put this an an enum, but actually keeping it as a u8 (and
 // not the required int is kind of fiddly). Also, there's almost no case where
@@ -18,7 +19,7 @@ const kind_not_leaf = 1 // page contains only links to other pages.
 const page_object_prefix_length = 23
 
 // page_object_tid_at and page_object_xid_at are where the tid and xid are in an
-// object, see PageObject.bytes.
+// object, see PageObject.prefix_bytes.
 const page_object_tid_at = 4
 
 const page_object_xid_at = 12
@@ -94,17 +95,35 @@ fn (o PageObject) blob_info() (int, bool) {
 	return blob_peices, has_fragment
 }
 
-fn (o PageObject) bytes() []u8 {
-	mut buf := new_empty_bytes()
+// prefix_bytes is how an object starts in a page, before its value: its length
+// (see length), tid, xid, the length of its key, the key and is_blob_ref. The
+// value comes straight after it (see Page.add).
+fn (o PageObject) prefix_bytes() []u8 {
+	mut buf := new_bytes_with_capacity(page_object_prefix_length + o.key.len)
 	buf.write_i32(o.length())
 	buf.write_u64(o.tid)
 	buf.write_u64(o.xid)
 	buf.write_i16(i16(o.key.len))
 	buf.write_u8s(o.key)
 	buf.write_bool(o.is_blob_ref)
-	buf.write_u8s(o.value)
 
 	return buf.bytes()
+}
+
+// bytes_range is the bytes from start to end of the object as it would be in a
+// page (prefix, which is prefix_bytes, and then the value). Only the part of
+// the prefix that's in the range is copied, so a long value isn't copied to be
+// split into blob objects (see Btree.add).
+fn (o PageObject) bytes_range(prefix []u8, start int, end int) []u8 {
+	if start >= prefix.len {
+		return o.value[start - prefix.len..end - prefix.len]
+	}
+
+	mut data := []u8{cap: end - start}
+	data << prefix[start..math.min(end, prefix.len)]
+	data << o.value[..math.max(end - prefix.len, 0)]
+
+	return data
 }
 
 fn parse_page_object(data []u8) (int, PageObject) {
@@ -257,14 +276,22 @@ fn (mut p Page) add(obj PageObject) ! {
 	}
 
 	// Objects are kept in order of their key, so the objects after it are moved
-	// to make room.
-	data := obj.bytes()
+	// to make room. The object is written straight into the page, with the
+	// layout of PageObject.prefix_bytes followed by the value.
+	len := obj.length()
 	if at < end {
-		unsafe { vmemmove(&p.data[at + data.len], &p.data[at], end - at) }
+		unsafe { vmemmove(&p.data[at + len], &p.data[at], end - at) }
 	}
-	unsafe { vmemcpy(&p.data[at], data.data, data.len) }
+	binary.big_endian_put_u32_at(mut p.data, u32(len), at)
+	binary.big_endian_put_u64_at(mut p.data, obj.tid, at + page_object_tid_at)
+	binary.big_endian_put_u64_at(mut p.data, obj.xid, at + page_object_xid_at)
+	binary.big_endian_put_u16_at(mut p.data, u16(obj.key.len), at + 20)
+	key_at := at + page_object_prefix_length - 1
+	unsafe { vmemcpy(&u8(p.data.data) + key_at, obj.key.data, obj.key.len) }
+	p.data[key_at + obj.key.len] = u8(obj.is_blob_ref)
+	unsafe { vmemcpy(&u8(p.data.data) + key_at + obj.key.len + 1, obj.value.data, obj.value.len) }
 
-	p.used += u16(data.len)
+	p.used += u16(len)
 }
 
 // delete will remove a key from a page if it exists, otherwise no action will
@@ -293,19 +320,38 @@ fn (mut p Page) delete(key []u8, tid u64) bool {
 	return did_delete
 }
 
+// get returns a copy of the object with the key that was created by tid, or an
+// object with an empty key if there isn't one.
 fn (p Page) get(key []u8, tid u64) PageObject {
+	offset := p.find(key, tid)
+	if offset < 0 {
+		return PageObject{}
+	}
+	_, object := parse_page_object(p.data[offset..])
+
+	return object
+}
+
+// get_in_place is get, but the key and value of the object are part of the
+// page (see objects_in_place).
+fn (p Page) get_in_place(key []u8, tid u64) PageObject {
+	offset := p.find(key, tid)
+	return if offset < 0 { PageObject{} } else { p.object_in_place(offset) }
+}
+
+// find returns where the object with the key that was created by tid is, or -1
+// if there isn't one.
+fn (p Page) find(key []u8, tid u64) int {
 	end := int(p.used) - page_header_size
 	mut offset := 0
 	for offset < end {
 		if p.object_tid(offset) == tid && compare_bytes(key, p.object_key(offset)) == 0 {
-			_, object := parse_page_object(p.data[offset..])
-
-			return object
+			return offset
 		}
 		offset += p.object_len(offset)
 	}
 
-	return PageObject{}
+	return -1
 }
 
 // expire will set the expiry transaction ID on an existing object. True is
@@ -339,24 +385,30 @@ fn (mut p Page) expire(key []u8, tid u64, xid u64) !bool {
 // objects_in_place sets objects to the objects of the page, reusing its
 // memory. Unlike objects, the key and value of each object are part of the page
 // rather than copies, so the page must not be changed while they are used. See
-// PageObject.bytes for the layout.
+// PageObject.prefix_bytes for the layout.
 fn (p Page) objects_in_place(mut objects []PageObject) {
 	objects.clear()
 	end := int(p.used) - page_header_size
 	mut offset := 0
 	for offset < end {
-		total_len := int(binary.big_endian_u32_at(p.data, offset))
-		key_len := int(binary.big_endian_u16_at(p.data, offset + 20))
-		key_at := offset + page_object_prefix_length - 1
-		value_at := key_at + key_len + 1
-		objects << PageObject{
-			key:         p.data[key_at..value_at - 1]
-			value:       p.data[value_at..offset + total_len]
-			is_blob_ref: p.data[value_at - 1] != 0
-			tid:         binary.big_endian_u64_at(p.data, offset + 4)
-			xid:         binary.big_endian_u64_at(p.data, offset + 12)
-		}
-		offset += total_len
+		objects << p.object_in_place(offset)
+		offset += p.object_len(offset)
+	}
+}
+
+// object_in_place is the object at offset, which is part of the page (see
+// objects_in_place).
+fn (p Page) object_in_place(offset int) PageObject {
+	total_len := p.object_len(offset)
+	key_len := int(binary.big_endian_u16_at(p.data, offset + 20))
+	key_at := offset + page_object_prefix_length - 1
+	value_at := key_at + key_len + 1
+	return PageObject{
+		key:         p.data[key_at..value_at - 1]
+		value:       p.data[value_at..offset + total_len]
+		is_blob_ref: p.data[value_at - 1] != 0
+		tid:         binary.big_endian_u64_at(p.data, offset + page_object_tid_at)
+		xid:         binary.big_endian_u64_at(p.data, offset + page_object_xid_at)
 	}
 }
 
@@ -374,7 +426,7 @@ fn (p Page) objects() []PageObject {
 }
 
 // page_object_value_at returns where the value starts of the object at offset,
-// using the layout in PageObject.bytes.
+// using the layout in PageObject.prefix_bytes.
 fn page_object_value_at(data []u8, offset int) int {
 	key_at := offset + page_object_prefix_length - 1
 	key_len := int(binary.big_endian_u16_at(data, key_at - 2))

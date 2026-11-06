@@ -475,6 +475,7 @@ INSERT INTO b (a_id, id) VALUES (2, 2);
 -- out:   CHECK (ID > 0)
 -- out: );
 -- out: INSERT INTO "PUBLIC"."B" ("A_ID", "ID") VALUES (1, 1);
+-- out: CREATE INDEX "B_FOREIGN_KEY_1" ON "PUBLIC"."B" ("A_ID");
 -- out: ALTER TABLE "PUBLIC"."B" ADD CONSTRAINT "B_FOREIGN_KEY_1" FOREIGN KEY ("A_ID") REFERENCES "PUBLIC"."A" ("ID");
 -- out: CREATE TABLE "PUBLIC"."A" (
 -- out:   "ID" INTEGER NOT NULL,
@@ -488,6 +489,7 @@ INSERT INTO b (a_id, id) VALUES (2, 2);
 -- out:   CHECK (ID > 0)
 -- out: );
 -- out: INSERT INTO "PUBLIC"."B" ("A_ID", "ID") VALUES (1, 1);
+-- out: CREATE INDEX "B_FOREIGN_KEY_1" ON "PUBLIC"."B" ("A_ID");
 -- out: ALTER TABLE "PUBLIC"."B" ADD CONSTRAINT "B_FOREIGN_KEY_1" FOREIGN KEY ("A_ID") REFERENCES "PUBLIC"."A" ("ID");
 -- error 23503: violates foreign key constraint: FOREIGN KEY (A_ID) REFERENCES ":memory:".PUBLIC.A (ID) on ":memory:".PUBLIC.B
 

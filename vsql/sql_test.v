@@ -2374,7 +2374,7 @@ fn test_dump_compat() {
 	// is doesn't.
 	mut sb := strings.new_builder(1024)
 	db.dump(mut sb, compat: .postgresql, include: ['public.types'])!
-	assert sb.str().contains('INSERT INTO "types" ("i", "b", "si", "bi", "r", "d", "c", "c2", "vc", "lv", "de", "n", "dt", "t", "tz", "ts", "tstz", "g2", "cat", "sch") OVERRIDING SYSTEM VALUE VALUES')
+	assert sb.str().contains('INSERT INTO "types" ("i", "b", "si", "bi", "r", "d", "c", "c2", "c2_more", "vc", "lv", "de", "n", "dt", "t", "tz", "ts", "tstz", "g2", "cat", "sch") OVERRIDING SYSTEM VALUE VALUES')
 
 	// A foreign key is selected separately from its table, even in SQLite.
 	mut only_table := strings.new_builder(1024)
@@ -2525,16 +2525,22 @@ fn test_dump_options() {
 	parent := 'CREATE TABLE "FOO"."PARENT"'
 	baz := 'CREATE TABLE "PUBLIC"."BAZ"'
 	fk1 := 'ALTER TABLE "FOO"."CHILD" ADD CONSTRAINT "FK1" FOREIGN KEY'
+	// The FOREIGN KEY made an index, which is in the output with its table, when
+	// the FOREIGN KEY is too.
+	fk1_index := 'CREATE INDEX "FK1" ON "FOO"."CHILD"'
 
-	assert dump_with(mut db)! == [schema_foo, seq1, child, parent, schema_nothing, baz, fk1]
+	assert dump_with(mut db)! == [schema_foo, seq1, child, fk1_index, parent, schema_nothing, baz,
+		fk1]
 	// "*.*" is the same as leaving it out.
-	assert dump_with(mut db, include: ['*.*'])! == [schema_foo, seq1, child, parent, schema_nothing,
-		baz, fk1]
+	assert dump_with(mut db, include: ['*.*'])! == [schema_foo, seq1, child, fk1_index, parent,
+		schema_nothing, baz, fk1]
 	// Case is ignored, and an object can be any type.
 	assert dump_with(mut db, include: ['foo.parent'])! == [schema_foo, parent]
 	assert dump_with(mut db, include: ['FOO.SEQ?'])! == [schema_foo, seq1]
 	assert dump_with(mut db, include: ['foo.fk*'])! == [schema_foo, fk1]
 	assert dump_with(mut db, include: ['public.*', 'foo.child'])! == [schema_foo, child, baz]
+	assert dump_with(mut db, include: ['foo.child', 'foo.fk1'])! == [schema_foo, child, fk1_index,
+		fk1]
 	// exclude is taken from what's included, and it doesn't have to match anything.
 	assert dump_with(mut db, include: ['foo.*'], exclude: ['foo.fk1', '*.seq1', 'x.y'])! == [
 		schema_foo,
@@ -2550,8 +2556,8 @@ fn test_dump_options() {
 	]
 	// A schema with nothing in it follows the schema of the patterns.
 	assert dump_with(mut db, exclude: ['foo.*'])! == [schema_nothing, baz]
-	assert dump_with(mut db, exclude: ['nothing.*'])! == [schema_foo, seq1, child, parent, baz,
-		fk1]
+	assert dump_with(mut db, exclude: ['nothing.*'])! == [schema_foo, seq1, child, fk1_index, parent,
+		baz, fk1]
 	assert dump_with(mut db, include: ['nothing.*'])! == [schema_nothing]
 	assert dump_with(mut db, exclude: ['*.*'])! == []
 	// PUBLIC is still only created if it's asked for.

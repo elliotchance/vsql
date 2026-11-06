@@ -245,9 +245,10 @@ The options are:
 - ``-format``: ``sql``, ``csv``, ``tsv`` or ``json``. The default is the
   extension of ``-file``, otherwise ``sql``.
 - ``-ignore-unsupported``: Show a warning for ``CREATE VIEW``, ``CREATE TRIGGER``
-  and ``CREATE INDEX`` if they can't be run, instead of an error. The import can
-  then finish without them, so anything that relies on them (such as a ``UNIQUE``
-  index) isn't there.
+  and ``CREATE INDEX`` if they can't be run, instead of an error. ``CREATE INDEX``
+  is supported (see :doc:`create-index`), but some forms of it aren't, such as an
+  index with a ``WHERE``. The import can then finish without them, so anything
+  that relies on them (such as a ``UNIQUE`` index) isn't there.
 - ``-map``: ``field=column`` puts a field of the file into a column, and can be
   used more than once. Fields that aren't mapped aren't imported. The default is
   that each field goes to the column with its name.
@@ -303,9 +304,14 @@ This is what's different:
   another table has a ``FOREIGN KEY`` to it, so a file that drops its tables first
   can only be loaded once into the same database.
 
-- A ``FOREIGN KEY`` of a table is added after everything else, so it can refer to
-  a table that's created later, and it's checked once all of the rows are there.
-  Its line is the line of the table.
+- A ``CREATE INDEX`` is run after everything else, so that each index is built
+  once, instead of being changed by every ``INSERT``. Its line is still its own
+  line.
+
+- A ``FOREIGN KEY`` of a table is added after everything else (including the
+  indexes, so that it uses an index on its columns), so it can refer to a table
+  that's created later, and it's checked once all of the rows are there. Its line
+  is the line of the table.
 
 - ``PRAGMA`` is ignored. ``BEGIN`` and ``END`` are ``START TRANSACTION`` and
   ``COMMIT``.
@@ -366,7 +372,10 @@ CSV, TSV or JSON:
 
 The output can be loaded into a new database with the ``in`` command, so it can
 be used as a backup. All names are quoted so that their case is kept. Sequences
-are restored to the same next value.
+are restored to the same next value. The indexes of a table (see
+:doc:`create-index`) are created after its rows, so that each one is built once.
+The index of a ``UNIQUE`` constraint isn't in the output, because the constraint
+creates it.
 
 Options must be before the file. These can be used with each ``-format``:
 
@@ -452,12 +461,14 @@ The options are:
   included in the output. By default it is not included because it is provided
   implicitly with a vsql database.
 - ``-data-only``: With ``sql``, write only the rows, and the positions of sequences
-  and identity columns. The rows are in the order of the table names, so a load
+  and identity columns (not the indexes). The rows are in the order of the table names, so a load
   with foreign keys in place can fail if a table references a table that comes
   after it. SQLite doesn't have this problem. It can't be used with
   ``-schema-only``.
 - ``-exclude``: Leave out the objects that match this pattern, even if they were
-  included. It can be used more than once.
+  included. It can be used more than once. An index is in the output with its
+  table, so it's matched by the name of the table. The index that a ``FOREIGN
+  KEY`` made for itself also needs the ``FOREIGN KEY`` to be in the output.
 - ``-file``: Write to this file instead of stdout. If the export fails, the file
   isn't changed.
 - ``-format``: ``sql`` (the default), ``csv``, ``tsv`` or ``json``. All except
@@ -498,7 +509,10 @@ A name that wasn't delimited is stored in upper case by vsql, and it's written i
 lower case, so that ``SELECT * FROM foo`` still works. Other names don't change.
 Tables in ``PUBLIC`` go into the default schema of the connection. Other schemas
 are ``CREATE SCHEMA`` in PostgreSQL and MySQL (where it's a database). SQLite
-doesn't have schemas, so ``foo.bar`` becomes the table ``foo_bar``.
+doesn't have schemas, so ``foo.bar`` becomes the table ``foo_bar`` (and an index
+``baz`` of that table becomes ``foo_baz``). An index has the same name as it does
+in vsql, so it can't be the same as the name of a table (or, in PostgreSQL, a
+``UNIQUE`` or ``PRIMARY KEY`` constraint) in the same schema.
 
 Each database has its own types for these, and any other type doesn't change:
 
@@ -552,6 +566,8 @@ out with a ``--`` comment above the statement it would have been in:
   comparison operators, ``+``, ``-``, ``*`` and ``||``. A generated column that's
   left out is a normal column that keeps its values.
 - A ``DEFAULT`` of ``CURRENT_CATALOG`` or ``CURRENT_SCHEMA``, in SQLite and MySQL.
+- An index in MySQL that has a ``LONGTEXT`` column, or a key that can be over
+  3072 bytes (four for each character of a ``CHAR`` or ``VARCHAR`` column).
 
 These are left out without a comment: ``NOT NULL`` constraint names,
 ``DEFERRABLE`` and ``INITIALLY DEFERRED`` in SQLite and MySQL (the constraint is

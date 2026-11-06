@@ -88,8 +88,8 @@ def test_load_demo(ui, db_file):
     expect(ui.page.locator('main .notice')).to_contain_text('chinook.sql', timeout=30000)
     expect(ui.sidebar_table('ARTIST', schema='MUSIC')).to_be_visible()
     assert count(db_file, 'SELECT COUNT(*) FROM music.artist;') == 2
-    # The index is skipped.
-    expect(ui.page.locator('.import-messages')).to_contain_text('CREATE INDEX is not supported')
+    # The index is created.
+    assert 'DROP INDEX 1' in cli(db_file, 'DROP INDEX music.ifk_artist;')
 
 
 def test_download_fails(ui):

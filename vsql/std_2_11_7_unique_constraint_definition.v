@@ -106,7 +106,7 @@ fn (mut f Storage) check_unique_constraints(t Table, rows []Row) ! {
 fn key_value(row Row, columns []string, types []SQLType, time_zone i16) []u8 {
 	mut key := new_empty_bytes()
 	for i, column in columns {
-		value := row.data[column] or { Value{} }
+		value := row.data.value(column)
 		if value.is_null {
 			return []u8{}
 		}

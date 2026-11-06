@@ -54,7 +54,7 @@ fn replace_table_definition(mut conn Connection, mut catalog CatalogConnection, 
 	for row in catalog.storage.read_rows(table.name)! {
 		mut r := row.for_storage()
 		for column in new_table.columns {
-			if column.not_null && (r.data[column.name.sub_entity_name] or { Value{} }).is_null {
+			if column.not_null && r.data.value(column.name.sub_entity_name).is_null {
 				return sqlstate_23502(new_table, column.name.sub_entity_name)
 			}
 		}

@@ -130,18 +130,18 @@ fn (mut o ValuesOperation) execute(_ []Row) ![]Row {
 	for row in o.rows {
 		o.conn.begin_row()
 		rows << row.eval_row(mut o.conn, Row{
-			data: map[string]Value{}
+			data: RowData{}
 		}, o.params)!
 	}
 
 	columns := o.columns()
 	if columns.len > 0 {
 		for mut row in rows {
-			mut data := map[string]Value{}
-			for i in 1 .. row.data.len + 1 {
+			mut data := RowData{}
+			for i in 1 .. row.data.len() + 1 {
 				column := columns[i - 1]
-				data[column.name.sub_entity_name] = convert_to_combined_type(mut o.conn,
-					'in VALUES', row.data['COL${i}'] or { Value{} }, column.typ)!
+				data.set(column.name.sub_entity_name, convert_to_combined_type(mut o.conn,
+					'in VALUES', row.data.value('COL${i}'), column.typ)!)
 			}
 
 			row = Row{

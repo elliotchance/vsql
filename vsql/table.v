@@ -597,14 +597,34 @@ fn (mut o TableOperation) execute(_ []Row) ![]Row {
 			names[column.name.id()] = o.table.columns[i].name.sub_entity_name
 		}
 
+		// The new keys are only made again when the keys of a row are different
+		// to the row before it. Two keys can get the same name, then the value of
+		// the last one is kept (slots is the position of each one).
+		mut from_keys := []string{}
+		mut keys := []string{}
+		mut slots := []int{}
 		for row in subplan.execute([]Row{})! {
-			mut data := map[string]Value{}
-			for k, v in row.data {
-				data['${o.table_name.id()}.${names[k] or { k }}'] = v
+			if keys.len == 0 || row.data.keys != from_keys {
+				from_keys = row.data.keys
+				keys = []string{}
+				slots = []int{}
+				for k in row.data.keys {
+					key := '${o.table_name.id()}.${names[k] or { k }}'
+					mut slot := keys.index(key)
+					if slot < 0 {
+						slot = keys.len
+						keys << key
+					}
+					slots << slot
+				}
+			}
+			mut values := []Value{len: keys.len}
+			for i, v in row.data.values {
+				values[slots[i]] = v
 			}
 
 			// The id is kept for a cursor, see ExprOperation.execute.
-			rows << Row{row.id, row.tid, data}
+			rows << Row{row.id, row.tid, RowData{keys, values}}
 		}
 	} else {
 		mut catalog := o.conn.catalogs[o.table_name.catalog_name] or {

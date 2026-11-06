@@ -165,7 +165,9 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 	mut final_rows := []Row{}
 	for set in sets {
 		final_rows << if set.len > 0 {
-			new_row(set[0].data.clone())
+			Row{
+				data: set[0].data.clone()
+			}
 		} else {
 			new_row(map[string]Value{})
 		}
@@ -203,7 +205,7 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 		for i, set in sets {
 			match aggregate {
 				AggregateFunctionCount {
-					final_rows[i].data[key] = new_integer_value(set.len)
+					final_rows[i].data.set(key, new_integer_value(set.len))
 				}
 				RoutineInvocation {
 					arg := aggregate.args[0].compile(mut c)!
@@ -220,8 +222,8 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 						values = distinct_values(o.conn, values)!
 					}
 
-					final_rows[i].data[key] = eval_set_function(mut o.conn, aggregate.function_name,
-						values, arg.typ)!
+					final_rows[i].data.set(key, eval_set_function(mut o.conn, aggregate.function_name,
+						values, arg.typ)!)
 				}
 			}
 		}

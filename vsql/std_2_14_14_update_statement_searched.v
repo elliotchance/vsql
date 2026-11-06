@@ -167,10 +167,15 @@ fn (stmt UpdateStatementSearched) execute(mut conn Connection, params map[string
 
 			// Unlike most comparisons we have to treat NULL like a known value
 			// for this particular case because we want NULL to be set in cases
-			// where the value wasn't NULL.
+			// where the value wasn't NULL, and a NULL that stays NULL isn't a
+			// change.
 			check_store_assignment(raw_value, table_column.typ)!
 			column_id := '${row_table_id}.${column_name}'
-			cmp := compare(conn, row.data.value(column_id), raw_value)!
+			old_value := row.data.value(column_id)
+			if old_value.is_null && raw_value.is_null {
+				continue
+			}
+			cmp := compare(conn, old_value, raw_value)!
 			if cmp != .is_equal {
 				did_modify = true
 				row2.data.set(column_id, cast(mut conn, 'for column ${column_name}', raw_value,

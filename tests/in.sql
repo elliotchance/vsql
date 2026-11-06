@@ -77,7 +77,7 @@ VALUES 1 IN (1, 'a');
 -- error 42883: cannot compare SMALLINT and CHARACTER(1)
 
 VALUES CAST(NULL AS INTEGER) IN (1, 'a');
--- COL1: UNKNOWN
+-- error 42883: cannot compare INTEGER and CHARACTER(1)
 
 VALUES (3 IN (1, 2, 3)) = TRUE;
 -- COL1: TRUE

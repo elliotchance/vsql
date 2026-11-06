@@ -10,12 +10,27 @@ struct TransactionIDs {
 mut:
 	// tids ensures we reserve up to 256 slots (2kb) for active transaction IDs.
 	tids [256]u64
+	// end is one more than the last slot in use, so that only the slots before
+	// it need to be searched (there's usually only one). It isn't stored, see
+	// update_end.
+	end int
+}
+
+// update_end sets end after tids has been changed directly.
+fn (mut t TransactionIDs) update_end() {
+	t.end = 256
+	for t.end > 0 && t.tids[t.end - 1] == 0 {
+		t.end--
+	}
 }
 
 fn (mut t TransactionIDs) add(transaction_id u64) ! {
 	for i in 0 .. 256 {
 		if t.tids[i] == 0 {
 			t.tids[i] = transaction_id
+			if i >= t.end {
+				t.end = i + 1
+			}
 			return
 		}
 	}
@@ -27,13 +42,14 @@ fn (mut t TransactionIDs) remove(transaction_id u64) {
 	for i in 0 .. 256 {
 		if t.tids[i] == transaction_id {
 			t.tids[i] = 0
+			t.update_end()
 			return
 		}
 	}
 }
 
 fn (mut t TransactionIDs) exists(transaction_id u64) bool {
-	for i in 0 .. 256 {
+	for i in 0 .. t.end {
 		if t.tids[i] == transaction_id {
 			return true
 		}

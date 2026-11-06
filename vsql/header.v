@@ -162,6 +162,7 @@ fn new_header_from_bytes(data []u8) !Header {
 	for i in 0 .. header.active_transaction_ids.tids.len {
 		header.active_transaction_ids.tids[i] = b.read_u64()
 	}
+	header.active_transaction_ids.update_end()
 	header.table_id = b.read_u64()
 	header.index_id = b.read_u64()
 	header.reserved = b.read_u8s(header_size - header_reserved_offset)

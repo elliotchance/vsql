@@ -217,7 +217,7 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 					}
 
 					if aggregate.distinct {
-						values = distinct_values(o.conn, values)!
+						values = distinct_values(mut o.conn, values, arg.typ)!
 					}
 
 					final_rows[i].data[key] = eval_set_function(mut o.conn, aggregate.function_name,

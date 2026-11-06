@@ -70,6 +70,10 @@ fn (e Subquery) plan(mut c Compiler) !SubqueryPlan {
 		return sqlstate_42601('a subquery cannot be used in an aggregate function')
 	}
 
+	if c.conn.collect_columns {
+		c.conn.collected_subquery = true
+	}
+
 	scope := SubqueryScope{
 		tables:           c.tables
 		context:          c.context

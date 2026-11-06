@@ -764,11 +764,65 @@ fn (mut o Plan) execute(_ []Row) ![]Row {
 	return rows
 }
 
+// needed_columns is whether each column of table is used by the operations
+// before end. The others don't need to be read, because the select list (which
+// must be one of them) makes new rows from the columns it uses. It's empty if
+// they may all be needed: when there isn't a select list, a subquery is used
+// (its columns aren't all known until it runs) or a column isn't one of the
+// table's. The expressions have already been compiled when the plan was made,
+// so they compile again without an error.
+fn (mut o Plan) needed_columns(mut table TableOperation, end int) ![]bool {
+	if !o.operations[1..end].any(it is ExprOperation) {
+		return []
+	}
+
+	mut conn := table.conn
+	warnings := conn.warnings.clone()
+	conn.collect_columns = true
+	conn.collected_columns = map[string]bool{}
+	conn.collected_subquery = false
+	defer {
+		conn.collect_columns = false
+		conn.collected_columns = map[string]bool{}
+		conn.collected_subquery = false
+		conn.warnings = warnings
+	}
+
+	for i in 1 .. end {
+		operation := o.operations[i]
+		if operation is WhereOperation {
+			mut c := Compiler{
+				conn:   conn
+				params: operation.params
+				tables: operation.tables
+			}
+			operation.condition.compile(mut c)!
+		} else if operation is ExprOperation {
+			for expr in operation.exprs {
+				mut c := Compiler{
+					conn:   conn
+					params: operation.params
+					tables: operation.tables
+				}
+				expr.expr.compile(mut c)!
+			}
+		}
+	}
+
+	ids := table.table.columns.map(it.name.id())
+	if conn.collected_subquery || conn.collected_columns.keys().any(it !in ids) {
+		return []
+	}
+
+	return ids.map(it in conn.collected_columns)
+}
+
 // execute_scan reads the rows of table some at a time, passing each batch
 // through the operations before end.
 fn (mut o Plan) execute_scan(mut table TableOperation, end int) ![]Row {
 	mut catalog := table.conn.catalog_for(table.table_name)
-	mut scanner := catalog.storage.scan_rows(table.table_name)!
+	needed := o.needed_columns(mut table, end)!
+	mut scanner := catalog.storage.scan_rows(table.table_name, needed)!
 	defer {
 		scanner.finish()
 	}

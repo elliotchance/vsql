@@ -776,8 +776,12 @@ fn create_query_expression_plan(stmt QueryExpression, params map[string]Value, m
 			}
 		}
 
-		plan.operations << new_order_operation(order, params, conn, plan.columns(), tables,
-			c.result_columns)
+		// The rows may already be in order, when they're read by a key.
+		if c.next_value_sort_keys.len > 0 || stmt.body !is QuerySpecification
+			|| !use_key_order(mut plan, order, c.result_columns, params, mut conn) {
+			plan.operations << new_order_operation(order, params, conn, plan.columns(),
+				tables, c.result_columns)
+		}
 	}
 
 	if stmt.fetch != none || stmt.offset != none {

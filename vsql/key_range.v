@@ -273,7 +273,12 @@ fn new_index_operation(table Table, index Index, conditions []KeyCondition, para
 fn (o &KeyOperation) str() string {
 	key := if index := o.index { 'INDEX ${index.name} ON' } else { 'PRIMARY KEY' }
 
-	return '${key} ${o.table.name} (${key_operation_columns(o.table, true)}) RANGE ${o.conditions.map(it.text).join(' AND ')}'
+	columns := '${key} ${o.table.name} (${key_operation_columns(o.table, true)})'
+	if o.conditions.len == 0 {
+		return columns
+	}
+
+	return '${columns} RANGE ${o.conditions.map(it.text).join(' AND ')}'
 }
 
 fn (o &KeyOperation) columns() Columns {

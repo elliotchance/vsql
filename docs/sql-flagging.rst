@@ -18,12 +18,19 @@ A statement that only uses Core SQL returns an empty array:
    stmt = db.prepare('SELECT name FROM people WHERE age > 20')!
    println(stmt.features()) // []
 
-The statement is only parsed, not executed. The features are found from the
-Conformance Rules of ISO/IEC 9075-2 that can be checked from the syntax alone
-(the "Syntax Only" extent of checking), so the rules that depend on the data
-type of an expression, or on the tables in the catalog, aren't checked. For
-example, a ``FOREIGN KEY`` whose columns have different data types than the
-columns it references needs T201, but it isn't flagged.
+The statement isn't executed. Most of the features are found from the Conformance
+Rules of ISO/IEC 9075-2 that can be checked from the syntax alone (the "Syntax
+Only" extent of checking), and the rules that depend on the data type of an
+expression aren't checked.
+
+The rules that depend on what a name refers to are found with the tables in the
+catalog when ``features()`` is called (the "Catalog Lookup" extent of checking),
+such as the same table in the subquery of a ``DELETE`` (F781), or a ``FOREIGN
+KEY`` whose columns have different data types than the columns it references
+(T201). These names are only resolved in a query, a cursor, a ``DELETE``, an
+``UPDATE``, a ``CREATE TABLE`` or an ``ALTER TABLE``. Nothing is flagged for a
+name that can't be resolved yet, such as for a table that doesn't exist, or
+anything after a dynamic parameter (which doesn't have a value yet).
 
 SQL-client Modules, Embedded SQL and Direct SQL
 -----------------------------------------------

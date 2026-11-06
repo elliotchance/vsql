@@ -478,7 +478,7 @@
 11.8/CR/2                n/a          - - MATCH (F741)
 11.8/CR/3                implemented  vsql/std_2_11_8_referential_constraint_definition.y tests/flagging.sql
 11.8/CR/4                implemented  vsql/std_2_11_8_referential_constraint_definition.y tests/flagging.sql
-11.8/CR/5                missing      - - a referencing column of a different type isn't flagged (#880)
+11.8/CR/5                implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging-name-resolution.sql
 11.8/CR/6                n/a          - - application-time periods (T181)
 11.8/CR/7                n/a          - - application-time periods (T181)
 # 11.9, <check constraint definition>

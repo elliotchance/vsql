@@ -142,6 +142,11 @@ int main(void) {
   EXPECT(delete_indicator(sqlstate, &s, &s_ind), "00000");
   EXPECT(count_indicator(sqlstate, &s, &s_ind, &rows), "00000");
   CHECK(rows == 0);
+
+  /* 14.9 GR 10 and 14.14 GR 15: a DELETE or UPDATE of no rows is no data. */
+  EXPECT(delete_indicator(sqlstate, &s, &s_ind), "02000");
+  s_ind = -1;
+  EXPECT(update_indicator(sqlstate, &s, &s_ind), "02000");
   s_ind = 0;
   rows = 2;
 

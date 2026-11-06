@@ -919,7 +919,9 @@ SQLRETURN SQLError(
  *
  * A transaction is started if there isn't one, and it must be ended with
  * SQLEndTran, so START TRANSACTION, COMMIT and ROLLBACK can't be executed
- * (42000). A "--" comment isn't allowed either (42000).
+ * (42000). A "--" comment isn't allowed either (42000). A DELETE, INSERT or
+ * UPDATE that doesn't change any rows returns SQL_NO_DATA (with no status
+ * record).
  *
  *   SQLExecDirect(stmt, (SQLCHAR *)"CREATE TABLE foo (x DOUBLE PRECISION)",
  *                 SQL_NTS);

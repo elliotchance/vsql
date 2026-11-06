@@ -15,10 +15,26 @@ mut:
 	// path describes the depth. At each depth is an iterator for that page.
 	path           []int
 	depth_iterator []int
+	// parents are the objects of the pages of path before the leaf, kept so that
+	// moving to the next leaf doesn't read them again. They are read when they
+	// are first needed (see parent), so there may be fewer than path.
+	parents [][]PageObject
 	// err is set if a page can't be read, which also ends the iteration. V
 	// iterators can't return an error, so the caller must check it after the
 	// loop.
 	err ?IError
+}
+
+// parent returns the objects of the page at depth in path, which isn't a leaf,
+// reading it (and any parents before it that haven't been read) if needed.
+fn (mut iter PageIterator) parent(depth int) ![]PageObject {
+	for iter.parents.len <= depth {
+		mut objects := []PageObject{}
+		(iter.btree.pager.fetch_page(iter.path[iter.parents.len])!).objects_in_place(mut objects)
+		iter.parents << objects
+	}
+
+	return iter.parents[depth]
 }
 
 // fail ends the iteration because of err, see PageIterator.err.
@@ -63,27 +79,39 @@ fn (mut iter PageIterator) next() ?PageObject {
 
 			iter.path = iter.path[..iter.path.len - 1]
 			iter.depth_iterator = iter.depth_iterator[..iter.depth_iterator.len - 1]
+			if iter.parents.len > iter.path.len {
+				iter.parents = iter.parents[..iter.path.len]
+			}
 			iter.depth_iterator[iter.depth_iterator.len - 1]++
 
-			if iter.depth_iterator[iter.depth_iterator.len - 1] < (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or {
+			if iter.depth_iterator[iter.depth_iterator.len - 1] < (iter.parent(iter.path.len - 1) or {
 				return iter.fail(err)
-			}).objects().len {
+			}).len {
 				break
 			}
 		}
 
-		for (iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).kind == kind_not_leaf {
-			objects :=
-				(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).objects()
+		// Go down to the next leaf. A page that's one of the parents is known to
+		// not be a leaf, so it doesn't need to be read again.
+		for {
+			depth := iter.path.len - 1
+			if depth >= iter.parents.len {
+				page := iter.btree.pager.fetch_page(iter.path[depth]) or { return iter.fail(err) }
+				if page.kind != kind_not_leaf {
+					// The page is only used by the iterator, so its objects don't
+					// need to be copied.
+					page.objects_in_place(mut iter.objects)
+					break
+				}
+				mut objects := []PageObject{}
+				page.objects_in_place(mut objects)
+				iter.parents << objects
+			}
 
-			mut buf := new_bytes(objects[iter.depth_iterator[iter.depth_iterator.len - 1]].value)
+			mut buf := new_bytes(iter.parents[depth][iter.depth_iterator[depth]].value)
 			iter.path << buf.read_i32()
 			iter.depth_iterator << 0
 		}
-
-		// The page is only used by the iterator, so its objects don't need to be
-		// copied.
-		(iter.btree.pager.fetch_page(iter.path[iter.path.len - 1]) or { return iter.fail(err) }).objects_in_place(mut iter.objects)
 	}
 
 	o := iter.objects[iter.depth_iterator[iter.depth_iterator.len - 1]]

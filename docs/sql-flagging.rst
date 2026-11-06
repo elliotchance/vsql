@@ -25,6 +25,34 @@ type of an expression, or on the tables in the catalog, aren't checked. For
 example, a ``FOREIGN KEY`` whose columns have different data types than the
 columns it references needs T201, but it isn't flagged.
 
+SQL-client Modules, Embedded SQL and Direct SQL
+-----------------------------------------------
+
+The language that can't be prepared has the same flagging, and is only compiled
+or parsed:
+
+.. code-block:: v
+
+   m := vsql.compile_module(source, 'name')!
+   println(m.features) // ['B031', 'B112']
+
+   p := vsql.precompile_c(source, 'program.sqc')!
+   println(p.features) // ['B012']
+
+   println(vsql.direct_features('SELECT CURRENT_SCHEMA FROM t;')!) // ['B021', 'F763']
+
+``features`` of a ``CompiledModule`` and of a
+``PrecompiledProgram`` are found from everything in the source, which includes
+the features of each statement, cursor and host parameter data type.
+
+``direct_features`` is for a statement of ``Connection.direct`` and
+``Agent.direct``, which has the same errors if it isn't one statement that ends
+with a semicolon, or if it has a parameter. Unlike those, it doesn't execute the
+statement, so it doesn't need a connection.
+
+The SQL given to ``PREPARE`` or ``EXECUTE IMMEDIATE`` isn't flagged, since it's
+usually not known until the module is executed.
+
 vsql Extensions
 ---------------
 
@@ -183,6 +211,18 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
 
    * - ``V116-02``
      - ``ABORT`` instead of ``ROLLBACK``.
+
+   * - ``V117``
+     - ``PREPARE`` (see :doc:`prepared-statements`).
+
+   * - ``V117-01``
+     - ``PREPARE`` from a literal, rather than a host parameter.
+
+   * - ``V118``
+     - ``EXECUTE IMMEDIATE``.
+
+   * - ``V118-01``
+     - ``EXECUTE IMMEDIATE`` of a literal, rather than a host parameter.
 
    * - ``V201``
      - ``FROM``.

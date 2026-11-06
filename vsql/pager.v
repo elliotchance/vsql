@@ -102,11 +102,21 @@ mut:
 	// root_page is the starting page for a traversal. The root page may change
 	// as balancing happens on the tree.
 	root_page int
+	// cache keeps up to cache_size pages that were read from the file, so that
+	// reading them again doesn't read the file. The pager is only used for one
+	// statement, while the file is locked, so the file can't change underneath
+	// it. cache_order is the page numbers in the order they were added (a ring
+	// starting at cache_next) so that the oldest one is removed when it's full.
+	cache_size  int
+	cache       map[int][]u8
+	cache_order []int
+	cache_next  int
 }
 
 // new_file_pager requires that the path already exists and has already been
-// initialized as a new database.
-fn new_file_pager(mut file os.File, page_size int, root_page int) !&FilePager {
+// initialized as a new database. cache_size is the number of pages to keep in
+// memory (see ConnectionOptions.cache_size), or 0 for none.
+fn new_file_pager(mut file os.File, page_size int, root_page int, cache_size int) !&FilePager {
 	file.seek(0, .end) or { return sqlstate_58030('unable seek end: ${err}') }
 
 	file_len := file.tell() or { return sqlstate_58030('unable to get file length: ${err}') }
@@ -118,11 +128,17 @@ fn new_file_pager(mut file os.File, page_size int, root_page int) !&FilePager {
 		// The first page is reserved for header information. We do not include
 		// this in the pages.
 		total_pages: int((file_len - header_size) / i64(page_size))
+		cache_size:  cache_size
 	}
 }
 
 fn (mut p FilePager) fetch_page(page_number int) !Page {
 	if data := p.dirty[page_number] {
+		return new_page_from_bytes(data)
+	}
+
+	// new_page_from_bytes copies the data, so a cached page can't be changed.
+	if data := p.cache[page_number] {
 		return new_page_from_bytes(data)
 	}
 
@@ -136,8 +152,26 @@ fn (mut p FilePager) fetch_page(page_number int) !Page {
 
 	mut buf := []u8{len: p.page_size}
 	p.file.read(mut buf) or { return sqlstate_58030('unable to read from file: ${err}') }
+	p.cache_page(page_number, buf)
 
 	return new_page_from_bytes(buf)
+}
+
+// cache_page keeps data (that was just read from the file) in the cache,
+// removing the oldest page if it's full.
+fn (mut p FilePager) cache_page(page_number int, data []u8) {
+	if p.cache_size <= 0 {
+		return
+	}
+
+	if p.cache_order.len < p.cache_size {
+		p.cache_order << page_number
+	} else {
+		p.cache.delete(p.cache_order[p.cache_next])
+		p.cache_order[p.cache_next] = page_number
+		p.cache_next = (p.cache_next + 1) % p.cache_size
+	}
+	p.cache[page_number] = data
 }
 
 fn (page Page) clone() Page {
@@ -178,6 +212,12 @@ fn (mut p FilePager) store_page(page_number int, page Page) ! {
 
 fn (mut p FilePager) discard() {
 	p.dirty = map[int][]u8{}
+
+	// A page that was committed before (see wal_commit) may be different to the
+	// cached one, which was read before it was changed.
+	p.cache = map[int][]u8{}
+	p.cache_order = []int{}
+	p.cache_next = 0
 }
 
 fn (mut p FilePager) total_pages() int {

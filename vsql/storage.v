@@ -21,6 +21,9 @@ enum TransactionState {
 struct Storage {
 mut:
 	header Header
+	// cache_size is the number of pages the pager of each operation keeps in
+	// memory, see ConnectionOptions.cache_size.
+	cache_size int
 	// btree is replaced for each operation (because it needs a new pager for
 	// each operation).
 	btree Btree
@@ -184,7 +187,8 @@ fn (mut f Storage) open(catalog_name string, exclusive bool) ! {
 	mut header := read_header(mut f.file)!
 	f.read_only = !exclusive
 
-	f.file_pager = new_file_pager(mut f.file, header.page_size, header.root_page)!
+	f.file_pager = new_file_pager(mut f.file, header.page_size, header.root_page,
+		f.cache_size)!
 	f.btree = new_btree(f.file_pager, header.page_size)
 
 	if exclusive && f.other_transaction_ids(header).len > 0 {

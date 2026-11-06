@@ -229,6 +229,7 @@ pub fn (mut conn Connection) add_catalog(catalog_name string, path string, optio
 
 	if path != ':memory:' {
 		catalog.storage.session = session_lock(session_path(path))!
+		catalog.storage.cache_size = options.cache_size
 	}
 
 	register_information_schema(mut catalog)!
@@ -972,6 +973,13 @@ pub mut:
 	// include rows that it can't see yet), before it fails with a 55P03 lock
 	// not available. The default is 60 seconds.
 	create_index_timeout time.Duration
+	// cache_size is the number of pages of a file that are kept in memory while
+	// a statement runs, so that a page that's used again (such as by a scan or
+	// a search of the B-tree) doesn't need to be read from the file again. The
+	// default is 2000 (8 MiB with the default page_size). 0 doesn't keep any.
+	// Pages are only kept for one statement, since another connection may
+	// change the file between statements.
+	cache_size int
 }
 
 // default_connection_options returns the sensible defaults used by open() and
@@ -981,6 +989,7 @@ pub fn default_connection_options() ConnectionOptions {
 		page_size:            4096
 		mutex:                sync.new_rwmutex()
 		create_index_timeout: 60 * time.second
+		cache_size:           2000
 	}
 }
 

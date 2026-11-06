@@ -39,7 +39,7 @@ fn test_btree_test() ! {
 				init_database_file(file_name, page_size)!
 
 				mut db_file := os.open_file('btree.vsql', 'r+') or { return err }
-				mut file_pager := new_file_pager(mut db_file, page_size, 0)!
+				mut file_pager := new_file_pager(mut db_file, page_size, 0, 3)!
 				run_btree_test(mut file_pager, size, blob_size, page_size, true, true)!
 				db_file.close()
 
@@ -237,7 +237,7 @@ fn test_btree_expire_test() ! {
 	init_database_file(file_name, page_size)!
 
 	mut db_file := os.open_file('btree.vsql', 'r+') or { return err }
-	mut file_pager := new_file_pager(mut db_file, page_size, 0)!
+	mut file_pager := new_file_pager(mut db_file, page_size, 0, 3)!
 	mut btree := new_btree(file_pager, page_size)
 
 	// 1. Insert a bunch of keys. We don't need to scrutinize this part becauase
@@ -311,7 +311,7 @@ fn test_big_btree_test() ! {
 	init_database_file(file_name, page_size)!
 
 	mut db_file := os.open_file('btree.vsql', 'r+') or { return err }
-	mut file_pager := new_file_pager(mut db_file, page_size, 0)!
+	mut file_pager := new_file_pager(mut db_file, page_size, 0, 3)!
 	run_btree_test(mut file_pager, 100000, 48, page_size, false, false)!
 
 	mut total_found_objects := validate(mut file_pager)!

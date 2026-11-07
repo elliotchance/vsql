@@ -203,93 +203,80 @@ fn (o &OrderOperation) columns() Columns {
 }
 
 fn (mut o OrderOperation) execute(rows []Row) ![]Row {
-	// This sorting implementation uses a linked list which is very simple but
-	// very expensive at O(n^2).
-
-	mut head := &RowLink(unsafe { nil })
-	for row in rows {
-		// First item is assigned to head.
-		if unsafe { head == 0 } {
-			head = &RowLink{
-				row: row
-			}
-			continue
-		}
-
-		// If the item is less than the head we unshift it. This cannot be
-		// easily done in the next step without us needing to keep the previous
-		// pointer as well.
-		head_cmp := row_cmp(mut o.conn, o.params, o.tables, o.result_columns, row, head.row,
-			o.order)!
-		if head_cmp < 0 {
-			head = &RowLink{
-				row:  row
-				next: head
-			}
-			continue
-		}
-
-		// Find the place to insert.
-		mut cursor := head
-		mut inserted := false
-		for unsafe { cursor.next != 0 } {
-			cmp := row_cmp(mut o.conn, o.params, o.tables, o.result_columns, row,
-				cursor.next.row, o.order)!
-			if cmp < 0 {
-				cursor.next = &RowLink{
-					row:  row
-					next: cursor.next
-				}
-				inserted = true
-				break
-			}
-			cursor = cursor.next
-		}
-
-		// Or, add it to the tail.
-		if !inserted {
-			cursor.next = &RowLink{
-				row: row
-			}
-		}
+	// A single row doesn't need to be sorted, so its sort keys aren't evaluated.
+	if rows.len < 2 {
+		return rows
 	}
 
-	if unsafe { head == 0 } {
-		return []Row{}
-	}
-
-	return head.rows()
-}
-
-@[heap]
-struct RowLink {
-	row Row
-mut:
-	next &RowLink = unsafe { 0 }
-}
-
-fn (l &RowLink) rows() []Row {
-	mut rows := []Row{}
-	mut cursor := unsafe { l }
-
-	for unsafe { cursor.next != 0 } {
-		rows << cursor.row
-		cursor = cursor.next
-	}
-
-	rows << cursor.row
-
-	return rows
-}
-
-fn row_cmp(mut conn Connection, params map[string]Value, tables map[string]Table, result_columns map[string][]ValueExpression, r1 Row, r2 Row, specs []SortSpecification) !int {
+	// Each sort key is compiled once, and evaluated once for each row, rather
+	// than for each comparison.
 	mut c := Compiler{
-		conn:           conn
-		params:         params
-		tables:         tables
-		result_columns: result_columns
+		conn:           o.conn
+		params:         o.params
+		tables:         o.tables
+		result_columns: o.result_columns
+	}
+	mut compiled := []CompileResult{cap: o.order.len}
+	for spec in o.order {
+		compiled << spec.expr.compile(mut c)!
 	}
 
+	mut keys := [][]Value{cap: rows.len}
+	for row in rows {
+		mut key := []Value{cap: compiled.len}
+		for e in compiled {
+			key << e.run(mut o.conn, row, o.params)!
+		}
+		keys << key
+	}
+
+	// A merge sort is O(n log n) and stable, so rows that are equal for every
+	// sort key (peers) stay in the order they were read in. It sorts the
+	// positions of the rows, so an error from a comparison is returned as soon
+	// as it happens.
+	mut positions := []int{len: rows.len, init: index}
+	mut buffer := []int{len: rows.len}
+	mut width := 1
+	for width < rows.len {
+		for lo := 0; lo < rows.len - width; lo += 2 * width {
+			mid := lo + width
+			hi := if mid + width < rows.len { mid + width } else { rows.len }
+			mut i := lo
+			mut j := mid
+			mut k := lo
+			for i < mid && j < hi {
+				// Only a row that's strictly less is taken from the right half.
+				if sort_keys_cmp(o.conn, keys[positions[j]], keys[positions[i]], o.order)! < 0 {
+					buffer[k] = positions[j]
+					j++
+				} else {
+					buffer[k] = positions[i]
+					i++
+				}
+				k++
+			}
+			for i < mid {
+				buffer[k] = positions[i]
+				i++
+				k++
+			}
+			for j < hi {
+				buffer[k] = positions[j]
+				j++
+				k++
+			}
+			for x in lo .. hi {
+				positions[x] = buffer[x]
+			}
+		}
+		width *= 2
+	}
+
+	return positions.map(rows[it])
+}
+
+// sort_keys_cmp compares the values of the sort keys of two rows.
+fn sort_keys_cmp(conn &Connection, left []Value, right []Value, specs []SortSpecification) !int {
 	// Each sort key is compared in turn, and the first one that isn't equal
 	// decides the order of the two rows. The values are compared like a
 	// <comparison predicate> with < (or > for DESC). Two null values are equal,
@@ -297,27 +284,24 @@ fn row_cmp(mut conn Connection, params map[string]Value, tables map[string]Table
 	// <null ordering> is NULLS FIRST for ASC and NULLS LAST for DESC (there's no
 	// <null ordering>). Rows that are equal for every sort key (peers) are in an
 	// implementation-dependent order, which is the order they were read in since
-	// the insertion sort in OrderOperation.execute is stable.
+	// the merge sort in OrderOperation.execute is stable.
 	//
 	// ISO/IEC 9075-2:2016(E), 10.10, <sort specification list>, Syntax Rules, 2 and 3
 	// ISO/IEC 9075-2:2016(E), 10.10, <sort specification list>, General Rules, 1
-	for spec in specs {
-		left := spec.expr.compile(mut c)!.run(mut conn, r1, params)!
-		right := spec.expr.compile(mut c)!.run(mut conn, r2, params)!
-
-		if left.is_null && right.is_null {
+	for i, spec in specs {
+		if left[i].is_null && right[i].is_null {
 			continue
 		}
 
-		if left.is_null && !right.is_null {
+		if left[i].is_null && !right[i].is_null {
 			return if spec.is_asc { -1 } else { 1 }
 		}
 
-		if !left.is_null && right.is_null {
+		if !left[i].is_null && right[i].is_null {
 			return if spec.is_asc { 1 } else { -1 }
 		}
 
-		cmp := compare(conn, left, right)!
+		cmp := compare(conn, left[i], right[i])!
 		if cmp == .is_equal {
 			continue
 		}

@@ -43,11 +43,15 @@ fn sql_get_session_info(connection_handle SQLInteger, info_type i16, info_value 
 
 fn get_session_info(mut dbc Dbc, h i64, info_type i16, info_value voidptr, buffer_length i16, string_length &i16) !i16 {
 	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 2: the
-	// connection must be established. It doesn't become the current
-	// connection (General Rules, 3), which is #728.
+	// connection must be established.
 	if dbc.conn == none {
 		return cli_error('08003', 'connection does not exist')
 	}
+
+	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 3: if it
+	// isn't the current SQL-connection, then the General Rules of Subclause
+	// 5.3, "Implicit set connection", are applied.
+	implicit_set_connection(h)!
 
 	// ISO/IEC 9075-3:2003(E), 6.42, GetSessionInfo, General Rules, 4-6: the
 	// InfoType must be one of the codes in Table 29.

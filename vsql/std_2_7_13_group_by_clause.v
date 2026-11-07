@@ -207,6 +207,29 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 				}
 				RoutineInvocation {
 					arg := aggregate.args[0].compile(mut c)!
+
+					// A row of a binary set function is eliminated if either of its
+					// values is NULL (GR 8.a).
+					if aggregate.args.len == 2 {
+						arg2 := aggregate.args[1].compile(mut c)!
+						mut ys := []Value{}
+						mut xs := []Value{}
+						for row in set {
+							y := arg.run(mut o.conn, row, o.params)!
+							x := arg2.run(mut o.conn, row, o.params)!
+							if y.is_null || x.is_null {
+								null_eliminated = true
+								continue
+							}
+							ys << y
+							xs << x
+						}
+
+						final_rows[i].data[key] = eval_binary_set_function(aggregate.function_name,
+							ys, xs)!
+						continue
+					}
+
 					mut values := []Value{}
 					for row in set {
 						value := arg.run(mut o.conn, row, o.params)!

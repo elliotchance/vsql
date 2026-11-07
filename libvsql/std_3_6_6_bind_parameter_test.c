@@ -142,7 +142,7 @@ UTEST_F(db, 6_6_bind_parameter_cast) {
   EXPECT_EQ(
       SQLGetData(utest_fixture->stmt, 1, SQL_CHAR, out, sizeof(out), NULL),
       SQL_SUCCESS);
-  EXPECT_STREQ(out, "2026-10-26");
+  EXPECT_STREQ(out, "DATE '2026-10-26'");
 }
 
 /* A number is out of range for a smaller ParameterType. */

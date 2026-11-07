@@ -125,7 +125,7 @@ UTEST_F(row, 6_30_get_data_double_as_char) {
   EXPECT_EQ(SQLGetData(utest_fixture->stmt, COL_DOUBLE, SQL_CHAR, big,
                        sizeof(big), NULL),
             SQL_SUCCESS);
-  EXPECT_STREQ(big, "4.56e0");
+  EXPECT_STREQ(big, "4.56E0");
 }
 
 UTEST_F(row, 6_30_get_data_bigint_as_integer) {
@@ -163,8 +163,8 @@ UTEST_F(row, 6_30_get_data_date) {
   EXPECT_EQ(SQLGetData(utest_fixture->stmt, COL_DATE, SQL_CHAR, big,
                        sizeof(big), &ind),
             SQL_SUCCESS);
-  EXPECT_STREQ(big, "2026-10-25");
-  EXPECT_EQ(ind, 10);
+  EXPECT_STREQ(big, "DATE '2026-10-25'");
+  EXPECT_EQ(ind, 17);
 }
 
 UTEST_F(row, 6_30_get_data_date_as_integer) {

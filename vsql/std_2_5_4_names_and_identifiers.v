@@ -267,6 +267,67 @@ fn requote_identifier(s string) string {
 	return delimit_identifier(s)
 }
 
+// without_catalog_qualifiers returns a statement printed by vsql with the catalog
+// name removed from each column reference, which is the only name that has four
+// parts. The catalog of a stored definition is always the file (see
+// Compiler.stored_definition), but a dump can be loaded into a file with any
+// name. The text is scanned because a definition is printed from its expression,
+// which has no way to change an identifier. A name is always printed without
+// spaces around the dots, and anything in a string isn't a name.
+fn without_catalog_qualifiers(stmt string) string {
+	cs := stmt.runes()
+	mut result := []rune{cap: cs.len}
+	mut i := 0
+	for i < cs.len {
+		mut start := i
+		mut end := i + 1
+		if cs[i] == `'` {
+			end = quoted_end(cs, i)
+		} else if cs[i] == `"` || is_identifier_char(cs[i], false) {
+			mut starts := [i]
+			end = identifier_part_end(cs, i)
+			for end < cs.len && cs[end] == `.` {
+				starts << end + 1
+				end = identifier_part_end(cs, end + 1)
+			}
+			if starts.len == 4 {
+				start = starts[1]
+			}
+		}
+		result << cs[start..end]
+		i = end
+	}
+
+	return result.string()
+}
+
+// identifier_part_end is the index after the name that starts at the index.
+fn identifier_part_end(cs []rune, start int) int {
+	if cs[start] == `"` {
+		return quoted_end(cs, start)
+	}
+
+	mut end := start
+	for end < cs.len && is_identifier_char(cs[end], true) {
+		end++
+	}
+
+	return end
+}
+
+// quoted_end is the index after the string or delimited identifier that starts
+// at the index, where a doubled quote is a part of it. It's only used on a whole
+// statement printed by vsql, so the closing quote is always followed by something
+// (at least the semicolon).
+fn quoted_end(cs []rune, start int) int {
+	mut i := start + 1
+	for cs[i] != cs[start] || cs[i + 1] == cs[start] {
+		i += if cs[i] == cs[start] { 2 } else { 1 }
+	}
+
+	return i + 1
+}
+
 // is_regular_identifier is true if s is read as a name without quotes. It must
 // only contain identifier characters, and not be a token other than a
 // non-reserved word (see tokenize and "non-reserved words" in grammar.y).

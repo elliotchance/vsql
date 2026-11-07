@@ -12,12 +12,13 @@ import math
 // ISO/IEC 9075-2:2016(E), 4.2.3, Operations involving character strings
 
 type CharacterValueFunction = CharacterSubstringFunction
+	| OverlayFunction
 	| RoutineInvocation // <fold>
 	| TrimFunction
 
 fn (e CharacterValueFunction) pstr(params map[string]Value) string {
 	return match e {
-		RoutineInvocation, CharacterSubstringFunction, TrimFunction {
+		RoutineInvocation, CharacterSubstringFunction, OverlayFunction, TrimFunction {
 			e.pstr(params)
 		}
 	}
@@ -25,7 +26,7 @@ fn (e CharacterValueFunction) pstr(params map[string]Value) string {
 
 fn (e CharacterValueFunction) compile(mut c Compiler) !CompileResult {
 	match e {
-		CharacterSubstringFunction, TrimFunction, RoutineInvocation {
+		CharacterSubstringFunction, OverlayFunction, TrimFunction, RoutineInvocation {
 			return e.compile(mut c)!
 		}
 	}
@@ -69,7 +70,7 @@ fn (e CharacterSubstringFunction) pstr(params map[string]Value) string {
 fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 	compiled_value := e.value.compile(mut c)!
 	compiled_from := if f := e.from {
-		check_substring_argument('start position', f, f.compile(mut c)!.typ)!
+		check_substring_argument('SUBSTRING', 'start position', f, f.compile(mut c)!.typ)!
 		f.compile(mut c)!
 	} else {
 		CompileResult{
@@ -79,7 +80,7 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 		}
 	}
 	compiled_for := if f := e.@for {
-		check_substring_argument('string length', f, f.compile(mut c)!.typ)!
+		check_substring_argument('SUBSTRING', 'string length', f, f.compile(mut c)!.typ)!
 		f.compile(mut c)!
 	} else {
 		CompileResult{
@@ -113,15 +114,17 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 
 			if e.using == 'CHARACTERS' {
 				characters := value.string_value().runes()
-				start, end := substring_range(characters.len, substring_position('start position',
-					from_value)!, e.@for != none, substring_position('string length', for_value)!)!
+				start, end := substring_range(characters.len, substring_position('SUBSTRING',
+					'start position', from_value)!, e.@for != none, substring_position('SUBSTRING',
+					'string length', for_value)!)!
 
 				return new_varchar_value(characters[start..end].string()).with_type(typ)
 			}
 
 			str := value.string_value()
-			start, end := substring_range(str.len, substring_position('start position',
-				from_value)!, e.@for != none, substring_position('string length', for_value)!)!
+			start, end := substring_range(str.len, substring_position('SUBSTRING',
+				'start position', from_value)!, e.@for != none, substring_position('SUBSTRING',
+				'string length', for_value)!)!
 
 			return new_varchar_value(str.substr(start, end)).with_type(typ)
 		}
@@ -132,11 +135,12 @@ fn (e CharacterSubstringFunction) compile(mut c Compiler) !CompileResult {
 }
 
 // check_substring_argument returns an error if the start position or string
-// length of a SUBSTRING isn't an exact numeric with scale 0. A dynamic parameter
-// ("?") may be any number that's a whole number (see substring_position).
+// length of a SUBSTRING (or OVERLAY, which is made of SUBSTRINGs) isn't an exact
+// numeric with scale 0. A dynamic parameter ("?") may be any number that's a
+// whole number (see substring_position).
 //
 // ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 3
-fn check_substring_argument(name string, e NumericValueExpression, typ Type) ! {
+fn check_substring_argument(function_name string, name string, e NumericValueExpression, typ Type) ! {
 	if typ.typ in [.is_smallint, .is_integer, .is_bigint]
 		|| (typ.typ in [.is_numeric, .is_decimal] && typ.scale == 0) {
 		return
@@ -146,7 +150,7 @@ fn check_substring_argument(name string, e NumericValueExpression, typ Type) ! {
 		return
 	}
 
-	return sqlstate_42601('SUBSTRING ${name} must be an exact numeric with scale 0, got ${typ}')
+	return sqlstate_42601('${function_name} ${name} must be an exact numeric with scale 0, got ${typ}')
 }
 
 // is_numeric_dynamic_parameter is true if the expression is only a dynamic
@@ -171,10 +175,10 @@ fn is_numeric_dynamic_parameter(e NumericValueExpression) bool {
 }
 
 // substring_position returns the start position or string length of a
-// SUBSTRING. A dynamic parameter must be a whole number.
-fn substring_position(name string, v Value) !i64 {
+// SUBSTRING (or OVERLAY). A dynamic parameter must be a whole number.
+fn substring_position(function_name string, name string, v Value) !i64 {
 	if !v.typ.uses_int() && v.as_f64()! != math.trunc(v.as_f64()!) {
-		return sqlstate_42601('SUBSTRING ${name} must be a whole number, got ${v.str()}')
+		return sqlstate_42601('${function_name} ${name} must be a whole number, got ${v.str()}')
 	}
 
 	return v.as_int()
@@ -214,6 +218,148 @@ fn substring_range(length int, from i64, has_for bool, @for i64) !(int, int) {
 	}
 
 	return int(start - 1), int(end - 1)
+}
+
+// OverlayFunction is OVERLAY(value PLACING placing FROM from [ FOR for ]
+// [ USING using ]). It replaces the part of value that starts at from and is
+// for characters (or octets) long with placing.
+//
+// The expressions are references because a CharacterValueExpression can contain
+// an OverlayFunction, and V stores a sum type's value inline.
+//
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 14
+struct OverlayFunction {
+	value   &CharacterValueExpression
+	placing &CharacterValueExpression
+	from    &NumericValueExpression
+	@for    ?&NumericValueExpression
+	using   string // CHARACTERS or OCTETS
+}
+
+fn new_overlay_function(value CharacterValueExpression, placing CharacterValueExpression, from NumericValueExpression, @for ?NumericValueExpression, using string) OverlayFunction {
+	mut for_ref := ?&NumericValueExpression(none)
+	if f := @for {
+		for_ref = ref_numeric_value_expression(f)
+	}
+	return OverlayFunction{&value, &placing, &from, for_ref, using}
+}
+
+fn (e OverlayFunction) pstr(params map[string]Value) string {
+	mut s := 'OVERLAY(${e.value.pstr(params)} PLACING ${e.placing.pstr(params)} FROM ${e.from.pstr(params)}'
+	if @for := e.@for {
+		s += ' FOR ${@for.pstr(params)}'
+	}
+
+	return s + ' USING ${e.using})'
+}
+
+fn (e OverlayFunction) compile(mut c Compiler) !CompileResult {
+	compiled_value := e.value.compile(mut c)!
+	compiled_placing := e.placing.compile(mut c)!
+	compiled_from := e.from.compile(mut c)!
+	check_substring_argument('OVERLAY', 'start position', e.from, compiled_from.typ)!
+	compiled_for := if f := e.@for {
+		check_substring_argument('OVERLAY', 'string length', f, f.compile(mut c)!.typ)!
+		f.compile(mut c)!
+	} else {
+		CompileResult{
+			run:          unsafe { nil }
+			typ:          Type{}
+			contains_agg: false
+		}
+	}
+
+	if !compiled_value.typ.typ.is_string() || !compiled_placing.typ.typ.is_string() {
+		return sqlstate_42883('function does not exist: OVERLAY(${compiled_value.typ} PLACING ${compiled_placing.typ})')
+	}
+
+	// OVERLAY is equivalent to:
+	//
+	//   SUBSTRING(CV FROM 1 FOR SP - 1) || RS || SUBSTRING(CV FROM SP + SL)
+	//
+	// so its type is the concatenation of the SUBSTRINGs (each a CHARACTER
+	// VARYING as long as CV) and RS.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 14.c
+	substring_type := varying_string_type('OVERLAY', compiled_value.typ)!
+	typ := concatenation_type(concatenation_type(substring_type, compiled_placing.typ)!,
+		substring_type)!
+
+	return CompileResult{
+		run:          fn [e, compiled_value, compiled_placing, compiled_from, compiled_for, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled_value.run(mut conn, data, params)!
+			placing := compiled_placing.run(mut conn, data, params)!
+			from_value := compiled_from.run(mut conn, data, params)!
+			for_value := if e.@for != none {
+				compiled_for.run(mut conn, data, params)!
+			} else {
+				new_integer_value(0)
+			}
+
+			// ISO/IEC 9075-2:2016(E), 6.31, <string value expression>, General Rules, 2.a
+			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 3.d
+			if value.is_null || placing.is_null || from_value.is_null || for_value.is_null {
+				return new_null_value(.is_varchar).with_type(typ)
+			}
+
+			from := substring_position('OVERLAY', 'start position', from_value)!
+			if e.using == 'CHARACTERS' {
+				characters := value.string_value().runes()
+				placing_characters := placing.string_value().runes()
+				// Without FOR, the string length is CHAR_LENGTH(RS).
+				//
+				// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 14.b
+				length := if e.@for != none {
+					substring_position('OVERLAY', 'string length', for_value)!
+				} else {
+					i64(placing_characters.len)
+				}
+				before_start, before_end := substring_range(characters.len, 1, true,
+					overlay_before_length(from))!
+				after_start, after_end := substring_range(characters.len, overlay_after(from,
+					length), false, 0)!
+
+				return new_varchar_value(limit_concatenation(characters[before_start..before_end].string() +
+					placing.string_value() + characters[after_start..after_end].string())!).with_type(typ)
+			}
+
+			str := value.string_value()
+			length := if e.@for != none {
+				substring_position('OVERLAY', 'string length', for_value)!
+			} else {
+				i64(placing.string_value().len)
+			}
+			before_start, before_end := substring_range(str.len, 1, true, overlay_before_length(from))!
+			after_start, after_end := substring_range(str.len, overlay_after(from, length),
+				false, 0)!
+
+			return new_varchar_value(limit_concatenation(str.substr(before_start, before_end) +
+				placing.string_value() + str.substr(after_start, after_end))!).with_type(typ)
+		}
+		typ:          typ
+		contains_agg: compiled_value.contains_agg || compiled_placing.contains_agg
+			|| compiled_from.contains_agg || compiled_for.contains_agg
+	}
+}
+
+// overlay_before_length is SP - 1, the length of the part of an OVERLAY before
+// the replacement. A start position before 1 makes it negative, which is a
+// substring error. The smallest start position can't be subtracted from, but
+// it's negative anyway.
+fn overlay_before_length(from i64) i64 {
+	return if from == min_i64 { -1 } else { from - 1 }
+}
+
+// overlay_after is SP + SL, the start of the part of an OVERLAY after the
+// replacement. SP is at least 1 (see overlay_before_length), so the sum can only
+// overflow when SL is large, and then it's past the end of any string.
+fn overlay_after(from i64, length i64) i64 {
+	sum := from + length
+	if sum < from && length > 0 {
+		return max_i64
+	}
+
+	return sum
 }
 
 // character and source are references because a CharacterValueExpression can

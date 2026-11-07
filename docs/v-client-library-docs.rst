@@ -611,6 +611,9 @@ struct Connection
    	collect_columns    bool
    	collected_columns  map[string]bool
    	correlated_columns map[string][]string
+   	// collected_subquery is set if a subquery is planned while collect_columns
+   	// is set. The columns that a subquery uses aren't all known until it runs.
+   	collected_subquery bool
    	// direct_query_transaction is true when an SQL-transaction was started by
    	// a query in direct (see Connection.direct) that hasn't changed anything.
    	direct_query_transaction bool

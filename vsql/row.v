@@ -275,6 +275,28 @@ fn (t Table) column_ids() []string {
 // new_row_from_bytes_with_ids is new_row_from_bytes with the ids of the columns
 // of the table (see column_ids), so that they aren't made again for each row.
 fn new_row_from_bytes_with_ids(t Table, ids []string, data []u8, tid u64) Row {
+	return new_row_from_bytes_needed(t, ids, [], data, tid)
+}
+
+// skip_value moves buf past a value of typ (that isn't NULL), see Row.bytes.
+fn skip_value(mut buf Bytes, typ SQLType) {
+	buf.at += match typ {
+		.is_boolean { 1 }
+		.is_smallint { 2 }
+		.is_integer, .is_real { 4 }
+		.is_bigint, .is_double_precision, .is_date, .is_time_without_time_zone,
+		.is_timestamp_without_time_zone {
+			8
+		}
+		.is_time_with_time_zone, .is_timestamp_with_time_zone { 10 }
+		.is_varchar, .is_character { int(buf.read_i32()) }
+		.is_numeric, .is_decimal { int(buf.read_i16()) }
+	}
+}
+
+// new_row_from_bytes_needed is new_row_from_bytes_with_ids, but if needed isn't
+// empty, only the columns that are needed are read.
+fn new_row_from_bytes_needed(t Table, ids []string, needed []bool, data []u8, tid u64) Row {
 	mut buf := new_bytes(data)
 	mut row := map[string]Value{}
 
@@ -313,6 +335,13 @@ fn new_row_from_bytes_with_ids(t Table, ids []string, data []u8, tid u64) Row {
 					// BOOLEAN: NULL is encoded as one of the values.
 				}
 			}
+		}
+
+		if needed.len > 0 && !needed[i] {
+			if !v.is_null || v.typ.typ == .is_boolean {
+				skip_value(mut buf, col.typ.typ)
+			}
+			continue
 		}
 
 		// The value is only written if it's not null (or NULL is encoded into

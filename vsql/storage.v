@@ -856,7 +856,7 @@ fn (mut f Storage) has_concurrent_objects(start []u8, end []u8) !bool {
 }
 
 fn (mut f Storage) read_rows(table_name Identifier) ![]Row {
-	mut scanner := f.scan_rows(table_name)!
+	mut scanner := f.scan_rows(table_name, [])!
 	defer {
 		scanner.finish()
 	}
@@ -870,18 +870,22 @@ fn (mut f Storage) read_rows(table_name Identifier) ![]Row {
 struct RowScanner {
 	table Table
 	ids   []string
+	// needed is whether each column is read, or empty for all of them, see
+	// new_row_from_bytes_needed.
+	needed []bool
 mut:
 	storage &Storage
 	iter    PageIterator
 }
 
-fn (mut f Storage) scan_rows(table_name Identifier) !RowScanner {
+fn (mut f Storage) scan_rows(table_name Identifier, needed []bool) !RowScanner {
 	f.isolation_start()!
 	table := f.table(table_name.storage_id())
 
 	return RowScanner{
 		table:   table
 		ids:     table.column_ids()
+		needed:  needed
 		storage: unsafe { &f }
 		iter:    f.btree.new_range_iterator(row_key_prefix(table.id), row_key_prefix(table.id + 1))
 	}
@@ -895,7 +899,7 @@ fn (mut s RowScanner) next_rows(limit int) ![]Row {
 		if object_is_visible(object.tid, object.xid, s.storage.transaction_id, mut
 			s.storage.header.active_transaction_ids)
 		{
-			rows << new_row_from_bytes_with_ids(s.table, s.ids, object.value, object.tid)
+			rows << new_row_from_bytes_needed(s.table, s.ids, s.needed, object.value, object.tid)
 		}
 	}
 	if err := s.iter.err {

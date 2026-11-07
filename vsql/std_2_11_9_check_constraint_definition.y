@@ -6,9 +6,9 @@
 
 check_constraint_definition:
   CHECK left_paren search_condition right_paren {
-    $$.v = CheckConstraintDefinition{
+    $$.v = yy_box(CheckConstraintDefinition{
       search_condition: $3.v as BooleanValueExpression
-    }
+    })
   }
 
 %%

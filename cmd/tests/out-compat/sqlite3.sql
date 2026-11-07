@@ -16,6 +16,7 @@ INSERT INTO "foo_child" ("id", "pid", "Mixed Case", "order") VALUES (1, 1, 'x', 
 INSERT INTO "foo_child" ("id", "pid", "Mixed Case", "order") VALUES (2, NULL, NULL, 4);
 DELETE FROM sqlite_sequence WHERE name = 'foo_child';
 INSERT INTO sqlite_sequence (name, seq) VALUES ('foo_child', 2);
+CREATE INDEX "foo_fk1" ON "foo_child" ("pid");
 
 CREATE TABLE "foo_parent" (
   "id" INTEGER NOT NULL,
@@ -26,6 +27,7 @@ CREATE TABLE "foo_parent" (
   CONSTRAINT "parent_unique_1" UNIQUE ("note")
 );
 INSERT INTO "foo_parent" ("id", "name", "note") VALUES (1, 'a\b''c', NULL);
+CREATE INDEX "foo_parent_name" ON "foo_parent" ("name" DESC, "id");
 
 -- The sequence "fresh" is left out, its next value is 100.
 
@@ -62,6 +64,7 @@ CREATE TABLE "types" (
   "d" DOUBLE PRECISION,
   "c" CHARACTER(5),
   "c2" CHARACTER(300),
+  "c2_more" CHARACTER VARYING(600),
   "vc" CHARACTER VARYING(10),
   "lv" CHARACTER VARYING(5000),
   "de" DECIMAL(10, 2),
@@ -79,8 +82,11 @@ CREATE TABLE "types" (
   CONSTRAINT "upper_vc" CHECK (UPPER("vc") = "vc" OR "vc" IS NULL),
   CONSTRAINT "types_check_3" CHECK ("vc" <> 'a\b' AND "d" < 1.5e+10)
 );
-INSERT INTO "types" ("i", "b", "si", "bi", "r", "d", "c", "c2", "vc", "lv", "de", "n", "dt", "t", "tz", "ts", "tstz", "g2", "cat", "sch") VALUES (1, TRUE, 7, 9000000000, 1.5e0, 2.25e0, 'ab   ', 'cd                                                                                                                                                                                                                                                                                                          ', 'XY', 'long', 12.50, 3, '2022-06-30', '12:34:56', '12:34:56.123+05:00', '2022-06-30 12:34:56.123', '2022-06-30 12:34:56.123456+05:00', 3, 'db', 'PUBLIC');
-INSERT INTO "types" ("i", "b", "si", "bi", "r", "d", "c", "c2", "vc", "lv", "de", "n", "dt", "t", "tz", "ts", "tstz", "g2", "cat", "sch") VALUES (2, FALSE, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2000-01-01', '00:00:00', NULL, '2000-01-01 00:00:00.000', NULL, NULL, 'db', 'PUBLIC');
+INSERT INTO "types" ("i", "b", "si", "bi", "r", "d", "c", "c2", "c2_more", "vc", "lv", "de", "n", "dt", "t", "tz", "ts", "tstz", "g2", "cat", "sch") VALUES (1, TRUE, 7, 9000000000, 1.5e0, 2.25e0, 'ab   ', 'cd                                                                                                                                                                                                                                                                                                          ', NULL, 'XY', 'long', 12.50, 3, '2022-06-30', '12:34:56', '12:34:56.123+05:00', '2022-06-30 12:34:56.123', '2022-06-30 12:34:56.123456+05:00', 3, 'db', 'PUBLIC');
+INSERT INTO "types" ("i", "b", "si", "bi", "r", "d", "c", "c2", "c2_more", "vc", "lv", "de", "n", "dt", "t", "tz", "ts", "tstz", "g2", "cat", "sch") VALUES (2, FALSE, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2000-01-01', '00:00:00', NULL, '2000-01-01 00:00:00.000', NULL, NULL, 'db', 'PUBLIC');
+CREATE INDEX "types_c2" ON "types" ("c2", "c2_more");
+CREATE INDEX "types_lv" ON "types" ("lv", "vc");
+CREATE UNIQUE INDEX "types_vc" ON "types" ("vc");
 
 -- The identity column "id" is a normal column.
 CREATE TABLE "unique_identity" (

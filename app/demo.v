@@ -35,7 +35,7 @@ const demo_data = [
 	DemoData{
 		key:            'chinook'
 		name:           'Chinook'
-		description:    'A digital media store with 11 tables and about 15,000 rows of artists, albums, tracks, playlists, customers, employees and invoices. It takes about a minute to load and uses about 15 MB. vsql has no indexes, so the indexes in the file are skipped and joins on it can take a minute too. The file drops its tables first, so a table in the schema with the same name is replaced. Loading it again into the same schema stops without changing anything, because those tables depend on each other.'
+		description:    'A digital media store with 11 tables and about 15,000 rows of artists, albums, tracks, playlists, customers, employees and invoices. It takes about two minutes to load and uses about 15 MB. The indexes in the file are created after the rows. The file drops its tables first, so a table in the schema with the same name is replaced. Loading it again into the same schema stops without changing anything, because those tables depend on each other.'
 		default_schema: 'chinook'
 		file:           'chinook.sql'
 		format:         'sql'

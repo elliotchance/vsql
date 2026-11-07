@@ -755,6 +755,8 @@ fn is_transaction_statement(stmt string) bool {
 
 // unsupported_statement is what a statement is if -ignore-unsupported can ignore
 // it. They would be a loss, but the rest of the file is still useful without them.
+// CREATE INDEX is run, but some forms of it (such as a partial index) aren't
+// supported.
 fn unsupported_statement(words []string) string {
 	if words.len < 2 || words[0] != 'CREATE' {
 		return ''
@@ -762,6 +764,14 @@ fn unsupported_statement(words []string) string {
 	kind := if words[1] in ['TEMP', 'TEMPORARY', 'UNIQUE'] { words[2] or { '' } } else { words[1] }
 
 	return if kind in ['VIEW', 'TRIGGER', 'INDEX'] { 'CREATE ${kind}' } else { '' }
+}
+
+// is_create_index is true for CREATE INDEX or CREATE UNIQUE INDEX.
+fn is_create_index(stmt string) bool {
+	words := top_level_words(stmt)
+
+	return words.len > 2 && words[0] == 'CREATE'
+		&& (words[1] == 'INDEX' || (words[1] == 'UNIQUE' && words[2] == 'INDEX'))
 }
 
 // ImportRun prints what happens as statements are run. See docs/cli.rst for the
@@ -1003,7 +1013,16 @@ fn (mut s ImportSql) translated(mut conn vsql.Connection, stmt string, line int,
 	} else {
 		''
 	}
-	if unsupported != '' {
+	if options.compat == 'sqlite3' && is_create_index(stmt) {
+		// An index is created at the end, so that it's built once instead of
+		// being changed by every INSERT. Its names are quoted like the rest of
+		// the file.
+		s.compat.indexes << ImportStatement{
+			sql:         sqlite_normalize(stmt)
+			unsupported: unsupported
+			line:        line
+		}
+	} else if unsupported != '' {
 		s.execute(mut conn, ImportStatement{
 			sql:         stmt
 			unsupported: unsupported
@@ -1032,6 +1051,10 @@ fn (mut s ImportSql) execute(mut conn vsql.Connection, stmt ImportStatement, lin
 	s.run.execute(mut conn, stmt.sql, line, done) or {
 		if stmt.ignore_missing && err.msg().contains('no such table') {
 			s.run.print_statement(line, done, 'DROP TABLE 0')
+			return
+		}
+		if stmt.unsupported == 'CREATE INDEX' {
+			s.run.print_condition('WARNING', vsql.sqlstate_to_int('01000'), line, done, 'CREATE INDEX failed, so it was ignored: ${err.msg()}')
 			return
 		}
 		if stmt.unsupported != '' {
@@ -1103,6 +1126,11 @@ fn import_sql(mut conn vsql.Connection, mut input ImportInput, total i64, option
 	if input.failure != '' {
 		s.run.fail(line, base, error(input.failure))
 		s.stopped = true
+	}
+	// The indexes are created before the FOREIGN KEYs, which use them (see
+	// CREATE INDEX).
+	for index in s.compat.indexes {
+		s.execute(mut conn, index, index.line, base)
 	}
 	for foreign_key in s.compat.foreign_keys {
 		s.execute(mut conn, foreign_key, foreign_key.line, base)

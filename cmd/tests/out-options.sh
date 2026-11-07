@@ -14,6 +14,7 @@ printf '%s\n' \
     "INSERT INTO foo.parent (id, name) VALUES (1, 'a,b');" \
     "INSERT INTO foo.parent (id, name) VALUES (2, '');" \
     'INSERT INTO foo.parent (id, name) VALUES (3, NULL);' \
+    'CREATE INDEX parent_name ON foo.parent (name);' \
     'CREATE TABLE baz (x INT, b BOOLEAN, s VARCHAR(20));' \
     "INSERT INTO baz (x, b, s) VALUES (7, TRUE, 'q\"t');" \
 | $VSQL in $VSQL_FILE
@@ -63,6 +64,12 @@ if grep 'CHILD\|SEQ1\|BAZ\|NOTHING' $DIR/out.sql; then exit 1; fi
 $VSQL out -include 'FOO.*' -exclude 'foo.fk1' -exclude '*.seq?' $VSQL_FILE > $DIR/out.sql
 grep 'CREATE TABLE "FOO"."CHILD"' $DIR/out.sql
 if grep 'FK1\|SEQ1\|BAZ' $DIR/out.sql; then exit 1; fi
+# An index is in the output with its table. The index that the FOREIGN KEY made
+# also needs the FOREIGN KEY, which is left out here.
+grep -x 'CREATE INDEX "PARENT_NAME" ON "FOO"."PARENT" ("NAME");' $DIR/out.sql
+$VSQL out $VSQL_FILE | grep -x 'CREATE INDEX "FK1" ON "FOO"."CHILD" ("PID");'
+if $VSQL out -data-only $VSQL_FILE | grep 'INDEX'; then exit 1; fi
+$VSQL out -schema-only $VSQL_FILE | grep -x 'CREATE INDEX "PARENT_NAME" ON "FOO"."PARENT" ("NAME");'
 
 # A foreign key isn't left out because its table is.
 $VSQL out -exclude 'foo.parent' $VSQL_FILE > $DIR/out.sql

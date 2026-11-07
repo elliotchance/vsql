@@ -366,6 +366,46 @@ fn (c DumpCompat) create_table_sql(table Table, foreign_keys []ForeignKey) []str
 	return lines
 }
 
+// create_index_sql is the CREATE INDEX of an index of table, or a comment if it
+// can't be kept. An index is always in the schema of its table, so the name
+// isn't qualified, except that SQLite has no schemas (see table_sql).
+fn (c DumpCompat) create_index_sql(table Table, index Index) string {
+	if c == .mysql {
+		// InnoDB can't index a LONGTEXT, and the key can be up to 3072 bytes (a
+		// character can be up to 4 bytes).
+		mut size := 0
+		for column in index.columns {
+			typ := (table.column(column.name) or { Column{} }).typ
+			if c.type_sql(typ) == 'LONGTEXT' {
+				return compat_comment('The index ${compat_name(index.name.entity_name)} is left out, a LONGTEXT column (${compat_name(column.name)}) cannot be indexed.')
+			}
+			if typ.typ in [.is_character, .is_varchar] {
+				size += 4 * typ.size
+			}
+		}
+		if size > 3072 {
+			return compat_comment('The index ${compat_name(index.name.entity_name)} is left out, its key can be over 3072 bytes.')
+		}
+	}
+
+	name := if c == .sqlite3 {
+		c.table_sql(Identifier{
+			...index.name
+			schema_name: table.name.schema_name
+		})
+	} else {
+		compat_name(index.name.entity_name)
+	}
+	unique := if index.unique { 'UNIQUE ' } else { '' }
+	columns := index.columns.map(if it.desc {
+		'${compat_name(it.name)} DESC'
+	} else {
+		compat_name(it.name)
+	})
+
+	return 'CREATE ${unique}INDEX ${name} ON ${c.table_sql(table.name)} (${columns.join(', ')});'
+}
+
 // identity_restart_sql is the statements that make the identity column continue
 // from next_value, because inserting the rows doesn't move it.
 fn (c DumpCompat) identity_restart_sql(table Table, column Column, next_value i64) []string {
@@ -504,6 +544,15 @@ fn (mut conn Connection) dump_compat(mut w io.Writer, objects []DumpSchema, sele
 							name: options.output_name(table.name)
 						}, column, next_value).join('\n'))!
 					}
+				}
+			}
+			// The indexes are created after the rows, like Connection.dump.
+			if !options.data_only {
+				for index in object.table_indexes(table) {
+					write_line(mut w, c.create_index_sql(Table{
+						...table
+						name: options.output_name(table.name)
+					}, index))!
 				}
 			}
 			write_line(mut w, '')!

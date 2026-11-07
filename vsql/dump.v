@@ -158,6 +158,15 @@ struct DumpSchema {
 	schema    Schema
 	sequences []Sequence
 	tables    []Table
+	// indexes are the indexes of the tables, by table name then index name,
+	// other than the index of a UNIQUE constraint (which is made by its CREATE
+	// TABLE). An index is in the output with its table.
+	indexes []Index
+}
+
+// table_indexes are the indexes of a table, by name.
+fn (s DumpSchema) table_indexes(table Table) []Index {
+	return s.indexes.filter(it.table_name.entity_name == table.name.entity_name)
 }
 
 // matches is whether a pattern selects anything in the schema.
@@ -232,7 +241,20 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 		tables.sort_with_compare(fn (a &Table, b &Table) int {
 			return a.name.entity_name.compare(b.name.entity_name)
 		})
-		objects << DumpSchema{schema, sequences, tables}
+		schema_indexes := catalog.indexes(schema.name)!
+		mut indexes := []Index{}
+		for table in tables {
+			for index in schema_indexes {
+				// The index that a FOREIGN KEY made for itself also needs the
+				// FOREIGN KEY to be selected, otherwise nothing would use it.
+				if index.table_name.entity_name == table.name.entity_name
+					&& !table.is_constraint_index(index) && (!table.is_foreign_key_index(index)
+					|| selection.selected(schema.name, index.name.entity_name)) {
+					indexes << index
+				}
+			}
+		}
+		objects << DumpSchema{schema, sequences, tables, indexes}
 	}
 
 	for pattern in options.include {
@@ -318,6 +340,9 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 				}
 			}
 			if options.schema_only {
+				if write_indexes(mut w, object.table_indexes(table), options)! {
+					write_line(mut w, '')!
+				}
 				continue
 			}
 
@@ -351,6 +376,12 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 				write_line(mut w, 'INSERT INTO ${name} (${columns})${overriding} VALUES (${data.join(', ')});')!
 			}
 
+			// The indexes are created after the rows, so that each one is built
+			// once.
+			if !options.data_only {
+				write_indexes(mut w, object.table_indexes(table), options)!
+			}
+
 			// Inserting the rows doesn't move the sequence of the identity
 			// column, so it's restarted at the value that the next row would
 			// get. A sequence that has reached its limit (without CYCLE) can't
@@ -378,6 +409,19 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 		}
 		write_line(mut w, 'COMMIT;')!
 	}
+}
+
+// write_indexes writes the CREATE INDEX of each index, and returns true if
+// there were any.
+fn write_indexes(mut w io.Writer, indexes []Index, options DumpOptions) !bool {
+	for index in indexes {
+		write_line(mut w, Index{
+			...index
+			table_name: options.output_name(index.table_name)
+		}.str())!
+	}
+
+	return indexes.len > 0
 }
 
 fn write_line(mut w io.Writer, line string) ! {

@@ -386,10 +386,6 @@ fn (mut f Storage) referencing_prefix(mut conn Connection, key ForeignKey, refer
 // deferred constraint isn't checked (see defer_check), it's checked against
 // every referencing row instead.
 fn (mut f Storage) check_referencing_rows(mut conn Connection, t Table, old_rows []Row, new_rows []Row, time_zone i16) ! {
-	if old_rows.len == 0 {
-		return
-	}
-
 	f.isolation_start()!
 	defer {
 		f.end_isolation()
@@ -399,6 +395,10 @@ fn (mut f Storage) check_referencing_rows(mut conn Connection, t Table, old_rows
 	mut table_names := f.tables.keys()
 	table_names.sort()
 	for table_name in table_names {
+		if !f.references(table_name, t.name.storage_id()) {
+			continue
+		}
+
 		referencing := f.table(table_name)
 		for key in referencing.foreign_keys {
 			if key.referenced_table.storage_id() != t.name.storage_id() {
@@ -578,6 +578,10 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 		table_changes := pending_changes.pop()
 
 		for table_name in table_names {
+			if !f.references(table_name, table.name.storage_id()) {
+				continue
+			}
+
 			referencing := f.table(table_name)
 			for key in referencing.foreign_keys {
 				if key.referenced_table.storage_id() != table.name.storage_id() {
@@ -711,6 +715,12 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 	}
 
 	for table_name in table_names {
+		// The checks only look at the rows that were changed, and each row
+		// that was written replaced an old one.
+		if table_name !in old {
+			continue
+		}
+
 		table := f.table(table_name)
 		rows := written[table_name].values()
 		f.check_unique_indexes(table, rows)!

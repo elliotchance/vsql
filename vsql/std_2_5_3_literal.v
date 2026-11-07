@@ -32,15 +32,25 @@ fn numeric_literal(x string) !Value {
 	// There must be an exact numeric type that can hold the literal (Syntax Rule
 	// 22), so it can't have more digits than the maximum precision. Leading
 	// zeros don't count.
-	parts := x.trim_left('+-').split('.')
-	digits := parts[0].trim_left('0').len + if parts.len > 1 { parts[1].len } else { 0 }
+	mut digits := 0
+	mut leading := true
+	mut has_point := false
+	for c in x {
+		if c == `.` {
+			has_point = true
+			leading = false
+		} else if c >= `0` && c <= `9` && !(leading && c == `0`) {
+			digits++
+			leading = false
+		}
+	}
 	if digits > max_numeric_precision {
 		return sqlstate_42601('numeric literal has more than ${max_numeric_precision} digits')
 	}
 
 	// Any number that contains a decimal (even if its a whole number) must be
 	// treated as a NUMERIC.
-	if x.contains('.') {
+	if has_point {
 		// The trim handles cases of "123." which should be treated as "123".
 		return new_numeric_value(x.trim_right('.'))
 	}
@@ -50,18 +60,24 @@ fn numeric_literal(x string) !Value {
 	// Note: There is an edge case where the negative sign may be consumed as part
 	// of <factor> rather than <signed numeric literal>. See parse_factor_2() for
 	// those edge cases.
+	//
+	// Any integer with up to 18 digits fits in an i64, so only a longer one
+	// needs a big.Integer to find out if it's a BIGINT.
+	if digits <= 18 {
+		v := x.i64()
+		if v >= min_i16 && v <= max_i16 {
+			return new_smallint_value(i16(v))
+		}
+
+		if v >= min_i32 && v <= max_i32 {
+			return new_integer_value(int(v))
+		}
+
+		return new_bigint_value(v)
+	}
+
 	n := big.integer_from_string(x)!
-
-	if n >= big.integer_from_i64(-32768) && n <= big.integer_from_i64(32767) {
-		return new_smallint_value(i16(x.i64()))
-	}
-
-	if n >= big.integer_from_i64(-2147483648) && n <= big.integer_from_i64(2147483647) {
-		return new_integer_value(int(x.i64()))
-	}
-
-	if n >= big.integer_from_i64(-9223372036854775808)
-		&& n <= big.integer_from_i64(9223372036854775807) {
+	if n >= big.integer_from_i64(min_i64) && n <= big.integer_from_i64(max_i64) {
 		return new_bigint_value(x.i64())
 	}
 

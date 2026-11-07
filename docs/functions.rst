@@ -8,9 +8,9 @@ Functions
 Overview
 --------
 
-Each function is in one category. The title of each function shows its
-arguments, and the code block below it lists each combination of argument
-types it accepts and the type of the result.
+Each function is in one category. The code block below each function's name
+lists each combination of argument types it accepts and the type of the
+result.
 
 Unless the function says otherwise:
 
@@ -45,25 +45,25 @@ Each function also has a **Compatibility** section:
      - SQL standard
 
    * - ``ABS``
-     - Mathematical
+     - Arithmetic
      - T441
    * - ``ACOS``
-     - Mathematical
+     - Trigonometric
      - T622
    * - ``ASIN``
-     - Mathematical
+     - Trigonometric
      - T622
    * - ``ATAN``
-     - Mathematical
+     - Trigonometric
      - T622
    * - ``AVG``
      - Aggregate
      - Core (E091-01)
    * - ``CEIL``
-     - Mathematical
+     - Rounding
      - T621
    * - ``CEILING``
-     - Mathematical
+     - Rounding
      - T621
    * - ``CHAR_LENGTH``
      - String
@@ -75,10 +75,10 @@ Each function also has a **Compatibility** section:
      - Conditional
      - Core (F261-04)
    * - ``COS``
-     - Mathematical
+     - Trigonometric
      - T622
    * - ``COSH``
-     - Mathematical
+     - Trigonometric
      - T622
    * - ``COUNT``
      - Aggregate
@@ -99,13 +99,13 @@ Each function also has a **Compatibility** section:
      - Date and Time
      - F411
    * - ``EXP``
-     - Mathematical
+     - Exponent and Logarithm
      - T621
    * - ``FLOOR``
-     - Mathematical
+     - Rounding
      - T621
    * - ``LN``
-     - Mathematical
+     - Exponent and Logarithm
      - T621
    * - ``LOCALTIME``
      - Date and Time
@@ -114,7 +114,7 @@ Each function also has a **Compatibility** section:
      - Date and Time
      - Core (F051-08)
    * - ``LOG10``
-     - Mathematical
+     - Exponent and Logarithm
      - T624
    * - ``LOWER``
      - String
@@ -126,7 +126,7 @@ Each function also has a **Compatibility** section:
      - Aggregate
      - Core (E091-04)
    * - ``MOD``
-     - Mathematical
+     - Arithmetic
      - T441
    * - ``NOW``
      - Date and Time
@@ -141,16 +141,16 @@ Each function also has a **Compatibility** section:
      - String
      - Core (E021-11)
    * - ``POWER``
-     - Mathematical
+     - Exponent and Logarithm
      - T621
    * - ``SIN``
-     - Mathematical
+     - Trigonometric
      - T622
    * - ``SINH``
-     - Mathematical
+     - Trigonometric
      - T622
    * - ``SQRT``
-     - Mathematical
+     - Exponent and Logarithm
      - T621
    * - ``SUBSTRING``
      - String
@@ -159,10 +159,10 @@ Each function also has a **Compatibility** section:
      - Aggregate
      - Core (E091-05)
    * - ``TAN``
-     - Mathematical
+     - Trigonometric
      - T622
    * - ``TANH``
-     - Mathematical
+     - Trigonometric
      - T622
    * - ``TRIM``
      - String
@@ -171,8 +171,8 @@ Each function also has a **Compatibility** section:
      - String
      - Core (E021-08)
 
-Aggregate Functions
--------------------
+Aggregate
+---------
 
 Aggregate functions calculate a single value from a set of rows (see
 ``GROUP BY`` in :doc:`select`). ``NULL`` values are ignored, with a ``01003``
@@ -199,8 +199,8 @@ The examples use this table:
     ('San Francisco', 7.5e0), ('San Francisco', 17.5e0),
     ('San Francisco', NULL);
 
-AVG(NUMBER)
-^^^^^^^^^^^
+AVG
+^^^
 
 .. code-block:: sql
 
@@ -238,43 +238,22 @@ A value that isn't a number (such as a ``VARCHAR``) is a ``42883`` error.
   average of integers. PostgreSQL, MySQL, SQLite and Oracle return the
   fractional part, such as 2.33 for the example above.
 
-COUNT(*)
-^^^^^^^^
+COUNT
+^^^^^
 
 .. code-block:: sql
 
    COUNT(*) INTEGER
-
-Counts the rows, including rows that only contain ``NULL`` values. The result
-is 0 when there are no rows. ``DISTINCT`` can't be used with ``*``.
-
-**Examples**
-
-.. code-block:: sql
-
-  SELECT COUNT(*) FROM products;
-  -- COL1: 5
-
-  SELECT city, COUNT(*) FROM products GROUP BY city;
-  -- CITY: New York COL2: 2
-  -- CITY: San Francisco COL2: 3
-
-**Compatibility**
-
-- **SQL standard:** Core SQL (E091-02).
-- **Other databases:** ``COUNT(*)`` in all of them. The result is a
-  ``BIGINT`` in PostgreSQL and MySQL, and an ``INT`` in SQL Server (which has
-  ``COUNT_BIG(*)`` for a ``BIGINT``).
-
-COUNT(VALUE)
-^^^^^^^^^^^^
-
-.. code-block:: sql
-
    COUNT(ANY) INTEGER
 
-Counts the values that are not ``NULL``. The value can be any type. The result
-is 0 when there are no rows, or all of the values are ``NULL``.
+``COUNT(*)`` counts the rows, including rows that only contain ``NULL`` values.
+``DISTINCT`` can't be used with ``*``.
+
+``COUNT(VALUE)`` counts the values that are not ``NULL``. The value can be any
+type.
+
+The result is 0 when there are no rows, or (for ``COUNT(VALUE)``) all of the
+values are ``NULL``.
 
 **Examples**
 
@@ -292,13 +271,19 @@ those that have a non-``NULL`` ``price``.
   SELECT COUNT(DISTINCT city) FROM products;
   -- COL1: 2
 
+  SELECT city, COUNT(*) FROM products GROUP BY city;
+  -- CITY: New York COL2: 2
+  -- CITY: San Francisco COL2: 3
+
 **Compatibility**
 
 - **SQL standard:** Core SQL (E091-02).
-- **Other databases:** ``COUNT`` in all of them.
+- **Other databases:** ``COUNT`` in all of them. The result is a
+  ``BIGINT`` in PostgreSQL and MySQL, and an ``INT`` in SQL Server (which has
+  ``COUNT_BIG`` for a ``BIGINT``).
 
-MAX(VALUE)
-^^^^^^^^^^
+MAX
+^^^
 
 .. code-block:: sql
 
@@ -330,8 +315,8 @@ time, or a string. The result has the same type as the values.
 - **Other databases:** ``MAX`` in all of them. PostgreSQL doesn't accept a
   ``BOOLEAN``, use ``BOOL_OR`` instead.
 
-MIN(VALUE)
-^^^^^^^^^^
+MIN
+^^^
 
 .. code-block:: sql
 
@@ -360,8 +345,8 @@ or a string. The result has the same type as the values.
 - **Other databases:** ``MIN`` in all of them. PostgreSQL doesn't accept a
   ``BOOLEAN``, use ``BOOL_AND`` instead.
 
-SUM(NUMBER)
-^^^^^^^^^^^
+SUM
+^^^
 
 .. code-block:: sql
 
@@ -401,15 +386,127 @@ A value that isn't a number (such as a ``VARCHAR``) is a ``42883`` error.
 - **Other databases:** ``SUM`` in all of them. PostgreSQL returns a
   ``NUMERIC`` for the sum of ``BIGINT`` values, so it can't overflow.
 
-Conditional Functions
----------------------
+Arithmetic
+----------
+
+Arithmetic functions return the absolute value or the remainder of a number.
+The result has the type of an argument (see each function).
+
+They accept any number. If there is no version of the function
+for the argument types, an exact number (such as an ``INTEGER``) is converted to
+a ``NUMERIC`` when possible, otherwise to a ``DOUBLE PRECISION``, and a ``REAL``
+is converted to a ``DOUBLE PRECISION``.
+
+A number literal has the smallest type that holds it, so ``-5`` is a
+``SMALLINT`` and ``1.50`` is a ``NUMERIC(3, 2)``.
+
+ABS
+^^^
+
+.. code-block:: sql
+
+   ABS(SMALLINT) SMALLINT
+   ABS(INTEGER) INTEGER
+   ABS(BIGINT) BIGINT
+   ABS(REAL) REAL
+   ABS(DOUBLE PRECISION) DOUBLE PRECISION
+   ABS(DECIMAL(p, s)) DECIMAL(p, s)
+   ABS(NUMERIC(p, s)) NUMERIC(p, s)
+
+Absolute value. The result is the same type as the argument, including the
+precision and scale of a ``DECIMAL`` or ``NUMERIC``.
+
+The smallest value of each integer type has no positive value in the same type,
+so it's a ``22003`` error, such as ``ABS(CAST(-32768 AS SMALLINT))``. The
+literal ``-32768`` is a ``SMALLINT``, so ``ABS(-32768)`` is also an error, use
+``ABS(CAST(-32768 AS INTEGER))``.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES ABS(1.2e0);
+  -- COL1: 1.2e0
+
+  VALUES ABS(-1.23e0);
+  -- COL1: 1.23e0
+
+  VALUES ABS(-1.230);
+  -- COL1: 1.230
+
+  VALUES ABS(-32768);
+  -- error 22003: numeric value out of range
+
+**Compatibility**
+
+- **SQL standard:** T441 (ABS and MOD functions).
+- **Other databases:** ``ABS`` in all of them.
+
+MOD
+^^^
+
+.. code-block:: sql
+
+   MOD(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+   MOD(NUMERIC, NUMERIC) NUMERIC
+   MOD(SMALLINT, SMALLINT) SMALLINT
+   MOD(INTEGER, INTEGER) INTEGER
+   MOD(BIGINT, BIGINT) BIGINT
+
+``MOD(DIVIDEND, DIVISOR)`` is the modulus, the remainder of dividing
+``DIVIDEND`` by ``DIVISOR``. The result has
+the same sign as ``DIVIDEND``, so ``MOD(-7, 3)`` is -1 and ``MOD(7, -3)`` is 1.
+A ``DIVISOR`` of 0 is a ``22012`` error (division by zero), for every type.
+
+When both arguments are integers the result has the type of ``DIVISOR`` (the
+result is always smaller than it), such as ``MOD(BIGINT, SMALLINT) SMALLINT``.
+When either is a ``NUMERIC`` or ``DECIMAL``, the result is a ``NUMERIC`` with
+the larger scale of the two. When either is approximate (``REAL`` or
+``DOUBLE PRECISION``), the result is a ``DOUBLE PRECISION``.
+
+The standard only allows integers (exact numbers with a scale of 0). An
+argument with a scale or an approximate literal, such as ``MOD(5.5, 2)``, is a
+vsql extension flagged by ``V403-01`` (see :doc:`sql-flagging`).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES MOD(232e0, 3e0);
+  -- COL1: 1e0
+
+  VALUES MOD(10.7e0, 0.8e0);
+  -- COL1: 0.3e0
+
+  VALUES MOD(10.7, 0.8);
+  -- COL1: 0.3
+
+  VALUES MOD(-7, 3);
+  -- COL1: -1
+
+  VALUES MOD(7, 0);
+  -- error 22012: division by zero
+
+**Compatibility**
+
+- **SQL standard:** T441 (ABS and MOD functions), for integers.
+- **Other databases:**
+
+  - PostgreSQL and MySQL: ``MOD(x, y)`` or ``x % y``.
+  - SQLite: ``x % y``, or ``MOD(x, y)`` which always returns a floating point
+    number.
+  - SQL Server: ``x % y``.
+  - Oracle: ``MOD(x, y)``.
+
+Conditional
+-----------
 
 Conditional functions choose between values. Unlike other functions, their
 result isn't always ``NULL`` when an argument is ``NULL``. See also ``CASE`` in
 :doc:`expressions`.
 
-COALESCE(VALUE, VALUE, ...)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+COALESCE
+^^^^^^^^
 
 .. code-block:: sql
 
@@ -455,14 +552,15 @@ The values are checked in order, and the values after the first one that is not
   argument versions: ``IFNULL`` (MySQL, SQLite), ``ISNULL`` (SQL Server) and
   ``NVL`` (Oracle).
 
-NULLIF(VALUE1, VALUE2)
-^^^^^^^^^^^^^^^^^^^^^^
+NULLIF
+^^^^^^
 
 .. code-block:: sql
 
    NULLIF(ANY, ANY) ANY
 
-If ``VALUE1`` and ``VALUE2`` are equal, ``NULL`` will be returned. Otherwise
+``NULLIF(VALUE1, VALUE2)`` returns ``NULL`` if ``VALUE1`` and ``VALUE2`` are
+equal. Otherwise
 ``VALUE1`` is returned. The result has the type of ``VALUE1``.
 
 The values are compared with ``=``, so ``1`` and ``1.0`` are equal, and so are
@@ -497,8 +595,8 @@ is returned.
 - **SQL standard:** Core SQL (F261-03).
 - **Other databases:** ``NULLIF`` in all of them.
 
-Date and Time Functions
------------------------
+Date and Time
+-------------
 
 These functions return the current date and time (see :doc:`dates-times` for
 the types). The time is taken once for each statement, so every use in the
@@ -528,8 +626,8 @@ session. There are no parentheses (``CURRENT_DATE()`` is a syntax error).
   - Oracle: ``CURRENT_DATE``, but it also has the time, use
     ``TRUNC(CURRENT_DATE)``.
 
-CURRENT_TIME[(PRECISION)]
-^^^^^^^^^^^^^^^^^^^^^^^^^
+CURRENT_TIME
+^^^^^^^^^^^^
 
 .. code-block:: sql
 
@@ -558,8 +656,8 @@ without the time zone.
     zone.
   - Oracle has no ``TIME`` type.
 
-CURRENT_TIMESTAMP[(PRECISION)]
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+CURRENT_TIMESTAMP
+^^^^^^^^^^^^^^^^^
 
 .. code-block:: sql
 
@@ -590,8 +688,8 @@ date and time, but without the time zone.
     zone. The SQLite timestamp is a string in UTC. SQL Server has
     ``SYSDATETIMEOFFSET()`` for the time zone.
 
-LOCALTIME[(PRECISION)]
-^^^^^^^^^^^^^^^^^^^^^^
+LOCALTIME
+^^^^^^^^^
 
 .. code-block:: sql
 
@@ -619,8 +717,8 @@ also includes the time zone.
   - SQLite: ``TIME('now', 'localtime')``.
   - Oracle has no ``TIME`` type.
 
-LOCALTIMESTAMP[(PRECISION)]
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+LOCALTIMESTAMP
+^^^^^^^^^^^^^^
 
 .. code-block:: sql
 
@@ -646,8 +744,8 @@ date and time, but also includes the time zone.
   - SQL Server: ``SYSDATETIME()``.
   - SQLite: ``DATETIME('now', 'localtime')``.
 
-NOW()
-^^^^^
+NOW
+^^^
 
 .. code-block:: sql
 
@@ -668,153 +766,197 @@ to be called with quotes: ``"NOW"()``.
   if the SQL needs to be portable.
 - **Other databases:**
 
-  - PostgreSQL: ``NOW()``, the time the transaction started.
-  - MySQL: ``NOW()``, without a time zone.
+  - PostgreSQL: ``NOW``, the time the transaction started.
+  - MySQL: ``NOW``, without a time zone.
   - SQL Server: ``SYSDATETIMEOFFSET()``.
   - SQLite: ``DATETIME('now')``, a string in UTC.
   - Oracle: ``CURRENT_TIMESTAMP`` or ``SYSTIMESTAMP``.
 
-Mathematical Functions
+Exponent and Logarithm
 ----------------------
 
-Mathematical functions accept any numeric argument. If there is no version of
-the function for the argument's type, an exact numeric argument (such as
-``INTEGER``) is converted to ``NUMERIC`` when possible, otherwise to
-``DOUBLE PRECISION``. A ``REAL`` is converted to ``DOUBLE PRECISION``. For
-example, ``LN(10)`` is the same as ``LN(10e0)``.
+Exponents and logarithms accept any number, which is converted to a
+``DOUBLE PRECISION`` (so ``LN(10)`` is the same as ``LN(10e0)``), and they
+return a ``DOUBLE PRECISION``. A result that is too large or too small to be a
+``DOUBLE PRECISION`` is a ``22003`` error (numeric value out of range).
 
-A number literal has the smallest type that holds it, so ``-5`` is a
-``SMALLINT`` and ``1.50`` is a ``NUMERIC(3, 2)``.
-
-The trigonometric functions use radians.
-
-An approximate result (``DOUBLE PRECISION``) that is too large or too small to
-be represented is a ``22003`` error (numeric value out of range), unless the
-function says otherwise.
-
-ABS(NUMBER)
-^^^^^^^^^^^
+EXP
+^^^
 
 .. code-block:: sql
 
-   ABS(SMALLINT) SMALLINT
-   ABS(INTEGER) INTEGER
-   ABS(BIGINT) BIGINT
-   ABS(REAL) REAL
-   ABS(DOUBLE PRECISION) DOUBLE PRECISION
-   ABS(DECIMAL(p, s)) DECIMAL(p, s)
-   ABS(NUMERIC(p, s)) NUMERIC(p, s)
+   EXP(DOUBLE PRECISION) DOUBLE PRECISION
 
-Absolute value. The result is the same type as the argument, including the
-precision and scale of a ``DECIMAL`` or ``NUMERIC``.
-
-The smallest value of each integer type has no positive value in the same type,
-so it's a ``22003`` error, such as ``ABS(CAST(-32768 AS SMALLINT))``. The
-literal ``-32768`` is a ``SMALLINT``, so ``ABS(-32768)`` is also an error, use
-``ABS(CAST(-32768 AS INTEGER))``.
+Exponential, *e* (2.718281828459...) raised to the power of the argument. The
+result is always greater than 0, so an argument greater than about 709.78 (the
+result is too large) or less than about -745.13 (the result is too small) is a
+``22003`` error.
 
 **Examples**
 
 .. code-block:: sql
 
-  VALUES ABS(1.2e0);
-  -- COL1: 1.2e0
+  VALUES EXP(3.7);
+  -- COL1: 40.447304360067e0
 
-  VALUES ABS(-1.23e0);
-  -- COL1: 1.23e0
+  VALUES EXP(1);
+  -- COL1: 2.718281828459e0
 
-  VALUES ABS(-1.230);
-  -- COL1: 1.230
-
-  VALUES ABS(-32768);
+  VALUES EXP(1000);
   -- error 22003: numeric value out of range
 
 **Compatibility**
 
-- **SQL standard:** T441 (ABS and MOD functions).
-- **Other databases:** ``ABS`` in all of them.
+- **SQL standard:** T621 (enhanced numeric functions).
+- **Other databases:** ``EXP`` in all of them.
 
-ACOS(NUMBER)
-^^^^^^^^^^^^
+LN
+^^
 
 .. code-block:: sql
 
-   ACOS(DOUBLE PRECISION) DOUBLE PRECISION
+   LN(DOUBLE PRECISION) DOUBLE PRECISION
 
-Inverse (arc) cosine. The result is between 0 and π. The argument must be
-between -1 and 1, otherwise it's a ``22003`` error.
+Natural logarithm (base *e*). The argument must be greater than 0, otherwise
+it's a ``2201E`` error (invalid argument for natural logarithm).
 
 **Examples**
 
 .. code-block:: sql
 
-  VALUES ACOS(0.2);
-  -- COL1: 1.369438406005e0
+  VALUES LN(13.7);
+  -- COL1: 2.617395832834e0
 
-  VALUES ACOS(-1);
-  -- COL1: 3.14159265359e0
+  VALUES LN(1);
+  -- COL1: 0e0
 
-  VALUES ACOS(2);
+  VALUES LN(0);
+  -- error 2201E: invalid argument for natural logarithm
+
+**Compatibility**
+
+- **SQL standard:** T621 (enhanced numeric functions).
+- **Other databases:**
+
+  - PostgreSQL, MySQL, SQLite and Oracle: ``LN``.
+  - SQL Server: ``LOG(x)``. MySQL also has ``LOG(x)``, which is the natural
+    logarithm there too, but in PostgreSQL and SQLite ``LOG(x)`` is base 10.
+
+LOG10
+^^^^^
+
+.. code-block:: sql
+
+   LOG10(DOUBLE PRECISION) DOUBLE PRECISION
+
+Logarithm in base 10. The argument must be greater than 0, otherwise it's a
+``22003`` error (numeric value out of range).
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES LOG10(13.7);
+  -- COL1: 1.136720567156e0
+
+  VALUES LOG10(1000);
+  -- COL1: 3e0
+
+  VALUES LOG10(0);
   -- error 22003: numeric value out of range
 
 **Compatibility**
 
-- **SQL standard:** T622 (trigonometric functions).
-- **Other databases:** ``ACOS`` in all of them. MySQL and SQLite return
-  ``NULL`` for an argument outside of -1 to 1.
+- **SQL standard:** T624 (common logarithm functions).
+- **Other databases:**
 
-ASIN(NUMBER)
-^^^^^^^^^^^^
+  - PostgreSQL, MySQL, SQLite and SQL Server: ``LOG10``. PostgreSQL and SQLite
+    also have ``LOG(x)``, which is base 10 there.
+  - Oracle: ``LOG(10, x)``.
+
+POWER
+^^^^^
 
 .. code-block:: sql
 
-   ASIN(DOUBLE PRECISION) DOUBLE PRECISION
+   POWER(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
 
-Inverse (arc) sine. The result is between -π/2 and π/2. The argument must be
-between -1 and 1, otherwise it's a ``22003`` error.
+``POWER(BASE, EXPONENT)`` is ``BASE`` raised to the power of ``EXPONENT``. Both are converted to
+``DOUBLE PRECISION``, so the result is always approximate, even for integers.
+
+- ``POWER(0, 0)`` is 1.
+- A ``BASE`` of 0 with a negative ``EXPONENT`` is a ``2201F`` error (invalid
+  argument for power function).
+- A negative ``BASE`` needs an ``EXPONENT`` that is a whole number, otherwise
+  it's a ``2201F`` error.
+- A result that is too large or too small (but not 0) is a ``22003`` error,
+  such as ``POWER(10, 400)``.
 
 **Examples**
 
 .. code-block:: sql
 
-  VALUES ASIN(0.2);
-  -- COL1: 0.20135792079e0
+  VALUES POWER(3.7, 2.5);
+  -- COL1: 26.333240780428e0
 
-  VALUES ASIN(1.5);
-  -- error 22003: numeric value out of range
+  VALUES POWER(2, 10);
+  -- COL1: 1024e0
+
+  VALUES POWER(-2, 3);
+  -- COL1: -8e0
+
+  VALUES POWER(0, -1);
+  -- error 2201F: invalid argument for power function
 
 **Compatibility**
 
-- **SQL standard:** T622 (trigonometric functions).
-- **Other databases:** ``ASIN`` in all of them. MySQL and SQLite return
-  ``NULL`` for an argument outside of -1 to 1.
+- **SQL standard:** T621 (enhanced numeric functions).
+- **Other databases:**
 
-ATAN(NUMBER)
-^^^^^^^^^^^^
+  - PostgreSQL: ``POWER`` or the ``^`` operator.
+  - MySQL and SQLite: ``POWER`` or ``POW``.
+  - SQL Server and Oracle: ``POWER``.
+
+SQRT
+^^^^
 
 .. code-block:: sql
 
-   ATAN(DOUBLE PRECISION) DOUBLE PRECISION
+   SQRT(DOUBLE PRECISION) DOUBLE PRECISION
 
-Inverse (arc) tangent. The result is between -π/2 and π/2, for any argument.
+Square root. The result is approximate, even for a perfect square. The argument
+can't be negative, otherwise it's a ``2201F`` error (invalid argument for power
+function), because ``SQRT(x)`` is the same as ``POWER(x, 0.5)``.
 
 **Examples**
 
 .. code-block:: sql
 
-  VALUES ATAN(0.2);
-  -- COL1: 0.19739555985e0
+  VALUES SQRT(3.7);
+  -- COL1: 1.923538406167e0
 
-  VALUES ATAN(1e300);
-  -- COL1: 1.570796326795e0
+  VALUES SQRT(16);
+  -- COL1: 4e0
+
+  VALUES SQRT(-1);
+  -- error 2201F: invalid argument for power function
 
 **Compatibility**
 
-- **SQL standard:** T622 (trigonometric functions).
-- **Other databases:** ``ATAN`` in all of them.
+- **SQL standard:** T621 (enhanced numeric functions).
+- **Other databases:** ``SQRT`` in all of them. MySQL and SQLite return
+  ``NULL`` for a negative argument.
 
-CEIL(NUMBER)
-^^^^^^^^^^^^
+Rounding
+--------
+
+Rounding functions round a number to an integer, up (``CEIL``) or down
+(``FLOOR``). They accept any number. An exact number (such as an ``INTEGER``
+or ``DECIMAL``) is converted to a ``NUMERIC``, and an approximate number (``REAL``
+or ``DOUBLE PRECISION``) to a ``DOUBLE PRECISION``.
+
+CEIL
+^^^^
 
 .. code-block:: sql
 
@@ -861,15 +1003,15 @@ an ``INTEGER``. A ``REAL`` argument returns a ``DOUBLE PRECISION``.
   - SQL Server: ``CEILING``.
   - Oracle: ``CEIL``.
 
-CEILING(NUMBER)
-^^^^^^^^^^^^^^^
+CEILING
+^^^^^^^
 
 .. code-block:: sql
 
    CEILING(DOUBLE PRECISION) DOUBLE PRECISION
    CEILING(NUMERIC(p, s)) NUMERIC(p - s + 1, 0)
 
-``CEILING`` is another name for ``CEIL``, see ``CEIL(NUMBER)``.
+``CEILING`` is another name for ``CEIL``, see ``CEIL``.
 
 **Examples**
 
@@ -884,88 +1026,10 @@ CEILING(NUMBER)
 **Compatibility**
 
 - **SQL standard:** T621 (enhanced numeric functions).
-- **Other databases:** see ``CEIL(NUMBER)``.
+- **Other databases:** see ``CEIL``.
 
-COS(NUMBER)
-^^^^^^^^^^^
-
-.. code-block:: sql
-
-   COS(DOUBLE PRECISION) DOUBLE PRECISION
-
-Cosine of an angle in radians. The result is between -1 and 1.
-
-**Examples**
-
-.. code-block:: sql
-
-  VALUES COS(1.2);
-  -- COL1: 0.362357754477e0
-
-  VALUES COS(0);
-  -- COL1: 1e0
-
-**Compatibility**
-
-- **SQL standard:** T622 (trigonometric functions).
-- **Other databases:** ``COS`` in all of them.
-
-COSH(NUMBER)
-^^^^^^^^^^^^
-
-.. code-block:: sql
-
-   COSH(DOUBLE PRECISION) DOUBLE PRECISION
-
-Hyperbolic cosine. The result is at least 1.
-
-**Examples**
-
-.. code-block:: sql
-
-  VALUES COSH(1.2);
-  -- COL1: 1.810655567324e0
-
-**Compatibility**
-
-- **SQL standard:** T622 (trigonometric functions).
-- **Other databases:**
-
-  - PostgreSQL, SQLite and Oracle: ``COSH``.
-  - MySQL and SQL Server: ``(EXP(x) + EXP(-x)) / 2``.
-
-EXP(NUMBER)
-^^^^^^^^^^^
-
-.. code-block:: sql
-
-   EXP(DOUBLE PRECISION) DOUBLE PRECISION
-
-Exponential, *e* (2.718281828459...) raised to the power of the argument. The
-result is always greater than 0, so an argument greater than about 709.78 (the
-result is too large) or less than about -745.13 (the result is too small) is a
-``22003`` error.
-
-**Examples**
-
-.. code-block:: sql
-
-  VALUES EXP(3.7);
-  -- COL1: 40.447304360067e0
-
-  VALUES EXP(1);
-  -- COL1: 2.718281828459e0
-
-  VALUES EXP(1000);
-  -- error 22003: numeric value out of range
-
-**Compatibility**
-
-- **SQL standard:** T621 (enhanced numeric functions).
-- **Other databases:** ``EXP`` in all of them.
-
-FLOOR(NUMBER)
-^^^^^^^^^^^^^
+FLOOR
+^^^^^
 
 .. code-block:: sql
 
@@ -1012,290 +1076,8 @@ the argument, because rounding down may need one, such as ``FLOOR(-9.5)`` is
 - **SQL standard:** T621 (enhanced numeric functions).
 - **Other databases:** ``FLOOR`` in all of them.
 
-LN(NUMBER)
-^^^^^^^^^^
-
-.. code-block:: sql
-
-   LN(DOUBLE PRECISION) DOUBLE PRECISION
-
-Natural logarithm (base *e*). The argument must be greater than 0, otherwise
-it's a ``2201E`` error (invalid argument for natural logarithm).
-
-**Examples**
-
-.. code-block:: sql
-
-  VALUES LN(13.7);
-  -- COL1: 2.617395832834e0
-
-  VALUES LN(1);
-  -- COL1: 0e0
-
-  VALUES LN(0);
-  -- error 2201E: invalid argument for natural logarithm
-
-**Compatibility**
-
-- **SQL standard:** T621 (enhanced numeric functions).
-- **Other databases:**
-
-  - PostgreSQL, MySQL, SQLite and Oracle: ``LN``.
-  - SQL Server: ``LOG(x)``. MySQL also has ``LOG(x)``, which is the natural
-    logarithm there too, but in PostgreSQL and SQLite ``LOG(x)`` is base 10.
-
-LOG10(NUMBER)
-^^^^^^^^^^^^^
-
-.. code-block:: sql
-
-   LOG10(DOUBLE PRECISION) DOUBLE PRECISION
-
-Logarithm in base 10. The argument must be greater than 0, otherwise it's a
-``22003`` error (numeric value out of range).
-
-**Examples**
-
-.. code-block:: sql
-
-  VALUES LOG10(13.7);
-  -- COL1: 1.136720567156e0
-
-  VALUES LOG10(1000);
-  -- COL1: 3e0
-
-  VALUES LOG10(0);
-  -- error 22003: numeric value out of range
-
-**Compatibility**
-
-- **SQL standard:** T624 (common logarithm functions).
-- **Other databases:**
-
-  - PostgreSQL, MySQL, SQLite and SQL Server: ``LOG10``. PostgreSQL and SQLite
-    also have ``LOG(x)``, which is base 10 there.
-  - Oracle: ``LOG(10, x)``.
-
-MOD(DIVIDEND, DIVISOR)
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. code-block:: sql
-
-   MOD(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
-   MOD(NUMERIC, NUMERIC) NUMERIC
-   MOD(SMALLINT, SMALLINT) SMALLINT
-   MOD(INTEGER, INTEGER) INTEGER
-   MOD(BIGINT, BIGINT) BIGINT
-
-Modulus, the remainder of dividing ``DIVIDEND`` by ``DIVISOR``. The result has
-the same sign as ``DIVIDEND``, so ``MOD(-7, 3)`` is -1 and ``MOD(7, -3)`` is 1.
-A ``DIVISOR`` of 0 is a ``22012`` error (division by zero), for every type.
-
-When both arguments are integers the result has the type of ``DIVISOR`` (the
-result is always smaller than it), such as ``MOD(BIGINT, SMALLINT) SMALLINT``.
-When either is a ``NUMERIC`` or ``DECIMAL``, the result is a ``NUMERIC`` with
-the larger scale of the two. When either is approximate (``REAL`` or
-``DOUBLE PRECISION``), the result is a ``DOUBLE PRECISION``.
-
-The standard only allows integers (exact numbers with a scale of 0). An
-argument with a scale or an approximate literal, such as ``MOD(5.5, 2)``, is a
-vsql extension flagged by ``V403-01`` (see :doc:`sql-flagging`).
-
-**Examples**
-
-.. code-block:: sql
-
-  VALUES MOD(232e0, 3e0);
-  -- COL1: 1e0
-
-  VALUES MOD(10.7e0, 0.8e0);
-  -- COL1: 0.3e0
-
-  VALUES MOD(10.7, 0.8);
-  -- COL1: 0.3
-
-  VALUES MOD(-7, 3);
-  -- COL1: -1
-
-  VALUES MOD(7, 0);
-  -- error 22012: division by zero
-
-**Compatibility**
-
-- **SQL standard:** T441 (ABS and MOD functions), for integers.
-- **Other databases:**
-
-  - PostgreSQL and MySQL: ``MOD(x, y)`` or ``x % y``.
-  - SQLite: ``x % y``, or ``MOD(x, y)`` which always returns a floating point
-    number.
-  - SQL Server: ``x % y``.
-  - Oracle: ``MOD(x, y)``.
-
-POWER(BASE, EXPONENT)
-^^^^^^^^^^^^^^^^^^^^^
-
-.. code-block:: sql
-
-   POWER(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
-
-``BASE`` raised to the power of ``EXPONENT``. Both are converted to
-``DOUBLE PRECISION``, so the result is always approximate, even for integers.
-
-- ``POWER(0, 0)`` is 1.
-- A ``BASE`` of 0 with a negative ``EXPONENT`` is a ``2201F`` error (invalid
-  argument for power function).
-- A negative ``BASE`` needs an ``EXPONENT`` that is a whole number, otherwise
-  it's a ``2201F`` error.
-- A result that is too large or too small (but not 0) is a ``22003`` error,
-  such as ``POWER(10, 400)``.
-
-**Examples**
-
-.. code-block:: sql
-
-  VALUES POWER(3.7, 2.5);
-  -- COL1: 26.333240780428e0
-
-  VALUES POWER(2, 10);
-  -- COL1: 1024e0
-
-  VALUES POWER(-2, 3);
-  -- COL1: -8e0
-
-  VALUES POWER(0, -1);
-  -- error 2201F: invalid argument for power function
-
-**Compatibility**
-
-- **SQL standard:** T621 (enhanced numeric functions).
-- **Other databases:**
-
-  - PostgreSQL: ``POWER`` or the ``^`` operator.
-  - MySQL and SQLite: ``POWER`` or ``POW``.
-  - SQL Server and Oracle: ``POWER``.
-
-SIN(NUMBER)
-^^^^^^^^^^^
-
-.. code-block:: sql
-
-   SIN(DOUBLE PRECISION) DOUBLE PRECISION
-
-Sine of an angle in radians. The result is between -1 and 1.
-
-**Examples**
-
-.. code-block:: sql
-
-  VALUES SIN(1.2);
-  -- COL1: 0.932039085967e0
-
-**Compatibility**
-
-- **SQL standard:** T622 (trigonometric functions).
-- **Other databases:** ``SIN`` in all of them.
-
-SINH(NUMBER)
-^^^^^^^^^^^^
-
-.. code-block:: sql
-
-   SINH(DOUBLE PRECISION) DOUBLE PRECISION
-
-Hyperbolic sine.
-
-**Examples**
-
-.. code-block:: sql
-
-  VALUES SINH(1.2);
-  -- COL1: 1.509461355412e0
-
-**Compatibility**
-
-- **SQL standard:** T622 (trigonometric functions).
-- **Other databases:**
-
-  - PostgreSQL, SQLite and Oracle: ``SINH``.
-  - MySQL and SQL Server: ``(EXP(x) - EXP(-x)) / 2``.
-
-SQRT(NUMBER)
-^^^^^^^^^^^^
-
-.. code-block:: sql
-
-   SQRT(DOUBLE PRECISION) DOUBLE PRECISION
-
-Square root. The result is approximate, even for a perfect square. The argument
-can't be negative, otherwise it's a ``2201F`` error (invalid argument for power
-function), because ``SQRT(x)`` is the same as ``POWER(x, 0.5)``.
-
-**Examples**
-
-.. code-block:: sql
-
-  VALUES SQRT(3.7);
-  -- COL1: 1.923538406167e0
-
-  VALUES SQRT(16);
-  -- COL1: 4e0
-
-  VALUES SQRT(-1);
-  -- error 2201F: invalid argument for power function
-
-**Compatibility**
-
-- **SQL standard:** T621 (enhanced numeric functions).
-- **Other databases:** ``SQRT`` in all of them. MySQL and SQLite return
-  ``NULL`` for a negative argument.
-
-TAN(NUMBER)
-^^^^^^^^^^^
-
-.. code-block:: sql
-
-   TAN(DOUBLE PRECISION) DOUBLE PRECISION
-
-Tangent of an angle in radians.
-
-**Examples**
-
-.. code-block:: sql
-
-  VALUES TAN(1.2);
-  -- COL1: 2.572151622126e0
-
-**Compatibility**
-
-- **SQL standard:** T622 (trigonometric functions).
-- **Other databases:** ``TAN`` in all of them.
-
-TANH(NUMBER)
-^^^^^^^^^^^^
-
-.. code-block:: sql
-
-   TANH(DOUBLE PRECISION) DOUBLE PRECISION
-
-Hyperbolic tangent. The result is between -1 and 1.
-
-**Examples**
-
-.. code-block:: sql
-
-  VALUES TANH(1.2);
-  -- COL1: 0.833654607012e0
-
-**Compatibility**
-
-- **SQL standard:** T622 (trigonometric functions).
-- **Other databases:**
-
-  - PostgreSQL, SQLite and Oracle: ``TANH``.
-  - MySQL and SQL Server: ``(EXP(2 * x) - 1) / (EXP(2 * x) + 1)``.
-
-Session Functions
------------------
+Session
+-------
 
 Session functions return information about the current connection. There are
 no parentheses after their names.
@@ -1360,8 +1142,8 @@ can be changed with :doc:`set-schema`.
   - Oracle: ``SYS_CONTEXT('USERENV', 'CURRENT_SCHEMA')``.
   - SQLite has no schemas.
 
-String Functions
-----------------
+String
+------
 
 String functions accept a ``CHARACTER`` or ``CHARACTER VARYING`` (see
 :doc:`text`). A ``CHARACTER(n)`` value always has ``n`` characters, so its
@@ -1371,8 +1153,8 @@ Lengths and positions are counted in characters, where a multibyte character
 (such as ``😊``) counts as one, unless the function says otherwise. The first
 character is at position 1.
 
-CHAR_LENGTH(STRING)
-^^^^^^^^^^^^^^^^^^^
+CHAR_LENGTH
+^^^^^^^^^^^
 
 .. code-block:: sql
 
@@ -1403,23 +1185,23 @@ character). The length of an empty string is 0, and the length of a
   - SQLite and Oracle: ``LENGTH``.
   - SQL Server: ``LEN``, which doesn't count spaces at the end.
 
-CHARACTER_LENGTH(STRING)
-^^^^^^^^^^^^^^^^^^^^^^^^
+CHARACTER_LENGTH
+^^^^^^^^^^^^^^^^
 
 .. code-block:: sql
 
    CHARACTER_LENGTH(CHARACTER VARYING) INTEGER
 
 ``CHARACTER_LENGTH`` is another name for ``CHAR_LENGTH``, see
-``CHAR_LENGTH(STRING)``.
+``CHAR_LENGTH``.
 
 **Compatibility**
 
 - **SQL standard:** Core SQL (E021-04).
-- **Other databases:** see ``CHAR_LENGTH(STRING)``.
+- **Other databases:** see ``CHAR_LENGTH``.
 
-LOWER(STRING)
-^^^^^^^^^^^^^
+LOWER
+^^^^^
 
 .. code-block:: sql
 
@@ -1431,7 +1213,7 @@ as the input, such as ``CHARACTER(5)`` for ``LOWER('Hello')``.
 The full Unicode case mappings are used, so a character may become several
 characters. A result that's longer than the maximum length of the type is
 truncated, with a warning (``01004``) if any of the removed characters aren't
-spaces. See ``UPPER(STRING)`` for an example.
+spaces. See ``UPPER`` for an example.
 
 **Examples**
 
@@ -1449,8 +1231,8 @@ spaces. See ``UPPER(STRING)`` for an example.
 - **Other databases:** ``LOWER`` in all of them, and ``LCASE`` in MySQL. SQLite
   only converts ASCII letters (unless it's built with ICU).
 
-OCTET_LENGTH(STRING)
-^^^^^^^^^^^^^^^^^^^^
+OCTET_LENGTH
+^^^^^^^^^^^^
 
 .. code-block:: sql
 
@@ -1480,15 +1262,15 @@ UTF-8. A character can be 1 to 4 bytes.
     value.
   - Oracle: ``LENGTHB``.
 
-POSITION(SEARCH IN STRING)
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+POSITION
+^^^^^^^^
 
 .. code-block:: sql
 
    POSITION(CHARACTER VARYING IN CHARACTER VARYING) INTEGER
 
-Returns the start of the left most (first) match of ``SEARCH`` within
-``STRING``. 1 will be the smallest index on a match and 0 is returned if
+``POSITION(SEARCH IN STRING)`` returns the start of the left most (first)
+match of ``SEARCH`` within ``STRING``. 1 will be the smallest index on a match and 0 is returned if
 ``SEARCH`` does not exist in ``STRING``. The position is counted in characters
 (a multibyte character counts as one).
 
@@ -1519,8 +1301,8 @@ Matching is case-sensitive. An empty ``SEARCH`` is found at the start of any
   - SQLite and Oracle: ``INSTR(string, search)``.
   - SQL Server: ``CHARINDEX(search, string)``.
 
-SUBSTRING(STRING FROM START [FOR LENGTH] [USING UNIT])
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SUBSTRING
+^^^^^^^^^
 
 .. code-block:: text
 
@@ -1598,8 +1380,8 @@ in bytes. If ``USING`` is not provided, ``CHARACTERS`` will be used.
   A negative ``START`` counts from the end of the string in MySQL, SQLite and
   Oracle, so ``SUBSTR('hello', -3)`` is ``'llo'`` there.
 
-TRIM([[SIDE] [CHARACTER] FROM] STRING)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TRIM
+^^^^
 
 .. code-block:: text
 
@@ -1661,8 +1443,8 @@ character is removed, not other white space such as tabs or new lines.
   - Oracle: ``TRIM``, which only allows one character like the standard, and
     ``LTRIM`` and ``RTRIM`` with any number of characters.
 
-UPPER(STRING)
-^^^^^^^^^^^^^
+UPPER
+^^^^^
 
 .. code-block:: sql
 
@@ -1696,3 +1478,228 @@ removed characters aren't spaces.
 - **Other databases:** ``UPPER`` in all of them, and ``UCASE`` in MySQL. SQLite
   only converts ASCII letters (unless it's built with ICU). The others convert
   ``ß`` to ``SS`` only in some collations or versions.
+
+Trigonometric
+-------------
+
+The trigonometric functions, including the hyperbolic functions (``SINH``,
+``COSH`` and ``TANH``), use radians. They accept any number, which is converted
+to a ``DOUBLE PRECISION`` (so ``SIN(1)`` is the same as ``SIN(1e0)``), and they
+return a ``DOUBLE PRECISION``.
+
+ACOS
+^^^^
+
+.. code-block:: sql
+
+   ACOS(DOUBLE PRECISION) DOUBLE PRECISION
+
+Inverse (arc) cosine. The result is between 0 and π. The argument must be
+between -1 and 1, otherwise it's a ``22003`` error.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES ACOS(0.2);
+  -- COL1: 1.369438406005e0
+
+  VALUES ACOS(-1);
+  -- COL1: 3.14159265359e0
+
+  VALUES ACOS(2);
+  -- error 22003: numeric value out of range
+
+**Compatibility**
+
+- **SQL standard:** T622 (trigonometric functions).
+- **Other databases:** ``ACOS`` in all of them. MySQL and SQLite return
+  ``NULL`` for an argument outside of -1 to 1.
+
+ASIN
+^^^^
+
+.. code-block:: sql
+
+   ASIN(DOUBLE PRECISION) DOUBLE PRECISION
+
+Inverse (arc) sine. The result is between -π/2 and π/2. The argument must be
+between -1 and 1, otherwise it's a ``22003`` error.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES ASIN(0.2);
+  -- COL1: 0.20135792079e0
+
+  VALUES ASIN(1.5);
+  -- error 22003: numeric value out of range
+
+**Compatibility**
+
+- **SQL standard:** T622 (trigonometric functions).
+- **Other databases:** ``ASIN`` in all of them. MySQL and SQLite return
+  ``NULL`` for an argument outside of -1 to 1.
+
+ATAN
+^^^^
+
+.. code-block:: sql
+
+   ATAN(DOUBLE PRECISION) DOUBLE PRECISION
+
+Inverse (arc) tangent. The result is between -π/2 and π/2, for any argument.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES ATAN(0.2);
+  -- COL1: 0.19739555985e0
+
+  VALUES ATAN(1e300);
+  -- COL1: 1.570796326795e0
+
+**Compatibility**
+
+- **SQL standard:** T622 (trigonometric functions).
+- **Other databases:** ``ATAN`` in all of them.
+
+COS
+^^^
+
+.. code-block:: sql
+
+   COS(DOUBLE PRECISION) DOUBLE PRECISION
+
+Cosine of an angle in radians. The result is between -1 and 1.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES COS(1.2);
+  -- COL1: 0.362357754477e0
+
+  VALUES COS(0);
+  -- COL1: 1e0
+
+**Compatibility**
+
+- **SQL standard:** T622 (trigonometric functions).
+- **Other databases:** ``COS`` in all of them.
+
+COSH
+^^^^
+
+.. code-block:: sql
+
+   COSH(DOUBLE PRECISION) DOUBLE PRECISION
+
+Hyperbolic cosine. The result is at least 1.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES COSH(1.2);
+  -- COL1: 1.810655567324e0
+
+**Compatibility**
+
+- **SQL standard:** T622 (trigonometric functions).
+- **Other databases:**
+
+  - PostgreSQL, SQLite and Oracle: ``COSH``.
+  - MySQL and SQL Server: ``(EXP(x) + EXP(-x)) / 2``.
+
+SIN
+^^^
+
+.. code-block:: sql
+
+   SIN(DOUBLE PRECISION) DOUBLE PRECISION
+
+Sine of an angle in radians. The result is between -1 and 1.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES SIN(1.2);
+  -- COL1: 0.932039085967e0
+
+**Compatibility**
+
+- **SQL standard:** T622 (trigonometric functions).
+- **Other databases:** ``SIN`` in all of them.
+
+SINH
+^^^^
+
+.. code-block:: sql
+
+   SINH(DOUBLE PRECISION) DOUBLE PRECISION
+
+Hyperbolic sine.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES SINH(1.2);
+  -- COL1: 1.509461355412e0
+
+**Compatibility**
+
+- **SQL standard:** T622 (trigonometric functions).
+- **Other databases:**
+
+  - PostgreSQL, SQLite and Oracle: ``SINH``.
+  - MySQL and SQL Server: ``(EXP(x) - EXP(-x)) / 2``.
+
+TAN
+^^^
+
+.. code-block:: sql
+
+   TAN(DOUBLE PRECISION) DOUBLE PRECISION
+
+Tangent of an angle in radians.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES TAN(1.2);
+  -- COL1: 2.572151622126e0
+
+**Compatibility**
+
+- **SQL standard:** T622 (trigonometric functions).
+- **Other databases:** ``TAN`` in all of them.
+
+TANH
+^^^^
+
+.. code-block:: sql
+
+   TANH(DOUBLE PRECISION) DOUBLE PRECISION
+
+Hyperbolic tangent. The result is between -1 and 1.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES TANH(1.2);
+  -- COL1: 0.833654607012e0
+
+**Compatibility**
+
+- **SQL standard:** T622 (trigonometric functions).
+- **Other databases:**
+
+  - PostgreSQL, SQLite and Oracle: ``TANH``.
+  - MySQL and SQL Server: ``(EXP(2 * x) - 1) / (EXP(2 * x) + 1)``.

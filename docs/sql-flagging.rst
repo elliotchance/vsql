@@ -241,7 +241,8 @@ of it. The first digit of ``VXXX`` is the kind of thing that's extended:
      - ``NOW()`` instead of ``CURRENT_TIMESTAMP``.
 
    * - ``V403``
-     - Mathematical functions (see :doc:`functions`).
+     - Mathematical functions: the arithmetic, exponent and logarithm, rounding
+       and trigonometric functions (see :doc:`functions`).
 
    * - ``V403-01``
      - ``MOD`` with an argument that contains a literal that has a scale or is

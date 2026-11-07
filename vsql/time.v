@@ -2,7 +2,6 @@
 
 module vsql
 
-import regex
 import time
 
 // The concept is described by ISO/IEC 9075-1:2003(E), 4.4.3.4, Datetime types.
@@ -23,7 +22,7 @@ const default_timestamp_precision = 6
 // literals. They express this through the grammar itself, but for simplicity
 // and performance the lexer treats all strings the same.
 //
-// We need to emulate the grammar with a regex which is expressed as:
+// We need to emulate the grammar, which is expressed as:
 //
 //   <unquoted timestamp string> ::=
 //     <unquoted date string> <space> <unquoted time string>
@@ -42,16 +41,47 @@ const default_timestamp_precision = 6
 //     <sign> <hours value> <colon> <minutes value>
 //
 // The years value must be four digits, and the other datetime components must
-// be two digits (with the exception of the seconds fraction).
+// be two digits (with the exception of the seconds fraction, which may have up
+// to six digits).
 //
 // ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules, 31
-const unquoted_date_string = r'\d{4}\-\d{2}\-\d{2}'
-const unquoted_time_string_with_time_zone = r'\d{2}:\d{2}:\d{2}(\.\d{1,6})?[-+]\d{2}:\d{2}'
-const unquoted_time_string_without_time_zone = r'\d{2}:\d{2}:\d{2}(\.\d{1,6})?'
-const unquoted_timestamp_with_time_zone_string = '^' + unquoted_date_string + r'\s' +
-	unquoted_time_string_with_time_zone + '$'
-const unquoted_timestamp_without_time_zone_string = '^' + unquoted_date_string + r'\s' +
-	unquoted_time_string_without_time_zone + '$'
+fn is_unquoted_timestamp_string(s string, with_time_zone bool) bool {
+	mut timestamp := s
+	if with_time_zone {
+		if s.len < 6 || !matches_datetime_pattern(s[s.len - 6..], '+00:00') {
+			return false
+		}
+		timestamp = s[..s.len - 6]
+	}
+
+	if timestamp.len < 19 || !matches_datetime_pattern(timestamp[..19], '0000-00-00 00:00:00') {
+		return false
+	}
+
+	fraction := timestamp[19..]
+
+	return fraction.len == 0 || (fraction.len >= 2 && fraction.len <= 7
+		&& matches_datetime_pattern(fraction, '.000000'[..fraction.len]))
+}
+
+// matches_datetime_pattern checks each character of s against the pattern,
+// which must be the same length, where `0` is a digit, a space is any
+// whitespace and `+` is a sign. Any other character must be the same.
+fn matches_datetime_pattern(s string, pattern string) bool {
+	for i in 0 .. s.len {
+		ok := match pattern[i] {
+			`0` { s[i].is_digit() }
+			` ` { s[i].is_space() }
+			`+` { s[i] == `+` || s[i] == `-` }
+			else { s[i] == pattern[i] }
+		}
+		if !ok {
+			return false
+		}
+	}
+
+	return true
+}
 
 // Time is the internal way that time is represented and provides other
 // conversions such as to/from storage and to/from V's native time.Time.
@@ -70,11 +100,7 @@ pub mut:
 fn new_timestamp_from_string(s string) !Time {
 	expects_time_zone := s.len > 6 && (s[s.len - 6] == `+` || s[s.len - 6] == `-`)
 
-	mut re := regex.regex_opt(match expects_time_zone {
-		true { unquoted_timestamp_with_time_zone_string }
-		false { unquoted_timestamp_without_time_zone_string }
-	}) or { return sqlstate_xx000('cannot compile regex for timestamp: ${err}') }
-	if !re.matches_string(s) {
+	if !is_unquoted_timestamp_string(s, expects_time_zone) {
 		return sqlstate_42601("TIMESTAMP '${s}' is not valid")
 	}
 
@@ -115,8 +141,8 @@ fn new_timestamp_from_string(s string) !Time {
 }
 
 // parse_timestamp_components parses a string that has already been validated
-// by unquoted_timestamp_without_time_zone_string. Each component must be within
-// the valid range for a Gregorian date and time.
+// by is_unquoted_timestamp_string. Each component must be within the valid
+// range for a Gregorian date and time.
 //
 // ISO/IEC 9075-2:2016(E), 5.3, <literal>, Syntax Rules, 32 (and Table 11)
 fn parse_timestamp_components(s string) !time.Time {

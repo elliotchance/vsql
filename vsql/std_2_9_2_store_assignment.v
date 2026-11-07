@@ -393,6 +393,31 @@ fn cast_numeric(mut _ Connection, v Value, t Type) !Value {
 		return sqlstate_42846(v.typ, t)
 	}
 
+	// An integer to an integer doesn't need a Numeric, which is much slower.
+	if v.typ.typ in [.is_smallint, .is_integer, .is_bigint] {
+		x := v.int_value()
+		match t.typ {
+			.is_smallint {
+				if x < min_i16 || x > max_i16 {
+					return sqlstate_22003()
+				}
+
+				return new_smallint_value(i16(x))
+			}
+			.is_integer {
+				if x < min_i32 || x > max_i32 {
+					return sqlstate_22003()
+				}
+
+				return new_integer_value(int(x))
+			}
+			.is_bigint {
+				return new_bigint_value(x)
+			}
+			else {}
+		}
+	}
+
 	match t.typ {
 		.is_smallint {
 			mut numeric_value := v.as_numeric()!

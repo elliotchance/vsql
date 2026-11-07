@@ -1499,7 +1499,7 @@ Optional Features
    * - ❌ **T572**
      - **Multiset-returning external SQL-invoked functions**
 
-   * - ❌ **T581**
+   * - ✅ **T581**
      - **Regular expression substring function**
 
    * - ✅ **T591**

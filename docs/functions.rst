@@ -154,7 +154,7 @@ Each function also has a **Compatibility** section:
      - T621
    * - ``SUBSTRING``
      - String
-     - Core (E021-06)
+     - Core (E021-06), T581
    * - ``SUM``
      - Aggregate
      - Core (E091-05)
@@ -1325,10 +1325,13 @@ SUBSTRING
      [ USING { CHARACTERS | OCTETS } ]
    )
 
+   SUBSTRING(STRING SIMILAR PATTERN ESCAPE ESCAPE_CHARACTER)
+
 .. code-block:: sql
 
    SUBSTRING(CHARACTER VARYING(n) FROM INTEGER) CHARACTER VARYING(n)
    SUBSTRING(CHARACTER VARYING(n) FROM INTEGER FOR INTEGER) CHARACTER VARYING(n)
+   SUBSTRING(CHARACTER VARYING(n) SIMILAR CHARACTER VARYING ESCAPE CHARACTER) CHARACTER VARYING(n)
 
 Returns part of ``STRING``. The result is a ``CHARACTER VARYING`` with the
 maximum length of ``STRING``.
@@ -1353,6 +1356,19 @@ If ``CHARACTERS`` is specified ``START`` and ``LENGTH`` will count in characters
 (this works with multibyte characters) whereas ``OCTETS`` will strictly count
 in bytes. If ``USING`` is not provided, ``CHARACTERS`` will be used.
 
+With ``SIMILAR``, the part of ``STRING`` that is returned is found with a
+pattern instead. ``PATTERN`` must have exactly two of ``ESCAPE_CHARACTER``
+followed by a double quote (``"``), otherwise a ``2200C`` error (invalid use of
+escape character) is raised. They split it into three patterns, and the whole
+of ``STRING`` must match all three together, the same as ``SIMILAR TO`` (see
+:doc:`expressions`). The result is the part that matches the middle pattern,
+or ``NULL`` if ``STRING`` doesn't match.
+
+The first pattern matches as little as it can from the start, and the last
+pattern matches as little as it can from the end, so the middle pattern gets
+the rest. Each pattern can be empty, otherwise it must be a valid pattern on
+its own (a ``2201B`` error).
+
 **Examples**
 
 .. code-block:: sql
@@ -1375,10 +1391,22 @@ in bytes. If ``USING`` is not provided, ``CHARACTERS`` will be used.
   VALUES SUBSTRING('hello' FROM 2 FOR -1);
   -- error 22011: substring error
 
+  VALUES SUBSTRING('foobar' SIMILAR '%#"o_b#"%' ESCAPE '#');
+  -- COL1: oob
+
+  VALUES SUBSTRING('aaabbb' SIMILAR 'a+#"%#"b*' ESCAPE '#');
+  -- COL1: aabbb
+
+  VALUES SUBSTRING('foobar' SIMILAR '#"o_b#"%' ESCAPE '#');
+  -- COL1: NULL
+
+  VALUES SUBSTRING('foobar' SIMILAR '%o_b%' ESCAPE '#');
+  -- error 2200C: invalid use of escape character
+
 **Compatibility**
 
 - **SQL standard:** Core SQL (E021-06). ``USING`` is part of T061 (UCS
-  support).
+  support), and ``SIMILAR`` is T581 (Regular expression substring function).
 - **Other databases:** none of them have ``USING``.
 
   - PostgreSQL: ``SUBSTRING(string FROM start FOR length)``,
@@ -1388,6 +1416,10 @@ in bytes. If ``USING`` is not provided, ``CHARACTERS`` will be used.
   - SQLite: ``SUBSTR(string, start, length)`` or ``SUBSTRING``.
   - SQL Server: ``SUBSTRING(string, start, length)``, the length is required.
   - Oracle: ``SUBSTR(string, start, length)``.
+
+  Only PostgreSQL has ``SIMILAR`` (and also the older
+  ``SUBSTRING(string FROM pattern FOR escape)``). The others use a different
+  regular expression function, such as ``REGEXP_SUBSTR``.
 
   A negative ``START`` counts from the end of the string in MySQL, SQLite and
   Oracle, so ``SUBSTR('hello', -3)`` is ``'llo'`` there.

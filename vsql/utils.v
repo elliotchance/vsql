@@ -11,13 +11,16 @@ pub fn pluralize(n int, word string) string {
 	return '${word}s'
 }
 
+// compare_bytes returns a negative number, zero or a positive number when a is
+// less than, equal to or greater than b. Only the sign is meaningful.
 fn compare_bytes(a []u8, b []u8) int {
 	// Only compare digits to the minimum length of both.
 	min := if a.len < b.len { a.len } else { b.len }
 
-	for i in 0 .. min {
-		if a[i] != b[i] {
-			return int(a[i]) - int(b[i])
+	if min > 0 {
+		cmp := unsafe { int(C.memcmp(a.data, b.data, u32(min))) }
+		if cmp != 0 {
+			return cmp
 		}
 	}
 

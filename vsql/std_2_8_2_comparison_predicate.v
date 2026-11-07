@@ -76,7 +76,7 @@ fn (e ComparisonPredicate) compile_comparison(mut c Compiler, retrospective bool
 	} else {
 		e.right.compile(mut c)!
 	}
-	c.check_time_zone_comparison(compiled_left.typ, compiled_right.typ)!
+	c.check_comparison(compiled_left.typ, compiled_right.typ)!
 
 	return CompileResult{
 		run:          fn [e, compiled_left, compiled_right] (mut conn Connection, data Row, params map[string]Value) !Value {

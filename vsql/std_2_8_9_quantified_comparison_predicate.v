@@ -22,7 +22,7 @@ fn (e QuantifiedComparisonPredicate) pstr(params map[string]Value) string {
 fn (e QuantifiedComparisonPredicate) compile(mut c Compiler) !CompileResult {
 	compiled_expr := e.expr.compile(mut c)!
 	plan := e.subquery.plan_column(mut c)!
-	c.check_time_zone_comparison(compiled_expr.typ, plan.plan.columns()[0].typ)!
+	c.check_comparison(compiled_expr.typ, plan.plan.columns()[0].typ)!
 
 	return CompileResult{
 		run:          fn [e, compiled_expr, plan] (mut conn Connection, data Row, params map[string]Value) !Value {
@@ -36,9 +36,9 @@ fn (e QuantifiedComparisonPredicate) compile(mut c Compiler) !CompileResult {
 	}
 }
 
-// quantified_comparison compares expr with each of the values. Every value is
-// compared (rather than stopping at the first result that decides it) so that
-// an incomparable value is always an error, wherever it is.
+// quantified_comparison compares expr with each of the values, until one
+// decides the result. The values are comparable (see check_comparison), so the
+// result doesn't depend on their order.
 //
 // ISO/IEC 9075-2:2016(E), 8.9, <quantified comparison predicate>, General
 // Rules, 2
@@ -51,6 +51,9 @@ fn quantified_comparison(conn &Connection, expr Value, op ComparisonOperator, al
 		// b) ALL is FALSE if any comparison is FALSE, and c) SOME is TRUE if any
 		// comparison is TRUE. e) Otherwise, it's UNKNOWN.
 		result = if all { truth_and(result, truth) } else { truth_or(result, truth) }
+		if result == if all { Truth.is_false } else { Truth.is_true } {
+			break
+		}
 	}
 
 	return result

@@ -530,6 +530,8 @@ The faults are:
 - ``accept``: a server accepting a client. A test with a ``fault`` doesn't run
   through the server, so this is only used by the server tests in
   ``vsql/sql_test.v``.
+- ``constraint_index``: a new table doesn't get the indexes of its constraints,
+  like a table from an older version of vsql. This isn't an error.
 
 Each fault is a ``fault_point()`` or ``fault_reached()`` call in the code, see
 ``vsql/fault.v``. A test with a fault only runs on disk.

@@ -192,7 +192,6 @@ fn (mut f Storage) defer_check(t Table, name string, characteristics ConstraintC
 // table. A constraint that's still deferred is remembered again, and one that
 // has been dropped (or whose table has been dropped) doesn't need to be checked.
 fn (mut conn Connection) check_deferred_constraints() ! {
-	_, time_zone := conn.now()
 	for _, mut catalog in conn.catalogs {
 		mut keys := catalog.storage.deferred_checks.keys()
 		keys.sort()
@@ -215,7 +214,7 @@ fn (mut conn Connection) check_deferred_constraints() ! {
 				check_constraints.verify(mut conn, row)!
 			}
 			catalog.storage.check_unique_constraints(constraint, rows)!
-			catalog.storage.check_foreign_keys(constraint, rows, time_zone)!
+			catalog.storage.check_foreign_keys(mut conn, constraint, rows)!
 		}
 	}
 }

@@ -369,6 +369,24 @@ fn (mut f Storage) create_table(definition Table) ! {
 
 	f.tables[table.name.storage_id()] = table
 	f.schema_changed()
+
+	// The fault makes a table like one from before indexes, which doesn't have
+	// the indexes of its constraints until they're needed.
+	if !fault_reached('constraint_index') {
+		f.build_constraint_indexes(Table{}, table)!
+	}
+}
+
+// schema_index_names are the names of the indexes in the schema of the table.
+fn (f Storage) schema_index_names(table_name Identifier) []string {
+	mut names := []string{}
+	for _, index in f.indexes {
+		if index.name.schema_name == table_name.schema_name {
+			names << index.name.entity_name
+		}
+	}
+
+	return names
 }
 
 // schema_constraint_names are the names of the constraints of the tables in the
@@ -393,8 +411,9 @@ fn (mut f Storage) update_table(definition Table) ! {
 		f.end_isolation()
 	}
 
+	old := f.table(definition.name.storage_id())
 	f.check_concurrent_rows(definition)!
-	f.check_concurrent_referenced_tables(definition, f.table(definition.name.storage_id()).foreign_keys)!
+	f.check_concurrent_referenced_tables(definition, old.foreign_keys)!
 
 	table := Table{
 		...definition
@@ -405,6 +424,7 @@ fn (mut f Storage) update_table(definition Table) ! {
 
 	f.tables[table.name.storage_id()] = table
 	f.schema_changed()
+	f.build_constraint_indexes(old, table)!
 }
 
 fn (mut f Storage) create_schema(schema_name string) ! {

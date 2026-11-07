@@ -28,7 +28,7 @@ fn (d AddTableConstraintDefinition) execute(mut conn Connection, mut catalog Cat
 		...definition.table(table.name, table.tid)!
 		id: table.id
 	}
-	new_table.name_constraints(catalog.storage.schema_constraint_names(table.name))!
+	new_table.name_constraints(catalog.storage.schema_constraint_names(table.name), catalog.storage.schema_index_names(table.name))!
 	resolve_foreign_keys(mut conn, mut new_table)!
 	check_new_check_constraints(mut conn, new_table, table.check_constraints.len)!
 
@@ -83,6 +83,5 @@ fn replace_table_definition(mut conn Connection, mut catalog CatalogConnection, 
 	}
 	rows << moved
 	catalog.storage.check_unique_constraints(new_table, rows)!
-	_, time_zone := conn.now()
-	catalog.storage.check_foreign_keys(new_table, rows, time_zone)!
+	catalog.storage.check_foreign_keys(mut conn, new_table, rows)!
 }

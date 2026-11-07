@@ -370,3 +370,33 @@ SELECT * FROM t;
 -- msg: COMMIT
 -- X: 1
 -- X: 3
+
+-- # A table from before indexes gets the indexes of its constraints when they're
+-- # needed.
+/* fault constraint_index */
+CREATE TABLE p (id INT PRIMARY KEY, u INT UNIQUE);
+CREATE TABLE c (id INT PRIMARY KEY, p INT REFERENCES p (u));
+INSERT INTO p (id, u) VALUES (1, 10), (2, 20);
+INSERT INTO p (id, u) VALUES (3, 10);
+INSERT INTO c (id, p) VALUES (1, 10);
+INSERT INTO c (id, p) VALUES (2, 30);
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- error 23505: violates unique constraint: UNIQUE (U) on ":memory:".PUBLIC.P
+-- msg: INSERT 1
+-- error 23503: violates foreign key constraint: FOREIGN KEY (P) REFERENCES ":memory:".PUBLIC.P (U) on ":memory:".PUBLIC.C
+
+CREATE TABLE p (id INT PRIMARY KEY);
+/* fault constraint_index */
+CREATE TABLE c (id INT PRIMARY KEY, p INT REFERENCES p ON DELETE CASCADE);
+INSERT INTO p (id) VALUES (1), (2);
+INSERT INTO c (id, p) VALUES (1, 1), (2, 2);
+DELETE FROM p WHERE id = 1;
+SELECT * FROM c;
+-- msg: CREATE TABLE 1
+-- msg: CREATE TABLE 1
+-- msg: INSERT 2
+-- msg: INSERT 2
+-- msg: DELETE 1
+-- ID: 2 P: 2

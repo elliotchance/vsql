@@ -233,70 +233,138 @@ fn foreign_key_type(a SQLType, b SQLType) SQLType {
 // can reference a row of the same table that's written by the same statement.
 // A deferred constraint isn't checked (see defer_check).
 //
-// A datetime without a time zone is in the session time zone (time_zone, in
-// minutes) when it's compared with one with a time zone.
-//
-// Every row of the referenced table is read, there is no index.
+// The referenced row is found by its PRIMARY KEY, or the index of its UNIQUE
+// constraint (see referenced_range), so only the rows (or entries) with the
+// same key are read.
 //
 // ISO/IEC 9075-2:2016(E), 11.8, <referential constraint definition>, Syntax Rules, 18
-fn (mut f Storage) check_foreign_keys(t Table, rows []Row, time_zone i16) ! {
-	if t.foreign_keys.len == 0 || rows.len == 0 {
-		return
-	}
-
+fn (mut f Storage) check_foreign_keys(mut conn Connection, t Table, rows []Row) ! {
 	f.isolation_start()!
 	defer {
 		f.end_isolation()
 	}
 
 	for key in t.foreign_keys {
-		referenced := f.table(key.referenced_table.storage_id())
-		types := foreign_key_types(t, key.columns, referenced, key.referenced_columns)!
-
-		mut missing := map[string]bool{}
-		for row in rows {
-			value := key_value(row, key.columns, types, time_zone)
-			if value.len > 0 {
-				missing[value.bytestr()] = true
-			}
-		}
-		if missing.len == 0 || f.defer_check(t, key.name, key.characteristics) {
+		referencing_rows := rows.filter(fn [key] (row Row) bool {
+			return !key.columns.any(row.data[it].is_null)
+		})
+		if referencing_rows.len == 0 || f.defer_check(t, key.name, key.characteristics) {
 			continue
 		}
 
 		// A row that another transaction is writing only matters if there
 		// isn't another row with the same key, so the result doesn't depend on
 		// the order of the rows.
-		mut concurrent := map[string]bool{}
-		mut iter := f.btree.new_range_iterator(row_key_prefix(referenced.id), row_key_prefix(referenced.id + 1))
-		for {
-			object := iter.next() or { break }
-			row := new_row_from_bytes(referenced, object.value, object.tid).for_storage()
-			value := key_value(row, key.referenced_columns, types, time_zone).bytestr()
-			if value !in missing {
+		referenced := f.table(key.referenced_table.storage_id())
+		mut is_missing := false
+		mut is_concurrent := false
+		for row in referencing_rows {
+			// A value that the referenced column can't hold can't be
+			// referenced.
+			search := search_row(mut conn, row, key.columns, referenced, key.referenced_columns) or {
+				is_missing = true
 				continue
 			}
-
-			if f.is_concurrent_write(object) {
-				concurrent[value] = true
-			} else if object.xid == 0 {
-				missing.delete(value)
-			}
-		}
-		if err := iter.err {
-			return err
-		}
-
-		for value, _ in missing {
-			if value in concurrent {
-				return sqlstate_40001('avoiding concurrent write on individual row')
+			start, end := f.referenced_range(key, referenced, search)!
+			found, concurrent := f.find_objects(start, end)!
+			if !found {
+				is_missing = true
+				is_concurrent = is_concurrent || concurrent
 			}
 		}
 
-		if missing.len > 0 {
+		if is_concurrent {
+			return sqlstate_40001('avoiding concurrent write on individual row')
+		}
+
+		if is_missing {
 			return key.violation(t)
 		}
 	}
+}
+
+// search_row is a row of to_table that has the values of the from_columns of
+// row (of the same or another table) in its to_columns, to find the rows of
+// to_table that have the same key. It's none when a value can't be held
+// exactly by its column of to_table (see exact_cast), so no row of to_table can
+// have the same key. None of the values can be NULL.
+fn search_row(mut conn Connection, row Row, from_columns []string, to_table Table, to_columns []string) ?Row {
+	mut data := map[string]Value{}
+	for i, column in to_columns {
+		typ := (to_table.column(column) or { return none }).typ
+		data[column] = exact_cast(mut conn, row.data[from_columns[i]], typ) or { return none }
+	}
+
+	return Row{
+		data: data
+	}
+}
+
+// referenced_range is the range of keys (inclusive) of the rows of referenced
+// that have the values of search in the referenced columns of the FOREIGN KEY,
+// when they're the PRIMARY KEY. Otherwise, it's the range of the entries of the
+// index of the UNIQUE constraint that has those columns (see
+// resolve_foreign_keys and constraint_index).
+fn (mut f Storage) referenced_range(key ForeignKey, referenced Table, search Row) !([]u8, []u8) {
+	if is_same_columns(referenced.primary_key, key.referenced_columns) {
+		mut r := search
+		row_key := r.object_key(referenced)!
+		return row_key, row_key
+	}
+
+	constraint := referenced.unique_constraints.filter(is_same_columns(it.columns, key.referenced_columns))[0]
+	index := f.constraint_index(referenced, constraint)!
+	values := index.entry_values(referenced, search)!
+
+	return values, next_key(values)
+}
+
+// is_same_columns is true when a and b have the same columns, in any order.
+fn is_same_columns(a []string, b []string) bool {
+	mut sorted_a := a.clone()
+	sorted_a.sort()
+	mut sorted_b := b.clone()
+	sorted_b.sort()
+
+	return sorted_a == sorted_b
+}
+
+// find_objects reads the objects (rows or index entries) from start to end
+// (inclusive). It's found when one of them exists (it hasn't been deleted by
+// this or a committed transaction), and concurrent when another transaction is
+// creating or deleting one, so it might or might not exist once that
+// transaction finishes. It must be called from inside an isolation block.
+fn (mut f Storage) find_objects(start []u8, end []u8) !(bool, bool) {
+	mut found := false
+	mut concurrent := false
+	mut iter := f.btree.new_range_iterator(start, end)
+	for {
+		object := iter.next() or { break }
+		if f.is_concurrent_write(object) {
+			concurrent = true
+		} else if object.xid == 0 {
+			found = true
+		}
+	}
+	if err := iter.err {
+		return err
+	}
+
+	return found, concurrent
+}
+
+// referencing_prefix is the start of the key of every entry of the index that
+// a FOREIGN KEY of referencing uses (see foreign_key_index) for the rows that
+// reference row (a row of the referenced table). It's empty when no row of
+// referencing can reference it, because the referencing columns can't hold the
+// key exactly (see search_row). None of the values of the key can be NULL.
+fn (mut f Storage) referencing_prefix(mut conn Connection, key ForeignKey, referencing Table, row Row) ![]u8 {
+	search := search_row(mut conn, row, key.referenced_columns, referencing, key.columns) or {
+		return []u8{}
+	}
+	index := f.foreign_key_index(referencing, key)!
+
+	return index.entry_prefix(referencing, search, key.columns.len)!
 }
 
 // check_referencing_rows returns an error if a row of a table that references
@@ -311,11 +379,13 @@ fn (mut f Storage) check_foreign_keys(t Table, rows []Row, time_zone i16) ! {
 // ISO/IEC 9075-2:2016(E), 13.4, <SQL procedure statement>, General Rules, 14 and 16.a
 //
 // The referenced columns are a unique constraint (which has already been
-// checked), so another row of t can't have the same key. time_zone is the same
-// as for check_foreign_keys. Every row of each referencing table is read, there
-// is no index. A deferred constraint isn't checked (see defer_check), it's
-// checked against every referencing row instead.
-fn (mut f Storage) check_referencing_rows(t Table, old_rows []Row, new_rows []Row, time_zone i16) ! {
+// checked), so another row of t can't have the same key. A datetime without a
+// time zone is in the session time zone (time_zone, in minutes) when it's
+// compared with one with a time zone. Only the entries of the index of each
+// FOREIGN KEY (see foreign_key_index) that have a removed key are read. A
+// deferred constraint isn't checked (see defer_check), it's checked against
+// every referencing row instead.
+fn (mut f Storage) check_referencing_rows(mut conn Connection, t Table, old_rows []Row, new_rows []Row, time_zone i16) ! {
 	if old_rows.len == 0 {
 		return
 	}
@@ -336,11 +406,11 @@ fn (mut f Storage) check_referencing_rows(t Table, old_rows []Row, new_rows []Ro
 			}
 
 			types := foreign_key_types(referencing, key.columns, t, key.referenced_columns)!
-			mut removed := map[string]bool{}
+			mut removed := map[string]Row{}
 			for row in old_rows {
 				value := key_value(row, key.referenced_columns, types, time_zone)
 				if value.len > 0 {
-					removed[value.bytestr()] = true
+					removed[value.bytestr()] = row
 				}
 			}
 			for row in new_rows {
@@ -353,22 +423,16 @@ fn (mut f Storage) check_referencing_rows(t Table, old_rows []Row, new_rows []Ro
 			// A row that references a removed key is an error, even if another
 			// transaction is also writing a row that references it.
 			mut is_concurrent := false
-			mut iter := f.btree.new_range_iterator(row_key_prefix(referencing.id), row_key_prefix(referencing.id + 1))
-			for {
-				object := iter.next() or { break }
-				row := new_row_from_bytes(referencing, object.value, object.tid).for_storage()
-				if key_value(row, key.columns, types, time_zone).bytestr() !in removed {
+			for _, row in removed {
+				prefix := f.referencing_prefix(mut conn, key, referencing, row)!
+				if prefix.len == 0 {
 					continue
 				}
-
-				if f.is_concurrent_write(object) {
-					is_concurrent = true
-				} else if object.xid == 0 {
+				found, concurrent := f.find_objects(prefix, next_key(prefix))!
+				if found {
 					return key.violation(referencing)
 				}
-			}
-			if err := iter.err {
-				return err
+				is_concurrent = is_concurrent || concurrent
 			}
 
 			if is_concurrent {
@@ -522,9 +586,11 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 
 				// A key is deleted when its row is deleted, and updated when a
 				// row has a different key afterwards (15.17 GR 10).
+				// keys are the old rows that have each deleted or updated key.
 				types := foreign_key_types(referencing, key.columns, table, key.referenced_columns)!
 				mut deleted_keys := map[string]bool{}
 				mut updated_keys := map[string]Row{}
+				mut keys := map[string]Row{}
 				for change in table_changes {
 					value := key_value(change.old, key.referenced_columns, types, time_zone)
 					if value.len == 0 {
@@ -534,20 +600,18 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 					if change.is_delete {
 						if key.delete_rule != '' {
 							deleted_keys[value.bytestr()] = true
+							keys[value.bytestr()] = change.old
 						}
 					} else if key.update_rule != ''
 						&& key_value(change.new, key.referenced_columns, types, time_zone) != value {
 						updated_keys[value.bytestr()] = change.new
+						keys[value.bytestr()] = change.old
 					}
 				}
-				if deleted_keys.len == 0 && updated_keys.len == 0 {
+				if keys.len == 0 {
 					continue
 				}
 
-				mut keys := deleted_keys.clone()
-				for value, _ in updated_keys {
-					keys[value] = true
-				}
 				// A row that was deleted can't also be updated by an action
 				// (General Rule 13). It's no longer stored, so it isn't one
 				// of the matching rows.
@@ -559,7 +623,7 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 					}
 				}
 
-				matching := f.matching_rows(key, referencing, types, keys, time_zone)!
+				matching := f.matching_rows(mut conn, key, referencing, types, keys, time_zone)!
 				if matching.len == 0 {
 					continue
 				}
@@ -651,44 +715,72 @@ fn apply_referential_actions(mut conn Connection, mut f Storage, t Table, change
 		rows := written[table_name].values()
 		f.check_unique_indexes(table, rows)!
 		f.check_unique_constraints(table, rows)!
-		f.check_foreign_keys(table, rows, time_zone)!
-		f.check_referencing_rows(table, old[table_name], rows, time_zone)!
+		f.check_foreign_keys(mut conn, table, rows)!
+		f.check_referencing_rows(mut conn, table, old[table_name], rows, time_zone)!
 	}
 }
 
 // matching_rows are the rows of the referencing table that reference one of
-// the keys (see key_value) of the referenced table by the FOREIGN KEY. The
-// matching rows are changed by the referential action, so it's an error if
-// another transaction is writing one of them.
+// the keys (see key_value) of the referenced table by the FOREIGN KEY, where
+// keys has a row of the referenced table with each key. They're found with the
+// index that the FOREIGN KEY uses (see referencing_prefix), and are in the
+// order of the rows of the table. The matching rows are changed by the
+// referential action, so it's an error if another transaction is writing one of
+// them.
 //
 // ISO/IEC 9075-2:2016(E), 15.17, Execution of referential actions, General Rules, 6
-fn (mut f Storage) matching_rows(key ForeignKey, referencing Table, types []SQLType, keys map[string]bool, time_zone i16) ![]Row {
+fn (mut f Storage) matching_rows(mut conn Connection, key ForeignKey, referencing Table, types []SQLType, keys map[string]Row, time_zone i16) ![]Row {
 	f.isolation_start()!
 	defer {
 		f.end_isolation()
 	}
 
-	mut matching := []Row{}
-	mut iter := f.btree.new_range_iterator(row_key_prefix(referencing.id), row_key_prefix(referencing.id + 1))
-	for {
-		object := iter.next() or { break }
-		row := new_row_from_bytes(referencing, object.value, object.tid).for_storage()
-		if key_value(row, key.columns, types, time_zone).bytestr() !in keys {
+	index := f.foreign_key_index(referencing, key)!
+	mut matching := map[string]Row{}
+	for _, referenced_row in keys {
+		prefix := f.referencing_prefix(mut conn, key, referencing, referenced_row)!
+		if prefix.len == 0 {
 			continue
 		}
+		for entry in f.read_existing_objects(prefix, next_key(prefix))! {
+			mut row_key := row_key_prefix(referencing.id)
+			row_key << index.entry_row_id(referencing, entry.key)!
+			for object in f.read_existing_objects(row_key, row_key)! {
+				row := new_row_from_bytes(referencing, object.value, object.tid).for_storage()
+				if key_value(row, key.columns, types, time_zone).bytestr() in keys {
+					matching[row_key.bytestr()] = row
+				}
+			}
+		}
+	}
 
+	mut row_keys := matching.keys()
+	row_keys.sort()
+
+	return row_keys.map(matching[it])
+}
+
+// read_existing_objects are the objects (index entries or rows) from start to
+// end (inclusive) that exist, which haven't been deleted by this or a committed
+// transaction. It's an error if another transaction is creating or deleting
+// one. It must be called from inside an isolation block.
+fn (mut f Storage) read_existing_objects(start []u8, end []u8) ![]PageObject {
+	mut objects := []PageObject{}
+	mut iter := f.btree.new_range_iterator(start, end)
+	for {
+		object := iter.next() or { break }
 		if f.is_concurrent_write(object) {
 			return sqlstate_40001('avoiding concurrent write on individual row')
 		}
 		if object.xid == 0 {
-			matching << row
+			objects << object
 		}
 	}
 	if err := iter.err {
 		return err
 	}
 
-	return matching
+	return objects
 }
 
 // referencing_tables are the names of the other tables that reference t.
@@ -740,17 +832,6 @@ fn foreign_key_types(referencing Table, columns []string, referenced Table, refe
 	mut types := []SQLType{}
 	for i, column in columns {
 		types << foreign_key_type(referencing.column(column)!.typ.typ, referenced.column(referenced_columns[i])!.typ.typ)
-	}
-
-	return types
-}
-
-// key_types are the types of the columns of t, which are used for the key of
-// a row (see key_value).
-fn key_types(t Table, columns []string) ![]SQLType {
-	mut types := []SQLType{}
-	for column in columns {
-		types << t.column(column)!.typ.typ
 	}
 
 	return types

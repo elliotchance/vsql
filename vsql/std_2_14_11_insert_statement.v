@@ -82,8 +82,7 @@ fn (stmt InsertStatement) execute(mut conn Connection, params map[string]Value, 
 	}
 	catalog.storage.check_unique_indexes(table, rows)!
 	catalog.storage.check_unique_constraints(table, rows)!
-	_, time_zone := conn.now()
-	catalog.storage.check_foreign_keys(table, rows, time_zone)!
+	catalog.storage.check_foreign_keys(mut conn, table, rows)!
 
 	// ISO/IEC 9075-2:2016(E), 14.11, <insert statement>, General Rules, 9
 	if rows.len == 0 {

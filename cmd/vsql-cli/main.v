@@ -6,7 +6,7 @@ import os
 fn main() {
 	mut cmd := cli.Command{
 		name:        'vsql'
-		description: 'vsql is a single-file or PostgreSQL-compatible SQL database written in V.\nhttps://github.com/elliotchance/vsql'
+		description: 'vsql is a single-file or PostgreSQL-compatible SQL database written in V.\nhttps://github.com/vlang/vsql'
 		execute:     unknown_command
 	}
 

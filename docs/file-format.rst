@@ -977,6 +977,6 @@ Notes
 -----
 
 .. [1] See ``default_connection_options()`` in
-   https://github.com/elliotchance/vsql/blob/main/vsql/connection.v.
+   https://github.com/vlang/vsql/blob/main/vsql/connection.v.
 
 .. [2] This is used for transaction visibility. See :doc:`mvcc`.

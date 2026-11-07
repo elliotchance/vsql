@@ -9,10 +9,10 @@
  *
  * This header is C99, and also works with C++11.
  *
- *   Project:   https://github.com/elliotchance/vsql
- *   Releases:  https://github.com/elliotchance/vsql/releases
+ *   Project:   https://github.com/vlang/vsql
+ *   Releases:  https://github.com/vlang/vsql/releases
  *   Docs:      https://vsql.readthedocs.io/en/latest/language-c.html
- *   Issues:    https://github.com/elliotchance/vsql/issues
+ *   Issues:    https://github.com/vlang/vsql/issues
  *
  * A complete program (error handling is left out, see SQLGetDiagRec):
  *

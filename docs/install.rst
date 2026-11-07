@@ -14,7 +14,7 @@ platforms, without installing anything else.
 Download the zip for your OS and architecture (such as
 ``vsql-<version>-macos-arm64.zip`` for Apple silicon, or
 ``vsql-<version>-linux-x86-64.zip``) from the
-`latest release <https://github.com/elliotchance/vsql/releases/latest>`_ and
+`latest release <https://github.com/vlang/vsql/releases/latest>`_ and
 unzip it. There are zips for Linux, macOS and Windows on x86-64 and ARM64. To
 update, download the latest release again.
 
@@ -35,7 +35,7 @@ platform that doesn't have a prebuilt binary, or to build it with your own C
 compiler and options, without installing V.
 
 Download ``vsql-<version>-amalgamation.zip`` from the
-`latest release <https://github.com/elliotchance/vsql/releases/latest>`_. It
+`latest release <https://github.com/vlang/vsql/releases/latest>`_. It
 has the C that V generates for vsql and libvsql on Linux, macOS and Windows,
 ``libvsql.h`` and a ``Makefile``:
 
@@ -73,7 +73,7 @@ library (see :doc:`language-v`):
 
 .. code-block:: sh
 
-   v install elliotchance.vsql
+   v install vlang.vsql
 
 Run the same command to update it. vsql is built and tested with the latest V
 every day, and older versions of V may not be able to compile it, so update V
@@ -87,6 +87,6 @@ This is the best choice if you want to modify vsql or contribute to the project
 
 .. code-block:: sh
 
-   git clone https://github.com/elliotchance/vsql.git
+   git clone https://github.com/vlang/vsql.git
    cd vsql
    make bin/vsql

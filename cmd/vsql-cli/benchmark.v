@@ -6,7 +6,7 @@
 //
 //   vsql bench
 //
-// See https://github.com/elliotchance/vsql/blob/main/docs/benchmark.rst
+// See https://github.com/vlang/vsql/blob/main/docs/benchmark.rst
 
 module main
 

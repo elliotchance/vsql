@@ -1,6 +1,6 @@
 // vorm is a driver for V's built-in ORM:
 //
-//   import elliotchance.vsql.vorm
+//   import vlang.vsql.vorm
 //
 //   struct Product {
 //       id    int @[primary; sql: serial]

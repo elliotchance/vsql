@@ -39,7 +39,7 @@ DELETE FROM foo.bar;
 -- warning 02000: no data
 -- msg: DELETE 0
 
--- # https://github.com/elliotchance/vsql/issues/200
+-- # https://github.com/vlang/vsql/issues/200
 /* extensions V001-02 */
 CREATE TABLE PrimaryProduct (id INT NOT NULL, PRIMARY KEY(id));
 INSERT INTO PrimaryProduct (id) VALUES (1);

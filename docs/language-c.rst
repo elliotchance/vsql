@@ -29,7 +29,7 @@ Routines
 --------
 
 Each routine is documented in
-`libvsql.h <https://github.com/elliotchance/vsql/blob/main/libvsql/libvsql.h>`_,
+`libvsql.h <https://github.com/vlang/vsql/blob/main/libvsql/libvsql.h>`_,
 which is C99 and also works with C++. The routines that are supported so far
 are listed in :doc:`sql-compliance`.
 

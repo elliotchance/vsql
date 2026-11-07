@@ -6,7 +6,7 @@ some clients will execute complex or highly PostgreSQL-specific queries during
 the connection phase that make them incompatible. This page documents clients
 and their compatibility.
 
-Feel free to `open an issue <https://github.com/elliotchance/vsql/issues>`_ or
+Feel free to `open an issue <https://github.com/vlang/vsql/issues>`_ or
 fork and update this documentation.
 
 Generally speaking, the connection details are:

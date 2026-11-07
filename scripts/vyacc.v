@@ -2938,7 +2938,7 @@ fn (mut y Vyacc) others() ! {
 	y.ftable.write_string('\n')!
 
 	// Support for custom error messages (%error) was removed because vsql
-	// doesn't use them. See https://github.com/elliotchance/vsql/pull/495 to
+	// doesn't use them. See https://github.com/vlang/vsql/pull/495 to
 	// restore them if they're needed.
 	if y.errors.len > 0 {
 		y.lineno = y.errors[0].lineno

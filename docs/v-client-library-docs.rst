@@ -1157,10 +1157,10 @@ struct Timer
 .. code-block:: v
 
    pub struct Timer {
-   	started_at time.Time
+   	started_at u64
    }
 
-
+Timer uses the monotonic clock, which is much cheaper to read than the time of day (time.now() and subtracting two time.Time both look up the local time zone).
 
 struct Type
 -----------

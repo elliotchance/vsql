@@ -37,12 +37,12 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	real := Type{SQLType.is_real, 0, 0, false}
 	decimal := Type{SQLType.is_decimal, 0, 0, false}
 
-	// Scalar functions. The trigonometric functions, LN, EXP, POWER and SQRT
+	// Scalar functions. The trigonometric functions, LOG, LN, EXP, POWER and SQRT
 	// return a DOUBLE PRECISION (the approximate numeric type is
 	// implementation-defined), and so do FLOOR and CEIL of an approximate number.
 	// None of them are called with a NULL argument, the result is NULL.
 	//
-	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 13.b and 16-18
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 13.b, 14.b and 16-18
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, Syntax Rules, 20.b
 	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 1.b
 	conn.register_func(Func{'ABS', [double_precision], false, func_abs, double_precision, false, true})!
@@ -67,6 +67,7 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	conn.register_func(Func{'FLOOR', [double_precision], false, func_floor, double_precision, false, true})!
 	conn.register_func(Func{'FLOOR', [numeric], false, func_floor_numeric, numeric, false, true})!
 	conn.register_func(Func{'LN', [double_precision], false, func_ln, double_precision, false, true})!
+	conn.register_func(Func{'LOG', [double_precision, double_precision], false, func_log, double_precision, false, true})!
 	conn.register_func(Func{'LOG10', [double_precision], false, func_log10, double_precision, false, true})!
 	conn.register_func(Func{'LOWER', [varchar], false, func_lower, varchar, false, true})!
 	conn.register_func(Func{'MOD', [double_precision, double_precision], false, func_mod, double_precision, false, true})!

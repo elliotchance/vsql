@@ -1183,9 +1183,9 @@
 6.30/SR/13               implemented  vsql/funcs.v tests/math.sql
 6.30/SR/13.a             n/a          - - DECFLOAT (T076)
 6.30/SR/13.b             impl-defined vsql/funcs.v tests/math.sql DOUBLE PRECISION
-6.30/SR/14               n/a          - - LOG (T623)
-6.30/SR/14.a             n/a          - - LOG (T623)
-6.30/SR/14.b             n/a          - - LOG (T623)
+6.30/SR/14               implemented  vsql/funcs.v tests/math.sql
+6.30/SR/14.a             n/a          - - DECFLOAT (T076)
+6.30/SR/14.b             impl-defined vsql/funcs.v tests/math.sql DOUBLE PRECISION
 6.30/SR/15               implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
 6.30/SR/16               implemented  vsql/funcs.v tests/math.sql
 6.30/SR/16.a             n/a          - - DECFLOAT (T076)
@@ -1256,9 +1256,9 @@
 6.30/GR/10.b.viii        implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
 6.30/GR/10.b.ix          implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql
 6.30/GR/11               implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/GR/11.a             untested     vsql/funcs.v -
+6.30/GR/11.a             implemented  vsql/funcs.v tests/numeric-null-operands.sql
 6.30/GR/11.b             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
-6.30/GR/11.c             n/a          - - LOG (T623); the base of LOG10 is always 10
+6.30/GR/11.c             implemented  vsql/std_2_6_30_numeric_value_function.v tests/approximate-errors.sql
 6.30/GR/11.d             implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
 6.30/GR/12               implemented  vsql/std_2_6_30_numeric_value_function.v tests/math.sql,tests/approximate-errors.sql
 6.30/GR/12.a             untested     vsql/funcs.v -
@@ -1330,7 +1330,7 @@
 6.30/CR/7                implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
 6.30/CR/8                implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
 6.30/CR/9                implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
-6.30/CR/10               n/a          - - LOG (T623)
+6.30/CR/10               implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
 6.30/CR/11               implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
 6.30/CR/12               implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql
 6.30/CR/13               implemented  vsql/std_2_6_30_numeric_value_function.y tests/flagging.sql

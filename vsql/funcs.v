@@ -96,16 +96,17 @@ fn register_builtin_funcs(mut conn Connection) ! {
 	// (SR 7.g.i). Every SQLType is registered, so a new type is supported
 	// automatically. CHARACTER uses the CHARACTER VARYING one, see find_function.
 	// The result type depends on the argument (see set_function_type) and the
-	// result is calculated by eval_set_function.
+	// result is calculated by eval_set_function. STDDEV_POP, STDDEV_SAMP,
+	// VAR_POP and VAR_SAMP also accept any number (SR 7.h).
 	//
-	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 7.d and 7.g.i
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 7.d, 7.g.i and 7.h
 	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.d.i
 	$for typ in SQLType.values {
 		if typ.value != SQLType.is_character {
 			arg := Type{typ.value, 0, 0, false}
 			mut names := ['COUNT', 'MAX', 'MIN']
 			if typ.value.is_number() {
-				names << ['AVG', 'SUM']
+				names << ['AVG', 'SUM', 'STDDEV_POP', 'STDDEV_SAMP', 'VAR_POP', 'VAR_SAMP']
 			}
 			for name in names {
 				conn.register_func(Func{
@@ -116,5 +117,19 @@ fn register_builtin_funcs(mut conn Connection) ! {
 				})!
 			}
 		}
+	}
+
+	// The binary set functions accept any two numbers, which are used as DOUBLE
+	// PRECISION (see eval_binary_set_function), so they're the only aggregate
+	// functions with arguments that are implicitly cast (see find_function).
+	//
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Format
+	for name in binary_set_functions {
+		conn.register_func(Func{
+			name:        name
+			arg_types:   [double_precision, double_precision]
+			is_agg:      true
+			return_type: set_function_type(name, double_precision)
+		})!
 	}
 }

@@ -1538,7 +1538,7 @@ Optional Features
    * - ❌ **T620**
      - **WINDOW clause: GROUPS option**
 
-   * - ⭕ **T621**
+   * - ✅ **T621**
      - **Enhanced numeric functions**
 
    * - ✅ **T622**

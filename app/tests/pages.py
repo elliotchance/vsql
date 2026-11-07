@@ -101,6 +101,17 @@ class AppPage:
         return self.page.locator('dialog.create-schema')
 
     @property
+    def create_index(self):
+        """create_index is the popup to create an index."""
+        return self.page.locator('dialog.create-index')
+
+    def index_column(self, name):
+        """index_column is the row of a column in the popup to create an
+        index."""
+        return self.create_index.locator('.index-columns li').filter(
+            has=self.page.locator('.name').get_by_text(name, exact=True))
+
+    @property
     def sidebar_tabs(self):
         """sidebar_tabs are the tabs listed in the sidebar (see titles)."""
         return self.page.locator('details[data-folder^="tabs:"] li > button')

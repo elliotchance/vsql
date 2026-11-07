@@ -78,6 +78,7 @@ type YYSym = AddColumnDefinition
 	| NullSpecification
 	| NumericPrimary
 	| NumericValueExpression
+	| OverlayFunction
 	| ParenthesizedValueExpression
 	| Predicate
 	| QualifiedAsteriskExpr

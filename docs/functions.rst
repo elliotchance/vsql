@@ -137,6 +137,9 @@ Each function also has a **Compatibility** section:
    * - ``OCTET_LENGTH``
      - String
      - Core (E021-05)
+   * - ``OVERLAY``
+     - String
+     - T312
    * - ``POSITION``
      - String
      - Core (E021-11)
@@ -1479,6 +1482,96 @@ UTF-8. A character can be 1 to 4 bytes.
   - SQL Server: ``DATALENGTH``, which is the length in the encoding of the
     value.
   - Oracle: ``LENGTHB``.
+
+OVERLAY(STRING PLACING REPLACEMENT FROM START [FOR LENGTH] [USING UNIT])
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: text
+
+   OVERLAY(
+     STRING
+     PLACING REPLACEMENT
+     FROM START
+     [ FOR LENGTH ]
+     [ USING { CHARACTERS | OCTETS } ]
+   )
+
+.. code-block:: sql
+
+   OVERLAY(CHARACTER VARYING(n) PLACING CHARACTER VARYING(m) FROM INTEGER) CHARACTER VARYING(2n + m)
+   OVERLAY(CHARACTER VARYING(n) PLACING CHARACTER VARYING(m) FROM INTEGER FOR INTEGER) CHARACTER VARYING(2n + m)
+
+Replaces ``LENGTH`` characters of ``STRING``, starting at ``START``, with
+``REPLACEMENT``. ``REPLACEMENT`` can be shorter or longer than the part it
+replaces, so the string can shrink or grow. If ``LENGTH`` is not provided, it's
+the length of ``REPLACEMENT``, so the same number of characters are
+overwritten.
+
+``OVERLAY`` is defined by the SQL standard as:
+
+.. code-block:: sql
+
+  SUBSTRING(STRING FROM 1 FOR START - 1)
+    || REPLACEMENT
+    || SUBSTRING(STRING FROM START + LENGTH)
+
+So it follows the same rules as ``SUBSTRING`` and ``||``:
+
+- A ``LENGTH`` of 0 inserts ``REPLACEMENT`` before ``START``, and an empty
+  ``REPLACEMENT`` deletes the characters.
+- A ``START`` after the end of ``STRING`` appends ``REPLACEMENT``, and a
+  ``LENGTH`` that goes past the end replaces the rest of ``STRING``.
+- A ``START`` before 1 is a ``22011`` error (substring error), because the first
+  ``SUBSTRING`` has a negative length.
+- A negative ``LENGTH`` isn't an error, the rest of ``STRING`` starts earlier
+  and repeats some characters. So ``OVERLAY('abcdef' PLACING 'X' FROM 3 FOR -1)``
+  is ``'abXbcdef'``.
+- ``START`` and ``LENGTH`` must be integers (or a ``NUMERIC`` or ``DECIMAL``
+  with a scale of 0), otherwise it's a ``42601`` error.
+- The result is a ``CHARACTER VARYING`` that's long enough for both
+  ``SUBSTRING`` results and ``REPLACEMENT``, even though the value can never be
+  that long.
+
+``USING CHARACTERS`` (the default) counts ``START`` and ``LENGTH`` in
+characters, and ``USING OCTETS`` counts them in bytes, like ``SUBSTRING``.
+Without ``FOR``, ``USING OCTETS`` replaces as many bytes as there are in
+``REPLACEMENT``.
+
+**Examples**
+
+.. code-block:: sql
+
+  VALUES OVERLAY('Hello World' PLACING 'There' FROM 7);
+  -- COL1: Hello There
+
+  VALUES OVERLAY('Hello World' PLACING 'Big ' FROM 7 FOR 0);
+  -- COL1: Hello Big World
+
+  VALUES OVERLAY('Hello World' PLACING '' FROM 6 FOR 6);
+  -- COL1: Hello
+
+  VALUES OVERLAY('abc' PLACING 'XYZ' FROM 2);
+  -- COL1: aXYZ
+
+  VALUES OVERLAY('abc' PLACING 'X' FROM 10);
+  -- COL1: abcX
+
+  VALUES OVERLAY('abc' PLACING 'X' FROM 0);
+  -- error 22011: substring error
+
+**Compatibility**
+
+- **SQL standard:** T312 (OVERLAY function). ``USING`` is part of T061 (UCS
+  support).
+- **Other databases:**
+
+  - PostgreSQL: ``OVERLAY``, with the same syntax (without ``USING``).
+  - MySQL: ``INSERT(string, start, length, replacement)``. The ``LENGTH`` is
+    required, and a ``START`` outside of the string returns ``STRING``
+    unchanged.
+  - SQL Server: ``STUFF(string, start, length, replacement)``. The ``LENGTH``
+    is required, and a ``START`` outside of the string returns ``NULL``.
+  - SQLite and Oracle: ``SUBSTR(...) || replacement || SUBSTR(...)``.
 
 POSITION(SEARCH IN STRING)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

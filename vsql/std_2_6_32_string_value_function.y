@@ -13,6 +13,10 @@ character_value_function:
     $$.v = CharacterValueFunction($1.v as CharacterSubstringFunction)
   }
 | fold { $$.v = CharacterValueFunction($1.v as RoutineInvocation) }
+| character_overlay_function {
+    flag(mut yylex, 'T312')
+    $$.v = CharacterValueFunction($1.v as OverlayFunction)
+  }
 | trim_function { $$.v = CharacterValueFunction($1.v as TrimFunction) }
 
 // Without USING, it's USING CHARACTERS.
@@ -51,6 +55,39 @@ fold:
 | LOWER left_paren character_value_expression right_paren {
     $$.v = RoutineInvocation{function_name: 'LOWER', args: [
       ValueExpression(CommonValueExpression($3.v as CharacterValueExpression))]}
+  }
+
+// Without USING, it's USING CHARACTERS (like SUBSTRING).
+//
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 14
+
+character_overlay_function:
+  OVERLAY left_paren character_value_expression PLACING
+  character_value_expression FROM start_position right_paren {
+    $$.v = new_overlay_function($3.v as CharacterValueExpression,
+      $5.v as CharacterValueExpression, $7.v as NumericValueExpression, none,
+      'CHARACTERS')
+  }
+| OVERLAY left_paren character_value_expression PLACING
+  character_value_expression FROM start_position FOR string_length
+  right_paren {
+    $$.v = new_overlay_function($3.v as CharacterValueExpression,
+      $5.v as CharacterValueExpression, $7.v as NumericValueExpression,
+      $9.v as NumericValueExpression, 'CHARACTERS')
+  }
+| OVERLAY left_paren character_value_expression PLACING
+  character_value_expression FROM start_position USING char_length_units
+  right_paren {
+    $$.v = new_overlay_function($3.v as CharacterValueExpression,
+      $5.v as CharacterValueExpression, $7.v as NumericValueExpression, none,
+      $9.v as string)
+  }
+| OVERLAY left_paren character_value_expression PLACING
+  character_value_expression FROM start_position FOR string_length USING
+  char_length_units right_paren {
+    $$.v = new_overlay_function($3.v as CharacterValueExpression,
+      $5.v as CharacterValueExpression, $7.v as NumericValueExpression,
+      $9.v as NumericValueExpression, $11.v as string)
   }
 
 trim_function:

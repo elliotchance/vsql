@@ -190,6 +190,23 @@ static SQLRETURN vsql_m_assign_row(SQLHSTMT stmt, SQLRETURN rc, int m,
   return rc;
 }
 
+/* section assigned */
+/*
+ * vsql_m_assigned sets the status parameter after the values of a row are
+ * assigned. The first diagnostics area keeps the conditions of executing the
+ * statement, and a truncated value is one more.
+ */
+static void vsql_m_assigned(char *sqlstate, int truncated) {
+  if (truncated) {
+    vsql_m_raise("01004", vsql_m_message("01004"));
+  }
+  if (vsql_m_da.number > 0) {
+    vsql_m_sqlstate(sqlstate, vsql_m_da.conditions[0].sqlstate);
+  } else {
+    vsql_m_sqlstate(sqlstate, truncated ? "01004" : "00000");
+  }
+}
+
 /* section select */
 /*
  * vsql_m_select executes the query and assigns the values of its only row to
@@ -251,7 +268,7 @@ static int vsql_m_select(char *sqlstate, const char *sql, int n,
    */
   rc = SQLFetch(stmt);
   if (rc == SQL_NO_DATA) {
-    vsql_m_status(sqlstate, truncated ? "01004" : "00000");
+    vsql_m_assigned(sqlstate, truncated);
   } else if (vsql_m_failed(rc)) {
     vsql_m_diag(sqlstate, rc, SQL_HANDLE_STMT, stmt);
   } else {

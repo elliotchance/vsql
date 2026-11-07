@@ -293,6 +293,7 @@ module-test: $(LIBVSQL) $(VSQL_BIN)
 	$(VSQL_BIN) module libvsql/module/test_other.mod
 	$(call module_program,test,libvsql/module/test_other.c)
 	$(call module_program,test_returned_length)
+	$(call module_program,test_more)
 
 # module_program compiles libvsql/module/$(1).mod and runs $(1)_main.c with it
 # (and the C files in $(2)).

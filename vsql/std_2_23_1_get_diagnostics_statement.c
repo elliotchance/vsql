@@ -24,12 +24,9 @@ static const char *vsql_m_item_text(int item, long long n) {
 
   switch (item) {
   case SQL_DIAG_MORE:
-    /* All of the conditions are kept, even though a condition can be dropped
-     * by DIAGNOSTICS SIZE (#798).
-     *
-     * ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.b
+    /* ISO/IEC 9075-2:2016(E), 23.1, <get diagnostics statement>, General Rules, 2.b
      */
-    return "N";
+    return vsql_m_da.more ? "Y" : "N";
   case VSQL_M_COMMAND_FUNCTION:
     return vsql_m_da.command_function;
   case VSQL_M_DYNAMIC_FUNCTION:

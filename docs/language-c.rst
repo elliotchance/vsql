@@ -348,7 +348,8 @@ The first form gets information about the statement:
 Item                         Value
 ============================ ==================================================
 ``NUMBER``                   The number of conditions (``0`` for success).
-``MORE``                     Always ``N``, since every condition is kept.
+``MORE``                     ``Y`` if the statement raised more conditions than
+                             the ``DIAGNOSTICS SIZE``, otherwise ``N``.
 ``COMMAND_FUNCTION``         The statement, such as ``INSERT`` or
                              ``UPDATE WHERE``.
 ``COMMAND_FUNCTION_CODE``    The code of the statement, such as ``50`` for

@@ -177,7 +177,10 @@ fn diag_header_field(handle_type i16, h i64, diag &Diagnostics, diag_identifier 
 		sql_diag_transactions_committed { diag.transactions_committed }
 		sql_diag_transactions_rolled_back { diag.transactions_rolled_back }
 		sql_diag_transaction_active { int(transaction_active(handle_type, h)) }
-		// - 11.f. Every condition is stored in the diagnostics area.
+		// - 11.f.
+		sql_diag_more {
+			if diag.more { 1 } else { 0 }
+		}
 		else { 0 }
 	}
 }

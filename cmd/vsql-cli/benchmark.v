@@ -11,6 +11,7 @@
 module main
 
 import rand
+import runtime
 import time
 import vsql
 
@@ -21,6 +22,10 @@ mut:
 	teller_rows  int
 	branch_rows  int
 	run_for      time.Duration
+	// peak_memory is the most memory (resident set size) the process has used,
+	// in bytes. It's sampled while the benchmark runs (see sample_memory), so
+	// it's 0 if the platform can't report it.
+	peak_memory u64
 }
 
 fn new_benchmark(conn &vsql.Connection) Benchmark {
@@ -39,7 +44,11 @@ fn (mut b Benchmark) start() ! {
 	mut t := vsql.start_timer()
 	for aid in 1 .. b.account_rows + 1 {
 		b.conn.query('INSERT INTO accounts (aid, abalance) VALUES (${aid}, 0)')!
+		if aid % 100 == 0 {
+			b.sample_memory()
+		}
 	}
+	b.sample_memory()
 	b.print_stat('INSERT', b.account_rows, 'rows', t.elapsed())
 
 	b.conn.query('CREATE TABLE tellers ( tid INT, tbalance INT, PRIMARY KEY ( tid ) ) ')!
@@ -57,6 +66,7 @@ fn (mut b Benchmark) start() ! {
 	t = vsql.start_timer()
 
 	b.conn.query('SELECT abalance FROM accounts WHERE abalance = 0')!
+	b.sample_memory()
 	b.print_stat('SELECT', b.account_rows, 'rows', t.elapsed())
 
 	t = vsql.start_timer()
@@ -64,6 +74,9 @@ fn (mut b Benchmark) start() ! {
 	for {
 		b.run_transaction()!
 		txn_count++
+		if txn_count % 10 == 0 {
+			b.sample_memory()
+		}
 
 		if t.elapsed() > b.run_for {
 			break
@@ -71,6 +84,19 @@ fn (mut b Benchmark) start() ! {
 	}
 
 	b.print_stat('TPC-B (sort of)', txn_count, 'transactions', t.elapsed())
+
+	b.sample_memory()
+	if b.peak_memory > 0 {
+		println('Peak memory: ${f64(b.peak_memory) / (1024 * 1024):.1f} MiB')
+	}
+}
+
+// sample_memory updates peak_memory with the memory the process is using now.
+fn (mut b Benchmark) sample_memory() {
+	used := runtime.used_memory() or { return }
+	if used > b.peak_memory {
+		b.peak_memory = used
+	}
 }
 
 fn (mut b Benchmark) print_stat(name string, n int, unit string, elapsed time.Duration) {

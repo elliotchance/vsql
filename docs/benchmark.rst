@@ -49,12 +49,17 @@ After the benchmark is finished it will report something like:
    INSERT: 100000 rows in 19.692 (5078.086 rows/s)
    SELECT: 100000 rows in 0.845 (118389.150 rows/s)
    TPC-B (sort of): 25 transactions in 61.963 (0.403 transactions/s)
+   Peak memory: 41.3 MiB
 
 Where:
 
 - ``INSERT`` describes the raw INSERT rate into the largest table ``ACCOUNTS``.
 - ``SELECT`` describes the raw SELECT read rate with a simple filter (``aid = 0``). This will not match any records but it will ensure the entire table is read.
 - ``TPC-B (sort of)`` is the result from the test explained above.
+- ``Peak memory`` is the most memory (resident set size) that the process used
+  for the whole benchmark. It's sampled while the benchmark runs, so a short
+  spike between samples may not be seen. It isn't shown on a platform that
+  can't report it.
 
 Notes
 -----

@@ -147,75 +147,9 @@ string does not, the session time zone is used.
 Current Date and Time
 ---------------------
 
-CURRENT_DATE
-^^^^^^^^^^^^
-
-Provides the current date (eg. ``2022-03-24``) within the time zone of the
-session as a ``DATE`` type.
-
-CURRENT_TIME(p)
-^^^^^^^^^^^^^^^
-
-Provides the time with the timezone (eg. ``15:45:55+05:00``) within the time
-zone of the session as a ``TIME(p) WITH TIME ZONE`` type.
-
-The ``(p)`` is optional and if not provided will use a value of ``0``.
-Otherwise, the value of ``p`` must be between ``0`` and ``6`` and controls both
-the subsecond accuracy and result type.
-
-``CURRENT_TIME`` differs from ``LOCALTIME`` which returns the same time
-component, but without the time zone.
-
-CURRENT_TIMESTAMP(p)
-^^^^^^^^^^^^^^^^^^^^
-
-Provides the date and time with the timezone (eg. ``2022-03-24 15:45:55+05:00``)
-within the time zone of the session as a ``TIMESTAMP WITH TIME ZONE`` type.
-
-The ``(p)`` is optional and if not provided will use a value of ``6``.
-Otherwise, the value of ``p`` must be between ``0`` and ``6`` and controls both
-the subsecond accuracy and result type.
-
-``CURRENT_TIMESTAMP`` differs from ``LOCALTIMESTAMP`` which returns the same
-date and time component, but without the time zone.
-
-LOCALTIME(p)
-^^^^^^^^^^^^
-
-Provides the time without the time zone (eg. ``15:45:55``) within the time
-zone of the session as a ``TIME(p) WITHOUT TIME ZONE`` type.
-
-The ``(p)`` is optional and if not provided will use a value of ``0``.
-Otherwise, the value of ``p`` must be between ``0`` and ``6`` and controls both
-the subsecond accuracy and result type.
-
-``LOCALTIME`` differs from ``CURRENT_TIME`` which returns the same time
-component, but also includes the time zone.
-
-LOCALTIMESTAMP(p)
-^^^^^^^^^^^^^^^^^
-
-Provides the date and time without the time zone (eg. ``2022-03-24 15:45:55``)
-within the time zone of the session as a ``TIMESTAMP WITHOUT TIME ZONE`` type.
-
-The ``(p)`` is optional and if not provided will use a value of ``6``.
-Otherwise, the value of ``p`` must be between ``0`` and ``6`` and controls both
-the subsecond accuracy and result type.
-
-``LOCALTIMESTAMP`` differs from ``CURRENT_TIMESTAMP`` which returns the same
-date and time component, but includes the time zone.
-
-NOW()
-^^^^^
-
-The same as ``CURRENT_TIMESTAMP``, including that it can be a ``DEFAULT`` (see
-:doc:`create-table`). This is a vsql extension, not standard SQL, and it's
-flagged by ``V402-01`` (see :doc:`sql-flagging`). ``CURRENT_TIMESTAMP`` should be
-used if the SQL needs to be portable.
-
-``NOW`` isn't a reserved word, so it can still be the name of a table or a
-column. A custom function (see :doc:`custom-functions`) with the name ``NOW`` has
-to be called with quotes: ``"NOW"()``.
+The current date and time are provided by ``CURRENT_DATE``, ``CURRENT_TIME``,
+``CURRENT_TIMESTAMP``, ``LOCALTIME``, ``LOCALTIMESTAMP`` and ``NOW()``. See
+*Date and Time Functions* in :doc:`functions`.
 
 Casting
 -------

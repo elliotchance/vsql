@@ -363,7 +363,7 @@ fn (mut o IndexOperation) execute(_ []Row) ![]Row {
 // because the full names would make the output extra verbose.
 fn key_operation_columns(table Table, pretty bool) Columns {
 	mut columns := []Column{}
-	for column in table.columns {
+	for column in table.result_columns() {
 		columns << Column{
 			name:     if pretty {
 				Identifier{

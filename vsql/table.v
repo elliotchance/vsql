@@ -565,7 +565,7 @@ fn (o TableOperation) str() string {
 // verbose, so we only show the column names.
 fn (o TableOperation) pretty_columns() Columns {
 	mut cols := []Column{}
-	for c in o.table.columns {
+	for c in o.columns() {
 		cols << Column{
 			name:     Identifier{
 				sub_entity_name: c.name.sub_entity_name
@@ -579,7 +579,25 @@ fn (o TableOperation) pretty_columns() Columns {
 }
 
 fn (o TableOperation) columns() Columns {
-	return o.table.columns
+	return o.table.result_columns()
+}
+
+// result_columns are the columns of the table as they're seen by a query, where
+// not_null is true for each column that's known not nullable. These aren't the
+// columns of the descriptor of the table: a CHECK doesn't change how a row is
+// stored, which depends on not_null.
+//
+// ISO/IEC 9075-2:2016(E), 4.13 (Columns, fields, and attributes)
+fn (t Table) result_columns() []Column {
+	mut columns := []Column{}
+	for column in t.columns {
+		columns << Column{
+			...column
+			not_null: is_known_not_nullable(t, column)
+		}
+	}
+
+	return columns
 }
 
 fn (mut o TableOperation) execute(_ []Row) ![]Row {

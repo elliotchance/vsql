@@ -1238,7 +1238,7 @@ Optional Features
    * - ❌ **T024**
      - **Spaces in binary literals**
 
-   * - ⭕ **T031**
+   * - ✅ **T031**
      - **BOOLEAN data type**
 
    * - ❌ **T041**

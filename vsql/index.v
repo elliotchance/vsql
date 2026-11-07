@@ -259,6 +259,7 @@ fn (mut f Storage) load_indexes() ! {
 		tables[table.id] = table
 	}
 
+	f.save_schema()
 	f.indexes = map[string]Index{}
 	for object in f.read_objects('N'.bytes(), 'O'.bytes())! {
 		mut buf := new_bytes(object.key[1..])
@@ -313,6 +314,7 @@ fn (mut f Storage) create_index(definition Index, t Table, check_unique bool) ! 
 		f.btree.add(new_page_object(index.entry_key(t, row)!, f.transaction_id, 0, []u8{}))!
 	}
 
+	f.save_schema()
 	f.indexes[index.name.storage_id()] = index
 	f.schema_changed()
 }
@@ -328,6 +330,7 @@ fn (mut f Storage) delete_index(index Index) ! {
 	f.btree.expire(index_object_key(index.table_id, index.id), index.tid, f.transaction_id)!
 	f.expire_objects(index_entry_prefix(index.id), index_entry_prefix(index.id + 1))!
 
+	f.save_schema()
 	f.indexes.delete(index.name.storage_id())
 	f.schema_changed()
 }

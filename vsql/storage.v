@@ -92,6 +92,7 @@ mut:
 // change anything (ISO/IEC 9075-2:2016(E), 4.39.5), so this is put back, and
 // the pages it changed are never written.
 struct StatementSnapshot {
+mut:
 	header            Header
 	tables            map[string]Table
 	schemas           map[string]Schema
@@ -100,6 +101,15 @@ struct StatementSnapshot {
 	transaction_id    u64
 	transaction_pages map[int]bool
 	isolation_depth   int
+	// in_statement is true between begin_statement and the end of the
+	// statement.
+	in_statement bool
+	// schema_saved is true once tables, schemas and indexes have been copied
+	// (see save_schema), and pages_saved once transaction_pages has been (see
+	// save_transaction_pages). They aren't copied by begin_statement because
+	// most statements don't change them.
+	schema_saved bool
+	pages_saved  bool
 }
 
 // begin_statement must be called at the start of a statement that changes the
@@ -111,21 +121,39 @@ fn (mut f Storage) begin_statement() {
 			...f.header
 			reserved: f.header.reserved.clone()
 		}
-		tables:            f.tables.clone()
-		schemas:           f.schemas.clone()
-		indexes:           f.indexes.clone()
 		transaction_state: f.transaction_state
 		transaction_id:    f.transaction_id
 		isolation_depth:   f.isolation_depth
-		transaction_pages: f.transaction_pages.clone()
+		in_statement:      true
 	}
 	f.btree.written_pages = map[int]bool{}
 	f.sequence_values = map[string]PageObject{}
 }
 
+// save_schema must be called before tables, schemas or indexes are changed, so
+// that they can be put back if the statement fails.
+fn (mut f Storage) save_schema() {
+	if f.snapshot.in_statement && !f.snapshot.schema_saved {
+		f.snapshot.tables = f.tables.clone()
+		f.snapshot.schemas = f.schemas.clone()
+		f.snapshot.indexes = f.indexes.clone()
+		f.snapshot.schema_saved = true
+	}
+}
+
+// save_transaction_pages must be called before transaction_pages is changed,
+// so that it can be put back if the statement fails.
+fn (mut f Storage) save_transaction_pages() {
+	if f.snapshot.in_statement && !f.snapshot.pages_saved {
+		f.snapshot.transaction_pages = f.transaction_pages.clone()
+		f.snapshot.pages_saved = true
+	}
+}
+
 // commit_statement keeps the changes made by the current statement. For a file,
 // they are written through the write-ahead log, see commit.
 fn (mut f Storage) commit_statement(path string) ! {
+	f.snapshot.in_statement = false
 	if path == ':memory:' {
 		mut pager := f.btree.pager
 		if mut pager is MemoryPager {
@@ -146,13 +174,18 @@ fn (mut f Storage) discard_statement(path string) ! {
 	sequence_values := f.sequence_values.clone()
 
 	f.header = f.snapshot.header
-	f.tables = f.snapshot.tables.clone()
-	f.schemas = f.snapshot.schemas.clone()
-	f.indexes = f.snapshot.indexes.clone()
+	if f.snapshot.schema_saved {
+		f.tables = f.snapshot.tables.clone()
+		f.schemas = f.snapshot.schemas.clone()
+		f.indexes = f.snapshot.indexes.clone()
+	}
 	f.transaction_state = f.snapshot.transaction_state
 	f.transaction_id = f.snapshot.transaction_id
 	f.isolation_depth = f.snapshot.isolation_depth
-	f.transaction_pages = f.snapshot.transaction_pages.clone()
+	if f.snapshot.pages_saved {
+		f.transaction_pages = f.snapshot.transaction_pages.clone()
+	}
+	f.snapshot.in_statement = false
 	f.btree.pager.discard()
 	f.btree.written_pages = map[int]bool{}
 	f.sequence_values = map[string]PageObject{}
@@ -223,6 +256,7 @@ fn (mut f Storage) load_schema(catalog_name string) ! {
 		f.end_isolation()
 	}
 
+	f.save_schema()
 	f.tables = map[string]Table{}
 	mut iter := f.btree.new_range_iterator('T'.bytes(), 'U'.bytes())
 	for {
@@ -367,6 +401,7 @@ fn (mut f Storage) create_table(definition Table) ! {
 		f.add_identity(table.id, (column.identity or { IdentityColumn{} }).sequence)!
 	}
 
+	f.save_schema()
 	f.tables[table.name.storage_id()] = table
 	f.schema_changed()
 
@@ -422,6 +457,7 @@ fn (mut f Storage) update_table(definition Table) ! {
 	f.btree.update(new_page_object(table_object_key(table.id), f.transaction_id, 0,
 		table.bytes()))!
 
+	f.save_schema()
 	f.tables[table.name.storage_id()] = table
 	f.schema_changed()
 	f.build_constraint_indexes(old, table)!
@@ -441,6 +477,7 @@ fn (mut f Storage) create_schema(schema_name string) ! {
 	obj := new_page_object('S${schema_name}'.bytes(), f.transaction_id, 0, schema.bytes())
 	f.btree.add(obj)!
 
+	f.save_schema()
 	f.schemas[schema_name] = schema
 	f.schema_changed()
 }
@@ -678,6 +715,7 @@ fn (mut f Storage) delete_table(table_name string, tid u64) ! {
 		f.btree.expire(object.key, object.tid, f.transaction_id)!
 	}
 
+	f.save_schema()
 	f.tables.delete(table_name)
 	f.schema_changed()
 }
@@ -690,6 +728,7 @@ fn (mut f Storage) delete_schema(schema_name string, tid u64) ! {
 
 	f.btree.expire('S${schema_name}'.bytes(), tid, f.transaction_id)!
 
+	f.save_schema()
 	f.schemas.delete(schema_name)
 	f.schema_changed()
 }
@@ -1020,6 +1059,9 @@ fn (mut f Storage) isolation_end() ! {
 
 	// The B-tree is replaced for each operation, so the pages it changed must
 	// be kept with the transaction before then.
+	if f.btree.written_pages.len > 0 {
+		f.save_transaction_pages()
+	}
 	for page_number, _ in f.btree.written_pages {
 		f.transaction_pages[page_number] = true
 	}
@@ -1061,6 +1103,7 @@ fn (mut f Storage) isolation_end() ! {
 		f.btree.remove_blob(obj)!
 	}
 
+	f.save_transaction_pages()
 	f.transaction_pages = map[int]bool{}
 
 	f.header.active_transaction_ids.remove(f.transaction_id)

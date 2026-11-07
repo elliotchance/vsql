@@ -4056,3 +4056,54 @@ fn test_query_from_another_thread() ! {
 	assert t.wait()! == 2
 	assert db.query('SELECT * FROM t')!.rows.len == 2
 }
+
+// The maximum length of the result of LISTAGG is too long to reach in a test, so
+// a much smaller one is used to test ON OVERFLOW.
+fn test_listagg_overflow() ! {
+	values := ['aa', 'bb', 'cc', 'dd']
+	error := ListaggOverflow{}
+	without_count := ListaggOverflow{
+		truncate: true
+	}
+	with_count := ListaggOverflow{
+		truncate:   true
+		with_count: true
+	}
+
+	assert listagg_result(values, ',', error, 11)! == 'aa,bb,cc,dd'
+	if _ := listagg_result(values, ',', error, 10) {
+		assert false
+	} else {
+		assert sqlstate_from_int(err.code()) == '22001'
+		assert err.msg() == 'string data right truncation for CHARACTER VARYING(10)'
+	}
+
+	// As many values as fit with the filler, and the count of the others.
+	assert listagg_result(values, ',', without_count, 10)! == 'aa,bb,...'
+	assert listagg_result(values, ',', with_count, 10)! == 'aa,...(3)'
+	assert listagg_result(values, ', ', ListaggOverflow{
+		truncate:   true
+		filler:     new_varchar_value('~')
+		with_count: true
+	}, 10)! == 'aa, ~(3)'
+
+	// Not even the first value fits.
+	assert listagg_result(values, ',', with_count, 8)! == ',...(4)'
+	assert listagg_result(values, ',', with_count, 6)! == '...(4)'
+	assert listagg_result(values, ',', without_count, 5)! == ',...'
+	assert listagg_result(values, ',', without_count, 3)! == '...'
+	assert listagg_result(['aaaaaaaaaaaa'], ',', with_count, 10)! == ',...(1)'
+
+	// The length is in characters, not bytes.
+	assert listagg_result(['é', 'é'], '', error, 2)! == 'éé'
+	assert listagg_result(['é', 'é', 'é', 'é', 'é'], '', without_count, 4)! == 'é...'
+}
+
+fn test_listagg_literal_too_long() ! {
+	check_listagg_literal(new_varchar_value('a'.repeat(max_character_length)))!
+	if _ := check_listagg_literal(new_varchar_value('a'.repeat(max_character_length + 1))) {
+		assert false
+	} else {
+		assert sqlstate_from_int(err.code()) == '42601'
+	}
+}

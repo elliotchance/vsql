@@ -26,6 +26,15 @@ aggregate_function:
     parsed_sort_key_part(mut yylex, .set_function)
     $$.v = $1.v as AggregateFunction
   }
+| listagg_set_function {
+    parsed_sort_key_part(mut yylex, .set_function)
+    $$.v = AggregateFunction($1.v as ListaggSetFunction)
+  }
+| listagg_set_function filter_clause {
+    parsed_sort_key_part(mut yylex, .set_function)
+    $$.v = with_filter(AggregateFunction($1.v as ListaggSetFunction),
+      $2.v as BooleanValueExpression)
+  }
 
 // ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 13
 filter_clause:
@@ -117,6 +126,87 @@ set_quantifier:
 
 set_function_type:
   computational_operation { $$.v = $1.v as string }
+
+// <ordered set function> is only a <listagg set function>, there are no
+// hypothetical set functions or inverse distribution functions (T612).
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.c
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Conformance Rules, 23
+listagg_set_function:
+  LISTAGG left_paren character_value_expression comma listagg_separator
+  right_paren within_group_specification {
+    flag(mut yylex, 'T625')
+    $$.v = new_listagg_set_function(false, $3.v as CharacterValueExpression,
+      $5.v as Value, ListaggOverflow{}, $7.v as []SortSpecification)
+  }
+| LISTAGG left_paren character_value_expression comma listagg_separator
+  listagg_overflow_clause right_paren within_group_specification {
+    flag(mut yylex, 'T625')
+    $$.v = new_listagg_set_function(false, $3.v as CharacterValueExpression,
+      $5.v as Value, $6.v as ListaggOverflow, $8.v as []SortSpecification)
+  }
+| LISTAGG left_paren set_quantifier character_value_expression comma
+  listagg_separator right_paren within_group_specification {
+    flag(mut yylex, 'T625')
+    $$.v = new_listagg_set_function($3.v as bool, $4.v as CharacterValueExpression,
+      $6.v as Value, ListaggOverflow{}, $8.v as []SortSpecification)
+  }
+| LISTAGG left_paren set_quantifier character_value_expression comma
+  listagg_separator listagg_overflow_clause right_paren
+  within_group_specification {
+    flag(mut yylex, 'T625')
+    $$.v = new_listagg_set_function($3.v as bool, $4.v as CharacterValueExpression,
+      $6.v as Value, $7.v as ListaggOverflow, $9.v as []SortSpecification)
+  }
+
+// The sort keys aren't the <sort key>s of an ORDER BY of a query, so they
+// aren't flagged (see flag_sort_key).
+within_group_specification:
+  WITHIN GROUP left_paren ORDER BY within_group_sort_specification_list
+  right_paren { $$.v = $6.v as []SortSpecification }
+
+within_group_sort_specification_list:
+  within_group_sort_specification {
+    $$.v = [$1.v as SortSpecification]
+  }
+| within_group_sort_specification_list comma within_group_sort_specification {
+    $$.v = append_list($1.v as []SortSpecification, $3.v as SortSpecification)
+  }
+
+within_group_sort_specification:
+  value_expression { $$.v = SortSpecification{$1.v as ValueExpression, true} }
+| value_expression ordering_specification {
+    $$.v = SortSpecification{$1.v as ValueExpression, $2.v as bool}
+  }
+
+listagg_separator:
+  character_string_literal { $$.v = $1.v as Value }
+
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.f and 11.g
+listagg_overflow_clause:
+  ON OVERFLOW ERROR { $$.v = ListaggOverflow{} }
+| ON OVERFLOW TRUNCATE listagg_count_indication {
+    $$.v = ListaggOverflow{
+      truncate:   true
+      filler:     new_varchar_value('...')
+      with_count: $4.v as bool
+    }
+  }
+| ON OVERFLOW TRUNCATE listagg_truncation_filler listagg_count_indication {
+    $$.v = ListaggOverflow{
+      truncate:   true
+      filler:     $4.v as Value
+      with_count: $5.v as bool
+    }
+  }
+
+listagg_truncation_filler:
+  character_string_literal { $$.v = $1.v as Value }
+
+// WITH COUNT is true.
+listagg_count_indication:
+  WITH COUNT { $$.v = true }
+| WITHOUT COUNT { $$.v = false }
 
 computational_operation:
   AVG { $$.v = $1.v as string }

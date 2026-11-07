@@ -1550,7 +1550,7 @@ Optional Features
    * - ✅ **T624**
      - **Common logarithm functions**
 
-   * - ❌ **T625**
+   * - ✅ **T625**
      - **LISTAGG**
 
    * - ❌ **T641**

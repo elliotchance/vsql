@@ -1103,7 +1103,7 @@
 6.28/SR/7.o              implemented  vsql/compiler.v tests/std_2_11_9_check_constraint.sql
 6.28/SR/7.p              n/a          - - multisets (S271)
 6.28/SR/7.q              n/a          - - ARRAY_AGG (S098)
-6.28/SR/7.r              n/a          - - LISTAGG (T625)
+6.28/SR/7.r              implemented  vsql/compiler.v tests/std_2_10_9_listagg.sql
 6.28/SR/7.s              n/a          - - multisets (S271)
 6.28/SR/7.t              n/a          - - multisets (S271)
 6.28/SR/7.u              n/a          - - window functions (T611)

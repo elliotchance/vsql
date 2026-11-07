@@ -81,37 +81,8 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 		// the query that it's an aggregate of.
 		compile_filter(mut c, e.filter, e.pstr(c.params))!
 
-		compiled := Identifier{
-			custom_id:  e.pstr(c.params)
-			custom_typ: set_function_type(func_name, arg_types[0])
-		}.compile(mut c)!
-
-		// An aggregate function of an outer query is calculated by that query
-		// (see Subquery.plan), and is a value of its row.
-		scope := c.aggregation_scope()!
-		if scope >= 0 {
-			// This isn't seen as an aggregate function by an enclosing one, because
-			// it's a value of this query.
-			//
-			// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 1
-			if in_aggregate {
-				return sqlstate_42601('nested set function: ${e.pstr(c.params)}')
-			}
-
-			c.conn.subquery_scopes[scope].aggregates << AggregateFunction(e)
-
-			return CompileResult{
-				run:          fn [compiled, scope] (mut conn Connection, data Row, params map[string]Value) !Value {
-					return compiled.run(mut conn, conn.subquery_scopes[scope].row, params)!
-				}
-				typ:          compiled.typ
-				contains_agg: false
-			}
-		}
-
-		c.aggregates << AggregateFunction(e)
-
-		return compiled.with_agg(true)
+		return aggregate_result(mut c, AggregateFunction(e), set_function_type(func_name,
+			arg_types[0]), in_aggregate)!
 	}
 
 	if e.args.len != found_func.arg_types.len {

@@ -10,11 +10,12 @@ import math
 //
 // ISO/IEC 9075-2:2016(E), 4.16 (Data analysis operations involving tables)
 
-type AggregateFunction = AggregateFunctionCount | RoutineInvocation
+type AggregateFunction = AggregateFunctionCount | ListaggSetFunction | RoutineInvocation
 
 fn (e AggregateFunction) pstr(params map[string]Value) string {
 	return match e {
 		AggregateFunctionCount { 'COUNT(*)${filter_pstr(e.filter, params)}' }
+		ListaggSetFunction { e.pstr(params) }
 		RoutineInvocation { e.pstr(params) }
 	}
 }
@@ -67,6 +68,9 @@ fn (e AggregateFunction) compile(mut c Compiler) !CompileResult {
 				contains_agg: true
 			}
 		}
+		ListaggSetFunction {
+			return e.compile(mut c)!
+		}
 		RoutineInvocation {
 			return e.compile(mut c)!
 		}
@@ -78,8 +82,17 @@ struct AggregateFunctionCount {
 }
 
 // with_filter adds the <search condition> of a <filter clause> to a general set
-// function.
+// function or a LISTAGG.
 fn with_filter(e AggregateFunction, filter BooleanValueExpression) AggregateFunction {
+	if e is ListaggSetFunction {
+		return ListaggSetFunction{
+			...e
+			filter: &BooleanValueExpression{
+				...filter
+			}
+		}
+	}
+
 	f := e as RoutineInvocation
 	return RoutineInvocation{
 		function_name: f.function_name
@@ -89,6 +102,45 @@ fn with_filter(e AggregateFunction, filter BooleanValueExpression) AggregateFunc
 			...filter
 		}
 	}
+}
+
+// aggregate_result is the result of the aggregate function e, after its
+// arguments (and filter) have been compiled with in_aggregate set, where typ is
+// its declared type and in_aggregate is whether it's in the argument of another
+// aggregate function. The result is calculated for each group (see
+// GroupOperation), and stored in the row by the name of the function.
+fn aggregate_result(mut c Compiler, e AggregateFunction, typ Type, in_aggregate bool) !CompileResult {
+	compiled := Identifier{
+		custom_id:  e.pstr(c.params)
+		custom_typ: typ
+	}.compile(mut c)!
+
+	// An aggregate function of an outer query is calculated by that query
+	// (see Subquery.plan), and is a value of its row.
+	scope := c.aggregation_scope()!
+	if scope >= 0 {
+		// This isn't seen as an aggregate function by an enclosing one, because
+		// it's a value of this query.
+		//
+		// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 1
+		if in_aggregate {
+			return sqlstate_42601('nested set function: ${e.pstr(c.params)}')
+		}
+
+		c.conn.subquery_scopes[scope].aggregates << e
+
+		return CompileResult{
+			run:          fn [compiled, scope] (mut conn Connection, data Row, params map[string]Value) !Value {
+				return compiled.run(mut conn, conn.subquery_scopes[scope].row, params)!
+			}
+			typ:          compiled.typ
+			contains_agg: false
+		}
+	}
+
+	c.aggregates << e
+
+	return compiled.with_agg(true)
 }
 
 fn filter_pstr(filter ?&BooleanValueExpression, params map[string]Value) string {
@@ -498,4 +550,222 @@ fn eval_binary_set_function(name string, ys []Value, xs []Value) !Value {
 		// REGR_INTERCEPT
 		else { scaled_value(m.mean_y - slope * m.mean_x, [m.sy], true)! }
 	}
+}
+
+// ListaggSetFunction is a <listagg set function>, such as
+// "LISTAGG(x, ', ') WITHIN GROUP (ORDER BY x)". value is a reference because
+// a CharacterValueExpression can contain an AggregateFunction.
+struct ListaggSetFunction {
+	distinct  bool
+	value     &CharacterValueExpression
+	separator Value
+	overflow  ListaggOverflow
+	order     []SortSpecification
+	filter    ?&BooleanValueExpression
+}
+
+// ListaggOverflow is the <listagg overflow clause>. Without one, it's ON
+// OVERFLOW ERROR (truncate is false). The filler is '...' if it isn't
+// specified.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.f and 11.g
+struct ListaggOverflow {
+	truncate   bool
+	filler     Value = new_varchar_value('...')
+	with_count bool
+}
+
+fn new_listagg_set_function(distinct bool, value CharacterValueExpression, separator Value, overflow ListaggOverflow, order []SortSpecification) ListaggSetFunction {
+	return ListaggSetFunction{
+		distinct:  distinct
+		value:     &value
+		separator: separator
+		overflow:  overflow
+		order:     order
+	}
+}
+
+fn (e ListaggSetFunction) pstr(params map[string]Value) string {
+	quantifier := if e.distinct { 'DISTINCT ' } else { '' }
+	mut overflow := ''
+	if e.overflow.truncate {
+		count := if e.overflow.with_count { 'WITH' } else { 'WITHOUT' }
+		overflow = ' ON OVERFLOW TRUNCATE ${e.overflow.filler.pstr(params)} ${count} COUNT'
+	}
+	order := e.order.map(it.pstr(params)).join(', ')
+
+	return 'LISTAGG(${quantifier}${e.value.pstr(params)}, ${e.separator.pstr(params)}${overflow}) WITHIN GROUP (ORDER BY ${order})${filter_pstr(e.filter, params)}'
+}
+
+// listagg_type is the declared type of the result of LISTAGG. It's a VARCHAR
+// with the maximum length (MLRT), rather than a CLOB, which isn't supported.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.d
+fn listagg_type() Type {
+	return new_type('CHARACTER VARYING', max_character_length, 0)
+}
+
+fn (e ListaggSetFunction) compile(mut c Compiler) !CompileResult {
+	// Like the argument of a general set function, the argument and the sort
+	// keys can use any column of a grouped query, and the columns that they use
+	// find the query that it's an aggregate of (see aggregation_scope). They
+	// can't contain a subquery (see Subquery.plan), and there are no window
+	// functions.
+	//
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.a
+	in_aggregate := c.in_aggregate
+	aggregated_columns := c.aggregated_columns
+	c.in_aggregate = true
+	c.aggregated_columns = []
+	defer {
+		c.in_aggregate = in_aggregate
+		c.aggregated_columns = aggregated_columns
+	}
+
+	name := e.pstr(c.params)
+	value := e.value.compile(mut c)!
+	mut contains_agg := value.contains_agg
+	for spec in e.order {
+		if spec.expr.compile(mut c)!.contains_agg {
+			contains_agg = true
+		}
+	}
+	if contains_agg {
+		return sqlstate_42601('nested set function: ${name}')
+	}
+
+	if !value.typ.typ.is_string() {
+		return sqlstate_42883('function does not exist: LISTAGG(${value.typ})')
+	}
+
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.e and 11.g
+	check_listagg_literal(e.separator)!
+	check_listagg_literal(e.overflow.filler)!
+
+	compile_filter(mut c, e.filter, name)!
+
+	return aggregate_result(mut c, AggregateFunction(e), listagg_type(), in_aggregate)!
+}
+
+// check_listagg_literal checks that the separator or the filler of a LISTAGG
+// isn't longer than the result can be.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.e and 11.g
+fn check_listagg_literal(literal Value) ! {
+	if literal.string_value().runes().len > max_character_length {
+		return sqlstate_42601('LISTAGG literal is longer than the maximum length of ${max_character_length}')
+	}
+}
+
+// eval returns the result of the LISTAGG for the rows of a group (after its
+// filter), and whether a null value was eliminated.
+//
+// The rows are sorted by the <within group specification> first, and each
+// value is then in the order of its row. With DISTINCT, the first of the
+// duplicate values (in that order) is kept, so the position of each value is
+// where it's first seen. Rows that are equal for every sort key are in the
+// order they were read in (see OrderOperation.execute). Every string type can
+// be compared, so the value can always be an operand of a grouping operation
+// for DISTINCT.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 11.b
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 11
+fn (e ListaggSetFunction) eval(mut c Compiler, rows []Row) !(Value, bool) {
+	mut order := new_order_operation(e.order, c.params, c.conn, []Column{}, c.tables,
+		map[string][]ValueExpression{})
+	sorted := order.execute(rows)!
+
+	compiled := e.value.compile(mut c)!
+	mut values := []Value{}
+	mut null_eliminated := false
+	for row in sorted {
+		value := compiled.run(mut c.conn, row, c.params)!
+		if value.is_null {
+			null_eliminated = true
+		}
+		values << value
+	}
+
+	values = if e.distinct {
+		distinct_values(mut c.conn, values, compiled.typ)!
+	} else {
+		non_null_values(values)
+	}
+
+	if values.len == 0 {
+		return Value{
+			typ:     listagg_type()
+			is_null: true
+		}, null_eliminated
+	}
+
+	result := listagg_result(values.map(it.string_value()), e.separator.string_value(),
+		e.overflow, max_character_length)!
+
+	return Value{
+		...new_varchar_value(result)
+		typ: listagg_type()
+	}, null_eliminated
+}
+
+// listagg_result joins the values with the separator. If that's longer than
+// mlrt characters, it's an error, or it's truncated after as many of the values
+// as fit with the filler (and the number of values that were removed, WITH
+// COUNT) after them.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 3.d, 11.f and 11.g
+fn listagg_result(values []string, separator string, overflow ListaggOverflow, mlrt int) !string {
+	result := values.join(separator)
+	// The number of characters can't be more than the number of bytes.
+	if result.len <= mlrt || result.runes().len <= mlrt {
+		return result
+	}
+
+	if !overflow.truncate {
+		return sqlstate_22001(new_type('CHARACTER VARYING', mlrt, 0))
+	}
+
+	// LTFP1 is the separator and the filler.
+	ltfp1 := separator + overflow.filler.string_value()
+	ltfp1_len := ltfp1.runes().len
+	n := values.len
+
+	// The greatest i (1 <= i < N) where the first i values (LIRPi) fit, or 0 if
+	// there's no such i. With a count, the space it needs depends on i.
+	separator_len := separator.runes().len
+	mut i := 0
+	mut prefix_len := 0
+	for j in 1 .. n {
+		prefix_len += values[j - 1].runes().len
+		if j > 1 {
+			prefix_len += separator_len
+		}
+		if prefix_len > mlrt {
+			break
+		}
+
+		limit := if overflow.with_count {
+			mlrt - ltfp1_len - (n - j).str().len - 2
+		} else {
+			mlrt - ltfp1_len
+		}
+		if prefix_len <= limit {
+			i = j
+		}
+	}
+
+	if overflow.with_count {
+		if i == 0 {
+			lir2 := '${ltfp1}(${n})'
+			return if lir2.runes().len > mlrt { '...(${n})' } else { lir2 }
+		}
+
+		return '${values[..i].join(separator)}${ltfp1}(${n - i})'
+	}
+
+	if i == 0 {
+		return if ltfp1_len > mlrt { '...' } else { ltfp1 }
+	}
+
+	return values[..i].join(separator) + ltfp1
 }

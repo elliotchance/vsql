@@ -119,6 +119,9 @@ Each function also has a **Compatibility** section:
    * - ``FLOOR``
      - Rounding
      - T621
+   * - ``LISTAGG``
+     - Aggregate
+     - T625
    * - ``LN``
      - Exponent and Logarithm
      - T621
@@ -437,6 +440,63 @@ if any value is ``FALSE``. ``UNKNOWN`` values are ``NULL``, so they're ignored l
   - MySQL and SQLite: ``MIN``, because their booleans are the numbers 0 and 1.
   - SQL Server: ``MIN(CASE WHEN condition THEN 1 ELSE 0 END) = 1``.
   - Oracle: ``BOOLEAN_AND_AGG`` (Oracle 23ai).
+
+LISTAGG
+^^^^^^^
+
+.. code-block:: sql
+
+   LISTAGG([DISTINCT] VALUE, 'separator' [overflow])
+     WITHIN GROUP (ORDER BY sort_key [ASC | DESC], ...)
+     CHARACTER VARYING(10485760)
+
+   overflow:
+     ON OVERFLOW ERROR
+     ON OVERFLOW TRUNCATE ['filler'] WITH COUNT
+     ON OVERFLOW TRUNCATE ['filler'] WITHOUT COUNT
+
+Joins the string values into one string, with the separator between them. The
+values are in the order of the ``WITHIN GROUP``, which can sort by any
+expression (not only the value). Values that are equal for every sort key are
+in the order that they're read in. The separator (and filler) must be a string
+literal.
+
+With ``DISTINCT``, each value is only used once, in the position where it's
+first seen. Values are the same if they are equal with ``=``, so ``'a'`` and
+``'a  '`` are the same value.
+
+The result can't be longer than 10485760 characters (the longest
+``VARCHAR``). By default a longer result is a ``22001`` error, which can also be
+written as ``ON OVERFLOW ERROR``. With ``ON OVERFLOW TRUNCATE``, the result is
+as many of the values as fit, followed by the separator and the filler
+(``'...'`` if it's not specified). ``WITH COUNT`` also adds the number of values
+that were left out in brackets, such as ``a, b, c, ...(5)``.
+
+A value that isn't a string is a ``42883`` error. Use a ``CAST`` to join other
+types, such as ``LISTAGG(CAST(id AS VARCHAR(20)), ', ')``.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT LISTAGG(city, ', ') WITHIN GROUP (ORDER BY price) FROM products;
+  -- COL1: San Francisco, San Francisco, New York, San Francisco, New York
+
+  SELECT LISTAGG(DISTINCT city, ', ') WITHIN GROUP (ORDER BY city DESC) FROM products;
+  -- COL1: San Francisco, New York
+
+  SELECT LISTAGG(city, ' | ') WITHIN GROUP (ORDER BY price DESC) FILTER (WHERE price > 10e0) FROM products;
+  -- COL1: New York | San Francisco
+
+**Compatibility**
+
+- **SQL standard:** T625. The standard lets the result be a ``CLOB`` instead,
+  which vsql doesn't have.
+- **Other databases:** Oracle and Db2 have the same syntax. Oracle also has
+  ``ON OVERFLOW``. SQL Server has ``STRING_AGG(value, separator) WITHIN GROUP
+  (ORDER BY ...)``, PostgreSQL has ``STRING_AGG(value, separator ORDER BY
+  ...)``, and MySQL has ``GROUP_CONCAT(value ORDER BY ... SEPARATOR
+  separator)``. SQLite has ``GROUP_CONCAT`` and ``STRING_AGG``.
 
 MAX
 ^^^

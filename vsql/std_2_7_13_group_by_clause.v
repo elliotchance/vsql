@@ -209,6 +209,14 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 					set := filter_rows(mut c, aggregate.filter, group)!
 					final_rows[i].data.set(key, new_integer_value(set.len))
 				}
+				ListaggSetFunction {
+					set := filter_rows(mut c, aggregate.filter, group)!
+					value, eliminated := aggregate.eval(mut c, set)!
+					if eliminated {
+						null_eliminated = true
+					}
+					final_rows[i].data.set(key, value)
+				}
 				RoutineInvocation {
 					set := filter_rows(mut c, aggregate.filter, group)!
 					arg := aggregate.args[0].compile(mut c)!

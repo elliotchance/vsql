@@ -355,6 +355,9 @@ fn is_known_not_nullable(table Table, column Column) bool {
 	if column.not_null || column_name in table.primary_key {
 		return true
 	}
+	if table.check_constraints.len == 0 {
+		return false
+	}
 
 	// The search condition can use the name of the column in any of its forms.
 	mut conditions := ['${requote_identifier(column_name)} IS NOT NULL']

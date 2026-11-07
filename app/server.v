@@ -230,17 +230,29 @@ fn (a &App) respond(is_post bool, form urllib.Values) !string {
 		conn.close()
 	}
 
-	all_tabs := a.tabs(mut conn)!
-
 	// Showing a tab doesn't run it (that's only done with Run), it shows the
 	// last result.
+	//
+	// An import that finishes while the page is being made (such as right after
+	// it's cancelled) would leave the page with the tab from before it finished
+	// and no result, which looks like an import that was interrupted. So the
+	// page is made again if an import started or finished in the meantime.
 	if !is_post {
-		tab := all_tabs.filter(it.active)[0] or { no_tab }
-		result := rlock a.results {
-			a.results[tab.ref()] or { TabResult{} }
+		for {
+			running := a.running_imports()
+			tabs := a.tabs(mut conn)!
+			tab := tabs.filter(it.active)[0] or { no_tab }
+			result := rlock a.results {
+				a.results[tab.ref()] or { TabResult{} }
+			}
+			page := a.page(mut conn, tabs, tab, result, Confirm{})!
+			if a.running_imports() == running {
+				return page
+			}
 		}
-		return a.page(mut conn, all_tabs, tab, result, Confirm{})
 	}
+
+	all_tabs := a.tabs(mut conn)!
 
 	tab_ref := form.get('tab') or { '' }
 	tab := all_tabs.filter(it.ref() == tab_ref)[0] or { no_tab }

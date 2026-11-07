@@ -372,8 +372,13 @@ fn test_all() ! {
 		mut failed_modes := []string{}
 		mut skipped := false
 		for mode in modes {
-			match run_single_test(test, verbose != '', filter_line, mode, through_server,
-				port, mut flagged)! {
+			// An error (rather than a failed assertion) still says which test it
+			// was.
+			result := run_single_test(test, verbose != '', filter_line, mode, through_server,
+				port, mut flagged) or {
+				return error('${test.file_name}:${test.line_number} (${sql_test_mode_str(mode, through_server)}): ${err}')
+			}
+			match result {
 				.passed {}
 				.failed { failed_modes << sql_test_mode_str(mode, through_server) }
 				.skipped { skipped = true }
@@ -954,6 +959,10 @@ mut:
 fn new_pg_test_client(port int, database string) !&PGTestClient {
 	mut client := &PGTestClient{net.dial_tcp('127.0.0.1:${port}')!}
 
+	// A statement can take longer than V's default of 30 seconds on a slow
+	// machine.
+	client.conn.set_read_timeout(10 * time.minute)
+
 	// StartupMessage: protocol 3.0, then name/value pairs.
 	mut body := []u8{}
 	body << pg_test_int32(196608)
@@ -1159,6 +1168,28 @@ fn test_server_db_file() ! {
 		client2.close()
 	}
 	assert client2.query('SELECT * FROM t')!.rows == ['X: 123']
+}
+
+// A client that waits between statements isn't disconnected.
+fn test_server_idle_client() ! {
+	mut server := new_server(ServerOptions{
+		connect: fn (database string) !&Connection {
+			return open(':memory:')
+		}
+	})
+	server.listen()!
+	defer {
+		server.stop() or {}
+	}
+	mut client := net.dial_tcp('127.0.0.1:${server.port()!}')!
+	defer {
+		client.close() or {}
+	}
+	mut conn := server.accept()!
+	defer {
+		conn.close() or {}
+	}
+	assert conn.read_timeout() == net.infinite_timeout
 }
 
 // A client only gets an error (or is disconnected) when its database can't be

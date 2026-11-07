@@ -56,6 +56,9 @@ Each function also has a **Compatibility** section:
    * - ``ATAN``
      - Trigonometric
      - T622
+   * - ``ANY``
+     - Aggregate
+     - T031
    * - ``AVG``
      - Aggregate
      - Core (E091-01)
@@ -98,6 +101,9 @@ Each function also has a **Compatibility** section:
    * - ``CURRENT_TIMESTAMP``
      - Date and Time
      - F411
+   * - ``EVERY``
+     - Aggregate
+     - T031
    * - ``EXP``
      - Exponent and Logarithm
      - T621
@@ -149,6 +155,9 @@ Each function also has a **Compatibility** section:
    * - ``SINH``
      - Trigonometric
      - T622
+   * - ``SOME``
+     - Aggregate
+     - T031
    * - ``SQRT``
      - Exponent and Logarithm
      - T621
@@ -206,6 +215,49 @@ The examples use this table:
     ('New York', 8.05e0), ('New York', 18.05e0),
     ('San Francisco', 7.5e0), ('San Francisco', 17.5e0),
     ('San Francisco', NULL);
+
+ANY
+^^^
+
+.. code-block:: sql
+
+   ANY(BOOLEAN) BOOLEAN
+
+``ANY(CONDITION)`` returns ``TRUE`` if any of the values is ``TRUE``, otherwise
+``FALSE``.
+``UNKNOWN`` values are ``NULL``, so they're ignored like any other ``NULL``. If
+there are no values (or they're all ``UNKNOWN``) the result is ``UNKNOWN``.
+
+``CONDITION`` must be a ``BOOLEAN``, such as a column or a condition like
+``price > 10``, otherwise it's a ``42883`` error.
+
+``ANY`` and ``SOME`` are the same function. They're also the quantifiers of a
+comparison with a subquery, such as ``x = ANY (SELECT ...)`` (see
+:doc:`expressions`). When the parentheses contain a subquery it's the
+comparison, otherwise it's this aggregate function, so ``x = ANY (y)`` compares
+``x`` with ``ANY(y)``.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT ANY(price > 18) FROM products;
+  -- COL1: TRUE
+
+  SELECT city, ANY(price > 18) FROM products GROUP BY city;
+  -- CITY: New York COL2: TRUE
+  -- CITY: San Francisco COL2: FALSE
+
+**Compatibility**
+
+- **SQL standard:** T031 (BOOLEAN data type).
+- **Other databases:**
+
+  - PostgreSQL: ``BOOL_OR``. It doesn't have ``ANY`` and ``SOME`` as aggregate
+    functions, because of the subquery comparisons.
+  - MySQL and SQLite: ``MAX``, because their booleans are the numbers 0 and 1.
+  - SQL Server: ``MAX(CASE WHEN condition THEN 1 ELSE 0 END) = 1``.
+  - Oracle: ``BOOLEAN_OR_AGG`` (Oracle 23ai).
 
 AVG
 ^^^
@@ -294,6 +346,42 @@ those that have a non-``NULL`` ``price``.
   ``BIGINT`` in PostgreSQL and MySQL, and an ``INT`` in SQL Server (which has
   ``COUNT_BIG`` for a ``BIGINT``).
 
+EVERY
+^^^^^
+
+.. code-block:: sql
+
+   EVERY(BOOLEAN) BOOLEAN
+
+``EVERY(CONDITION)`` returns ``TRUE`` if every value is ``TRUE``, and ``FALSE``
+if any value is ``FALSE``. ``UNKNOWN`` values are ``NULL``, so they're ignored like any other
+``NULL``. If there are no values (or they're all ``UNKNOWN``) the result is
+``UNKNOWN``.
+
+``CONDITION`` must be a ``BOOLEAN``, such as a column or a condition like
+``price > 10``, otherwise it's a ``42883`` error.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT EVERY(price > 7) FROM products;
+  -- COL1: TRUE
+
+  SELECT city, EVERY(price > 8) FROM products GROUP BY city;
+  -- CITY: New York COL2: TRUE
+  -- CITY: San Francisco COL2: FALSE
+
+**Compatibility**
+
+- **SQL standard:** T031 (BOOLEAN data type).
+- **Other databases:**
+
+  - PostgreSQL: ``EVERY`` or ``BOOL_AND``.
+  - MySQL and SQLite: ``MIN``, because their booleans are the numbers 0 and 1.
+  - SQL Server: ``MIN(CASE WHEN condition THEN 1 ELSE 0 END) = 1``.
+  - Oracle: ``BOOLEAN_AND_AGG`` (Oracle 23ai).
+
 MAX
 ^^^
 
@@ -356,6 +444,27 @@ or a string. The result has the same type as the values.
 - **SQL standard:** Core SQL (E091-04).
 - **Other databases:** ``MIN`` in all of them. PostgreSQL doesn't accept a
   ``BOOLEAN``, use ``BOOL_AND`` instead.
+
+SOME
+^^^^
+
+.. code-block:: sql
+
+   SOME(BOOLEAN) BOOLEAN
+
+``SOME`` is another name for ``ANY``, see ``ANY``.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT SOME(price > 18) FROM products;
+  -- COL1: TRUE
+
+**Compatibility**
+
+- **SQL standard:** T031 (BOOLEAN data type).
+- **Other databases:** see ``ANY``.
 
 SUM
 ^^^

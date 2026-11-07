@@ -92,13 +92,13 @@ fn register_builtin_funcs(mut conn Connection) ! {
 
 	// Aggregate functions. COUNT accepts a value of any type because it only
 	// counts the non-NULL values (GR 7.d.i). MAX and MIN accept any type that can
-	// be ordered, which is every type (SR 7.d), and SUM and AVG accept any number
-	// (SR 7.g.i). Every SQLType is registered, so a new type is supported
+	// be ordered, which is every type (SR 7.d), SUM and AVG accept any number
+	// (SR 7.g.i), and EVERY, ANY and SOME accept a BOOLEAN (SR 7.e). Every SQLType is registered, so a new type is supported
 	// automatically. CHARACTER uses the CHARACTER VARYING one, see find_function.
 	// The result type depends on the argument (see set_function_type) and the
 	// result is calculated by eval_set_function.
 	//
-	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 7.d and 7.g.i
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 7.d, 7.e and 7.g.i
 	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.d.i
 	$for typ in SQLType.values {
 		if typ.value != SQLType.is_character {
@@ -106,6 +106,9 @@ fn register_builtin_funcs(mut conn Connection) ! {
 			mut names := ['COUNT', 'MAX', 'MIN']
 			if typ.value.is_number() {
 				names << ['AVG', 'SUM']
+			}
+			if typ.value == SQLType.is_boolean {
+				names << ['EVERY', 'ANY', 'SOME']
 			}
 			for name in names {
 				conn.register_func(Func{

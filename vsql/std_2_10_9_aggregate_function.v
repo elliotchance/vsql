@@ -203,7 +203,8 @@ fn set_function_type(name string, t Type) Type {
 		}
 	}
 
-	// MAX and MIN have the type of their argument (SR 7.f). So does AVG, which
+	// MAX and MIN have the type of their argument (SR 7.f), and EVERY, ANY and
+	// SOME are a BOOLEAN like their argument (SR 7.e). So does AVG, which
 	// is allowed because an exact numeric only needs at least the same precision
 	// and scale (SR 7.g.iii), and an approximate numeric only needs at least the
 	// same precision (SR 7.g.iv). The average is truncated to that scale.
@@ -229,6 +230,17 @@ fn eval_set_function(mut conn Connection, name string, all_values []Value, t Typ
 			typ:     typ
 			is_null: true
 		}
+	}
+
+	// EVERY is TRUE if every value is TRUE, and ANY (or SOME) is TRUE if any
+	// value is TRUE. Unknown values are NULLs, which have been removed.
+	//
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.d.vi and 7.d.vii
+	if name == 'EVERY' {
+		return new_boolean_value(values.all(it.bool_value() == .is_true))
+	}
+	if name in ['ANY', 'SOME'] {
+		return new_boolean_value(values.any(it.bool_value() == .is_true))
 	}
 
 	if name in ['MAX', 'MIN'] {

@@ -1264,7 +1264,7 @@
 7.16/CR/5                n/a          - - row types (T053)
 7.16/CR/6                implemented  vsql/planner.v tests/values.sql
 # 7.17, <query expression>
-7.17                     partial      vsql/std_2_7_17_query_expression.v tests/union-except.sql no WITH (T121), INTERSECT (F302), CORRESPONDING (F301), explicit tables (F661) or FETCH NEXT (#331)
+7.17                     partial      vsql/std_2_7_17_query_expression.v tests/union-except.sql,tests/intersect.sql no WITH (T121), CORRESPONDING (F301), explicit tables (F661) or FETCH NEXT (#331)
 7.17/SR/1                definition   - -
 7.17/SR/2                n/a          - - data change delta tables (T495)
 7.17/SR/3                n/a          - - WITH (T121)
@@ -1329,10 +1329,10 @@
 7.17/SR/3.k              n/a          - - WITH (T121)
 7.17/SR/4                n/a          - - explicit tables (F661)
 7.17/SR/5                definition   - -
-7.17/SR/6                implemented  vsql/std_2_7_17_query_expression.y tests/union-except.sql
+7.17/SR/6                implemented  vsql/std_2_7_17_query_expression.y tests/union-except.sql,tests/intersect.sql
 7.17/SR/7                implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
 7.17/SR/7.a              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
-7.17/SR/7.b              n/a          - - INTERSECT (F302)
+7.17/SR/7.b              implemented  vsql/std_2_14_1_declare_cursor.v tests/intersect.sql
 7.17/SR/7.c              implemented  vsql/std_2_14_1_declare_cursor.v tests/cursors.sql
 7.17/SR/8                n/a          - - updatable unions (T111)
 7.17/SR/8.a              n/a          - - updatable unions (T111)
@@ -1370,10 +1370,10 @@
 7.17/SR/16.a.iv          n/a          - - CORRESPONDING (F301)
 7.17/SR/16.b             implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
 7.17/SR/17               implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/SR/18               n/a          - - INTERSECT (F302)
-7.17/SR/18.a             n/a          - - INTERSECT (F302)
-7.17/SR/18.b             n/a          - - INTERSECT (F302)
-7.17/SR/18.c             n/a          - - INTERSECT (F302)
+7.17/SR/18               implemented  vsql/std_2_7_17_query_expression.v tests/intersect.sql
+7.17/SR/18.a             implemented  vsql/std_2_7_17_query_expression.v tests/intersect.sql always the name of the left column
+7.17/SR/18.b             implemented  vsql/std_2_7_17_query_expression.v tests/intersect.sql
+7.17/SR/18.c             n/a          - - enhanced nullability determination (T101)
 7.17/SR/19               container    - -
 7.17/SR/19.a             implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
 7.17/SR/19.b             implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
@@ -1493,24 +1493,24 @@
 7.17/GR/3.b.iii.2.B      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
 7.17/GR/3.b.iii.2.B.I    implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
 7.17/GR/3.b.iii.2.B.II   implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.2.C      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.2.C.I    implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.2.C.II   implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
+7.17/GR/3.b.iii.2.C      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql,tests/intersect.sql
+7.17/GR/3.b.iii.2.C.I    implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql,tests/intersect.sql
+7.17/GR/3.b.iii.2.C.II   implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql,tests/intersect.sql
 7.17/GR/3.b.iii.3        implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
 7.17/GR/3.b.iii.3.A      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
 7.17/GR/3.b.iii.3.B      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
-7.17/GR/3.b.iii.3.C      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql
+7.17/GR/3.b.iii.3.C      implemented  vsql/std_2_7_17_query_expression.v tests/union-except.sql,tests/intersect.sql
 7.17/GR/4                container    - -
 7.17/GR/4.a              n/a          - - updatable unions (T111)
-7.17/GR/4.b              n/a          - - INTERSECT (F302)
-7.17/GR/4.b.i            n/a          - - INTERSECT (F302)
-7.17/GR/4.b.i.1          n/a          - - INTERSECT (F302)
-7.17/GR/4.b.i.2          n/a          - - INTERSECT (F302)
-7.17/GR/4.b.i.3          n/a          - - INTERSECT (F302)
-7.17/GR/4.b.i.4          n/a          - - INTERSECT (F302)
-7.17/GR/4.b.ii           n/a          - - INTERSECT (F302)
-7.17/GR/4.b.ii.1         n/a          - - INTERSECT (F302)
-7.17/GR/4.b.ii.2         n/a          - - INTERSECT (F302)
+7.17/GR/4.b              n/a          - - updatable unions (T111)
+7.17/GR/4.b.i            n/a          - - updatable unions (T111)
+7.17/GR/4.b.i.1          n/a          - - updatable unions (T111)
+7.17/GR/4.b.i.2          n/a          - - updatable unions (T111)
+7.17/GR/4.b.i.3          n/a          - - updatable unions (T111)
+7.17/GR/4.b.i.4          n/a          - - updatable unions (T111)
+7.17/GR/4.b.ii           n/a          - - updatable unions (T111)
+7.17/GR/4.b.ii.1         n/a          - - updatable unions (T111)
+7.17/GR/4.b.ii.2         n/a          - - updatable unions (T111)
 7.17/GR/5                implemented  vsql/std_2_7_17_query_expression.v tests/order.sql
 7.17/GR/5.a              untestable   - - the order of the rows is implementation-dependent
 7.17/GR/5.b              implemented  vsql/std_2_7_17_query_expression.v tests/order.sql
@@ -1538,9 +1538,9 @@
 7.17/CR/4                n/a          - - recursive queries (T132)
 7.17/CR/5                implemented  vsql/std_2_7_17_query_expression.y tests/flagging.sql
 7.17/CR/6                n/a          - - explicit tables (F661)
-7.17/CR/7                n/a          - - INTERSECT (F302)
+7.17/CR/7                implemented  vsql/std_2_7_17_query_expression.y tests/intersect.sql
 7.17/CR/8                n/a          - - CORRESPONDING (F301)
-7.17/CR/9                implemented  vsql/std_2_7_17_query_expression.y tests/flagging.sql
+7.17/CR/9                implemented  vsql/std_2_7_17_query_expression.y tests/flagging.sql,tests/intersect.sql
 7.17/CR/10               implemented  vsql/std_2_7_17_query_expression.y tests/flagging.sql
 7.17/CR/11               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
 7.17/CR/12               implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql

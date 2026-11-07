@@ -4,9 +4,8 @@
 //
 // Specify a table.
 //
-// There's no WITH (T121), INTERSECT (F302), CORRESPONDING (F301), explicit
-// table (F661) or FETCH NEXT (#331). LIMIT isn't in the standard, see
-// limit_clause.
+// There's no WITH (T121), CORRESPONDING (F301), explicit table (F661) or FETCH
+// NEXT (#331). LIMIT isn't in the standard, see limit_clause.
 
 // A query_expression is either a parenthesized_query_expression or a
 // nonparenthesized_query_expression, so that a query_expression in parentheses
@@ -177,6 +176,7 @@ query_expression_clauses:
 nonparenthesized_query_expression:
   simple_table { $$.v = QueryExpression{body: $1.v as SimpleTable} }
 | query_set_operation { $$.v = QueryExpression{body: $1.v as SimpleTable} }
+| query_intersect_operation { $$.v = QueryExpression{body: $1.v as SimpleTable} }
 | query_expression_with_clauses { $$.v = $1.v as QueryExpression }
 
 query_expression_body:
@@ -209,6 +209,32 @@ query_set_operator:
 
 query_term:
   query_primary { $$.v = $1.v as SimpleTable }
+| query_intersect_operation { $$.v = $1.v as SimpleTable }
+
+// INTERSECT is a query_term, so it's evaluated before a UNION or EXCEPT on
+// either side of it. "a UNION b INTERSECT c" is "a UNION (b INTERSECT c)".
+query_intersect_operation:
+  query_term intersect_operator query_primary {
+    operator := $2.v as QuerySetOperator
+    $$.v = new_set_operation($1.v as SimpleTable, operator.op, operator.all,
+      $3.v as SimpleTable)
+  }
+
+// Without ALL or DISTINCT, it's DISTINCT. INTERSECT is flagged with F302, and
+// INTERSECT DISTINCT also with T551.
+//
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 6
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Conformance Rules, 7 and 9
+intersect_operator:
+  INTERSECT {
+    flag(mut yylex, 'F302')
+    $$.v = QuerySetOperator{'INTERSECT', false}
+  }
+| INTERSECT set_quantifier {
+    flag(mut yylex, 'F302')
+    flag_if(mut yylex, $2.v as bool, 'T551')
+    $$.v = QuerySetOperator{'INTERSECT', !($2.v as bool)}
+  }
 
 query_primary:
   simple_table { $$.v = $1.v as SimpleTable }

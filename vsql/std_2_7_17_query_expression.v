@@ -39,18 +39,18 @@ fn (e QueryExpression) pstr(params map[string]Value) string {
 	return s
 }
 
-// QuerySetOperator is the UNION or EXCEPT of a SetOperation.
+// QuerySetOperator is the UNION, EXCEPT or INTERSECT of a SetOperation.
 struct QuerySetOperator {
 	op  string
 	all bool
 }
 
-// SetOperation is "<left> UNION <right>" or "<left> EXCEPT <right>". Each side
-// is a reference because it can contain another SetOperation, and V stores a
-// sum type's value inline.
+// SetOperation is "<left> UNION <right>", "<left> EXCEPT <right>" or
+// "<left> INTERSECT <right>". Each side is a reference because it can contain
+// another SetOperation, and V stores a sum type's value inline.
 struct SetOperation {
 	left  &QueryExpression
-	op    string // UNION or EXCEPT
+	op    string // UNION, EXCEPT or INTERSECT
 	all   bool   // DISTINCT is the default (Syntax Rule 6).
 	right &QueryExpression
 }
@@ -59,14 +59,23 @@ fn (e SetOperation) pstr(params map[string]Value) string {
 	op := if e.all { '${e.op} ALL' } else { e.op }
 
 	// A set operation is left associative, so one on the right must have been in
-	// parentheses.
+	// parentheses (or is an INTERSECT, where they don't change anything). A UNION
+	// or EXCEPT on the left of an INTERSECT must have been in parentheses, since
+	// INTERSECT is evaluated first.
 	right := if e.right.body is SetOperation {
 		'(${e.right.pstr(params)})'
 	} else {
 		e.right.pstr(params)
 	}
 
-	return '${e.left.pstr(params)} ${op} ${right}'
+	left_body := e.left.body
+	left := if e.op == 'INTERSECT' && left_body is SetOperation && left_body.op != 'INTERSECT' {
+		'(${e.left.pstr(params)})'
+	} else {
+		e.left.pstr(params)
+	}
+
+	return '${left} ${op} ${right}'
 }
 
 fn new_set_operation(left SimpleTable, op string, all bool, right SimpleTable) SimpleTable {
@@ -410,11 +419,11 @@ fn row_count(clause string, value Value) !i64 {
 	return value.as_int()
 }
 
-// A SetOperationOperation combines the rows of two queries for UNION or EXCEPT.
-// Each column has the combined type of that column in both queries (9.5), and
-// the name of that column in the left query.
+// A SetOperationOperation combines the rows of two queries for UNION, EXCEPT or
+// INTERSECT. Each column has the combined type of that column in both queries
+// (9.5), and the name of that column in the left query.
 //
-// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 16.b and 19.b
+// ISO/IEC 9075-2:2016(E), 7.17, <query expression>, Syntax Rules, 16.b, 18 and 19.b
 struct SetOperationOperation {
 	op      string
 	all     bool
@@ -471,6 +480,8 @@ fn (o &SetOperationOperation) columns() Columns {
 //   UNION DISTINCT:  once, if m > 0 or n > 0
 //   EXCEPT ALL:      max(m - n, 0) times
 //   EXCEPT DISTINCT: once, if m > 0 and n = 0
+//   INTERSECT ALL:      min(m, n) times
+//   INTERSECT DISTINCT: once, if m > 0 and n > 0
 //
 // Rows are duplicates when every value is equal, where NULLs are equal to each
 // other (4.1.5).
@@ -493,24 +504,26 @@ fn (mut o SetOperationOperation) execute(_ []Row) ![]Row {
 			}
 		}
 	} else {
-		// Each row on the right removes one duplicate from the left for EXCEPT
-		// ALL, or every duplicate for EXCEPT DISTINCT.
-		mut removed := []bool{len: right.len}
+		// Each left row is matched with a duplicate on the right. For ALL, each
+		// row on the right can only be matched once, so it removes one duplicate
+		// from the left for EXCEPT, or keeps one for INTERSECT. Otherwise, it
+		// removes (or keeps) every duplicate, and only the first one is kept.
+		mut matched := []bool{len: right.len}
 		for values in left {
 			if !o.all && find_duplicate_row(o.conn, kept, values)! >= 0 {
 				continue
 			}
 
-			mut is_removed := false
+			mut is_matched := false
 			for j, other in right {
-				if !removed[j] && is_duplicate_row(o.conn, values, other)! {
-					removed[j] = o.all
-					is_removed = true
+				if !matched[j] && is_duplicate_row(o.conn, values, other)! {
+					matched[j] = o.all
+					is_matched = true
 					break
 				}
 			}
 
-			if !is_removed {
+			if is_matched == (o.op == 'INTERSECT') {
 				kept << values
 			}
 		}

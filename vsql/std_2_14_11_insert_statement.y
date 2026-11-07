@@ -76,6 +76,11 @@ insert_query_expression:
       body: $1.v as SimpleTable
     }
   }
+| insert_query_intersect_operation {
+    $$.v = QueryExpression{
+      body: $1.v as SimpleTable
+    }
+  }
 | insert_query_body query_expression_clauses {
     $$.v = QueryExpression{
       ...$2.v as QueryExpression
@@ -84,11 +89,22 @@ insert_query_expression:
   }
 
 insert_query_body:
-  insert_query_primary { $$.v = $1.v as SimpleTable }
+  insert_query_term { $$.v = $1.v as SimpleTable }
 | insert_query_set_operation { $$.v = $1.v as SimpleTable }
 
 insert_query_set_operation:
   insert_query_body query_set_operator query_term {
+    operator := $2.v as QuerySetOperator
+    $$.v = new_set_operation($1.v as SimpleTable, operator.op, operator.all,
+      $3.v as SimpleTable)
+  }
+
+insert_query_term:
+  insert_query_primary { $$.v = $1.v as SimpleTable }
+| insert_query_intersect_operation { $$.v = $1.v as SimpleTable }
+
+insert_query_intersect_operation:
+  insert_query_term intersect_operator query_primary {
     operator := $2.v as QuerySetOperator
     $$.v = new_set_operation($1.v as SimpleTable, operator.op, operator.all,
       $3.v as SimpleTable)

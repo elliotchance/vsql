@@ -189,6 +189,14 @@ can't contain another aggregate function (``AVG(MAX(x))`` is a ``42601``
 error). An aggregate function also can't be used in a ``WHERE`` clause or in
 ``VALUES``, because there are no groups of rows there.
 
+An aggregate function can be followed by ``FILTER (WHERE condition)`` to only
+use the rows where the condition is true. For example, ``COUNT(*) FILTER (WHERE
+price > 10e0)`` counts the rows with a price over 10. The condition can use any
+column, but it can't contain an aggregate function, a subquery or a column of
+an outer query (all ``42601`` errors). ``FILTER`` is in the SQL standard
+(T612), PostgreSQL and SQLite. In MySQL, SQL Server and Oracle, use a ``CASE``
+in the value instead, such as ``SUM(CASE WHEN price > 10e0 THEN price END)``.
+
 The examples use this table:
 
 .. code-block:: sql
@@ -274,6 +282,10 @@ those that have a non-``NULL`` ``price``.
   SELECT city, COUNT(*) FROM products GROUP BY city;
   -- CITY: New York COL2: 2
   -- CITY: San Francisco COL2: 3
+
+  SELECT city, COUNT(*) FILTER (WHERE price > 10e0) FROM products GROUP BY city;
+  -- CITY: New York COL2: 1
+  -- CITY: San Francisco COL2: 1
 
 **Compatibility**
 

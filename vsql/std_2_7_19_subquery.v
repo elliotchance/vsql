@@ -65,7 +65,11 @@ fn (e Subquery) plan(mut c Compiler) !SubqueryPlan {
 		return sqlstate_42601('a subquery cannot be used in ${c.restricted}')
 	}
 
+	// This is also the <filter clause> of an aggregate function (see
+	// compile_filter).
+	//
 	// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 1
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 8
 	if c.in_aggregate {
 		return sqlstate_42601('a subquery cannot be used in an aggregate function')
 	}

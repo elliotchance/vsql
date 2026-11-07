@@ -13,12 +13,14 @@ import math
 
 type CharacterValueFunction = CharacterSubstringFunction
 	| OverlayFunction
+	| RegularExpressionSubstringFunction
 	| RoutineInvocation // <fold>
 	| TrimFunction
 
 fn (e CharacterValueFunction) pstr(params map[string]Value) string {
 	return match e {
-		RoutineInvocation, CharacterSubstringFunction, OverlayFunction, TrimFunction {
+		RoutineInvocation, CharacterSubstringFunction, OverlayFunction,
+		RegularExpressionSubstringFunction, TrimFunction {
 			e.pstr(params)
 		}
 	}
@@ -26,7 +28,8 @@ fn (e CharacterValueFunction) pstr(params map[string]Value) string {
 
 fn (e CharacterValueFunction) compile(mut c Compiler) !CompileResult {
 	match e {
-		CharacterSubstringFunction, OverlayFunction, TrimFunction, RoutineInvocation {
+		CharacterSubstringFunction, OverlayFunction, RegularExpressionSubstringFunction,
+		TrimFunction, RoutineInvocation {
 			return e.compile(mut c)!
 		}
 	}
@@ -364,6 +367,137 @@ fn overlay_after(from i64, length i64) i64 {
 
 // character and source are references because a CharacterValueExpression can
 // contain a TrimFunction, and V stores a sum type's value inline.
+// RegularExpressionSubstringFunction is
+// "SUBSTRING(value SIMILAR pattern ESCAPE escape)". The pattern is split into
+// three SIMILAR TO patterns by the escape character followed by a double quote,
+// and the result is the part of value that matches the middle one. The fields
+// are references for the same reason as CharacterSubstringFunction.
+//
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Format
+// ISO/IEC 9075-2:2016(E), 4.2.3.2, Operators that operate on character strings and return character strings
+struct RegularExpressionSubstringFunction {
+	value   &CharacterValueExpression
+	pattern &CharacterValueExpression
+	escape  &CharacterValueExpression
+}
+
+fn new_regular_expression_substring_function(value CharacterValueExpression, pattern CharacterValueExpression, escape CharacterValueExpression) RegularExpressionSubstringFunction {
+	return RegularExpressionSubstringFunction{&value, &pattern, &escape}
+}
+
+fn (e RegularExpressionSubstringFunction) pstr(params map[string]Value) string {
+	return 'SUBSTRING(${e.value.pstr(params)} SIMILAR ${e.pattern.pstr(params)} ESCAPE ${e.escape.pstr(params)})'
+}
+
+// The value, the pattern and the escape character must be character strings,
+// and the result has the type of the value as a CHARACTER VARYING.
+//
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, Syntax Rules, 7
+fn (e RegularExpressionSubstringFunction) compile(mut c Compiler) !CompileResult {
+	compiled_value := e.value.compile(mut c)!
+	compiled_pattern := e.pattern.compile(mut c)!
+	compiled_escape := e.escape.compile(mut c)!
+
+	if !compiled_value.typ.typ.is_string() || !compiled_pattern.typ.typ.is_string()
+		|| !compiled_escape.typ.typ.is_string() {
+		return sqlstate_42883('function does not exist: SUBSTRING(${compiled_value.typ} SIMILAR ${compiled_pattern.typ} ESCAPE ${compiled_escape.typ})')
+	}
+	typ := varying_string_type('SUBSTRING', compiled_value.typ)!
+
+	return CompileResult{
+		run:          fn [compiled_value, compiled_pattern, compiled_escape, typ] (mut conn Connection, data Row, params map[string]Value) !Value {
+			value := compiled_value.run(mut conn, data, params)!
+			pattern := compiled_pattern.run(mut conn, data, params)!
+			escape := compiled_escape.run(mut conn, data, params)!
+
+			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 6.b
+			if value.is_null || pattern.is_null || escape.is_null {
+				return new_null_value(.is_varchar).with_type(typ)
+			}
+
+			// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 6.c
+			result, found := similar_substring(value.string_value(), pattern.string_value(),
+				escape_character(escape)!)!
+			if !found {
+				return new_null_value(.is_varchar).with_type(typ)
+			}
+
+			return new_varchar_value(result).with_type(typ)
+		}
+		typ:          typ
+		contains_agg: compiled_value.contains_agg || compiled_pattern.contains_agg
+			|| compiled_escape.contains_agg
+	}
+}
+
+// similar_substring returns the part of value that matches the middle of the
+// three parts of pattern. found is false if value doesn't match the whole
+// pattern.
+//
+// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 6.d-6.h
+fn similar_substring(value string, pattern string, escape rune) !(string, bool) {
+	// The pattern must have exactly two of the escape character followed by a
+	// double quote.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 6.d
+	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 6.e
+	chars := pattern.runes()
+	mut parts := [][]rune{len: 1}
+	mut i := 0
+	for i < chars.len {
+		if chars[i] == escape && i + 1 < chars.len && chars[i + 1] == `"` {
+			parts << []rune{}
+			i += 2
+			continue
+		}
+		parts[parts.len - 1] << chars[i]
+		i++
+	}
+	if parts.len != 3 {
+		return sqlstate_2200c()
+	}
+	r1, r2, r3 := parts[0].string(), parts[1].string(), parts[2].string()
+
+	// Each part is a <regular expression>, or empty.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 6.f
+	p1 := parse_similar_pattern(r1, escape)!
+	p2 := parse_similar_pattern(r2, escape)!
+	p3 := parse_similar_pattern(r3, escape)!
+
+	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 6.g
+	if !parse_similar_pattern(r1 + r2 + r3, escape)!.matches(value) {
+		return '', false
+	}
+
+	// The "(R2R3)" only groups the two parts, so it's the same as R2 || R3,
+	// which is also a zero-length pattern when both are empty (a "()" is not a
+	// valid <regular expression>).
+	p23 := parse_similar_pattern(r2 + r3, escape)!
+
+	// S1 is the shortest start of value that matches R1 where the rest matches
+	// R2 || R3, and S3 is the shortest end of the rest that matches R3 where
+	// what's before it matches R2. If the parts only match when they are
+	// together (such as R1 being "a|b"), nothing is found and it's the same as
+	// not matching.
+	//
+	// ISO/IEC 9075-2:2016(E), 6.32, <string value function>, General Rules, 6.h
+	s := value.runes()
+	for start in 0 .. s.len + 1 {
+		if !p1.matches(s[..start].string()) || !p23.matches(s[start..].string()) {
+			continue
+		}
+		s23 := s[start..]
+		for end := s23.len; end >= 0; end-- {
+			if p3.matches(s23[end..].string()) && p2.matches(s23[..end].string()) {
+				return s23[..end].string(), true
+			}
+		}
+	}
+
+	return '', false
+}
+
 struct TrimFunction {
 	// LEADING, TRAILING or BOTH
 	specification string

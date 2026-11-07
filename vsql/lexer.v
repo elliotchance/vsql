@@ -90,6 +90,7 @@ type YYSym = AddColumnDefinition
 	| QuerySetOperator
 	| QuerySpecification
 	| ReferentialConstraintDefinition
+	| RegularExpressionSubstringFunction
 	| RoutineInvocation
 	| RowValueConstructor
 	| RowValueConstructorPredicand

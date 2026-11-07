@@ -1412,12 +1412,12 @@
 6.32/SR/4.b              impl-defined vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_substring.sql the character set is always UTF8, and its collation is the only one
 6.32/SR/5                untestable   - - a character string is always UTF8
 6.32/SR/6                implemented  vsql/std_2_6_32_string_value_function.y tests/std_2_6_32_substring.sql
-6.32/SR/7                n/a          - - SUBSTRING SIMILAR (T581)
-6.32/SR/7.a              n/a          - - SUBSTRING SIMILAR (T581)
+6.32/SR/7                implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
+6.32/SR/7.a              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
 6.32/SR/7.b              container    - -
-6.32/SR/7.b.i            n/a          - - SUBSTRING SIMILAR (T581)
-6.32/SR/7.b.ii           n/a          - - SUBSTRING SIMILAR (T581)
-6.32/SR/7.c              n/a          - - SUBSTRING SIMILAR (T581)
+6.32/SR/7.b.i            implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
+6.32/SR/7.b.ii           n/a          - - LOBs (T041)
+6.32/SR/7.c              impl-defined vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql the character set is always UTF8, and its collation is the only one
 6.32/SR/8                n/a          - - SUBSTRING_REGEX (F844)
 6.32/SR/8.a              n/a          - - SUBSTRING_REGEX (F844)
 6.32/SR/8.b              container    - -
@@ -1552,18 +1552,18 @@
 6.32/GR/5.d              container    - -
 6.32/GR/5.d.i            n/a          - - NORMALIZE (T061)
 6.32/GR/5.d.ii           n/a          - - NORMALIZE (T061)
-6.32/GR/6                n/a          - - SUBSTRING SIMILAR (T581)
-6.32/GR/6.a              n/a          - - SUBSTRING SIMILAR (T581)
-6.32/GR/6.b              n/a          - - SUBSTRING SIMILAR (T581)
-6.32/GR/6.c              n/a          - - SUBSTRING SIMILAR (T581)
-6.32/GR/6.d              n/a          - - SUBSTRING SIMILAR (T581)
-6.32/GR/6.e              n/a          - - SUBSTRING SIMILAR (T581)
-6.32/GR/6.f              n/a          - - SUBSTRING SIMILAR (T581)
-6.32/GR/6.g              n/a          - - SUBSTRING SIMILAR (T581)
-6.32/GR/6.h              n/a          - - SUBSTRING SIMILAR (T581)
-6.32/GR/6.h.i            n/a          - - SUBSTRING SIMILAR (T581)
-6.32/GR/6.h.ii           n/a          - - SUBSTRING SIMILAR (T581)
-6.32/GR/6.h.iii          n/a          - - SUBSTRING SIMILAR (T581)
+6.32/GR/6                implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
+6.32/GR/6.a              definition   - -
+6.32/GR/6.b              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
+6.32/GR/6.c              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
+6.32/GR/6.d              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
+6.32/GR/6.e              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
+6.32/GR/6.f              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
+6.32/GR/6.g              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
+6.32/GR/6.h              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
+6.32/GR/6.h.i            implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
+6.32/GR/6.h.ii           implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
+6.32/GR/6.h.iii          implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_regular_expression_substring.sql
 6.32/GR/7                implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_32_fold.sql
 6.32/GR/7.a              definition   - -
 6.32/GR/7.b              implemented  vsql/std_2_6_32_string_value_function.v tests/std_2_6_13_cast_null.sql
@@ -1659,9 +1659,9 @@
 6.32/GR/17.e.iii         n/a          - - row pattern recognition (R010)
 6.32/GR/17.e.iv          n/a          - - row pattern recognition (R010)
 6.32/CR/1                n/a          - - row pattern recognition (R010)
-6.32/CR/2                n/a          - - SUBSTRING SIMILAR (T581)
-6.32/CR/3                implemented  vsql/std_2_6_32_string_value_function.y tests/std_2_6_32_overlay.sql
-6.32/CR/4                n/a          - - binary strings (T021)
+6.32/CR/2                implemented  vsql/std_2_6_32_string_value_function.y tests/std_1_8_5_flagging.sql
+6.32/CR/3                n/a          - - OVERLAY (T312)
+6.32/CR/4                n/a          - - OVERLAY (T312)
 6.32/CR/5                n/a          - - binary strings (T022)
 6.32/CR/6                n/a          - - transliteration (F695)
 6.32/CR/7                n/a          - - transcoding (F695)

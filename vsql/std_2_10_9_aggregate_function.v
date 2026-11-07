@@ -10,12 +10,16 @@ import math
 //
 // ISO/IEC 9075-2:2016(E), 4.16 (Data analysis operations involving tables)
 
-type AggregateFunction = AggregateFunctionCount | ListaggSetFunction | RoutineInvocation
+type AggregateFunction = AggregateFunctionCount
+	| ListaggSetFunction
+	| OrderedSetFunction
+	| RoutineInvocation
 
 fn (e AggregateFunction) pstr(params map[string]Value) string {
 	return match e {
 		AggregateFunctionCount { 'COUNT(*)${filter_pstr(e.filter, params)}' }
 		ListaggSetFunction { e.pstr(params) }
+		OrderedSetFunction { e.pstr(params) }
 		RoutineInvocation { e.pstr(params) }
 	}
 }
@@ -71,6 +75,9 @@ fn (e AggregateFunction) compile(mut c Compiler) !CompileResult {
 		ListaggSetFunction {
 			return e.compile(mut c)!
 		}
+		OrderedSetFunction {
+			return e.compile(mut c)!
+		}
 		RoutineInvocation {
 			return e.compile(mut c)!
 		}
@@ -82,10 +89,18 @@ struct AggregateFunctionCount {
 }
 
 // with_filter adds the <search condition> of a <filter clause> to a general set
-// function or a LISTAGG.
+// function or an ordered set function.
 fn with_filter(e AggregateFunction, filter BooleanValueExpression) AggregateFunction {
 	if e is ListaggSetFunction {
 		return ListaggSetFunction{
+			...e
+			filter: &BooleanValueExpression{
+				...filter
+			}
+		}
+	}
+	if e is OrderedSetFunction {
+		return OrderedSetFunction{
 			...e
 			filter: &BooleanValueExpression{
 				...filter
@@ -768,4 +783,263 @@ fn listagg_result(values []string, separator string, overflow ListaggOverflow, m
 	}
 
 	return values[..i].join(separator) + ltfp1
+}
+
+// OrderedSetFunction is a <hypothetical set function>, such as
+// "RANK(5) WITHIN GROUP (ORDER BY x)", or an <inverse distribution function>,
+// such as "PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY x)". name is the <rank
+// function type> or the <inverse distribution function type>.
+//
+// The args are non-aggregated arguments: they're evaluated once for each group,
+// like an expression of the select list, so a column must be a grouping column
+// (or an outer reference). Only the sort keys (and the filter) are aggregated.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 14
+struct OrderedSetFunction {
+	name   string
+	args   []ValueExpression
+	order  []SortSpecification
+	filter ?&BooleanValueExpression
+}
+
+fn (e OrderedSetFunction) pstr(params map[string]Value) string {
+	args := e.args.map(it.pstr(params)).join(', ')
+	order := e.order.map(it.pstr(params)).join(', ')
+
+	return '${e.name}(${args}) WITHIN GROUP (ORDER BY ${order})${filter_pstr(e.filter, params)}'
+}
+
+fn (e OrderedSetFunction) is_hypothetical() bool {
+	return e.name in ['RANK', 'DENSE_RANK', 'PERCENT_RANK', 'CUME_DIST']
+}
+
+// ordered_set_function_type is the declared type of the result. RANK and
+// DENSE_RANK are an INTEGER, like COUNT. The others are a DOUBLE PRECISION,
+// since there's no decimal floating-point type (or intervals).
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 10.d and 12.e
+fn ordered_set_function_type(name string) Type {
+	if name in ['RANK', 'DENSE_RANK'] {
+		return new_type('INTEGER', 0, 0)
+	}
+
+	return new_type('DOUBLE PRECISION', 0, 0)
+}
+
+fn (e OrderedSetFunction) compile(mut c Compiler) !CompileResult {
+	name := e.pstr(c.params)
+
+	// The non-aggregated arguments are compiled before the sort keys, so that
+	// their columns don't decide which query it's an aggregate of.
+	mut arg_types := []Type{}
+	mut contains_agg := false
+	for arg in e.args {
+		compiled := arg.compile(mut c)!
+		arg_types << compiled.typ
+		if compiled.contains_agg {
+			contains_agg = true
+		}
+	}
+
+	// Like the argument of a general set function, the sort keys can use any
+	// column of a grouped query. Nothing in the function can contain a subquery
+	// (see Subquery.plan) or an aggregate function, and there are no window
+	// functions.
+	//
+	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 10.a and 12.b
+	in_aggregate := c.in_aggregate
+	aggregated_columns := c.aggregated_columns
+	c.in_aggregate = true
+	c.aggregated_columns = []
+	defer {
+		c.in_aggregate = in_aggregate
+		c.aggregated_columns = aggregated_columns
+	}
+
+	mut key_types := []Type{}
+	for spec in e.order {
+		compiled := spec.expr.compile(mut c)!
+		key_types << compiled.typ
+		if compiled.contains_agg {
+			contains_agg = true
+		}
+	}
+	if contains_agg {
+		return sqlstate_42601('nested set function: ${name}')
+	}
+
+	if e.is_hypothetical() {
+		// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 10.b and 10.c
+		if arg_types.len != key_types.len {
+			return sqlstate_42601('${e.name} has ${arg_types.len} ${pluralize(arg_types.len, 'argument')} but ${key_types.len} ${pluralize(key_types.len, 'sort key')}')
+		}
+		for i, arg_type in arg_types {
+			if !comparable_types(arg_type.typ, key_types[i].typ) {
+				return sqlstate_42883('function does not exist: ${e.name}(${arg_types.map(it.str()).join(', ')}) WITHIN GROUP (ORDER BY ${key_types.map(it.str()).join(', ')})')
+			}
+		}
+	} else {
+		// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 12.a, 12.c and 12.d
+		if key_types.len != 1 {
+			return sqlstate_42601('${e.name} must have one sort key')
+		}
+		if !arg_types[0].typ.is_number() || !key_types[0].typ.is_number() {
+			return sqlstate_42883('function does not exist: ${e.name}(${arg_types[0]}) WITHIN GROUP (ORDER BY ${key_types[0]})')
+		}
+	}
+
+	compile_filter(mut c, e.filter, name)!
+
+	return aggregate_result(mut c, AggregateFunction(e), ordered_set_function_type(e.name),
+		in_aggregate)!
+}
+
+// eval returns the result for the rows of a group (after its filter), and
+// whether a null value was eliminated. The arguments are evaluated on group_row,
+// which has the grouping columns of the group.
+fn (e OrderedSetFunction) eval(mut c Compiler, group_row Row, rows []Row) !(Value, bool) {
+	mut args := []Value{}
+	for arg in e.args {
+		args << arg.compile(mut c)!.run(mut c.conn, group_row, c.params)!
+	}
+
+	// The rows are sorted first, so their sort keys are in order. Rows that are
+	// equal for every sort key are peers.
+	mut order := new_order_operation(e.order, c.params, c.conn, []Column{}, c.tables,
+		map[string][]ValueExpression{})
+	sorted := order.execute(rows)!
+	mut compiled := []CompileResult{}
+	for spec in e.order {
+		compiled << spec.expr.compile(mut c)!
+	}
+	mut keys := [][]Value{}
+	for row in sorted {
+		mut key := []Value{}
+		for k in compiled {
+			key << k.run(mut c.conn, row, c.params)!
+		}
+		keys << key
+	}
+
+	if e.is_hypothetical() {
+		return hypothetical_set_function(c.conn, e.name, args, keys, e.order)!, false
+	}
+
+	return inverse_distribution_function(mut c.conn, e.name, args[0], keys.map(it[0]),
+		compiled[0].typ)!
+}
+
+// hypothetical_set_function is the rank of a hypothetical row with the values
+// of args (for each sort key) if it was added to the rows of the group, which
+// have the sorted sort keys keys. The rows aren't eliminated for null values.
+//
+// RANK is one more than the number of rows before it, and DENSE_RANK is one
+// more than the number of distinct rows (that aren't peers) before it.
+// PERCENT_RANK is (RANK - 1) / N, where N is the number of rows of the group,
+// or 0 when it's the only row. CUME_DIST is the number of rows before it or
+// peers of it, including itself, divided by N + 1.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 9
+fn hypothetical_set_function(conn &Connection, name string, args []Value, keys [][]Value, order []SortSpecification) !Value {
+	mut before := 0
+	mut distinct_before := 0
+	mut peers := 0
+	for i, key in keys {
+		cmp := sort_keys_cmp(conn, key, args, order)!
+		if cmp < 0 {
+			before++
+			if i == 0 || sort_keys_cmp(conn, keys[i - 1], key, order)! != 0 {
+				distinct_before++
+			}
+		} else if cmp == 0 {
+			peers++
+		} else {
+			break
+		}
+	}
+
+	n := keys.len
+	return match name {
+		'RANK' {
+			new_integer_value(before + 1)
+		}
+		'DENSE_RANK' {
+			new_integer_value(distinct_before + 1)
+		}
+		'PERCENT_RANK' {
+			new_double_precision_value(if n == 0 { 0.0 } else { f64(before) / n })
+		}
+		else {
+			// CUME_DIST
+			new_double_precision_value(f64(before + peers + 1) / (n + 1))
+		}
+	}
+}
+
+// inverse_distribution_function is the value at the fraction p of the sorted
+// values of the sort key (with the type typ), after null values are eliminated.
+// p must be from 0 to 1.
+//
+// PERCENTILE_DISC is the first value where at least that fraction of the values
+// are it or before it (its cumulative distribution). PERCENTILE_CONT is the
+// value that's p * (N - 1) positions after the first value, interpolated
+// between the values before and after that position when it isn't a whole
+// number. The interpolation is cast to the type of the sort key before it's
+// returned as a DOUBLE PRECISION, so a percentile of integers is an integer.
+// The position is calculated exactly.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 10
+fn inverse_distribution_function(mut conn Connection, name string, p Value, all_values []Value, typ Type) !(Value, bool) {
+	result_type := new_type('DOUBLE PRECISION', 0, 0)
+	null := Value{
+		typ:     result_type
+		is_null: true
+	}
+	if p.is_null {
+		return null, false
+	}
+
+	fraction := p.as_numeric()!
+	one := new_numeric_from_string('1')
+	if fraction.is_negative() || fraction.greater_than(one) {
+		return sqlstate_22003()
+	}
+
+	values := non_null_values(all_values)
+	null_eliminated := values.len < all_values.len
+	if values.len == 0 {
+		return null, null_eliminated
+	}
+
+	n := values.len
+	if name == 'PERCENTILE_DISC' {
+		// The cumulative distribution of a value is the number of values up to
+		// its last peer, divided by N. It's at least the fraction when that
+		// number is at least fraction * N.
+		at_least := fraction.multiply(new_numeric_from_string(n.str()))
+		for i, value in values {
+			if i + 1 < n && compare(conn, value, values[i + 1])! == .is_equal {
+				continue
+			}
+			if !new_numeric_from_string((i + 1).str()).less_than(at_least) {
+				return cast(mut conn, name, value, result_type)!, null_eliminated
+			}
+		}
+	}
+
+	// PERCENTILE_CONT. The position isn't negative, so truncating it is the same
+	// as its floor.
+	position := fraction.multiply(new_numeric_from_string((n - 1).str()))
+	row0 := position.trunc()
+	factor := position.subtract(row0).f64()
+	y0 := values[row0.i64()]
+	if factor == 0 {
+		return cast(mut conn, name, y0, result_type)!, null_eliminated
+	}
+
+	y1 := values[row0.i64() + 1]
+	interpolated := y0.as_f64()! + factor * (y1.as_f64()! - y0.as_f64()!)
+	exact := cast(mut conn, name, new_double_precision_value(interpolated), typ)!
+
+	return cast(mut conn, name, exact, result_type)!, null_eliminated
 }

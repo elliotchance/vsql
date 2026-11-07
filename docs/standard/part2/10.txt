@@ -670,23 +670,23 @@
 10.9/SR/7.m              n/a          - - FUSION and INTERSECTION (S275)
 10.9/SR/7.n              n/a          - - FUSION and INTERSECTION (S275)
 10.9/SR/8                implemented  vsql/std_2_10_9_aggregate_function.v,vsql/std_2_7_19_subquery.v tests/std_2_10_9_aggregate_filter.sql
-10.9/SR/9                container    - -
-10.9/SR/9.a              n/a          - - window functions (T611)
-10.9/SR/9.b              definition   - -
-10.9/SR/9.c              container    - -
-10.9/SR/9.c.i            impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql INTEGER
-10.9/SR/9.c.ii           container    - -
-10.9/SR/9.c.ii.1         n/a          - - DECFLOAT (T076)
-10.9/SR/9.c.ii.2         impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql DOUBLE PRECISION
-10.9/SR/10               n/a          - - hypothetical set functions (T612)
-10.9/SR/10.a             n/a          - - hypothetical set functions (T612)
-10.9/SR/10.b             n/a          - - hypothetical set functions (T612)
-10.9/SR/10.c             n/a          - - hypothetical set functions (T612)
-10.9/SR/10.c.i           n/a          - - hypothetical set functions (T612)
-10.9/SR/10.c.ii          n/a          - - hypothetical set functions (T612)
+10.9/SR/9                n/a          - - binary set functions (T621)
+10.9/SR/9.a              n/a          - - binary set functions (T621)
+10.9/SR/9.b              n/a          - - binary set functions (T621)
+10.9/SR/9.c              n/a          - - binary set functions (T621)
+10.9/SR/9.c.i            n/a          - - binary set functions (T621)
+10.9/SR/9.c.ii           n/a          - - binary set functions (T621)
+10.9/SR/9.c.ii.1         n/a          - - binary set functions (T621)
+10.9/SR/9.c.ii.2         n/a          - - binary set functions (T621)
+10.9/SR/10               implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/SR/10.a             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/SR/10.b             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/SR/10.c             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/SR/10.c.i           implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql there's only one collation
+10.9/SR/10.c.ii          implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
 10.9/SR/10.d             container    - -
-10.9/SR/10.d.i           n/a          - - hypothetical set functions (T612)
-10.9/SR/10.d.ii          n/a          - - hypothetical set functions (T612)
+10.9/SR/10.d.i           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql INTEGER
+10.9/SR/10.d.ii          impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql DOUBLE PRECISION
 10.9/SR/11               implemented  vsql/std_2_10_9_aggregate_function.y,vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_listagg.sql
 10.9/SR/11.a             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_listagg.sql
 10.9/SR/11.b             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_listagg.sql
@@ -695,19 +695,19 @@
 10.9/SR/11.e             implemented  vsql/std_2_10_9_aggregate_function.v vsql/sql_test.v
 10.9/SR/11.f             implemented  vsql/std_2_10_9_aggregate_function.y tests/std_2_10_9_listagg.sql
 10.9/SR/11.g             implemented  vsql/std_2_10_9_aggregate_function.y,vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_listagg.sql,vsql/sql_test.v
-10.9/SR/12               n/a          - - inverse distribution functions (T612)
-10.9/SR/12.a             n/a          - - inverse distribution functions (T612)
-10.9/SR/12.b             n/a          - - inverse distribution functions (T612)
-10.9/SR/12.c             n/a          - - inverse distribution functions (T612)
-10.9/SR/12.d             n/a          - - inverse distribution functions (T612)
-10.9/SR/12.e             n/a          - - inverse distribution functions (T612)
-10.9/SR/12.e.i           n/a          - - inverse distribution functions (T612)
-10.9/SR/12.e.ii          n/a          - - inverse distribution functions (T612)
-10.9/SR/12.e.iii         n/a          - - inverse distribution functions (T612)
+10.9/SR/12               implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/SR/12.a             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/SR/12.b             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/SR/12.c             definition   - -
+10.9/SR/12.d             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/SR/12.e             container    - -
+10.9/SR/12.e.i           impl-defined vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql DOUBLE PRECISION
+10.9/SR/12.e.ii          n/a          - - decimal floating-point isn't supported
+10.9/SR/12.e.iii         n/a          - - intervals (F052)
 10.9/SR/13               n/a          - - ARRAY_AGG (S098)
 10.9/SR/13.a             n/a          - - ARRAY_AGG (S098)
 10.9/SR/13.b             n/a          - - ARRAY_AGG (S098)
-10.9/SR/14               definition   - -
+10.9/SR/14               implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
 10.9/SR/15               n/a          - - row pattern recognition (R010)
 10.9/GR/1                container    - -
 10.9/GR/1.a              n/a          - - row pattern recognition (R010)
@@ -762,59 +762,59 @@
 10.9/GR/8.a              implemented  vsql/std_2_7_13_group_by_clause.v tests/std_2_10_9_statistical_set_functions.sql
 10.9/GR/8.b              implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
 10.9/GR/8.c              container    - -
-10.9/GR/8.c.i            implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.ii           implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.iii          implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.iv           implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.v            implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.vi           implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.vii          implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.viii         implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.ix           implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.ix.1         implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.ix.2         implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.x            implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.x.1          implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.x.2          implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.x.3          implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.xi           implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.xi.1         implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.xi.2         implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.xi.3         implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.xii          implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.xii.1        implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.xii.2        implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.xiii         implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.xiii.1       implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/8.c.xiii.2       implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_statistical_set_functions.sql
-10.9/GR/9                n/a          - - hypothetical set functions (T612)
-10.9/GR/9.a              n/a          - - hypothetical set functions (T612)
-10.9/GR/9.b              n/a          - - hypothetical set functions (T612)
-10.9/GR/9.c              n/a          - - hypothetical set functions (T612)
-10.9/GR/9.d              n/a          - - hypothetical set functions (T612)
-10.9/GR/9.e              n/a          - - hypothetical set functions (T612)
-10.9/GR/9.f              n/a          - - hypothetical set functions (T612)
-10.9/GR/9.g              n/a          - - hypothetical set functions (T612)
-10.9/GR/10               n/a          - - inverse distribution functions (T612)
-10.9/GR/10.a             n/a          - - inverse distribution functions (T612)
-10.9/GR/10.b             n/a          - - inverse distribution functions (T612)
-10.9/GR/10.c             n/a          - - inverse distribution functions (T612)
-10.9/GR/10.d             n/a          - - inverse distribution functions (T612)
-10.9/GR/10.e             n/a          - - inverse distribution functions (T612)
-10.9/GR/10.f             n/a          - - inverse distribution functions (T612)
-10.9/GR/10.g             n/a          - - inverse distribution functions (T612)
+10.9/GR/8.c.i            n/a          - - binary set functions (T621)
+10.9/GR/8.c.ii           n/a          - - binary set functions (T621)
+10.9/GR/8.c.iii          n/a          - - binary set functions (T621)
+10.9/GR/8.c.iv           n/a          - - binary set functions (T621)
+10.9/GR/8.c.v            n/a          - - binary set functions (T621)
+10.9/GR/8.c.vi           n/a          - - binary set functions (T621)
+10.9/GR/8.c.vii          n/a          - - binary set functions (T621)
+10.9/GR/8.c.viii         n/a          - - binary set functions (T621)
+10.9/GR/8.c.ix           n/a          - - binary set functions (T621)
+10.9/GR/8.c.ix.1         n/a          - - binary set functions (T621)
+10.9/GR/8.c.ix.2         n/a          - - binary set functions (T621)
+10.9/GR/8.c.x            n/a          - - binary set functions (T621)
+10.9/GR/8.c.x.1          n/a          - - binary set functions (T621)
+10.9/GR/8.c.x.2          n/a          - - binary set functions (T621)
+10.9/GR/8.c.x.3          n/a          - - binary set functions (T621)
+10.9/GR/8.c.xi           n/a          - - binary set functions (T621)
+10.9/GR/8.c.xi.1         n/a          - - binary set functions (T621)
+10.9/GR/8.c.xi.2         n/a          - - binary set functions (T621)
+10.9/GR/8.c.xi.3         n/a          - - binary set functions (T621)
+10.9/GR/8.c.xii          n/a          - - binary set functions (T621)
+10.9/GR/8.c.xii.1        n/a          - - binary set functions (T621)
+10.9/GR/8.c.xii.2        n/a          - - binary set functions (T621)
+10.9/GR/8.c.xiii         n/a          - - binary set functions (T621)
+10.9/GR/8.c.xiii.1       n/a          - - binary set functions (T621)
+10.9/GR/8.c.xiii.2       n/a          - - binary set functions (T621)
+10.9/GR/9                implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/GR/9.a              definition   - -
+10.9/GR/9.b              definition   - -
+10.9/GR/9.c              definition   - -
+10.9/GR/9.d              definition   - -
+10.9/GR/9.e              definition   - -
+10.9/GR/9.f              definition   - -
+10.9/GR/9.g              implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/GR/10               implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/GR/10.a             definition   - -
+10.9/GR/10.b             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/GR/10.c             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/GR/10.d             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/GR/10.e             definition   - -
+10.9/GR/10.f             definition   - -
+10.9/GR/10.g             definition   - -
 10.9/GR/10.h             container    - -
-10.9/GR/10.h.i           n/a          - - inverse distribution functions (T612)
-10.9/GR/10.h.ii          n/a          - - inverse distribution functions (T612)
-10.9/GR/10.h.ii.1        n/a          - - inverse distribution functions (T612)
-10.9/GR/10.h.ii.2        n/a          - - inverse distribution functions (T612)
-10.9/GR/10.h.ii.3        n/a          - - inverse distribution functions (T612)
-10.9/GR/10.h.ii.4        n/a          - - inverse distribution functions (T612)
-10.9/GR/10.h.ii.5        n/a          - - inverse distribution functions (T612)
-10.9/GR/10.h.iii         n/a          - - inverse distribution functions (T612)
-10.9/GR/10.h.iii.1       n/a          - - inverse distribution functions (T612)
-10.9/GR/10.h.iii.2       n/a          - - inverse distribution functions (T612)
-10.9/GR/10.h.iii.3       n/a          - - inverse distribution functions (T612)
+10.9/GR/10.h.i           implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/GR/10.h.ii          implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/GR/10.h.ii.1        definition   - -
+10.9/GR/10.h.ii.2        definition   - -
+10.9/GR/10.h.ii.3        definition   - -
+10.9/GR/10.h.ii.4        definition   - -
+10.9/GR/10.h.ii.5        implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/GR/10.h.iii         implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
+10.9/GR/10.h.iii.1       definition   - -
+10.9/GR/10.h.iii.2       definition   - -
+10.9/GR/10.h.iii.3       implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_ordered_set_functions.sql
 10.9/GR/11               implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_listagg.sql
 10.9/GR/11.a             implemented  vsql/std_2_10_9_aggregate_function.v tests/std_2_10_9_listagg.sql
 10.9/GR/11.b             container    - -
@@ -863,14 +863,14 @@
 10.9/CR/7                missing      - - an outer reference isn't flagged (#880)
 10.9/CR/8                missing      - - an outer reference isn't flagged (#880)
 10.9/CR/9                missing      - - a column derived from an aggregate function isn't flagged (#880)
-10.9/CR/10               implemented  vsql/std_2_10_9_aggregate_function.y tests/std_2_10_9_statistical_set_functions.sql
-10.9/CR/11               implemented  vsql/std_2_10_9_aggregate_function.y tests/std_2_10_9_statistical_set_functions.sql
-10.9/CR/12               n/a          - - T612
+10.9/CR/10               n/a          - - STDDEV_POP, STDDEV_SAMP, VAR_POP and VAR_SAMP (T621)
+10.9/CR/11               n/a          - - binary set functions (T621)
+10.9/CR/12               implemented  vsql/std_2_10_9_aggregate_function.y tests/std_1_8_5_flagging.sql
 10.9/CR/13               implemented  vsql/std_2_10_9_aggregate_function.y tests/std_1_8_5_flagging.sql
 10.9/CR/14               n/a          - - multisets (S271)
 10.9/CR/15               n/a          - - FUSION and INTERSECTION (S275)
-10.9/CR/16               n/a          - - ordered set functions (T612)
-10.9/CR/17               n/a          - - ordered set functions (T612)
+10.9/CR/16               missing      - - a mixed outer reference in a hypothetical set function argument isn't flagged (#880)
+10.9/CR/17               missing      - - a mixed outer reference in an inverse distribution function argument isn't flagged (#880)
 10.9/CR/18               missing      - - mixed outer references aren't flagged (#880)
 10.9/CR/19               n/a          - - binary set functions (T621)
 10.9/CR/20               missing      - - a mixed outer reference in a WITHIN GROUP isn't flagged (#880)

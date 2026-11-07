@@ -95,6 +95,9 @@ Each function also has a **Compatibility** section:
    * - ``COVAR_SAMP``
      - Statistical
      - T621
+   * - ``CUME_DIST``
+     - Aggregate
+     - T612
    * - ``CURRENT_CATALOG``
      - Session
      - F762
@@ -110,6 +113,9 @@ Each function also has a **Compatibility** section:
    * - ``CURRENT_TIMESTAMP``
      - Date and Time
      - F411
+   * - ``DENSE_RANK``
+     - Aggregate
+     - T612
    * - ``EVERY``
      - Aggregate
      - T031
@@ -161,12 +167,24 @@ Each function also has a **Compatibility** section:
    * - ``OVERLAY``
      - String
      - T312
+   * - ``PERCENT_RANK``
+     - Aggregate
+     - T612
+   * - ``PERCENTILE_CONT``
+     - Aggregate
+     - T612
+   * - ``PERCENTILE_DISC``
+     - Aggregate
+     - T612
    * - ``POSITION``
      - String
      - Core (E021-11)
    * - ``POWER``
      - Exponent and Logarithm
      - T621
+   * - ``RANK``
+     - Aggregate
+     - T612
    * - ``REGR_AVGX``
      - Statistical
      - T621
@@ -246,7 +264,8 @@ Aggregate
 Aggregate functions calculate a single value from a set of rows (see
 ``GROUP BY`` in :doc:`select`). ``NULL`` values are ignored, with a ``01003``
 warning. If all of the values are ``NULL`` (or there are no rows) the result is
-``NULL``, except for ``COUNT``.
+``NULL``, except for ``COUNT``. ``CUME_DIST``, ``DENSE_RANK``, ``PERCENT_RANK``
+and ``RANK`` don't ignore ``NULL`` values, and always have a result.
 
 The value can be preceded by ``DISTINCT`` to only use each value once, so
 ``COUNT(DISTINCT city)`` is the number of different cities. Values are the same
@@ -267,6 +286,17 @@ an outer query (all ``42601`` errors). ``FILTER`` is in the SQL standard
 in the value instead, such as ``SUM(CASE WHEN price > 10e0 THEN price END)``.
 
 The statistical functions (see *Statistical*) are aggregate functions too.
+
+``LISTAGG`` and the ordered set functions (``CUME_DIST``, ``DENSE_RANK``,
+``PERCENT_RANK``, ``PERCENTILE_CONT``, ``PERCENTILE_DISC`` and ``RANK``) are
+followed by ``WITHIN GROUP (ORDER BY sort_key [ASC | DESC], ...)``, which is
+the order of the rows of the group that they use. ``NULL`` is before any other
+value with ``ASC``, and after it with ``DESC``.
+
+The argument of an ordered set function isn't one of the rows of the group:
+it's evaluated once for each group, like the select list. So it can be a
+literal or a grouping column, but not another column of the table (a
+``42803`` error). Only the sort keys use the rows.
 
 The examples use this table:
 
@@ -407,6 +437,64 @@ those that have a non-``NULL`` ``price``.
 - **Other databases:** ``COUNT`` in all of them. The result is a
   ``BIGINT`` in PostgreSQL and MySQL, and an ``INT`` in SQL Server (which has
   ``COUNT_BIG`` for a ``BIGINT``).
+
+CUME_DIST
+^^^^^^^^^
+
+.. code-block:: sql
+
+   CUME_DIST(VALUE, ...) WITHIN GROUP (ORDER BY sort_key, ...) DOUBLE PRECISION
+
+The cumulative distribution of a hypothetical row with the values if it was
+added to the group: the number of rows before it or equal to it (including
+itself) divided by the number of rows (including itself). It's between 0 and 1.
+
+The hypothetical row has a value for each sort key, so there must be the same
+number of arguments as sort keys (otherwise it's a ``42601`` error), and each
+must be comparable with its sort key (otherwise it's a ``42883`` error). Rows
+with a ``NULL`` sort key aren't ignored.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT CUME_DIST(10e0) WITHIN GROUP (ORDER BY price) FROM products;
+  -- COL1: 0.666666666667e0
+
+**Compatibility**
+
+- **SQL standard:** T612 (Advanced OLAP operations).
+- **Other databases:** PostgreSQL and Oracle have the same syntax. MySQL,
+  SQLite and SQL Server only have ``CUME_DIST`` as a window function.
+
+DENSE_RANK
+^^^^^^^^^^
+
+.. code-block:: sql
+
+   DENSE_RANK(VALUE, ...) WITHIN GROUP (ORDER BY sort_key, ...) INTEGER
+
+The rank that a hypothetical row with the values would have if it was added to
+the group, without gaps: one more than the number of distinct values (of all of
+the sort keys) before it. Rows that are equal to it don't change its rank.
+
+The hypothetical row has a value for each sort key, so there must be the same
+number of arguments as sort keys (otherwise it's a ``42601`` error), and each
+must be comparable with its sort key (otherwise it's a ``42883`` error). Rows
+with a ``NULL`` sort key aren't ignored.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT DENSE_RANK('Oakland') WITHIN GROUP (ORDER BY city) FROM products;
+  -- COL1: 2
+
+**Compatibility**
+
+- **SQL standard:** T612 (Advanced OLAP operations).
+- **Other databases:** PostgreSQL and Oracle have the same syntax. MySQL,
+  SQLite and SQL Server only have ``DENSE_RANK`` as a window function.
 
 EVERY
 ^^^^^
@@ -563,6 +651,142 @@ or a string. The result has the same type as the values.
 - **SQL standard:** Core SQL (E091-04).
 - **Other databases:** ``MIN`` in all of them. PostgreSQL doesn't accept a
   ``BOOLEAN``, use ``BOOL_AND`` instead.
+
+PERCENT_RANK
+^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   PERCENT_RANK(VALUE, ...) WITHIN GROUP (ORDER BY sort_key, ...) DOUBLE PRECISION
+
+The relative rank of a hypothetical row with the values if it was added to the
+group: the number of rows before it divided by the number of rows of the group
+(not including itself), or 0 if the group has no rows. It's between 0 and 1.
+
+The hypothetical row has a value for each sort key, so there must be the same
+number of arguments as sort keys (otherwise it's a ``42601`` error), and each
+must be comparable with its sort key (otherwise it's a ``42883`` error). Rows
+with a ``NULL`` sort key aren't ignored.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT PERCENT_RANK(10e0) WITHIN GROUP (ORDER BY price) FROM products;
+  -- COL1: 0.6e0
+
+**Compatibility**
+
+- **SQL standard:** T612 (Advanced OLAP operations).
+- **Other databases:** PostgreSQL and Oracle have the same syntax. MySQL,
+  SQLite and SQL Server only have ``PERCENT_RANK`` as a window function.
+
+PERCENTILE_CONT
+^^^^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   PERCENTILE_CONT(FRACTION) WITHIN GROUP (ORDER BY sort_key) DOUBLE PRECISION
+
+The value at ``FRACTION`` (from 0 to 1) of the way through the sorted values,
+so ``PERCENTILE_CONT(0.5)`` is the median. When that's between two values, the
+result is between them in proportion: the position is ``FRACTION * (N - 1)``
+(where ``N`` is the number of values), and ``PERCENTILE_CONT(0.5)`` of 10 and 20
+is 15.
+
+There must be one sort key, and it must be a number. ``NULL`` values are
+ignored, with a ``01003`` warning, and if there are no values the result is
+``NULL``. A ``FRACTION`` that's less than 0 or more than 1 is a ``22003``
+error.
+
+The value in between is cast to the type of the sort key before it's returned
+as a ``DOUBLE PRECISION``, so the result for integers is truncated to an integer
+(``PERCENTILE_CONT(0.5)`` of 1 and 2 is 1). Sort by ``CAST(x AS DOUBLE
+PRECISION)`` to keep the fraction.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price) FROM products;
+  -- COL1: 12.775e0
+
+  SELECT city, PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price) FROM products GROUP BY city;
+  -- CITY: New York COL2: 13.05e0
+  -- CITY: San Francisco COL2: 12.5e0
+
+**Compatibility**
+
+- **SQL standard:** T612 (Advanced OLAP operations).
+- **Other databases:** PostgreSQL, Oracle and SQL Server (only as a window
+  function) have the same syntax. PostgreSQL and Oracle don't truncate a
+  percentile of integers. MySQL and SQLite don't have it.
+
+PERCENTILE_DISC
+^^^^^^^^^^^^^^^
+
+.. code-block:: sql
+
+   PERCENTILE_DISC(FRACTION) WITHIN GROUP (ORDER BY sort_key) DOUBLE PRECISION
+
+The first of the sorted values where at least ``FRACTION`` (from 0 to 1) of the
+values are equal to it or before it. Unlike ``PERCENTILE_CONT``, the result is
+always one of the values.
+
+There must be one sort key, and it must be a number. ``NULL`` values are
+ignored, with a ``01003`` warning, and if there are no values the result is
+``NULL``. A ``FRACTION`` that's less than 0 or more than 1 is a ``22003``
+error.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT PERCENTILE_DISC(0.5) WITHIN GROUP (ORDER BY price) FROM products;
+  -- COL1: 8.05e0
+
+  SELECT PERCENTILE_DISC(0.5) WITHIN GROUP (ORDER BY price DESC) FROM products;
+  -- COL1: 17.5e0
+
+**Compatibility**
+
+- **SQL standard:** T612 (Advanced OLAP operations). The result is a
+  ``DOUBLE PRECISION`` because the standard makes it an approximate number.
+- **Other databases:** PostgreSQL, Oracle and SQL Server (only as a window
+  function) have the same syntax, and return the type of the sort key. MySQL
+  and SQLite don't have it.
+
+RANK
+^^^^
+
+.. code-block:: sql
+
+   RANK(VALUE, ...) WITHIN GROUP (ORDER BY sort_key, ...) INTEGER
+
+The rank that a hypothetical row with the values would have if it was added to
+the group: one more than the number of rows before it. Rows that are equal to
+it don't change its rank.
+
+The hypothetical row has a value for each sort key, so there must be the same
+number of arguments as sort keys (otherwise it's a ``42601`` error), and each
+must be comparable with its sort key (otherwise it's a ``42883`` error). Rows
+with a ``NULL`` sort key aren't ignored.
+
+**Examples**
+
+.. code-block:: sql
+
+  SELECT RANK(10e0) WITHIN GROUP (ORDER BY price) FROM products;
+  -- COL1: 4
+
+  SELECT RANK(17.5e0) WITHIN GROUP (ORDER BY price DESC) FROM products;
+  -- COL1: 2
+
+**Compatibility**
+
+- **SQL standard:** T612 (Advanced OLAP operations).
+- **Other databases:** PostgreSQL and Oracle have the same syntax. MySQL,
+  SQLite and SQL Server only have ``RANK`` as a window function.
 
 SOME
 ^^^^

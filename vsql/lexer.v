@@ -82,6 +82,7 @@ type YYSym = AddColumnDefinition
 	| NullSpecification
 	| NumericPrimary
 	| NumericValueExpression
+	| OrderedSetFunction
 	| OverlayFunction
 	| ParenthesizedValueExpression
 	| Predicate

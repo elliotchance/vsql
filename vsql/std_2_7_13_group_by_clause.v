@@ -217,6 +217,14 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 					}
 					final_rows[i].data.set(key, value)
 				}
+				OrderedSetFunction {
+					set := filter_rows(mut c, aggregate.filter, group)!
+					value, eliminated := aggregate.eval(mut c, final_rows[i], set)!
+					if eliminated {
+						null_eliminated = true
+					}
+					final_rows[i].data.set(key, value)
+				}
 				RoutineInvocation {
 					set := filter_rows(mut c, aggregate.filter, group)!
 					arg := aggregate.args[0].compile(mut c)!

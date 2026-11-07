@@ -134,20 +134,24 @@ fn non_null_values(values []Value) []Value {
 
 // distinct_values removes NULLs and duplicates for a general set function with
 // DISTINCT, such as COUNT(DISTINCT x). Values are duplicates if they're equal
-// with =, so 1.5 and 1.50 (or 'a' and 'a ') are the same value.
+// with =, so 1.5 and 1.50 (or 'a' and 'a ') are the same value. The first of
+// each set of duplicates is kept.
 //
 // ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 7.b
-fn distinct_values(conn &Connection, values []Value) ![]Value {
+//
+// Values that are equal with = have the same PRIMARY KEY encoding, and values
+// that aren't have different ones, so each value is found by its key rather
+// than compared with every value already kept. The encoding depends on the type,
+// so each value is cast to the declared type of the argument (typ) first.
+fn distinct_values(mut conn Connection, values []Value, typ Type) ![]Value {
+	mut seen := map[string]bool{}
 	mut result := []Value{}
 	for value in non_null_values(values) {
-		mut is_duplicate := false
-		for existing in result {
-			if compare(conn, value, existing)! == .is_equal {
-				is_duplicate = true
-				break
-			}
-		}
-		if !is_duplicate {
+		mut key := new_empty_bytes()
+		write_key_value(mut key, cast(mut conn, '', value, typ)!, typ.typ)
+		k := key.bytes().bytestr()
+		if k !in seen {
+			seen[k] = true
 			result << value
 		}
 	}

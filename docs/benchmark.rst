@@ -59,16 +59,13 @@ Where:
 Notes
 -----
 
-1. A timestamp generated in V is stored as a ``VARCHAR``, rather than using
-``CURRENT_TIMESTAMP``.
-
-2. ``INSERT`` only inserts one row per statement (rather than inserting many
+1. ``INSERT`` only inserts one row per statement (rather than inserting many
 rows with a single statement).
 
-3. The ``bench`` command will create a file called ``bench.vsql`` for the test.
+2. The ``bench`` command will create a file called ``bench.vsql`` for the test.
 If the file already exists it's deleted first. Use ``-file`` to choose another
 file, or ``-file ':memory:'`` to run it in memory.
 
-4. ``-accounts`` changes the number of rows in the ``ACCOUNTS`` table and
+3. ``-accounts`` changes the number of rows in the ``ACCOUNTS`` table and
 ``-duration`` changes how many seconds the transactions are run for, such as
 ``vsql bench -accounts 1000 -duration 5`` for a quick test.

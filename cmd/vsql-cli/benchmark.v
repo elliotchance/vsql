@@ -52,7 +52,7 @@ fn (mut b Benchmark) start() ! {
 		b.conn.query('INSERT INTO branches (bid, bbalance) VALUES (${bid}, 0)')!
 	}
 
-	b.conn.query('CREATE TABLE history ( tid INT, bid INT, aid INT, delta INT, mtime VARCHAR(30) ) ')!
+	b.conn.query('CREATE TABLE history ( tid INT, bid INT, aid INT, delta INT, mtime TIMESTAMP ) ')!
 
 	t = vsql.start_timer()
 
@@ -90,10 +90,7 @@ fn (mut b Benchmark) run_transaction() ! {
 	b.conn.query('UPDATE tellers SET tbalance = tbalance + ${delta} WHERE tid = ${tid}')!
 	b.conn.query('UPDATE branches SET bbalance = bbalance + ${delta} WHERE bid = ${bid}')!
 
-	// time.now() is not called inside the string because the V3 compiler
-	// generates invalid C for that.
-	now := time.now()
-	b.conn.query("INSERT INTO history (tid, bid, aid, delta, mtime) VALUES (${tid}, ${bid}, ${aid}, ${delta}, '${now}')")!
+	b.conn.query('INSERT INTO history (tid, bid, aid, delta, mtime) VALUES (${tid}, ${bid}, ${aid}, ${delta}, CURRENT_TIMESTAMP)')!
 
 	b.conn.query('COMMIT')!
 }

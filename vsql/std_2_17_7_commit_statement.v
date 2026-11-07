@@ -29,13 +29,13 @@ fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elaps
 
 	// Every deferred constraint is checked first, as if by SET CONSTRAINTS ALL
 	// IMMEDIATE, so that nothing is committed if one isn't satisfied. The
-	// transaction is then rolled back, see PreparedStmt.fail.
+	// transaction is then rolled back, see commit_error.
 	//
 	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 5 and 6.a
 	for _, mut catalog in conn.catalogs {
 		catalog.storage.set_all_constraint_modes(false)
 	}
-	conn.check_deferred_constraints() or { return commit_error(err) }
+	conn.check_deferred_constraints()!
 
 	// ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 6.c and 9
 	for _, mut catalog in conn.catalogs {
@@ -45,18 +45,18 @@ fn (stmt CommitStatement) execute(mut conn Connection, _ map[string]Value, elaps
 	return new_result_msg('COMMIT', elapsed_parse, t.elapsed())
 }
 
-// commit_error is the error for a deferred constraint that isn't satisfied at
-// the COMMIT, or another error as it is. Conflicts are found when a row is
-// written, so another error (such as an I/O error) isn't in class 40, and the
-// SQL-transaction is still active.
+// commit_error is the error for anything that prevents a COMMIT, which is always
+// a transaction rollback, see PreparedStmt.fail. Conflicts are found when a row
+// is written, so a COMMIT can't fail with a serialization failure.
 //
 // ISO/IEC 9075-2:2016(E), 17.7, <commit statement>, General Rules, 6.a and 6.b
+// ISO/IEC 9075-3:2003(E), 6.17, EndTran, General Rules, 12.d.i and 12.d.iii
 fn commit_error(err IError) IError {
 	is_violation := sqlstate_from_int(err.code()).starts_with('23')
 	return if is_violation {
 		sqlstate_40002(err.msg(), violated_constraint(err) or { Identifier{} })
 	} else {
-		err
+		sqlstate_40v01(err.msg())
 	}
 }
 

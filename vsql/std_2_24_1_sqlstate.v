@@ -948,6 +948,20 @@ fn sqlstate_40002(message string, constraint Identifier) IError {
 	}
 }
 
+// transaction rollback: an error other than a constraint that isn't satisfied
+// prevented a COMMIT. The subclass is implementation-defined, and a subclass
+// that starts with V isn't reserved by the standard.
+struct SQLState40V01 {
+	SQLState
+}
+
+fn sqlstate_40v01(message string) IError {
+	return SQLState40V01{
+		code: sqlstate_to_int('40V01')
+		msg:  'transaction rollback: ${message}'
+	}
+}
+
 // feature not supported, such as a file that needs a different version of vsql
 // to be opened.
 struct SQLState0A000 {

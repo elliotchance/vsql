@@ -627,6 +627,17 @@ isn't satisfied at the ``COMMIT``. The whole transaction is rolled back.
   COMMIT;
   -- error 40002: integrity constraint violation: violates unique constraint: UNIQUE (X) on ":memory:".PUBLIC.T
 
+``40V01`` transaction rollback
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An error other than a constraint that isn't satisfied (such as an I/O error)
+prevented a ``COMMIT``. The whole transaction is rolled back, and the message
+has the original error.
+
+If it couldn't be rolled back either, the error is the one that prevented that
+instead, the message says that the transaction is still active, and the
+``COMMIT`` can be tried again.
+
 ``42501`` insufficient privilege
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

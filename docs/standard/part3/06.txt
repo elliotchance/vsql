@@ -606,7 +606,7 @@
 6.17/GR/12.d             container    - -
 6.17/GR/12.d.i           implemented  libvsql/std_3_6_17_end_tran.v tests/deferrable-constraints.sql by executing COMMIT
 6.17/GR/12.d.ii          n/a          - - there are no triggers
-6.17/GR/12.d.iii         untested     libvsql/std_3_6_17_end_tran.v - there's no test of a COMMIT that fails
+6.17/GR/12.d.iii         impl-defined libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c the subclass is 40V01
 6.17/GR/12.d.iv          implemented  libvsql/std_3_6_17_end_tran.v libvsql/std_3_6_17_end_tran_test.c
 6.17/GR/12.e             n/a          - - there are no savepoints
 6.17/GR/12.f             n/a          - - there are no locators

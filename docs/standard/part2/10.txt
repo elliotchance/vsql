@@ -651,7 +651,7 @@
 10.9/SR/7.d              container    - -
 10.9/SR/7.d.i            implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql every type can be ordered
 10.9/SR/7.d.ii           n/a          - - row types (T051)
-10.9/SR/7.e              n/a          - - EVERY, ANY and SOME aren't supported (T031)
+10.9/SR/7.e              implemented  vsql/funcs.v tests/boolean-set-functions.sql
 10.9/SR/7.f              implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
 10.9/SR/7.g              container    - -
 10.9/SR/7.g.i            implemented  vsql/funcs.v tests/set-functions.sql
@@ -745,12 +745,12 @@
 10.9/GR/7.d.iii          implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
 10.9/GR/7.d.iv           implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
 10.9/GR/7.d.v            implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
-10.9/GR/7.d.vi           n/a          - - EVERY, ANY and SOME aren't supported (T031)
-10.9/GR/7.d.vi.1         n/a          - - EVERY, ANY and SOME aren't supported (T031)
-10.9/GR/7.d.vi.2         n/a          - - EVERY, ANY and SOME aren't supported (T031)
-10.9/GR/7.d.vii          n/a          - - EVERY, ANY and SOME aren't supported (T031)
-10.9/GR/7.d.vii.1        n/a          - - EVERY, ANY and SOME aren't supported (T031)
-10.9/GR/7.d.vii.2        n/a          - - EVERY, ANY and SOME aren't supported (T031)
+10.9/GR/7.d.vi           implemented  vsql/std_2_10_9_aggregate_function.v tests/boolean-set-functions.sql
+10.9/GR/7.d.vi.1         implemented  vsql/std_2_10_9_aggregate_function.v tests/boolean-set-functions.sql
+10.9/GR/7.d.vi.2         implemented  vsql/std_2_10_9_aggregate_function.v tests/boolean-set-functions.sql
+10.9/GR/7.d.vii          implemented  vsql/std_2_10_9_aggregate_function.v tests/boolean-set-functions.sql
+10.9/GR/7.d.vii.1        implemented  vsql/std_2_10_9_aggregate_function.v tests/boolean-set-functions.sql
+10.9/GR/7.d.vii.2        implemented  vsql/std_2_10_9_aggregate_function.v tests/boolean-set-functions.sql
 10.9/GR/7.d.viii         n/a          - - VAR_POP and VAR_SAMP (T621)
 10.9/GR/7.d.viii.1       n/a          - - VAR_POP and VAR_SAMP (T621)
 10.9/GR/7.d.viii.2       n/a          - - VAR_POP and VAR_SAMP (T621)
@@ -855,7 +855,7 @@
 10.9/GR/12.g.i           n/a          - - ARRAY_AGG (S098)
 10.9/GR/12.g.ii          n/a          - - ARRAY_AGG (S098)
 10.9/CR/1                n/a          - - row pattern recognition (R010)
-10.9/CR/2                n/a          - - EVERY, ANY and SOME aren't supported (T031)
+10.9/CR/2                implemented  vsql/std_2_10_9_aggregate_function.y tests/boolean-set-functions.sql
 10.9/CR/3                implemented  vsql/std_1_8_5_sql_flagger.v tests/flagging.sql
 10.9/CR/4                implemented  vsql/std_2_10_9_aggregate_function.y tests/flagging.sql
 10.9/CR/5                missing      - - a column reference that isn't of T (an outer reference) isn't flagged (#880)

@@ -3337,6 +3337,9 @@ fn $\$_error_message(state int, look_ahead int) string {
 	return res
 }
 
+// The tables are only indexed with the states and tokens they were built for,
+// so they do not need bounds checks.
+@[direct_array_access]
 fn $\$lex1(mut lex YYLexer, mut lval YYSymType) (int, int) {
 	ch := lex.lex(mut lval)
 	if ch <= 0 {
@@ -3352,6 +3355,7 @@ fn $\$lex1(mut lex YYLexer, mut lval YYSymType) (int, int) {
 	return ch, int($\$_tok3[i+1])
 }
 
+@[direct_array_access]
 fn (mut $\$rcvr YYParserImpl) parse(mut $\$lex YYLexer) !int {
 	mut $\$n := 0
 	mut $\$_val := YYSymType{}

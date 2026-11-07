@@ -37175,6 +37175,9 @@ fn yy_error_message(state int, look_ahead int) string {
 	return res
 }
 
+// The tables are only indexed with the states and tokens they were built for,
+// so they do not need bounds checks.
+@[direct_array_access]
 fn yylex1(mut lex YYLexer, mut lval YYSymType) (int, int) {
 	ch := lex.lex(mut lval)
 	if ch <= 0 {
@@ -37190,6 +37193,7 @@ fn yylex1(mut lex YYLexer, mut lval YYSymType) (int, int) {
 	return ch, int(yy_tok3[i + 1])
 }
 
+@[direct_array_access]
 fn (mut yyrcvr YYParserImpl) parse(mut yylex YYLexer) !int {
 	mut yyn := 0
 	mut yy_val := YYSymType{}

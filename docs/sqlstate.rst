@@ -241,11 +241,17 @@ character class such as ``[:ALPHA:]``.
 When the ``ESCAPE`` of a ``SIMILAR TO`` is a character with a special meaning
 (such as ``%``), it can only be used in the pattern to escape a character.
 
+The pattern of a ``SUBSTRING`` with ``SIMILAR`` must have exactly two of the
+escape character followed by a double quote.
+
 **Examples**
 
 .. code-block:: sql
 
   VALUES 'abc' SIMILAR TO 'a%' ESCAPE '%';
+  -- error 2200C: invalid use of escape character
+
+  VALUES SUBSTRING('abc' SIMILAR '%b%' ESCAPE '#');
   -- error 2200C: invalid use of escape character
 
 ``2200H`` sequence generator limit exceeded
@@ -306,7 +312,8 @@ an error.
 ``22019`` invalid escape character
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The ``ESCAPE`` of a ``LIKE`` or ``SIMILAR TO`` must be exactly one character.
+The ``ESCAPE`` of a ``LIKE``, ``SIMILAR TO`` or ``SUBSTRING`` with ``SIMILAR``
+must be exactly one character.
 
 **Examples**
 
@@ -318,7 +325,8 @@ The ``ESCAPE`` of a ``LIKE`` or ``SIMILAR TO`` must be exactly one character.
 ``2201B`` invalid regular expression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The pattern of a ``SIMILAR TO`` is not a valid regular expression.
+The pattern of a ``SIMILAR TO`` (or a part of the pattern of a ``SUBSTRING``
+with ``SIMILAR``) is not a valid regular expression.
 
 **Examples**
 

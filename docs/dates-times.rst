@@ -126,12 +126,17 @@ Casting From Strings
 
 A character string can be cast to any of the date and time types. Leading and
 trailing spaces are ignored, and the rest must be in the same format as the
-literal for that type, otherwise an ``22007`` invalid datetime format error is
-raised:
+literal for that type, either with or without its keyword and quotes, otherwise
+an ``22007`` invalid datetime format error is raised. The keyword must be the
+one for the target type, so a ``DATE`` literal can't be cast to a
+``TIMESTAMP``:
 
 .. code-block:: sql
 
   VALUES CAST(' 2022-06-30 ' AS DATE);
+  -- COL1: 2022-06-30
+
+  VALUES CAST('DATE ''2022-06-30''' AS DATE);
   -- COL1: 2022-06-30
 
   VALUES CAST('2022-06-30 12:34:56+03:00' AS TIMESTAMP(0) WITH TIME ZONE);

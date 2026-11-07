@@ -2,6 +2,7 @@
 
 module vsql
 
+import builtin.closure
 import time
 
 // All possible root statments.
@@ -74,6 +75,41 @@ mut:
 
 // Execute the prepared statement.
 pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
+	mut c := p.c
+	// A statement run by another statement (or from a thread the lifetime
+	// doesn't belong to) keeps its closures.
+	if c.frame_active || isnil(c.frame_work) {
+		return p.query_statement(params)
+	}
+
+	c.frame_stmt = unsafe { p }
+	c.frame_params = params
+	c.frame_active = true
+	c.frame_ran = false
+	c.frame_err = none
+	c.lifetime.frame(c.frame_work) or {
+		// A lifetime belongs to the thread that made it, so a connection
+		// that's used from another thread needs a new one.
+		if !c.frame_ran && err.msg().contains('different thread') {
+			c.lifetime = closure.new_lifetime()
+			c.lifetime.frame(c.frame_work) or {}
+		}
+	}
+	c.frame_active = false
+	c.frame_stmt = unsafe { nil }
+	if !c.frame_ran {
+		return p.query_statement(params)
+	}
+	c.lifetime.reclaim_all() or {}
+
+	if c.frame_err !is none {
+		return c.frame_err
+	}
+
+	return c.frame_result
+}
+
+fn (mut p PreparedStmt) query_statement(params map[string]Value) !Result {
 	// A statement outside of a transaction is its own transaction, which ends
 	// with the statement.
 	defer {

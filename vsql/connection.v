@@ -3,6 +3,7 @@
 
 module vsql
 
+import builtin.closure
 import os
 import sync
 import time
@@ -39,7 +40,20 @@ mut:
 @[heap]
 pub struct Connection {
 mut:
-	catalogs map[string]&CatalogConnection
+	// V never frees a closure on its own, and every expression that's compiled
+	// makes some (see CompileResult). So each statement runs in a frame of
+	// lifetime, and the closures it made are released when it ends, see
+	// PreparedStmt.query. frame_work runs frame_stmt, it's made once so that it
+	// isn't a closure that's leaked for each statement.
+	lifetime     closure.Lifetime
+	frame_work   fn () = unsafe { nil }
+	frame_active bool
+	frame_ran    bool
+	frame_stmt   &PreparedStmt = unsafe { nil }
+	frame_params map[string]Value
+	frame_result Result
+	frame_err    IError = none
+	catalogs     map[string]&CatalogConnection
 	// funcs only needs to be initialized once on open()
 	funcs []Func
 	// cast_rules are use for CAST() (see cast.v)
@@ -191,6 +205,16 @@ fn open_connection(path string, options ConnectionOptions) !&Connection {
 		current_catalog: catalog_name
 		current_schema:  default_schema_name
 		now:             default_now
+	}
+
+	conn.lifetime = closure.new_lifetime()
+	conn.frame_work = fn [mut conn] () {
+		conn.frame_ran = true
+		mut p := conn.frame_stmt
+		conn.frame_result = p.query_statement(conn.frame_params) or {
+			conn.frame_err = err
+			Result{}
+		}
 	}
 
 	register_builtin_funcs(mut conn)!

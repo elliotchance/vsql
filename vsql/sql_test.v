@@ -3467,3 +3467,18 @@ fn test_index_entry_order() {
 		assert sorted == if desc { keys.reverse() } else { keys }
 	}
 }
+
+// A connection that's used from a thread other than the one that opened it
+// still releases the closures of each statement (see PreparedStmt.query).
+fn test_query_from_another_thread() ! {
+	mut db := open(':memory:')!
+	db.query('CREATE TABLE t (x INT)')!
+	t := spawn fn (mut db Connection) !int {
+		db.query('INSERT INTO t (x) VALUES (1)')!
+		db.query('INSERT INTO t (x) VALUES (2)')!
+
+		return db.query('SELECT * FROM t')!.rows.len
+	}(mut db)
+	assert t.wait()! == 2
+	assert db.query('SELECT * FROM t')!.rows.len == 2
+}

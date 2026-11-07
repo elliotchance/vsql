@@ -62,8 +62,23 @@ Or handling errors by class (first two letters):
 See also
 `examples/error-handling.v <https://github.com/elliotchance/vsql/blob/main/examples/error-handling.v>`_.
 
-SQLSTATE
---------
+SQLSTATE Classes
+----------------
+
+A SQLSTATE is five characters. The first two are the class, which is the kind
+of condition, and the last three are the subclass. A subclass of ``000`` is the
+class without any more detail, such as ``22000`` for a data exception. Classes
+``00`` (successful completion), ``01`` (warning) and ``02`` (no data) are
+completion conditions, where the statement still succeeds. Every other class is
+an exception, where the statement fails.
+
+The SQLSTATEs that vsql returns are listed below under their class.
+
+Class ``01``: Warning
+---------------------
+
+The statement succeeded, but something happened that you may want to know
+about. A warning doesn't stop the statement or roll back the transaction.
 
 ``01003`` null value eliminated in set function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -107,6 +122,12 @@ aren't spaces. The value is truncated. Storing the same value in a column with
 ``01012`` is a warning when the ``DIAGNOSTICS SIZE`` of :doc:`set-transaction`
 is more than 100, which is used instead.
 
+Class ``02``: No Data
+---------------------
+
+The statement succeeded but there were no rows for it to act on. Like a
+warning, this is a completion condition rather than an error.
+
 ``02000`` no data
 ^^^^^^^^^^^^^^^^^
 
@@ -123,6 +144,11 @@ sends it as a ``NOTICE``.
   -- msg: CREATE TABLE 1
   -- warning 02000: no data
   -- msg: DELETE 0
+
+Class ``08``: Connection Exception
+----------------------------------
+
+A connection couldn't be opened, used or closed.
 
 ``08001`` sql-client unable to establish sql-connection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -143,6 +169,12 @@ already exists.
 connection that doesn't exist, or for a statement when there is no current
 connection after :doc:`disconnect`.
 
+Class ``0A``: Feature Not Supported
+-----------------------------------
+
+The statement is valid but uses something that vsql doesn't support, or a file
+that this version of vsql can't open.
+
 ``0A000`` feature not supported
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -161,11 +193,22 @@ isn't supported yet.
 current connection has an active transaction, since a transaction can't be
 across more than one database.
 
+Class ``0B``: Invalid Transaction Initiation
+--------------------------------------------
+
+A transaction couldn't be started.
+
 ``0B000`` invalid transaction initiation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``0B000`` is caused when attempting to start a transaction but the pool of
 in-flight transactions is full (see :doc:`limitations`).
+
+Class ``21``: Cardinality Violation
+-----------------------------------
+
+A query returned a different number of rows than was expected where it was
+used.
 
 ``21000`` cardinality violation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -179,6 +222,14 @@ scalar subquery that returns no rows is ``NULL``.
 
   VALUES (SELECT x FROM (VALUES 1, 2) AS t (x));
   -- error 21000: cardinality violation: more than one row returned by a subquery used as an expression
+
+Class ``22``: Data Exception
+----------------------------
+
+A value was invalid for the operation it was used in, such as being out of
+range for a type, the wrong format for a ``CAST`` or an invalid argument for a
+function. These are found while the statement runs, so they depend on the
+data.
 
 ``22001`` string data right truncation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -412,6 +463,12 @@ the last two code points of each plane).
   VALUES U&'\FFFF';
   -- error 22029: noncharacter in UCS string
 
+Class ``23``: Integrity Constraint Violation
+--------------------------------------------
+
+A change to a table would break one of its constraints. The statement has no
+effect.
+
 ``23502`` violates not-null constraint
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -473,6 +530,11 @@ A row doesn't satisfy a ``CHECK`` constraint of the table.
   -- msg: CREATE TABLE 1
   -- error 23514: violates check constraint: CHECK (PRICE > 0) on ":memory:".PUBLIC.T1
 
+Class ``24``: Invalid Cursor State
+----------------------------------
+
+A cursor isn't in the right state for the statement that uses it.
+
 ``24000`` invalid cursor state
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -487,6 +549,11 @@ a cursor that isn't positioned on a row (see :doc:`cursors`).
   DECLARE c CURSOR FOR SELECT * FROM products;
   FETCH c;
   -- error 24000: invalid cursor state: cursor C is not open
+
+Class ``25``: Invalid Transaction State
+---------------------------------------
+
+The statement can't be run in the current state of the transaction.
 
 ``25001`` invalid transaction state: active sql transaction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -511,6 +578,11 @@ was changed by a newer version of vsql, in a way that this version cannot
 safely change it. The file can still be read. See *Compatibility* in
 :doc:`file-format`.
 
+Class ``27``: Triggered Data Change Violation
+---------------------------------------------
+
+The changes made by referential actions would conflict with each other.
+
 ``27000`` triggered data change violation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -518,11 +590,22 @@ safely change it. The file can still be read. See *Compatibility* in
 NULL``) of a statement would change a column of a row to two different values,
 or both change and delete a row. See :doc:`create-table`.
 
+Class ``28``: Invalid Authorization Specification
+-------------------------------------------------
+
+The user given for a connection isn't valid.
+
 ``28000`` invalid authorization specification
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``28000`` is returned when the ``USER`` of :doc:`connect` isn't an
 identifier.
+
+Class ``2B``: Dependent Privilege Descriptors Still Exist
+---------------------------------------------------------
+
+An object can't be dropped because other objects still depend on it. vsql
+uses the PostgreSQL code ``2BP01`` for this.
 
 ``2BP01`` dependent objects still exist
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -530,6 +613,11 @@ identifier.
 ``2BP01`` occurs if trying to drop a schema with ``RESTRICT`` and there are
 still objects that exist in the schema, a table or constraint that's
 referenced by a ``FOREIGN KEY``, or a column that's in an index.
+
+Class ``2D``: Invalid Transaction Termination
+---------------------------------------------
+
+A transaction couldn't be committed or rolled back in the current state.
 
 ``2D000`` invalid transaction termination
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -548,11 +636,21 @@ in an active transaction.
    -- msg: COMMIT
    -- error 2D000: invalid transaction termination
 
+Class ``2E``: Invalid Connection Name
+-------------------------------------
+
+The name of a connection isn't valid.
+
 ``2E000`` invalid connection name
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``2E000`` is returned when the name of a connection in :doc:`connect` isn't
 an identifier.
+
+Class ``34``: Invalid Cursor Name
+---------------------------------
+
+A cursor name doesn't refer to a cursor that can be used for the statement.
 
 ``34000`` invalid cursor name
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -568,11 +666,21 @@ an identifier.
   OPEN c;
   -- error 34000: invalid cursor name: cursor C does not exist
 
+Class ``35``: Invalid Condition Number
+--------------------------------------
+
+The number of diagnostic conditions isn't valid.
+
 ``35000`` invalid condition number
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``35000`` is returned when the ``DIAGNOSTICS SIZE`` of :doc:`set-transaction`
 or :doc:`start-transaction` is less than 1.
+
+Class ``3D``: Invalid Catalog Name
+----------------------------------
+
+A catalog name doesn't refer to a catalog of the connection.
 
 ``3D000`` invalid catalog name
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -586,6 +694,11 @@ or :doc:`start-transaction` is less than 1.
   SET CATALOG 'nope';
   -- error 3D000: invalid catalog name: nope
 
+Class ``3F``: Invalid Schema Name
+---------------------------------
+
+A schema name doesn't refer to a schema that exists.
+
 ``3F000`` invalid schema name
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -597,6 +710,12 @@ or :doc:`start-transaction` is less than 1.
 
   SET SCHEMA 'NOPE';
   -- error 3F000: invalid schema name: NOPE
+
+Class ``40``: Transaction Rollback
+----------------------------------
+
+The whole transaction was rolled back, so nothing that it changed was kept.
+The only exception is when the rollback also fails (see ``40V01``).
 
 ``40001`` serialization failure
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -637,6 +756,13 @@ has the original error.
 If it couldn't be rolled back either, the error is the one that prevented that
 instead, the message says that the transaction is still active, and the
 ``COMMIT`` can be tried again.
+
+Class ``42``: Syntax Error or Access Rule Violation
+---------------------------------------------------
+
+The statement isn't valid SQL, refers to something that doesn't exist, or
+isn't allowed. Most of these are found before the statement runs. Codes that end in ``P`` and a number are the same as PostgreSQL, since
+the standard has no code for them.
 
 ``42501`` insufficient privilege
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -900,6 +1026,13 @@ the connection.
   -- msg: CREATE TABLE 1
   -- error 42P10: column B must be in the select list to be used in ORDER BY with SELECT DISTINCT
 
+Class ``54``: Program Limit Exceeded
+------------------------------------
+
+The statement went beyond a limit of vsql (see :doc:`limitations`). This
+class, and the classes after it, aren't in the SQL standard. They're the same as
+PostgreSQL.
+
 ``54000`` program limit exceeded
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -918,6 +1051,11 @@ in half a page.
 ``ConnectionOptions.page_size`` must be more than 16 and at most 65535 bytes
 when a database is created.
 
+Class ``55``: Object Not In Prerequisite State
+----------------------------------------------
+
+An object wasn't in a state that allowed the statement to run.
+
 ``55P03`` lock not available
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -925,12 +1063,22 @@ when a database is created.
 for other transactions with changes to the table to finish (see
 :doc:`create-index`). Nothing was changed, so it can be tried again.
 
+Class ``58``: System Error
+--------------------------
+
+An error outside of vsql, such as from the operating system.
+
 ``58030`` io error
 ^^^^^^^^^^^^^^^^^^
 
 Opening, locking, reading or writing a file (including the write-ahead log)
 failed. The message has the reason from the operating system. The statement has
 no effect.
+
+Class ``XX``: Internal Error
+----------------------------
+
+vsql found a problem with itself or with the database file.
 
 ``XX000`` internal error
 ^^^^^^^^^^^^^^^^^^^^^^^^

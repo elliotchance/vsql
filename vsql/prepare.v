@@ -88,7 +88,7 @@ pub fn (mut p PreparedStmt) query(params map[string]Value) !Result {
 	// Storage.end_isolation.
 	p.c.take_isolation_error() or { return p.fail(err) }
 
-	p.c.finish_write(true)!
+	p.c.finish_write(true) or { return p.fail(err) }
 
 	return result
 }
@@ -195,17 +195,23 @@ fn (mut p PreparedStmt) fail(err IError) IError {
 	// ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, General Rules, 8.b
 	p.c.take_isolation_error() or {}
 	p.c.finish_write(false) or {}
-	if sqlstate_from_int(err.code()).starts_with('40') {
+
+	// The transaction isn't active for a COMMIT that had nothing to commit.
+	failure := if p.stmt is CommitStatement && !p.explain && p.c.in_transaction() {
+		commit_error(err)
+	} else {
+		err
+	}
+	if sqlstate_from_int(failure.code()).starts_with('40') {
 		// The exception condition says that the transaction was rolled back, so
 		// if it wasn't, the client must be told that it's still active instead.
-		original := err
 		p.c.rollback_after_error() or {
-			return error_with_code('${original.msg()}, but the transaction is still active because it could not be rolled back: ${err.msg()}',
+			return error_with_code('${failure.msg()}, but the transaction is still active because it could not be rolled back: ${err.msg()}',
 				err.code())
 		}
 	}
 
-	return err
+	return failure
 }
 
 fn (mut p PreparedStmt) query_internal(params map[string]Value) !Result {

@@ -561,7 +561,7 @@ fn (mut conn Connection) rollback_after_error() ! {
 	}
 
 	RollbackStatement{}.execute(mut conn, map[string]Value{}, time.Duration(0))!
-	conn.finish_write(true) or {}
+	conn.finish_write(true)!
 }
 
 // register_func adds a function, unless one with the same name and argument

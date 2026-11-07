@@ -699,7 +699,7 @@ fn read_string_literal(cs []rune, start int) !(string, int, []string) {
 				separator_features << 'T351'
 			}
 			j = end
-		} else if cs[j].str().trim_space() == '' {
+		} else if is_white_space(cs[j]) {
 			has_newline = has_newline || cs[j] == `\n`
 			j++
 		} else {
@@ -763,31 +763,44 @@ fn skip_comment(cs []rune, start int) !int {
 	return sqlstate_42601('unterminated comment: ${cs[start..].string()}')
 }
 
+// skip_separators returns the position after the white space and comments that
+// start at cs[i], which may be none of them.
+//
+// ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>
+fn skip_separators(cs []rune, start int) !int {
+	mut i := start
+	for i < cs.len {
+		if is_comment(cs, i) {
+			i = skip_comment(cs, i)!
+		} else if is_white_space(cs[i]) {
+			i++
+		} else {
+			break
+		}
+	}
+
+	return i
+}
+
 // read_unicode_escape_specifier returns the escape character of a Unicode
 // string, from the optional UESCAPE '<character>' after the string at cs[i],
 // and the position after it. Otherwise, the escape character is a backslash.
 //
 // ISO/IEC 9075-2:2016(E), 5.2, <token> and <separator>, Syntax Rules, 16 to 18
 fn read_unicode_escape_specifier(cs []rune, start int) !(rune, int) {
-	mut i := start
-	for i < cs.len && cs[i].str().trim_space() == '' {
-		i++
-	}
+	mut i := skip_separators(cs, start)!
 	if i + 7 > cs.len || cs[i..i + 7].string().to_upper() != 'UESCAPE'
 		|| (i + 7 < cs.len && is_identifier_char(cs[i + 7], true)) {
 		return `\\`, start
 	}
 
-	i += 7
-	for i < cs.len && cs[i].str().trim_space() == '' {
-		i++
-	}
+	i = skip_separators(cs, i + 7)!
 	if i + 2 >= cs.len || cs[i] != `'` || cs[i + 2] != `'` {
 		return sqlstate_42601('UESCAPE must be followed by a single character in quotes')
 	}
 
 	escape := cs[i + 1]
-	if is_hexit(escape) || escape in [`+`, `'`, `"`] || escape.str().trim_space() == '' {
+	if is_hexit(escape) || escape in [`+`, `'`, `"`] || is_white_space(escape) {
 		return sqlstate_42601("invalid Unicode escape character: '${escape}'")
 	}
 

@@ -2446,6 +2446,7 @@ fn test_dump_data_and_schema_only() {
 		'CREATE TABLE foo.parent (id INT NOT NULL PRIMARY KEY)',
 		'CREATE TABLE foo.child (pid INT, CONSTRAINT fk1 FOREIGN KEY (pid) REFERENCES foo.parent (id))',
 		'INSERT INTO foo.parent (id) VALUES (1)',
+		'CREATE TABLE foo.emp (id INT PRIMARY KEY, boss INT REFERENCES foo.emp)',
 	] {
 		db.query(stmt)!
 	}
@@ -2456,7 +2457,11 @@ fn test_dump_data_and_schema_only() {
 	assert schema_sql.contains('CREATE SCHEMA "FOO"')
 	assert schema_sql.contains('CREATE SEQUENCE "FOO"."SEQ1"')
 	assert schema_sql.contains('CREATE TABLE "FOO"."PARENT"')
-	assert schema_sql.contains('ADD CONSTRAINT "FK1"')
+	assert schema_sql.contains('CONSTRAINT "FK1" FOREIGN KEY')
+	// A table that references itself has its FOREIGN KEY in its CREATE TABLE when
+	// there are no rows.
+	assert schema_sql.contains('  FOREIGN KEY ("BOSS") REFERENCES "FOO"."EMP" ("ID")')
+	assert !schema_sql.contains('ALTER TABLE')
 	assert !schema_sql.contains('INSERT')
 	assert !schema_sql.contains('RESTART')
 
@@ -2478,9 +2483,11 @@ fn test_dump_data_and_schema_only() {
 	}
 	mut whole := strings.new_builder(1024)
 	db.dump(mut whole)!
+	whole_sql := whole.str()
+	assert whole_sql.contains('ALTER TABLE "FOO"."EMP" ADD CONSTRAINT "EMP_FOREIGN_KEY_1"')
 	mut copied := strings.new_builder(1024)
 	copy.dump(mut copied)!
-	assert copied.str() == whole.str()
+	assert copied.str() == whole_sql
 
 	mut sb := strings.new_builder(1024)
 	db.dump(mut sb, data_only: true, schema_only: true) or {
@@ -2561,23 +2568,26 @@ fn test_dump_options() {
 	// the FOREIGN KEY is too.
 	fk1_index := 'CREATE INDEX "FK1" ON "FOO"."CHILD"'
 
-	assert dump_with(mut db)! == [schema_foo, seq1, child, fk1_index, parent, schema_nothing, baz,
-		fk1]
+	// The parent comes first, so the FOREIGN KEY is part of the CREATE TABLE of
+	// the child, which also makes its index.
+	assert dump_with(mut db)! == [schema_foo, seq1, parent, child, schema_nothing, baz]
 	// "*.*" is the same as leaving it out.
-	assert dump_with(mut db, include: ['*.*'])! == [schema_foo, seq1, child, fk1_index, parent,
-		schema_nothing, baz, fk1]
+	assert dump_with(mut db, include: ['*.*'])! == [schema_foo, seq1, parent, child, schema_nothing,
+		baz]
 	// Case is ignored, and an object can be any type.
 	assert dump_with(mut db, include: ['foo.parent'])! == [schema_foo, parent]
 	assert dump_with(mut db, include: ['FOO.SEQ?'])! == [schema_foo, seq1]
 	assert dump_with(mut db, include: ['foo.fk*'])! == [schema_foo, fk1]
 	assert dump_with(mut db, include: ['public.*', 'foo.child'])! == [schema_foo, child, baz]
+	// The FOREIGN KEY is added at the end when the table that it references isn't
+	// in the output.
 	assert dump_with(mut db, include: ['foo.child', 'foo.fk1'])! == [schema_foo, child, fk1_index,
 		fk1]
 	// exclude is taken from what's included, and it doesn't have to match anything.
 	assert dump_with(mut db, include: ['foo.*'], exclude: ['foo.fk1', '*.seq1', 'x.y'])! == [
 		schema_foo,
-		child,
 		parent,
+		child,
 	]
 	// A foreign key isn't left out because its table is.
 	assert dump_with(mut db, exclude: ['foo.parent', 'foo.child', 'public.*'])! == [
@@ -2588,8 +2598,7 @@ fn test_dump_options() {
 	]
 	// A schema with nothing in it follows the schema of the patterns.
 	assert dump_with(mut db, exclude: ['foo.*'])! == [schema_nothing, baz]
-	assert dump_with(mut db, exclude: ['nothing.*'])! == [schema_foo, seq1, child, fk1_index, parent,
-		baz, fk1]
+	assert dump_with(mut db, exclude: ['nothing.*'])! == [schema_foo, seq1, parent, child, baz]
 	assert dump_with(mut db, include: ['nothing.*'])! == [schema_nothing]
 	assert dump_with(mut db, exclude: ['*.*'])! == []
 	// PUBLIC is still only created if it's asked for.

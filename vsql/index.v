@@ -463,9 +463,14 @@ fn (t Table) is_constraint_index(index Index) bool {
 // t made for itself (see foreign_key_index), which has the name of the
 // constraint and only its columns, in ascending order.
 fn (t Table) is_foreign_key_index(index Index) bool {
-	columns := index.columns.map(if it.desc { '' } else { it.name })
-	return !index.unique && t.foreign_keys.any(it.name == index.name.entity_name
-		&& it.columns == columns)
+	return t.foreign_keys.any(is_own_foreign_key_index(it, index))
+}
+
+// is_own_foreign_key_index is whether index is the one that key made for itself,
+// see Table.is_foreign_key_index.
+fn is_own_foreign_key_index(key ForeignKey, index Index) bool {
+	return !index.unique && index.name.entity_name == key.name
+		&& index.columns.map(if it.desc { '' } else { it.name }) == key.columns
 }
 
 // constraint_index is the index of the UNIQUE constraint of t, see

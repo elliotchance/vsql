@@ -162,6 +162,94 @@ struct DumpSchema {
 	// other than the index of a UNIQUE constraint (which is made by its CREATE
 	// TABLE). An index is in the output with its table.
 	indexes []Index
+	// all_indexes are all of the indexes of the schema, including the ones that
+	// aren't in indexes.
+	all_indexes []Index
+}
+
+// DumpTable is a table in the output, and the FOREIGN KEYs that are part of its
+// CREATE TABLE (see is_inline_foreign_key).
+struct DumpTable {
+	table        Table
+	foreign_keys []ForeignKey
+}
+
+// dump_order orders tables (which are by name) so that each one comes after the
+// tables that its FOREIGN KEYs reference, so the rows are inserted after the
+// rows that they reference. Otherwise they stay in order. When each of the
+// tables left references another one of them (a cycle), the first of them is
+// next.
+fn dump_order(tables []Table) []Table {
+	mut remaining := tables.clone()
+	mut ordered := []Table{}
+	for remaining.len > 0 {
+		ids := remaining.map(it.name.storage_id())
+		mut next := 0
+		for i, table in remaining {
+			referenced := table.foreign_keys.map(it.referenced_table.storage_id())
+			if !referenced.any(it != ids[i] && it in ids) {
+				next = i
+				break
+			}
+		}
+		ordered << remaining[next]
+		remaining.delete(next)
+	}
+
+	return ordered
+}
+
+// is_inline_foreign_key is whether a FOREIGN KEY of table can be part of its
+// CREATE TABLE, where written are the tables (by storage_id) that come before it
+// in the output. The table that it references must be one of them. A table that
+// references itself can't be sure that the rows come out in an order where each
+// one references a row before it, so it can only be part of the CREATE TABLE
+// when there are no rows (schema_only).
+//
+// The CREATE TABLE also makes the index that the FOREIGN KEY uses (see
+// build_constraint_indexes): the index of a UNIQUE constraint on its columns,
+// otherwise its own index, which is left out of the CREATE INDEXes. So that the
+// indexes are the same, the FOREIGN KEY is added later, after the CREATE
+// INDEXes of the table, when it uses another index instead of its own, or when
+// it has its own index as well as the index of a UNIQUE constraint.
+fn (s DumpSchema) is_inline_foreign_key(table Table, key ForeignKey, written map[string]bool, schema_only bool) bool {
+	referenced := key.referenced_table.storage_id()
+	if referenced == table.name.storage_id() {
+		if !schema_only {
+			return false
+		}
+	} else if referenced !in written {
+		return false
+	}
+
+	mut columns := key.columns.clone()
+	columns.sort()
+	mut has_own_index := false
+	mut has_constraint_index := false
+	mut has_other_index := false
+	for index in s.all_indexes {
+		if index.table_name.entity_name != table.name.entity_name
+			|| index.columns.len < columns.len {
+			continue
+		}
+		mut leading := index.columns[..columns.len].map(it.name)
+		leading.sort()
+		if is_own_foreign_key_index(key, index) {
+			has_own_index = true
+		} else if leading == columns {
+			if table.is_constraint_index(index) {
+				has_constraint_index = true
+			} else {
+				has_other_index = true
+			}
+		}
+	}
+
+	return if has_own_index {
+		!has_constraint_index
+	} else {
+		has_constraint_index || !has_other_index
+	}
 }
 
 // table_indexes are the indexes of a table, by name.
@@ -193,10 +281,6 @@ fn (s DumpSchema) names() []string {
 // statement from split_statements. A pattern of include that doesn't match
 // anything is an error, and INFORMATION_SCHEMA can't be included.
 pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
-	// The FOREIGN KEYs are added once all of the tables and rows have been
-	// loaded, because a table can reference a table that comes after it, or a
-	// row that comes after it in the same table.
-	mut foreign_keys := []string{}
 	if options.data_only && options.schema_only {
 		return error('data_only and schema_only cannot be used together')
 	}
@@ -254,7 +338,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 				}
 			}
 		}
-		objects << DumpSchema{schema, sequences, tables, indexes}
+		objects << DumpSchema{schema, sequences, tables, indexes, schema_indexes}
 	}
 
 	for pattern in options.include {
@@ -272,7 +356,36 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 		write_line(mut w, 'START TRANSACTION;\n')!
 	}
 
+	// A FOREIGN KEY is part of the CREATE TABLE when it can be (see
+	// is_inline_foreign_key), so the tables come after the tables that they
+	// reference (see dump_order). The rest are added once all of the tables and
+	// rows have been loaded, because they reference a table that comes after
+	// them (or another schema that comes after them), a row that might come
+	// after them in the same table, or a table that isn't in the output.
+	mut written := map[string]bool{}
+	mut dump_tables := [][]DumpTable{}
+	mut inline_keys := map[string]bool{}
 	for object in objects {
+		mut tables := []DumpTable{}
+		for table in dump_order(object.tables.filter(selection.selected(object.schema.name,
+			it.name.entity_name))) {
+			written[table.name.storage_id()] = true
+			mut keys := []ForeignKey{}
+			for key in table.foreign_keys {
+				if !options.data_only && selection.selected(object.schema.name, key.name)
+					&& object.is_inline_foreign_key(table, key, written, options.schema_only) {
+					keys << key
+					inline_keys[table.name.storage_id() + '.' + key.name] = true
+				}
+			}
+			tables << DumpTable{table, keys}
+		}
+		dump_tables << tables
+	}
+
+	mut foreign_keys := []string{}
+
+	for i, object in objects {
 		schema := object.schema
 		names := object.names()
 		// We avoid "CREATE SCHEMA PUBLIC;" because it would break the import.
@@ -313,13 +426,18 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 		for table in object.tables {
 			name := options.output_name(table.name).storage_sql()
 			for key in table.foreign_keys {
-				if !options.data_only && selection.selected(schema.name, key.name) {
+				if !options.data_only && selection.selected(schema.name, key.name)
+					&& table.name.storage_id() + '.' + key.name !in inline_keys {
 					foreign_keys << 'ALTER TABLE ${name} ADD CONSTRAINT ${delimit_identifier(key.name)} ${options.output_foreign_key(key)};'
 				}
 			}
 		}
 
-		for table in object.tables.filter(selection.selected(schema.name, it.name.entity_name)) {
+		for dump_table in dump_tables[i] {
+			table := dump_table.table
+			indexes := object.table_indexes(table).filter(fn [dump_table] (index Index) bool {
+				return !dump_table.foreign_keys.any(is_own_foreign_key_index(it, index))
+			})
 			if !options.data_only {
 				// A column in a CHECK or generation expression can be qualified with
 				// just the table name, which is only found in the table's schema if
@@ -333,14 +451,14 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 				write_line(mut w, options.output_definition(without_catalog_qualifiers(Table{
 					...table
 					name:         options.output_name(table.name)
-					foreign_keys: []ForeignKey{}
+					foreign_keys: dump_table.foreign_keys.map(options.output_foreign_key(it))
 				}.str()), table.name) + '\n')!
 				if is_schema_needed {
 					write_line(mut w, "SET SCHEMA '${default_schema_name}';\n")!
 				}
 			}
 			if options.schema_only {
-				if write_indexes(mut w, object.table_indexes(table), options)! {
+				if write_indexes(mut w, indexes, options)! {
 					write_line(mut w, '')!
 				}
 				continue
@@ -379,7 +497,7 @@ pub fn (mut conn Connection) dump(mut w io.Writer, options DumpOptions) ! {
 			// The indexes are created after the rows, so that each one is built
 			// once.
 			if !options.data_only {
-				write_indexes(mut w, object.table_indexes(table), options)!
+				write_indexes(mut w, indexes, options)!
 			}
 
 			// Inserting the rows doesn't move the sequence of the identity

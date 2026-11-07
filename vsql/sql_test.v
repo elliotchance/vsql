@@ -1744,6 +1744,38 @@ fn test_custom_function_in_check_constraint() ! {
 	assert false
 }
 
+struct SQLTestCallCounter {
+mut:
+	calls int
+}
+
+// A custom function is NOT DETERMINISTIC, so a subquery that uses it is
+// evaluated for each row, even though it doesn't refer to the outer query. A
+// subquery without one is only evaluated once for the statement.
+fn test_custom_function_in_subquery() ! {
+	mut db := open(':memory:')!
+	mut counter := &SQLTestCallCounter{}
+	db.register_function('next_call(integer) integer', fn [mut counter] (a []Value) !Value {
+		counter.calls++
+		return new_integer_value(counter.calls)
+	})!
+
+	db.query('CREATE TABLE t (x INTEGER)')!
+	db.query('INSERT INTO t (x) VALUES (1), (2), (3)')!
+
+	mut results := []int{}
+	for row in db.query('SELECT x + (VALUES next_call(0)) AS c FROM t')! {
+		results << row.get_int('C')!
+	}
+	assert results == [2, 4, 6]
+
+	results = []
+	for row in db.query('SELECT x + (SELECT MAX(x) FROM t) AS c FROM t')! {
+		results << row.get_int('C')!
+	}
+	assert results == [4, 5, 6]
+}
+
 // A function is identified by its name and argument types, so another function
 // with the same ones can't be registered, even if it returns a different type.
 fn test_custom_function_already_exists() ! {

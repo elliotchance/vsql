@@ -597,6 +597,10 @@ struct Connection
    	// EXISTS) that's being planned or evaluated, the innermost last. A subquery
    	// can refer to the columns of the queries that contain it, see SubqueryScope.
    	subquery_scopes []SubqueryScope
+   	// subquery_results has the result of each subquery that has been evaluated
+   	// in the statement that's executing, by its query (see run_subquery). They're
+   	// cleared when each statement starts.
+   	subquery_results map[voidptr]SubqueryResult
    	// subquery_tables has the id of each table that's read by a subquery that's
    	// planned while collect_subquery_tables is set (see tables_of_subqueries).
    	collect_subquery_tables bool

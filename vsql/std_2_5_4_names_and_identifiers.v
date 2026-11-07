@@ -726,6 +726,7 @@ fn (e Identifier) compile_outer(mut c Compiler, i int) !CompileResult {
 		return err
 	}
 	c.conn.subquery_scopes = scopes
+	c.conn.vary_subqueries(i)
 
 	return CompileResult{
 		run:          fn [i, compiled] (mut conn Connection, data Row, params map[string]Value) !Value {

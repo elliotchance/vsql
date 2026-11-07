@@ -408,6 +408,12 @@ fn create_select_plan_without_join(body QuerySpecification, from_clause TablePri
 				conn.next_value_not_allowed = next_value_not_allowed
 			}
 
+			in_derived_table := conn.in_derived_table
+			conn.in_derived_table = true
+			defer {
+				conn.in_derived_table = in_derived_table
+			}
+
 			subplan := create_query_expression_plan(from_clause.body, params, mut conn,
 				from_clause.correlation)!
 			table = add_correlation_plan(mut &plan, table_name, subplan, from_clause.correlation,

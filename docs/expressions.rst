@@ -318,6 +318,10 @@ select list) and the subquery uses the result. It can't be in the ``WHERE`` or a
 join condition of the outer query. An aggregate function that also uses a column of the subquery
 (such as ``MAX(t2.z + t1.x)``) is an aggregate of the subquery.
 
+An aggregate function without any columns in a ``VALUES`` subquery (such as
+``SELECT (VALUES COUNT(*)) FROM t``) is also an aggregate of the query that
+contains the subquery, because a ``VALUES`` doesn't have any rows to aggregate.
+
 *Examples*
 
 .. code-block:: sql

@@ -618,6 +618,9 @@ struct Connection
    	// collected_subquery is set if a subquery is planned while collect_columns
    	// is set. The columns that a subquery uses aren't all known until it runs.
    	collected_subquery bool
+   	// in_derived_table is set while a derived table is being planned, but not a
+   	// subquery in one, see values_aggregation_query.
+   	in_derived_table bool
    	// direct_query_transaction is true when an SQL-transaction was started by
    	// a query in direct (see Connection.direct) that hasn't changed anything.
    	direct_query_transaction bool

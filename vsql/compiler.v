@@ -41,6 +41,9 @@ mut:
 	// aggregate function being compiled, to find the query that it's an
 	// aggregate of (see aggregation_scope).
 	aggregated_columns []AggregatedColumn
+	// aggregation_query is set when compiling a VALUES, which isn't a query
+	// specification, see values_aggregation_query.
+	aggregation_query ?int
 	// distinct is set when compiling the select list of a "SELECT DISTINCT".
 	distinct bool
 	// distinct_columns is set when compiling an ORDER BY of a "SELECT DISTINCT".
@@ -99,12 +102,17 @@ struct AggregatedColumn {
 // the innermost query of its column references, so only an aggregate function
 // of outer references is an aggregate of another query, such as the MAX in
 // "SELECT (SELECT MAX(t1.x) FROM t2) FROM t1". Any other outer reference must
-// still be a grouping column of its query.
+// still be a grouping column of its query. An aggregate function without any
+// column references is of this query, unless it's in a VALUES.
 //
 // ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 6 and 8
 fn (c Compiler) aggregation_scope() !int {
+	if c.aggregated_columns.len == 0 {
+		return c.aggregation_query or { -1 }
+	}
+
 	mut scope := -1
-	if c.aggregated_columns.len > 0 && c.aggregated_columns.all(it.scope >= 0) {
+	if c.aggregated_columns.all(it.scope >= 0) {
 		for column in c.aggregated_columns {
 			if column.scope > scope {
 				scope = column.scope

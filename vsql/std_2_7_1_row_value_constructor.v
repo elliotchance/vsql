@@ -109,8 +109,9 @@ fn (r RowValueConstructor) compile_elements(mut c Compiler) ![]CompileResult {
 
 fn (r RowValueConstructor) eval_row(mut conn Connection, data Row, params map[string]Value) !Row {
 	mut c := Compiler{
-		conn:   conn
-		params: params
+		conn:              conn
+		params:            params
+		aggregation_query: values_aggregation_query(conn)
 	}
 	mut row := map[string]Value{}
 	for i, element in r.compile_elements(mut c)! {

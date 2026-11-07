@@ -75,12 +75,15 @@ fn (mut p MemoryPager) set_root_page(page_number int) ! {
 
 // commit keeps the pages changed by the current statement.
 fn (mut p MemoryPager) commit() {
-	mut pages := []Page{cap: p.total}
-	for i in 0 .. p.total {
-		pages << p.dirty[i] or { p.pages[i] }
+	// Only the changed pages are replaced, rather than copying all of them,
+	// since a page that's stored is never changed in place.
+	for p.pages.len < p.total {
+		p.pages << Page{}
+	}
+	for i, page in p.dirty {
+		p.pages[i] = page
 	}
 
-	p.pages = pages
 	p.dirty = map[int]Page{}
 	p.saved_root_page = p.root_page
 }

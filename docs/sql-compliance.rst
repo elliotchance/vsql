@@ -1544,7 +1544,7 @@ Optional Features
    * - ✅ **T622**
      - **Trigonometric functions**
 
-   * - ❌ **T623**
+   * - ✅ **T623**
      - **General logarithm functions**
 
    * - ✅ **T624**

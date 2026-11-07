@@ -266,6 +266,31 @@ fn func_mod_integer(args []Value) !Value {
 	}
 }
 
+// LOG(DOUBLE PRECISION, DOUBLE PRECISION) DOUBLE PRECISION
+fn func_log(args []Value) !Value {
+	base := args[0].f64_value()
+	x := args[1].f64_value()
+
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 11.b and 11.c
+	if x <= 0 || base <= 0 || base == 1 {
+		return sqlstate_22003()
+	}
+
+	// ISO/IEC 9075-2:2016(E), 6.30, <numeric value function>, General Rules, 11.d
+	//
+	// Bases 2 and 10 are calculated directly, so that LOG(10, 1000) is exactly 3
+	// (the same as LOG10(1000)) instead of 2.9999999999999996.
+	result := if base == 2 {
+		math.log2(x)
+	} else if base == 10 {
+		math.log10(x)
+	} else {
+		math.log(x) / math.log(base)
+	}
+
+	return new_double_precision_value(result)
+}
+
 // LOG10(DOUBLE PRECISION) DOUBLE PRECISION
 fn func_log10(args []Value) !Value {
 	// LOG10(x) is LOG(10, x).

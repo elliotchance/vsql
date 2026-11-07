@@ -177,8 +177,9 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 	// HAVING and ORDER BY may also use aggregate functions that are not in the
 	// select list.
 	// The argument source of each aggregate function is the set of rows of the
-	// group (there's no <filter clause>). COUNT(*) is the number of rows, and
-	// any other function is applied to the values of its argument.
+	// group, or only the rows that its <filter clause> is True for (see
+	// filter_rows). COUNT(*) is the number of rows, and any other function is
+	// applied to the values of its argument.
 	//
 	// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 1.d, 4.b and 5
 	mut agg_c := Compiler{
@@ -200,12 +201,14 @@ fn (mut o GroupOperation) execute(rows []Row) ![]Row {
 	mut null_eliminated := false
 	for aggregate in agg_c.aggregates {
 		key := aggregate.pstr(o.params)
-		for i, set in sets {
+		for i, group in sets {
 			match aggregate {
 				AggregateFunctionCount {
+					set := filter_rows(mut c, aggregate.filter, group)!
 					final_rows[i].data[key] = new_integer_value(set.len)
 				}
 				RoutineInvocation {
+					set := filter_rows(mut c, aggregate.filter, group)!
 					arg := aggregate.args[0].compile(mut c)!
 					mut values := []Value{}
 					for row in set {

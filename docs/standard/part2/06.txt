@@ -353,7 +353,7 @@
 6.9/SR/2                 n/a          - - binary set functions (T621)
 6.9/SR/3                 definition   - -
 6.9/SR/4                 definition   - -
-6.9/SR/5                 n/a          - - FILTER (T612)
+6.9/SR/5                 implemented  vsql/std_2_10_9_aggregate_function.v tests/aggregate-filter.sql
 6.9/SR/6                 implemented  vsql/compiler.v tests/correlated-subquery.sql
 6.9/SR/6.a               partial      vsql/compiler.v tests/set-functions.sql an aggregate function in a VALUES subquery without a column reference is rejected (#914)
 6.9/SR/6.b               implemented  vsql/compiler.v tests/correlated-subquery.sql

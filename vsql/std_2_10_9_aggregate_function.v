@@ -12,7 +12,7 @@ type AggregateFunction = AggregateFunctionCount | RoutineInvocation
 
 fn (e AggregateFunction) pstr(params map[string]Value) string {
 	return match e {
-		AggregateFunctionCount { 'COUNT(*)' }
+		AggregateFunctionCount { 'COUNT(*)${filter_pstr(e.filter, params)}' }
 		RoutineInvocation { e.pstr(params) }
 	}
 }
@@ -20,10 +20,17 @@ fn (e AggregateFunction) pstr(params map[string]Value) string {
 fn (e AggregateFunction) compile(mut c Compiler) !CompileResult {
 	match e {
 		AggregateFunctionCount {
+			// COUNT(*) has no argument, so its filter doesn't change the query that
+			// it's an aggregate of (this one).
+			aggregated_columns := c.aggregated_columns
+			c.aggregated_columns = []
+			compile_filter(mut c, e.filter, e.pstr(c.params))!
+			c.aggregated_columns = aggregated_columns
+
 			c.aggregates << e
 
 			compiled := Identifier{
-				custom_id:  'COUNT(*)'
+				custom_id:  e.pstr(c.params)
 				custom_typ: new_type('INTEGER', 0, 0)
 			}.compile(mut c)!
 
@@ -41,7 +48,81 @@ fn (e AggregateFunction) compile(mut c Compiler) !CompileResult {
 	}
 }
 
-struct AggregateFunctionCount {}
+struct AggregateFunctionCount {
+	filter ?BooleanValueExpression
+}
+
+// with_filter adds the <search condition> of a <filter clause> to a general set
+// function.
+fn with_filter(e AggregateFunction, filter BooleanValueExpression) AggregateFunction {
+	f := e as RoutineInvocation
+	return RoutineInvocation{
+		function_name: f.function_name
+		args:          f.args
+		distinct:      f.distinct
+		filter:        filter
+	}
+}
+
+fn filter_pstr(filter ?BooleanValueExpression, params map[string]Value) string {
+	if f := filter {
+		return ' FILTER (WHERE ${f.pstr(params)})'
+	}
+
+	return ''
+}
+
+// compile_filter checks the <search condition> of the <filter clause> of the
+// aggregate function agg. Like the argument of an aggregate function, it can use
+// any column of a grouped query, and it can't contain an aggregate function or
+// a subquery (see Subquery.plan). There are no window functions.
+//
+// ISO/IEC 9075-2:2016(E), 6.9, <set function specification>, Syntax Rules, 5
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, Syntax Rules, 8
+fn compile_filter(mut c Compiler, filter ?BooleanValueExpression, agg string) ! {
+	f := filter or { return }
+
+	in_aggregate := c.in_aggregate
+	c.in_aggregate = true
+	defer {
+		c.in_aggregate = in_aggregate
+	}
+
+	columns := c.aggregated_columns.len
+	compiled := f.compile(mut c)!
+	if compiled.contains_agg {
+		return sqlstate_42601('nested set function: ${agg}')
+	}
+
+	for column in c.aggregated_columns[columns..] {
+		if column.scope >= 0 {
+			return sqlstate_42601('outer reference in FILTER: ${column.name}')
+		}
+	}
+
+	if compiled.typ.typ != .is_boolean {
+		return sqlstate_42804('in FILTER', 'BOOLEAN', compiled.typ.str())
+	}
+}
+
+// filter_rows is the rows of a group that an aggregate function is applied to.
+// If there's a <filter clause>, they're only the rows where its search condition
+// is True.
+//
+// ISO/IEC 9075-2:2016(E), 10.9, <aggregate function>, General Rules, 4
+fn filter_rows(mut c Compiler, filter ?BooleanValueExpression, rows []Row) ![]Row {
+	f := filter or { return rows }
+
+	compiled := f.compile(mut c)!
+	mut result := []Row{}
+	for row in rows {
+		if compiled.run(mut c.conn, row, c.params)!.bool_value() == .is_true {
+			result << row
+		}
+	}
+
+	return result
+}
 
 // non_null_values removes NULLs before a general set function is applied. If
 // all values are NULL (or there are no values) the result will be NULL.

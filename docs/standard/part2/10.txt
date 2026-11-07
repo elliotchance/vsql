@@ -669,7 +669,7 @@
 10.9/SR/7.l              n/a          - - multisets (S271)
 10.9/SR/7.m              n/a          - - FUSION and INTERSECTION (S275)
 10.9/SR/7.n              n/a          - - FUSION and INTERSECTION (S275)
-10.9/SR/8                n/a          - - <filter clause> (T612)
+10.9/SR/8                implemented  vsql/std_2_10_9_aggregate_function.v,vsql/std_2_7_19_subquery.v tests/aggregate-filter.sql
 10.9/SR/9                n/a          - - binary set functions (T621)
 10.9/SR/9.a              n/a          - - binary set functions (T621)
 10.9/SR/9.b              n/a          - - binary set functions (T621)
@@ -729,7 +729,7 @@
 10.9/GR/3.d              n/a          - - no supported aggregate function has a character string intermediate result (LISTAGG isn't supported, T625)
 10.9/GR/3.e              implemented  vsql/std_2_10_9_aggregate_function.v tests/set-functions.sql
 10.9/GR/4                container    - -
-10.9/GR/4.a              n/a          - - <filter clause> (T612)
+10.9/GR/4.a              implemented  vsql/std_2_10_9_aggregate_function.v tests/aggregate-filter.sql
 10.9/GR/4.b              implemented  vsql/std_2_7_13_group_by_clause.v tests/set-functions.sql
 10.9/GR/5                implemented  vsql/std_2_7_13_group_by_clause.v tests/count-expression.sql
 10.9/GR/6                n/a          - - row pattern recognition (R010)
@@ -866,7 +866,7 @@
 10.9/CR/10               n/a          - - STDDEV_POP, STDDEV_SAMP, VAR_POP and VAR_SAMP (T621)
 10.9/CR/11               n/a          - - binary set functions (T621)
 10.9/CR/12               n/a          - - T612
-10.9/CR/13               n/a          - - T612
+10.9/CR/13               implemented  vsql/std_2_10_9_aggregate_function.y tests/flagging.sql
 10.9/CR/14               n/a          - - multisets (S271)
 10.9/CR/15               n/a          - - FUSION and INTERSECTION (S275)
 10.9/CR/16               n/a          - - ordered set functions (T612)

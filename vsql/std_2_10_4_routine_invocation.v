@@ -19,6 +19,9 @@ struct RoutineInvocation {
 	// distinct is only for an aggregate function, such as COUNT(DISTINCT x),
 	// see distinct_values.
 	distinct bool
+	// filter is the <search condition> of the <filter clause> of an aggregate
+	// function, such as SUM(x) FILTER (WHERE x > 0).
+	filter ?BooleanValueExpression
 }
 
 fn (e RoutineInvocation) pstr(params map[string]Value) string {
@@ -30,7 +33,7 @@ fn (e RoutineInvocation) pstr(params map[string]Value) string {
 
 	args := e.args.map(it.pstr(params)).join(', ')
 	quantifier := if e.distinct { 'DISTINCT ' } else { '' }
-	return '${e.function_name}(${quantifier}${args})'
+	return '${e.function_name}(${quantifier}${args})${filter_pstr(e.filter, params)}'
 }
 
 fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
@@ -69,6 +72,10 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 				return sqlstate_42601('nested set function: ${e.pstr(c.params)}')
 			}
 		}
+
+		// The columns of the filter are also aggregated, so they're used to find
+		// the query that it's an aggregate of.
+		compile_filter(mut c, e.filter, e.pstr(c.params))!
 
 		compiled := Identifier{
 			custom_id:  e.pstr(c.params)

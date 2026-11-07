@@ -1511,7 +1511,7 @@ Optional Features
    * - ❌ **T611**
      - **Elementary OLAP operations**
 
-   * - ❌ **T612**
+   * - ⭕ **T612**
      - **Advanced OLAP operations**
 
    * - ❌ **T613**

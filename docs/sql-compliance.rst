@@ -767,13 +767,13 @@ Optional Features
    * - ❌ **F301**
      - **CORRESPONDING in query expressions**
 
-   * - ❌ **F302**
+   * - ✅ **F302**
      - **INTERSECT table operator**
 
-   * - ❌ F302-01
+   * - ✅ F302-01
      - INTERSECT DISTINCT table operator
 
-   * - ❌ F302-02
+   * - ✅ F302-02
      - INTERSECT ALL table operator
 
    * - ✅ **F304**
@@ -1487,7 +1487,7 @@ Optional Features
    * - ❌ **T525**
      - **Default values for parameters of SQL-invoked functions**
 
-   * - ⭕ **T551**
+   * - ✅ **T551**
      - **Optional key words for default syntax**
 
    * - ❌ **T561**

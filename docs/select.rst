@@ -31,7 +31,7 @@ Syntax
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
 
-  <query> { UNION | EXCEPT } [ ALL | DISTINCT ] <query>
+  <query> { UNION | EXCEPT | INTERSECT } [ ALL | DISTINCT ] <query>
   [ ORDER BY <expr> [ ASC | DESC ] , ... ]
   [ OFFSET <integer> { ROW | ROWS } ]
   [ FETCH { FIRST | NEXT } [ <integer> ] { ROW | ROWS } ONLY ]
@@ -45,8 +45,8 @@ Syntax
   | OFFSET <integer> [ ROW | ROWS ] LIMIT <integer>
   | LIMIT <offset>, <count> }
 
-A ``<query>`` is a ``SELECT``, ``TABLE``, ``VALUES``, ``UNION`` or ``EXCEPT``.
-It can be in parentheses, such as ``(SELECT ... FETCH FIRST 1 ROW ONLY)``.
+A ``<query>`` is a ``SELECT``, ``TABLE``, ``VALUES``, ``UNION``, ``EXCEPT`` or
+``INTERSECT``. It can be in parentheses, such as ``(SELECT ... FETCH FIRST 1 ROW ONLY)``.
 
 ``AS <name>`` gives the table a *correlation name*. The table must then be
 referred to by that name instead (such as ``p.price``). The optional list of
@@ -87,8 +87,6 @@ A subquery can also be used in an expression, such as ``EXISTS``, ``IN``,
 
 A subquery can refer to the columns of the query that contains it (a correlated
 subquery).
-
-Not supported yet: ``INTERSECT``. See :doc:`sql-compliance`.
 
 SELECT
 ------
@@ -251,10 +249,10 @@ TABLE
 
   SELECT COUNT(*) FROM (TABLE products) AS p;
 
-UNION and EXCEPT
-----------------
+UNION, EXCEPT and INTERSECT
+---------------------------
 
-``UNION`` and ``EXCEPT`` combine the rows of two queries:
+``UNION``, ``EXCEPT`` and ``INTERSECT`` combine the rows of two queries:
 
 - ``UNION ALL`` returns the rows of both queries.
 - ``UNION`` (or ``UNION DISTINCT``) returns each distinct row of both queries.
@@ -262,6 +260,10 @@ UNION and EXCEPT
   row for every time that row is in the right query.
 - ``EXCEPT`` (or ``EXCEPT DISTINCT``) returns each distinct row of the left
   query that is not in the right query.
+- ``INTERSECT ALL`` returns each row that is in both queries, as many times as
+  it is in the query that has fewer of it.
+- ``INTERSECT`` (or ``INTERSECT DISTINCT``) returns each distinct row that is in
+  both queries.
 
 Rows are the same when each of their values are equal, and two ``NULL`` values
 are considered the same. For example:
@@ -276,12 +278,18 @@ are considered the same. For example:
   EXCEPT
   SELECT product_id FROM orders;
 
+  SELECT city FROM customers
+  INTERSECT
+  SELECT city FROM suppliers;
+
 Both queries must have the same number of columns, and each column must have
 compatible types (such as ``INTEGER`` and ``BIGINT``, or ``CHAR`` and
 ``VARCHAR``). Each column of the result has a type that fits the values of
 both queries, and the name of that column in the left query.
 
-The operators are evaluated left to right. Use parentheses to change the order.
+``INTERSECT`` is evaluated before ``UNION`` and ``EXCEPT``, so ``a UNION b
+INTERSECT c`` is ``a UNION (b INTERSECT c)``. Otherwise, the operators are
+evaluated left to right. Use parentheses to change the order.
 
 The ``ORDER BY``, ``OFFSET`` and ``FETCH FIRST`` at the end apply to the whole
 result, so the ``ORDER BY`` can only use the columns of the result. A query in

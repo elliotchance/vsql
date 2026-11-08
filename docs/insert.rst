@@ -15,10 +15,10 @@ Syntax
 Without a list of columns, it's every column in the order of the table.
 
 The rows are either the rows of ``VALUES``, or the result of a query (see
-:doc:`select`). A query can use ``UNION``, ``EXCEPT``, ``ORDER BY``, ``OFFSET``
-and ``FETCH FIRST``, and it can be in parentheses. Its result is known before
-any row is inserted, so a query that reads from the same table doesn't see the
-new rows. A ``VALUES`` on its own is always the first form, ``(VALUES ...)`` or
+:doc:`select`). A query can use ``UNION``, ``EXCEPT``, ``INTERSECT``,
+``ORDER BY``, ``OFFSET`` and ``FETCH FIRST``, and it can be in parentheses. Its
+result is known before any row is inserted, so a query that reads from the same
+table doesn't see the new rows. A ``VALUES`` on its own is always the first form, ``(VALUES ...)`` or
 ``VALUES ... UNION ...`` is a query, which can't contain ``DEFAULT`` or a
 ``NULL`` on its own.
 

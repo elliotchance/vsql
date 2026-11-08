@@ -51,7 +51,8 @@ fn create_basic_plan(body SimpleTable, params map[string]Value, mut conn Connect
 		}
 		SetOperation {
 			// Only a query specification that's the whole query can contain a
-			// NEXT VALUE FOR, not one on either side of a UNION or EXCEPT.
+			// NEXT VALUE FOR, not one on either side of a UNION, EXCEPT or
+			// INTERSECT.
 			//
 			// ISO/IEC 9075-2:2016(E), 6.14, <next value expression>, Syntax Rules, 1
 			next_value_not_allowed := conn.next_value_not_allowed

@@ -1,22 +1,33 @@
 name: CI
 
-# Every pull request and every tag tests every OS and architecture. A tag then
-# publishes the release. It can also be run by hand with workflow_dispatch,
-# which tests everything without publishing.
+# Every pull request into main and every tag tests every OS and architecture. A
+# tag then publishes the release. It can also be run by hand with
+# workflow_dispatch, which tests everything without publishing.
+#
+# A pull request that's stacked on another one isn't tested until it's changed
+# to go into main (which happens when the one below it is merged), since it's
+# tested then anyway, and each run uses a lot of the limited macOS runners. That
+# change is an "edited" event, which is also sent when the title or description
+# changes, so the v job (that every other job needs) only runs for an edit that
+# changed the base branch.
 on:
   workflow_dispatch:
   push:
     tags:
       - "v*"
   pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened, edited]
     paths-ignore:
       - "**.md"
       - "**.rst"
 
 # A new push to a pull request cancels its previous run. Other runs are never
-# cancelled.
+# cancelled. An edit that doesn't change the base branch gets a group of its
+# own, so that it doesn't cancel a run that's testing the pull request.
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  group: ci-${{ github.event.pull_request.number || github.run_id }}${{ github.event.action == 'edited' && !github.event.changes.base && format('-edit-{0}', github.run_id) || '' }}
   cancel-in-progress: true
 
 # There's one job for each OS and architecture. Each one runs the tests that
@@ -42,6 +53,7 @@ jobs:
   # be cached for each commit, instead of being built by every job.
   v:
     name: V master
+    if: github.event.action != 'edited' || github.event.changes.base
     runs-on: ubuntu-latest
     outputs:
       commit: ${{ steps.commit.outputs.commit }}
@@ -74,6 +86,9 @@ jobs:
             v_arch: arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
+    # About twice the longest run on Linux, so that a test that hangs fails the
+    # job instead of holding a runner for GitHub's limit of 6 hours.
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -198,6 +213,9 @@ jobs:
             v_arch: arm64
             runner: macos-latest
     runs-on: ${{ matrix.runner }}
+    # About twice the longest run on macOS, so that a test that hangs fails the
+    # job instead of holding a runner for GitHub's limit of 6 hours.
+    timeout-minutes: 120
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -288,6 +306,9 @@ jobs:
             v_arch: arm64
             runner: windows-11-arm
     runs-on: ${{ matrix.runner }}
+    # About twice the longest run on Windows, so that a test that hangs fails the
+    # job instead of holding a runner for GitHub's limit of 6 hours.
+    timeout-minutes: 60
     defaults:
       run:
         shell: bash

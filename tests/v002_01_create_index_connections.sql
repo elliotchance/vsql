@@ -256,3 +256,35 @@ SELECT * FROM t;
 -- 1: A: 1
 -- 1: A: 3
 -- 1: A: 2
+
+-- # IF NOT EXISTS still waits, unless the index already exists (then nothing
+-- # changes, so it doesn't matter what the table has).
+/* extensions V002-01 V002-03 */
+/* connection 1 */
+CREATE TABLE t (a INT);
+/* connection 2 */
+START TRANSACTION;
+INSERT INTO t (a) VALUES (1);
+/* connection 1 */
+CREATE INDEX IF NOT EXISTS t_a ON t (a);
+/* connection 2 */
+COMMIT;
+/* connection 1 */
+CREATE INDEX IF NOT EXISTS t_a ON t (a);
+/* connection 2 */
+START TRANSACTION;
+INSERT INTO t (a) VALUES (2);
+/* connection 1 */
+CREATE INDEX IF NOT EXISTS t_a ON t (a);
+/* connection 2 */
+COMMIT;
+-- 1: msg: CREATE TABLE 1
+-- 2: msg: START TRANSACTION
+-- 2: msg: INSERT 1
+-- 1: error 55P03: cannot create index T_A while another transaction has changes to T
+-- 2: msg: COMMIT
+-- 1: msg: CREATE INDEX 1
+-- 2: msg: START TRANSACTION
+-- 2: msg: INSERT 1
+-- 1: msg: CREATE INDEX 0
+-- 2: msg: COMMIT

@@ -571,7 +571,20 @@ struct Connection
    @[heap]
    pub struct Connection {
    mut:
-   	catalogs map[string]&CatalogConnection
+   	// V never frees a closure on its own, and every expression that's compiled
+   	// makes some (see CompileResult). So each statement runs in a frame of
+   	// lifetime, and the closures it made are released when it ends, see
+   	// PreparedStmt.query. frame_work runs frame_stmt, it's made once so that it
+   	// isn't a closure that's leaked for each statement.
+   	lifetime     closure.Lifetime
+   	frame_work   fn () = unsafe { nil }
+   	frame_active bool
+   	frame_ran    bool
+   	frame_stmt   &PreparedStmt = unsafe { nil }
+   	frame_params map[string]Value
+   	frame_result Result
+   	frame_err    IError = none
+   	catalogs     map[string]&CatalogConnection
    	// funcs only needs to be initialized once on open()
    	funcs []Func
    	// cast_rules are use for CAST() (see cast.v)

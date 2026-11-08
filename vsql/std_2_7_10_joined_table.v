@@ -231,7 +231,7 @@ fn (c CommonColumn) value() ValueExpression {
 }
 
 fn (c CommonColumn) equality() BooleanTest {
-	return new_boolean_test(BooleanPrimary(Predicate(ComparisonPredicate{RowValueConstructorPredicand(BooleanPredicand(NonparenthesizedValueExpressionPrimary(c.left.name))), ComparisonOperator.equal, RowValueConstructorPredicand(BooleanPredicand(NonparenthesizedValueExpressionPrimary(c.right.name)))})), false, none, false)
+	return new_boolean_test(BooleanPrimary(Predicate(ComparisonPredicate{RowValueConstructorPredicand(BooleanPredicand(NonparenthesizedValueExpressionPrimary(new_ref(c.left.name)))), ComparisonOperator.equal, RowValueConstructorPredicand(BooleanPredicand(NonparenthesizedValueExpressionPrimary(new_ref(c.right.name))))})), false, none, false)
 }
 
 // new_common_columns finds the columns of a named columns join. They're always

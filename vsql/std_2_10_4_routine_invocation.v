@@ -21,7 +21,7 @@ struct RoutineInvocation {
 	distinct bool
 	// filter is the <search condition> of the <filter clause> of an aggregate
 	// function, such as SUM(x) FILTER (WHERE x > 0).
-	filter ?BooleanValueExpression
+	filter ?&BooleanValueExpression
 }
 
 fn (e RoutineInvocation) pstr(params map[string]Value) string {

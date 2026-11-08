@@ -9,7 +9,9 @@ aggregate_function:
 | COUNT OPERATOR_LEFT_PAREN_ASTERISK right_paren filter_clause {
     parsed_sort_key_part(mut yylex, .set_function)
     $$.v = AggregateFunction(AggregateFunctionCount{
-      filter: $4.v as BooleanValueExpression
+      filter: &BooleanValueExpression{
+        ...$4.v as BooleanValueExpression
+      }
     })
   }
 | general_set_function {

@@ -41,19 +41,31 @@ fn (e ParenthesizedValueExpression) compile(mut c Compiler) !CompileResult {
 	return e.e.compile(mut c)!
 }
 
-type NonparenthesizedValueExpressionPrimary = AggregateFunction
+// new_ref copies v to the heap.
+fn new_ref[T](v T) &T {
+	mut ptr := unsafe { &T(voidptr(malloc(int(sizeof(T))))) }
+	unsafe {
+		*ptr = v
+	}
+	return ptr
+}
+
+// The biggest types are references, so that this (and every expression that
+// contains it) is small. The parser copies each node of the syntax tree several
+// times as it's built.
+type NonparenthesizedValueExpressionPrimary = &AggregateFunction
+	| &Identifier
+	| &NextValueExpression
+	| &RoutineInvocation
 	| CaseExpression
 	| CastSpecification
-	| Identifier
-	| NextValueExpression
-	| RoutineInvocation
 	| Subquery
 	| ValueSpecification
 
 fn (e NonparenthesizedValueExpressionPrimary) pstr(params map[string]Value) string {
 	return match e {
-		ValueSpecification, Identifier, AggregateFunction, RoutineInvocation, CaseExpression,
-		CastSpecification, NextValueExpression, Subquery {
+		ValueSpecification, &Identifier, &AggregateFunction, &RoutineInvocation, CaseExpression,
+		CastSpecification, &NextValueExpression, Subquery {
 			e.pstr(params)
 		}
 	}
@@ -61,8 +73,8 @@ fn (e NonparenthesizedValueExpressionPrimary) pstr(params map[string]Value) stri
 
 fn (e NonparenthesizedValueExpressionPrimary) compile(mut c Compiler) !CompileResult {
 	match e {
-		ValueSpecification, Identifier, AggregateFunction, CaseExpression, CastSpecification,
-		NextValueExpression, RoutineInvocation, Subquery {
+		ValueSpecification, &Identifier, &AggregateFunction, CaseExpression, CastSpecification,
+		&NextValueExpression, &RoutineInvocation, Subquery {
 			return e.compile(mut c)!
 		}
 	}

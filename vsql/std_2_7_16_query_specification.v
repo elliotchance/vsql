@@ -115,8 +115,8 @@ fn (e DerivedColumn) column_reference() ?Identifier {
 		f := factor.expr
 		if f is BooleanPredicand {
 			if f is NonparenthesizedValueExpressionPrimary {
-				if f is Identifier {
-					return f
+				if f is &Identifier {
+					return *f
 				}
 			}
 		}

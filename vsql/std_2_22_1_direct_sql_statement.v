@@ -98,7 +98,8 @@ pub fn (mut conn Connection) direct(sql_stmt string, options DirectOptions) !Res
 //
 // ISO/IEC 9075-2:2016(E), 22.1, <direct SQL statement>, Conformance Rules, 1
 pub fn direct_features(sql_stmt string) ![]string {
-	_, _, tokens, features := parse_sql(direct_statement_text(sql_stmt)!)!
+	mut stack := []YYSymType{}
+	_, _, tokens, features := parse_sql(direct_statement_text(sql_stmt)!, mut stack)!
 	check_direct_parameters(tokens)!
 
 	return unique_features(features, 'B021')

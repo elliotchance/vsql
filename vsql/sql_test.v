@@ -153,7 +153,8 @@ fn is_vsql_extension(id string) bool {
 // sql_test_extensions returns the vsql extensions that a statement uses, if it
 // can be parsed.
 fn sql_test_extensions(stmt string) []string {
-	_, _, _, features := parse_sql(stmt) or { return [] }
+	mut stack := []YYSymType{}
+	_, _, _, features := parse_sql(stmt, mut stack) or { return [] }
 
 	return features.filter(is_vsql_extension(it))
 }

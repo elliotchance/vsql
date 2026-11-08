@@ -159,10 +159,8 @@ fn syntax_error_hint(cs []rune, tokens []Token, index int) string {
 	if name in reserved_words() && text.to_upper() == name
 		&& name !in ['ALL', 'DEFAULT', 'DISTINCT', 'FALSE', 'NULL', 'TRUE', 'UNKNOWN'] {
 		mut quoted := tokens.clone()
-		quoted[index] = Token{token_literal_identifier, YYSymType{
-			v: IdentifierChain{
-				identifier: '"${name}"'
-			}
+		quoted[index] = Token{token_literal_identifier, IdentifierChain{
+			identifier: '"${name}"'
 		}, token.start, token.end}
 		if parses(quoted) {
 			return '${name} is a reserved word, so it must be quoted to be used as a name, such as "${name}" (see https://vsql.readthedocs.io/en/latest/keywords.html)'
@@ -202,9 +200,7 @@ fn syntax_error_hint(cs []rune, tokens []Token, index int) string {
 // the statement be parsed.
 fn is_missing_comma(tokens []Token, index int) bool {
 	mut with_comma := tokens[..index].clone()
-	with_comma << Token{token_operator_comma, YYSymType{
-		v: ','
-	}, 0, 0}
+	with_comma << Token{token_operator_comma, ',', 0, 0}
 	with_comma << tokens[index..]
 
 	return parses(with_comma)

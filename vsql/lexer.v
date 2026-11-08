@@ -200,7 +200,7 @@ fn (mut l Lexer) lex(mut lval YYSymType) int {
 
 	l.pos++
 	unsafe {
-		*lval = l.tokens[l.pos - 1].sym
+		*lval = l.tokens[l.pos - 1].sym()
 	}
 	return l.tokens[l.pos - 1].token
 }
@@ -251,15 +251,31 @@ fn cleanup_yacc_error(s string) string {
 	return msg['syntax error: '.len..]
 }
 
+// A TokenValue is what a token has besides its number. It's only the types that
+// a token can have, rather than YYSym, because a sum type is as big as its
+// biggest type, and YYSym is as big as the biggest node of the syntax tree.
+type TokenValue = IdentifierChain | Value | string
+
 // Token is a token of a statement. start and end are where it is in the text
 // that was tokenized, as the positions of its first character and the
 // character after it (see syntax_error_position).
 struct Token {
 	token int
-	sym   YYSymType
+	value TokenValue
 mut:
 	start int
 	end   int
+}
+
+// sym is the value of the token for the parser.
+fn (t Token) sym() YYSymType {
+	return YYSymType{
+		v: match t.value {
+			IdentifierChain { YYSym(t.value) }
+			Value { YYSym(t.value) }
+			string { YYSym(t.value) }
+		}
+	}
 }
 
 fn tokenize(sql_stmt string) ![]Token {
@@ -312,9 +328,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		// position: "?1", "?2", etc.
 		if cs[i] == `?` {
 			dynamic_parameters++
-			tokens << Token{token_operator_question_mark, YYSymType{
-				v: '?${dynamic_parameters}'
-			}, offset + i, offset + i + 1}
+			tokens << Token{token_operator_question_mark, '?${dynamic_parameters}', offset + i, offset + i + 1}
 			i++
 			continue
 		}
@@ -326,9 +340,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 				i++
 			}
 			word := substring(text, cs, ascii, start, i)
-			tokens << Token{token_literal_number, YYSymType{
-				v: word
-			}, 0, 0}
+			tokens << Token{token_literal_number, word, 0, 0}
 
 			// There is a special case for approximate numbers where 'E' is considered
 			// a separate token in the SQL BNF. However, "e2" should not be treated as
@@ -337,13 +349,11 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			// exponent must follow the E without any spaces. A mantissa may also end
 			// with a period, such as "1.e5".
 			if is_exponent(cs, i + 1) && cs[i] == `.` {
-				tokens << Token{token_operator_period, YYSymType{
-					v: '.'
-				}, 0, 0}
+				tokens << Token{token_operator_period, '.', 0, 0}
 				i++
 			}
 			if is_exponent(cs, i) {
-				tokens << Token{token_e, YYSymType{}, 0, 0}
+				tokens << Token{token_e, '', 0, 0}
 				i++
 			}
 
@@ -373,9 +383,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			check_noncharacters(word)!
 			// The character repertoire is always UCS, so the value is normalized
 			// (5.3 General Rule 2), after a compound literal is put together.
-			tokens << Token{token_literal_string, YYSymType{
-				v: new_character_value(normalize_nfc(word))
-			}, 0, 0}
+			tokens << Token{token_literal_string, new_character_value(normalize_nfc(word)), 0, 0}
 			unsafe {
 				goto next
 			}
@@ -408,10 +416,8 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 				return sqlstate_42601('a delimited identifier cannot be empty')
 			}
 			i++
-			tokens << Token{token_literal_identifier, YYSymType{
-				v: IdentifierChain{
-					identifier: '"${word}"'
-				}
+			tokens << Token{token_literal_identifier, IdentifierChain{
+				identifier: '"${word}"'
 			}, 0, 0}
 			unsafe {
 				goto next
@@ -422,9 +428,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		if i < cs.len - 1 {
 			multi_token := multi_operator_token(cs[i], cs[i + 1])
 			if multi_token != 0 {
-				tokens << Token{multi_token, YYSymType{
-					v: substring(text, cs, ascii, i, i + 2)
-				}, 0, 0}
+				tokens << Token{multi_token, substring(text, cs, ascii, i, i + 2), 0, 0}
 				i += 2
 				unsafe {
 					goto next
@@ -434,9 +438,7 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 
 		single_token := single_operator_token(cs[i])
 		if single_token != 0 {
-			tokens << Token{single_token, YYSymType{
-				v: substring(text, cs, ascii, i, i + 1)
-			}, 0, 0}
+			tokens << Token{single_token, substring(text, cs, ascii, i, i + 1), 0, 0}
 			i++
 			unsafe {
 				goto next
@@ -468,14 +470,10 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 		// regular identifier. LIMIT is the same (see is_limit_clause).
 		tok_number := keyword_tokens[upper_word] or { 0 }
 		if tok_number != 0 && upper_word != 'E' && upper_word != 'LIMIT' {
-			tokens << Token{tok_number, YYSymType{
-				v: upper_word
-			}, 0, 0}
+			tokens << Token{tok_number, upper_word, 0, 0}
 		} else {
-			tokens << Token{token_literal_identifier, YYSymType{
-				v: IdentifierChain{
-					identifier: word
-				}
+			tokens << Token{token_literal_identifier, IdentifierChain{
+				identifier: word
 			}, 0, 0}
 		}
 
@@ -488,21 +486,19 @@ fn tokenize_with_features(sql_stmt string) !([]Token, []string) {
 			start := tokens[tokens.len - length].start
 			end := tokens[tokens.len - 1].end
 			tokens = tokens[..tokens.len - length].clone()
-			tokens << Token{new_token, YYSymType{}, start, end}
+			tokens << Token{new_token, '', start, end}
 		}
 	}
 
 	for position, token in tokens {
 		if token.token == token_ilike && is_ilike_operator(tokens, position) {
-			tokens[position] = Token{token_operator_ilike, token.sym, token.start, token.end}
+			tokens[position] = Token{token_operator_ilike, token.value, token.start, token.end}
 		}
 	}
 
 	for pos in 0 .. tokens.len {
 		if is_limit_clause(tokens, pos) {
-			tokens[pos] = Token{token_limit, YYSymType{
-				v: 'LIMIT'
-			}, tokens[pos].start, tokens[pos].end}
+			tokens[pos] = Token{token_limit, 'LIMIT', tokens[pos].start, tokens[pos].end}
 		}
 	}
 
@@ -600,7 +596,7 @@ fn starts_value(token Token, reserved []string) bool {
 // is one that an expression can directly follow in the grammar, or a period for
 // "t.limit - 1".
 fn is_limit_clause(tokens []Token, i int) bool {
-	sym := tokens[i].sym.v
+	sym := tokens[i].value
 	if tokens[i].token != token_literal_identifier || sym !is IdentifierChain
 		|| (sym as IdentifierChain).identifier.to_upper() != 'LIMIT' || i + 1 >= tokens.len {
 		return false

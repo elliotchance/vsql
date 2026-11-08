@@ -104,7 +104,7 @@ fn normalize_identifier(s string) !string {
 		return error('not an identifier')
 	}
 
-	sym := tokens[0].sym.v
+	sym := tokens[0].value
 	if sym is IdentifierChain {
 		if sym.identifier.starts_with('"') {
 			return sym.identifier[1..sym.identifier.len - 1].replace('""', '"')

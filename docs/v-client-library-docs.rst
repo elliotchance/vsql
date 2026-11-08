@@ -621,6 +621,8 @@ struct Connection
    	frame_params map[string]Value
    	frame_result Result
    	frame_err    IError = none
+   	// parser_stack is kept between statements, see parse_statement.
+   	parser_stack []YYSymType
    	catalogs     map[string]&CatalogConnection
    	// funcs only needs to be initialized once on open()
    	funcs []Func

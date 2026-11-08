@@ -756,49 +756,43 @@ fn (e Identifier) id() string {
 		return e.custom_id
 	}
 
-	mut parts := []string{}
+	// This is called for every name that's compiled, so it doesn't build an
+	// array of the parts to join them.
+	return join_name_part(join_name_part(join_name_part(e.catalog_name, e.schema_name),
+		e.entity_name), e.sub_entity_name)
+}
 
-	if e.catalog_name != '' {
-		parts << e.catalog_name
+// join_name_part puts part after name with a '.', unless either is empty.
+fn join_name_part(name string, part string) string {
+	if part == '' {
+		return name
 	}
 
-	if e.schema_name != '' {
-		parts << e.schema_name
+	if name == '' {
+		return part
 	}
 
-	if e.entity_name != '' {
-		parts << e.entity_name
-	}
-
-	if e.sub_entity_name != '' {
-		parts << e.sub_entity_name
-	}
-
-	return parts.join('.')
+	return '${name}.${part}'
 }
 
 // storage_id is the internal canonical name for disk storage, as opposed to
 // str() which is the human readable form.
 fn (e Identifier) storage_id() string {
-	mut parts := []string{}
-
 	// Note: The catalog name is not included here because its registered
 	// virtually on the connection to the storage.
+	return join_name_part(join_name_part(storage_id_part(e.schema_name), storage_id_part(e.entity_name)),
+		storage_id_part(e.sub_entity_name))
+}
 
-	// A name that contains a '.' is quoted, otherwise "A.B".C and A."B.C" would
-	// be the same. So is a name with a quote, so that it can't be mistaken for
-	// a quoted name.
-	for part in [e.schema_name, e.entity_name, e.sub_entity_name] {
-		if part != '' {
-			parts << if part.contains('.') || part.contains('"') {
-				delimit_identifier(part)
-			} else {
-				part
-			}
-		}
+// storage_id_part is a part of a storage_id. A name that contains a '.' is
+// quoted, otherwise "A.B".C and A."B.C" would be the same. So is a name with a
+// quote, so that it can't be mistaken for a quoted name.
+fn storage_id_part(part string) string {
+	if part.contains('.') || part.contains('"') {
+		return delimit_identifier(part)
 	}
 
-	return parts.join('.')
+	return part
 }
 
 // storage_sql is the name as it's written in the definition of an object in the

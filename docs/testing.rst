@@ -728,8 +728,9 @@ location of each failed test:
    SQL tests: 1549 passed, 1 failed, 1550 total, 3120 statements
      FAILED tests/arithmetic.sql:3 (in memory through server, on disk through server)
 
-The "Summary for running V tests" line printed by V does not include failed
-tests, so always check the SQL tests summary (or the exit code).
+The "Summary for running V tests" line printed by V counts all of the SQL
+tests as the one V test ``test_all``, so check the SQL tests summary to see
+which ones failed.
 
 However, in some cases (such as debugging crashes) you might want more
 verbose output.
@@ -740,6 +741,22 @@ such as:
 .. code-block:: sh
 
    VERBOSE=1 make sql-test
+
+Running Tests at the Same Time
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The SQL tests are split between several processes that run at the same time,
+one for each CPU. ``$SQL_TEST_JOBS`` sets how many there are, and ``1`` runs
+them all in one process:
+
+.. code-block:: sh
+
+   SQL_TEST_JOBS=1 make sql-test
+
+Processes are used rather than threads, because V's garbage collector makes
+threads wait on each other each time they allocate memory. With ``$VERBOSE``
+or ``$TEST``, the tests always run in one process, in order, so that the output
+isn't mixed up.
 
 Running In Memory, On Disk or Without the Server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

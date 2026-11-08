@@ -15,6 +15,8 @@ SELECT * FROM t;
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.ID INTEGER NOT NULL, ":memory:".PUBLIC.T.X INTEGER)
 -- ID: 1 X: 10
 
+-- # NOT NULL can also be given, before or after PRIMARY KEY, though it's
+-- # implied (11.7, Syntax Rules, 7).
 CREATE TABLE t (id INT NOT NULL PRIMARY KEY);
 CREATE TABLE t2 (id INT PRIMARY KEY NOT NULL);
 INSERT INTO t (id) VALUES (1);
@@ -30,6 +32,8 @@ SELECT * FROM t2;
 -- ID: 1
 -- ID: 1
 
+-- # The key doesn't have to be the first column, and the rows are in key
+-- # order. Changing the key moves the row.
 CREATE TABLE t (x INT, id BIGINT PRIMARY KEY);
 INSERT INTO t (x, id) VALUES (1, 2);
 INSERT INTO t (x, id) VALUES (2, 1);

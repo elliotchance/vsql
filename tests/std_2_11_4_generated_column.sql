@@ -1,3 +1,5 @@
+-- # A generated column is computed from the other columns of the row when it's
+-- # inserted, also for DEFAULT, and is NULL when the expression is NULL.
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x * 2));
 INSERT INTO foo (x) VALUES (1), (2);
 INSERT INTO foo (x, y) VALUES (3, DEFAULT);
@@ -12,6 +14,8 @@ SELECT * FROM foo;
 -- X: 3 Y: 6
 -- X: NULL Y: NULL
 
+-- # An INSERT can only give DEFAULT for a generated column (14.11, Syntax
+-- # Rules, 10).
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x * 2));
 INSERT INTO foo (x, y) VALUES (1, 2);
 -- msg: CREATE TABLE 1
@@ -30,6 +34,8 @@ SELECT * FROM foo;
 -- X: 11 Y: 22 Z: a
 -- X: 2 Y: 4 Z: c
 
+-- # An UPDATE can also only set it to DEFAULT (14.15, Syntax Rules, 5), even
+-- # when no rows match.
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x * 2));
 INSERT INTO foo (x) VALUES (1);
 UPDATE foo SET y = 5;
@@ -68,6 +74,8 @@ SELECT COLUMN_NAME, DATA_TYPE, IS_GENERATED, GENERATION_EXPRESSION FROM INFORMAT
 -- COLUMN_NAME: Y DATA_TYPE: CHARACTER VARYING IS_GENERATED: ALWAYS GENERATION_EXPRESSION: X || 'a'
 -- COLUMN_NAME: Z DATA_TYPE: BOOLEAN IS_GENERATED: ALWAYS GENERATION_EXPRESSION: CHAR_LENGTH(X) < 5
 
+-- # The type of the expression must be assignable to the type of the column
+-- # (Syntax Rules, 13.a), which is checked when the table is created.
 CREATE TABLE foo (x VARCHAR(10), y INT GENERATED ALWAYS AS (x));
 -- error 42846: cannot coerce CHARACTER VARYING(10) to INTEGER
 
@@ -81,6 +89,8 @@ CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x * 2), z INT GENERATED ALWA
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (y + 1));
 -- error 42601: syntax error: generation expression of Y cannot use generated column Y
 
+-- # A column that doesn't exist, or a column of another table, can't be used.
+-- # The other table isn't in scope, so it's not found.
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (w + 1));
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.W
 
@@ -89,6 +99,9 @@ CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (bar.w + 1));
 -- msg: CREATE TABLE 1
 -- error 42P01: no such table: ":memory:".PUBLIC.BAR
 
+-- # The expression can't have a subquery (Syntax Rules, 10.f) or an aggregate
+-- # function, and must be deterministic (Syntax Rules, 10.d), so
+-- # CURRENT_TIMESTAMP and NEXT VALUE FOR can't be used.
 CREATE TABLE bar (w INT);
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS ((SELECT w FROM bar)));
 -- msg: CREATE TABLE 1
@@ -105,11 +118,15 @@ CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (NEXT VALUE FOR seq));
 -- msg: CREATE SEQUENCE 1
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in a generation expression
 
+-- # A parameter can't be used in a column definition, even when it has a value
+-- # (Syntax Rules, 1).
 /* params 1 */
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x + ?));
 -- sql: CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x + 1.0e0))
 -- error 42601: syntax error: parameter ?1 cannot be used in a generation expression
 
+-- # The product of two columns of different numeric types, stored with the
+-- # scale of the generated column.
 CREATE TABLE products (price NUMERIC(10, 2), quantity INTEGER, total NUMERIC(12, 2) GENERATED ALWAYS AS (price * quantity));
 INSERT INTO products (price, quantity) VALUES (1.25, 4);
 SELECT * FROM products;
@@ -129,6 +146,8 @@ INSERT INTO foo (x) VALUES (1);
 -- error 23514: violates check constraint: CHECK (Y < 10) on ":memory:".PUBLIC.FOO
 -- error 23505: violates unique constraint: UNIQUE (Y) on ":memory:".PUBLIC.FOO
 
+-- # A generated column can be the PRIMARY KEY, and the key changes when the row
+-- # is updated.
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x * 2) PRIMARY KEY);
 INSERT INTO foo (x) VALUES (1), (2);
 UPDATE foo SET x = 3 WHERE x = 1;
@@ -139,7 +158,8 @@ SELECT * FROM foo;
 -- X: 2 Y: 4
 -- X: 3 Y: 6
 
--- # ALTER TABLE.
+-- # ALTER TABLE can't give a generated column a default, or RESTART it like an
+-- # identity column.
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x * 2));
 ALTER TABLE foo ALTER COLUMN y SET DEFAULT 3;
 -- msg: CREATE TABLE 1
@@ -180,6 +200,8 @@ SELECT * FROM foo;
 -- msg: ALTER TABLE 1
 -- W: 10
 
+-- # Dropping x with CASCADE would also drop y and leave no columns, so it
+-- # fails.
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x * 2));
 ALTER TABLE foo DROP COLUMN x CASCADE;
 -- msg: CREATE TABLE 1

@@ -1,3 +1,8 @@
+-- # Transactions are READ COMMITTED rather than the implicit SERIALIZABLE
+-- # (17.3, Syntax Rules, 3): a statement sees the rows that other connections
+-- # committed before it started, even in a transaction that started earlier. A
+-- # rolled back row is never seen, and a row that isn't committed yet is only
+-- # seen by its own transaction.
 /* connection 1 */
 CREATE TABLE foo (bar INT);
 START TRANSACTION;
@@ -53,6 +58,10 @@ SELECT * FROM foo;
 -- 1: BAR: 123
 -- 1: BAR: 456
 
+-- # DELETE in another connection only finds committed rows. A row that was
+-- # rolled back, or isn't committed yet, isn't found (DELETE 0, with the no
+-- # data warning), and the uncommitted row is still there for its own
+-- # transaction.
 /* connection 1 */
 CREATE TABLE foo (bar INT);
 START TRANSACTION;
@@ -102,6 +111,8 @@ SELECT * FROM foo;
 -- 2: msg: DELETE 0
 -- 1: BAR: 123
 
+-- # UPDATE in another connection is the same as DELETE: only committed rows are
+-- # found.
 /* connection 1 */
 CREATE TABLE foo (bar INT);
 START TRANSACTION;
@@ -153,6 +164,10 @@ SELECT * FROM foo;
 -- 2: msg: UPDATE 0
 -- 1: BAR: 123
 
+-- # Two transactions can't change the same row at the same time. The second one
+-- # fails straight away with 40001 (no matter how many times the first changed
+-- # the row), and its transaction is rolled back, so it still sees the
+-- # committed value while the first sees its own change.
 /* connection 1 */
 CREATE TABLE foo (bar INT);
 INSERT INTO foo (bar) VALUES (123);
@@ -201,6 +216,8 @@ SELECT * FROM foo;
 -- 2: BAR: 123
 -- 1: BAR: 234
 
+-- # A row deleted by a transaction that isn't committed is still seen by other
+-- # connections, and is still there after the ROLLBACK.
 /* connection 1 */
 CREATE TABLE foo (bar INT);
 INSERT INTO foo (bar) VALUES (123);
@@ -220,6 +237,7 @@ SELECT * FROM foo;
 -- 1: msg: ROLLBACK
 -- 2: BAR: 123
 
+-- # ROLLBACK also cancels DROP TABLE and CREATE TABLE, for every connection.
 /* connection 1 */
 CREATE TABLE foo (bar INT);
 /* connection 2 */
@@ -242,6 +260,10 @@ SELECT * FROM baz;
 -- 1: error 42P01: no such table: "test".PUBLIC.BAZ
 -- 2: error 42P01: no such table: "test".PUBLIC.BAZ
 
+-- # Deleting or updating a row that another transaction has changed but not
+-- # committed is 40001, whether that transaction is committed or rolled back
+-- # afterwards. The failed transaction is rolled back, so it then sees whatever
+-- # the other transaction left.
 /* connection 1 */
 CREATE TABLE foo (bar INT);
 INSERT INTO foo (bar) VALUES (123);

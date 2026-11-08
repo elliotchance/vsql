@@ -83,7 +83,11 @@ COMMIT;
 -- msg: SET CONSTRAINTS
 -- msg: COMMIT
 
--- # SET CONSTRAINTS outside of a transaction is for the next transaction.
+-- # SET CONSTRAINTS outside of a transaction is for the next transaction only,
+-- # because every constraint goes back to its initial mode when a transaction
+-- # ends (17.8, General Rules, 2.h.ii.2). A name that doesn't identify a
+-- # constraint (S.U, as there's no schema S) fails the whole statement (Syntax
+-- # Rules, 1), so nothing is deferred.
 CREATE TABLE t (x INT CONSTRAINT u UNIQUE DEFERRABLE);
 INSERT INTO t (x) VALUES (1);
 SET CONSTRAINTS s.u, u DEFERRED;

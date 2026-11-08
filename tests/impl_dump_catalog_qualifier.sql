@@ -18,8 +18,8 @@ INSERT INTO t (a) VALUES (0);
 -- A: 1 B: 2
 -- error 23514: violates check constraint: CHECK (PUBLIC.T.A > 0) on ":memory:".PUBLIC.T
 
--- # In another schema, where every name in the chain is delimited and contains a
--- # dot or a doubled quote.
+-- # In another schema, where every name in the chain is delimited and contains
+-- # a dot or a doubled quote.
 CREATE SCHEMA "s.x";
 SET SCHEMA 's.x';
 CREATE TABLE "t.y" ("a""b" INT CHECK (":memory:"."s.x"."t.y"."a""b" > 0));
@@ -42,8 +42,8 @@ INSERT INTO "s.x"."t.y" ("a""b") VALUES (0);
 -- msg: INSERT 1
 -- error 23514: violates check constraint: CHECK ("s.x"."t.y"."a""b" > 0) on ":memory:"."s.x"."t.y"
 
--- # A name without a catalog isn't changed, however many parts it has, and neither
--- # is anything in a string that looks like a name with a catalog.
+-- # A name without a catalog isn't changed, however many parts it has, and
+-- # neither is anything in a string that looks like a name with a catalog.
 CREATE TABLE t (
   a VARCHAR(20) DEFAULT 'A.B.C.D' CHECK (t.a <> 'it''s W.X.Y.Z'),
   "B.C.D.E" INT CHECK (public.t."B.C.D.E" > 1.5e0),

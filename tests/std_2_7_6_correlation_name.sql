@@ -4,6 +4,7 @@ INSERT INTO t1 (id, parent_id, name) VALUES (1, NULL, 'root');
 INSERT INTO t1 (id, parent_id, name) VALUES (2, 1, 'left');
 INSERT INTO t1 (id, parent_id, name) VALUES (3, 1, 'right');
 
+-- # A correlation name qualifies the columns of the table it names.
 SELECT x.name FROM t1 AS x;
 -- NAME: root
 -- NAME: left
@@ -39,7 +40,8 @@ EXPLAIN SELECT x.name FROM t1 AS x;
 -- EXPLAIN: TABLE X (ID INTEGER, PARENT_ID INTEGER, NAME CHARACTER VARYING(10))
 -- EXPLAIN: EXPR (NAME CHARACTER VARYING(10))
 
--- # A derived column list renames the columns.
+-- # A derived column list renames the columns. It must have one name for
+-- # each column, and no name twice (Syntax Rules, 11.b.ii.1).
 SELECT * FROM t1 AS x (a, b, c);
 -- A: 1 B: NULL C: root
 -- A: 2 B: 1 C: left
@@ -91,7 +93,8 @@ SELECT * FROM t2 AS y WHERE y.z = 1;
 -- msg: CREATE TABLE 1
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Y.Z
 
--- # A correlation name can't be the unqualified name of another table.
+-- # A correlation name can't be the unqualified name of another table
+-- # (7.5, Syntax Rules, 5.c.ii.1).
 CREATE TABLE t2 (x INT);
 CREATE TABLE t3 (y INT);
 SELECT * FROM t2 AS t3 JOIN t3 ON TRUE;

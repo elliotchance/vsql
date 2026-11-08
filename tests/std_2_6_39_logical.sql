@@ -1,3 +1,4 @@
+-- # The truth tables of AND, OR and NOT (General Rules, 2 and 3).
 VALUES TRUE AND TRUE;
 -- COL1: TRUE
 
@@ -46,6 +47,8 @@ VALUES 1 IS NOT UNKNOWN;
 -- error 42804: data type mismatch in IS: expected BOOLEAN but got SMALLINT
 -- error 42804: data type mismatch in IS: expected BOOLEAN but got SMALLINT
 
+-- # A column has to be a BOOLEAN too, so an INTEGER column is an error, but
+-- # a comparison of it is fine.
 CREATE TABLE t (x INTEGER);
 INSERT INTO t (x) VALUES (1);
 SELECT * FROM t WHERE x AND x;

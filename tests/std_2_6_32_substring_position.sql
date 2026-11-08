@@ -1,5 +1,6 @@
 -- # The start position and string length of SUBSTRING must be an exact numeric
--- # with scale 0. A host parameter may be any whole number.
+-- # with scale 0 (Syntax Rules, 3). A dynamic parameter's value is checked
+-- # instead, so it only has to be a whole number.
 VALUES SUBSTRING('hello' FROM 2.5);
 -- error 42601: syntax error: SUBSTRING start position must be an exact numeric with scale 0, got NUMERIC(2, 1)
 

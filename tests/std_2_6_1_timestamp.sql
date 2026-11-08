@@ -1,3 +1,6 @@
+-- # A TIMESTAMP literal needs a date and a time. It has a time zone only if one
+-- # is given, and its precision is the number of digits in the fraction of a
+-- # second (5.3, Syntax Rules, 27).
 /* types */
 VALUES TIMESTAMP '2022-06-30 21:47:32';
 -- COL1: 2022-06-30T21:47:32 (TIMESTAMP(0) WITHOUT TIME ZONE)
@@ -28,6 +31,9 @@ VALUES TIMESTAMP '2022-06-30 21:47:32.123';
 VALUES TIMESTAMP '2022-06-30 21:47:32.456000+05:12';
 -- COL1: 2022-06-30T21:47:32.456000+0512 (TIMESTAMP(6) WITH TIME ZONE)
 
+-- # Anything else around the value, a T between the date and time, a field out
+-- # of range (5.3, Syntax Rules, 32) or a year that isn't four digits (5.3,
+-- # Syntax Rules, 31) makes it invalid.
 VALUES TIMESTAMP '2022-06-30T21:47:32';
 -- error 42601: syntax error: TIMESTAMP '2022-06-30T21:47:32' is not valid
 
@@ -55,6 +61,8 @@ VALUES TIMESTAMP '10000-06-30T21:47:32';
 VALUES TIMESTAMP '-1-06-30T21:47:32';
 -- error 42601: syntax error: TIMESTAMP '-1-06-30T21:47:32' is not valid
 
+-- # A time zone can be from -14:00 to +14:00 (5.3, Syntax Rules, 35), and its
+-- # minutes must be less than 60.
 VALUES TIMESTAMP '2022-06-30 21:47:32+12:00';
 -- COL1: 2022-06-30T21:47:32+1200
 
@@ -90,12 +98,18 @@ VALUES TIMESTAMP '2022-06-30 24:00:00';
 VALUES TIMESTAMP '2022-06-30 23:60:00';
 -- error 42601: syntax error: TIMESTAMP '2022-06-30 23:60:00' is not valid
 
+-- # Every field except the year has two digits (5.3, Syntax Rules, 31).
 VALUES TIMESTAMP '2022-6-30 21:47:32';
 -- error 42601: syntax error: TIMESTAMP '2022-6-30 21:47:32' is not valid
 
 VALUES TIMESTAMP '2022-06-30 1:47:32';
 -- error 42601: syntax error: TIMESTAMP '2022-06-30 1:47:32' is not valid
 
+-- # Storing a TIMESTAMP in a column of the other kind casts it (9.2, General
+-- # Rules, 3.b.xvi.1): a time zone is dropped, keeping the local time (6.13,
+-- # General Rules, 18.f), and a missing one becomes the session's, +05:00 here
+-- # (6.13, General Rules, 19.e). Without a precision it's 6 (Syntax Rules, 36),
+-- # and extra fractional seconds are truncated.
 CREATE TABLE foo (f1 TIMESTAMP WITHOUT TIME ZONE);
 INSERT INTO foo (f1) VALUES (TIMESTAMP '2022-06-30 21:47:32');
 INSERT INTO foo (f1) VALUES (TIMESTAMP '2022-06-30 01:47:32+05:12');
@@ -160,6 +174,10 @@ SELECT * FROM foo;
 -- F1: 2022-06-30T21:47:32.123+0500
 -- F1: 2022-06-30T01:47:32.123+0512
 
+-- # Casting a TIMESTAMP WITH TIME ZONE to a DATE, TIME or TIMESTAMP uses its
+-- # local date and time (6.13, General Rules, 14.d, 16.e and 18.f), and a TIME
+-- # WITH TIME ZONE keeps its time zone (6.13, General Rules, 17.d). Changing
+-- # the precision truncates or zero-extends the fraction.
 CREATE TABLE foo (f1 TIMESTAMP(3) WITH TIME ZONE);
 INSERT INTO foo (f1) VALUES (TIMESTAMP '2022-06-30 21:47:32.123+05:00');
 SELECT CAST(f1 AS DATE) FROM foo;
@@ -203,6 +221,8 @@ SELECT CAST(f1 AS TIMESTAMP(4) WITH TIME ZONE) FROM foo;
 -- COL1: 2022-06-30T21:47:32.12+0500
 -- COL1: 2022-06-30T21:47:32.1230+0500
 
+-- # A string is trimmed, then read as a timestamp (6.13, General Rules,
+-- # 18.a.ii).
 /* types */
 VALUES CAST('2022-06-30 12:34:56' AS TIMESTAMP(6));
 -- COL1: 2022-06-30T12:34:56.000000 (TIMESTAMP(6) WITHOUT TIME ZONE)
@@ -215,6 +235,9 @@ VALUES CAST(' 2022-06-30 12:34:56+03:00 ' AS TIMESTAMP(0));
 VALUES CAST('2022-06-30 12:34:56' AS TIMESTAMP WITH TIME ZONE);
 -- COL1: 2022-06-30T12:34:56.000000+0500
 
+-- # A string with a time zone keeps it. A string without a time, or with an
+-- # invalid date, is an invalid datetime format (6.13, General Rules,
+-- # 18.a.ii.3).
 /* types */
 VALUES CAST('2022-06-30 12:34:56.5+03:00' AS TIMESTAMP(3) WITH TIME ZONE);
 -- COL1: 2022-06-30T12:34:56.500+0300 (TIMESTAMP(3) WITH TIME ZONE)
@@ -235,6 +258,7 @@ VALUES CAST(CAST(TIMESTAMP '2022-06-30 12:34:56.5+03:00' AS VARCHAR(40)) AS TIME
 VALUES CAST('DATE ''2022-06-30''' AS TIMESTAMP);
 -- error 22007: invalid datetime format
 
+-- # A TIMESTAMP without a precision is a TIMESTAMP(6) (Syntax Rules, 36).
 /* types */
 VALUES CAST(TIMESTAMP '2022-06-30 12:34:56' AS TIMESTAMP);
 -- COL1: 2022-06-30T12:34:56.000000 (TIMESTAMP(6) WITHOUT TIME ZONE)
@@ -250,6 +274,9 @@ SELECT * FROM foo;
 -- msg: INSERT 1
 -- F1: 2022-06-30T21:47:32.123456
 
+-- # Timestamps with a time zone are compared in UTC (8.2, General Rules, 6),
+-- # which can change the date. One without a time zone is taken to be in the
+-- # session time zone.
 VALUES TIMESTAMP '2020-01-01 10:00:00+05:00' = TIMESTAMP '2020-01-01 05:00:00+00:00';
 -- COL1: TRUE
 

@@ -1,3 +1,6 @@
+-- # A row IS NULL when every field is NULL, and IS NOT NULL when no field is
+-- # NULL (General Rules, 2.b). So a row with some NULL fields is neither, and
+-- # IS NOT NULL isn't the same as NOT ... IS NULL unless the row has one field.
 VALUES ROW(ROW(1, 2) IS NULL, ROW(1, 2) IS NOT NULL);
 -- COL1: FALSE COL2: TRUE
 
@@ -25,6 +28,7 @@ VALUES ROW(ROW(CAST(NULL AS INT)) IS NOT NULL, ROW(1) IS NOT NULL);
 VALUES (1, 2, 3 + 4) IS NOT NULL;
 -- COL1: TRUE
 
+-- # Rows of columns, including in a WHERE.
 CREATE TABLE foo (x INT, y INT);
 INSERT INTO foo (x, y) VALUES (1, 2);
 INSERT INTO foo (x, y) VALUES (3, NULL);
@@ -56,6 +60,7 @@ SELECT x, (x, y) IS NOT NULL AS ok FROM foo;
 -- X: 1 OK: FALSE
 -- X: 2 OK: TRUE
 
+-- # The result can be stored like any other boolean.
 CREATE TABLE foo (x BOOLEAN, y INT);
 INSERT INTO foo (x, y) VALUES ((1, 2) IS NULL, 3);
 INSERT INTO foo (x, y) VALUES ((1, 2) IS NOT NULL, 4);
@@ -66,6 +71,7 @@ SELECT * FROM foo;
 -- X: FALSE Y: 3
 -- X: TRUE Y: 4
 
+-- # The fields can be aggregate functions.
 CREATE TABLE foo (x INT, y INT);
 INSERT INTO foo (x, y) VALUES (1, NULL);
 INSERT INTO foo (x, y) VALUES (2, NULL);
@@ -76,6 +82,7 @@ SELECT (count(x), max(y)) IS NOT NULL FROM foo;
 -- warning 01003: null value eliminated in set function
 -- COL1: FALSE
 
+-- # A row is shown with ROW.
 /* extensions V001-01 */
 CREATE TABLE foo (x INT);
 EXPLAIN SELECT * FROM foo WHERE (x, x + 1) IS NOT NULL;
@@ -84,6 +91,8 @@ EXPLAIN SELECT * FROM foo WHERE (x, x + 1) IS NOT NULL;
 -- EXPLAIN: WHERE ROW(X, X + 1) IS NOT NULL
 -- EXPLAIN: EXPR (":memory:".PUBLIC.FOO.X INTEGER)
 
+-- # A field must be a value expression, so a bare NULL or DEFAULT isn't
+-- # allowed, and its columns must exist.
 VALUES (1, NULL) IS NULL;
 -- error 42601: syntax error: unexpected NULL
 

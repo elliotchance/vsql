@@ -12,6 +12,8 @@ CREATE INDEX t_x ON t (x);
 -- flags: V002-01
 -- msg: CREATE INDEX 1
 
+-- # The index is kept up to date by INSERT, UPDATE and DELETE, including NULLs
+-- # and the order of ASC and DESC columns.
 /* extensions V002-01 */
 CREATE INDEX t_x ON t (x ASC, y DESC);
 INSERT INTO t (id, x, y) VALUES (4, 'b', 2), (5, NULL, NULL);
@@ -91,6 +93,8 @@ DROP INDEX t_x;
 -- msg: DROP INDEX 1
 -- msg: DROP INDEX 1
 
+-- # The table and its columns must exist, and a column can only be in the index
+-- # once. INFORMATION_SCHEMA can't have an index because it's read-only.
 /* extensions V002-01 */
 CREATE INDEX t_x ON nosuch (x);
 -- error 42P01: no such table: ":memory:".PUBLIC.NOSUCH
@@ -116,6 +120,7 @@ CREATE INDEX t_x ON t (x, y, x);
 CREATE INDEX public.t_x ON t (x);
 -- error 42601: syntax error: unexpected ".", expecting ON
 
+-- # CREATE INDEX can't be explained.
 /* extensions V002-01 */
 EXPLAIN CREATE INDEX t_x ON t (x);
 -- error 42601: syntax error: Cannot EXPLAIN CREATE INDEX
@@ -131,6 +136,8 @@ DROP INDEX t2_x;
 -- error 54000: the key of an object (184 bytes) is too long for a page of 256 bytes
 -- error 42704: no such index: ":memory:".PUBLIC.T2_X
 
+-- # A row whose key is too long for an index that's already there can't be
+-- # inserted or updated, and is left as it was.
 /* extensions V002-01 */
 CREATE TABLE t2 (x VARCHAR(200));
 CREATE INDEX t2_x ON t2 (x);
@@ -239,6 +246,7 @@ SELECT * FROM t;
 -- ID: 2 X: a Y: NULL
 -- ID: 3 X: c Y: 1
 
+-- # A ROLLBACK puts back the entries the rows had before the transaction.
 /* extensions V002-01 */
 CREATE INDEX t_x ON t (x);
 START TRANSACTION;
@@ -274,6 +282,7 @@ DROP INDEX t_x;
 -- msg: INSERT 1
 -- error 42704: no such index: ":memory:".PUBLIC.T_X
 
+-- # An index created in a transaction that's committed is kept.
 /* extensions V002-01 */
 START TRANSACTION;
 CREATE INDEX t_x ON t (x);

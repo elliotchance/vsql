@@ -1,3 +1,6 @@
+-- # A parent row can't be deleted or updated while another transaction has an
+-- # uncommitted FOREIGN KEY to it, because the referencing rows can't be seen
+-- # to be checked. Inserting a parent row is fine.
 /* connection 1 */
 CREATE TABLE parent (id INT PRIMARY KEY);
 INSERT INTO parent (id) VALUES (1);
@@ -25,6 +28,8 @@ SELECT * FROM child;
 -- 1: ID: 3
 -- 1: PARENT_ID: 1
 
+-- # A FOREIGN KEY can't be created while another transaction has changed rows
+-- # of the referenced table that it can't see yet.
 /* connection 1 */
 CREATE TABLE parent (id INT PRIMARY KEY);
 INSERT INTO parent (id) VALUES (1);
@@ -42,6 +47,9 @@ COMMIT;
 -- 1: error 40001: serialization failure: avoiding concurrent write on table definition
 -- 2: msg: COMMIT
 
+-- # Adding a FOREIGN KEY with ALTER TABLE, as a constraint or with a new
+-- # column, also stops the referenced table from being changed until it's
+-- # committed.
 /* connection 1 */
 CREATE TABLE parent (id INT PRIMARY KEY);
 INSERT INTO parent (id) VALUES (1);
@@ -80,6 +88,8 @@ COMMIT;
 -- 2: error 40001: serialization failure: avoiding concurrent write on referencing table definition
 -- 1: msg: COMMIT
 
+-- # Changing a table without changing its FOREIGN KEY isn't affected by
+-- # uncommitted rows of the referenced table.
 /* connection 1 */
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (parent_id INT REFERENCES parent);

@@ -1,3 +1,5 @@
+-- # CAST(NULL AS T) is the null value with the declared type T (General Rules,
+-- # 2.a). A null BOOLEAN is UNKNOWN.
 /* types */
 VALUES CAST(NULL AS INT);
 -- COL1: NULL (INTEGER)
@@ -18,6 +20,8 @@ VALUES CAST(NULL AS DATE);
 VALUES CAST(NULL AS BOOLEAN);
 -- COL1: UNKNOWN (BOOLEAN)
 
+-- # A typed NULL is like any other null value in expressions, predicates and
+-- # functions.
 /* types */
 VALUES CAST(NULL AS INT) + 1;
 -- COL1: NULL (INTEGER)
@@ -41,6 +45,8 @@ VALUES COALESCE(CAST(NULL AS INT), CAST(3 AS INT));
 VALUES UPPER(CAST(NULL AS VARCHAR(10)));
 -- COL1: NULL
 
+-- # A typed NULL can be inserted, compared (which matches no rows) and set by
+-- # an UPDATE.
 CREATE TABLE t1 (x INT, y VARCHAR(10));
 INSERT INTO t1 (x, y) VALUES (CAST(NULL AS INT), CAST(NULL AS VARCHAR(5)));
 INSERT INTO t1 (x, y) VALUES (1, 'a');

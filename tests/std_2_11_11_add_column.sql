@@ -169,6 +169,9 @@ SELECT * FROM t WHERE b = 7;
 -- msg: INSERT 1
 -- A: 1 B: 7
 
+-- # With two rows, the shared default is a duplicate key. Without a default the
+-- # rows would be NULL, but a PRIMARY KEY column is NOT NULL (11.7, Syntax
+-- # Rules, 7).
 CREATE TABLE t (a INT);
 INSERT INTO t (a) VALUES (1), (2);
 ALTER TABLE t ADD COLUMN b INT DEFAULT 7 PRIMARY KEY;
@@ -206,5 +209,6 @@ SELECT column_name, ordinal_position, data_type FROM information_schema.columns 
 -- COLUMN_NAME: A ORDINAL_POSITION: 1 DATA_TYPE: INTEGER
 -- COLUMN_NAME: B ORDINAL_POSITION: 2 DATA_TYPE: SMALLINT
 
+-- # ALTER TABLE can't be EXPLAINed (EXPLAIN is a vsql extension).
 EXPLAIN ALTER TABLE t ADD COLUMN b INT;
 -- error 42601: syntax error: Cannot EXPLAIN ALTER TABLE

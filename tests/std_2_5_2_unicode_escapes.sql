@@ -3,6 +3,8 @@
 VALUES ROW(U&'\0041bc', u&'d\0061t\+000061', U&'a\\b', U&'no escapes');
 -- COL1: Abc COL2: data COL3: a\b COL4: no escapes
 
+-- # An escape is one character, however many bytes it takes in UTF-8, and
+-- # U+0000 is an ordinary character. A doubled quote is still one quote.
 VALUES ROW(U&'caf\00e9', CHAR_LENGTH(U&'caf\00e9'), OCTET_LENGTH(U&'caf\00e9'));
 -- COL1: café COL2: 4 COL3: 5
 
@@ -24,10 +26,15 @@ VALUES 'a'
   'b';
 -- COL1: ab
 
+-- # The parts are joined into one literal (5.3, Syntax Rules, 2), so UESCAPE
+-- # applies to all of them and the backslashes are plain text.
 VALUES U&'\0041'
   '\0042!0043' UESCAPE '!';
 -- COL1: \0041\0042C
 
+-- # The separator between the parts must contain a new line (5.3, Syntax
+-- # Rules, 7), and there can't be one between the U, the & and the quote (5.3,
+-- # Syntax Rules, 11).
 VALUES 'a' 'b';
 -- error 42601: syntax error: unexpected string
 
@@ -50,6 +57,8 @@ VALUES U&'\+110000';
 VALUES U&'\D800';
 -- error 42601: syntax error: invalid Unicode code point: \D800
 
+-- # The escape character can't be a hexit, plus sign, quote, double quote or
+-- # white space (Syntax Rules, 16), and it must be exactly one character.
 VALUES U&'x' UESCAPE '+';
 -- error 42601: syntax error: invalid Unicode escape character: '+'
 

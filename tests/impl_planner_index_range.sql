@@ -216,7 +216,8 @@ SELECT * FROM t2 WHERE a > 1;
 -- A: 3 B: 1
 
 -- # Every type, in both orders. The row ID is after the values of every column
--- # of the index, including NULL.
+-- # of the index, including NULL. NULL is before every value of an ascending
+-- # column (like ORDER BY), so it's last in a descending one.
 /* extensions V002-01 V003-01 */
 CREATE TABLE types (b BOOLEAN, s SMALLINT, i INTEGER, bi BIGINT, r REAL, d DOUBLE PRECISION, n NUMERIC(10, 2), de DECIMAL(5, 1), c CHAR(3), vc VARCHAR(5), dt DATE, tm TIME, tmz TIME WITH TIME ZONE, ts TIMESTAMP, tsz TIMESTAMP WITH TIME ZONE);
 INSERT INTO types VALUES (TRUE, 1, 2, 3, 1.5, -2.5, 12.34, -0.5, 'ab', 'a b', DATE '2022-07-04', TIME '12:34:56', TIME '12:34:56+05:00', TIMESTAMP '2022-07-04 12:34:56', TIMESTAMP '2022-07-04 12:34:56+05:00');

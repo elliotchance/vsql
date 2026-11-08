@@ -16,6 +16,7 @@ SELECT * FROM DEFINITION_SCHEMA.t;
 -- error 42601: syntax error: DEFINITION_SCHEMA cannot be used as a schema name
 -- error 42601: syntax error: DEFINITION_SCHEMA cannot be used as a schema name
 
+-- # A column reference can't name it as a schema either (Syntax Rules, 10).
 /* setup */
 CREATE TABLE t (x INT);
 

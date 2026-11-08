@@ -1,3 +1,6 @@
+-- # When a generated column is added, it's set for the existing rows as if by
+-- # an UPDATE (11.11, General Rules, 2.a), so a NULL in the expression gives
+-- # NULL.
 CREATE TABLE foo (x INT);
 INSERT INTO foo (x) VALUES (1), (2), (NULL);
 ALTER TABLE foo ADD COLUMN y INT GENERATED ALWAYS AS (x * 3);
@@ -12,6 +15,8 @@ SELECT * FROM foo;
 -- X: NULL Y: NULL
 -- X: 4 Y: 12
 
+-- # So a NOT NULL generated column can't be added when its expression is NULL
+-- # for an existing row.
 CREATE TABLE foo (x INT);
 INSERT INTO foo (x) VALUES (1), (NULL);
 ALTER TABLE foo ADD COLUMN y GENERATED ALWAYS AS (x * 3) NOT NULL;
@@ -19,6 +24,7 @@ ALTER TABLE foo ADD COLUMN y GENERATED ALWAYS AS (x * 3) NOT NULL;
 -- msg: INSERT 2
 -- error 23502: violates non-null constraint: column Y
 
+-- # A generated column can be added to a table that already has one.
 CREATE TABLE foo (x INT, y INT GENERATED ALWAYS AS (x * 2));
 INSERT INTO foo (x) VALUES (1);
 ALTER TABLE foo ADD COLUMN z INT GENERATED ALWAYS AS (x + 1);

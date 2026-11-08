@@ -1,5 +1,7 @@
 -- # DROP SEQUENCE IF EXISTS is a vsql extension (V107-02).
 
+-- # A sequence that doesn't exist isn't an error (DROP SEQUENCE 0), with or
+-- # without RESTRICT or CASCADE. One that does is dropped (DROP SEQUENCE 1).
 /* extensions V107-01 V107-02 */
 DROP SEQUENCE IF EXISTS s;
 DROP SEQUENCE IF EXISTS s RESTRICT;
@@ -22,6 +24,9 @@ DROP SEQUENCE s;
 -- msg: DROP SEQUENCE 1
 -- error 42P01: no such sequence: ":memory:".PUBLIC.S
 
+-- # A sequence in a schema that doesn't exist doesn't exist either, which is
+-- # an error without IF EXISTS. A catalog that doesn't exist is still an error,
+-- # and so is the read-only INFORMATION_SCHEMA.
 /* extensions V107-01 V107-02 */
 DROP SEQUENCE IF EXISTS nosuch.s;
 -- msg: DROP SEQUENCE 0
@@ -51,6 +56,9 @@ DROP SEQUENCE IF EXISTS other.s;
 -- msg: DROP SEQUENCE 0
 -- msg: DROP SEQUENCE 1
 
+-- # Whether it exists is what this transaction can see: a drop earlier in the
+-- # transaction counts until ROLLBACK, and a sequence that another connection
+-- # has dropped doesn't exist.
 /* extensions V107-01 V107-02 */
 CREATE SEQUENCE s;
 START TRANSACTION;
@@ -75,6 +83,7 @@ DROP SEQUENCE IF EXISTS s;
 -- 1: msg: DROP SEQUENCE 1
 -- 2: msg: DROP SEQUENCE 0
 
+-- # IF isn't a reserved word, so it can still be a sequence name.
 /* extensions V107-01 V107-02 */
 CREATE SEQUENCE if;
 DROP SEQUENCE if;

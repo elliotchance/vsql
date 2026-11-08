@@ -4,6 +4,9 @@ INSERT INTO t (x, y) VALUES (1, 10);
 INSERT INTO t (x, y) VALUES (2, 20);
 CREATE TABLE u (x INTEGER);
 
+-- # FETCH, FETCH FROM and FETCH NEXT FROM are the same (14.5, Syntax Rules,
+-- # 2). After the last row it's no data, and the cursor stays after the last
+-- # row (15.3, General Rules, 9.b.ii).
 /* extensions V108-01 V109-01 V110-01 V111-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x, y * 2 AS z FROM t;
@@ -24,6 +27,7 @@ COMMIT;
 -- msg: CLOSE
 -- msg: COMMIT
 
+-- # A closed cursor can be opened again, and it starts before the first row.
 /* extensions V108-01 V109-01 V110-01 V111-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
@@ -42,6 +46,8 @@ COMMIT;
 -- X: 1 Y: 10
 -- msg: COMMIT
 
+-- # Without START TRANSACTION each statement commits, and COMMIT closes a
+-- # cursor that isn't WITH HOLD (17.7, General Rules, 3).
 /* extensions V108-01 V109-01 V110-01 */
 DECLARE c CURSOR FOR SELECT * FROM t;
 OPEN c;
@@ -62,6 +68,8 @@ FETCH c;
 -- msg: COMMIT
 -- error 24000: invalid cursor state: cursor C is not open
 
+-- # A WITH HOLD cursor stays open after COMMIT, but ROLLBACK closes it (17.8,
+-- # General Rules, 2.e).
 /* extensions V108-01 V109-01 V110-01 */
 DECLARE c CURSOR WITH HOLD FOR SELECT * FROM t;
 OPEN c;
@@ -90,6 +98,8 @@ FETCH c;
 -- msg: ROLLBACK
 -- error 24000: invalid cursor state: cursor C is not open
 
+-- # Cursor names are compared like other names, so c and C are the same
+-- # cursor, but "c" is another one.
 /* extensions V108-01 */
 DECLARE c CURSOR FOR SELECT * FROM t;
 DECLARE c CURSOR FOR SELECT * FROM u;
@@ -98,6 +108,9 @@ DECLARE "c" CURSOR FOR SELECT * FROM u;
 -- error 42P03: duplicate cursor: C
 -- msg: DECLARE CURSOR
 
+-- # The query is checked when the cursor is declared. A cursor must exist to be
+-- # used, and it must be open to be fetched or closed (15.3, General Rules, 2)
+-- # and (15.4, General Rules, 2).
 /* extensions V108-01 */
 DECLARE c CURSOR FOR SELECT * FROM missing;
 -- error 42P01: no such table: ":memory:".PUBLIC.MISSING
@@ -116,6 +129,7 @@ CLOSE c;
 -- msg: DECLARE CURSOR
 -- error 24000: invalid cursor state: cursor C is not open
 
+-- # A cursor that's already open can't be opened (15.1, General Rules, 2).
 /* extensions V108-01 V109-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
@@ -126,6 +140,8 @@ OPEN c;
 -- msg: OPEN
 -- error 24000: invalid cursor state: cursor C is already open
 
+-- # The query is evaluated each time the cursor is opened, so a sequence gives
+-- # its next value.
 /* extensions V108-01 V109-01 V110-01 V111-01 */
 CREATE SEQUENCE seq;
 START TRANSACTION;
@@ -144,6 +160,9 @@ FETCH c;
 -- msg: OPEN
 -- COL1: 2
 
+-- # A positioned DELETE deletes the current row, and then the cursor isn't on a
+-- # row (15.5, General Rules, 6) until the next FETCH, which gets the row after
+-- # it (15.5, General Rules, 13).
 /* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
@@ -162,6 +181,8 @@ SELECT * FROM t;
 -- X: 2 Y: 20
 -- X: 2 Y: 20
 
+-- # The table of a positioned DELETE is the table of the cursor's query, even
+-- # when the query gives it a correlation name (14.8, Syntax Rules, 6).
 /* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x FROM t AS a WHERE x = 2;
@@ -176,6 +197,8 @@ SELECT * FROM t;
 -- msg: DELETE 1
 -- X: 1 Y: 10
 
+-- # The cursor must exist, be open and be on a row, and the table must be the
+-- # table of its query (14.8, Syntax Rules, 6).
 /* extensions V108-01 V109-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
@@ -204,6 +227,9 @@ DELETE FROM u WHERE CURRENT OF c;
 -- X: 1 Y: 10
 -- error 42601: syntax error: table U is not the table of cursor C
 
+-- # A positioned DELETE of a row that another statement deleted is an error.
+-- # The standard says it's a warning (15.5, General Rules, 12), which isn't
+-- # implemented yet (#797).
 /* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
@@ -218,6 +244,8 @@ DELETE FROM t WHERE CURRENT OF c;
 -- msg: DELETE 2
 -- error 24000: invalid cursor state: the current row of cursor C has been deleted
 
+-- # After COMMIT, a WITH HOLD cursor has to be fetched again before a
+-- # positioned DELETE (15.5, General Rules, 7).
 /* extensions V108-01 V109-01 V110-01 V112-01 */
 DECLARE c CURSOR WITH HOLD FOR SELECT * FROM t;
 START TRANSACTION;
@@ -242,6 +270,8 @@ SELECT * FROM t;
 -- msg: COMMIT
 -- X: 1 Y: 10
 
+-- # A positioned UPDATE changes the current row and the cursor stays on it, so
+-- # it can be updated again. The next FETCH gets the next row.
 /* extensions V108-01 V109-01 V110-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
@@ -261,6 +291,8 @@ SELECT * FROM t;
 -- X: 1 Y: 12
 -- X: 2 Y: 20
 
+-- # With FOR UPDATE OF, only the listed columns can be set (14.13, Syntax
+-- # Rules, 14).
 /* extensions V108-01 V109-01 V110-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t FOR UPDATE OF y;
@@ -278,6 +310,8 @@ SELECT * FROM t;
 -- X: 1 Y: 3
 -- X: 2 Y: 20
 
+-- # A positioned UPDATE of a row that another statement deleted is an error,
+-- # rather than the warning of the standard (15.6, General Rules, 9) (#797).
 /* extensions V108-01 V109-01 V110-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
@@ -292,6 +326,10 @@ UPDATE t SET y = 3 WHERE CURRENT OF c;
 -- msg: DELETE 1
 -- error 24000: invalid cursor state: the current row of cursor C has been deleted
 
+-- # With ORDER BY or FOR READ ONLY a cursor is read-only (14.3, Syntax Rules,
+-- # 4.a), so a positioned DELETE or UPDATE is an invalid cursor name, as it is
+-- # for a dynamic cursor (20.23, General Rules, 3) and (20.24, General Rules,
+-- # 3).
 /* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t ORDER BY x DESC;
@@ -316,6 +354,8 @@ UPDATE t SET y = 3 WHERE CURRENT OF c;
 -- X: 1 Y: 10
 -- error 34000: invalid cursor name: cursor C is not updatable
 
+-- # FOR UPDATE makes a cursor with ORDER BY updatable (14.3, Syntax Rules,
+-- # 6.a). This needs Feature F831 (14.3, Conformance Rules, 1).
 /* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t ORDER BY x DESC FOR UPDATE;
@@ -330,6 +370,10 @@ SELECT * FROM t;
 -- msg: DELETE 1
 -- X: 1 Y: 10
 
+-- # FOR UPDATE needs a query that's simply updatable (14.3, Syntax Rules, 5):
+-- # a query specification of one base table (7.16, Syntax Rules, 27), so not
+-- # VALUES, FETCH FIRST, a join, a derived table, an aggregate, DISTINCT or
+-- # INFORMATION_SCHEMA.
 /* extensions V108-01 */
 DECLARE c1 CURSOR FOR VALUES 1 FOR UPDATE;
 DECLARE c2 CURSOR FOR SELECT * FROM t FETCH FIRST 1 ROW ONLY FOR UPDATE;
@@ -346,6 +390,8 @@ DECLARE c7 CURSOR FOR SELECT * FROM information_schema.tables FOR UPDATE;
 -- error 42601: syntax error: cursor C6 is not updatable
 -- error 42601: syntax error: cursor C7 is not updatable
 
+-- # Every column of the query must be a column of the table (7.16, Syntax
+-- # Rules, 27.c), not an expression.
 /* extensions V108-01 */
 CREATE TABLE b (p BOOLEAN, q BOOLEAN);
 DECLARE c1 CURSOR FOR SELECT x + 1 AS z FROM t FOR UPDATE;
@@ -364,6 +410,8 @@ DECLARE c7 CURSOR FOR SELECT p IS TRUE AS z FROM b FOR UPDATE;
 -- error 42601: syntax error: cursor C6 is not updatable
 -- error 42601: syntax error: cursor C7 is not updatable
 
+-- # A column of the table can't be selected more than once (7.16, Syntax
+-- # Rules, 24.b), even with another name.
 /* extensions V108-01 */
 DECLARE c1 CURSOR FOR SELECT x, x FROM t FOR UPDATE;
 DECLARE c2 CURSOR FOR SELECT x, t.x FROM t FOR UPDATE;
@@ -376,6 +424,8 @@ DECLARE c5 CURSOR FOR SELECT t.*, t.* FROM t FOR UPDATE;
 -- error 42601: syntax error: cursor C4 is not updatable
 -- error 42601: syntax error: cursor C5 is not updatable
 
+-- # A subquery in WHERE can't read the table of the cursor (7.16, Syntax
+-- # Rules, 27.d), however deeply it's nested.
 /* extensions V108-01 */
 DECLARE c1 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM t) FOR UPDATE;
 DECLARE c2 CURSOR FOR SELECT x FROM t WHERE EXISTS (SELECT * FROM t AS a WHERE a.x = t.x) FOR UPDATE;
@@ -392,6 +442,10 @@ DECLARE c7 CURSOR FOR SELECT x FROM t WHERE x IN (SELECT x FROM u UNION SELECT x
 -- error 42601: syntax error: cursor C6 is not updatable
 -- error 42601: syntax error: cursor C7 is not updatable
 
+-- # These are simply updatable: all the columns of the table, columns with
+-- # other names, and a subquery of another table, even one with the same name
+-- # in another schema. Without FOR UPDATE they're updatable (14.3, Syntax
+-- # Rules, 4.b).
 /* extensions V108-01 V109-01 V110-01 V112-01 V113-01 */
 CREATE SCHEMA s;
 CREATE TABLE s.t (x INTEGER);
@@ -424,6 +478,8 @@ SELECT * FROM t;
 -- msg: DELETE 1
 -- X: 1 Y: 3
 
+-- # A subquery of the same table in ORDER BY is allowed, it's only checked in
+-- # WHERE (7.16, Syntax Rules, 27.d).
 /* extensions V108-01 V109-01 V110-01 V112-01 V202-02 V202-03 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t ORDER BY (SELECT MAX(x) FROM t) FOR UPDATE;
@@ -436,6 +492,8 @@ DELETE FROM t WHERE CURRENT OF c;
 -- X: 1 Y: 10
 -- msg: DELETE 1
 
+-- # Without FOR UPDATE, a query that isn't simply updatable is read-only (14.3,
+-- # Syntax Rules, 4.a), so it's the positioned statement that fails.
 /* extensions V108-01 V109-01 V110-01 V112-01 V113-01 */
 START TRANSACTION;
 DECLARE c1 CURSOR FOR SELECT x + 1 AS z FROM t;
@@ -459,6 +517,7 @@ SELECT * FROM t;
 -- X: 1 Y: 10
 -- X: 2 Y: 20
 
+-- # Cursor statements can't be explained.
 /* extensions V108-01 V109-01 V110-01 V111-01 V112-01 V113-01 */
 EXPLAIN DECLARE c CURSOR FOR SELECT * FROM t;
 EXPLAIN OPEN c;
@@ -473,6 +532,8 @@ EXPLAIN UPDATE t SET x = 1 WHERE CURRENT OF c;
 -- error 42601: syntax error: Cannot EXPLAIN DELETE WHERE CURRENT OF
 -- error 42601: syntax error: Cannot EXPLAIN UPDATE WHERE CURRENT OF
 
+-- # FOR UPDATE OF can list any column of the table, even one that isn't
+-- # selected, but each must exist (14.3, Syntax Rules, 9).
 /* extensions V108-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT x FROM t FOR UPDATE OF nope;

@@ -22,6 +22,7 @@ SELECT y FROM t WHERE x != y;
 SELECT y FROM t WHERE x!=y;
 -- Y: 2
 
+-- # Strings are compared the same way, and != can be used with AND.
 /* extensions V301-01 */
 SELECT y FROM t WHERE 'a' != 'b' AND 'a' != 'a';
 

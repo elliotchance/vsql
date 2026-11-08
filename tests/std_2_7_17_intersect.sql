@@ -99,10 +99,13 @@ SELECT y FROM t1 INTERSECT ALL SELECT z FROM t2;
 -- Y: b (CHARACTER VARYING(20))
 -- Y: NULL (CHARACTER VARYING(20))
 
--- # Values are duplicates if they're equal with =, so trailing spaces are ignored.
+-- # Values are duplicates if they're equal with =, so trailing spaces are
+-- # ignored.
 VALUES CAST('a' AS CHAR(3)) INTERSECT VALUES CAST('a' AS VARCHAR(5));
 -- COL1: a
 
+-- # Columns whose types can't be combined are an error (9.5, Syntax Rules,
+-- # 3.a.i).
 SELECT x FROM t1 INTERSECT SELECT y FROM t1;
 -- error 42804: data type mismatch in column 1 of INTERSECT: expected INTEGER but got CHARACTER VARYING(10)
 
@@ -156,6 +159,8 @@ VALUES 1 IN (SELECT x FROM t1 INTERSECT SELECT x FROM t2);
 VALUES EXISTS (SELECT x FROM t1 INTERSECT SELECT x FROM t2 WHERE x = 4);
 -- COL1: FALSE
 
+-- # EXPLAIN shows each side as a numbered subplan. INTERSECT binds tighter, so
+-- # it's nested under the UNION.
 /* extensions V001-01 */
 EXPLAIN SELECT x FROM t1 INTERSECT ALL SELECT x FROM t2 ORDER BY x;
 -- EXPLAIN: $1:
@@ -179,7 +184,9 @@ EXPLAIN VALUES 1 UNION VALUES 2 INTERSECT VALUES 3;
 -- EXPLAIN:   INTERSECT DISTINCT (COL1 SMALLINT)
 -- EXPLAIN: UNION DISTINCT (COL1 SMALLINT)
 
--- # A UNION or EXCEPT in parentheses on the left of an INTERSECT keeps them.
+-- # A query that's printed keeps the parentheses around a UNION or EXCEPT on
+-- # either side of an INTERSECT, and adds them around an INTERSECT under a
+-- # UNION. DISTINCT is left out, as it's the default (Syntax Rules, 6).
 /* extensions V001-01 */
 EXPLAIN VALUES EXISTS ((VALUES 1 UNION VALUES 2) INTERSECT ALL VALUES 2 INTERSECT (VALUES 3 EXCEPT VALUES 4) UNION VALUES 5 INTERSECT DISTINCT VALUES 5);
 -- EXPLAIN: VALUES (COL1 BOOLEAN) = ROW(EXISTS ((VALUES 1 UNION VALUES 2) INTERSECT ALL VALUES 2 INTERSECT (VALUES 3 EXCEPT VALUES 4) UNION (VALUES 5 INTERSECT VALUES 5)))

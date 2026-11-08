@@ -1,3 +1,7 @@
+-- # A second connection to the same file reads the definitions that the first
+-- # one wrote: delimited names, every type with its precision, NOT NULL, and
+-- # the PRIMARY KEY (which makes Y NOT NULL and is used for the range). The
+-- # constraints and lengths are still checked by the second connection.
 /* connection 1 */
 /* extensions V001-01 */
 CREATE SCHEMA "Mixed";
@@ -20,6 +24,11 @@ INSERT INTO "Mixed"."Tab" (x, y, c) VALUES (1, 6, 'ab');
 -- 2: error 22001: string data right truncation for CHARACTER VARYING(10)
 -- 2: error 22001: string data right truncation for CHARACTER(1)
 
+-- # A sequence's options and its current value are in the file, so both
+-- # connections share them. The descending sequence starts at its MAXVALUE.
+-- # After the second connection changes INCREMENT BY to 50, the next value
+-- # (148) is past MAXVALUE, so it cycles to MINVALUE. A dropped sequence is
+-- # gone for the other connection too.
 /* connection 1 */
 CREATE SCHEMA "Mixed";
 CREATE SEQUENCE "Mixed"."seq" INCREMENT BY -2 MINVALUE -50 MAXVALUE 100 CYCLE;

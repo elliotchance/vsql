@@ -4,6 +4,8 @@
 CREATE TABLE t (x INT);
 INSERT INTO t (x) VALUES (1);
 
+-- # NOW() is replaced by CURRENT_TIMESTAMP, so it has the same type and value:
+-- # the statement's timestamp (6.36, General Rules, 1 and 2).
 /* extensions V402-01 */
 SELECT NOW() = CURRENT_TIMESTAMP AS same FROM t;
 -- SAME: TRUE
@@ -34,7 +36,8 @@ SELECT x, c IS NOT NULL AS has FROM d;
 -- msg: INSERT 1
 -- X: 1 HAS: TRUE
 
--- # It has the same rules as CURRENT_TIMESTAMP in a CHECK.
+-- # It has the same rules as CURRENT_TIMESTAMP in a CHECK, where a < NOW() is
+-- # retrospectively deterministic (6.39, Syntax Rules, 5.c.ii).
 /* extensions V402-01 */
 CREATE TABLE c (a TIMESTAMP(6) WITH TIME ZONE, CHECK (a < NOW()));
 -- msg: CREATE TABLE 1
@@ -49,7 +52,9 @@ SELECT now.now AS now FROM now AS now;
 -- NOW: 1
 -- NOW: 1
 
--- # It doesn't take arguments, and a quoted name is a function.
+-- # It doesn't take arguments, and only the unquoted, unqualified NOW() is
+-- # CURRENT_TIMESTAMP. "NOW"() is looked up as a function that doesn't
+-- # exist, and PUBLIC.NOW() isn't valid syntax.
 SELECT NOW(1) FROM t;
 -- error 42883: function does not exist: NOW(SMALLINT)
 

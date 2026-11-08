@@ -1,3 +1,5 @@
+-- # The table must exist (Syntax Rules, 2), so it can't be dropped twice, or
+-- # be dropped from a schema that doesn't exist.
 DROP TABLE foo RESTRICT;
 -- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
@@ -11,6 +13,7 @@ DROP TABLE foo RESTRICT;
 DROP TABLE foo.bar RESTRICT;
 -- error 3F000: invalid schema name: FOO
 
+-- # A table in a schema other than PUBLIC.
 CREATE SCHEMA foo;
 CREATE TABLE foo.bar (baz BIGINT);
 DROP TABLE foo.bar RESTRICT;
@@ -18,6 +21,8 @@ DROP TABLE foo.bar RESTRICT;
 -- msg: CREATE TABLE 1
 -- msg: DROP TABLE 1
 
+-- # Dropping a table deletes its rows, so a new table with the same name is
+-- # empty. The rows of a table whose name starts with the same name are kept.
 CREATE TABLE foo (x INT);
 INSERT INTO foo (x) VALUES (1);
 INSERT INTO foo (x) VALUES (2);
@@ -43,6 +48,7 @@ SELECT * FROM "FOO:BAR";
 -- msg: DROP TABLE 1
 -- Y: 2
 
+-- # A table can't be used after it's dropped, by RESTRICT or CASCADE.
 CREATE TABLE foo (x INT);
 DROP TABLE foo RESTRICT;
 SELECT * FROM foo;
@@ -69,12 +75,15 @@ SELECT * FROM foo;
 -- msg: DROP TABLE 1
 -- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
+-- # A table that was never created can't be dropped by either behavior.
 DROP TABLE foo RESTRICT;
 -- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
 DROP TABLE foo CASCADE;
 -- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
+-- # DROP TABLE can't be used with EXPLAIN, and only one of RESTRICT or CASCADE
+-- # can be given.
 EXPLAIN DROP TABLE foo CASCADE;
 -- error 42601: syntax error: Cannot EXPLAIN DROP TABLE
 

@@ -45,6 +45,7 @@ SELECT * FROM t;
 -- msg: COMMIT
 -- X: 1
 
+-- # Like COMMIT, they fail when there's no transaction to end.
 /* extensions V115-01 */
 COMMIT TRANSACTION;
 -- error 2D000: invalid transaction termination
@@ -70,6 +71,9 @@ SELECT * FROM t;
 -- msg: ROLLBACK
 -- X: 1
 
+-- # END is a reserved word, so it can't be a column name (5.2, Syntax
+-- # Rules, 26). Only TRANSACTION or WORK can follow END, and ROW can't follow
+-- # COMMIT.
 SELECT end FROM t;
 -- error 42601: syntax error: unexpected END
 
@@ -79,6 +83,8 @@ END ROW;
 COMMIT ROW;
 -- error 42601: syntax error: unexpected ROW
 
+-- # The flagger: START TRANSACTION is T241, and the alias is flagged on the
+-- # statement that uses it.
 /* flags */
 /* extensions V115-01 */
 START TRANSACTION;

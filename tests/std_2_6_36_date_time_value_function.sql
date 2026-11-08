@@ -1,3 +1,6 @@
+-- # The clock of the tests is 09:05:03.120056 UTC on 2022-07-04, in +05:00
+-- # (see the "clock" directive in docs/testing.rst). CURRENT_TIME has a
+-- # precision of 0 by default (6.1, Syntax Rules, 36).
 /* types */
 VALUES CURRENT_DATE;
 -- COL1: 2022-07-04 (DATE)
@@ -21,6 +24,8 @@ VALUES CURRENT_TIMESTAMP;
 VALUES CURRENT_DATE > DATE '2022-07-04';
 -- COL1: TRUE
 
+-- # The precision is the number of digits after the seconds, up to 6 (6.1,
+-- # Syntax Rules, 38). Extra digits are cut, not rounded.
 /* types */
 VALUES CURRENT_TIME(0);
 -- COL1: 14:05:03+0500 (TIME(0) WITH TIME ZONE)
@@ -52,6 +57,7 @@ VALUES CURRENT_TIME(6);
 VALUES CURRENT_TIME(7);
 -- error 42601: syntax error: CURRENT_TIME(7): cannot have precision greater than 6
 
+-- # CURRENT_TIMESTAMP has a precision of 6 by default (6.1, Syntax Rules, 36).
 /* types */
 VALUES CURRENT_TIMESTAMP;
 -- COL1: 2022-07-04T14:05:03.120056+0500 (TIMESTAMP(6) WITH TIME ZONE)
@@ -87,6 +93,8 @@ VALUES CURRENT_TIMESTAMP(6);
 VALUES CURRENT_TIMESTAMP(7);
 -- error 42601: syntax error: CURRENT_TIMESTAMP(7): cannot have precision greater than 6
 
+-- # LOCALTIME and LOCALTIMESTAMP are the same without the time zone (Syntax
+-- # Rules, 2 and 3), so their default precisions are 0 and 6 too.
 /* types */
 VALUES LOCALTIME;
 -- COL1: 14:05:03 (TIME(0) WITHOUT TIME ZONE)
@@ -157,6 +165,7 @@ VALUES LOCALTIMESTAMP(6);
 VALUES LOCALTIMESTAMP(7);
 -- error 42601: syntax error: LOCALTIMESTAMP(7): cannot have precision greater than 6
 
+-- # EXPLAIN shows the implicit precisions.
 /* extensions V001-01 */
 EXPLAIN VALUES ROW(CURRENT_TIME(3), LOCALTIME, CURRENT_TIMESTAMP, LOCALTIMESTAMP(2));
 -- EXPLAIN: VALUES (COL1 TIME(3) WITH TIME ZONE, COL2 TIME(0) WITHOUT TIME ZONE, COL3 TIMESTAMP(6) WITH TIME ZONE, COL4 TIMESTAMP(2) WITHOUT TIME ZONE) = ROW(CURRENT_TIME(3), LOCALTIME(0), CURRENT_TIMESTAMP(6), LOCALTIMESTAMP(2))
@@ -179,6 +188,8 @@ SELECT x, LOCALTIME FROM (VALUES ROW(1), ROW(2), ROW(3)) AS t (x);
 -- X: 2 COL2: 14:05:03
 -- X: 3 COL2: 14:05:03
 
+-- # A DEFAULT is the time of its INSERT, so the rows of one INSERT have the
+-- # same time and the next INSERT is later.
 /* clock tick */
 CREATE TABLE t (x INTEGER, y TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT LOCALTIMESTAMP(0));
 INSERT INTO t (x) VALUES (1), (2);

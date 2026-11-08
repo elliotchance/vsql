@@ -1,3 +1,5 @@
+-- # A DATE literal is only a date, as YYYY-MM-DD. A time, a time zone, a
+-- # fraction, a 'T' or any stray characters make it invalid.
 VALUES DATE '2022-06-30 21:47:32';
 -- error 42601: syntax error: DATE '2022-06-30 21:47:32' is not valid
 
@@ -31,6 +33,7 @@ VALUES DATE 'a2022-06-30 21:47:32';
 VALUES DATE '2022-06-30 21:47:32a';
 -- error 42601: syntax error: DATE '2022-06-30 21:47:32a' is not valid
 
+-- # A valid DATE literal has the type DATE (5.3, Syntax Rules, 25).
 /* types */
 VALUES DATE '2022-06-30';
 -- COL1: 2022-06-30 (DATE)
@@ -54,6 +57,9 @@ VALUES DATE '2022-13-01';
 VALUES DATE '2022-06-00';
 -- error 42601: syntax error: DATE '2022-06-00' is not valid
 
+-- # Years run from 0001 to 9999 (5.3, Syntax Rules, 32). The year must have
+-- # four digits and the month and day two (5.3, Syntax Rules, 31), and the rest
+-- # of these aren't dates at all.
 VALUES DATE '0000-01-01';
 -- error 42601: syntax error: DATE '0000-01-01' is not valid
 
@@ -87,6 +93,8 @@ VALUES DATE '2022-06-30 21:47:32+12:00';
 VALUES DATE '2022-06-30 21:47:32-12:00';
 -- error 42601: syntax error: DATE '2022-06-30 21:47:32-12:00' is not valid
 
+-- # A DATE column stores and returns the date, and casting a DATE to DATE gives
+-- # the same value (6.13, General Rules, 14.b).
 CREATE TABLE foo (f1 DATE);
 INSERT INTO foo (f1) VALUES (DATE '2022-06-30');
 SELECT * FROM foo;
@@ -101,6 +109,10 @@ SELECT CAST(f1 AS DATE) FROM foo;
 -- msg: INSERT 1
 -- COL1: 2022-06-30
 
+-- # A DATE has no time, so it can't be cast to a TIME (6.13, Syntax Rules, 7).
+-- # Casting it to a TIMESTAMP gives midnight at the target's precision (6.13,
+-- # General Rules, 18.b), and WITH TIME ZONE adds the session's time zone,
+-- # +05:00 in the tests (6.13, General Rules, 19.e).
 CREATE TABLE foo (f1 DATE);
 INSERT INTO foo (f1) VALUES (DATE '2022-06-30');
 SELECT CAST(f1 AS TIME WITHOUT TIME ZONE) FROM foo;
@@ -150,6 +162,9 @@ SELECT CAST(f1 AS TIMESTAMP(0) WITH TIME ZONE) FROM foo;
 -- msg: INSERT 1
 -- COL1: 2022-06-30T00:00:00+0500
 
+-- # A string is cast to a DATE after trimming spaces (6.13, General Rules,
+-- # 14.a.ii). Anything that isn't a valid date, including a timestamp, is an
+-- # invalid datetime format (6.13, General Rules, 14.a.ii.2).
 /* types */
 VALUES CAST('2022-06-30' AS DATE);
 -- COL1: 2022-06-30 (DATE)
@@ -166,7 +181,11 @@ VALUES CAST('2022-06-30 12:34:56' AS DATE);
 VALUES CAST('hello' AS DATE);
 -- error 22007: invalid datetime format
 
--- # A date literal is also accepted, but the keyword must be DATE.
+-- # A date literal is also accepted (6.13, General Rules, 14.a.ii.1), but the
+-- # keyword must be DATE. Any white space can separate DATE and the quoted
+-- # date, but a comment can't, since the string isn't SQL. A DATE cast to a
+-- # string is a DATE literal (6.13, General Rules, 12.e.i.2), so it casts back.
+-- # An unclosed or doubled quote is invalid.
 VALUES CAST('DATE ''2022-06-30''' AS DATE);
 -- COL1: 2022-06-30
 
@@ -194,6 +213,7 @@ VALUES CAST('DATE ''2022-''''06-30''' AS DATE);
 VALUES CAST('DATE' AS DATE);
 -- error 22007: invalid datetime format
 
+-- # A NULL string casts to a NULL DATE (6.13, General Rules, 2.c).
 CREATE TABLE foo (f1 VARCHAR(20));
 INSERT INTO foo (f1) VALUES ('2022-06-30');
 INSERT INTO foo (f1) VALUES (NULL);

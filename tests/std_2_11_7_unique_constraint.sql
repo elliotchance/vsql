@@ -1,3 +1,5 @@
+-- # Two rows can't have the same value in a UNIQUE column. The row that would
+-- # break the constraint isn't inserted.
 CREATE TABLE t (id INT NOT NULL, u INT NOT NULL UNIQUE);
 INSERT INTO t (id, u) VALUES (1, 10);
 INSERT INTO t (id, u) VALUES (2, 20);
@@ -156,7 +158,7 @@ SELECT * FROM t;
 -- U: 1
 -- U: 2
 
--- # A row that's not changed by an UPDATE isn't checked.
+-- # Updating a row to the value it already has doesn't conflict with itself.
 CREATE TABLE t (u INT UNIQUE);
 INSERT INTO t (u) VALUES (1);
 UPDATE t SET u = 1;
@@ -188,6 +190,10 @@ CREATE TABLE t (a INT, b INT, UNIQUE (a), UNIQUE (a, b), UNIQUE (b), PRIMARY KEY
 CREATE TABLE t (a INT PRIMARY KEY, b INT UNIQUE PRIMARY KEY);
 -- error 42601: syntax error: only one PRIMARY KEY can be defined
 
+-- # A value that another transaction has inserted or deleted, and not yet
+-- # committed, can't be inserted: the INSERT fails with a serialization failure
+-- # instead of waiting. Other values can be inserted, and after the COMMIT the
+-- # deleted value can be used again.
 /* connection 1 */
 CREATE TABLE t (u INT UNIQUE);
 INSERT INTO t (u) VALUES (1);

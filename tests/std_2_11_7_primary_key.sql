@@ -1,3 +1,5 @@
+-- # A PRIMARY KEY is used to find rows by their key (EXPLAIN shows a RANGE),
+-- # and changing the key moves the row.
 /* setup */
 CREATE TABLE pk1 (
     id INT,
@@ -32,6 +34,9 @@ SELECT * FROM pk1 WHERE id = 5;
 -- msg: UPDATE 1
 -- ID: 5
 
+-- # The key must be unique, and its columns are NOT NULL even though they
+-- # weren't declared that way (Syntax Rules, 7), so a missing value is an error
+-- # too. A failed UPDATE leaves the table unchanged.
 INSERT INTO pk1 (id) VALUES (2);
 -- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.PK1
 
@@ -53,6 +58,8 @@ SELECT * FROM pk1;
 UPDATE pk1 SET id = NULL WHERE id = 2;
 -- error 23502: violates non-null constraint: column ID
 
+-- # Updating a column that isn't part of the key doesn't conflict with the row
+-- # itself.
 CREATE TABLE pk2 (id INT, x INT, PRIMARY KEY (id));
 INSERT INTO pk2 (id, x) VALUES (1, 10);
 UPDATE pk2 SET x = 20 WHERE id = 1;
@@ -62,6 +69,7 @@ SELECT * FROM pk2;
 -- msg: UPDATE 1
 -- ID: 1 X: 20
 
+-- # A deleted key can be used again, even in the same transaction.
 DELETE FROM pk1 WHERE id = 2;
 INSERT INTO pk1 (id) VALUES (2);
 SELECT * FROM pk1;
@@ -80,6 +88,9 @@ INSERT INTO pk1 (id) VALUES (2);
 -- msg: INSERT 1
 -- error 23505: violates unique constraint: PRIMARY KEY on ":memory:".PUBLIC.PK1
 
+-- # A key that another transaction has inserted or deleted, but not committed,
+-- # can't be written. vsql fails with a serialization failure instead of
+-- # waiting.
 /* connection 1 */
 CREATE TABLE pk3 (id INT, PRIMARY KEY (id));
 INSERT INTO pk3 (id) VALUES (1);
@@ -106,6 +117,8 @@ INSERT INTO pk3 (id) VALUES (1);
 -- 1: msg: DELETE 1
 -- 2: error 40001: serialization failure: avoiding concurrent write on individual row
 
+-- # The rows are in key order, so negative numbers come first, for each size of
+-- # integer up to its limits.
 CREATE TABLE pk2 (id SMALLINT, PRIMARY KEY (id));
 INSERT INTO pk2 (id) VALUES (3);
 INSERT INTO pk2 (id) VALUES (-1);
@@ -163,6 +176,7 @@ SELECT * FROM pk2;
 -- ID: 3
 -- ID: 9223372036854775807
 
+-- # The PRIMARY KEY can come before its column, and be any integer type.
 CREATE TABLE pk2 (
     PRIMARY KEY (id),
     id INT
@@ -181,6 +195,8 @@ CREATE TABLE pk2 (
 );
 -- msg: CREATE TABLE 1
 
+-- # There can be only one PRIMARY KEY (Syntax Rules, 8), and it can't name a
+-- # column twice (Syntax Rules, 5.a).
 CREATE TABLE pk2 (
     id INT,
     PRIMARY KEY (id),
@@ -194,6 +210,9 @@ CREATE TABLE pk2 (
 );
 -- error 42601: syntax error: column ID appears more than once in PRIMARY KEY
 
+-- # With several columns, only the whole key must be unique, and every column
+-- # of it must be NOT NULL. The rows are in the order of the first column, then
+-- # the next.
 CREATE TABLE pk2 (a INT, b SMALLINT, x INT, PRIMARY KEY (a, b));
 INSERT INTO pk2 (a, b, x) VALUES (1, 2, 10);
 INSERT INTO pk2 (a, b, x) VALUES (-1, 5, 20);
@@ -218,6 +237,7 @@ SELECT * FROM pk2;
 -- A: 1 B: 2 X: 10
 -- A: 2 B: -3 X: 30
 
+-- # Another connection sees the committed keys and can't insert the same one.
 /* connection 1 */
 CREATE TABLE pk3 (a INT, b BIGINT, PRIMARY KEY (a, b));
 INSERT INTO pk3 (a, b) VALUES (1, 2);
@@ -232,6 +252,8 @@ SELECT * FROM pk3;
 -- 2: A: 1 B: -2
 -- 2: A: 1 B: 2
 
+-- # The columns of the key don't have to be in the same order as the table. A
+-- # condition on the first column of the key uses a RANGE of the key.
 /* extensions V001-01 */
 CREATE TABLE pk2 (b INT, a INT, PRIMARY KEY (a, b));
 INSERT INTO pk2 (a, b) VALUES (1, 2);
@@ -249,6 +271,7 @@ SELECT * FROM pk2 WHERE a = 1;
 -- B: 1 A: 1
 -- B: 2 A: 1
 
+-- # The key must use columns of the table (Syntax Rules, 5.a).
 CREATE TABLE pk2 (
     id INT,
     PRIMARY KEY (foo)

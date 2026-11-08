@@ -1,3 +1,5 @@
+-- # Another connection sees a new table once it's committed, and doesn't see a
+-- # dropped table once the drop is committed.
 /* connection 1 */
 CREATE TABLE bar (x INT);
 START TRANSACTION;
@@ -31,6 +33,8 @@ SELECT * FROM foo;
 -- 1: msg: COMMIT
 -- 2: error 42P01: no such table: "test".PUBLIC.FOO
 
+-- # A schema created in a transaction can be used by another connection once
+-- # it's committed.
 /* connection 1 */
 CREATE TABLE bar (x INT);
 START TRANSACTION;
@@ -47,6 +51,8 @@ CREATE TABLE s.t (x INT);
 -- 1: msg: COMMIT
 -- 2: msg: CREATE TABLE 1
 
+-- # An uncommitted table doesn't exist for another connection, and an
+-- # uncommitted new column isn't in its rows yet.
 /* connection 1 */
 START TRANSACTION;
 CREATE TABLE u (a INT);

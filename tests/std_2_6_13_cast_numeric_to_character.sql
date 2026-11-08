@@ -1,5 +1,6 @@
 -- # A negative number is cast with a leading minus sign. A CHAR is padded with
--- # spaces, and both CHAR and VARCHAR raise an error (22001) when it's too long.
+-- # spaces, and both CHAR and VARCHAR raise an error (22001) when it's too
+-- # long.
 
 /* types */
 VALUES CAST(-12 AS CHARACTER(5));
@@ -19,6 +20,8 @@ VALUES CAST(-12 AS VARCHAR(5));
 VALUES CAST(-12 AS VARCHAR(2));
 -- error 22001: string data right truncation for CHARACTER VARYING(2)
 
+-- # An approximate number is cast as an approximate literal such as 1.5E0, with
+-- # a minus sign when it's negative (General Rules, 11.b and 12.b).
 /* types */
 VALUES CAST(1.5e0 AS CHARACTER(10));
 -- COL1: 1.5E0      (CHARACTER(10))
@@ -128,6 +131,7 @@ VALUES CAST(CAST(0.000123e0 AS VARCHAR(30)) AS DOUBLE PRECISION);
 VALUES 123.0e0;
 -- COL1: 123e0
 
+-- # A null number is a null string of the target type (General Rules, 2.c).
 /* types */
 VALUES CAST(CAST(NULL AS DOUBLE PRECISION) AS VARCHAR(10));
 -- COL1: NULL (CHARACTER VARYING(10))

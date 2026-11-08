@@ -43,7 +43,8 @@ SELECT name FROM t x WHERE id = 3;
 
 SELECT * FROM t AS x WHERE x.id = 4;
 
--- # A renamed primary key column.
+-- # A renamed primary key column. The key is found by its position, so with
+-- # (name, id) the key is NAME and a condition on ID reads the whole table.
 SELECT * FROM t AS x (a, b) WHERE a = 2;
 -- A: 2 B: two
 
@@ -64,7 +65,8 @@ SELECT * FROM t AS x WHERE t.id = 1;
 
 -- # The primary key is only used for a comparison or BETWEEN that's part of an
 -- # AND (see impl_planner_primary_key_range.sql). Other conditions read the
--- # whole table.
+-- # whole table: an OR can be true for any row, and IS TRUE, NOT and
+-- # parentheses aren't a plain comparison of the column.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t WHERE id = 1 OR id = 2;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T (ID INTEGER NOT NULL, NAME CHARACTER VARYING(10))

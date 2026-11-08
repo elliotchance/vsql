@@ -7,6 +7,8 @@ INSERT INTO t (x) VALUES (2);
 INSERT INTO t (x) VALUES (3);
 INSERT INTO t (x) VALUES (4);
 
+-- # LIMIT n keeps the first n rows. The keyword isn't case sensitive, and a
+-- # comment can be between it and the number.
 /* extensions V203-01 */
 SELECT * FROM t LIMIT 2;
 -- X: 1
@@ -21,6 +23,8 @@ select * from t limit 2;
 SELECT * FROM t LIMIT /* comment */ 1;
 -- X: 1
 
+-- # An OFFSET can be before or after LIMIT. With ROW or ROWS it's the standard
+-- # clause, so only an OFFSET without them needs V203-02.
 /* extensions V203-01 V203-02 */
 SELECT * FROM t LIMIT 2 OFFSET 1;
 -- X: 2
@@ -67,6 +71,9 @@ SELECT * FROM t OFFSET 1 FETCH FIRST 1 ROW ONLY;
 SELECT * FROM t ORDER BY x DESC OFFSET 1 FETCH FIRST 1 ROW ONLY;
 -- X: 3
 
+-- # An offset past the end leaves no rows (7.17, General Rules, 6.c.i). A
+-- # negative one is the 2201X error (7.17, General Rules, 6.b), and it has to
+-- # be an exact numeric with scale 0 (7.17, Syntax Rules, 29).
 /* extensions V203-02 */
 SELECT * FROM t OFFSET 10;
 
@@ -111,6 +118,8 @@ EXPLAIN SELECT * FROM t LIMIT 1, 2;
 -- EXPLAIN: OFFSET 1 ROWS FETCH FIRST 2 ROWS ONLY
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.X INTEGER)
 
+-- # Each number of LIMIT offset, count has the rules of the clause it stands
+-- # for: the first is an OFFSET and the second is a FETCH FIRST.
 /* extensions V203-03 */
 SELECT * FROM t LIMIT -1, 1;
 -- error 2201X: invalid row count in result offset clause
@@ -127,6 +136,8 @@ SELECT * FROM t LIMIT 1.5, 1;
 SELECT * FROM t LIMIT 1, 1.5;
 -- error 42601: syntax error: FETCH FIRST row count must be an exact numeric with scale 0, got NUMERIC(2, 1)
 
+-- # LIMIT offset, count already has an offset, so it can't also have an OFFSET
+-- # before or after it, or a third number.
 SELECT * FROM t LIMIT 1, 2 OFFSET 1;
 -- error 42601: syntax error: unexpected OFFSET
 
@@ -136,6 +147,8 @@ SELECT * FROM t LIMIT 1, 2, 3;
 SELECT * FROM t OFFSET 1 LIMIT 1, 2;
 -- error 42601: syntax error: unexpected ","
 
+-- # With ORDER BY, LIMIT keeps the first rows in that order, and OFFSET skips
+-- # rows before that wherever it's written.
 /* extensions V203-01 */
 SELECT * FROM t ORDER BY x DESC LIMIT 1;
 -- X: 4
@@ -152,7 +165,8 @@ SELECT * FROM t ORDER BY x DESC OFFSET 1 LIMIT 1;
 SELECT * FROM t ORDER BY x DESC OFFSET 2 ROWS LIMIT 1;
 -- X: 2
 
--- # A LIMIT past the end returns all of the rows.
+-- # A LIMIT past the end returns the rows that are left after the OFFSET
+-- # (7.17, General Rules, 7.d).
 /* extensions V203-01 V203-02 */
 SELECT * FROM t LIMIT 10 OFFSET 3;
 -- X: 4
@@ -247,6 +261,7 @@ SELECT * FROM t ORDER BY x DESC LIMIT -1;
 SELECT * FROM t OFFSET 1 ROWS LIMIT -1;
 -- error 2201W: invalid row count in fetch first clause
 
+-- # A plus sign is allowed: +0 is still less than 1, and +1 is one row.
 /* extensions V203-01 */
 VALUES 1 LIMIT +0;
 -- error 2201W: invalid row count in fetch first clause
@@ -255,6 +270,8 @@ VALUES 1 LIMIT +0;
 VALUES 1, 2 LIMIT +1;
 -- COL1: 1
 
+-- # The row count has to be an exact numeric with scale 0 (7.17, Syntax Rules,
+-- # 30), so a decimal, a float, a string, a boolean or a date is an error.
 /* extensions V203-01 */
 SELECT * FROM t LIMIT 1.5;
 -- error 42601: syntax error: FETCH FIRST row count must be an exact numeric with scale 0, got NUMERIC(2, 1)
@@ -360,6 +377,7 @@ SELECT * FROM t ORDER BY x LIMIT 1, 1;
 -- flags: F857, F861, V203-03
 -- X: 2
 
+-- # A SELECT without a FROM (V201-01) can have a LIMIT too.
 /* extensions V201-01 V203-01 */
 SELECT 1 LIMIT 1;
 -- COL1: 1

@@ -5,16 +5,22 @@ INSERT INTO foo (x) VALUES (123);
 INSERT INTO foo (x) VALUES (NULL);
 INSERT INTO foo (x) VALUES (456);
 
+-- # NULLs aren't distinct from each other, so all the NULLs make one group
+-- # (General Rules, 2.b).
 SELECT x FROM foo GROUP BY x;
 -- X: NULL
 -- X: 123e0
 -- X: 456e0
 
+-- # COUNT(*) counts every row, NULLs included.
 SELECT x, count(*) FROM foo GROUP BY x;
 -- X: NULL COL2: 2
 -- X: 123e0 COL2: 1
 -- X: 456e0 COL2: 1
 
+-- # The other aggregates skip NULLs, with a warning when any are skipped
+-- # (10.9, General Rules, 7.a). Nothing is left in the NULL group, so COUNT is
+-- # 0 and the others are NULL (10.9, General Rules, 7.d.ii).
 SELECT x, count(x) FROM foo GROUP BY x;
 -- warning 01003: null value eliminated in set function
 -- X: NULL COL2: 0

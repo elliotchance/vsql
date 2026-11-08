@@ -1,3 +1,5 @@
+-- # UPPER and LOWER have the type of their argument, including its length
+-- # (Syntax Rules, 9).
 /* types */
 VALUES UPPER('Hello');
 -- COL1: HELLO (CHARACTER(5))
@@ -15,6 +17,7 @@ EXPLAIN SELECT UPPER(a), LOWER(a) FROM t;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T (A CHARACTER VARYING(10))
 -- EXPLAIN: EXPR (COL1 CHARACTER VARYING(10), COL2 CHARACTER VARYING(10))
 
+-- # The argument must be one character string.
 VALUES UPPER(123);
 -- error 42883: function does not exist: UPPER(SMALLINT)
 

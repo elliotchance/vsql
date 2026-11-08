@@ -21,8 +21,10 @@ SELECT x FROM a JOIN b ON TRUE ORDER BY id;
 SELECT COUNT(*) FROM a JOIN b ON TRUE GROUP BY id;
 -- error 42702: ambiguous column: ID
 
+-- # Qualifying each column with its table makes it unambiguous.
 SELECT a.id, b.id, x, y FROM a JOIN b ON TRUE ORDER BY a.id;
 -- ID: 1 ID: 2 X: 10 Y: 20
 
+-- # An unknown column in ORDER BY is an error even when there are no rows.
 SELECT x FROM a WHERE x > 100 ORDER BY nope;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.NOPE

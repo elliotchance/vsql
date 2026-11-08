@@ -1,9 +1,13 @@
+-- # A number is bound as a DOUBLE PRECISION (see the "params" directive in
+-- # docs/testing.rst).
 /* types */
 /* params 2 */
 VALUES ?;
 -- sql: VALUES 2.0e0
 -- COL1: 2e0 (DOUBLE PRECISION)
 
+-- # Each ? takes the next value, so a second ? with only one value doesn't
+-- # exist.
 /* params 'a' 'b' */
 VALUES ROW(?, ?);
 -- sql: VALUES ROW('a', 'b')
@@ -14,11 +18,13 @@ VALUES ?, ?;
 -- sql: VALUES 2.0e0, ?
 -- error 42P02: parameter does not exist: ?2
 
+-- # A ? in a character string literal isn't a parameter.
 /* params 'a' */
 VALUES ROW('?', ?);
 -- sql: VALUES ROW('?', 'a')
 -- COL1: ? COL2: a
 
+-- # A parameter can be inserted into a column, and compared in a WHERE.
 /* setup */
 CREATE TABLE t1 (x FLOAT, y VARCHAR(10));
 
@@ -46,5 +52,6 @@ SELECT * FROM t1;
 -- msg: UPDATE 1
 -- X: 6e0 Y: a
 
+-- # A ? without a value is an error.
 VALUES ?;
 -- error 42P02: parameter does not exist: ?1

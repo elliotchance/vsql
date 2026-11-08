@@ -1,3 +1,5 @@
+-- # TRUE, FALSE and UNKNOWN are the boolean literals, and UNKNOWN is a BOOLEAN
+-- # rather than an untyped NULL.
 VALUES TRUE;
 -- COL1: TRUE
 
@@ -8,6 +10,8 @@ VALUES FALSE;
 VALUES UNKNOWN;
 -- COL1: UNKNOWN (BOOLEAN)
 
+-- # UNKNOWN is the null value of BOOLEAN, so a NULL stored in a BOOLEAN column
+-- # reads back as UNKNOWN, the same as UNKNOWN itself.
 CREATE TABLE foo (x BOOLEAN);
 INSERT INTO foo (x) VALUES (NULL);
 INSERT INTO foo (x) VALUES (UNKNOWN);
@@ -24,6 +28,9 @@ SELECT * FROM foo;
 -- X: TRUE
 -- X: FALSE
 
+-- # AND and OR use three-valued logic (6.39, General Rules, 3): FALSE AND
+-- # anything is FALSE, TRUE OR anything is TRUE, and otherwise an UNKNOWN
+-- # operand makes the result UNKNOWN.
 VALUES TRUE AND TRUE;
 -- COL1: TRUE
 
@@ -79,6 +86,9 @@ VALUES FALSE OR UNKNOWN;
 VALUES UNKNOWN OR UNKNOWN;
 -- COL1: UNKNOWN
 
+-- # IS [NOT] TRUE, FALSE or UNKNOWN is never UNKNOWN itself (6.39, General
+-- # Rules, 3), so UNKNOWN IS FALSE is FALSE. Since UNKNOWN is the null value,
+-- # it's the only one that IS NULL.
 VALUES TRUE IS TRUE;
 -- COL1: TRUE
 
@@ -151,6 +161,8 @@ VALUES FALSE IS NOT NULL;
 VALUES UNKNOWN IS NOT NULL;
 -- COL1: FALSE
 
+-- # NOT swaps TRUE and FALSE, but NOT UNKNOWN is still UNKNOWN (6.39, General
+-- # Rules, 2).
 VALUES NOT TRUE;
 -- COL1: FALSE
 
@@ -161,6 +173,8 @@ VALUES NOT FALSE;
 VALUES NOT UNKNOWN;
 -- COL1: UNKNOWN (BOOLEAN)
 
+-- # Booleans can be compared, and TRUE is greater than FALSE (8.2, General
+-- # Rules, 8).
 VALUES ROW(TRUE > FALSE, FALSE < TRUE, TRUE = TRUE, FALSE = FALSE, TRUE < FALSE);
 -- COL1: TRUE COL2: TRUE COL3: TRUE COL4: TRUE COL5: FALSE
 

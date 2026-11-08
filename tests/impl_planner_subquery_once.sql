@@ -99,6 +99,8 @@ SELECT * FROM t1;
 -- X: 3 G: 2
 -- X: NULL G: 2
 
+-- # INSERT and DELETE also evaluate the subquery once, before any row is
+-- # changed, so every inserted row is 1 and the DELETE removes all four.
 INSERT INTO t3 (w) VALUES (1);
 INSERT INTO t3 (w) SELECT (SELECT COUNT(*) FROM t3) FROM t2;
 DELETE FROM t3 WHERE w = (SELECT COUNT(*) FROM t3) - 3;

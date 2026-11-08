@@ -1,5 +1,6 @@
 -- # CREATE SEQUENCE IF NOT EXISTS is a vsql extension (V106-01).
 
+-- # A sequence that doesn't exist is created as usual, with its options.
 /* extensions V106-01 */
 CREATE SEQUENCE IF NOT EXISTS s;
 SELECT NEXT VALUE FOR s FROM (VALUES 1) AS t;
@@ -41,11 +42,14 @@ CREATE SEQUENCE IF NOT EXISTS s START WITH 1 START WITH 2;
 CREATE SEQUENCE IF NOT EXISTS s START WITH 1 START WITH 2;
 -- error 42601: syntax error: START WITH is specified more than once
 
+-- # Without IF NOT EXISTS, it's the existing sequence that's the error.
 CREATE SEQUENCE s;
 CREATE SEQUENCE s START WITH 1 START WITH 2;
 -- msg: CREATE SEQUENCE 1
 -- error 42P07: duplicate sequence: ":memory:".PUBLIC.S
 
+-- # Only the sequence is optional: a later CREATE SEQUENCE still fails, and so
+-- # does a schema that doesn't exist or the read-only INFORMATION_SCHEMA.
 /* extensions V106-01 */
 CREATE SEQUENCE IF NOT EXISTS s;
 CREATE SEQUENCE s;
@@ -77,6 +81,9 @@ SELECT NEXT VALUE FOR other.s FROM (VALUES 1) AS t;
 -- COL1: 1
 -- COL1: 10
 
+-- # Whether it exists is what this transaction can see: a sequence created or
+-- # dropped earlier in the transaction counts, until ROLLBACK undoes it. One
+-- # that another connection has committed exists too.
 /* extensions V106-01 */
 START TRANSACTION;
 CREATE SEQUENCE s START WITH 10;
@@ -117,6 +124,9 @@ CREATE SEQUENCE IF NOT EXISTS s;
 -- 1: msg: CREATE SEQUENCE 1
 -- 2: msg: CREATE SEQUENCE 0
 
+-- # IF isn't a reserved word, so it can still be a sequence name. START WITH 5
+-- # is ignored because IF already exists; the next test is the same without IF
+-- # NOT EXISTS.
 /* extensions V106-01 */
 CREATE SEQUENCE if;
 CREATE SEQUENCE IF NOT EXISTS if;
@@ -132,7 +142,8 @@ SELECT NEXT VALUE FOR if FROM (VALUES 1) AS t;
 -- msg: CREATE SEQUENCE 1
 -- COL1: 5
 
--- # None of it is kept: the definitions and dumps are the same.
+-- # IF NOT EXISTS isn't kept: "vsql out" writes plain CREATE statements, and
+-- # the dump is the same after they're read back in.
 
 /* extensions V103-01 V101-01 V106-01 */
 CREATE SCHEMA IF NOT EXISTS foo;
@@ -178,7 +189,8 @@ CREATE SEQUENCE IF NOT EXISTS s START WITH 2;
 -- flags: T176, V106-01
 -- msg: CREATE SEQUENCE 1
 
--- # IF NOT EXISTS on a schema element
+-- # IF NOT EXISTS also works on a table or sequence in CREATE SCHEMA: the
+-- # second one with the same name is skipped, so the first one is kept.
 /* extensions V103-01 V106-01 */
 CREATE SCHEMA foo
   CREATE TABLE IF NOT EXISTS t (x INT)

@@ -10,6 +10,8 @@ VALUES TIMESTAMP '2024-01-02 12:00:00', TIMESTAMP '2024-01-02 13:00:00.12';
 -- COL1: 2024-01-02T12:00:00.00 (TIMESTAMP(2) WITHOUT TIME ZONE)
 -- COL1: 2024-01-02T13:00:00.12 (TIMESTAMP(2) WITHOUT TIME ZONE)
 
+-- # Character strings have the longest length, and are only CHARACTER VARYING
+-- # if one of them is (Syntax Rules, 3.a.iii.2 and 3.a.iii.3).
 /* types */
 VALUES 'a', 'abc';
 -- COL1: a   (CHARACTER(3))
@@ -20,6 +22,10 @@ VALUES 'a', CAST('abc' AS VARCHAR(5));
 -- COL1: a (CHARACTER VARYING(5))
 -- COL1: abc (CHARACTER VARYING(5))
 
+-- # Exact numbers have the largest scale, and enough digits for the largest
+-- # integer part (Syntax Rules, 3.c.ii.3). The literal 1 is a SMALLINT, which
+-- # needs 5 digits. A DECIMAL makes them all DECIMAL, and an approximate number
+-- # makes them all DOUBLE PRECISION (Syntax Rules, 3.c.ii.2).
 /* types */
 VALUES 1.5, 22.25;
 -- COL1: 1.50 (NUMERIC(4, 2))
@@ -40,6 +46,7 @@ VALUES 1, 1.5e0;
 -- COL1: 1e0 (DOUBLE PRECISION)
 -- COL1: 1.5e0 (DOUBLE PRECISION)
 
+-- # Each column of rows is combined separately.
 /* types */
 VALUES ROW(1, 'a'), ROW(2.5, 'bcd');
 -- COL1: 1.0 (NUMERIC(6, 1)) COL2: a   (CHARACTER(3))

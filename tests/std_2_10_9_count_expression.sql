@@ -4,6 +4,8 @@ INSERT INTO t (x, y, c, b, d, ts, n, f, s, g, r) VALUES (1, 'a', 'abc', TRUE, DA
 INSERT INTO t (x, y, c, b, d, ts, n, f, s, g, r) VALUES (2, 'b', 'def', FALSE, DATE '2022-01-02', TIMESTAMP '2022-01-02 10:00:00', 2.5, 2.5e0, 2, 2, 2.5e0);
 INSERT INTO t (x) VALUES (NULL);
 
+-- # COUNT counts the values that aren't NULL, whatever their type, and is an
+-- # INTEGER (Syntax Rules, 4).
 /* types */
 SELECT COUNT(x), COUNT(y), COUNT(c), COUNT(b), COUNT(d), COUNT(ts) FROM t;
 -- warning 01003: null value eliminated in set function
@@ -13,13 +15,17 @@ SELECT COUNT(n), COUNT(f), COUNT(s), COUNT(g), COUNT(r) FROM t;
 -- warning 01003: null value eliminated in set function
 -- COL1: 2 COL2: 2 COL3: 2 COL4: 2 COL5: 2
 
+-- # A literal is never NULL, so it counts every row like COUNT(*).
 SELECT COUNT(1), COUNT('a'), COUNT(*) FROM t;
 -- COL1: 3 COL2: 3 COL3: 3
 
+-- # The argument can be an expression, which is NULL when the column is.
 SELECT COUNT(x + 1), COUNT(UPPER(y)) FROM t;
 -- warning 01003: null value eliminated in set function
 -- COL1: 2 COL2: 2
 
+-- # A group of only NULLs, or no rows, counts 0 rather than NULL (General
+-- # Rules, 7.d.i).
 SELECT b, COUNT(y) FROM t GROUP BY b;
 -- warning 01003: null value eliminated in set function
 -- B: UNKNOWN COL2: 0

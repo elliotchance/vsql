@@ -1,3 +1,6 @@
+-- # A sequence never overflows: once the next value would be past its limit
+-- # (the largest BIGINT by default) it's an exception (General Rules, 3.a). An
+-- # INCREMENT BY that steps over the MAXVALUE is past it too.
 CREATE SEQUENCE seq1 START WITH 9223372036854775807;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
@@ -21,6 +24,8 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- COL1: 9223372036854775800
 -- error 2200H: sequence generator limit exceeded: PUBLIC.SEQ1
 
+-- # The limits themselves can be used, starting from the smallest BIGINT or
+-- # counting down from the largest.
 CREATE SEQUENCE seq1 START WITH -9223372036854775808 MINVALUE -9223372036854775808;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
@@ -35,6 +40,8 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- COL1: 9223372036854775807
 -- COL1: 9223372036854775806
 
+-- # With CYCLE, an ascending sequence starts again at its minimum, 1 by default
+-- # (General Rules, 3.b.i).
 CREATE SEQUENCE seq1 START WITH 9223372036854775806 CYCLE;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
@@ -44,6 +51,8 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- COL1: 9223372036854775807
 -- COL1: 1
 
+-- # RESTART WITH the limit returns it once more before the limit is exceeded
+-- # again.
 CREATE SEQUENCE seq1 START WITH 9223372036854775807;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 ALTER SEQUENCE seq1 RESTART WITH 9223372036854775807;
@@ -55,6 +64,8 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- COL1: 9223372036854775807
 -- error 2200H: sequence generator limit exceeded: PUBLIC.SEQ1
 
+-- # Adding CYCLE to a sequence that's already reached its limit lets it start
+-- # again at its minimum.
 CREATE SEQUENCE seq1 START WITH 9223372036854775807;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 ALTER SEQUENCE seq1 CYCLE;
@@ -64,6 +75,8 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- msg: ALTER SEQUENCE 1
 -- COL1: 1
 
+-- # A sequence is shared by every connection, so another connection gets the
+-- # exception once the limit has been reached.
 /* connection 1 */
 CREATE SEQUENCE seq1 START WITH 9223372036854775807;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
@@ -73,6 +86,8 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- 1: COL1: 9223372036854775807
 -- 2: error 2200H: sequence generator limit exceeded: PUBLIC.SEQ1
 
+-- # With CYCLE, a descending sequence starts again at its maximum (General
+-- # Rules, 3.b.ii).
 CREATE SEQUENCE seq1 START WITH 2 INCREMENT BY -1 MINVALUE 1 MAXVALUE 3 CYCLE;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2, 3) AS t;
 -- msg: CREATE SEQUENCE 1
@@ -147,6 +162,8 @@ ALTER SEQUENCE seq1 NO MINVALUE;
 -- msg: ALTER SEQUENCE 1
 -- error 42601: syntax error: MINVALUE (1) must not be greater than the next value (-5)
 
+-- # RESTART WITH must also be within the limits, including an implicit one
+-- # (9.31, Syntax Rules, 12).
 CREATE SEQUENCE seq1 MAXVALUE 10;
 ALTER SEQUENCE seq1 RESTART WITH 0;
 -- msg: CREATE SEQUENCE 1

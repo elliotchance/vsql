@@ -1,3 +1,4 @@
+-- # The table must exist, also for EXPLAIN.
 /* extensions V001-03 */
 EXPLAIN UPDATE foo SET x = 123;
 -- error 42P01: no such table: ":memory:".PUBLIC.FOO
@@ -5,6 +6,8 @@ EXPLAIN UPDATE foo SET x = 123;
 UPDATE foo SET x = 123;
 -- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
+-- # Without WHERE every row is updated (Syntax Rules, 5). A row counts even
+-- # if its new value is the same as its old value.
 CREATE TABLE foo (baz CHARACTER VARYING(10));
 INSERT INTO foo (baz) VALUES ('hi');
 INSERT INTO foo (baz) VALUES ('there');
@@ -19,6 +22,9 @@ SELECT * FROM foo;
 -- BAZ: other
 -- BAZ: other
 
+-- # The new values are computed from the old row (General Rules, 10), so
+-- # x = x changes nothing. When WHERE matches no row it's no data (General
+-- # Rules, 15). A column that doesn't exist is an error.
 CREATE TABLE foo (x INT, y INT);
 INSERT INTO foo (x, y) VALUES (1, 2);
 UPDATE foo SET x = x;
@@ -35,6 +41,7 @@ SELECT * FROM foo;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Z
 -- X: 1 Y: 2
 
+-- # WHERE compares numbers of different types by value, so 35 matches 35.0.
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (35);
 INSERT INTO foo (baz) VALUES (78);
@@ -49,6 +56,9 @@ SELECT * FROM foo;
 -- BAZ: 100e0
 -- BAZ: 78e0
 
+-- # The new value must be assignable to its column (14.15, Syntax Rules, 11.b)
+-- # and (9.2, Syntax Rules, 3). A string isn't converted to a number, or a
+-- # number to a string. This is checked even when the table has no rows.
 CREATE TABLE foo (a INT, c VARCHAR(5));
 INSERT INTO foo (a, c) VALUES (1, 'ok');
 UPDATE foo SET a = 'abc';
@@ -65,6 +75,7 @@ UPDATE foo SET baz = true;
 -- msg: CREATE TABLE 1
 -- error 42846: cannot coerce BOOLEAN to DOUBLE PRECISION
 
+-- # A column that can be NULL can be set to NULL, but a NOT NULL column can't.
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (123);
 UPDATE foo SET baz = NULL;
@@ -81,6 +92,8 @@ UPDATE foo SET baz = NULL;
 -- msg: INSERT 1
 -- error 23502: violates non-null constraint: column BAZ
 
+-- # The new value can be an expression that uses the column's old value, with
+-- # or without the table name.
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (-123);
 UPDATE foo SET baz = -223.0e0 * 4.2e0;
@@ -128,6 +141,7 @@ SELECT * FROM t;
 -- msg: UPDATE 1
 -- X: 101 Y: 100
 
+-- # A table in another schema, which must exist.
 UPDATE foo.bar SET baz = baz * 4.2;
 -- error 3F000: invalid schema name: FOO
 
@@ -142,12 +156,16 @@ SELECT * FROM foo.bar;
 -- msg: UPDATE 1
 -- BAZ: -516.6e0
 
+-- # NULL can't be set in a NOT NULL column, even when the table has no rows,
+-- # which is a bug (#1101).
 CREATE TABLE foo (baz FLOAT NOT NULL);
 UPDATE foo SET baz = NULL;
 SELECT * FROM foo;
 -- msg: CREATE TABLE 1
 -- error 23502: violates non-null constraint: column BAZ
 
+-- # A string that's too long for its VARCHAR is an error, rather than being cut
+-- # short (9.2, General Rules, 3.b.v.2), and the row keeps its old value.
 CREATE TABLE foo (baz VARCHAR(4));
 INSERT INTO foo (baz) VALUES ('abc');
 UPDATE foo SET baz = 'too long';
@@ -157,7 +175,8 @@ SELECT * FROM foo;
 -- error 22001: string data right truncation for CHARACTER VARYING(4)
 -- BAZ: abc
 
--- # https://github.com/elliotchance/vsql/issues/200
+-- # Changing the PRIMARY KEY of a row that's found with a range of the key
+-- # (#200).
 /* extensions V001-03 */
 CREATE TABLE PrimaryProduct (id INT NOT NULL, PRIMARY KEY(id));
 INSERT INTO PrimaryProduct (id) VALUES (1);
@@ -194,6 +213,8 @@ SELECT * FROM PrimaryProduct;
 -- ID: 3
 -- ID: 4
 
+-- # A new key that's the same as another row's key fails, whether that row
+-- # isn't changed or gets the same new key. None of the rows are changed.
 CREATE TABLE PrimaryProduct (id INT NOT NULL, PRIMARY KEY(id));
 INSERT INTO PrimaryProduct (id) VALUES (1);
 INSERT INTO PrimaryProduct (id) VALUES (2);
@@ -224,6 +245,8 @@ SELECT * FROM PrimaryProduct;
 -- ID: 2
 -- ID: 3
 
+-- # Each UPDATE in a transaction sees the ones before it, and ROLLBACK undoes
+-- # all of them.
 CREATE TABLE PrimaryProduct (id INT NOT NULL, x INT, PRIMARY KEY(id));
 INSERT INTO PrimaryProduct (id, x) VALUES (1, 10);
 INSERT INTO PrimaryProduct (id, x) VALUES (2, 20);
@@ -247,6 +270,8 @@ SELECT * FROM PrimaryProduct;
 -- ID: 1 X: 10
 -- ID: 2 X: 20
 
+-- # A column can't be set more than once (14.15, Syntax Rules, 8), but several
+-- # columns can be set at once, including ones with delimited names.
 CREATE TABLE foo (a INT, c VARCHAR(5));
 INSERT INTO foo (a, c) VALUES (3, 'z');
 UPDATE foo SET a = 1, a = 2;

@@ -1,7 +1,9 @@
+-- # LIKE is kept when it's shown.
 /* extensions V001-01 */
 EXPLAIN VALUES 'a' LIKE 'a';
 -- EXPLAIN: VALUES (COL1 BOOLEAN) = ROW('a' LIKE 'a')
 
+-- # Without wildcards the whole string must match, including its case.
 VALUES 'a' LIKE 'a';
 -- COL1: TRUE
 
@@ -11,6 +13,7 @@ VALUES 'a' LIKE 'A';
 VALUES 'a' LIKE 'aa';
 -- COL1: FALSE
 
+-- # _ matches exactly one character.
 VALUES 'ab' LIKE 'a_';
 -- COL1: TRUE
 
@@ -23,6 +26,7 @@ VALUES 'abc' LIKE 'a_';
 VALUES 'abc' LIKE '_b_';
 -- COL1: TRUE
 
+-- # % matches any number of characters, including none.
 VALUES 'abc' LIKE '%';
 -- COL1: TRUE
 
@@ -56,6 +60,7 @@ VALUES 'acb' NOT LIKE 'a%b';
 VALUES 'acdeb' NOT LIKE 'a%b';
 -- COL1: FALSE
 
+-- # % has to try every length, not stop at the first or last match.
 VALUES 'abab' LIKE '%b';
 -- COL1: TRUE
 
@@ -83,6 +88,7 @@ VALUES 'abc' LIKE '%%c';
 VALUES 'abcbd' LIKE '%b_';
 -- COL1: TRUE
 
+-- # The empty string only matches a pattern that can match no characters.
 VALUES '' LIKE '_';
 -- COL1: FALSE
 
@@ -95,9 +101,12 @@ VALUES '' LIKE '';
 VALUES 'a' LIKE '';
 -- COL1: FALSE
 
+-- # _ is one character, not one byte.
 VALUES 'é' LIKE '_';
 -- COL1: TRUE
 
+-- # Every other character is itself, including those that are special in
+-- # regular expressions.
 VALUES 'a.c' LIKE 'a.c';
 -- COL1: TRUE
 
@@ -110,12 +119,14 @@ VALUES '$5^' LIKE '$5^';
 VALUES 'a\b' LIKE 'a\b';
 -- COL1: TRUE
 
+-- # Wildcards next to each other.
 VALUES ROW('ab' LIKE '%_', 'ab' LIKE '_%', 'ab' LIKE '__', 'ab' LIKE '%%');
 -- COL1: TRUE COL2: TRUE COL3: TRUE COL4: TRUE
 
 VALUES ROW('' LIKE '%_', 'a' LIKE '__', 'abc' LIKE '_%_', 'a' LIKE '_%_');
 -- COL1: FALSE COL2: FALSE COL3: TRUE COL4: FALSE
 
+-- # Regular expression syntax (of SIMILAR) has no meaning in LIKE.
 VALUES 'abd' LIKE 'a(b|c)d';
 -- COL1: FALSE
 

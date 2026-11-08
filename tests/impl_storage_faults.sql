@@ -20,8 +20,8 @@ SELECT * FROM t;
 -- X: 3
 
 -- # A statement that is committed to the write-ahead log is copied into the
--- # file by the next statement if it couldn't be copied before. It doesn't fail,
--- # since it was committed.
+-- # file by the next statement if it couldn't be copied before. It doesn't
+-- # fail, since it was committed.
 CREATE TABLE t (x INT);
 /* fault checkpoint */
 INSERT INTO t (x) VALUES (1);
@@ -83,8 +83,8 @@ SELECT * FROM t;
 
 -- # A statement left in the write-ahead log is copied into the file before it's
 -- # read. If that fails, the next statement tries again. A fault with a number
--- # fails the nth time it's reached, so "lock_shared 2" is the shared lock after
--- # recovering.
+-- # fails the nth time it's reached, so "lock_shared 2" is the shared lock
+-- # after recovering.
 CREATE TABLE t (x INT);
 /* fault checkpoint */
 INSERT INTO t (x) VALUES (1);
@@ -371,8 +371,8 @@ SELECT * FROM t;
 -- X: 1
 -- X: 3
 
--- # A table from before indexes gets the indexes of its constraints when they're
--- # needed.
+-- # A table from before indexes gets the indexes of its constraints when
+-- # they're needed.
 /* fault constraint_index */
 CREATE TABLE p (id INT PRIMARY KEY, u INT UNIQUE);
 CREATE TABLE c (id INT PRIMARY KEY, p INT REFERENCES p (u));
@@ -387,6 +387,7 @@ INSERT INTO c (id, p) VALUES (2, 30);
 -- msg: INSERT 1
 -- error 23503: violates foreign key constraint: FOREIGN KEY (P) REFERENCES ":memory:".PUBLIC.P (U) on ":memory:".PUBLIC.C
 
+-- # The same for a table with a foreign key that has ON DELETE CASCADE.
 CREATE TABLE p (id INT PRIMARY KEY);
 /* fault constraint_index */
 CREATE TABLE c (id INT PRIMARY KEY, p INT REFERENCES p ON DELETE CASCADE);

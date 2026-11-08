@@ -57,7 +57,7 @@ VALUES ROW(1), (2), 3;
 -- COL1: 2
 -- COL1: 3
 
--- # Every row has the same number of columns.
+-- # Every row has the same number of columns (7.3, Syntax Rules, 1).
 VALUES (1, 2), (3);
 -- error 42601: syntax error: VALUES rows must have the same number of columns
 
@@ -73,7 +73,8 @@ VALUES (1, 2), (3, 4, 5);
 VALUES (1, 2), ROW(3, 4, 5);
 -- error 42601: syntax error: VALUES rows must have the same number of columns
 
--- # Each column has the combined type.
+-- # Each column has the combined type of its values, so a number and a
+-- # string can't be in the same column (7.3, Syntax Rules, 4).
 VALUES (1, 'a'), (200000, 'bcd');
 -- COL1: 1 COL2: a
 -- COL1: 200000 COL2: bcd
@@ -107,7 +108,9 @@ VALUES (1, (2, 3));
 VALUES (ROW(1, 2), 3);
 -- error 42601: syntax error: unexpected ",", expecting IS
 
--- # A row is still the start of a null predicate.
+-- # A row followed by IS [NOT] NULL is a null predicate. IS NULL is FALSE
+-- # unless every field is NULL (8.8, General Rules, 2.b.i). A field still
+-- # can't be NULL, and other predicates on a row aren't supported.
 VALUES (1, 2) IS NULL;
 -- COL1: FALSE
 

@@ -18,6 +18,9 @@ SELECT ":memory:".public.t1.* FROM t1;
 -- X: 123
 -- X: 123
 
+-- # The qualifier must name a table of the FROM clause (Syntax Rules, 8.b.vi),
+-- # so another schema or catalog is an unknown column. With .* the schema is
+-- # looked up first, so it's an invalid schema name.
 CREATE TABLE t1 (x INT);
 SELECT other.t1.x FROM t1;
 -- msg: CREATE TABLE 1
@@ -33,11 +36,15 @@ SELECT other.t1.* FROM t1;
 -- msg: CREATE TABLE 1
 -- error 3F000: invalid schema name: OTHER
 
+-- # At most a catalog, schema, table and column can be given (Syntax Rules,
+-- # 5).
 CREATE TABLE t1 (x INT);
 SELECT a.b.public.t1.x FROM t1;
 -- msg: CREATE TABLE 1
 -- error 42601: syntax error: invalid column reference: A.B.PUBLIC.T1.X
 
+-- # An unqualified table is in the current catalog, so after SET CATALOG
+-- # ":memory:" doesn't name it.
 /* create_catalog FOO */
 SET CATALOG 'FOO';
 CREATE TABLE public.bar (baz INTEGER);

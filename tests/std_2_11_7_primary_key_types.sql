@@ -77,8 +77,8 @@ SELECT * FROM t;
 -- D: 10.00
 -- D: 100.00
 
--- # A DECIMAL has exactly the scale of its type (#223), so 1.23 / 5 is 0.24, the
--- # same key as 0.24.
+-- # A DECIMAL has exactly the scale of its type (#223), so 1.23 / 5 is 0.24,
+-- # the same key as 0.24.
 CREATE TABLE t (d DECIMAL(3, 2) PRIMARY KEY);
 INSERT INTO t (d) VALUES (CAST(1.23 AS DECIMAL(3, 2)) / 5);
 INSERT INTO t (d) VALUES (0.24);
@@ -131,8 +131,8 @@ SELECT * FROM t;
 -- V: b
 -- V: é
 
--- # The rows are in the same order as ORDER BY, which compares strings as if the
--- # shorter one is padded with spaces. So 'a' is after 'a' and a tab.
+-- # The rows are in the same order as ORDER BY, which compares strings as if
+-- # the shorter one is padded with spaces. So 'a' is after 'a' and a tab.
 CREATE TABLE t (v VARCHAR(10), n INT, PRIMARY KEY (v, n));
 INSERT INTO t (v, n) VALUES ('a', 1), ('a	', 2), ('a b', 3), ('a  b', 4), ('a 	', 5), ('ab', 6), ('', 7), ('a~', 8), (' ', 9), ('a 	b', 10), ('a ', 11);
 SELECT n FROM t;

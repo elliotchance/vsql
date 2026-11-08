@@ -167,6 +167,8 @@ SELECT * FROM emp;
 -- msg: DELETE 3
 -- msg: DELETE 1
 
+-- # A row can be deleted once nothing references it. A NULL doesn't reference
+-- # any row, so it never stops a DELETE.
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (parent_id INT REFERENCES parent);
 INSERT INTO parent (id) VALUES (1), (2);
@@ -388,6 +390,12 @@ SELECT * FROM child;
 -- PARENT_ID: 1 ID: 1 P: NULL
 -- PARENT_ID: 2 ID: 2 P: NULL
 
+-- # A statement that depends on a row that another transaction has inserted or
+-- # deleted, and not yet committed, fails with a serialization failure: a new
+-- # or deleted parent can't be referenced yet, and a parent that only a new
+-- # child references can't be deleted. A parent that a committed row references
+-- # still fails with a foreign key violation. After the COMMIT, the new parent
+-- # can be referenced and the deleted one can't.
 /* connection 1 */
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (parent_id INT REFERENCES parent);

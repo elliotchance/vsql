@@ -61,9 +61,8 @@ SELECT constraint_schema, constraint_name, table_name FROM information_schema.ta
 -- CONSTRAINT_SCHEMA: S CONSTRAINT_NAME: C3 TABLE_NAME: T4
 -- CONSTRAINT_SCHEMA: S CONSTRAINT_NAME: T4_NOT_NULL_1 TABLE_NAME: T4
 
--- # A name can't be used for another constraint, even if it's the name that a
--- # constraint without one would get. A constraint without a name gets the next
--- # name that isn't used instead.
+-- # A name can't be used for another constraint (Syntax Rules, 4), even if
+-- # it's the name that a constraint without one was given.
 CREATE TABLE t (a INT CHECK (a > 0));
 CREATE TABLE u (a INT CONSTRAINT t_check_1 CHECK (a > 0));
 CREATE TABLE v (a INT CONSTRAINT t_check_1 CHECK (a > 0), CONSTRAINT v_check_1 UNIQUE (a), b INT CHECK (b > 0), CHECK (b > a), CONSTRAINT v_primary_key CHECK (b > 1), PRIMARY KEY (b));

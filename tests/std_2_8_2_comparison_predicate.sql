@@ -1,7 +1,6 @@
--- # 8.2 <comparison predicate>
-
--- # General Rules: 3, b:
--- # [E021-12]
+-- # The shorter of two character strings is padded with spaces before they're
+-- # compared (8.2, General Rules, 3.b), so trailing spaces don't matter but
+-- # leading spaces do (E021-12).
 VALUES ROW(1, 'hello' = 'hello   ');
 VALUES ROW(2, 'hello  ' = 'hello');
 VALUES ROW(3, 'hello  ' = 'hello  ');
@@ -25,5 +24,7 @@ VALUES DATE '2020-01-01' = TIME '00:00:00';
 VALUES TIME '00:00:00' < TIMESTAMP '2020-01-01 00:00:00';
 -- error 42883: cannot compare TIME(0) WITHOUT TIME ZONE and TIMESTAMP(0) WITHOUT TIME ZONE
 
+-- # A datetime can be cast to have the same fields, and times with a time zone
+-- # are compared.
 VALUES ROW(DATE '2020-01-01' = CAST(TIMESTAMP '2020-01-01 10:00:00' AS DATE), TIMESTAMP '2020-01-01 00:00:00+00:00' = TIMESTAMP '2020-01-01 00:00:00+00:00');
 -- COL1: TRUE COL2: TRUE

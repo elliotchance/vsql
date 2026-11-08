@@ -57,6 +57,9 @@ SELECT * FROM foo.public.bar;
 -- msg: DROP TABLE 1
 -- error 42P01: no such table: FOO.PUBLIC.BAR
 
+-- # An unqualified name is looked for in the current catalog (Syntax Rules,
+-- # 14.a), so the table is only found without FOO once FOO is current. A
+-- # primary key lookup works through the catalog-qualified name.
 /* create_catalog FOO */
 /* extensions V001-01 */
 SET CATALOG ':memory:';
@@ -79,6 +82,8 @@ SELECT * FROM qux;
 -- BAZ: 1
 -- BAZ: 2
 
+-- # Schemas and sequences in another catalog can be created, used and dropped,
+-- # and the dropped schema really is gone from that catalog.
 /* create_catalog FOO */
 SET CATALOG ':memory:';
 CREATE SCHEMA foo.s2;
@@ -101,6 +106,8 @@ SET SCHEMA 'S2';
 -- msg: SET CATALOG 1
 -- error 3F000: invalid schema name: S2
 
+-- # A catalog that doesn't exist is an invalid catalog name, not a missing
+-- # table or schema. A name can't have more than three parts.
 SELECT * FROM nope.public.t1;
 -- error 3D000: invalid catalog name: NOPE
 

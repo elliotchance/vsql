@@ -1,5 +1,6 @@
--- # ON DELETE CASCADE deletes the rows that reference a deleted row, and the
--- # rows that reference those rows, and so on.
+-- # ON DELETE CASCADE deletes the rows that reference a deleted row (General
+-- # Rules, 9.a.i), and the rows that reference those rows, and so on (General
+-- # Rules, 17).
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (id INT PRIMARY KEY, parent_id INT REFERENCES parent ON DELETE CASCADE);
 CREATE TABLE grandchild (child_id INT, FOREIGN KEY (child_id) REFERENCES child (id) ON DELETE CASCADE);
@@ -37,8 +38,9 @@ SELECT * FROM emp;
 -- ID: 6 MANAGER_ID: 5
 -- msg: DELETE 3
 
--- # ON DELETE SET NULL sets every referencing column to NULL. A row with a NULL
--- # in any of the referenced columns can't be referenced.
+-- # ON DELETE SET NULL sets every referencing column to NULL (General Rules,
+-- # 9.a.ii). A row with a NULL in any of the referenced columns can't be
+-- # referenced.
 CREATE TABLE parent (a INT, b INT, UNIQUE (a, b));
 CREATE TABLE child (x INT, y INT, FOREIGN KEY (x, y) REFERENCES parent (a, b) ON DELETE SET NULL);
 INSERT INTO parent (a, b) VALUES (1, 1), (1, 2), (NULL, 2);
@@ -70,8 +72,9 @@ SELECT * FROM parent;
 -- error 23502: violates non-null constraint: column PARENT_ID
 -- ID: 1
 
--- # ON DELETE SET DEFAULT sets every referencing column to its default, which
--- # must still reference a row. It's NULL when there's no default.
+-- # ON DELETE SET DEFAULT sets every referencing column to its default (General
+-- # Rules, 9.a.iii), which must still reference a row. It's NULL when there's
+-- # no default.
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (id INT, parent_id INT DEFAULT 0 REFERENCES parent ON DELETE SET DEFAULT, other_id INT REFERENCES parent ON DELETE SET DEFAULT);
 INSERT INTO parent (id) VALUES (0), (1), (2);
@@ -146,8 +149,8 @@ DELETE FROM child WHERE id = 10;
 -- ID: 10 PARENT_ID: 1
 -- error 23503: violates foreign key constraint: FOREIGN KEY (CHILD_ID) REFERENCES ":memory:".PUBLIC.CHILD (ID) on ":memory:".PUBLIC.OTHER
 
--- # The ON DELETE is kept with the definition of the table, including one that's
--- # added by ALTER TABLE.
+-- # The ON DELETE is kept with the definition of the table, including one
+-- # that's added by ALTER TABLE.
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (a INT REFERENCES parent ON DELETE CASCADE, b INT REFERENCES parent ON DELETE NO ACTION, c INT);
 ALTER TABLE child ADD CONSTRAINT c_fk FOREIGN KEY (c) REFERENCES parent ON DELETE SET NULL;
@@ -162,6 +165,7 @@ SELECT constraint_name, delete_rule FROM information_schema.referential_constrai
 -- CONSTRAINT_NAME: C_FK DELETE_RULE: SET NULL
 -- CONSTRAINT_NAME: CHILD_FOREIGN_KEY_3 DELETE_RULE: SET DEFAULT
 
+-- # ON DELETE can only be given once, and RESTRICT isn't supported (T191).
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (id INT REFERENCES parent ON DELETE CASCADE ON DELETE CASCADE);
 CREATE TABLE child (id INT REFERENCES parent ON DELETE RESTRICT);
@@ -196,8 +200,8 @@ SELECT * FROM child;
 -- 2: msg: DELETE 1
 
 -- # A row can't be both deleted and updated by the actions of one statement,
--- # in either order, which is a triggered data change violation. Nothing is
--- # changed.
+-- # in either order, which is a triggered data change violation (General Rules,
+-- # 13). Nothing is changed.
 CREATE TABLE p (id INT PRIMARY KEY);
 CREATE TABLE c (a INT REFERENCES p ON DELETE CASCADE, b INT REFERENCES p ON DELETE SET NULL);
 CREATE TABLE d (b INT REFERENCES p ON DELETE SET NULL, a INT REFERENCES p ON DELETE CASCADE);

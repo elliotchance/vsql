@@ -1,3 +1,6 @@
+-- # Connections share the same database. Outside of START TRANSACTION each
+-- # statement is committed on its own, so the other connection sees it straight
+-- # away, whichever connection was opened first.
 /* connection 1 */
 CREATE TABLE foo (bar INT);
 INSERT INTO foo (bar) VALUES (123);

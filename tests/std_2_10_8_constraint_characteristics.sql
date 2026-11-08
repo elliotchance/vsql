@@ -24,6 +24,9 @@ CREATE TABLE t (x INT NOT NULL NOT DEFERRABLE PRIMARY KEY INITIALLY IMMEDIATE);
 -- error 0A000: NOT NULL cannot be DEFERRABLE
 -- msg: CREATE TABLE 1
 
+-- # The characteristics must follow a constraint, and DEFERRABLE (or NOT
+-- # DEFERRABLE) and INITIALLY can each only be given once. NOT DEFERRABLE can't
+-- # be INITIALLY DEFERRED (Syntax Rules, 2.a.i).
 CREATE TABLE t (x INT DEFERRABLE);
 CREATE TABLE t (x INT UNIQUE DEFERRABLE NOT DEFERRABLE);
 CREATE TABLE t (x INT UNIQUE INITIALLY IMMEDIATE INITIALLY IMMEDIATE);
@@ -33,6 +36,9 @@ CREATE TABLE t (x INT, UNIQUE (x) NOT DEFERRABLE INITIALLY DEFERRED);
 -- error 42601: syntax error: invalid constraint characteristics: INITIALLY IMMEDIATE INITIALLY IMMEDIATE
 -- error 42601: syntax error: invalid constraint characteristics: NOT DEFERRABLE INITIALLY DEFERRED
 
+-- # INITIALLY IMMEDIATE is implicit (Syntax Rules, 1), and without DEFERRABLE a
+-- # constraint is NOT DEFERRABLE (Syntax Rules, 2.b). The two can be in either
+-- # order.
 CREATE TABLE t (
   a INT UNIQUE,
   b INT UNIQUE DEFERRABLE,

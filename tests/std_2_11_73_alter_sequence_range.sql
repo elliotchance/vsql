@@ -17,11 +17,15 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- msg: ALTER SEQUENCE 1
 -- COL1: 1
 
+-- # MAXVALUE must still be more than MINVALUE (9.31, Syntax Rules, 11), which
+-- # is 1 for an ascending sequence without one.
 CREATE SEQUENCE seq1;
 ALTER SEQUENCE seq1 MAXVALUE 1;
 -- msg: CREATE SEQUENCE 1
 -- error 42601: syntax error: MAXVALUE (1) must be greater than MINVALUE (1)
 
+-- # A new MINVALUE can be the next value but not more than it, for ascending
+-- # and descending sequences.
 CREATE SEQUENCE seq1 START WITH 10;
 ALTER SEQUENCE seq1 MINVALUE 11;
 ALTER SEQUENCE seq1 MINVALUE 10;

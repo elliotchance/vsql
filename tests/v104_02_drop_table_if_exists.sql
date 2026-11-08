@@ -1,5 +1,7 @@
 -- # DROP TABLE IF EXISTS is a vsql extension (V104-02).
 
+-- # A table that doesn't exist isn't an error (DROP TABLE 0), with or without
+-- # RESTRICT or CASCADE. One that does is dropped (DROP TABLE 1).
 /* extensions V104-01 V104-02 */
 DROP TABLE IF EXISTS t;
 DROP TABLE IF EXISTS t RESTRICT;
@@ -23,6 +25,8 @@ DROP TABLE IF EXISTS t;
 DROP TABLE IF EXISTS nosuch.t;
 -- msg: DROP TABLE 0
 
+-- # But a catalog that doesn't exist is still an error, and so is any table in
+-- # the read-only INFORMATION_SCHEMA, even one that doesn't exist.
 /* extensions V104-01 V104-02 */
 DROP TABLE IF EXISTS nosuch.public.t;
 -- error 3D000: invalid catalog name: NOSUCH
@@ -53,6 +57,9 @@ SELECT * FROM other.t;
 -- msg: CREATE TABLE 1
 -- msg: DROP TABLE 0
 
+-- # If the table exists, RESTRICT (also the default) still fails when a
+-- # FOREIGN KEY references it. CASCADE drops the table and the FOREIGN KEY, but
+-- # not the child table, which then accepts any value.
 /* extensions V104-01 V104-02 */
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (id INT, FOREIGN KEY (id) REFERENCES parent (id));
@@ -69,6 +76,8 @@ DROP TABLE IF EXISTS parent CASCADE;
 -- msg: INSERT 1
 -- msg: DROP TABLE 0
 
+-- # Whether it exists is what this transaction can see: a table dropped or
+-- # created earlier in the transaction counts, until ROLLBACK undoes it.
 /* extensions V104-01 V104-02 */
 CREATE TABLE t (x INT);
 START TRANSACTION;
@@ -121,6 +130,7 @@ DROP TABLE IF EXISTS t;
 -- 1: msg: DROP TABLE 1
 -- 2: msg: DROP TABLE 0
 
+-- # IF isn't a reserved word, so it can still be a table name.
 /* extensions V104-01 V104-02 */
 CREATE TABLE if (x INT);
 DROP TABLE if;
@@ -137,6 +147,7 @@ DROP TABLE IF EXISTS if CASCADE;
 -- msg: CREATE TABLE 1
 -- msg: DROP TABLE 1
 
+-- # IF NOT EXISTS is only for CREATE.
 DROP TABLE IF NOT EXISTS t;
 -- error 42601: syntax error: unexpected NOT
 

@@ -6,6 +6,7 @@ INSERT INTO t (x, y) VALUES (1, 'a');
 INSERT INTO t (x, y) VALUES (2, 'b');
 CREATE SEQUENCE seq;
 
+-- # Only a SELECT without a FROM is flagged, including with DISTINCT or ALL.
 /* flags */
 /* extensions V201-01 */
 SELECT 1;
@@ -41,6 +42,7 @@ SELECT * FROM t WHERE x = 1;
 -- flags:
 -- X: 1 Y: a
 
+-- # It returns the select list as one row, named and typed as usual.
 /* types */
 /* extensions V201-01 */
 SELECT 1 + 2 AS x, 'a';
@@ -63,6 +65,8 @@ SELECT CURRENT_DATE IS NOT NULL AS x;
 SELECT NEXT VALUE FOR seq;
 -- COL1: 1
 
+-- # There are no columns: * needs a FROM to parse, and a column reference or
+-- # T.* is an unknown name. WHERE, GROUP BY and HAVING need a FROM too.
 SELECT *;
 -- error 42601: syntax error: unexpected $end, expecting FROM
 
@@ -97,6 +101,10 @@ SELECT 1 GROUP BY x;
 SELECT 1 HAVING TRUE;
 -- error 42601: syntax error: unexpected HAVING
 
+-- # An aggregate sees the one row, so COUNT(*) is 1. In a subquery, COUNT(*)
+-- # has no column reference, so it counts the subquery's own row (6.9, Syntax
+-- # Rules, 6.a), but SUM(x) of an outer column is aggregated by the outer query
+-- # (6.9, Syntax Rules, 6.b), the same as with a FROM.
 /* extensions V201-01 */
 SELECT COUNT(*);
 -- COL1: 1
@@ -125,6 +133,7 @@ SELECT (SELECT SUM(x) FROM (VALUES 1) AS v) AS s FROM t;
 SELECT COUNT(x);
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.X
 
+-- # ORDER BY, FETCH and OFFSET apply to the one row, so OFFSET 1 skips it.
 /* extensions V201-01 */
 SELECT 1 AS a ORDER BY a;
 -- A: 1
@@ -144,6 +153,9 @@ SELECT 1 FETCH FIRST 1 ROW ONLY;
 /* extensions V201-01 */
 SELECT 1 OFFSET 1 ROW;
 
+-- # It can be used anywhere a query can: in a set operation, as a derived
+-- # table, or as a subquery in WHERE, IN, EXISTS or a value, including one that
+-- # only refers to the columns of the outer query.
 /* extensions V201-01 */
 SELECT 1 UNION SELECT 2;
 -- COL1: 1
@@ -213,6 +225,7 @@ VALUES (SELECT 7);
 SELECT DISTINCT (SELECT 1) AS z FROM t ORDER BY (SELECT 1);
 -- Z: 1
 
+-- # And in INSERT and UPDATE, as the source or as a value.
 /* extensions V201-01 */
 INSERT INTO t (x, y) SELECT 3, 'c';
 SELECT * FROM t WHERE x = 3;
@@ -231,6 +244,7 @@ SELECT y FROM t WHERE x = 1;
 -- msg: UPDATE 1
 -- Y: z
 
+-- # EXPLAIN shows the one row as SINGLE ROW.
 /* extensions V001-01 V201-01 */
 EXPLAIN SELECT 1;
 -- EXPLAIN: SINGLE ROW
@@ -249,6 +263,7 @@ EXPLAIN SELECT 1 AS a ORDER BY 1 + 1 FETCH FIRST 1 ROW ONLY;
 -- EXPLAIN: FETCH FIRST 1 ROWS ONLY
 -- EXPLAIN: EXPR (A SMALLINT)
 
+-- # A cursor can read it, but it isn't updatable since there's no table.
 /* extensions V108-01 V109-01 V110-01 V201-01 */
 DECLARE c CURSOR WITH HOLD FOR SELECT 1;
 OPEN c;
@@ -261,6 +276,7 @@ FETCH NEXT FROM c;
 DECLARE c CURSOR WITH HOLD FOR SELECT 1 FOR UPDATE;
 -- error 42601: syntax error: cursor C is not updatable
 
+-- # V201-01 is only listed once, however many SELECTs have no FROM.
 /* flags */
 /* extensions V201-01 */
 SELECT 1 AS "SELECT" UNION SELECT (SELECT 2);

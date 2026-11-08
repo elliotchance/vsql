@@ -5,18 +5,21 @@ CREATE TABLE no_rows (z INT);
 INSERT INTO t (x, g) VALUES (1, 10), (2, 10), (3, 20);
 INSERT INTO u (y) VALUES (1), (2);
 
--- # A VALUES isn't a query specification, so an aggregate function in it without
--- # a column reference is of the innermost one that contains it (6.9, SR 6.a).
+-- # A VALUES isn't a query specification, so an aggregate function in it
+-- # without a column reference is of the innermost one that contains it
+-- # (Syntax Rules, 6.a).
 SELECT (VALUES COUNT(*)) FROM t;
 -- COL1: 3
 
 SELECT (VALUES MAX(1)) FROM t;
 -- COL1: 1
 
--- # With a column reference it was already of the outer query (SR 6.b).
+-- # With a column reference it was already of the outer query
+-- # (Syntax Rules, 6.b).
 SELECT (VALUES MAX(t.x)) FROM t;
 -- COL1: 3
 
+-- # With no rows the outer query is still one group, so COUNT gives 0.
 SELECT (VALUES COUNT(*)) FROM no_rows;
 -- COL1: 0
 
@@ -96,8 +99,8 @@ SELECT (SELECT y FROM (SELECT (VALUES COUNT(*)) AS y FROM u) AS v) FROM t;
 SELECT y FROM (SELECT (VALUES COUNT(*)) AS y FROM t) AS v;
 -- Y: 3
 
--- # It must be in the select list or HAVING of its query (SR 7), not its WHERE or
--- # FROM. A derived table in a subquery isn't of the outer query.
+-- # It must be in the select list or HAVING of its query (Syntax Rules, 7), not
+-- # its WHERE or FROM. A derived table in a subquery isn't of the outer query.
 SELECT * FROM t WHERE (VALUES COUNT(*)) = 3;
 -- error 42601: syntax error: an aggregate function cannot be used in WHERE
 
@@ -107,11 +110,13 @@ SELECT (SELECT y FROM (VALUES COUNT(*)) AS v (y)) FROM t;
 SELECT (SELECT 1 FROM (VALUES (VALUES COUNT(*))) AS v) FROM t;
 -- error 42601: syntax error: an aggregate function cannot be used in VALUES
 
--- # A column reference can still be of the outer query from there (SR 6.b).
+-- # A column reference can still be of the outer query from there
+-- # (Syntax Rules, 6.b).
 SELECT (SELECT y FROM (VALUES MAX(t.x)) AS v (y)) FROM t;
 -- COL1: 3
 
--- # Without a query specification there's no aggregation query (SR 7).
+-- # Without a query specification there's no aggregation query
+-- # (Syntax Rules, 7).
 VALUES COUNT(*);
 -- error 42601: syntax error: an aggregate function cannot be used in VALUES
 
@@ -121,6 +126,7 @@ VALUES (VALUES COUNT(*));
 SELECT * FROM (VALUES COUNT(*)) AS v;
 -- error 42601: syntax error: an aggregate function cannot be used in VALUES
 
--- # Nesting is still an error when it's of the outer query (SR 1).
+-- # Nesting is still an error when it's of the outer query
+-- # (Syntax Rules, 1).
 SELECT (VALUES MAX(COUNT(*))) FROM t;
 -- error 42601: syntax error: nested set function: COUNT(*)

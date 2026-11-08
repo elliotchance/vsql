@@ -36,6 +36,8 @@ ROLLBACK;
 -- X: 1
 -- error 2D000: invalid transaction termination
 
+-- # Only the rows at the COMMIT are checked, so a duplicate that's deleted
+-- # (with the row it duplicated) isn't a violation.
 CREATE TABLE t (x INT UNIQUE DEFERRABLE INITIALLY DEFERRED);
 INSERT INTO t (x) VALUES (1);
 START TRANSACTION;
@@ -79,6 +81,8 @@ SELECT * FROM c;
 -- msg: COMMIT
 -- PID: 1
 
+-- # A reference that's still missing at the COMMIT cancels the transaction with
+-- # a transaction rollback (17.7, General Rules, 6.a).
 CREATE TABLE p (id INT PRIMARY KEY);
 CREATE TABLE c (pid INT REFERENCES p DEFERRABLE INITIALLY DEFERRED);
 START TRANSACTION;
@@ -117,6 +121,8 @@ SELECT * FROM p;
 -- error 40002: integrity constraint violation: violates foreign key constraint: FOREIGN KEY (PID) REFERENCES ":memory:".PUBLIC.P (ID) on ":memory:".PUBLIC.C
 -- ID: 1
 
+-- # A deferred CHECK can be broken and fixed in a transaction, but it must hold
+-- # at the COMMIT.
 CREATE TABLE t (x INT, CHECK (x > 0) INITIALLY DEFERRED);
 START TRANSACTION;
 INSERT INTO t (x) VALUES (-1);
@@ -174,6 +180,8 @@ COMMIT;
 -- msg: DELETE 2
 -- msg: COMMIT
 
+-- # INITIALLY can only be given once, and INITIALLY DEFERRED can't be NOT
+-- # DEFERRABLE (Syntax Rules, 2.a.i).
 CREATE TABLE t (x INT UNIQUE INITIALLY DEFERRED INITIALLY IMMEDIATE);
 CREATE TABLE t (x INT UNIQUE INITIALLY DEFERRED NOT DEFERRABLE);
 -- error 42601: syntax error: invalid constraint characteristics: INITIALLY DEFERRED INITIALLY IMMEDIATE

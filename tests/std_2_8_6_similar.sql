@@ -1,7 +1,10 @@
+-- # SIMILAR TO is kept when it's shown.
 /* extensions V001-01 */
 EXPLAIN VALUES 'a' SIMILAR TO 'a';
 -- EXPLAIN: VALUES (COL1 BOOLEAN) = ROW('a' SIMILAR TO 'a')
 
+-- # The whole string must match, including its case. _ and % are the same
+-- # as in LIKE.
 VALUES 'a' SIMILAR TO 'a';
 -- COL1: TRUE
 
@@ -56,6 +59,7 @@ VALUES 'acb' NOT SIMILAR TO 'a%b';
 VALUES 'acdeb' NOT SIMILAR TO 'a%b';
 -- COL1: FALSE
 
+-- # Unlike LIKE, a pattern can have alternatives, groups and repetition.
 VALUES 'abd' SIMILAR TO 'a(b|c)d';
 -- COL1: TRUE
 
@@ -80,6 +84,9 @@ VALUES 'abab' SIMILAR TO '[ab]*b';
 VALUES 'abab' SIMILAR TO '%a';
 -- COL1: FALSE
 
+-- # The value is compared with PAD SPACE (see std_2_8_6_similar_pad_space.sql),
+-- # so an empty string can match a pattern that needs one character, as a
+-- # space. It's one character, not one byte.
 VALUES '' SIMILAR TO '_';
 -- COL1: TRUE
 
@@ -95,6 +102,7 @@ VALUES 'a' SIMILAR TO '';
 VALUES 'é' SIMILAR TO '_';
 -- COL1: TRUE
 
+-- # Repetition with bounds, and an optional item.
 VALUES 'aaa' SIMILAR TO 'a{2,}';
 -- COL1: TRUE
 
@@ -110,6 +118,7 @@ VALUES 'aaaa' SIMILAR TO 'a{2,3}';
 VALUES 'ac' SIMILAR TO 'ab?c';
 -- COL1: TRUE
 
+-- # Every alternative is tried, not just the first that matches.
 VALUES 'ab' SIMILAR TO '(a|ab)b';
 -- COL1: TRUE
 
@@ -119,6 +128,8 @@ VALUES 'abb' SIMILAR TO '(a|ab)b';
 VALUES 'x' SIMILAR TO 'abc|x';
 -- COL1: TRUE
 
+-- # Character sets, negated with ^ only at the start, and with character
+-- # classes, whose names can be in any case.
 VALUES 'b' SIMILAR TO '[^a]';
 -- COL1: TRUE
 
@@ -143,18 +154,23 @@ VALUES 'a 1' SIMILAR TO '[[:ALPHA:]][[:SPACE:]][[:ALNUM:]]';
 VALUES 'a' SIMILAR TO '[[:lower:]]';
 -- COL1: TRUE
 
+-- # Characters that are special in other regular expressions are themselves.
 VALUES 'a.b$}' SIMILAR TO 'a.b$}';
 -- COL1: TRUE
 
 VALUES 'a\b' SIMILAR TO 'a\b';
 -- COL1: TRUE
 
+-- # Patterns that take exponential time to backtrack still finish.
 VALUES 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' SIMILAR TO '(a|aa)*c';
 -- COL1: FALSE
 
 VALUES 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab' SIMILAR TO '(a*)*b';
 -- COL1: TRUE
 
+-- # A pattern that isn't a valid regular expression is an error, including
+-- # an empty alternative, a repetition of nothing or of zero, and ^ outside
+-- # of a character set.
 VALUES 'a' SIMILAR TO '(a';
 -- error 2201B: invalid regular expression
 
@@ -191,6 +207,7 @@ VALUES 'a' SIMILAR TO 'a|';
 VALUES 'a' SIMILAR TO '^a';
 -- error 2201B: invalid regular expression
 
+-- # Patterns that combine everything above.
 VALUES 'abc' SIMILAR TO 'abc';
 -- COL1: TRUE
 

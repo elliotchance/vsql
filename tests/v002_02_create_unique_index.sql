@@ -29,6 +29,8 @@ DROP INDEX t_x;
 -- error 23505: violates unique constraint: UNIQUE INDEX T_X on ":memory:".PUBLIC.T
 -- error 42704: no such index: ":memory:".PUBLIC.T_X
 
+-- # A row can't have the values of another row, including another row of the
+-- # same INSERT. Any number of rows can have NULL.
 /* extensions V002-01 V002-02 */
 CREATE UNIQUE INDEX t_u ON t (u);
 INSERT INTO t (id, u) VALUES (5, 10);
@@ -91,8 +93,8 @@ SELECT * FROM t;
 -- ID: 4 U: NULL X: c
 -- ID: 7 U: 30 X: NULL
 
--- # With more than one column, rows conflict only when all of the values are the
--- # same, and none of them are NULL.
+-- # With more than one column, rows conflict only when all of the values are
+-- # the same, and none of them are NULL.
 /* extensions V002-01 V002-02 */
 CREATE UNIQUE INDEX t_x_u ON t (x, u);
 INSERT INTO t (id, x, u) VALUES (5, 'a', 20), (6, 'b', NULL), (7, NULL, 20);

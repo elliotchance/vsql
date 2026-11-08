@@ -7,6 +7,7 @@ SELECT table_catalog, table_schema, table_name, table_type, is_insertable_into F
 -- TABLE_CATALOG: :memory: TABLE_SCHEMA: INFORMATION_SCHEMA TABLE_NAME: TABLES TABLE_TYPE: VIEW IS_INSERTABLE_INTO: NO
 -- TABLE_CATALOG: :memory: TABLE_SCHEMA: INFORMATION_SCHEMA TABLE_NAME: TABLE_CONSTRAINTS TABLE_TYPE: VIEW IS_INSERTABLE_INTO: NO
 
+-- # The INFORMATION_SCHEMA is always there, so it can't be created.
 CREATE SCHEMA information_schema;
 -- error 42P06: duplicate schema: INFORMATION_SCHEMA
 
@@ -30,14 +31,18 @@ DROP SEQUENCE information_schema.seq RESTRICT;
 -- error 42501: insufficient privilege: INFORMATION_SCHEMA is read-only
 -- error 42501: insufficient privilege: INFORMATION_SCHEMA is read-only
 
+-- # A virtual table can't be put in the INFORMATION_SCHEMA, so it isn't there.
 /* virtual_table CREATE TABLE information_schema.fruits (id INT) AS VALUES 1 */
 SELECT * FROM information_schema.fruits;
 -- error 42501: insufficient privilege: INFORMATION_SCHEMA is read-only
 -- error 42P01: no such table: ":memory:".INFORMATION_SCHEMA.FRUITS
 
+-- # A view that doesn't exist is a missing table like any other.
 SELECT * FROM information_schema.nope;
 -- error 42P01: no such table: ":memory:".INFORMATION_SCHEMA.NOPE
 
+-- # A view can be used without the schema name when it's the current schema,
+-- # and its columns can be qualified by the schema and view name, or an alias.
 SET SCHEMA 'INFORMATION_SCHEMA';
 SELECT table_name FROM tables;
 -- msg: SET SCHEMA 1

@@ -1,3 +1,4 @@
+-- # Each comparison operator, with operands that are equal and that differ.
 VALUES 1 = 2;
 -- COL1: FALSE
 
@@ -34,6 +35,8 @@ VALUES 1 <= 2;
 VALUES 1 <= 1;
 -- COL1: TRUE
 
+-- # Exact numbers are compared by their value, whatever their precision or
+-- # scale.
 VALUES 1.0 = 1;
 -- COL1: TRUE
 

@@ -2,7 +2,7 @@
 CREATE TABLE t (d FLOAT, r REAL, i INT, s SMALLINT, b BIGINT, n NUMERIC(5, 2), m DECIMAL(5, 2), c VARCHAR(10));
 INSERT INTO t (d) VALUES (NULL);
 
--- # Arithmetic on any NULL operand is NULL (6.29, General Rules, 1).
+-- # Arithmetic on any NULL operand is NULL (General Rules, 1).
 
 /* types */
 SELECT d * 2e0, d + 1e0, d - 1e0, d / 2e0, -d, +d FROM t;

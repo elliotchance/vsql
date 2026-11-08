@@ -5,6 +5,10 @@ INSERT INTO nums (s, i, b, n, d, r, f) VALUES (2, -20, 200, 2.5, 2.5, 2.5, 2.5e0
 INSERT INTO nums (s, i, b, n, d, r, f) VALUES (4, 40, 400, -3.12, -3.12, -3.5, -3.5e0);
 INSERT INTO nums (s, i, b, n, d, r, f) VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
+-- # SUM of an integer is a BIGINT, and of a NUMERIC or DECIMAL is one without a
+-- # precision (Syntax Rules, 7.g.ii). AVG of an exact number (Syntax Rules,
+-- # 7.g.iii), SUM and AVG of an approximate number (Syntax Rules, 7.g.iv), and
+-- # MIN and MAX (Syntax Rules, 7.f) are the type of the argument.
 /* extensions V001-01 */
 EXPLAIN SELECT SUM(s), SUM(i), SUM(b), SUM(n), SUM(d), SUM(r), SUM(f) FROM nums;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.NUMS (S SMALLINT, I INTEGER, B BIGINT, N NUMERIC(5, 2), D DECIMAL(5, 2), R REAL, F DOUBLE PRECISION)
@@ -66,6 +70,8 @@ SELECT SUM(i), AVG(i) FROM big;
 -- msg: INSERT 1
 -- COL1: 4294967294 COL2: 2147483647
 
+-- # A SUM out of the range of a BIGINT is an exception (General Rules, 7.d.v).
+-- # An AVG isn't, and nor is a SUM that only goes out of range part way.
 CREATE TABLE big (b BIGINT);
 INSERT INTO big (b) VALUES (9223372036854775807);
 INSERT INTO big (b) VALUES (1);
@@ -110,6 +116,8 @@ SELECT SUM(n) FROM big;
 -- EXPLAIN: EXPR (COL1 NUMERIC)
 -- COL1: 199.8
 
+-- # The same for approximate numbers: a SUM past the largest REAL or DOUBLE
+-- # PRECISION is out of range, but their AVG isn't.
 CREATE TABLE big (r REAL);
 INSERT INTO big (r) VALUES (3e38);
 INSERT INTO big (r) VALUES (3e38);
@@ -157,6 +165,7 @@ SELECT MIN(t), MAX(t), MIN(tz), MAX(tz), MIN(ts), MAX(ts), MIN(tstz), MAX(tstz) 
 -- COL1: a     COL2: c     COL3: apple COL4: cherry COL5: FALSE COL6: TRUE COL7: 2021-01-01 COL8: 2023-12-31
 -- COL1: 01:02:03 COL2: 23:59:59 COL3: 12:00:00+0500 COL4: 09:00:00-0200 COL5: 2021-01-01T01:02:03.000000 COL6: 2023-12-31T23:59:59.000000 COL7: 2022-06-30T12:00:00.000000+0500 COL8: 2022-06-30T09:00:00.000000-0200
 
+-- # With GROUP BY, each group has its own result.
 CREATE TABLE t (x INTEGER, v VARCHAR(10));
 INSERT INTO t (x, v) VALUES (1, 'b');
 INSERT INTO t (x, v) VALUES (1, 'a');

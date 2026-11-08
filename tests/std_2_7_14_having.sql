@@ -8,6 +8,8 @@ INSERT INTO t (a, b) VALUES (3, 40);
 INSERT INTO t (a, b) VALUES (3, 50);
 CREATE TABLE e (a INT);
 
+-- # HAVING keeps only the groups where the condition is TRUE
+-- # (General Rules, 1).
 /* extensions V001-01 */
 EXPLAIN SELECT a, COUNT(*) FROM t GROUP BY a HAVING COUNT(*) > 1;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T (A INTEGER, B INTEGER)
@@ -77,7 +79,8 @@ SELECT MAX(b) FROM t HAVING MIN(b) = 10;
 -- warning 01003: null value eliminated in set function
 -- COL1: 50
 
--- # Even an empty table is one group.
+-- # Even an empty table is one group without a GROUP BY. With a GROUP BY
+-- # there are no groups, so there are no rows.
 SELECT COUNT(*) FROM e HAVING COUNT(*) = 0;
 -- COL1: 0
 
@@ -96,6 +99,8 @@ SELECT COUNT(*) FROM t HAVING a > 1;
 SELECT COUNT(*) FROM e HAVING a > 1;
 -- error 42803: column A must be in the GROUP BY clause or used in an aggregate function
 
+-- # An unknown column, a condition that isn't boolean, and an aggregate inside
+-- # another (6.9, Syntax Rules, 1) are errors.
 SELECT a FROM t GROUP BY a HAVING c > 1;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
 

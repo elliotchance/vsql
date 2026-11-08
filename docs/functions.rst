@@ -928,26 +928,49 @@ NOW
 
    NOW() TIMESTAMP(6) WITH TIME ZONE
 
-The same as ``CURRENT_TIMESTAMP``, including that it can be a ``DEFAULT`` (see
-:doc:`create-table`). It doesn't take a precision (``NOW(3)`` is a ``42883``
-error), use ``CURRENT_TIMESTAMP(3)`` instead.
+Returns the time now, read from the wall clock each time it's called. It
+doesn't take a precision (``NOW(3)`` is a ``42883`` error), use
+``CAST(NOW() AS TIMESTAMP(3) WITH TIME ZONE)`` instead.
+
+This is different from ``CURRENT_TIMESTAMP``, which is the time the statement
+started and is the same everywhere in the statement, even if the statement
+takes a long time. ``NOW()`` can be different each time it's called, including
+in the same statement:
+
+.. code-block:: sql
+
+   SELECT CURRENT_TIMESTAMP AS started, NOW() AS now FROM big_table;
+   -- STARTED is the same for every row, NOW moves as the rows are read.
+
+Use ``NOW()`` when you need the actual time, such as to measure how long
+something takes or to record when each row was processed. Use
+``CURRENT_TIMESTAMP`` when the statement needs one consistent time.
+
+Because it can return a different value each time, ``NOW()`` is not
+deterministic, so it can't be used in a ``CHECK`` constraint (a ``42601``
+error). It's also a function, not a datetime value function like
+``CURRENT_TIMESTAMP``, so it can't be a ``DEFAULT`` (a syntax error). Use
+``CURRENT_TIMESTAMP`` for both.
 
 ``NOW`` isn't a reserved word, so it can still be the name of a table or a
-column. A custom function (see :doc:`custom-functions`) with the name ``NOW`` has
-to be called with quotes: ``"NOW"()``.
+column. A custom function (see :doc:`custom-functions`) can't be registered as
+``now()``, because that function already exists.
 
 **Compatibility**
 
 - **SQL standard:** Not standard, it's a vsql extension flagged by
-  ``V402-01`` (see :doc:`sql-flagging`). ``CURRENT_TIMESTAMP`` should be used
-  if the SQL needs to be portable.
+  ``V402-01`` (see :doc:`sql-flagging`). The standard has no function that
+  reads the clock each time it's called. ``CURRENT_TIMESTAMP`` is portable, but
+  it's the time the statement started.
 - **Other databases:**
 
-  - PostgreSQL: ``NOW``, the time the transaction started.
-  - MySQL: ``NOW``, without a time zone.
+  - PostgreSQL: ``CLOCK_TIMESTAMP()``. PostgreSQL's ``NOW()`` is the time the
+    transaction started.
+  - MySQL: ``SYSDATE(6)``, without a time zone. MySQL's ``NOW()`` is the time
+    the statement started.
   - SQL Server: ``SYSDATETIMEOFFSET()``.
   - SQLite: ``DATETIME('now')``, a string in UTC.
-  - Oracle: ``CURRENT_TIMESTAMP`` or ``SYSTIMESTAMP``.
+  - Oracle: ``SYSTIMESTAMP``.
 
 Exponent and Logarithm
 ----------------------

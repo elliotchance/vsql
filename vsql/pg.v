@@ -323,11 +323,11 @@ fn register_pg_functions(mut db Connection) ! {
 	}
 }
 
-fn pg_version(_ []Value) !Value {
+fn pg_version(_ FunctionContext, _ []Value) !Value {
 	return new_varchar_value('PostgreSQL 9.3.10 on x86_64-unknown-linux-gnu, compiled by gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2, 64-bit')
 }
 
-fn pg_current_setting(_ []Value) !Value {
+fn pg_current_setting(_ FunctionContext, _ []Value) !Value {
 	return new_varchar_value('90310')
 }
 

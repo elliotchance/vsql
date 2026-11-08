@@ -161,7 +161,7 @@ fn (e RoutineInvocation) compile(mut c Compiler) !CompileResult {
 				}
 			}
 
-			result := found_func.func(args)!
+			result := found_func.func(FunctionContext{ conn: conn }, args)!
 			if is_fold {
 				return fold_result(mut conn, result, return_type)
 			}

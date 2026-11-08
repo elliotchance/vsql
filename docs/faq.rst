@@ -40,14 +40,6 @@ available and these will be close enough to use as a reference:
 
 See also :doc:`sql-standard`.
 
-Why is there no ``NOW()`` function?
------------------------------------
-
-The ``NOW()`` function commonly found in other databases is not actually part of
-the SQL standard. Instead you must use one of ``CURRENT_TIMESTAMP`` or
-``LOCALTIMESTAMP`` depending if you need to include the time zone or not. See
-:doc:`dates-times`.
-
 Why does ``SELECT 1`` give a syntax error?
 ------------------------------------------
 

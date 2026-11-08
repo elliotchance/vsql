@@ -784,7 +784,7 @@ fn implicit_numeric_cast_cost(from SQLType, to SQLType) ?int {
 
 // register_function will register a function that can be used in SQL
 // expressions.
-pub fn (mut conn Connection) register_function(prototype string, func fn ([]Value) !Value) ! {
+pub fn (mut conn Connection) register_function(prototype string, func fn (FunctionContext, []Value) !Value) ! {
 	// The prototype is "name(type, ...) type".
 	open_paren := prototype.index('(') or { -1 }
 	close_paren := prototype.last_index(')') or { -1 }

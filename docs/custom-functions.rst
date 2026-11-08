@@ -6,7 +6,7 @@ You can create custom functions to use in expressions:
 .. code-block:: text
 
    // no_pennies will round to 0.05 denominations.
-   db.register_function('no_pennies(float) float', fn (a []vsql.Value) !vsql.Value {
+   db.register_function('no_pennies(float) float', fn (_ vsql.FunctionContext, a []vsql.Value) !vsql.Value {
    	amount := math.round(a[0].f64_value() / 0.05) * 0.05
    	return vsql.new_double_precision_value(amount)
    })!
@@ -41,6 +41,29 @@ custom or builtin function) is an error ``42723``, even if the return type is
 different, because only the arguments choose which function is called.
 A prototype that isn't ``name(type, ...) type``, or has a type that doesn't
 exist, is an error ``42601``.
+
+A function is called with a ``FunctionContext`` before its arguments. It has
+the values that a function can know besides its arguments:
+
+- ``current_timestamp()`` is the same value as ``CURRENT_TIMESTAMP``: when the
+  statement started, which is the same for every call in the statement.
+- ``clock_timestamp()`` is the time now, read from the wall clock each time
+  it's called (this is what ``NOW()`` returns).
+- ``statement_timestamp()`` is the same time as ``current_timestamp()`` (in
+  UTC) and the time zone of the session (in minutes from UTC).
+- ``current_catalog()`` and ``current_schema()`` are the same as
+  ``CURRENT_CATALOG`` and ``CURRENT_SCHEMA``.
+- ``in_transaction()`` is true if the statement is in a transaction started with
+  ``START TRANSACTION``.
+- ``version()`` is the version of vsql.
+
+For example:
+
+.. code-block:: text
+
+   db.register_function('started() varchar', fn (ctx vsql.FunctionContext, _ []vsql.Value) !vsql.Value {
+   	return vsql.new_varchar_value(ctx.current_timestamp()!.str())
+   })!
 
 A function must return a value to match the return type. See the full list of
 ``Value`` constructors in :doc:`language-v`.

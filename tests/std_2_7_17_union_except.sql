@@ -16,7 +16,8 @@ SELECT x, y FROM t1 UNION ALL SELECT x, z FROM t2;
 -- X: 3 Y: NULL
 -- X: 4 Y: d
 
--- # UNION (and UNION DISTINCT) keeps one of each row, where NULLs are not distinct (E071-01).
+-- # UNION (and UNION DISTINCT) keeps one of each row, where NULLs are not
+-- # distinct (E071-01).
 SELECT x, y FROM t1 UNION SELECT x, z FROM t2;
 -- X: 1 Y: a
 -- X: 2 Y: b
@@ -41,7 +42,8 @@ SELECT x FROM t1 UNION SELECT x FROM t1;
 -- X: 2
 -- X: 3
 
--- # EXCEPT (and EXCEPT DISTINCT) keeps one of each left row that isn't on the right (E071-03).
+-- # EXCEPT (and EXCEPT DISTINCT) keeps one of each left row that isn't on the
+-- # right (E071-03).
 SELECT x, y FROM t1 EXCEPT SELECT x, z FROM t2;
 -- X: 1 Y: a
 
@@ -76,6 +78,7 @@ VALUES 1, 2 UNION (VALUES 3 EXCEPT VALUES 1);
 -- COL1: 2
 -- COL1: 3
 
+-- # A single query in parentheses.
 (VALUES 1);
 -- COL1: 1
 
@@ -110,10 +113,13 @@ VALUES 1 UNION VALUES 1.5E0;
 -- COL1: 1e0 (DOUBLE PRECISION)
 -- COL1: 1.5e0 (DOUBLE PRECISION)
 
--- # Values are duplicates if they're equal with =, so trailing spaces are ignored.
+-- # Values are duplicates if they're equal with =, so trailing spaces are
+-- # ignored.
 VALUES CAST('a' AS CHAR(3)) UNION VALUES CAST('a' AS VARCHAR(5));
 -- COL1: a
 
+-- # Columns whose types can't be combined are an error (9.5, Syntax Rules,
+-- # 3.a.i).
 SELECT x FROM t1 UNION SELECT y FROM t1;
 -- error 42804: data type mismatch in column 1 of UNION: expected INTEGER but got CHARACTER VARYING(10)
 
@@ -174,7 +180,8 @@ SELECT x FROM t1 UNION SELECT x FROM t2 ORDER BY y;
 SELECT x FROM t1 UNION SELECT x FROM t2 ORDER BY t1.x;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T1.X
 
--- # Each side can have its own ORDER BY, OFFSET and FETCH FIRST (F855, F856, F863).
+-- # Each side can have its own ORDER BY, OFFSET and FETCH FIRST (F855, F856,
+-- # F863).
 (SELECT x FROM t1 ORDER BY x DESC FETCH FIRST 1 ROW ONLY) UNION ALL (SELECT x FROM t2 ORDER BY x OFFSET 2 ROWS);
 -- X: 3
 -- X: 4
@@ -212,6 +219,8 @@ SELECT * FROM ((SELECT x FROM t1) UNION (SELECT x FROM t2 FETCH FIRST 1 ROW ONLY
 SELECT COUNT(*) FROM (SELECT x FROM t1 UNION ALL SELECT x FROM t2) AS t;
 -- COL1: 8
 
+-- # EXPLAIN shows each side as a numbered subplan, with the operators nested
+-- # left to right.
 /* extensions V001-01 */
 EXPLAIN SELECT x FROM t1 UNION SELECT x FROM t2 ORDER BY x;
 -- EXPLAIN: $1:

@@ -1,3 +1,4 @@
+-- # ABS has the type of its argument (Syntax Rules, 11).
 /* types */
 VALUES ROW(ABS(1.2), ABS(-1.23));
 -- COL1: 1.2 (NUMERIC(2, 1)) COL2: 1.23 (NUMERIC(3, 2))
@@ -6,6 +7,7 @@ VALUES ROW(ABS(1.2), ABS(-1.23));
 VALUES ROW(ABS(1.2e0), ABS(-1.23e0));
 -- COL1: 1.2e0 (DOUBLE PRECISION) COL2: 1.23e0 (DOUBLE PRECISION)
 
+-- # ABS takes exactly one numeric argument.
 VALUES ABS('hello');
 -- error 42883: function does not exist: ABS(CHARACTER(5))
 
@@ -15,6 +17,8 @@ VALUES ABS();
 VALUES ABS(1, 2);
 -- error 42601: syntax error: unexpected ",", expecting ")" or "+" or "-"
 
+-- # MOD of numbers with a scale is a vsql extension (V403-01). The result keeps
+-- # the larger scale of the two arguments.
 /* extensions V403-01 */
 /* types */
 VALUES MOD(232.0, 3.0);
@@ -35,6 +39,8 @@ VALUES MOD(232.000, 3.0);
 VALUES MOD(232., 3.0000);
 -- COL1: 1.0000 (NUMERIC(5, 4))
 
+-- # FLOOR rounds down and CEIL (or CEILING) rounds up, to an exact number with
+-- # scale 0 (Syntax Rules, 20.a).
 /* types */
 VALUES ROW(FLOOR(3.7), FLOOR(3.3), FLOOR(-3.7), FLOOR(-3.3));
 -- COL1: 3 (NUMERIC(2)) COL2: 3 (NUMERIC(2)) COL3: -4 (NUMERIC(2)) COL4: -4 (NUMERIC(2))
@@ -47,6 +53,8 @@ VALUES ROW(CEIL(3.7), CEIL(3.3), CEIL(-3.7), CEIL(-3.3));
 VALUES CEILING(3.7);
 -- COL1: 4 (NUMERIC(2))
 
+-- # The trigonometric functions take an angle in radians and return a DOUBLE
+-- # PRECISION (Syntax Rules, 13.b).
 /* types */
 VALUES SIN(1.2e0);
 -- COL1: 0.932039085967e0 (DOUBLE PRECISION)
@@ -83,6 +91,7 @@ VALUES ACOS(0.2e0);
 VALUES ATAN(0.2e0);
 -- COL1: 0.19739555985e0 (DOUBLE PRECISION)
 
+-- # MOD of approximate numbers is also a vsql extension (V403-01).
 /* extensions V403-01 */
 /* types */
 VALUES MOD(232e0, 3e0);
@@ -93,6 +102,8 @@ VALUES MOD(232e0, 3e0);
 VALUES MOD(10.7e0, 0.8e0);
 -- COL1: 0.3e0 (DOUBLE PRECISION)
 
+-- # LOG10, LN, EXP, POWER and SQRT return a DOUBLE PRECISION (Syntax Rules,
+-- # 16.b, 17.b and 18.b).
 /* types */
 VALUES LOG10(13.7e0);
 -- COL1: 1.136720567156e0 (DOUBLE PRECISION)
@@ -113,6 +124,8 @@ VALUES POWER(3.7e0, 2.5e0);
 VALUES SQRT(3.7e0);
 -- COL1: 1.923538406167e0 (DOUBLE PRECISION)
 
+-- # FLOOR and CEIL of an approximate number stay approximate (Syntax Rules,
+-- # 20.b).
 /* types */
 VALUES ROW(FLOOR(3.7e0), FLOOR(3.3e0), FLOOR(-3.7e0), FLOOR(-3.3e0));
 -- COL1: 3e0 (DOUBLE PRECISION) COL2: 3e0 (DOUBLE PRECISION) COL3: -4e0 (DOUBLE PRECISION) COL4: -4e0 (DOUBLE PRECISION)
@@ -125,6 +138,8 @@ VALUES ROW(CEIL(3.7e0), CEIL(3.3e0), CEIL(-3.7e0), CEIL(-3.3e0));
 VALUES CEILING(3.7e0);
 -- COL1: 4e0 (DOUBLE PRECISION)
 
+-- # ABS keeps the type of its argument, so ABS of the smallest value of an
+-- # integer type is out of range (General Rules, 8.c).
 /* types */
 VALUES ROW(ABS(-3), ABS(3), ABS(-70000), ABS(-3000000000));
 -- COL1: 3 (SMALLINT) COL2: 3 (SMALLINT) COL3: 70000 (INTEGER) COL4: 3000000000 (BIGINT)
@@ -142,6 +157,8 @@ VALUES ABS(CAST(-2147483648 AS INTEGER));
 VALUES ABS(-9223372036854775808);
 -- error 22003: numeric value out of range
 
+-- # Exact and REAL arguments are fine too. FLOOR and CEIL of an exact number
+-- # are exact, and everything else is a DOUBLE PRECISION.
 /* types */
 VALUES ROW(LN(10), LOG10(100), EXP(0), SQRT(16), POWER(2, 10));
 -- COL1: 2.302585092994e0 (DOUBLE PRECISION) COL2: 2e0 (DOUBLE PRECISION) COL3: 1e0 (DOUBLE PRECISION) COL4: 4e0 (DOUBLE PRECISION) COL5: 1024e0 (DOUBLE PRECISION)
@@ -211,6 +228,8 @@ VALUES MOD(2 * 1.5 * 3, 2);
 -- flags: F641, F661, T441, V403-01
 -- COL1: 1.0
 
+-- # With integer arguments it's the standard MOD, even when they're
+-- # expressions, but both must be numeric (Syntax Rules, 12).
 /* flags */
 VALUES MOD(-(5), (1 + 2) * 3);
 -- flags: F641, F661, T441
@@ -221,6 +240,9 @@ VALUES MOD((CHAR_LENGTH('a')), ('a' = 'a'));
 -- flags: F641, F661, T441
 -- error 42883: function does not exist: MOD(INTEGER, BOOLEAN)
 
+-- # MOD has the type of its divisor (Syntax Rules, 12.b) and the sign of its
+-- # dividend (General Rules, 9.c.i). It can't overflow, even for the smallest
+-- # BIGINT and -1.
 /* types */
 VALUES ROW(MOD(10, 3), MOD(-7, 3), MOD(7, -3), MOD(10, 200000), MOD(200000, 7), MOD(CAST(10 AS BIGINT), 4));
 -- COL1: 1 (SMALLINT) COL2: -1 (SMALLINT) COL3: 1 (SMALLINT) COL4: 10 (INTEGER) COL5: 3 (SMALLINT) COL6: 2 (SMALLINT)
@@ -228,9 +250,11 @@ VALUES ROW(MOD(10, 3), MOD(-7, 3), MOD(7, -3), MOD(10, 200000), MOD(200000, 7), 
 VALUES ROW(MOD(-9223372036854775808, -1), MOD(9223372036854775807, 10));
 -- COL1: 0 COL2: 7
 
+-- # A divisor of zero is a division by zero (General Rules, 9.b).
 VALUES MOD(7, 0);
 -- error 22012: division by zero
 
+-- # ABS keeps the precision and scale of a DECIMAL.
 /* types */
 VALUES ABS(CAST(1.25 AS DECIMAL(4, 2)));
 -- COL1: 1.25 (DECIMAL(4, 2))

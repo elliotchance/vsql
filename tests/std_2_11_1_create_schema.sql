@@ -1,6 +1,9 @@
+-- # CREATE SCHEMA can't be EXPLAINed (EXPLAIN is a vsql extension).
 EXPLAIN CREATE SCHEMA foo;
 -- error 42601: syntax error: Cannot EXPLAIN CREATE SCHEMA
 
+-- # The default schema of the session is PUBLIC, and creating a schema doesn't
+-- # change it.
 VALUES CURRENT_SCHEMA;
 -- COL1: PUBLIC
 
@@ -9,11 +12,13 @@ VALUES CURRENT_SCHEMA;
 -- msg: CREATE SCHEMA 1
 -- COL1: PUBLIC
 
+-- # A schema name can only be used once in a catalog (Syntax Rules, 3).
 CREATE SCHEMA foo;
 CREATE SCHEMA foo;
 -- msg: CREATE SCHEMA 1
 -- error 42P06: duplicate schema: FOO
 
+-- # A table can be created in the new schema by qualifying its name.
 CREATE SCHEMA foo;
 CREATE TABLE foo.bar (baz INT);
 INSERT INTO foo.bar (baz) VALUES (123);
@@ -25,6 +30,8 @@ VALUES CURRENT_SCHEMA;
 -- BAZ: 123
 -- COL1: PUBLIC
 
+-- # ABSOLUTE is a non-reserved word, so it can be a schema name. The schema
+-- # name can be qualified by its catalog.
 CREATE SCHEMA absolute;
 -- msg: CREATE SCHEMA 1
 
@@ -34,6 +41,10 @@ CREATE SCHEMA ABSOLUTE;
 CREATE SCHEMA ":memory:".foo;
 -- msg: CREATE SCHEMA 1
 
+-- # A CREATE SCHEMA can also create tables. An unqualified name is in the new
+-- # schema, not the default schema (5.4, Syntax Rules, 4.b), and a qualified
+-- # name must be in the new schema (11.3, Syntax Rules, 6). If a table fails,
+-- # the schema isn't created either.
 CREATE SCHEMA foo CREATE TABLE bar (baz INT);
 INSERT INTO foo.bar (baz) VALUES (123);
 SELECT * FROM foo.bar;
@@ -58,6 +69,9 @@ CREATE SCHEMA foo;
 -- error 42601: syntax error: PUBLIC.BAR must be in schema FOO
 -- msg: CREATE SCHEMA 1
 
+-- # Sequences can be created too. An unqualified name is in the new schema
+-- # (5.4, Syntax Rules, 13.d.ii), a qualified name must be in the new schema
+-- # (11.72, Syntax Rules, 2), and two sequences can't have the same name.
 CREATE SCHEMA foo CREATE TABLE bar (baz INT) CREATE SEQUENCE seq START WITH 5;
 SELECT NEXT VALUE FOR foo.seq FROM (VALUES 1) AS t;
 -- msg: CREATE SCHEMA 1
@@ -74,6 +88,10 @@ CREATE SCHEMA foo CREATE SEQUENCE public.seq;
 CREATE SCHEMA foo CREATE SEQUENCE seq CREATE SEQUENCE seq;
 -- error 42P07: duplicate sequence: ":memory:".FOO.SEQ
 
+-- # The names used inside a table are also in the new schema (5.4, Syntax
+-- # Rules, 4.b), so a table can reference itself or a table created before it,
+-- # but a table of another schema must be qualified. vsql doesn't yet support a
+-- # reference to a table that's created after it (#887).
 CREATE SCHEMA foo
   CREATE TABLE parent (id INT PRIMARY KEY)
   CREATE TABLE child (id INT REFERENCES parent, self INT REFERENCES child (other), other INT UNIQUE);
@@ -108,6 +126,8 @@ CREATE SCHEMA foo
   CREATE TABLE b (x INT PRIMARY KEY);
 -- error 42P01: no such table: ":memory:".FOO.B
 
+-- # A column of a CHECK can be qualified by its table, which is in the new
+-- # schema.
 CREATE SCHEMA foo CREATE TABLE bar (baz INT CHECK (bar.baz > 0));
 SET SCHEMA 'FOO';
 INSERT INTO bar (baz) VALUES (0);
@@ -115,6 +135,8 @@ INSERT INTO bar (baz) VALUES (0);
 -- msg: SET SCHEMA 1
 -- error 23514: violates check constraint: CHECK (BAR.BAZ > 0) on ":memory:".FOO.BAR
 
+-- # A DEFAULT CURRENT_SCHEMA is evaluated when a row is inserted, so it's the
+-- # schema of the session (PUBLIC), not the schema the table was created in.
 CREATE SCHEMA foo CREATE TABLE bar (baz VARCHAR(128) DEFAULT CURRENT_SCHEMA);
 INSERT INTO foo.bar (baz) VALUES (DEFAULT);
 SELECT * FROM foo.bar;
@@ -122,6 +144,9 @@ SELECT * FROM foo.bar;
 -- msg: INSERT 1
 -- BAZ: PUBLIC
 
+-- # When an element fails, nothing is created, not even the schema. In a
+-- # transaction only the failed statement is undone, so the schema can then be
+-- # created, and the ROLLBACK removes it.
 CREATE SCHEMA foo CREATE TABLE bar (baz INT) CREATE TABLE bar (baz INT);
 VALUES CURRENT_SCHEMA;
 CREATE SCHEMA foo;
@@ -143,6 +168,8 @@ CREATE SCHEMA foo;
 -- msg: ROLLBACK
 -- msg: CREATE SCHEMA 1
 
+-- # The schema must not exist yet, even when tables are created with it, and
+-- # INFORMATION_SCHEMA always exists (Syntax Rules, 3).
 CREATE SCHEMA foo CREATE TABLE bar (baz INT);
 CREATE SCHEMA foo CREATE TABLE bar (baz INT);
 -- msg: CREATE SCHEMA 1
@@ -151,11 +178,15 @@ CREATE SCHEMA foo CREATE TABLE bar (baz INT);
 CREATE SCHEMA information_schema CREATE TABLE bar (baz INT);
 -- error 42P06: duplicate schema: INFORMATION_SCHEMA
 
+-- # Naming the schema needs F171 (Conformance Rules, 3), and creating a
+-- # sequence needs T176 (11.72, Conformance Rules, 1).
 /* flags */
 CREATE SCHEMA foo CREATE TABLE bar (baz INT) CREATE SEQUENCE seq;
 -- flags: F171, T176
 -- msg: CREATE SCHEMA 1
 
+-- # The schema can be in another catalog, and then its tables must be in that
+-- # catalog too (11.3, Syntax Rules, 6). The current catalog doesn't change.
 /* create_catalog FOO */
 /* extensions V001-01 */
 SET CATALOG ':memory:';

@@ -1,3 +1,5 @@
+-- # PUBLIC is the default schema, so it can qualify a table in every
+-- # statement.
 CREATE TABLE PUBLIC.foo (baz INTEGER);
 INSERT INTO PUBLIC.foo (baz) VALUES (123);
 INSERT INTO PUBLIC.foo (baz) VALUES (456);
@@ -17,6 +19,8 @@ SELECT * FROM PUBLIC.foo;
 -- msg: DELETE 1
 -- BAZ: 456
 
+-- # A schema without a catalog is in the current catalog (Syntax Rules, 14.a),
+-- # so after SET CATALOG the table is in FOO.
 /* create_catalog FOO */
 /* extensions V001-01 */
 SET CATALOG 'FOO';
@@ -41,6 +45,10 @@ SET CATALOG ':memory:';
 -- EXPLAIN: EXPR (FOO.PUBLIC.BAR.BAZ INTEGER)
 -- msg: SET CATALOG 1
 
+-- # CURRENT_CATALOG starts as :memory:. Adding a catalog makes it current,
+-- # which is a bug (#1099).
+-- # Each catalog has its own tables, so baz in BAR isn't found from FOO, and
+-- # FOO can have its own, different baz.
 VALUES CURRENT_CATALOG;
 /* create_catalog FOO */
 /* create_catalog BAR */

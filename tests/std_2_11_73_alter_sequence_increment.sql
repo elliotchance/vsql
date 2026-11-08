@@ -1,3 +1,5 @@
+-- # A new INCREMENT BY is added to the last value returned. A sequence that
+-- # hasn't returned a value yet still starts at START WITH.
 CREATE SEQUENCE seq1;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 ALTER SEQUENCE seq1 INCREMENT BY 5;
@@ -50,6 +52,9 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- COL1: 1
 -- error 2200H: sequence generator limit exceeded: PUBLIC.SEQ1
 
+-- # With RESTART, in either order, the restart value comes first and then the
+-- # new INCREMENT BY is used. RESTART without a value goes back to START WITH
+-- # (9.31, Syntax Rules, 9.c).
 CREATE SEQUENCE seq1;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 ALTER SEQUENCE seq1 RESTART WITH 10 INCREMENT BY 5;
@@ -80,6 +85,10 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2) AS t;
 -- COL1: 2
 -- COL1: 5
 
+-- # Values never wrap around past the range of a BIGINT, which is the default
+-- # MAXVALUE (or MINVALUE when descending), so it's the limit for a new
+-- # INCREMENT BY too (9.29, General Rules, 3.a). The last value can still be
+-- # followed by one in the other direction.
 CREATE SEQUENCE seq1 START WITH 9223372036854775805;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 ALTER SEQUENCE seq1 INCREMENT BY 10;

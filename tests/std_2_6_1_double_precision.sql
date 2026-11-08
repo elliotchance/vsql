@@ -1,3 +1,6 @@
+-- # Casting to an integer type works while the value fits (6.13, General Rules,
+-- # 8.a.i), otherwise it's out of range (6.13, General Rules, 8.a.ii). Casting
+-- # to REAL or DOUBLE PRECISION keeps a small value.
 CREATE TABLE foo (x DOUBLE PRECISION);
 INSERT INTO foo (x) VALUES (123);
 SELECT CAST(x AS SMALLINT) FROM foo;
@@ -47,6 +50,10 @@ SELECT CAST(x AS DOUBLE PRECISION) FROM foo;
 -- msg: INSERT 1
 -- COL1: 123e0
 
+-- # Arithmetic between DOUBLE PRECISION values is a DOUBLE PRECISION (6.29,
+-- # Syntax Rules, 1.b), with IEEE 754 double precision (Syntax Rules, 31).
+-- # Values are shown with up to 12 places after the point, so -28125.21875
+-- # shows its binary rounding error.
 /* types */
 VALUES CAST(500000000.3 AS DOUBLE PRECISION) * 2000000000.7e0;
 -- COL1: 1.00000000095e+18 (DOUBLE PRECISION)
@@ -115,6 +122,8 @@ VALUES CAST(-300000000.5 AS DOUBLE PRECISION) / 0.02e0;
 VALUES -90000.7e0 / CAST(3.2 AS DOUBLE PRECISION);
 -- COL1: -28125.218749999996e0 (DOUBLE PRECISION)
 
+-- # Dividing by zero is an error for approximate numbers too (6.29, General
+-- # Rules, 4).
 VALUES CAST(-30000.5 AS DOUBLE PRECISION) / 0.0e0;
 -- error 22012: division by zero
 
@@ -122,6 +131,9 @@ VALUES CAST(-30000.5 AS DOUBLE PRECISION) / 0.0e0;
 VALUES -90000.5e0 / CAST(0.1 AS DOUBLE PRECISION);
 -- COL1: -900005e0 (DOUBLE PRECISION)
 
+-- # A NUMERIC literal too large for BIGINT is rounded when stored in a DOUBLE
+-- # PRECISION (9.2, General Rules, 3.b.xv.2), but then can't be cast to BIGINT
+-- # (6.13, General Rules, 8.a.ii).
 CREATE TABLE foo (x DOUBLE PRECISION);
 INSERT INTO foo (x) VALUES (123456789123456789123456789);
 SELECT * FROM foo;

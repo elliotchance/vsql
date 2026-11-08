@@ -281,7 +281,9 @@ DROP SEQUENCE seq1 RESTRICT;
 -- out:   "X" INTEGER
 -- out: );
 
--- # Sequences continue from the same place.
+-- # Sequences continue from the same place. A used sequence is restarted at
+-- # its last value, which NEXT VALUE then takes, so one that has reached its
+-- # limit without CYCLE is still at its limit after the restore.
 CREATE SEQUENCE unused START WITH 10;
 CREATE SEQUENCE moved INCREMENT BY 5;
 SELECT NEXT VALUE FOR moved FROM (VALUES 1) AS t;

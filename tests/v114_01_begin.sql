@@ -51,6 +51,8 @@ COMMIT;
 -- msg: START TRANSACTION
 -- msg: COMMIT
 
+-- # Like START TRANSACTION, it can't start a transaction while one is active
+-- # (17.1, General Rules, 1).
 /* extensions V114-01 */
 BEGIN;
 BEGIN;
@@ -80,6 +82,8 @@ SELECT * FROM t;
 -- msg: ROLLBACK
 -- X: 1
 
+-- # BEGIN is a reserved word, so it can't be a column name (5.2, Syntax
+-- # Rules, 26). Only TRANSACTION or WORK can follow it.
 SELECT begin FROM t;
 -- error 42601: syntax error: unexpected BEGIN
 

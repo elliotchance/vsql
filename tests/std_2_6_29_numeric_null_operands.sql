@@ -27,14 +27,15 @@ VALUES ROW(POWER(CAST(NULL AS DOUBLE PRECISION), 2.0e0), POWER(2.0e0, CAST(NULL 
 VALUES ROW(FLOOR(CAST(NULL AS DOUBLE PRECISION)), FLOOR(CAST(NULL AS NUMERIC(5, 2))), CEIL(CAST(NULL AS DOUBLE PRECISION)), CEILING(CAST(NULL AS NUMERIC(5, 2))));
 -- COL1: NULL COL2: NULL COL3: NULL COL4: NULL
 
--- # A <numeric primary> must be numeric.
+-- # A <numeric primary> must be numeric (Syntax Rules, 3).
 VALUES 'a' + 1;
 -- error 42883: operator does not exist: CHARACTER + SMALLINT
 
 VALUES 1 * TRUE;
 -- error 42883: operator does not exist: SMALLINT * BOOLEAN
 
--- # "--" always starts a comment, so "3 --1" is 3.
+-- # "--" always starts a comment, so "3 --1" is 3. That's why two minus
+-- # signs need a separator between them (Syntax Rules, 4).
 VALUES 3 --1
 ;
 -- COL1: 3

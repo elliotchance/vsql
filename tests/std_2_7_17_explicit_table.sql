@@ -24,14 +24,17 @@ TABLE t UNION ALL TABLE t ORDER BY a FETCH FIRST 3 ROWS ONLY;
 
 TABLE t EXCEPT TABLE t;
 
+-- # EXPLAIN shows a scan of the whole table, as for SELECT * FROM t.
 /* extensions V001-01 */
 EXPLAIN TABLE t;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T (A INTEGER, B CHARACTER VARYING(10))
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.A INTEGER, ":memory:".PUBLIC.T.B CHARACTER VARYING(10))
 
+-- # A table that doesn't exist is an error, the same as in a FROM clause.
 TABLE missing;
 -- error 42P01: no such table: ":memory:".PUBLIC.MISSING
 
+-- # An explicit table needs F661 (Conformance Rules, 6).
 /* flags */
 TABLE t;
 -- flags: F661

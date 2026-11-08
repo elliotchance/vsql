@@ -4,7 +4,7 @@
 6                        container    - -
 # 6.1, <data type>
 6.1                      implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
-6.1/SR/1                 partial      vsql/std_2_6_1_data_type.v tests/std_2_11_3_create_table.sql DEC isn't accepted (#263); NCHAR, CLOB and NCLOB (F421, T041), VARBINARY and BLOB (T021, T041)
+6.1/SR/1                 partial      vsql/std_2_6_1_data_type.v tests/std_2_11_3_create_table.sql NCHAR, CLOB and NCLOB (F421, T041), VARBINARY and BLOB (T021, T041)
 6.1/SR/2                 n/a          - - national character (F421)
 6.1/SR/3                 impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the only collation is the character set collation of UTF8 (no F690)
 6.1/SR/3.a               n/a          - - collations (F690)
@@ -49,7 +49,7 @@
 6.1/SR/23                implemented  vsql/std_2_6_1_data_type.v tests/std_2_6_13_cast.sql
 6.1/SR/24                impl-defined vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql the normal form of INT is INTEGER, and the others are their own normal form
 6.1/SR/24.a              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
-6.1/SR/24.b              missing      - - DEC isn't accepted (#263)
+6.1/SR/24.b              implemented  vsql/std_2_6_1_data_type.y tests/std_2_6_1_decimal.sql
 6.1/SR/24.c              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/SR/24.d              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
 6.1/SR/24.e              implemented  vsql/std_2_6_1_data_type.v tests/std_11_5_21_columns.sql
@@ -687,7 +687,7 @@
 6.13/GR/11.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/11.a.i           implemented  vsql/value.v tests/std_2_6_13_cast.sql
 6.13/GR/11.a.ii          container    - -
-6.13/GR/11.a.ii.1        untested     vsql/std_2_6_13_cast_specification.v -
+6.13/GR/11.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_numeric_to_character.sql
 6.13/GR/11.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/11.a.iii         container    - -
 6.13/GR/11.a.iii.1       untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
@@ -732,7 +732,7 @@
 6.13/GR/12.a             implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12.a.i           implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12.a.ii          container    - -
-6.13/GR/12.a.ii.1        untested     vsql/std_2_6_13_cast_specification.v -
+6.13/GR/12.a.ii.1        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast_numeric_to_character.sql
 6.13/GR/12.a.ii.2        implemented  vsql/std_2_6_13_cast_specification.v tests/std_2_6_13_cast.sql
 6.13/GR/12.a.iii         container    - -
 6.13/GR/12.a.iii.1       untestable   vsql/std_2_6_13_cast_specification.v - a character string is always UTF8, which contains every <SQL language character>
@@ -859,8 +859,8 @@
 6.13/CR/5                n/a          - - cast templates (T839)
 # 6.14, <next value expression>
 6.14                     implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
-6.14/SR/1                partial      vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql a derived table and a UNION aren't rejected (#767)
-6.14/SR/1.a              partial      vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql a derived table and a UNION aren't rejected (#767)
+6.14/SR/1                implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
+6.14/SR/1.a              implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
 6.14/SR/1.a.i            implemented  vsql/std_2_6_14_next_value_expression.v tests/std_2_6_14_next_value_for.sql
 6.14/SR/1.a.ii           n/a          - - CREATE TABLE AS (T172)
 6.14/SR/1.a.iii          n/a          - - INSERT ... SELECT isn't supported (14.11)
@@ -1132,7 +1132,7 @@
 6.29/SR/2                implemented  vsql/std_2_6_29_numeric_value_expression.v tests/std_2_6_29_arithmetic.sql
 6.29/SR/3                untested     vsql/std_2_6_29_numeric_value_expression.v -
 6.29/SR/4                untested     vsql/lexer.v - "--" always starts a comment
-6.29/GR/1                untested     vsql/std_2_6_29_numeric_value_expression.v -
+6.29/GR/1                implemented  vsql/std_2_6_29_numeric_value_expression.v tests/std_2_6_29_null_propagation.sql
 6.29/GR/2                implemented  vsql/std_2_6_29_numeric_value_expression.v tests/std_2_6_29_arithmetic.sql
 6.29/GR/3                implemented  vsql/operators.v tests/std_2_6_29_arithmetic.sql
 6.29/GR/4                implemented  vsql/operators.v tests/std_2_6_29_arithmetic.sql,tests/std_2_6_30_math.sql

@@ -1,9 +1,13 @@
+-- # A TIME literal is only a time of day, so it can't have a date.
 VALUES TIME '2022-06-30 21:47:32';
 -- error 42601: syntax error: TIME '2022-06-30 21:47:32' is not valid
 
 VALUES TIME '2022-06-30 21:47:32+05:12';
 -- error 42601: syntax error: TIME '2022-06-30 21:47:32+05:12' is not valid
 
+-- # Each field has two digits and must make a valid time of day (5.3, Syntax
+-- # Rules, 31 and 32). A time zone can be up to 14 hours either side of UTC
+-- # (5.3, Syntax Rules, 35), and its sign applies to the minutes too.
 /* types */
 VALUES TIME '21:47:32';
 -- COL1: 21:47:32 (TIME(0) WITHOUT TIME ZONE)
@@ -29,6 +33,8 @@ VALUES TIME 'a21:47:32';
 VALUES TIME '21:47:32T';
 -- error 42601: syntax error: TIME '21:47:32T' is not valid
 
+-- # A literal with a time zone is a TIME WITH TIME ZONE, and its precision is
+-- # the number of digits in the fraction of a second (5.3, Syntax Rules, 26).
 /* types */
 VALUES TIME '21:47:32+05:12';
 -- COL1: 21:47:32+0512 (TIME(0) WITH TIME ZONE)
@@ -41,6 +47,7 @@ VALUES TIME '21:47:32-11:30';
 VALUES TIME '21:47:32.123+05:12';
 -- COL1: 21:47:32.123+0512 (TIME(3) WITH TIME ZONE)
 
+-- # Anything with a date, or that isn't a time of day, isn't a TIME literal.
 VALUES TIME '2022-06-30 21:47:32-11:30';
 -- error 42601: syntax error: TIME '2022-06-30 21:47:32-11:30' is not valid
 
@@ -87,6 +94,10 @@ VALUES TIME '2022-06-30 21:47:32+12:00';
 VALUES TIME '2022-06-30 21:47:32-12:00';
 -- error 42601: syntax error: TIME '2022-06-30 21:47:32-12:00' is not valid
 
+-- # Storing a TIME in a column of the other kind casts it (9.2, General Rules,
+-- # 3.b.xvi.1): a time zone is dropped, keeping the local time (6.13, General
+-- # Rules, 16.c), and a missing one becomes the session's, +05:00 here (6.13,
+-- # General Rules, 17.c). Extra fractional seconds are truncated.
 CREATE TABLE foo (f1 TIME WITHOUT TIME ZONE);
 INSERT INTO foo (f1) 
 VALUES (TIME '21:47:32');
@@ -167,6 +178,10 @@ SELECT * FROM foo;
 -- F1: 21:47:32.123+0500
 -- F1: 01:47:32.123+0512
 
+-- # Casting a TIME WITH TIME ZONE. There's no cast to DATE (6.13, Syntax Rules,
+-- # 7). Changing the precision truncates or zero-extends the fraction. Dropping
+-- # the time zone keeps the local time (6.13, General Rules, 16.c), and a
+-- # TIMESTAMP gets today's date, 2022-07-04 here (6.13, General Rules, 19.d).
 CREATE TABLE foo (f1 TIME WITH TIME ZONE);
 INSERT INTO foo (f1) 
 VALUES (TIME '21:47:32+05:00');
@@ -227,6 +242,9 @@ SELECT CAST(f1 AS TIMESTAMP WITHOUT TIME ZONE) FROM foo;
 -- msg: INSERT 1
 -- COL1: 2022-07-04T21:47:32.000000
 
+-- # Casting a TIME WITHOUT TIME ZONE. Adding a time zone uses the session's,
+-- # +05:00 here (6.13, General Rules, 17.c), and a TIMESTAMP gets today's date
+-- # (6.13, General Rules, 18.c and 19.c).
 CREATE TABLE foo (f1 TIME WITHOUT TIME ZONE);
 INSERT INTO foo (f1) 
 VALUES (TIME '21:47:32');
@@ -307,6 +325,8 @@ VALUES CAST(TIME '01:02:03.456' AS TIMESTAMP(3) WITH TIME ZONE);
 VALUES CAST(TIME '01:02:03.456' AS TIMESTAMP(3) WITHOUT TIME ZONE);
 -- COL1: 2022-07-04T01:02:03.456
 
+-- # A string is trimmed, then read as a time (6.13, General Rules, 16.a.ii).
+-- # Extra fractional seconds are truncated.
 /* types */
 VALUES CAST('12:34:56' AS TIME);
 -- COL1: 12:34:56 (TIME(0) WITHOUT TIME ZONE)
@@ -322,6 +342,9 @@ VALUES CAST('12:34:56+03:00' AS TIME);
 VALUES CAST('12:34:56' AS TIME WITH TIME ZONE);
 -- COL1: 12:34:56+0500
 
+-- # A string with a time zone keeps it. A string that isn't a valid time,
+-- # including one with a date, is an invalid datetime format (6.13, General
+-- # Rules, 16.a.ii.3).
 /* types */
 VALUES CAST('12:34:56.5-03:00' AS TIME(2) WITH TIME ZONE);
 -- COL1: 12:34:56.50-0300 (TIME(2) WITH TIME ZONE)
@@ -342,6 +365,9 @@ VALUES CAST(CAST(TIME '12:34:56' AS VARCHAR(30)) AS TIME);
 VALUES CAST('TIMESTAMP ''2022-06-30 12:34:56''' AS TIME);
 -- error 22007: invalid datetime format
 
+-- # Times with a time zone are compared in UTC, which wraps around midnight
+-- # (8.2, General Rules, 6). A time without one is taken to be in the session
+-- # time zone.
 VALUES TIME '10:00:00+01:00' = TIME '09:00:00+00:00';
 -- COL1: TRUE
 

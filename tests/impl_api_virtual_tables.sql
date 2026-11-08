@@ -60,6 +60,7 @@ SELECT * FROM fruits;
 -- msg: CREATE TABLE 1
 -- error 42P07: duplicate table: ":memory:".PUBLIC.FRUITS
 
+-- # Either way round, the second one is an error and the first one stays.
 /* virtual_table CREATE TABLE fruits (id INT) AS VALUES 1 */
 CREATE TABLE fruits (id INT);
 /* virtual_table CREATE TABLE fruits (id INT) AS VALUES 2 */
@@ -78,6 +79,7 @@ SELECT name, price FROM fruits JOIN prices ON id = fruit_id ORDER BY price DESC;
 -- NAME: pear PRICE: 45
 -- NAME: kiwi PRICE: 30
 
+-- # It can be read in a derived table, like any other table.
 /* virtual_table CREATE TABLE fruits (id INT, name VARCHAR(10)) AS VALUES ROW(1, 'kiwi'), ROW(2, 'pear') */
 SELECT * FROM (SELECT name FROM fruits WHERE id = 2) AS t;
 -- NAME: pear
@@ -99,7 +101,9 @@ SELECT * FROM nope.t;
 /* virtual_table VALUES (1) AS VALUES 1 */
 -- error 42601: syntax error: must provide a CREATE TABLE statement
 
--- # A virtual table can only be read.
+-- # A virtual table can only be read. INSERT, UPDATE, DELETE and DROP TABLE
+-- # only look for tables stored in the catalog, so they don't find it, and
+-- # its rows are unchanged.
 /* virtual_table CREATE TABLE fruits (id INT, name VARCHAR(10)) AS VALUES ROW(1, 'kiwi') */
 INSERT INTO fruits (id, name) VALUES (2, 'pear');
 UPDATE fruits SET name = 'pear';

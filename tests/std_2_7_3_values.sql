@@ -1,3 +1,6 @@
+-- # A value without ROW is a row of one column (7.1, Syntax Rules, 1) with the
+-- # value's type. A derived table without a correlation name is a vsql
+-- # extension (V201-02).
 /* extensions V201-02 */
 SELECT * FROM (VALUES 1);
 -- COL1: 1
@@ -20,6 +23,9 @@ EXPLAIN SELECT * FROM (VALUES 1.23);
 SELECT * FROM (VALUES 1.23);
 -- COL1: 1.23
 
+-- # Each value after VALUES is a row of its own, so values of different types
+-- # in one column are an error (Syntax Rules, 4). ROW(...) makes one row of
+-- # many columns.
 /* extensions V201-02 */
 SELECT * FROM (VALUES 1, 'foo', TRUE);
 -- error 42804: data type mismatch in row 2, column 1 of VALUES: expected SMALLINT but got CHARACTER(3)
@@ -48,6 +54,9 @@ SELECT * FROM (VALUES 1, 'foo', TRUE) AS t1 (abc, col2, "f");
 SELECT * FROM (VALUES ROW(1, 'foo', TRUE)) AS t1 (abc, col2, "f");
 -- ABC: 1 COL2: foo f: TRUE
 
+-- # A string literal is CHARACTER of its length, even when it looks like a
+-- # number or a timestamp. Without ROW, a string and a number are two rows of
+-- # one column, so their types can't be combined.
 /* types */
 VALUES 'cool';
 -- COL1: cool (CHARACTER(4))
@@ -80,6 +89,8 @@ EXPLAIN VALUES 'hello', 1.22;
 EXPLAIN VALUES ROW('hello', 1.22);
 -- EXPLAIN: VALUES (COL1 CHARACTER(5), COL2 NUMERIC(3, 2)) = ROW('hello', 1.22)
 
+-- # Several ROWs as a derived table, with and without a correlation name and
+-- # a derived column list.
 /* extensions V201-02 */
 SELECT * FROM (VALUES ROW(123), ROW(456));
 -- COL1: 123
@@ -116,6 +127,9 @@ FROM (VALUES ROW(123, 'hi'), ROW(456, 'there')) AS foo (bar, baz);
 -- EXPLAIN: TABLE FOO (BAR SMALLINT, BAZ CHARACTER(5))
 -- EXPLAIN: EXPR (FOO.BAR SMALLINT, FOO.BAZ CHARACTER(5))
 
+-- # The derived column list must name every column (7.6, Syntax Rules,
+-- # 11.b.ii.1.B), and every row must have the same number of columns
+-- # (Syntax Rules, 1).
 SELECT * FROM (VALUES 1, 2) AS t1 (foo);
 -- FOO: 1
 -- FOO: 2
@@ -133,6 +147,8 @@ SELECT * FROM (VALUES ROW(1, 2), ROW(3, 4)) AS t1 (foo);
 SELECT * FROM (VALUES ROW(1), ROW(3, 4)) AS t1 (foo, bar);
 -- error 42601: syntax error: VALUES rows must have the same number of columns
 
+-- # FETCH and OFFSET of the outer query apply to the rows of the VALUES. An
+-- # OFFSET past the last row returns no rows.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM (VALUES ROW(1, 2), ROW(3, 4), ROW(5, 6)) AS t1 (foo, bar)
 FETCH FIRST 2 ROWS ONLY;
@@ -164,6 +180,10 @@ OFFSET 1 ROW;
 SELECT * FROM (VALUES ROW(1, 2), ROW(3, 4), ROW(5, 6)) AS t1 (foo, bar)
 OFFSET 10 ROWS;
 
+-- # Each column's type combines the types of all of its rows (Syntax Rules,
+-- # 4): numbers widen to fit every value, a VARCHAR makes the column VARCHAR
+-- # and an approximate number makes it DOUBLE PRECISION. Types that can't be
+-- # combined, or rows of different degrees, are an error.
 /* types */
 VALUES 1, 200000, 3;
 -- COL1: 1 (INTEGER)
@@ -187,6 +207,7 @@ VALUES ROW(1, 'a'), ROW(2, DATE '2022-06-30');
 VALUES ROW(1, 2), ROW(3);
 -- error 42601: syntax error: VALUES rows must have the same number of columns
 
+-- # A derived column list over one-column rows, and an OFFSET past the end.
 SELECT * FROM (VALUES 1, 2) AS t1 (foo);
 -- FOO: 1
 -- FOO: 2
@@ -210,6 +231,9 @@ EXPLAIN SELECT * FROM (VALUES 1, 2, 3 FETCH FIRST 2 ROWS ONLY) AS t (x);
 -- EXPLAIN: TABLE T (X SMALLINT)
 -- EXPLAIN: EXPR (T.X SMALLINT)
 
+-- # Rows of the same type keep it. An unconstrained NUMERIC can hold 1.25, so
+-- # the column stays NUMERIC, and TIME gets the largest fractional seconds
+-- # precision.
 /* extensions V001-01 */
 EXPLAIN VALUES CAST(1 AS REAL), CAST(2 AS REAL);
 -- EXPLAIN: VALUES (COL1 REAL) = ROW(CAST(1 AS REAL)), ROW(CAST(2 AS REAL))

@@ -1,3 +1,5 @@
+-- # A column that isn't given a value gets its default (General Rules, 3.b), or
+-- # NULL when it has none (General Rules, 3.e).
 CREATE TABLE t (a INT DEFAULT 3, b VARCHAR(10) DEFAULT 'it''s', c INT);
 INSERT INTO t (c) VALUES (1), (2);
 SELECT * FROM t;
@@ -6,6 +8,7 @@ SELECT * FROM t;
 -- A: 3 B: it's C: 1
 -- A: 3 B: it's C: 2
 
+-- # DEFAULT in VALUES sets a column to its default.
 CREATE TABLE t (a INT DEFAULT 3, b VARCHAR(10) DEFAULT 'foo', c INT);
 INSERT INTO t (a, b, c) VALUES (DEFAULT, 'bar', DEFAULT), (1, DEFAULT, 2);
 INSERT INTO t (a) VALUES DEFAULT;
@@ -17,6 +20,7 @@ SELECT * FROM t;
 -- A: 1 B: foo C: 2
 -- A: 3 B: foo C: NULL
 
+-- # UPDATE can set a column to its default too.
 CREATE TABLE t (a INT DEFAULT 3, b VARCHAR(10) DEFAULT 'foo');
 INSERT INTO t (a, b) VALUES (1, 'bar'), (2, 'baz');
 UPDATE t SET a = DEFAULT WHERE b = 'bar';
@@ -73,7 +77,8 @@ SELECT * FROM t;
 -- msg: INSERT 1
 -- A: :memory: B: PUBLIC X: 1
 
--- # CURRENT_CATALOG and CURRENT_SCHEMA need a column of at least 128 characters.
+-- # CURRENT_CATALOG and CURRENT_SCHEMA need a column of at least 128
+-- # characters.
 CREATE TABLE t (a VARCHAR(127) DEFAULT CURRENT_SCHEMA);
 CREATE TABLE t (a CHAR(127) DEFAULT CURRENT_CATALOG);
 CREATE TABLE t (a CHAR(128) DEFAULT CURRENT_CATALOG);
@@ -81,7 +86,9 @@ CREATE TABLE t (a CHAR(128) DEFAULT CURRENT_CATALOG);
 -- error 42601: syntax error: DEFAULT CURRENT_CATALOG is not valid for column A CHARACTER(127)
 -- msg: CREATE TABLE 1
 
--- # A datetime value function must have the same type as the column.
+-- # A datetime value function must have the same datetime type as the column,
+-- # including the time zone (Syntax Rules, 4.d). Only the fractional seconds
+-- # precision can be different.
 CREATE TABLE t (x TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE t (x TIMESTAMP WITH TIME ZONE DEFAULT LOCALTIMESTAMP);
 CREATE TABLE t (x TIME DEFAULT CURRENT_TIME);
@@ -104,6 +111,8 @@ CREATE TABLE t (x TIME(2) DEFAULT TIME '10:00:00.12');
 -- error 42601: syntax error: DEFAULT TIME '10:00:00.12' is not valid for column X TIME(1) WITHOUT TIME ZONE
 -- msg: CREATE TABLE 1
 
+-- # A default can satisfy a NOT NULL, but a NULL default fails when it's used,
+-- # not when the table is created.
 CREATE TABLE t (a INT DEFAULT 3 NOT NULL, x INT);
 INSERT INTO t (x) VALUES (1);
 INSERT INTO t (a, x) VALUES (DEFAULT, 2);
@@ -141,6 +150,8 @@ SELECT * FROM t;
 CREATE TABLE t (a INT NOT NULL DEFAULT 3);
 -- error 42601: syntax error: unexpected DEFAULT, expecting ")" or ","
 
+-- # A default can only be a literal, NULL, a datetime value function,
+-- # CURRENT_CATALOG or CURRENT_SCHEMA, not an expression or a parameter.
 CREATE TABLE t (a INT DEFAULT 1 + 2);
 -- error 42601: syntax error: unexpected "+", expecting ")" or ","
 
@@ -150,6 +161,11 @@ CREATE TABLE t (a INT DEFAULT (1));
 CREATE TABLE t (a INT DEFAULT ?);
 -- error 42601: syntax error: unexpected "?"
 
+-- # A literal must suit the type of the column (Syntax Rules, 4.a). A string
+-- # must fit in a character string column, even with trailing spaces (Syntax
+-- # Rules, 4.a.i). An exact numeric needs an exact numeric literal that doesn't
+-- # lose any digits, so 1.0 is allowed for an INTEGER, but 1.5 and 1e2 aren't
+-- # (Syntax Rules, 4.a.iii).
 CREATE TABLE t (a INT DEFAULT 'foo');
 -- error 42601: syntax error: DEFAULT 'foo' is not valid for column A INTEGER
 
@@ -177,6 +193,8 @@ CREATE TABLE t (a NUMERIC(5, 1) DEFAULT 1.55);
 CREATE TABLE t (a INT DEFAULT 1e2);
 -- error 42601: syntax error: DEFAULT 100.0e0 is not valid for column A INTEGER
 
+-- # A boolean literal is only valid for a BOOLEAN (Syntax Rules, 4.a.vii), and
+-- # a BOOLEAN can't have a number. UNKNOWN is shown as NULL in the error.
 CREATE TABLE t (a DOUBLE PRECISION DEFAULT TRUE);
 -- error 42601: syntax error: DEFAULT TRUE is not valid for column A DOUBLE PRECISION
 
@@ -186,6 +204,8 @@ CREATE TABLE t (a BOOLEAN DEFAULT 1);
 CREATE TABLE t (a INT DEFAULT UNKNOWN);
 -- error 42601: syntax error: DEFAULT NULL is not valid for column A INTEGER
 
+-- # A datetime column needs a datetime literal with the same fields and time
+-- # zone, not a string (Syntax Rules, 4.a.v).
 CREATE TABLE t (a DATE DEFAULT '2020-01-02');
 -- error 42601: syntax error: DEFAULT '2020-01-02' is not valid for column A DATE
 
@@ -198,6 +218,9 @@ CREATE TABLE t (a TIMESTAMP WITH TIME ZONE DEFAULT TIMESTAMP '2020-01-02 03:04:0
 CREATE TABLE t (a TIME WITH TIME ZONE DEFAULT TIME '03:04:05+05:00');
 -- msg: CREATE TABLE 1
 
+-- # A datetime value function needs a column of the same datetime type (Syntax
+-- # Rules, 4.d), and CURRENT_CATALOG and CURRENT_SCHEMA need a character string
+-- # (Syntax Rules, 4.b). A precision over 6 is too large for vsql.
 CREATE TABLE t (a DATE DEFAULT CURRENT_TIMESTAMP);
 -- error 42601: syntax error: DEFAULT CURRENT_TIMESTAMP(6) is not valid for column A DATE
 
@@ -223,6 +246,8 @@ SELECT * FROM t;
 -- 2: msg: INSERT 1
 -- 2: A: -3 B: it's C: 1.5e0 D: 2022-07-04T14:05:03 E: 2020-01-02T03:04:05.000000 F: NULL G: PUBLIC X: 1
 
+-- # The defaults are part of the dumped CREATE TABLE, and work after it's
+-- # loaded again.
 CREATE TABLE t (a INT DEFAULT -3 NOT NULL, b VARCHAR(10) DEFAULT 'it''s', c DOUBLE PRECISION DEFAULT 1.5e0, d TIMESTAMP(0) DEFAULT LOCALTIMESTAMP(0), e TIMESTAMP DEFAULT TIMESTAMP '2020-01-02 03:04:05', f INT DEFAULT NULL, g VARCHAR(128) DEFAULT CURRENT_SCHEMA);
 /* out */
 /* in */

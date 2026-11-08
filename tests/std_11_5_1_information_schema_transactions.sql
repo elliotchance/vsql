@@ -21,6 +21,8 @@ SELECT table_name FROM information_schema.tables WHERE table_schema = 'PUBLIC';
 -- 1: msg: COMMIT
 -- 2: TABLE_NAME: FOO
 
+-- # A table that's rolled back or dropped isn't described, and neither are its
+-- # columns.
 START TRANSACTION;
 CREATE TABLE foo (x INT);
 ROLLBACK;

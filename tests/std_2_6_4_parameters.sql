@@ -1,3 +1,5 @@
+-- # A ? without a value is an error. A number is bound as a DOUBLE
+-- # PRECISION, so it can be stored in the FLOAT column.
 /* setup */
 CREATE TABLE t1 (x FLOAT);
 
@@ -17,6 +19,8 @@ VALUES ?;
 -- sql: VALUES 2.0e0
 -- COL1: 2e0 (DOUBLE PRECISION)
 
+-- # A string is a CHARACTER, so it can't be stored in a FLOAT, but can in a
+-- # VARCHAR.
 /* params 'hello' */
 INSERT INTO t1 (x) VALUES (?);
 -- sql: INSERT INTO t1 (x) VALUES ('hello')
@@ -37,6 +41,7 @@ SELECT * FROM t2;
 -- msg: INSERT 1
 -- X: hello
 
+-- # EXPLAIN doesn't need the values, but the UPDATE does.
 /* extensions V001-03 */
 EXPLAIN UPDATE t1 SET x = ?;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T1 (X DOUBLE PRECISION)
@@ -70,6 +75,9 @@ SELECT * FROM t1;
 -- sql: DELETE FROM t1 WHERE x = 100.0e0
 -- msg: DELETE 1
 
+-- # A NULL is bound with a type, as a CAST of NULL, and it still can't be
+-- # stored in a NOT NULL column. vsql finds this from the statement, so it's an
+-- # error even though the table has no rows.
 INSERT INTO t1 (x) VALUES (100);
 /* params NULL INT */
 UPDATE t1 SET x = ?;

@@ -6,6 +6,9 @@ CREATE TABLE pk (id INT PRIMARY KEY);
 INSERT INTO a (id, x) VALUES (1, 10);
 INSERT INTO b (id, y) VALUES (2, 20);
 
+-- # A result column that's just a reference to a NOT NULL column is NOT NULL
+-- # too, however the column is named (Syntax Rules, 20). That includes a
+-- # PRIMARY KEY column and a column renamed by a correlation name.
 /* extensions V001-01 */
 EXPLAIN SELECT id, x FROM a;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.A (ID INTEGER NOT NULL, X INTEGER)
@@ -33,11 +36,16 @@ EXPLAIN SELECT d.i FROM a AS d (i, j);
 -- EXPLAIN: TABLE D (I INTEGER NOT NULL, J INTEGER)
 -- EXPLAIN: EXPR (I INTEGER NOT NULL)
 
+-- # Any other expression can be NULL, even one that never is, because vsql
+-- # doesn't have T101 (Syntax Rules, 21). A column in parentheses isn't just a
+-- # column reference.
 /* extensions V001-01 */
 EXPLAIN SELECT id + 1, (id), 1, COALESCE(id, 1) FROM a;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.A (ID INTEGER NOT NULL, X INTEGER)
 -- EXPLAIN: EXPR (COL1 INTEGER, COL2 INTEGER, COL3 SMALLINT, COL4 INTEGER)
 
+-- # A grouping column and a column of a derived table stay NOT NULL, but
+-- # COUNT(*) is another expression.
 /* extensions V001-01 */
 EXPLAIN SELECT id, COUNT(*) FROM a GROUP BY id;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.A (ID INTEGER NOT NULL, X INTEGER)
@@ -53,6 +61,9 @@ EXPLAIN SELECT i, x FROM (SELECT id AS i, x FROM a) AS d;
 -- EXPLAIN: TABLE D (I INTEGER NOT NULL, X INTEGER)
 -- EXPLAIN: EXPR (I INTEGER NOT NULL, X INTEGER)
 
+-- # A scalar subquery is NULL when it has no rows, so it can be NULL even when
+-- # its column can't. A column of a UNION ALL can be NULL too, since vsql
+-- # doesn't have T101 (7.17, Syntax Rules, 19.b.ii.1.A).
 /* extensions V001-01 */
 EXPLAIN SELECT (SELECT a.id FROM c) FROM a;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.A (ID INTEGER NOT NULL, X INTEGER)
@@ -68,6 +79,11 @@ EXPLAIN SELECT id FROM a UNION ALL SELECT id FROM b;
 -- EXPLAIN:   EXPR (ID INTEGER NOT NULL)
 -- EXPLAIN: UNION ALL (ID INTEGER)
 
+-- # An INNER JOIN keeps NOT NULL. An outer join keeps it only on the side that
+-- # it preserves, since the other side is NULL for a row without a match, and
+-- # that carries through nested joins, WHERE and ORDER BY. The standard has no
+-- # outer join column known not null (7.10, Syntax Rules, 14.a), so keeping
+-- # the preserved side is vsql's own rule (7.10, Syntax Rules, 15.c).
 /* extensions V001-01 */
 EXPLAIN SELECT a.id AS p, b.id AS q, y FROM a INNER JOIN b ON a.id = b.id;
 -- EXPLAIN: $1:
@@ -166,6 +182,7 @@ EXPLAIN SELECT a.id AS p, b.id AS q FROM a LEFT JOIN b ON a.id = b.id WHERE a.id
 -- EXPLAIN: ORDER BY A.ID ASC
 -- EXPLAIN: EXPR (P INTEGER NOT NULL, Q INTEGER)
 
+-- # The NULLs that an outer join puts in a NOT NULL column.
 SELECT a.id AS p, b.id AS q FROM a LEFT JOIN b ON a.id = b.id;
 -- P: 1 Q: NULL
 

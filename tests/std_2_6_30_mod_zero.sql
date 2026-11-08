@@ -1,3 +1,6 @@
+-- # MOD with a zero divisor is an error (General Rules, 9.b), whatever the
+-- # numeric type. A scale or an approximate type is a vsql extension (V403-01).
+-- # A zero dividend is fine.
 /* extensions V403-01 */
 VALUES MOD(5.0, 0.0);
 -- error 22012: division by zero
@@ -18,6 +21,8 @@ VALUES MOD(0.0, 5.0);
 VALUES MOD(0e0, 5e0);
 -- COL1: 0e0
 
+-- # Dividing by zero with / is an error too, including for exact numbers with
+-- # a scale (6.29, General Rules, 4).
 VALUES 5.0 / 0.0;
 -- error 22012: division by zero
 

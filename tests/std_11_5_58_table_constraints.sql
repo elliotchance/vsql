@@ -1,5 +1,6 @@
 -- # The PRIMARY KEY comes first, then the check constraints (including NOT
--- # NULL) with the same names as in CHECK_CONSTRAINTS. They're never deferrable.
+-- # NULL) with the same names as in CHECK_CONSTRAINTS. None of them is
+-- # DEFERRABLE, so IS_DEFERRABLE and INITIALLY_DEFERRED are NO.
 CREATE TABLE t (a INT CHECK (a > 0) NOT NULL, b INT, PRIMARY KEY (b), CHECK (b <> a));
 SELECT * FROM information_schema.table_constraints;
 -- msg: CREATE TABLE 1

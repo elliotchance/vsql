@@ -5,9 +5,11 @@ CREATE TABLE "q r" ("s t" INT CHECK ("s t" IS NOT NULL));
 INSERT INTO t (a, b, c, d, e, f) VALUES (1, 2, 3, 4, 5, NULL);
 INSERT INTO p (id, x, y) VALUES (1, 2, NULL);
 
--- # Only an enforced, not deferrable CHECK that's exactly "c IS NOT NULL" makes a
--- # column known not nullable.
-
+-- # A CHECK makes a column known not null only when it's enforced, not
+-- # deferrable, and exactly "column IS NOT NULL". It can be on the column or
+-- # the table (B), and the name can be qualified or quoted. C is deferrable,
+-- # D and E are only checked together, and F is the opposite, so they can be
+-- # NULL.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T (A INTEGER NOT NULL, B INTEGER NOT NULL, C INTEGER, D INTEGER, E INTEGER, F INTEGER)
@@ -23,8 +25,7 @@ EXPLAIN SELECT * FROM "q r";
 -- EXPLAIN: TABLE ":memory:".PUBLIC."q r" ("s t" INTEGER NOT NULL)
 -- EXPLAIN: EXPR (":memory:".PUBLIC."q r"."s t" INTEGER NOT NULL)
 
--- # A primary key lookup.
-
+-- # The columns stay NOT NULL when the rows are found by a primary key lookup.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM p WHERE id = 1;
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.P (ID INTEGER NOT NULL, X INTEGER NOT NULL, Y INTEGER) RANGE ID = 1
@@ -32,7 +33,6 @@ EXPLAIN SELECT * FROM p WHERE id = 1;
 -- EXPLAIN: EXPR (":memory:".PUBLIC.P.ID INTEGER NOT NULL, ":memory:".PUBLIC.P.X INTEGER NOT NULL, ":memory:".PUBLIC.P.Y INTEGER)
 
 -- # A correlation name, with and without the primary key lookup.
-
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM p AS d (i, j, k);
 -- EXPLAIN: D:
@@ -49,7 +49,6 @@ EXPLAIN SELECT * FROM p AS d (i, j, k) WHERE i = 1;
 -- EXPLAIN: EXPR (D.I INTEGER NOT NULL, D.J INTEGER NOT NULL, D.K INTEGER)
 
 -- # Both sides of an INNER JOIN.
-
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM p INNER JOIN "q r" ON id = "s t";
 -- EXPLAIN: $1:
@@ -59,9 +58,8 @@ EXPLAIN SELECT * FROM p INNER JOIN "q r" ON id = "s t";
 -- EXPLAIN: INNER JOIN ON ID = "s t" (":memory:".PUBLIC.P.ID INTEGER NOT NULL, ":memory:".PUBLIC.P.X INTEGER NOT NULL, ":memory:".PUBLIC.P.Y INTEGER, ":memory:".PUBLIC."q r"."s t" INTEGER NOT NULL)
 -- EXPLAIN: EXPR (":memory:".PUBLIC.P.ID INTEGER NOT NULL, ":memory:".PUBLIC.P.X INTEGER NOT NULL, ":memory:".PUBLIC.P.Y INTEGER, ":memory:".PUBLIC."q r"."s t" INTEGER NOT NULL)
 
--- # A derived table, and the rows are still read correctly because the column is
--- # stored as a column that can be NULL.
-
+-- # The CHECK only changes what a query knows about a column. The rows are
+-- # stored and read the same way, including through a derived table.
 SELECT * FROM (SELECT * FROM t) AS d;
 -- A: 1 B: 2 C: 3 D: 4 E: 5 F: NULL
 

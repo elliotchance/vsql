@@ -1,3 +1,4 @@
+-- # A row that makes the condition FALSE is rejected, and isn't inserted.
 CREATE TABLE t (a INT CHECK (a > 0));
 INSERT INTO t (a) VALUES (1);
 INSERT INTO t (a) VALUES (0);
@@ -81,6 +82,9 @@ SELECT * FROM t;
 -- A: 1.4 B: NULL
 -- A: NULL B: ab
 
+-- # An UPDATE checks the new values of every row it changes, and if any row
+-- # fails none of them are changed. Setting b to NULL makes the condition
+-- # UNKNOWN, which satisfies it.
 CREATE TABLE t (a INT, b INT, CHECK (a < b));
 INSERT INTO t (a, b) VALUES (1, 5), (2, 6);
 UPDATE t SET a = 5 WHERE b = 5;
@@ -193,6 +197,8 @@ CREATE TABLE t (a INT CHECK (a > 0) NOT NULL, b INT CHECK (t.b > 0) CHECK (b < 1
 -- error 42601: syntax error: CHECK on column B cannot use column A
 -- msg: CREATE TABLE 1
 
+-- # The condition must be a BOOLEAN, and can be just a BOOLEAN column. A NULL
+-- # is UNKNOWN, which satisfies both constraints.
 CREATE TABLE t (a INT CHECK (a));
 CREATE TABLE t (a VARCHAR(10) CHECK (a));
 -- error 42804: data type mismatch in CHECK constraint: expected BOOLEAN but got INTEGER
@@ -261,6 +267,9 @@ CREATE TABLE t (a VARCHAR(30) CHECK (CAST(a AS TIME WITH TIME ZONE) IS NOT NULL)
 -- error 42601: syntax error: CAST from TIME(0) WITHOUT TIME ZONE to TIMESTAMP(6) WITHOUT TIME ZONE cannot be used in a CHECK constraint
 -- error 42601: syntax error: CAST from CHARACTER VARYING(30) to TIME(0) WITH TIME ZONE cannot be used in a CHECK constraint
 
+-- # Comparisons and casts that don't depend on the session's time zone are
+-- # allowed: two values with a time zone, a TIMESTAMP cast to a DATE, and a
+-- # string cast to a TIMESTAMP without a time zone.
 CREATE TABLE t (a TIMESTAMP WITH TIME ZONE CHECK (a > TIMESTAMP '2020-01-01 00:00:00+05:00'), b TIMESTAMP CHECK (CAST(b AS DATE) > DATE '2020-01-01'), c VARCHAR(30) CHECK (CAST(c AS TIMESTAMP) > TIMESTAMP '2020-01-01 00:00:00'));
 INSERT INTO t (a, b, c) VALUES (TIMESTAMP '2020-01-01 00:00:00+04:00', TIMESTAMP '2020-01-02 00:00:00', '2020-01-02 00:00:00');
 INSERT INTO t (a) VALUES (TIMESTAMP '2020-01-01 00:00:00+06:00');

@@ -37,7 +37,8 @@ SELECT * FROM t;
 -- ID: 1 X: 10
 -- ID: 3 X: 30
 
--- # The correlation name hides the name of the table.
+-- # The correlation name is the only exposed name (Syntax Rules, 9.a, and
+-- # 14.14, Syntax Rules, 9.a), so it hides the name of the table.
 DELETE FROM t AS u WHERE t.x = 1;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
 
@@ -199,7 +200,8 @@ UPDATE d AS u SET y = NULL WHERE u.id = 2;
 -- error 23502: violates non-null constraint: column Y
 -- error 23502: violates non-null constraint: column Y
 
--- # A column can't be set more than once, and a generated column can't be set.
+-- # A column can't be set more than once, and a generated column can't be set
+-- # (14.15, Syntax Rules, 8 and 5).
 UPDATE t AS u SET x = 1, x = 2;
 -- error 42601: syntax error: column X is set more than once
 
@@ -357,7 +359,8 @@ COMMIT;
 -- ID: 3 X: 30
 -- msg: COMMIT
 
--- # A positioned statement hides the name of the table in a set clause.
+-- # A positioned statement hides the name of the table in a set clause (14.13,
+-- # Syntax Rules, 11.a and 12).
 /* extensions V108-01 V109-01 V110-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
@@ -370,7 +373,8 @@ UPDATE t AS u SET x = t.x + 1 WHERE CURRENT OF c;
 -- ID: 1 X: 10
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.T.X
 
--- # The cursor is matched by the table name, not the correlation name.
+-- # The cursor is matched by the table name, not the correlation name (14.8,
+-- # Syntax Rules, 6, and 14.13, Syntax Rules, 6).
 /* extensions V108-01 V109-01 V110-01 V112-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t;
@@ -395,7 +399,8 @@ UPDATE s AS t SET y = 1 WHERE CURRENT OF c;
 -- ID: 1 X: 10
 -- error 42601: syntax error: table S is not the table of cursor C
 
--- # The column of a positioned UPDATE must still be updatable by the cursor.
+-- # The column of a positioned UPDATE must still be updatable by the cursor
+-- # (14.13, Syntax Rules, 14).
 /* extensions V108-01 V109-01 V110-01 V113-01 */
 START TRANSACTION;
 DECLARE c CURSOR FOR SELECT * FROM t FOR UPDATE OF x;

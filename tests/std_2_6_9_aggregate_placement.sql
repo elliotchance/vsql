@@ -7,7 +7,7 @@ INSERT INTO t2 (z) VALUES (10);
 INSERT INTO t3 (w) VALUES (20);
 
 -- # An aggregate function must be in the select list or HAVING of its query
--- # (6.9, SR 7), so the rest of this file is every other place.
+-- # (Syntax Rules, 7), so the rest of this file is every other place.
 -- #
 -- # UPDATE isn't a query, so a column of the table being updated doesn't make
 -- # the subquery's aggregate function an aggregate of anything.
@@ -51,7 +51,8 @@ SELECT y FROM t1 WHERE x = 3;
 -- msg: UPDATE 1
 -- Y: 13
 
--- # VALUES
+-- # A VALUES isn't a query specification, so an aggregate function in it has
+-- # no aggregation query (Syntax Rules, 6.a and 7).
 INSERT INTO t1 (x) VALUES (MAX(1));
 -- error 42601: syntax error: an aggregate function cannot be used in VALUES
 
@@ -70,6 +71,7 @@ VALUES ROW(COUNT(*));
 SELECT * FROM (VALUES MAX(1)) AS v;
 -- error 42601: syntax error: an aggregate function cannot be used in VALUES
 
+-- # A subquery in a VALUES has its own aggregate functions.
 INSERT INTO t2 (z) VALUES ((SELECT MAX(x) FROM t1));
 SELECT z FROM t2 WHERE z = 3;
 -- msg: INSERT 1
@@ -171,7 +173,9 @@ SELECT x FROM t1 GROUP BY x ORDER BY (SELECT MAX(t1.y) FROM t2);
 SELECT MAX(x) AS m FROM t1 ORDER BY (SELECT MAX(t1.x) FROM t2);
 -- M: 3
 
--- # A join condition
+-- # A join condition isn't the select list or HAVING, so it can't have an
+-- # aggregate function of its query, even from inside a subquery (Syntax Rules,
+-- # 7).
 SELECT * FROM t1 JOIN t1 AS b ON MAX(b.x) > 1;
 -- error 42601: syntax error: an aggregate function cannot be used in a join condition
 
@@ -190,6 +194,7 @@ SELECT (SELECT 1 FROM t2 JOIN t3 ON MAX(z) > 0) FROM t1;
 SELECT (SELECT 1 FROM t2 JOIN t3 ON COUNT(*) > 0) FROM t1;
 -- error 42601: syntax error: an aggregate function cannot be used in a join condition
 
+-- # An aggregate function in the select list of a subquery is still fine.
 SELECT x, z FROM t1 JOIN t2 ON z = (SELECT MAX(w) - 10 FROM t3) AND x = 2;
 -- X: 2 Z: 10
 
@@ -233,8 +238,8 @@ SELECT * FROM t1 WHERE SUBSTRING('abc' FROM 1 FOR MAX(x)) = 'abc';
 SELECT x FROM t1 GROUP BY MAX(x);
 -- error 42601: syntax error: unexpected MAX
 
--- # Nested aggregate functions (6.9, SR 1), even if the inner one is of an outer
--- # query.
+-- # Nested aggregate functions (Syntax Rules, 1), even if the inner one is of
+-- # an outer query.
 SELECT MAX(MIN(x)) FROM t1;
 -- error 42601: syntax error: nested set function: MAX(MIN(X))
 
@@ -256,6 +261,7 @@ SELECT (SELECT MAX(MIN(t1.x)) FROM t2) FROM t1;
 SELECT (SELECT MAX(z + COUNT(t1.x)) FROM t2) FROM t1;
 -- error 42601: syntax error: nested set function: COUNT(T1.X)
 
+-- # The argument can't contain a subquery either (Syntax Rules, 1).
 SELECT MAX((SELECT MAX(z) FROM t2)) FROM t1;
 -- error 42601: syntax error: a subquery cannot be used in an aggregate function
 

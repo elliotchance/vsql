@@ -58,6 +58,8 @@ SELECT COUNT(DISTINCT x), SUM(DISTINCT x), AVG(DISTINCT x), SUM(x), AVG(x) FROM 
 -- msg: INSERT 5
 -- COL1: 3 COL2: 12 COL3: 4 COL4: 20 COL5: 4
 
+-- # COUNT(*) can't have a set quantifier, and a set quantifier needs an
+-- # argument and can only be given once.
 SELECT COUNT(DISTINCT *) FROM t;
 -- error 42601: syntax error: unexpected "*"
 

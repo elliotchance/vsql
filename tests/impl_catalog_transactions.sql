@@ -20,6 +20,11 @@ SELECT * FROM foo.public.bar;
 -- msg: COMMIT
 -- BAZ: 2
 
+-- # Changing the catalog doesn't start another transaction: START TRANSACTION
+-- # in the other catalog fails because one is already active (17.1, General
+-- # Rules, 1), and its ROLLBACK ends the transaction for both catalogs. So the
+-- # second ROLLBACK has no transaction to end, which vsql reports as 2D000
+-- # (#231), and the INSERT is gone.
 /* create_catalog FOO */
 CREATE TABLE foo.public.bar (baz INTEGER);
 SET CATALOG 'FOO';

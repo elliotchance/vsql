@@ -1,5 +1,6 @@
 -- # CREATE TABLE IF NOT EXISTS is a vsql extension (V103-01).
 
+-- # A table that doesn't exist is created as usual (CREATE TABLE 1).
 /* extensions V103-01 */
 CREATE TABLE IF NOT EXISTS t (x INT);
 INSERT INTO t (x) VALUES (1);
@@ -32,6 +33,9 @@ SELECT * FROM t;
 CREATE TABLE IF NOT EXISTS t (y INT, y INT);
 -- error 42601: syntax error: column Y is defined more than once
 
+-- # Only the table is optional: a later CREATE TABLE without IF NOT EXISTS
+-- # still fails, and so does a schema or catalog that doesn't exist, or the
+-- # read-only INFORMATION_SCHEMA (even though its TABLES exists).
 /* extensions V103-01 */
 CREATE TABLE IF NOT EXISTS t (x INT);
 CREATE TABLE t (x INT);
@@ -66,6 +70,7 @@ SELECT * FROM other.t;
 -- msg: INSERT 1
 -- X: 1
 
+-- # A virtual table is an existing table, so it's left alone.
 /* virtual_table CREATE TABLE fruits (id INT) AS VALUES 1 */
 /* extensions V103-01 */
 CREATE TABLE IF NOT EXISTS fruits (x INT);
@@ -73,6 +78,9 @@ SELECT * FROM fruits;
 -- msg: CREATE TABLE 0
 -- ID: 1
 
+-- # Whether it exists is what this transaction can see: a table created or
+-- # dropped earlier in the transaction counts, and ROLLBACK undoes a table that
+-- # IF NOT EXISTS created.
 /* extensions V103-01 */
 START TRANSACTION;
 CREATE TABLE t (x INT);
@@ -189,13 +197,16 @@ SELECT * FROM if;
 -- msg: INSERT 1
 -- IF: 1
 
+-- # EXISTS must follow IF NOT. IF EXISTS is only for DROP: here IF is read as
+-- # the table name, so EXISTS is unexpected.
 CREATE TABLE IF NOT (x INT);
 -- error 42601: syntax error: unexpected "(", expecting EXISTS
 
 CREATE TABLE IF EXISTS t (x INT);
 -- error 42601: syntax error: unexpected EXISTS, expecting "("
 
--- # None of it is kept: the definitions and dumps are the same.
+-- # IF NOT EXISTS isn't kept: "vsql out" writes plain CREATE statements, and
+-- # the dump is the same after they're read back in.
 
 /* extensions V103-01 V101-01 V106-01 */
 CREATE SCHEMA IF NOT EXISTS foo;
@@ -240,7 +251,8 @@ CREATE TABLE if (x INT);
 -- flags:
 -- msg: CREATE TABLE 1
 
--- # IF NOT EXISTS on a schema element
+-- # IF NOT EXISTS also works on a table or sequence in CREATE SCHEMA: the
+-- # second one with the same name is skipped, so the first one is kept.
 /* extensions V103-01 V106-01 */
 CREATE SCHEMA foo
   CREATE TABLE IF NOT EXISTS t (x INT)

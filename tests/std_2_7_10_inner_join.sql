@@ -9,6 +9,8 @@ INSERT INTO t2 (f3, f4) VALUES (123, 5);
 INSERT INTO t2 (f3, f4) VALUES (789, 6);
 INSERT INTO t2 (f3, f4) VALUES (345, 7);
 
+-- # EXPLAIN shows each side of the join, then the join with its condition and
+-- # the columns of both sides, left first.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t1 JOIN t2 ON TRUE;
 -- EXPLAIN: $1:
@@ -18,7 +20,9 @@ EXPLAIN SELECT * FROM t1 JOIN t2 ON TRUE;
 -- EXPLAIN: INNER JOIN ON TRUE (":memory:".PUBLIC.T1.F1 INTEGER, ":memory:".PUBLIC.T1.F2 INTEGER, ":memory:".PUBLIC.T2.F3 INTEGER, ":memory:".PUBLIC.T2.F4 INTEGER)
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T1.F1 INTEGER, ":memory:".PUBLIC.T1.F2 INTEGER, ":memory:".PUBLIC.T2.F3 INTEGER, ":memory:".PUBLIC.T2.F4 INTEGER)
 
--- # INNER is optional.
+-- # INNER is the default join type (Syntax Rules, 5). Only the pairs of rows
+-- # where ON is TRUE are kept, so ON TRUE keeps every pair
+-- # (General Rules, 1.b).
 SELECT * FROM t1 INNER JOIN t2 ON f1 = f3;
 -- F1: 123 F2: 1 F3: 123 F4: 5
 -- F1: 789 F2: 3 F3: 789 F4: 6
@@ -37,6 +41,8 @@ SELECT * FROM t1 JOIN t2 ON TRUE;
 -- F1: 234 F2: 4 F3: 789 F4: 6
 -- F1: 234 F2: 4 F3: 345 F4: 7
 
+-- # ON can be any condition, not just equality, and ORDER BY sorts the joined
+-- # rows.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t1 JOIN t2 ON f1 = f3;
 -- EXPLAIN: $1:
@@ -80,6 +86,9 @@ SELECT * FROM t1 JOIN t2 ON f1 > f3;
 -- F1: 789 F2: 3 F3: 345 F4: 7
 -- F1: 234 F2: 4 F3: 123 F4: 5
 
+-- # Both tables have an ID column. Unqualified, each is shown as ID; a
+-- # qualified name picks the side, and * gives every column, the left table's
+-- # first.
 /* extensions V001-01 */
 CREATE TABLE a (id INT, v VARCHAR(5));
 CREATE TABLE b (id INT, w VARCHAR(5));
@@ -103,5 +112,6 @@ EXPLAIN SELECT a.id, b.id FROM a JOIN b ON TRUE;
 -- EXPLAIN: INNER JOIN ON TRUE (":memory:".PUBLIC.A.ID INTEGER, ":memory:".PUBLIC.A.V CHARACTER VARYING(5), ":memory:".PUBLIC.B.ID INTEGER, ":memory:".PUBLIC.B.W CHARACTER VARYING(5))
 -- EXPLAIN: EXPR (ID INTEGER, ID INTEGER)
 
+-- # The same column can be selected more than once.
 SELECT id, id FROM (VALUES 7) AS t (id);
 -- ID: 7 ID: 7

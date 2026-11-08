@@ -23,7 +23,7 @@ VALUES<U+00A0>123;
 VALUES<U+1680>123;
 -- COL1: 123
 
--- # U+180E (Mongolian Vowel Separator)
+-- # U+180E (Mongolian Vowel Separator), which was in "Zs" before Unicode 6.3
 VALUES<U+180E>123;
 -- COL1: 123
 
@@ -118,6 +118,7 @@ VALUES<U+0009><U+0009><U+0009>123;
 <U+0009>VALUES 123;
 -- COL1: 123
 
+-- # A letter isn't white space, so VALUES and 123 become one identifier.
 VALUES<U+0061>123;
 -- error 42601: syntax error: unexpected identifier
 
@@ -128,8 +129,11 @@ VALUES 1 @;
 VALUES 1 ~;
 -- error 42601: syntax error: invalid character: ~
 
+-- # vsql only allows ASCII letters in a regular identifier (#761), although é
+-- # is a letter that can start one (Syntax Rules, 1).
 CREATE TABLE café (x INT);
 -- error 42601: syntax error: invalid character: é
 
+-- # U+200B (Zero Width Space) is a format character, not white space.
 VALUES<U+200B>123;
 -- error 42601: syntax error: invalid character: ​

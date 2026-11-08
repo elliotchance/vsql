@@ -14,6 +14,8 @@ DROP INDEX t_x;
 -- flags: V003-01
 -- msg: DROP INDEX 1
 
+-- # An index can be dropped by its qualified name, and the name can then be
+-- # used again. An index that's already dropped can't be dropped again.
 /* extensions V002-01 V003-01 */
 CREATE INDEX t_x ON t (x);
 DROP INDEX public.t_x;
@@ -33,6 +35,7 @@ DROP INDEX t_x;
 DROP INDEX t;
 -- error 42704: no such index: ":memory:".PUBLIC.T
 
+-- # A qualified name only finds an index in that schema, which must exist.
 /* extensions V002-01 V003-01 */
 CREATE SCHEMA other;
 CREATE INDEX t_x ON t (x);
@@ -45,6 +48,7 @@ DROP INDEX other.t_x;
 DROP INDEX nosuch.t_x;
 -- error 3F000: invalid schema name: NOSUCH
 
+-- # DROP INDEX can't be explained.
 /* extensions V003-01 */
 EXPLAIN DROP INDEX t_x;
 -- error 42601: syntax error: Cannot EXPLAIN DROP INDEX
@@ -81,6 +85,8 @@ CREATE INDEX t_x ON t (x);
 -- msg: INSERT 1
 -- msg: CREATE INDEX 1
 
+-- # A ROLLBACK of DROP TABLE puts back the indexes of the table. DROP SCHEMA
+-- # ... CASCADE drops the indexes of the tables in the schema.
 /* extensions V002-01 */
 CREATE INDEX t_x ON t (x);
 START TRANSACTION;

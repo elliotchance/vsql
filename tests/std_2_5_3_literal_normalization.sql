@@ -1,5 +1,5 @@
 -- # The value of a character string literal is normalized to NFC, because the
--- # character repertoire is UCS (5.3 General Rule 2).
+-- # character repertoire is UCS (General Rules, 2).
 
 VALUES U&'\0065\0301' = U&'\00E9';
 -- COL1: TRUE

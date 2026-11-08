@@ -1,5 +1,8 @@
 -- # CREATE SCHEMA IF NOT EXISTS is a vsql extension (V101-01).
 
+-- # A schema that doesn't exist is created (CREATE SCHEMA 1). One that does,
+-- # including the built-in PUBLIC and INFORMATION_SCHEMA, is left alone and the
+-- # result is CREATE SCHEMA 0, so its tables are kept.
 /* extensions V101-01 */
 CREATE SCHEMA IF NOT EXISTS foo;
 CREATE TABLE foo.t (x INT);
@@ -24,6 +27,8 @@ CREATE SCHEMA IF NOT EXISTS information_schema;
 -- msg: CREATE SCHEMA 0
 -- msg: CREATE SCHEMA 0
 
+-- # Only the schema is optional: a catalog that doesn't exist is still an
+-- # error, and so is a later CREATE SCHEMA without IF NOT EXISTS.
 /* extensions V101-01 */
 CREATE SCHEMA IF NOT EXISTS nosuch.foo;
 -- error 3D000: invalid catalog name: NOSUCH
@@ -34,6 +39,9 @@ CREATE SCHEMA foo;
 -- msg: CREATE SCHEMA 1
 -- error 42P06: duplicate schema: FOO
 
+-- # Whether it exists is what this transaction can see: a schema created or
+-- # dropped earlier in the transaction counts, until ROLLBACK undoes it. A
+-- # schema that another connection has committed exists too.
 /* extensions V101-01 */
 START TRANSACTION;
 CREATE SCHEMA foo;
@@ -71,6 +79,8 @@ CREATE SCHEMA IF NOT EXISTS foo;
 -- 1: msg: CREATE SCHEMA 1
 -- 2: msg: CREATE SCHEMA 0
 
+-- # IF isn't a reserved word, so it can still be a schema, table or column
+-- # name.
 /* extensions V101-01 */
 CREATE SCHEMA if;
 CREATE SCHEMA IF NOT EXISTS if;
@@ -80,7 +90,8 @@ SELECT * FROM if.if;
 -- msg: CREATE SCHEMA 0
 -- msg: CREATE TABLE 1
 
--- # None of it is kept: the definitions and dumps are the same.
+-- # IF NOT EXISTS isn't kept: "vsql out" writes plain CREATE statements, and
+-- # the dump is the same after they're read back in.
 
 /* extensions V103-01 V101-01 V106-01 */
 CREATE SCHEMA IF NOT EXISTS foo;
@@ -120,7 +131,8 @@ CREATE SCHEMA IF NOT EXISTS foo;
 -- flags: F171, V101-01
 -- msg: CREATE SCHEMA 1
 
--- # CREATE SCHEMA IF NOT EXISTS with schema elements
+-- # When the schema already exists, its schema elements aren't created
+-- # either, even one (T3) that doesn't exist yet.
 /* extensions V107-01 V101-01 */
 CREATE SCHEMA IF NOT EXISTS foo CREATE TABLE t (x INT) CREATE SEQUENCE s;
 CREATE TABLE foo.t2 (x INT);

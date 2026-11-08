@@ -26,8 +26,8 @@ SELECT constraint_schema, constraint_name, unique_constraint_schema, unique_cons
 -- CONSTRAINT_SCHEMA: PUBLIC CONSTRAINT_NAME: CHILD_FOREIGN_KEY_3 UNIQUE_CONSTRAINT_SCHEMA: S UNIQUE_CONSTRAINT_NAME: PARENT_PRIMARY_KEY
 -- CONSTRAINT_SCHEMA: S CONSTRAINT_NAME: EMP_FOREIGN_KEY_1 UNIQUE_CONSTRAINT_SCHEMA: S UNIQUE_CONSTRAINT_NAME: EMP_PRIMARY_KEY
 
--- # Each row is a FOREIGN KEY in TABLE_CONSTRAINTS, and the unique constraint is
--- # a PRIMARY KEY or UNIQUE of the referenced table.
+-- # Each row is a FOREIGN KEY in TABLE_CONSTRAINTS, and the unique constraint
+-- # is a PRIMARY KEY or UNIQUE of the referenced table.
 CREATE TABLE parent (id INT PRIMARY KEY, u INT UNIQUE);
 CREATE TABLE child (a INT REFERENCES parent (u), b INT REFERENCES parent);
 SELECT rc.constraint_name, tc1.constraint_type, tc1.table_name, tc2.constraint_type AS unique_type, tc2.table_name AS unique_table FROM information_schema.referential_constraints AS rc JOIN information_schema.table_constraints AS tc1 ON tc1.constraint_name = rc.constraint_name JOIN information_schema.table_constraints AS tc2 ON tc2.constraint_name = rc.unique_constraint_name;

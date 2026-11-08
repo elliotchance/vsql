@@ -1,5 +1,7 @@
--- # ABS has the declared type of its argument. FLOOR and CEIL have a scale of 0
--- # and one more digit for a fractional part. MOD has the type of the divisor.
+-- # ABS has the declared type of its argument (Syntax Rules, 11). FLOOR and
+-- # CEIL have a scale of 0 (Syntax Rules, 20.a) and one more integer digit than
+-- # the argument, so CEIL(9.5) can be 10. MOD has the type of the divisor
+-- # (Syntax Rules, 12.b).
 /* extensions V001-01 */
 EXPLAIN VALUES ROW(ABS(1.25), ABS(CAST(-5 AS DECIMAL(4, 1))), FLOOR(1.5), CEIL(CAST(9.5 AS NUMERIC(2, 1))), MOD(CAST(7 AS NUMERIC(10)), CAST(3 AS NUMERIC(2))));
 -- EXPLAIN: VALUES (COL1 NUMERIC(3, 2), COL2 DECIMAL(4, 1), COL3 NUMERIC(2), COL4 NUMERIC(2), COL5 NUMERIC(2)) = ROW(ABS(1.25), ABS(CAST(-5 AS DECIMAL(4, 1))), FLOOR(1.5), CEILING(CAST(9.5 AS NUMERIC(2, 1))), MOD(CAST(7 AS NUMERIC(10)), CAST(3 AS NUMERIC(2))))
@@ -25,6 +27,8 @@ SELECT ABS(x), FLOOR(x), CEIL(x) FROM t;
 -- msg: INSERT 1
 -- COL1: 123.45 COL2: -124 COL3: -123
 
+-- # A NULL argument gives NULL, still with the result type (General Rules,
+-- # 8.a).
 /* types */
 VALUES ABS(CAST(NULL AS NUMERIC(4, 1)));
 -- COL1: NULL (NUMERIC(4, 1))

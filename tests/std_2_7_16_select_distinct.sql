@@ -8,6 +8,10 @@ INSERT INTO t (a, b, c) VALUES (NULL, NULL, NULL);
 INSERT INTO t (a, b, c) VALUES (2, NULL, 1.5);
 INSERT INTO t (a, b, c) VALUES (NULL, NULL, 3.5);
 
+-- # DISTINCT removes duplicate rows and ALL (the default) keeps them
+-- # (General Rules, 2). NULLs aren't distinct from each other, so only one is
+-- # kept. A row is only a duplicate when every column is the same, including
+-- # with * and t.*.
 SELECT DISTINCT a FROM t;
 -- A: 1
 -- A: 2
@@ -47,6 +51,10 @@ SELECT DISTINCT t.* FROM t;
 -- A: 2 B: NULL C: 1.5e0
 -- A: NULL B: NULL C: 3.5e0
 
+-- # With DISTINCT, ORDER BY can only use what's selected (7.17, Syntax Rules,
+-- # 28.d.i.9.B.II): a column, with or without its qualifier, or the same
+-- # expression. A column that's only part of a selected expression is an error.
+-- # WHERE, OFFSET and FETCH work as usual.
 SELECT DISTINCT b FROM t ORDER BY b;
 -- B: NULL
 -- B: x
@@ -117,6 +125,7 @@ SELECT DISTINCT a FROM t WHERE c > 2;
 -- A: 1
 -- A: NULL
 
+-- # DISTINCT happens before ORDER BY.
 /* extensions V001-01 */
 EXPLAIN SELECT DISTINCT a FROM t ORDER BY a;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T (A INTEGER, B CHARACTER VARYING(10), C DOUBLE PRECISION)
@@ -124,6 +133,9 @@ EXPLAIN SELECT DISTINCT a FROM t ORDER BY a;
 -- EXPLAIN: ORDER BY A ASC
 -- EXPLAIN: EXPR (A INTEGER)
 
+-- # With GROUP BY, DISTINCT removes duplicates from the grouped rows, so only
+-- # the different counts are left. ORDER BY can't use a grouping column that
+-- # isn't selected.
 SELECT DISTINCT a, COUNT(*) FROM t GROUP BY a;
 -- A: NULL COL2: 3
 -- A: 1 COL2: 2
@@ -141,6 +153,8 @@ SELECT DISTINCT COUNT(*) FROM t GROUP BY a ORDER BY COUNT(*);
 SELECT DISTINCT COUNT(*) FROM t GROUP BY a ORDER BY a;
 -- error 42P10: column A must be in the select list to be used in ORDER BY with SELECT DISTINCT
 
+-- # Any expression can be DISTINCT, and UNKNOWN is a value like any other. A
+-- # DISTINCT query can be a derived table, and no rows in is no rows out.
 SELECT DISTINCT 1 FROM t;
 -- COL1: 1
 
@@ -159,6 +173,9 @@ SELECT * FROM (SELECT DISTINCT a FROM t) AS s;
 SELECT COUNT(*) FROM (SELECT DISTINCT b FROM t) AS s;
 -- COL1: 3
 
+-- # Values that are equal are duplicates even when they're written differently,
+-- # like CHAR values that only differ by trailing spaces. Which one is returned
+-- # is up to vsql (General Rules, 2.b).
 CREATE TABLE n (x NUMERIC(5, 2), y CHAR(3));
 INSERT INTO n (x, y) VALUES (1.5, 'a');
 INSERT INTO n (x, y) VALUES (1.50, 'a  ');
@@ -174,6 +191,8 @@ SELECT DISTINCT y FROM n;
 -- Y: a
 -- Y: b
 
+-- # NEXT VALUE FOR can't be used with DISTINCT (6.14, Syntax Rules, 2), but it
+-- # can with ALL.
 CREATE SEQUENCE s;
 SELECT DISTINCT NEXT VALUE FOR s FROM t;
 SELECT ALL NEXT VALUE FOR s FROM t FETCH FIRST 1 ROW ONLY;
@@ -181,9 +200,13 @@ SELECT ALL NEXT VALUE FOR s FROM t FETCH FIRST 1 ROW ONLY;
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in SELECT DISTINCT
 -- COL1: 1
 
+-- # The set quantifier can only be given once.
 SELECT DISTINCT DISTINCT a FROM t;
 -- error 42601: syntax error: unexpected DISTINCT
 
+-- # With a join, ORDER BY must use the selected columns, which are found the
+-- # same way as in the select list. A u.* selects u.a and u.d, and an
+-- # unqualified column of both tables is ambiguous.
 CREATE TABLE u (a INT, d INT);
 INSERT INTO u (a, d) VALUES (1, 10);
 INSERT INTO u (a, d) VALUES (1, 20);
@@ -207,7 +230,9 @@ SELECT DISTINCT d FROM t JOIN u ON t.a = u.a ORDER BY a;
 -- error 42P10: column U.A must be in the select list to be used in ORDER BY with SELECT DISTINCT
 -- error 42702: ambiguous column: A
 
--- # Only a SELECT DISTINCT limits the ORDER BY.
+-- # Without DISTINCT, a sort key doesn't have to be selected. The constant 1 is
+-- # a sort key (not a column position), and since it's the same for every row,
+-- # the rows keep their order.
 /* extensions V202-01 */
 VALUES 3, 1, 2 ORDER BY 1;
 -- COL1: 3

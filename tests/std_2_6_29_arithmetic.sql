@@ -1,3 +1,5 @@
+-- # An integer literal is the smallest integer type that holds it (5.3, Syntax
+-- # Rules, 22), and arithmetic on two of the same type keeps that type.
 /* types */
 VALUES 1 + 2;
 -- COL1: 3 (SMALLINT)
@@ -14,6 +16,10 @@ VALUES 2 * 3;
 VALUES 6 / 2;
 -- COL1: 3 (SMALLINT)
 
+-- # Adding or subtracting exact numbers keeps the larger scale, and multiplying
+-- # adds the scales (Syntax Rules, 1.c.ii and 1.c.iii). vsql gives a division
+-- # the type of a multiplication (Syntax Rules, 1.c.iv). Dividing by zero is an
+-- # error (General Rules, 4).
 /* types */
 VALUES 1.2 + 2.4;
 -- COL1: 3.6 (NUMERIC(3, 1))
@@ -50,15 +56,17 @@ VALUES +1.23;
 VALUES 1.5 + 2.4 * 7.0;
 -- COL1: 18.30 (NUMERIC(5, 2))
 
+-- # 30000 is a SMALLINT, so 30000 + 30000 is out of range for the SMALLINT
+-- # result (General Rules, 5.a). A wider operand makes a wider result.
 VALUES 30000 + 30000;
 -- error 22003: numeric value out of range
 
 VALUES CAST(30000 AS INTEGER) + 30000;
 -- COL1: 60000
 
--- # If either operand is approximate, the result is approximate (6.29 Syntax
--- # Rule 1b). It's DOUBLE PRECISION, like the rows of a VALUES, unless both are
--- # REAL.
+-- # If either operand is approximate, the result is approximate (Syntax
+-- # Rules, 1.b). It's DOUBLE PRECISION, like the rows of a VALUES, unless both
+-- # are REAL.
 /* types */
 VALUES 12 * 10.5e0;
 VALUES 1.5 + 2e0;
@@ -87,6 +95,8 @@ VALUES CAST(12 AS DOUBLE PRECISION) * 10.5e0;
 VALUES 12 * CAST(10.5e0 AS INTEGER);
 -- COL1: 120
 
+-- # An integer mixed with a scaled number makes a NUMERIC with the larger scale
+-- # (Syntax Rules, 1.c.ii) and room for every digit of the integer type.
 /* types */
 VALUES 1 + 2.5;
 -- COL1: 3.5 (NUMERIC(7, 1))
@@ -107,6 +117,7 @@ VALUES CAST(1 AS BIGINT) - 0.25;
 VALUES 3 * 0.5;
 -- COL1: 1.5
 
+-- # Adding a NUMERIC and a DECIMAL makes a DECIMAL, in either order.
 /* types */
 VALUES CAST(1.5 AS NUMERIC(2,1)) + CAST(1.25 AS DECIMAL(3,2));
 -- COL1: 2.75 (DECIMAL(4, 2))
@@ -115,10 +126,12 @@ VALUES CAST(1.5 AS NUMERIC(2,1)) + CAST(1.25 AS DECIMAL(3,2));
 VALUES CAST(1.25 AS DECIMAL(3,2)) + CAST(1.5 AS NUMERIC(2,1));
 -- COL1: 2.75 (DECIMAL(4, 2))
 
+-- # The precision grows by one to make room for a carry.
 /* types */
 VALUES 9.9 + 9.9;
 -- COL1: 19.8 (NUMERIC(3, 1))
 
+-- # Columns of mixed exact types work the same way, in either order.
 CREATE TABLE t (x INT, n NUMERIC(5,2));
 INSERT INTO t (x, n) VALUES (1, 2.5);
 SELECT x + n, n + x, x - n, x * n FROM t;

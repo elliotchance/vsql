@@ -1,3 +1,6 @@
+-- # No reserved word can be a regular identifier (Syntax Rules, 26), so each
+-- # one is a syntax error as a table name. A reserved word can still be a name
+-- # when it's quoted.
 CREATE TABLE ABS (x INT);
 -- error 42601: syntax error: unexpected ABS
 
@@ -328,6 +331,8 @@ CREATE TABLE END_FRAME (x INT);
 CREATE TABLE END_PARTITION (x INT);
 -- error 42601: syntax error: unexpected END_PARTITION
 
+-- # END-EXEC isn't one token. The error is at END, which is reserved on its
+-- # own.
 CREATE TABLE END-EXEC (x INT);
 -- error 42601: syntax error: unexpected END
 
@@ -1096,6 +1101,9 @@ CREATE TABLE WITHOUT (x INT);
 CREATE TABLE YEAR (x INT);
 -- error 42601: syntax error: unexpected YEAR
 
+-- # Key words aren't case sensitive (Syntax Rules, 33), and the case-normal
+-- # form of an identifier is upper case (Syntax Rules, 24 and 26), so a lower
+-- # case reserved word is rejected too, for a column as well as a table.
 CREATE TABLE abs (x INT);
 -- error 42601: syntax error: unexpected ABS
 

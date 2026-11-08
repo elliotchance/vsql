@@ -1,3 +1,5 @@
+-- # Each INSERT, and each row of an UPDATE, gets the next value (General Rules,
+-- # 1.b and 1.c).
 CREATE SEQUENCE seq1;
 CREATE TABLE bar (baz INTEGER);
 INSERT INTO bar (baz) VALUES (NEXT VALUE FOR seq1);
@@ -28,6 +30,7 @@ SELECT NEXT VALUE FOR ids FROM (VALUES 1) AS t;
 -- ID: 2
 -- COL1: 3
 
+-- # A CREATE, ALTER or DROP SEQUENCE in a transaction is undone by a ROLLBACK.
 START TRANSACTION;
 CREATE SEQUENCE q;
 SELECT NEXT VALUE FOR q FROM (VALUES 1) AS t;
@@ -78,6 +81,8 @@ SELECT NEXT VALUE FOR q FROM (VALUES 1) AS t;
 -- msg: ROLLBACK
 -- COL1: 2
 
+-- # A sequence created and changed in a transaction keeps its value after a
+-- # COMMIT.
 START TRANSACTION;
 CREATE SEQUENCE q;
 SELECT NEXT VALUE FOR q FROM (VALUES 1) AS t;
@@ -93,6 +98,8 @@ SELECT NEXT VALUE FOR q FROM (VALUES 1) AS t;
 -- msg: COMMIT
 -- COL1: 51
 
+-- # Values used in a transaction aren't given back by a ROLLBACK, so a value is
+-- # never used twice.
 CREATE SEQUENCE q;
 START TRANSACTION;
 SELECT NEXT VALUE FOR q FROM (VALUES 1) AS t;
@@ -106,6 +113,8 @@ SELECT NEXT VALUE FOR q FROM (VALUES 1) AS t;
 -- msg: ROLLBACK
 -- COL1: 3
 
+-- # Another connection doesn't see an ALTER SEQUENCE that isn't committed, and
+-- # doesn't wait for it.
 /* connection 1 */
 CREATE SEQUENCE q;
 START TRANSACTION;
@@ -123,6 +132,8 @@ SELECT NEXT VALUE FOR q FROM (VALUES 1) AS t;
 -- 1: msg: ROLLBACK
 -- 2: COL1: 2
 
+-- # Connections share the sequence, so each one gets the next values, in a
+-- # transaction or not, and whether it's committed, rolled back or still open.
 /* connection 1 */
 CREATE SEQUENCE seq1;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2) AS t;
@@ -310,9 +321,9 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- msg: UPDATE 0
 -- COL1: 1
 
--- # NEXT VALUE FOR can't be in a search condition, ORDER BY, aggregate function,
--- # grouped query or a VALUES that's a query (only the VALUES of an INSERT),
--- # even when there are no rows. No value is used.
+-- # NEXT VALUE FOR can't be in a search condition, ORDER BY, aggregate
+-- # function, grouped query or a VALUES that's a query (only the VALUES of an
+-- # INSERT), even when there are no rows. No value is used.
 /* extensions V202-01 */
 CREATE SEQUENCE seq1;
 CREATE TABLE bar (baz INTEGER);
@@ -356,6 +367,8 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in WHERE
 -- COL1: 1
 
+-- # A derived table isn't a query's own select list, so it's rejected there too
+-- # (Syntax Rules, 1.a). In the select list, it can be in a comparison.
 CREATE SEQUENCE seq1;
 CREATE TABLE bar (baz INTEGER);
 INSERT INTO bar (baz) VALUES (1);
@@ -373,11 +386,13 @@ SELECT NEXT VALUE FOR seq1 > 1 FROM (VALUES 1) AS t;
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in a derived table
 -- COL1: FALSE
 
+-- # The sequence must exist.
 CREATE TABLE bar (baz INTEGER);
 UPDATE bar SET baz = NEXT VALUE FOR seq1;
 -- msg: CREATE TABLE 1
 -- error 42P01: no such sequence: ":memory:".PUBLIC.SEQ1
 
+-- # A quoted schema or sequence name can contain a period.
 CREATE SCHEMA "A.B";
 CREATE SCHEMA a;
 CREATE SEQUENCE "A.B".s;

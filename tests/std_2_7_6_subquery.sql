@@ -3,6 +3,8 @@ CREATE TABLE PUBLIC.t1 (x INT, y VARCHAR(16));
 INSERT INTO t1 (x, y) VALUES (123, 'hello');
 INSERT INTO t1 (x, y) VALUES (456, 'world');
 
+-- # A derived table's columns get the names of the subquery's select list.
+-- # Leaving out the correlation name is a vsql extension (V201-02).
 /* extensions V001-01 V201-02 */
 EXPLAIN SELECT * FROM (SELECT * FROM t1);
 -- EXPLAIN: $1:
@@ -63,6 +65,7 @@ SELECT y FROM (SELECT x, y FROM t1);
 -- Y: hello
 -- Y: world
 
+-- # The outer query can order and group the rows of a derived table.
 /* extensions V201-02 */
 SELECT x FROM (SELECT x FROM t1) ORDER BY x DESC;
 -- X: 456
@@ -72,6 +75,8 @@ SELECT t.y, COUNT(*) FROM (SELECT y FROM t1) AS t GROUP BY t.y;
 -- Y: hello COL2: 1
 -- Y: world COL2: 1
 
+-- # An expression without AS gets a generated name, like COL1. With AS it
+-- # has that name, and the outer query can rename it again.
 /* extensions V001-01 V201-02 */
 EXPLAIN SELECT * FROM (SELECT x + char_length(y) FROM t1);
 -- EXPLAIN: $1:
@@ -111,6 +116,8 @@ SELECT foo AS bar FROM (SELECT x + char_length(y) AS foo FROM t1);
 -- BAR: 128
 -- BAR: 461
 
+-- # The outer WHERE filters the rows of the derived table, and its columns
+-- # can be qualified with the correlation name.
 CREATE TABLE t (x INT);
 INSERT INTO t (x) VALUES (1);
 INSERT INTO t (x) VALUES (2);
@@ -132,6 +139,8 @@ SELECT * FROM (VALUES 1, 2, 3) AS v (n) WHERE n >= 2;
 -- N: 2
 -- N: 3
 
+-- # A derived column list renames the subquery's columns, and must have one
+-- # name for each column (Syntax Rules, 11.b.ii.1.B).
 CREATE TABLE t (a INT, b INT);
 INSERT INTO t (a, b) VALUES (1, 2);
 SELECT * FROM (SELECT a, b FROM t) AS x (c, d);

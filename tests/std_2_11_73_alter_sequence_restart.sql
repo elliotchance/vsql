@@ -1,3 +1,6 @@
+-- # RESTART without a value goes back to START WITH (9.31, Syntax Rules, 9.c).
+-- # Without START WITH, that's the MINVALUE, or the MAXVALUE for a descending
+-- # sequence (9.30, Syntax Rules, 9.b).
 CREATE SEQUENCE seq1 START WITH 100;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1, 2) AS t;
 ALTER SEQUENCE seq1 RESTART;
@@ -28,6 +31,8 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- msg: ALTER SEQUENCE 1
 -- COL1: 50
 
+-- # RESTART WITH doesn't change START WITH, so a later RESTART still goes back
+-- # to 100.
 CREATE SEQUENCE seq1 START WITH 100 MINVALUE 10;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 ALTER SEQUENCE seq1 RESTART WITH 20;
@@ -41,6 +46,8 @@ SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 -- msg: ALTER SEQUENCE 1
 -- COL1: 100
 
+-- # The restart value must be within the new limits (9.31, Syntax Rules, 12),
+-- # so START WITH 100 can't be used with a MINVALUE of 200.
 CREATE SEQUENCE seq1 START WITH 100 MINVALUE 10 MAXVALUE 200 CYCLE;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;
 ALTER SEQUENCE seq1 MINVALUE 20 RESTART;
@@ -55,6 +62,8 @@ ALTER SEQUENCE seq1 MINVALUE 200 RESTART;
 -- msg: CREATE SEQUENCE 1
 -- error 42601: syntax error: START WITH (100) must not be less than MINVALUE (200)
 
+-- # Sequences are shared by all connections, so another connection gets the
+-- # next value, and RESTART applies to everyone.
 /* connection 1 */
 CREATE SEQUENCE seq1 START WITH 100;
 SELECT NEXT VALUE FOR seq1 FROM (VALUES 1) AS t;

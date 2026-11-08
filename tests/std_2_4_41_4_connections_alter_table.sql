@@ -1,3 +1,6 @@
+-- # A row can't be written while another transaction is changing the table's
+-- # definition, because it wouldn't have the new column, so it fails with a
+-- # serialization failure (40001).
 /* connection 1 */
 CREATE TABLE t (a INT);
 START TRANSACTION;
@@ -13,6 +16,8 @@ SELECT * FROM t;
 -- 2: error 40001: serialization failure: avoiding concurrent write on table definition
 -- 1: msg: COMMIT
 
+-- # A table can't be altered while another transaction has written rows that it
+-- # can't see yet.
 /* connection 1 */
 CREATE TABLE t (a INT);
 INSERT INTO t (a) VALUES (1);
@@ -33,6 +38,8 @@ SELECT * FROM t;
 -- 2: A: 1
 -- 2: A: 5
 
+-- # UPDATE and DELETE are stopped by the uncommitted ALTER TABLE too, so the
+-- # row still has its old value after the COMMIT.
 /* connection 1 */
 CREATE TABLE t (a INT);
 INSERT INTO t (a) VALUES (1);
@@ -53,6 +60,8 @@ SELECT * FROM t;
 -- 1: msg: COMMIT
 -- 1: A: 1 B: 2
 
+-- # DROP TABLE is the same: it can't be done while another transaction writes
+-- # to the table, and the table can't be written while it's being dropped.
 /* connection 1 */
 CREATE TABLE t (a INT);
 START TRANSACTION;

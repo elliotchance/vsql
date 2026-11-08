@@ -41,6 +41,7 @@ SELECT * FROM t;
 -- msg: INSERT 1
 -- msg: ROLLBACK
 
+-- # Like ROLLBACK, they fail when there's no transaction to end.
 /* extensions V116-01 */
 ROLLBACK TRANSACTION;
 -- error 2D000: invalid transaction termination
@@ -66,9 +67,12 @@ SELECT * FROM t;
 -- msg: ROLLBACK
 -- X: 1
 
+-- # Only TRANSACTION or WORK can follow ABORT.
 ABORT ROW;
 -- error 42601: syntax error: unexpected ROW
 
+-- # The flagger: START TRANSACTION is T241, and the alias is flagged on the
+-- # statement that uses it.
 /* flags */
 /* extensions V116-01 */
 START TRANSACTION;

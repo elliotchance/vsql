@@ -5,7 +5,8 @@ CREATE TABLE t3 (w INT);
 INSERT INTO t1 (x, y) VALUES (1, 'a'), (2, 'b'), (3, 'b'), (NULL, 'c');
 INSERT INTO t2 (x, z) VALUES (2, 20), (3, 30), (3, 31);
 
--- # A subquery can refer to the columns of the query that contains it (E061-13).
+-- # A subquery can refer to the columns of the query that contains it
+-- # (E061-13).
 SELECT * FROM t1 WHERE EXISTS (SELECT * FROM t2 WHERE t2.x = t1.x);
 -- X: 2 Y: b
 -- X: 3 Y: b
@@ -26,7 +27,8 @@ SELECT y FROM t1 WHERE (SELECT COUNT(*) FROM t2 WHERE t2.x = t1.x) > 1;
 SELECT * FROM t1 WHERE 25 IN (SELECT z - 5 * t1.x FROM t2);
 -- X: 1 Y: a
 
--- # ALL is TRUE when there are no rows, even for a NULL.
+-- # ALL is TRUE when the subquery has no rows, even for a NULL x (8.9, General
+-- # Rules, 2.a), and ANY needs a row that matches.
 SELECT * FROM t1 WHERE x * 10 >= ALL (SELECT z FROM t2 WHERE t2.x = t1.x);
 -- X: 1 Y: a
 -- X: 2 Y: b
@@ -35,7 +37,9 @@ SELECT * FROM t1 WHERE x * 10 >= ALL (SELECT z FROM t2 WHERE t2.x = t1.x);
 SELECT * FROM t1 WHERE 30 = ANY (SELECT z FROM t2 WHERE t2.x = t1.x);
 -- X: 3 Y: b
 
--- # An unqualified column is in the innermost query that has it.
+-- # An unqualified column is in the innermost query that has a column of that
+-- # name (6.6, Syntax Rules, 8.a.ii). So x is t2.x when t2 is in the subquery,
+-- # and t1.x when only t3 is.
 SELECT y FROM t1 WHERE EXISTS (SELECT * FROM t2 WHERE z = x * 10);
 -- Y: a
 -- Y: b
@@ -74,6 +78,8 @@ SELECT * FROM t1 WHERE EXISTS (SELECT * FROM (SELECT x FROM t2 WHERE t2.x = t1.x
 -- X: 2 Y: b
 -- X: 3 Y: b
 
+-- # A correlated subquery can be used anywhere a value can, such as in VALUES,
+-- # a UNION, CASE, ORDER BY and a join condition.
 SELECT x, (VALUES t1.x + 1) AS n FROM t1;
 -- X: 1 N: 2
 -- X: 2 N: 3
@@ -115,7 +121,9 @@ SELECT x FROM t1 GROUP BY x HAVING EXISTS (SELECT * FROM t2 WHERE t2.x = t1.x);
 -- X: 2
 -- X: 3
 
--- # An aggregate function of only outer columns is of the outer query, which is then grouped.
+-- # An aggregate function of only outer columns belongs to the outer query
+-- # (6.9, Syntax Rules, 6.b), which is then grouped, so it can't be used in
+-- # that query's WHERE (6.9, Syntax Rules, 7).
 SELECT (SELECT MAX(t1.x) FROM t2 WHERE z = 20) AS m FROM t1;
 -- warning 01003: null value eliminated in set function
 -- M: 3
@@ -149,7 +157,9 @@ SELECT * FROM t1 WHERE EXISTS (SELECT * FROM t2 WHERE t2.x = MAX(t1.x));
 SELECT * FROM t1 WHERE MAX(x) > 1;
 -- error 42601: syntax error: an aggregate function cannot be used in WHERE
 
--- # An aggregate function that also uses a column of the subquery is of the subquery.
+-- # An aggregate function that also uses a column of the subquery belongs to
+-- # the subquery (6.9, Syntax Rules, 6.b), but in a grouped outer query, its
+-- # outer column must still be a grouping column (6.9, Syntax Rules, 8).
 SELECT x, (SELECT MAX(t2.z + t1.x) FROM t2) AS m FROM t1;
 -- warning 01003: null value eliminated in set function
 -- X: 1 M: 32
@@ -182,7 +192,8 @@ SELECT * FROM t1;
 -- X: 3 Y: 31
 -- X: NULL Y: c
 
--- # The x is in t2, which is innermost.
+-- # The unqualified x is t2.x, which is innermost, so t2.x = x is TRUE for
+-- # every row of t2 and every count is 3.
 UPDATE t1 SET y = (SELECT CAST(COUNT(*) AS VARCHAR(10)) FROM t2 WHERE t2.x = x);
 SELECT * FROM t1;
 -- msg: UPDATE 4
@@ -197,6 +208,7 @@ SELECT * FROM t1;
 -- X: 2 Y: b
 -- X: 3 Y: b
 
+-- # EXPLAIN shows the subquery as part of the WHERE.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t1 WHERE EXISTS (SELECT * FROM t2 WHERE t2.x = t1.x);
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(10))

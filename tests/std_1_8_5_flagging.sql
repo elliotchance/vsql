@@ -5,6 +5,9 @@ CREATE TABLE t (x INT NOT NULL, y VARCHAR(10), b BOOLEAN, d DATE);
 INSERT INTO t (x, y, b, d) VALUES (1, 'a', TRUE, DATE '2026-10-28');
 CREATE SEQUENCE seq;
 
+-- # Queries that only use Core SQL aren't flagged, however many Core features
+-- # they combine. A set function of a column is Core, with or without ALL or
+-- # DISTINCT, except for COUNT without DISTINCT (see below).
 /* flags */
 SELECT x FROM t;
 -- flags:
@@ -65,6 +68,11 @@ SELECT CAST(x AS SMALLINT), CURRENT_DATE, LOCALTIME, LOCALTIMESTAMP FROM t;
 -- flags:
 -- COL1: 1 COL2: 2022-07-04 COL3: 14:05:03 COL4: 2022-07-04T14:05:03.120056
 
+-- # The Core data change and transaction statements aren't flagged either.
+-- # Flagging only looks at the syntax, so the flags are the same when nothing
+-- # is found or the statement fails. Each test starts again from the setup, so
+-- # the row where x = 2 isn't there, and COMMIT and ROLLBACK aren't in a
+-- # transaction.
 /* flags */
 INSERT INTO t (x, y) VALUES (2, 'b');
 -- flags:
@@ -92,6 +100,9 @@ ROLLBACK WORK;
 -- flags:
 -- error 2D000: invalid transaction termination
 
+-- # EXPLAIN is a vsql extension (V001), flagged by the kind of statement that's
+-- # explained, along with the features of that statement (VALUES needs F641 and
+-- # F661). EXPLAIN COMMIT is a syntax error, so it has no flags.
 /* extensions V001-01 */
 /* flags */
 EXPLAIN VALUES 1;
@@ -116,6 +127,10 @@ EXPLAIN COMMIT;
 -- flags:
 -- error 42601: syntax error: Cannot EXPLAIN COMMIT
 
+-- # Predicates outside of Core SQL: boolean literals (T031), IS TRUE (F571),
+-- # SYMMETRIC (T461), SIMILAR TO (T141), an IN list item that isn't a literal
+-- # (F561), a LIKE operand that isn't a column or a pattern or escape that
+-- # isn't a literal (F281), and EXISTS of more than one column (T501).
 /* flags */
 SELECT TRUE, FALSE, UNKNOWN, x = 1 FROM t;
 -- flags: T031
@@ -161,6 +176,10 @@ SELECT x FROM t WHERE EXISTS (SELECT x, y FROM t);
 -- flags: T501
 -- X: 1
 
+-- # COUNT of a value needs F441 unless it's DISTINCT, even though SUM and AVG
+-- # don't (Part 2, 10.9, Conformance Rules, 4). DISTINCT of anything but a
+-- # column needs F561 (Part 2, 10.9, Conformance Rules, 3), and FILTER needs
+-- # T612.
 /* flags */
 SELECT COUNT(x), COUNT(ALL x), COUNT(DISTINCT x + 1) FROM t;
 -- flags: F441, F561
@@ -171,11 +190,17 @@ SELECT COUNT(*) FILTER (WHERE x > 0), SUM(x) FILTER (WHERE x > 0) FROM t;
 -- flags: T612
 -- COL1: 1 COL2: 1
 
+-- # Numeric functions outside of Core SQL. Each one is flagged with its own
+-- # feature, so a statement can have several.
 /* flags */
 SELECT ABS(x), MOD(x, 2), SIN(x), LOG10(x), LN(x), EXP(x), POWER(x, 2), SQRT(x), FLOOR(x), CEILING(x) FROM t;
 -- flags: T441, T621, T622, T624
 -- COL1: 1 COL2: 1 COL3: 0.841470984808e0 COL4: 0e0 COL5: 0e0 COL6: 2.718281828459e0 COL7: 1e0 COL8: 1e0 COL9: 1 COL10: 1
 
+-- # A time zone needs F411 and a fraction of a second in a TIME needs F555
+-- # (Part 2, 5.3, Conformance Rules, 3 and 7), but a TIMESTAMP can have up to 6
+-- # digits of fraction in Core SQL. CURRENT_CATALOG, CURRENT_SCHEMA, USING
+-- # CHARACTERS and sequences have their own features.
 /* flags */
 SELECT SUBSTRING(y FROM 1 USING CHARACTERS), CURRENT_TIME, CURRENT_TIMESTAMP(3), LOCALTIME(2), LOCALTIMESTAMP(3) FROM t;
 -- flags: F411, F555, T061
@@ -191,11 +216,18 @@ SELECT TIME '12:00:00.5', TIME '12:00:00+05:00', TIMESTAMP '2026-10-28 12:00:00.
 -- flags: F411, F555
 -- COL1: 12:00:00.5 COL2: 12:00:00+0500 COL3: 2026-10-28T12:00:00.123
 
+-- # The flags come from the syntax, so a CAST to BIGINT (T071) or BOOLEAN
+-- # (T031) is flagged even though an INTEGER can't be cast to a BOOLEAN.
 /* flags */
 SELECT CAST(x AS BIGINT), CAST(x AS BOOLEAN), CAST(d AS TIMESTAMP(3) WITH TIME ZONE), CAST(d AS TIME(1)) FROM t;
 -- flags: F411, F555, T031, T071
 -- error 42846: cannot coerce INTEGER to BOOLEAN
 
+-- # A derived table needs F591. ORDER BY, OFFSET and FETCH FIRST need features
+-- # that depend on where the query is: at the top (F861, F857), in a subquery
+-- # (F850, F851, F862, F858 as well) or in parentheses as a query primary
+-- # (F855, F863, F856) (Part 2, 7.17, Conformance Rules, 11 to 21). A row count
+-- # that isn't an unsigned integer needs F860 or F865.
 /* flags */
 SELECT * FROM (SELECT x FROM t) AS u;
 -- flags: F591
@@ -225,10 +257,16 @@ SELECT ((SELECT x FROM t ORDER BY x OFFSET 0 ROWS FETCH FIRST 1 ROW ONLY)) FROM 
 -- flags: F855, F856, F863
 -- X: 1
 
+-- # UNION DISTINCT and EXCEPT DISTINCT need T551, since DISTINCT is the
+-- # default, and EXCEPT ALL needs F304.
 /* flags */
 SELECT x FROM t UNION DISTINCT SELECT x FROM t EXCEPT ALL SELECT x FROM t EXCEPT DISTINCT SELECT x FROM t;
 -- flags: F304, T551
 
+-- # VALUES as a query is a table value constructor (F641) that's a simple table
+-- # (F661), even with one row (Part 2, 7.3, Conformance Rules, 2 and 7.17,
+-- # Conformance Rules, 5). ROW needs T051, and a row of more than one value
+-- # outside of VALUES needs F641 (Part 2, 7.1, Conformance Rules, 1 and 3).
 /* flags */
 VALUES 1, 2;
 -- flags: F641, F661
@@ -250,6 +288,9 @@ SELECT x FROM t WHERE ROW(x, y) IS NOT NULL AND (x, y) IS NOT NULL;
 -- flags: F641, T051
 -- X: 1
 
+-- # An identifier of more than 18 characters needs F391, whether it's quoted or
+-- # not (Part 2, 5.2, Conformance Rules, 1 and 2), and a name with a catalog
+-- # needs F651.
 /* flags */
 SELECT averylongidentifier1 FROM t AS averylongidentifier1 (averylongidentifier1, a, b, c);
 -- flags: F391
@@ -265,6 +306,10 @@ SELECT x FROM ":memory:".PUBLIC.t;
 -- flags: F651
 -- X: 1
 
+-- # VALUES in an INSERT is only Core SQL for a single row in parentheses (Part
+-- # 2, 7.3, Conformance Rules, 1), so more rows or no parentheses need F641.
+-- # OVERRIDING needs S043 (Part 2, 14.11, Conformance Rules, 4), even though
+-- # vsql rejects it here because there's no identity column.
 /* flags */
 INSERT INTO t (x, y) VALUES (2, 'b'), (3, 'c');
 -- flags: F641
@@ -285,6 +330,9 @@ INSERT INTO t (x) OVERRIDING USER VALUE VALUES (6);
 -- flags: S043
 -- error 42601: syntax error: OVERRIDING USER VALUE cannot be used without an identity column
 
+-- # START TRANSACTION needs T241, SET CONSTRAINTS needs F721, and the SET
+-- # statements need F761 (and F651 for a catalog). Each test starts from the
+-- # setup, so ROLLBACK isn't in a transaction.
 /* flags */
 START TRANSACTION;
 -- flags: T241
@@ -310,17 +358,25 @@ SET CATALOG ':memory:';
 -- flags: F651, F761
 -- msg: SET CATALOG 1
 
+-- # A string literal in more than one part needs F271, and a Unicode one needs
+-- # F393 (Part 2, 5.3, Conformance Rules, 6 and 11).
 /* flags */
 SELECT 'a'
   'b', U&'\0041' FROM t;
 -- flags: F271, F393
 -- COL1: ab COL2: A
 
+-- # ASYMMETRIC needs T461, even though it's the default (Part 2, 8.3,
+-- # Conformance Rules, 1).
 /* flags */
 SELECT x FROM t WHERE x BETWEEN ASYMMETRIC 1 AND 2;
 -- flags: T461
 -- X: 1
 
+-- # In a table definition, a constraint name needs F491, ON DELETE needs F191,
+-- # ON UPDATE needs F701, DEFERRABLE needs F721, and UNIQUE on a column that
+-- # isn't NOT NULL needs T591 (Part 2, 11.7, Conformance Rules, 2). An identity
+-- # column needs T174 and a generated column needs T175.
 /* flags */
 CREATE TABLE u (a INT UNIQUE, b INT NOT NULL UNIQUE, c INT, CONSTRAINT k PRIMARY KEY (c), CONSTRAINT f FOREIGN KEY (a) REFERENCES t (x) ON DELETE CASCADE ON UPDATE SET NULL DEFERRABLE);
 -- flags: F191, F491, F701, F721, T591
@@ -331,6 +387,8 @@ CREATE TABLE v (a BIGINT GENERATED ALWAYS AS IDENTITY, b INT GENERATED ALWAYS AS
 -- flags: T071, T174, T175
 -- msg: CREATE TABLE 1
 
+-- # CREATE SCHEMA needs F171, and DROP SCHEMA needs F381 and F032 for CASCADE.
+-- # Each test starts from the setup, so there's no schema S to drop.
 /* flags */
 CREATE SCHEMA s;
 -- flags: F171
@@ -341,6 +399,10 @@ DROP SCHEMA s CASCADE;
 -- flags: F032, F381
 -- error 3F000: invalid schema name: S
 
+-- # A DROP without RESTRICT or CASCADE is a vsql extension (V104-01, V105-01,
+-- # V105-02), since the standard requires one. CASCADE needs F032, DROP COLUMN
+-- # needs F033, and the other ALTER TABLE actions except ADD COLUMN need F381.
+-- # They're flagged whether or not the change can be made.
 /* extensions V104-01 */
 /* flags */
 DROP TABLE t;
@@ -389,6 +451,8 @@ ALTER TABLE t DROP CONSTRAINT c;
 -- flags: F381, F491, V105-02
 -- error 42704: no such constraint: C on ":memory:".PUBLIC.T
 
+-- # A sequence needs T176, and RESTART without a value needs T177. DROP
+-- # SEQUENCE without RESTRICT is a vsql extension (V107-01).
 /* flags */
 ALTER SEQUENCE seq RESTART;
 -- flags: T176, T177
@@ -410,11 +474,15 @@ DROP SEQUENCE seq RESTRICT;
 -- flags: T176
 -- msg: DROP SEQUENCE 1
 
+-- # A subquery in a CHECK needs F671, and CURRENT_DATE needs F672 (Part 2,
+-- # 11.9, Conformance Rules, 1 and 2), even though vsql rejects the subquery.
 /* flags */
 CREATE TABLE w (a INT CHECK (a > (SELECT MIN(x) FROM t)), b DATE CHECK (b < CURRENT_DATE));
 -- flags: F671, F672
 -- error 42601: syntax error: a subquery cannot be used in a CHECK constraint
 
+-- # More than one DISTINCT in a query needs F801 (Part 2, 7.16, Conformance
+-- # Rules, 1), but a DISTINCT in a subquery isn't counted with the outer ones.
 /* flags */
 SELECT DISTINCT COUNT(DISTINCT x) FROM t;
 -- flags: F801
@@ -425,6 +493,8 @@ SELECT DISTINCT x FROM t WHERE x IN (SELECT DISTINCT x FROM t) ORDER BY x;
 -- flags:
 -- X: 1
 
+-- # A dynamic parameter needs B031, and B033 as well when it's the argument of
+-- # a function. Without a value for it, the statement fails.
 /* flags */
 SELECT x FROM t WHERE x = ?;
 -- flags: B031
@@ -437,11 +507,15 @@ VALUES current_setting(?);
 -- flags: B031, B033, F641, F661
 -- COL1: 90310
 
+-- # A value in parentheses on its own is Core SQL.
 /* flags */
 SELECT x FROM t WHERE x = (1);
 -- flags:
 -- X: 1
 
+-- # GENERATED BY DEFAULT AS IDENTITY needs T174. Changing an identity column
+-- # needs F381, and RESTART needs T178. Each test starts from the setup, so
+-- # there's no table X to change.
 /* flags */
 CREATE TABLE x (a INT GENERATED BY DEFAULT AS IDENTITY);
 -- flags: T174
@@ -457,6 +531,10 @@ ALTER TABLE x ALTER COLUMN a SET INCREMENT BY 2;
 -- flags: F381, T174
 -- error 42P01: no such table: ":memory:".PUBLIC.X
 
+-- # In an INSERT, a single row in parentheses is Core SQL whatever its values,
+-- # but VALUES without parentheses needs F641. A boolean literal or NOT, AND or
+-- # OR needs T031, but vsql doesn't flag a comparison here. These fail on X,
+-- # which is NOT NULL, after they're flagged.
 /* flags */
 INSERT INTO t (x) VALUES (4);
 -- flags:
@@ -507,42 +585,61 @@ INSERT INTO t (b) VALUES (1 = 1);
 -- flags:
 -- error 23502: violates non-null constraint: column X
 
+-- # A column used as a boolean (NOT b, b AND b) needs T031 (Part 2, 6.39,
+-- # Conformance Rules, 1), and IS TRUE needs F571.
 /* flags */
 SELECT NOT b, b AND b, b OR b, b IS TRUE, (x = 1), ((x = 1)) FROM t;
 -- flags: F571, T031
 -- COL1: FALSE COL2: TRUE COL3: TRUE COL4: TRUE COL5: TRUE COL6: TRUE
 
+-- # DISTINCT of anything but a column reference needs F561, even a column in
+-- # parentheses (Part 2, 10.9, Conformance Rules, 3). More than one DISTINCT
+-- # needs F801, and a comparison as a value needs T031 (Part 2, 6.28,
+-- # Conformance Rules, 1).
 /* flags */
 SELECT COUNT(DISTINCT (x)), COUNT(DISTINCT -x), COUNT(DISTINCT x = 1), COUNT(DISTINCT (x = 1)) FROM t;
 -- flags: F561, F801, T031
 -- COL1: 1 COL2: 1 COL3: 1 COL4: 1
 
+-- # An IN list item that isn't a literal needs F561, even a column (Part 2,
+-- # 8.4, Conformance Rules, 1).
 /* flags */
 SELECT x FROM t WHERE x IN (1, -1, (1), x * 2) AND d IN (CURRENT_DATE, d);
 -- flags: F561
 -- X: 1
 
+-- # A LIKE operand that isn't a column, or a pattern that isn't a literal,
+-- # needs F281 (Part 2, 8.5, Conformance Rules, 2 and 3).
 /* flags */
 SELECT x FROM t WHERE y LIKE 'a' || 'b' OR y LIKE UPPER(y) OR (y) LIKE 'a';
 -- flags: F281
 -- X: 1
 
+-- # The COLUMN keyword can be left out of DROP COLUMN, and it's still the
+-- # extension V105-01 without RESTRICT or CASCADE.
 /* extensions V105-01 */
 /* flags */
 ALTER TABLE t DROP y;
 -- flags: F033, V105-01
 -- msg: ALTER TABLE 1
 
+-- # UNIQUE on a NOT NULL column doesn't need T591, so only the referential
+-- # actions are flagged.
 /* flags */
 CREATE TABLE u (a INT NOT NULL UNIQUE, b INT REFERENCES u (a) ON UPDATE CASCADE ON DELETE CASCADE);
 -- flags: F191, F701
 -- msg: CREATE TABLE 1
 
+-- # NOT LIKE with a literal ESCAPE is Core SQL, so only CURRENT_TIME(3) is
+-- # flagged.
 /* flags */
 SELECT CURRENT_TIME(3) FROM t WHERE y NOT LIKE 'b' ESCAPE '\';
 -- flags: F411, F555
 -- COL1: 14:05:03.120+0500
 
+-- # Cursors outside of an SQL-client module are vsql extensions (V108 to V113),
+-- # flagged on each statement. WITHOUT HOLD needs T551, since it's the default,
+-- # and FETCH NEXT FROM needs F431.
 /* extensions V108-01 V109-01 V110-01 V111-01 V112-01 V113-01 */
 /* flags */
 START TRANSACTION;
@@ -570,6 +667,8 @@ CLOSE c;
 -- flags: V111-01
 -- msg: CLOSE
 
+-- # FOR UPDATE of a query with an ORDER BY needs F831 (Part 2, 14.3,
+-- # Conformance Rules, 1).
 /* extensions V108-01 */
 /* flags */
 DECLARE c CURSOR FOR SELECT * FROM t ORDER BY x FOR UPDATE;

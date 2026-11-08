@@ -1,3 +1,6 @@
+-- # A statement that fails part of the way through has no effect, so none of
+-- # the rows it already changed are kept. Here, 2 + 8 is a duplicate of the
+-- # PRIMARY KEY 10.
 CREATE TABLE t (a INT, PRIMARY KEY (a));
 INSERT INTO t (a) VALUES (1);
 INSERT INTO t (a) VALUES (2);
@@ -13,6 +16,7 @@ SELECT * FROM t;
 -- A: 2
 -- A: 10
 
+-- # A division by zero on the second row also undoes the first row.
 CREATE TABLE t (x INT, y INT);
 INSERT INTO t (x, y) VALUES (10, 2);
 INSERT INTO t (x, y) VALUES (20, 0);
@@ -25,6 +29,8 @@ SELECT * FROM t;
 -- X: 10 Y: 2
 -- X: 20 Y: 0
 
+-- # A sequence isn't rolled back, so the values that the failed UPDATE used (10
+-- # and 11) are gone, and the next one is 12.
 CREATE SEQUENCE s START WITH 10;
 CREATE TABLE t (x INT, y INT);
 INSERT INTO t (x, y) VALUES (1, 1);
@@ -41,6 +47,7 @@ SELECT NEXT VALUE FOR s FROM (VALUES 1) AS t;
 -- X: 2 Y: 0
 -- COL1: 12
 
+-- # Another connection never sees the rows of the failed UPDATE.
 /* connection 1 */
 CREATE TABLE t (x INT, y INT);
 INSERT INTO t (x, y) VALUES (10, 2);

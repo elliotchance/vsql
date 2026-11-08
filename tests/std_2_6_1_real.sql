@@ -1,3 +1,6 @@
+-- # Casting to an integer type works while the value fits (6.13, General Rules,
+-- # 8.a.i), otherwise it's out of range (6.13, General Rules, 8.a.ii). Casting
+-- # to REAL or DOUBLE PRECISION keeps a small value.
 CREATE TABLE foo (x REAL);
 INSERT INTO foo (x) VALUES (123);
 SELECT CAST(x AS SMALLINT) FROM foo;
@@ -47,6 +50,10 @@ SELECT CAST(x AS DOUBLE PRECISION) FROM foo;
 -- msg: INSERT 1
 -- COL1: 123e0
 
+-- # Arithmetic between REAL values is a REAL (6.29, Syntax Rules, 1.b), which
+-- # is IEEE 754 single precision (Syntax Rules, 30). With only about 7
+-- # significant digits, 52.47 shows as 52.470001e0 and the fractions of the
+-- # large values are lost.
 /* types */
 VALUES CAST(500000000.3 AS REAL) * CAST(2000000000.7 AS REAL);
 -- COL1: 1e+18 (REAL)
@@ -115,6 +122,8 @@ VALUES CAST(-300000000.5 AS REAL) / CAST(0.02 AS REAL);
 VALUES CAST(-90000.7 AS REAL) / CAST(3.2 AS REAL);
 -- COL1: -28125.21875e0 (REAL)
 
+-- # Dividing by zero is an error for approximate numbers too (6.29, General
+-- # Rules, 4).
 /* types */
 VALUES CAST(-30000.5 AS REAL) / CAST(0 AS REAL);
 -- error 22012: division by zero
@@ -123,6 +132,9 @@ VALUES CAST(-30000.5 AS REAL) / CAST(0 AS REAL);
 VALUES CAST(-90000.5 AS REAL) / CAST(0.1 AS REAL);
 -- COL1: -900005e0 (REAL)
 
+-- # A NUMERIC literal too large for BIGINT is rounded when stored in a REAL
+-- # (9.2, General Rules, 3.b.xv.2), but then can't be cast to BIGINT (6.13,
+-- # General Rules, 8.a.ii).
 CREATE TABLE foo (x REAL);
 INSERT INTO foo (x) VALUES (123456789123456789123456789);
 SELECT CAST(x AS BIGINT) FROM foo;
@@ -130,6 +142,7 @@ SELECT CAST(x AS BIGINT) FROM foo;
 -- msg: INSERT 1
 -- error 22003: numeric value out of range
 
+-- # Negating a REAL keeps the type REAL (6.29, Syntax Rules, 2).
 /* types */
 VALUES -CAST(1.5 AS REAL);
 -- COL1: -1.5e0 (REAL)

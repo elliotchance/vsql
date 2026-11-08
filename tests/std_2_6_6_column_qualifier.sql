@@ -11,6 +11,7 @@ SELECT t.x FROM t WHERE t.x > 0;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.NOPE.X
 -- X: 1
 
+-- # A derived table is qualified by its correlation name.
 CREATE TABLE t (x INT);
 INSERT INTO t (x) VALUES (1);
 SELECT s.x FROM (SELECT x FROM t) AS s;

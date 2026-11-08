@@ -1,3 +1,7 @@
+-- # A transaction ends with COMMIT or ROLLBACK. START TRANSACTION while one is
+-- # active is 25001 (General Rules, 1). COMMIT or ROLLBACK without an active
+-- # transaction is 2D000, because a statement outside of START TRANSACTION is
+-- # committed on its own, so there's nothing left to end.
 START TRANSACTION;
 COMMIT;
 -- msg: START TRANSACTION
@@ -33,6 +37,9 @@ ROLLBACK;
 ROLLBACK;
 -- error 2D000: invalid transaction termination
 
+-- # Changes made in a transaction are kept by COMMIT, with or without a primary
+-- # key, including a row that was inserted and then updated by the same
+-- # transaction. ROLLBACK cancels all of them (17.8, General Rules, 2.b).
 CREATE TABLE t (x INT);
 INSERT INTO t (x) VALUES (1);
 START TRANSACTION;
@@ -97,6 +104,10 @@ SELECT * FROM t;
 -- msg: UPDATE 1
 -- msg: ROLLBACK
 
+-- # Each connection has its own transaction. A table created by another
+-- # connection is only seen once it's committed, and not at all if it's rolled
+-- # back. A table dropped by a transaction is only gone for that transaction
+-- # until it's committed.
 /* connection 1 */
 START TRANSACTION;
 /* connection 2 */
@@ -152,6 +163,10 @@ SELECT * FROM foo;
 -- 2: msg: DROP TABLE 1
 -- 2: error 42P01: no such table: "test".PUBLIC.FOO
 
+-- # A statement that fails only cancels its own changes (13.4, General Rules,
+-- # 18.b.i), so a failed UPDATE leaves every row as it was, even the ones it
+-- # got to before the error. The transaction stays active and can still be
+-- # committed or rolled back with the changes of the statements that succeeded.
 CREATE TABLE foo (b BOOLEAN);
 INSERT INTO foo (b) VALUES (123, 456);
 SELECT * FROM foo;
@@ -234,6 +249,9 @@ SELECT * FROM t;
 -- X: 21 Y: 0
 -- msg: ROLLBACK
 
+-- # ROLLBACK puts back every row the transaction deleted or updated, however
+-- # many times, and removes a row that it inserted (even one it already
+-- # deleted).
 CREATE TABLE t (id INT NOT NULL, x INT, PRIMARY KEY(id));
 INSERT INTO t (id, x) VALUES (1, 10);
 START TRANSACTION;
@@ -287,6 +305,9 @@ SELECT * FROM t;
 -- X: 10
 -- X: 20
 
+-- # Changes to schemas are canceled by ROLLBACK too (17.8, General Rules, 2.b):
+-- # a table or schema that was created is gone (so it can be created again),
+-- # and one that was dropped is back with its rows.
 START TRANSACTION;
 CREATE TABLE t (x INT);
 ROLLBACK;
@@ -333,6 +354,7 @@ SELECT * FROM s.t;
 -- msg: ROLLBACK
 -- X: 1
 
+-- # WORK is optional and doesn't change anything.
 START TRANSACTION;
 COMMIT WORK;
 -- msg: START TRANSACTION

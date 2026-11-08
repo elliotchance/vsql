@@ -1,3 +1,4 @@
+-- # A value that isn't NULL, of each kind of literal.
 VALUES 'a' IS NULL;
 -- COL1: FALSE
 
@@ -16,6 +17,7 @@ VALUES 123 IS NULL;
 VALUES 123 IS NOT NULL;
 -- COL1: TRUE
 
+-- # Only TRUE rows are selected, so IS NULL is how a NULL is found.
 CREATE TABLE foo (num FLOAT);
 INSERT INTO foo (num) VALUES (13);
 INSERT INTO foo (num) VALUES (NULL);
@@ -34,6 +36,7 @@ SELECT * FROM foo WHERE num IS NOT NULL;
 -- NUM: 13e0
 -- NUM: 35e0
 
+-- # A NULL BOOLEAN is the same as UNKNOWN.
 CREATE TABLE foo (x BOOLEAN);
 INSERT INTO foo (x) VALUES (NULL);
 INSERT INTO foo (x) VALUES (UNKNOWN);
@@ -44,6 +47,7 @@ SELECT * FROM foo;
 -- X: UNKNOWN
 -- X: UNKNOWN
 
+-- # Every data type can store and return a NULL.
 CREATE TABLE foo (x BIGINT);
 INSERT INTO foo (x) VALUES (NULL);
 SELECT * FROM foo;

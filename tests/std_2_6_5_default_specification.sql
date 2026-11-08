@@ -1,3 +1,5 @@
+-- # DEFAULT in an INSERT or UPDATE is the default of the column (General
+-- # Rules, 3), which is NULL for a column that doesn't have one.
 /* setup */
 CREATE TABLE t1 (x INT, y VARCHAR(10));
 CREATE TABLE t2 (x INT, y VARCHAR(10) NOT NULL);
@@ -24,6 +26,8 @@ SELECT * FROM t1;
 -- X: 2 Y: foo
 -- X: NULL Y: bar
 
+-- # So a NOT NULL column without a default can't be DEFAULT. vsql finds this
+-- # from the statement, so it's an error even when no rows are updated.
 INSERT INTO t2 (x, y) VALUES (1, DEFAULT);
 -- error 23502: violates non-null constraint: column Y
 
@@ -54,10 +58,13 @@ UPDATE t2 SET y = DEFAULT;
 UPDATE t2 SET y = DEFAULT;
 -- error 23502: violates non-null constraint: column Y
 
+-- # With no rows to update, a nullable column is fine.
 UPDATE t1 SET x = DEFAULT;
 -- warning 02000: no data
 -- msg: UPDATE 0
 
+-- # DEFAULT can only be a whole value of an INSERT or UPDATE, not part of an
+-- # expression or anywhere else.
 INSERT INTO t1 (x) VALUES (DEFAULT + 1);
 -- error 42601: syntax error: unexpected "+", expecting ","
 

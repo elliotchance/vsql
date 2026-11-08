@@ -2,8 +2,10 @@
 -- # the parser. These tests ensure different whitespace combinations don't
 -- # interfere with that.
 
--- # Reducing: "." "*". We don't care about the errors, only ensure there is no
--- # syntax errors.
+-- # count(*) parses the same with or without spaces around the parentheses
+-- # and the asterisk, because any token can be followed by a separator
+-- # (Syntax Rules, 7). The table doesn't exist, so each one fails, but not
+-- # with a syntax error.
 SELECT x, count(*) FROM foo;
 SELECT x, count( * ) FROM foo;
 SELECT x, count (*) FROM foo;

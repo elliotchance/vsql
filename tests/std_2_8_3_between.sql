@@ -1,3 +1,6 @@
+-- # Both bounds are inclusive. Without SYMMETRIC (ASYMMETRIC is the default,
+-- # SR 1), the lower bound must come first or nothing is between them. NOT
+-- # BETWEEN is the opposite (SR 3 and 5).
 VALUES 35 BETWEEN 30 AND 40;
 -- COL1: TRUE
 
@@ -40,6 +43,9 @@ VALUES 41 NOT BETWEEN 35 AND 40;
 VALUES 35 NOT BETWEEN 40 AND 30;
 -- COL1: TRUE
 
+-- # X BETWEEN Y AND Z is X >= Y AND X <= Z (SR 6), so a NULL bound only makes
+-- # it UNKNOWN when the other bound doesn't already make it FALSE. SYMMETRIC
+-- # tries the bounds both ways around with OR (SR 4).
 /* setup */
 CREATE TABLE t (x INT);
 INSERT INTO t (x) VALUES (NULL);
@@ -55,6 +61,7 @@ SELECT x FROM t WHERE 5 NOT BETWEEN x AND 2;
 -- X: NULL
 -- X: 3
 
+-- # A bound can be an aggregate function.
 SELECT 2 BETWEEN 0 AND COUNT(*) FROM t;
 -- COL1: TRUE
 
@@ -94,12 +101,15 @@ SELECT 5 NOT BETWEEN SYMMETRIC x AND 2 FROM n;
 SELECT 5 BETWEEN SYMMETRIC 10 AND x FROM n;
 -- COL1: UNKNOWN
 
+-- # NOT BETWEEN with an explicit ASYMMETRIC or SYMMETRIC.
 VALUES 35 NOT BETWEEN ASYMMETRIC 40 AND 30;
 -- COL1: TRUE
 
 VALUES 35 NOT BETWEEN SYMMETRIC 40 AND 30;
 -- COL1: FALSE
 
+-- # Bounds of other numeric types, and character strings, which are compared
+-- # in the order of their characters.
 VALUES 3.5 BETWEEN 3 AND 4.1;
 -- COL1: TRUE
 
@@ -121,6 +131,7 @@ VALUES 'h' BETWEEN SYMMETRIC 'ka' AND 'h';
 VALUES 'i' BETWEEN 'h' AND 'j';
 -- COL1: TRUE
 
+-- # SYMMETRIC is kept when the predicate is shown.
 /* extensions V001-01 */
 EXPLAIN VALUES 'h' NOT BETWEEN SYMMETRIC 'ka' AND 'h';
 -- EXPLAIN: VALUES (COL1 BOOLEAN) = ROW('h' NOT BETWEEN SYMMETRIC 'ka' AND 'h')
@@ -135,6 +146,7 @@ EXPLAIN SELECT * FROM t1 WHERE x NOT BETWEEN SYMMETRIC 'ka' AND 'h';
 -- EXPLAIN: WHERE X NOT BETWEEN SYMMETRIC 'ka' AND 'h'
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T1.X INTEGER)
 
+-- # SYMMETRIC with the bounds in order and a value above both.
 VALUES 5 BETWEEN SYMMETRIC 1 AND 3;
 -- COL1: FALSE
 

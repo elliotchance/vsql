@@ -1,7 +1,7 @@
 -- # A COMMIT that fails with an I/O error (rather than a serialization failure
--- # or a constraint violation) rolls back the SQL-transaction, so there's nothing
--- # left to commit. These tests only run on disk, see "Faults" in
--- # docs/testing.rst.
+-- # or a constraint violation) rolls back the SQL-transaction (General Rules,
+-- # 6.b), so there's nothing left to commit. These tests only run on disk, see
+-- # "Faults" in docs/testing.rst.
 CREATE TABLE t (x INT);
 START TRANSACTION;
 INSERT INTO t (x) VALUES (1);

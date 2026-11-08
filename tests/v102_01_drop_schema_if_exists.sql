@@ -1,5 +1,8 @@
 -- # DROP SCHEMA IF EXISTS is a vsql extension (V102-01).
 
+-- # A schema that doesn't exist isn't an error (DROP SCHEMA 0). One that does
+-- # is the same as DROP SCHEMA: RESTRICT still fails on a schema with a table
+-- # in it, and CASCADE drops both.
 /* extensions V102-01 */
 DROP SCHEMA IF EXISTS foo RESTRICT;
 DROP SCHEMA IF EXISTS foo CASCADE;
@@ -31,6 +34,8 @@ SELECT * FROM foo.t;
 DROP SCHEMA IF EXISTS foo;
 -- error 42601: syntax error: unexpected $end, expecting CASCADE or RESTRICT
 
+-- # Only the schema is optional: a catalog that doesn't exist is still an
+-- # error, and INFORMATION_SCHEMA exists but can't be dropped.
 /* extensions V102-01 */
 DROP SCHEMA IF EXISTS nosuch.foo RESTRICT;
 -- error 3D000: invalid catalog name: NOSUCH
@@ -39,6 +44,9 @@ DROP SCHEMA IF EXISTS nosuch.foo RESTRICT;
 DROP SCHEMA IF EXISTS information_schema CASCADE;
 -- error 42501: insufficient privilege: INFORMATION_SCHEMA is read-only
 
+-- # Whether it exists is what this transaction can see: a drop earlier in the
+-- # transaction counts until ROLLBACK, and a schema that another connection has
+-- # dropped doesn't exist.
 /* extensions V102-01 */
 CREATE SCHEMA foo;
 START TRANSACTION;
@@ -63,6 +71,7 @@ DROP SCHEMA IF EXISTS foo RESTRICT;
 -- 1: msg: DROP SCHEMA 1
 -- 2: msg: DROP SCHEMA 0
 
+-- # IF isn't a reserved word, so it can still be a schema name.
 /* extensions V102-01 */
 CREATE SCHEMA if;
 DROP SCHEMA if RESTRICT;

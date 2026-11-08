@@ -11,6 +11,10 @@ INSERT INTO t (c) VALUES (DATE '2020-01-01');
 -- error 42846: cannot coerce TIMESTAMP(0) WITHOUT TIME ZONE to TIME(0) WITHOUT TIME ZONE
 -- error 42846: cannot coerce DATE to CHARACTER VARYING(30)
 
+-- # UPDATE follows the same rules. A TIME WITH TIME ZONE stored in a TIME is
+-- # cast to it (General Rules, 3.b.xvi.1), which keeps its local time (6.13,
+-- # General Rules, 16.c), and an explicit CAST can turn a TIMESTAMP into a
+-- # DATE.
 CREATE TABLE t (d DATE, tm TIME, ts TIMESTAMP WITH TIME ZONE);
 INSERT INTO t (d, tm, ts) VALUES (DATE '2020-01-01', TIME '10:00:00', TIMESTAMP '2020-01-01 10:00:00+05:00');
 UPDATE t SET d = TIMESTAMP '2020-01-01 10:00:00';

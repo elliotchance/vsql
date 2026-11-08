@@ -1,3 +1,6 @@
+-- # Both operands must be character strings (Syntax Rules, 1). The lengths are
+-- # added. The result is a CHARACTER VARYING if either operand is one, and
+-- # otherwise a CHARACTER (Syntax Rules, 3.b).
 /* types */
 VALUES 'foo' || 'bar';
 -- COL1: foobar (CHARACTER(6))
@@ -14,6 +17,8 @@ EXPLAIN SELECT a || b, b || b, a || 'xy' FROM t;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T (A CHARACTER VARYING(10), B CHARACTER(4))
 -- EXPLAIN: EXPR (COL1 CHARACTER VARYING(14), COL2 CHARACTER(8), COL3 CHARACTER VARYING(12))
 
+-- # A NULL operand gives NULL (General Rules, 2.b.i), still with the combined
+-- # type.
 /* types */
 VALUES 'foo' || CAST(NULL AS VARCHAR(5));
 -- COL1: NULL (CHARACTER VARYING(8))

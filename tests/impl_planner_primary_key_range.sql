@@ -44,7 +44,9 @@ SELECT * FROM t WHERE id > 1 AND id > 2 AND id < 5 AND id < 4;
 
 SELECT * FROM t WHERE id = 2 AND id = 3;
 
--- # BETWEEN is a lower and upper bound.
+-- # BETWEEN is a lower and upper bound. NOT BETWEEN isn't one range, and
+-- # SYMMETRIC can have its bounds either way around, so they read the whole
+-- # table.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t WHERE id BETWEEN -5 AND 2;
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.T (ID INTEGER NOT NULL, NAME CHARACTER VARYING(10)) RANGE ID >= -5 AND ID <= 2
@@ -74,7 +76,8 @@ SELECT * FROM t WHERE id BETWEEN SYMMETRIC 2 AND 1;
 -- ID: 1 NAME: one
 -- ID: 2 NAME: two
 
--- # Other conditions are only applied by the WHERE clause.
+-- # Other conditions are only applied by the WHERE clause. <> isn't a range,
+-- # so only the other bound is used.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t WHERE id = 2 AND name = 'two';
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.T (ID INTEGER NOT NULL, NAME CHARACTER VARYING(10)) RANGE ID = 2
@@ -92,7 +95,8 @@ EXPLAIN SELECT * FROM t WHERE id <> 2 AND id < 2;
 -- EXPLAIN: WHERE ID <> 2 AND ID < 2
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.ID INTEGER NOT NULL, ":memory:".PUBLIC.T.NAME CHARACTER VARYING(10))
 
--- # The value can be any expression that doesn't depend on the row.
+-- # The value can be any expression that doesn't depend on the row, including
+-- # a subquery. A value that uses a column of the row (id = id) can't be.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t WHERE id = 1 + 1;
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.T (ID INTEGER NOT NULL, NAME CHARACTER VARYING(10)) RANGE ID = 1 + 1
@@ -127,7 +131,9 @@ SELECT a, (SELECT name FROM t WHERE id = a) AS name FROM c WHERE b = 'x';
 -- A: 2 NAME: two
 -- A: 3 NAME: three
 
--- # A value that the column can't hold exactly isn't used to find the rows.
+-- # A value that the column can't hold exactly (1.5 or a number too big for
+-- # INT) isn't used to find the rows, and neither is NULL. The WHERE clause
+-- # still decides, so = finds nothing and < or > find the rows either side.
 SELECT * FROM t WHERE id = 1.5;
 
 SELECT * FROM t WHERE id < 2.5;
@@ -155,7 +161,8 @@ SELECT * FROM t WHERE id = CAST(NULL AS INT);
 
 SELECT * FROM t WHERE id > CAST(NULL AS INT) AND id = 2;
 
--- # An error is still raised for each row by the WHERE clause.
+-- # A value that fails (1 / 0) isn't used to find the rows, so the WHERE
+-- # clause raises the error when it's applied to a row.
 SELECT * FROM t WHERE id = 1 / 0;
 -- error 22012: division by zero
 
@@ -166,7 +173,9 @@ SELECT * FROM t WHERE id > 1 AND id = 1 / 0;
 SELECT * FROM t WHERE id = 'one';
 -- error 42883: cannot compare INTEGER and CHARACTER(3)
 
--- # A character string key.
+-- # A character string key. Trailing spaces are ignored when comparing, so
+-- # 'a  ' finds 'a', and 'a b' is before 'ab' because a space is before 'b'.
+-- # A value longer than the column isn't used, like 1.5 for INT.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM s WHERE code = 'a';
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.S (CODE CHARACTER VARYING(10) NOT NULL, N INTEGER) RANGE CODE = 'a'
@@ -198,7 +207,8 @@ SELECT * FROM s WHERE code < 'longer than ten';
 -- CODE: b N: 3
 
 -- # A PRIMARY KEY with more than one column uses = on the first columns, then
--- # a range of the next one.
+-- # a range of the next one. Without a condition on the first column, the
+-- # whole table is read, since the key is in the order of that column.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM c WHERE a = 2 AND b = 'y';
 -- EXPLAIN: PRIMARY KEY ":memory:".PUBLIC.C (A INTEGER NOT NULL, B CHARACTER VARYING(5) NOT NULL, X INTEGER) RANGE A = 2 AND B = 'y'
@@ -261,7 +271,9 @@ SELECT * FROM t;
 -- ID: 1 NAME: one
 -- ID: 2 NAME: TWO
 
--- # A key that ends with the byte 0xff. The next key after 255 is 256.
+-- # A key that ends with the byte 0xff (255 and 511). The end of the range is
+-- # the next key, which has to carry into the byte before, so 255 is next to
+-- # 256.
 CREATE TABLE ff (id INT PRIMARY KEY);
 INSERT INTO ff (id) VALUES (254), (255), (256), (511), (512);
 SELECT * FROM ff WHERE id <= 255;
@@ -272,7 +284,9 @@ SELECT * FROM ff WHERE id = 511;
 -- ID: 255
 -- ID: 511
 
--- # Other types of keys.
+-- # Other types of keys. A DATE can't be compared with a TIMESTAMP, 1.505
+-- # doesn't fit NUMERIC(5, 2) so it isn't used, -0e0 is equal to 0e0, and
+-- # times with a time zone are compared as UTC.
 CREATE TABLE d (d DATE PRIMARY KEY);
 INSERT INTO d (d) VALUES (DATE '2022-06-30'), (DATE '2022-07-01');
 SELECT * FROM d WHERE d > DATE '2022-06-30';

@@ -492,7 +492,7 @@
 14.12/CR/6               n/a          - - MERGE (F312)
 14.12/CR/7               n/a          - - MERGE (F312)
 # 14.13, <update statement: positioned>
-14.13                    partial      vsql/std_2_14_13_update_statement_positioned.v tests/std_2_14_1_cursors.sql a sort key column can be set (#794)
+14.13                    implemented  vsql/std_2_14_13_update_statement_positioned.v tests/std_2_14_1_cursors_sort_keys.sql
 14.13/SR/1               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.13/SR/2               implemented  vsql/std_2_14_1_declare_cursor.v tests/std_2_14_1_cursors.sql
 14.13/SR/3               definition   - -

@@ -1,6 +1,8 @@
 -- # ON UPDATE CASCADE changes the referencing columns to the new values of the
--- # referenced columns, and the rows that reference those rows, and so on. A row
--- # that keeps its key, or changes other columns, doesn't change.
+-- # referenced columns (General Rules, 10.a.i), and the rows that reference
+-- # those rows, and so on. A row that keeps its key, or changes other columns,
+-- # doesn't change. An UPDATE that fails (here, a duplicate key) changes
+-- # nothing.
 CREATE TABLE parent (id INT PRIMARY KEY, name VARCHAR(10));
 CREATE TABLE child (id INT PRIMARY KEY, parent_id BIGINT REFERENCES parent ON UPDATE CASCADE);
 CREATE TABLE grandchild (child_id INT, FOREIGN KEY (child_id) REFERENCES child (id) ON UPDATE CASCADE);
@@ -103,8 +105,9 @@ SELECT * FROM child;
 -- error 23502: violates non-null constraint: column PARENT_ID
 -- PARENT_ID: abc
 
--- # ON UPDATE NO ACTION is the same as no ON UPDATE, and a row that's changed
--- # by ON UPDATE CASCADE can't be referenced by it.
+-- # ON UPDATE NO ACTION is the same as no ON UPDATE, so a referenced key can't
+-- # be changed. A cascade that changes another column of a referenced row is
+-- # fine, since its key doesn't change (General Rules, 10).
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (id INT PRIMARY KEY, parent_id INT REFERENCES parent ON UPDATE CASCADE);
 CREATE TABLE other (child_id INT REFERENCES child ON UPDATE NO ACTION, child_parent_id INT REFERENCES child (id));
@@ -125,7 +128,7 @@ SELECT * FROM child;
 -- ID: 10 PARENT_ID: 2
 
 -- # A row that's changed by ON DELETE SET NULL can have its own ON UPDATE
--- # actions.
+-- # actions (General Rules, 17).
 CREATE TABLE a (id INT PRIMARY KEY);
 CREATE TABLE b (a_id INT UNIQUE REFERENCES a ON DELETE SET NULL);
 CREATE TABLE c (b_id INT REFERENCES b (a_id) ON UPDATE CASCADE);
@@ -143,8 +146,8 @@ SELECT * FROM c;
 -- msg: DELETE 1
 -- B_ID: NULL
 
--- # The ON UPDATE is kept with the definition of the table, in either order with
--- # the ON DELETE.
+-- # The ON UPDATE is kept with the definition of the table, in either order
+-- # with the ON DELETE.
 CREATE TABLE parent (id INT PRIMARY KEY);
 CREATE TABLE child (a INT REFERENCES parent ON UPDATE CASCADE, b INT REFERENCES parent ON DELETE SET NULL ON UPDATE SET DEFAULT, c INT REFERENCES parent ON UPDATE NO ACTION ON DELETE CASCADE);
 SELECT constraint_name, update_rule, delete_rule FROM information_schema.referential_constraints;
@@ -180,9 +183,9 @@ SELECT * FROM child;
 -- 2: PARENT_ID: 2
 
 -- # A site (a column of a row) can't be updated to two different values by the
--- # actions of one statement, which is a triggered data change violation. Here,
--- # X is updated to 10 by the first key, and then the second key matches it.
--- # Nothing is changed.
+-- # actions of one statement, which is a triggered data change violation
+-- # (General Rules, 12). Here, X is updated to 10 by the first key, and then
+-- # the second key matches it. Nothing is changed.
 CREATE TABLE p (id INT UNIQUE, k INT UNIQUE);
 CREATE TABLE c (x INT REFERENCES p (id) ON UPDATE CASCADE, FOREIGN KEY (x) REFERENCES p (k) ON UPDATE CASCADE);
 INSERT INTO p (id, k) VALUES (1, 10), (2, 1);

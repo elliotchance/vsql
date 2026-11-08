@@ -15,6 +15,8 @@ VALUES TRIM(TRUE);
 VALUES TRIM(123 FROM 'abc');
 -- error 42883: function does not exist: TRIM(SMALLINT FROM CHARACTER(3))
 
+-- # A NULL source gives NULL (General Rules, 3.d), and the result is a
+-- # CHARACTER VARYING as long as the source (Syntax Rules, 4.a.i and 13.b.i).
 /* types */
 VALUES SUBSTRING(CAST(NULL AS VARCHAR(5)) FROM 1);
 -- COL1: NULL (CHARACTER VARYING(5))

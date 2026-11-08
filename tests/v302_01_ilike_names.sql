@@ -28,6 +28,7 @@ SELECT "ILIKE" FROM ilike;
 SELECT ilike AS ilike FROM ilike;
 -- ILIKE: Ab
 
+-- # An alias without AS, because what follows it can't start a pattern.
 /* flags */
 SELECT x ilike FROM t;
 -- flags:
@@ -73,6 +74,7 @@ SELECT x FROM t ilike WHERE y = 2;
 SELECT ilike.x FROM t ilike INNER JOIN t u ON ilike.x = u.x;
 -- X: Ab
 
+-- # A column named ilike in an expression and in each kind of statement.
 SELECT * FROM ilike WHERE ilike = 'Ab';
 -- ILIKE: Ab
 
@@ -112,6 +114,8 @@ SELECT b FROM n WHERE NOT ilike = 3;
 SELECT b FROM n WHERE b AND NOT ilike + 1 = 2;
 -- B: TRUE
 
+-- # A column, a constraint, a sequence and a schema named ilike. The foreign
+-- # key fails only because the column isn't a PRIMARY KEY or UNIQUE.
 ALTER TABLE n ADD ilike2 INT;
 -- msg: ALTER TABLE 1
 
@@ -143,7 +147,8 @@ DROP SCHEMA ilike RESTRICT;
 -- msg: CREATE SCHEMA 1
 -- msg: DROP SCHEMA 1
 
--- # Quotes are needed for the words that are before a name.
+-- # A column named SEQUENCE (or ADD, CONNECTION, CONSTRAINTS or SCHEMA) needs
+-- # quotes on the left of ILIKE, since those words can be before a name.
 /* extensions V302-01 */
 SELECT "SEQUENCE" ILIKE 'a' FROM (SELECT x FROM t) u ("SEQUENCE");
 -- COL1: FALSE

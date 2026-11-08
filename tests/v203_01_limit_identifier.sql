@@ -1,5 +1,5 @@
--- # LIMIT (V203-01) isn't a reserved word: it's only the clause when a row count
--- # follows it, otherwise it's a regular identifier.
+-- # LIMIT (V203-01) isn't a reserved word: it's only the clause when a row
+-- # count follows it, otherwise it's a regular identifier.
 
 /* setup */
 CREATE TABLE limit (limit INT);
@@ -7,6 +7,7 @@ INSERT INTO limit (limit) VALUES (1);
 INSERT INTO limit (limit) VALUES (2);
 INSERT INTO limit (limit) VALUES (3);
 
+-- # A table and a column named limit, in any case, quoted or qualified.
 SELECT limit FROM limit;
 -- LIMIT: 1
 -- LIMIT: 2
@@ -86,6 +87,8 @@ SELECT limit FROM limit ORDER BY limit LIMIT 1;
 SELECT limit FROM limit WHERE limit = limit LIMIT 1;
 -- LIMIT: 1
 
+-- # A negative row count is still the clause, so it's the 2201W error rather
+-- # than limit - 1 (7.17, General Rules, 7.c).
 /* extensions V203-01 */
 SELECT limit FROM limit LIMIT -1;
 -- error 2201W: invalid row count in fetch first clause
@@ -201,7 +204,8 @@ SELECT limit FROM limit ORDER BY limit;
 -- LIMIT: 2
 -- LIMIT: 2
 
--- # Another column that's named after a type that can start a literal.
+-- # DATE, TIME and TIMESTAMP can start a literal, but after limit they're the
+-- # type of a column named limit unless a string follows them.
 CREATE TABLE t2 (limit DATE);
 INSERT INTO t2 (limit) VALUES (DATE '2026-11-03');
 SELECT limit FROM t2;
@@ -234,6 +238,7 @@ SELECT * FROM limit "LIMIT" 1;
 limit - 1;
 -- error 42601: syntax error: unexpected identifier
 
+-- # != (V301-01) is an operator that limit - 1 can follow, the same as <>.
 /* extensions V301-01 */
 SELECT limit FROM limit WHERE 1 != limit - 1;
 -- LIMIT: 1

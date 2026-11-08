@@ -1,3 +1,5 @@
+-- # The test runner skips every description line, wherever it is: in a block
+-- # of its own, between a statement and its expected output, or at the end.
 -- # The following tests are arithmetic.
 
 -- # Adding

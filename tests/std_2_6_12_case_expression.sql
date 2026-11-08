@@ -1,3 +1,6 @@
+-- # With no ELSE, there's an implicit ELSE NULL (Syntax Rules, 4). The type
+-- # combines the types of every result that isn't NULL (Syntax Rules, 5), so
+-- # 1.5 and 3 make a NUMERIC that can hold both.
 /* extensions V001-01 */
 EXPLAIN VALUES CASE 1 WHEN 1 THEN 'a' WHEN 2 THEN NULL ELSE 'b' END;
 -- EXPLAIN: VALUES (COL1 CHARACTER(1)) = ROW(CASE 1 WHEN 1 THEN 'a' WHEN 2 THEN NULL ELSE 'b' END)
@@ -14,6 +17,9 @@ EXPLAIN VALUES CASE WHEN 1 = 2 THEN 1.5 WHEN TRUE THEN 3 ELSE NULL END;
 EXPLAIN VALUES CASE WHEN TRUE THEN 'a' END;
 -- EXPLAIN: VALUES (COL1 CHARACTER(1)) = ROW(CASE WHEN TRUE THEN 'a' ELSE NULL END)
 
+-- # The result is the first WHEN that matches, otherwise the ELSE, otherwise
+-- # NULL. The result is cast to the type of the CASE, so 2 becomes 2e0 and a
+-- # NULL has that type too (General Rules, 2.a and 2.b).
 /* types */
 VALUES CASE 2 WHEN 1 THEN 'one' WHEN 2 THEN 'two' ELSE 'other' END;
 -- COL1: two   (CHARACTER(5))
@@ -54,26 +60,37 @@ VALUES CASE WHEN TRUE THEN NULL ELSE CAST(1 AS BIGINT) END;
 VALUES CASE WHEN TRUE THEN CAST(NULL AS INT) ELSE 1.5 END;
 -- COL1: NULL (NUMERIC(11, 1))
 
+-- # Only the first WHEN that matches is used, even if a later one also matches
+-- # (General Rules, 2.a).
 VALUES CASE 1 WHEN 1 THEN 'a' WHEN 1 THEN 'b' END;
 VALUES CASE WHEN TRUE THEN 'a' WHEN TRUE THEN 'b' END;
 -- COL1: a
 -- COL1: a
 
+-- # A NULL never matches, not even a NULL WHEN, because a simple CASE compares
+-- # with = (Syntax Rules, 2.i) and NULL = NULL is UNKNOWN, not TRUE. So the
+-- # ELSE is used.
 VALUES CASE CAST(NULL AS INT) WHEN 1 THEN 'a' WHEN CAST(NULL AS INT) THEN 'b' ELSE 'c' END;
 -- COL1: c
 
 VALUES CASE WHEN CAST(NULL AS BOOLEAN) THEN 'a' WHEN 1 = CAST(NULL AS INT) THEN 'b' ELSE 'c' END;
 -- COL1: c
 
+-- # A CASE can be the result of another CASE.
 VALUES CASE 1 WHEN 1 THEN CASE WHEN 1 = 2 THEN 'a' ELSE 'b' END END;
 -- COL1: b
 
+-- # At least one result must not be NULL, so the CASE has a type (Syntax Rules,
+-- # 3). The implicit ELSE NULL doesn't count.
 VALUES CASE 1 WHEN 1 THEN NULL END;
 -- error 42601: syntax error: CASE needs at least one result that is not NULL
 
 VALUES CASE WHEN TRUE THEN NULL ELSE NULL END;
 -- error 42601: syntax error: CASE needs at least one result that is not NULL
 
+-- # A WHEN value must be comparable with the operand (8.2, Syntax Rules, 3) and
+-- # a searched WHEN must be a BOOLEAN. The results must all be numbers or all
+-- # be strings (9.5, Syntax Rules, 3.a.i and 3.c.i).
 VALUES CASE 1 WHEN 'a' THEN 1 END;
 -- error 42804: data type mismatch in CASE WHEN: expected SMALLINT but got CHARACTER(1)
 
@@ -86,6 +103,8 @@ VALUES CASE 1 WHEN 1 THEN 1 ELSE 'a' END;
 VALUES CASE WHEN TRUE THEN 'a' WHEN FALSE THEN 1 END;
 -- error 42804: data type mismatch in CASE: expected CHARACTER(1) but got SMALLINT
 
+-- # Syntax errors: an extra END, a CASE without a WHEN and an ELSE without a
+-- # WHEN.
 VALUES CASE 1 WHEN 1 THEN 'a' END END;
 -- error 42601: syntax error: unexpected END
 
@@ -95,6 +114,8 @@ VALUES CASE 1 END;
 VALUES CASE ELSE 1 END;
 -- error 42601: syntax error: unexpected ELSE
 
+-- # On rows, a NULL in A matches no WHEN, so the simple CASE uses the ELSE (B).
+-- # The searched CASE has no ELSE, so it's NULL when A is 1.
 CREATE TABLE t (a INT, b VARCHAR(10));
 INSERT INTO t (a, b) VALUES (1, 'x'), (2, 'y'), (NULL, 'z');
 SELECT a, CASE a WHEN 1 THEN 'one' WHEN 2 THEN 'two' ELSE b END FROM t;
@@ -108,6 +129,7 @@ SELECT CASE WHEN a > 1 THEN a * 10 WHEN a IS NULL THEN -1 END FROM t;
 -- COL1: 20
 -- COL1: -1
 
+-- # A BOOLEAN CASE can be the search condition of a WHERE.
 /* extensions V001-01 */
 CREATE TABLE t (a INT, b VARCHAR(10));
 INSERT INTO t (a, b) VALUES (1, 'x'), (2, 'y'), (NULL, 'z');
@@ -120,6 +142,8 @@ SELECT * FROM t WHERE CASE a WHEN 2 THEN TRUE ELSE FALSE END;
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.A INTEGER, ":memory:".PUBLIC.T.B CHARACTER VARYING(10))
 -- A: 2 B: y
 
+-- # In an UPDATE, the CASE is evaluated for each row, and a NULL result sets
+-- # the column to NULL.
 CREATE TABLE t (a INT, b VARCHAR(10));
 INSERT INTO t (a, b) VALUES (1, 'x'), (2, 'y'), (NULL, 'z');
 UPDATE t SET b = CASE a WHEN 1 THEN 'uno' WHEN 2 THEN NULL ELSE b END;
@@ -131,6 +155,8 @@ SELECT * FROM t;
 -- A: 2 B: NULL
 -- A: NULL B: z
 
+-- # A CASE can be inside an aggregate function, contain one, or use one as its
+-- # operand. The aggregates of A skip its NULL, with a warning.
 CREATE TABLE t (a INT);
 INSERT INTO t (a) VALUES (1), (2), (NULL);
 SELECT SUM(CASE WHEN a > 1 THEN a ELSE 0 END) FROM t;

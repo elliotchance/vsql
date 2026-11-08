@@ -1,6 +1,9 @@
+-- # The table must exist.
 DELETE FROM foo;
 -- error 42P01: no such table: ":memory:".PUBLIC.FOO
 
+-- # Without a WHERE, every row is deleted (Syntax Rules, 5). When no row is
+-- # deleted it's a no data warning (General Rules, 10), not an error.
 CREATE TABLE foo (baz CHARACTER VARYING(10));
 INSERT INTO foo (baz) VALUES ('hi');
 INSERT INTO foo (baz) VALUES ('there');
@@ -14,6 +17,8 @@ SELECT * FROM foo;
 -- warning 02000: no data
 -- msg: DELETE 0
 
+-- # Only the rows where the WHERE is TRUE are deleted. A FLOAT is compared with
+-- # 35.0 like any other number.
 CREATE TABLE foo (baz FLOAT);
 INSERT INTO foo (baz) VALUES (35);
 INSERT INTO foo (baz) VALUES (78);
@@ -28,6 +33,7 @@ SELECT * FROM foo;
 -- msg: DELETE 0
 -- BAZ: 78e0
 
+-- # A table in another schema, which must exist.
 DELETE FROM foo.bar;
 -- error 3F000: invalid schema name: FOO
 
@@ -39,7 +45,8 @@ DELETE FROM foo.bar;
 -- warning 02000: no data
 -- msg: DELETE 0
 
--- # https://github.com/elliotchance/vsql/issues/200
+-- # When the WHERE fixes the PRIMARY KEY, the row is found with a RANGE of the
+-- # key instead of a scan, and only that row is deleted (#200).
 /* extensions V001-02 */
 CREATE TABLE PrimaryProduct (id INT NOT NULL, PRIMARY KEY(id));
 INSERT INTO PrimaryProduct (id) VALUES (1);

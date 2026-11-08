@@ -9,6 +9,8 @@ INSERT INTO t2 (f3, f4) VALUES (123, 5);
 INSERT INTO t2 (f3, f4) VALUES (789, 6);
 INSERT INTO t2 (f3, f4) VALUES (345, 7);
 
+-- # When every right row has a match, RIGHT JOIN gives the same rows as an
+-- # inner join.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t1 RIGHT JOIN t2 ON TRUE;
 -- EXPLAIN: $1:
@@ -32,6 +34,8 @@ SELECT * FROM t1 RIGHT JOIN t2 ON TRUE;
 -- F1: 789 F2: 3 F3: 345 F4: 7
 -- F1: 234 F2: 4 F3: 345 F4: 7
 
+-- # A right row with no match is still kept once, with NULLs for the columns
+-- # of the left table (General Rules, 4.i.ii). vsql sorts the NULLs first.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t1 RIGHT JOIN t2 ON f1 = f3;
 -- EXPLAIN: $1:
@@ -61,6 +65,8 @@ SELECT * FROM t1 RIGHT JOIN t2 ON f1 = f3 ORDER BY f1, f3 DESC;
 -- F1: 123 F2: 1 F3: 123 F4: 5
 -- F1: 789 F2: 3 F3: 789 F4: 6
 
+-- # OUTER is optional. With a condition other than equality, no F1 is greater
+-- # than 789, so that's the row that gets NULLs.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM t1 RIGHT OUTER JOIN t2 ON TRUE;
 -- EXPLAIN: $1:

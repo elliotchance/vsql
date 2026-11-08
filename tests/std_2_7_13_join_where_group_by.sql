@@ -9,6 +9,8 @@ INSERT INTO t2 (t1_id, y) VALUES (2, 200);
 INSERT INTO t2 (t1_id, y) VALUES (2, 300);
 INSERT INTO t2 (t1_id, y) VALUES (4, 400);
 
+-- # WHERE filters the joined rows, so it can use the columns of both tables
+-- # (7.12, General Rules, 1).
 SELECT * FROM t1 JOIN t2 ON t1.id = t2.t1_id WHERE y > 100;
 -- ID: 2 X: 20 T1_ID: 2 Y: 200
 -- ID: 2 X: 20 T1_ID: 2 Y: 300
@@ -35,6 +37,9 @@ EXPLAIN SELECT * FROM t1 JOIN t2 ON t1.id = t2.t1_id WHERE id = 2;
 -- EXPLAIN: WHERE ID = 2
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T1.ID INTEGER NOT NULL, ":memory:".PUBLIC.T1.X INTEGER, ":memory:".PUBLIC.T2.T1_ID INTEGER, ":memory:".PUBLIC.T2.Y INTEGER)
 
+-- # With an outer join, WHERE sees the NULLs that were added, so IS NULL finds
+-- # the rows with no match. A condition in ON only decides what matches, so
+-- # rows that fail it are still kept, with NULLs.
 SELECT * FROM t1 LEFT JOIN t2 ON t1.id = t2.t1_id WHERE t2.y IS NULL;
 -- ID: 3 X: 30 T1_ID: NULL Y: NULL
 
@@ -45,9 +50,12 @@ SELECT * FROM t1 LEFT JOIN t2 ON t1.id = t2.t1_id AND y = 100 WHERE x > 10;
 SELECT * FROM t1 RIGHT JOIN t2 ON t1.id = t2.t1_id WHERE x IS NULL;
 -- ID: NULL X: NULL T1_ID: 4 Y: 400
 
+-- # An unknown column in WHERE is an error.
 SELECT * FROM t1 JOIN t2 ON TRUE WHERE z = 1;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.Z
 
+-- # GROUP BY groups the rows that are left after the join and the WHERE
+-- # (General Rules, 1). An unknown grouping column is an error.
 SELECT t1_id, COUNT(*) FROM t1 JOIN t2 ON t1.id = t2.t1_id GROUP BY t1_id;
 -- T1_ID: 1 COL2: 1
 -- T1_ID: 2 COL2: 2

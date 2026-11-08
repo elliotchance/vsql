@@ -23,6 +23,9 @@ SELECT constraint_schema, constraint_name, check_clause FROM information_schema.
 -- CONSTRAINT_SCHEMA: PUBLIC CONSTRAINT_NAME: Mixed_NOT_NULL_2 CHECK_CLAUSE: "x y" IS NOT NULL
 -- CONSTRAINT_SCHEMA: S CONSTRAINT_NAME: A_CHECK_1 CHECK_CLAUSE: "my col" IN (1, 2)
 
+-- # CHECK_CLAUSE is the condition as it was written, so a column qualified by
+-- # its table stays qualified, and a name that's a reserved word stays quoted
+-- # (6.14, Description, 2.a).
 CREATE TABLE "select" (id INT NOT NULL, CHECK ("select".id > 0));
 SELECT constraint_name, check_clause FROM information_schema.check_constraints;
 -- msg: CREATE TABLE 1

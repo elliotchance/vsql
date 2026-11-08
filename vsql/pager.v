@@ -9,6 +9,8 @@ module vsql
 
 import os
 
+// A page that's given to store_page or append_page belongs to the pager, so it
+// must not be changed after that.
 interface Pager {
 mut:
 	fetch_page(page_number int) !Page
@@ -40,8 +42,9 @@ fn new_memory_pager() &MemoryPager {
 	return &MemoryPager{}
 }
 
-// Pages are copied in and out of the pager because the B-tree changes the
-// data of a page in place before storing it.
+// A page is copied by fetch_page because the B-tree changes the data of a page
+// in place before storing it. It's not copied again by store_page and
+// append_page, because the page that's stored isn't changed after that.
 fn (mut p MemoryPager) fetch_page(page_number int) !Page {
 	if page := p.dirty[page_number] {
 		return page.clone()
@@ -51,7 +54,7 @@ fn (mut p MemoryPager) fetch_page(page_number int) !Page {
 }
 
 fn (mut p MemoryPager) store_page(page_number int, page Page) ! {
-	p.dirty[page_number] = page.clone()
+	p.dirty[page_number] = page
 }
 
 fn (mut p MemoryPager) total_pages() int {
@@ -59,7 +62,7 @@ fn (mut p MemoryPager) total_pages() int {
 }
 
 fn (mut p MemoryPager) append_page(page Page) !int {
-	p.dirty[p.total] = page.clone()
+	p.dirty[p.total] = page
 	p.total++
 
 	return p.total - 1

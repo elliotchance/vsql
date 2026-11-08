@@ -56,11 +56,12 @@ fn (e DynamicParameterSpecification) compile(mut c Compiler) !CompileResult {
 	}
 
 	return CompileResult{
-		run:          fn [p] (mut conn Connection, data Row, params map[string]Value) !Value {
+		run:            fn [p] (mut conn Connection, data Row, params map[string]Value) !Value {
 			return p
 		}
-		typ:          p.typ
-		contains_agg: false
+		typ:            p.typ
+		contains_agg:   false
+		null_parameter: p.is_null
 	}
 }
 

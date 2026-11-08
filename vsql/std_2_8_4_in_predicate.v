@@ -38,7 +38,8 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 	mut compiled_values := []CompileResult{}
 	for value in e.values {
 		compiled := value.compile(mut c)!
-		c.check_time_zone_comparison(compiled_expr.typ, compiled.typ)!
+		c.check_comparison(compiled_expr.typ, compiled.typ, compiled_expr.null_parameter
+			|| compiled.null_parameter)!
 		contains_agg = contains_agg || compiled.contains_agg
 		compiled_values << compiled
 	}
@@ -46,7 +47,8 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 	mut plan := ?SubqueryPlan(none)
 	if subquery := e.subquery {
 		subquery_plan := subquery.plan_column(mut c)!
-		c.check_time_zone_comparison(compiled_expr.typ, subquery_plan.plan.columns()[0].typ)!
+		c.check_comparison(compiled_expr.typ, subquery_plan.plan.columns()[0].typ,
+			compiled_expr.null_parameter)!
 		contains_agg = contains_agg || subquery_plan.contains_agg
 		plan = subquery_plan
 	}
@@ -54,14 +56,6 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 	return CompileResult{
 		run:          fn [e, compiled_expr, compiled_values, plan] (mut conn Connection, data Row, params map[string]Value) !Value {
 			expr := compiled_expr.run(mut conn, data, params)!
-
-			mut values := []Value{}
-			if subquery_plan := plan {
-				values = subquery_values(mut conn, subquery_plan, data)!
-			}
-			for compiled_value in compiled_values {
-				values << compiled_value.run(mut conn, data, params)!
-			}
 
 			// ISO/IEC 9075-2:2016(E), 8.4, <in predicate>, Syntax Rules, 2, 4 and
 			// 5:
@@ -72,7 +66,22 @@ fn (e InPredicate) compile(mut c Compiler) !CompileResult {
 			//
 			// So the result is TRUE if any value is equal, FALSE if every value is
 			// not equal (or there are no values) and otherwise UNKNOWN.
-			mut result := quantified_comparison(conn, expr, .equal, false, values)!
+			//
+			// The values are comparable (see check_comparison), so it stops at the
+			// first one that's equal, and the rest of the list isn't evaluated.
+			mut result := Truth.is_false
+			if subquery_plan := plan {
+				result = quantified_comparison(conn, expr, .equal, false, subquery_values(mut conn,
+					subquery_plan, data)!)!
+			}
+			for compiled_value in compiled_values {
+				if result == .is_true {
+					break
+				}
+
+				value := compiled_value.run(mut conn, data, params)!
+				result = truth_or(result, ComparisonOperator.equal.truth(compare(conn, expr, value)!))
+			}
 			if e.not {
 				result = truth_not(result)
 			}

@@ -9,7 +9,7 @@
 8.2                      partial      vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql,tests/std_2_8_2_comparison_predicate.sql rows of degree > 1 are #722
 8.2/SR/1                 missing      - - rows of degree > 1 are #722
 8.2/SR/2                 definition   - -
-8.2/SR/3                 partial      vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison_predicate.sql checked when evaluated, rather than when prepared
+8.2/SR/3                 implemented  vsql/compiler.v tests/std_2_8_2_comparison_predicate.sql,tests/std_2_8_4_in_short_circuit.sql checked from the declared types when prepared
 8.2/SR/4                 definition   - -
 8.2/SR/5                 implemented  vsql/std_2_8_2_comparison_predicate.v tests/std_2_8_2_comparison.sql there are only scalar operands, so N is 1 (one); rows are #722
 8.2/SR/5.a               container    - -

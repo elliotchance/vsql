@@ -5,6 +5,8 @@ INSERT INTO foo (x, y) VALUES (12.34, 'there');
 INSERT INTO foo (x, y) VALUES (0.1234, 'hi');
 INSERT INTO foo (x, y) VALUES (5.6, 'bar');
 
+-- # ASC is the default direction, and DESC reverses it (10.10, General Rules,
+-- # 1.c).
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM foo ORDER BY x;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.FOO (X DOUBLE PRECISION, Y CHARACTER VARYING(32))
@@ -35,6 +37,10 @@ SELECT * FROM foo ORDER BY x DESC;
 -- X: 1.234e0 Y: hi
 -- X: 0.1234e0 Y: hi
 
+-- # Rows that are equal on a sort key are peers, and their order is
+-- # implementation-dependent (10.10, General Rules, 1.i); vsql keeps the order
+-- # they were read in. A second sort key orders the peers of the first, in its
+-- # own direction (10.10, General Rules, 1.h).
 SELECT * FROM foo ORDER BY y;
 -- X: 5.6e0 Y: bar
 -- X: 1.234e0 Y: hi
@@ -65,6 +71,7 @@ SELECT * FROM foo ORDER BY x DESC, y;
 -- X: 1.234e0 Y: hi
 -- X: 0.1234e0 Y: hi
 
+-- # A sort key can be an expression of the columns.
 /* extensions V001-01 */
 EXPLAIN SELECT * FROM foo ORDER BY ABS(10 - x);
 -- EXPLAIN: TABLE ":memory:".PUBLIC.FOO (X DOUBLE PRECISION, Y CHARACTER VARYING(32))
@@ -83,6 +90,8 @@ SELECT * FROM foo ORDER BY ABS(10e0 - x) DESC;
 -- X: 5.6e0 Y: bar
 -- X: 12.34e0 Y: there
 
+-- # The rows are sorted before OFFSET and FETCH FIRST remove any of them
+-- # (General Rules, 6.c.ii and 7.d.ii).
 SELECT * FROM foo
 ORDER BY y, x
 OFFSET 0 ROWS;
@@ -145,6 +154,7 @@ FETCH FIRST 2 ROWS ONLY;
 -- X: 0.1234e0 Y: hi
 -- X: 1.234e0 Y: hi
 
+-- # Sorting an empty table gives no rows.
 /* extensions V001-01 */
 CREATE TABLE bar (x FLOAT, y VARCHAR(32));
 EXPLAIN SELECT * FROM bar ORDER BY x;

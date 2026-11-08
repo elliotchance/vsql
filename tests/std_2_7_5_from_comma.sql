@@ -9,7 +9,8 @@ INSERT INTO t2 (b, x) VALUES (3, 10);
 INSERT INTO t2 (b, x) VALUES (4, 40);
 INSERT INTO t3 (c) VALUES (5);
 
--- # Every row of one table with every row of the other.
+-- # Every row of one table with every row of the other (General Rules,
+-- # 1.b.ii).
 SELECT a, b FROM t1, t2;
 -- A: 1 B: 3
 -- A: 1 B: 4
@@ -22,7 +23,8 @@ SELECT a, b, c FROM t1, t2, t3;
 -- A: 2 B: 3 C: 5
 -- A: 2 B: 4 C: 5
 
--- # The columns are in the order of the tables, then their definitions.
+-- # The columns are in the order of the tables, then their definitions
+-- # (Syntax Rules, 4.b.i).
 SELECT * FROM t3, t1;
 -- C: 5 A: 1 X: 10
 -- C: 5 A: 2 X: 20
@@ -61,7 +63,7 @@ SELECT a, b, c FROM t1, t2, t3 WHERE t1.x = t2.x AND c = 5;
 
 SELECT a, b FROM t1, t2 WHERE t1.x = t2.x AND a = 2;
 
--- # A table without rows has no combinations.
+-- # A table without rows has no combinations (General Rules, 1.b).
 SELECT * FROM t1, empty_t;
 
 SELECT * FROM empty_t, t1;
@@ -86,7 +88,8 @@ SELECT p.a AS p, q.a AS q FROM t1 AS p, t1 AS q WHERE p.a < q.a;
 SELECT p.a AS p, q.a AS q FROM t1 AS p, t1 AS q, t1 AS r WHERE p.a = 1 AND q.a = 2 AND r.a = 1;
 -- P: 1 Q: 2
 
--- # A range variable can only be exposed once.
+-- # A range variable can only be exposed once (Syntax Rules, 5.c), whether
+-- # it's a table name or a correlation name.
 SELECT * FROM t1, t1;
 -- error 42601: syntax error: table name ":memory:".PUBLIC.T1 specified more than once
 
@@ -114,6 +117,7 @@ SELECT * FROM t1 AS p, t2 JOIN t3 AS p ON TRUE;
 SELECT * FROM (SELECT a FROM t1) AS d, t2 AS d;
 -- error 42601: syntax error: table name D specified more than once
 
+-- # Without correlation names, two derived tables would have the same name.
 /* extensions V201-02 */
 SELECT * FROM (SELECT a FROM t1), (SELECT b FROM t2);
 -- error 42601: syntax error: each subquery in FROM needs its own correlation name
@@ -144,7 +148,8 @@ SELECT a, b, c FROM t3, (t1 JOIN t2 ON t1.x = t2.x);
 SELECT a, b, c FROM t1, t2 JOIN t3 ON b = 3 WHERE t1.x = t2.x;
 -- A: 1 B: 3 C: 5
 
--- # A join condition can't see the tables on the other side of a comma.
+-- # A join condition can't see the tables on the other side of a comma
+-- # (7.6, Syntax Rules, 18.a).
 SELECT * FROM t1, t2 JOIN t3 ON a = c;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.A
 
@@ -164,7 +169,9 @@ SELECT * FROM t3 AS p, t1 JOIN t2 ON p.c = a;
 SELECT * FROM t3 JOIN (t1 JOIN t2 ON c = a) ON TRUE;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
 
--- # A column isn't ambiguous if the other table is outside of the join.
+-- # In a join condition, a column is only ambiguous between the tables of
+-- # that join (7.6, Syntax Rules, 18.a). Q and R both have X, but D is
+-- # outside of the join, so X there is Q.X.
 SELECT p.x, q.b FROM t1 AS p, t2 AS q JOIN t1 AS r ON q.x = r.x AND x = 1;
 -- error 42702: ambiguous column: X
 
@@ -195,7 +202,8 @@ SELECT d.a, e.b FROM (SELECT a, x FROM t1) AS d, (SELECT b, x FROM t2) AS e WHER
 SELECT * FROM (SELECT c FROM t3), t3 AS q;
 -- C: 5 C: 5
 
--- # A derived table can't see the other tables in FROM.
+-- # A derived table can't see the other tables in FROM, because only a
+-- # LATERAL one could (7.6, Syntax Rules, 19.a).
 SELECT * FROM t3, (SELECT a FROM t1 WHERE a = c) AS d;
 -- error 42601: syntax error: unknown column: ":memory:".PUBLIC.C
 
@@ -236,6 +244,7 @@ SELECT a, b FROM t1, t2 WHERE t1.x = t2.x UNION ALL SELECT a, c FROM t1, t3 WHER
 -- A: 1 B: 3
 -- A: 2 B: 5
 
+-- # A comma is planned as an INNER JOIN ON TRUE.
 /* extensions V001-01 */
 EXPLAIN SELECT a FROM t1, t3;
 -- EXPLAIN: $1:

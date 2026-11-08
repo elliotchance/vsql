@@ -51,9 +51,9 @@ SELECT NULLIF(x, 2) AS a FROM t ORDER BY a DESC;
 -- A: 1
 -- A: NULL
 
--- # An alias hides a column of the table with the same name, but a qualified name
--- # is still the column of the table. A column that doesn't have the alias is
--- # still the column of the table too.
+-- # An alias hides a column of the table with the same name, but a qualified
+-- # name is still the column of the table. A column that doesn't have the alias
+-- # is still the column of the table too.
 SELECT -x AS x FROM t ORDER BY x;
 SELECT -x AS x FROM t ORDER BY t.x;
 SELECT y AS x, x AS y FROM t ORDER BY x;
@@ -102,8 +102,9 @@ SELECT -x AS x FROM t ORDER BY t.x * 2;
 -- X: -2
 -- X: -3
 
--- # A column of the result can be used even if the name is in more than one table,
--- # and without an alias.
+-- # A column of the result can be used even if the name is in more than one
+-- # table, and without an alias. A name that isn't a column of the result is
+-- # ambiguous if more than one table has it.
 SELECT t.x FROM t JOIN u ON t.x = u.x ORDER BY x DESC;
 SELECT t.y AS w, u.w AS y FROM t JOIN u ON t.x = u.x ORDER BY w;
 SELECT t.y AS w, u.w AS y FROM t JOIN u ON t.x = u.x ORDER BY u.w;
@@ -120,8 +121,8 @@ SELECT y FROM t JOIN u ON t.x = u.x ORDER BY x;
 -- error 42702: ambiguous column: X
 
 -- # A name is ambiguous if it's more than one column of the result, even in an
--- # expression, and even if they're the same expression. It's fine as long as it
--- # isn't used.
+-- # expression, and even if they're the same expression. It's fine as long as
+-- # it isn't used.
 SELECT x AS a, y AS a FROM t ORDER BY a;
 SELECT x AS a, y AS a FROM t ORDER BY a + 1;
 SELECT x AS a, x AS a FROM t ORDER BY a;
@@ -143,8 +144,8 @@ SELECT x AS a, y AS a FROM t ORDER BY t.x DESC;
 -- A: 2 A: 10
 -- A: 1 A: 30
 
--- # An unnamed column has an implementation-dependent name, so it doesn't hide a
--- # column of a table or make a name ambiguous.
+-- # An unnamed column has an implementation-dependent name, so it doesn't hide
+-- # a column of a table or make a name ambiguous.
 SELECT -col1 FROM col ORDER BY col1;
 SELECT col1 + 1, col2 AS col1 FROM col ORDER BY col1;
 SELECT col2 AS col2, col1 + 1 FROM col ORDER BY col2;
@@ -155,8 +156,8 @@ SELECT col2 AS col2, col1 + 1 FROM col ORDER BY col2;
 -- COL2: 10 COL2: 3
 -- COL2: 20 COL2: 2
 
--- # With DISTINCT, the alias is in the select list so it's always allowed, but a
--- # column of the table has to be.
+-- # With DISTINCT, the alias is in the select list so it's always allowed, but
+-- # a column of the table has to be.
 SELECT DISTINCT a AS c FROM d ORDER BY c DESC;
 SELECT DISTINCT a + 1 AS c FROM d ORDER BY c DESC;
 SELECT DISTINCT a + 1 AS c FROM d ORDER BY c * 2 DESC;
@@ -233,8 +234,8 @@ SELECT z AS y FROM t ORDER BY (SELECT y FROM (VALUES 1) AS v);
 -- Y: 100
 -- Y: 200
 
--- # A query with UNION or EXCEPT can only use the columns of the result,
--- # by the name of the left query, in any expression. A name is still ambiguous.
+-- # A query with UNION or EXCEPT can only use the columns of the result, by the
+-- # name of the left query, in any expression. A name is still ambiguous.
 SELECT x AS a FROM t UNION SELECT y FROM t ORDER BY a DESC FETCH FIRST 2 ROWS ONLY;
 SELECT x AS a FROM t UNION SELECT y FROM t ORDER BY a * -1 FETCH FIRST 2 ROWS ONLY;
 SELECT y AS x FROM t EXCEPT SELECT x FROM t ORDER BY x;
@@ -271,8 +272,9 @@ SELECT x FROM t WHERE x = (SELECT -w AS x FROM u ORDER BY x FETCH FIRST 1 ROW ON
 -- M: -2
 -- X: 1
 
--- # A sort key can't contain a NEXT VALUE FOR, but it can be the name of a column
--- # of the result that does. Each row uses one value, whatever the sort compares.
+-- # A sort key can't contain a NEXT VALUE FOR, but it can be the name of a
+-- # column of the result that does. Each row uses one value, whatever the sort
+-- # compares.
 /* extensions V202-01 */
 SELECT x FROM t ORDER BY NEXT VALUE FOR seq;
 SELECT NEXT VALUE FOR seq AS n FROM t ORDER BY x FETCH FIRST 1 ROW ONLY;
@@ -295,6 +297,7 @@ SELECT NEXT VALUE FOR seq AS n FROM t GROUP BY x ORDER BY n;
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in SELECT DISTINCT
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in a grouped query
 
+-- # EXPLAIN shows the sort by the alias, after any NEXT VALUE FOR is evaluated.
 /* extensions V001-01 */
 EXPLAIN SELECT NEXT VALUE FOR seq AS n FROM t ORDER BY n;
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T (X INTEGER, Y INTEGER, Z INTEGER)

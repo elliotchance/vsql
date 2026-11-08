@@ -24,6 +24,8 @@ EXPLAIN VALUES (SELECT a FROM t);
 VALUES (SELECT a, a FROM t);
 -- error 42601: syntax error: subquery must return only one column
 
+-- # A scalar subquery can be one field of a ROW, and a subquery in FROM is a
+-- # derived table.
 VALUES ROW((SELECT a FROM t), 2);
 -- COL1: 123 COL2: 2
 

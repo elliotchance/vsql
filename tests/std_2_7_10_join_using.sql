@@ -130,6 +130,8 @@ EXPLAIN SELECT * FROM t WHERE EXISTS (SELECT * FROM u AS p JOIN u AS q USING (x,
 -- EXPLAIN: EXPR (":memory:".PUBLIC.T.X INTEGER, ":memory:".PUBLIC.T.A INTEGER)
 
 -- # ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 10.c
+-- # Each name in the list must name exactly one column on each side, and can
+-- # only be listed once. The list can't be empty.
 SELECT * FROM t JOIN u USING (nope);
 -- error 42703: no such column: NOPE
 
@@ -259,6 +261,9 @@ SELECT only2.* FROM only1 LEFT JOIN only2 USING (k);
 -- error 42601: syntax error: the select list has no columns
 
 -- # ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 10.e and 10.j
+-- # The common columns must be comparable. The common column has a type that
+-- # fits both sides, so a BIGINT value isn't cut down to INTEGER. CHARACTER
+-- # and VARCHAR, or SMALLINT and DOUBLE PRECISION, can be compared.
 /* setup */
 CREATE TABLE types1 (n INTEGER, s VARCHAR(10), f INTEGER, c CHARACTER(5), m SMALLINT);
 CREATE TABLE types2 (n VARCHAR(10), s INTEGER, f BIGINT, c VARCHAR(10), m DOUBLE PRECISION);
@@ -290,6 +295,9 @@ SELECT CAST(f AS BIGINT) FROM types1 RIGHT JOIN types2 USING (f) WHERE f > 100;
 -- COL1: 5000000000
 
 -- # ISO/IEC 9075-2:2016(E), 7.10, <joined table>, Syntax Rules, 15.c
+-- # The common column is NOT NULL when a side that the join never fills with
+-- # NULLs has it NOT NULL. Other NOT NULL columns of a side that an outer
+-- # join can fill with NULLs become nullable.
 /* setup */
 CREATE TABLE nn1 (k INTEGER NOT NULL, c INTEGER NOT NULL);
 CREATE TABLE nn2 (k INTEGER NOT NULL, c INTEGER NOT NULL);
@@ -341,7 +349,8 @@ EXPLAIN SELECT nu.d FROM nn1 RIGHT JOIN nu USING (k);
 -- EXPLAIN: RIGHT JOIN ON ":memory:".PUBLIC.NN1.K = ":memory:".PUBLIC.NU.K ($USING2.K INTEGER, ":memory:".PUBLIC.NN1.C INTEGER, ":memory:".PUBLIC.NU.D INTEGER)
 -- EXPLAIN: EXPR (D INTEGER)
 
--- # The left side of a USING can already be NULL because of the join before.
+-- # A NOT NULL column becomes nullable once a left join can fill it with
+-- # NULLs, so the left side of a later USING can already be NULL.
 /* extensions V001-01 */
 EXPLAIN SELECT nu.d FROM nu LEFT JOIN nn1 ON nu.k = nn1.k LEFT JOIN nn3 ON nn1.k = nn3.k;
 -- EXPLAIN: $1:

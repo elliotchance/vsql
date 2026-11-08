@@ -22,7 +22,8 @@ VALUES (SELECT COUNT(*) FROM t1) = 3;
 VALUES (SELECT x FROM t1 WHERE x = 1) < (SELECT x FROM t1 WHERE x = 2);
 -- COL1: TRUE
 
--- # A subquery without any rows is NULL.
+-- # A subquery without any rows is NULL (General Rules, 3.b), and has the type
+-- # of its column (Syntax Rules, 5).
 SELECT * FROM t1 WHERE x = (SELECT x FROM t2);
 
 VALUES 1 = (SELECT x FROM t2);
@@ -32,7 +33,8 @@ VALUES 1 = (SELECT x FROM t2);
 VALUES (SELECT y FROM t1 WHERE x > 3);
 -- COL1: NULL (CHARACTER VARYING(10))
 
--- # It's an error if there's more than one row, but only when it's evaluated.
+-- # It's an error if there's more than one row (General Rules, 3.a), but only
+-- # when it's evaluated. Here t2 has no rows, so the subquery never is.
 SELECT * FROM t1 WHERE x = (SELECT x FROM t1);
 -- error 21000: cardinality violation: more than one row returned by a subquery used as an expression
 
@@ -86,16 +88,17 @@ SELECT y, (SELECT MAX(x) FROM t1) AS m FROM t1 GROUP BY y;
 -- Y: b M: 3
 -- Y: c M: 3
 
--- # An aggregate function can't contain a subquery.
+-- # An aggregate function can't contain a subquery (6.9, Syntax Rules, 1).
 SELECT MAX((SELECT MIN(x) FROM t1) + x) FROM t1;
 -- error 42601: syntax error: a subquery cannot be used in an aggregate function
 
+-- # A subquery can be in a join condition.
 SELECT a.x, b.x FROM t1 AS a INNER JOIN t1 AS b ON b.x = (SELECT MAX(x) FROM t1);
 -- X: 1 X: 3
 -- X: 2 X: 3
 -- X: 3 X: 3
 
--- # The subquery must have one column.
+-- # The subquery must have one column (Syntax Rules, 2).
 VALUES (SELECT * FROM t1);
 -- error 42601: syntax error: subquery must return only one column
 
@@ -124,6 +127,8 @@ SELECT * FROM t1;
 -- X: 2 Y: c
 -- X: 3 Y: c
 
+-- # An UPDATE has the same cardinality error. When no rows match there's a no
+-- # data warning, but the subquery's type is still checked.
 UPDATE t1 SET x = (SELECT x FROM t1);
 -- error 21000: cardinality violation: more than one row returned by a subquery used as an expression
 
@@ -134,7 +139,9 @@ UPDATE t1 SET x = (SELECT x FROM t2) WHERE x > 5;
 UPDATE t1 SET x = (SELECT y FROM t1 WHERE x = 1) WHERE x > 5;
 -- error 42846: cannot coerce CHARACTER VARYING(10) to INTEGER
 
--- # NEXT VALUE FOR can't be used in a subquery, but has one value for each row.
+-- # NEXT VALUE FOR can't be used in a subquery (6.14, Syntax Rules, 1), and has
+-- # one value for each row, however many times the row uses it (6.14, General
+-- # Rules, 1.a).
 VALUES (SELECT NEXT VALUE FOR seq1 FROM t1 WHERE x = 1);
 -- error 42601: syntax error: NEXT VALUE FOR cannot be used in a subquery
 
@@ -149,6 +156,8 @@ SELECT * FROM t1 WHERE x = (SELECT x FROM t1 WHERE x = ?);
 -- sql: SELECT * FROM t1 WHERE x = (SELECT x FROM t1 WHERE x = 2.0e0)
 -- X: 2 Y: b
 
+-- # EXPLAIN shows a subquery in the WHERE, and one in the select list is named
+-- # by its position.
 /* extensions V001-01 */
 EXPLAIN SELECT x, (SELECT MAX(x) FROM t2) FROM t1 WHERE y = (SELECT y FROM t1 WHERE x = 1);
 -- EXPLAIN: TABLE ":memory:".PUBLIC.T1 (X INTEGER, Y CHARACTER VARYING(10))

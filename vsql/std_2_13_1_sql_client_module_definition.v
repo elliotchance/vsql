@@ -60,6 +60,7 @@ const c_module_runtime = $embed_file('std_2_13_1_sql_client_module_definition.c'
 const c_runtime_requires = {
 	'exec':                  ['param']
 	'target':                ['put']
+	'select':                ['assigned']
 	'cursor':                ['cursors']
 	'descriptor':            ['connection', 'find_descriptor']
 	'allocate_descriptor':   ['connection', 'find_descriptor']
@@ -75,7 +76,7 @@ const c_runtime_requires = {
 	'deallocate_prepare':    ['prepared']
 	'describe':              ['prepared_statement', 'descriptor']
 	'input':                 ['param', 'scan', 'descriptor', 'items']
-	'output':                ['target', 'descriptor', 'items']
+	'output':                ['target', 'assigned', 'descriptor', 'items']
 	'execute_prepared':      ['prepared_statement', 'input', 'output']
 	'execute_immediate':     ['connection', 'scan']
 	'open_dynamic':          ['prepared_statement', 'input', 'cursor']

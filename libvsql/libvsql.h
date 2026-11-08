@@ -186,7 +186,7 @@ typedef SQLINTEGER SQLHDESC;
 #define SQL_DIAG_ROW_COUNT                3  /* see SQLRowCount */
 #define SQL_DIAG_DYNAMIC_FUNCTION         7  /* the statement executed */
 #define SQL_DIAG_DYNAMIC_FUNCTION_CODE    12 /* the code of the statement */
-#define SQL_DIAG_MORE                     13 /* always 0 */
+#define SQL_DIAG_MORE                     13 /* 1 if a condition was dropped */
 #define SQL_DIAG_TRANSACTIONS_COMMITTED   34 /* transactions committed */
 #define SQL_DIAG_TRANSACTIONS_ROLLED_BACK 35 /* transactions rolled back */
 #define SQL_DIAG_TRANSACTION_ACTIVE       36 /* 1 if one is active */
@@ -1204,7 +1204,8 @@ SQLRETURN SQLGetDescRec(
  *   SQL_DIAG_TRANSACTIONS_COMMITTED    transactions committed by the routine
  *   SQL_DIAG_TRANSACTIONS_ROLLED_BACK  transactions rolled back by the routine
  *   SQL_DIAG_TRANSACTION_ACTIVE        1 if a transaction is active, or 0
- *   SQL_DIAG_MORE                      always 0
+ *   SQL_DIAG_MORE                      1 if the statement raised more conditions
+ *                                      than DIAGNOSTICS SIZE, or 0
  *
  *   SQL_DIAG_SQLSTATE                  the SQLSTATE
  *   SQL_DIAG_MESSAGE_TEXT              the message

@@ -67,6 +67,8 @@ mut:
 	// SQL-transactions that the routine committed or rolled back.
 	transactions_committed   int
 	transactions_rolled_back int
+	// more is true if the routine raised more conditions than are in records.
+	more bool
 }
 
 // CLIError is an exception condition raised by a CLI routine itself, rather
@@ -100,6 +102,7 @@ fn (mut d Diagnostics) clear() {
 	d.dynamic_function_code = 0
 	d.transactions_committed = 0
 	d.transactions_rolled_back = 0
+	d.more = false
 }
 
 // add inserts a status record after the records that sort before or with it, so
@@ -124,6 +127,25 @@ fn (mut d Diagnostics) warning(sqlstate string, msg string) i16 {
 	}
 
 	return sql_success_with_info
+}
+
+// statement_warnings raises the warnings of the statement that the connection
+// just executed. If the statement failed, then the exception condition also
+// needs a condition area. A completion condition: no data doesn't have a status
+// record (see no_data).
+//
+// ISO/IEC 9075-2:2016(E), 4.36, Diagnostics area
+fn (mut d Diagnostics) statement_warnings(conn &vsql.Connection, failed bool) {
+	d.more = conn.more_conditions
+	mut warnings := conn.warnings.filter(!vsql.sqlstate_from_int(it.code()).starts_with('02'))
+	limit := if failed { conn.condition_area_limit - 1 } else { conn.condition_area_limit }
+	if warnings.len > limit {
+		warnings = warnings[warnings.len - limit..].clone()
+		d.more = true
+	}
+	for warning in warnings {
+		d.warning(vsql.sqlstate_from_int(warning.code()), warning.msg())
+	}
 }
 
 // row_condition records a condition raised for a column of a row of a rowset
